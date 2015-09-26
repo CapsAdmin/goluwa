@@ -16,33 +16,33 @@ end
 
 function serializer.Encode(lib, ...)
 	lib = lib or "luadata"
-	
+
 	local data = serializer.libraries[lib]
-	
+
 	if not data then
 		error("serializer " .. lib .. " not found", 2)
 	end
-	
+
 	if data.encode then
 		return data.encode(...)
 	end
-	
+
 	error("encoding not supported", 2)
 end
 
 function serializer.Decode(lib, ...)
 	lib = lib or "luadata"
-	
+
 	local data = serializer.libraries[lib]
-	
+
 	if not data then
 		error("serializer " .. lib .. " not found", 2)
 	end
-	
+
 	if data.decode then
 		return data.decode(...)
 	end
-	
+
 	error("decoding not supported", 2)
 end
 
@@ -65,17 +65,17 @@ do -- vfs extension
 
 	function serializer.GetKeyFromFile(lib, path, key, def)
 		local tbl = serializer.ReadFile(lib, path)
-		
+
 		if tbl then
 			local val = serializer.ReadFile(lib, path)[key]
-			
+
 			if val == nil then
 				return def
 			end
-			
+
 			return val
 		end
-		
+
 		return def
 	end
 

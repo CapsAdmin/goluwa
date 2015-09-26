@@ -21,7 +21,7 @@ prototype.Delegate(PANEL, "label", "GetTextSize", "GetSize")
 
 function PANEL:Initialize()
 	prototype.GetRegistered(self.Type, "button").Initialize(self)
-	
+
 	local label = self:CreatePanel("text", "label")
 	label:SetIgnoreMouse(true)
 	self:Layout(true)
@@ -30,10 +30,10 @@ end
 
 function PANEL:SizeToText()
 	local marg = self:GetMargin()
-		
+
 	self.label:SetPosition(marg:GetPosition())
 	self:SetSize(self.label:GetSize() + marg:GetSize()*2)
-	
+
 	self.LayoutSize = self:GetSize():Copy()
 end
 

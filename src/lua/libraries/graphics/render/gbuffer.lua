@@ -18,7 +18,7 @@ vec2 get_screen_uv()
 {
 	return gl_FragCoord.xy / g_screen_size;
 }]])
- 
+
 render.AddGlobalShaderCode([[
 vec2 g_poisson_disk[4] = vec2[](
 	vec2( -0.94201624, -0.39906216 ),
@@ -29,12 +29,12 @@ vec2 g_poisson_disk[4] = vec2[](
 
 render.gbuffer_size = Vec2(1,1)
 
-function render.GetGBufferSize()	
+function render.GetGBufferSize()
 	return render.gbuffer_size
 end
 
-render.SetGlobalShaderVariable("g_screen_size", render.GetGBufferSize, "vec2") 
-render.SetGlobalShaderVariable("g_noise_texture", render.GetNoiseTexture, "sampler2D") 
+render.SetGlobalShaderVariable("g_screen_size", render.GetGBufferSize, "vec2")
+render.SetGlobalShaderVariable("g_noise_texture", render.GetNoiseTexture, "sampler2D")
 
 render.gbuffer = render.gbuffer or NULL
 render.gbuffer_passes = render.gbuffer_passes or {}
@@ -43,20 +43,20 @@ render.gbuffer_values = render.gbuffer_values or {}
 render.gbuffer_shaders = render.gbuffer_shaders or {}
 
 function render.RegisterGBufferPass(PASS)
-	for i, pass in ipairs(render.gbuffer_passes) do 
-		if pass.Name == PASS.Name then 
-			table.remove(render.gbuffer_passes, i) 
-			break 
+	for i, pass in ipairs(render.gbuffer_passes) do
+		if pass.Name == PASS.Name then
+			table.remove(render.gbuffer_passes, i)
+			break
 		end
 	end
-		
+
 	PASS.Stage = tonumber(PASS.Stage) or 0
 	PASS.Shader.name = PASS.Name
-		
+
 	table.insert(render.gbuffer_passes, PASS)
-		
+
 	table.sort(render.gbuffer_passes, function(a, b) return a.Stage < b.Stage end)
-	
+
 	if RELOAD then
 		render.InitializeGBuffer()
 	end
@@ -65,7 +65,7 @@ end
 do -- mixer
 	function render.SetGBufferValue(key, var)
 		render.gbuffer_values[key] = var
-		
+
 		for _, pass in pairs(render.gbuffer_shaders) do
 			for _, shader in pairs(pass.shaders) do
 				if shader[key] then
@@ -78,7 +78,7 @@ do -- mixer
 	function render.GetGBufferValue(key)
 		return render.gbuffer_values[key]
 	end
-	
+
 	function render.GetGBufferValues()
 		local out = {}
 		for name, pass in pairs(render.gbuffer_shaders) do
@@ -93,100 +93,100 @@ do -- mixer
 		end
 		return out
 	end
-	
+
 	render.gbuffer_shaders_sorted = render.gbuffer_shaders_sorted or {}
 
 	function render.AddGBufferShader(PASS, init_now)
 		render.gbuffer_shaders_[PASS.Name] = PASS
-		
+
 		local stages = PASS.Source
-		
+
 		if type(stages) == "string" then
 			stages = {{source = stages}}
 		end
-				
-		for i, stage in ipairs(stages) do			
+
+		for i, stage in ipairs(stages) do
 			local shader = {
 				name = "pp_" .. PASS.Name .. "_" .. i,
 				vertex = {
 					mesh_layout = {
 						{pos = "vec3"},
 						{uv = "vec2"},
-					},	
+					},
 					source = "gl_Position = g_projection_view_world_2d * vec4(pos, 1);"
-				},				
-				fragment = { 
+				},
+				fragment = {
 					variables = {
 						self = {texture = function() return render.gbuffer_mixer_buffer:GetTexture() end},
 					},
 					mesh_layout = {
 						{uv = "vec2"},
-					},			
+					},
 					source = stage.source
 				}
 			}
-			
+
 			for i, info in ipairs(render.gbuffer_buffers) do
 				local name = "tex_" .. info.name
 				if stage.source:find(name) then
 					shader.fragment.variables[name] = {texture = function() return render.gbuffer:GetTexture(info.name) end}
 				end
 			end
-			
+
 			if PASS.Variables then
 				table.merge(shader.fragment.variables, PASS.Variables)
 			end
-			
+
 			stage.shader = shader
 		end
-		
+
 		function PASS:__init()
 			self.__init = nil
-			
+
 			local shader = {}
-			
+
 			shader.shaders = {}
-			
+
 			for i, stage in ipairs(stages) do
 				local size = render.gbuffer_size
 				local fb
-				
+
 				if stage.buffer then
 					if stage.buffer.size_divider then
 						size = size / stage.buffer.size_divider
 					else
 						size = stage.buffer.size or size
 					end
-					
+
 					if stage.buffer.max_size then
 						size = size:Copy()
 						size.x = math.min(size.x, stage.buffer.max_size.x)
 						size.y = math.min(size.y, stage.buffer.max_size.y)
 					end
-					
+
 					fb = render.CreateFrameBuffer(size.x, size.y, stage.buffer or {internal_format = "rgba8"})
 					for _, stage in ipairs(stages) do
 						stage.shader.fragment.variables["tex_stage_" .. i] = fb:GetTexture()
 					end
 				end
-				
+
 				local obj = render.CreateShader(stage.shader)
 				obj.size = size
 				obj.fb = fb
 				obj.blend_mode = stage.blend_mode
 				shader.shaders[i] = obj
 			end
-			
+
 			render.gbuffer_shaders[PASS.Name] = shader
 
 			if PASS.Variables then
 				shader.gbuffer_values = PASS.Variables
 			end
-			
+
 			shader.gbuffer_pass = PASS
 			shader.gbuffer_name = PASS.Name
 			shader.gbuffer_position = tonumber(PASS.Position) or #render.gbuffer_shaders_sorted
-			
+
 			for k,v in pairs(render.gbuffer_values) do
 				render.SetGBufferValue(k,v)
 			end
@@ -197,15 +197,15 @@ do -- mixer
 					break
 				end
 			end
-			
+
 			table.insert(render.gbuffer_shaders_sorted, shader)
-			
+
 			table.sort(render.gbuffer_shaders_sorted, function(a, b)
 				return a.gbuffer_position < b.gbuffer_position
 			end)
-			
+
 			PASS.shader = shader
-			
+
 			if PASS.Initialize then
 				local ok, err = pcall(function() PASS:Initialize() end)
 				if not ok then
@@ -214,14 +214,14 @@ do -- mixer
 				end
 			end
 
-			if not console.IsVariableAdded("render_pp_" .. PASS.Name) then			
+			if not console.IsVariableAdded("render_pp_" .. PASS.Name) then
 				local pass = table.copy(PASS)
 				local default = PASS.Default
-				
+
 				if default == nil then
 					default = true
 				end
-						
+
 				console.CreateVariable("render_pp_" .. pass.Name, default, function(val)
 					if val then
 						render.AddGBufferShader(pass, true)
@@ -230,15 +230,15 @@ do -- mixer
 					end
 				end)
 			end
-			
+
 			if not console.GetVariable("render_pp_" .. PASS.Name) then
 				render.RemoveGBufferShader(PASS.Name)
 			end
 		end
-		
+
 		if init_now or RELOAD then PASS:__init() end
 	end
-	
+
 	function render.RemoveGBufferShader(name)
 		render.gbuffer_shaders[name] = nil
 		for k,v in ipairs(render.gbuffer_shaders_sorted) do
@@ -249,7 +249,7 @@ do -- mixer
 		end
 	end
 end
- 
+
 local gbuffer_enabled = false
 local w_cvar = console.CreateVariable("render_width", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
 local h_cvar = console.CreateVariable("render_height", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
@@ -265,21 +265,21 @@ function render.DrawGBuffer(what, dist)
 
 	for i, pass in ipairs(render.gbuffer_passes) do
 		if pass.Draw3D then
-			pass:Draw3D(what, dist) 
+			pass:Draw3D(what, dist)
 		end
 	end
-		
+
 	surface.PushMatrix()
-	
-	-- gbuffer	
+
+	-- gbuffer
 	render.EnableDepth(false)
-	
+
 	render.gbuffer_mixer_buffer:Begin()
 	for i, shader in ipairs(render.gbuffer_shaders_sorted) do
 		if shader.gbuffer_pass.Update then
 			shader.gbuffer_pass:Update()
 		end
-			
+
 		for i, shader in ipairs(shader.shaders) do
 			render.SetBlendMode(shader.blend_mode)
 			if shader.fb then shader.fb:Begin() end
@@ -289,23 +289,23 @@ function render.DrawGBuffer(what, dist)
 			surface.PopMatrix()
 			if shader.fb then shader.fb:End() end
 		end
-		
+
 		if barrier then barrier() end
-	
+
 		if shader.gbuffer_pass.PostRender then
 			shader.gbuffer_pass:PostRender()
 		end
 	end
 	render.gbuffer_mixer_buffer:End()
-		
+
 	surface.SetColor(1,1,1,1)
 	surface.SetTexture(render.gbuffer_mixer_buffer:GetTexture())
 	render.SetBlendMode()
 	render.SetShaderOverride()
 	surface.DrawRect(0, 0, surface.GetSize())
-	
+
 	surface.PopMatrix()
-	
+
 	render.SetBlendMode("alpha")
 	if render.debug then
 		render.DrawGBufferDebugOverlay()
@@ -319,63 +319,63 @@ local function init(width, height)
 
 	width = width or render.GetWidth()
 	height = height or render.GetHeight()
-	
+
 	if w_cvar:Get() > 0 then width = w_cvar:Get() end
 	if h_cvar:Get() > 0 then height = h_cvar:Get() end
-	
+
 	if width == 0 or height == 0 then return end
-	
+
 	width = width * mult_cvar:Get()
 	height = height * mult_cvar:Get()
-	
+
 	render.camera_3d:SetViewport(Rect(0,0,width,height))
-	
+
 	render.gbuffer_size = Vec2(width, height)
-		
+
 	render.gbuffer_width = width
 	render.gbuffer_height = height
-	
+
 	local noise_size = Vec2() + math.pow2floor(width)
 	if render.noise_texture:GetSize() ~= noise_size then
 		render.noise_texture = Texture(noise_size, "return vec4(random(uv*1), random(uv*2), random(uv*3), random(uv*4));")
 		render.noise_texture:SetMinFilter("nearest")
 	end
-	
+
 	if render.debug then
 		warning("initializing gbuffer: ", width, " ", height)
-	end 
-	
-	do -- gbuffer	  
+	end
+
+	do -- gbuffer
 		render.gbuffer_buffers = {
 			{
 				name = "depth",
 				attach = "depth",
-				internal_format = "depth_component24",	 
+				internal_format = "depth_component24",
 				depth_texture_mode = "red",
 			},
 		}
-		
+
 		render.gbuffer_discard = render.CreateFrameBuffer(
-			width, 
-			height, 
+			width,
+			height,
 			{
 				internal_format = "r8",
 			}
 		)
-		
+
 		render.SetGlobalShaderVariable("tex_depth", function() return render.gbuffer:GetTexture("depth") end, "texture")
 		render.SetGlobalShaderVariable("tex_discard", function() return render.gbuffer_discard:GetTexture() end, "texture")
-	
-		for _, pass in ipairs(render.gbuffer_passes) do		
+
+		for _, pass in ipairs(render.gbuffer_passes) do
 			if pass.Buffers then
 				for _, args in ipairs(pass.Buffers) do
 					local name, format, attach = unpack(args)
-					
+
 					attach = attach or "color"
 					format = format or "rgb16f"
-					
+
 					render.SetGlobalShaderVariable("tex_" .. name, function() return render.gbuffer:GetTexture(name) end, "texture")
-					
+
 					table.insert(render.gbuffer_buffers, #render.gbuffer_buffers, {
 						name = name,
 						attach = attach,
@@ -385,30 +385,30 @@ local function init(width, height)
 				end
 			end
 		end
-	
-		render.gbuffer = render.CreateFrameBuffer(width, height, render.gbuffer_buffers)  
+
+		render.gbuffer = render.CreateFrameBuffer(width, height, render.gbuffer_buffers)
 		render.gbuffer_mixer_buffer = render.CreateFrameBuffer(width, height, {
 			internal_format = "rgb16f"
 		})
-		
+
 		if not render.gbuffer:IsValid() then
 			warning("failed to initialize gbuffer")
 			return
 		end
 	end
-	
+
 	if not RELOAD then
 		include("lua/libraries/graphics/render/post_process/*")
 	end
-	
+
 	for k,v in pairs(render.gbuffer_shaders_) do
 		if v.__init then
 			v:__init()
 		end
 	end
-	
+
 	table.clear(render.gbuffer_shaders_)
-		
+
 	for _, pass in ipairs(render.gbuffer_passes) do
 		local shader = render.CreateShader(pass.Shader)
 		pass.shader = shader
@@ -418,106 +418,106 @@ local function init(width, height)
 		end
 		render["gbuffer_" .. pass.Name .. "_shader"] = shader
 	end
-				
+
 	event.AddListener("WindowFramebufferResized", "gbuffer", function(window, w, h)
 		if render.GetGBufferSize() ~= Vec2(w,h) then
 			render.InitializeGBuffer(w, h)
 		end
 	end)
-	
+
 	do -- AUTOMATE THIS
 		local size = 6
 		local x,y,w,h,i
-		
+
 		local function draw_buffer(name, tex, bg)
 			if name == "diffuse" or name == "normal" or name == "light" then surface.mesh_2d_shader.color_override.a = 1 end
 			surface.SetColor(1,1,1,1)
 			surface.SetTexture(tex)
 			surface.DrawRect(x, y, w, h)
 			if name == "diffuse" or name == "normal" or name == "light" then surface.mesh_2d_shader.color_override.a = 0 end
-			
+
 			surface.SetTextPosition(x, y + 5)
 			surface.DrawText(name)
-			
+
 			if i%size == 0 then
 				y = y + h
 				x = 0
 			else
 				x = x + w
 			end
-			
+
 			i = i  + 1
 		end
-		
+
 		function render.DrawGBufferDebugOverlay()
 			w, h = surface.GetSize()
 			w = w / size
 			h = h / size
-			
+
 			x = 0
 			y = 0
 			i = 1
-			
+
 			local grey = 0.5 + math.sin(os.clock() * 10) / 10
 			surface.SetFont("default")
-						
+
 			for _, data in pairs(render.gbuffer_buffers) do
 				draw_buffer(data.name, render.gbuffer:GetTexture(data.name))
 			end
-			
+
 			surface.SetColor(0,0,0,1)
 			surface.SetTexture(tex)
 			surface.DrawRect(x, y, w, h)
 			surface.mesh_2d_shader.color_override.r = 1
 			surface.mesh_2d_shader.color_override.g = 1
-			surface.mesh_2d_shader.color_override.b = 1				
+			surface.mesh_2d_shader.color_override.b = 1
 			draw_buffer("self illumination", render.gbuffer:GetTexture("light"), true)
 			surface.mesh_2d_shader.color_override.r = 0
 			surface.mesh_2d_shader.color_override.g = 0
-			surface.mesh_2d_shader.color_override.b = 0				
-			
+			surface.mesh_2d_shader.color_override.b = 0
+
 			surface.SetColor(0,0,0,1)
 			surface.SetTexture(tex)
 			surface.DrawRect(x, y, w, h)
 			surface.mesh_2d_shader.color_override.r = 1
 			surface.mesh_2d_shader.color_override.g = 1
-			surface.mesh_2d_shader.color_override.b = 1				
+			surface.mesh_2d_shader.color_override.b = 1
 			draw_buffer("roughness", render.gbuffer:GetTexture("diffuse"), true)
 			surface.mesh_2d_shader.color_override.r = 0
 			surface.mesh_2d_shader.color_override.g = 0
 			surface.mesh_2d_shader.color_override.b = 0
-			
+
 			surface.SetColor(0,0,0,1)
 			surface.SetTexture(tex)
 			surface.DrawRect(x, y, w, h)
 			surface.mesh_2d_shader.color_override.r = 1
 			surface.mesh_2d_shader.color_override.g = 1
-			surface.mesh_2d_shader.color_override.b = 1				
+			surface.mesh_2d_shader.color_override.b = 1
 			draw_buffer("metallic", render.gbuffer:GetTexture("normal"), true)
 			surface.mesh_2d_shader.color_override.r = 0
 			surface.mesh_2d_shader.color_override.g = 0
 			surface.mesh_2d_shader.color_override.b = 0
-			
+
 			draw_buffer("discard", render.gbuffer_discard:GetTexture())
-							
+
 			for _, pass in ipairs(render.gbuffer_passes) do
-				if pass.DrawDebug then 
-					i,x,y,w,h = pass:DrawDebug(i,x,y,w,h,size) 
+				if pass.DrawDebug then
+					i,x,y,w,h = pass:DrawDebug(i,x,y,w,h,size)
 				end
 			end
 		end
 	end
-	
+
 	for k,v in pairs(render.gbuffer_values) do
 		render.SetGBufferValue(k,v)
 	end
-	
+
 	gbuffer_enabled = true
-	
+
 	event.Call("GBufferInitialized")
-	
+
 	barrier = gl.TextureBarrierNV or gl.TextureBarrier
-	
+
 	logn("render: gbuffer initialized ", width, "x", height)
 end
 
@@ -532,11 +532,11 @@ function render.ShutdownGBuffer()
 	event.RemoveListener("PreDisplay", "gbuffer")
 	event.RemoveListener("PostDisplay", "gbuffer")
 	event.RemoveListener("WindowFramebufferResized", "gbuffer")
-	
+
 	if render.gbuffer:IsValid() then
 		render.gbuffer:Remove()
 	end
-		
+
 	warning("gbuffer shutdown")
 end
 
@@ -546,7 +546,7 @@ end
 
 function render.EnableGBuffer(b)
 	gbuffer_enabled = b
-	if b then 
+	if b then
 		render.InitializeGBuffer()
 	else
 		render.ShutdownGBuffer()
@@ -558,7 +558,7 @@ event.AddListener("EntityCreate", "gbuffer", function()
 
 	if not console.GetVariable("render_deferred") then return end
 	if table.count(entities.GetAll()) ~= 0 then return end
-	
+
 	render.InitializeGBuffer()
 end)
 
@@ -567,7 +567,7 @@ event.AddListener("EntityRemove", "gbuffer", function(ent)
 
 	if not console.GetVariable("render_deferred") then return end
 	if table.count(entities.GetAll()) ~= 0 then return end
-	
+
 	render.ShutdownGBuffer()
 end)
 

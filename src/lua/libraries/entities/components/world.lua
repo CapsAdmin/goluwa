@@ -6,14 +6,14 @@ COMPONENT.Name = "world"
 
 function COMPONENT:OnAdd(ent)
 	prototype.SafeRemove(self.sun)
-	
+
 	self.sun = entities.CreateEntity("light", ent)
 	self.sun:SetHideFromEditor(true)
 	self.sun:SetProjectFromCamera(true)
-		
+
 	SUN = self.sun
-	
-	for _, info in ipairs(prototype.GetStorableVariables(self)) do		
+
+	for _, info in ipairs(prototype.GetStorableVariables(self)) do
 		self[info.set_name](self, self[info.get_name](self))
 	end
 end
@@ -24,12 +24,12 @@ end
 
 local function ADD(name, default, callback)
 	local var_name = ("_" .. name):gsub("_(%l)", string.upper)
-	
+
 	prototype.GetSet(var_name, default)
-	
+
 	local callback_set_name
 	local callback_get_name
-	
+
 	if type(callback) == "string" then
 		local temp = ("_" .. callback):gsub("_(%l)", string.upper)
 		callback_set_name = "Set" .. temp
@@ -38,12 +38,12 @@ local function ADD(name, default, callback)
 
 	COMPONENT["Set" .. var_name] = function(self, var)
 		self[var_name] = var
-			
+
 		if callback_set_name then
 			self[callback_set_name](self, self[callback_get_name](self))
 		elseif callback then
 			if self.sun:IsValid() then
-				callback(self, var) 
+				callback(self, var)
 			end
 		else
 			render.SetGBufferValue("world_" .. name, var)
@@ -57,11 +57,11 @@ prototype.StartStorable(COMPONENT)
 			local vec = var:GetForward()
 			local size = 50000
 			local sun_pos = vec * size/10
-			
+
 			local grr = Matrix44()
 			grr:Rotate(-var.x-math.pi/2, -1,0,0)
 			grr:Rotate(var.y, 0,0,1)
-			
+
 			self.sun:SetRotation(grr:GetRotation())
 			self.sun:SetPosition(sun_pos)
 			self.sun:SetSize(size)

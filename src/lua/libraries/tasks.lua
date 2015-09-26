@@ -13,17 +13,17 @@ prototype.GetSet(META, "Frequency", 0)
 prototype.GetSet(META, "IterationsPerTick", 1)
 prototype.GetSet(META, "EnsureFPS", 30)
 prototype.IsSet(META, "Running", false)
- 
+
 META.wait = 0
- 
+
 function META:Start(now)
-	
+
 	if not enabled:Get() then
-		self:OnStart() 
+		self:OnStart()
 		self:Remove()
 		return
 	end
-	
+
 	if not now then
 		self.run_me = true
 		return
@@ -31,25 +31,25 @@ function META:Start(now)
 
 	self.Running = true
 	self.run_me = nil
-	
-	local co = coroutine.create(function(...) 
-		return select(2, system.pcall(self.OnStart, ...)) 
+
+	local co = coroutine.create(function(...)
+		return select(2, system.pcall(self.OnStart, ...))
 	end)
-	
+
 	tasks.coroutine_lookup[co] = self
 	self.co = co
-	
+
 	self.progress = {}
-	
+
 	local start = function()
 		if not self:IsValid() then return false end -- removed
-		
+
 		local time = system.GetElapsedTime()
 
-		if self.debug then 
+		if self.debug then
 			if next(self.progress) then
-				for k, v in pairs(self.progress) do	
-					if v.i <= v.max then 
+				for k, v in pairs(self.progress) do
+					if v.i <= v.max then
 						if not v.last_print or v.last_print < time or v.i == v.max then
 							logf("%s %s progress: %s\n", self, k, self:GetProgress(k))
 							v.last_print = time + 1
@@ -61,10 +61,10 @@ function META:Start(now)
 				end
 			end
 		end
-					
+
 		if time > self.wait then
 			local ok, res, err = coroutine.resume(co, self)
-			
+
 			if coroutine.status(co) == "dead" then
 				self.Running = false
 				tasks.created[self] = nil
@@ -72,8 +72,8 @@ function META:Start(now)
 				self:OnFinish(res)
 				return false
 			end
-			
-			if ok == false and res then				
+
+			if ok == false and res then
 				if self.OnError then
 					self:OnError(res)
 				else
@@ -88,11 +88,11 @@ function META:Start(now)
 			else
 				self:OnUpdate()
 			end
-			
+
 			return res
 		end
 	end
-	
+
 	if self.EnsureFPS ~= 0 then
 		event.CreateThinker(start, true, self.EnsureFPS, true)
 	elseif self.Frequency == 0 then
@@ -101,7 +101,7 @@ function META:Start(now)
 		event.CreateThinker(start, true, 1/self.Frequency, self.IterationsPerTick)
 	end
 end
- 
+
 function META:Wait(sec)
 	if not enabled:Get() then return end
 	if sec then self.wait = system.GetElapsedTime() + sec end
@@ -113,7 +113,7 @@ function META:OnStart()
 end
 
 function META:OnFinish()
-	
+
 end
 
 function META:OnUpdate()
@@ -127,7 +127,7 @@ function META:Report(what)
 		self.last_report = system.GetElapsedTime() + 1
 	end
 end
-	
+
 function META:ReportProgress(what, max)
 	if not self.debug then return end
 	self.progress[what] = self.progress[what] or {}
@@ -139,7 +139,7 @@ function META:GetProgress(what)
 	if self.progress[what] then
 		return ("%.2f%%"):format(math.round((self.progress[what].i / self.progress[what].max) * 100, 3))
 	end
-	
+
 	return "0%"
 end
 
@@ -151,12 +151,12 @@ prototype.Register(META)
 
 function tasks.CreateTask(on_start, on_finish)
 	local self = prototype.CreateObject(META)
-	
+
 	if on_start then self.OnStart = function(_, ...) return on_start(...) end end
 	if on_finish then self.OnFinish = function(_, ...) return on_finish(...) end end
-	
+
 	if on_start then self:Start() end
-	
+
 	tasks.created[self] = self
 
 	return self
@@ -187,23 +187,23 @@ function tasks.IsBusy()
 	return tasks.busy
 end
 
-event.CreateTimer("tasks", 0.25, 0, function()	
+event.CreateTimer("tasks", 0.25, 0, function()
 	local i = 0
-	
+
 	if next(tasks.created) then
 		tasks.busy = true
 	else
 		tasks.busy = false
 	end
-	
+
 	for thread in pairs(tasks.created) do
 		if thread:IsRunning() then
 			i = i + 1
 		end
-		
+
 		if i >= tasks.max then return end
 	end
-		
+
 	for thread in pairs(tasks.created) do
 		if thread.run_me then
 			thread:Start(true)

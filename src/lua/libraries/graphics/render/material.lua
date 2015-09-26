@@ -7,11 +7,11 @@ do
 
 	function render.GetErrorMaterial()
 
-		if not render.error_material then 	
+		if not render.error_material then
 			render.error_material = render.CreateMaterial("base")
 			render.error_material:SetError("render.GetErrorMaterial")
 		end
-		
+
 		return render.error_material
 	end
 end
@@ -29,22 +29,22 @@ META:Register()
 
 function render.CreateMaterial(name, shader)
 	local self = prototype.CreateDerivedObject("material", name)
-	
+
 	self.required_shader = shader
-	
+
 	return self
 end
 
 function render.CreateMaterialTemplate(name)
 	local META = prototype.CreateTemplate()
-	
+
 	META.Name = name
-	
+
 	function META:Register()
 		META.TypeBase = "base"
 		prototype.Register(META, "material", META.Name)
 	end
-	
+
 	return META
 end
 

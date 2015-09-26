@@ -14,37 +14,37 @@ do
 
 	function render.DrawMatrix(x, y, m, name)
 		surface.PushMatrix(x, y)
-		
+
 		surface.SetFont("default")
 		surface.SetWhiteTexture()
-		
+
 		surface.SetColor(1, 0, 0, 0.5)
 		surface.DrawRect(0, y_offset, spacing * 3, spacing * 3)
-		
+
 		surface.SetColor(0, 1, 0, 0.5)
 		surface.DrawRect(spacing * 3, y_offset, spacing, spacing * 3)
 		draw_axis("x", 4, 0)
 		draw_axis("y", 4, 1)
 		draw_axis("z", 4, 2)
-		
-		
+
+
 		surface.SetColor(0, 0, 1, 0.5)
 		surface.DrawRect(0, y_offset + spacing * 3, spacing * 3, spacing - y_offset/2)
-		
+
 		--surface.SetColor(1, 0, 1, 0.5)
 		--surface.DrawRect(spacing * 3, y_offset + spacing * 3, spacing, spacing - y_offset/2)
-		
+
 		surface.SetColor(1,1,1,1)
-		
+
 		surface.SetTextPosition(0, 0)
 		surface.DrawText(name)
-		
+
 		for x = 0, 3 do
 		for y = 0, 3 do
 			local str = tostring(math.round(m[x*4+y], 2))
 			local x_offset_2 = 0
-			
-			if str:sub(1, 1)  == "-" then 
+
+			if str:sub(1, 1)  == "-" then
 				x_offset_2 = surface.GetTextSize("-")
 			end
 			local w, h = surface.GetTextSize(str)
@@ -52,7 +52,7 @@ do
 			surface.DrawText(str)
 		end
 		end
-		
+
 		surface.PopMatrix()
 	end
 end
@@ -84,7 +84,7 @@ local types = {
 function render.StartDebug()
 	if EXTERNAL_OPENGL_DEBUGGER then return end
 	if render.verbose_debug then return end
-	
+
 	if gl.DebugMessageControl then
 		gl.Enable("GL_DEBUG_OUTPUT")
 		gl.DebugMessageControl("GL_DONT_CARE", "GL_DONT_CARE", "GL_DONT_CARE", ffi.new("GLuint"), nil, true)
@@ -97,21 +97,21 @@ end
 function render.StopDebug()
 	if EXTERNAL_OPENGL_DEBUGGER then return end
 	if render.verbose_debug then return end
-	
+
 	if gl.DebugMessageControl then
 		level = level or 0
-		
+
 		local buffer = ffi.new("char[1024]")
 		local length = ffi.sizeof(buffer)
-		
+
 		local int = ffi.new("int[1]")
 		gl.GetIntegerv("GL_DEBUG_LOGGED_MESSAGES", int)
-			
+
 		local message
-		
+
 		if int[0] ~= 0 then
 			message = {}
-			
+
 			for i = 0, int[0] do
 				local types = ffi.new("GLenum[1]")
 				if gl.GetDebugMessageLog(1, length, nil, types, nil, nil, nil, buffer) ~= 0 and types[0] == gl.e.GL_DEBUG_TYPE_ERROR then
@@ -119,14 +119,14 @@ function render.StopDebug()
 					table.insert(message, str)
 				end
 			end
-			
+
 			message = table.concat(message, "\n")
-			
+
 			if message == "" then message = nil end
 		end
-		
+
 		gl.Disable("GL_DEBUG_OUTPUT")
-				
+
 		return message
 	else
 		-- todo
@@ -135,22 +135,22 @@ end
 
 function render.EnableVerboseDebug(b)
 	if gl.DebugMessageControl then
-		if b then		
+		if b then
 			gl.Enable("GL_DEBUG_OUTPUT")
 			gl.DebugMessageControl("GL_DONT_CARE", "GL_DEBUG_TYPE_ERROR", "GL_DONT_CARE", ffi.new("GLuint"), nil, true)
 			gl.Enable("GL_DEBUG_OUTPUT_SYNCHRONOUS")
-			
+
 			local buffer = ffi.new("char[1024]")
 			local length = ffi.sizeof(buffer)
-			
-			debug.sethook(function() 
+
+			debug.sethook(function()
 				local info = debug.getinfo(2)
 				if info.source:find("opengl", nil, true) then
-					
+
 					local logged_count = ffi.new("int[1]")
 					gl.GetIntegerv("GL_DEBUG_LOGGED_MESSAGES", logged_count)
-					
-					if logged_count[0] ~= 0 then						
+
+					if logged_count[0] ~= 0 then
 						local info = debug.getinfo(3)
 						local source = info.source:match(".+render/(.+)")
 
@@ -165,7 +165,7 @@ function render.EnableVerboseDebug(b)
 								end
 							end
 						end
-						
+
 						if message then
 							logf("[render] %s:%i gl.%s:\n", source, info.currentline, info.name)
 							logn(message)

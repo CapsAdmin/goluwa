@@ -17,7 +17,7 @@ local function create_horizontal_divider(self)
 		pos.x = math.clamp(pos.x, 0, self:GetWidth() - self.DividerWidth)
 		pos.y = 0
 		self:Layout()
-		
+
 		self:OnDividerPositionChanged(pos)
 	end
 	self.horizontal_divider = divider
@@ -33,7 +33,7 @@ local function create_vertical_divider(self)
 		pos.x = 0
 		pos.y = math.clamp(pos.y, 0, self:GetHeight() - self.DividerWidth)
 		self:Layout()
-		
+
 		self:OnDividerPositionChanged(pos)
 	end
 end
@@ -51,30 +51,30 @@ function PANEL:OnLayout()
 	if self.horizontal_divider then
 		self.horizontal_divider:SetNoDraw(self.HideDivider)
 		self.horizontal_divider:BringToFront()
-	
+
 		self.horizontal_divider:SetSize(Vec2(self.DividerWidth, self.DividerHeight == 0 and self:GetHeight() or self.DividerHeight))
-		
+
 		if self.left:IsValid() then
 			self.left:SetSize(Vec2(self.horizontal_divider:GetX() + (self.HideDivider and 0 or self.DividerWidth), self:GetHeight()))
 		end
-		
+
 		if self.right:IsValid() then
 			local offset = self.HideDivider and 0 or self.DividerWidth
 			self.right:SetX(self.horizontal_divider:GetX() + offset)
 			self.right:SetSize(Vec2(self:GetWidth() - self.horizontal_divider:GetX() + offset,  self:GetHeight()))
 		end
 	end
-	
+
 	if self.vertical_divider then
 		self.vertical_divider:SetNoDraw(self.HideDivider)
 		self.vertical_divider:BringToFront()
 
 		self.vertical_divider:SetSize(Vec2(self.DividerHeight == 0 and self:GetWidth() or self.DividerHeight, self.DividerWidth))
-		
+
 		if self.top:IsValid() then
 			self.top:SetSize(Vec2(self:GetWidth(), self.vertical_divider:GetY() + (self.HideDivider and 0 or self.DividerWidth)))
 		end
-		
+
 		if self.bottom:IsValid() then
 			local offset = self.HideDivider and 0 or self.DividerWidth
 			self.bottom:SetY(self.vertical_divider:GetY() + offset)
@@ -116,13 +116,13 @@ function PANEL:SetBottom(pnl)
 end
 
 function PANEL:SetDividerPosition(x, y)
-	if self.horizontal_divider then 
-		self.horizontal_divider:SetX(x) 
+	if self.horizontal_divider then
+		self.horizontal_divider:SetX(x)
 		if self.left:IsValid() then self.left:Layout() end
 		if self.right:IsValid() then self.right:Layout() end
 	end
-	if self.vertical_divider then 
-		self.vertical_divider:SetY(y or x) 
+	if self.vertical_divider then
+		self.vertical_divider:SetY(y or x)
 		if self.top:IsValid() then self.top:Layout() end
 		if self.bottom:IsValid() then self.bottom:Layout() end
 	end

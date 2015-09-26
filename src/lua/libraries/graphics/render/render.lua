@@ -5,20 +5,20 @@ if not gl then return end
 local render = _G.render or {}
 
 function render.Initialize()
-	if not gl then 
+	if not gl then
 		llog("cannot initialize : ", err)
 	return end
-	
+
 	if not render.context_created then error("a window must exist before the renderer can be initialized", 2) end
 
 	llog("opengl version: %s", render.GetVersion())
 	llog("glsl version: %s", render.GetShadingLanguageVersion())
 	llog("vendor: %s", render.GetVendor())
-	
+
 	if render.GetVersion():find("OpenGL ES") then
 		OPENGL_ES = true
 	end
-	
+
 	do
 		local vendor = render.GetVendor():lower()
 		if vendor:find("nvidia") then NVIDIA = true end
@@ -27,32 +27,32 @@ function render.Initialize()
 		if vendor:find("mesa") or vendor:find("open source technology center") or render.GetVersion():lower():find("mesa") then MESA = true end
 		if vendor:find("intel") then INTEL = true end
 	end
-		
+
 	if SRGB then
 		gl.Enable("GL_FRAMEBUFFER_SRGB")
 	end
-	
+
 	gl.Enable("GL_TEXTURE_CUBE_MAP_SEAMLESS")
 	gl.Enable("GL_MULTISAMPLE")
-	
+
 	include("lua/libraries/graphics/decoders/*")
-	
+
 	render.frame = 0
-		
+
 	render.SetBlendMode("src_alpha", "one_minus_src_alpha")
 	render.EnableDepth(false)
-	
+
 	render.SetClearColor(0.25, 0.25, 0.25, 0.5)
-	
+
 	include("lua/libraries/graphics/render/shader_builder.lua", render)
-		
+
 	render.GenerateTextures()
-	
+
 	event.Call("RenderContextInitialized")
 end
 
 function render.Shutdown()
-	
+
 end
 
 do
@@ -74,22 +74,22 @@ do
 				break
 			end
 		end
-		
+
 		table.insert(render.global_shader_code, {code = glsl_code, require = require})
 	end
 
 	function render.GetGlobalShaderCode(code)
-		
+
 		local done = {}
 		local out = {}
-		
+
 		for _, info in ipairs(render.global_shader_code) do
 			if not code or (info.require and code:find(info.require, nil, true)) then
 				table.insert(out, info.code)
 				done[info.require] = true
 			end
 		end
-		
+
 		-- ASHDJUIASHDUAWSD TODO
 		local out2 = {}
 		for _, new_code in pairs(out) do
@@ -100,13 +100,13 @@ do
 				end
 			end
 		end
-		for _, str in pairs(out2) do 
-			table.insert(out, 1, str) 
+		for _, str in pairs(out2) do
+			table.insert(out, 1, str)
 		end
-		
+
 		return table.concat(out, "\n\n")
 	end
-	
+
 	render.AddGlobalShaderCode([[
 		vec3 rgb2hsv(vec3 c)
 		{
@@ -119,46 +119,46 @@ do
 			return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
 		}
 	]])
-	
-	render.AddGlobalShaderCode([[	
+
+	render.AddGlobalShaderCode([[
 		vec3 hsv2rgb(vec3 c)
 		{
 			vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
 			vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
 			return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
-		}	
+		}
 	]])
 end
 
 do -- occlusion query
 	local META = prototype.CreateTemplate("occlusion_query")
-	
+
 	function META:Begin()
 		gl.BeginQuery("GL_SAMPLES_PASSED", self.id)
 	end
-	
+
 	function META:End()
 		gl.EndQuery("GL_SAMPLES_PASSED")
 	end
-	
+
 	local ready = ffi.new("GLuint[1]")
-	
+
 	function META:GetVisibility()
 		gl.GetQueryObjectuiv(self.id, "GL_QUERY_RESULT_AVAILABLE", ready)
 		if ready[0] ~= 0 then
 			gl.GetQueryObjectuiv(self.id, "GL_QUERY_RESULT", ready)
 			return tonumber(ready[0])/480000
 		end
-		
+
 		return 0
 	end
-	
+
 	META:Register()
-	
+
 	function render.CreateOcclusionQuery()
 		local self = prototype.CreateObject("occlusion_query")
 		self.id = gl.GenQuerie()
-		
+
 		return self
 	end
 end
@@ -171,38 +171,38 @@ do -- shaders
 	function render.CreateGLShader(type, source)
 		check(type, "number")
 		check(source, "string")
-		
+
 		if not render.CheckSupport("CreateShader") then return 0 end
-		
+
 		local shader = gl.CreateShader(type)
-		
+
 		shader_strings[0] = ffi.cast("const char *", source)
 		gl.ShaderSource(shader, 1, shader_strings, nil)
 		gl.CompileShader(shader)
-		gl.GetShaderiv(shader, "GL_COMPILE_STATUS", status)		
+		gl.GetShaderiv(shader, "GL_COMPILE_STATUS", status)
 
-		if status[0] == 0 then			
-		
+		if status[0] == 0 then
+
 			gl.GetShaderInfoLog(shader, 1024, nil, log)
 			gl.DeleteShader(shader)
-			
+
 			error(ffi.string(log), 2)
 		end
 
 		return shader
 	end
 
-	function render.CreateGLProgram(cb, ...)	
+	function render.CreateGLProgram(cb, ...)
 
 		if not render.CheckSupport("CreateProgram") then return 0 end
 
 		local shaders = {...}
 		local program = gl.CreateProgram()
-		
+
 		for _, shader_id in pairs(shaders) do
 			gl.AttachShader(program, shader_id)
 		end
-		
+
 		cb(program)
 
 		gl.LinkProgram(program)
@@ -210,18 +210,18 @@ do -- shaders
 		gl.GetProgramiv(program, "GL_LINK_STATUS", status)
 
 		if status[0] == 0 then
-		
+
 			gl.GetProgramInfoLog(program, 1024, nil, log)
-			gl.DeleteProgram(program)		
-			
+			gl.DeleteProgram(program)
+
 			error(ffi.string(log), 2)
 		end
-		
+
 		for _, shader_id in pairs(shaders) do
 			gl.DetachShader(program, shader_id)
 			gl.DeleteShader(shader_id)
 		end
-		
+
 		return program
 	end
 
@@ -247,7 +247,7 @@ do -- shaders
 			end
 		end
 	end
-	
+
 	do
 		local last
 		local last2
@@ -256,7 +256,7 @@ do -- shaders
 			if last ~= id or last2 ~= id2 then
 				gl.BindVertexArray(id)
 				last = id
-				
+
 				if id2 then
 					gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", id2)
 					last2 = id2
@@ -268,7 +268,7 @@ end
 
 do
 	local vsync = 0
-	
+
 	function render.SetVSync(b)
 		if gl.SwapIntervalEXT then
 			gl.SwapIntervalEXT(b == true and 1 or b == "adaptive" and -1 or 0)
@@ -282,20 +282,20 @@ do
 		return vsync
 	end
 end
- 
-function render.Shutdown()	
+
+function render.Shutdown()
 
 end
 
-function render.GetVersion()		
+function render.GetVersion()
 	return ffi.string(gl.GetString("GL_VERSION"))
 end
 
-function render.GetShadingLanguageVersion()		
+function render.GetShadingLanguageVersion()
 	return ffi.string(gl.GetString("GL_SHADING_LANGUAGE_VERSION"))
 end
 
-function render.GetVendor()		
+function render.GetVendor()
 	return ffi.string(gl.GetString("GL_VENDOR"))
 end
 
@@ -308,19 +308,19 @@ function render.CheckSupport(func)
 		logf("%s: the function gl.%s does not exist\n", debug.getinfo(2).func:name(), func)
 		return false
 	end
-	
+
 	return true
 end
 
 do
 	local R,G,B,A = 0,0,0,1
-	
+
 	function render.SetClearColor(r,g,b,a)
 		R = r
 		G = g
 		B = b
 		A = a or 1
-		
+
 		gl.ClearColor(R,G,B,A)
 	end
 
@@ -331,20 +331,20 @@ end
 
 do
 	local X, Y, W, H = 0, 0, 0, 0
-	
+
 	function render.SetScissor(x,y,w,h)
-		--render.ScissorRect(x,y,w,h)  
+		--render.ScissorRect(x,y,w,h)
 		--surface.SetScissor(x, y, w, h)
 
 		local sw, sh = render.GetScreenSize():Unpack()
-		
+
 		x = x or 0
 		y = y or 0
 		w = w or sw
 		h = h or sh
-		
+
 		gl.Scissor(x, sh - (y + h), w, h)
-		
+
 		X = x
 		Y = y
 		W = w
@@ -358,45 +358,45 @@ end
 
 do
 	local X,Y,W,H
-	
+
 	local last = Rect()
-	
+
 	function render.SetViewport(x, y, w, h)
 		X,Y,W,H = x,y,w,h
-		
+
 		if last.x ~= x or last.y ~= y or last.w ~= w or last.h ~= h then
 			gl.Viewport(x, y, w, h)
 			gl.Scissor(x, y, w, h)
-			
+
 			render.camera_2d.Viewport.w = w
 			render.camera_2d.Viewport.h = h
 			render.camera_2d:Rebuild()
-			
+
 			last.x = x
 			last.y = y
 			last.w = w
 			last.h = h
 		end
 	end
-	
+
 	function render.GetViewport()
 		return x,y,w,h
 	end
 
 	local stack = {}
-	
+
 	function render.PushViewport(x, y, w, h)
 		table.insert(stack, {X or 0,Y or 0,W or render.GetWidth(),H or render.GetHeight()})
-				
+
 		render.SetViewport(x, y, w, h)
 	end
-	
+
 	function render.PopViewport()
 		render.SetViewport(unpack(table.remove(stack)))
 	end
 end
 
-do 
+do
 	local enums = gl and {
 		zero = gl.e.GL_ZERO,
 		one = gl.e.GL_ONE,
@@ -413,7 +413,7 @@ do
 		constant_alpha = gl.e.GL_CONSTANT_ALPHA,
 		one_minus_constant_alpha = gl.e.GL_ONE_MINUS_CONSTANT_ALPHA,
 		src_alpha_saturate = gl.e.GL_SRC_ALPHA_SATURATE,
-		
+
 		add = gl.e.GL_FUNC_ADD,
 		sub = gl.e.GL_FUNC_SUBTRACT,
 		reverse_sub = gl.e.GL_FUNC_REVERSE_SUBTRACT,
@@ -437,10 +437,10 @@ do
 			end
 			return
 		end
-		
-		if src_color == "alpha" then			
-			gl.BlendFuncSeparate(	
-				"GL_SRC_ALPHA", "GL_ONE_MINUS_SRC_ALPHA", 
+
+		if src_color == "alpha" then
+			gl.BlendFuncSeparate(
+				"GL_SRC_ALPHA", "GL_ONE_MINUS_SRC_ALPHA",
 				"GL_ONE", "GL_ONE_MINUS_SRC_ALPHA"
 			)
 		elseif src_color == "multiplicative" then
@@ -449,34 +449,34 @@ do
 			gl.BlendFunc("GL_ONE", "GL_ONE_MINUS_SRC_ALPHA")
 		elseif src_color == "additive" then
 			gl.BlendFunc("GL_SRC_ALPHA", "GL_ONE")
-		else		
+		else
 			src_color = enums[src_color or "src_alpha"]
 			dst_color = enums[dst_color or "one_minus_src_alpha"]
 			func_color = enums[func_color or "add"]
-			
+
 			src_alpha = enums[src_alpha] or src_color
 			dst_alpha = enums[dst_alpha] or dst_color
 			func_alpha = enums[func_alpha] or func_color
-			
+
 			gl.BlendFuncSeparate(src_color, dst_color, src_alpha, dst_alpha)
-			gl.BlendEquationSeparate(func_color, func_alpha)		
+			gl.BlendEquationSeparate(func_color, func_alpha)
 		end
 	end
 end
 
-do	
+do
 	local cull_mode
 	local override_
 
 	function render.SetCullMode(mode, override)
 		if mode == cull_mode and override ~= true then return end
 		if override_ and override ~= false then return end
-		
+
 		if mode == "none" then
 			gl.Disable("GL_CULL_FACE")
 		else
 			gl.Enable("GL_CULL_FACE")
-				
+
 			if mode == "front" then
 				gl.CullFace("GL_FRONT")
 			elseif mode == "back" then
@@ -485,7 +485,7 @@ do
 				gl.CullFace("GL_FRONT_AND_BACK")
 			end
 		end
-		
+
 		cull_mode = mode
 		override_ = override
 	end
@@ -501,9 +501,9 @@ do
 	function render.ReadPixels(x, y, w, h)
 		w = w or 1
 		h = h or 1
-		
+
 		gl.ReadPixels(x, y, w, h, "GL_RGBA", "GL_FLOAT", data)
-			
+
 		return data[0], data[1], data[2], data[3]
 	end
 end
@@ -514,7 +514,7 @@ do
 	function render.EnableDepth(b)
 		local prev = enabled
 		enabled = b
-		
+
 		if b then
 			gl.Enable("GL_DEPTH_TEST")
 			gl.DepthMask(1)
@@ -524,7 +524,7 @@ do
 			gl.DepthMask(0)
 			--gl.DepthFunc("GL_ALWAYS")
 		end
-		
+
 		return prev
 	end
 end

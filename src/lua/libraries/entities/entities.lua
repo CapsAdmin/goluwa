@@ -14,15 +14,15 @@ local id = 1
 
 function entities.CreateEntity(name, parent, info)
 	local self = prototype.CreateEntity(name, parent, info)
-		
+
 	self.Id = id
-		
+
 	entities.active_entities[id] = self
-	
+
 	id = id + 1
-	
+
 	event.Call("EntityCreated", self)
-	
+
 	return self
 end
 

@@ -7,16 +7,16 @@ local ACTIVATION_RESPONSE = 1
 
 local function sigmoid_transfer(x)
 	return 1 / (1 + exp(-x / ACTIVATION_RESPONSE))
-end 
+end
 
 function NeuralNetwork(inputs, outputs, hidden_layers, neurons_per_layer)
 	local self = prototype.CreateObject(META)
-	
+
 	self.inputs = inputs or 1
 	self.outputs = outputs or 1
 	self.hidden_layers = hidden_layers or math.ceil(self.inputs / 2)
 	self.neurons_per_layer = neurons_per_layer or math.ceil(self.outputs * 0.66666 + self.outputs)
-	
+
 	self.Neurons[1] = {}   --Input Layer
 
 	for i = 1, self.inputs do
@@ -32,7 +32,7 @@ function NeuralNetwork(inputs, outputs, hidden_layers, neurons_per_layer)
 			in_layer = self.outputs
 		end
 
-		for j = 1, in_layer do	
+		for j = 1, in_layer do
 			self.Neurons[i][j] = {bias = math.randomf(-1, 1)}
 			for k = 1, #self.Neurons[i-1] do
 				self.Neurons[i][j][k] = math.randomf(-1, 1)
@@ -47,7 +47,7 @@ function META:Ask(input)
 	check(input, "table")
 
 	local neurons = self.Neurons
-	
+
 	local output = {}
 
 	for i = 1,#neurons do
@@ -75,12 +75,12 @@ end
 
 function META:Learn(desired_outputs)
 	check(desired_outputs, "table")
-	
+
 	local neurons = self.Neurons
 
 	for i = #neurons, 2, -1 do
 		for j = 1,#neurons[i] do
-			if i == #neurons then 
+			if i == #neurons then
 				neurons[i][j].delta = (desired_outputs[j] - neurons[i][j].result) * neurons[i][j].result * (1 - neurons[i][j].result)
 			else
 				local weight = 0

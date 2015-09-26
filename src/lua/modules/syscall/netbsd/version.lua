@@ -28,7 +28,7 @@ if abi.host == "netbsd" then
   osrevision = osrevision[0]
 end
 if not ok or res == -1 then if pcall(inlibc_fn, "rump_getversion") then ok, osrevision = pcall(ffi.C.rump_getversion) end end
-if not ok then 
+if not ok then
   version = 7
 else
   major = math.floor(osrevision / 100000000)

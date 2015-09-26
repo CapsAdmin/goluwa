@@ -8,8 +8,8 @@ luadata.Types = {}
 
 function luadata.SetModifier(type, callback, global_ctor)
 	luadata.Types[type] = callback
-	
-	if global_ctor then 
+
+	if global_ctor then
 		env[global_ctor] = _G[global_ctor]
 	end
 end
@@ -30,46 +30,46 @@ luadata.SetModifier("boolean", function(var) return var and "true" or "false" en
 
 luadata.SetModifier("table", function(tbl, context)
 	local str
-		
+
 	if context.tab_limit and context.tab >= context.tab_limit then
 		return "{--[[tab limit reached]]}"
 	end
-	
+
 	if context.done then
 		if context.done[tbl] then
 			return ("{--[=[%s already serialized]=]}"):format(tostring(tbl))
 		end
 		context.done[tbl] = true
 	end
-	
+
 	context.tab = context.tab + 1
-	
-	if context.tab == 0 then 	
+
+	if context.tab == 0 then
 		str = {}
 	else
-		str = {"{\n"} 
+		str = {"{\n"}
 	end
-	
+
 	if table.isarray(tbl) then
 		if #tbl == 0 then
-			str = {"{"} 
+			str = {"{"}
 		else
 			for i = 1, #tbl do
 				str[#str+1] = ("%s%s,\n"):format(("\t"):rep(context.tab), luadata.ToString(tbl[i], context))
-				
+
 				if context.thread then thread:Wait() end
 			end
 		end
 	else
 		for key, value in pairs(tbl) do
 			value = luadata.ToString(value, context)
-			
+
 			if value then
 				if type(key) == "string" and key:find("^[%w_]+$") then
 					str[#str+1] = ("%s%s = %s,\n"):format(("\t"):rep(context.tab), key, value)
 				else
 					key = luadata.ToString(key, context)
-					
+
 					if key then
 						str[#str+1] = ("%s[%s] = %s,\n"):format(("\t"):rep(context.tab), key, value)
 					end
@@ -79,7 +79,7 @@ luadata.SetModifier("table", function(tbl, context)
 			if context.thread then thread:Wait() end
 		end
 	end
-	
+
 	if context.tab == 0 then
 		str[#str+1] = "\n"
 	else
@@ -89,9 +89,9 @@ luadata.SetModifier("table", function(tbl, context)
 			str[#str+1] = ("%s}"):format(("\t"):rep(context.tab - 1))
 		end
 	end
-		
+
 	context.tab = context.tab - 1
-	
+
 	return table.concat(str, "")
 end)
 
@@ -111,7 +111,7 @@ function luadata.ToString(var, context)
 	context = context or {}
 	context.tab = context.tab or -1
 	context.out = context.out or {}
-	
+
 	local func = luadata.Types[luadata.Type(var)]
 	if not func and luadata.Types.fallback then
 		return luadata.Types.fallback(var, context)
@@ -128,19 +128,19 @@ end
 function luadata.Encode(tbl, callback)
 	if callback then
 		local thread = tasks.CreateTask()
-		
+
 		function thread:OnStart()
 			return luadata.ToString(tbl, {thread = self})
 		end
-		
+
 		function thread:OnFinish(...)
 			callback(...)
 		end
-		
+
 		function thread:OnError(msg)
 			callback(false, msg)
 		end
-		
+
 		thread:Start()
 	else
 		return luadata.ToString(tbl)
@@ -151,27 +151,27 @@ function luadata.Decode(str, skip_error)
 	if not str then return {} end
 
 	local func, err = loadstring("return {\n" .. str .. "\n}")
-	
+
 	if not func then
 		if not skip_error then warning("luadata syntax error: ", err) end
 		return {}
 	end
-	
+
 	setfenv(func, env)
-	
+
 	local ok, err
-	
-	if not skip_error then 
+
+	if not skip_error then
 		ok, err = xpcall(func, system and system.OnError or print)
-	else 
+	else
 		ok, err = pcall(func)
 	end
-	
+
 	if not ok then
 		if not skip_error then warning("luadata runtime error: ", err) end
 		return {}
 	end
-	
+
 	return err
 end
 

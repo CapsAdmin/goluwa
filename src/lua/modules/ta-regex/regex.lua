@@ -35,7 +35,7 @@ local mt = {
     __index = {
         match = function(t, s, index)
             local result = t._pat:match(s, index)
-            
+
             if result == nil then return result end
             -- Post-process to put the matches into a nicer form
             local groups = nil
@@ -112,7 +112,7 @@ local charset_char = C(P(1) - charset_special) /
      function(c) return { [0] = "char", c } end
 local range = (C(P(1) - charset_special) * P"-" * C(P(1) - charset_special)) /
             function(a,b) return { [0]="range", a, b } end
-local charset = (P"[" * 
+local charset = (P"[" *
                  Ct((Cg(P"^"*Cc(true), "negate") + P(0))
                  * (range + charset_char)^0) *
                  P"]") /
@@ -135,7 +135,7 @@ local newgrp = (Cb("groups") * Cp()) /
                       groups[grp] = {pos}
                       groups.open[#groups.open] = grp
                    end
-                   
+
 -- endgrp leaves the group number or name as a capture
 local endgrp = (Cb("groups") * Cp()) /
                    function(groups, pos)
@@ -144,7 +144,7 @@ local endgrp = (Cb("groups") * Cp()) /
                        groups[grp][2] = pos
                        return grp
                    end
-     
+
 local bra = P"(" * newgrp
 local ket = P")" * endgrp
 
@@ -153,32 +153,32 @@ local anonket = P")"
 
 local pattern = P{
     "pattern",
-    
+
     -- A complete pattern, starting from an empty pattern.
-    pattern = Cg(Carg(1),"groups") * Ct((P"^"*Cg(Cc(1),"anchorstart") + P(0)) * V"subpat" * (P"$"*(-P(1))*Cg(Cc(1),"anchorend") + (-P(1)))) / 
+    pattern = Cg(Carg(1),"groups") * Ct((P"^"*Cg(Cc(1),"anchorstart") + P(0)) * V"subpat" * (P"$"*(-P(1))*Cg(Cc(1),"anchorend") + (-P(1)))) /
              function(t) t[0] = "pattern" ; return t end,
-    
+
     -- A set of alternate branches
-    subpat = (V"branch" * (P"|" * V"branch") ^ 0) / 
+    subpat = (V"branch" * (P"|" * V"branch") ^ 0) /
              function(...) return { [0] = "alt", ... } end,
-    
+
     branch = V"concat",
-    
+
     -- A set of concatenated pieces
     concat = (V"piece" ^ 0) /
              function(...) return { [0] = "concat", ... } end,
-             
+
     piece = V"atom_multi",
-    
+
     atom_multi = V"atom_plus" + V"atom_star" + V"atom_query" + V"atom",
-    
+
     atom_plus = (V"atom" * P"+") /
              function(atom) return { [0] = "+", atom } end,
     atom_star = (V"atom" * P"*") /
              function(atom) return { [0] = "*", atom } end,
     atom_query = (V"atom" * P"?") /
              function(atom) return { [0] = "?", atom } end,
-    
+
     anongroup = (anonbra * V"subpat" * anonket),
     group = (bra * V"subpat" * ket) /
              function(subpat, grpname) return { [0] = "group", subpat, grpname } end,
@@ -192,7 +192,7 @@ local function foldr(f, t, init)
         res = t[start]
         start = start - 1
     end
-        
+
     for i=start,1,-1 do
         res = f(t[i], res)
     end
@@ -256,8 +256,8 @@ local function re_to_peg(retab, k, patternProps)
         if #retab == 1 then
             return re_to_peg(retab[1], k, patternProps)
         else
-            local parts = map(function(x) 
-                    return re_to_peg(x, k, patternProps) 
+            local parts = map(function(x)
+                    return re_to_peg(x, k, patternProps)
                 end, retab)
             return foldr(add, parts)
         end

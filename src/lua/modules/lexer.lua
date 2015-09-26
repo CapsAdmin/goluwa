@@ -5,12 +5,12 @@
 -- some keyword additions to create the complete Lua lexer,
 -- as is done in mlp_lexer.lua.
 --
--- TODO: 
+-- TODO:
 --
 -- * Make it easy to define new flavors of strings. Replacing the
 --   lexer.patterns.long_string regexp by an extensible list, with
 --   customizable token tag, would probably be enough. Maybe add:
---   + an index of capture for the regexp, that would specify 
+--   + an index of capture for the regexp, that would specify
 --     which capture holds the content of the string-like token
 --   + a token tag
 --   + or a string->string transformer function.
@@ -74,17 +74,17 @@ local function unescape_string (s)
       local k, j, i = digits:reverse():byte(1, 3)
       local z = _G.string.byte "0"
       local code = (k or z) + 10*(j or z) + 100*(i or z) - 111*z
-      if code > 255 then 
+      if code > 255 then
       	 error ("Illegal escape sequence '\\"..digits..
-                "' in string: ASCII codes must be in [0..255]") 
+                "' in string: ASCII codes must be in [0..255]")
       end
       return backslashes .. string.char (code)
    end
 
-   -- Take a letter [x], and returns the character represented by the 
+   -- Take a letter [x], and returns the character represented by the
    -- sequence ['\\'..x], e.g. [unesc_letter "n" == "\n"].
    local function unesc_letter(x)
-      local t = { 
+      local t = {
          a = "\a", b = "\b", f = "\f",
          n = "\n", r = "\r", t = "\t", v = "\v",
          ["\\"] = "\\", ["'"] = "'", ['"'] = '"', ["\n"] = "\n" }
@@ -98,19 +98,19 @@ end
 
 lexer.extractors = {
    "skip_whitespaces_and_comments",
-   "extract_short_string", "extract_word", "extract_number", 
+   "extract_short_string", "extract_word", "extract_number",
    "extract_long_string", "extract_symbol" }
 
-lexer.token_metatable = { 
---         __tostring = function(a) 
---            return string.format ("`%s{'%s'}",a.tag, a[1]) 
---         end 
-} 
-      
+lexer.token_metatable = {
+--         __tostring = function(a)
+--            return string.format ("`%s{'%s'}",a.tag, a[1])
+--         end
+}
+
 lexer.lineinfo_metatable = { }
 
 ----------------------------------------------------------------------
--- Really extract next token fron the raw string 
+-- Really extract next token fron the raw string
 -- (and update the index).
 -- loc: offset of the position just after spaces and comments
 -- previous_i: offset in src before extraction began
@@ -139,10 +139,10 @@ function lexer:extract ()
          previous_line_length = i - self.column_offset
          if loc and i <= loc then -- '\n' before beginning of token
             first_column_offset = i
-            first_line = first_line+1 
+            first_line = first_line+1
          end
-         self.line   = self.line+1 
-         self.column_offset = i 
+         self.line   = self.line+1
+         self.column_offset = i
       end
 
       -- lineinfo entries: [1]=line, [2]=column, [3]=char, [4]=filename
@@ -151,10 +151,10 @@ function lexer:extract ()
       --Pluto barfes when the metatable is set:(
       setmetatable(fli, lexer.lineinfo_metatable)
       setmetatable(lli, lexer.lineinfo_metatable)
-      local a = { tag = tag, lineinfo = { first=fli, last=lli }, content } 
+      local a = { tag = tag, lineinfo = { first=fli, last=lli }, content }
       if lli[2]==-1 then lli[1], lli[2] = lli[1]-1, previous_line_length-1 end
-      if #self.attached_comments > 0 then 
-         a.lineinfo.comments = self.attached_comments 
+      if #self.attached_comments > 0 then
+         a.lineinfo.comments = self.attached_comments
          fli.comments = self.attached_comments
          if self.lineinfo_last then
             self.lineinfo_last.comments = self.attached_comments
@@ -171,14 +171,14 @@ function lexer:extract ()
       -- for this to work, the whitespace extractor *must be* at index 1.
       if ext_idx==1 then loc = self.i end
 
-      if tag then 
+      if tag then
          --printf("`%s{ %q }\t%i", tag, content, loc);
-         return build_token (tag, content) 
+         return build_token (tag, content)
       end
    end
 
    error "None of the lexer extractors returned anything!"
-end   
+end
 
 ----------------------------------------------------------------------
 -- skip whites and comments
@@ -195,24 +195,24 @@ function lexer:skip_whitespaces_and_comments()
       -- skip spaces
       self.i = self.src:match (self.patterns.spaces, self.i)
       -- skip a long comment if any
-      _, last_comment_content, j = 
+      _, last_comment_content, j =
          self.src :match (self.patterns.long_comment, self.i)
-      if j then 
-         table_insert(self.attached_comments, 
+      if j then
+         table_insert(self.attached_comments,
                          {last_comment_content, self.i, j, "long"})
-         self.i=j; again=true 
+         self.i=j; again=true
       end
       -- skip a short comment if any
       last_comment_content, j = self.src:match (self.patterns.short_comment, self.i)
       if j then
-         table_insert(self.attached_comments, 
+         table_insert(self.attached_comments,
                          {last_comment_content, self.i, j, "short"})
-         self.i=j; again=true 
+         self.i=j; again=true
       end
       if self.i>#self.src then return "Eof", "eof" end
    until not again
 
-   if self.src:match (self.patterns.final_short_comment, self.i) then 
+   if self.src:match (self.patterns.final_short_comment, self.i) then
       return "Eof", "eof" end
    --assert (not self.src:match(self.patterns.short_comment, self.i))
    --assert (not self.src:match(self.patterns.long_comment, self.i))
@@ -298,13 +298,13 @@ function lexer:extract_symbol()
    -- compound symbol
    local k = self.src:sub (self.i,self.i)
    local symk = self.sym [k]
-   if not symk then 
+   if not symk then
       self.i = self.i + 1
       return "Keyword", k
    end
    for _, sym in pairs (symk) do
-      if sym == self.src:sub (self.i, self.i + #sym - 1) then 
-         self.i = self.i + #sym; 
+      if sym == self.src:sub (self.i, self.i + #sym - 1) then
+         self.i = self.i + #sym;
          return "Keyword", sym
       end
    end
@@ -322,7 +322,7 @@ function lexer:add (w, ...)
       for _, x in ipairs (w) do self:add (x) end
    else
       if w:match (self.patterns.word .. "$") then self.alpha [w] = true
-      elseif w:match "^%p%p+$" then 
+      elseif w:match "^%p%p+$" then
          local k = w:sub(1,1)
          local list = self.sym [k]
          if not list then list = { }; self.sym [k] = list end
@@ -356,9 +356,9 @@ function lexer:next (n)
    n = n or 1
    self:peek (n)
    local a
-   for i=1,n do 
-      a = _G.table.remove (self.peeked, 1) 
-      if a then 
+   for i=1,n do
+      a = _G.table.remove (self.peeked, 1)
+      if a then
          --debugf ("lexer:next() ==> %s %s",
          --        table.tostring(a), tostring(a))
       end
@@ -387,7 +387,7 @@ function lexer:restore (s) self.i=s[1]; self.peeked=s[2] end
 ----------------------------------------------------------------------
 function lexer:sync()
    local p1 = self.peeked[1]
-   if p1 then 
+   if p1 then
       li = p1.lineinfo.first
       self.line, self.i = li[1], li[3]
       self.column_offset = self.i - li[2]
@@ -441,7 +441,7 @@ function lexer:newstream (src_or_stream, name)
       return setmetatable ({ }, self) :takeover (src_or_stream)
    elseif type(src_or_stream)=='string' then -- it's a source string
       local src = src_or_stream
-      local stream = { 
+      local stream = {
          src_name      = name;   -- Name of the file
          src           = src;    -- The source, as a single string
          peeked        = { };    -- Already peeked, but not discarded yet, tokens
@@ -488,10 +488,10 @@ function lexer:check (...)
    local words = {...}
    local a = self:next()
    local function err ()
-      error ("Got " .. tostring (a) .. 
+      error ("Got " .. tostring (a) ..
              ", expected one of these keywords : '" ..
              _G.table.concat (words,"', '") .. "'") end
-          
+
    if not a or a.tag ~= "Keyword" then err () end
    if #words == 0 then return a[1] end
    for _, w in ipairs (words) do
@@ -501,7 +501,7 @@ function lexer:check (...)
 end
 
 ----------------------------------------------------------------------
--- 
+--
 ----------------------------------------------------------------------
 function lexer:clone()
    local clone = {

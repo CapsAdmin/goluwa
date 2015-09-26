@@ -16,13 +16,13 @@ end
 function META:CaretFromPixels(x, y)
 	local CHAR
 	local POS
-	
+
 	for i, char in ipairs(self.chars) do
 		if
-			x >= char.data.x and 
+			x >= char.data.x and
 			y >= char.data.y and
-			
-			x <= char.data.right and 
+
+			x <= char.data.right and
 			y <= char.data.top
 		then
 			POS = i
@@ -164,23 +164,23 @@ function META:AdvanceCaret(X, Y)
 
 	if Y ~= 0 then
 		local pixel_y = self.caret_pos.char.data.y
-		
+
 		if Y > 0 then
 			pixel_y = pixel_y + self.caret_pos.char.data.h + Y * 2
 		else
 			pixel_y = pixel_y + Y
 		end
-		
+
 		local pcaret = self:CaretFromPixels(
 			(self.real_x or self.caret_pos.char.data.x) + self.caret_pos.char.data.w / 2,
-			pixel_y			
+			pixel_y
 		)
-		
+
 		x = pcaret.x
-		y = pcaret.y		
+		y = pcaret.y
 	elseif X ~= math.huge and X ~= -math.huge then
 		x = x + X
-		
+
 		self.real_x = self:CaretFromPosition(x, y).char.data.x
 
 		-- move to next or previous line

@@ -1,28 +1,28 @@
 include("string_anime.lua")
 
 do
-	local vowels = {"e", "a", "o", "i", "u", "y"}	
+	local vowels = {"e", "a", "o", "i", "u", "y"}
 	local consonants = {"t", "n", "s", "h", "r", "d", "l", "c", "m", "w", "f", "g", "p", "b", "v", "k", "j", "x", "q", "z"}
 	local first_letters = {"t", "a", "s", "h", "w", "i", "o", "b", "m", "f", "c", "l", "d", "p", "n", "e", "g", "r", "y", "u", "v", "j", "k", "q", "z", "x"}
 
 	function string.randomtext(word_count)
 		word_count = word_count or 8
-		
+
 		local text = {}
-		
+
 		local last_punctation = 1
 		local capitalize = true
-		
+
 		for i = 1, word_count do
 			math.randomseed(i)
 			local word = ""
-			
+
 			local consonant_start = 1
-			
+
 			local length = math.ceil((math.random()^3)*8) + math.random(2, 3)
 
 			for i = 1, length do
-				if i == 1 then 
+				if i == 1 then
 					word = word .. first_letters[math.floor((math.random()^3) * #first_letters) + 1]
 					if table.hasvalue(vowels, word[i]) then
 						consonant_start = 0
@@ -34,17 +34,17 @@ do
 						word = word .. vowels[math.floor((math.random()^3) * #vowels) + 1]
 					end
 				end
-				
+
 				if capitalize then
 					word = word:upper()
 					capitalize =  false
 				end
 			end
-			
+
 			text[i] = word
-			
+
 			last_punctation = last_punctation + 1
-			
+
 			if last_punctation > math.random(4,16) then
 				if math.random() > 0.9 then
 					text[i] = text[i] .. ","
@@ -54,10 +54,10 @@ do
 				end
 				last_punctation = 1
 			end
-			
+
 			text[i] = text[i]  .. " "
 		end
-		
+
 		return table.concat(text)
 	end
 end
@@ -66,40 +66,40 @@ function string.readablehex(str)
 	return (str:gsub("(.)", function(str) str = ("%X"):format(str:byte()) if #str == 1 then str = "0" .. str end return str .. " " end))
 end
 
--- gsub doesn't seem to remove \0 
+-- gsub doesn't seem to remove \0
 
 function string.removepadding(str, padding)
 	padding = padding or "\0"
-	
+
 	local new = {}
-	
+
 	for i = 1, #str do
 		local char = str:sub(i, i)
 		if char ~= padding then
 			table.insert(new, char)
 		end
 	end
-	
+
 	return table.concat(new)
 end
 
 function string.dumphex(str)
 	local str = str:readablehex():lower():explode(" ")
 	local out = {}
-	
+
 	for i, char in pairs(str) do
 		table.insert(out, char)
 		table.insert(out, " ")
 		if i%16 == 0 then
 			table.insert(out, "\n")
 		end
-		if i%16 == 4 or i%16 == 12 then 
+		if i%16 == 4 or i%16 == 12 then
 			table.insert(out, " ")
 		end
-		if i%16 == 8 then 
+		if i%16 == 8 then
 			table.insert(out, "  ")
 		end
-		
+
 	end
 	table.insert(out, "\n")
 	return table.concat(out)
@@ -112,10 +112,10 @@ function string.endswith(a, b)
 				return true
 			end
 		end
-		
+
 		return false
 	end
-	
+
 	return a:sub(-#b) == b
 end
 
@@ -126,16 +126,16 @@ function string.startswith(a, b)
 				return true
 			end
 		end
-		
+
 		return false
 	end
-	
+
 	return a:sub(0, #b) == b
 end
 
-function string.levenshtein(a, b)		
+function string.levenshtein(a, b)
 	local distance = {}
-	
+
 	for i = 0, #a do
 	  distance[i] = {}
 	  distance[i][0] = i
@@ -144,44 +144,44 @@ function string.levenshtein(a, b)
 	for i = 0, #b do
 	  distance[0][i] = i
 	end
-	
+
 	local str1 = utf8.totable(a)
 	local str2 = utf8.totable(b)
-	
+
 	for i = 1, #a do
-		for j = 1, #b do				
+		for j = 1, #b do
 			distance[i][j] = math.min(
-				distance[i-1][j] + 1, 
-				distance[i][j-1] + 1, 
+				distance[i-1][j] + 1,
+				distance[i][j-1] + 1,
 				distance[i-1][j-1] + (str1[i-1] == str2[j-1] and 0 or 1)
 			)
 		end
 	end
-	
+
 	return distance[#a][#b]
 end
 
 function string.lengthsplit(str, len)
 	if #str > len then
 		local tbl = {}
-		
+
 		local max = math.floor(#str/len)
 		local leftover = #str - (max * len)
-		
+
 		for i = 0, max do
-			
+
 			local left = i * len + 1
 			local right = (i * len) + len
 			local res = str:sub(left, right)
-			
+
 			if res ~= "" then
 				table.insert(tbl, res)
 			end
 		end
-		
+
 		return tbl
 	end
-	
+
 	return {str}
 end
 
@@ -196,7 +196,7 @@ function string.getchartype(char)
 	elseif char:find("%a") or char == "_" then
 		return "letters"
 	end
-	
+
 	return "unknown"
 end
 
@@ -220,14 +220,14 @@ function string.charclass(char)
 	end
 end
 
-function string.safeformat(str, ...)	
+function string.safeformat(str, ...)
 	str = str:gsub("%%(%d+)", "%%s")
 	local count = select(2, str:gsub("(%%)", ""))
-	
-	if count == 0 then	
+
+	if count == 0 then
 		return table.concat({str, ...}, "")
 	end
-	
+
 	local copy = {}
 	for i = 1, count do
 		table.insert(copy, tostringx(select(i, ...)))
@@ -269,14 +269,14 @@ end
 function string.explode(self, sep, pattern)
 	sep = sep or ""
 	pattern = pattern or false
-	
+
 	--cache[self] = cache[self] or {}
 	--cache[self][sep] = cache[self][sep] or {}
-	
+
 	--if cache[self][sep][pattern] then
 	---	return table.copy(cache[self][sep][pattern])
 	--end
-	
+
 	if sep == "" then
 		local tbl = {}
 		local i = 1
@@ -305,7 +305,7 @@ function string.explode(self, sep, pattern)
 	tbl[i] = self:sub(last_pos)
 
 	--cache[self][sep][pattern] = tbl
-	
+
 	return tbl
 end
 
@@ -320,16 +320,16 @@ end
 function string.replace(self, a, b)
 	local tbl = self:explode(a)
 	local out = ""
-	
+
 	if #tbl > 1 then
 		for i = 1, #tbl - 1 do
 			out = out .. tbl[i] .. b
 		end
-		
+
 		out = out .. tbl[#tbl]
-		
+
 		return out
 	end
-	
+
 	return self
 end

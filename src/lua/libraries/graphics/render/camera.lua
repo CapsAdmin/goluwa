@@ -22,42 +22,42 @@ META:GetSet("World", Matrix44(), {callback = "InvalidateWorld"})
 
 do
 	META.matrix_stack_i = 1
-	
+
 	function META:PushWorldEx(pos, ang, scale, dont_multiply)
 		if not self.matrix_stack[self.matrix_stack_i] then
 			self.matrix_stack[self.matrix_stack_i] = self.World or Matrix44()
 		end
-		
+
 		self.matrix_stack[self.matrix_stack_i] = self.World
-	
-		if dont_multiply then	
+
+		if dont_multiply then
 			self.World = Matrix44()
-		else				
+		else
 			self.World = self.matrix_stack[self.matrix_stack_i]:Copy()
 		end
-					
+
 		-- source engine style world orientation
 		if pos then
-			self:TranslateWorld(-pos.y, -pos.x, -pos.z) -- Vec3(left/right, back/forth, down/up)	
+			self:TranslateWorld(-pos.y, -pos.x, -pos.z) -- Vec3(left/right, back/forth, down/up)
 		end
-		
+
 		if ang then
 			self:RotateWorld(-ang.y, 0, 0, 1)
 			self:RotateWorld(-ang.z, 0, 1, 0)
-			self:RotateWorld(-ang.x, 1, 0, 0) 
+			self:RotateWorld(-ang.x, 1, 0, 0)
 		end
-		
-		if scale then 
-			self:ScaleWorld(scale.x, scale.y, scale.z) 
+
+		if scale then
+			self:ScaleWorld(scale.x, scale.y, scale.z)
 		end
 
 		self.matrix_stack_i = self.matrix_stack_i + 1
-		
+
 		self:InvalidateWorld()
-		
+
 		return self.World
 	end
-	
+
 	function META:PushWorld(mat, dont_multiply)
 		if not self.matrix_stack[self.matrix_stack_i] then
 			self.matrix_stack[self.matrix_stack_i] = Matrix44()
@@ -65,7 +65,7 @@ do
 			self.matrix_stack[self.matrix_stack_i] = self.World
 		end
 
-		if dont_multiply then	
+		if dont_multiply then
 			if mat then
 				self.World = mat
 			else
@@ -78,23 +78,23 @@ do
 				self.World = self.matrix_stack[self.matrix_stack_i]:Copy()
 			end
 		end
-		
+
 		self.matrix_stack_i = self.matrix_stack_i + 1
-		
+
 		self:InvalidateWorld()
-		
+
 		return self.World
 	end
-	
+
 	function META:PopWorld()
 		self.matrix_stack_i = self.matrix_stack_i - 1
-		
+
 		if self.matrix_stack_i < 1 then
 			error("stack underflow", 2)
 		end
 
 		self.World = self.matrix_stack[self.matrix_stack_i]
-		
+
 		self:InvalidateWorld()
 	end
 
@@ -103,17 +103,17 @@ do
 		self.World:Translate(x, y, z)
 		self:InvalidateWorld()
 	end
-	
+
 	function META:RotateWorld(a, x, y, z)
 		self.World:Rotate(a, x, y, z)
 		self:InvalidateWorld()
 	end
-	
+
 	function META:ScaleWorld(x, y, z)
 		self.World:Scale(x, y, z)
 		self:InvalidateWorld()
 	end
-	
+
 	function META:LoadIdentityWorld()
 		self.World:LoadIdentity()
 		self:InvalidateWorld()
@@ -121,13 +121,13 @@ do
 end
 
 do -- 3d 2d
-	function META:Start3D2DEx(pos, ang, scale)	
+	function META:Start3D2DEx(pos, ang, scale)
 		local w, h = surface.GetSize()
-		
+
 		pos = pos or Vec3(0, 0, 0)
 		ang = ang or Ang3(0, 0, 0)
 		scale = scale or Vec3(4 * (self.Viewport.w / self.Viewport.h), 4 * (self.Viewport.w / self.Viewport.h), 1)
-		
+
 		self:Set3D(true)
 		self.oldpos, self.oldang, self.oldfov = self:GetPosition(), self:GetAngles(), self:GetFOV()
 		self:SetPosition(render.camera_3d:GetPosition())
@@ -140,12 +140,12 @@ do -- 3d 2d
 	function META:Start3D2D(mat, dont_multiply)
 		--self:Set3D(true)
 		self:Rebuild()
-		
+
 		self:PushWorld(mat, dont_multiply)
 	end
 
 	function META:End3D2D()
-		self:PopWorld()	
+		self:PopWorld()
 		self:Set3D(false)
 		self:SetPosition(self.oldpos)
 		self:SetAngles(self.oldang)
@@ -157,18 +157,18 @@ do -- 3d 2d
 		if self:Get3D() then
 			x = ((x / self.Viewport.w) - 0.5) * 2
 			y = ((y / self.Viewport.h) - 0.5) * 2
-			
+
 			local m = (self:GetMatrices().view * self:GetMatrices().world):GetInverse()
-			
+
 			local cursor_x, cursor_y, cursor_z = m:TransformVector(self:GetMatrices().projection_inverse:TransformVector(x, -y, 1))
 			local camera_x, camera_y, camera_z = m:TransformVector(0, 0, 0)
 
 			--local intersect = camera + ( camera.z / ( camera.z - cursor.z ) ) * ( cursor - camera )
-			
+
 			local z = camera_z / ( camera_z - cursor_z )
 			local intersect_x = camera_x + z * ( cursor_x - camera_x )
 			local intersect_y = camera_y + z * ( cursor_y - camera_y )
-					
+
 			return intersect_x, intersect_y
 		else
 			local x, y = (self:GetMatrices().view * self:GetMatrices().world):GetInverse():TransformVector(x, y, 1)
@@ -179,29 +179,29 @@ end
 
 function META:Rebuild(type)
 	local vars = self.shader_variables
-	
+
 	if type == nil or type == "projection" then
 		if self.Projection then
 			vars.projection = self.Projection
 		else
 			local proj = Matrix44()
-			
+
 			if self:Get3D() then
 				proj:Perspective(self.FOV, self.FarZ, self.NearZ, self.Viewport.w / self.Viewport.h)
 			else
 				proj:Ortho(0, self.Viewport.w, self.Viewport.h, 0, -1, 1)
 			end
-			
+
 			vars.projection = proj
 		end
 	end
-	
+
 	if type == nil or type == "view" then
 		if self.View then
 			vars.view = self.View
 		else
 			local view = Matrix44()
-			
+
 			if self:Get3D() then
 				-- source engine style camera angles
 				view:Rotate(self.Angles.z, 0, 0, 1)
@@ -211,24 +211,24 @@ function META:Rebuild(type)
 				view:Translate(self.Position.y, self.Position.x, self.Position.z)
 			else
 				local x, y
-				
+
 				x, y = self.Viewport.w/2, self.Viewport.h/2
 				view:Translate(x, y, 0)
 				view:Rotate(self.Angles.y, 0, 0, 1)
 				view:Translate(-x, -y, 0)
-				
+
 				view:Translate(self.Position.x, self.Position.y, 0)
-				
+
 				x, y = self.Viewport.w/2, self.Viewport.h/2
 				view:Translate(x, y, 0)
 				view:Scale(self.Zoom, self.Zoom, 1)
 				view:Translate(-x, -y, 0)
 			end
-			
+
 			vars.view = view
 		end
 	end
-	
+
 	if self:Get3D() then
 		if type == nil or type == "projection" or type == "view" then
 			vars.projection_inverse = vars.projection:GetInverse()
@@ -237,22 +237,22 @@ function META:Rebuild(type)
 			vars.projection_view = vars.view * vars.projection
 			vars.projection_view_inverse = vars.projection_view:GetInverse()
 		end
-		
+
 		if type == nil or type == "view" or type == "world" then
 			vars.world = self.World
 			vars.view_world =  vars.world * vars.view
 			vars.view_world_inverse = vars.view_world:GetInverse()
 			vars.normal_matrix = vars.view_world_inverse:GetTranspose()
 		end
-	
-		
+
+
 		if type == nil or type == "world" then
 			--vars.world_inverse = vars.world:GetInverse()
-		end		
+		end
 	else
 		vars.world = self.World
 	end
-	
+
 	vars.projection_view_world = vars.world * vars.view * vars.projection
 end
 
@@ -266,7 +266,7 @@ function META:InvalidateView()
 	self.rebuild_matrix = "view"
 end
 
-function META:InvalidateWorld()	
+function META:InvalidateWorld()
 	if self.rebuild_matrix and self.rebuild_matrix ~= "world" then return end
 	self.rebuild_matrix = "world"
 end
@@ -284,7 +284,7 @@ function META:GetMatrices()
 		end
 		self.rebuild_matrix = false
 	end
-	
+
 	return self.shader_variables
 end
 
@@ -306,20 +306,20 @@ render.camera_3d = render.CreateCamera()
 local variables = {
 	"projection",
 	"projection_inverse",
-    
+
 	"view",
 	"view_inverse",
-    
+
 	"world",
 	"world_inverse",
-    
+
 	"projection_view",
 	"projection_view_inverse",
-    
+
 	"view_world",
 	"view_world_inverse",
 	"projection_view_world",
-    
+
 	"normal_matrix",
 }
 
@@ -338,7 +338,7 @@ render.SetGlobalShaderVariable("g_cam_forward", function() return render.camera_
 render.SetGlobalShaderVariable("g_cam_right", function() return render.camera_3d:GetAngles():GetRight() end, "vec3")
 
 render.AddGlobalShaderCode([[
-float get_depth(vec2 uv) 
+float get_depth(vec2 uv)
 {
 	return (2.0 * g_cam_nearz) / (g_cam_farz + g_cam_nearz - texture(tex_depth, uv).r * (g_cam_farz - g_cam_nearz));
 }]])

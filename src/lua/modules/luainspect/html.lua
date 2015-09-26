@@ -57,7 +57,7 @@ function M.ast_to_html(ast, src, tokenlist, options)
   return snip_html
  end)
 
- 
+
  local function get_line_numbers_html(src)
   local out_htmls = {}
   local linenum = 1
@@ -68,12 +68,12 @@ function M.ast_to_html(ast, src, tokenlist, options)
   end
   return table.concat(out_htmls)
  end
- 
+
  local line_numbers_html = get_line_numbers_html(src)
 
  options = options or {}
  local libpath = options.libpath or '.'
- 
+
   src_html = [[
  <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
   "http://www.w3.org/TR/html4/strict.dtd">

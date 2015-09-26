@@ -33,44 +33,44 @@ end
 prototype.Register(META)
 
 local video = {}
-	
+
 function video.CreateGif(path)
 	local self = prototype.CreateObject(META)
-		
+
 	self.frames = {}
 	self.frame_count = 1
 	self.frame_speed = 15
-	
+
 	self.loading = true
 
 	resource.Download(path, function(path)
 		local data = vfs.Read(path)
-		
+
 		local frames = freeimage.LoadMultiPageImage(data)
-		
+
 		local w, h = 0, 0
 		for i, frame in pairs(frames) do
 			if frame.w > w then w = frame.w end
 			if frame.h > h then h = frame.h end
-			
+
 			local tex = Texture(frame.w, frame.h)
 			tex:Upload({buffer = frame.data})
-			
+
 			frames[i] = tex
 			frames[i].x = frame.x
 			frames[i].y = frame.y
 			frames[i].ms = frame.ms
 		end
-		
+
 		self.frames = frames
 		self.frame_count = #frames
 		self.loading = false
-		
+
 		if self.frame_count == 0 then
 			self.error = true
 		end
 	end)
-		
+
 	return self
 end
 

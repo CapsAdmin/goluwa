@@ -71,9 +71,9 @@ expr_list = gg.list{ _expr, separators = "," }
 --------------------------------------------------------------------------------
 -- Helpers for function applications / method applications
 --------------------------------------------------------------------------------
-func_args_content = gg.list { 
+func_args_content = gg.list {
    name = "function arguments",
-   _expr, separators = ",", terminators = ")" } 
+   _expr, separators = ",", terminators = ")" }
 
 -- Used to parse methods
 method_args = gg.multisequence{
@@ -93,7 +93,7 @@ method_args = gg.multisequence{
 --------------------------------------------------------------------------------
 func_params_content = gg.list{ name="function parameters",
    gg.multisequence{ { "...", builder = "Dots" }, default = id },
-   separators  = ",", terminators = {")", "|"} } 
+   separators  = ",", terminators = {")", "|"} }
 
 local _func_params_content = function (lx) return func_params_content(lx) end
 
@@ -117,22 +117,22 @@ end
 
 --------------------------------------------------------------------------------
 -- Builder generator for operators. Wouldn't be worth it if "|x|" notation
--- were allowed, but then lua 5.1 wouldn't compile it 
+-- were allowed, but then lua 5.1 wouldn't compile it
 --------------------------------------------------------------------------------
 
 -- opf1 = |op| |_,a| `Op{ op, a }
-local function opf1 (op) return 
+local function opf1 (op) return
    function (_,a) return { tag="Op", op, a } end end
 
 -- opf2 = |op| |a,_,b| `Op{ op, a, b }
-local function opf2 (op) return 
+local function opf2 (op) return
    function (a,_,b) return { tag="Op", op, a, b } end end
 
 -- opf2r = |op| |a,_,b| `Op{ op, b, a } -- (args reversed)
-local function opf2r (op) return 
+local function opf2r (op) return
    function (a,_,b) return { tag="Op", op, b, a } end end
 
-local function op_ne(a, _, b) 
+local function op_ne(a, _, b)
    -- The first version guarantees to return the same code as Lua,
    -- but it relies on the non-standard 'ne' operator, which has been
    -- suppressed from the official AST grammar (although still supported
@@ -141,7 +141,7 @@ local function op_ne(a, _, b)
    return { tag="Op", "not", { tag="Op", "eq", a, b, lineinfo= {
             first = a.lineinfo.first, last = b.lineinfo.last } } }
 end
-   
+
 
 --------------------------------------------------------------------------------
 --
@@ -157,7 +157,7 @@ expr = gg.expr { name = "expression",
       { "(", _expr, ")",           builder = "Paren" },
       { "function", _func_val,     builder = fget(1) },
       { "-{", splice_content, "}", builder = fget(1) },
-      { "+{", quote_content, "}",  builder = fget(1) }, 
+      { "+{", quote_content, "}",  builder = fget(1) },
       { "nil",                     builder = "Nil" },
       { "true",                    builder = "True" },
       { "false",                   builder = "False" },
@@ -188,17 +188,17 @@ expr = gg.expr { name = "expression",
       { "-",   prec = 80, builder = opf1 "unm" } },
 
    suffix = { name="expr suffix op",
-      { "[", _expr, "]", builder = function (tab, idx) 
+      { "[", _expr, "]", builder = function (tab, idx)
          return {tag="Index", tab, idx[1]} end},
-      { ".", id, builder = function (tab, field) 
+      { ".", id, builder = function (tab, field)
          return {tag="Index", tab, id2string(field[1])} end },
-      { "(", func_args_content, ")", builder = function(f, args) 
+      { "(", func_args_content, ")", builder = function(f, args)
          return {tag="Call", f, unpack(args[1])} end },
       { "{", _table_content, "}", builder = function (f, arg)
          return {tag="Call", f, arg[1]} end},
       { ":", id, method_args, builder = function (obj, post)
          return {tag="Invoke", obj, id2string(post[1]), unpack(post[2])} end},
-      { "+{", quote_content, "}", builder = function (f, arg) 
+      { "+{", quote_content, "}", builder = function (f, arg)
          return {tag="Call", f,  arg[1] } end },
-      default = { name="opt_string_arg", parse = mlp.opt_string, builder = function(f, arg) 
+      default = { name="opt_string_arg", parse = mlp.opt_string, builder = function(f, arg)
          return {tag="Call", f, arg } end } } }

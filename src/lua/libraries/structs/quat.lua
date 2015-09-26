@@ -22,9 +22,9 @@ end
 
 function META:SetAxis(rad, axis)
 	rad = rad * 0.5
-	local s = math.sin(rad)	
+	local s = math.sin(rad)
 	self:Set(axis.x * s, axis.y * s, axis.z * s, math.cos(rad))
-	
+
 	return self
 end
 
@@ -43,7 +43,7 @@ function META.HamRight(a, b)
 		a.z = a.w*b.z + a.z*b.w + a.x*b.y - a.y*b.x
 		a.w = a.w*b.w - a.x*b.x - a.y*b.y - a.z*b.z
 	end
-	
+
 	return a
 end
 
@@ -64,7 +64,7 @@ end
 
 function META:Right() return self:VecMul(Vec3( 0, -1, 0)) end META.GetRight = META.Right
 function META:Left () return self:VecMul(Vec3( 0, 1, 0)) end META.GetLeft  = META.Left
-function META:Up   () return self:VecMul(Vec3( 0, 0, 1)) end META.GetUp    = META.Up  
+function META:Up   () return self:VecMul(Vec3( 0, 0, 1)) end META.GetUp    = META.Up
 function META:Down () return self:VecMul(Vec3( 0, 0, -1)) end META.GetDown  = META.Down
 function META:Front() return self:VecMul(Vec3( 1, 0, 0)) end META.GetFront = META.Front
 function META:Back () return self:VecMul(Vec3( -1, 0,0)) end META.GetBack = META.Back
@@ -85,7 +85,7 @@ function META.Divide(a, b)
 	else
 		--return self:GetConjugated():Multiply(self:Dot(self))
 	end
-	
+
 	return a
 end
 
@@ -103,7 +103,7 @@ function META.Lerp(a, mult, b)
 	a.y = (b.y - a.y) * mult + a.y
 	a.z = (b.z - a.z) * mult + a.z
 	a.w = (b.w - a.w) * mult + a.w
-	
+
 	return a
 end
 
@@ -119,7 +119,7 @@ end
 
 function META:Normalize()
 	local len = self:GetLength()
-	
+
 	if len > 0 then
 		local div = 1 / len
 		self.x = self.x * div
@@ -129,7 +129,7 @@ function META:Normalize()
 	else
 		self:Identity()
 	end
-	
+
 	return self
 end
 
@@ -142,23 +142,23 @@ function META:SetAngles(ang)
 	local c1 = math.cos(ang.z * 0.5)
 	local c2 = math.cos(ang.x * 0.5)
 	local c3 = math.cos(ang.y * 0.5)
-	
+
 	local s1 = math.sin(ang.z * 0.5)
 	local s2 = math.sin(ang.x * 0.5)
 	local s3 = math.sin(ang.y * 0.5)
-	
+
 	-- equiv Q1 = Qy * Qx; -- since many terms are zero
 	local tw = c1*c2
 	local tx = c1*s2
 	local ty = s1*c2
 	local tz =-s1*s2
-	
+
 	-- equiv Q2 = Q1 * Qz; -- since many terms are zero
 	self.x = tx*c3 + ty*s3
 	self.y = ty*c3 - tx*s3
 	self.z = tw*s3 + tz*c3
 	self.w = tw*c3 - tz*s3
-	
+
 	return self
 end
 
@@ -167,20 +167,20 @@ end
 local function twoaxisrot(r11, r12, r21, r31, r32, res)
 	return Ang3(math.atan2(r11, r12), math.acos(r21), math.atan2(r31, r32))
 end
-		
+
 local function threeaxisrot(r11, r12, r21, r31, r32, res)
 	return Ang3(math.atan2(r31, r32), math.asin(r21), math.atan2(r11, r12))
 end
 
 function META.GetAngles(q, seq)
 	--seq = seq or "xzy"
-	
-	if not seq then		
+
+	if not seq then
 		local sqw = q.w*q.w
 		local sqx = q.x*q.x
 		local sqy = q.y*q.y
 		local sqz = q.z*q.z
-		
+
 		return
 			Ang3(
 				math.asin (-2.0 * (q.x*q.z - q.w*q.y)),
@@ -228,7 +228,7 @@ function META.GetAngles(q, seq)
 			q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z
 		)
 	elseif seq == "yxy" then
-		return twoaxisrot( 
+		return twoaxisrot(
 			2*(q.x*q.y - q.w*q.z),
 			2*(q.y*q.z + q.w*q.x),
 			q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z,
@@ -244,7 +244,7 @@ function META.GetAngles(q, seq)
 			q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z
 		)
 	elseif seq == "yzy" then
-		return twoaxisrot( 
+		return twoaxisrot(
 			2*(q.y*q.z + q.w*q.x),
 			-2*(q.x*q.y - q.w*q.z),
 			q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z,
@@ -252,7 +252,7 @@ function META.GetAngles(q, seq)
 			2*(q.x*q.y + q.w*q.z)
 		)
 	elseif seq == "xyz" then
-		return threeaxisrot( 
+		return threeaxisrot(
 			-2*(q.y*q.z - q.w*q.x),
 			q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z,
 			2*(q.x*q.z + q.w*q.y),
@@ -260,7 +260,7 @@ function META.GetAngles(q, seq)
 			q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z
 		)
 	elseif seq == "xyx" then
-		return twoaxisrot( 
+		return twoaxisrot(
 			2*(q.x*q.y + q.w*q.z),
 			-2*(q.x*q.z - q.w*q.y),
 			q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z,
@@ -268,7 +268,7 @@ function META.GetAngles(q, seq)
 			2*(q.x*q.z + q.w*q.y)
 		)
 	elseif seq == "xzy" then
-		return threeaxisrot( 
+		return threeaxisrot(
 			2*(q.y*q.z + q.w*q.x),
 			q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z,
 			-2*(q.x*q.y - q.w*q.z),
@@ -286,4 +286,4 @@ function META.GetAngles(q, seq)
 	end
 end
 
-structs.Register(META) 
+structs.Register(META)

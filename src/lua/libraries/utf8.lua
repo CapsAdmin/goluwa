@@ -7,9 +7,9 @@ local cache = {}
 function utf8.byte(char, offset)
 	if cache[char] and cache[char][offset] then return cache[char][offset] end
 	if char == "" then return -1 end
-	
+
 	offset = offset or 1
-	
+
 	local byte = char:byte(offset)
 
 	if byte >= 128 then
@@ -32,17 +32,17 @@ function utf8.byte(char, offset)
 			byte = -1
 		end
 	end
-	
+
 	cache[char] = cache[char] or {}
 	cache[char][offset] = byte
-	
+
 	return byte
 end
 
-function utf8.bytelength(char, offset)	
+function utf8.bytelength(char, offset)
 	local byte = char:byte(offset or 1)
 	local length = 1
-	
+
 	if byte >= 128 then
 		if byte >= 240 then
 			length = 4
@@ -52,35 +52,35 @@ function utf8.bytelength(char, offset)
 			length = 2
 		end
 	end
-	
+
 	return length
 end
 
 function utf8.char(byte)
 	local utf8 = ""
-	
+
 	if byte <= 127 then
 		utf8 = string.char(byte)
 	elseif byte < 2048 then
 		utf8 = ("%c%c"):format(
-			192 + math_floor(byte / 64), 
+			192 + math_floor(byte / 64),
 			128 + (byte % 64)
 		)
 	elseif byte < 65536 then
 		utf8 = ("%c%c%c"):format(
-			224 + math_floor(byte / 4096),   
-			128 + (math_floor(byte / 64) % 64),   
+			224 + math_floor(byte / 4096),
+			128 + (math_floor(byte / 64) % 64),
 			128 + (byte % 64)
 		)
 	elseif byte < 2097152 then
 		utf8 = ("%c%c%c%c"):format(
-			240 + math_floor(byte / 262144), 
-			128 + (math_floor(byte / 4096) % 64), 
-			128 + (math_floor(byte / 64) % 64), 
+			240 + math_floor(byte / 262144),
+			128 + (math_floor(byte / 4096) % 64),
+			128 + (math_floor(byte / 64) % 64),
 			128 + (byte % 64)
 		)
 	end
-	
+
 	return utf8
 end
 
@@ -159,15 +159,15 @@ local cache = {}
 
 function utf8.totable(str)
 	if cache[str] then return cache[str] end
-	
+
 	local tbl = {}
-	
+
 	for uchar in str:gmatch("([%z\1-\127\194-\244][\128-\191]*)") do
 		tbl[#tbl + 1] = uchar
 	end
-	
+
 	cache[str] = tbl
-	
+
 	return tbl
 end
 

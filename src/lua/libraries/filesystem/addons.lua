@@ -27,9 +27,9 @@ end
 
 function vfs.AutorunAddon(addon, folder, force)
 	local info =  type(addon) == "table" and addon or vfs.GetAddonInfo(addon)
-	if force or info.load ~= false and not info.core then			
+	if force or info.load ~= false and not info.core then
 		_G.INFO = info
-			
+
 			local function run()
 				if info.startup then
 					if not info.startup_launched then
@@ -37,8 +37,8 @@ function vfs.AutorunAddon(addon, folder, force)
 						info.startup_launched = true
 					end
 				end
-				
-				-- autorun folders			
+
+				-- autorun folders
 				for path in vfs.Iterate(info.path .. "lua/autorun/" .. folder) do
 					if path:find("%.lua") then
 						local ok, err = system.pcall(include, info.path .. "lua/autorun/" .. folder .. "/" ..  path)
@@ -48,17 +48,17 @@ function vfs.AutorunAddon(addon, folder, force)
 					end
 				end
 			end
-			
+
 			if info.event then
-				event.AddListener(info.event, "addon_" .. folder, function() 
-					run() 
-					return e.EVENT_DESTROY 
+				event.AddListener(info.event, "addon_" .. folder, function()
+					run()
+					return e.EVENT_DESTROY
 				end)
 			else
 				run()
 			end
-			
-		_G.INFO = nil	
+
+		_G.INFO = nil
 	else
 		--logf("the addon %q does not want to be loaded\n", info.name)
 	end
@@ -75,17 +75,17 @@ function vfs.AutorunAddons(folder, force)
 	end
 end
 
-function vfs.MountAddon(path, force)									
+function vfs.MountAddon(path, force)
 	local func, msg = vfs.loadfile(path .. "info.lua")
-	
+
 	local info = {}
-	
+
 	if func then
 		info = func() or {}
 	end
-	
+
 	local folder = path:match(".+/(.+)/")
-	
+
 	info.path = path
 		info.file_info = folder
 		info.name = info.name or folder
@@ -94,16 +94,16 @@ function vfs.MountAddon(path, force)
 	table.insert(vfs.loaded_addons, info)
 
 	e["ADDON_" .. info.name:upper()] = info
-	
+
 	vfs.SortAddonsAfterPriority()
-		
+
 	if info.load == false and not force then
 		table.insert(vfs.disabled_addons, info)
 		return false
 	end
-		
+
 	vfs.Mount(path)
-	
+
 	return true
 end
 

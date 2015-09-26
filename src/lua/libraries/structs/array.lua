@@ -1,9 +1,9 @@
 local TMPL = prototype.CreateTemplate("array")
- 
+
 TMPL:GetSet("Length", 0)
 TMPL:GetSet("Size", 0)
 TMPL:GetSet("ArrayType", "uint8_t")
-TMPL:EndStorable() 
+TMPL:EndStorable()
 TMPL:GetSet("Pointer", nil)
 
 function TMPL:OnSerialize()
@@ -13,7 +13,7 @@ end
 function TMPL:OnDeserialize(data)
 	self:SetArrayType(data[1])
 	self:SetSize(size[2])
-	self:SetPointer(ptr[3]) 
+	self:SetPointer(ptr[3])
 end
 
 
@@ -50,30 +50,30 @@ TMPL:Register()
 local translate = {
 	int_8 = "int8_t[?]",
 	uint_8 = "uint8_t[?]",
-	
+
 	int_16 = "int16_t[?]",
 	uint_16 = "uint16_t[?]",
-	
+
 	int_32 = "int32_t[?]",
 	uint_32 = "uint32_t[?]",
-	
+
 	int_64 = "int64_t[?]",
 	uint_64 = "uint64_t[?]",
 }
- 
+
 function Array(type, length, ptr)
 	local self = prototype.CreateObject(TMPL)
 
 	if not translate[type] then
 		translate[type] = ffi.typeof(type .. "[?]")
 	end
-	
+
 	local ctype = translate[type]
-	
+
 	self:SetArrayType(type)
-	
+
 	if _G.type(ptr) == "cdata" then
-		self:SetPointer(ptr) 
+		self:SetPointer(ptr)
 		self:SetSize(length * ffi.sizeof(ptr[0]))
 		self:SetLength(length)
 	elseif _G.type(ptr) == "table" then
@@ -85,6 +85,6 @@ function Array(type, length, ptr)
 		self:SetSize(ffi.sizeof(self.Pointer))
 		self:SetLength(length)
 	end
-	
+
 	return self
 end

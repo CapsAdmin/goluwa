@@ -1,6 +1,6 @@
 chatsounds.Initialize()
- 
-if true then 
+
+if true then
 	chatsounds.Say(nil, [[hi cdi%150--4 cdi%130--4 cdi%120--4 cdi%50--4 nice of the princess to invite
 	us over for a picnic eh luigi cdi%130--1 cdi%50--1 cdi%180--1 cdi%115--1 cdi%170--1
 	i hope she made lots of spaghetti luigi look its from bowser dear pesky plumbers

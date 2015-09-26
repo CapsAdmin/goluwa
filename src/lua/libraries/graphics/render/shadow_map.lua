@@ -8,7 +8,7 @@ local SHADER = {
 			{pos = "vec3"},
 			{uv = "vec2"},
 			{normal = "vec3"},
-		},	
+		},
 		source = "gl_Position = g_projection_view_world * vec4(pos, 1); out_pos.z = (gl_Position.z) * 0.5 + 0.5;"
 	},
 	fragment = {
@@ -19,37 +19,37 @@ local SHADER = {
 		},
 		source = [[
 			out float depth;
-						
+
 			// https://www.shadertoy.com/view/MslGR8
 			bool dither(vec2 uv, float alpha)
-			{			
+			{
 				if (lua[AlphaTest = false])
 				{
 					return alpha*alpha < 0.25;
 				}
-				
+
 				const vec3 magic = vec3( 0.06711056, 0.00583715, 52.9829189 );
 				float lol = fract( magic.z * fract( dot( gl_FragCoord.xy, magic.xy ) ) );
-				
+
 				return (alpha + lol) < 1;
 			}
-			
+
 			void main()
-			{		
+			{
 				if (!lua[DiffuseAlphaMetallic = false])
 				{
 					float alpha = texture(lua[DiffuseTexture = "sampler2D"], uv).a * lua[Color = Color(1,1,1,1)].a;
-				
-					if 
+
+					if
 					(
-						(lua[Translucent = false] && dither(uv, alpha)) || 
+						(lua[Translucent = false] && dither(uv, alpha)) ||
 						(lua[AlphaTest = false] && alpha < 0.5)
 					)
 					{
 						discard;
-					}				
+					}
 				}
-				
+
 				depth = pos.z;
 			}
 		]],
@@ -58,13 +58,13 @@ local SHADER = {
 
 local function setup(self)
 	local tex = render.CreateTexture("2d")
-	
+
 	if self.cubemap then
 		tex = render.CreateTexture("cube_map")
 	else
 		tex = render.CreateTexture("2d")
 	end
-	
+
 	tex:SetSize(Vec2() + self.ShadowSize)
 	tex:SetInternalFormat("r16f")
 	tex:SetBaseLevel(0)
@@ -86,8 +86,8 @@ local function setup(self)
 	fb:SetTexture(1, tex)
 	--fb:CheckCompletness()
 	fb:WriteThese(1)
-	--fb.fb:ReadBuffer("GL_NONE")	
-	
+	--fb.fb:ReadBuffer("GL_NONE")
+
 	self.fb = fb
 	self.tex = tex
 end
@@ -95,10 +95,10 @@ end
 local directions = {
 	QuatDeg3(0,-90,-90), -- back
 	QuatDeg3(0,90,90), -- front
-	
+
 	QuatDeg3(0,0,0), -- up
 	QuatDeg3(180,0,0), -- down
-	
+
 	QuatDeg3(90,0,0), -- left
 	QuatDeg3(-90,180,0), -- right
 }
@@ -148,15 +148,15 @@ META:Register()
 
 function render.CreateShadowMap(cubemap)
 	local self = prototype.CreateObject(META)
-	
+
 	if not render.shadow_map_shader then
 		render.shadow_map_shader = render.CreateShader(SHADER)
 	end
-	
+
 	self.cubemap = cubemap
-	
+
 	setup(self)
-	
+
 	return self
 end
 

@@ -32,7 +32,7 @@ function META:__tostring()
 end
 
 function META:__index(key)
-	
+
 	if key == "x" then
 		return self.__obj:GetPosition().x
 	elseif key == "y" then
@@ -46,12 +46,12 @@ function META:__index(key)
 	end
 
 	local val = rawget(META, key)
-	if val then 
+	if val then
 		return val
 	end
-	
+
 	local base = rawget(self, "BaseClass")
-	
+
 	if base then
 		return rawget(base, key)
 	end
@@ -79,11 +79,11 @@ end
 
 function META:GetChildren()
 	local children = {}
-	
+
 	for k,v in pairs(self.__obj:GetChildren()) do
 		table.insert(children, gmod.WrapObject(v, "Panel"))
 	end
-	
+
 	return children
 end
 
@@ -91,7 +91,7 @@ function META:GetChild(idx)
 	return self:GetChildren()[idx - 1]
 end
 
-function META:SetFGColor(r,g,b,a)	
+function META:SetFGColor(r,g,b,a)
 	self.__obj.fg_color.r = r/255
 	self.__obj.fg_color.g = g/255
 	self.__obj.fg_color.b = b/255
@@ -116,7 +116,7 @@ end
 function META:GetBounds()
 	local x,y = self:GetPos()
 	local w,h = self:GetSize()
-	
+
 	return x,y,w,h
 end
 
@@ -187,8 +187,8 @@ function META:GetSize()
 	return self.__obj:GetSize():Unpack()
 end
 
-function META:ChildrenSize() 
-	return self.__obj:GetSizeOfChildren():Unpack() 
+function META:ChildrenSize()
+	return self.__obj:GetSizeOfChildren():Unpack()
 end
 
 function META:LocalToScreen(x, y)
@@ -215,11 +215,11 @@ end
 
 function META:GetParent()
 	local parent = self.__obj:GetParent()
-	
+
 	if parent:IsValid() then
 		return gmod.WrapObject(parent, "Panel")
 	end
-	
+
 	return nil
 end
 
@@ -227,30 +227,30 @@ function META:InvalidateLayout(b)
 	self.__obj:Layout(b)
 end
 
-function META:GetContentSize() 
+function META:GetContentSize()
 	local panel = self.__obj
 
 	if panel.vgui_type == "label" then
 		return self:GetTextSize()
 	end
-	
+
 	return 0, 0
 end
 
 function META:GetTextSize()
 	local panel = self.__obj
 
-	return surface.GetFont(panel.font_internal):GetTextSize(panel.text_internal) 
+	return surface.GetFont(panel.font_internal):GetTextSize(panel.text_internal)
 end
 
 function META:SizeToContents()
 	local panel = self.__obj
 
 	local w, h = self:GetContentSize()
-	
-	if panel.vgui_type == "label" then		
+
+	if panel.vgui_type == "label" then
 		panel:Layout(true)
-		panel:SetSize(Vec2(panel.text_inset.x + panel.Margin.x + w, panel.text_inset.y + panel.Margin.y + h))		
+		panel:SetSize(Vec2(panel.text_inset.x + panel.Margin.x + w, panel.text_inset.y + panel.Margin.y + h))
 		panel.LayoutSize = panel:GetSize():Copy()
 	end
 end
@@ -271,7 +271,7 @@ function META:SetTextInset(x, y)
 	self.__obj.text_inset.y = y
 end
 
-function META:SizeToChildren(size_w, size_h)	
+function META:SizeToChildren(size_w, size_h)
 	if size_w == nil then size_w = true end
 	if size_h == nil then size_h = true end
 	print(self, size_w, size_h)
@@ -300,7 +300,7 @@ function META:Dock(enum)
 		self.__obj:SetupLayout("center_simple", "bottom", "fill_x")
 	elseif enum == gmod.env.NODOCK then
 		self.__obj:SetupLayout()
-	end	
+	end
 	self.__obj.vgui_dock = enum
 end
 
@@ -312,13 +312,13 @@ function META:SetCursor(typ)
 	self.__obj:SetCursor(typ)
 end
 
-function META:SetContentAlignment(num) 
-	self.__obj.content_alignment = num 
+function META:SetContentAlignment(num)
+	self.__obj.content_alignment = num
 end
 function META:SetExpensiveShadow() end
 function META:Prepare() self:__setup_events() end
 function META:SetPaintBorderEnabled() end
-function META:SetPaintBackgroundEnabled(b) 
+function META:SetPaintBackgroundEnabled(b)
 	self.__obj.paint_bg = b
 end
 
@@ -342,9 +342,9 @@ do -- z pos stuff
 	function META:MoveToFront()
 		--self.__obj:BringToFront()
 	end
-	
+
 	--function META:SetFocusTopLevel() end
-	
+
 	function META:MakePopup()
 	--	self.__obj:BringToFront()
 	end
@@ -355,11 +355,11 @@ function META:NoClipping(b)
 end
 
 function META:ParentToHUD()
-	
+
 end
 
 function META:DrawTextEntryText(text_color, highlight_color, cursor_color)
-	
+
 end
 
 function META:DrawFilledRect()
@@ -391,9 +391,9 @@ do -- html
 	function META:NewObjectCallback(obj, func)
 
 	end
-	
+
 	function META:OpenURL()
-	
+
 	end
 end
 
@@ -402,9 +402,9 @@ do
 	function META:GetCaretPos()
 		return 0
 	end
-	
+
 	function META:SetCaretPos(pos)
-	
+
 	end
 end
 

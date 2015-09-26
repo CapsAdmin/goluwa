@@ -2,17 +2,17 @@ do -- source engine
 	console.AddCommand("getpos", function()
 		local pos = render.camera_3d:GetPosition() * (1/0.0254)
 		local ang = render.camera_3d:GetAngles():GetDeg()
-		
+
 		logf("setpos %f %f %f;setang %f %f %f", pos.x, pos.y, pos.z, ang.x, ang.y, ang.z)
 	end)
-	
+
 	console.AddCommand("setpos", function(line)
 		local x,y,z = unpack(line:match("(.-);"):explode(" "))
 		x = tonumber(x)
 		y = tonumber(y)
 		z = tonumber(z)
 		render.camera_3d:SetPosition(Vec3(x,y,z) * 0.0254)
-		
+
 		local p,y,r = unpack(line:match("setang (.+)"):explode(" "))
 		p = tonumber(p)
 		y = tonumber(y)
@@ -44,13 +44,13 @@ console.AddCommand("map", function(name)
 			return
 		end
 	end
-	
+
 	steam.SetMap(name)
 end)
 
 console.AddCommand("dump_object_count", function()
 	local found = {}
-	
+
 	for obj in pairs(prototype.GetCreated()) do
 		local name = obj.ClassName
 		if obj.ClassName ~= obj.Type then
@@ -58,7 +58,7 @@ console.AddCommand("dump_object_count", function()
 		end
 		found[name] = (found[name] or 0) + 1
 	end
-	
+
 	table.print(found)
 end)
 
@@ -72,21 +72,21 @@ end)
 do -- url monitoring
 	console.AddCommand("monitor_url", function(_, url, interval)
 		interval = tonumber(interval) or 0.5
-		
+
 		local last_modified
 		local busy
-			
+
 		event.CreateTimer("monitor_" .. url, interval, 0, function()
 			if busy then return end
 			busy = true
 			sockets.Request({
 				url = url,
 				method = "HEAD",
-				callback = function(data) 
+				callback = function(data)
 					busy = false
 					local date = data.header["last-modified"] or data.header["date"]
-					
-					if date ~= last_modified then					
+
+					if date ~= last_modified then
 						sockets.Download(url, function(lua)
 							local func, err = loadstring(lua)
 							if func then
@@ -100,19 +100,19 @@ do -- url monitoring
 								logf("%s loadstring failed: %s\n", url, err)
 							end
 						end)
-						
+
 						last_modified = date
 					end
 				end,
 			})
 		end)
-		
+
 		logf("%s start monitoring\n", url)
 	end)
 
 	console.AddCommand("unmonitor_url", function(_, url)
 		event.RemoveTimer("monitor_" .. url)
-		
+
 		logf("%s stop monitoring\n", url)
 	end)
 end
@@ -149,7 +149,7 @@ do
 	end)
 
 	console.AddCommand("lua_run", function(line)
-		console.SetLuaEnvironmentVariable("me", clients.GetLocalClient()) 
+		console.SetLuaEnvironmentVariable("me", clients.GetLocalClient())
 		console.RunLua(line)
 	end)
 
@@ -159,7 +159,7 @@ do
 
 	console.AddServerCommand("lua_run_sv", function(client, line)
 		logn(client:GetNick(), " ran ", line)
-		console.SetLuaEnvironmentVariable("me", client) 
+		console.SetLuaEnvironmentVariable("me", client)
 		console.RunLua(line)
 	end)
 
@@ -175,29 +175,29 @@ do
 	if CLIENT then
 		local ip_cvar = console.CreateVariable("cl_ip", default_ip)
 		local port_cvar = console.CreateVariable("cl_port", default_port)
-		
+
 		local last_ip
 		local last_port
-		
+
 		console.AddCommand("retry", function()
 			if last_ip then
 				network.Connect(last_ip, last_port)
 			end
 		end)
-		
-		console.AddCommand("connect", function(line, ip, port)		
+
+		console.AddCommand("connect", function(line, ip, port)
 			ip = ip or ip_cvar:Get()
 			port = tonumber(port) or port_cvar:Get()
-			
+
 			logf("connecting to %s:%i\n", ip, port)
-			
+
 			last_ip = ip
 			last_port = port
-			
+
 			network.Connect(ip, port)
 		end)
 
-		console.AddCommand("disconnect", function(line)	
+		console.AddCommand("disconnect", function(line)
 			network.Disconnect(line)
 		end)
 	end
@@ -205,13 +205,13 @@ do
 	if SERVER then
 		local ip_cvar = console.CreateVariable("sv_ip", default_ip)
 		local port_cvar = console.CreateVariable("sv_port", default_port)
-				
+
 		console.AddCommand("host", function(line, ip, port)
 			ip = ip or ip_cvar:Get()
 			port = tonumber(port) or port_cvar:Get()
-			
+
 			logf("hosting at %s:%i\n", ip, port)
-			
+
 			network.Host(ip, port)
 		end)
 	end
@@ -224,18 +224,18 @@ console.AddCommand("trace_calls", function(_, line, ...)
 	if ok and old_func then
 		local table_index, key = line:match("(.+)%.(.+)")
 		local idx_func = assert(loadstring(("%s[%q] = ..."):format(table_index, key)))
-		
+
 		local args = {...}
-		
+
 		for k, v in pairs(args) do
 			args[k] = select(2, assert(pcall(assert(loadstring("return " .. v)))))
 		end
-				
-		idx_func(function(...)	
-			
+
+		idx_func(function(...)
+
 			if #args > 0 then
 				local found = false
-				
+
 				for i = 1, select("#", ...) do
 					local v = select(i, ...)
 					if args[i] then
@@ -247,17 +247,17 @@ console.AddCommand("trace_calls", function(_, line, ...)
 						end
 					end
 				end
-				
+
 				if found then
-					debug.trace()	
+					debug.trace()
 				end
 			else
 				debug.trace()
 			end
-			
+
 			return old_func(...)
 		end)
-		
+
 		event.Delay(1, function()
 			idx_func(old_func)
 		end)
@@ -266,14 +266,14 @@ end)
 
 console.AddCommand("debug", function(line, lib)
 	local tbl = _G[lib]
-	
+
 	if type(tbl) == "table" then
 		tbl.debug = not tbl.debug
-		
+
 		if tbl.EnableDebug then
 			tbl.EnableDebug(tbl.debug)
 		end
-		
+
 		if tbl.debug then
 			logn(lib, " debugging enabled")
 		else
@@ -284,13 +284,13 @@ end)
 
 console.AddCommand("find", function(line, ...)
 	local data = utility.FindValue(...)
-	
+
 	for k,v in pairs(data) do
-		logn("\t", v.nice_name) 
+		logn("\t", v.nice_name)
 	end
 end)
 
-console.AddCommand("lfind", function(line) 
+console.AddCommand("lfind", function(line)
 	for path, lines in pairs(utility.FindInLoadedLuaFiles(line)) do
 		logn(path)
 		for _, info in ipairs(lines) do
@@ -324,7 +324,7 @@ console.AddCommand("source", function(line, path, line_number, ...)
 			debug.openscript(path, tonumber(line_number) or 0)
 			return
 		end
-	end	
+	end
 
 	for k,v in pairs(vfs.GetLoadedLuaFiles()) do
 		if k:compare(path) then
@@ -334,10 +334,10 @@ console.AddCommand("source", function(line, path, line_number, ...)
 	end
 
 	local data = utility.FindValue(path, line_number, ...)
-		
+
 	local func
 	local name
-	
+
 	for k,v in pairs(data) do
 		if type(v.val) == "function" then
 			func = v.val
@@ -345,25 +345,25 @@ console.AddCommand("source", function(line, path, line_number, ...)
 			break
 		end
 	end
-	
+
 	if func then
 		logn("--> ", name)
-		
+
 		table.remove(data, 1)
-		
+
 		if not debug.openfunction(func) then
 			logn(func:src())
 		end
 	else
 		logf("function %q could not be found in _G or in added commands\n", line)
 	end
-	
+
 	if #data > 0 then
 		if #data < 10 then
 			logf("also found:\n")
-			
+
 			for k,v in pairs(data) do
-				logn("\t", v.nice_name) 
+				logn("\t", v.nice_name)
 			end
 		else
 			logf("%i results were also found\n", #data)
@@ -379,7 +379,7 @@ local tries = {
 
 console.AddCommand("open", function(line)
 	local tried = {}
-	
+
 	for i, try in pairs(tries) do
 		local path = try:gsub("?", line)
 		if vfs.IsFile(path) then
@@ -391,7 +391,7 @@ console.AddCommand("open", function(line)
 			return
 		end
 		table.insert(tried, "\t" .. path)
-	end	
-	
+	end
+
 	return false, "no such file:\n" .. table.concat(tried, "\n")
 end, "opens a lua file with some helpers (ie trying to append .lua or prepend lua/)")

@@ -20,12 +20,12 @@ function PANEL:DrawTile(tile_x, tile_y, rot)
 	tile_y = tile_y or 0
 	tile_x = tile_x * tile_size.x
 	tile_y = tile_y * tile_size.y
-	
+
 	local w, h = tile_size.x, tile_size.y
-	
+
 	if tile_x < 0 then tile_x = -tile_x w = -w end
 	if tile_y < 0 then tile_y = -tile_y h = -h end
-	
+
 	surface.SetRectUV(tile_x, tile_y, w, h, surface.GetTexture().w, surface.GetTexture().h)
 	surface.DrawRect(self.Size.x/2, self.Size.y/2, self.Size.x, self.Size.y, rot or 0, self.Size.x/2, self.Size.y/2)
 end
@@ -33,7 +33,7 @@ end
 function PANEL:DrawAnimation(animation, frame, rot, flip_x, relative)
 	local time = system.GetElapsedTime()
 	local data = animations[animation]
-	
+
 	local i = relative and math.clamp(math.round(frame), 1, #data.tiles) or math.floor((frame%#data.tiles) + 1)
 	local pos = data.tiles[i]
 	if pos then
@@ -43,7 +43,7 @@ end
 
 function PANEL:Initialize()
 	self:SetSize(tile_size)
-	self.Position = Vec2():Random(0,500)  
+	self.Position = Vec2():Random(0,500)
 	self:SetDraggable(true)
 	self:SetResizable(true)
 	self.Velocity = Vec2()
@@ -58,30 +58,30 @@ function PANEL:OnParentLand(parent)
 end
 
 local faint_vel = 2
-local bounce = 0.9 
+local bounce = 0.9
 
 function PANEL:CheckCollision()
 	local w, h = self.Parent:GetSize():Unpack()
 	local length = self.Velocity:GetLength()
 
 	self.on_ground = false
-	
+
 	local pos, found = self.Parent:RayCast(self, self.Position.x, h - self.Size.y, self.Size.x, self.Size.y, true, true)
-	
+
 	if self.Position.y > pos.y - 2 then
 		self.on_ground = true
 	end
-	
-	if self.Position.y > pos.y then 
+
+	if self.Position.y > pos.y then
 		if length> faint_vel then self.faint_time = length/5 self.faint = system.GetElapsedTime() + self.faint_time end
 		self.Velocity = self.Velocity:GetReflected(Vec2(0,1)) * bounce
 		self.Position.y = self.Position.y - 1
 		if found and found.Velocity then found.Velocity.y = found.Velocity.y + (self.Velocity.y * -0.5) end
 		return
 	end
-	
+
 	local pos, found = self.Parent:RayCast(self, self.Position.x, 1, self.Size.x, self.Size.y, true, true)
-	
+
 	if self.Position.y < pos.y then
 		if length> faint_vel then self.faint_time = length/5  self.faint = system.GetElapsedTime() + self.faint_time end
 		self.Velocity = self.Velocity:GetReflected(Vec2(0,-1)) * bounce
@@ -89,19 +89,19 @@ function PANEL:CheckCollision()
 		if found and found.Velocity then found.Velocity.y = found.Velocity.y + (self.Velocity.y * -0.5) end
 		return
 	end
-	
+
 	local pos, found = self.Parent:RayCast(self, w - self.Size.x, self.Position.y, self.Size.x, self.Size.y, true, true)
-		
+
 	if self.Position.x > pos.x - 4 then
 		if length> faint_vel then self.faint_time = length/5 self.faint = system.GetElapsedTime() + self.faint_time end
 		self.Velocity = self.Velocity:GetReflected(Vec2(1,0)) * bounce
 		self.Position.x = self.Position.x - 1
 		if found and found.Velocity then found.Velocity.x = found.Velocity.x + (self.Velocity.x * -0.5) end
-		return 
+		return
 	end
-	
+
 	local pos, found = self.Parent:RayCast(self, 1, self.Position.y, self.Size.x, self.Size.y, true, true)
-	
+
 	if self.Position.x < pos.x + 4 then
 		if length> faint_vel then self.faint_time = length/5 self.faint = system.GetElapsedTime() + self.faint_time end
 		self.Velocity = self.Velocity:GetReflected(Vec2(-1,0)) * bounce
@@ -111,17 +111,17 @@ function PANEL:CheckCollision()
 	end
 end
 
-function PANEL:OnUpdate()	
+function PANEL:OnUpdate()
 	local dt = system.GetFrameTime() / 5
 	local mpos = self:GetMousePosition()
 
-	if self:IsDragging() then self.Velocity = Vec2(surface.GetMouseVel())/10 end 
-	
+	if self:IsDragging() then self.Velocity = Vec2(surface.GetMouseVel())/10 end
+
 	self.frame = self.frame + self.Velocity.x / 15
-	self.Velocity = self.Velocity + Vec2(0, 10) * dt  
+	self.Velocity = self.Velocity + Vec2(0, 10) * dt
 
 	if self.faint and self.faint > system.GetElapsedTime() then
-		
+
 	else
 		if self.on_ground then
 			if math.abs(mpos.x - self.Size.x/2) > self.Size:GetLength() then
@@ -133,11 +133,11 @@ function PANEL:OnUpdate()
 		self.faint = nil
 		self.faint_time = nil
 	end
-		
+
 --	for i = 1, 3 do
 		self:CheckCollision()
 	--end
-	
+
 
 	if self.on_ground and not self.faint then
 		self.Velocity = self.Velocity * 0.9
@@ -146,16 +146,16 @@ function PANEL:OnUpdate()
 	self:MarkCacheDirty()
 	self.Position = self.Position + self.Velocity
 	if not self.Position:IsValid() then self.Position:Zero() end
-	if not self.Velocity:IsValid() then self.Velocity:Zero() end 
+	if not self.Velocity:IsValid() then self.Velocity:Zero() end
 end
 
 function PANEL:OnDraw()
 	surface.SetTexture(self.sheep_texture)
-	local length = self.Velocity:GetLength() 
+	local length = self.Velocity:GetLength()
 	local w, h = self.Parent:GetSize():Unpack()
 
 	if self.faint then
-		if self.on_ground then 
+		if self.on_ground then
 			self:DrawAnimation("comet", (-(self.faint-system.GetElapsedTime()) / self.faint_time + 1)*#animations.comet.tiles, self.frame)
 		else
 			self:DrawAnimation("comet", (-(self.faint-system.GetElapsedTime()) / self.faint_time + 1)*#animations.comet.tiles, -self.Velocity:GetRad() - (math.pi / 3), false, true)
@@ -167,16 +167,16 @@ function PANEL:OnDraw()
 			self:DrawTile(2,2)
 		elseif length > 0.1 then
 			self:DrawAnimation("run", self.frame/2, 0, self.Velocity.x > 0)
-		else 
-			self:DrawAnimation("walk", self.frame, 0, self.Velocity.x > 0) 
+		else
+			self:DrawAnimation("walk", self.frame, 0, self.Velocity.x > 0)
 		end
 	end
 	surface.SetRectUV()
 end
-  
-gui.RegisterPanel(PANEL)  
+
+gui.RegisterPanel(PANEL)
 
 if RELOAD then
-	local sheep = gui.CreatePanel("sheep")  
+	local sheep = gui.CreatePanel("sheep")
 
-end 
+end

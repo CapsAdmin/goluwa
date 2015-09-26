@@ -27,9 +27,9 @@ function PANEL:Initialize()
 	button:SetStyleTranslation("button_active", "button_rounded_active")
 	button:SetStyleTranslation("button_inactive", "button_rounded_inactive")
 	button:SetStyle("button_rounded_inactive")
-	
+
 	button:SetDraggable(true)
-	
+
 	button.OnPositionChanged = function(_, pos)
 		self:OnButtonPositionChanged(button, pos)
 	end
@@ -51,19 +51,19 @@ function PANEL:OnButtonPositionChanged(button, pos)
 		pos.x = self:GetWidth()/2 - button:GetWidth()/2
 		pos.y = math.clamp(pos.y, 0, self:GetHeight() - button:GetHeight())
 	end
-	
+
 	self.Fraction = pos / (self:GetSize() - button:GetSize())
 	self.Fraction.x = math.clamp(self.Fraction.x, 0, 1)
 	self.Fraction.y = math.clamp(self.Fraction.y, 0, 1)
-	
+
 	self:OnSlide(self.Fraction)
-	
+
 	self:MarkCacheDirty()
 end
 
 function PANEL:OnLineDraw(line)
 	surface.SetTexture(self:GetSkin().menu_select[1])
-		
+
 	if self.RightFill then
 		if self.XSlide and self.YSlide then
 			self:DrawRect(0, 0, self.Fraction.x * line:GetWidth(), self.Fraction.y * line:GetHeight())
@@ -75,9 +75,9 @@ function PANEL:OnLineDraw(line)
 	elseif self.LeftFill then
 		if self.XSlide and self.YSlide then
 			self:DrawRect(
-				self.Fraction.x * line:GetWidth(), 
-				self.Fraction.y * line:GetHeight(), 
-				line:GetWidth() - (self.Fraction.x * line:GetWidth()), 
+				self.Fraction.x * line:GetWidth(),
+				self.Fraction.y * line:GetHeight(),
+				line:GetWidth() - (self.Fraction.x * line:GetWidth()),
 				line:GetHeight() - (self.Fraction.y * line:GetHeight())
 			)
 		elseif self.XSlide then
@@ -91,10 +91,10 @@ end
 function PANEL:OnSlide(pos)
 
 end
-		
+
 function PANEL:OnLayout(S)
 	self.button:SetSize(self:GetSize():Copy() - S*8)
-	
+
 	if self.XSlide and self.YSlide then
 		self.line:SetSize(self:GetSize():Copy())
 		self.button:SetSize(Vec2()+S*5)
@@ -109,7 +109,7 @@ function PANEL:OnLayout(S)
 		self.line:SetHeight(self:GetHeight())
 		self.line:SetWidth(self:GetWidth()-8*S*2)
 	end
-	
+
 	self.button:SetPosition(self.Fraction * self:GetSize())
 end
 

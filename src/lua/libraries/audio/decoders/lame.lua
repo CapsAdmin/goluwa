@@ -6,7 +6,7 @@ local audio = ... or _G.audio
 
 audio.AddDecoder("lame", function(data, path_hint)
 	local file = assert(vfs.Open(path_hint))
-	
+
 	if data:sub(0,3) ~= "ID3" then return false, "unknown format" end
 
 	local lame = lib.lame_init()
@@ -25,10 +25,10 @@ audio.AddDecoder("lame", function(data, path_hint)
 	--local total_size = 0ULL
 
 	while true do
-		local chunk = file:ReadBytes(4096*8) 
+		local chunk = file:ReadBytes(4096*8)
 
 		local size = lib.hip_decode1_headersB(hip, ffi.cast("unsigned char *", chunk), 4096*8, buffer_left, buffer_right, header, enc_delay, enc_padding)
-		
+
 		if size < 0 or not chunk then break end
 
 		--[[logn("header_parsed", " = ", header[0].header_parsed)
@@ -41,19 +41,19 @@ audio.AddDecoder("lame", function(data, path_hint)
 		logn("nsamp", " = ", header[0].nsamp)
 		logn("totalframes", " = ", header[0].totalframes)
 		logn("framenum", " = ", header[0].framenum)]]
-		
+
 		table.insert(left, ffi.string(buffer_left, size))
 		table.insert(right, ffi.string(buffer_right, size))
-		
-		--[[local buffer = ffi.new("short[?]", size)	
+
+		--[[local buffer = ffi.new("short[?]", size)
 		ffi.copy(buffer, buffer_left, size)
 		table.insert(left, {buffer = buffer, size = size})
-		
-		local buffer = ffi.new("short[?]", size)	
+
+		local buffer = ffi.new("short[?]", size)
 		ffi.copy(buffer, buffer_right, size)
 		table.insert(right, {buffer = buffer, size = size})
-		
-		total_size = total_size + size]] 
+
+		total_size = total_size + size]]
 	end
 
 	--logn("delay", " = ", enc_delay[0])

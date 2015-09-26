@@ -7,7 +7,7 @@ function surface.GetTextureID(path)
 	if vfs.IsFile("materials/" .. path) then
 		return Texture("materials/" .. path)
 	end
-	
+
 	return Texture("materials/" .. path .. ".vtf")
 end
 
@@ -74,7 +74,7 @@ function surface.CreateFont(name, tbl)
 	logn("gmod create font: ", tbl.font)
 	local tbl = table.copy(tbl)
 	tbl.path = tbl.font
-	
+
 	if tbl.path:lower() == "roboto bk" then
 		tbl.path = "resource/fonts/Roboto-Black.ttf"
 	elseif tbl.path:lower() == "helvetica" then
@@ -82,21 +82,21 @@ function surface.CreateFont(name, tbl)
 	elseif tbl.path:lower() == "tahoma" then
 		tbl.path = "fonts/tahoma.ttf"
 	end
-	
+
 	if tbl.size then tbl.size = math.ceil(tbl.size * 0.75) end
-	
+
 	logf("surface.CreateFont(%q, %q)\n", name, tbl.path)
-	
+
 	lib.CreateFont(name, tbl)
 end
 
-function surface.SetFont(name) 
-	lib.SetFont(name) 
+function surface.SetFont(name)
+	lib.SetFont(name)
 end
 
 function surface.GetTextSize(str)
 	str = gmod.translation2[str] or str
-	return lib.GetTextSize(str) 
+	return lib.GetTextSize(str)
 end
 
 function surface.DrawText(str)

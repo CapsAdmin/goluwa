@@ -2,38 +2,38 @@ local math3d = _G.math3d or {}
 
 function math3d.WorldToLocal(local_pos, local_ang, world_pos, world_ang)
 	local pos, ang
-	
+
 	if world_ang and local_ang then
 		local lmat = Matrix44():SetRotation(Quat():SetAngles(local_ang))
 		local wmat = Matrix44():SetRotation(Quat():SetAngles(world_ang))
 		ang = (lmat * wmat):GetRotation():GetAngles()
 	end
-	
+
 	if world_pos and local_pos then
 		local lmat = Matrix44():SetTranslation(local_pos:Unpack())
 		local wmat = Matrix44():SetTranslation(world_pos:Unpack())
 		pos = Vec3((lmat * wmat):GetTranslation())
 	end
-		
+
 	return pos, ang
 end
 
 
 function math3d.LocalToWorld(local_pos, local_ang, world_pos, world_ang)
 	local pos, ang
-	
+
 	if world_ang and local_ang then
 		local lmat = Matrix44():SetRotation(Quat():SetAngles(local_ang)):GetInverse()
 		local wmat = Matrix44():SetRotation(Quat():SetAngles(world_ang))
 		ang = (lmat * wmat):GetRotation():GetAngles()
 	end
-	
+
 	if world_pos and local_pos then
 		local lmat = Matrix44():SetTranslation(local_pos:Unpack()):GetInverse()
 		local wmat = Matrix44():SetTranslation(world_pos:Unpack())
 		pos = Vec3((lmat * wmat):GetTranslation())
 	end
-			
+
 	return pos, ang
 end
 
@@ -41,8 +41,8 @@ function math3d.LinePlaneIntersection(pos, normal, screen_pos)
 	local ln = math3d.ScreenToWorldDirection(screen_pos)
 	local lp = render.camera_3d:GetPosition() - pos
 	local t = lp:GetDot(normal) / ln:GetDot(normal)
-	
-	if t < 0 then 
+
+	if t < 0 then
 		return lp + ln * -t
 	end
 end
@@ -63,7 +63,7 @@ function math3d.ScreenToWorldDirection(screen_pos, cam_pos, cam_ang, cam_fov, sc
 	cam_fov = cam_fov or render.camera_3d:GetFOV()
 	screen_width = screen_width or render.GetWidth()
 	screen_height = screen_height or render.GetHeight()
-	
+
     --This code works by basically treating the camera like a frustrum of a pyramid.
     --We slice this frustrum at a distance "d" from the camera, where the slice will be a rectangle whose width equals the "4:3" width corresponding to the given screen height.
     local d = 4 * screen_height / (8 * math.tan(0.5 * cam_fov))
@@ -75,9 +75,9 @@ function math3d.ScreenToWorldDirection(screen_pos, cam_pos, cam_ang, cam_fov, sc
 
     --Then convert vec to proper world coordinates and return it
 	local dir = (fwd * d) + (rgt * (0.5 * screen_width - screen_pos.x)) + (upw * (0.5 * screen_height - screen_pos.y))
-	
+
 	dir:Normalize()
-	
+
     return dir
 end
 
@@ -90,7 +90,7 @@ function math3d.WorldPositionToScreen(position, cam_pos, cam_ang, screen_width, 
 
 	local dir = cam_pos - position
 	dir:Normalize()
-			
+
     --Same as we did above, we found distance the camera to a rectangular slice of the camera's frustrum, whose width equals the "4:3" width corresponding to the given screen height.
     local d = 4 * screen_height / (8 * math.tan(0.5 * cam_fov))
     local fdp = cam_ang:GetForward():GetDot(dir)
@@ -112,9 +112,9 @@ function math3d.WorldPositionToScreen(position, cam_pos, cam_ang, screen_width, 
 
     --Lastly we have to ensure these screen positions are actually on the screen.
     local vis
-	
+
 	--Simple check to see if the object is in front of the camera
-    if fdp < 0 then 
+    if fdp < 0 then
         vis = 1
     elseif x < 0 or x > screen_width or y < 0 or y > screen_height then  --We've already determined the object is in front of us, but it may be lurking just outside our field of vision.
         vis = 0

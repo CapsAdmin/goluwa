@@ -241,7 +241,7 @@ do
 
 				local id = sf2:ReadBytes(4)
 				local size = sf2:ReadLong()
-								
+
 				local the_end = sf2:GetPosition() + size
 
 				if id == "ifil" then
@@ -286,7 +286,7 @@ do
 						info.mod_index = sf2:ReadShort()
 						table.insert(list, info)
 					until sf2:GetPosition() >= the_end
-										
+
 					chunk.pbag = list
 				elseif id == "pmod" then
 					sf2:Advance(size)
@@ -303,36 +303,36 @@ do
 
 					repeat
 						local info = {}
-											
+
 						info.mod_src_oper = mod_bits_to_table(sf2:ReadShort())
-						
+
 						info.mod_dest_oper = sf2:ReadShort()
 						info.mod_amount = sf2:ReadShort()
 						info.mod_amt_src_oper = mod_bits_to_table(sf2:ReadShort())
-						
+
 						info.mod_trans_oper = sf2:ReadShort()
 						table.insert(list, info)
 					until sf2:GetPosition() >= the_end
-					
+
 					chunk.imod = list
 				elseif id == "pgen" then
 					sf2:Advance(size)
 				elseif id == "igen" then
 					local list = {}
-					
+
 					repeat
 						local gen = {}
 						local gen_operator = sf2:ReadShort()
-						
+
 						gen.operator = gen_operator
-						
+
 						if gen_operator == 43 or gen_operator == 44 then
 							gen.lo = sf2:ReadByte()
 							gen.hi = sf2:ReadByte()
 						else
 							gen.amount = sf2:ReadShort()
 						end
-						
+
 						table.insert(list, gen)
 					until sf2:GetPosition() >= the_end
 
@@ -346,7 +346,7 @@ do
 						info.instrument_bag_index = sf2:ReadShort()
 						table.insert(list, info)
 					until sf2:GetPosition() >= the_end
-					
+
 					chunk.inst = list
 
 				elseif id == "ibag" then
@@ -365,13 +365,13 @@ do
 					repeat
 						local info = {}
 						info.sample_name = sf2:ReadString(20, true)
-						
+
 						info.start = sf2:ReadUnsignedLong()
 						info.stop = sf2:ReadUnsignedLong()
-						
+
 						info.start_loop = sf2:ReadLong()
 						info.stop_loop = sf2:ReadLong()
-						
+
 						info.sample_rate = sf2:ReadLong()
 						info.original_pitch = sf2:ReadByte()
 						info.pitch_correction = sf2:ReadByte()
@@ -388,7 +388,7 @@ do
 
 			out[header.type] = chunk
 		end
-		
+
 		return out
 	end
 end

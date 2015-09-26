@@ -7,7 +7,7 @@ PASS.Source = [[
 out vec3 fragColor;
 
 void main()
-{    
+{
     // maximum aberration in number of pixels at uv.x == 0 or 1 (left or right edge)
     const float redAberration = 10.0;
     const float greenAberration =0.0;
@@ -19,7 +19,7 @@ void main()
     aberration *= pctEffect;
 
     vec3 col;
-	
+
     col.r = texture(self, vec2(uv.x+aberration.x,uv.y)).x;
     col.g = texture(self, vec2(uv.x+aberration.y,uv.y)).y;
     col.b = texture(self, vec2(uv.x+aberration.z,uv.y)).z;

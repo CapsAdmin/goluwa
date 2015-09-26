@@ -2,7 +2,7 @@ local prototype = ... or _G.prototype
 
 local META = {}
 META.ClassName = "base"
-	
+
 META.Require = {}
 META.Events = {}
 
@@ -23,7 +23,7 @@ end
 function META:OnEntityAddComponent(component)
 
 end
-	
+
 function META:OnRemove()
 	if self.Entity:IsValid() and self.Entity.Components and self.Entity.Components[self.Type] then
 		self.Entity.Components[self.Type] = nil
@@ -36,11 +36,11 @@ end
 
 function META:GetEntityComponents()
 	local out = {}
-	
+
 	for name, component in pairs(self:GetEntity():GetComponents()) do
 		table.insert(out, component)
 	end
-	
+
 	return out
 end
 
@@ -56,7 +56,7 @@ function prototype.RegisterComponent(meta)
 	prototype.Register(meta, "component")
 end
 
-function prototype.CreateComponent(name)		
+function prototype.CreateComponent(name)
 	local self = prototype.CreateDerivedObject("component", name)
 	self:Initialize()
 	return self

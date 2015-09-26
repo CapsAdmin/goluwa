@@ -5,7 +5,7 @@ frame:SetTitle("Confirm Save As")
 	local info = frame:CreatePanel("base")
 	info:SetStyle("frame")
 	info:SetHeight(85)
-		
+
 		local area = info:CreatePanel("base")
 		area:SetSize(Vec2(500,500))
 		area:SetColor(Color(0,0,0,0))
@@ -14,15 +14,15 @@ frame:SetTitle("Confirm Save As")
 			image:SetTexture(tex)
 			image:SetSize(tex:GetSize())
 			image:SetupLayout("left")
-			
+
 			local text = area:CreatePanel("text", "temp.txt already exist.\nDo you want to replace it?")
-			text:SetPadding(Rect()+5) 
+			text:SetPadding(Rect()+5)
 			text:SetText("temp.txt already exist.\nDo you want to replace it?")
 			text:SetupLayout("left")
 		area:SetupLayout("size_to_width", "size_to_height", "center_x_simple", "center_y")
-	
+
 	info:SetupLayout("top", "fill_x")
-	
+
 local yes = frame:CreatePanel("text_button")
 yes.label:SetupLayout("center_simple")
 yes:SetPadding(Rect()+5)

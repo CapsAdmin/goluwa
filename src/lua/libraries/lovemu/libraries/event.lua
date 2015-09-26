@@ -19,7 +19,7 @@ function love.event.poll() --partial
 end
 
 function love.event.pump() --partial
-	
+
 end
 
 function love.event.quit() --partial
@@ -28,8 +28,8 @@ end
 
 function love.event.wait() --partial
 	local val = table.remove(queue, 1)
-	
-	if val then 
+
+	if val then
 		return unpack(val)
 	end
 end

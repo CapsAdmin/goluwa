@@ -44,7 +44,7 @@ function META:SelectCurrentWord()
 
 	local x, y = self:GetNextCharacterClassPosition(1, false)
 	self:SelectStop(x + 1, y)
-	
+
 	self:SetCaretPosition(x + 1, y)
 end
 

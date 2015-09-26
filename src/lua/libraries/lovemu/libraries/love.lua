@@ -4,7 +4,7 @@ function love.load()
 end
 
 function love.update(dt)
-end	
+end
 
 function love.draw()
 end
@@ -35,7 +35,7 @@ do -- error screen
 		msg = tostring(msg)
 		love.graphics.setBackgroundColor(89, 157, 220)
 		love.graphics.setColor(255, 255, 255, 255)
-		
+
 		local trace = debug.traceback()
 
 		local err = {}
@@ -58,7 +58,7 @@ do -- error screen
 		local function draw()
 			love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)
 		end
-		
+
 		draw()
 	end
 end

@@ -7,10 +7,10 @@ local function blur_texture(dir)
 		//this will be our RGBA sum
 		vec4 sum = vec4(0.0);
 
-		//the amount to blur, i.e. how far off center to sample from 
+		//the amount to blur, i.e. how far off center to sample from
 		//1.0 -> blur by one pixel
 		//2.0 -> blur by two pixels, etc.
-		float blur = radius/resolution.x; 
+		float blur = radius/resolution.x;
 
 		//the direction of our blur
 		//(1.0, 0.0) -> x-axis blur
@@ -33,11 +33,11 @@ local function blur_texture(dir)
 		sum += texture(self, vec2(uv.x + 4.0*blur*hstep, uv.y + 4.0*blur*vstep)) * 0.0162162162;
 
 		return sum;
-	]], { 
-		radius = 1, 
+	]], {
+		radius = 1,
 		resolution = render.GetScreenSize(),
 		dir = dir,
-	})  
+	})
 end
 
 blur_texture(Vec2(0,5))
@@ -52,15 +52,15 @@ local shader = render.CreateShader({
 		},
 		mesh_layout = {
 			{uv = "vec2"},
-		},			
+		},
 		source = [[
 			out highp vec4 frag_color;
-			
+
 			void main()
-			{	
-				vec4 tex_color = texture(tex, uv); 
-				//vec4 tex_color = texture(tex, cam_dir); 
-				
+			{
+				vec4 tex_color = texture(tex, uv);
+				//vec4 tex_color = texture(tex, cam_dir);
+
 				frag_color = tex_color;
 			}
 		]],
@@ -117,17 +117,17 @@ event.AddListener("PostDrawMenu", "lol", function()
 		--surface.rect_mesh:Draw()
 		--render.SetShaderOverride()
 	--surface.PopMatrix()
-	
+
 	surface.SetFont("zsnes_gui_font")
 	surface.DrawText("p", 64, 64)
-	
+
 	--surface.SetTexture(grad)
 	--surface.SetColor(1,1,1,1)
 	--surface.DrawRect(64,64,grad.w*32,grad.h*32)
-	
+
 	--surface.SetTexture(tex)
 	--surface.DrawRect(0,0,tex.w,tex.h)
-	
+
 	--surface.SetWhiteTexture()
 	--surface.SetColor(ColorBytes(tex:GetPixelColor(surface.GetMousePosition())))
 	--surface.DrawRect(50,50,50,50)

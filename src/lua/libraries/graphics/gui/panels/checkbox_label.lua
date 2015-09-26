@@ -18,7 +18,7 @@ prototype.Delegate(PANEL, "label", "GetTextSize", "GetSize")
 
 function PANEL:Initialize()
 	self:SetNoDraw(true)
-	
+
 	local check = self:CreatePanel("button", "checkbox")
 	check:SetActiveStyle("check")
 	check:SetInactiveStyle("uncheck")
@@ -26,11 +26,11 @@ function PANEL:Initialize()
 
 	local label = self:CreatePanel("text", "label")
 	self:Layout(true)
-	
+
 	self.tied_checkboxes = {}
 	check.OnStateChanged = function(_, b)
 		self:OnCheck(b)
-		
+
 		for i,v in ipairs(self.tied_checkboxes) do
 			if v:IsValid() and v ~= check then
 				v.checkbox:SetState(not b)
@@ -39,15 +39,15 @@ function PANEL:Initialize()
 	end
 end
 
-function PANEL:TieCheckbox(checkbox)	
+function PANEL:TieCheckbox(checkbox)
 	checkbox.tied_checkboxes = {}
 	table.insert(self.tied_checkboxes, checkbox)
-	
+
 	for k,v in ipairs(self.tied_checkboxes) do
 		v.checkbox:SetActiveStyle("rad_check")
 		v.checkbox:SetInactiveStyle("rad_uncheck")
 	end
-	
+
 	self.checkbox:SetActiveStyle("rad_check")
 	self.checkbox:SetInactiveStyle("rad_uncheck")
 end
@@ -57,18 +57,18 @@ function PANEL:IsChecked()
 end
 
 function PANEL:OnCheck(b)
-	
+
 end
 
 function PANEL:SizeToText()
 	local marg = self:GetMargin()
-	
+
 	self.checkbox:SetX(0)
 	self.label:SetX(self.checkbox:GetPosition().x + marg.left + self.checkbox:GetWidth())
 	self:SetSize(self.label:GetPosition() + Vec2(marg.left, 0) + self.label:GetSize() + marg:GetSize())
 	self.label:CenterY()
 	self.checkbox:CenterY()
-	
+
 	if self.LayoutSize then
 		self.LayoutSize = self:GetSize():Copy()
 	end

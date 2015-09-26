@@ -15,11 +15,11 @@ function steam.SetMap(name)
 			render.InitializeGBuffer()
 		end
 	end
-	
+
 	if not entities.world then
 		entities.world = entities.CreateEntity("world")
 	end
-	
+
 	steam.bsp_world = steam.bsp_world or entities.CreateEntity("physical", entities.world)
 	steam.bsp_world:SetName(name)
 	steam.bsp_world:SetCull(false)
@@ -29,15 +29,15 @@ end
 
 local function read_lump_data(thread, what, bsp_file, header, index, size, struct)
 	local out = {}
-	
+
 	local lump = header.lumps[index]
-	
+
 	if lump.filelen == 0 then return end
-	
+
 	local length = lump.filelen / size
-	
+
 	bsp_file:SetPosition(lump.fileofs)
-		
+
 	if type(struct) == "function" then
 		for i = 1, length do
 			out[i] = struct()
@@ -51,7 +51,7 @@ local function read_lump_data(thread, what, bsp_file, header, index, size, struc
 			tasks.Wait()
 		end
 	end
-				
+
 	return out
 end
 
@@ -63,24 +63,24 @@ function steam.LoadMap(path)
 	if steam.bsp_cache[path] then
 		return steam.bsp_cache[path]
 	end
-	
+
 	logn("loading map: ", path)
-		
+
 	local bsp_file = assert(vfs.Open(path))
 
 	local header = bsp_file:ReadStructure([[
 	long ident; // BSP file identifier
 	long version; // BSP file version
 	]])
-	
+
 	local info = skyboxes[path:match(".+/(.+)%.bsp")]
-	
+
 	if info then
 		header.sky_aabb = info[1]
 		header.sky_scale = info[2]
 	end
-	 
-	do 
+
+	do
 		local struct = [[
 			int	fileofs;	// offset into file (bytes)
 			int	filelen;	// length of lump (bytes)
@@ -95,19 +95,19 @@ function steam.LoadMap(path)
 			char fourCC[4];	// lump ident code
 		]]
 
-		if header.version > 21 then 
+		if header.version > 21 then
 			struct = struct_21
 		end
-		
+
 		header.lumps = {}
 
 		for i = 1, 64 do
-			header.lumps[i] = bsp_file:ReadStructure(struct) 
+			header.lumps[i] = bsp_file:ReadStructure(struct)
 			tasks.ReportProgress("reading lumps", 64)
 			tasks.Wait()
 		end
-		
-	end 
+
+	end
 
 	header.map_revision = bsp_file:ReadLong()
 
@@ -116,8 +116,8 @@ function steam.LoadMap(path)
 		logn("VERSION ", header.version)
 		logn("REVISION ", header.map_revision)
 	end
-	
-	do	
+
+	do
 		tasks.Wait()
 		tasks.Report("mounting pak")-- pak
 		local lump = header.lumps[41]
@@ -125,13 +125,13 @@ function steam.LoadMap(path)
 
 		bsp_file:SetPosition(lump.fileofs)
 		local pak = bsp_file:ReadBytes(length)
-		
+
 		local name = "temp_bsp.zip"
-		
+
 		vfs.Write(name, pak)
-		
+
 		--FIX ME
-		
+
 		if LINUX then
 			local dir = R(name):match("(.+)%.zip")
 			os.execute("rm -f " .. dir)
@@ -141,7 +141,7 @@ function steam.LoadMap(path)
 			vfs.PopWorkingDirectory()
 			vfs.Mount(dir)
 		else
-			vfs.Mount(R(name))			
+			vfs.Mount(R(name))
 		end
 	end
 
@@ -154,7 +154,7 @@ function steam.LoadMap(path)
 			return unpack(t)
 		end
 		local entities = {}
-		local i = 1 
+		local i = 1
 		bsp_file:PushPosition(header.lumps[1].fileofs)
 		for vdf in bsp_file:ReadString():gmatch("{(.-)}") do
 			local ent = {}
@@ -174,24 +174,24 @@ function steam.LoadMap(path)
 				header.sky_scale = header.sky_scale + ent.scale
 			end
 			entities[i] = ent
-			i = i + 1  
-			
+			i = i + 1
+
 			tasks.Wait()
 		end
 		bsp_file:PopPosition()
 		header.entities = entities
 	end
-		
+
 	do
 		tasks.Wait()
 		tasks.Report("reading game lump")
-		
+
 		local lump = header.lumps[36]
-		
+
 		bsp_file:SetPosition(lump.fileofs)
-		
+
 		local game_lumps = bsp_file:ReadLong()
-		
+
 		for i = 1, game_lumps do
 			local id = bsp_file:ReadBytes(4)
 			local flags = bsp_file:ReadShort()
@@ -200,11 +200,11 @@ function steam.LoadMap(path)
 			local filelen = bsp_file:ReadLong()
 
 			if id == "prps" then
-				bsp_file:PushPosition(fileofs)					
-				
+				bsp_file:PushPosition(fileofs)
+
 				local count = bsp_file:ReadLong()
-				local paths = {}					
-				for i = 1, count do 
+				local paths = {}
+				for i = 1, count do
 					local str = bsp_file:ReadString(128, true)
 					if str ~= "" then
 						paths[i] = str
@@ -212,13 +212,13 @@ function steam.LoadMap(path)
 				end
 
 				local count = bsp_file:ReadLong()
-				local leafs = {}					
+				local leafs = {}
 				for i = 1, count do
 					leafs[i] = bsp_file:ReadShort()
 				end
-				
+
 				local count = bsp_file:ReadLong()
-				
+
 				for i = 1, count do
 					local lump = bsp_file:ReadStructure([[
 						vec3 origin;
@@ -231,54 +231,54 @@ function steam.LoadMap(path)
 						long skin;
 						float fade_min_dist;
 						float fade_max_dist;
-						
+
 						long lighting_origin_x;
 						long lighting_origin_y;
 						long lighting_origin_z;
 					]])
-										
+
 					if version > 4 then
 						lump.forced_fade_scale = bsp_file:ReadFloat()
-					end						
-					
+					end
+
 					if version > 5 then
 						lump.min_dx_level = bsp_file:ReadShort()
 						lump.max_dx_level = bsp_file:ReadShort()
 					end
-					
+
 					if version > 6 then
 						bsp_file:Advance(4*3) -- ???
 					end
-											
+
 					lump.model = paths[lump.prop_type + 1] or paths[1]
 					lump.classname = "static_entity"
-					
+
 					table.insert(header.entities, lump)
-					
+
 					tasks.Wait()
 					tasks.ReportProgress("reading static props", count)
 				end
-								
+
 				bsp_file:PopPosition()
 			end
 
 			--[[if id == "prpd" then
 				bsp_file:PushPosition(fileofs)
-				
+
 				local count = bsp_file:ReadLong()
 				local paths = {}
 				logf("prpd paths = %s\n", count)
-				
-				-- for i = 1, count do 
+
+				-- for i = 1, count do
 					-- local str = bsp_file:ReadString()
 					-- if str ~= "" then
 						-- paths[i] = str
 					-- end
 				-- end
-													
+
 				bsp_file:PopPosition()
 			end
-					
+
 			if id == "tlpd" then
 				bsp_file:PushPosition(fileofs)
 
@@ -287,32 +287,32 @@ function steam.LoadMap(path)
 				--for i = 1, count do
 				--	local a = bsp_file:ReadBytes(4)
 				--	local b = bsp_file:ReadByte()
-				--	
+				--
 				--end
-				
+
 				bsp_file:PopPosition()
 			end]]
 		end
-		
+
 	end
-	
+
 	header.brushes = read_lump_data(thread, "reading brushes", bsp_file, header, 19, 12, [[
 		int	firstside;	// first brushside
 		int	numsides;	// number of brushsides
 		int	contents;	// contents flags
 	]])
-	
+
 	header.brushsides = read_lump_data(thread, "reading brushsides", bsp_file, header, 20, 8, [[
 		unsigned short	planenum;	// facing out of the leaf
 		short		texinfo;	// texture info
 		short		dispinfo;	// displacement info
 		short		bevel;		// is the side a bevel plane?
 	]])
-	
+
 	header.vertices = read_lump_data(thread, "reading verticies", bsp_file, header, 4, 12, "vec3")
-	
+
 	header.surfedges = read_lump_data(thread, "reading surfedges", bsp_file, header, 14, 4, "long")
-	
+
 	header.edges = read_lump_data(thread, "reading edges", bsp_file, header, 13, 4, function() return {bsp_file:ReadUnsignedShort(), bsp_file:ReadUnsignedShort()} end)
 
 	header.faces = read_lump_data(thread, "reading faces", bsp_file, header, 8, 56, [[
@@ -340,7 +340,7 @@ function steam.LoadMap(path)
 		float lightmapVecs[8];
 		int flags;
 		int texdata;
-	]])	
+	]])
 
 	header.texdatas = read_lump_data(thread, "reading texdata", bsp_file, header, 3, 32, [[
 		vec3 reflectivity;
@@ -363,7 +363,7 @@ function steam.LoadMap(path)
 		tasks.Wait()
 	end
 
-	do 
+	do
 		local structure = [[
 			vec3 startPosition; // start position used for orientation
 			int DispVertStart; // Index into LUMP_DISP_VERTS.
@@ -376,45 +376,45 @@ function steam.LoadMap(path)
 			char asdf[2];
 			int LightmapAlphaStart;	// Index into ddisplightmapalpha.
 			int LightmapSamplePositionStart; // Index into LUMP_DISP_LIGHTMAP_SAMPLE_POSITIONS.
-			
+
 			padding byte padding[128];
 		]]
-			
+
 		local lump = header.lumps[27]
-		local length = lump.filelen / 176 
-		
+		local length = lump.filelen / 176
+
 		bsp_file:SetPosition(lump.fileofs)
-		
+
 		header.displacements = {}
-		
+
 		for i = 1, length do
 			local data = bsp_file:ReadStructure(structure)
-									
+
 			local lump = header.lumps[34]
-			
+
 			data.vertex_info = {}
-			
+
 			bsp_file:PushPosition(lump.fileofs + (data.DispVertStart * 20))
 				for i = 1, ((2 ^ data.power) + 1) ^ 2 do
 					local vertex = bsp_file:ReadVec3()
 					local dist = bsp_file:ReadFloat()
 					local alpha = bsp_file:ReadFloat()
-					
+
 					data.vertex_info[i] = {
-						vertex = vertex, 
-						dist = dist, 
+						vertex = vertex,
+						dist = dist,
 						alpha = alpha
 					}
 				end
 
 			bsp_file:PopPosition(old_pos)
-			
+
 			header.displacements[i] = data
-			
+
 			tasks.ReportProgress("reading displacements", length)
 			tasks.Wait()
 		end
-		
+
 	end
 
 	header.models = read_lump_data(thread, "reading models", bsp_file, header, 15, 48, [[
@@ -425,19 +425,19 @@ function steam.LoadMap(path)
 		int firstface;
 		int numfaces;
 	]])
-		
+
 	--for i = 1, #header.brushes do
 	--	local brush = header.brushes[i]
 	--end
-	
+
 	local function sky_to_world(pos)
 		if header.sky_aabb:IsPointInside(pos) then
 			return (pos - header.sky_origin) * header.sky_scale, header.sky_scale
 		end
-		
+
 		return pos
 	end
-	
+
 	if header.sky_aabb then
 		for i,v in ipairs(header.entities) do
 			if v.origin then
@@ -445,30 +445,30 @@ function steam.LoadMap(path)
 			end
 		end
 	end
-	
+
 	local models = {}
 
-	do 				
+	do
 		local function add_vertex(model, texinfo, texdata, pos, blend, normal)
 			local a = texinfo.textureVecs
-			
-			if blend then 
-				blend = blend / 255 
+
+			if blend then
+				blend = blend / 255
 			else
 				blend = 0
 			end
-			
+
 			blend = math.clamp(blend, 0, 1)
-			
+
 			local uv_scale
-			
+
 			if header.sky_aabb then
 				pos, uv_scale = sky_to_world(pos)
 				if uv_scale then uv_scale = 1/uv_scale  end
 			end
-			
+
 			uv_scale = uv_scale or 1
-			
+
 			local vertex = {
 				pos = -Vec3(pos.y, pos.x, pos.z) * scale, -- copy
 				texture_blend = blend,
@@ -477,11 +477,11 @@ function steam.LoadMap(path)
 					uv_scale * (a[5] * pos.x + a[6] * pos.y + a[7] * pos.z + a[8]) / texdata.height
 				)
 			}
-			
+
 			if GRAPHICS then
-				model:AddVertex(vertex) 
+				model:AddVertex(vertex)
 			end
-			
+
 			if SERVER then
 				table.insert(model, vertex)
 			end
@@ -490,43 +490,43 @@ function steam.LoadMap(path)
 		local function bilerpvec(a, b, c, d, alpha1, alpha2)
 			return a:Copy():Lerp(alpha1, b):Lerp(alpha2, c:Copy():Lerp(alpha1, d))
 		end
-		
+
 		local function asdf(corners, start_corner, dims, x, y)
 			return bilerpvec(
-				corners[1 + (start_corner + 0) % 4], 
-				corners[1 + (start_corner + 1) % 4], 
-				corners[1 + (start_corner + 3) % 4], 
-				corners[1 + (start_corner + 2) % 4], 
-				(y - 1) / (dims - 1), 
+				corners[1 + (start_corner + 0) % 4],
+				corners[1 + (start_corner + 1) % 4],
+				corners[1 + (start_corner + 3) % 4],
+				corners[1 + (start_corner + 2) % 4],
+				(y - 1) / (dims - 1),
 				(x - 1) / (dims - 1)
 			)
 		end
-		
+
 		local function qwerty(dims, corners, start_corner, dispinfo, x, y)
 			local index = (y - 1) * dims + x
 			local data = dispinfo.vertex_info[index]
 			return asdf(corners, start_corner, dims, x, y) + (data.vertex * data.dist), data.alpha
 		end
-		
+
 		local meshes = {}
-		
-		for _, model in ipairs(header.models) do						
+
+		for _, model in ipairs(header.models) do
 			for i = 1, model.numfaces do
 				local face = header.faces[model.firstface + i]
-							
+
 				local texinfo = header.texinfos[1 + face.texinfo]
 				local texdata = texinfo and header.texdatas[1 + texinfo.texdata]
 				local texname = header.texdatastringdata[1 + texdata.nameStringTableID]
-												
+
 				if texname:lower():find("skyb", nil, true) then goto continue end
 				if texname:lower():find("water", nil, true) then goto continue end
-									
+
 				-- split the world up into sub models by texture
-				if not meshes[texname] then				
+				if not meshes[texname] then
 					local mesh = GRAPHICS and render.CreateMeshBuilder() or {}
-					
+
 					meshes[texname] = mesh
-					
+
 					if GRAPHICS then
 						mesh.material = render.CreateMaterial("model")
 						steam.LoadMaterial("materials/" .. texname .. ".vmt", mesh.material)
@@ -536,10 +536,10 @@ function steam.LoadMap(path)
 
 				do
 					local mesh = meshes[texname]
-					
+
 					if face.dispinfo < 0 then
 						local first, previous, current
-					
+
 						for j = 1, face.numedges do
 							local surfedge = header.surfedges[face.firstedge + j]
 							local edge = header.edges[1 + math.abs(surfedge)]
@@ -560,64 +560,64 @@ function steam.LoadMap(path)
 					else
 						local dispinfo = header.displacements[face.dispinfo + 1]
 						local size = 2 ^ dispinfo.power + 1
-						
+
 						local start_corner_dist = math.huge
 						local start_corner = 0
-						
+
 						local corners = {}
-						
+
 						for j = 1, 4 do
 							local face = header.faces[1 + dispinfo.MapFace]
 							local surfedge = header.surfedges[1 + face.firstedge + (j - 1)]
 							local edge = header.edges[1 + math.abs(surfedge)]
 							local vertex = edge[1 + (surfedge < 0 and 1 or 0)]
-						
+
 							local corner = header.vertices[1 + vertex]
 							local cough = corner:Distance(dispinfo.startPosition)
-								
+
 							if cough < start_corner_dist then
 								start_corner_dist = cough
 								start_corner = j - 1
 							end
-							
+
 							corners[j] = corner
 						end
 
 						local dims = 2 ^ dispinfo.power + 1
-										
+
 						for x = 1, dims - 1 do
 							for y = 1, dims - 1 do
 								add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y + 1))
 								add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y))
 								add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y + 1))
-								
+
 								add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y))
 								add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y))
 								add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y + 1))
 							end
 						end
-						
+
 						mesh.displacement = true
 					end
 				end
-				
+
 				::continue::
 				tasks.ReportProgress("building meshes", model.numfaces)
 				tasks.Wait()
 			end
-			
+
 			-- only world needed
-			break 
+			break
 		end
-		
+
 	end
-	
-	if GRAPHICS then			
+
+	if GRAPHICS then
 		for i, mesh in ipairs(models) do
 			mesh:BuildNormals(thread)
 			tasks.ReportProgress("generating normals", #models)
 			tasks.Wait()
-		end 		
+		end
 
 		for i, mesh in ipairs(models) do
 			if mesh.displacement then
@@ -625,8 +625,8 @@ function steam.LoadMap(path)
 			end
 			tasks.Report("smoothing displacements", #models)
 			tasks.Wait()
-		end 
-					
+		end
+
 		for i, mesh in ipairs(models) do
 			mesh:BuildBoundingBox()
 			mesh:Upload(true)
@@ -634,65 +634,65 @@ function steam.LoadMap(path)
 			tasks.Wait()
 		end
 	end
-	
+
 	local physics_meshes = {}
-	
+
 	local count = #models
 
-	for i_, model in ipairs(models) do	
+	for i_, model in ipairs(models) do
 		local vertices_tbl = GRAPHICS and model:GetVertices() or model
 		local vertices_count = #vertices_tbl
-		
+
 		local triangles = ffi.new("unsigned int[?]", vertices_count)
 		for i = 0, vertices_count - 1 do triangles[i] = i end
-		
+
 		local vertices = ffi.new("float[?]", vertices_count * 3)
-		
+
 		local i = 0
-		
+
 		--FIX ME
 		local _, huh = next(vertices_tbl)
 		if type(huh.pos) == "cdata" then
-			for j, data in ipairs(vertices_tbl) do 
-				vertices[i] = data.pos.x i = i + 1		
-				vertices[i] = data.pos.y i = i + 1		
-				vertices[i] = data.pos.z i = i + 1		
-			end	
+			for j, data in ipairs(vertices_tbl) do
+				vertices[i] = data.pos.x i = i + 1
+				vertices[i] = data.pos.y i = i + 1
+				vertices[i] = data.pos.z i = i + 1
+			end
 		else
-			for j, data in ipairs(vertices_tbl) do 
-				vertices[i] = data.pos[1] i = i + 1		
-				vertices[i] = data.pos[2] i = i + 1		
-				vertices[i] = data.pos[3] i = i + 1		
-			end	
+			for j, data in ipairs(vertices_tbl) do
+				vertices[i] = data.pos[1] i = i + 1
+				vertices[i] = data.pos[2] i = i + 1
+				vertices[i] = data.pos[3] i = i + 1
+			end
 		end
-		
-		local mesh = {	
+
+		local mesh = {
 			triangles = {
-				count = vertices_count / 3, 
-				pointer = triangles, 
-				stride = ffi.sizeof("unsigned int") * 3, 
-			},					
+				count = vertices_count / 3,
+				pointer = triangles,
+				stride = ffi.sizeof("unsigned int") * 3,
+			},
 			vertices = {
-				count = vertices_count,  
-				pointer = vertices, 
+				count = vertices_count,
+				pointer = vertices,
 				stride = ffi.sizeof("float") * 3,
 			},
 		}
-		
+
 		physics_meshes[i_] = mesh
 
 		tasks.Wait()
 		tasks.ReportProgress("building physics meshes", count)
 	end
-	
+
 	if GRAPHICS then
 		for i, mesh in ipairs(models) do
 			mesh:UnreferenceVertices()
 		end
 	end
-	
+
 	local func = steam.bsp_cache[path]
-	
+
 	steam.bsp_cache[path] = {
 		render_meshes = models,
 		entities = header.entities,
@@ -704,56 +704,56 @@ function steam.LoadMap(path)
 end
 
 function steam.SpawnMapEntities(path, parent)
-	path = R(path)	
+	path = R(path)
 	local data = steam.bsp_cache[path]
-	
+
 	local thread = tasks.CreateTask()
 	thread.debug = true
-	
+
 	logn("spawning map entities: ", path)
 
 	function thread:OnStart()
-		
+
 		for k,v in ipairs(parent:GetChildrenList()) do
 			if v.spawned_from_bsp then
 				v:Remove()
 			end
 		end
 
-		if GRAPHICS then			
+		if GRAPHICS then
 			parent:RemoveMeshes()
-			
+
 			for i, model in ipairs(data.render_meshes) do
 				parent:AddMesh(model)
 			end
 		end
-		
+
 		local count = table.count(data.entities)
 		for i, info in pairs(data.entities) do
 			if GRAPHICS then
 				if info.classname and info.classname:find("light_environment") then
-					
+
 					local p, y = info.pitch, info.angles.y
 					--parent.world_params:SetSunAngles(Deg3(p or 0, y+180, 0))
-					
+
 					--info._light.a = 1
 					--parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b))
 					--parent.world_params:SetSunIntensity(1)
-										
-				elseif info.classname:lower():find("light") and info._light then		
+
+				elseif info.classname:lower():find("light") and info._light then
 					local ent = entities.CreateEntity("light", parent)
 					ent:SetName(info.classname .. "_" .. i)
 					ent:SetPosition(info.origin * 0.0254)
 					ent:SetHideFromEditor(true)
-					
+
 					ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1))
 					ent:SetSize(math.max(info._light.a, 25))
 					ent:SetIntensity(math.clamp(info._light.a/9, 0.5, 3))
-					
+
 					if info._zero_percent_distance then
 						ent:SetSize(ent:GetSize() + info._zero_percent_distance*0.02)
 					end
-					
+
 					if ent:GetPosition():Distance(render.camera_3d:GetPosition()) < 1 then table.print(info) end
 					ent.spawned_from_bsp = true
 				elseif info.classname == "env_fog_controller" then
@@ -762,8 +762,8 @@ function steam.SpawnMapEntities(path, parent)
 					--parent.world_params:SetFogEnd(info.fogend * scale)
 				end
 			end
-		
-			if info.origin and info.angles and info.model and not info.classname:lower():find("npc") then	
+
+			if info.origin and info.angles and info.model and not info.classname:lower():find("npc") then
 				if vfs.IsFile(info.model) then
 					local ent = entities.CreateEntity("visual", parent)
 					ent:SetName(info.classname .. "_" .. i)
@@ -777,18 +777,18 @@ function steam.SpawnMapEntities(path, parent)
 			end
 			tasks.ReportProgress("spawning entities", count)
 			tasks.Wait()
-		end	
+		end
 	end
-	
-	thread:Start() 
+
+	thread:Start()
 end
 
 
-for k,v in pairs(entities.GetAll()) do 
-	if v:HasComponent("model") then 
+for k,v in pairs(entities.GetAll()) do
+	if v:HasComponent("model") then
 		local mesh = v.model.sub_models[1]
 		if mesh and mesh.bump2 then
-			print(mesh.bump2) 
+			print(mesh.bump2)
 		end
-	end 
+	end
 end

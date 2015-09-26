@@ -12,29 +12,29 @@ fb:SetTexture(1, tex)
 
 fb:WriteThese(1)
 
-local brush = Texture(128, 128):Fill(function(x, y) 
+local brush = Texture(128, 128):Fill(function(x, y)
 	x = x / 128
 	y = y / 128
-	
+
 	x = x - 1
 	y = y - 1.5
-	
+
 	x = x * math.pi
 	y = y * math.pi
-		
+
 	local a = math.sin(x) * math.cos(y)
-	
+
 	a = a ^ 32
-		
+
 	return 255, 255, 255, a * 128
 end)
 
-local size = 16 
-   
+local size = 16
+
 event.CreateTimer("fb_update", 0, 0, function()
 	fb:Begin()
-	render.EnableDepth(false)	
-	render.SetBlendMode("alpha")	
+	render.EnableDepth(false)
+	render.SetBlendMode("alpha")
 		if input.IsMouseDown("button_1") then
 			surface.SetTexture(brush)
 			surface.SetColor(1, 1, 1, 1)
@@ -58,5 +58,5 @@ end)
 event.AddListener("Draw2D", "fb", function()
 	surface.SetTexture(fb:GetTexture(1))
 	surface.SetColor(1,1,1,1)
-	surface.DrawRect(0, 0, 512, 512) 
-end)   
+	surface.DrawRect(0, 0, 512, 512)
+end)

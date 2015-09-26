@@ -72,7 +72,7 @@ end
 function _M.clear_builtin_defs(state)
 	local p = io.popen(builtin_defs_cmd)
 	local undefs = {}
-	while true do 
+	while true do
 		local line = p:read('*l')
 		if line then
 			local tmp,cnt = line:gsub('^#define%s+([_%w]+)%s+.*', '%1')

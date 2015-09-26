@@ -33,22 +33,22 @@ function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
 	checkx(shader, "shader")
 	--check(vertices, "cdata", "table")
 	--check(indices, "cdata", "table", "number", "nil")
-	
-	local vertex_attributes = shader:GetVertexAttributes() 
-	
+
+	local vertex_attributes = shader:GetVertexAttributes()
+
 	local self = prototype.CreateObject(META)
 	self:SetMode(self:GetMode())
 	self.vertices_id = gl.GenBuffer()
 	self.indices_id = gl.GenBuffer()
 	self.vao_id = gl.GenVertexArray()
 	self.vertex_attributes = vertex_attributes
-	
+
 	if vertices then
 		self:UpdateBuffer(shader:CreateBuffersFromTable(vertices, indices, is_valid_table))
 	end
-	
+
 	return self
-end 
+end
 
 function META:OnRemove()
 	gl.DeleteBuffers(1, ffi.new("GLuint[1]", self.vertices_id))
@@ -60,11 +60,11 @@ function META:Draw(count)
 	if render.current_shader_override then
 		render.current_shader_override:Bind()
 	elseif self.Shader then
-		self.Shader:Bind()	
+		self.Shader:Bind()
 	end
-	
+
 	render.BindVertexArray(self.vao_id)
-	--render.BindArrayBuffer(self.vertices_id)	
+	--render.BindArrayBuffer(self.vertices_id)
 	gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
 	gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_INT", nil)
 end
@@ -84,40 +84,40 @@ end
 
 function META:SetVertices(vertices)
 	self.Vertices = vertices
-	
+
 	gl.BindBuffer("GL_ARRAY_BUFFER", self.vertices_id)
 	gl.BufferData("GL_ARRAY_BUFFER", vertices:GetSize(), vertices:GetPointer(), "GL_STATIC_DRAW")
 	gl.BindBuffer("GL_ARRAY_BUFFER", 0)
-	
+
 	setup_vertex_array(self)
 end
 
 function META:SetIndices(indices)
 	self.Indices = indices
-	
+
 	self.indices_length = indices:GetLength() -- needed for drawing
-	
+
 	gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
 	gl.BufferData("GL_ELEMENT_ARRAY_BUFFER", indices:GetSize(), indices:GetPointer(), "GL_STATIC_DRAW")
 	gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", 0)
-	
+
 	setup_vertex_array(self)
 end
 
 function META:UpdateBuffer(vertices, indices)
 	vertices = vertices or self.Vertices
 	indices = indices or self.Indices
-	
+
 	if vertices then
 		self:SetVertices(vertices)
 	end
-	
-	if indices and self.UpdateIndices then		
+
+	if indices and self.UpdateIndices then
 		self:SetIndices(indices)
 	end
 end
 
-function META:UnreferenceMesh()	
+function META:UnreferenceMesh()
 	self.Vertices = nil
 	self.Indices = nil
 	collectgarbage("step")

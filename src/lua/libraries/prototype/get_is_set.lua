@@ -22,26 +22,26 @@ function prototype.DelegateProperties(meta, from, var_name)
 	for _, info in pairs(prototype.GetStorableVariables(from)) do
 		if not meta[info.var_name] then
 			 prototype.SetupProperty({
-				meta = meta, 
-				var_name = info.var_name, 
+				meta = meta,
+				var_name = info.var_name,
 				default = info.default,
 				set_name = info.set_name,
 				get_name = info.get_name,
 			})
-			
+
 			meta[info.set_name] = function(self, var)
 				self[info.var_name] = var
-				
+
 				if self[var_name]:IsValid() then
 					self[var_name][info.set_name](self[var_name], var)
 				end
 			end
-		
-			meta[info.get_name] = function(self)			
+
+			meta[info.get_name] = function(self)
 				if self[var_name]:IsValid() then
 					return self[var_name][info.get_name](self[var_name])
 				end
-				
+
 				return self[info.var_name]
 			end
 		end
@@ -59,8 +59,8 @@ function prototype.SetupProperty(info)
 	local set_name = info.set_name
 	local get_name = info.get_name
 	local callback = info.callback
-		
-	if type(default) == "number" then	
+
+	if type(default) == "number" then
 		if callback then
 			meta[set_name] = meta[set_name] or function(self, var) self[name] = tonumber(var) or default self[callback](self) end
 		else
@@ -87,11 +87,11 @@ function prototype.SetupProperty(info)
 
 	if __store then
 		info.type = typex(default)
-		
+
 		meta.storable_variables = meta.storable_variables or {}
 		table.insert(meta.storable_variables, info)
 	end
-	
+
 	do
 		if pcall(has_copy, info.default) then
 			info.copy = function()
@@ -108,30 +108,30 @@ function prototype.SetupProperty(info)
 				end
 			end
 		end
-		
+
 		meta.prototype_variables = meta.prototype_variables or {}
 		meta.prototype_variables[info.var_name] = info
 	end
-	
+
 	return info
 end
 
 local function add(meta, name, default, extra_info, get)
 	local info = {
-		meta = meta, 
+		meta = meta,
 		default = default,
-		var_name = name, 
+		var_name = name,
 		set_name = "Set" .. name,
 		get_name = get .. name,
 	}
-	
+
 	if extra_info then
 		if table.isarray(extra_info) and #extra_info > 1 then
 			extra_info = {enums = extra_info}
 		end
 		table.merge(info, extra_info)
 	end
-	
+
 	return prototype.SetupProperty(info)
 end
 
@@ -153,7 +153,7 @@ end
 
 function prototype.Delegate(meta, key, func_name, func_name2)
 	if not func_name2 then func_name2 = func_name end
-	
+
 	meta[func_name] = function(self, ...)
 		return self[key][func_name2](self[key], ...)
 	end

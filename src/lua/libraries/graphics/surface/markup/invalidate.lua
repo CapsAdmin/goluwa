@@ -18,15 +18,15 @@ local function prepare_chunks(self)
 	-- this is needed when invalidating the chunks table again
 	-- anything that need to add more chunks need to store the
 	-- old chunk as old_chunk key
-	
-	
+
+
 	local out = {}
 	local found = {}
-	
+
 	local last_type
 	local offset = 0
 	local last_char_class
-	
+
 	for i, chunk in ipairs(self.chunks) do
 		if chunk.internal or chunk.type == "string" and chunk.val == "" then goto continue_ end
 
@@ -34,7 +34,7 @@ local function prepare_chunks(self)
 		--	print(last_type)
 		else
 			local old = chunk.old_chunk
-			
+
 
 			if old then
 				if not found[old] then
@@ -44,15 +44,15 @@ local function prepare_chunks(self)
 			else
 				table.insert(out, chunk)
 			end
-			
+
 			offset = 0
 		end
-			
+
 		last_type = chunk.type
 
 		::continue_::
-	end 
-	
+	end
+
 	table.insert(out, 1, {type = "font", val = "default", internal = true})
 	table.insert(out, 1, {type = "color", val = Color(1, 1, 1, 1), internal = true})
 	for i = 1, 3 do table.insert(out, {type = "string", val = "", internal = true}) end
@@ -62,12 +62,12 @@ end
 
 local function split_by_space_and_punctation(self, chunks)
 	-- solve white space and punctation
-	
+
 	local out = {}
-			
-	for i, chunk in ipairs(chunks) do		
+
+	for i, chunk in ipairs(chunks) do
 		if chunk.type == "string" and chunk.val:find("%s") and not chunk.internal then
-		
+
 			if self.LineWrap then
 				local str = {}
 
@@ -95,7 +95,7 @@ local function split_by_space_and_punctation(self, chunks)
 				if #str ~= 0 then
 					table.insert(out, {type = "string", val = table.concat(str)})
 				end
-			else	
+			else
 				if chunk.val:find("\n", nil, true) then
 					for line in chunk.val:gmatch("(.-)\n") do
 						table.insert(out, {type = "string", val = line})
@@ -114,15 +114,15 @@ local function split_by_space_and_punctation(self, chunks)
 			table.insert(out, chunk)
 		end
 	end
-	
+
 	return out
 end
 
-local function get_size_info(self, chunks)	
+local function get_size_info(self, chunks)
 	-- get the size of each object
 	for i, chunk in ipairs(chunks) do
-		
-		
+
+
 		if chunk.type == "font" then
 			-- set the font so GetTextSize will be correct
 			set_font(self, chunk.val)
@@ -159,14 +159,14 @@ local function get_size_info(self, chunks)
 		chunk.w = chunk.w or 0
 		chunk.h = chunk.h or 0
 	end
-	
+
 	return chunks
 end
 
 
 local function solve_max_width(self, chunks)
 	local out = {}
-	
+
 	-- solve max width
 	local current_x = 0
 	local current_y = 0
@@ -193,7 +193,7 @@ local function solve_max_width(self, chunks)
 
 			-- is this a new line or are we going to exceed the maximum width?
 			if newline or (self.LineWrap and current_x + chunk.w >= self.MaxWidth) then
-			
+
 				-- does the string's width exceed the max width?
 				-- if it does we need to split the string up
 				if self.LineWrap and chunk.type == "string" and chunk.w > self.MaxWidth then
@@ -229,10 +229,10 @@ local function solve_max_width(self, chunks)
 						table.insert(out, {type = "string", val = table.concat(str, ""), x = 0, y = current_y, w = current_x, h = chunk_height, old_chunk = chunk.old_chunk or chunk})
 					end
 				end
-			
+
 				-- reset the width
 				current_x = 0
-				
+
 				-- advance y with the height of the tallest chunk
 				current_y = current_y + chunk_height
 
@@ -241,10 +241,10 @@ local function solve_max_width(self, chunks)
 
 			chunk.x = current_x
 			chunk.y = current_y
-	
-			current_x = current_x + chunk.w			
+
+			current_x = current_x + chunk.w
 		end
-	
+
 		if not split then
 			-- i don't know why i need this
 			-- if i don't have this the chunk table will
@@ -252,12 +252,12 @@ local function solve_max_width(self, chunks)
 			--chunk.old_chunk = chunk
 
 			table.insert(out, chunk)
-		end	
+		end
 	end
-	
+
 	return out
 end
-	
+
 local function store_tag_info(self, chunks)
 	local line = 0
 	local width = 0
@@ -317,7 +317,7 @@ local function store_tag_info(self, chunks)
 	local chunk_line = {}
 	local line_height = 0
 	local line_width = 0
-	
+
 	self.chars = {}
 	self.lines = {}
 
@@ -326,8 +326,8 @@ local function store_tag_info(self, chunks)
 	local char_line_str = {}
 
 	for i, chunk in ipairs(chunks) do
-		
-		
+
+
 		-- this is for expressions to be use d like line.i+time()
 		chunk.exp_env = {
 			i = chunk.real_i,
@@ -373,7 +373,7 @@ local function store_tag_info(self, chunks)
 				chunk.line_height = line_height
 				chunk.line_width = line_width
 			end
-			
+
 			table.clear(chunk_line)
 
 	--		log(chunk.y - chunks[i+1].y, "\n")
@@ -381,7 +381,7 @@ local function store_tag_info(self, chunks)
 			line_height = chunk.h
 			line_width = chunk.w
 		end
-		
+
 		chunk.line = line
 		chunk.build_chars = build_chars
 		chunk.i = i
@@ -397,7 +397,7 @@ local function store_tag_info(self, chunks)
 				local width = 0
 				local height = 0
 				local last_y
-						
+
 				local tag_type = chunk.val.type
 				local start_chunk = chunk
 				local line = {}
@@ -409,26 +409,26 @@ local function store_tag_info(self, chunks)
 					local chunk = chunks[i]
 
 					if chunk then
-							
+
 						if not last_y then last_y = chunk.y end
-							
+
 						current_width = current_width + chunk.w
 
 						if chunk.h > current_height then
 							current_height = chunk.h
 						end
-						
+
 						if last_y ~= chunk.y then
 							if current_width > width then
 								width = current_width
 							end
-							
+
 							height = height + current_height
 							current_height = 0
 							current_width = 0
 							last_y = chunk.y
 						end
-						
+
 						chunk.i = i
 
 						if chunk.type == "tag_stopper" then
@@ -451,21 +451,21 @@ local function store_tag_info(self, chunks)
 				end
 
 				height = height + current_height
-				
+
 				if current_width > width then
 					width = current_width
 				end
-				
+
 				local stop_chunk = stops[start_found] or line[#line]
-				
-				if stop_chunk then						
+
+				if stop_chunk then
 					stop_chunk.chunks_inbetween = line
 					stop_chunk.start_chunk = chunk
 					stop_chunk.tag_stop_draw = true
-					
+
 					local center_x = chunk.x + width / 2
 					local center_y = chunk.y + height / 2
-					
+
 					chunk.tag_start_draw = true
 					chunk.tag_center_x = center_x
 					chunk.tag_center_y = center_y
@@ -481,13 +481,13 @@ local function store_tag_info(self, chunks)
 						chunk.tag_width = width
 						chunk.chunks_inbetween = line
 					end
-					
+
 				end
 			else
 				chunk.tag_start_draw = true
 			end
 		end
-		
+
 		do
 			chunk.chars = nil
 
@@ -527,7 +527,7 @@ local function store_tag_info(self, chunks)
 				char_line_pos = 0
 
 				table.insert(self.lines, table.concat(char_line_str, ""))
-				
+
 				table.clear(char_line_str)
 			elseif chunk.w > 0 and chunk.h > 0 then
 				table.insert(self.chars, {
@@ -538,14 +538,14 @@ local function store_tag_info(self, chunks)
 						char = " ",
 						w = chunk.w,
 						h = chunk.h,
-						
+
 						x = chunk.x,
 						y = chunk.y,
-						
+
 						top = chunk.y + chunk.h,
 						right = chunk.x + chunk.w,
 					},
-					y = char_line, 
+					y = char_line,
 					x = char_line_pos,
 					unicode = 0,
 					length = 0,
@@ -571,20 +571,20 @@ local function store_tag_info(self, chunks)
 		chunk.line_height = line_height
 		chunk.line_width = line_width
 	end
-	
+
 	-- add the last line since there's probably not a newline at the very end
 	table.insert(self.lines, table.concat(char_line_str, ""))
 
 	self.text = table.concat(self.lines, "\n")
 	--timer.Measure("chars build")
-	
+
 --	log(line_height, "\n")
 
 	self.line_count = line
 	self.width = width
 	self.height = height
-	
-		
+
+
 	if self.height < self.MinimumHeight then
 		self.height = self.MinimumHeight
 	end
@@ -595,13 +595,13 @@ local function align_y_axis(self, chunks)
 		-- mouse testing
 		chunk.y = chunk.y + chunk.line_height - chunk.h
 
-		if chunk.chars then 
+		if chunk.chars then
 			for i, char in ipairs(chunk.chars) do
 				char.top = char.y + chunk.line_height
-				char.h = chunk.line_height 
+				char.h = chunk.line_height
 			end
 		end
-		
+
 		chunk.right = chunk.x + chunk.w
 		chunk.top = chunk.y
 	end
@@ -612,22 +612,22 @@ function META:SuppressLayout(b)
 	self.suppress_layout = b
 end
 
-function META:Invalidate()		
+function META:Invalidate()
 	if self.suppress_layout then return end
 	local chunks = prepare_chunks(self)
 	chunks = split_by_space_and_punctation(self, chunks)
-	chunks = get_size_info(self, chunks)		
-	
+	chunks = get_size_info(self, chunks)
+
 	chunks = solve_max_width(self, chunks)
-	
+
 	if self.LineWrap then
 		chunks = solve_max_width(self, chunks)
 	end
-	
+
 	store_tag_info(self, chunks)
 
 	align_y_axis(self, chunks)
-	
+
 	self.chunks = chunks
 
 	-- preserve caret positions
@@ -644,7 +644,7 @@ function META:Invalidate()
 	if self.select_stop then
 		self:SelectStop(self.select_stop.x, self.select_stop.y)
 	end
-	
+
 	if self.LightMode or self.SuperLightMode then
 		self.light_mode_obj = self:CompileString()
 	end
@@ -671,11 +671,11 @@ function META:CompileString()
 					table.insert(strings, {font = chunk.font, data = data})
 				end
 			end
-			
+
 			table.insert(data, Vec2(chunk.x, chunk.y))
 			table.insert(data, chunk.color)
 			table.insert(data, chunk.val or "\n")
-			
+
 			if chunk.font then
 				last_font = chunk.font
 			end
@@ -687,13 +687,13 @@ function META:CompileString()
 	end
 
 	local obj = {}
-	
+
 	function obj:Draw(max_w)
 		for k,v in ipairs(strings) do
 			v:Draw(0, 0, max_w)
 		end
 	end
-	
+
 	return obj
 end
 

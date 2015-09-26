@@ -21,20 +21,20 @@ local words = {}
 
 for _, path in ipairs(vfs.Search("lua/", ".lua")) do
 	for i,v in ipairs(blacklist) do
-		if path:find(v) then 
+		if path:find(v) then
 			goto continue
 		end
 	end
-	
+
 	local str = vfs.Read(path)
-	
+
 	if str then
 		local lines = str:count("\n")
 		data.total_lines = data.total_lines + lines
 		str = str:gsub("%s+", " ")
 		data.total_words = data.total_words + str:count(" ")
 		data.total_chars = data.total_chars + #str
-		
+
 		for i, word in ipairs(str:explode(" ")) do
 			words[word] = (words[word] or 0) + 1
 		end
@@ -42,7 +42,7 @@ for _, path in ipairs(vfs.Search("lua/", ".lua")) do
 	else
 		print(path)
 	end
-	
+
 	::continue::
 end
 

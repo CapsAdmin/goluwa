@@ -72,8 +72,8 @@ function LL_P (...)
     if LL_ispattern(v) then
         return v
     elseif typ == "function" then
-        return 
-            --[[DBG]] true and 
+        return
+            --[[DBG]] true and
             LL.Cmt("", v)
     elseif typ == "string" then
         local success, index = validate(v)
@@ -81,8 +81,8 @@ function LL_P (...)
             charset_error(index, cs.name)
         end
         if v == "" then return truept end
-        return 
-            --[[DBG]] true and 
+        return
+            --[[DBG]] true and
             Builder.sequence(map(makechar, split_int(v)))
     elseif typ == "table" then
         -- private copy because tables are mutable.
@@ -231,7 +231,7 @@ function choice (a, b, ...)
     end
 end
 function LL.__add (a,b)
-    return 
+    return
         --[[DBG]] true and
         choice(LL_P(a), LL_P(b))
 end
@@ -255,7 +255,7 @@ end
 Builder.sequence = sequence
 
 function LL.__mul (a, b)
-    return 
+    return
         --[[DBG]] true and
         sequence(LL_P(a), LL_P(b))
 end

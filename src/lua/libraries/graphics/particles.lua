@@ -47,85 +47,85 @@ prototype.GetSet(EMITTER, "ScreenRect", Rect())
 
 function ParticleEmitter(max)
 	max = max or 1000
-	
+
 	local self = prototype.CreateObject(EMITTER)
-	
+
 	self.max = max
 	self.particles = {}
 	self.last_emit = 0
 	self.next_think = 0
 	self.poly = surface.CreatePoly(max)
-		
+
 	return self
 end
- 
+
 function EMITTER:Update(dt)
 	local time = system.GetElapsedTime()
-	
+
 	if self.Rate == 0 then
 		self:Emit()
 	elseif self.Rate ~= -1 then
-		if self.last_emit < time then 
+		if self.last_emit < time then
 			self:Emit()
 			self.last_emit = time + self.Rate
 		end
 	end
 
-	local remove_these = {} 
-	
+	local remove_these = {}
+
 	local center = Vec3(0,0,0)
-	
+
 	dt = dt * self.Speed
-	
+
 	local w, h = surface.GetSize()
 	local cull = not self.ScreenRect:IsZero()
-	
+
 	for i = 1, self.max do
 		local p = self.particles[i]
-		
+
 		if not p then break end
-		
+
 		if p.life_end < time or (not p.Jitter and p.life_mult < 0.001) then
 			table.insert(remove_these, i)
 		else
-			
+
 			if self.CenterAttractionForce ~= 0 and self.attraction_center then
 				p.Velocity.x = p.Velocity.x + (self.attraction_center.x - p.Position.x) * self.CenterAttractionForce
 				p.Velocity.y = p.Velocity.y + (self.attraction_center.y - p.Position.y) * self.CenterAttractionForce
 				p.Velocity.z = p.Velocity.z + (self.attraction_center.z - p.Position.z) * self.CenterAttractionForce
-			end		
-			
+			end
+
 			if self.PosAttractionForce ~= 0 then
 				p.Velocity.x = p.Velocity.x + (self.Position.x - p.Position.x) * self.PosAttractionForce
 				p.Velocity.y = p.Velocity.y + (self.Position.y - p.Position.y) * self.PosAttractionForce
 				p.Velocity.z = p.Velocity.z + (self.Position.z - p.Position.z) * self.PosAttractionForce
 			end
-			
-		
+
+
 			-- velocity
-			if p.Velocity.x ~= 0 then			
+			if p.Velocity.x ~= 0 then
 				p.Position.x = p.Position.x + (p.Velocity.x * dt)
 				p.Velocity.x = p.Velocity.x * p.Drag
 			end
-			
+
 			if p.Velocity.y ~= 0 then
 				p.Position.y = p.Position.y + (p.Velocity.y * dt)
 				p.Velocity.y = p.Velocity.y * p.Drag
 			end
-			
+
 			if not self.Mode2D and p.Velocity.z ~= 0 then
 				p.Position.z = p.Position.z + (p.Velocity.z * dt)
 				p.Velocity.z = p.Velocity.z * p.Drag
 			end
-		
+
 			p.life_mult = clamp((p.life_end - time) / p.LifeTime, 0, 1)
-			
+
 			if self.CenterAttractionForce ~= 0 then
 				center = center + p.Position
 			end
-			
-			if cull then 
-				if 
+
+			if cull then
+				if
 					p.Position.x > self.ScreenRect.w or
 					p.Position.y > self.ScreenRect.h or
 					p.Position.x < self.ScreenRect.x or
@@ -135,49 +135,49 @@ function EMITTER:Update(dt)
 				end
 			end
 		end
-		
+
 	end
 	self.attraction_center = center / #self.particles
 
 	table.multiremove(self.particles, remove_these)
-end  
-  
+end
+
 function EMITTER:Draw()
 	render.SetBlendMode(self.Additive and "additive" or "alpha")
-	
+
 	if self.Texture:IsValid() then
 		surface.SetTexture(self.Texture)
 	else
 		surface.SetWhiteTexture()
 	end
-	
+
 	surface.SetColor(1,1,1,1)
-	
+
 	if self.Mode2D then
 		for i = 1, self.max do
 			local p = self.particles[i]
-			
+
 			if not p then break end
-		
+
 			local size = lerp(p.life_mult, p.EndSize, p.StartSize)
 			local alpha = lerp(p.life_mult, p.EndAlpha, p.StartAlpha)
 			local length_x = lerp(p.life_mult, p.EndLength.x, p.StartLength.x)
 			local length_y = lerp(p.life_mult, p.EndLength.y, p.StartLength.y)
 			local jitter = lerp(p.life_mult, p.EndJitter, p.StartJitter)
-			
+
 			if jitter ~= 0 then
 				size = size + randomf(-jitter, jitter)
 				alpha = alpha + randomf(-jitter, jitter)
 			end
-			
+
 			local w = size * p.Size.x
 			local h = size * p.Size.y
 			local a = 0
-			
-					
+
+
 			if not (length_x == 0 and length_y == 0) and self.Mode2D then
 				a = deg(p.Velocity:GetAngles().y)
-				
+
 				if length_x ~= 0 then
 					w = w * length_x
 				end
@@ -188,60 +188,60 @@ function EMITTER:Draw()
 			end
 
 			local ox, oy = w*0.5, h*0.5
-			
+
 			self.poly:SetColor(p.Color.r, p.Color.g, p.Color.b, p.Color.a * alpha)
-			
+
 			local x, y = p.Position:Unpack()
-			
+
 			if self.MoveResolution ~= 0 then
 				x = math.ceil(x * self.MoveResolution) / self.MoveResolution
 				y = math.ceil(y * self.MoveResolution) / self.MoveResolution
 			end
-			
+
 			self.poly:SetRect(
 				i,
-				x, 
-				y, 
-				w, 
+				x,
+				y,
+				w,
 				h,
 				p.Angle + a,
 				ox, oy
 			)
-			
+
 		end
-		
+
 		self.poly:Draw()
-	else	
-		-- 3d here	
+	else
+		-- 3d here
 	end
-end  
+end
 
 function EMITTER:GetParticles()
 	return self.particles
 end
- 
+
 PARTICLE.__index = PARTICLE
- 
+
 function EMITTER:AddParticle(...)
 	local p = setmetatable({}, PARTICLE) -- prototype.CreateObject(PARTICLE)
 	p:SetPosition(self:GetPosition():Copy())
-	p.life_mult = 1	
-	
+	p.life_mult = 1
+
 	p:SetLifeTime(1)
-	
+
 	if #self.particles >= self.max then
 		table.remove(self.particles, 1)
 	end
-	
+
 	table.insert(self.particles, p)
-	
+
 	return p
 end
-  
+
 function EMITTER:Emit(...)
 	for i = 1, self.EmitCount do
 		self:AddParticle(...)
-		
+
 		if self.OnEmit then
 			self:OnEmit(p, ...)
 		end

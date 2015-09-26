@@ -39,8 +39,8 @@ alignment tags
 		local path = table.random(icons)
 		tags = tags .. ("<texture=textures/silkicons/%s>%s"):format(path, i%16 == 0 and "\n" or "")
 	end
-	
-	self:AddString(tags, true) 
+
+	self:AddString(tags, true)
 
 	self:AddString([[<font=default><color=0.5,0.62,0.75,1>if<color=1,1,1,1> CLIENT<color=0.5,0.62,0.75,1> then
 if<color=1,1,1,1> window<color=0.5,0.62,0.75,1> and<color=0.75,0.75,0.62,1> #<color=1,1,1,1>window<color=0.75,0.75,0.62,1>.<color=1,1,1,1>GetSize<color=0.75,0.75,0.62,1>() ><color=0.5,0.75,0.5,1> 5<color=0.5,0.62,0.75,1> then<color=1,1,1,1>

@@ -12,12 +12,12 @@ function SKIN:Build()
 	local skin = {}
 
 	local S = self:GetScale()
-	
+
 	local ninepatch_size = 32
 	local ninepatch_corner_size = 4
 	local ninepatch_pixel_border = scale
-	
-	local text_size = 5*S 
+
+	local text_size = 5*S
 
 	local font = surface.CreateFont("default_gui_zsnes", {path = surface.default_font_path, size = 10, filtering = "nearest"})
 
@@ -31,7 +31,7 @@ function SKIN:Build()
 		scale = S,
 		--shade = "vec4(sin(uv.x*130)+cos(uv.y*50))*texture(self, uv).a;",
 		filtering = "nearest",
-	}) 
+	})
 
 	local texture = Texture("textures/gui/skins/zsnes.png")
 	--texture:SetMinFilter("nearest")
@@ -52,9 +52,9 @@ function SKIN:Build()
 
 	local function add(name, u,v, w,h, corner_size, color)
 		skin[name] = {
-			texture = texture, 
+			texture = texture,
 			texture_rect = Rect(u, v, w, h),
-			corner_size = corner_size, 
+			corner_size = corner_size,
 			color = color,
 			ninepatch = true,
 		}
@@ -62,7 +62,7 @@ function SKIN:Build()
 
 	local function add_simple(name, u,v, w,h, color, no_size)
 		skin[name] = {
-			texture = texture, 
+			texture = texture,
 			texture_rect = Rect(u, v, w, h),
 			color = color,
 		}
@@ -72,57 +72,57 @@ function SKIN:Build()
 	end
 
 	add("button_inactive", 480,0, 31,31, 4)
-	add("button_active", 480,96, 31,31, 4) 
+	add("button_active", 480,96, 31,31, 4)
 
-	add_simple("close_inactive", 32,452, 9,7) 
-	add_simple("close_active", 96,452, 9,7) 
+	add_simple("close_inactive", 32,452, 9,7)
+	add_simple("close_active", 96,452, 9,7)
 
-	add_simple("minimize_inactive", 131,452, 9,7) 
-	add_simple("minimize_active", 195,452, 9,7) 
+	add_simple("minimize_inactive", 131,452, 9,7)
+	add_simple("minimize_active", 195,452, 9,7)
 
-	add_simple("maximize_inactive", 225,484, 9,7) 
-	add_simple("maximize_active", 289,484, 9,7) 
+	add_simple("maximize_inactive", 225,484, 9,7)
+	add_simple("maximize_active", 289,484, 9,7)
 
-	add_simple("maximize2_inactive", 225,452, 9,7) 
-	add_simple("maximize2_active", 289,452, 9,7) 
+	add_simple("maximize2_inactive", 225,452, 9,7)
+	add_simple("maximize2_active", 289,452, 9,7)
 
-	add_simple("up_inactive", 464,224, 15,15) 
-	add_simple("up_active", 480,224, 15,15) 
+	add_simple("up_inactive", 464,224, 15,15)
+	add_simple("up_active", 480,224, 15,15)
 
-	add_simple("down_inactive", 464,256, 15,15) 
-	add_simple("down_active", 480,256, 15,15) 
+	add_simple("down_inactive", 464,256, 15,15)
+	add_simple("down_active", 480,256, 15,15)
 
-	add_simple("left_inactive", 464,208, 15,15) 
-	add_simple("left_active", 480,208, 15,15) 
+	add_simple("left_inactive", 464,208, 15,15)
+	add_simple("left_active", 480,208, 15,15)
 
-	add_simple("right_inactive", 464,240, 15,15) 
-	add_simple("right_active", 480,240, 15,15) 
+	add_simple("right_inactive", 464,240, 15,15)
+	add_simple("right_active", 480,240, 15,15)
 
-	add_simple("menu_right_arrow", 472,116, 4,7) 
-	add_simple("list_up_arrow", 385,114, 5,3) 
-	add_simple("list_down_arrow", 385,122, 5,3) 
+	add_simple("menu_right_arrow", 472,116, 4,7)
+	add_simple("list_up_arrow", 385,114, 5,3)
+	add_simple("list_down_arrow", 385,122, 5,3)
 
 	add_simple("check", 449,34, 7,7)
 	add_simple("uncheck", 465,34, 7,7)
 	add_simple("rad_check", 449,65, 7,7)
 	add_simple("rad_uncheck", 465,65, 7,7)
-	 
-	add_simple("+", 451,99, 5,5) 
+
+	add_simple("+", 451,99, 5,5)
 	add_simple("-", 467,99, 5,5)
 
-	add("scroll_vertical_track", 384,208, 15,127, 4) 
-	add("scroll_vertical_handle_inactive", 400,208, 15,127, 4) 
+	add("scroll_vertical_track", 384,208, 15,127, 4)
+	add("scroll_vertical_handle_inactive", 400,208, 15,127, 4)
 	add("scroll_vertical_handle_active", 432,208, 15,127, 4)
 
-	add("scroll_horizontal_track", 384,128, 127,15, 4) 
-	add("scroll_horizontal_handle_inactive", 384,144, 127,15, 4) 
-	add("scroll_horizontal_handle_active", 384,176, 127,15, 4) 
+	add("scroll_horizontal_track", 384,128, 127,15, 4)
+	add("scroll_horizontal_handle_inactive", 384,144, 127,15, 4)
+	add("scroll_horizontal_handle_active", 384,176, 127,15, 4)
 
-	add("button_rounded_active", 480,64, 31,31, 4) 
-	add("button_rounded_inactive", 480,64, 31,31, 4) 
+	add("button_rounded_active", 480,64, 31,31, 4)
+	add("button_rounded_inactive", 480,64, 31,31, 4)
 
-	add("tab_active", 1,384, 61,24, 8) 
-	add("tab_inactive", 128,384, 61,24, 16) 
+	add("tab_active", 1,384, 61,24, 8)
+	add("tab_inactive", 128,384, 61,24, 16)
 	add("tab_frame", 1,256+4, 127-2,127-4, 16)
 
 	add("menu_select", 130,258, 123,27, 16)
@@ -153,7 +153,7 @@ function SKIN:Build()
 	skin.background = Color(0.5, 0.5, 0.5)
 
 	skin.icons = include("lua/libraries/graphics/gui/icons.lua")
-	
+
 	return skin
 end
 

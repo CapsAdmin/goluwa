@@ -3,7 +3,7 @@
 
 local require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
-pcall, type, table, string = 
+pcall, type, table, string =
 require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
 pcall, type, table, string
@@ -55,9 +55,9 @@ IOC.DIRSHIFT  = IOC.SIZESHIFT + IOC.SIZEBITS
 
 local function ioc(dir, ch, nr, size)
   if type(ch) == "string" then ch = ch:byte() end
-  return bor(lshift(dir, IOC.DIRSHIFT), 
-	     lshift(ch, IOC.TYPESHIFT), 
-	     lshift(nr, IOC.NRSHIFT), 
+  return bor(lshift(dir, IOC.DIRSHIFT),
+	     lshift(ch, IOC.TYPESHIFT),
+	     lshift(nr, IOC.NRSHIFT),
 	     lshift(size, IOC.SIZESHIFT))
 end
 
@@ -269,7 +269,7 @@ local ioctl = strflag {
 
 -- allow user defined ioctls
   _IO = _IO,
-  _IOR = _IOR, 
+  _IOR = _IOR,
   _IOW = _IOW,
   _IOWR = _IOWR,
 }

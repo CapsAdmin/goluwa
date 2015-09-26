@@ -632,7 +632,7 @@ local enums = {
 	ENET_PEER_STATE_CONNECTED = 5,
 	ENET_PEER_STATE_DISCONNECT_LATER = 6,
 	ENET_PEER_STATE_DISCONNECTING = 7,
-	ENET_PEER_STATE_ACKNOWLEDGING_DISCONNECT = 8, 
+	ENET_PEER_STATE_ACKNOWLEDGING_DISCONNECT = 8,
 	ENET_PEER_STATE_ZOMBIE = 9,
 
 	ENET_HOST_RECEIVE_BUFFER_SIZE = 256 * 1024,
@@ -667,26 +667,26 @@ local enums = {
 	ENET_EVENT_TYPE_RECEIVE = 3,
 }
 
-ffi.cdef(header) 
- 
+ffi.cdef(header)
+
 local lib = assert(ffi.load("enet"))
- 
+
 local enet = {
 	lib = lib,
 	e = enums,
 }
 
 local prefix = "enet_"
- 
+
 for line in header:gmatch("(.-)\n") do
 	if not line:find("typedef") and not line:find("=")  then
 		local name = line:match(" "..prefix.."(.-)%(")
-		if name then  
+		if name then
 			name = name:trim()
 			local return_type = line:match("^(.-)%s"..prefix)
 			local friendly_name = name -- name:gsub("_", "")
 			local ok, func = pcall(function() return lib[prefix .. name] end)
-			
+
 			if ok then
 				enet[friendly_name] = func
 			else
@@ -697,5 +697,5 @@ for line in header:gmatch("(.-)\n") do
 end
 
 enet.lib = lib
- 
-return enet   
+
+return enet

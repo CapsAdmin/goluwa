@@ -5,7 +5,7 @@ love.keyboard = {}
 do
 	local DELAY = 0.5
 	local INTERVAL = 0.1
-	
+
 	function love.keyboard.getKeyRepeat() -- partial
 		return DELAY, INTERVAL
 	end
@@ -61,7 +61,7 @@ local CURRENT_CHAR
 
 event.AddListener("KeyInput","lovemu_keyboard",function(key, press)
 	key = keyboard_map[key] or key
-	
+
 	if press then
 		if love.keypressed then
 			love.keypressed(key, CURRENT_CHAR) --partial
@@ -71,11 +71,11 @@ event.AddListener("KeyInput","lovemu_keyboard",function(key, press)
 			love.keyreleased(key)
 		end
 	end
-end) 
+end)
 
 event.AddListener("CharInput","lovemu_keyboard",function(char)
 	CURRENT_CHAR = char
 	if love.textinput then
 		love.textinput(char) --partial
 	end
-end) 
+end)

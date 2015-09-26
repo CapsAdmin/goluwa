@@ -8,39 +8,39 @@ local bank = {}
 
 for i, sample in ipairs(sf2.pdta.shdr) do
 	if sample.sample_name == "EOS" then break end
-		
+
 	local size = (sample.stop - sample.start)*2
 	local buffer = ffi.new("uint16_t[?]", size)
 	ffi.copy(buffer, sf2.sdta.data + sample.start, size)
-	
+
 	local albuffer = audio.CreateBuffer()
 	albuffer:SetFormat(al.e.AL_FORMAT_MONO16)
 	albuffer:SetSampleRate(sample.sample_rate)
 	albuffer:SetData(buffer, size)
 	albuffer.buffer = buffer
-	
+
 	local a, b = sample.start_loop - sample.start, sample.stop_loop - sample.start
-	albuffer:SetLoopPoints(a, b) 
-		
+	albuffer:SetLoopPoints(a, b)
+
 	local inst = sf2.pdta.phdr[i]
 	if inst then
 		bank[inst.preset] = sample
 	end
-	
+
 	sample.albuffer = albuffer
 end
 
 local function create_source(index)
 	local sample = bank[index] or sf2.pdta.shdr[1]
-		
+
 	local source = audio.CreateSource()
 	source:SetBuffer(sample.albuffer)
 	source:SetLooping(true)
 	source.sample_info = sample
-	
+
 	source:Play()
 	source:SetGain(0)
-		
+
 	return source
 end
 
@@ -55,40 +55,40 @@ event.AddListener("Update", "asdf", function(dt)
 			track.volume = 1
 			track.init = true
 		end
-		
+
 		for i = track.start_i, #track.events do
 			local v = track.events[i]
-			
+
 			if v.time then
 				local time = (tonumber(v.time) / data.time_division) / 2.5
 				if time > clock then break end
-				
+
 				if v.subtype == "program_change" then
 					track.program = v.program_number-1
 					track.start_i = 1
 					track.volume = 1
 				elseif v.subtype == "note_on" then
 					track.voices[v.note_number] = track.voices[v.note_number] or create_source(track.program)
-				
+
 					local sound = track.voices[v.note_number]
-				
+
 					if not sound:IsPlaying() then
 						sound:Play()
 					end
 					sound.last_event = v.subtype
-					
+
 					sound.pitch = 2 ^ (((sound.sample_info.original_pitch + v.note_number) - 24)/12) / 128
 
 					sound.gain = (v.velocity/127) * 0.75
-					
+
 					sound:SetPitch(sound.pitch)
 					sound:SetGain(sound.gain)
-				elseif v.subtype == "note_off" then					
+				elseif v.subtype == "note_off" then
 					local sound = track.voices[v.note_number]
-					
+
 					if sound then
 						sound:Stop()
-						sound.last_event = v.subtype					
+						sound.last_event = v.subtype
 					end
 				elseif v.subtype == "pitch_bend" then
 					for i, sound in pairs(track.voices) do
@@ -109,11 +109,11 @@ event.AddListener("Update", "asdf", function(dt)
 				else
 					table.print(v)
 				end
-				
+
 				track.start_i = i
 			end
 		end
 	end
-	
+
 	clock = clock + dt
 end)

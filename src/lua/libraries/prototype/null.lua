@@ -19,12 +19,12 @@ do
 	function NULL:__tostring()
 		return "NULL"
 	end
-	
+
 	function NULL:__copy()
 		return self
 	end
-		
-	function NULL:__index(key)		
+
+	function NULL:__index(key)
 		if type(key) == "string" and key:sub(0, 2) == "Is" then
 			return FALSE
 		end
@@ -40,11 +40,11 @@ function prototype.MakeNULL(tbl)
 	for k,v in pairs(tbl) do tbl[k] = nil end
 	tbl.Type = "null"
 	setmetatable(tbl, prototype.GetRegistered("NULL"))
-	
+
 	if prototype.created_objects then
 		prototype.created_objects[tbl] = nil
 	end
-	
+
 	return var
 end
 

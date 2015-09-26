@@ -12,11 +12,11 @@ function CONTEXT:PCall(name, ...)
 		vfs.DebugPrint("%s: error calling %s: %s", self.Name or "", name, var)
 		return false
 	end
-	
+
 	if ok then
 		return var
 	end
-	
+
 	return false
 end
 
@@ -31,9 +31,9 @@ end
 function CONTEXT:Lines()
 	local temp = {}
 	return function()
-		while not self:TheEnd() do 
+		while not self:TheEnd() do
 			local char = self:ReadChar()
-			
+
 			if char == "\n" then
 				local str = table.concat(temp)
 				table.clear(temp)

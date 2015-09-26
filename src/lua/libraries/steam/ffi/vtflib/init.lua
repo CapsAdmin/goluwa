@@ -1,7 +1,7 @@
 local enums = include("enums.lua")
 local header = include("header.lua")
 
-ffi.cdef(header) 
+ffi.cdef(header)
 
 local lib = assert(ffi.load("vtflib"))
 
@@ -15,12 +15,12 @@ local vl = {
 -- put all the functions in the glfw table
 for line in header:gmatch("(.-)\n") do
 	local name = line:match("[vV][lT]%u.-vl(.-)%(")
-		
+
 	if name and not line:find("typedef") then
 		local func = lib["vl" .. name]
 		vl[name] = function(...)
 			local val = func(...)
-			
+
 			if vl.debug and name ~= "GetLastError" then
 				local str = vl.GetLastError()
 				str = ffi.string(str)
@@ -29,7 +29,7 @@ for line in header:gmatch("(.-)\n") do
 					error("HLLib " .. str, 2)
 				end
 			end
-			
+
 			return val
 		end
 	end
@@ -62,7 +62,7 @@ function vl.LoadImage(data, format)
 		return nil, "unknown format"
 	end
 
-	
+
 	if not format then
 		if vl.ImageGetFormat() == enums.IMAGE_FORMAT_DXT1 then
 			format = enums.IMAGE_FORMAT_RGB888
@@ -70,16 +70,16 @@ function vl.LoadImage(data, format)
 			format = enums.IMAGE_FORMAT_RGBA8888
 		end
 	end
-	
+
 	local w, h = vl.ImageGetWidth(), vl.ImageGetHeight()
 	local size = vl.ImageComputeImageSize(w, h, 1, 1, format)
 	local buffer = ffi.new("vlByte[?]", size)
-		
+
 	vl.ImageConvert(vl.ImageGetData(0, 0, 0, 0), buffer, w, h, vl.ImageGetFormat(), format)
 
 	return buffer, w, h, format
 end
 
-vl.Initialize() 
+vl.Initialize()
 
 return vl

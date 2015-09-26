@@ -32,11 +32,11 @@ function PANEL:IsWorld()
 end
 
 function PANEL:GetSizeOfChildren()
-	
+
 	if self.last_children_size then
 		return self.last_children_size
 	end
-	
+
 	for _, child in ipairs(self:GetChildren()) do
 		child:Layout(true)
 	end
@@ -47,7 +47,7 @@ function PANEL:GetSizeOfChildren()
 	for k, v in ipairs(self:GetChildren()) do
 		if v:IsVisible() then
 			local pos = v:GetPosition() + v:GetSize() + v.Padding:GetPosition()
-			
+
 			if pos.x > total_size.x then
 				total_size.x = pos.x
 			end
@@ -57,7 +57,7 @@ function PANEL:GetSizeOfChildren()
 			end
 		end
 	end
-	
+
 	self.last_children_size = total_size
 
 	return total_size
@@ -77,30 +77,30 @@ end
 
 function PANEL:GetVisibleChildren()
 	local tbl = {}
-	
+
 	for i,v in ipairs(self:GetChildren()) do
 		if v.Visible then
 			table.insert(tbl, v)
 		end
 	end
-	
+
 	return tbl
 end
 
-function PANEL:IsInsideParent()	
+function PANEL:IsInsideParent()
 	local override = self.Parent
-	
+
 	if not override:IsValid() then return true end
-	
+
 	local override = override.Parent
-	
+
 	if not override:IsValid() then return true end
-	
+
 	if override.VisibilityPanel:IsValid() then
 	--	override = override.VisibilityPanel
 	end
-		
-	if 
+
+	if
 		self.Position.x - override.Scroll.x < override.Size.x and
 		self.Position.y - override.Scroll.y < override.Size.y and
 		self.Position.x + self.Size.x - override.Scroll.x > 0 and
@@ -108,12 +108,12 @@ function PANEL:IsInsideParent()
 	then
 		return true
 	end
-		
+
 	return false
 end
 
 do -- focus
-	function PANEL:BringToFront()	
+	function PANEL:BringToFront()
 		if self.RedirectFocus:IsValid() then
 			return self.RedirectFocus:BringToFront()
 		end
@@ -125,8 +125,8 @@ do -- focus
 			parent:AddChild(self)
 		end
 	end
-	
-	function PANEL:SendToBack()	
+
+	function PANEL:SendToBack()
 		local parent = self:GetParent()
 
 		if parent:IsValid() then
@@ -143,9 +143,9 @@ do -- focus
 		if gui.focus_panel:IsValid() and gui.focus_panel ~= self then
 			gui.focus_panel:OnUnfocus()
 		end
-		
+
 		self:OnFocus()
-		
+
 		gui.focus_panel = self
 	end
 
@@ -159,21 +159,21 @@ do -- focus
 			gui.focus_panel = NULL
 		end
 	end
-	
+
 	function PANEL:IsFocused()
 		return gui.focus_panel == self
 	end
 end
 
-do -- call on hide	
+do -- call on hide
 	function PANEL:IsVisible()
 		if self.visible == nil then return true end -- ?????
 		return self.Visible
 	end
-	
+
 	function PANEL:SetVisible(bool)
 		self.call_on_hide = self.call_on_hide or {}
-		
+
 		self.Visible = bool
 		if bool then
 			self:OnShow()
@@ -185,16 +185,16 @@ do -- call on hide
 				end
 			end
 		end
-	
+
 		self:Layout(true)
 	end
-	
+
 	function PANEL:CallOnHide(callback, id)
 		self.call_on_hide = self.call_on_hide or {}
-		
+
 		id = id or callback
-		
-		self.call_on_hide[id] = callback		
+
+		self.call_on_hide[id] = callback
 	end
 end
 
@@ -202,21 +202,21 @@ do -- drawing
 
 	function PANEL:PreDraw(from_cache)
 		if self.ThreeDee then surface.Start3D2D() end
-		
+
 		local no_draw = self:HasParent() and self.Parent.draw_no_draw
-		
+
 		self:InvalidateMatrix()
 		self:RebuildMatrix()
 
 		surface.SetWorldMatrix(self.Matrix)
-		
+
 		if not from_cache then
 			self:CalcMouse()
-		
+
 			self:CalcDragging()
 			self:CalcScrolling()
 		end
-	
+
 		self:CalcAnimations()
 		self:CalcLayout()
 
@@ -225,15 +225,15 @@ do -- drawing
 			self:DrawCache()
 			no_draw = true
 		end
-		
+
 		self:OnUpdate()
-		
+
 		if from_cache or not no_draw then
 			if self:IsDragging() or self:IsWorld() or self:IsInsideParent() then
 				self:OnPreDraw()
 				self:OnDraw()
 				self:OnPostDraw()
-				
+
 				if gui.keyboard_selected_panel == self then
 					render.SetBlendMode("additive")
 					surface.SetColor(1, 1, 1, 0.5)
@@ -241,7 +241,7 @@ do -- drawing
 					surface.DrawRect(0, 0, self.Size.x + self.DrawSizeOffset.x, self.Size.y + self.DrawSizeOffset.y)
 					render.SetBlendMode("alpha")
 				end
-				
+
 				self.visible = true
 				no_draw = false
 			else
@@ -249,12 +249,12 @@ do -- drawing
 				no_draw = true
 			end
 		end
-		
+
 		if --[[true or]] not no_draw and self.Clipping then
 			--surface.PushClipFunction(self.DrawClippingStencil, self)
 			surface.EnableClipRect(0,0,self.Size.x + self.DrawSizeOffset.x, self.Size.y + self.DrawSizeOffset.y)
 		end
-		
+
 		if from_cache then
 			self.draw_no_draw = false
 		else
@@ -281,7 +281,7 @@ do -- drawing
 			end
 		self:PostDraw(from_cache)
 	end
-				
+
 	function PANEL:PostDraw(from_cache)
 		self:CalcResizing()
 
@@ -290,12 +290,12 @@ do -- drawing
 			surface.DisableClipRect()
 			--render.PopViewport()
 		end
-		
+
 		if self.debug_flash and self.debug_flash > os.clock() then
 			surface.SetColor(1,0,0,(os.clock()*4)%1 > 0.5 and 0.5 or 0)
 			surface.DrawRect(0, 0, self.Size.x, self.Size.y)
 		end
-				
+
 		if gui.debug then
 			if self.updated_layout then
 				render.SetBlendMode("additive")
@@ -313,17 +313,17 @@ do -- drawing
 				end
 			end
 		end
-				
+
 		if self.ThreeDee then surface.End3D2D() end
 	end
-		
+
 	function PANEL:DrawRect(x, y, w, h)
 		if self.NinePatch then
 			surface.DrawNinePatch(
-				x or 0, y or 0, 
+				x or 0, y or 0,
 				w or (self.Size.x + self.DrawSizeOffset.x), h or (self.Size.y + self.DrawSizeOffset.y),
-				self.NinePatchRect.w, self.NinePatchRect.h, 
-				self.NinePatchCornerSize, 
+				self.NinePatchRect.w, self.NinePatchRect.h,
+				self.NinePatchCornerSize,
 				self.NinePatchRect.x, self.NinePatchRect.y,
 				self:GetSkin().pixel_scale
 			)
@@ -337,7 +337,7 @@ do -- drawing
 			end
 		end
 	end
-	
+
 	function PANEL:DebugFlash()
 		self.debug_flash = os.clock() + 3
 	end
@@ -351,16 +351,16 @@ do -- orientation
 	prototype.GetSet(PANEL, "Margin", Rect(0, 0, 0, 0))
 	prototype.GetSet(PANEL, "Angle", 0)
 	prototype.GetSet(PANEL, "Order", 0)
-	
+
 	prototype.GetSet(PANEL, "ThreeDee", false)
 	prototype.GetSet(PANEL, "ThreeDeePosition", Vec3(0,0,0))
 	prototype.GetSet(PANEL, "ThreeDeeAngles", Ang3(0,0,0))
 	prototype.GetSet(PANEL, "ThreeDeeScale", Vec3(1,1,1))
-	
+
 	do
 		prototype.GetSet(PANEL, "Matrix", Matrix44())
-		
-		function PANEL:InvalidateMatrix()			
+
+		function PANEL:InvalidateMatrix()
 			if not self.rebuild_matrix then
 				for i, v in ipairs(self:GetChildrenList()) do
 					v.rebuild_matrix = true
@@ -368,89 +368,89 @@ do -- orientation
 			end
 			self.rebuild_matrix = true
 		end
-		
+
 		function PANEL:RebuildMatrix()
 			if self:IsWorld() then return end
 			if self.rebuild_matrix then
 				self.rebuild_matrix = false
 
 				self.Matrix:Identity()
-								
+
 				self:OnPreMatrixBuild()
-				
+
 				if self.ThreeDee then
 					local pos, ang, scale = self.ThreeDeePosition, self.ThreeDeeAngles, self.ThreeDeeScale
 					if pos then
-						self.Matrix:Translate(-pos.y, -pos.x, -pos.z) -- Vec3(left/right, back/forth, down/up)	
+						self.Matrix:Translate(-pos.y, -pos.x, -pos.z) -- Vec3(left/right, back/forth, down/up)
 					end
-					
+
 					if ang then
 						self.Matrix:Rotate(-ang.y, 0, 0, 1)
 						self.Matrix:Rotate(-ang.z, 0, 1, 0)
-						self.Matrix:Rotate(-ang.x, 1, 0, 0) 
+						self.Matrix:Rotate(-ang.x, 1, 0, 0)
 					end
-					
-					if scale then 
+
+					if scale then
 						local w,h = surface.GetSize()
 						local scale2d = (w/h) / 100
-						self.Matrix:Scale(scale.x * scale2d, scale.y * scale2d, scale.z) 
+						self.Matrix:Scale(scale.x * scale2d, scale.y * scale2d, scale.z)
 					end
 				end
-				
-				self.temp_matrix = self.temp_matrix or Matrix44()				
+
+				self.temp_matrix = self.temp_matrix or Matrix44()
 				self.Matrix:Multiply(self.Parent.Matrix, self.temp_matrix)
 				self.Matrix, self.temp_matrix = self.temp_matrix, self.Matrix
-				
+
 				self.Matrix:Translate(math.ceil(self.Position.x), math.ceil(self.Position.y), 0)
-				
+
 				if self.Angle ~= 0 then
 					local w = (self.Size.x)/2
 					local h = (self.Size.y)/2
-				
+
 					self.Matrix:Translate(w, h, 0)
 						self.Matrix:SetRotation(Quat():SetAngles(Ang3(0,self.Angle,0)))
 					self.Matrix:Translate(-w, -h, 0)
 				end
-				
+
 				if not self.DrawPositionOffset:IsZero() then
 					self.Matrix:Translate(self.DrawPositionOffset.x, self.DrawPositionOffset.y, 0)
 				end
-				
+
 				if self.DrawScaleOffset.x ~= 1 or self.DrawScaleOffset.y ~= 1 then
 					self.Matrix:Scale(self.DrawScaleOffset.x, self.DrawScaleOffset.y, 1)
 				end
-				
+
 				if not self.DrawSizeOffset:IsZero() or not self.DrawAngleOffset:IsZero() then
 					local w = (self.Size.x + self.DrawSizeOffset.x)/2
 					local h = (self.Size.y + self.DrawSizeOffset.y)/2
 
 					self.Matrix:Translate(w, h, 0)
-					
+
 					self.Matrix:Rotate(self.DrawAngleOffset.x, 0, 0, 1)
 					self.Matrix:Rotate(self.DrawAngleOffset.y, 0, 1, 0)
 					self.Matrix:Rotate(self.DrawAngleOffset.z, 1, 0, 0)
-				
+
 					self.Matrix:Translate(-w, -h, 0)
 				end
-				
+
 				self.Matrix:Translate(math.ceil(-self.Parent.Scroll.x), math.ceil(-self.Parent.Scroll.y), 0)
-				
+
 				self:OnPostMatrixBuild()
-				
+
 				self.rebuild_matrix = false
 			end
 		end
 
-		function PANEL:GetMatrix()			
-			return self.Matrix 
+		function PANEL:GetMatrix()
+			return self.Matrix
 		end
 	end
-	
+
 	function PANEL:SetPosition(pos)
 		if self:HasParent() and self.Parent.TrapChildren and not self.ThreeDee then
 			pos:Clamp(Vec2(0, 0), self.Parent.Size - self.Size)
 		end
-		
+
 		self:OnPositionChanged(pos)
 
 		self.Position = pos
@@ -462,16 +462,16 @@ do -- orientation
 			size.y = math.max(size.y, self.MinimumSize.y)
 
 			self.Size = size
-			
+
 			self:Layout()
 		end
 	end
-	
+
 	function PANEL:SetPadding(rect)
 		self.Padding = rect
 		self:Layout()
 	end
-	
+
 	function PANEL:SetMargin(rect)
 		self.Margin = rect
 		self:Layout()
@@ -499,7 +499,7 @@ do -- orientation
 
 	function PANEL:LocalToWorld(lpos)
 		local x, y = self.Matrix:GetTranslation()
-		
+
 		return Vec2(x + lpos.x, y + lpos.y)
 	end
 
@@ -517,14 +517,14 @@ do -- orientation
 			gui.unrolled_draw = nil
 		end
 	end
-	
+
 	function PANEL:SetX(x)
 		self.Position.x = x
 	end
 	function PANEL:GetX()
 		return self.Position.x
 	end
-	
+
 	function PANEL:SetY(y)
 		self.Position.y = y
 	end
@@ -547,47 +547,47 @@ do -- orientation
 	function PANEL:GetHeight()
 		return self.Size.y
 	end
-	
+
 	PANEL.SetW = PANEL.SetWidth
 	PANEL.GetW = PANEL.GetWidth
-	
+
 	PANEL.SetH = PANEL.SetHeight
 	PANEL.GetH = PANEL.GetHeight
-	
+
 	function PANEL:SetRect(rect)
 		self:SetPosition(Vec2(rect.x, rect.y))
 		self:SetSize(Vec2(rect.w, rect.h))
 	end
-	
+
 	function PANEL:GetRect()
 		return Rect(self.Position.x, self.Position.y, self.Size.x, self.Size.y)
 	end
-	
+
 	function PANEL:SetRectFast(x,y,w,h)
 		self.Position.x = x
 		self.Position.y = y
 		self.Size.x = w
 		self.Size.y = h
 	end
-	
+
 	function PANEL:GetRectFast()
 		return self.Position.x, self.Position.y, self.Size.x, self.Size.y
 	end
-	
+
 	function PANEL:GetWorldRect()
 		local rect = Rect(self.Position.x, self.Position.y, self.Size.x, self.Size.y)
-		
+
 		-- convert to world
 		rect.w = rect.x + rect.w
 		rect.h = rect.y + rect.h
-		
+
 		return rect
 	end
-	
+
 	function PANEL:GetWorldRectFast()
 		return self.Position.x, self.Position.y, self.Position.x + self.Size.x, self.Position.y + self.Size.y
 	end
-	
+
 	function PANEL:CenterX()
 		self:SetX((self.Parent:GetWidth() * 0.5) - (self:GetWidth() * 0.5))
 	end
@@ -619,19 +619,19 @@ do -- cached rendering
 		if self.CachedRendering then
 			self.cache_dirty = true
 
-			if 
+			if
 				(not self.cache_fb or self.cache_texture:GetSize() ~= self.Size) and
-				
-				self.Size.x > 1 and 
+
+				self.Size.x > 1 and
 				self.Size.y > 1 and
-				self.Size.x < 4096 and 
+				self.Size.x < 4096 and
 				self.Size.y < 4096
 			then
 				local fb = render.CreateFrameBuffer()
 				fb:SetTexture(1, Texture(self.Size))
 				fb:SetTexture("depth_stencil", {internal_format = "depth_stencil", size = self.Size})
 				fb:CheckCompletness()
-				
+
 				self.cache_fb = fb
 				self.cache_texture = fb:GetTexture(1)
 			end
@@ -661,15 +661,15 @@ do -- cached rendering
 		if self:IsCacheDirty() then
 			self.cache_fb:Begin()
 			self.cache_fb:Clear()
-			
+
 			local x,y = self.Matrix:GetTranslation()
 			self.Matrix:Translate(-x, -y, 0)
 			surface.PushMatrix(nil, true)
-			
+
 			if self:IsDragging() or self:IsInsideParent() then
 				self:OnDraw()
 			end
-			
+
 			--surface.Translate(-self.Scroll.x, -self.Scroll.y)
 
 			for k,v in ipairs(self:GetChildren()) do
@@ -679,68 +679,68 @@ do -- cached rendering
 			end
 
 			surface.PopMatrix()
-			
+
 			self.Matrix:Translate(x, y, 0)
 			self.cache_fb:End()
-			
+
 			self.cache_dirty = false
 			self.updated_cache = true
 		end
 	end
 end
-	
-do -- scrolling		
+
+do -- scrolling
 	prototype.GetSet(PANEL, "Scrollable", false)
 	prototype.GetSet(PANEL, "Scroll", Vec2(0, 0))
 	prototype.GetSet(PANEL, "ScrollFraction", Vec2(0, 0))
 
 	function PANEL:SetScroll(vec)
 		local size = self:GetSizeOfChildren()
-		
+
 		self.Scroll = vec:GetClamped(Vec2(0), size - self.Size)
-		
+
 		if size.x < self.Size.x then self.Scroll.x = 0 end
 		if size.y < self.Size.y then self.Scroll.y = 0 end
-		
+
 		self.ScrollFraction = self.Scroll / (size - self.Size)
 		self:OnScroll(self.ScrollFraction)
-		
+
 		self:MarkCacheDirty()
 	end
-	
+
 	function PANEL:SetScrollFraction(frac)
 		local size = self:GetSizeOfChildren()
 
 		self.Scroll = frac * size
 		self.Scroll:Clamp(Vec2(0, 0), size - self.Size)
 		self.ScrollFraction = frac
-		
+
 		self:OnScroll(self.ScrollFraction)
-		
+
 		self:MarkCacheDirty()
 	end
-	
+
 	function PANEL:StartScrolling(button)
 		self.scroll_button = button
 		self.scroll_drag_pos = self:GetScroll() + self:GetMousePosition()
 	end
-	
+
 	function PANEL:StopScrolling()
 		self.scroll_button = nil
 		self.scroll_drag_pos = nil
 	end
-	
+
 	function PANEL:IsScrolling()
 		return self.scroll_button ~= nil
 	end
-	
+
 	function PANEL:CalcScrolling()
 		if not self:IsScrolling() then return end
-		
+
 		local size = self:GetSizeOfChildren()
 
 		if size.x < self.Size.x and size.y < self.Size.y then self:StopScrolling() return end
-		
+
 		if input.IsMouseDown(self.scroll_button) then
 			self:SetScroll(self.scroll_drag_pos - self:GetMousePosition())
 			self:OnScroll(self.ScrollFraction)
@@ -773,7 +773,7 @@ do -- drag drop
 
 	function PANEL:CalcDragging()
 		if not self.drag_world_pos then return end
-		
+
 		if not self.drag_panel_start_pos then
 			self.drag_panel_start_pos = self:GetPosition()
 		end
@@ -785,7 +785,7 @@ do -- drag drop
 		local panel = gui.GetHoveringPanel(nil, self)
 
 		local drop_pos = panel:GetMousePosition()
-		
+
 		if self.drag_last_hover ~= panel then
 
 			if self.drag_last_hover then
@@ -811,7 +811,7 @@ do -- drag drop
 
 			self:StopDragging()
 		end
-		
+
 		self:MarkCacheDirty()
 	end
 
@@ -826,13 +826,13 @@ do -- drag drop
 	function PANEL:OnParentLand(parent)
 
 	end
-	
+
 	function PANEL:OnPanelHover(panel, drop_pos)
 
 	end
 
 	function PANEL:OnChildDrop(child, pos)
-	
+
 	end
 end
 
@@ -950,7 +950,7 @@ do -- animations
 	prototype.GetSet(PANEL, "DrawAngleOffset", Ang3(0,0,0))
 	prototype.GetSet(PANEL, "DrawColor", Color(0,0,0,0))
 	prototype.GetSet(PANEL, "DrawAlpha", 1)
-	
+
 	local parent_layout = {
 		DrawSizeOffset = true,
 		DrawScaleOffset = true,
@@ -960,7 +960,7 @@ do -- animations
 		Position = true,
 		Angle = true,
 	}
-	
+
 	local function lerp_values(values, alpha)
 		local tbl = {}
 
@@ -979,9 +979,9 @@ do -- animations
 		end
 	end
 
-	function PANEL:CalcAnimations()			
+	function PANEL:CalcAnimations()
 		self.animations = self.animations or {}
-		
+
 		for key, animation in pairs(self.animations) do
 
 			local pause = false
@@ -1013,15 +1013,15 @@ do -- animations
 				val = lerp_values(to, alpha)
 
 				if val == false then return end
-	
+
 				animation.func(self, val)
-				
+
 				if parent_layout[animation.var] and self:HasParent() then
 					self.Parent:Layout(true)
 				else
 					self:Layout(true)
 				end
-				
+
 				if alpha >= 1 then
 					if animation.callback then
 						if animation.callback(self) ~= false then
@@ -1041,7 +1041,7 @@ do -- animations
 
 	function PANEL:StopAnimations()
 		self.animations = self.animations or {}
-		
+
 		for key, animation in pairs(self.animations) do
 			if animation.callback then
 				if animation.callback(self) ~= false then
@@ -1055,16 +1055,16 @@ do -- animations
 		end
 		self:UpdateAnimations()
 	end
-	
+
 	function PANEL:IsAnimating()
 		self.animations = self.animations or {}
-		
+
 		return next(self.animations) ~= nil
 	end
 
 	function PANEL:Animate(var, to, time, operator, pow, set, callback)
 		self.animations = self.animations or {}
-		
+
 		if self.animations[var] then
 			self.animations[var].alpha = 0
 			return
@@ -1108,7 +1108,7 @@ do -- animations
 				to[i] = v
 			end
 		end
-		
+
 		if not set then
 			table.insert(to, 1, from)
 		end
@@ -1162,7 +1162,7 @@ do -- resizing
 	function PANEL:IsResizing()
 		return self.resize_start_pos ~= nil
 	end
-	
+
 	local location2cursor = {
 		right = "sizewe",
 		left = "sizewe",
@@ -1183,7 +1183,7 @@ do -- resizing
 				gui.active_cursor = nil
 			end
 		end
-	
+
 		if self.resize_start_pos then
 
 			if self.resize_button ~= nil and not input.IsMouseDown(self.resize_button) then
@@ -1239,16 +1239,16 @@ do -- mouse
 	prototype.GetSet(PANEL, "AlwaysCalcMouse", false)
 	prototype.GetSet(PANEL, "AlwaysReceiveMouseInput", false)
 	prototype.GetSet(PANEL, "SendMouseInputToPanel", NULL)
-	
+
 	prototype.GetSet(PANEL, "MouseHoverTime", 0)
 	prototype.GetSet(PANEL, "MouseHoverTimeTrigger", 1)
-	
+
 	do
 		gui.active_tooltip = NULL
-		
+
 		prototype.GetSet(PANEL, "Tooltip", "")
-		
-		function PANEL:ShowTooltip()			
+
+		function PANEL:ShowTooltip()
 			local tooltip = gui.CreatePanel("text_button", nil, "gui_tooltip")
 			tooltip:SetSkin(self:GetSkin())
 			tooltip:SetPosition(self:GetWorldPosition())
@@ -1262,21 +1262,21 @@ do -- mouse
 			gui.active_tooltip = tooltip
 			self.my_tooltip = tooltip
 		end
-				
+
 		function PANEL:CloseTooltip()
 			gui.RemovePanel(self.my_tooltip)
 		end
 	end
-	
+
 
 	function PANEL:BringMouse()
 		window.SetMousePosition(self:GetWorldPosition() + self:GetSize() / 2)
 	end
-	
+
 	function PANEL:IsMouseOver()
 		return self:IsDragging() or self:IsResizing() or self.mouse_over and gui.hovering_panel == self
 	end
-	
+
 	function PANEL:GlobalMouseCapture(b)
 		self.mouse_capture = b
 	end
@@ -1336,44 +1336,44 @@ do -- mouse
 
 		return "center"
 	end
-	
+
 	function PANEL:CalcMouse()
-		if 
-			self:HasParent() and 
-			not self.Parent:IsWorld() and 
+		if
+			self:HasParent() and
+			not self.Parent:IsWorld() and
 			not self.Parent.mouse_over and
-			not self:IsDragging() and 
-			not self:IsScrolling() and 
+			not self:IsDragging() and
+			not self:IsScrolling() and
 			not self.AlwaysCalcMouse
-		then 
-	
+		then
+
 			if self.mouse_just_entered then
 				self:OnMouseExit()
 				self.mouse_just_entered = false
 			end
-			
+
 			self.mouse_over = false
-	
-			return 
+
+			return
 		end
-		
+
 		local x, y = surface.ScreenToWorld(gui.mouse_pos.x, gui.mouse_pos.y)
-		
+
 		self.MousePosition.x = x
 		self.MousePosition.y = y
-		
+
 		local alpha = 1
 
 		if not self.NinePatch and self.NinePatchRect:IsZero() and self.Texture:IsValid() and self.Texture ~= render.GetWhiteTexture() and not self.Texture:IsLoading() then
 			local x = (x / self.Size.x)
 			local y = (y / self.Size.y)
-			
+
 			x = x * self.Texture.w
 			y = y * self.Texture.h
-			
-			x = math.clamp(math.floor(x), 1, self.Texture.w-1)		
-			y = math.clamp(math.floor(y), 1, self.Texture.h-1)		
-			
+
+			x = math.clamp(math.floor(x), 1, self.Texture.w-1)
+			y = math.clamp(math.floor(y), 1, self.Texture.h-1)
+
 			alpha = select(4, self.Texture:GetPixelColor(x, y)) / 255
 		end
 
@@ -1386,7 +1386,7 @@ do -- mouse
 		else
 			self.mouse_over = false
 		end
-		
+
 		if self:IsMouseOver() then
 			if not self.mouse_just_entered then
 				if self.SendMouseInputToPanel:IsValid() then
@@ -1410,11 +1410,11 @@ do -- mouse
 					end
 				end
 			end
-			
+
 			self:OnMouseMove(x, y)
 		else
 			if self.mouse_just_entered then
-				if self.SendMouseInputToPanel:IsValid() then					
+				if self.SendMouseInputToPanel:IsValid() then
 					if self.SendMouseInputToPanel.mouse_just_entered then
 						self.SendMouseInputToPanel:OnMouseExit(x, y)
 						self.SendMouseInputToPanel.mouse_just_entered = false
@@ -1423,7 +1423,7 @@ do -- mouse
 				self:OnMouseExit(x, y)
 				self.mouse_just_entered = false
 			end
-			
+
 			if self.mouse_hover_triggered and not self:HasParent(gui.active_tooltip) then
 				self:OnMouseHoverTrigger(false, x, y)
 				self.mouse_hover_triggered = false
@@ -1431,27 +1431,27 @@ do -- mouse
 					self:CloseTooltip()
 				end
 			end
-			
+
 			if self.mouse_capture then
 				self:OnMouseMove(x, y)
 			end
 		end
 	end
-	
-	function PANEL:MouseInput(button, press)		
+
+	function PANEL:MouseInput(button, press)
 		if self.SendMouseInputToPanel:IsValid() then
 			self.SendMouseInputToPanel:MouseInput(button, press)
 		end
-		
+
 		event.Call("PanelMouseInput", self, button, press)
-		
+
 		if press then
-			
+
 			if self.FocusOnClick then
 				self:RequestFocus()
 			end
-			
-			if self.BringToFrontOnClick then 
+
+			if self.BringToFrontOnClick then
 				self:BringToFront()
 			end
 
@@ -1462,7 +1462,7 @@ do -- mouse
 					end
 				end
 			end
-			
+
 		else
 			if button == "button_2" then
 				self:OnRightClick()
@@ -1470,40 +1470,40 @@ do -- mouse
 		end
 
 		self:OnMouseInput(button, press)
-		
+
 		self:MarkCacheDirty()
 	end
-	
+
 	function PANEL:GlobalMouseInput(button, press)
 		if self.Scrollable and self.mouse_over then
 			if button == "button_3" then
 				self:StartScrolling(button)
 			end
-			
+
 			if button == "mwheel_down" then
 				self:SetScroll(self:GetScroll() + Vec2(0, 20))
 			elseif button == "mwheel_up" then
 				self:SetScroll(self:GetScroll() + Vec2(0, -20))
 			end
 		end
-		
+
 		self:OnGlobalMouseInput(button, press)
 	end
-	
+
 	function PANEL:KeyInput(button, press)
 		local b
-		
+
 		if self:OnPreKeyInput(button, press) ~= false then
 			b = self:OnKeyInput(button, press)
 			self:OnPostKeyInput(button, press)
 		end
-		
+
 		self:MarkCacheDirty()
-		
+
 		return b
-	end	
-	
-	function PANEL:CharInput(char)			
+	end
+
+	function PANEL:CharInput(char)
 		self:MarkCacheDirty()
 		return self:OnCharInput(char)
 	end
@@ -1517,47 +1517,47 @@ do -- layout
 	prototype.GetSet(PANEL, "CollisionGroup", "none")
 
 	local origin
-	
+
 	local function sort(a, b)
 		return math.abs(a.point-origin) < math.abs(b.point-origin)
 	end
-	
+
 	function PANEL:RayCast(panel, x,y,w,h, collide, always)
 		local dir_x = x - panel.Position.x
 		local dir_y = y - panel.Position.y
-		
+
 		local found
-		
+
 		if collide then
 			found = {}
 			local i = 1
-			
+
 			local panel_left, panel_top, panel_right, panel_bottom = panel:GetWorldRectFast()
-			
+
 			for _, child in ipairs(self:GetChildren()) do
-				if 
-					child ~= panel and 
-					(always or child.laid_out) and 
-					child.Visible and 
-					not child.ThreeDee and 
-					not child.IgnoreLayout and 
-					(panel.CollisionGroup == "none" or panel.CollisionGroup == child.CollisionGroup) 
+				if
+					child ~= panel and
+					(always or child.laid_out) and
+					child.Visible and
+					not child.ThreeDee and
+					not child.IgnoreLayout and
+					(panel.CollisionGroup == "none" or panel.CollisionGroup == child.CollisionGroup)
 				then
 					local child_left, child_top, child_right, child_bottom = child:GetWorldRectFast()
-					
-					if 
-						child_left <= panel_left and 
+
+					if
+						child_left <= panel_left and
 						child_right >= panel_right
 						or
-						child_left >= panel_left and 
+						child_left >= panel_left and
 						child_right <= panel_right
-						or 
+						or
 						child_right > panel_right and
 						child_left < panel_right
-						or 
+						or
 						child_right > panel_left and
 						child_left < panel_left
-					then				
+					then
 						if dir_y > 0 and child_top > panel_top then
 							found[i] = {child = child, point = child_top}
 							i = i + 1
@@ -1565,21 +1565,21 @@ do -- layout
 							found[i] = {child = child, point = child_bottom}
 							i = i + 1
 						end
-					end	
-					
+					end
+
 					if
-						child_top <= panel_top and 
-						child_bottom >= panel_bottom 
+						child_top <= panel_top and
+						child_bottom >= panel_bottom
 						or
-						child_top >= panel_top and 
+						child_top >= panel_top and
 						child_bottom <= panel_bottom
-						or 
+						or
 						child_bottom > panel_bottom and
 						child_top < panel_bottom
-						or 
+						or
 						child_bottom > panel_top and
 						child_top < panel_top
-					then					
+					then
 						if dir_x > 0 and child_right > panel_right then
 							found[i] = {child = child, point = child_left}
 							i = i + 1
@@ -1590,7 +1590,7 @@ do -- layout
 					end
 				end
 			end
-			
+
 			if dir_y > 0 then
 				origin = panel_bottom
 			elseif dir_y < 0 then
@@ -1600,24 +1600,24 @@ do -- layout
 			elseif dir_x < 0 then
 				origin = panel_left
 			end
-			
-			table.sort(found, sort)		
+
+			table.sort(found, sort)
 		end
 
 		local pos
-			
-		if found and found[1] then		
+
+		if found and found[1] then
 			local child = found[1].child
-			
+
 			x = child.Position.x
 			y = child.Position.y
-				
+
 			if dir_x < 0 then
 				y = panel:GetY()
-				x = x + child:GetWidth() + panel.Padding:GetRight()	
+				x = x + child:GetWidth() + panel.Padding:GetRight()
 			elseif dir_x > 0 then
 				y = panel:GetY()
-				x = x - panel:GetWidth() - panel.Padding:GetLeft()			
+				x = x - panel:GetWidth() - panel.Padding:GetLeft()
 			elseif dir_y < 0 then
 				x = panel:GetX()
 				y = y + child:GetHeight() + panel.Padding:GetBottom()
@@ -1628,36 +1628,36 @@ do -- layout
 		else
 			if dir_x < 0 then
 				x = x + panel.Padding:GetRight()
-				x = x + self.Margin:GetRight()				
-			elseif dir_x > 0 then                  
+				x = x + self.Margin:GetRight()
+			elseif dir_x > 0 then
 				x = x - panel.Padding:GetLeft()
-				x = x - self.Margin:GetLeft() 
-			elseif dir_y < 0 then                  	
+				x = x - self.Margin:GetLeft()
+			elseif dir_y < 0 then
 				y = y + panel.Padding:GetBottom()
 				y = y + self.Margin:GetBottom()
-			elseif dir_y > 0 then            
+			elseif dir_y > 0 then
 				y = y - panel.Padding:GetTop()
 				y = y - self.Margin:GetTop()
-			end            
-			
+			end
+
 			x = math.max(x, 0)
 			y = math.max(y, 0)
 		end
-				
+
 		return Vec2(x, y), found and found[1] and found[1].child
 	end
-	
-	function PANEL:ExecuteLayoutCommands()		
+
+	function PANEL:ExecuteLayoutCommands()
 	--	if self:HasParent() then self = self.Parent end
 
 		if not self.layout_us then return end
-				
+
 		for _, child in ipairs(self:GetChildren()) do
 			if child.layout_commands then
-				if child.LayoutSize then 
+				if child.LayoutSize then
 					child:SetSize(child.LayoutSize:Copy())
 				end
-				child.laid_out = false		
+				child.laid_out = false
 			end
 		end
 		for _, child in ipairs(self:GetChildren()) do
@@ -1680,7 +1680,7 @@ do -- layout
 						child:MoveLeft()
 						child:FillX()
 						child:FillY()
-					elseif cmd == "fill_x" then	
+					elseif cmd == "fill_x" then
 						child:CenterXSimple()
 						child:FillX()
 					elseif cmd == "fill_y" then
@@ -1696,9 +1696,9 @@ do -- layout
 						child:CenterYSimple()
 					elseif cmd == "center_simple" then
 						child:CenterSimple()
-					elseif cmd == "center_x" then				
+					elseif cmd == "center_x" then
 						child:CenterX()
-					elseif cmd == "center_x_simple" then				
+					elseif cmd == "center_x_simple" then
 						child:CenterXSimple()
 					elseif cmd == "center_y_simple" then
 						child:CenterYSimple()
@@ -1715,7 +1715,7 @@ do -- layout
 					elseif cmd == "right" then
 						child:MoveRight()
 					elseif cmd == "gmod_fill" then
-						child:CenterSimple() 
+						child:CenterSimple()
 						child:MoveUp()
 						child:MoveLeft()
 						child:FillX()
@@ -1743,75 +1743,75 @@ do -- layout
 			end
 		end
 	end
-	
+
 	function PANEL:Layout(now)
-		if now and (self.LayoutWhenInvisible or not self.draw_no_draw) then		
-			
-			if not self.in_layout then 
+		if now and (self.LayoutWhenInvisible or not self.draw_no_draw) then
+
+			if not self.in_layout then
 				self.in_layout = true
 				self:OnLayout(self:GetLayoutScale(), self:GetSkin())
 				self.in_layout = false
 			end
 
-			self:ExecuteLayoutCommands()					
+			self:ExecuteLayoutCommands()
 			if self.Stack then
 				self:StackChildren()
 			end
-			
+
 			for _, v in ipairs(self:GetChildren()) do
 				v.layout_me = true
 			end
-			
+
 			self.updated_layout = true
 			self.layout_count = (self.layout_count or 0) + 1
-	
-			self.last_children_size = nil			
-			
+
+			self.last_children_size = nil
+
 			self:MarkCacheDirty()
-			
+
 			self.layout_me = false
 		else
 			self.layout_me = true
 		end
 	end
-	
+
 	function PANEL:CalcLayout()
-		if self.layout_me or gui.layout_stress then 
+		if self.layout_me or gui.layout_stress then
 			self:Layout(true)
 		end
 	end
 
 	function PANEL:SetupLayout(...)
 		self:Layout(true)
-		
+
 		if ... then
 			self.layout_commands = {...}
-			self.LayoutSize = self:GetSize():Copy()		
+			self.LayoutSize = self:GetSize():Copy()
 			self.Parent.layout_us = true
 		else
 			self.layout_commands = nil
 			self.Parent.layout_us = nil
 			self.LayoutSize = nil
 		end
-		
+
 		self:Layout()
 	end
-	
-	do -- layout commands	
-	
+
+	do -- layout commands
+
 		function PANEL:ResetLayout()
 			self.laid_out = false
-			
+
 			for _, child in ipairs(self:GetChildren()) do
-				if child.LayoutSize then 
+				if child.LayoutSize then
 					child:SetSize(child.LayoutSize:Copy())
 				end
 				child.laid_out = false
 			end
 		end
-		
+
 		PANEL.layout_collide = true
-		
+
 		function PANEL:Collide()
 			self.layout_collide = true
 		end
@@ -1834,7 +1834,7 @@ do -- layout
 			self:SetRectFast(ox,oy,ow,oh)
 
 			self:SetWidth(pos.x + self.Margin:GetRight() + (pnl and pnl.Padding:GetRight() or 0))
-			
+
 			self.laid_out = true
 		end
 
@@ -1854,7 +1854,7 @@ do -- layout
 
 			--self:SetHeight(left.y)
 			self:SetHeight(pos.y + self.Margin.y + (pnl and pnl.Padding:GetBottom() or 0))
-			
+
 			self.laid_out = true
 		end
 
@@ -1883,7 +1883,7 @@ do -- layout
 
 			self:SetX(math.max(x, left.x)) -- HACK???
 			self:SetWidth(math.max(w, min_width))
-			
+
 			self.laid_out = true
 		end
 
@@ -1909,10 +1909,10 @@ do -- layout
 					h = bottom.y
 				end
 			end
-			
+
 			self:SetY(math.max(y, top.y)) -- HACK???
 			self:SetHeight(math.max(h, min_height))
-			
+
 			self.laid_out = true
 		end
 
@@ -1928,17 +1928,17 @@ do -- layout
 			local right = parent:RayCast(self, parent.Size.x, left.y, self.Size.x, self.Size.y, self.layout_collide)
 
 			self:SetX(math.lerp(0.5, left.x, right.x))
-			
+
 			self.laid_out = true
 		end
-		
+
 		function PANEL:CenterY()
 			local parent = self:GetParent()
 
 			local top = parent:RayCast(self, self.Position.x, 0, self.Size.x, self.Size.y, self.layout_collide)
 			local bottom = parent:RayCast(self, top.x, parent:GetHeight(), self.Size.x, self.Size.y, self.layout_collide)
 			self:SetY(top.y + (bottom.y/2 - self:GetHeight()/2) - self.Padding:GetTop() + self.Padding:GetBottom())
-			
+
 			self.laid_out = true
 		end
 
@@ -1947,7 +1947,7 @@ do -- layout
 			local parent = self:GetParent()
 
 			self:SetX(parent:GetWidth() / 2 - self:GetWidth() / 2)
-			
+
 			self.laid_out = true
 		end
 
@@ -1955,7 +1955,7 @@ do -- layout
 			local parent = self:GetParent()
 
 			self:SetY(parent:GetHeight() / 2 - self:GetHeight() / 2)
-			
+
 			self.laid_out = true
 		end
 
@@ -1963,17 +1963,17 @@ do -- layout
 			local parent = self:GetParent()
 
 			local laid_out
-			
+
 			if parent:GetWidth() ~= math.huge then
 				self:SetX(parent:GetWidth() / 2 - self:GetWidth() / 2)
 				laid_out = true
 			end
-			
+
 			if parent:GetHeight() ~= math.huge then
 				self:SetY(parent:GetHeight() / 2 - self:GetHeight() / 2)
 				laid_out = true
 			end
-			
+
 			self.laid_out = laid_out
 		end
 
@@ -1989,33 +1989,33 @@ do -- layout
 			then
 				self:SetX(parent:GetWidth() / 2 - self:GetWidth() / 2)
 			end
-			
+
 			self.laid_out = true
 		end
 
 		function PANEL:MoveUp()
 			local parent = self:GetParent()
-			
+
 			if not self.laid_out then
 				self:SetY(parent:GetHeight() == math.huge and 999999999999 or parent:GetHeight()) -- :(
 			end
-			
+
 			self:SetY(math.max(self:GetY(), 1))
 			self:SetY(parent:RayCast(self, self.Position.x, 0, self.Size.x, self.Size.y, self.layout_collide).y)
-			
+
 			self.laid_out = true
 		end
 
 		function PANEL:MoveLeft()
 			local parent = self:GetParent()
-			
+
 			if not self.laid_out then
 				self:SetX(parent:GetWidth() == math.huge and 999999999999 or parent:GetWidth()) -- :(
 			end
 
 			self:SetX(math.max(self:GetX(), 1))
 			self:SetX(parent:RayCast(self, 0, self.Position.y, self.Size.x, self.Size.y, self.layout_collide).x)
-			
+
 			self.laid_out = true
 		end
 
@@ -2025,10 +2025,10 @@ do -- layout
 			if not self.laid_out then
 				self:SetY(0 - self:GetHeight())
 			end
-			
+
 			self:SetY(math.max(self:GetY(), 1))
 			self:SetY(parent:RayCast(self, self.Position.x, parent:GetHeight() - self:GetHeight(), self.Size.x, self.Size.y, self.layout_collide).y)
-			
+
 			self.laid_out = true
 		end
 
@@ -2038,38 +2038,38 @@ do -- layout
 			if not self.laid_out then
 				self:SetX(0 - self:GetWidth())
 			end
-			
+
 			self:SetX(math.max(self:GetX(), 1))
 			self:SetX(parent:RayCast(self, parent:GetWidth() - self:GetWidth(), self.Position.y, self.Size.x, self.Size.y, self.layout_collide).x)
-			
+
 			self.laid_out = true
 		end
-		
+
 		function PANEL:MoveRightOf(panel)
 			self:SetY(panel:GetY())
 			self:SetX(panel:GetX() + panel:GetWidth())
-			
+
 			self.laid_out = true
 		end
-		
+
 		function PANEL:MoveDownOf(panel)
 			self:SetX(panel:GetX())
 			self:SetY(panel:GetY() + panel:GetHeight())
-			
+
 			self.laid_out = true
 		end
-		
+
 		function PANEL:MoveLeftOf(panel)
 			self:SetY(panel:GetY())
 			self:SetX(panel:GetX() - self:GetWidth())
-			
+
 			self.laid_out = true
 		end
-		
+
 		function PANEL:MoveUpOf(panel)
 			self:SetX(panel:GetX())
 			self:SetY(panel:GetY() - self:GetHeight())
-			
+
 			self.laid_out = true
 		end
 	end
@@ -2077,7 +2077,7 @@ end
 
 do -- stacking
 	prototype.GetSet(PANEL, "ForcedStackSize", Vec2(0, 0))
-	
+
 	prototype.GetSet(PANEL, "StackRight", true)
 	prototype.GetSet(PANEL, "StackDown", true)
 
@@ -2085,24 +2085,24 @@ do -- stacking
 	prototype.GetSet(PANEL, "SizeStackToHeight", false)
 	prototype.IsSet(PANEL, "Stackable", true)
 	prototype.IsSet(PANEL, "Stack", false)
-	 
-	function PANEL:StackChildren()		
+
+	function PANEL:StackChildren()
 		local w = 0
 		local h
 		local pad = self:GetMargin()
-					
+
 		for _, pnl in ipairs(self:GetChildren()) do
 			if pnl:IsStackable() then
 				local siz = pnl:GetSize():Copy()
-				
+
 				if self.ForcedStackSize.x ~= 0 then
 					siz.x = self.ForcedStackSize.x
 				end
-				
+
 				if self.ForcedStackSize.y ~= 0 then
 					siz.y = self.ForcedStackSize.y
 				end
-				
+
 				siz.x = siz.x + pnl.Padding.w
 				siz.y = siz.y + pnl.Padding.h
 
@@ -2114,26 +2114,26 @@ do -- stacking
 						h = h + siz.y
 						w = siz.x
 					end
-					
+
 					pnl.Position.x = w + pad.x - siz.x + pnl.Padding.x
 					pnl.Position.y = h + pad.y - siz.y + pnl.Padding.y
 				else
 					h = h or 0
 					h = h + siz.y
-					
+
 					w = siz.x > w and siz.x or w
-					
+
 					pnl.Position.x = pad.x + pnl.Padding.x
 					pnl.Position.y = h + pad.y - siz.y + pnl.Padding.y
 				end
-				
+
 				if not self.ForcedStackSize:IsZero() then
 					local siz = self.ForcedStackSize
-					
+
 					if self.SizeStackToWidth then
 						siz.x = self:GetWidth()
 					end
-					
+
 					if self.SizeStackToHeight then
 						siz.x = self:GetHeight()
 					end
@@ -2143,56 +2143,56 @@ do -- stacking
 					if self.SizeStackToWidth then
 						pnl:SetWidth(self:GetWidth() - pad.x * 2)
 					end
-					
+
 					if self.SizeStackToHeight then
 						pnl:SetHeight(self:GetHeight() - pad.y * 2)
 					end
 				end
 			end
 		end
-		
+
 		if self.SizeStackToWidth then
 			w = self:GetWidth() - pad.x * 2
 		end
-		
+
 		h = h or 0
 
 		return Vec2(w, h) + pad:GetSize()
 	end
 end
 
-do -- skin	
+do -- skin
 	prototype.GetSet(PANEL, "Style")
 	prototype.GetSet(PANEL, "Skin")
 	prototype.GetSet(PANEL, "LayoutScale")
-	
+
 	function PANEL:SetLayoutScale(scale)
 		self.LayoutScale = scale
 		for i,v in ipairs(self:GetChildrenList()) do
 			v.LayoutScale = scale
 		end
 	end
-	
+
 	function PANEL:GetLayoutScale()
 		return self.LayoutScale or self:GetSkin():GetScale()
 	end
-	
+
 	function PANEL:HasSkin(name)
 		return self.Skin and self:GetSkin().name == name
 	end
-	
+
 	function PANEL:SetSkin(skin)
 		if type(skin) == "string" then
 			skin = gui.GetRegisteredSkin(skin).skin
 		end
-		
+
 		self.Skin = skin
-		
+
 		if skin then
 			self.LayoutScale = skin:GetScale()
 			self:ReloadStyle()
 			self:OnStyleChanged(skin)
-			
+
 			for i,v in ipairs(self:GetChildrenList()) do
 				v.LayoutScale = skin:GetScale()
 				v.Skin = skin
@@ -2201,16 +2201,16 @@ do -- skin
 			end
 		end
 	end
-	
+
 	function PANEL:GetSkin()
 		return self.Skin or gui.skin
 	end
-		
+
 	function PANEL:SetStyle(name)
 		self.Style = name
-		
+
 		self.style_nodraw = false
-		
+
 		if name == "nodraw" then
 			self.style_nodraw = true
 		elseif name == "none" then
@@ -2222,69 +2222,69 @@ do -- skin
 		else
 			self.style_translation = self.style_translation or {}
 			name = self.style_translation[name] or name
-			
+
 			local skin = self:GetSkin()
-			
+
 			if skin[name] then
 				self:SetupStyle(skin[name])
 			end
 		end
 	end
-		
+
 	function PANEL:SetStyleTranslation(from, to)
 		self.style_translation = self.style_translation or {}
 		self.style_translation[from] = to
 	end
-	
+
 	prototype.GetSet(PANEL, "NinePatch", false)
 	prototype.GetSet(PANEL, "NinePatchRect", Rect(0, 0, 0, 0))
 	prototype.GetSet(PANEL, "NinePatchCornerSize", 4)
 	prototype.GetSet(PANEL, "StyleSize", Vec2(0, 0))
-	
+
 	function PANEL:SetStyleSize(vec)
 		if not vec:IsZero() then
 			self:SetSize(vec)
 		end
 		self.StyleSize = vec
 	end
-	
+
 	function PANEL:SetupStyle(tbl)
 		tbl = table.copy(tbl or {})
 		tbl.texture_rect = tbl.texture_rect or self.NinePatchRect
 		tbl.corner_size = tbl.corner_size or self.NinePatchCornerSize
 		tbl.color = tbl.color or self.Color
 		tbl.size = tbl.size or self.StyleSize
-		
+
 		self:SetNinePatch(tbl.ninepatch)
 		self:SetColor(tbl.color)
 		self:SetTexture(tbl.texture)
 		self:SetNinePatchRect(tbl.texture_rect)
 		self:SetNinePatchCornerSize(tbl.corner_size)
-		
+
 		local skin = self:GetSkin()
-		
+
 		local scale = tbl.size
-		
+
 		if skin.pixel_scale then
 			scale = scale * skin.pixel_scale
 		end
-		
+
 		self:SetStyleSize(scale)
 	end
 
 	function PANEL:ReloadStyle()
-		
+
 		local style = self:GetStyle()
-		
+
 		if style then
 			self:SetStyle("none")
 			self:SetStyle(style)
-			
+
 			if self.GetText then
 				self:SetText(self:GetText())
 			end
 		end
-		
+
 		self:Layout()
 	end
 end
@@ -2292,7 +2292,7 @@ end
 do -- events
 	function PANEL:OnDraw()
 		if self.NoDraw or self.style_nodraw then return end
-				
+
 		surface.SetAlphaMultiplier(self.DrawAlpha)
 		surface.SetColor(
 			self.Color.r + self.DrawColor.r,
@@ -2301,7 +2301,7 @@ do -- events
 			self.Color.a + self.DrawColor.a
 		)
 		surface.SetTexture(self.Texture)
-		
+
 		self:DrawRect()
 
 		if gui.debug_layout then
@@ -2312,7 +2312,7 @@ do -- events
 			--surface.DrawRect(self:GetMousePosition().x, self:GetMousePosition().y, 2, 2)
 		end
 	end
-	
+
 	function PANEL:OnUnParent()
 		gui.unrolled_draw = nil
 	end
@@ -2325,25 +2325,25 @@ do -- events
 
 	function PANEL:OnRemove(a)
 		gui.panels[self] = nil
-		
+
 		a = (a or 0) + 1
-		
+
 		for k,v in pairs(self:GetChildrenList()) do
 			v:Remove(a)
 		end
-			
+
 		-- this is important!!
 		self:UnParent()
 	end
-	
+
 	function PANEL:OnSystemFileDrop(path) end
-	
+
 	function PANEL:OnPreDraw() end
 	function PANEL:OnPostDraw() end
-	
+
 	function PANEL:OnPostMatrixBuild() end
 	function PANEL:OnPreMatrixBuild() end
-	
+
 	function PANEL:OnFocus() end
 	function PANEL:OnUnfocus() end
 
@@ -2351,7 +2351,7 @@ do -- events
 	function PANEL:OnMouseExit(x, y) end
 	function PANEL:OnMouseMove(x, y) end
 	function PANEL:OnMouseInput(button, press) end
-	
+
 	function PANEL:OnPreKeyInput(button, press) end
 	function PANEL:OnKeyInput(button, press) end
 	function PANEL:OnPostKeyInput(button, press) end

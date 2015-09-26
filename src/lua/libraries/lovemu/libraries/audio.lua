@@ -27,26 +27,26 @@ function love.audio.getVolume()
 end
 
 function love.audio.pause()
-	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do 
-		v:pause() 
+	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do
+		v:pause()
 	end
 end
 
 function love.audio.play()
-	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do 
-		v:play() 
+	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do
+		v:play()
 	end
 end
 
 function love.audio.resume()
-	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do 
-		v:resume() 
+	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do
+		v:resume()
 	end
 end
 
 function love.audio.rewind()
-	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do 
-		v:rewind() 
+	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do
+		v:rewind()
 	end
 end
 
@@ -83,17 +83,17 @@ function love.audio.newFilter(...) --lovemu only
 end
 
 function love.audio.stop()
-	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do 
-		v:stop() 
+	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do
+		v:stop()
 	end
 end
 
 do -- Source
 
 	local Source = {}
-	
+
 	Source.Type = "Source"
-	
+
 	function Source:getChannels() -- partial
 		return 2 --stereo
 	end
@@ -102,7 +102,7 @@ do -- Source
 		if self.source then
 			return self.source:GetDirection()
 		end
-		
+
 		return 0,0,0
 	end
 
@@ -110,7 +110,7 @@ do -- Source
 		if self.source then
 			return self.source:GetReferenceDistance(), self.source:GetMaxDistance()
 		end
-		
+
 		return 0,0
 	end
 
@@ -118,7 +118,7 @@ do -- Source
 		if self.source then
 			return self.source:GetPitch()
 		end
-		
+
 		return 1
 	end
 
@@ -126,7 +126,7 @@ do -- Source
 		if self.source then
 			return self.source:GetPosition()
 		end
-		
+
 		return 0,0,0
 	end
 
@@ -134,7 +134,7 @@ do -- Source
 		if self.source then
 			return self.source:GetRolloffFactor()
 		end
-		
+
 		return 1
 	end
 
@@ -142,7 +142,7 @@ do -- Source
 		if self.source then
 			return self.source:GetVelocity()
 		end
-		
+
 		return 0,0,0
 	end
 
@@ -150,7 +150,7 @@ do -- Source
 		if self.source then
 			return self.source:GetGain()
 		end
-		
+
 		return 1
 	end
 
@@ -162,15 +162,15 @@ do -- Source
 		if self.source then
 			return self.source:GetLooping()
 		end
-		
-		return false	
+
+		return false
 	end
 
 	function Source:isPaused() -- partial
 		if self.source then
 			return not self.playing
 		end
-		
+
 		return false
 	end
 
@@ -182,10 +182,10 @@ do -- Source
 		if self.source then
 			return not self.playing
 		end
-		
+
 		return false
 	end
-	
+
 	function Source:isPlaying()
 		return not self:isStopped()
 	end
@@ -285,49 +285,49 @@ do -- Source
 	end
 
 	function Source:setVolumeLimits() --partial
-		
+
 	end
 
 	function Source:tell(type)
 		if self.source then
 			return self.source:Tell(self, type)
 		end
-		
+
 		return 1
 	end
-	
+
 	function Source:addEffect(...) --lovemu only
 		if self.source then
 			return self.source:AddEffect(...)
 		end
 	end
-	
+
 	function Source:setFilter(...) --lovemu only
 		if self.source then
 			return self.source:SetFilter(...)
 		end
 	end
-	
+
 	function Source:clone()
 		return love.audio.newSource(self.path)
 	end
 
 	function love.audio.newSource(var, type) --partial
 		local self = lovemu.CreateObject(Source)
-		
+
 		if lovemu.Type(var) == "string" then
-			
+
 			self.path = var
-			
+
 			if vfs.Exists(var) then
 				local ext = var:match(".+%.(.+)")
-				
+
 				if ext == "flac" or ext == "wav" or ext == "ogg" then
 					self.source = audio.CreateSource(var)
 					self.source:SetChannel(1)
 				end
-				
-			end			
+
+			end
 		elseif lovemu.Type(var) == "File" then
 			lovemu.ErrorNotSupported("Decoder is not supported yet")
 		elseif lovemu.Type(var) == "Decoder" then
@@ -338,7 +338,7 @@ do -- Source
 		else
 			warning("tried to create unknown source type: ", lovemu.Type(var), ", ", type)
 		end
-		
+
 		return self
 	end
 end

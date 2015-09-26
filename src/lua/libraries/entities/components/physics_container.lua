@@ -8,7 +8,7 @@ local PHYSICS = prototype.GetRegistered("component", "physics")
 if not PHYSICS then return end
 
 for k,v in pairs(PHYSICS) do
-	
+
 	local info = PHYSICS.prototype_variables[k:sub(4)]
 	if info then
 		--prototype.GetSet()
@@ -29,7 +29,7 @@ function COMPONENT:Initialize()
 end
 
 function COMPONENT:OnAdd(ent)
-	
+
 end
 
 function COMPONENT:OnRemove(ent)

@@ -8,7 +8,7 @@ function util.PrecacheSound() end
 
 function util.TraceLine(info)
 	local data = {}
-	
+
 	data.Entity = NULL -- [Entity] The entity hit by the trace
 	data.Fraction = 0 -- [number] This indicates the how much of your trace length was used from 0-1 (resultLength/originalLength)
 	data.FractionLeftSolid = 0 -- [number] Given the trace started in a solid enviroment, this will return at what distance the trace left the solid from 0-1
@@ -28,6 +28,6 @@ function util.TraceLine(info)
 	data.StartPos = gmod.env.Vector(0,0,0) -- [Vector] The origin of the trace
 	data.SurfaceProps = 0 -- [number] ID of hit surface property, from scripts/surfaceproperties.txt You can get the name using util.GetSurfacePropName Used for CEffectData:SetSurfaceProp in "Impact" effect.
 	data.StartSolid = false -- [boolean] Indicates whenever the trace started in a solid enviroment
-	
+
 	return data
 end

@@ -4,7 +4,7 @@ local love = ... or love
 
 local ParticleSystem = {}
 ParticleSystem.Type = "ParticleSystem"
-	
+
 function ParticleSystem:clone()
 
 end
@@ -220,6 +220,6 @@ function ParticleSystem:update()
 end
 function love.graphics.newParticleSystem()
 	local self = lovemu.CreateObject(ParticleSystem)
-	
+
 	return self
 end

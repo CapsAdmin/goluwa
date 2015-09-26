@@ -18,7 +18,7 @@ function META:CreateTexture()
 
 	fb:SetTexture(1, tex)
 	fb:WriteThese(1)
-	
+
 	self.fb = fb
 	self.tex = tex
 end
@@ -26,10 +26,10 @@ end
 local directions = {
 	QuatDeg3(90,-90,-90), -- back
 	QuatDeg3(-90,180,0), -- front
-	
+
 	QuatDeg3(0,90,0), -- up
 	QuatDeg3(180,-90,0), -- down
-	
+
 	QuatDeg3(0,90,90), -- left
 	QuatDeg3(0,-90,-90), -- right
 }
@@ -39,13 +39,13 @@ function META:Capture()
 	local old_projection = render.camera_3d:GetProjection()
 
 	local projection = Matrix44()
-	projection:Perspective(self.FOV, render.camera_3d.FarZ, render.camera_3d.NearZ, self.tex.w / self.tex.h) 
+	projection:Perspective(self.FOV, render.camera_3d.FarZ, render.camera_3d.NearZ, self.tex.w / self.tex.h)
 
-	self.fb:Begin()	
+	self.fb:Begin()
 		for i, rot in ipairs(directions) do
 			self.fb:SetTexture(1, self.tex, nil, nil, i)
-			self.fb:Clear()			
-			
+			self.fb:Clear()
+
 			local view = Matrix44()
 			view:SetRotation(rot)
 			view:Translate(self.Position.y ,self.Position.x,self.Position.z)
@@ -66,16 +66,16 @@ function META:SetPreview(b)
 		ent:SetModelPath("models/sphere.obj")
 		ent:SetPosition(self.Position)
 		ent:SetSize(0.25)
-		
+
 		local mat = render.CreateMaterial("model")
 		mat:SetSkyTexture(self.tex)
 		mat:SetDiffuseTexture(render.GetWhiteTexture())
 		mat:SetRoughnessTexture(render.GetWhiteTexture())
 		mat:SetMetallicTexture(render.GetWhiteTexture())
 		mat:SetRoughnessMultiplier(0)
-		mat:SetMetallicMultiplier(1)			 
+		mat:SetMetallicMultiplier(1)
 		ent:SetMaterialOverride(mat)
-		
+
 		self.preview_ent = ent
 	else
 		prototype.SafeRemove(self.preview_ent)

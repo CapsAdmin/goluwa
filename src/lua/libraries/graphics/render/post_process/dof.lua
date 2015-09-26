@@ -5,9 +5,9 @@ PASS.Default = false
 
 PASS.Source = [[
 	out vec3 out_color;
-	
+
 	void main()
-	{					
+	{
 		int uBlurSize = 4;
 		vec2 texelSize = 1.0 / vec2(textureSize(self, 0));
 		float z = pow((-texture(tex_depth, uv).r+1)*10, 1.25);
@@ -19,11 +19,11 @@ PASS.Source = [[
 				vec2 offset = vec2(float(x), float(y));
 				offset += hlim;
 				offset *= texelSize * z;
-						
+
 				fResult += texture(self, uv + offset).rgb;
 			}
 		}
-		
+
 		out_color = fResult / (uBlurSize * uBlurSize);
 	}
 ]]

@@ -64,7 +64,7 @@ local function get_format(channels, bits)
 	elseif channels == 2 and bits == 16 then
 		return al.e.AL_FORMAT_STEREO16
 	end
-	
+
 	return 0
 end
 
@@ -72,45 +72,45 @@ function love.sound.newSoundData(samples, rate, bits, channels)
 	local self = lovemu.CreateObject(SoundData)
 	local buffer = audio.CreateBuffer()
 	self.buffer = buffer
-	
+
 	if type(samples) == "string" then
 		resource.Download(samples, function(path)
 			local data = vfs.Read(path)
-			
+
 			local data, length, info = audio.Decode(data, var)
-			
+
 			if data then
 				local buffer = audio.CreateBuffer()
 				buffer:SetFormat(info.channels == 1 and al.e.AL_FORMAT_MONO16 or al.e.AL_FORMAT_STEREO16)
 				buffer:SetSampleRate(info.samplerate)
 				buffer:SetData(data, length)
-				
+
 				self:SetBuffer(buffer)
 
 				self.decode_info = info
 				self.ready = true
 
 				-- in case it's instantly loaded and OnLoad is defined the same frame
-				event.Delay(0, function() 
-					if self:IsValid() and self.OnLoad then 
+				event.Delay(0, function()
+					if self:IsValid() and self.OnLoad then
 						self:OnLoad(info)
 						if self.play_when_ready then
 							self:Play()
 							self.play_when_ready = nil
 						end
-					end 
+					end
 				end)
 			end
 		end)
-		
+
 		return self
 	end
-	
-	
+
+
 	buffer:SetFormat(get_format(channels, bits))
 	buffer:SetData(ffi.new("int8_t[?]", samples * channels), samples * channels)
-	
+
 	self.samples = buffer:GetData()
-	
+
 	return self
 end

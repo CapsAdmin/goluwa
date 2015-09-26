@@ -179,14 +179,14 @@ local replies = {
 }
 
 function META:HandleMessage(line)
-	if line:startswith("PING :") then	
+	if line:startswith("PING :") then
 		self:PONG()
-	end		
-	
+	end
+
 	local name, id, target, chanmode, str = line:match(":(.-) (.-) (.-) (.-) :(.+)")
-	
+
 	id = replies[tonumber(id)]
-	
+
 	if name and id and target and chanmode then
 		if target == self:GetNick() then
 			for i, v in ipairs(self.queries) do
@@ -202,7 +202,7 @@ function META:HandleMessage(line)
 		--print(name, id, target, chanmode, str)
 	else
 		local nick, username, ip, cmd, str = line:match(":(.-)!~(.-)@(.-) (.-) (.+)")
-		
+
 		if nick and username and ip and cmd and str then
 			if cmd == "PRIVMSG" then
 				local target, message = str:match("(.-) :(.+)")
@@ -217,11 +217,11 @@ function META:HandleMessage(line)
 							if user:startswith("@") then user = user:sub(2) end
 							self.Users[user] = self.Users[user] or true
 						end
-						
+
 						self:OnReady()
-					end)  
+					end)
 				end
-				
+
 				self:OnJoin(nick, ip)
 				return
 			elseif cmd == "PART" or cmd == "QUIT" then
@@ -235,12 +235,12 @@ function META:HandleMessage(line)
 				self:OnNickChanged(nick, new, ip)
 				return
 			end
-			
+
 			--print(nick, username, ip, cmd, str)
 			return
 		end
 	end
-		
+
 	--print(line)
 end
 
@@ -270,21 +270,21 @@ function META:Connect(address, port)
 
 	do
 		local socket = sockets.CreateClient()
-		
+
 		socket:Connect(address, port)
 		socket:SetKeepAlive(true)
 		socket:SetTimeout(math.huge)
 		socket:SetReceiveMode("line")
-		
-		socket.OnReceive = function(s, line) 
+
+		socket.OnReceive = function(s, line)
 			if self:OnReceive(line) ~= false then
-				self:HandleMessage(line)			
+				self:HandleMessage(line)
 			end
 		end
-		
+
 		self.socket = socket
 	end
-	
+
 	self:USER(self.Nick .. " " .. self.Nick .. " irc.freenode.net :realname")
 	self:SetNick(self:GetNick())
 end
@@ -321,8 +321,8 @@ prototype.Register(META)
 
 function sockets.CreateIRCClient()
 	local self = prototype.CreateObject(META)
-	
+
 	self.queries = {}
-	
+
 	return self
 end

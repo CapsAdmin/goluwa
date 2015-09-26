@@ -35,21 +35,21 @@ function vfs.IsPathAbsolute(path)
 	if LINUX then
 		return path:sub(1,1) == "/"
 	end
-	
+
 	if WINDOWS then
 		return path:sub(1, 2):find("%a:") ~= nil
 	end
-	
+
 end
 function vfs.ParseVariables(path)
 	-- windows
 	path = path:gsub("%%(.-)%%", vfs.GetEnv)
-	path = path:gsub("%%", "")		
+	path = path:gsub("%%", "")
 	path = path:gsub("%$%((.-)%)", vfs.GetEnv)
-	
+
 	-- linux
 	path = path:gsub("%$%((.-)%)", "%1")
-		
+
 	return vfs.FixPath(path)
 end
 
@@ -72,31 +72,31 @@ end
 function vfs.FixPath(path)
 	return (path:gsub("\\", "/"):gsub("(/+)", "/"))
 end
-	
+
 function vfs.CreateFoldersFromPath(filesystem, path)
 	check(filesystem, "string")
 	check(path, "string")
-	
+
 	if not vfs.GetFileSystem(filesystem) then
 		error("unknown filesystem " .. filesystem, 2)
 	end
-	
+
 	local path_info = vfs.GetPathInfo(path)
 	local folders = path_info:GetFolders("full")
-	
+
 	local max = #folders
-	
+
 	for i = 1, #folders - 1 do
 		local folder = folders[i]
-		
+
 		vfs.CreateFolder(filesystem ..":"..  folder)
 	end
 end
 
 function vfs.GetAbsolutePath(path, is_folder)
 	check(path, "string")
-	
-	for i, data in ipairs(vfs.TranslatePath(path, is_folder)) do	
+
+	for i, data in ipairs(vfs.TranslatePath(path, is_folder)) do
 		if data.context:PCall("IsFile", data.path_info) or data.context:PCall("IsFolder", data.path_info) then
 			return data.path_info.full_path
 		end

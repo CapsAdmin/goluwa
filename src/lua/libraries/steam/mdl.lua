@@ -215,7 +215,7 @@ local function find_file(path, ...)
 			end
 		end
 	end
-	
+
 	return assert(ok, err)
 end
 
@@ -232,7 +232,7 @@ local function load_mdl(path)
 		local offset = header[name .. "_offset"]
 
 		--tasks.Report("reading " .. name)
-		
+
 		if _debug then llog("reading %i %ss (at %i)", count, name, offset) end
 
 		if _debug then profiler.StartTimer(name) end
@@ -246,7 +246,7 @@ local function load_mdl(path)
 				if callback(data, i) ~= false then
 					out[i] = data
 				end
-				
+
 				tasks.Wait()
 			end
 
@@ -257,15 +257,15 @@ local function load_mdl(path)
 		header[name .. "_offset"] = nil
 
 		header[name] = out
-		
+
 		if _debug then profiler.StopTimer() end
 	end
-	
+
 	header.material = {}
-	
+
 	buffer:PushPosition(header.material_offset)
 		local offset = buffer:ReadInt()
-		
+
 		buffer:PushPosition(header.material_offset + offset)
 			for i = 1, header.material_count do
 				header.material[i] = buffer:ReadString()
@@ -276,7 +276,7 @@ local function load_mdl(path)
 	--[[parse("material", function(data, i)
 		do -- texture name
 			local offset = buffer:ReadInt()
-			
+
 			if offset > 0 then
 				buffer:PushPosition(header.material_offset + offset)
 					local str = buffer:ReadString()
@@ -289,7 +289,7 @@ local function load_mdl(path)
 
 		buffer:Advance(14 * 4)
 	end)]]
-	
+
 	parse("bone", function(data, i)
 		do -- bone name
 			local offset = buffer:ReadInt()
@@ -365,7 +365,7 @@ local function load_mdl(path)
 			data.path = buffer:ReadString()
 		buffer:PopPosition()
 	end)
-	
+
 	local function string_from_offset(offset, offset2)
 		if offset2 == 0 then return "" end
 
@@ -515,12 +515,12 @@ local function load_vtx(path)
 					mesh.flags = buffer:ReadByte()
 					lod_model.meshes[i] = mesh
 
-					buffer:PushPosition(stream_pos + mesh.strip_group_offset)   
+					buffer:PushPosition(stream_pos + mesh.strip_group_offset)
 					mesh.strip_groups = {}
-					
+
 					for i = 1, mesh.strip_group_count do
 						local stream_pos = buffer:GetPosition()
-						
+
 						local strip_group = {}
 						strip_group.vertices_count = buffer:ReadLong()
 						strip_group.vertices_offset = buffer:ReadLong()
@@ -530,7 +530,7 @@ local function load_vtx(path)
 						strip_group.strip_offset = buffer:ReadLong()
 						strip_group.flags = buffer:ReadByte()
 						mesh.strip_groups[i] = strip_group
-						
+
 						local vertices = {}
 						buffer:PushPosition(stream_pos + strip_group.vertices_offset)
 						for i = 1, strip_group.vertices_count do
@@ -547,7 +547,7 @@ local function load_vtx(path)
 							tasks.Wait()
 						end
 						buffer:PopPosition()
-						
+
 						local indices = {}
 						buffer:PushPosition(stream_pos + strip_group.indices_offset)
 						for i = 1, strip_group.indices_count do
@@ -555,8 +555,8 @@ local function load_vtx(path)
 						end
 						buffer:PopPosition()
 
-						local strips = {}											
-						buffer:PushPosition(stream_pos + strip_group.strip_offset)						
+						local strips = {}
+						buffer:PushPosition(stream_pos + strip_group.strip_offset)
 						for i = 1, strip_group.strip_count do
 							local strip = {}
 
@@ -569,7 +569,7 @@ local function load_vtx(path)
 							strip.bone_state_change_count = buffer:ReadLong()
 							strip.bone_state_change_offset = buffer:ReadLong()
 
-							strip.indices = indices 
+							strip.indices = indices
 							strip.vertices = vertices
 
 							strips[i] = strip
@@ -643,7 +643,7 @@ local function load_vvd(path)
 	end
 
 	vvd.fixed_vertices_by_lod = {}
-	
+
 	if _debug then profiler.StartTimer("processed %i fixups", vvd.fixup_count) end
 	if vvd.fixup_count > 0 and vvd.fixup_offset ~= 0 then
 		buffer:SetPosition(vvd.fixup_offset)
@@ -655,7 +655,7 @@ local function load_vvd(path)
 			fixup.lod_index = buffer:ReadLong() + 1
 			fixup.vertex_index = buffer:ReadLong() + 1
 			fixup.vertices_count = buffer:ReadLong()
-			
+
 			vvd.theFixups[i] = fixup
 		end
 
@@ -695,36 +695,36 @@ function steam.LoadModel(path, sub_model_callback)
 	local mdl = load_mdl(path)
 	local vvd = load_vvd(path)
 	local vtx = load_vtx(path)
-		
+
 	for i, body_part in ipairs(vtx.body_parts) do
 		for _, model_ in ipairs(body_part.models) do
 			for lod_index, lod_model in ipairs(model_.model_lods) do
 				if lod_model.meshes then
 					local WHAT2 = 0
-					
+
 					for model_i, mesh_data in ipairs(lod_model.meshes) do
-						
+
 						local vertices = table.copy(vvd.fixed_vertices_by_lod[lod_index] or vvd.vertices)
 						local indices = {}
-					
+
 						local mesh = render.CreateMeshBuilder()
 
 						mesh.material = render.CreateMaterial("model")
 						mesh:SetName(path)
-						--mesh.bbox = {min = mdl.hull_min*scale, max = mdl.hull_max*scale}								
-						
+						--mesh.bbox = {min = mdl.hull_min*scale, max = mdl.hull_max*scale}
+
 						if mdl.material[model_i] then
 							local path = mdl.material[model_i]
-							
+
 							if not path:find("/", nil, true) then
 								path = mdl.texturedir[i].path .. path
 							end
-							
+
 							steam.LoadMaterial(vfs.FixPath("materials/" .. path .. ".vmt"), mesh.material)
 						end
-						
+
 						local WHAT = 0
-						
+
 						for _, strip_group in ipairs(mesh_data.strip_groups) do
 							for _, strip in ipairs(strip_group.strips) do
 								for _, index in ipairs(strip.indices) do
@@ -733,32 +733,32 @@ function steam.LoadModel(path, sub_model_callback)
 								end
 							end
 						end
-						
+
 						WHAT2 = WHAT
 
 						mesh:SetVertices(vertices)
-						mesh:SetIndices(indices)						
+						mesh:SetIndices(indices)
 						mesh:BuildBoundingBox()
 						mesh:Upload()
-						
+
 						sub_model_callback(mesh)
-						
+
 						table.insert(models, mesh)
 					end
 				end
-				
+
 				break -- only first lod_model for now
 			end
 		end
 	--	break -- only first body part
 	end
-	
+
 	end)
-	
-	if not ok then 
+
+	if not ok then
 		llog("failed to decompile %s: %s", path, err)
 	end
-	
+
 	return models
 end
 

@@ -96,12 +96,12 @@ typedef enum ILenum {
 	IL_WAL = 0x0432,  //!< Quake 2 Texture - .wal extension
 	IL_LIF = 0x0434,  //!< Homeworld Texture - .lif extension
 	IL_MNG = 0x0435,  //!< Multiple-image Network Graphics - .mng extension
-	IL_JNG = 0x0435,  //!< 
+	IL_JNG = 0x0435,  //!<
 	IL_GIF = 0x0436,  //!< Graphics Interchange Format - .gif extension
 	IL_DDS = 0x0437,  //!< DirectDraw Surface - .dds extension
 	IL_DCX = 0x0438,  //!< ZSoft Multi-PCX - .dcx extension
 	IL_PSD = 0x0439,  //!< Adobe PhotoShop - .psd extension
-	IL_EXIF = 0x043A,  //!< 
+	IL_EXIF = 0x043A,  //!<
 	IL_PSP = 0x043B,  //!< PaintShop Pro - .psp extension
 	IL_PIX = 0x043C,  //!< PIX - .pix extension
 	IL_PXR = 0x043D,  //!< Pixar - .pxr extension
@@ -378,7 +378,7 @@ typedef void  (*mFree) (const void* CONST_RESTRICT);
 // Registered format procedures
 typedef ILenum (*IL_LOADPROC)(ILconst_string);
 typedef ILenum (*IL_SAVEPROC)(ILconst_string);
-	
+
 ILboolean ilActiveFace(ILuint Number);
 ILboolean ilActiveImage(ILuint Number);
 ILboolean ilActiveLayer(ILuint Number);
@@ -481,8 +481,8 @@ ILboolean ilTypeFunc(ILenum Mode);
 ILboolean ilLoadData(ILconst_string FileName, ILuint Width, ILuint Height, ILuint Depth, ILubyte Bpp);
 ILboolean ilLoadDataF(ILHANDLE File, ILuint Width, ILuint Height, ILuint Depth, ILubyte Bpp);
 ILboolean ilLoadDataL(void *Lump, ILuint Size, ILuint Width, ILuint Height, ILuint Depth, ILubyte Bpp);
-ILboolean ilSaveData(ILconst_string FileName);	
-]] 
+ILboolean ilSaveData(ILconst_string FileName);
+]]
 
 ffi.cdef(header)
 
@@ -490,21 +490,21 @@ local lib = assert(ffi.load(LINUX and "IL" or "devil"))
 ffi.cdef("ILboolean iluFlipImage(void);")
 
 local devil = {
-	lib = lib, 
+	lib = lib,
 }
- 
+
 function devil.LoadImage(data)
 	local buffer = ffi.cast("const unsigned char *const ", data)
 
 	local id = ffi.new("ILuint[1]")
 	lib.ilGenImages(1, id)
 	lib.ilBindImage(id[0])
-	
+
 	local width, height
-	
+
 	if lib.ilLoadL("IL_TYPE_UNKNOWN", buffer, #data) ~= 0 then
 		lib.ilConvertImage("IL_BGRA", "IL_UNSIGNED_BYTE")
-		
+
 		local size = lib.ilGetInteger("IL_IMAGE_SIZE_OF_DATA")
 		width = lib.ilGetInteger("IL_IMAGE_WIDTH")
 		height = lib.ilGetInteger("IL_IMAGE_HEIGHT")
@@ -514,9 +514,9 @@ function devil.LoadImage(data)
 		data = nil
 		width = "unknown format"
 	end
-	
+
 	lib.ilDeleteImages(1, id)
-	
+
 	return data, width, height
 end
 

@@ -21,62 +21,62 @@ table.insert(PASS.Source, {
 
 		out float out_color;
 
-		void main() 
+		void main()
 		{
 			const float PI = 3.14159265359;
-			
+
 			vec3 originVS = get_view_pos(uv)*0.996;
-			
+
 			vec3 normalVS = get_view_normal(uv);
 			float occlusion = 0;
-			
-			float oldAngle = uAngleBias;				
+
+			float oldAngle = uAngleBias;
 
 			]]..(function()
 				local loop = ""
 				for i = 1, samples do
 					for fade = 1, sub_samples do
 						local fade = (fade/sub_samples) / 1
-					
+
 						local str = [[
 						{
 							vec2 offset = vec2(%s, %s) * %s * ]]..fade..[[ / originVS.z;
-							
+
 							offset += (random(uv)*2-1) / 500;
-						
+
 							vec2 sampleUV = uv + offset;
 							vec3 sampleVS = get_view_pos(sampleUV);
 							vec3 sampleDirVS = (sampleVS - originVS);
-							
+
 							if (sampleDirVS.z < ]]..(radius*4)..[[)
-							{		
+							{
 								// angle between fragment tangent and the sample
 								float gamma = (PI / 1.8) - acos(dot(normalVS, normalize(sampleDirVS)));
-								
-								if (gamma > oldAngle) 
+
+								if (gamma > oldAngle)
 								{
 									occlusion += sin(gamma) - sin(oldAngle);
 									oldAngle = gamma;
 								}
 							}
 						}]]
-						
+
 						local theta = (i / samples) * math.pi * 2
 						str = str:format(math.sin(theta), math.cos(theta), radius)
-						
-						loop = loop .. str 
+
+						loop = loop .. str
 					end
 				end
-				
+
 				loop = loop .. "occlusion = 1 - occlusion / 2;\n"
-				
+
 				return loop
 			end)()..[[
-		
+
 		out_color = occlusion;
 	}]]
 })
- 
+
 if blur then
 
 	for x = -1, 1 do
@@ -89,12 +89,12 @@ if blur then
 				},
 				source = [[
 					out vec3 out_color;
-					
+
 					vec3 blur(vec2 tex, vec2 dir)
 					{
 						if (get_view_normal(tex) == vec3(0,0,0))
 							return vec3(1);
-					
+
 						float weights[9] =
 						{
 							0.013519569015984728,
@@ -149,27 +149,27 @@ if blur then
 
 						return res;
 					}
-					
+
 					void main()
-					{					 
+					{
 						out_color = blur(uv, vec2(]]..(x*blur)..","..(y*blur)..[[));
 					}
 				]]
 			})
 			::continue::
 		end
-	end 
+	end
 end
- 
+
 table.insert(PASS.Source, {
 	source = [[
 		out vec3 out_color;
-		
+
 		void main()
 		{
 			vec3 color = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rrr;
-		
-			out_color = 
+
+			out_color =
 				texture(self, uv).rgb *
 				color*color*color*color;
 		}

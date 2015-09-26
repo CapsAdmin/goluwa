@@ -399,7 +399,7 @@ local enums = {
 	AL_EFFECT_AUTOWAH = 0x000A,
 	AL_EFFECT_COMPRESSOR = 0x000B,
 	AL_EFFECT_EQUALIZER = 0x000C,
-	
+
 	AL_METERS_PER_UNIT = 0x20004,
 	AL_DIRECT_FILTER = 0x20005,
 	AL_AUXILIARY_SEND_FILTER = 0x20006,
@@ -873,7 +873,7 @@ local enums = {
 	AL_MIN_METERS_PER_UNIT = FLT_MIN,
 	AL_MAX_METERS_PER_UNIT = FLT_MAX,
 	AL_DEFAULT_METERS_PER_UNIT = 1.0,
-	
+
 	AL_MIDI_CLOCK_SOFT = 0x9999,
 	AL_MIDI_GAIN_SOFT = 0x9998,
 	AL_NOTEOFF_SOFT = 0x0080,
@@ -920,7 +920,7 @@ local extensions = {
 	alGetAuxiliaryEffectSlotiv = "LPALGETAUXILIARYEFFECTSLOTIV",
 	alGetAuxiliaryEffectSlotf = "LPALGETAUXILIARYEFFECTSLOTF",
 	alGetAuxiliaryEffectSlotfv = "LPALGETAUXILIARYEFFECTSLOTFV",
-	
+
 	alBufferSamplesSOFT = "LPALBUFFERSAMPLESSOFT",
 	alIsBufferFormatSupportedSOFT = "LPALISBUFFERFORMATSUPPORTEDSOFT",
 
@@ -933,33 +933,33 @@ local extensions = {
 
 	alBufferSamplesSOFT = "LPALBUFFERSAMPLESSOFT",
 	alIsBufferFormatSupportedSOFT = "LPALISBUFFERFORMATSUPPORTEDSOFT",
-		
+
 	alGetInteger64SOFT = "ALint64SOFT(*)(ALenum pname)",
 	alGetInteger64vSOFT = "void(*)(ALenum pname, ALint64SOFT *values)",
-	
+
 	alMidiPlaySOFT = "void(*)(void)",
 	alMidiPauseSOFT = "void(*)(void)",
-	alMidiStopSOFT = "void(*)(void)", 
+	alMidiStopSOFT = "void(*)(void)",
 	alMidiResetSOFT = "void(*)(void)",
-	
+
 	alMidiGainSOFT = "void(*)(ALfloat value)",
-	
+
 	alIsSoundfontSOFT = "ALboolean(*)(const char *filename)",
 	alMidiSoundfontSOFT = "void(*)(ALuint id)",
 	alMidiSoundfontvSOFT = "void(*)(ALsizei count, const ALuint *ids)",
-	
-	alMidiEventSOFT = "void(*)(ALuint64SOFT time, ALenum event, ALsizei channel, ALsizei param1, ALsizei param2)", 
-	alMidiSysExSOFT = "void(*)(ALuint64SOFT time, const ALbyte *data, ALsizei size)",	
+
+	alMidiEventSOFT = "void(*)(ALuint64SOFT time, ALenum event, ALsizei channel, ALsizei param1, ALsizei param2)",
+	alMidiSysExSOFT = "void(*)(ALuint64SOFT time, const ALbyte *data, ALsizei size)",
 	alLoadSoundfontSOFT = "void(*)(ALuint id, size_t(*cb)(ALvoid*, size_t, ALvoid*), ALvoid *user)",
 }
 
 local reverse_enums = {}
-for k,v in pairs(enums) do 
+for k,v in pairs(enums) do
 	k = k:gsub("AL_", "")
 	k = k:gsub("_", " ")
-	k = k:lower()	
+	k = k:lower()
 
-	reverse_enums[v] = k 
+	reverse_enums[v] = k
 end
 
 ffi.cdef(header)
@@ -968,7 +968,7 @@ local lib = assert(ffi.load(WINDOWS and "openal32" or "openal"))
 
 local al = {
 	lib = lib,
-	e = enums, 
+	e = enums,
 }
 
 local function gen_available_params(type, user_unavailable) -- effect params
@@ -980,17 +980,17 @@ local function gen_available_params(type, user_unavailable) -- effect params
 		type = true,
 		null = true,
 	}
-	
+
 	for k,v in pairs(user_unavailable) do
 		unavailable[v] = true
 	end
-	
+
 	local type_pattern = "AL_"..type:upper().."_(.+)"
 
 	for key, val in pairs(enums) do
 		local type = key:match(type_pattern)
-		
-		if type then 
+
+		if type then
 			type = type:lower()
 			if not unavailable[type] then
 				available[type] = {enum = val, params = {}}
@@ -1001,10 +1001,10 @@ local function gen_available_params(type, user_unavailable) -- effect params
 	for name, data in pairs(available) do
 		for key, val in pairs(enums) do
 			local param = key:match("AL_" .. name:upper() .. "_(.+)")
-			
+
 			if param then
-				local name = param:lower() 
-				
+				local name = param:lower()
+
 				if param:find("DEFAULT_") then
 					name = param:match("DEFAULT_(.+)")
 					key = "default"
@@ -1015,17 +1015,17 @@ local function gen_available_params(type, user_unavailable) -- effect params
 					name = param:match("MAX_(.+)")
 					key = "max"
 				else
-					key = "enum" 
+					key = "enum"
 				end
-				
+
 				name = name:lower()
-				
+
 				data.params[name] = data.params[name] or {}
 				data.params[name][key] = val
 			end
 		end
 	end
-	
+
 	al["GetAvailable" .. type .. "s"] = function()
 		return available
 	end
@@ -1036,22 +1036,22 @@ gen_available_params("Effect", {"pitch_shifter", "vocal_morpher", "frequency_shi
 gen_available_params("Filter", {"highpass", "bandpass"})
 
 local function add_al_func(name, func)
-	al[name] = function(...) 
+	al[name] = function(...)
 		local val = func(...)
-		
+
 		if al.logcalls then
 			setlogfile("al_calls")
 				logf("%s = al%s(%s)\n", serializer.GetLibrary("luadata").ToString(val), name, table.concat(tostring_args(...), ",\t"))
 			setlogfile()
 		end
-		
+
 		if name ~= "GetError" and al.debug then
-		
+
 			local code = al.GetError()
-		
+
 			if code ~= 0 then
 				local str = reverse_enums[code] or "unkown error"
-				
+
 				local info = debug.getinfo(2)
 				for i = 1, 10 do
 					if info.source:find("al.lua", nil, true) then
@@ -1060,11 +1060,11 @@ local function add_al_func(name, func)
 						break
 					end
 				end
-				
+
 				logf("[openal] %q in function %s at %s:%i\n", str, info.name, info.source, info.currentline)
 			end
 		end
-		
+
 		return val
 	end
 end
@@ -1073,21 +1073,21 @@ for line in header:gmatch("(.-)\n") do
 	local func_name = line:match(" (al%u.-)%(")
 	if func_name then
 		add_al_func(func_name:sub(3), lib[func_name])
-	end 
+	end
 end
 
 for name, type in pairs(extensions) do
 	local func = al.GetProcAddress(name)
 	func = ffi.cast(type, func)
-	
+
 	al[name:sub(3)] = func
 end
 
 for name, func in pairs(al) do
 	if name:find("Gen%u%l") then
 		al[name:sub(0,-2)] = function()
-			local id = ffi.new("ALuint [1]") 
-			al[name](1, id) 
+			local id = ffi.new("ALuint [1]")
+			al[name](1, id)
 			return id[0]
 		end
 	end

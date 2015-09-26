@@ -11,7 +11,7 @@ if SERVER then
 	function META:SendLua(code)
 		message.Send("sendlua", self, code, env)
 	end
-	
+
 	function META:Cexec(str)
 		self:SendLua("console.RunString('"..str.."')")
 	end

@@ -136,9 +136,9 @@
 		local y = (n400*400) + (n100*100) + (n004*4) + n001	- ((n001 == 4 or n100 == 4) and 1 or 0)
 		local d = g - dayfromyear(y)
 		local mi = floor((100*d + 52)/3060)
-		return (floor((mi + 2)/12) + y), mod(mi + 2,12), (d - floor((mi*306 + 5)/10) + 1)		
+		return (floor((mi + 2)/12) + y), mod(mi + 2,12), (d - floor((mi*306 + 5)/10) + 1)
 	end
-	]]		
+	]]
 	-- day fraction from time
 	local function makedayfrc(h,r,s,t)
 		return ((h*60 + r)*60 + s)*TICKSPERSEC + t

@@ -1,5 +1,5 @@
 surface.CreateFont("lol", {
-	path = "Francois One", 
+	path = "Francois One",
 	size = 54,
 })
 
@@ -17,13 +17,13 @@ event.AddListener("Draw2D", "lol", function()
 	surface.SetFont("lol")
 	surface.SetTextPosition(17, 30)
 	surface.DrawText("empathize foolish self benefit start off preferred occasions")
-	
+
 	local w, h = surface.GetTextSize("empathize foolish self benefit start off preferred occasions")
 	surface.SetWhiteTexture()
 	surface.SetColor(1,0,0,0.25)
 	surface.DrawRect(17, 30, w, h)
-	
-	
+
+
 	surface.SetColor(1,1,1,1)
 	surface.SetFont("love")
 	surface.SetTextPosition(17, 150)
@@ -32,8 +32,8 @@ event.AddListener("Draw2D", "lol", function()
 	surface.SetColor(1,1,1,1)
 	surface.SetFont("love2")
 	surface.SetTextPosition(17, 170)
-	surface.DrawText("EMPATHIZE FOOLISH SELF BENEFIT START OFF PREFERRED OCCASIONS")	
-	
+	surface.DrawText("EMPATHIZE FOOLISH SELF BENEFIT START OFF PREFERRED OCCASIONS")
+
 	local w, h = surface.GetTextSize("empathize foolish self benefit start off preferred occasions")
 	surface.SetWhiteTexture()
 	surface.SetColor(1,0,0,0.25)

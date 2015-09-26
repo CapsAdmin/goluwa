@@ -19,7 +19,7 @@ local encodet, decodet, wrapt = {},{},{}
 
 _M.encodet = encodet
 _M.decodet = decodet
-_M.wrapt   = wrapt  
+_M.wrapt   = wrapt
 
 -- creates a function that chooses a filter by name from a given table
 local function choose(table)
@@ -28,7 +28,7 @@ local function choose(table)
             name, opt1, opt2 = "default", name, opt1
         end
         local f = table[name or "nil"]
-        if not f then 
+        if not f then
             base.error("unknown key (" .. base.tostring(name) .. ")", 3)
         else return f(opt1, opt2) end
     end

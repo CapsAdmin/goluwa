@@ -117,14 +117,14 @@ end
 
 function sigh.Encode(...)
 	local buffer = ""
-	
+
 	for key, arg in pairs({...}) do
 		local T = typex(arg)
 
 		if not sigh.types[T] and (hasindex(arg) and arg.GetId) then
 			T = "entity"
 		end
-		
+
 		if sigh.types[T] then
 			buffer = buffer .. sigh.types[T].encode(arg)
 		else

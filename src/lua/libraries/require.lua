@@ -34,7 +34,7 @@ local function path_loader(name, paths, loader_func)
 	local errors = {}
 	local loader
 	local found_path
-	
+
 	name = name or ""
 
 	name = name:gsub("%.", "/")
@@ -100,7 +100,7 @@ local function find_chunk(loaders, errors, name, hint)
 	for _, loader in ipairs(loaders) do
 		local chunk, err, path = select(2, pcall(loader, name))
 		if require.debug then print(chunk, err, path) end
-		if type(chunk) == "function" then			
+		if type(chunk) == "function" then
 			if hint and not (path and path:lower():find(hint:lower(), nil, true)) then
 				table.insert(errors, ("hint %q was given but it was not found in in the returned path %q\n"):format(hint, path))
 			else
@@ -116,10 +116,10 @@ end
 
 local function load(name, hint, skip_error)
 	local errors = { string.format("module %q not found\n", name) }
-	
+
 	local func, path
-	
-	func, path = find_chunk(_M.loaders, errors, name, hint) 
+
+	func, path = find_chunk(_M.loaders, errors, name, hint)
 	if func then return func, nil, path end
 	func, path = find_chunk(package.loaders, errors, name, hint)
 	if func then return func, nil, path end
@@ -129,11 +129,11 @@ local function load(name, hint, skip_error)
 	end
 
 	errors = table.concat(errors, "")
-	
+
 	if not chunk and not skip_error then
 		error(errors, 3)
 	end
-		
+
 	return chunk, errors, path
 end
 
@@ -141,21 +141,21 @@ local function require(name)
 	if package.loaded[name] == nil then
 		local func, err, path = load(name)
 		if path then path = path:match("(.+)[\\/]") end
-		
-		if vfs and vfs.PushToIncludeStack and path then	
+
+		if vfs and vfs.PushToIncludeStack and path then
 			vfs.PushToIncludeStack(path .. "/")
 		end
-		
+
 		local args = {pcall(func, path)}
-		
-		if vfs and vfs.PopFromIncludeStack and path then	
+
+		if vfs and vfs.PopFromIncludeStack and path then
 			vfs.PopFromIncludeStack()
 		end
-		
+
 		if args[1] == false then error(args[2], 2) end
-		
+
 		local result = args[2]
-	
+
 		if result ~= nil then
 			package.loaded[name] = result
 		elseif package.loaded[name] == nil then
@@ -180,12 +180,12 @@ function module(name, ...)
 	end
 end
 
-local function require_function(name, func, path, arg_override)	
+local function require_function(name, func, path, arg_override)
 	if package.loaded[name] == nil and package.loaded[path] == nil then
-	
+
 	local dir = path
 	if dir then dir = dir:match("(.+)[\\/]") end
-	
+
 	IN_MODULE = name
 		local result = func(arg_override or dir)
 		if MODULE_CALLED then
@@ -193,14 +193,14 @@ local function require_function(name, func, path, arg_override)
 			MODULE_CALLED = false
 		end
 	IN_MODULE = false
-	
+
 		if result ~= nil and not package.loaded[path] and not package.loaded[name] then
 			package.loaded[name] = result
 		elseif package.loaded[name] == nil and package.loaded[path] == nil then
 			package.loaded[name] = true
 		end
 	end
-	
+
 	return package.loaded[path] or package.loaded[name] -- or package.loaded[path] in case of module(...)
 end
 

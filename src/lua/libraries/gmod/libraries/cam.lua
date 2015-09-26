@@ -14,6 +14,6 @@ function cam.End3D()
 
 end
 
-function cam.IgnoreZ() 
+function cam.IgnoreZ()
 
 end

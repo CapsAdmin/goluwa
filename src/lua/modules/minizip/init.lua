@@ -34,7 +34,7 @@ local errors = {
 	[-3] = "data error",
 	[-4] = "mem error",
 	[-5] = "buf error",
-	[-6] = "version error", 
+	[-6] = "version error",
 }
 
 local function checkh(h)

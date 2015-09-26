@@ -23,21 +23,21 @@ local queries = {
 			{"char", "Environment", translate = {l = "Linux", w = "Windows", m = "Mac", o = "Mac"}}, -- Indicates the operating system of the server
 			{"boolean", "Visibility"}, -- Indicates whether the server requires a password
 			{"boolean", "VAC"}, -- Specifies whether the server uses VAC
-			
+
 			-- the ship
 			{"byte", "Mode", match = {ID = 2400}, translate =  {[0] = "Hunt", [1] = "Elimination", [2] = "Duel", [3] = "Deathmatch", [4] = "VIP Team", [5] = "Team Ellimination"}},
 			{"byte", "Witnesses", match = {ID = 2400}, }, -- The number of witnesses necessary to have a player arrested.
 			{"byte", "Duration", match = {ID = 2400}}, -- Time (in seconds) before a player is arrested while being witnessed
-			
+
 			{"string", "Version"}, -- Version of the game installed on the server.
 			{"byte", "ExtraDataFlag"}, -- If present, this specifies which additional data fields will be included.
-			
+
 			{"short", "Port", match = {ExtraDataFlag = function(num) return bit.band(num, 0x80) end}}, -- The server's game port number.
 			{"long", "SteamID", match = {ExtraDataFlag = function(num) return bit.band(num, 0x10) end}}, -- Server's SteamID.
 
 			{"short", "Port", match = {ExtraDataFlag = function(num) return bit.band(num, 0x40) end}}, -- Spectator port number for SourceTV.
 			{"string", "Name", match = {ExtraDataFlag = function(num) return bit.band(num, 0x20) end}}, -- Name of the spectator server for SourceTV.
-			
+
 			{"long", "Name", match = {ExtraDataFlag = function(num) return bit.band(num, 0x01) end}}, -- The server's 64-bit GameID. If this is present, a more accurate AppID is present in the low 24 bits. The earlier AppID could have been truncated as it was forced into 16-bit storage.
 		}
 	},
@@ -63,7 +63,7 @@ local queries = {
 			{"byte", 0x56},
 			{"long", 0xFFFFFFFF},
 		},
-		response = {			
+		response = {
 			{"byte", "Header", assert = 0x45}, -- Always equal to 'E' (0x45.)
 			{"short", "Rules", {
 				{"string", "Name"},  -- Name of the rule
@@ -93,67 +93,67 @@ local split_query = {
 
 local function query_server(ip, port, query, callback)
 	callback = callback or table.print
-		
+
 	local socket = sockets.CreateClient("udp", ip, port)
-	
+
 	socket.debug = steam.debug
-	
+
 	-- more like on socket created
 	function socket:OnConnect()
 		local buffer = packet.CreateBuffer()
 		buffer:WriteLong(0xFFFFFFFF)
 		buffer:WriteStructure(query.request)
-		
+
 		if steam.debug then
 			llog("sending %s to %s %i", buffer:GetDebugString(), ip, port)
 		end
-		
+
 		socket:Send(buffer:GetString())
 	end
-	
+
 	function socket:OnReceive(str)
 		local buffer = packet.CreateBuffer(str)
-		
+
 		if steam.debug then
 			llog("received %s to %s %i", buffer:GetDebugString(), ip, port)
 		end
-		
+
 		local header = buffer:ReadLong()
 
 		-- packet is split up
 		if header == -2 then
 			local info = buffer:ReadStructure(split_query.response)
-			
+
 			if not self.buffer_chunks then
 				self.buffer_size = buffer:ReadLong()
 				self.buffer_crc32_sum = buffer:ReadLong()
-				
+
 				self.buffer_chunks = {}
 			end
-			
+
 			self.buffer_chunks[info.Number + 1] = buffer:ReadRest()
-			
+
 			if table.count(self.buffer_chunks) - 1 == info.Total then
 				callback(packet.CreateBuffer(table.concat(self.buffer_chunks)):ReadStructure(query.response))
 			end
 		elseif header == -1 then
 			if query.challenge and not self.challenge then
 				local type = buffer:ReadByte()
-						
+
 				if type == 0x41 then
 					local challenge = buffer:ReadLong()
-				
+
 					local buffer = packet.CreateBuffer()
 					buffer:WriteLong(0xFFFFFFFF)
 					buffer:WriteByte(query.request[1][2])
 					buffer:WriteLong(challenge)
-					
+
 					if steam.debug then
 						llog("sending challenge %s to %s %i", buffer:GetDebugString(), ip, port)
 					end
-					
+
 					self:Send(buffer:GetString())
-					
+
 					self.challenge = challenge
 				end
 			else
@@ -168,28 +168,28 @@ end
 function steam.GetServerInfo(ip, port, callback)
 	check(ip, "string")
 	check(port, "number")
-	
+
 	query_server(ip, port, queries.info, callback)
 end
 
 function steam.GetServerClients(ip, port, callback)
 	check(ip, "string")
 	check(port, "number")
-	
+
 	query_server(ip, port, queries.clients, callback)
 end
 
 function steam.GetServerRules(ip, port, callback)
 	check(ip, "string")
 	check(port, "number")
-	
+
 	query_server(ip, port, queries.rules, callback)
 end
 
-function steam.GetServerPing(ip, port, callback)	
+function steam.GetServerPing(ip, port, callback)
 	check(ip, "string")
 	check(port, "number")
-	
+
 	callback = callback or logn
 	local start = system.GetTime()
 	query_server(ip, port, queries.ping, function()

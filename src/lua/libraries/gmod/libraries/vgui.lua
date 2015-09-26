@@ -21,7 +21,7 @@ for k,v in pairs(gmod.env) do
 end
 
 function vgui.CreateX(class, parent, name)
-	
+
 	if not gmod.gui_world:IsValid() then
 		gmod.gui_world = gui.CreatePanel("base")
 		gmod.gui_world:SetColor(Color(0,0,0,0))
@@ -32,21 +32,21 @@ function vgui.CreateX(class, parent, name)
 			self.Size.y = size.y
 		end
 	end
-	
+
 	class = class:lower()
-		
+
 	local obj
-	
-	if class == "textentry" then 
-		obj = gui.CreatePanel("text_edit") 
-	else 
+
+	if class == "textentry" then
+		obj = gui.CreatePanel("text_edit")
+	else
 		obj = gui.CreatePanel("base")
 	end
-	
+
 	local self = gmod.WrapObject(obj, "Panel")
-	
+
 	self.__class = class
-		
+
 	obj.fg_color = Color(1,1,1,1)
 	obj.bg_color = Color(1,1,1,1)
 	obj.text_inset = Vec2()
@@ -56,25 +56,25 @@ function vgui.CreateX(class, parent, name)
 	obj:SetSize(Vec2(64, 24))
 	obj:SetPadding(Rect())
 	obj:SetMargin(Rect())
-	
+
 	self:SetParent(parent)
 
 	obj.IsInsideParent = function() return true end -- :(
 	obj.OnDraw = function()
 		local paint_bg
-		
-		if self.Paint then 
+
+		if self.Paint then
 			paint_bg = self:Paint(obj:GetWidth(), obj:GetHeight())
-		end 
-		
-		if not obj.draw_manual then 
+		end
+
+		if not obj.draw_manual then
 			if obj.paint_bg and paint_bg ~= nil then
 				surface.SetWhiteTexture()
 				surface.SetColor(obj.bg_color:Unpack())
 				surface.DrawRect(0,0,obj.Size.x,obj.Size.y)
 			end
-			
-			if class == "label" then						
+
+			if class == "label" then
 				if obj.text_internal and obj.text_internal ~= "" then
 					surface.SetColor(obj.fg_color:Unpack())
 					surface.SetTextPosition(obj.text_offset.x, obj.text_offset.y)
@@ -82,25 +82,25 @@ function vgui.CreateX(class, parent, name)
 					surface.DrawText(obj.text_internal)
 				end
 			end
-		end	
-		
-		if self.PaintOver then 
-			self:PaintOver(obj:GetWidth(), obj:GetHeight()) 
-		end 
+		end
+
+		if self.PaintOver then
+			self:PaintOver(obj:GetWidth(), obj:GetHeight())
+		end
 	end
 	obj:CallOnRemove(function() if self.OnDeletion then self:OnDeletion() end end)
 	obj.OnUpdate = function() if self.Think then self:Think() end if self.AnimationThink then self:AnimationThink() end end
 	obj.OnMouseMove = function(_, x, y) if self.OnCursorMoved then self:OnCursorMoved(x, y) end end
 	obj.OnMouseEnter = function() if self.OnMouseEnter then self:OnMouseEnter() end end
-	obj.OnCursorExited = function() if self.OnCursorExited then self:OnCursorExited() end end	
-	
+	obj.OnCursorExited = function() if self.OnCursorExited then self:OnCursorExited() end end
+
 	-- OnChildAdd and such doesn't seem to be called in Init
-	
+
 	function self:__setup_events()
-		obj.OnChildAdd = function(_, child) if self.OnChildAdded then self:OnChildAdded(gmod.WrapObject(child, "Panel")) end end	
-		obj.OnChildRemove = function(_, child) if self.OnChildRemoved then self:OnChildRemoved(gmod.WrapObject(child, "Panel")) end end	
+		obj.OnChildAdd = function(_, child) if self.OnChildAdded then self:OnChildAdded(gmod.WrapObject(child, "Panel")) end end
+		obj.OnChildRemove = function(_, child) if self.OnChildRemoved then self:OnChildRemoved(gmod.WrapObject(child, "Panel")) end end
 	end
-	
+
 	obj.OnLayout = function()
 		local panel = obj
 
@@ -135,37 +135,37 @@ function vgui.CreateX(class, parent, name)
 				panel.text_offset.x = panel:GetWidth() - w - m.right
 				panel.text_offset.y = panel:GetHeight() - h - m.bottom
 			end
-			
+
 			panel.text_offset = panel.text_offset + panel.text_inset
 		end
-	
-		if self.ApplySchemeSettings then 
+
+		if self.ApplySchemeSettings then
 			self:ApplySchemeSettings()
 		end
-	
-		if self.PerformLayout then 
-			self:PerformLayout(obj:GetWidth(), obj:GetHeight()) 
+
+		if self.PerformLayout then
+			self:PerformLayout(obj:GetWidth(), obj:GetHeight())
 		end
-	end	
-	
+	end
+
 	obj.OnMouseInput = function(_, button, press)
 		if translate_mouse[button] then
 			if press then
 				if self.OnMousePressed then
 					self:OnMousePressed(translate_mouse[button])
 				end
-			else	
+			else
 				if self.OnMouseReleased then
-					self:OnMouseReleased(translate_mouse[button]) 
+					self:OnMouseReleased(translate_mouse[button])
 				end
 			end
 		else
 			logf("mouse button %q could not be translated!\n", button)
 		end
 	end
-	
+
 	self:MouseCapture(false)
-	
+
 	obj.OnKeyInput = function(_, key, press)
 		if press and self.OnKeyCodePressed then
 			if translate_key[key] then

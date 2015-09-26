@@ -13,14 +13,14 @@ local i = 1
 
 local function spawn_test(path)
 	local tex = Texture(path)
-	
+
 	local ent = entities.CreateEntity("visual")
 	ent:SetPosition(Vec3(4*i,0,0))
 	local mat = render.CreateMaterial("model")
 	mat:SetDiffuseTexture(render.GetGreyTexture())
 	mat:SetNormalTexture(tex)
-	ent:SetMaterialOverride(mat)	
-	
+	ent:SetMaterialOverride(mat)
+
 	do
 		local ent = entities.CreateEntity("visual")
 		ent:SetPosition(Vec3(4*i,-0.75,2))
@@ -29,9 +29,9 @@ local function spawn_test(path)
 		mat:SetDiffuseTexture(tex)
 		ent:SetMaterialOverride(mat)
 	end
-	
+
 	i = i + 1
-	
+
 	return mat
 end
 

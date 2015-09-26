@@ -1,4 +1,4 @@
-local emotes = 
+local emotes =
 {
 	"\227\131\189\40\239\189\143\96\231\154\191\226\128\178\239\189\143\41\239\190\137",
 	"\111\40\38\103\116\59\38\108\116\59\32\41\111",
@@ -818,42 +818,42 @@ local emotes =
 	"\207\134\40\227\131\187\207\137\227\131\187\239\189\128\32\41",
 	"\227\128\134\40\227\131\187\226\136\128\227\131\187\239\188\160\41",
 }
-	
+
 function string.anime(str)
 	str = str:gsub("^.", function(c) return c:upper() end)
-	
+
 	-- todo: automatic conversion of punctation?
 	str = str:gsub("%.","\239\188\142")
 	str = str:gsub("%!", "\239\188\129")
-	
+
 	-- upper and lower to full width
 	str = str:gsub("%l", function(c) return string.char(239, 189, 130 + (c:byte() - 98)) end)
 	str = str:gsub("%u", function(c) return string.char(239, 188, 161 + (c:byte() - 65)) end)
-	
+
 	-- maybe add some dots at the end
 	if math.random() > 0.5 then
 		str = str .. "\239\188\142\239\188\142"
-		
+
 		-- maybe add some exclamation points at the end
 		if math.random() > 0.5 then
 			str = str .. "\239\188\129\239\188\129"
 		end
 	end
-	
+
 	-- maybe add a wiggly thing at the end
 	if math.random() > 0.5 then
 		str = str .. "\239\189\158"
 	end
-	
+
 	-- add some decoration
 	str = "\227\128\144\32\226\128\157\32" .. str .. "\32\226\128\157\32\227\128\145"
-	
+
 	-- have the emote on the left or right?
 	if math.random() > 0.5 then
 		str = emotes[math.random(#emotes)] .. " \239\188\141 " .. str
 	else
 		str = str .. " \239\188\141 " .. emotes[math.random(#emotes)]
 	end
-	
+
 	return str
 end

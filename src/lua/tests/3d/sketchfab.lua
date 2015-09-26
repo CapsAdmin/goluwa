@@ -11,8 +11,8 @@ local function parse_scene(id)
 				huh(v, node["osg.Node"])
 			end
 		end
-		
-		if node["osg.Geometry"] then 
+
+		if node["osg.Geometry"] then
 			for name, info in pairs(node["osg.Geometry"].VertexAttributeList) do
 				if info.Array then
 					local t, info = next(info.Array)
@@ -20,38 +20,38 @@ local function parse_scene(id)
 						if name == "Vertex" then
 							local file = vfs.Open(output_folder .. info.File:match("(.+)%.gz"))
 							local ints = {}
-							
+
 							for i = 1, math.huge do
 								ints[i] = (file:ReadVarInt()-(0xFFFF/2))/32000
 								if file:GetPosition() >= file:GetSize() then break end
 							end
-							
+
 							--if true then
 								local vertices = {}
-								
+
 								--[[for i = 1, math.huge do
 									vertices[i] = Vec3(file:ReadVarInt(), file:ReadVarInt(), file:ReadVarInt())
 									if file:GetPosition() >= info.Offset + info.Size then
 										break
 									end
 								end]]
-								
+
 								local asdf = 1
 								for i = 0, info.Size, 3 do
 									vertices[asdf] = Vec3(ints[info.Offset + i + 1], ints[info.Offset + i + 2], ints[info.Offset + i + 3])
 									asdf = asdf + 1
 								end
-								
+
 								table.print(vertices)
 							--end
-						
-							if false then	
+
+							if false then
 								local t, info = next(node["osg.Geometry"].PrimitiveSetList[1].DrawElementsUInt.Indices.Array)
-								
+
 								local indices = {}
-								
-								file:SetPosition(info.Offset) 
-								
+
+								file:SetPosition(info.Offset)
+
 								--[[for i = 1, math.huge do
 									indices[i] = file:ReadVarInt()
 									if file:GetPosition() >= info.Offset + info.Size then
@@ -73,22 +73,22 @@ local function parse_scene(id)
 								--print(vertices[index], index)
 								--mesh:AddVertex({pos = vertices[index]})
 						--	end
-							
+
 							mesh:Upload()
-							
+
 							prototype.SafeRemove(TEST)
-							
+
 							local model = entities.CreateEntity("visual")
 							model:AddMesh(mesh)
-							
+
 							TEST = model
 						end
 					end
 				end
 			end
-		end 
+		end
 	end
-	
+
 	huh(tbl)
 end
 
@@ -96,18 +96,18 @@ end
 sockets.Download("https://sketchfab.com/models/" .. id .. "/embed", function(str)
 	local tbl = serializer.Decode("json", str:match('prefetchedData%[ "/i/models/' .. id .. '" %] = (%b{})'))
 	local url = tbl.files.polygon.url
-	
+
 	print(url)
-			
+
 	sockets.Download(url, function(str)
 		str = serializer.Decode("gunzip", str)
 		local tbl = serializer.Decode("json", str)
-				
+
 		vfs.CreateFolders("os", output_folder)
 		vfs.Write(output_folder .. "file.osgjs", str)
-		
+
 		local downloaded = {}
-			
+
 		for path in str:gmatch('"File": "(.-)"') do
 			if not downloaded[path] then
 				print(url:match("(.+/)") .. path)
@@ -123,7 +123,7 @@ sockets.Download("https://sketchfab.com/models/" .. id .. "/embed", function(str
 			end
 		end
 	end)
-	
+
 	local tbl = serializer.Decode("json", str:match('prefetchedData%[ "/i/models/' .. id .. '/textures" %] = (%b{})'))
 
 	for i,v in ipairs(tbl.results) do

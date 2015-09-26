@@ -8,7 +8,7 @@ local start_symbols = {
 }
 
 local arg_types = {
-	vec3 = Vec3,	
+	vec3 = Vec3,
 	ang3 = Ang3,
 	client = function(str)
 		return NULL-- easylua.FindEntity(str) or NULL
@@ -86,32 +86,32 @@ function console.Exec(cfg)
 	return false
 end
 
-do -- commands	
+do -- commands
 	console.AddedCommands = console.AddedCommands or {}
 
 	function console.AddCommand(cmd, callback, help, autocomplete)
 		cmd = cmd:lower()
-		
+
 		console.AddedCommands[cmd] = {callback = callback, help = help, autocomplete = autocomplete}
 	end
 
 	function console.RemoveCommand(cmd)
-		cmd = cmd:lower()	
-		
+		cmd = cmd:lower()
+
 		console.AddedCommands[cmd] = nil
 	end
 
 	function console.GetCommands()
 		return console.AddedCommands
 	end
-	
+
 	local function call(data, line, ...)
 		local a, b, c = system.pcall(data, line, ...)
 
 		if a and b ~= nil then
 			return b, c
 		end
-		
+
 		return a, b
 	end
 
@@ -124,10 +124,10 @@ do -- commands
 			local ok, reason = call(data.callback, line, ...)
 			 if not ok then
 				logn("failed to execute command ", cmd, "!")
-				logn(reason) 
-				
+				logn(reason)
+
 				local help = console.AddedCommands[cmd].help
-				
+
 				if help then
 					if type(help) == "function" then
 						help()
@@ -136,28 +136,28 @@ do -- commands
 					end
 				end
 			end
-			
+
 			return ok, reason
 		end
 	end
-	
+
 	function console.RunCommand(cmd, ...)
 		return call_command(cmd, table.concat({...}, ","), ...)
 	end
-	
+
 	do -- arg parsing
 		local function parse_args(arg_line)
 			if not arg_line or arg_line:trim() == "" then return {} end
-			
+
 			local chars = arg_line:utotable()
-					
+
 			local args = {}
 			local capture = {}
 			local escape  = false
-			
+
 			local in_capture = false
-			
-			for _, char in ipairs(chars) do	
+
+			for _, char in ipairs(chars) do
 				if escape then
 					table.insert(capture, char)
 					escape = false
@@ -166,19 +166,19 @@ do -- commands
 						if char == in_capture then
 							in_capture = false
 						end
-						
+
 						table.insert(capture, char)
 					else
 						if char == "," then
 							table.insert(args, table.concat(capture, ""):trim())
 							table.clear(capture)
-						else												
+						else
 							table.insert(capture, char)
-							
-							if capture_symbols[char] then								
+
+							if capture_symbols[char] then
 								in_capture = capture_symbols[char]
 							end
-							
+
 							if char == "\\" then
 								escape = true
 							end
@@ -186,36 +186,36 @@ do -- commands
 					end
 				end
 			end
-			
-			table.insert(args, table.concat(capture, ""):trim())		
-			
-			for i, str in ipairs(args) do		
+
+			table.insert(args, table.concat(capture, ""):trim())
+
+			for i, str in ipairs(args) do
 				if tonumber(str) then
 					args[i] = tonumber(str)
 				else
 					local cmd, rest = str:match("^(.+)%((.+)%)$")
-					
+
 					if not cmd then
 						local t = str:sub(1,1):charclass()
 						if t then
 							cmd, rest = str:match("^("..t.."+)(.+)$")
 						end
 					end
-					
+
 					if cmd then
 						cmd = cmd:trim():lower()
 						if arg_types[cmd] then
-							
+
 							if capture_symbols[rest:sub(1,1)] then
 								rest = rest:sub(2, -2)
 							end
-							
+
 							args[i] = {cmd = cmd, args = parse_args(rest), line = str}
 						end
 					end
 				end
 			end
-			
+
 			return args
 		end
 
@@ -233,21 +233,21 @@ do -- commands
 			end
 		end
 
-		local function execute_args(args, udata)	
+		local function execute_args(args, udata)
 			local errors = {}
-			
-			for i, arg in ipairs(args) do	
+
+			for i, arg in ipairs(args) do
 				if type(arg) == "table" then
-					
+
 					local ok, res = execute_args(arg.args, udata)
-					
+
 					if not ok then
 						table.insert(errors, res)
 					end
-					
+
 					if arg_types[arg.cmd] and allowed(udata, arg) then
 						local ok, res = pcall(arg_types[arg.cmd], unpack(arg.args))
-						
+
 						if ok then
 							args[i] = res
 						else
@@ -256,30 +256,30 @@ do -- commands
 					end
 				end
 			end
-			
+
 			if #errors > 0 then
-				return nil, table.concat(errors, "\n") 
+				return nil, table.concat(errors, "\n")
 			end
-			
+
 			return true
 		end
-		
+
 		function console.IsValidCommand(line)
 			local symbol, cmd, rest = parse_line(line)
 			return console.AddedCommands[cmd] ~= nil, symbol and symbol:sub(2,2)
 		end
-		
+
 		function console.ParseCommandArgs(line)
 			local symbol, cmd, rest = parse_line(line)
-			
+
 			local data = {args = parse_args(rest), line = rest or "", cmd = cmd, symbol = symbol}
-			
+
 			local ok, err = execute_args(data.args)
 			if not ok then return nil, err end
 			return data
 		end
 	end
-	
+
 	function console.RunString(line, skip_lua, skip_split, log_error)
 		if not skip_split and line:find("\n") then
 			for line in (line .. "\n"):gmatch("(.-)\n") do
@@ -287,58 +287,58 @@ do -- commands
 			end
 			return
 		end
-		
+
 		local data, err = console.ParseCommandArgs(line)
 
-		if data then						
+		if data then
 			if console.AddedCommands[data.cmd] then
 				return call_command(data.cmd, data.line, unpack(data.args))
 			end
-			
+
 			if not skip_lua then
 				return console.RunLua(line, log_error)
 			end
-		end 
-		
+		end
+
 		if log_error and err then
 			logn(err)
 		end
 	end
-	
+
 	console.run_lua_environment = {}
-	
+
 	function console.SetLuaEnvironmentVariable(key, var)
 		console.run_lua_environment[key] = var
 	end
-	
+
 	function console.RunLua(line, log_error, env_name)
 		console.SetLuaEnvironmentVariable("copy", system.SetClipboard)
 		console.SetLuaEnvironmentVariable("gl", desire("graphics.ffi.opengl"))
-		console.SetLuaEnvironmentVariable("findo", prototype.FindObject)	
+		console.SetLuaEnvironmentVariable("findo", prototype.FindObject)
 		local lua = ""
-		
+
 		for k in pairs(console.run_lua_environment) do
 			lua = lua .. ("local %s = console.run_lua_environment.%s;"):format(k, k)
 		end
-		
+
 		lua = lua .. line
 
 		local func, err = loadstring(lua, env_name or line)
 
-		if log_error and not func then 
+		if log_error and not func then
 			logn(err)
 			return func, err
 		end
-		
+
 		if not func then return func, err end
-		
+
 		local ret = {system.pcall(func)}
-		
+
 		if log_error and not ret[1] then
 			if ret[2] then logn(ret[2]) end
 			return unpack(ret)
 		end
-		
+
 		return unpack(ret)
 	end
 end
@@ -346,59 +346,59 @@ end
 do -- console vars
 	console.cvar_file_name = "%DATA%/cvars.txt"
 	console.variable_objects = console.variable_objects or {}
-	
+
 	-- what's the use?
 	do -- cvar meta
 		local META = prototype.CreateTemplate("cvar")
-		
+
 		function META:Get()
-			if not console.vars then 
-				console.ReloadVariables() 
+			if not console.vars then
+				console.ReloadVariables()
 			end
-			
+
 			return console.vars[self.name]
 		end
-		
+
 		function META:GetHelp() return self.help end
 		function META:GetCallback() return self.callback end
 		function META:GetDefault() return self.def end
-		
+
 		function META:Set(var)
 			console.SetVariable(self.name, var)
 		end
-		
+
 		prototype.Register(META)
 	end
-	
+
 	function console.ReloadVariables()
 		console.vars = serializer.ReadFile("luadata", console.cvar_file_name) or {}
 	end
-	
+
 	local luadata = serializer.GetLibrary("luadata")
-	
+
 	function console.CreateVariable(name, def, callback, help)
 		if not console.vars then console.ReloadVariables() end
 
-		if console.vars[name] == nil then 
+		if console.vars[name] == nil then
 			console.vars[name] = def
 		end
 
 		local T = type(def)
-		
+
 		local func = function(line, value)
-			if value == nil then	
-				if console.vars[name] ~= nil then	
+			if value == nil then
+				if console.vars[name] ~= nil then
 					value = console.vars[name]
 				end
-				
+
 				if value == nil then
 					value = def
 				end
-				
+
 				if T == "string" then
 					value = ("%q"):format(value)
 				end
-				
+
 				logf("%s = %s (default = %s)\n", name, luadata.ToString(value), luadata.ToString(def))
 				local help = console.GetCommands()[name].help
 				if help then
@@ -412,60 +412,60 @@ do -- console vars
 				if T ~= "string" then
 					value = luadata.FromString(value)
 				end
-							
+
 				if value == nil then
 					value = def
 				end
-			
+
 				console.SetVariable(name, value)
-				
+
 				if type(callback) == "function" then
 					callback(value)
 				end
-				
+
 				logf("%s = %s (%s)\n", name, value, typex(value))
 			end
-			
+
 		end
 
-		if type(callback) == "string" then 
-			help = callback 
+		if type(callback) == "string" then
+			help = callback
 		end
-		
+
 		console.AddCommand(name, func, help)
-		
+
 		if type(callback) == "function" then
-			event.Delay(function() 
+			event.Delay(function()
 				callback(console.GetVariable(name))
 			end)
 		end
-		
+
 		console.variable_objects[name] = prototype.CreateObject("cvar", {name = name, def = def, help = help, callback = callback})
-		
+
 		return console.GetVariableObject(name)
 	end
-	
+
 	function console.GetVariableObject(name)
 		return console.variable_objects[name]
 	end
-	
+
 	function console.IsVariableAdded(var)
 		return console.AddedCommands and console.AddedCommands[var] ~= nil
 	end
 
 	function console.GetVariable(var, def)
 		if not console.vars then console.ReloadVariables() end
-		
+
 		if console.vars[var] == nil then
 			return def
 		end
-		
+
 		return console.vars[var]
 	end
 
 	function console.SetVariable(name, value)
 		if not console.vars then console.ReloadVariables() end
-		
+
 		console.vars[name] = value
 		serializer.SetKeyValueInFile("luadata", console.cvar_file_name, name, value)
 	end
@@ -475,7 +475,7 @@ end
 do -- title
 	if not console.SetTitleRaw then
 		local set_title
-		
+
 		if WINDOWS then
 			ffi.cdef("int SetConsoleTitleA(const char* blah);")
 
@@ -494,19 +494,19 @@ do -- title
 				return iowrite and iowrite('\27]0;', str, '\7') or nil
 			end
 		end
-		
+
 		console.SetTitleRaw = set_title
 	end
-	
+
 	local titles = {}
 	local str = ""
 	local last_title
-	
+
 	local lasttbl = {}
-	
+
 	function console.SetTitle(title, id)
 		local time = os.clock()
-		
+
 		if not lasttbl[id] or lasttbl[id] < time then
 			if id then
 				titles[id] = title
@@ -527,7 +527,7 @@ do -- title
 			lasttbl[id] = os.clock() + 0.05
 		end
 	end
-	
+
 	function console.GetTitle()
 		return str
 	end
@@ -535,33 +535,33 @@ end
 
 do -- for fun
 	console.cmd = setmetatable(
-		{}, 
+		{},
 		{
-			__index = function(self, key)				
+			__index = function(self, key)
 				key = key:lower()
-				
+
 				-- lua commands
 				if console.AddedCommands[key] then
 					return function(...)
 						console.RunCommand(key, ...)
 					end
 				end
-				
+
 				-- lua cvars
 				local tbl = console.vars
-				
+
 				if not console.vars then
 					console.ReloadVariables()
 				end
-				
+
 				if tbl[key] then
 					return tbl[key]
 				end
 			end,
-			
+
 			__newindex = function(self, key, val)
 				key = key:lower()
-			
+
 				console.RunString(key .. " " .. val, true)
 			end
 		}
@@ -594,7 +594,7 @@ if not DISABLE_CURSES then
 	console.curses = console.curses or {}
 	console.input_height = 1
 	console.max_lines = 10000
-	
+
 	local c = console.curses
 	local command_history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt") or {}
 	local hush
@@ -602,7 +602,7 @@ if not DISABLE_CURSES then
 
 	local COLORPAIR_STATUS = 9
 
-	local char_translate = 
+	local char_translate =
 	{
 		[10] = "KEY_ENTER",
 		[13] = "KEY_ENTER",
@@ -610,13 +610,13 @@ if not DISABLE_CURSES then
 		[8] = "KEY_BACKSPACE",
 		[127] = "CTL_BACKSPACE",
 		[9] = "KEY_TAB",
-		
+
 		[25] = "KEY_UNDO",
 		[26] = "KEY_UNDO",
-		
+
 		[3] = "KEY_COPY",
 		[22] = "KEY_PASTE",
-		
+
 		["kRIT5"] = "CTL_RIGHT",
 		["kLFT5"] = "CTL_LEFT",
 		["\27[1;5D"] = "CTL_LEFT",
@@ -629,7 +629,7 @@ if not DISABLE_CURSES then
 
 		KEY_SELECT = "KEY_HOME",
 		KEY_FIND = "KEY_END",
-		
+
 		PADENTER = "KEY_ENTER",
 		KEY_NPAGE = "KEY_PAGEDOWN",
 		KEY_PPAGE = "KEY_PAGEUP",
@@ -649,20 +649,20 @@ if not DISABLE_CURSES then
 		KEY_T = "t",
 		KEY_UP = "up",
 		KEY_DOWN = "down",
-		
+
 		KEY_SLEFT = "left",
 		KEY_SRIGHT = "right",
-			
+
 		CTL_LEFT = "left",
 		CTL_RIGHT = "right",
-		
+
 		KEY_LEFT = "left",
 		KEY_RIGHT = "right",
-		
+
 		CTL_DEL = "delete",
 		CTL_BACKSPACE = "backspace",
 		CTL_ENTER = "enter",
-		
+
 		KEY_PAGEUP = "page_up",
 		KEY_PAGEDOWN = "page_down",
 		KEY_LSHIFT = "left_shift",
@@ -675,36 +675,36 @@ if not DISABLE_CURSES then
 		if SERVER or not surface then
 			-- the renderer might fail to load :( !
 			local hack = false
-			
+
 			if not SERVER then
 				SERVER = true
 				hack = true
 			end
-			
+
 			_G.surface = {}
-			include("lua/libraries/graphics/surface/markup/markup.lua")	
-			
+			include("lua/libraries/graphics/surface/markup/markup.lua")
+
 			if hack then
 				SERVER = nil
 			end
 		end
-		
+
 		c.markup = surface.CreateMarkup()
 		c.markup:SetFixedSize(14)
-		
+
 		console.SetInputHeight(console.input_height)
-		
+
 		local last_w = curses.COLS
 		local last_h = curses.LINES
 
 		event.CreateTimer("curses", 1/30, 0, function()
 			if GRAPHICS and window.IsFocused() then return end
-			
+
 			local key = {}
-			
+
 			for i = 1, math.huge do
 				local byte = curses.wgetch(c.input_window)
-				
+
 				if byte > 0 and byte < 255 then
 					key[i] = utf8.char(byte)
 				else
@@ -716,7 +716,7 @@ if not DISABLE_CURSES then
 					break
 				end
 			end
-			
+
 			if #key > 0 then
 				-- super hacks
 				for chars in pairs(char_translate) do
@@ -726,50 +726,50 @@ if not DISABLE_CURSES then
 						end
 					end
 				end
-				
+
 				local temp = char_translate[key] or char_translate[key:byte()]
-				
+
 				if temp then
 					key = temp
 				--elseif #key > 1 and not (key:find("KEY_") or key:find("CTL_") or key:find("PAD")) then
 					--logn("unknown key pressed: ", key)
 					--return
-				end					
-				
+				end
+
 				c.markup:SetControlDown(key:find("CTL_") ~= nil)
 				c.markup:SetShiftDown(key:find("KEY_S") ~= nil)
-			
-				if (key:find("KEY_") or key:find("CTL_") or key:find("PAD")) and event.Call("ConsoleKeyInput", key) ~= false then									
-					console.HandleKey(key)		
+
+				if (key:find("KEY_") or key:find("CTL_") or key:find("PAD")) and event.Call("ConsoleKeyInput", key) ~= false then
+					console.HandleKey(key)
 				elseif event.Call("ConsoleCharInput", key) ~= false then
 					if key:byte(1) >= 32 then
 						console.HandleChar(key)
 					end
 				end
-								
+
 				console.SetInputText(c.markup:GetText())
 			end
-			
+
 			if last_w ~= curses.COLS or last_h ~= curses.LINES then
 				console.SetSize(curses.COLS, curses.LINES)
 				last_w = curses.COLS
 				last_h = curses.LINES
 			end
-			
+
 			if dirty then
 				curses.doupdate()
 			end
 		end)
-		 
+
 		do -- input extensions
 			local trigger = input.SetupInputEvent("ConsoleKey")
 
 			event.AddListener("ConsoleKeyInput", "input", function(key)
 				local ret = trigger(key, true)
-				
+
 				-- :(
 				event.Delay(0, function() trigger(key, false) end)
-				
+
 				return ret
 			end)
 
@@ -777,37 +777,37 @@ if not DISABLE_CURSES then
 
 			event.AddListener("ConsoleCharInput", "input", function(char)
 				local ret = trigger(char, true)
-				
+
 				-- :(
 				event.Delay(0, function() trigger(char, false) end)
-				
+
 				return ret
 			end)
 		end
-		
+
 		if console.curses_init then	return end
-		
+
 		local pdcurses_for_real_windows = pcall(function() return curses.PDC_set_resize_limits end)
-		
+
 		if pdcurses_for_real_windows then
 			curses.freeconsole()
 		end
-		
+
 		curses.initscr() -- init curses
-		
+
 		if WINDOWS and pdcurses_for_real_windows then
-			curses.resize_term(50, 150) 
+			curses.resize_term(50, 150)
 		end
-		
+
 		curses.raw() -- raw input, disables ctrl-c and such
 		curses.noecho()
-		
+
 		c.log_window = curses.newpad(console.max_lines, curses.COLS)
-		
+
 		c.input_window = curses.newwin(1, curses.COLS, curses.LINES - 1, 0)
 		curses.keypad(c.input_window, 1) -- enable arrows and other keys
 		curses.nodelay(c.input_window, 1) -- don't wait for input
-		
+
 		curses.start_color()
 		curses.use_default_colors()
 		--[[for i = 0, curses.COLORS-1 do
@@ -817,44 +817,44 @@ if not DISABLE_CURSES then
 			curses.init_color(i, r,g,b)
 			curses.init_pair(i+1, i, -1)
 		end]]
-			
+
 		for i = 0, curses.COLORS-1 do
 			curses.init_pair(i+1, i, -1)
 		end
-	
+
 		-- replace some functions
-		
+
 		if WINDOWS then
 			ffi.cdef("void PDC_set_title(const char *);")
-			
+
 			console.SetTitleRaw = curses.PDC_set_title
 			console.SetTitleRaw(console.GetTitle())
 		else
 			curses.init_pair(COLORPAIR_STATUS, curses.COLOR_RED, curses.COLOR_WHITE + curses.A_DIM * 2 ^ 8)
 			c.status_window = curses.newwin(1, curses.COLS, 0, 0)
-			
+
 			console.SetTitleRaw = console.SetStatusText
 		end
-		
+
 		console.SetSize(curses.COLS, curses.LINES)
-		
+
 		console.curses_init = true
 	end
-	
+
 	do
 		c.y = c.y or 0
 		c.x = c.x or 0
-		
+
 		function console.SetScroll(y, x)
 			c.y = y or c.y
-			c.x = x or c.x 
-			
+			c.x = x or c.x
+
 			c.y = math.clamp(c.y, 0, math.max(curses.getcury(c.log_window) - curses.LINES + console.input_height + 1, 0))
 
 			curses.pnoutrefresh(c.log_window, c.y, c.x,    1,0,curses.LINES-console.input_height-1,curses.COLS)
 			dirty = true
 		end
-		
+
 		function console.GetScroll()
 			return c.y, c.x
 		end
@@ -865,18 +865,18 @@ if not DISABLE_CURSES then
 
 		function console.CanPrint(str)
 			if suppress_print then return end
-			
-			if event then 
+
+			if event then
 				suppress_print = true
-				
+
 				if event.Call("ConsolePrint", str) == false then
 					suppress_print = false
 					return false
 				end
-				
+
 				suppress_print = false
 			end
-			
+
 			return true
 		end
 	end
@@ -885,25 +885,25 @@ if not DISABLE_CURSES then
 		if not console.CanPrint(str) then return end
 
 		console.SyntaxPrint(str, c.log_window)
-		
+
 		table.insert(log_history, str)
-		
+
 		console.SetScroll(math.huge,0)
 	end
-	
+
 	function console.ColorPrint(str, color, window)
 		window = window or c.log_window
-		
+
 		--local r,g,b = 255,255,255
 		--local attr = curses.COLOR_PAIR(16+r/48*36+g/48*6+b/48)
 		local attr = curses.COLOR_PAIR(color + 1)
 		curses.wattron(window, attr)
 		curses.waddstr(window, str)
-		curses.wattroff(window, attr)		
-		
+		curses.wattroff(window, attr)
+
 		curses.wnoutrefresh(window)
 		dirty = true
-		
+
 		console.SetScroll()
 	end
 
@@ -913,19 +913,19 @@ if not DISABLE_CURSES then
 		console.SetScroll()
 		event.Call("ConsoleClear")
 	end
-	
+
 	function console.SetInputHeight(h)
 		h = math.max(h or 1, 1)
-		
+
 		local resize = h ~= console.input_height
-		
+
 		console.input_height = h
-		
+
 		if resize then
 			console.SetSize(curses.COLS, curses.LINES)
 		end
 	end
-	
+
 	function console.GetInputHeight()
 		return console.input_height
 	end
@@ -933,10 +933,10 @@ if not DISABLE_CURSES then
 	function console.SetSize(w, h)
 		w = w or curses.COLS
 		h = h or curses.LINES
-		
+
 		curses.wresize(c.log_window, console.max_lines, w)
 		curses.werase(c.log_window)
-		
+
 		for _, v in pairs(log_history) do
 			console.SyntaxPrint(v, c.log_window)
 		end
@@ -946,21 +946,21 @@ if not DISABLE_CURSES then
 			curses.wresize(c.status_window, 1, w)
 			curses.wnoutrefresh(c.status_window)
 		end
-		
+
 		curses.wresize(c.input_window, console.input_height, w)
 		curses.mvwin(c.input_window, h - console.input_height, 0)
 		curses.wnoutrefresh(c.input_window)
-		
+
 		dirty = true
 	end
-	
+
 	function console.GetSize()
 		return curses.COLS, curses.LINES
 	end
 
 	function console.ShutdownCurses()
 		if console.curses_init then
-			curses.endwin()	
+			curses.endwin()
 
 			event.RemoveTimer("curses")
 			event.RemoveListener("ConsoleKeyInput", "input")
@@ -968,9 +968,9 @@ if not DISABLE_CURSES then
 			console.curses_init = nil
 		end
 	end
-	
+
 	event.AddListener("ShutDown", console.ShutdownCurses)
-		
+
 	do
 		local syntax = _G.syntax or {}
 
@@ -1032,12 +1032,12 @@ if not DISABLE_CURSES then
 			["nil"]      = true,
 			["in"]       = true
 		}
-		
+
 		function console.SyntaxPrint(str, window)
 			window = window or c.log_window
-			
+
 			str = str:gsub("\t", "    ")
-			
+
 			--	profiler.StartTimer("console syntax parse")
 			local output, finds, types, a, b, c = {}, {}, {}, 0, 0, 0
 
@@ -1076,46 +1076,46 @@ if not DISABLE_CURSES then
 
 			for i = 1, #output / 2 do
 				local color, str = output[1 + (i - 1) * 2 + 0], output[1 + (i - 1) * 2 + 1]
-				
+
 				console.ColorPrint(str, color, window)
 			end
 		end
 	end
-	
+
 	function console.GetActiveKey()
 		local byte = curses.wgetch(c.input_window)
-		
+
 		if byte < 0 then return end
-			
+
 		local key = char_translate[byte] or ffi.string(curses.keyname(byte))
 		if not key:find("KEY_") then key = nil end
-		
+
 		return key
 	end
 
 	function console.SetInputText(str)
 		if str then
 			local lines = str:count("\n")
-			
+
 			console.SetInputHeight(lines)
 		end
-		
+
 		curses.werase(c.input_window)
-		
+
 		if str then
 			str = str:gsub("\t", " ")
 			console.SyntaxPrint(str, c.input_window)
 		end
-		
+
 		local y = c.markup:GetCaretPosition().y
 		local x = c.markup:GetCaretPosition().x
-		
+
 		curses.wmove(c.input_window, y-1, x)
-		
+
 		curses.wnoutrefresh(c.input_window)
 		dirty = true
 	end
-	
+
 	function console.GetTextInput()
 		return c.markup:GetText()
 	end
@@ -1125,19 +1125,19 @@ if not DISABLE_CURSES then
 
 		function console.SetStatusText(str)
 			curses.werase(c.status_window)
-			
+
 			curses.wattron(c.status_window, curses.COLOR_PAIR(COLORPAIR_STATUS))
 			curses.wbkgdset(c.status_window, COLORPAIR_STATUS)
 			curses.waddstr(c.status_window, str)
-			curses.wattroff(c.status_window, curses.COLOR_PAIR(COLORPAIR_STATUS)) 	
-			
+			curses.wattroff(c.status_window, curses.COLOR_PAIR(COLORPAIR_STATUS))
+
 			curses.mvwin(c.status_window, 0, (curses.COLS / 2) - (#str / 2))
-			
+
 			curses.wnoutrefresh(c.status_window)
 			dirty = true
 			last_status = str
 		end
-		
+
 		function console.GetStatusText()
 			return last_status
 		end
@@ -1145,24 +1145,24 @@ if not DISABLE_CURSES then
 
 	local function get_commands_for_autocomplete()
 		local cmds = {}
-		for k in pairs(console.GetCommands()) do 
-			table.insert(cmds, k) 
+		for k in pairs(console.GetCommands()) do
+			table.insert(cmds, k)
 		end
 		return cmds
 	end
 
 	c.scroll_command_history = c.scroll_command_history or 0
-	
+
 	local last_key
 
 	function console.HandleKey(key)
-		
+
 		if key == "KEY_PAGEUP" then
 			console.SetScroll(console.GetScroll() - curses.LINES / 2)
 		elseif key == "KEY_PAGEDOWN" then
 			console.SetScroll(console.GetScroll() + curses.LINES / 2)
 		end
-		
+
 		if key == "KEY_PASTE" then
 			c.markup:Paste(system.GetClipboard())
 		elseif key == "KEY_COPY" then
@@ -1172,11 +1172,11 @@ if not DISABLE_CURSES then
 		if key == "KEY_TAB" then
 			local line = console.GetTextInput()
 			local cmd, rest = line:match("(%S+)%s+(.+)")
-			
+
 			if not cmd then cmd = line:match("(%S+)") end
-			
+
 			if cmd and not rest then
-				
+
 				local found = autocomplete.Query("console", cmd, 1, get_commands_for_autocomplete())
 
 				if found and found[1] then
@@ -1185,7 +1185,7 @@ if not DISABLE_CURSES then
 				end
 				return
 			end
-			
+
 			if cmd and rest then
 				local info = console.GetCommands()[cmd]
 				if info and info.autocomplete then
@@ -1195,21 +1195,21 @@ if not DISABLE_CURSES then
 						local found = autocomplete.Query("console_command_" .. cmd, data.args[#data.args], 1, list)
 						if found then
 							table.remove(data.args)
-							
+
 							if #data.args > 0 then
 								found = "," .. found
 							end
-							
+
 							c.markup:SetText(cmd .. " " .. table.concat(data.args, ",") .. found)
 							c.markup:SetCaretPosition(math.huge, 0)
 						end
 					end
 				end
-			end	
+			end
 		else
 			autocomplete.Query("console", console.GetTextInput())
 		end
-	
+
 		if console.input_height == 1 or c.markup:GetText() == "" then
 			if key == "KEY_UP" then
 				c.scroll_command_history = c.scroll_command_history - 1
@@ -1221,40 +1221,40 @@ if not DISABLE_CURSES then
 				c.markup:SetCaretPosition(math.huge, 0)
 			end
 		end
-		
+
 
 		if key == "KEY_ENTER" and last_key ~= "CTL_ENTER" then
 			console.SetInputText()
 			local line = c.markup:GetText()
-			
-			if line ~= "" then			
+
+			if line ~= "" then
 				for key, str in pairs(command_history) do
 					if str == line then
 						table.remove(command_history, key)
 					end
 				end
-				
+
 				table.insert(command_history, line)
 				serializer.WriteFile("luadata", "%DATA%/cmd_history.txt", command_history)
 
 				c.scroll_command_history = 0
 				console.SetInputText()
-				
+
 				if event.Call("ConsoleLineEntered", line) ~= false then
 					logn("> ", line)
-					
+
 					console.RunString(line, nil, nil, true)
 				end
-				
+
 				c.in_function = false
 				c.markup:SetText("")
 			end
 		end
-		
+
 		if markup_translate[key] then
 			c.markup:OnKeyInput(markup_translate[key])
 		end
-		
+
 		last_key = key
 	end
 

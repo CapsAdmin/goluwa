@@ -10,10 +10,10 @@ render.camera_3d:SetAngles(Ang3(math.pi/2, 0, 0))
 --world:SetSunAngles(Ang3(-0.5, -2.5, 0))
 --world:GetChildren()[1]:SetShadow(false)
 --world:GetChildren()[1]:SetIntensity(1)
- 
+
 local max = 11
- 
-local light = entities.CreateEntity("light") 
+
+local light = entities.CreateEntity("light")
 light:SetSize(2000)
 light:SetIntensity(1)
 light:SetPosition(Vec3(0,0,z+15)+Vec3(10,-10, 25)*5)
@@ -23,31 +23,31 @@ for x = -max/2, max/2 do
 
 	for y = -max/2, max/2 do
 		local y = y/max*2
-		
+
 		local ent = entities.CreateEntity("visual")
 		ent:SetPosition(Vec3(x*3.25, y*3.25, z))
-		
+
 		ent:SetModelPath("models/sphere.obj")
 		ent:SetSize(0.05)
 		ent:SetAngles(Ang3(90,0,0))
-		
+
 		--ent:SetModelPath("models/mitsuba-sphere.obj")
 		--ent:SetSize(0.2)
 		--ent:SetAngles(Ang3(-math.pi/2,math.pi/4,0))
-		
+
 		ent:SetCull(false)
-		
+
 		local mat = render.CreateMaterial("model")
-		
+
 		mat:SetDiffuseTexture(render.GetWhiteTexture())
 		mat:SetMetallicTexture(render.GetWhiteTexture())
 		mat:SetRoughnessTexture(render.GetWhiteTexture())
 		--mat:SetColor(Color(1,1,1, 1))
 		mat:SetColor(HSVToColor(1,0.5,1))
-		
+
 		mat:SetRoughnessMultiplier((x+1) / 2)
 		mat:SetMetallicMultiplier(-(y+1) / 2+1)
-		
+
 		ent:SetMaterialOverride(mat)
 	end
 end

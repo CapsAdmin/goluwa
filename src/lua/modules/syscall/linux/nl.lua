@@ -2,7 +2,7 @@
 
 local require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
-pcall, type, table, string = 
+pcall, type, table, string =
 require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
 pcall, type, table, string
@@ -293,7 +293,7 @@ meth.iflink = {
     delete = function(i)
       local ok, err = nl.dellink(i.index)
       if not ok then return nil, err end
-      return true     
+      return true
     end,
     move_ns = function(i, ns) -- TODO also support file descriptor form as well as pid
       local ok, err = nl.newlink(i.index, 0, 0, 0, "net_ns_pid", ns)

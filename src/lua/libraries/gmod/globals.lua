@@ -3,11 +3,11 @@ local globals = gmod.env
 
 local function make_is(name)
 	if name:sub(1,1) == name:sub(1,1):upper() then
-		globals["is" .. name:lower()] = function(var) 
+		globals["is" .. name:lower()] = function(var)
 			return typex(var) == name
 		end
 	else
-		globals["is" .. name:lower()] = function(var) 
+		globals["is" .. name:lower()] = function(var)
 			return type(var) == name
 		end
 	end
@@ -27,15 +27,15 @@ make_is("Panel")
 
 function globals.type(obj)
 	local t = type(obj)
-		
+
 	if t == "table" and obj.MetaName then
 		return obj.MetaName
 	end
-	
+
 	return t
 end
 
-function globals.istable(obj) 
+function globals.istable(obj)
 	return globals.type(obj) == "table"
 end
 
@@ -46,7 +46,7 @@ do
 		globals["SetGlobal" .. name] = function(key, val) nw_globals[key] = val end
 		globals["GetGlobal" .. name] = function(key) return nw_globals[key] end
 	end
-	
+
 	ADD("String")
 	ADD("Int")
 	ADD("Float")
@@ -89,14 +89,14 @@ function globals.VGUIFrameTime() return system.GetElapsedTime() end
 function globals.CurTime() return system.GetElapsedTime() end --system.GetServerTime()
 function globals.SysTime() return system.GetTime() end --system.GetServerTime()
 
-function globals.FindMetaTable(name) 
-	return globals._R[name] 
+function globals.FindMetaTable(name)
+	return globals._R[name]
 end
 
 function globals.Material(path)
 	local mat = render.CreateMaterial("model")
 	mat.gmod_name = path
-	
+
 	if path:lower():endswith(".png") then
 		mat:SetDiffuseTexture(Texture("materials/" .. path))
 	elseif vfs.IsFile("materials/" .. path) then
@@ -104,13 +104,13 @@ function globals.Material(path)
 	else
 		steam.LoadMaterial("materials/" .. path .. ".vmt", mat)
 	end
-	
+
 	return gmod.WrapObject(mat, "IMaterial")
 end
 
 function globals.LoadPresets()
 	local out = {}
-	
+
 	for folder_name in vfs.Iterate("settings/presets/") do
 		if vfs.IsFolder("settings/presets/"..folder_name) then
 			out[folder_name] = {}
@@ -119,7 +119,7 @@ function globals.LoadPresets()
 			end
 		end
 	end
-	
+
 	return out
 end
 
@@ -145,37 +145,37 @@ function globals.module(name, _ENV)
 	--logn("gmod: module(",name,")")
 
 	local tbl = {}
-	
+
 	if _ENV == package.seeall then
 		_ENV = globals
 		setmetatable(tbl, {__index = _ENV})
 	elseif _ENV then
 		print(_ENV, "!?!??!?!")
 	end
-	
+
 	if not tbl._NAME then
 		tbl._NAME = name
 		tbl._M = tbl
 		tbl._PACKAGE = name:gsub("[^.]*$", "")
 	end
-	
+
 	package.loaded[name] = tbl
 	globals[name] = tbl
-	
-	setfenv(2, tbl)	
+
+	setfenv(2, tbl)
 end
 
 function globals.require(name, ...)
 	--logn("gmod: require(",name,")")
-	
-	local func, err, path = require.load(name, gmod.dir, true) 
-				
+
+	local func, err, path = require.load(name, gmod.dir, true)
+
 	if type(func) == "function" then
 		if debug.getinfo(func).what ~= "C" then
 			setfenv(func, globals)
 		end
-		
-		return require.require_function(name, func, path, name) 
+
+		return require.require_function(name, func, path, name)
 	end
 
 	if pcall(require, name) then

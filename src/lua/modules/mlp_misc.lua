@@ -63,15 +63,15 @@ module ("mlp", package.seeall)
 -- a lightweight syntax.
 --------------------------------------------------------------------------------
 
-function fget (n, tag) 
+function fget (n, tag)
    assert (type (n) == "number")
    if tag then
       assert (type (tag) == "string")
-      return function (x) 
-         assert (type (x[n]) == "table")       
-         return {tag=tag, unpack(x[n])} end 
+      return function (x)
+         assert (type (x[n]) == "table")
+         return {tag=tag, unpack(x[n])} end
    else
-      return function (x) return x[n] end 
+      return function (x) return x[n] end
    end
 end
 
@@ -133,7 +133,7 @@ function id2string (id)
       -- Morally, this is what I want:
       -- return `String{ `Index{ `Splice{ id[1] }, `Number 1 } }
       -- That is, without sugar:
-      return {tag="String",  {tag="Index", {tag="Splice", id[1] }, 
+      return {tag="String",  {tag="Index", {tag="Splice", id[1] },
                                            {tag="Number", 1 } } }
    else error ("Identifier expected: "..table.tostring(id)) end
 end
@@ -159,7 +159,7 @@ end
 function opt_string (lx)
    return lx:peek().tag == "String" and lx:next()
 end
-   
+
 --------------------------------------------------------------------------------
 -- Chunk reader: block + Eof
 --------------------------------------------------------------------------------
@@ -173,7 +173,7 @@ end
 
 local function _chunk (lx)
    if lx:peek().tag == 'Eof' then return { } -- handle empty files
-   else 
+   else
       skip_initial_sharp_comment (lx)
       local chunk = block (lx)
       if lx:peek().tag ~= "Eof" then error "End-of-file expected" end

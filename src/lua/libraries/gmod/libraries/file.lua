@@ -8,11 +8,11 @@ end
 
 function file.Find(path, where)
 	local files, folders = {}, {}
-	
+
 	path = path:gsub("%.", ".")
 	path = path:gsub("%*", ".*")
-		
-	if where == "LUA" then		
+
+	if where == "LUA" then
 		for k,v in ipairs(vfs.Find("lua/" .. path, nil, true)) do
 			if v:startswith(gmod.dir) then
 				if vfs.IsFolder(v) then
@@ -21,7 +21,7 @@ function file.Find(path, where)
 					table.insert(files, v:match(".+/(.+)"))
 				end
 			end
-		end	
+		end
 	else
 		for k,v in ipairs(vfs.Find(path, nil, true)) do
 			if vfs.IsFolder(v) then
@@ -29,9 +29,9 @@ function file.Find(path, where)
 			else
 				table.insert(files, v:match(".+/(.+)"))
 			end
-		end	
-	end	
-	
+		end
+	end
+
 	return files, folders
 end
 

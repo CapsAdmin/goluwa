@@ -1366,7 +1366,7 @@ function M.get_value_details(ast, tokenlist, src)
     local location = path .. ":" .. (fline) .. (fcol and ":" .. fcol or "")
     lines[#lines+1] = "location defined: " .. location
   end
-  
+
   if ast.localdefinition and ast.localmasking then
       local fpos = LA.ast_pos_range(ast.localmasking, tokenlist)
       if fpos then

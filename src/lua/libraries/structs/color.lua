@@ -10,7 +10,7 @@ function ColorBytes(r, g, b, a)
 	g = g or 0
 	b = b or 0
 	a = a or 255
-	
+
 	return Color(r/255, g/255, b/255, a/255)
 end
 
@@ -55,7 +55,7 @@ function META:SetHue(h)
 	self.r = new.r
 	self.g = new.g
 	self.b = new.b
-	
+
 	return self
 end
 
@@ -81,9 +81,9 @@ function META.Lerp(a, mult, b)
 	a.r = (b.r - a.r) * mult + a.r
 	a.g = (b.g - a.g) * mult + a.g
 	a.b = (b.b - a.b) * mult + a.b
-	
+
 	a.a = (b.a - a.a) * mult + a.a
-	
+
 	return a
 end
 
@@ -96,7 +96,7 @@ function META:SetSaturation(s)
 	self.r = new.r
 	self.g = new.g
 	self.b = new.b
-	
+
 	return self
 end
 
@@ -107,7 +107,7 @@ function META:SetLightness(l)
 	self.r = new.r
 	self.g = new.g
 	self.b = new.b
-	
+
 	return self
 end
 
@@ -144,14 +144,14 @@ end
 function META:SetTint(num)
 	local h,s,v = ColorToHSV(self)
 	self:SetLightness(v + (1 - v) * num)
-	
+
 	return self
 end
 
 function META:SetShade(num)
 	local h,s,v = ColorToHSV(self)
 	self:SetLightness(v - v * num)
-	
+
 	return self
 end
 

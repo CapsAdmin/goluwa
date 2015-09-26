@@ -4,7 +4,7 @@ typedef struct{
 }aiVector2D;
 
 typedef struct {
-	float w, x, y, z;	
+	float w, x, y, z;
 }aiQuaternion;
 
 typedef struct{
@@ -31,7 +31,7 @@ typedef struct
 {
 	size_t length;
 	char data[1024];
-}aiString; 
+}aiString;
 
 typedef struct
 {
@@ -72,29 +72,29 @@ typedef struct
 	double mTime;
 	aiQuaternion mValue;
 } aiQuatKey;
- 
-typedef struct 
+
+typedef struct
 {
 	double mTime;
 	unsigned int mValue;
-}aiMeshKey; 
+}aiMeshKey;
 
- 
+
 typedef enum
 {
 	aiReturn_SUCCESS = 0x0,
 	aiReturn_FAILURE = -0x1,
 	aiReturn_OUTOFMEMORY = -0x3,
-	_AI_ENFORCE_ENUM_SIZE = 0x7fffffff 
+	_AI_ENFORCE_ENUM_SIZE = 0x7fffffff
 }aiReturn;
- 
+
 
 typedef enum
 {
 	aiOrigin_SET = 0x0,
 	aiOrigin_CUR = 0x1,
 	aiOrigin_END = 0x2,
-	_AI_ORIGIN_ENFORCE_ENUM_SIZE = 0x7fffffff 
+	_AI_ORIGIN_ENFORCE_ENUM_SIZE = 0x7fffffff
 }aiOrigin;
 
 
@@ -102,8 +102,8 @@ typedef enum
 typedef struct{float r, g, b, a;} aiColor4D;
 
 typedef struct {} aiFileIO_;
-typedef struct {} aiFile_;  
- 
+typedef struct {} aiFile_;
+
 typedef size_t   (*aiFileWriteProc) (aiFile_*,   const char*, size_t, size_t);
 typedef size_t   (*aiFileReadProc)  (aiFile_*,   char*, size_t,size_t);
 typedef size_t   (*aiFileTellProc)  (aiFile_*);
@@ -112,15 +112,15 @@ typedef aiReturn (*aiFileSeek)(aiFile_*, size_t, aiOrigin);
 typedef aiFile_* (*aiFileOpenProc)  (aiFileIO_*, const char*, const char*);
 typedef void    (*aiFileCloseProc) (aiFileIO_*, aiFile_*);
 
-typedef char* aiUserData; 
+typedef char* aiUserData;
 
 typedef struct aiFileIO
 {
 	aiFileOpenProc OpenProc;
 	aiFileCloseProc CloseProc;
 	aiUserData UserData;
-}aiFileIO; 
- 
+}aiFileIO;
+
 typedef struct aiFile
 {
 	aiFileReadProc ReadProc;
@@ -132,13 +132,13 @@ typedef struct aiFile
 	aiUserData UserData;
 }aiFile;
 
-typedef enum	
+typedef enum
 {
 	aiDefaultLogStream_FILE = 0x1,
 	aiDefaultLogStream_STDOUT = 0x2,
 	aiDefaultLogStream_STDERR = 0x4,
 	aiDefaultLogStream_DEBUGGER = 0x8,
-	_AI_DLS_ENFORCE_ENUM_SIZE = 0x7fffffff 
+	_AI_DLS_ENFORCE_ENUM_SIZE = 0x7fffffff
 } aiDefaultLogStream;
 
 typedef struct
@@ -158,7 +158,7 @@ typedef bool aiBool;
 
 typedef void (*aiLogStreamCallback)(const char* /* message */, char* /* user */);
 
-typedef struct 
+typedef struct
 {
 	aiLogStreamCallback callback;
 	char* user;
@@ -186,7 +186,7 @@ typedef struct
 	aiColor3D mColorAmbient;
 	float mAngleInnerCone;
 	float mAngleOuterCone;
-}aiLight; 
+}aiLight;
 
 typedef enum
 {
@@ -229,7 +229,7 @@ typedef enum
     aiTextureType_LIGHTMAP = 0xA,
     aiTextureType_REFLECTION = 0xB,
     aiTextureType_UNKNOWN = 0xC,
-}aiTextureType; 
+}aiTextureType;
 enum aiShadingMode
 {
     aiShadingMode_Flat = 0x1,
@@ -286,35 +286,35 @@ typedef struct
 }aiMaterial;
 
 aiReturn aiGetMaterialProperty(
-	 const aiMaterial* pMat, 
+	 const aiMaterial* pMat,
     const char* pKey,
 	 unsigned int type,
     unsigned int  index,
     const aiMaterialProperty** pPropOut);
 aiReturn aiGetMaterialFloatArray(
-	 const aiMaterial* pMat, 
+	 const aiMaterial* pMat,
     const char* pKey,
 	 unsigned int type,
     unsigned int index,
     float* pOut,
     unsigned int* pMax);
-aiReturn aiGetMaterialIntegerArray(const aiMaterial* pMat, 
+aiReturn aiGetMaterialIntegerArray(const aiMaterial* pMat,
     const char* pKey,
 	 unsigned int  type,
 	 unsigned int  index,
     int* pOut,
     unsigned int* pMax);
-aiReturn aiGetMaterialColor(const aiMaterial* pMat, 
+aiReturn aiGetMaterialColor(const aiMaterial* pMat,
     const char* pKey,
 	 unsigned int type,
     unsigned int index,
 	 aiColor4D* pOut);
-aiReturn aiGetMaterialString(const aiMaterial* pMat, 
+aiReturn aiGetMaterialString(const aiMaterial* pMat,
     const char* pKey,
 	 unsigned int type,
     unsigned int index,
-    aiString* pOut); 
-unsigned int aiGetMaterialTextureCount(const aiMaterial* pMat,  
+    aiString* pOut);
+unsigned int aiGetMaterialTextureCount(const aiMaterial* pMat,
 	aiTextureType type);
 
 aiReturn aiGetMaterialTexture(const aiMaterial* mat,
@@ -327,14 +327,14 @@ aiReturn aiGetMaterialTexture(const aiMaterial* mat,
     aiTextureOp* op,
 	aiTextureMapMode* mapmode,
 	unsigned int* flags
-); 
+);
 
 typedef struct
 {
-	const char* id; 
+	const char* id;
 	const char* description;
 	const char* fileExtension;
-} aiExportFormatDesc; 
+} aiExportFormatDesc;
 
 typedef struct
 {
@@ -359,19 +359,19 @@ typedef struct aiTexture;
 typedef struct aiLight;
 typedef struct aiVertexWeight;
 typedef struct aiFileIO;
-typedef struct aiLogStream; 
-typedef struct aiReturn; 
-typedef struct aiMemoryInfo; 
-typedef struct aiQuaternion; 
+typedef struct aiLogStream;
+typedef struct aiReturn;
+typedef struct aiMemoryInfo;
+typedef struct aiQuaternion;
 typedef struct aiExportDataBlob;
 
 
 typedef struct
 {
 	unsigned int mNumIndices;
-	unsigned int* mIndices;   
+	unsigned int* mIndices;
 }aiFace;
- 
+
 typedef struct
 {
 	unsigned int mVertexId;
@@ -435,13 +435,13 @@ typedef struct
 
 typedef enum
 {
-	aiAnimBehaviour_DEFAULT  = 0x0,  
+	aiAnimBehaviour_DEFAULT  = 0x0,
 	aiAnimBehaviour_CONSTANT = 0x1,
 	aiAnimBehaviour_LINEAR   = 0x2,
 	aiAnimBehaviour_REPEAT   = 0x3,
 } aiAnimBehaviour;
 
-typedef struct 
+typedef struct
 {
 	aiString mNodeName;
 	unsigned int mNumPositionKeys;
@@ -450,7 +450,7 @@ typedef struct
 	aiQuatKey* mRotationKeys;
 	unsigned int mNumScalingKeys;
 	aiVectorKey* mScalingKeys;
-	
+
 	aiAnimBehaviour mPreState;
 	aiAnimBehaviour mPostState;
 } aiNodeAnim;
@@ -460,7 +460,7 @@ typedef struct
 	aiString mName;
 	unsigned int mNumKeys;
 	aiMeshKey* mKeys;
-} aiMeshAnim; 
+} aiMeshAnim;
 
 typedef struct
 {
@@ -481,7 +481,7 @@ typedef struct
 	aiMesh** mMeshes;
 	unsigned int mNumMaterials;
 	aiMaterial** mMaterials;
-	unsigned int mNumAnimations; 
+	unsigned int mNumAnimations;
 	aiAnimation** mAnimations;
 	unsigned int mNumTextures;
 	aiTexture** mTextures;
@@ -513,9 +513,9 @@ enum aiPostProcessSteps
 	aiProcess_GenUVCoords = 0x40000,
 	aiProcess_TransformUVCoords = 0x80000,
 	aiProcess_FindInstances = 0x100000,
-	aiProcess_OptimizeMeshes  = 0x200000, 
-	aiProcess_OptimizeGraph  = 0x400000, 
-	aiProcess_FlipUVs = 0x800000, 
+	aiProcess_OptimizeMeshes  = 0x200000,
+	aiProcess_OptimizeGraph  = 0x400000,
+	aiProcess_FlipUVs = 0x800000,
 	aiProcess_FlipWindingOrder  = 0x1000000,
 	aiProcess_SplitByBoneCount  = 0x2000000,
 	aiProcess_Debone  = 0x4000000
@@ -529,7 +529,7 @@ enum aiPrimitiveType
 	aiPrimitiveType_POLYGON     = 0x8,
 };
 
-enum aiImporterFlags 
+enum aiImporterFlags
 {
 	aiImporterFlags_SupportTextFlavour = 0x1,
 	aiImporterFlags_SupportBinaryFlavour = 0x2,
@@ -537,7 +537,7 @@ enum aiImporterFlags
 	aiImporterFlags_LimitedSupport = 0x8,
 	aiImporterFlags_Experimental = 0x10,
 };
-struct aiImporterDesc 
+struct aiImporterDesc
 {
 	const char* mName;
 	const char* mAuthor;
@@ -591,13 +591,13 @@ aiReturn aiExportSceneEx(const aiScene* pScene,const char* pFormatId, const char
 typedef struct _aiExportDataBlob;
 typedef struct _aiExportDataBlob aiExportDataBlob;
 
-typedef struct 
+typedef struct
 {
-	size_t size; 
+	size_t size;
 	void* data;
 	aiString name;
 	aiExportDataBlob * next;
-}_aiExportDataBlob; 
+}_aiExportDataBlob;
 
 const aiExportDataBlob* aiExportSceneToBlob( const aiScene* pScene, const char* pFormatId,  unsigned int pPreprocessing );
 void aiReleaseExportBlob( const aiExportDataBlob* pData );
@@ -623,9 +623,9 @@ local enums = {
 	aiProcess_GenUVCoords = 0x40000,
 	aiProcess_TransformUVCoords = 0x80000,
 	aiProcess_FindInstances = 0x100000,
-	aiProcess_OptimizeMeshes  = 0x200000, 
-	aiProcess_OptimizeGraph  = 0x400000, 
-	aiProcess_FlipUVs = 0x800000, 
+	aiProcess_OptimizeMeshes  = 0x200000,
+	aiProcess_OptimizeGraph  = 0x400000,
+	aiProcess_FlipUVs = 0x800000,
 	aiProcess_FlipWindingOrder  = 0x1000000,
 	aiProcess_SplitByBoneCount  = 0x2000000,
 	aiProcess_Debone  = 0x4000000,
@@ -677,7 +677,7 @@ enums.aiProcess_ConvertToLeftHanded = bit.bor(
 	enums.aiProcess_FlipUVs,
 	enums.aiProcess_FlipWindingOrder
 )
- 
+
 ffi.cdef(header)
 
 local lib = assert(ffi.load("assimp"))
@@ -689,12 +689,12 @@ local assimp = {
 
 for line in header:gmatch("(.-)\n") do
 	if not line:find("enum") and not line:find("struct") and not line:find("typedef") then
-		local func = line:match("(ai%u[%a_]-)%(.-%)") 
-		
-		if func then 
+		local func = line:match("(ai%u[%a_]-)%(.-%)")
+
+		if func then
 			assimp[func:sub(3)] = lib[func]
 		end
-		
+
 	end
 end
 
@@ -706,19 +706,19 @@ local function parse_scene(scene, path, callback)
 	if not scene then
 		return nil, ffi.string(assimp.GetErrorString())
 	end
-	
+
 	local dir = path:match("(.+)/")
 
 	local out = {}
-		
+
 	for i = 0, scene.mNumMeshes - 1 do
 		local mesh = scene.mMeshes[i]
-		
+
 		local sub_model = {vertices = {}, indices = {}}
-				
+
 		for i = 0, mesh.mNumVertices - 1 do
 			local data = {}
-		
+
 			local val = mesh.mVertices[i]
 			data.pos = Vec3(val.x, -val.y, val.z)
 
@@ -726,41 +726,41 @@ local function parse_scene(scene, path, callback)
 				local val = mesh.mNormals[i]
 				data.normal = Vec3(val.x, -val.y, val.z)
 			end
-			
+
 			if mesh.mTangents ~= nil then
 				local val = mesh.mTangents[i]
 				data.tangent = Vec3(val.x, -val.y, val.z)
-			end	
+			end
 
 			if mesh.mBitangents ~= nil then
 				local val = mesh.mBitangents[i]
 				data.bitangent = Vec3(val.x, -val.y, val.z)
-			end	
-						
+			end
+
 			if mesh.mTextureCoords ~= nil and mesh.mTextureCoords[0] ~= nil then
 				local val = mesh.mTextureCoords[0][i]
 				data.uv = Vec3(val.x, val.y)
 			end
-			
+
 			table.insert(sub_model.vertices, data)
-			
+
 			if callback then
 				tasks.Wait()
 			end
 		end
-		
+
 		for i = 0, mesh.mNumFaces - 1 do
 			local face = mesh.mFaces[i]
-			
+
 			for i = 0, face.mNumIndices - 1 do
 				local i = face.mIndices[i]
-				
+
 				table.insert(sub_model.indices, i)
 			end
 		end
-		
+
 		sub_model.name = ffi.string(mesh.mName.data, mesh.mName.length):trim()
-		
+
 		if mesh.mMaterialIndex > 0 then
 			local mat = scene.mMaterials[mesh.mMaterialIndex]
 			sub_model.material = {}
@@ -769,16 +769,16 @@ local function parse_scene(scene, path, callback)
 				local property = mat.mProperties[i]
 				local key = ffi.string(property.mKey.data, property.mKey.length)
 				local val = ffi.string(property.mData, property.mDataLength)
-				
+
 				key = key:sub(2)
-				val = val:sub(4) 
-					
-				val = val:gsub("(.)", function(char) if char:byte() == 0 then return "" end end) 
-				
+				val = val:sub(4)
+
+				val = val:gsub("(.)", function(char) if char:byte() == 0 then return "" end end)
+
 				if key == "mat.name" then
 					sub_model.material.name = val
 				end
-				
+
 				if key == "tex.file" and val then
 					local path = val
 					if path:sub(1, 1) == "." then
@@ -786,7 +786,7 @@ local function parse_scene(scene, path, callback)
 					else
 						path = fix_path(val)
 					end
-					
+
 					if tex_i == 1 then
 						sub_model.material.path = path
 						sub_model.material.diffuse = path
@@ -797,22 +797,22 @@ local function parse_scene(scene, path, callback)
 					elseif tex_i == 4 then
 						sub_model.material.roughness = path
 					end
-					
+
 					tex_i = tex_i + 1
 				end
 			end
 		end
-						
+
 		out[i] = sub_model
-		
+
 		if callback then
 			callback(sub_model, i+1, scene.mNumMeshes)
 			tasks.Wait()
 		end
-	end	
-	
+	end
+
 	assimp.ReleaseImport(scene)
-	
+
 	return out
 end
 
@@ -821,79 +821,79 @@ function assimp.ImportFileMemory(data, flags, hint, callback)
 	return parse_scene(scene, hint, callback)
 end
 
-function assimp.ImportFileEx(path, flags, callback, custom_io)		
+function assimp.ImportFileEx(path, flags, callback, custom_io)
 	local scene
-	
+
 	flags = flags or 0
 	flags = bit.bor(flags, enums.aiProcess_ConvertToLeftHanded)
 	flags = bit.bor(flags, enums.aiProcessPreset_TargetRealtime_MaxQuality)
-	
+
 	if custom_io then
 		local file_io_data = ffi.new("aiFileIO", {
 			OpenProc = function(self, path, mode)
 				path = ffi.string(path)
 				path = vfs.FixPath(path)
 				path = path:gsub("/./", "/")
-				
+
 				local file, err = vfs.Open(path, "read")
 				--print("file open", file, err, path)
-				
+
 				if not file then return nil end
-				
+
 				local proxy_data = ffi.new("aiFile", {
 					ReadProc = function(proxy, buffer_out, size, count)
 						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
 						local length = size * count
 						--print("read", file, buffer_out, size)
-												
+
 						local str = file:ReadBytes(tonumber(length))
-						
+
 						local temp = ffi.cast("char *", str)
 						ffi.copy(buffer_out, temp, #str)
-						
+
 						--print(#str, length, ffi.string(buffer_out, #str) == str)
-						
+
 						return #str
 					end,
 					WriteProc = function(proxy, buffer_in, buffer_length, length)
 						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
 						--print("write", file, buffer_in, buffer_length, length)
-						
+
 						file:WriteBytes(ffi.string(buffer_in, buffer_length))
-					
+
 						return buffer_length
 					end,
 					TellProc = function(proxy)
 						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
 						--print("tell", file)
-						
+
 						return file:GetPosition()
 					end,
 					FileSizeProc = function(proxy)
 						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
 						--print("file size", file)
-						
+
 						return file:GetSize()
 					end,
 					SeekProc = function(proxy, pos, current_pos)
 						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
 						--print("seek", file)
-						
+
 						file:SetPosition(pos)
 						return 0 -- 0 = success, -1 = failure, -3 = out of memory
 					end,
 					FlushProc = function(proxy)
 						local file = vfs.proxies[tostring(proxy):match(".+: (.+)")]
 						--print("flush", file)
-						
+
 					end,
 				})
 				--ffi.gc(proxy_data, print)
 				local proxy = ffi.new("aiFile[1]", proxy_data)
-				
+
 				vfs.proxies = vfs.proxies or {}
 				vfs.proxies[tostring(proxy):match(".+: (.+)")] = file
-								
+
 				return ffi.cast("aiFile_*", proxy)
 			end,
 			CloseProc = function(self, proxy)
@@ -905,15 +905,15 @@ function assimp.ImportFileEx(path, flags, callback, custom_io)
 		})
 		--ffi.gc(file_io_data, print)
 		local file_io = ffi.new("aiFileIO[1]", file_io_data)
-		
+
 		assimp.file_ios = assimp.file_ios or {}
 		assimp.file_ios[path] = file_io
-			
+
 		scene = lib.aiImportFileEx(path, flags, file_io)
 	else
 		scene = assimp.ImportFile(path, flags)
 	end
-		
+
 	return parse_scene(scene, path, callback)
 end
 

@@ -8,7 +8,7 @@ TMPL:GetSet("ScaleMatrix", Matrix44())
 TMPL:StartStorable()
 	TMPL:GetSet("Position", Vec3(0, 0, 0), {callback = "InvalidateTRMatrix"})
 	TMPL:GetSet("Rotation", Quat(0, 0, 0, 1), {callback = "InvalidateTRMatrix"})
-	
+
 	TMPL:GetSet("Scale", Vec3(1, 1, 1), {callback = "InvalidateScaleMatrix"})
 	TMPL:GetSet("Shear", Vec3(0, 0, 0), {callback = "InvalidateScaleMatrix"})
 	TMPL:GetSet("Size", 1, {callback = "InvalidateScaleMatrix"})
@@ -17,7 +17,7 @@ TMPL:EndStorable()
 
 TMPL:GetSet("OverridePosition", nil, {callback = "InvalidateTRMatrix"})
 TMPL:GetSet("OverrideRotation", nil, {callback = "InvalidateTRMatrix"})
-	
+
 TMPL.Network = {
 	Position = {"vec3", 1/30, "unreliable"},
 	Rotation = {"quat", 1/30, "unreliable"},
@@ -42,7 +42,7 @@ function TMPL:SetTRPosition(vec)
 	self.TRMatrix:SetTranslation(vec.x, vec.y, vec.z)
 end
 
-function TMPL:GetTRAngles()	
+function TMPL:GetTRAngles()
 	return self.TRMatrix:GetRotation():GetAngles()
 end
 
@@ -69,17 +69,17 @@ end
 
 function TMPL:GetMatrix()
 	self:RebuildMatrix()
-			
-	return self.TRMatrix 
+
+	return self.TRMatrix
 end
 
-function TMPL:SetScale(vec3) 
+function TMPL:SetScale(vec3)
 	self.Scale = vec3
 	self.temp_scale = vec3 * self.Size
 	self:InvalidateScaleMatrix()
 end
-		
-function TMPL:SetSize(num) 
+
+function TMPL:SetSize(num)
 	self.Size = num
 	self.temp_scale = num * self.Scale
 	self:InvalidateScaleMatrix()
@@ -118,26 +118,26 @@ function TMPL:RebuildMatrix()
 		--self.ScaleMatrix:Shear(self.Shear)
 		self.rebuild_scale_matrix = false
 	end
-	
-	if self.rebuild_tr_matrix and not self.SkipRebuild then				
+
+	if self.rebuild_tr_matrix and not self.SkipRebuild then
 		local pos = self.Position
 		local rot = self.Rotation
-		
+
 		if self.OverrideRotation then
 			rot = self.OverrideRotation
 		end
-		
+
 		if self.OverridePosition then
 			pos = self.OverridePosition
 		end
-		
+
 		self.TRMatrix:Identity()
 		self.TRMatrix:SetTranslation(-pos.y, -pos.x, -pos.z)
 		self.TRMatrix:SetRotation(rot)
-		
+
 		if self.Entity:HasParent() then
 			local parent_transform = self.Entity.Parent:GetComponent("transform")
-			
+
 			if not parent_transform:IsValid() then
 				for i, ent in ipairs(self.Entity:GetParentList()) do
 					parent_transform = ent:GetComponent("transform")
@@ -146,19 +146,19 @@ function TMPL:RebuildMatrix()
 					end
 				end
 			end
-			
+
 			if parent_transform:IsValid() then
-				self.temp_matrix = self.temp_matrix or Matrix44()				
+				self.temp_matrix = self.temp_matrix or Matrix44()
 				--self.TRMatrix = self.TRMatrix * self.Parent.TRMatrix
 				self.TRMatrix:Multiply(parent_transform.TRMatrix, self.temp_matrix)
 				self.TRMatrix, self.temp_matrix = self.temp_matrix, self.TRMatrix
 			end
 		end
-		
+
 		if self.temp_scale.x ~= 1 or self.temp_scale.y ~= 1 or self.temp_scale.z ~= 1 then
 			self.TRMatrix = self.ScaleMatrix * self.TRMatrix
 		end
-		
+
 		self.rebuild_tr_matrix = false
 	end
 end
@@ -168,12 +168,12 @@ do
 
 	function TMPL:IsPointsVisible(points, view)
 		view = view or render.GetProjectionViewMatrix()
-		
+
 		temp:Identity()
-		
+
 		local matrix = self:GetMatrix()
 
-		for i, pos in ipairs(points) do			
+		for i, pos in ipairs(points) do
 			self.visible_matrix_cache[i]:Identity()
 			self.visible_matrix_cache[i]:Translate(pos.x, pos.y, pos.z)
 
@@ -181,7 +181,7 @@ do
 			temp:Multiply(view, self.visible_matrix_cache[i])
 
 			local x, y, z = self.visible_matrix_cache[i]:GetClipCoordinates()
-			
+
 			if
 				(x > -1 and x < 1) and
 				(y > -1 and y < 1) and
@@ -190,7 +190,7 @@ do
 				return true
 			end
 		end
-		
+
 		return false
 	end
 end

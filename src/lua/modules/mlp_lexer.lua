@@ -24,9 +24,9 @@ local keywords = {
     "end", "false", "for", "function", "if",
     "in", "local", "nil", "not", "or", "repeat",
     "return", "then", "true", "until", "while",
-    "...", "..", "==", ">=", "<=", "~=", 
+    "...", "..", "==", ">=", "<=", "~=",
     "+{", "-{" }
- 
+
 for w in values(keywords) do mlp_lexer:add(w) end
 
 _M.lexer = mlp_lexer

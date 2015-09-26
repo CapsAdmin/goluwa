@@ -35,7 +35,7 @@ end
 function state_ops.push(self)
 	local i = self.i + 1
 	self.i = i
-	
+
 	self.stack[i] = self.active
 	self.state_stack[i] = self.active_state
 	self.key_stack[i] = self.active_key
@@ -158,7 +158,7 @@ function state_ops.set_key(self)
 	local value = self:grab_value()
 	local value_type = type(value)
 	if self.options.object.number then
-		assert(value_type == 'string' or value_type == 'number', "As configured, a key must be a number or string") 
+		assert(value_type == 'string' or value_type == 'number', "As configured, a key must be a number or string")
 	else
 		assert(value_type == 'string', "As configured, a key must be a string")
 	end

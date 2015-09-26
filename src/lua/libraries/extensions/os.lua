@@ -1,13 +1,13 @@
 
 if WINDOWS then
 	ffi.cdef[[int _putenv_s(const char *var_name, const char *new_value)]]
-	
+
 	function os.setenv(key, val)
 		ffi.C._putenv_s(key, val)
 	end
 else
 	ffi.cdef[[int setenv(const char *var_name, const char *new_value, int change_flag)]]
-	
+
 	function os.setenv(key, val, flag)
 		ffi.C.setenv(key, val, flag or 0)
 	end
@@ -20,7 +20,7 @@ do -- by Python1320
 
 	function os.datetable(a)
 		check(a, "number")
-		
+
 		local negative=false
 		if a<0 then negative=true a=a*-1 end
 		local f,s,m,h,d
@@ -48,7 +48,7 @@ end
 do -- by Python1320
 	local conjunction=  " and"
 	local conjunction2= ","
-	
+
 	function os.prettydate(t)
 		check(t, "number", "table")
 
@@ -77,12 +77,12 @@ do -- by Python1320
 		if t.n then
 			table.insert(tbl," in the past")
 		end
-		for k,v in pairs(tbl) do 
+		for k,v in pairs(tbl) do
 			if v==conjunction and k~=lastand then
 				tbl[k]=conjunction2
 			end
 		end
 
-		return table.concat ( tbl , "" ) 
+		return table.concat ( tbl , "" )
 	end
 end

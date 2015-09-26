@@ -13,14 +13,14 @@ do
 		sockets.Get(url, function(data)
 			local out = {translated = "", transliteration = "", from = ""}
 			local content = data.content:match(".-%[(%b[])"):sub(2, -2)
-			
+
 			for part in content:gmatch("(%b[])") do
 				local to, from, trl = part:match("%[(%b\"\"),(%b\"\"),(%b\"\")")
 				out.translated = out.translated .. to:sub(2,-2)
 				out.from = out.from .. from:sub(2,-2)
 				out.transliteration = out.transliteration .. trl:sub(2,-2)
 			end
-			
+
 			callback(out)
 		end)
 	end
@@ -28,7 +28,7 @@ end
 
 do
 	local base_url = "http://translate.google.com/translate_tts?tl=%s&q=%s"
-	
+
 	function google.SayTTS(lang, str)
 		local url = base_url:format(lang, sockets.EscapeURL(str))
 
@@ -50,7 +50,7 @@ function google.AutoComplete(question, callback)
 			:gsub('"', "")
 			:gsub("[^%a, ]", "")
 			:gsub(_q:lower() .. " ", "")
-			
+
 			local tbl = str:explode(',')
 			table.remove(tbl, 1)
 
@@ -64,9 +64,9 @@ end
 function google.YoutubeSearch(query, callback)
 	sockets.Get(("http://gdata.youtube.com/feeds/api/videos?q=%s&max-results=1&v=2&prettyprint=flase&alt=json"):format(query), function(data)
 		local hashed = serializer.Decode("json", data.content)
-		
+
 		if not hashed.feed or not hashed.feed.entry then return end
-		
+
 		local page_url = "https://www.youtube.com/results?search_query=#" .. query
 
 		local name = hashed["feed"]["entry"][1]["media$group"]["media$title"]["$t"]
@@ -78,7 +78,7 @@ function google.YoutubeSearch(query, callback)
 
 		--local embed = hashed["feed"]["entry"][0]["yt$accessControl"].find{|i| i["action"] == "embed"}
 
-		--local views = add_commas(views) 
+		--local views = add_commas(views)
 		callback({name = name, id = id, views = views, likes = likes, dislikes = dislikes, length = length})
 	end)
 end
@@ -97,11 +97,11 @@ if CLIENT then
 		table.insert(tbl, ColorBytes(5,163,94))
 		table.insert(tbl, "l")
 		table.insert(tbl, ColorBytes(214,68,48))
-		table.insert(tbl, "e")		
+		table.insert(tbl, "e")
 		table.insert(tbl, ColorBytes(255, 255, 255, 255))
 		table.insert(tbl, ": ")
 		table.insert(tbl, str)
-		
+
 		if chathud then
 			chathud.AddText(unpack(tbl))
 		else
@@ -119,9 +119,9 @@ if SERVER then
 			if not question then return end
 			google.AutoComplete(question, function(tbl)
 				local msg = table.random(tbl)
-							
+
 				chat.Append("Google", msg)
-				
+
 				message.Broadcast("google_say", msg)
 			end)
 		end
@@ -131,12 +131,12 @@ end
 console.AddCommand("yt", function(query)
 	google.YoutubeSearch(query, function(info)
 		local votes = info.likes + info.dislikes
-		
+
 		local rating = ((info.likes+0.0)/votes)*100
 		rating = math.round(rating) .. "%"
 
 		chat.Append("Google", ("YouTube | %s | %s | %s views | %s | http://youtu.be/%s | More results: %s"):format(info.name, info.length, info.views, info.rating, info.id, info.page_url))
-	end)	
+	end)
 end)
 
 console.AddCommand("gauto", function(line)
@@ -148,22 +148,22 @@ end)
 
 console.AddCommand("t", function(line, from, to, str)
 	local client = console.GetClient()
-			
+
 	if from and not to and not str then
 		str = from
 		to = "en"
 		from = "auto"
 	end
-	
+
 	google.Translate(from, to, str, function(data)
 		chat.ClientSay(client, data.translated)
-		
+
 		if STEAM_FRIENDS_SUBJECT and STEAM_FRIENDS_SUBJECT:IsValid() then
 			steam.SendChatMessage(STEAM_FRIENDS_SUBJECT:GetUniqueID(), data.translated)
 		end
 	end)
 end)
 
-console.AddCommand("g", function(query) 
-	os.execute(([[explorer "https://www.google.no/search?&q=%s"]]):format(sockets.EscapeURL(query))) 
+console.AddCommand("g", function(query)
+	os.execute(([[explorer "https://www.google.no/search?&q=%s"]]):format(sockets.EscapeURL(query)))
 end)

@@ -51,7 +51,7 @@ META.tags.console =
 	end,
 
 	post_draw_chunks = function(markup, self, chunk)
-		
+
 		surface.DrawLine(chunk.x, chunk.top, chunk.right, chunk.top)
 	end,
 }
@@ -83,18 +83,18 @@ META.tags.wrong =
 META.tags.background =
 {
 	arguments = {1,1,1,1},
-	pre_draw = function(markup, self, x,y, r,g,b,a)					
+	pre_draw = function(markup, self, x,y, r,g,b,a)
 		local r,g,b,a = surface.SetColor(r,g,b,a)
-		
+
 		local w, h = self.tag_width, self.tag_height
 		if h > self.h then y = y - h end
 		surface.SetWhiteTexture()
 		surface.DrawRect(x, y, w, h)
-		
+
 		surface.SetColor(r,g,b,a)
 	end,
-	
-	post_draw = function() 
+
+	post_draw = function()
 		-- if we don't have this we don't get tag_center_x and stuff due to performance reasons
 	end,
 }
@@ -132,7 +132,7 @@ META.tags.color =
 META.tags.alpha =
 {
 	arguments = {1},
-	
+
 	pre_draw = function(markup, self, x, y, alpha)
 		surface.SetAlphaMultiplier(alpha)
 	end,
@@ -144,24 +144,24 @@ META.tags.alpha =
 
 META.tags.blackhole = {
 	arguments = {1},
-	
+
 	pre_draw = function(markup, self, x,y, force)
 		local delta = system.GetFrameTime() * 2
-		
+
 		for k,v in ipairs(markup.chunks) do
 			if v ~= self and v.w > 0 and v.h > 0 then
 				if not v.phys then
 					v.phys = {
 						pos = {x = v.x, y = v.y},
 						vel = {x = 0, y = 0},
-					}	
+					}
 				end
-				
+
 				local phys = v.phys
-				
+
 				phys.vel.x = phys.vel.x + ((self.x - phys.pos.x) * 0.01 * force)
 				phys.vel.y = phys.vel.y + ((self.y - phys.pos.y) * 0.01 * force)
-				
+
 				-- velocity
 				phys.pos.x = phys.pos.x + (phys.vel.x * delta)
 				phys.pos.y = phys.pos.y + (phys.vel.y * delta)
@@ -169,7 +169,7 @@ META.tags.blackhole = {
 				-- friction
 				phys.vel.x = phys.vel.x * 0.97
 				phys.vel.y = phys.vel.y * 0.97
-				
+
 				v.x = phys.pos.x
 				v.y = phys.pos.y
 			end
@@ -207,10 +207,10 @@ META.tags.physics =
 
 		--local xvel = (self.last_world_x or markup.current_x) - markup.current_x
 		--local yvel = (self.last_world_y or markup.current_y) - markup.current_y
-		
+
 		--self.last_world_x = markup.current_x or 0
 		--self.last_world_y = markup.current_y or 0
-		
+
 		-- random velocity for some variation
 		part.vel.y = part.vel.y + gravity_y + (math.randomf(-1,1) * rand_mult) --+ yvel
 		part.vel.x = part.vel.x + gravity_x + (math.randomf(-1,1) * rand_mult) --+ xvel
@@ -243,21 +243,21 @@ META.tags.physics =
 			part.pos.y = H - part.siz.y
 			part.vel.y = part.vel.y * -part.drag
 		end
-		
+
 		surface.PushMatrix()
 
-		
+
 		local center_x = self.tag_center_x
 		local center_y = self.tag_center_y
 
 		surface.Translate(part.pos.x, part.pos.y)
 
-		
+
 		surface.Translate(center_x, center_y)
 			surface.Rotate(math.deg(math.atan2(part.vel.y, part.vel.x)))
 		surface.Translate(-center_x, -center_y)
-		
-		
+
+
 	end,
 
 	post_draw = function()
@@ -287,7 +287,7 @@ META.tags.texture =
 	end,
 
 	get_size = function(markup, self, path, size)
-		if not self.mat or not self.mat:IsValid() then self.mat = Texture(path) end 
+		if not self.mat or not self.mat:IsValid() then self.mat = Texture(path) end
 		if self.mat:IsLoading() then return 16, 16 end
 		return self.mat.w or size, self.mat.h or size
 	end,

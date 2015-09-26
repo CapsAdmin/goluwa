@@ -1,4 +1,4 @@
-local fb = render.CreateFrameBuffer() 
+local fb = render.CreateFrameBuffer()
 fb:SetSize(Vec2()+1024)
 
 do
@@ -11,7 +11,7 @@ do
 end
 
 do
-	local tex = render.CreateTexture("2d") 
+	local tex = render.CreateTexture("2d")
 	tex:SetSize(Vec2(1024, 1024))
 	tex:SetInternalFormat("rgba8")
 	tex:Clear()
@@ -19,7 +19,7 @@ do
 	fb:SetTexture(2, tex, "read_write")
 end
 
-do	
+do
 	fb:WriteThese("2")
 
 	fb:Begin()
@@ -28,23 +28,23 @@ do
 	fb:End()
 end
 
-do	
+do
 	fb:WriteThese("1")
 
 	fb:Begin()
 		surface.SetColor(1,1,1,1)
 		surface.DrawText("YOU SHOULD NOT SEE THIS", 250, 50)
 	fb:End()
-	
+
 	fb:WriteThese("all")
-	
+
 	fb:Clear(1)
 end
 
 do -- write a red square only to attachment 2
 	fb:WriteThese("2")
 
-	fb:Begin() 
+	fb:Begin()
 		surface.SetWhiteTexture()
 		surface.SetColor(1,0,0,1)
 		surface.DrawRect(30,30,50,50)
@@ -62,10 +62,10 @@ do	-- write a pink square only to attachment 1
 end
 
 --fb:WriteThese("stencil")
- 
+
 do -- write a rotated green rectangle to attachment 1 and 2
 	fb:WriteThese("1|2")
-	
+
 	fb:Begin()
 		surface.SetWhiteTexture()
 		surface.SetColor(0,1,0,0.5)
@@ -73,17 +73,17 @@ do -- write a rotated green rectangle to attachment 1 and 2
 	fb:End()
 end
 
-local fb = render.CreateFrameBuffer() 
+local fb = render.CreateFrameBuffer()
 fb:SetSize(Vec2()+128)
 
 for i = 1, 3 do
-	local tex = render.CreateTexture("2d") 
+	local tex = render.CreateTexture("2d")
 	tex:SetSize(Vec2(128, 128))
 	tex:SetInternalFormat("rgba8")
 	tex:Clear()
 
 	fb:SetTexture(i, tex, "read_write")
-	
+
 	fb:WriteThese(tostring(i))
 
 	fb:Begin()
@@ -96,7 +96,7 @@ for i = 1, 3 do
 			surface.SetColor(0,0,1,0.5)
 		end
 		surface.DrawRect(i * 20, 20,50,50, 50)
-	fb:End()	 
+	fb:End()
 end
 
 event.CreateTimer("lol", 1, 4, function(i)

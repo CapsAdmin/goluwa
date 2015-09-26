@@ -86,7 +86,7 @@ local newpattern, pattmt
 -- This deals with the Lua 5.1/5.2 compatibility, and restricted
 -- environements without access to newproxy and/or debug.setmetatable.
 
-if compat.proxies and not compat.lua52_len then 
+if compat.proxies and not compat.lua52_len then
     -- Lua 5.1 / LuaJIT without compat.
     local proxycache = weakkey{}
     local __index_LL = {__index = LL}

@@ -39,9 +39,9 @@ end)
 
 event.AddListener("ClientChat", "chat_commands", function(client, txt)
 	if CLIENT and network.IsConnected() then return end
-	
+
 	local cmd, symbol = console.IsValidCommand(txt)
-	
+
 	if cmd and symbol ~= "" then
 		console.SetClient(client)
 			console.RunString(txt, true, true)

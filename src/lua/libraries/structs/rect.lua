@@ -25,8 +25,8 @@ function META:Shrink(amt)
 end
 
 function META:Expand(amt)
-	amt = -amt 
-	
+	amt = -amt
+
 	self.x = self.x + amt
 	self.y = self.y + amt
 	self.w = self.w - (amt * 2)
@@ -51,7 +51,7 @@ function META:SetPosition(x, y)
 end
 
 function META:IsPosInside(v)
-	return 
+	return
 		v.x > self.x and
 		v.y > self.y and
 		v.x < self.w and
@@ -59,14 +59,14 @@ function META:IsPosInside(v)
 end
 
 function META.IsRectInside(a, b)
-	return 
-		not 
+	return
+		not
 		(
 			b.x > a.x + a.w or
-			b.x + b.w < a.x or 
+			b.x + b.w < a.x or
 			b.y > a.y + a.h or
 			b.y + b.h < a.y
-		)		
+		)
 end
 
 function META:SetSize(w, h)
@@ -100,7 +100,7 @@ function META:GetPosition()
 	return structs.Vec2(self.x, self.y)
 end
 
-function META:GetSize()	
+function META:GetSize()
 	return structs.Vec2(self.w, self.h)
 end
 
@@ -139,19 +139,19 @@ function META.GetUV8(R, S)
 	local xtr = R.x + R.w
 	local ytr = R.y
 
-	xtl = xtl / S.x 
+	xtl = xtl / S.x
 	ytl = ytl / S.y
-	xtr = xtr / S.x 
+	xtr = xtr / S.x
 	ytr = ytr / S.y
 
 	local xbl = R.x
 	local ybl = R.y + R.h
 	local xbr = R.x + R.w
 	local ybr = R.y + R.h
-	
-	xbl = xbl / S.x 
+
+	xbl = xbl / S.x
 	ybl = ybl / S.y
-	xbr = xbr / S.x 
+	xbr = xbr / S.x
 	ybr = ybr / S.y
 
 	return

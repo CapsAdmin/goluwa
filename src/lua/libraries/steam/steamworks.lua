@@ -12,24 +12,24 @@ end
 
 do
 	local META = prototype.CreateTemplate("steam_friend")
-	
+
 	for k,v in pairs(steam.steamid_meta) do
 		META[k] = META[k] or v
 	end
-	
+
 	function META:CreateBot()
 		local bot = clients.Create(tostring(self.id), true)
 		bot:SetNick(self:GetPersonaName())
 		return bot
 	end
-	
+
 	function META:GetAvatarTexture()
 		self.avatar_texture = self.avatar_texture or render.CreateTexture()
-		
+
 		if not self.requesting_avatar then
 			event.CreateThinker(function()
 				if not self:IsValid() then return false end
-				
+
 				local handle = self:GetLargeAvatar()
 
 				if handle > 0 then
@@ -51,42 +51,42 @@ do
 			end)
 			self.requesting_avatar = true
 		end
-		
+
 		return self.avatar_texture
 	end
-	
+
 	local str = ffi.new("char[2048]", 0)
 	local type = ffi.new("SteamWorks_EChatEntryType[1]")
-	
+
 	function META:GetChatMessage(message_id)
 		local length = steam.friends.GetFriendMessage(self.id, message_id, str, 512, type)
 		if length > 0 then
 			return ffi.string(str), type[0]
 		end
 	end
-	
+
 	local last = {}
-	
+
 	function META:GetLastChatMessage()
 		if steam.friends.GetFriendMessage(self.id, 0, str, 512, type) == 0 then return end
-		
+
 		local i = last[tostring(self.id)] or 0
-		
+
 		while true do
 			type[0] = 0
-			
+
 			local length = steam.friends.GetFriendMessage(self.id, i, str, 512, type)
-			
+
 			if type[0] == 0 and length == 0 then break end
-			
+
 			i = i + 1
 		end
-		
-		last[tostring(self.id)] = i 
-		
+
+		last[tostring(self.id)] = i
+
 		return self:GetChatMessage(i - 1)
 	end
-	
+
 	--[[[event.CreateTimer("steam_friends", 0.25, 0, function()
 		for i, friend in ipairs(steam.GetFriends()) do
 			local message = friend:GetLastChatMessage()
@@ -99,7 +99,7 @@ do
 			end
 		end
 	end)]]
-	
+
 	prototype.Register(META)
 end
 
@@ -107,18 +107,18 @@ local active = utility.CreateWeakTable()
 
 function steam.GetFriendObjectFromSteamID(id)
 	active[tostring(id)] = active[tostring(id)] or prototype.CreateObject("steam_friend", {id = id})
-	
+
 	return active[tostring(id)]
 end
 
 function steam.GetFriends()
 	local out = {}
-	
+
 	for i = 0, steam.friends.GetFriendCount(65535) - 1 do
 		local id = steam.friends.GetFriendByIndex(i, 65535)
 		out[i+1] = steam.GetFriendObjectFromSteamID(id)
 	end
-	
+
 	return out
 end
 
@@ -136,9 +136,9 @@ function steam.GetClient()
 	return steam.client
 end
 
-if RELOAD then 
+if RELOAD then
 	local tex = steam.GetFriends()[301]:GetAvatarTexture()
-		
+
 	event.AddListener("PostDrawMenu", "lol", function()
 		surface.SetTexture(tex)
 		surface.SetColor(1,1,1,1)

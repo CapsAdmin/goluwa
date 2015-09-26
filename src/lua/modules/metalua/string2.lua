@@ -9,7 +9,7 @@
 
 -- Courtesy of lua-users.org
 function string.split(str, pat)
-   local t = {} 
+   local t = {}
    local fpat = "(.-)" .. pat
    local last_end = 1
    local s, e, cap = string.find(str, fpat, 1)
@@ -27,7 +27,7 @@ function string.split(str, pat)
    return t
 end
 
--- "match" is regularly used as a keyword for pattern matching, 
+-- "match" is regularly used as a keyword for pattern matching,
 -- so here is an always available substitute.
 string.strmatch = string["match"]
 

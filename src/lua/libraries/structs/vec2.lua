@@ -7,17 +7,17 @@ META.ClassName = "Vec2"
 META.NumberType = {[""] = "float", ["i"] = "int"}
 META.Args = {{"x", "w", "p"}, {"y", "h", "y"}}
 
-structs.AddAllOperators(META) 
+structs.AddAllOperators(META)
 
 -- length stuff
-do 
+do
 	function META:GetLengthSquared()
 		return self.x * self.x + self.y * self.y
 	end
 
 	function META:SetLength(num)
 		local scale = num * 1/math.sqrt(self:GetLengthSquared())
-		
+
 		self.x = self.x * scale
 		self.y = self.y * scale
 	end
@@ -46,15 +46,15 @@ do
 
 	function META:SetMaxLength(num)
 		local length = self:GetLengthSquared()
-		
+
 		if length * length > num then
 			local scale = num * 1/math.sqrt(length)
-			
+
 			self.x = self.x * scale
 			self.y = self.y * scale
 		end
 	end
-	
+
 	function META.Distance(a, b)
 		return (a - b):GetLength()
 	end
@@ -66,10 +66,10 @@ function META:Rotate(angle)
 
 	local xx = self.x * cs - self.y * sn;
 	local yy = self.x * sn + self.y * cs;
-	
+
 	self.x = xx
 	self.y = yy
-	
+
 	return self
 end
 
@@ -79,7 +79,7 @@ function META.Lerp(a, mult, b)
 
 	a.x = (b.x - a.x) * mult + a.x
 	a.y = (b.y - a.y) * mult + a.y
-	
+
 	return a
 end
 
@@ -99,10 +99,10 @@ function META:Normalize()
 		return self
 	end
 	local inverted_length = 1/math.sqrt(length)
-	
+
 	self.x = self.x * inverted_length
 	self.y = self.y * inverted_length
-	
+
 	return self
 end
 
@@ -114,7 +114,7 @@ function META:GetReflected(normal)
 	local proj = self:GetNormalized()
 	local dot = proj:GetDot(normal)
 
-  return Vec2(2 * (-dot) * normal.x + proj.x, 2 * (-dot) * normal.y + proj.y) * self:GetLength()          
+  return Vec2(2 * (-dot) * normal.x + proj.x, 2 * (-dot) * normal.y + proj.y) * self:GetLength()
 end
 
 function META:Rotate90CCW()
@@ -122,7 +122,7 @@ function META:Rotate90CCW()
 
 	self.x = -y
 	self.y = x
-	
+
 	return self
 end
 
@@ -131,7 +131,7 @@ function META:Rotate90CW()
 
 	self.x = y
 	self.y = -x
-	
+
 	return self
 end
 

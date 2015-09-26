@@ -4,48 +4,48 @@ surface.fonts = surface.fonts or {}
 surface.registered_fonts = surface.registered_fonts or {}
 surface.font_dpi = 72
 
-surface.default_font_path = "fonts/unifont.ttf" 
+surface.default_font_path = "fonts/unifont.ttf"
 
 local ready = false
 local queue = {}
 
 function surface.InitializeFonts()
 	ready = true
-	
+
 	surface.SetFont(surface.CreateFont("default", {path = surface.default_font_path}))
-	
+
 	for _, args in pairs(queue) do
 		surface.CreateFont(unpack(args))
 	end
 end
 
 function surface.CreateFont(name, options, callback)
-	
+
 	if not ready then
 		table.insert(queue, {name, options, callback})
-		return 
+		return
 	end
-	
+
 	options = options or {}
-	
+
 	local path = options.path or surface.default_font_path
 	local size = options.size or 14
 	local scale = options.scale or Vec2(1,1)
 	local padding = options.padding or 1
 	local fallback = options.fallback
 	local filtering = options.filtering or "linear"
-	
+
 	if type(scale) == "number" then
 		scale = Vec2()+scale
 	end
-	
-	if fallback then 
+
+	if fallback then
 		if type(fallback) == "string" then fallback = {options.fallback} end
 		for k,v in ipairs(fallback) do fallback[k] = surface.fonts[v] end
 	end
-	
+
 	local shader = options.shade
-	
+
 	if shader then
 		if type(shader) == "string" then
 			if not shader:find("return") then
@@ -57,14 +57,14 @@ function surface.CreateFont(name, options, callback)
 			shader = {shader}
 		end
 	end
-	
+
 	local shadow = options.shadow
 	local shadow_color = options.shadow_color or Color(0,0,0,0.25)
 
 	if shadow and type(shadow) ~= "number" then
 		shadow = size * scale --???
 	end
-	
+
 	if shadow then
 		shader = shader or {}
 		table.insert(shader, {
@@ -75,25 +75,25 @@ function surface.CreateFont(name, options, callback)
 			},
 		})
 	end
-	
+
 	local monospace = options.monospace
 	local spacing = options.spacing
-	
+
 	if monospace and not spacing then
 		spacing = size
 	end
-	
+
 	spacing = spacing or 1
-	
+
 	surface.fonts[name] = surface.fonts.default
-	
+
 	for class_name, _ in pairs(surface.registered_fonts) do
 		local self = prototype.CreateDerivedObject("font", class_name)
-		
+
 		self.pages = {}
 		self.chars = {}
 		self.state = "reading"
-		
+
 		self:SetName(name)
 		self:SetPath(path)
 		self:SetSize(size)
@@ -106,38 +106,38 @@ function surface.CreateFont(name, options, callback)
 		self:SetMonospace(monospace)
 		self:SetSpacing(spacing)
 		self:SetFiltering(filtering)
-				
+
 		self.OnLoad = function(...)
 			self:SetReady(true)
 			event.Call("FontChanged", name, options)
 		end
-		
+
 		local ok, err = pcall(self.Initialize, self, options)
-		
-		if ok and err ~= false then		
+
+		if ok and err ~= false then
 			surface.fonts[name] = self
 			surface.InvalidateFontSizeCache(name)
-			
+
 			return self
 		else
 			if err ~= false or surface.debug then
 				debug.trace()
 				llog("%s: failed to load font %s %q", class_name, name, err)
 			end
-			
+
 			self:Remove()
 		end
 	end
-	
+
 	return surface.fonts.default
 end
 
 function surface.RegisterFont(meta)
 	meta.TypeBase = "base"
 	meta.Type = "font"
-	
+
 	prototype.Register(meta)
-	
+
 	surface.registered_fonts[meta.ClassName] = meta
 end
 
@@ -155,19 +155,19 @@ function surface.DrawText(str, x, y, w)
 	local ux,uy,uw,uh,usx,usy = surface.GetRectUV()
 	local old_tex = surface.GetTexture()
 	local r,g,b,a = surface.GetColor()
-	
+
 	x = x or X
 	y = y or Y
-	
+
 	local font = surface.current_font
-	
+
 	if not font or not font:IsReady() then
 		surface.SetTexture(render.GetLoadingTexture())
 		surface.DrawRect(x,y,32,32)
-	else	
+	else
 		font:DrawString(str, x, y, w)
 	end
-	
+
 	surface.SetRectUV(ux,uy,uw,uh,usx,usy)
 	surface.SetTexture(old_tex)
 	surface.SetColor(r,g,b,a)
@@ -183,29 +183,29 @@ do
 
 	function surface.GetTextSize(str)
 		local font = surface.current_font
-		
+
 		if not font then
 			return 0,0
 		end
-		
+
 		if not font:IsReady() then
 			return font.Size, font.Size
 		end
-		
-		if cache[font] and cache[font][str] then 
-			return cache[font][str][1], cache[font][str][2] 
+
+		if cache[font] and cache[font][str] then
+			return cache[font][str][1], cache[font][str][2]
 		end
-		
+
 		local x, y = font:GetTextSize(str)
-		
+
 		cache[font] = cache[font] or {}
 		cache[font][str] = cache[font][str] or {}
 		cache[font][str][1] = x
 		cache[font][str][2] = y
-		
+
 		return x, y
 	end
-	
+
 	function surface.InvalidateFontSizeCache(font)
 		if font then
 			cache[font] = nil
@@ -219,9 +219,9 @@ function surface.WrapString(str, max_width)
 	if not max_width or max_width == 0 then
 		return str:explode("")
 	end
-	
+
 	local lines = {}
-	
+
 	local last_pos = 0
 	local line_width = 0
 	local found = false

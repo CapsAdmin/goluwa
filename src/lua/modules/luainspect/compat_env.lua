@@ -8,11 +8,11 @@ SYNOPSIS
   local CL = pcall(load, '') and _G or require 'compat_env'
   local load     = CL.load
   local loadfile = CL.loadfile
-  
+
   -- The following now works in both Lua 5.1 and 5.2:
   assert(load('return 2*pi', nil, 't', {pi=math.pi}))()
   assert(loadfile('ex.lua', 't', {print=print}))()
-  
+
   -- Get getfenv/setfenv compatibility functions only if using 5.2.
   local getfenv = _G.getfenv or require 'compat_env'.getfenv
   local setfenv = _G.setfenv or require 'compat_env'.setfenv
@@ -26,23 +26,23 @@ DESCRIPTION
   This includes implementations of Lua 5.2 style `load` and `loadfile`
   for use in Lua 5.1.  It also includes Lua 5.1 style `getfenv` and `setfenv`
   for use in Lua 5.2.
- 
+
 API
 
   local CL = require 'compat_env'
-  
+
   CL.load (ld [, source [, mode [, env] ] ]) --> f [, err]
 
     This behaves the same as the Lua 5.2 `load` in both
     Lua 5.1 and 5.2.
     http://www.lua.org/manual/5.2/manual.html#pdf-load
-    
+
   CL.loadfile ([filename [, mode [, env] ] ]) --> f [, err]
-  
+
     This behaves the same as the Lua 5.2 `loadfile` in both
     Lua 5.1 and 5.2.
     http://www.lua.org/manual/5.2/manual.html#pdf-loadfile
-    
+
   CL.getfenv ([f]) --> t
 
     This is identical to the Lua 5.1 `getfenv` in Lua 5.1.
@@ -55,9 +55,9 @@ API
     debug info.  It is not normally considered good design to use
     this function; when possible, use `load` or `loadfile` instead.
     http://www.lua.org/manual/5.1/manual.html#pdf-getfenv
-    
+
   CL.setfenv (f, t)
-  
+
     This is identical to the Lua 5.1 `setfenv` in Lua 5.1.
     This behaves similar to the Lua 5.1 `setfenv` in Lua 5.2.
     This will do nothing if `f` is a Lua function that
@@ -66,7 +66,7 @@ API
     It is not normally considered good design to use
     this function; when possible, use `load` or `loadfile` instead.
     http://www.lua.org/manual/5.1/manual.html#pdf-setfenv
-    
+
 DESIGN NOTES
 
   This module intends to provide robust and fairly complete reimplementations
@@ -75,7 +75,7 @@ DESIGN NOTES
   such as thread environments, although this is liable to change in the future.
   Such 5.1 capabilities are discouraged and ideally
   removed from 5.1 code, thereby allowing your code to work in both 5.1 and 5.2.
-  
+
   In Lua 5.2, a `setfenv(f, {})`, where `f` lacks any upvalues, will be silently
   ignored since there is no `_ENV` in this function to write to, and the
   environment will have no effect inside the function anyway.  However,
@@ -84,12 +84,12 @@ DESIGN NOTES
   If `setfenv(f, {})` has an upvalue but no debug info, then this will raise
   an error to prevent inadvertently executing potentially untrusted code in the
   global environment.
-  
+
   It is not normally considered good design to use `setfenv` and `getfenv`
   (one reason they were removed in 5.2).  When possible, consider replacing
   these with `load` or `loadfile`, which are more restrictive and have native
   implementations in 5.2.
-  
+
   This module might be merged into a more general Lua 5.1/5.2 compatibility
   library (e.g. a full reimplementation of Lua 5.2 `_G`).  However,
   `load/loadfile/getfenv/setfenv` perhaps are among the more cumbersome
@@ -98,13 +98,13 @@ DESIGN NOTES
 INSTALLATION
 
   Download compat_env.lua:
-  
+
     wget https://raw.github.com/gist/1654007/compat_env.lua
 
   Copy compat_env.lua into your LUA_PATH.
-  
+
   Alternately, unpack, test, and install into LuaRocks:
-  
+
      wget https://raw.github.com/gist/1422205/sourceunpack.lua
      lua sourceunpack.lua compat_env.lua
      (cd out && luarocks make)
@@ -116,7 +116,7 @@ Related work
     - penlight implementations of getfenv/setfenv
   http://lua-users.org/lists/lua-l/2010-06/msg00313.html
     - initial getfenv/setfenv implementation
-    
+
 References
 
   [1] http://lua-users.org/lists/lua-l/2010-06/msg00315.html
@@ -148,7 +148,7 @@ THE SOFTWARE.
 local M = {_TYPE='module', _NAME='compat_env', _VERSION='0.2.20120124'}
 
 local function check_chunk_type(s, mode)
-  local nmode = mode or 'bt' 
+  local nmode = mode or 'bt'
   local is_binary = s and #s > 0 and s:byte(1) == 27
   if is_binary and not nmode:match'b' then
     return nil, ("attempt to load a binary chunk (mode is '%s')"):format(mode)
@@ -243,7 +243,7 @@ else -- >= Lua 5.2
     return f
   end
   -- [*] might simulate with table keyed by coroutine.running()
-  
+
   -- 5.1 style `setfenv` implemented in 5.2
   function M.setfenv(f, t)
     local f = envhelper(f, 'setfenv')

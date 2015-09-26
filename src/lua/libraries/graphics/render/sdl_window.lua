@@ -10,28 +10,28 @@ do -- window meta
 
 	function META:OnRemove()
 		event.RemoveListener("OnUpdate", self)
-		
+
 		sdl.DestroyWindow(self.__ptr)
 		render.sdl_windows[self.sdl_window_id] = nil
 	end
 
 	local x = ffi.new("int[1]")
 	local y = ffi.new("int[1]")
-	
+
 	function META:GetPosition()
 		sdl.GetWindowPosition(self.__ptr, x, y)
 		return Vec2(x[0], y[0])
 	end
-	
+
 	function META:SetPosition(pos)
 		sdl.SetWindowPosition(self.__ptr, pos:Unpack())
-	end	
-	
+	end
+
 	function META:GetSize()
 		sdl.GetWindowSize(self.__ptr, x, y)
 		return Vec2(x[0], y[0])
 	end
-		
+
 	function META:SetSize(pos)
 		sdl.SetWindowSize(self.__ptr, pos:Unpack())
 	end
@@ -39,9 +39,9 @@ do -- window meta
 	function META:SetTitle(title)
 		sdl.SetWindowTitle(self.__ptr, title)
 	end
-	
+
 	local x, y = ffi.new(sdl and "int[1]" or "double[1]"), ffi.new(sdl and "int[1]" or "double[1]")
-	
+
 	if sdl.GetGlobalMouseState then
 		function META:GetMousePosition()
 			if self.global_mouse then
@@ -66,30 +66,30 @@ do -- window meta
 	function META:HasFocus()
 		return self.focused
 	end
-	
+
 	function META:ShowCursor(b)
 		sdl.ShowCursor(b and 1 or 0)
 		self.cursor_visible = b
-	end	
-	
+	end
+
 	function META:IsCursorVisible()
 		return self.cursor_visible
 	end
 
 	function META:SetMouseTrapped(b)
 		self.mouse_trapped = b
-		
+
 		sdl.SetWindowGrab(self.__ptr, b and 1 or 0)
 		self:ShowCursor(not b)
 		sdl.SetRelativeMouseMode(b and 1 or 0)
-		
+
 		self.mouse_trapped_start = true
 	end
-	
+
 	function META:GetMouseTrapped()
 		return self.mouse_trapped
 	end
-		
+
 	function META:GetMouseDelta()
 		if self.mouse_trapped_start then
 			self.mouse_trapped_start = nil
@@ -101,107 +101,107 @@ do -- window meta
 		end
 		return self.mouse_delta or Vec2()
 	end
-		 
-	function META:UpdateMouseDelta()	
+
+	function META:UpdateMouseDelta()
 		local pos = self:GetMousePosition()
-	
+
 		if self.last_mpos then
 			self.mouse_delta = (pos - self.last_mpos)
 		end
-				
+
 		self.last_mpos = pos
 	end
-	
+
 	function META:MakeContextCurrent()
-		sdl.GL_MakeCurrent(self.__ptr, render.gl_context) 
+		sdl.GL_MakeCurrent(self.__ptr, render.gl_context)
 	end
-	
+
 	function META:SwapBuffers()
 		sdl.GL_SwapWindow(self.__ptr)
 	end
-	
+
 	function META:SwapInterval(b)
 		sdl.GL_SetSwapInterval(b and 1 or 0)
 	end
 
 	function META:OnUpdate(delta)
-		
+
 	end
-	
+
 	function META:OnFocus(focused)
-		
+
 	end
-	
+
 	function META:OnShow()
-		
+
 	end
-	
+
 	function META:OnClose()
-		
+
 	end
-	
+
 	function META:OnCursorPosition(x, y)
 
 	end
-	
+
 	function META:OnFileDrop(paths)
 		print(paths, "dropped!")
 	end
-	
+
 	function META:OnCharInput(str)
-	
+
 	end
-	
+
 	function META:OnKeyInput(key, press)
-	
+
 	end
-	
+
 	function META:OnKeyInputRepeat(key, press)
-	
+
 	end
-	
+
 	function META:OnMouseInput(key, press)
-		
+
 	end
-	
+
 	function META:OnMouseScroll(x, y)
-	
+
 	end
-	
+
 	function META:OnCursorEnter()
-	
+
 	end
-	
+
 	function META:OnRefresh()
-		
+
 	end
-	
+
 	function META:OnFramebufferResized(width, height)
-	
+
 	end
-	
+
 	function META:OnMove(x, y)
-	
+
 	end
-	
+
 	function META:OnIconify()
-	
+
 	end
-	
+
 	function META:OnResize(width, height)
-		
+
 	end
-	
+
 	function META:OnTextEditing(str)
-		
+
 	end
-	
+
 	function META:IsFocused()
 		return self.focused
 	end
-	
+
 	prototype.Register(META)
-	
+
 	local flags_to_enums = {
 		fullscreen = sdl.e.SDL_WINDOW_FULLSCREEN, -- fullscreen window
 		fullscreen_desktop = sdl.e.SDL_WINDOW_FULLSCREEN_DESKTOP, -- fullscreen window at the current desktop resolution
@@ -214,80 +214,80 @@ do -- window meta
 		input_grabbed = sdl.e.SDL_WINDOW_INPUT_GRABBED, -- window has grabbed input focus
 		allow_highdpi = sdl.e.SDL_WINDOW_ALLOW_HIGHDPI, -- window should be created in high-DPI mode if supported (>= SDL 2.0.1)
 	}
-	
-	function render.CreateWindow(width, height, title, flags, reset_flags)	
+
+	function render.CreateWindow(width, height, title, flags, reset_flags)
 		width = width or 800
 		height = height or 600
 		title = title or ""
-				
+
 		if not render.gl_context then
 			sdl.Init(sdl.e.SDL_INIT_VIDEO)
 			sdl.video_init = true
-			
+
 			sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_MAJOR_VERSION, 3)
 			sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_MINOR_VERSION, 3)
 			sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_PROFILE_MASK, sdl.e.SDL_GL_CONTEXT_PROFILE_CORE)
-			
+
 			--sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_FLAGS, sdl.e.SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG)
 			--sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_PROFILE_MASK, sdl.e.SDL_GL_CONTEXT_PROFILE_COMPATIBILITY)
 		end
-		
+
 		local bit_flags = bit.bor(sdl.e.SDL_WINDOW_OPENGL, sdl.e.SDL_WINDOW_SHOWN, sdl.e.SDL_WINDOW_RESIZABLE)
-		
+
 		if flags then
 			bit_flags = sdl.e.SDL_WINDOW_OPENGL
-			
+
 			for k,v in pairs(flags) do
 				bit_flags = bit.bor(bit_flags, flags_to_enums[v])
 			end
 		end
-		
+
 		local ptr = sdl.CreateWindow(
-			title, 
-			sdl.e.SDL_WINDOWPOS_CENTERED, 
+			title,
 			sdl.e.SDL_WINDOWPOS_CENTERED,
-			width, 
-			height, 
+			sdl.e.SDL_WINDOWPOS_CENTERED,
+			width,
+			height,
 			bit_flags
 		)
 
 		if ptr == nil then
 			error("sdl.CreateWindow failed: " .. ffi.string(sdl.GetError()), 2)
 		end
-		
+
 		if not render.gl_context then
 			local context = sdl.GL_CreateContext(ptr)
-			
+
 			if context == nil then
 				error("sdl.GL_CreateContext failed: " .. ffi.string(sdl.GetError()), 2)
 			end
 			sdl.GL_MakeCurrent(ptr, context)
-			
-			llog("sdl version: %s", ffi.string(sdl.GetRevision()))	
-			
+
+			llog("sdl version: %s", ffi.string(sdl.GetRevision()))
+
 			-- this needs to be initialized once after a context has been created
 			gl.GetProcAddress = sdl.GL_GetProcAddress
 
 			gl.Initialize()
-			
+
 			if not gl.GetString then
 				error("gl.Initialize failed! (gl.GetString not found)", 2)
 			end
-			
+
 			render.gl_context = context
 		end
-			
+
 		local self = prototype.CreateObject(META)
-		
+
 		self.last_mpos = Vec2()
 		self.mouse_delta = Vec2()
 		self.__ptr = ptr
-		
+
 		render.sdl_windows = render.sdl_windows or {}
 		local id = sdl.GetWindowID(ptr)
 		self.sdl_window_id = id
 		render.sdl_windows[id] = self
-		
+
 		local event_name_translate = {}
 		local key_translate = {
 			left_ctrl = "left_control",
@@ -298,31 +298,31 @@ do -- window meta
 		for i = 1, 9 do
 			key_translate["keypad_" .. i] = "kp_" .. i
 		end
-		
+
 		local function call(self, name, ...)
 			if not self then print(name, ...) return end
-				
+
 			if not event_name_translate[name] then
 				event_name_translate[name] = name:gsub("^On", "Window")
 			end
-			
+
 			local b
-						
+
 			if self[name] then
 				if self[name](self, ...) ~= false then
 					b = event.Call(event_name_translate[name], self, ...)
 				end
 			end
-			
+
 			return b
 		end
-		
+
 		local event = ffi.new("SDL_Event")
 		local mbutton_translate = {}
 		for i = 1, 8 do mbutton_translate[i] = "button_" .. i end
 		mbutton_translate[3] = "button_2"
 		mbutton_translate[2] = "button_3"
-		
+
 		local suppress_char_input = false
 
 		_G.event.AddListener("Update", self, function(dt)
@@ -330,20 +330,20 @@ do -- window meta
 				sdl.PollEvent(event) -- this needs to be done or windows thinks the application froze..
 				return
 			end
-			
+
 			self.mouse_delta:Zero()
 			self:UpdateMouseDelta()
 			self:OnUpdate(dt)
-			
+
 			while sdl.PollEvent(event) ~= 0 do
-				local window 
+				local window
 				if event.window and event.window.windowID then
 					window = render.sdl_windows[event.window.windowID]
 				end
 
 				if event.type == sdl.e.SDL_WINDOWEVENT and window then
 					local case = event.window.event
-										
+
 					if case == sdl.e.SDL_WINDOWEVENT_SHOWN then
 						call(window, "OnShow")
 					elseif case == sdl.e.SDL_WINDOWEVENT_HIDDEN then
@@ -380,32 +380,32 @@ do -- window meta
 				elseif event.type == sdl.e.SDL_KEYDOWN or event.type == sdl.e.SDL_KEYUP then
 					local window = render.sdl_windows[event.key.windowID]
 					local key = ffi.string(sdl.GetKeyName(event.key.keysym.sym)):lower():gsub(" ", "_")
-				
+
 					key = key_translate[key] or key
-				
+
 					if event.key["repeat"] == 0 then
 						if call(
-							window, 
-							"OnKeyInput", 
-							key, 
-							event.type == sdl.e.SDL_KEYDOWN, 
-							
-							event.key.state, 
-							event.key.keysym.mod, 
-							ffi.string(sdl.GetScancodeName(event.key.keysym.scancode)):lower(), 
+							window,
+							"OnKeyInput",
+							key,
+							event.type == sdl.e.SDL_KEYDOWN,
+
+							event.key.state,
+							event.key.keysym.mod,
+							ffi.string(sdl.GetScancodeName(event.key.keysym.scancode)):lower(),
 							event.key.keysym
 						) == false then suppress_char_input = true return end
 					end
-				
+
 					call(
-						window, 
-						"OnKeyInputRepeat", 
-						key, 
-						event.type == sdl.e.SDL_KEYDOWN, 
-						
-						event.key.state, 
-						event.key.keysym.mod, 
-						ffi.string(sdl.GetScancodeName(event.key.keysym.scancode)):lower(), 
+						window,
+						"OnKeyInputRepeat",
+						key,
+						event.type == sdl.e.SDL_KEYDOWN,
+
+						event.key.state,
+						event.key.keysym.mod,
+						ffi.string(sdl.GetScancodeName(event.key.keysym.scancode)):lower(),
 						event.key.keysym
 					)
 				elseif event.type == sdl.e.SDL_TEXTINPUT then
@@ -439,16 +439,16 @@ do -- window meta
 				else print("unknown event", event.type) end
 			end
 		end, {on_error = function(...) system.OnError(...) end})
-		
+
 		if not render.current_window:IsValid() then
 			render.current_window = self
 		end
-	
+
 		if not render.context_created then
 			render.context_created = true
 			render.Initialize()
 		end
-		
+
 		return self
 	end
 end
@@ -464,19 +464,19 @@ end
 do
 	local freq = tonumber(sdl.GetPerformanceFrequency())
 	local start_time = sdl.GetPerformanceCounter()
-	
+
 	function system.GetTime()
 		local time = sdl.GetPerformanceCounter()
-		
+
 		time = time - start_time
-		
+
 		return tonumber(time) / freq
-	end	
+	end
 end
 
 do
 
-	local enums = {	
+	local enums = {
 		arrow = sdl.e.SDL_SYSTEM_CURSOR_ARROW,
 		ibeam = sdl.e.SDL_SYSTEM_CURSOR_IBEAM,
 		wait = sdl.e.SDL_SYSTEM_CURSOR_WAIT,
@@ -488,16 +488,16 @@ do
 		sizens = sdl.e.SDL_SYSTEM_CURSOR_SIZENS,
 		sizeall = sdl.e.SDL_SYSTEM_CURSOR_SIZEALL,
 		no = sdl.e.SDL_SYSTEM_CURSOR_NO,
-		hand = sdl.e.SDL_SYSTEM_CURSOR_HAND,		
+		hand = sdl.e.SDL_SYSTEM_CURSOR_HAND,
 	}
 
 	local current
-	local last 
+	local last
 	local cache = {}
 
 	function system.SetCursor(id)
 		id = id or "arrow"
-		
+
 		cache[id] = cache[id] or sdl.CreateSystemCursor(enums[id] or enums.arrow)
 		--if last ~= id then
 			current = id

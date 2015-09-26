@@ -9,16 +9,16 @@ local love = ... or love
 love.graphics = {}
 
 local function ADD_FILTER(obj)
-	obj.setFilter = function(s, min, mag, anistropy) 
-		
+	obj.setFilter = function(s, min, mag, anistropy)
+
 		lovemu.textures[s]:SetMinFilter(min)
 		lovemu.textures[s]:SetMagFilter(mag)
-						
+
 		s.filter_min = min
 		s.filter_mag = mag
 		s.filter_anistropy = anistropy
 	end
-	
+
 	obj.getFilter = function() return s.filter_min, s.filter_mag, s.filter_anistropy end
 end
 
@@ -26,20 +26,20 @@ local FILTER_MIN = "linear"
 local FILTER_MAG = "linear"
 local FILTER_ANISOTROPY = 1
 
-do -- filter	
+do -- filter
 	function love.graphics.setDefaultImageFilter(min, mag, anisotropy) --partial
 		FILTER_MIN = min
 		FILTER_MAG = mag
-		FILTER_ANISOTROPY = anisotropy 
+		FILTER_ANISOTROPY = anisotropy
 	end
-	
+
 	love.graphics.setDefaultFilter = love.graphics.setDefaultImageFilter
 end
 
 do -- quad
 	local Quad = {}
 	Quad.Type = "Quad"
-		
+
 	local function refresh(vertices, x,y,w,h, sw, sh)
 		vertices[0].x = 0;
 		vertices[0].y = 0;
@@ -59,46 +59,46 @@ do -- quad
 		vertices[3].s = (x+w)/sw;
 		vertices[3].t = y/sh;
 	end
-	
+
 	function Quad:flip() -- partial
-	
+
 	end
-	
-	function Quad:getViewport() 
-		return self.x, self.y, self.w, self.h 
+
+	function Quad:getViewport()
+		return self.x, self.y, self.w, self.h
 	end
-	
-	function Quad:setViewport(x,y,w,h) 
+
+	function Quad:setViewport(x,y,w,h)
 		self.x = x
 		self.y = y
 		self.w = w
 		self.h = h
-		
-		refresh(self.vertices, self.x,self.y,self.w,self.h, self.sw, self.sh) 
+
+		refresh(self.vertices, self.x,self.y,self.w,self.h, self.sw, self.sh)
 	end
-	
-	
+
+
 	function love.graphics.newQuad(x,y,w,h, sw,sh) -- partial
 		local self = lovemu.CreateObject(Quad)
-		
+
 		local vertices = {}
 
 		for i = 0, 3 do
 			vertices[i] = {x = 0, y = 0, s = 0, t = 0}
 		end
-		
+
 		self.x = x
 		self.y = y
 		self.w = w
 		self.h = h
-		
+
 		self.sw = sw or 1
 		self.sh = sh or 1
-		
+
 		self.vertices = vertices
-		
-		refresh(self.vertices, x,y,w,h, sw,sh) 
-			
+
+		refresh(self.vertices, x,y,w,h, sw,sh)
+
 		return self
 	end
 end
@@ -130,7 +130,7 @@ function love.graphics.setMode() -- partial
 end
 
 function love.graphics.reset() -- partial
-	
+
 end
 
 function love.graphics.isSupported(what) -- partial
@@ -152,7 +152,7 @@ function love.graphics.setColor(r, g, b, a)
 		cb = r[3] or 0
 		ca = r[4] or 255
 	end
-	
+
 	surface.SetColor(cr/255, cg/255, cb/255, ca/255)
 end
 
@@ -189,11 +189,11 @@ do -- background
 	end
 end
 
-do	
+do
 	function love.graphics.setBlendMode(mode)
 		render.SetBlendMode(mode)
 	end
-	
+
 	function love.graphics.getBlendMode()
 		return render.GetBlendMode()
 	end
@@ -203,19 +203,19 @@ do -- points
 	function love.graphics.setPointStyle(style)
 		surface.SetPointStyle(style)
 	end
-	
+
 	function love.graphics.getPointStyle()
 		return surface.GetPointStyle()
 	end
-	
+
 	function love.graphics.setPointSize(size)
 		surface.SetPointSize(size)
 	end
-	
+
 	function love.graphics.getPointSize()
 		return surface.GetPointSize()
 	end
-	
+
 	function love.graphics.setPoint(size, style)
 		surface.SetPointSize(size)
 		surface.SetPointStyle(style)
@@ -229,31 +229,31 @@ end
 
 
 do -- font
-	
+
 	local Font = {}
-	
+
 	Font.Type = "Font"
-		
-	function Font:getWidth(str) 
+
+	function Font:getWidth(str)
 		str = str or "W"
 		surface.SetFont(self.Name)
 		return (surface.GetTextSize(str))
 	end
-	
-	function Font:getHeight(str)	
+
+	function Font:getHeight(str)
 		str = str or "W"
 		surface.SetFont(self.Name)
 		return select(2, surface.GetTextSize(str))
 	end
-	
+
 	function Font:setLineHeight(num)
 		self.line_height = num
 	end
-	
+
 	function Font:getLineHeight(num)
 		self.line_height = num
 	end
-	
+
 	function Font:getWrap() -- partial
 		return 1, 1
 	end
@@ -261,20 +261,20 @@ do -- font
 	function Font:setFilter(filter)
 		self.filter = filter
 	end
-	
+
 	function Font:getFilter()
 		return self.filter
 	end
-	
+
 	function Font:setFallbacks(...)
-		
+
 	end
-	
+
 	local i = 0
-	
+
 	local function create_font(path, size, glyphs, texture)
 		local self = lovemu.CreateObject(Font)
-		
+
 		self.font = surface.CreateFont("lovemu_" .. path .. i, {
 			size = size,
 			path = path,
@@ -282,38 +282,38 @@ do -- font
 			glyphs = glyphs,
 			texture = texture,
 		})
-		
-		
+
+
 		self.Name = self.font:GetName()
-		
+
 		i = i + 1
-		
+
 		surface.SetFont(self.Name)
 		local w, h = surface.GetTextSize("W")
 		self.Size = size or w
 
 		return self
 	end
-	
+
 	function love.graphics.newFont(a, b)
 		local font = a
 		local size = b
-		
+
 		if type(a) == "number" then
 			font = "fonts/vera.ttf"
 			size = a
 		end
-		
+
 		if not a then
 			font = "fonts/vera.ttf"
 			size = b or 12
 		end
-		
+
 		size = size or 12
-				
+
 		return create_font(font, size)
 	end
-	
+
 	function love.graphics.newImageFont(path, glyphs)
 		local tex
 		if lovemu.Type(path) == "Image" then
@@ -322,15 +322,15 @@ do -- font
 		end
 		return create_font(path, nil, glyphs, tex)
 	end
-	
+
 	local current_font
 	local default_font
-	
+
 	function love.graphics.setFont(font)
 		current_font = font
 		surface.SetFont(font.Name)
 	end
-	
+
 	function love.graphics.getFont()
 		if not default_font then
 			default_font = love.graphics.newFont(12)
@@ -341,14 +341,14 @@ do -- font
 	function love.graphics.setNewFont(...)
 		love.graphics.setFont(love.graphics.newFont(...))
 	end
-	
+
 	function love.graphics.print(text, x, y, r, sx, sy)
 		x = x or 0
 		y = y or 0
 		sx = sx or 1
 		sy = sy or 1
 		r = r or 0
-		
+
 		surface.SetColor(cr/255, cg/255, cb/255, ca/255)
 		--surface.Scale(sx, sy)
 		surface.SetTextPosition(x, y)
@@ -357,7 +357,7 @@ do -- font
 	end
 
 	function love.graphics.printf(text, x, y, limit, align, r, sx, sy)
-		
+
 		text = tostring(text)
 		y = y or 0
 		limit = limit or 0
@@ -365,23 +365,23 @@ do -- font
 		sx = sx or 1
 		sy = sy or 1
 		r = r or 0
-		
+
 		surface.SetColor(cr/255, cg/255, cb/255, ca/255)
 		surface.SetTextPosition(x, y)
 		surface.DrawText(text)
 		do return end
 		-- todo: is this really a format function?
-		
+
 		local lines = string.explode(text, "\n")
-		
+
 		surface.SetColor(cr/255, cg/255, cb/255, ca/255)
 		--surface.Scale(sx, sy)
-		
+
 		for i = 1, #lines do
 			surface.SetTextPosition(x, y + (current_font.Size+(current_font.Size*125/100) * (i - 1)))
 			surface.DrawText(lines[i])
 		end
-		
+
 		--surface.Scale(-sx, -sy)
 	end
 end
@@ -389,34 +389,34 @@ end
 do -- line
 	local WIDTH = 1
 	local STYLE = "huh"
-	
+
 	function love.graphics.setLineStyle(s)
 		STYLE = s
 	end
-	
+
 	function love.graphics.setLineStyle(s)
 		STYLE = s
 	end
-	
+
 	function love.graphics.setLineWidth(w)
 		WIDTH = w
 	end
-	
+
 	function love.graphics.getLineStyle()
 		return STYLE
 	end
-	
+
 	function love.graphics.getLineWidth()
 		return WIDTH
 	end
 
 	function love.graphics.line(...)
 		local tbl = {...}
-		
+
 		if type(tbl[1]) == "table" then
 			tbl = tbl[1]
 		end
-		
+
 		for i = 1, #tbl, 4 do
 			local x1, y1, x2, y2 = tbl[i+0], tbl[i+2], tbl[i+2], tbl[i+3]
 			if x1 and y1 and x2 and y2 then
@@ -426,67 +426,67 @@ do -- line
 	end
 end
 
-do -- canvas	
+do -- canvas
 	local Canvas = {}
 	Canvas.Type = "Canvas"
-	
+
 	ADD_FILTER(Canvas)
-	
+
 	function Canvas:renderTo(cb)
 		self.fb:Begin()
 		cb()
 		self.fb:End()
 	end
-	
-	function Canvas:getWidth() 
-		return self.w 
+
+	function Canvas:getWidth()
+		return self.w
 	end
-	
-	function Canvas:getHeight() 
-		return self.h 
+
+	function Canvas:getHeight()
+		return self.h
 	end
-	
-	function Canvas:getImageData() 
-		
+
+	function Canvas:getImageData()
+
 	end
-	
-	function Canvas:clear(...) 
-		self.fb:Begin() 
-		love.graphics.clear(...) 
+
+	function Canvas:clear(...)
+		self.fb:Begin()
+		love.graphics.clear(...)
 		self.fb:End()
 	end
-	
-	function Canvas:setWrap() 
-		
+
+	function Canvas:setWrap()
+
 	end
-	
-	function Canvas:getWrap() 
-		
+
+	function Canvas:getWrap()
+
 	end
 
 	function love.graphics.newCanvas(w, h) -- partial
 		w = w or render.GetWidth()
 		h = h or render.GetHeight()
-				
+
 		local self = lovemu.CreateObject(Canvas)
-		
+
 		self.fb = render.CreateFrameBuffer(w, h, {
 			mag_filter = FILTER_MAG,
 			min_filter = FILTER_MIN,
 		})
-		
+
 		lovemu.textures[self] = self.fb:GetTexture()
-		
+
 		return self
 	end
-	
+
 	local gl = require("graphics.ffi.opengl")
-	
+
 	local CANVAS
-	
+
 	function love.graphics.setCanvas(canvas) -- partial
 		CANVAS = canvas
-		
+
 		if canvas then
 			canvas.fb:Bind()
 			render.SetViewport(0, 0, canvas.fb:GetTexture().w, canvas.fb:GetTexture().h)
@@ -495,91 +495,91 @@ do -- canvas
 			render.SetViewport(0, 0, window.GetSize():Unpack())
 		end
 	end
-	
+
 	function love.graphics.getCanvas() -- partial
 		return CANVAS
 	end
 end
 
-do -- image	
+do -- image
 	local Image = {}
-	
+
 	Image.Type = "Image"
-	
-	function Image:getWidth() 
-		return lovemu.textures[self].w 
+
+	function Image:getWidth()
+		return lovemu.textures[self].w
 	end
-	
-	function Image:getHeight() 
-		return lovemu.textures[self].h 
+
+	function Image:getHeight()
+		return lovemu.textures[self].h
 	end
-	
-	function Image:getDimensions() 
+
+	function Image:getDimensions()
 		return lovemu.textures[self].w, lovemu.textures[self].h
 	end
-	
-	function Image:getHeight() 
-		return lovemu.textures[self].h 
+
+	function Image:getHeight()
+		return lovemu.textures[self].h
 	end
-	
+
 	ADD_FILTER(Image)
-	
+
 	function Image:setWrap()  --partial
-		
+
 	end
-	
+
 	function Image:getWrap() --partial
-		
+
 	end
-	
-	function love.graphics.newImage(path) -- partial		
+
+	function love.graphics.newImage(path) -- partial
 		if lovemu.Type(path) == "ImageData" then
 			return path
 		else
 			local self = lovemu.CreateObject(Image)
-			
+
 			local tex = Texture(path)
 			tex:SetMinFilter(FILTER_MIN)
 			tex:SetMagFilter(FILTER_MAG)
 			lovemu.textures[self] = tex
-			
+
 			return self
 		end
 	end
-	
+
 	function love.graphics.newImageData(path) -- partial
 		local self = lovemu.CreateObject(Image)
-				
+
 		local tex = Texture(path)
 		tex:SetMinFilter(FILTER_MIN)
 		tex:SetMagFilter(FILTER_MAG)
 		lovemu.textures[self] = tex
-		
+
 		return self
 	end
 end
 
 do -- stencil
 	local STENCIL = false
-	
+
 	function love.graphics.newStencil(func) --partial
-	
-	end 
+
+	end
 
 	function love.graphics.setStencil(func) --partial
-	
+
 	end
 
 	function love.graphics.setStencilTest(b)
 		STENCIL = b
 	end
-	
+
 	function love.graphics.getStencilTest()
 		return STENCIL
 	end
 
 	function love.graphics.stencil(stencilfunction, keepbuffer)
-		
+
 	end
 end
 
@@ -608,7 +608,7 @@ function love.graphics.drawq(drawable, quad, x,y, r, sx,sy, ox,oy) -- partial
 	ox=ox or 0
 	oy=oy or 0
 	r=r or 0
-	
+
 	surface.SetColor(cr/255, cg/255, cb/255, ca/255)
 	surface.SetTexture(lovemu.textures[drawable])
 	surface.SetRectUV(quad.x,quad.y, quad.w,quad.h, quad.sw,quad.sh)
@@ -633,11 +633,11 @@ function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 				ox=ox or 0
 				oy=oy or 0
 				r=r or 0
-								
+
 				local tex = lovemu.textures[drawable]
-				
+
 				--if drawable.fb then  sx = 5 sy = 6 end
-				
+
 				surface.SetTexture(tex)
 				surface.DrawRect(x,y, tex.w*sx, tex.h*sy, r, ox*sx,oy*sy)
 			end
@@ -651,26 +651,26 @@ end
 function love.graphics.setIcon() --partial
 end
 
-do 
+do
 	local Shader = {}
 	Shader.Type = "Shader"
-	
+
 	function Shader:getWarnings() -- partial
-		return "" 
+		return ""
 	end
-	
+
 	function Shader:send() -- partial
-		
+
 	end
-	
+
 	function love.graphics.newShader() --partial
 		local obj = lovemu.CreateObject(Shader)
-				
+
 		return obj
 	end
 end
 
-love.graphics.newPixelEffect = love.graphics.newShader 
+love.graphics.newPixelEffect = love.graphics.newShader
 
 function love.graphics.setShader() --partial
 end
@@ -733,17 +733,17 @@ end
 do -- sprite batch
 	local SpriteBatch = {}
 	SpriteBatch.Type = "SpriteBatch"
-	
-	local function set_rect(self, i, x,y, r, sx,sy, ox,oy, kx,ky)	
+
+	local function set_rect(self, i, x,y, r, sx,sy, ox,oy, kx,ky)
 		sx = sx or self.w
 		sy = sy or self.h
-		
+
 		if ox then ox = -ox end
 		if oy then oy = -oy end
-				
-		self.poly:SetRect(i, x,y, sx,sy, r, ox,oy)		
+
+		self.poly:SetRect(i, x,y, sx,sy, r, ox,oy)
 	end
-		
+
 	function SpriteBatch:set(id, q, ...)
 		id = id or 1
 		if lovemu.Type(q) == "Quad" then
@@ -754,53 +754,53 @@ do -- sprite batch
 			set_rect(self, id, q, ...)
 		end
 	end
-	
+
 	SpriteBatch.setq = SpriteBatch.set
-	
+
 	function SpriteBatch:add(...)
 		if self.i < self.size then
 			self:set(self.i, ...)
 		end
-		
+
 		self.i = self.i + 1
-		
+
 		return self.i
 	end
-	
+
 	SpriteBatch.addq = SpriteBatch.add
-	
-	function SpriteBatch:setColor(r,g,b,a) 
-		
-		r = r or 255 
-		g = g or 255 
-		b = b or 255 
-		a = a or 255 
-		
-		self.poly:SetColor(r/255,g/255,b/255,a/255) 
+
+	function SpriteBatch:setColor(r,g,b,a)
+
+		r = r or 255
+		g = g or 255
+		b = b or 255
+		a = a or 255
+
+		self.poly:SetColor(r/255,g/255,b/255,a/255)
 	end
-	
+
 	function SpriteBatch:clear()  -- partial
 		self.i = 1
 	end
-	
+
 	function SpriteBatch:getImage()  -- partial
-		return self.image 
+		return self.image
 	end
-	
-	function SpriteBatch:bind() 
-		
+
+	function SpriteBatch:bind()
+
 	end
-	
-	function SpriteBatch:unbind() 
-		
+
+	function SpriteBatch:unbind()
+
 	end
-	
+
 	function SpriteBatch:setImage(image)
 		self.img = image
 		self.w = image:getWidth()
 		self.h = image:getHeight()
 	end
-	
+
 	function SpriteBatch:getImage(image)
 		return self.img
 	end
@@ -808,15 +808,15 @@ do -- sprite batch
 	function love.graphics.newSpriteBatch(image, size, usagehint) -- partial
 		local self = lovemu.CreateObject(SpriteBatch)
 		local poly = surface.CreatePoly(size)
-		
+
 		self.size = size
-		
+
 		self.poly = poly
 		self.img = image
 		self.w = image:getWidth()
 		self.h = image:getHeight()
 		self.i = 1
-		
+
 		return self
 	end
 end

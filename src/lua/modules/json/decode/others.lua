@@ -55,7 +55,7 @@ local function generateLexer(options)
 end
 
 local others = {
-	mergeOptions = mergeOptions,	
+	mergeOptions = mergeOptions,
 	generateLexer = generateLexer
 }
 

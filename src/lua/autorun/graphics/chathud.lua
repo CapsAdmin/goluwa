@@ -1,6 +1,6 @@
 local blur_shader = [[
 	float sum = 0;
-		
+
 	vec2 blur = radius/size;
 
 	sum += texture(self, vec2(uv.x - 4.0*blur.x*dir.x, uv.y - 4.0*blur.y*dir.y)).a * 0.0162162162;
@@ -16,10 +16,10 @@ local blur_shader = [[
 	sum += texture(self, vec2(uv.x + 4.0*blur.x*dir.x, uv.y + 4.0*blur.y*dir.y)).a * 0.0162162162;
 
 	sum = pow(sum, 0.5);
-	
+
 	float black = -sum;
 	sum -= texture(self, uv).a*2;
-			
+
 	return vec4(black,black,black, sum)*1.1;
 ]]
 
@@ -30,18 +30,18 @@ for i = -max, max do
 	local f = i/max
 	local s = math.sin(f * math.pi)
 	local c = math.sin(f * math.pi)
-	
+
 	table.insert(passes, {source = blur_shader, vars = {dir = Vec2(c,s), radius = 0.05}})
 end
 
-chathud = chathud or {} 
+chathud = chathud or {}
 chathud.font_modifiers = {
 	["...."] = {type = "font", val = "DefaultFixed"},
 	["!!!!"] = {type = "font", val = "Trebuchet24"},
 	["!!!!!11"] = {type = "font", val = "DermaLarge"},
 }
 
-chathud.emote_shortucts = chathud.emote_shortucts or {		
+chathud.emote_shortucts = chathud.emote_shortucts or {
 	smug = "<texture=masks/smug>",
 	downs = "<texture=masks/downs>",
 	saddowns = "<texture=masks/saddowns>",
@@ -53,12 +53,12 @@ chathud.emote_shortucts = chathud.emote_shortucts or {
 }
 
 chathud.tags = chathud.tags or {}
- 
+
 if surface.DrawFlag then
 	chathud.tags.flag =
-	{		
+	{
 		arguments = {"gb"},
-		
+
 		draw = function(markup, self, x,y, flag)
 			surface.DrawFlag(flag, x, y - 12)
 		end,
@@ -77,17 +77,17 @@ chathud.life_time = 20
 local first = true
 
 function chathud.AddText(...)
-	
+
 	if first then
 		surface.CreateFont("chathud_default", {
 			path = "Roboto",
 			fallback = "default",
 			size = 16,
-			padding = 8, 
+			padding = 8,
 			shade = passes,
 			shadow = 1,
 		})
-		
+
 		for _, v in pairs(vfs.Find("textures/silkicons/")) do
 			chathud.emote_shortucts[v:gsub("(%.png)$","")] = "<texture=textures/silkicons/" .. v .. ",16>"
 		end
@@ -95,7 +95,7 @@ function chathud.AddText(...)
 	end
 
 	local args = {}
-		
+
 	for k,v in pairs({...}) do
 		local t = typex(v)
 		if t == "client" then
@@ -103,41 +103,41 @@ function chathud.AddText(...)
 			table.insert(args, v:GetNick())
 			table.insert(args, ColorBytes(255, 255, 255, 255))
 		elseif t == "string" then
-		
+
 			if v == ": sh" or v == "sh" or v:find("%ssh%s") then
 				chathud.markup:TagPanic()
 			end
-		
-			v = v:gsub("<remember=(.-)>(.-)</remember>", function(key, val) 
+
+			v = v:gsub("<remember=(.-)>(.-)</remember>", function(key, val)
 				chathud.emote_shortucts[key] = val
 			end)
-		
+
 			v = v:gsub("(:[%a%d]-:)", function(str)
 				str = str:sub(2, -2)
 				if chathud.emote_shortucts[str] then
 					return chathud.emote_shortucts[str]
 				end
 			end)
-			
+
 			v = v:gsub("\\n", "\n")
 			v = v:gsub("\\t", "\t")
-			
+
 			for pattern, font in pairs(chathud.font_modifiers) do
 				if v:find(pattern, nil, true) then
 					table.insert(args, #args-1, font)
 				end
 			end
-						
+
 			table.insert(args, v)
 		else
 			table.insert(args, v)
 		end
 	end
-	
+
 	event.Call("ChatAddText", args)
-	 
+
 	local markup = chathud.markup
-	
+
 	markup:BeginLifeTime(chathud.life_time)
 		-- this will make everything added here get removed after said life time
 		markup:AddFont("chathud_default") -- also reset the font just in case
@@ -145,22 +145,22 @@ function chathud.AddText(...)
 		markup:AddTagStopper()
 		markup:AddString("\n")
 	markup:EndLifeTime()
-	
+
 	markup:SetMaxWidth(surface.GetSize() * width_mult:Get())
-	
+
 	for k,v in pairs(chathud.tags) do
 		markup.tags[k] = v
 	end
 end
-   
+
 function chathud.Draw()
 	local markup = chathud.markup
-	
+
 	local w, h = surface.GetSize()
 	local x, y = 30, h * height_mult:Get()
-	
+
 	y = y - markup.height
-	
+
 	surface.PushMatrix(x,y)
 		markup:Update()
 		markup:Draw()
@@ -181,11 +181,11 @@ end)
 
 event.AddListener("Chat", "chathud", function(name, str, client)
 	local tbl = chat.AddTimeStamp()
-	
+
 	if client:IsValid() then
 		table.insert(tbl, client:GetUniqueColor())
 	end
-	
+
 	table.insert(tbl, name)
 	table.insert(tbl, Color(1,1,1,1))
 	table.insert(tbl, ": ")

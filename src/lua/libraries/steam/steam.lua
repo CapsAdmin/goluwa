@@ -16,11 +16,11 @@ if steamfriends then
 			steam[k] = v
 		end
 	end
-	
+
 	event.CreateTimer("steam_friends", 0, 0.2, function()
 		steamfriends.Update()
 	end)
-	
+
 	function steamfriends.OnChatMessage(sender_steam_id, text, receiver_steam_id)
 		event.Call("SteamFriendsMessage", sender_steam_id, text, receiver_steam_id)
 	end
@@ -57,33 +57,33 @@ end
 function steam.VDFToTable(str, lower_or_modify_keys, preprocess)
 	if not str or str == "" then return nil, "data is empty" end
 	if lower_or_modify_keys == true then lower_or_modify_keys = string.lower end
-	
+
 	str = str:gsub("http://", "___L_O_L___")
 	str = str:gsub("https://", "___L_O_L_2___")
-	
+
 	str = str:gsub("//.-\n", "")
-	
+
 	str = str:gsub("___L_O_L___", "http://")
 	str = str:gsub("___L_O_L_2___", "https://")
-	
-	str = str:gsub("(%b\"\"%s-)%[$(%S-)%](%s-%b{})", function(start, def, stop) 
+
+	str = str:gsub("(%b\"\"%s-)%[$(%S-)%](%s-%b{})", function(start, def, stop)
 		if def ~= "WIN32" then
 			return ""
 		end
-		
-		return start .. stop
-	end) 
 
-	str = str:gsub("(%b\"\"%s-)(%b\"\"%s-)%[$(%S-)%]", function(start, stop, def) 
+		return start .. stop
+	end)
+
+	str = str:gsub("(%b\"\"%s-)(%b\"\"%s-)%[$(%S-)%]", function(start, stop, def)
 		if def ~= "WIN32" then
 			return ""
-		end		
+		end
 		return start .. stop
-	end) 
-	
-	
+	end)
+
+
 	local tbl = {}
-	
+
 	for uchar in str:gmatch("([%z\1-\127\194-\244][\128-\191]*)") do
 		tbl[#tbl + 1] = uchar
 	end
@@ -95,29 +95,29 @@ function steam.VDFToTable(str, lower_or_modify_keys, preprocess)
 	local out = {}
 	local current = out
 	local stack = {current}
-	
+
 	local key, val
 
 	for i = 1, #tbl do
 		local char = tbl[i]
-			
+
 		if (char == [["]] or (no_quotes and char:find("%s"))) and tbl[i-1] ~= "\\" then
 			if in_string then
-				
+
 				if key then
-					if lower_or_modify_keys then 
+					if lower_or_modify_keys then
 						key = lower_or_modify_keys(key)
 					end
-					
-					local val = table.concat(capture, "")					
-				
+
+					local val = table.concat(capture, "")
+
 					if preprocess and val:find("|") then
 						for k, v in pairs(preprocess) do
 							val = val:gsub("|" .. k .. "|", v)
 						end
 					end
-				
-					if val:lower() == "false" then 
+
+					if val:lower() == "false" then
 						val = false
 					elseif val:lower() ==  "true" then
 						val =  true
@@ -134,7 +134,7 @@ function steam.VDFToTable(str, lower_or_modify_keys, preprocess)
 					else
 						val = tonumber(val) or val
 					end
-					
+
 					if type(current[key]) == "table" then
 						table.insert(current[key], val)
 					elseif current[key] then
@@ -152,12 +152,12 @@ function steam.VDFToTable(str, lower_or_modify_keys, preprocess)
 							current[key] = val
 						end
 					end
-					
+
 					key = nil
 				else
 					key = table.concat(capture, "")
 				end
-				
+
 				in_string = false
 				no_quotes = false
 				capture = {}
@@ -169,10 +169,10 @@ function steam.VDFToTable(str, lower_or_modify_keys, preprocess)
 				table.insert(capture, char)
 			elseif char == [[{]] then
 				if key then
-					if lower_or_modify_keys then 
+					if lower_or_modify_keys then
 						key = lower_or_modify_keys(key)
 					end
-					
+
 					table.insert(stack, current)
 					current[key] = {}
 					current = current[key]
@@ -189,7 +189,7 @@ function steam.VDFToTable(str, lower_or_modify_keys, preprocess)
 			end
 		end
 	end
-	
+
 	return out
 end
 

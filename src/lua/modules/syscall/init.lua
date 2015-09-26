@@ -2,7 +2,7 @@
 
 local require, print, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
-pcall, type, table, string, math = 
+pcall, type, table, string, math =
 require, print, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
 pcall, type, table, string, math

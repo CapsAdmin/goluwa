@@ -7,37 +7,37 @@ event.errors = event.errors or {}
 event.profil = event.profil or {}
 event.destroy_tag = e.EVENT_DESTROY
 
-function event.AddListener(event_type, id, callback, config)	
+function event.AddListener(event_type, id, callback, config)
 	if type(event_type) == "table" then
 		config = event_type
 	end
-		
+
 	if not callback and type(id) == "function" then
 		callback = id
 		id = nil
 	end
-		
+
 	config = config or {}
-	
+
 	config.event_type = config.event_type or event_type
 	config.id = config.id or id
 	config.callback = config.callback or callback
 	config.priority = config.priority or 0
-	
+
 	-- useful for initialize events
 	if config.id == nil then
 		config.id = tostring(callback)
 		config.remove_after_one_call = true
 	end
-	
+
 	config.print_str = config.event_type .. "->" .. tostring(config.id)
-	
+
 	event.RemoveListener(config.event_type, config.id)
-	
+
 	event.active[config.event_type] = event.active[config.event_type] or {}
-	
+
 	table.insert(event.active[config.event_type], config)
-		
+
 	event.SortByPriority()
 end
 
@@ -55,29 +55,29 @@ function event.RemoveListener(event_type, id)
 				-- an event which will mess up the ipairs loop and skip all the other events
 				-- of the same type
 				event.active[event_type][index] = nil
-				
+
 				profiler.RemoveSection(val.print_str)
-				
+
 				do -- repair the table
 					local temp = {}
-					
+
 					for k,v in pairs(event.active[event_type]) do
 						table.insert(temp, v)
 						event.active[event_type][k] = nil
 					end
-					
+
 					for k,v in pairs(temp) do
 						table.insert(event.active[event_type], v)
 					end
 				end
-				
+
 				break
 			end
 		end
 	else
 		--logn(("Tried to remove non existing event '%s:%s'"):format(event, tostring(unique)))
 	end
-	
+
 	event.SortByPriority()
 end
 
@@ -123,7 +123,7 @@ function event.Call(event_type, a_, b_, c_, d_, e_)
 	if event.active[event_type] then
 		for index, data in ipairs(event.active[event_type]) do
 			profiler.PushSection(data.print_str)
-			
+
 			if data.self_arg then
 				if data.self_arg:IsValid() then
 					if data.self_arg_with_callback then
@@ -142,11 +142,11 @@ function event.Call(event_type, a_, b_, c_, d_, e_)
 			else
 				status, a,b,c,d,e = xpcall(data.callback, data.on_error or system.OnError, a_, b_, c_, d_, e_)
 			end
-			
+
 			if a == event.destroy_tag or data.remove_after_one_call then
 				event.RemoveListener(event_type, data.id)
 			else
-				if status == false then		
+				if status == false then
 					if type(data.on_error) == "function" then
 						data.on_error(a, event_type, data.id)
 					else
@@ -162,7 +162,7 @@ function event.Call(event_type, a_, b_, c_, d_, e_)
 					return a,b,c,d,e
 				end
 			end
-			
+
 			profiler.PopSection()
 		end
 	end
@@ -209,7 +209,7 @@ do -- timers
 	do -- timer meta
 		local META = {}
 		META.__index = META
-		
+
 		function META:Pause()
 			self.paused = true
 		end
@@ -246,10 +246,10 @@ do -- timers
 		function META:Remove()
 			self.__remove_me = true
 		end
-		
+
 		event.TimerMeta = META
 	end
-	
+
 	local function remove_timer(key)
 		for k,v in ipairs(event.timers) do
 			if v.key == key then
@@ -260,20 +260,20 @@ do -- timers
 		end
 	end
 
-	function event.CreateThinker(callback, run_now, frequency, iterations)	
+	function event.CreateThinker(callback, run_now, frequency, iterations)
 		if run_now and callback() ~= nil then
 			return
 		end
-		
+
 		remove_timer(callback)
-		
+
 		local info = {
 			key = callback,
-			type = "thinker", 
-			realtime = 0, 
+			type = "thinker",
+			realtime = 0,
 			callback = callback,
 		}
-		
+
 		if iterations == true then
 			info.fps = frequency or 120
 			info.fps = 1/info.fps
@@ -281,7 +281,7 @@ do -- timers
 			info.frequency = frequency or 0
 			info.iterations = iterations or 1
 		end
-		
+
 		table.insert(event.timers, info)
 	end
 
@@ -293,7 +293,7 @@ do -- timers
 			callback = time
 			time = 0
 		end
-		
+
 		if hasindex(obj) and obj.IsValid then
 			local old = callback
 			callback = function(...)
@@ -305,23 +305,23 @@ do -- timers
 
 		table.insert(event.timers, {
 			key = callback,
-			type = "delay", 
-			callback = callback, 
+			type = "delay",
+			callback = callback,
 			realtime = system.GetElapsedTime() + time
 		})
 	end
-	
+
 	function event.DeferExecution(callback, time, id, ...)
 		id = id or callback
 		local data
-		
-		for k,v in ipairs(event.timers) do 
-			if v.key == id then 
+
+		for k,v in ipairs(event.timers) do
+			if v.key == id then
 				v.realtime = system.GetElapsedTime() + (time or 0)
 				return
-			end 
+			end
 		end
-		
+
 		table.insert(event.timers, {
 			key = id,
 			type = "delay",
@@ -335,9 +335,9 @@ do -- timers
 		check(time, "number")
 		check(repeats, "number", "function")
 		check(callback, "function", "nil")
-		
-		if not callback then 
-			callback = repeats 
+
+		if not callback then
+			callback = repeats
 			repeats = 0
 		end
 
@@ -346,16 +346,16 @@ do -- timers
 		repeats = math.max(repeats, 0)
 
 		local data
-		
-		for k,v in ipairs(event.timers) do 
-			if v.key == id then 
-				data = v 
-				break 
-			end 
+
+		for k,v in ipairs(event.timers) do
+			if v.key == id then
+				data = v
+				break
+			end
 		end
-		
+
 		data = data or {}
-		
+
 		data.key = id
 		data.type = "timer"
 		data.realtime = 0
@@ -365,28 +365,28 @@ do -- timers
 		data.callback = callback
 		data.times_ran = 1
 		data.paused = false
-		
+
 		table.insert(event.timers, data)
-		
-		setmetatable(data, event.TimerMeta)	
-		
+
+		setmetatable(data, event.TimerMeta)
+
 		if run_now then
 			callback(repeats-1)
 			data.repeats = data.repeats - 1
 		end
-		
+
 		return data
 	end
 
 	function event.RemoveTimer(id)
 		remove_timer(id)
 	end
-	
+
 	local remove_these = {}
-	
+
 	function event.UpdateTimers(a_, b_, c_, d_, e_)
 		local cur = system.GetElapsedTime()
-				
+
 		for i, data in ipairs(event.timers) do
 			if data.type == "thinker" then
 				if data.fps then
@@ -394,37 +394,37 @@ do -- timers
 					repeat
 						local start = system.GetTime()
 						local ok, res = system.pcall(data.callback)
-						
+
 						if system.GetFrameTime() >= data.fps then break end
-						
+
 						if not ok or res ~= nil then
 							table.insert(remove_these, i)
 							break
-						end		
-						
+						end
+
 						time = time + (system.GetTime() - start)
-					until time >= data.fps 
+					until time >= data.fps
 				else
-					if data.realtime < cur then					
+					if data.realtime < cur then
 						local fps = ((cur + data.frequency) - data.realtime)
 						local extra_iterations = math.ceil(fps/data.frequency) - 2
 						if extra_iterations == math.huge then extra_iterations = 1 end
-						
+
 						local errored = false
-						
+
 						for i = 1, data.iterations + extra_iterations do
 							local ok, res = system.pcall(data.callback)
 							if not ok or res ~= nil then
 								errored = true
 								break
-							end	
+							end
 						end
-						
+
 						if errored then
 							table.insert(remove_these, i)
 							break
 						end
-						
+
 						data.realtime = cur + data.frequency
 					end
 				end
@@ -442,7 +442,7 @@ do -- timers
 				if not data.paused and data.realtime < cur then
 					profiler.PushSection(data.id)
 					local ran, msg = data:Call(data.times_ran - 1, a_, b_, c_, d_, e_)
-					
+
 					if ran then
 						if msg == "stop" then
 							table.insert(remove_these, i)
@@ -473,7 +473,7 @@ do -- timers
 				end
 			end
 		end
-		
+
 		if remove_these[1] then
 			for k, v in ipairs(remove_these) do
 				--print(event.timers[v].type)

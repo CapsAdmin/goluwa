@@ -29,23 +29,23 @@ function server:OnReceive(str, client)
 	local top, rest = str:match("(.-)\n(.+)")
 	local type, path, protocol = top:match("(%S-) (/%S-) (%S+)")
 	local parameters = {}
-	
+
 	if path:find("?") then
 		local new_path, param_line = path:match("(.+)?(.+)")
-		
+
 		param_line = "&" .. param_line
-		
+
 		for key, val in param_line:gmatch("&(.+)=(.+)") do
 			parameters[key] = val
 		end
-		
+
 		path = new_path
 	end
-	
+
 	local extension = path:match(".+%.(.+)")
-	
+
 	if path == "/" then path = path .. "index.html" end
-	
+
 	path = server.content_folder .. path
 
 	if type == "GET" then
@@ -54,21 +54,21 @@ function server:OnReceive(str, client)
 		if vfs.Exists(path) then
 			local info = server.file_types[extension] or server.file_types.default
 			local data = vfs.Read(path, info.read_mode)
-			
+
 			local header = sockets.TableToHeader({
 			--	["Content-Type"] = info.mime,
 				["Accept-Ranges"] = "bytes",
 				["Content-Length"] = #data,
 				["Connection"] = "Keep-Alive",
 			})
-			
+
 			client:Send("HTTP/1.1 200 OK\r\n" .. header .. "\r\n" .. data)
 			vfs.Write("data/header.txt", "HTTP/1.1 200 OK\r\n" .. header)
 		else
-			client:Send(self:NotFound(path)) 
+			client:Send(self:NotFound(path))
 		end
 	end
-	
+
 	client:CloseWhenDoneSending(true)
 end
 
@@ -95,14 +95,14 @@ function server:NotFound(dir)
 			<br>
 		</body>
 	</html>
-	]] 
+	]]
 end
 
 function server:OnClientConnected(client)
 	return true
-end   
+end
 
-server:Host("*", server.port) 
+server:Host("*", server.port)
 
 if WINDOWS then
 	os.execute("explorer http://localhost:" .. server.port)

@@ -2,7 +2,7 @@
 
 local require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
-pcall, type, table, string = 
+pcall, type, table, string =
 require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
 pcall, type, table, string
@@ -232,7 +232,7 @@ local ioctl = strflag {
 
 -- allow user defined ioctls
   _IO = _IO,
-  _IOR = _IOR, 
+  _IOR = _IOR,
   _IOW = _IOW,
   _IOWR = _IOWR,
 }

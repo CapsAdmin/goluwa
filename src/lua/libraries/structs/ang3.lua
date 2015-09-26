@@ -46,9 +46,9 @@ function META:Normalize()
 	self.x = normalize(self.x)
 	self.y = normalize(self.y)
 	self.z = normalize(self.z)
-	
+
 	return self
-end 
+end
 
 structs.AddGetFunc(META, "Normalize", "Normalized")
 
@@ -56,11 +56,11 @@ function META.AngleDifference(a, b)
 	a.x = normalize(a.x - b.x)
 	a.y = normalize(a.y - b.y)
 	a.z = normalize(a.z - b.z)
-	
+
 	a.x = a.x < PI2 and a.x or a.x - PI2
 	a.y = a.y < PI2 and a.y or a.y - PI2
 	a.z = a.z < PI2 and a.z or a.z - PI2
-	
+
 	return a
 end
 
@@ -71,9 +71,9 @@ function META.Lerp(a, mult, b)
 	a.x = (b.x - a.x) * mult + a.x
 	a.y = (b.y - a.y) * mult + a.y
 	a.z = (b.z - a.z) * mult + a.z
-	
+
 	a:Normalize()
-	
+
 	return a
 end
 
@@ -83,7 +83,7 @@ function META:Rad()
 	self.x = math.rad(self.x)
 	self.y = math.rad(self.y)
 	self.z = math.rad(self.z)
-	
+
 	return self
 end
 
@@ -93,7 +93,7 @@ function META:Deg()
 	self.x = math.deg(self.x)
 	self.y = math.deg(self.y)
 	self.z = math.deg(self.z)
-	
+
 	return self
 end
 

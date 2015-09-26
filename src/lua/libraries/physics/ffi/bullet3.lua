@@ -103,7 +103,7 @@ local bullet = {
 -- put all the functions in the glfw table
 for line in header:gmatch("(.-)\n") do
 	local name = line:match("bullet(.-)%(")
-	
+
 	if name then
 		local ok, err = pcall(function()
 			bullet[name] = lib["bullet" .. name]

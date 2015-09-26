@@ -8,7 +8,7 @@ if party_lights then
 end
 
 party_lights = {}
-   
+
 for y = -5, 5 do
 	for x = -5, 5 do
 		local light = entities.CreateEntity("light")
@@ -26,7 +26,7 @@ light:SetPosition(Vec3(-341, 135, 25))
 light:SetSize(40)
 light:SetIntensity(5)]]
 
-event.AddListener("Update", "light movement", function() 
+event.AddListener("Update", "light movement", function()
 	local t = system.GetElapsedTime()
 	for i, v in ipairs(party_lights) do
 		v:SetPosition(v.start_pos + (Vec3(math.sin(t + v.seed + i), math.cos(t + v.seed + i), math.sin(t + v.seed + i)) * 20))

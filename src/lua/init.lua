@@ -12,7 +12,7 @@ do -- force the current directory
 	if path:sub(1, 1) == "@" then
 		path = path:gsub("\\", "/")
 		local dir = path:match("@(.+/)src/lua/init.lua")
-		
+
 		local ffi = require("ffi")
 		if jit.os == "Windows" then
 			ffi.cdef("int SetCurrentDirectoryA(const char *);")
@@ -31,10 +31,10 @@ do -- constants
 
 	-- enums table
 	e = e or {}
-	
+
 	e.USERNAME = tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
 	_G[e.USERNAME:upper()] = true
-	
+
 	local env_vars = {
 		"USE_GLFW",
 		"SERVER",
@@ -45,7 +45,7 @@ do -- constants
 		"DISABLE_CURSES",
 		"SRGB",
 	}
-	
+
 	for _, key in pairs(env_vars) do
 		if  _G[key] == nil  then
 			if os.getenv(key) == "0" then
@@ -55,46 +55,46 @@ do -- constants
 			end
 		end
 	end
-	
+
 	if os.getenv("CODEXL") == "1" or os.getenv("MESA_DEBUG") == "1" then
 		EXTERNAL_OPENGL_DEBUGGER = true
 	end
-	
+
 	-- assume client if nothing was provided
 	if SERVER == nil and CLIENT == nil then
 		CLIENT = true
 	end
-	
+
 	if SOUND == nil then SOUND = true end
 	if GRAPHICS == nil then GRAPHICS = true end
 	if SRGB == nil then SRGB = true end
-	
+
 	do -- write them to output
 		io.write("constants:\n")
-		
+
 		for k,v in pairs(_G) do
 			if k:upper() == k and k ~= _G then
 				io.write("\t_G.", k, " = ", tostring(v), "\n")
 			end
 		end
-		
+
 		for k,v in pairs(e) do
 			io.write("\te.", k, " = ", tostring(v), "\n")
 		end
 	end
 end
 
--- put all c functions in a table so we can override them if needed 
+-- put all c functions in a table so we can override them if needed
 -- without doing the local oldfunc = print thing over and over again
 if not _OLD_G then
 	-- this will be replaced with utility.GetOldGLibrary() later on
 	_OLD_G = {}
 	local done = {[_G] = true}
-	
+
 	local function scan(tbl, store)
 		for key, val in pairs(tbl) do
 			local t = type(val)
-			
+
 			if t == "table" and not done[val] and val ~= store then
 				store[key] = store[key] or {}
 				done[val] = true
@@ -104,7 +104,7 @@ if not _OLD_G then
 			end
 		end
 	end
-	
+
 	scan(_G, _OLD_G)
 end
 
@@ -124,9 +124,9 @@ do -- file system
 		-- this is required because fs needs winapi and syscall
 		table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../../src/lua/modules/" .. name .. ".lua") end)
 		table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../../src/lua/modules/" .. name .. "/init.lua") end)
-		
+
 		fs = dofile("../../../src/lua/libraries/filesystem/intermediate.lua")
-		
+
 		-- remove them because we do it properly later on
 		table.remove(package.loaders)
 		table.remove(package.loaders)
@@ -137,16 +137,16 @@ do -- file system
 	e.SRC_FOLDER = e.ROOT_FOLDER .. "src/"
 	e.DATA_FOLDER = e.ROOT_FOLDER .. "data/"
 	e.USERDATA_FOLDER = e.DATA_FOLDER .. "users/" .. e.USERNAME:lower() .. "/"
-	
+
 	-- create ROOT/data/users/
 	fs.createdir(e.USERDATA_FOLDER:match("(.+/).-/"))
 	fs.createdir(e.USERDATA_FOLDER)
 
 	do -- this is ugly but it's because we haven't included the global extensions yet..
 		_G.check = function() end
-		
+
 		include = function() end
-		
+
 		ffi = require("ffi")
 
 		dofile(e.SRC_FOLDER .. "lua/libraries/extensions/globals.lua")
@@ -158,9 +158,9 @@ do -- file system
 		dofile(e.SRC_FOLDER .. "lua/libraries/prototype/base_object.lua")
 		dofile(e.SRC_FOLDER .. "lua/libraries/prototype/null.lua")
 		utility = dofile(e.SRC_FOLDER .. "lua/libraries/utilities/utility.lua")
-		
+
 		vfs = dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/vfs.lua")
-		
+
 		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/path_utilities.lua")
 		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/base_file.lua")
 		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/find.lua")
@@ -173,18 +173,18 @@ do -- file system
 
 		vfs.IsDir = vfs.IsFolder
 	end
-	
+
 	vfs.Mount("os:" .. e.USERDATA_FOLDER, "data") -- mount "ROOT/data/users/*username*/" to "/data/"
 	vfs.Mount("os:" .. e.BIN_FOLDER, "bin") -- mount "ROOT/data/bin" to "/bin/"
 	vfs.MountAddon("os:" .. e.SRC_FOLDER) -- mount "ROOT/src" to "/"
-	
+
 	-- a nice global for loading resources externally from current dir
-	-- 
+	--
 	_G.R = vfs.GetAbsolutePath
-	
+
 	vfs.AddModuleDirectory("lua/modules/")
 	vfs.AddModuleDirectory("lua/libraries/")
-	
+
 	-- replace require with the pure lua version (lua/procure/init.lua)
 	-- this is needed for the file system and lovemu
 	_G.require = dofile(e.SRC_FOLDER .. "lua/libraries/require.lua")
@@ -192,7 +192,7 @@ end
 
 do -- libraries
 	_G.include = vfs.include
-		
+
 	include("lua/libraries/extensions/ffi.lua")
 
 	-- standard library extensions
@@ -222,59 +222,59 @@ do -- libraries
 	autocomplete = include("lua/libraries/autocomplete.lua")
 	input = include("lua/libraries/input.lua")
 	language = include("lua/libraries/language.lua") _G.L = language.LanguageString
-	
+
 	-- network
 	sockets = include("lua/libraries/network/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
-	
+
 	if sockets then
 		enet = include("lua/libraries/network/enet.lua") -- low level udp library
-		
+
 		network = include("lua/libraries/network/network.lua") -- high level implementation of enet
 		packet = include("lua/libraries/network/packet.lua") -- medium (?) level communication between server and client
 		message = include("lua/libraries/network/message.lua") -- high level communication between server and client
-		
+
 		nvars = include("lua/libraries/network/nvars.lua") -- variable synchronization between server and client
 		clients = include("lua/libraries/network/clients.lua") -- high level wrapper for a connected client
 		chat = include("lua/libraries/network/chat.lua") -- in game chat
-			
+
 		resource = include("lua/libraries/network/resource.lua") -- used for downloading resources with resource.Download("http://...", function(path) end)
 		resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/")
 		resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/")
 	end
-		
+
 	if CLIENT then
 		-- graphics
 		render = include("lua/libraries/graphics/render/render.lua") -- OpenGL abstraction
-		
+
 		if render then
 			surface = include("lua/libraries/graphics/surface/surface.lua") -- high level 2d rendering of the render library
 			window = include("lua/libraries/graphics/window.lua") -- high level window implementation
 			video = include("lua/libraries/graphics/video.lua") -- gif support (for now)
 			include("lua/libraries/graphics/particles.lua")
-					
+
 			if not SCITE then
 				io.write("opening window\n")
 				window.Open()
 				io.write("window opened!\n")
 			end
 		end
-		
+
 		-- audio
 		audio = include("lua/libraries/audio/audio.lua") -- high level implementation of OpenAl
-		
+
 		if audio then
 			chatsounds = include("lua/libraries/audio/chatsounds.lua")
 		end
 	end
-	
+
 	if not render or not window.IsOpen() then
 		GRAPHICS = nil
 	end
-	
+
 	if not audio then
 		SOUND = nil
 	end
-	
+
 	-- other
 	physics = include("lua/libraries/physics/physics.lua") -- bullet physics
 	entities = include("lua/libraries/entities/entities.lua") -- entity component system
@@ -286,7 +286,7 @@ do -- libraries
 	if GRAPHICS then
 		gui = include("lua/libraries/graphics/gui/gui.lua")
 	end
-	
+
 	-- include the filesystem again so it will include all the details such as zip file reading
 	include("lua/libraries/filesystem/vfs.lua")
 end
@@ -311,12 +311,12 @@ if CLIENT and enet then
 	clients.local_client = clients.Create("unconnected")
 end
 
--- tries to load all addons 
+-- tries to load all addons
 -- some might not load depending on its info.lua file.
 -- for instance: "load = CAPSADMIN ~= nil," will make it load
 -- only if the CAPSADMIN constant is not nil.
 vfs.MountAddons(e.ROOT_FOLDER)
-	
+
 -- load everything in lua/autorun/*
 vfs.AutorunAddons()
 
@@ -354,16 +354,16 @@ logf("[init] launched on %s by %s as %s\n", os.date(), e.USERNAME, CLIENT and "c
 do
 	local time = os.clock() - profile_start_time
 	serializer.AppendToFile("simple", "data/launch_times.txt", time)
-	
+
 	local average = 0
 	local times = serializer.ReadFile("simple", "data/launch_times.txt")
-	
+
 	for i, time in ipairs(times) do
 		average = average + time
 	end
-	
+
 	average = average / #times
-	
+
 	logf("[init] launch time took %s seconds (average startup time is %s seconds) \n", time, average)
 end
 

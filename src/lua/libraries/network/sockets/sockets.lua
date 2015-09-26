@@ -45,7 +45,7 @@ function sockets.Update()
 				logn(err)
 				sock:Remove()
 			end
-			
+
 			if sock.remove_me then
 				sock.socket:close()
 				prototype.MakeNULL(sock)
@@ -68,7 +68,7 @@ function sockets.Panic()
 			sock:Remove()
 		end
 	end
-	
+
 	table.clear(sockets.active_sockets)
 end
 
@@ -77,7 +77,7 @@ local function new_socket(override, META, typ, id)
 	typ = typ:lower()
 
 	if typ == "udp" or typ == "tcp" then
-		
+
 		if id then
 			for _, socket in ipairs(sockets.active_sockets) do
 				if socket.uid == id then
@@ -85,7 +85,7 @@ local function new_socket(override, META, typ, id)
 				end
 			end
 		end
-	
+
 		local self = prototype.CreateObject(META)
 		self.socket = override or assert(sockets.luasocket[typ]())
 		self.socket:settimeout(0)
@@ -93,13 +93,13 @@ local function new_socket(override, META, typ, id)
 		self.data_sent = 0
 		self.data_received = 0
 		self:Initialize()
-		
+
 		table.insert(sockets.active_sockets, self)
 
 		self:DebugPrintf("created")
 
 		self.uid = id
-		
+
 		return self
 	end
 end
@@ -129,14 +129,14 @@ do -- tcp socket meta
 
 	do -- client
 		local CLIENT = prototype.CreateTemplate("socket_client")
-		
+
 		add_options(CLIENT)
 
 		function CLIENT:Initialize()
 			self.Buffer = {}
 			self:SetTimeout(3)
 		end
-		
+
 		function CLIENT:GetStatistics()
 			return {
 				received = utility.FormatFileSize(self.data_received),
@@ -151,7 +151,7 @@ do -- tcp socket meta
 		function CLIENT:DebugPrintf(fmt, ...)
 			sockets.DebugPrint(self, "%s - " .. fmt, self, ...)
 		end
-		
+
 		do
 			prototype.GetSet(CLIENT, "SSLParams")
 			local https_default = {
@@ -160,7 +160,7 @@ do -- tcp socket meta
 				verify = "none",
 				mode = "client",
 			}
-			
+
 			function CLIENT:SetSSLParams(params)
 				local ssl = desire("ssl") _G.ssl = nil -- grr
 
@@ -169,7 +169,7 @@ do -- tcp socket meta
 				if not params or params == "https" then
 					params = https_default
 				end
-				
+
 				self.SSLParams = params
 			end
 		end
@@ -177,17 +177,17 @@ do -- tcp socket meta
 		function CLIENT:Connect(ip, port)
 			check(ip, "string")
 			check(port, "number")
-			
+
 			self:DebugPrintf("connecting to %s:%s", ip, port)
 
 			local ok, msg
-			
+
 			if self.socket_type == "tcp" then
 				ok, msg = self.socket:connect(ip, port)
 			else
 				ok, msg = self.socket:setpeername(ip, port)
 			end
-						
+
 			if not ok and msg and msg ~= "timeout" then
 				self:DebugPrintf("connect failed: %s", msg)
 				self:OnError(msg)
@@ -197,10 +197,10 @@ do -- tcp socket meta
 		end
 
 		function CLIENT:Send(str, instant)
-			if self.socket_type == "tcp" then				
+			if self.socket_type == "tcp" then
 				if instant then
 					local bytes, b, c, d = self.socket:send(str)
-					
+
 					if bytes then
 						self:DebugPrintf("sucessfully sent %s",  utility.FormatFileSize(#str))
 						self:OnSend(packet, bytes, b,c,d)
@@ -208,7 +208,7 @@ do -- tcp socket meta
 					elseif b ~= "Socket is not connected" then
 						self:DebugPrintf("could not send %s of data : %s", utility.FormatFileSize(#str), b)
 					end
-				else					
+				else
 					for i, packet in pairs(str:lengthsplit(65536)) do
 						table.insert(self.Buffer, packet)
 					end
@@ -218,10 +218,10 @@ do -- tcp socket meta
 				self:DebugPrintf("sent %q", str:readablehex())
 				self.data_sent = self.data_sent + #str
 			end
-			
+
 			if sockets.trace then debug.trace() end
 		end
-		
+
 		function CLIENT:CloseWhenDoneSending(b)
 			self.close_when_done = b
 		end
@@ -237,7 +237,7 @@ do -- tcp socket meta
 		end
 
 		local receive_types = {all = "*a", line = "*l"}
-		
+
 		function CLIENT:Think()
 			local sock = self.socket
 			sock:settimeout(0)
@@ -251,16 +251,16 @@ do -- tcp socket meta
 					if self.SSLParams then
 						local ssl = desire("ssl") _G.ssl = nil -- grr
 						self.old_socket = sock
-						sock = assert(ssl.wrap(sock, self.SSLParams))						
+						sock = assert(ssl.wrap(sock, self.SSLParams))
 						assert(sock:settimeout(0, "t"))
 						self.socket = sock
-						
+
 						self.ssl_socket = sock
 						self.shaking_hands = true
-						
+
 						self:DebugPrintf("start handshake")
 					end
-					
+
 					-- ip, port = res, msg
 					self.connected = true
 					self.connecting = nil
@@ -274,19 +274,19 @@ do -- tcp socket meta
 					self:OnError(msg)
 				end
 			end
-			
+
 			if self.shaking_hands then
 				if sock:dohandshake() then
 					self.shaking_hands = nil
 					self:DebugPrintf("done shaking hands")
 				end
-				
+
 				return
 			end
-			
-			if self.connected then			
+
+			if self.connected then
 				-- try send
-								
+
 				if self.socket_type == "tcp" then
 					for i = 1, 128 do
 						local data = self.Buffer[1]
@@ -297,9 +297,9 @@ do -- tcp socket meta
 								self:DebugPrintf("sucessfully sent %s",  utility.FormatFileSize(bytes))
 								self:OnSend(data, bytes, b,c,d)
 								table.remove(self.Buffer, 1)
-								
+
 								self.data_sent = self.data_sent + bytes
-								
+
 								if self.__server then
 									self.__server.data_sent = self.__server.data_sent + bytes
 								end
@@ -315,7 +315,7 @@ do -- tcp socket meta
 						end
 					end
 				end
-				
+
 				-- try receive
 				local mode
 
@@ -324,14 +324,14 @@ do -- tcp socket meta
 				else
 					mode = receive_types[self.ReceiveMode] or self.ReceiveMode
 				end
-				
+
 				while true do
 					local data, err, partial = sock:receive(mode)
 
 					if not data and partial and partial ~= "" then
 						data = partial
 					end
-					
+
 					if data then
 						if #data > 256 then
 							self:DebugPrintf("received (mode %s) %i bytes of data", mode, #data)
@@ -346,9 +346,9 @@ do -- tcp socket meta
 							self.__server:OnReceive(data, self)
 							self.__server.data_received = self.__server.data_received + #data
 						end
-						
+
 						self.data_received = self.data_received + #data
-					else					
+					else
 						if err == "timeout" or "Socket is not connected" then
 							self:Timeout(true)
 						elseif err == "closed" then
@@ -359,7 +359,7 @@ do -- tcp socket meta
 							end
 						else
 							self:DebugPrintf("errored: %s", err)
-							
+
 							if self.__server then
 								self.__server:OnClientError(self3, err)
 							end
@@ -419,12 +419,12 @@ do -- tcp socket meta
 
 		function CLIENT:Remove()
 			if self.remove_me then return end
-			
+
 			self:DebugPrintf("removed")
 			self:OnClose()
-			
+
 			self.remove_me = true
-			
+
 			if self.__server then
 				for k, v in pairs(self.__server.Clients) do
 					if v == self then
@@ -432,8 +432,8 @@ do -- tcp socket meta
 						break
 					end
 				end
-			
-				self.__server:OnClientClosed(self) 
+
+				self.__server:OnClientClosed(self)
 			end
 		end
 
@@ -447,44 +447,44 @@ do -- tcp socket meta
 
 		function CLIENT:GetIP()
 			if not self.connected then return "nil" end
-			local ip, port 
+			local ip, port
 			local socket = self.old_socket or self.socket
-			
-			if self.__server then 
+
+			if self.__server then
 				ip, port = socket:getpeername()
 			else
 				ip, port = socket:getsockname()
 			end
-			
+
 			return ip
 		end
 
 		function CLIENT:GetPort()
 			if not self.connected then return "nil" end
-			local ip, port 
+			local ip, port
 			local socket = self.old_socket or self.socket
-			
-			if self.__server then 
+
+			if self.__server then
 				ip, port = socket:getpeername()
 			else
 				ip, port = socket:getsockname()
 			end
 			return ip and port or nil
 		end
-				
+
 		function CLIENT:GetIPPort()
 			if not self.connected then return "nil" end
 			local ip, port
 			local socket = self.old_socket or self.socket
-			
-			if self.__server then 
+
+			if self.__server then
 				ip, port = socket:getpeername()
 			else
 				ip, port = socket:getsockname()
 			end
 			return ip .. ":" .. port
 		end
-		
+
 		function CLIENT:GetSocketName()
 			return (self.old_socket or self.socket):getpeername()
 		end
@@ -514,13 +514,13 @@ do -- tcp socket meta
 
 	do -- server
 		local SERVER = prototype.CreateTemplate("socket_server")
-		
+
 		add_options(SERVER)
 
 		function SERVER:Initialize()
 			self.Clients = {}
 		end
-		
+
 		function SERVER:GetStatistics()
 			return {
 				received = utility.FormatFileSize(self.data_received),
@@ -539,7 +539,7 @@ do -- tcp socket meta
 		function SERVER:GetClients()
 			return self.Clients
 		end
-		
+
 		function SERVER:HasClients()
 			return next(self.Clients) ~= nil
 		end
@@ -547,7 +547,7 @@ do -- tcp socket meta
 		function SERVER:Host(ip, port)
 			ip = ip or "*"
 			port = port or 0
-			
+
 			local ok, msg
 
 			if self.socket_type == "tcp" then
@@ -556,7 +556,7 @@ do -- tcp socket meta
 			elseif self.socket_type == "udp" then
 				ok, msg = self.socket:setsockname(ip, port)
 			end
-			
+
 			if not ok and msg then
 				self:DebugPrintf("bind failed: %s", msg)
 				if self:OnError(msg) ~= false then
@@ -565,10 +565,10 @@ do -- tcp socket meta
 			else
 				if self.socket_type == "tcp" then
 					ok, msg = self.socket:listen()
-					
-					if not ok and msg then	
+
+					if not ok and msg then
 						self:DebugPrintf("bind failed: %s", msg)
-					
+
 						if self:OnError(msg) ~= false then
 							error(msg, 2)
 						end
@@ -613,7 +613,7 @@ do -- tcp socket meta
 		local function create_dummy_client(ip, port)
 			return setmetatable({ip = ip, port = port}, DUMMY)
 		end
-		
+
 		function SERVER:UseDummyClient(bool)
 			self.use_dummy_client = bool
 		end
@@ -630,20 +630,20 @@ do -- tcp socket meta
 					self:DebugPrintf("errored: %s", ip)
 				else
 					self:DebugPrintf("received %s from %s:%s", data, ip, port)
-					
+
 					if self.use_dummy_client == false then
 						self:OnReceive(data, ip, port)
 					else
 						local client = create_dummy_client(ip, port)
 						local b = self:OnClientConnected(client, ip, port)
-						
+
 						if b == true or b == nil then
 							self:OnReceive(data, client)
 						end
-						
+
 						client.IsValid = function() return false end
 					end
-					
+
 					self.data_received = self.data_received + #data
 				end
 			elseif self.socket_type == "tcp" then
@@ -656,12 +656,12 @@ do -- tcp socket meta
 
 					client = new_socket(client, sockets.ClientMeta, "tcp")
 					client.connected = true
-					
+
 					self:DebugPrintf("%s connected", client)
-					
+
 					table.insert(self.Clients, client)
 					client.__server = self
-										
+
 					local b = self:OnClientConnected(client, client:GetIP(), client:GetPort())
 
 					if b == true then
@@ -673,11 +673,11 @@ do -- tcp socket meta
 				end
 			end
 		end
-		
+
 		function SERVER:SuppressSend(client)
 			self.suppressed_send = client
 		end
-		
+
 		function SERVER:Broadcast(...)
 			for k,v in pairs(self:GetClients()) do
 				if self.suppressed_send ~= v then
@@ -692,10 +692,10 @@ do -- tcp socket meta
 				v:Remove()
 			end
 		end
-		
+
 		function SERVER:Remove()
 			self:DebugPrintf("removed")
-			self:KickAllClients()			
+			self:KickAllClients()
 			self.remove_me = true
 		end
 
@@ -712,12 +712,12 @@ do -- tcp socket meta
 			local ip, port = self.socket:getsockname()
 			return ip and port or nil
 		end
-		
+
 		function SERVER:GetIPPort()
 			local ip, port = self.socket:getsockname()
 			return ip .. ":" .. port
 		end
-		
+
 		function SERVER:GetSocketName()
 			return self.socket:getsockname()
 		end

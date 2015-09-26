@@ -21,7 +21,7 @@ surface.CreateFont("scoreboard_title", {
 	shadow = 1,
 })
 
-surface.CreateFont("scoreboard_title_2", { 
+surface.CreateFont("scoreboard_title_2", {
 	path = "Oswald",
 	fallback = "default",
 	size = 11,
@@ -30,15 +30,15 @@ surface.CreateFont("scoreboard_title_2", {
 
 function scoreboard.SetupContainer(id)
 	if scoreboard.containers[id] then return scoreboard.containers[id] end
-				
-	local container = scoreboard.panel:CreatePanel("base") 
+
+	local container = scoreboard.panel:CreatePanel("base")
 	container:SetStyle("text_edit")
 	container:SetMargin(Rect())
 	container:SetupLayout("layout_children", "top", "size_to_height")
 	container:SetNoDraw(true)
 	container:SetMinimumSize(Vec2())
 	container:SetLayoutSize()
-	
+
 	local title = container:CreatePanel("text_button")
 	title:SetMode("toggle")
 	title:SetFont("scoreboard_title_2")
@@ -52,10 +52,10 @@ function scoreboard.SetupContainer(id)
 
 	local team = scoreboard.panel:CreatePanel("base")
 	team:SetMargin(Rect())
-	team:SetSize(scoreboard.panel:GetSize()) 
+	team:SetSize(scoreboard.panel:GetSize())
 	team:SetupLayout( "top", "size_to_height")
 	team:SetNoDraw(true)
-	
+
 	title.OnStateChanged = function(_, b)
 		if b then
 			team:SetVisible(true)
@@ -80,9 +80,9 @@ function scoreboard.SetupContainer(id)
 			end)
 		end
 	end
-	
+
 	scoreboard.containers[id] = team
-	
+
 	return team
 end
 
@@ -93,7 +93,7 @@ function scoreboard.AddClient(client)
 	player_info:SetNoDraw(true)
 	player_info:SetMargin(Rect())
 --	player_info:SetPadding(Rect())
- 
+
 	local friend = player_info:CreatePanel("base")
 	friend:SetCursor("hand")
 	friend:SetTexture(Texture("textures/silkicons/user.png"))
@@ -111,7 +111,7 @@ function scoreboard.AddClient(client)
 	info:SetHeight(30)
 	info:SetStyle("tab_frame")
 	info:SetupLayout("left", "fill_x")
-	
+
 	info.OnRightClick = function()
 		gui.CreateMenu({
 			{"goto", {{"bring", nil, "textures/silkicons/arrow_in.png"}}, "textures/silkicons/arrow_right.png"},
@@ -123,11 +123,11 @@ function scoreboard.AddClient(client)
 				{"ban weapons", nil, "textures/silkicons/gun.png"},
 				{"kick", nil, "textures/silkicons/door_out.png"},
 				{"ban", nil, "textures/silkicons/delete.png"},
-			}, "textures/silkicons/lock.png"},			
+			}, "textures/silkicons/lock.png"},
 			{"mute", {{"gag", nil, "textures/silkicons/comment_delete.png"}}, "textures/silkicons/sound_mute.png"},
 		}, info)
 	end
-	
+
 	do
 		local ping = info:CreatePanel("base")
 		ping:SetStyle("menu_select")
@@ -135,12 +135,12 @@ function scoreboard.AddClient(client)
 		ping:SetWidth(55)
 		ping:SetMargin(Rect()+5)
 		ping:SetupLayout("layout_children", "right")
-		
+
 		local icon = ping:CreatePanel("base")
 		icon:SetTexture(Texture("textures/silkicons/connect.png"))
 		icon:SetSize(Vec2()+16)
 		icon:SetupLayout("left", "center_y_simple")
-		
+
 		local text = ping:CreatePanel("text")
 		prototype.AddPropertyLink(text, client, "Text", "Ping") -- text:SetText(client:GetPing())
 		text:SetupLayout("left", "center_y_simple")
@@ -191,21 +191,21 @@ function scoreboard.AddClient(client)
 			text:SetIgnoreMouse(true)
 			text:SetupLayout("left", "center_y_simple")
 		end
-			
+
 	--	add_tag("textures/silkicons/clock.png", "AFK")
 	--	add_tag("textures/silkicons/wrench.png", "Building")
 	end
-	
+
 	scoreboard.panel.help:BringToFront()
 end
 
 function scoreboard.Initialize()
 	local panel = gui.CreatePanel("base")
 	scoreboard.panel = panel
-	
+
 	if not RELOAD then
-		panel:SetVisible(false) 
-	end  
+		panel:SetVisible(false)
+	end
 
 	panel:SetSize(window.GetSize()/1.25)
 	panel:SetNoDraw(true)
@@ -224,7 +224,7 @@ function scoreboard.Initialize()
 
 	do
 		local info = panel:CreatePanel("base")
-		info:SetVisible(false) 
+		info:SetVisible(false)
 		info:SetHeight(30)
 		info:SetStyle("frame2")
 		info:SetupLayout("top", "fill_x")
@@ -259,7 +259,7 @@ function scoreboard.Initialize()
 		text:SetText("curtime 1:24h")
 		text:SetupLayout("left", "top")
 	end
-	
+
 	local help = panel:CreatePanel("text", "help")
 	help:SetFont("scoreboard_title")
 	help:SetText("right click to show cursor")

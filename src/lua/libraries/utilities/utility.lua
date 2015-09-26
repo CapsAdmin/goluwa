@@ -21,7 +21,7 @@ function utility.CreateDeferredLibrary(name)
 				end
 				return lib
 			end,
-		}, 
+		},
 		{
 			__index = function(self, key)
 				return function(...)
@@ -32,12 +32,12 @@ function utility.CreateDeferredLibrary(name)
 	)
 end
 
-function utility.LuaAutoComplete(text)	
+function utility.LuaAutoComplete(text)
 	local found = {}
 	local node = _G
-	
+
 	print(text)
-		
+
 	if text:find("(", nil, true) then
 		local ok, func = loadstring("return " .. text:match("(.+)%("))
 		if ok then
@@ -46,32 +46,32 @@ function utility.LuaAutoComplete(text)
 				print(func)
 			end
 		end
-		
-	else		
+
+	else
 		local keys = text:explode(".")
 		local found_string = ""
-		
+
 		local current_func
-		
+
 		for i, index in ipairs(keys) do
-			if node[index] and type(node[index]) == "table" then			
+			if node[index] and type(node[index]) == "table" then
 				last_node = node
 				node = node[index]
-			
+
 				--found_string  = found_string  .. index
-				
+
 				--if type(node) == "table" then
 				--	found_string = found_string .. "."
 				--end
-				
+
 			else
-				for key, val in pairs(node) do				
+				for key, val in pairs(node) do
 					local str = tostring(key)
 					if current_func then
 						local params = debug.getparams(current_func)
 						--event.AddListener(
 					elseif str:find("^.-" .. index) then
-							
+
 						if type(val) == "table" then
 							str = str .. "."
 						elseif type(val) == "function" then
@@ -86,7 +86,7 @@ function utility.LuaAutoComplete(text)
 			end
 		end
 	end
-		
+
 	return found
 end
 
@@ -96,13 +96,13 @@ function utility.StripLuaCommentsAndStrings(code)
 	local double_quote_strings = {}
 	local single_quote_strings = {}
 	local multiline_strings = {}
-	
+
 	code = code:gsub("(%-%-%[(=*)%[.-%]%2%])", function(str) table.insert(multiline_comments, str) return "____COMMENT_MULTILINE_" .. #multiline_comments .. "____" .. " "  end)
 	code = code:gsub("(%[(=*)%[.-%]%2%])", function(str) table.insert(multiline_strings, str) return "____STRING_MULTILINE_" .. #multiline_strings .. "____" .. " "  end)
 	code = code:gsub("%b\"\"", function(str) table.insert(double_quote_strings, str) return "____STRING_DOUBLE_QUOTE_" .. #double_quote_strings .. "____" .. " "  end)
 	code = code:gsub("(%-%-.-)\n", function(str) table.insert(singleline_comments, str) return "____COMMENT_SINGLELINE_" .. #singleline_comments .. "____" .. " " end)
 	code = code:gsub("%b''", function(str) table.insert(single_quote_strings, str) return "____STRING_SINGLE_QUOTE_" .. #single_quote_strings .. "____" .. " "  end)
-	
+
 	return code, {singleline_comments, multiline_comments, double_quote_strings, single_quote_strings, multiline_strings}
 end
 
@@ -114,18 +114,18 @@ function utility.RestoreLuaCommentsAndStrings(code, data)
 	for i, v in ipairs(double_quote_strings) do	code = code:replace("____STRING_DOUBLE_QUOTE_" .. i .. "____", v) end
 	for i, v in ipairs(singleline_comments) do	code = code:replace("____COMMENT_SINGLELINE_" .. i .. "____", v .. "\n") end
 	for i, v in ipairs(single_quote_strings) do	code = code:replace("____STRING_SINGLE_QUOTE_" .. i .. "____", v) end
-	
-	return code 
+
+	return code
 end
 
-function utility.CreateCallbackThing(cache)	
+function utility.CreateCallbackThing(cache)
 	cache = cache or {}
 	local self = {}
-	
+
 	function self:check(path, callback, extra)
-		if cache[path] then 				
+		if cache[path] then
 			if cache[path].extra_callbacks then
-				for key, old in pairs(cache[path].extra_callbacks) do						
+				for key, old in pairs(cache[path].extra_callbacks) do
 					local callback = extra[key]
 					if callback then
 						cache[path].extra_callbacks[key] = function(...)
@@ -133,13 +133,13 @@ function utility.CreateCallbackThing(cache)
 							callback(...)
 						end
 					end
-					
+
 				end
 			end
-			
+
 			if cache[path].callback then
 				local old = cache[path].callback
-				
+
 				cache[path].callback = function(...)
 					old(...)
 					callback(...)
@@ -148,30 +148,30 @@ function utility.CreateCallbackThing(cache)
 			end
 		end
 	end
-	
+
 	function self:start(path, callback, extra)
 		cache[path] = {callback = callback, extra_callbacks = extra}
 	end
-	
+
 	function self:callextra(path, key, out)
 		if not cache[path] or not cache[path].extra_callbacks[key] then return end
 		cache[path].extra_callbacks[key](out)
 	end
-					
+
 	function self:stop(path, out, ...)
 		if not cache[path] then return end
 		cache[path].callback(out, ...)
 		cache[path] = out
 	end
-	
+
 	function self:get(path)
 		return cache[path]
 	end
-	
+
 	function self:uncache(path)
 		cache[path] = nil
 	end
-	
+
 	return self
 end
 
@@ -198,7 +198,7 @@ function utility.SimpleLineIntersectAABB(from, to, min, max)
 		return false
 	end
 
-  
+
 
     if math.abs(d.y * c.z - d.z * c.y) > e.y * ad.z + e.z * ad.y + EPSILON then
         return false
@@ -211,40 +211,40 @@ function utility.SimpleLineIntersectAABB(from, to, min, max)
     if math.abs(d.x * c.y - d.y * c.x) > e.x * ad.y + e.y * ad.x + EPSILON then
         return false
 	end
-	
+
 	return true
 end
 
 do
 	local ok, lib = pcall(ffi.load, "lz4")
-		
-	if ok then		
+
+	if ok then
 		ffi.cdef[[
 			int LZ4_compress        (const char* source, char* dest, int inputSize);
 			int LZ4_decompress_safe (const char* source, char* dest, int inputSize, int maxOutputSize);
 		]]
-		
+
 		function utility.Compress(data)
-			local size = #data	
+			local size = #data
 			local buf = ffi.new("uint8_t[?]", ((size) + ((size)/255) + 16))
 			local res = lib.LZ4_compress(data, buf, size)
-		 
+
 			if res ~= 0 then
 				return ffi.string(buf, res)
 			end
 		end
-		 
+
 		function utility.Decompress(source, orig_size)
 			local dest = ffi.new("uint8_t[?]", orig_size)
 			local res = lib.LZ4_decompress_safe(source, dest, #source, orig_size)
-			
+
 			if res > 0 then
 				return ffi.string(dest, res)
 			end
 		end
 	else
 		(logn or print)(lib) -- aaaaa
-		
+
 		utility.Compress = function() error("lz4 is not avaible: " .. lib, 2) end
 		utility.Decompress = utility.Compress
 	end
@@ -253,26 +253,26 @@ end
 function utility.MakePushPopFunction(lib, name, func_set, func_get, reset)
 	local stack = {}
 	local i = 1
-	
+
 	lib["Push" .. name] = function(...)
 		stack[i] = {func_get()}
-		
+
 		func_set(...)
-		
+
 		i = i + 1
 	end
-	
+
 	lib["Pop" .. name] = function()
 		i = i - 1
-		
+
 		if i < 1 then
 			error("stack underflow", 2)
 		end
-		
+
 		if i == 1 and reset then
 			reset()
 		end
-		
+
 		func_set(unpack(stack[i]))
 	end
 end
@@ -281,15 +281,15 @@ function utility.FindReferences(reference)
 	local done = {}
 	local found = {}
 	local found2 = {}
-	
+
 	local revg = {}
 	for k,v in pairs(_G) do revg[v] = tostring(k) end
 
 	local function search(var, str)
 		if done[var] then return end
-		
+
 		if revg[var] then str = revg[var] end
-				
+
 		if rawequal(var, reference) then
 			local res = str .. " = " .. tostring(reference)
 			if not found2[res] then
@@ -297,19 +297,19 @@ function utility.FindReferences(reference)
 				found2[res] = true
 			end
 		end
-		
+
 		local t = type(var)
-		
+
 		if t == "table" then
-			done[var] = true	
-			
+			done[var] = true
+
 			for k, v in pairs(var) do
 				search(k, str .. "." .. tostring(k))
 				search(v, str .. "." .. tostring(k))
 			end
-		elseif t == "function" then			
+		elseif t == "function" then
 			done[var] = true
-			
+
 			for k, v in pairs(debug.getupvalues(var)) do
 				if v.val then
 					search(v.val, str .. "^" .. v.key)
@@ -319,10 +319,10 @@ function utility.FindReferences(reference)
 	end
 
 	search(_G, "_G")
-	
+
 	return table.concat(found, "\n")
 end
- 
+
 local diffuse_suffixes = {
 	"_diff",
 	"_d",
@@ -330,23 +330,23 @@ local diffuse_suffixes = {
 
 function utility.FindTextureFromSuffix(path, ...)
 	path = path:lower()
-	
+
 	local suffixes = {...}
 
 	-- try to find the normal texture
 	for _, suffix in pairs(suffixes) do
 		local new = path:gsub("(.+)(%.)", "%1" .. suffix .. "%2")
-		
+
 		if new ~= path and vfs.Exists(new) then
 			return new
 		end
 	end
-	
+
 	-- try again without the __diff suffix
 	for _, diffuse_suffix in pairs(diffuse_suffixes) do
 		for _, suffix in pairs(suffixes) do
 			local new = path:gsub(diffuse_suffix .. "%.", suffix ..".")
-			
+
 			if new ~= path and vfs.Exists(new) then
 				return new
 			end
@@ -364,20 +364,20 @@ function utility.TableToColumns(title, tbl, columns, check, sort_key)
 		local frame = gui.CreatePanel("frame", nil, "table_to_columns_" .. title)
 		frame:SetSize(Vec2() + 300)
 		frame:SetTitle(title)
-		
+
 		local list = frame:CreatePanel("list")
 		list:SetupLayout("fill")
-		
-		local keys = {} 
+
+		local keys = {}
 		for i,v in ipairs(columns) do keys[i] = v.friendly or v.key end
 		list:SetupSorted(unpack(keys))
-		
+
 		for _, data in ipairs(tbl) do
 			local args = {}
 			for i, info in ipairs(columns) do
-				if info.tostring then 
+				if info.tostring then
 					args[i] = info.tostring(data[info.key], data, tbl)
-				else	
+				else
 					args[i] = data[info.key]
 				end
 				if type(args[i]) == "string" then
@@ -386,18 +386,18 @@ function utility.TableToColumns(title, tbl, columns, check, sort_key)
 			end
 			list:AddEntry(unpack(args))
 		end
-	
+
 		return
 	end
 
 	local top = {}
-	
+
 	for k, v in pairs(tbl) do
 		if not check or check(v) then
 			table.insert(top, {key = k, val = v})
 		end
 	end
-	
+
 	if type(sort_key) == "function" then
 		table.sort(top, function(a, b)
 			return sort_key(a.val, b.val)
@@ -410,65 +410,65 @@ function utility.TableToColumns(title, tbl, columns, check, sort_key)
 
 	local max_lengths = {}
 	local temp = {}
-	
+
 	for i, column in ipairs(top) do
 		for key, data in ipairs(columns) do
 			data.tostring = data.tostring or function(...) return ... end
 			data.friendly = data.friendly or data.key
-			
+
 			max_lengths[data.key] = max_lengths[data.key] or 0
-			
+
 			local str = tostring(data.tostring(column.val[data.key], column.val, top))
 			column.str = column.str or {}
 			column.str[data.key] = str
-			
+
 			if #str > max_lengths[data.key] then
 				max_lengths[data.key] = #str
-			end			
-			
+			end
+
 			temp[key] = data
 		end
 	end
-	
+
 	columns = temp
-	
+
 	local width = 0
-		
-	for k,v in pairs(columns) do 		
-		if max_lengths[v.key] > #v.friendly then 
+
+	for k,v in pairs(columns) do
+		if max_lengths[v.key] > #v.friendly then
 			v.length = max_lengths[v.key]
-		else 
+		else
 			v.length = #v.friendly + 1
-		end 
-		width = width + #v.friendly + max_lengths[v.key] - 2 
+		end
+		width = width + #v.friendly + max_lengths[v.key] - 2
 	end
-	
+
 	local out = " "
-		
+
 	out = out .. ("_"):rep(width - 1) .. "\n"
 	out = out .. "|" .. (" "):rep(width / 2 - math.floor(#title / 2)) .. title .. (" "):rep(math.floor(width / 2) - #title + math.floor(#title / 2)) .. "|\n"
 	out = out .. "|" .. ("_"):rep(width - 1) .. "|\n"
 
-	for k,v in ipairs(columns) do 
+	for k,v in ipairs(columns) do
 		out = out .. "| " .. v.friendly .. ": " .. (" "):rep(-#v.friendly + max_lengths[v.key] - 1)  -- 2 = : + |
-	end 
+	end
 	out = out .. "|\n"
-	
-	
-	for k,v in ipairs(columns) do 
-		out = out .. "|" .. ("_"):rep(v.length + 2) 
-	end 
+
+
+	for k,v in ipairs(columns) do
+		out = out .. "|" .. ("_"):rep(v.length + 2)
+	end
 	out = out .. "|\n"
-	
-	for k,v in ipairs(top) do 
-		for _,column in ipairs(columns) do 
-			out = out .. "| " .. v.str[column.key] .. (" "):rep(-#v.str[column.key] + column.length + 1) 
-		end 
+
+	for k,v in ipairs(top) do
+		for _,column in ipairs(columns) do
+			out = out .. "| " .. v.str[column.key] .. (" "):rep(-#v.str[column.key] + column.length + 1)
+		end
 		out = out .. "|\n"
-	end 
-	
+	end
+
 	out = out .. "|"
-	
+
 	out = out .. ("_"):rep(width-1) .. "|\n"
 
 
@@ -478,11 +478,11 @@ end
 do -- tree
 	local META = prototype.CreateTemplate("tree")
 
-	function META:SetEntry(str, value)		
+	function META:SetEntry(str, value)
 		local keys = type(str) == "table" and str or str and str:explode(self.delimiter) or {}
-		
+
 		local next = self.tree
-				
+
 		for i, key in ipairs(keys) do
 			if key ~= "" then
 				if type(next[key]) ~= "table" then
@@ -491,16 +491,16 @@ do -- tree
 				next = next[key]
 			end
 		end
-		
+
 		next.key = str
 		next.value = value
 	end
 
-	function META:GetEntry(str)		
+	function META:GetEntry(str)
 		local keys = type(str) == "table" and str or str and str:explode(self.delimiter) or {}
-				
+
 		local next = self.tree
-		
+
 		for i, key in ipairs(keys) do
 			if key ~= "" then
 				if not next[key] then
@@ -509,14 +509,14 @@ do -- tree
 				next = next[key]
 			end
 		end
-		
+
 		return next.value
 	end
-	
-	function META:GetChildren(str)		
+
+	function META:GetChildren(str)
 		local keys = type(str) == "table" and str or str and str:explode(self.delimiter) or {}
 		local next = self.tree
-		
+
 		for i, key in ipairs(keys) do
 			if key ~= "" then
 				if not next[key] then
@@ -525,18 +525,18 @@ do -- tree
 				next = next[key]
 			end
 		end
-				
+
 		return next
 	end
-	
+
 	prototype.Register(META)
 
 	function utility.CreateTree(delimiter, tree)
 		local self = prototype.CreateObject(META)
-		
+
 		self.tree = tree or {}
 		self.delimiter = delimiter
-		
+
 		return self
 	end
 end
@@ -545,32 +545,32 @@ function utility.TableToFlags(flags, valid_flags)
 	if type(flags) == "string" then
 		flags = {flags}
 	end
-	
+
 	local out = 0
-	
+
 	for k, v in pairs(flags) do
 		local flag = valid_flags[v] or valid_flags[k]
-		if not flag then 
-			error("invalid flag", 2) 
+		if not flag then
+			error("invalid flag", 2)
 		end
 		out = bit.band(out, flag)
 	end
-	
+
 	return out
 end
 
 function utility.FlagsToTable(flags, valid_flags)
 
 	if not flags then return valid_flags.default_valid_flag end
-	
+
 	local out = {}
-	
+
 	for k, v in pairs(valid_flags) do
 		if bit.band(flags, v) > 0 then
 			out[k] = true
 		end
 	end
-	
+
 	return out
 end
 
@@ -583,7 +583,7 @@ do -- long long
 	]]
 
 	local btl = ffi.typeof("buffer_int64")
-	
+
 	function utility.StringToLongLong(str)
 		return btl(str).i
 	end
@@ -601,15 +601,15 @@ do -- find value
 
 	local keywords =
 	{
-		AND = function(a, func, x,y) return func(a, x) and func(a, y) end	
+		AND = function(a, func, x,y) return func(a, x) and func(a, y) end
 	}
 
 	local function args_call(a, func, ...)
 		local tbl = {...}
-		
+
 		for i = 1, #tbl do
 			local val = tbl[i]
-			
+
 			if not keywords[val] then
 				local keyword = tbl[i+1]
 				if keywords[keyword] and tbl[i+2] then
@@ -633,39 +633,39 @@ do -- find value
 
 	local function _find(tbl, name, dot, level, ...)
 		if level >= 3 then return end
-			
-		for key, val in pairs(tbl) do	
+
+		for key, val in pairs(tbl) do
 			local T = type(val)
 			key = tostring(key)
-			
-			if name == "_M" then	
+
+			if name == "_M" then
 				if val.Type == val.ClassName then
 					key = val.Type
 				else
 					key = val.Type .. "." .. val.ClassName
 				end
 			end
-				
+
 			if not skip[key] and T == "table" and not done[val] then
 				done[val] = true
 				_find(val, name .. "." .. key, dot, level + 1, ...)
 			else
-				if (T == "function" or T == "number") and strfind(name .. "." .. key, ...) then					
-					
+				if (T == "function" or T == "number") and strfind(name .. "." .. key, ...) then
+
 					local nice_name
-					
+
 					if type(val) == "function" then
 						local params = debug.getparams(val)
-						
+
 						if dot == ":" and params[1] == "self" then
 							table.remove(params, 1)
 						end
-					
+
 						nice_name = ("%s%s%s(%s)"):format(name, dot, key, table.concat(params, ", "))
 					else
 						nice_name = ("%s.%s = %s"):format(name, key, val)
 					end
-				
+
 					if name == "_G" or name == "_M" then
 						table.insert(found, {key = key, val = val, name = name, nice_name = nice_name})
 					else
@@ -675,7 +675,7 @@ do -- find value
 			end
 		end
 	end
-	
+
 	local function find(tbl, ...)
 		found = {}
 		_find(...)
@@ -683,31 +683,31 @@ do -- find value
 		for k,v in ipairs(found) do table.insert(tbl, v) end
 	end
 
-	function utility.FindValue(...)		
+	function utility.FindValue(...)
 		local found = {}
-		done = 
+		done =
 		{
 			[_G] = true,
 			[package] = true,
 			[_OLD_G] = true,
 		}
-			
+
 		find(found, _G, "_G", ".", 1, ...)
 		find(found, prototype.GetAllRegistered(), "_M", ":", 1, ...)
-		
+
 		local temp = {}
 		for cmd, v in pairs(console.GetCommands()) do
 			if strfind(cmd, ...) then
 				local arg_line = table.concat(debug.getparams(v.callback), ", ")
 				arg_line = arg_line:gsub("line, ", "")
 				arg_line = arg_line:gsub("line", "")
-				
+
 				table.insert(temp, {key = cmd, val = v.callback, name = ("console.GetCommands().%s.callback"):format(cmd), nice_name = ("_C->%s(%s)"):format(cmd, arg_line)})
 			end
 		end
 		table.sort(temp, function(a, b) return #a.key < #b.key end)
 		for k,v in ipairs(temp) do table.insert(found, v) end
-		
+
 		return found
 	end
 end
@@ -736,20 +736,20 @@ end
 do -- thanks etandel @ #lua!
 	function utility.SetGCCallback(t, func)
 		func = func or t.Remove
-		
-		if not func then 
+
+		if not func then
 			error("could not find remove function", 2)
 		end
 
 		local ud = t.__gc or newproxy(true)
-		
-		debug.getmetatable(ud).__gc = function() 
+
+		debug.getmetatable(ud).__gc = function()
 			if not t.IsValid or t:IsValid() then
-				return func(t) 
+				return func(t)
 			end
 		end
-		
-		t.__gc = ud  
+
+		t.__gc = ud
 
 		return t
 	end
@@ -757,41 +757,41 @@ end
 
 do
 	-- http://cakesaddons.googlecode.com/svn/trunk/glib/lua/glib/stage1.lua
-	local size_units = 
-	{ 
-		"B", 
-		"KiB", 
-		"MiB", 
-		"GiB", 
-		"TiB", 
-		"PiB", 
-		"EiB", 
-		"ZiB", 
-		"YiB" 
+	local size_units =
+	{
+		"B",
+		"KiB",
+		"MiB",
+		"GiB",
+		"TiB",
+		"PiB",
+		"EiB",
+		"ZiB",
+		"YiB"
 	}
 	function utility.FormatFileSize(size)
 		local unit_index = 1
-		
+
 		while size >= 1024 and size_units[unit_index + 1] do
 			size = size / 1024
 			unit_index = unit_index + 1
 		end
-		
+
 		return tostring(math.floor(size * 100 + 0.5) / 100) .. " " .. size_units[unit_index]
 	end
 end
 
 function utility.SafeRemove(obj, gc)
 	if hasindex(obj) then
-		
+
 		if obj.IsValid and not obj:IsValid() then return end
-		
+
 		if type(obj.Remove) == "function" then
 			obj:Remove()
 		elseif type(obj.Close) == "function" then
 			obj:Close()
 		end
-		
+
 		if gc and type(obj.__gc) == "function" then
 			obj:__gc()
 		end
@@ -799,19 +799,19 @@ function utility.SafeRemove(obj, gc)
 end
 
 function utility.RemoveOldObject(obj, id)
-	
+
 	if hasindex(obj) and type(obj.Remove) == "function" then
 		UTIL_REMAKES = UTIL_REMAKES or {}
-			
+
 		id = id or (debug.getinfo(2).currentline .. debug.getinfo(2).source)
-		
+
 		if typex(UTIL_REMAKES[id]) == typex(obj) then
 			UTIL_REMAKES[id]:Remove()
 		end
-		
+
 		UTIL_REMAKES[id] = obj
 	end
-	
+
 	return obj
 end
 
@@ -855,19 +855,19 @@ function utility.GetFileFromPath(self)
 	return self:match(".*/(.*)")
 end
 
-do 
+do
 	local hooks = {}
 
 	function utility.SetFunctionHook(tag, tbl, func_name, type, callback)
 		local old = hooks[tag] or tbl[func_name]
-		
+
 		if type == "pre" then
 			tbl[func_name] = function(...)
 				local args = {callback(old, ...)}
-				
+
 				if args[1] == "abort_call" then return end
 				if #args == 0 then return old(...) end
-				
+
 				return unpack(args)
 			end
 		elseif type == "post" then
@@ -877,13 +877,13 @@ do
 				return unpack(args)
 			end
 		end
-		
+
 		return old
 	end
-	
+
 	function utility.RemoveFunctionHook(tag, tbl, func_name)
 		local old = hooks[tag]
-		
+
 		if old then
 			tbl[func_name] = old
 			hooks[tag] = nil
@@ -901,7 +901,7 @@ do -- header parse
 				return str
 			end
 		end
-		
+
 		for _, dir in pairs(directories) do
 			local str = vfs.Read(dir .. path .. ".in")
 			if str then
@@ -909,18 +909,18 @@ do -- header parse
 			end
 		end
 	end
-	
+
 	local macros = {}
-	
+
 	local function process_macros(str)
 		for line in str:gmatch("(.-\n)") do
 			if line:find("#") then
 				local type = line:match("#%s-([%l%d_]+)()")
-			
+
 				--print(type, line)
 			end
 		end
-		
+
 		return str
 	end
 
@@ -928,17 +928,17 @@ do -- header parse
 
 	local function process_include(str)
 		local out = ""
-		
+
 		for line in str:gmatch("(.-\n)") do
 			if not included[line] then
 				if line:find("#include") then
 					included[line] = true
-					
+
 					local path = line:match("%s-#include.-<(.-)>")
-					
+
 					if path then
 						local content = read_file(path)
-						
+
 						if content then
 							out = out .. "// HEADER: " .. path .. ";"
 							out = out .. process_include(content)
@@ -946,49 +946,49 @@ do -- header parse
 							out = out .. "// missing header " .. path .. ";"
 						end
 					end
-				else 
+				else
 					out = out .. line
 				end
 			end
-			
+
 			out = out
 		end
-		
+
 		return out
 	end
 
 	local function remove_comments(str)
 		str = str:gsub("/%*.-%*/", "")
-		
+
 		return str
 	end
 
 	local function remove_whitespace(str)
 		str = str:gsub("%s+", " ")
 		str = str:gsub(";", ";\n")
-		
+
 		return str
 	end
 
 	local function solve_definitions(str)
 		local definitions = {}
-		
+
 		str = str:gsub("\\%s-\n", "")
-		
+
 		for line in str:gmatch("#define(.-)\n") do
 			local key, val = line:match("%s-(%S+)%s-(%S+)")
 			if key and val then
 				definitions[key] = tonumber(val)
 			end
 		end
-		 
+
 		return str, definitions
 	end
-	 
+
 	local function solve_typedefs(str)
-		
+
 		local typedefs = {}
-			
+
 		for line in str:gmatch("typedef(.-);") do
 			if not line:find("enum") then
 				local key, val = line:match("(%S-)%s-(%S+)$")
@@ -996,14 +996,14 @@ do -- header parse
 					typedefs[key] = val
 				end
 			end
-		end 
-		
+		end
+
 		return str, typedefs
 	end
 
 	local function solve_enums(str)
 		local enums = {}
-		
+
 		for line in str:gmatch("(.-)\n") do
 
 			if line:find("enum%s-{") then
@@ -1028,7 +1028,7 @@ do -- header parse
 				end
 			end
 		end
-		
+
 		return str, enums
 	end
 
@@ -1043,15 +1043,15 @@ do -- header parse
 		header = process_include(header)
 		header = remove_comments(header)
 		header = remove_whitespace(header)
-		 
+
 		header, definitions = solve_definitions(header)
 		header, typedefs = solve_typedefs(header)
 		header, enums = solve_enums(header)
-		
+
 		return {
-			header = header, 
-			definitions = definitions, 
-			typedefs = typedefs, 
+			header = header,
+			definitions = definitions,
+			typedefs = typedefs,
 			enums = enums,
 		}
 	end

@@ -8,14 +8,14 @@ event.AddListener("SteamFriendsMessage", "steam_friends", function(sender_steam_
 	if txt:sub(1, 2) == ">>" then return end
 
 	local ply = clients.GetByUniqueID(sender_steam_id)
-	
+
 	if sender_steam_id == steam.GetClientSteamID() then
 		sender_steam_id = receiver_steam_id
 	end
-	
+
 	subject = sender_steam_id
 	event.Delay(0.1, function() subject = nil end)
-	
+
 	if ply:IsValid() then
 		if SERVER then
 			chat.PlayerSay(ply, txt)

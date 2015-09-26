@@ -7,7 +7,7 @@ prototype.GetSet(PANEL, "CaretColor")
 prototype.GetSet(PANEL, "SelectionColor")
 prototype.GetSet(PANEL, "Editable", true)
 prototype.GetSet(PANEL, "CaretPosition", Vec2(0, 0))
- 
+
 prototype.GetSetDelegate(PANEL, "Text", "", "label")
 prototype.GetSetDelegate(PANEL, "ParseTags", false, "label")
 prototype.GetSetDelegate(PANEL, "Font", nil, "label")
@@ -19,23 +19,23 @@ prototype.Delegate(PANEL, "label", "CenterTextY", "CenterY")
 prototype.Delegate(PANEL, "label", "CenterTextX", "CenterX")
 prototype.Delegate(PANEL, "label", "GetTextSize", "GetSize")
 
-function PANEL:Initialize()	
+function PANEL:Initialize()
 	self:SetStyle("text_edit")
 	self:SetFocusOnClick(true)
 	self.BaseClass.Initialize(self)
-	
+
 	local label = self:CreatePanel("text", "label")
 	label.OnStyleChanged = nil
 	label.markup:SetEditable(self.Editable)
-	
+
 	label:SetClipping(true)
 	label:SetIgnoreMouse(true)
-	
+
 	self:SetEditable(true)
-	
+
 	label.OnTextChanged = function(_, ...) self:OnTextChanged(...) end
 	label.OnEnter = function(_, ...) self:OnEnter(...) end
-	
+
 	self:SetCursor("ibeam")
 end
 
@@ -49,7 +49,7 @@ function PANEL:OnStyleChanged(skin)
 	self:SetTextColor(skin.text_edit_color:Copy())
 	self.label:SetTextColor(skin.text_edit_color:Copy())
 	self:SetFont(skin.default_font)
-	
+
 	if self.label and self.label.markup then
 		self.label.markup:SetCaretColor(self.CaretColor)
 		self.label.markup:SetSelectionColor(self.SelectionColor)
@@ -79,7 +79,7 @@ end
 
 function PANEL:SizeToText()
 	local marg = self:GetMargin()
-		
+
 	self.label:SetPosition(marg:GetPosition())
 	self:SetSize(self.label:GetSize() + marg:GetSize()*2)
 end
@@ -112,5 +112,5 @@ end
 
 function PANEL:OnEnter() end
 function PANEL:OnTextChanged() end
-	
+
 gui.RegisterPanel(PANEL)

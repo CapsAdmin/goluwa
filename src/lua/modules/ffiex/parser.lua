@@ -1,5 +1,5 @@
 ---------------------------------------------------
--- logger 
+-- logger
 ---------------------------------------------------
 local function log(...)
 	-- print(...)
@@ -109,7 +109,7 @@ end
 
 
 ---------------------------------------------------
--- basic elements 
+-- basic elements
 ---------------------------------------------------
 local TYPEDEF_SYMBOL="typedef"
 local SPACE="%s+"
@@ -153,7 +153,7 @@ local QUALIFY_KEYWORD = {
 	"register",
 }
 local QUALIFY_KEYWORD_CAPTURE = {
-	EXT_ATTR_TAG, 
+	EXT_ATTR_TAG,
 }
 local FUNC_TYPE_SYMBOL="%(?"..VAR_DECL..OPTSPACE.."%)?"
 local HO_FUNC_TYPE_SYMBOL="%(?"..VAR_DECL..OPTSPACE..ARG_VAR_LIST..OPTSPACE.."%)?"
@@ -230,7 +230,7 @@ local function common_parser(sym, deps, body, patterns, sep, opaque)
 end
 
 local qualifier_patterns = {
-	"^(long long)"..OPTSPACE, 
+	"^(long long)"..OPTSPACE,
 	"^([_%w$]+)"..OPTSPACE,
 }
 local function common_parse_qualifier(sym, src, ext_attr_list)
@@ -241,7 +241,7 @@ local function common_parse_qualifier(sym, src, ext_attr_list)
 	src = src:gsub("^%s+", ""):gsub("%s+$", "")
 	while true do
 		local found
-		local s, e, m 
+		local s, e, m
 		-- special treatment for evil "long long" (has space in keyword)
 		for _,pattern in ipairs(qualifier_patterns) do
 			s, e, m = match(src, pattern)
@@ -332,9 +332,9 @@ local TYPEDECL_PATTERN_LIST
 local function common_parse_type_decls(sym, deps, src)
 	local depslist = {}
 	common_parser(
-		sym, 
-		deps, 
-		src:gsub("^%,", ""), 
+		sym,
+		deps,
+		src:gsub("^%,", ""),
 		TYPEDECL_PATTERN_LIST,
 		"%,?",
 		depslist
@@ -345,9 +345,9 @@ end
 local STRUCT_PATTERN_LIST
 local function common_parse_struct_deps(sym, deps, struct_body, parent_struct)
 	return common_parser(
-		sym, 
-		deps, 
-		struct_body:sub(2, -2), 
+		sym,
+		deps,
+		struct_body:sub(2, -2),
 		STRUCT_PATTERN_LIST,
 		"%;",
 		parent_struct
@@ -358,8 +358,8 @@ local ARG_PATTERN_LIST
 local function common_parse_argument_deps(sym, deps, args_body)
 	return common_parser(
 		sym,
-		deps, 
-		args_body:sub(2, -2), 
+		deps,
+		args_body:sub(2, -2),
 		ARG_PATTERN_LIST,
 		"%,?"
 	)
@@ -367,7 +367,7 @@ end
 
 
 ---------------------------------------------------
--- type or var decl 
+-- type or var decl
 ---------------------------------------------------
 local VAR_DECL_CAPTURE=OPT_SPACE_OR_STAR..
 	"([_%w]+)"..OPTSPACE..
@@ -405,10 +405,10 @@ local function parse_var_decl_var_high_order_func(sym, opaque, deps, matches, sr
 end
 
 ---------------------------------------------------
--- typedef 
+-- typedef
 ---------------------------------------------------
--- typedef qualifier *type1_t[size1], *type2_t[size2], ..., *typeN_t[sizeN], 
--- *ftype1[fsize1](...), 
+-- typedef qualifier *type1_t[size1], *type2_t[size2], ..., *typeN_t[sizeN],
+-- *ftype1[fsize1](...),
 -- (*(*hoftype[hofsize])(...))(...); (currently upto 2 level higher order function)
 local TYPEDEF="^"..TYPEDEF_SYMBOL..SPACE..
 	"("..QUALIFIER..")"..OPTSPACE..
@@ -616,7 +616,7 @@ local function parse_struct_var_high_order_func(sym, opaque, deps, matches, src)
 	local argdeps = {}
 	common_parse_argument_deps(sym, deps, matches[3])
 	common_parse_argument_deps(sym, deps, matches[4])
-	table.insert(deps, typename)		
+	table.insert(deps, typename)
 end
 
 -- (struct/union/enum) {...} *val1, *val2, ..., *valN;
@@ -647,7 +647,7 @@ end
 ---------------------------------------------------
 -- argument decl
 ---------------------------------------------------
--- non_ext_qualifier type_t *val[size], 
+-- non_ext_qualifier type_t *val[size],
 local ARG_VAR="^"..
 	"("..QUALIFIER..")"..
 	"("..ALL_REMAINS_IN_ARG_DECL..")"
@@ -656,10 +656,10 @@ local function parse_arg_var(sym, opaque, deps, matches, src)
 	-- $2 : vardecls
 	local typename, attr = common_parse_qualifier(sym, matches[1], opaque)
 	assert(typename and #typename > 0, "invalid qualifier:["..matches[1].."]")
-	table.insert(deps, typename)	
+	table.insert(deps, typename)
 end
 
--- qualifier retval_t (**fval)(...) qualifier, 
+-- qualifier retval_t (**fval)(...) qualifier,
 local ARG_VAR_FUNC="^"..
 	"("..QUALIFIER..")"..SPACE_OR_STAR.."%(?"..SPACE_OR_STAR..
 	"("..OPT_TYPENAME..")"..OPTSPACE.."%)?"..OPTSPACE..
@@ -672,7 +672,7 @@ local function parse_arg_var_func(sym, opaque, deps, matches, src)
 	table.insert(deps, typename)
 end
 
--- qualifier retval_t ((**fval)(...))(...) qualifier, 
+-- qualifier retval_t ((**fval)(...))(...) qualifier,
 local ARG_VAR_HO_FUNC=HO_FUNC_DECL_CAPTURE
 local function parse_arg_var_high_order_func(sym, opaque, deps, matches, src)
 	local typename, attr = common_parse_qualifier(sym, matches[1], opaque)
@@ -705,7 +705,7 @@ MAIN_PATTERN_LIST = {
 STRUCT_PATTERN_LIST = {
 	STRUCT_VAR_HO_FUNC,
 	STRUCT_VAR_FUNC,
-	STRUCT_VAR_STRUCT,	
+	STRUCT_VAR_STRUCT,
 	STRUCT_VAR_ANON_STRUCT,
 	STRUCT_VAR_VARIABLE,
 }
@@ -718,7 +718,7 @@ ARG_PATTERN_LIST = {
 
 TYPEDECL_PATTERN_LIST = {
 	VAR_DECL_VAR_HO_FUNC,
-	VAR_DECL_VAR_FUNC, 
+	VAR_DECL_VAR_FUNC,
 	VAR_DECL_VAR,
 }
 
@@ -743,19 +743,19 @@ PARSER_MAP = {
 		[STRUCT_VAR_FUNC] = parse_struct_var_func,
 		[STRUCT_VAR_HO_FUNC] = parse_struct_var_high_order_func,
 		[STRUCT_VAR_ANON_STRUCT] = parse_struct_var_anon_struct,
-		[STRUCT_VAR_STRUCT] = parse_struct_var_struct,	
+		[STRUCT_VAR_STRUCT] = parse_struct_var_struct,
 	},
 	-- arg decl
 	[ARG_PATTERN_LIST] = {
 		[ARG_VAR] = parse_arg_var,
 		[ARG_VAR_FUNC] = parse_arg_var_func,
 		[ARG_VAR_HO_FUNC] = parse_arg_var_high_order_func,
-		[ARG_VAR_FUNC] = parse_arg_var_func,	
+		[ARG_VAR_FUNC] = parse_arg_var_func,
 	},
 	-- type decl
 	[TYPEDECL_PATTERN_LIST] = {
 		[VAR_DECL_VAR] = parse_var_decl_var,
-		[VAR_DECL_VAR_FUNC] = parse_var_decl_var_func, 
+		[VAR_DECL_VAR_FUNC] = parse_var_decl_var_func,
 		[VAR_DECL_VAR_HO_FUNC] = parse_var_decl_var_high_order_func,
 	}
 }
@@ -799,7 +799,7 @@ local function traverse_cdef(tree, symbol, injected, depth)
 	if not injected.lookup[symbol] then
 		injected.lookup[symbol] = true
 		-- it is possible that multiple symbols defined in same cdef
-		-- eg) typedef struct A {...} B; >> A and B is declared at the same time, 
+		-- eg) typedef struct A {...} B; >> A and B is declared at the same time,
 		-- so has same cdef. de-dupe that
 		if not injected.chunks[sym.cdef] then
 			injected.chunks[sym.cdef] = true

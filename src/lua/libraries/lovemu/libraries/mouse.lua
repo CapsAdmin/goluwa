@@ -19,7 +19,7 @@ function love.mouse.getY()
 end
 
 function love.mouse.setRelativeMode(b)
-	
+
 end
 
 local Cursor = {}
@@ -32,11 +32,11 @@ end
 
 function love.mouse.getCursor() -- partial
 	local obj = lovemu.CreateObject(Cursor)
-	
+
 	obj.getType = function()
 		return system.GetCursor()
 	end
-	
+
 	return obj
 end
 

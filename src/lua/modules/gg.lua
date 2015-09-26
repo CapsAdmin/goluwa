@@ -26,7 +26,7 @@
 -- * [gg.onkeyword()]
 -- * [gg.optkeyword()]
 --
--- Other functions: 
+-- Other functions:
 -- * [gg.parse_error()]
 -- * [gg.make_parser()]
 -- * [gg.is_parser()]
@@ -42,18 +42,18 @@ module("gg", package.seeall)
 local parser_metatable = { }
 function parser_metatable.__call (parser, lx, ...)
    --printf ("Call parser %q of type %q", parser.name or "?", parser.kind)
-   if mlc.metabugs then 
-      return parser:parse (lx, ...) 
-      --local x = parser:parse (lx, ...) 
-      --printf ("Result of parser %q: %s", 
+   if mlc.metabugs then
+      return parser:parse (lx, ...)
+      --local x = parser:parse (lx, ...)
+      --printf ("Result of parser %q: %s",
       --        parser.name or "?",
       --        _G.table.tostring(x, "nohash", 80))
       --return x
    else
       local li = lx:lineinfo_right() or { "?", "?", "?", "?" }
-      local status, ast = pcall (parser.parse, parser, lx, ...)      
+      local status, ast = pcall (parser.parse, parser, lx, ...)
       if status then return ast else
-         error (string.format ("%s\n - (l.%s, c.%s, k.%s) in parser %s", 
+         error (string.format ("%s\n - (l.%s, c.%s, k.%s) in parser %s",
                                ast:strmatch "gg.lua:%d+: (.*)" or ast,
                                li[1], li[2], li[3], parser.name or parser.kind))
       end
@@ -88,14 +88,14 @@ local function raw_parse_sequence (lx, p)
    local r = { }
    for i=1, #p do
       e=p[i]
-      if type(e) == "string" then 
+      if type(e) == "string" then
          if not lx:is_keyword (lx:next(), e) then
             parse_error (lx, "Keyword '%s' expected", e) end
       elseif is_parser (e) then
-         table.insert (r, e (lx)) 
-      else 
+         table.insert (r, e (lx))
+      else
          gg.parse_error (lx,"Sequence `%s': element #%i is not a string "..
-                         "nor a parser: %s", 
+                         "nor a parser: %s",
                          p.name, i, table.tostring(e))
       end
    end
@@ -134,19 +134,19 @@ end
 -------------------------------------------------------------------------------
 function parse_error(lx, fmt, ...)
    local li = lx:lineinfo_left() or {-1,-1,-1, "<unknown file>"}
-   local msg  = string.format("line %i, char %i: "..fmt, li[1], li[2], ...)   
+   local msg  = string.format("line %i, char %i: "..fmt, li[1], li[2], ...)
    local src = lx.src
    if li[3]>0 and src then
       local i, j = li[3], li[3]
       while src:sub(i,i) ~= '\n' and i>=0    do i=i-1 end
-      while src:sub(j,j) ~= '\n' and j<=#src do j=j+1 end      
+      while src:sub(j,j) ~= '\n' and j<=#src do j=j+1 end
       local srcline = src:sub (i+1, j-1)
       local idx  = string.rep (" ", li[2]).."^"
       msg = string.format("%s\n>>> %s\n>>> %s", msg, srcline, idx)
    end
    error(msg)
 end
-   
+
 -------------------------------------------------------------------------------
 --
 -- Sequence parser generator
@@ -165,7 +165,7 @@ end
 -- * [transformers]: a list of AST->AST functions, applied in order on ASTs
 --   returned by the parser.
 --
--- * Table-part entries corresponds to keywords (strings) and subparsers 
+-- * Table-part entries corresponds to keywords (strings) and subparsers
 --   (function and callable objects).
 --
 -- After creation, the following fields are added:
@@ -201,8 +201,8 @@ function sequence (p)
    -- Construction
    -------------------------------------------------------------------
    -- Try to build a proper name
-   if not p.name and type(p[1])=="string" then 
-      p.name = p[1].." ..." 
+   if not p.name and type(p[1])=="string" then
+      p.name = p[1].." ..."
       if type(p[#p])=="string" then p.name = p.name .. " " .. p[#p] end
    else
       p.name = "<anonymous>"
@@ -250,7 +250,7 @@ end --</sequence>
 -- * [kind] == "multisequence"
 --
 -------------------------------------------------------------------------------
-function multisequence (p)   
+function multisequence (p)
    make_parser ("multisequence", p)
 
    -------------------------------------------------------------------
@@ -260,7 +260,7 @@ function multisequence (p)
       -- compile if necessary:
       local keyword = s[1]
       if not is_parser(s) then sequence(s) end
-      if is_parser(s) ~= 'sequence' or type(keyword) ~= "string" then 
+      if is_parser(s) ~= 'sequence' or type(keyword) ~= "string" then
          if self.default then -- two defaults
             error ("In a multisequence parser, all but one sequences "..
                    "must start with a keyword")
@@ -281,13 +281,13 @@ function multisequence (p)
    -------------------------------------------------------------------
    -- Remove the sequence starting with keyword [kw :: string]
    -------------------------------------------------------------------
-   function p:del (kw) 
-      if not self.sequences[kw] then 
+   function p:del (kw)
+      if not self.sequences[kw] then
          eprintf("*** Warning: trying to delete sequence starting "..
                  "with %q from a multisequence having no such "..
                  "entry ***", kw) end
       local removed = self.sequences[kw]
-      self.sequences[kw] = nil 
+      self.sequences[kw] = nil
       return removed
    end
 
@@ -333,9 +333,9 @@ end --</multisequence>
 -- * the builder takes specific parameters:
 --   - for [prefix], it takes the result of the prefix sequence parser,
 --     and the prefixed expression
---   - for [infix], it takes the left-hand-side expression, the results 
+--   - for [infix], it takes the left-hand-side expression, the results
 --     of the infix sequence parser, and the right-hand-side expression.
---   - for [suffix], it takes the suffixed expression, and theresult 
+--   - for [suffix], it takes the suffixed expression, and theresult
 --     of the suffix sequence parser.
 --
 -- * the default field is a list, with parameters:
@@ -348,7 +348,7 @@ end --</multisequence>
 -- In [p], useful fields are:
 -- * [transformers]: as usual
 -- * [name]: as usual
--- * [primary]: the atomic expression parser, or a multisequence config 
+-- * [primary]: the atomic expression parser, or a multisequence config
 --   table (mandatory)
 -- * [prefix]:  prefix  operators config table, see above.
 -- * [infix]:   infix   operators config table, see above.
@@ -357,7 +357,7 @@ end --</multisequence>
 -- After creation, these fields are added:
 -- * [kind] == "expr"
 -- * [parse] as usual
--- * each table is turned into a multisequence, and therefore has an 
+-- * each table is turned into a multisequence, and therefore has an
 --   [add] method
 --
 -------------------------------------------------------------------------------
@@ -405,7 +405,7 @@ function expr (p)
             local e = p2.builder (op, self:parse (lx, p2.prec))
             local lli = lx:lineinfo_left()
             return transform (transform (e, p2, ili, lli), self, fli, lli)
-         else -- No prefix found, get a primary expression         
+         else -- No prefix found, get a primary expression
             local e = self.primary(lx)
             local lli = lx:lineinfo_left()
             return transform (e, self, fli, lli)
@@ -423,7 +423,7 @@ function expr (p)
 
          -----------------------------------------
          -- Handle flattening operators: gather all operands
-         -- of the series in [list]; when a different operator 
+         -- of the series in [list]; when a different operator
          -- is found, stop, build from [list], [transform] and
          -- return.
          -----------------------------------------
@@ -440,13 +440,13 @@ function expr (p)
             local e2 = pflat.builder (list)
             local lli = lx:lineinfo_left()
             return transform (transform (e2, pflat, fli, lli), self, fli, lli)
- 
+
          -----------------------------------------
          -- Handle regular infix operators: [e] the LHS is known,
          -- just gather the operator and [e2] the RHS.
          -- Result goes in [e3].
          -----------------------------------------
-         elseif p2.prec and p2.prec>prec or 
+         elseif p2.prec and p2.prec>prec or
                 p2.prec==prec and p2.assoc=="right" then
             local fli = e.lineinfo.first -- lx:lineinfo_right()
             local op = p2_func(lx)
@@ -457,7 +457,7 @@ function expr (p)
             return transform (transform (e3, p2, fli, lli), self, fli, lli)
 
          -----------------------------------------
-         -- Check for non-associative operators, and complain if applicable. 
+         -- Check for non-associative operators, and complain if applicable.
          -----------------------------------------
          elseif p2.assoc=="none" and p2.prec==prec then
             parse_error (lx, "non-associative operator!")
@@ -493,7 +493,7 @@ function expr (p)
       end --</expr.parse.handle_suffix>
 
       ------------------------------------------------------
-      -- Parser body: read suffix and (infix+operand) 
+      -- Parser body: read suffix and (infix+operand)
       -- extensions as long as we're able to fetch more at
       -- this precedence level.
       ------------------------------------------------------
@@ -559,17 +559,17 @@ function list (p)
    function p:parse (lx)
 
       ------------------------------------------------------
-      -- Used to quickly check whether there's a terminator 
+      -- Used to quickly check whether there's a terminator
       -- or a separator immediately ahead
       ------------------------------------------------------
-      local function peek_is_in (keywords) 
+      local function peek_is_in (keywords)
          return keywords and lx:is_keyword(lx:peek(), unpack(keywords)) end
 
       local x = { }
       local fli = lx:lineinfo_right()
 
       -- if there's a terminator to start with, don't bother trying
-      if not peek_is_in (self.terminators) then 
+      if not peek_is_in (self.terminators) then
          repeat table.insert (x, self.primary (lx)) -- read one element
          until
             -- First reason to stop: There's a separator list specified,
@@ -582,8 +582,8 @@ function list (p)
       end
 
       local lli = lx:lineinfo_left()
-      
-      -- Apply the builder. It can be a string, or a callable value, 
+
+      -- Apply the builder. It can be a string, or a callable value,
       -- or simply nothing.
       local b = self.builder
       if b then
@@ -615,7 +615,7 @@ end --</list>
 -- Keyword-conditionned parser generator
 --
 -------------------------------------------------------------------------------
--- 
+--
 -- Only apply a parser if a given keyword is found. The result of
 -- [gg.onkeyword] parser is the result of the subparser (modulo
 -- [transformers] applications).
@@ -634,7 +634,7 @@ end --</list>
 -- * [peek]: if non-nil, the conditionning keyword is left in the lexeme
 --   stream instead of being consumed.
 --
--- * [primary]: the subparser. 
+-- * [primary]: the subparser.
 --
 -- * [keywords]: list of strings representing triggering keywords.
 --
@@ -642,7 +642,7 @@ end --</list>
 --   Strings are put in [keywords], and the parser is put in [primary].
 --
 -- After the call, the following fields will be set:
---   
+--
 -- * [parse] the parsing method
 -- * [kind] == "onkeyword"
 -- * [primary]
@@ -674,7 +674,7 @@ function onkeyword (p)
       if type(x)=="string" then table.insert (p.keywords, x)
       else assert (not p.primary and is_parser (x)); p.primary = x end
    end
-   if not next (p.keywords) then 
+   if not next (p.keywords) then
       eprintf("Warning, no keyword to trigger gg.onkeyword") end
    assert (p.primary, 'no primary parser in gg.onkeyword')
    return p
@@ -688,7 +688,7 @@ end --</onkeyword>
 -------------------------------------------------------------------------------
 --
 -- This doesn't return a real parser, just a function. That function parses
--- one of the keywords passed as parameters, and returns it. It returns 
+-- one of the keywords passed as parameters, and returns it. It returns
 -- [false] if no matching keyword is found.
 --
 -- Notice that tokens returned by lexer already carry lineinfo, therefore
@@ -696,7 +696,7 @@ end --</onkeyword>
 -------------------------------------------------------------------------------
 function optkeyword (...)
    local args = {...}
-   if type (args[1]) == "table" then 
+   if type (args[1]) == "table" then
       assert (#args == 1)
       args = args[1]
    end
@@ -724,7 +724,7 @@ end
 function with_lexer(new_lexer, parser)
 
    -------------------------------------------------------------------
-   -- Most gg functions take their parameters in a table, so it's 
+   -- Most gg functions take their parameters in a table, so it's
    -- better to silently accept when with_lexer{ } is called with
    -- its arguments in a list:
    -------------------------------------------------------------------

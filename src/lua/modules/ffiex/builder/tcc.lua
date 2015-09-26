@@ -1,7 +1,7 @@
 local ffi = require 'ffiex.init'
 local lib
 
--- initialize cc 
+-- initialize cc
 local cc
 local function error_callback(self, msg)
 	msg = ffi.string(msg)
@@ -81,7 +81,7 @@ local function apply_option(self)
 				lib.tcc_add_library_path(self.state, p)
 			end
 		end
-	end	
+	end
 	if type(opts.lib) == 'table' then
 		for _,l in ipairs(opts.lib) do
 			lib.tcc_add_library(self.state, l)
@@ -119,7 +119,7 @@ function cc:build(code)
 		self.state = new_tcc()
 		self.build_once = nil
 		self.option_applied = nil
-	end	
+	end
 	if not self.option_applied then
 		self.option_applied = true
 		apply_option(self)

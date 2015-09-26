@@ -19,14 +19,14 @@ end
 
 function META:Fit(w, h)
 	local node = self:FindNode(self.root, w, h)
-	
-	if node then		
+
+	if node then
 		return self:SplitNode(node, w, h)
 	end
 end
 
-function utility.CreatePackedRectangle(w, h) 
-	return prototype.CreateObject(META, {root = {x = 0, y = 0, w = w, h = h}}) 
+function utility.CreatePackedRectangle(w, h)
+	return prototype.CreateObject(META, {root = {x = 0, y = 0, w = w, h = h}})
 end
 
 prototype.Register(META)

@@ -1,40 +1,40 @@
 local function insert_rect(node, w, h)
 	if node.left and node.right then
 		return insert_rect(node.left, w, h) or insert_rect(node.right, w, h)
-	elseif not node.used and (node.w >= w and node.h >= h) then		
+	elseif not node.used and (node.w >= w and node.h >= h) then
 		if w == node.w and h == node.h then
 			node.used = true
 			return node
 		end
-			
+
 		if node.w - w > node.h - h then
 			node.left = {
-				x = node.x, 
-				y = node.y, 
-				w = w, 
+				x = node.x,
+				y = node.y,
+				w = w,
 				h = node.h
 			}
 			node.right = {
-				x = node.x + w, 
-				y = node.y, 
-				w = node.w - w, 
+				x = node.x + w,
+				y = node.y,
+				w = node.w - w,
 				h = node.h,
 			}
 		else
 			node.left = {
-				x = node.x, 
-				y = node.y, 
-				w = node.w, 
+				x = node.x,
+				y = node.y,
+				w = node.w,
 				h = h
 			}
 			node.right = {
-				x = node.x, 
-				y = node.y + h, 
-				w = node.w, 
+				x = node.x,
+				y = node.y + h,
+				w = node.w,
 				h = node.h - h
 			}
 		end
-		
+
 		return insert_rect(node.left, w, h)
 	end
 end

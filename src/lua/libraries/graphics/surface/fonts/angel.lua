@@ -11,20 +11,20 @@ local TYPE_CHARS = 4
 
 function META:Initialize()
 	local buffer, err = vfs.Open(self.Path .. "/" .. (self.Path:match(".+/(.+)") or self.Path) .. ".fnt")
-	
+
 	if not buffer then
 		return false, err
 	end
-	
+
 	local magic = buffer:ReadString(4)
 	assert(magic == "BMF\3")
-	
+
 	self.char_data = {}
-	
+
 	repeat
 		local type = buffer:ReadByte()
 		local size = buffer:ReadInt()
-		
+
 		if type == TYPE_INFO then
 			local info = buffer:ReadStructure[[
 				short size;
@@ -41,7 +41,7 @@ function META:Initialize()
 				byte outline;
 				string fontName;
 			]]
-			
+
 			table.merge(self, info)
 		elseif type == TYPE_COMMON then
 			local info = buffer:ReadStructure[[unsigned short lineHeight;
@@ -55,15 +55,15 @@ function META:Initialize()
 				byte greenChnl;
 				byte blueChnl;
 			]]
-			
+
 			table.merge(self, info)
 		elseif type == TYPE_PAGES then
 			local count = self.pages
-			
+
 			self.pages = {}
 			for i = 1, count do
-				local name = buffer:ReadString()		
-				self.pages[i - 1] = {name = name, chars = {}, png = Texture(self.Path .. "/" .. name)}		
+				local name = buffer:ReadString()
+				self.pages[i - 1] = {name = name, chars = {}, png = Texture(self.Path .. "/" .. name)}
 			end
 		elseif type == TYPE_CHARS then
 			for i = 1, size / 20 do
@@ -79,22 +79,22 @@ function META:Initialize()
 					byte page;
 					byte chnl;
 				]]
-				
+
 				char.tex = self.pages[char.page].png
-				
+
 				self.pages[char.page].chars[utf8.byte(char.id)] = char
 				self.char_data[utf8.byte(char.id)] = char
 			end
 		else
 			buffer:Advance(size)
 		end
-		
-	until buffer:TheEnd()	
+
+	until buffer:TheEnd()
 end
 
 function META:GetGlyphData(code)
 	local info = self.char_data[code]
-	
+
 	if info then
 		--local buffer, len = info.tex:Download()
 		error("texture:Download needs x y w h region arguments!!!")

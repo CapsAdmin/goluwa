@@ -14,25 +14,25 @@ tex:SetupStorage()
 fb:SetTexture(1, tex)
 
 -- last argument stores this socket with the specified id and destroys previous socket with that id if called again
-local client = sockets.CreateClient("tcp", "localhost", 13854, "neurosky") 
+local client = sockets.CreateClient("tcp", "localhost", 13854, "neurosky")
 
 local function update_rt(eeg)
 	fb:Begin()
 		render.Start2D(0, 0, W, H)
 			surface.SetWhiteTexture()
 			surface.SetColor(1, 1, 1, 1)
-			
+
 			local x, y = system.GetTime() * 100 % W, H / 2 + eeg / 10
-			
+
 			surface.DrawLine(x, y, last_x, last_y)
-			
+
 			last_x = x
 			last_y = y
-			
-			if x < 5 then 
-				fb:Clear() 
+
+			if x < 5 then
+				fb:Clear()
 			end
-			
+
 		render.End2D()
 	fb:End()
 end
@@ -40,12 +40,12 @@ end
 event.AddListener("DrawHUD", "mindwave", function()
 	surface.SetTexture(fb:GetTexture(1))
 	surface.DrawRect(0,0, W,H)
-	
+
 	surface.SetFont("default")
 	surface.SetColor(1,1,1,1)
-		
+
 	local x, y = 5, 5
-	
+
 	for k,v in pairs(eeg_power) do
 		surface.SetTextPosition(x, y)
 		surface.DrawText(k .. " = " .. v)
@@ -54,16 +54,16 @@ event.AddListener("DrawHUD", "mindwave", function()
 end)
 
 client:Send(serializer.Encode("json", {
-	appName = "NodeThinkGear", 
-	appKey = "0fc4141b4b45c675cc8d3a765b8d71c5bde9390", 
-	format = "Json", 
+	appName = "NodeThinkGear",
+	appKey = "0fc4141b4b45c675cc8d3a765b8d71c5bde9390",
+	format = "Json",
 	enableRawOutput = true
 }))
 
 function client:OnReceive(data)
 	data = serializer.Decode("json", data)
-	
-	if data.rawEeg then			
+
+	if data.rawEeg then
 		update_rt(data.rawEeg)
 	elseif data.eegPower then
 		eeg_power = data.eegPower

@@ -2,7 +2,7 @@
 
 local require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
-pcall, type, table, string = 
+pcall, type, table, string =
 require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
 pcall, type, table, string
@@ -1512,7 +1512,7 @@ c.IP = strflag {
   DROP_SOURCE_MEMBERSHIP       = 40,
   MSFILTER                     = 41,
 
-  MULTICAST_ALL                = 49, 
+  MULTICAST_ALL                = 49,
   UNICAST_IF                   = 50,
 }
 
@@ -3115,7 +3115,7 @@ c.SWAP_FLAG = swapflags {
   DISCARD      = 0x10000,
 }
 
---c.FUTEX = 
+--c.FUTEX =
 
 -- iptables/xtables
 
@@ -3165,7 +3165,7 @@ c.TUN_READQ = strflag {
 }
 
 c.TUN = multiflags {
-  TUN_DEV    = 0x0001, 
+  TUN_DEV    = 0x0001,
   TAP_DEV    = 0x0002,
   TYPE_MASK  = 0x000f,
   FASYNC     = 0x0010,

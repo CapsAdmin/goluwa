@@ -26,22 +26,22 @@ expr:add{ "`", adt, builder = fget(1) }
 --------------------------------------------------------------------------------
 -- Anonymous lambda
 --------------------------------------------------------------------------------
-local lambda_expr = gg.sequence{ 
+local lambda_expr = gg.sequence{
    "|", func_params_content, "|", expr,
-   builder= function (x) 
+   builder= function (x)
       local li = x[2].lineinfo
-      return { tag="Function", x[1], 
+      return { tag="Function", x[1],
                { {tag="Return", x[2], lineinfo=li }, lineinfo=li } }
    end }
 
 -- In an earlier version, lambda_expr took an expr_list rather than an expr
 -- after the 2nd bar. However, it happened to be much more of a burden than an
--- help, So finally I disabled it. If you want to return several results, 
+-- help, So finally I disabled it. If you want to return several results,
 -- use the long syntax.
 --------------------------------------------------------------------------------
--- local lambda_expr = gg.sequence{ 
+-- local lambda_expr = gg.sequence{
 --    "|", func_params_content, "|", expr_list,
---    builder= function (x) 
+--    builder= function (x)
 --       return {tag="Function", x[1], { {tag="Return", unpack(x[2]) } } } end }
 
 expr:add (lambda_expr)
@@ -53,8 +53,8 @@ expr:add (lambda_expr)
 --------------------------------------------------------------------------------
 local function expr_in_backquotes (lx) return expr(lx, 35) end
 
-expr.infix:add{ name = "infix function", 
-   "`", expr_in_backquotes, "`", prec = 35, assoc="left", 
+expr.infix:add{ name = "infix function",
+   "`", expr_in_backquotes, "`", prec = 35, assoc="left",
    builder = function(a, op, b) return {tag="Call", op[1], a, b} end }
 
 
@@ -64,26 +64,26 @@ expr.infix:add{ name = "infix function",
 
 mlp.lexer:add "<-"
 stat.assignments["<-"] = function (a, b)
-   assert( #a==1 and #b==1, "No multi-args for '<-'")                         
+   assert( #a==1 and #b==1, "No multi-args for '<-'")
    return { tag="Call", { tag="Index", { tag="Id", "table" },
                                        { tag="String", "override" } },
-                        a[1], b[1]} 
+                        a[1], b[1]}
 end
 
 --------------------------------------------------------------------------------
 -- C-style op+assignments
 --------------------------------------------------------------------------------
-local function op_assign(kw, op) 
+local function op_assign(kw, op)
    local function rhs(a, b)
-      return { tag="Op", op, a, b } 
+      return { tag="Op", op, a, b }
    end
-   local function f(a,b) 
+   local function f(a,b)
       return { tag="Set", a, _G.table.imap(rhs, a, b) }
    end
    mlp.lexer:add (kw)
    mlp.stat.assignments[kw] = f
 end
 
-_G.table.iforeach (op_assign, 
+_G.table.iforeach (op_assign,
                 {"+=", "-=", "*=", "/="},
                 {"add", "sub", "mul", "div"})

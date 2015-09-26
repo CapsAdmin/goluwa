@@ -2002,7 +2002,7 @@ extern __attribute__((dllexport)) void SDL_QuitSubSystem(Uint32 flags);
 extern __attribute__((dllexport)) Uint32 SDL_WasInit(Uint32 flags);
 extern __attribute__((dllexport)) void SDL_Quit(void);
 ]]
-local enums =  { 
+local enums =  {
 SDL_ADDEVENT = 0,
 SDL_PEEKEVENT = 1,
 SDL_GETEVENT = 2,
@@ -2067,7 +2067,7 @@ SDL_HAPTIC_SPRING = bit.lshift(1,7),
 SDL_HAPTIC_DAMPER = bit.lshift(1,8),
 SDL_HAPTIC_INERTIA = bit.lshift(1,9),
 SDL_HAPTIC_FRICTION = bit.lshift(1,10),
-SDL_HAPTIC_CUSTOM = bit.lshift(1,11), 
+SDL_HAPTIC_CUSTOM = bit.lshift(1,11),
 SDL_HAPTIC_GAIN = bit.lshift(1,12),
 SDL_HAPTIC_AUTOCENTER = bit.lshift(1,13),
 SDL_HAPTIC_STATUS = bit.lshift(1,14),
@@ -2597,7 +2597,7 @@ SDL_FLIP_VERTICAL = 0x00000002 ,
 }
 
 ffi.cdef(header)
-  
+
 local lib = assert(ffi.load("SDL2"))
 
 local sdl = {
@@ -2612,20 +2612,20 @@ for line in header:gmatch("(.-)\n") do
 	if name then
 		local ok, err = pcall(function()
 			local func = lib["SDL_" .. name]
-			
-			if DEBUG then				
-				sdl[name] = function(...) 
+
+			if DEBUG then
+				sdl[name] = function(...)
 					local res = func(...)
-					
+
 					if name ~= "GetError" then
 						local err = ffi.string(sdl.GetError())
 						if err ~= "" then
 							sdl.ClearError()
 							error(err, 2)
 						end
-						
+
 						if sdl.logcalls then
-							setlogfile("sdl_calls")			
+							setlogfile("sdl_calls")
 								local args = {}
 								for i =  1, select("#", ...) do
 									local val = select(i, ...)
@@ -2635,7 +2635,7 @@ for line in header:gmatch("(.-)\n") do
 										args[#args+1] = serializer.GetLibrary("luadata").ToString(val)
 									end
 								end
-								
+
 								if not val then
 									logf("SDL_%s(%s)\n", name, table.concat(args, ", "))
 								else
@@ -2643,20 +2643,20 @@ for line in header:gmatch("(.-)\n") do
 									if sdl.reverse_enums[val] then
 										val = sdl.reverse_enums[val]
 									end
-									
+
 									logf("%s = SDL_%s(%s)\n", val, name, table.concat(args, ", "))
 								end
 							setlogfile()
 						end
 					end
-					
+
 					return res
 				end
 			else
 				sdl[name] = func
 			end
 		end)
-		
+
 		if not ok then
 			--print(err)
 		end
@@ -2674,7 +2674,7 @@ do
 	function sdl.EnumToString(num)
 		return reverse_enums[num]
 	end
-	
+
 	sdl.reverse_enums = reverse_enums
 end
 
@@ -2683,18 +2683,18 @@ function sdl.GenerateHeader()
 	os.execute("gcc -E " .. R("lua/libraries/low_level/ffi_binds/sdl/include/sdl.h") .. " -o gcc_output.h")
 	local content = vfs.Read("gcc_output.h")
 
-	
+
 	-- this is kinda stupid because of the SDLKey enums that are defined like " SDLK_SEMICOLON = ';' "
-	-- which would be replaced with "';\n'" and thus breaking luajit's c header parser 
+	-- which would be replaced with "';\n'" and thus breaking luajit's c header parser
 	-- so we have to use [^'] to make an exception for that
-	
+
 	content = content:gsub("# .-\n", "") -- remove the line directive comments
 	content = content:gsub("%s+", " ") -- remove excessive newlines
 	content = content:gsub(";[^']", ";\n")
 	content = content:gsub("({.-})", function(str) return str:gsub(",[^']", ",\n") end)
-	
-	vfs.Write(e.SRC_FOLDER .. "lua/libraries/low_level/ffi_binds/sdl/header.lua", "return [[" .. content .. "]]") 
-	
+
+	vfs.Write(e.SRC_FOLDER .. "lua/libraries/low_level/ffi_binds/sdl/header.lua", "return [[" .. content .. "]]")
+
 	-- eww
 	local enums = ""
 	for enum in content:gmatch("typedef enum {(.-)}") do
@@ -2711,15 +2711,15 @@ function sdl.GenerateHeader()
 			new = new:sub(0,-3)
 			enum = new
 		end
-		
+
 		if enum ~= "" then
 			enums = enums .. enum .. ",\n"
 		end
 	end
- 
-	vfs.Write(e.SRC_FOLDER .. "lua/libraries/low_level/sdl/enums.lua", "return {" .. enums .. "}") 
+
+	vfs.Write(e.SRC_FOLDER .. "lua/libraries/low_level/sdl/enums.lua", "return {" .. enums .. "}")
 end
- 
+
 sdl.events = {
 	SDL_QUIT = 0x100,
 	SDL_APP_TERMINATING = 0x101,
@@ -2761,7 +2761,7 @@ sdl.events = {
 	SDL_DROPFILE = 0x1000,
 	SDL_USEREVENT = 0x8000,
 }
- 
+
 sdl.window_events = {
 	SDL_WINDOWEVENT_NONE = 0,
 	SDL_WINDOWEVENT_SHOWN = 1,
@@ -2779,7 +2779,7 @@ sdl.window_events = {
 	SDL_WINDOWEVENT_FOCUS_LOST = 13,
 	SDL_WINDOWEVENT_CLOSE = 14,
 }
- 
+
 --sdl.GenerateHeader()
- 
+
 return sdl

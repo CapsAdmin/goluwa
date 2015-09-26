@@ -10,7 +10,7 @@ function META:__index(key)
 	elseif key == "r" then
 		return self.v.z
 	end
-	
+
 	return META[key]
 end
 
@@ -63,9 +63,9 @@ function META:Zero()
 end
 
 function gmod.env.Angle(p, y, r)
-	local self = {} 
-	
+	local self = {}
+
 	self.q = QuatDeg3(p, y, r)
-	
+
 	return setmetatable(self, META)
 end

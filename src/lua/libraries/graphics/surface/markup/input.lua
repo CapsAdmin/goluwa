@@ -100,9 +100,9 @@ end
 
 function META:OnMouseInput(button, press)
 	if #self.chunks == 0 then return end
-	
+
 	if button == "mwheel_up" or button == "mwheel_down" then return end
-	
+
 	local x, y = self:GetMousePosition():Unpack()
 
 	local chunk = self:CaretFromPixels(x, y).char.chunk
@@ -110,7 +110,7 @@ function META:OnMouseInput(button, press)
 	if chunk.type == "string" and chunk.chunks_inbetween then
 		chunk = chunk.chunks_inbetween[1]
 	end
-	
+
 	if chunk.type == "custom" and chunk.console and press then
 		console.RunString(str)
 		return
@@ -150,7 +150,7 @@ function META:OnMouseInput(button, press)
 
 		if press then
 			local caret = self:CaretFromPixels(x, y)
-			
+
 			self.select_start = self:CaretFromPixels(x + caret.w / 2, y)
 			self.select_stop = nil
 			self.mouse_selecting = true

@@ -31,7 +31,7 @@ local function generate(options, version)
 /* If you need to generate these options again, see options.lua */
 ]])
   printf([[
-/* 
+/*
   OpenSSL version: %s
 */
 ]], version)

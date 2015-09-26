@@ -26,7 +26,7 @@ end
 
 function META:handleInput()
 	local x, y = surface.ScreenToWorld(surface.GetMousePosition())
-	
+
 	-- Lower boundary
 	x = math.max(0, x);
 	y = math.max(0, y);
@@ -72,7 +72,7 @@ function META:draw()
 		for x = 0, self.cwidth - 1 do
 			local d00 = self.dens[self:IX(x, -y + self.cheight)];
 			d00 = math.min(0xff, d00);
-			
+
 			local index = (y * self.cwidth + x) * 4
 			bufferData[index].r = d00; -- RED
 			bufferData[index].g = d00; -- GREEN
@@ -80,9 +80,9 @@ function META:draw()
 			bufferData[index].a = 255; -- ALPHA
 		end
 	end
-	
+
 	self.canvas:Upload({buffer = bufferData})
-	
+
 	surface.SetTexture(self.canvas)
 	surface.SetColor(1,1,1,1)
 	surface.DrawRect(0, 0, self.cwidth, self.cheight)
@@ -190,7 +190,7 @@ function META:project()
 			self.u_prev[self:IX(i, j)] = 0;
 		end
 	end
-	
+
 	self:setBnd(0, self.v_prev);
 	self:setBnd(0, self.u_prev);
 
@@ -246,9 +246,9 @@ function META:addSource(current, prev)
 	end
 end
 
-function FField(resolution, debug) 
+function FField(resolution, debug)
 	local self = setmetatable({}, META)
-	
+
     self.debug = debug or false;
 
     self.gridResolution = resolution or 128;
@@ -270,11 +270,11 @@ function FField(resolution, debug)
     self.dens_prev = new_array(0, self.bufferSize);
 
     self.dt = 0.1;
-	
+
 	self.canvas = Texture(self.gridResolution, self.gridResolution)
 	self.cwidth = self.canvas.w
 	self.cheight = self.canvas.h
-	
+
 	return self
 end
 

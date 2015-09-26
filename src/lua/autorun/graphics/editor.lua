@@ -18,27 +18,27 @@ do -- PUT ME IN TRANSFORM
 	mctrl.target = NULL
 
 	local function get_axes(ang)
-		return 
+		return
 			ang:GetForward(),
 			ang:GetRight(),
 			ang:GetUp()
 	end
-	
+
 	local function get_target_pos_ang(pos, ang)
-		local parent = mctrl.target:GetParent()				
-		
+		local parent = mctrl.target:GetParent()
+
 		if parent:IsValid() and parent:HasComponent("transform") then
 			return math3d.WorldToLocal(pos, ang, parent:GetTRPosition(), parent:GetTRAngles())
 		end
-		
+
 		return pos, ang
 	end
-	
-	local function get_target_position(pos, ang) 
+
+	local function get_target_position(pos, ang)
 		return (get_target_pos_ang(pos, ang))
 	end
 
-	local function get_target_angles(pos, ang) 
+	local function get_target_angles(pos, ang)
 		return select(2, get_target_pos_ang(pos, ang))
 	end
 
@@ -62,11 +62,11 @@ do -- PUT ME IN TRANSFORM
 			local pos, ang = mctrl.target:GetTRPosition(), mctrl.target:GetTRAngles()
 			local forward, right, up = get_axes(ang)
 			local final
-					
+
 			if axis == AXIS_X then
 				local screen_pos = math3d.PointToAxis(pos, forward, mouse_pos)
 				local localpos = math3d.LinePlaneIntersection(pos, right, screen_pos)
-				
+
 				if localpos then
 					final = get_target_position(pos + localpos:GetDot(forward)*forward - forward*mctrl.size, ang)
 				end
@@ -86,12 +86,12 @@ do -- PUT ME IN TRANSFORM
 				end
 			elseif axis == AXIS_VIEW then
 				local localpos = math3d.LinePlaneIntersection(pos, render.camera_3d:GetAngles():GetForward(), mouse_pos)
-				
+
 				if localpos then
 					final = get_target_position(pos + localpos, ang)
 				end
 			end
-					
+
 			if final then
 				if input.IsKeyDown("left_shift") then
 					mctrl.temp_scale = mctrl.temp_scale or target:GetScale()
@@ -108,17 +108,17 @@ do -- PUT ME IN TRANSFORM
 	function mctrl.Rotate(axis, mouse_pos)
 		local target = mctrl.target
 		if target:IsValid() then
-			
+
 			local pos, ang = mctrl.target:GetTRPosition(), mctrl.target:GetTRAngles()
-			local forward, right, up = get_axes(ang) 
+			local forward, right, up = get_axes(ang)
 			local final
-			
+
 			if axis == AXIS_X then
 				local localpos = math3d.LinePlaneIntersection(pos, right, mouse_pos)
 				if localpos then
 					local diffang = (pos - (localpos + pos)):GetAngles()
 					diffang:RotateAroundAxis(right, math.rad(180))
-					
+
 					local _, localang = math3d.WorldToLocal(nil, diffang, nil, ang)
 					local _, newang = math3d.LocalToWorld(nil, Ang3(localang.x + localang.y, 0, 0):Normalize(), nil, ang)
 					final = get_target_angles(nil, newang)
@@ -136,7 +136,7 @@ do -- PUT ME IN TRANSFORM
 				end
 			elseif axis == AXIS_Z then
 				local localpos = math3d.LinePlaneIntersection(pos, forward, mouse_pos)
-				
+
 				if localpos then
 					local diffang = (pos - (localpos + pos)):GetAngles()
 					diffang:RotateAroundAxis(forward, math.rad(-90))
@@ -147,7 +147,7 @@ do -- PUT ME IN TRANSFORM
 					final = get_target_angles(nil, newang)
 				end
 			end
-			
+
 			if final then
 				target:SetRotation(Quat():SetAngles(final))
 			end
@@ -156,9 +156,9 @@ do -- PUT ME IN TRANSFORM
 
 	function mctrl.Draw()
 		local target = mctrl.target
-		
+
 		if not target:IsValid() or not target:HasComponent("transform") then return end
-		
+
 		local x, y = surface.GetMousePosition()
 		if mctrl.grab.axis and mctrl.grab.mode == MODE_MOVE then
 			mctrl.Move(mctrl.grab.axis, Vec2(x, y))
@@ -203,10 +203,10 @@ do -- PUT ME IN TRANSFORM
 			surface.DrawCircle(o.x, o.y, 4, 2, 32)
 		end
 	end
-		
+
 	function mctrl.MouseInput(key, press)
 		if not key == "button_1" then return end
-			
+
 		if not press then
 			mctrl.grab.mode = nil
 			mctrl.grab.axis = nil
@@ -214,13 +214,13 @@ do -- PUT ME IN TRANSFORM
 			mctrl.temp_scale = nil
 			return
 		end
-		
+
 		local target = mctrl.target
 		if not target:IsValid() or not target:HasComponent("transform") then return end
-		
+
 		local x, y = surface.GetMousePosition()
 		local pos, ang = mctrl.target:GetTRPosition(), mctrl.target:GetTRAngles()
-		
+
 		local forward, right, up = get_axes(ang)
 		local r = mctrl.size
 
@@ -284,27 +284,27 @@ function editor.Open()
 		render.InitializeGBuffer()
 		entities.world = entities.CreateEntity("world")
 	end
-	
+
 	gui.RemovePanel(editor.frame)
-	
+
 	local frame = gui.CreatePanel("frame")
 	frame:SetWidth(300)
 	frame:SetTitle(L"editor")
 	frame:SetIcon(frame:GetSkin().icons.application_edit)
 	editor.frame = frame
-	
+
 	local div = gui.CreatePanel("divider", frame)
 	div:SetupLayout("fill")
 	div:SetHideDivider(true)
-		
+
 	editor.top_scroll = div:SetTop(gui.CreatePanel("scroll"))
 	editor.bottom_scroll = div:SetBottom(gui.CreatePanel("scroll"))
-	
+
 	local tree
-	
+
 	local function show_tooltip(node, entered, x, y)
 		local ent = node.ent
-		
+
 		if entered then
 			local tooltip = gui.CreatePanel("text_button")
 			tooltip:SetPosition(Vec2(surface.GetMousePosition()))
@@ -317,18 +317,18 @@ function editor.Open()
 			gui.RemovePanel(node.tooltip)
 		end
 	end
-		
+
 	local function right_click_node(node)
 		if node then tree:SelectNode(node) end
-		
+
 		local options = {}
-		
+
 		local function add(...)
 			table.insert(options, {...})
 		end
-		
+
 		--add("wear", nil, frame:GetSkin().icons.wear)
-		
+
 		if node then
 			add(L"copy", function()
 				system.SetClipboard(assert(serializer.Encode("luadata", node.ent:GetStorableTable())))
@@ -341,7 +341,7 @@ function editor.Open()
 				ent:SetParent(node.ent:GetParent())
 				ent:SetStorableTable(node.ent:GetStorableTable())
 			end, frame:GetSkin().icons.clone)
-			
+
 			if node.ent:HasComponent("transform") then
 				add(L"goto", function()
 					render.camera_3d:SetPosition(node.ent:GetPosition())
@@ -349,38 +349,38 @@ function editor.Open()
 			end
 			add()
 		end
-		
-		
-		
+
+
+
 		local groups = {}
-		
+
 		for config_name, info in pairs(prototype.GetConfigurations()) do
 			local group
-			
+
 			local meta = #info.components == 1 and prototype.GetRegistered("component", info.components[1])
-			
-			if meta and meta.Base then		
+
+			if meta and meta.Base then
 				groups[meta.Base] = groups[meta.Base] or {configs = {}, icon = meta.Icon}
 				groups[meta.Base].configs[config_name] = info
-			else			
+			else
 				groups.default = groups.default or {configs = {}, icon = "textures/silkicons/shape_square.png"}
 				groups.default.configs[config_name] = info
 			end
 		end
-				
+
 		for group_name, group in pairs(groups) do
 			local tbl = {}
-			for config_name, info in pairs(group.configs) do		
-				table.insert(tbl, {L(info.name), function() 
-					local ent = entities.CreateEntity(config_name, node and node.ent) 
-					if ent.SetPosition then 
+			for config_name, info in pairs(group.configs) do
+				table.insert(tbl, {L(info.name), function()
+					local ent = entities.CreateEntity(config_name, node and node.ent)
+					if ent.SetPosition then
 						ent:SetPosition(render.camera_3d:GetPosition())
 					end
-				end, info.icon})				
+				end, info.icon})
 			end
 			add(L(group_name), tbl, group.icon) -- FIX ME
 		end
-	
+
 		add()
 		--add("help", nil, frame:GetSkin().icons.help)
 		add(L"paste", function()
@@ -391,20 +391,20 @@ function editor.Open()
 		end, frame:GetSkin().icons.paste)
 		add(L"save", nil, frame:GetSkin().icons.save)
 		add(L"load", nil, frame:GetSkin().icons.load)
-		
+
 		if node then
 			add()
-			add(L"remove", function() 
+			add(L"remove", function()
 				local node = tree:GetSelectedNode()
 				if node:IsValid() and node.ent:IsValid() then
 					node.ent:Remove()
 				end
 			end, frame:GetSkin().icons.clear)
 		end
-		
+
 		gui.CreateMenu(options, frame)
 	end
-	
+
 	local function fill(entities, node)
 		for key, ent in pairs(entities) do
 			if not ent:GetHideFromEditor() then
@@ -420,36 +420,36 @@ function editor.Open()
 				--node:SetIcon(Texture("textures/" .. frame:GetSkin().icons[val.self.ClassName]))
 				fill(ent:GetChildren(), node)
 			end
-		end  
+		end
 	end
-	
+
 	local function repopulate()
 		if not frame:IsValid() then return end
-				
+
 		gui.RemovePanel(tree)
-		
+
 		tree = frame:CreatePanel("tree")
 		editor.top_scroll:SetPanel(tree)
-		
+
 		local ents = {}
 		for k,v in pairs(entities.GetAll()) do
-			if not v:HasParent() then 
-				table.insert(ents, v) 
-			end 
+			if not v:HasParent() then
+				table.insert(ents, v)
+			end
 		end
 		fill(ents, tree)
 		tree:SetSize(tree:GetSizeOfChildren())
 		tree:SetWidth(frame:GetWidth())
-		
+
 		editor.top_scroll:SetAlwaysReceiveMouseInput(true)
-		
+
 		tree.OnNodeSelect = function(_, node)
 			gui.RemovePanel(editor.properties)
-			
+
 			local properties = frame:CreatePanel("properties")
-			
+
 			local found_anything = false
-			
+
 			for k, v in pairs(node.ent:GetComponents()) do
 				if next(prototype.GetStorableVariables(v)) then
 					properties:AddGroup(L(v.ClassName))
@@ -457,47 +457,47 @@ function editor.Open()
 					found_anything = true
 				end
 			end
-			
+
 			editor.bottom_scroll:SetPanel(properties)
-			
+
 			editor.properties = properties
-			
+
 			event.Call("EditorSelectEentity", node.ent)
 			editor.selected_ent = node.ent
-			mctrl.target = node.ent			
+			mctrl.target = node.ent
 		end
-		
+
 		tree.OnNodeDrop = function(_, node, dropped_node, drop_pos)
 			node.ent:AddChild(dropped_node.ent)
 			repopulate()
 		end
-		
+
 		editor.tree = tree
 	end
-	
+
 	--editor.top_scroll.OnRightClick = function() right_click_node() end
-	
+
 	event.AddListener("EntityCreated", "editor", function() event.DeferExecution(function() repopulate() end, 0.1, "editor_repopulate_hack") end)
-	event.AddListener("EntityRemoved", "editor", function() event.DeferExecution(function() repopulate() end, 0.1, "editor_repopulate_hack") end)	
-	event.AddListener("MouseInput", "editor", mctrl.MouseInput)	
-	event.AddListener("PreDrawMenu", "editor", mctrl.Draw)	
+	event.AddListener("EntityRemoved", "editor", function() event.DeferExecution(function() repopulate() end, 0.1, "editor_repopulate_hack") end)
+	event.AddListener("MouseInput", "editor", mctrl.MouseInput)
+	event.AddListener("PreDrawMenu", "editor", mctrl.Draw)
 	repopulate()
-	
+
 	tree:SetSize(tree:GetSizeOfChildren())
 	tree:SetWidth(frame:GetWidth()-20)
-	
+
 	frame.OnRightClick = function() right_click_node() end
-	
-	div:SetDividerPosition(gui.world:GetHeight()/2) 
-	
+
+	div:SetDividerPosition(gui.world:GetHeight()/2)
+
 	if editor.selected_ent:IsValid() then
 		editor.SelectEntity(editor.selected_ent)
-	elseif tree:GetChildren()[1] then 
+	elseif tree:GetChildren()[1] then
 		tree:SelectNode(tree:GetChildren()[1])
 	end
-		
-	window.SetMouseTrapped(false) 
-	
+
+	window.SetMouseTrapped(false)
+
 	frame:SetY(500)
 	frame:MoveLeft()
 	frame:FillY()
@@ -505,7 +505,7 @@ end
 
 function editor.Close()
 	gui.RemovePanel(editor.frame)
-	window.SetMouseTrapped(false) 
+	window.SetMouseTrapped(false)
 end
 
 function editor.Toggle()
@@ -515,7 +515,7 @@ function editor.Toggle()
 			window.SetMouseTrapped(true)
 		else
 			editor.frame:Minimize(true)
-			window.SetMouseTrapped(false) 
+			window.SetMouseTrapped(false)
 		end
 	else
 		editor.Open()
@@ -526,7 +526,7 @@ function editor.SelectEntity(ent)
 	editor.selected_ent = ent
 
 	if not editor.frame:IsValid() then return end
-	
+
 	for i, v in ipairs(editor.tree:GetChildren()) do
 		if v.ent == ent then
 			editor.tree:SelectNode(v)

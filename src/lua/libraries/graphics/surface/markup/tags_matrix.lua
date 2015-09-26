@@ -46,10 +46,10 @@ META.tags.translate =
 
 	pre_draw = function(markup, self, x, y, dx, dy)
 		surface.PushMatrix()
-		
+
 		surface.Translate(dx, dy)
 
-		
+
 	end,
 
 	post_draw = function()
@@ -67,7 +67,7 @@ META.tags.scale =
 
 	pre_draw = function(markup, self, x, y, scaleX, scaleY)
 		surface.PushMatrix()
-		
+
 		self.matrixDeterminant = scaleX * scaleY
 
 		if math.abs (self.matrixDeterminant) > 10 then
@@ -85,7 +85,7 @@ META.tags.scale =
 			end
 		surface.Translate(-x, -centerY)
 
-		
+
 
 		set_cull_clockwise(self.matrixDeterminant < 0)
 	end,
@@ -102,7 +102,7 @@ META.tags.scale =
 META.tags.size =
 {
 	arguments = {1},
-	
+
 	pre_draw = function(markup, self, x, y, size)
 		markup.tags.scale.pre_draw(markup, self, x, y, size, size)
 	end,
@@ -121,12 +121,12 @@ META.tags.rotate =
 
 		local center_x = self.tag_center_x
 		local center_y = self.tag_center_y
-		
+
 		surface.Translate(center_x, center_y)
 			surface.Rotate(deg)
 		surface.Translate(-center_x, -center_y)
 
-		
+
 	end,
 
 	post_draw = function()
@@ -150,7 +150,7 @@ META.tags.matrixez =
 		local centerY = self.tag_center_y
 
 		surface.PushMatrix()
-		
+
 		surface.Translate(x, centerY)
 			surface.Translate(X,Y)
 			surface.Scale(scaleX, scaleY)
@@ -164,7 +164,7 @@ META.tags.matrixez =
 			end
 		surface.Translate(x, -centerY)
 
-		
+
 
 		set_cull_clockwise(self.matrixDeterminant < 0)
 	end,
@@ -248,7 +248,7 @@ META.tags.matrix =
 		-- End of Cthulhu summoning
 
 		self.matrixDeterminant = detM2x2(a11, a12, a21, a22)
-		
+
 		surface.PushMatrix()
 
 		surface.Translate(x, y)
@@ -257,10 +257,10 @@ META.tags.matrix =
 			orthonormalM2x2ToVMatrix(q211, q212, q221, q222)
 				surface.Scale(scaleX, scaleY)
 			orthonormalM2x2ToVMatrix(q111, q112, q121, q122)
-			
+
 		surface.Translate(-x, -y)
 
-		
+
 
 		set_cull_clockwise(self.matrixDeterminant < 0)
 	end,

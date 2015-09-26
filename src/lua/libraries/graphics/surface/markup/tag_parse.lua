@@ -4,7 +4,7 @@ local function parse_tag_arguments(self, arg_line)
 	local out = {}
 	local str = {}
 	local in_lua = false
-	
+
 	for i, char in pairs(utf8.totable(arg_line)) do
 		if char == "[" then
 			in_lua = true
@@ -33,37 +33,37 @@ local function parse_tag_arguments(self, arg_line)
 		table.insert(out, table.concat(str, ""))
 		str = {}
 	end
-	
+
 	for k,v in pairs(out) do
 		if tonumber(v) then
 			out[k] = tonumber(v)
 		end
 	end
-					
+
 	return out
 end
 
 function META:StringTagsToTable(str)
 
 	str = tostring(str)
-	
-	str = str:gsub("<rep=(%d+)>(.-)</rep>", function(count, str) 
+
+	str = str:gsub("<rep=(%d+)>(.-)</rep>", function(count, str)
 		count = math.min(math.max(tonumber(count), 1), 500)
-		
-		if #str:rep(count):gsub("<(.-)=(.-)>", ""):gsub("</(.-)>", ""):gsub("%^%d","") > 500 then 
-			return "rep limit reached" 
+
+		if #str:rep(count):gsub("<(.-)=(.-)>", ""):gsub("</(.-)>", ""):gsub("%^%d","") > 500 then
+			return "rep limit reached"
 		end
-		
+
 		return str:rep(count)
 	end)
-	
+
 	local chunks = {}
 	local found = false
 
 	local in_tag = false
 	local current_string = {}
 	local current_tag = {}
-	
+
 	local last_font
 	local last_color
 
@@ -99,17 +99,17 @@ function META:StringTagsToTable(str)
 
 				if info then
 					local args = {}
-					
+
 					if not stop_tag then
 						info.arg_types = {}
-						
+
 						args = parse_tag_arguments(self, arg_str or "")
 
 						for i = 1, #info.arguments do
 							local arg = args[i]
 							local default = info.arguments[i]
 							local t = type(default)
-							
+
 							info.arg_types[i] = t == "table" and "number" or t
 
 							if t == "number" then
@@ -203,29 +203,29 @@ function META:StringTagsToTable(str)
 		chunks = {{type = "string", val = str}}
 	end
 
-	
-	-- text modifiers	
+
+	-- text modifiers
 	-- this wont work if you do markup:AddTable({"<strmod>sada  sad ad wad d asdasd", Color(1,1,1,1), "</strmod>"})
 	-- since it can only be applied to one markup.AddString(str, true) call
 	for i, chunk in ipairs(chunks) do
 		if chunk.type == "custom" and self.tags[chunk.val.type].modify_text then
 			local start_chunk = chunk
 			local func = self.tags[start_chunk.val.type].modify_text
-			
+
 			for i = i, #chunks do
 				local chunk = chunks[i]
-				
+
 				if chunk.type == "string" then
 					chunk.val = func(self, chunk, chunk.val, unpack(start_chunk.val.args)) or chunk.val
 				end
-				
+
 				if chunk.type == "tag_stopper" or (chunk.type == "custom" and chunk.val.type == start_chunk.val.type and chunk.val.stop_tag) then
 					break
 				end
 			end
 		end
 	end
-	
+
 	return chunks
 end
 

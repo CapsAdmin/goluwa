@@ -1,5 +1,5 @@
-local tex = Texture(64,64):Fill(function() 
-	return math.random(255), math.random(255), math.random(255), math.random(255) 
+local tex = Texture(64,64):Fill(function()
+	return math.random(255), math.random(255), math.random(255), math.random(255)
 end)
 
 local function blur_texture(dir)
@@ -7,10 +7,10 @@ local function blur_texture(dir)
 		//this will be our RGBA sum
 		vec4 sum = vec4(0.0);
 
-		//the amount to blur, i.e. how far off center to sample from 
+		//the amount to blur, i.e. how far off center to sample from
 		//1.0 -> blur by one pixel
 		//2.0 -> blur by two pixels, etc.
-		float blur = radius/resolution; 
+		float blur = radius/resolution;
 
 		//the direction of our blur
 		//(1.0, 0.0) -> x-axis blur
@@ -34,8 +34,8 @@ local function blur_texture(dir)
 
 		sum.a = 1;
 		return sum;
-	]], { 
-		radius = 1, 
+	]], {
+		radius = 1,
 		resolution = render.GetScreenSize(),
 		dir = dir,
 	})
@@ -43,11 +43,11 @@ end
 
 blur_texture(Vec2(0,5))
 blur_texture(Vec2(5,0))
-    
+
 event.AddListener("Draw2D", "lol", function()
 
 	surface.SetColor(1,1,1,1)
 	surface.SetTexture(tex)
 
 	surface.DrawRect(90, 50, 100, 100)
-end)  
+end)

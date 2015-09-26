@@ -19,7 +19,7 @@ function steam.FindGamePaths(force_cache_update)
 		steam._Traverse(steam.GetInstallPath() .. "/SteamApps", function(path, mode, count)
 			if mode == "file" and path:find("gameinfo.txt", -12, true) then
 				local data = vfs.Read(path)
-				
+
 				if data then
 					local name = data:match("game%s-\"([^\"]+)\"")
 					local appid = data:match("SteamAppId%s-(%d+)")
@@ -30,9 +30,9 @@ function steam.FindGamePaths(force_cache_update)
 							appid = appid,
 							path = path:match("^(.-)/?[^/]*$")
 						}
-						
+
 						llog("found %s with appid %s", name, appid)
-												
+
 						--table.sort(steam.paths)
 
 						steam.SaveGamePaths()
@@ -63,18 +63,18 @@ end
 
 function steam.GetLibraryFolders()
 	local base = steam.GetInstallPath()
-	
+
 	local tbl = {base .. "/steamapps/"}
-	
+
 	local config = steam.VDFToTable(assert(vfs.Read(base .. "/config/config.vdf", "r")))
 
 	for key, path in pairs(config.InstallConfigStore.Software.Valve.Steam) do
-		
+
 		if key:find("BaseInstallFolder_") then
 			table.insert(tbl, vfs.FixPath(path) .. "/steamapps/")
 		end
 	end
-	
+
 	return tbl
 end
 
@@ -85,13 +85,13 @@ function steam.GetGamePath(game)
 			return path
 		end
 	end
-	
+
 	return ""
 end
 
 function steam.GetGameFolders(skip_mods)
 	local games = {}
-	
+
 	for i, library in ipairs(steam.GetLibraryFolders()) do
 		for i, game in ipairs(vfs.Find(library .. "/common/", nil, true)) do
 			table.insert(games, game .. "/")
@@ -102,29 +102,29 @@ function steam.GetGameFolders(skip_mods)
 			end
 		end
 	end
-	
+
 	return games
 end
 
 function steam.GetSourceGames()
 	local found = {}
-	
+
 	for i, game_dir in ipairs(steam.GetGameFolders()) do
 		for i, folder in ipairs(vfs.Find("os:" .. game_dir, nil, true)) do
 			local path = folder .. "/gameinfo.txt"
 			local str = vfs.Read("os:" .. path)
 			local dir = path:match("(.+/).+/")
-			
-			if str then				
+
+			if str then
 				local tbl = steam.VDFToTable(str, true)
 				if tbl and tbl.gameinfo and tbl.gameinfo.game then
 					tbl = tbl.gameinfo
-					
+
 					tbl.game_dir = game_dir
-					
-					if tbl.filesystem then		
+
+					if tbl.filesystem then
 						local fixed = {}
-						
+
 						for k,v in pairs(tbl.filesystem.searchpaths) do
 							for k,v in pairs(type(v) == "string" and {v} or v) do
 								if v:find("|gameinfo_path|") then
@@ -134,20 +134,20 @@ function steam.GetSourceGames()
 								else
 									v = dir .. v
 								end
-								
+
 								table.insert(fixed, v)
 							end
 						end
-						
+
 						tbl.filesystem.searchpaths = fixed
-						
+
 						table.insert(found, tbl)
 					end
 				end
 			end
 		end
 	end
-	
+
 	return found
 end
 
@@ -158,32 +158,32 @@ function steam.MountSourceGame(game_info)
 	if cache_mounted[game_info] then
 		return cache_mounted[game_info]
 	end
-	
+
 	local str_game_info
 
-	if type(game_info) == "string" then 
+	if type(game_info) == "string" then
 		str_game_info = game_info
 		game_info = steam.FindSourceGame(str_game_info)
 	end
-	
+
 	if not game_info then return nil, "could not find " .. str_game_info end
-		
+
 	steam.UnmountSourceGame(game_info)
-	
+
 	local done = {}
-		
-	for i, path in pairs(game_info.filesystem.searchpaths) do		
+
+	for i, path in pairs(game_info.filesystem.searchpaths) do
 		local path = "os:" .. path
-	
+
 		if path:endswith("/.") then
 			path = path:sub(0, -2)
 		end
-		
+
 		if not done[path] and vfs.Exists(path) then
 			if not vfs.GetMounts()[path] then
 				vfs.Mount(path, nil, game_info)
 			end
-			
+
 			if vfs.IsDir(path .. "addons/") then
 				for k, v in pairs(vfs.Find(path .. "addons/")) do
 					if vfs.IsDir(path .. "addons/" .. v) or v:endswith(".gma") then
@@ -192,13 +192,13 @@ function steam.MountSourceGame(game_info)
 					end
 				end
 			end
-			
+
 			if vfs.IsDir(path .. "maps/workshop/") then
 				for k, v in pairs(vfs.Find(path .. "maps/workshop/")) do
 					vfs.Mount(path .. "maps/workshop/" .. v, "maps/", game_info)
 				end
 			end
-						
+
 			-- garry's mod exceptions..
 			if game_info.filesystem.steamappid == 4000 then
 				for k, v in pairs(vfs.Find(game_info.game_dir .. "sourceengine/")) do
@@ -210,7 +210,7 @@ function steam.MountSourceGame(game_info)
 					end
 				end
 			end
-			
+
 			if vfs.IsDir(path) then
 				if not path:endswith("/") then
 					path = path .. "/"
@@ -218,8 +218,8 @@ function steam.MountSourceGame(game_info)
 
 				if vfs.IsDir(path .. "download/") and not vfs.GetMounts()[path .. "download/"] then
 					vfs.Mount(path .. "download/", nil, game_info)
-				end				
-				
+				end
+
 				for k, v in pairs(vfs.Find(path)) do
 					if not done[path .. v] then
 						if v:find("%.vpk") and v:find("_dir") and not vfs.GetMounts()[path .. v .. "/"] then
@@ -231,33 +231,33 @@ function steam.MountSourceGame(game_info)
 			end
 		end
 	end
-	
+
 	if str_game_info then
 		cache_mounted[str_game_info] = game_info
 	end
-	
+
 	return game_info
 end
 
 function steam.UnmountSourceGame(game_info)
 	local str_game_info = game_info
-	
-	if type(game_info) == "string" then 
+
+	if type(game_info) == "string" then
 		cache_mounted[game_info] = nil
 		str_game_info = game_info
-		game_info = steam.FindSourceGame(game_info) 
+		game_info = steam.FindSourceGame(game_info)
 	end
-	
+
 	if not game_info then return nil, "could not find " .. str_game_info end
-	
+
 	if game_info then
 		for k, v in pairs(vfs.GetMounts()) do
 			if v.userdata and v.userdata.filesystem.steamappid == game_info.filesystem.steamappid then
-				vfs.Unmount(v.full_where, v.full_to)				
+				vfs.Unmount(v.full_where, v.full_to)
 			end
 		end
 	end
-	
+
 	return game_info
 end
 
@@ -299,40 +299,40 @@ local name_translate = {
 	["ep1"] = "episodic",
 }
 
-function steam.FindSourceGame(name)	
+function steam.FindSourceGame(name)
 	local games = steam.GetSourceGames()
-	
+
 	if type(name) == "number" then
 		for i, game_info in ipairs(games) do
-			if game_info.filesystem.steamappid == name then 
+			if game_info.filesystem.steamappid == name then
 				return game_info
 			end
 		end
 	else
 		local id = translate[name:lower()]
-		
+
 		if id then
 			for i, game_info in ipairs(games) do
-				if game_info.filesystem.steamappid == id then 
+				if game_info.filesystem.steamappid == id then
 					return game_info
 				end
 			end
 		end
-	
+
 		for i, game_info in ipairs(games) do
-			if game_info.game:lower() == name then 
+			if game_info.game:lower() == name then
 				return game_info
 			end
 		end
-			
+
 		for i, game_info in ipairs(games) do
-			if game_info.game:compare(name) then 
+			if game_info.game:compare(name) then
 				return game_info
 			end
 		end
-			
+
 		for i, game_info in ipairs(games) do
-			if game_info.filesystem.searchpaths.mod and game_info.filesystem.searchpaths.mod:compare(name) then 
+			if game_info.filesystem.searchpaths.mod and game_info.filesystem.searchpaths.mod:compare(name) then
 				return game_info
 			end
 		end
@@ -370,7 +370,7 @@ function steam.MountGamesFromPath(path)
 
 	if name then
 		local mounts = mount_info[name]
-		
+
 		if not mounts then
 			for k,v in pairs(mount_info) do
 				if name:find(k) then
@@ -379,7 +379,7 @@ function steam.MountGamesFromPath(path)
 				end
 			end
 		end
-		
+
 		if mounts then
 			for _, mount in ipairs(mounts) do
 				steam.MountSourceGame(mount)

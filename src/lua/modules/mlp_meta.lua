@@ -99,7 +99,7 @@ end
 -- Parse the inside of a "+{ ... }"
 --------------------------------------------------------------------------------
 function quote_content (lx)
-   local parser 
+   local parser
    if lx:is_keyword (lx:peek(2), ":") then -- +{parser: content }
       parser = mlp[id(lx)[1]]
       lx:next()

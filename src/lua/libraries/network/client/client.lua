@@ -21,7 +21,7 @@ function META:GetNick()
 			return ("%s(%s)"):format(self.nv.Nick, self:GetUniqueID())
 		end
 	end
-	
+
 	return self.nv.Nick or "PubePurse"
 end
 
@@ -29,19 +29,19 @@ function META:__tostring2()
 	return string.format("[%s][%s]", self:GetName(), self:GetUniqueID())
 end
 
-function META:GetName()	
+function META:GetName()
 	return self.nv and self.nv.Nick or self:GetUniqueID()
 end
 
-function META:OnRemove()	
+function META:OnRemove()
 	self.nv:Remove()
 	clients.active_clients[self:GetUniqueID()] = nil
-	if SERVER then 
+	if SERVER then
 		if self.socket:IsValid() then
 			self.socket:Disconnect(--[[removed]])
 		end
 	end
-end	
+end
 
 function META:GetUniqueColor()
 	local r,g,b = tostring(crypto.CRC32(self:GetUniqueID())):match(("(%d%d%d)"):rep(3))
@@ -55,12 +55,12 @@ if SERVER then
 		if self.socket:IsValid() then
 			network.HandleMessage(self.socket, network.DISCONNECT, reason or "kicked")
 		end
-		
+
 		if self:IsBot() then
 			event.Call("ClientLeft", self:GetName(), self:GetUniqueID(), reason, self)
 			event.BroadcastCall("ClientLeft", self:GetName(), self:GetUniqueID(), reason)
 			network.BroadcastMessage(network.DISCONNECT, self:GetUniqueID(), reason)
-		
+
 			self:Remove()
 		end
 	end

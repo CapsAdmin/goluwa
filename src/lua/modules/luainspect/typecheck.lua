@@ -22,7 +22,7 @@ return function(context)
   ast.previous = ast; ast.parent = ast
   ast.seevalue = ast; ast.seenote=ast
   setmetatable(ast, ast_mt)
-  
+
   ast[1] = ast; ast[2] = ast
   context.apply_value('ast$', ast)
 
@@ -30,7 +30,7 @@ return function(context)
   context.apply_value('token$', T.table{
     tag=T.string, fpos=T.number, lpos=T.number, keywordid=T.number, ast=ast, [1]=T.string
   })
-  
+
   -- Lua source code string type.
   context.apply_value('src$', '')
 

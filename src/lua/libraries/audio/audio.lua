@@ -10,7 +10,7 @@ alc.debug = true
 
 audio.effect_channels = audio.effect_channels or utility.CreateWeakTable()
 
-function audio.Initialize(name)	
+function audio.Initialize(name)
 	os.setenv("ALSOFT_CONF", "./al_config.ini")
 	audio.Shutdown()
 
@@ -39,7 +39,7 @@ function audio.Initialize(name)
 
 	audio.device = device
 	audio.context = context
-	
+
 	event.AddListener("ShutDown", "openal", audio.Shutdown)
 end
 
@@ -65,7 +65,7 @@ end
 
 function audio.GetAllOutputDevices()
 	local list = ffi.cast("unsigned char *", alc.GetString(nil, alc.e.ALC_ALL_DEVICES_SPECIFIER))
-	
+
 	local devices = {}
 
 	local temp = {}
@@ -88,37 +88,37 @@ end
 
 function audio.GetAvailableEffects()
 	local effects = al.GetAvailableEffects()
-	
+
 	local out = {}
-	
+
 	for k, v in pairs(effects) do
 		local tbl = {}
-		
+
 		for k, v in pairs(v.params) do
 			tbl[k] = {max = v.max, min = v.min, default = v.default}
 		end
-		
+
 		out[k] = tbl
 	end
-	
+
 	return out
 end
 
 function audio.GetAvailableFilters()
 	local effects = al.GetAvailableFilters()
-	
+
 	local out = {}
-	
+
 	for k, v in pairs(effects) do
 		local tbl = {}
-		
+
 		for k, v in pairs(v.params) do
 			tbl[k] = {max = v.max, min = v.min, default = v.default}
 		end
-		
+
 		out[k] = tbl
 	end
-	
+
 	return out
 end
 
@@ -166,16 +166,16 @@ do
 		exponent = e.AL_EXPONENT_DISTANCE,
 		exponent_clamped = e.AL_EXPONENT_DISTANCE_CLAMPED,
 	}
-	
+
 	function audio.SetDistanceModel(name)
 		local enum = translate[name]
-		
+
 		if not enum then
 			error("unknown distance model " .. name, 2)
 		end
-		
+
 		al.DistanceModel(enum)
-		
+
 		audio.distance_model = name
 	end
 
@@ -316,7 +316,7 @@ local function GET_BINDER(META, object_name)
 		end
 	end
 end
- 
+
 local function GEN_TEMPLATE(type, ctor, on_remove)
 	local type2 = type:lower()
 
@@ -330,7 +330,7 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 	local set_fv = al[type.."fv"]
 	local set_f = al[type.."f"]
 	local temp = ffi.new("float[3]")
-	
+
 	-- todo: move this to metatable?
 	META.is_audio_object = true
 
@@ -355,7 +355,7 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 		elseif x then
 			set_f(self.id, key, x)
 		end
-		
+
 		if self.slots then
 			for id, slot in pairs(self.slots) do
 				slot:SetEffect(self)
@@ -368,7 +368,7 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 	local temp = ffi.new("float[3]")
 
 	function META:GetParam(key)
-		
+
 		if self.params and self.params[key] then
 			local val = x or self.params[key].default
 
@@ -387,7 +387,7 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 	end
 
 	local key = "Gen" .. type
- 
+
 	local create = function(...)
 		local self = prototype.CreateObject(META)
 
@@ -396,7 +396,7 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 		if ctor then
 			ctor(self, ...)
 		end
-		
+
 		return self
 	end
 
@@ -431,48 +431,48 @@ do -- source
 	local META = GEN_TEMPLATE("Source", function(self, var, length, info)
 
 		self.effects = {}
-		
+
 		if type(var) == "cdata" and type(length) == "cdata" or type(length) == "number" then
-			
+
 			local buffer = audio.CreateBuffer()
-			
+
 			if type(info) == "table" and info.samplerate and info.channels then
 				buffer:SetFormat(info.channels == 1 and al.e.AL_FORMAT_MONO16 or al.e.AL_FORMAT_STEREO16)
 				buffer:SetSampleRate(info.samplerate)
 				self.decode_info = info
 			end
-			
+
 			buffer:SetData(var, length)
 			self:SetBuffer(buffer)
-			
+
 		elseif typex(var) == "buffer" then
 			self:SetBuffer(var)
-		elseif type(var) == "string" then		
+		elseif type(var) == "string" then
 			resource.Download(var, function(path)
 				local data = vfs.Read(path)
-				
+
 				local data, length, info = audio.Decode(data, var)
-				
+
 				if data then
 					local buffer = audio.CreateBuffer()
 					buffer:SetFormat(info.channels == 1 and al.e.AL_FORMAT_MONO16 or al.e.AL_FORMAT_STEREO16)
 					buffer:SetSampleRate(info.samplerate)
 					buffer:SetData(data, length)
-					
+
 					self:SetBuffer(buffer)
 
 					self.decode_info = info
 					self.ready = true
 
 					-- in case it's instantly loaded and OnLoad is defined the same frame
-					event.Delay(0, function() 
-						if self:IsValid() and self.OnLoad then 
+					event.Delay(0, function()
+						if self:IsValid() and self.OnLoad then
 							self:OnLoad(info)
 							if self.play_when_ready then
 								self:Play()
 								self.play_when_ready = nil
 							end
-						end 
+						end
 					end)
 				end
 			end)
@@ -508,7 +508,7 @@ do -- source
 	function META:Rewind()
 		al.SourceRewind(self.id)
 	end
-	
+
 	function META:IsPlaying()
 		return self:GetState() == al.e.AL_PLAYING
 	end
@@ -542,7 +542,7 @@ do -- source
 	do
 		prototype.GetSet(META, "BufferCount", 4)
 		prototype.GetSet(META, "BufferFormat", al.e.AL_FORMAT_STEREO16)
-		
+
 		local buffers = ffi.new("ALuint[1]")
 		local pushed = {}
 
@@ -558,7 +558,7 @@ do -- source
 			al.SourceUnqueueBuffers(self.id, 1, buffers)
 			return pushed[buffers[0]] or NULL
 		end
-		
+
 		function META:FeedBuffer(buffer, length)
 			if not self.pushed_feed_buffers or self.pushed_feed_buffers < self.BufferCount then
 				local b = audio.CreateBuffer()
@@ -568,22 +568,22 @@ do -- source
 				self.pushed_feed_buffers = (self.pushed_feed_buffers or 0) + 1
 			else
 				local val = self:GetBuffersProcessed()
-				
+
 				for i = 1, val do
 					local b = self:PopBuffer()
 					if b:IsValid() then
 						b:SetData(buffer, length)
 						self:PushBuffer(b)
 					end
-				end	
+				end
 			end
-			
+
 			if not self:IsPlaying() then
 				self:Play()
 			end
 		end
 	end
-	 
+
 	do
 		-- http://wiki.delphigl.com/index.php/alGetSource
 
@@ -609,7 +609,7 @@ do -- source
 		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "Buffer", "i", al.e.AL_BUFFER)
 		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "Filter", "i", al.e.AL_DIRECT_FILTER)
 	end
-	
+
 	do
 		local old = META.SetPitch
 		function META:SetPitch(num)
@@ -618,22 +618,22 @@ do -- source
 					local data, size = self:GetBuffer():GetData()
 					local eek = tostring(ffi.typeof(data)):match("<(.-) ")
 					local length = tonumber(size / ffi.sizeof(eek))
-					
+
 					local buffer = ffi.new(eek .. "[?]", size)
-					
+
 					for i = 0, length - 1 do
 						buffer[i] = data[-i+length + 1]
 					end
-					
+
 					self.reverse_source = audio.CreateSource(buffer, size)
 				end
-				
+
 				if self:IsPlaying() then
 					self.reverse_source:Play()
 					self:Stop()
 				end
 				self.reverse_source:SetPitch(-num)
-												
+
 				return
 			end
 			old(self, num)
@@ -651,9 +651,9 @@ do -- source
 
 		local slot = audio.CreateAuxiliaryEffectSlot()
 		slot:SetEffect(effect)
-		
+
 		effect.slots[id] = slot
-		
+
 		table.insert(self.effects, {id = id, slot = slot, effect = effect})
 
 		self:SetAuxiliaryEffectSlot(slot, #self.effects)
@@ -670,14 +670,14 @@ do -- source
 			end
 		end
 	end
-	
+
 	prototype.Register(META)
 end
 
 do -- buffer
 	local META = GEN_TEMPLATE("Buffer", function(self, data, size, format, sample_rate, start_loop, stop_loop)
 		if data and size then
-			if format then 
+			if format then
 				self:SetFormat(format)
 			end
 			if sample_rate then
@@ -706,11 +706,11 @@ do -- buffer
 		ADD_FUNCTION("AL_LOOP_POINTS", "iv")
 
 	end
-	
+
 	function META:GetLength()
 		return self:GetSize() * 8 / (self:GetChannels() * self:GetBits())
 	end
-	
+
 	function META:GetDuration()
 		return self:GetLength() / self:GetFrequency()
 	end
@@ -728,7 +728,7 @@ do -- buffer
 
 		return nil, 0
 	end
-	
+
 	prototype.Register(META)
 end
 
@@ -737,7 +737,7 @@ do -- effect
 
 	local META = GEN_TEMPLATE("Effect", function(self, var, override_params)
 		self.slots = {}
-	
+
 		if available[var] then
 			self:SetType(available[var].enum)
 			self.params = table.copy(available[var].params)
@@ -767,7 +767,7 @@ do -- effect
 	function META:GetParams()
 		return self.params
 	end
-	
+
 	prototype.Register(META)
 end
 
@@ -791,7 +791,7 @@ do -- filter
 		local ADD_FUNCTION = GET_BINDER(META, "Filter")
 		ADD_FUNCTION("Type", "i", al.e.AL_FILTER_TYPE)
 	end
-	
+
 	prototype.Register(META)
 end
 
@@ -812,7 +812,7 @@ do -- auxiliary effect slot
 	function META:GetParams()
 		return self.params
 	end
-	
+
 	prototype.Register(META)
 end
 
@@ -824,19 +824,19 @@ do -- microphone
 	function META:Start(func)
 		alc.CaptureStart(self.id)
 	end
-	
+
 	function META:Stop()
 		alc.CaptureStop(self.id)
 		self.stopped = true
 	end
 
 	function META:FeedSource(source)
-	
+
 		source:SetLooping(false)
 
 		-- fill it with some silence first so we can pop safely (???)
 		source:PushBuffer(audio.CreateBuffer(ffi.new("ALshort[4]"), 4))
-		
+
 		event.CreateThinker(function()
 			if not self:IsValid() or self.stopped then return true end
 
@@ -901,7 +901,7 @@ do -- microphone
 		self.buffer_size = buffer_size
 
 		self.id = alc.CaptureOpenDevice(name, sample_rate, format, buffer_size)
-		
+
 		return self
 	end
 
@@ -927,7 +927,7 @@ end
 function audio.Decode(data, path_hint)
 	for i, decoder in ipairs(audio.decoders) do
 		local ok, buffer, length, info = pcall(decoder.callback, data, path_hint)
-		if ok then 
+		if ok then
 			if buffer and length then
 				return buffer, length, info or {}
 			elseif audio.debug or not length:find("unknown format") then

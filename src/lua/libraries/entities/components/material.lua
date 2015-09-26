@@ -49,9 +49,9 @@ event.AddListener("GBufferInitialized", "register_material_components", function
 		prototype.StartStorable()
 			prototype.DelegateProperties(COMPONENT, meta, "mat")
 		prototype.EndStorable()
-		
+
 		prototype.RegisterComponent(COMPONENT)
-		
+
 		prototype.SetupComponents(COMPONENT.Name, {COMPONENT.Name}, COMPONENT.Icon)
-	end  
+	end
 end)

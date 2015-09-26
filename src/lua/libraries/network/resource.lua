@@ -13,15 +13,15 @@ vfs.CreateFolder(e.DOWNLOAD_FOLDER)
 vfs.Mount("os:" .. e.DOWNLOAD_FOLDER, "downloads")
 
 function resource.AddProvider(provider)
-	for i,v in ipairs(resource.providers) do 
-		if v == provider then 
-			table.remove(resource.providers, i) 
-			break 
+	for i,v in ipairs(resource.providers) do
+		if v == provider then
+			table.remove(resource.providers, i)
+			break
 		end
 	end
-	
+
 	table.insert(resource.providers, provider)
-	
+
 	sockets.Download(provider .. "auto_download.txt", function(str)
 		for i,v in ipairs(serializer.Decode("newline", str)) do
 			resource.Download(v)
@@ -33,8 +33,8 @@ local function download(from, to, callback, on_fail, on_header)
 	local file
 
 	return sockets.Download(
-		from, 
-		function()			
+		from,
+		function()
 			file:Close()
 			local full_path = R("os:" .. e.DOWNLOAD_FOLDER .. to)
 			if full_path then
@@ -44,14 +44,14 @@ local function download(from, to, callback, on_fail, on_header)
 				warning("resource download error: %q not found!", "data/downloads/" .. to)
 				on_fail()
 			end
-		end, 
+		end,
 		function(...)
-			on_fail(...)			
-		end, 
+			on_fail(...)
+		end,
 		function(chunk)
 			file:Write(chunk)
 		end,
-		function(header)			
+		function(header)
 			vfs.CreateFolders("os", e.DOWNLOAD_FOLDER .. to)
 			file, err = vfs.Open("os:" .. e.DOWNLOAD_FOLDER .. to, "write")
 
@@ -60,14 +60,14 @@ local function download(from, to, callback, on_fail, on_header)
 				on_fail()
 				return false
 			end
-			
+
 			on_header(header)
 		end
-	)	
+	)
 end
 
 local function download_from_providers(path, callback, on_fail)
-	
+
 	if event.Call("ResourceDownload", path, callback, on_fail) ~= nil then
 		return
 	end
@@ -75,13 +75,13 @@ local function download_from_providers(path, callback, on_fail)
 	if #resource.providers == 0 then
 		on_fail("[resource] no providers added\n")
 	return end
-	
+
 	local failed = 0
-	
+
 	for i, provider in ipairs(resource.providers) do
 		download(
-			provider .. path, 
-			path, 
+			provider .. path,
+			path,
 			callback,
 			function(...)
 				failed = failed + 1
@@ -89,7 +89,7 @@ local function download_from_providers(path, callback, on_fail)
 					on_fail(...)
 				end
 			end,
-			function() 
+			function()
 				for i, other_provider in ipairs(resource.providers) do
 					if provider ~= other_provider then
 						sockets.AbortDownload(other_provider .. path)
@@ -106,27 +106,27 @@ local cb = utility.CreateCallbackThing()
 function resource.Download(path, callback, on_fail, crc)
 	check(path, "string")
 	on_fail = on_fail or logn
-		
+
 	local url
-	
-	if path:find("^(.-)://") then 
+
+	if path:find("^(.-)://") then
 		url = path
 		local ext = url:match(".+(%.%a+)") or ".dat"
 		path = "cache/" .. (crc or crypto.CRC32(path)) .. ext
 	end
-	
+
 	local path2 = R(path)
-	
+
 	if not path2 then
 		local path = R(path:lower())
-		if path then 
-			path2 = path 
+		if path then
+			path2 = path
 		end
 	end
-	
+
 	do
 		local old = callback
-		callback = function(path) 
+		callback = function(path)
 			if event.Call("ResourceDownloaded", path) ~= false then
 				if old then old(path) end
 			end
@@ -139,23 +139,23 @@ function resource.Download(path, callback, on_fail, crc)
 	end
 
 	if cb:check(path, callback, {on_fail = on_fail}) then return true end
-	
+
 	cb:start(path, callback, {on_fail = on_fail})
-	
-	if url then	
+
+	if url then
 		llog("donwnloading ", url)
 
 		download(
-			url, 
-			path, 
-			function(...) 
+			url,
+			path,
+			function(...)
 				cb:stop(path, ...)
 				cb:uncache(path)
-			end, 
+			end,
 			function(...)
 				cb:callextra(path, "on_fail", ... or path .. " not found")
 				cb:uncache(path)
-			end, 
+			end,
 			function()
 				-- check file crc stuff here/
 				return true
@@ -165,9 +165,9 @@ function resource.Download(path, callback, on_fail, crc)
 		if #resource.providers > 0 then
 			llog("donwnloading ", path)
 		end
-		
+
 		download_from_providers(
-			path, 
+			path,
 			function(...)
 				cb:stop(path, ...)
 				cb:uncache(path)
@@ -178,7 +178,7 @@ function resource.Download(path, callback, on_fail, crc)
 			end
 		)
 	end
-	
+
 	return true
 end
 

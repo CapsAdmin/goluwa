@@ -344,7 +344,7 @@ local glfw = {
 -- put all the functions in the glfw table
 for line in header:gmatch("(.-)\n") do
 	local name = line:match("glfw(.-)%(")
-	
+
 	if name then
 		pcall(function()
 			glfw[name] = lib["glfw" .. name]
@@ -397,9 +397,9 @@ function glfw.GetVersion()
 	local major = ffi.new("int[1]")
 	local minor = ffi.new("int[1]")
 	local rev = ffi.new("int[1]")
-	
+
 	lib.glfwGetVersion(major, minor, rev)
-	
+
 	return major[0] + (minor[0] / 100), rev[0]
 end
 

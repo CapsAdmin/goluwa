@@ -13,7 +13,7 @@ event.AddListener("SciTEKey", "scite_cmd", function(key)
 		if not table.hasvalue(history, console_input) then
 			table.insert(history, 1, console_input)
 		end
-		
+
 		console_input = ""
 		scite.StripShow("'console:'{}")
 		scite.StripSetList(1, table.concat(history, "\n"))
@@ -26,5 +26,5 @@ function debug.openscript(script, line)
 	if line then scite.SendEditor(SCI_GOTOLINE, line) end
 end
 
-scite.StripShow("'console:'{}") 
+scite.StripShow("'console:'{}")
 scite.StripSetList(1, table.concat(history, "\n"))

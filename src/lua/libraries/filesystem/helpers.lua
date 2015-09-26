@@ -6,12 +6,12 @@ do
 	vfs.GetWorkingDirectory = fs.getcd
 
 	local stack = {}
-	
+
 	function vfs.PushWorkingDirectory(dir)
 		table.insert(stack, vfs.GetWorkingDirectory())
 		vfs.SetWorkingDirectory(dir)
 	end
-	
+
 	function vfs.PopWorkingDirectory()
 		local old = table.remove(stack)
 		if old then
@@ -23,51 +23,51 @@ end
 function vfs.Delete(path, ...)
 	check(path, "string")
 	local abs_path = vfs.GetAbsolutePath(path, ...)
-	
+
 	if abs_path then
 		local ok, err = os.remove(abs_path)
-		
+
 		if not ok and err then
 			warning(err)
 		end
 	end
-	
+
 	local err = ("No such file or directory %q"):format(path)
-	
+
 	warning(err)
-	
+
 	return false, "No such file or directory"
 end
 
 local function add_helper(name, func, mode, cb)
 	vfs[name] = function(path, ...)
 		check(path, "string")
-		
+
 		if cb then cb(path, ...) end
-		
+
 		local file, err = vfs.Open(path, mode)
-		
-		if file then			
+
+		if file then
 			local data = {file[func](file, ...)}
-			
+
 			file:Close()
-			
+
 			return unpack(data)
 		end
-			
+
 		return file, err
 	end
 end
 
 add_helper("Read", "ReadAll", "read")
 add_helper("Write", "WriteBytes", "write", function(path, content, on_change)
-	path = path:gsub("(.+/)(.+)", function(folder, file_name) 
+	path = path:gsub("(.+/)(.+)", function(folder, file_name)
 		for i, char in ipairs({--[['\\', '/', ]]':', '%*', '%?', '"', '<', '>', '|'}) do
 			file_name = file_name:gsub(char, "_il" .. char:byte() .. "_")
 		end
 		return folder .. file_name
 	end)
-		
+
 	if path:startswith("data/") then
 		local fs = vfs.GetFileSystem("os")
 		if fs then
@@ -80,9 +80,9 @@ add_helper("Write", "WriteBytes", "write", function(path, content, on_change)
 			end
 		end
 	end
-	
+
 	if on_change then
-		vfs.MonitorFile(path, function(file_path) 
+		vfs.MonitorFile(path, function(file_path)
 			on_change(vfs.Read(file_path), file_path)
 		end)
 		on_change(content)
@@ -93,8 +93,8 @@ add_helper("GetLastAccessed", "GetLastAccessed", "read")
 
 function vfs.CreateFolder(path)
 	check(path, "string")
-	
-	for i, data in ipairs(vfs.TranslatePath(path, true)) do	
+
+	for i, data in ipairs(vfs.TranslatePath(path, true)) do
 		data.context:PCall("CreateFolder", data.path_info)
 	end
 end
@@ -112,25 +112,25 @@ end
 
 function vfs.IsFolder(path)
 	if path == "" then return false end
-	
+
 	for i, data in ipairs(vfs.TranslatePath(path, true)) do
 		if data.context:PCall("IsFolder", data.path_info) then
 			return true
 		end
 	end
-	
+
 	return false
 end
 
 function vfs.IsFile(path)
 	if path == "" then return false end
-	
-	for i, data in ipairs(vfs.TranslatePath(path)) do	
+
+	for i, data in ipairs(vfs.TranslatePath(path)) do
 		if data.context:PCall("IsFile", data.path_info) then
 			return true
 		end
 	end
-	
+
 	return false
 end
 

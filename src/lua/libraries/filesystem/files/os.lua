@@ -7,7 +7,7 @@ if vfs.use_appdata then
 
 	if LINUX then
 		vfs.SetEnv("DATA", "os:%%HOME%%/.goluwa")
-	end 
+	end
 else
 	vfs.SetEnv("DATA", "os:" .. e.USERDATA_FOLDER)
 end
@@ -28,9 +28,9 @@ end
 
 function CONTEXT:GetFiles(path_info)
 	local out = fs.find(path_info.full_path, true)
-	
+
 	if #out == 0 then error("not a valid folder", 2) end
-	
+
 	return out
 end
 
@@ -44,7 +44,7 @@ function CONTEXT:IsFolder(path_info)
 	return info and info.type == "directory"
 end
 
--- if CONTEXT:Open errors the virtual file system will assume 
+-- if CONTEXT:Open errors the virtual file system will assume
 -- the file doesn't exist and will go to the next mounted context
 
 local translate_mode = {
@@ -53,16 +53,16 @@ local translate_mode = {
 }
 
 function CONTEXT:Open(path_info, ...)
-	
+
 	local mode = translate_mode[self:GetMode()]
-		
-	if not mode then 
+
+	if not mode then
 		error("mode not supported: " .. self:GetMode())
 	end
-	
+
 	mode = mode .. "b" -- always open in binary
 
-	self.file = assert(io.open(path_info.full_path, mode)) 
+	self.file = assert(io.open(path_info.full_path, mode))
 	self.attributes = fs.getattributes(path_info.full_path)
 end
 
@@ -72,7 +72,7 @@ end
 
 function CONTEXT:ReadBytes(bytes)
 	if bytes == math.huge then bytes = self:GetSize() end
-	
+
 	return self.file:read(bytes)
 end
 

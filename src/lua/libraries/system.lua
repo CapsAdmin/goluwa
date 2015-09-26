@@ -3,19 +3,19 @@ local system = _G.system or {}
 do
 	system.run = true
 
-	function system.ShutDown(code)	
+	function system.ShutDown(code)
 		code = code or 0
 		logn("shutting down with code ", code)
 		system.run = code
 	end
-	
+
 	local old = os.exit
 
 	function os.exit(code)
 		warning("os.exit() called with code %i", code or 0)
 		--system.ShutDown(code)
 	end
-	
+
 	function os.realexit(code)
 		old(code)
 	end
@@ -25,20 +25,20 @@ do
 	local show = console.CreateVariable("system_fps_show", true, "show fps in titlebar")
 	local avg_fps = 1
 
-	function system.UpdateTitlebarFPS(dt)	
+	function system.UpdateTitlebarFPS(dt)
 		if not show:Get() then return end
-		
+
 		local fps = 1/dt
-		
+
 		avg_fps = avg_fps + ((fps - avg_fps) * dt)
-		
+
 		if wait(0.25) then
 			console.SetTitle(("FPS: %i"):format(avg_fps), "fps")
-			
+
 			if utility and utility.FormatFileSize then
 				console.SetTitle(("GARBAGE: %s"):format(utility.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
 			end
-			
+
 			if GRAPHICS then
 				window.SetTitle(console.GetTitle())
 			end
@@ -50,27 +50,27 @@ local function not_implemented() debug.trace() logn("this function is not yet im
 
 function system.ExecuteArgs(args)
 	args = args or _G.ARGS
-	
+
 	if not args and os.getenv("ARGS") then
 		local func, err = loadstring("return " .. os.getenv("ARGS"))
-		
-		if func then 
+
+		if func then
 			local ok, tbl = pcall(func)
-			
+
 			if not ok then
 				logn("failed to execute ARGS: ", tbl)
 			end
-			
+
 			args = tbl
 		else
 			logn("failed to execute ARGS: ", err)
 		end
 	end
-	
+
 	if args then
 		for _, arg in pairs(args) do
 			console.RunString(tostring(arg))
-		end	
+		end
 	end
 end
 
@@ -106,7 +106,7 @@ do -- elapsed time (avanved from frame time)
 	function system.GetElapsedTime()
 		return elapsed_time
 	end
-	
+
 	-- used internally in main_loop.lua
 	function system.SetElapsedTime(num)
 		elapsed_time = num
@@ -115,11 +115,11 @@ end
 
 do -- server time (synchronized across client and server)
 	local server_time = 0
-	
+
 	function system.SetServerTime(time)
 		server_time = time
 	end
-		
+
 	function system.GetServerTime()
 		return server_time
 	end
@@ -129,40 +129,40 @@ local function not_implemented() debug.trace() logn("this function is not yet im
 
 do -- time in ms
 	local get = not_implemented
-	
+
 	if WINDOWS then
 		require("winapi.time")
-		
+
 		local winapi = require("winapi")
-		
+
 		local freq = tonumber(winapi.QueryPerformanceFrequency().QuadPart)
 		local start_time = winapi.QueryPerformanceCounter()
-		
+
 		get = function()
 			local time = winapi.QueryPerformanceCounter()
-			
+
 			time.QuadPart = time.QuadPart - start_time.QuadPart
 			return tonumber(time.QuadPart) / freq
-		end		
+		end
 	end
-	
+
 	if LINUX then
 		local posix = require("syscall")
 
 		local ts = posix.t.timespec()
-		
-		get = function() 
-			posix.clock_gettime("MONOTONIC", ts)			
+
+		get = function()
+			posix.clock_gettime("MONOTONIC", ts)
 			return tonumber(ts.tv_sec * 1000000000 + ts.tv_nsec) * 1e-9
 		end
 	end
-	
+
 	system.GetTime = get
 end
 
 do -- sleep
 	local sleep = not_implemented
-	
+
 	if WINDOWS then
 		ffi.cdef("VOID Sleep(DWORD dwMilliseconds);")
 		sleep = function(ms) ffi.C.Sleep(ms) end
@@ -172,7 +172,7 @@ do -- sleep
 		ffi.cdef("void usleep(unsigned int ns);")
 		sleep = function(ms) ffi.C.usleep(ms*1000) end
 	end
-	
+
 	system.Sleep = sleep
 end
 
@@ -187,7 +187,7 @@ end
 
 do -- memory
 	if WINDOWS then
-		 
+
 		ffi.cdef([[
 			typedef struct _PROCESS_MEMORY_COUNTERS {
 				DWORD  cb;
@@ -201,18 +201,18 @@ do -- memory
 				SIZE_T PagefileUsage;
 				SIZE_T PeakPagefileUsage;
 			} PROCESS_MEMORY_COUNTERS, *PPROCESS_MEMORY_COUNTERS;
-			
+
 			BOOL GetProcessMemoryInfo(HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb);
 		]])
-		
+
 		local lib = ffi.load("psapi")
 		local pmc = ffi.new("PROCESS_MEMORY_COUNTERS[1]")
 		local size = ffi.sizeof(pmc)
-		
+
 		function system.GetMemoryInfo()
 			lib.GetProcessMemoryInfo(nil, pmc, size)
 			local pmc = pmc[0]
-			
+
 			return {
 				page_fault_count = pmc.PageFaultCount,
 				peak_working_set_size = pmc.PeakWorkingSetSize,
@@ -223,10 +223,10 @@ do -- memory
 				quota_non_paged_pool_usage = pmc.QuotaNonPagedPoolUsage,
 				page_file_usage = pmc.PagefileUsage,
 				peak_page_file_usage = pmc.PeakPagefileUsage,
-			}			
+			}
 		end
 	end
-	
+
 	if LINUX then
 		system.GetMemoryInfo = not_implemented
 	end
@@ -252,12 +252,12 @@ do -- editors
 						if os_execute then
 							path = "start \"\" " .. path
 						end
-						
-						if with_args and editors[app] then 
+
+						if with_args and editors[app] then
 							path = path .. " " .. editors[app]
 						end
-						
-						return path					
+
+						return path
 					end
 				end
 			end
@@ -296,26 +296,26 @@ do -- editors
 				terminal = true,
 			},
 		}
-		
+
 		function system.FindFirstEditor(os_execute, with_args)
 			for k, v in pairs(editors) do
-				
+
 				if io.popen("command -v " .. v.name):read() then
 					local cmd = v.name
-					
+
 					if v.terminal then
 						cmd = "x-terminal-emulator -e " .. cmd
 					end
-					
+
 					if with_args then
 						cmd = cmd .. " " .. v.args
-						
+
 					end
-					
+
 					if os_execute then
 						cmd = cmd .. " &"
 					end
-					
+
 					return cmd
 				end
 			end
@@ -325,16 +325,16 @@ end
 
 do -- message box
 	local set = not_implemented
-	
-	if WINDOWS then	
+
+	if WINDOWS then
 		require("winapi.messagebox")
 		local winapi = require("winapi")
-		
+
 		set = function(title, message)
 			winapi.MessageBox(message, title)
 		end
 	end
-	
+
 	system.MessageBox = set
 end
 
@@ -345,10 +345,10 @@ do -- cursor
 	if WINDOWS then
 		require("winapi.cursor")
 		local winapi = require("winapi")
-				
+
 		local lib = ffi.load("user32.dll")
 		local cache = {}
-		
+
 		local enums = {
 			arrow = 32512,
 			ibeam = 32513,
@@ -365,7 +365,7 @@ do -- cursor
 			no = 32648,
 			hand = 32649,
 			appstarting = 32650,
-			help = 32651,			
+			help = 32651,
 			contexthelp = 30977, -- context sensitive help
 			magnify = 30978, -- print preview zoom
 			smallarrows = 30979, -- splitter
@@ -389,25 +389,25 @@ do -- cursor
 			mouse_pan_se = 31006, -- pan south-east
 			mouse_pan_horz = 31007, -- pan x-axis
 			mouse_pan_vert = 31008, -- pan y-axis
-			
+
 		}
-		
+
 		local current
-		
-		local last 
-		
+
+		local last
+
 		set = function(id)
 			id = id or "arrow"
-			
+
 			cache[id] = cache[id] or winapi.LoadCursor(enums[id] or enums.arrow)
-			
+
 			--if last ~= id then
 				current = id
 				winapi.SetCursor(cache[id])
 			--	last = id
 			--end
 		end
-		
+
 		get = function()
 			return current
 		end
@@ -415,54 +415,54 @@ do -- cursor
 		get = function() end
 		set = get
 	end
-	
+
 	system.SetCursor = set
 	system.GetCursor = get
-	
+
 end
 
 do -- dll paths
 	local set, get = not_implemented, not_implemented
-	
-	if WINDOWS then		
+
+	if WINDOWS then
 		ffi.cdef[[
 			BOOL SetDllDirectoryA(LPCTSTR lpPathName);
 			DWORD GetDllDirectoryA(DWORD nBufferLength, LPTSTR lpBuffer);
 		]]
-		
+
 		set = function(path)
 			ffi.C.SetDllDirectoryA(path or "")
 		end
-		
+
 		local str = ffi.new("char[1024]")
-		
+
 		get = function()
 			ffi.C.GetDllDirectoryA(1024, str)
-			
+
 			return ffi.string(str)
 		end
 	end
-	
+
 	if LINUX then
 		set = function(path)
 			os.setenv("LD_LIBRARY_PATH", path)
 		end
-		
+
 		get = function()
 			return os.getenv("LD_LIBRARY_PATH") or ""
 		end
 	end
-	
+
 	system.SetSharedLibraryPath = set
 	system.GetSharedLibraryPath = get
 end
 
 do -- fonts
 	local get = not_implemented
-	
+
 	if WINDOWS then
 		--[==[ffi.cdef[[
-				
+
 		typedef struct LOGFONT {
 		  long  lfHeight;
 		  long lfWidth;
@@ -480,12 +480,12 @@ do -- fonts
 		  char lfFaceName[LF_FACESIZE];
 		} LOGFONT;
 
-		
+
 		int EnumFontFamiliesEx(void *, LOGFONT *)
 		]]]==]
-	
+
 		get = function()
-			
+
 		end
 	elseif LINUX then
 		ffi.cdef([[
@@ -496,7 +496,7 @@ do -- fonts
 		]])
 
 		local X11 = ffi.load("X11")
-		
+
 		if X11 then
 			local display = X11.XOpenDisplay(nil)
 
@@ -540,38 +540,38 @@ do -- registry
 		local HKEY_CURRENT_CONFIG = 0x80000005
 
 		local RRF_RT_REG_SZ = 0x00000002
-	
+
 		local translate = {
 			HKEY_CLASSES_ROOT  = 0x80000000,
 			HKEY_CURRENT_USER = 0x80000001,
 			HKEY_LOCAL_MACHINE = 0x80000002,
 			HKEY_CURRENT_CONFIG = 0x80000005,
-			
+
 			ClassesRoot  = 0x80000000,
 			CurrentUser = 0x80000001,
 			LocalMachine = 0x80000002,
 			CurrentConfig = 0x80000005,
 		}
-		
+
 		get = function(str)
 			local where, key1, key2 = str:match("(.-)/(.+)/(.*)")
-			
+
 			if where then
 				where, key1 = str:match("(.-)/(.+)/")
 			end
-									
+
 			where = translate[where] or where
 			key1 = key1:gsub("/", "\\")
 			key2 = key2 or ""
-			
+
 			if key2 == "default" then key2 = nil end
-			
+
 			local value = ffi.new("char[4096]")
 			local value_size = ffi.new("unsigned[1]")
 			value_size[0] = 4096
-						
+
 			local err = advapi.RegGetValueA(where, key1, key2, RRF_RT_REG_SZ, nil, value, value_size)
-			
+
 			if err ~= ERROR_SUCCESS then
 				return
 			end
@@ -579,11 +579,11 @@ do -- registry
 			return ffi.string(value)
 		end
 	end
-	
+
 	if LINUX then
 		-- return empty values
 	end
-	
+
 	system.GetRegistryValue = get
 	system.SetRegistryValue = set
 end
@@ -591,9 +591,9 @@ end
 do -- clipboard
 	local set = not_implemented
 	local get = not_implemented
-		
+
 	system.SetClipboard = set
-	system.GetClipboard = get	
+	system.GetClipboard = get
 end
 
 function system.DebugJIT(b)
@@ -606,7 +606,7 @@ end
 
 do
 	local current = {
-		maxtrace = 1000*10, -- Max. number of traces in the cache						default = 1000		min = 1	 max = 65535				
+		maxtrace = 1000*10, -- Max. number of traces in the cache						default = 1000		min = 1	 max = 65535
 		maxrecord = 4000*5, -- Max. number of recorded IR instructions                default = 4000
 		maxirconst = 500*5, -- Max. number of IR constants of a trace                default = 500
 		maxside = 100, -- Max. number of side traces of a root trace                default = 100
@@ -622,33 +622,33 @@ do
 		--sizemcode = X64 and 64 or 32, -- Size of each machine code area in KBytes (Windows: 64K)
 		maxmcode = 512*16, -- Max. total size of all machine code areas in KBytes     default = 512
 	}
-	
+
 	function system.GetJITOptions()
 		return current
 	end
-	
+
 	local sshh
 	local last = {}
 
 	function system.SetJITOption(option, num)
 		if not current[option] then error("not a valid option", 2) end
-		
+
 		current[option] = num
-		
+
 		if last[option] ~= num then
 			local options = {}
-			
+
 			if not sshh then
 				logn("jit option ", option, " = ", num)
 			end
-			
+
 			for k, v in pairs(current) do
 				table.insert(options, k .. "=" .. v)
 			end
-			
+
 			require("jit.opt").start(unpack(options))
 			jit.flush()
-			
+
 			last[option] = num
 		end
 	end
@@ -661,24 +661,24 @@ end
 
 function system.Restart(run_on_launch)
 	run_on_launch = run_on_launch or ""
-	vfs.SetWorkingDirectory("../../../") 
-		
+	vfs.SetWorkingDirectory("../../../")
+
 	if LINUX then
 		if CLIENT then
-			os.execute("./launch_client.sh " .. run_on_launch .. "&") 
-		else	
-			os.execute("./launch_server.sh " .. run_on_launch .. "&") 
+			os.execute("./launch_client.sh " .. run_on_launch .. "&")
+		else
+			os.execute("./launch_server.sh " .. run_on_launch .. "&")
 		end
 	end
-	
+
 	if WINDOWS then
 		if CLIENT then
-			os.execute("start \"\" \"launch_client.bat\" \"" .. run_on_launch .. "\"") 
-		else	
-			os.execute("start \"\" \"launch_server.bat\" \"" .. run_on_launch .. "\"") 
+			os.execute("start \"\" \"launch_client.bat\" \"" .. run_on_launch .. "\"")
+		else
+			os.execute("start \"\" \"launch_server.bat\" \"" .. run_on_launch .. "\"")
 		end
 	end
-	
+
 	system.ShutDown()
 end
 
@@ -692,27 +692,27 @@ do
 		if suppress then logn("error in system.OnError: ", msg, ...) for i = 3, 100 do local t = debug.getinfo(i) if t then table.print(t) else break end end return end
 		suppress = true
 		if LINUX and msg == "interrupted!\n" then return end
-		
+
 		if event.Call("LuaError", msg) == false then return end
-		
+
 		if msg:find("stack overflow") then
 			logn(msg)
 			table.print(debug.getinfo(3))
 			return
 		end
-		
+
 		logn("STACK TRACE:")
 		logn("{")
-		
+
 		local base_folder = e.ROOT_FOLDER:gsub("%p", "%%%1")
 		local data = {}
-			
+
 		for level = 3, 100 do
 			local info = debug.getinfo(level)
 			if info then
-				if info.currentline >= 0 then			
+				if info.currentline >= 0 then
 					local args = {}
-					
+
 					for arg = 1, info.nparams do
 						local key, val = debug.getlocal(level, arg)
 						if type(val) == "table" then
@@ -725,21 +725,21 @@ do
 						end
 						table.insert(args, ("%s = %s"):format(key, val))
 					end
-					
+
 					info.arg_line = table.concat(args, ", ")
-		
+
 					info.name = info.name or "unknown"
-					
+
 					table.insert(data, info)
 				end
 			else
 				break
 			end
 		end
-		
+
 		local function resize_field(tbl, field)
 			local length = 0
-			
+
 			for _, info in pairs(tbl) do
 				local str = tostring(info[field])
 				if str then
@@ -749,29 +749,29 @@ do
 					info[field] = str
 				end
 			end
-			
+
 			for _, info in pairs(tbl) do
 				local str = info[field]
-				if str then				
+				if str then
 					local diff = length - #str
-					
+
 					if diff > 0 then
 						info[field] = str .. (" "):rep(diff)
 					end
 				end
 			end
 		end
-		
+
 		table.insert(data, {currentline = "LINE:", source = "SOURCE:", name = "FUNCTION:", arg_line = " ARGUMENTS "})
-		
+
 		resize_field(data, "currentline")
 		resize_field(data, "source")
 		resize_field(data, "name")
-		
+
 		for _, info in npairs(data) do
 			logf("  %s   %s   %s  (%s)\n", info.currentline, info.source, info.name, info.arg_line)
 		end
-		
+
 		table.clear(data)
 
 		logn("}")
@@ -780,66 +780,66 @@ do
 		for _, param in pairs(debug.getparamsx(4)) do
 			--if not param.key:find("(",nil,true) then
 				local val
-				
+
 				if type(param.val) == "table" then
 					val = tostring(param.val)
 				elseif type(param.val) == "string" then
 					val = param.val:sub(0, 10)
-					
+
 					if val ~= param.val then
 						val = val .. " .. " .. utility.FormatFileSize(#param.val)
 					end
 				else
 					val = serializer.GetLibrary("luadata").ToString(param.val)
 				end
-				
+
 				table.insert(data, {key = param.key, value = val})
 			--end
 		end
-		
+
 		table.insert(data, {key = "KEY:", value = "VALUE:"})
-		
+
 		resize_field(data, "key")
 		resize_field(data, "value")
-		
+
 		for _, info in npairs(data) do
 			logf("  %s   %s\n", info.key, info.value)
 		end
 		logn("}")
-		
+
 		logn("ERROR:")
 		logn("{")
 		local source, _msg = msg:match("(.+): (.+)")
-		
+
 		if source then
 			source = source:trim()
-			
+
 			local info
-			
+
 			-- this should be replaced with some sort of configuration
-			-- gl.lua never shows anything useful but the level above does..			
+			-- gl.lua never shows anything useful but the level above does..
 			if source:find("ffi_bind") then
 				info = debug.getinfo(4)
 			else
 				info = debug.getinfo(2)
 			end
-				
+
 			if last_openfunc < os.clock() then
 				debug.openfunction(info.func, info.currentline)
 				last_openfunc = os.clock() + 3
 			else
 				--logf("debug.openfunction(%q)\n", source)
 			end
-			
+
 			logn("  ", source)
 			logn("  ", _msg:trim())
 		else
 			logn(msg)
 		end
-		
+
 		logn("}")
 		logn("")
-		
+
 		suppress = false
 		logsection("lua error", false)
 	end
@@ -860,18 +860,18 @@ do -- environment
 	function system.StartLuaInstance(...)
 		local args = {...}
 		local arg_line = ""
-		
+
 		for k,v in pairs(args) do
 			arg_line = arg_line .. serializer.GetLibrary("luadata").ToString(v)
 			if #args ~= k then
 				arg_line = arg_line .. ", "
 			end
 		end
-		
+
 		arg_line = arg_line:gsub('"', "'")
-		
+
 		local arg = ([[-e ARGS={%s}loadfile('%sinit.lua')()]]):format(arg_line, e.SRC_FOLDER .. "lua/")
-			
+
 		if WINDOWS then
 			os.execute([[start "" "luajit" "]] .. arg .. [["]])
 		elseif LINUX then
@@ -881,25 +881,25 @@ do -- environment
 
 	system.lua_environment_sockets = {}
 
-	function system.CreateLuaEnvironment(title, globals, id)	
+	function system.CreateLuaEnvironment(title, globals, id)
 		check(globals, "table", "nil")
 		id = id or title
-		
+
 		local socket = system.lua_environment_sockets[id] or NULL
-		
-		if socket:IsValid() then 
+
+		if socket:IsValid() then
 			socket:Remove()
 		end
-		
+
 		local socket = sockets.CreateServer()
 		socket:Host("*", 0)
-						
+
 		system.lua_environment_sockets[id] = socket
-		
+
 		local arg = ""
-			
+
 		globals = globals or {}
-		
+
 		globals.PLATFORM = _G.PLATFORM or globals.PLATFORM
 		globals.PORT = socket:GetPort()
 		globals.CREATED_ENV = true
@@ -907,23 +907,23 @@ do -- environment
 
 		for key, val in pairs(globals) do
 			arg = arg .. key .. "=" .. serializer.GetLibrary("luadata").ToString(val) .. ";"
-		end	
-		
-		arg = arg:gsub([["]], [[']])	
+		end
+
+		arg = arg:gsub([["]], [[']])
 		arg = ([[-e %sloadfile('%sinit.lua')()]]):format(arg, e.SRC_FOLDER .. "lua/")
-			
+
 		if WINDOWS then
 			os.execute([[start "" "luajit" "]] .. arg .. [["]])
 		elseif LINUX then
 			os.execute([[luajit "]] .. arg .. [[" &]])
 		end
-		
+
 		local env = {}
-		
+
 		function env:OnReceive(line)
 			local func, msg = loadstring(line)
 			if func then
-				local ok, msg = system.pcall(func) 
+				local ok, msg = system.pcall(func)
 				if not ok then
 					logn("runtime error:", client, msg)
 				end
@@ -931,9 +931,9 @@ do -- environment
 				logn("compile error:", client, msg)
 			end
 		end
-		
+
 		local queue = {}
-			
+
 		function env:Send(line)
 			if not socket:HasClients() then
 				table.insert(queue, line)
@@ -941,84 +941,84 @@ do -- environment
 				socket:Broadcast(line, true)
 			end
 		end
-		
+
 		function env:Remove()
 			self:Send("os.exit()")
 			socket:Remove()
 		end
-		
-		socket.OnClientConnected = function(self, client)	
+
+		socket.OnClientConnected = function(self, client)
 			for k,v in pairs(queue) do
 				socket:Broadcast(v, true)
 			end
-			
+
 			table.clear(queue)
-			
-			return true 
+
+			return true
 		end
-			
+
 		socket.OnReceive = function(self, line)
 			env:OnReceive(line)
 		end
-			
+
 		env.socket = socket
-		
+
 		return env
 	end
-	
+
 	function system._CheckCreatedEnv()
 		if CREATED_ENV then
 			console.SetTitle(TITLE, "env")
-			
+
 			utility.SafeRemove(ENV_SOCKET)
-			
+
 			ENV_SOCKET = sockets.CreateClient()
 
-			ENV_SOCKET:Connect("localhost", PORT)	
+			ENV_SOCKET:Connect("localhost", PORT)
 			ENV_SOCKET:SetTimeout()
-			
-			ENV_SOCKET.OnReceive = function(self, line)		
+
+			ENV_SOCKET.OnReceive = function(self, line)
 				local func, msg = loadstring(line)
 
 				if func then
-					local ok, msg = system.pcall(func) 
+					local ok, msg = system.pcall(func)
 					if not ok then
 						logn("runtime error:", client, msg)
 					end
 				else
 					logn("compile error:", client, msg)
 				end
-				
+
 				event.Delay(0, function() event.Call("ConsoleEnvReceive", line) end)
-			end 
+			end
 		end
 	end
 
 	function system.CreateConsole(title)
 		if CONSOLE then return logn("tried to create a console in a console!!!") end
 		local env = system.CreateLuaEnvironment(title, {CONSOLE = true})
-		
+
 		env:Send([[
 			local __stop__
-			
-			local function clear() 
+
+			local function clear()
 				logn(("\n"):rep(1000)) -- lol
 			end
-					
+
 			local function exit()
 				__stop__ = true
 				os.exit()
 			end
-			
+
 			clear()
-			
+
 			ENV_SOCKET.OnClose = function() exit() end
 
 			event.AddListener("ConsoleEnvReceive", TITLE, function()
 				::again::
-				
+
 				local str = io.read()
-				
+
 				if str == "exit" then
 					exit()
 				elseif str == "clear" then
@@ -1031,25 +1031,25 @@ do -- environment
 					goto again
 				end
 			end)
-			
+
 			event.AddListener("ShutDown", TITLE, function()
 				ENV_SOCKET:Remove()
 			end)
-		]])	
-			
+		]])
+
 		event.AddListener("Print", title .. "_console_output", function(...)
 			local line = tostring_args(...)
 			env:Send(string.format("logn(%q)", line))
 		end)
-		
-			
+
+
 		function env:Remove()
 			self:Send("os.exit()")
 			utility.SafeRemove(self.socket)
 			event.RemoveListener("Print", title .. "_console_output")
 		end
-		
-		
+
+
 		return env
 	end
 end

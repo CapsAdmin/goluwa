@@ -18,18 +18,18 @@ function PANEL:Initialize()
 	self:SetLayoutWhenInvisible(false)
 	local markup = surface.CreateMarkup()
 	markup:SetEditable(false)
-	markup.OnInvalidate = function()			
+	markup.OnInvalidate = function()
 		self.Size.x = markup.width + self.Padding:GetLeft() + self.Padding:GetRight()
 		self.Size.y = markup.height + self.Padding:GetTop() + self.Padding:GetBottom()
 
 		self.LayoutSize = self.Size
-		
+
 		local str = self.markup:GetText(self.ParseTags)
 		if str ~= self.last_text then
-			self:OnTextChanged(str)		
+			self:OnTextChanged(str)
 			self.last_text = str
 		end
-		
+
 		self:MarkCacheDirty()
 	end
 	self.markup = markup
@@ -70,25 +70,25 @@ end
 
 function PANEL:SetText(str)
 	str = tostring(str)
-	
+
 	self.Text = str
-	
+
 	local markup = self.markup
-	
+
 	markup:SuppressLayout(true)
-	
+
 	markup:SetLightMode(self.LightMode)
 	markup:SetLineWrap(self.TextWrap)
 	markup:SetCopyTags(self.CopyTags)
-	
+
 	markup:Clear()
 	if self.Font then markup:AddFont(self.Font) end
 	if self.TextColor then markup:AddColor(self.TextColor:Copy()) end
 	markup:AddString(self.Text, self.ParseTags)
 	markup:SetCaretPosition(0,0)
-	
+
 	markup:SuppressLayout(false)
-	
+
 	markup:Invalidate()
 end
 
@@ -120,17 +120,17 @@ end
 
 function PANEL:OnUpdate()
 	if not self:HasParent() then return end
-	
+
 	local markup = self.markup
-	
+
 	markup.cull_x = self.Parent.Scroll.x
 	markup.cull_y = self.Parent.Scroll.y
 	markup.cull_w = self.Parent.Size.x
 	markup.cull_h = self.Parent.Size.y
-	
+
 	markup.need_layout = nil
 	markup:Update()
-		
+
 	-- :(
 	if markup:IsCaretVisible() then
 		if not self.sadface then
@@ -154,16 +154,16 @@ function PANEL:OnKeyInput(key, press)
 
 	if key == "left_shift" or key == "right_shift" then  markup:SetShiftDown(press) return end
 	if key == "left_control" or key == "right_control" then  markup:SetControlDown(press) return end
-	
+
 	if press then
 		if key == "enter" then if self:OnEnter() == false then return end end
 		markup:OnKeyInput(key, press)
 	end
 end
 
-function PANEL:OnCharInput(char)	
+function PANEL:OnCharInput(char)
 	self.markup:OnCharInput(char)
-end	
+end
 
 function PANEL:OnEnter() end
 function PANEL:OnTextChanged() end

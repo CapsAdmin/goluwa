@@ -9,7 +9,7 @@ Some of these we already don't use, but some we do, eg use open not openat etc.
 
 local require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
-pcall, type, table, string, select = 
+pcall, type, table, string, select =
 require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
 pcall, type, table, string, select

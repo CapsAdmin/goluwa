@@ -2,7 +2,7 @@ local fs = _G.fs or {}
 
 if WINDOWS then
 	local ffi = require("ffi")
-	
+
 	ffi.cdef([[
 		typedef struct goluwa_file_time {
 			unsigned long high;
@@ -11,30 +11,30 @@ if WINDOWS then
 
 		typedef struct goluwa_find_data {
 		  unsigned long dwFileAttributes;
-		  
+
 		  goluwa_file_time ftCreationTime;
 		  goluwa_file_time ftLastAccessTime;
 		  goluwa_file_time ftLastWriteTime;
-		  
+
 		  unsigned long nFileSizeHigh;
 		  unsigned long nFileSizeLow;
-		  
+
 		  unsigned long dwReserved0;
 		  unsigned long dwReserved1;
-		  
+
 		  char cFileName[260];
 		  char cAlternateFileName[14];
 		} goluwa_find_data;
 
 		void *FindFirstFileA(const char *lpFileName, goluwa_find_data *find_data);
 		bool FindNextFileA(void *handle, goluwa_find_data *find_data);
-		bool FindClose(void *); 
-		
+		bool FindClose(void *);
+
 		unsigned long GetCurrentDirectoryA(unsigned long length, char *buffer);
 		bool SetCurrentDirectoryA(const char *path);
-		
+
 		bool CreateDirectoryA(const char *path, void *lpSecurityAttributes);
-				
+
 		typedef struct goluwa_file_attributes {
 			unsigned long dwFileAttributes;
 			goluwa_file_time ftCreationTime;
@@ -43,7 +43,7 @@ if WINDOWS then
 			unsigned long nFileSizeHigh;
 			unsigned long nFileSizeLow;
 		} goluwa_file_attributes;
-		
+
 		bool GetFileAttributesExA(
 		  const char *lpFileName,
 		  int fInfoLevelId,
@@ -55,44 +55,44 @@ if WINDOWS then
 
 	function fs.find(dir, exclude_dot)
 		local out = {}
-		
+
 		if dir:sub(-1) ~= "/" then dir = dir .. "/" end
-		
+
 		local handle = ffi.C.FindFirstFileA(dir .. "*", data)
-		
+
 		if ffi.cast("unsigned long", handle) ~= 0xffffffff then
 			local i = 1
-			
+
 			while ffi.C.FindNextFileA(handle, data) do
 				local name = ffi.string(data[0].cFileName)
 				if not exclude_dot or (name ~= "." and name ~= "..") then
 					out[i] = name
 					i = i + 1
 				end
-			end	
-			
+			end
+
 			ffi.C.FindClose(handle)
 		end
-		
+
 		return out
 	end
-	
+
 	function fs.getcd()
 		local buffer = ffi.new("char[260]")
 		local length = ffi.C.GetCurrentDirectoryA(260, buffer)
 		return ffi.string(buffer, length)
 	end
-	
+
 	function fs.setcd(path)
 		ffi.C.SetCurrentDirectoryA(path)
 	end
-	
+
 	function fs.createdir(path)
 		ffi.C.CreateDirectoryA(path, nil)
 	end
-	
+
 	local flags = {
-		archive = 0x20, -- A file or directory that is an archive file or directory. Applications typically use this attribute to mark files for backup or removal . 
+		archive = 0x20, -- A file or directory that is an archive file or directory. Applications typically use this attribute to mark files for backup or removal .
 		compressed = 0x800, -- A file or directory that is compressed. For a file, all of the data in the file is compressed. For a directory, compression is the default for newly created files and subdirectories.
 		device = 0x40, -- This value is reserved for system use.
 		directory = 0x10, -- The handle that identifies a directory.
@@ -110,36 +110,36 @@ if WINDOWS then
 		temporary = 0x100, -- A file that is being used for temporary storage. File systems avoid writing data back to mass storage if sufficient cache memory is available, because typically, an application deletes a temporary file after the handle is closed. In that scenario, the system can entirely avoid writing the data. Otherwise, the data is written after the handle is closed.
 		virtual = 0x10000, -- This value is reserved for system use.
 	}
-	
+
 	local function flags_to_table(bits)
 		local out = {}
-		
+
 		for k,v in pairs(flags) do
 			out[k] = bit.bor(bits, v) == v
 		end
-		
+
 		return out
 	end
-	
+
 	local info = ffi.new("goluwa_file_attributes[1]")
-	
+
 	local COMBINE = function(hi, lo) return bit.band(bit.lshift(hi, 8), lo) end
-	
-	function fs.getattributes(path)	
+
+	function fs.getattributes(path)
 		if fs.debug then logn(path) end
 		if ffi.C.GetFileAttributesExA(path, 0, info) then
 			--local flags = flags_to_table(info[0].dwFileAttributes) -- overkill
 			local type
 
 			-- hmmm
-			if --[[flags.archive]] 
+			if --[[flags.archive]]
 				bit.bor(info[0].dwFileAttributes, flags.archive) == flags.archive or
 				bit.bor(info[0].dwFileAttributes, flags.normal) == flags.normal
 			then
 				type = "file"
 			else
 				type = "directory"
-				
+
 				-- GRRRR
 				-- GRRRR
 				local file = io.open(path, "r")
@@ -150,7 +150,7 @@ if WINDOWS then
 				-- GRRRR
 				-- GRRRR
 			end
-			
+
 			local info = {
 				creation_time = COMBINE(info[0].ftCreationTime.high, info[0].ftCreationTime.low),
 				last_accessed = COMBINE(info[0].ftLastAccessTime.high, info[0].ftLastAccessTime.low),
@@ -166,56 +166,56 @@ if WINDOWS then
 	end
 else
 	local S = require("syscall")
-	
+
 	local size = 4096
 	local buf = S.t.buffer(size)
-	
+
 	function fs.find(dir, exclude_dot)
 		local out = {}
-		
+
 		local fd, err = S.open(dir, "directory, rdonly")
-		
+
 		if fd then
 			local iterator, err = fd:getdents(buf, size)
-			
+
 			local i = 1
-			
-			for info in iterator do				
+
+			for info in iterator do
 				if not exclude_dot or (info.name ~= "." and info.name ~= "..") then
 					out[i] = info.name
 					i = i + 1
 				end
 			end
-			
+
 			fd:close()
 		end
-				
+
 		return out
 	end
-	
+
 	function fs.getcd()
 		return S.getcwd()
 	end
-	
+
 	function fs.setcd(path)
 		S.chdir(path)
 	end
-	
+
 	function fs.createdir(path)
 		S.mkdir(path, "rwxu")
 	end
-	
+
 	--local cache = {}
-	
+
 	function fs.getattributes(path)
 		--if cache[path] and cache[path].time < os.clock() then
 		--	return cache[path].info
 		--end
-		
+
 		local info = S.stat(path)
-		
+
 		--cache[path] = {time = os.clock() + 0.01}
-		
+
 		if info then
 			local info = {
 				last_accessed = info.access,

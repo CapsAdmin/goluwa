@@ -8,11 +8,11 @@ local enabled = console.CreateVariable("chat_timestamps", true)
 
 function chat.AddTimeStamp(tbl)
 	if not enabled:Get() then return {} end
-	
+
 	tbl = tbl or {}
-	
+
 	local time = os.date("*t")
-	
+
 	table.insert(tbl, 1, " - ")
 	table.insert(tbl, 1, Color(1, 1, 1))
 	table.insert(tbl, 1, ("%.2d:%.2d"):format(time.hour, time.min))
@@ -35,7 +35,7 @@ function chat.Append(var, str, skip_log)
 	end
 
 	local client = NULL
-	
+
 	if typex(var) == "client" then
 		client = var
 		var = getnick(var)
@@ -45,35 +45,35 @@ function chat.Append(var, str, skip_log)
 		var = "server"
 	else
 		var = tostring(var)
-	end	
-	
+	end
+
 	if not skip_log then
 		logf("%s%s: %s\n", chat.GetTimeStamp(), var, str)
 	end
-	
+
 	event.Call("Chat", var, str, client)
 end
 
-if CLIENT then	
+if CLIENT then
 	message.AddListener("say", function(client, str, seed)
 		chat.ClientSay(client, str, seed)
 	end)
 
 	function chat.Say(str)
-		str = tostring(str)	
+		str = tostring(str)
 		if network.IsConnected() then
 			message.Send("say", str)
-		else	
+		else
 			chat.ClientSay(clients.GetLocalClient(), str)
 		end
-	end	
+	end
 end
 
 local SEED = 0
 
 function chat.ClientSay(client, str, skip_log, seed)
 	seed = seed or SEED
-	
+
 	if event.Call("ClientChat", client, str, seed) ~= false then
 		chat.Append(client, str, skip_log)
 		if SERVER then message.Broadcast("say", client, str, seed) SEED = SEED + 1 end
@@ -87,7 +87,7 @@ if SERVER then
 	end)
 
 	function chat.Say(str)
-		str = tostring(str)		
+		str = tostring(str)
 		message.Broadcast("say", NULL, str)
 		chat.Append(NULL, str)
 	end

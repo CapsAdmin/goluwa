@@ -63,7 +63,7 @@ grammar["["]=function(root,stack,str)
 	local i=0
 	for c in str:gmatch(".") do
 		i = i+1
-		if c == ESC and not escaped then 
+		if c == ESC and not escaped then
 			escaped = true
 		elseif c == "]" and not escaped then
 			break

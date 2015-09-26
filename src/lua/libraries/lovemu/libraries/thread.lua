@@ -22,9 +22,9 @@ function Thread:demand(name) return self.vars[name] end
 
 function love.thread.newThread(name, script_path)
 	local self = lovemu.CreateObject(Thread)
-	
+
 	self.vars = {}
-	
+
 	local env = getfenv(2)
 	local func = love.filesystem.load(script_path or name)
 	local thread = tasks.CreateTask()
@@ -35,19 +35,19 @@ function love.thread.newThread(name, script_path)
 		self:Wait()
 	end
 	thread:Start()
-	
+
 	function thread:OnFinish()
 		logn("[lovemu] thread ", name ," finished")
 	end
-	
+
 	self.thread = thread
 	threads[name] = self
 	threads2[thread.co] = self
-	
+
 	self.name = name
-	
+
 	logn("[lovemu] creating thread ", name)
-	
+
 	return self
 end
 

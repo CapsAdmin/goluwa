@@ -2,16 +2,16 @@
 
 event.AddListener("Draw2D", "lol", function()
 	surface.SetFont("default")
-	
+
 	surface.SetColor(1,1,1,1)
 	local x, y = surface.GetMousePosition()
-	
+
 	for i, line in pairs(surface.WrapString(str, x)) do
 		local w, h = surface.GetTextSize(line)
 		surface.SetTextPosition(0, (i-1) * h)
-		surface.DrawText(line)		
+		surface.DrawText(line)
 	end
-	
+
 	surface.SetColor(1,0,0,1)
 	surface.DrawLine(x, 0, x, 10000)
 end)

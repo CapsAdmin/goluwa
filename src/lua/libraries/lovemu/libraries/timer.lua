@@ -28,7 +28,7 @@ end
 
 function love.timer.sleep(ms)
 	local thread = love.thread.getThread()
-	
+
 	if thread then
 		thread.thread:Wait(ms)
 	end

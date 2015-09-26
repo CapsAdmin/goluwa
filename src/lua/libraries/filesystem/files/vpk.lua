@@ -6,22 +6,22 @@ CONTEXT.Name = "valve package"
 CONTEXT.Extension = "vpk"
 CONTEXT.Base = "generic_archive"
 
-function CONTEXT:OnParseArchive(file, archive_path)	
+function CONTEXT:OnParseArchive(file, archive_path)
 	local vpk = file:ReadStructure([[
 		long signature = 0x55aa1234;
 		long version;
 		long tree_length;
-			
+
 		padding long unknown_1;
 		long footer_length;
 		padding long unknown_3;
-		padding long unknown_4; 
+		padding long unknown_4;
 	]])
 
-	for extension in file:IterateStrings() do		
+	for extension in file:IterateStrings() do
 		for directory in file:IterateStrings() do
 			for name in file:IterateStrings() do
-			
+
 				local entry = file:ReadStructure([[
 					unsigned long crc;
 					short preload_length;
@@ -31,7 +31,7 @@ function CONTEXT:OnParseArchive(file, archive_path)
 					short terminator;
 					bufferpos preload_offset;
 				]])
-				
+
 				entry.file_name = name .. "." .. extension
 				entry.file_name = entry.file_name
 				entry.full_path = directory .. "/" .. entry.file_name
@@ -40,10 +40,10 @@ function CONTEXT:OnParseArchive(file, archive_path)
 					entry.size = entry.preload_length
 					entry.offset = entry.preload_offset
 				end
-			
+
 				entry.preload_data = file:ReadBytes(entry.preload_length)
 				entry.size = entry.size + entry.preload_length
-								
+
 				-- remove these because we don't need them and they will take up memory and blow up the size of the cache
 				entry.preload_offset = nil
 				entry.preload_length = nil

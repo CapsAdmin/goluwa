@@ -266,7 +266,7 @@ local enums = {
 
 local lib = assert(ffi.load("libsndfile"))
 
-ffi.cdef(header)  
+ffi.cdef(header)
 
 header = header:gsub("%s+", " ")
 header = header:gsub(";", "%1\n")
@@ -277,23 +277,23 @@ for line in header:gmatch("(.-)\n") do
 	if not line:find("typedef") then
 		local func = line:match("(sf_%S-) %(")
 		if func then
-		
+
 			local temp = func
 			temp = temp:gsub("(str)[^ing]", "string")
 			temp = temp:gsub("_fd", "_file_descriptor")
 			temp = temp:gsub("_readf", "_read_frames")
 			local friendly = ("_" .. temp):sub(4):gsub("(_%l)", function(char) return char:sub(2,2):upper() end)
-			
+
 			libsndfile[friendly] = lib[func]
 		end
 	end
-end 
+end
 
 -- eek
 libsndfile.ErrorString = libsndfile.ErrorStr
 libsndfile.ErrorStr = nil
 
 libsndfile.StringError = libsndfile.Stringrror
-libsndfile.Stringrror = nil 
+libsndfile.Stringrror = nil
 
 return libsndfile

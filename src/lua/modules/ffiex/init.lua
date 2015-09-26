@@ -2,7 +2,7 @@ local lcpp = require 'ffiex.lcpp'
 local ffi = require 'ffi'
 
 -----------------------
--- search header file 
+-- search header file
 -----------------------
 local originalCompileFile = lcpp.compileFile
 local lastTryPath
@@ -27,7 +27,7 @@ local function search_header_file(filename, predefines, nxt, _local, no_throw)
 			end
 		end
 	else
-		local found 
+		local found
 		if _local then
 			local trypath = (lastTryPath .. filename)
 			local ok, r = pcall(io.open, trypath, 'r')
@@ -133,7 +133,7 @@ local function generate_cdefs(state, code)
 			-- print(s)
 			decl = (decl .. "extern " .. s .. ";\n")
 		end)
-		-- matching function declaration with access specifier 
+		-- matching function declaration with access specifier
 		-- (e.g. extern void foo(t1 a1, t2 a2), static void bar())
 		-- and not export function declaration contains 'static' specifier
 		if count <= 0 then
@@ -181,7 +181,7 @@ local function get_decl_file(name, src, depth)
 			return tr.file
 		end
 	end
-	return nil 
+	return nil
 end
 
 
@@ -202,7 +202,7 @@ local defs_mt = {
 		local def = st.lcpp_defs[k]
 		if type(def) == 'number' then
 			local ok, r = pcall(loadstring, "return " .. def)
-			if ok and r then 
+			if ok and r then
 				rawset(t, k, r())
 				return rawget(t, k)
 			end
@@ -236,8 +236,8 @@ function ffi_state:init(try_init_path)
 
 	-- add built in macro here
 	self.lcpp_defs = {
-		["__has_include"] = has_include, 
-		["__has_include_next"] = has_include_next, 
+		["__has_include"] = has_include,
+		["__has_include_next"] = has_include_next,
 		-- i don't know the reason but OSX __asm alias not works for luajit symbol search
 		["__asm"] = __asm, -- just return empty string TODO : investigate reason.
 	}
@@ -271,7 +271,7 @@ function importer_lib.new(state, sym)
 end
 function importer_lib:from(code)
 	local tree = self.state:parse(code)
-	
+
 	return ffi.native_cdef_with_guard(tree, self.sym)
 end
 
@@ -358,7 +358,7 @@ function ffi_state:search(path, file, add)
 		if not line then
 			break -- eof
 		else
-			-- if matches find:, log of find itself. 
+			-- if matches find:, log of find itself.
 			if (not line:match('^find:')) and line:match((file .. '$')) then
 				break
 			end
@@ -492,8 +492,8 @@ function ffi_state:load(...)
 end
 function ffi_state:src_of(symbol, recursive)
 	symbol = parser_lib.name(self.tree, symbol)
-	return recursive and 
-		parser_lib.inject(self.tree, {symbol}) or 
+	return recursive and
+		parser_lib.inject(self.tree, {symbol}) or
 		assert(self.tree[symbol], "no such symbol:"..symbol).cdef
 end
 

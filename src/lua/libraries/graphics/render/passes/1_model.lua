@@ -11,12 +11,12 @@ PASS.Buffers = {
 
 function PASS:Initialize()
 	local META = self.shader:CreateMaterialTemplate(PASS.Name)
-	
+
 	function META:OnBind()
 		if self.NoCull or self.Translucent then
-			render.SetCullMode("none") 
+			render.SetCullMode("none")
 		else
-			render.SetCullMode("front") 
+			render.SetCullMode("front")
 		end
 		self.SkyTexture = render.GetSkyTexture()
 		self.EnvironmentProbeTexture = render.GetEnvironmentProbeTexture()
@@ -30,10 +30,10 @@ local gl = require("graphics.ffi.opengl") -- OpenGL
 
 function PASS:Draw3D(what, dist)
 	render.UpdateSky()
-	
+
 	render.EnableDepth(true)
 	render.SetBlendMode()
-		
+
 	render.gbuffer:Begin()
 		event.Call("PreGBufferModelPass")
 		render.Draw3DScene(what or "models", dist)
@@ -54,35 +54,35 @@ PASS.Shader = {
 		source = [[
 			out vec3 world_vertex;
 			out vec3 view_normal;
-		
+
 			void main()
-			{				
+			{
 				vec4 vertex = g_view_world * vec4(pos, 1.0);
 				world_vertex = vertex.xyz;
 				gl_Position = g_projection * vertex;
 
 				view_normal = normalize(g_normal_matrix * vec4(normal, 1)).xyz;
 				//out_binormal = normalize(g_normal_matrix * vec4(binormal, 1)).xyz;
-				//out_tangent = normalize(g_normal_matrix * vec4(tangent, 1)).xyz;				
+				//out_tangent = normalize(g_normal_matrix * vec4(tangent, 1)).xyz;
 			}
 		]]
 	},
 	fragment = {
-		variables = {	
+		variables = {
 			NoCull = false,
 		},
 		mesh_layout = {
 			{uv = "vec2"},
 			{texture_blend = "float"},
 		},
-		source = [[			
+		source = [[
 			in vec3 world_vertex;
 			in vec3 view_normal;
-				
+
 			out vec4 diffuse_buffer;
-			out vec4 normal_buffer;			
+			out vec4 normal_buffer;
 			out vec4 light_buffer; // AUTOMATE THIS
-			
+
 			#define roughness diffuse_buffer.a
 			#define metallic normal_buffer.a
 			#define self_illumination light_buffer.a
@@ -91,18 +91,18 @@ PASS.Shader = {
 
 			// https://www.shadertoy.com/view/MslGR8
 			bool dither(vec2 uv, float alpha)
-			{			
+			{
 				if (lua[AlphaTest = false])
 				{
 					return alpha*alpha < 0.25;
 				}
-				
+
 				const vec3 magic = vec3( 0.06711056, 0.00583715, 52.9829189 );
 				float lol = fract( magic.z * fract( dot( gl_FragCoord.xy, magic.xy ) ) );
-				
+
 				return (alpha + lol) < 1;
 			}
-			
+
 			// http://www.geeks3d.com/20130122/normal-mapping-without-precomputed-tangent-space-vectors/
 			mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)
 			{
@@ -111,18 +111,18 @@ PASS.Shader = {
 				vec3 dp2 = dFdy( p );
 				vec2 duv1 = dFdx( uv );
 				vec2 duv2 = dFdy( uv );
-			 
+
 				// solve the linear system
 				vec3 dp2perp = cross( dp2, N );
 				vec3 dp1perp = cross( N, dp1 );
 				vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
 				vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
-			 
-				// construct a scale-invariant frame 
+
+				// construct a scale-invariant frame
 				float invmax = inversesqrt( max( dot(T,T), dot(B,B) ) );
 				return mat3( T * invmax, B * invmax, N );
 			}
-						
+
 			void main()
 			{
 				//{diffuse = texture(DiffuseTexture, uv).rgb; return;}
@@ -132,11 +132,11 @@ PASS.Shader = {
 
 				if (texture_blend != 0)
 					color = mix(color, texture(lua[Diffuse2Texture = "texture"], uv), texture_blend);
-				
+
 				color *= lua[Color = Color(1,1,1,1)];
-				
+
 				diffuse = color.rgb;
-				
+
 				if (lua[Translucent = false])
 				{
 					if (dither(uv, color.a))
@@ -144,14 +144,14 @@ PASS.Shader = {
 						discard;
 					}
 				}
-				
-				
-				
+
+
+
 				// normals
 				vec4 normal_map = texture(lua[NormalTexture = render.GetBlackTexture()], uv);
-				
+
 				if (normal_map.xyz != vec3(0))
-				{						
+				{
 					if (texture_blend != 0)
 					{
 						normal_map = mix(normal_map, texture(lua[Normal2Texture = "texture"], uv), texture_blend);
@@ -162,33 +162,33 @@ PASS.Shader = {
 						// this is so wrong
 						normal_map.xyz = normalize(pow((normal_map.xyz*0.5 + vec3(0,0,1)), vec3(0.2)));
 					}
-					
+
 					if (lua[FlipYNormal = false])
 					{
 						normal_map.rgb = normal_map.rgb * vec3(1, -1, 1) + vec3(0, 1, 0);
 					}
-					
+
 					if (lua[FlipXNormal = false])
 					{
 						normal_map.rgb = normal_map.rgb * vec3(-1, 1, 1) + vec3(1, 0, 0);
 					}
-					
+
 					normal_map.xyz = /*normalize*/(normal_map.xyz * 2 - 1).xyz;
-				
+
 					normal = cotangent_frame(normalize(view_normal), world_vertex, uv) * normal_map.xyz;
 				}
 				else
 				{
 					normal = view_normal;
 				}
-				
+
 				normal = normalize(normal);
-				
-				
-				
+
+
+
 				// metallic
 				if (lua[NormalAlphaMetallic = false])
-				{ 
+				{
 					metallic = normal_map.a;
 				}
 				else if (lua[DiffuseAlphaMetallic = false])
@@ -199,14 +199,14 @@ PASS.Shader = {
 				{
 					metallic = texture(lua[MetallicTexture = render.GetBlackTexture()], uv).r;
 				}
-				
-				
-				
+
+
+
 				// roughness
-				roughness = texture(lua[RoughnessTexture = render.GetBlackTexture()], uv).r;	
-				
-				
-				
+				roughness = texture(lua[RoughnessTexture = render.GetBlackTexture()], uv).r;
+
+
+
 				//generate roughness and metallic they're zero
 				if (roughness == 0)
 				{
@@ -217,22 +217,22 @@ PASS.Shader = {
 					else
 					{
 						roughness = max(pow((-(length(diffuse)/3) + 1), 5), 0.9);
-						diffuse *= pow(roughness, 0.5); 
-					}						
-					
+						diffuse *= pow(roughness, 0.5);
+					}
+
 					if (metallic == 0)
 					{
 						metallic = (-roughness+1)/1.5;
 					}
 				}
-								
-				
+
+
 				metallic *= lua[MetallicMultiplier = 1];
 				roughness *= lua[RoughnessMultiplier = 1];
-				
+
 				// self lllumination
-				self_illumination = texture(lua[SelfIlluminationTexture = render.GetWhiteTexture()], uv).r * lua[SelfIllumination = 0]*10; 
-				
+				self_illumination = texture(lua[SelfIlluminationTexture = render.GetWhiteTexture()], uv).r * lua[SelfIllumination = 0]*10;
+
 				light_buffer.rgb = vec3(0,0,0);
 			}
 		]]
@@ -245,7 +245,7 @@ function render.CreateMesh(vertices, indices, is_valid_table)
 	if render.IsGBufferReady() then
 		return render.gbuffer_model_shader:CreateVertexBuffer(vertices, indices, is_valid_table)
 	end
-	
+
 	return nil, "gbuffer not ready"
 end
 
@@ -285,7 +285,7 @@ float get_roughness(vec2 uv)
 {
 	return texture(tex_diffuse, uv).a;
 }]])
- 
+
 render.AddGlobalShaderCode([[
 vec3 get_world_pos(vec2 uv)
 {

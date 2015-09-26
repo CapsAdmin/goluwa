@@ -2375,7 +2375,7 @@ do
 			error("failed to write steam_appid.txt (because it's needed) in cd : " .. err)
 		end
 	end
-	
+
 end
 
 if not lib.SteamAPI_Init() then
@@ -2383,7 +2383,7 @@ if not lib.SteamAPI_Init() then
 end
 
 local steamworks = {}
-	
+
 steamworks.unifiedmessages = {}
 steamworks.unifiedmessages_ptr = lib.SteamUnifiedMessages()
 function steamworks.unifiedmessages.SendMethod(pchServiceMethod, pRequestBuffer, unRequestBufferSize, unContext) return lib.SteamAPI_ISteamUnifiedMessages_SendMethod(steamworks.unifiedmessages_ptr, pchServiceMethod, pRequestBuffer, unRequestBufferSize, unContext) end

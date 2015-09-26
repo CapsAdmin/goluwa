@@ -1,11 +1,11 @@
 local gmod = ... or gmod
 local input = gmod.env.input
 
-function input.SetCursorPos(x, y) 
+function input.SetCursorPos(x, y)
 	window.SetMousePosition(Vec2(x, y))
 end
 
-function input.GetCursorPos()	
+function input.GetCursorPos()
 	return window.GetMousePosition():Unpack()
 end
 
@@ -31,7 +31,7 @@ end
 
 do
 	local translate = {}
-	
+
 	for k,v in pairs(gmod.env) do
 		if k:startswith("KEY_") then
 			translate[v] = k:match("KEY_(.+)"):lower()
@@ -41,7 +41,7 @@ do
 	function input.IsKeyDown(code)
 		return input.IsKeyDown(translate[code])
 	end
-	
+
 	function input.GetKeyName(code)
 		return translate[code]
 	end

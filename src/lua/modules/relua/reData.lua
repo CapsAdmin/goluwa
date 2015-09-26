@@ -9,7 +9,7 @@ function DefaultTable.__call(table, val)
 		mt.__index = function(table, key)
 			local v = val(key)
 			table[key] = v
-			return v	
+			return v
 		end
 	elseif type(val) == "table" then
 		mt.__index = function(table, key)
@@ -48,7 +48,7 @@ function CharacterClass.__call(t, str)
 		if i == 2 and c == "^" then
 			self = DefaultTable(true)
 			negate = true
-		elseif c == ESC and not escaped then 
+		elseif c == ESC and not escaped then
 			escaped = true
 		elseif c == "]" and not escaped then
 			break
@@ -94,7 +94,7 @@ function Tree.new(val, children)
 	end
 	setmetatable(t, Tree)
 	return t
-end	
+end
 --function Tree.empty(Tree self) return Bool True if self is an empty Tree, false otherwise.
 --A Tree is empty if has no children and has no val field.
 function Tree.empty(self)
@@ -108,7 +108,7 @@ function Tree.concat(left, right)
 	if left:empty() then return right end
 	if right:empty() then return left end
 	local children = {}
-	if left.val == "CONCAT" then 
+	if left.val == "CONCAT" then
 		for _,c in ipairs(left.children) do
 			table.insert(children, c)
 		end
@@ -151,7 +151,7 @@ function Tree.__tostring(self)
 	return table.concat(s)
 end
 
--- object Stack a filo stack. 
+-- object Stack a filo stack.
 local Stack = {}
 Stack.__index = Stack
 --function Stack.new() return Stack A new empty stack

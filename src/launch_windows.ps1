@@ -17,20 +17,20 @@ $output_folder = [IO.Path]::GetFullPath($(PSScriptRoot) + "\..\data\bin\windows_
 if(!(Test-Path ($output_folder + "\luajit.exe")))
 {
 	[Foo.ConsoleUtils]::ShowWindow($hWnd, 1)
-	
+
 	if (!(Test-Path $output_folder))
 	{
 		New-Item -ItemType directory -Path $output_folder
 	}
-	
+
 	Clear-Host
-	
+
 	Write-Output "downloading binaries from $url to $output_folder"
-	
+
 	$download_location = (get-item $output_folder).parent.FullName + "\temp.zip"
-		
+
 	Remove-Item $download_location -ErrorAction SilentlyContinue -Confirm:$false -Recurse:$true
-	
+
 	if (Get-Command Invoke-WebRequest -CommandType cmdlet -errorAction SilentlyContinue)
 	{
 		#nicer download
@@ -39,11 +39,11 @@ if(!(Test-Path ($output_folder + "\luajit.exe")))
 	else
 	{
 		$client = new-object System.Net.WebClient
-		$client.DownloadFile( $url, $download_location )	
+		$client.DownloadFile( $url, $download_location )
 	}
-	
+
 	Write-Output "unzipping files"
-	
+
 	$shell = new-object -com shell.application
 	$zip = $shell.NameSpace($download_location)
 
@@ -51,13 +51,13 @@ if(!(Test-Path ($output_folder + "\luajit.exe")))
 	{
 		$shell.Namespace($output_folder).copyhere($item)
 	}
-	
+
 	Write-Output "removing leftover files"
-	
+
 	Remove-Item ($download_location) -ErrorAction SilentlyContinue -Confirm:$false -Recurse:$true
-	
+
 	Write-Output "launching"
-	
+
 	[Foo.ConsoleUtils]::ShowWindow($hWnd, 0)
 }
 

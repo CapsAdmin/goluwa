@@ -1,11 +1,11 @@
 entities.Panic()
 
 local center = Vec3(0,0,0)
- 
+
 local terrain = entities.CreateEntity("visual")
 terrain:SetModelPath("models/skpfile.obj", nil, nil, 1)
 terrain:SetAngles(Ang3(0,0,0))
-terrain:SetPosition(Vec3(1000, -1000, -90))           
+terrain:SetPosition(Vec3(1000, -1000, -90))
 terrain:SetScale(Vec3(30, 30, 30))
 
 local sponza = entities.CreateEntity("visual")
@@ -25,7 +25,7 @@ sphere:SetBumpTexture(render.GetBlackTexture())
 
 local sun = entities.CreateEntity("light")
 sun:SetPosition(Vec3(1, 1, 1)*1000)
-sun:SetColor(Color(1,1,0.9)) 
+sun:SetColor(Color(1,1,0.9))
 sun:SetSize(1000)
 sun:SetIntensity(0.75)
 SUN = sun
@@ -43,7 +43,7 @@ for i=1,3 do
 		person:SetAngles(Ang3(-90,i*b*90,0))
 		person:SetPosition(center + Vec3(36,0,0) + Vec3(-i*20,-b*20, 0))
 		person:SetSize(0.1)
-		
+
 		local cube = entities.CreateEntity("visual")
 		cube:SetModelPath("models/cube.obj")
 		cube:SetAngles(Ang3(-90,i*b*90,0))
@@ -75,14 +75,14 @@ mdl:SetSize(10)
 
 local mdl = entities.CreateEntity("visual")
 mdl:SetModelPath("models/spider.obj")
-mdl:SetPosition(Vec3(0, 0, 0)) 
-mdl:SetAngles(Ang3(10,10,10))  
+mdl:SetPosition(Vec3(0, 0, 0))
+mdl:SetAngles(Ang3(10,10,10))
 mdl:SetSize(1)
 
 local mdl = entities.CreateEntity("visual")
 mdl:SetModelPath("models/face.obj")
 mdl:SetAngles(Ang3(0,90,0))
-mdl:SetSize(20)      
+mdl:SetSize(20)
 mdl:SetPosition(Vec3(0,500, 200))
 
 for i=1,15 do
@@ -105,6 +105,6 @@ mdl:SetSize(100)
 local mdl = entities.CreateEntity("visual")
 mdl:SetModelPath("models/skpfile.obj", nil, nil, 1)
 mdl:SetAngles(Ang3(0,0,0))
-mdl:SetPosition(Vec3(-5000,31900, -200))           
+mdl:SetPosition(Vec3(-5000,31900, -200))
 mdl:SetSize(100)
 

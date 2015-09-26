@@ -1,4 +1,4 @@
--- gmod gmod gmod gmod gmod gmod gmod gmod 
+-- gmod gmod gmod gmod gmod gmod gmod gmod
 local gmod = ... or gmod
 local gmod = gmod.env.gmod
 

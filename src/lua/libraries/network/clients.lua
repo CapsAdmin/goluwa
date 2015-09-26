@@ -16,61 +16,61 @@ end
 function clients.GetLocalClient()
 	return clients.local_client or NULL
 end
-	
+
 function clients.BroadcastLua(str)
 	for key, client in pairs(clients.GetAll()) do
 		client:SendLua(str)
 	end
 end
-		
+
 function clients.Create(uniqueid, is_bot, clientside, filter, local_client)
 	local self = clients.active_clients[uniqueid] or NULL
 
 	if self:IsValid() then
-	
+
 		if SERVER then
 			if clientside == nil or clientside then
 				message.Send("create_client", filter, uniqueid, is_bot, local_client)
 			end
 		end
-	
+
 		return self
 	end
-	
+
 	local self = prototype.CreateObject("client")
-		
+
 	self:SetUniqueID(uniqueid)
-	
+
 	clients.active_clients[self.UniqueID] = self
-			
+
 	-- add a networked table to the client
 	self.nv = nvars.CreateObject(uniqueid)
-	
+
 	if is_bot ~= nil then
 		self:SetBot(is_bot)
 		self:SetGroup("bots")
 	end
-	
+
 	if SERVER then
-		if is_bot then	
+		if is_bot then
 			if event.Call("ClientConnect", self) ~= false then
 				event.Call("ClientEntered", self)
 			end
 		end
 	end
-		
+
 	return self
 end
 
 if CLIENT then
 	message.AddListener("create_client", function(uniqueid, is_bot, local_client)
 		local client = clients.Create(uniqueid, is_bot)
-		
+
 		if local_client then
 			prototype.SafeRemove(clients.local_client)
 			clients.local_client = client
 		end
-		
+
 		event.Call("ClientEntered", client)
 	end)
 end
@@ -107,29 +107,29 @@ do -- filter
 
 	function META:GetAll()
 		local out = {}
-		
-		for _, client in pairs(self.clients) do 
-			if client:IsValid() then 	
-				table.insert(out, client) 
+
+		for _, client in pairs(self.clients) do
+			if client:IsValid() then
+				table.insert(out, client)
 			end
 		end
-		
+
 		return out
 	end
 
 	function clients.CreateFilter()
 		return prototype.CreateObject(META, {clients = {}}, true)
 	end
-	
+
 	prototype.Register(META)
 end
 
 packet.ExtendBuffer(
-	"Client", 
-	function(buffer, client) 
+	"Client",
+	function(buffer, client)
 		buffer:WriteString(client:GetUniqueID())
 	end,
-	function(buffer) 
+	function(buffer)
 		return clients.GetByUniqueID(buffer:ReadString())
 	end
 )

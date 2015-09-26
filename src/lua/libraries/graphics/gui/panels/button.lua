@@ -2,7 +2,7 @@ local gui = ... or _G.gui
 local PANEL = {}
 
 PANEL.ClassName = "button"
-	
+
 prototype.GetSet(PANEL, "Mode", "normal")
 prototype.GetSet(PANEL, "ResetOnMouseExit", true)
 prototype.GetSet(PANEL, "Highlight", false)
@@ -13,7 +13,7 @@ prototype.GetSet(PANEL, "ClicksToActivate", 0)
 
 function PANEL:SetActiveStyle(str)
 	self.ActiveStyle = str
-	
+
 	if self:GetState() then
 		self:SetStyle(self.ActiveStyle)
 	else
@@ -23,7 +23,7 @@ end
 
 function PANEL:SetInactiveStyle(str)
 	self.InactiveStyle = str
-	
+
 	if self:GetState() then
 		self:SetStyle(self.ActiveStyle)
 	else
@@ -43,25 +43,25 @@ end
 
 function PANEL:SetState(press, button)
 	button = button or "button_1"
-	
+
 	if press then
 		self.button_down[button] = press
-				
+
 		if button == "button_1" then
 			self:SetStyle(self.ActiveStyle)
 		end
-		
+
 		return true
-	else--if self.button_down[button] then		
+	else--if self.button_down[button] then
 		self.button_down[button] = nil
-		
+
 		if button == "button_1" then
 			self:SetStyle(self.InactiveStyle)
 		end
-		
+
 		return true
 	end
-	
+
 	return false
 end
 
@@ -72,25 +72,25 @@ end
 
 function PANEL:CanPress(button)
 	button = button or "button_1"
-	
+
 	self.click_times = self.click_times or {}
 	self.click_times[button] = self.click_times[button] or {last_click = 0, times = 0}
-	
+
 	return self.click_times[button].times >= self.ClicksToActivate
 end
 
 function PANEL:OnMouseInput(button, press)
 	if button == "button_3" or button == "mwheel_up" or button == "mwheel_down" then return end
-	
+
 	self.click_times = self.click_times or {}
 	self.click_times[button] = self.click_times[button] or {last_click = 0, times = 0}
-	
-	if press then		
+
+	if press then
 		if self.click_times[button].last_click < system.GetTime() then
 			self.click_times[button].last_click = 0
 			self.click_times[button].times = 0
 		end
-		
+
 		self.click_times[button].last_click = system.GetTime() + 0.2
 		self.click_times[button].times = self.click_times[button].times + 1
 	end
@@ -143,12 +143,12 @@ function PANEL:OnRelease() end
 function PANEL:OnPress() end
 function PANEL:OnStateChanged(press, button) end
 
-function PANEL:Test()		
+function PANEL:Test()
 	local btn = gui.CreatePanel("button")
-	
+
 	btn:SetMode("toggle")
 	btn:SetPosition(Vec2()+100)
-	
+
 	return btn
 end
 

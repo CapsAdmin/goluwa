@@ -6,7 +6,7 @@ function vfs.MonitorFile(file_path, callback)
 
 	local last = vfs.GetLastModified(file_path)
 	local first = true
-	
+
 	if last then
 		event.CreateTimer(file_path, 1, 0, function()
 			local time = vfs.GetLastModified(file_path)
@@ -30,7 +30,7 @@ end
 function vfs.MonitorFileInclude(source, target)
 	source = source or vfs.GetCurrentPath(3)
 	target = target or source
-	
+
 	vfs.MonitorFile(source, function()
 		event.Delay(0, function()
 			dofile(target)
@@ -49,7 +49,7 @@ function vfs.MonitorEverything(b)
 		if profiler.IsBusy() then return end -- I already know this is slow so it's just in the way
 		for path, data in pairs(vfs.GetLoadedLuaFiles()) do
 			local info = fs.getattributes(path)
-			
+
 			if info then
 				if not data.last_modified then
 					data.last_modified = info.last_modified
@@ -57,11 +57,11 @@ function vfs.MonitorEverything(b)
 					if data.last_modified ~= info.last_modified then
 						logn("reloading ", vfs.GetFileNameFromPath(path))
 						_G.RELOAD = true
-						include(path) 
+						include(path)
 						_G.RELOAD = nil
 						data.last_modified = info.last_modified
 					end
-				end			
+				end
 			end
 		end
 	end)

@@ -31,13 +31,13 @@ local size = ffi.sizeof("float") * 16
 function META:Copy(matrix)
 	if matrix then
 		ffi.copy(self, matrix, 16)
-		
+
 		return self
 	else
 		local result = light_ctor()
-		
+
 		ffi.copy(result, self, size)
-		
+
 		return result
 	end
 end
@@ -45,11 +45,11 @@ end
 META.__copy = META.Copy
 
 function META:__tostring()
-	return string.format("matrix44[%p]:\n" .. ("%f %f %f %f\n"):rep(4), self,		
+	return string.format("matrix44[%p]:\n" .. ("%f %f %f %f\n"):rep(4), self,
 		self.m00, self.m01, self.m02, self.m03,
 		self.m10, self.m11, self.m12, self.m13,
 		self.m20, self.m21, self.m22, self.m23,
-		self.m30, self.m31, self.m32, self.m33 
+		self.m30, self.m31, self.m32, self.m33
 	)
 end
 
@@ -57,12 +57,12 @@ function META:__mul(b)
 	return self:GetMultiplied(b)
 end
 
-function META:Identity()	
-	self.m00 = 1 
+function META:Identity()
+	self.m00 = 1
 	self.m11 = 1
 	self.m22 = 1
 	self.m33 = 1
-	
+
 	self.m01 = 0
 	self.m02 = 0
 	self.m03 = 0
@@ -75,7 +75,7 @@ function META:Identity()
 	self.m30 = 0
 	self.m31 = 0
 	self.m32 = 0
-	
+
 	return self
 end
 
@@ -105,56 +105,56 @@ function META:GetInverse(out)
 	out.m33 = self.m00*self.m11*self.m22 - self.m00*self.m21*self.m12 - self.m01*self.m10*self.m22 + self.m01*self.m20 *self.m12 + self.m02*self.m10*self.m21 - self.m02*self.m20 *self.m11
 
 	local det = 1 / (self.m00*out.m00 + self.m01*out.m10 + self.m02*out.m20 + self.m03*out.m30)
-	
-	out.m00 = out.m00 * det 
-	out.m01 = out.m01 * det 
-	out.m02 = out.m02 * det 
-	out.m03 = out.m03 * det 
-	out.m10 = out.m10 * det 
-	out.m11 = out.m11 * det 
-	out.m12 = out.m12 * det 
-	out.m13 = out.m13 * det 
-	out.m20 = out.m20 * det 
-	out.m21 = out.m21 * det 
-	out.m22 = out.m22 * det 
-	out.m23 = out.m23 * det 
-	out.m30 = out.m30 * det 
-	out.m31 = out.m31 * det 
-	out.m32 = out.m32 * det 
-	out.m33 = out.m33 * det 
-	
+
+	out.m00 = out.m00 * det
+	out.m01 = out.m01 * det
+	out.m02 = out.m02 * det
+	out.m03 = out.m03 * det
+	out.m10 = out.m10 * det
+	out.m11 = out.m11 * det
+	out.m12 = out.m12 * det
+	out.m13 = out.m13 * det
+	out.m20 = out.m20 * det
+	out.m21 = out.m21 * det
+	out.m22 = out.m22 * det
+	out.m23 = out.m23 * det
+	out.m30 = out.m30 * det
+	out.m31 = out.m31 * det
+	out.m32 = out.m32 * det
+	out.m33 = out.m33 * det
+
 	return out
 end
 
 function META:GetTranspose(out)
 	out = out or light_ctor()
-	
-	out.m00 = self.m00 
-	out.m01 = self.m10 
-	out.m02 = self.m20 
+
+	out.m00 = self.m00
+	out.m01 = self.m10
+	out.m02 = self.m20
 	out.m03 = self.m30
-	
-	out.m10 = self.m01 
-	out.m11 = self.m11 
-	out.m12 = self.m21 
+
+	out.m10 = self.m01
+	out.m11 = self.m11
+	out.m12 = self.m21
 	out.m13 = self.m31
-	
-	out.m20 = self.m02 
-	out.m21 = self.m12 
-	out.m22 = self.m22 
+
+	out.m20 = self.m02
+	out.m21 = self.m12
+	out.m22 = self.m22
 	out.m23 = self.m32
-	
+
 	out.m30 = self.m03
-	out.m31 = self.m13 
-	out.m32 = self.m23 
+	out.m31 = self.m13
+	out.m32 = self.m23
 	out.m33 = self.m33
-	
+
 	return out
 end
 
 function META.GetMultiplied(a, b, out)
 	out = out or light_ctor()
-		
+
 	out.m00 = a.m00 * b.m00 + a.m01 * b.m10 + a.m02 * b.m20 + a.m03 * b.m30
 	out.m01 = a.m00 * b.m01 + a.m01 * b.m11 + a.m02 * b.m21 + a.m03 * b.m31
 	out.m02 = a.m00 * b.m02 + a.m01 * b.m12 + a.m02 * b.m22 + a.m03 * b.m32
@@ -174,7 +174,7 @@ function META.GetMultiplied(a, b, out)
 	out.m31 = a.m30 * b.m01 + a.m31 * b.m11 + a.m32 * b.m21 + a.m33 * b.m31
 	out.m32 = a.m30 * b.m02 + a.m31 * b.m12 + a.m32 * b.m22 + a.m33 * b.m32
 	out.m33 = a.m30 * b.m03 + a.m31 * b.m13 + a.m32 * b.m23 + a.m33 * b.m33
-	
+
 	return out
 end
 
@@ -199,17 +199,17 @@ function META:Translate(x, y, z)
 	return self
 end
 
-function META:SetTranslation(x, y, z)	
+function META:SetTranslation(x, y, z)
 	self.m30 = x
 	self.m31 = y
 	self.m32 = z
-	
+
 	return self
 end
 
 function META:Rotate(a, x, y, z, out)
 	if a == 0 then return self end
-	
+
 	out = out or light_ctor()
 
 	local xx, yy, zz, xy, yz, zx, xs, ys, zs, one_c, s, c
@@ -223,7 +223,7 @@ function META:Rotate(a, x, y, z, out)
 			if z ~= 0 then
 				optimized = true
 				-- rotate only around z axis
-				
+
 				out.m00 = c
 				out.m11 = c
 
@@ -237,7 +237,7 @@ function META:Rotate(a, x, y, z, out)
 			elseif z == 0 then
 				optimized = true
 				-- rotate only around y axis
-				
+
 				out.m00 = c
 				out.m22 = c
 
@@ -254,7 +254,7 @@ function META:Rotate(a, x, y, z, out)
 		if z == 0 then
 			optimized = true
 			-- rotate only around x axis
-			
+
 			out.m11 = c
 			out.m22 = c
 
@@ -303,27 +303,27 @@ function META:Rotate(a, x, y, z, out)
 		out.m22 = (one_c * zz) + c
 
 	end
-	
+
 	self.GetMultiplied(out, self:Copy(), self)
-	
+
 	return self
 end
 
 function META:Scale(x, y, z)
 	if x == 1 and y == 1 and z == 1 then return self end
-	
-	self.m00 = self.m00 * x 
+
+	self.m00 = self.m00 * x
 	self.m10 = self.m10 * y
 	self.m20 = self.m20 * z
-	
+
 	self.m01 = self.m01 * x
 	self.m11 = self.m11 * y
 	self.m21 = self.m21 * z
-	
+
 	self.m02 = self.m02 * x
 	self.m12 = self.m12 * y
 	self.m22 = self.m22 * z
-	
+
 	self.m03 = self.m03 * x
 	self.m13 = self.m13 * y
 	self.m23 = self.m23 * z
@@ -336,36 +336,36 @@ do -- projection
 		local yScale = 1.0 / math.tan(fov / 2)
 		local xScale = yScale / aspect
 		local nearmfar =  far - near
-		
+
 		self.m00 = xScale
-		self.m01 = 0 
-		self.m02 = 0 
-		self.m03 = 0 
-		
+		self.m01 = 0
+		self.m02 = 0
+		self.m03 = 0
+
 		self.m10 = 0
 		self.m11 = yScale
-		self.m12 = 0 
-		self.m13 = 0 
-		
-		self.m20 = 0 
+		self.m12 = 0
+		self.m13 = 0
+
+		self.m20 = 0
 		self.m21 = 0
 		self.m22 = (far + near) / nearmfar
-		self.m23 = -1 
+		self.m23 = -1
 
-		self.m30 = 0 
+		self.m30 = 0
 		self.m31 = 0
 		self.m32 = 2*far*near / nearmfar
 		self.m33 = 0
-		
+
 		return self
 	end
 
-	function META:Frustum(l, r, b, t, n, f)			
+	function META:Frustum(l, r, b, t, n, f)
 		local temp = 2.0 * n
 		local temp2 = r - l
 		local temp3 = t - b
 		local temp4 = f - n
-		
+
 		self.m00 = temp / temp2
 		self.m01 = 0.0
 		self.m02 = 0.0
@@ -382,13 +382,13 @@ do -- projection
 		self.m31 = 0.0
 		self.m32 = (-temp * f) / temp4
 		self.m33 = 0.0
-		
+
 		return self
 	end
 
 	function META:Ortho(left, right, bottom, top, near, far)
 		local out = self
-		
+
 		out.m00 = 2 / (right - left)
 		--out.m10 = 0
 		--out.m20 = 0
@@ -408,16 +408,16 @@ do -- projection
 	--	out.m13 = 0
 	--	out.m23 = 0
 	--	out.m33 = 1
-					
+
 		return self
 	end
 end
 
 function META:TransformVector(x, y, z)
 	local out = self
-	
+
 	local div = x * out.m03 + y * out.m13 + z * out.m23 + out.m33
-		
+
 	return
 		(x * out.m00 + y * out.m10 + z * out.m20 + out.m30) / div,
 		(x * out.m01 + y * out.m11 + z * out.m21 + out.m31) / div,
@@ -426,7 +426,7 @@ end
 
 function META:Shear(v)
 	local out = self
-	
+
 	 for i = 0, 3 do
 		out[i + 2] = out[i + 2] + y * out[i] + v.z * out[i + 1]
 		out[i + 1] = out[i + 1] + v.x * out[i]
@@ -440,17 +440,17 @@ function META:Lerp(alpha, other)
 	end
 end
 
-function META:GetRotation(out)	
+function META:GetRotation(out)
 	local w = math.sqrt(1 + self.m00 + self.m11 + self.m22) / 2
 	local w2 = w * 4
-	
+
 	x = (self.m21 - self.m12) / w2
 	y = (self.m02 - self.m20 ) / w2
 	z = (self.m10 - self.m01) / w2
-	
+
 	out = out or structs.Quat()
 	out:Set(x,y,z,w)
-	
+
 	return out
 end
 
@@ -462,13 +462,13 @@ function META:SetRotation(q)
 
 	-- invs (inverse square length) is only required if quaternion is not already normalised
 	local invs = 1 / (sqx + sqy + sqz + sqw)
-	
+
 	self.m00 = ( sqx - sqy - sqz + sqw)*invs -- since sqw + sqx + sqy + sqz =1/invs*invs
 	self.m11 = (-sqx + sqy - sqz + sqw)*invs
 	self.m22 = (-sqx - sqy + sqz + sqw)*invs
 
 	local tmp1, tmp2
-	
+
 	tmp1 = q.x*q.y;
 	tmp2 = q.z*q.w;
 	self.m10 = 2.0 * (tmp1 + tmp2)*invs
@@ -478,12 +478,12 @@ function META:SetRotation(q)
 	tmp2 = q.y*q.w
 	self.m20 = 2.0 * (tmp1 - tmp2)*invs
 	self.m02 = 2.0 * (tmp1 + tmp2)*invs
-	
+
 	tmp1 = q.y*q.z
 	tmp2 = q.x*q.w
 	self.m21 = 2.0 * (tmp1 + tmp2)*invs
 	self.m12 = 2.0 * (tmp1 - tmp2)*invs
-	
+
 	return self
 end
 

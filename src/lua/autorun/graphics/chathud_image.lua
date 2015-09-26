@@ -21,12 +21,12 @@ local hDCvar = console.CreateVariable("chathud_image_holdduration", 5)
 
 local function show_image(url)
 	busy = true
-	
+
 	-- Animation parameters
 	local slideDuration = sDCvar:Get()
 	local holdDuration = hDCvar:Get()
 	local totalDuration = slideDuration * 2 + holdDuration
-	
+
 	-- Returns a value from 0 to 1
 	-- 0: Fully off-screen
 	-- 1: Fully on-screen
@@ -45,79 +45,79 @@ local function show_image(url)
 			return math.cos(normalizedT * math.pi / 4)
 		end
 	end
-	
+
 	local tex = Texture(url)
-	
+
 	local start = system.GetElapsedTime()
-	
+
 	event.AddListener("DrawHUD", "chathud_image_url", function()
 		if tex:IsLoading() then
 			start = system.GetElapsedTime()
 			return
 		end
-		
+
 		local t = system.GetElapsedTime() - start
-		
+
 		if t > totalDuration then
 			event.RemoveListener("DrawHUD", "chathud_image_url")
 			table.remove(queue, 1)
 			busy = false
 			return
 		end
-		 
+
 		surface.SetColor(1,1,1,1)
 		surface.SetTexture(tex)
 		surface.DrawRect(10 + surface.GetSize() * (getPositionFraction(t) - 1), 10, tex.w / 2, tex.h / 2)
-	end)	
-end 
+	end)
+end
 
 event.CreateTimer("chathud_image_url_queue", 0.25, 0, function()
 	if busy then return end
 	local url = queue[1]
 	if url then
-		show_image(url)	
+		show_image(url)
 	end
 end)
 
 local cvar = console.CreateVariable("chathud_image_url", 1)
 
 event.AddListener("ClientChat", "chathud_image_url", function(client, str)
-	
+
 	if str == "" then return end
-	
+
 	local num = cvar:Get()
-		
+
 	if num == 0 then return end
-		
+
 	if str == "sh" then
 		event.RemoveListener("Draw2D", "chathud_image_url")
 		queue = {}
-		
+
 		return
 	end
-		
+
 	if str:find("http") then
 		str = str:gsub("https:", "http:")
-		
+
 		str = str .. " "
 		local url = str:match("(http://.-)%s")
 		if not url then return end
-		
+
 		for _, rewriteRule in ipairs(urlRewriters) do
 			url = string.gsub(url, rewriteRule[1], rewriteRule[2])
 		end
-		
+
 		local ext = url:match(".+%.(.+)")
 		if not ext then return end
-		
+
 		if not allowed[ext] then return end
-		
+
 		for k,v in pairs(queue) do
-			if v == url then return end	
+			if v == url then return end
 		end
-		
+
 		url = url:trim()
-		
+
 		table.insert(queue, url)
 	end
 end)

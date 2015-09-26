@@ -32,7 +32,7 @@ prototype.GetSet(META, "CopyTags", true)
 
 if SERVER then
 	prototype.GetSet(META, "FixedSize", 14) -- sigh
-else	
+else
 	prototype.GetSet(META, "FixedSize", 0)
 end
 
@@ -41,7 +41,7 @@ function surface.CreateMarkup()
 		w = 0,
 		h = 0,
 		chunks = {},
-		
+
 		cull_x = 0,
 		cull_y = 0,
 		cull_w = math.huge,
@@ -168,29 +168,29 @@ function META:CallTagFunction(chunk, name, ...)
 
 		if func then
 			local args = {self, chunk, ...}
-			
+
 			for i, t in pairs(chunk.val.tag.arg_types) do
 				local val = chunk.val.args[i]
-			
+
 				if type(val) == "function" then
 					local ok, v = pcall(val, chunk.exp_env)
 					if ok then
 						val = v
 					end
 				end
-				
+
 				-- type isn't right? revert to default!
 				if type(val) ~= t then
 					val = chunk.val.tag.arguments[k]
-					
+
 					if type(v) == "table" then
 						val = v.default
 					end
 				end
-								
+
 				table.insert(args, val)
 			end
-			
+
 			args = {system.pcall(func, unpack(args))}
 
 			if not args[1] then

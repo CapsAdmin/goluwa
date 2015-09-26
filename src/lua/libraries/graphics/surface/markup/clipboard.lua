@@ -12,7 +12,7 @@ end
 
 function META:Paste(str)
 	str = str:gsub("\r", "")
-	
+
 	self:DeleteSelection()
 
 	if #str > 0 then

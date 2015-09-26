@@ -42,7 +42,7 @@ module ("mlp", package.seeall)
 local block_terminators = { "else", "elseif", "end", "until", ")", "}", "]" }
 
 -- FIXME: this must be handled from within GG!!!
-function block_terminators:add(x) 
+function block_terminators:add(x)
    if type (x) == "table" then for _, y in ipairs(x) do self:add (y) end
    else _G.table.insert (self, x) end
 end
@@ -70,8 +70,8 @@ block = gg.list {
 -- sync if it was relying on a copy.
 --------------------------------------------------------------------------------
 local return_expr_list_parser = gg.multisequence{
-   { ";" , builder = function() return { } end }, 
-   default = gg.list { 
+   { ";" , builder = function() return { } end },
+   default = gg.list {
       expr, separators = ",", terminators = block_terminators } }
 
 --------------------------------------------------------------------------------
@@ -80,7 +80,7 @@ local return_expr_list_parser = gg.multisequence{
 --------------------------------------------------------------------------------
 function for_header (lx)
    local var = mlp.id (lx)
-   if lx:is_keyword (lx:peek(), "=") then 
+   if lx:is_keyword (lx:peek(), "=") then
       -- Fornum: only 1 variable
       lx:next() -- skip "="
       local e = expr_list (lx)
@@ -91,7 +91,7 @@ function for_header (lx)
       local a = lx:is_keyword (lx:next(), ",", "in")
       if a=="in" then var_list = { var, lineinfo = var.lineinfo } else
          -- several vars; first "," skipped, read other vars
-         var_list = gg.list{ 
+         var_list = gg.list{
             primary = id, separators = ",", terminators = "in" } (lx)
          _G.table.insert (var_list, 1, var) -- put back the first variable
 	 var_list.lineinfo.first = var.lineinfo.first
@@ -118,7 +118,7 @@ local func_name = gg.list{ id, separators = ".", builder = fn_builder }
 --------------------------------------------------------------------------------
 -- Function def parser helper: ( : id )?
 --------------------------------------------------------------------------------
-local method_name = gg.onkeyword{ name = "method invocation", ":", id, 
+local method_name = gg.onkeyword{ name = "method invocation", ":", id,
    transformers = { function(x) return x and id2string(x) end } }
 
 --------------------------------------------------------------------------------
@@ -126,17 +126,17 @@ local method_name = gg.onkeyword{ name = "method invocation", ":", id,
 --------------------------------------------------------------------------------
 local function funcdef_builder(x)
    local name, method, func = x[1], x[2], x[3]
-   if method then 
+   if method then
       name = { tag="Index", name, method, lineinfo = {
          first = name.lineinfo.first,
          last  = method.lineinfo.last } }
-      _G.table.insert (func[1], 1, {tag="Id", "self"}) 
+      _G.table.insert (func[1], 1, {tag="Id", "self"})
    end
-   local r = { tag="Set", {name}, {func} } 
+   local r = { tag="Set", {name}, {func} }
    r[1].lineinfo = name.lineinfo
    r[2].lineinfo = func.lineinfo
    return r
-end 
+end
 
 
 --------------------------------------------------------------------------------
@@ -147,7 +147,7 @@ local function if_builder (x)
    for i=1,#cb_pairs do r[2*i-1]=cb_pairs[i][1]; r[2*i]=cb_pairs[i][2] end
    if else_block then r[#r+1] = else_block end
    return r
-end 
+end
 
 --------------------------------------------------------------------------------
 -- produce a list of (expr,block) pairs
@@ -170,13 +170,13 @@ local function assign_or_call_stat_parser (lx)
       local v = expr_list (lx)
       if type(op)=="string" then return { tag=op, e, v }
       else return op (e, v) end
-   else 
+   else
       assert (#e > 0)
-      if #e > 1 then 
+      if #e > 1 then
          gg.parse_error (lx, "comma is not a valid statement separator") end
       if e[1].tag ~= "Call" and e[1].tag ~= "Invoke" then
          gg.parse_error (lx, "This expression is of type '%s'; "..
-            "only function and method calls make valid statements", 
+            "only function and method calls make valid statements",
             e[1].tag or "<list>")
       end
       return e[1]
@@ -185,11 +185,11 @@ end
 
 local_stat_parser = gg.multisequence{
    -- local function <name> <func_val>
-   { "function", id, func_val, builder = 
-      function(x) 
+   { "function", id, func_val, builder =
+      function(x)
          local vars = { x[1], lineinfo = x[1].lineinfo }
          local vals = { x[2], lineinfo = x[2].lineinfo }
-         return { tag="Localrec", vars, vals } 
+         return { tag="Localrec", vars, vals }
       end },
    -- local <id_list> ( = <expr_list> )?
    default = gg.sequence{ id_list, gg.onkeyword{ "=", expr_list },
@@ -198,11 +198,11 @@ local_stat_parser = gg.multisequence{
 --------------------------------------------------------------------------------
 -- statement
 --------------------------------------------------------------------------------
-stat = gg.multisequence { 
+stat = gg.multisequence {
    name="statement",
-   { "do", block, "end", builder = 
+   { "do", block, "end", builder =
       function (x) return { tag="Do", unpack (x[1]) } end },
-   { "for", for_header, "do", block, "end", builder = 
+   { "for", for_header, "do", block, "end", builder =
       function (x) x[1][#x[1]+1] = x[2]; return x[1] end },
    { "function", func_name, method_name, func_val, builder=funcdef_builder },
    { "while", expr, "do", block, "end", builder = "While" },
@@ -211,7 +211,7 @@ stat = gg.multisequence {
    { "return", return_expr_list_parser, builder = fget (1, "Return") },
    { "break", builder = function() return { tag="Break" } end },
    { "-{", splice_content, "}", builder = fget(1) },
-   { "if", elseifs_parser, gg.onkeyword{ "else", block }, "end", 
+   { "if", elseifs_parser, gg.onkeyword{ "else", block }, "end",
      builder = if_builder },
    default = assign_or_call_stat_parser }
 

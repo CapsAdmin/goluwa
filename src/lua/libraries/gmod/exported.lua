@@ -1279,7 +1279,7 @@ return {
 			["TableToJSON"] = true,
 			["GetSurfacePropName"] = true,
 			["Decompress"] = true,
-		},		
+		},
 		["system"] = {
 			["BatteryPower"] = true,
 			["AppTime"] = true,
@@ -1291,7 +1291,7 @@ return {
 			["SteamTime"] = true,
 			["IsWindows"] = true,
 			["HasFocus"] = true,
-		},	
+		},
 		["jit"] = {
 			["off"] = true,
 			["flush"] = true,

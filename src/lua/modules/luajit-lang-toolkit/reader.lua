@@ -18,7 +18,7 @@ local function new_file_reader(filename)
     return reader
 end
 
-return { 
+return {
     string = new_string_reader,
     file = new_file_reader,
 }

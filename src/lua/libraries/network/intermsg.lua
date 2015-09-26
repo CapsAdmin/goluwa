@@ -11,7 +11,7 @@ function intermsg.Panic()
 			end
 		end
 	end
-	
+
 	for typ, sockets in pairs(intermsg.server_sockets) do
 		for ip_part, sck in pairs(sockets) do
 			if sck:IsValid() then
@@ -28,10 +28,10 @@ function intermsg.Send(ip, port, str, typ)
 	typ = typ and "udp" or "tcp"
 
 	local sck = intermsg.client_sockets[typ][ip..port] or NULL
-	
+
 	if not sck:IsValid() then
 		sck = sockets.CreateClient(typ)
-		
+
 		sck:SetTimeout()
 		sck:Connect(ip, port, true)
 	end
@@ -44,7 +44,7 @@ end
 function intermsg.CloseClient(ip, port, typ)
 	typ = typ and "udp" or "tcp"
 	local sck = intermsg.client_sockets[typ][ip..port] or NULL
-	
+
 	if sck:IsValid() then
 		sck:Remove()
 	end
@@ -62,15 +62,15 @@ function intermsg.StartServer(ip, port, callback, typ)
 
 	function sck:OnClientConnected(client, ip, port)
 		local b = callback("connect", ip, port, client, self)
-		
+
 		if client.SetReceiveMode then
 			client:SetReceiveMode("all")
 		end
-		
+
 		if b ~= nil then
 			return b
 		end
-		
+
 		return true
 	end
 
@@ -89,7 +89,7 @@ function intermsg.StopServer(ip, port, typ)
 	typ = typ and "udp" or "tcp"
 
 	local sck = intermsg.server_sockets[typ][ip..port] or NULL
-	
+
 	if sck:IsValid() then
 		sck:Remove()
 	end

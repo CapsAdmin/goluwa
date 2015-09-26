@@ -10,7 +10,7 @@ function META:__index(key)
 	elseif key == "z" then
 		return self.v.z
 	end
-	
+
 	return META[key]
 end
 
@@ -34,7 +34,7 @@ function META.__div(a, b) if type(b) == "number" then return gmod.env.Vector((a.
 function META:ToScreen()
 	local pos,vis = math3d.WorldPositionToScreen(self.v)
 	return {
-		x = pos.x, 
+		x = pos.x,
 		y = pos.y,
 		visible = vis > 0,
 	}
@@ -91,16 +91,16 @@ function gmod.env.LerpVector(alpha, a, b)
 end
 
 function gmod.env.Vector(x, y, z)
-	local self = {} 
-	
+	local self = {}
+
 	if type(x) == "string" then
 		x, y, z = x:match("(%S+)%s-(%S+)%s-(%S+)")
 		x = tonumber(x)
 		y = tonumber(y)
 		z = tonumber(z)
 	end
-	
+
 	self.v = Vec3(x or 0, y or 0, z or 0)
-	
+
 	return setmetatable(self, META)
 end

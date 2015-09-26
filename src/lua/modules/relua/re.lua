@@ -11,7 +11,7 @@ local ListTable = data.ListTable
 local re = {}
 local function warn(...) print(...) end
 
---data NFA 
+--data NFA
 --data NFA.states = [State]
 --data NFA.edges = [{Input:[State]}]
 --data State = Table Holds some arbitrary state information
@@ -68,7 +68,7 @@ function NDFA:addEdge(source, input, dest)
 	end
 end
 
---function NDFA:insert(NDFA m) return NDFA A machine with the states and edges of m added to self with no link between them. 
+--function NDFA:insert(NDFA m) return NDFA A machine with the states and edges of m added to self with no link between them.
 function NDFA:insert(m)
 	-- add all states in m to self and copy edges
 	for s,_ in pairs(m.states) do
@@ -92,8 +92,8 @@ end
 
 -- function NDFA:addState(State source, Input input, Bool final) Add a new State to this machine, adding edges from the given state ID to it.
 function NDFA:addState(source, input, final)
-	local state = State.new() 
-	if final then 
+	local state = State.new()
+	if final then
 		state.isFinal = true
 	end
 	--table.insert(self.states, state)
@@ -118,7 +118,7 @@ function NDFA:execute(input)
 			break
 		end
 	end
-	
+
 	local match = self:match()
 	if not match then return match end
 	return self:match():extract(input)
@@ -179,7 +179,7 @@ function Path:extract(input)
 		table.insert(matches, match)
 	end
 	local mt = {}
-	function mt.__tostring(match) 
+	function mt.__tostring(match)
 		local t = {}
 		for k,v in ipairs(match) do table.insert(t,v);table.insert(t,", ") end
 		table.remove(t)
@@ -217,7 +217,7 @@ function compare( path1, path2)
 
 	for n = 1,nGroups*3,3 do
 		assert( path1[n] == path2[n], "Mismatched maximality for group" )
-		local maxify = path1[n +0] 
+		local maxify = path1[n +0]
 		--print("group:", n, maxify)
 
 		local len1, len2 = 0,0
@@ -287,7 +287,7 @@ end
 function eClosure(m, start, mutable)
 	if not m.cache then m.cache = DefaultTable( function() return ListTable() end ) end
 	local cache = m.cache.eClosure[start]
-	if cache.clean then 
+	if cache.clean then
 		return cache.val --return the actual cache, assuming caller will not attempt to modify it
 	else
 
@@ -314,7 +314,7 @@ function eClosure2(m, start, prevStates, depthTable, depth)
 			end
 		end
 		-- copy start.hit function into the cache
-		if start.hit then 
+		if start.hit then
 			for k,v in pairs(states) do
 				table.insert( v, 1, start.hit)
 			end
@@ -323,7 +323,7 @@ function eClosure2(m, start, prevStates, depthTable, depth)
 		for k,v in pairs(states) do
 			prevStates[k]=v
 		end
-	return prevStates 
+	return prevStates
 end
 
 -- function compile(String) return Regex
@@ -358,7 +358,7 @@ function stopGroup(i)
 	end
 end
 -- function buildNFA(Tree, NDFA) return NDFA builds an NFA from the given regex AST
-function buildNDFA(ast, state) 
+function buildNDFA(ast, state)
 	local mt = {}
 	mt.__index = function(table, key)
 		if not key then warn("nil literal?") end
@@ -373,7 +373,7 @@ function buildNDFA(ast, state)
 		local m0 = nil
 		for _,m1 in ipairs(machines) do
 			if m0 then
-				m0:concat(m1) 
+				m0:concat(m1)
 			else
 				m0 = m1
 			end
@@ -435,7 +435,7 @@ function buildNDFA(ast, state)
 		m2.start.isFinal = true
 		local finalStates = m1:final()
 		m:concat(m1):concat(m2)
-		
+
 
 		buildState.groupN = buildState.groupN + 1
 		local i= buildState.groupN

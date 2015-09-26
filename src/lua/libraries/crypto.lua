@@ -1,6 +1,6 @@
 local crypto = _G.crypto or {}
 
-do 
+do
 	local ffi = require "ffi"
 	local bit = require "bit"
 	local band = bit.band
@@ -22,7 +22,7 @@ do
 	});
 
 	function mz_crc32(buff, buf_len)
-		
+
 	end
 
 	function crypto.CRC32(src, len)
@@ -34,7 +34,7 @@ do
 				len = ffi.sizeof(src)
 			end
 		end
-		
+
 		if not len then return nil end
 
 		local crcu32 = 0ULL
@@ -48,7 +48,7 @@ do
 
 		while len > 0 do
 			local b = ptr[0];
-			
+
 			crcu32 = bxor(rshift(crcu32, 4), s_crc32[bxor(band(crcu32, 0xF), band(b, 0xF))])
 			crcu32 = bxor(rshift(crcu32, 4), s_crc32[bxor(band(crcu32, 0xF), rshift(b, 4))])
 

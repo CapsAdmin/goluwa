@@ -13,8 +13,8 @@ local shader = render.CreateShader({
 			time = {number =  system.GetTime},
 		},
 	},
-	
-	fragment = { 
+
+	fragment = {
 		variables = {
 			size = {vec2 = function() return fb:GetTexture():GetSize() end},
 			self = {texture = function() return fb:GetTexture() end},
@@ -22,7 +22,7 @@ local shader = render.CreateShader({
 		},
 		mesh_layout = {
 			{uv = "vec2"},
-		},			
+		},
 		source = [[
 			out vec4 frag_color;
 			vec4 color = texture(self, uv);
@@ -31,20 +31,20 @@ local shader = render.CreateShader({
 			{
 				if (generate_random == 1)
 				{
-				
+
 					gl_FragColor.rgb = vec3(1, 1, 1);
 					gl_FragColor.a = fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453) > 0.5 ? 1 : 0;
-					
+
 					return;
 				}
-			
+
 				vec4 color = texture(self, uv);
-									
+
 				vec2 uv2 = uv / size;
-				vec2 uv_unit = 1.0 / size;	
-			
+				vec2 uv_unit = 1.0 / size;
+
 				int neighbours = 0;
-				
+
 				for (float y = -1; y <= 1; y++)
 				{
 					for (float x = -1; x <= 1; x++)
@@ -55,7 +55,7 @@ local shader = render.CreateShader({
 						}
 					}
 				}
-				
+
 				if (color.a > 0 && (neighbours-1 < 2 || neighbours-1 > 3))
 				{
 					color.a = 0;
@@ -64,13 +64,13 @@ local shader = render.CreateShader({
 				{
 					color.a = 1;
 				}
-									
+
 				gl_FragColor = color;
 			}
 		]]
-	} 
+	}
 })
- 
+
 event.CreateTimer("fb_update", 0, 0, function()
 
 	fb:Begin()
@@ -81,10 +81,10 @@ event.CreateTimer("fb_update", 0, 0, function()
 			render.SetShaderOverride()
 		surface.PopMatrix()
 		if input.IsMouseDown("button_left") then
-			
+
 		end
 	fb:End()
-	
+
 	shader.generate_random = 0
 end)
 
@@ -92,4 +92,4 @@ event.AddListener("Draw2D", "fb", function()
 	surface.SetTexture(fb:GetTexture())
 	surface.SetColor(1, 1, 1, 1)
 	surface.DrawRect(0, 0, surface.GetSize())
-end)   
+end)

@@ -11,7 +11,7 @@ console.AddCommand("cat", function(line, file)
 	end
 end, nil, function(arg, args)
 	if #args > 1 then return end
-	
+
 	return vfs.Find(cd)
 end)
 console.AddCommand("cd", function(line, folder)
@@ -25,7 +25,7 @@ console.AddCommand("cd", function(line, folder)
 end, nil, function(arg, args)
 	if #args > 1 then return end
 	print(#args)
-	
+
 	return vfs.Find(cd)
 end)
 
@@ -39,4 +39,4 @@ end)
 
 console.AddCommand("restart", function(startup_cmd)
 	system.Restart(startup_cmd)
-end) 
+end)

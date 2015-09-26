@@ -11,8 +11,8 @@ function META:Update()
 		self:Invalidate()
 		self.need_layout = false
 	end
-	
-	if self.Selectable and self.chunks[1] then		
+
+	if self.Selectable and self.chunks[1] then
 		if self.mouse_selecting then
 			local x, y = self:GetMousePosition():Unpack()
 			local caret = self:CaretFromPixels(x, y)
@@ -20,7 +20,7 @@ function META:Update()
 			if x > caret.char.data.x + caret.char.data.w / 2 then
 				caret = self:CaretFromPixels(x + caret.w / 2, y)
 			end
-			
+
 			if caret then
 				self.select_stop = caret
 			end
@@ -30,7 +30,7 @@ function META:Update()
 			if not self.caret_shift_pos then
 				local START = self:GetSelectStart()
 				local END = self:GetSelectStop()
-				
+
 				if START and END then
 					if self.caret_pos.i < END.i then
 						self.caret_shift_pos = self:CaretFromPosition(END.x, END.y)
@@ -54,17 +54,17 @@ local started_tags = false
 function META:Draw(max_w)
 	if self.LightMode or self.SuperLightMode and self.light_mode_obj then
 		self.light_mode_obj:Draw(max_w)
-		
+
 		if self.Selectable then
 			self:DrawSelection()
 		end
-		
+
 		if self.SuperLightMode then
 			return
 		end
 	end
 
-	if self.chunks[1] then		
+	if self.chunks[1] then
 		-- reset font and color for every line
 		set_font(self, "default")
 		surface.SetColor(1, 1, 1, 1)
@@ -72,16 +72,16 @@ function META:Draw(max_w)
 		start_remove = false
 		remove_these = false
 		started_tags = false
-		
-		--[[if 
+
+		--[[if
 			self.cull_x ~= self.last_cull_x or
 			self.cull_y ~= self.last_cull_y or
 			self.cull_w ~= self.last_cull_w or
 			self.cull_h ~= self.last_cull_h
 		then
-			
-			
-			
+
+
+
 			self.last_cull_x = self.cull_x
 			self.last_cull_y = self.cull_y
 			self.last_cull_w = self.cull_w
@@ -93,14 +93,14 @@ function META:Draw(max_w)
 			if not chunk.internal then
 				if not chunk.x then return end -- UMM
 
-				if 
+				if
 					(
 						chunk.x + chunk.w >= self.cull_x and
 						chunk.y + chunk.h >= self.cull_y and
-						
+
 						chunk.x - self.cull_x <= self.cull_w and
-						chunk.y - self.cull_y <= self.cull_h					
-					) or 
+						chunk.y - self.cull_y <= self.cull_h
+					) or
 					-- these are important since they will remove anything in between
 					(chunk.type == "start_fade" or chunk.type == "end_fade") or
 					start_remove
@@ -124,12 +124,12 @@ function META:Draw(max_w)
 
 						local c = chunk.color
 						surface.SetColor(c.r, c.g, c.b, c.a)
-						
+
 						surface.DrawText(chunk.val, chunk.x, chunk.y, max_w)
 					elseif chunk.type == "tag_stopper" then
 						for _, chunks in pairs(self.started_tags) do
 							local fix = false
-							
+
 							for key, chunk in pairs(chunks) do
 								--print("force stop", chunk.val.type, chunk.i)
 								if next(chunks) then
@@ -137,7 +137,7 @@ function META:Draw(max_w)
 									chunks[key] = nil
 								end
 							end
-							
+
 							if fix then
 								table.fixindices(chunks)
 							end
@@ -155,12 +155,12 @@ function META:Draw(max_w)
 						self.started_tags[chunk.val.type] = self.started_tags[chunk.val.type] or {}
 
 						started_tags = true
-						
+
 						-- draw_under
 						if chunk.tag_start_draw then
 							if self:CallTagFunction(chunk, "pre_draw", chunk.x, chunk.y) then
 								--print("pre_draw", chunk.val.type, chunk.i)
-								
+
 								-- only if there's a post_draw
 								if self.tags[chunk.val.type].post_draw then
 									table.insert(self.started_tags[chunk.val.type], chunk)
@@ -187,12 +187,12 @@ function META:Draw(max_w)
 					-- this is not only for tags. a tag might've been started without being ended
 					if chunk.tag_stop_draw then
 						--print("post_draw_chunks", chunk.type, chunk.i, chunk.chunks_inbetween, chunk.start_chunk.val.type)
-						
+
 						if table.remove(self.started_tags[chunk.start_chunk.val.type]) then
 							--print("post_draw", chunk.start_chunk.val.type, chunk.i)
 							self:CallTagFunction(chunk.start_chunk, "post_draw", chunk.start_chunk.x, chunk.start_chunk.y)
 						end
-						
+
 						for i, other_chunk in ipairs(chunk.chunks_inbetween) do
 							self:CallTagFunction(chunk.start_chunk, "post_draw_chunks", other_chunk)
 						end
@@ -202,7 +202,7 @@ function META:Draw(max_w)
 						surface.SetAlphaMultiplier(1)
 						start_remove = false
 					end
-									
+
 					chunk.culled = false
 				else
 					chunk.culled = true
@@ -218,7 +218,7 @@ function META:Draw(max_w)
 					self:CallTagFunction(chunk, "post_draw", chunk.x, chunk.y)
 				end
 			end
-			
+
 			table.clear(self.started_tags)
 		end
 
@@ -227,7 +227,7 @@ function META:Draw(max_w)
 			table.fixindices(self.chunks)
 			self:Invalidate()
 		end
-		
+
 		if self.Selectable then
 			self:DrawSelection()
 		end
@@ -288,7 +288,7 @@ function META:DrawCaret()
 				h = self.caret_pos.char.chunk.real_h
 			end
 		end
-		
+
 		if h < self.MinimumHeight then
 			h = self.MinimumHeight
 		end

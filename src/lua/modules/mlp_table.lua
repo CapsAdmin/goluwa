@@ -1,7 +1,7 @@
 ----------------------------------------------------------------------
 -- Metalua:  $Id: mlp_table.lua,v 1.5 2006/11/10 02:11:17 fab13n Exp $
 --
--- Summary: metalua parser, table constructor parser. This is part 
+-- Summary: metalua parser, table constructor parser. This is part
 --   of thedefinition of module [mlp].
 --
 ----------------------------------------------------------------------
@@ -64,11 +64,11 @@ local bracket_field = gg.sequence{ "[", _expr, "]", "=", _expr, builder = "Pair"
 function table_field (lx)
    if lx:is_keyword (lx:peek(), "[") then return bracket_field (lx) end
    local e = _expr (lx)
-   if lx:is_keyword (lx:peek(), "=") then 
+   if lx:is_keyword (lx:peek(), "=") then
       lx:next(); -- skip the "="
       local key = id2string(e)
       local val = _expr(lx)
-      local r = { tag="Pair", key, val } 
+      local r = { tag="Pair", key, val }
       r.lineinfo = { first = key.lineinfo.first, last = val.lineinfo.last }
       return r
    else return e end
@@ -79,7 +79,7 @@ local function _table_field(lx) return table_field(lx) end
 --------------------------------------------------------------------------------
 -- table constructor, without enclosing braces; returns a full table object
 --------------------------------------------------------------------------------
-table_content = gg.list { _table_field, 
+table_content = gg.list { _table_field,
    separators = { ",", ";" }, terminators = "}", builder = "Table" }
 
 local function _table_content(lx) return table_content(lx) end
