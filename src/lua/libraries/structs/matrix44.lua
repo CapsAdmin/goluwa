@@ -387,56 +387,49 @@ do -- projection
 	end
 
 	function META:Ortho(left, right, bottom, top, near, far)
-		local out = self
+		self.m00 = 2 / (right - left)
+		--self.m10 = 0
+		--self.m20 = 0
+		self.m30 = -(right + left) / (right - left)
 
-		out.m00 = 2 / (right - left)
-		--out.m10 = 0
-		--out.m20 = 0
-		out.m30 = -(right + left) / (right - left)
+	--	self.m01 = 0
+		self.m11 = 2 / (top - bottom)
+	--	self.m21 = 0
+		self.m31 = -(top + bottom) / (top - bottom)
 
-	--	out.m01 = 0
-		out.m11 = 2 / (top - bottom)
-	--	out.m21 = 0
-		out.m31 = -(top + bottom) / (top - bottom)
+	--	self.m02 = 0
+	--	self.m12 = 0
+		self.m22 = -2 / (far - near)
+		self.m32 = -(far + near) / (far - near)
 
-	--	out.m02 = 0
-	--	out.m12 = 0
-		out.m22 = -2 / (far - near)
-		out.m32 = -(far + near) / (far - near)
-
-	--	out.m03 = 0
-	--	out.m13 = 0
-	--	out.m23 = 0
-	--	out.m33 = 1
+	--	self.m03 = 0
+	--	self.m13 = 0
+	--	self.m23 = 0
+	--	self.m33 = 1
 
 		return self
 	end
 end
 
 function META:TransformVector(x, y, z)
-	local out = self
-
-	local div = x * out.m03 + y * out.m13 + z * out.m23 + out.m33
+	local div = x * self.m03 + y * self.m13 + z * self.m23 + self.m33
 
 	return
-		(x * out.m00 + y * out.m10 + z * out.m20 + out.m30) / div,
-		(x * out.m01 + y * out.m11 + z * out.m21 + out.m31) / div,
-		(x * out.m02 + y * out.m12 + z * out.m22 + out.m32) / div
+		(x * self.m00 + y * self.m10 + z * self.m20 + self.m30) / div,
+		(x * self.m01 + y * self.m11 + z * self.m21 + self.m31) / div,
+		(x * self.m02 + y * self.m12 + z * self.m22 + self.m32) / div
 end
 
 function META:Shear(v)
-	local out = self
-
 	 for i = 0, 3 do
-		out[i + 2] = out[i + 2] + y * out[i] + v.z * out[i + 1]
-		out[i + 1] = out[i + 1] + v.x * out[i]
+		self[i + 2] = self[i + 2] + y * self[i] + v.z * self[i + 1]
+		self[i + 1] = self[i + 1] + v.x * self[i]
 	end
 end
 
 function META:Lerp(alpha, other)
-	local out = self
 	for i = 1, 16 do
-		math.lerp(alpha, out[i-1], other[i-1])
+		math.lerp(alpha, self[i-1], other[i-1])
 	end
 end
 
