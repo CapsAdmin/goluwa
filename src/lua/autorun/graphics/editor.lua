@@ -282,7 +282,7 @@ editor.selected_ent = editor.selected_ent or NULL
 function editor.Open()
 	if not render.gbuffer:IsValid() then
 		render.InitializeGBuffer()
-		entities.world = entities.CreateEntity("world")
+		entities.GetWorld():SetStorableTable(serializer.ReadFile("luadata", "world.map"))
 	end
 
 	gui.RemovePanel(editor.frame)
@@ -327,15 +327,20 @@ function editor.Open()
 			table.insert(options, {...})
 		end
 
+		local clipboard = serializer.Decode("luadata", system.GetClipboard(), true)
+		if not clipboard.config or not clipboard.self or not clipboard.self.GUID then clipboard = nil end
+
 		--add("wear", nil, frame:GetSkin().icons.wear)
 
 		if node then
 			add(L"copy", function()
 				system.SetClipboard(assert(serializer.Encode("luadata", node.ent:GetStorableTable())))
 			end, frame:GetSkin().icons.copy)
-			add(L"paste", function()
-				node.ent:SetStorableTable(assert(serializer.Decode("luadata", system.GetClipboard())))
-			end, frame:GetSkin().icons.paste)
+			if clipboard then
+				add(L"paste", function()
+					node.ent:SetStorableTable(clipboard)
+				end, frame:GetSkin().icons.paste)
+			end
 			add(L"clone", function()
 				local ent = entities.CreateEntity(node.ent.config)
 				ent:SetParent(node.ent:GetParent())
@@ -383,14 +388,20 @@ function editor.Open()
 
 		add()
 		--add("help", nil, frame:GetSkin().icons.help)
-		add(L"paste", function()
-			local data = assert(serializer.Decode("luadata", system.GetClipboard()))
-			assert(data.config)
-			local ent = entities.CreateEntity(data.config)
-			ent:SetStorableTable(data)
-		end, frame:GetSkin().icons.paste)
-		add(L"save", nil, frame:GetSkin().icons.save)
-		add(L"load", nil, frame:GetSkin().icons.load)
+
+		if clipboard then
+			add(L("add") .. " " .. ((clipboard.self.Name and clipboard.self.Name ~= "" and clipboard.self.Name) or clipboard.config), function()
+				local ent = entities.CreateEntity(clipboard.config)
+				ent:SetStorableTable(clipboard)
+			end, frame:GetSkin().icons.add)
+		end
+
+		add(L"save map", function()
+			serializer.WriteFile("luadata", "world.map", entities.GetWorld():GetStorableTable())
+		end, frame:GetSkin().icons.save)
+		add(L"load map", function()
+			entities.GetWorld():SetStorableTable(serializer.ReadFile("luadata", "world.map"))
+		end, frame:GetSkin().icons.load)
 
 		if node then
 			add()
