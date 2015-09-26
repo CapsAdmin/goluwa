@@ -267,7 +267,7 @@ function META:DrawLineHighlight(y)
 end
 
 function META:IsCaretVisible()
-	return (system.GetElapsedTime() - self.blink_offset)%0.5 > 0.25
+	return self.Editable and (system.GetElapsedTime() - self.blink_offset)%0.5 > 0.25
 end
 
 function META:DrawCaret()
