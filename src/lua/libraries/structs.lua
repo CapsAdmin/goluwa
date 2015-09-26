@@ -28,7 +28,7 @@ function structs.Register(META)
 
 			for i, v in pairs(arg) do
 				if arg_i == 1 then
-					arg_lines[i] = "\tstruct { " .. number_type .. " "
+					arg_lines[i] = number_type .. " "
 				end
 
 				arg_lines[i] = arg_lines[i] .. v
@@ -36,7 +36,7 @@ function structs.Register(META)
 				if arg_i ~= #META.Args then
 					arg_lines[i] = arg_lines[i] .. ", "
 				else
-					arg_lines[i] = arg_lines[i] .. "; };"
+					arg_lines[i] = arg_lines[i] .. ";"
 				end
 			end
 		end
@@ -56,7 +56,7 @@ function structs.Register(META)
 			while pcall(ffi.typeof, type_name) do
 				type_name = type_name .. "_"
 			end
-			ffi.cdef("typedef struct " .. type_name .. " {\n" .. arg_lines[1] .. "\n} " .. type_name .. ";")
+			ffi.cdef(print("typedef struct " .. type_name .. " {\n" .. arg_lines[1] .. "\n} " .. type_name .. ";"))
 			obj = assert(ffi.metatype(type_name, META))
 		end
 

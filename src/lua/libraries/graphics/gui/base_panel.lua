@@ -980,10 +980,7 @@ do -- animations
 	end
 
 	function PANEL:CalcAnimations()
-		self.animations = self.animations or {}
-
-		for key, animation in pairs(self.animations) do
-
+		for i, animation in ipairs(self.animations) do
 			local pause = false
 
 			for i, v in ipairs(animation.pausers) do
@@ -1031,7 +1028,8 @@ do -- animations
 						animation.func(self, from)
 					end
 
-					self.animations[key] = nil
+					table.remove(self.animations, i)
+					break
 				else
 					self:MarkCacheDirty()
 				end
@@ -1040,9 +1038,7 @@ do -- animations
 	end
 
 	function PANEL:StopAnimations()
-		self.animations = self.animations or {}
-
-		for key, animation in pairs(self.animations) do
+		for key, animation in ipairs(self.animations) do
 			if animation.callback then
 				if animation.callback(self) ~= false then
 					animation.func(self, animation.from)
@@ -1050,24 +1046,23 @@ do -- animations
 			else
 				animation.func(self, animation.from)
 			end
-
-			self.animations[key] = nil
 		end
+
+		table.clear(self.animations)
+
 		self:UpdateAnimations()
 	end
 
 	function PANEL:IsAnimating()
-		self.animations = self.animations or {}
-
-		return next(self.animations) ~= nil
+		return #self.animations ~= 0
 	end
 
 	function PANEL:Animate(var, to, time, operator, pow, set, callback)
-		self.animations = self.animations or {}
-
-		if self.animations[var] then
-			self.animations[var].alpha = 0
-			return
+		for i, v in ipairs(self.animations) do
+			if v.var == var then
+				v.alpha = 0
+				return
+			end
 		end
 
 		local from = type(self[var]) == "number" and self[var] or self[var]:Copy()
@@ -1113,7 +1108,7 @@ do -- animations
 			table.insert(to, 1, from)
 		end
 
-		self.animations[var] = {
+		table.insert(self.animations, {
 			operator = operator,
 			from = from,
 			to = to,
@@ -1125,7 +1120,7 @@ do -- animations
 			callback = callback,
 			pausers =  pausers,
 			alpha = 0,
-		}
+		})
 	end
 end
 

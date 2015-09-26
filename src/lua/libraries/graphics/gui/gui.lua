@@ -32,6 +32,8 @@ function gui.CreatePanel(name, parent, store_in_parent)
 		return NULL
 	end
 
+	self.animations = {}
+
 	if parent then
 		parent:AddChild(self)
 
