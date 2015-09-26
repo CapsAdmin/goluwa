@@ -16,11 +16,7 @@ function steam.SetMap(name)
 		end
 	end
 
-	if not entities.world then
-		entities.world = entities.CreateEntity("world")
-	end
-
-	steam.bsp_world = steam.bsp_world or entities.CreateEntity("physical", entities.world)
+	steam.bsp_world = steam.bsp_world or entities.CreateEntity("physical", entities.GetWorld())
 	steam.bsp_world:SetName(name)
 	steam.bsp_world:SetCull(false)
 	steam.bsp_world:SetModelPath("maps/" .. name .. ".bsp")
