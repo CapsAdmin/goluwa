@@ -46,4 +46,13 @@ function entities.SafeRemove(ent)
 	end
 end
 
+entities.world = NULL
+
+function entities.GetWorld()
+	if not entities.world:IsValid() then
+		entities.world = entities.CreateEntity("world")
+	end
+	return entities.world
+end
+
 return entities
