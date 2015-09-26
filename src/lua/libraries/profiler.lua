@@ -333,6 +333,12 @@ function profiler.PrintTraceAborts(min_samples)
 
 	logn("trace abort reasons for functions that were sampled by the profiler more than ", min_samples, " times:")
 
+	local blacklist = {
+		["NYI: return to lower frame"] = true,
+		["inner loop in root trace"] = true,
+		["blacklisted"] = true,
+	}
+
 	for path, lines in pairs(profiler.data.trace_aborts) do
 		path = path:sub(2)
 
@@ -360,8 +366,10 @@ function profiler.PrintTraceAborts(min_samples)
 					end
 
 					for reason, count in pairs(reasons) do
-						table.insert(temp, "\t\t" .. reason:trim() .. " (x" .. count .. ")")
-						table.insert(temp, "\t\t\t" .. line .. ": " .. str)
+						if not blacklist[reason] then
+							table.insert(temp, "\t\t" .. reason:trim() .. " (x" .. count .. ")")
+							table.insert(temp, "\t\t\t" .. line .. ": " .. str)
+						end
 					end
 				end
 			end

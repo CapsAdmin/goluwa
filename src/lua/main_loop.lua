@@ -60,7 +60,7 @@ local function main()
 			end
 		end
 
-		collectgarbage("step", 30)
+		--collectgarbage("step", 30)
 	end
 
 	if OnUpdate then

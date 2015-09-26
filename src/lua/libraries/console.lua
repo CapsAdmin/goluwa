@@ -982,17 +982,17 @@ if not DISABLE_CURSES then
 		syntax.OPERATOR   = 6
 
 		syntax.patterns = {
-			[2]  = "[%a_][%w_]*",
-			[1]  = "\".-\"",
-			[4]  = "0x[a-fA-F0-9]+",
-			[5]  = "[%d]+%.?%d*e?%d*",
-			[6]  = "[%+%-%*/%%%(%)%.,<>=:;{}%[%]]",
-			[7]  = "//[^\n]*",
-			[8]  = "/%*.-%*/",
-			[9]  = "%-%-[^%[][^\n]*",
-			[10] = "%-%-%[%[.-%]%]",
-			[11] = "%[=-%[.-%]=-%]",
-			[12] = "'.-'"
+			{2, "[%a_][%w_]*"},
+			{1, "\".-\""},
+			{4, "0x[a-fA-F0-9]+"},
+			{5, "[%d]+%.?%d*e?%d*"},
+			{6, "[%+%-%*/%%%(%)%.,<>=:;{}%[%]]"},
+			{7, "//[^\n]*"},
+			{8, "/%*.-%*/"},
+			{9, "%-%-[^%[][^\n]*"},
+			{10, "%-%-%[%[.-%]%]"},
+			{11, "%[=-%[.-%]=-%]"},
+			{12, "'.-'"},
 		}
 
 		local COLOR_DEFAULT = -1
@@ -1046,9 +1046,9 @@ if not DISABLE_CURSES then
 			while b < #str do
 				local temp = {}
 
-				for k, v in pairs(syntax.patterns) do
-					local aa, bb = str:find(v, b + 1)
-					if aa then temp[#temp+1] = {k, aa, bb} end
+				for _, v in ipairs(syntax.patterns) do
+					local aa, bb = str:find(v[2], b + 1)
+					if aa then temp[#temp+1] = {v[1], aa, bb} end
 				end
 
 				if #temp == 0 then

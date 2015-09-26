@@ -35,7 +35,7 @@ local function generate_draw_buffers(self)
 	local draw_buffers = {}
 	--self.read_buffer = nil -- TODO
 
-	for k,v in pairs(self.textures) do
+	for _, v in ipairs(self.textures_sorted) do
 		if (v.mode == "GL_DRAW_FRAMEBUFFER" or v.mode == "GL_FRAMEBUFFER") and not v.draw_manual then
 			table.insert(draw_buffers, v.pos)
 		else
@@ -70,6 +70,7 @@ function render.GetScreenFrameBuffer()
 		local self = prototype.CreateObject(META)
 		self.fb = gl.CreateFramebuffer(0)
 		self.textures = {}
+		self.textures_sorted = {}
 		self.render_buffers = {}
 		self.draw_buffers_cache = {}
 		self:SetSize(render.GetScreenSize())
@@ -85,6 +86,7 @@ function render.CreateFrameBuffer(width, height, textures)
 	local self = prototype.CreateObject(META)
 	self.fb = gl.CreateFramebuffer()
 	self.textures = {}
+	self.textures_sorted = {}
 	self.render_buffers = {}
 	self.draw_buffers_cache = {}
 
@@ -278,8 +280,13 @@ function META:SetTexture(pos, tex, mode, uid, face)
 				uid = uid,
 				draw_manual = pos == "GL_DEPTH_ATTACHMENT" or pos == "GL_STENCIL_ATTACHMENT" or pos == "GL_DEPTH_STENCIL_ATTACHMENT"
 			}
+
+			for i,v in ipairs(self.textures_sorted) do if v.uid == uid then table.remove(self.textures_sorted, i) break end end
+			table.insert(self.textures_sorted, self.textures[uid])
+
 			self:SetSize(tex:GetSize():Copy())
 		else
+			for i,v in ipairs(self.textures_sorted) do if v.uid == uid then table.remove(self.textures_sorted, i) break end end
 			self.textures[uid] = nil
 		end
 	elseif tex then

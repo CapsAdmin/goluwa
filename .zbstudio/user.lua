@@ -19,7 +19,7 @@ local lua = ""..
 
 do -- config
 	local config = ide.config
-	
+
 	config.editor.usetabs = true
 	config.editor.tabwidth = 4
 	config.editor.usewrap = false
@@ -42,25 +42,25 @@ do -- custom plugin
 			socket:send(str)
 		end
 	end
-	
+
 	function PLUGIN:onIdle()
 		if ready then
 			if not connected and socket:connect("localhost", port) then
 				connected = true
 			end
 		end
-		
+
 		if not connected then return end
-		
+
 		local res = socket:receive("*line")
-		
-		if res and res ~= "" then		
+
+		if res and res ~= "" then
 			GetEditor():UserListShow(1, res)
 		else
 			--GetEditor():AutoCompCancel()
 		end
 	end
-	
+
 	ide.packages["goluwa"] = setmetatable(PLUGIN, ide.proto.Plugin)
 end
 
@@ -70,17 +70,17 @@ do -- profiler plugin
 	-- modify this function to your needs
 	local function find_path(list, path)
 		path = path:lower():gsub("\\", "/")
-		
+
 		for str, info in pairs(list) do
 			str = ide.config.path.projectdir .. "/" .. str
 			str = str:lower():gsub("\\", "/")
-					
+
 			if str == path then
 				DisplayOutputLn("zb_profile_plugin: found info on path: ", path)
-				return info 
+				return info
 			end
 		end
-		
+
 		DisplayOutputLn("zb_profile_plugin: unable to find any info on path: ", path)
 	end
 
@@ -110,10 +110,10 @@ do -- profiler plugin
 	function PLUGIN:onEditorLoad(editor)
 		if not self.initialized then
 			local tree = load("zerobrane_statistical.msgpack")
-			
-			if tree then				
+
+			if tree then
 				local list = {}
-				
+
 				local function parse(node, root)
 					for k,v in pairs(node.children) do
 						local path, line = k:match("(.+):(.+)")
@@ -122,39 +122,39 @@ do -- profiler plugin
 						parse(v, root)
 					end
 				end
-				
+
 				for k,v in pairs(tree) do
 					parse(v, v)
 				end
-				
+
 				self.profile_list = list
 			end
-			
+
 			self.trace_abort_list = load("zerobrane_trace_aborts.msgpack")
-				
+
 			self.initialized = true
 		end
-		
+
 		if not self.markers_setup[editor] then
 			local r,g,b = unpack(ide:GetConfig().styles.text.bg)
-			
+
 			local max_markers = 10
-			
+
 			for i = 0, max_markers do
 				r = r + math.ceil(i/max_markers * 50)
 				local marker = ide:AddMarker("heatmap_" .. i, wxstc.wxSTC_MARK_BACKGROUND, {0,0,0,0}, {r,g,b})
-				if not marker or i == max_markers then 
+				if not marker or i == max_markers then
 					self.max_marker = i-2
-					break 
+					break
 				end
 				editor:MarkerDefine(ide:GetMarker("heatmap_" .. i))
 			end
 
 			self.markers_setup[editor] = true
 		end
-		
+
 		local path = ide:GetDocument(editor).filePath
-		
+
 		if self.profile_list then
 			local info = find_path(self.profile_list, path)
 			if info then
@@ -163,7 +163,7 @@ do -- profiler plugin
 				end
 			end
 		end
-		
+
 		if self.trace_abort_list then
 			local info = find_path(self.trace_abort_list, path)
 			if info then
@@ -172,7 +172,10 @@ do -- profiler plugin
 					for k,v in pairs(reasons) do
 						table.insert(str, line .. ": " .. k .. " ("..v..")")
 					end
-					self:annotateLine(editor, line, table.concat(str, "\n"))
+					str = table.concat(str, "\n")
+					if not str:find("error thrown or hook called") then
+						self:annotateLine(editor, line, str)
+					end
 				end
 			end
 		end
@@ -191,7 +194,7 @@ do -- custom intepreter
 	}
 
 	function INTERPRETER:frun(wfile, run_debug)
-		local temp_file 
+		local temp_file
 
 		if run_debug then
 			DebuggerAttachDefault({startwith = file_path, allowediting = true})
@@ -207,21 +210,21 @@ do -- custom intepreter
 			f:write(run_debug)
 			f:close()
 		end
-		
+
 		-- modify CPATH to work with other Lua versions
 		local _, cpath = wx.wxGetEnv("LUA_CPATH")
-		
+
 		if cpath then
 			wx.wxSetEnv("LUA_CPATH", cpath:gsub("/clibs/", "/clibs51/"))
 		end
-		
+
 		wx.wxSetEnv("LD_LIBRARY_PATH", ".:$LD_LIBRARY_PATH")
-		
+
 		--callback = function(...) CONSOLE_OUT(...) end
 		local fmt = "%q -e \"io.stdout:setvbuf('no');DISABLE_CURSES=true;ZEROBRANE=true;ARGS={[==[include[[%s]]%s]==]};dofile[[%s]]\""
-		
+
 		local root = ide.config.path.projectdir .. "/"
-		
+
 		local file_path = ide:GetDocument(ide:GetEditor()):GetFilePath()
 		local pid = CommandLineRun(
 			fmt:format(root .. bin .. "luajit", file_path, lua, root .. "src/lua/init.lua"),
@@ -231,22 +234,22 @@ do -- custom intepreter
 			function(s) CONSOLE_OUT(s) end,
 			nil,--uid,
 			function()
-				if run_debug then 
-					wx.wxRemoveFile(temp_file) 
-				end 
-				connected = false 
-				ready = false 
+				if run_debug then
+					wx.wxRemoveFile(temp_file)
+				end
+				connected = false
+				ready = false
 				socket = sockets.tcp()
 				socket:settimeout(0)
 			end
 		)
-		
+
 		if cpath then
 			wx.wxSetEnv("LUA_CPATH", cpath)
 		end
-		
+
 		ready = true
-		
+
 		if SHELLBOX then
 			SHELLBOX:SetFocus()
 		end
@@ -263,7 +266,7 @@ do -- custom intepreter
 
 		return root .. "/" .. bin
 	end
-	
+
 	--[[ide:AddAPI("lua", "goluwa", {
 		surface = {
 			type = "lib",
@@ -278,7 +281,7 @@ do -- custom intepreter
 			}
 		}
 	})]]
-	
+
 	ide:AddInterpreter("goluwa", INTERPRETER)
 	ProjectSetInterpreter("goluwa")
 end
@@ -289,9 +292,9 @@ do -- remote console shellbox
 	local shellbox = wxstc.wxStyledTextCtrl(ide.frame.bottomnotebook, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxBORDER_NONE)
 	ide.frame.bottomnotebook:AddPage(shellbox, TR("Remote console"), false)
 	SetupKeywords(shellbox,"lua",nil,ide.config.stylesoutshell,ide.font.oNormal,ide.font.oItalic)
-		
+
 	SHELLBOX = shellbox
-		
+
 	-- Copyright 2011-15 Paul Kulchenko, ZeroBrane LLC
 	-- authors: Luxinia Dev (Eike Decker & Christoph Kubisch)
 	---------------------------------------------------------
@@ -492,7 +495,7 @@ do -- remote console shellbox
 	  -- don't print anything; just mark the line with a prompt mark
 	  out:MarkerAdd(out:GetLineCount()-1, PROMPT_MARKER)
 	end
-	
+
 	CONSOLE_OUT = DisplayShell
 
 	local function filterTraceError(err, addedret)
@@ -599,7 +602,7 @@ do -- remote console shellbox
 	  tx = tx:gsub(forcelocalprefix, '')
 
 	  DisplayShellPrompt('')
-		
+
 		PLUGIN:onLineInput(tx)
 	end
 
@@ -629,7 +632,7 @@ do -- remote console shellbox
 	  DisplayShellDirect(code)
 	  executeShellCode(code)
 	end
-	
+
 	out:Connect(wx.wxEVT_KEY_DOWN,
 	  function (event)
 		-- this loop is only needed to allow to get to the end of function easily

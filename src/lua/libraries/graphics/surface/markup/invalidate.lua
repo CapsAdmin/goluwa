@@ -258,6 +258,53 @@ local function solve_max_width(self, chunks)
 	return out
 end
 
+local function build_chars(chunk)
+	if not chunk.chars then
+		set_font(chunk.markup, chunk.font)
+		chunk.chars = {}
+		local width = 0
+
+		local str = chunk.val
+
+		if str == "" and chunk.internal then
+			str = " "
+		end
+
+		for i, char in ipairs(utf8.totable(str)) do
+			local char_width, char_height = get_text_size(chunk.markup, char)
+			local x = chunk.x + width
+			local y = chunk.y
+
+			chunk.chars[i] = {
+				x = x,
+				y = chunk.y,
+				w = char_width,
+				h = char_height,
+				right = x + char_width,
+				top = y + char_height,
+				char = char,
+				i  = i,
+				chunk = chunk,
+			}
+
+			chunk.chars[i].unicode = #char > 1
+			chunk.chars[i].length = #char
+
+			width = width + char_width
+		end
+
+		if str == " " and chunk.internal then
+			chunk.chars[1].char = ""
+			chunk.chars[1].w = 0
+			chunk.chars[1].h = 0
+			chunk.chars[1].x = 0
+			chunk.chars[1].y = 0
+			chunk.chars[1].top = 0
+			chunk.chars[1].right = 0
+		end
+	end
+end
+
 local function store_tag_info(self, chunks)
 	local line = 0
 	local width = 0
@@ -266,53 +313,6 @@ local function store_tag_info(self, chunks)
 
 	local font = "default"
 	local color = Color(1,1,1,1)
-
-	local function build_chars(chunk)
-		if not chunk.chars then
-			set_font(self, chunk.font)
-			chunk.chars = {}
-			local width = 0
-
-			local str = chunk.val
-
-			if str == "" and chunk.internal then
-				str = " "
-			end
-
-			for i, char in ipairs(utf8.totable(str)) do
-				local char_width, char_height = get_text_size(self, char)
-				local x = chunk.x + width
-				local y = chunk.y
-
-				chunk.chars[i] = {
-					x = x,
-					y = chunk.y,
-					w = char_width,
-					h = char_height,
-					right = x + char_width,
-					top = y + char_height,
-					char = char,
-					i  = i,
-					chunk = chunk,
-				}
-
-				chunk.chars[i].unicode = #char > 1
-				chunk.chars[i].length = #char
-
-				width = width + char_width
-			end
-
-			if str == " " and chunk.internal then
-				chunk.chars[1].char = ""
-				chunk.chars[1].w = 0
-				chunk.chars[1].h = 0
-				chunk.chars[1].x = 0
-				chunk.chars[1].y = 0
-				chunk.chars[1].top = 0
-				chunk.chars[1].right = 0
-			end
-		end
-	end
 
 	local chunk_line = {}
 	local line_height = 0
@@ -326,7 +326,6 @@ local function store_tag_info(self, chunks)
 	local char_line_str = {}
 
 	for i, chunk in ipairs(chunks) do
-
 
 		-- this is for expressions to be use d like line.i+time()
 		chunk.exp_env = {
@@ -383,6 +382,7 @@ local function store_tag_info(self, chunks)
 		end
 
 		chunk.line = line
+		chunk.markup = self
 		chunk.build_chars = build_chars
 		chunk.i = i
 		chunk.real_i = chunk.real_i or i -- expressions need this
@@ -565,7 +565,7 @@ local function store_tag_info(self, chunks)
 		table.insert(chunk_line, chunk)
 	end
 
-	for i, chunk in pairs(chunk_line) do
+	for i, chunk in ipairs(chunk_line) do
 --		log(chunk.type == "string" and chunk.val or ( "<"..  chunk.type .. ">"))
 
 		chunk.line_height = line_height

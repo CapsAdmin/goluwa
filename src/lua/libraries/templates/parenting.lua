@@ -169,7 +169,7 @@ function META:BuildParentList()
 
 	self.RootPart = temp
 
-	for key, obj in pairs(self.Children) do
+	for key, obj in ipairs(self.Children) do
 		obj:BuildParentList()
 	end
 end

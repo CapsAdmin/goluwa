@@ -63,16 +63,17 @@ do
 
 		if not event_added and _G.event then
 			event.AddListener("Update", "prototype_remove_objects", function()
-				for k in pairs(prototype.remove_these) do
-					prototype.remove_these[k] = nil
-					prototype.created_objects[k] = nil
-					prototype.MakeNULL(k)
+				local obj = prototype.remove_these[1]
+				if obj then
+					prototype.created_objects[obj] = nil
+					prototype.MakeNULL(obj)
+					table.remove(prototype.remove_these, 1)
 				end
 			end)
 			event_added = true
 		end
 
-		prototype.remove_these[self] = true
+		table.insert(prototype.remove_these, self)
 	end
 end
 
