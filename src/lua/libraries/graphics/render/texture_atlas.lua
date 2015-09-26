@@ -87,8 +87,10 @@ function META:FindFreePage(w, h)
 	end
 end
 
+local function sort(a, b) return (a.w + a.h) > (b.w + b.h) end
+
 function META:Build()
-	table.sort(self.dirty_textures, function(a, b) return (a.w + a.h) > (b.w + b.h) end)
+	table.sort(self.dirty_textures, sort)
 
 	for _, data in ipairs(self.dirty_textures) do
 
