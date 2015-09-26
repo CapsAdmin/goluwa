@@ -154,11 +154,11 @@ do -- 3d 2d
 	end
 
 	function META:ScreenToWorld(x, y)
+		local m = (self:GetMatrices().view * self:GetMatrices().world):GetInverse()
+
 		if self:Get3D() then
 			x = ((x / self.Viewport.w) - 0.5) * 2
 			y = ((y / self.Viewport.h) - 0.5) * 2
-
-			local m = (self:GetMatrices().view * self:GetMatrices().world):GetInverse()
 
 			local cursor_x, cursor_y, cursor_z = m:TransformVector(self:GetMatrices().projection_inverse:TransformVector(x, -y, 1))
 			local camera_x, camera_y, camera_z = m:TransformVector(0, 0, 0)
@@ -171,7 +171,7 @@ do -- 3d 2d
 
 			return intersect_x, intersect_y
 		else
-			local x, y = (self:GetMatrices().view * self:GetMatrices().world):GetInverse():TransformVector(x, y, 1)
+			local x, y = m:TransformVector(x, y, 1)
 			return x, y
 		end
 	end
