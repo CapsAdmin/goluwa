@@ -34,14 +34,12 @@ function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
 	--check(vertices, "cdata", "table")
 	--check(indices, "cdata", "table", "number", "nil")
 
-	local vertex_attributes = shader:GetVertexAttributes()
-
 	local self = prototype.CreateObject(META)
 	self:SetMode(self:GetMode())
 	self.vertices_id = gl.GenBuffer()
 	self.indices_id = gl.GenBuffer()
 	self.vao_id = gl.GenVertexArray()
-	self.vertex_attributes = vertex_attributes
+	self.vertex_attributes = shader:GetVertexAttributes()
 
 	if vertices then
 		self:UpdateBuffer(shader:CreateBuffersFromTable(vertices, indices, is_valid_table))
