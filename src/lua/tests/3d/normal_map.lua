@@ -6,7 +6,7 @@ local light = entities.CreateEntity("light")
 light:SetSize(10)
 
 event.AddListener("Update", "test", function()
-	--light:SetPosition(render.camera_3d:GetPosition())
+	light:SetPosition(render.camera_3d:GetPosition())
 end)
 
 local i = 1
