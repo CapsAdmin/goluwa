@@ -350,6 +350,9 @@ function render.CreateShader(data, vars)
 		build_output.vertex.source = source
 	end
 
+	-- this info is used when building a mesh
+	local mesh_layout = {}
+
 	-- get type info from the vertex mesh_layout
 	if data.vertex.mesh_layout then
 
@@ -373,6 +376,7 @@ function render.CreateShader(data, vars)
 						table.insert(declaration, ("struct %s %s; "):format(info.real_type, name))
 					end
 					table.insert(build_output.vertex.vtx_info, {name = name, type = t, info = info})
+					mesh_layout[name] = t
 				else
 					errorf("undefined type %q in mesh_layout", 2, t)
 				end
@@ -882,6 +886,7 @@ function render.CreateShader(data, vars)
 	self.shader_id = shader_id
 	self.build_output = build_output
 	self.force_bind = force_bind
+	self.mesh_layout = mesh_layout
 
 	render.active_shaders[shader_id] = self
 
@@ -919,13 +924,19 @@ end
 
 do -- create data for vertex buffer
 	-- this will unpack all structs  so ffi.new can accept the table
-	local function unpack_structs(output)
+	local function unpack_structs(self, output)
 		local found = {}
 
 		-- only bother doing this if the first line has structs
-		for key, val in pairs(output[1]) do
-			if hasindex(val) and val.Unpack then
-				found[key] = true
+		for key, typ in pairs(self.mesh_layout) do
+			local val = output[1][key]
+
+			if val then
+				if hasindex(val) and val.Unpack then
+					found[key] = true
+				end
+			else
+				warning(typ .. " " .. key .. " is missing from vertices", 6)
 			end
 		end
 
@@ -934,6 +945,8 @@ do -- create data for vertex buffer
 				for key, val in pairs(struct) do
 					if found[key] then
 						struct[key] = {val:Unpack()}
+					else
+						struct[key] = nil
 					end
 				end
 			end
@@ -954,7 +967,7 @@ do -- create data for vertex buffer
 		end
 
 		if not is_valid_table then
-			unpack_structs(vertices)
+			unpack_structs(self, vertices)
 
 			if not indices then
 				indices = {}
