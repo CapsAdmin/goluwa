@@ -342,7 +342,7 @@ local function init(width, height)
 	end
 
 	if render.debug then
-		warning("initializing gbuffer: ", width, " ", height)
+		warning("initializing gbuffer: %sx%s", 2, width, height)
 	end
 
 	do -- gbuffer
@@ -524,7 +524,7 @@ end
 function render.InitializeGBuffer(width, height)
 	local ok, err = system.pcall(init, width, height)
 	if not ok then
-		warning("failed to initialize gbuffer: ", err)
+		warning("failed to initialize gbuffer: ", 2, err)
 	end
 end
 

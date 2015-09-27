@@ -92,7 +92,7 @@ do
 						found = true
 					end
 					if not found then
-						warning("%s: META.%s = %s is mutable"--[[. unless this value is intended to be a constant use \nprototype.GetSet or create the variable during runtime (like in init)\n"]], meta.ClassName, k, tostring(v))
+						warning("%s: META.%s = %s is mutable", 2, meta.ClassName, k, tostring(v))
 					end
 				end
 			end
@@ -295,7 +295,7 @@ do
 					end
 				else
 					if not info_b then
-						warning("unable to find property info for %s (%s)", field_b, obj_b)
+						warning("unable to find property info for %s (%s)", 2, field_b, obj_b)
 					end
 					table.remove(prototype.linked_objects, i)
 					break

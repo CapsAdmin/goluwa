@@ -147,7 +147,7 @@ function sigh.Decode(str)
 			if sigh.types[T] then
 				table.insert(args, sigh.types[T].decode(line))
 			else
-				warning("cannot decode '" .. T .. "'")
+				warning("cannot decode '" .. T .. "'", 2)
 			end
 		end
 	end

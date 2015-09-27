@@ -212,33 +212,28 @@ do -- verbose print
 	end
 end
 
-do
-	local level = 2
+function warning(format, level, ...)
+	level = level or 1
+	format = tostringx(format)
 
-	function warning(format, ...)
-		format = tostringx(format)
+	local str = format:safeformat(...)
+	local source = debug.getprettysource(level + 1, true)
 
-		local str = format:safeformat(...)
-		local source = debug.getprettysource(level, true)
+	logn(source, ": ", str)
 
-		logn(source, ": ", str)
+	return format, ...
+end
 
-		return format, ...
+function desire(str, ...)
+	local args = {pcall(require, str, ...)}
+
+	if not args[1] then
+		warning("unable to require %s:\n\t%s", 2, str, args[2]:trim())
+
+		return unpack(args)
 	end
 
-	function desire(str, ...)
-		local args = {pcall(require, str, ...)}
-
-		if not args[1] then
-			level = 3
-			warning("unable to require %s:\n\t%s", str, args[2]:trim())
-			level = 2
-
-			return unpack(args)
-		end
-
-		return select(2, unpack(args))
-	end
+	return select(2, unpack(args))
 end
 
 do -- nospam

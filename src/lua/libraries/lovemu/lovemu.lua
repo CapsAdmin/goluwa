@@ -129,7 +129,7 @@ function lovemu.RunGame(folder, ...)
 	lovemu.love = love
 	lovemu.textures = {}
 
-	warning("mounting love game folder: ", R("lovers/" .. lovemu.demoname .. "/"))
+	warning("mounting love game folder: ", 1, R("lovers/" .. lovemu.demoname .. "/"))
 	vfs.CreateFolder("data/lovemu/")
 	vfs.AddModuleDirectory("data/lovemu/")
 	vfs.Mount(R("lovers/" .. lovemu.demoname .. "/"))

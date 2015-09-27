@@ -12,7 +12,7 @@ do
 	local old = os.exit
 
 	function os.exit(code)
-		warning("os.exit() called with code %i", code or 0)
+		warning("os.exit() called with code %i", 2, code or 0)
 		--system.ShutDown(code)
 	end
 

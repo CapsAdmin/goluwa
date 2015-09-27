@@ -41,7 +41,7 @@ local function download(from, to, callback, on_fail, on_header)
 				callback(full_path)
 				llog("finished donwnloading ", from)
 			else
-				warning("resource download error: %q not found!", "data/downloads/" .. to)
+				warning("resource download error: %q not found!", 2, "data/downloads/" .. to)
 				on_fail()
 			end
 		end,
@@ -56,7 +56,7 @@ local function download(from, to, callback, on_fail, on_header)
 			file, err = vfs.Open("os:" .. e.DOWNLOAD_FOLDER .. to, "write")
 
 			if not file then
-				warning("resource download error: ", err)
+				warning("resource download error: ", 2, err)
 				on_fail()
 				return false
 			end
