@@ -48,22 +48,35 @@ PASS.Shader = {
 			{uv = "vec2"},
 			{normal = "vec3"},
 			--{tangent = "vec3"},
-			--{binormal = "vec3"},
 			{texture_blend = "float"},
 		},
 		source = [[
-			out vec3 world_vertex;
-			out vec3 view_normal;
+			#define GENERATE_TANGENT 1
+
+			out vec3 view_pos;
+
+			#ifdef GENERATE_TANGENT
+				out vec3 view_normal;
+			#else
+				out mat3 tangent_space;
+			#endif
 
 			void main()
 			{
-				vec4 vertex = g_view_world * vec4(pos, 1.0);
-				world_vertex = vertex.xyz;
-				gl_Position = g_projection * vertex;
+				vec4 temp = g_view_world * vec4(pos, 1.0);
+				view_pos = temp.xyz;
+				gl_Position = g_projection * temp;
 
-				view_normal = normalize(g_normal_matrix * vec4(normal, 1)).xyz;
-				//out_binormal = normalize(g_normal_matrix * vec4(binormal, 1)).xyz;
-				//out_tangent = normalize(g_normal_matrix * vec4(tangent, 1)).xyz;
+
+				#ifdef GENERATE_TANGENT
+					view_normal = mat3(g_normal_matrix) * normal;
+				#else
+					vec3 view_normal = mat3(g_normal_matrix) * normal;
+					vec3 view_tangent = mat3(g_normal_matrix) * tangent;
+					vec3 view_bitangent = cross(view_tangent, view_normal);
+
+					tangent_space = mat3(view_tangent, view_bitangent, view_normal);
+				#endif
 			}
 		]]
 	},
@@ -76,8 +89,17 @@ PASS.Shader = {
 			{texture_blend = "float"},
 		},
 		source = [[
-			in vec3 world_vertex;
-			in vec3 view_normal;
+			#define GENERATE_TANGENT 1
+			//#define DEBUG_NORMALS 1
+
+			in vec3 view_pos;
+
+			#ifdef GENERATE_TANGENT
+				in vec3 view_normal;
+			#else
+				in mat3 tangent_space;
+				#define view_normal tangent_space[2]
+			#endif
 
 			out vec4 diffuse_buffer;
 			out vec4 normal_buffer;
@@ -160,7 +182,7 @@ PASS.Shader = {
 					if (lua[SSBump = false])
 					{
 						// this is so wrong
-						normal_map.xyz = normalize(pow((normal_map.xyz*0.5 + vec3(0,0,1)), vec3(0.2)));
+						normal_map.xyz = normalize(pow((normal_map.xyz*0.1 + vec3(0,0,1)), vec3(0.1)));
 					}
 
 					if (lua[FlipYNormal = false])
@@ -175,7 +197,11 @@ PASS.Shader = {
 
 					normal_map.xyz = /*normalize*/(normal_map.xyz * 2 - 1).xyz;
 
-					normal = cotangent_frame(normalize(view_normal), world_vertex, uv) * normal_map.xyz;
+					#ifdef GENERATE_TANGENT
+						normal = cotangent_frame(normalize(view_normal), view_pos, uv) * normal_map.xyz;
+					#else
+						normal = tangent_space * normal_map.xyz;
+					#endif
 				}
 				else
 				{
@@ -234,6 +260,45 @@ PASS.Shader = {
 				self_illumination = texture(lua[SelfIlluminationTexture = render.GetWhiteTexture()], uv).r * lua[SelfIllumination = 0]*10;
 
 				light_buffer.rgb = vec3(0,0,0);
+
+				#ifdef DEBUG_NORMALS
+
+				//debug normals
+
+				normal = vec3(-1,-1,-1);
+
+				if (get_screen_uv().y > 0.5)
+				{
+					if (get_screen_uv().x < 0.33)
+					{
+						diffuse = cotangent_frame(normalize(view_normal), view_pos, uv)[0] * 0.5 + 0.5;
+					}
+					else if (get_screen_uv().x > 0.33 && get_screen_uv().x < 0.66)
+					{
+						diffuse = cotangent_frame(normalize(view_normal), view_pos, uv)[1] * 0.5 + 0.5;
+					}
+					else if (get_screen_uv().x > 0.66)
+					{
+						diffuse = cotangent_frame(normalize(view_normal), view_pos, uv)[2] * 0.5 + 0.5;
+					}
+				}
+				else
+				{
+					if (get_screen_uv().x < 0.33)
+					{
+						diffuse = tangent_space[0] * 0.5 + 0.5;
+					}
+					else if (get_screen_uv().x > 0.33 && get_screen_uv().x < 0.66)
+					{
+						diffuse = tangent_space[1] * 0.5 + 0.5;
+					}
+					else if (get_screen_uv().x > 0.66)
+					{
+						diffuse = tangent_space[2] * 0.5 + 0.5;
+					}
+				}
+
+				#endif
 			}
 		]]
 	}

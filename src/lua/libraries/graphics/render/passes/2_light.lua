@@ -196,7 +196,7 @@ PASS.Shader = {
 
 			void main()
 			{
-				//{out_color = vec3(1); return;}
+				//{out_color = vec4(1); return;}
 
 				vec2 uv = get_screen_uv();
 
