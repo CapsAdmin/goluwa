@@ -6,7 +6,7 @@ local light = entities.CreateEntity("light")
 light:SetSize(10)
 
 event.AddListener("Update", "test", function()
-	light:SetPosition(render.camera_3d:GetPosition())
+	--light:SetPosition(render.camera_3d:GetPosition())
 end)
 
 local i = 1
@@ -15,6 +15,7 @@ local function spawn_test(path)
 	local tex = Texture(path)
 
 	local ent = entities.CreateEntity("visual")
+	ent:SetModelPath("models/cube.obj")
 	ent:SetPosition(Vec3(4*i,0,0))
 	local mat = render.CreateMaterial("model")
 	mat:SetDiffuseTexture(render.GetGreyTexture())
@@ -23,6 +24,7 @@ local function spawn_test(path)
 
 	do
 		local ent = entities.CreateEntity("visual")
+		ent:SetModelPath("models/cube.obj")
 		ent:SetPosition(Vec3(4*i,-0.75,2))
 		ent:SetScale(Vec3(1,0.05,1))
 		local mat = render.CreateMaterial("model")
@@ -41,3 +43,8 @@ spawn_test("https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Normal_map
 spawn_test("http://40.media.tumblr.com/00141864a3adb82557f0416f072597ad/tumblr_inline_nmf5di73iE1s90xcn_1280.png"):SetFlipYNormal(true)
 spawn_test("http://ssbump-generator.yolasite.com/resources/TestBump2_normal.jpg"):SetFlipYNormal(true)
 spawn_test("http://robbylamb.com/Images/Normal_Test.jpg"):SetFlipXNormal(true)
+
+
+local ent = entities.CreateEntity("visual")
+ent:SetModelPath("models/cube.obj")
+ent:SetPosition(Vec3(0,0,0))
