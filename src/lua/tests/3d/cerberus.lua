@@ -238,9 +238,9 @@ for _,ent in pairs(ent:GetChildren()) do
 	if ent.config == "visual" then
 		local mat = render.CreateMaterial("model")
 		mat:SetDiffuseTexture(Texture("textures/Cerberus_A.tga"))
-		mat:SetNormalTexture(Texture("textures/Cerberus_N.tga"))
-		mat:SetRoughnessTexture(Texture("textures/Cerberus_R.tga"))
-		mat:SetMetallicTexture(Texture("textures/Cerberus_M.tga"))
+		mat:SetNormalTexture(Texture("textures/Cerberus_N.tga", false))
+		mat:SetRoughnessTexture(Texture("textures/Cerberus_R.tga", false))
+		mat:SetMetallicTexture(Texture("textures/Cerberus_M.tga", false))
 		mat:SetMetallicMultiplier(1)
 		mat:SetRoughnessMultiplier(1)
 		mat:SetFlipYNormal(true)

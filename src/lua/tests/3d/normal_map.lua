@@ -12,7 +12,7 @@ end)
 local i = 1
 
 local function spawn_test(path)
-	local tex = Texture(path)
+	local tex = Texture(path, false)
 
 	local ent = entities.CreateEntity("visual")
 	ent:SetModelPath("models/cube.obj")

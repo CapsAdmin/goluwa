@@ -32,7 +32,7 @@ end)
 
 local mat = render.CreateMaterial("model")
 mat:SetDiffuseTexture(Texture("textures/Cerberus_A.tga"))
-mat:SetNormalTexture(Texture("textures/Cerberus_N.tga"))
+mat:SetNormalTexture(Texture("textures/Cerberus_N.tga", false))
 mat:SetRoughnessTexture(Texture("textures/Cerberus_R.tga"))
 mat:SetMetallicTexture(Texture("textures/Cerberus_M.tga"))
 
