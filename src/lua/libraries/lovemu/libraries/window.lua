@@ -22,6 +22,26 @@ function love.window.getDimensions()
 	return window.GetSize():Unpack()
 end
 
+function love.window.getMode()
+	local w, h = window.GetSize():Unpack()
+	return w, h, {
+		fullscreen = false,
+		vsync = false,
+		fsaa = false,
+		resizable = true,
+		borderless = true,
+		centered = false,
+		display = 0,
+		minwidth = 800,
+		maxwidth = 600,
+		highdpi = false,
+		srgb = SRGB,
+		refreshrate = 60,
+		x = window.GetPosition().x,
+		y = window.GetPosition().y,
+	}
+end
+
 local vec = Vec2()
 
 function love.window.setMode(x,y)

@@ -65,7 +65,13 @@ end
 function love.filesystem.load(path, mode)
 	mode = mode or "read"
 
-	local func, err = vfs.loadfile("data/lovemu/" .. IDENTITY .. "/" .. path, mode)
+	local func, err
+
+	if lovemu.Type(path) == "FileData" then
+		func, err = loadstring(path:getString())
+	else
+		func, err = vfs.loadfile("data/lovemu/" .. IDENTITY .. "/" .. path, mode)
+	end
 
 	if func then
 		setfenv(func, getfenv(2))
@@ -221,6 +227,48 @@ do -- File object
 		if mode then
 			self:open(mode)
 		end
+
+		return self
+	end
+end
+
+
+do -- FileData object
+	local FileData = {}
+
+	FileData.Type = "FileData"
+
+	function FileData:getPointer()
+		return ffi.cast("uint8_t *", self.contents)
+	end
+
+	function FileData:getSize()
+		return #self.contents
+	end
+
+	function FileData:getString()
+		return self.contents
+	end
+
+	function FileData:getExtension()
+		return self.ext
+	end
+
+	function FileData:getFilename()
+		return self.filename
+	end
+
+	function love.filesystem.newFileData(contents, name, decoder)
+		if name then
+			love.filesystem.write(name, contents)
+		else
+			contents = love.filesystem.read(name)
+		end
+
+		local self = lovemu.CreateObject(FileData)
+
+		self.contents = contents
+		self.filename, self.ext = name:match("(.+)%.(.+)")
 
 		return self
 	end

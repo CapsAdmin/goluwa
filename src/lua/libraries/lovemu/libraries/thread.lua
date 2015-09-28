@@ -8,7 +8,7 @@ local threads2 = {}
 local Thread = {}
 Thread.Type = "Thread"
 
-function Thread:start() end
+function Thread:start(...) self.args = {...} self.thread:Start() threads2[self.co] = self end
 function Thread:wait() end
 function Thread:set(key, val) self.vars[key] = val end
 function Thread:send() end
@@ -28,13 +28,12 @@ function love.thread.newThread(name, script_path)
 	local env = getfenv(2)
 	local func = love.filesystem.load(script_path or name)
 	local thread = tasks.CreateTask()
-	function thread:OnStart()
+	function thread.OnStart()
 		setfenv(func, env)
-		self:Wait()
-		func()
-		self:Wait()
+		thread:Wait()
+		func(unpack(self.args))
+		thread:Wait()
 	end
-	thread:Start()
 
 	function thread:OnFinish()
 		logn("[lovemu] thread ", name ," finished")
@@ -42,7 +41,6 @@ function love.thread.newThread(name, script_path)
 
 	self.thread = thread
 	threads[name] = self
-	threads2[thread.co] = self
 
 	self.name = name
 
@@ -60,4 +58,30 @@ end
 
 function love.thread.getThreads()
 	return threads
+end
+
+local channels = {}
+
+local Channel = {}
+Channel.Type = "Channel"
+
+function Channel:clear() table.clear(self.queue) end
+function Channel:demand() return table.remove(self.queue, 1) end
+function Channel:getCount() return #self.queue end
+function Channel:peek() return self.queue[1] end
+function Channel:pop() return self:demand() end -- supposedly blocking
+function Channel:push(value) return table.insert(self.queue, value) end
+function Channel:supply(value) return self:push(value) end -- supposedly blocking
+
+
+function love.thread.newChannel()
+	local self = lovemu.CreateObject(Channel)
+
+	self.queue = {}
+
+	return self
+end
+
+function love.thread.getChannel(name)
+	return channels[name]
 end
