@@ -96,6 +96,7 @@ PASS.Shader = {
 
 			#ifdef GENERATE_TANGENT
 				in vec3 view_normal;
+				#define tangent_space cotangent_frame(view_normal, view_pos, uv)
 			#else
 				in mat3 tangent_space;
 				#define view_normal tangent_space[2]
@@ -197,11 +198,7 @@ PASS.Shader = {
 
 					normal_map.xyz = /*normalize*/(normal_map.xyz * 2 - 1).xyz;
 
-					#ifdef GENERATE_TANGENT
-						normal = cotangent_frame(normalize(view_normal), view_pos, uv) * normal_map.xyz;
-					#else
-						normal = tangent_space * normal_map.xyz;
-					#endif
+					normal = tangent_space * normal_map.xyz;
 				}
 				else
 				{
