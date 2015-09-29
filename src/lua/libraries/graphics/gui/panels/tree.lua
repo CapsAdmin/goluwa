@@ -10,6 +10,7 @@ do -- tree node
 
 	function PANEL:Initialize()
 		self:SetDraggable(true)
+		self:SetDragMinDistance(Vec2()-1)
 		self.nodes = {}
 
 		prototype.GetRegistered(self.Type, "button").Initialize(self)
@@ -26,6 +27,9 @@ do -- tree node
 		exp:SetupLayout("center_left")
 		exp.OnStateChanged = function(_, b)
 			self:OnExpand(b)
+			if self.expand_callback then
+				self.expand_callback(b)
+			end
 		end
 
 		local img = self:CreatePanel("base", "image")
@@ -107,6 +111,10 @@ do -- tree node
 	function PANEL:AddNode(str, icon, id)
 		local pnl = self.tree.AddNode(self.tree, str, icon, id)
 
+		local pos
+		for i,v in ipairs(self.tree:GetChildren()) do if v == self then pos = i break end  end
+		if pos then self.tree:AddChild(pnl, pos+1) end
+
 		pnl.offset = self.offset + self.tree.IndentWidth
 		pnl.node_parent = self
 
@@ -114,6 +122,15 @@ do -- tree node
 		self:SetExpand(true)
 
 		return pnl
+	end
+
+	function PANEL:SetExpandCallback(callback)
+		self.expand_callback = function(b)
+			callback()
+			self.expand_callback = nil
+		end
+		self.expand:SetVisible(true)
+		self:SetExpand(false)
 	end
 
 	function PANEL:SetExpandInternal(b)
