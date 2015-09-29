@@ -45,7 +45,6 @@ function structs.Register(META)
 
 		META.__index = META
 		META.Type = META.ClassName:lower()
-		META.TypeX = META.TypeX or META.Type
 
 		local obj
 

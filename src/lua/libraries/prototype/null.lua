@@ -4,7 +4,6 @@ do
 	local NULL = {}
 
 	NULL.Type = "null"
-	NULL.TypeX = "null"
 	NULL.ClassName = "NULL"
 	NULL.IsNull = true
 
@@ -48,4 +47,4 @@ function prototype.MakeNULL(tbl)
 	return var
 end
 
-_G.NULL = setmetatable({Type  = "null", TypeX = "null", ClassName = "ClassName"}, prototype.GetRegistered("null"))
+_G.NULL = setmetatable({Type  = "null", ClassName = "ClassName"}, prototype.GetRegistered("null"))

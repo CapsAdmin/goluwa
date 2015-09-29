@@ -13,7 +13,6 @@ local META = {}
 META.__index = META
 
 META.Type = "matrix44"
-META.TypeX = "matrix44"
 
 META.ClassName = "Matrix44"
 META.NumberType = "float"
@@ -498,8 +497,7 @@ ffi.cdef[[
 local meta = ffi.metatype("Matrix44", META)
 light_ctor = function() return meta(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1) end
 function Matrix44(x, y, z)
-	local self = meta(1,0,0,0, 0,1,0,0, 0,0,1,0, x or 0, y or 0, z or 0,1)
-	return self
+	return meta(1,0,0,0, 0,1,0,0, 0,0,1,0, x or 0, y or 0, z or 0,1)
 end
 
 prototype.Register(META)

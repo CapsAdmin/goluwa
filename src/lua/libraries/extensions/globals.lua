@@ -327,7 +327,7 @@ do -- check
 	end
 end
 
-local idx = function(var) return var.TypeX or var.Type end
+local idx = function(var) return var.Type end
 
 function hasindex(var)
 	if getmetatable(var) == getmetatable(NULL) then return false end
@@ -372,7 +372,7 @@ function typex(var)
 	if getmetatable(var) == getmetatable(NULL) then return "null" end
 
 	if t == "table" then
-		return var.TypeX or var.Type or t
+		return var.Type or t
 	end
 
 	local ok, res = pcall(idx, var)
