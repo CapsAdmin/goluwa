@@ -753,6 +753,7 @@ end
 do -- drag drop
 	prototype.GetSet(PANEL, "Draggable", false)
 	prototype.GetSet(PANEL, "DragDrop", false)
+	prototype.GetSet(PANEL, "DragMinDistance", 20)
 
 	function PANEL:StartDragging(button)
 		self.drag_world_pos = gui.mouse_pos:Copy()
@@ -765,6 +766,7 @@ do -- drag drop
 		self.drag_local_pos = nil
 		self.drag_panel_start_pos = nil
 		self.drag_last_hover = nil
+		self.dragged_out_of_min_distance = nil
 	end
 
 	function PANEL:IsDragging()
@@ -779,8 +781,15 @@ do -- drag drop
 		end
 
 		local drag_pos = Vec2(surface.ScreenToWorld(self.drag_world_pos:Unpack()))
+		local pos = self.drag_panel_start_pos + self:GetMousePosition() - drag_pos
 
-		self:SetPosition(self.drag_panel_start_pos + self:GetMousePosition() - drag_pos)
+		if not self.dragged_out_of_min_distance and pos:Distance(self.drag_panel_start_pos) < self.DragMinDistance then
+			return
+		else
+			self.dragged_out_of_min_distance = true
+		end
+
+		self:SetPosition(pos)
 
 		local panel = gui.GetHoveringPanel(nil, self)
 
@@ -1462,6 +1471,7 @@ do -- mouse
 			if button == "button_2" then
 				self:OnRightClick()
 			end
+			self:StopDragging()
 		end
 
 		self:OnMouseInput(button, press)
