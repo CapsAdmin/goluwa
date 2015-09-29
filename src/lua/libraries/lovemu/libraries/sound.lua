@@ -85,21 +85,8 @@ function love.sound.newSoundData(samples, rate, bits, channels)
 				buffer:SetSampleRate(info.samplerate)
 				buffer:SetData(data, length)
 
-				self:SetBuffer(buffer)
+				self.buffer = buffer
 
-				self.decode_info = info
-				self.ready = true
-
-				-- in case it's instantly loaded and OnLoad is defined the same frame
-				event.Delay(0, function()
-					if self:IsValid() and self.OnLoad then
-						self:OnLoad(info)
-						if self.play_when_ready then
-							self:Play()
-							self.play_when_ready = nil
-						end
-					end
-				end)
 			end
 		end)
 

@@ -66,10 +66,10 @@ local Channel = {}
 Channel.Type = "Channel"
 
 function Channel:clear() table.clear(self.queue) end
-function Channel:demand() return table.remove(self.queue, 1) end
+function Channel:demand() repeat until #self.queue ~= 0 return self:pop() end -- supposedly blocking
 function Channel:getCount() return #self.queue end
 function Channel:peek() return self.queue[1] end
-function Channel:pop() return self:demand() end -- supposedly blocking
+function Channel:pop() return table.remove(self.queue, 1) end
 function Channel:push(value) return table.insert(self.queue, value) end
 function Channel:supply(value) return self:push(value) end -- supposedly blocking
 

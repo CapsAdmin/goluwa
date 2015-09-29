@@ -356,19 +356,30 @@ do -- font
 		--surface.Scale(-sx, -sy)
 	end
 
-	function love.graphics.printf(text, x, y, limit, align, r, sx, sy)
+	function love.graphics.printf(text, x, y, limit, align, r, sx, sy, ox, oy, kx, ky)
 
 		text = tostring(text)
+		x = x or 0
 		y = y or 0
 		limit = limit or 0
 		align = align or "left"
 		sx = sx or 1
 		sy = sy or 1
 		r = r or 0
+		ox = ox or 0
+		oy = oy or 0
+		kx = kx or 0
+		ky = ky or 0
+
+		if align == "center" then
+			x = x - (surface.GetTextSize(text) / 2)
+		end
 
 		surface.SetColor(cr/255, cg/255, cb/255, ca/255)
-		surface.SetTextPosition(x, y)
+		surface.SetTextPosition(0, 0)
+		surface.Translate(x, y)
 		surface.DrawText(text)
+		surface.Translate(-x, -y)
 		do return end
 		-- todo: is this really a format function?
 
