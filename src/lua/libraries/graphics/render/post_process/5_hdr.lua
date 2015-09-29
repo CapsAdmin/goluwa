@@ -8,14 +8,14 @@ PASS.Source = {}
 table.insert(PASS.Source, {
 	buffer = {
 		max_size = Vec2() + 512,
-		internal_format = "rgb8",
+		internal_format = "rgb16f",
 	},
 	source = [[
 		out vec3 out_color;
 
 		void main()
 		{
-			out_color = pow(texture(self, uv).rgb, vec3(5));
+			out_color = max(pow(texture(self, uv).rgb*6, vec3(3)), vec3(0));
 		}
 	]]
 })
@@ -27,13 +27,13 @@ for x = -1, 1 do
 		local weights = {}
 
 		for i,v in ipairs({-0.028, -0.024, -0.020, -0.016, -0.012, -0.008, -0.004, 0.004, 0.008, 0.012, 0.016, 0.020, 0.024, 0.028}) do
-			weights[i] = Vec2(v*x, v*y) * 2
+			weights[i] = Vec2(v*x, v*y) * 0.75
 		end
 
 		table.insert(PASS.Source, {
 			buffer = {
-				max_size = Vec2() + 128,
-				internal_format = "rgb8",
+				max_size = Vec2() + 512,
+				internal_format = "rgb16f",
 			},
 			source = [[
 				out vec3 out_color;
@@ -67,10 +67,10 @@ table.insert(PASS.Source, {
 	source = [[
 		out vec3 out_color;
 
-		const float gamma = 0.8;
-		float exposure = 1.75;
-		float bloomFactor = 0.01;
-		float brightMax = 1.5;
+		const float gamma = 1;
+		float exposure = 1.25;
+		float bloomFactor = 0.0005;
+		float brightMax = 1;
 
 		void main()
 		{
@@ -80,11 +80,9 @@ table.insert(PASS.Source, {
 
 			vec3 color = original_image + downsampled_extracted_bloom * bloomFactor;
 
-			color *= exposure * (exposure/brightMax + 1.0) / (exposure + 1.0);
+			color *= exposure * (exposure + 1.0);
 			vec3 mapped = vec3(1.0) - exp(-color * exposure);
 			mapped = pow(mapped, vec3(1.0 / gamma));
-
-
 
 			out_color = mapped;
 		}

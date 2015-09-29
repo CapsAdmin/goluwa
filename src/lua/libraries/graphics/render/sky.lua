@@ -52,7 +52,7 @@ vec3 sky_absorb(vec3 sky_color, float dist, vec3 color, float factor)
 
 vec3 get_sky(vec2 uv, vec3 sun_direction, float depth)
 {
-	float intensity = lua[world_sky_intensity = 10];
+	float intensity = lua[world_sun_intensity = 1];
 	vec3 sky_color = lua[world_sky_color = Vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131)];
 
 	const float surface_height = 0.95;
@@ -61,7 +61,7 @@ vec3 get_sky(vec2 uv, vec3 sun_direction, float depth)
 
 	const float rayleigh_brightness = 2;
 	const float mie_brightness = 0.99;
-	const float spot_brightness = 1;
+	float spot_brightness = intensity;
 	const float scatter_strength = 0.1;
 	const float rayleigh_strength = 0.839;
 	const float mie_strength = 0.964;
@@ -84,7 +84,13 @@ vec3 get_sky(vec2 uv, vec3 sun_direction, float depth)
 
 	float sky_mult = pow(depth, 100);
 	float spot = smoothstep(0.0, 100.0, sky_phase(alpha, 0.9995)) * spot_brightness * sky_mult;
-	float stars = pow(get_noise((ray.xz+sun_direction.xy)/2).x, 15) * 0.25 * sky_mult;
+
+	vec3 noise = get_noise((ray.xz+sun_direction.xy)/5).xyz;
+	vec3 hsv = rgb2hsv(noise);
+	hsv.y = 0.25;
+	hsv.z = pow(hsv.z, 75)*5;
+	noise = hsv2rgb(hsv);
+	vec3 stars = noise * sky_mult;
 
 	vec3 eye_position = min(vec3(0,surface_height,0) + (vec3(-g_cam_pos.x, g_cam_pos.z, g_cam_pos.y) / 100010000), vec3(0.999999));
 	float eye_depth = sky_atmospheric_depth(eye_position, ray, depth);
@@ -100,7 +106,7 @@ vec3 get_sky(vec2 uv, vec3 sun_direction, float depth)
 		vec3 position = eye_position + ray * sample_distance;
 		float extinction = sky_horizon_extinction(position, ldir, surface_height - 0.2);
 		float sample_depth = sky_atmospheric_depth(position, ray, depth);
-		vec3 influx = sky_absorb(sky_color, sample_depth, vec3(intensity), scatter_strength) * extinction;
+		vec3 influx = sky_absorb(sky_color, sample_depth, vec3(intensity * 5), scatter_strength) * extinction;
 		rayleigh_collected += sky_absorb(sky_color, sqrt(sample_distance), sky_color * influx, rayleigh_strength);
 
 		mie_collected += sky_absorb(sky_color, sample_distance, influx, mie_strength);
@@ -130,7 +136,8 @@ local function init()
 	tex = render.CreateTexture("cube_map")
 	tex:SetInternalFormat("rgb16f")
 	tex:SetMipMapLevels(1)
-	tex:LoadCubemap("textures/skybox/bluesky.png")
+	tex:SetSize(Vec2() + 1024)
+	tex:SetupStorage()
 
 	shader = render.CreateShader({
 		name = "sky",
@@ -155,7 +162,7 @@ local function init()
 
 				void main()
 				{
-					out_color = get_sky(uv, sun_direction, get_depth(uv));
+					out_color = get_sky(uv, sun_direction, 1);
 				}
 			]]
 		}
@@ -172,6 +179,10 @@ function render.UpdateSky()
 
 	render.EnableDepth(false)
 	render.SetBlendMode()
+
+	for k,v in pairs(render.gbuffer_values) do
+		shader[k] = v
+	end
 
 	render.SetShaderOverride(shader)
 	local old_view = render.camera_3d:GetView()
@@ -207,4 +218,7 @@ end
 
 if RELOAD then
 	init()
+	event.Delay(0.1, function()
+	render.InitializeGBuffer()
+	end)
 end

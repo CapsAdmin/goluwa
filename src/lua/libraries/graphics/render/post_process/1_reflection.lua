@@ -10,7 +10,7 @@ local FAST_BLUR = false
 table.insert(PASS.Source, {
 	buffer = {
 		max_size = Vec2() + 512,
-		internal_format = "rgb8",
+		internal_format = "rgb16f",
 	},
 	source = [[
 	const float rayStep = 0.002;
@@ -90,7 +90,7 @@ if FAST_BLUR then
 			table.insert(PASS.Source, {
 				buffer = {
 					size_divider = 4,
-					internal_format = "rgb8",
+					internal_format = "rgb16f",
 				},
 				source = [[
 					out vec3 out_color;
@@ -126,8 +126,8 @@ else
 			if x == 0 or y == 0 then goto continue end
 			table.insert(PASS.Source, {
 				buffer = {
-					max_size = Vec2() + 1024,
-					internal_format = "rgb8",
+					--max_size = Vec2() + 1024,
+					internal_format = "rgb16f",
 				},
 				source = [[
 					out vec3 out_color;
@@ -194,7 +194,7 @@ else
 
 					void main()
 					{
-						out_color = blur(uv, vec2(]]..x..","..y..[[) * min((get_roughness(uv) * 5 / g_cam_fov) / (texture(tex_depth, uv).r/1.5), 4));
+						out_color = blur(uv, vec2(]]..x..","..y..[[) * min((get_roughness(uv) * 2 / g_cam_fov) / (texture(tex_depth, uv).r/1.5), 5));
 					}
 				]]
 			})
