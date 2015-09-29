@@ -187,6 +187,12 @@ function tasks.IsBusy()
 	return tasks.busy
 end
 
+function tasks.Panic()
+	for thread in pairs(tasks.created) do
+		thread:Remove()
+	end
+end
+
 event.CreateTimer("tasks", 0.25, 0, function()
 	local i = 0
 
