@@ -367,18 +367,14 @@ function typex(var)
 		t == "thread"
 	then
 		return t
-	end
-
-	if getmetatable(var) == getmetatable(NULL) then return "null" end
-
-	if t == "table" then
+	elseif t == "table" then
 		return var.Type or t
-	end
+	else
+		local ok, res = pcall(idx, var)
 
-	local ok, res = pcall(idx, var)
-
-	if ok then
-		return res
+		if ok then
+			t = res
+		end
 	end
 
 	return t
