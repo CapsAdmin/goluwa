@@ -199,9 +199,7 @@ function menu.CreateTopBar()
 						local entry = list:AddEntry(name--[[, last_modified, type, size]])
 
 						entry.OnSelect = function()
-							tester.Begin(name)
-								include(dir .. name)
-							tester.End()
+							include(dir .. name)
 						end
 
 						entry:SetIcon("textures/silkicons/script.png")
