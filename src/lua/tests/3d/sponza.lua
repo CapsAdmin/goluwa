@@ -28,7 +28,6 @@ sun:SetPosition(Vec3(1, 1, 1)*1000)
 sun:SetColor(Color(1,1,0.9))
 sun:SetSize(1000)
 sun:SetIntensity(0.75)
-SUN = sun
 
 local sponza = entities.CreateEntity("visual")
 sponza:SetModelPath("crytek-sponza.zip/crytek-sponza/sponza.obj")

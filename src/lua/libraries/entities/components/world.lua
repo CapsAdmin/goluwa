@@ -11,7 +11,7 @@ function COMPONENT:OnAdd(ent)
 	self.sun:SetHideFromEditor(true)
 	self.sun:SetProjectFromCamera(true)
 
-	SUN = self.sun
+	ent.sun = self.sun
 
 	for _, info in ipairs(prototype.GetStorableVariables(self)) do
 		self[info.set_name](self, self[info.get_name](self))

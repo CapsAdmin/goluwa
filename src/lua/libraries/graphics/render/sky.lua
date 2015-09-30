@@ -50,8 +50,9 @@ vec3 sky_absorb(vec3 sky_color, float dist, vec3 color, float factor)
 	return color-color*pow(sky_color, vec3(factor/dist));
 }
 
-vec3 get_sky(vec2 uv, vec3 sun_direction, float depth)
+vec3 get_sky(vec2 uv, float depth)
 {
+	vec3 sun_direction = lua[(vec3)render.GetShaderSunDirection];
 	float intensity = lua[world_sun_intensity = 1];
 	vec3 sky_color = lua[world_sky_color = Vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131)];
 
@@ -142,17 +143,6 @@ local function init()
 	shader = render.CreateShader({
 		name = "sky",
 		fragment = {
-			variables = {
-				sun_direction = {vec3 = function()
-					if SUN and SUN:IsValid() then
-						local dir = SUN:GetTRPosition():GetNormalized()
-
-						return Vec3(-dir.y, dir.z, -dir.x)
-					end
-
-					return Vec3()
-				end},
-			},
 			mesh_layout = {
 				{pos = "vec3"},
 				{uv = "vec2"},
@@ -162,7 +152,7 @@ local function init()
 
 				void main()
 				{
-					out_color = get_sky(uv, sun_direction, 1);
+					out_color = get_sky(uv, 1);
 				}
 			]]
 		}
@@ -214,6 +204,18 @@ end
 function render.GetSkyTexture()
 	if not tex then init() end
 	return tex
+end
+
+function render.GetShaderSunDirection()
+	local sun = entities.world and entities.world.sun
+
+	if sun and sun:IsValid() then
+		local dir = sun:GetTRPosition():GetNormalized()
+
+		return Vec3(-dir.y, dir.z, -dir.x)
+	end
+
+	return Vec3()
 end
 
 if RELOAD then
