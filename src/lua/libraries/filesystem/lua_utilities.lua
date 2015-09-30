@@ -1,10 +1,12 @@
 local vfs = (...) or _G.vfs
 
+local fs = require("fs")
+
 vfs.included_files = vfs.included_files or {}
 
 local function store(path)
 	local path = vfs.FixPath(path)
-	vfs.included_files[path] = fs.getattributes(path)
+	vfs.included_files[path] = vfs.OSGetAttributes(path)
 end
 
 function loadfile(path, ...)
@@ -58,7 +60,7 @@ function vfs.dofile(path, ...)
 end
 
 do -- include
-	local base = fs.getcd()
+	local base = vfs.GetWorkingDirectory()
 
 	local include_stack = vfs.include_stack or {}
 	vfs.include_stack = include_stack

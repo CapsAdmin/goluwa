@@ -1,5 +1,7 @@
 local utility = _G.utility or ...
 
+local fs = require("fs")
+
 local temp_dir = R"data/" .. "bms/"
 local temp_script = R"bin/temp_script.bms"
 local quickbms_location = R("bin/")
@@ -39,7 +41,7 @@ function utility.QuickBMSOpenFile(archive_path, file_path, script)
 		last_written = script
 	end
 
-	fs.createdir(temp_dir)
+	vfs.OSCreateDirectory(temp_dir)
 
 	vfs.PushWorkingDirectory(quickbms_location)
 		os.execute(("quickbms -R -f %q temp_script.bms %q %q"):format(file_path, archive_path, temp_dir))

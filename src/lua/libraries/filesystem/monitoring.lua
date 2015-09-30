@@ -1,5 +1,7 @@
 local vfs = (...) or _G.vfs
 
+local fs = require("fs")
+
 function vfs.MonitorFile(file_path, callback)
 	check(file_path, "string")
 	check(callback, "function")

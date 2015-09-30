@@ -120,29 +120,23 @@ end
 
 do -- file system
 
-	do
+	do -- this is ugly but it's because we haven't included the global extensions yet..
 		-- this is required because fs needs winapi and syscall
 		table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../../src/lua/modules/" .. name .. ".lua") end)
 		table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../../src/lua/modules/" .. name .. "/init.lua") end)
 
-		fs = dofile("../../../src/lua/libraries/filesystem/intermediate.lua")
+		local fs = require("fs")
 
-		-- remove them because we do it properly later on
-		table.remove(package.loaders)
-		table.remove(package.loaders)
-	end
+		e.BIN_FOLDER = fs.getcd():gsub("\\", "/") .. "/"
+		e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(3)) -- the root folder is always 3 directories up (data/bin/os_arch)
+		e.SRC_FOLDER = e.ROOT_FOLDER .. "src/"
+		e.DATA_FOLDER = e.ROOT_FOLDER .. "data/"
+		e.USERDATA_FOLDER = e.DATA_FOLDER .. "users/" .. e.USERNAME:lower() .. "/"
 
-	e.BIN_FOLDER = fs.getcd():gsub("\\", "/") .. "/"
-	e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(3)) -- the root folder is always 3 directories up (data/bin/os_arch)
-	e.SRC_FOLDER = e.ROOT_FOLDER .. "src/"
-	e.DATA_FOLDER = e.ROOT_FOLDER .. "data/"
-	e.USERDATA_FOLDER = e.DATA_FOLDER .. "users/" .. e.USERNAME:lower() .. "/"
+		-- create ROOT/data/users/
+		fs.createdir(e.USERDATA_FOLDER:match("(.+/).-/"))
+		fs.createdir(e.USERDATA_FOLDER)
 
-	-- create ROOT/data/users/
-	fs.createdir(e.USERDATA_FOLDER:match("(.+/).-/"))
-	fs.createdir(e.USERDATA_FOLDER)
-
-	do -- this is ugly but it's because we haven't included the global extensions yet..
 		_G.check = function() end
 
 		include = function() end
@@ -172,6 +166,10 @@ do -- file system
 	--	dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/files/vpk.lua")
 
 		vfs.IsDir = vfs.IsFolder
+
+		-- remove the temporary added loaders from top because we do it properly later on
+		table.remove(package.loaders)
+		table.remove(package.loaders)
 	end
 
 	vfs.Mount("os:" .. e.USERDATA_FOLDER, "data") -- mount "ROOT/data/users/*username*/" to "/data/"

@@ -93,7 +93,7 @@ do -- logging
 	local count = 0
 	local last_count_length = 0
 
-	fs.createdir(base_log_dir)
+	require("fs").createdir(base_log_dir)
 
 	local function raw_log(args, sep, append)
 		local line = type(args) == "string" and args or table.concat(args, sep)

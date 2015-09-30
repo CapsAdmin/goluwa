@@ -1,5 +1,9 @@
 local vfs = (...) or _G.vfs
 
+local fs = require("fs")
+
+vfs.OSCreateDirectory = fs.createdir
+vfs.OSGetAttributes = fs.getattributes
 
 do
 	vfs.SetWorkingDirectory = fs.setcd

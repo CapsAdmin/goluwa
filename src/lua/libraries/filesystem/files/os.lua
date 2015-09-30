@@ -1,5 +1,7 @@
 local vfs = (...) or _G.vfs
 
+local fs = require("fs")
+
 if vfs.use_appdata then
 	if WINDOWS then
 		vfs.SetEnv("DATA", "os:%%APPDATA%%/.goluwa")
