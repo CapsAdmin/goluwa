@@ -633,7 +633,7 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
 	local right = self.right:CreatePanel("base")
 	right:SetWidth(500)
 
-	if prototype.GetRegistered("panel2", t .. "_property") then
+	if prototype.GetRegistered("panel", t .. "_property") then
 		local panel = right:CreatePanel(t .. "_property", "property")
 
 		panel:SetValue(default)

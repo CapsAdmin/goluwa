@@ -1,6 +1,6 @@
 local gui = ... or _G.gui
 
-local PANEL = prototype.CreateTemplate("panel2", "base")
+local PANEL = prototype.CreateTemplate("panel", "base")
 
 include("lua/libraries/templates/parenting.lua", PANEL)
 

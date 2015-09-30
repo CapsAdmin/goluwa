@@ -26,7 +26,7 @@ function gui.CreatePanel(name, parent, store_in_parent)
 		end
 	end
 
-	local self = prototype.CreateDerivedObject("panel2", name, nil, true)
+	local self = prototype.CreateDerivedObject("panel", name, nil, true)
 
 	if not self then
 		return NULL
@@ -63,7 +63,7 @@ end
 
 function gui.RegisterPanel(META)
 	META.TypeBase = "base"
-	prototype.Register(META, "panel2")
+	prototype.Register(META, "panel")
 end
 
 function gui.RemovePanel(pnl)
