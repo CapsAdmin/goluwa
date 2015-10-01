@@ -94,7 +94,7 @@ function vfs.CreateFoldersFromPath(filesystem, path)
 end
 
 function vfs.GetAbsolutePath(path, is_folder)
-	check(path, "string")
+	--check(path, "string")
 
 	for i, data in ipairs(vfs.TranslatePath(path, is_folder)) do
 		if data.context:PCall("IsFile", data.path_info) or data.context:PCall("IsFolder", data.path_info) then
