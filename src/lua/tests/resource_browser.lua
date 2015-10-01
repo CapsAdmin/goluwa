@@ -14,48 +14,108 @@ local bottom = gui.CreatePanel("divider", area)
 bottom:SetStyle("frame")
 bottom:SetupLayout("bottom", "fill_x", "fill_y")
 
-local list = bottom:SetRight(gui.CreatePanel("list"))
-list:SetupSorted("name", "type")
-list:SizeColumnsToFit()
+local right = bottom:SetRight(gui.CreatePanel("scroll"))
+local icons = right:SetPanel(gui.CreatePanel("base"))
+icons:SetNoDraw(true)
+icons:SetStack(true)
+icons:SetupLayout("fill_x")
 
-local scroll = bottom:SetLeft(gui.CreatePanel("scroll"))
-scroll:SetWidth(200)
+local left = bottom:SetLeft(gui.CreatePanel("scroll"))
+local tree = left:SetPanel(gui.CreatePanel("tree"))
+tree:SetSize(Vec2() + 20000)
 
 bottom:SetDividerPosition(200)
 
-local tree = scroll:SetPanel(gui.CreatePanel("tree"))
-tree:SetSize(Vec2() + 20000)
+--[[
+render.InitializeGBuffer()
+local ent = entities.CreateEntity("visual")
+ent:SetModel("models/cube.obj")
+local light = entities.CreateEntity("light")
+light:SetSize(100)
+local function draw_scene(mat)
+	light:SetPosition(Vec3() + 2)
+	ent:SetMaterialOverride(mat)
+	ent:Draw()
+end
+]]
+
+local function add_icon(full_path)
+	local dir, name = full_path:match("(.+)/(.+)")
+	name = name or full_path
+
+	local area = icons:CreatePanel("base")
+	area:SetSize(Vec2() + 128)
+	area:SetNoDraw(true)
+	area:SetPadding(Rect()+4)
+
+	local label = area:CreatePanel("text")
+	label:SetText(name)
+	label:SetupLayout("bottom", "center_x_simple")
+
+	local icon = area:CreatePanel("base")
+	icon:SetSize(Vec2() + 128)
+	icon.OnMouseEnter = function()
+		if full_path:endswith(".vmt") then
+			--local mat = render.CreateMaterial("model")
+			--steam.LoadMaterial(full_path, mat)
+			--draw_scene(mat)
+		else
+			local tex = Texture(full_path)
+			icon:SetTexture(tex)
+			icon:SetSize((Vec2() + 100) * tex:GetSize().x/tex:GetSize().y)
+			icon:SetupLayout("center_simple")
+		end
+	end
+end
+
+local function populate_icons(full_path)
+	icons:RemoveChildren()
+
+	for _, full_path in pairs(vfs.Find(full_path .. "/", nil, true)) do
+		add_icon(full_path)
+	end
+
+	icons:SizeToChildrenHeight()
+end
 
 local function populate(dir, node)
+	local folders = false
+
 	for _, full_path in pairs(vfs.Find(dir, nil, true)) do
-		local is_dir = vfs.IsFolder(full_path)
 		local dir, name = full_path:match("(.+)/(.+)")
 		name = name or full_path
 		dir = dir or full_path
 
-		if is_dir then
-			dir = full_path
+		if vfs.IsFolder(full_path) then
 			local node = node:AddNode(name, gui.skin.icons.folder)
 			node:SetExpandCallback(function(b)
-				populate(dir .. "/", node)
+				if not populate(full_path .. "/", node) then
+					node.expand:SetVisible(false)
+				end
 			end)
+			node.OnSelect = function()
+				populate_icons(full_path)
+			end
+			folders = true
 		else
-			node:AddNode(name, gui.skin.icons.page)
-		end
 
-		--local name, ext = name:match("(.+)%.(.+)")
-		--list:AddEntry(name, ext)
+		end
 	end
 	tree:SizeToChildrenHeight()
+
 	tree:Layout()
+
+	return folders
 end
 
-populate(".", tree)
+local where = "textures/"
+
+populate(where, tree)
 
 function search:OnTextChanged(str)
 	if str == "" then
 		tree:RemoveChildren()
-		populate("models/", tree)
+		populate(where, tree)
 		return
 	end
 
@@ -65,13 +125,14 @@ function search:OnTextChanged(str)
 	tree:RemoveChildren()
 
 	function task:OnStart()
-		vfs.Search("models/", nil, function(full_path)
+		icons:RemoveChildren()
+		vfs.Search(where, nil, function(full_path)
 			if full_path:find(str) and vfs.IsFile(full_path) then
-				local name = full_path:match(".+/(.+)")
-				tree:AddNode(name, gui.skin.icons.page)
+				add_icon(full_path)
 			end
 			self:Wait()
 		end)
+		icons:SizeToChildrenHeight()
 	end
 
 	task:Start()
