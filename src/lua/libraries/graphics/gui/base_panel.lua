@@ -65,13 +65,19 @@ end
 
 function PANEL:SizeToChildrenHeight()
 	self:SetHeight(math.huge)
-	self:SetSize(self:GetSizeOfChildren())
+	self:SetHeight(self:GetSizeOfChildren().y + self.Margin:GetHeight())
 	self.LayoutSize = self.Size:Copy()
 end
 
 function PANEL:SizeToChildrenWidth()
 	self:SetWidth(math.huge)
-	self:SetSize(self:GetSizeOfChildren())
+	self:SetWidth(self:GetSizeOfChildren().x + self.Margin:GetWidth())
+	self.LayoutSize = self.Size:Copy()
+end
+
+function PANEL:SizeToChildren()
+	self:SetSize(Vec2() + math.huge)
+	self:SetSize(self:GetSizeOfChildren() + self.Margin:GetSize())
 	self.LayoutSize = self.Size:Copy()
 end
 
