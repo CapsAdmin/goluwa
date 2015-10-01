@@ -80,5 +80,32 @@ function gui.CreateMenu(options, parent)
 	return menu
 end
 
+function gui.CreateChoices(list, default, parent, padding)
+	local area = gui.CreatePanel("base", parent, padding)
+	area:SetStack(true)
+	area:SetStackRight(false)
+	area:SetNoDraw(true)
 
+	for i, v in ipairs(list) do
+		local pnl = area:CreatePanel("checkbox_label")
+		pnl:SetText(v)
+		if padding then pnl:SetPadding(padding) end
+		pnl:SizeToText()
+	end
 
+	for i, a in ipairs(area:GetChildren()) do
+		for i, b in ipairs(area:GetChildren()) do
+			a:TieCheckbox(b)
+		end
+	end
+
+	if default and area:GetChildren()[default] then
+		area:GetChildren()[default]:SetState(true)
+	else
+		area:GetChildren()[1]:SetState(true)
+	end
+
+	area:SizeToChildren()
+
+	return area
+end
