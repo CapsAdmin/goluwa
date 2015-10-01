@@ -10,6 +10,7 @@ prototype.GetSetDelegate(PANEL, "Font", nil, "label")
 prototype.GetSetDelegate(PANEL, "TextColor", nil, "label")
 prototype.GetSetDelegate(PANEL, "TextWrap", false, "label")
 prototype.GetSetDelegate(PANEL, "ConcatenateTextToSize", false, "label")
+prototype.GetSetDelegate(PANEL, "State", false, "checkbox")
 
 prototype.Delegate(PANEL, "label", "CenterText", "Center")
 prototype.Delegate(PANEL, "label", "CenterTextY", "CenterY")
@@ -28,19 +29,39 @@ function PANEL:Initialize()
 	self:Layout(true)
 
 	self.tied_checkboxes = {}
-	check.OnStateChanged = function(_, b)
+
+	check.OnStateChanged = function(check, b)
 		self:OnCheck(b)
 
-		for i,v in ipairs(self.tied_checkboxes) do
-			if v:IsValid() and v ~= check then
-				v.checkbox:SetState(not b)
+		if b then
+			for i,v in ipairs(self.tied_checkboxes) do
+				if v:IsValid() and v.checkbox ~= check then
+					v.checkbox:SetState(not b)
+				end
+			end
+		else
+			local found = false
+			for i,v in ipairs(self.tied_checkboxes) do
+				if v:IsValid() and v.checkbox == check then
+					local next = self.tied_checkboxes[i + 1]
+
+					if not next or not next:IsValid() then
+						next = self.tied_checkboxes[1]
+					end
+
+					next:SetState(true)
+					found = true
+				end
+			end
+
+			if not found then
+				self:SetState(true)
 			end
 		end
 	end
 end
 
 function PANEL:TieCheckbox(checkbox)
-	checkbox.tied_checkboxes = {}
 	table.insert(self.tied_checkboxes, checkbox)
 
 	for k,v in ipairs(self.tied_checkboxes) do
