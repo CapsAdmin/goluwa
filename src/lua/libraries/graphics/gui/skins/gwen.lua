@@ -117,6 +117,9 @@ for i, sub_skin in ipairs(skins) do
 		add_simple("check", 448,32, 15,15)
 		add_simple("uncheck", 464,32, 15,15)
 
+		add_simple("rad_check", 449,65, 15,15)
+		add_simple("rad_uncheck", 465,65, 15,15)
+
 		add_simple("+", 451,99, 9,9)
 		add_simple("-", 467,99, 9,9)
 
