@@ -234,6 +234,8 @@ function PANEL:AddEntry(...)
 
 	table.insert(self.entries, entry)
 
+	event.Delay(0, function() self:Layout() end, self) -- FIX ME
+
 	return entry
 end
 
