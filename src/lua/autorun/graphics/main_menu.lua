@@ -165,13 +165,12 @@ function menu.CreateTopBar()
 			divider:SetHeight(250)
 			divider:SetupLayout("top", "fill_x")
 			divider:SetDividerWidth(8)
+			divider:SetHideDivider(true)
 
 			local left = divider:SetLeft(gui.CreatePanel("base", divider))
 			left:SetNoDraw(true)
 			local right = divider:SetRight(gui.CreatePanel("base", divider))
 			right:SetNoDraw(true)
-
-			divider.horizontal_divider:SetColor(Color(1,1,1,0)) -- todo
 
 			divider:SetDividerPosition(300)
 
@@ -225,19 +224,8 @@ function menu.CreateTopBar()
 				area:SetupLayout("left", "bottom", "fill_y", "size_to_width")
 				area:SetNoDraw(true)
 
-				local choice1 = area:CreatePanel("checkbox_label")
-				choice1:SetPadding(Rect()+4)
-				choice1:SetText("long filename")
-				choice1:SizeToText()
-				choice1:SetupLayout("top", "left")
-
-				local choice2 = area:CreatePanel("checkbox_label")
-				choice2:SetPadding(Rect()+4)
-				choice2:SetText("snes header name")
-				choice2:SizeToText()
-				choice2:SetupLayout("top", "left")
-
-				choice2:TieCheckbox(choice1)
+				local choices = gui.CreateChoices({"long filename", "snes header name"}, 1, area, Rect() + 4)
+				choices:SetupLayout("top", "left")
 
 				local check = area:CreatePanel("checkbox_label")
 				check:SetPadding(Rect()+4)
@@ -263,19 +251,8 @@ function menu.CreateTopBar()
 					left:SetupLayout("top", "right", "fill", "layout_children", "size_to_width")
 					left:SetNoDraw(true)
 
-					local choice1 = left:CreatePanel("checkbox_label")
-					choice1:SetPadding(Rect()+4)
-					choice1:SetText("PAL")
-					choice1:SizeToText()
-					choice1:SetupLayout("bottom", "left")
-
-					local choice2 = left:CreatePanel("checkbox_label")
-					choice2:SetPadding(Rect()+4)
-					choice2:SetText("NTSC")
-					choice2:SizeToText()
-					choice2:SetupLayout("bottom", "left")
-
-					choice2:TieCheckbox(choice1)
+					local choices = gui.CreateChoices({"PAL", "NTSC"}, 1, left, Rect() + 4)
+					choices:SetupLayout("bottom", "left")
 
 					local label = left:CreatePanel("text")
 					label:SetPadding(Rect()+2)
@@ -291,19 +268,8 @@ function menu.CreateTopBar()
 					right:SetupLayout("top", "right", "fill", "layout_children", "size_to_width")
 					right:SetNoDraw(true)
 
-					local choice1 = right:CreatePanel("checkbox_label")
-					choice1:SetPadding(Rect()+4)
-					choice1:SetText("hirom")
-					choice1:SizeToText()
-					choice1:SetupLayout("bottom", "left")
-
-					local choice2 = right:CreatePanel("checkbox_label")
-					choice2:SetPadding(Rect()+4)
-					choice2:SetText("lowrom")
-					choice2:SizeToText()
-					choice2:SetupLayout("bottom", "left")
-
-					choice2:TieCheckbox(choice1)
+					local choices = gui.CreateChoices({"hirom", "lorom"}, 1, right, Rect() + 4)
+					choices:SetupLayout("bottom", "left")
 
 					local label = right:CreatePanel("text_button")
 					label:SetText("load")
