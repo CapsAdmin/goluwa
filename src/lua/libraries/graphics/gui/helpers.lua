@@ -74,7 +74,7 @@ function gui.CreateMenu(options, parent)
 
 	add_entry(menu, options)
 
-	--menu:Layout(true)
+	menu:Layout(true)
 	menu:SetPosition(gui.world:GetMousePosition():Copy())
 
 	return menu

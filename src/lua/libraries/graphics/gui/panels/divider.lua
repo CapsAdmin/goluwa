@@ -55,13 +55,13 @@ function PANEL:OnLayout()
 		self.horizontal_divider:SetSize(Vec2(self.DividerWidth, self.DividerHeight == 0 and self:GetHeight() or self.DividerHeight))
 
 		if self.left:IsValid() then
-			self.left:SetSize(Vec2(self.horizontal_divider:GetX() + (self.HideDivider and 0 or self.DividerWidth), self:GetHeight()))
+			self.left:SetSize(Vec2(self.horizontal_divider:GetX(), self:GetHeight()))
 		end
 
 		if self.right:IsValid() then
 			local offset = self.HideDivider and 0 or self.DividerWidth
 			self.right:SetX(self.horizontal_divider:GetX() + offset)
-			self.right:SetSize(Vec2(self:GetWidth() - self.horizontal_divider:GetX() + offset,  self:GetHeight()))
+			self.right:SetSize(Vec2(self:GetWidth() - self.horizontal_divider:GetX() - offset,  self:GetHeight()))
 		end
 	end
 
@@ -72,14 +72,13 @@ function PANEL:OnLayout()
 		self.vertical_divider:SetSize(Vec2(self.DividerHeight == 0 and self:GetWidth() or self.DividerHeight, self.DividerWidth))
 
 		if self.top:IsValid() then
-			self.top:SetSize(Vec2(self:GetWidth(), self.vertical_divider:GetY() + (self.HideDivider and 0 or self.DividerWidth)))
+			self.top:SetSize(Vec2(self:GetWidth(), self.vertical_divider:GetY()))
 		end
 
 		if self.bottom:IsValid() then
 			local offset = self.HideDivider and 0 or self.DividerWidth
 			self.bottom:SetY(self.vertical_divider:GetY() + offset)
-			self.bottom:SetSize(Vec2(self:GetWidth(), self:GetHeight() - self.vertical_divider:GetY() - offset))
-		end
+			self.bottom:SetSize(Vec2(self:GetWidth(), self:GetHeight() - self.vertical_divider:GetY() - offset)) end
 	end
 end
 

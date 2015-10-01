@@ -1,8 +1,3 @@
--- drag drop doesn't work properly with camera changes
--- multiple animations of the same type
--- support rotation in TrapChildren and drag drop
--- clipping isn't "recursive"
-
 local gui = _G.gui or {}
 
 gui.unroll_draw = false
@@ -57,6 +52,8 @@ function gui.CreatePanel(name, parent, store_in_parent)
 		prototype.SafeRemove(parent[store_in_parent])
 		parent[store_in_parent] = self
 	end
+
+	self:Layout()
 
 	return self
 end

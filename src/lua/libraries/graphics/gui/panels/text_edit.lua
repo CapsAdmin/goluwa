@@ -57,7 +57,7 @@ function PANEL:OnStyleChanged(skin)
 end
 
 function PANEL:OnLayout(S)
---	self.label:SetPosition(Vec2()+S)
+	self.label:SetPosition(Vec2()+S*2)
 end
 
 function PANEL:SetCaretPosition(pos)

@@ -59,9 +59,18 @@ function PANEL:OnLayout(S)
 		local x = 0
 		for i, label in ipairs(entry.labels) do
 			local w = self.columns[i].div.left:GetWidth()
+
+			local x2 = S*4
+			if label.icon then
+				x2 = label.icon:GetWidth() + S*4*2
+				label.icon:SetX(x + S*4)
+				label.icon:CenterYSimple()
+			end
+
 			label:SetWidth(w)
-			label:SetX(x-S)
+			label.label:SetX(x+x2)
 			label:SetHeight(entry:GetHeight())
+			label.label:CenterYSimple()
 
 			w = w + self.columns[i].div:GetDividerWidth()
 
@@ -75,6 +84,12 @@ function PANEL:OnLayout(S)
 	self.list:SetWidth(self:GetWidth())
 
 	--self:SizeColumnsToFit()
+
+	for k,v in pairs(self.columns) do
+		v.label:SetPadding(Rect()+S*2)
+		v:SetHeight(self.top:GetHeight())
+		v.div:SetHeight(v:GetHeight())
+	end
 
 	local column = self.columns[1]
 	--column:SetMargin(Rect()+2*S)
@@ -199,15 +214,12 @@ function PANEL:AddEntry(...)
 		local label = entry.labels[1]
 
 		table.remove(label:GetChildren())
-		local icon = label:CreatePanel("base")
+		local icon = label:CreatePanel("base", "icon")
 		table.insert(label:GetChildren(), label.label)
 
 		local image = Texture(path or "textures/silkicons/folder.png")
 		icon:SetTexture(image)
 		icon:SetSize(image:GetSize())
-
-		icon:SetupLayout("left", "center_y_simple")
-		label.label:SetupLayout("left", "center_y_simple")
 	end
 
 	entry.OnStateChanged = function(_, b)

@@ -194,7 +194,6 @@ function PANEL:SetTitle(str)
 
 	local title = self.bar:CreatePanel("text", "title")
 	title:SetText(str)
-	title:SetNoDraw(true)
 	title:SetupLayout("center_y_simple", "center_x")
 	self.title = title
 

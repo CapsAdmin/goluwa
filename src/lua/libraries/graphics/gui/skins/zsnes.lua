@@ -34,7 +34,7 @@ function SKIN:Build()
 	})
 
 	local texture = Texture("textures/gui/skins/zsnes.png")
-	--texture:SetMinFilter("nearest")
+	texture:SetMinFilter("nearest")
 	texture:SetMagFilter("nearest")
 
 	texture.OnLoad = function()

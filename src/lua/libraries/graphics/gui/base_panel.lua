@@ -1022,7 +1022,7 @@ do -- animations
 
 				animation.func(self, val)
 
-				if parent_layout[animation.var] and self:HasParent() then
+				if parent_layout[animation.var] and self:HasParent() and not self.Parent:IsWorld() then
 					self.Parent:Layout(true)
 				else
 					self:Layout(true)
@@ -1665,6 +1665,7 @@ do -- layout
 				child.laid_out = false
 			end
 		end
+
 		for _, child in ipairs(self:GetChildren()) do
 			if child.layout_commands then
 				for i, cmd in ipairs(child.layout_commands) do
@@ -1787,6 +1788,7 @@ do -- layout
 	end
 
 	function PANEL:SetupLayout(...)
+		if self:HasParent() then self.Parent:Layout() end
 		self:Layout(true)
 
 		if ... then
@@ -1799,7 +1801,7 @@ do -- layout
 			self.LayoutSize = nil
 		end
 
-		self:Layout()
+		event.Delay(0, function() self:Layout() end, self) -- FIX ME
 	end
 
 	do -- layout commands
@@ -1835,7 +1837,6 @@ do -- layout
 			self:SetY(0)
 
 			local pos, pnl = self:RayCast(self, 1, self.Position.y, self.Size.x, self.Size.y, self.layout_collide)
-
 			self:SetRectFast(ox,oy,ow,oh)
 
 			self:SetWidth(pos.x + self.Margin:GetRight() + (pnl and pnl.Padding:GetRight() or 0))
@@ -2324,7 +2325,7 @@ do -- events
 
 	function PANEL:OnChildAdd(child)
 		gui.unrolled_draw = nil
-		self:Layout()
+--		self:Layout()
 		--child:Layout()
 	end
 

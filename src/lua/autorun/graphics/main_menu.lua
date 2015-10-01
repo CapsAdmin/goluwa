@@ -148,66 +148,214 @@ function menu.CreateTopBar()
 	})
 	create_button(L"game", {
 		{L"load", function()
-			local current_dir
-
 			local frame = gui.CreatePanel("frame")
 			frame:SetSkin(bar:GetSkin())
-			frame:SetPosition(Vec2(100, 100))
 			frame:SetSize(Vec2(500, 400))
+			frame:CenterSimple()
 			frame:SetTitle("load lua")
 
-			local list = frame:CreatePanel("list")
-			list:SetupLayout("fill")
+			local area = frame:CreatePanel("base")
+			area:SetupLayout("fill")
+			area:SetNoDraw(true)
+			area:SetMargin(Rect()+8)
 
-			populate = function(dir)
-				list:SetupSorted("name"--[[, "modified", "type", "size"]])
-				--list:SetupConverters(nil, function(num) return os.date("%c", num) end, nil, utility.FormatFileSize)
 
-				current_dir = dir
+			local divider = area:CreatePanel("divider")
+			divider.lol = true
+			divider:SetHeight(250)
+			divider:SetupLayout("top", "fill_x")
+			divider:SetDividerWidth(8)
 
-				if utility.GetParentFolder(dir):find("/", nil, true) then
-					list:AddEntry("..", 0, "folder", 0).OnSelect = function()
+			local left = divider:SetLeft(gui.CreatePanel("base", divider))
+			left:SetNoDraw(true)
+			local right = divider:SetRight(gui.CreatePanel("base", divider))
+			right:SetNoDraw(true)
+
+			divider.horizontal_divider:SetColor(Color(1,1,1,0)) -- todo
+
+			divider:SetDividerPosition(300)
+
+
+			local label = left:CreatePanel("text")
+			label:SetText("filename")
+			label:SetupLayout("top", "left")
+
+			local left_list = left:CreatePanel("list")
+			left_list:SetPadding(Rect(0,0,0,10))
+			left_list:SetupLayout("fill")
+			left_list:SetupSorted("name"--[[, "modified", "type", "size"]])
+
+
+			local label = right:CreatePanel("text")
+			label:SetText("directory")
+			label:SetupLayout("top", "left")
+
+			local right_list = right:CreatePanel("list")
+			right_list:SetPadding(Rect(0,0,0,10))
+			right_list:SetupLayout("fill")
+			right_list:SetupSorted("name"--[[, "modified", "type", "size"]])
+
+			local path_label = area:CreatePanel("text")
+			path_label:SetPadding(Rect()+2)
+			path_label:SetSize(Vec2()+12)
+			path_label:SetupLayout("top", "left", "fill_x")
+
+			local text_entry = area:CreatePanel("text_edit")
+			text_entry:SetPadding(Rect()+2)
+			text_entry:SetSize(Vec2() + 20)
+			text_entry:SetupLayout("top", "left", "fill_x")
+
+			local filename_label = area:CreatePanel("text")
+			filename_label:SetPadding(Rect()+2)
+			filename_label:SetSize(Vec2()+12)
+			filename_label:SetupLayout("top", "left")
+
+			local bottom = area:CreatePanel("base")
+			bottom:SetSize(Vec2()+20)
+			bottom:SetPadding(Rect()+2)
+			bottom:SetMargin(Rect(10,0,10,0))
+			bottom:SetupLayout("top", "fill")
+			bottom:SetNoDraw(true)
+
+			do
+				local area = bottom:CreatePanel("base")
+				area:SetPadding(Rect()+2)
+				area:SetMargin(Rect(10,0,10,0))
+				area:SetWidth(100)
+				area:SetupLayout("left", "bottom", "fill_y", "size_to_width")
+				area:SetNoDraw(true)
+
+				local choice1 = area:CreatePanel("checkbox_label")
+				choice1:SetPadding(Rect()+4)
+				choice1:SetText("long filename")
+				choice1:SizeToText()
+				choice1:SetupLayout("top", "left")
+
+				local choice2 = area:CreatePanel("checkbox_label")
+				choice2:SetPadding(Rect()+4)
+				choice2:SetText("snes header name")
+				choice2:SizeToText()
+				choice2:SetupLayout("top", "left")
+
+				choice2:TieCheckbox(choice1)
+
+				local check = area:CreatePanel("checkbox_label")
+				check:SetPadding(Rect()+4)
+				check:SetText("show all extensions")
+				check:SizeToText()
+				check:SetupLayout("top", "bottom", "left")
+			end
+
+			local current_script
+
+			do
+				local area = bottom:CreatePanel("base")
+				area:SetPadding(Rect()+2)
+				area:SetMargin(Rect(10,0,10,0))
+				area:SetupLayout("left", "top", "fill")
+				area:SetNoDraw(true)
+
+				do
+					local left = area:CreatePanel("base")
+					left:SetSize(Vec2()+20)
+					left:SetPadding(Rect()+2)
+					left:SetMargin(Rect(10,0,10,0))
+					left:SetupLayout("top", "right", "fill", "layout_children", "size_to_width")
+					left:SetNoDraw(true)
+
+					local choice1 = left:CreatePanel("checkbox_label")
+					choice1:SetPadding(Rect()+4)
+					choice1:SetText("PAL")
+					choice1:SizeToText()
+					choice1:SetupLayout("bottom", "left")
+
+					local choice2 = left:CreatePanel("checkbox_label")
+					choice2:SetPadding(Rect()+4)
+					choice2:SetText("NTSC")
+					choice2:SizeToText()
+					choice2:SetupLayout("bottom", "left")
+
+					choice2:TieCheckbox(choice1)
+
+					local label = left:CreatePanel("text")
+					label:SetPadding(Rect()+2)
+					label:SetText("force")
+					label:SetupLayout("bottom", "left")
+				end
+
+				do
+					local right = area:CreatePanel("base")
+					right:SetSize(Vec2()+20)
+					right:SetPadding(Rect()+2)
+					right:SetMargin(Rect(10,0,10,0))
+					right:SetupLayout("top", "right", "fill", "layout_children", "size_to_width")
+					right:SetNoDraw(true)
+
+					local choice1 = right:CreatePanel("checkbox_label")
+					choice1:SetPadding(Rect()+4)
+					choice1:SetText("hirom")
+					choice1:SizeToText()
+					choice1:SetupLayout("bottom", "left")
+
+					local choice2 = right:CreatePanel("checkbox_label")
+					choice2:SetPadding(Rect()+4)
+					choice2:SetText("lowrom")
+					choice2:SizeToText()
+					choice2:SetupLayout("bottom", "left")
+
+					choice2:TieCheckbox(choice1)
+
+					local label = right:CreatePanel("text_button")
+					label:SetText("load")
+					label:SetMargin(Rect()+5)
+					label:SizeToText()
+					label:SetupLayout("bottom", "left", "fill_x")
+					label.OnPress = function()
+						if current_script then include(current_script) end
+					end
+				end
+			end
+
+
+			local function populate(dir)
+				path_label:SetText(dir)
+				right_list:SetupSorted("name"--[[, "modified", "type", "size"]])
+				left_list:SetupSorted("name"--[[, "modified", "type", "size"]])
+
+				if utility.GetParentFolder(dir) then
+					right_list:AddEntry("..", 0, "folder", 0).OnSelect = function()
 						populate(utility.GetParentFolder(dir))
 					end
 				end
 
-				for name in vfs.Iterate(dir) do
-					local file = vfs.Open(dir .. name)
-					local type = "folder"
-					local size = 0
-					local last_modified = 0
+				for full_path in vfs.Iterate(dir, nil, true) do
+					local name = full_path:match(".+/(.+)")
 
-					if file then
-						type = name:match(".+%.(.+)")
-						size = file:GetSize()
-						last_modified = file:GetLastModified()
-					end
-
-					if file then
-						file:Close()
-					end
-
-					if type == "folder" then
-						local entry = list:AddEntry(name--[[, last_modified, type, size]])
+					if vfs.IsFolder(full_path) then
+						local entry = right_list:AddEntry(name--[[, last_modified, type, size]])
 
 						entry.OnSelect = function()
 							populate(dir .. name .. "/")
+							filename_label:SetText(name)
 						end
 
-						entry:SetIcon("textures/silkicons/folder.png")
+						--entry:SetIcon("textures/silkicons/folder.png")
 					else
-						local entry = list:AddEntry(name--[[, last_modified, type, size]])
+						local entry = left_list:AddEntry(name--[[, last_modified, type, size]])
 
 						entry.OnSelect = function()
-							include(dir .. name)
+							current_script = dir .. name
+							filename_label:SetText(name)
 						end
 
-						entry:SetIcon("textures/silkicons/script.png")
+						--entry:SetIcon("textures/silkicons/script.png")
 					end
 				end
 			end
 
 			populate("lua/tests/")
+
+			frame:Layout()
 		end},
 		{L"run [ESC]", function() menu.Close() end},
 		{L"reset", function() console.RunString("restart") end},
