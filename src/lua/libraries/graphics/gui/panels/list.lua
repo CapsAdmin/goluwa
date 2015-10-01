@@ -140,6 +140,7 @@ function PANEL:SetupSorted(...)
 		local div = self.top:CreatePanel("divider")
 		--div:SetupLayout("fill")
 		div:SetHideDivider(true)
+		div:SetDividerWidth(0)
 		div:SetHeight(column:GetHeight())
 		div:SetLeft(column)
 		div.OnDividerPositionChanged = function() self:Layout() end
