@@ -1252,6 +1252,7 @@ do -- mouse
 
 	prototype.GetSet(PANEL, "MouseHoverTime", 0)
 	prototype.GetSet(PANEL, "MouseHoverTimeTrigger", 1)
+	prototype.GetSet(PANEL, "AlphaMouseCheck", false)
 
 	do
 		gui.active_tooltip = NULL
@@ -1374,7 +1375,7 @@ do -- mouse
 
 		local alpha = 1
 
-		if not self.NinePatch and self.NinePatchRect:IsZero() and self.Texture:IsValid() and self.Texture ~= render.GetWhiteTexture() and not self.Texture:IsLoading() then
+		if self.AlphaMouseCheck and not self.NinePatch and self.NinePatchRect:IsZero() and self.Texture:IsValid() and self.Texture ~= render.GetWhiteTexture() and not self.Texture:IsLoading() then
 			local x = (x / self.Size.x)
 			local y = (y / self.Size.y)
 
