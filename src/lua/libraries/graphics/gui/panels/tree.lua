@@ -80,6 +80,7 @@ do -- tree node
 		end
 		self.tree:SetSelectedNode(self)
 		self.tree:OnNodeSelect(self)
+		self:OnSelect()
 	end
 
 	function PANEL:OnMouseEnter(...)
@@ -125,12 +126,16 @@ do -- tree node
 	end
 
 	function PANEL:SetExpandCallback(callback)
-		self.expand_callback = function(b)
-			callback()
-			self.expand_callback = nil
+		if callback then
+			self.expand_callback = function(b)
+				callback()
+				self.expand_callback = nil
+			end
+			self.expand:SetVisible(true)
+			self:SetExpand(false)
+		else
+			self.expand:SetVisible(false)
 		end
-		self.expand:SetVisible(true)
-		self:SetExpand(false)
 	end
 
 	function PANEL:SetExpandInternal(b)
@@ -159,6 +164,8 @@ do -- tree node
 		self.Expand = b
 		self.expand:SetState(not b)
 	end
+
+	function PANEL:OnSelect() end
 
 	gui.RegisterPanel(PANEL)
 end
