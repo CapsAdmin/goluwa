@@ -215,9 +215,10 @@ function prototype.GetAllRegistered()
 end
 
 local function remove_callback(self)
-	if self:IsValid() then
+	if (not self.IsValid or self:IsValid()) and self.Remove then
 		self:Remove()
 	end
+
 	if prototype.created_objects then
 		prototype.created_objects[self] = nil
 	end
