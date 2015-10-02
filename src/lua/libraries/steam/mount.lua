@@ -183,7 +183,7 @@ function steam.MountSourceGame(game_info)
 			for k, v in pairs(vfs.Find(path .. "addons/")) do
 				if vfs.IsDir(path .. "addons/" .. v) or v:endswith(".gma") then
 					logn("[vfs] also mounting addon ", v)
-					vfs.Mount("os:" .. path .. "addons/" .. v .. "/", nil, game_info)
+					vfs.Mount(path .. "addons/" .. v, nil, game_info)
 				end
 			end
 
