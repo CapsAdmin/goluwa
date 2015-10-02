@@ -108,6 +108,28 @@ if not _OLD_G then
 	scan(_G, _OLD_G)
 end
 
+if false then -- 52 compat
+	local old_setmetatable = setmetatable
+
+	function setmetatable(t, mt)
+
+		if rawget(mt,"__gc") and not rawget(t,"__gc_proxy") then
+			local p = newproxy(true)
+			rawset(t,"__gc_proxy", p)
+			debug.getmetatable(p).__gc=function()
+				rawset(t,"__gc_proxy",nil)
+				local nmt = debug.getmetatable(t)
+				if not nmt then return end
+				local fin = rawget(nmt,"__gc")
+				if not fin then return end
+				fin(t)
+			end
+		end
+
+		return old_setmetatable(t,mt)
+	end
+end
+
 if not DISABLE_CURSES then
 	-- this will be replaced later on with logn
 	_G.LOG_BUFFER = {}

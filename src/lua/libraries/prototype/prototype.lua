@@ -218,7 +218,9 @@ local function remove_callback(self)
 	if self:IsValid() then
 		self:Remove()
 	end
-	prototype.created_objects[self] = nil
+	if prototype.created_objects then
+		prototype.created_objects[self] = nil
+	end
 end
 
 function prototype.OverrideCreateObjectTable(obj)
@@ -235,16 +237,16 @@ function prototype.CreateObject(meta, override, skip_gc_callback)
 	-- this has to be done in order to ensure we have the prepared metatable with bases
 	meta = prototype.GetRegistered(meta.Type, meta.ClassName) or meta
 
+	if not skip_gc_callback then
+		meta.__gc = remove_callback
+	end
+
 	local self = setmetatable(override, meta)
 
 	if meta.copy_variables then
 		for i, info in ipairs(meta.copy_variables) do
 			self[info.var_name] = info.copy()
 		end
-	end
-
-	if not skip_gc_callback then
-		utility.SetGCCallback(self, remove_callback)
 	end
 
 	self:SetDebugTrace(debug.traceback())

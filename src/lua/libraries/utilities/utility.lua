@@ -733,28 +733,6 @@ do -- find in files
 	end
 end
 
-do -- thanks etandel @ #lua!
-	function utility.SetGCCallback(t, func)
-		func = func or t.Remove
-
-		if not func then
-			error("could not find remove function", 2)
-		end
-
-		local ud = t.__gc or newproxy(true)
-
-		debug.getmetatable(ud).__gc = function()
-			if not t.IsValid or t:IsValid() then
-				return func(t)
-			end
-		end
-
-		t.__gc = ud
-
-		return t
-	end
-end
-
 do
 	-- http://cakesaddons.googlecode.com/svn/trunk/glib/lua/glib/stage1.lua
 	local size_units =
