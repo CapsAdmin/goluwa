@@ -2,7 +2,7 @@
 
 local require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
-pcall, type, table, string =
+pcall, type, table, string = 
 require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
 pcall, type, table, string
@@ -737,7 +737,7 @@ mt.iocb = {
 addtype(types, "iocb", "struct iocb", mt.iocb)
 
 -- aio operations want an array of pointers to struct iocb. To make sure no gc, we provide a table with array and pointers
--- easiest to do as Lua table not ffi type.
+-- easiest to do as Lua table not ffi type. 
 -- expects Lua table of either tables or iocb as input. can provide ptr table too
 -- TODO check maybe the implementation actually copies these? only the posix aio says you need to keep.
 
@@ -913,7 +913,7 @@ mt.epoll_event = {
     local e = ffi.new(tp)
     if a then
       if type(a) == "string" then a.events = c.EPOLL[a]
-      else
+      else 
         if a.events then a.events = c.EPOLL[a.events] end
         for k, v in pairs(a) do e[k] = v end
       end

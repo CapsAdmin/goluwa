@@ -2,7 +2,7 @@
 
 local require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
-pcall, type, table, string =
+pcall, type, table, string = 
 require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
 pcall, type, table, string
@@ -260,7 +260,7 @@ static const int IFNAMSIZ = 16;
 struct ifmap {
   unsigned long mem_start;
   unsigned long mem_end;
-  unsigned short base_addr;
+  unsigned short base_addr; 
   unsigned char irq;
   unsigned char dma;
   unsigned char port;
@@ -333,12 +333,12 @@ struct ndt_config {
   uint32_t ndtc_hash_chain_gc;
   uint32_t ndtc_proxy_qlen;
 };
-typedef struct {
+typedef struct { 
   unsigned int clock_rate;
   unsigned int clock_type;
   unsigned short loopback;
 } sync_serial_settings;
-typedef struct {
+typedef struct { 
   unsigned int clock_rate;
   unsigned int clock_type;
   unsigned short loopback;

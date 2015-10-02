@@ -2,7 +2,7 @@
 
 local require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
-pcall, type, table, string =
+pcall, type, table, string = 
 require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
 pcall, type, table, string
@@ -630,7 +630,7 @@ c.IFF = multiflags {
   MULTICAST   = 0x8000,
 }
 
-c.IFF.CANTCHANGE = c.IFF.BROADCAST + c.IFF.POINTOPOINT + c.IFF.RUNNING + c.IFF.OACTIVE +
+c.IFF.CANTCHANGE = c.IFF.BROADCAST + c.IFF.POINTOPOINT + c.IFF.RUNNING + c.IFF.OACTIVE + 
                    c.IFF.SIMPLEX + c.IFF.MULTICAST + c.IFF.ALLMULTI + c.IFF.PROMISC
 
 c.POLL = multiflags {
@@ -1014,7 +1014,7 @@ c.KTR = strflag {
   USER     = 8,
   EXEC_ARG = 10,
   EXEC_ENV = 11,
-  SAUPCALL = 13,
+  SAUPCALL = 13, 
   MIB      = 14,
   EXEC_FD  = 15,
 }

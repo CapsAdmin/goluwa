@@ -5,7 +5,7 @@
 
 local require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
-pcall, type, table, string =
+pcall, type, table, string = 
 require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
 pcall, type, table, string
@@ -303,7 +303,7 @@ end
 local function lastslash(name)
   local ls
   local i = 0
-  while true do
+  while true do 
     i = string.find(name, "/", i + 1)
     if not i then return ls end
     ls = i

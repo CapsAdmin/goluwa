@@ -2,7 +2,7 @@
 
 local require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
-pcall, type, table, string =
+pcall, type, table, string = 
 require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
 pcall, type, table, string
@@ -159,7 +159,7 @@ local function inet6_ntop(src)
   if max > 2 then
     parts[start] = ""
     if start == 1 or start + max == 9 then parts[start] = ":" end
-    if start == 1 and start + max == 9 then parts[start] = "::" end
+    if start == 1 and start + max == 9 then parts[start] = "::" end 
     for i = 1, max - 1 do table.remove(parts, start + 1) end
   end
 

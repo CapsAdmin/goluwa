@@ -82,7 +82,7 @@ local errsyms = {} -- reverse lookup by number
 local errnames = {} -- lookup error message by number
 for k, v in pairs(c.E) do
   errsyms[v] = k
-  errnames[v] = assert(c.errornames[k], "missing error name " .. k)
+  errnames[v] = c.errornames[k] or ("missing error name " .. k)--assert(c.errornames[k], "missing error name " .. k)
 end
 
 for k, v in pairs(c.EALIAS or {}) do
