@@ -108,7 +108,7 @@ if not _OLD_G then
 	scan(_G, _OLD_G)
 end
 
-if false then -- 52 compat
+do -- 52 compat
 	local old_setmetatable = setmetatable
 
 	function setmetatable(t, mt)
