@@ -16,6 +16,8 @@ do -- mounting/links
 
 		vfs.Unmount(where, to)
 
+		---print(where, to)
+
 		local path_info_where = vfs.GetPathInfo(where, true)
 		local path_info_to = vfs.GetPathInfo(to, true)
 
@@ -24,7 +26,6 @@ do -- mounting/links
 		end
 
 		for i, context in ipairs(vfs.GetFileSystems()) do
-			context.mounted_paths = context.mounted_paths or {}
 			if path_info_to.filesystem == context.Name or path_info_to.filesystem == "unknown" then
 				table.insert(context.mounted_paths, {
 					where = path_info_where,
@@ -43,14 +44,12 @@ do -- mounting/links
 
 		local path_info_where = vfs.GetPathInfo(where, true)
 		local path_info_to = vfs.GetPathInfo(to, true)
-
-		for filesystem, context in ipairs(vfs.GetFileSystems()) do
-			context.mounted_paths = context.mounted_paths or {}
+		for _, context in ipairs(vfs.GetFileSystems()) do
 			for i, v in ipairs(context.mounted_paths) do
 				if
 					v.full_where:lower() == where:lower() and
 					v.full_to:lower() == to:lower() and
-					(path_info_where == filesystem or path_info_where.filesystem == "unknown")
+					(path_info_where.filesystem == context.Name or path_info_to.filesystem == "unknown")
 				then
 					table.remove(context.mounted_paths, i)
 					break
@@ -61,8 +60,7 @@ do -- mounting/links
 
 	function vfs.GetMounts()
 		local out = {}
-		for filesystem, context in pairs(vfs.GetFileSystems()) do
-			context.mounted_paths = context.mounted_paths or {}
+		for filesystem, context in ipairs(vfs.GetFileSystems()) do
 			for i, v in ipairs(context.mounted_paths) do
 				out[v.full_where] = v
 			end
@@ -83,7 +81,6 @@ do -- mounting/links
 
 		for i, context in ipairs(filesystems) do
 			if path_info.relative then
-				context.mounted_paths = context.mounted_paths or {}
 				for i, mount_info in ipairs(context.mounted_paths) do
 					local where = mount_info.where
 
@@ -149,8 +146,9 @@ do -- file systems
 		if is_base then return end
 
 		local context = prototype.CreateDerivedObject("file_system", META.Name)
+		context.mounted_paths = {}
 
-		for k,v in pairs(vfs.filesystems) do
+		for k,v in ipairs(vfs.filesystems) do
 			if v.Name == META.Name then
 				table.remove(vfs.filesystems, k)
 				context.mounted_paths = v.mounted_paths
@@ -176,8 +174,6 @@ do -- file systems
 	include("files/*", vfs)
 
 	for i, context in ipairs(vfs.GetFileSystems()) do
-		context.mounted_paths = context.mounted_paths or {}
-
 		if context.VFSOpened then
 			context:VFSOpened()
 		end

@@ -75,6 +75,10 @@ function steam.GetLibraryFolders()
 		end
 	end
 
+	if #tbl == 1 and (CAPS or ROOT) then
+		table.insert(tbl, "/media/steam/SteamLibrary/SteamApps/")
+	end
+
 	return tbl
 end
 
@@ -169,66 +173,27 @@ function steam.MountSourceGame(game_info)
 	if not game_info then return nil, "could not find " .. str_game_info end
 
 	steam.UnmountSourceGame(game_info)
-
-	local done = {}
-
 	for i, path in pairs(game_info.filesystem.searchpaths) do
-		local path = "os:" .. path
 
-		if path:endswith("/.") then
-			path = path:sub(0, -2)
+		if path:endswith(".vpk") then
+			path = "os:" .. path:gsub("(.+)%.vpk", "%1_dir.vpk")
+		else
+			path = "os:" .. path .. "/"
+
+			for k, v in pairs(vfs.Find(path .. "addons/")) do
+				if vfs.IsDir(path .. "addons/" .. v) or v:endswith(".gma") then
+					logn("[vfs] also mounting addon ", v)
+					vfs.Mount("os:" .. path .. "addons/" .. v .. "/", nil, game_info)
+				end
+			end
+
+			for k, v in pairs(vfs.Find(path .. "maps/workshop/")) do
+				vfs.Mount(path .. "maps/workshop/" .. v, "maps/", game_info)
+			end
 		end
 
-		if not done[path] and vfs.Exists(path) then
-			if not vfs.GetMounts()[path] then
-				vfs.Mount(path, nil, game_info)
-			end
-
-			if vfs.IsDir(path .. "addons/") then
-				for k, v in pairs(vfs.Find(path .. "addons/")) do
-					if vfs.IsDir(path .. "addons/" .. v) or v:endswith(".gma") then
-						logn("[vfs] also mounting addon ", v)
-						vfs.Mount(path .. "addons/" .. v, nil, game_info)
-					end
-				end
-			end
-
-			if vfs.IsDir(path .. "maps/workshop/") then
-				for k, v in pairs(vfs.Find(path .. "maps/workshop/")) do
-					vfs.Mount(path .. "maps/workshop/" .. v, "maps/", game_info)
-				end
-			end
-
-			-- garry's mod exceptions..
-			if game_info.filesystem.steamappid == 4000 then
-				for k, v in pairs(vfs.Find(game_info.game_dir .. "sourceengine/")) do
-					if not done[v] then
-						if v:find("%.vpk") and v:find("_dir") and not vfs.GetMounts()[game_info.game_dir .. v .. "/"] then
-							vfs.Mount(game_info.game_dir .. "sourceengine/" .. v .. "/", nil, game_info)
-						end
-						done[v] = true
-					end
-				end
-			end
-
-			if vfs.IsDir(path) then
-				if not path:endswith("/") then
-					path = path .. "/"
-				end
-
-				if vfs.IsDir(path .. "download/") and not vfs.GetMounts()[path .. "download/"] then
-					vfs.Mount(path .. "download/", nil, game_info)
-				end
-
-				for k, v in pairs(vfs.Find(path)) do
-					if not done[path .. v] then
-						if v:find("%.vpk") and v:find("_dir") and not vfs.GetMounts()[path .. v .. "/"] then
-							vfs.Mount(path:sub(4) .. v .. "/", nil, game_info)
-						end
-						done[path .. v] = true
-					end
-				end
-			end
+		if vfs.Exists(path) then
+			vfs.Mount(path, nil, game_info)
 		end
 	end
 
@@ -342,6 +307,12 @@ end
 function steam.MountAllSourceGames()
 	for i, game_info in ipairs(steam.GetSourceGames()) do
 		steam.MountSourceGame(game_info)
+	end
+end
+
+function steam.UnmountAllSourceGames()
+	for i, game_info in ipairs(steam.GetSourceGames()) do
+		steam.UnmountSourceGame(game_info)
 	end
 end
 

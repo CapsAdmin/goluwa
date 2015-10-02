@@ -48,7 +48,7 @@ function CONTEXT:GetFileTree(path)
 	if never then error("grr") end
 
 	never = true
-	local cache_path = "data/archive_cache/" .. crypto.CRC32(path)
+	local cache_path = "os:data/archive_cache/" .. crypto.CRC32(path)
 	tree_data = serializer.ReadFile("msgpack", cache_path)
 	never = false
 
