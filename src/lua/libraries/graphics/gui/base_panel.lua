@@ -2336,13 +2336,11 @@ do -- events
 		--child:Layout()
 	end
 
-	function PANEL:OnRemove(a)
+	function PANEL:OnRemove()
 		gui.panels[self] = nil
 
-		a = (a or 0) + 1
-
 		for k,v in pairs(self:GetChildrenList()) do
-			v:Remove(a)
+			v:Remove()
 		end
 
 		-- this is important!!

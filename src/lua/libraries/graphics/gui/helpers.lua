@@ -48,7 +48,6 @@ end
 
 function gui.CreateMenu(options, parent)
 	local menu = gui.CreatePanel("menu")
-	event.Delay(0, function() gui.SetActiveMenu(menu) end)
 
 	if parent then
 		if parent.Skin then
@@ -76,6 +75,8 @@ function gui.CreateMenu(options, parent)
 
 	menu:Layout(true)
 	menu:SetPosition(gui.world:GetMousePosition():Copy())
+
+	gui.SetActiveMenu(menu)
 
 	return menu
 end

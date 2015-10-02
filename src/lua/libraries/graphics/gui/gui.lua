@@ -139,6 +139,14 @@ do -- events
 
 		local panel = gui.hovering_panel
 
+		do -- context menus
+			local panel = gui.current_menu
+
+			if button == "button_1" and press and panel:IsValid() and not panel:IsMouseOver() then
+				panel:Remove()
+			end
+		end
+
 		if panel:IsValid() and panel:IsMouseOver() then
 			panel:MouseInput(button, press)
 			gui.last_clicked = panel
@@ -149,14 +157,6 @@ do -- events
 
 			if panel.AlwaysReceiveMouseInput and panel.mouse_over then
 				panel:MouseInput(button, press)
-			end
-		end
-
-		do -- context menus
-			local panel = gui.current_menu
-
-			if button == "button_1" and press and panel:IsValid() and not panel:IsMouseOver() then
-				panel:Remove()
 			end
 		end
 	end
