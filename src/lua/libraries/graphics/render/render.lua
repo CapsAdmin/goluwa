@@ -392,7 +392,9 @@ do
 	end
 
 	function render.PopViewport()
-		render.SetViewport(unpack(table.remove(stack)))
+		local v = table.remove(stack)
+
+		render.SetViewport(v[1], v[2], v[3], v[4])
 	end
 end
 
