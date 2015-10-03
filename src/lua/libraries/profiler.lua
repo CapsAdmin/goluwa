@@ -489,6 +489,44 @@ function profiler.IsBusy()
 	return profiler.busy
 end
 
+local blacklist = {
+	["NYI: return to lower frame"] = true,
+	["inner loop in root trace"] = true,
+	["blacklisted"] = true,
+}
+
+function profiler.EnableRealTimeTraceAbortLogging(b)
+	if b then
+		jit.attach(function(what, trace_id, func, pc, trace_error_id, trace_error_arg)
+			if what == "abort" then
+				local info = jit_util.funcinfo(func, pc)
+				local reason = jit_vmdef.traceerr[trace_error_id]
+
+				if not blacklist[reason] then
+					if type(trace_error_arg) == "number" and reason:find("bytecode") then
+						trace_error_arg = string.sub(jit_vmdef.bcnames, trace_error_arg*6+1, trace_error_arg*6+6)
+						reason = reason:gsub("(%%d)", "%%s")
+					end
+
+					reason = reason:format(trace_error_arg)
+
+					local path = info.source
+					local line = info.currentline or info.linedefined
+					local content, err = vfs.Read(e.ROOT_FOLDER .. path:sub(2))
+
+					if content then
+						logf("%s:%s\n%s:--\t%s\n\n", path, line, content:explode("\n")[line]:trim(), reason)
+					else
+						logf("%s:%s:\n\t%s\n\n", path, line, reason)
+					end
+				end
+			end
+		end, "trace")
+	else
+		jit.attach(nil)
+	end
+end
+
 profiler.Restart()
 
 console.AddCommand("profile_start", function(line)
@@ -545,6 +583,11 @@ console.AddCommand("zbprofile", function()
 	local prf = require("zbprofiler")
 	prf.start()
 	event.CreateTimer("zbprofiler_save", 3, 0, function() prf.save(0) end)
+end)
+
+console.AddCommand("trace_abort", function()
+	jit.flush()
+	profiler.EnableRealTimeTraceAbortLogging(true)
 end)
 
 return profiler
