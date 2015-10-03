@@ -146,7 +146,10 @@ function steam.VDFToTable(str, lower_or_modify_keys, preprocess)
 									table.insert(current[key], val)
 								elseif current[key] then
 									current[key] = {current[key], val}
+								else
+									current[key] = val
 								end
+
 							end
 						else
 							current[key] = val
