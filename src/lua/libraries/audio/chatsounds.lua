@@ -324,7 +324,7 @@ do -- list parsing
 	end
 
 	function chatsounds.BuildTreeFromAddon()
-		steam.MountAllSourceGames()
+		steam.MountSourceGames()
 
 		local addons = steam.GetGamePath("GarrysMod") .. "garrysmod/addons/"
 		local addon_dir = addons .. "chatsounds"
@@ -1479,7 +1479,7 @@ end
 function chatsounds.Initialize()
 	if chatsounds.tree then return end
 
-	--steam.MountAllSourceGames()
+	--steam.MountSourceGames()
 	--chatsounds.BuildTree("game")
 	--chatsounds.BuildTree("custom")
 
