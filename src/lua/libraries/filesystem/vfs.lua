@@ -70,7 +70,6 @@ do -- mounting/links
 
 	function vfs.TranslatePath(path, is_folder)
 		local path_info = vfs.GetPathInfo(path, is_folder)
-
 		local out = {}
 
 		local filesystems = vfs.GetFileSystems()
@@ -216,7 +215,6 @@ do -- translate path to useful data
 		local out = {}
 
 		path = vfs.PreprocessPath(path)
-		path = vfs.FixPath(path)
 
 		out.filesystem = path:match("^(.-):")
 
@@ -229,7 +227,7 @@ do -- translate path to useful data
 		local relative = path:sub(1, 1) ~= "/"
 
 		if WINDOWS then
-			relative = path:sub(2, 2) ~= ":"
+			relative = path:sub(2, 2) ~= ":" and path:sub(1, 2) ~= [[//]]
 		end
 
 		if is_folder and not path:endswith("/") then

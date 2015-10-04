@@ -5,7 +5,6 @@ local fs = require("fs")
 vfs.included_files = vfs.included_files or {}
 
 local function store(path)
-	local path = vfs.FixPath(path)
 	vfs.included_files[path] = vfs.OSGetAttributes(path)
 end
 

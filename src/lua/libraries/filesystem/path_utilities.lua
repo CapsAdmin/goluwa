@@ -50,7 +50,7 @@ function vfs.ParseVariables(path)
 	-- linux
 	path = path:gsub("%$%((.-)%)", "%1")
 
-	return vfs.FixPath(path)
+	return path
 end
 
 local illegal_characters = {
@@ -94,8 +94,6 @@ function vfs.CreateFoldersFromPath(filesystem, path)
 end
 
 function vfs.GetAbsolutePath(path, is_folder)
-	--check(path, "string")
-
 	for i, data in ipairs(vfs.TranslatePath(path, is_folder)) do
 		if data.context:PCall("IsFile", data.path_info) or data.context:PCall("IsFolder", data.path_info) then
 			return data.path_info.full_path
