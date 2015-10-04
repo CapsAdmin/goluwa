@@ -33,29 +33,32 @@ function PANEL:Initialize()
 	check.OnStateChanged = function(check, b)
 		self:OnCheck(b)
 
-		if b then
-			for i,v in ipairs(self.tied_checkboxes) do
-				if v:IsValid() and v.checkbox ~= check then
-					v.checkbox:SetState(not b)
-				end
-			end
-		else
-			local found = false
-			for i,v in ipairs(self.tied_checkboxes) do
-				if v:IsValid() and v.checkbox == check then
-					local next = self.tied_checkboxes[i + 1]
-
-					if not next or not next:IsValid() then
-						next = self.tied_checkboxes[1]
+		if #self.tied_checkboxes > 0 then
+			if b then
+				for i,v in ipairs(self.tied_checkboxes) do
+					if v:IsValid() and v.checkbox ~= check then
+						v.checkbox:SetState(not b)
 					end
-
-					next:SetState(true)
-					found = true
 				end
-			end
+			else
+				local found = false
 
-			if not found then
-				self:SetState(true)
+				for i,v in ipairs(self.tied_checkboxes) do
+					if v:IsValid() and v.checkbox == check then
+						local next = self.tied_checkboxes[i + 1]
+
+						if not next or not next:IsValid() then
+							next = self.tied_checkboxes[1]
+						end
+
+						next:SetState(true)
+						found = true
+					end
+				end
+
+				if not found then
+					self:SetState(true)
+				end
 			end
 		end
 	end
