@@ -644,7 +644,7 @@ do -- cached rendering
 		else
 			for k,v in ipairs(self:GetParentList()) do
 				if v:IsValid() and v.CachedRendering then
-					v:MarkCacheDirty()
+					v.cache_dirty = true
 				end
 			end
 		end
@@ -2242,6 +2242,8 @@ do -- skin
 				self:SetupStyle(skin[name])
 			end
 		end
+
+		self:MarkCacheDirty()
 	end
 
 	function PANEL:SetStyleTranslation(from, to)
