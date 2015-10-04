@@ -131,21 +131,28 @@ function menu.CreateTopBar()
 		end
 	end
 
-	create_button("↓", {
-		{"1."},
-		{"2."},
-		{"3."},
-		{"4."},
-		{"5."},
-		{"6."},
-		{"7."},
-		{"8."},
-		{"9."},
-		{"0."},
-		{},
-		{L"freeze data: off"},
-		{L"clear all data"},
-	})
+	local command_history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt") or {}
+	local list = {}
+
+	for i = 1, 10 do
+		local name = i .. "."
+		local cmd = command_history[#command_history - i - 1]
+
+		if i == 10 then
+			name = "0."
+		end
+
+		name = name .. cmd:trim()
+
+		table.insert(list, {name, function() console.RunString(cmd) end})
+	end
+
+	table.insert(list, {})
+	table.insert(list, {L"freeze data: off"})
+	table.insert(list, {L"clear all data"})
+
+	create_button("↓", list)
+
 	create_button(L"game", {
 		{L"load", function()
 			local frame = gui.CreatePanel("frame")
@@ -327,36 +334,10 @@ function menu.CreateTopBar()
 		{L"reset", function() console.RunString("restart") end},
 		{},
 		{L"save state", function()
-			if _SAVING then return end
-
-			local out = {}
-
-			out.entities = {}
-			out.camera = render.camera_3d:GetStorableTable()
-
-			for k,v in pairs(entities.GetAll()) do
-				if not v:HasParent() then
-					table.insert(out.entities, v:GetStorableTable())
-				end
-			end
-
-			serializer.WriteFile("luadata", "world.lua", out)
+			serializer.WriteFile("luadata", "world.map", entities.GetWorld():GetStorableTable())
 		end},
 		{L"open state", function()
-			_SAVING = true
-
-			local data = serializer.ReadFile("luadata", "world.lua")
-
-			for k,v in pairs(data.entities) do
-				if not prototype.GetObjectByGUID(v.self.GUID):IsValid() then
-					local ent = entities.CreateEntity(v.config)
-					ent:SetStorableTable(v, true)
-				end
-			end
-
-			render.camera_3d:SetStorableTable(data.camera)
-
-			_SAVING = nil
+			entities.GetWorld():SetStorableTable(serializer.ReadFile("luadata", "world.map"))
 		end},
 		{L"pick state"},
 		{},
