@@ -36,7 +36,11 @@ local function main()
 		local ok, err = pcall(update_, dt)
 
 		if not ok then
-			system.MessageBox("fatal error", tostring(err))
+			if system.MessageBox then
+				system.MessageBox("fatal error", tostring(err))
+			else
+				error("fatal error: " .. tostring(err))
+			end
 			os.exit()
 			return false
 		end

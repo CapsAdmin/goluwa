@@ -323,21 +323,6 @@ do -- editors
 	end
 end
 
-do -- message box
-	local set = not_implemented
-
-	if WINDOWS then
-		require("winapi.messagebox")
-		local winapi = require("winapi")
-
-		set = function(title, message)
-			winapi.MessageBox(message, title)
-		end
-	end
-
-	system.MessageBox = set
-end
-
 do -- cursor
 	local set = not_implemented
 	local get = not_implemented
