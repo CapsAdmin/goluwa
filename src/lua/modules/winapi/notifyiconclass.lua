@@ -1,5 +1,5 @@
 
---oo/notifyiconclass: system tray icons.
+--oo/controls/notifyiconclass: system tray icons
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -100,50 +100,50 @@ function NotifyIcon.__set_vproperty(class, self, k, v)
 	end
 end
 
+--showcase
 
 if not ... then
-require'winapi.windowclass'
-require'winapi.icon'
-require'winapi.menu'
+	require'winapi.windowclass'
+	require'winapi.icon'
+	require'winapi.menu'
 
-local win = Window{w = 500, h = 300, visible = false, autoquit = true}
+	local win = Window{w = 500, h = 300, visible = false, autoquit = true}
 
-local nicon, pmenu
+	local nicon, pmenu
 
-function win:on_show()
+	function win:on_show()
 
-	--create a notification icon.
-	nicon = NotifyIcon{
-		window = self,
-		icon = LoadIconFromInstance(IDI_INFORMATION),
-	}
+		--create a notification icon.
+		nicon = NotifyIcon{
+			window = self,
+			icon = LoadIconFromInstance(IDI_INFORMATION),
+		}
 
-	--alternate the icon on a timer.
-	local alt = true
-	self:settimer(200, function()
-		nicon.icon = LoadIconFromInstance(alt == true and IDI_WARNING or IDI_INFORMATION)
-		alt = not alt
-	end)
+		--alternate the icon on a timer.
+		local alt = true
+		self:settimer(200, function()
+			nicon.icon = LoadIconFromInstance(alt == true and IDI_WARNING or IDI_INFORMATION)
+			alt = not alt
+		end)
 
-	--popup a menu when right-clicking on the icon.
-	pmenu = Menu()
-	pmenu.items:add{text = 'Hello1'}
-	pmenu.items:add{text = 'Hello2'}
-	pmenu.items:add{text = 'Hello3'}
-	pmenu.items:add{text = 'Hello4'}
+		--popup a menu when right-clicking on the icon.
+		pmenu = Menu()
+		pmenu.items:add{text = 'Hello1'}
+		pmenu.items:add{text = 'Hello2'}
+		pmenu.items:add{text = 'Hello3'}
+		pmenu.items:add{text = 'Hello4'}
 
-	function nicon:on_rbutton_up()
-		local pos = win.cursor_pos
-		pmenu:popup(win, pos.x, pos.y)
+		function nicon:on_rbutton_up()
+			local pos = win.cursor_pos
+			pmenu:popup(win, pos.x, pos.y)
+		end
 	end
-end
 
-function win:on_destroy()
-	nicon:free()
-end
+	function win:on_destroy()
+		nicon:free()
+	end
 
-win:show()
+	win:show()
 
-MessageLoop()
-
+	MessageLoop()
 end

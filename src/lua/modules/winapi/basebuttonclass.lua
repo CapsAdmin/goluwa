@@ -1,5 +1,5 @@
 
---oo/basebutton: base class for push-buttons, checkboxes, radio buttons.
+--oo/controls/basebutton: base class for button-like controls
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -72,9 +72,6 @@ function BaseButton:get_image_list()
 		margin = iml.margin,
 	}
 end
-
-function BaseButton:get_text() return GetWindowText(self.hwnd) end
-function BaseButton:set_text(text) SetWindowText(self.hwnd, text) end
 
 function BaseButton:set_icon(icon)
 	SetWindowStyle(self.hwnd, setbit(GetWindowStyle(self.hwnd), BS_ICON, icon))

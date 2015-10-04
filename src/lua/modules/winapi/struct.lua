@@ -1,5 +1,5 @@
 
---ffi/struct: struct ctype wrapper
+--binding/struct: struct ctype wrapper
 --Written by Cosmin Apreutesei. Public Domain.
 
 
@@ -12,6 +12,8 @@ local Struct_meta = {__index = Struct}
 --struct virtual field setter and getter -------------------------------------
 
 local setbit = setbit --cache
+
+local pins = setmetatable({}, {__mode = 'k'}) --{cdata = {field = pinned_val}}
 
 function Struct:set(cdata, field, value) --hot code
 	if type(field) ~= 'string' then
@@ -27,8 +29,15 @@ function Struct:set(cdata, field, value) --hot code
 			if setter then
 				value = setter(value, cdata)
 			end
+			--cdata values are pinned to their respective struct field automatically.
+			--only the current value is pinned. the old value is released when a new value is set.
 			if type(value) == 'cdata' then
-				pin(value, cdata)
+				local t = pins[cdata]
+				if not t then
+					t = {}
+					pins[cdata] = t
+				end
+				t[field] = value
 			end
 			cdata[name] = value
 		else
@@ -51,7 +60,7 @@ function Struct:set(cdata, field, value) --hot code
 			def = self.bitfields[fieldname]
 			if def then
 				local datafield, maskfield, prefix = unpack(def, 1, 3)
-				local mask = _M[prefix..'_'..bitname]
+				local mask = _M[prefix..'_'..bitname:upper()]
 				if mask then
 					cdata[maskfield] = setbit(cdata[maskfield] or 0, mask, value ~= nil)
 					cdata[datafield] = setbit(cdata[datafield] or 0, mask, value)
@@ -60,7 +69,8 @@ function Struct:set(cdata, field, value) --hot code
 			end
 		end
 	end
-	error(string.format('struct "%s" has no field "%s"', self.ctype, field), 5)
+	--TODO: find a way to raise this error on assignment but not on initialization.
+	--error(string.format('struct "%s" has no field "%s"', self.ctype, field), 5)
 end
 
 local getbit = getbit
@@ -127,7 +137,7 @@ end
 function Struct:init(cdata) end --stub
 
 --create a struct with a clear mask and default values.
---cdata are passed through.
+--cdata passes through untouched.
 function Struct:new(t)
 	if type(t) == 'cdata' then return t end
 	local cdata = self.ctype_cons()
@@ -166,12 +176,12 @@ function Struct:collect(cdata)
 	return t
 end
 
---compute the struct's full mask (i.e. with all bitmasks set).
+--compute the struct's full mask (i.e. with all mask bits set).
 function Struct:compute_mask()
 	local mask = 0
 	for field, def in pairs(self.fields) do
-		local bitmask = def[2]
-		if bitmask then mask = bit.bor(mask, bitmask) end
+		local maskbit = def[2]
+		if maskbit then mask = bit.bor(mask, maskbit) end
 	end
 	return mask
 end

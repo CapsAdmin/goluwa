@@ -1,5 +1,5 @@
 
---proc/button: button and button-like controls.
+--proc/controls/button: button and button-like controls
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -122,7 +122,7 @@ BCM_SETSHIELD           = (BCM_FIRST + 0x000C)
 
 function Button_GetIdealSize(hwnd, size)
 	size = SIZE(size)
-	checknz(SNDMSG(hwnd, BCM_GETIDEALSIZE, 0, ffi.cast('PSIZE', size)))
+	--checknz(SNDMSG(hwnd, BCM_GETIDEALSIZE, 0, ffi.cast('PSIZE', size)))
 	return size
 end
 

@@ -1,5 +1,5 @@
 
---oo/window: overlapping (aka top-level) windows.
+--oo/windows/window: overlapping (aka top-level) windows
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -11,7 +11,7 @@ require'winapi.waitemlistclass'
 
 Window = subclass({
 	__class_style_bitmask = bitmask{ --only static, frame styles here
-		noclose = CS_NOCLOSE, --disable close button and ALT+F4
+		closeable = negate(CS_NOCLOSE), --enable close button and ALT+F4
 		dropshadow = CS_DROPSHADOW, --only for non-movable windows
 		own_dc = CS_OWNDC, --for opengl or other purposes
 		receive_double_clicks = CS_DBLCLKS, --receive double click messages
@@ -19,9 +19,9 @@ Window = subclass({
 	__style_bitmask = bitmask{ --only static, frame styles here
 		border = WS_BORDER, 		--a frameless window is one without WS_BORDER, WS_DLGFRAME, WS_SIZEBOX and WS_EX_WINDOWEDGE
 		frame = WS_DLGFRAME,    --for the titlebar to appear you need both WS_BORDER and WS_DLGFRAME
-		minimize_button = WS_MINIMIZEBOX,
-		maximize_button = WS_MAXIMIZEBOX,
-		sizeable = WS_SIZEBOX,  --needs WS_DLGFRAME
+		minimizable = WS_MINIMIZEBOX,
+		maximizable = WS_MAXIMIZEBOX,
+		resizeable = WS_SIZEBOX,  --needs WS_DLGFRAME
 		sysmenu = WS_SYSMENU,   --not setting this hides all buttons
 		vscroll = WS_VSCROLL,
 		hscroll = WS_HSCROLL,
@@ -35,7 +35,7 @@ Window = subclass({
 		dialog_frame = WS_EX_DLGMODALFRAME, --double border and no system menu icon!
 		help_button = WS_EX_CONTEXTHELP, --only shown if both minimize and maximize buttons are hidden
 		tool_window = WS_EX_TOOLWINDOW,
-		transparent = WS_EX_TRANSPARENT, --not really, better use layered and UpdateLayeredWindow()
+		transparent = WS_EX_TRANSPARENT, --makes clicks go through where alpha == 255
 		layered = WS_EX_LAYERED, --setting this makes a completely frameless window regardless of other styles
 		control_parent = WS_EX_CONTROLPARENT, --recurse when looking for the next control with WS_TABSTOP
 		activable = negate(WS_EX_NOACTIVATE), --don't activate and don't show on taskbar (but see notes in window.lua!)
@@ -43,20 +43,22 @@ Window = subclass({
 	},
 	__defaults = {
 		--class style bits
-		noclose = false,
+		closeable = true,
 		dropshadow = false,
+		own_dc = false,
 		receive_double_clicks = true,
 		--window style bits
 		border = true,
 		frame = true,
-		minimize_button = true,
-		maximize_button = true,
-		sizeable = true, --...and has a 3px resizing border
+		minimizable = true,
+		maximizable = true,
+		resizeable = true, --...and has a 3px resizing border
 		sysmenu = true,
 		vscroll = false,
 		hscroll = false,
 		clip_children = true,
 		clip_siblings = true,
+		child = false,
 		--window ex style bits
 		topmost = false,
 		window_edge = true,
@@ -66,7 +68,7 @@ Window = subclass({
 		transparent = false,
 		layered = false,
 		control_parent = true,
-		activatable = true,
+		activable = true,
 		taskbar_button = false,
 		--class properties
 		background = COLOR_WINDOW,
@@ -159,7 +161,7 @@ function Window:__after_create(info, args)
 	self:__check_class_style(self.__winclass_style)
 	self.__winclass_style = nil --we're done with this
 
-	--hack instead of setting WS_MAXIMIZED style, when WS_MINIMIZED is present.
+	--when WS_MINIMIZED is present we don't want to set WS_MAXIMIZED.
 	if info.maximized and info.minimized then
 		self.restore_to_maximized = true
 	end
@@ -206,6 +208,7 @@ end
 --activation -----------------------------------------------------------------
 
 function Window:get_active() return GetActiveWindow() == self.hwnd end
+function Window:get_foreground() return GetForegroundWindow() == self.hwnd end
 function Window:activate() SetActiveWindow(self.hwnd) end
 
 --this is different than activate() in that the window flashes in the taskbar
@@ -280,12 +283,13 @@ end
 
 function Window:WM_WINDOWPOSCHANGED(wp)
 	--NOTE: A maximized window becomes movable if its size is smaller than
-	--the entire screen. A window can have such smaller maximized size if
-	--constrained, for instance (try it!). But when such a window is maximized,
-	--in absence of a programmer-supplied maximized_pos, it always moves to
-	--the top-left corner of the screen, which is lame. A much better option
-	--IMHO is to remember the last maximized position and restore to that
-	--position instead, when maximized again. Which is what we do here.
+	--the entire screen (WinXP only, in Win7+ it is unmaximized when moved).
+	--A window can have such smaller maximized size if constrained.
+	--But when such a window is maximized, in absence of a programmer-supplied
+	--maximized_pos, it always moves to the top-left corner of the screen,
+	--which is lame. A much better option is to remember the last maximized
+	--position and restore to that position instead, when maximized again.
+	--Which is what we do here.
 	if self.remember_maximized_pos and not getbit(wp.flags, SWP_NOMOVE) then
 		if self.maximized and not self.minimized then
 			self.__maximized_pos = POINT(self.__maximized_pos)
@@ -308,12 +312,12 @@ function Window:get_maximized()
 	return IsZoomed(self.hwnd)
 end
 
---minimize (or show minimized) and deactivate or not.
+--minimize (or show minimized if hidden) and deactivate or not.
 function Window:minimize(deactivate, async)
 	self:show(deactivate == false and SW_SHOWMINIMIZED or SW_MINIMIZE, async)
 end
 
---maximize (or show maximized) and activate.
+--maximize (or show maximized if hidden) and activate.
 --NOTE: can't maximize without activating; WM_COMMAND/SC_MAXIMIZE also activates.
 function Window:maximize(_, async)
 	self:show(SW_SHOWMAXIMIZED, async)
@@ -327,6 +331,7 @@ end
 --restore to last state and activate:
 -- 1) if minimized, restore to normal or maximized state.
 -- 2) if maximized, restore to normal state.
+--NOTE: retore-to-maximized doesn't work with async=true.
 function Window:restore(_, async)
 	self:show(SW_RESTORE, async)
 end
@@ -356,8 +361,8 @@ function Window:set_normal_rect(...) --x1,y1,x2,y2 or rect
 	if self.maximized then
 		local minw, minh, maxw, maxh = self:__constraints()
 		if minw or minh or maxw or maxh then
-			r.w = clamp(r.w, minw, maxw)
-			r.h = clamp(r.h, minh, maxh)
+			r.x2 = r.x1 + clamp(r.w, minw, maxw)
+			r.y2 = r.y1 + clamp(r.h, minh, maxh)
 		end
 	end
 
@@ -462,8 +467,8 @@ require'winapi.icon'
 require'winapi.font'
 
 local c = Window{title = 'Main',
-	border = true, frame = true, window_edge = true, sizeable = true, control_parent = true,
-	help_button = true, maximize_button = false, minimize_button = false, maximized = true,
+	border = true, frame = true, window_edge = true, resizeable = true, control_parent = true,
+	help_button = true, maximizable = false, minimizable = false, maximized = true,
 	autoquit = true, w = 500, h = 300, visible = false}
 c:show()
 
@@ -482,7 +487,7 @@ print('restored  ', c.visible, c.minimized, c.maximized)
 c:shownormal()
 print('shownormal', c.visible, c.minimized, c.maximized)
 
-local c3 = Window{topmost = true, title='Topmost', h = 300, w = 300, sizeable = false}
+local c3 = Window{topmost = true, title='Topmost', h = 300, w = 300, resizeable = false}
 
 local c2 = Window{title = 'Owned by Main', frame = true, w = 500, h = 100, visible = true, owner = c,
 							--taskbar_button = true --force a button on taskbar even when owned
@@ -495,14 +500,9 @@ local c4 = Window{x = 400, y = 400, w = 400, h = 200,
 						frame = false,
 						window_edge = false,
 						--dialog_frame = false,
-						sizeable = false,
+						resizeable = false,
 						owner = c,
 						}
-
-function c:WM_GETDLGCODE()
-	return 0
-	--return bit.bor(DLGC_WANTALLKEYS, DLGC_WANTCHARS, DLGC_WANTMESSAGE)
-end
 
 function c:on_key_down(vk, flags)
 	print('WM_KEYDOWN', vk, flags)

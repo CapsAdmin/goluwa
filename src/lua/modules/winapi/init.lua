@@ -1,9 +1,8 @@
 
---core/winapi: winapi namespace + core + ffi: the platform for loading any proc/ file or oo/ file.
+--binding/winapi: main winapi module
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi.namespace')
-require'winapi.debug'
 require'winapi.types'
 require'winapi.util'
 require'winapi.struct'

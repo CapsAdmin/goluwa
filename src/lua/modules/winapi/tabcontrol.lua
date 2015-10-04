@@ -1,5 +1,5 @@
 
---proc/tabcontrol: standard tab control.
+--proc/controls/tabcontrol: standard tab control
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -149,101 +149,106 @@ function TabCtrl_SetImageList(tab, iml)
 	return ptr(ffi.cast('HIMAGELIST', SNDMSG(tab, TCM_SETIMAGELIST, 0, iml)))
 end
 
+TCN_FIRST               = tonumber(ffi.cast('UINT', -550))
 
---[[
+TCM_GETITEMRECT         = (TCM_FIRST + 10)
 
-TCN_FIRST               = ffi.cast('UINT', -550)
+function TabCtrl_GetItemRect(hwnd, i, r)
+	r = RECT(r)
+	return SNDMSG(hwnd, TCM_GETITEMRECT, countfrom0(i), r)
+end
 
-TCM_GETITEMRECT         (TCM_FIRST +  = 10)
-TabCtrl_GetItemRect(hwnd, i, prc)  = \
-    (BOOL)SNDMSG((hwnd), TCM_GETITEMRECT, (WPARAM)(int)(i), (LPARAM)(RECT *)(prc))
-
+--[=[
 TCHT_NOWHERE             = 0x0001
 TCHT_ONITEMICON          = 0x0002
 TCHT_ONITEMLABEL         = 0x0004
 TCHT_ONITEM              = bit.bor(TCHT_ONITEMICON, TCHT_ONITEMLABEL)
 
-
+ffi.cdef[[
 typedef struct tagTCHITTESTINFO
 {
     POINT pt;
     UINT flags;
 } TCHITTESTINFO, *LPTCHITTESTINFO;
+]]
 
-TCM_HITTEST             (TCM_FIRST +  = 13)
-TabCtrl_HitTest(hwndTC, pinfo)  = \
-    (int)SNDMSG((hwndTC), TCM_HITTEST, 0, (LPARAM)(TC_HITTESTINFO *)(pinfo))
+TCM_HITTEST             = (TCM_FIRST + 13)
+TabCtrl_HitTest(hwndTC, pinfo)
+    (int)SNDMSG(hwndTC, TCM_HITTEST, 0, (LPARAM)(TC_HITTESTINFO *)(pinfo))
 
 
-TCM_SETITEMEXTRA        (TCM_FIRST +  = 14)
-TabCtrl_SetItemExtra(hwndTC, cb)  = \
+TCM_SETITEMEXTRA        = (TCM_FIRST + 14)
+TabCtrl_SetItemExtra(hwndTC, cb)
     (BOOL)SNDMSG((hwndTC), TCM_SETITEMEXTRA, (WPARAM)(cb), 0L)
 
 
-TCM_ADJUSTRECT          (TCM_FIRST +  = 40)
-TabCtrl_AdjustRect(hwnd, bLarger, prc)  = \
+TCM_ADJUSTRECT          = (TCM_FIRST + 40)
+TabCtrl_AdjustRect(hwnd, bLarger, prc)
     (int)SNDMSG(hwnd, TCM_ADJUSTRECT, (WPARAM)(BOOL)(bLarger), (LPARAM)(RECT *)(prc))
 
 
-TCM_SETITEMSIZE         (TCM_FIRST +  = 41)
-TabCtrl_SetItemSize(hwnd, x, y)  = \
+TCM_SETITEMSIZE         = (TCM_FIRST + 41)
+TabCtrl_SetItemSize(hwnd, x, y)
     (DWORD)SNDMSG((hwnd), TCM_SETITEMSIZE, 0, MAKELPARAM(x,y))
 
 
-TCM_REMOVEIMAGE         (TCM_FIRST +  = 42)
-TabCtrl_RemoveImage(hwnd, i)  = \
+TCM_REMOVEIMAGE         = (TCM_FIRST + 42)
+TabCtrl_RemoveImage(hwnd, i)
         (void)SNDMSG((hwnd), TCM_REMOVEIMAGE, i, 0L)
 
 
-TCM_SETPADDING          (TCM_FIRST +  = 43)
-TabCtrl_SetPadding(hwnd,  cx, cy)  = \
+TCM_SETPADDING          = (TCM_FIRST + 43)
+TabCtrl_SetPadding(hwnd,  cx, cy)
         (void)SNDMSG((hwnd), TCM_SETPADDING, 0, MAKELPARAM(cx, cy))
 
 
-TCM_GETROWCOUNT         (TCM_FIRST +  = 44)
-TabCtrl_GetRowCount(hwnd)  = \
+TCM_GETROWCOUNT         = (TCM_FIRST + 44)
+TabCtrl_GetRowCount(hwnd)
         (int)SNDMSG((hwnd), TCM_GETROWCOUNT, 0, 0L)
 
 
-TCM_GETTOOLTIPS         (TCM_FIRST +  = 45)
-TabCtrl_GetToolTips(hwnd)  = \
+TCM_GETTOOLTIPS         = (TCM_FIRST + 45)
+TabCtrl_GetToolTips(hwnd)
         (HWND)SNDMSG((hwnd), TCM_GETTOOLTIPS, 0, 0L)
 
 
-TCM_SETTOOLTIPS         (TCM_FIRST +  = 46)
-TabCtrl_SetToolTips(hwnd, hwndTT)  = \
+TCM_SETTOOLTIPS         = (TCM_FIRST + 46)
+TabCtrl_SetToolTips(hwnd, hwndTT)
         (void)SNDMSG((hwnd), TCM_SETTOOLTIPS, (WPARAM)(hwndTT), 0L)
 
-TCM_SETMINTABWIDTH      (TCM_FIRST +  = 49)
-TabCtrl_SetMinTabWidth(hwnd, x)  = \
+TCM_SETMINTABWIDTH      = (TCM_FIRST + 49)
+TabCtrl_SetMinTabWidth(hwnd, x)
         (int)SNDMSG((hwnd), TCM_SETMINTABWIDTH, 0, x)
 
-TCM_DESELECTALL         (TCM_FIRST +  = 50)
+TCM_DESELECTALL         = (TCM_FIRST + 50)
 TabCtrl_DeselectAll(hwnd,  = fExcludeFocus)\
         (void)SNDMSG((hwnd), TCM_DESELECTALL, fExcludeFocus, 0)
 
-TCM_HIGHLIGHTITEM       (TCM_FIRST +  = 51)
-TabCtrl_HighlightItem(hwnd, i, fHighlight)  = \
+TCM_HIGHLIGHTITEM       = (TCM_FIRST + 51)
+TabCtrl_HighlightItem(hwnd, i, fHighlight)
     (BOOL)SNDMSG((hwnd), TCM_HIGHLIGHTITEM, (WPARAM)(i), (LPARAM)MAKELONG (fHighlight, 0))
 
-TCM_SETEXTENDEDSTYLE    (TCM_FIRST + 52)  -- optional wParam ==  = mask
+TCM_SETEXTENDEDSTYLE    = (TCM_FIRST + 52)  -- optional wParam ==  = mask
 TabCtrl_SetExtendedStyle(hwnd,  = dw)\
         (DWORD)SNDMSG((hwnd), TCM_SETEXTENDEDSTYLE, 0, dw)
 
-TCM_GETEXTENDEDSTYLE    (TCM_FIRST +  = 53)
+TCM_GETEXTENDEDSTYLE    = (TCM_FIRST + 53)
 #define TabCtrl_GetExtendedStyle(hwnd)\
         (DWORD)SNDMSG((hwnd), TCM_GETEXTENDEDSTYLE, 0, 0)
 
 TCM_SETUNICODEFORMAT      = CCM_SETUNICODEFORMAT
-TabCtrl_SetUnicodeFormat(hwnd, fUnicode)   = \
+TabCtrl_SetUnicodeFormat(hwnd, fUnicode)
     (BOOL)SNDMSG((hwnd), TCM_SETUNICODEFORMAT, (WPARAM)(fUnicode), 0)
 
 TCM_GETUNICODEFORMAT      = CCM_GETUNICODEFORMAT
-TabCtrl_GetUnicodeFormat(hwnd)   = \
+TabCtrl_GetUnicodeFormat(hwnd)
     (BOOL)SNDMSG((hwnd), TCM_GETUNICODEFORMAT, 0, 0)
 
-TCN_KEYDOWN             (TCN_FIRST -  = 0)
+]=]
 
+TCN_KEYDOWN             = (TCN_FIRST - 0)
+
+ffi.cdef[[
 typedef struct tagTCKEYDOWN
 {
     NMHDR hdr;
@@ -251,9 +256,9 @@ typedef struct tagTCKEYDOWN
     UINT flags;
 } NMTCKEYDOWN;
 
-TCN_SELCHANGE           (TCN_FIRST -  = 1)
-TCN_SELCHANGING         (TCN_FIRST -  = 2)
-TCN_GETOBJECT           (TCN_FIRST -  = 3)
-TCN_FOCUSCHANGE         (TCN_FIRST -  = 4)
-
 ]]
+
+TCN_SELCHANGE           = (TCN_FIRST - 1)
+TCN_SELCHANGING         = (TCN_FIRST - 2)
+TCN_GETOBJECT           = (TCN_FIRST - 3)
+TCN_FOCUSCHANGE         = (TCN_FIRST - 4)

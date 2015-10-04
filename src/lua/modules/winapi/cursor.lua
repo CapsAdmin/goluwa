@@ -1,5 +1,5 @@
 
---proc/cursor: cursor resources.
+--proc/resources/cursor: cursor resources
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -80,8 +80,10 @@ function GetCursorPos(p, pci)
 	else
 		p = POINT(pci.ptScreenPos)
 	end
-	return p
+	return p, pci
 end
+
+SetCursorPos = C.SetCursorPos
 
 --messages
 

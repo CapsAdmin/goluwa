@@ -1,5 +1,5 @@
 
---proc/propsys: Property System API.
+--proc/system/propsys: Property System API
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

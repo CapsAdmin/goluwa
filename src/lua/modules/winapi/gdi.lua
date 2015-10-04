@@ -1,5 +1,5 @@
 
---proc/gdi: windows GDI API.
+--proc/windows/gdi: GDI API
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -58,17 +58,17 @@ ffi.cdef[[
 HDC GetDC(HWND hWnd);
 int ReleaseDC(HWND hWnd, HDC hDC);
 typedef struct tagPAINTSTRUCT {
-    HDC         hdc;
-    BOOL        fErase;
-    RECT        rcPaint;
-    BOOL        fRestore;
-    BOOL        fIncUpdate;
-    BYTE        rgbReserved[32];
+	HDC   hdc;
+	BOOL  fErase;
+	RECT  rcPaint;
+	BOOL  fRestore;
+	BOOL  fIncUpdate;
+	BYTE  rgbReserved[32];
 } PAINTSTRUCT, *PPAINTSTRUCT, *NPPAINTSTRUCT, *LPPAINTSTRUCT;
-HDC BeginPaint(HWND hwnd, LPPAINTSTRUCT lpPaint);
-BOOL EndPaint(HWND hWnd, const PAINTSTRUCT *lpPaint);
-BOOL InvalidateRect(HWND hWnd, const RECT *lpRect, BOOL bErase);
-BOOL RedrawWindow(HWND hWnd, const RECT *lprcUpdate, HRGN hrgnUpdate, UINT flags);
+HDC      BeginPaint(HWND hwnd, LPPAINTSTRUCT lpPaint);
+BOOL     EndPaint(HWND hWnd, const PAINTSTRUCT *lpPaint);
+BOOL     InvalidateRect(HWND hWnd, const RECT *lpRect, BOOL bErase);
+BOOL     RedrawWindow(HWND hWnd, const RECT *lprcUpdate, HRGN hrgnUpdate, UINT flags);
 HGDIOBJ  SelectObject(HDC hdc, HGDIOBJ h);
 BOOL     DeleteObject(HGDIOBJ ho);
 COLORREF SetDCBrushColor(HDC hdc, COLORREF color);
@@ -358,11 +358,37 @@ typedef struct _BLENDFUNCTION {
 AC_SRC_OVER  = 0x00
 AC_SRC_ALPHA = 0x01
 
+--regions
+
+ffi.cdef[[
+HRGN CreateRoundRectRgn(
+	int nLeftRect,
+	int nTopRect,
+	int nRightRect,
+	int nBottomRect,
+	int nWidthEllipse,
+	int nHeightEllipse
+);
+
+int SetWindowRgn(
+	HWND hWnd,
+	HRGN hRgn,
+	BOOL bRedraw
+);
+]]
+
+function CreateRoundRectRgn(...)
+	return checkh(C.CreateRoundRectRgn(...))
+end
+
+function SetWindowRgn(hwnd, rgn, redraw)
+	checknz(C.SetWindowRgn(hwnd, rgn, redraw))
+end
 
 --showcase
 
 if not ... then
-print(GetStockObject(WHITE_BRUSH))
-print(GetStockObject(DEFAULT_GUI_FONT))
+	print(GetStockObject(WHITE_BRUSH))
+	print(GetStockObject(DEFAULT_GUI_FONT))
 end
 

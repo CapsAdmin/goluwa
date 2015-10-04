@@ -1,5 +1,5 @@
 
---proc/wglext: opengl WGL API from wglext.h
+--proc/opengl/wglext: opengl WGL API from wglext.h
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

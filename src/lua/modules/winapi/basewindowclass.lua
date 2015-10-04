@@ -1,5 +1,5 @@
 
---oo/basewindow: base class for both overlapping windows and controls.
+--oo/abstract/basewindow: base class for top-level windows and controls
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -10,6 +10,7 @@ require'winapi.gdi'
 require'winapi.keyboard'
 require'winapi.mouse'
 require'winapi.monitor'
+require'winapi.dpiaware'
 
 --window tracker -------------------------------------------------------------
 
@@ -71,6 +72,19 @@ function MessageRouter:__init()
 		end
 		return DefWindowProc(hwnd, WM, wParam, lParam) --catch WM_CREATE etc.
 	end
+
+	--exceptions in WNDPROC are caught by Windows on x64, see:
+	--http://stackoverflow.com/questions/1487950/access-violation-in-wm-paint-not-caught
+	if ffi.abi'64bit' then
+		local dispatch0 = dispatch
+		function dispatch(...)
+			local ok, ret = xpcall(dispatch0, debug.traceback, ...)
+			if ok then return ret end
+			io.stderr:write(ret..'\n')
+			PostMessage(nil, WM_EXCEPTION)
+		end
+	end
+
 	self.proc = ffi.cast('WNDPROC', dispatch)
 end
 
@@ -88,9 +102,7 @@ function ProcessMessage(msg)
 	if window then
 		if window.accelerators and window.accelerators.haccel then
 			--make hotkeys work
-			if TranslateAccelerator(window.hwnd,
-				window.accelerators.haccel, msg)
-			then
+			if TranslateAccelerator(window.hwnd, window.accelerators.haccel, msg) then
 				return
 			end
 		end
@@ -109,33 +121,33 @@ function ProcessMessage(msg)
 	--posted by Window objects to unregister their WNDCLASS after they're gone.
 	if msg.message == WM_UNREGISTER_CLASS then
 		UnregisterClass(msg.wParam)
+	elseif msg.message == WM_EXCEPTION then
+		error'WM_EXCEPTION'
 	end
 end
 
---TIP: can call the message loop like this: os.exit(MessageLoop()).
-function MessageLoop(after_process)
+--NOTE: you can call the message loop like this: os.exit(MessageLoop()).
+function MessageLoop()
 	local msg = types.MSG()
 	while true do
 		local ret = GetMessage(nil, 0, 0, msg)
-		if ret == 0 then break end
+		if ret == 0 then break end --WM_QUIT received
 		ProcessMessage(msg)
-		if after_process then
-			after_process(msg)
-		end
 	end
-	return msg.signed_wParam --WM_QUIT sends an int exit code in wParam
+	return tonumber(msg.signed_wParam) --WM_QUIT sends an int exit code in wParam
 end
 
---process all pending message from the queue (if any) and return.
-function ProcessMessages(after_process)
-	while true do
-		local ok, msg = PeekMessage(nil, 0, 0, PM_REMOVE)
-		if not ok then return end
-		ProcessMessage(msg)
-		if after_process then
-			after_process(msg)
-		end
-	end
+function ProcessNextMessage()
+	local ok, msg = PeekMessage(nil, 0, 0, PM_REMOVE)
+	if not ok then return false end
+	if msg.message == WM_QUIT then return false, true end
+	ProcessMessage(msg)
+	return true
+end
+
+--process all pending messages from the queue (if any) and return.
+function ProcessMessages()
+	while ProcessNextMessage() do end
 end
 
 --base window class ----------------------------------------------------------
@@ -157,7 +169,7 @@ BaseWindow = {
 		--on_destroyed = WM_NCDESTROY, --manually triggered
 		--movement
 		on_pos_changing = WM_WINDOWPOSCHANGING,
-		on_pos_changed = WM_WINDOWPOSCHANGED,
+		on_pos_change = WM_WINDOWPOSCHANGED,
 		on_moving = WM_MOVING,
 		on_moved = WM_MOVE,
 		on_resizing = WM_SIZING,
@@ -198,11 +210,14 @@ BaseWindow = {
 		on_syskey_down_char = WM_SYSCHAR,
 		on_dead_key_up_char = WM_DEADCHAR,
 		on_dead_syskey_down_char = WM_SYSDEADCHAR,
-		--system events
-		on_timer = WM_TIMER,
 		--raw input
 		on_raw_input = WM_INPUT,
 		on_device_change = WM_INPUT_DEVICE_CHANGE,
+		--system events
+		on_dpi_change = WM_DPICHANGED,
+		--custom draw
+		on_nc_hittest = WM_NCHITTEST,
+		on_nc_calcsize = WM_NCCALCSIZE,
 	},
 	__wm_syscommand_handler_names = {}, --WM_SYSCOMMAND code -> handler name map
 	__wm_command_handler_names = {},    --WM_COMMAND code -> handler name map
@@ -245,7 +260,7 @@ end
 
 function BaseWindow:__set_style_ex_bit(k,v)
 	SetWindowExStyle(self.hwnd,
-		self.__style_ex_bitmask:set(GetWindowExStyle(self.hwnd), k, v))
+		self.__style_ex_bitmask:setbit(GetWindowExStyle(self.hwnd), k, v))
 	SetWindowPos(self.hwnd, nil, 0, 0, 0, 0, SWP_FRAMECHANGED_ONLY)
 end
 
@@ -300,25 +315,28 @@ function BaseWindow:__after_create(info, args) end --stub
 --wanted style attributes to what was actually set and raise an error if
 --any of our attributes were ignored.
 function BaseWindow:__check_bitmask(name, mask, wanted, actual)
-	if wanted == actual then return end
-	local pp = require'pp'
-	error(string.format('inconsistent %s bits\nwanted: 0x%08x %s\nactual: 0x%08x %s', name,
-		wanted, pp.format(mask:get(wanted), '   '),
-		actual, pp.format(mask:get(actual), '   ')))
+	if bit.tobit(wanted) == bit.tobit(actual) then return end
+	local ok, pp = pcall(require, 'pp')
+	local wanted_fmt = ok and pp.format(mask:get(wanted), '   ') or ''
+	local actual_fmt = ok and pp.format(mask:get(actual), '   ') or ''
+	print(string.format(
+		'WARNING: inconsistent %s bits\nwanted: 0x%08x %s\nactual: 0x%08x %s', name,
+			tonumber(wanted), wanted_fmt,
+			tonumber(actual), actual_fmt))
 end
 
 function BaseWindow:__check_class_style(wanted)
-	self:__check_bitmask('class style', self.__class_style_bitmask, wanted,
+	self:__check_bitmask('ClassStyle', self.__class_style_bitmask, wanted,
 		GetClassStyle(self.hwnd))
 end
 
 function BaseWindow:__check_style(wanted)
-	self:__check_bitmask('style', self.__style_bitmask, wanted,
+	self:__check_bitmask('WS_* style', self.__style_bitmask, wanted,
 		GetWindowStyle(self.hwnd))
 end
 
 function BaseWindow:__check_style_ex(wanted)
-	self:__check_bitmask('ex style', self.__style_ex_bitmask, wanted,
+	self:__check_bitmask('WS_EX_* style', self.__style_ex_bitmask, wanted,
 		GetWindowExStyle(self.hwnd))
 end
 
@@ -560,14 +578,23 @@ function BaseWindow:disable() self.enabled = false end
 function BaseWindow:get_focused() return GetFocus() == self.hwnd end
 function BaseWindow:focus() SetFocus(self.hwnd) end
 
-function BaseWindow:children()
-	local t = EnumChildWindows(self.hwnd)
+function BaseWindow:children(recursive)
+	local t
+	if recursive then
+		t = EnumChildWindows(self.hwnd)
+	else
+		t = {}
+		for win in GetChildWindows(self.hwnd) do
+			t[#t+1] = win
+		end
+	end
 	local i = 0
 	return function()
 		i = i + 1
 		return Windows:find(t[i])
 	end
 end
+
 
 function BaseWindow:get_cursor_pos()
 	return Windows:get_cursor_pos(self)
@@ -580,7 +607,7 @@ end
 --visibility -----------------------------------------------------------------
 
 --show(true|nil) = show in current state.
---show(false) = show show in current state but don't activate.
+--show(false) = show in current state but don't activate.
 function BaseWindow:show(SW, async)
 	SW = flags((SW == nil or SW == true) and SW_SHOW or SW == false and SW_SHOWNA or SW)
 	local ShowWindow = async and ShowWindowAsync or ShowWindow
@@ -589,7 +616,8 @@ function BaseWindow:show(SW, async)
 	--_on a top-level window_ (msdn is not accurate about this detail).
 	--Instead, the SW flag in STARTUPINFO is used (which for luajit.exe is SW_HIDE).
 	--So unless SW_SHOWDEFAULT is explicitly requested, ShowWindow() is called again.
-	if SW ~= SW_HIDE and SW ~= SW_SHOWDEFAULT and not self.visible then
+	--NOTE: if async is used, ShowWindow() is not called twice, call it yourself then!
+	if not async and SW ~= SW_HIDE and SW ~= SW_SHOWDEFAULT and not self.visible then
 		ShowWindow(self.hwnd, SW)
 	end
 end
@@ -697,10 +725,10 @@ end
 function BaseWindow:frame_to_client(info, ...) --x1,y1,x2,y2 or rect
 	local cr = RECT(...)
 	local dr = self:client_to_frame(info, 0, 0, 200, 200)
-	cr.x = cr.x - dr.x
-	cr.y = cr.y - dr.y
-	cr.w = cr.w - (dr.w - 200) - dr.x
-	cr.h = cr.h - (dr.h - 200) - dr.y
+	cr.x1 = cr.x1 - dr.x1
+	cr.y1 = cr.y1 - dr.y1
+	cr.x2 = cr.x2 - (dr.w - 200) - dr.x
+	cr.y2 = cr.y2 - (dr.h - 200) - dr.y
 	return cr
 end
 
@@ -746,7 +774,7 @@ end
 
 function BaseWindow:WM_WINDOWPOSCHANGING(wp)
 	if not getbit(wp.flags, SWP_NOSIZE) then
-		--enable anchors and constraints in child windows.
+		--this is to enable anchors and constraints in child windows.
 		for child in self:children() do
 			child:__parent_resizing(wp)
 		end
@@ -761,22 +789,6 @@ end
 
 function BaseWindow:real_child_at(...) --x,y or point
 	return Windows:find(RealChildWindowFromPoint(self.hwnd, ...))
-end
-
-function BaseWindow:child_at_recursive(...) --x,y or point
-	for w in self:children() do
-		local child = w:child_at_recursive(...)
-		if child then return child end
-	end
-	return self:child_at(...)
-end
-
-function BaseWindow:real_child_at_recursive(...) --x,y or point
-	for w in self:children() do
-		local child = w:real_child_at_recursive(...)
-		if child then return child end
-	end
-	return self:real_child_at(...)
 end
 
 --z order --------------------------------------------------------------------
@@ -819,12 +831,16 @@ function BaseWindow:invalidate(r, erase_background)
 	InvalidateRect(self.hwnd, r, erase_background ~= false)
 end
 
+function BaseWindow:__WM_PAINT_pass(ok, err)
+	EndPaint(self.hwnd, self.__paintstruct)
+	if not ok then error(err, 4) end
+end
+
 function BaseWindow:WM_PAINT()
 	if self.on_paint then
 		self.__paintstruct = types.PAINTSTRUCT(self.__paintstruct)
 		local hdc = BeginPaint(self.hwnd, self.__paintstruct)
-		self:on_paint(hdc)
-		EndPaint(self.hwnd, self.__paintstruct)
+		self:__WM_PAINT_pass(xpcall(self.on_paint, debug.traceback, self, hdc))
 		return 0
 	end
 end
@@ -837,20 +853,29 @@ end
 
 --timers ---------------------------------------------------------------------
 
-function BaseWindow:settimer(timeout_ms, handler, id)
-	id = SetTimer(self.hwnd, id or 1, timeout_ms)
-	if not self.__timers then self.__timers = {} end
+--NOTE: passing an existing id replaces that timer.
+function BaseWindow:settimer(seconds, handler, id)
+	self.__timers = self.__timers or {}
+	id = id or #self.__timers + 1
+	assert(id > 0) --id 0 only works if passing a callback to SetTimer()
+	SetTimer(self.hwnd, id, seconds * 1000)
 	self.__timers[id] = handler
 	return id
 end
 
 function BaseWindow:stoptimer(id)
-	KillTimer(self.hwnd, id or 1)
+	id = tonumber(id)
+	KillTimer(self.hwnd, id)
 	self.__timers[id] = nil
 end
 
 function BaseWindow:WM_TIMER(id)
+	id = tonumber(id)
 	local callback = self.__timers and self.__timers[id]
-	if callback then callback(self, id) end
+	if callback then
+		if callback(self, id) == false then --returning false kills the timer
+			self:stoptimer(id)
+		end
+	end
 end
 

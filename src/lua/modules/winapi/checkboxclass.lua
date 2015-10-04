@@ -1,5 +1,5 @@
 
---oo/checkbox: checkbox control.
+--oo/controls/checkbox: checkbox control
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -12,7 +12,7 @@ CheckBox = subclass({
 			right = BS_LEFTTEXT,
 		},
 		pushlike = BS_PUSHLIKE,
-		type = { --TODO: make two orthogonal properties out of these: autocheck and 3state or allow_grayed
+		type = { --TODO: make two orthogonal properties out of these: autocheck and allow_grayed
 			twostate = BS_CHECKBOX,
 			threestate = BS_3STATE,
 			twostate_autocheck = BS_AUTOCHECKBOX,
@@ -23,7 +23,6 @@ CheckBox = subclass({
 		type = 'twostate_autocheck',
 		text = 'Option',
 		w = 100, h = 24,
-		text_margin = {20,5},
 	},
 	__init_properties = {
 		'checked'

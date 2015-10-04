@@ -1,5 +1,5 @@
 
---proc/guid: UUID API from rpcdce.h
+--proc/system/uuid: UUID API from rpcdce.h
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

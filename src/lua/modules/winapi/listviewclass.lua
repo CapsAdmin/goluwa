@@ -1,5 +1,5 @@
 
---oo/listview: standard listview control.
+--oo/controls/listview: standard listview control
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -64,17 +64,23 @@ LVItemList = class(ItemList)
 function LVItemList:add(i, item)
 	if not item then i,item = self.count+1,i end
 	if type(item) == 'string' then item = {text = item} end
+	local subitems = item.subitems
 	item = LVITEM(item)
 	item.i = i
 	item.subitem = 0
 	ListView_InsertItem(self.hwnd, item)
+	if subitems then
+		for si, item in ipairs(subitems) do
+			self:set_subitem(i, si, item)
+		end
+	end
 end
 
 function LVItemList:remove(i)
 	ListView_DeleteItem(self.hwnd, i)
 end
 
-function LVItemList:set_subitem(i,subitem,item)
+function LVItemList:set_subitem(i, subitem, item)
 	if type(item) == 'string' then item = {text = item} end
 	item = LVITEM(item)
 	item.i = i
@@ -82,7 +88,7 @@ function LVItemList:set_subitem(i,subitem,item)
 	ListView_SetItem(self.hwnd, item)
 end
 
-function LVItemList:get_subitem(i,subitem)
+function LVItemList:get_subitem(i, subitem)
 	local item = LVITEM:setmask()
 	item.i = i
 	item.subitem = subitem
@@ -91,11 +97,11 @@ function LVItemList:get_subitem(i,subitem)
 end
 
 function LVItemList:set(i, item)
-	self:set_subitem(i,0,item)
+	self:set_subitem(i, 0, item)
 end
 
 function LVItemList:get(i)
-	return self:get_subitem(i,0)
+	return self:get_subitem(i, 0)
 end
 
 function LVItemList:get_count()
@@ -178,7 +184,7 @@ ListView = {
 	__init_properties = {'hoover_time'},
 	__wm_notify_handler_names = {
 		on_item_changing = LVN_ITEMCHANGING,
-		on_item_changed = LVN_ITEMCHANGED,
+		on_item_change = LVN_ITEMCHANGED,
 		on_insert_item = LVN_INSERTITEM,
 		on_delete_item = LVN_DELETEITEM,
 		on_delete_all_items = LVN_DELETEALLITEMS,
@@ -190,7 +196,7 @@ ListView = {
 		on_odcachehint = LVN_ODCACHEHINT,
 		on_find_item = LVN_ODFINDITEMW,
 		on_item_activate = LVN_ITEMACTIVATE,
-		--on_state_changed = LVN_ODSTATECHANGED,
+		--on_state_change = LVN_ODSTATECHANGED,
 		on_hot_track = LVN_HOTTRACK,
 		on_get_dispinfo = LVN_GETDISPINFOW,
 		on_set_dispinfo = LVN_SETDISPINFOW,
@@ -250,8 +256,8 @@ end
 
 function ListView:LVN_ITEMCHANGED(i, subitem, newstate, oldstate)
 	if getbit(newstate, LVIS_SELECTED) ~= getbit(oldstate, LVIS_SELECTED) then
-		if self.on_selection_changed then
-			self:on_selection_changed(i, subitem, getbit(newstate, LVIS_SELECTED))
+		if self.on_selection_change then
+			self:on_selection_change(i, subitem, getbit(newstate, LVIS_SELECTED))
 		end
 	end
 end
@@ -274,21 +280,21 @@ end
 --showcase
 
 if not ... then
-require'winapi.showcase'
-local window = ShowcaseWindow{w=300, h=200}
-local lv = ReportListView{parent = window, x = 10, y = 10, w = 200, h = 100}
-lv.columns:add'name'
-lv.columns:add'address'
-lv.items:add'you won\'t see me'
-lv.items:clear()
-lv.items:add'Louis Armstrong'
-lv.items:add'Django Reinhardt'
-lv.items:set_subitem(lv.items.count,1,'Topsy')
-lv.items:set_subitem(1,1,'Basin Street')
---lv.items:add(3, {text = LPSTR_TEXTCALLBACKW})
---lv.items:add(4, {text = LPSTR_TEXTCALLBACKW})
---function lv:get_item_data(item) item.text = 'n/a'end
-lv.items:remove(3)
-MessageLoop()
+	require'winapi.showcase'
+	local window = ShowcaseWindow{w=300, h=200}
+	local lv = ReportListView{parent = window, x = 10, y = 10, w = 200, h = 100}
+	lv.columns:add'name'
+	lv.columns:add'address'
+	lv.items:add'you won\'t see me'
+	lv.items:clear()
+	lv.items:add'Louis Armstrong'
+	lv.items:add'Django Reinhardt'
+	lv.items:set_subitem(lv.items.count,1,'Beyond The Sea')
+	lv.items:set_subitem(1,1,'Basin Street')
+	--lv.items:add(3, {text = LPSTR_TEXTCALLBACKW})
+	--lv.items:add(4, {text = LPSTR_TEXTCALLBACKW})
+	--function lv:get_item_data(item) item.text = 'n/a'end
+	lv.items:remove(3)
+	MessageLoop()
 end
 

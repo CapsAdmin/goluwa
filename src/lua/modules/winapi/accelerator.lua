@@ -1,5 +1,5 @@
 
---proc/accelerator: creating accelerator tables
+--proc/controls/accelerator: accelerator tables
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

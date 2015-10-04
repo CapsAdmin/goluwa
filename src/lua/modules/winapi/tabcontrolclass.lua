@@ -1,5 +1,5 @@
 
---oo/tabcontrol: standard tab control.
+--oo/controls/tabcontrol: standard tab control
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -9,8 +9,9 @@ require'winapi.tabcontrol'
 
 TabItemList = class(ItemList)
 
-function TabItemList:__init(tab)
+function TabItemList:__init(tab, items)
 	self.hwnd = tab.hwnd
+	self:add_items(items)
 end
 
 function TabItemList:add(i, item)
@@ -58,8 +59,12 @@ TabControl = subclass({
 		w = 200, h = 100,
 	},
 	__init_properties = {},
-	__wm_command_handler_names = index{
-
+	__wm_notify_handler_names = index{
+		on_key_down = TCN_KEYDOWN,
+		on_tab_change = TCN_SELCHANGE,
+		on_tab_changing = TCN_SELCHANGING,
+		on_get_object = TCN_GETOBJECT,
+		on_focus_change = TCN_FOCUSCHANGE,
 	}
 }, Control)
 
@@ -71,7 +76,7 @@ end
 
 function TabControl:__init(info)
 	TabControl.__index.__init(self, info)
-	self.items = TabItemList(self)
+	self.items = TabItemList(self, info.items)
 end
 
 function TabControl:set_image_list(iml)
@@ -83,15 +88,15 @@ function TabControl:get_selected_index() return TabCtrl_GetCurSel(self.hwnd) end
 
 --showcase
 if not ... then
-require'winapi.showcase'
-local window = ShowcaseWindow{w=300,h=200}
+	require'winapi.showcase'
+	local window = ShowcaseWindow{w=300,h=200}
 
-t1 = TabControl{parent = window}
-t1.image_list = ShowcaseImageList()
-t1.items:add{text = 'tab#1', image = 1}
-t1.items:add{text = 'tab#2', image = 5}
-t1.selected_index = 2
-assert(t1.selected_index == 2)
+	t1 = TabControl{parent = window}
+	t1.image_list = ShowcaseImageList()
+	t1.items:add{text = 'tab#1', image = 2}
+	t1.items:add{text = 'tab#2', image = 3}
+	t1.selected_index = 2
+	assert(t1.selected_index == 2)
 
-MessageLoop()
+	MessageLoop()
 end

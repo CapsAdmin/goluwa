@@ -1,5 +1,5 @@
 
---proc/comdlg: common dialogs
+--proc/dialogs/comdlg: common dialogs API
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

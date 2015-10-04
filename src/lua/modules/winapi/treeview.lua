@@ -1,5 +1,5 @@
 
---proc/treeview: standard treeview control.
+--proc/controls/treeview: standard treeview control
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

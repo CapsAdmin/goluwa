@@ -1,5 +1,5 @@
 
---proc/gdi/devcaps: get device capabilities (submodule required by gdi)
+--proc/gdi/devcaps: device capabilities API
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

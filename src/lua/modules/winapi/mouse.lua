@@ -1,5 +1,5 @@
 
---proc/mouse: mouse functions
+--proc/input/mouse: Mouse API
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -123,7 +123,7 @@ local buttons_bitmask = bitmask{
 --NOTE: double-click messages are only received on windows with CS_DBLCLKS style
 function WM.WM_LBUTTONDBLCLK(wParam, lParam)
 	local x, y = splitsigned(lParam)
-	return x, y, buttons_bitmask:get(wParam)
+	return x, y, buttons_bitmask:get(tonumber(wParam))
 end
 
 WM.WM_LBUTTONDOWN = WM.WM_LBUTTONDBLCLK
@@ -139,7 +139,7 @@ WM.WM_RBUTTONUP = WM.WM_LBUTTONDBLCLK
 
 function WM.WM_MOUSEWHEEL(wParam, lParam)
 	local x, y = splitsigned(lParam)
-	local buttons, delta = splitsigned(wParam)
+	local buttons, delta = splitsigned(ffi.cast('int32_t', wParam))
 	return x, y, buttons_bitmask:get(buttons), delta
 end
 
@@ -164,7 +164,7 @@ WM.WM_XBUTTONUP = WM.WM_XBUTTONDBLCLK
 
 function WM.WM_NCLBUTTONDBLCLK(wParam, lParam)
 	local x, y = splitsigned(lParam)
-	return x, y, wParam --x, y, HT*
+	return x, y, tonumber(wParam) --x, y, HT*
 end
 WM.WM_NCLBUTTONDOWN = WM.WM_NCLBUTTONDBLCLK
 WM.WM_NCLBUTTONUP = WM.WM_NCLBUTTONDBLCLK

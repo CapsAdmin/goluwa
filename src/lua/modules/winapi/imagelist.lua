@@ -1,5 +1,5 @@
 
---proc/imagelist: image list resources.
+--proc/resources/imagelist: image lists
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -33,8 +33,6 @@ function ImageList_Destroy(himl)
 	checknz(comctl.ImageList_Destroy(himl))
 	disown(himl)
 end
-
---
 
 ffi.cdef[[
 int         ImageList_Add(HIMAGELIST himl, HBITMAP hbmImage, HBITMAP hbmMask);

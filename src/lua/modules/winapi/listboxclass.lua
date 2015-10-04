@@ -1,5 +1,5 @@
 
---oo/listbox: standard listbox control.
+--oo/controls/listbox: standard listbox control
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -9,17 +9,17 @@ require'winapi.listbox'
 
 LBItemList = class(ItemList)
 
-function LBItemList:add(i,s)
+function LBItemList:add(i,s) --returns index
 	if not s then i,s = nil,i end
 	if i then
-		ListBox_InsertString(self.hwnd, i, s)
+		return ListBox_InsertString(self.hwnd, i, s)
 	else
-		ListBox_AddString(self.hwnd, s)
+		return ListBox_AddString(self.hwnd, s)
 	end
 end
 
-function LBItemList:remove(i)
-	ListBox_DeleteString(self.hwnd, i)
+function LBItemList:remove(i) --returns count
+	return ListBox_DeleteString(self.hwnd, i)
 end
 
 local function setitem(hwnd, i, s)
@@ -62,9 +62,9 @@ ListBox = subclass({
 		tabstops = LBS_USETABSTOPS,
 		free_height = LBS_NOINTEGRALHEIGHT,
 		multicolumn = LBS_MULTICOLUMN,
-		always_show_scrollbar = LBS_DISABLENOSCROLL,
 		vscroll = WS_VSCROLL,
 		hscroll = WS_HSCROLL,
+		always_show_scrollbars = LBS_DISABLENOSCROLL,
 		allow_select = negate(LBS_NOSEL),
 	},
 	__style_ex_bitmask = bitmask{
@@ -72,12 +72,14 @@ ListBox = subclass({
 	},
 	__defaults = {
 		client_edge = true,
-		always_show_scrollbar = true,
 		free_height = true,
+		vscroll = true,
+		hscroll = true,
+		always_show_scrollbars = true, --if disabled, either vscroll or hscroll must be disabled too!
 		--window properties
 		w = 100, h = 100,
 	},
-	__init_properties = {'sort'}, --LBS_SORT is not set initially. why?
+	__init_properties = {'sort', 'hextent'}, --LBS_SORT is not set initially. why?
 	__wm_command_handler_names = index{
 		on_memory_error = LBN_ERRSPACE,
 		on_select = LBN_SELCHANGE,
@@ -100,7 +102,21 @@ function ListBox:__init(info)
 	self.items = LBItemList(self)
 end
 
-function ListBox:LB_GETTEXT()
-	--print'LB_GETTEXT'
+function ListBox:get_hextent()
+	return ListBox_GetHorizontalExtent(self.hwnd)
 end
 
+function ListBox:set_hextent(width)
+	ListBox_SetHorizontalExtent(self.hwnd, width)
+end
+
+
+if not ... then
+	require'winapi.showcase'
+	local window = ShowcaseWindow{w=300,h=200}
+	local lb = ListBox{parent = window, x = 10, y = 10, hextent = 120}
+	for i = 1,100 do
+		lb.items:add('xxxxxxxxxx test '..i)
+	end
+	MessageLoop()
+end

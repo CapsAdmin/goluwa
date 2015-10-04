@@ -1,6 +1,8 @@
 
---oo/wglpanel: opengl-enabled panel.
+--oo/controls/wglpanel: opengl-enabled panel
 --Written by Cosmin Apreutesei. Public Domain.
+
+if not ... then require'winapi.wglpanel_demo'; return end
 
 setfenv(1, require'winapi')
 require'winapi.panelclass'
@@ -34,13 +36,12 @@ end
 
 function WGLPanel:on_resized()
 	if not self.hrc then return end
-	self:set_viewport()
+	self:on_set_viewport()
 	self:invalidate()
 end
 
-function WGLPanel:on_render() end --stub
-function WGLPanel:set_viewport() end --stub
-function WGLPanel:__after_gl_context() end --stub
+function WGLPanel:on_render() end
+function WGLPanel:on_set_viewport() end
 
 function WGLPanel:on_paint(window_hdc)
 	self.window_hdc = window_hdc
@@ -97,9 +98,8 @@ function WGLPanel:on_paint(window_hdc)
 		end
 
 		wglMakeCurrent(window_hdc, self.hrc)
-		self:__after_gl_context()
 		--TODO: use wglChoosePixelFormatARB to enable FSAA
-		self:set_viewport()
+		self:on_set_viewport()
 	else
 		wglMakeCurrent(window_hdc, self.hrc)
 	end
@@ -108,4 +108,3 @@ function WGLPanel:on_paint(window_hdc)
 	SwapBuffers(window_hdc)
 end
 
-if not ... then require'winapi.wglpanel_demo' end

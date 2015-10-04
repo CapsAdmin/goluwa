@@ -1,5 +1,5 @@
 
---proc/icon: icon resources.
+--proc/resources/icon: icon resources
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -11,7 +11,6 @@ HICON LoadIconW(
 	  LPCWSTR lpIconName);
 
 BOOL DestroyIcon(HICON hIcon);
-
 
 typedef struct _ICONINFO {
     BOOL    fIcon;

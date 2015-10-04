@@ -1,8 +1,9 @@
 
---proc/memory: memory management
+--proc/system/memory: Memory Management API
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
+require'winapi.winnt'
 
 -- Global Memory Flags
 GMEM_FIXED           = 0x0000
@@ -65,43 +66,22 @@ function GlobalFree(h)
 	return checknz(ffi.C.GlobalFree(h) == nil and 1 or 0)
 end
 
-PAGE_NOACCESS           = 0x01
-PAGE_READONLY           = 0x02
-PAGE_READWRITE          = 0x04
-PAGE_WRITECOPY          = 0x08
-PAGE_EXECUTE            = 0x10
-PAGE_EXECUTE_READ       = 0x20
-PAGE_EXECUTE_READWRITE  = 0x40
-PAGE_EXECUTE_WRITECOPY  = 0x80
-PAGE_GUARD             = 0x100
-PAGE_NOCACHE           = 0x200
-PAGE_WRITECOMBINE      = 0x400
-
-MEM_COMMIT            = 0x1000
-MEM_RESERVE           = 0x2000
-MEM_DECOMMIT          = 0x4000
-MEM_RELEASE           = 0x8000
-MEM_FREE             = 0x10000
-MEM_PRIVATE          = 0x20000
-MEM_MAPPED           = 0x40000
-MEM_RESET            = 0x80000
-MEM_TOP_DOWN        = 0x100000
-MEM_WRITE_WATCH     = 0x200000
-MEM_PHYSICAL        = 0x400000
-MEM_ROTATE          = 0x800000
+MEM_COMMIT        = 0x00001000
+MEM_RESERVE       = 0x00002000
+MEM_DECOMMIT      = 0x00004000
+MEM_RELEASE       = 0x00008000
+MEM_FREE          = 0x00010000
+MEM_PRIVATE       = 0x00020000
+MEM_MAPPED        = 0x00040000
+MEM_RESET         = 0x00080000
+MEM_TOP_DOWN      = 0x00100000
+MEM_WRITE_WATCH   = 0x00200000
+MEM_PHYSICAL      = 0x00400000
+MEM_ROTATE        = 0x00800000
 MEM_LARGE_PAGES   = 0x20000000
 MEM_4MB_PAGES     = 0x80000000
 
-SEC_FILE            = 0x800000
-SEC_IMAGE          = 0x1000000
-SEC_PROTECTED_IMAGE= 0x2000000
-SEC_RESERVE        = 0x4000000
-SEC_COMMIT         = 0x8000000
-SEC_NOCACHE       = 0x10000000
-SEC_WRITECOMBINE  = 0x40000000
-SEC_LARGE_PAGES   = 0x80000000
-
-MEM_IMAGE          = SEC_IMAGE
+MEM_IMAGE         = SEC_IMAGE
 
 WRITE_WATCH_FLAG_RESET  = 0x01
 

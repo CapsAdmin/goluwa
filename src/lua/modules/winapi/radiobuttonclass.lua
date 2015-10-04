@@ -1,5 +1,5 @@
 
---oo/radiobutton: radio button control.
+--oo/controls/radiobutton: radio button control
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -21,14 +21,27 @@ RadioButton = subclass({
 		autocheck = true,
 		text = 'Option',
 		w = 100, h = 24,
-		text_margin = {20,5},
+	},
+	__init_properties = {
+		'checked'
 	},
 }, BaseButton)
 
-function RadioButton:set_dontclick(dontclick) --vista+
+function RadioButton:set_dontclick(dontclick) --Vista+
 	Button_SetDontClick(self.hwnd, dontclick)
 end
 
+local button_states = {
+	[false] = BST_UNCHECKED,
+	[true] = BST_CHECKED,
+}
+local button_state_names = index(button_states)
+function RadioButton:set_checked(checked)
+	Button_SetCheck(self.hwnd, button_states[checked])
+end
+function RadioButton:get_checked()
+	return button_state_names[bit.band(Button_GetCheck(self.hwnd), 3)]
+end
 
 --showcase
 
@@ -49,5 +62,4 @@ function cb3:on_double_click() print 'b3 dbl-clicked' end
 
 MessageLoop()
 end
-
 

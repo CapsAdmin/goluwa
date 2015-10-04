@@ -1,5 +1,5 @@
 
---oo/class: single inheritance object model.
+--oo/oo-system/class: single inheritance object model
 --Written by Cosmin Apreutesei. Public Domain.
 
 --subclassing defined by super:__subclass(derived).

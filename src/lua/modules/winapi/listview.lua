@@ -1,5 +1,5 @@
 
---proc/listview: standard listview control.
+--proc/controls/listview: standard listview control
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -210,7 +210,7 @@ typedef struct tagLVITEMW
 	 UINT mask;
 	 int iItem;
 	 int iSubItem;
-	 UINT state;
+	 UINT stateFlags;
 	 UINT stateMask;
 	 LPWSTR pszText;
 	 int cchTextMax;
@@ -255,7 +255,7 @@ LVITEM = struct{
 		'group_id', 'iGroupId', LVIF_GROUPID, pass, pass, --xp+
 		'image', 'iImage', LVIF_IMAGE, pass, pass,
 		'indent', 'iIndent', LVIF_INDENT, pass, pass,
-		'state', 'state', LVIF_STATE, flags, pass,
+		'state', 'stateFlags', LVIF_STATE, flags, pass,
 		'state_mask', 'stateMask', LVIF_STATE, flags, pass,
 		'text', 'pszText', LVIF_TEXT, wcs, mbs,
 		'setitem', '', LVIF_DI_SETITEM, pass, pass,

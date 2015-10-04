@@ -1,5 +1,5 @@
 
---proc/window/class: window classes (see msdn for what a window class means)
+--proc/windows/class: WNDCLASSEX API
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -101,7 +101,7 @@ function GetClassLong(hwnd, GCL) return GetClassLongW(hwnd, flags(GCL)) end
 
 -- Get/SetClassLong wrappers (don't look them up in the docs)
 
-function GetClassStyle(hwnd) return GetClassLong(hwnd, GCL_STYLE) end
+function GetClassStyle(hwnd) return tonumber(GetClassLong(hwnd, GCL_STYLE)) end
 function SetClassStyle(hwnd, style) SetClassLong(hwnd, GCL_STYLE, flags(style)) end
 
 function GetClassIcon(hwnd) return ptr(ffi.cast('HICON', GetClassLong(hwnd, GCL_HICON))) end
@@ -123,13 +123,13 @@ package.loaded['winapi.windowclasses'] = true --prevent double-loading by winapi
 require'winapi.color'
 require'winapi.cursor'
 require'winapi.window' --for DefWindowProc
-local class = assert(print(RegisterClass{
+local class = print(RegisterClass{
 	name='MyClass',
 	style = bit.bor(CS_HREDRAW, CS_VREDRAW),
 	background = COLOR_WINDOW,
 	cursor = LoadCursor(IDC_ARROW),
 	proc = DefWindowProc,
-}))
+})
 UnregisterClass(class)
 end
 

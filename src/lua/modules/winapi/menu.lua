@@ -1,5 +1,5 @@
 
---proc/menu: standard menu control.
+--proc/controls/menu: standard menu control
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

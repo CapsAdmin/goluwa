@@ -1,5 +1,5 @@
 
---oo/itemlist: class template for lists of structured items.
+--oo/abstract/itemlist: base class for lists of objects
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

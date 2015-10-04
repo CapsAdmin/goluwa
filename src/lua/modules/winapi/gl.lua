@@ -1,8 +1,9 @@
 
---proc/gl: opengl dynamic namespace based on PFN*PROC cdefs and wglGetProcAddress.
+--proc/opengl/gl: opengl dynamic namespace
 --Written by Cosmin Apreutesei. Public Domain.
 
---instead of loading this module, you should require gl11, gl21, wglext etc. as needed.
+--NOTE: don't load this module, load gl11, gl21, wglext etc. instead.
+
 setfenv(1, require'winapi')
 require'winapi.wgl'
 
@@ -15,7 +16,7 @@ end
 gl = setmetatable({}, {
 	__index = function(t,k)
 		t[k] = checksym(opengl32, k) or
-					ptr(ffi.cast(string.format('PFN%sPROC', k:upper()), wglGetProcAddress(k)))
+			ptr(ffi.cast(string.format('PFN%sPROC', k:upper()), wglGetProcAddress(k)))
 		return rawget(t,k)
 	end
 })

@@ -1,5 +1,5 @@
 
---oo/handlelist: track objects by their corresponding 32bit pointer handle
+--oo/abstract/handlelist: handle to Lua object mapping
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

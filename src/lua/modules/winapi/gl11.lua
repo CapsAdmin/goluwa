@@ -1,5 +1,5 @@
 
---proc/gl11: opengl 1.1 API
+--proc/opengl/gl11: OpenGL 1.1 API
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

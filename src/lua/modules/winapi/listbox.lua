@@ -1,5 +1,5 @@
 
---proc/listbox: standard listbox control.
+--proc/controls/listbox: standard listbox control
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -8,7 +8,7 @@ require'winapi.comctl'
 
 --creation
 
-WC_LISTBOX             = 'ListBox'
+WC_LISTBOX             = 'LISTBOX'
 
 LBS_NOTIFY             = 0x0001
 LBS_SORT               = 0x0002
@@ -101,7 +101,7 @@ function ListBox_GetString(hwnd, i, buf)
 end
 
 function ListBox_GetItemData(hwnd, i)
-	return SNDMSG(hwnd, LB_GETITEMDATA, countfrom0(i))
+	return SNDMSG_PTR(hwnd, LB_GETITEMDATA, countfrom0(i))
 end
 
 function ListBox_SetItemData(hwnd, i, data)
@@ -158,7 +158,7 @@ function ListBox_GetSelItems(hwnd)
 end
 
 function ListBox_GetTopIndex(hwnd)
-	return checkpoz(SNDMSG(hwnd, LB_GETTOPINDEX))+1
+	return countfrom1(checkpoz(SNDMSG(hwnd, LB_GETTOPINDEX)))
 end
 
 function ListBox_SetTopIndex(hwnd, indexTop)
@@ -175,7 +175,7 @@ function ListBox_SetTabStops(hwnd, tabs)
 end
 
 function ListBox_GetHorizontalExtent(hwnd)
-	SNDMSG(hwnd, LB_GETHORIZONTALEXTENT)
+	return SNDMSG(hwnd, LB_GETHORIZONTALEXTENT)
 end
 
 function ListBox_SetHorizontalExtent(hwnd, cxExtent)

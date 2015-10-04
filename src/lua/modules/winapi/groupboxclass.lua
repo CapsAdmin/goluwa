@@ -1,5 +1,5 @@
 
---oo/groupbox: groupbox control.
+--oo/controls/groupbox: groupbox control
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

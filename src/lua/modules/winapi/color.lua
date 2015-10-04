@@ -1,5 +1,5 @@
 
---proc/color: standard color brushes
+--proc/resources/color: standard color brushes
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

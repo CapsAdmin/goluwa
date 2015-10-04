@@ -1,5 +1,5 @@
 
---core/debug: strict mode and some debug tools. entirely optional module.
+--binding/debug: strict mode and debug tools (optional module)
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi.namespace')
@@ -13,7 +13,7 @@ local _G = _G
 local declared = {}
 
 local getinfo = debug.getinfo
-local rawget, rawset, _print = rawget, rawset, print
+local rawget, rawset = rawget, rawset
 
 function _M:__index(k)
 	if declared[k] then return nil end
@@ -22,12 +22,20 @@ function _M:__index(k)
 end
 
 function _M:__newindex(k,v)
-	local w = getinfo(2, 'S').what
-	if w == 'main' or w == 'C' or declared[k] then
-		declared[k] = true
+	if declared[k] then
 		rawset(self, k, v)
 	else
-		error(string.format('Assignment to undeclared winapi global %s', k), 2)
+		--NOTE: linedefined is always 0 for stripped bytecode, which makes
+		--strict mode innefective if winapi is compiled and loaded as bytecode.
+		--The reason we don't check for `what == 'main'` like strict.lua does,
+		--is because LuaJIT sets `what` to "Lua" on stripped bytecode, while
+		--Lua sets it to "main".
+		local info = getinfo(2, 'S')
+		if info and info.linedefined > 0 then
+			error(string.format('Assignment to undeclared winapi global %s', k), 2)
+		end
+		declared[k] = true
+		rawset(self, k, v)
 	end
 end
 
@@ -50,18 +58,4 @@ function findbits(prefix, value)
 	end
 	return table.concat(t, ' ')
 end
-
---print that can be used in expressions and recurses into tables
-local function __print(indent,...)
-	if indent ~= '' then _print(indent,...) else _print(...) end
-	for i=1,select('#',...) do
-		local t = select(i,...)
-		if type(t) == 'table' and (not getmetatable(t) or not getmetatable(t).__tostring) then
-			for k,v in pairs(t) do __print(indent..'       ',k,v) end
-		end
-	end
-	return ...
-end
-
-function print(...) return __print('',...) end
 

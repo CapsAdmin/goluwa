@@ -1,5 +1,5 @@
 
---oo/control: base class for standard controls.
+--oo/abstract/control: base class for standard controls
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -17,9 +17,29 @@ Control = subclass({
 	},
 }, BaseWindow)
 
+function parse_anchors(s)
+	if type(s) == 'string' then
+		return {
+			left   = s:find('l', 1, true) and true or nil,
+			top    = s:find('t', 1, true) and true or nil,
+			right  = s:find('r', 1, true) and true or nil,
+			bottom = s:find('b', 1, true) and true or nil,
+		}
+	end
+	return s
+end
+
+function format_anchors(t)
+	return
+		(t.left   and 'l')..
+		(t.top    and 't')..
+		(t.right  and 'r')..
+		(t.bottom and 'b')
+end
+
 function Control:__before_create(info, args)
 	Control.__index.__before_create(self, info, args)
-	self.anchors = info.anchors
+	self.anchors = info.anc and parse_anchors(info.anc) or info.anchors
 	--parent is either a window object or a handle. if it's a handle, self.parent will return nil.
 	args.parent = info.parent and info.parent.hwnd or info.parent
 	args.style = bit.bor(args.style, args.parent and WS_CHILD or WS_POPUP, WS_CLIPSIBLINGS, WS_CLIPCHILDREN)
@@ -28,7 +48,7 @@ end
 function Control:__init(info)
 	Control.__index.__init(self, info)
 	--subclass the control to intercept the messages sent to it.
-	self.__prev_proc = SetWindowLong(self.hwnd, GWL_WNDPROC, MessageRouter.proc)
+	self.__prev_proc = ffi.cast('WNDPROC', SetWindowLong(self.hwnd, GWL_WNDPROC, MessageRouter.proc))
 end
 
 function Control:__default_proc(WM, wParam, lParam)
@@ -42,14 +62,17 @@ end
 function Control:set_parent(parent)
 	local old_parent = self.parent
 	if parent and not old_parent then --popup windows can become child windows
-		SetWindowStyle(self.hwnd, setbits(GetWindowStyle(self.hwnd),
-														bit.bor(WS_POPUP, WS_CHILD), WS_CHILD))
+		SetWindowStyle(self.hwnd,
+			setbits(GetWindowStyle(self.hwnd),
+			bit.bor(WS_POPUP, WS_CHILD),
+			WS_CHILD))
 	end
 	SetParent(self.hwnd, parent and parent.hwnd)
-	pin(self, parent)
 	if not parent and old_parent then --child windows can become popup windows (diff. from overlapped)
-		SetWindowStyle(self.hwnd, setbits(GetWindowStyle(self.hwnd),
-														bit.bor(WS_POPUP, WS_CHILD), WS_POPUP))
+		SetWindowStyle(self.hwnd,
+			setbits(GetWindowStyle(self.hwnd),
+			bit.bor(WS_POPUP, WS_CHILD),
+			WS_POPUP))
 	end
 	if (parent and not old_parent) or (not parent and old_parent) then
 		SetWindowPos(self.hwnd, nil, 0, 0, 0, 0, SWP_FRAMECHANGED_ONLY)
@@ -74,10 +97,19 @@ function Control:__apply_constraints(r, left, top, right, bottom)
 	local w1 = clamp(r.w, min_w, max_w)
 	local h1 = clamp(r.h, min_h, max_h)
 
-	if top    then r.y, r.h = r.y + r.h - h1, h1 end
-	if bottom then r.h = h1 end
-	if left   then r.x, r.w = r.x + r.w - w1, w1 end
-	if right  then r.w = w1 end
+	if top then
+		r.y1 = r.y2 - h1
+		r.y2 = r.y1 + h1 end
+	if bottom then
+		r.y2 = r.y1 + h1
+	end
+	if left then
+		r.x1 = r.x2 - w1
+		r.x2 = r.x1 + w1
+	end
+	if right then
+		r.x2 = r.x1 + w1
+	end
 
 	return r
 end
@@ -105,15 +137,15 @@ function Control:__parent_resizing(wp)
 	local pr, r = self.parent.screen_rect, self.rect
 
 	local x, w = anchor_dim(self, self.anchors.left, self.anchors.right,
-									pr.x1 + wp.w - pr.x2, r.x1, r.w, self.__anchor_w)
+		pr.x1 + wp.w - pr.x2, r.x1, r.w, self.__anchor_w)
 	local y, h = anchor_dim(self, self.anchors.top,  self.anchors.bottom,
-									pr.y1 + wp.h - pr.y2, r.y1, r.h, self.__anchor_h)
+		pr.y1 + wp.h - pr.y2, r.y1, r.h, self.__anchor_h)
 
 	--override rect with the changed sides.
-	if x then r.x = x end
-	if y then r.y = y end
-	if w then r.w = w end
-	if h then r.h = h end
+	if x then r.x1 = x end
+	if y then r.y1 = y end
+	if w then r.x2 = r.x1 + w end
+	if h then r.y2 = r.y1 + h end
 
 	--apply constraints only on the changed (thus movable) sides of rect.
 	self.rect = self:__apply_constraints(r, x, y, w, h)
@@ -126,3 +158,10 @@ function Control:__parent_resizing(wp)
 	if h and rh ~= h then self.__anchor_h = h - rh else self.__anchor_h = nil end
 end
 
+function Control:get_anc()
+	return format_anchors(self.anchors)
+end
+
+function Control:set_anc(s)
+	self.anchors = parse_anchors(s)
+end

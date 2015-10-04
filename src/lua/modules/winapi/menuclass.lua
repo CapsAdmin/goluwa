@@ -1,5 +1,5 @@
 
---oo/menu: standard menu control.
+--oo/controls/menu: standard menu control
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -133,8 +133,7 @@ function Menu:__init(info)
 	self.items = MenuItemList(self, info.items)
 
 	local style = info
-	local t = update({}, info); t.items = nil --TODO: find another way
-	info = MENUINFO(t)
+	info = MENUINFO(info)
 	info.style = style_bitmask:set(MNS_NOTIFYBYPOS, style)
 	SetMenuInfo(self.hmenu, info)
 end
@@ -191,7 +190,7 @@ end
 
 function Menu:WM_MENUCOMMAND(i) --pseudo-message from the owner window further routed to individual item handlers
 	local handler = self.items.handlers[i]
-	if handler then handler() end
+	if handler then handler(self) end
 end
 
 
@@ -212,3 +211,27 @@ function MenuBar:__set_window(window) --used by Window:set_menu()
 	self:__redraw()
 end
 
+--showcase
+
+if not ... then
+	require'winapi.showcase'
+	local win = ShowcaseWindow()
+
+	win.menu = MenuBar()
+
+	win.menu.items:add{
+		text = '&File',
+		submenu = Menu{
+			items = {
+				{text = '&Close', on_click = function() win:close() end},
+			},
+		},
+	}
+
+	local helpmenu = Menu()
+	helpmenu.items:add{text = '&About', on_click = function() end}
+
+	win.menu.items:add{text = '&Help', submenu = helpmenu}
+
+	MessageLoop()
+end

@@ -1,5 +1,5 @@
 
---proc/fontex: font resources (new API).
+--proc/resources/fontex: font resources (the new API)
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

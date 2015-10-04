@@ -1,13 +1,28 @@
 
---ffi/types: basic windows types and macros from multiple headers.
+--types/types: types and macros from multiple headers
 --Written by Cosmin Apreutesei. Public Domain.
 
-
 --NOTE: Don't define time_t because it's 64bit in windows but 32bit in mingw: use explicit types!
---NOTE: SIZE has w and h in addition to cx and cy and these are the ones used.
---NOTE: RECT has x1, y1, x2, y2 in addition to left, right, top, bottom and these are the ones used.
+--NOTE: SIZE has w and h unioned to cx and cy and these are the ones used throughout.
+--NOTE: RECT has x1, y1, x2, y2 unioned to left, right, top, bottom and these are the ones used throughout.
 
 local ffi = require'ffi'
+
+if ffi.abi'64bit' then
+	ffi.cdef[[
+		typedef int32_t  __int1632;
+		typedef int64_t  __int3264;
+		typedef uint32_t __uint1632;
+		typedef uint64_t __uint3264;
+	]]
+else
+	ffi.cdef[[
+		typedef int16_t  __int1632;
+		typedef int32_t  __int3264;
+		typedef uint16_t __uint1632;
+		typedef uint32_t __uint3264;
+	]]
+end
 
 ffi.cdef[[
 typedef size_t          rsize_t;
@@ -24,7 +39,7 @@ typedef unsigned char   UCHAR;
 typedef UCHAR           *PUCHAR;
 typedef char            *PSZ;
 typedef unsigned long   DWORD;
-typedef bool             BOOL;
+typedef int             BOOL;
 typedef unsigned char   BYTE;
 typedef unsigned short  WORD;
 typedef float           FLOAT;
@@ -59,14 +74,14 @@ typedef unsigned __int64 UINT64, *PUINT64;
 typedef signed int      LONG32, *PLONG32;
 typedef unsigned int    ULONG32, *PULONG32;
 typedef unsigned int    DWORD32, *PDWORD32;
-typedef int             INT_PTR, *PINT_PTR;
-typedef unsigned int    UINT_PTR, *PUINT_PTR;
-typedef long            LONG_PTR, *PLONG_PTR;
-typedef unsigned long   ULONG_PTR, *PULONG_PTR;
-typedef unsigned short  UHALF_PTR, *PUHALF_PTR;
-typedef short           HALF_PTR, *PHALF_PTR;
-typedef long            SHANDLE_PTR;
-typedef unsigned long   HANDLE_PTR;
+typedef __int3264  INT_PTR, *PINT_PTR;
+typedef __uint3264 UINT_PTR, *PUINT_PTR;
+typedef __int3264  LONG_PTR, *PLONG_PTR;
+typedef __uint3264 ULONG_PTR, *PULONG_PTR;
+typedef __int1632  HALF_PTR, *PHALF_PTR;
+typedef __uint1632 UHALF_PTR, *PUHALF_PTR;
+typedef __int3264  SHANDLE_PTR;
+typedef __uint3264 HANDLE_PTR;
 typedef ULONG_PTR       SIZE_T, *PSIZE_T;
 typedef LONG_PTR        SSIZE_T, *PSSIZE_T;
 typedef ULONG_PTR       DWORD_PTR, *PDWORD_PTR;
@@ -171,7 +186,7 @@ typedef struct _GUID {
     unsigned short Data2;
     unsigned short Data3;
     unsigned char  Data4[8];
-} GUID;
+} GUID, *LPGUID;
 
 typedef GUID IID;
 typedef IID *LPIID;
@@ -250,6 +265,10 @@ typedef struct tagRECT {
 			LONG x2;
 			LONG y2;
 		};
+		struct{
+			LONG x;
+			LONG y;
+		};
 	};
 } RECT, *PRECT,  *NPRECT,  *LPRECT;
 typedef const RECT * LPCRECT;
@@ -286,4 +305,7 @@ typedef struct tagPOINTS {
 	SHORT x;
 	SHORT y;
 } POINTS, *PPOINTS, *LPPOINTS;
+
+struct HKEY__ { int unused; }; typedef struct HKEY__ *HKEY;
+typedef HKEY *PHKEY;
 ]]

@@ -1,5 +1,5 @@
 
---ffi/util: filters and conversion functions for winapi args and return-values.
+--binding/util: binding utilities
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi.namespace')
@@ -70,19 +70,36 @@ end
 
 local NULL = ffi.new'void*'
 
---given a validator, create a checker function for checking the return value of winapi calls.
---you should pass all winapi calls that signal errors by special return value through a checker.
---this moves error signaling from in-band (return values - C) to out-of-band (exceptions - Lua).
-function checkwith(valid)
+--given a validator, create a checker function for checking the return value
+--of winapi calls. you should pass all winapi calls that signal errors
+--by special return value through a checker. this moves error signaling
+--from in-band (return values - C) to out-of-band (secondary return values
+--or exceptions - Lua).
+
+function retwith(valid) --nil,err-returning variant
 	return function(ret)
-		if type(ret) == 'cdata' and ret == NULL then ret = nil end --discard NULL pointers
+		if type(ret) == 'cdata' and ret == NULL then
+			--discard NULL pointers
+			ret = nil
+		end
 		local valid, err = valid(ret)
 		if not valid then
 			local code = GetLastError()
 			if code ~= 0 then
 				err = get_error_message(code)
 			end
-			error(err,2)
+			return nil, err, code
+		end
+		return ret
+	end
+end
+
+function checkwith(valid) --error raising variant
+	local retfunc = retwith(valid)
+	return function(ret)
+		local ret, err = retfunc(ret)
+		if err then
+			error(err, 2)
 		end
 		return ret
 	end
@@ -94,7 +111,14 @@ local function validtrue(ret) return ret == 1, '1 (TRUE) expected, got 0 (FALSE)
 local function validh(ret) return ret ~= nil, 'non NULL value expected, got NULL' end
 local function validpoz(ret) return ret >= 0, 'positive number expected, got negative' end
 
---common return-value checkers.
+--common return-value nil,err-returning checkers.
+retz    = retwith(validz)     --a not-zero is an error
+retnz   = retwith(validnz)    --a zero is an error
+rettrue = retwith(validtrue)  --non-TRUE is an error
+reth    = retwith(validh)     --a null pointer is an error (also converts NULL->nil)
+retpoz  = retwith(validpoz)   --a (strictly) negative number is an error
+
+--common return-value error-raising checkers.
 checkz    = checkwith(validz)     --a not-zero is an error
 checknz   = checkwith(validnz)    --a zero is an error
 checktrue = checkwith(validtrue)  --non-TRUE is an error
@@ -147,11 +171,6 @@ function pin(resource, target)
 	return resource
 end
 
-function unpin(resource)
-	pins[resource] = nil
-	return resource
-end
-
 --index adjustment -----------------------------------------------------------
 
 --adjust a number from counting from 1 to counting from 0.
@@ -192,36 +211,52 @@ local band, bor, bnot, rshift = bit.band, bit.bor, bit.bnot, bit.rshift --cache
 
 local flags_cache = setmetatable({}, {__mode = 'kv'})
 
---compute bit OR'ing of a list flags. names are uppercased and looked up in the winapi namespace.
---anything that's not a letter, digit or underscore is a separator. nil turns to 0.
---you should pass all args indicating a flag or a combination of flags through this function.
+--compute bit OR'ing of a list flags 'flag1 flag2'. flags are uppercased
+--and looked up in the winapi namespace. anything that's not a letter,
+--digit or underscore is a separator. nil turns to 0.
+--you should pass all flag args through this function.
 function flags(s)
-	if s == nil then return 0 end
+	if s == nil or s == '' then return 0 end
 	if type(s) ~= 'string' then return s end
 	local x = flags_cache[s]
 	if x then return x end
 	local x = 0
 	for flag in s:gmatch'[_%w]+' do --any separator works.
-		x = bor(x, _M[trim(flag):upper()])
-		flags_cache[s] = x
+		flag = flag:upper()
+		flag = assert(_M[flag], 'invalid flag %s', flag)
+		x = bor(x, flag)
 	end
+	flags_cache[s] = x
 	return x
 end
 
 --integer splitter -----------------------------------------------------------
 
---return the low and the high word of a signed long (usually LPARAM or LRESULT).
+--return the low and the high word of a signed long (usually WPARAM, LPARAM or LRESULT).
+--TODO: make a platform-dependent splitlongptr() for splitting wParam and lParam.
 function splitlong(n)
+	n = tonumber(n) --because lParam is uint64 in x64 (which leaves 20 clean bits for the high part)
 	return band(n, 0xffff), rshift(n, 16)
 end
 
---use this instead of splitlong to extract signed integers out of a 32bit quantity
---this is good for extracting coordinate values which can be negative.
+--use this instead of splitlong to extract signed integers out of a signed long
+--(usually LPARAM). this is good for extracting coordinate values which can be negative.
+--TODO: make a platform-dependent splitsignedptr() for splitting wParam and lParam.
 function splitsigned(n)
+	n = tonumber(n) --because lParam is int64 in x64 (which leaves 20 clean bits for the high part)
 	local x, y = band(n, 0xffff), rshift(n, 16)
 	if x >= 0x8000 then x = x-0xffff end
 	if y >= 0x8000 then y = y-0xffff end
 	return x, y
+end
+
+function split_uint64(x)
+	if not x or x == 0 then
+		return 0, 0
+	end
+	local m = ffi.new'ULARGE_INTEGER'
+	m.QuadPart = x
+	return m.HighPart, m.LowPart
 end
 
 --bitmask utils --------------------------------------------------------------
@@ -244,8 +279,8 @@ end
 --ctype constructor ----------------------------------------------------------
 
 --use arg = types.FOO(arg) instead of arg = ffi.new('FOO', arg): if arg is
---already a FOO, it is passed through instead of being copied over, thus
---allowing the user to pre-allocate args if needed to lower gc pressure.
+--already a FOO or FOO*, it is passed through instead of being copied over,
+--thus allowing the user to pre-allocate args if needed to lower gc pressure.
 
 types = {}
 setmetatable(types, types)

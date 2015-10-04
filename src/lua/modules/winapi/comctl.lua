@@ -1,5 +1,5 @@
 
---proc/comctl: common controls API.
+--proc/controls/comctl: common controls API
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -81,10 +81,6 @@ CCM_GETVERSION           = (CCM_FIRST + 0x8)
 CCM_SETNOTIFYWINDOW      = (CCM_FIRST + 0x9) -- wParam == hwndParent.
 CCM_SETWINDOWTHEME       = (CCM_FIRST + 0xb)
 CCM_DPISCALE             = (CCM_FIRST + 0xc) -- wParam == Awareness
-
-function Comctl_SetVersion(hctl, version)
-	return checkpoz(SNDMSG(hctl, version))
-end
 
 --assorted consants
 

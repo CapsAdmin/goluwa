@@ -1,5 +1,5 @@
 
---oo/object: base object class
+--oo/oo-system/object: base object class
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

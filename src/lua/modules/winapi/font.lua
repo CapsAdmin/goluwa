@@ -1,5 +1,5 @@
 
---proc/font: font resources.
+--proc/resources/font: font resources (the old API)
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -140,10 +140,11 @@ function CreateFont(lf)
 	return own(checkh(C.CreateFontIndirectW(LOGFONT(lf))), DeleteObject)
 end
 
-if not ... then
-local logfont = LOGFONT{facename = 'Arial'}
-assert(logfont.facename == 'Arial')
+--showcase
 
-print('CreateFont:', CreateFont(logfont))
+if not ... then
+	local logfont = LOGFONT{facename = 'Arial'}
+	assert(logfont.facename == 'Arial')
+	print('CreateFont:', CreateFont(logfont))
 end
 

@@ -77,8 +77,7 @@ local function cube(w)
 	gl.glPopMatrix()
 end
 
-function panel:set_viewport()
-	--set default viewport
+function panel:on_set_viewport()
 	local w, h = self.client_w, self.client_h
 	gl.glViewport(0, 0, w, h)
 	gl.glMatrixMode(gl.GL_PROJECTION)

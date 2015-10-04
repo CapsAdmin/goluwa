@@ -1,5 +1,5 @@
 
---proc/gdi/bitmap: windows bitmap API (submodule required by gdi).
+--proc/gdi/bitmap: bitmap API
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

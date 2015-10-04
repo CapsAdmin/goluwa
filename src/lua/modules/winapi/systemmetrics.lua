@@ -1,5 +1,5 @@
 
---proc/systemmetrics: system metrics API
+--proc/system/systemmetrics: System Metrics API
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

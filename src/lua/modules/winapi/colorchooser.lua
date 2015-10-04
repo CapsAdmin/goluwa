@@ -1,5 +1,5 @@
 
---proc/colorchooser: color chooser dialog.
+--proc/dialogs/colorchooser: color chooser dialog
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

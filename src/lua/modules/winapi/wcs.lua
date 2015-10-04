@@ -1,5 +1,5 @@
 
---ffi/wcs: utf8 to wide character string and back.
+--binding/wcs: utf8 <-> wide char conversions
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi.namespace')
@@ -77,7 +77,7 @@ end
 
 --Some APIs don't have a way to tell how large they need an input buffer
 --to be, but then again it doesn't matter much either because it's usually
---about small strings. In those cases, we give 2K (4 KBytes) and move on.
+--about small strings. In those cases, we give 2Kchars (4 Kbytes) and move on.
 DEFAULT_WCS_BUFFER_SIZE = 2048
 
 --wcs buffer constructor: allocate a WCHAR[?] buffer and return the buffer
@@ -128,20 +128,23 @@ function wcsncpy(dest, src, count)
 	dest[count-1] = 0
 end
 
---convert and store a utf8-encoded Lua string into a user-provided WCHAR[?] cdata.
+--convert and store a utf8-encoded Lua string into a user-provided WCHAR[?] or WCHAR[n] cdata.
 --nil means empty string. anything else passes through.
---if the dest. buffer is a WCHAR* instead of a WCHAR[?], max size must be given too.
+--if the dest. buffer is a WCHAR*, maxsz must be given too.
 function wcs_to(s, ws, maxsz)
 	if s == nil then s = '' end
 	if type(s) ~= 'string' then return s end
 
-	if ffi.type(ws, WCS_ctype) then
-		--VLA, size known, check maxsz against it
+	if ffi.istype(ws, PWCS_ctype) then
+		--pointer: size unknown, maxsz must be given.
+		assert(maxsz, 'max size missing')
+	else
+		--WCHAR[?] or WCHAR[n]: size known, check maxsz against it.
+		--NOTE: unfortunately we can't test generically for WCHAR[n] with what ffi provides.
+		--so we'll just assume that any cdata that's not a WCHAR* is a WCHAR[n] or WCHAR[?]
+		--for which sizeof returns the correct value.
 		local wsz = ffi.sizeof(ws) / 2
 		maxsz = math.min(maxsz or wsz, wsz)
-	else
-		--pointer, size unknown, maxsz must be given
-		assert(maxsz, 'max size missing')
 	end
 
 	local sz = checknz(MB2WC(CP, MB, s, #s + 1, nil, 0))

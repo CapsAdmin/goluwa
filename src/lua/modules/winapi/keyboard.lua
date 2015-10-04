@@ -1,5 +1,5 @@
 
---proc/keyboard: keyboard input handling and keyboard layouts
+--proc/input/keyboard: Keyboard API
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -8,7 +8,7 @@ setfenv(1, require'winapi')
 --NOTE: pressing both shift keys and then depressing one of them doesn't trigger WM_KEYUP, but does trigger WM_INPUT.
 --NOTE: flags.prev_key_state is a single flag for both left and right ctrl/alt/shift, not for each physical key.
 --NOTE: AltGr is LCTRL followed by RALT with the same message timestamp (which we can use to distinguish from CTRL+ALT).
---NOTE: To distinguish Ctrl+Break from Ctrl+ScrollLock, and Break from Ctrl+NumLock check RI_KEY_E1 and RI_KEY_E0 on WM_INPUT.
+--NOTE: To distinguish Ctrl+Break from Ctrl+ScrollLock and Break from Ctrl+NumLock, check RI_KEY_E1 and RI_KEY_E0 on WM_INPUT.
 --NOTE: Ctrl+NumLock doesn't change the NumLock state, unlike other keys + NumLock (same with Ctrl+ScrollLock).
 
 VK_LBUTTON        = 0x01
@@ -175,11 +175,8 @@ VK_OEM_AX         = 0xE1  --  'AX' key on Japanese AX kbd
 VK_OEM_102        = 0xE2  --  "<>" or "\|" on RT 102-key kbd.
 VK_ICO_HELP       = 0xE3  --  Help key on ICO
 VK_ICO_00         = 0xE4  --  00 key on ICO
-
 VK_PROCESSKEY     = 0xE5
-
 VK_ICO_CLEAR      = 0xE6
-
 VK_PACKET         = 0xE7
 
 -- Nokia/Ericsson definitions
@@ -327,7 +324,7 @@ local function key_flags(lParam)
 end
 
 function WM.WM_KEYDOWN(wParam, lParam)
-	return wParam, key_flags(lParam) --VK_*, flags
+	return tonumber(wParam), key_flags(lParam) --VK_*, flags
 end
 
 WM.WM_KEYUP = WM.WM_KEYDOWN
@@ -338,7 +335,6 @@ function WM.WM_CHAR(wParam, lParam)
 	return mbs(ffi.new('WCHAR[?]', 2, wParam, 0)), key_flags(lParam)
 end
 
-WM.WM_UNICHAR = WM.WM_CHAR --TODO: support characters outside the BMP
 WM.WM_SYSCHAR = WM.WM_CHAR
 WM.WM_DEADCHAR = WM.WM_CHAR
 WM.WM_SYSDEADCHAR = WM.WM_CHAR

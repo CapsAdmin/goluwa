@@ -1,5 +1,5 @@
 
---proc/window: common API for windows and standard controls.
+--proc/windows/window: Windows (as in HWND) API
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -371,7 +371,7 @@ BOOL EnumChildWindows(
 ]]
 
 --NOTE: for a not null hwnd you can use GetChildWindows (no callback, no table).
-function EnumChildWindows(hwnd) --note: fron-to-back order
+function EnumChildWindows(hwnd) --note: front-to-back order
 	local t = {}
 	local cb = ffi.cast('WNDENUMPROC', function(hwnd, lparam)
 		t[#t+1] = hwnd
@@ -432,7 +432,7 @@ LRESULT DefWindowProcW(
      LPARAM lParam);
 
 LRESULT CallWindowProcW(
-     LONG lpPrevWndFunc,
+     WNDPROC lpPrevWndFunc,
 	  HWND hWnd,
      UINT Msg,
      WPARAM wParam,
@@ -478,10 +478,10 @@ end
 
 --Get/SetWindowLong wrappers (don't look them up in the docs)
 
-function GetWindowStyle(hwnd) return GetWindowLong(hwnd, GWL_STYLE) end
+function GetWindowStyle(hwnd) return tonumber(GetWindowLong(hwnd, GWL_STYLE)) end
 function SetWindowStyle(hwnd, style) SetWindowLong(hwnd, GWL_STYLE, flags(style)) end
 
-function GetWindowExStyle(hwnd) return GetWindowLong(hwnd, GWL_EXSTYLE) end
+function GetWindowExStyle(hwnd) return tonumber(GetWindowLong(hwnd, GWL_EXSTYLE)) end
 function SetWindowExStyle(hwnd, style) SetWindowLong(hwnd, GWL_EXSTYLE, flags(style)) end
 
 function GetWindowInstance(hwnd) return ffi.cast('HMODULE', GetWindowLong(hwnd, GWL_HINSTANCE)) end
@@ -562,20 +562,35 @@ ULW_EX_NORESIZE         = 0x00000008
 
 ffi.cdef[[
 BOOL UpdateLayeredWindow(
-  HWND hwnd,
-  HDC hdcDst,
-  POINT *pptDst,
-  SIZE *psize,
-  HDC hdcSrc,
-  POINT *pptSrc,
-  COLORREF crKey,
-  BLENDFUNCTION *pblend,
-  DWORD dwFlags
+	HWND hwnd,
+	HDC hdcDst,
+	POINT *pptDst,
+	SIZE *psize,
+	HDC hdcSrc,
+	POINT *pptSrc,
+	COLORREF crKey,
+	BLENDFUNCTION *pblend,
+	DWORD dwFlags
+);
+
+BOOL SetLayeredWindowAttributes(
+	HWND     hwnd,
+	COLORREF crKey,
+	BYTE     bAlpha,
+	DWORD    dwFlags
 );
 ]]
 
-function UpdateLayeredWindow(hwnd, dst_hdc, dst_ppt, psize, src_hdc, src_ppt, key, pblend, dwflags)
-	checknz(C.UpdateLayeredWindow(hwnd, dst_hdc, dst_ppt, psize, src_hdc, src_ppt, key, pblend, flags(dwflags)))
+--NOTE: this fails under Remote Desktop and doesn't set an error in GetLastError().
+function UpdateLayeredWindow(hwnd, dst_hdc, dst_ppt, psize, src_hdc, src_ppt, key, pblend, ULW)
+	return C.UpdateLayeredWindow(hwnd, dst_hdc, dst_ppt, psize, src_hdc, src_ppt, key, pblend, flags(ULW)) == 1
+end
+
+LWA_COLORKEY = 1
+LWA_ALPHA    = 2
+
+function SetLayeredWindowAttributes(hwnd, key_color, alpha, LWA)
+	return C.SetLayeredWindowAttributes(hwnd, key_color, alpha, flags(LWA)) == 1
 end
 
 -- timers
@@ -593,6 +608,7 @@ BOOL KillTimer(
      UINT_PTR uIDEvent);
 ]]
 
+--NOTE: calling error() in callback is not supported!
 function SetTimer(hwnd, id, timeout, callback)
 	return checknz(C.SetTimer(hwnd, id, timeout, callback))
 end
@@ -609,7 +625,7 @@ typedef struct tagMSG {
 	 UINT        message;
 	 union {
 		WPARAM      wParam;
-		int         signed_wParam;
+		LPARAM      signed_wParam;
 	 };
 	 LPARAM      lParam;
 	 DWORD       time;
@@ -696,22 +712,29 @@ function PostQuitMessage(exitcode)
 	C.PostQuitMessage(exitcode or 0)
 end
 
-function SendMessage(hwnd, WM, wparam, lparam)
-	if wparam == nil then wparam = 0 end
-	if type(lparam) == 'nil' then lparam = 0 end
+function SendMessagePtr(hwnd, WM, wParam, lParam)
+	if wParam == nil then wParam = 0 end
+	if type(lParam) == 'nil' then lParam = 0 end
 	return C.SendMessageW(hwnd, flags(WM),
-		ffi.cast('WPARAM', wparam),
-		ffi.cast('LPARAM', lparam))
+		ffi.cast('WPARAM', wParam),
+		ffi.cast('LPARAM', lParam))
 end
+if ffi.abi'64bit' then
+	function SendMessage(...) --converts int64_t results on x64
+		return tonumber(SendMessagePtr(...))
+	end
+else
+	SendMessage = SendMessagePtr
+end
+SNDMSG = SendMessage
+SNDMSG_PTR = SendMessagePtr --use this when the return value is a pointer
 
-SNDMSG = SendMessage --less typing on those tedious macros
-
-function PostMessage(hwnd, WM, wparam, lparam)
-	if wparam == nil then wparam = 0 end
-	if lparam == nil then lparam = 0 end
+function PostMessage(hwnd, WM, wParam, lParam)
+	if wParam == nil then wParam = 0 end
+	if lParam == nil then lParam = 0 end
 	return C.PostMessageW(hwnd, WM,
-		ffi.cast('WPARAM', wparam),
-		ffi.cast('LPARAM', lparam))
+		ffi.cast('WPARAM', wParam),
+		ffi.cast('LPARAM', lParam))
 end
 
 GetMessageTime = C.GetMessageTime
@@ -984,6 +1007,7 @@ WM_NAMES = constants{
 	WM_NCMOUSEHOVER                  = 0x02A0,
 	WM_NCMOUSELEAVE                  = 0x02A2,
 	WM_WTSSESSION_CHANGE             = 0x02B1,
+	WM_DPICHANGED                    = 0x02E0, --Win8.1+
 	WM_CUT                           = 0x0300,
 	WM_COPY                          = 0x0301,
 	WM_PASTE                         = 0x0302,
@@ -1017,6 +1041,9 @@ register_message'WM_UNREGISTER_CLASS'
 --default message routed by BaseWindowClass through the NotifyIcons tracker.
 register_message'WM_NOTIFYICON'
 
+--message sent to the thread to raise an error (see WM_PAINT handling in BaseWindowClass).
+register_message'WM_EXCEPTION'
+
 --decode a message based on registered decoders from various submodules.
 function DecodeMessage(WM_, wParam, lParam) --returns decoded results...
 	local decoder = WM[WM_NAMES[WM_]] or pass
@@ -1030,10 +1057,14 @@ SW_OTHERZOOM      = 2 --The window is being covered by another window that has b
 SW_PARENTCLOSING  = 1 --The window's owner window is being minimized.
 SW_PARENTOPENING  = 3 --The window's owner window is being restored.
 
-local show_status = {'minimized', 'other_maximized', 'restored', 'other_restored'}
+local show_status = {'owner_minimized', 'other_maximized', 'owner_restored', 'other_restored'}
 
-function WM.WM_SHOWWINDOW(wParam, lParam) --shown/hidden, show_status
-	return wParam == 1, show_status[lParam]
+function WM.WM_SHOWWINDOW(wParam, lParam) --shown/hidden, show_status (nil if ShowWindow was called)
+	return wParam == 1, show_status[tonumber(lParam)]
+end
+
+function WM.WM_ENABLE(wParam)
+	return wParam == 1
 end
 
 -- window activation
@@ -1046,11 +1077,11 @@ function WM.WM_ACTIVATE(wParam, lParam)
 end
 
 function WM.WM_ACTIVATEAPP(wParam, lParam)
-	return activate_flags[wParam], lParam --flag, other_thread_id
+	return activate_flags[tonumber(wParam)], tonumber(lParam) --flag, other_thread_id
 end
 
 function WM.WM_NCACTIVATE(wParam, lParam)
-	return activate_flags[wParam], lParam --flag, update_hrgn
+	return activate_flags[tonumber(wParam)], tonumber(lParam) --flag, update_hrgn
 end
 
 -- window sizing
@@ -1122,7 +1153,7 @@ local sizing_flags = {'left', 'right', 'top', 'topleft', 'topright', 'bottom', '
 
 --NOTE: only sent when resizing by user.
 function WM.WM_SIZING(wParam, lParam) --flag, RECT (frame rect, not client rect)
-	return sizing_flags[wParam], ffi.cast('RECT*', lParam)
+	return sizing_flags[tonumber(wParam)], ffi.cast('RECT*', lParam)
 end
 
 local size_flags = {[0] = 'restored', 'minimized', 'maximized', 'other_restored', 'other_maximized'}
@@ -1130,7 +1161,7 @@ local size_flags = {[0] = 'restored', 'minimized', 'maximized', 'other_restored'
 --NOTE: WM_SIZE gives the size of the client rect, not of the frame rect!
 --NOTE: WM_SIZE is sent by the default proc for WM_WINDOWPOSCHANGED.
 function WM.WM_SIZE(wParam, lParam) --flag, cw, ch
-	return size_flags[wParam], splitlong(lParam)
+	return size_flags[tonumber(wParam)], splitlong(lParam)
 end
 
 --NOTE: WM_MOVE gives the coordinates of the client rect, not of the frame rect!
@@ -1162,7 +1193,7 @@ function WM.WM_COMMAND(wParam, lParam)
 end
 
 function WM.WM_MENUCOMMAND(wParam, lParam)
-	return checkh(ffi.cast('HMENU', lParam)), countfrom1(wParam)
+	return checkh(ffi.cast('HMENU', lParam)), countfrom1(tonumber(wParam))
 end
 
 SC_SIZE          = 0xF000
@@ -1189,9 +1220,9 @@ SC_SEPARATOR     = 0xF00F
 SCF_ISSECURE     = 0x00000001
 
 function WM.WM_SYSCOMMAND(wParam, lParam)
-	local SC = bit.band(wParam, 0xfff0)
+	local SC = bit.band(tonumber(wParam), 0xfff0)
 	if SC == SC_KEYMENU then
-		return SC, lParam --SC, char_code
+		return SC, tonumber(lParam) --SC, char_code
 	else
 		return SC, splitsigned(lParam) --SC, x, y
 	end
@@ -1280,4 +1311,3 @@ CDRF_NOTIFYPOSTERASE    = 0x00000040
 function NM.NM_CUSTOMDRAW(hdr)
 	return ffi.cast('NMCUSTOMDRAW*', hdr)
 end
-

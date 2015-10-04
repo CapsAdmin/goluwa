@@ -1,5 +1,5 @@
 
---proc/sstorage: Structured Storage API.
+--proc/system/sstorage: Structured Storage API
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

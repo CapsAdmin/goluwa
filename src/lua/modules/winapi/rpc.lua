@@ -1,5 +1,5 @@
 
---proc/rpc: RPC types
+--proc/system/rpc: RPC types
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

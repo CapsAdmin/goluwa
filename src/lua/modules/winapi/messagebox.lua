@@ -1,5 +1,5 @@
 
---proc/messagebox: standard message box dialog.
+--proc/controls/messagebox: standard message box dialog
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

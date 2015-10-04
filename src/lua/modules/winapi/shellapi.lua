@@ -1,5 +1,5 @@
 
---proc/shellapi: shell API.
+--proc/system/shellapi: Shell32 API
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

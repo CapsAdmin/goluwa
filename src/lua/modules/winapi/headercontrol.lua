@@ -1,5 +1,5 @@
 
---proc/headercontrol: standard header control.
+--proc/controls/headercontrol: standard header control
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

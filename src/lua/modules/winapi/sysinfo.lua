@@ -1,5 +1,5 @@
 
---proc/sysinfo: system info API
+--proc/system/sysinfo: System Info API
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
@@ -52,7 +52,8 @@ typedef struct _OSVERSIONINFOEXW {
     BYTE  wReserved;
 } OSVERSIONINFOEXW, *POSVERSIONINFOEXW, *LPOSVERSIONINFOEXW, RTL_OSVERSIONINFOEXW, *PRTL_OSVERSIONINFOEXW;
 
-BOOL GetVersionExW(LPOSVERSIONINFOEXW lpVersionInfo);
+BOOL  GetVersionExW(LPOSVERSIONINFOEXW lpVersionInfo);
+DWORD RtlGetVersion(PRTL_OSVERSIONINFOEXW lpVersionInformation);
 ]]
 
 VER_SUITE_SMALLBUSINESS             = 0x00000001
@@ -87,19 +88,35 @@ OSVERSIONINFOEX = struct{
 	},
 }
 
+--NOTE: GetVersionEx lies about Win8.1 being Win8.0 (i.e. 6.2 instead of 6.3).
+--To make it not lie, you have to use a dreaded manifest.
+--Better use RtlGetVersion which doesn't (yet) lie.
 function GetVersionEx(info)
 	info = OSVERSIONINFOEX(info)
 	checknz(C.GetVersionExW(info))
 	return info
 end
 
+local ntdll
+function RtlGetVersion(info)
+	ntdll = ntdll or ffi.load'ntdll'
+	info = OSVERSIONINFOEX(info)
+	checkz(ntdll.RtlGetVersion(info))
+	return info
+end
 
 if not ... then
 	local sysinfo = GetSystemInfo()
-	local verinfo = GetVersionEx()
-	print('Windows ' ..
-			verinfo.dwMajorVersion .. '.' .. verinfo.dwMinorVersion .. '.' .. verinfo.dwBuildNumber .. ' ' ..
-			'SP ' .. verinfo.wServicePackMajor .. '.' .. verinfo.wServicePackMinor .. ' (' ..
-			verinfo.ServicePackString .. ')')
+
+	local function print_verinfo(how)
+		local verinfo = _M[how]()
+		print(how, 'Windows ' ..
+				verinfo.dwMajorVersion .. '.' .. verinfo.dwMinorVersion .. '.' .. verinfo.dwBuildNumber .. ' ' ..
+				'SP ' .. verinfo.wServicePackMajor .. '.' .. verinfo.wServicePackMinor .. ' (' ..
+				verinfo.ServicePackString .. ')')
+	end
+
+	print_verinfo'GetVersionEx'
+	print_verinfo'RtlGetVersion'
 end
 

@@ -1,5 +1,5 @@
 
---proc/module: winuser submodule that deals with dlls.
+--proc/system/module: LoadLibrary API
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')

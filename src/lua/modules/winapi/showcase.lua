@@ -1,5 +1,5 @@
 
---test/showcase: showcase window for the showcase part of modules.
+--test/showcase: testing utilities
 --Written by Cosmin Apreutesei. Public Domain.
 
 setfenv(1, require'winapi')
