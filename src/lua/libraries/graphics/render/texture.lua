@@ -788,7 +788,7 @@ end
 function META:CreateBuffer()
 	local format = self:GetFormatInfo()
 	local size = self.Size.x * self.Size.y * ffi.sizeof(format.ctype)
-	local buffer = ffi.new(format.tdef .. "[?]", size)
+	local buffer = ffi.malloc(format.tdef, size)
 
 	return buffer, size, format
 end
@@ -818,7 +818,7 @@ function META:Download(mip_map_level)
 		height = self.Size.y,
 		format = format.preferred_upload_format,
 		mip_map_level = mip_map_level,
-
+		size = self.Size.x * self.Size.y * ffi.sizeof(format.ctype),
 		length = (self.Size.x * self.Size.y) - 1, -- for i = 0, data.length do
 		channels = #format.bits,
 	}
