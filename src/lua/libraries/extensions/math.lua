@@ -1,5 +1,21 @@
 math.tau = math.pi*2
 
+function math.linear2gamma(n)
+	if n <= 0.04045 then
+		return n / 12.92
+	end
+
+	return ((n + 0.055) / 1.055) ^ 2.4
+end
+
+function math.gamma2linear(n)
+	if n < 0.0031308 then
+		return n * 12.92
+	else
+		return 1.055 * (n ^ (1.0 / 2.4)) - 0.055
+	end
+end
+
 function math.normalizeangle(a)
 	return (a + math.pi) % math.tau - math.pi
 end

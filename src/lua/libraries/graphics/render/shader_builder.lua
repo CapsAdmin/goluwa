@@ -17,7 +17,7 @@ local unrolled_lines = {
 }
 
 if SRGB then
-	unrolled_lines.color = "gl.ProgramUniform4f(render.current_program, %i, val.r ^ 2.2, val.g ^ 2.2, val.b ^ 2.2, val.a)"
+	unrolled_lines.color = "gl.ProgramUniform4f(render.current_program, %i, math.linear2gamma(val.r), math.linear2gamma(val.g), math.linear2gamma(val.b), val.a)"
 end
 
 unrolled_lines.vec4 = unrolled_lines.color
