@@ -512,8 +512,8 @@ do -- registry
 
 	if WINDOWS then
 		ffi.cdef([[
-			typedef unsigned HKEY;
-			LONG RegGetValueA(HKEY, LPCTSTR, LPCTSTR, DWORD, LPDWORD, PVOID, LPDWORD);
+			typedef unsigned goluwa_hkey;
+			LONG RegGetValueA(goluwa_hkey, LPCTSTR, LPCTSTR, DWORD, LPDWORD, PVOID, LPDWORD);
 		]])
 
 		local advapi = ffi.load("advapi32")
