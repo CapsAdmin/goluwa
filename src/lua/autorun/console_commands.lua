@@ -1,6 +1,4 @@
-
-
-console.AddCommand("dump_gbuffer", function()
+console.AddCommand("dump_gbuffer", function(_, format, depth_format)
 	ffi.cdef[[
 		void *fopen(const char *filename, const char *mode);
 		size_t fwrite(const void *ptr, size_t size, size_t nmemb, void *stream);
@@ -10,7 +8,10 @@ console.AddCommand("dump_gbuffer", function()
 	event.AddListener("GBufferPrePostProcess", function()
 		for k,v in pairs(render.gbuffer.textures) do
 			local ok, err = pcall(function()
-				local data = v.tex:Download()
+				local format = format
+				if k == "depth" then format = depth_format end
+				print(format)
+				local data = v.tex:Download(nil, format)
 				local buffer = data.buffer
 				data.buffer = nil
 				serializer.WriteFile("luadata", "" .. k .. ".tbl", data)
