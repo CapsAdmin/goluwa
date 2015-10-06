@@ -18,6 +18,7 @@ PASS.Source = [[
 		specular += diffuse * get_self_illumination(uv)/200;
 
 		out_color = diffuse * specular;
+		//out_color = reflection;
 	}
 ]]
 

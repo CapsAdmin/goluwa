@@ -9,7 +9,7 @@ local FAST_BLUR = false
 
 table.insert(PASS.Source, {
 	buffer = {
-		max_size = Vec2() + 512,
+		--max_size = Vec2() + 512,
 		internal_format = "rgb16f",
 	},
 	source = [[
@@ -126,7 +126,7 @@ else
 			if x == 0 or y == 0 then goto continue end
 			table.insert(PASS.Source, {
 				buffer = {
-					--max_size = Vec2() + 1024,
+					size_divider = 2,
 					internal_format = "rgb16f",
 				},
 				source = [[
