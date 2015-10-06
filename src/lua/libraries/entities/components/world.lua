@@ -72,7 +72,7 @@ prototype.StartStorable(COMPONENT)
 			self.sun:SetSize(size)
 		end)
 
-		ADD("sun_color", Color(1, 0.95, 0.8), function(self, var) self.sun:SetColor(var) end)
+		ADD("sun_color", Color(1, 1, 1), function(self, var) self.sun:SetColor(var) end)
 		ADD("sun_shadow", true, function(self, var) self.sun:SetShadow(var) end)
 		ADD("sun_shadow_size", CAPS and 2048 or 512, function(self, var) self.sun:SetShadowSize(var) end)
 		ADD("sun_ortho_size", 400, function(self, var) self.sun:SetOrthoSize(var) end)
