@@ -12,6 +12,7 @@ META:GetSet("NearZ", 0.1, {callback = "InvalidateProjection"})
 META:GetSet("FarZ", 32000, {callback = "InvalidateProjection"})
 META:GetSet("Viewport", Rect(0, 0, 1000, 1000), {callback = "InvalidateProjection"})
 META:GetSet("3D", true, {callback = "Invalidate"})
+META:GetSet("Ortho", false, {callback = "InvalidateProjection"})
 
 META:EndStorable()
 
@@ -186,10 +187,20 @@ function META:Rebuild(type)
 		else
 			local proj = Matrix44()
 
-			if self:Get3D() then
-				proj:Perspective(self.FOV, self.FarZ, self.NearZ, self.Viewport.w / self.Viewport.h)
+			if self.Ortho then
+				local mult = 100 * self.FOV
+				local ratio = self.Viewport.h / self.Viewport.w
+				proj:Ortho(
+					-mult, mult,
+					ratio * -mult, ratio * mult,
+					0, self.FarZ
+				)
 			else
-				proj:Ortho(0, self.Viewport.w, self.Viewport.h, 0, -1, 1)
+				if self:Get3D() then
+					proj:Perspective(self.FOV, self.FarZ, self.NearZ, self.Viewport.w / self.Viewport.h)
+				else
+					proj:Ortho(0, self.Viewport.w, self.Viewport.h, 0, -1, 1)
+				end
 			end
 
 			vars.projection = proj
@@ -203,7 +214,6 @@ function META:Rebuild(type)
 			local view = Matrix44()
 
 			if self:Get3D() then
-				-- source engine style camera angles
 				view:Rotate(self.Angles.z, 0, 0, 1)
 				view:Rotate(self.Angles.x + math.pi/2, 1, 0, 0)
 				view:Rotate(self.Angles.y, 0, 0, 1)
@@ -298,10 +308,18 @@ function render.CreateCamera()
 	return self
 end
 
+local old_data
+if render.camera_3d then
+	old_data = render.camera_3d:GetStorableTable()
+end
+
 render.camera_2d = render.CreateCamera()
 render.camera_2d:Set3D(false)
 
 render.camera_3d = render.CreateCamera()
+if old_data then
+	render.camera_3d:SetStorableTable(old_data)
+end
 
 local variables = {
 	"projection",

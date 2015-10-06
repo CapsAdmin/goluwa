@@ -106,6 +106,8 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 	render.camera_3d:SetFOV(fov)
 end)
 
+input.Bind("o", "cam_ortho", function() render.camera_3d:SetOrtho(not render.camera_3d:GetOrtho()) end)
+
 local roll = 0
 local pos = Vec2(0, 0)
 local zoom = 1
