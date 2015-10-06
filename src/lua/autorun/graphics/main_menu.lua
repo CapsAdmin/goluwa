@@ -136,15 +136,18 @@ function menu.CreateTopBar()
 
 	for i = 1, 10 do
 		local name = i .. "."
-		local cmd = command_history[#command_history - i - 1]
 
 		if i == 10 then
 			name = "0."
 		end
 
-		name = name .. cmd:trim()
+		local cmd = command_history[#command_history - i - 1]
 
-		table.insert(list, {name, function() console.RunString(cmd) end})
+		if cmd then
+			name = name .. cmd:trim()
+		end
+
+		table.insert(list, {name, function() if cmd then console.RunString(cmd) end end})
 	end
 
 	table.insert(list, {})
