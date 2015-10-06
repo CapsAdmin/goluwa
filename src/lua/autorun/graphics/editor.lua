@@ -3,13 +3,6 @@ editor = _G.editor or {}
 local mctrl = {}
 
 do -- PUT ME IN TRANSFORM
-	local AXIS_X = 1
-	local AXIS_Y = 2
-	local AXIS_Z = 3
-	local AXIS_VIEW = 4
-	local MODE_MOVE = 1
-	local MODE_ROTATE = 2
-
 	mctrl.size = 2
 	mctrl.grab_dist = 15
 	mctrl.angle_pos = 0.5
@@ -20,15 +13,19 @@ do -- PUT ME IN TRANSFORM
 	local function get_axes(ang)
 		return
 			ang:GetForward(),
-			ang:GetRight(),
+			-ang:GetRight(),
 			ang:GetUp()
+	end
+
+	local function get_draw_position()
+		return mctrl.target:GetTRPosition(), mctrl.target:GetRotation():GetAngles("yzx")
 	end
 
 	local function get_target_pos_ang(pos, ang)
 		local parent = mctrl.target:GetParent()
 
 		if parent:IsValid() and parent:HasComponent("transform") then
-			return math3d.WorldToLocal(pos, ang, parent:GetTRPosition(), parent:GetTRAngles())
+			--return math3d.WorldToLocal(pos, ang, parent:GetTRPosition(), parent:GetTRAngles())
 		end
 
 		return pos, ang
@@ -59,32 +56,32 @@ do -- PUT ME IN TRANSFORM
 	function mctrl.Move(axis, mouse_pos)
 		local target = mctrl.target
 		if target:IsValid() then
-			local pos, ang = mctrl.target:GetTRPosition(), mctrl.target:GetTRAngles()
+			local pos, ang = get_draw_position()
 			local forward, right, up = get_axes(ang)
 			local final
 
-			if axis == AXIS_X then
+			if axis == "x" then
 				local screen_pos = math3d.PointToAxis(pos, forward, mouse_pos)
 				local localpos = math3d.LinePlaneIntersection(pos, right, screen_pos)
 
 				if localpos then
 					final = get_target_position(pos + localpos:GetDot(forward)*forward - forward*mctrl.size, ang)
 				end
-			elseif axis == AXIS_Y then
+			elseif axis == "y" then
 				local screen_pos = math3d.PointToAxis(pos, right, mouse_pos)
 				local localpos = math3d.LinePlaneIntersection(pos, forward, screen_pos)
 
 				if localpos then
 					final = get_target_position(pos + localpos:GetDot(right)*right - right*mctrl.size, ang)
 				end
-			elseif axis == AXIS_Z then
+			elseif axis == "z" then
 				local screen_pos = math3d.PointToAxis(pos, up, mouse_pos)
 				local localpos = math3d.LinePlaneIntersection(pos, forward, screen_pos) or math3d.LinePlaneIntersection(pos, right, screen_pos)
 
 				if localpos then
 					final = get_target_position(pos + localpos:GetDot(up)*up - up*mctrl.size, ang)
 				end
-			elseif axis == AXIS_VIEW then
+			elseif axis == "view" then
 				local localpos = math3d.LinePlaneIntersection(pos, render.camera_3d:GetAngles():GetForward(), mouse_pos)
 
 				if localpos then
@@ -109,47 +106,58 @@ do -- PUT ME IN TRANSFORM
 		local target = mctrl.target
 		if target:IsValid() then
 
-			local pos, ang = mctrl.target:GetTRPosition(), mctrl.target:GetTRAngles()
+			local pos, ang = get_draw_position()
+			local rot = mctrl.target:GetRotation():Copy()
 			local forward, right, up = get_axes(ang)
 			local final
 
-			if axis == AXIS_X then
+			if axis == "x" then
 				local localpos = math3d.LinePlaneIntersection(pos, right, mouse_pos)
 				if localpos then
 					local diffang = (pos - (localpos + pos)):GetAngles()
-					diffang:RotateAroundAxis(right, math.rad(180))
+					diffang.x = diffang.x + math.pi / 2
+					diffang:Normalize()
 
-					local _, localang = math3d.WorldToLocal(nil, diffang, nil, ang)
-					local _, newang = math3d.LocalToWorld(nil, Ang3(localang.x + localang.y, 0, 0):Normalize(), nil, ang)
-					final = get_target_angles(nil, newang)
+					if diffang.y < 0 then
+						diffang.x = -diffang.x + math.pi
+					end
+
+					rot:SetAxis(diffang.x, Vec3(1,0,0))
+					final = rot
 				end
-			elseif axis == AXIS_Y then
+			elseif axis == "y" then
 				local localpos = math3d.LinePlaneIntersection(pos, up, mouse_pos)
 				if localpos then
 					local diffang = (pos - (localpos + pos)):GetAngles()
-					diffang:RotateAroundAxis(up, math.rad(90))
+					diffang.y = diffang.y + (math.pi / 2)
+					diffang:Normalize()
+					print(diffang)
+					if diffang.y < math.pi then
+						--diffang.y = diffang.y
+					end
 
-					local _, localang = math3d.WorldToLocal(nil, diffang, nil, ang)
-					local _, newang = math3d.LocalToWorld(nil, Ang3(0, localang.x + localang.y, 0):Normalize(), nil, ang)
-
-					final = get_target_angles(nil, newang)
+					rot:SetAxis(diffang.y, Vec3(0,0,-1))
+					final = rot
 				end
-			elseif axis == AXIS_Z then
+			elseif axis == "z" then
 				local localpos = math3d.LinePlaneIntersection(pos, forward, mouse_pos)
-
 				if localpos then
 					local diffang = (pos - (localpos + pos)):GetAngles()
+					diffang.x = diffang.x - math.pi / 2
+					diffang:Normalize()
+
+					if diffang.x < 0 then
+						diffang.x = -diffang.x + math.pi
+					end
+
 					diffang:RotateAroundAxis(forward, math.rad(-90))
-
-					local _, localang = math3d.WorldToLocal(nil, diffang, nil, ang)
-					local _, newang = math3d.LocalToWorld(nil, Ang3(0, 0, localang.x):Normalize(), nil, ang)
-
-					final = get_target_angles(nil, newang)
+					rot:SetAxis(diffang.x, Vec3(0,-1,0))
+					final = rot
 				end
 			end
 
-			if final then
-				target:SetRotation(Quat():SetAngles(final))
+			if final and final:IsValid() then
+				target:SetRotation(final)
 			end
 		end
 	end
@@ -160,13 +168,13 @@ do -- PUT ME IN TRANSFORM
 		if not target:IsValid() or not target:HasComponent("transform") then return end
 
 		local x, y = surface.GetMousePosition()
-		if mctrl.grab.axis and mctrl.grab.mode == MODE_MOVE then
+		if mctrl.grab.axis and mctrl.grab.mode == "move" then
 			mctrl.Move(mctrl.grab.axis, Vec2(x, y))
-		elseif mctrl.grab.axis and mctrl.grab.mode == MODE_ROTATE then
+		elseif mctrl.grab.axis and mctrl.grab.mode == "rotate" then
 			mctrl.Rotate(mctrl.grab.axis, Vec2(x, y))
 		end
 
-		local pos, ang = mctrl.target:GetTRPosition(), mctrl.target:GetTRAngles()
+		local pos, ang = get_draw_position()
 
 		local forward, right, up = get_axes(ang)
 
@@ -174,7 +182,7 @@ do -- PUT ME IN TRANSFORM
 		local o, visible = math3d.WorldPositionToScreen(pos)
 
 		if visible > 0 then
-			if mctrl.grab.axis == AXIS_X or mctrl.grab.axis == AXIS_VIEW then
+			if mctrl.grab.axis == "x" or mctrl.grab.axis == "view" then
 				surface.SetColor(ColorBytes(255, 200, 0, 255))
 			else
 				surface.SetColor(ColorBytes(255, 80, 80, 255))
@@ -183,7 +191,7 @@ do -- PUT ME IN TRANSFORM
 			draw_rotation_lines(pos, forward, up, r)
 
 
-			if mctrl.grab.axis == AXIS_Y or mctrl.grab.axis == AXIS_VIEW then
+			if mctrl.grab.axis == "y" or mctrl.grab.axis == "view" then
 				surface.SetColor(ColorBytes(255, 200, 0, 255))
 			else
 				surface.SetColor(ColorBytes(80, 255, 80, 255))
@@ -191,7 +199,7 @@ do -- PUT ME IN TRANSFORM
 			draw_line_to_box(o, (math3d.WorldPositionToScreen(pos + right * r)))
 			draw_rotation_lines(pos, right, forward, r)
 
-			if mctrl.grab.axis == AXIS_Z or mctrl.grab.axis == AXIS_VIEW then
+			if mctrl.grab.axis == "z" or mctrl.grab.axis == "view" then
 				surface.SetColor(ColorBytes(255, 200, 0, 255))
 			else
 				surface.SetColor(ColorBytes(80, 80, 255, 255))
@@ -219,7 +227,7 @@ do -- PUT ME IN TRANSFORM
 		if not target:IsValid() or not target:HasComponent("transform") then return end
 
 		local x, y = surface.GetMousePosition()
-		local pos, ang = mctrl.target:GetTRPosition(), mctrl.target:GetTRAngles()
+		local pos, ang = get_draw_position()
 
 		local forward, right, up = get_axes(ang)
 		local r = mctrl.size
@@ -228,23 +236,23 @@ do -- PUT ME IN TRANSFORM
 		local axis
 		local dist = mctrl.grab_dist
 
-		for i, v in pairs
+		for k, v in pairs
 			{
-				[AXIS_X] = math3d.WorldPositionToScreen(pos + forward * r),
-				[AXIS_Y] = math3d.WorldPositionToScreen(pos + right * r),
-				[AXIS_Z] = math3d.WorldPositionToScreen(pos + up * r),
-				[AXIS_VIEW] = math3d.WorldPositionToScreen(pos)
+				x = math3d.WorldPositionToScreen(pos + forward * r),
+				y = math3d.WorldPositionToScreen(pos + right * r),
+				z = math3d.WorldPositionToScreen(pos + up * r),
+				view = math3d.WorldPositionToScreen(pos)
 			}
 		do
 			local d = math.sqrt((v.x - x)^2 + (v.y - y)^2)
 			if d <= dist then
-				axis = i
+				axis = k
 				dist = d
 			end
 		end
 
 		if axis then
-			mctrl.grab.mode = MODE_MOVE
+			mctrl.grab.mode = "move"
 			mctrl.grab.axis = axis
 			return true
 		end
@@ -252,22 +260,20 @@ do -- PUT ME IN TRANSFORM
 		-- Rotation
 		local axis
 		local dist = mctrl.grab_dist
-		for i, v in pairs
-			{
-				[AXIS_X] = math3d.WorldPositionToScreen(pos + forward * r * mctrl.angle_pos),
-				[AXIS_Y] = math3d.WorldPositionToScreen(pos + right * r * mctrl.angle_pos),
-				[AXIS_Z] = math3d.WorldPositionToScreen(pos + up * r * mctrl.angle_pos)
-			}
-		do
+		for k, v in pairs({
+			x = math3d.WorldPositionToScreen(pos + forward * r * mctrl.angle_pos),
+			y = math3d.WorldPositionToScreen(pos + right * r * mctrl.angle_pos),
+			z = math3d.WorldPositionToScreen(pos + up * r * mctrl.angle_pos)
+		}) do
 			local d = math.sqrt((v.x - x)^2 + (v.y - y)^2)
 			if d <= dist then
-				axis = i
+				axis = k
 				dist = d
 			end
 		end
 
 		if axis then
-			mctrl.grab.mode = MODE_ROTATE
+			mctrl.grab.mode = "rotate"
 			mctrl.grab.axis = axis
 			return true
 		end
@@ -551,3 +557,8 @@ input.Bind("e+left_control", "toggle_editor")
 console.AddCommand("close_editor", editor.Close)
 console.AddCommand("toggle_editor", editor.Toggle)
 console.AddCommand("open_editor", editor.Open)
+
+if RELOAD then
+	editor.Close()
+	editor.Open()
+end
