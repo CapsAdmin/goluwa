@@ -135,6 +135,10 @@ function TMPL:RebuildMatrix()
 		self.TRMatrix:SetTranslation(-pos.y, -pos.x, -pos.z)
 		self.TRMatrix:SetRotation(rot)
 
+		if self.temp_scale.x ~= 1 or self.temp_scale.y ~= 1 or self.temp_scale.z ~= 1 then
+			self.TRMatrix = self.ScaleMatrix * self.TRMatrix
+		end
+
 		if self.Entity:HasParent() then
 			local parent_transform = self.Entity.Parent:GetComponent("transform")
 
@@ -153,10 +157,6 @@ function TMPL:RebuildMatrix()
 				self.TRMatrix:Multiply(parent_transform.TRMatrix, self.temp_matrix)
 				self.TRMatrix, self.temp_matrix = self.temp_matrix, self.TRMatrix
 			end
-		end
-
-		if self.temp_scale.x ~= 1 or self.temp_scale.y ~= 1 or self.temp_scale.z ~= 1 then
-			self.TRMatrix = self.ScaleMatrix * self.TRMatrix
 		end
 
 		self.rebuild_tr_matrix = false
