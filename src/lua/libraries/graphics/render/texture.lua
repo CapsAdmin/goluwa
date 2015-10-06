@@ -200,21 +200,17 @@ for friendly, info in pairs(texture_formats) do
 			type = type .. "int"
 		end
 
-		if bit > 0 and bit <= 8 then
-			bit = 8
-		elseif bit >= 8 and bit <= 16 then
-			bit = 16
-		elseif bit >= 16 and bit <= 32 then
-			bit = 32
-		end
-
 		if info.float then
-			if bit == 8 then
-				type = "float"
-			else
-				type = "double"
-			end
+			type = "float"
 		else
+			if bit > 0 and bit <= 8 then
+				bit = 8
+			elseif bit >= 8 and bit <= 16 then
+				bit = 16
+			elseif bit >= 16 and bit <= 32 then
+				bit = 32
+			end
+
 			type = type .. bit .. "_t"
 		end
 
@@ -243,7 +239,6 @@ for friendly, info in pairs(texture_formats) do
 	end
 
 	line = line .. "} "
-
 	info.ctype = ffi.typeof(line)
 	info.tdef = friendly .. "_pixel"
 	line = line .. info.tdef .. ";"
@@ -776,29 +771,30 @@ function META:MakeError(reason)
 	self.error_reason = reason
 end
 
-function META:GetFormatInfo()
-	local format = table.copy(texture_formats[self.InternalFormat:lower()])
+function META:GetFormatInfo(format_override)
+	local internal_format = format_override or self.InternalFormat
+	local format = table.copy(texture_formats[internal_format:lower()])
 
-	format.preferred_upload_format = get_upload_format(#format.bits, false, false, self.InternalFormat:lower():find("depth", nil, true), self.InternalFormat:lower():find("stencil", nil, true))
+	format.preferred_upload_format = get_upload_format(#format.bits, false, false, internal_format:lower():find("depth", nil, true), internal_format:lower():find("stencil", nil, true))
 	format.preferred_upload_type = format.number_type.friendly
 
 	return format
 end
 
-function META:CreateBuffer()
-	local format = self:GetFormatInfo()
+function META:CreateBuffer(format_override)
+	local format = self:GetFormatInfo(format_override)
 	local size = self.Size.x * self.Size.y * ffi.sizeof(format.ctype)
 	local buffer = ffi.malloc(format.tdef, size)
 
 	return buffer, size, format
 end
 
-function META:Download(mip_map_level)
+function META:Download(mip_map_level, format_override)
 	render.StartDebug()
 
 	mip_map_level = mip_map_level or 0
 
-	local buffer, size, format = self:CreateBuffer()
+	local buffer, size, format = self:CreateBuffer(format_override)
 
 	self.gl_tex:GetImage(mip_map_level, TOENUM(format.preferred_upload_format), format.number_type.enum, size, buffer)
 
