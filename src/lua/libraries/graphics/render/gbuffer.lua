@@ -269,6 +269,8 @@ function render.DrawGBuffer(what, dist)
 		end
 	end
 
+	event.Call("GBufferPrePostProcess")
+
 	surface.PushMatrix()
 
 	-- gbuffer

@@ -1,3 +1,32 @@
+
+
+console.AddCommand("dump_gbuffer", function()
+	ffi.cdef[[
+		void *fopen(const char *filename, const char *mode);
+		size_t fwrite(const void *ptr, size_t size, size_t nmemb, void *stream);
+		int fclose( void * stream );
+	]]
+
+	event.AddListener("GBufferPrePostProcess", function()
+		for k,v in pairs(render.gbuffer.textures) do
+			local ok, err = pcall(function()
+				local data = v.tex:Download()
+				local buffer = data.buffer
+				data.buffer = nil
+				serializer.WriteFile("luadata", "" .. k .. ".tbl", data)
+				local f = ffi.C.fopen(R("data/") .. k .. ".data", "wb")
+				ffi.C.fwrite(buffer, 1, data.size, f)
+				ffi.C.fclose(f)
+			end)
+			if ok then
+				logf("dumped buffer %s to %s\n", k,  k .. ".tbl and *.data")
+			else
+				logf("error dumping buffer %s: %s\n", k, err)
+			end
+		end
+	end)
+end)
+
 do -- source engine
 	console.AddCommand("getpos", function()
 		local pos = render.camera_3d:GetPosition() * (1/0.0254)
