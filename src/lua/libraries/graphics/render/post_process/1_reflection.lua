@@ -10,6 +10,7 @@ local FAST_BLUR = false
 table.insert(PASS.Source, {
 	buffer = {
 		--max_size = Vec2() + 512,
+		size_divider = 2,
 		internal_format = "rgb16f",
 	},
 	source = [[
@@ -75,132 +76,128 @@ table.insert(PASS.Source, {
 ]]
 })
 
-if FAST_BLUR then
+for x = -1, 1 do
+	for y = -1, 1 do
+		if x == y or (y == 0 and x == 0) then goto continue end
 
-	for x = -1, 1 do
-		for y = -1, 1 do
-			if x == 0 and y == 0 then goto continue end
+		local weights = {
+			Vec2(0.53812504, 0.18565957),
+			Vec2(0.13790712, 0.24864247),
+			Vec2(0.33715037, 0.56794053),
+			Vec2(-0.6999805, -0.04511441),
+			Vec2(0.06896307, -0.15983082),
+			Vec2(0.056099437, 0.006954967),
+			Vec2(-0.014653638, 0.14027752),
+			Vec2(0.010019933, -0.1924225),
+			Vec2(-0.35775623, -0.5301969),
+			Vec2(-0.3169221, 0.106360726),
+			Vec2(0.010350345, -0.58698344),
+			Vec2(-0.08972908, -0.49408212),
+			Vec2(0.7119986, -0.0154690035),
+			Vec2(-0.053382345, 0.059675813),
+			Vec2(0.035267662, -0.063188605),
+			Vec2(-0.47761092, 0.2847911)
+		}
 
-			local weights = {}
-
-			for i,v in ipairs({-0.028, -0.024, -0.020, -0.016, -0.012, -0.008, -0.004, 0.004, 0.008, 0.012, 0.016, 0.020, 0.024, 0.028}) do
-				weights[i] = Vec2(v*x, v*y)
-			end
-
-			table.insert(PASS.Source, {
-				buffer = {
-					size_divider = 4,
-					internal_format = "rgb16f",
-				},
-				source = [[
-					out vec3 out_color;
-
-					void main()
-					{
-						float roughness = get_roughness(uv);
-						out_color = vec3(0.0);
-						out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[1].x..[[,]]..weights[1].y..[[)*roughness).rgb*0.0044299121055113265;
-						out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[2].x..[[,]]..weights[2].y..[[)*roughness).rgb*0.00895781211794;
-						out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[3].x..[[,]]..weights[3].y..[[)*roughness).rgb*0.0215963866053;
-						out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[4].x..[[,]]..weights[4].y..[[)*roughness).rgb*0.0443683338718;
-						out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[5].x..[[,]]..weights[5].y..[[)*roughness).rgb*0.0776744219933;
-						out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[6].x..[[,]]..weights[6].y..[[)*roughness).rgb*0.115876621105;
-						out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[7].x..[[,]]..weights[7].y..[[)*roughness).rgb*0.147308056121;
-						out_color += texture(tex_stage_]]..#PASS.Source..[[, uv).rgb*0.159576912161;
-						out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[8].x..[[,]]..weights[8].y..[[)*roughness).rgb*0.147308056121;
-						out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[9].x..[[,]]..weights[9].y..[[)*roughness).rgb*0.115876621105;
-						out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[10].x..[[,]]..weights[10].y..[[)*roughness).rgb*0.0776744219933;
-						out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[11].x..[[,]]..weights[11].y..[[)*roughness).rgb*0.0443683338718;
-						out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[12].x..[[,]]..weights[12].y..[[)*roughness).rgb*0.0215963866053;
-						out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[13].x..[[,]]..weights[13].y..[[)*roughness).rgb*0.00895781211794;
-						out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[14].x..[[,]]..weights[14].y..[[)*roughness).rgb*0.0044299121055113265;
-					}
-				]]
-			})
-			::continue::
+		for i,v in ipairs(weights) do
+			weights[i] = {
+				dir = ("vec2(%s, %s)"):format(v.x, v.y),
+				weight = math.lerp(math.sin((i / #weights) * math.pi), 0, 0.25),
+			}
 		end
+
+		table.insert(PASS.Source, {
+			buffer = {
+				size_divider = 2,
+				internal_format = "rgb16f",
+			},
+			source = [[
+				out vec3 out_color;
+
+				const float discard_threshold = 0.5;
+
+				vec3 blur(vec2 dir, float amount)
+				{
+
+					amount = pow(amount*2, 2.5) / get_depth(uv) / g_cam_farz;
+
+					vec2 step = dir * amount;
+					vec3 normal = normalize(get_view_normal(uv));
+					float total_weight = 3;
+					vec3 res = vec3(0);
+					vec2 offset;
+
+					]] ..(function()
+						local str = ""
+						for i, weight in ipairs(weights) do
+							str = str .. "offset = uv + " ..weight.dir.." * step;\n"
+							str = str .. "if( dot(normalize(get_view_normal(offset)), normal) < discard_threshold) {\n"
+							str = str .."total_weight -= "..weight.weight..";\n"
+							str = str .. "} else {\n"
+							str = str .. "res += texture(tex_stage_"..#PASS.Source..", offset).rgb * "..weight.weight.."; }\n"
+						end
+						return str
+					end)()..[[
+
+					res /= total_weight;
+
+					return res;
+				}
+
+				void main()
+				{
+					out_color = blur(vec2(]]..x..","..y..[[), get_roughness(uv));
+				}
+			]]
+		})
+		::continue::
 	end
-else
-	for x = -1, 1 do
-		for y = -1, 1 do
-			if x == 0 or y == 0 then goto continue end
-			table.insert(PASS.Source, {
-				buffer = {
-					size_divider = 2,
-					internal_format = "rgb16f",
-				},
-				source = [[
-					out vec3 out_color;
+end
 
-					vec3 blur(vec2 tex, vec2 dir)
+do
+	table.insert(PASS.Source, {
+		buffer = {
+			size_divider = 2,
+			internal_format = "rgb8",
+		},
+		source = [[
+			const vec2 KERNEL[16] = vec2[](vec2(0.53812504, 0.18565957), vec2(0.13790712, 0.24864247), vec2(0.33715037, 0.56794053), vec2(-0.6999805, -0.04511441), vec2(0.06896307, -0.15983082), vec2(0.056099437, 0.006954967), vec2(-0.014653638, 0.14027752), vec2(0.010019933, -0.1924225), vec2(-0.35775623, -0.5301969), vec2(-0.3169221, 0.106360726), vec2(0.010350345, -0.58698344), vec2(-0.08972908, -0.49408212), vec2(0.7119986, -0.0154690035), vec2(-0.053382345, 0.059675813), vec2(0.035267662, -0.063188605), vec2(-0.47761092, 0.2847911));
+			const float SAMPLE_RAD = 0.75;  /// Used in main
+			const float INTENSITY = 0.5; /// Used in doAmbientOcclusion
+
+			float ssao(void)
+			{
+				vec3 p = get_view_pos(uv);
+				vec3 n = get_view_normal(uv);
+				vec2 rand = normalize(get_noise(uv).xy*2-1);
+
+				float occlusion = 0.0;
+
+				const int ITERATIONS = 16;
+				for(int j = 0; j < ITERATIONS; ++j)
+				{
+					vec2 offset = uv + (reflect(KERNEL[j], rand) / (get_depth(uv)) / g_cam_farz * SAMPLE_RAD);
+
+					vec3 diff = get_view_pos(offset) - p;
+					float d = length(diff);
+
+					if (d < 1)
 					{
-						if (get_view_normal(tex) == vec3(0,0,0))
-							return vec3(0);
-
-						float weights[9] =
-						{
-							0.013519569015984728,
-							0.047662179108871855,
-							0.11723004402070096,
-							0.20116755999375591,
-							0.240841295721373,
-							0.20116755999375591,
-							0.11723004402070096,
-							0.047662179108871855,
-							0.013519569015984728
-						};
-
-						const float indices[9] = {-4, -3, -2, -1, 0, +1, +2, +3, +4};
-
-						vec2 step = dir/g_screen_size.xy;
-
-						vec3 normal[9];
-
-						]] ..(function()
-							local str = ""
-							for i = 0, 8 do
-								str = str .. "normal["..i.."] = get_view_normal(tex + indices["..i.."]*step).xyz;\n"
-							end
-							return str
-						end)()..[[
-
-						float total_weight = 1.0;
-						float discard_threshold = 0.4;
-
-						int i;
-
-						for( i=0; i<9; ++i )
-						{
-							if( dot(normal[i].xyz, normal[4].xyz) < discard_threshold)
-							{
-								total_weight -= weights[i];
-								weights[i] = 0;
-							}
-						}
-
-						//
-
-						vec3 res = vec3(0);
-
-						for( i = 0; i < 9; ++i )
-						{
-							res += texture(tex_stage_]]..#PASS.Source..[[, tex + indices[i]*step).rgb * weights[i];
-						}
-
-						res /= total_weight;
-
-						return res;
+						occlusion += max(0.0, dot(n, normalize(diff))) * (INTENSITY / (1.0 + d));
 					}
+				}
 
-					void main()
-					{
-						out_color = blur(uv, vec2(]]..x..","..y..[[) * min((get_roughness(uv) * 2 / g_cam_fov) / (texture(tex_depth, uv).r/1.5), 5));
-					}
-				]]
-			})
-			::continue::
-		end
-	end
+				return 1.0 - occlusion / ITERATIONS;
+			}
+			out vec3 out_color;
+
+			void main()
+			{
+				vec3 color = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
+				out_color = color * pow(ssao(), 5);
+			}
+		]]
+	})
 end
 
 table.insert(PASS.Source, {
@@ -210,8 +207,7 @@ table.insert(PASS.Source, {
 		void main()
 		{
 			vec3 color = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
-			vec3 lol = (texture(tex_stage_1, uv).rgb * 2 - 1) * clamp(-pow(length(color)*5, 1)+1, 0, 1);
-			out_color = color;
+			out_color = color*3;
 		}
 	]]
 })

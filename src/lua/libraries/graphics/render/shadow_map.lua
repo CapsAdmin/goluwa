@@ -66,7 +66,7 @@ local function setup(self)
 	end
 
 	tex:SetSize(Vec2() + self.ShadowSize)
-	tex:SetInternalFormat("r16f")
+	tex:SetInternalFormat("r32f")
 	tex:SetBaseLevel(0)
 	tex:SetMaxLevel(0)
 	--[[tex:SetWrapS("clamp_to_border")
@@ -81,7 +81,7 @@ local function setup(self)
 	fb:SetSize(Vec2() + self.ShadowSize)
 	fb:SetTexture("depth", {
 		size = Vec2() + self.ShadowSize,
-		internal_format = "depth_component16",
+		internal_format = "depth_component32f",
 	})
 	fb:SetTexture(1, tex)
 	--fb:CheckCompletness()

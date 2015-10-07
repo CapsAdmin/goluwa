@@ -239,8 +239,8 @@ PASS.Shader = {
 					}
 					else
 					{
-						roughness = max(pow((-(length(diffuse)/3) + 1), 5), 0.9);
-						diffuse *= pow(roughness, 0.5);
+						roughness = 0.9;//max(pow((-(length(diffuse)/3) + 1), 5), 0.9);
+						//diffuse *= pow(roughness, 0.5);
 					}
 
 					if (metallic == 0)
@@ -325,9 +325,28 @@ vec3 get_view_normal(vec2 uv)
 }]])
 
 render.AddGlobalShaderCode([[
+vec3 get_normal_from_depth(vec2 uv)
+{
+	const vec2 offset1 = vec2(0.0,0.001);
+	const vec2 offset2 = vec2(0.001,0.0);
+
+	float depth = texture(tex_depth, uv).r;
+	float depth1 = texture(tex_depth, uv + offset1).r;
+	float depth2 = texture(tex_depth, uv + offset2).r;
+
+	vec3 p1 = vec3(offset1, depth1 - depth);
+	vec3 p2 = vec3(offset2, depth2 - depth);
+
+	vec3 normal = cross(p1, p2);
+	normal.z = -normal.z;
+
+	return normalize(normal);
+}]])
+
+render.AddGlobalShaderCode([[
 vec3 get_world_normal(vec2 uv)
 {
-	return normalize(-texture(tex_normal, uv).xyz * mat3(g_normal_matrix));
+	return normalize(-get_view_normal(uv) * mat3(g_normal_matrix));
 }]])
 
 render.AddGlobalShaderCode([[

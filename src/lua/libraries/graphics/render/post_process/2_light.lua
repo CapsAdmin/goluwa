@@ -12,7 +12,7 @@ PASS.Source = [[
 		vec3 specular = get_light(uv);
 		float metallic = get_metallic(uv);
 
-		specular = mix(specular, reflection, metallic);
+		specular = mix(specular, reflection, pow(metallic, 0.5));
 
 		// self illumination
 		specular += diffuse * get_self_illumination(uv)/200;

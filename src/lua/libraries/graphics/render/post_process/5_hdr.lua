@@ -67,8 +67,8 @@ table.insert(PASS.Source, {
 	source = [[
 		out vec3 out_color;
 
-		const float gamma = 1.5;
-		float exposure = 1.5;
+		float gamma = 1.1;
+		float exposure = 0.9;
 		float bloomFactor = 0.0005;
 		float brightMax = 1;
 
@@ -81,10 +81,14 @@ table.insert(PASS.Source, {
 			vec3 color = original_image + downsampled_extracted_bloom * bloomFactor;
 
 			color *= exposure * (exposure + 1.0);
-			vec3 mapped = vec3(1.0) - exp(-color * exposure);
-			mapped = pow(mapped, vec3(1.0 / gamma));
 
-			out_color = mapped;
+			color = exp( -1.0 / ( 2.72*color + 0.15 ) );
+			color = pow(color, vec3(1. / gamma));
+
+			color = max(vec3(0.), color - vec3(0.004));
+			color = (color * (6.2 * color + .5)) / (color * (6.2 * color + 1.7) + 0.06);
+
+			out_color = color;
 		}
 	]]
 })

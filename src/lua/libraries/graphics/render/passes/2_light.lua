@@ -156,7 +156,7 @@ PASS.Shader = {
 
 				if (lua[light_shadow = false])
 				{
-					attenuation *= get_shadow(uv, 0.00075);
+					attenuation *= get_shadow(uv, 0.002);
 				}
 
 				return light_color.rgb * attenuation * light_intensity;
