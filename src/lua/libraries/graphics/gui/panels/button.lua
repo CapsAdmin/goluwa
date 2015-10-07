@@ -65,6 +65,20 @@ function PANEL:SetState(press, button)
 	return false
 end
 
+function PANEL:TieCheckbox(button)
+	self.tied_buttons = self.tied_buttons or {}
+
+	table.insert(self.tied_buttons, button)
+
+	for _, button in ipairs(self.tied_buttons) do
+		button:SetActiveStyle("rad_check")
+		button:SetInactiveStyle("rad_uncheck")
+	end
+
+	self:SetActiveStyle("rad_check")
+	self:SetInactiveStyle("rad_uncheck")
+end
+
 function PANEL:GetState(button)
 	button = button or "button_1"
 	return self.button_down[button] or false
@@ -108,14 +122,59 @@ function PANEL:OnMouseInput(button, press)
 				end
 			end
 		end
-	elseif self.Mode == "toggle" and press then
-		if self:Toggle(button) then
-			local press = self:GetState(button)
-			self:OnStateChanged(press, button)
-			if press then
-				self:OnPress()
-			else
-				self:OnRelease()
+	elseif press then
+		if self.Mode == "toggle" then
+			if self:Toggle(button) then
+				local press = self:GetState(button)
+				self:OnStateChanged(press, button)
+				if press then
+					self:OnPress()
+				else
+					self:OnRelease()
+				end
+			end
+		elseif self.Mode == "radio" then
+			if self:Toggle(button) then
+				local press = self:GetState(button)
+
+				self:OnCheck(press)
+
+				if self.tied_buttons and #self.tied_buttons > 0 then
+					if press then
+						for _, pnl in ipairs(self.tied_buttons) do
+							if pnl:IsValid() and pnl ~= self then
+								pnl:SetState(not press, button)
+							end
+						end
+					else
+						local found = false
+
+						for i, pnl in ipairs(self.tied_buttons) do
+							if pnl:IsValid() and pnl == self then
+								local next = self.tied_buttons[i + 1]
+
+								if not next or not next:IsValid() then
+									next = self.tied_buttons[1]
+								end
+
+								next:SetState(true, button)
+								found = true
+							end
+						end
+
+						if not found then
+							self:SetState(true, button)
+						end
+					end
+				end
+
+				self:OnStateChanged(press, button)
+
+				if press then
+					self:OnPress()
+				else
+					self:OnRelease()
+				end
 			end
 		end
 	end
