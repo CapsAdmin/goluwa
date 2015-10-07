@@ -352,7 +352,7 @@ local function init(width, height)
 			{
 				name = "depth",
 				attach = "depth",
-				internal_format = "depth_component24",
+				internal_format = "depth_component32f",
 				depth_texture_mode = "red",
 			},
 		}

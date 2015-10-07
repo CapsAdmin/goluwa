@@ -67,8 +67,8 @@ table.insert(PASS.Source, {
 	source = [[
 		out vec3 out_color;
 
-		float gamma = 1.1;
-		float exposure = 0.9;
+		float gamma = 1.2;
+		float exposure = 0.8;
 		float bloomFactor = 0.0005;
 		float brightMax = 1;
 

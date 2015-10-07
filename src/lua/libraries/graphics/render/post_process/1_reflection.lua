@@ -14,7 +14,7 @@ table.insert(PASS.Source, {
 		internal_format = "rgb16f",
 	},
 	source = [[
-	const float rayStep = 0.002;
+	const float rayStep = 0.005;
 	const float minRayStep = 50;
 	const float maxSteps = 50;
 
@@ -26,7 +26,7 @@ table.insert(PASS.Source, {
 
 	vec2 ray_cast(vec3 dir, vec3 hitCoord)
 	{
-		dir *= rayStep + get_depth(uv);
+		dir *= rayStep;
 
 		for(int i = 0; i < maxSteps; i++)
 		{
@@ -47,7 +47,7 @@ table.insert(PASS.Source, {
 
 	void main()
 	{
-		vec3 viewNormal = get_view_normal(uv);
+		vec3 viewNormal = (get_view_normal(uv));
 		vec3 viewPos = get_view_pos(uv);
 		vec3 reflected = normalize(reflect(normalize(viewPos), normalize(viewNormal)));
 
@@ -75,34 +75,21 @@ table.insert(PASS.Source, {
 	}
 ]]
 })
-
 for x = -1, 1 do
 	for y = -1, 1 do
 		if x == y or (y == 0 and x == 0) then goto continue end
 
-		local weights = {
-			Vec2(0.53812504, 0.18565957),
-			Vec2(0.13790712, 0.24864247),
-			Vec2(0.33715037, 0.56794053),
-			Vec2(-0.6999805, -0.04511441),
-			Vec2(0.06896307, -0.15983082),
-			Vec2(0.056099437, 0.006954967),
-			Vec2(-0.014653638, 0.14027752),
-			Vec2(0.010019933, -0.1924225),
-			Vec2(-0.35775623, -0.5301969),
-			Vec2(-0.3169221, 0.106360726),
-			Vec2(0.010350345, -0.58698344),
-			Vec2(-0.08972908, -0.49408212),
-			Vec2(0.7119986, -0.0154690035),
-			Vec2(-0.053382345, 0.059675813),
-			Vec2(0.035267662, -0.063188605),
-			Vec2(-0.47761092, 0.2847911)
-		}
+		local samples = 16
+		local total_weight = 0
+		local weights = {}
 
-		for i,v in ipairs(weights) do
+		for i = 1, samples do
+			local theta = (i / samples) * math.pi * 2
+			local weight = math.lerp(math.sin((i / samples) * math.pi), 0, 0.25)
+			total_weight = total_weight + weight
 			weights[i] = {
-				dir = ("vec2(%s, %s)"):format(v.x, v.y),
-				weight = math.lerp(math.sin((i / #weights) * math.pi), 0, 0.25),
+				dir = ("vec2(%s, %s)"):format(math.sin(theta), math.cos(theta)),
+				weight = weight,
 			}
 		end
 
@@ -116,21 +103,20 @@ for x = -1, 1 do
 
 				const float discard_threshold = 0.5;
 
-				vec3 blur(vec2 dir, float amount)
+				vec3 blur()
 				{
+					float amount = get_roughness(uv);
+					amount = min(pow(amount*3, 2.5) / get_depth(uv) / g_cam_farz / 20, 0.1);
 
-					amount = pow(amount*2, 2.5) / get_depth(uv) / g_cam_farz;
-
-					vec2 step = dir * amount;
 					vec3 normal = normalize(get_view_normal(uv));
-					float total_weight = 3;
+					float total_weight = ]]..total_weight..[[;
 					vec3 res = vec3(0);
 					vec2 offset;
 
 					]] ..(function()
 						local str = ""
 						for i, weight in ipairs(weights) do
-							str = str .. "offset = uv + " ..weight.dir.." * step;\n"
+							str = str .. "offset = uv + (" ..weight.dir.." * amount);\n"
 							str = str .. "if( dot(normalize(get_view_normal(offset)), normal) < discard_threshold) {\n"
 							str = str .."total_weight -= "..weight.weight..";\n"
 							str = str .. "} else {\n"
@@ -146,7 +132,7 @@ for x = -1, 1 do
 
 				void main()
 				{
-					out_color = blur(vec2(]]..x..","..y..[[), get_roughness(uv));
+					out_color = blur(); // get_roughness(uv)
 				}
 			]]
 		})
@@ -157,18 +143,18 @@ end
 do
 	table.insert(PASS.Source, {
 		buffer = {
-			size_divider = 2,
+			size_divider = 1,
 			internal_format = "rgb8",
 		},
 		source = [[
 			const vec2 KERNEL[16] = vec2[](vec2(0.53812504, 0.18565957), vec2(0.13790712, 0.24864247), vec2(0.33715037, 0.56794053), vec2(-0.6999805, -0.04511441), vec2(0.06896307, -0.15983082), vec2(0.056099437, 0.006954967), vec2(-0.014653638, 0.14027752), vec2(0.010019933, -0.1924225), vec2(-0.35775623, -0.5301969), vec2(-0.3169221, 0.106360726), vec2(0.010350345, -0.58698344), vec2(-0.08972908, -0.49408212), vec2(0.7119986, -0.0154690035), vec2(-0.053382345, 0.059675813), vec2(0.035267662, -0.063188605), vec2(-0.47761092, 0.2847911));
 			const float SAMPLE_RAD = 0.75;  /// Used in main
-			const float INTENSITY = 0.5; /// Used in doAmbientOcclusion
+			const float INTENSITY = 0.75; /// Used in doAmbientOcclusion
 
 			float ssao(void)
 			{
-				vec3 p = get_view_pos(uv);
-				vec3 n = get_view_normal(uv);
+				vec3 p = get_view_pos(uv)*0.996;
+				vec3 n = normalize(get_view_normal(uv));
 				vec2 rand = normalize(get_noise(uv).xy*2-1);
 
 				float occlusion = 0.0;
@@ -207,7 +193,7 @@ table.insert(PASS.Source, {
 		void main()
 		{
 			vec3 color = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
-			out_color = color*3;
+			out_color = color;
 		}
 	]]
 })
