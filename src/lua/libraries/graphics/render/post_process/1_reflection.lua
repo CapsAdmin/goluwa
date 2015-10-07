@@ -15,7 +15,7 @@ table.insert(PASS.Source, {
 	},
 	source = [[
 	const float rayStep = 0.005;
-	const float minRayStep = 50;
+	const float minRayStep = 20;
 	const float maxSteps = 50;
 
 	vec2 project(vec3 coord)
@@ -64,7 +64,7 @@ table.insert(PASS.Source, {
 
 		//vec3 probe = texture(lua[probe_tex = render.GetEnvironmentProbeTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
 		vec3 diffuse = get_diffuse(coords.xy);
-		vec3 light = diffuse * (sky + get_light(uv)) + (diffuse * diffuse * diffuse * get_self_illumination(coords.xy));
+		vec3 light = diffuse * (length(sky) + get_light(uv)) + (diffuse * diffuse * diffuse * get_self_illumination(coords.xy));
 
 		vec2 dCoords = abs(vec2(0.5, 0.5) - coords.xy);
 		float fade = clamp(1.0 - (dCoords.x + dCoords.y)*1.5, 0.0, 1.0);
@@ -75,81 +75,84 @@ table.insert(PASS.Source, {
 	}
 ]]
 })
-for x = -1, 1 do
-	for y = -1, 1 do
-		if x == y or (y == 0 and x == 0) then goto continue end
 
-		local samples = 16
-		local total_weight = 0
-		local weights = {}
+if true then
+	for x = -1, 1 do
+		for y = -1, 1 do
+			if x == y or (y == 0 and x == 0) then goto continue end
 
-		for i = 1, samples do
-			local theta = (i / samples) * math.pi * 2
-			local weight = math.lerp(math.sin((i / samples) * math.pi), 0, 0.25)
-			total_weight = total_weight + weight
-			weights[i] = {
-				dir = ("vec2(%s, %s)"):format(math.sin(theta), math.cos(theta)),
-				weight = weight,
-			}
+			local samples = 16
+			local total_weight = 0
+			local weights = {}
+
+			for i = 1, samples do
+				local theta = (i / samples) * math.pi * 2
+				local weight = math.lerp(math.sin((i / samples) * math.pi), 0, 0.25)
+				total_weight = total_weight + weight
+				weights[i] = {
+					dir = ("vec2(%s, %s)"):format(math.sin(theta), math.cos(theta)),
+					weight = weight,
+				}
+			end
+
+			table.insert(PASS.Source, {
+				buffer = {
+					size_divider = 2,
+					internal_format = "rgb16f",
+				},
+				source = [[
+					out vec3 out_color;
+
+					const float discard_threshold = 0.5;
+
+					vec3 blur()
+					{
+						float amount = get_roughness(uv);
+						amount = min(pow(amount*3, 2.5) / get_depth(uv) / g_cam_farz / 20, 0.1);
+
+						vec3 normal = normalize(get_view_normal(uv));
+						float total_weight = ]]..total_weight..[[;
+						vec3 res = vec3(0);
+						vec2 offset;
+
+						]] ..(function()
+							local str = ""
+							for i, weight in ipairs(weights) do
+								str = str .. "offset = (" ..weight.dir.." * amount);\n"
+								str = str .. "if( dot(normalize(get_view_normal(uv + offset)), normal) < discard_threshold) {\n"
+								str = str .."total_weight -= "..weight.weight..";\n"
+								str = str .. "} else {\n"
+								str = str .. "res += texture(tex_stage_"..#PASS.Source..", uv + offset).rgb * "..weight.weight.."; }\n"
+							end
+							return str
+						end)()..[[
+
+						res /= total_weight;
+
+						return res;
+					}
+
+					void main()
+					{
+						out_color = blur();
+					}
+				]]
+			})
+			::continue::
 		end
-
-		table.insert(PASS.Source, {
-			buffer = {
-				size_divider = 2,
-				internal_format = "rgb16f",
-			},
-			source = [[
-				out vec3 out_color;
-
-				const float discard_threshold = 0.5;
-
-				vec3 blur()
-				{
-					float amount = get_roughness(uv);
-					amount = min(pow(amount*3, 2.5) / get_depth(uv) / g_cam_farz / 20, 0.1);
-
-					vec3 normal = normalize(get_view_normal(uv));
-					float total_weight = ]]..total_weight..[[;
-					vec3 res = vec3(0);
-					vec2 offset;
-
-					]] ..(function()
-						local str = ""
-						for i, weight in ipairs(weights) do
-							str = str .. "offset = uv + (" ..weight.dir.." * amount);\n"
-							str = str .. "if( dot(normalize(get_view_normal(offset)), normal) < discard_threshold) {\n"
-							str = str .."total_weight -= "..weight.weight..";\n"
-							str = str .. "} else {\n"
-							str = str .. "res += texture(tex_stage_"..#PASS.Source..", offset).rgb * "..weight.weight.."; }\n"
-						end
-						return str
-					end)()..[[
-
-					res /= total_weight;
-
-					return res;
-				}
-
-				void main()
-				{
-					out_color = blur(); // get_roughness(uv)
-				}
-			]]
-		})
-		::continue::
 	end
 end
 
-do
+if true then
 	table.insert(PASS.Source, {
 		buffer = {
 			size_divider = 1,
-			internal_format = "rgb8",
+			internal_format = "rgb16f",
 		},
 		source = [[
 			const vec2 KERNEL[16] = vec2[](vec2(0.53812504, 0.18565957), vec2(0.13790712, 0.24864247), vec2(0.33715037, 0.56794053), vec2(-0.6999805, -0.04511441), vec2(0.06896307, -0.15983082), vec2(0.056099437, 0.006954967), vec2(-0.014653638, 0.14027752), vec2(0.010019933, -0.1924225), vec2(-0.35775623, -0.5301969), vec2(-0.3169221, 0.106360726), vec2(0.010350345, -0.58698344), vec2(-0.08972908, -0.49408212), vec2(0.7119986, -0.0154690035), vec2(-0.053382345, 0.059675813), vec2(0.035267662, -0.063188605), vec2(-0.47761092, 0.2847911));
-			const float SAMPLE_RAD = 0.75;  /// Used in main
-			const float INTENSITY = 0.75; /// Used in doAmbientOcclusion
+			const float SAMPLE_RAD = 1.25;  /// Used in main
+			const float INTENSITY = 1.25; /// Used in doAmbientOcclusion
 
 			float ssao(void)
 			{
@@ -180,7 +183,9 @@ do
 			void main()
 			{
 				vec3 color = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
-				out_color = color * pow(ssao(), 5);
+				float occlusion = ssao();
+				//out_color = pow(color*3, vec3(occlusion*3)) * pow(occlusion, 5)/3;
+				out_color = color * pow(occlusion, 5);
 			}
 		]]
 	})
