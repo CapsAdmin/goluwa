@@ -2,6 +2,7 @@ local PASS = {}
 
 PASS.Name = FILE_NAME
 PASS.Default = false
+PASS.Position = 3
 
 PASS.Source = {}
 
@@ -53,7 +54,7 @@ table.insert(PASS.Source, {
 
 	void main()
 	{
-		float z = pow((-texture(tex_depth, uv).r+1)*20, 1.25);
+		float z = pow((-texture(tex_depth, uv).r+1)*15, 1.25);
 
 		out_color = Bokeh(self, uv, z, 1);
 	}
@@ -67,7 +68,7 @@ table.insert(PASS.Source, {
 		void main()
 		{
 			vec3 color = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
-			out_color = color;
+			out_color = pow(color, vec3(0.5));
 		}
 	]]
 })

@@ -245,7 +245,7 @@ PASS.Shader = {
 
 					if (metallic == 0)
 					{
-						metallic = (-roughness+1)/1.5;
+						metallic = min((-roughness+1)/1.5, 0.075);
 					}
 				}
 
