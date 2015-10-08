@@ -24,7 +24,7 @@ prototype.StartStorable()
 prototype.EndStorable()
 
 if GRAPHICS then
-	function COMPONENT:OnAdd(ent)
+	function COMPONENT:OnAdd()
 		self.shadow_maps = {}
 		render.LoadModel("models/low-poly-sphere.obj", function(meshes)
 			self.light_mesh = meshes[1]

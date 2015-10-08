@@ -26,11 +26,11 @@ if GRAPHICS then
 		self.visible = {}
 	end
 
-	function COMPONENT:OnAdd(ent)
+	function COMPONENT:OnAdd()
 		table.insert(render.scene_3d, self)
 	end
 
-	function COMPONENT:OnRemove(ent)
+	function COMPONENT:OnRemove()
 		table.removevalue(render.scene_3d, self)
 	end
 
@@ -104,7 +104,7 @@ if GRAPHICS then
 		function COMPONENT:BuildBoundingBox()
 			local min, max = Vec3(), Vec3()
 
-			for i, sub_model in ipairs(self.sub_models) do
+			for _, sub_model in ipairs(self.sub_models) do
 				if sub_model.BBMin.x < min.x then min.x = sub_model.BBMin.x end
 				if sub_model.BBMin.y < min.y then min.y = sub_model.BBMin.y end
 				if sub_model.BBMin.z < min.z then min.z = sub_model.BBMin.z end
@@ -155,7 +155,7 @@ if GRAPHICS then
 		then
 			render.SetBlendMode()
 			if self.MaterialOverride then render.SetMaterial(self.MaterialOverride) end
-			for i, model in ipairs(self.sub_models) do
+			for _, model in ipairs(self.sub_models) do
 				if not self.MaterialOverride then render.SetMaterial(model.material) end
 				model:Draw()
 			end

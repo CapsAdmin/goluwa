@@ -421,7 +421,7 @@ local function init(width, height)
 		render["gbuffer_" .. pass.Name .. "_shader"] = shader
 	end
 
-	event.AddListener("WindowFramebufferResized", "gbuffer", function(window, w, h)
+	event.AddListener("WindowFramebufferResized", "gbuffer", function(_, w, h)
 		if render.GetGBufferSize() ~= Vec2(w,h) then
 			render.InitializeGBuffer(w, h)
 		end
@@ -431,7 +431,7 @@ local function init(width, height)
 		local size = 6
 		local x,y,w,h,i
 
-		local function draw_buffer(name, tex, bg)
+		local function draw_buffer(name, tex)
 			if name == "diffuse" or name == "normal" or name == "light" then surface.mesh_2d_shader.color_override.a = 1 end
 			surface.SetColor(1,1,1,1)
 			surface.SetTexture(tex)
@@ -460,7 +460,6 @@ local function init(width, height)
 			y = 0
 			i = 1
 
-			local grey = 0.5 + math.sin(os.clock() * 10) / 10
 			surface.SetFont("default")
 
 			for _, data in pairs(render.gbuffer_buffers) do
@@ -473,7 +472,7 @@ local function init(width, height)
 			surface.mesh_2d_shader.color_override.r = 1
 			surface.mesh_2d_shader.color_override.g = 1
 			surface.mesh_2d_shader.color_override.b = 1
-			draw_buffer("self illumination", render.gbuffer:GetTexture("light"), true)
+			draw_buffer("self illumination", render.gbuffer:GetTexture("light"))
 			surface.mesh_2d_shader.color_override.r = 0
 			surface.mesh_2d_shader.color_override.g = 0
 			surface.mesh_2d_shader.color_override.b = 0
@@ -484,7 +483,7 @@ local function init(width, height)
 			surface.mesh_2d_shader.color_override.r = 1
 			surface.mesh_2d_shader.color_override.g = 1
 			surface.mesh_2d_shader.color_override.b = 1
-			draw_buffer("roughness", render.gbuffer:GetTexture("diffuse"), true)
+			draw_buffer("roughness", render.gbuffer:GetTexture("diffuse"))
 			surface.mesh_2d_shader.color_override.r = 0
 			surface.mesh_2d_shader.color_override.g = 0
 			surface.mesh_2d_shader.color_override.b = 0
@@ -495,7 +494,7 @@ local function init(width, height)
 			surface.mesh_2d_shader.color_override.r = 1
 			surface.mesh_2d_shader.color_override.g = 1
 			surface.mesh_2d_shader.color_override.b = 1
-			draw_buffer("metallic", render.gbuffer:GetTexture("normal"), true)
+			draw_buffer("metallic", render.gbuffer:GetTexture("normal"))
 			surface.mesh_2d_shader.color_override.r = 0
 			surface.mesh_2d_shader.color_override.g = 0
 			surface.mesh_2d_shader.color_override.b = 0
@@ -564,7 +563,7 @@ event.AddListener("EntityCreate", "gbuffer", function()
 	render.InitializeGBuffer()
 end)
 
-event.AddListener("EntityRemove", "gbuffer", function(ent)
+event.AddListener("EntityRemove", "gbuffer", function()
 	if gbuffer_enabled then return end
 
 	if not console.GetVariable("render_deferred") then return end

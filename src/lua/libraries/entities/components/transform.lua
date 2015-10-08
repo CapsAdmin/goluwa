@@ -87,7 +87,7 @@ end
 
 function TMPL:InvalidateScaleMatrix()
 	if not self.rebuild_tr_matrix then
-		for i,v in ipairs(self.Entity:GetChildrenList()) do
+		for _, v in ipairs(self.Entity:GetChildrenList()) do
 			local v = v.Components[TMPL.Name]
 			if v then
 				v.rebuild_scale_matrix = true
@@ -101,7 +101,7 @@ end
 
 function TMPL:InvalidateTRMatrix()
 	if not self.rebuild_tr_matrix then
-		for i,v in ipairs(self.Entity:GetChildrenList()) do
+		for _, v in ipairs(self.Entity:GetChildrenList()) do
 			local v = v.Components[TMPL.Name]
 			if v then
 				v.rebuild_tr_matrix = true
@@ -143,7 +143,7 @@ function TMPL:RebuildMatrix()
 			local parent_transform = self.Entity.Parent:GetComponent("transform")
 
 			if not parent_transform:IsValid() then
-				for i, ent in ipairs(self.Entity:GetParentList()) do
+				for _, ent in ipairs(self.Entity:GetParentList()) do
 					parent_transform = ent:GetComponent("transform")
 					if parent_transform:IsValid() then
 						break
