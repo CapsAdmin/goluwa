@@ -197,9 +197,15 @@ event.Timer("tasks", 0.25, 0, function()
 	local i = 0
 
 	if next(tasks.created) then
-		tasks.busy = true
+		if not tasks.busy then
+			tasks.busy = true
+			event.Call("TasksBusy", true)
+		end
 	else
-		tasks.busy = false
+		if tasks.busy then
+			tasks.busy = false
+			event.Call("TasksBusy", false)
+		end
 	end
 
 	for thread in pairs(tasks.created) do

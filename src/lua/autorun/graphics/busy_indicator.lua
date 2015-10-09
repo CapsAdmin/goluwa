@@ -1,5 +1,5 @@
-event.Timer("busy_indicator", 1, 0, function()
-	if tasks.IsBusy() then
+event.AddListener("TasksBusy", "busy_indicator", function(b)
+	if b then
 		gui.world:SetCursor("wait")
 	else
 		gui.world:SetCursor()
