@@ -36,7 +36,7 @@ if CLIENT then
 end
 
 if SERVER then
-	event.AddListener("NetworkStarted", "spawn_world", function()
+	event.AddListener("NetworkStarted", function()
 		go()
 	end)
 end
