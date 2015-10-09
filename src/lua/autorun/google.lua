@@ -165,5 +165,5 @@ console.AddCommand("t", function(line, from, to, str)
 end)
 
 console.AddCommand("g", function(query)
-	os.execute(([[explorer "https://www.google.no/search?&q=%s"]]):format(sockets.EscapeURL(query)))
+	system.OpenURL(print(("http://www.google.com/search?&q=%s"):format(sockets.EscapeURL(query))))
 end)

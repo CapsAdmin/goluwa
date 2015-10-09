@@ -104,8 +104,4 @@ end
 
 server:Host("*", server.port)
 
-if WINDOWS then
-	os.execute("explorer http://localhost:" .. server.port)
-else
-	os.execute("firefox http://localhost:" .. server.port)
-end
+system.OpenURL("http://localhost:" .. server.port)

@@ -176,6 +176,33 @@ do -- sleep
 	system.Sleep = sleep
 end
 
+do -- openurl
+	local func = not_implemented
+
+	if WINDOWS then
+		func = function(url) os.execute(([[explorer "%s"]]):format(url)) end
+	else
+		local attempts = {
+			"sensible-browser",
+			"xdg-open",
+			"kde-open",
+			"gnome-open",
+		}
+
+		func = function(url)
+			for i, cmd in ipairs(attempts) do
+				if os.execute(cmd .. " " .. url) then
+					return
+				end
+			end
+
+			warning("don't know how to open an url (tried: %s)", 2, table.concat(attempts, ", "))
+		end
+	end
+
+	system.OpenURL = func
+end
+
 do -- arg is made from luajit.exe
 	local arg = _G.arg
 	_G.arg = nil
