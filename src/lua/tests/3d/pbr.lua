@@ -6,14 +6,12 @@ render.camera_3d:SetPosition(Vec3(0, 0, z + 50))
 render.camera_3d:SetFOV(0.15)
 render.camera_3d:SetAngles(Ang3(math.pi/2, 0, 0))
 
---local world = entities.CreateEntity("world")
---world:SetSunAngles(Ang3(-0.5, -2.5, 0))
---world:GetChildren()[1]:SetShadow(false)
---world:GetChildren()[1]:SetIntensity(1)
+local group = entities.CreateEntity("group", entities.GetWorld())
+group:SetName("pbr test")
 
 local max = 11
 
-local light = entities.CreateEntity("light")
+local light = entities.CreateEntity("light", group)
 light:SetSize(2000)
 light:SetIntensity(1)
 light:SetPosition(Vec3(0,0,z+15)+Vec3(10,-10, 25)*5)
@@ -24,7 +22,7 @@ for x = -max/2, max/2 do
 	for y = -max/2, max/2 do
 		local y = y/max*2
 
-		local ent = entities.CreateEntity("visual")
+		local ent = entities.CreateEntity("visual", group)
 		ent:SetPosition(Vec3(x*3.25, y*3.25, z))
 
 		ent:SetModelPath("models/sphere.obj")
@@ -37,7 +35,7 @@ for x = -max/2, max/2 do
 
 		ent:SetCull(false)
 
-		local mat = render.CreateMaterial("model")
+		local mat = render.CreateMaterial("model", group)
 
 		mat:SetDiffuseTexture(render.GetWhiteTexture())
 		mat:SetMetallicTexture(render.GetWhiteTexture())
