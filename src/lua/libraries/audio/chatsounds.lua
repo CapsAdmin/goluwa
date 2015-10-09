@@ -931,7 +931,7 @@ do -- list parsing
 			table.merge(chatsounds.tree, tree)
 
 			if autocomplete then
-				event.DeferExecution(function()
+				event.Delay(0, function()
 					local list = {}
 
 					for key, val in pairs(chatsounds.list) do

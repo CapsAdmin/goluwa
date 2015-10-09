@@ -94,11 +94,11 @@ function META:Start(now)
 	end
 
 	if self.EnsureFPS ~= 0 then
-		event.CreateThinker(start, true, self.EnsureFPS, true)
+		event.Thinker(start, true, self.EnsureFPS, true)
 	elseif self.Frequency == 0 then
-		event.CreateThinker(start, true, 0, self.IterationsPerTick)
+		event.Thinker(start, true, 0, self.IterationsPerTick)
 	else
-		event.CreateThinker(start, true, 1/self.Frequency, self.IterationsPerTick)
+		event.Thinker(start, true, 1/self.Frequency, self.IterationsPerTick)
 	end
 end
 
@@ -193,7 +193,7 @@ function tasks.Panic()
 	end
 end
 
-event.CreateTimer("tasks", 0.25, 0, function()
+event.Timer("tasks", 0.25, 0, function()
 	local i = 0
 
 	if next(tasks.created) then

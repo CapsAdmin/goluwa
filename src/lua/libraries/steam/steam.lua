@@ -17,7 +17,7 @@ if steamfriends then
 		end
 	end
 
-	event.CreateTimer("steam_friends", 0, 0.2, function()
+	event.Timer("steam_friends", 0, 0.2, function()
 		steamfriends.Update()
 	end)
 

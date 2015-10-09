@@ -163,7 +163,7 @@ if SERVER then
 		local buffer = packet.CreateBuffer()
 		local last_send = 0
 
-		event.CreateTimer("server_command_tick", server_tick_rate, function()
+		event.Timer("server_command_tick", server_tick_rate, function()
 			buffer:WriteDouble(system.GetTime())
 
 			if last_send < system.GetTime() then

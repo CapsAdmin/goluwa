@@ -1808,7 +1808,7 @@ do -- layout
 			self.LayoutSize = nil
 		end
 
-		event.Delay(0, function() self:Layout() end, self) -- FIX ME
+		event.Delay(0, function() self:Layout() end, nil, self) -- FIX ME
 	end
 
 	do -- layout commands

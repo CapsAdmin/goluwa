@@ -106,7 +106,7 @@ do -- url monitoring
 		local last_modified
 		local busy
 
-		event.CreateTimer("monitor_" .. url, interval, 0, function()
+		event.Timer("monitor_" .. url, interval, 0, function()
 			if busy then return end
 			busy = true
 			sockets.Request({

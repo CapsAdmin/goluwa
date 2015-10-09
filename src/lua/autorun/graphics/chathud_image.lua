@@ -71,7 +71,7 @@ local function show_image(url)
 	end)
 end
 
-event.CreateTimer("chathud_image_url_queue", 0.25, 0, function()
+event.Timer("chathud_image_url_queue", 0.25, 0, function()
 	if busy then return end
 	local url = queue[1]
 	if url then

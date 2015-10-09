@@ -88,7 +88,7 @@ end)
 
 local brush_size = 4
 
-event.CreateTimer("fb_update", fps, 0, function()
+event.Timer("fb_update", fps, 0, function()
 
 	fb:Begin()
 		render.SetBlendMode("src_color", "one_minus_dst_alpha", "add")

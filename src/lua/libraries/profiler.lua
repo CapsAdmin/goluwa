@@ -582,7 +582,7 @@ end)
 console.AddCommand("zbprofile", function()
 	local prf = require("zbprofiler")
 	prf.start()
-	event.CreateTimer("zbprofiler_save", 3, 0, function() prf.save(0) end)
+	event.Timer("zbprofiler_save", 3, 0, function() prf.save(0) end)
 end)
 
 console.AddCommand("trace_abort", function()

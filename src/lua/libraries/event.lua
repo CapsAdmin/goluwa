@@ -216,7 +216,7 @@ do -- timers
 		end
 	end
 
-	function event.CreateThinker(callback, run_now, frequency, iterations)
+	function event.Thinker(callback, run_now, frequency, iterations)
 		if run_now and callback() ~= nil then
 			return
 		end
@@ -241,16 +241,22 @@ do -- timers
 		table.insert(event.timers, info)
 	end
 
-	function event.Delay(time, callback, obj)
-		check(time, "number", "function")
-		check(callback, "function", "nil")
-
+	function event.Delay(time, callback, id, obj, ...)
 		if not callback then
 			callback = time
 			time = 0
 		end
 
-		if hasindex(obj) and obj.IsValid then
+		if id then
+			for k,v in ipairs(event.timers) do
+				if v.key == id then
+					v.realtime = system.GetElapsedTime() + (time or 0)
+					return
+				end
+			end
+		end
+
+		if obj and hasindex(obj) and obj.IsValid then
 			local old = callback
 			callback = function(...)
 				if obj:IsValid() then
@@ -263,31 +269,12 @@ do -- timers
 			key = callback,
 			type = "delay",
 			callback = callback,
-			realtime = system.GetElapsedTime() + time
-		})
-	end
-
-	function event.DeferExecution(callback, time, id, ...)
-		id = id or callback
-		local data
-
-		for k,v in ipairs(event.timers) do
-			if v.key == id then
-				v.realtime = system.GetElapsedTime() + (time or 0)
-				return
-			end
-		end
-
-		table.insert(event.timers, {
-			key = id,
-			type = "delay",
-			callback = callback,
-			args = {...},
 			realtime = system.GetElapsedTime() + (time or 0),
+			args = {...},
 		})
 	end
 
-	function event.CreateTimer(id, time, repeats, callback, run_now)
+	function event.Timer(id, time, repeats, callback, run_now)
 		check(time, "number")
 		check(repeats, "number", "function")
 		check(callback, "function", "nil")
@@ -382,11 +369,7 @@ do -- timers
 				end
 			elseif data.type == "delay" then
 				if data.realtime < cur then
-					if data.args then
-						system.pcall(data.callback, unpack(data.args))
-					else
-						system.pcall(data.callback)
-					end
+					system.pcall(data.callback, unpack(data.args))
 					table.insert(remove_these, i)
 					break
 				end

@@ -283,7 +283,7 @@ do -- window meta
 						local char = utf8.char(uint)
 
 						if self:OnCharInput(self, char) ~= false then
-							event.DeferExecution(function()
+							event.Delay(0, function()
 								event.Call("WindowCharInput", self, char)
 							end)
 						end
@@ -403,7 +403,7 @@ end
 -- this is needed regardless of whether a window exists or not or else the console will freeze..???
 local cb = function() glfw.PollEvents() end
 jit.off(cb)
-event.CreateTimer("glfw_pollevents", 1/60, 0, cb)
+event.Timer("glfw_pollevents", 1/60, 0, cb)
 
 function system.SetClipboard(str)
 	if window.wnd:IsValid() then

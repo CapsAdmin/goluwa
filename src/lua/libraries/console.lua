@@ -713,7 +713,7 @@ if not DISABLE_CURSES then
 		local last_w = curses.COLS
 		local last_h = curses.LINES
 
-		event.CreateTimer("curses", 1/30, 0, function()
+		event.Timer("curses", 1/30, 0, function()
 			if GRAPHICS and window.IsFocused() then return end
 
 			local key = {}

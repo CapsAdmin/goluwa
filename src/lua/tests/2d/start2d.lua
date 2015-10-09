@@ -6,7 +6,7 @@ tex:SetMinFilter("nearest")
 
 fb:SetTexture(1, tex)
 
-event.CreateTimer("updatefb", 0.1, function()
+event.Timer("updatefb", 0.1, function()
 	local t = system.GetElapsedTime()
 
 	fb:Begin()

@@ -67,7 +67,7 @@ function CONTEXT:GetFileTree(path)
 	cache[path] = tree
 
 	event.Delay(math.random(), function()
-		serializer.WriteFile("msgpack", cache_path, tree.tree)
+		serializer.WriteFile("msgpack", cache_path, nil, tree.tree)
 	end)
 end
 

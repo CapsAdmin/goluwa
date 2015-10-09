@@ -15,7 +15,7 @@ include("http.lua", sockets)
 include("irc.lua", sockets)
 
 function sockets.Initialize()
-	event.CreateTimer("sockets", 1/30, 0, sockets.Update)
+	event.Timer("sockets", 1/30, 0, sockets.Update)
 	event.AddListener("LuaClose", "sockets", sockets.Panic)
 end
 

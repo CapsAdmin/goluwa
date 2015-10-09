@@ -837,7 +837,7 @@ do -- microphone
 		-- fill it with some silence first so we can pop safely (???)
 		source:PushBuffer(audio.CreateBuffer(ffi.new("ALshort[4]"), 4))
 
-		event.CreateThinker(function()
+		event.Thinker(function()
 			if not self:IsValid() or self.stopped then return true end
 
 			if self:IsFull() then

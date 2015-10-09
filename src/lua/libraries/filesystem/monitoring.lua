@@ -10,7 +10,7 @@ function vfs.MonitorFile(file_path, callback)
 	local first = true
 
 	if last then
-		event.CreateTimer(file_path, 1, 0, function()
+		event.Timer(file_path, 1, 0, function()
 			local time = vfs.GetLastModified(file_path)
 			if time then
 				if first then first = nil return end
@@ -46,7 +46,7 @@ function vfs.MonitorEverything(b)
 		return
 	end
 
-	event.CreateTimer("vfs_monitor_everything", 0.1, 0, function()
+	event.Timer("vfs_monitor_everything", 0.1, 0, function()
 		if GRAPHICS and window.IsFocused() then return end
 		if profiler.IsBusy() then return end -- I already know this is slow so it's just in the way
 		for path, data in pairs(vfs.GetLoadedLuaFiles()) do

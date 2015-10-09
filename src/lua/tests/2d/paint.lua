@@ -31,7 +31,7 @@ end)
 
 local size = 16
 
-event.CreateTimer("fb_update", 0, 0, function()
+event.Timer("fb_update", 0, 0, function()
 	fb:Begin()
 	render.EnableDepth(false)
 	render.SetBlendMode("alpha")

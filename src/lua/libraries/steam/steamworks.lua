@@ -27,7 +27,7 @@ do
 		self.avatar_texture = self.avatar_texture or render.CreateTexture()
 
 		if not self.requesting_avatar then
-			event.CreateThinker(function()
+			event.Thinker(function()
 				if not self:IsValid() then return false end
 
 				local handle = self:GetLargeAvatar()
@@ -87,7 +87,7 @@ do
 		return self:GetChatMessage(i - 1)
 	end
 
-	--[[[event.CreateTimer("steam_friends", 0.25, 0, function()
+	--[[[event.Timer("steam_friends", 0.25, 0, function()
 		for i, friend in ipairs(steam.GetFriends()) do
 			local message = friend:GetLastChatMessage()
 			if message then

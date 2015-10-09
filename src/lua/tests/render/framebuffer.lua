@@ -99,7 +99,7 @@ for i = 1, 3 do
 	fb:End()
 end
 
-event.CreateTimer("lol", 1, 4, function(i)
+event.Timer("lol", 1, 4, function(i)
 	if i == 1 then
 		fb:Clear(i,1,0,0,0.25)
 	elseif i == 2 then

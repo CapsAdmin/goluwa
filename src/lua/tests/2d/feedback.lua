@@ -71,7 +71,7 @@ local shader = render.CreateShader({
 	}
 })
 
-event.CreateTimer("fb_update", 0, 0, function()
+event.Timer("fb_update", 0, 0, function()
 
 	fb:Begin()
 		render.SetBlendMode("src_color", "one_minus_dst_alpha", "add")

@@ -8,7 +8,7 @@ do -- open close
 		window.SetMouseTrapped(false)
 		menu.CreateTopBar()
 		event.AddListener("PreDrawMenu", "StartupMenu", menu.RenderBackground)
-		event.CreateTimer("StartupMenu", 0.025, menu.UpdateBackground)
+		event.Timer("StartupMenu", 0.025, menu.UpdateBackground)
 		menu.visible = true
 	end
 

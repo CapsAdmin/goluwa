@@ -6,7 +6,7 @@ tex:Fill(function()
 	return math.random()> start and 255 or 0,math.random()> start and 255 or 0,math.random()> start and 255 or 0,math.random()> start and 255 or 0
 end)
 
-event.CreateTimer("update_cells", 0, 0,function()
+event.Timer("update_cells", 0, 0,function()
 --render.SetBlendMode("src_color", "src_color", "add")
 render.SetBlendMode()
 tex:Shade([[

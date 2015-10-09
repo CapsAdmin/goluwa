@@ -13,7 +13,7 @@ tex:Fill(function()
 	--return math.random(255),math.random(255),math.random(255),math.random(255)
 end)
 
-event.CreateTimer("update_cells", 0, 0, function()
+event.Timer("update_cells", 0, 0, function()
 	--render.SetBlendMode("src_color", "src_color", "add")
 	render.SetBlendMode()
 
