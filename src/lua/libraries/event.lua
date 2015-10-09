@@ -188,42 +188,16 @@ function event.EnableAll()
 	end
 end
 
-function event.Dump()
-	local h=0
-	for k,v in pairs(event.GetTable()) do
-		logn("> "..k.." ("..table.count(v).." events):")
-		for name,data in pairs(v) do
-			h=h+1
-			logn("   \""..tostring(data.id).."\" \t "..tostring(debug.getinfo(data.callback).source)..":")
-			logn(" Line:"..tostring(debug.getinfo(data.callback).linedefined))
-		end
-		logn("")
-	end
-	logn("")
-	logn(">>> Total events: "..h..".")
-end
-
 do -- timers
 	event.timers = event.timers or {}
 
-	local function remove_timer(key)
-		for k,v in ipairs(event.timers) do
-			if v.key == key then
-				table.remove(event.timers, k)
-				profiler.RemoveSection(v.id)
-				break
-			end
-		end
-	end
-
-	function event.Thinker(callback, run_now, frequency, iterations)
+	function event.Thinker(callback, run_now, frequency, iterations, id)
 		if run_now and callback() ~= nil then
 			return
 		end
 
-		remove_timer(callback)
-
 		local info = {
+			key = id or callback,
 			key = callback,
 			type = "thinker",
 			realtime = 0,
@@ -318,7 +292,13 @@ do -- timers
 	end
 
 	function event.RemoveTimer(id)
-		remove_timer(id)
+		for k,v in ipairs(event.timers) do
+			if v.key == id then
+				table.remove(event.timers, k)
+				profiler.RemoveSection(v.id)
+				break
+			end
+		end
 	end
 
 	local remove_these = {}
