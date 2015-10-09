@@ -95,6 +95,22 @@ do -- commands
 		console.AddedCommands[cmd] = {callback = callback, help = help, autocomplete = autocomplete}
 	end
 
+	function console.AddAutocomplete(cmd, callback)
+		cmd = cmd:lower()
+
+		if console.AddedCommands[cmd] then
+			console.AddedCommands[cmd].autocomplete = callback
+		end
+	end
+
+	function console.AddHelp(cmd, str)
+		cmd = cmd:lower()
+
+		if console.AddedCommands[cmd] then
+			console.AddedCommands[cmd].help = str
+		end
+	end
+
 	function console.RemoveCommand(cmd)
 		cmd = cmd:lower()
 
