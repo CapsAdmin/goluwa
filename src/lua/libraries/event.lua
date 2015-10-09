@@ -206,50 +206,6 @@ end
 do -- timers
 	event.timers = event.timers or {}
 
-	do -- timer meta
-		local META = {}
-		META.__index = META
-
-		function META:Pause()
-			self.paused = true
-		end
-		function META:Start()
-			self.paused = false
-		end
-		function META:IsPaused()
-			return self.paused
-		end
-		function META:SetRepeats(num)
-			self.times_ran = num
-		end
-		function META:GetRepeats()
-			return self.times_ran
-		end
-		function META:SetInterval(num)
-			self.time = num
-		end
-		function META:GetInterval()
-			return self.time
-		end
-		function META:SetCallback(callback)
-			self.callback = callback
-		end
-		function META:GetCallback()
-			return self.callback
-		end
-		function META:Call(...)
-			return system.pcall(self.callback, ...)
-		end
-		function META:SetNextThink(num)
-			self.realtime = system.GetElapsedTime() + num
-		end
-		function META:Remove()
-			self.__remove_me = true
-		end
-
-		event.TimerMeta = META
-	end
-
 	local function remove_timer(key)
 		for k,v in ipairs(event.timers) do
 			if v.key == key then
@@ -368,14 +324,10 @@ do -- timers
 
 		table.insert(event.timers, data)
 
-		setmetatable(data, event.TimerMeta)
-
 		if run_now then
 			callback(repeats-1)
 			data.repeats = data.repeats - 1
 		end
-
-		return data
 	end
 
 	function event.RemoveTimer(id)
@@ -441,7 +393,7 @@ do -- timers
 			elseif data.type == "timer" then
 				if not data.paused and data.realtime < cur then
 					profiler.PushSection(data.id)
-					local ran, msg = data:Call(data.times_ran - 1, a_, b_, c_, d_, e_)
+					local ran, msg = system.pcall(data.callback, data.times_ran - 1, a_, b_, c_, d_, e_)
 
 					if ran then
 						if msg == "stop" then
@@ -484,18 +436,5 @@ do -- timers
 		end
 	end
 end
-
-event.events = setmetatable({}, {
-	__index = function(_, id)
-		return setmetatable({}, {
-			__newindex = function(_, event_name, callback)
-				event.AddListener(event_name, id, callback)
-			end,
-		})
-	end,
-	__newindex = function(_, event_name, callback)
-		event.AddListener(event_name, nil, callback)
-	end,
-})
 
 return event

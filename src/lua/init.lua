@@ -228,7 +228,7 @@ do -- libraries
 	math3d = include("lua/libraries/math3d.lua") -- 3d math functions
 	structs = include("lua/libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
 	utf8 = include("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
-	event = include("lua/libraries/event.lua") _G.goluwa = event.events -- event handler
+	event = include("lua/libraries/event.lua") -- event handler
 	utility = include("lua/libraries/utilities/utility.lua") -- misc functions i don't know where to put
 	crypto = include("lua/libraries/crypto.lua")
 	tasks = include("lua/libraries/tasks.lua")
