@@ -66,18 +66,21 @@ end
 function PANEL:SizeToChildrenHeight()
 	self:SetHeight(math.huge)
 	self:SetHeight(self:GetSizeOfChildren().y + self.Margin:GetHeight())
+	if not math.isvalid(self.Size.y) then self.Size.y = 100 end -- FIX ME
 	self.LayoutSize = self.Size:Copy()
 end
 
 function PANEL:SizeToChildrenWidth()
 	self:SetWidth(math.huge)
 	self:SetWidth(self:GetSizeOfChildren().x + self.Margin:GetWidth())
+	if not math.isvalid(self.Size.x) then self.Size.x = 100 end -- FIX ME
 	self.LayoutSize = self.Size:Copy()
 end
 
 function PANEL:SizeToChildren()
 	self:SetSize(Vec2() + math.huge)
 	self:SetSize(self:GetSizeOfChildren() + self.Margin:GetSize())
+	if not self.Size:IsValid() then self.Size:Set(100, 100) end -- FIX ME
 	self.LayoutSize = self.Size:Copy()
 end
 

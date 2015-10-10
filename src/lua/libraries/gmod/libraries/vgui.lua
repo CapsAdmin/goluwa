@@ -45,6 +45,7 @@ function vgui.CreateX(class, parent, name)
 
 	local self = gmod.WrapObject(obj, "Panel")
 
+	obj.gmod_pnl = self
 	self.__class = class
 
 	obj.fg_color = Color(1,1,1,1)
