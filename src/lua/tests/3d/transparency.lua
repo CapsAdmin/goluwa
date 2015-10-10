@@ -8,6 +8,6 @@ ent:SetPosition(Vec3(0,0,0))
 local mat = render.CreateMaterial("model")
 mat:SetTranslucent(true)
 mat:SetColor(Color(1,1,1,0.1))
-mat:SetDiffuseTexture(render.GetWhiteTexture())
+mat:SetAlbedoTexture(render.GetWhiteTexture())
 
 ent:SetMaterialOverride(mat)

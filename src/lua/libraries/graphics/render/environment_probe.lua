@@ -69,7 +69,7 @@ function META:SetPreview(b)
 
 		local mat = render.CreateMaterial("model")
 		mat:SetSkyTexture(self.tex)
-		mat:SetDiffuseTexture(render.GetWhiteTexture())
+		mat:SetAlbedoTexture(render.GetWhiteTexture())
 		mat:SetRoughnessTexture(render.GetWhiteTexture())
 		mat:SetMetallicTexture(render.GetWhiteTexture())
 		mat:SetRoughnessMultiplier(0)

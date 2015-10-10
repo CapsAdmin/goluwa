@@ -5,8 +5,8 @@ local PASS = {}
 PASS.Stage, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
 
 PASS.Buffers = {
-	{"diffuse", "rgba8"},
-	{"normal", "rgba16f"},
+	{"data1", "rgba8"},
+	{"data2", "rgba16f"},
 }
 
 function PASS:Initialize()
@@ -102,15 +102,15 @@ PASS.Shader = {
 				#define view_normal tangent_space[2]
 			#endif
 
-			out vec4 diffuse_buffer;
-			out vec4 normal_buffer;
+			out vec4 data1_buffer;
+			out vec4 data2_buffer;
 			out vec4 light_buffer; // AUTOMATE THIS
 
-			#define roughness diffuse_buffer.a
-			#define metallic normal_buffer.a
+			#define roughness data1_buffer.a
+			#define metallic data2_buffer.a
 			#define self_illumination light_buffer.a
-			#define normal normal_buffer.xyz
-			#define diffuse diffuse_buffer.rgb
+			#define normal data2_buffer.xyz
+			#define diffuse data1_buffer.rgb
 
 			// https://www.shadertoy.com/view/MslGR8
 			bool dither(vec2 uv, float alpha)
@@ -148,13 +148,13 @@ PASS.Shader = {
 
 			void main()
 			{
-				//{diffuse = texture(DiffuseTexture, uv).rgb; return;}
+				//{diffuse = texture(AlbedoTexture, uv).rgb; return;}
 
 				// diffuse
-				vec4 color = texture(lua[DiffuseTexture = render.GetErrorTexture()], uv);
+				vec4 color = texture(lua[AlbedoTexture = render.GetErrorTexture()], uv);
 
 				if (texture_blend != 0)
-					color = mix(color, texture(lua[Diffuse2Texture = "texture"], uv), texture_blend);
+					color = mix(color, texture(lua[Albedo2Texture = "texture"], uv), texture_blend);
 
 				color *= lua[Color = Color(1,1,1,1)];
 
@@ -214,7 +214,7 @@ PASS.Shader = {
 				{
 					metallic = normal_map.a;
 				}
-				else if (lua[DiffuseAlphaMetallic = false])
+				else if (lua[AlbedoAlphaMetallic = false])
 				{
 					metallic = -color.a+1;
 				}
@@ -321,7 +321,7 @@ vec3 get_view_pos(vec2 uv)
 render.AddGlobalShaderCode([[
 vec3 get_view_normal(vec2 uv)
 {
-	return texture(tex_normal, uv).xyz;
+	return texture(tex_data2, uv).xyz;
 }]])
 
 render.AddGlobalShaderCode([[
@@ -350,21 +350,21 @@ vec3 get_world_normal(vec2 uv)
 }]])
 
 render.AddGlobalShaderCode([[
-vec3 get_diffuse(vec2 uv)
+vec3 get_albedo(vec2 uv)
 {
-	return texture(tex_diffuse, uv).rgb;
+	return texture(tex_data1, uv).rgb;
 }]])
 
 render.AddGlobalShaderCode([[
 float get_metallic(vec2 uv)
 {
-	return texture(tex_normal, uv).a;
+	return texture(tex_data2, uv).a;
 }]])
 
 render.AddGlobalShaderCode([[
 float get_roughness(vec2 uv)
 {
-	return texture(tex_diffuse, uv).a;
+	return texture(tex_data1, uv).a;
 }]])
 
 render.AddGlobalShaderCode([[

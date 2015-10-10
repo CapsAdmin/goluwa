@@ -63,7 +63,7 @@ table.insert(PASS.Source, {
 		}
 
 		//vec3 probe = texture(lua[probe_tex = render.GetEnvironmentProbeTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
-		vec3 diffuse = get_diffuse(coords.xy);
+		vec3 diffuse = get_albedo(coords.xy);
 		vec3 light = diffuse * (sky + get_light(coords.xy)) + (diffuse * diffuse * diffuse * get_self_illumination(coords.xy));
 
 		vec2 dCoords = abs(vec2(0.5, 0.5) - coords.xy);

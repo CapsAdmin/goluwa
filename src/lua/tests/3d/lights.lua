@@ -8,7 +8,7 @@ ent:SetModelPath("models/cube.obj")
 ent:SetScale(Vec3(100,100,0.01))
 ent:SetCull(false)
 local mat = render.CreateMaterial("model")
-mat:SetDiffuseTexture(render.GetGreyTexture())
+mat:SetAlbedoTexture(render.GetGreyTexture())
 ent:SetMaterialOverride(mat)
 
 local max = 500

@@ -18,7 +18,7 @@ local function spawn_test(path)
 	ent:SetModelPath("models/cube.obj")
 	ent:SetPosition(Vec3(4*i,0,0))
 	local mat = render.CreateMaterial("model")
-	mat:SetDiffuseTexture(render.GetGreyTexture())
+	mat:SetAlbedoTexture(render.GetGreyTexture())
 	mat:SetNormalTexture(tex)
 	ent:SetMaterialOverride(mat)
 
@@ -28,7 +28,7 @@ local function spawn_test(path)
 		ent:SetPosition(Vec3(4*i,-0.75,2))
 		ent:SetScale(Vec3(1,0.05,1))
 		local mat = render.CreateMaterial("model")
-		mat:SetDiffuseTexture(tex)
+		mat:SetAlbedoTexture(tex)
 		ent:SetMaterialOverride(mat)
 	end
 

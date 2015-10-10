@@ -22,7 +22,7 @@ end
 
 function META:SetError(reason)
 	self.Error = reason
-	self.DiffuseTexture = render.GetErrorTexture()
+	self.AlbedoTexture = render.GetErrorTexture()
 end
 
 META:Register()

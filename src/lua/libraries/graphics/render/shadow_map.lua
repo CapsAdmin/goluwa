@@ -36,9 +36,9 @@ local SHADER = {
 
 			void main()
 			{
-				if (!lua[DiffuseAlphaMetallic = false])
+				if (!lua[AlbedoAlphaMetallic = false])
 				{
-					float alpha = texture(lua[DiffuseTexture = "sampler2D"], uv).a * lua[Color = Color(1,1,1,1)].a;
+					float alpha = texture(lua[AlbedoTexture = "sampler2D"], uv).a * lua[Color = Color(1,1,1,1)].a;
 
 					if
 					(

@@ -36,7 +36,7 @@ function surface.SetTextColor(r,g,b,a)
 end
 
 function surface.SetMaterial(mat)
-	lib.SetTexture(mat.__obj.DiffuseTexture)
+	lib.SetTexture(mat.__obj.AlbedoTexture)
 end
 
 function surface.SetTexture(tex)

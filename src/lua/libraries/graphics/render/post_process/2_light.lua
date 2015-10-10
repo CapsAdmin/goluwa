@@ -8,7 +8,7 @@ PASS.Source = [[
 	void main()
 	{
 		vec3 reflection = texture(self, uv).rgb;
-		vec3 diffuse = get_diffuse(uv);
+		vec3 diffuse = get_albedo(uv);
 		vec3 specular = get_light(uv);
 		float metallic = get_metallic(uv);
 

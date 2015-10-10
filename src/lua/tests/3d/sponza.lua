@@ -19,7 +19,7 @@ local sphere = entities.CreateEntity("visual")
 sphere:SetModelPath("models/sphere.obj")
 sphere:SetPosition(Vec3(0,0,20))
 sphere:SetSize(1)
-sphere:SetDiffuseTexture(render.GetBlackTexture())
+sphere:SetAlbedoTexture(render.GetBlackTexture())
 sphere:SetSpecularTexture(render.GetBlackTexture())
 sphere:SetBumpTexture(render.GetBlackTexture())
 

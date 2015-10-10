@@ -37,7 +37,7 @@ for x = -max/2, max/2 do
 
 		local mat = render.CreateMaterial("model", group)
 
-		mat:SetDiffuseTexture(render.GetWhiteTexture())
+		mat:SetAlbedoTexture(render.GetWhiteTexture())
 		mat:SetMetallicTexture(render.GetWhiteTexture())
 		mat:SetRoughnessTexture(render.GetWhiteTexture())
 		--mat:SetColor(Color(1,1,1, 1))

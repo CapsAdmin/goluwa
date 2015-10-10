@@ -122,9 +122,9 @@ function render.LoadModel(path, callback, callback2, on_fail)
 
 						if diffuse_path then
 							diffuse_path = find(diffuse_path)
-							material:SetDiffuseTexture(Texture(diffuse_path))
+							material:SetAlbedoTexture(Texture(diffuse_path))
 
-							if potentially_ue4 and material:GetDiffuseTexture():GetSize() == Vec2(1, 1) then
+							if potentially_ue4 and material:GetAlbedoTexture():GetSize() == Vec2(1, 1) then
 								material:Remove()
 								mesh:Remove()
 								return

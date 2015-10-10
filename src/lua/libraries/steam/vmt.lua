@@ -1,8 +1,8 @@
 local steam = ... or _G.steam
 
 local path_translate = {
-	DiffuseTexture = "basetexture",
-	Diffuse2Texture = "basetexture2",
+	AlbedoTexture = "basetexture",
+	Albedo2Texture = "basetexture2",
 	NormalTexture = "bumpmap",
 	Normal2Texture = "bumpmap2",
 	MetallicTexture = "envmapmask",
@@ -17,7 +17,7 @@ local property_translate = {
 	NoCull = {"nocull"},
 	Translucent = {"alphatest", "translucent", function(num) return num == 1 end},
 	NormalAlphaMetallic = {"normalmapalphaenvmapmask", function(num) return num == 1 end},
-	DiffuseAlphaMetallic = {"basealphaenvmapmask", function(num) return num == 1 end},
+	AlbedoAlphaMetallic = {"basealphaenvmapmask", function(num) return num == 1 end},
 	RoughnessMultiplier = {"phongexponent", function(num) return 1/(-num+1)^3 end},
 	MetallicMultiplier = {"envmaptint", function(num) return type(num) == "number" and num or typex(num) == "vec3" and num.x or typex(num) == "color" and num.r end},
 	SelfIllumination = {"selfillum", function(num) return num end},
@@ -121,7 +121,7 @@ function steam.LoadMaterial(path, material)
 					resource.Download(
 						new_path,
 						function(path)
-							if key == "DiffuseTexture" or key == "Diffuse2Texture" then
+							if key == "AlbedoTexture" or key == "Albedo2Texture" then
 								material["Set" .. key](material, Texture(path))
 							else
 								material["Set" .. key](material, Texture(path, false)) -- not srgb

@@ -40,8 +40,8 @@ for y = max-1, 0, -1 do
 
 	local info = table.random(materials)
 
-	--mat:SetDiffuseTexture(render.GetWhiteTexture() or Texture(1,1):Fill(function() return math.random(255), math.random(255), math.random(255), 255 end) or Texture("sponza/textures_pbr/Sponza_Ceiling_diffuse.tga"))
-	mat:SetDiffuseTexture(Texture(info.d))
+	--mat:SetAlbedoTexture(render.GetWhiteTexture() or Texture(1,1):Fill(function() return math.random(255), math.random(255), math.random(255), 255 end) or Texture("sponza/textures_pbr/Sponza_Ceiling_diffuse.tga"))
+	mat:SetAlbedoTexture(Texture(info.d))
 	mat:SetNormalTexture(Texture(info.n))
 	mat:SetRoughnessTexture(Texture(info.s))
 	mat:SetMetallicTexture(Texture(info.g))
