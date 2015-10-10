@@ -210,6 +210,9 @@ end
 function gmod.Initialize()
 	if not gmod.init then
 
+		steam.MountSourceGame("hl2")
+		steam.MountSourceGame("css")
+		steam.MountSourceGame("tf2")
 		steam.MountSourceGame("gmod")
 		render.InitializeGBuffer() -- TODO
 
@@ -221,7 +224,7 @@ function gmod.Initialize()
 		-- setup engine functions
 		include("lua/libraries/gmod/environment.lua", gmod)
 
-		vfs.AddModuleDirectory(R"lua/includes/modules/")
+		vfs.AddModuleDirectory(R(gmod.dir.."/lua/includes/modules/"))
 
 		-- include and init files in the right order
 

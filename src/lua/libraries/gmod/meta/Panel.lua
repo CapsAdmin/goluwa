@@ -274,11 +274,12 @@ end
 function META:SizeToChildren(size_w, size_h)
 	if size_w == nil then size_w = true end
 	if size_h == nil then size_h = true end
-	print(self, size_w, size_h)
-	if size_w then
+
+	if size_w and size_h then
+		self.__obj:SizeToChildren()
+	elseif size_w then
 		self.__obj:SizeToChildrenWidth()
-	end
-	if size_h then
+	elseif size_h then
 		self.__obj:SizeToChildrenHeight()
 	end
 end

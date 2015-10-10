@@ -111,29 +111,29 @@ function vgui.CreateX(class, parent, name)
 			if panel.content_alignment == 5 then
 				panel.text_offset = (panel:GetSize() / 2) - (Vec2(w, h) / 2)
 			elseif panel.content_alignment == 4 then
-				panel.text_offset.x = m.left
+				panel.text_offset.x = m:GetLeft()
 				panel.text_offset.y = (panel:GetHeight() / 2) + (h / 2)
 			elseif panel.content_alignment == 6 then
-				panel.text_offset.x = panel:GetWidth() - w - m.right
+				panel.text_offset.x = panel:GetWidth() - w - m:GetRight()
 				panel.text_offset.y = (panel:GetHeight() / 2) + (h / 2)
 			elseif panel.content_alignment == 2 then
 				panel.text_offset.x = (panel:GetWidth() / 2) - (w / 2)
-				panel.text_offset.y = panel:GetHeight() - h - m.bottom
+				panel.text_offset.y = panel:GetHeight() - h - m:GetBottom()
 			elseif panel.content_alignment == 8 then
 				panel.text_offset.x = (panel:GetWidth() / 2) - (w / 2)
-				panel.text_offset.y = m.top
+				panel.text_offset.y = m:GetTop()
 			elseif panel.content_alignment == 7 then
-				panel.text_offset.x = m.left
-				panel.text_offset.y = m.top
+				panel.text_offset.x = m:GetLeft()
+				panel.text_offset.y = m:GetTop()
 			elseif panel.content_alignment == 9 then
-				panel.text_offset.x = panel:GetWidth() - w - m.right
-				panel.text_offset.y = m.top
+				panel.text_offset.x = panel:GetWidth() - w - m:GetRight()
+				panel.text_offset.y = m:GetTop()
 			elseif panel.content_alignment == 1 then
-				panel.text_offset.x = m.left
-				panel.text_offset.y = panel:GetHeight() - h - m.bottom
+				panel.text_offset.x = m:GetLeft()
+				panel.text_offset.y = panel:GetHeight() - h - m:GetBottom()
 			elseif panel.content_alignment == 3 then
-				panel.text_offset.x = panel:GetWidth() - w - m.right
-				panel.text_offset.y = panel:GetHeight() - h - m.bottom
+				panel.text_offset.x = panel:GetWidth() - w - m:GetRight()
+				panel.text_offset.y = panel:GetHeight() - h - m:GetBottom()
 			end
 
 			panel.text_offset = panel.text_offset + panel.text_inset

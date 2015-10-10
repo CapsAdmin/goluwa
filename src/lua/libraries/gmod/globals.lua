@@ -134,11 +134,10 @@ function globals.MsgC(...) log(...) end
 function globals.MsgN(...) logn(...) end
 
 globals.include = function(path)
-	if vfs.IsFile("lua/" .. path) then
-		include("lua/" .. path)
-	else
-		include(path)
-	end
+	if include(path) ~= false then return end
+	if include(path:lower()) ~= false then return end
+	if include("lua/" .. path) ~= false then return end
+	if include("lua/" .. path:lower()) ~= false then return end
 end
 
 function globals.module(name, _ENV)
