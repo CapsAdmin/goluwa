@@ -63,6 +63,12 @@ function render.GenerateTextures()
 		end)
 		render.loading_texture = loading:GetTexture()
 	end
+
+	for k,v in pairs(render) do
+		if type(k) == "string" and k:endswith("_texture") and typex(v) == "texture" then
+			render.texture_path_cache[k:match("(.+)_texture")] = v
+		end
+	end
 end
 
 function render.GetWhiteTexture()
