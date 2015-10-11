@@ -85,7 +85,7 @@ do
 
 		for _, info in ipairs(render.global_shader_code) do
 			if not code or (info.require and code:find(info.require, nil, true)) then
-				table.insert(out, info.code)
+				table.insert(out, 1, info.code)
 				done[info.require] = true
 			end
 		end

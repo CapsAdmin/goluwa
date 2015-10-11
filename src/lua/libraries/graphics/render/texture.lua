@@ -102,6 +102,8 @@ local texture_formats = {
 	rgba32ui = {bits = {32, 32, 32, 32}},
 }
 
+render.texture_formats = texture_formats
+
 local function get_upload_format(size, reverse, integer, depth, stencil)
 	if depth and stencil then
 		return "depth_stencil"

@@ -63,11 +63,13 @@ if GRAPHICS then
 			self:DrawShadowMap()
 		end
 
-		render.gbuffer_light_shader.light_color = self.Color
-		render.gbuffer_light_shader.light_intensity = self.Intensity
-		render.gbuffer_light_shader.light_shadow = self.Shadow
-		render.gbuffer_light_shader.light_point_shadow = self.ShadowCubemap
-		render.gbuffer_light_shader.project_from_camera = self.ProjectFromCamera
+		local shader = render.gbuffer_fill.light_shader
+
+		shader.light_color = self.Color
+		shader.light_intensity = self.Intensity
+		shader.light_shadow = self.Shadow
+		shader.light_point_shadow = self.ShadowCubemap
+		shader.project_from_camera = self.ProjectFromCamera
 
 		local transform = self:GetComponent("transform")
 
@@ -75,10 +77,10 @@ if GRAPHICS then
 		local mat = render.camera_3d:GetMatrices().view_world
 		local x,y,z = mat:GetTranslation()
 
-		render.gbuffer_light_shader.light_view_pos:Set(x,y,z)
-		render.gbuffer_light_shader.light_radius = transform:GetSize()
+		shader.light_view_pos:Set(x,y,z)
+		shader.light_radius = transform:GetSize()
 
-		render.SetShaderOverride(render.gbuffer_light_shader)
+		render.SetShaderOverride(shader)
 		render.SetBlendMode("one", "one")
 		self.light_mesh:Draw()
 	end
@@ -101,7 +103,7 @@ if GRAPHICS then
 
 		-- render the scene with this matrix
 		render.camera_3d:SetProjection(projection)
-		render.gbuffer_light_shader["light_projection_view_" .. i] = render.camera_3d:GetMatrices().projection_view
+		render.gbuffer_fill.light_shader["light_projection_view_" .. i] = render.camera_3d:GetMatrices().projection_view
 		render.Draw3DScene(self, self.OrthoSize == 0 and self:GetComponent("transform"):GetSize())
 	end
 
@@ -145,9 +147,9 @@ if GRAPHICS then
 			shadow_map:End()
 
 			if self.ShadowCubemap then
-				render.gbuffer_light_shader["tex_shadow_map_cube"] = shadow_map:GetTexture()
+				render.gbuffer_fill.light_shader["tex_shadow_map_cube"] = shadow_map:GetTexture()
 			else
-				render.gbuffer_light_shader["tex_shadow_map_" .. i] = shadow_map:GetTexture()
+				render.gbuffer_fill.light_shader["tex_shadow_map_" .. i] = shadow_map:GetTexture()
 			end
 
 			if self.OrthoSize == 0 then break end
