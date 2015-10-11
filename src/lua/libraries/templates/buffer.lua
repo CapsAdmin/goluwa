@@ -11,90 +11,34 @@ local function swap_endian(num, size)
 end
 
 local type_info = {
-	LongLong = {type = "int64_t", field = "integer_signed", union = "longlong"},
-	UnsignedLongLong = {type = "uint64_t", field = "integer_unsigned", union = "longlong"},
+	LongLong = "int64_t",
+	UnsignedLongLong = "uint64_t",
 
-	Long = {type = "int32_t", field = "integer_signed", union = "long"},
-	UnsignedLong = {type = "uint32_t", field = "integer_unsigned", union = "long"},
+	Long = "int32_t",
+	UnsignedLong = "uint32_t",
 
-	Short = {type = "int16_t", field = "integer_signed", union = "short"},
-	UnsignedShort = {type = "uint16_t", field = "integer_unsigned", union = "short"},
+	Short = "int16_t",
+	UnsignedShort = "uint16_t",
 
-	Double = {type = "double", field = "decimal", union = "longlong"},
-	Float = {type = "float", field = "decimal", union = "long"},
+	Double = "double",
+	Float = "float",
 }
 
-ffi.cdef[[
-	typedef union {
-		uint8_t chars[8];
-		uint16_t shorts[4];
-		uint32_t longs[2];
-
-		int64_t integer_signed;
-		uint64_t integer_unsigned;
-		double decimal;
-
-	} number_buffer_longlong;
-
-	typedef union {
-		uint8_t chars[4];
-		uint16_t shorts[2];
-
-		int32_t integer_signed;
-		uint32_t integer_unsigned;
-		float decimal;
-
-	} number_buffer_long;
-
-	typedef union {
-		uint8_t chars[2];
-
-		int16_t integer_signed;
-		uint16_t integer_unsigned;
-
-	} number_buffer_short;
-
-]]
-
-local buff = ffi.new("number_buffer_longlong")
-buff.integer_unsigned = 1LL
-e.BIG_ENDIAN = buff.chars[0] == 0
-
-local template = [[
-local META, buff = ...
-META["Write@TYPE@"] = function(self, num)
-	buff.@FIELD@ = num
-@WRITE_BYTES@
-	return self
-end
-META["Read@TYPE@"] = function(self)
-@READ_BYTES@
-	return buff.@FIELD@
-end
-]]
-
 local function ADD_FFI_OPTIMIZED_TYPES(META)
-	for typ, info in pairs(type_info) do
-		local template = template
+	for name, type in pairs(type_info) do
+		local size = ffi.sizeof(type)
 
-		template = template:gsub("@TYPE@", typ)
-		template = template:gsub("@FIELD@", info.field)
-
-		local size = ffi.sizeof(info.type)
-
-		local read_unroll = "\tlocal bytes = self:ReadBytes(" .. size .. ")\nif not bytes then return end\nlocal chars = ffi.cast('char *', bytes)\n"
-		for i = 1, size do
-			read_unroll = read_unroll .. "\tbuff.chars[" .. i-1 .. "] = chars[" .. i-1 .. "]\n"
+		local ctype = ffi.typeof(type .. "*")
+		META["Read" .. name] = function(self)
+			return ffi.cast(ctype, self:ReadBytes(size))[0]
 		end
-		template = template:gsub("@READ_BYTES@", read_unroll)
 
-		local write_unroll = ""
-		write_unroll = write_unroll .. "\tself:WriteBytes(ffi.string(buff.chars, " .. size .. "))\n"
-		template = template:gsub("@WRITE_BYTES@", write_unroll)
-
-		local func = loadstring(template, "buffer ffi optimized types")
-
-		func(META, ffi.new("number_buffer_" .. info.union))
+		local ctype = ffi.typeof(type .. "[1]")
+		local hmm = ffi.new(ctype, 0)
+		META["Write" .. name] = function(self, num)
+			hmm[0] = num
+			self:WriteBytes(ffi.string(hmm, size))
+		end
 	end
 end
 
