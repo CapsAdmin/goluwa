@@ -38,6 +38,7 @@ local function ADD_FFI_OPTIMIZED_TYPES(META)
 		META["Write" .. name] = function(self, num)
 			hmm[0] = num
 			self:WriteBytes(ffi.string(hmm, size))
+			return self
 		end
 	end
 end
