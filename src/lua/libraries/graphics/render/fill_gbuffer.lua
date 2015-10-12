@@ -688,8 +688,6 @@ void main()
 			local offset = "uv + vec2("..(x*weight)..", "..(y*weight)..") * amount"
 			local fade = AUTOMATE_ME[i]
 
-			print(fade)
-
 			str = str .. "\tif( dot(normalize(get_view_normal("..offset..")), normal) > discard_threshold)\n"
 			str = str .. "\t{\n"
 			str = str .. "\t\tout_color += texture(tex_stage_"..#PASS.Source..", "..offset..").rgb *"..fade..";\n"
