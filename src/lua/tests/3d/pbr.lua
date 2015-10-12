@@ -11,11 +11,6 @@ group:SetName("pbr test")
 
 local max = 11
 
-local light = entities.CreateEntity("light", group)
-light:SetSize(2000)
-light:SetIntensity(1)
-light:SetPosition(Vec3(0,0,z+15)+Vec3(10,-10, 25)*5)
-
 for x = -max/2, max/2 do
 	local x = x/max*2
 
