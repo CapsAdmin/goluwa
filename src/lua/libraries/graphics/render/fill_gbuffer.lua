@@ -561,6 +561,9 @@ PASS.Stages = {
 }
 
 render.gbuffer_fill = PASS
+if RELOAD then
+	render.InitializeGBuffer()
+end
 
 do -- reflection
 
@@ -627,7 +630,7 @@ do -- reflection
 				return;
 			}
 
-			//vec3 probe = texture(lua[probe_tex = render.GetEnvironmentProbeTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
+			vec3 probe = texture(lua[probe_tex = render.GetEnvironmentProbeTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
 			vec3 diffuse = get_albedo(coords.xy);
 			vec3 light = diffuse * (sky + get_light(coords.xy)) + (diffuse * diffuse * diffuse * get_self_illumination(coords.xy));
 
@@ -672,7 +675,8 @@ do -- reflection
 					vec3 blur()
 					{
 						float amount = get_roughness(uv);
-						amount = min(pow(amount*3, 2.5) / get_depth(uv) / g_cam_farz / 20, 0.1);
+						//amount = min(pow(amount*3, 2.5) / get_depth(uv) / g_cam_farz / 20, 0.1);
+						amount = min(pow(amount*3, 3)/get_depth(uv)/500000, 0.5);
 
 						vec3 normal = normalize(get_view_normal(uv));
 						float total_weight = ]]..total_weight..[[;
@@ -707,11 +711,7 @@ do -- reflection
 	end
 
 	table.insert(PASS.Source, {
-		buffer = {
-			size_divider = 1,
-			internal_format = "rgb16f",
-		},
-		source = [[
+		source =  [[
 			const vec2 KERNEL[16] = vec2[](vec2(0.53812504, 0.18565957), vec2(0.13790712, 0.24864247), vec2(0.33715037, 0.56794053), vec2(-0.6999805, -0.04511441), vec2(0.06896307, -0.15983082), vec2(0.056099437, 0.006954967), vec2(-0.014653638, 0.14027752), vec2(0.010019933, -0.1924225), vec2(-0.35775623, -0.5301969), vec2(-0.3169221, 0.106360726), vec2(0.010350345, -0.58698344), vec2(-0.08972908, -0.49408212), vec2(0.7119986, -0.0154690035), vec2(-0.053382345, 0.059675813), vec2(0.035267662, -0.063188605), vec2(-0.47761092, 0.2847911));
 			const float SAMPLE_RAD = 1.25;  /// Used in main
 			const float INTENSITY = 1.25; /// Used in doAmbientOcclusion
@@ -720,7 +720,7 @@ do -- reflection
 			{
 				vec3 p = get_view_pos(uv)*0.996;
 				vec3 n = normalize(get_view_normal(uv));
-				vec2 rand = normalize(get_noise(uv).xy*2-1);
+				vec2 rand = normalize(vec2(random(uv), random(uv*1.1234)) * 2 - 1);
 
 				float occlusion = 0.0;
 
@@ -738,22 +738,9 @@ do -- reflection
 					}
 				}
 
-				return 1.0 - occlusion / ITERATIONS;
+				return pow(1.0 - occlusion / ITERATIONS, 5);
 			}
-			out vec3 out_color;
 
-			void main()
-			{
-				vec3 color = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
-				float occlusion = ssao();
-				//out_color = pow(color*3, vec3(occlusion*3)) * pow(occlusion, 5)/3;
-				out_color = color * pow(occlusion, 5);
-			}
-		]]
-	})
-
-	table.insert(PASS.Source, {
-		source =  [[
 			out vec3 out_color;
 
 			void main()
@@ -763,17 +750,26 @@ do -- reflection
 				vec3 specular = get_light(uv);
 				float metallic = get_metallic(uv);
 
+				float occlusion = ssao();
+				reflection *= occlusion;
+
 				specular = mix(specular, reflection, pow(metallic, 0.5));
 
 				// self illumination
 				specular += diffuse * get_self_illumination(uv)/200;
 
 				out_color = (diffuse * specular) + get_sky(uv, get_depth(uv));
-				//out_color = reflection;
-
 			}
 		]]
 	})
 
 	render.AddGBufferShader(PASS)
+
+	if RELOAD then
+		PASS:__init()
+	end
+end
+
+if RELOAD then
+	collectgarbage()
 end

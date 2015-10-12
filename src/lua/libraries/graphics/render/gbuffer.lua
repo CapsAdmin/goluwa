@@ -29,7 +29,6 @@ render.SetGlobalShaderVariable("g_screen_size", render.GetGBufferSize, "vec2")
 render.SetGlobalShaderVariable("g_noise_texture", render.GetNoiseTexture, "sampler2D")
 
 render.gbuffer = render.gbuffer or NULL
-render.gbuffer_shaders_ = render.gbuffer_shaders_ or {}
 render.gbuffer_values = render.gbuffer_values or {}
 render.gbuffer_shaders = render.gbuffer_shaders or {}
 
@@ -38,9 +37,11 @@ do -- mixer
 		render.gbuffer_values[key] = var
 
 		for _, pass in pairs(render.gbuffer_shaders) do
-			for _, shader in pairs(pass.shaders) do
-				if shader[key] then
-					shader[key] = var
+			if pass.init then
+				for _, shader in pairs(pass.shaders) do
+					if shader[key] then
+						shader[key] = var
+					end
 				end
 			end
 		end
@@ -53,12 +54,14 @@ do -- mixer
 	function render.GetGBufferValues()
 		local out = {}
 		for name, pass in pairs(render.gbuffer_shaders) do
-			for _, shader in pairs(pass.shaders) do
-				for k, v in pairs(shader.defaults) do
-					if type(v) == "function" then
-						v = v()
+			if pass.init then
+				for _, shader in pairs(pass.shaders) do
+					for k, v in pairs(shader.defaults) do
+						if type(v) == "function" then
+							v = v()
+						end
+						out[name .. "_" .. k] = {k = k, v = v}
 					end
-					out[name .. "_" .. k] = {k = k, v = v}
 				end
 			end
 		end
@@ -68,7 +71,7 @@ do -- mixer
 	render.gbuffer_shaders_sorted = render.gbuffer_shaders_sorted or {}
 
 	function render.AddGBufferShader(PASS, init_now)
-		render.gbuffer_shaders_[PASS.Name] = PASS
+		render.gbuffer_shaders[PASS.Name] = PASS
 
 		local stages = PASS.Source
 
@@ -105,13 +108,6 @@ do -- mixer
 		end
 
 		function PASS:__init()
-			if not render.gbuffer_fill.init then
-				render.InitializeGBuffer()
-				return
-			end
-
-			self.__init = nil
-
 			local shader = {}
 
 			shader.shaders = {}
@@ -182,30 +178,31 @@ do -- mixer
 					render.RemoveGBufferShader(PASS.Name)
 				end
 			end
-
-			if not console.IsVariableAdded("render_pp_" .. PASS.Name) then
-				local pass = table.copy(PASS)
-				local default = PASS.Default
-
-				if default == nil then
-					default = true
-				end
-
-				console.CreateVariable("render_pp_" .. pass.Name, default, function(val)
-					if val then
-						render.AddGBufferShader(pass, true)
-					else
-						render.RemoveGBufferShader(pass.Name)
-					end
-				end)
-			end
-
-			if not console.GetVariable("render_pp_" .. PASS.Name) then
-				render.RemoveGBufferShader(PASS.Name)
-			end
 		end
 
-		if init_now or RELOAD then PASS:__init() end
+		if not console.IsVariableAdded("render_pp_" .. PASS.Name) then
+			local pass = table.copy(PASS)
+			local default = PASS.Default
+
+			if default == nil then
+				default = true
+			end
+
+			console.CreateVariable("render_pp_" .. pass.Name, default, function(val)
+				if val then
+					if render.IsGBufferReady() then
+						render.AddGBufferShader(pass)
+						pass:__init()
+					end
+				else
+					render.RemoveGBufferShader(pass.Name)
+				end
+			end)
+		end
+
+		if not console.GetVariable("render_pp_" .. PASS.Name) then
+			render.RemoveGBufferShader(PASS.Name)
+		end
 	end
 
 	function render.RemoveGBufferShader(name)
@@ -456,13 +453,11 @@ local function init(width, height)
 		include("lua/libraries/graphics/render/post_process/*")
 	end
 
-	for k,v in pairs(render.gbuffer_shaders_) do
+	for k,v in pairs(render.gbuffer_shaders) do
 		if v.__init then
 			v:__init()
 		end
 	end
-
-	table.clear(render.gbuffer_shaders_)
 
 	render.gbuffer_fill.shaders = {}
 

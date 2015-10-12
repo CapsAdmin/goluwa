@@ -55,7 +55,7 @@ if GRAPHICS then
 	end
 
 	function COMPONENT:OnDraw3DLights()
-		if not self.light_mesh then return end -- grr
+		if not self.light_mesh or not render.gbuffer_fill.light_shader then return end -- grr
 
 		-- automate this!!
 

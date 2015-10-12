@@ -152,6 +152,10 @@ function render.CreateFrameBuffer(width, height, textures)
 	return self
 end
 
+function META:OnRemove()
+	self.fb:Delete()
+end
+
 function META:__tostring2()
 	return ("[%i]"):format(self.fb.id)
 end

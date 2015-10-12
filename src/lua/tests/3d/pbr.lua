@@ -35,7 +35,7 @@ for x = -max/2, max/2 do
 
 		ent:SetCull(false)
 
-		local mat = render.CreateMaterial("model", group)
+		local mat = render.CreateMaterial("model")
 
 		mat:SetAlbedoTexture(render.GetWhiteTexture())
 		mat:SetMetallicTexture(render.GetWhiteTexture())

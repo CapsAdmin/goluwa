@@ -570,58 +570,61 @@ function render.CreateShader(data, vars)
 			end
 
 			if not ok then
-				vfs.Write("data/logs/last_shader_error.c", data.source)
+				local error_depth = 2
 
-				for i = 2, 20 do
+				for i = error_depth, 20 do
 					local info = debug.getinfo(i)
 
 					if not info then break end
-
-					local line_offset
 					local path = info.source
 
 					if path then
 						path = path:sub(2)
 
-						local lua_file = vfs.Read(path)
+						local lua_file = vfs.Read(e.ROOT_FOLDER .. path)
+
 						if lua_file then
 							lua_file = lua_file:gsub("[ %t\r]", "")
 
 							local source = data.original_source:gsub("[ %t\r]", "")
 							local start, stop = lua_file:find(source, 0, true)
+							local line_offset
+
 							if start then
 								line_offset = lua_file:sub(0, start):count("\n")
+
+								local err = "\n" .. shader_id .. "\n" .. shader
+
+								if path then
+									err = (path:match(".+/(.+)") or path) .. ":" .. err
+								end
+
+								local goto_line
+
+								err = err:gsub("0%((%d+)%) ", function(line)
+									line = tonumber(line)
+									goto_line = line - data.line_start + 1 + line_offset
+									return goto_line
+								end)
+
+								if path then
+									debug.openscript(path, tonumber(goto_line))
+								else
+									debug.openfunction(info.func, tonumber(goto_line))
+								end
+
+								error(err, i)
 							end
+						else
+							break
 						end
 					end
-
-					if line_offset or i == 20 then
-						local err = "\n" .. shader_id .. "\n" .. shader
-
-						if path then
-							err = (path:match(".+/(.+)") or path) .. ":" .. err
-						end
-
-						if line_offset then
-							local goto_line
-
-							err = err:gsub("0%((%d+)%) ", function(line)
-								line = tonumber(line)
-								goto_line = line - data.line_start + 1 + line_offset
-								return goto_line
-							end)
-
-							if path then
-								debug.openscript(path, tonumber(goto_line))
-							else
-								debug.openfunction(info.func, tonumber(goto_line))
-							end
-						end
-
-						error(err, i)
-					end
-					error("\n" .. shader_id .. "\n" .. shader, i)
 				end
+
+				vfs.Write("data/logs/last_shader_error.c", data.source)
+				debug.openscript("data/logs/last_shader_error.c", tonumber(shader:match("0%((%d+)%) ")))
+
+				error("\n" .. shader_id .. "\n" .. shader, error_depth)
 			end
 
 			table.insert(shaders, shader)
