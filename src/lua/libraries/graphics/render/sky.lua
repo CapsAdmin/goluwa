@@ -56,8 +56,8 @@ vec3 get_sky(vec2 uv, float depth)
 	float intensity = lua[world_sun_intensity = 1];
 	vec3 sky_color = lua[world_sky_color = Vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131)];
 
-	const float surface_height = 0.95;
-	const int step_count = 8;
+	const float surface_height = 0.9;
+	const int step_count = 1;
 
 
 	const float rayleigh_brightness = 2;
@@ -115,7 +115,7 @@ vec3 get_sky(vec2 uv, float depth)
 
 	rayleigh_collected = rayleigh_collected * pow(eye_depth, rayleigh_collection_power) / float(step_count);
 	mie_collected = (mie_collected * pow(eye_depth, mie_collection_power)) / float(step_count);
-	return stars + vec3(spot) + clamp(vec3(spot * mie_collected + mie_factor * mie_collected + rayleigh_factor * rayleigh_collected), vec3(0), vec3(1));
+	return pow(stars + vec3(spot) + clamp(vec3(spot * mie_collected + mie_factor * mie_collected + rayleigh_factor * rayleigh_collected), vec3(0), vec3(1)), vec3(2));
 }]], "get_sky")
 
 local directions = {
