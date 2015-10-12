@@ -250,12 +250,10 @@ function prototype.CreateObject(meta, override, skip_gc_callback)
 		end
 	end
 
-	self:SetDebugTrace(debug.traceback())
-	self:SetCreationTime(os.clock())
+	--self:SetDebugTrace(debug.traceback())
+	self:SetCreationTime(system and system.GetElapsedTime() or os.clock())
 
-	if crypto then
-		self:SetGUID(("%x"):format(math.random(999999999999999999)) .. ("%x"):format(math.random(999999999999999999)))
-	end
+	self:SetGUID(("%x"):format(math.random(999999999999999999)) .. ("%x"):format(math.random(999999999999999999)))
 
 	prototype.created_objects = prototype.created_objects or utility.CreateWeakTable()
 	prototype.created_objects[self] = self
