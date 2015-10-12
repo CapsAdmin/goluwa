@@ -584,7 +584,7 @@ do -- reflection
 		source = [[
 		const float rayStep = 0.005;
 		const float minRayStep = 20;
-		const float maxSteps = 50;
+		const float maxSteps = 20;
 
 		vec2 project(vec3 coord)
 		{
@@ -642,72 +642,75 @@ do -- reflection
 			out_color =	mix(sky, light, fade);
 		}
 	]]
+})
+
+
+local AUTOMATE_ME = {
+	[-7] = 0.0044299121055113265,
+	[-6] = 0.00895781211794,
+	[-5] = 0.0215963866053,
+	[-4] = 0.0443683338718,
+	[-3] = 0.0776744219933,
+	[-2] = 0.115876621105,
+	[-1] = 0.147308056121,
+	[1] = 0.147308056121,
+	[2] = 0.115876621105,
+	[3] = 0.0776744219933,
+	[4] = 0.0443683338718,
+	[5] = 0.0215963866053,
+	[6] = 0.00895781211794,
+	[7] = 0.0044299121055113265,
+}
+
+	for _ = 0, 2 do
+	for x = 0, 1 do
+	for y = 0, 1 do
+	if (x == 0 and y == 0) or y == x then goto continue end
+
+	local str = [[
+out vec3 out_color;
+void main()
+{
+	float amount = get_roughness(uv);
+	amount = pow(amount*3, 3)/get_depth(uv)/20000/]]..(_+1)..[[;
+
+	vec3 normal = normalize(get_view_normal(uv));
+	const float discard_threshold = 0.6;
+	float total_weight = 1;
+
+	out_color = texture(tex_stage_]]..#PASS.Source..[[, uv).rgb*0.159576912161;
+
+]]
+
+	for i = -7, 7 do
+		if i ~= 0 then
+			local weight = i * 4 / 1000
+			local offset = "uv + vec2("..(x*weight)..", "..(y*weight)..") * amount"
+			local fade = AUTOMATE_ME[i]
+
+			print(fade)
+
+			str = str .. "\tif( dot(normalize(get_view_normal("..offset..")), normal) > discard_threshold)\n"
+			str = str .. "\t{\n"
+			str = str .. "\t\tout_color += texture(tex_stage_"..#PASS.Source..", "..offset..").rgb *"..fade..";\n"
+			str = str .. "\t}else{total_weight += "..fade..";}\n"
+		end
+	end
+
+	str = str .. "\tout_color *= total_weight;\n"
+	str = str .. "}"
+
+	table.insert(PASS.Source, {
+		buffer = {
+			size_divider = 2,
+			internal_format = "rgb16f",
+		},
+		source = str,
 	})
 
-	for x = -1, 1 do
-		for y = -1, 1 do
-			if x == y or (y == 0 and x == 0) then goto continue end
-
-			local samples = 16
-			local total_weight = 0
-			local weights = {}
-
-			for i = 1, samples do
-				local theta = (i / samples) * math.pi * 2
-				local weight = math.lerp(math.sin((i / samples) * math.pi), 0, 0.25)
-				total_weight = total_weight + weight
-				weights[i] = {
-					dir = ("vec2(%s, %s)"):format(math.sin(theta), math.cos(theta)),
-					weight = weight,
-				}
-			end
-
-			table.insert(PASS.Source, {
-				buffer = {
-					size_divider = 2,
-					internal_format = "rgb16f",
-				},
-				source = [[
-					out vec3 out_color;
-
-					const float discard_threshold = 0.5;
-
-					vec3 blur()
-					{
-						float amount = get_roughness(uv);
-						//amount = min(pow(amount*3, 2.5) / get_depth(uv) / g_cam_farz / 20, 0.1);
-						amount = min(pow(amount*3, 3)/get_depth(uv)/500000, 0.5);
-
-						vec3 normal = normalize(get_view_normal(uv));
-						float total_weight = ]]..total_weight..[[;
-						vec3 res = vec3(0);
-						vec2 offset;
-
-						]] ..(function()
-							local str = ""
-							for i, weight in ipairs(weights) do
-								str = str .. "offset = (" ..weight.dir.." * amount);\n"
-								str = str .. "if( dot(normalize(get_view_normal(uv + offset)), normal) < discard_threshold) {\n"
-								str = str .."total_weight -= "..weight.weight..";\n"
-								str = str .. "} else {\n"
-								str = str .. "res += texture(tex_stage_"..#PASS.Source..", uv + offset).rgb * "..weight.weight.."; }\n"
-							end
-							return str
-						end)()..[[
-
-						res /= total_weight;
-
-						return res;
-					}
-
-					void main()
-					{
-						out_color = blur();
-					}
-				]]
-			})
-			::continue::
-		end
+	::continue::
+	end
+	end
 	end
 
 	table.insert(PASS.Source, {
@@ -720,7 +723,7 @@ do -- reflection
 			{
 				vec3 p = get_view_pos(uv)*0.996;
 				vec3 n = normalize(get_view_normal(uv));
-				vec2 rand = normalize(vec2(random(uv), random(uv*1.1234)) * 2 - 1);
+				vec2 rand = normalize(texture(g_noise_texture, uv*4).xy * 2 - 1);
 
 				float occlusion = 0.0;
 
@@ -749,11 +752,10 @@ do -- reflection
 				vec3 diffuse = get_albedo(uv);
 				vec3 specular = get_light(uv);
 				float metallic = get_metallic(uv);
+				float roughness = get_roughness(uv);
+				float occlusion = mix(1, ssao(), roughness);
 
-				float occlusion = ssao();
-				reflection *= occlusion;
-
-				specular = mix(specular, reflection, pow(metallic, 0.5));
+				specular = mix(specular, reflection * occlusion, pow(metallic, 0.5));
 
 				// self illumination
 				specular += diffuse * get_self_illumination(uv)/200;
