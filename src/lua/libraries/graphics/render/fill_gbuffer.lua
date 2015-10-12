@@ -1,5 +1,7 @@
 local render = ... or _G.render
 
+local reflection_res_divider = 2
+
 local PASS = {}
 
 PASS.Buffers = {
@@ -578,7 +580,7 @@ do -- reflection
 	table.insert(PASS.Source, {
 		buffer = {
 			--max_size = Vec2() + 512,
-			size_divider = 2,
+			size_divider = reflection_res_divider,
 			internal_format = "rgb16f",
 		},
 		source = [[
@@ -630,7 +632,7 @@ do -- reflection
 				return;
 			}
 
-			vec3 probe = texture(lua[probe_tex = render.GetEnvironmentProbeTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
+			//vec3 probe = texture(lua[probe_tex = render.GetEnvironmentProbeTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
 			vec3 diffuse = get_albedo(coords.xy);
 			vec3 light = diffuse * (sky + get_light(coords.xy)) + (diffuse * diffuse * diffuse * get_self_illumination(coords.xy));
 
@@ -639,7 +641,15 @@ do -- reflection
 			fade -= pow(fade, 1.5)/1.75;
 			fade *= 2;
 
-			out_color =	mix(sky, light, fade);
+			float reflectivity = 1.0;
+
+			if (diffuse == vec3(1.0))
+			{
+				reflectivity = (-((-get_roughness(coords.xy)+1) * get_metallic(coords.xy))+1);
+				reflectivity = pow(reflectivity, 3.0);
+			}
+
+			out_color =	mix(sky, light, fade * reflectivity);
 		}
 	]]
 })
@@ -690,7 +700,7 @@ void main()
 
 			str = str .. "\tif( dot(normalize(get_view_normal("..offset..")), normal) > discard_threshold)\n"
 			str = str .. "\t{\n"
-			str = str .. "\t\tout_color += texture(tex_stage_"..#PASS.Source..", "..offset..").rgb *"..fade..";\n"
+			str = str .. "\t\tout_color += texture(tex_stage_"..#PASS.Source..", "..offset.." * vec2(g_screen_size.y / g_screen_size.x, 1)).rgb *"..fade..";\n"
 			str = str .. "\t}else{total_weight += "..fade..";}\n"
 		end
 	end
@@ -700,7 +710,7 @@ void main()
 
 	table.insert(PASS.Source, {
 		buffer = {
-			size_divider = 2,
+			size_divider = reflection_res_divider,
 			internal_format = "rgb16f",
 		},
 		source = str,
@@ -746,7 +756,7 @@ void main()
 
 			void main()
 			{
-				vec3 reflection = texture(tex_stage_]]..#PASS.Source..[[, uv).rgb;
+				vec3 reflection = texture(tex_stage_]]..#PASS.Source..[[, uv).rgb * 1.25;
 				vec3 diffuse = get_albedo(uv);
 				vec3 specular = get_light(uv);
 				float metallic = get_metallic(uv);

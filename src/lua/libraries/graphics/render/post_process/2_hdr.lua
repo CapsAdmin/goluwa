@@ -7,7 +7,7 @@ PASS.Source = {}
 
 table.insert(PASS.Source, {
 	buffer = {
-		max_size = Vec2() + 512,
+		size_divider = 5,
 		internal_format = "rgb16f",
 	},
 	source = [[
@@ -20,48 +20,63 @@ table.insert(PASS.Source, {
 	]]
 })
 
-for x = -1, 1 do
-	for y = -1, 1 do
-		if x == 0 or y == 0 then goto continue end
+local AUTOMATE_ME = {
+	[-7] = 0.0044299121055113265,
+	[-6] = 0.00895781211794,
+	[-5] = 0.0215963866053,
+	[-4] = 0.0443683338718,
+	[-3] = 0.0776744219933,
+	[-2] = 0.115876621105,
+	[-1] = 0.147308056121,
+	[1] = 0.147308056121,
+	[2] = 0.115876621105,
+	[3] = 0.0776744219933,
+	[4] = 0.0443683338718,
+	[5] = 0.0215963866053,
+	[6] = 0.00895781211794,
+	[7] = 0.0044299121055113265,
+}
 
-		local weights = {}
+	for _ = 0, 2 do
+	for x = 0, 1 do
+	for y = 0, 1 do
+	if (x == 0 and y == 0) or y == x then goto continue end
 
-		for i,v in ipairs({-0.028, -0.024, -0.020, -0.016, -0.012, -0.008, -0.004, 0.004, 0.008, 0.012, 0.016, 0.020, 0.024, 0.028}) do
-			weights[i] = Vec2(v*x, v*y) * 0.75
+	local str = [[
+out vec3 out_color;
+void main()
+{
+	vec3 normal = normalize(get_view_normal(uv));
+	const float discard_threshold = 0.6;
+
+	out_color = texture(tex_stage_]]..#PASS.Source..[[, uv).rgb*0.159576912161;
+
+]]
+
+	for i = -7, 7 do
+		if i ~= 0 then
+			local weight = i * 4 / 1000
+			local offset = "uv + vec2("..(x*weight)..", "..(y*weight)..") * 1"
+			local fade = AUTOMATE_ME[i]
+
+			str = str .. "\t\tout_color += texture(tex_stage_"..#PASS.Source..", "..offset.." * vec2(g_screen_size.y / g_screen_size.x, 1)).rgb *"..fade..";\n"
 		end
-
-		table.insert(PASS.Source, {
-			buffer = {
-				max_size = Vec2() + 512,
-				internal_format = "rgb16f",
-			},
-			source = [[
-				out vec3 out_color;
-
-				void main()
-				{
-					out_color = vec3(0.0);
-					out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[1].x..[[,]]..weights[1].y..[[)).rgb*0.0044299121055113265;
-					out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[2].x..[[,]]..weights[2].y..[[)).rgb*0.00895781211794;
-					out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[3].x..[[,]]..weights[3].y..[[)).rgb*0.0215963866053;
-					out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[4].x..[[,]]..weights[4].y..[[)).rgb*0.0443683338718;
-					out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[5].x..[[,]]..weights[5].y..[[)).rgb*0.0776744219933;
-					out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[6].x..[[,]]..weights[6].y..[[)).rgb*0.115876621105;
-					out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[7].x..[[,]]..weights[7].y..[[)).rgb*0.147308056121;
-					out_color += texture(tex_stage_]]..#PASS.Source..[[, uv).rgb*0.159576912161;
-					out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[8].x..[[,]]..weights[8].y..[[)).rgb*0.147308056121;
-					out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[9].x..[[,]]..weights[9].y..[[)).rgb*0.115876621105;
-					out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[10].x..[[,]]..weights[10].y..[[)).rgb*0.0776744219933;
-					out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[11].x..[[,]]..weights[11].y..[[)).rgb*0.0443683338718;
-					out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[12].x..[[,]]..weights[12].y..[[)).rgb*0.0215963866053;
-					out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[13].x..[[,]]..weights[13].y..[[)).rgb*0.00895781211794;
-					out_color += texture(tex_stage_]]..#PASS.Source..[[, uv + vec2(]]..weights[14].x..[[,]]..weights[14].y..[[)).rgb*0.0044299121055113265;
-				}
-			]]
-		})
-		::continue::
 	end
-end
+
+	str = str .. "}"
+
+	table.insert(PASS.Source, {
+		buffer = {
+			size_divider = 5,
+			internal_format = "rgb16f",
+		},
+		source = str,
+	})
+
+	::continue::
+	end
+	end
+	end
 
 table.insert(PASS.Source, {
 	source = [[
