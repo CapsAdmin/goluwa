@@ -85,7 +85,7 @@ do -- profiler plugin
 	end
 
 	local function load(path)
-		return select(2, msgpack.unpack(assert(io.open(ide.config.path.projectdir .. "/data/bin/windows_x64/" .. path, "rb")):read("*all")))
+		return select(2, msgpack.unpack(assert(io.open(ide.config.path.projectdir .. "/data/bin/"..jit.os:lower().."_"..jit.arch:lower().."/" .. path, "rb")):read("*all")))
 	end
 
 
