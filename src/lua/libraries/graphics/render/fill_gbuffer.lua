@@ -501,7 +501,7 @@ PASS.Stages = {
 
 					if (lua[light_shadow = false])
 					{
-						attenuation *= get_shadow(uv, 0.00005);
+						attenuation *= get_shadow(uv, 0.0025);
 					}
 
 					return light_color.rgb * attenuation * light_intensity;

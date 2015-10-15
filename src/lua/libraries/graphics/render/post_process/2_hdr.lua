@@ -55,7 +55,7 @@ void main()
 
 	for i = -7, 7 do
 		if i ~= 0 then
-			local weight = i * 4 / 300
+			local weight = i * 4 / 800
 			local offset = "uv + vec2("..(x*weight)..", "..(y*weight)..") * 1"
 			local fade = AUTOMATE_ME[i]
 
