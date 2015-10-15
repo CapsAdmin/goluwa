@@ -12,6 +12,7 @@ prototype.GetSet(META, "Indices")
 prototype.EndStorable()
 
 local translate = {
+	patches = "GL_PATCHES", -- tessellation
 	points = "GL_POINTS", --Draws points on screen. Every vertex specified is a point.
 	lines = "GL_LINES", --Draws lines on screen. Every two vertices specified compose a line.
 	line_strip = "GL_LINE_STRIP", --Draws connected lines on screen. Every vertex specified after first two are connected.
