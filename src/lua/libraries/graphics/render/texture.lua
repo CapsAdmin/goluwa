@@ -30,10 +30,11 @@ META:GetSet("Depth", 0)
 META:GetSet("MipMapLevels", -1)
 META:GetSet("Path", "")
 META:GetSet("Multisample", 0)
-META:IsSet("Loading", false)
 META:IsSet("InternalFormat", "rgba8")
 META:IsSet("SRGB", true)
 META:EndStorable()
+
+META:IsSet("Loading", false)
 
 local texture_formats = {
 	depth_component16 = {bits = {16}},
@@ -1135,3 +1136,5 @@ function Texture(...)
 
 	return render.CreateTexture(...)
 end
+
+serializer.GetLibrary("luadata").SetModifier("texture", function(var) return ("Texture(%q)"):format(var:GetPath()) end, "Texture")

@@ -15,10 +15,10 @@ function render.GenerateTextures()
 	end
 
 	do
-		render.error_tex = Texture(Vec2() + 256)
+		render.error_texture = Texture(Vec2() + 256)
 
 		local size = 16
-		render.error_tex:Fill(function(x, y)
+		render.error_texture:Fill(function(x, y)
 			if (math.floor(x/size) + math.floor(y/size % 2)) % 2 < 1 then
 				return 255, 255, 255, 255
 			else
@@ -66,7 +66,10 @@ function render.GenerateTextures()
 
 	for k,v in pairs(render) do
 		if type(k) == "string" and k:endswith("_texture") and typex(v) == "texture" then
-			render.texture_path_cache[k:match("(.+)_texture")] = v
+			local name = k:match("(.+)_texture")
+			render.texture_path_cache[name] = v
+			v.Path = name
+			print(name)
 		end
 	end
 end
@@ -84,11 +87,11 @@ function render.GetGreyTexture()
 end
 
 function render.GetErrorTexture()
-	return render.error_tex
+	return render.error_texture
 end
 
 function render.GetLoadingTexture()
-	return render.loading_texture or render.error_tex
+	return render.loading_texture or render.error_texture
 end
 
 function render.GetNoiseTexture()
