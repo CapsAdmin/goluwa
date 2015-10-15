@@ -28,6 +28,7 @@ event.AddListener("Update", "probe", function()
 
 		probe:SetPosition(Vec3(x,y,z))
 		probe:Capture()
+		probe:SetPreview(true)
 		data.probe = probe
 
 		table.insert(list, {probe = probe, key = {x,y,z}})

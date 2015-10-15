@@ -364,6 +364,9 @@ float get_depth(vec2 uv)
 render.AddGlobalShaderCode([[
 vec3 get_camera_dir(vec2 uv)
 {
-	return (g_projection_view_inverse * vec4(uv * 2 - 1, 1, 1)).xyz;
+    vec4 device_normal = vec4(uv * 2 - 1, 0.0, 1.0);
+    vec3 eye_normal = normalize((g_projection_inverse * device_normal).xyz);
+    vec3 world_normal = normalize(mat3(g_view_inverse)*eye_normal);
+    return world_normal;
 }]])
 

@@ -1,6 +1,6 @@
 local render = ... or _G.render
 
-local reflection_res_divider = 2
+local reflection_res_divider = 1
 
 local PASS = {}
 
@@ -74,7 +74,7 @@ vec3 get_view_normal_from_depth(vec2 uv)
 render.AddGlobalShaderCode([[
 vec3 get_world_normal(vec2 uv)
 {
-	return normalize(-get_view_normal(uv) * mat3(g_normal_matrix));
+	return normalize(-get_view_normal(uv) * mat3(g_view));
 }]])
 
 function PASS:Initialize()
@@ -95,9 +95,6 @@ function PASS:Initialize()
 end
 
 function PASS:Draw3D(what, dist)
-	render.gbuffer:WriteThese("all")
-	render.gbuffer:Clear("all", 0,0,0,0, 1)
-
 	render.UpdateSky()
 
 	render.SetBlendMode()
@@ -504,7 +501,7 @@ PASS.Stages = {
 
 					if (lua[light_shadow = false])
 					{
-						attenuation *= get_shadow(uv, 0.002);
+						attenuation *= get_shadow(uv, 0.00005);
 					}
 
 					return light_color.rgb * attenuation * light_intensity;
@@ -567,8 +564,7 @@ if RELOAD then
 	render.InitializeGBuffer()
 end
 
-do -- reflection
-
+do
 	local PASS = {}
 
 	PASS.Position = -1
@@ -584,9 +580,8 @@ do -- reflection
 			internal_format = "rgb16f",
 		},
 		source = [[
-		const float rayStep = 0.005;
-		const float minRayStep = 20;
-		const float maxSteps = 20;
+		const float ray_step = 0.0025;
+		const float maxSteps = 50;
 
 		vec2 project(vec3 coord)
 		{
@@ -596,16 +591,17 @@ do -- reflection
 
 		vec2 ray_cast(vec3 dir, vec3 hitCoord)
 		{
-			dir *= rayStep;
+			dir *= ray_step;
 
 			for(int i = 0; i < maxSteps; i++)
 			{
-				hitCoord += dir;
 
 				float depth = hitCoord.z - get_view_pos(project(hitCoord)).z;
+				hitCoord += dir;
 
-				if(depth < 0.0 && depth > -0.3)
+				if(depth < 0.0 && depth > -0.9)
 				{
+
 					return project(hitCoord).xy;
 				}
 			}
@@ -617,27 +613,35 @@ do -- reflection
 
 		void main()
 		{
-			vec3 viewNormal = get_view_normal(uv);
-			vec3 viewPos = get_view_pos(uv);
-			vec3 reflected = normalize(reflect(normalize(viewPos), normalize(viewNormal)));
 
-			vec3 hitPos = viewPos;
-			vec2 coords = ray_cast(reflected * max(minRayStep, viewPos.z), hitPos);
 
-			vec3 sky = texture(lua[sky_tex = render.GetSkyTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
+			if (texture(tex_depth, uv).r == 1)
+			{
+				out_color = texture(lua[sky_tex = render.GetSkyTexture()], -get_camera_dir(uv) * vec3(-1,1,1)).rgb;
+				return;
+			}
+
+			vec3 sky_color = texture(lua[sky_tex = render.GetSkyTexture()], reflect(-get_camera_dir(uv), get_world_normal(uv)).xyz * vec3(-1,1,1)).rgb;
+
+			vec3 view_pos = get_view_pos(uv);
+			vec3 view_normal = get_view_normal(uv);
+			vec3 reflected = normalize(reflect(view_pos, view_normal));
+
+			vec2 coords = ray_cast(reflected * 100, view_pos);
+
 
 			if (coords == vec2(0.0))
 			{
-				out_color = sky;
+				out_color = sky_color;
 				return;
 			}
 
 			//vec3 probe = texture(lua[probe_tex = render.GetEnvironmentProbeTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
 			vec3 diffuse = get_albedo(coords.xy);
-			vec3 light = diffuse * (sky + get_light(coords.xy)) + (diffuse * diffuse * diffuse * get_self_illumination(coords.xy));
+			vec3 light = diffuse * (sky_color + get_light(coords.xy)) + (diffuse * diffuse * diffuse * get_self_illumination(coords.xy));
 
 			vec2 dCoords = abs(vec2(0.5, 0.5) - coords.xy);
-			float fade = clamp(1.0 - (dCoords.x + dCoords.y)*1.5, 0.0, 1.0);
+			float fade = clamp(1.0 - (dCoords.x + dCoords.y)*1.25, 0.0, 1.0);
 			fade -= pow(fade, 1.5)/1.75;
 			fade *= 2;
 
@@ -649,12 +653,12 @@ do -- reflection
 				reflectivity = pow(reflectivity, 3.0);
 			}
 
-			out_color =	mix(sky, light, fade * reflectivity);
+			out_color =	mix(sky_color, light, fade * reflectivity);
 		}
 	]]
 })
 
-
+do
 local AUTOMATE_ME = {
 	[-7] = 0.0044299121055113265,
 	[-6] = 0.00895781211794,
@@ -681,6 +685,8 @@ local AUTOMATE_ME = {
 out vec3 out_color;
 void main()
 {
+	if (texture(tex_depth, uv).r == 1) {out_color = texture(tex_stage_]]..#PASS.Source..[[, uv).rgb; return;}
+
 	float amount = get_roughness(uv);
 	amount = pow(amount*3, 3)/get_depth(uv)/20000/]]..(_+1)..[[;
 
@@ -720,7 +726,7 @@ void main()
 	end
 	end
 	end
-
+end
 	table.insert(PASS.Source, {
 		source =  [[
 			const vec2 KERNEL[16] = vec2[](vec2(0.53812504, 0.18565957), vec2(0.13790712, 0.24864247), vec2(0.33715037, 0.56794053), vec2(-0.6999805, -0.04511441), vec2(0.06896307, -0.15983082), vec2(0.056099437, 0.006954967), vec2(-0.014653638, 0.14027752), vec2(0.010019933, -0.1924225), vec2(-0.35775623, -0.5301969), vec2(-0.3169221, 0.106360726), vec2(0.010350345, -0.58698344), vec2(-0.08972908, -0.49408212), vec2(0.7119986, -0.0154690035), vec2(-0.053382345, 0.059675813), vec2(0.035267662, -0.063188605), vec2(-0.47761092, 0.2847911));
@@ -758,17 +764,22 @@ void main()
 			{
 				vec3 reflection = texture(tex_stage_]]..#PASS.Source..[[, uv).rgb * 1.25;
 				vec3 diffuse = get_albedo(uv);
-				vec3 specular = get_light(uv);
+				vec3 specular = get_light(uv)/2;
 				float metallic = get_metallic(uv);
 				float roughness = get_roughness(uv);
-				float occlusion = mix(1, ssao(), roughness);
+				float occlusion = mix(1, ssao(), pow(roughness, 0.25));
 
 				specular = mix(specular, reflection * occlusion, pow(metallic, 0.5));
 
 				// self illumination
 				specular += diffuse * get_self_illumination(uv)/200;
 
-				out_color = (diffuse * specular) + get_sky(uv, get_depth(uv));
+				out_color = (diffuse * specular);
+
+				if (texture(tex_depth, uv).r == 1)
+					out_color = reflection;
+
+
 			}
 		]]
 	})

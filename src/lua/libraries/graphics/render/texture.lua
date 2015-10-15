@@ -538,7 +538,7 @@ function META:SetupStorage()
 		logn("==================================")
 		self:DumpInfo()
 		logn("==================================")
-		warning("\n" .. msg)
+		warning("\n" .. msg, 2)
 	end
 
 	self.storage_setup = true

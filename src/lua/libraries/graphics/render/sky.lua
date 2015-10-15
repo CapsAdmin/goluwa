@@ -50,32 +50,26 @@ vec3 sky_absorb(vec3 sky_color, float dist, vec3 color, float factor)
 	return color-color*pow(sky_color, vec3(factor/dist));
 }
 
-vec3 get_sky(vec2 uv, float depth)
+vec3 get_sky(vec3 ray, float depth)
 {
+	ray = normalize(ray);
+
 	vec3 sun_direction = lua[(vec3)render.GetShaderSunDirection];
 	float intensity = lua[world_sun_intensity = 1];
 	vec3 sky_color = lua[world_sky_color = Vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131)];
 
-	const float surface_height = 0.9;
-	const int step_count = 1;
+	const float surface_height = 0.99;
 
 
-	const float rayleigh_brightness = 2;
-	const float mie_brightness = 0.99;
+	const float rayleigh_brightness = 3.3;
+	const float mie_brightness = 0.1;
 	float spot_brightness = intensity;
-	const float scatter_strength = 0.1;
-	const float rayleigh_strength = 0.839;
-	const float mie_strength = 0.964;
-	const float rayleigh_collection_power = 0.65;
-	const float mie_collection_power = 0.8;
-	const float mie_distribution = 0.26;
-
-	vec2 frag_coord = uv;
-	frag_coord = (frag_coord-0.5)*2.0;
-	vec4 device_normal = vec4(frag_coord, 0.0, 1.0);
-	vec3 eye_normal = normalize((g_projection_inverse * device_normal).xyz);
-	vec3 world_normal = normalize(mat3(g_view_inverse)*eye_normal).xyz;
-	vec3 ray = vec3(world_normal.x, -world_normal.z, world_normal.y);
+	const float scatter_strength = 0.028;
+	const float rayleigh_strength = 0.139;
+	const float mie_strength = 0.264;
+	const float rayleigh_collection_power = 0.81;
+	const float mie_collection_power = 0.39;
+	const float mie_distribution = 0.63;
 
 	vec3 ldir = sun_direction;
 	float alpha = dot(ray, ldir);
@@ -86,36 +80,23 @@ vec3 get_sky(vec2 uv, float depth)
 	float sky_mult = pow(depth, 100);
 	float spot = smoothstep(0.0, 100.0, sky_phase(alpha, 0.9995)) * spot_brightness * sky_mult;
 
-	vec3 noise = get_noise((ray.xz+sun_direction.xy)/5).xyz;
-	vec3 hsv = rgb2hsv(noise);
-	hsv.y = 0.25;
-	hsv.z = pow(hsv.z, 75)*5;
-	noise = hsv2rgb(hsv);
-	vec3 stars = noise * sky_mult;
+	vec3 stars = texture(lua[nightsky_tex = render.GetNightSkyTexture()], reflect(ray, ldir)).rgb * depth * 0.01;
 
 	vec3 eye_position = min(vec3(0,surface_height,0) + (vec3(-g_cam_pos.x, g_cam_pos.z, g_cam_pos.y) / 100010000), vec3(0.999999));
 	float eye_depth = sky_atmospheric_depth(eye_position, ray, depth);
-	float step_length = eye_depth/float(step_count);
+	float step_length = eye_depth;
 
-	vec3 rayleigh_collected = vec3(0.0, 0.0, 0.0);
-	vec3 mie_collected = vec3(0.0, 0.0, 0.0);
+	float sample_distance = step_length;
 
-	for(int i=0; i < step_count; i++)
-	{
-		float sample_distance = step_length * float(i);
+	vec3 position = eye_position + ray * sample_distance;
+	float extinction = sky_horizon_extinction(position, ldir, surface_height - 0.2);
+	float sample_depth = sky_atmospheric_depth(position, ray, depth);
+	vec3 influx = sky_absorb(sky_color, sample_depth, vec3(intensity * 4), scatter_strength) * extinction;
 
-		vec3 position = eye_position + ray * sample_distance;
-		float extinction = sky_horizon_extinction(position, ldir, surface_height - 0.2);
-		float sample_depth = sky_atmospheric_depth(position, ray, depth);
-		vec3 influx = sky_absorb(sky_color, sample_depth, vec3(intensity * 5), scatter_strength) * extinction;
-		rayleigh_collected += sky_absorb(sky_color, sqrt(sample_distance), sky_color * influx, rayleigh_strength);
+	vec3 rayleigh_collected = sky_absorb(sky_color, sqrt(sample_distance), sky_color * influx, rayleigh_strength)  * pow(eye_depth, rayleigh_collection_power);
+	vec3 mie_collected = sky_absorb(sky_color, sample_distance, influx, mie_strength) * pow(eye_depth, mie_collection_power);
 
-		mie_collected += sky_absorb(sky_color, sample_distance, influx, mie_strength);
-	}
-
-	rayleigh_collected = rayleigh_collected * pow(eye_depth, rayleigh_collection_power) / float(step_count);
-	mie_collected = (mie_collected * pow(eye_depth, mie_collection_power)) / float(step_count);
-	return pow(stars + vec3(spot) + clamp(vec3(spot * mie_collected + mie_factor * mie_collected + rayleigh_factor * rayleigh_collected), vec3(0), vec3(1)), vec3(2));
+	return 	stars + vec3(spot) + max(vec3(spot * mie_collected + mie_factor * mie_collected + rayleigh_factor * rayleigh_collected), vec3(0));
 }]], "get_sky")
 
 local directions = {
@@ -137,8 +118,16 @@ local function init()
 	tex = render.CreateTexture("cube_map")
 	tex:SetInternalFormat("rgb16f")
 	tex:SetMipMapLevels(1)
-	tex:SetSize(Vec2() + 1024)
+	tex:SetSize(Vec2() + 2048)
 	tex:SetupStorage()
+
+	do
+		local tex = render.CreateTexture("cube_map")
+		tex:SetMipMapLevels(1)
+		tex:LoadCubemap("textures/skybox/galaxy.png")
+
+		render.nightsky_texture = tex
+	end
 
 	shader = render.CreateShader({
 		name = "sky",
@@ -152,7 +141,7 @@ local function init()
 
 				void main()
 				{
-					out_color = get_sky(uv, 1);
+					out_color = get_sky(get_camera_dir(uv), 1);
 				}
 			]]
 		}
@@ -198,12 +187,18 @@ function render.UpdateSky()
 	render.camera_3d:SetView(old_view)
 	render.camera_3d:SetProjection(old_projection)
 
+
 	render.SetShaderOverride()
 end
 
 function render.GetSkyTexture()
 	if not tex then init() end
 	return tex
+end
+
+function render.GetNightSkyTexture()
+	if not render.nightsky_texture then init() end
+	return render.nightsky_texture
 end
 
 function render.GetShaderSunDirection()

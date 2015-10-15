@@ -52,7 +52,7 @@ function META:Capture()
 			render.camera_3d:SetProjection(projection)
 			render.camera_3d:SetView(view)
 
-			render.Draw3DScene("no_cull_only")
+			render.DrawGBuffer("no_cull_only")
 		end
 	self.fb:End()
 
@@ -65,10 +65,9 @@ function META:SetPreview(b)
 		local ent = entities.CreateEntity("visual")
 		ent:SetModelPath("models/sphere.obj")
 		ent:SetPosition(self.Position)
-		ent:SetSize(0.25)
+		ent:SetSize(0.1)
 
 		local mat = render.CreateMaterial("model")
-		mat:SetSkyTexture(self.tex)
 		mat:SetAlbedoTexture(render.GetWhiteTexture())
 		mat:SetRoughnessTexture(render.GetWhiteTexture())
 		mat:SetMetallicTexture(render.GetWhiteTexture())

@@ -55,7 +55,7 @@ void main()
 
 	for i = -7, 7 do
 		if i ~= 0 then
-			local weight = i * 4 / 1000
+			local weight = i * 4 / 300
 			local offset = "uv + vec2("..(x*weight)..", "..(y*weight)..") * 1"
 			local fade = AUTOMATE_ME[i]
 
@@ -82,18 +82,19 @@ table.insert(PASS.Source, {
 	source = [[
 		out vec3 out_color;
 
-		float gamma = 1.2;
-		float exposure = 1.2;
-		float bloomFactor = 0.0005;
+		float gamma = 1.3;
+		float exposure = 1.6;
+		float bloom_factor = 0.0015;
 		float brightMax = 1;
 
 		void main()
 		{
 
-			vec3 original_image = texture(self, uv).rgb;
-			vec3 downsampled_extracted_bloom = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
+			vec3 color = texture(self, uv).rgb;
 
-			vec3 color = original_image + downsampled_extracted_bloom * bloomFactor;
+			vec3 bloom = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
+
+			color = color + bloom * bloom_factor;
 
 			color = pow(color, vec3(1. / gamma));
 			color = clamp(exposure * color, 0., 1.);
