@@ -65,6 +65,9 @@ function META:Draw(count)
 	--render.BindArrayBuffer(self.vertices_id)
 	gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
 	gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_INT", nil)
+
+	render.vertex_draw_count = render.vertex_draw_count + self.vertices_length
+	render.draw_call_count = render.draw_call_count + 1
 end
 
 local function setup_vertex_array(self)
@@ -82,6 +85,8 @@ end
 
 function META:SetVertices(vertices)
 	self.Vertices = vertices
+
+	self.vertices_length = vertices:GetLength()
 
 	gl.BindBuffer("GL_ARRAY_BUFFER", self.vertices_id)
 	gl.BufferData("GL_ARRAY_BUFFER", vertices:GetSize(), vertices:GetPointer(), "GL_STATIC_DRAW")

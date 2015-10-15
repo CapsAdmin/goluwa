@@ -39,6 +39,14 @@ do
 				console.SetTitle(("GARBAGE: %s"):format(utility.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
 			end
 
+			if render.draw_calls then
+				console.SetTitle(("DRAW CALLS: %s"):format(render.draw_calls), "drawcalls")
+			end
+
+			if render.vertices_drawn then
+				console.SetTitle(("VERTICES: %s"):format(render.vertices_drawn), "vertices")
+			end
+
 			if GRAPHICS then
 				window.SetTitle(console.GetTitle())
 			end

@@ -65,7 +65,13 @@ end
 console.CreateVariable("render_accum", 0)
 local deferred = console.CreateVariable("render_deferred", true, "whether or not deferred rendering is enabled.")
 
+render.vertex_draw_count = 0
+render.draw_call_count = 0
+
 function render.DrawScene(skip_2d)
+	render.vertex_draw_count = 0
+	render.draw_call_count = 0
+
 	render.GetScreenFrameBuffer():Clear()
 	render.GetScreenFrameBuffer():Bind()
 
@@ -78,19 +84,22 @@ function render.DrawScene(skip_2d)
 		render.Draw3DScene("models")
 	end
 
-	if skip_2d then return end
+	if not skip_2d then
+		render.EnableDepth(false)
+		render.SetBlendMode("alpha")
 
-	render.EnableDepth(false)
-	render.SetBlendMode("alpha")
+		event.Call("Draw2D", system.GetFrameTime())
 
-	event.Call("Draw2D", system.GetFrameTime())
+		local blur_amt = console.GetVariable("render_accum") or 0
+		if blur_amt ~= 0 then
+			gl.Accum("GL_ACCUM", 1)
+			gl.Accum("GL_RETURN", 1-blur_amt)
+			gl.Accum("GL_MULT", blur_amt)
+		end
 
-	local blur_amt = console.GetVariable("render_accum") or 0
-	if blur_amt ~= 0 then
-		gl.Accum("GL_ACCUM", 1)
-		gl.Accum("GL_RETURN", 1-blur_amt)
-		gl.Accum("GL_MULT", blur_amt)
+		event.Call("PostDrawScene")
 	end
 
-	event.Call("PostDrawScene")
+	render.vertices_drawn = render.vertex_draw_count
+	render.draw_calls = render.draw_call_count
 end
