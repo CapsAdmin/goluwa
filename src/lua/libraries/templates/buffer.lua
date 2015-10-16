@@ -734,6 +734,7 @@ end
 
 do -- push pop position
 	function META:PushPosition(pos)
+		if pos >= self:GetSize() then error("position pushed is larger than reported size of buffer", 2) end
 		self.push_pop_pos_stack = self.push_pop_pos_stack or {}
 
 		table.insert(self.push_pop_pos_stack, self:GetPosition())
