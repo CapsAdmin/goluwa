@@ -427,7 +427,11 @@ function editor.Open()
 			if not ent:GetHideFromEditor() then
 				local name = ent:GetName()
 				if name == "" then
-					name = ent.config
+					if ent.config == "visual" then
+						name = ent:GetModelPath():match(".+/(.+)%.")
+					else
+						name = ent.config
+					end
 				end
 				local node = node:AddNode(name, ent:GetPropertyIcon())
 				node.OnRightClick = right_click_node
