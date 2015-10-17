@@ -735,80 +735,120 @@ do
 			internal_format = "rgb16f",
 		},
 		source = [[
-		const float ray_step = 0.0025;
-		const float maxSteps = 50;
-
-		vec2 project(vec3 coord)
+		vec3 project(vec3 coord)
 		{
 			vec4 res = g_projection * vec4(coord, 1.0);
-			return (res.xy / res.w) * 0.5 + 0.5;
+			return (res.xyz / res.w) * 0.5 + 0.5;
 		}
 
-		vec2 ray_cast(vec3 dir, vec3 hitCoord)
+		//Z buffer is nonlinear by default, so we fix this here
+		float linearizeDepth(float depth)
 		{
-			dir *= ray_step;
-
-			for(int i = 0; i < maxSteps; i++)
-			{
-
-				float depth = hitCoord.z - get_view_pos(project(hitCoord)).z;
-				hitCoord += dir;
-
-				if(depth < 0.0 && depth > -0.9)
-				{
-
-					return project(hitCoord).xy;
-				}
-			}
-
-			return vec2(0.0, 0.0);
+			return (2.0 * g_cam_nearz) / (g_cam_farz + g_cam_nearz - depth * (g_cam_farz - g_cam_nearz));
 		}
 
 		out vec3 out_color;
 
 		void main()
 		{
-
-
 			if (texture(tex_depth, uv).r == 1)
 			{
 				out_color = texture(lua[sky_tex = render.GetSkyTexture()], -get_camera_dir(uv) * vec3(-1,1,1)).rgb;
 				return;
 			}
 
-			vec3 sky_color = texture(lua[sky_tex = render.GetSkyTexture()], reflect(-get_camera_dir(uv), get_world_normal(uv)).xyz * vec3(-1,1,1)).rgb;
+			//Tweakable variables
+			float initialStepAmount = .01;
+			float stepRefinementAmount = .7;
+			int maxRefinements = 3;
+			int maxDepth = 1;
 
-			vec3 view_pos = get_view_pos(uv);
-			vec3 view_normal = get_view_normal(uv);
-			vec3 reflected = normalize(reflect(view_pos, view_normal));
+			//Values from textures
+			vec3 cameraSpacePosition = get_view_pos(uv);
+			vec3 cameraSpaceNormal = get_view_normal(uv);
+			float roughness = get_roughness(uv);
+			float reflectivity = get_metallic(uv);
 
-			vec2 coords = ray_cast(reflected * 100, view_pos);
+			//Screen space vector
+			vec3 cameraSpaceViewDir = normalize(cameraSpacePosition);
+			vec3 cameraSpaceVector = normalize(reflect(cameraSpaceViewDir,cameraSpaceNormal));
+			vec3 screenSpacePosition = project(cameraSpacePosition);
+			vec3 cameraSpaceVectorPosition = cameraSpacePosition + cameraSpaceVector;
+			vec3 screenSpaceVectorPosition = project(cameraSpaceVectorPosition);
+			vec3 screenSpaceVector = initialStepAmount*normalize(screenSpaceVectorPosition - screenSpacePosition);
+
+			//Jitter the initial ray
+			//float randomOffset1 = clamp(rand(gl_FragCoord.xy),0,1)/1000.0;
+			//float randomOffset2 = clamp(rand(gl_FragCoord.yy),0,1)/1000.0;
+			//screenSpaceVector += vec3(randomOffset1,randomOffset2,0);
+			vec3 oldPosition = screenSpacePosition + screenSpaceVector;
+			vec3 currentPosition = oldPosition + screenSpaceVector;
 
 
-			if (coords == vec2(0.0))
+			vec3 world_normal = -cameraSpaceNormal * mat3(g_view);
+			vec3 sky_reflect = reflect(-get_camera_dir(uv), world_normal);
+			vec3 sky_color = texture(lua[sky_tex = render.GetSkyTexture()], sky_reflect.xyz * vec3(-1,1,1)).rgb;
+
+
+
+			//State
+			vec3 color = sky_color;
+			int count = 0;
+			int numRefinements = 0;
+			int depth = 0;
+
+			//Ray trace!
+			while(depth < maxDepth) //doesnt do anything right now
 			{
-				out_color = sky_color;
-				return;
+				while(count < 1000)
+				{
+					//Stop ray trace when it goes outside screen space
+					if(currentPosition.x < 0 || currentPosition.x > 1 ||
+					   currentPosition.y < 0 || currentPosition.y > 1 ||
+					   currentPosition.z < 0 || currentPosition.z > 1)
+						break;
+
+					//intersections
+					vec2 samplePos = currentPosition.xy;
+					float currentDepth = linearizeDepth(currentPosition.z);
+					float sampleDepth = linearizeDepth(texture(tex_depth, samplePos).x);
+					float diff = currentDepth - sampleDepth;
+					float error = 0.000025 + (currentDepth/30);
+					if(diff >= 0 && diff < error)
+					{
+						screenSpaceVector *= stepRefinementAmount;
+						currentPosition = oldPosition;
+						numRefinements++;
+						if(numRefinements >= maxRefinements)
+						{
+							vec3 normalAtPos = get_view_normal(samplePos);
+							float orientation = dot(cameraSpaceVector,normalAtPos);
+							if(orientation < 0)
+							{
+								float cosAngIncidence = -dot(cameraSpaceViewDir,cameraSpaceNormal);
+								cosAngIncidence = clamp(1-cosAngIncidence,0.0,1.0);
+
+								vec2 dCoords = abs(vec2(0.5, 0.5) - samplePos);
+								float fade = clamp(1.0 - (dCoords.x + dCoords.y)*1.8, 0.0, 1.0);
+
+								vec3 albedo = get_albedo(samplePos);
+								vec3 light = albedo * (sky_color + get_light(samplePos)/2) + (albedo * albedo * albedo * get_self_illumination(samplePos.xy));
+
+								color = mix(sky_color, light, fade) * cosAngIncidence;
+							}
+							break;
+						}
+					}
+
+					//Step ray
+					oldPosition = currentPosition;
+					currentPosition = oldPosition + screenSpaceVector;
+					count++;
+				}
+				depth++;
 			}
 
-			//vec3 probe = texture(lua[probe_tex = render.GetEnvironmentProbeTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
-			vec3 diffuse = get_albedo(coords.xy);
-			vec3 light = diffuse * (sky_color + get_light(coords.xy)) + (diffuse * diffuse * diffuse * get_self_illumination(coords.xy));
-
-			vec2 dCoords = abs(vec2(0.5, 0.5) - coords.xy);
-			float fade = clamp(1.0 - (dCoords.x + dCoords.y)*1.25, 0.0, 1.0);
-			fade -= pow(fade, 1.5)/1.75;
-			fade *= 2;
-
-			float reflectivity = 1.0;
-
-			if (diffuse == vec3(1.0))
-			{
-				reflectivity = (-((-get_roughness(coords.xy)+1) * get_metallic(coords.xy))+1);
-				reflectivity = pow(reflectivity, 3.0);
-			}
-
-			out_color =	mix(sky_color, light, fade * reflectivity);
+			out_color = color;
 		}
 	]]
 })
@@ -831,7 +871,10 @@ local AUTOMATE_ME = {
 	[7] = 0.0044299121055113265,
 }
 
-	for _ = 0, 2 do
+	local samples = 2
+	local discard_threshold = 0.98
+
+	for sample = 0, samples do
 	for x = 0, 1 do
 	for y = 0, 1 do
 	if (x == 0 and y == 0) or y == x then goto continue end
@@ -840,14 +883,12 @@ local AUTOMATE_ME = {
 out vec3 out_color;
 void main()
 {
-	if (texture(tex_depth, uv).r == 1) {out_color = texture(tex_stage_]]..#PASS.Source..[[, uv).rgb; return;}
-
 	float amount = get_roughness(uv);
-	amount = pow(amount*3, 3)/get_depth(uv)/20000/]]..(_+1)..[[;
+	amount = (amount*2)/get_depth(uv)/1000/]]..((sample+1)*2)..[[;
 
 	vec3 normal = normalize(get_view_normal(uv));
-	const float discard_threshold = 0.6;
-	float total_weight = 1;
+	float total_weight = 0;
+	vec2 ratio = vec2(1, 1);
 
 	out_color = texture(tex_stage_]]..#PASS.Source..[[, uv).rgb*0.159576912161;
 
@@ -859,14 +900,14 @@ void main()
 			local offset = "uv + vec2("..(x*weight)..", "..(y*weight)..") * amount"
 			local fade = AUTOMATE_ME[i]
 
-			str = str .. "\tif( dot(normalize(get_view_normal("..offset..")), normal) > discard_threshold)\n"
+			str = str .. "\tif(dot(normalize(get_view_normal("..offset..")), normal) > "..discard_threshold..")\n"
 			str = str .. "\t{\n"
-			str = str .. "\t\tout_color += texture(tex_stage_"..#PASS.Source..", "..offset.." * vec2(g_screen_size.y / g_screen_size.x, 1)).rgb *"..fade..";\n"
-			str = str .. "\t}else{total_weight += "..fade..";}\n"
+			str = str .. "\t\tout_color += texture(tex_stage_"..#PASS.Source..", "..offset.."*ratio).rgb *"..fade..";\n"
+			str = str .. "\t}else{total_weight += "..(fade)..";}\n"
 		end
 	end
 
-	str = str .. "\tout_color *= total_weight;\n"
+	str = str .. "\tout_color += texture(tex_stage_"..#PASS.Source..", uv).rgb*total_weight;\n"
 	str = str .. "}"
 
 	table.insert(PASS.Source, {
@@ -922,7 +963,7 @@ end
 				vec3 specular = get_light(uv)/2;
 				float metallic = get_metallic(uv);
 				float roughness = get_roughness(uv);
-				float occlusion = mix(1, ssao(), pow(roughness, 0.25));
+				float occlusion = 1;//mix(1, ssao(), pow(roughness, 0.25));
 
 				specular = mix(specular, reflection * occlusion, pow(metallic, 0.5));
 
@@ -934,7 +975,7 @@ end
 				if (texture(tex_depth, uv).r == 1)
 					out_color = reflection;
 
-
+				//out_color = reflection;
 			}
 		]]
 	})
