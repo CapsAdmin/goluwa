@@ -521,6 +521,8 @@ do -- structures
 			return self:ReadStructure(data, ordered)
 		end
 
+		if self:GetSize() == 0 then return end
+
 		local out = {}
 
 		for i, data in ipairs(structure) do
