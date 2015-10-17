@@ -939,7 +939,7 @@ do -- create data for vertex buffer
 					found[key] = true
 				end
 			else
-				warning(typ .. " " .. key .. " is missing from vertices", 6)
+				--warning(typ .. " " .. key .. " is missing from vertices", 6)
 			end
 		end
 
