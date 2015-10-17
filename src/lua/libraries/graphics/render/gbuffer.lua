@@ -8,6 +8,12 @@ float random(vec2 co)
 }]])
 
 render.AddGlobalShaderCode([[
+vec3 get_noise2(vec2 uv)
+{
+	return vec3(random(uv), random(uv*23.512), random(uv*6.53330));
+}]])
+
+render.AddGlobalShaderCode([[
 vec4 get_noise(vec2 uv)
 {
 	return texture(g_noise_texture, uv);
@@ -277,7 +283,7 @@ function render.DrawGBuffer(what, dist)
 end
 
 local function init(width, height)
-	if not RELOAD then
+	if not RELOAD or not render.gbuffer_fill then
 		include("lua/libraries/graphics/render/fill_gbuffer.lua", render)
 	end
 
@@ -299,9 +305,14 @@ local function init(width, height)
 	render.gbuffer_width = width
 	render.gbuffer_height = height
 
-	local noise_size = Vec2() + math.pow2floor(width)
-	if render.noise_texture:GetSize() ~= noise_size then
-		render.noise_texture = Texture(noise_size, "return vec4(random(uv*1), random(uv*2), random(uv*3), random(uv*4));")
+	local noise_size = Vec2(width, height)
+	if render.noise_texture:GetSize() ~= noise_size or RELOAD then
+		render.noise_texture = render.CreateTexture("2d")
+		render.noise_texture:SetSize(noise_size)
+		--render.noise_texture:SetInternalFormat("rgba16f")
+		render.noise_texture:SetupStorage()
+		render.SetBlendMode()
+		render.noise_texture:Shade("return vec4(random(uv), random(uv*23.512), random(uv*6.53330), random(uv*122.260));")
 		render.noise_texture:SetMinFilter("nearest")
 	end
 
@@ -330,7 +341,7 @@ local function init(width, height)
 		render.SetGlobalShaderVariable("tex_depth", function() return render.gbuffer:GetTexture("depth") end, "texture")
 		render.SetGlobalShaderVariable("tex_discard", function() return render.gbuffer_discard:GetTexture() end, "texture")
 
-		do -- setup the gbuffer fill table
+		if not render.gbuffer_fill.init then -- setup the gbuffer fill table
 			local fill = render.gbuffer_fill
 
 			function fill:BeginPass(name)
