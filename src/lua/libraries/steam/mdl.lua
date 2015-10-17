@@ -253,12 +253,21 @@ local function load_mdl(path)
 			buffer:PopPosition()
 		end
 
-		header[name .. "_count"] = nil
-		header[name .. "_offset"] = nil
+		--header[name .. "_count"] = nil
+		--header[name .. "_offset"] = nil
 
 		header[name] = out
 
 		if _debug then profiler.StopTimer() end
+	end
+
+	local function string_from_offset(offset, offset2)
+		if offset2 == 0 then return "" end
+
+		buffer:PushPosition(offset + offset2)
+		local str = buffer:ReadString()
+		buffer:PopPosition()
+		return str
 	end
 
 	header.material = {}
@@ -290,17 +299,21 @@ local function load_mdl(path)
 		buffer:Advance(14 * 4)
 	end)]]
 
+	local bone_names
+	local surface_prop_names
+
 	parse("bone", function(data, i)
 		do -- bone name
 			local offset = buffer:ReadInt()
-
-			if offset > 0 then
+			if not bone_names then
+				bone_names = {}
 				buffer:PushPosition(header.bone_offset + offset)
-					data.name = buffer:ReadString()
+					for i = 1, header.bone_count do
+						bone_names[i] = buffer:ReadString()
+					end
 				buffer:PopPosition()
-			else
-				data.name = ""
 			end
+			data.name = bone_names[i]
 		end
 
 		data.parent_bone_index = buffer:ReadInt()
@@ -338,14 +351,15 @@ local function load_mdl(path)
 
 		do -- bone name
 			local offset = buffer:ReadInt()
-
-			if offset > 0 then
+			if not surface_prop_names then
+				surface_prop_names = {}
 				buffer:PushPosition(header.bone_offset + offset)
-					data.surface_prop_name = buffer:ReadString()
+					for i = 1, header.bone_count do
+						surface_prop_names[i] = buffer:ReadString()
+					end
 				buffer:PopPosition()
-			else
-				data.surface_prop_name = ""
 			end
+			data.surface_prop_name = surface_prop_names[i]
 		end
 
 		data.contents = buffer:ReadInt()
@@ -365,15 +379,6 @@ local function load_mdl(path)
 			data.path = buffer:ReadString()
 		buffer:PopPosition()
 	end)
-
-	local function string_from_offset(offset, offset2)
-		if offset2 == 0 then return "" end
-
-		buffer:PushPosition(offset + offset2)
-		local str = buffer:ReadString()
-		buffer:PopPosition()
-		return str
-	end
 
 	parse("localseq", function(data, i)
 		do return end
@@ -558,6 +563,8 @@ local function load_vtx(path)
 						local strips = {}
 						buffer:PushPosition(stream_pos + strip_group.strip_offset)
 						for i = 1, strip_group.strip_count do
+							local stream_pos = buffer:GetPosition()
+
 							local strip = {}
 
 							strip.indices_count = buffer:ReadLong()
@@ -566,8 +573,20 @@ local function load_vtx(path)
 							strip.vertex_model_index = buffer:ReadLong()
 							strip.bone_count = buffer:ReadShort()
 							strip.flags = buffer:ReadByte()
+
 							strip.bone_state_change_count = buffer:ReadLong()
 							strip.bone_state_change_offset = buffer:ReadLong()
+
+							local bone_state_changes = {}
+							buffer:PushPosition(stream_pos + strip.bone_state_change_offset)
+							for i = 1, strip.bone_state_change_count do
+								bone_state_changes[i] = {}
+								bone_state_changes[i].hardware_id = buffer:ReadLong()
+								bone_state_changes[i].new_bone_id = buffer:ReadLong()
+							end
+							buffer:PopPosition()
+
+							strip.bone_state_changes = bone_state_changes
 
 							strip.indices = indices
 							strip.vertices = vertices
@@ -696,6 +715,10 @@ function steam.LoadModel(path, sub_model_callback)
 	local vvd = load_vvd(path)
 	local vtx = load_vtx(path)
 
+	--if path == "models/sprops/trans/wheel_b/t_wheel35.mdl" then
+	--	table.print(mdl)
+	--end
+
 	for i, body_part in ipairs(vtx.body_parts) do
 		for _, model_ in ipairs(body_part.models) do
 			for lod_index, lod_model in ipairs(model_.model_lods) do
@@ -711,13 +734,29 @@ function steam.LoadModel(path, sub_model_callback)
 
 						mesh.material = render.CreateMaterial("model")
 						mesh:SetName(path)
+						if mdl.bone[model_i] and mdl.bone[model_i].quat then -- TODO
+							--local q = mdl.bone[model_i].quat
+							--mesh.rotation_init = Quat(q.z, q.y, q.x, q.w)
+							local a = mdl.bone[model_i].rotation
+							mesh.rotation_init = Ang3(a.y, a.x, a.z)
+						end
 						--mesh.bbox = {min = mdl.hull_min*scale, max = mdl.hull_max*scale}
+
+						--if path:lower():find("airboat") then table.print(mdl.texturedir) table.print(mdl.material) print(i) end
 
 						if mdl.material[model_i] then
 							local path = mdl.material[model_i]
 
 							if not path:find("/", nil, true) then
-								path = mdl.texturedir[i].path .. path
+								for i, dir in ipairs(mdl.texturedir) do
+									if vfs.IsFile("materials/" .. vfs.FixPath(dir.path .. path) .. ".vmt") then
+										path = dir.path .. path
+										break
+									elseif vfs.IsFile("materials/" .. vfs.FixPath(dir.path .. path):lower() .. ".vmt") then
+										path = (dir.path .. path):lower()
+										break
+									end
+								end
 							end
 
 							steam.LoadMaterial(vfs.FixPath("materials/" .. path .. ".vmt"), mesh.material)
