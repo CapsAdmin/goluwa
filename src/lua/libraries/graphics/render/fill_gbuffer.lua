@@ -952,27 +952,28 @@ do
 
 			void main()
 			{
+				vec3 reflection = texture(tex_stage_]]..(#PASS.Source - 4)..[[, uv).rgb * 1.25;
+
+				if (texture(tex_depth, uv).r == 1)
+				{
+					out_color = reflection;
+					return;
+				}
+
 				float roughness = get_roughness(uv);
 				float occlusion = texture(tex_stage_]]..(#PASS.Source)..[[, uv).r;
-				vec3 reflection = texture(tex_stage_]]..(#PASS.Source - 4)..[[, uv).rgb * 1.25;
-				vec3 diffuse = get_albedo(uv);
-				vec3 specular = get_light(uv)*pow(occlusion, 1.5)/2;
-				float metallic = get_metallic(uv);
+				vec3 albedo = get_albedo(uv);
+				vec3 light = get_light(uv)*pow(occlusion, 1.5)/2;
 
+				float metallic = get_metallic(uv);
 
 				float base = 1 - dot(get_camera_dir(uv), get_world_normal(uv));
 				float exp = pow(base, 5*roughness);
 				float fresnel = exp * (1.0 - exp);
-
 				metallic += fresnel/10;
+				metallic = pow(clamp(metallic, 0, 1), 0.5);
 
-				specular = mix(specular, reflection, pow(clamp(metallic, 0, 1), 0.5));
-
-				out_color = (diffuse * specular);
-
-				if (texture(tex_depth, uv).r == 1)
-					out_color = reflection;
-
+				out_color = albedo * mix(light, reflection, metallic);
 
 				//out_color = vec3(occlusion);
 			}
