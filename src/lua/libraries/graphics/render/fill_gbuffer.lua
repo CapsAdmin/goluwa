@@ -11,7 +11,7 @@ PASS.Buffers = {
 		layout =
 		{
 			{
-				format = "rgba8",
+				format = "rgba16f",
 
 				albedo = "rgb",
 				roughness = "a",
@@ -32,7 +32,7 @@ PASS.Buffers = {
 				format = "rgba16f",
 
 				light = "rgb",
-				self_illumination = "a",
+				shadow = "a",
 			}
 		},
 	}
@@ -346,9 +346,6 @@ PASS.Stages = {
 					metallic *= lua[MetallicMultiplier = 1]+0.005;
 					roughness *= lua[RoughnessMultiplier = 1];
 
-					// self lllumination
-					self_illumination = texture(lua[SelfIlluminationTexture = render.GetWhiteTexture()], uv).r * lua[SelfIllumination = 0]*10;
-
 					light = vec3(0,0,0);
 
 					#ifdef DEBUG_NORMALS
@@ -423,7 +420,7 @@ PASS.Stages = {
 
 						float shadow_view = texture(lua[tex_shadow_map_cube = render.GetSkyTexture()], dir.xzy).r;
 
-						visibility = shadow_view < 1 ? 0: 1;
+						visibility = shadow_view;
 					}
 					else
 					{
@@ -448,13 +445,13 @@ PASS.Stages = {
 										{
 											shadow_coord = 0.5 * shadow_coord + 0.5;
 
-											visibility = shadow_coord.z - bias < texture(tex_shadow_map, shadow_coord.xy).r ? 1.0 : 0.0;
+											visibility = abs(shadow_coord.z - texture(tex_shadow_map, shadow_coord.xy).r);
 										}
 										]]..(function()
 											if i == 1 then
 												return [[else if(lua[project_from_camera = false])
 												{
-													visibility = 1;
+													visibility = 0;
 												}]]
 											end
 											return ""
@@ -498,11 +495,6 @@ PASS.Stages = {
 
 					float dot = max(dot(L, N), 0);
 					attenuation *= dot;
-
-					if (lua[light_shadow = false])
-					{
-						attenuation *= get_shadow(uv, 0.0025);
-					}
 
 					return light_color.rgb * attenuation * light_intensity;
 				}
@@ -552,7 +544,11 @@ PASS.Stages = {
 					float specular = get_specular(normalize(pos - light_view_pos), normalize(pos), -normal, roughness, 0.25);
 
 					light = specular.rrr * attenuate + attenuate;
-					self_illumination = 0;
+
+					if (lua[light_shadow = false])
+					{
+						shadow = get_shadow(uv, 0.0025);
+					}
 				}
 			]]
 		}
@@ -830,9 +826,16 @@ do
 								float fade = clamp(1.0 - (dCoords.x + dCoords.y)*1.8, 0.0, 1.0);
 
 								vec3 albedo = get_albedo(samplePos);
-								vec3 light = albedo * (sky_color + get_light(samplePos)/2) + (albedo * albedo * albedo * get_self_illumination(samplePos.xy));
+								vec3 light = albedo * (sky_color + get_light(samplePos)/2);
+								float shadow = get_shadow(samplePos) > 0.002 ? 0.5 : 1;
 
-								color = mix(sky_color, light, pow(fade*cosAngIncidence, 0.5));
+								vec3 world_normal = -get_view_normal(samplePos) * mat3(g_view);
+								vec3 sky_reflect = reflect(-get_camera_dir(uv), world_normal);
+								vec3 sky_color = texture(lua[sky_tex = render.GetSkyTexture()], sky_reflect.xyz * vec3(-1,1,1)).rgb;
+
+
+								//color = mix(sky_color, light, pow(fade*cosAngIncidence, 0.5)* get_metallic(samplePos));
+								color = albedo * mix(get_light(samplePos) * shadow / 2, sky_color, pow(clamp(get_metallic(samplePos), 0, 1), 0.5));
 							}
 							break;
 						}
@@ -890,22 +893,22 @@ do
 		end
 	end
 
-	blur(5, "min(0.000002/get_depth(uv)*pow(get_roughness(uv), 2)*50, 0.3)", "rgb16f", "0.99")
+	blur(5, "min(0.000002/get_depth(uv)*pow(get_roughness(uv), 2)*100, 0.3)", "rgb16f", "0.99")
 
 	table.insert(PASS.Source, {
 		buffer = {
 			--max_size = Vec2() + 512,
-			internal_format = "r8",
+			internal_format = "r16f",
 		},
 		source =  [[
 			const vec2 KERNEL[16] = vec2[](vec2(0.53812504, 0.18565957), vec2(0.13790712, 0.24864247), vec2(0.33715037, 0.56794053), vec2(-0.6999805, -0.04511441), vec2(0.06896307, -0.15983082), vec2(0.056099437, 0.006954967), vec2(-0.014653638, 0.14027752), vec2(0.010019933, -0.1924225), vec2(-0.35775623, -0.5301969), vec2(-0.3169221, 0.106360726), vec2(0.010350345, -0.58698344), vec2(-0.08972908, -0.49408212), vec2(0.7119986, -0.0154690035), vec2(-0.053382345, 0.059675813), vec2(0.035267662, -0.063188605), vec2(-0.47761092, 0.2847911));
-			const float SAMPLE_RAD = 2;  /// Used in main
-			const float INTENSITY = 10; /// Used in doAmbientOcclusion
-			const int ITERATIONS = 32;
+			const float SAMPLE_RAD = 0.5;  /// Used in main
+			const float INTENSITY = 20; /// Used in doAmbientOcclusion
+			const int ITERATIONS = 10;
 
 			float ssao(void)
 			{
-				vec3 p = get_view_pos(uv)*0.9994;
+				vec3 p = get_view_pos(uv)*0.995;
 				vec3 n = (get_view_normal(uv));
 				vec2 rand = get_noise(uv).xy;
 
@@ -933,12 +936,15 @@ do
 
 			void main()
 			{
-				out_color = ssao();
+				float shadow = get_shadow(uv) > 0.001 ? 0.5 : 1;
+
+				out_color = shadow * (min(ssao() + 0.4, 1));
+				out_color = pow(mix(1, out_color, pow(get_roughness(uv), 0.25)), 2);
 			}
 		]]
 	})
 
-	blur(3, "0.1", "r8", 0.2)
+	blur(3, "0.000002/get_depth(uv)*(0.1+get_shadow(uv))*300", "r16f", 0.99)
 
 	table.insert(PASS.Source, {
 		source =  [[
@@ -947,10 +953,10 @@ do
 			void main()
 			{
 				float roughness = get_roughness(uv);
-				float occlusion = pow(mix(1, texture(tex_stage_]]..(#PASS.Source)..[[, uv).r, pow(roughness, 0.25)), 2);
+				float occlusion = texture(tex_stage_]]..(#PASS.Source)..[[, uv).r;
 				vec3 reflection = texture(tex_stage_]]..(#PASS.Source - 4)..[[, uv).rgb * 1.25;
 				vec3 diffuse = get_albedo(uv);
-				vec3 specular = get_light(uv)/2;
+				vec3 specular = get_light(uv)*pow(occlusion, 1.5)/2;
 				float metallic = get_metallic(uv);
 
 
@@ -960,10 +966,7 @@ do
 
 				metallic += fresnel/10;
 
-				specular = mix(specular, reflection * occlusion, pow(min(metallic, 1), 0.5));
-
-				// self illumination
-				specular += diffuse * get_self_illumination(uv)/200;
+				specular = mix(specular, reflection, pow(clamp(metallic, 0, 1), 0.5));
 
 				out_color = (diffuse * specular);
 
@@ -971,7 +974,7 @@ do
 					out_color = reflection;
 
 
-		//out_color = vec3(metallic);
+				//out_color = vec3(occlusion);
 			}
 		]]
 	})
