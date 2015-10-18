@@ -37,7 +37,7 @@ local AUTOMATE_ME = {
 	[7] = 0.0044299121055113265,
 }
 
-	for _ = 0, 2 do
+	for _ = 0,1  do
 	for x = 0, 1 do
 	for y = 0, 1 do
 	if (x == 0 and y == 0) or y == x then goto continue end
