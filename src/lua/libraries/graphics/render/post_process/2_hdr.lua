@@ -15,7 +15,15 @@ table.insert(PASS.Source, {
 
 		void main()
 		{
-			out_color = max(pow(texture(self, uv).rgb*6, vec3(3)), vec3(0));
+			vec3 color = texture(self, uv).rgb*4;
+			if (length(color) > 1)
+			{
+				out_color = texture(self, uv).rgb;
+			}
+			else
+			{
+				out_color = vec3(0,0,0);
+			}
 		}
 	]]
 })
@@ -37,7 +45,7 @@ local AUTOMATE_ME = {
 	[7] = 0.0044299121055113265,
 }
 
-	for _ = 0,1  do
+	for _ = 0,2  do
 	for x = 0, 1 do
 	for y = 0, 1 do
 	if (x == 0 and y == 0) or y == x then goto continue end
@@ -82,9 +90,9 @@ table.insert(PASS.Source, {
 	source = [[
 		out vec3 out_color;
 
-		float gamma = 1.3;
-		float exposure = 1.6;
-		float bloom_factor = 0.0015;
+		float gamma = 1.1;
+		float exposure = 1.1;
+		float bloom_factor = 0.0005;
 		float brightMax = 1;
 
 		void main()

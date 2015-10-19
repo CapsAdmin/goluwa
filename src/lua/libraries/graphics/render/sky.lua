@@ -55,7 +55,7 @@ vec3 get_sky(vec3 ray, float depth)
 	ray = normalize(ray);
 
 	vec3 sun_direction = lua[(vec3)render.GetShaderSunDirection];
-	float intensity = lua[world_sun_intensity = 1];
+	float intensity = lua[world_sun_intensity = 1]*8;
 	vec3 sky_color = lua[world_sky_color = Vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131)];
 
 	const float surface_height = 0.99;
