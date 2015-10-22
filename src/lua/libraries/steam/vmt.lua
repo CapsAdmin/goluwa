@@ -7,7 +7,7 @@ local path_translate = {
 	Normal2Texture = "bumpmap2",
 	MetallicTexture = "envmapmask",
 	RoughnessTexture = "phongexponenttexture",
-	SelfIlluminationTexture = "selfillummask",
+	--SelfIlluminationTexture = "selfillummask",
 }
 
 local property_translate = {
@@ -20,7 +20,7 @@ local property_translate = {
 	AlbedoAlphaMetallic = {"basealphaenvmapmask", function(num) return num == 1 end},
 	RoughnessMultiplier = {"phongexponent", function(num) return 1/(-num+1)^3 end},
 	MetallicMultiplier = {"envmaptint", function(num) return type(num) == "number" and num or typex(num) == "vec3" and num.x or typex(num) == "color" and num.r end},
-	SelfIllumination = {"selfillum", function(num) return num end},
+	--SelfIllumination = {"selfillum", function(num) return num end},
 }
 
 function steam.LoadMaterial(path, material)
