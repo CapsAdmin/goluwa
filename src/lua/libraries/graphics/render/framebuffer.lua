@@ -206,7 +206,7 @@ do -- binding
 		local stack = {}
 
 		function META:Push(...)
-			table.insert(stack, current_id)
+			stack[#stack + 1] = current_id
 
 			self:Bind()
 
@@ -220,7 +220,7 @@ do -- binding
 		end
 
 		function META:Pop()
-			local id = table.remove(stack)
+			local id = stack[#stack] stack[#stack] = nil
 
 			--fb:Unbind()
 			gl.BindFramebuffer("GL_FRAMEBUFFER", id)
