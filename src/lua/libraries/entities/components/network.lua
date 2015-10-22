@@ -156,6 +156,8 @@ do
 end
 
 function COMPONENT:OnUpdate(dt)
+	if not network.IsConnected() then return end
+
 	self:UpdateVars()
 
 	if self.smooth_vars then
