@@ -72,7 +72,7 @@ vec3 compute_specular(vec3 light_dir, vec3 vertex_eye, vec3 normal, float metall
 	return color * ((dotNL * D * F * vis) * attenuation);*/
 
 	float a = max( roughness * roughness, 2e-3 );
-	float a2 = a * a;
+	float a2 = a * a + attenuation;
 
 	vec3 H = normalize(light_dir + vertex_eye);
 	float NdotH = clamp(dot(-normal,H), 0, 1.0);
@@ -88,7 +88,7 @@ vec3 compute_specular(vec3 light_dir, vec3 vertex_eye, vec3 normal, float metall
 	atten = atten - atten * horizon;
 
 	//incident light
-	vec3 spec = color * (atten * LdotN);
+	vec3 spec = color * (atten + attenuation * LdotN);
 
 	//microfacet distribution
 	float d = ( NdotH * a2 - NdotH ) * NdotH + 1.0;
@@ -105,7 +105,7 @@ vec3 compute_specular(vec3 light_dir, vec3 vertex_eye, vec3 normal, float metall
 	float F = (1 + exp2( (-5.55473 * VdotH - 6.98316) * VdotH ));
 
 	//final
-	return (D * G) * (mix(albedo, vec3(1), metallic) * F * spec);
+	return (D * G) * (F * spec);
 }
 ]])
 
@@ -393,17 +393,16 @@ PASS.Stages = {
 					roughness = texture(lua[RoughnessTexture = render.GetBlackTexture()], uv).r;
 
 
-
 					//generate roughness and metallic they're zero
 					if (roughness == 0)
 					{
 						if (metallic != 0)
 						{
-							roughness = -metallic+1;
+							roughness = pow(-metallic+1, 0.25)/1.5;
 						}
 						else
 						{
-							roughness = 0.9;//max(pow((-(length(albedo)/3) + 1), 5), 0.9);
+							roughness = 0.98;//max(pow((-(length(albedo)/3) + 1), 5), 0.9);
 							//albedo *= pow(roughness, 0.5);
 						}
 
@@ -591,7 +590,7 @@ PASS.Stages = {
 						attenuation
 					);
 
-					specular = vec3(attenuation) + specular * 2;
+					//specular = (specular ) * vec3(attenuation);
 
 					if (lua[light_shadow = false])
 					{
@@ -898,16 +897,15 @@ do
 							float fade = clamp(1.0 - (dCoords.x + dCoords.y)*1.8, 0.0, 1.0);
 
 							vec3 albedo = get_albedo(samplePos);
-							vec3 light = albedo * (sky_color + get_specular(samplePos)/2);
-							float shadow = get_shadow(samplePos) > 0.002 ? 0.5 : 1;
+							float shadow = get_shadow(samplePos) > 0.0025 ? 0.6 : 1;
 
 							vec3 world_normal = -get_view_normal(samplePos) * mat3(g_view);
 							vec3 sky_reflect = reflect(-get_camera_dir(uv), world_normal);
 							vec3 sky_color = texture(lua[sky_tex = render.GetSkyTexture()], sky_reflect.xyz * vec3(-1,1,1)).rgb;
 
-							vec3 color = albedo * mix(get_specular(samplePos) * shadow / 2, sky_color, pow(clamp(get_metallic(samplePos), 0, 1), 0.5));
+							vec3 color = albedo * mix(get_specular(samplePos) * shadow, sky_color, pow(clamp(get_metallic(samplePos), 0, 1), 0.5));
 
-							color = mix(color, compute_specular(normalAtPos, vertex_eye, normal, metallic, roughness, color*40, albedo, 1), roughness);
+							color = mix(color, compute_specular(normalAtPos, vertex_eye, normal, metallic, roughness, albedo, color*40, 1), roughness);
 
 							sample += color;
 						}
@@ -951,15 +949,20 @@ do
 					float normalization = 1.0;
 
 					float amount = ]]..source..[[;
-
+					float lol = ]]..(discard or 0.99)..[[;
 					for (float j=-RADIUS; j <= RADIUS; j++) {
 						for (float i=-RADIUS; i <= RADIUS; i++) {
-							vec2 offset = (vec2(i, j) / g_screen_size)*12*]]..i..[[*amount;
+							vec2 offset = ((vec2(i, j) / g_screen_size)*]]..(i*10)..[[*amount) * g_screen_size / 2500000;
 							float closeness = dot(center, get_view_normal(uv + offset));
-							if (closeness > ]]..(discard or 0.99)..[[)
+
+							if (closeness > lol)
 							{
 								result += texture(tex_stage_]]..#PASS.Source..[[, uv + offset).rgb * closeness;
 								normalization += closeness;
+							}
+							else
+							{
+								lol *= 0.98;
 							}
 						}
 					}
@@ -971,7 +974,7 @@ do
 		end
 	end
 
-	blur(5, "min(0.000002/get_depth(uv)*pow(get_roughness(uv), 2)*200, 0.2)", "rgb16f", "0.97")
+	blur(5, "0.000002/get_depth(uv)*100000*get_roughness(uv)", "rgb16f", "0.99")
 
 	table.insert(PASS.Source, {
 		buffer = {
@@ -1014,15 +1017,15 @@ do
 
 			void main()
 			{
-				float shadow = get_shadow(uv) > 0.00025 ? 0.5 : 1;
+				float shadow = get_shadow(uv) > 0.0025 ? 0.5 : 1;
 
 				out_color = shadow * (min(ssao() + 0.25, 1));
-				out_color = pow(mix(1, out_color, pow(get_roughness(uv), 0.25)), 2);
+				//out_color = pow(mix(1, out_color, pow(get_roughness(uv), 0.25)), 2);
 			}
 		]]
 	})
 
-	blur(3, "0.000002/get_depth(uv)*(0.1+get_shadow(uv))*200", "r16f", 0.99)
+	blur(3, "0.000002/get_depth(uv)*(0.1+get_shadow(uv))*750000", "r16f", 0.99)
 
 	table.insert(PASS.Source, {
 		source =  [[
@@ -1039,9 +1042,9 @@ do
 				}
 
 				float roughness = get_roughness(uv);
-				float occlusion = texture(tex_stage_]]..(#PASS.Source)..[[, uv).r;
+				float shadow = texture(tex_stage_]]..(#PASS.Source)..[[, uv).r;
 				vec3 albedo = get_albedo(uv);
-				vec3 light = get_specular(uv)*pow(occlusion, 1.5)/2;
+				vec3 light = get_specular(uv) * pow(shadow, 2);
 
 				float metallic = get_metallic(uv);
 
@@ -1049,10 +1052,9 @@ do
 				float exp = pow(base, 5*roughness);
 				float fresnel = exp * (1.0 - exp);
 				metallic += fresnel/10;
-				metallic = pow(clamp(metallic, 0, 1), 0.5);
+				metallic = clamp(metallic, 0, 1);
 
 				out_color = albedo * mix(light, reflection, metallic);
-				//out_color = vec3(occlusion);
 			}
 		]]
 	})
