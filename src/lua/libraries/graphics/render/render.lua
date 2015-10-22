@@ -169,9 +169,6 @@ do -- shaders
 	local log = ffi.new("char[1024]")
 
 	function render.CreateGLShader(type, source)
-		check(type, "number")
-		check(source, "string")
-
 		if not render.CheckSupport("CreateShader") then return 0 end
 
 		local shader = gl.CreateShader(type)

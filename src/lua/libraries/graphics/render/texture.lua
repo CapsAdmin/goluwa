@@ -532,6 +532,11 @@ function META:SetupStorage()
 		end
 	end
 
+	if gl.GetTextureHandleARB then
+		self.bindless_handle = gl.GetTextureHandleARB(self.id)
+		gl.MakeTextureHandleResidentARB(self.bindless_handle)
+	end
+
 	local msg = render.StopDebug()
 	if msg then
 		logn("==================================")
@@ -1009,6 +1014,7 @@ do
 end
 
 function META:Bind(location)
+	if BINDLESS then return end
 	if self.Loading then
 		self = render.GetLoadingTexture()
 	end

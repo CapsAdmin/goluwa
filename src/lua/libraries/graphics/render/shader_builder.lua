@@ -4,6 +4,8 @@ local BUILD_OUTPUT = false
 local gl = require("graphics.ffi.opengl") -- OpenGL
 local render = (...) or _G.render
 
+local BINDLESS = gl.GetTextureHandleARB
+
 -- used to figure out how to upload types
 local unrolled_lines = {
 	bool = "gl.ProgramUniform1i(render.current_program, %i, val and 1 or 0)",
@@ -15,6 +17,10 @@ local unrolled_lines = {
 	mat4 = "gl.ProgramUniformMatrix4fv(render.current_program, %i, 1, 0, ffi.cast('const float *', val))",
 	texture = "gl.ProgramUniform1i(render.current_program, %i, %i) val:Bind(%i)",
 }
+
+if BINDLESS then
+	unrolled_lines.texture = "if val.bindless_handle then gl.ProgramUniformHandleui64ARB(render.current_program, %i, val.bindless_handle) end"
+end
 
 if SRGB then
 	unrolled_lines.color = "gl.ProgramUniform4f(render.current_program, %i, math.linear2gamma(val.r), math.linear2gamma(val.g), math.linear2gamma(val.b), val.a)"
@@ -188,14 +194,18 @@ local function variables_to_string(type, variables, prepend, macro, array)
 			end
 
 			if data.type:find("sampler") then
-				local layout = ""
+				if BINDLESS then
+					table.insert(out, ("%s %s %s %s %s%s;"):format(data.varying, type, data.precision, data.type, name, array):trim())
+				else
+					local layout = ""
 
-				if render.IsExtensionSupported("GL_ARB_enhanced_layouts") or render.IsExtensionSupported("GL_ARB_shading_language_420pack") then
-					layout = ("layout(binding = %i)"):format(texture_channel)
+					if render.IsExtensionSupported("GL_ARB_enhanced_layouts") or render.IsExtensionSupported("GL_ARB_shading_language_420pack") then
+						layout = ("layout(binding = %i)"):format(texture_channel)
+					end
+
+					table.insert(out, ("%s %s %s %s %s %s%s;"):format(layout, data.varying, type, data.precision, data.type, name, array):trim())
+					texture_channel = texture_channel + 1
 				end
-
-				table.insert(out, ("%s %s %s %s %s %s%s;"):format(layout, data.varying, type, data.precision, data.type, name, array):trim())
-				texture_channel = texture_channel + 1
 			else
 				table.insert(out, ("%s %s %s %s %s%s;"):format(data.varying, type, data.precision, data.type, name, array):trim())
 			end
@@ -492,6 +502,10 @@ function render.CreateShader(data, vars)
 			end
 
 			local extensions = {}
+
+			if BINDLESS then
+				table.insert(extensions, "#extension GL_ARB_bindless_texture : enable")
+			end
 
 			if render.IsExtensionSupported("GL_ARB_shading_language_420pack") then
 				table.insert(extensions, "#extension GL_ARB_shading_language_420pack : enable")
@@ -850,8 +864,12 @@ function render.CreateShader(data, vars)
 				local line = tostring(unrolled_lines[data.val.type] or data.val.type)
 
 				if data.val.type == "texture" or data.val.type:find("sampler") then
-					line = line:format(data.id, texture_channel, texture_channel)
-					texture_channel = texture_channel + 1
+					if BINDLESS then
+						line = line:format(data.id)
+					else
+						line = line:format(data.id, texture_channel, texture_channel)
+						texture_channel = texture_channel + 1
+					end
 				else
 					line = line:format(data.id)
 				end
