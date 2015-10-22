@@ -30,12 +30,11 @@ render.InitializeGBuffer()
 
 entities.Panic()
 
-local ent = entities.CreateEntity("visual", entities.GetWorld())
-ent:SetModelPath("models/sprops/trans/wheel_b/t_wheel35.mdl")
-ent:SetAngles(Deg3(39.990, 0.000, -90.000))
+--local ent = entities.CreateEntity("visual", entities.GetWorld())
+--ent:SetModelPath("models/sprops/trans/wheel_b/t_wheel35.mdl")
+--ent:SetAngles(Deg3(39.990, 0.000, -90.000))
 
 --render.camera_3d:SetAngles(Ang3(0,0,0))
-do return end
 
 local data = vfs.Read("data/map.txt")
 data = data:gsub("Vector%(", "Vec3(")
@@ -43,7 +42,7 @@ data = data:gsub("Angle%(", "Ang3(")
 data = serializer.Decode("luadata", data)
 
 for k,v in pairs(data) do
-	if v.pos:Distance(Vec3(-8785.78125, 242.22570800781, 699.27935791016)) < 500 or v.mdl:find("bsp") then
+	if v.pos:Distance(Vec3(8755.41015625, 643.95831298828, 580.03125)) < 500 or v.mdl:find("bsp") then
 
 	if v.mdl:find("t_wheel35") then
 		print(v.ang)
