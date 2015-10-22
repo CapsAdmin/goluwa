@@ -1,5 +1,5 @@
 -- header stolen from https://code.google.com/p/lua-files!!
-
+local ffi = require("ffi")
 local header = [[
 typedef enum {
         FT_FACE_FLAG_SCALABLE           = ( 1 <<  0 ),

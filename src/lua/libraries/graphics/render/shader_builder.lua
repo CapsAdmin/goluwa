@@ -1,6 +1,7 @@
 local SOMETHING = false
 local BUILD_OUTPUT = false
 
+local ffi = require("ffi")
 local gl = require("graphics.ffi.opengl") -- OpenGL
 local render = (...) or _G.render
 
@@ -825,6 +826,7 @@ function render.CreateShader(data, vars)
 		local texture_channel = 0
 		local lua = ""
 
+		lua = lua .. "local ffi = require(\"ffi\")\n"
 		lua = lua .. "local gl = require(\"graphics.ffi.opengl\")\n"
 		lua = lua .. "local function update(self)\n"
 

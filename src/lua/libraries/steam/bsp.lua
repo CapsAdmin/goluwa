@@ -1,3 +1,4 @@
+local ffi = require("ffi")
 local steam = ... or _G.steam
 
 local scale = 0.0254

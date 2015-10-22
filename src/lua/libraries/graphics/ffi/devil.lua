@@ -1,3 +1,4 @@
+local ffi = require("ffi")
 local header = [[
 typedef enum ILenum {
 	IL_FALSE = 0,

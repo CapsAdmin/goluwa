@@ -1,5 +1,7 @@
 local console = _G.console or {}
 
+local ffi = require("ffi")
+
 local start_symbols = {
 	"%!",
 	"%.",

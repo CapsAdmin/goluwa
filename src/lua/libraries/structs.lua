@@ -1,5 +1,7 @@
 local structs = _G.structs or {}
 
+local ffi = require("ffi")
+
 function structs.Register(META)
 	local number_types = META.NumberType
 
@@ -178,7 +180,7 @@ function structs.AddOperator(META, operator, ...)
 		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
 	elseif operator == "==" then
 		local lua = [==[
-		local META, structs = ...
+		local META, structs, ffi = ...
 		META["__eq"] = function(a, b)
 				return
 				--a and
@@ -192,7 +194,7 @@ function structs.AddOperator(META, operator, ...)
 
 		lua = parse_args(META, lua, " and ")
 
-		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
+		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs, ffi)
 
 		local lua = [==[
 		local META, structs = ...
@@ -252,7 +254,7 @@ function structs.AddOperator(META, operator, ...)
 		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
 	elseif operator == "copy" then
 		local lua = [==[
-		local META, structs = ...
+		local META, structs, ffi = ...
 		META["Copy"] = function(a)
 			return
 			CTOR(
@@ -279,7 +281,7 @@ function structs.AddOperator(META, operator, ...)
 
 		lua = lua:gsub("CTOR", "structs."..META.ClassName)
 
-		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
+		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs, ffi)
 	elseif operator == "math" then
 		local args = {...}
 		local func_name = args[1]
@@ -328,7 +330,7 @@ function structs.AddOperator(META, operator, ...)
 		--end
 	elseif structs.OperatorTranslate[operator] then
 		local lua = [==[
-		local META, structs = ...
+		local META, structs, ffi = ...
 		META[structs.OperatorTranslate["OPERATOR"]] = function(a, b)
 			if type(b) == "number" then
 				return CTOR(
@@ -355,7 +357,7 @@ function structs.AddOperator(META, operator, ...)
 		lua = lua:gsub("OPERATOR", operator == "%" and "%%" or operator)
 		lua = lua:gsub("PROTECT", "a.")
 
-		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
+		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs, ffi)
 	elseif operator == "iszero" then
 		local lua = [==[
 		local META, structs = ...

@@ -1,3 +1,4 @@
+local ffi = require("ffi")
 local header = [[
 	typedef struct {} FI_MEMORY;
 	typedef struct {} FI_BITMAP;

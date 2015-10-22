@@ -1,3 +1,4 @@
+local ffi = require("ffi")
 local physics = ... or _G.physics
 local bullet = physics.bullet
 

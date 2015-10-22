@@ -1,3 +1,5 @@
+local ffi = require("ffi")
+
 local header =  [[
 typedef void * FILE;
 typedef uint64_t chtype;

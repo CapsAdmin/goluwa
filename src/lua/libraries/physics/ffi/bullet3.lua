@@ -1,3 +1,4 @@
+local ffi = require("ffi")
 local header = [[
 typedef void *btRigidBody;
 typedef void *btGeneric6DofConstraint;

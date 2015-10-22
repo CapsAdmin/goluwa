@@ -1,4 +1,7 @@
 local structs = (...) or _G.structs
+
+local ffi = require("ffi")
+
 local light_ctor
 --[[local META = {}
 

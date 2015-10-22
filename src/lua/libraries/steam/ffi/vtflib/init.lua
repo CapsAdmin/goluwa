@@ -1,3 +1,5 @@
+local ffi = require("ffi")
+
 local enums = include("enums.lua")
 local header = include("header.lua")
 

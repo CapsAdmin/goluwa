@@ -1,3 +1,4 @@
+local ffi = require("ffi")
 local physics = physics or {}
 
 physics.bullet = desire("physics.ffi.bullet3")

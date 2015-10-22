@@ -1,3 +1,4 @@
+local ffi = require("ffi")
 local surface = ... or _G.surface
 
 local freetype = desire("graphics.ffi.freetype")

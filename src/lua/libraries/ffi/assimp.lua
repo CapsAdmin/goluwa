@@ -1,3 +1,4 @@
+local ffi = require("ffi")
 local header = [[
 typedef struct{
 	float x,y;

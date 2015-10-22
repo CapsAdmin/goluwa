@@ -1,5 +1,7 @@
+
 local render = ... or _G.render
 local gl = require("graphics.ffi.opengl")
+local ffi = require("ffi")
 
 local TOENUM = function(str)
 	return "GL_" .. str:upper()

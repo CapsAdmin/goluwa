@@ -1,3 +1,4 @@
+local ffi = require("ffi")
 local header = [[
 typedef void (*GLFWglproc)(void);
 typedef struct GLFWmonitor GLFWmonitor;

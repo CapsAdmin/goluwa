@@ -1,5 +1,7 @@
 -- header stolen from https://code.google.com/p/lua-files!!
 
+local ffi = require("ffi")
+
 local header = [[
 static const int ENET_VERSION_MAJOR = 1;
 static const int ENET_VERSION_MINOR = 3;

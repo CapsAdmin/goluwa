@@ -1,3 +1,4 @@
+local ffi = require("ffi")
 local steam = ... or steam
 
 if EXTERNAL_OPENGL_DEBUGGER then return end

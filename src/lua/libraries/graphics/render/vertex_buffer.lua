@@ -1,3 +1,4 @@
+local ffi = require("ffi")
 local gl = require("graphics.ffi.opengl")
 local render = (...) or _G.render
 

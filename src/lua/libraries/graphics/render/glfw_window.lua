@@ -1,4 +1,4 @@
-jit.off(true, true)
+local ffi = require("ffi")
 local gl = require("graphics.ffi.opengl") -- OpenGL
 local glfw = require("graphics.ffi.glfw") -- window manager
 

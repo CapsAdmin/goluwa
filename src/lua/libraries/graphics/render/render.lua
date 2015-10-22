@@ -1,3 +1,4 @@
+local ffi = require("ffi")
 local gl = desire("graphics.ffi.opengl") -- OpenGL
 
 if not gl then return end

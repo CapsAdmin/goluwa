@@ -1,5 +1,7 @@
 local META = ...
 
+local ffi = require("ffi")
+
 -- <cmtptr> CapsAdmin, http://codepad.org/uN7qlQTm
 local function swap_endian(num, size)
 	local result = 0

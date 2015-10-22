@@ -1,3 +1,4 @@
+local ffi = require("ffi")
 local header = [[extern __attribute__((dllexport)) const char * SDL_GetPlatform (void);
 typedef int ptrdiff_t;
 typedef unsigned int size_t;

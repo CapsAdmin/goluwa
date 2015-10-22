@@ -1,3 +1,4 @@
+local ffi = require("ffi")
 local header = [[
 typedef	struct SNDFILE_tag	SNDFILE ;
 typedef __int64		sf_count_t ;

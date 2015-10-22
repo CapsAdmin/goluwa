@@ -1,5 +1,7 @@
 local system = _G.system or {}
 
+local ffi = require("ffi")
+
 do
 	system.run = true
 

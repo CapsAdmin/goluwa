@@ -1,15 +1,18 @@
+do
+	local ffi = require("ffi")
 
-if WINDOWS then
-	ffi.cdef[[int _putenv_s(const char *var_name, const char *new_value)]]
+	if WINDOWS then
+		ffi.cdef[[int _putenv_s(const char *var_name, const char *new_value)]]
 
-	function os.setenv(key, val)
-		ffi.C._putenv_s(key, val)
-	end
-else
-	ffi.cdef[[int setenv(const char *var_name, const char *new_value, int change_flag)]]
+		function os.setenv(key, val)
+			ffi.C._putenv_s(key, val)
+		end
+	else
+		ffi.cdef[[int setenv(const char *var_name, const char *new_value, int change_flag)]]
 
-	function os.setenv(key, val, flag)
-		ffi.C.setenv(key, val, flag or 0)
+		function os.setenv(key, val, flag)
+			ffi.C.setenv(key, val, flag or 0)
+		end
 	end
 end
 

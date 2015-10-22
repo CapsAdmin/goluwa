@@ -5,6 +5,8 @@
 -- http://connect.creativelabs.com/openal/Downloads/oalinst.zip
 -- and run the executable from inside of it (I've seen couple of games use it).
 
+local ffi = require("ffi")
+
 local header = [[
 
 typedef struct ALCdevice_struct ALCdevice;

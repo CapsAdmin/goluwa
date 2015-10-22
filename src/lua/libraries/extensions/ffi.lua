@@ -1,4 +1,5 @@
-_G.ffi = require("ffi")
+--_G.ffi = require("ffi")
+local ffi = require("ffi")
 
 _OLD_G.ffi_load = _OLD_G.ffi_load or ffi.load
 

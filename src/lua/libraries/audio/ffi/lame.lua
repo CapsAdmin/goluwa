@@ -1,4 +1,4 @@
-
+local ffi = require("ffi")
 local header = [[
 typedef void(*lame_report_function)(const char *format, va_list ap);
 typedef enum vbr_mode_e { vbr_off = 0, vbr_mt, vbr_rh, vbr_abr, vbr_mtrh, vbr_max_indicator, vbr_default = vbr_mtrh } vbr_mode;

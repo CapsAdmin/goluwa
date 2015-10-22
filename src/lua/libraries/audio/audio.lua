@@ -1,3 +1,4 @@
+local ffi = require("ffi")
 local al = desire("audio.ffi.openal.al")
 local alc = desire("audio.ffi.openal.alc")
 

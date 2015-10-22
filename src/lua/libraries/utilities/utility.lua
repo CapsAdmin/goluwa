@@ -216,6 +216,7 @@ function utility.SimpleLineIntersectAABB(from, to, min, max)
 end
 
 do
+	local ffi = require("ffi")
 	local ok, lib = pcall(ffi.load, "lz4")
 
 	if ok then
@@ -575,6 +576,7 @@ function utility.FlagsToTable(flags, valid_flags)
 end
 
 do -- long long
+	local ffi = require("ffi")
 	ffi.cdef [[
 	  typedef union {
 		char b[8];

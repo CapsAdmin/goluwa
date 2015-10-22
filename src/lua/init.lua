@@ -163,8 +163,6 @@ do -- file system
 
 		include = function() end
 
-		ffi = require("ffi")
-
 		dofile(e.SRC_FOLDER .. "lua/libraries/extensions/globals.lua")
 		dofile(e.SRC_FOLDER .. "lua/libraries/extensions/debug.lua")
 		dofile(e.SRC_FOLDER .. "lua/libraries/extensions/string.lua")

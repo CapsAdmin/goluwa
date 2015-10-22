@@ -1,3 +1,4 @@
+local ffi = require("ffi")
 local lib = desire("network.ffi.enet")
 
 if not lib then return end
