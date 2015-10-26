@@ -116,6 +116,7 @@ function steam.GetSourceGames()
 
 					tbl.game_dir = game_dir
 
+
 					if tbl.filesystem then
 						local fixed = {}
 
@@ -136,6 +137,12 @@ function steam.GetSourceGames()
 								end
 
 								if not done[v] and not done[v.."/"] then
+
+									if tbl.filesystem.steamappid == 4000 then
+										-- is there an internal fix in gmod for this?
+										v = v:gsub("GarrysMod/hl2/", "GarrysMod/sourceengine/")
+									end
+
 									table.insert(fixed, v)
 									done[v] = true
 								end
@@ -166,6 +173,7 @@ function steam.MountSourceGame(game_info)
 
 	if type(game_info) == "string" then
 		str_game_info = game_info
+
 		game_info = steam.FindSourceGame(str_game_info)
 	end
 
@@ -246,81 +254,77 @@ function steam.UnmountSourceGame(game_info)
 end
 
 
-local translate = {
-	["counter-strike: source"] = 240,
-	["css"] = 240,
-	["half-life: source"] = 280,
-	["hls"] = 280,
-	["day of defeat: source"] = 300,
-	["dods"] = 300,
-	["half-life 2: deathmatch"] = 320,
-	["hl2dm"] = 320,
-	["half-life 2: lost coast"] = 220,
-	["hl2lc"] = 220,
-	["half-life deathmatch: source"] = 360,
-	["hldm"] = 360,
-	["half-life 2: episode one"] = 380,
-	["hl2e1"] = 380,
-	["portal"] = 400,
-	["half-life 2: episode two"] = 420,
-	["hl2ep2"] = 420,
-	["team fortress 2"] = 440,
-	["tf2"] = 440,
-	["left 4 dead"] = 500,
-	["l4d2"] = 550,
-	["left 4 dead 2"] = 550,
-	["dota 2"] = 570,
-	["portal 2"] = 620,
-	["alien swarm"] = 630,
-	["counter-strike: global offensive"] = 730,
-	["csgo"] = 730,
-	["dota 2"] = 570,
-	["gmod"] = 4000	,
-	["garrysmod"] = 4000,
-}
+do
+	local translate = {
+		[630] = {"alien swarm", "as"},
+		[420] = {"hl2ep2", "half-life 2: episode two", "ep2"},
+		[320] = {"hl2dm", "half-life 2: deathmatch"},
+		[240] = {"css", "counter-strike: source"},
+		[730] = {"counter-strike: global offensive", "csgo"},
+		[360] = {"hldm", "hl1dm", "half-life deathmatch: source"},
+		[4000] = {"gmod", "gm", "garrysmod", "garrys mod"},
+		[550] = {"left 4 dead 2", "l4d2"},
+		[280] = {"half-life: source", "hls"},
+		[500] = {"left 4 dead"},
+		[220] = {"half-life 2: lost coast", "hl2lc"},
+		[400] = {"portal"},
+		[300] = {"day of defeat: source", "dods", "dod"},
+		[380] = {"half-life 2: episode one", "hl2e1", "ep1"},
+		[570] = {"dota 2", "dota"},
+		[440] = {"tf2", "team fortress 2"},
+		[620] = {"portal 2"},
+	}
 
-local name_translate = {
-	["ep1"] = "episodic",
-}
+	local temp = {}
 
-function steam.FindSourceGame(name)
-	local games = steam.GetSourceGames()
-
-	if type(name) == "number" then
-		for i, game_info in ipairs(games) do
-			if game_info.filesystem.steamappid == name then
-				return game_info
-			end
+	for k, v in pairs(translate) do
+		for _, name in ipairs(v) do
+			temp[name] = k
 		end
-	else
-		local id = translate[name:lower()]
+	end
 
-		if id then
+	translate = temp
+
+	function steam.FindSourceGame(name)
+		local games = steam.GetSourceGames()
+
+		if type(name) == "number" then
 			for i, game_info in ipairs(games) do
-				if game_info.filesystem.steamappid == id then
+				if game_info.filesystem.steamappid == name then
+					return game_info
+				end
+			end
+		else
+			local id = translate[name:lower()]
+
+			if id then
+				for i, game_info in ipairs(games) do
+					if game_info.filesystem.steamappid == id then
+						return game_info
+					end
+				end
+			end
+
+			for i, game_info in ipairs(games) do
+				if game_info.game:lower() == name then
+					return game_info
+				end
+			end
+
+			for i, game_info in ipairs(games) do
+				if game_info.game:compare(name) then
+					return game_info
+				end
+			end
+
+			for i, game_info in ipairs(games) do
+				if game_info.filesystem.searchpaths.mod and game_info.filesystem.searchpaths.mod:compare(name) then
 					return game_info
 				end
 			end
 		end
-
-		for i, game_info in ipairs(games) do
-			if game_info.game:lower() == name then
-				return game_info
-			end
-		end
-
-		for i, game_info in ipairs(games) do
-			if game_info.game:compare(name) then
-				return game_info
-			end
-		end
-
-		for i, game_info in ipairs(games) do
-			if game_info.filesystem.searchpaths.mod and game_info.filesystem.searchpaths.mod:compare(name) then
-				return game_info
-			end
-		end
 	end
+
 end
 
 function steam.MountSourceGames()
@@ -348,6 +352,7 @@ local mount_info = {
 	["jakobson"] = {"dear esther"},
 	["donnelley"] = {"dear esther"},
 	["paul"] = {"dear esther"},
+
 	["aramaki_4d"] = {"team fortress 2", "garry's mod"},
 	["de_overpass"] = {"counter-strike: global offensive"},
 	["sp_a4_finale1"] = {"portal 2"},
