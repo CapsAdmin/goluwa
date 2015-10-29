@@ -140,7 +140,7 @@ function steam.GetSourceGames()
 
 									if tbl.filesystem.steamappid == 4000 then
 										-- is there an internal fix in gmod for this?
-										v = v:gsub("GarrysMod/hl2/", "GarrysMod/sourceengine/")
+										v = v:gsub("GarrysMod/hl2", "GarrysMod/sourceengine")
 									end
 
 									table.insert(fixed, v)
