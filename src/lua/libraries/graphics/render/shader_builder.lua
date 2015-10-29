@@ -1,4 +1,3 @@
-local SOMETHING = false
 local BUILD_OUTPUT = false
 
 local ffi = require("ffi")
@@ -337,26 +336,21 @@ function render.CreateShader(data, vars)
 
 		local source = build_output.vertex.source
 
-		if SOMETHING then
-			print(variables_to_string("out", build_output.vertex.out))
-			source = replace_field(source, "OUT3", variables_to_string("out", build_output.vertex.out))
-		else
-			-- declare them as
-			-- out highp vec3 glw_out_foo;
-			source = replace_field(source, "OUT", variables_to_string("out", build_output.vertex.out, reserve_prepend))
+		-- declare them as
+		-- out highp vec3 glw_out_foo;
+		source = replace_field(source, "OUT", variables_to_string("out", build_output.vertex.out, reserve_prepend))
 
-			-- and then in main do
-			-- glw_out_normal = normal;
-			-- to avoid name conflicts
-			local vars = {}
+		-- and then in main do
+		-- glw_out_normal = normal;
+		-- to avoid name conflicts
+		local vars = {}
 
-			for i, v in pairs(build_output.vertex.out) do
-				local name = next(v)
-				table.insert(vars, ("\t%s = %s;"):format(reserve_prepend .. name, name))
-			end
-
-			source = replace_field(source, "OUT2", table.concat(vars, "\n"))
+		for i, v in pairs(build_output.vertex.out) do
+			local name = next(v)
+			table.insert(vars, ("\t%s = %s;"):format(reserve_prepend .. name, name))
 		end
+
+		source = replace_field(source, "OUT2", table.concat(vars, "\n"))
 
 		build_output.vertex.source = source
 	end
