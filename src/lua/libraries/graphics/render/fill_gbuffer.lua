@@ -281,7 +281,7 @@ PASS.Stages = {
 				{
 					if (lua[AlphaTest = false])
 					{
-						return alpha*alpha < 0.25;
+						return alpha*alpha < (-gl_FragDepth+1)/20;
 					}
 
 					const vec3 magic = vec3( 0.06711056, 0.00583715, 52.9829189 );
@@ -984,7 +984,7 @@ do
 		source =  [[
 			const vec2 KERNEL[16] = vec2[](vec2(0.53812504, 0.18565957), vec2(0.13790712, 0.24864247), vec2(0.33715037, 0.56794053), vec2(-0.6999805, -0.04511441), vec2(0.06896307, -0.15983082), vec2(0.056099437, 0.006954967), vec2(-0.014653638, 0.14027752), vec2(0.010019933, -0.1924225), vec2(-0.35775623, -0.5301969), vec2(-0.3169221, 0.106360726), vec2(0.010350345, -0.58698344), vec2(-0.08972908, -0.49408212), vec2(0.7119986, -0.0154690035), vec2(-0.053382345, 0.059675813), vec2(0.035267662, -0.063188605), vec2(-0.47761092, 0.2847911));
 			const float SAMPLE_RAD = 0.75;  /// Used in main
-			const float INTENSITY = 20; /// Used in doAmbientOcclusion
+			const float INTENSITY = 10; /// Used in doAmbientOcclusion
 			const int ITERATIONS = 10;
 
 			float ssao(void)
@@ -1048,13 +1048,15 @@ do
 
 				float metallic = get_metallic(uv);
 
-				float base = 1 - dot(get_camera_dir(uv), get_world_normal(uv));
+				/*float base = 1 - dot(get_camera_dir(uv), get_world_normal(uv));
 				float exp = pow(base, 5*roughness);
 				float fresnel = exp * (1.0 - exp);
 				metallic += fresnel/10;
-				metallic = clamp(metallic, 0, 1);
+				metallic = clamp(metallic, 0, 1);*/
 
-				out_color = albedo * mix(light, reflection, metallic);
+				vec3 final = albedo * mix(light, reflection, metallic);
+
+				out_color = final;
 			}
 		]]
 	})
