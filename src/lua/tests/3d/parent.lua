@@ -9,23 +9,19 @@ parent:SetPosition(render.camera_3d:GetPosition())
 parent:SetAngles(Ang3(0,0,0))
 parent:SetScale(Vec3(1,1,1))
 
+console.RunString("mount gmod")
 
 local materials = {}
-local dir = "C:/Program Files/Marmoset Toolbag 2/data/mat/textures/"
 
-for _, file_name in pairs(vfs.Find(dir)) do
-	local name = file_name:match("(.+)_")
-	local type = file_name:match(".+_(.+)%.")
-
-	materials[name] = materials[name]  or {}
-	materials[name][type] = dir .. file_name
+for i = 1, 50 do
+	materials[i] = Texture(Vec2()+32, "return vec4(random(uv*1), random(uv*2), random(uv*3), random(uv*4));")
 end
 
 
 do
 	local parent = parent
 
-	for i = 1, 4000 do
+	for i = 1, 20000 do
 
 		local child = entities.CreateEntity("visual", parent)
 		child:SetPosition(Vec3(0, 2, 0))
@@ -33,19 +29,12 @@ do
 		child:SetScale(Vec3(1, 1, 1))
 		child:SetModelPath("models/cube.obj")
 
-
 		local mat = render.CreateMaterial("model")
 
-		local info = table.random(materials)
-
-		--mat:SetAlbedoTexture(render.GetWhiteTexture() or Texture(1,1):Fill(function() return math.random(255), math.random(255), math.random(255), 255 end) or Texture("sponza/textures_pbr/Sponza_Ceiling_diffuse.tga"))
-		mat:SetAlbedoTexture(Texture(info.d))
-		mat:SetNormalTexture(Texture(info.n))
-		mat:SetRoughnessTexture(Texture(info.s))
-		mat:SetMetallicTexture(Texture(info.g))
-
-		--mat:SetRoughnessMultiplier(y/max)
-		--mat:SetMetallicMultiplier(x/max)
+		mat:SetAlbedoTexture(table.random(materials))
+		mat:SetNormalTexture(table.random(materials))
+		mat:SetRoughnessTexture(table.random(materials))
+		mat:SetMetallicTexture(table.random(materials))
 
 		child:SetMaterialOverride(mat)
 
@@ -53,7 +42,7 @@ do
 		parent = child
 	end
 end
-
+do return end
 local start = system.GetElapsedTime()
 
 parent:BuildChildrenList()
