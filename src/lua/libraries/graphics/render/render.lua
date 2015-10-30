@@ -250,15 +250,10 @@ do -- shaders
 		local last
 		local last2
 
-		function render.BindVertexArray(id, id2)
-			if last ~= id or last2 ~= id2 then
+		function render.BindVertexArray(id)
+			if last ~= id then
 				gl.BindVertexArray(id)
 				last = id
-
-				if id2 then
-					gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", id2)
-					last2 = id2
-				end
 			end
 		end
 	end
