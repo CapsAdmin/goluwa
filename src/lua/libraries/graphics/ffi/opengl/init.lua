@@ -33275,44 +33275,44 @@ function gl.Initialize(get_proc_address)
 					last = self
 				end
 			end
-			function META:ElementBuffer(vaobj, buffer)
-				bind(self) return gl.VertexArrayElementBuffer(vaobj, buffer)
+			function META:ElementBuffer(buffer)
+				bind(self) return gl.VertexElementBuffer(buffer)
 			end
-			function META:DisableAttrib(vaobj, index)
-				bind(self) return gl.DisableVertexArrayAttrib(vaobj, index)
+			function META:DisableAttrib(index)
+				bind(self) return gl.DisableVertexAttrib(index)
 			end
-			function META:AttribFormat(vaobj, attribindex, size, type, normalized, relativeoffset)
-				bind(self) return gl.VertexArrayAttribFormat(vaobj, attribindex, size, type, normalized, relativeoffset)
+			function META:AttribFormat(attribindex, size, type, normalized, relativeoffset)
+				bind(self) return gl.VertexAttribFormat(attribindex, size, type, normalized, relativeoffset)
 			end
-			function META:AttribLFormat(vaobj, attribindex, size, type, relativeoffset)
-				bind(self) return gl.VertexArrayAttribLFormat(vaobj, attribindex, size, type, relativeoffset)
+			function META:AttribLFormat(attribindex, size, type, relativeoffset)
+				bind(self) return gl.VertexAttribLFormat(attribindex, size, type, relativeoffset)
 			end
-			function META:GetIndexediv(vaobj, index, pname, param)
-				bind(self) return gl.GetVertexArrayIndexediv(vaobj, index, pname, param)
+			function META:GetIndexediv(index, pname, param)
+				bind(self) return gl.GetVertexIndexediv(index, pname, param)
 			end
-			function META:AttribIFormat(vaobj, attribindex, size, type, relativeoffset)
-				bind(self) return gl.VertexArrayAttribIFormat(vaobj, attribindex, size, type, relativeoffset)
+			function META:AttribIFormat(attribindex, size, type, relativeoffset)
+				bind(self) return gl.VertexAttribIFormat(attribindex, size, type, relativeoffset)
 			end
-			function META:AttribBinding(vaobj, attribindex, bindingindex)
-				bind(self) return gl.VertexArrayAttribBinding(vaobj, attribindex, bindingindex)
+			function META:AttribBinding(attribindex, bindingindex)
+				bind(self) return gl.VertexAttribBinding(attribindex, bindingindex)
 			end
-			function META:VertexBuffers(vaobj, first, count, buffers, offsets, strides)
-				bind(self) return gl.VertexArrayVertexBuffers(vaobj, first, count, buffers, offsets, strides)
+			function META:VertexBuffers(first, count, buffers, offsets, strides)
+				bind(self) return gl.VertexVertexBuffers(first, count, buffers, offsets, strides)
 			end
-			function META:BindingDivisor(vaobj, bindingindex, divisor)
-				bind(self) return gl.VertexArrayBindingDivisor(vaobj, bindingindex, divisor)
+			function META:BindingDivisor(bindingindex, divisor)
+				bind(self) return gl.VertexBindingDivisor(bindingindex, divisor)
 			end
-			function META:EnableAttrib(vaobj, index)
-				bind(self) return gl.EnableVertexArrayAttrib(vaobj, index)
+			function META:EnableAttrib(index)
+				bind(self) return gl.EnableVertexAttribArray(index)
 			end
-			function META:Getiv(vaobj, pname, param)
-				bind(self) return gl.GetVertexArrayiv(vaobj, pname, param)
+			function META:Getiv(pname, param)
+				bind(self) return gl.GetVertexiv(pname, param)
 			end
-			function META:GetIndexed64iv(vaobj, index, pname, param)
-				bind(self) return gl.GetVertexArrayIndexed64iv(vaobj, index, pname, param)
+			function META:GetIndexed64iv(index, pname, param)
+				bind(self) return gl.GetVertexIndexed64iv(index, pname, param)
 			end
-			function META:VertexBuffer(vaobj, bindingindex, buffer, offset, stride)
-				bind(self) return gl.VertexArrayVertexBuffer(vaobj, bindingindex, buffer, offset, stride)
+			function META:VertexBuffer(bindingindex, buffer, offset, stride)
+				bind(self) return gl.BindVertexBuffer(bindingindex, buffer, offset, stride)
 			end
 			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
@@ -33645,7 +33645,7 @@ function gl.Initialize(get_proc_address)
 				local last
 				function bind(self)
 					if self ~= last then
-						gl.BindBuffer(self.id)
+						gl.BindBuffer(self.target, self.id)
 					end
 					last = self
 				end
@@ -33653,47 +33653,47 @@ function gl.Initialize(get_proc_address)
 			function META:CreateBuffers(n, buffers)
 				bind(self) return gl.CreateBuffers(n, self.ids)
 			end
-			function META:ClearData(target, internalformat, format, type, data)
-				bind(self) return gl.ClearBufferData(target, internalformat, format, type, data)
+			function META:ClearData(internalformat, format, type, data)
+				bind(self) return gl.ClearBufferData(self.target, internalformat, format, type, data)
 			end
-			function META:Data(target, size, data, usage)
-				bind(self) return gl.BufferData(target, size, data, usage)
+			function META:Data(size, data, usage)
+				bind(self) return gl.BufferData(self.target, size, data, usage)
 			end
-			function META:Map(target, access)
-				bind(self) return gl.MapBuffer(target, access)
+			function META:Map(access)
+				bind(self) return gl.MapBuffer(self.target, access)
 			end
-			function META:GetPointerv(target, pname, params)
-				bind(self) return gl.GetBufferPointerv(target, pname, params)
+			function META:GetPointerv(pname, params)
+				bind(self) return gl.GetBufferPointerv(self.target, pname, params)
 			end
-			function META:SetSubData(target, offset, size, data)
-				bind(self) return gl.BufferSubData(target, offset, size, data)
+			function META:SetSubData(offset, size, data)
+				bind(self) return gl.BufferSubData(self.target, offset, size, data)
 			end
-			function META:MapRange(target, offset, length, access)
-				bind(self) return gl.MapBufferRange(target, offset, length, access)
+			function META:MapRange(length, access)
+				bind(self) return gl.self.self.MapBufferRange(target, offset, length, access)
 			end
-			function META:GetParameteri64v(target, pname, params)
-				bind(self) return gl.GetBufferParameteri64v(target, pname, params)
+			function META:GetParameteri64v(pname, params)
+				bind(self) return gl.GetBufferParameteri64v(self.target, pname, params)
 			end
-			function META:FlushMappedRange(target, offset, length)
-				bind(self) return gl.FlushMappedBufferRange(target, offset, length)
+			function META:FlushMappedRange(offset, length)
+				bind(self) return gl.FlushMappedBufferRange(self.target, offset, length)
 			end
-			function META:GetSubData(target, offset, size, data)
-				bind(self) return gl.GetBufferSubData(target, offset, size, data)
+			function META:GetSubData(offset, size, data)
+				bind(self) return gl.GetBufferSubData(self.target, offset, size, data)
 			end
-			function META:Storage(target, size, data, flags)
-				bind(self) return gl.BufferStorage(target, size, data, flags)
+			function META:Storage(size, data, flags)
+				bind(self) return gl.self.BufferStorage(target, size, data, flags)
 			end
 			function META:CopySubData(readTarget, writeTarget, readOffset, writeOffset, size)
 				bind(self) return gl.CopyBufferSubData(readTarget, writeTarget, readOffset, writeOffset, size)
 			end
-			function META:GetParameteriv(target, pname, params)
-				bind(self) return gl.GetBufferParameteriv(target, pname, params)
+			function META:GetParameteriv(pname, params)
+				bind(self) return gl.GetBufferParameteriv(self.target, pname, params)
 			end
-			function META:ClearSubData(target, internalformat, offset, size, format, type, data)
-				bind(self) return gl.ClearBufferSubData(target, internalformat, offset, size, format, type, data)
+			function META:ClearSubData(internalformat, offset, size, format, type, data)
+				bind(self) return gl.ClearBufferSubData(self.target, internalformat, offset, size, format, type, data)
 			end
-			function META:Unmap(target)
-				bind(self) return gl.UnmapBuffer(target)
+			function META:Unmap()
+				bind(self) return gl.UnmapBuffer(self.target)
 			end
 			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
@@ -33703,9 +33703,10 @@ function gl.Initialize(get_proc_address)
 				gl.DeleteBuffers(1, temp)
 			end
 			META.not_dsa = true
-			function gl.CreateBuffer()
+			function gl.CreateBuffer(target)
 				local self = setmetatable({}, META)
 				self.id = gl.GenBuffer()
+				self.target = target -- non dsa specific
 				return self
 			end
 		end
