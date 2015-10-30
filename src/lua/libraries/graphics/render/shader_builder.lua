@@ -46,7 +46,7 @@ do -- extend typeinfo
 	-- add some extra information
 	for k,v in pairs(type_info) do
 		v.size = ffi.sizeof(v.type)
-		v.enum_type = gl.e["GL_" .. v.type:upper()]
+		v.enum_type = "GL_" .. v.type:upper()
 		v.real_type = "glw_glsl_" ..k
 	end
 
@@ -653,27 +653,30 @@ function render.CreateShader(data, vars)
 	end
 
 	local ok, prog = pcall(render.CreateGLProgram, function(prog)
-		local vertex_attributes = {}
+		local info = {}
+
+		info.attributes = {}
+		info.size = build_output.vertex.vtx_atrb_size
+
 		local pos = 0
 
 		for i, data in pairs(build_output.vertex.vtx_info) do
 			gl.BindAttribLocation(prog, i - 1, data.name)
 
-			vertex_attributes[i] = {
-				arg_count = data.info.arg_count,
-				enum = data.info.enum_type,
-				stride = build_output.vertex.vtx_atrb_size,
-				type_stride = ffi.cast("void*", data.info.size * pos),
+			info.attributes[i] = {
 				location = i - 1,
+				row_length = data.info.arg_count,
+				row_offset = data.info.size * pos,
+				number_type = data.info.enum_type,
 			}
 
 			pos = pos + data.info.arg_count
 		end
 
-		self.vertex_attributes = vertex_attributes
+		self.vao_info = info
 
 		if BUILD_OUTPUT then
-			serializer.WriteFile("luadata", "shader_builder_output/" .. shader_id .. "/vertex_attributes.lua", vertex_attributes)
+			serializer.WriteFile("luadata", "shader_builder_output/" .. shader_id .. "/vao_info.lua", info)
 		end
 	end, unpack(shaders))
 
@@ -1000,7 +1003,7 @@ do -- create data for vertex buffer
 	end
 
 	function META:GetVertexAttributes()
-		return self.vertex_attributes
+		return self.vao_info
 	end
 
 	function META:CreateVertexBuffer(vertices, indices, is_valid_table)

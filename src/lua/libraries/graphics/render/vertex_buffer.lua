@@ -35,13 +35,12 @@ function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
 	checkx(shader, "shader")
 	--check(vertices, "cdata", "table")
 	--check(indices, "cdata", "table", "number", "nil")
-
 	local self = prototype.CreateObject(META)
 	self:SetMode(self:GetMode())
-	self.vertices_id = gl.GenBuffer()
-	self.indices_id = gl.GenBuffer()
-	self.vao_id = gl.GenVertexArray()
-	self.vertex_attributes = shader:GetVertexAttributes()
+	self.vertex_buffer = gl.CreateBuffer()
+	self.element_buffer = gl.CreateBuffer()
+	self.vertex_array = gl.CreateVertexArray()
+	self.vertex_array_info = shader:GetVertexAttributes()
 
 	if vertices then
 		self:UpdateBuffer(shader:CreateBuffersFromTable(vertices, indices, is_valid_table))
@@ -51,8 +50,11 @@ function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
 end
 
 function META:OnRemove()
-	gl.DeleteBuffers(1, ffi.new("GLuint[1]", self.vertices_id))
-	gl.DeleteBuffers(1, ffi.new("GLuint[1]", self.indices_id))
+	self.vertex_buffer:Unmap()
+	self.vertex_buffer:Delete()
+
+	self.element_buffer:Unmap()
+	self.element_buffer:Delete()
 end
 
 function META:Draw(count)
@@ -63,24 +65,20 @@ function META:Draw(count)
 		self.Shader:Bind()
 	end
 
-	render.BindVertexArray(self.vao_id)
-	--render.BindArrayBuffer(self.vertices_id)
-	gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
+	gl.BindVertexArray(self.vertex_array.id)
 	gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_INT", nil)
 
-	render.vertex_draw_count = render.vertex_draw_count + self.vertices_length
-	render.draw_call_count = render.draw_call_count + 1
+	--render.vertex_draw_count = render.vertex_draw_count + self.vertices_length
+	--render.draw_call_count = render.draw_call_count + 1
 end
 
 local function setup_vertex_array(self)
 	if not self.setup_vao and self.Indices and self.Vertices then
-		gl.BindBuffer("GL_ARRAY_BUFFER", self.vertices_id)
-		render.BindVertexArray(self.vao_id)
-			for _, data in ipairs(self.vertex_attributes) do
-				gl.EnableVertexAttribArray(data.location)
-				gl.VertexAttribPointer(data.location, data.arg_count, data.enum, false, data.stride, data.type_stride)
-			end
-		render.BindVertexArray(0)
+		for _, data in ipairs(self.vertex_array_info.attributes) do
+			self.vertex_array:AttribFormat(data.location, data.row_length, data.number_type, false, data.row_offset)
+			self.vertex_array:AttribBinding(data.location, 0)
+			self.vertex_array:EnableAttrib(data.location)
+		end
 		self.setup_vao = true
 	end
 end
@@ -90,11 +88,11 @@ function META:SetVertices(vertices)
 
 	self.vertices_length = vertices:GetLength()
 
-	gl.BindBuffer("GL_ARRAY_BUFFER", self.vertices_id)
-	gl.BufferData("GL_ARRAY_BUFFER", vertices:GetSize(), vertices:GetPointer(), "GL_STATIC_DRAW")
-	gl.BindBuffer("GL_ARRAY_BUFFER", 0)
+	self.vertex_buffer:Data(vertices:GetSize(), vertices:GetPointer(), "GL_DYNAMIC_DRAW")
 
 	setup_vertex_array(self)
+
+	self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.vertex_array_info.size)
 end
 
 function META:SetIndices(indices)
@@ -102,11 +100,11 @@ function META:SetIndices(indices)
 
 	self.indices_length = indices:GetLength() -- needed for drawing
 
-	gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
-	gl.BufferData("GL_ELEMENT_ARRAY_BUFFER", indices:GetSize(), indices:GetPointer(), "GL_STATIC_DRAW")
-	gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", 0)
+	self.element_buffer:Data(indices:GetSize(), indices:GetPointer(), "GL_DYNAMIC_DRAW")
 
 	setup_vertex_array(self)
+
+	self.vertex_array:ElementBuffer(self.element_buffer.id)
 end
 
 function META:UpdateBuffer(vertices, indices)
@@ -117,7 +115,7 @@ function META:UpdateBuffer(vertices, indices)
 		self:SetVertices(vertices)
 	end
 
-	if indices and self.UpdateIndices then
+	if indices then
 		self:SetIndices(indices)
 	end
 end
