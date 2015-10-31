@@ -72,7 +72,7 @@ function render.DrawScene(skip_2d)
 	render.vertex_draw_count = 0
 	render.draw_call_count = 0
 
-	render.GetScreenFrameBuffer():Clear()
+	--render.GetScreenFrameBuffer():Clear()
 	render.GetScreenFrameBuffer():Bind()
 
 	if deferred:Get() and render.IsGBufferReady() then

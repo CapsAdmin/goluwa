@@ -173,7 +173,7 @@ function render.UpdateSky()
 	fb:Begin()
 		for i, rot in ipairs(directions) do
 			fb:SetTexture(1, tex, nil, nil, i)
-			fb:Clear()
+			--fb:Clear()
 
 			local view = Matrix44()
 			view:SetRotation(rot)

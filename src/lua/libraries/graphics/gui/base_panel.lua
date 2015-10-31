@@ -669,7 +669,7 @@ do -- cached rendering
 	function PANEL:BuildCache()
 		if self:IsCacheDirty() then
 			self.cache_fb:Begin()
-			self.cache_fb:Clear()
+			--self.cache_fb:Clear()
 
 			local x,y = self.Matrix:GetTranslation()
 			self.Matrix:Translate(-x, -y, 0)

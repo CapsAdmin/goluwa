@@ -79,7 +79,7 @@ function PANEL:ToWindow()
 		gui.world = world
 
 		render.PushWindow(self)
-			render.GetScreenFrameBuffer():Clear()
+			--render.GetScreenFrameBuffer():Clear()
 			render.EnableDepth(false)
 			render.SetBlendMode("alpha")
 
