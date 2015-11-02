@@ -282,23 +282,27 @@ do -- synchronization server > client
 	function COMPONENT:UpdateVars(client, force_update)
 
 		for i, info in ipairs(SERVER and self.server_synced_vars or CLIENT and self.client_synced_vars) do
-			if force_update or not self.last_update[info.key2] or self.last_update[info.key2] < system.GetTime() then
+			if force_update or not self.last_update[info.key2] or self.last_update[info.key2] < system.GetElapsedTime() then
 				self:UpdateVariableFromSyncInfo(info, client, force_update)
 			end
 		end
 
 
 		if CLIENT then
-			local buffer = table.remove(self.queued_packets)
+			if self.queued_packets[1] then
+				local buffer = table.remove(self.queued_packets)
 
-			if buffer then
-				handle_packet(buffer)
+				if buffer then
+					handle_packet(buffer)
+				end
 			end
 
-			local buffer = table.remove(queued_packets)
+			if queued_packets[1] then
+				local buffer = table.remove(queued_packets)
 
-			if buffer then
-				handle_packet(buffer)
+				if buffer then
+					handle_packet(buffer)
+				end
 			end
 		end
 	end

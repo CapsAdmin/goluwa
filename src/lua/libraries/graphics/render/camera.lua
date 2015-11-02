@@ -256,9 +256,9 @@ function META:Rebuild(type)
 		end
 
 
-		if type == nil or type == "world" then
+		--if type == nil or type == "world" then
 			--vars.world_inverse = vars.world:GetInverse()
-		end
+		--end
 	else
 		vars.world = self.World
 	end

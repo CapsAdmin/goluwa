@@ -3,21 +3,14 @@ local structs = (...) or _G.structs
 local ffi = require("ffi")
 
 local light_ctor
---[[local META = {}
-
-function META:Constructor()
-	self:LoadIdentity()
-end
-
-structs.AddOperator(META, "==")
-structs.AddOperator(META, "copy")]]
 
 local META = {}
 META.__index = META
 
-META.Type = "matrix44"
-
 META.ClassName = "Matrix44"
+
+META.Type = META.ClassName:lower()
+
 META.NumberType = "float"
 META.Args = {
 	"m00", "m01", "m02", "m03",
@@ -490,14 +483,49 @@ function META:GetAngles()
 	return self:GetRotation():GetAngles()
 end
 
---structs.Register(META)
+if RELOAD then
+	local gl = require("graphics.ffi.opengl")
+	gl.MatrixMode("GL_MODELVIEW")
 
-ffi.cdef[[
-	typedef struct Matrix44 {
-		float m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33;
-} Matrix44;]]
+	function META.GetMultiplied(a, b, out)
+		out = out or light_ctor()
 
-local meta = ffi.metatype("Matrix44", META)
+		gl.LoadMatrixf(ffi.cast("float *", b))
+		gl.MultMatrixf(ffi.cast("float *", a))
+		gl.GetFloatv("GL_MODELVIEW_MATRIX", ffi.cast("float *", out))
+
+		return out
+	end
+
+	META.Multiply = META.GetMultiplied
+
+	function META:Rotate(a, x, y, z, out)
+		out = out or light_ctor()
+
+		gl.LoadMatrixf(ffi.cast("float *", self))
+		gl.Rotatef(math.deg(a), x, y, z)
+		gl.GetFloatv("GL_MODELVIEW_MATRIX", ffi.cast("float *", out))
+
+		return out
+	end
+	function META:Translate(x, y, z)
+		gl.LoadMatrixf(ffi.cast("float *", self))
+		gl.Translatef(x, y, z)
+		gl.GetFloatv("GL_MODELVIEW_MATRIX", ffi.cast("float *", self))
+
+		return out
+	end
+
+	function META:Scale(x, y, z)
+		gl.LoadMatrixf(ffi.cast("float *", self))
+		gl.Scalef(x, y, z)
+		gl.GetFloatv("GL_MODELVIEW_MATRIX", ffi.cast("float *", self))
+
+		return out
+	end
+end
+
+local meta = ffi.metatype("struct {	float m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33;}", META)
 light_ctor = function() return meta(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1) end
 function Matrix44(x, y, z)
 	return meta(1,0,0,0, 0,1,0,0, 0,0,1,0, x or 0, y or 0, z or 0,1)

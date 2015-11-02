@@ -53,12 +53,7 @@ function structs.Register(META)
 		if META.StructOverride then
 			obj = META.StructOverride()
 		else
-			local type_name = META.ClassName
-			while pcall(ffi.typeof, type_name) do
-				type_name = type_name .. "_"
-			end
-			ffi.cdef("typedef struct " .. type_name .. " {\n" .. arg_lines[1] .. "\n} " .. type_name .. ";")
-			obj = assert(ffi.metatype(type_name, META))
+			obj = assert(ffi.metatype("struct {\n" .. arg_lines[1] .. "\n}", META))
 		end
 
 		if META.Constructor then

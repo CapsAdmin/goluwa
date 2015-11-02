@@ -1,6 +1,6 @@
 local ffi = require("ffi")
 local gl = require("graphics.ffi.opengl")
-local DSA = gl.CreateBuffers
+local DSA
 local render = (...) or _G.render
 
 local META = prototype.CreateTemplate("vertex_buffer")
@@ -34,6 +34,7 @@ end
 
 function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
 	checkx(shader, "shader")
+	DSA = gl.CreateBuffers
 	--check(vertices, "cdata", "table")
 	--check(indices, "cdata", "table", "number", "nil")
 	local self = prototype.CreateObject(META)
@@ -65,7 +66,7 @@ function META:Draw(count)
 	elseif self.Shader then
 		self.Shader:Bind()
 	end
-	
+
 	gl.BindVertexArray(self.vertex_array.id)
 	if not DSA then
 		gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.element_buffer.id)
@@ -82,10 +83,10 @@ local function setup_vertex_array(self)
 			if not DSA then
 				gl.BindBuffer("GL_ARRAY_BUFFER", self.vertex_buffer.id)
 				gl.BindVertexArray(self.vertex_array.id)
-				
+
 				gl.EnableVertexAttribArray(data.location)
 				gl.VertexAttribPointer(data.location, data.row_length, data.number_type, false, self.vertex_array_info.size, ffi.cast("void*", data.row_offset))
-				
+
 				gl.BindVertexArray(0)
 			else
 				self.vertex_array:AttribFormat(data.location, data.row_length, data.number_type, false, data.row_offset)

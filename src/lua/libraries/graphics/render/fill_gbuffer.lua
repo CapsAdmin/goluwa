@@ -45,10 +45,10 @@ vec3 compute_specular(vec3 light_dir, vec3 vertex_eye, vec3 normal, float metall
 
 	vec3 H = normalize(vertex_eye+light_dir);
 
-	float dotNL = clamp(dot(normal,light_dir), 0, 1);
+	float dotNL = clamp(dot(normal,light_dir), 0.0, 1.0);
 
-	float dotLH = clamp(dot(light_dir,H), 0, 1);
-	float dotNH = clamp(dot(normal,H), 0, 1);
+	float dotLH = clamp(dot(light_dir,H), 0.0, 1.0);
+	float dotNH = clamp(dot(normal,H), 0.0, 1.0);
 
 	float F, D, vis;
 
@@ -75,10 +75,10 @@ vec3 compute_specular(vec3 light_dir, vec3 vertex_eye, vec3 normal, float metall
 	float a2 = a * a + attenuation;
 
 	vec3 H = normalize(light_dir + vertex_eye);
-	float NdotH = clamp(dot(-normal,H), 0, 1.0);
-	float VdotN = clamp(dot(vertex_eye,-normal), 0, 1.0);
-	float LdotN = clamp(dot(light_dir,-normal), 0, 1.0);
-	float VdotH = clamp(dot(vertex_eye,H), 0, 1.0);
+	float NdotH = clamp(dot(-normal,H), 0.0, 1.0);
+	float VdotN = clamp(dot(vertex_eye,-normal), 0.0, 1.0);
+	float LdotN = clamp(dot(light_dir,-normal), 0.0, 1.0);
+	float VdotH = clamp(dot(vertex_eye,H), 0.0, 1.0);
 
 
 	//horizon
@@ -862,7 +862,7 @@ do
 
 				currentPosition += noise;*/
 
-				vec3 sample = vec3(0);
+				vec3 res = vec3(0);
 
 				for (float step = 0; step < steps;step++)
 				{
@@ -903,11 +903,11 @@ do
 							vec3 sky_reflect = reflect(-get_camera_dir(uv), world_normal);
 							vec3 sky_color = texture(lua[sky_tex = render.GetSkyTexture()], sky_reflect.xyz * vec3(-1,1,1)).rgb;
 
-							vec3 color = albedo * mix(get_specular(samplePos) * shadow, sky_color, pow(clamp(get_metallic(samplePos), 0, 1), 0.5));
+							vec3 color = albedo * mix(get_specular(samplePos) * shadow, sky_color, pow(clamp(get_metallic(samplePos), 0.0, 1.0), 0.5));
 
-							color = mix(color, compute_specular(normalAtPos, vertex_eye, normal, metallic, roughness, albedo, color*40, 1), roughness);
+							color = mix(color, compute_specular(normalAtPos, vertex_eye, normal, metallic, roughness, albedo, color*40, 1.0), roughness);
 
-							sample += color;
+							res += color;
 						}
 						break;
 					}
@@ -917,7 +917,7 @@ do
 				}
 
 
-				reflect_color += sample;
+				reflect_color += res;
 			}
 
 			//reflect_color /= samples;
@@ -1052,7 +1052,7 @@ do
 				float exp = pow(base, 5*roughness);
 				float fresnel = exp * (1.0 - exp);
 				metallic += fresnel/10;
-				metallic = clamp(metallic, 0, 1);*/
+				metallic = clamp(metallic, 0.0, 1.0);*/
 
 				vec3 final = albedo * mix(light, reflection, metallic);
 
