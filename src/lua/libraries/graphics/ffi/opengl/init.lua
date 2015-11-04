@@ -33754,6 +33754,104 @@ function gl.Initialize(get_proc_address)
 			end
 		end
 	end
+	do -- Program
+		local META = {}
+		META.__index = META
+		function META:AttachShader(shader) return gl.AttachShader(self.id, shader) end
+		function META:DetachShader(shader) return gl.AttachShader(self.id, shader) end
+		function META:Link() return gl.LinkProgram(self.id) end
+		function META:Use() return gl.UseProgram(self.id) end
+		function META:Parameteri(pname, value) return gl.ProgramParameteri(self.id, pname, value) end
+		function META:UniformBlockBinding(blockindex, blockbinding) return gl.UniformBlockBinding(self.id, blockindex, blockbinding) end
+		function META:ShaderStorageBlockBinding(blockindex, blockbinding) return gl.ShaderStorageBlockBinding(self.id, blockindex, blockbinding) end
+
+		function META:Getiv(pname, params) return gl.GetProgramiv(self.id, pname, params) end
+		function META:GetUniformLocation(name) return gl.GetUniformLocation(self.id, name) end
+		function META:GetUniformBlockIndex(name) return gl.GetUniformBlockIndex(self.id, name) end
+
+		function META:BindAttribLocation(index, name) return gl.BindAttribLocation(self.id, index, name) end
+
+		function META:UniformHandleui64(location, value) return gl.ProgramUniformHandleui64ARB(self.id, location, value) end
+
+		for i = 1, 4 do
+		for _, t in ipairs({"i", "f", "d"}) do
+		for _, v in ipairs({"", "v"}) do
+			local name = "ProgramUniform" .. i .. t .. v
+			local friendly = "Uniform" .. i .. t .. v
+			if v == "v" then
+				META[friendly] = function(self, location, count, value) return gl[name](self.id, location, count, value) end
+			else
+				if i == 1 then
+					META[friendly] = function(self, location, a) return gl[name](self.id, location, a) end
+				elseif i == 2 then
+					META[friendly] = function(self, location, a,b) return gl[name](self.id, location, a,b) end
+				elseif i == 3 then
+					META[friendly] = function(self, location, a,b,c) return gl[name](self.id, location, a,b,c) end
+				elseif i == 4 then
+					META[friendly] = function(self, location, a,b,c,d) return gl[name](self.id, location, a,b,c,d) end
+				end
+			end
+		end
+		end
+		end
+
+		for i = 1, 4 do
+			local name = "ProgramUniform" .. i .. "uiv"
+			META["Uniform" .. i .. "uiv"] = function(self, location, count, value) return gl[name](self.id, location, count, value) end
+		end
+
+		function META:Uniform1ui(location, a) return gl.ProgramUniform1ui(self.id, location, a) end
+		function META:Uniform2ui(location, a,b) return gl.ProgramUniform2ui(self.id, location, a,b) end
+		function META:Uniform3ui(location, a,b,c) return gl.ProgramUniform3ui(self.id, location, a,b,c) end
+		function META:Uniform4ui(location, a,b,c,d) return gl.ProgramUniform4ui(self.id, location, a,b,c,d) end
+
+		for i = 2, 4 do
+		for _, t in ipairs({"f", "d"}) do
+		for _, v in ipairs({"", "v"}) do
+			local name = "ProgramUniformMatrix" .. i .. t .. v
+			META["UniformMatrix" .. i .. t .. v] = function(self, location, count, transpose, value) return gl[name](self.id, location, count, transpose, value) end
+		end
+		end
+		end
+
+		for _, i in ipairs({"2x3", "3x2", "2x4", "4x2", "3x4", "4x3"}) do
+		for _, t in ipairs({"f", "d"}) do
+		for _, v in ipairs({"", "v"}) do
+			local name = "ProgramUniformMatrix" .. i .. t .. v
+			META["UniformMatrix" .. i .. t .. v] = function(self, location, count, transpose, value) return gl[name](self.id, location, count, transpose, value) end
+		end
+		end
+		end
+
+		function META:Delete()
+			gl.DeleteProgram(self.id)
+		end
+		function gl.CreateProgram2()
+			local ctype = ffi.typeof('struct { int id; }')
+			ffi.metatype(ctype, META)
+			local self = ffi.new(ctype)
+			self.id = gl.CreateProgram()
+			return self
+		end
+	end
+	do -- Shader
+		local META = {}
+		META.__index = META
+		function META:Source(count, string, length) return gl.ShaderSource(self.id, count, string, length) end
+		function META:Compile() return gl.CompileShader(self.id) end
+		function META:Getiv(pname, params) return gl.GetShaderiv(self.id, pname, params) end
+
+		function META:Delete()
+			gl.DeleteShader(self.id)
+		end
+		function gl.CreateShader2(type)
+			local ctype = ffi.typeof('struct { int id; }')
+			ffi.metatype(ctype, META)
+			local self = ffi.new(ctype)
+			self.id = gl.CreateShader(type)
+			return self
+		end
+	end
 	do -- Sampler
 		local META = {}
 		META.__index = META

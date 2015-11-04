@@ -172,17 +172,17 @@ do -- shaders
 	function render.CreateGLShader(type, source)
 		if not render.CheckSupport("CreateShader") then return 0 end
 
-		local shader = gl.CreateShader(type)
+		local shader = gl.CreateShader2(type)
 
 		shader_strings[0] = ffi.cast("const char *", source)
-		gl.ShaderSource(shader, 1, shader_strings, nil)
-		gl.CompileShader(shader)
-		gl.GetShaderiv(shader, "GL_COMPILE_STATUS", status)
+		shader:Source(1, shader_strings, nil)
+		shader:Compile()
+		shader:Getiv("GL_COMPILE_STATUS", status)
 
 		if status[0] == 0 then
 
-			gl.GetShaderInfoLog(shader, 1024, nil, log)
-			gl.DeleteShader(shader)
+			shader:GetInfoLog(1024, nil, log)
+			shader:Delete()
 
 			error(ffi.string(log), 2)
 		end
@@ -195,67 +195,32 @@ do -- shaders
 		if not render.CheckSupport("CreateProgram") then return 0 end
 
 		local shaders = {...}
-		local program = gl.CreateProgram()
+		local program = gl.CreateProgram2()
 
-		for _, shader_id in pairs(shaders) do
-			gl.AttachShader(program, shader_id)
+		for _, shader in pairs(shaders) do
+			program:AttachShader(shader.id)
 		end
 
 		cb(program)
 
-		gl.LinkProgram(program)
+		program:Link()
 
-		gl.GetProgramiv(program, "GL_LINK_STATUS", status)
+		program:Getiv("GL_LINK_STATUS", status)
 
 		if status[0] == 0 then
 
-			gl.GetProgramInfoLog(program, 1024, nil, log)
-			gl.DeleteProgram(program)
+			program:GetInfoLog(1024, nil, log)
+			program:Delete()
 
 			error(ffi.string(log), 2)
 		end
 
-		for _, shader_id in pairs(shaders) do
-			gl.DetachShader(program, shader_id)
-			gl.DeleteShader(shader_id)
+		for _, shader in pairs(shaders) do
+			program:DetachShader(shader.id)
+			shader:Delete()
 		end
 
 		return program
-	end
-
-	do
-		local last
-
-		function render.UseProgram(id)
-			if last ~= id then
-				gl.UseProgram(id)
-				last = id
-				render.current_program = id
-			end
-		end
-	end
-
-	do
-		local last
-
-		function render.BindArrayBuffer(id)
-			if last ~= id then
-				gl.BindBuffer("GL_ARRAY_BUFFER", id)
-				last = id
-			end
-		end
-	end
-
-	do
-		local last
-		local last2
-
-		function render.BindVertexArray(id)
-			if last ~= id then
-				gl.BindVertexArray(id)
-				last = id
-			end
-		end
 	end
 end
 

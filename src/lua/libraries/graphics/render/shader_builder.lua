@@ -8,22 +8,22 @@ local BINDLESS = gl.GetTextureHandleARB
 
 -- used to figure out how to upload types
 local unrolled_lines = {
-	bool = "gl.ProgramUniform1i(render.current_program, %i, val and 1 or 0)",
-	number = "gl.ProgramUniform1f(render.current_program, %i, val)",
-	int = "gl.ProgramUniform1i(render.current_program, %i, val)",
-	vec2 = "gl.ProgramUniform2f(render.current_program, %i, val.x, val.y)",
-	vec3 = "gl.ProgramUniform3f(render.current_program, %i, val.x, val.y, val.z)",
-	color = "gl.ProgramUniform4f(render.current_program, %i, val.r, val.g, val.b, val.a)",
-	mat4 = "gl.ProgramUniformMatrix4fv(render.current_program, %i, 1, 0, ffi.cast('const float *', val))",
-	texture = "gl.ProgramUniform1i(render.current_program, %i, %i) val:Bind(%i)",
+	bool = "render.current_program:Uniform1i(%i, val and 1 or 0)",
+	number = "render.current_program:Uniform1f(%i, val)",
+	int = "render.current_program:Uniform1i(%i, val)",
+	vec2 = "render.current_program:Uniform2f(%i, val.x, val.y)",
+	vec3 = "render.current_program:Uniform3f(%i, val.x, val.y, val.z)",
+	color = "render.current_program:Uniform4f(%i, val.r, val.g, val.b, val.a)",
+	mat4 = "render.current_program:UniformMatrix4fv(%i, 1, 0, ffi.cast('const float *', val))",
+	texture = "render.current_program:Uniform1i(%i, %i) val:Bind(%i)",
 }
 
 if BINDLESS then
-	unrolled_lines.texture = "if val.bindless_handle then gl.ProgramUniformHandleui64ARB(render.current_program, %i, val.bindless_handle) end"
+	unrolled_lines.texture = "if val.bindless_handle then render.current_program:UniformHandleui64(%i, val.bindless_handle) end"
 end
 
 if SRGB then
-	unrolled_lines.color = "gl.ProgramUniform4f(render.current_program, %i, math.linear2gamma(val.r), math.linear2gamma(val.g), math.linear2gamma(val.b), val.a)"
+	unrolled_lines.color = "render.current_program:Uniform4f(%i, math.linear2gamma(val.r), math.linear2gamma(val.g), math.linear2gamma(val.b), val.a)"
 end
 
 unrolled_lines.vec4 = unrolled_lines.color
@@ -126,8 +126,6 @@ local function type_of_attribute(var)
 			t = k
 			get = v
 			def = v
-		else
-			t = "variable_buffer"
 		end
 	end
 
@@ -179,40 +177,31 @@ local function variables_to_string(type, variables, prepend, macro, array)
 	local out = {}
 
 	for i, data in ipairs(translate_fields(variables)) do
-		if data.type == "variable_buffer" then
-			table.insert(out, "layout (std140) variables " .. data.name)
-			table.insert(out, "{")
-			for i, data in ipairs(translate_fields(data.default)) do
-				table.insert(out, ("\t%s %s;"):format(data.type, data.name))
-			end
-			table.insert(out, "};")
-		else
-			local name = data.name
+		local name = data.name
 
-			if prepend then
-				name = prepend .. name
-			end
+		if prepend then
+			name = prepend .. name
+		end
 
-			if data.type:find("sampler") then
-				if BINDLESS then
-					table.insert(out, ("%s %s %s %s %s%s;"):format(data.varying, type, data.precision, data.type, name, array):trim())
-				else
-					local layout = ""
-
-					if render.IsExtensionSupported("GL_ARB_enhanced_layouts") or render.IsExtensionSupported("GL_ARB_shading_language_420pack") then
-						layout = ("layout(binding = %i)"):format(texture_channel)
-					end
-
-					table.insert(out, ("%s %s %s %s %s %s%s;"):format(layout, data.varying, type, data.precision, data.type, name, array):trim())
-					texture_channel = texture_channel + 1
-				end
-			else
+		if data.type:find("sampler") then
+			if BINDLESS then
 				table.insert(out, ("%s %s %s %s %s%s;"):format(data.varying, type, data.precision, data.type, name, array):trim())
-			end
+			else
+				local layout = ""
 
-			if macro then
-				table.insert(out, ("#define %s %s"):format(data.name, name))
+				if render.IsExtensionSupported("GL_ARB_enhanced_layouts") or render.IsExtensionSupported("GL_ARB_shading_language_420pack") then
+					layout = ("layout(binding = %i)"):format(texture_channel)
+				end
+
+				table.insert(out, ("%s %s %s %s %s %s%s;"):format(layout, data.varying, type, data.precision, data.type, name, array):trim())
+				texture_channel = texture_channel + 1
 			end
+		else
+			table.insert(out, ("%s %s %s %s %s%s;"):format(data.varying, type, data.precision, data.type, name, array):trim())
+		end
+
+		if macro then
+			table.insert(out, ("#define %s %s"):format(data.name, name))
 		end
 	end
 
@@ -662,7 +651,7 @@ function render.CreateShader(data, vars)
 		local pos = 0
 
 		for i, data in pairs(build_output.vertex.vtx_info) do
-			gl.BindAttribLocation(prog, i - 1, data.name)
+			prog:BindAttribLocation(i - 1, data.name)
 
 			info.attributes[i] = {
 				location = i - 1,
@@ -694,124 +683,24 @@ function render.CreateShader(data, vars)
 		for shader, data in pairs(build_output) do
 			if data.variables then
 				for key, val in pairs(data.variables) do
-					if val.type == "variable_buffer" then
-						local id = gl.GetUniformBlockIndex(prog, val.name)
+					local id = prog:GetUniformLocation(val.name)
 
-						local init_table = {}
+					variables[val.name] = {
+						id = id,
+						info = val,
+					}
 
-						do
-							val.struct_name = "shader_builder_ufb_" .. val.name
-							local declaration = {"typedef struct "..val.struct_name.."\n{"}
+					table.insert(temp, {id = id, key = val.name, val = val})
 
-							for name, obj in pairs(val.default) do
-								local t = typex(obj)
+					self.defaults[val.name] = val.default
+					self[val.name] = val.default
 
-								init_table[name] = {}
+					if val.get then
+						self[val.name] = val.get
+					end
 
-								if t == "matrix44" or obj == "mat4" then
-									table.insert(declaration, "\tfloat " .. name .. "[16];")
-
-									if t == "matrix44" then
-										for i = 1, 16 do
-											init_table[name][i] = obj.m[i - 1]
-										end
-									else
-										for i = 1, 16 do
-											init_table[name][i] = 0
-										end
-									end
-								elseif t == "color" or obj == "vec4" then
-									table.insert(declaration, "\tfloat " .. name .. "[4];")
-
-									if t == "color" then
-										init_table[name][1] = obj.r
-										init_table[name][2] = obj.g
-										init_table[name][3] = obj.b
-										init_table[name][4] = obj.a
-									else
-										for i = 1, 4 do
-											init_table[name][i] = 0
-										end
-									end
-								elseif t == "vec3" or obj == "vec3" then
-									table.insert(declaration, "\tfloat " .. name .. "[3];")
-									if t == "vec3" then
-										init_table[name][1] = obj.x
-										init_table[name][2] = obj.y
-										init_table[name][3] = obj.z
-									else
-										for i = 1, 3 do
-											init_table[name][i] = 0
-										end
-									end
-								elseif t == "vec2" or obj == "vec2" then
-									table.insert(declaration, "\tfloat " .. name .. "[2];")
-									if t == "vec2" then
-										init_table[name][1] = obj.x
-										init_table[name][2] = obj.y
-									else
-										for i = 1, 2 do
-											init_table[name][i] = 0
-										end
-									end
-								elseif t == "number" or obj == "float" then
-									table.insert(declaration, "\tfloat " .. name .. ";")
-									if t == "number" then
-										init_table[name] = obj
-									else
-										init_table[name] = 0
-									end
-								end
-
-								self[name] = obj
-							end
-
-							table.insert(declaration, "}"..val.struct_name..";")
-							declaration = table.concat(declaration, "\n")
-
-							ffi.cdef(declaration)
-							val.struct_type = ffi.typeof(val.struct_name)
-
-							self[val.name .. "_ufb_type"] = ffi.typeof(val.struct_name .. " *")
-						end
-
-						local struct = ffi.new(val.struct_type, init_table)
-
-						local buffer_id = gl.GenBuffer()
-						gl.BindBuffer("GL_UNIFORM_BUFFER", buffer_id)
-							gl.BufferData("GL_UNIFORM_BUFFER", ffi.sizeof(struct), struct, "GL_DYNAMIC_DRAW")
-						gl.BindBuffer("GL_UNIFORM_BUFFER", 0)
-
-						self[val.name .. "_ufb_struct"] = struct
-
-						variables[val.name] = {
-							id = id,
-							info = val,
-							variable_buffer = true,
-						}
-
-						table.insert(temp, {id = id, key = val.name, val = val, variable_buffer = true, buffer_id = buffer_id})
-
-					else
-						local id = gl.GetUniformLocation(prog, val.name)
-
-						variables[val.name] = {
-							id = id,
-							info = val,
-						}
-
-						table.insert(temp, {id = id, key = val.name, val = val})
-
-						self.defaults[val.name] = val.default
-						self[val.name] = val.default
-
-						if val.get then
-							self[val.name] = val.get
-						end
-
-						if render.debug and id < 0 and not val.type:find("sampler") then
-							logf("%s: variables in %s %s %s is not being used (variables location < 0)\n", shader_id, shader, val.name, val.type)
-						end
+					if render.debug and id < 0 and not val.type:find("sampler") then
+						logf("%s: variables in %s %s %s is not being used (variables location < 0)\n", shader_id, shader, val.name, val.type)
 					end
 				end
 			end
@@ -829,38 +718,7 @@ function render.CreateShader(data, vars)
 		lua = lua .. "local function update(self)\n"
 
 		for i, data in ipairs(temp) do
-			if data.variable_buffer then
-				lua = lua .. "\tif \n"
-				for k, v in pairs(data.val.default) do
-					lua = lua .. "\tself."..k.." ~= self.last_" .. k .. " or \n"
-				end
-
-				lua = lua:sub(0, -5) .. "\n"
-
-				lua = lua .. "\tthen \n"
-				lua = lua .. "\t\tlocal ptr = ffi.cast(self."..data.key.."_ufb_type, gl.MapBuffer(\"GL_UNIFORM_BUFFER\", \"GL_WRITE_ONLY\"));\n\n"
-				lua = lua .. "\t\tif ptr ~= nil then \n"
-				for k, v in pairs(data.val.default) do
-					if type(v) == "number" then
-						lua = lua .. "\t\t\tptr." .. k .. " = self."..k.."\n"
-						lua = lua .. "\t\t\tself.last_" .. k .. " = self."..k.." \n"
-					else
-						if typex(v) == "matrix44" then
-							lua = lua .. "\t\t\tffi.copy(ptr." .. k .. ", self."..k..".m, "..ffi.sizeof(self[data.val.name .. "_ufb_struct"][k])..") \n"
-						else
-							lua = lua .. "\t\t\tffi.copy(ptr." .. k .. ", self."..k..", "..ffi.sizeof(self[data.val.name .. "_ufb_struct"][k])..") \n"
-						end
-						lua = lua .. "\t\t\tself.last_" .. k .. " = self."..k..":Copy() \n"
-					end
-				end
-
-				lua = lua .. "\t\tend\n\n"
-
-				lua = lua .. "\t\tgl.UnmapBuffer(\"GL_UNIFORM_BUFFER\")\n"
-				lua = lua .. "\tend\n"
-
-				lua = lua .. "\tgl.BindBufferBase(\"GL_UNIFORM_BUFFER\", "..data.id..", "..data.buffer_id..")\n\n"
-			elseif data.id > -1 then
+			if data.id > -1 then
 				local line = tostring(unrolled_lines[data.val.type] or data.val.type)
 
 				if data.val.type == "texture" or data.val.type:find("sampler") then
@@ -903,7 +761,7 @@ function render.CreateShader(data, vars)
 	self.base_shader = base
 
 	self.vtx_atrb_type = build_output.vertex.vtx_atrb_type
-	self.program_id = prog
+	self.program = prog
 	self.shader_id = shader_id
 	self.build_output = build_output
 	self.force_bind = force_bind
@@ -925,7 +783,10 @@ function META:__tostring2()
 end
 
 function META:Bind()
-	render.UseProgram(self.program_id)
+	if render.current_program ~= self.program then
+		self.program:Use()
+		render.current_program = self.program
+	end
 	self.unrolled_bind_func(self)
 end
 
