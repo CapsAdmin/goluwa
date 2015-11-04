@@ -312,7 +312,7 @@ PASS.Stages = {
 
 				void main()
 				{
-					//{albedo = texture(AlbedoTexture, uv).rgb; return;}
+					//{albedo = vertex_view_normal; return;}
 
 					// albedo
 					vec4 color = texture(lua[AlbedoTexture = render.GetErrorTexture()], uv);
@@ -614,43 +614,49 @@ if TESSELLATION then
 			{texture_blend = "float"},
 		},
 		source = [[
-			out vec2 vTexCoord;
+			#version 420
 			out vec3 vPosition;
+			out vec2 vTexCoord;
 			out vec3 vNormal;
+			out float vTextureBlend;
 
 			void main() {
-				vPosition = pos.xyz;
-				vNormal = normal.xyz;
+				vPosition = pos;
 				vTexCoord = uv;
+				vNormal = normal;
+				vTextureBlend = texture_blend;
 			}
 		]]
 	}
 	PASS.Stages[1].tess_control = {
 		source = [[
-			#version 400
+			#version 420
 			layout(vertices = 3) out;
 
-			in vec2 vTexCoord[];
 			in vec3 vPosition[];
+			in vec2 vTexCoord[];
 			in vec3 vNormal[];
+			in float vTextureBlend[];
 
 			out vec2 tcTexCoord[];
 			out vec3 tcPosition[];
 			out vec3 tcNormal[];
+			out float tcTextureBlend[];
 
 			void main()
 			{
 				tcTexCoord[gl_InvocationID] = vTexCoord[gl_InvocationID];
 				tcPosition[gl_InvocationID] = vPosition[gl_InvocationID];
-				tcNormal[gl_InvocationID]   = vNormal[gl_InvocationID];
+				tcNormal[gl_InvocationID] = vNormal[gl_InvocationID];
+				tcTextureBlend[gl_InvocationID] = tcTextureBlend[gl_InvocationID];
 
 				if(gl_InvocationID == 0)
 				{
 					float inTess  = lua[innerTessLevel = 10];
 					float outTess = lua[outerTessLevel = 10];
 
-					inTess = 10;
-					outTess = 10;
+					inTess = 16;
+					outTess = 16;
 
 					gl_TessLevelInner[0] = inTess;
 					gl_TessLevelInner[1] = inTess;
@@ -664,28 +670,30 @@ if TESSELLATION then
 	}
 	PASS.Stages[1].tess_evaluation = {
 		source = [[
-			#version 400
+			#version 420
 			layout(triangles, equal_spacing, ccw) in;
 
-			in vec2 tcTexCoord[];
 			in vec3 tcPosition[];
+			in vec2 tcTexCoord[];
 			in vec3 tcNormal[];
+			in float tcTextureBlend[];
 
-			out vec2 teTexCoord;
 			out vec3 tePosition;
+			out vec2 teTexCoord;
 			out vec3 teNormal;
+			out float teTextureBlend;
 
 			void main()
 			{
-				vec2 tc0 = gl_TessCoord.x * tcTexCoord[0];
-				vec2 tc1 = gl_TessCoord.y * tcTexCoord[1];
-				vec2 tc2 = gl_TessCoord.z * tcTexCoord[2];
-				teTexCoord = tc0 + tc1 + tc2;
-
 				vec3 p0 = gl_TessCoord.x * tcPosition[0];
 				vec3 p1 = gl_TessCoord.y * tcPosition[1];
 				vec3 p2 = gl_TessCoord.z * tcPosition[2];
 				vec3 pos = p0 + p1 + p2;
+
+				vec2 tc0 = gl_TessCoord.x * tcTexCoord[0];
+				vec2 tc1 = gl_TessCoord.y * tcTexCoord[1];
+				vec2 tc2 = gl_TessCoord.z * tcTexCoord[2];
+				teTexCoord = tc0 + tc1 + tc2;
 
 				vec3 n0 = gl_TessCoord.x * tcNormal[0];
 				vec3 n1 = gl_TessCoord.y * tcNormal[1];
@@ -693,6 +701,7 @@ if TESSELLATION then
 				vec3 normal = normalize(n0 + n1 + n2);
 				teNormal = mat3(g_normal_matrix) * normal;
 
+				teTextureBlend = (tcTextureBlend[0] + tcTextureBlend[1] + tcTextureBlend[2]) / 3;
 
 				float height = texture(lua[HeightTexture = Texture("https://upload.wikimedia.org/wikipedia/commons/5/57/Heightmap.png")], teTexCoord).x;
 				pos += normal * (height * 0.5f);
@@ -706,41 +715,50 @@ if TESSELLATION then
 	}
 	PASS.Stages[1].geometry = {
 		source = [[
-			layout(triangles) in;
-			layout(triangle_strip, max_vertices = 3) out;
+			#version 420
+			layout (triangles) in;
+			layout (triangle_strip) out;
+			layout (max_vertices = 3) out;
 
-			in vec2 teTexCoord[3];
 			in vec3 tePosition[3];
+			in vec2 teTexCoord[3];
 			in vec3 teNormal[3];
+			in float teTextureBlend[3];
 
 			out vec2 gTexCoord;
+			out float gTextureBlend;
+
 			out vec3 gPosition;
 			out vec3 gFacetNormal;
 
-			void main() {
-
-				gTexCoord = teTexCoord[0];
-				gPosition = tePosition[0];
-				gFacetNormal = teNormal[0];
-				gl_Position = gl_in[0].gl_Position;
-				EmitVertex();
-
-				gTexCoord = teTexCoord[1];
-				gPosition = tePosition[1];
-				gFacetNormal = teNormal[1];
-				gl_Position = gl_in[1].gl_Position;
-				EmitVertex();
-
-				gTexCoord = teTexCoord[2];
-				gPosition = tePosition[2];
-				gFacetNormal = teNormal[2];
-				gl_Position = gl_in[2].gl_Position;
-				EmitVertex();
+			void main()
+			{
+				for ( int i = 0; i < gl_in.length(); i++)
+				{
+					gTexCoord = teTexCoord[i];
+					gPosition = tePosition[i];
+					gFacetNormal = vec3(1,0,0);//teNormal[i];
+					gTextureBlend = teTextureBlend[i];
+					gl_Position = gl_in[i].gl_Position;
+					EmitVertex();
+				}
 
 				EndPrimitive();
 			}
 		]],
 	}
+
+	PASS.Stages[1].fragment.mesh_layout = nil
+
+	PASS.Stages[1].fragment.source = [[
+		#version 420
+		//in vec3 pos;
+		in vec2 uv;
+		//in vec3 normal;
+		//in vec3 tangent;
+		in float texture_blend;
+	]]
+	.. PASS.Stages[1].fragment.source
 
 	if RELOAD then
 		for mesh in pairs(prototype.GetCreated()) do

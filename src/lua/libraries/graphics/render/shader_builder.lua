@@ -1,4 +1,4 @@
-local BUILD_OUTPUT = false
+local BUILD_OUTPUT = true
 
 local ffi = require("ffi")
 local gl = require("graphics.ffi.opengl") -- OpenGL
@@ -322,8 +322,9 @@ function render.CreateShader(data, vars)
 		build_output[shader] = {source = source, original_source = info.source, out = {}}
 	end
 
-	do -- figure out vertex mesh_layout other shaders need
-
+	-- figure out vertex mesh_layout other shaders need only if vertex and fragment is defined
+	-- since tesselation and geometry requires specialized input and output
+	if data.vertex and data.fragment and table.count(data) == 2 then
 		for shader, info in pairs(data) do
 			if shader ~= "vertex" then
 				if info.mesh_layout then
