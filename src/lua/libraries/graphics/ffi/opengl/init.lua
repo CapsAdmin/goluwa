@@ -21719,6 +21719,10 @@ function gl.Initialize(get_proc_address)
 			if ok then
 				gl.TextureBarrier = func
 			end
+
+			if not gl.TextureBarrier then
+				gl.TextureBarrier = gl.TextureBarrierNV
+			end
 		end
 	end
 	do

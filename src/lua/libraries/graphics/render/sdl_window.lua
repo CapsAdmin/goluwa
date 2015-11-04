@@ -513,6 +513,14 @@ do
 
 end
 
-function render.IsExtensionSupported(str)
-	return sdl.GL_ExtensionSupported(str) == 1
+do
+	local cache = {}
+
+	function render.IsExtensionSupported(str)
+		if cache[str] == nil then
+			cache[str] = sdl.GL_ExtensionSupported(str) == 1
+		end
+
+		return cache[str]
+	end
 end

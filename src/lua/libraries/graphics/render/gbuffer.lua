@@ -227,8 +227,6 @@ local w_cvar = console.CreateVariable("render_width", 0, function() if gbuffer_e
 local h_cvar = console.CreateVariable("render_height", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
 local mult_cvar = console.CreateVariable("render_ss_multiplier", 1, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
 
-local barrier
-
 function render.DrawGBuffer(what, dist)
 	if not gbuffer_enabled then return end
 
@@ -260,7 +258,7 @@ function render.DrawGBuffer(what, dist)
 			if shader.fb then shader.fb:End() end
 		end
 
-		if barrier then barrier() end
+		if render.IsExtensionSupported("GL_ARB_texture_barrier") then gl.TextureBarrier() end
 
 		if shader.gbuffer_pass.PostRender then
 			shader.gbuffer_pass:PostRender()
@@ -577,8 +575,6 @@ local function init(width, height)
 	gbuffer_enabled = true
 
 	event.Call("GBufferInitialized")
-
-	barrier = gl.TextureBarrierNV or gl.TextureBarrier
 
 	logn("render: gbuffer initialized ", width, "x", height)
 end

@@ -66,7 +66,7 @@ META:GetSet("BindMode", "all", {"all", "read", "write"})
 META:GetSet("Size", Vec2(128,128))
 
 function render.GetScreenFrameBuffer()
-	if not gl.GenFramebuffer then return end
+	if not render.IsExtensionSupported("GL_ARB_framebuffer_object") then return end
 	if not render.screen_buffer then
 		local self = prototype.CreateObject(META)
 		self.fb = gl.CreateFramebuffer(0)
@@ -201,32 +201,27 @@ function META:SetBindMode(str)
 end
 
 do -- binding
-	local current_id = 0
-
 	do
 		local stack = {}
+		local current
 
 		function META:Push(...)
-			stack[#stack + 1] = current_id
+			current = current or render.GetScreenFrameBuffer()
+			stack[#stack + 1] = current
 
 			self:Bind()
 
 			update_drawbuffers(self)
 
-			--if fb.read_buffer then
-			--	gl.ReadBuffer(fb.read_buffer)
-			--end
-
-			current_id = self.fb.id
+			current = self
 		end
 
 		function META:Pop()
-			local id = stack[#stack] stack[#stack] = nil
+			local fb = stack[#stack] stack[#stack] = nil
 
-			--fb:Unbind()
-			gl.BindFramebuffer("GL_FRAMEBUFFER", id)
+			fb:Bind()
 
-			current_id = id
+			current = fb
 		end
 
 		function META:Begin(...)
@@ -243,11 +238,6 @@ do -- binding
 	function META:Bind()
 		self.fb:Bind(self.enum_bind_mode)
 		render.active_framebuffer = self
-	end
-
-	function META:Unbind()
-		gl.BindFramebuffer(self.enum_bind_mode, 0) -- uh
-		render.active_framebuffer = render.GetScreenFrameBuffer()
 	end
 
 	function render.GetActiveFramebuffer()

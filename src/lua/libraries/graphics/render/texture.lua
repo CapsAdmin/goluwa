@@ -456,7 +456,7 @@ function META:SetupStorage()
 	end
 
 	if self.StorageType == "3d" then
-		if gl.TexStorage3D then
+		if render.IsExtensionSupported("GL_ARB_texture_storage") then
 			self.gl_tex:Storage3D(
 				levels,
 				TOENUM(self.InternalFormat),
@@ -480,7 +480,7 @@ function META:SetupStorage()
 			)
 		end
 	elseif self.StorageType == "2d" or self.StorageType == "rectangle" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then
-		if gl.TexStorage2D then
+		if render.IsExtensionSupported("GL_ARB_texture_storage") then
 			if self.Multisample > 0 then
 				self.gl_tex:Storage2DMultisample(
 					self.Multisample,
@@ -513,7 +513,7 @@ function META:SetupStorage()
 			)
 		end
 	elseif self.StorageType == "1d" or self.StorageType == "1d_array" then
-		if gl.TexStorage1D then
+		if render.IsExtensionSupported("GL_ARB_texture_storage") then
 			self.gl_tex:Storage1D(
 				levels,
 				TOENUM(self.InternalFormat),
@@ -534,7 +534,7 @@ function META:SetupStorage()
 		end
 	end
 
-	if gl.GetTextureHandleARB then
+	if render.IsExtensionSupported("GL_ARB_bindless_texture") then
 		self.bindless_handle = gl.GetTextureHandleARB(self.id)
 		gl.MakeTextureHandleResidentARB(self.bindless_handle)
 	end
@@ -1034,7 +1034,6 @@ function render.CreateTexture(type)
 	end
 
 	self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
-	self.not_dsa = not gl.CreateTextures
 	self.id = self.gl_tex.id -- backwards compatibility
 
 	if type == "cube_map" then

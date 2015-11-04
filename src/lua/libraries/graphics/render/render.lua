@@ -131,48 +131,13 @@ do
 	]])
 end
 
-do -- occlusion query
-	local META = prototype.CreateTemplate("occlusion_query")
-
-	function META:Begin()
-		gl.BeginQuery("GL_SAMPLES_PASSED", self.id)
-	end
-
-	function META:End()
-		gl.EndQuery("GL_SAMPLES_PASSED")
-	end
-
-	local ready = ffi.new("GLuint[1]")
-
-	function META:GetVisibility()
-		gl.GetQueryObjectuiv(self.id, "GL_QUERY_RESULT_AVAILABLE", ready)
-		if ready[0] ~= 0 then
-			gl.GetQueryObjectuiv(self.id, "GL_QUERY_RESULT", ready)
-			return tonumber(ready[0])/480000
-		end
-
-		return 0
-	end
-
-	META:Register()
-
-	function render.CreateOcclusionQuery()
-		local self = prototype.CreateObject("occlusion_query")
-		self.id = gl.GenQuerie()
-
-		return self
-	end
-end
-
 do -- shaders
 	local status = ffi.new("GLint[1]")
 	local shader_strings = ffi.new("const char * [1]")
 	local log = ffi.new("char[1024]")
 
 	function render.CreateGLShader(type, source)
-		if not render.CheckSupport("CreateShader") then return 0 end
-
-		local shader = gl.CreateShader2(type)
+		local shader = gl.CreateShader2("GL_" .. type:upper() .. "_SHADER")
 
 		shader_strings[0] = ffi.cast("const char *", source)
 		shader:Source(1, shader_strings, nil)
@@ -191,9 +156,6 @@ do -- shaders
 	end
 
 	function render.CreateGLProgram(cb, ...)
-
-		if not render.CheckSupport("CreateProgram") then return 0 end
-
 		local shaders = {...}
 		local program = gl.CreateProgram2()
 
@@ -227,13 +189,18 @@ end
 do
 	local vsync = 0
 
-	function render.SetVSync(b)
-		if gl.SwapIntervalEXT then
+	if WINDOWS then
+		function render.SetVSync(b)
 			gl.SwapIntervalEXT(b == true and 1 or b == "adaptive" and -1 or 0)
-		elseif window and window.IsOpen() then
-			window.SwapInterval(b) -- works on linux
+			vsync = b
 		end
-		vsync = b
+	else
+		function render.SetVSync(b)
+			if window and window.IsOpen() then
+				window.SwapInterval(b) -- works on linux
+			end
+			vsync = b
+		end
 	end
 
 	function render.GetVSync(b)
@@ -259,15 +226,6 @@ end
 
 function render.IsExtensionSupported()
 	return false
-end
-
-function render.CheckSupport(func)
-	if not gl[func] then
-		logf("%s: the function gl.%s does not exist\n", debug.getinfo(2).func:name(), func)
-		return false
-	end
-
-	return true
 end
 
 do
@@ -452,19 +410,6 @@ do
 
 	function render.GetCullMode()
 		return cull_mode
-	end
-end
-
-do
-	local data = ffi.new("float[3]")
-
-	function render.ReadPixels(x, y, w, h)
-		w = w or 1
-		h = h or 1
-
-		gl.ReadPixels(x, y, w, h, "GL_RGBA", "GL_FLOAT", data)
-
-		return data[0], data[1], data[2], data[3]
 	end
 end
 

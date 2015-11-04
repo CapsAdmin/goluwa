@@ -617,7 +617,7 @@ do -- cached rendering
 	function PANEL:SetCachedRendering(b)
 		self.CachedRendering = b
 
-		if not render.CheckSupport("GenFramebuffer") then
+		if not render.IsExtensionSupported("GL_ARB_framebuffer_object") then
 			self.CachedRendering = false
 		end
 

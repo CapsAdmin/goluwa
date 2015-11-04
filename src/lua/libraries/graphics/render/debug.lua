@@ -86,7 +86,7 @@ function render.StartDebug()
 	if EXTERNAL_OPENGL_DEBUGGER then return end
 	if render.verbose_debug then return end
 
-	if gl.DebugMessageControl then
+	if render.IsExtensionSupported("GL_KHR_debug") then
 		gl.Enable("GL_DEBUG_OUTPUT")
 		gl.DebugMessageControl("GL_DONT_CARE", "GL_DONT_CARE", "GL_DONT_CARE", ffi.new("GLuint"), nil, true)
 		gl.Enable("GL_DEBUG_OUTPUT_SYNCHRONOUS")
@@ -99,7 +99,7 @@ function render.StopDebug()
 	if EXTERNAL_OPENGL_DEBUGGER then return end
 	if render.verbose_debug then return end
 
-	if gl.DebugMessageControl then
+	if render.IsExtensionSupported("GL_KHR_debug") then
 		level = level or 0
 
 		local buffer = ffi.new("char[1024]")
@@ -135,7 +135,7 @@ function render.StopDebug()
 end
 
 function render.EnableVerboseDebug(b)
-	if gl.DebugMessageControl then
+	if render.IsExtensionSupported("GL_KHR_debug") then
 		if b then
 			gl.Enable("GL_DEBUG_OUTPUT")
 			gl.DebugMessageControl("GL_DONT_CARE", "GL_DEBUG_TYPE_ERROR", "GL_DONT_CARE", ffi.new("GLuint"), nil, true)
