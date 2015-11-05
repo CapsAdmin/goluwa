@@ -534,10 +534,9 @@ function META:SetupStorage()
 		end
 	end
 
-	if render.IsExtensionSupported("GL_ARB_bindless_texture") then
-		self.bindless_handle = gl.GetTextureHandleARB(self.id)
-		gl.MakeTextureHandleResidentARB(self.bindless_handle)
-	end
+	event.Delay(0, function()
+		self:MakeResident()
+	end)
 
 	local msg = render.StopDebug()
 	if msg then
@@ -550,6 +549,21 @@ function META:SetupStorage()
 	end
 
 	self.storage_setup = true
+end
+
+function META:MakeResident()
+	if render.IsExtensionSupported("GL_ARB_bindless_texture") and not self.bindless_handle then
+		self.bindless_handle = gl.GetTextureHandleARB(self.id)
+		gl.MakeTextureHandleResidentARB(self.bindless_handle)
+	end
+end
+
+function META:MakeNonResident()
+	do return end
+	if render.IsExtensionSupported("GL_ARB_bindless_texture") then
+		gl.MakeTextureHandleNonResidentARB(self.bindless_handle)
+		self.bindless_handle = nil
+	end
 end
 
 function META:Upload(data)
