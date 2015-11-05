@@ -33213,9 +33213,9 @@ function gl.Initialize(get_proc_address)
 		end
 	end
 	do -- VertexArray
-		local META = {}
-		META.__index = META
-		if gl.CreateVertexArrays then
+		do
+			local META = {}
+			META.__index = META
 			function META:ElementBuffer(buffer)
 				return gl.VertexArrayElementBuffer(self.id, buffer)
 			end
@@ -33257,18 +33257,20 @@ function gl.Initialize(get_proc_address)
 			end
 			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
-			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
-				temp[0] = self.id
-				gl.DeleteVertexArrays(1, temp)
+				gl.DeleteVertexArrays(1, ffi.new('GLuint[1]', self.id))
 			end
 			function gl.CreateVertexArray()
+				local temp = ffi.new("GLuint[1]")
 				gl.CreateVertexArrays(1, temp)
 				local self = ffi.new(ctype)
 				self.id = temp[0]
 				return self
 			end
-		else
+		end
+		do
+			local META = {}
+			META.__index = META
 			local bind
 			do
 				local last
@@ -33320,23 +33322,24 @@ function gl.Initialize(get_proc_address)
 			end
 			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
-			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
-				temp[0] = self.id
-				gl.DeleteVertexArrays(1, temp)
+				gl.DeleteVertexArrays(1, ffi.new('GLuint[1]', self.id))
 			end
-			META.not_dsa = true
-			function gl.CreateVertexArray()
+			function gl.CreateVertexArrayNODSA()
 				local self = setmetatable({}, META)
 				self.id = gl.GenVertexArray()
 				return self
 			end
 		end
+
+		if not gl.CreateVertexArrays or true then
+			gl.CreateVertexArray = gl.CreateVertexArrayNODSA
+		end
 	end
 	do -- Framebuffer
-		local META = {}
-		META.__index = META
-		if gl.CreateFramebuffers then
+		do
+			local META = {}
+			META.__index = META
 			function META:Bind(target)
 				return gl.BindFramebuffer(target, self.id)
 			end
@@ -33438,10 +33441,8 @@ function gl.Initialize(get_proc_address)
 			end
 			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
-			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
-				temp[0] = self.id
-				gl.DeleteFramebuffers(1, temp)
+				gl.DeleteFramebuffers(1, ffi.new('GLuint[1]', self.id))
 			end
 			function gl.CreateFramebuffer(id)
 				if id then
@@ -33449,13 +33450,18 @@ function gl.Initialize(get_proc_address)
 					self.id = id
 					return self
 				else
+					local temp = ffi.new("GLuint[1]")
 					gl.CreateFramebuffers(1, temp)
 					local self = ffi.new(ctype)
 					self.id = temp[0]
 					return self
 				end
 			end
-		else
+		end
+
+		do
+			local META = {}
+			META.__index = META
 			local bind
 			do
 				local last
@@ -33539,9 +33545,6 @@ function gl.Initialize(get_proc_address)
 			function META:Renderbuffer(attachment, renderbuffer)
 				bind(self, "GL_FRAMEBUFFER") return gl.FramebufferRenderbuffer("GL_FRAMEBUFFER", attachment, "GL_RENDERBUFFER", renderbuffer)
 			end
-			function META:CreateFramebuffers(n, framebuffers)
-				bind(self, "GL_FRAMEBUFFER") return gl.CreateFramebuffers(n, self.ids)
-			end
 			function META:Texture1D(target, attachment, textarget, texture, level)
 				bind(self, target) return gl.FramebufferTexture1DEXT(target, attachment, textarget, texture, level)
 			end
@@ -33568,23 +33571,24 @@ function gl.Initialize(get_proc_address)
 			end
 			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
-			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
-				temp[0] = self.id
-				gl.DeleteFramebuffers(1, temp)
+				gl.DeleteFramebuffers(1, ffi.new('GLuint[1]', self.id))
 			end
-			META.not_dsa = true
-			function gl.CreateFramebuffer(id)
+			function gl.CreateFramebufferNODSA(id)
 				local self = setmetatable({}, META)
 				self.id = id or gl.GenFramebuffer()
 				return self
 			end
 		end
+
+		if not gl.CreateFramebuffers or true then
+			gl.CreateFramebuffer = gl.CreateFramebufferNODSA
+		end
 	end
 	do -- Buffer
-		local META = {}
-		META.__index = META
-		if gl.CreateBuffers then
+		do
+			local META = {}
+			META.__index = META
 			function META:CreateBuffers(buffers)
 				return gl.CreateBuffers(self.id, buffers)
 			end
@@ -33632,18 +33636,20 @@ function gl.Initialize(get_proc_address)
 			end
 			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
-			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
-				temp[0] = self.id
-				gl.DeleteBuffers(1, temp)
+				gl.DeleteBuffers(1, ffi.new('GLuint[1]', self.id))
 			end
 			function gl.CreateBuffer()
+				local temp = ffi.new("GLuint[1]")
 				gl.CreateBuffers(1, temp)
 				local self = ffi.new(ctype)
 				self.id = temp[0]
 				return self
 			end
-		else
+		end
+		do
+			local META = {}
+			META.__index = META
 			local bind
 			do
 				local last
@@ -33653,9 +33659,6 @@ function gl.Initialize(get_proc_address)
 					end
 					last = self
 				end
-			end
-			function META:CreateBuffers(n, buffers)
-				bind(self) return gl.CreateBuffers(n, self.ids)
 			end
 			function META:ClearData(internalformat, format, type, data)
 				bind(self) return gl.ClearBufferData(self.target, internalformat, format, type, data)
@@ -33701,38 +33704,40 @@ function gl.Initialize(get_proc_address)
 			end
 			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
-			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
-				temp[0] = self.id
-				gl.DeleteBuffers(1, temp)
+				gl.DeleteBuffers(1, ffi.new('GLuint[1]', self.id))
 			end
-			META.not_dsa = true
-			function gl.CreateBuffer(target)
+			function gl.CreateBufferNODSA(target)
 				local self = setmetatable({}, META)
 				self.id = gl.GenBuffer()
 				self.target = target -- non dsa specific
 				return self
 			end
 		end
+		if not gl.CreateBuffers or true then
+			gl.CreateBuffer = gl.CreateBufferNODSA
+		end
 	end
 	do -- ProgramPipeline
-		local META = {}
-		META.__index = META
-		if gl.CreateProgramPipelines then
+		do
+			local META = {}
+			META.__index = META
 			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
-			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
-				temp[0] = self.id
-				gl.DeleteProgramPipelines(1, temp)
+				gl.DeleteProgramPipelines(1, ffi.new('GLuint[1]', self.id))
 			end
 			function gl.CreateProgramPipeline()
+				local temp = ffi.new("GLuint[1]")
 				gl.CreateProgramPipelines(1, temp)
 				local self = ffi.new(ctype)
 				self.id = temp[0]
 				return self
 			end
-		else
+		end
+		do
+			local META = {}
+			META.__index = META
 			local bind
 			do
 				local last
@@ -33745,17 +33750,18 @@ function gl.Initialize(get_proc_address)
 			end
 			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
-			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
-				temp[0] = self.id
-				gl.DeleteProgramPipelines(1, temp)
+				gl.DeleteProgramPipelines(1, ffi.new('GLuint[1]', self.id))
 			end
-			META.not_dsa = true
-			function gl.CreateProgramPipeline()
+			function gl.CreateProgramPipelineNODSA()
 				local self = setmetatable({}, META)
 				self.id = gl.GenProgramPipeline()
 				return self
 			end
+		end
+
+		if not gl.CreateProgramPipelines or true then
+			gl.CreateProgramPipeline = gl.CreateProgramPipelineNODSA
 		end
 	end
 	do -- Program
@@ -33857,23 +33863,25 @@ function gl.Initialize(get_proc_address)
 		end
 	end
 	do -- Sampler
-		local META = {}
-		META.__index = META
-		if gl.CreateSamplers then
+		do
+			local META = {}
+			META.__index = META
 			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
-			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
-				temp[0] = self.id
-				gl.DeleteSamplers(1, temp)
+				gl.DeleteSamplers(1, ffi.new('GLuint[1]', self.id))
 			end
 			function gl.CreateSampler()
+				local temp = ffi.new("GLuint[1]")
 				gl.CreateSamplers(1, temp)
 				local self = ffi.new(ctype)
 				self.id = temp[0]
 				return self
 			end
-		else
+		end
+		do
+			local META = {}
+			META.__index = META
 			local bind
 			do
 				local last
@@ -33886,23 +33894,24 @@ function gl.Initialize(get_proc_address)
 			end
 			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
-			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
-				temp[0] = self.id
-				gl.DeleteSamplers(1, temp)
+				gl.DeleteSamplers(1, ffi.new('GLuint[1]', self.id))
 			end
-			META.not_dsa = true
-			function gl.CreateSampler()
+
+			function gl.CreateSamplerNODSA()
 				local self = setmetatable({}, META)
 				self.id = gl.GenSampler()
 				return self
 			end
 		end
+		if not gl.CreateSamplers or true then
+			gl.CreateSampler = gl.CreateSamplerNODSA
+		end
 	end
 	do -- Renderbuffer
-		local META = {}
-		META.__index = META
-		if gl.CreateRenderbuffers then
+		do
+			local META = {}
+			META.__index = META
 			function META:GetParameterivEXT(pname, params)
 				return gl.GetNamedRenderbufferParameterivEXT(self.id, pname, params)
 			end
@@ -33921,26 +33930,25 @@ function gl.Initialize(get_proc_address)
 			function META:StorageMultisampleCoverage(coverageSamples, colorSamples, internalformat, width, height)
 				return gl.NamedRenderbufferStorageMultisampleCoverageEXT(self.id, coverageSamples, colorSamples, internalformat, width, height)
 			end
-			function META:CreateRenderbuffers(renderbuffers)
-				return gl.CreateRenderbuffers(self.id, renderbuffers)
-			end
 			function META:GetParameteriv(pname, params)
 				return gl.GetNamedRenderbufferParameteriv(self.id, pname, params)
 			end
 			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
-			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
-				temp[0] = self.id
-				gl.DeleteRenderbuffers(1, temp)
+				gl.DeleteRenderbuffers(1, ffi.new('GLuint[1]', self.id))
 			end
 			function gl.CreateRenderbuffer()
+				local temp = ffi.new("GLuint[1]")
 				gl.CreateRenderbuffers(1, temp)
 				local self = ffi.new(ctype)
 				self.id = temp[0]
 				return self
 			end
-		else
+		end
+		do
+			local META = {}
+			META.__index = META
 			local bind
 			do
 				local last
@@ -33974,21 +33982,21 @@ function gl.Initialize(get_proc_address)
 			end
 			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
-			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
-				temp[0] = self.id
-				gl.DeleteRenderbuffers(1, temp)
+				gl.DeleteRenderbuffers(1, ffi.new('GLuint[1]', self.id))
 			end
-			META.not_dsa = true
-			function gl.CreateRenderbuffer()
+			function gl.CreateRenderbufferNODSA()
 				local self = setmetatable({}, META)
 				self.id = gl.GenRenderbuffer()
 				return self
 			end
 		end
+		if not gl.CreateRenderbuffers or true then
+			gl.CreateRenderbuffer = gl.CreateRenderbufferNODSA
+		end
 	end
 	do -- Texture
-		if gl.CreateTextures then
+		do
 			local META = {}
 			META.__index = META
 
@@ -34195,19 +34203,17 @@ function gl.Initialize(get_proc_address)
 			end
 			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
-			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
-				temp[0] = self.id
-				gl.DeleteTextures(1, temp)
+				gl.DeleteTextures(1, ffi.new('GLuint[1]', self.id))
 			end
 			function gl.CreateTexture(target)
+				local temp = ffi.new('GLuint[1]')
 				gl.CreateTextures(target, 1, temp)
 				local self = ffi.new(ctype)
 				self.id = temp[0]
 				return self
 			end
 		end
-
 		do
 			local META = {}
 			META.__index = META
@@ -34248,7 +34254,7 @@ function gl.Initialize(get_proc_address)
 			function META:CopySubImage1D(level, xoffset, x, y, width)
 				bind(self) return gl.CopyTexSubImage1D(self.target, level, xoffset, x, y, width)
 			end
-			function META:GetImage(level, format, type, bufSize, pixels)
+			function META:GetImage(level, format, type, pixels)
 				bind(self) return gl.GetTexImage(self.target, level, format, type, pixels)
 			end
 			function META:CopyImage2D(level, internalformat, x, y, width, height, border)
@@ -34440,23 +34446,18 @@ function gl.Initialize(get_proc_address)
 			end
 			local ctype = ffi.typeof('struct { int id, target; }')
 			ffi.metatype(ctype, META)
-			local temp = ffi.new('GLuint[1]')
 			function META:Delete()
-				temp[0] = self.id
-				gl.DeleteTextures(1, temp)
+				gl.DeleteTextures(1, ffi.new('GLuint[1]', self.id))
 			end
-			META.not_dsa = true
-
 			function gl.CreateTextureNODSA(target)
 				local self = setmetatable({}, META)
 				self.id = gl.GenTexture()
 				self.target = target
 				return self
 			end
-
-			if not gl.CreateTexture then
-				gl.CreateTexture = gl.CreateTextureNODSA
-			end
+		end
+		if not gl.CreateTexture then
+			gl.CreateTexture = gl.CreateTextureNODSA
 		end
 	end
 end
