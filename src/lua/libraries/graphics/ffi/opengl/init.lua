@@ -33212,6 +33212,15 @@ function gl.Initialize(get_proc_address)
 			end
 		end
 	end
+	do
+		local func = gl.GetProcAddress("wglSwapIntervalEXT")
+		if func ~= nil then
+			local ok, func = pcall(ffi.cast, 'void (*)(GLint)', func)
+			if ok then
+				gl.SwapIntervalEXT = func
+			end
+		end
+	end
 	do -- VertexArray
 		do
 			local META = {}
@@ -33332,7 +33341,7 @@ function gl.Initialize(get_proc_address)
 			end
 		end
 
-		if not gl.CreateVertexArrays or true then
+		if not gl.CreateVertexArrays then
 			gl.CreateVertexArray = gl.CreateVertexArrayNODSA
 		end
 	end
@@ -33581,7 +33590,7 @@ function gl.Initialize(get_proc_address)
 			end
 		end
 
-		if not gl.CreateFramebuffers or true then
+		if not gl.CreateFramebuffers then
 			gl.CreateFramebuffer = gl.CreateFramebufferNODSA
 		end
 	end
@@ -33660,6 +33669,9 @@ function gl.Initialize(get_proc_address)
 					last = self
 				end
 			end
+			function META:Bind()
+				bind(self)
+			end
 			function META:ClearData(internalformat, format, type, data)
 				bind(self) return gl.ClearBufferData(self.target, internalformat, format, type, data)
 			end
@@ -33714,7 +33726,7 @@ function gl.Initialize(get_proc_address)
 				return self
 			end
 		end
-		if not gl.CreateBuffers or true then
+		if not gl.CreateBuffers then
 			gl.CreateBuffer = gl.CreateBufferNODSA
 		end
 	end
@@ -33760,7 +33772,7 @@ function gl.Initialize(get_proc_address)
 			end
 		end
 
-		if not gl.CreateProgramPipelines or true then
+		if not gl.CreateProgramPipelines then
 			gl.CreateProgramPipeline = gl.CreateProgramPipelineNODSA
 		end
 	end
@@ -33904,7 +33916,7 @@ function gl.Initialize(get_proc_address)
 				return self
 			end
 		end
-		if not gl.CreateSamplers or true then
+		if not gl.CreateSamplers then
 			gl.CreateSampler = gl.CreateSamplerNODSA
 		end
 	end
@@ -33991,7 +34003,7 @@ function gl.Initialize(get_proc_address)
 				return self
 			end
 		end
-		if not gl.CreateRenderbuffers or true then
+		if not gl.CreateRenderbuffers then
 			gl.CreateRenderbuffer = gl.CreateRenderbufferNODSA
 		end
 	end
@@ -34254,7 +34266,7 @@ function gl.Initialize(get_proc_address)
 			function META:CopySubImage1D(level, xoffset, x, y, width)
 				bind(self) return gl.CopyTexSubImage1D(self.target, level, xoffset, x, y, width)
 			end
-			function META:GetImage(level, format, type, pixels)
+			function META:GetImage(level, format, type, _, pixels)
 				bind(self) return gl.GetTexImage(self.target, level, format, type, pixels)
 			end
 			function META:CopyImage2D(level, internalformat, x, y, width, height, border)
@@ -34456,7 +34468,7 @@ function gl.Initialize(get_proc_address)
 				return self
 			end
 		end
-		if not gl.CreateTexture then
+		if not gl.CreateTextures then
 			gl.CreateTexture = gl.CreateTextureNODSA
 		end
 	end
