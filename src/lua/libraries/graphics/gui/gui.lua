@@ -170,70 +170,6 @@ do -- events
 			panel:KeyInput(button, press)
 			return true
 		end
-
-		if button == "space" then
-			gui.MouseInput("button_1", press)
-		end
-
-		if press and input.IsKeyDown("left_control") then
-
-			local last = gui.hovering_panel
-
-			if button == "up" then
-				local x, y = window.GetMousePosition():Unpack()
-				for i = y, 1, -16 do
-					window.SetMousePosition(Vec2(x, i))
-					gui.UpdateMousePosition()
-					gui.world:Draw()
-					if last ~= gui.hovering_panel and last.Parent ~= gui.hovering_panel then
-						gui.hovering_panel:BringMouse()
-						if window.GetMousePosition().y > i then
-							break
-						end
-					end
-				end
-			elseif button == "left" then
-				local x, y = window.GetMousePosition():Unpack()
-				for i = x, 1, -16 do
-					window.SetMousePosition(Vec2(i, y))
-					gui.UpdateMousePosition()
-					gui.world:Draw()
-					if last ~= gui.hovering_panel and last.Parent ~= gui.hovering_panel then
-						gui.hovering_panel:BringMouse()
-						if window.GetMousePosition().x > i then
-							break
-						end
-					end
-				end
-			elseif button == "right" then
-				local x, y = window.GetMousePosition():Unpack()
-				for i = x, window.GetSize().x, 16 do
-					window.SetMousePosition(Vec2(i, y))
-					gui.UpdateMousePosition()
-					gui.world:Draw()
-					if last ~= gui.hovering_panel and last.Parent ~= gui.hovering_panel then
-						gui.hovering_panel:BringMouse()
-						if window.GetMousePosition().x < i then
-							break
-						end
-					end
-				end
-			elseif button == "down" then
-				local x, y = window.GetMousePosition():Unpack()
-				for i = y, window.GetSize().y, 16 do
-					window.SetMousePosition(Vec2(x, i))
-					gui.UpdateMousePosition()
-					gui.world:Draw()
-					if last ~= gui.hovering_panel and last.Parent ~= gui.hovering_panel then
-						gui.hovering_panel:BringMouse()
-						if window.GetMousePosition().y > i then
-							break
-						end
-					end
-				end
-			end
-		end
-
 	end
 
 	function gui.CharInput(char)
@@ -258,18 +194,6 @@ do -- events
 		end
 
 		gui.mouse_pos.x, gui.mouse_pos.y = surface.GetMousePosition()
-
-		if not input.IsKeyDown("left_control") then
-			if input.IsKeyDown("up") then
-				window.SetMousePosition(Vec2(gui.mouse_pos.x, gui.mouse_pos.y - 1))
-			elseif input.IsKeyDown("down") then
-				window.SetMousePosition(Vec2(gui.mouse_pos.x, gui.mouse_pos.y + 1))
-			elseif input.IsKeyDown("left") then
-				window.SetMousePosition(Vec2(gui.mouse_pos.x - 1, gui.mouse_pos.y))
-			elseif input.IsKeyDown("right") then
-				window.SetMousePosition(Vec2(gui.mouse_pos.x + 1, gui.mouse_pos.y))
-			end
-		end
 	end
 
 	function gui.Draw2D(dt)
