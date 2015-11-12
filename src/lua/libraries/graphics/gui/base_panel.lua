@@ -2350,6 +2350,7 @@ do -- events
 
 		-- this is important!!
 		self:UnParent()
+		self:OnUnfocus()
 	end
 
 	function PANEL:OnSystemFileDrop(path) end

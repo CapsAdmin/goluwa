@@ -85,12 +85,14 @@ function PANEL:SizeToText()
 end
 
 function PANEL:OnFocus()
+	input.DisableFocus = true -- TODO
 	if self.Editable then
 		self.label.markup:SetEditable(true)
 	end
 end
 
 function PANEL:OnUnfocus()
+	input.DisableFocus = false -- TODO
 	self.label.markup:SetEditable(false)
 end
 
