@@ -1556,7 +1556,8 @@ do -- layout
 					child.Visible and
 					not child.ThreeDee and
 					not child.IgnoreLayout and
-					(panel.CollisionGroup == "none" or panel.CollisionGroup == child.CollisionGroup)
+					(panel.CollisionGroup == "none" or panel.CollisionGroup == child.CollisionGroup) and
+					(panel.lol == nil or panel.lol ~= child.lol)
 				then
 					local child_left, child_top, child_right, child_bottom = child:GetWorldRectFast()
 

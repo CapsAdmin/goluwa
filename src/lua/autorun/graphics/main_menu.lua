@@ -9,6 +9,10 @@ do -- open close
 		menu.CreateTopBar()
 		event.AddListener("PreDrawMenu", "StartupMenu", menu.RenderBackground)
 		event.Timer("StartupMenu", 0.025, menu.UpdateBackground)
+		
+		local sheep = gui.CreatePanel("sheep")
+		--sheep:SetSize()
+		
 		menu.visible = true
 	end
 
