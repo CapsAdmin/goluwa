@@ -288,7 +288,10 @@ editor.selected_ent = editor.selected_ent or NULL
 function editor.Open()
 	if not render.gbuffer:IsValid() then
 		render.InitializeGBuffer()
-		entities.GetWorld():SetStorableTable(serializer.ReadFile("luadata", "world.map"))
+		local data = serializer.ReadFile("luadata", "world.map")
+		if data then
+			entities.GetWorld():SetStorableTable(data)
+		end
 	end
 
 	gui.RemovePanel(editor.frame)

@@ -55,6 +55,7 @@ do -- vfs extension
 		if vfs.IsFile(path) then
 			return serializer.Decode(lib, vfs.Read(path))
 		end
+		return false, "no such file"
 	end
 
 	function serializer.SetKeyValueInFile(lib, path, key, value)
