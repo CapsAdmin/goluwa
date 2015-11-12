@@ -845,33 +845,37 @@ function META:Download(mip_map_level, format_override)
 end
 
 function META:Clear(mip_map_level)
-	local data = self:Download(mip_map_level)
+	if render.IsExtensionSupported("GL_ARB_clear_texture") then
+		gl.ClearTexImage(self.gl_tex.id, mip_map_level or 0, "GL_RGBA", "GL_UNSIGNED_BYTE", nil)
+	else
+		local data = self:Download(mip_map_level)
 
-	if data.channels == 4 then
-		for i = 0, data.length do
-			data.buffer[i].r = 0
-			data.buffer[i].g = 0
-			data.buffer[i].b = 0
-			data.buffer[i].a = 0
+		if data.channels == 4 then
+			for i = 0, data.length do
+				data.buffer[i].r = 0
+				data.buffer[i].g = 0
+				data.buffer[i].b = 0
+				data.buffer[i].a = 0
+			end
+		elseif data.channels == 3 then
+			for i = 0, data.length do
+				data.buffer[i].r = 0
+				data.buffer[i].g = 0
+				data.buffer[i].b = 0
+			end
+		elseif data.channels == 2 then
+			for i = 0, data.length do
+				data.buffer[i].r = 0
+				data.buffer[i].g = 0
+			end
+		elseif data.channels == 1 then
+			for i = 0, data.length do
+				data.buffer[i].r = 0
+			end
 		end
-	elseif data.channels == 3 then
-		for i = 0, data.length do
-			data.buffer[i].r = 0
-			data.buffer[i].g = 0
-			data.buffer[i].b = 0
-		end
-	elseif data.channels == 2 then
-		for i = 0, data.length do
-			data.buffer[i].r = 0
-			data.buffer[i].g = 0
-		end
-	elseif data.channels == 1 then
-		for i = 0, data.length do
-			data.buffer[i].r = 0
-		end
+
+		self:Upload(data)
 	end
-
-	self:Upload(data)
 end
 
 function META:Fill(callback)
