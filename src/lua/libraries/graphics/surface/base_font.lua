@@ -33,17 +33,17 @@ function META:CreateTextureAtlas()
 	self.texture_atlas:Build()
 end
 
-function META:Shade(source, vars)
+function META:Shade(source, vars, blend_mode)
 	if source then
 		for _, tex in ipairs(self:GetTextures()) do
-			tex:Shade(source, vars)
+			tex:Shade(source, vars, blend_mode)
 		end
 	elseif self.ShadingInfo then
 		self:CreateTextureAtlas()
 
 		for _, info in ipairs(self.ShadingInfo) do
 			for _, tex in ipairs(self.texture_atlas:GetTextures()) do
-				tex:Shade(info.source, info.vars)
+				tex:Shade(info.source, info.vars, info.blend_mode)
 			end
 		end
 	end

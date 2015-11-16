@@ -31,7 +31,7 @@ for i = -max, max do
 	local s = math.sin(f * math.pi)
 	local c = math.sin(f * math.pi)
 
-	table.insert(passes, {source = blur_shader, vars = {dir = Vec2(c,s), radius = 0.05}})
+	table.insert(passes, {source = blur_shader, vars = {dir = Vec2(c,s), radius = 0.05}, blend_mode = "additive"})
 end
 
 chathud = chathud or {}
