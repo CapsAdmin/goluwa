@@ -33783,10 +33783,11 @@ function gl.Initialize(get_proc_address)
 		function META:DetachShader(shader) return gl.AttachShader(self.id, shader) end
 		function META:Link() return gl.LinkProgram(self.id) end
 		function META:Use() return gl.UseProgram(self.id) end
+		function META:GetInfoLog(...) return gl.GetProgramInfoLog(self.id, ...) end
 		function META:Parameteri(pname, value) return gl.ProgramParameteri(self.id, pname, value) end
 		function META:UniformBlockBinding(blockindex, blockbinding) return gl.UniformBlockBinding(self.id, blockindex, blockbinding) end
 		function META:ShaderStorageBlockBinding(blockindex, blockbinding) return gl.ShaderStorageBlockBinding(self.id, blockindex, blockbinding) end
-
+		
 		function META:Getiv(pname, params) return gl.GetProgramiv(self.id, pname, params) end
 		function META:GetUniformLocation(name) return gl.GetUniformLocation(self.id, name) end
 		function META:GetUniformBlockIndex(name) return gl.GetUniformBlockIndex(self.id, name) end
@@ -33862,7 +33863,8 @@ function gl.Initialize(get_proc_address)
 		function META:Source(count, string, length) return gl.ShaderSource(self.id, count, string, length) end
 		function META:Compile() return gl.CompileShader(self.id) end
 		function META:Getiv(pname, params) return gl.GetShaderiv(self.id, pname, params) end
-
+		function META:GetInfoLog(...) return gl.GetShaderInfoLog(self.id, ...) end
+		
 		function META:Delete()
 			gl.DeleteShader(self.id)
 		end
