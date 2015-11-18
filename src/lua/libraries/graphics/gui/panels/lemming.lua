@@ -123,18 +123,21 @@ function PANEL:OnUpdate()
 	if self:IsDragging() then self.Velocity = Vec2(surface.GetMouseVel())/10 end
 
 	self.frame = self.frame + self.Velocity.x / 2
-	self.Velocity = self.Velocity + Vec2(0, 10) * dt
-
-	self:CheckCollision()
 
 	if self.on_ground then
-		self.Velocity = self.Velocity + Vec2(self.dir*0.001, 0)
+		self.Velocity = Vec2(self.dir*10000, 0)
+	else
+		self.Velocity = self.Velocity + Vec2(0, 100) 
 	end
 	
-	self:MarkCacheDirty()
-	self.Position = self.Position + self.Velocity
+	self:CheckCollision()
+	
+	self.Position = self.Position + (self.Velocity * dt)
+
 	if not self.Position:IsValid() then self.Position:Zero() end
 	if not self.Velocity:IsValid() then self.Velocity:Zero() end
+	
+	self:MarkCacheDirty()
 end
 
 function PANEL:OnDraw()
