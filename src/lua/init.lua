@@ -111,22 +111,27 @@ end
 do -- 52 compat
 	local old_setmetatable = setmetatable
 
-	function setmetatable(t, mt)
+	function setmetatable(tbl, meta)
 
-		if rawget(mt,"__gc") and not rawget(t,"__gc_proxy") then
-			local p = newproxy(true)
-			rawset(t,"__gc_proxy", p)
-			debug.getmetatable(p).__gc=function()
-				rawset(t,"__gc_proxy",nil)
-				local nmt = debug.getmetatable(t)
-				if not nmt then return end
-				local fin = rawget(nmt,"__gc")
-				if not fin then return end
-				fin(t)
+		if rawget(meta, "__gc") and not rawget(tbl, "__gc_proxy") then
+			local proxy = newproxy(true)
+			rawset(tbl, "__gc_proxy", proxy)
+
+			debug.getmetatable(proxy).__gc = function()
+				rawset(tbl, "__gc_proxy", nil)
+
+				local new_meta = debug.getmetatable(tbl)
+
+				if new_meta then
+					local __gc = rawget(new_meta, "__gc")
+					if __gc then
+						__gc(tbl)
+					end
+				end
 			end
 		end
 
-		return old_setmetatable(t,mt)
+		return old_setmetatable(tbl, meta)
 	end
 end
 
