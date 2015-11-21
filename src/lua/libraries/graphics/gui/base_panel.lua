@@ -228,6 +228,7 @@ do -- drawing
 
 		self:CalcAnimations()
 		self:CalcLayout()
+		self:CalcResizing()
 
 		if self.CachedRendering and not gui.debug then
 			self:BuildCache()
@@ -292,8 +293,6 @@ do -- drawing
 	end
 
 	function PANEL:PostDraw(from_cache)
-		self:CalcResizing()
-
 		if --[[true or]] not self.draw_no_draw and self.Clipping then
 			--surface.PopClipFunction()
 			surface.DisableClipRect()
@@ -1191,9 +1190,9 @@ do -- resizing
 		if self.Resizable then
 			local loc = self:GetResizeLocation(self:GetMousePosition())
 			if location2cursor[loc] then
-				system.SetCursor(location2cursor[loc])
+				self:SetCursor(location2cursor[loc])
 			else
-				gui.active_cursor = nil
+				self:SetCursor()
 			end
 		end
 
