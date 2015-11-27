@@ -31,90 +31,170 @@ function META:SetMode(mode)
 	self.gl_mode = translate[mode] or translate.triangle
 end
 
-function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
-	checkx(shader, "shader")
-	--check(vertices, "cdata", "table")
-	--check(indices, "cdata", "table", "number", "nil")
-	local self = prototype.CreateObject(META)
-	self:SetMode(self:GetMode())
-	self.vertex_buffer = gl.CreateBuffer("GL_ARRAY_BUFFER")
-	self.element_buffer = gl.CreateBuffer("GL_ELEMENT_ARRAY_BUFFER")
-	self.vertex_array = gl.CreateVertexArray()
-	self.vertex_array_info = shader:GetVertexAttributes()
 
-	if vertices then
-		self:UpdateBuffer(shader:CreateBuffersFromTable(vertices, indices, is_valid_table))
-	end
+if NVIDIA_WORKAROUND then
+	function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
+		checkx(shader, "shader")
+		--check(vertices, "cdata", "table")
+		--check(indices, "cdata", "table", "number", "nil")
 
-	return self
-end
+		local self = prototype.CreateObject(META)
+		self:SetMode(self:GetMode())
+		self.vertices_id = gl.GenBuffer()
+		self.indices_id = gl.GenBuffer()
+		self.vao_id = gl.GenVertexArray()
+		self.vertex_attributes = shader:GetVertexAttributes()
 
-function META:OnRemove()
-	self.vertex_buffer:Unmap()
-	self.vertex_buffer:Delete()
-
-	self.element_buffer:Unmap()
-	self.element_buffer:Delete()
-end
-
-function META:Draw(count)
-
-	if render.current_shader_override then
-		render.current_shader_override:Bind()
-	elseif self.Shader then
-		self.Shader:Bind()
-	end
-
-	gl.BindVertexArray(self.vertex_array.id)
-	if not render.IsExtensionSupported("GL_ARB_direct_state_access") then
-		self.element_buffer:Bind()
-	end
-	gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_INT", nil)
-
-	--render.vertex_draw_count = render.vertex_draw_count + self.vertices_length
-	--render.draw_call_count = render.draw_call_count + 1
-end
-
-local function setup_vertex_array(self)
-	if not self.setup_vao and self.Indices and self.Vertices then
-		for _, data in ipairs(self.vertex_array_info.attributes) do
-			if not render.IsExtensionSupported("GL_ARB_direct_state_access") then
-				self.element_buffer:Bind()
-				self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.vertex_array_info.size)
-			end
-			self.vertex_array:AttribBinding(data.location, 0)
-			self.vertex_array:AttribFormat(data.location, data.row_length, data.number_type, false, data.row_offset)
-			self.vertex_array:EnableAttrib(data.location)		
+		if vertices then
+			self:UpdateBuffer(shader:CreateBuffersFromTable(vertices, indices, is_valid_table))
 		end
-		self.setup_vao = true
+
+		return self
 	end
-end
 
-function META:SetVertices(vertices)
-	self.Vertices = vertices
-
-	self.vertices_length = vertices:GetLength()
-
-	self.vertex_buffer:Data(vertices:GetSize(), vertices:GetPointer(), "GL_DYNAMIC_DRAW")
-
-	setup_vertex_array(self)
-
-	if render.IsExtensionSupported("GL_ARB_direct_state_access") then
-		self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.vertex_array_info.size)
+	function META:OnRemove()
+		gl.DeleteBuffers(1, ffi.new("GLuint[1]", self.vertices_id))
+		gl.DeleteBuffers(1, ffi.new("GLuint[1]", self.indices_id))
 	end
-end
 
-function META:SetIndices(indices)
-	self.Indices = indices
+	function META:Draw(count)
 
-	self.indices_length = indices:GetLength() -- needed for drawing
+		if render.current_shader_override then
+			render.current_shader_override:Bind()
+		elseif self.Shader then
+			self.Shader:Bind()
+		end
 
-	self.element_buffer:Data(indices:GetSize(), indices:GetPointer(), "GL_DYNAMIC_DRAW")
+		gl.BindVertexArray(self.vao_id)
+		gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
+		gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_INT", nil)
 
-	setup_vertex_array(self)
-	
-	if render.IsExtensionSupported("GL_ARB_direct_state_access") then
-		self.vertex_array:ElementBuffer(self.element_buffer.id)
+		render.vertex_draw_count = render.vertex_draw_count + self.vertices_length
+		render.draw_call_count = render.draw_call_count + 1
+	end
+
+	local function setup_vertex_array(self)
+		if not self.setup_vao and self.Indices and self.Vertices then
+			gl.BindBuffer("GL_ARRAY_BUFFER", self.vertices_id)
+			gl.BindVertexArray(self.vao_id)
+				for _, data in ipairs(self.vertex_attributes.attributes) do
+					gl.EnableVertexAttribArray(data.location)
+					gl.VertexAttribPointer(data.location, data.row_length, data.number_type, false, self.vertex_attributes.size, ffi.cast("void*", data.row_offset))
+				end
+			gl.BindVertexArray(0)
+			self.setup_vao = true
+		end
+	end
+
+	function META:SetVertices(vertices)
+		self.Vertices = vertices
+
+		self.vertices_length = vertices:GetLength()
+
+		gl.BindBuffer("GL_ARRAY_BUFFER", self.vertices_id)
+		gl.BufferData("GL_ARRAY_BUFFER", vertices:GetSize(), vertices:GetPointer(), "GL_STATIC_DRAW")
+		gl.BindBuffer("GL_ARRAY_BUFFER", 0)
+
+		setup_vertex_array(self)
+	end
+
+	function META:SetIndices(indices)
+		self.Indices = indices
+
+		self.indices_length = indices:GetLength() -- needed for drawing
+
+		gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
+		gl.BufferData("GL_ELEMENT_ARRAY_BUFFER", indices:GetSize(), indices:GetPointer(), "GL_STATIC_DRAW")
+		gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", 0)
+
+		setup_vertex_array(self)
+	end
+else
+	function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
+		checkx(shader, "shader")
+		--check(vertices, "cdata", "table")
+		--check(indices, "cdata", "table", "number", "nil")
+		local self = prototype.CreateObject(META)
+		self:SetMode(self:GetMode())
+		self.vertex_buffer = gl.CreateBuffer("GL_ARRAY_BUFFER")
+		self.element_buffer = gl.CreateBuffer("GL_ELEMENT_ARRAY_BUFFER")
+		self.vertex_array = gl.CreateVertexArray()
+		self.vertex_array_info = shader:GetVertexAttributes()
+
+		if vertices then
+			self:UpdateBuffer(shader:CreateBuffersFromTable(vertices, indices, is_valid_table))
+		end
+
+		return self
+	end
+
+	function META:OnRemove()
+		self.vertex_buffer:Unmap()
+		self.vertex_buffer:Delete()
+
+		self.element_buffer:Unmap()
+		self.element_buffer:Delete()
+	end
+
+	function META:Draw(count)
+
+		if render.current_shader_override then
+			render.current_shader_override:Bind()
+		elseif self.Shader then
+			self.Shader:Bind()
+		end
+
+		gl.BindVertexArray(self.vertex_array.id)
+		if not system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
+			self.element_buffer:Bind()
+		end
+		gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_INT", nil)
+
+		--render.vertex_draw_count = render.vertex_draw_count + self.vertices_length
+		--render.draw_call_count = render.draw_call_count + 1
+	end
+
+	local function setup_vertex_array(self)
+		if not self.setup_vao and self.Indices and self.Vertices then
+			for _, data in ipairs(self.vertex_array_info.attributes) do
+				if not system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
+					self.element_buffer:Bind()
+					self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.vertex_array_info.size)
+				end
+				self.vertex_array:AttribBinding(data.location, 0)
+				self.vertex_array:AttribFormat(data.location, data.row_length, data.number_type, false, data.row_offset)
+				self.vertex_array:EnableAttrib(data.location)
+			end
+			self.setup_vao = true
+		end
+	end
+
+	function META:SetVertices(vertices)
+		self.Vertices = vertices
+
+		self.vertices_length = vertices:GetLength()
+
+		self.vertex_buffer:Data(vertices:GetSize(), vertices:GetPointer(), "GL_DYNAMIC_DRAW")
+
+		setup_vertex_array(self)
+
+		if system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
+			self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.vertex_array_info.size)
+		end
+	end
+
+	function META:SetIndices(indices)
+		self.Indices = indices
+
+		self.indices_length = indices:GetLength() -- needed for drawing
+
+		self.element_buffer:Data(indices:GetSize(), indices:GetPointer(), "GL_DYNAMIC_DRAW")
+
+		setup_vertex_array(self)
+
+		if system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
+			self.vertex_array:ElementBuffer(self.element_buffer.id)
+		end
 	end
 end
 

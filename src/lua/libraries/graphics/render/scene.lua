@@ -2,12 +2,12 @@ local gl = require("graphics.ffi.opengl") -- OpenGL
 local render = (...) or _G.render
 
 do -- current window
-	render.current_window = render.current_window or NULL
+	system.current_window = system.current_window or NULL
 
 	function render.SetWindow(window)
 		window:MakeContextCurrent()
 
-		render.current_window = window
+		system.current_window = window
 
 		_G.window.wnd = window
 
@@ -19,22 +19,22 @@ do -- current window
 	end
 
 	function render.GetWindow()
-		return render.current_window
+		return system.current_window
 	end
 
 	utility.MakePushPopFunction(render, "Window", render.SetWindow, render.GetWindow, reset)
 
 	function render.GetWidth()
-		if render.current_window:IsValid() then
-			return render.current_window:GetSize().x
+		if system.current_window:IsValid() then
+			return system.current_window:GetSize().x
 		end
 
 		return 0
 	end
 
 	function render.GetHeight()
-		if render.current_window:IsValid() then
-			return render.current_window:GetSize().y
+		if system.current_window:IsValid() then
+			return system.current_window:GetSize().y
 		end
 
 		return 0

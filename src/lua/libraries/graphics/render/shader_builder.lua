@@ -16,7 +16,7 @@ local unrolled_lines = {
 	texture = "render.current_program:Uniform1i(%i, %i) val:Bind(%i)",
 }
 
-if render.IsExtensionSupported("GL_ARB_bindless_texture") then
+if system.IsOpenGLExtensionSupported("GL_ARB_bindless_texture") then
 	unrolled_lines.texture = "if val.bindless_handle then render.current_program:UniformHandleui64(%i, val.bindless_handle) end"
 end
 
@@ -182,12 +182,12 @@ local function variables_to_string(type, variables, prepend, macro, array)
 		end
 
 		if data.type:find("sampler") then
-			if render.IsExtensionSupported("GL_ARB_bindless_texture") then
+			if system.IsOpenGLExtensionSupported("GL_ARB_bindless_texture") then
 				table.insert(out, ("%s %s %s %s %s%s;"):format(data.varying, type, data.precision, data.type, name, array):trim())
 			else
 				local layout = ""
 
-				if render.IsExtensionSupported("GL_ARB_enhanced_layouts") or render.IsExtensionSupported("GL_ARB_shading_language_420pack") then
+				if system.IsOpenGLExtensionSupported("GL_ARB_enhanced_layouts") or system.IsOpenGLExtensionSupported("GL_ARB_shading_language_420pack") then
 					layout = ("layout(binding = %i)"):format(texture_channel)
 				end
 
@@ -482,11 +482,11 @@ function render.CreateShader(data, vars)
 
 			local extensions = {}
 
-			if render.IsExtensionSupported("GL_ARB_bindless_texture") then
+			if system.IsOpenGLExtensionSupported("GL_ARB_bindless_texture") then
 				table.insert(extensions, "#extension GL_ARB_bindless_texture : enable")
 			end
 
-			if render.IsExtensionSupported("GL_ARB_shading_language_420pack") then
+			if system.IsOpenGLExtensionSupported("GL_ARB_shading_language_420pack") then
 				table.insert(extensions, "#extension GL_ARB_shading_language_420pack : enable")
 			end
 
@@ -710,7 +710,7 @@ function render.CreateShader(data, vars)
 				local line = tostring(unrolled_lines[data.val.type] or data.val.type)
 
 				if data.val.type == "texture" or data.val.type:find("sampler") then
-					if render.IsExtensionSupported("GL_ARB_bindless_texture") then
+					if system.IsOpenGLExtensionSupported("GL_ARB_bindless_texture") then
 						line = line:format(data.id)
 					else
 						line = line:format(data.id, texture_channel, texture_channel)

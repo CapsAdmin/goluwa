@@ -33,6 +33,7 @@ function PANEL:Initialize()
 		self:MarkCacheDirty()
 	end
 	self.markup = markup
+	self:GlobalMouseCapture(true)
 end
 
 function PANEL:SetPadding(rect)

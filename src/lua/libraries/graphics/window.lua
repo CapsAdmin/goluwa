@@ -17,12 +17,17 @@ end
 function window.Open(...)
 	if window.wnd:IsValid() then return end
 
-	if not render.CreateWindow then
+	if not system.CreateWindow then
 		warning("no window manager found")
 		return
 	end
 
-	local ok, wnd = pcall(render.CreateWindow, ...)
+	local ok, wnd = pcall(system.CreateWindow, ...)
+
+	if not render.initialized then
+		render.initialized = true
+		render.Initialize()
+	end
 
 	if not ok then warning(wnd) return NULL end
 

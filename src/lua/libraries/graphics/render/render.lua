@@ -10,7 +10,7 @@ function render.Initialize()
 		llog("cannot initialize : ", err)
 	return end
 
-	if not render.context_created then error("a window must exist before the renderer can be initialized", 2) end
+	if not system.gl_context then error("a window must exist before the renderer can be initialized", 2) end
 
 	llog("opengl version: %s", render.GetVersion())
 	llog("glsl version: %s", render.GetShadingLanguageVersion())
@@ -222,10 +222,6 @@ end
 
 function render.GetVendor()
 	return ffi.string(gl.GetString("GL_VENDOR"))
-end
-
-function render.IsExtensionSupported()
-	return false
 end
 
 do
@@ -468,13 +464,6 @@ include("model_loader.lua", render)
 include("shadow_map.lua", render)
 include("sky.lua", render)
 include("environment_probe.lua", render)
-
-if USE_GLFW then
-	include("glfw_window.lua", render)
-else
-	include("sdl_window.lua", render)
-end
-
 include("debug.lua", render)
 include("globals.lua", render)
 
