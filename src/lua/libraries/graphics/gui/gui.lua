@@ -188,7 +188,7 @@ do -- events
 			local cursor = gui.hovering_panel:GetCursor()
 
 			if gui.active_cursor ~= cursor then
-				system.SetCursor(cursor)
+				window.GetCursor(cursor)
 				gui.active_cursor = cursor
 			end
 		end

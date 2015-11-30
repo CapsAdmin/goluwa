@@ -258,7 +258,7 @@ function render.DrawGBuffer(what, dist)
 			if shader.fb then shader.fb:End() end
 		end
 
-		if system.IsOpenGLExtensionSupported("GL_ARB_texture_barrier") then gl.TextureBarrier() end
+		if window.IsExtensionSupported("GL_ARB_texture_barrier") then gl.TextureBarrier() end
 
 		if shader.gbuffer_pass.PostRender then
 			shader.gbuffer_pass:PostRender()

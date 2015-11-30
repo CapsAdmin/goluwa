@@ -330,7 +330,7 @@ do -- commands
 	end
 
 	function console.RunLua(line, log_error, env_name)
-		console.SetLuaEnvironmentVariable("copy", system.SetClipboard)
+		console.SetLuaEnvironmentVariable("copy", window.SetClipboard)
 		console.SetLuaEnvironmentVariable("gl", desire("graphics.ffi.opengl"))
 		console.SetLuaEnvironmentVariable("findo", prototype.FindObject)
 		local lua = ""
@@ -1182,9 +1182,9 @@ if not DISABLE_CURSES then
 		end
 
 		if key == "KEY_PASTE" then
-			c.markup:Paste(system.GetClipboard())
+			c.markup:Paste(window.GetClipboard())
 		elseif key == "KEY_COPY" then
-			system.SetClipboard(c.markup:GetText())
+			window.SetClipboard(c.markup:GetText())
 		end
 
 		if key == "KEY_TAB" then

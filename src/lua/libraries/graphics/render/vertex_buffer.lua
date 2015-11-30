@@ -145,7 +145,7 @@ else
 		end
 
 		gl.BindVertexArray(self.vertex_array.id)
-		if not system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
+		if not window.IsExtensionSupported("GL_ARB_direct_state_access") then
 			self.element_buffer:Bind()
 		end
 		gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_INT", nil)
@@ -157,7 +157,7 @@ else
 	local function setup_vertex_array(self)
 		if not self.setup_vao and self.Indices and self.Vertices then
 			for _, data in ipairs(self.vertex_array_info.attributes) do
-				if not system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
+				if not window.IsExtensionSupported("GL_ARB_direct_state_access") then
 					self.element_buffer:Bind()
 					self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.vertex_array_info.size)
 				end
@@ -178,7 +178,7 @@ else
 
 		setup_vertex_array(self)
 
-		if system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
+		if window.IsExtensionSupported("GL_ARB_direct_state_access") then
 			self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.vertex_array_info.size)
 		end
 	end
@@ -192,7 +192,7 @@ else
 
 		setup_vertex_array(self)
 
-		if system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
+		if window.IsExtensionSupported("GL_ARB_direct_state_access") then
 			self.vertex_array:ElementBuffer(self.element_buffer.id)
 		end
 	end

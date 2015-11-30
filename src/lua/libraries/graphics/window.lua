@@ -4,12 +4,10 @@ window.wnd = window.wnd or NULL
 
 local meta = prototype.GetRegistered("render_window")
 
-for k,v in pairs(meta) do
-	if type(v) == "function" then
-		window[k] = function(...)
-			if window.wnd:IsValid() then
-				return window.wnd[k](window.wnd, ...)
-			end
+for key, val in pairs(meta) do
+	if type(val) == "function" then
+		window[key] = function(...)
+			return val(window.wnd, ...)
 		end
 	end
 end
@@ -39,7 +37,7 @@ function window.Open(...)
 	end
 
 	function wnd:OnCursorPosition()
-		if system then system.SetCursor(system.GetCursor()) end
+		if system then window.GetCursor(window.GetCursor()) end
 	end
 
 	local key_trigger = input.SetupInputEvent("Key")

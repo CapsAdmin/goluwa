@@ -357,89 +357,6 @@ do -- editors
 	end
 end
 
-do -- cursor
-	local set = not_implemented
-	local get = not_implemented
-
-	if WINDOWS then
-		require("winapi.cursor")
-		local winapi = require("winapi")
-
-		local lib = ffi.load("user32.dll")
-		local cache = {}
-
-		local enums = {
-			arrow = 32512,
-			ibeam = 32513,
-			wait = 32514,
-			cross = 32515,
-			uparrow = 32516,
-			size = 32640,
-			icon = 32641,
-			sizenwse = 32642,
-			sizenesw = 32643,
-			sizewe = 32644,
-			sizens = 32645,
-			sizeall = 32646,
-			no = 32648,
-			hand = 32649,
-			appstarting = 32650,
-			help = 32651,
-			contexthelp = 30977, -- context sensitive help
-			magnify = 30978, -- print preview zoom
-			smallarrows = 30979, -- splitter
-			hsplitbar = 30980, -- splitter
-			vsplitbar = 30981, -- splitter
-			nodropcrsr = 30982, -- no drop cursor
-			tracknwse = 30983, -- tracker
-			tracknesw = 30984, -- tracker
-			trackns = 30985, -- tracker
-			trackwe = 30986, -- tracker
-			track4way = 30987, -- tracker
-			move4way = 30988, -- resize bar (server only)
-			mouse_pan_nw = 30998, -- pan east
-			mouse_pan_n = 30999, -- pan northeast
-			mouse_pan_ne = 31000, -- pan north
-			mouse_pan_w = 31001, -- pan northwest
-			mouse_pan_hv = 31002, -- pan both axis
-			mouse_pan_e = 31003, -- pan west
-			mouse_pan_sw = 31004, -- pan south-west
-			mouse_pan_s = 31005, -- pan south
-			mouse_pan_se = 31006, -- pan south-east
-			mouse_pan_horz = 31007, -- pan x-axis
-			mouse_pan_vert = 31008, -- pan y-axis
-
-		}
-
-		local current
-
-		local last
-
-		set = function(id)
-			id = id or "arrow"
-
-			cache[id] = cache[id] or winapi.LoadCursor(enums[id] or enums.arrow)
-
-			--if last ~= id then
-				current = id
-				winapi.SetCursor(cache[id])
-			--	last = id
-			--end
-		end
-
-		get = function()
-			return current
-		end
-	else
-		get = function() end
-		set = get
-	end
-
-	system.SetCursor = set
-	system.GetCursor = get
-
-end
-
 do -- dll paths
 	local set, get = not_implemented, not_implemented
 
@@ -543,14 +460,6 @@ do -- registry
 	system.SetRegistryValue = set
 end
 
-do -- clipboard
-	local set = not_implemented
-	local get = not_implemented
-
-	system.SetClipboard = set
-	system.GetClipboard = get
-end
-
 do -- jit debug
 	function system.DebugJIT(b)
 		if b then
@@ -563,18 +472,18 @@ end
 do -- jit options
 	local current = {
 		maxtrace = 65535, -- Max. number of traces in the cache						default = 1000		min = 1	 max = 65535
-		maxrecord = 4000*5, -- Max. number of recorded IR instructions                default = 4000
-		maxirconst = 500*5, -- Max. number of IR constants of a trace                default = 500
-		maxside = 100, -- Max. number of side traces of a root trace                default = 100
-		maxsnap = 500, -- Max. number of snapshots for a trace                     default = 500
+		maxrecord = 4000*5, -- Max. number of recorded IR instructions 		1		default = 4000
+		maxirconst = 500*5, -- Max. number of IR constants of a trace       		default = 500
+		maxside = 100, -- Max. number of side traces of a root trace        		default = 100
+		maxsnap = 500, -- Max. number of snapshots for a trace              		default = 500
 		minstitch = 0, -- Min. # of IR ins for a stitched trace.					default = 0
-		hotloop = 56*100, -- Number of iterations to detect a hot loop or hot call     default = 56
-		hotexit = 10, -- Number of taken exits to start a side trace                 default = 10
+		hotloop = 56*100, -- Number of iterations to detect a hot loop or hot call  default = 56
+		hotexit = 10, -- Number of taken exits to start a side trace                default = 10
 		tryside = 4, -- Number of attempts to compile a side trace                  default = 4
-		instunroll = 4*999, -- Max. unroll factor for instable loops                  default = 4
-		loopunroll = 15*999, -- Max. unroll factor for loop ops in side traces         default = 15
-		callunroll = 3*999, -- Max. unroll factor for pseudo-recursive calls          default = 3
-		recunroll = 2*0, -- Min. unroll factor for true recursion                     default = 2
+		instunroll = 4*999, -- Max. unroll factor for instable loops                default = 4
+		loopunroll = 15*999, -- Max. unroll factor for loop ops in side traces      				default = 15
+		callunroll = 3*999, -- Max. unroll factor for pseudo-recursive calls        				default = 3
+		recunroll = 2*0, -- Min. unroll factor for true recursion                   				default = 2
 		--sizemcode = X64 and 64 or 32, -- Size of each machine code area in KBytes (Windows: 64K)
 		maxmcode = 512*16, -- Max. total size of all machine code areas in KBytes     default = 512
 	}
@@ -1207,6 +1116,76 @@ if sdl then
 	function META:IsFocused()
 		return self.focused
 	end
+	
+	function META:SetClipboard(str)
+		sdl.SetClipboardText(tostring(str))
+	end
+
+	function META:GetClipboard()
+		return ffi.string(sdl.GetClipboardText())
+	end
+
+	do
+		local freq = tonumber(sdl.GetPerformanceFrequency())
+		local start_time = sdl.GetPerformanceCounter()
+
+		function system.GetTime()
+			local time = sdl.GetPerformanceCounter()
+
+			time = time - start_time
+
+			return tonumber(time) / freq
+		end
+	end
+
+	do
+
+		local enums = {
+			arrow = sdl.e.SDL_SYSTEM_CURSOR_ARROW,
+			ibeam = sdl.e.SDL_SYSTEM_CURSOR_IBEAM,
+			wait = sdl.e.SDL_SYSTEM_CURSOR_WAIT,
+			crosshair = sdl.e.SDL_SYSTEM_CURSOR_CROSSHAIR,
+			waitarrow = sdl.e.SDL_SYSTEM_CURSOR_WAITARROW,
+			sizenwse = sdl.e.SDL_SYSTEM_CURSOR_SIZENWSE,
+			sizenesw = sdl.e.SDL_SYSTEM_CURSOR_SIZENESW,
+			sizewe = sdl.e.SDL_SYSTEM_CURSOR_SIZEWE,
+			sizens = sdl.e.SDL_SYSTEM_CURSOR_SIZENS,
+			sizeall = sdl.e.SDL_SYSTEM_CURSOR_SIZEALL,
+			no = sdl.e.SDL_SYSTEM_CURSOR_NO,
+			hand = sdl.e.SDL_SYSTEM_CURSOR_HAND,
+		}
+
+		local current
+		local last
+		local cache = {}
+
+		function META:SetCursor(id)
+			id = id or "arrow"
+
+			cache[id] = cache[id] or sdl.CreateSystemCursor(enums[id] or enums.arrow)
+			--if last ~= id then
+				current = id
+				sdl.SetCursor(cache[id])
+			--	last = id
+			--end
+		end
+
+		function META:GetCursor()
+			return current
+		end
+
+	end
+
+	do
+		local cache = {}
+
+		function META:IsExtensionSupported(str)
+			if cache[str] == nil then
+				cache[str] = sdl.GL_ExtensionSupported(str) == 1
+			end
+			return cache[str]
+		end
+	end
 
 	prototype.Register(META)
 
@@ -1455,77 +1434,6 @@ if sdl then
 		end
 
 		return self
-	end
-
-	function system.SetClipboard(str)
-		sdl.SetClipboardText(tostring(str))
-	end
-
-	function system.GetClipboard()
-		return ffi.string(sdl.GetClipboardText())
-	end
-
-	do
-		local freq = tonumber(sdl.GetPerformanceFrequency())
-		local start_time = sdl.GetPerformanceCounter()
-
-		function system.GetTime()
-			local time = sdl.GetPerformanceCounter()
-
-			time = time - start_time
-
-			return tonumber(time) / freq
-		end
-	end
-
-	do
-
-		local enums = {
-			arrow = sdl.e.SDL_SYSTEM_CURSOR_ARROW,
-			ibeam = sdl.e.SDL_SYSTEM_CURSOR_IBEAM,
-			wait = sdl.e.SDL_SYSTEM_CURSOR_WAIT,
-			crosshair = sdl.e.SDL_SYSTEM_CURSOR_CROSSHAIR,
-			waitarrow = sdl.e.SDL_SYSTEM_CURSOR_WAITARROW,
-			sizenwse = sdl.e.SDL_SYSTEM_CURSOR_SIZENWSE,
-			sizenesw = sdl.e.SDL_SYSTEM_CURSOR_SIZENESW,
-			sizewe = sdl.e.SDL_SYSTEM_CURSOR_SIZEWE,
-			sizens = sdl.e.SDL_SYSTEM_CURSOR_SIZENS,
-			sizeall = sdl.e.SDL_SYSTEM_CURSOR_SIZEALL,
-			no = sdl.e.SDL_SYSTEM_CURSOR_NO,
-			hand = sdl.e.SDL_SYSTEM_CURSOR_HAND,
-		}
-
-		local current
-		local last
-		local cache = {}
-
-		function system.SetCursor(id)
-			id = id or "arrow"
-
-			cache[id] = cache[id] or sdl.CreateSystemCursor(enums[id] or enums.arrow)
-			--if last ~= id then
-				current = id
-				sdl.SetCursor(cache[id])
-			--	last = id
-			--end
-		end
-
-		function system.GetCursor()
-			return current
-		end
-
-	end
-
-	do
-		local cache = {}
-
-		function system.IsOpenGLExtensionSupported(str)
-			if cache[str] == nil then
-				cache[str] = sdl.GL_ExtensionSupported(str) == 1
-			end
-
-			return cache[str]
-		end
 	end
 end
 

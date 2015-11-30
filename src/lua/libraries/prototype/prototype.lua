@@ -251,7 +251,7 @@ function prototype.CreateObject(meta, override, skip_gc_callback)
 	end
 
 	--self:SetDebugTrace(debug.traceback())
-	self:SetCreationTime(system and system.GetElapsedTime() or os.clock())
+	self:SetCreationTime(system and system.GetElapsedTime and system.GetElapsedTime() or os.clock())
 
 	self:SetGUID(("%x"):format(math.random(999999999999999999)) .. ("%x"):format(math.random(999999999999999999)))
 

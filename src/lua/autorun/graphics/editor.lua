@@ -336,14 +336,14 @@ function editor.Open()
 			table.insert(options, {...})
 		end
 
-		local clipboard = serializer.Decode("luadata", system.GetClipboard(), true)
+		local clipboard = serializer.Decode("luadata", window.GetClipboard(), true)
 		if not clipboard.config or not clipboard.self or not clipboard.self.GUID then clipboard = nil end
 
 		--add("wear", nil, frame:GetSkin().icons.wear)
 
 		if node then
 			add(L"copy", function()
-				system.SetClipboard(assert(serializer.Encode("luadata", node.ent:GetStorableTable())))
+				window.SetClipboard(assert(serializer.Encode("luadata", node.ent:GetStorableTable())))
 			end, frame:GetSkin().icons.copy)
 			if clipboard then
 				add(L"paste", function()

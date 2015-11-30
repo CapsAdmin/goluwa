@@ -34,20 +34,20 @@ function love.mouse.getCursor() -- partial
 	local obj = lovemu.CreateObject(Cursor)
 
 	obj.getType = function()
-		return system.GetCursor()
+		return window.GetCursor()
 	end
 
 	return obj
 end
 
 function love.mouse.setCursor() -- partial
-	--system.SetCursor()
+	--window.GetCursor()
 end
 
 function love.mouse.getSystemCursor() -- partial
 	local obj = lovemu.CreateObject(Cursor)
 	obj.getType = function()
-		return system.GetCursor()
+		return window.GetCursor()
 	end
 	return obj
 end

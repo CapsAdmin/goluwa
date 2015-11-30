@@ -372,9 +372,9 @@ function META:SetPath(path, face, flip_y)
 				end
 			end
 
-			--if flip_y == nil then
-			--	flip_y = not full_path:endswith(".vtf")
-			--end
+			if flip_y == nil then
+				flip_y = not full_path:endswith(".vtf")
+			end
 
 			self:Upload({
 				buffer = buffer,
@@ -456,7 +456,7 @@ function META:SetupStorage()
 	end
 
 	if self.StorageType == "3d" then
-		if system.IsOpenGLExtensionSupported("GL_ARB_texture_storage") then
+		if window.IsExtensionSupported("GL_ARB_texture_storage") then
 			self.gl_tex:Storage3D(
 				levels,
 				TOENUM(self.InternalFormat),
@@ -480,7 +480,7 @@ function META:SetupStorage()
 			)
 		end
 	elseif self.StorageType == "2d" or self.StorageType == "rectangle" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then
-		if system.IsOpenGLExtensionSupported("GL_ARB_texture_storage") then
+		if window.IsExtensionSupported("GL_ARB_texture_storage") then
 			if self.Multisample > 0 then
 				self.gl_tex:Storage2DMultisample(
 					self.Multisample,
@@ -513,7 +513,7 @@ function META:SetupStorage()
 			)
 		end
 	elseif self.StorageType == "1d" or self.StorageType == "1d_array" then
-		if system.IsOpenGLExtensionSupported("GL_ARB_texture_storage") then
+		if window.IsExtensionSupported("GL_ARB_texture_storage") then
 			self.gl_tex:Storage1D(
 				levels,
 				TOENUM(self.InternalFormat),
@@ -552,7 +552,7 @@ function META:SetupStorage()
 end
 
 function META:MakeResident()
-	if system.IsOpenGLExtensionSupported("GL_ARB_bindless_texture") and not self.bindless_handle then
+	if window.IsExtensionSupported("GL_ARB_bindless_texture") and not self.bindless_handle then
 		self.bindless_handle = gl.GetTextureHandleARB(self.id)
 		gl.MakeTextureHandleResidentARB(self.bindless_handle)
 	end
@@ -560,7 +560,7 @@ end
 
 function META:MakeNonResident()
 	do return end
-	if system.IsOpenGLExtensionSupported("GL_ARB_bindless_texture") then
+	if window.IsExtensionSupported("GL_ARB_bindless_texture") then
 		gl.MakeTextureHandleNonResidentARB(self.bindless_handle)
 		self.bindless_handle = nil
 	end
@@ -845,7 +845,7 @@ function META:Download(mip_map_level, format_override)
 end
 
 function META:Clear(mip_map_level)
-	if system.IsOpenGLExtensionSupported("GL_ARB_clear_texture") then
+	if window.IsExtensionSupported("GL_ARB_clear_texture") then
 		gl.ClearTexImage(self.gl_tex.id, mip_map_level or 0, "GL_RGBA", "GL_UNSIGNED_BYTE", nil)
 	else
 		local data = self:Download(mip_map_level)

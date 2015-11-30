@@ -59,11 +59,11 @@ function META:OnKeyInput(key, press)
 
 	if self.ControlDown then
 		if key == "c" then
-			system.SetClipboard(self:Copy())
+			window.SetClipboard(self:Copy())
 		elseif key == "x" then
-			system.SetClipboard(self:Cut())
-		elseif key == "v" and system.GetClipboard() then
-			self:Paste(system.GetClipboard())
+			window.SetClipboard(self:Cut())
+		elseif key == "v" and window.GetClipboard() then
+			self:Paste(window.GetClipboard())
 		elseif key == "a" then
 			self:SelectAll()
 		elseif key == "t" then
@@ -164,7 +164,7 @@ function META:OnMouseInput(button, press)
 			if not self.Editable then
 				local str = self:Copy(self.CopyTags)
 				if str ~= "" then
-					system.SetClipboard(str)
+					window.SetClipboard(str)
 					self:Unselect()
 				end
 			end

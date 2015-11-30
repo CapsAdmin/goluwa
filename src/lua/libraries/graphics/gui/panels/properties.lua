@@ -75,8 +75,8 @@ do -- base property
 				end
 
 				gui.CreateMenu({
-					{L"copy", function() system.SetClipboard(self:GetEncodedValue()) end, self:GetSkin().icons.copy},
-					{L"paste", function() self:SetEncodedValue(system.GetClipboard()) end, self:GetSkin().icons.paste},
+					{L"copy", function() window.SetClipboard(self:GetEncodedValue()) end, self:GetSkin().icons.copy},
+					{L"paste", function() self:SetEncodedValue(window.GetClipboard()) end, self:GetSkin().icons.paste},
 					{},
 					option,
 					{L"remove links", function() prototype.RemovePropertyLinks(self.obj) end, "textures/silkicons/link_break.png"},
