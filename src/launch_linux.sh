@@ -10,7 +10,7 @@ case $(uname -m) in
 esac
 
 # make sure we're in this bash's directory
-cd $( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+cd "$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 mkdir -p ../data/bin
 cd ../data/bin
 
