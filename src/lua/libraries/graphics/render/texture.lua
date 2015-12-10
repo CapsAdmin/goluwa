@@ -372,7 +372,7 @@ function META:SetPath(path, face, flip_y)
 				end
 			end
 
-			if flip_y == nil then
+			if flip_y == nil and window.IsExtensionSupported("GL_ARB_bindless_texture") then
 				flip_y = not full_path:endswith(".vtf")
 			end
 
@@ -535,7 +535,7 @@ function META:SetupStorage()
 	end
 
 	event.Delay(0, function()
-		---self:MakeResident()
+		self:MakeResident()
 	end)
 
 	local msg = render.StopDebug()
