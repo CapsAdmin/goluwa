@@ -1179,6 +1179,12 @@ if sdl then
 	do
 		local cache = {}
 
+		for k,v in pairs(_G) do
+			if type(k) == "string" and k:sub(1, 3)  == "GL_" then
+				cache[k] = v
+			end
+		end
+
 		function META:IsExtensionSupported(str)
 			if cache[str] == nil then
 				cache[str] = sdl.GL_ExtensionSupported(str) == 1
