@@ -530,9 +530,9 @@ function system.Restart(run_on_launch)
 
 	if LINUX then
 		if CLIENT then
-			os.execute("./launch_client.sh " .. run_on_launch .. "&")
+			os.execute("./launch_client.bash " .. run_on_launch .. "&")
 		else
-			os.execute("./launch_server.sh " .. run_on_launch .. "&")
+			os.execute("./launch_server.bash " .. run_on_launch .. "&")
 		end
 	end
 
