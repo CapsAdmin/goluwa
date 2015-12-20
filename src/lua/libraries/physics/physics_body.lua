@@ -191,8 +191,8 @@ end
 do -- generic get set
 
 	local function GET_SET(name, default)
-		local set_func = bullet["RigidBodySet" .. name]
-		local get_func = bullet["RigidBodyGet" .. name]
+		local set_func = bullet and bullet["RigidBodySet" .. name] or function() end
+		local get_func = bullet and bullet["RigidBodyGet" .. name] or function() end
 
 		prototype.GetSet(META, name, default)
 
