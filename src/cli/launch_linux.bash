@@ -11,8 +11,8 @@ esac
 
 # make sure we're in this bash's directory
 cd "$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-mkdir -p ../data/bin
-cd ../data/bin
+mkdir -p ../../data/bin
+cd ../../data/bin
 
 #if we don't have binaries get them from github
 if [ ! -f "linux_${arch}/luajit" ]; then

@@ -12,7 +12,7 @@ $hWnd = [Foo.ConsoleUtils]::GetConsoleWindow()
 
 if ($ENV:PROCESSOR_ARCHITECTURE -Match "64"){ $arch = "x64" } else { $arch = "x86" }
 $url = "https://github.com/CapsAdmin/goluwa/releases/download/windows-binaries/" + $arch + ".zip"
-$output_folder = [IO.Path]::GetFullPath($(PSScriptRoot) + "\..\data\bin\windows_" + $arch)
+$output_folder = [IO.Path]::GetFullPath($(PSScriptRoot) + "\..\..\data\bin\windows_" + $arch)
 
 if(!(Test-Path ($output_folder + "\luajit.exe")))
 {
