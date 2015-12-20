@@ -81,7 +81,7 @@ do -- image data
 		end, false, true)
 	end
 
-	local freeimage = require("graphics.ffi.freeimage")
+	local freeimage = desire("graphics.ffi.freeimage")
 
 	function love.image.newImageData(a, b) --partial
 		if lovemu.Type(a) == "ImageData" then
@@ -98,7 +98,7 @@ do -- image data
 		if type(a) == "number" and type(b) == "number" then
 			w = a
 			h = a
-		elseif not b and type(a) == "string" then
+		elseif not b and type(a) == "string" and freeimage then
 			buffer, w, h = freeimage.LoadImage(a)
 			if not buffer then
 				a = vfs.Read(a, "rb")

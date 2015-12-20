@@ -1,5 +1,7 @@
 local freeimage = desire("graphics.ffi.freeimage") -- image decoder
 
+if not freeimage then return end
+
 render.AddTextureDecoder("freeimage", function(data, path_hint)
 	local format
 
