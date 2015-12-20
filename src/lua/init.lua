@@ -7,6 +7,13 @@ if not require("ffi") then
 	error("goluwa requires ffi to run!")
 end
 
+do -- force package paths
+	if jit.os ~= "Windows" then
+		package.cpath = "./?.so"
+		package.path = "./?.lua"
+	end
+end
+
 do -- force the current directory
 	local path = debug.getinfo(1).source
 	if path:sub(1, 1) == "@" then
