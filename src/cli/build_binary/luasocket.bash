@@ -4,12 +4,11 @@ cd ../../../data/bin
 mkdir src
 cd src
 
-luarocks --local install luasocket
-luarocks --local install luasec
+git clone https://github.com/diegonehab/luasocket
+cd luasocket
+make MYCFLAGS=-I/usr/include/luajit-2.0/
 
-cp -r ~/.luarocks/lib/lua/5.1/mime ../linux_x64/mime
-cp -r ~/.luarocks/lib/lua/5.1/socket ../linux_x64/socket
-cp ~/.luarocks/lib/lua/5.1/ssl.so ../linux_x64/ssl.so
-
-luarocks --local remove luasocket
-luarocks --local remove luasec
+mkdir ../../linux_x64/socket
+mkdir ../../linux_x64/mime
+mv src/socket-3.0-rc1.so ../../linux_x64/socket/core.so
+mv src/mime-1.0.3.so ../../linux_x64/mime/core.so
