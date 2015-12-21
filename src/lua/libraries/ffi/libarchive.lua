@@ -264,6 +264,158 @@ int archive_match_include_uname_w(struct archive *, const wchar_t *);
 int archive_match_include_gname(struct archive *, const char *);
 int archive_match_include_gname_w(struct archive *, const wchar_t *);
 int archive_utility_string_sort(char **);
+
+struct archive_entry *archive_entry_clear(struct archive_entry *);
+struct archive_entry *archive_entry_clone(struct archive_entry *);
+void archive_entry_free(struct archive_entry *);
+struct archive_entry *archive_entry_new(void);
+struct archive_entry *archive_entry_new2(struct archive *);
+time_t archive_entry_atime(struct archive_entry *);
+long archive_entry_atime_nsec(struct archive_entry *);
+int archive_entry_atime_is_set(struct archive_entry *);
+time_t archive_entry_birthtime(struct archive_entry *);
+long archive_entry_birthtime_nsec(struct archive_entry *);
+int archive_entry_birthtime_is_set(struct archive_entry *);
+time_t archive_entry_ctime(struct archive_entry *);
+long archive_entry_ctime_nsec(struct archive_entry *);
+int archive_entry_ctime_is_set(struct archive_entry *);
+dev_t archive_entry_dev(struct archive_entry *);
+int archive_entry_dev_is_set(struct archive_entry *);
+dev_t archive_entry_devmajor(struct archive_entry *);
+dev_t archive_entry_devminor(struct archive_entry *);
+mode_t archive_entry_filetype(struct archive_entry *);
+void archive_entry_fflags(struct archive_entry *, unsigned long * , unsigned long * );
+const char *archive_entry_fflags_text(struct archive_entry *);
+la_int64_t archive_entry_gid(struct archive_entry *);
+const char *archive_entry_gname(struct archive_entry *);
+const char *archive_entry_gname_utf8(struct archive_entry *);
+const wchar_t *archive_entry_gname_w(struct archive_entry *);
+const char *archive_entry_hardlink(struct archive_entry *);
+const char *archive_entry_hardlink_utf8(struct archive_entry *);
+const wchar_t *archive_entry_hardlink_w(struct archive_entry *);
+la_int64_t archive_entry_ino(struct archive_entry *);
+la_int64_t archive_entry_ino64(struct archive_entry *);
+int archive_entry_ino_is_set(struct archive_entry *);
+mode_t archive_entry_mode(struct archive_entry *);
+time_t archive_entry_mtime(struct archive_entry *);
+long archive_entry_mtime_nsec(struct archive_entry *);
+int archive_entry_mtime_is_set(struct archive_entry *);
+unsigned int archive_entry_nlink(struct archive_entry *);
+const char *archive_entry_pathname(struct archive_entry *);
+const char *archive_entry_pathname_utf8(struct archive_entry *);
+const wchar_t *archive_entry_pathname_w(struct archive_entry *);
+mode_t archive_entry_perm(struct archive_entry *);
+dev_t archive_entry_rdev(struct archive_entry *);
+dev_t archive_entry_rdevmajor(struct archive_entry *);
+dev_t archive_entry_rdevminor(struct archive_entry *);
+const char *archive_entry_sourcepath(struct archive_entry *);
+const wchar_t *archive_entry_sourcepath_w(struct archive_entry *);
+la_int64_t archive_entry_size(struct archive_entry *);
+int archive_entry_size_is_set(struct archive_entry *);
+const char *archive_entry_strmode(struct archive_entry *);
+const char *archive_entry_symlink(struct archive_entry *);
+const char *archive_entry_symlink_utf8(struct archive_entry *);
+const wchar_t *archive_entry_symlink_w(struct archive_entry *);
+la_int64_t archive_entry_uid(struct archive_entry *);
+const char *archive_entry_uname(struct archive_entry *);
+const char *archive_entry_uname_utf8(struct archive_entry *);
+const wchar_t *archive_entry_uname_w(struct archive_entry *);
+int archive_entry_is_data_encrypted(struct archive_entry *);
+int archive_entry_is_metadata_encrypted(struct archive_entry *);
+int archive_entry_is_encrypted(struct archive_entry *);
+void archive_entry_set_atime(struct archive_entry *, time_t, long);
+void archive_entry_unset_atime(struct archive_entry *);
+void archive_entry_set_birthtime(struct archive_entry *, time_t, long);
+void archive_entry_unset_birthtime(struct archive_entry *);
+void archive_entry_set_ctime(struct archive_entry *, time_t, long);
+void archive_entry_unset_ctime(struct archive_entry *);
+void archive_entry_set_dev(struct archive_entry *, dev_t);
+void archive_entry_set_devmajor(struct archive_entry *, dev_t);
+void archive_entry_set_devminor(struct archive_entry *, dev_t);
+void archive_entry_set_filetype(struct archive_entry *, unsigned int);
+void archive_entry_set_fflags(struct archive_entry *,unsigned long , unsigned long );
+const char *archive_entry_copy_fflags_text(struct archive_entry *, const char *);
+const wchar_t *archive_entry_copy_fflags_text_w(struct archive_entry *, const wchar_t *);
+void archive_entry_set_gid(struct archive_entry *, la_int64_t);
+void archive_entry_set_gname(struct archive_entry *, const char *);
+void archive_entry_set_gname_utf8(struct archive_entry *, const char *);
+void archive_entry_copy_gname(struct archive_entry *, const char *);
+void archive_entry_copy_gname_w(struct archive_entry *, const wchar_t *);
+int archive_entry_update_gname_utf8(struct archive_entry *, const char *);
+void archive_entry_set_hardlink(struct archive_entry *, const char *);
+void archive_entry_set_hardlink_utf8(struct archive_entry *, const char *);
+void archive_entry_copy_hardlink(struct archive_entry *, const char *);
+void archive_entry_copy_hardlink_w(struct archive_entry *, const wchar_t *);
+int archive_entry_update_hardlink_utf8(struct archive_entry *, const char *);
+void archive_entry_set_ino(struct archive_entry *, la_int64_t);
+void archive_entry_set_ino64(struct archive_entry *, la_int64_t);
+void archive_entry_set_link(struct archive_entry *, const char *);
+void archive_entry_set_link_utf8(struct archive_entry *, const char *);
+void archive_entry_copy_link(struct archive_entry *, const char *);
+void archive_entry_copy_link_w(struct archive_entry *, const wchar_t *);
+int archive_entry_update_link_utf8(struct archive_entry *, const char *);
+void archive_entry_set_mode(struct archive_entry *, mode_t);
+void archive_entry_set_mtime(struct archive_entry *, time_t, long);
+void archive_entry_unset_mtime(struct archive_entry *);
+void archive_entry_set_nlink(struct archive_entry *, unsigned int);
+void archive_entry_set_pathname(struct archive_entry *, const char *);
+void archive_entry_set_pathname_utf8(struct archive_entry *, const char *);
+void archive_entry_copy_pathname(struct archive_entry *, const char *);
+void archive_entry_copy_pathname_w(struct archive_entry *, const wchar_t *);
+int archive_entry_update_pathname_utf8(struct archive_entry *, const char *);
+void archive_entry_set_perm(struct archive_entry *, mode_t);
+void archive_entry_set_rdev(struct archive_entry *, dev_t);
+void archive_entry_set_rdevmajor(struct archive_entry *, dev_t);
+void archive_entry_set_rdevminor(struct archive_entry *, dev_t);
+void archive_entry_set_size(struct archive_entry *, la_int64_t);
+void archive_entry_unset_size(struct archive_entry *);
+void archive_entry_copy_sourcepath(struct archive_entry *, const char *);
+void archive_entry_copy_sourcepath_w(struct archive_entry *, const wchar_t *);
+void archive_entry_set_symlink(struct archive_entry *, const char *);
+void archive_entry_set_symlink_utf8(struct archive_entry *, const char *);
+void archive_entry_copy_symlink(struct archive_entry *, const char *);
+void archive_entry_copy_symlink_w(struct archive_entry *, const wchar_t *);
+int archive_entry_update_symlink_utf8(struct archive_entry *, const char *);
+void archive_entry_set_uid(struct archive_entry *, la_int64_t);
+void archive_entry_set_uname(struct archive_entry *, const char *);
+void archive_entry_set_uname_utf8(struct archive_entry *, const char *);
+void archive_entry_copy_uname(struct archive_entry *, const char *);
+void archive_entry_copy_uname_w(struct archive_entry *, const wchar_t *);
+int archive_entry_update_uname_utf8(struct archive_entry *, const char *);
+void archive_entry_set_is_data_encrypted(struct archive_entry *, char is_encrypted);
+void archive_entry_set_is_metadata_encrypted(struct archive_entry *, char is_encrypted);
+const struct stat *archive_entry_stat(struct archive_entry *);
+void archive_entry_copy_stat(struct archive_entry *, const struct stat *);
+const void * archive_entry_mac_metadata(struct archive_entry *, size_t *);
+void archive_entry_copy_mac_metadata(struct archive_entry *, const void *, size_t);
+void archive_entry_acl_clear(struct archive_entry *);
+int archive_entry_acl_add_entry(struct archive_entry *, int , int , int , int , const char * );
+int archive_entry_acl_add_entry_w(struct archive_entry *, int , int , int , int , const wchar_t * );
+int archive_entry_acl_reset(struct archive_entry *, int );
+int archive_entry_acl_next(struct archive_entry *, int , int * , int * , int * , int * , const char ** );
+int archive_entry_acl_next_w(struct archive_entry *, int , int * , int * , int * , int * , const wchar_t ** );
+const wchar_t *archive_entry_acl_text_w(struct archive_entry *,  int );
+const char *archive_entry_acl_text(struct archive_entry *,  int );
+int archive_entry_acl_count(struct archive_entry *, int );
+struct archive_acl;
+struct archive_acl *archive_entry_acl(struct archive_entry *);
+void archive_entry_xattr_clear(struct archive_entry *);
+void archive_entry_xattr_add_entry(struct archive_entry *, const char * , const void * , size_t );
+int archive_entry_xattr_count(struct archive_entry *);
+int archive_entry_xattr_reset(struct archive_entry *);
+int archive_entry_xattr_next(struct archive_entry *, const char ** , const void ** , size_t *);
+void archive_entry_sparse_clear(struct archive_entry *);
+void archive_entry_sparse_add_entry(struct archive_entry *, la_int64_t , la_int64_t );
+int archive_entry_sparse_count(struct archive_entry *);
+int archive_entry_sparse_reset(struct archive_entry *);
+int archive_entry_sparse_next(struct archive_entry *, la_int64_t * , la_int64_t * );
+struct archive_entry_linkresolver;
+struct archive_entry_linkresolver *archive_entry_linkresolver_new(void);
+void archive_entry_linkresolver_set_strategy(struct archive_entry_linkresolver *, int );
+void archive_entry_linkresolver_free(struct archive_entry_linkresolver *);
+void archive_entry_linkify(struct archive_entry_linkresolver *,struct archive_entry **, struct archive_entry **);
+struct archive_entry *archive_entry_partial_links(struct archive_entry_linkresolver *res, unsigned int *links);
+
 ]]
 
 local ffi = require("ffi")
@@ -274,12 +426,10 @@ local lib = {
 	lib = ffi.load("archive")
 }
 
-for name in header:gmatch("archive_(.-)%(") do
+for name in header:gmatch("archive_(%S-)%(") do
 	local ok, err = pcall(function()
 		lib[name] = lib.lib["archive_" .. name]
 	end)
-
-	print(ok, err, name)
 end
 
 return lib
