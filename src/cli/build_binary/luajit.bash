@@ -23,6 +23,7 @@ cp Makefile_debug luajit/src/Makefile
 cd luajit
 
 make CFLAGS=-DLUAJIT_ENABLE_LUA52COMPAT=1
-mv src/luajit ../../luajit
-rm -r ../../jit
-mv src/jit/ ../../jit/
+mv src/luajit ../../linux_x64/luajit
+rm -r ../../linux_x64/jit
+mkdir ../../linux_x64/jit/
+mv src/jit/vmdef.lua ../../linux_x64/jit/vmdef.lua

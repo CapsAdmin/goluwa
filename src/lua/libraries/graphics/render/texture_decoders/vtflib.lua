@@ -1,4 +1,4 @@
-local vl = require("steam.ffi.vtflib") -- HLLib
+local vl = require("graphics.ffi.vtflib")
 
 render.AddTextureDecoder("vtflib", function(data, path_hint)
 	local buffer, w, h, format = vl.LoadImage(data)

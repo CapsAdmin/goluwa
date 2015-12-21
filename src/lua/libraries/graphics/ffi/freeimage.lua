@@ -154,7 +154,7 @@ function freeimage.LoadImage(data, flags, format)
 
 	if type == enums.FIF_UNKNOWN or type > enums.FIF_RAW then -- huh...
 		lib.FreeImage_CloseMemory(stream)
-		return nil, "unknown format"
+		error("unknown format", 2)
 	end
 
 	local temp = lib.FreeImage_LoadFromMemory(type, stream, flags or 0)

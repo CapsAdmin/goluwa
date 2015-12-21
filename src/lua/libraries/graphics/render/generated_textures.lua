@@ -69,7 +69,6 @@ function render.GenerateTextures()
 			local name = k:match("(.+)_texture")
 			render.texture_path_cache[name] = v
 			v.Path = name
-			print(name)
 		end
 	end
 end

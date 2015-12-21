@@ -36,7 +36,7 @@ function render.Initialize()
 	gl.Enable("GL_TEXTURE_CUBE_MAP_SEAMLESS")
 	gl.Enable("GL_MULTISAMPLE")
 
-	include("lua/libraries/graphics/decoders/*")
+	include("lua/libraries/graphics/render/texture_decoders/*")
 
 	render.frame = 0
 

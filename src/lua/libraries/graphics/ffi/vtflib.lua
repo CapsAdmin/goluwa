@@ -718,7 +718,7 @@ function vl.LoadImage(data, format)
 	vl.BindMaterial(uiVMTMaterial[0])
 
 	if vl.ImageLoadLump(ffi.cast("void *", data), #data, 0) == 0 then
-		error("unknown format", 2)
+		return nil, "unknown format"
 	end
 
 

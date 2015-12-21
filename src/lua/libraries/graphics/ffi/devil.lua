@@ -485,38 +485,137 @@ ILboolean ilLoadDataL(void *Lump, ILuint Size, ILuint Width, ILuint Height, ILui
 ILboolean ilSaveData(ILconst_string FileName);
 ]]
 
+local error_to_string = {
+	[0x0000] = "no error",
+	[0x0501] = "invalid enum",
+	[0x0502] = "out of memory",
+	[0x0503] = "format not supported",
+	[0x0504] = "internal error",
+	[0x0505] = "invalid value",
+	[0x0506] = "illegal operation",
+	[0x0507] = "illegal file value",
+	[0x0508] = "invalid file header",
+	[0x0509] = "invalid param",
+	[0x050a] = "could not open file",
+	[0x050b] = "invalid extension",
+	[0x050c] = "file already exists",
+	[0x050d] = "out format same",
+	[0x050e] = "stack overflow",
+	[0x050f] = "stack underflow",
+	[0x0510] = "invalid conversion",
+	[0x0511] = "bad dimensions",
+	[0x0512] = "file read error",
+	[0x0512] = "file write error",
+	[0x05e1] = "lib gif error",
+	[0x05e2] = "lib jpeg error",
+	[0x05e3] = "lib png error",
+	[0x05e4] = "lib tiff error",
+	[0x05e5] = "lib mng error",
+	[0x05e6] = "lib jp2 error",
+	[0x05e7] = "lib exr error",
+	[0x05ff] = "unknown error",
+}
+
+local extensions = {
+	type_unknown = 0x0000,
+	bmp = 0x0420,
+	cut = 0x0421,
+	doom = 0x0422,
+	doom_flat = 0x0423,
+	ico = 0x0424,
+	jpg = 0x0425,
+	jfif = 0x0425,
+	ilbm = 0x0426,
+	pcd = 0x0427,
+	pcx = 0x0428,
+	pic = 0x0429,
+	png = 0x042a,
+	pnm = 0x042b,
+	sgi = 0x042c,
+	tga = 0x042d,
+	tif = 0x042e,
+	chead = 0x042f,
+	raw = 0x0430,
+	mdl = 0x0431,
+	wal = 0x0432,
+	lif = 0x0434,
+	mng = 0x0435,
+	jng = 0x0435,
+	gif = 0x0436,
+	dds = 0x0437,
+	dcx = 0x0438,
+	psd = 0x0439,
+	exif = 0x043a,
+	psp = 0x043b,
+	pix = 0x043c,
+	pxr = 0x043d,
+	xpm = 0x043e,
+	hdr = 0x043f,
+	icns = 0x0440,
+	jp2 = 0x0441,
+	exr = 0x0442,
+	wdp = 0x0443,
+	vtf = 0x0444,
+	wbmp = 0x0445,
+	sun = 0x0446,
+	iff = 0x0447,
+	tpl = 0x0448,
+	fits = 0x0449,
+	dicom = 0x044a,
+	iwi = 0x044b,
+	blp = 0x044c,
+	ftx = 0x044d,
+	rot = 0x044e,
+	texture = 0x044f,
+	dpx = 0x0450,
+	utx = 0x0451,
+	mp3 = 0x0452,
+	jasc_pal = 0x0475,
+}
+
 ffi.cdef(header)
 
 local lib = assert(ffi.load(LINUX and "IL" or "devil"))
 ffi.cdef("ILboolean iluFlipImage(void);")
 
+local function check_error()
+	local code = tonumber(lib.ilGetError())
+	if code~= 0 then
+		error(error_to_string[code] or "unknown error: " .. lib.ilGetError(), 2)
+	end
+end
+
 local devil = {
 	lib = lib,
 }
 
-function devil.LoadImage(data)
-	local buffer = ffi.cast("const unsigned char *const ", data)
+function devil.LoadImage(data, path_hint)
 
 	local id = ffi.new("ILuint[1]")
 	lib.ilGenImages(1, id)
 	lib.ilBindImage(id[0])
 
-	local width, height
+	local buffer = ffi.cast("const unsigned char *const ", data)
 
-	if lib.ilLoadL("IL_TYPE_UNKNOWN", buffer, #data) ~= 0 then
-		lib.ilConvertImage("IL_BGRA", "IL_UNSIGNED_BYTE")
-
-		local size = lib.ilGetInteger("IL_IMAGE_SIZE_OF_DATA")
-		width = lib.ilGetInteger("IL_IMAGE_WIDTH")
-		height = lib.ilGetInteger("IL_IMAGE_HEIGHT")
-		data = ffi.new("char[?]", size)
-		ffi.copy(data, lib.ilGetData(), size)
-	else
-		data = nil
-		width = "unknown format"
+	if lib.ilLoadL("IL_TYPE_UNKNOWN", buffer, #data) == 0 then
+		check_error()
+		error("unknown format: ilLoadL(IL_TYPE_UNKNOWN, buffer, "..#data..") failed", 2)
 	end
 
+	lib.ilConvertImage("IL_BGRA", "IL_UNSIGNED_BYTE")
+	check_error()
+
+	local size = lib.ilGetInteger("IL_IMAGE_SIZE_OF_DATA")
+	local width = lib.ilGetInteger("IL_IMAGE_WIDTH")
+	local height = lib.ilGetInteger("IL_IMAGE_HEIGHT")
+	data = ffi.new("char[?]", size)
+	ffi.copy(data, lib.ilGetData(), size)
+
+	check_error()
+
 	lib.ilDeleteImages(1, id)
+
+	check_error()
 
 	return data, width, height
 end

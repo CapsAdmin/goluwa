@@ -385,10 +385,10 @@ function META:SetPath(path, face, flip_y)
 				flip_y = flip_y,
 			})
 		else
-			local reason = w or "unknown"
-			reason = "decoding failed: " .. reason
-			self:MakeError(reason)
-			logf("[%s] unable to find %s: %s\n", self, path, reason)
+			local reason = w
+			logn("======")
+			logf("[%s] unable to find or decode %s: %s\n", self, path, reason)
+			logn("======")
 		end
 
 		self.Loading = false
@@ -1093,18 +1093,19 @@ function render.RemoveTextureDecoder(id)
 end
 
 function render.DecodeTexture(data, path_hint)
+	local errors = {"\n"}
+
 	for i, decoder in ipairs(render.texture_decoders) do
 		local ok, buffer, w, h, info = pcall(decoder.callback, data, path_hint)
+
 		if ok then
-			if buffer and w then
-				return buffer, w, h, info or {}
-			elseif not w:find("unknown format") then
-				logf("[render] %s failed to decode %s: %s\n", decoder.id, path_hint or "", w)
-			end
-		else
-			logf("[render] decoder %q errored: %s\n", decoder.id, buffer)
+			return buffer, w, h, info or {}
+		elseif not buffer:find("unknown format", nil, true) then
+			table.insert(errors, "\t" .. buffer)
 		end
 	end
+
+	return nil, table.concat(errors, "\n")
 end
 
 render.texture_path_cache = {}

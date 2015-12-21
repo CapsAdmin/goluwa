@@ -1,7 +1,5 @@
 local freeimage = desire("graphics.ffi.freeimage") -- image decoder
 
-if not freeimage then return end
-
 local META = prototype.CreateTemplate("gif")
 
 function META:GetFrameCount()
@@ -43,33 +41,35 @@ function video.CreateGif(path)
 
 	self.loading = true
 
-	resource.Download(path, function(path)
-		local data = vfs.Read(path)
+	if freeimage then
+		resource.Download(path, function(path)
+			local data = vfs.Read(path)
 
-		local frames = freeimage.LoadMultiPageImage(data)
+			local frames = freeimage.LoadMultiPageImage(data)
 
-		local w, h = 0, 0
-		for i, frame in pairs(frames) do
-			if frame.w > w then w = frame.w end
-			if frame.h > h then h = frame.h end
+			local w, h = 0, 0
+			for i, frame in pairs(frames) do
+				if frame.w > w then w = frame.w end
+				if frame.h > h then h = frame.h end
 
-			local tex = Texture(frame.w, frame.h)
-			tex:Upload({buffer = frame.data})
+				local tex = Texture(frame.w, frame.h)
+				tex:Upload({buffer = frame.data})
 
-			frames[i] = tex
-			frames[i].x = frame.x
-			frames[i].y = frame.y
-			frames[i].ms = frame.ms
-		end
+				frames[i] = tex
+				frames[i].x = frame.x
+				frames[i].y = frame.y
+				frames[i].ms = frame.ms
+			end
 
-		self.frames = frames
-		self.frame_count = #frames
-		self.loading = false
+			self.frames = frames
+			self.frame_count = #frames
+			self.loading = false
 
-		if self.frame_count == 0 then
-			self.error = true
-		end
-	end)
+			if self.frame_count == 0 then
+				self.error = true
+			end
+		end)
+	end
 
 	return self
 end
