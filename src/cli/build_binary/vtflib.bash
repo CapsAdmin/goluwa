@@ -10,5 +10,6 @@ cd VTFLib
 mkdir build
 cd build
 cmake ..
+make
 
 mv src/libVTFLib13.so ../../../linux_x64/libVTFlib.so
