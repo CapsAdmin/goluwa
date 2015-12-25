@@ -15,18 +15,17 @@ Some of those features can maybe make things a little slow and even messy but I 
 LuaJIT's FFI library is used to bind to the following shared libraries:
 
 * [OpenGL](http://www.opengl.org/) - graphics
-* [SDL](https://www.libsdl.org/) - window and input handler (mainly for android)
+* [SDL](https://www.libsdl.org/) - window and input handler
 * [OpenAL Soft](http://kcat.strangesoft.net/openal.html) - sound library
 * [FreeType](http://www.freetype.org/) - font decoding
 * [Libsndfile](http://www.mega-nerd.com/libsndfile/) - sound decoding
-* [FreeImage](http://freeimage.sourceforge.net/) - image decoding
 * [DevIL](https://github.com/DentonW/DevIL/tree/master/DevIL) - image decoding
 * [PDCurses](http://www.projectpluto.com/win32a.htm) - console
 * [Assimp](https://github.com/assimp/assimp) - model decoding
 * [Bullet3](https://github.com/bulletphysics/bullet3) - physics engine (needs a c wrapper)
 * [ENet](https://github.com/lsalzman/enet) - networking library targeted at games
 
-The rest is then made in LuaJIT.
+The rest is then made in LuaJIT. There are some libraries that can be used but are not used and shipped with by default.
 
 GUI:
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/goluwa_screenshots/test17.png)
