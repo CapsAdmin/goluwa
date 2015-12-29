@@ -820,10 +820,6 @@ end
 function assimp.ImportFileEx(path, flags, callback, custom_io)
 	local scene
 
-	flags = flags or 0
-	flags = bit.bor(flags, enums.aiProcessPreset_TargetRealtime_Fast)
-	flags = bit.bor(flags, enums.aiProcess_ConvertToLeftHanded)
-
 	if custom_io then
 		local file_io_data = ffi.new("aiFileIO", {
 			OpenProc = function(self, path, mode)

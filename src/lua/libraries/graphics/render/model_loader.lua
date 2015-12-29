@@ -76,7 +76,7 @@ function render.LoadModel(path, callback, callback2, on_fail)
 					table.insert(out, mesh)
 				end
 			elseif assimp then
-				local flags = assimp.e.aiProcessPreset_TargetRealtime_Quality
+				local flags = bit.bor(assimp.e.aiProcessPreset_TargetRealtime_Quality, assimp.e.aiProcess_ConvertToLeftHanded)
 				--[[
 					bit.bor(
 						assimp.e.aiProcess_CalcTangentSpace,
