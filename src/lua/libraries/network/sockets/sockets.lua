@@ -558,6 +558,10 @@ do -- tcp socket meta
 			end
 
 			if not ok and msg then
+				if msg == "address already in use" then
+					msg = string.format("address already in use (%s:%s)", ip, port)
+				end
+
 				self:DebugPrintf("bind failed: %s", msg)
 				if self:OnError(msg) ~= false then
 					error(msg, 2)
