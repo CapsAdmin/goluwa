@@ -595,9 +595,7 @@ function devil.LoadImage(data, path_hint)
 	lib.ilGenImages(1, id)
 	lib.ilBindImage(id[0])
 
-	local buffer = ffi.cast("const unsigned char *const ", data)
-
-	if lib.ilLoadL("IL_TYPE_UNKNOWN", buffer, #data) == 0 then
+	if lib.ilLoadL("IL_TYPE_UNKNOWN", ffi.cast("const unsigned char *const ", data), #data) == 0 then
 		check_error()
 		error("unknown format: ilLoadL(IL_TYPE_UNKNOWN, buffer, "..#data..") failed", 2)
 	end
@@ -608,7 +606,8 @@ function devil.LoadImage(data, path_hint)
 	local size = lib.ilGetInteger("IL_IMAGE_SIZE_OF_DATA")
 	local width = lib.ilGetInteger("IL_IMAGE_WIDTH")
 	local height = lib.ilGetInteger("IL_IMAGE_HEIGHT")
-	data = ffi.new("char[?]", size)
+
+	data = ffi.new("uint8_t[?]", size)
 	ffi.copy(data, lib.ilGetData(), size)
 
 	check_error()
