@@ -1,4 +1,18 @@
-local rate_cvar = console.CreateVariable("system_fps_max", 0, "-1\t=\trun as fast as possible\n 0\t=\tvsync\n+1\t=\t/try/ to run at this framerate (using sleep)")
+local rate_cvar = console.CreateVariable(
+	"system_fps_max",
+	0,
+	function(rate)
+		if system.gl_context then
+			if rate == 0 then
+				render.SetVSync(true)
+			else
+				render.SetVSync(false)
+				print("wow!!!")
+			end
+		end
+	end,
+	"-1\t=\trun as fast as possible\n 0\t=\tvsync\n+1\t=\t/try/ to run at this framerate (using sleep)"
+)
 
 -- main loop
 
@@ -16,14 +30,6 @@ local function main()
 	local i = 0ULL
 
 	local function update()
-		if (collectgarbage("count")*1024) > 1024*1024*1024 then
-			if wait(1) then
-				warning("emergency collect! memory > 1 gb")
-			end
-			collectgarbage()
-		end
-
-		local rate = rate_cvar:Get()
 		local time = system.GetTime()
 
 		local dt = time - (last_time or 0)
@@ -49,22 +55,11 @@ local function main()
 
 		system.UpdateTitlebarFPS(dt)
 
+		local rate = rate_cvar:Get()
+
 		if rate > 0 then
 			system.Sleep(math.floor(1/rate * 1000))
-			if render and render.context_created and render.GetVSync() then
-				render.SetVSync(false)
-			end
-		elseif rate == 0 then
-			if render and render.context_created and not render.GetVSync() then
-				render.SetVSync(true)
-			end
-		else
-			if render and render.context_created and render.GetVSync() then
-				render.SetVSync(false)
-			end
 		end
-
-		--collectgarbage("step", 30)
 	end
 
 	if OnUpdate then
