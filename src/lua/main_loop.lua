@@ -7,7 +7,6 @@ local rate_cvar = console.CreateVariable(
 				render.SetVSync(true)
 			else
 				render.SetVSync(false)
-				print("wow!!!")
 			end
 		end
 	end,
