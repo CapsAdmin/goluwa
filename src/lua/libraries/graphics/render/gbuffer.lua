@@ -360,7 +360,7 @@ local function init(width, height)
 
 					local name = "data" .. buffer_i
 					render.SetGlobalShaderVariable("tex_" .. name, function() return render.gbuffer:GetTexture(name) end, "texture")
-
+										
 					table.insert(render.gbuffer_buffers, #render.gbuffer_buffers, {
 						name = name,
 						attach = "color",
@@ -489,84 +489,6 @@ local function init(width, height)
 			render.InitializeGBuffer(w, h)
 		end
 	end)
-
-	do -- AUTOMATE THIS
-		local size = 6
-		local x,y,w,h,i
-
-		local function draw_buffer(name, tex)
-			if name == "data1" or name == "data2" or name == "data3" then surface.mesh_2d_shader.color_override.a = 1 end
-			surface.SetColor(1,1,1,1)
-			surface.SetTexture(tex)
-			surface.DrawRect(x, y, w, h)
-			if name == "data1" or name == "data2" or name == "data3" then surface.mesh_2d_shader.color_override.a = 0 end
-
-			surface.SetTextPosition(x, y + 5)
-			surface.DrawText(name)
-
-			if i%size == 0 then
-				y = y + h
-				x = 0
-			else
-				x = x + w
-			end
-
-			i = i  + 1
-		end
-
-		function render.DrawGBufferDebugOverlay()
-			w, h = surface.GetSize()
-			w = w / size
-			h = h / size
-
-			x = 0
-			y = 0
-			i = 1
-
-			surface.SetFont("default")
-
-			for _, data in pairs(render.gbuffer_buffers) do
-				draw_buffer(data.name, render.gbuffer:GetTexture(data.name))
-			end
-
-			surface.SetColor(0,0,0,1)
-			surface.SetTexture(tex)
-			surface.DrawRect(x, y, w, h)
-			surface.mesh_2d_shader.color_override.r = 1
-			surface.mesh_2d_shader.color_override.g = 1
-			surface.mesh_2d_shader.color_override.b = 1
-			draw_buffer("self illumination", render.gbuffer:GetTexture("data3"))
-			surface.mesh_2d_shader.color_override.r = 0
-			surface.mesh_2d_shader.color_override.g = 0
-			surface.mesh_2d_shader.color_override.b = 0
-
-			surface.SetColor(0,0,0,1)
-			surface.SetTexture(tex)
-			surface.DrawRect(x, y, w, h)
-			surface.mesh_2d_shader.color_override.r = 1
-			surface.mesh_2d_shader.color_override.g = 1
-			surface.mesh_2d_shader.color_override.b = 1
-			draw_buffer("roughness", render.gbuffer:GetTexture("data1"))
-			surface.mesh_2d_shader.color_override.r = 0
-			surface.mesh_2d_shader.color_override.g = 0
-			surface.mesh_2d_shader.color_override.b = 0
-
-			surface.SetColor(0,0,0,1)
-			surface.SetTexture(tex)
-			surface.DrawRect(x, y, w, h)
-			surface.mesh_2d_shader.color_override.r = 1
-			surface.mesh_2d_shader.color_override.g = 1
-			surface.mesh_2d_shader.color_override.b = 1
-			draw_buffer("metallic", render.gbuffer:GetTexture("data2"))
-			surface.mesh_2d_shader.color_override.r = 0
-			surface.mesh_2d_shader.color_override.g = 0
-			surface.mesh_2d_shader.color_override.b = 0
-
-			draw_buffer("discard", render.gbuffer_discard:GetTexture())
-
-			i,x,y,w,h = render.gbuffer_fill:DrawDebug(i,x,y,w,h,size)
-		end
-	end
 
 	for k,v in pairs(render.gbuffer_values) do
 		render.SetGBufferValue(k,v)
