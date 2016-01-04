@@ -3,6 +3,77 @@ local utility = _G.utility or {}
 include("packed_rectangle.lua", utility)
 include("quickbms.lua", utility)
 
+do	
+	local function mapToHemisphere(point, maxVertAngle)
+		maxVertAngle = maxVertAngle or math.pi / 2
+		
+		local point = point:Copy()
+		point = point * 2 - 1
+		if point:IsZero() then
+			return Vec3(0,0,1)
+		end
+		
+		local sinTheta
+		if point.y > -point.x then
+			if point.y < point.x then
+				sinTheta = point.x
+			else
+				sinTheta = point.y
+			end
+		else
+			if point.y > point.x then
+				sinTheta = -point.x
+			else
+				sinTheta = -point.y
+			end
+		end
+		
+		local theta = math.asin(sinTheta)
+		theta = theta * maxVertAngle / (math.pi / 2)
+		point = point:Normalize()
+		local phi = math.atan2(point.x, point.y)
+		
+		return Vec3(
+			math.cos(phi) * math.cos(theta), 
+			math.sin(phi) * math.sin(theta), 
+			math.cos(theta)
+		)
+	end
+
+	function utility.CreateHemisphereNormalsTexture(size, hemiAngle)
+		-- allocate memory for texture
+		local components = 3
+		local data = Array("uint8_t", components*size*size)
+
+		-- half texel offset
+		local base = 0.5 / size
+		-- calculate direction for each texel in texture
+		for x = 0, size-1 do 
+			local xx = x / size
+			for y = 0, size-1 do
+				local yy = y / size
+				
+				local res = mapToHemisphere(Vec2(xx + base, yy + base), hemiAngle)
+				local offset = x * components + y * size * components
+				data[offset + 0] = (res.x + 1) / 2 * 255
+				data[offset + 1] = (res.y + 1) / 2 * 255
+				data[offset + 2] = (res.z + 1) / 2 * 255
+			end
+		end
+		
+		local tex = render.CreateTexture("2d")
+		tex:SetSize(Vec2() + size)
+		tex:SetInternalFormat("rgb8")
+		tex:SetupStorage()
+		tex:Upload({
+			format = "rgb",
+			buffer = data:GetPointer(), 
+		})
+		
+		return tex
+	end
+end
+
 function utility.CreateDeferredLibrary(name)
 	return setmetatable(
 		{
