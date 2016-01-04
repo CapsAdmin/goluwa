@@ -33,6 +33,7 @@ end
 
 render.SetGlobalShaderVariable("g_screen_size", render.GetGBufferSize, "vec2")
 render.SetGlobalShaderVariable("g_noise_texture", render.GetNoiseTexture, "sampler2D")
+render.SetGlobalShaderVariable("g_hemisphere_normals_texture", render.GetHemisphereNormalsTexture, "sampler2D")
 
 render.gbuffer = render.gbuffer or NULL
 render.gbuffer_values = render.gbuffer_values or {}
