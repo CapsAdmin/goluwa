@@ -148,6 +148,32 @@ vec3 get_world_normal(vec2 uv)
 	return normalize(-get_view_normal(uv) * mat3(g_view));
 }]])
 
+render.AddGlobalShaderCode([[
+vec3 get_view_tangent(vec2 uv)
+{
+	vec3 norm = get_view_normal(uv);
+	vec3 tang = abs(norm.x) < 0.999 ? vec3(1,0,0) : vec3(0,1,0);
+	return normalize(cross(norm, tang));
+}]])
+
+render.AddGlobalShaderCode([[
+vec3 get_world_tangent(vec2 uv)
+{
+	return normalize(-get_view_tangent(uv) * mat3(g_view));
+}]])
+
+render.AddGlobalShaderCode([[
+vec3 get_view_bitangent(vec2 uv)
+{
+	return normalize(cross(get_view_normal(uv), get_view_tangent(uv)));
+}]])
+
+render.AddGlobalShaderCode([[
+vec3 get_world_bitangent(vec2 uv)
+{
+	return normalize(-get_view_bitangent(uv) * mat3(g_view));
+}]])
+
 function PASS:Initialize()
 	local META = self.model_shader:CreateMaterialTemplate(PASS.Name)
 
