@@ -65,45 +65,68 @@ do
 
 	render.global_shader_code = render.global_shader_code or {}
 
-	function render.AddGlobalShaderCode(glsl_code, require)
-		if not require then
-			require = glsl_code:match("%s([a-zA-Z0-9_]-)%(")
+	function render.AddGlobalShaderCode(glsl_code, function_name, pos)
+		if glsl_code:endswith(".brdf") then
+			local str = vfs.Read(glsl_code)
+			local shader_name = glsl_code:match(".+/(.+)%.brdf")
+			
+			local parameters = str:match("::begin parameters(.+)::end parameters")
+			local code = str:match("::begin shader(.+)::end shader")
+			
+			local arg_line = {}
+			
+			for _, line in pairs(parameters:explode("\n")) do
+				local type, name, max, min, default = unpack(line:explode(" "))
+				if type and name then
+					if type == "color" then type = "vec3" end
+					table.insert(arg_line, type .. " " .. name)
+				end
+			end
+			
+			code = code:replace(
+				"vec3 BRDF( vec3 L, vec3 V, vec3 N, vec3 X, vec3 Y )",
+				"vec3 "..shader_name.."_brdf( vec3 L, vec3 V, vec3 N, vec3 X, vec3 Y, " .. table.concat(arg_line, ", ") .. " )"
+			)
+			
+			glsl_code = code
+			function_name = shader_name
+		end
+		
+		if not function_name then
+			function_name = glsl_code:match("%s([a-zA-Z0-9_]-)%(")
 		end
 		for i,v in ipairs(render.global_shader_code) do
-			if v.require == require then
+			if v.function_name == function_name then
 				table.remove(render.global_shader_code, i)
 				break
 			end
 		end
-
-		table.insert(render.global_shader_code, {code = glsl_code, require = require})
+		
+		if pos then
+			table.insert(render.global_shader_code, pos, {code = glsl_code, function_name = function_name})
+		else
+			table.insert(render.global_shader_code, {code = glsl_code, function_name = function_name})
+		end
 	end
 
 	function render.GetGlobalShaderCode(code)
 
 		local done = {}
 		local out = {}
-
-		for _, info in ipairs(render.global_shader_code) do
-			if not code or (info.require and code:find(info.require, nil, true)) then
-				table.insert(out, 1, info.code)
-				done[info.require] = true
-			end
-		end
-
-		-- ASHDJUIASHDUAWSD TODO
-		local out2 = {}
-		for _, new_code in pairs(out) do
+		
+		local function add_code(code)			
 			for _, info in ipairs(render.global_shader_code) do
-				if not done[info.require] and info.require and new_code:find(info.require, nil, true) then
-					table.insert(out2, info.code)
-					done[info.require] = true
+				if code:find(info.function_name, nil, true) then
+					if not done[info.function_name] then
+						table.insert(out, 1, info.code)
+						done[info.function_name] = true
+						add_code(info.code)
+					end
 				end
 			end
 		end
-		for _, str in pairs(out2) do
-			table.insert(out, 1, str)
-		end
+		
+		add_code(code)
 
 		return table.concat(out, "\n\n")
 	end
