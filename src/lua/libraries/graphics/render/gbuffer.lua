@@ -361,7 +361,7 @@ local function init(width, height)
 
 					local name = "data" .. buffer_i
 					render.SetGlobalShaderVariable("tex_" .. name, function() return render.gbuffer:GetTexture(name) end, "texture")
-										
+
 					table.insert(render.gbuffer_buffers, #render.gbuffer_buffers, {
 						name = name,
 						attach = "color",
@@ -379,11 +379,10 @@ local function init(width, height)
 								glsl_type = "vec" .. channel_count
 							end
 
-							render.AddGlobalShaderCode([[
-							]]..glsl_type..[[ get_]]..key..[[(vec2 uv)
-							{
-								return texture(tex_data]]..buffer_i..[[, uv).]]..index..[[;
-							}]])
+							render.AddGlobalShaderCode(glsl_type.." get_"..key.."(vec2 uv)\n"..
+							"{\n"..
+								"\treturn texture(tex_data"..buffer_i..", uv)."..index..";\n"..
+							"}")
 						end
 					end
 
