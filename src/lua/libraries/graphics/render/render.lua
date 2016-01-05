@@ -65,68 +65,83 @@ do
 
 	render.global_shader_code = render.global_shader_code or {}
 
-	function render.AddGlobalShaderCode(glsl_code, function_name, pos)
+	function render.AddGlobalShaderCode(glsl_code, function_name)
+		function_name = function_name or glsl_code:match("%s([a-zA-Z0-9_]-)%(")
+
 		if glsl_code:endswith(".brdf") then
 			local str = vfs.Read(glsl_code)
-			local shader_name = glsl_code:match(".+/(.+)%.brdf")
-			
-			local parameters = str:match("::begin parameters(.+)::end parameters")
-			local code = str:match("::begin shader(.+)::end shader")
-			
-			local arg_line = {}
-			
-			for _, line in pairs(parameters:explode("\n")) do
-				local type, name, max, min, default = unpack(line:explode(" "))
-				if type and name then
-					if type == "color" then type = "vec3" end
-					table.insert(arg_line, type .. " " .. name)
+			if str then
+				local shader_name = glsl_code:match(".+/(.+)%.brdf")
+
+				local parameters = str:match("::begin parameters(.+)::end parameters")
+				local code = str:match("::begin shader(.+)::end shader")
+
+				local arg_line = {}
+
+				for _, line in pairs(parameters:explode("\n")) do
+					local type, name, max, min, default = unpack(line:explode(" "))
+					if type and name then
+						if type == "color" then type = "vec3" end
+						table.insert(arg_line, type .. " " .. name)
+					end
 				end
-			end
-			
-			code = code:replace(
-				"vec3 BRDF( vec3 L, vec3 V, vec3 N, vec3 X, vec3 Y )",
-				"vec3 "..shader_name.."_brdf( vec3 L, vec3 V, vec3 N, vec3 X, vec3 Y, " .. table.concat(arg_line, ", ") .. " )"
-			)
-			
-			glsl_code = code
-			function_name = shader_name
-		end
-		
-		if not function_name then
-			function_name = glsl_code:match("%s([a-zA-Z0-9_]-)%(")
-		end
-		for i,v in ipairs(render.global_shader_code) do
-			if v.function_name == function_name then
-				table.remove(render.global_shader_code, i)
-				break
+
+				code = code:replace(
+					"vec3 BRDF( vec3 L, vec3 V, vec3 N, vec3 X, vec3 Y )",
+					"vec3 "..shader_name.."_brdf( vec3 L, vec3 V, vec3 N, vec3 X, vec3 Y, " .. table.concat(arg_line, ", ") .. " )"
+				)
+
+				glsl_code = code
+				function_name = shader_name
 			end
 		end
-		
-		if pos then
-			table.insert(render.global_shader_code, pos, {code = glsl_code, function_name = function_name})
-		else
-			table.insert(render.global_shader_code, {code = glsl_code, function_name = function_name})
-		end
+
+		render.global_shader_code[function_name] = {
+			function_name = function_name,
+			code = glsl_code,
+		}
 	end
 
 	function render.GetGlobalShaderCode(code)
 
 		local done = {}
-		local out = {}
-		
-		local function add_code(code)			
-			for _, info in ipairs(render.global_shader_code) do
+
+		local node = {value = "", dependencies = {}}
+
+		local function add_code(code, node)
+			-- iterate other code
+			for _, info in pairs(render.global_shader_code) do
+				-- does this code use this other code? (using simple find as it doesn't really need to be more sophisticated)
 				if code:find(info.function_name, nil, true) then
 					if not done[info.function_name] then
-						table.insert(out, 1, info.code)
+						local new_node = {value = info.code, dependencies = {}}
+						table.insert(node.dependencies, new_node)
 						done[info.function_name] = true
-						add_code(info.code)
+						-- check if this other code also has dependencies
+						add_code(info.code, new_node)
 					end
 				end
 			end
 		end
-		
-		add_code(code)
+
+		add_code(code, node)
+
+		--(03:32:42 AM) thej89: .
+		local function ts( l, s, x )
+			--Already in l
+			if s[x] then return end
+			--Add x's dependencies to l first
+			for _, x in ipairs( x.dependencies ) do
+				ts( l, s, x )
+			end
+			--Now add x to l
+			s[x] = true
+			table.insert( l, x.value )
+		end
+
+		local out = {}
+
+		ts(out, {}, node)
 
 		return table.concat(out, "\n\n")
 	end
