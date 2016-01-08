@@ -383,6 +383,7 @@ function META:SetPath(path, face, flip_y)
 				format = info.format or "bgra",
 				face = face, -- todo
 				flip_y = flip_y,
+				type = info.type,
 			})
 		else
 			local reason = w

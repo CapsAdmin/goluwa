@@ -591,6 +591,8 @@ local devil = {
 
 function devil.LoadImage(data, path_hint)
 
+	local info = {}
+
 	local id = ffi.new("ILuint[1]")
 	lib.ilGenImages(1, id)
 	lib.ilBindImage(id[0])
@@ -600,8 +602,15 @@ function devil.LoadImage(data, path_hint)
 		error("unknown format: ilLoadL(IL_TYPE_UNKNOWN, buffer, "..#data..") failed", 2)
 	end
 
-	lib.ilConvertImage("IL_BGRA", "IL_UNSIGNED_BYTE")
-	check_error()
+	if path_hint:endswith(".hdr") or path_hint:endswith(".exr") then
+		lib.ilConvertImage("IL_BGRA", "IL_FLOAT")
+		check_error()
+
+		info.internal_format = "rgb16f"
+	else
+		lib.ilConvertImage("IL_BGRA", "IL_UNSIGNED_BYTE")
+		check_error()
+	end
 
 	local size = lib.ilGetInteger("IL_IMAGE_SIZE_OF_DATA")
 	local width = lib.ilGetInteger("IL_IMAGE_WIDTH")
@@ -616,7 +625,7 @@ function devil.LoadImage(data, path_hint)
 
 	check_error()
 
-	return data, width, height
+	return data, width, height, info
 end
 
 return devil
