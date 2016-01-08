@@ -147,6 +147,13 @@ do
 	end
 
 	render.AddGlobalShaderCode([[
+		vec4 textureLatLon(sampler2D tex, vec3 dir)
+		{
+			return texture(tex, vec2((atan(dir.y, dir.x) / 3.1415926 + 1.0) * 0.5, 1.0 - acos(dir.z) / 3.1415926));
+		}
+	]])
+
+	render.AddGlobalShaderCode([[
 		vec3 rgb2hsv(vec3 c)
 		{
 			vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
