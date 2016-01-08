@@ -117,6 +117,7 @@ do -- mixer
 		function PASS:__init()
 			local shader = {}
 
+			shader.textures = {}
 			shader.shaders = {}
 
 			for i, stage in ipairs(stages) do
@@ -138,7 +139,9 @@ do -- mixer
 
 					fb = render.CreateFrameBuffer(size.x, size.y, stage.buffer or {internal_format = "rgba8"})
 					for _, stage in ipairs(stages) do
-						stage.shader.fragment.variables["tex_stage_" .. i] = fb:GetTexture()
+						local tex = fb:GetTexture()
+						stage.shader.fragment.variables["tex_stage_" .. i] = tex
+						table.insert(shader.textures, tex)
 					end
 				end
 
@@ -219,6 +222,13 @@ do -- mixer
 				table.remove(render.gbuffer_shaders_sorted, k)
 				break
 			end
+		end
+	end
+
+	function render.GetGBufferShaderTextures(name)
+		local pass = render.gbuffer_shaders[name]
+		if pass then
+			return pass.textures
 		end
 	end
 end
