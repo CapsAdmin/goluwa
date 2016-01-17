@@ -39,75 +39,270 @@ PASS.Buffers = {
 }
 
 render.AddGlobalShaderCode([[
-vec3 compute_specular(vec3 light_dir, vec3 vertex_eye, vec3 normal, float metallic, float roughness, vec3 albedo, vec3 color, float attenuation)
+#extension GL_ARB_texture_query_levels: enable
+
+#define MMAL_LOD_REGULATOR 512.0
+vec3 MMAL(vec3 normal, vec3 reflected, float roughness)
 {
-	/*float alpha = roughness*roughness;
+	roughness *= 1;
+	vec2 size = vec2(512);
+	float levels = float(textureQueryLevels(lua[tex_sky = render.GetSkyTexture()])) - 1;
+	float mx = log2(roughness*size.x+1)/log2(size.x);
+	vec3 result = textureLod(tex_sky, normalize(mix(reflected, normal, roughness)), mx * levels).rgb;
+	return pow(result * 2.0, vec3(1.7))*0.5;
+}
 
-	vec3 H = normalize(vertex_eye+light_dir);
+vec3 get_env_color()
+{
+	float roughness = get_roughness(uv);
+	float metallic = get_metallic(uv);
+	vec3 normal = get_view_normal(uv);
 
-	float dotNL = clamp(dot(normal,light_dir), 0.0, 1.0);
+	vec3 cam_dir = -get_camera_dir(uv);
+	vec3 sky_normal = normal * mat3(g_view);
+	vec3 sky_reflect = reflect(cam_dir, sky_normal).xyz;
 
-	float dotLH = clamp(dot(light_dir,H), 0.0, 1.0);
-	float dotNH = clamp(dot(normal,H), 0.0, 1.0);
+	vec3 irradiance = MMAL(-sky_normal, sky_reflect, -metallic+1);
+	vec3 reflection = MMAL(-sky_normal, sky_reflect, roughness);
 
-	float F, D, vis;
+	return mix((irradiance+reflection), reflection, metallic);
+}
+]], "get_env_color")
 
-	// D
+render.AddGlobalShaderCode([[
+float compute_light_attenuation(vec3 pos, vec3 normal, float cutoff)
+{
+	// calculate normalized light vector and distance to sphere light surface
+	float r = lua[light_radius = 1000]/10;
+	vec3 L = light_view_pos - pos;
+	float distance = length(L);
+	float d = max(distance - r, 0);
+	L /= distance;
+
+	float attenuation = 1;
+
+	float denom = d/r + 1;
+	attenuation = 1 / (denom*denom);
+
+	// scale and bias attenuation such that:
+	//   attenuation == 0 at extent of max influence
+	//   attenuation == 1 when d == 0
+	attenuation = (attenuation - cutoff) / (1 - cutoff);
+	attenuation = max(attenuation, 0);
+
+	float dot = max(dot(L, normal), 0);
+	attenuation *= dot;
+
+	return attenuation;
+}
+]])
+
+render.AddGlobalShaderCode([[
+const float PI = 3.14159265358979323846;
+
+float sqr(float x) { return x*x; }
+
+float SchlickFresnel(float u)
+{
+    float m = clamp(1-u, 0, 1);
+    float m2 = m*m;
+    return m2*m2*m; // pow(m,5)
+}
+
+float GTR1(float NdotH, float a)
+{
+    if (a >= 1) return 1/PI;
+    float a2 = a*a;
+    float t = 1 + (a2-1)*NdotH*NdotH;
+    return (a2-1) / (PI*log(a2)*t);
+}
+
+float GTR2(float NdotH, float a)
+{
+    float a2 = a*a;
+    float t = 1 + (a2-1)*NdotH*NdotH;
+    return a2 / (PI * t*t);
+}
+
+float GTR2_aniso(float NdotH, float HdotX, float HdotY, float ax, float ay)
+{
+    return 1 / ( PI * ax*ay * sqr( sqr(HdotX/ax) + sqr(HdotY/ay) + NdotH*NdotH ));
+}
+
+float smithG_GGX(float Ndotv, float alphaG)
+{
+    float a = alphaG*alphaG;
+    float b = Ndotv*Ndotv;
+    return 1/(Ndotv + sqrt(a + b - a*b));
+}
+
+vec3 mon2lin(vec3 x)
+{
+    return vec3(pow(x[0], 2.2), pow(x[1], 2.2), pow(x[2], 2.2));
+}
+
+
+vec3 compute_specular2(
+	vec3 L,
+	vec3 V,
+	vec3 N,
+	vec3 X,
+	vec3 Y,
+	vec3 baseColor,
+	float metallic,
+	float subsurface,
+	float specular,
+	float roughness,
+	float specularTint,
+	float anisotropic,
+	float sheen,
+	float sheenTint,
+	float clearcoat,
+	float clearcoatGloss
+)
+{
+    float NdotL = dot(N,L);
+    float NdotV = dot(N,V);
+   // if (NdotL < 0 || NdotV < 0) return vec3(0);
+
+    vec3 H = normalize(L+V);
+    float NdotH = dot(N,H);
+    float LdotH = dot(L,H);
+
+    vec3 Cdlin = mon2lin(baseColor);
+    float Cdlum = .3*Cdlin[0] + .6*Cdlin[1]  + .1*Cdlin[2]; // luminance approx.
+
+    vec3 Ctint = Cdlum > 0 ? Cdlin/Cdlum : vec3(1); // normalize lum. to isolate hue+sat
+    vec3 Cspec0 = mix(specular*.08*mix(vec3(1), Ctint, specularTint), Cdlin, metallic);
+    vec3 Csheen = mix(vec3(1), Ctint, sheenTint);
+
+    // Diffuse fresnel - go from 1 at normal incidence to .5 at grazing
+    // and mix in diffuse retro-reflection based on roughness
+    float FL = SchlickFresnel(NdotL), FV = SchlickFresnel(NdotV);
+    float Fd90 = 0.5 + 2 * LdotH*LdotH * roughness;
+    float Fd = mix(1, Fd90, FL) * mix(1, Fd90, FV);
+
+    // Based on Hanrahan-Krueger brdf approximation of isotropic bssrdf
+    // 1.25 scale is used to (roughly) preserve albedo
+    // Fss90 used to "flatten" retroreflection based on roughness
+    float Fss90 = LdotH*LdotH*roughness;
+    float Fss = mix(1, Fss90, FL) * mix(1, Fss90, FV);
+    float ss = 1.25 * (Fss * (1 / (NdotL + NdotV) - .5) + .5);
+
+    // specular
+    float aspect = sqrt(1-anisotropic*.9);
+    float ax = max(.001, sqr(roughness)/aspect);
+    float ay = max(.001, sqr(roughness)*aspect);
+    float Ds = GTR2_aniso(NdotH, dot(H, X), dot(H, Y), ax, ay);
+    float FH = SchlickFresnel(LdotH);
+    vec3 Fs = mix(Cspec0, vec3(1), FH);
+    float roughg = sqr(roughness*.5+.5);
+    float Gs = smithG_GGX(NdotL, roughg) * smithG_GGX(NdotV, roughg);
+
+    // sheen
+    vec3 Fsheen = FH * sheen * Csheen;
+
+    // clearcoat (ior = 1.5 -> F0 = 0.04)
+    float Dr = GTR1(NdotH, mix(.1,.001,clearcoatGloss));
+    float Fr = mix(.04, 1, FH);
+    float Gr = smithG_GGX(NdotL, .25) * smithG_GGX(NdotV, .25);
+
+    return
+		((1/PI) *
+		mix(Fd, ss, subsurface)*Cdlin + Fsheen) *
+		(1-metallic) +
+		Gs*Fs/*Ds*/ +
+		.25*clearcoat*Gr*Fr*Dr;
+}
+]], "compute_specular2")
+render.AddGlobalShaderCode([[
+float LightingFuncGGX_D(float dotNH, float roughness)
+{
+	float alpha = roughness*roughness;
 	float alphaSqr = alpha*alpha;
 	float pi = 3.14159f;
 	float denom = dotNH * dotNH *(alphaSqr-1.0) + 1.0f;
-	D = alphaSqr/(pi * denom * denom);
+
+	float D = alphaSqr/(pi * denom * denom);
+	return D;
+}
+
+vec2 LightingFuncGGX_FV(float dotLH, float roughness)
+{
+	float alpha = roughness*roughness;
 
 	// F
+	float F_a, F_b;
 	float dotLH5 = pow(1.0f-dotLH,5);
-	float F0 = 0.25;
-	F = F0 + (1.0-F0)*(dotLH5);
+	F_a = 1.0f;
+	F_b = dotLH5;
 
 	// V
+	float vis;
 	float k = alpha/2.0f;
 	float k2 = k*k;
 	float invK2 = 1.0f-k2;
-	vis = (dotLH*dotLH*invK2 + k2);
+	vis = /*rcp*/(dotLH*dotLH*invK2 + k2);
 
-	return color * ((dotNL * D * F * vis) * attenuation);*/
-
-	float a = max( roughness * roughness, 2e-3 );
-	float a2 = a * a + attenuation;
-
-	vec3 H = normalize(light_dir + vertex_eye);
-	float NdotH = clamp(dot(-normal,H), 0.0, 1.0);
-	float VdotN = clamp(dot(vertex_eye,-normal), 0.0, 1.0);
-	float LdotN = clamp(dot(light_dir,-normal), 0.0, 1.0);
-	float VdotH = clamp(dot(vertex_eye,H), 0.0, 1.0);
-
-
-	//horizon
-	float atten = attenuation;
-	float horizon = 1.0 - LdotN;
-	horizon *= horizon; horizon *= horizon;
-	atten = atten - atten * horizon;
-
-	//incident light
-	vec3 spec = color * (atten + attenuation * LdotN);
-
-	//microfacet distribution
-	float d = ( NdotH * a2 - NdotH ) * NdotH + 1.0;
-	d *= d;
-	float D = a2 / (3.141593 * d);
-
-	//geometric / visibility
-	float k = a * 0.5;
-	float G_SmithL = LdotN * (1.0 - k) + k;
-	float G_SmithV = VdotN * (1.0 - k) + k;
-	float G = 0.25 / ( G_SmithL * G_SmithV );
-
-	//fresnel
-	float F = (1 + exp2( (-5.55473 * VdotH - 6.98316) * VdotH ));
-
-	//final
-	return (D * G) * (F * spec);
+	return vec2(F_a*vis,F_b*vis);
 }
-]])
+
+float compute_specular(vec3 N, vec3 V, vec3 L, float roughness, float F0)
+{
+	vec3 H = normalize(V+L);
+
+	float dotNL = clamp(dot(N,L), 0, 1);
+	float dotLH = clamp(dot(L,H), 0, 1);
+	float dotNH = clamp(dot(N,H), 0, 1);
+
+	float D = LightingFuncGGX_D(dotNH,roughness);
+	vec2 FV_helper = LightingFuncGGX_FV(dotLH,roughness);
+
+	float FV = F0*FV_helper.x + (1.0f-F0)*FV_helper.y;
+	float specular = dotNL * D * FV;
+
+	return specular;
+}
+]], "compute_specular")
+render.AddGlobalShaderCode([[
+vec3 compute_brdf(vec2 uv, vec3 light_dir, vec3 view_dir, vec3 normal)
+{
+	{
+		return vec3(compute_specular(
+			normal,
+			-view_dir,
+			-light_dir,
+			get_roughness(uv),
+			1
+		));
+	}
+	return compute_specular2(
+		light_dir,
+		-view_dir,
+		normal,
+
+		normal,
+		normal,
+
+
+		get_albedo(uv), // albedo
+		get_metallic(uv), // metallic
+		1, // subsurface
+		0.5, //specular
+
+		get_roughness(uv), //roughness
+		0, //specular tint
+
+		0, //anisotropic
+
+		0, // sheen
+		0.5, // sheen tint
+
+		0, // clearcoat
+		1 // clearcoat gloss
+
+	) * max(dot(-light_dir, normal), 0);
+}]])
 
 render.AddGlobalShaderCode([[
 vec3 get_view_pos(vec2 uv)
@@ -145,7 +340,7 @@ vec3 get_view_normal_from_depth(vec2 uv)
 render.AddGlobalShaderCode([[
 vec3 get_world_normal(vec2 uv)
 {
-	return normalize(-get_view_normal(uv) * mat3(g_view));
+	return (-get_view_normal(uv) * mat3(g_view));
 }]])
 
 render.AddGlobalShaderCode([[
@@ -173,6 +368,44 @@ vec3 get_world_bitangent(vec2 uv)
 {
 	return normalize(-get_view_bitangent(uv) * mat3(g_view));
 }]])
+
+render.AddGlobalShaderCode([[
+// http://www.geeks3d.com/20130122/normal-mapping-without-precomputed-tangent-space-vectors/
+mat3 get_view_tbn(vec2 uv)
+{
+	vec3 N = (get_view_normal(uv));
+	vec3 p = normalize(get_view_pos(uv));
+
+	// get edge vectors of the pixel triangle
+	vec3 dp1 = dFdx( p );
+	vec3 dp2 = dFdy( p );
+	vec2 duv1 = dFdx( uv );
+	vec2 duv2 = dFdy( uv );
+
+	// solve the linear system
+	vec3 dp2perp = cross( dp2, N );
+	vec3 dp1perp = cross( N, dp1 );
+	vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
+	vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
+
+	// construct a scale-invariant frame
+	float invmax = inversesqrt( max( dot(T,T), dot(B,B) ) );
+	return mat3( T * invmax, B * invmax, N );
+}]])
+
+render.AddGlobalShaderCode([[
+mat3 get_world_tbn(vec2 uv)
+{
+	mat3 tbn = get_view_tbn(uv);
+	tbn[0] *= -mat3(g_view);
+	tbn[1] *= -mat3(g_view);
+	tbn[2] *= -mat3(g_view);
+	return tbn;
+}]])
+
+
+
+--render.AddGlobalShaderCode("brdfs/disney.brdf")
 
 function PASS:Initialize()
 	local META = self.model_shader:CreateMaterialTemplate(PASS.Name)
@@ -397,8 +630,6 @@ PASS.Stages = {
 
 					view_normal = normalize(view_normal);
 
-
-
 					// metallic
 					if (lua[NormalAlphaMetallic = false])
 					{
@@ -442,47 +673,6 @@ PASS.Stages = {
 					metallic *= lua[MetallicMultiplier = 1];
 					roughness *= lua[RoughnessMultiplier = 1];
 					specular = vec3(0,0,0);
-
-					//albedo = albedo * (-metallic+1);
-
-					#ifdef DEBUG_NORMALS
-
-					//debug normals
-
-					view_normal = vec3(-1,-1,-1);
-
-					if (get_screen_uv().y > 0.5)
-					{
-						if (get_screen_uv().x < 0.33)
-						{
-							albedo = cotangent_frame(normalize(vertex_view_normal), view_pos, uv)[0] * 0.5 + 0.5;
-						}
-						else if (get_screen_uv().x > 0.33 && get_screen_uv().x < 0.66)
-						{
-							albedo = cotangent_frame(normalize(vertex_view_normal), view_pos, uv)[1] * 0.5 + 0.5;
-						}
-						else if (get_screen_uv().x > 0.66)
-						{
-							albedo = cotangent_frame(normalize(vertex_view_normal), view_pos, uv)[2] * 0.5 + 0.5;
-						}
-					}
-					else
-					{
-						if (get_screen_uv().x < 0.33)
-						{
-							albedo = tangent_space[0] * 0.5 + 0.5;
-						}
-						else if (get_screen_uv().x > 0.33 && get_screen_uv().x < 0.66)
-						{
-							albedo = tangent_space[1] * 0.5 + 0.5;
-						}
-						else if (get_screen_uv().x > 0.66)
-						{
-							albedo = tangent_space[2] * 0.5 + 0.5;
-						}
-					}
-
-					#endif
 				}
 			]]
 		}
@@ -566,57 +756,25 @@ PASS.Stages = {
 					return visibility;
 				}
 
-				float get_attenuation(vec2 uv, vec3 P, vec3 N, float cutoff)
-				{
-					// calculate normalized light vector and distance to sphere light surface
-					float r = lua[light_radius = 1000]/10;
-					vec3 L = light_view_pos - P;
-					float distance = length(L);
-					float d = max(distance - r, 0);
-					L /= distance;
-
-					float attenuation = 1;
-
-					float denom = d/r + 1;
-					attenuation = 1 / (denom*denom);
-
-					// scale and bias attenuation such that:
-					//   attenuation == 0 at extent of max influence
-					//   attenuation == 1 when d == 0
-					attenuation = (attenuation - cutoff) / (1 - cutoff);
-					attenuation = max(attenuation, 0);
-
-					float dot = max(dot(L, N), 0);
-					attenuation *= dot;
-
-					return attenuation * light_intensity;
-				}
-
 				void main()
 				{
-					//{specular = vec3(1) self_illumination = 1; return;}
 
 					vec3 pos = get_view_pos(uv);
 					vec3 normal = get_view_normal(uv);
+
 					float attenuation = 1;
 
 					if (!lua[project_from_camera = false])
 					{
-						attenuation = get_attenuation(uv, pos, normal, 0.175);
+						attenuation = compute_light_attenuation(pos, normal, 0.175);
 					}
 
-					specular = compute_specular(
+					specular = compute_brdf(
+						uv,
 						normalize(pos - light_view_pos),
 						normalize(pos),
-						normal,
-						get_metallic(uv),
-						get_roughness(uv),
-						get_albedo(uv),
-						light_color.rgb * light_intensity,
-						attenuation
-					);
-
-					//specular = (specular ) * vec3(attenuation);
+						normal
+					)*attenuation*light_intensity*light_color.rgb;
 
 					if (lua[light_shadow = false])
 					{
@@ -820,188 +978,107 @@ do
 			--max_size = Vec2() + 512,
 			size_divider = reflection_res_divider,
 			internal_format = "rgb16f",
+			mip_maps = 0,
 		},
 		source = [[
+		#extension GL_ARB_texture_query_levels: enable
+		out vec4 out_color;
+
 		vec3 project(vec3 coord)
 		{
 			vec4 res = g_projection * vec4(coord, 1.0);
 			return (res.xyz / res.w) * 0.5 + 0.5;
 		}
 
-		//Z buffer is nonlinear by default, so we fix this here
-		float linearizeDepth(float depth)
-		{
-			return (2.0 * g_cam_nearz) / (g_cam_farz + g_cam_nearz - depth * (g_cam_farz - g_cam_nearz));
-		}
-
-		out vec3 out_color;
-
 		void main()
 		{
 			if (texture(tex_depth, uv).r == 1)
-			{
-				out_color = texture(lua[sky_tex = render.GetSkyTexture()], -get_camera_dir(uv) * vec3(-1,1,1)).rgb;
 				return;
-			}
-
-			//Tweakable variables
-			float initialStepAmount = .01;
-			int maxDepth = 1;
-
-			//Values from textures
-			vec3 cameraSpacePosition = get_view_pos(uv);
-			vec3 cameraSpaceNormal = get_view_normal(uv);
-			vec3 cam_dir = -get_camera_dir(uv);
 
 
-			//Screen space vector
-			vec3 cameraSpaceViewDir = normalize(cameraSpacePosition);
-			vec3 cameraSpaceVector = normalize(reflect(cameraSpaceViewDir,cameraSpaceNormal));
-			vec3 screenSpacePosition = project(cameraSpacePosition);
-			vec3 cameraSpaceVectorPosition = cameraSpacePosition + cameraSpaceVector;
-			vec3 screenSpaceVectorPosition = project(cameraSpaceVectorPosition);
-			vec3 screenSpaceVector = initialStepAmount*normalize(screenSpaceVectorPosition - screenSpacePosition);
-
-
-			vec3 oldPosition = screenSpacePosition + screenSpaceVector;
-			vec3 currentPosition = oldPosition + screenSpaceVector;
-
-
-
-			float steps = 1000;
-			float samples = 4;
-
-			vec3 albedo = get_albedo(uv);
-			float metallic = get_metallic(uv);
-			float roughness = pow(get_roughness(uv), 5);
+			vec3 view_pos = get_view_pos(uv);
 			vec3 normal = get_view_normal(uv);
-			vec3 vertex_eye = normalize(get_view_pos(uv));
 
+			vec3 view_dir = normalize(view_pos);
+			vec3 view_reflect = reflect(view_dir, normal);
+			vec3 screen_pos = project(view_pos);
+			vec3 screen_reflect = normalize(project(view_pos + view_reflect) - screen_pos);
+			screen_reflect *= 0.0075;
 
+			vec3 old_pos = screen_pos + screen_reflect;
+			vec3 cur_pos = old_pos + screen_reflect;
 
-			vec3 sky_color = vec3(0);
+			float refinements = 0;
 
-			//for (float i = 0; i < samples;i++)
+			for (float i = 0; i < 100; i++)
 			{
-				//vec3 noise = (get_noise(uv+(vec2((i/samples)))).xyz*2-1)*0.5*roughness;
+				if(
+					cur_pos.x < 0 || cur_pos.x > 1 ||
+					cur_pos.y < 0 || cur_pos.y > 1 ||
+					cur_pos.z < 0 || cur_pos.z > 1
+				)
+				break;
 
-				vec3 vnormal = normalize(normal/*+noise*/);
-				vec3 world_normal = -(vnormal) * mat3(g_view);
+				float depth = linearize_depth(cur_pos.z);
+				float diff = depth - linearize_depth(texture(tex_depth, cur_pos.xy).x);
 
-				vec3 sky_reflect = reflect(cam_dir, world_normal);
-				vec3 color = texture(lua[sky_tex = render.GetSkyTexture()], sky_reflect.xyz * vec3(-1,1,1)).rgb;
-				color = mix(color*4, compute_specular(-vnormal, vertex_eye, normal, metallic, roughness, albedo, color*40, 1), roughness);
-				sky_color += color;
-			}
-
-			sky_color /= samples;
-
-			vec3 reflect_color = vec3(0);
-
-			//for (float i = 0; i < samples;i++)
-			{
-				/*vec3 noise = (get_noise(uv+(vec2((i/samples)))).xyz*2-1)*roughness / get_depth(uv)  / 10000;
-
-				noise.z = noise.z / 30;
-
-				currentPosition += noise;*/
-
-				vec3 res = vec3(0);
-
-				for (float step = 0; step < steps;step++)
+				if(diff >= 0 && diff < 0.000025 + (depth/30))
 				{
-					//Stop ray trace when it goes outside screen space
-					if(currentPosition.x < 0 || currentPosition.x > 1 ||
-					   currentPosition.y < 0 || currentPosition.y > 1 ||
-					   currentPosition.z < 0 || currentPosition.z > 1)
-						break;
-
-					//intersections
-
-
-					vec2 samplePos = currentPosition.xy;
-					float currentDepth = linearizeDepth(currentPosition.z);
-					float sampleDepth = linearizeDepth(texture(tex_depth, samplePos).x);
-
-					float diff = (currentDepth - sampleDepth);
-					float error = 0.000025 + (currentDepth/30);
-					if(diff >= 0 && diff < error)
+					if(refinements >= 2)
 					{
-						currentPosition = oldPosition;
+						vec2 device_coord = abs(vec2(0.5, 0.5) - cur_pos.xy);
+						float fade = clamp(1.0 - (device_coord.x + device_coord.y) * 1.8, 0.0, 1.0);
 
-						vec3 normalAtPos = get_view_normal(samplePos);
-						float orientation = dot(cameraSpaceVector, normalAtPos);
-
-						if(orientation < 0)
-						{
-							float cosAngIncidence = -dot(cameraSpaceViewDir,cameraSpaceNormal);
-							cosAngIncidence = clamp(1-cosAngIncidence,0.0,1.0);
-
-							vec2 dCoords = abs(vec2(0.5, 0.5) - samplePos);
-							float fade = clamp(1.0 - (dCoords.x + dCoords.y)*1.8, 0.0, 1.0);
-
-							vec3 albedo = get_albedo(samplePos);
-							float shadow = get_shadow(samplePos) > 0.0025 ? 0.6 : 1;
-
-							vec3 world_normal = -get_view_normal(samplePos) * mat3(g_view);
-							vec3 sky_reflect = reflect(-get_camera_dir(uv), world_normal);
-							vec3 sky_color = texture(lua[sky_tex = render.GetSkyTexture()], sky_reflect.xyz * vec3(-1,1,1)).rgb;
-
-							vec3 color = albedo * mix(get_specular(samplePos) * shadow, sky_color, pow(clamp(get_metallic(samplePos), 0.0, 1.0), 0.5));
-
-							color = mix(color, compute_specular(normalAtPos, vertex_eye, normal, metallic, roughness, albedo, color*40, 1.0), roughness);
-
-							res += color;
-						}
+						out_color = texture(lua[(sampler2D)render.GetFinalGBufferTexture], cur_pos.xy).rgba;
+						//out_color.rgb = get_albedo(cur_pos.xy);
 						break;
 					}
 
-					oldPosition = currentPosition;
-					currentPosition = oldPosition + screenSpaceVector;
+					screen_reflect *= 0.75;
+					cur_pos = old_pos;
+					refinements++;
 				}
 
-
-				reflect_color += res;
+				old_pos = cur_pos;
+				cur_pos += screen_reflect;
 			}
 
-			//reflect_color /= samples;
-
-			if (reflect_color == vec3(0,0,0))
-				reflect_color = sky_color;
-
-			out_color = reflect_color;
 		}
 	]]})
 
 	local function blur(times, source, format, discard)
-		for i = 1, times do
+		--for i = 1, times do
 			table.insert(PASS.Source, {
 				buffer = {
 					size_divider = reflection_res_divider,
-					internal_format = format or "rgb16f",
+					internal_format = format or "rgba16f",
 				},
 				source = [[
-				out vec3 out_color;
+				out vec4 out_color;
 
 				void main()
 				{
-					//{out_color = texture(tex_stage_]]..#PASS.Source..[[, uv).rgb; return;}
-					float RADIUS = 1;
+					float RADIUS = ]]..times..[[;
 
 					vec3 center = get_view_normal(uv);
-					vec3 result = texture(tex_stage_]]..#PASS.Source..[[, uv).rgb;
+					vec4 result = texture(tex_stage_]]..#PASS.Source..[[, uv);
 					float normalization = 1.0;
 
 					float amount = ]]..source..[[;
 					float lol = ]]..(discard or 0.99)..[[;
-					for (float j=-RADIUS; j <= RADIUS; j++) {
-						for (float i=-RADIUS; i <= RADIUS; i++) {
-							vec2 offset = ((vec2(i, j) / g_screen_size)*]]..(i*10)..[[*amount) * g_screen_size / 2500000;
-							float closeness = dot(center, get_view_normal(uv + offset));
+					float depth = get_depth(uv);
+					for (float j = -RADIUS; j <= RADIUS; j++)
+					{
+						for (float i = -RADIUS; i <= RADIUS; i++)
+						{
 
-							if (closeness > lol)
+							vec2 offset = vec2(i, j) * amount / g_screen_size;
+
+							float closeness = dot(center, get_view_normal(uv + offset));
+							float diff = depth-get_depth(uv + offset);
+							if (closeness > lol && diff < 0.0001)
 							{
-								result += texture(tex_stage_]]..#PASS.Source..[[, uv + offset).rgb * closeness;
+								result += texture(tex_stage_]]..#PASS.Source..[[, uv + offset) * closeness;
 								normalization += closeness;
 							}
 							else
@@ -1015,10 +1092,82 @@ do
 				}
 				]],
 			})
+		--end
+	end
+
+	local function blur2()
+		local AUTOMATE_ME = {
+			[-7] = 0.0044299121055113265,
+			[-6] = 0.00895781211794,
+			[-5] = 0.0215963866053,
+			[-4] = 0.0443683338718,
+			[-3] = 0.0776744219933,
+			[-2] = 0.115876621105,
+			[-1] = 0.147308056121,
+			[1] = 0.147308056121,
+			[2] = 0.115876621105,
+			[3] = 0.0776744219933,
+			[4] = 0.0443683338718,
+			[5] = 0.0215963866053,
+			[6] = 0.00895781211794,
+			[7] = 0.0044299121055113265,
+		}
+
+		local samples = 4
+		local discard_threshold = 0.99
+
+		for sample = samples, 1, -1 do
+		for x = 0, 1 do
+		for y = 0, 1 do
+			if (x == 0 and y == 0) or y == x then goto continue end
+
+			local str = [[
+				out vec3 out_color;
+				void main()
+				{
+					float amount = get_roughness(uv) / get_depth(uv) * 500 / ]]..(sample*20)..[[/length(g_screen_size);
+					vec3 normal = normalize(get_view_normal(uv));
+					float total_weight = 0;
+					out_color = texture(tex_stage_]]..#PASS.Source..[[, uv).rgb*0.159576912161;
+			]]
+
+			for i = -7, 7 do
+				if i ~= 0 then
+					local weight = i * 4 / 1000
+					local offset = "uv + vec2("..(x*weight)..", "..(y*weight)..") * amount"
+					local fade = AUTOMATE_ME[i]
+
+					str = str .. "\tif(dot(normalize(get_view_normal("..offset..")), normal) > "..discard_threshold..")\n"
+					str = str .. "\t{\n"
+					str = str .. "\t\tout_color += texture(tex_stage_"..#PASS.Source..", "..offset..").rgb *"..fade..";\n"
+					str = str .. "\t}else{total_weight += "..(fade)..";}\n"
+				end
+			end
+
+			str = str .. "\tout_color += texture(tex_stage_"..#PASS.Source..", uv).rgb*total_weight;\n"
+			str = str .. "}"
+
+			table.insert(PASS.Source, {
+				buffer = {
+					size_divider = reflection_res_divider*sample,
+					internal_format = "rgb16f",
+				},
+				source = str,
+			})
+
+			::continue::
+		end
+		end
 		end
 	end
 
-	blur(5, "0.000002/get_depth(uv)*100000*get_roughness(uv)", "rgb16f", "0.99")
+	blur2()
+
+	--blur(2, "get_roughness(uv)/get_depth(uv)*0.2", "rgb8", "0.9999")
+	--blur(3, "get_roughness(uv)/get_depth(uv)*0.25", "rgb8", "0.9999")
+	--blur(2, "get_roughness(uv)/get_depth(uv)*0.05", "rgb8", "0.9999")
+	--blur(2, "get_roughness(uv)/get_depth(uv)*0.025", "rgb8", "0.9999")
+
 
 	table.insert(PASS.Source, {
 		buffer = {
@@ -1027,8 +1176,8 @@ do
 		},
 		source =  [[
 			const vec2 KERNEL[16] = vec2[](vec2(0.53812504, 0.18565957), vec2(0.13790712, 0.24864247), vec2(0.33715037, 0.56794053), vec2(-0.6999805, -0.04511441), vec2(0.06896307, -0.15983082), vec2(0.056099437, 0.006954967), vec2(-0.014653638, 0.14027752), vec2(0.010019933, -0.1924225), vec2(-0.35775623, -0.5301969), vec2(-0.3169221, 0.106360726), vec2(0.010350345, -0.58698344), vec2(-0.08972908, -0.49408212), vec2(0.7119986, -0.0154690035), vec2(-0.053382345, 0.059675813), vec2(0.035267662, -0.063188605), vec2(-0.47761092, 0.2847911));
-			const float SAMPLE_RAD = 0.75;  /// Used in main
-			const float INTENSITY = 10; /// Used in doAmbientOcclusion
+			const float SAMPLE_RAD = 1;  /// Used in main
+			const float INTENSITY = 8; /// Used in doAmbientOcclusion
 			const int ITERATIONS = 10;
 
 			float ssao(void)
@@ -1061,23 +1210,31 @@ do
 
 			void main()
 			{
-				float shadow = get_shadow(uv) > 0.0025 ? 0.5 : 1;
+				float shadow = get_shadow(uv) > 0.0025 ? 0.15 : 1;
 
-				out_color = shadow * (min(ssao() + 0.25, 1));
+				out_color = shadow * (min(ssao() + 0, 1));
 				//out_color = pow(mix(1, out_color, pow(get_roughness(uv), 0.25)), 2);
 			}
 		]]
 	})
 
-	blur(3, "0.000002/get_depth(uv)*(0.1+get_shadow(uv))*750000", "r16f", 0.99)
+	blur(1, "0.000001/get_depth(uv)*(0.1+get_shadow(uv))*14000", "r16f", 0.99)
+
 
 	table.insert(PASS.Source, {
 		source =  [[
 			out vec3 out_color;
 
+			vec3 fresnel(float V2Ncos, vec3 reflected)
+			{
+				return reflected + 0.5 * reflected * pow(1.0 - V2Ncos, 2.0);
+			}
+
 			void main()
 			{
-				vec3 reflection = texture(tex_stage_]]..(#PASS.Source - 4)..[[, uv).rgb;
+				vec3 reflection = texture(tex_stage_]]..(#PASS.Source-2)..[[, uv).rgb;
+				vec3 sky = get_env_color();
+				reflection = mix(sky, reflection, 0.5);
 
 				if (texture(tex_depth, uv).r == 1)
 				{
@@ -1088,19 +1245,19 @@ do
 				float roughness = get_roughness(uv);
 				float shadow = texture(tex_stage_]]..(#PASS.Source)..[[, uv).r;
 				vec3 albedo = get_albedo(uv);
-				vec3 light = get_specular(uv) * pow(shadow, 2);
 
-				float metallic = get_metallic(uv);
+				vec3 specular = get_specular(uv);
 
-				/*float base = 1 - dot(get_camera_dir(uv), get_world_normal(uv));
-				float exp = pow(base, 5*roughness);
-				float fresnel = exp * (1.0 - exp);
-				metallic += fresnel/10;
-				metallic = clamp(metallic, 0.0, 1.0);*/
+				specular = specular;
+				//specular = mix(specular * albedo, specular, 1.0 - roughness);
+				//reflection = albedo*reflection;
 
-				vec3 final = albedo * mix(light, reflection, metallic);
 
-				out_color = final;
+				reflection *= 0.28;
+				reflection = fresnel(-min(dot(get_view_normal(uv), normalize(get_view_pos(uv))), 0.0), reflection);
+
+				out_color = albedo * 5 * (reflection+(specular*shadow)) * (vec3(shadow));
+
 			}
 		]]
 	})
@@ -1109,6 +1266,10 @@ do
 
 	if RELOAD then
 		PASS:__init()
+	end
+
+	function render.GetFinalGBufferTexture()
+		return render.gbuffer_mixer_buffer:GetTexture()
 	end
 end
 
