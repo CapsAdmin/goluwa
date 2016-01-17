@@ -616,7 +616,7 @@ function devil.LoadImage(data, path_hint)
 	local width = lib.ilGetInteger("IL_IMAGE_WIDTH")
 	local height = lib.ilGetInteger("IL_IMAGE_HEIGHT")
 
-	data = ffi.new("uint8_t[?]", size)
+	data = ffi.malloc("uint8_t", size)
 	ffi.copy(data, lib.ilGetData(), size)
 
 	check_error()
