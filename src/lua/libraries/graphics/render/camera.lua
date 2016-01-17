@@ -370,3 +370,8 @@ vec3 get_camera_dir(vec2 uv)
     return world_normal;
 }]])
 
+render.AddGlobalShaderCode([[
+float linearize_depth(float depth)
+{
+	return (2.0 * g_cam_nearz) / (g_cam_farz + g_cam_nearz - depth * (g_cam_farz - g_cam_nearz));
+}]])
