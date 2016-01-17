@@ -1046,56 +1046,7 @@ do
 		}
 	]]})
 
-	local function blur(times, source, format, discard)
-		--for i = 1, times do
-			table.insert(PASS.Source, {
-				buffer = {
-					size_divider = reflection_res_divider,
-					internal_format = format or "rgba16f",
-				},
-				source = [[
-				out vec4 out_color;
-
-				void main()
-				{
-					float RADIUS = ]]..times..[[;
-
-					vec3 center = get_view_normal(uv);
-					vec4 result = texture(tex_stage_]]..#PASS.Source..[[, uv);
-					float normalization = 1.0;
-
-					float amount = ]]..source..[[;
-					float lol = ]]..(discard or 0.99)..[[;
-					float depth = get_depth(uv);
-					for (float j = -RADIUS; j <= RADIUS; j++)
-					{
-						for (float i = -RADIUS; i <= RADIUS; i++)
-						{
-
-							vec2 offset = vec2(i, j) * amount / g_screen_size;
-
-							float closeness = dot(center, get_view_normal(uv + offset));
-							float diff = depth-get_depth(uv + offset);
-							if (closeness > lol && diff < 0.0001)
-							{
-								result += texture(tex_stage_]]..#PASS.Source..[[, uv + offset) * closeness;
-								normalization += closeness;
-							}
-							else
-							{
-								lol *= 0.98;
-							}
-						}
-					}
-
-					out_color = result / normalization;
-				}
-				]],
-			})
-		--end
-	end
-
-	local function blur2()
+	local function blur(samples, source, format, discard)
 		local AUTOMATE_ME = {
 			[-7] = 0.0044299121055113265,
 			[-6] = 0.00895781211794,
@@ -1113,8 +1064,7 @@ do
 			[7] = 0.0044299121055113265,
 		}
 
-		local samples = 4
-		local discard_threshold = 0.99
+		local discard_threshold = discard
 
 		for sample = samples, 1, -1 do
 		for x = 0, 1 do
@@ -1125,8 +1075,11 @@ do
 				out vec3 out_color;
 				void main()
 				{
-					float amount = get_roughness(uv) / get_depth(uv) * 500 / ]]..(sample*20)..[[/length(g_screen_size);
+					float amount = ]]..source..[[ / get_depth(uv) * ]]..(20/sample)..[[ / length(g_screen_size);
+					//amount += random(uv)*0.2;
+
 					vec3 normal = normalize(get_view_normal(uv));
+
 					float total_weight = 0;
 					out_color = texture(tex_stage_]]..#PASS.Source..[[, uv).rgb*0.159576912161;
 			]]
@@ -1149,8 +1102,8 @@ do
 
 			table.insert(PASS.Source, {
 				buffer = {
-					size_divider = reflection_res_divider*sample,
-					internal_format = "rgb16f",
+					size_divider = reflection_res_divider,
+					internal_format = format or "rgb16f",
 				},
 				source = str,
 			})
@@ -1161,13 +1114,7 @@ do
 		end
 	end
 
-	blur2()
-
-	--blur(2, "get_roughness(uv)/get_depth(uv)*0.2", "rgb8", "0.9999")
-	--blur(3, "get_roughness(uv)/get_depth(uv)*0.25", "rgb8", "0.9999")
-	--blur(2, "get_roughness(uv)/get_depth(uv)*0.05", "rgb8", "0.9999")
-	--blur(2, "get_roughness(uv)/get_depth(uv)*0.025", "rgb8", "0.9999")
-
+	blur(3, "get_roughness(uv)", "rgba16f", 0.999)
 
 	table.insert(PASS.Source, {
 		buffer = {
@@ -1218,8 +1165,7 @@ do
 		]]
 	})
 
-	blur(1, "0.000001/get_depth(uv)*(0.1+get_shadow(uv))*14000", "r16f", 0.99)
-
+	blur(1, "get_shadow(uv)/8", "r16f", 0.9)
 
 	table.insert(PASS.Source, {
 		source =  [[
@@ -1232,7 +1178,9 @@ do
 
 			void main()
 			{
-				vec3 reflection = texture(tex_stage_]]..(#PASS.Source-2)..[[, uv).rgb;
+				vec3 reflection = texture(tex_stage_]]..(#PASS.Source-3)..[[, uv).rgb;
+				//out_color = reflection; {return;}
+
 				vec3 sky = get_env_color();
 				reflection = mix(sky, reflection, 0.5);
 
@@ -1244,6 +1192,7 @@ do
 
 				float roughness = get_roughness(uv);
 				float shadow = texture(tex_stage_]]..(#PASS.Source)..[[, uv).r;
+				//out_color = vec3(shadow); {return;}
 				vec3 albedo = get_albedo(uv);
 
 				vec3 specular = get_specular(uv);
