@@ -80,7 +80,13 @@ vec3 get_sky(vec3 ray, float depth)
 	float sky_mult = pow(depth, 100);
 	float spot = smoothstep(0.0, 100.0, sky_phase(alpha, 0.9995)) * spot_brightness * sky_mult;
 
-	vec3 stars = texture(lua[nightsky_tex = render.GetNightSkyTexture()], reflect(ray, ldir)).rgb * depth * 0.01;
+	/*vec3 debug = textureLatLon(lua[debug_tex = Texture("textures/skybox/winter_forest.jpg")], reflect(ray, ldir).xzy).rgb;
+	debug += pow(debug*1.25, vec3(5));
+	{return debug;}*/
+
+	vec3 stars = textureLatLon(lua[nightsky_tex = Texture("textures/skybox/milkyway.jpg")], reflect(ray, ldir)).rgb * depth * 0.05;
+	//stars += pow(stars*2.0, vec3(2));
+	//stars *= 0.5;
 
 	vec3 eye_position = min(vec3(0,surface_height,0) + (vec3(-g_cam_pos.x, g_cam_pos.z, g_cam_pos.y) / 100010000), vec3(0.999999));
 	float eye_depth = sky_atmospheric_depth(eye_position, ray, depth);
@@ -96,7 +102,7 @@ vec3 get_sky(vec3 ray, float depth)
 	vec3 rayleigh_collected = sky_absorb(sky_color, sqrt(sample_distance), sky_color * influx, rayleigh_strength)  * pow(eye_depth, rayleigh_collection_power);
 	vec3 mie_collected = sky_absorb(sky_color, sample_distance, influx, mie_strength) * pow(eye_depth, mie_collection_power);
 
-	return 	stars + vec3(spot) + max(vec3(spot * mie_collected + mie_factor * mie_collected + rayleigh_factor * rayleigh_collected), vec3(0));
+	return stars + vec3(spot) + max(vec3(spot * mie_collected + mie_factor * mie_collected + rayleigh_factor * rayleigh_collected), vec3(0));
 }]], "get_sky")
 
 local directions = {
@@ -117,17 +123,10 @@ local shader
 local function init()
 	tex = render.CreateTexture("cube_map")
 	tex:SetInternalFormat("rgb16f")
-	tex:SetMipMapLevels(1)
+	tex:SetAnisotropy(100)
+	--tex:SetMipMapLevels(16)
 	tex:SetSize(Vec2() + 2048)
 	tex:SetupStorage()
-
-	do
-		local tex = render.CreateTexture("cube_map")
-		tex:SetMipMapLevels(1)
-		tex:LoadCubemap("textures/skybox/galaxy.png")
-
-		render.nightsky_texture = tex
-	end
 
 	shader = render.CreateShader({
 		name = "sky",
@@ -154,6 +153,7 @@ local function init()
 end
 
 function render.UpdateSky()
+	if not fb then return end
 	if not tex then init() end
 
 	render.EnableDepth(false)
@@ -187,6 +187,8 @@ function render.UpdateSky()
 	render.camera_3d:SetView(old_view)
 	render.camera_3d:SetProjection(old_projection)
 
+	tex:GenerateMipMap()
+
 
 	render.SetShaderOverride()
 end
@@ -196,18 +198,13 @@ function render.GetSkyTexture()
 	return tex
 end
 
-function render.GetNightSkyTexture()
-	if not render.nightsky_texture then init() end
-	return render.nightsky_texture
-end
-
 function render.GetShaderSunDirection()
 	local sun = entities.world and entities.world.sun
 
 	if sun and sun:IsValid() then
 		local dir = sun:GetTRPosition():GetNormalized()
 
-		return Vec3(-dir.y, dir.z, -dir.x)
+		return Vec3(dir.y, dir.z, -dir.x)
 	end
 
 	return Vec3()
