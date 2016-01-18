@@ -140,7 +140,11 @@ function render.CreateFrameBuffer(width, height, textures)
 				tex:SetDepthTextureMode(v.depth_texture_mode)
 			end
 
-			tex:SetMipMapLevels(1)
+			if v.mip_maps then
+				tex:SetMipMapLevels(v.mip_maps)
+			else
+				tex:SetMipMapLevels(1)
+			end
 			tex:SetupStorage()
 			--tex:Clear()
 
@@ -232,6 +236,11 @@ do -- binding
 		function META:End()
 			render.PopViewport()
 			self:Pop()
+			for i,v in ipairs(self.textures_sorted) do
+				if v.tex and v.tex.MipMapLevels ~= 1 then
+					v.tex:GenerateMipMap()
+				end
+			end
 		end
 	end
 
