@@ -123,7 +123,7 @@ local shader
 local function init()
 	tex = render.CreateTexture("cube_map")
 	tex:SetInternalFormat("rgb16f")
-	tex:SetAnisotropy(100)
+
 	--tex:SetMipMapLevels(16)
 	tex:SetSize(Vec2() + 2048)
 	tex:SetupStorage()
