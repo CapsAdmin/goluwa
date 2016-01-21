@@ -35,17 +35,17 @@ local shader = render.CreateShader({
 				if (generate_random == 1)
 				{
 
-					gl_FragColor.rgb = vec3(1, 1, 1);
-					gl_FragColor.a = random(uv);
-					//pow(gl_FragColor.a, 1);
+					frag_color.rgb = vec3(1, 1, 1);
+					frag_color.a = random(uv);
+					//pow(frag_color.a, 1);
 
 					return;
 				}
 
-				vec4 neighbours = vec4(0);
-				vec4 color = texture(self, uv);
+				float neighbours = 0;
+				float color = texture(self, uv).r;
 
-				float radius = 1 + cos(color.a);
+				float radius = 1 + cos(color);
 
 				vec2 uv_unit = radius / size;
 				float div = 0;
@@ -54,16 +54,16 @@ local shader = render.CreateShader({
 				{
 					for (float x = -1; x <= 1; x++)
 					{
-						neighbours += texture(self, uv + (uv_unit * vec2(x, y)));
+						neighbours += texture(self, uv + (uv_unit * vec2(x, y))).r;
 						div++;
 					}
 				}
 
 				neighbours /= div;
 
-				color.a = sin(pow(neighbours.a, pi2) * pi) / color.a * 2;
+				color = sin(pow(neighbours, pi2) * pi) / color * 2;
 
-				gl_FragColor = color;
+				frag_color = vec4(color);
 			}
 		]]
 	}
