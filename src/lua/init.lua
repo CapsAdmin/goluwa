@@ -31,6 +31,9 @@ do -- force the current directory
 	end
 end
 
+NVIDIA_WORKAROUND = true
+GL_ARB_bindless_texture = false
+
 do -- constants
 	-- if WINDOWS and X86 then blah blah end
 	_G[jit.os:upper()] = true

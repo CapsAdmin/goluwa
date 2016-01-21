@@ -959,7 +959,7 @@ if sdl then
 
 	local x, y = ffi.new(sdl and "int[1]" or "double[1]"), ffi.new(sdl and "int[1]" or "double[1]")
 
-	if sdl.GetGlobalMouseState then
+	if false and sdl.GetGlobalMouseState then
 		function META:GetMousePosition()
 			if self.global_mouse then
 				sdl.GetGlobalMouseState(x, y)
@@ -1116,7 +1116,7 @@ if sdl then
 	function META:IsFocused()
 		return self.focused
 	end
-	
+
 	function META:SetClipboard(str)
 		sdl.SetClipboardText(tostring(str))
 	end
