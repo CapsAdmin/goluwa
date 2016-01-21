@@ -372,8 +372,12 @@ function META:SetPath(path, face, flip_y)
 				end
 			end
 
-			if flip_y == nil and window.IsExtensionSupported("GL_ARB_bindless_texture") then
-				flip_y = not full_path:endswith(".vtf")
+			if  window.IsExtensionSupported("GL_ARB_bindless_texture") then
+
+			else
+				if flip_y == nil then
+					flip_y = full_path:endswith(".vtf")
+				end
 			end
 
 			self:Upload({
