@@ -212,10 +212,10 @@ do -- custom intepreter
 		end
 
 		-- modify CPATH to work with other Lua versions
-		local _, cpath = wx.wxGetEnv("LUA_CPATH")
+		--local _, cpath = wx.wxGetEnv("LUA_CPATH")
 
 		if cpath then
-			wx.wxSetEnv("LUA_CPATH", cpath:gsub("/clibs/", "/clibs51/"))
+			--wx.wxSetEnv("LUA_CPATH", cpath:gsub("/clibs/", "/clibs51/"))
 		end
 
 		wx.wxSetEnv("LD_LIBRARY_PATH", ".:$LD_LIBRARY_PATH")
@@ -245,7 +245,7 @@ do -- custom intepreter
 		)
 
 		if cpath then
-			wx.wxSetEnv("LUA_CPATH", cpath)
+		--	wx.wxSetEnv("LUA_CPATH", cpath)
 		end
 
 		ready = true
