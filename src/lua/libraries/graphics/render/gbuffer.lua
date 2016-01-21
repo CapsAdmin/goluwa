@@ -14,6 +14,16 @@ vec3 get_noise2(vec2 uv)
 }]])
 
 render.AddGlobalShaderCode([[
+vec3 get_noise3(vec2 uv)
+{
+	float x = random(uv);
+	float y = random(uv*x);
+	float z = random(uv*y);
+
+	return vec3(x,y,z) * 2 - 1;
+}]])
+
+render.AddGlobalShaderCode([[
 vec4 get_noise(vec2 uv)
 {
 	return texture(g_noise_texture, uv);
@@ -34,6 +44,7 @@ end
 render.SetGlobalShaderVariable("g_screen_size", render.GetGBufferSize, "vec2")
 render.SetGlobalShaderVariable("g_noise_texture", render.GetNoiseTexture, "sampler2D")
 render.SetGlobalShaderVariable("g_hemisphere_normals_texture", render.GetHemisphereNormalsTexture, "sampler2D")
+render.SetGlobalShaderVariable("g_time", system.GetElapsedTime, "float")
 
 render.gbuffer = render.gbuffer or NULL
 render.gbuffer_values = render.gbuffer_values or {}
