@@ -155,8 +155,6 @@ function steam.InitializeWebAPI(force)
 		steam.supported = nil
 	end
 
-	steam.key = steam.GetWebAPIKey()
-
 	if not steam.supported then
 		steam.supported = serializer.ReadFile("luadata", "steam_webapi_supported.lua") or {}
 
@@ -213,7 +211,7 @@ function steam.InitializeWebAPI(force)
 
 					callback = callback or table.print
 
-					data.key = steam.key
+					data.key = steam.GetWebAPIKey()
 
 					-- check and convert parameters
 					for key, info in pairs(parameters) do
@@ -309,7 +307,7 @@ end
 function steam.UpdateSupportedWebAPI(callback)
 	logn("[steam] fetching supported api..")
 
-	sockets.Get("https://api.steampowered.com/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key=" .. steam.key, function(data)
+	sockets.Get("https://api.steampowered.com/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key=" .. steam.GetWebAPIKey(), function(data)
 		if data.content then
 			local tbl = serializer.Decode("json", data.content)
 
