@@ -6,5 +6,6 @@ cd src
 
 git clone https://github.com/brunoos/luasec
 cd luasec
-export LUAPATH=/usr/include/luajit-2.0/
+export INC_PATH=-I/usr/include/luajit-2.0/
 make linux
+mv src/ssl.so ../../linux_x64/ssl.so
