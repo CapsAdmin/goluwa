@@ -1,4 +1,4 @@
-for k,v in pairs(entities.GetAll()) do v:Remove() end
+entities.Panic()
 
 local group = entities.CreateEntity("group", entities.GetWorld())
 group:SetName("pbr test")

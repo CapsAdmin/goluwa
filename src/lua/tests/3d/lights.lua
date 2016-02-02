@@ -1,4 +1,4 @@
-for k,v in pairs(entities.GetAll()) do v:Remove() end
+entities.Panic()
 
 render.camera_3d:SetPosition(Vec3(100, 0, 100))
 render.camera_3d:SetAngles(Ang3(1.1, math.pi, 0))

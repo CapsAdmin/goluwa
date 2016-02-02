@@ -13,6 +13,7 @@ entities.active_entities = entities.active_entities or {}
 local id = 1
 
 function entities.CreateEntity(name, parent, info)
+	if parent == nil then parent = entities.GetWorld() end
 	local self = prototype.CreateEntity(name, parent, info)
 
 	self.Id = id
@@ -50,7 +51,7 @@ entities.world = NULL
 
 function entities.GetWorld()
 	if not entities.world:IsValid() then
-		entities.world = entities.CreateEntity("world")
+		entities.world = entities.CreateEntity("world", NULL)
 	end
 	return entities.world
 end
