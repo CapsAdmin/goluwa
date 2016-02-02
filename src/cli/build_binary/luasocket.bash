@@ -6,7 +6,7 @@ cd src
 
 git clone https://github.com/diegonehab/luasocket
 cd luasocket
-make MYCFLAGS=-I/usr/include/luajit-2.0/
+make MYCFLAGS=$(pkg-config --cflags luajit) MYLDFLAGS=$(pkg-config --libs luajit)
 
 mkdir ../../linux_x64/socket
 mkdir ../../linux_x64/mime
