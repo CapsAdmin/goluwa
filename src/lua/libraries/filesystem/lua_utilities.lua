@@ -182,8 +182,12 @@ do -- include
 
 		if func then
 			dir = path:match("(.+/)(.+)")
-			vfs.PushToIncludeStack(dir)
 
+			if not full_path:startswith(e.ROOT_FOLDER) then
+				vfs.PushWorkingDirectory(dir)
+			end
+
+			vfs.PushToIncludeStack(dir)
 
 			_G.FILE_PATH = full_path
 			_G.FILE_NAME = full_path:match(".*/(.+)%.") or full_path
@@ -205,6 +209,10 @@ do -- include
 			end
 
 			vfs.PopFromIncludeStack()
+
+			if not full_path:startswith(e.ROOT_FOLDER) then
+				vfs.PopWorkingDirectory(dir)
+			end
 
 			return select(2, unpack(res))
 		end
