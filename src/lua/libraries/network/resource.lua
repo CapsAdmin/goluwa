@@ -22,6 +22,8 @@ function resource.AddProvider(provider)
 
 	table.insert(resource.providers, provider)
 
+	if not SOCKETS then return end
+
 	sockets.Download(provider .. "auto_download.txt", function(str)
 		for i,v in ipairs(serializer.Decode("newline", str)) do
 			resource.Download(v)
@@ -141,6 +143,12 @@ function resource.Download(path, callback, on_fail, crc)
 	if cb:check(path, callback, {on_fail = on_fail}) then return true end
 
 	cb:start(path, callback, {on_fail = on_fail})
+
+	if not SOCKETS then
+		cb:callextra(path, "on_fail", "sockets not availble")
+		cb:uncache(path)
+		return false
+	end
 
 	if url then
 		llog("donwnloading ", url)

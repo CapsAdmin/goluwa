@@ -4,6 +4,8 @@ window.wnd = window.wnd or NULL
 
 local meta = prototype.GetRegistered("render_window")
 
+if not meta then warning("no window managed found") return end
+
 for key, val in pairs(meta) do
 	if type(val) == "function" then
 		window[key] = function(...)

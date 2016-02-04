@@ -59,8 +59,6 @@ function google.AutoComplete(question, callback)
 	)
 end
 
-
-
 function google.YoutubeSearch(query, callback)
 	sockets.Get(("http://gdata.youtube.com/feeds/api/videos?q=%s&max-results=1&v=2&prettyprint=flase&alt=json"):format(query), function(data)
 		local hashed = serializer.Decode("json", data.content)
@@ -82,6 +80,8 @@ function google.YoutubeSearch(query, callback)
 		callback({name = name, id = id, views = views, likes = likes, dislikes = dislikes, length = length})
 	end)
 end
+
+if not SOCKETS then return end
 
 if CLIENT then
     message.AddListener("google_say", function(str)

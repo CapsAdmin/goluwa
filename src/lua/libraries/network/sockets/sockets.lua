@@ -1,7 +1,59 @@
+if not SOCKETS then return end
+
 local luasocket = desire("socket")
 
 if not luasocket then
 	luasocket = desire("socket.core")
+end
+
+if not luasocket then
+	local META = {}
+	META.__index = META
+
+	function META:close()
+
+	end
+
+	function META:settimeout(sec)
+
+	end
+
+	function META:setoption(key, val)
+		return nil
+	end
+
+	function META:connect(ip, port)
+
+	end
+
+	function META:send(str)
+
+	end
+
+	function META:bind(ip, port)
+
+	end
+
+	function META:listen()
+
+	end
+
+	function META:sendto(str, ip, port)
+
+	end
+
+	function META:receivefrom()
+
+	end
+
+	function META:getsockname()
+
+	end
+
+	luasocket = {
+		tcp = function() return setmetatable({}, META) end,
+		udp = function() return setmetatable({}, META) end,
+	}
 end
 
 local sockets = _G.sockets or {}

@@ -94,6 +94,8 @@ local split_query = {
 local function query_server(ip, port, query, callback)
 	callback = callback or table.print
 
+	if not SOCKETS then return callback(nil, "sockets not avaible") end
+
 	local socket = sockets.CreateClient("udp", ip, port)
 
 	socket.debug = steam.debug

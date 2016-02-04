@@ -1,3 +1,5 @@
+if not SOCKETS then return end
+
 local steam = ... or _G.steam
 
 local patch = {

@@ -61,13 +61,14 @@ local function main()
 		end
 	end
 
-	if OnUpdate then
-		function OnUpdate()
+	if not LOOP then
+		function UpdateGoluwa()
 			if update() == false or not system.run then
 				event.Call("ShutDown")
-				OnUpdate = nil
 				--os.realexit(system.run)
+				return false
 			end
+			return true
 		end
 	else
 		while system.run == true do
@@ -83,7 +84,8 @@ end
 vfs.PopFromIncludeStack()
 
 main()
-if not OnUpdate then
+
+if not LOOP then
 	event.Call("ShutDown")
 	os.realexit(system.run)
 end

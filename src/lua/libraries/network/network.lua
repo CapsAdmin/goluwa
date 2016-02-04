@@ -279,6 +279,10 @@ do
 	end
 
 	function network.JoinIRCServer()
+		if not SOCKETS then
+			warning("sockets not availible")
+			return
+		end
 		if not network.irc_client:IsValid() then
 			local client = sockets.CreateIRCClient()
 

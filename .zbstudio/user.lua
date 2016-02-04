@@ -221,7 +221,7 @@ do -- custom intepreter
 		wx.wxSetEnv("LD_LIBRARY_PATH", ".:$LD_LIBRARY_PATH")
 
 		--callback = function(...) CONSOLE_OUT(...) end
-		local fmt = "%q -e \"io.stdout:setvbuf('no');DISABLE_CURSES=true;ZEROBRANE=true;ARGS={[==[include[[%s]]%s]==]};dofile[[%s]]\""
+		local fmt = "%q -e \"io.stdout:setvbuf('no');CURSES=false;ARGS={[==[include[[%s]]%s]==]};dofile[[%s]]\""
 
 		local root = ide.config.path.projectdir .. "/"
 

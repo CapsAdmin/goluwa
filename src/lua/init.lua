@@ -7,6 +7,17 @@ if not require("ffi") then
 	error("goluwa requires ffi to run!")
 end
 
+do -- make cdef not error
+	local ffi = require("ffi")
+	local old = ffi.cdef
+	ffi.cdef = function(src)
+		local ok, err = pcall(old, src)
+		if not ok then
+			io.write(err, "\n")
+		end
+	end
+end
+
 do -- force package paths
 	if jit.os ~= "Windows" then
 		package.cpath = "./?.so"
@@ -23,10 +34,18 @@ do -- force the current directory
 		local ffi = require("ffi")
 		if jit.os == "Windows" then
 			ffi.cdef("int SetCurrentDirectoryA(const char *);")
-			ffi.C.SetCurrentDirectoryA(dir .. "data/bin/windows_" .. jit.arch:lower() .. "/")
+			dir = dir .. "data/bin/windows_" .. jit.arch:lower() .. "/"
+			ffi.C.SetCurrentDirectoryA(dir)
 		else
 			ffi.cdef("int chdir(const char *);")
-			ffi.C.chdir(dir .. "data/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/")
+			dir = dir .. "data/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
+			ffi.C.chdir(dir)
+		end
+
+		if jit.os ~= "Windows" then
+			-- chdir doesnt' seem to have an effect on these in some situations
+		--	package.cpath = package.cpath .. ";" .. dir .. "?.so"
+			--package.path = package.path .. ";" .. dir .. "?.lua"
 		end
 	end
 end
@@ -42,25 +61,29 @@ do -- constants
 	-- enums table
 	e = e or {}
 
-	e.USERNAME = tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
+	e.USERNAME = _G.USERNAME or tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
 	_G[e.USERNAME:upper()] = true
 
 	local env_vars = {
-		"USE_GLFW",
-		"SERVER",
-		"CLIENT",
-		"GRAPHICS",
-		"SOUND",
-		"DEBUG",
-		"DISABLE_CURSES",
-		"SRGB",
+		SERVER = false,
+		CLIENT = true,
+		GRAPHICS = true,
+		SOUND = true,
+		DEBUG = false,
+		CURSES = true,
+		SOCKETS = true,
+		SRGB = true,
+		LOOP = true,
+		WINDOW = true,
 	}
 
-	for _, key in pairs(env_vars) do
-		if  _G[key] == nil  then
+	for key, default in pairs(env_vars) do
+		if _G[key] == nil then
 			if os.getenv(key) == "0" then
 				_G[key] = false
 			elseif os.getenv(key) == "1" then
+				_G[key] = true
+			elseif default == true then
 				_G[key] = true
 			end
 		end
@@ -69,15 +92,6 @@ do -- constants
 	if os.getenv("CODEXL") == "1" or os.getenv("MESA_DEBUG") == "1" then
 		EXTERNAL_OPENGL_DEBUGGER = true
 	end
-
-	-- assume client if nothing was provided
-	if SERVER == nil and CLIENT == nil then
-		CLIENT = true
-	end
-
-	if SOUND == nil then SOUND = true end
-	if GRAPHICS == nil then GRAPHICS = true end
-	if SRGB == nil then SRGB = true end
 
 	do -- write them to output
 		io.write("constants:\n")
@@ -145,7 +159,7 @@ do -- 52 compat
 	end
 end
 
-if not DISABLE_CURSES then
+if CURSES then
 	-- this will be replaced later on with logn
 	_G.LOG_BUFFER = {}
 
@@ -257,11 +271,13 @@ do -- libraries
 	language = include("lua/libraries/language.lua") _G.L = language.LanguageString
 
 	-- network
-	sockets = include("lua/libraries/network/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
+	if SOCKETS then
+		sockets = include("lua/libraries/network/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
+	end
 
-	if sockets then
-		enet = include("lua/libraries/network/enet.lua") -- low level udp library
+	enet = include("lua/libraries/network/enet.lua") -- low level udp library
 
+	if enet then
 		network = include("lua/libraries/network/network.lua") -- high level implementation of enet
 		packet = include("lua/libraries/network/packet.lua") -- medium (?) level communication between server and client
 		message = include("lua/libraries/network/message.lua") -- high level communication between server and client
@@ -285,7 +301,7 @@ do -- libraries
 			video = include("lua/libraries/graphics/video.lua") -- gif support (for now)
 			include("lua/libraries/graphics/particles.lua")
 
-			if not SCITE then
+			if WINDOW and _G.window then
 				io.write("opening window\n")
 				window.Open()
 				io.write("window opened!\n")
@@ -300,7 +316,7 @@ do -- libraries
 		end
 	end
 
-	if not render or not window.IsOpen() then
+	if not render or not window or not window.IsOpen() then
 		GRAPHICS = nil
 	end
 
@@ -334,7 +350,7 @@ if audio then
 	audio.Initialize()
 end
 
-if not ZEROBRANE and not DISABLE_CURSES and console.InitializeCurses then
+if console.InitializeCurses then
 	console.InitializeCurses()
 end
 
