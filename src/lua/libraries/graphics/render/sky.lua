@@ -1,108 +1,132 @@
 local render = ... or _G.render
 
 render.AddGlobalShaderCode([[
-float sky_atmospheric_depth(vec3 position, vec3 dir, float depth)
-{
-	float a = dot(dir, dir);
-	float b = 2.0*dot(dir, position);
-	float c = dot(position, position)-1.0;
-	float det = b*b-4.0*a*c;
-	float detSqrt = sqrt(det);
-	float q = (-b - detSqrt)/2.0;
-	float t1 = c/q;
-	return t1 * pow(depth, 2.5) / 7;
+#define PI 3.141592
+#define iSteps 16
+#define jSteps 8
+
+float rsi(vec3 r0, vec3 rd, float sr) {
+    // Simplified ray-sphere intersection that assumes
+    // the ray starts inside the sphere and that the
+    // sphere is centered at the origin. Always intersects.
+    float a = dot(rd, rd);
+    float b = 2.0 * abs(dot(rd, r0));
+    float c = dot(r0, r0) - (sr * sr);
+    return (-b + sqrt((b*b) - 4.0*a*c))/(2.0*a);
 }
 
-float sky_phase(float alpha, float g)
-{
-	float a = 3.0*(1.0-g*g);
-	float b = 2.0*(2.0+g*g);
-	float c = 1.0+alpha*alpha;
-	float d = pow(1.0+g*g-2.0*g*alpha, 1.5);
-	d = max(d, 0.00001);
-	return (a/b)*(c/d);
-}
+vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAtmos, vec3 kRlh, float kMie, float shRlh, float shMie, float g) {
+    // Normalize the sun and view directions.
+    pSun = normalize(pSun);
+    r = normalize(r);
 
-float sky_horizon_extinction(vec3 position, vec3 dir, float radius)
-{
-	float u = dot(dir, -position);
-	if(u<0.0)
-	{
-		return 1.0;
-	}
-	vec3 near = position + u*dir;
-	if(length(near) < radius)
-	{
-		return 0.0;
-	}
-	else if (length(near) >= radius)
-	{
-		vec3 v2 = normalize(near)*radius - position;
-		float diff = acos(dot(normalize(v2), dir));
-		return smoothstep(0.0, 1.0, pow(diff*2.0, 3.0));
-	}
-	else
-		return 1.0;
-}
+    // Calculate the step size of the primary ray.
+    float iStepSize = rsi(r0, r, rAtmos) / float(iSteps);
 
-vec3 sky_absorb(vec3 sky_color, float dist, vec3 color, float factor)
-{
-	return color-color*pow(sky_color, vec3(factor/dist));
+    // Initialize the primary ray time.
+    float iTime = 0.0;
+
+    // Initialize accumulators for Rayleigh and Mie scattering.
+    vec3 totalRlh = vec3(0,0,0);
+    vec3 totalMie = vec3(0,0,0);
+
+    // Initialize optical depth accumulators for the primary ray.
+    float iOdRlh = 0.0;
+    float iOdMie = 0.0;
+
+    // Calculate the Rayleigh and Mie phases.
+    float mu = dot(r, pSun);
+    float mumu = mu * mu;
+    float gg = g * g;
+    float pRlh = 3.0 / (16.0 * PI) * (1.0 + mumu);
+    float pMie = 3.0 / (8.0 * PI) * ((1.0 - gg) * (mumu + 1.0)) / (pow(1.0 + gg - 2.0 * mu * g, 1.5) * (2.0 + gg));
+
+    // Sample the primary ray.
+    for (int i = 0; i < iSteps; i++) {
+
+        // Calculate the primary ray sample position.
+        vec3 iPos = r0 + r * (iTime + iStepSize * 0.5);
+
+        // Calculate the height of the sample.
+        float iHeight = length(iPos) - rPlanet;
+
+        // Calculate the optical depth of the Rayleigh and Mie scattering for this step.
+        float odStepRlh = exp(-iHeight / shRlh) * iStepSize;
+        float odStepMie = exp(-iHeight / shMie) * iStepSize;
+
+        // Accumulate optical depth.
+        iOdRlh += odStepRlh;
+        iOdMie += odStepMie;
+
+        // Calculate the step size of the secondary ray.
+        float jStepSize = rsi(iPos, pSun, rAtmos) / float(jSteps);
+
+        // Initialize the secondary ray time.
+        float jTime = 0.0;
+
+        // Initialize optical depth accumulators for the secondary ray.
+        float jOdRlh = 0.0;
+        float jOdMie = 0.0;
+
+        // Sample the secondary ray.
+        for (int j = 0; j < jSteps; j++) {
+
+            // Calculate the secondary ray sample position.
+            vec3 jPos = iPos + pSun * (jTime + jStepSize * 0.5);
+
+            // Calculate the height of the sample.
+            float jHeight = length(jPos) - rPlanet;
+
+            // Accumulate the optical depth.
+            jOdRlh += exp(-jHeight / shRlh) * jStepSize;
+            jOdMie += exp(-jHeight / shMie) * jStepSize;
+
+            // Increment the secondary ray time.
+            jTime += jStepSize;
+        }
+
+        // Calculate attenuation.
+        vec3 attn = exp(-(kMie * (iOdMie + jOdMie) + kRlh * (iOdRlh + jOdRlh)));
+
+        // Accumulate scattering.
+        totalRlh += odStepRlh * attn;
+        totalMie += odStepMie * attn;
+
+        // Increment the primary ray time.
+        iTime += iStepSize;
+
+    }
+
+    // Calculate and return the final color.
+    return iSun * (pRlh * kRlh * totalRlh + pMie * kMie * totalMie);
 }
 
 vec3 get_sky(vec3 ray, float depth)
 {
-	ray = normalize(ray);
 
 	vec3 sun_direction = lua[(vec3)render.GetShaderSunDirection];
-	float intensity = lua[world_sun_intensity = 1]*8;
+	float intensity = lua[world_sun_intensity = 1];
 	vec3 sky_color = lua[world_sky_color = Vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131)];
 
-	const float surface_height = 0.99;
+	//{return textureLatLon(lua[nightsky_tex = Texture("textures/skybox/street.jpg")], reflect(ray, sun_direction)).rgb;};
 
+	vec3 stars = textureLatLon(lua[nightsky_tex = Texture("textures/skybox/milkyway.jpg")], reflect(ray, sun_direction)).rgb;
+	stars += pow(stars*1.25, vec3(1.5));
+	stars *= depth * 0.05;
 
-	const float rayleigh_brightness = 3.3;
-	const float mie_brightness = 0.1;
-	float spot_brightness = intensity;
-	const float scatter_strength = 0.028;
-	const float rayleigh_strength = 0.139;
-	const float mie_strength = 0.264;
-	const float rayleigh_collection_power = 0.81;
-	const float mie_collection_power = 0.39;
-	const float mie_distribution = 0.63;
-
-	vec3 ldir = sun_direction;
-	float alpha = dot(ray, ldir);
-
-	float rayleigh_factor = sky_phase(alpha, -0.01) * rayleigh_brightness * ldir.y;
-	float mie_factor = sky_phase(alpha - 0.5, mie_distribution) * mie_brightness * (1.0 - ldir.y);
-
-	float sky_mult = pow(depth, 100);
-	float spot = smoothstep(0.0, 100.0, sky_phase(alpha, 0.9995)) * spot_brightness * sky_mult;
-
-	/*vec3 debug = textureLatLon(lua[debug_tex = Texture("textures/skybox/winter_forest.jpg")], reflect(ray, ldir).xzy).rgb;
-	debug += pow(debug*1.25, vec3(5));
-	{return debug;}*/
-
-	vec3 stars = textureLatLon(lua[nightsky_tex = Texture("textures/skybox/milkyway.jpg")], reflect(ray, ldir)).rgb * depth * 0.05;
-	//stars += pow(stars*2.0, vec3(2));
-	//stars *= 0.5;
-
-	vec3 eye_position = min(vec3(0,surface_height,0) + (vec3(-g_cam_pos.x, g_cam_pos.z, g_cam_pos.y) / 100010000), vec3(0.999999));
-	float eye_depth = sky_atmospheric_depth(eye_position, ray, depth);
-	float step_length = eye_depth;
-
-	float sample_distance = step_length;
-
-	vec3 position = eye_position + ray * sample_distance;
-	float extinction = sky_horizon_extinction(position, ldir, surface_height - 0.2);
-	float sample_depth = sky_atmospheric_depth(position, ray, depth);
-	vec3 influx = sky_absorb(sky_color, sample_depth, vec3(intensity * 4), scatter_strength) * extinction;
-
-	vec3 rayleigh_collected = sky_absorb(sky_color, sqrt(sample_distance), sky_color * influx, rayleigh_strength)  * pow(eye_depth, rayleigh_collection_power);
-	vec3 mie_collected = sky_absorb(sky_color, sample_distance, influx, mie_strength) * pow(eye_depth, mie_collection_power);
-
-	return stars + vec3(spot) + max(vec3(spot * mie_collected + mie_factor * mie_collected + rayleigh_factor * rayleigh_collected), vec3(0));
+	return depth*max(atmosphere(
+		normalize(ray),         		// normalized ray direction
+        g_cam_pos.xzy + vec3(0,6372e3,0),               // ray origin
+        vec3(sun_direction.x, sun_direction.y, sun_direction.z),					// position of the sun
+        22.0*intensity,                           // intensity of the sun
+        6371e3,                         // radius of the planet in meters
+        6471e3,                         // radius of the atmosphere in meters
+        vec3(5.5e-6, 13.0e-6, 22.4e-6), // Rayleigh scattering coefficient
+        21e-6,                          // Mie scattering coefficient
+        8e3,                            // Rayleigh scale height
+        1.2e3,                          // Mie scale height
+        0.758                           // Mie preferred scattering direction
+	), vec3(0))+stars;
 }]], "get_sky")
 
 local directions = {
@@ -125,7 +149,7 @@ local function init()
 	tex:SetInternalFormat("rgb16f")
 
 	--tex:SetMipMapLevels(16)
-	tex:SetSize(Vec2() + 2048)
+	tex:SetSize(Vec2() + 1024)
 	tex:SetupStorage()
 
 	shader = render.CreateShader({
