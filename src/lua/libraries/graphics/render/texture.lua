@@ -376,7 +376,7 @@ function META:SetPath(path, face, flip_y)
 
 			else
 				if flip_y == nil then
-					flip_y = full_path:endswith(".vtf")
+					--flip_y = full_path:endswith(".vtf")
 				end
 			end
 
