@@ -1209,8 +1209,6 @@ if sdl then
 	}
 
 	function system.CreateWindow(width, height, title, flags, reset_flags)
-		width = width or 800
-		height = height or 600
 		title = title or ""
 
 		if not system.gl_context then
@@ -1233,6 +1231,13 @@ if sdl then
 			for k,v in pairs(flags) do
 				bit_flags = bit.bor(bit_flags, flags_to_enums[v])
 			end
+		end
+
+		if not width or not height then
+			local info = ffi.new("SDL_DisplayMode[1]")
+			sdl.GetCurrentDisplayMode(0, info)
+			width = width or info[0].w / 2
+			height = height or info[0].h / 2
 		end
 
 		local ptr = sdl.CreateWindow(
