@@ -502,7 +502,7 @@ do -- title
 			end
 		end
 
-		if ZEROBRANE then
+		if not CURSES then
 			set_title = function()
 				-- hmmm
 			end
@@ -605,7 +605,7 @@ console.AddCommand("help", function(line)
 	end
 end)
 
-if not DISABLE_CURSES then
+if CURSES then
 	local curses = require("ffi.curses")
 
 	local log_history = console.GetLogHistory and console.GetLogHistory() or {}
