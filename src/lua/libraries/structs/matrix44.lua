@@ -2,7 +2,7 @@ local structs = (...) or _G.structs
 
 local ffi = require("ffi")
 
-local light_ctor
+local ctype = ffi.typeof("struct { float m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33; }")
 
 local META = {}
 META.__index = META
@@ -12,6 +12,7 @@ META.ClassName = "Matrix44"
 META.Type = META.ClassName:lower()
 
 META.NumberType = "float"
+
 META.Args = {
 	"m00", "m01", "m02", "m03",
 	"m10", "m11", "m12", "m13",
@@ -29,7 +30,7 @@ function META:Copy(matrix)
 
 		return self
 	else
-		local result = light_ctor()
+		local result = ctype(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
 
 		ffi.copy(result, self, size)
 
@@ -77,7 +78,7 @@ end
 META.LoadIdentity = META.Identity
 
 function META:GetInverse(out)
-	out = out or light_ctor()
+	out = out or ctype(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
 
 	out.m00 = self.m11*self.m22*self.m33 - self.m11*self.m32*self.m23 - self.m12*self.m21*self.m33 + self.m12*self.m31*self.m23 + self.m13*self.m21*self.m32 - self.m13*self.m31*self.m22
 	out.m01 = -self.m01*self.m22*self.m33 + self.m01*self.m32*self.m23 + self.m02*self.m21*self.m33 - self.m02*self.m31*self.m23 - self.m03*self.m21*self.m32 + self.m03*self.m31*self.m22
@@ -122,7 +123,7 @@ function META:GetInverse(out)
 end
 
 function META:GetTranspose(out)
-	out = out or light_ctor()
+	out = out or ctype(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
 
 	out.m00 = self.m00
 	out.m01 = self.m10
@@ -148,7 +149,7 @@ function META:GetTranspose(out)
 end
 
 function META.GetMultiplied(a, b, out)
-	out = out or light_ctor()
+	out = out or ctype(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
 
 	out.m00 = a.m00 * b.m00 + a.m01 * b.m10 + a.m02 * b.m20 + a.m03 * b.m30
 	out.m01 = a.m00 * b.m01 + a.m01 * b.m11 + a.m02 * b.m21 + a.m03 * b.m31
@@ -205,9 +206,9 @@ end
 function META:Rotate(a, x, y, z, out)
 	if a == 0 then return self end
 
-	out = out or light_ctor()
+	out = out or ctype(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
 
-	local xx, yy, zz, xy, yz, zx, xs, ys, zs, one_c, s, c
+	local xx, yy, zz, xy, yz, zx, xs, ys, zs, one_c
 	local optimized = false
 
 	local s = math.sin(a)
@@ -415,13 +416,6 @@ function META:TransformVector(x, y, z)
 		(x * self.m02 + y * self.m12 + z * self.m22 + self.m32) / div
 end
 
-function META:Shear(v)
-	 for i = 0, 3 do
-		self[i + 2] = self[i + 2] + y * self[i] + v.z * self[i + 1]
-		self[i + 1] = self[i + 1] + v.x * self[i]
-	end
-end
-
 function META:Lerp(alpha, other)
 	for i = 1, 16 do
 		math.lerp(alpha, self[i-1], other[i-1])
@@ -432,9 +426,9 @@ function META:GetRotation(out)
 	local w = math.sqrt(1 + self.m00 + self.m11 + self.m22) / 2
 	local w2 = w * 4
 
-	x = (self.m21 - self.m12) / w2
-	y = (self.m02 - self.m20 ) / w2
-	z = (self.m10 - self.m01) / w2
+	local x = (self.m21 - self.m12) / w2
+	local y = (self.m02 - self.m20 ) / w2
+	local z = (self.m10 - self.m01) / w2
 
 	out = out or structs.Quat()
 	out:Set(x,y,z,w)
@@ -483,52 +477,10 @@ function META:GetAngles()
 	return self:GetRotation():GetAngles()
 end
 
-if RELOAD then
-	local gl = require("graphics.ffi.opengl")
-	gl.MatrixMode("GL_MODELVIEW")
+ffi.metatype(ctype, META)
 
-	function META.GetMultiplied(a, b, out)
-		out = out or light_ctor()
-
-		gl.LoadMatrixf(ffi.cast("float *", b))
-		gl.MultMatrixf(ffi.cast("float *", a))
-		gl.GetFloatv("GL_MODELVIEW_MATRIX", ffi.cast("float *", out))
-
-		return out
-	end
-
-	META.Multiply = META.GetMultiplied
-
-	function META:Rotate(a, x, y, z, out)
-		out = out or light_ctor()
-
-		gl.LoadMatrixf(ffi.cast("float *", self))
-		gl.Rotatef(math.deg(a), x, y, z)
-		gl.GetFloatv("GL_MODELVIEW_MATRIX", ffi.cast("float *", out))
-
-		return out
-	end
-	function META:Translate(x, y, z)
-		gl.LoadMatrixf(ffi.cast("float *", self))
-		gl.Translatef(x, y, z)
-		gl.GetFloatv("GL_MODELVIEW_MATRIX", ffi.cast("float *", self))
-
-		return out
-	end
-
-	function META:Scale(x, y, z)
-		gl.LoadMatrixf(ffi.cast("float *", self))
-		gl.Scalef(x, y, z)
-		gl.GetFloatv("GL_MODELVIEW_MATRIX", ffi.cast("float *", self))
-
-		return out
-	end
-end
-
-local meta = ffi.metatype("struct {	float m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33;}", META)
-light_ctor = function() return meta(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1) end
 function Matrix44(x, y, z)
-	return meta(1,0,0,0, 0,1,0,0, 0,0,1,0, x or 0, y or 0, z or 0,1)
+	return ctype(1,0,0,0, 0,1,0,0, 0,0,1,0, x or 0, y or 0, z or 0,1)
 end
 
 prototype.Register(META)
