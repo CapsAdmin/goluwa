@@ -1,7 +1,7 @@
 local ffi = require("ffi")
 local surface = ... or _G.surface
 
-local freetype = desire("graphics.ffi.freetype")
+local freetype = desire("libfreetype")
 
 if not freetype then return end
 
@@ -17,7 +17,7 @@ function META:Initialize()
 	end
 
 	if not surface.freetype_lib then
-		local lib = ffi.new("FT_Library[1]")
+		local lib = ffi.new("struct FT_LibraryRec_ * [1]")
 		freetype.InitFreeType(lib)
 --		freetype.LibrarySetLcdFilter(lib[0], 1)
 		surface.freetype_lib = lib
@@ -28,7 +28,7 @@ function META:Initialize()
 
 		self.binary_font_data = data
 
-		local face = ffi.new("FT_Face[1]")
+		local face = ffi.new("struct FT_FaceRec_ * [1]")
 
 		if freetype.NewMemoryFace(surface.freetype_lib[0], data, #data, 0, face) == 0 then
 			self.face_ref = face

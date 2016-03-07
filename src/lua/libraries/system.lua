@@ -919,9 +919,8 @@ do -- environment
 	end
 end
 
+local sdl = desire("libSDL2") -- window manager
 
-
-local sdl = desire("graphics.ffi.sdl") -- window manager
 if sdl then
 	local META = prototype.CreateTemplate("render_window")
 
@@ -1141,18 +1140,18 @@ if sdl then
 	do
 
 		local enums = {
-			arrow = sdl.e.SDL_SYSTEM_CURSOR_ARROW,
-			ibeam = sdl.e.SDL_SYSTEM_CURSOR_IBEAM,
-			wait = sdl.e.SDL_SYSTEM_CURSOR_WAIT,
-			crosshair = sdl.e.SDL_SYSTEM_CURSOR_CROSSHAIR,
-			waitarrow = sdl.e.SDL_SYSTEM_CURSOR_WAITARROW,
-			sizenwse = sdl.e.SDL_SYSTEM_CURSOR_SIZENWSE,
-			sizenesw = sdl.e.SDL_SYSTEM_CURSOR_SIZENESW,
-			sizewe = sdl.e.SDL_SYSTEM_CURSOR_SIZEWE,
-			sizens = sdl.e.SDL_SYSTEM_CURSOR_SIZENS,
-			sizeall = sdl.e.SDL_SYSTEM_CURSOR_SIZEALL,
-			no = sdl.e.SDL_SYSTEM_CURSOR_NO,
-			hand = sdl.e.SDL_SYSTEM_CURSOR_HAND,
+			arrow = sdl.e.SYSTEM_CURSOR_ARROW,
+			ibeam = sdl.e.SYSTEM_CURSOR_IBEAM,
+			wait = sdl.e.SYSTEM_CURSOR_WAIT,
+			crosshair = sdl.e.SYSTEM_CURSOR_CROSSHAIR,
+			waitarrow = sdl.e.SYSTEM_CURSOR_WAITARROW,
+			sizenwse = sdl.e.SYSTEM_CURSOR_SIZENWSE,
+			sizenesw = sdl.e.SYSTEM_CURSOR_SIZENESW,
+			sizewe = sdl.e.SYSTEM_CURSOR_SIZEWE,
+			sizens = sdl.e.SYSTEM_CURSOR_SIZENS,
+			sizeall = sdl.e.SYSTEM_CURSOR_SIZEALL,
+			no = sdl.e.SYSTEM_CURSOR_NO,
+			hand = sdl.e.SYSTEM_CURSOR_HAND,
 		}
 
 		local current
@@ -1196,37 +1195,37 @@ if sdl then
 	prototype.Register(META)
 
 	local flags_to_enums = {
-		fullscreen = sdl.e.SDL_WINDOW_FULLSCREEN, -- fullscreen window
-		fullscreen_desktop = sdl.e.SDL_WINDOW_FULLSCREEN_DESKTOP, -- fullscreen window at the current desktop resolution
---		opengl = sdl.e.SDL_WINDOW_OPENGL, -- window usable with OpenGL context
-		hidden = sdl.e.SDL_WINDOW_HIDDEN, -- window is not visible
-		borderless = sdl.e.SDL_WINDOW_BORDERLESS, -- no window decoration
-		resizable = sdl.e.SDL_WINDOW_RESIZABLE, -- window can be resized
-		minimized = sdl.e.SDL_WINDOW_MINIMIZED, -- window is minimized
-		maximized = sdl.e.SDL_WINDOW_MAXIMIZED, -- window is maximized
-		input_grabbed = sdl.e.SDL_WINDOW_INPUT_GRABBED, -- window has grabbed input focus
-		allow_highdpi = sdl.e.SDL_WINDOW_ALLOW_HIGHDPI, -- window should be created in high-DPI mode if supported (>= SDL 2.0.1)
+		fullscreen = sdl.e.WINDOW_FULLSCREEN, -- fullscreen window
+		fullscreen_desktop = sdl.e.WINDOW_FULLSCREEN_DESKTOP, -- fullscreen window at the current desktop resolution
+--		opengl = sdl.e.WINDOW_OPENGL, -- window usable with OpenGL context
+		hidden = sdl.e.WINDOW_HIDDEN, -- window is not visible
+		borderless = sdl.e.WINDOW_BORDERLESS, -- no window decoration
+		resizable = sdl.e.WINDOW_RESIZABLE, -- window can be resized
+		minimized = sdl.e.WINDOW_MINIMIZED, -- window is minimized
+		maximized = sdl.e.WINDOW_MAXIMIZED, -- window is maximized
+		input_grabbed = sdl.e.WINDOW_INPUT_GRABBED, -- window has grabbed input focus
+		allow_highdpi = sdl.e.WINDOW_ALLOW_HIGHDPI, -- window should be created in high-DPI mode if supported (>= SDL 2.0.1)
 	}
 
 	function system.CreateWindow(width, height, title, flags, reset_flags)
 		title = title or ""
 
 		if not system.gl_context then
-			sdl.Init(sdl.e.SDL_INIT_VIDEO)
+			sdl.Init(sdl.e.INIT_VIDEO)
 			sdl.video_init = true
 
-			sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_MAJOR_VERSION, 3)
-			sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_MINOR_VERSION, 3)
-			sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_PROFILE_MASK, sdl.e.SDL_GL_CONTEXT_PROFILE_CORE)
+			sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_MAJOR_VERSION, 3)
+			sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_MINOR_VERSION, 3)
+			sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_PROFILE_MASK, sdl.e.GL_CONTEXT_PROFILE_CORE)
 
-			--sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_FLAGS, sdl.e.SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG)
-			--sdl.GL_SetAttribute(sdl.e.SDL_GL_CONTEXT_PROFILE_MASK, sdl.e.SDL_GL_CONTEXT_PROFILE_COMPATIBILITY)
+			--sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_FLAGS, sdl.e.GL_CONTEXT_ROBUST_ACCESS_FLAG)
+			--sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_PROFILE_MASK, sdl.e.GL_CONTEXT_PROFILE_COMPATIBILITY)
 		end
 
-		local bit_flags = bit.bor(sdl.e.SDL_WINDOW_OPENGL, sdl.e.SDL_WINDOW_SHOWN, sdl.e.SDL_WINDOW_RESIZABLE)
+		local bit_flags = bit.bor(sdl.e.WINDOW_OPENGL, sdl.e.WINDOW_SHOWN, sdl.e.WINDOW_RESIZABLE)
 
 		if flags then
-			bit_flags = sdl.e.SDL_WINDOW_OPENGL
+			bit_flags = sdl.e.WINDOW_OPENGL
 
 			for k,v in pairs(flags) do
 				bit_flags = bit.bor(bit_flags, flags_to_enums[v])
@@ -1234,7 +1233,7 @@ if sdl then
 		end
 
 		if not width or not height then
-			local info = ffi.new("SDL_DisplayMode[1]")
+			local info = ffi.new("struct SDL_DisplayMode[1]")
 			sdl.GetCurrentDisplayMode(0, info)
 			width = width or info[0].w / 2
 			height = height or info[0].h / 2
@@ -1242,8 +1241,8 @@ if sdl then
 
 		local ptr = sdl.CreateWindow(
 			title,
-			sdl.e.SDL_WINDOWPOS_CENTERED,
-			sdl.e.SDL_WINDOWPOS_CENTERED,
+			sdl.e.WINDOWPOS_CENTERED,
+			sdl.e.WINDOWPOS_CENTERED,
 			width,
 			height,
 			bit_flags
@@ -1263,7 +1262,7 @@ if sdl then
 
 			llog("sdl version: %s", ffi.string(sdl.GetRevision()))
 
-			local gl = require("graphics.ffi.opengl")
+			local gl = require("libopengl")
 
 			-- this needs to be initialized once after a context has been created
 			gl.GetProcAddress = sdl.GL_GetProcAddress
@@ -1317,7 +1316,7 @@ if sdl then
 			return b
 		end
 
-		local event = ffi.new("SDL_Event")
+		local event = ffi.new("union SDL_Event")
 		local mbutton_translate = {}
 		for i = 1, 8 do mbutton_translate[i] = "button_" .. i end
 		mbutton_translate[3] = "button_2"
@@ -1341,43 +1340,43 @@ if sdl then
 					window = system.sdl_windows[event.window.windowID]
 				end
 
-				if event.type == sdl.e.SDL_WINDOWEVENT and window then
+				if event.type == sdl.e.WINDOWEVENT and window then
 					local case = event.window.event
 
-					if case == sdl.e.SDL_WINDOWEVENT_SHOWN then
+					if case == sdl.e.WINDOWEVENT_SHOWN then
 						call(window, "OnShow")
-					elseif case == sdl.e.SDL_WINDOWEVENT_HIDDEN then
+					elseif case == sdl.e.WINDOWEVENT_HIDDEN then
 						call(window, "OnHide")
-					elseif case == sdl.e.SDL_WINDOWEVENT_EXPOSED then
+					elseif case == sdl.e.WINDOWEVENT_EXPOSED then
 						call(window, "OnFramebufferResized", self:GetSize():Unpack())
-					elseif case == sdl.e.SDL_WINDOWEVENT_SIZE_CHANGED then
+					elseif case == sdl.e.WINDOWEVENT_SIZE_CHANGED then
 						call(window, "OnFramebufferResized", event.window.data1, event.window.data2)
-					elseif case == sdl.e.SDL_WINDOWEVENT_MOVED then
+					elseif case == sdl.e.WINDOWEVENT_MOVED then
 						call(window, "OnMove", event.window.data1, event.window.data2)
-					elseif case == sdl.e.SDL_WINDOWEVENT_RESIZED then
+					elseif case == sdl.e.WINDOWEVENT_RESIZED then
 						call(window, "OnResize", event.window.data1, event.window.data2)
 						call(window, "OnFramebufferResized", event.window.data1, event.window.data2)
-					elseif case == sdl.e.SDL_WINDOWEVENT_MINIMIZED then
+					elseif case == sdl.e.WINDOWEVENT_MINIMIZED then
 						call(window, "OnMinimize")
-					elseif case == sdl.e.SDL_WINDOWEVENT_MAXIMIZED then
+					elseif case == sdl.e.WINDOWEVENT_MAXIMIZED then
 						call(window, "OnResize", self:GetSize():Unpack())
 						call(window, "OnFramebufferResized", self:GetSize():Unpack())
-					elseif case == sdl.e.SDL_WINDOWEVENT_RESTORED then
+					elseif case == sdl.e.WINDOWEVENT_RESTORED then
 						call(window, "OnRefresh")
-					elseif case == sdl.e.SDL_WINDOWEVENT_ENTER then
+					elseif case == sdl.e.WINDOWEVENT_ENTER then
 						call(window, "OnCursorEnter", false)
-					elseif case == sdl.e.SDL_WINDOWEVENT_LEAVE then
+					elseif case == sdl.e.WINDOWEVENT_LEAVE then
 						call(window, "OnCursorEnter", true)
-					elseif case == sdl.e.SDL_WINDOWEVENT_FOCUS_GAINED then
+					elseif case == sdl.e.WINDOWEVENT_FOCUS_GAINED then
 						call(window, "OnFocus", true)
 						window.focused = true
-					elseif case == sdl.e.SDL_WINDOWEVENT_FOCUS_LOST then
+					elseif case == sdl.e.WINDOWEVENT_FOCUS_LOST then
 						call(window, "OnFocus", false)
 						window.focused = false
-					elseif case == sdl.e.SDL_WINDOWEVENT_CLOSE then
+					elseif case == sdl.e.WINDOWEVENT_CLOSE then
 						call(window, "OnClose")
 					else print("unknown window event", case) end
-				elseif event.type == sdl.e.SDL_KEYDOWN or event.type == sdl.e.SDL_KEYUP then
+				elseif event.type == sdl.e.KEYDOWN or event.type == sdl.e.KEYUP then
 					local window = system.sdl_windows[event.key.windowID]
 					local key = ffi.string(sdl.GetKeyName(event.key.keysym.sym)):lower():gsub(" ", "_")
 
@@ -1388,7 +1387,7 @@ if sdl then
 							window,
 							"OnKeyInput",
 							key,
-							event.type == sdl.e.SDL_KEYDOWN,
+							event.type == sdl.e.KEYDOWN,
 
 							event.key.state,
 							event.key.keysym.mod,
@@ -1401,40 +1400,40 @@ if sdl then
 						window,
 						"OnKeyInputRepeat",
 						key,
-						event.type == sdl.e.SDL_KEYDOWN,
+						event.type == sdl.e.KEYDOWN,
 
 						event.key.state,
 						event.key.keysym.mod,
 						ffi.string(sdl.GetScancodeName(event.key.keysym.scancode)):lower(),
 						event.key.keysym
 					)
-				elseif event.type == sdl.e.SDL_TEXTINPUT then
+				elseif event.type == sdl.e.TEXTINPUT then
 					if suppress_char_input then suppress_char_input = false return end
 					local window = system.sdl_windows[event.edit.windowID]
 
 					call(window, "OnCharInput", ffi.string(event.edit.text), event.edit.start, event.edit.length)
-				elseif event.type == sdl.e.SDL_TEXTEDITING then
+				elseif event.type == sdl.e.TEXTEDITING then
 					local window = system.sdl_windows[event.text.windowID]
 
 					call(window, "OnTextEditing", ffi.string(event.text.text))
-				elseif event.type == sdl.e.SDL_MOUSEMOTION then
+				elseif event.type == sdl.e.MOUSEMOTION then
 					local window = system.sdl_windows[event.motion.windowID]
 					if window then
 						self.mouse_delta.x = event.motion.xrel
 						self.mouse_delta.y = event.motion.yrel
 						call(window, "OnCursorPosition", event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, event.motion.state, event.motion.which)
 					end
-				elseif event.type == sdl.e.SDL_MOUSEBUTTONDOWN or event.type == sdl.e.SDL_MOUSEBUTTONUP then
+				elseif event.type == sdl.e.MOUSEBUTTONDOWN or event.type == sdl.e.MOUSEBUTTONUP then
 					local window = system.sdl_windows[event.button.windowID]
-					call(window, "OnMouseInput", mbutton_translate[event.button.button], event.type == sdl.e.SDL_MOUSEBUTTONDOWN, event.button.x, event.button.y)
-				elseif event.type == sdl.e.SDL_MOUSEWHEEL then
+					call(window, "OnMouseInput", mbutton_translate[event.button.button], event.type == sdl.e.MOUSEBUTTONDOWN, event.button.x, event.button.y)
+				elseif event.type == sdl.e.MOUSEWHEEL then
 					local window = system.sdl_windows[event.button.windowID]
 					call(window, "OnMouseScroll", event.wheel.x, event.wheel.y, event.wheel.which)
-				elseif event.type == sdl.e.SDL_DROPFILE then
+				elseif event.type == sdl.e.DROPFILE then
 					for _, window in pairs(system.sdl_windows) do
 						call(window, "OnFileDrop", ffi.string(event.drop.file))
 					end
-				elseif event.type == sdl.e.SDL_QUIT then
+				elseif event.type == sdl.e.QUIT then
 					system.ShutDown()
 				else print("unknown event", event.type) end
 			end

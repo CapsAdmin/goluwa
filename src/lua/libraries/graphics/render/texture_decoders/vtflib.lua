@@ -1,4 +1,6 @@
-local vl = require("graphics.ffi.vtflib")
+local vl = desire("libVTFLib")
+
+if not vl then return end
 
 render.AddTextureDecoder("vtflib", function(data, path_hint)
 	local buffer, w, h, format = vl.LoadImage(data)

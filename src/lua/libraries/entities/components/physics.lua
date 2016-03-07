@@ -108,8 +108,6 @@ function COMPONENT:GetAngles()
 end
 
 do
-	local assimp = require("ffi.assimp")
-
 	function COMPONENT:InitPhysicsSphere(rad)
 		local tr = self:GetComponent("transform")
 		self.rigid_body:SetMatrix(tr:GetMatrix():Copy())

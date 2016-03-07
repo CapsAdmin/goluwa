@@ -1,6 +1,6 @@
 local render = ... or _G.render
 
-local assimp = desire("ffi.assimp")
+local assimp = desire("libassimp")
 local cb_render
 
 local mount_info = {
@@ -25,7 +25,7 @@ local mount_info = {
 
 render.model_cache = {}
 
-local assimp = desire("ffi.assimp") -- model decoder
+local assimp = desire("libassimp") -- model decoder
 
 local cb = utility.CreateCallbackThing(render.model_cache)
 
@@ -76,13 +76,13 @@ function render.LoadModel(path, callback, callback2, on_fail)
 					table.insert(out, mesh)
 				end
 			elseif assimp then
-				local flags = bit.bor(assimp.e.aiProcessPreset_TargetRealtime_Quality, assimp.e.aiProcess_ConvertToLeftHanded)
+				local flags = bit.bor(assimp.e.TargetRealtime_Quality, assimp.e.ConvertToLeftHanded)
 				--[[
 					bit.bor(
-						assimp.e.aiProcess_CalcTangentSpace,
-						assimp.e.aiProcess_GenSmoothNormals,
-						assimp.e.aiProcess_Triangulate,
-						assimp.e.aiProcess_JoinIdenticalVertices
+						assimp.e.CalcTangentSpace,
+						assimp.e.GenSmoothNormals,
+						assimp.e.Triangulate,
+						assimp.e.JoinIdenticalVertices
 					)
 				]]
 

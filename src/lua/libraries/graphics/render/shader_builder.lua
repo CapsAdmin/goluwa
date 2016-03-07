@@ -1,7 +1,7 @@
 local BUILD_OUTPUT = true
 
 local ffi = require("ffi")
-local gl = require("graphics.ffi.opengl") -- OpenGL
+local gl = require("libopengl") -- OpenGL
 local render = (...) or _G.render
 
 -- used to figure out how to upload types
@@ -702,7 +702,7 @@ function render.CreateShader(data, vars)
 		local lua = ""
 
 		lua = lua .. "local ffi = require(\"ffi\")\n"
-		lua = lua .. "local gl = require(\"graphics.ffi.opengl\")\n"
+		lua = lua .. "local gl = require(\"libopengl\")\n"
 		lua = lua .. "local function update(self)\n"
 
 		for i, data in ipairs(temp) do

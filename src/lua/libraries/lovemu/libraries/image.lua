@@ -81,7 +81,7 @@ do -- image data
 		end, false, true)
 	end
 
-	local freeimage = desire("graphics.ffi.freeimage")
+	local freeimage = desire("libfreeimage")
 
 	function love.image.newImageData(a, b) --partial
 		if lovemu.Type(a) == "ImageData" then

@@ -1,4 +1,4 @@
-local freeimage = desire("graphics.ffi.freeimage") -- image decoder
+local freeimage = desire("libfreeimage")
 
 if not freeimage then return end
 

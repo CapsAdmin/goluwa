@@ -1,9 +1,9 @@
 local ffi = require("ffi")
-local lib = desire("network.ffi.enet")
+local lib = desire("libenet")
 
 if not lib then return end
 
-lib.initialize()
+lib.Initialize()
 
 local enet = _G.enet or {}
 
@@ -12,17 +12,17 @@ enet.sockets = enet.sockets or utility.CreateWeakTable()
 local valid_flags = {
 	default_valid_flag = 0,
 	unreliable = 0,
-	reliable = lib.e.ENET_PACKET_FLAG_RELIABLE,
-	unsequenced = lib.e.ENET_PACKET_FLAG_UNSEQUENCED,
-	unreliable_fragment = lib.e.ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT,
-	sent = lib.e.ENET_PACKET_FLAG_SENT,
+	reliable = lib.e.PACKET_FLAG_RELIABLE,
+	unsequenced = lib.e.PACKET_FLAG_UNSEQUENCED,
+	unreliable_fragment = lib.e.PACKET_FLAG_UNRELIABLE_FRAGMENT,
+	sent = lib.e.PACKET_FLAG_SENT,
 }
 
 local function ipport2address(ip, port)
 	if not ip or not port then return nil end
-	local address = ffi.new("ENetAddress[1]")
+	local address = ffi.new("struct _ENetAddress[1]")
 
-	lib.address_set_host(address, ip)
+	lib.AddressSetHost(address, ip)
 	address[0].port = port
 
 	return address
@@ -34,7 +34,7 @@ local function create_host(ip, port, max_connections, max_channels, incomming_ba
 	incomming_bandwidth = incomming_bandwidth or 0
 	outgoing_bandwidth = outgoing_bandwidth or 0
 
-	local host = lib.host_create(ipport2address(ip, port), max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)
+	local host = lib.HostCreate(ipport2address(ip, port), max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)
 	if host == nil then
 		print(ip, port, max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)
 		error("host is NULL")
@@ -50,33 +50,33 @@ do -- peer
 		check(ip, "string")
 		check(port, "number")
 
-		self.peer = lib.host_connect(self.host, ipport2address(ip, port), channels, 0)
+		self.peer = lib.HostConnect(self.host, ipport2address(ip, port), channels, 0)
 	end
 
 	function CLIENT:Disconnect(why)
 		why = why or 0
-		lib.peer_disconnect(self.peer, why)
+		lib.PeerDisconnect(self.peer, why)
 
 		if self.host then
-			local evt = ffi.new("ENetEvent[1]")
-			while lib.host_service(self.host, evt, 3000) > 0 do
-				if evt[0].type == lib.e.ENET_EVENT_TYPE_DISCONNECT then
+			local evt = ffi.new("struct _ENetEvent[1]")
+			while lib.HostService(self.host, evt, 3000) > 0 do
+				if evt[0].type == lib.e.EVENT_TYPE_DISCONNECT then
 					return true
-				elseif evt[0].type == lib.e.ENET_EVENT_TYPE_RECEIVE then
-					lib.packet_destroy(evt[0].packet)
+				elseif evt[0].type == lib.e.EVENT_TYPE_RECEIVE then
+					lib.PacketDestroy(evt[0].packet)
 				end
 			end
 		end
 
-		lib.peer_reset(self.peer)
+		lib.PeerReset(self.peer)
 	end
 
 	function CLIENT:Send(str, flags, channel)
 		flags = utility.TableToFlags(flags, valid_flags)
 		channel = channel or 0
 
-		local packet = lib.packet_create(str, #str, flags)
-		lib.peer_send(self.peer, channel, packet)
+		local packet = lib.PacketCreate(str, #str, flags)
+		lib.PeerSend(self.peer, channel, packet)
 	end
 
 	function CLIENT:OnConnect()
@@ -150,8 +150,8 @@ do -- server
 		flags = utility.TableToFlags(flags, valid_flags)
 		channel = channel or 0
 
-		local packet = lib.packet_create(str, #str, flags)
-		lib.host_broadcast(self.host, channel, packet)
+		local packet = lib.PacketCreate(str, #str, flags)
+		lib.HostBroadcast(self.host, channel, packet)
 	end
 
 	function SERVER:OnReceive(peer, str, flags, channel)
@@ -190,7 +190,7 @@ do -- server
 	prototype.Register(SERVER)
 end
 
-local evt = ffi.new("ENetEvent[1]")
+local evt = ffi.new("struct _ENetEvent[1]")
 
 enet.uid_ref = enet.uid_ref or {}
 local unique_id = 0
@@ -201,8 +201,8 @@ end
 
 event.AddListener("Update", "enet", function()
 	for i, socket in ipairs(enet.sockets) do
-		while lib.host_service(socket.host, evt, 0) > 0 do
-			if evt[0].type == lib.e.ENET_EVENT_TYPE_CONNECT then
+		while lib.HostService(socket.host, evt, 0) > 0 do
+			if evt[0].type == lib.e.EVENT_TYPE_CONNECT then
 				if socket.Type == "enet_peer" then
 					socket:OnConnect()
 					socket.connected = true
@@ -224,7 +224,7 @@ event.AddListener("Update", "enet", function()
 					peer.connected = true
 					if enet.debug then logf("[enet] %s: %s connected\n", socket, peer) end
 				end
-			elseif evt[0].type == lib.e.ENET_EVENT_TYPE_DISCONNECT then
+			elseif evt[0].type == lib.e.EVENT_TYPE_DISCONNECT then
 				if socket.Type == "enet_peer" then
 					socket:OnDisconnect()
 					socket.connected = false
@@ -237,7 +237,7 @@ event.AddListener("Update", "enet", function()
 					socket.peers[getuid(peer.peer)] = nil
 					if enet.debug then logf("[enet] %s: %s disconnected\n", socket, peer) end
 				end
-			elseif evt[0].type == lib.e.ENET_EVENT_TYPE_RECEIVE then
+			elseif evt[0].type == lib.e.EVENT_TYPE_RECEIVE then
 
 				local str, flags, channel = ffi.string(evt[0].packet.data, evt[0].packet.dataLength), evt[0].packet.flags, evt[0].channelID
 				flags = utility.FlagsToTable(flags, valid_flags)

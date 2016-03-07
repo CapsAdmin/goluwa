@@ -52,17 +52,19 @@ function SoundData:setSample(i, sample)
 	self.buffer:SetData(self.buffer:GetData()) -- slow!!!
 end
 
-local al = require("audio.ffi.openal.al")
+local al = desire("libal")
 
 local function get_format(channels, bits)
-	if channels == 1 and bits == 8 then
-		return al.e.AL_FORMAT_MONO8
-	elseif channels == 1 and bits == 16 then
-		return al.e.AL_FORMAT_MONO16
-	elseif channels == 2 and bits == 8 then
-		return al.e.AL_FORMAT_STEREO8
-	elseif channels == 2 and bits == 16 then
-		return al.e.AL_FORMAT_STEREO16
+	if al then
+		if channels == 1 and bits == 8 then
+			return al.e.FORMAT_MONO8
+		elseif channels == 1 and bits == 16 then
+			return al.e.FORMAT_MONO16
+		elseif channels == 2 and bits == 8 then
+			return al.e.FORMAT_STEREO8
+		elseif channels == 2 and bits == 16 then
+			return al.e.FORMAT_STEREO16
+		end
 	end
 
 	return 0
@@ -81,7 +83,7 @@ function love.sound.newSoundData(samples, rate, bits, channels)
 
 			if data then
 				local buffer = audio.CreateBuffer()
-				buffer:SetFormat(info.channels == 1 and al.e.AL_FORMAT_MONO16 or al.e.AL_FORMAT_STEREO16)
+				if al then buffer:SetFormat(info.channels == 1 and al.e.FORMAT_MONO16 or al.e.FORMAT_STEREO16) end
 				buffer:SetSampleRate(info.samplerate)
 				buffer:SetData(data, length)
 

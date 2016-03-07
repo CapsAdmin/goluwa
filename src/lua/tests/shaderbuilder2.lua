@@ -1,5 +1,5 @@
 local ffi = require("ffi")
-local gl = require("graphics.ffi.opengl")
+local gl = require("libopengl")
 
 local function handle_error(error_str, source)
 	if source then

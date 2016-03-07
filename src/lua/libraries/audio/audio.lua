@@ -1,6 +1,6 @@
 local ffi = require("ffi")
-local al = desire("audio.ffi.openal.al")
-local alc = desire("audio.ffi.openal.alc")
+local al = desire("libal")
+local alc = desire("libalc")
 
 if not al or not alc then return end
 
@@ -65,7 +65,7 @@ function audio.Panic()
 end
 
 function audio.GetAllOutputDevices()
-	local list = ffi.cast("unsigned char *", alc.GetString(nil, alc.e.ALC_ALL_DEVICES_SPECIFIER))
+	local list = ffi.cast("unsigned char *", alc.GetString(nil, alc.e.ALL_DEVICES_SPECIFIER))
 
 	local devices = {}
 
@@ -124,7 +124,7 @@ function audio.GetAvailableFilters()
 end
 
 function audio.GetAllInputDevices()
-	local list = alc.GetString(nil, alc.e.ALC_CAPTURE_DEVICE_SPECIFIER)
+	local list = alc.GetString(nil, alc.e.CAPTURE_DEVICE_SPECIFIER)
 
 	local devices = {}
 
@@ -232,10 +232,10 @@ local function ADD_LISTENER_FUNCTION(name, func, enum, val, vec, sigh)
 	end
 end
 
-ADD_LISTENER_FUNCTION("Gain", al.Listenerfv, al.e.AL_GAIN, ffi.new("float[1]"))
-ADD_LISTENER_FUNCTION("Position", al.Listenerfv, al.e.AL_POSITION, ffi.new("float[3]"), true)
-ADD_LISTENER_FUNCTION("Velocity", al.Listenerfv, al.e.AL_VELOCITY, ffi.new("float[3]"), true)
-ADD_LISTENER_FUNCTION("Orientation", al.Listenerfv, al.e.AL_ORIENTATION, ffi.new("float[6]"), true, true)
+ADD_LISTENER_FUNCTION("Gain", al.Listenerfv, al.e.GAIN, ffi.new("float[1]"))
+ADD_LISTENER_FUNCTION("Position", al.Listenerfv, al.e.POSITION, ffi.new("float[3]"), true)
+ADD_LISTENER_FUNCTION("Velocity", al.Listenerfv, al.e.VELOCITY, ffi.new("float[3]"), true)
+ADD_LISTENER_FUNCTION("Orientation", al.Listenerfv, al.e.ORIENTATION, ffi.new("float[6]"), true, true)
 
 local function GET_BINDER(META, object_name)
 	return function(name, type, enum)
@@ -245,7 +245,7 @@ local function GET_BINDER(META, object_name)
 
 		if not enum then
 			enum = al.e[name]
-			name = name:gsub("AL_", "")
+			name = name:gsub("", "")
 			name = name:gsub(object_name:upper() .. "_", "")
 			name = name:lower()
 			name = name:gsub("(_%l)", function(char) return char:upper():sub(2,2) end)
@@ -255,14 +255,14 @@ local function GET_BINDER(META, object_name)
 		local number_type
 
 		if type == "i" or type == "b" then
-			number_type = "ALint"
+			number_type = "int"
 		elseif type == "f" then
-			number_type = "ALfloat"
+			number_type = "float"
 		elseif type == "iv" then
-			number_type = "ALint"
+			number_type = "int"
 			type = "v"
 		elseif type == "fv" then
-			number_type = "ALfloat"
+			number_type = "float"
 			type = "v"
 		end
 
@@ -438,7 +438,7 @@ do -- source
 			local buffer = audio.CreateBuffer()
 
 			if type(info) == "table" and info.samplerate and info.channels then
-				buffer:SetFormat(info.channels == 1 and al.e.AL_FORMAT_MONO16 or al.e.AL_FORMAT_STEREO16)
+				buffer:SetFormat(info.channels == 1 and al.e.FORMAT_MONO16 or al.e.FORMAT_STEREO16)
 				buffer:SetSampleRate(info.samplerate)
 				self.decode_info = info
 			end
@@ -456,7 +456,7 @@ do -- source
 
 				if data then
 					local buffer = audio.CreateBuffer()
-					buffer:SetFormat(info.channels == 1 and al.e.AL_FORMAT_MONO16 or al.e.AL_FORMAT_STEREO16)
+					buffer:SetFormat(info.channels == 1 and al.e.FORMAT_MONO16 or al.e.FORMAT_STEREO16)
 					buffer:SetSampleRate(info.samplerate)
 					buffer:SetData(data, length)
 
@@ -511,7 +511,7 @@ do -- source
 	end
 
 	function META:IsPlaying()
-		return self:GetState() == al.e.AL_PLAYING
+		return self:GetState() == al.e.PLAYING
 	end
 
 	do -- length stuff
@@ -542,9 +542,9 @@ do -- source
 
 	do
 		prototype.GetSet(META, "BufferCount", 4)
-		prototype.GetSet(META, "BufferFormat", al.e.AL_FORMAT_STEREO16)
+		prototype.GetSet(META, "BufferFormat", al.e.FORMAT_STEREO16)
 
-		local buffers = ffi.new("ALuint[1]")
+		local buffers = ffi.new("unsigned int[1]")
 		local pushed = {}
 
 		function META:PushBuffer(buffer)
@@ -553,7 +553,7 @@ do -- source
 			al.SourceQueueBuffers(self.id, 1, buffers)
 		end
 
-		local buffers = ffi.new("ALuint[1]")
+		local buffers = ffi.new("unsigned int[1]")
 
 		function META:PopBuffer()
 			al.SourceUnqueueBuffers(self.id, 1, buffers)
@@ -589,26 +589,26 @@ do -- source
 		-- http://wiki.delphigl.com/index.php/alGetSource
 
 		local ADD_FUNCTION = GET_BINDER(META, "Source")
-		ADD_FUNCTION("AL_SAMPLE_OFFSET", "i")
-		ADD_FUNCTION("AL_GAIN", "f")
-		ADD_FUNCTION("AL_LOOPING", "b")
-		ADD_FUNCTION("AL_MAX_GAIN", "f")
-		ADD_FUNCTION("AL_MAX_DISTANCE", "f")
-		ADD_FUNCTION("AL_REFERENCE_DISTANCE", "f")
-		ADD_FUNCTION("AL_ROLLOFF_FACTOR", "f")
-		ADD_FUNCTION("AL_PITCH", "f")
-		ADD_FUNCTION("AL_SOURCE_RELATIVE", "b")
-		ADD_FUNCTION("AL_SOURCE_STATE", "i")
-		ADD_FUNCTION("AL_SOURCE_TYPE", "i")
-		ADD_FUNCTION("AL_VELOCITY", "fv")
-		ADD_FUNCTION("AL_DIRECTION", "fv")
-		ADD_FUNCTION("AL_POSITION", "fv")
-		ADD_FUNCTION("AL_BYTE_OFFSET", "i")
-		ADD_FUNCTION("AL_BUFFERS_PROCESSED", "i")
+		ADD_FUNCTION("SAMPLE_OFFSET", "i")
+		ADD_FUNCTION("GAIN", "f")
+		ADD_FUNCTION("LOOPING", "b")
+		ADD_FUNCTION("MAX_GAIN", "f")
+		ADD_FUNCTION("MAX_DISTANCE", "f")
+		ADD_FUNCTION("REFERENCE_DISTANCE", "f")
+		ADD_FUNCTION("ROLLOFF_FACTOR", "f")
+		ADD_FUNCTION("PITCH", "f")
+		ADD_FUNCTION("SOURCE_RELATIVE", "b")
+		ADD_FUNCTION("SOURCE_STATE", "i")
+		ADD_FUNCTION("SOURCE_TYPE", "i")
+		ADD_FUNCTION("VELOCITY", "fv")
+		ADD_FUNCTION("DIRECTION", "fv")
+		ADD_FUNCTION("POSITION", "fv")
+		ADD_FUNCTION("BYTE_OFFSET", "i")
+		ADD_FUNCTION("BUFFERS_PROCESSED", "i")
 
-		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "AuxiliaryEffectSlot", "iv", al.e.AL_AUXILIARY_SEND_FILTER)
-		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "Buffer", "i", al.e.AL_BUFFER)
-		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "Filter", "i", al.e.AL_DIRECT_FILTER)
+		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "AuxiliaryEffectSlot", "iv", al.e.AUXILIARY_SEND_FILTER)
+		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "Buffer", "i", al.e.BUFFER)
+		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "Filter", "i", al.e.DIRECT_FILTER)
 	end
 
 	do
@@ -692,7 +692,7 @@ do -- buffer
 		end
 	end)
 
-	prototype.GetSet(META, "Format", al.e.AL_FORMAT_MONO16)
+	prototype.GetSet(META, "Format", al.e.FORMAT_MONO16)
 	prototype.GetSet(META, "SampleRate", 44100)
 
 	do
@@ -700,11 +700,11 @@ do -- buffer
 
 		local ADD_FUNCTION = GET_BINDER(META, "Buffer")
 
-		ADD_FUNCTION("AL_BITS", "i")
-		ADD_FUNCTION("AL_CHANNELS", "i")
-		ADD_FUNCTION("AL_FREQUENCY", "i")
-		ADD_FUNCTION("AL_SIZE", "i")
-		ADD_FUNCTION("AL_LOOP_POINTS", "iv")
+		ADD_FUNCTION("BITS", "i")
+		ADD_FUNCTION("CHANNELS", "i")
+		ADD_FUNCTION("FREQUENCY", "i")
+		ADD_FUNCTION("SIZE", "i")
+		ADD_FUNCTION("LOOP_POINTS", "iv")
 
 	end
 
@@ -754,7 +754,7 @@ do -- effect
 
 	do
 		local ADD_FUNCTION = GET_BINDER(META, "Effect")
-		ADD_FUNCTION("Type", "i", al.e.AL_EFFECT_TYPE)
+		ADD_FUNCTION("Type", "i", al.e.EFFECT_TYPE)
 	end
 
 	function META:BindToChannel(channel)
@@ -790,7 +790,7 @@ do -- filter
 
 	do
 		local ADD_FUNCTION = GET_BINDER(META, "Filter")
-		ADD_FUNCTION("Type", "i", al.e.AL_FILTER_TYPE)
+		ADD_FUNCTION("Type", "i", al.e.FILTER_TYPE)
 	end
 
 	prototype.Register(META)
@@ -806,8 +806,8 @@ do -- auxiliary effect slot
 	do
 		local ADD_FUNCTION = GET_BINDER(META, "AuxiliaryEffectSlot")
 
-		ADD_FUNCTION("AL_EFFECTSLOT_GAIN", "f")
-		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "Effect", "i", al.e.AL_EFFECTSLOT_EFFECT)
+		ADD_FUNCTION("EFFECTSLOT_GAIN", "f")
+		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "Effect", "i", al.e.EFFECTSLOT_EFFECT)
 	end
 
 	function META:GetParams()
@@ -836,7 +836,7 @@ do -- microphone
 		source:SetLooping(false)
 
 		-- fill it with some silence first so we can pop safely (???)
-		source:PushBuffer(audio.CreateBuffer(ffi.new("ALshort[4]"), 4))
+		source:PushBuffer(audio.CreateBuffer(ffi.new("short[4]"), 4))
 
 		event.Thinker(function()
 			if not self:IsValid() or self.stopped then return true end
@@ -862,7 +862,7 @@ do -- microphone
 		end)
 	end
 
-	local val = ffi.new("ALint[1]")
+	local val = ffi.new("int[1]")
 
 	function META:GetCapturedSamples()
 		alc.GetIntegerv(self.id, al.e.ALC_CAPTURE_SAMPLES, 1, val)
@@ -875,7 +875,7 @@ do -- microphone
 
 	function META:Read()
 		local size = self:GetCapturedSamples()
-		local buffer = ffi.new("ALshort[?]", size)
+		local buffer = ffi.new("short[?]", size)
 
 		alc.CaptureSamples(id, buffer, size)
 
@@ -888,7 +888,7 @@ do -- microphone
 
 	function audio.CreateAudioCapture(name, sample_rate, format, buffer_size)
 		sample_rate = sample_rate or 44100
-		format = format or al.e.AL_FORMAT_MONO16
+		format = format or al.e.FORMAT_MONO16
 		buffer_size = buffer_size or 4096
 
 		if not name then

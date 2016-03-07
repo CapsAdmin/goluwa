@@ -1,4 +1,4 @@
-local lib = desire("audio.ffi.lame")
+local lib = desire("liblame")
 
 if not lib then return end
 

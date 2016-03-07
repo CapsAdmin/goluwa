@@ -1,7 +1,7 @@
 local data = audio.MidiToTable("sounds/hyrule.mid")
 local sf2 = audio.SF2ToTable("sounds/zelda.sf2")
 
-local al = require("audio.ffi.openal.al")
+local al = require("libal")
 sf2.sdta.data = ffi.cast("uint16_t *", sf2.sdta.data)
 
 local bank = {}
@@ -14,7 +14,7 @@ for i, sample in ipairs(sf2.pdta.shdr) do
 	ffi.copy(buffer, sf2.sdta.data + sample.start, size)
 
 	local albuffer = audio.CreateBuffer()
-	albuffer:SetFormat(al.e.AL_FORMAT_MONO16)
+	albuffer:SetFormat(al.e.FORMAT_MONO16)
 	albuffer:SetSampleRate(sample.sample_rate)
 	albuffer:SetData(buffer, size)
 	albuffer.buffer = buffer

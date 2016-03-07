@@ -1,4 +1,4 @@
-local freeimage = desire("graphics.ffi.freeimage") -- image decoder
+local freeimage = desire("libfreeimage") -- image decoder
 
 local META = prototype.CreateTemplate("gif")
 

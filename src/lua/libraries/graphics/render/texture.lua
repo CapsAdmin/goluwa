@@ -1,6 +1,6 @@
 
 local render = ... or _G.render
-local gl = require("graphics.ffi.opengl")
+local gl = require("libopengl")
 local ffi = require("ffi")
 
 local TOENUM = function(str)

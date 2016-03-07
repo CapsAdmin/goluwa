@@ -1,5 +1,5 @@
 local audio = ... or _G.audio
-local soundfile = desire("audio.ffi.libsndfile") -- sound decoder
+local soundfile = desire("libsndfile") -- sound decoder
 
 if not soundfile then return end
 
@@ -26,7 +26,7 @@ audio.AddDecoder("libsndfile", function(data, path_hint)
 	file:close()
 
 	local info = ffi.new("SF_INFO[1]")
-	local file = soundfile.Open(name, soundfile.e.SFM_READ, info)
+	local file = soundfile.Open(name, soundfile.e.READ, info)
 	info = info[0]
 
 	local err = ffi.string(soundfile.StringError(file))
@@ -40,15 +40,15 @@ audio.AddDecoder("libsndfile", function(data, path_hint)
 	local subname
 
 	do
-		local data = ffi.new("SF_FORMAT_INFO[1]")
+		local data = ffi.new("struct SF_FORMAT_INFO[1]")
 		data[0].format = info.format
-		soundfile.Command(nil, soundfile.e.SFC_GET_FORMAT_INFO, data, ffi.sizeof("SF_FORMAT_INFO"))
+		soundfile.Command(nil, soundfile.e.GET_FORMAT_INFO, data, ffi.sizeof("struct SF_FORMAT_INFO"))
 
 		typename = ffi.string(data[0].name)
 		extension = ffi.string(data[0].extension)
 
 		data[0].format = bit.band(info.format , soundfile.e.SF_FORMAT_SUBMASK)
-		soundfile.Command(nil, soundfile.e.SFC_GET_FORMAT_INFO, data, ffi.sizeof("SF_FORMAT_INFO"))
+		soundfile.Command(nil, soundfile.e.GET_FORMAT_INFO, data, ffi.sizeof("struct SF_FORMAT_INFO"))
 		subname = ffi.string(data[0].name)
 	end
 

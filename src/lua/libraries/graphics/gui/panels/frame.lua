@@ -65,7 +65,7 @@ function PANEL:Initialize()
 end
 
 function PANEL:ToWindow()
-	local gl = require("graphics.ffi.opengl")
+	local gl = require("libopengl")
 	local window = system.CreateWindow(self:GetSize().x, self:GetSize().y, nil, {"borderless"})
 	local world = gui.CreateWorld()
 

@@ -331,7 +331,7 @@ do -- commands
 
 	function console.RunLua(line, log_error, env_name)
 		console.SetLuaEnvironmentVariable("copy", window.SetClipboard)
-		console.SetLuaEnvironmentVariable("gl", desire("graphics.ffi.opengl"))
+		console.SetLuaEnvironmentVariable("gl", desire("libopengl"))
 		console.SetLuaEnvironmentVariable("findo", prototype.FindObject)
 		local lua = ""
 
@@ -606,7 +606,7 @@ console.AddCommand("help", function(line)
 end)
 
 if CURSES then
-	local curses = require("ffi.curses")
+	local curses = require("libcurses")
 
 	local log_history = console.GetLogHistory and console.GetLogHistory() or {}
 	console.curses = console.curses or {}

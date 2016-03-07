@@ -2,8 +2,6 @@ if not GRAPHICS then return end
 
 local love = (...) or _G.lovemu.love
 
-local gl = require("graphics.ffi.opengl") -- OpenGL
-
 local love = ... or love
 
 love.graphics = {}
@@ -490,8 +488,6 @@ do -- canvas
 
 		return self
 	end
-
-	local gl = require("graphics.ffi.opengl")
 
 	local CANVAS
 

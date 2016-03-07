@@ -1,7 +1,7 @@
 local ffi = require("ffi")
 local physics = physics or {}
 
-physics.bullet = desire("physics.ffi.bullet3")
+physics.bullet = desire("libbullet3")
 physics.bodies = physics.bodies or {}
 
 local function vec3_to_bullet(x, y, z)
@@ -123,7 +123,7 @@ end
 
 do -- physcs models
 
-	local assimp = desire("ffi.assimp")
+	local assimp = desire("libassimp")
 
 	physics.model_cache = {}
 
@@ -160,7 +160,7 @@ do -- physcs models
 					-- :(
 					cb:stop(path, steam.LoadMap(full_path).physics_meshes)
 				elseif assimp then
-					local scene = assimp.ImportFile(full_path, assimp.e.aiProcessPreset_TargetRealtime_Quality)
+					local scene = assimp.ImportFile(full_path, assimp.e.TargetRealtime_Quality)
 
 					if scene.mMeshes[0].mNumVertices == 0 then
 						return nil, "no vertices found in " .. path
