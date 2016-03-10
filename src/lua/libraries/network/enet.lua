@@ -3,9 +3,11 @@ local lib = desire("libenet")
 
 if not lib then return end
 
-lib.Initialize()
-
 local enet = _G.enet or {}
+
+function enet.Initialize()
+	return lib.Initialize()
+end
 
 enet.sockets = enet.sockets or utility.CreateWeakTable()
 

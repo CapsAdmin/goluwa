@@ -31,21 +31,23 @@ do -- force the current directory
 		path = path:gsub("\\", "/")
 		local dir = path:match("@(.+/)src/lua/init.lua")
 
-		local ffi = require("ffi")
-		if jit.os == "Windows" then
-			ffi.cdef("int SetCurrentDirectoryA(const char *);")
-			dir = dir .. "data/bin/windows_" .. jit.arch:lower() .. "/"
-			ffi.C.SetCurrentDirectoryA(dir)
-		else
-			ffi.cdef("int chdir(const char *);")
-			dir = dir .. "data/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
-			ffi.C.chdir(dir)
-		end
+		if dir then
+			local ffi = require("ffi")
+			if jit.os == "Windows" then
+				ffi.cdef("int SetCurrentDirectoryA(const char *);")
+				dir = dir .. "data/bin/windows_" .. jit.arch:lower() .. "/"
+				ffi.C.SetCurrentDirectoryA(dir)
+			else
+				ffi.cdef("int chdir(const char *);")
+				dir = dir .. "data/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
+				ffi.C.chdir(dir)
+			end
 
-		if jit.os ~= "Windows" then
-			-- chdir doesnt' seem to have an effect on these in some situations
-		--	package.cpath = package.cpath .. ";" .. dir .. "?.so"
-			--package.path = package.path .. ";" .. dir .. "?.lua"
+			if jit.os ~= "Windows" then
+				-- chdir doesnt' seem to have an effect on these in some situations
+			--	package.cpath = package.cpath .. ";" .. dir .. "?.so"
+				--package.path = package.path .. ";" .. dir .. "?.lua"
+			end
 		end
 	end
 end
@@ -275,23 +277,25 @@ do -- libraries
 		sockets = include("lua/libraries/network/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
 	end
 
-	enet = include("lua/libraries/network/enet.lua") -- low level udp library
+	if SERVER or CLIENT then
+		enet = include("lua/libraries/network/enet.lua") -- low level udp library
 
-	if enet then
-		network = include("lua/libraries/network/network.lua") -- high level implementation of enet
-		packet = include("lua/libraries/network/packet.lua") -- medium (?) level communication between server and client
-		message = include("lua/libraries/network/message.lua") -- high level communication between server and client
+		if enet then
+			network = include("lua/libraries/network/network.lua") -- high level implementation of enet
+			packet = include("lua/libraries/network/packet.lua") -- medium (?) level communication between server and client
+			message = include("lua/libraries/network/message.lua") -- high level communication between server and client
 
-		nvars = include("lua/libraries/network/nvars.lua") -- variable synchronization between server and client
-		clients = include("lua/libraries/network/clients.lua") -- high level wrapper for a connected client
-		chat = include("lua/libraries/network/chat.lua") -- in game chat
+			nvars = include("lua/libraries/network/nvars.lua") -- variable synchronization between server and client
+			clients = include("lua/libraries/network/clients.lua") -- high level wrapper for a connected client
+			chat = include("lua/libraries/network/chat.lua") -- in game chat
 
-		resource = include("lua/libraries/network/resource.lua") -- used for downloading resources with resource.Download("http://...", function(path) end)
-		resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/")
-		resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/")
+			resource = include("lua/libraries/network/resource.lua") -- used for downloading resources with resource.Download("http://...", function(path) end)
+			resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/")
+			resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/")
+		end
 	end
 
-	if CLIENT then
+	if GRAPHICS then
 		-- graphics
 		render = include("lua/libraries/graphics/render/render.lua") -- OpenGL abstraction
 
@@ -299,48 +303,49 @@ do -- libraries
 			surface = include("lua/libraries/graphics/surface/surface.lua") -- high level 2d rendering of the render library
 			window = include("lua/libraries/graphics/window.lua") -- high level window implementation
 			video = include("lua/libraries/graphics/video.lua") -- gif support (for now)
+			gui = include("lua/libraries/graphics/gui/gui.lua")
 			include("lua/libraries/graphics/particles.lua")
-
-			if WINDOW and _G.window then
-				io.write("opening window\n")
-				window.Open()
-				io.write("window opened!\n")
-			end
+		else
+			GRAPHCIS = nil
+			WINDOW = nil
 		end
+	end
 
+	if SOUND then
 		-- audio
 		audio = include("lua/libraries/audio/audio.lua") -- high level implementation of OpenAl
 
 		if audio then
 			chatsounds = include("lua/libraries/audio/chatsounds.lua")
+		else
+			SOUND = nil
 		end
-	end
-
-	if not render or not window or not window.IsOpen() then
-		GRAPHICS = nil
-	end
-
-	if not audio then
-		SOUND = nil
 	end
 
 	-- other
 	physics = include("lua/libraries/physics/physics.lua") -- bullet physics
 	entities = include("lua/libraries/entities/entities.lua") -- entity component system
 	steam = include("lua/libraries/steam/steam.lua") -- utilities for dealing with steam, the source engine and steamworks
-	lovemu = include("lua/libraries/lovemu/lovemu.lua") -- a löve wrapper that lets you run löve games
-	love = lovemu.CreateLoveEnv() -- https://www.love2d.org/wiki/love
-	gmod = include("lua/libraries/gmod/gmod.lua") -- a gmod wrapper that lets you run gmod scripts
 
-	if GRAPHICS then
-		gui = include("lua/libraries/graphics/gui/gui.lua")
-	end
+	lovemu = include("lua/libraries/lovemu/lovemu.lua") -- a löve wrapper that lets you run löve games
+	gmod = include("lua/libraries/gmod/gmod.lua") -- a gmod wrapper that lets you run gmod scripts
 
 	-- include the filesystem again so it will include all the details such as zip file reading
 	include("lua/libraries/filesystem/vfs.lua")
+
 end
 
 console.CreateVariable("editor_path", system.FindFirstEditor(true, true) or "")
+
+if WINDOW then
+	io.write("opening window\n")
+	window.Open()
+	io.write("window opened!\n")
+end
+
+if GRAPHICS then
+	gui.Initialize()
+end
 
 if sockets then
 	sockets.Initialize()
@@ -350,13 +355,22 @@ if audio then
 	audio.Initialize()
 end
 
-if console.InitializeCurses then
+if CURSES then
 	console.InitializeCurses()
+end
+
+if lovemu then
+	love = lovemu.CreateLoveEnv() -- https://www.love2d.org/wiki/love
+end
+
+if physics then
+	physics.Initialize()
 end
 
 --steam.InitializeWebAPI()
 
 if CLIENT and enet then
+	enet.Initialize()
 	clients.local_client = clients.Create("unconnected")
 end
 

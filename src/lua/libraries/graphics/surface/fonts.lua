@@ -229,7 +229,7 @@ function surface.WrapString(str, max_width)
 	local space_pos
 
 	for pos, char in pairs(str:utotable()) do
-		local w, h = surface.GetTextSize(char)
+		local w = surface.GetTextSize(char)
 
 		if char:find("%s") then
 			space_pos = pos

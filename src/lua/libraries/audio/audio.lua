@@ -57,7 +57,7 @@ function audio.Shutdown()
 end
 
 function audio.Panic()
-	for k, v in pairs(prototype.GetCreated()) do
+	for _, v in pairs(prototype.GetCreated()) do
 		if v:IsValid() and v.is_audio_object then
 			v:Remove()
 		end
@@ -330,12 +330,12 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 
 	local set_fv = al[type.."fv"]
 	local set_f = al[type.."f"]
-	local temp = ffi.new("float[3]")
 
 	-- todo: move this to metatable?
 	META.is_audio_object = true
 
 	function META:SetParam(key, x, y, z)
+		local temp = ffi.new("float[3]")
 
 		if self.params and self.params[key] then
 			local val = x or self.params[key].default
@@ -358,7 +358,7 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 		end
 
 		if self.slots then
-			for id, slot in pairs(self.slots) do
+			for _, slot in pairs(self.slots) do
 				slot:SetEffect(self)
 			end
 		end
@@ -366,12 +366,12 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 	end
 
 	local get_fv = al["Get" .. type.."fv"]
-	local temp = ffi.new("float[3]")
 
 	function META:GetParam(key)
+		local temp = ffi.new("float[3]")
 
 		if self.params and self.params[key] then
-			local val = x or self.params[key].default
+			local val = self.params[key].default
 
 			if self.params[key].min and self.params[key].max then
 				val = math.clamp(val, self.params[key].min, self.params[key].max)
@@ -450,9 +450,7 @@ do -- source
 			self:SetBuffer(var)
 		elseif type(var) == "string" then
 			resource.Download(var, function(path)
-				local data = vfs.Read(path)
-
-				local data, length, info = audio.Decode(data, var)
+				local data, length, info = audio.Decode(vfs.Read(path), var)
 
 				if data then
 					local buffer = audio.CreateBuffer()
@@ -480,7 +478,7 @@ do -- source
 		end
 	end,
 	function(self)
-		for i,v in pairs(self.effects) do
+		for _, v in pairs(self.effects) do
 			if v.slot:IsValid() then
 				v.slot:Remove()
 			end
@@ -544,18 +542,18 @@ do -- source
 		prototype.GetSet(META, "BufferCount", 4)
 		prototype.GetSet(META, "BufferFormat", al.e.FORMAT_STEREO16)
 
-		local buffers = ffi.new("unsigned int[1]")
 		local pushed = {}
 
 		function META:PushBuffer(buffer)
+			local buffers = ffi.new("unsigned int[1]")
 			buffers[0] = buffer.id
 			pushed[buffer.id] = buffer
 			al.SourceQueueBuffers(self.id, 1, buffers)
 		end
 
-		local buffers = ffi.new("unsigned int[1]")
 
 		function META:PopBuffer()
+			local buffers = ffi.new("unsigned int[1]")
 			al.SourceUnqueueBuffers(self.id, 1, buffers)
 			return pushed[buffers[0]] or NULL
 		end
@@ -570,7 +568,7 @@ do -- source
 			else
 				local val = self:GetBuffersProcessed()
 
-				for i = 1, val do
+				for _ = 1, val do
 					local b = self:PopBuffer()
 					if b:IsValid() then
 						b:SetData(buffer, length)
@@ -743,9 +741,13 @@ do -- effect
 			self:SetType(available[var].enum)
 			self.params = table.copy(available[var].params)
 			if override_params then
-				for k,v in pairs(override_params) do self:SetParam(k, v) end
+				for k, v in pairs(override_params) do
+					self:SetParam(k, v)
+				end
 			else
-				for k,v in pairs(self.params) do v.val = v.default end
+				for _, v in pairs(self.params) do
+					v.val = v.default
+				end
 			end
 		else
 			self:SetType(var)
@@ -762,7 +764,7 @@ do -- effect
 	end
 
 	function META:UnbindFromChannel()
-		audio.SetEffect(channel, self)
+		audio.SetEffect(nil, self)
 	end
 
 	function META:GetParams()
@@ -780,10 +782,15 @@ do -- filter
 			self:SetType(available[var].enum)
 			self.params = table.copy(available[var].params)
 			if override_params then
-				for k,v in pairs(override_params) do self:SetParam(k, v) end
+				for k,v in pairs(override_params) do
+					self:SetParam(k, v)
+				end
 			else
-				for k,v in pairs(self.params) do v.val = v.default end
-			end		else
+				for _, v in pairs(self.params) do
+					v.val = v.default
+				end
+			end
+		else
 			self:SetType(var)
 		end
 	end)
@@ -822,7 +829,7 @@ _G.Sound = audio.CreateSource
 do -- microphone
 	local META = prototype.CreateTemplate("audio_capture")
 
-	function META:Start(func)
+	function META:Start()
 		alc.CaptureStart(self.id)
 	end
 
@@ -877,7 +884,7 @@ do -- microphone
 		local size = self:GetCapturedSamples()
 		local buffer = ffi.new("short[?]", size)
 
-		alc.CaptureSamples(id, buffer, size)
+		alc.CaptureSamples(nil, buffer, size)
 
 		return buffer, size
 	end
@@ -917,7 +924,7 @@ function audio.AddDecoder(id, callback)
 end
 
 function audio.RemoveDecoder(id)
-	for k,v in pairs(audio.decoders) do
+	for _, v in pairs(audio.decoders) do
 		if v.id == id then
 			table.remove(audio.decoders)
 			return true
@@ -926,7 +933,7 @@ function audio.RemoveDecoder(id)
 end
 
 function audio.Decode(data, path_hint)
-	for i, decoder in ipairs(audio.decoders) do
+	for _, decoder in ipairs(audio.decoders) do
 		local ok, buffer, length, info = pcall(decoder.callback, data, path_hint)
 		if ok then
 			if buffer and length then

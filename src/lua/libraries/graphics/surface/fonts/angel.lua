@@ -4,12 +4,12 @@ local META = {}
 
 META.ClassName = "angel"
 
-local TYPE_INFO = 1
-local TYPE_COMMON = 2
-local TYPE_PAGES = 3
-local TYPE_CHARS = 4
-
 function META:Initialize()
+	local TYPE_INFO = 1
+	local TYPE_COMMON = 2
+	local TYPE_PAGES = 3
+	local TYPE_CHARS = 4
+
 	local buffer, err = vfs.Open(self.Path .. "/" .. (self.Path:match(".+/(.+)") or self.Path) .. ".fnt")
 
 	if not buffer then

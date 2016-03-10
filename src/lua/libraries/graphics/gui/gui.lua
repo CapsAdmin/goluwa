@@ -447,11 +447,9 @@ function gui.Initialize()
 	end
 end
 
+
 include("base_panel.lua", gui)
 include("panels/*", gui)
 include("helpers.lua", gui)
-
-gui.Initialize()
-
 return gui
 --for k,v in pairs(event.GetTable()) do for k2,v2 in pairs(v) do if type(v2.id)=='string' and v2.id:lower():find"aahh" or v2.id == "gui" then event.RemoveListener(k,v2.id) end end end

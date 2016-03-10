@@ -209,6 +209,4 @@ do -- physcs models
 	end
 end
 
-physics.Initialize()
-
 return physics
