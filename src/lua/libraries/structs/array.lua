@@ -78,11 +78,11 @@ function Array(type, length, ptr)
 		self:SetSize(length * ffi.sizeof(ptr[0]))
 		self:SetLength(length)
 	elseif _G.type(ptr) == "table" then
-		self.Pointer = ffi.new(ctype, length, ptr)
+		self.Pointer = ctype(length, ptr)
 		self:SetSize(ffi.sizeof(self.Pointer))
 		self:SetLength(length)
 	else
-		self.Pointer = ffi.new(ctype, length)
+		self.Pointer = ctype(length)
 		self:SetSize(ffi.sizeof(self.Pointer))
 		self:SetLength(length)
 	end

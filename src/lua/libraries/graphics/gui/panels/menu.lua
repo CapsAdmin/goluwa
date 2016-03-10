@@ -111,7 +111,9 @@ do
 		self:SetMargin(Rect()+S*2)
 		self.label:SetPadding(Rect()+S*2)
 		self.image:SetPadding(Rect()+S*2)
-		self.image:SetLayoutSize(Vec2(math.min(S*8, self.image.Texture.w), math.min(S*8, self.image.Texture.h)))
+		if self.image.Texture then
+			self.image:SetLayoutSize(Vec2(math.min(S*8, self.image.Texture.w), math.min(S*8, self.image.Texture.h)))
+		end
 	end
 
 	function PANEL:OnMouseExit()
