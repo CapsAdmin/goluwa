@@ -286,5 +286,6 @@ include("find.lua", vfs)
 include("helpers.lua", vfs)
 include("addons.lua", vfs)
 include("lua_utilities.lua", vfs)
+include("monitoring.lua", vfs)
 
 return vfs

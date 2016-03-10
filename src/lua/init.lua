@@ -143,10 +143,10 @@ do -- 52 compat
 			local proxy = newproxy(true)
 			rawset(tbl, "__gc_proxy", proxy)
 
-			debug.getmetatable(proxy).__gc = function()
+			getmetatable(proxy).__gc = function()
 				rawset(tbl, "__gc_proxy", nil)
 
-				local new_meta = debug.getmetatable(tbl)
+				local new_meta = getmetatable(tbl)
 
 				if new_meta then
 					local __gc = rawget(new_meta, "__gc")
@@ -180,19 +180,22 @@ do -- file system
 
 		local fs = require("fs")
 
+		-- remove the temporary added loaders from top because we do it properly later on
+		table.remove(package.loaders)
+		table.remove(package.loaders)
+
 		e.BIN_FOLDER = fs.getcd():gsub("\\", "/") .. "/"
 		e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(3)) -- the root folder is always 3 directories up (data/bin/os_arch)
 		e.SRC_FOLDER = e.ROOT_FOLDER .. "src/"
 		e.DATA_FOLDER = e.ROOT_FOLDER .. "data/"
 		e.USERDATA_FOLDER = e.DATA_FOLDER .. "users/" .. e.USERNAME:lower() .. "/"
 
-		-- create ROOT/data/users/
-		fs.createdir(e.USERDATA_FOLDER:match("(.+/).-/"))
+		fs.createdir(e.DATA_FOLDER)
+		fs.createdir(e.DATA_FOLDER .. "users/")
 		fs.createdir(e.USERDATA_FOLDER)
 
 		_G.check = function() end
-
-		include = function() end
+		_G.include = function() end
 
 		dofile(e.SRC_FOLDER .. "lua/libraries/extensions/globals.lua")
 		dofile(e.SRC_FOLDER .. "lua/libraries/extensions/debug.lua")
@@ -212,35 +215,22 @@ do -- file system
 		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/helpers.lua")
 		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/lua_utilities.lua")
 		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/addons.lua")
-		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/monitoring.lua")
 		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/files/os.lua")
-	--	dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/files/vpk.lua")
-
-		vfs.IsDir = vfs.IsFolder
-
-		-- remove the temporary added loaders from top because we do it properly later on
-		table.remove(package.loaders)
-		table.remove(package.loaders)
 	end
 
 	vfs.Mount("os:" .. e.USERDATA_FOLDER, "data") -- mount "ROOT/data/users/*username*/" to "/data/"
 	vfs.Mount("os:" .. e.BIN_FOLDER, "bin") -- mount "ROOT/data/bin" to "/bin/"
 	vfs.MountAddon("os:" .. e.SRC_FOLDER) -- mount "ROOT/src" to "/"
 
-	-- a nice global for loading resources externally from current dir
-	--
-	_G.R = vfs.GetAbsolutePath
-
 	vfs.AddModuleDirectory("lua/modules/")
 	vfs.AddModuleDirectory("lua/libraries/")
 
-	-- replace require with the pure lua version (lua/procure/init.lua)
-	-- this is needed for the file system and lovemu
-	_G.require = dofile(e.SRC_FOLDER .. "lua/libraries/require.lua")
+	_G.include = vfs.include
+	_G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir
 end
 
 do -- libraries
-	_G.include = vfs.include
+	_G.require = include("lua/libraries/require.lua") -- replace require with the pure lua version
 
 	include("lua/libraries/extensions/ffi.lua")
 
@@ -332,7 +322,6 @@ do -- libraries
 
 	-- include the filesystem again so it will include all the details such as zip file reading
 	include("lua/libraries/filesystem/vfs.lua")
-
 end
 
 console.CreateVariable("editor_path", system.FindFirstEditor(true, true) or "")

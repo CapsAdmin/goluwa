@@ -42,7 +42,7 @@ function steam.GetInstallPath()
 		path = system.GetRegistryValue("CurrentUser/Software/Valve/Steam/SteamPath") or (X64 and "C:\\Program Files (x86)\\Steam" or "C:\\Program Files\\Steam")
 	elseif LINUX then
 		path = os.getenv("HOME") .. "/.local/share/Steam"
-		if not vfs.IsFolder(path) then
+		if not vfs.IsDirectory(path) then
 			path = os.getenv("HOME") .. "/.steam/steam"
 		end
 	end
@@ -74,7 +74,7 @@ end
 function steam.GetGamePath(game)
 	for _, dir in pairs(steam.GetLibraryFolders()) do
 		local path = dir .. "common/" .. game .. "/"
-		if vfs.IsDir(path) then
+		if vfs.IsDirectory(path) then
 			return path
 		end
 	end
@@ -189,14 +189,14 @@ function steam.MountSourceGame(game_info)
 			if path:endswith("*") then
 				path = path:sub(0, -2)
 				for k, v in pairs(vfs.Find(path)) do
-					if vfs.IsDir(path .. "/" .. v) or v:endswith(".vpk") then
+					if vfs.IsDirectory(path .. "/" .. v) or v:endswith(".vpk") then
 						llog("mounting custom folder/vpk %s", v)
 						vfs.Mount(path .. "/" .. v, nil, game_info)
 					end
 				end
 			else
 				for k, v in pairs(vfs.Find(path .. "addons/")) do
-					if vfs.IsDir(path .. "addons/" .. v) or v:endswith(".gma") then
+					if vfs.IsDirectory(path .. "addons/" .. v) or v:endswith(".gma") then
 						llog("mounting addon %s", v)
 						vfs.Mount(path .. "addons/" .. v, nil, game_info)
 					end

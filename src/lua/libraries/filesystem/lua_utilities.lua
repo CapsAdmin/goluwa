@@ -103,7 +103,7 @@ do -- include
 				dir = previous_dir .. dir
 			end
 
-			if not vfs.IsDir(dir) then
+			if not vfs.IsDirectory(dir) then
 				dir = original_dir
 			end
 

@@ -1133,7 +1133,7 @@ function Texture(...)
 		return self
 	end
 
-	local w,h,shade = ...
+	local w, h, shade = ...
 	if type(w) == "number" and type(h) == "number" then
 		local self = render.CreateTexture("2d")
 		self:SetSize(Vec2(w, h))
@@ -1152,19 +1152,7 @@ function Texture(...)
 
 	local size, shade = ...
 	if typex(size) == "vec2" then
-		local self = render.CreateTexture("2d")
-		self:SetSize(size:Copy())
-		self:SetupStorage()
-		self:Clear()
-
-		if shade then
-			self:Shade(shade)
-			self:GenerateMipMap()
-			self.fb = nil
-			self.shaders = nil
-		end
-
-		return self
+		return Texture(size.x, size.y)
 	end
 
 	return render.CreateTexture(...)

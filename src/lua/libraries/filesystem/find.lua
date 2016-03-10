@@ -106,7 +106,7 @@ do
 				end
 			end
 
-			if vfs.IsFolder(path .. v.name) then
+			if vfs.IsDirectory(path .. v.name) then
 				search(path .. v.name .. "/", ext, callback)
 			end
 		end

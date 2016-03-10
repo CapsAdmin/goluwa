@@ -19,7 +19,7 @@ console.AddCommand("cd", function(line, folder)
 		logn(cd)
 	elseif folder == ".." then
 		cd = cd:match("(.+)/")
-	elseif vfs.IsDir(cd .. "/" .. folder) then
+	elseif vfs.IsDirectory(cd .. "/" .. folder) then
 		cd = cd .. "/" .. folder .. "/"
 	end
 end, nil, function(arg, args)

@@ -311,7 +311,7 @@ function menu.CreateTopBar()
 				for full_path in vfs.Iterate(dir, nil, true) do
 					local name = full_path:match(".+/(.+)")
 
-					if vfs.IsFolder(full_path) then
+					if vfs.IsDirectory(full_path) then
 						local entry = right_list:AddEntry(name--[[, last_modified, type, size]])
 
 						entry.OnSelect = function()

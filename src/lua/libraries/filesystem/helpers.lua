@@ -114,7 +114,7 @@ function vfs.CreateFolders(fs, path)
 	end
 end
 
-function vfs.IsFolder(path)
+function vfs.IsDirectory(path)
 	if path == "" then return false end
 
 	for i, data in ipairs(vfs.TranslatePath(path, true)) do
@@ -139,5 +139,5 @@ function vfs.IsFile(path)
 end
 
 function vfs.Exists(path)
-	return vfs.IsFolder(path) or vfs.IsFile(path)
+	return vfs.IsDirectory(path) or vfs.IsFile(path)
 end

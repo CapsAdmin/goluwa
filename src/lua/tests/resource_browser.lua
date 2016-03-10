@@ -136,7 +136,7 @@ local function populate(dir, node)
 		name = name or full_path
 		dir = dir or full_path
 
-		if vfs.IsFolder(full_path) then
+		if vfs.IsDirectory(full_path) then
 			local node = node:AddNode(name, gui.skin.icons.folder)
 			node:SetExpandCallback(function(b)
 				populate(full_path .. "/", node)
