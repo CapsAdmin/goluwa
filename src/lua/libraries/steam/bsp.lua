@@ -127,19 +127,7 @@ function steam.LoadMap(path)
 
 		vfs.Write(name, pak)
 
-		--FIX ME
-
-		if LINUX then
-			local dir = R(name):match("(.+)%.zip")
-			os.execute("rm -f " .. dir)
-			os.execute("mkdir " .. dir)
-			vfs.PushWorkingDirectory(dir)
-				os.execute("unzip -o ../temp_bsp.zip")
-			vfs.PopWorkingDirectory()
-			vfs.Mount(dir)
-		else
-			vfs.Mount(R(name))
-		end
+		vfs.Mount(R(name))
 	end
 
 	do
