@@ -224,6 +224,17 @@ function string.safeformat(str, ...)
 	str = str:gsub("%%(%d+)", "%%s")
 	local count = select(2, str:gsub("(%%)", ""))
 
+	if str:find("%...", nil, true) then
+		local temp = {}
+
+		for i = count, select("#", ...) do
+			table.insert(temp, tostringx(select(i, ...)))
+		end
+		str = str:replace("%...", table.concat(temp, ", "))
+
+		count = count - 1
+	end
+
 	if count == 0 then
 		return table.concat({str, ...}, "")
 	end
