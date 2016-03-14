@@ -2,62 +2,6 @@ local ffi = require("ffi")
 local gl = require("libopengl") -- OpenGL
 local render = (...) or _G.render
 
-do
-	local spacing = 50
-	local x_offset = 10
-	local y_offset = 20
-
-	local function draw_axis(axis, x, y)
-		local w,h = surface.GetTextSize(axis)
-		surface.SetTextPosition(spacing * x + x_offset, spacing * y + y_offset + h/2 - 2)
-		surface.DrawText(axis)
-	end
-
-	function render.DrawMatrix(x, y, m, name)
-		surface.PushMatrix(x, y)
-
-		surface.SetFont("default")
-		surface.SetWhiteTexture()
-
-		surface.SetColor(1, 0, 0, 0.5)
-		surface.DrawRect(0, y_offset, spacing * 3, spacing * 3)
-
-		surface.SetColor(0, 1, 0, 0.5)
-		surface.DrawRect(spacing * 3, y_offset, spacing, spacing * 3)
-		draw_axis("x", 4, 0)
-		draw_axis("y", 4, 1)
-		draw_axis("z", 4, 2)
-
-
-		surface.SetColor(0, 0, 1, 0.5)
-		surface.DrawRect(0, y_offset + spacing * 3, spacing * 3, spacing - y_offset/2)
-
-		--surface.SetColor(1, 0, 1, 0.5)
-		--surface.DrawRect(spacing * 3, y_offset + spacing * 3, spacing, spacing - y_offset/2)
-
-		surface.SetColor(1,1,1,1)
-
-		surface.SetTextPosition(0, 0)
-		surface.DrawText(name)
-
-		for x = 0, 3 do
-		for y = 0, 3 do
-			local str = tostring(math.round(m[x*4+y], 2))
-			local x_offset_2 = 0
-
-			if str:sub(1, 1)  == "-" then
-				x_offset_2 = surface.GetTextSize("-")
-			end
-			local w, h = surface.GetTextSize(str)
-			surface.SetTextPosition(x*spacing + x_offset - x_offset_2, y*spacing + y_offset + h/2 - 2)
-			surface.DrawText(str)
-		end
-		end
-
-		surface.PopMatrix()
-	end
-end
-
 local severities = {
 	[0x9146] = "important", -- high
 	[0x9147] = "warning", -- medium
@@ -198,14 +142,14 @@ do -- AUTOMATE THIS
 		x = 0
 		y = 0
 		i = 1
-		
+
 		local buffer_i = 1
 
 		surface.SetFont("default")
-			
+
 		for _, pass in pairs(render.gbuffer_fill.Buffers) do
 			local pass_name = pass.name
-			
+
 			for _, buffer in pairs(pass.layout) do
 				for channel_name, str in pairs(buffer) do
 					if channel_name ~= "format" then
@@ -213,25 +157,25 @@ do -- AUTOMATE THIS
 						surface.mesh_2d_shader.color_override.g = 0
 						surface.mesh_2d_shader.color_override.b = 0
 						surface.mesh_2d_shader.color_override.a = 0
-						
+
 						for _, color in ipairs({"r", "g", "b", "a"}) do
-							if str:find(color) then 
+							if str:find(color) then
 								surface.mesh_2d_shader.color_override[color] = 0
 							else
 								surface.mesh_2d_shader.color_override[color] = 1
 							end
 						end
-						
+
 						--print(i, channel_name, surface.mesh_2d_shader.color_override)
-						
+
 						surface.SetColor(0,0,0,1)
 						surface.SetWhiteTexture()
 						surface.DrawRect(x, y, w, h)
-						
+
 						surface.SetColor(1,1,1,1)
 						surface.SetTexture(render.gbuffer:GetTexture("data"..buffer_i))
 						surface.DrawRect(x, y, w, h)
-						
+
 						surface.mesh_2d_shader.color_override.r = 0
 						surface.mesh_2d_shader.color_override.g = 0
 						surface.mesh_2d_shader.color_override.b = 0
@@ -253,9 +197,9 @@ do -- AUTOMATE THIS
 				buffer_i = buffer_i + 1
 			end
 		end
-			
+
 		do return end
-			
+
 		for _, data in pairs(render.gbuffer_buffers) do
 			draw_buffer(data.name, render.gbuffer:GetTexture(data.name))
 		end

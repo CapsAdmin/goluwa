@@ -84,9 +84,7 @@ local function setup(self)
 		internal_format = "depth_component32f",
 	})
 	fb:SetTexture(1, tex)
-	--fb:CheckCompletness()
 	fb:WriteThese(1)
-	--fb.fb:ReadBuffer("GL_NONE")
 
 	self.fb = fb
 	self.tex = tex

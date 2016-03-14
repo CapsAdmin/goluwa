@@ -1,4 +1,3 @@
-
 local render = ... or _G.render
 local gl = require("libopengl")
 local ffi = require("ffi")

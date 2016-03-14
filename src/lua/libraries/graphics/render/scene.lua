@@ -1,4 +1,3 @@
-local gl = require("libopengl") -- OpenGL
 local render = (...) or _G.render
 
 do -- current window
