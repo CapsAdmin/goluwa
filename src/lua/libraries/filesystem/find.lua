@@ -11,13 +11,9 @@ function vfs.Find(path, invert, full_path, start, plain, info)
 	local done = {}
 
 	for i, data in ipairs(vfs.TranslatePath(path, true)) do
-		local ok, found = pcall(data.context.GetFiles, data.context, data.path_info)
+		local found = data.context:CacheCall("GetFiles", data.path_info)
 
-		if vfs.debug and not ok then
-			vfs.DebugPrint("%s: error getting files: %s", data.context.Name, found)
-		end
-
-		if ok then
+		if found then
 			for i, v in ipairs(found) do
 				if not done[v] then
 					done[v] = true

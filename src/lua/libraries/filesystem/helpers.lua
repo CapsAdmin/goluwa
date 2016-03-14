@@ -118,7 +118,7 @@ function vfs.IsDirectory(path)
 	if path == "" then return false end
 
 	for i, data in ipairs(vfs.TranslatePath(path, true)) do
-		if data.context:PCall("IsFolder", data.path_info) then
+		if data.context:CacheCall("IsFolder", data.path_info) then
 			return true
 		end
 	end
@@ -130,7 +130,7 @@ function vfs.IsFile(path)
 	if path == "" then return false end
 
 	for i, data in ipairs(vfs.TranslatePath(path)) do
-		if data.context:PCall("IsFile", data.path_info) then
+		if data.context:CacheCall("IsFile", data.path_info) then
 			return true
 		end
 	end

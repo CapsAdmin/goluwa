@@ -6,13 +6,15 @@ local data_prefix = "%DATA%"
 local data_prefix_pattern = data_prefix:gsub("(%p)", "%%%1")
 
 function vfs.DebugPrint(fmt, ...)
-	logf("[VFS] %s\n", fmt:format(...))
+	logf("[VFS] %s\n", string.safeformat(fmt, ...))
 end
 
 do -- mounting/links
 	function vfs.Mount(where, to, userdata)
 		check(where, "string")
 		to = to or ""
+
+		vfs.ClearCallCache()
 
 		vfs.Unmount(where, to)
 
@@ -41,6 +43,8 @@ do -- mounting/links
 	function vfs.Unmount(where, to)
 		check(where, "string")
 		to = to or ""
+
+		vfs.ClearCallCache()
 
 		local path_info_where = vfs.GetPathInfo(where, true)
 		local path_info_to = vfs.GetPathInfo(to, true)
@@ -271,6 +275,9 @@ function vfs.Open(path, mode, sub_mode)
 		file:SetMode(mode)
 
 		if file:PCall("Open", data.path_info) ~= false then
+			if mode == "write" then
+				vfs.ClearCallCache()
+			end
 			return file
 		else
 			file:Remove()

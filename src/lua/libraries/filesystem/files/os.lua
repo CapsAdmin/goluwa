@@ -29,11 +29,11 @@ function CONTEXT:CreateFolder(path_info)
 end
 
 function CONTEXT:GetFiles(path_info)
-	local out = fs.find(path_info.full_path, true)
+	if not self:IsFolder(path_info) then
+		error(path_info.full_path .. " is not a valid folder", 2)
+	end
 
-	if #out == 0 then error("not a valid folder", 2) end
-
-	return out
+	return fs.find(path_info.full_path, true)
 end
 
 function CONTEXT:IsFile(path_info)

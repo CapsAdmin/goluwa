@@ -7,17 +7,47 @@ CONTEXT.Name = "base"
 prototype.GetSet(CONTEXT, "Mode", "read")
 
 function CONTEXT:PCall(name, ...)
-	local ok, var = pcall(self[name], self, ...)
-	if vfs.debug and not ok then
-		vfs.DebugPrint("%s: error calling %s: %s", self.Name or "", name, var)
+	local vars = {pcall(self[name], self, ...)}
+	if vfs.debug and not vars[1] then
+		vfs.DebugPrint("%s: error calling %s: %s", self.Name or "", name, vars[2])
 		return false
 	end
 
-	if ok then
-		return var
+	if vars[1] then
+		return select(2, unpack(vars))
 	end
 
 	return false
+end
+
+do
+	local cache = vfs.call_cache or {}
+	local last_framenumber = 0
+
+	function vfs.ClearCallCache()
+		table.clear(cache)
+	end
+
+	function CONTEXT:CacheCall(func_name, path_info)
+		if system then
+			local frame_number = system.GetFrameNumber()
+			if frame_number ~= last_framenumber then
+				vfs.ClearCallCache()
+				last_framenumber = frame_number
+			end
+		end
+
+		cache[func_name] = cache[func_name] or {}
+		cache[func_name][self.Name] = cache[func_name][self.Name] or {}
+
+		if cache[func_name][self.Name][path_info.full_path] == nil then
+			cache[func_name][self.Name][path_info.full_path] = self:PCall(func_name, path_info)
+		end
+
+		return cache[func_name][self.Name][path_info.full_path]
+	end
+
+	vfs.call_cache = cache
 end
 
 function CONTEXT:Write(str)

@@ -95,7 +95,7 @@ end
 
 function vfs.GetAbsolutePath(path, is_folder)
 	for i, data in ipairs(vfs.TranslatePath(path, is_folder)) do
-		if data.context:PCall("IsFile", data.path_info) or data.context:PCall("IsFolder", data.path_info) then
+		if data.context:CacheCall("IsFile", data.path_info) or data.context:CacheCall("IsFolder", data.path_info) then
 			return data.path_info.full_path
 		end
 	end
