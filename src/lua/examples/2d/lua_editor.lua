@@ -136,6 +136,6 @@ function edit:OnTextChanged()
 	self:SizeToText()
 end
 
-syntax_process(vfs.Read("lua/tests/lua_editor.lua") or "local hello = ''\n asdasdasd = 1234\n --[[it's a comment]] local test \n --it's really powerful\n", edit:GetMarkup())
+syntax_process(vfs.Read("lua/examples/lua_editor.lua") or "local hello = ''\n asdasdasd = 1234\n --[[it's a comment]] local test \n --it's really powerful\n", edit:GetMarkup())
 
 edit:SizeToText()

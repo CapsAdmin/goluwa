@@ -333,7 +333,7 @@ function menu.CreateTopBar()
 				end
 			end
 
-			populate("lua/tests/")
+			populate("lua/examples/")
 
 			frame:Layout()
 		end},

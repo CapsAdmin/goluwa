@@ -332,7 +332,7 @@ end)
 local tries = {
 	"lua/?",
 	"?",
-	"lua/tests/?",
+	"lua/examples/?",
 	"lua/libraries/?",
 }
 
@@ -400,7 +400,7 @@ end)
 local tries = {
 	"?.lua",
 	"?",
-	"tests/?.lua",
+	"examples/?.lua",
 }
 
 console.AddCommand("open", function(line)

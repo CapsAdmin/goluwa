@@ -195,7 +195,7 @@ end)
 
 
 do
-	local lua = vfs.Read("lua/tests/grid.lua")
+	local lua = vfs.Read("lua/examples/grid.lua")
 
 	surface.fonts.default:DrawString(lua)
 
