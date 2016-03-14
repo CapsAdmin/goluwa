@@ -25,8 +25,9 @@
 
 local bit  = require 'bit'
 local ffi  = require 'ffi'
-local util = require 'util'
 local jit  = require 'jit'
+
+local band, bor, shl, shr, bnot = bit.band, bit.bor, bit.lshift, bit.rshift, bit.bnot
 
 local jit_v21 = jit.version_num >= 20100
 
@@ -167,7 +168,7 @@ local VKNIL   = 0
 local VKFALSE = 1
 local VKTRUE  = 2
 
-local NO_JMP = bit.bnot(0)
+local NO_JMP = bnot(0)
 
 -- Type codes for the GC constants of a prototype. Plus length for strings.
 local KOBJ = enum {
@@ -186,39 +187,32 @@ local FOR_GEN   = "(for generator)";
 local FOR_STATE = "(for state)";
 local FOR_CTL   = "(for control)";
 
-ffi.cdef[[
-    void *malloc(size_t);
-    void *realloc(void*, size_t);
-    int free(void*);
-
-    typedef struct Buf {
-        size_t size;
-        size_t offs;
-        uint8_t *data;
-    } Buf;
-]]
+local function num_is_int32(x)
+    return x % 1 == 0 and x >= -2^31 and x < 2^31
+end
 
 Buf = {}
 Buf.new = function(size)
-    if not size then
-        size = 2048
-    end
-    local self = ffi.new('Buf', size)
-    self.data  = ffi.C.malloc(size)
-    self.offs  = 0
-    return self
+    size = size or 2048
+    local self = {
+        data = ffi.new('char[?]', size),
+        size = size,
+        offs = 0,
+    }
+    return setmetatable(self, Buf)
 end
-Buf.__gc = function(self)
-    ffi.C.free(self.data)
-end
+
 Buf.__index = {}
 Buf.__index.need = function(self, size)
     local need_size = self.offs + size
     if self.size <= need_size then
+        local prev_size = self.size
         while self.size <= need_size do
             self.size = self.size * 2
         end
-        self.data = ffi.C.realloc(ffi.cast('void*', self.data), self.size)
+        local new_data = ffi.new('char[?]', self.size)
+        ffi.copy(new_data, self.data, prev_size)
+        self.data = new_data
     end
 end
 Buf.__index.put = function(self, v)
@@ -235,7 +229,7 @@ Buf.__index.put_uint16 = function(self, v)
     local offs = self.offs
     local dptr = self.data + offs
     dptr[0] = v
-    v = bit.rshift(v, 8)
+    v = shr(v, 8)
     dptr[1] = v
     self.offs = offs + 2
     return offs
@@ -247,11 +241,11 @@ Buf.__index.put_uint32 = function(self, v)
     local dptr = self.data + offs
 
     dptr[0] = v
-    v = bit.rshift(v, 8)
+    v = shr(v, 8)
     dptr[1] = v
-    v = bit.rshift(v, 8)
+    v = shr(v, 8)
     dptr[2] = v
-    v = bit.rshift(v, 8)
+    v = shr(v, 8)
     dptr[3] = v
 
     self.offs = offs + 4
@@ -259,17 +253,34 @@ Buf.__index.put_uint32 = function(self, v)
 end
 
 Buf.__index.put_uleb128 = function(self,  v)
-    v = tonumber(v)
-    local i, offs = 0, self.offs
-    repeat
-        local b = bit.band(v, 0x7f)
-        v = bit.rshift(v, 7)
-        if v ~= 0 then
-            b = bit.bor(b, 0x80)
-        end
+    local offs = self.offs
+    local b = band(v, 0x7f)
+    v = shr(v, 7)
+    if v ~= 0 then b = bor(b, 0x80) end
+    self:put(b)
+    while v > 0 do
+        b = band(v, 0x7f)
+        v = shr(v, 7)
+        if v ~= 0 then b = bor(b, 0x80) end
         self:put(b)
-        i = i + 1
-    until v == 0
+    end
+    return offs
+end
+
+-- Write a 32 bit unsigned integer + 1 bit given by "numbit".
+-- This last argument should be either 0 or 1.
+Buf.__index.put_uleb128_33 = function(self,  v, numbit)
+    local offs = self.offs
+    local b = bor(shl(band(v, 0x3f), 1), numbit)
+    v = shr(v, 6)
+    if v ~= 0 then b = bor(b, 0x80) end
+    self:put(b)
+    while v > 0 do
+        b = band(v, 0x7f)
+        v = shr(v, 7)
+        if v ~= 0 then b = bor(b, 0x80) end
+        self:put(b)
+    end
     return offs
 end
 
@@ -292,26 +303,23 @@ local uint64_new = ffi.typeof('uint64_t[1]')
 local function dword_get_u32(cdata_new, v)
     local p = cdata_new(v)
     local char = ffi.cast('uint8_t*', p)
-    local u32_lo, u32_hi = uint32_new(0), uint32_new(0)
-    ffi.copy(u32_lo, char, 4)
-    ffi.copy(u32_hi, char + 4, 4)
-    return u32_lo, u32_hi
+    local lo, hi = uint32_new(0), uint32_new(0)
+    ffi.copy(lo, char, 4)
+    ffi.copy(hi, char + 4, 4)
+    return lo[0], hi[0]
 end
 
 Buf.__index.put_number = function(self, v)
     local offs = self.offs
-    local u32_lo, u32_hi = dword_get_u32(double_new, v)
-
-    self:put_uleb128(1 + 2 * u32_lo[0]) -- 33 bits with lsb set
-    if u32_lo[0] >= 0x80000000 then
-        self.data[self.offs-1] = bit.bor(self.data[self.offs-1], 0x10)
+    if num_is_int32(v) then
+        self:put_uleb128_33(v, 0)
+    else
+        local lo, hi = dword_get_u32(double_new, v)
+        self:put_uleb128_33(lo, 1)
+        self:put_uleb128(hi)
     end
-    self:put_uleb128(u32_hi[0])
-
     return offs
 end
-
-ffi.metatype('Buf', Buf)
 
 Ins = {}
 Ins.__index = {}
@@ -354,13 +362,13 @@ local function hsize2hbits(s)
     s = s - 1
     local c = 0
     while s > 0 do
-        s = bit.rshift(s, 1)
+        s = shr(s, 1)
         c = c + 1
     end
     return c
 end
 local function tabsize(narr, nrec)
-    return bit.bor(narr, bit.lshift(hsize2hbits(nrec), 11))
+    return bor(narr, shl(hsize2hbits(nrec), 11))
 end
 function Ins.__index.tnewsize(narry, nhash)
     if narry then
@@ -401,29 +409,25 @@ end
 function KObj.__index:write_kcdata(buf, v)
     if ffi.istype('double complex', v) then
         buf:put_uleb128(KOBJ.COMPLEX)
-        local u32_lo, u32_hi = dword_get_u32(double_new, v[0])
-        buf:put_uleb128(u32_lo[0])
-        buf:put_uleb128(u32_hi[0])
-        u32_lo, u32_hi = dword_get_u32(double_new, v[1])
-        buf:put_uleb128(u32_lo[0])
-        buf:put_uleb128(u32_hi[0])
+        local lo, hi = dword_get_u32(double_new, v[0])
+        buf:put_uleb128(lo)
+        buf:put_uleb128(hi)
+        lo, hi = dword_get_u32(double_new, v[1])
+        buf:put_uleb128(lo)
+        buf:put_uleb128(hi)
     elseif ffi.istype('uint64_t', v) then
         buf:put_uleb128(KOBJ.U64)
-        local u32_lo, u32_hi = dword_get_u32(uint64_new, v)
-        buf:put_uleb128(u32_lo[0])
-        buf:put_uleb128(u32_hi[0])
+        local lo, hi = dword_get_u32(uint64_new, v)
+        buf:put_uleb128(lo)
+        buf:put_uleb128(hi)
     elseif ffi.istype('int64_t', v) then
         buf:put_uleb128(KOBJ.I64)
-        local u32_lo, u32_hi = dword_get_u32(int64_new, v)
-        buf:put_uleb128(u32_lo[0])
-        buf:put_uleb128(u32_hi[0])
+        local lo, hi = dword_get_u32(int64_new, v)
+        buf:put_uleb128(lo)
+        buf:put_uleb128(hi)
     else
         assert(false, 'Unknown KCDATA : ' .. tostring(v))
     end
-end
-
-local function num_is_int32(x)
-    return x % 1 == 0 and x >= -2^31 and x < 2^31
 end
 
 local function write_ktabk(buf, val, narrow)
@@ -437,10 +441,10 @@ local function write_ktabk(buf, val, narrow)
             buf:put_uleb128(val)
             return
         end
-        local u32_lo, u32_hi = dword_get_u32(double_new, val)
+        local lo, hi = dword_get_u32(double_new, val)
         buf:put(KTAB.NUM)
-        buf:put_uleb128(u32_lo[0])
-        buf:put_uleb128(u32_hi[0])
+        buf:put_uleb128(lo)
+        buf:put_uleb128(hi)
     elseif tp == "boolean" then
         buf:put(val and KTAB.TRUE or KTAB.FALSE)
     elseif tp == "nil" then
@@ -546,11 +550,11 @@ end
 Proto = {
     CHILD  = 0x01; -- Has child prototypes.
     VARARG = 0x02; -- Vararg function.
-    FFI     = 0x04; -- Uses BC_KCDATA for FFI datatypes.
+    FFI    = 0x04; -- Uses BC_KCDATA for FFI datatypes.
     NOJIT  = 0x08; -- JIT disabled for this function.
     ILOOP  = 0x10; -- Patched bytecode with ILOOP etc.
 }
-function Proto.new(flags, outer)
+function Proto.new(flags, firstline, lastline, outer)
     local proto = setmetatable({
         flags  = flags or 0;
         outer  = outer;
@@ -566,11 +570,11 @@ function Proto.new(flags, outer)
         kcache = {};
         varinfo = {};
         freereg   = 0;
-        currline  = 1;
-        lastline  = 1;
-        firstline = 1;
-        numlines  = 0;
-        framesize = 0;
+        firstline = firstline;
+        lastline  = lastline;
+        currline  = firstline;
+        numlines  = lastline - firstline;
+        framesize = 1;
         explret = false;
     }, Proto)
 
@@ -593,6 +597,12 @@ function Proto.__index:setreg(reg)
         self.framesize = self.freereg
     end
 end
+function Proto.__index:maxframe(reg)
+    if reg > self.framesize then
+        self.framesize = reg
+    end
+end
+
 function Proto.__index:enter()
     local outer = self.scope
     self.scope = {
@@ -616,17 +626,18 @@ function Proto.__index:leave()
     self.scope = self.scope.outer
     self.freereg = freereg
 end
-function Proto.__index:set_line(firstline, lastline)
-    self.firstline = firstline
-    self.numlines = lastline - firstline
-end
-function Proto.__index:child(flags)
-    self.flags = bit.bor(self.flags, Proto.CHILD)
-    local child = Proto.new(flags, self)
+function Proto.__index:child(firstline, lastline)
+    self.flags = bor(self.flags, Proto.CHILD)
+    local child = Proto.new(0, firstline, lastline, self)
     child.idx = #self.kobj
     self.kobj[child] = #self.kobj
     self.kobj[#self.kobj + 1] = child
     return child
+end
+function Proto.__index:parent()
+    local parent = self.outer
+    parent.flags = bor(parent.flags, band(self.flags, Proto.FFI))
+    return parent
 end
 function Proto.__index:kpri(val)
     if val == nil then return VKNIL
@@ -653,6 +664,8 @@ function Proto.__index:const(val)
         local item = KObj.new(val)
         item.idx = #self.kobj
         self.kobj[#self.kobj + 1] = item
+        -- Set the FFI flag for the proto.
+        self.flags = bor(self.flags, Proto.FFI)
         return item.idx
     else
         error("not a const: "..tostring(val))
@@ -669,8 +682,11 @@ end
 function Proto.__index:line(ln)
     self.currline = ln
 end
+-- Set line number for the last generated instruction.
+function Proto.__index:setpcline(ln)
+    self.lninfo[#self.lninfo] = ln
+end
 function Proto.__index:emit(op, a, b, c)
-    --print(("Ins:%s %s %s %s"):format(BC[op], a, b, c))
     local ins = Ins.new(op, a, b, c)
     self.code[#self.code + 1] = ins
     self.lninfo[#self.lninfo + 1] = self.currline
@@ -678,7 +694,7 @@ function Proto.__index:emit(op, a, b, c)
 end
 function Proto.__index:write(buf)
     local has_child
-    if bit.band(self.flags, Proto.CHILD) ~= 0 then
+    if band(self.flags, Proto.CHILD) ~= 0 then
         has_child = true
         for i=1, #self.kobj do
             local o = self.kobj[i]
@@ -726,7 +742,7 @@ function Proto.__index:write_body(buf)
         if uval.outer_idx then
             -- the upvalue refer to a local of the enclosing function
             local btag = uval.vinfo.mutable and 0x8000 or 0xc000
-            local uv = bit.bor(uval.outer_idx, btag)
+            local uv = bor(uval.outer_idx, btag)
             buf:put_uint16(uv)
         else
             -- the upvalue refer to an upvalue of the enclosing function
@@ -772,29 +788,46 @@ function Proto.__index:write_debug(buf)
     for i=1, #self.varinfo do
         local var = self.varinfo[i]
         local startpc, endpc = (var.startpc or 0), (var.endpc or 0) + 1
-        buf:put_bytes(var.name.."\0")
-        buf:put_uleb128(startpc - lastpc)
-        buf:put_uleb128(endpc - startpc)
+        if type(var.name) == "number" then
+            for n = var.name, var.name + 2 do
+                buf:put(n)
+                buf:put_uleb128(startpc - lastpc)
+                buf:put_uleb128(endpc - startpc)
+                lastpc = startpc
+            end
+        else
+            buf:put_bytes(var.name.."\0")
+            buf:put_uleb128(startpc - lastpc)
+            buf:put_uleb128(endpc - startpc)
+        end
         lastpc = startpc
     end
+    buf:put(0)
 end
 function Proto.__index:newvar(name, dest)
     dest = dest or self:nextreg()
     local vinfo = {
-        idx        = dest;
-        startpc  = #self.code;
-        endpc     = #self.code;
-        name      = name;
-        mutable  = false;
+        idx = dest,
+        startpc = #self.code + 1,
+        endpc = #self.code + 1,
+        name = name,
+        mutable = false,
     }
     -- scoped variable info
     self.scope.actvars[name] = vinfo
     self.scope.actvars[#self.scope.actvars + 1] = vinfo
 
     -- for the debug segment only
-    vinfo.vidx = #self.varinfo
     self.varinfo[#self.varinfo + 1] = vinfo
 
+    return vinfo
+end
+-- Add debug variables informations for implicit for variables.
+-- The code should be 1 for simple "for" statements and 4 for
+-- "for in" statements.
+function Proto.__index:forivars(code)
+    local vinfo = { name = code, startpc = #self.code + 1 }
+    self.varinfo[#self.varinfo + 1] = vinfo
     return vinfo
 end
 local function scope_var_lookup(scope, name)
@@ -875,7 +908,6 @@ function Proto.__index:upval(name)
     return self.upvals[name].idx
 end
 function Proto.__index:here(name)
-    if name == nil then name = util.genid() end
     if self.tohere[name] then
         -- forward jump
         local back = self.tohere[name]
@@ -1118,12 +1150,12 @@ function Proto.__index:op_tset(tab, ktag, key, val)
     self:emit(BC[ins_name], val, tab, key)
 end
 function Proto.__index:op_tsetm(base, vnum)
-    local knum = double_new(0)
-    local vint = ffi.cast('uint8_t*', knum)
-    vint[0] = bit.band(vnum, 0x00FF)
-    vint[1] = bit.rshift(vnum, 8)
-    local vidx = self:const(tonumber(knum[0]))
-    return self:emit(BC.TSETM, base, vidx)
+    local dptr = double_new(0)
+    local iptr = ffi.cast('uint32_t*', dptr)
+    iptr[0] = vnum
+    iptr[1] = 0x43300000 -- Biased integer to avoid denormals.
+    local vidx = self:const(dptr[0])
+    return self:emit(BC.TSETM, base + 1, vidx)
 end
 function Proto.__index:op_fnew(dest, pidx)
     return self:emit(BC.FNEW, dest, pidx)
@@ -1160,6 +1192,19 @@ function Proto.__index:close_uvals()
     if self:global_uclo() then
         self:emit(BC.UCLO, 0, 0)
     end
+end
+function Proto.__index:close_proto()
+    if not self.explret then
+        self:close_uvals()
+        self:op_ret0()
+    end
+    local fixups = self.scope.goto_fixups
+    if #fixups > 0 then
+        local label = fixups[1]
+        local msg = string.format("undefined label '%s'", label.name)
+        return msg, label.source_line
+    end
+    self:leave()
 end
 function Proto.__index:op_ret(base, rnum)
     return self:emit(BC.RET, base, rnum + 1)
@@ -1220,11 +1265,11 @@ Dump = {
     DEBUG  = false;
 }
 Dump.__index = {}
-function Dump.new(main, name, flags)
+function Dump.new(main, name)
     local self =  setmetatable({
-        main  = main or Proto.new(Proto.VARARG);
+        main  = main;
         name  = name;
-        flags = flags or 0;
+        flags = band(main.flags, Dump.FFI);
     }, Dump)
     return self
 end
@@ -1234,11 +1279,8 @@ function Dump.__index:write_header(buf)
     buf:put(Dump.HEAD_3)
     buf:put(Dump.VERS)
     buf:put(self.flags)
-    local name = string.gsub(self.name, "[^/\\]+[/\\]", "")
-    if bit.band(self.flags, Dump.STRIP) == 0 then
-        if not name then
-            name = '(binary)'
-        end
+    local name = self.name and "@" .. self.name or "(binary)"
+    if band(self.flags, Dump.STRIP) == 0 then
         buf:put_uleb128(#name)
         buf:put_bytes(name)
     end

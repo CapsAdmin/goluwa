@@ -294,6 +294,57 @@ local function hex_char(c)
     end
 end
 
+local function read_escape_char(ls)
+    local c = nextchar(ls) -- Skip the '\\'.
+    local esc = Escapes[c]
+    if esc then
+        save(ls, esc)
+        nextchar(ls)
+    elseif c == 'x' then -- Hexadecimal escape '\xXX'.
+        local ch1 = hex_char(nextchar(ls))
+        local hc
+        if ch1 then
+            local ch2 = hex_char(nextchar(ls))
+            if ch2 then
+                hc = strchar(ch1 * 16 + ch2)
+            end
+        end
+        if not hc then
+            lex_error(ls, 'TK_string', "invalid escape sequence")
+        end
+        save(ls, hc)
+        nextchar(ls)
+    elseif c == 'z' then -- Skip whitespace.
+        nextchar(ls)
+        while char_isspace(ls.current) do
+            if curr_is_newline(ls) then inclinenumber(ls) else nextchar(ls) end
+        end
+    elseif c == '\n' or c == '\r' then
+        save(ls, '\n')
+        inclinenumber(ls)
+    elseif c == '\\' or c == '\"' or c == '\'' then
+        save(ls, c)
+        nextchar(ls)
+    elseif c == END_OF_STREAM then
+    else
+        if not char_isdigit(c) then
+            lex_error(ls, 'TK_string', "invalid escape sequence")
+        end
+        local bc = band(strbyte(c), 15) -- Decimal escape '\ddd'.
+        if char_isdigit(nextchar(ls)) then
+            bc = bc * 10 + band(strbyte(ls.current), 15)
+            if char_isdigit(nextchar(ls)) then
+                bc = bc * 10 + band(strbyte(ls.current), 15)
+                if bc > 255 then
+                    lex_error(ls, 'TK_string', "invalid escape sequence")
+                end
+                nextchar(ls)
+            end
+        end
+        save(ls, strchar(bc))
+    end
+end
+
 local function read_string(ls, delim)
     save_and_next(ls)
     while ls.current ~= delim do
@@ -303,55 +354,19 @@ local function read_string(ls, delim)
         elseif c == '\n' or c == '\r' then
             lex_error(ls, 'TK_string', "unfinished string")
         elseif c == '\\' then
-            c = nextchar(ls) -- Skip the '\\'.
-            local esc = Escapes[c]
-            if esc then
-                c = esc
-            elseif c == 'x' then -- Hexadecimal escape '\xXX'.
-                local ch1 = hex_char(nextchar(ls))
-                c = nil
-                if ch1 then
-                    local ch2 = hex_char(nextchar(ls))
-                    if ch2 then
-                        c = strchar(ch1 * 16 + ch2)
-                    end
-                end
-                if not c then
-                    lex_error(ls, 'TK_string', "invalid escape sequence")
-                end
-            elseif c == 'z' then -- Skip whitespace.
-                nextchar(ls)
-                while char_isspace(ls.current) do
-                    if curr_is_newline(ls) then inclinenumber(ls) else nextchar(ls) end
-                end
-            elseif c == '\n' or c == '\r' then
-                save(ls, '\n')
-                inclinenumber(ls)
-            elseif c == '\\' or c == '\"' or c == '\''  or c == END_OF_STREAM then
-            else
-                if not char_isdigit(c) then
-                    lex_error(ls, 'TK_string', "invalid escape sequence")
-                end
-                local bc = band(strbyte(c), 15) -- Decimal escape '\ddd'.
-                if char_isdigit(nextchar(ls)) then
-                    bc = bc * 10 + band(strbyte(ls.current), 15)
-                    if char_isdigit(nextchar(ls)) then
-                        bc = bc * 10 + band(strbyte(ls.current), 15)
-                        if bc > 255 then
-                            lex_error(ls, 'TK_string', "invalid escape sequence")
-                        end
-                    end
-                end
-                c = strchar(bc)
-            end
-            save(ls, c)
-            nextchar(ls)
+            read_escape_char(ls)
         else
             save_and_next(ls)
         end
     end
     save_and_next(ls) -- skip delimiter
     return get_string(ls, 1, 1)
+end
+
+local function skip_line(ls)
+    while not curr_is_newline(ls) and ls.current ~= END_OF_STREAM do
+        savespace_and_next(ls)
+    end
 end
 
 local function llex(ls)
@@ -390,10 +405,11 @@ local function llex(ls)
                 if sep >= 0 then
                     read_long_string(ls, sep, false) -- long comment
                     resetbuf_tospace(ls)
+                else
+                    skip_line(ls)
                 end
-            end
-            while not curr_is_newline(ls) and ls.current ~= END_OF_STREAM do
-                savespace_and_next(ls)
+            else
+                skip_line(ls)
             end
         elseif current == '[' then
             local sep = skip_sep(ls)

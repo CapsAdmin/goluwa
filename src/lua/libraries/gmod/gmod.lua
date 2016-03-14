@@ -13,8 +13,8 @@ function gmod.PreprocessLua(code)
 	code = utility.RestoreLuaCommentsAndStrings(code, data)
 
 	if code:find("continue", nil, true) then
-		local lex_setup = require("luajit-lang-toolkit.lexer")
-		local reader = require("luajit-lang-toolkit.reader")
+		local lex_setup = require("lang.lexer")
+		local reader = require("lang.reader")
 
 		local ls = lex_setup(reader.string(code), code)
 
