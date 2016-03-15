@@ -2,11 +2,11 @@ local rate_cvar = console.CreateVariable(
 	"system_fps_max",
 	0,
 	function(rate)
-		if system.gl_context then
+		if window and window.IsOpen() then
 			if rate == 0 then
-				render.SetVSync(true)
+				window.SwapInterval(true)
 			else
-				render.SetVSync(false)
+				window.SwapInterval(false)
 			end
 		end
 	end,

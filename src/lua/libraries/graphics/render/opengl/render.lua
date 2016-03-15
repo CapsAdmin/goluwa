@@ -10,7 +10,7 @@ include("texture.lua", render)
 include("framebuffer.lua", render)
 include("vertex_buffer.lua", render)
 
-function render.InitializeInternal()
+function render._Initialize()
 	if not gl then
 		llog("cannot initialize : ", err)
 	return end
@@ -51,7 +51,7 @@ do -- shaders
 	local shader_strings = ffi.new("const char * [1]")
 	local log = ffi.new("char[1024]")
 
-	function render.CreateGLShader(type, source)
+	function render.CreateGLSLShader(type, source)
 		local shader = gl.CreateShader2("GL_" .. type:upper() .. "_SHADER")
 
 		shader_strings[0] = ffi.cast("const char *", source)
@@ -70,7 +70,7 @@ do -- shaders
 		return shader
 	end
 
-	function render.CreateGLProgram(cb, ...)
+	function render.CreateGLSLProgram(cb, ...)
 		local shaders = {...}
 		local program = gl.CreateProgram2()
 
@@ -101,28 +101,6 @@ do -- shaders
 	end
 end
 
-do
-	local vsync = 0
-
-	if WINDOWS then
-		function render.SetVSync(b)
-			gl.SwapIntervalEXT(b == true and 1 or b == "adaptive" and -1 or 0)
-			vsync = b
-		end
-	else
-		function render.SetVSync(b)
-			if window and window.IsOpen() then
-				window.SwapInterval(b) -- works on linux
-			end
-			vsync = b
-		end
-	end
-
-	function render.GetVSync(b)
-		return vsync
-	end
-end
-
 function render.Shutdown()
 
 end
@@ -139,80 +117,17 @@ function render.GetVendor()
 	return ffi.string(gl.GetString("GL_VENDOR"))
 end
 
-do
-	local R,G,B,A = 0,0,0,1
+function render._SetScissor(x,y,w,h, sw,sh)
+	gl.Scissor(x, sh - (y + h), w, h)
+end
 
-	function render.SetClearColor(r,g,b,a)
-		R = r
-		G = g
-		B = b
-		A = a or 1
-
-		gl.ClearColor(R,G,B,A)
-	end
-
-	function render.GetClearColor()
-		return R,G,B,A
-	end
+function render._SetViewport(x,y,w,h)
+	gl.Viewport(x, y, w, h)
+	gl.Scissor(x, y, w, h)
 end
 
 do
-	local X, Y, W, H = 0, 0, 0, 0
-
-	function render.SetScissor(x,y,w,h)
-		--render.ScissorRect(x,y,w,h)
-		--surface.SetScissor(x, y, w, h)
-
-		local sw, sh = render.GetScreenSize():Unpack()
-
-		x = x or 0
-		y = y or 0
-		w = w or sw
-		h = h or sh
-
-		gl.Scissor(x, sh - (y + h), w, h)
-
-		X = x
-		Y = y
-		W = w
-		H = h
-	end
-
-	function render.GetScissor()
-		return X,Y,W,H
-	end
-end
-
-do
-	local X,Y,W,H
-
-	local last = Rect()
-
-	function render.SetViewport(x, y, w, h)
-		X,Y,W,H = x,y,w,h
-
-		if last.x ~= x or last.y ~= y or last.w ~= w or last.h ~= h then
-			gl.Viewport(x, y, w, h)
-			gl.Scissor(x, y, w, h)
-
-			render.camera_2d.Viewport.w = w
-			render.camera_2d.Viewport.h = h
-			render.camera_2d:Rebuild()
-
-			last.x = x
-			last.y = y
-			last.w = w
-			last.h = h
-		end
-	end
-
-	function render.GetViewport()
-		return x,y,w,h
-	end
-end
-
-do
-	local enums = gl and {
+	local enums = {
 		zero = gl.e.GL_ZERO,
 		one = gl.e.GL_ONE,
 		src_color = gl.e.GL_SRC_COLOR,
@@ -234,7 +149,7 @@ do
 		reverse_sub = gl.e.GL_FUNC_REVERSE_SUBTRACT,
 		min = gl.e.GL_MIN,
 		max = gl.e.GL_MAX,
-	} or {}
+	}
 
 	local enabled
 
@@ -279,54 +194,30 @@ do
 	end
 end
 
-do
-	local cull_mode
-	local override_
+function render._SetCullMode(mode)
+	if mode == "none" then
+		gl.Disable("GL_CULL_FACE")
+	else
+		gl.Enable("GL_CULL_FACE")
 
-	function render.SetCullMode(mode, override)
-		if mode == cull_mode and override ~= true then return end
-		if override_ and override ~= false then return end
-
-		if mode == "none" then
-			gl.Disable("GL_CULL_FACE")
-		else
-			gl.Enable("GL_CULL_FACE")
-
-			if mode == "front" then
-				gl.CullFace("GL_FRONT")
-			elseif mode == "back" then
-				gl.CullFace("GL_BACK")
-			elseif mode == "front_and_back" then
-				gl.CullFace("GL_FRONT_AND_BACK")
-			end
+		if mode == "front" then
+			gl.CullFace("GL_FRONT")
+		elseif mode == "back" then
+			gl.CullFace("GL_BACK")
+		elseif mode == "front_and_back" then
+			gl.CullFace("GL_FRONT_AND_BACK")
 		end
-
-		cull_mode = mode
-		override_ = override
-	end
-
-	function render.GetCullMode()
-		return cull_mode
 	end
 end
 
-do
-	local enabled = false
-
-	function render.EnableDepth(b)
-		local prev = enabled
-		enabled = b
-
-		if b then
-			gl.Enable("GL_DEPTH_TEST")
-			gl.DepthMask(1)
-			gl.DepthFunc("GL_LESS")
-		else
-			gl.Disable("GL_DEPTH_TEST")
-			gl.DepthMask(0)
-			--gl.DepthFunc("GL_ALWAYS")
-		end
-
-		return prev
+function render._SetDepth(b)
+	if b then
+		gl.Enable("GL_DEPTH_TEST")
+		gl.DepthMask(1)
+		gl.DepthFunc("GL_LESS")
+	else
+		gl.Disable("GL_DEPTH_TEST")
+		gl.DepthMask(0)
+		--gl.DepthFunc("GL_ALWAYS")
 	end
 end

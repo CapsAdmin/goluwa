@@ -537,7 +537,7 @@ function render.CreateShader(data, vars)
 			vfs.Write("data/shader_builder_output/" .. shader_id .. "/" .. shader_type .. ".c", data.source)
 		end
 
-		local ok, shader = pcall(render.CreateGLShader, shader_type, data.source)
+		local ok, shader = pcall(render.CreateGLSLShader, shader_type, data.source)
 
 		if not ok then
 			local extensions = {}
@@ -548,7 +548,7 @@ function render.CreateShader(data, vars)
 				local source = data.source:gsub("(#version.-\n)", function(str)
 					return str .. table.concat(extensions, "\n")
 				end)
-				local ok2, shader2 = pcall(render.CreateGLShader, shader_type, source)
+				local ok2, shader2 = pcall(render.CreateGLSLShader, shader_type, source)
 				if ok2 then
 					ok = ok2
 					shader = shader2
@@ -630,7 +630,7 @@ function render.CreateShader(data, vars)
 		end
 	end
 
-	local ok, prog = pcall(render.CreateGLProgram, function(prog)
+	local ok, prog = pcall(render.CreateGLSLProgram, function(prog)
 		local info = {}
 
 		info.attributes = {}

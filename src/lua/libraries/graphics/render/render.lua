@@ -18,7 +18,7 @@ include("globals.lua", render)
 
 
 function render.Initialize()
-	render.InitializeInternal()
+	render._Initialize()
 
 	include("lua/libraries/graphics/render/texture_decoders/*")
 
@@ -26,8 +26,6 @@ function render.Initialize()
 
 	render.SetBlendMode("src_alpha", "one_minus_src_alpha")
 	render.EnableDepth(false)
-
-	render.SetClearColor(0.25, 0.25, 0.25, 0.5)
 
 	include("lua/libraries/graphics/render/shader_builder.lua", render)
 
@@ -49,6 +47,92 @@ do
 		local v = table.remove(stack)
 
 		render.SetViewport(v[1], v[2], v[3], v[4])
+	end
+end
+
+do
+	local X,Y,W,H
+
+	local last = Rect()
+
+	function render.SetViewport(x, y, w, h)
+		X,Y,W,H = x,y,w,h
+
+		if last.x ~= x or last.y ~= y or last.w ~= w or last.h ~= h then
+			render._SetViewport(x,y,w,h)
+
+			render.camera_2d.Viewport.w = w
+			render.camera_2d.Viewport.h = h
+			render.camera_2d:Rebuild()
+
+			last.x = x
+			last.y = y
+			last.w = w
+			last.h = h
+		end
+	end
+
+	function render.GetViewport()
+		return x,y,w,h
+	end
+end
+
+do
+	local enabled = false
+
+	function render.EnableDepth(b)
+		local prev = enabled
+		enabled = b
+
+		render._SetDepth(b)
+
+		return prev
+	end
+end
+
+do
+	local X, Y, W, H = 0, 0, 0, 0
+
+	function render.SetScissor(x,y,w,h)
+		--render.ScissorRect(x,y,w,h)
+		--surface.SetScissor(x, y, w, h)
+
+		local sw, sh = render.GetScreenSize():Unpack()
+
+		x = x or 0
+		y = y or 0
+		w = w or sw
+		h = h or sh
+
+		render._SetScissor(x,y,w,h, sw,sh)
+
+		X = x
+		Y = y
+		W = w
+		H = h
+	end
+
+	function render.GetScissor()
+		return X,Y,W,H
+	end
+end
+
+do
+	local cull_mode
+	local override_
+
+	function render.SetCullMode(mode, override)
+		if mode == cull_mode and override ~= true then return end
+		if override_ and override ~= false then return end
+
+		render._SetCullMode(mode)
+
+		cull_mode = mode
+		override_ = override
+	end
+
+	function render.GetCullMode()
+		return cull_mode
 	end
 end
 

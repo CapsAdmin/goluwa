@@ -187,8 +187,6 @@ local number_types = {
 	float_32_unsigned_int_24_8_rev = {type = "", combined = true},
 }
 
-local letters = {"r", "g", "b", "a"}
-
 for friendly, info in pairs(texture_formats) do
 	local line = "struct {"
 	local type
@@ -218,7 +216,7 @@ for friendly, info in pairs(texture_formats) do
 			type = type .. bit .. "_t"
 		end
 
-		line = line .. type .. " " .. letters[i] .. "; "
+		line = line .. type .. " " .. ({"r", "g", "b", "a"})[i] .. "; "
 	end
 
 	local ending = table.concat(info.bits, "_")
@@ -1040,7 +1038,7 @@ do
 end
 
 function META:Bind(location)
-	if BINDLESS then return end
+	if window.IsExtensionSupported("GL_ARB_bindless_texture") then return end
 	if self.Loading then
 		self = render.GetLoadingTexture()
 	end

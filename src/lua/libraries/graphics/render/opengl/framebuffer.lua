@@ -55,7 +55,7 @@ end
 
 local function update_drawbuffers(self)
 	if self.draw_buffers ~= self.last_draw_buffers then
-		self.fb:DrawBuffers(self.draw_buffers_size, self.draw_buffers)
+		self.gl_fb:DrawBuffers(self.draw_buffers_size, self.draw_buffers)
 		self.last_draw_buffers = self.draw_buffers
 	end
 end
@@ -69,7 +69,7 @@ function render.GetScreenFrameBuffer()
 	if not window.IsExtensionSupported("GL_ARB_framebuffer_object") then return end
 	if not render.screen_buffer then
 		local self = prototype.CreateObject(META)
-		self.fb = gl.CreateFramebuffer(0)
+		self.gl_fb = gl.CreateFramebuffer(0)
 		self.textures = {}
 		self.textures_sorted = {}
 		self.render_buffers = {}
@@ -85,7 +85,7 @@ end
 
 function render.CreateFrameBuffer(width, height, textures)
 	local self = prototype.CreateObject(META)
-	self.fb = gl.CreateFramebuffer()
+	self.gl_fb = gl.CreateFramebuffer()
 	self.textures = {}
 	self.textures_sorted = {}
 	self.render_buffers = {}
@@ -158,15 +158,15 @@ function render.CreateFrameBuffer(width, height, textures)
 end
 
 function META:OnRemove()
-	self.fb:Delete()
+	self.gl_fb:Delete()
 end
 
 function META:__tostring2()
-	return ("[%i]"):format(self.fb.id)
+	return ("[%i]"):format(self.gl_fb.id)
 end
 
 function META:CheckCompletness()
-	local err = self.fb:CheckStatus("GL_FRAMEBUFFER")
+	local err = self.gl_fb:CheckStatus("GL_FRAMEBUFFER")
 
 	if err ~= gl.e.GL_FRAMEBUFFER_COMPLETE then
 		local str = "Unknown error: " .. err
@@ -245,7 +245,7 @@ do -- binding
 	end
 
 	function META:Bind()
-		self.fb:Bind(self.enum_bind_mode)
+		self.gl_fb:Bind(self.enum_bind_mode)
 		render.active_framebuffer = self
 	end
 
@@ -256,7 +256,7 @@ end
 
 function META:SetCubemapTexture(pos, i, tex)
 	pos = attachment_to_enum(self, pos)
-	self.fb:TextureFace(pos, tex and tex.gl_tex.id or 0, 0, i - 1)
+	self.gl_fb:TextureFace(pos, tex and tex.gl_tex.id or 0, 0, i - 1)
 end
 
 function META:SetTexture(pos, tex, mode, uid, face)
@@ -271,9 +271,9 @@ function META:SetTexture(pos, tex, mode, uid, face)
 		local id = tex and tex.gl_tex.id or 0 -- 0 will be detach if tex is nil
 
 		if face then
-			self.fb:TextureLayer(pos, tex and tex.gl_tex.id or 0, 0, face - 1)
+			self.gl_fb:TextureLayer(pos, tex and tex.gl_tex.id or 0, 0, face - 1)
 		else
-			self.fb:Texture(pos, id, 0)
+			self.gl_fb:Texture(pos, id, 0)
 		end
 
 		if id ~= 0 then
@@ -304,7 +304,7 @@ function META:SetTexture(pos, tex, mode, uid, face)
 		end
 
 		rb:Storage("GL_" .. tex.internal_format:upper(), tex.width, tex.height)
-		self.fb:Renderbuffer(pos, rb.id)
+		self.gl_fb:Renderbuffer(pos, rb.id)
 
 		self.render_buffers[uid] = {rb = rb}
 	elseif self.render_buffers[uid] then
@@ -423,7 +423,7 @@ do
 			self:WriteThese("all")
 
 			for i = 0, self.draw_buffers_size or 1 do
-				self.fb:Clearfv("GL_COLOR", i, temp_color)
+				self.gl_fb:Clearfv("GL_COLOR", i, temp_color)
 			end
 
 			if x then
@@ -433,19 +433,19 @@ do
 		elseif i == "depth" then
 			temp_color[0] = r or 0
 			local old = render.EnableDepth(true)
-			self.fb:Clearfv("GL_DEPTH", 0, temp_color)
+			self.gl_fb:Clearfv("GL_DEPTH", 0, temp_color)
 			render.EnableDepth(old)
 		elseif i == "stencil" then
 			temp_colori[0] = r or 0
-			self.fb:Cleariv("GL_STENCIL", 0, temp_colori)
+			self.gl_fb:Cleariv("GL_STENCIL", 0, temp_colori)
 		elseif i == "depth_stencil" then
 			local old = render.EnableDepth(true)
-			self.fb:Clearfi("GL_DEPTH_STENCIL", 0, r or 0, g or 0)
+			self.gl_fb:Clearfi("GL_DEPTH_STENCIL", 0, r or 0, g or 0)
 			render.EnableDepth(old)
 		elseif type(i) == "number" then
 			local x,y = self.draw_buffers, self.draw_buffers_size
 			self:WriteThese(i)
-			self.fb:Clearfv("GL_COLOR", 0, temp_color)
+			self.gl_fb:Clearfv("GL_COLOR", 0, temp_color)
 			if x then
 				self.draw_buffers, self.draw_buffers_size = x,y
 				update_drawbuffers(self)
@@ -453,7 +453,7 @@ do
 		elseif self.textures[i] then
 			local x,y = self.draw_buffers, self.draw_buffers_size
 			self:WriteThese(i)
-			self.fb:Clearfv("GL_COLOR", 0, temp_color)
+			self.gl_fb:Clearfv("GL_COLOR", 0, temp_color)
 			if x then
 				self.draw_buffers, self.draw_buffers_size = x,y
 				update_drawbuffers(self)

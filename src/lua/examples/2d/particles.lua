@@ -80,8 +80,6 @@ local function calc_collision(p)
 	end
 end
 
-render.SetClearColor(0,0,0,0)
-
 event.AddListener("Draw2D", "particles", function(dt)
 	dt = dt  * 25
 
