@@ -1,0 +1,2 @@
+- [component_material:OnAdd](nil)(ent)
+- [component_material:OnRemove](nil)()

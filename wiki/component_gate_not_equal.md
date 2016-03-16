@@ -1,0 +1,7 @@
+- [component_gate_not_equal:ComputeInputs](nil)(i, o)
+- [component_gate_not_equal:GetInputA](nil)()
+- [component_gate_not_equal:GetInputB](nil)()
+- [component_gate_not_equal:GetOutputA](nil)()
+- [component_gate_not_equal:SetInputA](nil)(num)
+- [component_gate_not_equal:SetInputB](nil)(num)
+- [component_gate_not_equal:SetOutputA](nil)(num)

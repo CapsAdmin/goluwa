@@ -1,0 +1,8 @@
+- [panel_logic_gate:AddInput](nil)(i, info)
+- [panel_logic_gate:AddOutput](nil)(i, info)
+- [panel_logic_gate:Initialize](nil)()
+- [panel_logic_gate:OnGlobalMouseInput](nil)(button, press)
+- [panel_logic_gate:OnLayout](nil)()
+- [panel_logic_gate:OnMouseHoverTrigger](nil)(entered, x, y)
+- [panel_logic_gate:OnUpdate](nil)()
+- [panel_logic_gate:SetGate](nil)(gate)

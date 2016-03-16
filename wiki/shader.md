@@ -1,0 +1,7 @@
+- [shader:Bind](nil)()
+- [shader:CreateBuffersFromTable](nil)(vertices, indices, is_valid_table)
+- [shader:CreateMaterialTemplate](nil)(name)
+- [shader:CreateVertexBuffer](nil)(vertices, indices, is_valid_table)
+- [shader:GetVertexAttributes](nil)()
+- [shader:Rebuild](nil)()
+- [shader:__tostring2](nil)()

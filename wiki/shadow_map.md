@@ -1,0 +1,8 @@
+- [shadow_map:Begin](nil)()
+- [shadow_map:Clear](nil)()
+- [shadow_map:End](nil)()
+- [shadow_map:GetDirections](nil)()
+- [shadow_map:GetShadowSize](nil)(var)
+- [shadow_map:GetTexture](nil)()
+- [shadow_map:SetShadowSize](nil)(size)
+- [shadow_map:SetupCube](nil)(i)

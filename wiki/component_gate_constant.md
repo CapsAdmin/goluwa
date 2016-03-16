@@ -1,0 +1,5 @@
+- [component_gate_constant:ComputeInputs](nil)(i, o)
+- [component_gate_constant:GetOutputA](nil)()
+- [component_gate_constant:GetValue](nil)(var)
+- [component_gate_constant:SetOutputA](nil)(num)
+- [component_gate_constant:SetValue](nil)(var)

@@ -1,0 +1,1 @@
+- [file_system_gmod addon archive:OnParseArchive](nil)(file, archive_path)

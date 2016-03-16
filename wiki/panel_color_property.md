@@ -1,0 +1,5 @@
+- [panel_color_property:Decode](nil)(str)
+- [panel_color_property:Encode](nil)(color)
+- [panel_color_property:Initialize](nil)()
+- [panel_color_property:OnLayout](nil)(S)
+- [panel_color_property:OnValueChangedInternal](nil)(val)

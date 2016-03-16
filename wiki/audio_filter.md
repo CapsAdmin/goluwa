@@ -1,0 +1,6 @@
+- [audio_filter:GetParam](nil)(key)
+- [audio_filter:GetType](nil)()
+- [audio_filter:OnRemove](nil)()
+- [audio_filter:SetParam](nil)(key, x, y, z)
+- [audio_filter:SetType](nil)(x)
+- [audio_filter:__tostring2](nil)()

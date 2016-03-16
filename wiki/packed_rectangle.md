@@ -1,0 +1,3 @@
+- [packed_rectangle:FindNode](nil)(root, w, h)
+- [packed_rectangle:Fit](nil)(w, h)
+- [packed_rectangle:SplitNode](nil)(node, w, h)

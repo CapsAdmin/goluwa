@@ -1,0 +1,3 @@
+- [font_freetype:GetGlyphData](nil)(code)
+- [font_freetype:Initialize](nil)()
+- [font_freetype:OnRemove](nil)()

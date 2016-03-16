@@ -1,0 +1,2 @@
+- [font_zsnes:GetGlyphData](nil)(code)
+- [font_zsnes:Initialize](nil)()

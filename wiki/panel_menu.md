@@ -1,0 +1,5 @@
+- [panel_menu:AddEntry](nil)(text, on_click)
+- [panel_menu:AddSeparator](nil)()
+- [panel_menu:AddSubMenu](nil)(text, on_click)
+- [panel_menu:Initialize](nil)()
+- [panel_menu:OnLayout](nil)(S)

@@ -1,0 +1,5 @@
+- [component_gate_rad:ComputeInputs](nil)(i, o)
+- [component_gate_rad:GetInputA](nil)()
+- [component_gate_rad:GetOutputA](nil)()
+- [component_gate_rad:SetInputA](nil)(num)
+- [component_gate_rad:SetOutputA](nil)(num)

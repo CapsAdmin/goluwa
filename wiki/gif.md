@@ -1,0 +1,5 @@
+- [gif:Draw](nil)(x, y)
+- [gif:GetFrameCount](nil)()
+- [gif:GetTexture](nil)(num)
+- [gif:GetTextures](nil)()
+- [gif:SetFPS](nil)(fps)

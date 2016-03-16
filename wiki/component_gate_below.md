@@ -1,0 +1,7 @@
+- [component_gate_below:ComputeInputs](nil)(i, o)
+- [component_gate_below:GetInputA](nil)()
+- [component_gate_below:GetInputB](nil)()
+- [component_gate_below:GetOutputA](nil)()
+- [component_gate_below:SetInputA](nil)(num)
+- [component_gate_below:SetInputB](nil)(num)
+- [component_gate_below:SetOutputA](nil)(num)

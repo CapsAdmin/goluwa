@@ -1,0 +1,21 @@
+
+##shared
+
+- [sockets.AbortDownload](nil)(url)
+- [sockets.CreateClient](nil)(type, ip, port, id)
+- [sockets.CreateIRCClient](nil)()
+- [sockets.CreateServer](nil)(type, ip, port, id)
+- [sockets.DebugPrint](nil)(...)
+- [sockets.Download](nil)(url, callback, on_fail, on_chunks, on_header)
+- [sockets.EscapeURL](nil)(str)
+- [sockets.GetSockets](nil)()
+- [sockets.Get](nil)(url, callback, timeout, user_agent, binary, debug)
+- [sockets.HeaderToTable](nil)(header)
+- [sockets.Initialize](nil)()
+- [sockets.Panic](nil)()
+- [sockets.Post](nil)(url, post_data, callback, timeout, user_agent, binary, debug)
+- [sockets.Request](nil)(info)
+- [sockets.SendUDPData](nil)(ip, port, str)
+- [sockets.Shutdown](nil)()
+- [sockets.TableToHeader](nil)(tbl)
+- [sockets.Update](nil)()

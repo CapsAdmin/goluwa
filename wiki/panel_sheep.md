@@ -1,0 +1,7 @@
+- [panel_sheep:CheckCollision](nil)()
+- [panel_sheep:DrawAnimation](nil)(animation, frame, rot, flip_x, relative)
+- [panel_sheep:DrawTile](nil)(tile_x, tile_y, rot)
+- [panel_sheep:Initialize](nil)()
+- [panel_sheep:OnDraw](nil)()
+- [panel_sheep:OnParentLand](nil)(parent)
+- [panel_sheep:OnUpdate](nil)()

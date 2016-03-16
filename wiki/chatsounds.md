@@ -1,0 +1,23 @@
+
+##shared
+
+- [chatsounds.AddSound](nil)(trigger, realm)
+- [chatsounds.BuildFromAutoadd](nil)()
+- [chatsounds.BuildSoundInfo](nil)()
+- [chatsounds.BuildSoundLists](nil)()
+- [chatsounds.BuildTreeFromAddon](nil)()
+- [chatsounds.CreateSound](nil)(path, udata)
+- [chatsounds.GetLists](nil)()
+- [chatsounds.GetScript](nil)(str)
+- [chatsounds.GetSoundData](nil)(file, plaintext)
+- [chatsounds.Initialize](nil)()
+- [chatsounds.ListToTable](nil)(data)
+- [chatsounds.LoadData](nil)(name)
+- [chatsounds.Panic](nil)()
+- [chatsounds.PlayScript](nil)(script, udata)
+- [chatsounds.Say](nil)(client, str, seed)
+- [chatsounds.Shutdown](nil)()
+- [chatsounds.TableToList](nil)(tbl)
+- [chatsounds.TableToTree](nil)(tbl)
+- [chatsounds.TranslateSoundListsFromSoundInfo](nil)()
+- [chatsounds.Update](nil)()
