@@ -15,8 +15,8 @@ git clone https://github.com/brunoos/luasec $BUILD_DIR/luasec
 git clone https://github.com/diegonehab/luasocket $BUILD_DIR/luasocket
 
 make -C $BUILD_DIR/ffibuild
-make -C $BUILD_DIR/luasocket linux MYCFLAGS="-I$(realpath $BUILD_DIR/ffibuild/LuaJIT/src)" MYLDFLAGS="-lluajit -L$(realpath $BUILD_DIR/ffibuild/LuaJIT/src)"
-make linux -C $BUILD_DIR/luasec INC_PATH="-I$(realpath $BUILD_DIR/ffibuild/LuaJIT/src)" LIB_PATH="-lluajit -L$(realpath $BUILD_DIR/ffibuild/LuaJIT/src)"
+make -C $BUILD_DIR/luasocket linux MYCFLAGS="-I$(realpath $BUILD_DIR/ffibuild/LuaJIT/src)" MYLDFLAGS="-l:libluajit.a -L$(realpath $BUILD_DIR/ffibuild/LuaJIT/src)"
+make linux -C $BUILD_DIR/luasec INC_PATH="-I$(realpath $BUILD_DIR/ffibuild/LuaJIT/src)" LIB_PATH="-l:libluajit.a -L$(realpath $BUILD_DIR/ffibuild/LuaJIT/src)"
 
 cp $BUILD_DIR/luasec/src/ssl.so $OUT_DIR/ssl.so
 cp $BUILD_DIR/luasocket/src/socket*.so $OUT_DIR/socket/core.so
