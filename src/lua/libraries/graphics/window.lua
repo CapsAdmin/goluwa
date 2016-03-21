@@ -23,13 +23,13 @@ function window.Open(...)
 	end
 
 	local ok, wnd = pcall(system.CreateWindow, ...)
-
+	
+	if not ok then warning(wnd) return NULL end
+	
 	if not render.initialized then
 		render.initialized = true
 		render.Initialize()
 	end
-
-	if not ok then warning(wnd) return NULL end
 
 	function wnd:OnUpdate(dt)
 		render.PushWindow(self)

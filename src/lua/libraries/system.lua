@@ -1194,22 +1194,19 @@ if sdl then
 
 	prototype.Register(META)
 
-	local flags_to_enums = {
-		fullscreen = sdl.e.WINDOW_FULLSCREEN, -- fullscreen window
-		fullscreen_desktop = sdl.e.WINDOW_FULLSCREEN_DESKTOP, -- fullscreen window at the current desktop resolution
---		opengl = sdl.e.WINDOW_OPENGL, -- window usable with OpenGL context
-		hidden = sdl.e.WINDOW_HIDDEN, -- window is not visible
-		borderless = sdl.e.WINDOW_BORDERLESS, -- no window decoration
-		resizable = sdl.e.WINDOW_RESIZABLE, -- window can be resized
-		minimized = sdl.e.WINDOW_MINIMIZED, -- window is minimized
-		maximized = sdl.e.WINDOW_MAXIMIZED, -- window is maximized
-		input_grabbed = sdl.e.WINDOW_INPUT_GRABBED, -- window has grabbed input focus
-		allow_highdpi = sdl.e.WINDOW_ALLOW_HIGHDPI, -- window should be created in high-DPI mode if supported (>= SDL 2.0.1)
-	}
-
-	function system.CreateWindow(width, height, title, flags, reset_flags)
+	local flags_to_enums = {}
+	
+	for k,v in pairs(sdl.e) do
+		local friendly = k:match("WINDOW_(.+)")
+		if friendly then
+			friendly = friendly:lower()
+			flags_to_enums[friendly] = v
+		end
+	end
+	
+	function system.CreateWindow(width, height, title, flags)
 		title = title or ""
-
+		
 		if not system.gl_context then
 			sdl.Init(sdl.e.INIT_VIDEO)
 			sdl.video_init = true
@@ -1221,15 +1218,15 @@ if sdl then
 			--sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_FLAGS, sdl.e.GL_CONTEXT_ROBUST_ACCESS_FLAG)
 			--sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_PROFILE_MASK, sdl.e.GL_CONTEXT_PROFILE_COMPATIBILITY)
 		end
+		
+		flags = flags or {"shown", "resizable"}
 
-		local bit_flags = bit.bor(sdl.e.WINDOW_OPENGL, sdl.e.WINDOW_SHOWN, sdl.e.WINDOW_RESIZABLE)
-
-		if flags then
-			bit_flags = sdl.e.WINDOW_OPENGL
-
-			for k,v in pairs(flags) do
-				bit_flags = bit.bor(bit_flags, flags_to_enums[v])
-			end
+		table.insert(flags, "opengl")
+		
+		local bit_flags = 0
+		
+		for k,v in pairs(flags) do
+			bit_flags = bit.bor(bit_flags, flags_to_enums[v])
 		end
 
 		if not width or not height then
