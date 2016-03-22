@@ -64,7 +64,7 @@ ffi.cdef("void* malloc(size_t size); void free(void* ptr);")
 function ffi.malloc(t, size)
 	size = size * ffi.sizeof(t)
 
-	return ffi.cast(t .. "*", ffi.gc(ffi.C.malloc(size), ffi.C.free))
+	return ffi.cast(t, ffi.gc(ffi.C.malloc(size), ffi.C.free))
 end
 
 local function warn_pcall(func, ...)

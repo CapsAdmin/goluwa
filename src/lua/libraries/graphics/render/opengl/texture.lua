@@ -242,11 +242,7 @@ for friendly, info in pairs(texture_formats) do
 
 	line = line .. "} "
 	info.ctype = ffi.typeof(line)
-	info.tdef = friendly .. "_pixel"
-	line = line .. info.tdef .. ";"
-	ffi.cdef("typedef " .. line)
-
-	info.enum = gl.e[TOENUM(friendly)]
+	info.ptr_ctype = ffi.typeof(line .. " *")
 end
 
 do -- add get set functions based on parameters
@@ -555,7 +551,7 @@ end
 
 function META:MakeResident()
 	if window.IsExtensionSupported("GL_ARB_bindless_texture") and not self.bindless_handle then
-		self.bindless_handle = gl.GetTextureHandleARB(self.id)
+		self.bindless_handle = gl.GetTextureHandleARB(self.gl_tex.id)
 		gl.MakeTextureHandleResidentARB(self.bindless_handle)
 	end
 end
@@ -810,7 +806,7 @@ end
 function META:CreateBuffer(format_override)
 	local format = self:GetFormatInfo(format_override)
 	local size = self.Size.x * self.Size.y * ffi.sizeof(format.ctype)
-	local buffer = ffi.malloc(format.tdef, size)
+	local buffer = ffi.malloc(format.ptr_ctype, size)
 
 	return buffer, size, format
 end
@@ -965,6 +961,10 @@ function META:EndWrite()
 	self.fb:End()
 end
 
+function META:GetID()
+	return self.gl_tex.id
+end
+
 do
 	local template = [[
 		out vec4 out_color;
@@ -991,7 +991,7 @@ do
 
 		self.shaders = self.shaders or {}
 
-		local name = "shade_texture_" .. tostring(self.gl_tex.id) .. "_" .. crypto.CRC32(fragment_shader)
+		local name = "shade_texture_" .. tostring(self:GetID()) .. "_" .. crypto.CRC32(fragment_shader)
 		local shader = self.shaders[name]
 
 
@@ -1056,7 +1056,6 @@ function render.CreateTexture(type)
 	end
 
 	self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
-	self.id = self.gl_tex.id -- backwards compatibility
 
 	if type == "cube_map" then
 		self:SetWrapS("clamp_to_edge")

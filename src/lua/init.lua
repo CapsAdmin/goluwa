@@ -1,3 +1,5 @@
+OPENGL = true
+VULKAN = false
 io.write(">> src/lua/init.lua\n")
 
 local profile_start_time = os.clock()

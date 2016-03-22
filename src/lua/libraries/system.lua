@@ -927,7 +927,7 @@ if sdl then
 	function META:OnRemove()
 		event.RemoveListener("OnUpdate", self)
 
-		sdl.DestroyWindow(self.__ptr)
+		sdl.DestroyWindow(self.sdl_wnd)
 		system.sdl_windows[self.sdl_window_id] = nil
 	end
 
@@ -935,25 +935,25 @@ if sdl then
 	local y = ffi.new("int[1]")
 
 	function META:GetPosition()
-		sdl.GetWindowPosition(self.__ptr, x, y)
+		sdl.GetWindowPosition(self.sdl_wnd, x, y)
 		return Vec2(x[0], y[0])
 	end
 
 	function META:SetPosition(pos)
-		sdl.SetWindowPosition(self.__ptr, pos:Unpack())
+		sdl.SetWindowPosition(self.sdl_wnd, pos:Unpack())
 	end
 
 	function META:GetSize()
-		sdl.GetWindowSize(self.__ptr, x, y)
+		sdl.GetWindowSize(self.sdl_wnd, x, y)
 		return Vec2(x[0], y[0])
 	end
 
 	function META:SetSize(pos)
-		sdl.SetWindowSize(self.__ptr, pos:Unpack())
+		sdl.SetWindowSize(self.sdl_wnd, pos:Unpack())
 	end
 
 	function META:SetTitle(title)
-		sdl.SetWindowTitle(self.__ptr, title)
+		sdl.SetWindowTitle(self.sdl_wnd, title)
 	end
 
 	local x, y = ffi.new(sdl and "int[1]" or "double[1]"), ffi.new(sdl and "int[1]" or "double[1]")
@@ -976,7 +976,7 @@ if sdl then
 	end
 
 	function META:SetMousePosition(pos)
-		sdl.WarpMouseInWindow(self.__ptr, pos:Unpack())
+		sdl.WarpMouseInWindow(self.sdl_wnd, pos:Unpack())
 	end
 
 	function META:HasFocus()
@@ -995,7 +995,7 @@ if sdl then
 	function META:SetMouseTrapped(b)
 		self.mouse_trapped = b
 
-		sdl.SetWindowGrab(self.__ptr, b and 1 or 0)
+		sdl.SetWindowGrab(self.sdl_wnd, b and 1 or 0)
 		self:ShowCursor(not b)
 		sdl.SetRelativeMouseMode(b and 1 or 0)
 
@@ -1029,11 +1029,11 @@ if sdl then
 	end
 
 	function META:MakeContextCurrent()
-		sdl.GL_MakeCurrent(self.__ptr, system.gl_context)
+		sdl.GL_MakeCurrent(self.sdl_wnd, system.gl_context)
 	end
 
 	function META:SwapBuffers()
-		sdl.GL_SwapWindow(self.__ptr)
+		sdl.GL_SwapWindow(self.sdl_wnd)
 	end
 
 	function META:SwapInterval(b)
@@ -1195,7 +1195,7 @@ if sdl then
 	prototype.Register(META)
 
 	local flags_to_enums = {}
-	
+
 	for k,v in pairs(sdl.e) do
 		local friendly = k:match("WINDOW_(.+)")
 		if friendly then
@@ -1203,28 +1203,23 @@ if sdl then
 			flags_to_enums[friendly] = v
 		end
 	end
-	
+
 	function system.CreateWindow(width, height, title, flags)
 		title = title or ""
-		
-		if not system.gl_context then
+
+		if not sdl.video_init then
 			sdl.Init(sdl.e.INIT_VIDEO)
 			sdl.video_init = true
-
-			sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_MAJOR_VERSION, 3)
-			sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_MINOR_VERSION, 3)
-			sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_PROFILE_MASK, sdl.e.GL_CONTEXT_PROFILE_CORE)
-
-			--sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_FLAGS, sdl.e.GL_CONTEXT_ROBUST_ACCESS_FLAG)
-			--sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_PROFILE_MASK, sdl.e.GL_CONTEXT_PROFILE_COMPATIBILITY)
 		end
-		
+
 		flags = flags or {"shown", "resizable"}
 
-		table.insert(flags, "opengl")
-		
+		if OPENGL then
+			table.insert(flags, "opengl")
+		end
+
 		local bit_flags = 0
-		
+
 		for k,v in pairs(flags) do
 			bit_flags = bit.bor(bit_flags, flags_to_enums[v])
 		end
@@ -1236,53 +1231,63 @@ if sdl then
 			height = height or info[0].h / 2
 		end
 
-		local ptr = sdl.CreateWindow(
-			title,
-			sdl.e.WINDOWPOS_CENTERED,
-			sdl.e.WINDOWPOS_CENTERED,
-			width,
-			height,
-			bit_flags
-		)
+		local sdl_wnd = sdl.CreateWindow(title, sdl.e.WINDOWPOS_CENTERED, sdl.e.WINDOWPOS_CENTERED, width, height, bit_flags)
 
-		if ptr == nil then
+		if sdl_wnd == nil then
 			error("sdl.CreateWindow failed: " .. ffi.string(sdl.GetError()), 2)
 		end
 
-		if not system.gl_context then
-			local context = sdl.GL_CreateContext(ptr)
+		if VULKAN then
+			local extensions = {}
 
-			if context == nil then
-				error("sdl.GL_CreateContext failed: " .. ffi.string(sdl.GetError()), 2)
-			end
-			sdl.GL_MakeCurrent(ptr, context)
-
-			llog("sdl version: %s", ffi.string(sdl.GetRevision()))
-
-			local gl = require("libopengl")
-
-			-- this needs to be initialized once after a context has been created
-			gl.GetProcAddress = sdl.GL_GetProcAddress
-
-			gl.Initialize()
-
-			if not gl.GetString then
-				error("gl.Initialize failed! (gl.GetString not found)", 2)
+			for _, ext in ipairs(sdl.GetRequiredInstanceExtensions()) do
+				table.insert(extensions, ext)
 			end
 
-			system.gl_context = context
+			local instance
+
+			system.vk_instance = instance
 		end
+
+		if OPENGL then
+			if not system.gl_context then
+				sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_MAJOR_VERSION, 3)
+				sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_MINOR_VERSION, 3)
+				sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_PROFILE_MASK, sdl.e.GL_CONTEXT_PROFILE_CORE)
+
+				--sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_FLAGS, sdl.e.GL_CONTEXT_ROBUST_ACCESS_FLAG)
+				--sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_PROFILE_MASK, sdl.e.GL_CONTEXT_PROFILE_COMPATIBILITY)
+
+				local context = sdl.GL_CreateContext(sdl_wnd)
+
+				if context == nil then
+					error("sdl.GL_CreateContext failed: " .. ffi.string(sdl.GetError()), 2)
+				end
+
+				sdl.GL_MakeCurrent(sdl_wnd, context)
+
+				local gl = require("libopengl")
+
+				-- this needs to be initialized once after a context has been created
+				gl.GetProcAddress = sdl.GL_GetProcAddress
+
+				gl.Initialize()
+
+				system.gl_context = context
+			end
+		end
+
+		llog("sdl version: %s", ffi.string(sdl.GetRevision()))
 
 		local self = prototype.CreateObject(META)
 
 		self.last_mpos = Vec2()
 		self.mouse_delta = Vec2()
-		self.__ptr = ptr
+		self.sdl_wnd = sdl_wnd
 
 		system.sdl_windows = system.sdl_windows or {}
-		local id = sdl.GetWindowID(ptr)
-		self.sdl_window_id = id
-		system.sdl_windows[id] = self
+		self.sdl_window_id = sdl.GetWindowID(self.sdl_wnd)
+		system.sdl_windows[self.sdl_window_id] = self
 
 		local event_name_translate = {}
 		local key_translate = {
