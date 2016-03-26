@@ -767,13 +767,3 @@ function steam.SpawnMapEntities(path, parent)
 
 	thread:Start()
 end
-
-
-for k,v in pairs(entities.GetAll()) do
-	if v:HasComponent("model") then
-		local mesh = v.model.sub_models[1]
-		if mesh and mesh.bump2 then
-			print(mesh.bump2)
-		end
-	end
-end

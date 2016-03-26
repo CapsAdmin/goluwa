@@ -1238,15 +1238,150 @@ if sdl then
 		end
 
 		if VULKAN then
-			local extensions = {}
+			local vk = require("libvulkan")
 
-			for _, ext in ipairs(sdl.GetRequiredInstanceExtensions()) do
-				table.insert(extensions, ext)
+			do
+				local extensions = {
+					"VK_EXT_debug_report"
+				}
+
+				for _, ext in ipairs(sdl.GetRequiredInstanceExtensions()) do
+					table.insert(extensions, ext)
+				end
+
+				local validation_layers = {
+					--"VK_LAYER_LUNARG_threading",
+					--"VK_LAYER_LUNARG_mem_tracker",
+					--"VK_LAYER_LUNARG_object_tracker",
+					--"VK_LAYER_LUNARG_draw_state",
+					"VK_LAYER_LUNARG_param_checker",
+					--"VK_LAYER_LUNARG_swapchain",
+					--"VK_LAYER_LUNARG_device_limits",
+					--"VK_LAYER_LUNARG_image",
+					--"VK_LAYER_LUNARG_api_dump",
+				}
+
+				local debug_flags = {
+					vk.e.DEBUG_REPORT_INFORMATION_BIT_EXT,
+					vk.e.DEBUG_REPORT_WARNING_BIT_EXT,
+					vk.e.DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT,
+					vk.e.DEBUG_REPORT_ERROR_BIT_EXT,
+					vk.e.DEBUG_REPORT_DEBUG_BIT_EXT,
+				}
+
+				local instance = vk.CreateInstance({
+					pApplicationInfo = vk.s.ApplicationInfo{
+						pApplicationName = "goluwa",
+						applicationVersion = 0,
+						pEngineName = "goluwa",
+						engineVersion = 0,
+						apiVersion = vk.macros.MAKE_VERSION(1, 0, 2),
+					},
+
+					enabledLayerCount = #validation_layers,
+					ppEnabledLayerNames = vk.util.StringList(validation_layers),
+
+					enabledExtensionCount = #extensions,
+					ppEnabledExtensionNames = vk.util.StringList(extensions),
+				})
+
+				if instance:LoadProcAddr("vkCreateDebugReportCallbackEXT") then
+					instance:CreateDebugReportCallback({
+						flags = bit.bor(unpack(debug_flags)),
+						pfnCallback = function(msgFlags, objType, srcObject, location, msgCode, pLayerPrefix, pMsg, pUserData)
+
+							local level = 3
+							local info = debug.getinfo(level, "Sln")
+							local lines = {}
+							for i = 3, 10 do
+								local info = debug.getinfo(i, "Sln")
+								if not info or info.currentline == -1 then break end
+								table.insert(lines, info.currentline)
+							end
+							io.write(string.format("Line %s %s: %s: %s\n", table.concat(lines, ", "), info.name or "unknown", ffi.string(pLayerPrefix), ffi.string(pMsg)))
+
+							return 0
+						end,
+					})
+				end
+
+				instance:LoadProcAddr("vkGetPhysicalDeviceSurfacePresentModesKHR")
+				instance:LoadProcAddr("vkGetPhysicalDeviceSurfaceSupportKHR")
+				instance:LoadProcAddr("vkCreateSwapchainKHR")
+				instance:LoadProcAddr("vkDestroySwapchainKHR")
+				instance:LoadProcAddr("vkGetSwapchainImagesKHR")
+				instance:LoadProcAddr("vkAcquireNextImageKHR")
+				instance:LoadProcAddr("vkQueuePresentKHR")
+				instance:LoadProcAddr("vkGetPhysicalDeviceSurfaceCapabilitiesKHR")
+				instance:LoadProcAddr("vkGetPhysicalDeviceSurfaceFormatsKHR")
+
+				vk.instance = instance
 			end
 
-			local instance
+			do -- find and use a gpu
+				local extensions = {
 
-			system.vk_instance = instance
+				}
+
+				local validation_layers = {
+					--"VK_LAYER_LUNARG_threading",
+					--"VK_LAYER_LUNARG_mem_tracker",
+					--"VK_LAYER_LUNARG_object_tracker",
+					--"VK_LAYER_LUNARG_draw_state",
+					"VK_LAYER_LUNARG_param_checker",
+					--"VK_LAYER_LUNARG_swapchain",
+					--"VK_LAYER_LUNARG_device_limits",
+					--"VK_LAYER_LUNARG_image",
+					--"VK_LAYER_LUNARG_api_dump",
+				}
+
+
+				for _, physical_device in ipairs(vk.instance:GetPhysicalDevices()) do			-- get a list of vulkan capable hardware
+					for i, info in ipairs(physical_device:GetQueueFamilyProperties()) do			-- get a list of queues the hardware supports
+						if bit.band(info.queueFlags, vk.e.QUEUE_GRAPHICS_BIT) ~= 0 then			-- if this queue supports graphics use it
+							local queue_index = i - 1
+
+							local memory_properties = physical_device:GetMemoryProperties()
+
+							local device = physical_device:CreateDevice({
+								enabledLayerCount = #validation_layers,
+								ppEnabledLayerNames = vk.util.StringList(validation_layers),
+
+								enabledExtensionCount = #extensions,
+								ppEnabledExtensionNames = vk.util.StringList(extensions),
+
+								queueCreateInfoCount = 1,
+								pQueueCreateInfos = vk.s.DeviceQueueCreateInfoArray{
+									{
+										queueFamilyIndex = queue_index,
+										queueCount = 1,
+										pQueuePriorities = ffi.new("float[1]", 0), -- todo: public ffi use is bad!
+										pEnabledFeatures = nil,
+									}
+								}
+							})
+
+							local queue = device:GetQueue(queue_index, 0)
+							local command_pool = device:CreateCommandPool({queueFamilyIndex = queue_index})
+
+							vk.physical_device = physical_device
+							vk.device = {
+								queue = queue,
+								command_pool = command_pool,
+								device = device,
+								memory_properties = memory_properties,
+								queue_index = queue_index,
+							}
+
+							break
+						end
+					end
+				end
+			end
+
+			vk.surface = sdl.CreateWindowSurface(vk.instance, sdl_wnd)
+
+			system.vulkan = vk
 		end
 
 		if OPENGL then
@@ -1291,7 +1426,7 @@ if sdl then
 
 		local event_name_translate = {}
 		local key_translate = {
-			left_ctrl = "left_control",
+			["left_ctrl"] = "left_control",
 			["keypad_-"] = "kp_subtract",
 			["keypad_+"] = "kp_add",
 			["return"] = "enter",

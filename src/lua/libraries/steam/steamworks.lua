@@ -1,7 +1,7 @@
 local ffi = require("ffi")
 local steam = ... or steam
 
-if EXTERNAL_OPENGL_DEBUGGER then return end
+if EXTERNAL_DEBUGGER then return end
 
 local steamworks = desire("libsteamworks")
 

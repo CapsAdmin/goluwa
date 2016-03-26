@@ -16,9 +16,9 @@ Mostly unmodified standard Lua modules used by goluwa.
 
 Goluwa specific libraries.
 
-### [main_loop.lua](main_loop.lua)
+### [main.lua](main.lua)
 
-This contains the main loop which updates Goluwa every frame.
+This initializes the included libraries and handles the main loop which updates Goluwa every frame.
 
 ### [examples/](examples/)
 

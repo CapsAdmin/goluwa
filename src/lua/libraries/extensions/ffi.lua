@@ -20,8 +20,8 @@ function ffi.new_dbg_gc(...)
 end
 
 local where = {
-	"bin/" .. ffi.os .. "_" .. ffi.arch .. "/",
-	"lua/modules/bin/" .. ffi.os .. "_" .. ffi.arch .. "/",
+	"bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/",
+	"lua/modules/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/",
 }
 
 -- make ffi.load search using our file system
@@ -77,14 +77,10 @@ local function warn_pcall(func, ...)
 end
 
 -- ffi's cdef is so anti realtime
-local cdef = ffi.cdef
 ffi.cdef = function(str, ...)
-	return warn_pcall(cdef, str, ...)
+	return warn_pcall(_OLD_G.ffi.cdef, str, ...)
 end
 
-ffi.real_cdef = cdef
-
-local metatype = ffi.metatype
 ffi.metatype = function(str, ...)
-	return warn_pcall(metatype, str, ...)
+	return warn_pcall(_OLD_G.ffi.metatype, str, ...)
 end

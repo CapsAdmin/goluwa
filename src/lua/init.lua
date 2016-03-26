@@ -1,54 +1,37 @@
-OPENGL = true
-VULKAN = false
-io.write(">> src/lua/init.lua\n")
-
 local profile_start_time = os.clock()
 
--- check if this environment is compatible
-if not require("ffi") then
-	error("goluwa requires ffi to run!")
+OPENGL = true
+--VULKAN = true
+io.write(">> src/lua/init.lua\n")
+
+-- force package paths
+if jit.os ~= "Windows" then
+	package.cpath = "./?.so"
+else
+	package.cpath = "./?.dll"
 end
 
-do -- make cdef not error
-	local ffi = require("ffi")
-	local old = ffi.cdef
-	ffi.cdef = function(src)
-		local ok, err = pcall(old, src)
-		if not ok then
-			io.write(err, "\n")
-		end
-	end
-end
-
-do -- force package paths
-	if jit.os ~= "Windows" then
-		package.cpath = "./?.so"
-		package.path = "./?.lua"
-	end
-end
+package.path = "./?.lua"
 
 do -- force the current directory
 	local path = debug.getinfo(1).source
+
 	if path:sub(1, 1) == "@" then
 		path = path:gsub("\\", "/")
-		local dir = path:match("@(.+/)src/lua/init.lua")
+
+		local dir = path:match("@(.+/)src/lua/init.lua$")
 
 		if dir then
 			local ffi = require("ffi")
+
+			dir = dir .. "data/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
+
 			if jit.os == "Windows" then
 				ffi.cdef("int SetCurrentDirectoryA(const char *);")
-				dir = dir .. "data/bin/windows_" .. jit.arch:lower() .. "/"
 				ffi.C.SetCurrentDirectoryA(dir)
 			else
 				ffi.cdef("int chdir(const char *);")
-				dir = dir .. "data/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
 				ffi.C.chdir(dir)
-			end
-
-			if jit.os ~= "Windows" then
-				-- chdir doesnt' seem to have an effect on these in some situations
-			--	package.cpath = package.cpath .. ";" .. dir .. "?.so"
-				--package.path = package.path .. ";" .. dir .. "?.lua"
 			end
 		end
 	end
@@ -94,21 +77,7 @@ do -- constants
 	end
 
 	if os.getenv("CODEXL") == "1" or os.getenv("MESA_DEBUG") == "1" then
-		EXTERNAL_OPENGL_DEBUGGER = true
-	end
-
-	do -- write them to output
-		io.write("constants:\n")
-
-		for k,v in pairs(_G) do
-			if k:upper() == k and k ~= _G then
-				io.write("\t_G.", k, " = ", tostring(v), "\n")
-			end
-		end
-
-		for k,v in pairs(e) do
-			io.write("\te.", k, " = ", tostring(v), "\n")
-		end
+		EXTERNAL_DEBUGGER = true
 	end
 end
 
@@ -132,8 +101,9 @@ if not _OLD_G then
 			end
 		end
 	end
-
+	_G.ffi = require("ffi")
 	scan(_G, _OLD_G)
+	_G.ffi = nil
 end
 
 do -- 52 compat
@@ -173,254 +143,141 @@ if CURSES then
 	end
 end
 
-do -- file system
+do
+	-- this is required because fs needs winapi and syscall
+	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../../src/lua/modules/" .. name .. ".lua") end)
+	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../../src/lua/modules/" .. name .. "/init.lua") end)
+	local fs = require("fs")
+	-- remove the temporary added loaders from top because we do it properly later on
+	table.remove(package.loaders)
+	table.remove(package.loaders)
 
-	do -- this is ugly but it's because we haven't included the global extensions yet..
-		-- this is required because fs needs winapi and syscall
-		table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../../src/lua/modules/" .. name .. ".lua") end)
-		table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../../src/lua/modules/" .. name .. "/init.lua") end)
+	-- create directory constnats
+	e.BIN_FOLDER = fs.getcd():gsub("\\", "/") .. "/"
+	e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(3)) -- the root folder is always 3 directories up (data/bin/os_arch)
+	e.SRC_FOLDER = e.ROOT_FOLDER .. "src/"
+	e.DATA_FOLDER = e.ROOT_FOLDER .. "data/"
+	e.USERDATA_FOLDER = e.DATA_FOLDER .. "users/" .. e.USERNAME:lower() .. "/"
 
-		local fs = require("fs")
-
-		-- remove the temporary added loaders from top because we do it properly later on
-		table.remove(package.loaders)
-		table.remove(package.loaders)
-
-		e.BIN_FOLDER = fs.getcd():gsub("\\", "/") .. "/"
-		e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(3)) -- the root folder is always 3 directories up (data/bin/os_arch)
-		e.SRC_FOLDER = e.ROOT_FOLDER .. "src/"
-		e.DATA_FOLDER = e.ROOT_FOLDER .. "data/"
-		e.USERDATA_FOLDER = e.DATA_FOLDER .. "users/" .. e.USERNAME:lower() .. "/"
-
-		fs.createdir(e.DATA_FOLDER)
-		fs.createdir(e.DATA_FOLDER .. "users/")
-		fs.createdir(e.USERDATA_FOLDER)
-
-		_G.check = function() end
-		_G.include = function() end
-
-		dofile(e.SRC_FOLDER .. "lua/libraries/extensions/globals.lua")
-		dofile(e.SRC_FOLDER .. "lua/libraries/extensions/debug.lua")
-		dofile(e.SRC_FOLDER .. "lua/libraries/extensions/string.lua")
-		dofile(e.SRC_FOLDER .. "lua/libraries/extensions/table.lua")
-		prototype = dofile(e.SRC_FOLDER .. "lua/libraries/prototype/prototype.lua")
-		dofile(e.SRC_FOLDER .. "lua/libraries/prototype/get_is_set.lua")
-		dofile(e.SRC_FOLDER .. "lua/libraries/prototype/base_object.lua")
-		dofile(e.SRC_FOLDER .. "lua/libraries/prototype/null.lua")
-		utility = dofile(e.SRC_FOLDER .. "lua/libraries/utilities/utility.lua")
-
-		vfs = dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/vfs.lua")
-
-		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/path_utilities.lua")
-		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/base_file.lua")
-		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/find.lua")
-		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/helpers.lua")
-		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/lua_utilities.lua")
-		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/addons.lua")
-		dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/files/os.lua")
-	end
-
-	vfs.Mount("os:" .. e.USERDATA_FOLDER, "data") -- mount "ROOT/data/users/*username*/" to "/data/"
-	vfs.Mount("os:" .. e.BIN_FOLDER, "bin") -- mount "ROOT/data/bin" to "/bin/"
-	vfs.MountAddon("os:" .. e.SRC_FOLDER) -- mount "ROOT/src" to "/"
-
-	vfs.AddModuleDirectory("lua/modules/")
-	vfs.AddModuleDirectory("lua/libraries/")
-
-	_G.include = vfs.include
-	_G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir
+	fs.createdir(e.DATA_FOLDER)
+	fs.createdir(e.DATA_FOLDER .. "users/")
+	fs.createdir(e.USERDATA_FOLDER)
 end
 
-do -- libraries
-	_G.require = include("lua/libraries/require.lua") -- replace require with the pure lua version
+-- some of the lua files ran below use check and include which don't exist yet
+_G.check = function() end
+_G.include = function() end
 
-	include("lua/libraries/extensions/ffi.lua")
+-- standard library extensions
+dofile(e.SRC_FOLDER .. "lua/libraries/extensions/globals.lua")
+dofile(e.SRC_FOLDER .. "lua/libraries/extensions/debug.lua")
+dofile(e.SRC_FOLDER .. "lua/libraries/extensions/string.lua")
+dofile(e.SRC_FOLDER .. "lua/libraries/extensions/table.lua")
+dofile(e.SRC_FOLDER .. "lua/libraries/extensions/os.lua")
+dofile(e.SRC_FOLDER .. "lua/libraries/extensions/ffi.lua")
+dofile(e.SRC_FOLDER .. "lua/libraries/extensions/math.lua")
 
-	-- standard library extensions
-	include("lua/libraries/extensions/globals.lua")
-	include("lua/libraries/extensions/debug.lua")
-	include("lua/libraries/extensions/math.lua")
-	include("lua/libraries/extensions/string.lua")
-	include("lua/libraries/extensions/table.lua")
-	include("lua/libraries/extensions/os.lua")
 
-	-- libraries
-	prototype = include("lua/libraries/prototype/prototype.lua")
-	math3d = include("lua/libraries/math3d.lua") -- 3d math functions
-	structs = include("lua/libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
-	utf8 = include("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
-	event = include("lua/libraries/event.lua") -- event handler
-	utility = include("lua/libraries/utilities/utility.lua") -- misc functions i don't know where to put
-	crypto = include("lua/libraries/crypto.lua")
-	tasks = include("lua/libraries/tasks.lua")
-	serializer = include("lua/libraries/serializer.lua")
+-- include some of prototype as required by vfs
+prototype = dofile(e.SRC_FOLDER .. "lua/libraries/prototype/prototype.lua")
+dofile(e.SRC_FOLDER .. "lua/libraries/prototype/get_is_set.lua")
+dofile(e.SRC_FOLDER .. "lua/libraries/prototype/base_object.lua")
+dofile(e.SRC_FOLDER .. "lua/libraries/prototype/null.lua")
+utility = {CreateWeakTable = function() return setmetatable({}, {__mode = "kv"}) end}
 
-	console = include("lua/libraries/console.lua")
-	system = include("lua/libraries/system.lua")
-	profiler = include("lua/libraries/profiler.lua")
-	cookies = include("lua/libraries/cookies.lua")
-	expression = include("lua/libraries/expression.lua")
-	autocomplete = include("lua/libraries/autocomplete.lua")
-	input = include("lua/libraries/input.lua")
-	language = include("lua/libraries/language.lua") _G.L = language.LanguageString
 
-	-- network
-	if SOCKETS then
-		sockets = include("lua/libraries/network/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
-	end
+-- include some of vfs so we can setup and mount the filesystem
+vfs = dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/vfs.lua")
+dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/path_utilities.lua")
+dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/base_file.lua")
+dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/find.lua")
+dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/helpers.lua")
+dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/lua_utilities.lua")
+dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/addons.lua")
+dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/files/os.lua")
 
-	if SERVER or CLIENT then
-		enet = include("lua/libraries/network/enet.lua") -- low level udp library
+vfs.Mount("os:" .. e.USERDATA_FOLDER, "data") -- mount "ROOT/data/users/*username*/" to "/data/"
+vfs.Mount("os:" .. e.BIN_FOLDER, "bin") -- mount "ROOT/data/bin" to "/bin/"
+vfs.MountAddon("os:" .. e.SRC_FOLDER) -- mount "ROOT/src" to "/"
 
-		if enet then
-			network = include("lua/libraries/network/network.lua") -- high level implementation of enet
-			packet = include("lua/libraries/network/packet.lua") -- medium (?) level communication between server and client
-			message = include("lua/libraries/network/message.lua") -- high level communication between server and client
+vfs.AddModuleDirectory("lua/modules/")
+vfs.AddModuleDirectory("lua/libraries/")
 
-			nvars = include("lua/libraries/network/nvars.lua") -- variable synchronization between server and client
-			clients = include("lua/libraries/network/clients.lua") -- high level wrapper for a connected client
-			chat = include("lua/libraries/network/chat.lua") -- in game chat
+_G.include = vfs.include
+_G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir
+_G.require = include("lua/libraries/require.lua") -- replace require with the pure lua version
 
-			resource = include("lua/libraries/network/resource.lua") -- used for downloading resources with resource.Download("http://...", function(path) end)
-			resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/")
-			resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/")
-		end
-	end
+-- now we can use include properly
 
-	if GRAPHICS then
-		-- graphics
-		render = include("lua/libraries/graphics/render/render.lua") -- OpenGL abstraction
+-- libraries
+prototype = include("lua/libraries/prototype/prototype.lua") -- handles classes, objects, etc
+math3d = include("lua/libraries/math3d.lua") -- 3d math functions
+structs = include("lua/libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
+crypto = include("lua/libraries/crypto.lua") -- base64 and other hash functions
+serializer = include("lua/libraries/serializer.lua") -- for serializing lua data in different formats
+console = include("lua/libraries/console.lua") -- console interface, cvars, commands, etc
+system = include("lua/libraries/system.lua") -- os and luajit related functions like creating windows or changing jit options
+utility = include("lua/libraries/utilities/utility.lua") -- misc functions i don't know where to put
+event = include("lua/libraries/event.lua") -- event handler
+input = include("lua/libraries/input.lua") -- keyboard and mouse input
+utf8 = include("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
+tasks = include("lua/libraries/tasks.lua") -- high level abstraction around coroutines
+vfs = include("lua/libraries/filesystem/vfs.lua") -- include the filesystem again so it will include all the details such as zip file reading
+expression = include("lua/libraries/expression.lua") -- used by chat and editor to run small and safe lua expressions
+autocomplete = include("lua/libraries/autocomplete.lua") -- mainly used in console and chatsounds
+profiler = include("lua/libraries/profiler.lua") -- for profiling
+language = include("lua/libraries/language.lua") _G.L = language.LanguageString -- L"options", for use in gui menus and such.
+physics = include("lua/libraries/physics/physics.lua") -- bullet physics
+steam = include("lua/libraries/steam/steam.lua") -- utilities for dealing with steam, the source engine and steamworks
+lovemu = include("lua/libraries/lovemu/lovemu.lua") -- a löve wrapper that lets you run löve games
+gmod = include("lua/libraries/gmod/gmod.lua") -- a gmod wrapper that lets you run gmod scripts
 
-		if render then
-			surface = include("lua/libraries/graphics/surface/surface.lua") -- high level 2d rendering of the render library
-			window = include("lua/libraries/graphics/window.lua") -- high level window implementation
-			video = include("lua/libraries/graphics/video.lua") -- gif support (for now)
-			gui = include("lua/libraries/graphics/gui/gui.lua")
-			include("lua/libraries/graphics/particles.lua")
-		else
-			GRAPHCIS = nil
-			WINDOW = nil
-		end
-	end
-
-	if SOUND then
-		-- audio
-		audio = include("lua/libraries/audio/audio.lua") -- high level implementation of OpenAl
-
-		if audio then
-			chatsounds = include("lua/libraries/audio/chatsounds.lua")
-		else
-			SOUND = nil
-		end
-	end
-
-	-- other
-	physics = include("lua/libraries/physics/physics.lua") -- bullet physics
-	entities = include("lua/libraries/entities/entities.lua") -- entity component system
-	steam = include("lua/libraries/steam/steam.lua") -- utilities for dealing with steam, the source engine and steamworks
-
-	lovemu = include("lua/libraries/lovemu/lovemu.lua") -- a löve wrapper that lets you run löve games
-	gmod = include("lua/libraries/gmod/gmod.lua") -- a gmod wrapper that lets you run gmod scripts
-
-	-- include the filesystem again so it will include all the details such as zip file reading
-	include("lua/libraries/filesystem/vfs.lua")
+if SOCKETS then
+	sockets = include("lua/libraries/network/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
+	resource = include("lua/libraries/network/resource.lua") -- used for downloading resources with resource.Download("http://...", function(path) end)
 end
 
-console.CreateVariable("editor_path", system.FindFirstEditor(true, true) or "")
+if SERVER or CLIENT then
+	enet = include("lua/libraries/network/enet.lua") -- low level udp library
 
-if WINDOW then
-	io.write("opening window\n")
-	window.Open()
-	io.write("window opened!\n")
+	if enet then
+		network = include("lua/libraries/network/network.lua") -- high level implementation of enet
+		packet = include("lua/libraries/network/packet.lua") -- medium (?) level communication between server and client
+		message = include("lua/libraries/network/message.lua") -- high level communication between server and client
+
+		nvars = include("lua/libraries/network/nvars.lua") -- variable synchronization between server and client
+		clients = include("lua/libraries/network/clients.lua") -- high level wrapper for a connected client
+		chat = include("lua/libraries/network/chat.lua") -- in game chat
+	end
 end
 
 if GRAPHICS then
-	gui.Initialize()
-end
+	render = include("lua/libraries/graphics/render/render.lua") -- OpenGL abstraction
 
-if sockets then
-	sockets.Initialize()
-end
-
-if audio then
-	audio.Initialize()
-end
-
-if CURSES then
-	console.InitializeCurses()
-end
-
-if lovemu then
-	love = lovemu.CreateLoveEnv() -- https://www.love2d.org/wiki/love
-end
-
-if physics then
-	physics.Initialize()
-end
-
---steam.InitializeWebAPI()
-
-if CLIENT and enet then
-	enet.Initialize()
-	clients.local_client = clients.Create("unconnected")
-end
-
--- tries to load all addons
--- some might not load depending on its info.lua file.
--- for instance: "load = CAPSADMIN ~= nil," will make it load
--- only if the CAPSADMIN constant is not nil.
-vfs.MountAddons(e.ROOT_FOLDER)
-
--- load everything in lua/autorun/*
-vfs.AutorunAddons()
-
--- load everything in lua/autorun/*USERNAME*/*
-vfs.AutorunAddons(e.USERNAME)
-
--- load everything in lua/autorun/client/*
-if CLIENT then
-	vfs.AutorunAddons("client/")
-end
-
--- load everything in lua/autorun/server/*
-if SERVER then
-	vfs.AutorunAddons("server/")
+	if render then
+		surface = include("lua/libraries/graphics/surface/surface.lua") -- high level 2d rendering of the render library
+		window = include("lua/libraries/graphics/window.lua") -- high level window implementation
+		video = include("lua/libraries/graphics/video.lua") -- gif support (for now)
+		gui = include("lua/libraries/graphics/gui/gui.lua")
+		include("lua/libraries/graphics/particles.lua")
+	else
+		GRAPHCIS = nil
+		WINDOW = nil
+	end
 end
 
 if SOUND then
-	vfs.AutorunAddons("sound/")
-end
+	audio = include("lua/libraries/audio/audio.lua") -- high level implementation of OpenAl
 
-if GRAPHICS then
-	vfs.AutorunAddons("graphics/")
-end
-
--- execute /.userdata/*USERNAME*/cfg/autoexec.lua
-console.Exec("autoexec")
-
-system._CheckCreatedEnv()
-
-vfs.MonitorEverything(true)
-system.ExecuteArgs()
-
-logf("[init] launched on %s by %s as %s\n", os.date(), e.USERNAME, CLIENT and "client" or "server")
-
-do
-	local time = os.clock() - profile_start_time
-	serializer.AppendToFile("simple", "data/launch_times.txt", time)
-
-	local average = 0
-	local times = serializer.ReadFile("simple", "data/launch_times.txt")
-
-	for i, time in ipairs(times) do
-		average = average + time
+	if audio then
+		chatsounds = include("lua/libraries/audio/chatsounds.lua")
+	else
+		SOUND = nil
 	end
-
-	average = average / #times
-
-	logf("[init] launch time took %s seconds (average startup time is %s seconds) \n", time, average)
 end
 
-event.Call("Initialize")
+entities = include("lua/libraries/entities/entities.lua") -- entity component system
 
-include("lua/main_loop.lua")
+logf("[init] including libraries took %s seconds\n", os.clock() - profile_start_time)
+
+include("lua/main.lua")

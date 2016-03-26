@@ -819,7 +819,7 @@ local emotes =
 	"\227\128\134\40\227\131\187\226\136\128\227\131\187\239\188\160\41",
 }
 
-function string.anime(str)
+return function(str)
 	str = str:gsub("^.", function(c) return c:upper() end)
 
 	-- todo: automatic conversion of punctation?

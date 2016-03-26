@@ -27,7 +27,7 @@ local types = {
 }
 
 function render.StartDebug()
-	if EXTERNAL_OPENGL_DEBUGGER then return end
+	if EXTERNAL_DEBUGGER then return end
 	if render.verbose_debug then return end
 
 	if window.IsExtensionSupported("GL_KHR_debug") then
@@ -40,7 +40,7 @@ function render.StartDebug()
 end
 
 function render.StopDebug()
-	if EXTERNAL_OPENGL_DEBUGGER then return end
+	if EXTERNAL_DEBUGGER then return end
 	if render.verbose_debug then return end
 
 	if window.IsExtensionSupported("GL_KHR_debug") then

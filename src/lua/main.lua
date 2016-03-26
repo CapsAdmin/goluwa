@@ -1,3 +1,85 @@
+local profile_start_time = os.clock()
+
+console.CreateVariable("editor_path", system.FindFirstEditor(true, true) or "")
+
+if WINDOW then
+	window.Open()
+end
+
+if GRAPHICS then
+	gui.Initialize()
+end
+
+if sockets then
+	sockets.Initialize()
+
+	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/")
+	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/")
+end
+
+if audio then
+	audio.Initialize()
+end
+
+if CURSES then
+	console.InitializeCurses()
+end
+
+if lovemu then
+	love = lovemu.CreateLoveEnv() -- https://www.love2d.org/wiki/love
+end
+
+if physics then
+	physics.Initialize()
+end
+
+--steam.InitializeWebAPI()
+
+if CLIENT and enet then
+	enet.Initialize()
+	clients.local_client = clients.Create("unconnected")
+end
+
+-- tries to load all addons
+-- some might not load depending on its info.lua file.
+-- for instance: "load = CAPSADMIN ~= nil," will make it load
+-- only if the CAPSADMIN constant is not nil.
+vfs.MountAddons(e.ROOT_FOLDER)
+
+-- load everything in lua/autorun/*
+vfs.AutorunAddons()
+
+-- load everything in lua/autorun/*USERNAME*/*
+vfs.AutorunAddons(e.USERNAME)
+
+-- load everything in lua/autorun/client/*
+if CLIENT then
+	vfs.AutorunAddons("client/")
+end
+
+-- load everything in lua/autorun/server/*
+if SERVER then
+	vfs.AutorunAddons("server/")
+end
+
+if SOUND then
+	vfs.AutorunAddons("sound/")
+end
+
+if GRAPHICS then
+	vfs.AutorunAddons("graphics/")
+end
+
+-- execute /.userdata/*USERNAME*/cfg/autoexec.lua
+console.Exec("autoexec")
+
+system._CheckCreatedEnv()
+
+vfs.MonitorEverything(true)
+system.ExecuteArgs()
+
+logf("[main] initializing libraries took %s seconds\n", os.clock() - profile_start_time)
+
 local rate_cvar = console.CreateVariable(
 	"system_fps_max",
 	0,
