@@ -78,7 +78,7 @@ system._CheckCreatedEnv()
 vfs.MonitorEverything(true)
 system.ExecuteArgs()
 
-logf("[main] initializing libraries took %s seconds\n", os.clock() - profile_start_time)
+llog("initializing libraries took %s seconds\n", os.clock() - profile_start_time)
 
 local rate_cvar = console.CreateVariable(
 	"system_fps_max",

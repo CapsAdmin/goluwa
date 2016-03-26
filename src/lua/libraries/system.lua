@@ -1512,7 +1512,7 @@ if sdl then
 						window.focused = false
 					elseif case == sdl.e.WINDOWEVENT_CLOSE then
 						call(window, "OnClose")
-					else print("unknown window event", case) end
+					else llog("unknown window event %s", case) end
 				elseif event.type == sdl.e.KEYDOWN or event.type == sdl.e.KEYUP then
 					local window = system.sdl_windows[event.key.windowID]
 					local key = ffi.string(sdl.GetKeyName(event.key.keysym.sym)):lower():gsub(" ", "_")

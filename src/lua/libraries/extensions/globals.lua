@@ -1,3 +1,27 @@
+-- 52 compat
+function setmetatable(tbl, meta)
+
+	if rawget(meta, "__gc") and not rawget(tbl, "__gc_proxy") then
+		local proxy = newproxy(true)
+		rawset(tbl, "__gc_proxy", proxy)
+
+		getmetatable(proxy).__gc = function()
+			rawset(tbl, "__gc_proxy", nil)
+
+			local new_meta = getmetatable(tbl)
+
+			if new_meta then
+				local __gc = rawget(new_meta, "__gc")
+				if __gc then
+					__gc(tbl)
+				end
+			end
+		end
+	end
+
+	return _OLD_G.setmetatable(tbl, meta)
+end
+
 do -- logging
 	local pretty_prints = {}
 
@@ -127,15 +151,10 @@ do -- logging
 		end
 
 		if log_files.console == log_file then
-
 			if console and console.Print then
 				console.Print(line)
 			else
 				io.write(line)
-			end
-
-			if _G.LOG_BUFFER then
-				table.insert(_G.LOG_BUFFER, line)
 			end
 		end
 	end

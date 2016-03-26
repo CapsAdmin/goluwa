@@ -1,19 +1,16 @@
 local profile_start_time = os.clock()
 
-OPENGL = true
---VULKAN = true
-io.write(">> src/lua/init.lua\n")
+do
+	-- force lookup modules in current directory rather than system
+	if jit.os ~= "Windows" then
+		package.cpath = "./?.so"
+	else
+		package.cpath = "./?.dll"
+	end
 
--- force package paths
-if jit.os ~= "Windows" then
-	package.cpath = "./?.so"
-else
-	package.cpath = "./?.dll"
-end
+	package.path = "./?.lua"
 
-package.path = "./?.lua"
-
-do -- force the current directory
+	-- force current directory
 	local path = debug.getinfo(1).source
 
 	if path:sub(1, 1) == "@" then
@@ -37,19 +34,15 @@ do -- force the current directory
 	end
 end
 
-NVIDIA_WORKAROUND = true
-GL_ARB_bindless_texture = false
-
 do -- constants
+	OPENGL = true
+	NVIDIA_WORKAROUND = true
+	GL_ARB_bindless_texture = false
+	--VULKAN = true
+
 	-- if WINDOWS and X86 then blah blah end
 	_G[jit.os:upper()] = true
 	_G[jit.arch:upper()] = true
-
-	-- enums table
-	e = e or {}
-
-	e.USERNAME = _G.USERNAME or tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
-	_G[e.USERNAME:upper()] = true
 
 	local env_vars = {
 		SERVER = false,
@@ -79,6 +72,12 @@ do -- constants
 	if os.getenv("CODEXL") == "1" or os.getenv("MESA_DEBUG") == "1" then
 		EXTERNAL_DEBUGGER = true
 	end
+
+	-- enums table
+	e = e or {}
+
+	e.USERNAME = _G.USERNAME or tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
+	_G[e.USERNAME:upper()] = true
 end
 
 -- put all c functions in a table so we can override them if needed
@@ -106,43 +105,6 @@ if not _OLD_G then
 	_G.ffi = nil
 end
 
-do -- 52 compat
-	local old_setmetatable = setmetatable
-
-	function setmetatable(tbl, meta)
-
-		if rawget(meta, "__gc") and not rawget(tbl, "__gc_proxy") then
-			local proxy = newproxy(true)
-			rawset(tbl, "__gc_proxy", proxy)
-
-			getmetatable(proxy).__gc = function()
-				rawset(tbl, "__gc_proxy", nil)
-
-				local new_meta = getmetatable(tbl)
-
-				if new_meta then
-					local __gc = rawget(new_meta, "__gc")
-					if __gc then
-						__gc(tbl)
-					end
-				end
-			end
-		end
-
-		return old_setmetatable(tbl, meta)
-	end
-end
-
-if CURSES then
-	-- this will be replaced later on with logn
-	_G.LOG_BUFFER = {}
-
-	print = function(...)
-		table.insert(_G.LOG_BUFFER, table.concat(..., ", ") .. "\n")
-		return _OLD_G.print(...)
-	end
-end
-
 do
 	-- this is required because fs needs winapi and syscall
 	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../../src/lua/modules/" .. name .. ".lua") end)
@@ -152,7 +114,8 @@ do
 	table.remove(package.loaders)
 	table.remove(package.loaders)
 
-	-- create directory constnats
+	-- create constants
+
 	e.BIN_FOLDER = fs.getcd():gsub("\\", "/") .. "/"
 	e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(3)) -- the root folder is always 3 directories up (data/bin/os_arch)
 	e.SRC_FOLDER = e.ROOT_FOLDER .. "src/"
@@ -211,7 +174,9 @@ _G.require = include("lua/libraries/require.lua") -- replace require with the pu
 
 -- libraries
 prototype = include("lua/libraries/prototype/prototype.lua") -- handles classes, objects, etc
-math3d = include("lua/libraries/math3d.lua") -- 3d math functions
+if GRAPHICS then
+	math3d = include("lua/libraries/graphics/math3d.lua") -- 3d math functions
+end
 structs = include("lua/libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
 crypto = include("lua/libraries/crypto.lua") -- base64 and other hash functions
 serializer = include("lua/libraries/serializer.lua") -- for serializing lua data in different formats
@@ -278,6 +243,6 @@ end
 
 entities = include("lua/libraries/entities/entities.lua") -- entity component system
 
-logf("[init] including libraries took %s seconds\n", os.clock() - profile_start_time)
+llog("including libraries took %s seconds\n", os.clock() - profile_start_time)
 
 include("lua/main.lua")

@@ -61,16 +61,16 @@ do
 				data[offset + 2] = (res.z + 1) / 2 * 255
 			end
 		end
-		
+
 		local tex = render.CreateTexture("2d")
 		tex:SetSize(Vec2() + size)
 		tex:SetInternalFormat("rgb8")
 		tex:SetupStorage()
 		tex:Upload({
 			format = "rgb",
-			buffer = data:GetPointer(), 
+			buffer = data:GetPointer(),
 		})
-		
+
 		return tex
 	end
 end
@@ -649,14 +649,11 @@ end
 
 do -- long long
 	local ffi = require("ffi")
-	ffi.cdef [[
-	  typedef union {
+
+	local btl = ffi.typeof([[union {
 		char b[8];
 		int64_t i;
-	  } buffer_int64;
-	]]
-
-	local btl = ffi.typeof("buffer_int64")
+	  }]])
 
 	function utility.StringToLongLong(str)
 		return btl(str).i
@@ -940,172 +937,6 @@ do
 			tbl[func_name] = old
 			hooks[tag] = nil
 		end
-	end
-end
-
-do -- header parse
-	local directories
-
-	local function read_file(path)
-		for _, dir in pairs(directories) do
-			local str = vfs.Read(dir .. path)
-			if str then
-				return str
-			end
-		end
-
-		for _, dir in pairs(directories) do
-			local str = vfs.Read(dir .. path .. ".in")
-			if str then
-				return str
-			end
-		end
-	end
-
-	local macros = {}
-
-	local function process_macros(str)
-		for line in str:gmatch("(.-\n)") do
-			if line:find("#") then
-				local type = line:match("#%s-([%l%d_]+)()")
-
-				--print(type, line)
-			end
-		end
-
-		return str
-	end
-
-	local included = {}
-
-	local function process_include(str)
-		local out = ""
-
-		for line in str:gmatch("(.-\n)") do
-			if not included[line] then
-				if line:find("#include") then
-					included[line] = true
-
-					local path = line:match("%s-#include.-<(.-)>")
-
-					if path then
-						local content = read_file(path)
-
-						if content then
-							out = out .. "// HEADER: " .. path .. ";"
-							out = out .. process_include(content)
-						else
-							out = out .. "// missing header " .. path .. ";"
-						end
-					end
-				else
-					out = out .. line
-				end
-			end
-
-			out = out
-		end
-
-		return out
-	end
-
-	local function remove_comments(str)
-		str = str:gsub("/%*.-%*/", "")
-
-		return str
-	end
-
-	local function remove_whitespace(str)
-		str = str:gsub("%s+", " ")
-		str = str:gsub(";", ";\n")
-
-		return str
-	end
-
-	local function solve_definitions(str)
-		local definitions = {}
-
-		str = str:gsub("\\%s-\n", "")
-
-		for line in str:gmatch("#define(.-)\n") do
-			local key, val = line:match("%s-(%S+)%s-(%S+)")
-			if key and val then
-				definitions[key] = tonumber(val)
-			end
-		end
-
-		return str, definitions
-	end
-
-	local function solve_typedefs(str)
-
-		local typedefs = {}
-
-		for line in str:gmatch("typedef(.-);") do
-			if not line:find("enum") then
-				local key, val = line:match("(%S-)%s-(%S+)$")
-				if key and val then
-					typedefs[key] = val
-				end
-			end
-		end
-
-		return str, typedefs
-	end
-
-	local function solve_enums(str)
-		local enums = {}
-
-		for line in str:gmatch("(.-)\n") do
-
-			if line:find("enum%s-{") then
-				local i = 0
-				local um = line:match(" enum {(.-)}")
-				--if not um then print(line) end
-				for enum in (um .. ","):gmatch(" (.-),") do
-					if enum:find("=") then
-						local left, operator, right = enum:match(" = (%d) (.-) (%d)")
-						enum = enum:match("(.-) =")
-						if not operator then
-							enums[enum] = enum:match(" = (%d)")
-						elseif operator == "<<" then
-							enums[enum] = bit.lshift(left, right)
-						elseif operator == ">>" then
-							enums[enum] = bit.rshift(left, right)
-						end
-					else
-						enums[enum] = i
-						i = i + 1
-					end
-				end
-			end
-		end
-
-		return str, enums
-	end
-
-	function utility.ParseHeader(path, directories_)
-		directories = directories_
-
-		local header, definitions, typedefs, enums
-
-		header = read_file(path)
-
-		header = process_macros(header)
-		header = process_include(header)
-		header = remove_comments(header)
-		header = remove_whitespace(header)
-
-		header, definitions = solve_definitions(header)
-		header, typedefs = solve_typedefs(header)
-		header, enums = solve_enums(header)
-
-		return {
-			header = header,
-			definitions = definitions,
-			typedefs = typedefs,
-			enums = enums,
-		}
 	end
 end
 
