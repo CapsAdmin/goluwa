@@ -1,5 +1,3 @@
-window.Open(500, 500)
-
 local tex = Texture(64,64):Fill(function()
 	return math.random(255), math.random(255), math.random(255), math.random(255)
 end)

@@ -1,5 +1,3 @@
-window.Open()
-
 local gif1 = Gif("https://dl.dropboxusercontent.com/u/244444/angrykid.gif")
 local gif2 = Gif("https://dl.dropboxusercontent.com/u/244444/pug.gif")
 local gif3 = Gif("https://dl.dropboxusercontent.com/u/244444/envy.gif")

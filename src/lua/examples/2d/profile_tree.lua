@@ -16,14 +16,14 @@ local function draw_branch(node)
 
 	local w, h = surface.GetTextSize(node.name)
 
-	surface.PushMatrix(h*0.5, -w, 1, 1, 90)
+	surface.PushMatrix(h*0.5, -w, 1, 1, math.rad(90))
 	surface.DrawText(node.name)
 	surface.PopMatrix()
 
 	for key, child in pairs(node.children) do
 		math.randomseed(tonumber(tostring(child):match("(0x.+)")))
 
-		surface.PushMatrix(0, -w, 1, 1, math.randomf(-45, 45))
+		surface.PushMatrix(0, -w, 1, 1, math.randomf(math.rad(-45), math.rad(45)))
 			draw_branch(child)
 		surface.PopMatrix()
 		count = count + 1

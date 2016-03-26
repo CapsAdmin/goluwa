@@ -4,7 +4,7 @@ local group = entities.CreateEntity("group", entities.GetWorld())
 group:SetName("pbr test")
 
 local ent = entities.CreateEntity("visual", group)
-ent:SetModelPath("maps/gm_old_flatgrass.bsp")
+--ent:SetModelPath("maps/gm_old_flatgrass.bsp")
 ent:SetCull(false)
 
 local max = 4
@@ -19,8 +19,8 @@ local r = math.clamp(r / max, 0, 1)
 	local ent = entities.CreateEntity("visual", group)
 	ent:SetPosition((Vec3(r, m, 0)*10) + Vec3(20,0,1))
 
-	ent:SetModelPath("models/She3PO.obj")
-	ent:SetSize(0.025)
+	ent:SetModelPath("models/sphere.obj")
+	ent:SetSize(0.25)
 	ent:SetAngles(Deg3(-90,0,0))
 
 	--ent:SetModelPath("models/mitsuba-sphere.obj")

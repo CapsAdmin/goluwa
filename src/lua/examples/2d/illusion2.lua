@@ -1,5 +1,3 @@
-window.Open()
-
 local function draw_shape(s, r, t)
 	s = s or 50
 	r = r or 45
@@ -18,6 +16,7 @@ local function draw_shape(s, r, t)
 end
 
 event.AddListener("Draw2D", "illusion", function()
+	surface.SetWhiteTexture()
 	surface.SetColor(0.75, 0.75, 0.75, 1)
 	surface.DrawRect(0,0,5000,5000)
 

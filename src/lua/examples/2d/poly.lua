@@ -1,5 +1,3 @@
-window.Open(500, 500)
-
 local tex = Texture("textures/pac.png")
 local count = 100
 local poly = surface.CreatePoly(count)
