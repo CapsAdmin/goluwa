@@ -39,7 +39,7 @@ for i, sub_skin in ipairs(skins) do
 			size = 5.5*scale,
 		})
 
-		local texture = Texture("textures/gui/skins/" .. sub_skin)
+		local texture = render.CreateTextureFromPath("textures/gui/skins/" .. sub_skin)
 		texture:SetMinFilter("nearest")
 
 		texture.OnLoad = function()

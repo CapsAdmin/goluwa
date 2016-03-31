@@ -884,7 +884,7 @@ if TESSELLATION then
 
 				teTextureBlend = (tcTextureBlend[0] + tcTextureBlend[1] + tcTextureBlend[2]) / 3;
 
-				float height = texture(lua[HeightTexture = Texture("https://upload.wikimedia.org/wikipedia/commons/5/57/Heightmap.png")], teTexCoord).x;
+				float height = texture(lua[HeightTexture = render.CreateTextureFromPath("https://upload.wikimedia.org/wikipedia/commons/5/57/Heightmap.png")], teTexCoord).x;
 				pos += normal * (height * 0.5f);
 
 				vec4 temp = g_view_world * vec4(pos, 1.0);

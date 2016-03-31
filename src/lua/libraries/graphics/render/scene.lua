@@ -10,11 +10,7 @@ do -- current window
 
 		_G.window.wnd = window
 
-		local w, h = window:GetSize():Unpack()
-		render.w = w
-		render.h = h
-
-		render.SetViewport(0, 0, w, h)
+		render.SetViewport(0, 0, window:GetSize():Unpack())
 	end
 
 	function render.GetWindow()

@@ -7,7 +7,7 @@ prototype.GetSet(PANEL, "Path", "loading")
 
 function PANEL:SetPath(path)
 	self.Path = path
-	self:SetTexture(Texture(path))
+	self:SetTexture(render.CreateTextureFromPath(path))
 end
 
 gui.RegisterPanel(PANEL)

@@ -47,7 +47,7 @@ function PANEL:Initialize()
 	self:SetDraggable(true)
 	self:SetResizable(true)
 	self.Velocity = Vec2()
-	self.sheep_texture = Texture("textures/esheep.png")
+	self.sheep_texture = render.CreateTextureFromPath("textures/esheep.png")
 	self.sheep_texture:SetMinFilter("nearest")
 	self.sheep_texture:SetMagFilter("nearest")
 	self.frame = 0

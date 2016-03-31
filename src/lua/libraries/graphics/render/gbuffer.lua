@@ -423,7 +423,7 @@ local function init(width, height)
 					local buffer_i = 1
 					for _, pass_info in ipairs(fill.Buffers) do
 						for _, buffer in ipairs(pass_info.layout) do
-							local channel_count = #render.texture_formats[buffer.format].bits
+							local channel_count = #render.GetTextureFormatInfo(buffer.format).bits
 							local glsl_type
 							if channel_count == 1 then
 								glsl_type = "float"
@@ -445,7 +445,7 @@ local function init(width, height)
 				elseif fill.Buffers[i].write == "self" then
 					local buffer_i = 1
 					for _, buffer in ipairs(fill.Buffers[i].layout) do
-						local channel_count = #render.texture_formats[buffer.format].bits
+						local channel_count = #render.GetTextureFormatInfo(buffer.format).bits
 						local glsl_type
 						if channel_count == 1 then
 							glsl_type = "float"

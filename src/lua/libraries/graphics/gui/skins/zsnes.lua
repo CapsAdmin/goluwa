@@ -33,7 +33,7 @@ function SKIN:Build()
 		filtering = "nearest",
 	})
 
-	local texture = Texture("textures/gui/skins/zsnes.png")
+	local texture = render.CreateTextureFromPath("textures/gui/skins/zsnes.png")
 	texture:SetMinFilter("nearest")
 	texture:SetMagFilter("nearest")
 

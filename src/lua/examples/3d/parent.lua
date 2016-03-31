@@ -14,7 +14,7 @@ console.RunString("mount gmod")
 local materials = {}
 
 for i = 1, 50 do
-	materials[i] = Texture(Vec2()+32, "return vec4(random(uv*1), random(uv*2), random(uv*3), random(uv*4));")
+	materials[i] = render.CreateBlankTexture(Vec2() + 32, "return vec4(random(uv*1), random(uv*2), random(uv*3), random(uv*4));")
 end
 
 

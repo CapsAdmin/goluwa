@@ -1,5 +1,5 @@
 local fb = render.CreateFrameBuffer()
-local tex = Texture(window.GetSize():Copy())
+local tex = render.CreateBlankTexture(window.GetSize():Copy())
 tex:SetInternalFormat("rgba32f")
 tex:SetupStorage()
 tex:SetMinFilter("nearest")

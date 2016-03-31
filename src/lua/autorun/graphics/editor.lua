@@ -441,7 +441,7 @@ function editor.Open()
 				--node.OnMouseHoverTrigger = show_tooltip
 				node.ent = ent
 				ent.editor_node = node
-				--node:SetIcon(Texture("textures/" .. frame:GetSkin().icons[val.self.ClassName]))
+				--node:SetIcon(render.CreateTextureFromPath("textures/" .. frame:GetSkin().icons[val.self.ClassName]))
 				fill(ent:GetChildren(), node)
 			end
 		end

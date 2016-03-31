@@ -95,7 +95,7 @@ local d = ColorBytes(178, 179, 175)
 local m = ColorBytes(203, 203, 202)
 local l = ColorBytes(226, 227, 225)
 
-local grad = Texture()
+local grad = render.CreateTexture("2d")
 grad:SetSize(Vec2(5, 5))
 --grad:SetMinFilter("nearest")
 grad:SetMagFilter("nearest")
@@ -123,10 +123,10 @@ event.AddListener("PostDrawMenu", "lol", function()
 
 	--surface.SetTexture(grad)
 	--surface.SetColor(1,1,1,1)
-	--surface.DrawRect(64,64,grad.w*32,grad.h*32)
+	--surface.DrawRect(64,64,grad:GetSize().x*32,grad:GetSize().y*32)
 
 	--surface.SetTexture(tex)
-	--surface.DrawRect(0,0,tex.w,tex.h)
+	--surface.DrawRect(0,0,tex:GetSize().x,tex:GetSize().y)
 
 	--surface.SetWhiteTexture()
 	--surface.SetColor(ColorBytes(tex:GetPixelColor(surface.GetMousePosition())))

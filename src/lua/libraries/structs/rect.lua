@@ -163,3 +163,5 @@ function META.GetUV8(R, S)
 end
 
 structs.Register(META)
+
+serializer.GetLibrary("luadata").SetModifier("rect", function(var) return ("Rect(%f, %f, %f, %f)"):format(var:Unpack()) end, structs.Rect, "Rect")

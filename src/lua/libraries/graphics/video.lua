@@ -25,7 +25,7 @@ function META:Draw(x, y)
 	local tex = self:GetTexture()
 	surface.SetTexture(tex)
 
-	surface.DrawRect(x, y, tex.w, tex.h)
+	surface.DrawRect(x, y, tex:GetSize().x, tex:GetSize().y)
 end
 
 prototype.Register(META)
@@ -52,7 +52,7 @@ function video.CreateGif(path)
 				if frame.w > w then w = frame.w end
 				if frame.h > h then h = frame.h end
 
-				local tex = Texture(frame.w, frame.h)
+				local tex = render.CreateBlankTexture(Vec2(frame.w, frame.h))
 				tex:Upload({buffer = frame.data})
 
 				frames[i] = tex

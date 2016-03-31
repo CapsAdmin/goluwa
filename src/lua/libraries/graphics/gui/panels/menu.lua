@@ -112,7 +112,7 @@ do
 		self.label:SetPadding(Rect()+S*2)
 		self.image:SetPadding(Rect()+S*2)
 		if self.image.Texture then
-			self.image:SetLayoutSize(Vec2(math.min(S*8, self.image.Texture.w), math.min(S*8, self.image.Texture.h)))
+			self.image:SetLayoutSize(Vec2(math.min(S*8, self.image.Texture:GetSize().x), math.min(S*8, self.image.Texture:GetSize().y)))
 		end
 	end
 

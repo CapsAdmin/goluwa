@@ -322,7 +322,3 @@ function surface.CreatePoly(size)
 
 	return self
 end
-
-if RELOAD then
-
-end

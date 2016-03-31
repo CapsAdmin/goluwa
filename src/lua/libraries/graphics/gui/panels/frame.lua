@@ -133,7 +133,7 @@ function PANEL:OnLayout(S)
 	self.close:SetPadding(Rect()+S)
 	self.title:SetPadding(Rect()+S)
 
-	self.icon:SetLayoutSize(Vec2(math.min(S*8, self.icon.Texture.w), math.min(S*8, self.icon.Texture.h)))
+	self.icon:SetLayoutSize(Vec2(math.min(S*8, self.icon.Texture:GetSize().x), math.min(S*8, self.icon.Texture:GetSize().y)))
 end
 
 function PANEL:Maximize(b)
@@ -176,7 +176,7 @@ function PANEL:SetIcon(str)
 	self.Icon = str
 
 	local icon = self.bar:CreatePanel("base", "icon")
-	icon:SetTexture(Texture(str))
+	icon:SetTexture(render.CreateTextureFromPath(str))
 	icon:SetSize(icon.Texture:GetSize())
 	icon:SetupLayout("right", "left", "center_y_simple")
 	icon.OnRightClick = function()

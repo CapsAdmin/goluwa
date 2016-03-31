@@ -236,3 +236,5 @@ function ColorToHSV(c)
 end
 
 structs.Register(META)
+
+serializer.GetLibrary("luadata").SetModifier("color", function(var) return ("Color(%f, %f, %f, %f)"):format(var:Unpack()) end, structs.Color, "Color")

@@ -5,10 +5,10 @@ local surface = gmod.env.surface
 
 function surface.GetTextureID(path)
 	if vfs.IsFile("materials/" .. path) then
-		return Texture("materials/" .. path)
+		return render.CreateTextureFromPath("materials/" .. path)
 	end
 
-	return Texture("materials/" .. path .. ".vtf")
+	return render.CreateTextureFromPath("materials/" .. path .. ".vtf")
 end
 
 function surface.SetDrawColor(r,g,b,a)

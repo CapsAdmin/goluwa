@@ -34,7 +34,7 @@ do -- tree node
 
 		local img = self:CreatePanel("base", "image")
 		img:SetIgnoreMouse(true)
-		self:SetIcon(Texture("textures/silkicons/heart.png"))
+		self:SetIcon(render.CreateTextureFromPath("textures/silkicons/heart.png"))
 
 		local button = self:CreatePanel("text_button", "button")
 		button:SetColor(Color(1,1,1,0))
@@ -58,7 +58,7 @@ do -- tree node
 		self.expand:SetPadding(Rect()+2*S)
 
 		self.image:SetPadding(Rect()+2*S)
-		self.image:SetSize(Vec2(math.min(S*8, self.image.Texture.w), math.min(S*8, self.image.Texture.h)))
+		self.image:SetSize(Vec2(math.min(S*8, self.image.Texture:GetSize().x), math.min(S*8, self.image.Texture:GetSize().y)))
 		self.image:SetupLayout("center_left")
 
 		self.button:SetPadding(Rect()+2*S)
@@ -196,7 +196,7 @@ do
 		pnl.tree = self
 
 		if icon then
-			pnl.image:SetTexture(Texture(icon))
+			pnl.image:SetTexture(render.CreateTextureFromPath(icon))
 		end
 
 		if id then

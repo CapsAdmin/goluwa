@@ -1,10 +1,10 @@
-local circle = Texture( "textures/ball.png" )
-local luwa = Texture( "textures/goluwa.png" )
+local circle = render.CreateTextureFromPath( "textures/ball.png" )
+local luwa = render.CreateTextureFromPath( "textures/goluwa.png" )
 
 local x, y = 0, 0
 local dirX, dirY = 100, 100
 
-local W, H = luwa.w - 10, luwa.h - 10
+local W, H = luwa:GetSize().x - 10, luwa:GetSize().y - 10
 event.AddListener( "Draw2D", "goluwa", function()
 
 	x = x + dirX * system.GetFrameTime()
@@ -17,8 +17,8 @@ event.AddListener( "Draw2D", "goluwa", function()
 		dirY = -dirY
 		H = H / 2
 	end
-	W = W + ((luwa.w-10)/W) * system.GetFrameTime() * 300
-	H = H + ((luwa.h-10)/H) * system.GetFrameTime() * 300
+	W = W + ((luwa:GetSize().x-10)/W) * system.GetFrameTime() * 300
+	H = H + ((luwa:GetSize().y-10)/H) * system.GetFrameTime() * 300
 
 
 	x = math.clamp( x, W / 2, render.GetWidth() - W / 2 )

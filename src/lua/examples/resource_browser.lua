@@ -106,9 +106,9 @@ local function add_icon(full_path)
 		steam.LoadMaterial(full_path, mat)
 		icon.OnDraw = function() draw_scene(mat, Vec3()+10, QuatDeg3(45,45,0), 90, icon:GetWidth(), icon:GetHeight()) end
 	elseif file_type == "image" then
-		icon:SetTexture(Texture("loading"))
+		icon:SetTexture(render.CreateTextureFromPath("loading"))
 		icon.OnMouseEnter = function()
-			local tex = Texture(full_path)
+			local tex = render.CreateTextureFromPath(full_path)
 			icon:SetTexture(tex)
 			icon:SetSize((Vec2() + 100) * tex:GetSize().x/tex:GetSize().y)
 			icon:SetupLayout("center_simple")

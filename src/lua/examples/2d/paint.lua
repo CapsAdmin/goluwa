@@ -12,7 +12,7 @@ fb:SetTexture(1, tex)
 
 fb:WriteThese(1)
 
-local brush = Texture(128, 128):Fill(function(x, y)
+local brush = render.CreateBlankTexture(Vec2() + 128):Fill(function(x, y)
 	x = x / 128
 	y = y / 128
 

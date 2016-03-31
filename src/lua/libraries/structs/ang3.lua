@@ -109,3 +109,5 @@ function META:RotateAroundAxis(axis, rad)
 end
 
 structs.Register(META)
+
+serializer.GetLibrary("luadata").SetModifier("ang3", function(var) return ("Ang3(%f, %f, %f)"):format(var:Unpack()) end, structs.Ang3, "Ang3")

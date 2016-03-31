@@ -6,7 +6,7 @@ PANEL.ClassName = "wire_board"
 PANEL.Base = "base"
 
 function PANEL:Initialize()
-	self.cable_texture = Texture("materials/cable/cable.vtf")
+	self.cable_texture = render.CreateTextureFromPath("materials/cable/cable.vtf")
 	self.current_wires = {}
 
 	self:SetStyle("frame")

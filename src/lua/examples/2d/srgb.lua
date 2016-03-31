@@ -1,4 +1,4 @@
---local tex = Texture(256, 1):Fill(function(x, y) x = x / 255 x = x ^ 2.2 x = x * 255 return x,x,x,255 end)
+--local tex = render.CreateBlankTexture(Vec2(256, 1)):Fill(function(x, y) x = x / 255 x = x ^ 2.2 x = x * 255 return x,x,x,255 end)
 local tex = render.CreateTexture("2d")
 tex:SetSRGB(true)
 tex:SetSize(Vec2(256, 1))

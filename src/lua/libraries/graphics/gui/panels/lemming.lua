@@ -48,7 +48,7 @@ function PANEL:Initialize()
 	self:SetDraggable(true)
 	self:SetResizable(true)
 	self.Velocity = Vec2()
-	self.sheep_texture = Texture("textures/lemmings.png")
+	self.sheep_texture = render.CreateTextureFromPath("textures/lemmings.png")
 	self.sheep_texture:SetMinFilter("nearest")
 	self.sheep_texture:SetMagFilter("nearest")
 	self.frame = 0
@@ -127,16 +127,16 @@ function PANEL:OnUpdate()
 	if self.on_ground then
 		self.Velocity = Vec2(self.dir*10000, 0)
 	else
-		self.Velocity = self.Velocity + Vec2(0, 100) 
+		self.Velocity = self.Velocity + Vec2(0, 100)
 	end
-	
+
 	self:CheckCollision()
-	
+
 	self.Position = self.Position + (self.Velocity * dt)
 
 	if not self.Position:IsValid() then self.Position:Zero() end
 	if not self.Velocity:IsValid() then self.Velocity:Zero() end
-	
+
 	self:MarkCacheDirty()
 end
 
@@ -166,6 +166,6 @@ if RELOAD then
 	for i = 1, 100 do
 		local sheep = gui.CreatePanel("lemming")
 	end
-	
-	
+
+
 end

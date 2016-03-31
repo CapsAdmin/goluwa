@@ -45,10 +45,10 @@ local tree = {x = 0, y = 0, w = render.GetWidth(), h = render.GetHeight()}
 
 for k,v in pairs(prototype.GetCreated()) do
 	if v.Type == "texture" then
-		local w,h = v.w,v.h
+		local w, h = v:GetSize().x, v:GetSize().y
 		if w > 64 or h > 64 then
 			w = 64
-			h = 64 * (v.h/v.w)
+			h = 64 * (v:GetSize().y / v:GetSize().x)
 		end
 		table.insert(list, {tex = v, node = insert_rect(tree, w+4, h+4)})
 	end

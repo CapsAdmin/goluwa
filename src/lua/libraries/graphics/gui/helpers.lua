@@ -60,11 +60,11 @@ function gui.CreateMenu(options, parent)
 		for k, v in ipairs(val) do
 			if type(v[2]) == "table" then
 				local menu, entry = menu:AddSubMenu(v[1])
-				if v[3] then entry:SetIcon(Texture(v[3])) end
+				if v[3] then entry:SetIcon(render.CreateTextureFromPath(v[3])) end
 				add_entry(menu, v[2])
 			elseif v[1] then
 				local entry = menu:AddEntry(v[1], v[2])
-				if v[3] then entry:SetIcon(Texture(v[3])) end
+				if v[3] then entry:SetIcon(render.CreateTextureFromPath(v[3])) end
 			else
 				menu:AddSeparator()
 			end

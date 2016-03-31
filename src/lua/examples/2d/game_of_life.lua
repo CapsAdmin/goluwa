@@ -1,5 +1,5 @@
 local start = 0.5
-local tex = Texture(render.GetHeight(), render.GetWidth())
+local tex = render.CreateBlankTexture(Vec2(render.GetHeight(), render.GetWidth()))
 tex:SetMinFilter("nearest")
 tex:SetMagFilter("nearest")
 tex:Fill(function()
@@ -46,9 +46,9 @@ end)
 event.AddListener("Draw2D", "fb", function()
 	surface.SetWhiteTexture()
 	surface.SetColor(0,0,0,1)
-	surface.DrawRect(0, 0, tex.w, tex.h)
+	surface.DrawRect(0, 0, tex:GetSize().x, tex:GetSize().y)
 
 	surface.SetTexture(tex)
 	surface.SetColor(1,1,1,1)
-	surface.DrawRect(0, 0, tex.w, tex.h)
+	surface.DrawRect(0, 0, tex:GetSize().x, tex:GetSize().y)
 end)

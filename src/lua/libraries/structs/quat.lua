@@ -287,3 +287,5 @@ function META.GetAngles(q, seq)
 end
 
 structs.Register(META)
+
+serializer.GetLibrary("luadata").SetModifier("quat", function(var) return ("Quat(%f, %f, %f, %f)"):format(var:Unpack()) end, structs.Quat, "Quat")

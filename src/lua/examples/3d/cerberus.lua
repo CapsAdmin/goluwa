@@ -158,10 +158,10 @@ config = "group",
 for _,ent in pairs(ent:GetChildren()) do
 	if ent.config == "visual" then
 		local mat = render.CreateMaterial("model")
-		mat:SetAlbedoTexture(Texture("textures/Cerberus_A.tga"))
-		mat:SetNormalTexture(Texture("textures/Cerberus_N.tga", false))
-		mat:SetRoughnessTexture(Texture("textures/Cerberus_R.tga", false))
-		mat:SetMetallicTexture(Texture("textures/Cerberus_M.tga", false))
+		mat:SetAlbedoTexture(render.CreateTextureFromPath("textures/Cerberus_A.tga"))
+		mat:SetNormalTexture(render.CreateTextureFromPath("textures/Cerberus_N.tga", false))
+		mat:SetRoughnessTexture(render.CreateTextureFromPath("textures/Cerberus_R.tga", false))
+		mat:SetMetallicTexture(render.CreateTextureFromPath("textures/Cerberus_M.tga", false))
 		mat:SetMetallicMultiplier(1)
 		mat:SetRoughnessMultiplier(1)
 		mat:SetFlipYNormal(true)

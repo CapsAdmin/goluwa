@@ -218,7 +218,7 @@ function PANEL:AddEntry(...)
 		local icon = label:CreatePanel("base", "icon")
 		table.insert(label:GetChildren(), label.label)
 
-		local image = Texture(path or "textures/silkicons/folder.png")
+		local image = render.CreateTextureFromPath(path or "textures/silkicons/folder.png")
 		icon:SetTexture(image)
 		icon:SetSize(image:GetSize())
 	end

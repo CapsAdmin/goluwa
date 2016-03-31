@@ -31,10 +31,10 @@ event.AddListener("Update", "test", function()
 end)
 
 local mat = render.CreateMaterial("model")
-mat:SetAlbedoTexture(Texture("textures/Cerberus_A.tga"))
-mat:SetNormalTexture(Texture("textures/Cerberus_N.tga", false))
-mat:SetRoughnessTexture(Texture("textures/Cerberus_R.tga"))
-mat:SetMetallicTexture(Texture("textures/Cerberus_M.tga"))
+mat:SetAlbedoTexture(render.CreateTextureFromPath("textures/Cerberus_A.tga"))
+mat:SetNormalTexture(render.CreateTextureFromPath("textures/Cerberus_N.tga", false))
+mat:SetRoughnessTexture(render.CreateTextureFromPath("textures/Cerberus_R.tga"))
+mat:SetMetallicTexture(render.CreateTextureFromPath("textures/Cerberus_M.tga"))
 
 ent:SetMaterialOverride(mat)
 

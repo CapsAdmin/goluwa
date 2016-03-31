@@ -98,7 +98,7 @@ function globals.Material(path)
 	mat.gmod_name = path
 
 	if path:lower():endswith(".png") then
-		mat:SetAlbedoTexture(Texture("materials/" .. path))
+		mat:SetAlbedoTexture(render.CreateTextureFromPath("materials/" .. path))
 	elseif vfs.IsFile("materials/" .. path) then
 		steam.LoadMaterial("materials/" .. path, mat)
 	else

@@ -63,7 +63,7 @@ function META:Initialize()
 			self.pages = {}
 			for i = 1, count do
 				local name = buffer:ReadString()
-				self.pages[i - 1] = {name = name, chars = {}, png = Texture(self.Path .. "/" .. name)}
+				self.pages[i - 1] = {name = name, chars = {}, png = render.CreateTextureFromPath(self.Path .. "/" .. name)}
 			end
 		elseif type == TYPE_CHARS then
 			for i = 1, size / 20 do

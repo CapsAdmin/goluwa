@@ -337,7 +337,7 @@ do -- drawing
 			)
 		else
 			if not self.NinePatchRect:IsZero() then
-				surface.SetRectUV(self.NinePatchRect.x, self.NinePatchRect.y, self.NinePatchRect.w, self.NinePatchRect.h, self.Texture.w, self.Texture.h)
+				surface.SetRectUV(self.NinePatchRect.x, self.NinePatchRect.y, self.NinePatchRect.w, self.NinePatchRect.h, self.Texture.Size.x, self.Texture.Size.y)
 			end
 			surface.DrawRect(x or 0, y or 0, w or (self.Size.x + self.DrawSizeOffset.x), h or (self.Size.y + self.DrawSizeOffset.y))
 			if not self.NinePatchRect:IsZero() then
@@ -636,7 +636,7 @@ do -- cached rendering
 				self.Size.y < 4096
 			then
 				local fb = render.CreateFrameBuffer()
-				fb:SetTexture(1, Texture(self.Size))
+				fb:SetTexture(1, render.CreateBlankTexture(self.Size))
 				fb:SetTexture("depth_stencil", {internal_format = "depth_stencil", size = self.Size})
 				fb:CheckCompletness()
 
@@ -1381,11 +1381,11 @@ do -- mouse
 			local x = (x / self.Size.x)
 			local y = (y / self.Size.y)
 
-			x = x * self.Texture.w
-			y = y * self.Texture.h
+			x = x * self.Texture:GetSize().x
+			y = y * self.Texture:GetSize().y
 
-			x = math.clamp(math.floor(x), 1, self.Texture.w-1)
-			y = math.clamp(math.floor(y), 1, self.Texture.h-1)
+			x = math.clamp(math.floor(x), 1, self.Texture:GetSize().x-1)
+			y = math.clamp(math.floor(y), 1, self.Texture:GetSize().y-1)
 
 			alpha = select(4, self.Texture:GetPixelColor(x, y)) / 255
 		end

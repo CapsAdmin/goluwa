@@ -17,7 +17,7 @@ local volume = 1
 local pitch = 1
 
 window.Open(1024, 1024)
-local sphere = Texture(64, 64):Fill(function(x, y)
+local sphere = render.CreateBlankTexture(Vec2(64, 64)):Fill(function(x, y)
 	x = x / 64
 	y = y / 64
 
@@ -40,7 +40,7 @@ local emitter = ParticleEmitter()
 emitter:SetRate(-1)
 emitter:SetTexture(sphere)
 
-local trail_tex = Texture(1, 255):Fill(function(x, y) return 255, 255, 255, y end)
+local trail_tex = render.CreateBlankTexture(Vec2(1, 255)):Fill(function(x, y) return 255, 255, 255, y end)
 
 local grid_size = 1000
 local smooth_pitch = 0

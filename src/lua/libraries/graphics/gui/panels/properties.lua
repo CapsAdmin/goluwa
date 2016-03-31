@@ -465,7 +465,7 @@ do -- texture
 	end
 
 	function PANEL:OnSystemFileDrop(path)
-		self:SetValue(Texture(path))
+		self:SetValue(render.CreateTextureFromPath(path))
 	end
 
 	function PANEL:OnValueChangedInternal(val)
@@ -473,7 +473,7 @@ do -- texture
 	end
 
 	function PANEL:Decode(str)
-		return Texture(str)
+		return render.CreateTextureFromPath(str)
 	end
 
 	function PANEL:Encode(tex)

@@ -16,10 +16,6 @@ local unrolled_lines = {
 	texture = "render.current_program:Uniform1i(%i, %i) val:Bind(%i)",
 }
 
-if window.IsExtensionSupported("GL_ARB_bindless_texture") then
-	unrolled_lines.texture = "if val.bindless_handle then render.current_program:UniformHandleui64(%i, val.bindless_handle) end"
-end
-
 if SRGB then
 	unrolled_lines.color = "render.current_program:Uniform4f(%i, math.linear2gamma(val.r), math.linear2gamma(val.g), math.linear2gamma(val.b), val.a)"
 end
@@ -182,18 +178,14 @@ local function variables_to_string(type, variables, prepend, macro, array)
 		end
 
 		if data.type:find("sampler") then
-			if window.IsExtensionSupported("GL_ARB_bindless_texture") then
-				table.insert(out, ("%s %s %s %s %s%s;"):format(data.varying, type, data.precision, data.type, name, array):trim())
-			else
-				local layout = ""
+			local layout = ""
 
-				if window.IsExtensionSupported("GL_ARB_enhanced_layouts") or window.IsExtensionSupported("GL_ARB_shading_language_420pack") then
-					layout = ("layout(binding = %i)"):format(texture_channel)
-				end
-
-				table.insert(out, ("%s %s %s %s %s %s%s;"):format(layout, data.varying, type, data.precision, data.type, name, array):trim())
-				texture_channel = texture_channel + 1
+			if window.IsExtensionSupported("GL_ARB_enhanced_layouts") or window.IsExtensionSupported("GL_ARB_shading_language_420pack") then
+				layout = ("layout(binding = %i)"):format(texture_channel)
 			end
+
+			table.insert(out, ("%s %s %s %s %s %s%s;"):format(layout, data.varying, type, data.precision, data.type, name, array):trim())
+			texture_channel = texture_channel + 1
 		else
 			table.insert(out, ("%s %s %s %s %s%s;"):format(data.varying, type, data.precision, data.type, name, array):trim())
 		end
@@ -482,10 +474,6 @@ function render.CreateShader(data, vars)
 
 			local extensions = {}
 
-			if window.IsExtensionSupported("GL_ARB_bindless_texture") then
-				table.insert(extensions, "#extension GL_ARB_bindless_texture : enable")
-			end
-
 			if window.IsExtensionSupported("GL_ARB_shading_language_420pack") then
 				table.insert(extensions, "#extension GL_ARB_shading_language_420pack : enable")
 			end
@@ -710,12 +698,8 @@ function render.CreateShader(data, vars)
 				local line = tostring(unrolled_lines[data.val.type] or data.val.type)
 
 				if data.val.type == "texture" or data.val.type:find("sampler") then
-					if window.IsExtensionSupported("GL_ARB_bindless_texture") then
-						line = line:format(data.id)
-					else
-						line = line:format(data.id, texture_channel, texture_channel)
-						texture_channel = texture_channel + 1
-					end
+					line = line:format(data.id, texture_channel, texture_channel)
+					texture_channel = texture_channel + 1
 				else
 					line = line:format(data.id)
 				end

@@ -39,7 +39,7 @@ function META:Capture()
 	local old_projection = render.camera_3d:GetProjection()
 
 	local projection = Matrix44()
-	projection:Perspective(self.FOV, render.camera_3d.FarZ, render.camera_3d.NearZ, self.tex.w / self.tex.h)
+	projection:Perspective(self.FOV, render.camera_3d.FarZ, render.camera_3d.NearZ, self.tex:GetSize().x / self.tex:GetSize().y)
 
 	self.fb:Begin()
 		for i, rot in ipairs(directions) do

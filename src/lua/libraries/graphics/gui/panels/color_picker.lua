@@ -62,7 +62,7 @@ function PANEL:PosToColor(pos)
 end
 
 function PANEL:SetPallete(path)
-	local tex = Texture(path)
+	local tex = render.CreateTextureFromPath(path)
 
 	self.lookup_tree = nil
 
@@ -84,7 +84,7 @@ function PANEL:SetPallete(path)
 	end
 
 	if tex.loading == false then
-		on_load(tex, tex.w, tex.h)
+		on_load(tex, tex:GetSize().x, tex:GetSize().y)
 	else
 		tex.OnLoad = on_load
 	end

@@ -407,7 +407,7 @@ end
 function surface.DrawNinePatch(x, y, w, h, patch_size_w, patch_size_h, corner_size, u_offset, v_offset, uv_scale)
 	local skin = surface.GetTexture()
 
-	surface.poly:SetNinePatch(1, x, y, w, h, patch_size_w, patch_size_h, corner_size, u_offset, v_offset, uv_scale, skin.w, skin.h)
+	surface.poly:SetNinePatch(1, x, y, w, h, patch_size_w, patch_size_h, corner_size, u_offset, v_offset, uv_scale, skin.Size.x, skin.Size.y)
 	surface.poly:Draw()
 end
 
@@ -428,7 +428,7 @@ do
 
 	function surface.DrawStencilTexture()
 
-	    stencil_debug_tex = stencil_debug_tex or Texture(render.GetWidth(), render.GetHeight())
+	    stencil_debug_tex = stencil_debug_tex or render.CreateBlankTexture(Vec2(render.GetWidth(), render.GetHeight()))
 
 		local stencilStateArray = ffi.new("GLboolean[1]", 0)
 		gl.GetBooleanv("GL_STENCIL_TEST", stencilStateArray)

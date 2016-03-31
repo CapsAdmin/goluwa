@@ -1,6 +1,4 @@
-window.Open(500, 500)
-
-local tex = Texture("textures/pac.png")
+local tex = render.CreateTextureFromPath("textures/pac.png")
 
 event.AddListener("Draw2D", "lol", function()
 	surface.SetColor(1,1,1,1)

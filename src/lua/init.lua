@@ -37,7 +37,6 @@ end
 do -- constants
 	OPENGL = true
 	NVIDIA_WORKAROUND = true
-	GL_ARB_bindless_texture = false
 	--VULKAN = true
 
 	-- if WINDOWS and X86 then blah blah end
@@ -177,9 +176,9 @@ prototype = include("lua/libraries/prototype/prototype.lua") -- handles classes,
 if GRAPHICS then
 	math3d = include("lua/libraries/graphics/math3d.lua") -- 3d math functions
 end
-structs = include("lua/libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
 crypto = include("lua/libraries/crypto.lua") -- base64 and other hash functions
 serializer = include("lua/libraries/serializer.lua") -- for serializing lua data in different formats
+structs = include("lua/libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
 console = include("lua/libraries/console.lua") -- console interface, cvars, commands, etc
 system = include("lua/libraries/system.lua") -- os and luajit related functions like creating windows or changing jit options
 utility = include("lua/libraries/utilities/utility.lua") -- misc functions i don't know where to put

@@ -69,7 +69,7 @@ local shader = render.CreateShader({
 	}
 })
 
-local brush = Texture(128, 128):Fill(function(x, y)
+local brush = render.CreateBlankTexture(Vec2() + 128):Fill(function(x, y)
 	x = x / 128
 	y = y / 128
 
@@ -109,7 +109,7 @@ event.Timer("fb_update", fps, 0, function()
 			end
 			surface.SetTexture(brush)
 			local x,y = surface.GetMousePosition()
-			surface.DrawRect(x, y, brush.w*brush_size, brush.h*brush_size, 0, brush.w/2*brush_size, brush.h/2*brush_size)
+			surface.DrawRect(x, y, brush:GetSize().x*brush_size, brush:GetSize().y*brush_size, 0, brush:GetSize().x/2*brush_size, brush:GetSize().y/2*brush_size)
 		end
 	fb:End()
 

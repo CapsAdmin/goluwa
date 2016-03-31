@@ -108,9 +108,9 @@ vec3 get_sky(vec3 ray, float depth)
 	float intensity = lua[world_sun_intensity = 1];
 	vec3 sky_color = lua[world_sky_color = Vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131)];
 
-	//{return textureLatLon(lua[nightsky_tex = Texture("textures/skybox/street.jpg")], reflect(ray, sun_direction)).rgb;};
+	//{return textureLatLon(lua[nightsky_tex = render.CreateTextureFromPath("textures/skybox/street.jpg")], reflect(ray, sun_direction)).rgb;};
 
-	vec3 stars = textureLatLon(lua[nightsky_tex = Texture("textures/skybox/milkyway.jpg")], reflect(ray, sun_direction)).rgb;
+	vec3 stars = textureLatLon(lua[nightsky_tex = render.CreateTextureFromPath("textures/skybox/milkyway.jpg")], reflect(ray, sun_direction)).rgb;
 	stars += pow(stars*1.25, vec3(1.5));
 	stars *= depth * 0.05;
 
@@ -192,7 +192,7 @@ function render.UpdateSky()
 	local old_projection = render.camera_3d:GetProjection()
 
 	local projection = Matrix44()
-	projection:Perspective(math.rad(90), render.camera_3d.FarZ, render.camera_3d.NearZ, tex.w / tex.h)
+	projection:Perspective(math.rad(90), render.camera_3d.FarZ, render.camera_3d.NearZ, tex:GetSize().x / tex:GetSize().y)
 
 	fb:Begin()
 		for i, rot in ipairs(directions) do

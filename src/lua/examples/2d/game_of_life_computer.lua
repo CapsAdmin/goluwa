@@ -1,7 +1,7 @@
 local start = 0.5
 local scale = 1
 
-local tex = Texture(render.GetWidth()/scale, render.GetHeight()/scale)
+local tex = render.CreateBlankTexture(Vec2(render.GetWidth()/scale, render.GetHeight()/scale))
 tex:SetInternalFormat("rgba32f")
 tex:SetMipMapLevels(0)
 tex:SetMinFilter("nearest")
@@ -57,9 +57,9 @@ end)
 event.AddListener("Draw2D", "fb", function()
 	surface.SetWhiteTexture()
 	surface.SetColor(0,0,0,1)
-	surface.DrawRect(0, 0, tex.w*scale, tex.h*scale)
+	surface.DrawRect(0, 0, tex:GetSize().x*scale, tex:GetSize().y*scale)
 
 	surface.SetTexture(tex)
 	surface.SetColor(1,1,1,1)
-	surface.DrawRect(0, 0, tex.w*scale, tex.h*scale)
+	surface.DrawRect(0, 0, tex:GetSize().x*scale, tex:GetSize().y*scale)
 end)

@@ -143,6 +143,6 @@ if RELOAD then
 	event.AddListener("PostDrawMenu", "lol", function()
 		surface.SetTexture(tex)
 		surface.SetColor(1,1,1,1)
-		surface.DrawRect(50,50,tex.w,tex.h)
+		surface.DrawRect(50,50,tex:GetSize().x,tex:GetSize().y)
 	end)
 end

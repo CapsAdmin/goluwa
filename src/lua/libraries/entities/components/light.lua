@@ -126,7 +126,7 @@ if GRAPHICS then
 
 			do -- setup the projection matrix
 				if self.OrthoSize == 0 then
-					projection:Perspective(math.rad(self.FOV), self.FarZ, self.NearZ, shadow_map.tex.w / shadow_map.tex.h)
+					projection:Perspective(math.rad(self.FOV), self.FarZ, self.NearZ, shadow_map.tex:GetSize().x / shadow_map.tex:GetSize().y)
 				else
 					local size = 1 * self.OrthoSize / (i^2)
 					projection:Ortho(-size, size, -size, size, size+100, -size)

@@ -1,4 +1,4 @@
-local tex = Texture("textures/pac.png")
+local tex = render.CreateTextureFromPath("textures/pac.png")
 local count = 100
 local poly = surface.CreatePoly(count)
 

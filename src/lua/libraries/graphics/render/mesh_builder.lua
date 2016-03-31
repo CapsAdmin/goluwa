@@ -498,12 +498,12 @@ do -- helpers
 			local offset = -Vec3(size.x, size.y, height) / 2
 
 			for x = 0, res.x do
-				local x2 = (x/res.x) * tex.w
+				local x2 = (x/res.x) * tex:GetSize().x
 
 				for y = 0, res.y do
-					local y2 = (y/res.y) * tex.h
+					local y2 = (y/res.y) * tex:GetSize().y
 
-					y2 = -y2 + tex.h -- fix me
+					y2 = -y2 + tex:GetSize().y -- fix me
 
 					--[[
 							  __
@@ -513,9 +513,9 @@ do -- helpers
 
 
 					local z3 = get_color(x2, y2) * height -- top left
-					local z4 = get_color(x2+pixel_advance.w, y2) * height -- top right
+					local z4 = get_color(x2+pixel_advance.x, y2) * height -- top right
 					local z1 = get_color(x2, y2+pixel_advance.h) * height -- bottom left
-					local z2 = get_color(x2+pixel_advance.w, y2+pixel_advance.h) * height -- bottom right
+					local z2 = get_color(x2+pixel_advance.x, y2+pixel_advance.h) * height -- bottom right
 
 					local z5 = (z1+z2+z3+z4)/4
 

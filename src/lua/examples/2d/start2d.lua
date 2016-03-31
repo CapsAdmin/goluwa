@@ -27,7 +27,7 @@ event.Timer("updatefb", 0.1, function()
 
 		for i = 1, 10 do
 			surface.SetColor(math.randomf(), math.randomf(), math.randomf(), 0.2)
-			surface.DrawRect(math.random(tex.w), math.random(tex.h), 100, 100, math.random()*math.pi)
+			surface.DrawRect(math.random(tex:GetSize().x), math.random(tex:GetSize().y), 100, 100, math.random()*math.pi)
 		end
 
 		render.SetBlendMode("alpha")
@@ -45,7 +45,7 @@ event.AddListener("Draw2D", "lol", function()
 	surface.PushMatrix(50, 50)
 		surface.SetWhiteTexture()
 		surface.SetColor(1, 0, 1, 1)
-		surface.DrawRect(0, 0, tex.w, tex.h)
+		surface.DrawRect(0, 0, tex:GetSize().x, tex:GetSize().y)
 
 		surface.PushMatrix(256, 256)
 			surface.SetScissor(0, 0, 100, 100)
@@ -59,9 +59,9 @@ event.AddListener("Draw2D", "lol", function()
 
 	surface.SetTexture(tex)
 	surface.SetColor(1, 1, 1, 1)
-	surface.DrawRect(50, 50, tex.w, tex.h)
+	surface.DrawRect(50, 50, tex:GetSize().x, tex:GetSize().y)
 
 	surface.SetTexture(tex)
 	surface.SetColor(1, 1, 1, 1)
-	surface.DrawRect(tex.w, tex.h, 50, 50, t, 25, 25)
+	surface.DrawRect(tex:GetSize().x, tex:GetSize().y, 50, 50, t, 25, 25)
 end)

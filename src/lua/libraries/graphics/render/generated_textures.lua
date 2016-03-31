@@ -1,10 +1,10 @@
 local render = (...) or _G.render
 
 function render.GenerateTextures()
-	render.white_texture = Texture(Vec2()+8):Fill(function() return 255,255,255,255 end)
-	render.black_texture = Texture(Vec2()+8):Fill(function() return 0,0,0,255 end)
-	render.grey_texture = Texture(Vec2()+8):Fill(function() return 127,127,127,255 end)
-	render.noise_texture = Texture(Vec2()+2048, "return vec4(random(uv*1), random(uv*2), random(uv*3), random(uv*4));")
+	render.white_texture = render.CreateBlankTexture(Vec2()+8):Fill(function() return 255,255,255,255 end)
+	render.black_texture = render.CreateBlankTexture(Vec2()+8):Fill(function() return 0,0,0,255 end)
+	render.grey_texture = render.CreateBlankTexture(Vec2()+8):Fill(function() return 127,127,127,255 end)
+	render.noise_texture = render.CreateBlankTexture(Vec2()+2048, "return vec4(random(uv*1), random(uv*2), random(uv*3), random(uv*4));")
 	render.noise_texture:SetMinFilter("nearest")
 	render.hemisphere_normals_texture = utility.CreateHemisphereNormalsTexture(8)
 
@@ -16,7 +16,7 @@ function render.GenerateTextures()
 	end
 
 	do
-		render.error_texture = Texture(Vec2() + 256)
+		render.error_texture = render.CreateBlankTexture(Vec2() + 256)
 
 		local size = 16
 		render.error_texture:Fill(function(x, y)

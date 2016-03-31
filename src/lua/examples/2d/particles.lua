@@ -5,11 +5,11 @@ local random_force = 0.5
 local particle_count = 5000
 local gravity = 0.25
 
-local trail_tex = Texture(1, 255):Fill(function(x, y)
+local trail_tex = render.CreateBlankTexture(Vec2(1, 255)):Fill(function(x, y)
 	return 255, 255, 255, y
 end)
 
-local head_tex = Texture(128, 128):Fill(function(x, y)
+local head_tex = render.CreateBlankTexture(Vec2() + 128):Fill(function(x, y)
 	x = x / 128
 	y = y / 128
 

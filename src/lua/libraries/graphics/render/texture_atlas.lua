@@ -73,7 +73,7 @@ function META:FindFreePage(w, h)
 
 	if node then
 		local page = {
-			texture = Texture(self.width + self.Padding, self.height + self.Padding),
+			texture = render.CreateBlankTexture(Vec2(self.width, self.height) + self.Padding),
 			textures = {},
 			tree = tree,
 		}
@@ -108,7 +108,7 @@ function META:Build()
 		data.page_h = h
 		data.page = page
 
-		data.page_uv = {x+self.Padding/2, y+self.Padding/2, w, h, page.texture.w, page.texture.h}
+		data.page_uv = {x+self.Padding/2, y+self.Padding/2, w, h, page.texture:GetSize().x, page.texture:GetSize().y}
 
 		page.textures[data] = data
 
@@ -160,12 +160,12 @@ function META:DebugDraw()
 	local x, y = 0,0
 	for _, page in ipairs(self.pages) do
 		surface.SetTexture(page.texture)
-		surface.DrawRect(x,y,page.texture.w, page.texture.h)
-		if x + page.texture.w*2 > render.GetWidth() then
+		surface.DrawRect(x,y,page.texture:GetSize().x, page.texture:GetSize().y)
+		if x + page.texture:GetSize().x*2 > render.GetWidth() then
 			x = 0
-			y = y + page.texture.h
+			y = y + page.texture:GetSize().y
 		else
-			x = x + page.texture.w
+			x = x + page.texture:GetSize().x
 		end
 	end
 end

@@ -152,3 +152,5 @@ if GRAPHICS then
 end
 
 structs.Register(META)
+
+serializer.GetLibrary("luadata").SetModifier("vec3", function(var) return ("Vec3(%f, %f, %f)"):format(var:Unpack()) end, structs.Vec3, "Vec3")

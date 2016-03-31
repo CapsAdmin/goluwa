@@ -6,20 +6,13 @@ local env = {}
 
 luadata.Types = {}
 
-function luadata.SetModifier(type, callback, global_ctor)
+function luadata.SetModifier(type, callback, func, func_name)
 	luadata.Types[type] = callback
 
-	if global_ctor then
-		env[global_ctor] = _G[global_ctor]
+	if func_name then
+		env[func_name] = func
 	end
 end
-
-luadata.SetModifier("rect", function(var) return ("Rect(%f, %f, %f, %f)"):format(var:Unpack()) end, "Rect")
-luadata.SetModifier("color", function(var) return ("Color(%f, %f, %f, %f)"):format(var:Unpack()) end, "Color")
-luadata.SetModifier("quat", function(var) return ("Quat(%f, %f, %f, %f)"):format(var:Unpack()) end, "Quat")
-luadata.SetModifier("vec3", function(var) return ("Vec3(%f, %f, %f)"):format(var:Unpack()) end, "Vec3")
-luadata.SetModifier("vec2", function(var) return ("Vec2(%f, %f)"):format(var:Unpack()) end, "Vec2")
-luadata.SetModifier("ang3", function(var) return ("Ang3(%f, %f, %f)"):format(var:Unpack()) end, "Ang3")
 
 luadata.SetModifier("cdata", function(var) return tostring(var) end)
 luadata.SetModifier("cdata", function(var) return tostring(var) end)

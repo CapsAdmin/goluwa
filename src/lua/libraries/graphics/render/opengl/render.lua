@@ -6,7 +6,6 @@ if not gl then return end
 local render = ... or {}
 
 include("debug.lua", render)
-include("texture.lua", render)
 include("framebuffer.lua", render)
 include("vertex_buffer.lua", render)
 

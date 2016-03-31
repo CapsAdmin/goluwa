@@ -122,9 +122,9 @@ function steam.LoadMaterial(path, material)
 						new_path,
 						function(path)
 							if key == "AlbedoTexture" or key == "Albedo2Texture" then
-								material["Set" .. key](material, Texture(path))
-							else
-								material["Set" .. key](material, Texture(path, false)) -- not srgb
+								material["Set" .. key](material, render.CreateTextureFromPath(path))
+
+								material["Set" .. key](material, render.CreateTextureFromPath(path, false)) -- not srgb
 							end
 						end
 					)
