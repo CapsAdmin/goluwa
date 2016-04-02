@@ -6,7 +6,7 @@ if fps == math.huge then
 	fps = 0
 end
 
-local fb = render.CreateFrameBuffer(window.GetSize().x, window.GetSize().y, {
+local fb = render.CreateFrameBuffer(window.GetSize(), {
 	internal_format = "RGBA8",
 	--filter = "nearest",
 })

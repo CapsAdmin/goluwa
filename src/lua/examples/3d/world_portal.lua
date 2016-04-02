@@ -1,4 +1,4 @@
-local fb = render.CreateFrameBuffer(2048, 2048)
+local fb = render.CreateFrameBuffer(Vec2(2048, 2048))
 
 local portal_a_cam = render.CreateCamera()
 

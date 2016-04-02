@@ -148,7 +148,7 @@ do -- mixer
 						size.y = math.min(size.y, stage.buffer.max_size.y)
 					end
 
-					fb = render.CreateFrameBuffer(size.x, size.y, stage.buffer or {internal_format = "rgba8"})
+					fb = render.CreateFrameBuffer(Vec2(size.x, size.y), stage.buffer or {internal_format = "rgba8"})
 					for _, stage in ipairs(stages) do
 						local tex = fb:GetTexture()
 						stage.shader.fragment.variables["tex_stage_" .. i] = tex
@@ -351,8 +351,7 @@ local function init(width, height)
 		}
 
 		render.gbuffer_discard = render.CreateFrameBuffer(
-			width,
-			height,
+			Vec2(width, height),
 			{
 				internal_format = "r8",
 			}
@@ -471,10 +470,8 @@ local function init(width, height)
 			fill.init = true
 		end
 
-		render.gbuffer = render.CreateFrameBuffer(width, height, render.gbuffer_buffers)
-		render.gbuffer_mixer_buffer = render.CreateFrameBuffer(width, height, {
-			internal_format = "rgb16f"
-		})
+		render.gbuffer = render.CreateFrameBuffer(Vec2(width, height), render.gbuffer_buffers)
+		render.gbuffer_mixer_buffer = render.CreateFrameBuffer(Vec2(width, height), {internal_format = "rgb16f"})
 
 		if not render.gbuffer:IsValid() then
 			warning("failed to initialize gbuffer")

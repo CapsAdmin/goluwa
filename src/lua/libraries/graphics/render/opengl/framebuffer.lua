@@ -7,50 +7,45 @@ local base_color = gl.e.GL_COLOR_ATTACHMENT0
 local function attachment_to_enum(self, var)
 	if not var then return end
 
-	if self.textures[var] then
-		return var
-	elseif type(var) == "number" then
-		return base_color + var - 1
-	elseif var == "depth" then
+	if var == "depth" then
 		return "GL_DEPTH_ATTACHMENT"
 	elseif var == "stencil" then
 		return "GL_STENCIL_ATTACHMENT"
 	elseif var == "depth_stencil" then
 		return "GL_DEPTH_STENCIL_ATTACHMENT"
+	elseif self.textures[var] then
+		return var
+	elseif type(var) == "number" then
+		return base_color + var - 1
 	elseif var:startswith("color") then
 		return base_color + (tonumber(var:match(".-(%d)")) or 0) - 1
 	end
 end
 
-local function bind_mode_to_enum(str)
-	if str == "all" or str == "read_write" then
-		return "GL_FRAMEBUFFER"
-	elseif str == "read" then
-		return "GL_READ_FRAMEBUFFER"
-	elseif str == "write" or str == "draw" then
-		return "GL_DRAW_FRAMEBUFFER"
-	end
-end
+local bind_mode_to_enum = {
+	all = "GL_FRAMEBUFFER",
+	read_write = "GL_FRAMEBUFFER",
+	read = "GL_READ_FRAMEBUFFER",
+	write = "GL_DRAW_FRAMEBUFFER",
+	draw = "GL_DRAW_FRAMEBUFFER",
+}
 
 local function generate_draw_buffers(self)
 	local draw_buffers = {}
-	--self.read_buffer = nil -- TODO
 
 	for _, v in ipairs(self.textures_sorted) do
-		if (v.mode == "GL_DRAW_FRAMEBUFFER" or v.mode == "GL_FRAMEBUFFER") and not v.draw_manual then
-			table.insert(draw_buffers, v.pos)
-		else
-			--if self.read_buffer then
-			--	warning("more than one read buffer attached", 2)
-			--end
-			--self.read_buffer = v.mode
-			--table.insert(draw_buffers, 0)
+		if
+			(v.mode == "GL_DRAW_FRAMEBUFFER" or v.mode == "GL_FRAMEBUFFER") and
+			(v.enum ~= "GL_DEPTH_ATTACHMENT" and v.enum ~= "GL_STENCIL_ATTACHMENT" and v.enum ~= "GL_DEPTH_STENCIL_ATTACHMENT")
+		then
+			table.insert(draw_buffers, v.enum)
 		end
 	end
 
 	table.sort(draw_buffers, function(a, b) return a < b end)
 
-	return ffi.new("GLenum["..#draw_buffers.."]", draw_buffers), #draw_buffers
+	self.draw_buffers = ffi.new("GLenum[?]", #draw_buffers, draw_buffers)
+	self.draw_buffers_size = #draw_buffers
 end
 
 local function update_drawbuffers(self)
@@ -67,25 +62,17 @@ META:GetSet("Size", Vec2(128,128))
 
 function render.GetScreenFrameBuffer()
 	if not window.IsExtensionSupported("GL_ARB_framebuffer_object") then return end
-	if not render.screen_buffer then
-		local self = prototype.CreateObject(META)
-		self.gl_fb = gl.CreateFramebuffer(0)
-		self.textures = {}
-		self.textures_sorted = {}
-		self.render_buffers = {}
-		self.draw_buffers_cache = {}
-		self:SetSize(render.GetScreenSize())
-		self:SetBindMode("read_write")
 
-		render.screen_buffer = self
+	if not render.screen_buffer then
+		render.screen_buffer = render.CreateFrameBuffer(render.GetScreenSize(), nil, 0)
 	end
 
 	return render.screen_buffer
 end
 
-function render.CreateFrameBuffer(width, height, textures)
+function render.CreateFrameBuffer(size, textures, id_override)
 	local self = prototype.CreateObject(META)
-	self.gl_fb = gl.CreateFramebuffer()
+	self.gl_fb = gl.CreateFramebuffer(id_override)
 	self.textures = {}
 	self.textures_sorted = {}
 	self.render_buffers = {}
@@ -93,10 +80,10 @@ function render.CreateFrameBuffer(width, height, textures)
 
 	self:SetBindMode("read_write")
 
-	if width and height then
-		self:SetSize(Vec2(width, height))
+	if size then
+		self:SetSize(size:Copy())
 
-		if not textures then
+		if not textures and not id_override then
 			textures = {
 				attach = "color",
 				internal_format = "rgba8",
@@ -190,18 +177,20 @@ function META:CheckCompletness()
 		end
 
 		for k, v in pairs(self.textures) do
-			logn(v.tex, " attached to ", v.pos)
+			logn(v.tex, " attached to ", v.enum)
 			v.tex:DumpInfo()
 		end
 
 		warning(str)
+
+		debug.trace()
 	end
 end
 
 function META:SetBindMode(str)
 	self.BindMode = str
 
-	self.enum_bind_mode = bind_mode_to_enum(str)
+	self.enum_bind_mode = bind_mode_to_enum[str]
 end
 
 do -- binding
@@ -254,43 +243,41 @@ do -- binding
 	end
 end
 
-function META:SetCubemapTexture(pos, i, tex)
-	pos = attachment_to_enum(self, pos)
-	self.gl_fb:TextureFace(pos, tex and tex.gl_tex.id or 0, 0, i - 1)
-end
-
 function META:SetTexture(pos, tex, mode, uid, face)
-	pos = attachment_to_enum(self, pos)
-	mode = bind_mode_to_enum(mode or "write")
+	local enum = attachment_to_enum(self, pos)
 
 	if not uid then
-		uid = pos
+		uid = enum
 	end
 
 	if typex(tex) == "texture" then
 		local id = tex and tex.gl_tex.id or 0 -- 0 will be detach if tex is nil
 
 		if face then
-			self.gl_fb:TextureLayer(pos, tex and tex.gl_tex.id or 0, 0, face - 1)
+			self.gl_fb:TextureLayer(enum, tex and tex.gl_tex.id or 0, 0, face - 1)
 		else
-			self.gl_fb:Texture(pos, id, 0)
+			self.gl_fb:Texture(enum, id, 0)
+		end
+
+		for i,v in ipairs(self.textures_sorted) do
+			if v.uid == uid then
+				table.remove(self.textures_sorted, i)
+				break
+			end
 		end
 
 		if id ~= 0 then
 			self.textures[uid] = {
 				tex = tex,
-				mode = mode,
-				pos = pos,
+				mode = bind_mode_to_enum[mode or "write"],
+				enum = enum,
 				uid = uid,
-				draw_manual = pos == "GL_DEPTH_ATTACHMENT" or pos == "GL_STENCIL_ATTACHMENT" or pos == "GL_DEPTH_STENCIL_ATTACHMENT"
 			}
 
-			for i,v in ipairs(self.textures_sorted) do if v.uid == uid then table.remove(self.textures_sorted, i) break end end
 			table.insert(self.textures_sorted, self.textures[uid])
 
 			self:SetSize(tex:GetSize():Copy())
 		else
-			for i,v in ipairs(self.textures_sorted) do if v.uid == uid then table.remove(self.textures_sorted, i) break end end
 			self.textures[uid] = nil
 		end
 	elseif tex then
@@ -304,7 +291,7 @@ function META:SetTexture(pos, tex, mode, uid, face)
 		end
 
 		rb:Storage("GL_" .. tex.internal_format:upper(), tex.width, tex.height)
-		self.gl_fb:Renderbuffer(pos, rb.id)
+		self.gl_fb:Renderbuffer(enum, rb.id)
 
 		self.render_buffers[uid] = {rb = rb}
 	elseif self.render_buffers[uid] then
@@ -312,7 +299,7 @@ function META:SetTexture(pos, tex, mode, uid, face)
 		self.render_buffers[uid] = nil
 	end
 
-	self.draw_buffers, self.draw_buffers_size = generate_draw_buffers(self)
+	generate_draw_buffers(self)
 end
 
 function META:GetTexture(pos)
@@ -326,6 +313,8 @@ function META:GetTexture(pos)
 end
 
 function META:SetWrite(pos, b)
+	if pos == "depth" or pos == "depth_stencil" or pos == "stencil" then return end
+
 	pos = attachment_to_enum(self, pos)
 	if pos then
 		local val = self.textures[pos]
@@ -342,35 +331,11 @@ function META:SetWrite(pos, b)
 		end
 
 		if mode ~= val.mode then
-			self.draw_buffers, self.draw_buffers_size = generate_draw_buffers(self)
+			generate_draw_buffers(self)
 		end
 	end
 
 	update_drawbuffers(self)
-end
-
-function META:SetRead(pos, b)
-	pos = attachment_to_enum(self, pos)
-
-	if pos then
-		local val = self.textures[pos]
-		local mode = val.mode
-
-		if b then
-			if val.mode == "GL_DRAW_FRAMEBUFFER" then
-				val.mode = "GL_FRAMEBUFFER"
-				self.draw_buffers, self.draw_buffers_size = generate_draw_buffers(self)
-			end
-		else
-			if mode == "GL_FRAMEBUFFER" or mode == "GL_READ_FRAMEBUFFER" then
-				val.mode = "GL_DRAW_FRAMEBUFFER"
-			end
-		end
-
-		if mode ~= val.mode then
-			self.draw_buffers, self.draw_buffers_size = generate_draw_buffers(self)
-		end
-	end
 end
 
 function META:WriteThese(str)
@@ -397,68 +362,99 @@ function META:WriteThese(str)
 		self.draw_buffers_cache[str] = {self.draw_buffers, self.draw_buffers_size}
 	end
 
-	self.draw_buffers, self.draw_buffers_size = self.draw_buffers_cache[str][1], self.draw_buffers_cache[str][2]
+	self.draw_buffers = self.draw_buffers_cache[str][1]
+	self.draw_buffers_size = self.draw_buffers_cache[str][2]
 
 	update_drawbuffers(self)
 end
 
-do
-	local temp_color = ffi.new("float[4]")
-	local temp_colori = ffi.new("int[4]")
+function META:SaveDrawBuffers()
+	self.old_draw_buffers = self.draw_buffers
+	self.old_draw_buffers_size = self.draw_buffers_size
+end
 
-	function META:Clear(i, r,g,b,a, d,s)
-		i = i or "all"
+function META:RestoreDrawBuffers()
+	if self.old_draw_buffers then
+		self.draw_buffers = self.old_draw_buffers
+		self.draw_buffers_size = self.old_draw_buffers_size
+		update_drawbuffers(self)
+	end
+end
 
-		temp_color[0] = r or 0
-		temp_color[1] = g or 0
-		temp_color[2] = b or 0
-		temp_color[3] = a or 0
+function META:Clear(i, r,g,b,a, d,s)
+	i = i or "all"
 
-		if i == "all" then
-			self:Clear("color", r,g,b,a)
-			self:Clear("depth", d or 1)
-			if s then self:Clear("stencil", s) end
-		elseif i == "color" then
-			local x,y = self.draw_buffers, self.draw_buffers_size
-			self:WriteThese("all")
+	r = r or 0
+	g = g or 0
+	b = b or 0
+	a = a or 0
 
-			for i = 0, self.draw_buffers_size or 1 do
-				self.gl_fb:Clearfv("GL_COLOR", i, temp_color)
-			end
+	if i == "all" then
+		self:SaveDrawBuffers()
 
-			if x then
-				self.draw_buffers, self.draw_buffers_size = x,y
-				update_drawbuffers(self)
-			end
-		elseif i == "depth" then
-			temp_color[0] = r or 0
-			local old = render.EnableDepth(true)
-			self.gl_fb:Clearfv("GL_DEPTH", 0, temp_color)
-			render.EnableDepth(old)
-		elseif i == "stencil" then
-			temp_colori[0] = r or 0
-			self.gl_fb:Cleariv("GL_STENCIL", 0, temp_colori)
-		elseif i == "depth_stencil" then
-			local old = render.EnableDepth(true)
-			self.gl_fb:Clearfi("GL_DEPTH_STENCIL", 0, r or 0, g or 0)
-			render.EnableDepth(old)
-		elseif type(i) == "number" then
-			local x,y = self.draw_buffers, self.draw_buffers_size
-			self:WriteThese(i)
-			self.gl_fb:Clearfv("GL_COLOR", 0, temp_color)
-			if x then
-				self.draw_buffers, self.draw_buffers_size = x,y
-				update_drawbuffers(self)
-			end
-		elseif self.textures[i] then
-			local x,y = self.draw_buffers, self.draw_buffers_size
-			self:WriteThese(i)
-			self.gl_fb:Clearfv("GL_COLOR", 0, temp_color)
-			if x then
-				self.draw_buffers, self.draw_buffers_size = x,y
-				update_drawbuffers(self)
-			end
+		self:WriteThese("all")
+
+		local color = ffi.new("float[4]",r,g,b,a)
+
+		for i = 0, self.draw_buffers_size or 1 do
+			self.gl_fb:Clearfv("GL_COLOR", i, color)
 		end
+
+		if d or s then
+			local old = render.EnableDepth(true)
+			if d and s then
+				self.gl_fb:Clearfi("GL_DEPTH_STENCIL", 0, d or 0, s or 0)
+			elseif d then
+				self.gl_fb:Clearfv("GL_DEPTH", 0, ffi.new("float[1]", d))
+			elseif s then
+				self.gl_fb:Cleariv("GL_STENCIL", 0, ffi.new("int[1]", s))
+			end
+			render.EnableDepth(old)
+		end
+
+		self:RestoreDrawBuffers()
+	elseif i == "color" then
+		self:SaveDrawBuffers()
+
+		self:WriteThese("all")
+
+		local color = ffi.new("float[4]",r,g,b,a)
+
+		for i = 0, self.draw_buffers_size or 1 do
+			self.gl_fb:Clearfv("GL_COLOR", i, color)
+		end
+
+		self:RestoreDrawBuffers()
+	elseif i == "depth" then
+		local old = render.EnableDepth(true)
+
+		self.gl_fb:Clearfv("GL_DEPTH", 0, ffi.new("float[1]", r))
+
+		render.EnableDepth(old)
+	elseif i == "stencil" then
+
+		self.gl_fb:Cleariv("GL_STENCIL", 0, ffi.new("int[1]", r))
+
+	elseif i == "depth_stencil" then
+		local old = render.EnableDepth(true)
+
+		self.gl_fb:Clearfi("GL_DEPTH_STENCIL", 0, r or 0, g or 0)
+
+		render.EnableDepth(old)
+	elseif type(i) == "number" then
+		self:SaveDrawBuffers()
+
+		self:SetWrite(i, true)
+		self.gl_fb:Clearfv("GL_COLOR", 0, ffi.new("float[4]",r,g,b,a))
+
+		self:RestoreDrawBuffers()
+	elseif self.textures[i] then
+		self:SaveDrawBuffers()
+
+		self:SetWrite(i, true)
+		self.gl_fb:Clearfv("GL_COLOR", 0, ffi.new("float[4]",r,g,b,a))
+
+		self:RestoreDrawBuffers()
 	end
 end
 

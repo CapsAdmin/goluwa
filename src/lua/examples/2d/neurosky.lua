@@ -6,7 +6,7 @@ local W, H = surface.GetSize()
 local last_x = 0
 local last_y = 0
 
-local fb = render.CreateFrameBuffer(W, H)
+local fb = render.CreateFrameBuffer(Vec2(W, H))
 local tex = render.CreateTexture("2d")
 tex:SetSize(Vec2(W, H))
 tex:SetInternalFormat("rgb32f")
