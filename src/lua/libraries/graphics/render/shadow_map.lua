@@ -112,7 +112,7 @@ end
 
 function META:Begin()
 	render.SetCullMode("none", true)
-	render.EnableDepth(true)
+	render.SetDepth(true)
 	render.SetBlendMode()
 	render.SetShaderOverride(render.shadow_map_shader)
 	self.fb:Begin()
@@ -120,7 +120,7 @@ end
 
 function META:End()
 	render.SetCullMode("front", false)
-	render.EnableDepth(false)
+	render.SetDepth(false)
 	self.fb:End()
 end
 

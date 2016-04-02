@@ -73,14 +73,14 @@ function render.DrawScene(skip_2d)
 	if deferred:Get() and render.IsGBufferReady() then
 		render.DrawGBuffer()
 	else
-		render.EnableDepth(true)
+		render.SetDepth(true)
 		render.SetBlendMode("alpha")
 
 		render.Draw3DScene("models")
 	end
 
 	if not skip_2d then
-		render.EnableDepth(false)
+		render.SetDepth(false)
 		render.SetBlendMode("alpha")
 
 		event.Call("Draw2D", system.GetFrameTime())

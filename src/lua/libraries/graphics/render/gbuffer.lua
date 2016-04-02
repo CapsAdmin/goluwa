@@ -262,7 +262,7 @@ function render.DrawGBuffer(what, dist)
 	surface.PushMatrix()
 
 	-- gbuffer
-	render.EnableDepth(false)
+	render.SetDepth(false)
 
 	render.gbuffer_mixer_buffer:Begin()
 	for i, shader in ipairs(render.gbuffer_shaders_sorted) do

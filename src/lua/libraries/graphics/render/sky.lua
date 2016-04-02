@@ -180,7 +180,7 @@ function render.UpdateSky()
 	if not fb then return end
 	if not tex then init() end
 
-	render.EnableDepth(false)
+	render.SetDepth(false)
 	render.SetBlendMode()
 
 	for k,v in pairs(render.gbuffer_values) do

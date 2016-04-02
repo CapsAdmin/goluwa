@@ -4,6 +4,7 @@ include("opengl/render.lua", render)
 include("texture.lua", render)
 include("texture_format.lua", render)
 include("texture_decoder.lua", render)
+include("framebuffer.lua", render)
 include("global_shader_code.lua", render)
 include("generated_textures.lua", render)
 include("camera.lua", render)
@@ -18,7 +19,6 @@ include("sky.lua", render)
 include("environment_probe.lua", render)
 include("globals.lua", render)
 
-
 function render.Initialize()
 	render._Initialize()
 
@@ -27,7 +27,7 @@ function render.Initialize()
 	render.frame = 0
 
 	render.SetBlendMode("src_alpha", "one_minus_src_alpha")
-	render.EnableDepth(false)
+	render.SetDepth(false)
 
 	include("lua/libraries/graphics/render/shader_builder.lua", render)
 
@@ -36,25 +36,12 @@ function render.Initialize()
 	event.Call("RenderContextInitialized")
 end
 
-do
-	local stack = {}
+function render.Shutdown()
 
-	function render.PushViewport(x, y, w, h)
-		table.insert(stack, {X or 0,Y or 0,W or render.GetWidth(),H or render.GetHeight()})
-
-		render.SetViewport(x, y, w, h)
-	end
-
-	function render.PopViewport()
-		local v = table.remove(stack)
-
-		render.SetViewport(v[1], v[2], v[3], v[4])
-	end
 end
 
 do
 	local X,Y,W,H
-
 	local last = Rect()
 
 	function render.SetViewport(x, y, w, h)
@@ -77,18 +64,32 @@ do
 	function render.GetViewport()
 		return x,y,w,h
 	end
+
+	local stack = {}
+
+	function render.PushViewport(x, y, w, h)
+		table.insert(stack, {X or 0, Y or 0, W or render.GetWidth(), H or render.GetHeight()})
+
+		render.SetViewport(x, y, w, h)
+	end
+
+	function render.PopViewport()
+		local v = table.remove(stack)
+
+		render.SetViewport(v[1], v[2], v[3], v[4])
+	end
 end
 
 do
 	local enabled = false
 
-	function render.EnableDepth(b)
-		local prev = enabled
+	function render.SetDepth(b)
 		enabled = b
-
 		render._SetDepth(b)
+	end
 
-		return prev
+	function render.GetDepth()
+		return enabled
 	end
 end
 

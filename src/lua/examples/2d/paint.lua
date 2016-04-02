@@ -33,7 +33,7 @@ local size = 16
 
 event.Timer("fb_update", 0, 0, function()
 	fb:Begin()
-	render.EnableDepth(false)
+	render.SetDepth(false)
 	render.SetBlendMode("alpha")
 		if input.IsMouseDown("button_1") then
 			surface.SetTexture(brush)

@@ -14,33 +14,71 @@ function META:SetWrapS(val)
 	self.WrapS = val
 	self.gl_tex:SetParameteri("GL_TEXTURE_WRAP_S", gl.e[TOENUM(val)])
 end
-function META:SetSwizzleRgba(val)
-	self.SwizzleRgba = val
-	self.gl_tex:SetParameterfv("GL_TEXTURE_SWIZZLE_RGBA", ffi.cast("const float *", val))
-end
-function META:SetSwizzleG(val)
-	self.SwizzleG = val
-	self.gl_tex:SetParameteri("GL_TEXTURE_SWIZZLE_G", gl.e[TOENUM(val)])
-end
-function META:SetCompareFunc(val)
-	self.CompareFunc = val
-	self.gl_tex:SetParameteri("GL_TEXTURE_COMPARE_FUNC", gl.e[TOENUM(val)])
-end
-function META:SetMagFilter(val)
-	self.MagFilter = val
-	if val == "nearest" then
-		self.gl_tex:SetParameteri("GL_TEXTURE_MAX_ANISOTROPY_EXT", 1)
-	end
-	self.gl_tex:SetParameteri("GL_TEXTURE_MAG_FILTER", gl.e[TOENUM(val)])
+function META:SetWrapT(val)
+	self.WrapT = val
+	self.gl_tex:SetParameteri("GL_TEXTURE_WRAP_T", gl.e[TOENUM(val)])
 end
 function META:SetWrapR(val)
 	self.WrapR = val
 	self.gl_tex:SetParameteri("GL_TEXTURE_WRAP_R", gl.e[TOENUM(val)])
 end
+
+function META:SetCompareFunc(val)
+	self.CompareFunc = val
+	self.gl_tex:SetParameteri("GL_TEXTURE_COMPARE_FUNC", gl.e[TOENUM(val)])
+end
+function META:SetCompareMode(val)
+	self.CompareMode = val
+	self.gl_tex:SetParameteri("GL_TEXTURE_COMPARE_MODE", gl.e[TOENUM(val)])
+end
+
+function META:SetBorderColor(val)
+	self.BorderColor = val
+	self.gl_tex:SetParameterfv("GL_TEXTURE_BORDER_COLOR", ffi.cast("const float *", val))
+end
+
+function META:SetSwizzleR(val)
+	self.SwizzleR = val
+	self.gl_tex:SetParameteri("GL_TEXTURE_SWIZZLE_R", gl.e[TOENUM(val)])
+end
+function META:SetSwizzleG(val)
+	self.SwizzleG = val
+	self.gl_tex:SetParameteri("GL_TEXTURE_SWIZZLE_G", gl.e[TOENUM(val)])
+end
+function META:SetSwizzleB(val)
+	self.SwizzleB = val
+	self.gl_tex:SetParameteri("GL_TEXTURE_SWIZZLE_B", gl.e[TOENUM(val)])
+end
+function META:SetSwizzleA(val)
+	self.SwizzleA = val
+	self.gl_tex:SetParameteri("GL_TEXTURE_SWIZZLE_A", gl.e[TOENUM(val)])
+end
+function META:SetSwizzleRgba(val)
+	self.SwizzleRgba = val
+	self.gl_tex:SetParameterfv("GL_TEXTURE_SWIZZLE_RGBA", ffi.cast("const float *", val))
+end
+
+function META:SetMinLod(val)
+	self.MinLod = val
+	self.gl_tex:SetParameterf("GL_TEXTURE_MIN_LOD", val)
+end
+function META:SetMaxLod(val)
+	self.MaxLod = val
+	self.gl_tex:SetParameterf("GL_TEXTURE_MAX_LOD", val)
+end
 function META:SetBaseLevel(val)
 	self.BaseLevel = val
 	self.gl_tex:SetParameteri("GL_TEXTURE_BASE_LEVEL", val)
 end
+function META:SetMaxLevel(val)
+	self.MaxLevel = val
+	self.gl_tex:SetParameteri("GL_TEXTURE_MAX_LEVEL", val)
+end
+function META:SetLodBias(val)
+	self.LodBias = val
+	self.gl_tex:SetParameterf("GL_TEXTURE_LOD_BIAS", val)
+end
+
 function META:SetAnisotropy(num)
 	self.Anisotropy = num
 
@@ -58,41 +96,12 @@ function META:SetAnisotropy(num)
 
 	self.gl_tex:SetParameteri("GL_TEXTURE_MAX_ANISOTROPY_EXT", num)
 end
-function META:SetCompareMode(val)
-	self.CompareMode = val
-	self.gl_tex:SetParameteri("GL_TEXTURE_COMPARE_MODE", gl.e[TOENUM(val)])
-end
-function META:SetWrapT(val)
-	self.WrapT = val
-	self.gl_tex:SetParameteri("GL_TEXTURE_WRAP_T", gl.e[TOENUM(val)])
-end
-function META:SetMaxLod(val)
-	self.MaxLod = val
-	self.gl_tex:SetParameterf("GL_TEXTURE_MAX_LOD", val)
-end
-function META:SetSwizzleA(val)
-	self.SwizzleA = val
-	self.gl_tex:SetParameteri("GL_TEXTURE_SWIZZLE_A", gl.e[TOENUM(val)])
-end
-function META:SetLodBias(val)
-	self.LodBias = val
-	self.gl_tex:SetParameterf("GL_TEXTURE_LOD_BIAS", val)
-end
-function META:SetMaxLevel(val)
-	self.MaxLevel = val
-	self.gl_tex:SetParameteri("GL_TEXTURE_MAX_LEVEL", val)
-end
-function META:SetBorderColor(val)
-	self.BorderColor = val
-	self.gl_tex:SetParameterfv("GL_TEXTURE_BORDER_COLOR", ffi.cast("const float *", val))
-end
-function META:SetSwizzleR(val)
-	self.SwizzleR = val
-	self.gl_tex:SetParameteri("GL_TEXTURE_SWIZZLE_R", gl.e[TOENUM(val)])
-end
-function META:SetSwizzleB(val)
-	self.SwizzleB = val
-	self.gl_tex:SetParameteri("GL_TEXTURE_SWIZZLE_B", gl.e[TOENUM(val)])
+function META:SetMagFilter(val)
+	self.MagFilter = val
+	if val == "nearest" then
+		self.gl_tex:SetParameteri("GL_TEXTURE_MAX_ANISOTROPY_EXT", 1)
+	end
+	self.gl_tex:SetParameteri("GL_TEXTURE_MAG_FILTER", gl.e[TOENUM(val)])
 end
 function META:SetMinFilter(val)
 	self.MinFilter = val
@@ -100,10 +109,6 @@ function META:SetMinFilter(val)
 		self.gl_tex:SetParameteri("GL_TEXTURE_MAX_ANISOTROPY_EXT", 1)
 	end
 	self.gl_tex:SetParameteri("GL_TEXTURE_MIN_FILTER", gl.e[TOENUM(val)])
-end
-function META:SetMinLod(val)
-	self.MinLod = val
-	self.gl_tex:SetParameterf("GL_TEXTURE_MIN_LOD", val)
 end
 
 function META:OnRemove()

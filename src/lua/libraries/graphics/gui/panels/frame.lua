@@ -80,7 +80,7 @@ function PANEL:ToWindow()
 
 		render.PushWindow(self)
 			--render.GetScreenFrameBuffer():Clear()
-			render.EnableDepth(false)
+			render.SetDepth(false)
 			render.SetBlendMode("alpha")
 
 			local x,y = pnl:GetPosition():Unpack()

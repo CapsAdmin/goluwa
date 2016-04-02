@@ -6,15 +6,17 @@ if not gl then return end
 local render = ... or {}
 
 include("debug.lua", render)
-include("framebuffer.lua", render)
 include("vertex_buffer.lua", render)
 
 function render._Initialize()
 	if not gl then
 		llog("cannot initialize : ", err)
-	return end
+		return
+	end
 
-	if not system.gl_context then error("a window must exist before the renderer can be initialized", 2) end
+	if not system.gl_context then
+		error("a window must exist before the renderer can be initialized", 2)
+	end
 
 	llog("opengl version: %s", render.GetVersion())
 	llog("glsl version: %s", render.GetShadingLanguageVersion())
@@ -24,14 +26,12 @@ function render._Initialize()
 		OPENGL_ES = true
 	end
 
-	do
-		local vendor = render.GetVendor():lower()
-		if vendor:find("nvidia") then NVIDIA = true end
-		if vendor:find("ati") then ATI = true end
-		if vendor:find("amd") then AMD = true end
-		if vendor:find("mesa") or vendor:find("open source technology center") or render.GetVersion():lower():find("mesa") then MESA = true end
-		if vendor:find("intel") then INTEL = true end
-	end
+	local vendor = render.GetVendor():lower()
+	if vendor:find("nvidia") then NVIDIA = true end
+	if vendor:find("ati") then ATI = true end
+	if vendor:find("amd") then AMD = true end
+	if vendor:find("mesa") or vendor:find("open source technology center") or render.GetVersion():lower():find("mesa") then MESA = true end
+	if vendor:find("intel") then INTEL = true end
 
 	if SRGB then
 		gl.Enable("GL_FRAMEBUFFER_SRGB")
@@ -45,63 +45,56 @@ function render._Initialize()
 	render.max_anisotropy = largest[0]
 end
 
-function render.Shutdown()
+function render.CreateGLSLShader(type, source)
+	local shader = gl.CreateShader2("GL_" .. type:upper() .. "_SHADER")
 
+	local shader_strings = ffi.new("const char * [1]", ffi.cast("const char *", source))
+	shader:Source(1, shader_strings, nil)
+	shader:Compile()
+
+	local status = ffi.new("GLint[1]")
+	shader:Getiv("GL_COMPILE_STATUS", status)
+
+	if status[0] == 0 then
+		local log = ffi.new("char[1024]")
+		shader:GetInfoLog(1024, nil, log)
+		shader:Delete()
+
+		error(ffi.string(log), 2)
+	end
+
+	return shader
 end
 
-do -- shaders
+function render.CreateGLSLProgram(cb, ...)
+	local shaders = {...}
+	local program = gl.CreateProgram2()
+
+	for _, shader in pairs(shaders) do
+		program:AttachShader(shader.id)
+	end
+
+	cb(program)
+
+	program:Link()
+
 	local status = ffi.new("GLint[1]")
-	local shader_strings = ffi.new("const char * [1]")
-	local log = ffi.new("char[1024]")
+	program:Getiv("GL_LINK_STATUS", status)
 
-	function render.CreateGLSLShader(type, source)
-		local shader = gl.CreateShader2("GL_" .. type:upper() .. "_SHADER")
+	if status[0] == 0 then
 
-		shader_strings[0] = ffi.cast("const char *", source)
-		shader:Source(1, shader_strings, nil)
-		shader:Compile()
-		shader:Getiv("GL_COMPILE_STATUS", status)
+		program:GetInfoLog(1024, nil, log)
+		program:Delete()
 
-		if status[0] == 0 then
-
-			shader:GetInfoLog(1024, nil, log)
-			shader:Delete()
-
-			error(ffi.string(log), 2)
-		end
-
-		return shader
+		error(ffi.string(log), 2)
 	end
 
-	function render.CreateGLSLProgram(cb, ...)
-		local shaders = {...}
-		local program = gl.CreateProgram2()
-
-		for _, shader in pairs(shaders) do
-			program:AttachShader(shader.id)
-		end
-
-		cb(program)
-
-		program:Link()
-
-		program:Getiv("GL_LINK_STATUS", status)
-
-		if status[0] == 0 then
-
-			program:GetInfoLog(1024, nil, log)
-			program:Delete()
-
-			error(ffi.string(log), 2)
-		end
-
-		for _, shader in pairs(shaders) do
-			program:DetachShader(shader.id)
-			shader:Delete()
-		end
-
-		return program
+	for _, shader in pairs(shaders) do
+		program:DetachShader(shader.id)
+		shader:Delete()
 	end
+
+	return program
 end
 
 function render.Shutdown()
