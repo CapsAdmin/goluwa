@@ -104,7 +104,7 @@ function META:Initialize()
 				data = data:gsub("1", "\255")
 
 				local buffer = ffi.cast("unsigned char *", data)
-				local copy = ffi.new("unsigned char["..width.."]["..height.."][4]")
+				local copy = ffi.typeof("unsigned char[$][$][$]", width, height, 4)()
 
 				local i = 0
 				local length = math.sqrt(width*width + height*height)

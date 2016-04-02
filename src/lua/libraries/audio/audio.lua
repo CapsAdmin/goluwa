@@ -255,14 +255,14 @@ local function GET_BINDER(META, object_name)
 		local number_type
 
 		if type == "i" or type == "b" then
-			number_type = "int"
+			number_type = ffi.typeof("int")
 		elseif type == "f" then
-			number_type = "float"
+			number_type = ffi.typeof("float")
 		elseif type == "iv" then
-			number_type = "int"
+			number_type = ffi.typeof("int")
 			type = "v"
 		elseif type == "fv" then
-			number_type = "float"
+			number_type = ffi.typeof("float")
 			type = "v"
 		end
 
@@ -272,7 +272,7 @@ local function GET_BINDER(META, object_name)
 		end
 
 		if type == "v" then
-			local val = ffi.new(number_type .. "[3]", 0, 0, 0)
+			local val = ffi.typeof("$[3]", number_type)(0, 0, 0)
 			META["Set" .. name] = function(self, x, y, z)
 
 				val[0] = x or 0
@@ -287,7 +287,7 @@ local function GET_BINDER(META, object_name)
 				return val[0], val[1], val[2]
 			end
 		else
-			local val = ffi.new(number_type .. "[1]", 0)
+			local val = ffi.typeof("$[1]", number_type)(0)
 
 			if type == "b" then
 				META["Set" .. name] = function(self, bool)
@@ -615,12 +615,10 @@ do -- source
 			if num < 0 then
 				if not self.reverse_source then
 					local data, size = self:GetBuffer():GetData()
-					local eek = tostring(ffi.typeof(data)):match("<(.-) ")
-					local length = tonumber(size / ffi.sizeof(eek))
 
-					local buffer = ffi.new(eek .. "[?]", size)
+					local buffer = ffi.new("$[$]", data, size)()
 
-					for i = 0, length - 1 do
+					for i = 0, (size / ffi.sizeof(data)) - 1 do
 						buffer[i] = data[-i+length + 1]
 					end
 

@@ -28,14 +28,15 @@ local type_info = {
 
 local function ADD_FFI_OPTIMIZED_TYPES(META)
 	for name, type in pairs(type_info) do
+		type = ffi.typeof(type)
 		local size = ffi.sizeof(type)
 
-		local ctype = ffi.typeof(type .. "*")
+		local ctype = ffi.typeof("$*", type)
 		META["Read" .. name] = function(self)
 			return ffi.cast(ctype, self:ReadBytes(size))[0]
 		end
 
-		local ctype = ffi.typeof(type .. "[1]")
+		local ctype = ffi.typeof("$[1]", type)
 		local hmm = ffi.new(ctype, 0)
 		META["Write" .. name] = function(self, num)
 			hmm[0] = num

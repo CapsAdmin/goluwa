@@ -205,7 +205,7 @@ function META:GetGlyphData(code)
 			bitmap_top = tonumber(glyph.bitmap_top)
 		}
 
-		local copy = ffi.new("unsigned char["..char.w.."]["..char.h.."][4]")
+		local copy = ffi.typeof("unsigned char[$][$][$]", char.w, char.h, 4)()
 
 		local i = 0
 		for x = 0, char.w - 1 do
