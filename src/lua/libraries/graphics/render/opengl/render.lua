@@ -39,6 +39,10 @@ function render._Initialize()
 
 	gl.Enable("GL_TEXTURE_CUBE_MAP_SEAMLESS")
 	gl.Enable("GL_MULTISAMPLE")
+
+	local largest = ffi.new("float[1]")
+	gl.GetFloatv("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT", largest)
+	render.max_anisotropy = largest[0]
 end
 
 function render.Shutdown()

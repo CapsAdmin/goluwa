@@ -48,18 +48,12 @@ function META:SetAnisotropy(num)
 		return
 	end
 
-	if not render.max_anisotropy then
-		local largest = ffi.new("float[1]")
-		gl.GetFloatv("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT", largest)
-		render.max_anisotropy = largest[0]
-	end
-
 	if num == -1 or num > render.max_anisotropy then
-		return render.max_anisotropy
+		num = render.max_anisotropy
 	end
 
 	if num == 0 then
-		return 1
+		num = 1
 	end
 
 	self.gl_tex:SetParameteri("GL_TEXTURE_MAX_ANISOTROPY_EXT", num)
@@ -116,7 +110,7 @@ function META:OnRemove()
 	self.gl_tex:Delete()
 end
 
-function META:_SetupStorage()
+function META:SetupStorage()
 	render.StartDebug()
 
 	local internal_format = TOENUM(self.InternalFormat)
@@ -141,7 +135,7 @@ function META:_SetupStorage()
 	if self.StorageType == "3d" then
 		if window.IsExtensionSupported("GL_ARB_texture_storage") then
 			self.gl_tex:Storage3D(
-				levels,
+				mip_map_levels,
 				TOENUM(self.InternalFormat),
 				self.Size.x,
 				self.Size.y,
@@ -226,6 +220,8 @@ function META:_SetupStorage()
 		logn("==================================")
 		warning("\n" .. msg, 2)
 	end
+
+	self.storage_setup = true
 end
 
 function META:MakeError(reason)
@@ -233,7 +229,7 @@ function META:MakeError(reason)
 	self.error_reason = reason
 end
 
-function META:_Upload(data)
+function META:_Upload(data, y)
 
 	if data.internal_format then
 		self:SetInternalFormat(data.internal_format)
@@ -350,7 +346,7 @@ function META:_Upload(data)
 	end
 end
 
-function META:_GenerateMipMap()
+function META:GenerateMipMap()
 	self.gl_tex:GenerateMipmap()
 	return self
 end

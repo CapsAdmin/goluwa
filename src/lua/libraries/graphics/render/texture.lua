@@ -126,9 +126,7 @@ do -- todo
 end
 
 function META:SetupStorage()
-	self:_SetupStorage()
 
-	self.storage_setup = true
 end
 
 function META:Upload(data)
@@ -217,7 +215,7 @@ function META:Upload(data)
 		data.buffer = new_buffer
 	end
 
-	self:_Upload(data)
+	self:_Upload(data, y)
 
 	self.downloaded_image = nil
 
