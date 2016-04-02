@@ -55,28 +55,35 @@ function META:SetPath(path, face, flip_y)
 	self.Loading = true
 
 	resource.Download(path, function(full_path)
-		local buffer, w, h, info = render.DecodeTexture(vfs.Read(full_path), full_path)
+		local val, err = vfs.Read(full_path)
+		if val then
+			local buffer, w, h, info = render.DecodeTexture(val, full_path)
 
-		if buffer then
-			self:SetSize(Vec2(w, h))
+			if buffer then
+				self:SetSize(Vec2(w, h))
 
-			if flip_y == nil then
-				--flip_y = full_path:endswith(".vtf")
+				if flip_y == nil then
+					--flip_y = full_path:endswith(".vtf")
+				end
+
+				self:Upload({
+					buffer = buffer,
+					width = w,
+					height = h,
+					format = info.format or "bgra",
+					face = face, -- todo
+					flip_y = flip_y,
+					type = info.type,
+				})
+			else
+				local reason = w
+				logn("======")
+				logf("[%s] unable to decode %s: %s\n", self, path, reason)
+				logn("======")
 			end
-
-			self:Upload({
-				buffer = buffer,
-				width = w,
-				height = h,
-				format = info.format or "bgra",
-				face = face, -- todo
-				flip_y = flip_y,
-				type = info.type,
-			})
 		else
-			local reason = w
 			logn("======")
-			logf("[%s] unable to find or decode %s: %s\n", self, path, reason)
+			logf("[%s] unable to read %s: %s\n", self, full_path, err)
 			logn("======")
 		end
 
@@ -142,7 +149,7 @@ function META:Upload(data)
 			numbers[i2] = data.buffer[i].b * 255 i2 = i2 + 1
 			numbers[i2] = data.buffer[i].a * 255 i2 = i2 + 1
 		end
-		data.buffer = ffi.new("uint8_t[".. (data.width * data.height) * 4 .."]", numbers)
+		data.buffer = ffi.new("uint8_t[?]", (data.width * data.height) * 4, numbers)
 		data.flip_y = true
 	end
 
@@ -224,7 +231,7 @@ end
 function META:DumpInfo()
 	logn("==================================")
 		logn("storage type = ", self.StorageType)
-		logn("internal format = ", TOENUM(self.InternalFormat))
+		logn("internal format = ", self.InternalFormat)
 		if self.MipMapLevels > 0 then
 			logn("mip map levels = ", self.MipMapLevels)
 		else
