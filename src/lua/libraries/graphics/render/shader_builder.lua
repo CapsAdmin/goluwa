@@ -668,6 +668,7 @@ function render.CreateShader(data, vars)
 		local lua = ""
 
 		lua = lua .. "local ffi = require(\"ffi\")\n"
+		lua = lua .. "local render = _G.render\n"
 		lua = lua .. "local function update(self)\n"
 
 		for _, data in ipairs(temp) do
