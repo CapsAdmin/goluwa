@@ -149,7 +149,7 @@ local function init()
 	tex:SetInternalFormat("rgb16f")
 
 	--tex:SetMipMapLevels(16)
-	tex:SetSize(Vec2() + 1024)
+	tex:SetSize(Vec2() + 512)
 	tex:SetupStorage()
 
 	shader = render.CreateShader({
