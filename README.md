@@ -1,31 +1,20 @@
-Goluwa is a framework coded entirely with LuaJIT that I use to satisfy my programming hobby and further develop Goluwa with. I don't really have any big plans so I just code whatever I feel like coding. Because I'm interested in game engines and middleware for games Goluwa ends up being something that vaguely resembles a game engine. I constantly refactor and change the api so I can't recommend using Goluwa to make a game or anything too serious but I'd be happy if you find code to use or learn from.
+Goluwa is a framework coded entirely in LuaJIT that I use to satisfy my programming hobby and further develop Goluwa with. I don't really have any big plans so I just code whatever I feel like coding. I'm interested in game engines and middleware for games so Goluwa ends up being something that vaguely resembles a game engine. I constantly refactor and change the api so I wouldn't recommend using Goluwa to make a game or anything like that but I'd be happy if you find code to use or learn from.
 
-Feature highlights:
-* Code can be reloaded without the need to restart.
-* All assets can be loaded from the internet using urls.
-* Fonts can be loaded from google webfont, dafont and other places.
-* Realtime deferred rendering.
-* Lots of model and image formats supported.
-* Löve wrapper to run löve games.
-* Source engine compatible. (So you can load source engine maps and models)
-* GUI that is compatible with gwen skins and has a layout system.
+I mainly use and develop this on Linux so windows support isn't high priority even though it should work there.
 
-Some of those features can maybe make things a little slow and even messy but I always enjoy trying to solve these issues.
-
-LuaJIT's FFI library is used to bind to the following shared libraries:
+I use [ffibuild](https://github.com/CapsAdmin/ffibuild) to build ffi bindings for these libraries:
 
 * [OpenGL](http://www.opengl.org/) - graphics
 * [SDL](https://www.libsdl.org/) - window and input handler
 * [OpenAL Soft](http://kcat.strangesoft.net/openal.html) - sound library
 * [FreeType](http://www.freetype.org/) - font decoding
 * [Libsndfile](http://www.mega-nerd.com/libsndfile/) - sound decoding
-* [DevIL](https://github.com/DentonW/DevIL/tree/master/DevIL) - image decoding
-* [PDCurses](http://www.projectpluto.com/win32a.htm) - console
+* [Freeimage](http://freeimage.sourceforge.net/) - image decoding
+* [vtflib](https://github.com/panzi/VTFLib/) - source engine texture decoding
+* [ncurses](https://www.gnu.org/software/ncurses/) - console
 * [Assimp](https://github.com/assimp/assimp) - model decoding
 * [Bullet3](https://github.com/bulletphysics/bullet3) - physics engine (needs a c wrapper)
 * [ENet](https://github.com/lsalzman/enet) - networking library targeted at games
-
-The rest is then made in LuaJIT. There are some libraries that can be used but are not used and shipped with by default.
 
 GUI:
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/goluwa_screenshots/test17.png)
@@ -60,3 +49,13 @@ Markup language:
 ![ScreenShot](https://dl.dropboxusercontent.com/u/244444/ShareX/2014-11/2014-11-18_23-40-58.gif)
 
 This is used by the GUI and chat. It has lots of tags to change colors, rotation, offsets, fonts etc.
+
+Feature highlights:
+* All assets can be loaded from the internet using urls.
+* Fonts can be loaded from google webfont, dafont and other places.
+* Lots of model and image formats supported for prototyping.
+* Most code can be reloaded without the need to restart.
+* Löve wrapper to run löve games.
+* Source engine asset compatible. (So you can load source engine maps and models)
+* GUI that is compatible with gwen skins and has an extensive layout system.
+* GLua wrapper to run gmod scripts (mostly client stuff at the moment)
