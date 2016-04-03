@@ -1,16 +1,8 @@
-local ffi = require("ffi")
+local render, META = ...
+render = render or _G.render
+META = META or prototype.GetRegistered("vertex_buffer")
+
 local gl = require("libopengl")
-local render = (...) or _G.render
-
-local META = prototype.CreateTemplate("vertex_buffer")
-
-prototype.StartStorable()
-prototype.GetSet(META, "UpdateIndices", true)
-prototype.GetSet(META, "Mode", "triangles")
-prototype.GetSet(META, "Shader")
-prototype.GetSet(META, "Vertices")
-prototype.GetSet(META, "Indices")
-prototype.EndStorable()
 
 local translate = {
 	patches = "GL_PATCHES", -- tessellation
@@ -33,22 +25,10 @@ end
 
 
 if not NVIDIA_WORKAROUND then
-	function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
-		checkx(shader, "shader")
-		--check(vertices, "cdata", "table")
-		--check(indices, "cdata", "table", "number", "nil")
-		local self = prototype.CreateObject(META)
-		self:SetMode(self:GetMode())
+	function render._CreateVertexBuffer(self)
 		self.vertex_buffer = gl.CreateBuffer("GL_ARRAY_BUFFER")
 		self.element_buffer = gl.CreateBuffer("GL_ELEMENT_ARRAY_BUFFER")
 		self.vertex_array = gl.CreateVertexArray()
-		self.vertex_array_info = shader:GetVertexAttributes()
-
-		if vertices then
-			self:UpdateBuffer(shader:CreateBuffersFromTable(vertices, indices, is_valid_table))
-		end
-
-		return self
 	end
 
 	function META:OnRemove()
@@ -59,22 +39,17 @@ if not NVIDIA_WORKAROUND then
 		self.element_buffer:Delete()
 	end
 
-	function META:Draw(count)
-
-		if render.current_shader_override then
-			render.current_shader_override:Bind()
-		elseif self.Shader then
-			self.Shader:Bind()
+	if window.IsExtensionSupported("GL_ARB_direct_state_access") then
+		function META:_Draw(count)
+			gl.BindVertexArray(self.vertex_array.id)
+			gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_INT", nil)
 		end
-
-		gl.BindVertexArray(self.vertex_array.id)
-		if not window.IsExtensionSupported("GL_ARB_direct_state_access") then
+	else
+		function META:_Draw(count)
+			gl.BindVertexArray(self.vertex_array.id)
 			self.element_buffer:Bind()
+			gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_INT", nil)
 		end
-		gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_INT", nil)
-
-		--render.vertex_draw_count = render.vertex_draw_count + self.vertices_length
-		--render.draw_call_count = render.draw_call_count + 1
 	end
 
 	local function setup_vertex_array(self)
@@ -92,92 +67,56 @@ if not NVIDIA_WORKAROUND then
 		end
 	end
 
-	function META:SetVertices(vertices)
-		self.Vertices = vertices
-
-		self.vertices_length = vertices:GetLength()
-
+	function META:_SetVertices(vertices)
 		self.vertex_buffer:Data(vertices:GetSize(), vertices:GetPointer(), "GL_DYNAMIC_DRAW")
-
 		setup_vertex_array(self)
-
 		if window.IsExtensionSupported("GL_ARB_direct_state_access") then
 			self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.vertex_array_info.size)
 		end
 	end
 
-	function META:SetIndices(indices)
-		self.Indices = indices
-
-		self.indices_length = indices:GetLength() -- needed for drawing
-
+	function META:_SetIndices(indices)
 		self.element_buffer:Data(indices:GetSize(), indices:GetPointer(), "GL_DYNAMIC_DRAW")
-
 		setup_vertex_array(self)
-
 		if window.IsExtensionSupported("GL_ARB_direct_state_access") then
 			self.vertex_array:ElementBuffer(self.element_buffer.id)
 		end
 	end
 else
-	function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
-		checkx(shader, "shader")
-		--check(vertices, "cdata", "table")
-		--check(indices, "cdata", "table", "number", "nil")
+	local ffi = require("ffi")
 
-		local self = prototype.CreateObject(META)
-		self:SetMode(self:GetMode())
+	function render._CreateVertexBuffer(self)
 		self.vertices_id = gl.GenBuffer()
 		self.indices_id = gl.GenBuffer()
 		self.vao_id = gl.GenVertexArray()
-		self.vertex_attributes = shader:GetVertexAttributes()
-
-		if vertices then
-			self:UpdateBuffer(shader:CreateBuffersFromTable(vertices, indices, is_valid_table))
-		end
-
-		return self
 	end
+
 
 	function META:OnRemove()
 		gl.DeleteBuffers(1, ffi.new("GLuint[1]", self.vertices_id))
 		gl.DeleteBuffers(1, ffi.new("GLuint[1]", self.indices_id))
 	end
 
-	function META:Draw(count)
-
-		if render.current_shader_override then
-			render.current_shader_override:Bind()
-		elseif self.Shader then
-			self.Shader:Bind()
-		end
-
+	function META:_Draw(count)
 		gl.BindVertexArray(self.vao_id)
 		gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
 		gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_INT", nil)
-
-		render.vertex_draw_count = render.vertex_draw_count + self.vertices_length
-		render.draw_call_count = render.draw_call_count + 1
 	end
 
 	local function setup_vertex_array(self)
 		if not self.setup_vao and self.Indices and self.Vertices then
 			gl.BindBuffer("GL_ARRAY_BUFFER", self.vertices_id)
 			gl.BindVertexArray(self.vao_id)
-				for _, data in ipairs(self.vertex_attributes.attributes) do
+				for _, data in ipairs(self.vertex_array_info.attributes) do
 					gl.EnableVertexAttribArray(data.location)
-					gl.VertexAttribPointer(data.location, data.row_length, data.number_type, false, self.vertex_attributes.size, ffi.cast("void*", data.row_offset))
+					gl.VertexAttribPointer(data.location, data.row_length, data.number_type, false, self.vertex_array_info.size, ffi.cast("void*", data.row_offset))
 				end
 			gl.BindVertexArray(0)
 			self.setup_vao = true
 		end
 	end
 
-	function META:SetVertices(vertices)
-		self.Vertices = vertices
-
-		self.vertices_length = vertices:GetLength()
-
+	function META:_SetVertices(vertices)
 		gl.BindBuffer("GL_ARRAY_BUFFER", self.vertices_id)
 		gl.BufferData("GL_ARRAY_BUFFER", vertices:GetSize(), vertices:GetPointer(), "GL_STATIC_DRAW")
 		gl.BindBuffer("GL_ARRAY_BUFFER", 0)
@@ -185,11 +124,7 @@ else
 		setup_vertex_array(self)
 	end
 
-	function META:SetIndices(indices)
-		self.Indices = indices
-
-		self.indices_length = indices:GetLength() -- needed for drawing
-
+	function META:_SetIndices(indices)
 		gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
 		gl.BufferData("GL_ELEMENT_ARRAY_BUFFER", indices:GetSize(), indices:GetPointer(), "GL_STATIC_DRAW")
 		gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", 0)
@@ -197,24 +132,3 @@ else
 		setup_vertex_array(self)
 	end
 end
-
-function META:UpdateBuffer(vertices, indices)
-	vertices = vertices or self.Vertices
-	indices = indices or self.Indices
-
-	if vertices then
-		self:SetVertices(vertices)
-	end
-
-	if indices then
-		self:SetIndices(indices)
-	end
-end
-
-function META:UnreferenceMesh()
-	self.Vertices = nil
-	self.Indices = nil
-	collectgarbage("step")
-end
-
-prototype.Register(META)

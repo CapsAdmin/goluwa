@@ -1,6 +1,7 @@
 local render = _G.render or {}
 
 include("opengl/render.lua", render)
+include("vertex_buffer.lua", render)
 include("texture.lua", render)
 include("texture_format.lua", render)
 include("texture_decoder.lua", render)

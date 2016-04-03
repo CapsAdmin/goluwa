@@ -6,7 +6,6 @@ if not gl then return end
 local render = ... or {}
 
 include("debug.lua", render)
-include("vertex_buffer.lua", render)
 
 function render._Initialize()
 	if not gl then
