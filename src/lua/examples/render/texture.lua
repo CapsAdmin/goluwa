@@ -118,7 +118,7 @@ event.AddListener("PostDrawMenu", "lol", function()
 		--render.SetShaderOverride()
 	--surface.PopMatrix()
 
-	surface.SetFont("zsnes_gui_font")
+	surface.SetDefaultFont()
 	surface.DrawText("p", 64, 64)
 
 	--surface.SetTexture(grad)

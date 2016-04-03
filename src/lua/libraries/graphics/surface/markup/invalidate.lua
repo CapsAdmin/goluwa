@@ -53,7 +53,7 @@ local function prepare_chunks(self)
 		::continue_::
 	end
 
-	table.insert(out, 1, {type = "font", val = "default", internal = true})
+	table.insert(out, 1, {type = "font", val = surface.GetDefaultFont(), internal = true})
 	table.insert(out, 1, {type = "color", val = Color(1, 1, 1, 1), internal = true})
 	table.insert(out, {type = "string", val = "", internal = true})
 
@@ -311,7 +311,7 @@ local function store_tag_info(self, chunks)
 	local height = 0
 	local last_y
 
-	local font = "default"
+	local font = surface.GetDefaultFont()
 	local color = Color(1,1,1,1)
 
 	local chunk_line = {}
@@ -683,7 +683,7 @@ function META:CompileString()
 	end
 
 	for k,v in ipairs(strings) do
-		strings[k] = surface.fonts[v.font]:CompileString(v.data)
+		strings[k] = v.font:CompileString(v.data)
 	end
 
 	local obj = {}

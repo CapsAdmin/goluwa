@@ -91,7 +91,7 @@ local function invalidate()
 		for x, info in ipairs(line) do
 			if info.char:getchartype() ~= "space" then
 				--surface.DrawText(info.char, x*w, y*h)
-				surface.fonts.default:SetPolyChar(poly, draw_i, x*w, y*h, info.char)
+				surface.default_font:SetPolyChar(poly, draw_i, x*w, y*h, info.char)
 				draw_i = draw_i + 1
 			end
 		end
@@ -99,7 +99,7 @@ local function invalidate()
 end
 
 local function draw()
-	local k,v = next(surface.fonts.default.texture_atlas.textures)
+	local k,v = next(surface.default_font.texture_atlas.textures)
 	if v.page then
 		surface.SetTexture(v.page.texture)
 		--surface.SetTexture(render.GetErrorTexture())
@@ -132,7 +132,7 @@ event.AddListener("PostDrawMenu", "lol", function()
 end)
 
 event.AddListener("CharInput", "lol", function(char)
-	surface.fonts.default:DrawString(char)
+	surface.default_font:DrawString(char)
 
 	local line = grid[caret_pos.y]
 
@@ -197,7 +197,7 @@ end)
 do
 	local lua = vfs.Read("lua/examples/grid.lua")
 
-	surface.fonts.default:DrawString(lua)
+	surface.default_font:DrawString(lua)
 
 	local x, y = 1, 1
 

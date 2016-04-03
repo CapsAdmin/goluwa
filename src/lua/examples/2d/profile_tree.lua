@@ -47,7 +47,7 @@ event.AddListener("Draw2D", "lol", function()
 	local w, h = surface.GetSize()
 	local x, y = w / 2, h
 
-	surface.SetFont("default")
+	surface.SetDefaultFont()
 	surface.SetWhiteTexture()
 	surface.SetColor(1,1,1,1)
 	surface.DrawText(count)

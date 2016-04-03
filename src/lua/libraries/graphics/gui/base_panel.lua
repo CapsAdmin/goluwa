@@ -2323,7 +2323,7 @@ do -- events
 		self:DrawRect()
 
 		if gui.debug_layout then
-			surface.SetFont("default")
+			surface.SetDefaultFont()
 			surface.DrawText("layout count " .. self.layout_count)
 			--surface.SetWhiteTexture()
 			--surface.SetColor(1,0,0,1)

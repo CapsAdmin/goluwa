@@ -1,6 +1,5 @@
 local surface = (...) or _G.surface
 
-surface.fonts = surface.fonts or {}
 surface.registered_fonts = surface.registered_fonts or {}
 surface.font_dpi = 72
 
@@ -12,17 +11,26 @@ local queue = {}
 function surface.InitializeFonts()
 	ready = true
 
-	surface.SetFont(surface.CreateFont("default", {path = surface.default_font_path}))
+	surface.default_font = surface.CreateFont({path = surface.default_font_path})
+	surface.SetFont(default_font)
 
 	for _, args in pairs(queue) do
 		surface.CreateFont(unpack(args))
 	end
 end
 
-function surface.CreateFont(name, options, callback)
+function surface.SetDefaultFont()
+	surface.current_font = surface.default_font
+end
+
+function surface.GetDefaultFont()
+	return surface.default_font
+end
+
+function surface.CreateFont(options, callback)
 
 	if not ready then
-		table.insert(queue, {name, options, callback})
+		table.insert(queue, {options, callback})
 		return
 	end
 
@@ -40,8 +48,7 @@ function surface.CreateFont(name, options, callback)
 	end
 
 	if fallback then
-		if type(fallback) == "string" then fallback = {options.fallback} end
-		for k,v in ipairs(fallback) do fallback[k] = surface.fonts[v] end
+		if typex(fallback) ~= "table" then fallback = {options.fallback} end
 	end
 
 	local shader = options.shade
@@ -85,8 +92,6 @@ function surface.CreateFont(name, options, callback)
 
 	spacing = spacing or 1
 
-	surface.fonts[name] = surface.fonts.default
-
 	for class_name, _ in pairs(surface.registered_fonts) do
 		local self = prototype.CreateDerivedObject("font", class_name)
 
@@ -94,7 +99,7 @@ function surface.CreateFont(name, options, callback)
 		self.chars = {}
 		self.state = "reading"
 
-		self:SetName(name)
+		self:SetName(path)
 		self:SetPath(path)
 		self:SetSize(size)
 		self:SetScale(scale)
@@ -109,27 +114,25 @@ function surface.CreateFont(name, options, callback)
 
 		self.OnLoad = function(...)
 			self:SetReady(true)
-			event.Call("FontChanged", name, options)
+			event.Call("FontChanged", self, options)
 		end
 
 		local ok, err = pcall(self.Initialize, self, options)
 
 		if ok and err ~= false then
-			surface.fonts[name] = self
-			surface.InvalidateFontSizeCache(name)
-
+			surface.InvalidateFontSizeCache(self)
 			return self
 		else
 			if err ~= false or surface.debug then
 				debug.trace()
-				llog("%s: failed to load font %s %q", class_name, name, err)
+				llog("%s: failed to load font %s %q", class_name, self, err)
 			end
 
 			self:Remove()
 		end
 	end
 
-	return surface.fonts.default
+	return surface.default_font
 end
 
 function surface.RegisterFont(meta)
@@ -142,7 +145,7 @@ function surface.RegisterFont(meta)
 end
 
 function surface.SetFont(font)
-	surface.current_font = surface.fonts[font] or surface.fonts.default
+	surface.current_font = font or surface.default_font
 end
 
 function surface.GetFont()

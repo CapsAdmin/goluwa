@@ -22,7 +22,7 @@ alignment tags
 	self:AddString("\nhere's some text in chinese:\n我寫了這個在谷歌翻譯，所以我可以測試我的標記語言使用Unicode正確。它似乎做工精細！\n")	self:AddString("some normal string again\n")
 	self:AddString("and another one\n")
 
-	self:AddFont("default")
+	self:AddFont(surface.GetDefaultFont())
 	self:AddString("back to normal!\n\n")
 
 	local small_font = "markup_small4"
@@ -31,7 +31,7 @@ alignment tags
 	self:AddFont(small_font)
 	self:AddString("monospace\n")
 	self:AddString("░█░█░█▀█░█▀█░█▀█░█░█░\n░█▀█░█▀█░█▀▀░█▀▀░▀█▀░\n░▀░▀░▀░▀░▀░░░▀░░░░▀░░\n")	self:AddString("it's kinda like fullwidth\n")
-	self:AddFont("default")
+	self:AddFont(surface.GetDefaultFont())
 
 	local icons = vfs.Find("textures/silkicons/.")
 	local tags = ""
@@ -59,7 +59,7 @@ end
 	self:AddString("This font is huge and green for some reason!\n")
 	self:AddString("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\n")
 	self:AddColor(ColorBytes(255, 255, 255, 255))
-	self:AddFont("default")
+	self:AddFont(surface.GetDefaultFont())
 
 	local big_font = "markup_big2"
 	surface.CreateFont(big_font, {path = "Roboto", size = 20, read_speed = 100})
@@ -68,7 +68,7 @@ end
 	self:AddColor(ColorBytes(255,0,255,255))
 	self:AddString("This one is slightly smaller bug with a different font\n")
 	self:AddColor(ColorBytes(255, 255, 255, 255))
-	self:AddFont("default")
+	self:AddFont(surface.GetDefaultFont())
 
 	--self:AddString("rotated grin<rotate=90>:D</rotate> \n", true)
 	--self:AddString("that's <wrong>WRONG</wrong>\n", true)
@@ -98,7 +98,7 @@ end
 	self:AddFont(big_font)
 	local str = "That's all folks!"
 
-	self:AddFont("default")
+	self:AddFont(surface.GetDefaultFont())
 	self:AddString("\n")
 	self:AddString([[
 © 2012, Author

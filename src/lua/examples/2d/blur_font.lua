@@ -23,7 +23,7 @@
 
 local radius = 0.5
 
-local font = surface.CreateFont("lol", {
+local font = surface.CreateFont({
 	path = "Roboto",
 	size = 20,
 	padding = 8,
@@ -40,12 +40,12 @@ event.AddListener("DrawHUD", "lol", function()
 
 	surface.SetColor(1,1,1,1)
 
-	surface.SetFont("lol")
+	surface.SetFont(font)
 	surface.SetTextPosition(350, 350)
 	surface.DrawText("outline blur text")
 
-	if surface.fonts.lol.texture_atlas then
-		surface.fonts.lol.texture_atlas:DebugDraw()
+	if font.texture_atlas then
+		font.texture_atlas:DebugDraw()
 	end
 
 do return end

@@ -1,7 +1,7 @@
 event.AddListener("Draw2D", "joystick", function()
 	local data = window.GetJoystickState(0)
 
-	surface.SetFont("default")
+	surface.SetDefaultFont()
 	surface.SetColor(1,1,1,1)
 
 	if data then

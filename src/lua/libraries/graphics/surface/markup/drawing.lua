@@ -66,7 +66,7 @@ function META:Draw(max_w)
 
 	if self.chunks[1] then
 		-- reset font and color for every line
-		set_font(self, "default")
+		set_font(self, surface.GetDefaultFont())
 		surface.SetColor(1, 1, 1, 1)
 
 		start_remove = false

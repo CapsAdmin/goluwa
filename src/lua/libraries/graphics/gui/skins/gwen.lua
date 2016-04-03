@@ -33,9 +33,9 @@ for i, sub_skin in ipairs(skins) do
 
 		local scale = self:GetScale()
 
-		surface.CreateFont("snow_font", {
+		local font = surface.CreateFont({
 			path = "Roboto",
-			fallback = "default",
+			fallback = surface.GetDefaultFont(),
 			size = 5.5*scale,
 		})
 
@@ -153,8 +153,8 @@ for i, sub_skin in ipairs(skins) do
 		skin.tab_active_text_color = Color(0.25,0.25,0.25)
 		skin.tab_inactive_text_color = Color(0.5,0.5,0.5, 1)
 
-		skin.default_font = "snow_font"
-		skin.text_list_font = "snow_font"
+		skin.default_font = font
+		skin.text_list_font = font
 
 		skin.background = Color(0.5, 0.5, 0.5, 1)
 

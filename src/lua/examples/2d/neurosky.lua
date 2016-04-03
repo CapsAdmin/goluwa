@@ -41,7 +41,7 @@ event.AddListener("DrawHUD", "mindwave", function()
 	surface.SetTexture(fb:GetTexture(1))
 	surface.DrawRect(0,0, W,H)
 
-	surface.SetFont("default")
+	surface.SetDefaultFont()
 	surface.SetColor(1,1,1,1)
 
 	local x, y = 5, 5

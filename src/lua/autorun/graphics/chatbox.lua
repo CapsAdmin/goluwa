@@ -145,7 +145,7 @@ end
 function chat.GetPanel()
 	if chat.panel:IsValid() then return chat.panel end
 
-	surface.CreateFont("console_font", {path = "Roboto", size = 10})
+	chat.console_font = surface.CreateFont({path = "Roboto", size = 10})
 
 	local frame = gui.CreatePanel("frame")
 	frame:SetTitle("chatbox")
@@ -333,7 +333,7 @@ function chat.GetPanel()
 	text.markup:SetSuperLightMode(true)
 	text:SetTextWrap(false)
 	text:SetPosition(Vec2()+S*2)
-	text.markup:AddFont("console_font")
+	text.markup:AddFont(chat.console_font)
 	text:AddEvent("ConsolePrint")
 	text:AddEvent("ConsoleClear")
 	--text:AddEvent("LogSection")

@@ -79,9 +79,9 @@ local first = true
 function chathud.AddText(...)
 
 	if first then
-		surface.CreateFont("chathud_default", {
+		chathud.font = surface.CreateFont({
 			path = "Roboto",
-			fallback = "default",
+			fallback = surface.GetDefaultFont(),
 			size = 16,
 			padding = 8,
 			shade = passes,
@@ -140,7 +140,7 @@ function chathud.AddText(...)
 
 	markup:BeginLifeTime(chathud.life_time)
 		-- this will make everything added here get removed after said life time
-		markup:AddFont("chathud_default") -- also reset the font just in case
+		markup:AddFont(chathud.font) -- also reset the font just in case
 		markup:AddTable(args, true)
 		markup:AddTagStopper()
 		markup:AddString("\n")

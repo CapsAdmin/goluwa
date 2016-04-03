@@ -19,11 +19,9 @@ function SKIN:Build()
 
 	local text_size = 5*S
 
-	local font = surface.CreateFont("default_gui_zsnes", {path = surface.default_font_path, size = 10, filtering = "nearest"})
-
-	surface.CreateFont("zsnes_gui_font", {
+	local font = surface.CreateFont({
 		path = "fonts/zfont.txt",
-		fallback = "default_gui_zsnes",
+		fallback = surface.CreateFont({path = surface.default_font_path, size = 10, filtering = "nearest"}),
 		shadow = 1,
 		padding = 2,
 		shadow_color = Color(0.2,0.2,0.2,0.9),
@@ -147,7 +145,7 @@ function SKIN:Build()
 	skin.text_edit_color = skin.text_list_color:Copy()
 
 	skin.scroll_width = 20
-	skin.default_font = "zsnes_gui_font"
+	skin.default_font = font
 	skin.pixel_scale = S
 
 	skin.background = Color(0.5, 0.5, 0.5)

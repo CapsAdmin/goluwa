@@ -14,16 +14,16 @@ input.Bind("tab", "-score", function()
 	window.SetMouseTrapped(true)
 end)
 
-surface.CreateFont("scoreboard_title", {
+local scoreboard_title = surface.CreateFont({
 	path = "Oswald",
-	fallback = "default",
+	fallback = surface.GetDefaultFont(),
 	size = 17,
 	shadow = 1,
 })
 
-surface.CreateFont("scoreboard_title_2", {
+local scoreboard_title_2 = surface.CreateFont({
 	path = "Oswald",
-	fallback = "default",
+	fallback = surface.GetDefaultFont(),
 	size = 11,
 	shadow = 5,
 })
@@ -41,7 +41,7 @@ function scoreboard.SetupContainer(id)
 
 	local title = container:CreatePanel("text_button")
 	title:SetMode("toggle")
-	title:SetFont("scoreboard_title_2")
+	title:SetFont(scoreboard_title_2)
 	title:SetText(id)
 	title:SetMargin(Rect()+5)
 	title:SizeToText()
@@ -214,7 +214,7 @@ function scoreboard.Initialize()
 
 	local title = panel:CreatePanel("text_button")
 	title:SetMode("toggle")
-	title:SetFont("scoreboard_title")
+	title:SetFont(scoreboard_title)
 	title:SetText("Bubu's Server - Subway Simulator")
 
 	title:SetMargin(Rect()+7)
@@ -261,7 +261,7 @@ function scoreboard.Initialize()
 	end
 
 	local help = panel:CreatePanel("text", "help")
-	help:SetFont("scoreboard_title")
+	help:SetFont(scoreboard_title)
 	help:SetText("right click to show cursor")
 	help:SetPadding(Rect()+10)
 	help:SetupLayout("top", "center_x_simple")

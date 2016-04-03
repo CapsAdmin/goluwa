@@ -1,4 +1,4 @@
-﻿local font = surface.CreateFont("lol", {
+﻿local font = surface.CreateFont({
 	path = "Aladin",
 	size = 50,
 })
