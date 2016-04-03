@@ -6,6 +6,7 @@ if not gl then return end
 local render = ... or {}
 
 include("debug.lua", render)
+include("shader_program.lua", render)
 
 function render._Initialize()
 	if not gl then
@@ -42,58 +43,6 @@ function render._Initialize()
 	local largest = ffi.new("float[1]")
 	gl.GetFloatv("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT", largest)
 	render.max_anisotropy = largest[0]
-end
-
-function render.CreateGLSLShader(type, source)
-	local shader = gl.CreateShader2("GL_" .. type:upper() .. "_SHADER")
-
-	local shader_strings = ffi.new("const char * [1]", ffi.cast("const char *", source))
-	shader:Source(1, shader_strings, nil)
-	shader:Compile()
-
-	local status = ffi.new("GLint[1]")
-	shader:Getiv("GL_COMPILE_STATUS", status)
-
-	if status[0] == 0 then
-		local log = ffi.new("char[1024]")
-		shader:GetInfoLog(1024, nil, log)
-		shader:Delete()
-
-		error(ffi.string(log), 2)
-	end
-
-	return shader
-end
-
-function render.CreateGLSLProgram(cb, ...)
-	local shaders = {...}
-	local program = gl.CreateProgram2()
-
-	for _, shader in pairs(shaders) do
-		program:AttachShader(shader.id)
-	end
-
-	cb(program)
-
-	program:Link()
-
-	local status = ffi.new("GLint[1]")
-	program:Getiv("GL_LINK_STATUS", status)
-
-	if status[0] == 0 then
-
-		program:GetInfoLog(1024, nil, log)
-		program:Delete()
-
-		error(ffi.string(log), 2)
-	end
-
-	for _, shader in pairs(shaders) do
-		program:DetachShader(shader.id)
-		shader:Delete()
-	end
-
-	return program
 end
 
 function render.Shutdown()

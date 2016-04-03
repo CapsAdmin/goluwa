@@ -1,24 +1,19 @@
-local BUILD_OUTPUT = true
+local BUILD_OUTPUT = false
 
 local ffi = require("ffi")
-local gl = require("libopengl") -- OpenGL
 local render = (...) or _G.render
 
 -- used to figure out how to upload types
 local unrolled_lines = {
-	bool = "render.current_program:Uniform1i(%i, val and 1 or 0)",
-	number = "render.current_program:Uniform1f(%i, val)",
-	int = "render.current_program:Uniform1i(%i, val)",
-	vec2 = "render.current_program:Uniform2f(%i, val.x, val.y)",
-	vec3 = "render.current_program:Uniform3f(%i, val.x, val.y, val.z)",
-	color = "render.current_program:Uniform4f(%i, val.r, val.g, val.b, val.a)",
-	mat4 = "render.current_program:UniformMatrix4fv(%i, 1, 0, ffi.cast('const float *', val))",
-	texture = "render.current_program:Uniform1i(%i, %i) val:Bind(%i)",
+	bool = "render.current_program:UploadBoolean(%i, val)",
+	number = "render.current_program:UploadNumber(%i, val)",
+	int = "render.current_program:UploadInteger(%i, val)",
+	vec2 = "render.current_program:UploadVec2(%i, val)",
+	vec3 = "render.current_program:UploadVec3(%i, val)",
+	color = "render.current_program:UploadColor(%i, val)",
+	mat4 = "render.current_program:UploadMatrix44(%i, val)",
+	texture = "render.current_program:UploadTexture(%i, val, %i, %i)",
 }
-
-if SRGB then
-	unrolled_lines.color = "render.current_program:Uniform4f(%i, math.linear2gamma(val.r), math.linear2gamma(val.g), math.linear2gamma(val.b), val.a)"
-end
 
 unrolled_lines.vec4 = unrolled_lines.color
 unrolled_lines.sampler2D = unrolled_lines.texture
@@ -37,26 +32,26 @@ local type_info =  {
 }
 
 do -- extend typeinfo
-	-- add some extra information
-	for k,v in pairs(type_info) do
-		v.size = ffi.sizeof(v.type)
-		v.enum_type = "GL_" .. v.type:upper()
-		v.real_type = "glw_glsl_" ..k
+	-- declare the types
+	for _, info in pairs(type_info) do
+		if info.arg_count > 1 then
+			local line = info.type .. " "
+			for i = 1, info.arg_count do
+				line = line .. string.char(64+i)
+
+				if i ~= info.arg_count then
+					line = line .. ", "
+				end
+			end
+
+			info.ctype = ffi.typeof(("struct { %s; }"):format(line))
+		else
+			info.ctype = ffi.typeof(info.type)
+		end
 	end
 
-	-- declare the types
-	for type, info in pairs(type_info) do
-		local line = info.type .. " "
-		for i = 1, info.arg_count do
-			line = line .. string.char(64+i)
-
-			if i ~= info.arg_count then
-				line = line .. ", "
-			end
-		end
-
-		local dec = ("struct %s { %s; };"):format(info.real_type, line)
-		ffi.cdef(dec)
+	for k,v in pairs(type_info) do
+		v.size = ffi.sizeof(v.type)
 	end
 end
 
@@ -170,7 +165,7 @@ local function variables_to_string(type, variables, prepend, macro, array)
 
 	local out = {}
 
-	for i, data in ipairs(translate_fields(variables)) do
+	for _, data in ipairs(translate_fields(variables)) do
 		local name = data.name
 
 		if prepend then
@@ -211,8 +206,6 @@ render.active_shaders = render.active_shaders or utility.CreateWeakTable()
 function render.GetShaders()
 	return render.active_shaders
 end
-
-local cdef_defined = {}
 
 local META = prototype.CreateTemplate("shader")
 
@@ -321,7 +314,7 @@ function render.CreateShader(data, vars)
 		-- to avoid name conflicts
 		local vars = {}
 
-		for i, v in pairs(build_output.vertex.out) do
+		for _, v in pairs(build_output.vertex.out) do
 			local name = next(v)
 			table.insert(vars, ("\t%s = %s;"):format(reserve_prepend .. name, name))
 		end
@@ -341,39 +334,29 @@ function render.CreateShader(data, vars)
 		build_output.vertex.vtx_info = {}
 
 		do -- build_output and define the struct information with ffi
-			local type = "glw_vtx_atrb_" .. shader_id
-			type = type:gsub("%p", "_")
+			local ctypes = {}
 
-			local declaration = {"struct "..type.." { "}
+			local declaration = {"struct { "}
 
-			for key, val in pairs(data.vertex.mesh_layout) do
+			for _, val in pairs(data.vertex.mesh_layout) do
 				local name, t = next(val)
 				local info = type_info[t]
 
 				if info then
-					if info.arg_count == 1 then
-						table.insert(declaration, ("%s %s;"):format(info.type, name))
-					else
-						table.insert(declaration, ("struct %s %s; "):format(info.real_type, name))
-					end
+					table.insert(declaration, ("$ %s;"):format(name))
 					table.insert(build_output.vertex.vtx_info, {name = name, type = t, info = info})
 					mesh_layout[name] = t
+					table.insert(ctypes, info.ctype)
 				else
 					errorf("undefined type %q in mesh_layout", 2, t)
 				end
 			end
 
-			table.insert(declaration, " };")
+			table.insert(declaration, " }")
 			declaration = table.concat(declaration, "")
 
-			if not cdef_defined[declaration] then
-				ffi.cdef(declaration)
-				cdef_defined[declaration] = true
-			end
+			local type = ffi.typeof(declaration, unpack(ctypes))
 
-			type = "struct " .. type
-
-			build_output.vertex.vtx_atrb_dec = declaration
 			build_output.vertex.vtx_atrb_size = ffi.sizeof(type)
 			build_output.vertex.vtx_atrb_type = type
 		end
@@ -506,7 +489,7 @@ function render.CreateShader(data, vars)
 		end
 
 		-- merge shared variables to vertex so they can be used
-		for k,v in pairs(translate_fields(shared.variables)) do
+		for _, v in pairs(translate_fields(shared.variables)) do
 			table.insert(build_output.vertex.variables, v)
 		end
 	end
@@ -515,7 +498,7 @@ function render.CreateShader(data, vars)
 		serializer.WriteFile("luadata", "shader_builder_output/" .. shader_id .. "/build_output.lua", build_output)
 	end
 
-	local shaders = {}
+	local prog = render.CreateShaderProgram()
 
 	for shader_type, data in pairs(build_output) do
 		-- strip data that wasnt found from the source_template
@@ -525,24 +508,21 @@ function render.CreateShader(data, vars)
 			vfs.Write("data/shader_builder_output/" .. shader_id .. "/" .. shader_type .. ".c", data.source)
 		end
 
-		local ok, shader = pcall(render.CreateGLSLShader, shader_type, data.source)
+		local ok, message = pcall(prog.CompileShader, prog, shader_type, data.source)
 
 		if not ok then
 			local extensions = {}
-			shader:gsub("#extension ([%w_]+)", function(extension)
+			message:gsub("#extension ([%w_]+)", function(extension)
 				table.insert(extensions, "#extension " .. extension .. ": enable")
 			end)
 			if #extensions > 0 then
 				local source = data.source:gsub("(#version.-\n)", function(str)
 					return str .. table.concat(extensions, "\n")
 				end)
-				local ok2, shader2 = pcall(render.CreateGLSLShader, shader_type, source)
-				if ok2 then
-					ok = ok2
-					shader = shader2
-				else
+				local ok2, message2 = pcall(prog.CompileShader, prog, shader_type, source)
+				if not ok2 then
 					data.source = source
-					shader = shader .. "\nshader_builder.lua attempted to add " .. table.concat(extensions, ", ") .. " but failed: \n" .. shader2
+					message = message .. "\nshader_builder.lua attempted to add " .. table.concat(extensions, ", ") .. " but failed: \n" .. message2
 				end
 			end
 		end
@@ -565,13 +545,13 @@ function render.CreateShader(data, vars)
 						lua_file = lua_file:gsub("[ %t\r]", "")
 
 						local source = data.original_source:gsub("[ %t\r]", "")
-						local start, stop = lua_file:find(source, 0, true)
+						local start = lua_file:find(source, 0, true)
 						local line_offset
 
 						if start then
 							line_offset = lua_file:sub(0, start):count("\n")
 
-							local err = "\n" .. shader_id .. "\n" .. shader
+							local err = "\n" .. shader_id .. "\n" .. message
 
 							if path then
 								err = (path:match(".+/(.+)") or path) .. ":" .. err
@@ -600,54 +580,52 @@ function render.CreateShader(data, vars)
 			end
 
 			vfs.Write("data/logs/last_shader_error.c", data.source)
-			debug.openscript("data/logs/last_shader_error.c", tonumber(shader:match("0%((%d+)%) ")))
+			debug.openscript("data/logs/last_shader_error.c", tonumber(message:match("0%((%d+)%) ")))
 
-			error("\n" .. shader_id .. "\n" .. shader, error_depth)
+			error("\n" .. shader_id .. "\n" .. message, error_depth)
 		end
-
-		table.insert(shaders, shader)
 	end
 
 	local self = prototype.CreateObject(META)
 
 	for _, info in pairs(data) do
 		if info.source_path then
-			vfs.MonitorFile(info.source_path, function(path)
+			vfs.MonitorFile(info.source_path, function()
 				self:Rebuild()
 			end)
 		end
 	end
 
-	local ok, prog = pcall(render.CreateGLSLProgram, function(prog)
-		local info = {}
+	prog:Link()
 
-		info.attributes = {}
-		info.size = build_output.vertex.vtx_atrb_size
+	local info = {}
 
-		local pos = 0
+	info.attributes = {}
+	info.size = build_output.vertex.vtx_atrb_size
 
-		for i, data in pairs(build_output.vertex.vtx_info) do
-			prog:BindAttribLocation(i - 1, data.name)
+	local pos = 0
 
-			info.attributes[i] = {
-				location = i - 1,
-				row_length = data.info.arg_count,
-				row_offset = data.info.size * pos,
-				number_type = data.info.enum_type,
-			}
+	for i, data in pairs(build_output.vertex.vtx_info) do
+		prog:BindAttribLocation(i - 1, data.name)
 
-			pos = pos + data.info.arg_count
+		info.attributes[i] = {
+			location = i - 1,
+			row_length = data.info.arg_count,
+			row_offset = data.info.size * pos,
+			number_type = data.info.type,
+		}
+
+		if OPENGL then
+			info.attributes[i].number_type = "GL_" .. info.attributes[i].number_type:upper()
 		end
 
-		self.vao_info = info
+		pos = pos + data.info.arg_count
+	end
 
-		if BUILD_OUTPUT then
-			serializer.WriteFile("luadata", "shader_builder_output/" .. shader_id .. "/vao_info.lua", info)
-		end
-	end, unpack(shaders))
+	self.vao_info = info
 
-	if not ok then
-		error(prog, 2)
+	if BUILD_OUTPUT then
+		serializer.WriteFile("luadata", "shader_builder_output/" .. shader_id .. "/vao_info.lua", info)
 	end
 
 	do -- build lua code from variables data
@@ -658,7 +636,7 @@ function render.CreateShader(data, vars)
 
 		for shader, data in pairs(build_output) do
 			if data.variables then
-				for key, val in pairs(data.variables) do
+				for _, val in pairs(data.variables) do
 					local id = prog:GetUniformLocation(val.name)
 
 					variables[val.name] = {
@@ -690,10 +668,9 @@ function render.CreateShader(data, vars)
 		local lua = ""
 
 		lua = lua .. "local ffi = require(\"ffi\")\n"
-		lua = lua .. "local gl = require(\"libopengl\")\n"
 		lua = lua .. "local function update(self)\n"
 
-		for i, data in ipairs(temp) do
+		for _, data in ipairs(temp) do
 			if data.id > -1 then
 				local line = tostring(unrolled_lines[data.val.type] or data.val.type)
 
@@ -711,21 +688,25 @@ function render.CreateShader(data, vars)
 		end
 
 		lua = lua .. "end\n"
-		lua = lua .. "if RELOAD then\n\trender.active_shaders[\""..shader_id.."\"].unrolled_bind_func = update\nend\n"
+		if BUILD_OUTPUT then
+			lua = lua .. "if RELOAD then\n\trender.active_shaders[\""..shader_id.."\"].unrolled_bind_func = update\nend\n"
+		end
 		lua = lua .. "return update"
 
 		if BUILD_OUTPUT then
 			vfs.Write("data/shader_builder_output/" .. shader_id .. "/unrolled_lines.lua", lua)
 			serializer.WriteFile("luadata", "shader_builder_output/" .. shader_id .. "/variables.lua", variables)
+
+			local path = "data/shader_builder/" .. shader_id .. "_unrolled.lua"
+			vfs.Write(path, lua)
+
+			local RELOAD = _G.RELOAD
+			if RELOAD then _G.RELOAD = nil end
+			self.unrolled_bind_func = assert(vfs.dofile(path))
+			if RELOAD then _G.RELOAD = RELOAD end
+		else
+			self.unrolled_bind_func = assert(loadstring(lua))()
 		end
-
-		local path = "data/shader_builder/" .. shader_id .. "_unrolled.lua"
-		vfs.Write(path, lua)
-
-		local RELOAD = _G.RELOAD
-		if RELOAD then _G.RELOAD = nil end
-		self.unrolled_bind_func = assert(vfs.dofile(path))
-		if RELOAD then _G.RELOAD = RELOAD end
 	end
 
 	self.original_data = original_data
@@ -756,7 +737,7 @@ end
 
 function META:Bind()
 	if render.current_program ~= self.program then
-		self.program:Use()
+		self.program:Bind()
 		render.current_program = self.program
 	end
 	self.unrolled_bind_func(self)
@@ -795,7 +776,7 @@ do -- create data for vertex buffer
 		end
 
 		if next(found) then
-			for index, struct in pairs(output) do
+			for _, struct in pairs(output) do
 				for key, val in pairs(struct) do
 					if found[key] then
 						struct[key] = {val:Unpack()}

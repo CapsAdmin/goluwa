@@ -503,7 +503,7 @@ render.CreateShader2([[
 ]])
 
 do return end
-local id = render.CreateGLSLProgram(function(prog)
+local id = render.CreateShaderProgram(function(prog)
 	local vertex_attributes = {}
 	local pos = 0
 

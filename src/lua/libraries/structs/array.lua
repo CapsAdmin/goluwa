@@ -13,7 +13,7 @@ end
 
 function TMPL:OnDeserialize(data)
 	self:SetArrayType(data[1])
-	self:SetSize(size[2])
+		self:SetSize(size[2])
 	self:SetPointer(ptr[3])
 end
 
@@ -64,12 +64,13 @@ local translate = {
 
 function Array(type, length, ptr)
 	local self = prototype.CreateObject(TMPL)
+	local constructor
 
 	if not translate[type] then
-		translate[type] = ffi.typeof(type .. "[?]")
+		translate[type] = ffi.typeof("$[?]", ffi.typeof(type))
 	end
 
-	local ctype = translate[type]
+	constructor = translate[type]
 
 	self:SetArrayType(type)
 
@@ -78,11 +79,11 @@ function Array(type, length, ptr)
 		self:SetSize(length * ffi.sizeof(ptr[0]))
 		self:SetLength(length)
 	elseif _G.type(ptr) == "table" then
-		self.Pointer = ctype(length, ptr)
+		self.Pointer = constructor(length, ptr)
 		self:SetSize(ffi.sizeof(self.Pointer))
 		self:SetLength(length)
 	else
-		self.Pointer = ctype(length)
+		self.Pointer = constructor(length)
 		self:SetSize(ffi.sizeof(self.Pointer))
 		self:SetLength(length)
 	end
