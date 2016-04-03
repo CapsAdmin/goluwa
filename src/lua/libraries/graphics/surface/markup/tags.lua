@@ -267,7 +267,7 @@ META.tags.physics =
 
 META.tags.font =
 {
-	arguments = {surface.GetDefaultFont()},
+	arguments = {},
 
 	pre_draw = function(markup, self, x,y, font)
 		set_font(self, font)
