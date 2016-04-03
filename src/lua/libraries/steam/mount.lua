@@ -64,10 +64,6 @@ function steam.GetLibraryFolders()
 		end
 	end
 
-	if #tbl == 1 and (CAPS or ROOT) then
-		table.insert(tbl, "/media/steam/SteamLibrary/SteamApps/")
-	end
-
 	return tbl
 end
 
@@ -142,6 +138,8 @@ function steam.GetSourceGames()
 										-- is there an internal fix in gmod for this?
 										v = v:gsub("GarrysMod/hl2", "GarrysMod/sourceengine")
 									end
+
+									v = v:gsub("/+", "/") -- TODO
 
 									table.insert(fixed, v)
 									done[v] = true
@@ -382,3 +380,4 @@ function steam.MountGamesFromPath(path)
 		end
 	end
 end
+
