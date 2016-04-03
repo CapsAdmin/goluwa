@@ -180,13 +180,17 @@ function META:SetTexture(pos, tex, mode, uid, face)
 end
 
 function META:GetTexture(pos)
-	local uid = attachment_to_enum(self, pos or 1)
-
-	if not uid then
-		return render.GetErrorTexture()
+	if self.textures[pos] then
+		return self.textures[pos].tex
 	end
 
-	return self.textures[uid] and self.textures[uid].tex or render.GetErrorTexture()
+	local uid = attachment_to_enum(self, pos or 1)
+
+	if uid and self.textures[uid] then
+		return self.textures[uid].tex
+	end
+
+	return render.GetErrorTexture()
 end
 
 function META:SetWrite(pos, b)
