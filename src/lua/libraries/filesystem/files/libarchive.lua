@@ -77,15 +77,20 @@ end
 
 function CONTEXT:IsFolder(path_info)
 	local archive_path, relative = split_path(path_info)
-
 	local a = open_archive(archive_path)
+
+	local found = false
+
+	for path in iterate_archive(a) do
+		if path:startswith(relative) then
+			found = true
+			break
+		end
+	end
 
 	archive.ReadFree(a)
 
-	-- open_archive will error if this is not an archive
-	-- which is effectively the same as returning false
-
-	return true
+	return found
 end
 
 function CONTEXT:GetFiles(path_info)
