@@ -58,7 +58,7 @@ function META:Link()
 end
 
 function META:UploadBoolean(key, val)
-	self.gl_program:Uniform1i(loc, val and 1 or 0)
+	self.gl_program:Uniform1i(key, val and 1 or 0)
 end
 
 function META:UploadNumber(key, val)
