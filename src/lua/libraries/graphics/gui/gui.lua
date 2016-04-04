@@ -187,8 +187,13 @@ do -- events
 		if gui.hovering_panel:IsValid() then
 			local cursor = gui.hovering_panel:GetCursor()
 
+			if gui.hovering_panel.GreyedOut then
+				cursor = "no"
+			end
+
+
 			if gui.active_cursor ~= cursor then
-				window.GetCursor(cursor)
+				window.SetCursor(cursor)
 				gui.active_cursor = cursor
 			end
 		end

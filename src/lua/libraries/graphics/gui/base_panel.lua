@@ -18,6 +18,7 @@ prototype.GetSet(PANEL, "LayoutParentOnLayout", false)
 prototype.GetSet(PANEL, "LayoutWhenInvisible", true)
 prototype.GetSet(PANEL, "VisibilityPanel", NULL)
 prototype.GetSet(PANEL, "NoDraw", false)
+prototype.GetSet(PANEL, "GreyedOut", false)
 
 function PANEL:CreatePanel(name, store_in_self)
 	return gui.CreatePanel(name, self, store_in_self)
@@ -210,6 +211,8 @@ end
 do -- drawing
 
 	function PANEL:PreDraw(from_cache)
+		if self.GreyedOut then surface.PushHSV(1,0,0.5) end
+
 		if self.ThreeDee then surface.Start3D2D() end
 
 		local no_draw = self:HasParent() and self.Parent.draw_no_draw
@@ -323,6 +326,8 @@ do -- drawing
 		end
 
 		if self.ThreeDee then surface.End3D2D() end
+
+		if self.GreyedOut then surface.PopHSV() end
 	end
 
 	function PANEL:DrawRect(x, y, w, h)
@@ -1142,7 +1147,7 @@ do -- animations
 end
 
 do -- resizing
-	prototype.GetSet(PANEL, "ResizePadding", Rect(4,4,4,4))
+	prototype.GetSet(PANEL, "ResizeBorder", Rect(8,8,8,8))
 	prototype.GetSet(PANEL, "Resizable", false)
 
 	function PANEL:GetResizeLocation(pos)
@@ -1296,7 +1301,7 @@ do -- mouse
 
 	function PANEL:GetMouseLocation(pos) -- rename this function
 		pos = pos or self:GetMousePosition()
-		local offset = self.ResizePadding
+		local offset = self.ResizeBorder
 
 		local siz = self:GetSize()
 
@@ -1452,6 +1457,8 @@ do -- mouse
 	end
 
 	function PANEL:MouseInput(button, press)
+		if self.GreyedOut then return end
+
 		if self.SendMouseInputToPanel:IsValid() then
 			self.SendMouseInputToPanel:MouseInput(button, press)
 		end
@@ -1505,6 +1512,8 @@ do -- mouse
 	end
 
 	function PANEL:KeyInput(button, press)
+		if self.GreyedOut then return end
+
 		local b
 
 		if self:OnPreKeyInput(button, press) ~= false then

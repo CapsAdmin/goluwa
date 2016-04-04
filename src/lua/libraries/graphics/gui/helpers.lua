@@ -65,6 +65,7 @@ function gui.CreateMenu(options, parent)
 			elseif v[1] then
 				local entry = menu:AddEntry(v[1], v[2])
 				if v[3] then entry:SetIcon(render.CreateTextureFromPath(v[3])) end
+				if not v[2] then entry:SetGreyedOut(true) end
 			else
 				menu:AddSeparator()
 			end
