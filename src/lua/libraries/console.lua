@@ -856,6 +856,8 @@ if CURSES then
 
 		console.SetSize(curses.COLS, curses.LINES)
 
+		event.AddListener("ShutDown", console.ShutdownCurses)
+
 		console.curses_init = true
 	end
 
@@ -986,8 +988,6 @@ if CURSES then
 			console.curses_init = nil
 		end
 	end
-
-	event.AddListener("ShutDown", console.ShutdownCurses)
 
 	do
 		local syntax = _G.syntax or {}
