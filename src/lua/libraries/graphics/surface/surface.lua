@@ -32,6 +32,13 @@ local SHADER = {
 
 				frag_color = tex_color * color * lua[global_color = Color(1,1,1,1)];
 				frag_color.a = frag_color.a * lua[alpha_multiplier = 1];
+
+				vec3 hsv_mult = lua[hsv_mult = Vec3(1,1,1)];
+
+				if (hsv_mult != vec3(1,1,1))
+				{
+					frag_color.rgb = hsv2rgb(rgb2hsv(frag_color.rgb) * hsv_mult);
+				}
 			}
 		]]
 	}
@@ -703,6 +710,18 @@ function surface.DrawCircle(x, y, radius, width, resolution)
 		)
 	end
 end
+
+function surface.SetHSV(h,s,v)
+	surface.mesh_2d_shader.hsv_mult.x = h
+	surface.mesh_2d_shader.hsv_mult.y = s
+	surface.mesh_2d_shader.hsv_mult.z = v
+end
+
+function surface.GetHSV()
+	return surface.mesh_2d_shader.hsv_mult:Unpack()
+end
+
+utility.MakePushPopFunction(surface, "HSV", surface.SetHSV, surface.GetHSV)
 
 event.AddListener("RenderContextInitialized", nil, surface.Initialize)
 
