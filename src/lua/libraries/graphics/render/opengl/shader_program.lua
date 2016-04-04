@@ -109,7 +109,9 @@ function META:BindAttribLocation(i, name)
 end
 
 function META:OnRemove()
-	self.gl_program:Delete()
+	if self.gl_program then
+		self.gl_program:Delete()
+	end
 end
 
 META:Register()

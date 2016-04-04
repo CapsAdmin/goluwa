@@ -27,7 +27,8 @@ PASS.Buffers = {
 	{
 		name = "light",
 		write = "self",
-		layout = {
+		layout =
+		{
 			{
 				format = "rgba16f",
 
