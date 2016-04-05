@@ -14,9 +14,9 @@ prototype.GetSetDelegate(PANEL, "TextColor", nil, "label")
 prototype.GetSetDelegate(PANEL, "TextWrap", false, "label")
 prototype.GetSetDelegate(PANEL, "ConcatenateTextToSize", false, "label")
 
-prototype.Delegate(PANEL, "label", "CenterText", "Center")
-prototype.Delegate(PANEL, "label", "CenterTextY", "CenterY")
-prototype.Delegate(PANEL, "label", "CenterTextX", "CenterX")
+prototype.Delegate(PANEL, "label", "CenterText", "CenterSimple")
+prototype.Delegate(PANEL, "label", "CenterTextY", "CenterYSimple")
+prototype.Delegate(PANEL, "label", "CenterTextX", "CenterXSimple")
 prototype.Delegate(PANEL, "label", "GetTextSize", "GetSize")
 
 function PANEL:Initialize()
