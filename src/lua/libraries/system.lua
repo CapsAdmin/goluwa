@@ -530,17 +530,17 @@ function system.Restart(run_on_launch)
 
 	if LINUX then
 		if CLIENT then
-			os.execute("./launch_client.bash " .. run_on_launch .. "&")
+			os.execute("./client.bash " .. run_on_launch .. "&")
 		else
-			os.execute("./launch_server.bash " .. run_on_launch .. "&")
+			os.execute("./server.bash " .. run_on_launch .. "&")
 		end
 	end
 
 	if WINDOWS then
 		if CLIENT then
-			os.execute("start \"\" \"launch_client.bat\" \"" .. run_on_launch .. "\"")
+			os.execute("start \"\" \"client.bat\" \"" .. run_on_launch .. "\"")
 		else
-			os.execute("start \"\" \"launch_server.bat\" \"" .. run_on_launch .. "\"")
+			os.execute("start \"\" \"server.bat\" \"" .. run_on_launch .. "\"")
 		end
 	end
 
