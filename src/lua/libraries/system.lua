@@ -952,6 +952,18 @@ if sdl then
 		sdl.SetWindowSize(self.sdl_wnd, pos:Unpack())
 	end
 
+	function META:Maximize()
+		sdl.MaximizeWindow(self.sdl_wnd)
+	end
+
+	function META:Minimize()
+		sdl.MinimizeWindow(self.sdl_wnd)
+	end
+
+	function META:Restore()
+		sdl.RestoreWindow(self.sdl_wnd)
+	end
+
 	function META:SetTitle(title)
 		sdl.SetWindowTitle(self.sdl_wnd, title)
 	end
