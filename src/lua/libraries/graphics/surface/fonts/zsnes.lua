@@ -99,6 +99,18 @@ function META:Initialize()
 			byte = tonumber(byte) or byte
 
 			if data then
+				if name == "maximize (Win)" then
+
+					data = [[
+00000000
+11111100
+10000100
+11111100
+00000000
+]]
+
+				end
+
 				data = data:gsub("%s", "")
 				data = data:gsub("0", "\0")
 				data = data:gsub("1", "\255")

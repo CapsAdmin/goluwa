@@ -96,6 +96,59 @@ function menu.CreateTopBar()
 	local skin = gui.GetRegisteredSkin("zsnes").skin
 	local S = skin:GetScale()
 
+	local thingy = gui.CreatePanel("base", gui.world, "close_resize_minimize")
+	thingy:SetSize(Vec2(52,27))
+	thingy:SetColor(Color(0,0,0,0))
+	thingy:SetupLayout("right", "top")
+
+	local function draw_shadow(self)
+		surface.SetWhiteTexture()
+		surface.SetColor(0,0,0,0.25)
+		surface.DrawRect(11, 11, self.Size.x, self.Size.y)
+	end
+
+	local min = thingy:CreatePanel("text_button")
+	min:SetSkin(skin)
+	min:SetText("-")
+	min:SetSize(Vec2(22,10))
+	min:CenterText()
+	min:SetupLayout("left", "bottom")
+	min:SetPadding(Rect()+2)
+	min.OnPreDraw = draw_shadow
+	min.OnRelease = function()
+		window.Minimize()
+	end
+
+	local restore = false
+
+	local max = thingy:CreatePanel("text_button")
+	max:SetSkin(skin)
+	max:SetText("▫")
+	max:SetSize(Vec2(22,10))
+	max:CenterText()
+	max:SetupLayout("left", "bottom")
+	max:SetPadding(Rect()+2)
+	max.OnPreDraw = draw_shadow
+	max.OnRelease = function()
+		if restore then
+			window.Restore()
+			restore = false
+		else
+			window.Maximize()
+			restore = true
+		end
+	end
+
+	local exit = thingy:CreatePanel("text_button")
+	exit:SetSkin(skin)
+	exit:SetText("x")
+	exit:SetSize(Vec2(23,22))
+	exit:CenterText()
+	exit:SetupLayout("right", "bottom")
+	exit:SetPadding(Rect()+2)
+	exit.OnPreDraw = draw_shadow
+	exit.OnRelease = function() system.ShutDown() end
+
 	local bar = gui.CreatePanel("base", gui.world, "main_menu_bar")
 	bar:SetSkin(skin)
 	bar:SetStyle("gradient")
@@ -104,11 +157,7 @@ function menu.CreateTopBar()
 	bar:SetCachedRendering(true)
 	bar:SetupLayout("layout_children", "size_to_width", "size_to_height")
 
-	function bar:OnPreDraw()
-		surface.SetWhiteTexture()
-		surface.SetColor(0,0,0,0.25)
-		surface.DrawRect(11, 11, self.Size.x, self.Size.y)
-	end
+	bar.OnPreDraw = draw_shadow
 
 	menu.panel = bar
 
