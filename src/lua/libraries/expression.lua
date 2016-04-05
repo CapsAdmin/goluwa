@@ -8,12 +8,7 @@ local lib =
 	pi = math.pi,
 	rand = math.random,
 	random = math.random,
-	randx = function(a,b)
-		a = a or -1
-		b = b or 1
-		return EXT.Rand(a, b)
-	end,
-
+	randomf = math.randomf,
 	abs = math.abs,
 	sgn = function (x)
 		if x < 0 then return -1 end
