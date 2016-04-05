@@ -288,11 +288,19 @@ function render.DrawGBuffer(what, dist)
 	end
 	render.gbuffer_mixer_buffer:End()
 
+	if menu and menu.IsVisible() then
+		surface.PushHSV(1,0,1)
+	end
+
 	surface.SetColor(1,1,1,1)
 	surface.SetTexture(render.gbuffer_mixer_buffer:GetTexture())
 	render.SetBlendMode()
 	render.SetShaderOverride()
 	surface.DrawRect(0, 0, surface.GetSize())
+
+	if menu and menu.IsVisible() then
+		surface.PopHSV()
+	end
 
 	surface.PopMatrix()
 
