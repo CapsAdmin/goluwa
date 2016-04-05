@@ -267,7 +267,7 @@ end
 console.AddCommand("love", function(line, command, ...)
 	if command == "run" then
 		local name = tostring((...))
-		if vfs.IsDir("lovers/" .. name) then
+		if vfs.IsDirectory("lovers/" .. name) then
 			lovemu.RunGame(name)
 		elseif vfs.IsFile("lovers/" .. name .. ".love") then
 			lovemu.RunGame(name .. ".love")
@@ -276,7 +276,7 @@ console.AddCommand("love", function(line, command, ...)
 		end
 	elseif command == "check" then
 		local name = tostring((...))
-		if vfs.IsDir("lovers/" .. name) then
+		if vfs.IsDirectory("lovers/" .. name) then
 			lovemu.CheckSupported(name)
 		else
 			return false, "love game " .. name .. " does not exist"

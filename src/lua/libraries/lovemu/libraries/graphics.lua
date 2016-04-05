@@ -182,7 +182,7 @@ do -- background
 	function love.graphics.clear()
 		surface.SetWhiteTexture()
 		surface.SetColor(br/255,bg/255,bb/255,ba/255)
-		surface.DrawRect(0, 0, render.w, render.h)
+		surface.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
 		surface.SetColor(cr/255,cg/255,cb/255,ca/255)
 	end
 end
@@ -234,14 +234,12 @@ do -- font
 
 	function Font:getWidth(str)
 		str = str or "W"
-		surface.SetFont(self.Name)
-		return (surface.GetTextSize(str))
+		return self.font:GetTextSize()
 	end
 
 	function Font:getHeight(str)
 		str = str or "W"
-		surface.SetFont(self.Name)
-		return select(2, surface.GetTextSize(str))
+		return select(2, self.font:GetTextSize())
 	end
 
 	function Font:setLineHeight(num)
@@ -286,8 +284,7 @@ do -- font
 
 		i = i + 1
 
-		surface.SetFont(self.Name)
-		local w, h = surface.GetTextSize("W")
+		local w, h = self.font:GetTextSize("W")
 		self.Size = size or w
 
 		return self
@@ -326,7 +323,7 @@ do -- font
 
 	function love.graphics.setFont(font)
 		current_font = font
-		surface.SetFont(font.Name)
+		surface.SetFont(font.font)
 	end
 
 	function love.graphics.getFont()
@@ -479,7 +476,7 @@ do -- canvas
 
 		local self = lovemu.CreateObject(Canvas)
 
-		self.fb = render.CreateFrameBuffer(w, h, {
+		self.fb = render.CreateFrameBuffer(Vec2(w, h), {
 			mag_filter = FILTER_MAG,
 			min_filter = FILTER_MIN,
 		})
@@ -496,7 +493,7 @@ do -- canvas
 
 		if canvas then
 			canvas.fb:Bind()
-			render.SetViewport(0, 0, canvas.fb:GetTexture().w, canvas.fb:GetTexture().h)
+			render.SetViewport(0, 0, canvas.fb:GetTexture():GetSize().x, canvas.fb:GetTexture():GetSize().y)
 		else
 			render.GetScreenFrameBuffer():Bind()
 			render.SetViewport(0, 0, window.GetSize():Unpack())
@@ -514,19 +511,19 @@ do -- image
 	Image.Type = "Image"
 
 	function Image:getWidth()
-		return lovemu.textures[self].w
+		return lovemu.textures[self]:GetSize().x
 	end
 
 	function Image:getHeight()
-		return lovemu.textures[self].h
+		return lovemu.textures[self]:GetSize().y
 	end
 
 	function Image:getDimensions()
-		return lovemu.textures[self].w, lovemu.textures[self].h
+		return lovemu.textures[self]:GetSize().x, lovemu.textures[self]:GetSize().y
 	end
 
 	function Image:getHeight()
-		return lovemu.textures[self].h
+		return lovemu.textures[self]:GetSize().y
 	end
 
 	ADD_FILTER(Image)
@@ -545,7 +542,7 @@ do -- image
 		else
 			local self = lovemu.CreateObject(Image)
 
-			local tex = Texture(path)
+			local tex = render.CreateTextureFromPath(path)
 			tex:SetMinFilter(FILTER_MIN)
 			tex:SetMagFilter(FILTER_MAG)
 			lovemu.textures[self] = tex
@@ -557,7 +554,7 @@ do -- image
 	function love.graphics.newImageData(path) -- partial
 		local self = lovemu.CreateObject(Image)
 
-		local tex = Texture(path)
+		local tex = render.CreateTextureFromPath(path)
 		tex:SetMinFilter(FILTER_MIN)
 		tex:SetMagFilter(FILTER_MAG)
 		lovemu.textures[self] = tex
@@ -646,7 +643,7 @@ function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 				--if drawable.fb then  sx = 5 sy = 6 end
 
 				surface.SetTexture(tex)
-				surface.DrawRect(x,y, tex.w*sx, tex.h*sy, r, ox*sx,oy*sy)
+				surface.DrawRect(x,y, tex:GetSize().x*sx, tex:GetSize().y*sy, r, ox*sx,oy*sy)
 			end
 		end
 	end
