@@ -15,7 +15,7 @@ void main()
 
     float pctEffect = (uv.x - 0.5) * 0.5;
 
-    vec3 aberration = vec3(redAberration / g_screen_size.x, greenAberration / g_screen_size.x, blueAberration / g_screen_size.x);
+    vec3 aberration = vec3(redAberration / g_gbuffer_size.x, greenAberration / g_gbuffer_size.x, blueAberration / g_gbuffer_size.x);
     aberration *= pctEffect;
 
     vec3 col;

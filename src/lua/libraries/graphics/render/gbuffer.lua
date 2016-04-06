@@ -32,7 +32,7 @@ vec4 get_noise(vec2 uv)
 render.AddGlobalShaderCode([[
 vec2 get_screen_uv()
 {
-	return gl_FragCoord.xy / g_screen_size;
+	return gl_FragCoord.xy / g_gbuffer_size;
 }]])
 
 render.gbuffer_size = Vec2(1,1)
@@ -41,7 +41,8 @@ function render.GetGBufferSize()
 	return render.gbuffer_size
 end
 
-render.SetGlobalShaderVariable("g_screen_size", render.GetGBufferSize, "vec2")
+render.SetGlobalShaderVariable("g_gbuffer_size", render.GetGBufferSize, "vec2")
+render.SetGlobalShaderVariable("g_screen_size", render.GetScreenSize, "vec2")
 render.SetGlobalShaderVariable("g_noise_texture", render.GetNoiseTexture, "sampler2D")
 render.SetGlobalShaderVariable("g_hemisphere_normals_texture", render.GetHemisphereNormalsTexture, "sampler2D")
 render.SetGlobalShaderVariable("g_time", system.GetElapsedTime, "float")

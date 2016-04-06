@@ -1075,7 +1075,7 @@ do
 				out vec3 out_color;
 				void main()
 				{
-					float amount = ]]..source..[[ / get_depth(uv) / length(g_screen_size) * 1;
+					float amount = ]]..source..[[ / get_depth(uv) / length(g_gbuffer_size) * 1;
 					//amount = min(amount, 0.25);
 					amount += random(uv)*0.5*amount;
 

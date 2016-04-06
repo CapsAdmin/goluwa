@@ -32,7 +32,7 @@ table.insert(PASS.Source, {
 	{
 		vec3 acc = vec3(0.0);
 		vec3 div = vec3(0.0);
-		vec2 pixel = 1.0 / g_screen_size.xy;
+		vec2 pixel = 1.0 / g_gbuffer_size.xy;
 		float r = 1.0;
 		vec2 vangle = vec2(0.0,radius); // Start angle
 		amount += radius*1000.0;

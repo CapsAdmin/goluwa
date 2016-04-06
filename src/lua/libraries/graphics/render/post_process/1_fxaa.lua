@@ -18,7 +18,7 @@ PASS.Source = [[
 	#define FxaaTexLod0(t, p) textureLod(t, p, 0.0)
 	#define FxaaTexOff(t, p, o, r) textureLodOffset(t, p, 0.0, o)
 
-	vec2 rcpFrame = 1.0/g_screen_size;
+	vec2 rcpFrame = 1.0/g_gbuffer_size;
 	vec4 posPos = vec4(uv, uv - (rcpFrame * (0.5 + FXAA_SUBPIX_SHIFT)));
 
 	vec3 FxaaPixelShader(vec4 posPos, sampler2D tex)
