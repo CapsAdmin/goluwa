@@ -60,34 +60,48 @@ end
 console.CreateVariable("render_accum", 0)
 local deferred = console.CreateVariable("render_deferred", true, "whether or not deferred rendering is enabled.")
 
-render.vertex_draw_count = 0
-render.draw_call_count = 0
-
 function render.DrawScene(skip_2d)
-	render.vertex_draw_count = 0
-	render.draw_call_count = 0
-
-	--render.GetScreenFrameBuffer():Clear()
-	render.GetScreenFrameBuffer():Bind()
+	render.GetScreenFrameBuffer():Begin()
 
 	if deferred:Get() and render.IsGBufferReady() then
 		render.DrawGBuffer()
 	else
 		render.SetDepth(true)
 		render.SetBlendMode("alpha")
-
 		render.Draw3DScene("models")
 	end
 
 	if not skip_2d then
+		surface.Start()
+
+		surface.SetColor(1,1,1,1)
 		render.SetDepth(false)
 		render.SetBlendMode("alpha")
+		render.SetShaderOverride()
+
+		if deferred:Get() and render.IsGBufferReady() then
+			if menu and menu.IsVisible() then
+				surface.PushHSV(1,0,1)
+			end
+
+			surface.SetTexture(render.GetFinalGBufferTexture())
+			surface.DrawRect(0, 0, surface.GetSize())
+
+			if menu and menu.IsVisible() then
+				surface.PopHSV()
+			end
+
+			if render.debug then
+				render.DrawGBufferDebugOverlay()
+			end
+		end
 
 		event.Call("Draw2D", system.GetFrameTime())
+
+		surface.End()
 
 		event.Call("PostDrawScene")
 	end
 
-	render.vertices_drawn = render.vertex_draw_count
-	render.draw_calls = render.draw_call_count
+	render.GetScreenFrameBuffer():End()
 end
