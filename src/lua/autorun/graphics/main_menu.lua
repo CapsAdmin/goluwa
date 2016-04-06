@@ -100,6 +100,7 @@ function menu.CreateTopBar()
 	thingy:SetSize(Vec2(52,27))
 	thingy:SetColor(Color(0,0,0,0))
 	thingy:SetupLayout("right", "top")
+	thingy:SetCachedRendering(true)
 
 	local function draw_shadow(self)
 		surface.SetWhiteTexture()
@@ -161,16 +162,19 @@ function menu.CreateTopBar()
 
 	menu.panel = bar
 
-	local function create_button(text, options)
+	local function create_button(text, options, w)
+		w = w or 0
 		local button = bar:CreatePanel("text_button")
 		button:SetSizeToTextOnLayout(true)
 		button:SetText(text)
-		button:SetMargin(Rect(S*3, S*3, S*3, S*2+1))
+		button:SetMargin(Rect(S*3-w, S*3, S*3-w-1, S*2+1))
 		button:SetPadding(Rect(S*4, S*2, S*4, S*2))
 		button:SetMode("toggle")
 		button:SetupLayout("left", "top")
+		button.menu = NULL
 
 		button.OnPress = function()
+			if button.menu:IsValid() then return end
 			local menu = gui.CreateMenu(options, bar)
 			function menu:OnPreDraw()
 				surface.SetWhiteTexture()
@@ -179,8 +183,19 @@ function menu.CreateTopBar()
 			end
 			menu:SetPosition(button:GetWorldPosition() + Vec2(0, button:GetHeight() + 2*S), options)
 			menu:Animate("DrawScaleOffset", {Vec2(1,0), Vec2(1,1)}, 0.25, "*", 0.25, true)
-			menu:SetVisible(true)
-			menu:CallOnRemove(function() button:SetState(false) end)
+			menu:CallOnRemove(function()
+				if button:IsValid() then
+					button:SetState(false)
+				end
+				menu:Animate("DrawScaleOffset", {Vec2(1,1), Vec2(1,0)}, 0.25, "*", 0.25, true, function()
+					menu.okay = true
+					menu:Remove()
+				end)
+				if not menu.okay then
+					return false
+				end
+			end)
+			button.menu = menu
 		end
 	end
 
@@ -207,7 +222,7 @@ function menu.CreateTopBar()
 	table.insert(list, {L"freeze data: off"})
 	table.insert(list, {L"clear all data"})
 
-	create_button("↓", list)
+	create_button("↓", list, 2)
 
 	create_button(L"game", {
 		{L"load", function()
