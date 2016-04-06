@@ -341,3 +341,15 @@ function META:Clear(i, r,g,b,a, d,s)
 		self:RestoreDrawBuffers()
 	end
 end
+
+function META.Blit(a, b, a_rect, b_rect)
+	a_rect = a_rect or Rect(0, 0, a.Size.x, a.Size.y)
+	b_rect = b_rect or Rect(0, 0, b.Size.x, b.Size.y)
+	a.gl_fb:Blit(
+		b.gl_fb.id,
+		a_rect.x, a_rect.y, a_rect.w, a_rect.h,
+		b_rect.x, b_rect.y, b_rect.w, b_rect.h,
+		gl.e.GL_COLOR_BUFFER_BIT,
+		"GL_NEAREST"
+	)
+end
