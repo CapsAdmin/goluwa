@@ -723,6 +723,61 @@ end
 
 utility.MakePushPopFunction(surface, "HSV", surface.SetHSV, surface.GetHSV)
 
+do -- effects
+	function surface.EnableEffects(b)
+		if b then
+			local fb = render.CreateFrameBuffer()
+			fb:SetTexture(1, render.CreateBlankTexture(render.GetScreenSize()))
+			fb:SetTexture("depth_stencil", {internal_format = "depth_stencil", size = render.GetScreenSize()})
+			fb:CheckCompletness()
+
+			surface.framebuffer = fb
+		elseif surface.framebuffer then
+			surface.framebuffer = nil
+		end
+	end
+
+	surface.effects = {}
+
+	function surface.AddEffect(name, pos, ...)
+		table.insert(surface.effects, {name = name, pos = pos, args = {...}})
+
+		table.sort(surface.effects, function(a, b)
+			return a.pos > b.pos
+		end)
+	end
+
+	function surface.RemoveEffect(name)
+		for i, info in ipairs(surface.effects) do
+			if info.name == name then
+				table.remove(surface.effects, i)
+			end
+		end
+
+		table.sort(surface.effects, function(a, b)
+			return a.pos > b.pos
+		end)
+	end
+
+	function surface.Start()
+		if surface.framebuffer then
+			surface.framebuffer:Begin()
+		end
+	end
+
+	function surface.End()
+		if surface.framebuffer then
+			for i, info in ipairs(surface.effects) do
+				surface.framebuffer:GetTexture():Shade(unpack(info.args))
+			end
+
+			surface.framebuffer:End()
+
+			surface.framebuffer:Blit(render.GetScreenFrameBuffer())
+		end
+	end
+end
+
 event.AddListener("RenderContextInitialized", nil, surface.Initialize)
 
 if RELOAD then
