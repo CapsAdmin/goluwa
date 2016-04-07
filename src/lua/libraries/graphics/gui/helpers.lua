@@ -83,16 +83,18 @@ function gui.CreateMenu(options, parent)
 end
 
 function gui.CreateChoices(list, default, parent, padding)
-	local area = gui.CreatePanel("base", parent, padding)
+	local area = gui.CreatePanel("base", parent)
 	area:SetStack(true)
 	area:SetStackRight(false)
 	area:SetNoDraw(true)
+	area.OnCheck = function() end
 
 	for i, v in ipairs(list) do
 		local pnl = area:CreatePanel("checkbox_label")
 		pnl:SetText(v)
-		if padding then pnl:SetPadding(padding) end
+		if padding then pnl:SetPadding(padding) pnl.checkbox:SetPadding(padding) end
 		pnl:SizeToText()
+		pnl.OnCheck = function(a) area:OnCheck(v, pnl) end
 	end
 
 	for i, a in ipairs(area:GetChildren()) do

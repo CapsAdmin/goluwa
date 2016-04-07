@@ -119,6 +119,27 @@ do -- logging
 
 	require("fs").createdir(base_log_dir)
 
+
+	local suppress_print = false
+
+	local function can_print(str)
+		if suppress_print then return end
+
+		if event then
+			suppress_print = true
+
+			if event.Call("ConsolePrint", str) == false then
+				suppress_print = false
+				return false
+			end
+
+			suppress_print = false
+		end
+
+		return true
+	end
+
+
 	local function raw_log(args, sep, append)
 		local line = type(args) == "string" and args or table.concat(args, sep)
 
@@ -153,7 +174,7 @@ do -- logging
 		if log_files.console == log_file then
 			if console and console.Print then
 				console.Print(line)
-			else
+			elseif can_print(line) then
 				io.write(line)
 			end
 		end

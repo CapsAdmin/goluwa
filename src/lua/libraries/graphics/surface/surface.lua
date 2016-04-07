@@ -740,6 +740,8 @@ do -- effects
 	surface.effects = {}
 
 	function surface.AddEffect(name, pos, ...)
+		surface.RemoveEffect(name)
+
 		table.insert(surface.effects, {name = name, pos = pos, args = {...}})
 
 		table.sort(surface.effects, function(a, b)

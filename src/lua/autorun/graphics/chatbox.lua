@@ -116,8 +116,6 @@ do
 
 		markup:AddString(str:sub(last_pos-1, last_pos-2))
 	end
-
-	loll = syntax_process
 end
 
 

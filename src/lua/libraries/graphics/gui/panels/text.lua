@@ -34,6 +34,7 @@ function PANEL:Initialize()
 	end
 	self.markup = markup
 	self:GlobalMouseCapture(true)
+	self:SetFont(surface.GetDefaultFont())
 end
 
 function PANEL:SetPadding(rect)
@@ -43,8 +44,7 @@ function PANEL:SetPadding(rect)
 end
 
 function PANEL:SetFont(font)
-	surface.SetFont(font)
-	self.markup:SetMinimumHeight(select(2, surface.GetTextSize("")))
+	self.markup:SetMinimumHeight(select(2, font:GetTextSize("")))
 	self.Font = font
 	self:SetText(self:GetText())
 end
@@ -99,6 +99,7 @@ end
 
 function PANEL:OnLayout()
 	self.markup:Invalidate()
+	self.markup:Update()
 end
 
 function PANEL:OnPostDraw()
@@ -129,7 +130,7 @@ function PANEL:OnUpdate()
 	markup.cull_w = self.Parent.Size.x
 	markup.cull_h = self.Parent.Size.y
 
-	markup.need_layout = nil
+	--markup.need_layout = nil
 	markup:Update()
 
 	-- :(

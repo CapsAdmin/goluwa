@@ -289,7 +289,7 @@ META.tags.texture =
 	get_size = function(markup, self, path, size)
 		if not self.mat or not self.mat:IsValid() then self.mat = render.CreateTextureFromPath(path) end
 		if self.mat:IsLoading() then return 16, 16 end
-		return self.mat.Size.x or size, self.Size.y or size
+		return self.mat.Size.x or size, self.mat.Size.y or size
 	end,
 
 	pre_draw = function(markup, self, x,y, path, size)

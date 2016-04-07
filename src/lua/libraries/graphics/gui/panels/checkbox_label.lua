@@ -46,7 +46,7 @@ function PANEL:SizeToText()
 	local marg = self:GetMargin()
 
 	self.checkbox:SetX(0)
-	self.label:SetX(self.checkbox:GetPosition().x + marg:GetLeft() + self.checkbox:GetWidth())
+	self.label:SetX(self.checkbox:GetPosition().x + marg:GetLeft() + self.checkbox:GetWidth() + self.checkbox:GetPadding():GetRight())
 	self:SetSize(self.label:GetPosition() + Vec2(marg:GetLeft(), 0) + self.label:GetSize() + marg:GetSize())
 	self.label:CenterY()
 	self.checkbox:CenterY()

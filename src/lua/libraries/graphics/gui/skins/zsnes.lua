@@ -121,7 +121,7 @@ function SKIN:Build()
 
 	add("tab_active", 1,384, 61,24, 8)
 	add("tab_inactive", 128,384, 61,24, 16)
-	add("tab_frame", 1,256+4, 127-2,127-4, 16)
+	add("tab_frame",  320,384+19, 63,63-19, 4)
 
 	add("menu_select", 130,258, 123,27, 16)
 	add("frame", 480,32, 31,31, 16)
