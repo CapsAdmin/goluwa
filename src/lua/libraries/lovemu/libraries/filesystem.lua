@@ -43,7 +43,7 @@ function love.filesystem.init() -- partial
 end
 
 function love.filesystem.isDirectory(path)
-	return vfs.IsDir("data/lovemu/" .. IDENTITY .. "/" .. path) or vfs.IsDir(path)
+	return vfs.IsDirectory("data/lovemu/" .. IDENTITY .. "/" .. path) or vfs.IsDirectory(path)
 end
 
 function love.filesystem.isFile(path)
