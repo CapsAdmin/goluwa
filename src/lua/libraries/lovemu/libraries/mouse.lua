@@ -82,8 +82,18 @@ local mouse_keymap_10 = {
 	button_5 = 5,
 }
 
+local mouse_keymap_reverse = {}
+for k,v in pairs(mouse_keymap) do
+	mouse_keymap_reverse[v] = k
+end
+
+local mouse_keymap_10_reverse = {}
+for k,v in pairs(mouse_keymap_10) do
+	mouse_keymap_10_reverse[v] = k
+end
+
 function love.mouse.isDown(key)
-	return input.IsMouseDown(mouse_keymap[key])
+	return input.IsMouseDown(mouse_keymap_10_reverse[key]) or input.IsMouseDown(mouse_keymap_reverse[key])
 end
 
 event.AddListener("MouseInput","lovemu_mouse",function(key, press)
