@@ -736,6 +736,18 @@ function love.graphics.polygon() -- partial
 
 end
 
+function love.graphics.getStats()
+	return {
+		fonts = 1,
+		images = 1,
+		canvases = 1,
+		images = 1,
+		texturememory = 1,
+		canvasswitches = 1,
+		drawcalls = 1,
+	}
+end
+
 do -- sprite batch
 	local SpriteBatch = {}
 	SpriteBatch.Type = "SpriteBatch"
