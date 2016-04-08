@@ -323,6 +323,7 @@ do -- font
 	local default_font
 
 	function love.graphics.setFont(font)
+		font = font or default_font
 		current_font = font
 		surface.SetFont(font.font)
 	end
