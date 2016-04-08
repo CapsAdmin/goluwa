@@ -17,7 +17,7 @@ do -- AUTOMATE THIS
 
 		surface.SetDefaultFont()
 
-		for _, pass in pairs(render.gbuffer_fill.Buffers) do
+		for _, pass in pairs(render.gbuffer_data_pass.Buffers) do
 			local pass_name = pass.name
 
 			for _, buffer in pairs(pass.layout) do
@@ -109,6 +109,6 @@ do -- AUTOMATE THIS
 
 		draw_buffer("discard", render.gbuffer_discard:GetTexture())
 
-		i,x,y,w,h = render.gbuffer_fill:DrawDebug(i,x,y,w,h,size)
+		i,x,y,w,h = render.gbuffer_data_pass:DrawDebug(i,x,y,w,h,size)
 	end
 end

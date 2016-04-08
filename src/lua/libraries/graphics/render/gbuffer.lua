@@ -1,39 +1,7 @@
 local gl = require("libopengl") -- OpenGL
 local render = (...) or _G.render
 
-render.AddGlobalShaderCode([[
-float random(vec2 co)
-{
-	return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-}]])
-
-render.AddGlobalShaderCode([[
-vec3 get_noise2(vec2 uv)
-{
-	return vec3(random(uv), random(uv*23.512), random(uv*6.53330));
-}]])
-
-render.AddGlobalShaderCode([[
-vec3 get_noise3(vec2 uv)
-{
-	float x = random(uv);
-	float y = random(uv*x);
-	float z = random(uv*y);
-
-	return vec3(x,y,z) * 2 - 1;
-}]])
-
-render.AddGlobalShaderCode([[
-vec4 get_noise(vec2 uv)
-{
-	return texture(g_noise_texture, uv);
-}]])
-
-render.AddGlobalShaderCode([[
-vec2 get_screen_uv()
-{
-	return gl_FragCoord.xy / g_gbuffer_size;
-}]])
+include("gbuffer_data_fill.lua", render)
 
 render.gbuffer_size = Vec2(1,1)
 
@@ -256,7 +224,7 @@ function render.DrawGBuffer(what, dist)
 	render.gbuffer:WriteThese("all")
 	render.gbuffer:Clear("all", 0,0,0,0, 1)
 
-	render.gbuffer_fill:Draw3D(what, dist)
+	render.gbuffer_data_pass:Draw3D(what, dist)
 
 	event.Call("GBufferPrePostProcess")
 
@@ -292,9 +260,11 @@ function render.DrawGBuffer(what, dist)
 	surface.PopMatrix()
 end
 
+local shader_cvar = console.CreateVariable("render_gbuffer_shader", "template", function() if gbuffer_enabled then render.InitializeGBuffer() end end)
+
 local function init(width, height)
-	if not RELOAD or not render.gbuffer_fill then
-		include("lua/libraries/graphics/render/fill_gbuffer.lua", render)
+	if not RELOAD or not render.gbuffer_data_pass then
+		include("lua/libraries/graphics/render/gbuffer_shaders/"..shader_cvar:Get()..".lua")
 	end
 
 	width = width or render.GetWidth()
@@ -350,8 +320,8 @@ local function init(width, height)
 		render.SetGlobalShaderVariable("tex_depth", function() return render.gbuffer:GetTexture("depth") end, "texture")
 		render.SetGlobalShaderVariable("tex_discard", function() return render.gbuffer_discard:GetTexture() end, "texture")
 
-		if not render.gbuffer_fill.init then -- setup the gbuffer fill table
-			local fill = render.gbuffer_fill
+		if not render.gbuffer_data_pass.init then -- setup the gbuffer fill table
+			local fill = render.gbuffer_data_pass
 
 			function fill:BeginPass(name)
 				render.gbuffer:WriteThese(self.buffers_write_these[name])
@@ -479,18 +449,18 @@ local function init(width, height)
 		end
 	end
 
-	render.gbuffer_fill.shaders = {}
+	render.gbuffer_data_pass.shaders = {}
 
-	for i, shader_info in ipairs(render.gbuffer_fill.Stages) do
+	for i, shader_info in ipairs(render.gbuffer_data_pass.Stages) do
 		local shader = render.CreateShader(shader_info)
 		for i, info in ipairs(render.gbuffer_buffers) do
 			shader["tex_" .. info.name] = render.gbuffer:GetTexture(info.name)
 		end
-		render.gbuffer_fill.shaders[i] = shader
-		render.gbuffer_fill[shader_info.name.."_shader"] = shader
+		render.gbuffer_data_pass.shaders[i] = shader
+		render.gbuffer_data_pass[shader_info.name.."_shader"] = shader
 	end
 
-	render.gbuffer_fill:Initialize()
+	render.gbuffer_data_pass:Initialize()
 
 	event.AddListener("WindowFramebufferResized", "gbuffer", function(_, w, h)
 		if render.GetGBufferSize() ~= Vec2(w,h) then
@@ -541,6 +511,10 @@ function render.EnableGBuffer(b)
 	end
 end
 
+function render.GetFinalGBufferTexture()
+	return render.gbuffer_mixer_buffer:GetTexture()
+end
+
 event.AddListener("EntityCreate", "gbuffer", function()
 	if gbuffer_enabled then return end
 
@@ -561,7 +535,7 @@ end)
 
 function render.CreateMesh(vertices, indices, is_valid_table)
 	if render.IsGBufferReady() then
-		return render.gbuffer_fill.model_shader:CreateVertexBuffer(vertices, indices, is_valid_table)
+		return render.gbuffer_data_pass.model_shader:CreateVertexBuffer(vertices, indices, is_valid_table)
 	end
 
 	return nil, "gbuffer not ready"

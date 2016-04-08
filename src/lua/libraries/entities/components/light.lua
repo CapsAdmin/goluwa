@@ -1,7 +1,5 @@
 if not render then return end
 
-render.csm_count = 4
-
 local COMPONENT = {}
 
 COMPONENT.Name = "light"
@@ -55,7 +53,7 @@ if GRAPHICS then
 	end
 
 	function COMPONENT:OnDraw3DLights()
-		if not self.light_mesh or not render.gbuffer_fill.light_shader then return end -- grr
+		if not self.light_mesh or not render.gbuffer_data_pass.light_shader then return end -- grr
 
 		-- automate this!!
 
@@ -63,7 +61,7 @@ if GRAPHICS then
 			self:DrawShadowMap()
 		end
 
-		local shader = render.gbuffer_fill.light_shader
+		local shader = render.gbuffer_data_pass.light_shader
 
 		shader.light_color = self.Color
 		shader.light_intensity = self.Intensity
@@ -103,7 +101,7 @@ if GRAPHICS then
 
 		-- render the scene with this matrix
 		render.camera_3d:SetProjection(projection)
-		render.gbuffer_fill.light_shader["light_projection_view_" .. i] = render.camera_3d:GetMatrices().projection_view
+		render.gbuffer_data_pass.light_shader["light_projection_view_" .. i] = render.camera_3d:GetMatrices().projection_view
 		render.Draw3DScene(self, self.OrthoSize == 0 and self:GetComponent("transform"):GetSize())
 	end
 
@@ -147,9 +145,9 @@ if GRAPHICS then
 			shadow_map:End()
 
 			if self.ShadowCubemap then
-				render.gbuffer_fill.light_shader["tex_shadow_map_cube"] = shadow_map:GetTexture()
+				render.gbuffer_data_pass.light_shader["tex_shadow_map_cube"] = shadow_map:GetTexture()
 			else
-				render.gbuffer_fill.light_shader["tex_shadow_map_" .. i] = shadow_map:GetTexture()
+				render.gbuffer_data_pass.light_shader["tex_shadow_map_" .. i] = shadow_map:GetTexture()
 			end
 
 			if self.OrthoSize == 0 then break end
