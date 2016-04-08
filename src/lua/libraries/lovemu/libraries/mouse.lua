@@ -74,21 +74,46 @@ local mouse_keymap = {
 	mwheel_down = "wu",
 }
 
+local mouse_keymap_10 = {
+	button_1 = 1,
+	button_2 = 2,
+	button_3 = 3,
+	button_4 = 4,
+	button_5 = 5,
+}
+
 function love.mouse.isDown(key)
 	return input.IsMouseDown(mouse_keymap[key])
 end
 
-event.AddListener("MouseInput","lovemu_mouse",function(key,press)
+event.AddListener("MouseInput","lovemu_mouse",function(key, press)
 	local x, y = window.GetMousePosition():Unpack()
 
-	key = mouse_keymap[key]
+	if key == "mwheel_up" or key == "mwheel_down" then
+		if love.wheelmoved then
+			love.wheelmoved(0, key == "mwheel_up" and 1 or -1)
+		end
+	end
+
 	if press then
 		if love.mousepressed then
-			love.mousepressed(x, y, key)
+			if mouse_keymap[key] then
+				love.mousepressed(x, y, mouse_keymap[key])
+			end
+
+			if mouse_keymap_10[key] then
+				love.mousepressed(x, y, mouse_keymap_10[key])
+			end
 		end
 	else
 		if love.mousereleased then
-			love.mousereleased(x, y, key)
+			if mouse_keymap[key] then
+				love.mousereleased(x, y, mouse_keymap[key])
+			end
+
+			if mouse_keymap_10[key] then
+				love.mousereleased(x, y, mouse_keymap_10[key])
+			end
 		end
 	end
 end)
