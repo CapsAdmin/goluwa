@@ -5,6 +5,9 @@ function render.GetScreenFrameBuffer()
 		render.screen_buffer = render.CreateFrameBuffer(render.GetScreenSize(), nil, 0)
 	end
 
+	render.screen_buffer.Size.x = render.GetWidth()
+	render.screen_buffer.Size.y = render.GetHeight()
+
 	return render.screen_buffer
 end
 
