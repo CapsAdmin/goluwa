@@ -12,6 +12,8 @@ function input.SetupAccessorFunctions(tbl, name, up_id, down_id)
 		if not hasindex(self) then args = {self, ...} self = tbl else args = {...} end
 		if not self[down_id] then self[down_id] = {} end
 
+		if #args == 0 then return false end
+
 		for _, val in ipairs(args) do
 			if not self[down_id][val] then
 				return false
