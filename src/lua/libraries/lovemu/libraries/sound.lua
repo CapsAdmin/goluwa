@@ -37,7 +37,7 @@ function SoundData:getDuration()
 end
 
 function SoundData:getSample(i)
-	return self.samples[i]
+	return self.samples and self.samples[i] or 0
 end
 
 function SoundData:getSampleCount()
@@ -48,6 +48,7 @@ function SoundData:getSampleRate()
 	return self.buffer:GetSampleRate()
 end
 function SoundData:setSample(i, sample)
+	if not self.samples then return end
 	self.samples[i] = sample*127
 	self.buffer:SetData(self.buffer:GetData()) -- slow!!!
 end
