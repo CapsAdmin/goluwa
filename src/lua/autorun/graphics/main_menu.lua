@@ -160,6 +160,8 @@ function menu.CreateTopBar()
 
 	bar.OnPreDraw = draw_shadow
 
+	bar:CallOnRemove(function() thingy:Remove() end)
+
 	menu.panel = bar
 
 	local function create_button(text, options, w)
