@@ -234,7 +234,11 @@ function lovemu.RunGame(folder, ...)
 
 	surface.CreateFont("lovemu", {path = "fonts/vera.ttf", size = 11})
 
-	event.AddListener("Draw2D", id, function(dt)
+	event.AddListener("PreDrawMenu", id, function(dt)
+		if menu and menu.IsVisible() then
+			surface.PushHSV(1,0,1)
+		end
+
 		for i = 1, lovemu.speed do
 			surface.SetFont("lovemu")
 			lovemu.delta = dt
@@ -260,6 +264,10 @@ function lovemu.RunGame(folder, ...)
 				love.errhand(lovemu.error_msg)
 			end
 			render.SetCullMode("front")
+		end
+
+		if menu and menu.IsVisible() then
+			surface.PopHSV(1,0,1)
 		end
 	end, {priority = math.huge}) -- draw this first
 end
