@@ -103,6 +103,7 @@ end
 
 love.graphics.origin = surface.LoadIdentity
 love.graphics.translate = surface.Translate
+love.graphics.shear = surface.Shear
 love.graphics.scale = surface.Scale
 love.graphics.rotate = surface.Rotate
 love.graphics.push = surface.PushMatrix

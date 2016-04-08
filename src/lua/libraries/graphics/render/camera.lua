@@ -115,6 +115,11 @@ do
 		self:InvalidateWorld()
 	end
 
+	function META:ShearWorld(x, y, z)
+		self.World:SetShear(x, y, z)
+		self:InvalidateWorld()
+	end
+
 	function META:LoadIdentityWorld()
 		self.World:LoadIdentity()
 		self:InvalidateWorld()

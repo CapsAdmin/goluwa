@@ -195,6 +195,12 @@ function META:Translate(x, y, z)
 	return self
 end
 
+function META:SetShear(x, y, z)
+	self.m01 = x
+	self.m10 = y
+	-- z?
+end
+
 function META:SetTranslation(x, y, z)
 	self.m30 = x
 	self.m31 = y

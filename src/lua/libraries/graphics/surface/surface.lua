@@ -108,6 +108,10 @@ do -- render world matrix helpers
 		render.camera_2d:ScaleWorld(w, h or w, z or 1)
 	end
 
+	function surface.Shear(x, y)
+		render.camera_2d:ShearWorld(x, y, 0)
+	end
+
 	function surface.LoadIdentity()
 		render.camera_2d:LoadIdentityWorld()
 	end
