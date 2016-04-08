@@ -1,3 +1,4 @@
+do return end
 local lib = desire("liblame")
 
 if not lib then return end
