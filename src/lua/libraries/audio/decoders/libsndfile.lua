@@ -1,3 +1,4 @@
+local ffi =  require("ffi")
 local audio = ... or _G.audio
 local soundfile = desire("libsndfile") -- sound decoder
 
@@ -25,11 +26,11 @@ audio.AddDecoder("libsndfile", function(data, path_hint)
 	file:write(data)
 	file:close()
 
-	local info = ffi.new("SF_INFO[1]")
+	local info = ffi.new("struct SF_INFO[1]")
 	local file = soundfile.Open(name, soundfile.e.READ, info)
 	info = info[0]
 
-	local err = ffi.string(soundfile.StringError(file))
+	local err = ffi.string(soundfile.Strerror(file))
 
 	if err ~= "No Error." then
 		return false, err
@@ -47,7 +48,7 @@ audio.AddDecoder("libsndfile", function(data, path_hint)
 		typename = ffi.string(data[0].name)
 		extension = ffi.string(data[0].extension)
 
-		data[0].format = bit.band(info.format , soundfile.e.SF_FORMAT_SUBMASK)
+		data[0].format = bit.band(info.format , soundfile.e.FORMAT_SUBMASK)
 		soundfile.Command(nil, soundfile.e.GET_FORMAT_INFO, data, ffi.sizeof("struct SF_FORMAT_INFO"))
 		subname = ffi.string(data[0].name)
 	end
@@ -62,10 +63,10 @@ audio.AddDecoder("libsndfile", function(data, path_hint)
 		extension = extension,
 		typename = typename,
 		samplerate = info.samplerate,
-		buffer_length = info.frames * info.channels * ffi.sizeof("ALshort"),
+		buffer_length = info.frames * info.channels * ffi.sizeof("short"),
 	}
 
-	local buffer = ffi.new("ALshort[?]", info.buffer_length)
+	local buffer = ffi.new("short[?]", info.buffer_length)
 	-- just read everything
 	-- maybe have a callback later using coroutines
 	soundfile.ReadShort(file, buffer, info.buffer_length)
