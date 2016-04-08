@@ -33,6 +33,10 @@ function love.filesystem.enumerate(path)
 		path = path .. "/"
 	end
 
+	if vfs.IsDirectory("data/lovemu/" .. IDENTITY .. "/" .. path) then
+		return vfs.Find("data/lovemu/" .. IDENTITY .. "/" .. path)
+	end
+
 	return vfs.Find(path)
 end
 
@@ -89,14 +93,9 @@ end
 function love.filesystem.mkdir(path) --partial
 	vfs.OSCreateDirectory(R("data/") .. "lovemu/")
 	vfs.OSCreateDirectory(R("data/lovemu/") .. IDENTITY .. "/")
+	vfs.OSCreateDirectory(R("data/lovemu/" .. IDENTITY .. "/") .. path)
 
-	local ok, err = vfs.OSCreateDirectory(R("data/lovemu/" .. IDENTITY .. "/") .. path)
-
-	if not ok and err:find("File exist") then
-		return true
-	end
-
-	return ok
+	return true
 end
 
 love.filesystem.createDirectory = love.filesystem.mkdir
@@ -129,12 +128,18 @@ function love.filesystem.isFused() -- partial
 	return false
 end
 
-function love.filesystem.mount() --partial
-
+function love.filesystem.mount(from, to) --partial
+	if not vfs.IsDirectory("data/lovemu/" .. IDENTITY .. "/" .. from) then
+		vfs.Mount(from, "data/lovemu/" .. IDENTITY .. "/" .. to)
+		return vfs.IsDirectory(from)
+	else
+		vfs.Mount("data/lovemu/" .. IDENTITY .. "/" .. from, "data/lovemu/" .. IDENTITY .. "/" .. to)
+		return true
+	end
 end
 
-function love.filesystem.unmount() --partial
-
+function love.filesystem.unmount(from) --partial
+	vfs.Unmount("data/lovemu/" .. IDENTITY .. "/" .. from)
 end
 
 function love.filesystem.append(name, data, size) -- partial
@@ -176,6 +181,14 @@ do -- File object
 
 	function File:getMode()
 		return self.mode
+	end
+
+	function File:getFilename()
+		if self.dropped then
+			return self.path
+		else
+			return self.path:match(".+/(.+)")
+		end
 	end
 
 	function File:getSize() -- partial
@@ -273,3 +286,11 @@ do -- FileData object
 		return self
 	end
 end
+
+event.AddListener("WindowFileDrop", "love_filedrop", function(wnd, path)
+	if love.filedropped then
+		local file = love.filesystem.newFile(path)
+		file.dropped = true
+		love.filedropped(file)
+	end
+end)
