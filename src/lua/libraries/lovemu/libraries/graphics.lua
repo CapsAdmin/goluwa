@@ -235,7 +235,7 @@ do -- font
 
 	function Font:getWidth(str)
 		str = str or "W"
-		return self.font:GetTextSize()
+		return (self.font:GetTextSize(str))
 	end
 
 	function Font:getHeight(str)
