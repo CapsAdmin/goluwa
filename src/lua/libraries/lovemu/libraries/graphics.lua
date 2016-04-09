@@ -614,6 +614,16 @@ function love.graphics.circle(mode,x,y,w,h) --partial
 	surface.DrawRect(x or 0, y or 0, w or 0, h or 0)
 end
 
+function love.graphics.arc(...)
+	if type(select(2, ...)) == "string" then
+		local drawmode, arctype, x, y, radius, angle1, angle2, segments = ...
+
+	else
+		local drawmode, x, y, radius, angle1, angle2, segments = ...
+
+	end
+end
+
 function love.graphics.drawq(drawable, quad, x,y, r, sx,sy, ox,oy) -- partial
 	x=x or 0
 	y=y or 0

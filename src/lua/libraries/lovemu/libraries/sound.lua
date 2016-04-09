@@ -1,5 +1,7 @@
 if not SOUND then return end
 
+local ffi = require("ffi")
+
 local love = ... or love
 
 love.sound = {}

@@ -57,6 +57,10 @@ function love.keyboard.isDown(key) --partial
 	return input.IsKeyDown(reverse_keyboard_map[key] or key)
 end
 
+function love.keyboard.setTextInput(b)
+
+end
+
 local CURRENT_CHAR
 
 event.AddListener("KeyInput","lovemu_keyboard",function(key, press)

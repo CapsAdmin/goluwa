@@ -22,6 +22,8 @@ function love.mouse.setRelativeMode(b)
 
 end
 
+love.mouse.setGrabbed = love.mouse.setRelativeMode
+
 local Cursor = {}
 Cursor.Type = "Cursor"
 

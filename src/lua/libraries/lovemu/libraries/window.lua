@@ -22,6 +22,11 @@ function love.window.getDimensions()
 	return window.GetSize():Unpack()
 end
 
+function love.window.isCreated()
+	return true
+end
+
+
 function love.window.getMode()
 	local w, h = window.GetSize():Unpack()
 	return w, h, {
