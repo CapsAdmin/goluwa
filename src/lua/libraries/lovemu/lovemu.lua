@@ -136,6 +136,7 @@ function lovemu.RunGame(folder, ...)
 	vfs.AddModuleDirectory("lovers/" .. lovemu.demoname .. "/")
 
 	local env
+	local require = require
 	env = setmetatable({
 		love = love,
 		require = function(name, ...)
@@ -174,6 +175,21 @@ function lovemu.RunGame(folder, ...)
 
 			return t
 		end,
+		pcall = function(func, ...)
+			if type(func) == "function" then
+				setfenv(func, env)
+			end
+			return _G.pcall(func, ...)
+		end,
+		xpcall = function(func, err, ...)
+			if type(func) == "function" then
+				setfenv(func, env)
+			end
+			if type(err) == "function" then
+				setfenv(err, env)
+			end
+			return _G.xpcall(func, err, ...)
+		end
 	},
 	{
 		__index = _G,
