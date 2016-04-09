@@ -5,19 +5,19 @@ love.filesystem = {}
 local IDENTITY = "none"
 
 function love.filesystem.getAppdataDirectory()
-	return R("data/lovemu/" .. IDENTITY)
+	return R("data/lovemu/" .. IDENTITY .. "/")
 end
 
 function love.filesystem.getSaveDirectory()
-	return R("data/lovemu/" .. IDENTITY)
+	return R("data/lovemu/" .. IDENTITY .. "/")
 end
 
 function love.filesystem.getUserDirectory()
-	return R("data/lovemu/" .. IDENTITY)
+	return R("data/lovemu/" .. IDENTITY .. "/")
 end
 
 function love.filesystem.getWorkingDirectory()
-	return R("data/lovemu/" .. IDENTITY)
+	return R("data/lovemu/" .. IDENTITY .. "/")
 end
 
 function love.filesystem.getLastModified(path)
@@ -105,7 +105,7 @@ function love.filesystem.read(path)
 end
 
 function love.filesystem.remove(path) --partial
-	warning("attempted to remove folder/file ", path)
+	warning("attempted to remove folder/file " .. path)
 end
 
 function love.filesystem.setIdentity(name) --partial
@@ -113,6 +113,8 @@ function love.filesystem.setIdentity(name) --partial
 	vfs.OSCreateDirectory(R("data/lovemu/") .. name .. "/")
 
 	IDENTITY = name
+
+	vfs.Mount(love.filesystem.getUserDirectory())
 end
 
 function love.filesystem.getIdentity()

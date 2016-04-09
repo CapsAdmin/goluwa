@@ -272,7 +272,9 @@ do -- font
 	local function create_font(path, size, glyphs, texture)
 		local self = lovemu.CreateObject(Font)
 
-		self.font = surface.CreateFont("lovemu_" .. path .. i, {
+		path = lovemu.FixPath(path)
+
+		self.font = surface.CreateFont({
 			size = size,
 			path = path,
 			filtering = FILTER_MIN,
@@ -544,6 +546,8 @@ do -- image
 		else
 			local self = lovemu.CreateObject(Image)
 
+			path = lovemu.FixPath(path)
+
 			local tex = render.CreateTextureFromPath(path)
 			tex:SetMinFilter(FILTER_MIN)
 			tex:SetMagFilter(FILTER_MAG)
@@ -555,6 +559,8 @@ do -- image
 
 	function love.graphics.newImageData(path) -- partial
 		local self = lovemu.CreateObject(Image)
+
+		path = lovemu.FixPath(path)
 
 		local tex = render.CreateTextureFromPath(path)
 		tex:SetMinFilter(FILTER_MIN)

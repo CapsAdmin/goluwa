@@ -114,6 +114,13 @@ function lovemu.CreateLoveEnv()
 	return love
 end
 
+function lovemu.FixPath(path)
+	if path:startswith("/") or path:startswith("\\") then
+		return path:sub(2)
+	end
+	return path
+end
+
 function lovemu.RunGame(folder, ...)
 	--require("socket")
 	--require("socket.http")
@@ -249,6 +256,8 @@ function lovemu.RunGame(folder, ...)
 	setfenv(run, env)
 
 	surface.CreateFont("lovemu", {path = "fonts/vera.ttf", size = 11})
+
+	vfs.Mount(love.filesystem.getUserDirectory())
 
 	event.AddListener("PreDrawMenu", id, function(dt)
 		if menu and menu.IsVisible() then
