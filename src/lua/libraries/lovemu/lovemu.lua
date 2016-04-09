@@ -223,11 +223,11 @@ function lovemu.RunGame(folder, ...)
 		lovemu.config.screen={}
 	end
 
-	local w = lovemu.config.screen.width or 800
-	local h = lovemu.config.screen.height or 600
+	local w = lovemu.config.screen.width or lovemu.config.window.width or 800
+	local h = lovemu.config.screen.height or lovemu.config.window.height or 600
 	local title = lovemu.config.title or "LovEmu"
 
-	love.window.setMode(w,h)
+	love.window.setMode(w, h)
 	love.window.setTitle(title)
 
 	local main = assert(vfs.loadfile("main.lua"))
