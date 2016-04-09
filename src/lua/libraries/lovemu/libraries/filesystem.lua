@@ -207,6 +207,11 @@ do -- File object
 	end
 
 	function File:read(bytes)
+		if not bytes then
+			local size = self.file:GetSize()
+			local str = self.file:ReadAll()
+			return str, size
+		end
 		local str = self.file:ReadBytes(bytes)
 		return str, #str
 	end
