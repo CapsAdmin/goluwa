@@ -44,7 +44,13 @@ local CONTEXT = {}
 CONTEXT.Name = "libarchive"
 
 local function split_path(path_info)
-	local archive_path, relative = path_info.full_path:match("(.+%..-)/(.*)")
+	local archive_path, relative
+
+	if path_info.full_path:find("tar.gz", nil, true) then
+		archive_path, relative = path_info.full_path:match("(.+%.tar%.gz)/(.*)")
+	else
+		archive_path, relative = path_info.full_path:match("(.+%..-)/(.*)")
+	end
 
 	if not archive_path and not relative then
 		error("not a valid archive path", 2)
@@ -119,15 +125,24 @@ function CONTEXT:GetFiles(path_info)
 
 	archive.ReadFree(a)
 
-	for i, path in ipairs(files) do
-		local dir2, name = path:match("(.*/)(.*/)")
+	-- really ugly logic: TODO
+	-- this kind of logic messes up my head
 
-		if dir == dir2 then
-			name = name or path
-			if name:endswith("/") then
-				name = name:sub(0, -2)
+	for i, path in ipairs(files) do
+		if not dir then
+			local path2 = path:match("^([^/]-)/$")
+			if path2 then
+				table.insert(out, path2)
 			end
-			table.insert(out, name)
+		else
+			local dir2, name = path:match("^(.+/)(.+)")
+
+			if dir == dir2 and name then
+				if name:endswith("/") then
+					name = name:sub(0, -2)
+				end
+				table.insert(out, name)
+			end
 		end
 	end
 
