@@ -190,6 +190,7 @@ end
 
 do
 	function love.graphics.setBlendMode(mode)
+		if mode == "replace" then mode = "none" end
 		render.SetBlendMode(mode)
 	end
 
@@ -399,21 +400,26 @@ end
 do -- line
 	local WIDTH = 1
 	local STYLE = "huh"
+	local JOIN = "huh"
 
 	function love.graphics.setLineStyle(s)
 		STYLE = s
-	end
-
-	function love.graphics.setLineStyle(s)
-		STYLE = s
-	end
-
-	function love.graphics.setLineWidth(w)
-		WIDTH = w
 	end
 
 	function love.graphics.getLineStyle()
 		return STYLE
+	end
+
+	function love.graphics.setLineJoin(s)
+		JOIN = s
+	end
+
+	function love.graphics.getLineJoin(s)
+		return JOIN
+	end
+
+	function love.graphics.setLineWidth(w)
+		WIDTH = w
 	end
 
 	function love.graphics.getLineWidth()

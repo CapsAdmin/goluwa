@@ -26,6 +26,10 @@ function love.window.isCreated()
 	return true
 end
 
+function love.window.getPixelScale()
+	return 2
+end
+
 
 function love.window.getMode()
 	local w, h = window.GetSize():Unpack()
