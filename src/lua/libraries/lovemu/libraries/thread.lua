@@ -4,11 +4,12 @@ love.thread = {}
 
 local threads = {}
 local threads2 = {}
+local running
 
 local Thread = {}
 Thread.Type = "Thread"
 
-function Thread:start(...) self.args = {...} self.thread:Start() threads2[self.co] = self end
+function Thread:start(...) self.args = {...} self.thread:Start() if self.thread.co then threads2[self.thread.co] = self else running = self end end
 function Thread:wait() end
 function Thread:set(key, val) self.vars[key] = val end
 function Thread:send() end
@@ -19,6 +20,7 @@ function Thread:getName() return self.name end
 function Thread:getKeys() return {} end
 function Thread:get() return end
 function Thread:demand(name) return self.vars[name] end
+function Thread:getError(name) end
 
 function love.thread.newThread(name, script_path)
 	local self = lovemu.CreateObject(Thread)
@@ -51,7 +53,7 @@ end
 
 function love.thread.getThread(name)
 	if not name then
-		return threads2[coroutine.running()]
+		return threads2[coroutine.running()] or running
 	end
 	return threads[name]
 end
