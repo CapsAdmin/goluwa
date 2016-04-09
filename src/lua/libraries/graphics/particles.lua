@@ -54,7 +54,7 @@ function ParticleEmitter(max)
 	self.particles = {}
 	self.last_emit = 0
 	self.next_think = 0
-	self.poly = surface.CreatePoly(max)
+	self.poly = surface.CreatePoly(max * 6)
 
 	return self
 end

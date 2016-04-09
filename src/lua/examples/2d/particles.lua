@@ -28,8 +28,8 @@ end)
 
 local particles = {}
 
-local poly_head = surface.CreatePoly(particle_count)
-local poly_tail = surface.CreatePoly(particle_count)
+local poly_head = surface.CreatePoly(particle_count * 6)
+local poly_tail = surface.CreatePoly(particle_count * 6)
 local W, H = surface.GetSize()
 
 for i = 1, particle_count do

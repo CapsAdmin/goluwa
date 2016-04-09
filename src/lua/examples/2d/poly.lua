@@ -1,6 +1,6 @@
 local tex = render.CreateTextureFromPath("textures/pac.png")
 local count = 100
-local poly = surface.CreatePoly(count)
+local poly = surface.CreatePoly(count * 6)
 
 event.AddListener("Draw2D", "lol", function()
 	local time = system.GetElapsedTime()

@@ -74,7 +74,7 @@ local function set_uv(self, i, x,y, w,h, sx,sy)
 end
 
 function META:SetVertex(i, x,y, u,v)
-	if i > self.size or i < 0 then logf("i = %i size = %i\n", i, self.size) return end
+	if i > self.vertex_count or i < 0 then logf("i = %i vertex_count = %i\n", i, self.vertex_count) return end
 
 	x = x or 0
 	y = y or 0
@@ -104,6 +104,13 @@ function META:SetVertex(i, x,y, u,v)
 	end
 
 	self.dirty = true
+end
+
+function META:SetTriangle(i, x1,y1, x2,y2, x3,y3, u1,v1,u2,v2,u3,v3)
+	i = i * 3
+	self:SetVertex(i + 0, x1,x1, u1,v1)
+	self:SetVertex(i + 1, x2,x2, u2,v2)
+	self:SetVertex(i + 2, x3,x3, u3,v3)
 end
 
 function META:SetRect(i, x,y,w,h, r, ox,oy)
@@ -139,7 +146,6 @@ function META:DrawLine(i, x1, y1, x2, y2, w)
 end
 
 function META:Draw(count)
-	if count then count = count * 6 end
 	if self.dirty then
 		self.mesh:UpdateBuffer()
 		self.dirty = false
@@ -307,9 +313,8 @@ end
 
 prototype.Register(META)
 
-function surface.CreatePoly(size)
-	size = size * 6
-	local mesh = surface.CreateMesh(size)
+function surface.CreatePoly(vertex_count)
+	local mesh = surface.CreateMesh(vertex_count)
 
 	-- they never change anyway
 	mesh:SetUpdateIndices(false)
@@ -317,7 +322,7 @@ function surface.CreatePoly(size)
 	local self = prototype.CreateObject(META)
 
 	self.mesh = mesh
-	self.size = size
+	self.vertex_count = vertex_count
 	self.Vertices = mesh.Vertices
 
 	return self

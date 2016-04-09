@@ -81,7 +81,7 @@ local function move(x, y)
 	caret_pos.y = math.max(caret_pos.y + y, 1)
 end
 
-local poly = surface.CreatePoly(4096)
+local poly = surface.CreatePoly(4096 * 6)
 poly:SetColor(1,1,1,1)
 
 local function invalidate()

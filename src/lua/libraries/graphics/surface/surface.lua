@@ -68,7 +68,7 @@ function surface.Initialize()
 	surface.mesh_2d_shader = shader
 
 	surface.rect_mesh = surface.CreateMesh()
-	surface.poly = surface.CreatePoly(9)
+	surface.ninepatch_poly = surface.CreatePoly(9 * 6)
 
 	surface.SetWhiteTexture()
 	surface.InitializeFonts()
@@ -418,8 +418,8 @@ end
 function surface.DrawNinePatch(x, y, w, h, patch_size_w, patch_size_h, corner_size, u_offset, v_offset, uv_scale)
 	local skin = surface.GetTexture()
 
-	surface.poly:SetNinePatch(1, x, y, w, h, patch_size_w, patch_size_h, corner_size, u_offset, v_offset, uv_scale, skin.Size.x, skin.Size.y)
-	surface.poly:Draw()
+	surface.ninepatch_poly:SetNinePatch(1, x, y, w, h, patch_size_w, patch_size_h, corner_size, u_offset, v_offset, uv_scale, skin.Size.x, skin.Size.y)
+	surface.ninepatch_poly:Draw()
 end
 
 function surface.SetScissor(x, y, w, h)

@@ -131,13 +131,13 @@ function META:SetPolyChar(poly, i, x, y, char)
 end
 
 function META:CompileString(data)
-	local size = 0
+	local vertex_count = 0
 
 	do
 		for _, str in ipairs(data) do
 			if type(str) == "string" then
 				local rebuild = false
-				size = size + utf8.length(str)
+				vertex_count = vertex_count + (utf8.length(str) * 6)
 				for i = 1, utf8.length(str) do
 					local char = utf8.sub(str, i,i)
 					local ch = self.chars[char]
@@ -154,7 +154,7 @@ function META:CompileString(data)
 		end
 	end
 
-	local poly = surface.CreatePoly(size)
+	local poly = surface.CreatePoly(vertex_count)
 	local width_info = {}
 	local out = {}
 
@@ -234,7 +234,7 @@ function META:CompileString(data)
 		if w and not width_cache[w] then
 			for i, x in ipairs(width_info) do
 				if x > w then
-					width_cache[w] = i - 1
+					width_cache[w] = (i - 1) * 6
 					break
 				end
 			end
