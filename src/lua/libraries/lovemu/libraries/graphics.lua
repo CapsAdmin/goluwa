@@ -427,11 +427,13 @@ do -- line
 			tbl = tbl[1]
 		end
 
-		for i = 1, #tbl, 4 do
-			local x1, y1, x2, y2 = tbl[i+0], tbl[i+2], tbl[i+2], tbl[i+3]
-			if x1 and y1 and x2 and y2 then
-				surface.DrawLine(x1, y1, x2, y2, WIDTH, false)
+		for i = 1, #tbl, 2 do
+			local x, y = tbl[i+0], tbl[i+1]
+			if last_x and last_y then
+				surface.DrawLine(last_x, last_y, x, y)
 			end
+			last_x = x
+			last_y = y
 		end
 	end
 end
@@ -600,10 +602,10 @@ function love.graphics.rectangle(mode, x, y, w, h)
 		surface.SetWhiteTexture()
 		surface.DrawRect(x, y, w, h)
 	else
-		love.graphics.line(x,y, x+w,y)
-		love.graphics.line(x,y, x,y+h)
-		love.graphics.line(x+w,y, x+w,y+h)
-		love.graphics.line(x,y+h, x+w,y+h)
+		surface.DrawLine(x,y, x+w,y)
+		surface.DrawLine(x,y, x,y+h)
+		surface.DrawLine(x+w,y, x+w,y+h)
+		surface.DrawLine(x,y+h, x+w,y+h)
 	end
 end
 
