@@ -136,11 +136,11 @@ function lovemu.RunGame(folder, ...)
 	lovemu.love = love
 	lovemu.textures = {}
 
-	warning("mounting love game folder: ", 1, R("lovers/" .. lovemu.demoname .. "/"))
+	warning("mounting love game folder: ", 1, R(lovemu.demoname .. "/"))
 	vfs.CreateFolder("data/lovemu/")
 	vfs.AddModuleDirectory("data/lovemu/")
-	vfs.Mount(R("lovers/" .. lovemu.demoname .. "/"))
-	vfs.AddModuleDirectory("lovers/" .. lovemu.demoname .. "/")
+	vfs.Mount(R(lovemu.demoname .. "/"))
+	vfs.AddModuleDirectory(lovemu.demoname .. "/")
 
 	local env
 	local require = require
@@ -156,7 +156,6 @@ function lovemu.RunGame(folder, ...)
 			end
 
 			local func, err, path = require.load(name, folder, true)
-
 			if type(func) == "function" then
 				if debug.getinfo(func).what ~= "C" then
 					setfenv(func, env)
@@ -300,10 +299,27 @@ end
 console.AddCommand("love", function(line, command, ...)
 	if command == "run" then
 		local name = tostring((...))
+
 		if vfs.IsDirectory("lovers/" .. name) then
-			lovemu.RunGame(name)
+			lovemu.RunGame("lovers/" .. name, select(2, ...))
 		elseif vfs.IsFile("lovers/" .. name .. ".love") then
-			lovemu.RunGame(name .. ".love")
+			lovemu.RunGame("lovers/" .. name .. ".love", select(2, ...))
+		elseif name:find("github") then
+			local url = name
+
+			if name:startswith("github/") then
+				url = name:gsub("github/", "https://github.com/") .. "/archive/master.zip"
+			else
+				url =  url .. "/archive/master.zip"
+			end
+
+			local args = {select(2, ...)}
+
+			resource.Download(url, function(full_path)
+				full_path = full_path .. "/" .. name:match(".+/(.+)") .. "-master"
+				logn("running downloaded löve game: ", full_path)
+				lovemu.RunGame(full_path, unpack(args))
+			end)
 		else
 			return false, "love game " .. name .. " does not exist"
 		end
