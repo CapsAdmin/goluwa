@@ -16,7 +16,7 @@ excludelist = {
 	"goluwa_ffmpeg/",
 	"private/",
 	"megahal/",
-	"lovemu/",
+	"love_games/",
 	"TinyC/",
 	"vlc/",
 	"wiki/",
