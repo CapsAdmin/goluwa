@@ -254,13 +254,16 @@ function lovemu.RunGame(folder, ...)
 	vfs.Mount(love.filesystem.getUserDirectory())
 
 	lovemu.current_game = love
+
+	return love
 end
 
 console.AddCommand("love_run", function(line, name, ...)
+	local found
 	if vfs.IsDirectory("lovers/" .. name) then
-		lovemu.RunGame("lovers/" .. name, select(2, ...))
+		found = lovemu.RunGame("lovers/" .. name, select(2, ...))
 	elseif vfs.IsFile("lovers/" .. name .. ".love") then
-		lovemu.RunGame("lovers/" .. name .. ".love", select(2, ...))
+		found = lovemu.RunGame("lovers/" .. name .. ".love", select(2, ...))
 	elseif name:find("github") then
 		local url = name
 
@@ -278,9 +281,19 @@ console.AddCommand("love_run", function(line, name, ...)
 			lovemu.RunGame(full_path, unpack(args))
 		end)
 	else
+		for _, file_name in ipairs(vfs.Find("lovers/")) do
+			if file_name:compare(name) and vfs.IsDirectory("lovers/" .. file_name) then
+				found = lovemu.RunGame("lovers/" .. file_name)
+				break
+			end
+		end
+	end
+
+	if found then
+		if menu then menu.Close() end
+	else
 		return false, "love game " .. name .. " does not exist"
 	end
-	if menu then menu.Close() end
 end)
 
 return lovemu

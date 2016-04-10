@@ -101,8 +101,17 @@ end
 
 love.filesystem.createDirectory = love.filesystem.mkdir
 
-function love.filesystem.read(path)
-	return vfs.Read("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path) or vfs.Read(path) or ""
+function love.filesystem.read(path, size)
+	local file = vfs.Open("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path)
+
+	if not file then
+		file = vfs.Open(path)
+	end
+
+	if file then
+		local str = file:ReadBytes(size or math.huge)
+		return str, #str
+	end
 end
 
 function love.filesystem.remove(path) --partial
@@ -150,9 +159,7 @@ function love.filesystem.append(name, data, size) -- partial
 end
 
 do -- File object
-	local File = {}
-
-	File.Type = "File"
+	local File = lovemu.TypeTemplate("File")
 
 	function File:close()
 		if not self.file then return end
@@ -246,6 +253,8 @@ do -- File object
 
 		return self
 	end
+
+	lovemu.RegisterType(File)
 end
 
 

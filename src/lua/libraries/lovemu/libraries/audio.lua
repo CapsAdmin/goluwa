@@ -72,7 +72,7 @@ function love.audio.setVelocity(x,y,z)
 end
 
 function love.audio.setVolume(vol)
-	audio.SetListenerGain(vol)
+	audio.SetListenerGain(vol or 1)
 end
 
 function love.audio.newEffect(...) --lovemu only

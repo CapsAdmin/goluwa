@@ -31,6 +31,10 @@ function love.window.getPixelScale()
 	return 2
 end
 
+function love.window.setFullscreen()
+
+end
+
 function love.window.setMode(x,y, flags)
 	window.SetSize(Vec2(x, y))
 end

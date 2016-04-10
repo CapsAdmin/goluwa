@@ -27,21 +27,21 @@ end
 function love.lovemu_update(dt)
 	if not love.update then return end
 
-	local ok, msg = pcall(love.update, dt)
+	ENV.draw_now = true -- this is stupid but it's because some games rely on update being called before draw
 
-	if not ok then
-		ENV.error_message = msg
-	end
+	lovemu.pcall(love, love.update, dt)
 end
 
-event.AddListener("Update", "love", function(dt)
+event.AddListener("Update", "love", function()
 	for i = 1, lovemu.speed do
-		lovemu.CallEvent("lovemu_update", dt)
+		lovemu.CallEvent("lovemu_update", system.GetFrameTime())
 	end
 end)
 
 function love.lovemu_draw(dt)
 	if not love.draw then return end
+
+	if not ENV.draw_now then return end
 
 	surface.PushMatrix()
 	surface.SetWhiteTexture()
@@ -50,11 +50,7 @@ function love.lovemu_draw(dt)
 	love.graphics.setColor(love.graphics.getColor())
 	love.graphics.setFont(love.graphics.getFont())
 
-	local ok, msg = pcall(love.draw, dt)
-
-	if not ok then
-		ENV.error_message = msg
-	end
+	lovemu.pcall(love, love.draw, dt)
 
 	surface.PopMatrix()
 end
