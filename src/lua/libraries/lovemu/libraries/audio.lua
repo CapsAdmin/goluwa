@@ -1,8 +1,9 @@
 if not SOUND then return end
 
-local love = ... or love
+local love = ... or _G.love
+local ENV = love._lovemu_env
 
-love.audio = {}
+love.audio = love.audio or {}
 
 function love.audio.getNumSources()
 	return #lovemu.GetCreatedObjects("Source")
@@ -90,9 +91,7 @@ end
 
 do -- Source
 
-	local Source = {}
-
-	Source.Type = "Source"
+	local Source = lovemu.TypeTemplate("Source")
 
 	function Source:getChannels() -- partial
 		return 2 --stereo
@@ -313,7 +312,7 @@ do -- Source
 	end
 
 	function love.audio.newSource(var, type) --partial
-		local self = lovemu.CreateObject(Source)
+		local self = lovemu.CreateObject("Source")
 
 		if lovemu.Type(var) == "string" then
 
@@ -341,4 +340,6 @@ do -- Source
 
 		return self
 	end
+
+	lovemu.RegisterType(Source)
 end

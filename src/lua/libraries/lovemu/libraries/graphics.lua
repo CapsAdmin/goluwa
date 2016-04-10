@@ -1,16 +1,15 @@
 if not GRAPHICS then return end
 
-local love = (...) or _G.lovemu.love
+local love = ... or _G.love
+local ENV = love._lovemu_env
 
-local love = ... or love
-
-love.graphics = {}
+love.graphics = love.graphics or {}
 
 local function ADD_FILTER(obj)
 	obj.setFilter = function(s, min, mag, anistropy)
 
-		lovemu.textures[s]:SetMinFilter(min)
-		lovemu.textures[s]:SetMagFilter(mag)
+		ENV.textures[s]:SetMinFilter(min)
+		ENV.textures[s]:SetMagFilter(mag)
 
 		s.filter_min = min
 		s.filter_mag = mag
@@ -20,23 +19,22 @@ local function ADD_FILTER(obj)
 	obj.getFilter = function() return s.filter_min, s.filter_mag, s.filter_anistropy end
 end
 
-local FILTER_MIN = "linear"
-local FILTER_MAG = "linear"
-local FILTER_ANISOTROPY = 1
+ENV.graphics_filter_min = "linear"
+ENV.graphics_filter_mag = "linear"
+ENV.graphics_filter_anisotropy = 1
 
 do -- filter
 	function love.graphics.setDefaultImageFilter(min, mag, anisotropy) --partial
-		FILTER_MIN = min
-		FILTER_MAG = mag
-		FILTER_ANISOTROPY = anisotropy
+		ENV.graphics_filter_min = min
+		ENV.graphics_filter_mag = mag
+		ENV.graphics_filter_anisotropy = anisotropy
 	end
 
 	love.graphics.setDefaultFilter = love.graphics.setDefaultImageFilter
 end
 
 do -- quad
-	local Quad = {}
-	Quad.Type = "Quad"
+	local Quad = lovemu.TypeTemplate("Quad")
 
 	local function refresh(vertices, x,y,w,h, sw, sh)
 		vertices[0].x = 0;
@@ -77,7 +75,7 @@ do -- quad
 
 
 	function love.graphics.newQuad(x,y,w,h, sw,sh) -- partial
-		local self = lovemu.CreateObject(Quad)
+		local self = lovemu.CreateObject("Quad")
 
 		local vertices = {}
 
@@ -99,6 +97,8 @@ do -- quad
 
 		return self
 	end
+
+	lovemu.RegisterType(Quad)
 end
 
 love.graphics.origin = surface.LoadIdentity
@@ -108,8 +108,6 @@ love.graphics.scale = surface.Scale
 love.graphics.rotate = surface.Rotate
 love.graphics.push = surface.PushMatrix
 love.graphics.pop = surface.PopMatrix
-
-local cr, cg, cb, ca = 0, 0, 0, 0
 
 function love.graphics.setCaption(title)
 	window.SetTitle(title)
@@ -139,52 +137,69 @@ function love.graphics.isSupported(what) -- partial
 	return true
 end
 
-function love.graphics.setColor(r, g, b, a)
-	if type(r) == "number" then
-		cr = r or 0
-		cg = g or 0
-		cb = b or 0
-		ca = a or 255
-	else
-		cr = r[1] or 0
-		cg = r[2] or 0
-		cb = r[3] or 0
-		ca = r[4] or 255
+do
+	ENV.graphics_color_r = 0
+	ENV.graphics_color_g = 0
+	ENV.graphics_color_b = 0
+	ENV.graphics_color_a = 0
+
+	function love.graphics.setColor(r, g, b, a)
+		if type(r) == "number" then
+			ENV.graphics_color_r = r or 0
+			ENV.graphics_color_g = g or 0
+			ENV.graphics_color_b = b or 0
+			ENV.graphics_color_a = a or 255
+		else
+			ENV.graphics_color_r = r[1] or 0
+			ENV.graphics_color_g = r[2] or 0
+			ENV.graphics_color_b = r[3] or 0
+			ENV.graphics_color_a = r[4] or 255
+		end
+
+		surface.SetColor(ENV.graphics_color_r/255, ENV.graphics_color_g/255, ENV.graphics_color_b/255, ENV.graphics_color_a/255)
 	end
 
-	surface.SetColor(cr/255, cg/255, cb/255, ca/255)
-end
-
-function love.graphics.getColor()
-	return cr, cg, cb, ca
+	function love.graphics.getColor()
+		return ENV.graphics_color_r, ENV.graphics_color_g, ENV.graphics_color_b, ENV.graphics_color_a
+	end
 end
 
 do -- background
-	local br, bg, bb, ba = 0, 0, 0, 0
+	ENV.graphics_bg_color_r = 0
+	ENV.graphics_bg_color_g = 0
+	ENV.graphics_bg_color_b = 0
+	ENV.graphics_bg_color_a = 0
 
 	function love.graphics.setBackgroundColor(r, g, b, a)
 		if type(r) == "number" then
-			br = r or 0
-			bg = g or 0
-			bb = b or 0
-			ba = a or 255
+			ENV.graphics_bg_color_r = r or 0
+			ENV.graphics_bg_color_g = g or 0
+			ENV.graphics_bg_color_b = b or 0
+			ENV.graphics_bg_color_a = a or 255
 		else
-			br = r[1] or 0
-			bg = r[2] or 0
-			bb = r[3] or 0
-			ba = r[4] or 255
+			ENV.graphics_bg_color_r = r[1] or 0
+			ENV.graphics_bg_color_g = r[2] or 0
+			ENV.graphics_bg_color_b = r[3] or 0
+			ENV.graphics_bg_color_a = r[4] or 255
 		end
 	end
 
 	function love.graphics.getBackgroundColor()
-		return br, bg, bb, ba
+		return ENV.graphics_bg_color_r, ENV.graphics_bg_color_g, ENV.graphics_bg_color_b, ENV.graphics_bg_color_a
 	end
 
 	function love.graphics.clear()
-		surface.SetWhiteTexture()
-		surface.SetColor(br/255,bg/255,bb/255,ba/255)
-		surface.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
-		surface.SetColor(cr/255,cg/255,cb/255,ca/255)
+		local canvas = love.graphics.getCanvas()
+		if canvas then
+			canvas:clear()
+		else
+			local br, bg, bb, ba = love.graphics.getColor()
+			surface.SetWhiteTexture()
+			surface.SetColor(br/255,bg/255,bb/255,ba/255)
+			surface.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
+			local cr, cg, cb, ca = love.graphics.getColor()
+			surface.SetColor(cr/255,cg/255,cb/255,ca/255)
+		end
 	end
 end
 
@@ -230,10 +245,7 @@ end
 
 do -- font
 
-	local Font = {}
-
-	Font.Type = "Font"
-
+	local Font = lovemu.TypeTemplate("Font")
 	function Font:getWidth(str)
 		str = str or "W"
 		return (self.font:GetTextSize(str))
@@ -268,25 +280,21 @@ do -- font
 
 	end
 
-	local i = 0
-
 	local function create_font(path, size, glyphs, texture)
-		local self = lovemu.CreateObject(Font)
+		local self = lovemu.CreateObject("Font")
 
 		path = lovemu.FixPath(path)
 
 		self.font = surface.CreateFont({
 			size = size,
 			path = path,
-			filtering = FILTER_MIN,
+			filtering = ENV.graphics_filter_min,
 			glyphs = glyphs,
 			texture = texture,
 		})
 
 
 		self.Name = self.font:GetName()
-
-		i = i + 1
 
 		local w, h = self.font:GetTextSize("W")
 		self.Size = size or w
@@ -316,26 +324,23 @@ do -- font
 	function love.graphics.newImageFont(path, glyphs)
 		local tex
 		if lovemu.Type(path) == "Image" then
-			tex = lovemu.textures[path]
+			tex = ENV.textures[path]
 			path = "memory"
 		end
 		return create_font(path, nil, glyphs, tex)
 	end
 
-	local current_font
-	local default_font
-
 	function love.graphics.setFont(font)
-		font = font or default_font
-		current_font = font
+		font = font or ENV.default_font
+		ENV.current_font = font
 		surface.SetFont(font.font)
 	end
 
 	function love.graphics.getFont()
-		if not default_font then
-			default_font = love.graphics.newFont(12)
+		if not ENV.default_font then
+			ENV.default_font = love.graphics.newFont(12)
 		end
-		return current_font or default_font
+		return ENV.current_font or ENV.default_font
 	end
 
 	function love.graphics.setNewFont(...)
@@ -348,11 +353,18 @@ do -- font
 		sx = sx or 1
 		sy = sy or 1
 		r = r or 0
-
+		local cr, cg, cb, ca = love.graphics.getColor()
 		surface.SetColor(cr/255, cg/255, cb/255, ca/255)
-		--surface.Scale(sx, sy)
+		if sx ~= 1 or sy ~= 1 then
+			surface.PushMatrix()
+			surface.Translate(-x, -y)
+			surface.Scale(sx, sy)
+		end
 		surface.SetTextPosition(x, y)
 		surface.DrawText(text)
+		if sx ~= 1 or sy ~= 1 then
+			surface.PopMatrix()
+		end
 		--surface.Scale(-sx, -sy)
 	end
 
@@ -375,6 +387,7 @@ do -- font
 			x = x - (surface.GetTextSize(text) / 2)
 		end
 
+		local cr, cg, cb, ca = love.graphics.getColor()
 		surface.SetColor(cr/255, cg/255, cb/255, ca/255)
 		surface.SetTextPosition(0, 0)
 		surface.Translate(x, y)
@@ -389,41 +402,42 @@ do -- font
 		--surface.Scale(sx, sy)
 
 		for i = 1, #lines do
-			surface.SetTextPosition(x, y + (current_font.Size+(current_font.Size*125/100) * (i - 1)))
+			surface.SetTextPosition(x, y + (ENV.current_font.Size+(ENV.current_font.Size*125/100) * (i - 1)))
 			surface.DrawText(lines[i])
 		end
 
 		--surface.Scale(-sx, -sy)
 	end
+	lovemu.RegisterType(Font)
 end
 
 do -- line
-	local WIDTH = 1
-	local STYLE = "huh"
-	local JOIN = "huh"
+	ENV.graphics_line_width = 1
+	ENV.graphics_line_style = "huh"
+	ENV.graphics_line_join = "huh"
 
 	function love.graphics.setLineStyle(s)
-		STYLE = s
+		ENV.graphics_line_style = s
 	end
 
 	function love.graphics.getLineStyle()
-		return STYLE
+		return ENV.graphics_line_style
 	end
 
 	function love.graphics.setLineJoin(s)
-		JOIN = s
+		ENV.graphics_line_join = s
 	end
 
 	function love.graphics.getLineJoin(s)
-		return JOIN
+		return ENV.graphics_line_join
 	end
 
 	function love.graphics.setLineWidth(w)
-		WIDTH = w
+		ENV.graphics_line_width = w
 	end
 
 	function love.graphics.getLineWidth()
-		return WIDTH
+		return ENV.graphics_line_width
 	end
 
 	function love.graphics.line(...)
@@ -445,15 +459,18 @@ do -- line
 end
 
 do -- canvas
-	local Canvas = {}
-	Canvas.Type = "Canvas"
+	local Canvas = lovemu.TypeTemplate("Canvas")
 
 	ADD_FILTER(Canvas)
 
 	function Canvas:renderTo(cb)
-		self.fb:Begin()
-		cb()
-		self.fb:End()
+		local old = love.graphics.getCanvas()
+		love.graphics.setCanvas(self)
+
+		local ok, err = pcall(cb)
+		if not ok then warning(err) end
+
+		love.graphics.setCanvas(old)
 	end
 
 	function Canvas:getWidth()
@@ -469,9 +486,7 @@ do -- canvas
 	end
 
 	function Canvas:clear(...)
-		self.fb:Begin()
-		love.graphics.clear(...)
-		self.fb:End()
+		self.fb:Clear()
 	end
 
 	function Canvas:setWrap()
@@ -486,22 +501,20 @@ do -- canvas
 		w = w or render.GetWidth()
 		h = h or render.GetHeight()
 
-		local self = lovemu.CreateObject(Canvas)
+		local self = lovemu.CreateObject("Canvas")
 
 		self.fb = render.CreateFrameBuffer(Vec2(w, h), {
-			mag_filter = FILTER_MAG,
-			min_filter = FILTER_MIN,
+			mag_filter = ENV.graphics_filter_mag,
+			min_filter = ENV.graphics_filter_min,
 		})
 
-		lovemu.textures[self] = self.fb:GetTexture()
+		ENV.textures[self] = self.fb:GetTexture()
 
 		return self
 	end
 
-	local CANVAS
-
 	function love.graphics.setCanvas(canvas) -- partial
-		CANVAS = canvas
+		ENV.graphics_current_canvas = canvas
 
 		if canvas then
 			canvas.fb:Bind()
@@ -513,29 +526,29 @@ do -- canvas
 	end
 
 	function love.graphics.getCanvas() -- partial
-		return CANVAS
+		return ENV.graphics_current_canvas
 	end
+
+	lovemu.RegisterType(Canvas)
 end
 
 do -- image
-	local Image = {}
-
-	Image.Type = "Image"
+	local Image = lovemu.TypeTemplate("Image")
 
 	function Image:getWidth()
-		return lovemu.textures[self]:GetSize().x
+		return ENV.textures[self]:GetSize().x
 	end
 
 	function Image:getHeight()
-		return lovemu.textures[self]:GetSize().y
+		return ENV.textures[self]:GetSize().y
 	end
 
 	function Image:getDimensions()
-		return lovemu.textures[self]:GetSize().x, lovemu.textures[self]:GetSize().y
+		return ENV.textures[self]:GetSize().x, ENV.textures[self]:GetSize().y
 	end
 
 	function Image:getHeight()
-		return lovemu.textures[self]:GetSize().y
+		return ENV.textures[self]:GetSize().y
 	end
 
 	ADD_FILTER(Image)
@@ -552,36 +565,36 @@ do -- image
 		if lovemu.Type(path) == "ImageData" then
 			return path
 		else
-			local self = lovemu.CreateObject(Image)
+			local self = lovemu.CreateObject("Image")
 
 			path = lovemu.FixPath(path)
 
 			local tex = render.CreateTextureFromPath(path)
-			tex:SetMinFilter(FILTER_MIN)
-			tex:SetMagFilter(FILTER_MAG)
-			lovemu.textures[self] = tex
+			tex:SetMinFilter(ENV.graphics_filter_min)
+			tex:SetMagFilter(ENV.graphics_filter_mag)
+			ENV.textures[self] = tex
 
 			return self
 		end
 	end
 
 	function love.graphics.newImageData(path) -- partial
-		local self = lovemu.CreateObject(Image)
+		local self = lovemu.CreateObject("Image")
 
 		path = lovemu.FixPath(path)
 
 		local tex = render.CreateTextureFromPath(path)
-		tex:SetMinFilter(FILTER_MIN)
-		tex:SetMagFilter(FILTER_MAG)
-		lovemu.textures[self] = tex
+		tex:SetMinFilter(ENV.graphics_filter_min)
+		tex:SetMagFilter(ENV.graphics_filter_mag)
+		ENV.textures[self] = tex
 
 		return self
 	end
+
+	lovemu.RegisterType(Image)
 end
 
 do -- stencil
-	local STENCIL = false
-
 	function love.graphics.newStencil(func) --partial
 
 	end
@@ -591,11 +604,11 @@ do -- stencil
 	end
 
 	function love.graphics.setStencilTest(b)
-		STENCIL = b
+		ENV.graphics_stencil_test = b
 	end
 
 	function love.graphics.getStencilTest()
-		return STENCIL
+		return ENV.graphics_stencil_test
 	end
 
 	function love.graphics.stencil(stencilfunction, keepbuffer)
@@ -639,8 +652,9 @@ function love.graphics.drawq(drawable, quad, x,y, r, sx,sy, ox,oy) -- partial
 	oy=oy or 0
 	r=r or 0
 
+	local cr, cg, cb, ca = love.graphics.getColor()
 	surface.SetColor(cr/255, cg/255, cb/255, ca/255)
-	surface.SetTexture(lovemu.textures[drawable])
+	surface.SetTexture(ENV.textures[drawable])
 	surface.SetRectUV(quad.x,quad.y, quad.w,quad.h, quad.sw,quad.sh)
 	surface.DrawRect(x,y, quad.w*sx, quad.h*sy,r,ox*sx,oy*sy)
 	surface.SetRectUV()
@@ -649,10 +663,10 @@ end
 function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 	if lovemu.Type(drawable) == "SpriteBatch" then
 		surface.SetColor(1,1,1,1)
-		surface.SetTexture(lovemu.textures[drawable.img])
+		surface.SetTexture(ENV.textures[drawable.img])
 		drawable.poly:Draw()
 	else
-		if lovemu.textures[drawable] then
+		if ENV.textures[drawable] then
 			if lovemu.Type(x) == "Quad" then
 				love.graphics.drawq(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 			else
@@ -664,7 +678,7 @@ function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 				oy=oy or 0
 				r=r or 0
 
-				local tex = lovemu.textures[drawable]
+				local tex = ENV.textures[drawable]
 
 				--if drawable.fb then  sx = 5 sy = 6 end
 
@@ -682,8 +696,7 @@ function love.graphics.setIcon() --partial
 end
 
 do
-	local Shader = {}
-	Shader.Type = "Shader"
+	local Shader = lovemu.TypeTemplate("Shader")
 
 	function Shader:getWarnings() -- partial
 		return ""
@@ -694,10 +707,12 @@ do
 	end
 
 	function love.graphics.newShader() --partial
-		local obj = lovemu.CreateObject(Shader)
+		local obj = lovemu.CreateObject("Shader")
 
 		return obj
 	end
+
+	lovemu.RegisterType(Shader)
 end
 
 love.graphics.newPixelEffect = love.graphics.newShader
@@ -706,9 +721,6 @@ function love.graphics.setShader() --partial
 end
 
 function love.graphics.setPixelEffect() --partial
-end
-
-function love.graphics.setScissor() --partial
 end
 
 function love.graphics.isCreated() -- partial
@@ -773,8 +785,7 @@ function love.graphics.getStats()
 end
 
 do -- sprite batch
-	local SpriteBatch = {}
-	SpriteBatch.Type = "SpriteBatch"
+	local SpriteBatch = lovemu.TypeTemplate("SpriteBatch")
 
 	local function set_rect(self, i, x,y, r, sx,sy, ox,oy, kx,ky)
 		sx = sx or self.w
@@ -848,7 +859,7 @@ do -- sprite batch
 	end
 
 	function love.graphics.newSpriteBatch(image, size, usagehint) -- partial
-		local self = lovemu.CreateObject(SpriteBatch)
+		local self = lovemu.CreateObject("SpriteBatch")
 		local poly = surface.CreatePoly(size)
 
 		self.size = size
@@ -861,4 +872,19 @@ do -- sprite batch
 
 		return self
 	end
+
+	lovemu.RegisterType(SpriteBatch)
 end
+
+event.AddListener("PreDrawMenu", "love", function(dt)
+	if menu and menu.IsVisible() then
+		surface.PushHSV(1,0,1)
+	end
+
+	lovemu.CallEvent("lovemu_draw", dt)
+	render.SetCullMode("front")
+
+	if menu and menu.IsVisible() then
+		surface.PopHSV(1,0,1)
+	end
+end)

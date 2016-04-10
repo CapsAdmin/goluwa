@@ -12,20 +12,36 @@ do
 		return self.name
 	end
 
-	local created = {}
+	local created = utility.CreateWeakTable()
+	local registered = {}
 
-	function lovemu.CreateObject(META)
+	function lovemu.TypeTemplate(name)
+		local META = {}
+		META.__lovemu_type = name
+		return META
+	end
 
+	function lovemu.RegisterType(META)
 		META.__index = META
 		META.typeOf = base_typeOf
 		META.type = base_type
 
+		registered[META.__lovemu_type] = META
+
+		if created[META.__lovemu_type] then
+			for i,v in ipairs(created[META.__lovemu_type]) do
+				setmetatable(v, META)
+			end
+		end
+	end
+
+	function lovemu.CreateObject(name)
+		local META = registered[name]
+
 		local self = setmetatable({}, META)
 
-		self.__lovemu_type = META.Type
-
-		created[META.Type] = created[META.Type] or {}
-		table.insert(created[META.Type], self)
+		created[META.__lovemu_type] = created[META.__lovemu_type] or {}
+		table.insert(created[META.__lovemu_type], self)
 
 		return self
 	end
@@ -98,6 +114,8 @@ function lovemu.GetGames()
 	return vfs.Find("lovers/")
 end
 
+lovemu.love_envs = utility.CreateWeakTable()
+
 function lovemu.CreateLoveEnv()
 	local love = {}
 
@@ -108,10 +126,23 @@ function lovemu.CreateLoveEnv()
 	love._version_major = tonumber(version[1])
 	love._version_minor = tonumber(version[2])
 	love._version_revision = tonumber(version[3])
+	love._lovemu_env = {
+		textures = {},
+	}
 
 	include("lua/libraries/lovemu/libraries/*", love)
 
+	table.insert(lovemu.love_envs, love)
+
 	return love
+end
+
+function lovemu.CallEvent(what, ...)
+	for i, love in ipairs(lovemu.love_envs) do
+		if love[what] then
+			system.pcall(love[what], ...)
+		end
+	end
 end
 
 function lovemu.FixPath(path)
@@ -122,31 +153,25 @@ function lovemu.FixPath(path)
 end
 
 function lovemu.RunGame(folder, ...)
-	--require("socket")
-	--require("socket.http")
-
-	--render.EnableGBuffer(false)
-
 	local love = lovemu.CreateLoveEnv(lovemu.version)
 
-	lovemu.errored = false
-	lovemu.error_msg = ""
-	lovemu.delta = 0
-	lovemu.demoname = folder
-	lovemu.love = love
-	lovemu.textures = {}
-
-	warning("mounting love game folder: ", 1, R(lovemu.demoname .. "/"))
+	warning("mounting love game folder: ", 1, R(folder .. "/"))
 	vfs.CreateFolder("data/lovemu/")
 	vfs.AddModuleDirectory("data/lovemu/")
-	vfs.Mount(R(lovemu.demoname .. "/"))
-	vfs.AddModuleDirectory(lovemu.demoname .. "/")
+	vfs.Mount(R(folder .. "/"))
+	vfs.AddModuleDirectory(folder .. "/")
 
 	local env
 	local require = require
 	env = setmetatable({
 		love = love,
 		require = function(name, ...)
+			if name == "strict" then
+				-- nonono
+				-- nonono
+				return true
+			end
+
 			logn("[lovemu] requre: ", name)
 
 			name = name:gsub("[%.]+", ".")
@@ -183,7 +208,9 @@ function lovemu.RunGame(folder, ...)
 		end,
 		pcall = function(func, ...)
 			if type(func) == "function" then
-				setfenv(func, env)
+				if debug.getinfo(func).what ~= "C" then
+					setfenv(func, env)
+				end
 			end
 			return _G.pcall(func, ...)
 		end,
@@ -203,6 +230,18 @@ function lovemu.RunGame(folder, ...)
 
 	env._G = env
 	env.arg = {...}
+
+	setmetatable(
+		love,
+		{
+			__newindex = function(t, k, v)
+				if type(v) == "function" then
+					setfenv(v, env)
+				end
+				rawset(t,k,v)
+			end,
+		}
+	)
 
 	do -- config
 		lovemu.config = {
@@ -239,61 +278,13 @@ function lovemu.RunGame(folder, ...)
 	local main = assert(vfs.loadfile("main.lua"))
 
 	setfenv(main, env)
-	setfenv(love.load, env)
+	setfenv(love.lovemu_update, env)
+	setfenv(love.lovemu_draw, env)
 
 	if not system.pcall(main) then return end
 	if not system.pcall(love.load, {}) then return end
 
-
-	local id = "lovemu_" .. folder
-
-	local function run(dt)
-		love.update(dt)
-		love.draw(dt)
-	end
-
-	setfenv(run, env)
-
-	surface.CreateFont("lovemu", {path = "fonts/vera.ttf", size = 11})
-
 	vfs.Mount(love.filesystem.getUserDirectory())
-
-	event.AddListener("PreDrawMenu", id, function(dt)
-		if menu and menu.IsVisible() then
-			surface.PushHSV(1,0,1)
-		end
-
-		for i = 1, lovemu.speed do
-			surface.SetFont("lovemu")
-			lovemu.delta = dt
-			surface.SetWhiteTexture()
-
-			love.graphics.clear()
-			love.graphics.setColor(love.graphics.getColor())
-			love.graphics.setFont(love.graphics.getFont())
-
-			if not lovemu.errored then
-				surface.PushMatrix()
-				local err, msg = system.pcall(run, dt)
-				surface.PopMatrix()
-				if not err then
-					warning(msg)
-
-					lovemu.errored = true
-					lovemu.error_msg = msg
-
-					love.errhand(lovemu.error_msg)
-				end
-			else
-				love.errhand(lovemu.error_msg)
-			end
-			render.SetCullMode("front")
-		end
-
-		if menu and menu.IsVisible() then
-			surface.PopHSV(1,0,1)
-		end
-	end, {priority = math.huge}) -- draw this first
 end
 
 console.AddCommand("love", function(line, command, ...)

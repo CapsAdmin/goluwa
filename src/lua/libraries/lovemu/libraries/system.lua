@@ -1,6 +1,7 @@
-local love = ... or love
+local love = ... or _G.love
+local ENV = love._lovemu_env
 
-love.system = {}
+love.system = love.system or {}
 
 function love.system.getClipboardText()
 	return system.GetClipboard()
@@ -11,5 +12,5 @@ function love.system.setClipboardText(str)
 end
 
 function love.system.openURL(url)
-	logn("love.system.openURL(",url,")")
+	system.OpenURL(url)
 end

@@ -1,9 +1,9 @@
 if not GRAPHICS then return end
 
-local love = ... or love
+local love = ... or _G.love
+local ENV = love._lovemu_env
 
-local ParticleSystem = {}
-ParticleSystem.Type = "ParticleSystem"
+local ParticleSystem = lovemu.TypeTemplate("ParticleSystem")
 
 function ParticleSystem:clone()
 
@@ -219,7 +219,9 @@ function ParticleSystem:update()
 
 end
 function love.graphics.newParticleSystem()
-	local self = lovemu.CreateObject(ParticleSystem)
+	local self = lovemu.CreateObject("ParticleSystem")
 
 	return self
 end
+
+lovemu.RegisterType(ParticleSystem)

@@ -1,31 +1,32 @@
 if not GRAPHICS then return end
 
-local love = ... or love
+local love = ... or _G.love
+local ENV = love._lovemu_env
 
-local textures = lovemu.textures
-local FILTER = "nearest"
+local ffi = require("ffi")
 
-love.image = {}
+local textures = ENV.textures
+
+love.image = love.image or {}
 
 do -- image data
 
-	local ImageData = {}
-	ImageData.Type = "ImageData"
+	local ImageData = lovemu.TypeTemplate("ImageData")
 
 	function ImageData:getSize()
-		return #buffer
+		return self.size
 	end
 
 	function ImageData:getWidth()
-		return self.tex.w
+		return self.tex.Size.x
 	end
 
 	function ImageData:getHeight()
-		return self.tex.h
+		return self.tex.Size.y
 	end
 
 	function ImageData:getDimensions()
-		return self.tex.w, self.tex.h
+		return self.tex.Size.x, self.tex.Size.y
 	end
 
 	function ImageData:setFilter()
@@ -41,7 +42,7 @@ do -- image data
 	end
 
 	function ImageData:getString()
-		return buffer
+		return ffi.string(self.buffer, self.size)
 	end
 
 	function ImageData:setWrap()
@@ -52,19 +53,8 @@ do -- image data
 
 	end
 
-	function ImageData:getPixel(x,y, r,g,b,a)
-		do return math.random(255), math.random(255), math.random(255), math.random(255) end
-		local rr, rg, rb, ra
-		self.tex:Fill(function(_x,_y, i, r,g,b,a)
-			if _x == x and _y == y then
-				rr = r
-				rg = g
-				rb = b
-				ra = a
-				return true
-			end
-		end, nil, true)
-		return rr or 0, rg or 0, rb or 0, ra or 0
+	function ImageData:getPixel(x,y)
+		return self.tex:GetPixelColor(x, y)
 	end
 
 	function ImageData:setPixel(x,y, r,g,b,a)
@@ -91,32 +81,42 @@ do -- image data
 		check(a, "string", "number")
 		check(b, "number", "nil")
 
-		local w
-		local h
-		local buffer
-
-		if type(a) == "number" and type(b) == "number" then
-			w = a
-			h = a
-		elseif not b and type(a) == "string" and freeimage then
-			buffer, w, h = freeimage.LoadImage(a)
-			if not buffer then
-				a = vfs.Read(a, "rb")
-				buffer, w, h = freeimage.LoadImage(a)
-			end
-		end
-
-		local self = lovemu.CreateObject(ImageData)
+		local self = lovemu.CreateObject("ImageData")
 
 		local tex = render.CreateTexture("2d")
-		tex:SetSize(Vec2(w, h))
-		tex:SetMinFilter(FILTER)
-		tex:SetMagFilter(FILTER)
 
-		lovemu.textures[self] = tex
+		if type(a) == "number" and type(b) == "number" then
+			tex:SetSize(Vec2(a, b))
+		else
+			local buffer, w, h, info = render.DecodeTexture(a)
+
+			if not buffer then
+				buffer, w, h, info = render.DecodeTexture(vfs.Read(a, "rb"))
+			end
+
+			if buffer then
+				tex:SetSize(Vec2(w, h))
+
+				tex:Upload({
+					buffer = buffer,
+					width = w,
+					height = h,
+					format = info.format or "bgra",
+					type = info.type,
+				})
+			end
+			self.buffer = buffer
+		end
+
+		tex:SetMinFilter("nearest")
+		tex:SetMagFilter("nearest")
+
+		ENV.textures[self] = tex
 
 		self.tex = tex
 
 		return self
 	end
+
+	lovemu.RegisterType(ImageData)
 end

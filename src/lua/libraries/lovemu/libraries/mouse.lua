@@ -1,6 +1,7 @@
-local love = ... or love
+local love = ... or _G.love
+local ENV = love._lovemu_env
 
-love.mouse = {}
+love.mouse = love.mouse or {}
 
 function love.mouse.setPosition(x, y)
 	window.SetMousePosition(Vec2(x, y))
@@ -24,16 +25,16 @@ end
 
 love.mouse.setGrabbed = love.mouse.setRelativeMode
 
-local Cursor = {}
-Cursor.Type = "Cursor"
+local Cursor = lovemu.TypeTemplate("Cursor")
+lovemu.RegisterType(Cursor)
 
 function love.mouse.newCursor() -- partial
-	local obj = lovemu.CreateObject(Cursor)
+	local obj = lovemu.CreateObject("Cursor")
 	return obj
 end
 
 function love.mouse.getCursor() -- partial
-	local obj = lovemu.CreateObject(Cursor)
+	local obj = lovemu.CreateObject("Cursor")
 
 	obj.getType = function()
 		return window.GetCursor()
@@ -47,7 +48,7 @@ function love.mouse.setCursor() -- partial
 end
 
 function love.mouse.getSystemCursor() -- partial
-	local obj = lovemu.CreateObject(Cursor)
+	local obj = lovemu.CreateObject("Cursor")
 	obj.getType = function()
 		return window.GetCursor()
 	end
@@ -55,14 +56,14 @@ function love.mouse.getSystemCursor() -- partial
 end
 
 do
-	local visible = false
+	ENV.mouse_visible = false
 
 	function love.mouse.setVisible(bool) -- partial
-		visible = bool
+		ENV.mouse_visible = bool
 	end
 
 	function love.mouse.getVisible(bool) -- partial
-		return visible
+		return ENV.mouse_visible
 	end
 end
 
@@ -98,34 +99,28 @@ function love.mouse.isDown(key)
 	return input.IsMouseDown(mouse_keymap_10_reverse[key]) or input.IsMouseDown(mouse_keymap_reverse[key])
 end
 
-event.AddListener("MouseInput","lovemu_mouse",function(key, press)
+event.AddListener("MouseInput", "lovemu", function(key, press)
 	local x, y = window.GetMousePosition():Unpack()
 
 	if key == "mwheel_up" or key == "mwheel_down" then
-		if love.wheelmoved then
-			love.wheelmoved(0, key == "mwheel_up" and 1 or -1)
-		end
+		lovemu.CallEvent("wheelmoved", 0, key == "mwheel_up" and 1 or -1)
 	end
 
 	if press then
-		if love.mousepressed then
-			if mouse_keymap[key] then
-				love.mousepressed(x, y, mouse_keymap[key])
-			end
+		if mouse_keymap[key] then
+			lovemu.CallEvent("mousepressed", x, y, mouse_keymap[key])
+		end
 
-			if mouse_keymap_10[key] then
-				love.mousepressed(x, y, mouse_keymap_10[key])
-			end
+		if mouse_keymap_10[key] then
+			lovemu.CallEvent("mousepressed", x, y, mouse_keymap_10[key])
 		end
 	else
-		if love.mousereleased then
-			if mouse_keymap[key] then
-				love.mousereleased(x, y, mouse_keymap[key])
-			end
+		if mouse_keymap[key] then
+			lovemu.CallEvent("mousereleased", x, y, mouse_keymap[key])
+		end
 
-			if mouse_keymap_10[key] then
-				love.mousereleased(x, y, mouse_keymap_10[key])
-			end
+		if mouse_keymap_10[key] then
+			lovemu.CallEvent("mousereleased", x, y, mouse_keymap_10[key])
 		end
 	end
 end)

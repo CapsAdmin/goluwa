@@ -1,15 +1,16 @@
-local love = ... or love
+local love = ... or _G.love
+local ENV = love._lovemu_env
 
-love.event = {}
+love.event = love.event or {}
 
-local queue = {}
+ENV.event_queue = ENV.event_queue or {}
 
 function love.event.clear()
-	table.clear(queue)
+	table.clear(ENV.event_queue)
 end
 
 function love.event.push(e, a, b, c, d) --partial
-	table.insert(queue, {e, a, b, c, d})
+	table.insert(ENV.event_queue, {e, a, b, c, d})
 end
 
 function love.event.poll() --partial
@@ -27,7 +28,7 @@ function love.event.quit() --partial
 end
 
 function love.event.wait() --partial
-	local val = table.remove(queue, 1)
+	local val = table.remove(ENV.event_queue, 1)
 
 	if val then
 		return unpack(val)

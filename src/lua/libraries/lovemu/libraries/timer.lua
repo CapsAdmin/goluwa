@@ -1,6 +1,7 @@
-local love = ... or love
+local love = ... or _G.love
+local ENV = love._lovemu_env
 
-love.timer = {}
+love.timer = love.timer or {}
 
 function love.timer.getDelta()
 	return system.GetFrameTime() or 0

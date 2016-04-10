@@ -1,6 +1,7 @@
-local love = ... or love
+local love = ... or _G.love
+local ENV = love._lovemu_env
 
-love.joystick = {}
+love.joystick = love.joystick or {}
 
 function love.joystick.getJoysticks() --partial
 	return {}

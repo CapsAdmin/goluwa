@@ -1,19 +1,15 @@
-local love = ... or love
+local love = ... or _G.love
+local ENV = love._lovemu_env
 
-love.keyboard = {}
+love.keyboard = love.keyboard or {}
 
-do
-	local DELAY = 0.5
-	local INTERVAL = 0.1
+function love.keyboard.getKeyRepeat() -- partial
+	return ENV.keyboard_delay or 0.5, ENV.keyboard_interval or 0.1
+end
 
-	function love.keyboard.getKeyRepeat() -- partial
-		return DELAY, INTERVAL
-	end
-
-	function love.keyboard.setKeyRepeat(delay, interval) -- partial
-		DELAY = delay
-		INTERVAL = interval
-	end
+function love.keyboard.setKeyRepeat(delay, interval) -- partial
+	ENV.keyboard_delay = delay
+	ENV.keyboard_interval = interval
 end
 
 local keyboard_map = {
@@ -61,25 +57,20 @@ function love.keyboard.setTextInput(b)
 
 end
 
-local CURRENT_CHAR
+local char_hack
 
-event.AddListener("KeyInput","lovemu_keyboard",function(key, press)
+event.AddListener("KeyInput", "lovemu", function(key, press)
 	key = keyboard_map[key] or key
 
 	if press then
-		if love.keypressed then
-			love.keypressed(key, CURRENT_CHAR) --partial
-		end
+		lovemu.CallEvent("keypressed", key, char_hack) --partial
 	else
-		if love.keyreleased then
-			love.keyreleased(key)
-		end
+		lovemu.CallEvent("keyreleased", key)
 	end
 end)
 
-event.AddListener("CharInput","lovemu_keyboard",function(char)
-	CURRENT_CHAR = char
-	if love.textinput then
-		love.textinput(char) --partial
-	end
+event.AddListener("CharInput", "lovemu", function(char)
+	char_hack = char
+
+	lovemu.CallEvent("textinput", char) --partial
 end)

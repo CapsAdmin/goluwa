@@ -1,15 +1,14 @@
-local love = ... or love
+local love = ... or _G.love
+local ENV = love._lovemu_env
 
-love.thread = {}
+love.thread = love.thread or {}
 
-local threads = {}
-local threads2 = {}
-local running
+ENV.threads = {}
+ENV.threads2 = {}
 
-local Thread = {}
-Thread.Type = "Thread"
+local Thread = lovemu.TypeTemplate("Thread")
 
-function Thread:start(...) self.args = {...} self.thread:Start() if self.thread.co then threads2[self.thread.co] = self else running = self end end
+function Thread:start(...) self.args = {...} self.thread:Start() if self.thread.co then ENV.threads2[self.thread.co] = self else ENV.running = self end end
 function Thread:wait() end
 function Thread:set(key, val) self.vars[key] = val end
 function Thread:send() end
@@ -23,7 +22,7 @@ function Thread:demand(name) return self.vars[name] end
 function Thread:getError(name) end
 
 function love.thread.newThread(name, script_path)
-	local self = lovemu.CreateObject(Thread)
+	local self = lovemu.CreateObject("Thread")
 
 	self.vars = {}
 
@@ -42,7 +41,7 @@ function love.thread.newThread(name, script_path)
 	end
 
 	self.thread = thread
-	threads[name] = self
+	ENV.threads[name] = self
 
 	self.name = name
 
@@ -53,19 +52,20 @@ end
 
 function love.thread.getThread(name)
 	if not name then
-		return threads2[coroutine.running()] or running
+		return ENV.threads2[coroutine.running()] or ENV.running
 	end
-	return threads[name]
+	return ENV.threads[name]
 end
 
 function love.thread.getThreads()
-	return threads
+	return ENV.threads
 end
 
-local channels = {}
+lovemu.RegisterType(Thread)
 
-local Channel = {}
-Channel.Type = "Channel"
+ENV.channels = {}
+
+local Channel = lovemu.TypeTemplate("Channel")
 
 function Channel:clear() table.clear(self.queue) end
 function Channel:demand() repeat until #self.queue ~= 0 return self:pop() end -- supposedly blocking
@@ -77,7 +77,7 @@ function Channel:supply(value) return self:push(value) end -- supposedly blockin
 
 
 function love.thread.newChannel()
-	local self = lovemu.CreateObject(Channel)
+	local self = lovemu.CreateObject("Channel")
 
 	self.queue = {}
 
@@ -85,5 +85,7 @@ function love.thread.newChannel()
 end
 
 function love.thread.getChannel(name)
-	return channels[name]
+	return ENV.channels[name]
 end
+
+lovemu.RegisterType(Channel)

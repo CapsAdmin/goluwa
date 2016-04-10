@@ -1,6 +1,7 @@
-local love = ... or love
+local love = ... or _G.love
+local ENV = love._lovemu_env
 
-love.window = {}
+love.window = love.window or {}
 
 function love.window.setTitle(title)
 	window.SetTitle(title)
@@ -30,6 +31,9 @@ function love.window.getPixelScale()
 	return 2
 end
 
+function love.window.setMode(x,y, flags)
+	window.SetSize(Vec2(x, y))
+end
 
 function love.window.getMode()
 	local w, h = window.GetSize():Unpack()
@@ -49,14 +53,6 @@ function love.window.getMode()
 		x = window.GetPosition().x,
 		y = window.GetPosition().y,
 	}
-end
-
-local vec = Vec2()
-
-function love.window.setMode(x,y)
-	vec.x = x
-	vec.y = y
-	window.SetSize(vec)
 end
 
 function love.window.getDesktopDimensions()

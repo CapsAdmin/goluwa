@@ -1,6 +1,7 @@
-local love = ... or love
+local love = ... or _G.love
+local ENV = love._lovemu_env
 
-love.math = {}
+love.math = love.math or {}
 
 for k,v in pairs(math) do
 	love.math[k] = v
@@ -35,11 +36,7 @@ do
 end
 
 do
-	local RandomGenerator = {}
-
-	RandomGenerator.Type = "RandomGenerator"
-
-	RandomGenerator.seed = 0
+	local RandomGenerator = lovemu.TypeTemplate("RandomGenerator")
 
 	function RandomGenerator:setSeed(seed)
 		self.seed = seed
@@ -76,8 +73,12 @@ do
 	end
 
 	function love.math.newRandomGenerator()
-		local self = lovemu.CreateObject(RandomGenerator)
+		local self = lovemu.CreateObject("RandomGenerator")
+
+		self.seed = 0
 
 		return self
 	end
+
+	lovemu.RegisterType(RandomGenerator)
 end
