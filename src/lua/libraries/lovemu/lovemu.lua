@@ -2,6 +2,7 @@ local lovemu = _G.lovemu or {}
 
 lovemu.version = "0.9.0"
 lovemu.speed = 1
+lovemu.love_envs = lovemu.love_envs or utility.CreateWeakTable()
 
 do
 	local function base_typeOf(self, str)
@@ -62,56 +63,6 @@ function lovemu.ErrorNotSupported(str, level)
 	warning("[lovemu] " .. str)
 end
 
-function lovemu.CheckSupported(demo)
-	local supported = {}
-
-	for path in vfs.Iterate("lua/libraries/lovemu/libraries/", nil, true) do
-		local file = vfs.Open(path)
-		for line in file:Lines() do
-			local name = line:match("(love%..-)%b()")
-			if name then
-				local partial = line:match("--partial(.+)\n", nil, true)
-
-				if partial then
-					partial = partial:trim()
-
-					if partial ~= "" then
-						partial = "partial"
-					end
-
-					supported[name] = partial
-				else
-					supported[name] = true
-				end
-			end
-		end
-	end
-
-	local found = {}
-
-	for _, path in pairs(vfs.Search("lovers/" .. demo .. "/", "lua")) do
-		local file = vfs.Open(path)
-		for line in file:Lines() do
-			local name = line:match("(love%.[_%a]-%.[_%a]-)[^_%a]")
-			if name then
-				found[name] = true
-			end
-		end
-	end
-
-	for k in pairs(found) do
-		if supported[k] then
-			if type(supported[k]) == "string" then
-				logn("partial:\t", k, " -- ", supported[k])
-			end
-		else
-			logn("not supported: ", k)
-		end
-	end
-end
-
-lovemu.love_envs = utility.CreateWeakTable()
-
 function lovemu.CreateLoveEnv()
 	local love = {}
 
@@ -136,13 +87,13 @@ do
 
 	local on_error = function(msg)
 		current_love._lovemu_env.error_message = msg .. "\n" .. debug.traceback()
-		print(current_love._lovemu_env.error_message)
+		llog(current_love._lovemu_env.error_message)
 	end
 
 	function lovemu.pcall(love, func, ...)
 		if love._lovemu_env.error_message then return end
 		current_love = love
-		local ret = {xpcall(func, on_error,...)}
+		local ret = {xpcall(func, on_error, ...)}
 		if ret[1] then
 			return select(2, unpack(ret))
 		end
@@ -187,7 +138,7 @@ function lovemu.RunGame(folder, ...)
 				return true
 			end
 
-			logn("[lovemu] requre: ", name)
+			llog("requre: ", name)
 
 			name = name:gsub("[%.]+", ".")
 
@@ -251,6 +202,7 @@ function lovemu.RunGame(folder, ...)
 		{
 			__newindex = function(t, k, v)
 				if type(v) == "function" then
+					llog("love.%s = %s", k,v)
 					setfenv(v, env)
 				end
 				rawset(t,k,v)
@@ -300,56 +252,35 @@ function lovemu.RunGame(folder, ...)
 	lovemu.pcall(love, love.load, {})
 
 	vfs.Mount(love.filesystem.getUserDirectory())
+
+	lovemu.current_game = love
 end
 
-console.AddCommand("love", function(line, command, ...)
-	if command == "run" then
-		local name = tostring((...))
+console.AddCommand("love_run", function(line, name, ...)
+	if vfs.IsDirectory("lovers/" .. name) then
+		lovemu.RunGame("lovers/" .. name, select(2, ...))
+	elseif vfs.IsFile("lovers/" .. name .. ".love") then
+		lovemu.RunGame("lovers/" .. name .. ".love", select(2, ...))
+	elseif name:find("github") then
+		local url = name
 
-		if vfs.IsDirectory("lovers/" .. name) then
-			lovemu.RunGame("lovers/" .. name, select(2, ...))
-		elseif vfs.IsFile("lovers/" .. name .. ".love") then
-			lovemu.RunGame("lovers/" .. name .. ".love", select(2, ...))
-		elseif name:find("github") then
-			local url = name
-
-			if name:startswith("github/") then
-				url = name:gsub("github/", "https://github.com/") .. "/archive/master.zip"
-			else
-				url =  url .. "/archive/master.zip"
-			end
-
-			local args = {select(2, ...)}
-
-			resource.Download(url, function(full_path)
-				full_path = full_path .. "/" .. name:match(".+/(.+)") .. "-master"
-				logn("running downloaded löve game: ", full_path)
-				lovemu.RunGame(full_path, unpack(args))
-			end)
+		if name:startswith("github/") then
+			url = name:gsub("github/", "https://github.com/") .. "/archive/master.zip"
 		else
-			return false, "love game " .. name .. " does not exist"
+			url = url .. "/archive/master.zip"
 		end
-		if menu then menu.Close() end
-	elseif command == "check" then
-		local name = tostring((...))
-		if vfs.IsDirectory("lovers/" .. name) then
-			lovemu.CheckSupported(name)
-		else
-			return false, "love game " .. name .. " does not exist"
-		end
-	elseif command == "version" then
-		local name = tostring((...))
-		lovemu.version = version
-		logn("Changed internal version to " .. version)
+
+		local args = {...}
+
+		resource.Download(url, function(full_path)
+			full_path = full_path .. "/" .. name:match(".+/(.+)") .. "-master"
+			logn("running downloaded löve game: ", full_path)
+			lovemu.RunGame(full_path, unpack(args))
+		end)
 	else
-		return false, "no such command"
+		return false, "love game " .. name .. " does not exist"
 	end
-end, function()
-	logn("Usage:")
-	logn("\tlovemu     <command> <params>\n\nCommands:\n")
-	logn("\tcheck      <folder name>        //check game compatibility with lovemu")
-	logn("\trun        <folder name>        //runs a game  ")
-	logn("\tversion    <version>            //change internal love version, default: 0.9.0")
+	if menu then menu.Close() end
 end)
 
 return lovemu
