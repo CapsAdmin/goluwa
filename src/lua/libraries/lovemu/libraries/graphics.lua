@@ -3,6 +3,11 @@ if not GRAPHICS then return end
 local love = ... or _G.love
 local ENV = love._lovemu_env
 
+ENV.textures = ENV.textures or utility.CreateWeakTable()
+ENV.graphics_filter_min = ENV.graphics_filter_min or "linear"
+ENV.graphics_filter_mag = ENV.graphics_filter_mag or "linear"
+ENV.graphics_filter_anisotropy = ENV.graphics_filter_anisotropy or 1
+
 love.graphics = love.graphics or {}
 
 local function ADD_FILTER(obj)
@@ -18,10 +23,6 @@ local function ADD_FILTER(obj)
 
 	obj.getFilter = function() return s.filter_min, s.filter_mag, s.filter_anistropy end
 end
-
-ENV.graphics_filter_min = "linear"
-ENV.graphics_filter_mag = "linear"
-ENV.graphics_filter_anisotropy = 1
 
 do -- filter
 	function love.graphics.setDefaultImageFilter(min, mag, anisotropy) --partial
@@ -141,7 +142,7 @@ do
 	ENV.graphics_color_r = 0
 	ENV.graphics_color_g = 0
 	ENV.graphics_color_b = 0
-	ENV.graphics_color_a = 0
+	ENV.graphics_color_a = 255
 
 	function love.graphics.setColor(r, g, b, a)
 		if type(r) == "number" then
@@ -168,7 +169,7 @@ do -- background
 	ENV.graphics_bg_color_r = 0
 	ENV.graphics_bg_color_g = 0
 	ENV.graphics_bg_color_b = 0
-	ENV.graphics_bg_color_a = 0
+	ENV.graphics_bg_color_a = 255
 
 	function love.graphics.setBackgroundColor(r, g, b, a)
 		if type(r) == "number" then
@@ -193,12 +194,11 @@ do -- background
 		if canvas then
 			canvas:clear()
 		else
-			local br, bg, bb, ba = love.graphics.getColor()
+			local br, bg, bb, ba = love.graphics.getBackgroundColor()
 			surface.SetWhiteTexture()
 			surface.SetColor(br/255,bg/255,bb/255,ba/255)
 			surface.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
-			local cr, cg, cb, ca = love.graphics.getColor()
-			surface.SetColor(cr/255,cg/255,cb/255,ca/255)
+			love.graphics.setColor(love.graphics.getColor())
 		end
 	end
 end
@@ -331,7 +331,7 @@ do -- font
 	end
 
 	function love.graphics.setFont(font)
-		font = font or ENV.default_font
+		font = font or love.graphics.getFont()
 		ENV.current_font = font
 		surface.SetFont(font.font)
 	end
@@ -883,6 +883,10 @@ event.AddListener("PreDrawMenu", "love", function(dt)
 
 	lovemu.CallEvent("lovemu_draw", dt)
 	render.SetCullMode("front")
+
+	if ENV.error_message then
+		love.errhand(ENV.error_message)
+	end
 
 	if menu and menu.IsVisible() then
 		surface.PopHSV(1,0,1)

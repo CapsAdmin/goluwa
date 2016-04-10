@@ -110,10 +110,6 @@ function lovemu.CheckSupported(demo)
 	end
 end
 
-function lovemu.GetGames()
-	return vfs.Find("lovers/")
-end
-
 lovemu.love_envs = utility.CreateWeakTable()
 
 function lovemu.CreateLoveEnv()
@@ -126,9 +122,7 @@ function lovemu.CreateLoveEnv()
 	love._version_major = tonumber(version[1])
 	love._version_minor = tonumber(version[2])
 	love._version_revision = tonumber(version[3])
-	love._lovemu_env = {
-		textures = {},
-	}
+	love._lovemu_env = {}
 
 	include("lua/libraries/lovemu/libraries/*", love)
 
@@ -137,10 +131,31 @@ function lovemu.CreateLoveEnv()
 	return love
 end
 
+do
+	local current_love
+
+	local on_error = function(msg)
+		current_love._lovemu_env.error_message = msg .. "\n" .. debug.traceback()
+		print(current_love._lovemu_env.error_message)
+	end
+
+	function lovemu.pcall(love, func, ...)
+		if love._lovemu_env.error_message then return end
+		current_love = love
+		local ret = {xpcall(func, on_error,...)}
+		if ret[1] then
+			return select(2, unpack(ret))
+		end
+	end
+end
+
 function lovemu.CallEvent(what, ...)
 	for i, love in ipairs(lovemu.love_envs) do
-		if love[what] then
-			system.pcall(love[what], ...)
+		if love[what] and not love._lovemu_env.error_message then
+			local a,b,c,d,e,f = lovemu.pcall(love, love[what], ...)
+			if a then
+				return a,b,c,d,e,f
+			end
 		end
 	end
 end
@@ -281,8 +296,8 @@ function lovemu.RunGame(folder, ...)
 	setfenv(love.lovemu_update, env)
 	setfenv(love.lovemu_draw, env)
 
-	if not system.pcall(main) then return end
-	if not system.pcall(love.load, {}) then return end
+	lovemu.pcall(love, main)
+	lovemu.pcall(love, love.load, {})
 
 	vfs.Mount(love.filesystem.getUserDirectory())
 end
@@ -314,6 +329,7 @@ console.AddCommand("love", function(line, command, ...)
 		else
 			return false, "love game " .. name .. " does not exist"
 		end
+		if menu then menu.Close() end
 	elseif command == "check" then
 		local name = tostring((...))
 		if vfs.IsDirectory("lovers/" .. name) then

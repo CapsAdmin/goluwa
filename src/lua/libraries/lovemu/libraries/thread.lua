@@ -3,8 +3,8 @@ local ENV = love._lovemu_env
 
 love.thread = love.thread or {}
 
-ENV.threads = {}
-ENV.threads2 = {}
+ENV.threads = ENV.threads or {}
+ENV.threads2 = ENV.threads2 or {}
 
 local Thread = lovemu.TypeTemplate("Thread")
 

@@ -27,11 +27,10 @@ end
 function love.lovemu_update(dt)
 	if not love.update then return end
 
-	local ok, msg = system.pcall(love.update, dt)
+	local ok, msg = pcall(love.update, dt)
 
 	if not ok then
-		ENV.errored = true
-		ENV.error_msg = msg
+		ENV.error_message = msg
 	end
 end
 
@@ -45,22 +44,16 @@ function love.lovemu_draw(dt)
 	if not love.draw then return end
 
 	surface.PushMatrix()
-	surface.SetFont("lovemu")
 	surface.SetWhiteTexture()
 
 	love.graphics.clear()
 	love.graphics.setColor(love.graphics.getColor())
 	love.graphics.setFont(love.graphics.getFont())
 
-	local ok, msg = system.pcall(love.draw, dt)
+	local ok, msg = pcall(love.draw, dt)
 
 	if not ok then
-		ENV.errored = true
-		ENV.error_msg = msg
-	end
-
-	if ENV.errored then
-		love.errhand(ENV.error_msg)
+		ENV.error_message = msg
 	end
 
 	surface.PopMatrix()
