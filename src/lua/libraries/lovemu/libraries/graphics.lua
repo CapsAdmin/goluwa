@@ -860,7 +860,7 @@ do -- sprite batch
 
 	function love.graphics.newSpriteBatch(image, size, usagehint) -- partial
 		local self = lovemu.CreateObject("SpriteBatch")
-		local poly = surface.CreatePoly(size)
+		local poly = surface.CreatePoly(size * 6)
 
 		self.size = size
 
