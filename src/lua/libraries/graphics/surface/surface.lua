@@ -93,7 +93,7 @@ include("fonts.lua", surface)
 
 do -- render world matrix helpers
 	function surface.Translate(x, y, z)
-		render.camera_2d:TranslateWorld(math.ceil(tonumber(x)), math.ceil(tonumber(y)), z or 0)
+		render.camera_2d:TranslateWorld(math.ceil(x), math.ceil(y), z or 0)
 	end
 
 	function surface.Translatef(x, y, z)
