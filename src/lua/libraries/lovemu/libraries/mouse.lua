@@ -73,8 +73,8 @@ local mouse_keymap = {
 	button_3 = "m",
 	button_4 = "x1",
 	button_5 = "x2",
-	mwheel_up = "wd",
-	mwheel_down = "wu",
+	mwheel_up = "wu",
+	mwheel_down = "wd",
 }
 
 local mouse_keymap_10 = {
