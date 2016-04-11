@@ -182,4 +182,4 @@ package.path = package.path .. ";../../src/lua/modules/?.lua"
 package.path = package.path .. ";../../src/lua/modules/?/init.lua"
 package.path = package.path .. ";../../src/lua/modules/?/?.lua"
 
-package("/packages") -- relative to config.lua
+package("packages/") -- relative to config.lua
