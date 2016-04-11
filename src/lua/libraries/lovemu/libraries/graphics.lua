@@ -147,9 +147,9 @@ function love.graphics.isSupported(what)
 end
 
 do
-	ENV.graphics_color_r = 0
-	ENV.graphics_color_g = 0
-	ENV.graphics_color_b = 0
+	ENV.graphics_color_r = 255
+	ENV.graphics_color_g = 255
+	ENV.graphics_color_b = 255
 	ENV.graphics_color_a = 255
 
 	function love.graphics.setColor(r, g, b, a)
@@ -333,7 +333,7 @@ do -- font
 
 		if not a then
 			font = "fonts/vera.ttf"
-			size = b or 12
+			size = b or 10
 		end
 
 		size = size or 12
@@ -358,7 +358,7 @@ do -- font
 
 	function love.graphics.getFont()
 		if not ENV.default_font then
-			ENV.default_font = love.graphics.newFont(12)
+			ENV.default_font = love.graphics.newFont()
 		end
 		return ENV.current_font or ENV.default_font
 	end
@@ -367,67 +367,60 @@ do -- font
 		love.graphics.setFont(love.graphics.newFont(...))
 	end
 
-	function love.graphics.print(text, x, y, r, sx, sy)
-		x = x or 0
-		y = y or 0
-		sx = sx or 1
-		sy = sy or 1
-		r = r or 0
-		local cr, cg, cb, ca = love.graphics.getColor()
-		surface.SetColor(cr/255, cg/255, cb/255, ca/255)
-		if sx ~= 1 or sy ~= 1 then
-			surface.PushMatrix()
-			surface.Translate(-x, -y)
-			surface.Scale(sx, sy)
-		end
-		surface.SetTextPosition(x, y)
-		surface.DrawText(text)
-		if sx ~= 1 or sy ~= 1 then
-			surface.PopMatrix()
-		end
-		--surface.Scale(-sx, -sy)
-	end
-
-	function love.graphics.printf(text, x, y, limit, align, r, sx, sy, ox, oy, kx, ky)
-
+	local function draw_text(text, x, y, r, sx, sy, ox, oy, kx, ky, align, limit)
 		text = tostring(text)
 		x = x or 0
 		y = y or 0
-		limit = limit or 0
-		align = align or "left"
 		sx = sx or 1
-		sy = sy or 1
+		sy = sy or sx
 		r = r or 0
 		ox = ox or 0
 		oy = oy or 0
 		kx = kx or 0
 		ky = ky or 0
 
-		if align == "center" then
-			x = x - (surface.GetTextSize(text) / 2)
-		end
-
 		local cr, cg, cb, ca = love.graphics.getColor()
 		surface.SetColor(cr/255, cg/255, cb/255, ca/255)
-		surface.SetTextPosition(0, 0)
-		surface.Translate(x, y)
-		surface.DrawText(text)
-		surface.Translate(-x, -y)
-		do return end
-		-- todo: is this really a format function?
+		surface.PushMatrix(x, y, sx, sy, r)
+			if align then
+				local max_width = 0
 
-		local lines = string.explode(text, "\n")
+				for i, line in ipairs(surface.WrapString(text, limit+15)) do
+					local w, h = surface.GetTextSize(line)
+					if w > max_width then
+						max_width = w
+					end
+				end
 
-		surface.SetColor(cr/255, cg/255, cb/255, ca/255)
-		--surface.Scale(sx, sy)
+				for i, line in pairs(surface.WrapString(text, limit+15)) do
+					local w, h = surface.GetTextSize(line)
 
-		for i = 1, #lines do
-			surface.SetTextPosition(x, y + (ENV.current_font.Size+(ENV.current_font.Size*125/100) * (i - 1)))
-			surface.DrawText(lines[i])
-		end
+					local align_x = 0
 
-		--surface.Scale(-sx, -sy)
+					if align == "right" then
+						align_x = max_width - w
+					elseif align == "center" then
+						align_x = (-w / 2) + limit/2 - x
+					end
+
+					surface.SetTextPosition(x + align_x, (i-1) * h)
+					surface.DrawText(line)
+				end
+			else
+				surface.SetTextPosition(0, 0)
+				surface.DrawText(text)
+			end
+		surface.PopMatrix()
 	end
+
+	function love.graphics.print(text, x, y, r, sx, sy, ox, oy, kx, ky)
+		return draw_text(text, x, y, r, sx, sy, ox, oy, kx, ky)
+	end
+
+	function love.graphics.printf(text, x, y, limit, align, r, sx, sy, ox, oy, kx, ky)
+		return draw_text(text, x, y, r, sx, sy, ox, oy, kx, ky, align or "left", limit or 0)
+	end
+
 	lovemu.RegisterType(Font)
 end
 
@@ -466,6 +459,9 @@ do -- line
 		if type(tbl[1]) == "table" then
 			tbl = tbl[1]
 		end
+
+		local last_x
+		local last_y
 
 		for i = 1, #tbl, 2 do
 			local x, y = tbl[i+0], tbl[i+1]
@@ -667,7 +663,7 @@ function love.graphics.drawq(drawable, quad, x,y, r, sx,sy, ox,oy)
 	x=x or 0
 	y=y or 0
 	sx=sx or 1
-	sy=sy or 1
+	sy=sy or sx
 	ox=ox or 0
 	oy=oy or 0
 	r=r or 0
@@ -693,7 +689,7 @@ function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 				x=x or 0
 				y=y or 0
 				sx=sx or 1
-				sy=sy or 1
+				sy=sy or sx
 				ox=ox or 0
 				oy=oy or 0
 				r=r or 0
