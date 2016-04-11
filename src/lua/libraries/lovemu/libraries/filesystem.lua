@@ -26,7 +26,9 @@ function love.filesystem.getLastModified(path)
 end
 
 function love.filesystem.exists(path)
-	return vfs.Exists("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path) or vfs.Exists(path)
+	local b = vfs.Exists("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path) or vfs.Exists(path)
+	print(path, b)
+	return b
 end
 
 function love.filesystem.enumerate(path)
@@ -67,8 +69,7 @@ function love.filesystem.lines(path)
 	return file:Lines()
 end
 
-function love.filesystem.load(path, mode)
-	mode = mode or "read"
+function love.filesystem.load(path)
 
 	local func, err
 
@@ -76,16 +77,14 @@ function love.filesystem.load(path, mode)
 		func, err = loadstring(path:getString())
 	else
 		func, err = vfs.loadfile("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path, mode)
+
+		if not func then
+			func, err = vfs.loadfile(path)
+		end
 	end
 
 	if func then
 		setfenv(func, getfenv(2))
-	elseif mode == "read" then
-		func, err = vfs.loadfile(path, mode)
-
-		if func then
-			setfenv(func, getfenv(2))
-		end
 	end
 
 	return func, err
@@ -110,7 +109,11 @@ function love.filesystem.read(path, size)
 
 	if file then
 		local str = file:ReadBytes(size or math.huge)
-		return str, #str
+		if str then
+			return str, #str
+		else
+			return "", 0
+		end
 	end
 end
 
