@@ -26,9 +26,7 @@ function love.filesystem.getLastModified(path)
 end
 
 function love.filesystem.exists(path)
-	local b = vfs.Exists("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path) or vfs.Exists(path)
-	print(path, b)
-	return b
+	return vfs.Exists("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path) or vfs.Exists(path)
 end
 
 function love.filesystem.enumerate(path)
@@ -58,15 +56,15 @@ function love.filesystem.isFile(path)
 end
 
 function love.filesystem.lines(path)
-	local file = assert(vfs.Open("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path))
+	local file = vfs.Open("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path)
 
-	if ok then
-		return ok:Lines()
+	if not file then
+		file = vfs.Open(path)
 	end
 
-	local file = assert(vfs.Open("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path))
-
-	return file:Lines()
+	if file then
+		return file:Lines()
+	end
 end
 
 function love.filesystem.load(path)
