@@ -105,10 +105,14 @@ end
 love.graphics.origin = surface.LoadIdentity
 love.graphics.translate = surface.Translate
 love.graphics.shear = surface.Shear
-love.graphics.scale = surface.Scale
 love.graphics.rotate = surface.Rotate
 love.graphics.push = surface.PushMatrix
 love.graphics.pop = surface.PopMatrix
+
+function love.graphics.scale(x, y)
+	y = y or x
+	surface.Scale(x, y)
+end
 
 function love.graphics.setCaption(title)
 	window.SetTitle(title)
@@ -125,6 +129,10 @@ end
 
 function love.graphics.setMode() -- partial
 
+end
+
+function love.graphics.getDimensions()
+	return render.GetWidth(), render.GetHeight()
 end
 
 function love.graphics.reset() -- partial
@@ -211,6 +219,18 @@ do
 
 	function love.graphics.getBlendMode()
 		return render.GetBlendMode()
+	end
+end
+
+do
+	function love.graphics.setColorMode(mode)
+		if mode == "replace" then mode = "none" end
+		--render.SetColorMode(mode)
+	end
+
+	function love.graphics.getColorMode()
+		--return render.GetBlendMode()
+		return "modulate"
 	end
 end
 

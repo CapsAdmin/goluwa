@@ -3,6 +3,10 @@ local ENV = love._lovemu_env
 
 love.joystick = love.joystick or {}
 
+function love.joystick.loadGamepadMappings()
+
+end
+
 function love.joystick.getJoysticks() --partial
 	return {}
 end

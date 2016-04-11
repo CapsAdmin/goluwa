@@ -965,7 +965,7 @@ if sdl then
 	end
 
 	function META:SetTitle(title)
-		sdl.SetWindowTitle(self.sdl_wnd, title)
+		sdl.SetWindowTitle(self.sdl_wnd, tostring(title))
 	end
 
 	local x, y = ffi.new(sdl and "int[1]" or "double[1]"), ffi.new(sdl and "int[1]" or "double[1]")
