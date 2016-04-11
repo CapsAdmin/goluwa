@@ -48,10 +48,13 @@ do
 	end
 
 	function lovemu.Type(v)
-		if type(v) == "table" and v.__lovemu_type then
+		local t = type(v)
+
+		if t == "table" and v.__lovemu_type then
 			return v.__lovemu_type
 		end
-		return type(v)
+
+		return t
 	end
 
 	function lovemu.GetCreatedObjects(name)
@@ -164,7 +167,7 @@ function lovemu.RunGame(folder, ...)
 			return func
 		end,
 		type = function(v)
-			local t = type(v)
+			local t = _G.type(v)
 
 			if t == "table" and v.__lovemu_type then
 				return "userdata"
@@ -173,18 +176,16 @@ function lovemu.RunGame(folder, ...)
 			return t
 		end,
 		pcall = function(func, ...)
-			if type(func) == "function" then
-				if debug.getinfo(func).what ~= "C" then
-					setfenv(func, env)
-				end
+			if type(func) == "function" and debug.getinfo(func).what ~= "C" then
+				setfenv(func, env)
 			end
 			return _G.pcall(func, ...)
 		end,
 		xpcall = function(func, err, ...)
-			if type(func) == "function" then
+			if type(func) == "function" and debug.getinfo(func).what ~= "C" then
 				setfenv(func, env)
 			end
-			if type(err) == "function" then
+			if type(err) == "function" and debug.getinfo(err).what ~= "C" then
 				setfenv(err, env)
 			end
 			return _G.xpcall(func, err, ...)
@@ -293,6 +294,13 @@ console.AddCommand("love_run", function(line, name, ...)
 		if menu then menu.Close() end
 	else
 		return false, "love game " .. name .. " does not exist"
+	end
+end)
+
+event.AddListener("WindowFileDrop", "lovemu", function(wnd, path)
+	if vfs.IsDirectory(path) and vfs.IsFile(path .. "/main.lua") then
+		lovemu.RunGame(path)
+		if menu then menu.Close() end
 	end
 end)
 
