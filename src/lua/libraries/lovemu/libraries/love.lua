@@ -27,7 +27,9 @@ end
 function love.lovemu_update(dt)
 	if not love.update then return end
 
-	ENV.draw_now = true -- this is stupid but it's because some games rely on update being called before draw
+	if ENV.love_game_update_draw_hack == false then
+		ENV.love_game_update_draw_hack = true -- this is stupid but it's because some games rely on update being called before draw
+	end
 
 	lovemu.pcall(love, love.update, dt)
 end
@@ -41,7 +43,7 @@ end)
 function love.lovemu_draw(dt)
 	if not love.draw then return end
 
-	if not ENV.draw_now then return end
+	if ENV.love_game_update_draw_hack == false then return end
 
 	surface.PushMatrix()
 	surface.SetWhiteTexture()

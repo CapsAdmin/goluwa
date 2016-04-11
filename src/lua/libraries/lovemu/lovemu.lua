@@ -189,7 +189,14 @@ function lovemu.RunGame(folder, ...)
 				setfenv(err, env)
 			end
 			return _G.xpcall(func, err, ...)
-		end
+		end,
+		loadstring = function(...)
+			local a, b = _G.loadstring(...)
+			if type(a) == "function" then
+				setfenv(a, env)
+			end
+			return a, b
+		end,
 	},
 	{
 		__index = _G,
@@ -255,6 +262,7 @@ function lovemu.RunGame(folder, ...)
 	vfs.Mount(love.filesystem.getUserDirectory())
 
 	lovemu.current_game = love
+	love._lovemu_env.love_game_update_draw_hack = false
 
 	return love
 end
