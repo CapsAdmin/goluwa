@@ -79,11 +79,10 @@ function META:Initialize(options)
 			end
 
 			w, h = #sigh, #sigh[1]
-
 			font_data[glyphs[i]] = {
 				w = h,
 				h = w,
-				buffer = ffi.typeof("uint8_t[$][$][$]", width, height, 4)(sigh)
+				buffer = ffi.typeof("uint8_t[$][$][$]", w, h, 4)(sigh)
 			}
 			end)
 
