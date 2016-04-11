@@ -1,7 +1,6 @@
 -- 52 compat
 function setmetatable(tbl, meta)
-
-	if rawget(meta, "__gc") and not rawget(tbl, "__gc_proxy") then
+	if meta and rawget(meta, "__gc") and not rawget(tbl, "__gc_proxy") then
 		local proxy = newproxy(true)
 		rawset(tbl, "__gc_proxy", proxy)
 
