@@ -182,8 +182,4 @@ package.path = package.path .. ";../../src/lua/modules/?.lua"
 package.path = package.path .. ";../../src/lua/modules/?/init.lua"
 package.path = package.path .. ";../../src/lua/modules/?/?.lua"
 
-for _, file in ipairs(FileSysGetRecursive("../../src/lua/editor/packages/", nil, "*.lua")) do
-	local PLUGIN = dofile(file)
-	local name = file:match(".+/(.+)%.lua")
-	ide.packages[name] = setmetatable(PLUGIN, ide.proto.Plugin)
-end
+package("/packages") -- relative to config.lua
