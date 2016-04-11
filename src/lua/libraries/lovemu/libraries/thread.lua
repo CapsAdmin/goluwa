@@ -8,7 +8,15 @@ ENV.threads2 = ENV.threads2 or {}
 
 local Thread = lovemu.TypeTemplate("Thread")
 
-function Thread:start(...) self.args = {...} self.thread:Start() if self.thread.co then ENV.threads2[self.thread.co] = self else ENV.running = self end end
+function Thread:start(...)
+	self.args = {...}
+	self.thread:Start()
+	if self.thread.co then
+		ENV.threads2[self.thread.co] = self
+	else
+		ENV.running = self
+	end
+end
 function Thread:wait() end
 function Thread:set(key, val) self.vars[key] = val end
 function Thread:send() end
