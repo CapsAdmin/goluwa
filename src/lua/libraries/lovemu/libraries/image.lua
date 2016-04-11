@@ -73,7 +73,7 @@ do -- image data
 
 	local freeimage = desire("libfreeimage")
 
-	function love.image.newImageData(a, b) --partial
+	function love.image.newImageData(a, b)
 		if lovemu.Type(a) == "ImageData" then
 			return a -- uhhh
 		end

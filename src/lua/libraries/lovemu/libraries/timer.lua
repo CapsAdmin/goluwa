@@ -23,7 +23,7 @@ function love.timer.getTime()
 	end
 end
 
-function love.timer.getAverageDelta() -- partial
+function love.timer.getAverageDelta()
 	return love.timer.getDelta()
 end
 

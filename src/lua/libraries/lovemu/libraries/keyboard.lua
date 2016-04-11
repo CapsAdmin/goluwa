@@ -3,11 +3,11 @@ local ENV = love._lovemu_env
 
 love.keyboard = love.keyboard or {}
 
-function love.keyboard.getKeyRepeat() -- partial
+function love.keyboard.getKeyRepeat()
 	return ENV.keyboard_delay or 0.5, ENV.keyboard_interval or 0.1
 end
 
-function love.keyboard.setKeyRepeat(delay, interval) -- partial
+function love.keyboard.setKeyRepeat(delay, interval)
 	ENV.keyboard_delay = delay
 	ENV.keyboard_interval = interval
 end
@@ -49,7 +49,7 @@ for k,v in pairs(keyboard_map) do
 	reverse_keyboard_map[v] = k
 end
 
-function love.keyboard.isDown(key) --partial
+function love.keyboard.isDown(key)
 	return input.IsKeyDown(reverse_keyboard_map[key] or key)
 end
 
@@ -63,7 +63,7 @@ event.AddListener("KeyInput", "lovemu", function(key, press)
 	key = keyboard_map[key] or key
 
 	if press then
-		lovemu.CallEvent("keypressed", key, char_hack) --partial
+		lovemu.CallEvent("keypressed", key, char_hack)
 	else
 		lovemu.CallEvent("keyreleased", key)
 	end
@@ -72,5 +72,5 @@ end)
 event.AddListener("CharInput", "lovemu", function(char)
 	char_hack = char
 
-	lovemu.CallEvent("textinput", char) --partial
+	lovemu.CallEvent("textinput", char)
 end)

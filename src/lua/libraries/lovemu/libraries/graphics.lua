@@ -25,7 +25,7 @@ local function ADD_FILTER(obj)
 end
 
 do -- filter
-	function love.graphics.setDefaultImageFilter(min, mag, anisotropy) --partial
+	function love.graphics.setDefaultImageFilter(min, mag, anisotropy)
 		ENV.graphics_filter_min = min
 		ENV.graphics_filter_mag = mag
 		ENV.graphics_filter_anisotropy = anisotropy
@@ -57,7 +57,7 @@ do -- quad
 		vertices[3].t = y/sh;
 	end
 
-	function Quad:flip() -- partial
+	function Quad:flip()
 
 	end
 
@@ -75,7 +75,7 @@ do -- quad
 	end
 
 
-	function love.graphics.newQuad(x,y,w,h, sw,sh) -- partial
+	function love.graphics.newQuad(x,y,w,h, sw,sh)
 		local self = lovemu.CreateObject("Quad")
 
 		local vertices = {}
@@ -127,7 +127,7 @@ function love.graphics.getHeight()
 	return render.GetHeight()
 end
 
-function love.graphics.setMode() -- partial
+function love.graphics.setMode()
 
 end
 
@@ -135,11 +135,11 @@ function love.graphics.getDimensions()
 	return render.GetWidth(), render.GetHeight()
 end
 
-function love.graphics.reset() -- partial
+function love.graphics.reset()
 
 end
 
-function love.graphics.isSupported(what) -- partial
+function love.graphics.isSupported(what)
 	if what == "multicanvas" then
 		return false
 	end
@@ -284,7 +284,7 @@ do -- font
 		self.line_height = num
 	end
 
-	function Font:getWrap() -- partial
+	function Font:getWrap()
 		return 1, 1
 	end
 
@@ -517,7 +517,7 @@ do -- canvas
 
 	end
 
-	function love.graphics.newCanvas(w, h) -- partial
+	function love.graphics.newCanvas(w, h)
 		w = w or render.GetWidth()
 		h = h or render.GetHeight()
 
@@ -533,7 +533,7 @@ do -- canvas
 		return self
 	end
 
-	function love.graphics.setCanvas(canvas) -- partial
+	function love.graphics.setCanvas(canvas)
 		ENV.graphics_current_canvas = canvas
 
 		if canvas then
@@ -545,7 +545,7 @@ do -- canvas
 		end
 	end
 
-	function love.graphics.getCanvas() -- partial
+	function love.graphics.getCanvas()
 		return ENV.graphics_current_canvas
 	end
 
@@ -573,15 +573,15 @@ do -- image
 
 	ADD_FILTER(Image)
 
-	function Image:setWrap()  --partial
+	function Image:setWrap()
 
 	end
 
-	function Image:getWrap() --partial
+	function Image:getWrap()
 
 	end
 
-	function love.graphics.newImage(path) -- partial
+	function love.graphics.newImage(path)
 		if lovemu.Type(path) == "ImageData" then
 			return path
 		else
@@ -598,7 +598,7 @@ do -- image
 		end
 	end
 
-	function love.graphics.newImageData(path) -- partial
+	function love.graphics.newImageData(path)
 		local self = lovemu.CreateObject("Image")
 
 		path = lovemu.FixPath(path)
@@ -615,11 +615,11 @@ do -- image
 end
 
 do -- stencil
-	function love.graphics.newStencil(func) --partial
+	function love.graphics.newStencil(func)
 
 	end
 
-	function love.graphics.setStencil(func) --partial
+	function love.graphics.setStencil(func)
 
 	end
 
@@ -648,7 +648,7 @@ function love.graphics.rectangle(mode, x, y, w, h)
 	end
 end
 
-function love.graphics.circle(mode,x,y,w,h) --partial
+function love.graphics.circle(mode,x,y,w,h)
 	surface.SetWhiteTexture()
 	surface.DrawRect(x or 0, y or 0, w or 0, h or 0)
 end
@@ -663,7 +663,7 @@ function love.graphics.arc(...)
 	end
 end
 
-function love.graphics.drawq(drawable, quad, x,y, r, sx,sy, ox,oy) -- partial
+function love.graphics.drawq(drawable, quad, x,y, r, sx,sy, ox,oy)
 	x=x or 0
 	y=y or 0
 	sx=sx or 1
@@ -709,24 +709,24 @@ function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 	end
 end
 
-function love.graphics.present() --partial
+function love.graphics.present()
 end
 
-function love.graphics.setIcon() --partial
+function love.graphics.setIcon()
 end
 
 do
 	local Shader = lovemu.TypeTemplate("Shader")
 
-	function Shader:getWarnings() -- partial
+	function Shader:getWarnings()
 		return ""
 	end
 
-	function Shader:send() -- partial
+	function Shader:send()
 
 	end
 
-	function love.graphics.newShader() --partial
+	function love.graphics.newShader()
 		local obj = lovemu.CreateObject("Shader")
 
 		return obj
@@ -737,17 +737,17 @@ end
 
 love.graphics.newPixelEffect = love.graphics.newShader
 
-function love.graphics.setShader() --partial
+function love.graphics.setShader()
 end
 
-function love.graphics.setPixelEffect() --partial
+function love.graphics.setPixelEffect()
 end
 
-function love.graphics.isCreated() -- partial
+function love.graphics.isCreated()
 	return true
 end
 
-function love.graphics.getModes() --partial
+function love.graphics.getModes()
 	return {
 		{width=720,height=480},
 		{width=800,height=480},
@@ -779,16 +779,16 @@ function love.graphics.getModes() --partial
 end
 
 do
-	function love.graphics.setScissor(x,y,w,h) -- partial
+	function love.graphics.setScissor(x,y,w,h)
 		render.SetScissor(x, y, w, h)
 	end
 
-	function love.graphics.getScissor() -- partial
+	function love.graphics.getScissor()
 		return render.GetScissor()
 	end
 end
 
-function love.graphics.polygon() -- partial
+function love.graphics.polygon()
 
 end
 
@@ -852,11 +852,11 @@ do -- sprite batch
 		self.poly:SetColor(r/255,g/255,b/255,a/255)
 	end
 
-	function SpriteBatch:clear()  -- partial
+	function SpriteBatch:clear()
 		self.i = 1
 	end
 
-	function SpriteBatch:getImage()  -- partial
+	function SpriteBatch:getImage()
 		return self.image
 	end
 
@@ -878,7 +878,7 @@ do -- sprite batch
 		return self.img
 	end
 
-	function love.graphics.newSpriteBatch(image, size, usagehint) -- partial
+	function love.graphics.newSpriteBatch(image, size, usagehint)
 		local self = lovemu.CreateObject("SpriteBatch")
 		local poly = surface.CreatePoly(size * 6)
 

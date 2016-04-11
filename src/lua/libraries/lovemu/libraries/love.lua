@@ -16,7 +16,7 @@ end
 function love.keyreleased()
 end
 
-function love.conf(t) --partial
+function love.conf(t)
 
 end
 

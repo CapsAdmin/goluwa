@@ -28,12 +28,12 @@ love.mouse.setGrabbed = love.mouse.setRelativeMode
 local Cursor = lovemu.TypeTemplate("Cursor")
 lovemu.RegisterType(Cursor)
 
-function love.mouse.newCursor() -- partial
+function love.mouse.newCursor()
 	local obj = lovemu.CreateObject("Cursor")
 	return obj
 end
 
-function love.mouse.getCursor() -- partial
+function love.mouse.getCursor()
 	local obj = lovemu.CreateObject("Cursor")
 
 	obj.getType = function()
@@ -43,11 +43,11 @@ function love.mouse.getCursor() -- partial
 	return obj
 end
 
-function love.mouse.setCursor() -- partial
+function love.mouse.setCursor()
 	--window.GetCursor()
 end
 
-function love.mouse.getSystemCursor() -- partial
+function love.mouse.getSystemCursor()
 	local obj = lovemu.CreateObject("Cursor")
 	obj.getType = function()
 		return window.GetCursor()
@@ -58,11 +58,11 @@ end
 do
 	ENV.mouse_visible = false
 
-	function love.mouse.setVisible(bool) -- partial
+	function love.mouse.setVisible(bool)
 		ENV.mouse_visible = bool
 	end
 
-	function love.mouse.getVisible(bool) -- partial
+	function love.mouse.getVisible(bool)
 		return ENV.mouse_visible
 	end
 end

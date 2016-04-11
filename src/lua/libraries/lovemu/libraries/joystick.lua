@@ -7,49 +7,49 @@ function love.joystick.loadGamepadMappings()
 
 end
 
-function love.joystick.getJoysticks() --partial
+function love.joystick.getJoysticks()
 	return {}
 end
 
-function love.joystick.close() --partial
+function love.joystick.close()
 
 end
-function love.joystick.getAxes() --partial
+function love.joystick.getAxes()
 	return 0
 end
-function love.joystick.getAxis() --partial
+function love.joystick.getAxis()
 	return 0
 end
-function love.joystick.getBall() --partial
+function love.joystick.getBall()
 	return 0
 end
-function love.joystick.getHat() --partial
+function love.joystick.getHat()
 	return 0
 end
-function love.joystick.getName() --partial
+function love.joystick.getName()
 	return "hello_world"
 end
-function love.joystick.getNumAxes() --partial
+function love.joystick.getNumAxes()
 	return 2
 end
-function love.joystick.getNumBalls() --partial
+function love.joystick.getNumBalls()
 	return 2
 end
-function love.joystick.getNumButtons() --partial
+function love.joystick.getNumButtons()
 	return 2
 end
-function love.joystick.getNumHats() --partial
+function love.joystick.getNumHats()
 	return 2
 end
-function love.joystick.getNumJoysticks() --partial
+function love.joystick.getNumJoysticks()
 	return 0
 end
-function love.joystick.isDown() --partial
+function love.joystick.isDown()
 	return false
 end
-function love.joystick.isOpen() --partial
+function love.joystick.isOpen()
 	return true
 end
-function love.joystick.open() --partial
+function love.joystick.open()
 
 end

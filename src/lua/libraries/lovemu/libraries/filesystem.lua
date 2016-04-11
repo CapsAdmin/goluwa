@@ -25,10 +25,6 @@ function love.filesystem.getLastModified(path)
 	return vfs.GetLastModified("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path) or vfs.GetLastModified(path)
 end
 
-function love.filesystem.exists(path)
-	return vfs.Exists("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path) or vfs.Exists(path)
-end
-
 function love.filesystem.enumerate(path)
 	if path:sub(-1) ~= "/" then
 		path = path .. "/"
@@ -43,7 +39,7 @@ end
 
 love.filesystem.getDirectoryItems = love.filesystem.enumerate
 
-function love.filesystem.init() -- partial
+function love.filesystem.init()
 
 end
 
@@ -53,6 +49,10 @@ end
 
 function love.filesystem.isFile(path)
 	return vfs.IsFile("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path) or vfs.IsFile(path)
+end
+
+function love.filesystem.exists(path)
+	return vfs.Exists("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path) or vfs.Exists(path)
 end
 
 function love.filesystem.lines(path)
@@ -88,7 +88,7 @@ function love.filesystem.load(path)
 	return func, err
 end
 
-function love.filesystem.mkdir(path) --partial
+function love.filesystem.mkdir(path)
 	vfs.OSCreateDirectory(R("data/") .. "lovemu/")
 	vfs.OSCreateDirectory(R("data/lovemu/") .. ENV.filesystem_identity .. "/")
 	vfs.OSCreateDirectory(R("data/lovemu/" .. ENV.filesystem_identity .. "/") .. path)
@@ -115,11 +115,11 @@ function love.filesystem.read(path, size)
 	end
 end
 
-function love.filesystem.remove(path) --partial
+function love.filesystem.remove(path)
 	warning("attempted to remove folder/file " .. path)
 end
 
-function love.filesystem.setIdentity(name) --partial
+function love.filesystem.setIdentity(name)
 	vfs.OSCreateDirectory(R("data/") .. "lovemu/")
 	vfs.OSCreateDirectory(R("data/lovemu/") .. name .. "/")
 
@@ -137,11 +137,11 @@ function love.filesystem.write(path, data)
 	return true
 end
 
-function love.filesystem.isFused() -- partial
+function love.filesystem.isFused()
 	return false
 end
 
-function love.filesystem.mount(from, to) --partial
+function love.filesystem.mount(from, to)
 	if not vfs.IsDirectory("data/lovemu/" .. ENV.filesystem_identity .. "/" .. from) then
 		vfs.Mount(from, "data/lovemu/" .. ENV.filesystem_identity .. "/" .. to)
 		return vfs.IsDirectory(from)
@@ -151,11 +151,11 @@ function love.filesystem.mount(from, to) --partial
 	end
 end
 
-function love.filesystem.unmount(from) --partial
+function love.filesystem.unmount(from)
 	vfs.Unmount("data/lovemu/" .. ENV.filesystem_identity .. "/" .. from)
 end
 
-function love.filesystem.append(name, data, size) -- partial
+function love.filesystem.append(name, data, size)
 
 end
 
@@ -197,7 +197,7 @@ do -- File object
 		end
 	end
 
-	function File:getSize() -- partial
+	function File:getSize()
 		return 10
 	end
 
@@ -220,7 +220,7 @@ do -- File object
 		return str, #str
 	end
 
-	function File:write(data, size) -- partial
+	function File:write(data, size)
 		if lovemu.Type(data) == "string" then
 			self.file:WriteBytes(data)
 			return true

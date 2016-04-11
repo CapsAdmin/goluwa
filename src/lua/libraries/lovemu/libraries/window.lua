@@ -71,7 +71,7 @@ function love.window.getIcon()
 
 end
 
-function love.window.getFullscreenModes() --partial
+function love.window.getFullscreenModes()
 	return {
 		{width=720,height=480},
 		{width=800,height=480},

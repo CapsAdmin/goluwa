@@ -93,7 +93,7 @@ do -- Source
 
 	local Source = lovemu.TypeTemplate("Source")
 
-	function Source:getChannels() -- partial
+	function Source:getChannels()
 		return 2 --stereo
 	end
 
@@ -153,7 +153,7 @@ do -- Source
 		return 1
 	end
 
-	function Source:getVolumeLimits() -- partial
+	function Source:getVolumeLimits()
 		return 0,1
 	end
 
@@ -165,7 +165,7 @@ do -- Source
 		return false
 	end
 
-	function Source:isPaused() -- partial
+	function Source:isPaused()
 		if self.source then
 			return not self.playing
 		end
@@ -173,11 +173,11 @@ do -- Source
 		return false
 	end
 
-	function Source:isStatic() -- partial
+	function Source:isStatic()
 		return false
 	end
 
-	function Source:isStopped() -- partial
+	function Source:isStopped()
 		if self.source then
 			return not self.playing
 		end
@@ -283,7 +283,7 @@ do -- Source
 		end
 	end
 
-	function Source:setVolumeLimits() --partial
+	function Source:setVolumeLimits()
 
 	end
 
@@ -311,7 +311,7 @@ do -- Source
 		return love.audio.newSource(self.path)
 	end
 
-	function love.audio.newSource(var, type) --partial
+	function love.audio.newSource(var, type)
 		local self = lovemu.CreateObject("Source")
 
 		if lovemu.Type(var) == "string" then
