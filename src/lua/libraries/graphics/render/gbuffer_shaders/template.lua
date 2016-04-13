@@ -1,4 +1,11 @@
 render.AddGlobalShaderCode([[
+vec3 get_sky(vec3 ray, float depth)
+{
+	return vec3(0.4,0.8,1);
+}]], "get_sky")
+
+
+render.AddGlobalShaderCode([[
 vec3 tonemap(vec3 color, vec3 bloom)
 {
 	float gamma = 1.1;

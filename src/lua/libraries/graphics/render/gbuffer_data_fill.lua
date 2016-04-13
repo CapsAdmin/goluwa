@@ -719,20 +719,23 @@ if TESSELLATION then
 	.. PASS.Stages[1].fragment.source
 end
 
-if TESSELLATION then
-	if RELOAD then
+if RELOAD then
+	if TESSELLATION then
 		for mesh in pairs(prototype.GetCreated()) do
 			if mesh.Type == "mesh_builder" then
 				mesh.mesh:SetMode("patches")
 			end
 		end
-	end
-else
-	for mesh in pairs(prototype.GetCreated()) do
-		if mesh.Type == "mesh_builder" then
-			mesh.mesh:SetMode("triangles")
+	else
+		for mesh in pairs(prototype.GetCreated()) do
+			if mesh.Type == "mesh_builder" then
+				mesh.mesh:SetMode("triangles")
+			end
 		end
 	end
+
+	render.InitializeGBuffer()
+	return
 end
 
 return PASS
