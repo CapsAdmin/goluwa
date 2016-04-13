@@ -1,4 +1,25 @@
 render.AddGlobalShaderCode([[
+vec3 tonemap(vec3 color, vec3 bloom)
+{
+	float gamma = 1.1;
+	float exposure = 1.1;
+	float bloom_factor = 0.0005;
+	float brightMax = 1;
+
+	color = color + bloom * bloom_factor;
+
+	color = pow(color, vec3(1. / gamma));
+	color = clamp(exposure * color, 0., 1.);
+
+	//color = max(vec3(0.), color - vec3(0.004));
+	color = exp( -1.0 / ( 2.72*color + 0.15 ) );
+	color = (color * (6.2 * color + .5)) / (color * (6.2 * color + 1.7) + 0.06);
+
+	return color;
+}
+]])
+
+render.AddGlobalShaderCode([[
 float compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, vec3 normal)
 {
 	float cutoff = 0.175;
@@ -477,3 +498,8 @@ table.insert(PASS.Source, {
 })
 
 render.AddGBufferShader(PASS)
+
+if RELOAD then
+	RELOAD = nil
+	render.InitializeGBuffer()
+end

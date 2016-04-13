@@ -1,11 +1,25 @@
 local gl = require("libopengl") -- OpenGL
 local render = (...) or _G.render
 
-include("gbuffer_data_fill.lua", render)
-
-render.gbuffer_size = Vec2(1,1)
+local w_cvar = console.CreateVariable("render_width", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
+local h_cvar = console.CreateVariable("render_height", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
+local mult_cvar = console.CreateVariable("render_ss_multiplier", 1, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
 
 function render.GetGBufferSize()
+	if not render.gbuffer_size then
+		local size = render.GetScreenSize()
+
+		if w_cvar:Get() > 0 then size.x = w_cvar:Get() end
+		if h_cvar:Get() > 0 then size.y = h_cvar:Get() end
+
+		size = size * mult_cvar:Get()
+
+		if size.x == 0 or size.y == 0 then
+			size = render.GetScreenSize()
+		end
+		render.gbuffer_size = size
+	end
+
 	return render.gbuffer_size
 end
 
@@ -14,10 +28,6 @@ render.SetGlobalShaderVariable("g_screen_size", render.GetScreenSize, "vec2")
 render.SetGlobalShaderVariable("g_noise_texture", render.GetNoiseTexture, "sampler2D")
 render.SetGlobalShaderVariable("g_hemisphere_normals_texture", render.GetHemisphereNormalsTexture, "sampler2D")
 render.SetGlobalShaderVariable("g_time", system.GetElapsedTime, "float")
-
-render.gbuffer = render.gbuffer or NULL
-render.gbuffer_values = render.gbuffer_values or {}
-render.gbuffer_shaders = render.gbuffer_shaders or {}
 
 do -- mixer
 	function render.SetGBufferValue(key, var)
@@ -55,9 +65,7 @@ do -- mixer
 		return out
 	end
 
-	render.gbuffer_shaders_sorted = render.gbuffer_shaders_sorted or {}
-
-	function render.AddGBufferShader(PASS, init_now)
+	function render.AddGBufferShader(PASS)
 		render.gbuffer_shaders[PASS.Name] = PASS
 
 		local stages = PASS.Source
@@ -95,13 +103,10 @@ do -- mixer
 		end
 
 		function PASS:__init()
-			local shader = {}
-
-			shader.textures = {}
-			shader.shaders = {}
+			local shaders = {}
 
 			for i, stage in ipairs(stages) do
-				local size = render.gbuffer_size
+				local size = render.gbuffer_size:Copy()
 				local fb
 
 				if stage.buffer then
@@ -112,54 +117,26 @@ do -- mixer
 					end
 
 					if stage.buffer.max_size then
-						size = size:Copy()
 						size.x = math.min(size.x, stage.buffer.max_size.x)
 						size.y = math.min(size.y, stage.buffer.max_size.y)
 					end
 
-					fb = render.CreateFrameBuffer(Vec2(size.x, size.y), stage.buffer or {internal_format = "rgba8"})
+					fb = render.CreateFrameBuffer(size, stage.buffer or {internal_format = "rgba8"})
 					for _, stage in ipairs(stages) do
 						local tex = fb:GetTexture()
 						stage.shader.fragment.variables["tex_stage_" .. i] = tex
-						table.insert(shader.textures, tex)
 					end
 				end
 
-				local obj = render.CreateShader(stage.shader)
-				obj.size = size
-				obj.fb = fb
-				obj.blend_mode = stage.blend_mode
-				shader.shaders[i] = obj
+				local shader = render.CreateShader(stage.shader)
+				shader.size = size
+				shader.fb = fb
+				shader.blend_mode = stage.blend_mode
+				shaders[i] = shader
 			end
 
-			render.gbuffer_shaders[PASS.Name] = shader
-
-			if PASS.Variables then
-				shader.gbuffer_values = PASS.Variables
-			end
-
-			shader.gbuffer_pass = PASS
-			shader.gbuffer_name = PASS.Name
-			shader.gbuffer_position = tonumber(PASS.Position) or #render.gbuffer_shaders_sorted
-
-			for k,v in pairs(render.gbuffer_values) do
-				render.SetGBufferValue(k,v)
-			end
-
-			for k,v in ipairs(render.gbuffer_shaders_sorted) do
-				if v.gbuffer_name == PASS.Name then
-					table.remove(render.gbuffer_shaders_sorted, k)
-					break
-				end
-			end
-
-			table.insert(render.gbuffer_shaders_sorted, shader)
-
-			table.sort(render.gbuffer_shaders_sorted, function(a, b)
-				return a.gbuffer_position < b.gbuffer_position
-			end)
-
-			PASS.shader = shader
+			PASS.gbuffer_position = tonumber(PASS.Position) or #render.gbuffer_shaders_sorted
+			PASS.shaders = shaders
 
 			if PASS.Initialize then
 				local ok, err = pcall(function() PASS:Initialize() end)
@@ -168,29 +145,46 @@ do -- mixer
 					render.RemoveGBufferShader(PASS.Name)
 				end
 			end
+
+			for i, pass in ipairs(render.gbuffer_shaders_sorted) do
+				if pass.Name == PASS.Name then
+					table.remove(render.gbuffer_shaders_sorted, i)
+					break
+				end
+			end
+
+			table.insert(render.gbuffer_shaders_sorted, PASS)
+
+			table.sort(render.gbuffer_shaders_sorted, function(a, b)
+				return a.gbuffer_position < b.gbuffer_position
+			end)
+
+			for k,v in pairs(render.gbuffer_values) do
+				render.SetGBufferValue(k,v)
+			end
 		end
 
 		if not console.IsVariableAdded("render_pp_" .. PASS.Name) then
-			local pass = table.copy(PASS)
 			local default = PASS.Default
 
 			if default == nil then
 				default = true
 			end
 
-			console.CreateVariable("render_pp_" .. pass.Name, default, function(val)
-				if val then
-					if render.IsGBufferReady() then
-						render.AddGBufferShader(pass)
-						pass:__init()
-					end
+			console.CreateVariable("render_pp_" .. PASS.Name, default, function(b)
+				if b then
+					render.AddGBufferShader(PASS)
 				else
-					render.RemoveGBufferShader(pass.Name)
+					render.RemoveGBufferShader(PASS.Name)
 				end
 			end)
 		end
 
-		if not console.GetVariable("render_pp_" .. PASS.Name) then
+		if console.GetVariable("render_pp_" .. PASS.Name) then
+			if render.gbuffer_data_pass then
+				PASS:__init()
+			end
+		else
 			render.RemoveGBufferShader(PASS.Name)
 		end
 	end
@@ -198,25 +192,15 @@ do -- mixer
 	function render.RemoveGBufferShader(name)
 		render.gbuffer_shaders[name] = nil
 		for k,v in ipairs(render.gbuffer_shaders_sorted) do
-			if v.gbuffer_name == name then
+			if v.Name == name then
 				table.remove(render.gbuffer_shaders_sorted, k)
 				break
 			end
 		end
 	end
-
-	function render.GetGBufferShaderTextures(name)
-		local pass = render.gbuffer_shaders[name]
-		if pass then
-			return pass.textures
-		end
-	end
 end
 
 local gbuffer_enabled = false
-local w_cvar = console.CreateVariable("render_width", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
-local h_cvar = console.CreateVariable("render_height", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
-local mult_cvar = console.CreateVariable("render_ss_multiplier", 1, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
 
 function render.DrawGBuffer(what, dist)
 	if not gbuffer_enabled then return end
@@ -234,12 +218,12 @@ function render.DrawGBuffer(what, dist)
 	render.SetDepth(false)
 
 	render.gbuffer_mixer_buffer:Begin()
-	for i, shader in ipairs(render.gbuffer_shaders_sorted) do
-		if shader.gbuffer_pass.Update then
-			shader.gbuffer_pass:Update()
+	for i, pass in ipairs(render.gbuffer_shaders_sorted) do
+		if pass.Update then
+			pass:Update()
 		end
 
-		for i, shader in ipairs(shader.shaders) do
+		for i, shader in ipairs(pass.shaders) do
 			render.SetBlendMode(shader.blend_mode)
 			if shader.fb then shader.fb:Begin() end
 			surface.PushMatrix(0, 0, shader.size.x, shader.size.y)
@@ -251,8 +235,8 @@ function render.DrawGBuffer(what, dist)
 
 		if window.IsExtensionSupported("GL_ARB_texture_barrier") then gl.TextureBarrier() end
 
-		if shader.gbuffer_pass.PostRender then
-			shader.gbuffer_pass:PostRender()
+		if pass.PostRender then
+			pass:PostRender()
 		end
 	end
 	render.gbuffer_mixer_buffer:End()
@@ -262,149 +246,56 @@ end
 
 local shader_cvar = console.CreateVariable("render_gbuffer_shader", "template", function() if gbuffer_enabled then render.InitializeGBuffer() end end)
 
-local function init(width, height)
-	if not RELOAD or not render.gbuffer_data_pass then
-		include("lua/libraries/graphics/render/gbuffer_shaders/"..shader_cvar:Get()..".lua")
-	end
+render.gbuffer = NULL
 
-	width = width or render.GetWidth()
-	height = height or render.GetHeight()
+function render.InitializeGBuffer()
+	render.gbuffer = NULL
+	render.gbuffer_values = {}
+	render.gbuffer_shaders = {}
+	render.gbuffer_shaders_sorted = {}
 
-	if w_cvar:Get() > 0 then width = w_cvar:Get() end
-	if h_cvar:Get() > 0 then height = h_cvar:Get() end
+	local size = render.GetGBufferSize()
 
-	if width == 0 or height == 0 then return end
+	render.camera_3d:SetViewport(Rect(0,0,size.x,size.y))
+	render.InitializeNoiseTexture(size)
 
-	width = width * mult_cvar:Get()
-	height = height * mult_cvar:Get()
+	include("lua/libraries/graphics/render/gbuffer_shaders/"..shader_cvar:Get()..".lua")
 
-	render.camera_3d:SetViewport(Rect(0,0,width,height))
+	local data_pass = include("lua/libraries/graphics/render/gbuffer_data_fill.lua", render)
 
-	render.gbuffer_size = Vec2(width, height)
+	do -- init data pass
+		local framebuffer_buffers = {}
 
-	render.gbuffer_width = width
-	render.gbuffer_height = height
-
-	local noise_size = Vec2(width, height)
-	if render.noise_texture:GetSize() ~= noise_size or RELOAD then
-		render.noise_texture = render.CreateTexture("2d")
-		render.noise_texture:SetSize(noise_size)
-		--render.noise_texture:SetInternalFormat("rgba16f")
-		render.noise_texture:SetupStorage()
-		render.SetBlendMode()
-		render.noise_texture:Shade("return vec4(random(uv), random(uv*23.512), random(uv*6.53330), random(uv*122.260));")
-		render.noise_texture:SetMinFilter("nearest")
-	end
-
-	if render.debug then
-		warning("initializing gbuffer: %sx%s", 2, width, height)
-	end
-
-	do -- gbuffer
-		render.gbuffer_buffers = {
-			{
+		if data_pass.DepthFormat then
+			table.insert(framebuffer_buffers, {
 				name = "depth",
 				attach = "depth",
-				internal_format = "depth_component32f",
+				internal_format = data_pass.DepthFormat,
 				depth_texture_mode = "red",
-			},
-		}
+			})
 
-		render.gbuffer_discard = render.CreateFrameBuffer(
-			Vec2(width, height),
-			{
-				internal_format = "r8",
-			}
-		)
+			render.SetGlobalShaderVariable("tex_depth", function() return render.gbuffer:GetTexture("depth") end, "texture")
+		end
 
-		render.SetGlobalShaderVariable("tex_depth", function() return render.gbuffer:GetTexture("depth") end, "texture")
-		render.SetGlobalShaderVariable("tex_discard", function() return render.gbuffer_discard:GetTexture() end, "texture")
+		local buffer_i = 1
+		for _, pass_info in ipairs(data_pass.Buffers) do
+			local write_these = ""
 
-		if not render.gbuffer_data_pass.init then -- setup the gbuffer fill table
-			local fill = render.gbuffer_data_pass
+			for i, buffer in ipairs(pass_info.layout) do
+				local name = "data" .. buffer_i
 
-			function fill:BeginPass(name)
-				render.gbuffer:WriteThese(self.buffers_write_these[name])
-				render.gbuffer:Begin()
-			end
+				table.insert(framebuffer_buffers, {
+					name = name,
+					attach = "color",
+					internal_format = buffer.format,
+					filter = "linear",
+				})
 
-			function fill:EndPass()
-				render.gbuffer:End()
-			end
+				render.SetGlobalShaderVariable("tex_" .. name, function() return render.gbuffer:GetTexture(name) end, "texture")
 
-			fill.buffers_write_these = {}
-
-			local buffer_i = 1
-			for _, pass_info in ipairs(fill.Buffers) do
-				local write_these = ""
-				for i, buffer in ipairs(pass_info.layout) do
-
-					local name = "data" .. buffer_i
-					render.SetGlobalShaderVariable("tex_" .. name, function() return render.gbuffer:GetTexture(name) end, "texture")
-
-					table.insert(render.gbuffer_buffers, #render.gbuffer_buffers, {
-						name = name,
-						attach = "color",
-						internal_format = buffer.format,
-						filter = "linear",
-					})
-
-					for key, index in pairs(buffer) do
-						if key ~= "format" then
-							local channel_count = #index
-							local glsl_type
-							if channel_count == 1 then
-								glsl_type = "float"
-							else
-								glsl_type = "vec" .. channel_count
-							end
-
-							render.AddGlobalShaderCode(glsl_type.." get_"..key.."(vec2 uv)\n"..
-							"{\n"..
-								"\treturn texture(tex_data"..buffer_i..", uv)."..index..";\n"..
-							"}")
-						end
-					end
-
-					write_these = write_these .. "data" .. buffer_i
-					if i ~= #pass_info.layout then
-						write_these = write_these .. "|"
-					end
-
-					buffer_i = buffer_i + 1
-				end
-				fill.buffers_write_these[pass_info.name] = write_these
-			end
-
-			for i,v in ipairs(fill.Stages) do
-				local code = ""
-				if fill.Buffers[i].write == "all" then
-					local buffer_i = 1
-					for _, pass_info in ipairs(fill.Buffers) do
-						for _, buffer in ipairs(pass_info.layout) do
-							local channel_count = #render.GetTextureFormatInfo(buffer.format).bits
-							local glsl_type
-							if channel_count == 1 then
-								glsl_type = "float"
-							else
-								glsl_type = "vec" .. channel_count
-							end
-
-							code = code .. "out " .. glsl_type .. " data" .. buffer_i .. "_buffer;\n"
-
-							for key, index in pairs(buffer) do
-								if key ~= "format" then
-									code = code .. "#define " .. key .. " data" .. buffer_i .. "_buffer." ..  index .. "\n"
-								end
-							end
-
-							buffer_i = buffer_i + 1
-						end
-					end
-				elseif fill.Buffers[i].write == "self" then
-					local buffer_i = 1
-					for _, buffer in ipairs(fill.Buffers[i].layout) do
-						local channel_count = #render.GetTextureFormatInfo(buffer.format).bits
+				for key, index in pairs(buffer) do
+					if key ~= "format" then
+						local channel_count = #index
 						local glsl_type
 						if channel_count == 1 then
 							glsl_type = "float"
@@ -412,83 +303,109 @@ local function init(width, height)
 							glsl_type = "vec" .. channel_count
 						end
 
-						code = code .. "out " .. glsl_type .. " data" .. buffer_i .. "_buffer;\n"
-
-						for key, index in pairs(buffer) do
-							if key ~= "format" then
-								code = code .. "#define " .. key .. " data" .. buffer_i .. "_buffer." ..  index .. "\n"
-							end
-						end
-
-						buffer_i = buffer_i + 1
+						render.AddGlobalShaderCode(glsl_type.." get_"..key.."(vec2 uv)\n"..
+						"{\n"..
+							"\treturn texture(tex_data"..buffer_i..", uv)."..index..";\n"..
+						"}")
 					end
 				end
 
-				v.fragment.source = code .. v.fragment.source
+				write_these = write_these .. "data" .. buffer_i
+				if i ~= #pass_info.layout then
+					write_these = write_these .. "|"
+				end
+
+				buffer_i = buffer_i + 1
 			end
 
-			fill.init = true
+			data_pass.buffers_write_these = data_pass.buffers_write_these or {}
+			data_pass.buffers_write_these[pass_info.name] = write_these
 		end
 
-		render.gbuffer = render.CreateFrameBuffer(Vec2(width, height), render.gbuffer_buffers)
-		render.gbuffer_mixer_buffer = render.CreateFrameBuffer(Vec2(width, height), {internal_format = "rgb16f"})
+		local function gen_code(code, buffer, buffer_i)
+			local channel_count = #render.GetTextureFormatInfo(buffer.format).bits
+			local glsl_type
+			if channel_count == 1 then
+				glsl_type = "float"
+			else
+				glsl_type = "vec" .. channel_count
+			end
 
-		if not render.gbuffer:IsValid() then
-			warning("failed to initialize gbuffer")
-			return
+			code = code .. "out " .. glsl_type .. " data" .. buffer_i .. "_buffer;\n"
+
+			for key, index in pairs(buffer) do
+				if key ~= "format" then
+					code = code .. "#define " .. key .. " data" .. buffer_i .. "_buffer." ..  index .. "\n"
+				end
+			end
+
+			return code
 		end
-	end
 
-	if not RELOAD then
-		include("lua/libraries/graphics/render/post_process/*")
-	end
+		for i, stage in ipairs(data_pass.Stages) do
+			local code = ""
 
-	for k,v in pairs(render.gbuffer_shaders) do
-		if v.__init then
-			v:__init()
+			if data_pass.Buffers[i].write == "all" then
+				local buffer_i = 1
+				for _, pass_info in ipairs(data_pass.Buffers) do
+					for _, buffer in ipairs(pass_info.layout) do
+						code = gen_code(code, buffer, buffer_i)
+						buffer_i = buffer_i + 1
+					end
+				end
+			elseif data_pass.Buffers[i].write == "self" then
+				local buffer_i = 1
+				for _, buffer in ipairs(data_pass.Buffers[i].layout) do
+					code = gen_code(code, buffer, buffer_i)
+					buffer_i = buffer_i + 1
+				end
+			end
+
+			stage.fragment.source = code .. stage.fragment.source
 		end
-	end
 
-	render.gbuffer_data_pass.shaders = {}
+		render.gbuffer = render.CreateFrameBuffer(render.gbuffer_size, framebuffer_buffers)
+		render.gbuffer_mixer_buffer = render.CreateFrameBuffer(render.gbuffer_size, {internal_format = "rgb16f"})
 
-	for i, shader_info in ipairs(render.gbuffer_data_pass.Stages) do
-		local shader = render.CreateShader(shader_info)
-		for i, info in ipairs(render.gbuffer_buffers) do
-			shader["tex_" .. info.name] = render.gbuffer:GetTexture(info.name)
+		data_pass.shaders = {}
+
+		for i, shader_info in ipairs(data_pass.Stages) do
+			local shader = render.CreateShader(shader_info)
+			for i, info in ipairs(framebuffer_buffers) do
+				shader["tex_" .. info.name] = render.gbuffer:GetTexture(info.name)
+			end
+			data_pass.shaders[i] = shader
+			data_pass[shader_info.name.."_shader"] = shader
 		end
-		render.gbuffer_data_pass.shaders[i] = shader
-		render.gbuffer_data_pass[shader_info.name.."_shader"] = shader
+
+		data_pass:Initialize()
 	end
 
-	render.gbuffer_data_pass:Initialize()
+	render.gbuffer_data_pass = data_pass
+
+	include("lua/libraries/graphics/render/post_process/*")
 
 	event.AddListener("WindowFramebufferResized", "gbuffer", function(_, w, h)
-		if render.GetGBufferSize() ~= Vec2(w,h) then
-			render.InitializeGBuffer(w, h)
+		local current = render.GetGBufferSize()
+		render.gbuffer_size = nil
+		if render.GetGBufferSize() ~= current then
+			render.InitializeGBuffer()
 		end
+		render.camera_3d:SetViewport(Rect(0,0,w,h))
 	end)
 
 	for k,v in pairs(render.gbuffer_values) do
 		render.SetGBufferValue(k,v)
 	end
 
-	gbuffer_enabled = true
-
 	event.Call("GBufferInitialized")
 
-	logn("render: gbuffer initialized ", width, "x", height)
-end
+	logn("render: gbuffer initialized ", size.x, "x", size.y)
 
-function render.InitializeGBuffer(width, height)
-	local ok, err = system.pcall(init, width, height)
-	if not ok then
-		warning("failed to initialize gbuffer: ", 2, err)
-	end
+	gbuffer_enabled = true
 end
 
 function render.ShutdownGBuffer()
-	event.RemoveListener("PreDisplay", "gbuffer")
-	event.RemoveListener("PostDisplay", "gbuffer")
 	event.RemoveListener("WindowFramebufferResized", "gbuffer")
 
 	if render.gbuffer:IsValid() then
@@ -534,13 +451,9 @@ event.AddListener("EntityRemove", "gbuffer", function()
 end)
 
 function render.CreateMesh(vertices, indices, is_valid_table)
-	if render.IsGBufferReady() then
-		return render.gbuffer_data_pass.model_shader:CreateVertexBuffer(vertices, indices, is_valid_table)
-	end
-
 	return nil, "gbuffer not ready"
 end
 
 if RELOAD then
-	event.Delay(0.01, render.InitializeGBuffer)
+	render.InitializeGBuffer()
 end

@@ -4,7 +4,6 @@ do
 	local NULL = {}
 
 	NULL.Type = "null"
-	NULL.ClassName = "NULL"
 	NULL.IsNull = true
 
 	local function FALSE()
@@ -38,7 +37,7 @@ function prototype.MakeNULL(tbl)
 
 	for k,v in pairs(tbl) do tbl[k] = nil end
 	tbl.Type = "null"
-	setmetatable(tbl, prototype.GetRegistered("NULL"))
+	setmetatable(tbl, prototype.GetRegistered("null"))
 
 	if prototype.created_objects then
 		prototype.created_objects[tbl] = nil

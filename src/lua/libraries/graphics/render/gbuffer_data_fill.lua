@@ -1,8 +1,8 @@
-local render = ... or _G.render
-
 render.csm_count = 4
 
 local PASS = {}
+
+PASS.DepthFormat = "depth_component32f"
 
 PASS.Buffers = {
 	{
@@ -38,40 +38,6 @@ PASS.Buffers = {
 		},
 	}
 }
-
-render.AddGlobalShaderCode([[
-float random(vec2 co)
-{
-	return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-}]])
-
-render.AddGlobalShaderCode([[
-vec3 get_noise2(vec2 uv)
-{
-	return vec3(random(uv), random(uv*23.512), random(uv*6.53330));
-}]])
-
-render.AddGlobalShaderCode([[
-vec3 get_noise3(vec2 uv)
-{
-	float x = random(uv);
-	float y = random(uv*x);
-	float z = random(uv*y);
-
-	return vec3(x,y,z) * 2 - 1;
-}]])
-
-render.AddGlobalShaderCode([[
-vec4 get_noise(vec2 uv)
-{
-	return texture(g_noise_texture, uv);
-}]])
-
-render.AddGlobalShaderCode([[
-vec2 get_screen_uv()
-{
-	return gl_FragCoord.xy / g_gbuffer_size;
-}]])
 
 render.AddGlobalShaderCode([[
 vec3 get_view_pos(vec2 uv)
@@ -201,7 +167,11 @@ vec3 get_env_color()
 ]], "get_env_color")
 
 function PASS:Initialize()
-	local META = self.model_shader:CreateMaterialTemplate(PASS.Name)
+	function render.CreateMesh(vertices, indices, is_valid_table)
+		return render.gbuffer_data_pass.model_shader:CreateVertexBuffer(vertices, indices, is_valid_table)
+	end
+
+	local META = self.model_shader:CreateMaterialTemplate("model")
 
 	function META:OnBind()
 		if self.NoCull or self.Translucent then
@@ -215,6 +185,15 @@ function PASS:Initialize()
 	end
 
 	META:Register()
+end
+
+function PASS:BeginPass(name)
+	render.gbuffer:WriteThese(self.buffers_write_these[name])
+	render.gbuffer:Begin()
+end
+
+function PASS:EndPass()
+	render.gbuffer:End()
 end
 
 function PASS:Draw3D(what, dist)
@@ -738,7 +717,9 @@ if TESSELLATION then
 		in float texture_blend;
 	]]
 	.. PASS.Stages[1].fragment.source
+end
 
+if TESSELLATION then
 	if RELOAD then
 		for mesh in pairs(prototype.GetCreated()) do
 			if mesh.Type == "mesh_builder" then
@@ -746,7 +727,7 @@ if TESSELLATION then
 			end
 		end
 	end
-elseif RELOAD then
+else
 	for mesh in pairs(prototype.GetCreated()) do
 		if mesh.Type == "mesh_builder" then
 			mesh.mesh:SetMode("triangles")
@@ -754,4 +735,4 @@ elseif RELOAD then
 	end
 end
 
-render.gbuffer_data_pass = PASS
+return PASS

@@ -8,6 +8,15 @@ local ang_a = Ang3(math.pi/2, math.pi/2, 0)
 portal_a_cam:SetPosition(pos_a)
 portal_a_cam:SetAngles(ang_a + Deg3(-90,0,0))
 
+render.gbuffer_discard = render.CreateFrameBuffer(
+	size,
+	{
+		internal_format = "r8",
+	}
+)
+
+render.SetGlobalShaderVariable("tex_discard", function() return render.gbuffer_discard:GetTexture() end, "texture")
+
 local function fill_discard(invert)
 	render.gbuffer_discard:Begin()
 

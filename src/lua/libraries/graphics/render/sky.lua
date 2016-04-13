@@ -236,7 +236,5 @@ end
 
 if RELOAD then
 	init()
-	event.Delay(0.1, function()
 	render.InitializeGBuffer()
-	end)
 end

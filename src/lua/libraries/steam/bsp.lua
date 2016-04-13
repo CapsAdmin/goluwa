@@ -11,12 +11,6 @@ local skyboxes = {
 }
 
 function steam.SetMap(name)
-	if GRAPHICS then
-		if not render.gbuffer:IsValid() then
-			render.InitializeGBuffer()
-		end
-	end
-
 	steam.bsp_world = steam.bsp_world or entities.CreateEntity("physical", entities.GetWorld())
 	steam.bsp_world:SetName(name)
 	steam.bsp_world:SetCull(false)

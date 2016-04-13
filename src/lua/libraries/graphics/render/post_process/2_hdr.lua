@@ -45,73 +45,56 @@ local AUTOMATE_ME = {
 	[7] = 0.0044299121055113265,
 }
 
-	for _ = 0,2  do
-	for x = 0, 1 do
-	for y = 0, 1 do
-	if (x == 0 and y == 0) or y == x then goto continue end
+for _ = 0,2  do
+for x = 0, 1 do
+for y = 0, 1 do
+if (x == 0 and y == 0) or y == x then goto continue end
 
-	local str = [[
+local str = [[
 out vec3 out_color;
 void main()
 {
-	vec3 normal = normalize(get_view_normal(uv));
-	const float discard_threshold = 0.6;
+vec3 normal = normalize(get_view_normal(uv));
+const float discard_threshold = 0.6;
 
-	out_color = texture(tex_stage_]]..#PASS.Source..[[, uv).rgb*0.159576912161;
+out_color = texture(tex_stage_]]..#PASS.Source..[[, uv).rgb*0.159576912161;
 
 ]]
 
-	for i = -7, 7 do
-		if i ~= 0 then
-			local weight = i * 4 / 800
-			local offset = "uv + vec2("..(x*weight)..", "..(y*weight)..") * 1"
-			local fade = AUTOMATE_ME[i]
+for i = -7, 7 do
+	if i ~= 0 then
+		local weight = i * 4 / 800
+		local offset = "uv + vec2("..(x*weight)..", "..(y*weight)..") * 1"
+		local fade = AUTOMATE_ME[i]
 
-			str = str .. "\t\tout_color += texture(tex_stage_"..#PASS.Source..", "..offset.." * vec2(g_gbuffer_size.y / g_gbuffer_size.x, 1)).rgb *"..fade..";\n"
-		end
+		str = str .. "\t\tout_color += texture(tex_stage_"..#PASS.Source..", "..offset.." * vec2(g_gbuffer_size.y / g_gbuffer_size.x, 1)).rgb *"..fade..";\n"
 	end
+end
 
-	str = str .. "}"
+str = str .. "}"
 
-	table.insert(PASS.Source, {
-		buffer = {
-			size_divider = 5,
-			internal_format = "rgb16f",
-		},
-		source = str,
-	})
+table.insert(PASS.Source, {
+	buffer = {
+		size_divider = 5,
+		internal_format = "rgb16f",
+	},
+	source = str,
+})
 
-	::continue::
-	end
-	end
-	end
+::continue::
+end
+end
+end
 
 table.insert(PASS.Source, {
 	source = [[
 		out vec3 out_color;
 
-		float gamma = 1.1;
-		float exposure = 1.1;
-		float bloom_factor = 0.0005;
-		float brightMax = 1;
-
 		void main()
 		{
-
 			vec3 color = texture(self, uv).rgb;
-
 			vec3 bloom = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
-
-			color = color + bloom * bloom_factor;
-
-			color = pow(color, vec3(1. / gamma));
-			color = clamp(exposure * color, 0., 1.);
-
-			//color = max(vec3(0.), color - vec3(0.004));
-			color = exp( -1.0 / ( 2.72*color + 0.15 ) );
-			color = (color * (6.2 * color + .5)) / (color * (6.2 * color + 1.7) + 0.06);
-
-			out_color = color;
+			out_color = tonemap(color, bloom);
 		}
 	]]
 })

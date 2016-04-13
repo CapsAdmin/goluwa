@@ -141,6 +141,41 @@ do
 	end
 end
 
+render.AddGlobalShaderCode([[
+float random(vec2 co)
+{
+	return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}]])
+
+render.AddGlobalShaderCode([[
+vec3 get_noise2(vec2 uv)
+{
+	return vec3(random(uv), random(uv*23.512), random(uv*6.53330));
+}]])
+
+render.AddGlobalShaderCode([[
+vec3 get_noise3(vec2 uv)
+{
+	float x = random(uv);
+	float y = random(uv*x);
+	float z = random(uv*y);
+
+	return vec3(x,y,z) * 2 - 1;
+}]])
+
+render.AddGlobalShaderCode([[
+vec4 get_noise(vec2 uv)
+{
+	return texture(g_noise_texture, uv);
+}]])
+
+render.AddGlobalShaderCode([[
+vec2 get_screen_uv()
+{
+	return gl_FragCoord.xy / g_gbuffer_size;
+}]])
+
+
 -- shadertoy
 
 --[[
