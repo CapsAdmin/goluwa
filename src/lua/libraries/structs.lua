@@ -16,11 +16,9 @@ function structs.Register(META)
 			META = copy
 			META.ClassName = META.ClassName .. prepend
 
-			local size = ffi.sizeof(number_type) * #META.Args
-			function META:GetByteSize() return size end
+			META.byte_size = ffi.sizeof(number_type) * #META.Args
 		else
-			local size = ffi.sizeof(number_type) * #META.Args
-			function META:GetByteSize() return size end
+			META.byte_size = ffi.sizeof(number_type) * #META.Args
 		end
 
 		i = i + 1
@@ -249,24 +247,17 @@ function structs.AddOperator(META, operator, ...)
 		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
 	elseif operator == "copy" then
 		local lua = [==[
-		local META, structs, ffi = ...
+		local META, structs, copy = ...
 		META["Copy"] = function(a)
-			return
-			CTOR(
-				a.KEY
-			)
+			local out = CTOR()
+
+			copy(out, a, a.byte_size)
+
+			return out
 		end
-		META["Copy"] = function(a, b)
-			if b then
-				ffi.copy(a, b, a:GetByteSize())
-				return a
-			else
-				local out = CTOR()
-
-				ffi.copy(out, a, a:GetByteSize())
-
-				return out
-			end
+		META["CopyTo"] = function(a, b)
+			copy(a, b, a.byte_size)
+			return a
 		end
 		META.__copy = META.Copy
 		]==]
@@ -276,7 +267,7 @@ function structs.AddOperator(META, operator, ...)
 
 		lua = lua:gsub("CTOR", "structs."..META.ClassName)
 
-		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs, ffi)
+		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs, ffi.copy)
 	elseif operator == "math" then
 		local args = {...}
 		local func_name = args[1]

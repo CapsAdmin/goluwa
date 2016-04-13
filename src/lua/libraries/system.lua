@@ -554,7 +554,7 @@ do
 	function system.OnError(msg, ...)
 		logsection("lua error", true)
 		msg = msg or "no error"
-		if suppress then logn("error in system.OnError: ", msg, ...) for i = 3, 100 do local t = debug.getinfo(i) if t then table.print(t) else break end end return end
+		if suppress then logn("error in system.OnError: ", msg, ...) logn(debug.traceback())  return end
 		suppress = true
 		if LINUX and msg == "interrupted!\n" then return end
 

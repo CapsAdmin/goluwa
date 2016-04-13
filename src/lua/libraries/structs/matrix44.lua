@@ -2,8 +2,6 @@ local structs = (...) or _G.structs
 
 local ffi = require("ffi")
 
-local ctype = ffi.typeof("struct { float m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33; }")
-
 local META = {}
 META.__index = META
 
@@ -22,20 +20,22 @@ META.Args = {
 
 structs.AddOperator(META, "==")
 
-local size = ffi.sizeof("float") * 16
+local ctype = ffi.typeof("struct { $ m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33; }", ffi.typeof(META.NumberType))
+local size = ffi.sizeof(META.NumberType) * 16
+local copy = ffi.copy
 
-function META:Copy(matrix)
-	if matrix then
-		ffi.copy(self, matrix, 16)
+function META:CopyTo(matrix)
+	copy(self, matrix, 16)
 
-		return self
-	else
-		local result = ctype(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+	return self
+end
 
-		ffi.copy(result, self, size)
+function META:Copy()
+	local out = ctype(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
 
-		return result
-	end
+	copy(out, self, size)
+
+	return out
 end
 
 META.__copy = META.Copy
@@ -185,7 +185,7 @@ function META:GetClipCoordinates()
 end
 
 function META:Translate(x, y, z)
-	if x == 0 and y == 0 and (z == 0 or not z) then return self end
+	if x == 0 and y == 0 and z == 0 then return self end
 
 	self.m30 = self.m00 * x + self.m10 * y + self.m20 * z + self.m30
 	self.m31 = self.m01 * x + self.m11 * y + self.m21 * z + self.m31

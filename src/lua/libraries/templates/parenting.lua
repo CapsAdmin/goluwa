@@ -26,15 +26,6 @@ function META:GetParentList()
 	return self.parent_list
 end
 
-function META:SetParent(obj)
-	if not obj or not obj:IsValid() then
-		self:UnParent()
-		return false
-	end
-
-	return obj:AddChild(self)
-end
-
 function META:AddChild(obj, pos)
 	if self == obj or obj:HasChild(self) then
 		return false
@@ -61,6 +52,10 @@ function META:AddChild(obj, pos)
 	self:OnChildAdd(obj)
 
 	return true
+end
+
+function META:SetParent(obj)
+	return obj:AddChild(self)
 end
 
 function META:HasParent(obj)
@@ -129,9 +124,8 @@ function META:UnParent()
 
 	if parent:IsValid() then
 		parent:UnparentChild(self)
+		self:OnUnParent(parent)
 	end
-
-	self:OnUnParent(parent)
 end
 
 local function add_children_to_list(parent, list)

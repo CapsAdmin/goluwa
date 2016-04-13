@@ -131,7 +131,7 @@ do -- focus
 		local parent = self:GetParent()
 
 		if parent:IsValid() then
-			self:SetParent()
+			self:UnParent()
 			parent:AddChild(self)
 		end
 	end
@@ -140,7 +140,7 @@ do -- focus
 		local parent = self:GetParent()
 
 		if parent:IsValid() then
-			self:SetParent()
+			self:UnParent()
 			parent:AddChild(self, 1)
 		end
 	end
@@ -527,7 +527,7 @@ do -- orientation
 
 		if parent:IsValid() then
 			table.sort(parent:GetChildren(), sorter)
-			gui.unrolled_draw = nil
+			--gui.unrolled_draw = nil
 		end
 	end
 
@@ -2339,7 +2339,7 @@ do -- events
 			--surface.DrawRect(self:GetMousePosition().x, self:GetMousePosition().y, 2, 2)
 		end
 	end
-
+--[[
 	function PANEL:OnUnParent()
 		gui.unrolled_draw = nil
 	end
@@ -2349,6 +2349,7 @@ do -- events
 --		self:Layout()
 		--child:Layout()
 	end
+	]]
 
 	function PANEL:OnRemove()
 		gui.panels[self] = nil

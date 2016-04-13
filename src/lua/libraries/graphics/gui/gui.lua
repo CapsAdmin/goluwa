@@ -355,7 +355,7 @@ end
 
 function gui.CreateWorld()
 	local world = gui.CreatePanel("base")
-	world:SetParent()
+	world:UnParent()
 	world:SetPosition(Vec2(0, 0))
 	world:SetSize(Vec2(window.GetSize()))
 	world:SetCursor("arrow")

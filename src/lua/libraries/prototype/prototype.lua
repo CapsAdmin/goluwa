@@ -65,9 +65,6 @@ do
 			end
 		end
 
-		super_type = super_type:lower()
-		sub_type = sub_type:lower()
-
 		prototype.registered[super_type] = prototype.registered[super_type] or {}
 		prototype.registered[super_type][sub_type] = meta
 
@@ -186,9 +183,6 @@ end
 function prototype.GetRegistered(super_type, sub_type)
 	sub_type = sub_type or super_type
 
-	super_type = super_type:lower()
-	sub_type = sub_type:lower()
-
 	if prototype.prepared_metatables[super_type] and prototype.prepared_metatables[super_type][sub_type] then
 		return prototype.prepared_metatables[super_type][sub_type]
 	end
@@ -197,7 +191,6 @@ function prototype.GetRegistered(super_type, sub_type)
 end
 
 function prototype.GetRegisteredSubTypes(super_type)
-	super_type = super_type:lower()
 
 	return prototype.registered[super_type]
 end

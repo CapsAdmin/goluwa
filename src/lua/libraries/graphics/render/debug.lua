@@ -67,48 +67,5 @@ do -- AUTOMATE THIS
 				buffer_i = buffer_i + 1
 			end
 		end
-
-		do return end
-
-		for _, data in pairs(render.gbuffer_buffers) do
-			draw_buffer(data.name, render.gbuffer:GetTexture(data.name))
-		end
-
-		surface.SetColor(0,0,0,1)
-		surface.SetTexture(tex)
-		surface.DrawRect(x, y, w, h)
-		surface.mesh_2d_shader.color_override.r = 1
-		surface.mesh_2d_shader.color_override.g = 1
-		surface.mesh_2d_shader.color_override.b = 1
-		draw_buffer("self illumination", render.gbuffer:GetTexture("data3"))
-		surface.mesh_2d_shader.color_override.r = 0
-		surface.mesh_2d_shader.color_override.g = 0
-		surface.mesh_2d_shader.color_override.b = 0
-
-		surface.SetColor(0,0,0,1)
-		surface.SetTexture(tex)
-		surface.DrawRect(x, y, w, h)
-		surface.mesh_2d_shader.color_override.r = 1
-		surface.mesh_2d_shader.color_override.g = 1
-		surface.mesh_2d_shader.color_override.b = 1
-		draw_buffer("roughness", render.gbuffer:GetTexture("data1"))
-		surface.mesh_2d_shader.color_override.r = 0
-		surface.mesh_2d_shader.color_override.g = 0
-		surface.mesh_2d_shader.color_override.b = 0
-
-		surface.SetColor(0,0,0,1)
-		surface.SetTexture(tex)
-		surface.DrawRect(x, y, w, h)
-		surface.mesh_2d_shader.color_override.r = 1
-		surface.mesh_2d_shader.color_override.g = 1
-		surface.mesh_2d_shader.color_override.b = 1
-		draw_buffer("metallic", render.gbuffer:GetTexture("data2"))
-		surface.mesh_2d_shader.color_override.r = 0
-		surface.mesh_2d_shader.color_override.g = 0
-		surface.mesh_2d_shader.color_override.b = 0
-
-		draw_buffer("discard", render.gbuffer_discard:GetTexture())
-
-		i,x,y,w,h = render.gbuffer_data_pass:DrawDebug(i,x,y,w,h,size)
 	end
 end

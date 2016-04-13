@@ -51,7 +51,7 @@ entities.world = NULL
 
 function entities.GetWorld()
 	if not entities.world:IsValid() then
-		entities.world = entities.CreateEntity("world", NULL)
+		entities.world = entities.CreateEntity("world", false)
 	end
 	return entities.world
 end
