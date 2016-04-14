@@ -95,6 +95,13 @@ local rate_cvar = console.CreateVariable(
 	"-1\t=\trun as fast as possible\n 0\t=\tvsync\n+1\t=\t/try/ to run at this framerate (using sleep)"
 )
 
+event.Thinker(function()
+	if collectgarbage("count") > 900000 then
+		collectgarbage()
+		llog("emergency gc!")
+	end
+end, false, 1/10)
+
 -- main loop
 
 local function main()
@@ -135,6 +142,7 @@ local function main()
 		last_time = time
 
 		system.UpdateTitlebarFPS(dt)
+
 
 		local rate = rate_cvar:Get()
 
