@@ -543,12 +543,14 @@ PASS.Stages = {
 						attenuation = compute_light_attenuation(pos, light_view_pos, radius, normal);
 					}
 
-					specular = compute_brdf(
+					specular = compute_light_specular(
 						uv,
-						normalize(pos - light_view_pos),
-						normalize(pos),
-						normal
-					)*attenuation*light_intensity*light_color.rgb*5;
+						normalize(pos - light_view_pos), // L
+						normalize(pos), // V
+						normal, // N
+						attenuation,
+						light_color.rgb * light_intensity
+					);
 
 					if (lua[light_shadow = false])
 					{

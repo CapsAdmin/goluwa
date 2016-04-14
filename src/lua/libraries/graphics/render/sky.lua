@@ -23,7 +23,7 @@ local fb
 local tex
 local shader
 
-local function init()
+function render.InitializeSky()
 	tex = render.CreateTexture("cube_map")
 	tex:SetInternalFormat("rgb16f")
 
@@ -57,7 +57,7 @@ end
 
 function render.UpdateSky()
 	if not fb then return end
-	if not tex then init() end
+	if not tex then render.InitializeSky() end
 
 	render.SetDepth(false)
 	render.SetBlendMode()
@@ -97,7 +97,7 @@ function render.UpdateSky()
 end
 
 function render.GetSkyTexture()
-	if not tex then init() end
+	if not tex then render.InitializeSky() end
 	return tex
 end
 
@@ -114,6 +114,6 @@ function render.GetShaderSunDirection()
 end
 
 if RELOAD then
-	init()
+	RELOAD = nil
 	render.InitializeGBuffer()
 end

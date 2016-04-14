@@ -261,6 +261,8 @@ function render.InitializeGBuffer()
 
 	include("lua/libraries/graphics/render/gbuffer_shaders/"..shader_cvar:Get()..".lua")
 
+	render.InitializeSky()
+
 	local data_pass = include("lua/libraries/graphics/render/gbuffer_data_fill.lua", render)
 
 	do -- init data pass

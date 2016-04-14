@@ -348,7 +348,7 @@ float compute_specular(vec3 N, vec3 V, vec3 L, float roughness, float F0)
 }
 ]], "compute_specular")
 render.AddGlobalShaderCode([[
-vec3 compute_brdf(vec2 uv, vec3 light_dir, vec3 view_dir, vec3 normal)
+vec3 compute_light_specular(vec2 uv, vec3 light_dir, vec3 view_dir, vec3 normal, float attenuation, vec3 light_color)
 {
 	{
 		return vec3(compute_specular(
@@ -357,7 +357,7 @@ vec3 compute_brdf(vec2 uv, vec3 light_dir, vec3 view_dir, vec3 normal)
 			-light_dir,
 			get_roughness(uv),
 			1
-		));
+		))*attenuation*light_color*5;
 	}
 	return compute_specular2(
 		light_dir,
