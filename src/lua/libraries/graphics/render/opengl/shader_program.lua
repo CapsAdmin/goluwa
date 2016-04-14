@@ -44,7 +44,7 @@ function META:Link()
 	self.gl_program:Getiv("GL_LINK_STATUS", status)
 
 	if status[0] == 0 then
-
+		local log = ffi.new("char[1024]")
 		self.gl_program:GetInfoLog(1024, nil, log)
 		self.gl_program:Delete()
 
