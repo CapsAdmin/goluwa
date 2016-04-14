@@ -465,7 +465,7 @@ function render.CreateTextureFromPath(path, srgb)
 	end
 
 	local self = render.CreateTexture("2d")
-	if srgb then self:SetSRGB(srgb) end
+	if srgb ~= nil then self:SetSRGB(srgb) end
 	self:SetPath(path)
 
 	render.texture_path_cache[path] = self
