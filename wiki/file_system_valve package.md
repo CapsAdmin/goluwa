@@ -1,2 +1,0 @@
-- [file_system_valve package:OnParseArchive](nil)(file, archive_path)
-- [file_system_valve package:TranslateArchivePath](nil)(file_info, archive_path)

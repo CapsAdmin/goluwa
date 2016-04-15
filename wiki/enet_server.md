@@ -1,6 +1,0 @@
-- [enet_server:Broadcast](nil)(str, flags, channel)
-- [enet_server:GetPeers](nil)()
-- [enet_server:OnPeerConnect](nil)(peer)
-- [enet_server:OnPeerDisconnect](nil)(peer)
-- [enet_server:OnReceive](nil)(peer, str, flags, channel)
-- [enet_server:OnRemove](nil)()

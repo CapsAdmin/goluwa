@@ -1,8 +1,0 @@
-- [panel_tab:AddTab](nil)(name)
-- [panel_tab:GetSelectedTab](nil)()
-- [panel_tab:GetTab](nil)(name)
-- [panel_tab:Initialize](nil)()
-- [panel_tab:IsTabSelected](nil)(name)
-- [panel_tab:OnLayout](nil)(S, skin)
-- [panel_tab:OnSelectTab](nil)()
-- [panel_tab:SelectTab](nil)(name)

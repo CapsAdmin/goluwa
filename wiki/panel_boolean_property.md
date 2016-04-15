@@ -1,5 +1,0 @@
-- [panel_boolean_property:Decode](nil)(str)
-- [panel_boolean_property:Encode](nil)(b)
-- [panel_boolean_property:Initialize](nil)()
-- [panel_boolean_property:OnLayout](nil)(S)
-- [panel_boolean_property:OnValueChangedInternal](nil)(val)

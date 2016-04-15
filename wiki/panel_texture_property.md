@@ -1,6 +1,0 @@
-- [panel_texture_property:Decode](nil)(str)
-- [panel_texture_property:Encode](nil)(tex)
-- [panel_texture_property:Initialize](nil)()
-- [panel_texture_property:OnLayout](nil)(S)
-- [panel_texture_property:OnSystemFileDrop](nil)(path)
-- [panel_texture_property:OnValueChangedInternal](nil)(val)

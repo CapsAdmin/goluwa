@@ -1,2 +1,0 @@
-- [font_love:GetGlyphData](nil)(code)
-- [font_love:Initialize](nil)(options)

@@ -1,7 +1,0 @@
-- [component_gate_multiply:ComputeInputs](nil)(i, o)
-- [component_gate_multiply:GetInputA](nil)()
-- [component_gate_multiply:GetInputB](nil)()
-- [component_gate_multiply:GetOutputA](nil)()
-- [component_gate_multiply:SetInputA](nil)(num)
-- [component_gate_multiply:SetInputB](nil)(num)
-- [component_gate_multiply:SetOutputA](nil)(num)

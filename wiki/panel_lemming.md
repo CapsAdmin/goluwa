@@ -1,7 +1,0 @@
-- [panel_lemming:CheckCollision](nil)()
-- [panel_lemming:DrawAnimation](nil)(animation, frame, rot, flip_x, relative)
-- [panel_lemming:DrawTile](nil)(tile_x, tile_y, rot)
-- [panel_lemming:Initialize](nil)()
-- [panel_lemming:OnDraw](nil)()
-- [panel_lemming:OnParentLand](nil)(parent)
-- [panel_lemming:OnUpdate](nil)()

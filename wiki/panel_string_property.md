@@ -1,2 +1,0 @@
-- [panel_string_property:Initialize](nil)()
-- [panel_string_property:OnSystemFileDrop](nil)(path)

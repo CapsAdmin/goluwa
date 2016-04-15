@@ -1,5 +1,0 @@
-- [component_gate_deg:ComputeInputs](nil)(i, o)
-- [component_gate_deg:GetInputA](nil)()
-- [component_gate_deg:GetOutputA](nil)()
-- [component_gate_deg:SetInputA](nil)(num)
-- [component_gate_deg:SetOutputA](nil)(num)

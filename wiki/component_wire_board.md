@@ -1,5 +1,0 @@
-- [component_wire_board:GetWirePanel](nil)()
-- [component_wire_board:OnAdd](nil)(ent)
-- [component_wire_board:OnDeserialize](nil)(rect)
-- [component_wire_board:OnRemove](nil)(ent)
-- [component_wire_board:OnSerialize](nil)()

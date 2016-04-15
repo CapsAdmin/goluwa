@@ -1,5 +1,0 @@
-- [component_gate_cos:ComputeInputs](nil)(i, o)
-- [component_gate_cos:GetInputA](nil)()
-- [component_gate_cos:GetOutputA](nil)()
-- [component_gate_cos:SetInputA](nil)(num)
-- [component_gate_cos:SetOutputA](nil)(num)

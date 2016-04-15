@@ -1,2 +1,0 @@
-- [font_angel:GetGlyphData](nil)(code)
-- [font_angel:Initialize](nil)()

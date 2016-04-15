@@ -1,2 +1,0 @@
-- [panel_wire_board:Initialize](nil)()
-- [panel_wire_board:OnPostDraw](nil)()

@@ -1,4 +1,0 @@
-- [null:IsValid](nil)()
-- [null:__copy](nil)()
-- [null:__index](nil)(key)
-- [null:__tostring](nil)()

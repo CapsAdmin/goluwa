@@ -1,5 +1,0 @@
-- [component_gate_ceil:ComputeInputs](nil)(i, o)
-- [component_gate_ceil:GetInputA](nil)()
-- [component_gate_ceil:GetOutputA](nil)()
-- [component_gate_ceil:SetInputA](nil)(num)
-- [component_gate_ceil:SetOutputA](nil)(num)

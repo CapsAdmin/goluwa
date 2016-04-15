@@ -1,6 +1,0 @@
-- [panel_properties:AddGroup](nil)(name)
-- [panel_properties:AddPropertiesFromObject](nil)(obj)
-- [panel_properties:AddProperty](nil)(name, set_value, get_value, default, extra_info, obj)
-- [panel_properties:Initialize](nil)()
-- [panel_properties:OnLayout](nil)(S)
-- [panel_properties:OnPanelMouseInput](nil)(panel, button, press)

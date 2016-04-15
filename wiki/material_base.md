@@ -1,3 +1,0 @@
-- [material_base:GetError](nil)(var)
-- [material_base:OnBind](nil)()
-- [material_base:SetError](nil)(reason)
