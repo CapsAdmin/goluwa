@@ -62,10 +62,6 @@ function META:SetPath(path, face, flip_y)
 			if buffer then
 				self:SetSize(Vec2(w, h))
 
-				if flip_y == nil then
-					--flip_y = full_path:endswith(".vtf")
-				end
-
 				self:Upload({
 					buffer = buffer,
 					width = w,

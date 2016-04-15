@@ -44,7 +44,7 @@ vec3 sky_absorb(vec3 sky_color, float dist, vec3 color, float factor)
 {
 	return color-color*pow(sky_color, vec3(factor/dist));
 }
-vec3 get_sky(vec3 ray, float depth)
+vec3 gbuffer_compute_sky(vec3 ray, float depth)
 {
 	ray = ray.xzy * vec3(-1, -1, 1);
 
@@ -94,29 +94,10 @@ vec3 get_sky(vec3 ray, float depth)
 	rayleigh_collected = rayleigh_collected * pow(eye_depth, rayleigh_collection_power) / float(step_count);
 	mie_collected = (mie_collected * pow(eye_depth, mie_collection_power)) / float(step_count);
 	return stars + vec3(spot) + clamp(vec3(spot * mie_collected + mie_factor * mie_collected + rayleigh_factor * rayleigh_collected), vec3(0), vec3(1));
-}]], "get_sky")
-
-
-render.AddGlobalShaderCode([[
-vec3 tonemap(vec3 color, vec3 bloom)
-{
-	const float gamma = 1.1;
-	const float exposure = 0.9;
-	const float bloomFactor = 0.0005;
-	const float brightMax = 1;
-
-	color = color + bloom * bloomFactor;
-	color *= exposure * (exposure + 1.0);
-	color = exp( -1.0 / ( 2.72*color + 0.15 ) );
-	color = pow(color, vec3(1. / gamma));
-	color = max(vec3(0.), color - vec3(0.004));
-	color = (color * (6.2 * color + .5)) / (color * (6.2 * color + 1.7) + 0.06);
-	return color;
 }]])
 
-
 render.AddGlobalShaderCode([[
-float compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, vec3 normal)
+float gbuffer_compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, vec3 normal)
 {
 	float cutoff = 0.175;
 
@@ -146,8 +127,9 @@ float compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, vec3 nor
 ]])
 
 render.AddGlobalShaderCode([[
-vec3 compute_light_specular(vec2 uv, vec3 L, vec3 V, vec3 N, float attenuation, vec3 light_color)
+vec3 gbuffer_compute_specular(vec3 L, vec3 V, vec3 N, float attenuation, vec3 light_color)
 {
+	vec2 uv = get_screen_uv();
 	L = -L;
 	V = -V;
 	float F0 = 0.25;
@@ -178,6 +160,24 @@ vec3 compute_light_specular(vec2 uv, vec3 L, vec3 V, vec3 N, float attenuation, 
 }
 ]])
 
+render.AddGlobalShaderCode([[
+vec3 gbuffer_compute_tonemap(vec3 color, vec3 bloom)
+{
+	const float gamma = 1.1;
+	const float exposure = 0.9;
+	const float bloomFactor = 0.0005;
+	const float brightMax = 1;
+
+	color = color + bloom * bloomFactor;
+	color *= exposure * (exposure + 1.0);
+	color = exp( -1.0 / ( 2.72*color + 0.15 ) );
+	color = pow(color, vec3(1. / gamma));
+	color = max(vec3(0.), color - vec3(0.004));
+	color = (color * (6.2 * color + .5)) / (color * (6.2 * color + 1.7) + 0.06);
+
+	return color;
+}]])
+
 do
 	local PASS = {}
 
@@ -186,8 +186,6 @@ do
 	PASS.Default = true
 
 	PASS.Source = {}
-
-	local FAST_BLUR = false
 
 	table.insert(PASS.Source, {
 		buffer = {
@@ -261,6 +259,7 @@ do
 	for x = -1, 1 do
 		for y = -1, 1 do
 			if x == y or (y == 0 and x == 0) then goto continue end
+			print(x, y)
 
 			local weights = {
 				Vec2(0.53812504, 0.18565957),
@@ -388,29 +387,8 @@ do
 
 			void main()
 			{
-				vec3 color = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
-				out_color = color*3;
-			}
-		]]
-	})
+				vec3 reflection = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb * 3;
 
-
-	render.AddGBufferShader(PASS)
-end
-
-do
-	local PASS = {}
-
-	PASS.Name = "template"
-	PASS.Source = {}
-
-	table.insert(PASS.Source, {
-		source =  [[
-			out vec3 out_color;
-
-			void main()
-			{
-				vec3 reflection = texture(self, uv).rgb;
 				vec3 diffuse = get_albedo(uv);
 				vec3 specular = get_specular(uv)*2;
 				float shadow = get_shadow(uv) > 0.00025 ? 0.25 : 1;
@@ -420,7 +398,7 @@ do
 				float metallic = get_metallic(uv);
 				specular = mix(specular, reflection, pow(metallic, 0.5));
 				out_color = diffuse * specular;
-				out_color += get_sky(get_camera_dir(uv), get_depth(uv))*0.5;
+				out_color += gbuffer_compute_sky(get_camera_dir(uv), get_depth(uv))*0.5;
 				//out_color = reflection;
 			}
 		]]

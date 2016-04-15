@@ -1,12 +1,12 @@
 render.AddGlobalShaderCode([[
-vec3 get_sky(vec3 ray, float depth)
+vec3 gbuffer_compute_sky(vec3 ray, float depth)
 {
 	return vec3(0.4,0.8,1);
-}]], "get_sky")
+}]])
 
 
 render.AddGlobalShaderCode([[
-vec3 tonemap(vec3 color, vec3 bloom)
+vec3 gbuffer_compute_tonemap(vec3 color, vec3 bloom)
 {
 	const float bloom_factor = 0.05;
 	const float exposure = 1;
@@ -19,7 +19,7 @@ vec3 tonemap(vec3 color, vec3 bloom)
 ]])
 
 render.AddGlobalShaderCode([[
-float compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, vec3 normal)
+float gbuffer_compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, vec3 normal)
 {
 	float distance = length(light_pos - pos);
 	distance = distance / radius / 9;
@@ -30,8 +30,9 @@ float compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, vec3 nor
 ]])
 
 render.AddGlobalShaderCode([[
-vec3 compute_light_specular(vec2 uv, vec3 l, vec3 v, vec3 n, float attenuation, vec3 light_color)
+vec3 gbuffer_compute_specular(vec3 l, vec3 v, vec3 n, float attenuation, vec3 light_color)
 {
+	vec2 uv = get_screen_uv();
 	n = -n;
 
 	float diffuse = max(dot(n, l), 0.0);

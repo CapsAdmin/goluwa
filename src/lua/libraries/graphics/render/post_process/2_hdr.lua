@@ -94,7 +94,7 @@ table.insert(PASS.Source, {
 		{
 			vec3 color = texture(self, uv).rgb;
 			vec3 bloom = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
-			out_color = tonemap(color, bloom);
+			out_color = gbuffer_compute_tonemap(color, bloom);
 		}
 	]]
 })

@@ -361,6 +361,8 @@ local mount_info = {
 function steam.MountGamesFromPath(path)
 	local name = path:match("maps/(.+)%.bsp")
 
+	if name == "gm_old_flatgrass" then return end
+
 	if name then
 		local mounts = mount_info[name]
 

@@ -100,7 +100,7 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
     return iSun * (pRlh * kRlh * totalRlh + pMie * kMie * totalMie);
 }
 
-vec3 get_sky(vec3 ray, float depth)
+vec3 gbuffer_compute_sky(vec3 ray, float depth)
 {
 
 	vec3 sun_direction = lua[(vec3)render.GetShaderSunDirection];
@@ -126,11 +126,11 @@ vec3 get_sky(vec3 ray, float depth)
         1.2e3,                          // Mie scale height
         0.758                           // Mie preferred scattering direction
 	), vec3(0))+stars;
-}]], "get_sky")
+}]])
 
 
 render.AddGlobalShaderCode([[
-vec3 tonemap(vec3 color, vec3 bloom)
+vec3 gbuffer_compute_tonemap(vec3 color, vec3 bloom)
 {
 	float gamma = 1.1;
 	float exposure = 1.1;
@@ -151,7 +151,7 @@ vec3 tonemap(vec3 color, vec3 bloom)
 ]])
 
 render.AddGlobalShaderCode([[
-float compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, vec3 normal)
+float gbuffer_compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, vec3 normal)
 {
 	float cutoff = 0.175;
 
@@ -348,7 +348,7 @@ float compute_specular(vec3 N, vec3 V, vec3 L, float roughness, float F0)
 }
 ]], "compute_specular")
 render.AddGlobalShaderCode([[
-vec3 compute_light_specular(vec2 uv, vec3 light_dir, vec3 view_dir, vec3 normal, float attenuation, vec3 light_color)
+vec3 gbuffer_compute_specular(vec2 uv, vec3 light_dir, vec3 view_dir, vec3 normal, float attenuation, vec3 light_color)
 {
 	{
 		return vec3(compute_specular(
@@ -602,7 +602,7 @@ table.insert(PASS.Source, {
 			vec3 reflection = texture(tex_stage_]]..(#PASS.Source-3)..[[, uv).rgb;
 			if (texture(tex_depth, uv).r == 1)
 			{
-				out_color = get_sky(-get_camera_dir(uv).xzy*vec3(1,1,-1), 1);
+				out_color = gbuffer_compute_sky(-get_camera_dir(uv).xzy*vec3(1,1,-1), 1);
 				return;
 			}
 
@@ -620,7 +620,7 @@ table.insert(PASS.Source, {
 			light *= shadow;
 			light += reflection*albedo;
 
-			vec3 fog = get_sky(-get_view_pos(uv).xzy, get_depth(uv));
+			vec3 fog = gbuffer_compute_sky(-get_view_pos(uv).xzy, get_depth(uv));
 
 			out_color = albedo * light + fog;
 

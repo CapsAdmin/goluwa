@@ -1,13 +1,5 @@
 local render = ... or _G.render
 
-render.AddGlobalShaderCode([[
-vec3 get_sky(vec3 ray, float depth)
-{
-	return vec3(0.4,0.8,1);
-}]], "get_sky")
-
-
-
 local directions = {
 	QuatDeg3(0,-90,-90), -- back
 	QuatDeg3(0,90,90), -- front
@@ -43,7 +35,7 @@ function render.InitializeSky()
 
 				void main()
 				{
-					out_color = get_sky(get_camera_dir(uv), 1);
+					out_color = gbuffer_compute_sky(get_camera_dir(uv), 1);
 				}
 			]]
 		}

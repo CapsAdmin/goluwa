@@ -540,11 +540,10 @@ PASS.Stages = {
 					{
 						float radius = lua[light_radius = 1000];
 
-						attenuation = compute_light_attenuation(pos, light_view_pos, radius, normal);
+						attenuation = gbuffer_compute_light_attenuation(pos, light_view_pos, radius, normal);
 					}
 
-					specular = compute_light_specular(
-						uv,
+					specular = gbuffer_compute_specular(
 						normalize(pos - light_view_pos), // L
 						normalize(pos), // V
 						normal, // N

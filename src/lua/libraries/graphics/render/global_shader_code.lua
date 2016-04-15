@@ -9,7 +9,7 @@ end
 render.global_shader_code = render.global_shader_code or {}
 
 function render.AddGlobalShaderCode(glsl_code, function_name)
-	function_name = function_name or glsl_code:match("%s([a-zA-Z0-9_]-)%(")
+	function_name = function_name or glsl_code:match(".+%s([a-zA-Z0-9_]-)%b()%s-%b{}%s*$")
 
 	if glsl_code:endswith(".brdf") then
 		local str = vfs.Read(glsl_code)
