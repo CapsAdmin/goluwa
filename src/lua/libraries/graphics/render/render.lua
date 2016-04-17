@@ -148,15 +148,43 @@ float random(vec2 co)
 }]])
 
 render.AddGlobalShaderCode([[
-vec3 get_noise2(vec2 uv)
+float random_temporal(vec2 co)
 {
-	return vec3(random(uv), random(uv*23.512), random(uv*6.53330));
+	return fract(sin(dot(co.xy * iGlobalTime,vec2(12.9898,78.233))) * 43758.5453);
+}]])
+
+render.AddGlobalShaderCode([[
+vec2 get_noise2(vec2 uv)
+{
+	float x = random(uv);
+	float y = random(uv*x);
+
+	return vec2(x,y) * 2 - 1;
+}]])
+
+render.AddGlobalShaderCode([[
+vec2 get_noise2_temporal(vec2 uv)
+{
+	float x = random(uv * iGlobalTime);
+	float y = random(uv*x);
+
+	return vec2(x,y) * 2 - 1;
 }]])
 
 render.AddGlobalShaderCode([[
 vec3 get_noise3(vec2 uv)
 {
 	float x = random(uv);
+	float y = random(uv*x);
+	float z = random(uv*y);
+
+	return vec3(x,y,z) * 2 - 1;
+}]])
+
+render.AddGlobalShaderCode([[
+vec3 get_noise3_temporal(vec2 uv)
+{
+	float x = random(uv * iGlobalTime);
 	float y = random(uv*x);
 	float z = random(uv*y);
 
