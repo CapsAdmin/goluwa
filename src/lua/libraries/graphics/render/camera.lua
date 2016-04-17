@@ -203,8 +203,9 @@ function META:Rebuild(type)
 			else
 				if self:Get3D() then
 					proj:Perspective(self.FOV, self.FarZ, self.NearZ, self.Viewport.w / self.Viewport.h)
+					proj:Translate(self.Viewport.x, self.Viewport.y, 0)
 				else
-					proj:Ortho(0, self.Viewport.w, self.Viewport.h, 0, -1, 1)
+					proj:Ortho(self.Viewport.x, self.Viewport.w, self.Viewport.h, self.Viewport.y, -1, 1)
 				end
 			end
 
