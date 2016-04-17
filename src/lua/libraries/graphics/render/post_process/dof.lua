@@ -56,7 +56,7 @@ table.insert(PASS.Source, {
 	{
 		float z = pow((-texture(tex_depth, uv).r+1)*15, 1.25);
 
-		out_color = Bokeh(self, uv, z, 1);
+		out_color = Bokeh(tex_mixer, uv, z, 1);
 	}
 ]]
 })
