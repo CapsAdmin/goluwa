@@ -137,6 +137,7 @@ do -- mixer
 					fb = render.CreateFrameBuffer(size, stage.buffer or {internal_format = "rgba8"})
 
 					stage.shader.fragment.variables.self = fb:GetTexture()
+					fb:GetTexture():Clear()
 
 					for _, stage in ipairs(stages) do
 						local tex = fb:GetTexture()

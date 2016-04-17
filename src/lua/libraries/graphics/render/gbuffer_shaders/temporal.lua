@@ -272,7 +272,7 @@ table.insert(PASS.Source, {
 table.insert(PASS.Source, {
 	buffer = {
 		--max_size = Vec2() + 512,
-		internal_format = "r16f",
+		internal_format = "r8",
 	},
 	source =  [[
 		float ssao()
@@ -283,7 +283,7 @@ table.insert(PASS.Source, {
 			for (float i = 0; i < iterations; i++)
 			{
 				vec3 noise = get_noise3_temporal(uv+i);
-				noise.z *= 2;
+				noise.z *= 5;
 
 				vec3 diff = get_view_pos(uv + (noise.xy / get_depth(uv) / g_cam_farz * noise.z)) - get_view_pos(uv);
 
@@ -297,14 +297,14 @@ table.insert(PASS.Source, {
 
 		void main()
 		{
-			out_color = pow(mix(texture(self, uv).r, ssao()*1.1, 0.5), 4);
+			out_color = mix(texture(self, uv).r, ssao(), 0.6);
 		}
 	]]
 })
 
 table.insert(PASS.Source, {
 	buffer = {
-		--internal_format = "rgb16f",
+		internal_format = "rgb16f",
 	},
 	source =  [[
 		out vec3 out_color;
@@ -314,19 +314,16 @@ table.insert(PASS.Source, {
 			vec3 reflection = get_env_color();//texture(tex_stage_]]..(#PASS.Source-1)..[[, uv).rgb;
 			vec3 diffuse = get_albedo(uv);
 			vec3 specular = get_specular(uv);
-			float shadow = get_shadow(uv) > 0.00025 + random_temporal(uv)/10 ? 0 : 1;
+			float shadow = get_shadow(uv) > 0.00025 ? 0 : 1;
 			float ssao = texture(tex_stage_]]..(#PASS.Source)..[[, uv).r;
+			float metallic = get_metallic(uv);
 
 			specular *= shadow;
 
-			float metallic = get_metallic(uv);
 			specular = mix(specular, reflection, pow(metallic, 0.5));
 			out_color = diffuse * specular;
-			out_color *= ssao*5;
-			out_color += gbuffer_compute_sky(get_camera_dir(uv), get_depth(uv))*0.5;
-			//out_color = reflection;
-			//out_color = vec3(ssao);
-
+			out_color *= pow(ssao*1.25, 3);
+			out_color += gbuffer_compute_sky(get_camera_dir(uv), get_depth(uv));
 			out_color = mix(texture(self, uv).rgb, out_color, 0.1);
 		}
 	]]
