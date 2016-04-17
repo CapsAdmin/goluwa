@@ -2,19 +2,19 @@ local profile_start_time = os.clock()
 
 console.CreateVariable("editor_path", system.FindFirstEditor(true, true) or "")
 
+if sockets then
+	sockets.Initialize()
+
+	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/")
+	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/")
+end
+
 if WINDOW then
 	window.Open()
 end
 
 if GRAPHICS then
 	gui.Initialize()
-end
-
-if sockets then
-	sockets.Initialize()
-
-	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/")
-	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/")
 end
 
 if audio then
