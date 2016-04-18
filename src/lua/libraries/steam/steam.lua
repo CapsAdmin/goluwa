@@ -163,7 +163,7 @@ function steam.VDFToTable(str, lower_or_modify_keys, preprocess)
 
 				in_string = false
 				no_quotes = false
-				capture = {}
+				table.clear(capture)
 			else
 				in_string = true
 			end
