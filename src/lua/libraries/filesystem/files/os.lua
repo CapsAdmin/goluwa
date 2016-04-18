@@ -21,6 +21,7 @@ vfs.SetEnv("BIN", "os:" .. e.BIN_FOLDER)
 local CONTEXT = {}
 
 CONTEXT.Name = "os"
+CONTEXT.Position = 0
 
 function CONTEXT:CreateFolder(path_info)
 	if path_info.full_path:startswith(e.ROOT_FOLDER) then

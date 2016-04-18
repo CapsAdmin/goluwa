@@ -144,6 +144,7 @@ do -- file systems
 
 	function vfs.RegisterFileSystem(META, is_base)
 		META.TypeBase = "base"
+		META.Position = META.Position or 0
 		prototype.Register(META, "file_system", META.Name)
 
 		if is_base then return end
@@ -160,6 +161,10 @@ do -- file systems
 		end
 
 		table.insert(vfs.filesystems, context)
+
+		table.sort(vfs.filesystems, function(a, b)
+			return a.Position < b.Position
+		end)
 	end
 
 	function vfs.GetFileSystems()

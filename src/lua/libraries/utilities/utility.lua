@@ -864,22 +864,24 @@ function utility.RemoveOldObject(obj, id)
 	return obj
 end
 
-function utility.GetCurrentPath(level)
-	return (debug.getinfo(level or 1).source:gsub("\\", "/"):sub(2):gsub("//", "/"))
-end
-
 function utility.GeFolderFromPath(str)
-	str = str or utility.GetCurrentPath()
 	return str:match("(.+/).+") or ""
 end
 
 function utility.GetParentFolder(str, level)
-	str = str or utility.GetCurrentPath()
-	return str:match("(.*/)" .. (level == 0 and "" or (".*/"):rep(level or 1))) or ""
+	for i = #str, 1, -1 do
+		local char = str:sub(i, i)
+		if char == "/" then
+			level = level - 1
+		end
+		if level == -1 then
+			return str:sub(0, i)
+		end
+	end
+	return ""
 end
 
 function utility.GetFolderNameFromPath(str)
-	str = str or utility.GetCurrentPath()
 	if str:sub(#str, #str) == "/" then
 		str = str:sub(0, #str - 1)
 	end
@@ -887,12 +889,10 @@ function utility.GetFolderNameFromPath(str)
 end
 
 function utility.GetFileNameFromPath(str)
-	str = str or utility.GetCurrentPath()
 	return str:match(".+/(.+)") or ""
 end
 
 function utility.GetExtensionFromPath(str)
-	str = str or utility.GetCurrentPath()
 	return str:match(".+%.(%a+)")
 end
 

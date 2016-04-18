@@ -18,19 +18,21 @@ function CONTEXT:AddEntry(entry)
 	self.tree:SetEntry(entry.full_path, entry)
 	self.tree:SetEntry(entry.directory, {path = entry.directory, is_dir = true, file_name = entry.directory:match(".+/(.+)")})
 
-	for i = 0, 100 do
-		local dir = utility.GetParentFolder(entry.directory, i)
-		if dir == "" or self.tree.done_directories[dir] then break end
-		local file_name = dir:match(".+/(.+)") or dir
+	for i = #entry.directory, 1, -1 do
+		local char = entry.directory:sub(i, i)
+		if char == "/" then
+			local dir = entry.directory:sub(0, i)
+			if dir == "" or self.tree.done_directories[dir] then break end
+			local file_name = dir:match(".+/(.+)") or dir
 
-		if file_name:sub(-1) == "/" then
-			file_name = file_name:sub(0, -2)
+			if file_name:sub(-1) == "/" then
+				file_name = file_name:sub(0, -2)
+			end
+
+			self.tree:SetEntry(dir, {path = dir, is_dir = true, file_name = file_name})
+			self.tree.done_directories[dir] = true
 		end
-
-		self.tree:SetEntry(dir, {path = dir, is_dir = true, file_name = file_name})
-		self.tree.done_directories[dir] = true
 	end
-
 end
 
 --self:ParseArchive(vfs.Open("os:G:/SteamLibrary/SteamApps/common/Skyrim/Data/Skyrim - Sounds.gma"), "os:G:/SteamLibrary/SteamApps/common/Skyrim/Data/Skyrim - Sounds.gma")
@@ -145,15 +147,14 @@ end
 
 function CONTEXT:ReadByte()
 	if self.file_info.preload_data then
-		local byte = self.data:sub(self.position+1, self.position+1)
+		local char = self.data:sub(self.position+1, self.position+1)
 		self.position = math.clamp(self.position + 1, 0, self.file_info.size)
-		return byte:byte()
+		return char:byte()
 	else
 		self.file:SetPosition(self.file_info.offset + self.position)
-		local byte = self.file:ReadByte(1)
+		local char = self.file:ReadByte(1)
 		self.position = math.clamp(self.position + 1, 0, self.file_info.size)
-
-		return byte
+		return char
 	end
 end
 

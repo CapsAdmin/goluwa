@@ -1,26 +1,26 @@
 local steam = ... or _G.steam
 
 local path_translate = {
-	AlbedoTexture = "basetexture",
-	Albedo2Texture = "basetexture2",
-	NormalTexture = "bumpmap",
-	Normal2Texture = "bumpmap2",
-	MetallicTexture = "envmapmask",
-	RoughnessTexture = "phongexponenttexture",
-	--SelfIlluminationTexture = "selfillummask",
+	{"AlbedoTexture", "basetexture"},
+	{"Albedo2Texture", "basetexture2"},
+	{"NormalTexture", "bumpmap"},
+	{"Normal2Texture", "bumpmap2"},
+	{"MetallicTexture", "envmapmask"},
+	{"RoughnessTexture", "phongexponenttexture"},
+	--{"SelfIlluminationTexture", "selfillummask"},
 }
 
 local property_translate = {
-	--IlluminationColor = {"selfillumtint"},
-	AlphaTest = {"alphatest", function(num) return num == 1 end},
-	SSBump = {"ssbump", function(num) return num == 1 end},
-	NoCull = {"nocull"},
-	Translucent = {"alphatest", "translucent", function(num) return num == 1 end},
-	NormalAlphaMetallic = {"normalmapalphaenvmapmask", function(num) return num == 1 end},
-	AlbedoAlphaMetallic = {"basealphaenvmapmask", function(num) return num == 1 end},
-	RoughnessMultiplier = {"phongexponent", function(num) return 1/(-num+1)^3 end},
-	MetallicMultiplier = {"envmaptint", function(num) return type(num) == "number" and num or typex(num) == "vec3" and num.x or typex(num) == "color" and num.r end},
-	--SelfIllumination = {"selfillum", function(num) return num end},
+	--{"IlluminationColor", {"selfillumtint"}},
+	{"AlphaTest", {"alphatest", function(num) return num == 1 end}},
+	{"SSBump", {"ssbump", function(num) return num == 1 end}},
+	{"NoCull", {"nocull"}},
+	{"Translucent", {"alphatest", "translucent", function(num) return num == 1 end}},
+	{"NormalAlphaMetallic", {"normalmapalphaenvmapmask", function(num) return num == 1 end}},
+	{"AlbedoAlphaMetallic", {"basealphaenvmapmask", function(num) return num == 1 end}},
+	{"RoughnessMultiplier", {"phongexponent", function(num) return 1/(-num+1)^3 end}},
+	{"MetallicMultiplier", {"envmaptint", function(num) return type(num) == "number" and num or typex(num) == "vec3" and num.x or typex(num) == "color" and num.r end}},
+	--{"SelfIllumination", {"selfillum", function(num) return num end}},
 }
 
 function steam.LoadMaterial(path, material)
@@ -73,10 +73,9 @@ function steam.LoadMaterial(path, material)
 			vmt.shader = k
 			vmt.fullpath = path
 
-			local old_roughness = material:GetRoughnessMultiplier()
-
-			for key, info in pairs(property_translate) do
-				for i,v in ipairs(info) do
+			for _, v in ipairs(property_translate) do
+				local key, info = v[1], v[2]
+				for _,v in ipairs(info) do
 					local val = vmt[v]
 					if val then
 						local func = info[#info]
@@ -112,7 +111,8 @@ function steam.LoadMaterial(path, material)
 			--material:SetMetallicTexture(render.GetGreyTexture())
 			--material:SetRoughnessMetallicInvert(true)
 
-			for key, field in pairs(path_translate) do
+			for _, v in ipairs(path_translate) do
+				local key, field = v[1], v[2]
 				if vmt[field] then
 					local new_path = vfs.FixPath("materials/" .. vmt[field])
 					if not new_path:endswith(".vtf") then
@@ -142,7 +142,7 @@ function steam.LoadMaterial(path, material)
 end
 
 if RELOAD then
-	for k,v in pairs(prototype.GetCreated()) do
+	for _,v in pairs(prototype.GetCreated()) do
 		if v.Type == "material" and v.ClassName == "model" and v.vmt then
 			--v:SetMetallicMultiplier(v:GetMetallicMultiplier()/3)
 		end

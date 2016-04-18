@@ -42,6 +42,7 @@ end
 local CONTEXT = {}
 
 CONTEXT.Name = "libarchive"
+CONTEXT.Position = math.huge
 
 local function split_path(path_info)
 	local archive_path, relative
@@ -111,12 +112,16 @@ function CONTEXT:GetFiles(path_info)
 	local done = {}
 
 	for path in iterate_archive(a) do
-		for i = 0, 10 do
-			local dir = utility.GetParentFolder(path, i)
-			if not done[dir] then
-				done[dir] = true
-				if dir ~= "" then
-					table.insert(files, dir)
+		for i = #path, 1, -1 do
+			local char = path:sub(i, i)
+			if char == "/" then
+				local dir = path:sub(0, i)
+
+				if not done[dir] then
+					done[dir] = true
+					if dir ~= "" then
+						table.insert(files, dir)
+					end
 				end
 			end
 		end

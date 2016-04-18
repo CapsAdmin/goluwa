@@ -5,6 +5,7 @@ local CONTEXT = {}
 CONTEXT.Name = "gmod addon archive"
 CONTEXT.Extension = "gma"
 CONTEXT.Base = "generic_archive"
+CONTEXT.Position = 5
 
 function CONTEXT:OnParseArchive(file, archive_path)
 	local info = {}
