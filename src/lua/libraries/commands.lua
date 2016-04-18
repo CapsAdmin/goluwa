@@ -270,16 +270,24 @@ function commands.RunString(line, skip_lua, skip_split, log_error)
 			return call_command(data.cmd, data.line, unpack(data.args))
 		end
 
-		if pvars.Get(data.cmd) then
+		if pvars.IsSetup(data.cmd) then
 			local val = data.line
 
-			if pvars.GetObject(data.cmd):GetType() == "string" then
-				val = ("%q"):format(val)
-			else
-				val = serializer.GetLibrary("luadata").FromString(val)
+			if data.line ~= "" then
+				if data.line == "nil" then
+					val = nil
+				else
+					if pvars.GetObject(data.cmd):GetType() ~= "string" then
+						val = serializer.GetLibrary("luadata").FromString(val)
+					end
+				end
+
+				pvars.Set(data.cmd, val)
 			end
 
-			return pvars.Set(data.cmd, val)
+			logn(data.cmd, " (",pvars.GetObject(data.cmd):GetType(),") = ", pvars.Get(data.cmd))
+
+			return
 		end
 
 		if not skip_lua then

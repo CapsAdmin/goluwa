@@ -332,8 +332,8 @@ function chat.GetPanel()
 	text:SetTextWrap(false)
 	text:SetPosition(Vec2()+S*2)
 	text.markup:AddFont(chat.console_font)
-	text:AddEvent("ConsolePrint")
-	text:AddEvent("ConsoleClear")
+	text:AddEvent("ReplPrint")
+	text:AddEvent("ReplClear")
 	--text:AddEvent("LogSection")
 
 	chat.markup = text.markup
@@ -355,11 +355,11 @@ function chat.GetPanel()
 		end
 	end]]
 
-	function text:OnConsoleClear()
+	function text:OnReplClear()
 		self.markup:Clear()
 	end
 
-	function text:OnConsolePrint(str)
+	function text:OnReplPrint(str)
 		--if self.capture then
 		--	self.capture = self.capture .. str
 		--	return
@@ -380,7 +380,7 @@ function chat.GetPanel()
 
 	if commands.history then
 		for i, v in pairs(commands.history) do
-			text:OnConsolePrint(v)
+			text:OnReplPrint(v)
 		end
 	end
 

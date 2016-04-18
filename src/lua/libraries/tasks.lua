@@ -5,7 +5,7 @@ tasks.max = 4
 tasks.coroutine_lookup = tasks.coroutine_lookup or utility.CreateWeakTable()
 tasks.created = tasks.created or {}
 
-local enabled = {Get = function() return false end} event.AddListener("Initialize", function() enabled = pvars.Setup("tasks_enable", true) end)
+local enabled = {Get = function() return false end} event.AddListener("Initialize", function() enabled = pvars.Setup("tasks_enable", false) end)
 
 local META = prototype.CreateTemplate("task")
 

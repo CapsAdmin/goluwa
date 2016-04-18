@@ -25,7 +25,7 @@ event.AddListener("SteamFriendsMessage", "steam_friends", function(sender_steam_
 	end
 end)
 
-event.AddListener("ConsolePrint", "steam_friends", function(line)
+event.AddListener("ReplPrint", "steam_friends", function(line)
 	if subject then
 		steam.SendChatMessage(subject, ">> " .. line)
 	end

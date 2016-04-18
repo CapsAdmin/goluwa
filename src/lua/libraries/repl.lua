@@ -151,9 +151,9 @@ function repl.Initialize()
 			c.markup:SetControlDown(key:find("CTL_") ~= nil)
 			c.markup:SetShiftDown(key:find("KEY_S") ~= nil)
 
-			if (key:find("KEY_") or key:find("CTL_") or key:find("PAD")) and event.Call("ConsoleKeyInput", key) ~= false then
+			if (key:find("KEY_") or key:find("CTL_") or key:find("PAD")) and event.Call("ReplKeyInput", key) ~= false then
 				repl.HandleKey(key)
-			elseif event.Call("ConsoleCharInput", key) ~= false then
+			elseif event.Call("ReplCharInput", key) ~= false then
 				if key:byte(1) >= 32 then
 					repl.HandleChar(key)
 				end
@@ -174,9 +174,9 @@ function repl.Initialize()
 	end)
 
 	do -- input extensions
-		local trigger = input.SetupInputEvent("ConsoleKey")
+		local trigger = input.SetupInputEvent("ReplKey")
 
-		event.AddListener("ConsoleKeyInput", "input", function(key)
+		event.AddListener("ReplKeyInput", "input", function(key)
 			local ret = trigger(key, true)
 
 			-- :(
@@ -185,9 +185,9 @@ function repl.Initialize()
 			return ret
 		end)
 
-		local trigger = input.SetupInputEvent("ConsoleChar")
+		local trigger = input.SetupInputEvent("ReplChar")
 
-		event.AddListener("ConsoleCharInput", "input", function(char)
+		event.AddListener("ReplCharInput", "input", function(char)
 			local ret = trigger(char, true)
 
 			-- :(
@@ -283,7 +283,7 @@ do
 		if event then
 			suppress_print = true
 
-			if event.Call("ConsolePrint", str) == false then
+			if event.Call("ReplPrint", str) == false then
 				suppress_print = false
 				return false
 			end
@@ -325,7 +325,7 @@ function repl.Clear()
 	table.clear(log_history)
 	curses.wclear(c.log_window)
 	repl.SetScroll()
-	event.Call("ConsoleClear")
+	event.Call("ReplClear")
 end
 
 function repl.SetInputHeight(h)
@@ -377,8 +377,8 @@ function repl.Shutdown()
 		curses.endwin()
 
 		event.RemoveTimer("curses")
-		event.RemoveListener("ConsoleKeyInput", "input")
-		event.RemoveListener("ConsoleCharInput", "input")
+		event.RemoveListener("ReplKeyInput", "input")
+		event.RemoveListener("ReplCharInput", "input")
 		repl.curses_init = nil
 	end
 end
@@ -652,7 +652,7 @@ function repl.HandleKey(key)
 			c.scroll_command_history = 0
 			repl.SetInputText()
 
-			if event.Call("ConsoleLineEntered", line) ~= false then
+			if event.Call("ReplLineEntered", line) ~= false then
 				logn("> ", line)
 
 				commands.RunString(line, nil, nil, true)

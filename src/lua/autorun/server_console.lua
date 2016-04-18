@@ -5,7 +5,7 @@ if CLIENT then
 end
 
 if SERVER then
-	event.AddListener("ConsolePrint", "epoe", function(line)
+	event.AddListener("ReplPrint", "epoe", function(line)
 		-- THIS is bad
 		line = line:gsub("\n", "")
 

@@ -31,9 +31,9 @@ do -- pvar meta
 
 	prototype.Register(META)
 end
-function pvars.Setup(key, def, callback)
-	def = def or table.copy(def)
+function pvars.Setup(key, def, callback, typ)
 	typ = typ or type(def)
+	def = def or table.copy(def)
 
 	pvars.infos[key] = {
 		def = table.copy(def),
@@ -71,7 +71,13 @@ function pvars.Get(key)
 	local info = pvars.infos[key]
 
 	if info then
-		return pvars.vars[key] or info.def
+		local val = pvars.vars[key]
+
+		if val == nil then
+			val = info.def
+		end
+
+		return val
 	end
 end
 
@@ -79,12 +85,18 @@ function pvars.Set(key, val)
 	local info = pvars.infos[key]
 
 	if info then
-		pvars.vars[key] = val or info.def
+		if val == nil then
+			val = info.def
+		end
+
+		pvars.vars[key] = val
 
 		serializer.SetKeyValueInFile(mode, path, key, pvars.vars[key])
 
-		if info.callback then
-			info.callback(val)
+		if info.callback and not info.in_callback then
+			info.in_callback = true
+			system.pcall(info.callback, val)
+			info.in_callback = nil
 		end
 	end
 end

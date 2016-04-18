@@ -127,7 +127,7 @@ do -- logging
 		if event then
 			suppress_print = true
 
-			if event.Call("ConsolePrint", str) == false then
+			if event.Call("ReplPrint", str) == false then
 				suppress_print = false
 				return false
 			end
@@ -171,8 +171,8 @@ do -- logging
 		end
 
 		if log_files.console == log_file then
-			if console and commands.Print then
-				commands.Print(line)
+			if repl and repl.Print then
+				repl.Print(line)
 			elseif can_print(line) then
 				io.write(line)
 			end
