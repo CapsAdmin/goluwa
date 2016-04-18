@@ -348,8 +348,10 @@ float compute_specular(vec3 N, vec3 V, vec3 L, float roughness, float F0)
 }
 ]], "compute_specular")
 render.AddGlobalShaderCode([[
-vec3 gbuffer_compute_specular(vec2 uv, vec3 light_dir, vec3 view_dir, vec3 normal, float attenuation, vec3 light_color)
+vec3 gbuffer_compute_specular(vec3 light_dir, vec3 view_dir, vec3 normal, float attenuation, vec3 light_color)
 {
+	vec2 uv = get_screen_uv();
+
 	{
 		return vec3(compute_specular(
 			normal,

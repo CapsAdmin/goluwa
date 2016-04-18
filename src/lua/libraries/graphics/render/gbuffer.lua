@@ -74,6 +74,19 @@ do -- mixer
 			stages = {{source = stages}}
 		end
 
+		if stages[#stages].buffer then
+			table.insert(stages, {
+				source =  [[
+					out vec3 out_color;
+
+					void main()
+					{
+						out_color = texture(tex_stage_]]..#stages..[[, uv).rgb;
+					}
+				]]
+			})
+		end
+
 		for i, stage in ipairs(stages) do
 			local shader = {
 				name = "pp_" .. PASS.Name .. "_" .. i,
@@ -86,7 +99,7 @@ do -- mixer
 				},
 				fragment = {
 					variables = {
-						self = {texture = function() return render.gbuffer_mixer_buffer:GetTexture() end},
+						tex_mixer = {texture = function() return render.gbuffer_mixer_buffer:GetTexture() end},
 					},
 					mesh_layout = {
 						{uv = "vec2"},
@@ -122,6 +135,10 @@ do -- mixer
 					end
 
 					fb = render.CreateFrameBuffer(size, stage.buffer or {internal_format = "rgba8"})
+
+					stage.shader.fragment.variables.self = fb:GetTexture()
+					fb:GetTexture():Clear()
+
 					for _, stage in ipairs(stages) do
 						local tex = fb:GetTexture()
 						stage.shader.fragment.variables["tex_stage_" .. i] = tex

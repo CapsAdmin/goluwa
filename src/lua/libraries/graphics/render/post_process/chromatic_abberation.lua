@@ -20,9 +20,9 @@ void main()
 
     vec3 col;
 
-    col.r = texture(self, vec2(uv.x+aberration.x,uv.y)).x;
-    col.g = texture(self, vec2(uv.x+aberration.y,uv.y)).y;
-    col.b = texture(self, vec2(uv.x+aberration.z,uv.y)).z;
+    col.r = texture(tex_mixer, vec2(uv.x+aberration.x,uv.y)).x;
+    col.g = texture(tex_mixer, vec2(uv.x+aberration.y,uv.y)).y;
+    col.b = texture(tex_mixer, vec2(uv.x+aberration.z,uv.y)).z;
 
     fragColor = col;
 }

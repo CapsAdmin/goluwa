@@ -363,7 +363,6 @@ function render.CreateShader(data, vars)
 	end
 
 	local function preprocess(str, info)
-		local var_i = 0
 		return str:gsub("lua(%b[])", function(code)
 			if code:find("=", nil, true) then
 				local key, default = code:sub(2, -2):match("(.-)=(.+)")
@@ -388,12 +387,10 @@ function render.CreateShader(data, vars)
 					error(var, 3)
 				end
 
-				local name = "auto_lua_variable_" .. var_i
+				local name = "auto_lua_variable_" .. tostring(crypto.CRC32(code .. os.clock()))
 
 				info.variables = info.variables or {}
 				info.variables[name] = {[type] = var}
-
-				var_i = var_i + 1
 
 				return name
 			end

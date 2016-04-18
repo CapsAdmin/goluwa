@@ -22,7 +22,7 @@ render.AddGlobalShaderCode([[
 float gbuffer_compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, vec3 normal)
 {
 	float distance = length(light_pos - pos);
-	distance = distance / radius / 9;
+	distance = distance / radius * 9;
 	distance = -distance + 2;
 
 	return pow(clamp(distance, 0, 1), 0.5);

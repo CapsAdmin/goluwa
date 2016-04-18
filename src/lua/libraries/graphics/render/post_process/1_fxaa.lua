@@ -73,7 +73,7 @@ PASS.Source = [[
 
 	void main()
 	{
-		out_color = FxaaPixelShader(posPos, self);
+		out_color = FxaaPixelShader(posPos, tex_mixer);
 	}
 ]]
 

@@ -15,10 +15,10 @@ table.insert(PASS.Source, {
 
 		void main()
 		{
-			vec3 color = texture(self, uv).rgb*4;
+			vec3 color = texture(tex_mixer, uv).rgb*4;
 			if (length(color) > 1)
 			{
-				out_color = texture(self, uv).rgb;
+				out_color = texture(tex_mixer, uv).rgb;
 			}
 			else
 			{
@@ -92,7 +92,7 @@ table.insert(PASS.Source, {
 
 		void main()
 		{
-			vec3 color = texture(self, uv).rgb;
+			vec3 color = texture(tex_mixer, uv).rgb;
 			vec3 bloom = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
 			out_color = gbuffer_compute_tonemap(color, bloom);
 		}
