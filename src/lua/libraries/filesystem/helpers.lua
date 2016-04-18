@@ -72,6 +72,17 @@ add_helper("Write", "WriteBytes", "write", function(path, content, on_change)
 		return folder .. file_name
 	end)
 
+	if on_change then
+		vfs.MonitorFile(path, function(file_path)
+			on_change(vfs.Read(file_path), file_path)
+		end)
+		on_change(content)
+	end
+
+	if path:startswith("os:") then
+		path = path:sub(4)
+	end
+
 	if path:startswith("data/") then
 		local fs = vfs.GetFileSystem("os")
 		if fs then
@@ -83,13 +94,6 @@ add_helper("Write", "WriteBytes", "write", function(path, content, on_change)
 				fs:CreateFolder({full_path = base .. dir:sub(#"data/"+1)})
 			end
 		end
-	end
-
-	if on_change then
-		vfs.MonitorFile(path, function(file_path)
-			on_change(vfs.Read(file_path), file_path)
-		end)
-		on_change(content)
 	end
 end)
 add_helper("GetLastModified", "GetLastModified", "read")
