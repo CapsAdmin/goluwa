@@ -275,47 +275,29 @@ function string.getbyte(self, pos)
 	return self:getchar(pos):byte() or 0
 end
 
---local cache = {}
-
 function string.explode(self, sep, pattern)
-	sep = sep or ""
-	pattern = pattern or false
-
-	--cache[self] = cache[self] or {}
-	--cache[self][sep] = cache[self][sep] or {}
-
-	--if cache[self][sep][pattern] then
-	---	return table.copy(cache[self][sep][pattern])
-	--end
-
-	if sep == "" then
-		local tbl = {}
-		local i = 1
-		for char in self:gmatch(".") do
-			tbl[i] = char
-			i=i+1
+	if not sep or sep == "" then
+		local tbl = table.new(#str, 0)
+		for i = 1, #str do
+			tbl[i] = str:sub(i, i)
 		end
-		--cache[self][sep][pattern] = tbl
 		return tbl
 	end
 
 	local tbl = {}
-	local i, last_pos = 1,1
-	local new_sep = sep
+	local last_pos = 1
+	local sep_length = #sep
 
-	if not pattern then
-		new_sep = new_sep:gsub("[%-%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1")
+	pattern = not pattern
+
+	for i = 1, math.huge do
+		local pos = self:find(sep, last_pos, pattern)
+		if not pos then break end
+		tbl[i] = self:sub(last_pos, pos-1)
+		last_pos = pos + sep_length
 	end
 
-	for start_pos, end_pos in self:gmatch("()"..new_sep.."()") do
-		tbl[i] = self:sub(last_pos, start_pos-1)
-		last_pos = end_pos
-		i=i+1
-	end
-
-	tbl[i] = self:sub(last_pos)
-
-	--cache[self][sep][pattern] = tbl
+	tbl[#tbl + 1] = self:sub(last_pos)
 
 	return tbl
 end
