@@ -112,7 +112,7 @@ function META:OnMouseInput(button, press)
 	end
 
 	if chunk.type == "custom" and chunk.console and press then
-		console.RunString(str)
+		commands.RunString(str)
 		return
 	end
 	if

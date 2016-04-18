@@ -44,7 +44,7 @@ do -- open close
 
 	input.Bind("escape", "toggle_menu")
 
-	console.AddCommand("toggle_menu", function()
+	commands.Add("toggle_menu", function()
 		menu.Toggle()
 	end)
 
@@ -217,7 +217,7 @@ function menu.CreateTopBar()
 			name = name .. cmd:trim()
 		end
 
-		table.insert(list, {name, function() if cmd then console.RunString(cmd) end end})
+		table.insert(list, {name, function() if cmd then commands.RunString(cmd) end end})
 	end
 
 	table.insert(list, {})
@@ -404,7 +404,7 @@ function menu.CreateTopBar()
 			frame:Layout()
 		end},
 		{L"run [ESC]", function() menu.Close() end},
-		{L"reset", function() console.RunString("restart") end},
+		{L"reset", function() commands.RunString("restart") end},
 		{},
 		{L"save state", function()
 			serializer.WriteFile("luadata", "world.map", entities.GetWorld():GetStorableTable())

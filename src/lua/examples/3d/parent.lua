@@ -9,7 +9,7 @@ parent:SetPosition(render.camera_3d:GetPosition())
 parent:SetAngles(Ang3(0,0,0))
 parent:SetScale(Vec3(1,1,1))
 
-console.RunString("mount gmod")
+commands.RunString("mount gmod")
 
 local materials = {}
 

@@ -3,7 +3,7 @@ local language = _G.language or {}
 language.known_strings = language.known_strings or {}
 language.current_translation = {}
 
-local cvar = console.CreateVariable("language", "english", function(val)
+local cvar = pvars.Setup("language", "english", function(val)
 	language.Set(val)
 end)
 
@@ -128,7 +128,7 @@ function language.Translate(to, nice)
 end
 
 function language.Set(lang)
-	lang = lang or cvar:GetString()
+	lang = lang or cvar:Get()
 
 	cvar:Set(lang)
 

@@ -172,6 +172,7 @@ _G.require = include("lua/libraries/require.lua") -- replace require with the pu
 -- now we can use include properly
 
 -- libraries
+pvars = include("lua/libraries/pvars.lua") -- like cvars
 prototype = include("lua/libraries/prototype/prototype.lua") -- handles classes, objects, etc
 if GRAPHICS then
 	math3d = include("lua/libraries/graphics/math3d.lua") -- 3d math functions
@@ -179,7 +180,10 @@ end
 crypto = include("lua/libraries/crypto.lua") -- base64 and other hash functions
 serializer = include("lua/libraries/serializer.lua") -- for serializing lua data in different formats
 structs = include("lua/libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
-console = include("lua/libraries/console.lua") -- console interface, cvars, commands, etc
+commands = include("lua/libraries/commands.lua") -- console command type interface for running in repl, chat, etc
+if CURSES then
+	repl = include("lua/libraries/repl.lua") -- read eval print loop using curses
+end
 system = include("lua/libraries/system.lua") -- os and luajit related functions like creating windows or changing jit options
 utility = include("lua/libraries/utilities/utility.lua") -- misc functions i don't know where to put
 event = include("lua/libraries/event.lua") -- event handler

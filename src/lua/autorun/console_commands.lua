@@ -1,4 +1,4 @@
-console.AddCommand("dump_gbuffer", function(_, format, depth_format)
+commands.Add("dump_gbuffer", function(_, format, depth_format)
 	ffi.cdef[[
 		void *fopen(const char *filename, const char *mode);
 		size_t fwrite(const void *ptr, size_t size, size_t nmemb, void *stream);
@@ -29,14 +29,14 @@ console.AddCommand("dump_gbuffer", function(_, format, depth_format)
 end)
 
 do -- source engine
-	console.AddCommand("getpos", function()
+	commands.Add("getpos", function()
 		local pos = render.camera_3d:GetPosition() * (1/0.0254)
 		local ang = render.camera_3d:GetAngles():GetDeg()
 
 		logf("setpos %f %f %f;setang %f %f %f", pos.x, pos.y, pos.z, ang.x, ang.y, ang.z)
 	end)
 
-	console.AddCommand("setpos", function(line)
+	commands.Add("setpos", function(line)
 		local x,y,z = unpack(line:match("(.-);"):explode(" "))
 		x = tonumber(x)
 		y = tonumber(y)
@@ -51,7 +51,7 @@ do -- source engine
 	end)
 end
 
-console.AddCommand("clear", console.Clear)
+commands.Add("clear", commands.Clear)
 
 local tries = {
 	{path = "__MAPNAME__"},
@@ -59,7 +59,7 @@ local tries = {
 	{path = "__MAPNAME__/__MAPNAME__.obj", callback =  function(ent) ent:SetSize(0.01) ent:SetRotation(Quat(-1,0,0,1)) end},
 }
 
-console.AddCommand("map", function(name)
+commands.Add("map", function(name)
 	for _, info in pairs(tries) do
 		local path = info.path:gsub("__MAPNAME__", name)
 		if vfs.IsFile(path) then
@@ -78,7 +78,7 @@ console.AddCommand("map", function(name)
 	steam.SetMap(name)
 end)
 
-console.AddCommand("dump_object_count", function()
+commands.Add("dump_object_count", function()
 	local found = {}
 
 	for obj in pairs(prototype.GetCreated()) do
@@ -92,7 +92,7 @@ console.AddCommand("dump_object_count", function()
 	table.print(found)
 end)
 
-console.AddCommand("find_object", function(str)
+commands.Add("find_object", function(str)
 	local obj = prototype.FindObject(str)
 	if obj then
 		table.print(obj:GetStorableTable())
@@ -100,7 +100,7 @@ console.AddCommand("find_object", function(str)
 end)
 
 do -- url monitoring
-	console.AddCommand("monitor_url", function(_, url, interval)
+	commands.Add("monitor_url", function(_, url, interval)
 		interval = tonumber(interval) or 0.5
 
 		local last_modified
@@ -140,7 +140,7 @@ do -- url monitoring
 		logf("%s start monitoring\n", url)
 	end)
 
-	console.AddCommand("unmonitor_url", function(_, url)
+	commands.Add("unmonitor_url", function(_, url)
 		event.RemoveTimer("monitor_" .. url)
 
 		logf("%s stop monitoring\n", url)
@@ -158,38 +158,38 @@ end)
 do
 	local source = NULL
 
-	console.AddCommand("play", function(path)
+	commands.Add("play", function(path)
 		if source:IsValid() then source:Remove() end
 		source = audio.CreateSource(path)
 		source:Play()
 	end)
 end
 
-console.AddCommand("stopsounds", function()
+commands.Add("stopsounds", function()
 	audio.Panic()
 end)
 
 do
-	console.AddCommand("say", function(line)
+	commands.Add("say", function(line)
 		chat.Say(line)
 	end)
 
-	console.AddCommand("lua_run", function(line)
-		console.SetLuaEnvironmentVariable("me", clients.GetLocalClient())
-		console.RunLua(line)
+	commands.Add("lua_run", function(line)
+		commands.SetLuaEnvironmentVariable("me", clients.GetLocalClient())
+		commands.RunLua(line)
 	end)
 
-	console.AddCommand("lua_open", function(line)
+	commands.Add("lua_open", function(line)
 		include(line)
 	end)
 
-	console.AddServerCommand("lua_run_sv", function(client, line)
+	commands.AddServerCommand("lua_run_sv", function(client, line)
 		logn(client:GetNick(), " ran ", line)
-		console.SetLuaEnvironmentVariable("me", client)
-		console.RunLua(line)
+		commands.SetLuaEnvironmentVariable("me", client)
+		commands.RunLua(line)
 	end)
 
-	console.AddServerCommand("lua_open_sv", function(client, line)
+	commands.AddServerCommand("lua_open_sv", function(client, line)
 		logn(client:GetNick(), " opened ", line)
 		include(line)
 	end)
@@ -199,19 +199,19 @@ do
 	local default_port = 1234
 
 	if CLIENT then
-		local ip_cvar = console.CreateVariable("cl_ip", default_ip)
-		local port_cvar = console.CreateVariable("cl_port", default_port)
+		local ip_cvar = pvars.Setup("cl_ip", default_ip)
+		local port_cvar = pvars.Setup("cl_port", default_port)
 
 		local last_ip
 		local last_port
 
-		console.AddCommand("retry", function()
+		commands.Add("retry", function()
 			if last_ip then
 				network.Connect(last_ip, last_port)
 			end
 		end)
 
-		console.AddCommand("connect", function(line, ip, port)
+		commands.Add("connect", function(line, ip, port)
 			ip = ip or ip_cvar:Get()
 			port = tonumber(port) or port_cvar:Get()
 
@@ -223,16 +223,16 @@ do
 			network.Connect(ip, port)
 		end)
 
-		console.AddCommand("disconnect", function(line)
+		commands.Add("disconnect", function(line)
 			network.Disconnect(line)
 		end)
 	end
 
 	if SERVER then
-		local ip_cvar = console.CreateVariable("sv_ip", default_ip)
-		local port_cvar = console.CreateVariable("sv_port", default_port)
+		local ip_cvar = pvars.Setup("sv_ip", default_ip)
+		local port_cvar = pvars.Setup("sv_port", default_port)
 
-		console.AddCommand("host", function(line, ip, port)
+		commands.Add("host", function(line, ip, port)
 			ip = ip or ip_cvar:Get()
 			port = tonumber(port) or port_cvar:Get()
 
@@ -243,7 +243,7 @@ do
 	end
 end
 
-console.AddCommand("trace_calls", function(_, line, ...)
+commands.Add("trace_calls", function(_, line, ...)
 	line = "_G." .. line
 	local ok, old_func = assert(pcall(assert(loadstring("return " .. line))))
 
@@ -290,7 +290,7 @@ console.AddCommand("trace_calls", function(_, line, ...)
 	end
 end)
 
-console.AddCommand("debug", function(line, lib)
+commands.Add("debug", function(line, lib)
 	local tbl = _G[lib]
 
 	if type(tbl) == "table" then
@@ -308,7 +308,7 @@ console.AddCommand("debug", function(line, lib)
 	end
 end)
 
-console.AddCommand("find", function(line, ...)
+commands.Add("find", function(line, ...)
 	local data = utility.FindValue(...)
 
 	for k,v in pairs(data) do
@@ -316,7 +316,7 @@ console.AddCommand("find", function(line, ...)
 	end
 end)
 
-console.AddCommand("lfind", function(line)
+commands.Add("lfind", function(line)
 	for path, lines in pairs(utility.FindInLoadedLuaFiles(line)) do
 		logn(path)
 		for _, info in ipairs(lines) do
@@ -336,7 +336,7 @@ local tries = {
 	"lua/libraries/?",
 }
 
-console.AddCommand("source", function(line, path, line_number, ...)
+commands.Add("source", function(line, path, line_number, ...)
 
 	if path:find(":") then
 		local a,b = path:match("(.+):(%d+)")
@@ -403,7 +403,7 @@ local tries = {
 	"examples/?.lua",
 }
 
-console.AddCommand("open", function(line)
+commands.Add("open", function(line)
 	local tried = {}
 
 	for i, try in pairs(tries) do

@@ -20,7 +20,7 @@ event.AddListener("SteamFriendsMessage", "steam_friends", function(sender_steam_
 		if SERVER then
 			chat.PlayerSay(ply, txt)
 		elseif txt:sub(1, 1) == "!" then
-			console.RunString(txt:sub(2),nil,nil,true)
+			commands.RunString(txt:sub(2),nil,nil,true)
 		end
 	end
 end)

@@ -22,10 +22,10 @@ local glua = [[
 
 vfs.Write(steam.GetGamePath("GarrysMod") .. "garrysmod/lua/goluwa_map.lua", glua)
 
-console.RunString("mount gmod")
-console.RunString("mount hl2")
-console.RunString("mount css")
-console.RunString("mount tf2")
+commands.RunString("mount gmod")
+commands.RunString("mount hl2")
+commands.RunString("mount css")
+commands.RunString("mount tf2")
 render.InitializeGBuffer()
 
 entities.Panic()

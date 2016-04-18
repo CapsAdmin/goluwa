@@ -73,13 +73,13 @@ function globals.AddCSLuaFile()
 end
 
 function globals.AddConsoleCommand(name)
-	console.AddCommand(name, function(line, ...)
+	commands.Add(name, function(line, ...)
 		gmod.env.concommand.Run(NULL, name, {...}, line)
 	end)
 end
 
 function globals.RunConsoleCommand(...)
-	console.RunCommand(...)
+	commands.RunCommand(...)
 end
 
 function globals.RealTime() return system.GetElapsedTime() end

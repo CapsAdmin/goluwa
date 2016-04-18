@@ -1,5 +1,5 @@
-console.RunString("mount csgo")
-console.RunString("map gm_old_flatgrass")
+commands.RunString("mount csgo")
+commands.RunString("map gm_old_flatgrass")
 
 local ent = entities.CreateEntity("visual")
 ent:SetModelPath("models/dragon.obj")

@@ -171,8 +171,8 @@ do -- logging
 		end
 
 		if log_files.console == log_file then
-			if console and console.Print then
-				console.Print(line)
+			if console and commands.Print then
+				commands.Print(line)
 			elseif can_print(line) then
 				io.write(line)
 			end

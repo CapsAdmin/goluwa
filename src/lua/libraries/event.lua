@@ -1,11 +1,18 @@
 local event = _G.event or {}
 
-e.EVENT_DESTROY = "??|___EVENT_DESTROY___|??" -- unique what
-
 event.active = event.active or {}
-event.errors = event.errors or {}
-event.profil = event.profil or {}
-event.destroy_tag = e.EVENT_DESTROY
+event.destroy_tag = {}
+
+e.EVENT_DESTROY = event.destroy_tag
+
+local function sort_events()
+	for key, tbl in pairs(event.active) do
+		local new = {}
+		for k,v in pairs(tbl) do table.insert(new, v) end
+		table.sort(new, function(a, b) return a.priority > b.priority end)
+		event.active[key] = new
+	end
+end
 
 function event.AddListener(event_type, id, callback, config)
 	if type(event_type) == "table" then
@@ -38,7 +45,7 @@ function event.AddListener(event_type, id, callback, config)
 
 	table.insert(event.active[config.event_type], config)
 
-	event.SortByPriority()
+	sort_events()
 end
 
 function event.RemoveListener(event_type, id)
@@ -78,48 +85,12 @@ function event.RemoveListener(event_type, id)
 		--logn(("Tried to remove non existing event '%s:%s'"):format(event, tostring(unique)))
 	end
 
-	event.SortByPriority()
+	sort_events()
 end
-
-function event.SortByPriority()
-	for key, tbl in pairs(event.active) do
-		local new = {}
-		for k,v in pairs(tbl) do table.insert(new, v) end
-		table.sort(new, function(a, b) return a.priority > b.priority end)
-		event.active[key] = new
-	end
-end
-
-function event.GetTable()
-	return event.active
-end
-
-local blacklist = {
-	Update = true,
-	PreDisplay = true,
-	NetworkMessageReceived = true,
-	NetworkPacketReceived = true,
-	PostDisplay = true,
-	Draw2D = true,
-	Draw3DGeometry = true,
-	Draw3DLights = true,
-	DrawHUD = true,
-	PostDrawMenu = true,
-	PreDrawMenu = true,
-	PostDrawScene = true,
-}
-
-local status, a,b,c,d,e
-local time = 0
 
 function event.Call(event_type, a_, b_, c_, d_, e_)
-	if event.debug then
-		if not blacklist[event_type] then
-			event.call_count = event.call_count or 0
-				print(event.call_count, event_type, a,b,c,d,e)
-			event.call_count = event.call_count + 1
-		end
-	end
+	local status, a,b,c,d,e
+
 	if event.active[event_type] then
 		for index, data in ipairs(event.active[event_type]) do
 			profiler.PushSection(data.print_str)
@@ -135,7 +106,7 @@ function event.Call(event_type, a_, b_, c_, d_, e_)
 					event.RemoveListener(event_type, data.id)
 
 					event.active[event_type][index] = nil
-					event.SortByPriority()
+					sort_events()
 					llog("[%q][%q] removed because self is invalid", event_type, data.unique)
 					return
 				end
@@ -153,9 +124,6 @@ function event.Call(event_type, a_, b_, c_, d_, e_)
 						event.RemoveListener(event_type, data.id)
 						llog("[%q][%q] removed", event_type, data.id)
 					end
-
-					event.errors[event_type] = event.errors[event_type] or {}
-					table.insert(event.errors[event_type], {id = data.id, error = a, time = os.date("*t")})
 				end
 
 				if a ~= nil then
@@ -165,26 +133,6 @@ function event.Call(event_type, a_, b_, c_, d_, e_)
 
 			profiler.PopSection()
 		end
-	end
-end
-
-function event.GetErrorHistory()
-	return event.errors
-end
-
-function event.DisableAll()
-	if event.enabled ~= false then
-		event.enabled = false
-		event.__backup_events = table.copy(event.GetTable())
-		table.clear(event.GetTable())
-	end
-end
-
-function event.EnableAll()
-	if event.enabled ~= true then
-		event.enabled = true
-		table.merge(event.GetTable(), event.__backup_events)
-		event.__backup_events = nil
 	end
 end
 

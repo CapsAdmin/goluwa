@@ -31,21 +31,21 @@ function META:GetInt()
 end
 
 function gmod.env.GetConVar(name)
-	return gmod.WrapObject(console.GetVariable(name), "ConVar")
+	return gmod.WrapObject(pvars.GetObject(name), "ConVar")
 end
 
 function gmod.env.CreateConVar(name, def, flags, help)
-	return gmod.WrapObject(console.CreateVariable(name, tostring(def), nil, help), "ConVar")
+	return gmod.WrapObject(pvars.Setup(name, tostring(def), nil, help), "ConVar")
 end
 
 function gmod.env.CreateClientConVar(name, def)
-	return gmod.WrapObject(console.CreateVariable(name, tostring(def), nil, help), "ConVar")
+	return gmod.WrapObject(pvars.Setup(name, tostring(def), nil, help), "ConVar")
 end
 
 function gmod.env.GetConVarNumber(name)
-	return tonumber(console.GetVariable(name)) or 0
+	return tonumber(pvars.Get(name)) or 0
 end
 
 function gmod.env.GetConVarString(name)
-	return tostring(console.GetVariable(name, ""))
+	return tostring(pvars.Get(name) or "")
 end

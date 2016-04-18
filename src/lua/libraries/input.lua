@@ -116,7 +116,7 @@ do
 		}
 
 		if callback then
-			console.AddCommand(cmd, callback)
+			commands.Add(cmd, callback)
 		end
 	end
 
@@ -138,7 +138,7 @@ do
 						end
 					end
 					if ok then
-						console.RunString(data.cmd)
+						commands.RunString(data.cmd)
 						return false
 					end
 				end
@@ -148,14 +148,12 @@ do
 
 	event.AddListener("KeyInput", "keybind", input.Call, {on_error = system.OnError, priority = math.huge})
 
-	function input.Command(line, key, ...)
+	commands.Add("bind", function(line, key, ...)
 		if key then
 			cmd = table.concat({...}, " ")
 			input.Bind(key, cmd)
 		end
-	end
-
-	console.AddCommand("bind", input.Command)
+	end)
 end
 
 return input

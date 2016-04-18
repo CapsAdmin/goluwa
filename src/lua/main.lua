@@ -1,6 +1,8 @@
 local profile_start_time = os.clock()
 
-console.CreateVariable("editor_path", system.FindFirstEditor(true, true) or "")
+pvars.Setup("editor_path", system.FindFirstEditor(true, true) or "")
+
+pvars.Initialize()
 
 if WINDOW then
 	window.Open()
@@ -70,8 +72,8 @@ if GRAPHICS then
 	vfs.AutorunAddons("graphics/")
 end
 
--- execute /.userdata/*USERNAME*/cfg/autoexec.lua
-console.Exec("autoexec")
+-- execute /data/users/*USERNAME*/cfg/autoexec.lua
+commands.RunString(vfs.Read("cfg/autoexec.cfg"))
 
 system._CheckCreatedEnv()
 
@@ -80,7 +82,7 @@ system.ExecuteArgs()
 
 llog("initializing libraries took %s seconds\n", os.clock() - profile_start_time)
 
-local rate_cvar = console.CreateVariable(
+local rate_cvar = pvars.Setup(
 	"system_fps_max",
 	0,
 	function(rate)

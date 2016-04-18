@@ -64,12 +64,12 @@ end
 do -- console extension
 	message.server_commands = message.server_commands or {}
 
-	function console.SetClient(client)
-		console.current_client = client or NULL
+	function commands.SetClient(client)
+		commands.current_client = client or NULL
 	end
 
-	function console.GetClient()
-		return console.current_client
+	function commands.GetClient()
+		return commands.current_client
 	end
 
 	if SERVER then
@@ -82,24 +82,24 @@ do -- console extension
 		end)
 	end
 
-	function console.AddServerCommand(command, callback)
+	function commands.AddServerCommand(command, callback)
 		message.server_commands[command] = callback
 
 		if CLIENT then
-			console.AddCommand(command, function(line, ...)
+			commands.Add(command, function(line, ...)
 				message.Send("scmd", command, line, ...)
 			end)
 		end
 
 		if SERVER then
-			console.AddCommand(command, function(line, ...)
+			commands.Add(command, function(line, ...)
 				callback(client, line, ...)
 			end)
 		end
 	end
 
-	function console.RemoveServerCommand(command)
-		console.RemoveCommand(command)
+	function commands.RemoveServerCommand(command)
+		commands.Remove(command)
 		message.server_commands[command] = nil
 	end
 end

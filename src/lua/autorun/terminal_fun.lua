@@ -1,11 +1,11 @@
 local cd = ""
 
-console.AddCommand("ls", function()
+commands.Add("ls", function()
 	local files = vfs.Find(cd)
 	table.print(files)
 end)
 
-console.AddCommand("cat", function(line, file)
+commands.Add("cat", function(line, file)
 	if vfs.Exists(cd .. file) then
 		log(vfs.Read(file))
 	end
@@ -14,7 +14,7 @@ end, nil, function(arg, args)
 
 	return vfs.Find(cd)
 end)
-console.AddCommand("cd", function(line, folder)
+commands.Add("cd", function(line, folder)
 	if not folder then
 		logn(cd)
 	elseif folder == ".." then
@@ -29,14 +29,14 @@ end, nil, function(arg, args)
 	return vfs.Find(cd)
 end)
 
-console.AddCommand("quit", function()
+commands.Add("quit", function()
 	system.ShutDown()
 end)
 
-console.AddCommand("exit", function()
+commands.Add("exit", function()
 	system.ShutDown()
 end)
 
-console.AddCommand("restart", function(startup_cmd)
+commands.Add("restart", function(startup_cmd)
 	system.Restart(startup_cmd)
 end)

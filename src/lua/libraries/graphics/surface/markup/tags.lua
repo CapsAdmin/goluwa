@@ -40,7 +40,7 @@ META.tags.console =
 			for i = self.i+1, math.huge do
 				local chunk = markup.chunks[i]
 				if chunk.type == self.type or i > #markup.chunks then
-					console.RunString(str)
+					commands.RunString(str)
 					break
 				elseif chunk.type == "string" then
 					str = str .. chunk.val

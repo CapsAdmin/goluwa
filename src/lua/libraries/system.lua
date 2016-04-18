@@ -2,6 +2,67 @@ local system = _G.system or {}
 
 local ffi = require("ffi")
 
+do -- console title
+	if not system.SetConsoleTitleRaw then
+		local set_title
+
+		if WINDOWS then
+			ffi.cdef("int SetConsoleTitleA(const char* blah);")
+
+			set_title = function(str)
+				return ffi.C.SetConsoleTitleA(str)
+			end
+		end
+
+		if not CURSES then
+			set_title = function()
+				-- hmmm
+			end
+		elseif LINUX then
+			local iowrite = _OLD_G.io.write
+			set_title = function(str)
+				return iowrite and iowrite('\27]0;', str, '\7') or nil
+			end
+		end
+
+		system.SetConsoleTitleRaw = set_title
+	end
+
+	local titles = {}
+	local str = ""
+	local last_title
+
+	local lasttbl = {}
+
+	function system.SetConsoleTitle(title, id)
+		local time = os.clock()
+
+		if not lasttbl[id] or lasttbl[id] < time then
+			if id then
+				titles[id] = title
+				str = "| "
+				for _, v in pairs(titles) do
+					str = str ..  v .. " | "
+				end
+				if str ~= last_title then
+					system.SetConsoleTitleRaw(str)
+				end
+			else
+				str = title
+				if str ~= last_title then
+					system.SetConsoleTitleRaw(title)
+				end
+			end
+			last_title = str
+			lasttbl[id] = os.clock() + 0.05
+		end
+	end
+
+	function system.GetConsoleTitle()
+		return str
+	end
+end
+
 do
 	system.run = true
 
@@ -24,7 +85,7 @@ do
 end
 
 do
-	local show = console.CreateVariable("system_fps_show", true, "show fps in titlebar")
+	local show = pvars.Setup("system_fps_show", true, "show fps in titlebar")
 	local avg_fps = 1
 
 	function system.UpdateTitlebarFPS(dt)
@@ -35,22 +96,22 @@ do
 		avg_fps = avg_fps + ((fps - avg_fps) * dt)
 
 		if wait(0.25) then
-			console.SetTitle(("FPS: %i"):format(avg_fps), "fps")
+			system.SetConsoleTitle(("FPS: %i"):format(avg_fps), "fps")
 
 			if utility and utility.FormatFileSize then
-				console.SetTitle(("GARBAGE: %s"):format(utility.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
+				system.SetConsoleTitle(("GARBAGE: %s"):format(utility.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
 			end
 
 			if render.draw_calls then
-				console.SetTitle(("DRAW CALLS: %s"):format(render.draw_calls), "drawcalls")
+				system.SetConsoleTitle(("DRAW CALLS: %s"):format(render.draw_calls), "drawcalls")
 			end
 
 			if render.vertices_drawn then
-				console.SetTitle(("VERTICES: %s"):format(render.vertices_drawn), "vertices")
+				system.SetConsoleTitle(("VERTICES: %s"):format(render.vertices_drawn), "vertices")
 			end
 
 			if GRAPHICS then
-				window.SetTitle(console.GetTitle())
+				window.SetTitle(system.GetConsoleTitle())
 			end
 		end
 	end
@@ -79,7 +140,7 @@ function system.ExecuteArgs(args)
 
 	if args then
 		for _, arg in pairs(args) do
-			console.RunString(tostring(arg))
+			commands.RunString(tostring(arg))
 		end
 	end
 end
@@ -833,7 +894,7 @@ do -- environment
 
 	function system._CheckCreatedEnv()
 		if CREATED_ENV then
-			console.SetTitle(TITLE, "env")
+			system.SetConsoleTitle(TITLE, "env")
 
 			utility.SafeRemove(ENV_SOCKET)
 

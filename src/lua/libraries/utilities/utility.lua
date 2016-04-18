@@ -767,13 +767,13 @@ do -- find value
 		find(found, prototype.GetAllRegistered(), "_M", ":", 1, ...)
 
 		local temp = {}
-		for cmd, v in pairs(console.GetCommands()) do
+		for cmd, v in pairs(commands.GetCommands()) do
 			if strfind(cmd, ...) then
 				local arg_line = table.concat(debug.getparams(v.callback), ", ")
 				arg_line = arg_line:gsub("line, ", "")
 				arg_line = arg_line:gsub("line", "")
 
-				table.insert(temp, {key = cmd, val = v.callback, name = ("console.GetCommands().%s.callback"):format(cmd), nice_name = ("_C->%s(%s)"):format(cmd, arg_line)})
+				table.insert(temp, {key = cmd, val = v.callback, name = ("commands.GetCommands().%s.callback"):format(cmd), nice_name = ("_C->%s(%s)"):format(cmd, arg_line)})
 			end
 		end
 		table.sort(temp, function(a, b) return #a.key < #b.key end)

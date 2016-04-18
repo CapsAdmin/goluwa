@@ -13,7 +13,7 @@ local function get_is_set(is, meta, name, default, cvar)
 		nvars.added_cvars[cvar] = name
 
 		if CLIENT then
-			console.CreateVariable(cvar, default, function(var)
+			pvars.Setup(cvar, default, function(var)
 				if network.IsConnected() then
 					message.Send("ncv", cvar, var)
 				else
@@ -52,7 +52,7 @@ if CLIENT then
 
 	function nvars.Synchronize()
 		for cvar in pairs(nvars.added_cvars) do
-			console.RunCommand(cvar, console.GetVariable(cvar))
+			commands.RunCommand(cvar, pvars.Get(cvar))
 		end
 
 		if network.debug or nvars.debug then

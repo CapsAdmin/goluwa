@@ -1,26 +1,26 @@
 local steam = ... or _G.steam
 
-console.AddCommand("mount", function(game)
+commands.Add("mount", function(game)
 	local game_info = assert(steam.MountSourceGame(game))
 	llog("mounted %s %s", game_info.game, game_info.title2)
 end)
 
-console.AddCommand("unmount", function(game)
+commands.Add("unmount", function(game)
 	local game_info = assert(steam.UnmountSourceGame(game))
 	llog("unmounted %s %s", game_info.game, game_info.title2 or game_info.title)
 end)
 
-console.AddCommand("mount_all", function(game)
+commands.Add("mount_all", function(game)
 	local game_info = assert(steam.MountSourceGame(game))
 	llog("mounted %s %s", game_info.game, game_info.title2)
 end)
 
-console.AddCommand("unmount_all", function(game)
+commands.Add("unmount_all", function(game)
 	steam.UnmountAllSourceGames()
 end)
 
 
-console.AddCommand("list_games", function(game)
+commands.Add("list_games", function(game)
 	for _, info in pairs(steam.GetSourceGames()) do
 		logn(info.game)
 		logn("\tgame_dir = ", info.game_dir)
@@ -29,7 +29,7 @@ console.AddCommand("list_games", function(game)
 	end
 end)
 
-console.AddCommand("game_info", function(game)
+commands.Add("game_info", function(game)
 	local info = steam.FindSourceGame(game)
 	print(vfs.Read(info.gameinfo_path))
 	table.print(info)

@@ -529,7 +529,7 @@ end
 
 profiler.Restart()
 
-console.AddCommand("profile_start", function(line)
+commands.Add("profile_start", function(line)
 	if line == "" or line == "st" or line == "s" then
 		profiler.EnableStatisticalProfiling(true)
 	end
@@ -543,7 +543,7 @@ console.AddCommand("profile_start", function(line)
 	end
 end)
 
-console.AddCommand("profile_stop", function()
+commands.Add("profile_stop", function()
 	if line == "" or line == "st" or line == "s" then
 		profiler.EnableStatisticalProfiling(false)
 	end
@@ -557,11 +557,11 @@ console.AddCommand("profile_stop", function()
 	end
 end)
 
-console.AddCommand("profile_restart", function()
+commands.Add("profile_restart", function()
 	profiler.Restart()
 end)
 
-console.AddCommand("profile_dump", function(line, a, b, c)
+commands.Add("profile_dump", function(line, a, b, c)
 	if a == "" or a == "st" or a == "s" then
 		profiler.PrintStatistical(b, tonumber(c))
 	end
@@ -575,17 +575,17 @@ console.AddCommand("profile_dump", function(line, a, b, c)
 	end
 end)
 
-console.AddCommand("profile", function(line, time, file_filter)
+commands.Add("profile", function(line, time, file_filter)
 	profiler.MeasureInstrumental(tonumber(time) or 5, file_filter)
 end)
 
-console.AddCommand("zbprofile", function()
+commands.Add("zbprofile", function()
 	local prf = require("zbprofiler")
 	prf.start()
 	event.Timer("zbprofiler_save", 3, 0, function() prf.save(0) end)
 end)
 
-console.AddCommand("trace_abort", function()
+commands.Add("trace_abort", function()
 	jit.flush()
 	profiler.EnableRealTimeTraceAbortLogging(true)
 end)

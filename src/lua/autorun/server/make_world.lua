@@ -1,7 +1,7 @@
-local map = console.CreateVariable("default_map", "gm_old_flatgrass")
+pvars.Setup("default_map", "gm_old_flatgrass")
 
 local function go()
-	console.RunString("map " .. map:Get())
+	commands.RunString("map " .. pvars.Get("default_map"))
 
 	for i = 1, 10 do
 		local body = entities.CreateEntity("physical")

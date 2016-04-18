@@ -1,4 +1,4 @@
-console.RunString("mount hl2")
+commands.RunString("mount hl2")
 
 local speaker = {}
 

@@ -146,10 +146,10 @@ local type_translate = {
 	bool = "boolean",
 }
 
-console.CreateVariable("steam_webapi_key", "")
+pvars.Setup("steam_webapi_key", "")
 
 function steam.GetWebAPIKey()
-	return console.GetVariable("steam_webapi_key", "")
+	return pvars.Get("steam_webapi_key") or ""
 end
 
 function steam.InitializeWebAPI(force)

@@ -1,4 +1,4 @@
-console.RunString"mount css"
+commands.RunString"mount css"
 
 entities.Panic()
 

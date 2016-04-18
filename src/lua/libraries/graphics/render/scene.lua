@@ -57,8 +57,8 @@ function render.Draw3DScene(what, dist)
 	end
 end
 
-console.CreateVariable("render_accum", 0)
-local deferred = console.CreateVariable("render_deferred", true, "whether or not deferred rendering is enabled.")
+pvars.Setup("render_accum", 0)
+local deferred = pvars.Setup("render_deferred", true, "whether or not deferred rendering is enabled.")
 
 function render.DrawScene(skip_2d)
 	render.GetScreenFrameBuffer():Begin()

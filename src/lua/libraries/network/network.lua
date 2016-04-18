@@ -71,12 +71,12 @@ function network.IsStarted()
 end
 
 function network.UpdateStatistics()
-	console.SetTitle(("NET in: %s"):format(network.socket:GetStatistics().received), "network udp in")
-	console.SetTitle(("NET out: %s"):format(network.socket:GetStatistics().sent), "network udp out")
+	system.SetConsoleTitle(("NET in: %s"):format(network.socket:GetStatistics().received), "network udp in")
+	system.SetConsoleTitle(("NET out: %s"):format(network.socket:GetStatistics().sent), "network udp out")
 end
 
 if CLIENT then
-	local var = console.CreateVariable("connect_translate", "")
+	local var = pvars.Setup("connect_translate", "")
 
 	function network.Connect(ip, port, retries)
 		network.Disconnect("already connected")

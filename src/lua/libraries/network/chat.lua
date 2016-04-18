@@ -4,7 +4,7 @@ local function getnick(client)
 	return client:IsValid() and client:GetNick() or "server"
 end
 
-local enabled = console.CreateVariable("chat_timestamps", true)
+local enabled = pvars.Setup("chat_timestamps", true)
 
 function chat.AddTimeStamp(tbl)
 	if not enabled:Get() then return {} end

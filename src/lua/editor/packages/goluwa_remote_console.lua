@@ -51,10 +51,10 @@ function PLUGIN:onRegister()
 			local lua = ""..
 			"ZEROBRANE_LINEINPUT=sockets.CreateServer([[tcp]],[[localhost]],"..self.port..")"..
 			"ZEROBRANE_LINEINPUT.OnClientConnected=function(s,client)return\32true\32end;"..
-			"ZEROBRANE_LINEINPUT.OnReceive=function(s,str)console.RunString(str)end;"..
+			"ZEROBRANE_LINEINPUT.OnReceive=function(s,str)commands.RunString(str)end;"..
 			"zb=function(s)ZEROBRANE_LINEINPUT:Broadcast(s,true)end;"..
 			"ZEROBRANE_LINEINPUT.debug=true;" ..
-			"console.SetVariable([[editor_path]],[[./../../editor/zbstudio.sh %PATH%:%LINE%]])"
+			"pvars.Set([[editor_path]],[[./../../editor/zbstudio.sh %PATH%:%LINE%]])"
 
 			if run_debug then
 				lua = "include[["..ide:GetDocument(ide:GetEditor()):GetFilePath().."]]" .. lua

@@ -283,7 +283,7 @@ function chat.GetPanel()
 					chat.Close()
 				elseif chat.panel.tab:IsTabSelected("console") then
 					logn("> ", str)
-					console.RunString(str, nil, true, true)
+					commands.RunString(str, nil, true, true)
 					edit:SetText("")
 					chat.panel:Layout(true)
 					return false
@@ -378,8 +378,8 @@ function chat.GetPanel()
 		end
 	end
 
-	if console.history then
-		for i, v in pairs(console.history) do
+	if commands.history then
+		for i, v in pairs(commands.history) do
 			text:OnConsolePrint(v)
 		end
 	end

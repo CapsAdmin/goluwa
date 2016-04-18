@@ -1,9 +1,9 @@
 local gl = require("libopengl") -- OpenGL
 local render = (...) or _G.render
 
-local w_cvar = console.CreateVariable("render_width", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
-local h_cvar = console.CreateVariable("render_height", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
-local mult_cvar = console.CreateVariable("render_ss_multiplier", 1, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
+local w_cvar = pvars.Setup("render_width", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
+local h_cvar = pvars.Setup("render_height", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
+local mult_cvar = pvars.Setup("render_ss_multiplier", 1, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
 
 function render.GetGBufferSize()
 	if not render.gbuffer_size then
@@ -164,14 +164,14 @@ do -- mixer
 			end
 		end
 
-		if not console.IsVariableAdded("render_pp_" .. PASS.Name) then
+		if not pvars.IsSetup("render_pp_" .. PASS.Name) then
 			local default = PASS.Default
 
 			if default == nil then
 				default = true
 			end
 
-			console.CreateVariable("render_pp_" .. PASS.Name, default, function(b)
+			pvars.Setup("render_pp_" .. PASS.Name, default, function(b)
 				if b then
 					render.AddGBufferShader(PASS)
 				else
@@ -180,7 +180,7 @@ do -- mixer
 			end)
 		end
 
-		if console.GetVariable("render_pp_" .. PASS.Name) then
+		if pvars.Get("render_pp_" .. PASS.Name) then
 			if render.gbuffer_data_pass then
 				PASS:__init()
 			end
@@ -244,7 +244,7 @@ function render.DrawGBuffer(what, dist)
 	surface.PopMatrix()
 end
 
-local shader_cvar = console.CreateVariable("render_gbuffer_shader", "template", function() if gbuffer_enabled then render.InitializeGBuffer() end end)
+local shader_cvar = pvars.Setup("render_gbuffer_shader", "template", function() if gbuffer_enabled then render.InitializeGBuffer() end end)
 
 render.gbuffer = NULL
 
@@ -437,7 +437,7 @@ end
 event.AddListener("EntityCreate", "gbuffer", function()
 	if gbuffer_enabled then return end
 
-	if not console.GetVariable("render_deferred") then return end
+	if not pvars.Get("render_deferred") then return end
 	if table.count(entities.GetAll()) ~= 0 then return end
 
 	render.InitializeGBuffer()
@@ -446,7 +446,7 @@ end)
 event.AddListener("EntityRemove", "gbuffer", function()
 	if gbuffer_enabled then return end
 
-	if not console.GetVariable("render_deferred") then return end
+	if not pvars.Get("render_deferred") then return end
 	if table.count(entities.GetAll()) ~= 0 then return end
 
 	render.ShutdownGBuffer()

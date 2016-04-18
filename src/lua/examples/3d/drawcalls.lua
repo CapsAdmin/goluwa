@@ -1,6 +1,6 @@
 entities.Panic()
 
-console.RunString("mount gmod")
+commands.RunString("mount gmod")
 
 local materials = {}
 

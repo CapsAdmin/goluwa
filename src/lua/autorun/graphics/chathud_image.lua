@@ -16,8 +16,8 @@ local queue = {}
 
 local busy
 
-local sDCvar = console.CreateVariable("chathud_image_slideduration", 0.5)
-local hDCvar = console.CreateVariable("chathud_image_holdduration", 5)
+local sDCvar = pvars.Setup("chathud_image_slideduration", 0.5)
+local hDCvar = pvars.Setup("chathud_image_holdduration", 5)
 
 local function show_image(url)
 	busy = true
@@ -79,7 +79,7 @@ event.Timer("chathud_image_url_queue", 0.25, 0, function()
 	end
 end)
 
-local cvar = console.CreateVariable("chathud_image_url", 1)
+local cvar = pvars.Setup("chathud_image_url", 1)
 
 event.AddListener("ClientChat", "chathud_image_url", function(client, str)
 

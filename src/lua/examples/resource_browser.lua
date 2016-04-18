@@ -1,4 +1,4 @@
-console.RunString("mount gmod")
+commands.RunString("mount gmod")
 
 local frame = gui.CreatePanel("frame", nil, "lol")
 frame:SetSize(Vec2()+512)

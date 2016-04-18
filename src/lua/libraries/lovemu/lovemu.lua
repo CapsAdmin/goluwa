@@ -267,7 +267,7 @@ function lovemu.RunGame(folder, ...)
 	return love
 end
 
-console.AddCommand("love_run", function(line, name, ...)
+commands.Add("love_run", function(line, name, ...)
 	local found
 	if vfs.IsDirectory("lovers/" .. name) then
 		found = lovemu.RunGame("lovers/" .. name, select(2, ...))

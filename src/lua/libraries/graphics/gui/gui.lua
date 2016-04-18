@@ -304,7 +304,7 @@ do -- skin
 		return out
 	end
 
-	console.AddCommand("gui_skin", function(_, str, sub_skin)
+	commands.Add("gui_skin", function(_, str, sub_skin)
 		str = str or "gwen"
 		gui.SetSkin(str, sub_skin)
 	end)

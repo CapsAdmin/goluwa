@@ -118,7 +118,7 @@ end
 function debug.openscript(lua_script, line)
 	if not console then return false end
 
-	local path = console.GetVariable("editor_path")
+	local path = pvars.Get("editor_path")
 
 	if not path then return false end
 	lua_script = R(lua_script) or lua_script
@@ -341,7 +341,7 @@ function debug.logcalls(b, type)
 end
 
 function debug.stepin()
-	if not console.curses then return end
+	if not commands.curses then return end
 
 	debug.debugging = true
 
@@ -350,18 +350,18 @@ function debug.stepin()
 	local curses = require("ffi.curses")
 
 	step = function(mode, line)
-		console.Clear()
+		commands.Clear()
 
 		debug.dumpcall(2, line)
 		curses.doupdate()
 
 		while debug.debugging do
-			local key = console.GetActiveKey()
+			local key = repl.GetActiveKey()
 
 			if key == "KEY_SPACE" then
 				debug.debugging = false
 				debug.sethook()
-				console.ScrollLogHistory(1)
+				commands.ScrollLogHistory(1)
 				break
 			elseif key == "KEY_ENTER" then
 				debug.sethook(step, "r")
