@@ -3,19 +3,11 @@ local pvars = _G.pvars or {}
 local path = "%DATA%/pvars.txt"
 local mode = "luadata"
 
-pvars.vars = {}
-pvars.infos = {}
+pvars.vars = pvars.vars or {}
+pvars.infos = pvars.infos or {}
 
 function pvars.Initialize()
-	local new = serializer.ReadFile(mode, path) or {}
-
-	for key, val in pairs(pvars.vars) do
-		if new[key] == nil then
-			new[key] = val
-		end
-	end
-
-	pvars.vars = new
+	pvars.vars = serializer.ReadFile(mode, path) or {}
 	pvars.init = true
 	serializer.WriteFile(mode, path, pvars.vars)
 end
@@ -41,7 +33,16 @@ function pvars.Setup(key, def, callback, typ)
 		callback = callback,
 	}
 
-	pvars.vars[key] = def
+	local val = def
+
+	if pvars.init then
+		local test = serializer.GetKeyFromFile(mode, path, key)
+		if test ~= nil then
+			val = test
+		end
+	end
+
+	pvars.vars[key] = val
 
 	if type(callback) == "function" then
 		event.Delay(function()
@@ -50,7 +51,7 @@ function pvars.Setup(key, def, callback, typ)
 	end
 
 	if pvars.init then
-		serializer.SetKeyValueInFile(mode, path, key, pvars.vars[key])
+		serializer.SetKeyValueInFile(mode, path, key, val)
 	end
 
 	return pvars.GetObject(key)
@@ -91,7 +92,9 @@ function pvars.Set(key, val)
 
 		pvars.vars[key] = val
 
-		serializer.SetKeyValueInFile(mode, path, key, pvars.vars[key])
+		if pvars.init then
+			serializer.SetKeyValueInFile(mode, path, key, val)
+		end
 
 		if info.callback and not info.in_callback then
 			info.in_callback = true
