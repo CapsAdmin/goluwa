@@ -95,13 +95,12 @@ struct placeholder {
   static const int NEG = 3;
   static const int SET = 4;
   static const int UNTIL = 5;
-  static const int FRETCAPS = 6;
-  static const int MRETCAPS = 7;
-  static const int RETURN = 8;
-  static const int TEST = 9;
-  static const int NEXT = 10;
-  static const int OPEN = 11;
-  static const int CLOSE = 12;
+  static const int RETURN = 6;
+  static const int TEST = 7;     // the current test (either a single character, 
+                                 // a charset or a ".")
+  static const int NEXT = 8;     // the rest of the pattern
+  static const int OPEN = 9;
+  static const int CLOSE = 10;
 }
 ]]
 
@@ -114,11 +113,14 @@ local g_i, g_subj, g_ins, g_start, g_end
 --- Templates -----------------------------------------------------------------
 -------------------------------------------------------------------------------
 
--- patterns are compiled to Lua by stitching these:
+-- patterns are compiled to Lua by stitching these together:
 
 local templates = {}
 
 -- charsets, caps and qstn are the FFI pointers to the corresponding resources.
+-- in order to minimize the memory allocation and ensure type stability, we 
+-- set the i variable to 0 in case of failure at a given index.
+
 templates.head = {[=[
 local bittest, charsets, caps, constchar, expose = ...
 return function(subj, _, i)
@@ -137,7 +139,7 @@ return function(subj, _, i)
 
 templates.tail = {[=[ --
     ::done:: end
-  ]=], P.UNTIL,
+  ]=], P.UNTIL, -- anchored and "end" or "until i ~= 0 or i0 > len"
   P.RETURN, [=[ --
 end]=]
 }
@@ -147,6 +149,9 @@ templates.one = {[[ -- c
   if i == 0 then goto done end]]
 }
 
+-- match the current character as much as possible, then
+-- try to match the rest of the pattern. If the rest fails,
+-- backtrack one character at a time until success is met
 templates['*'] = {[=[ -- c*
     local i0, i1 = i
   while true do
@@ -165,6 +170,9 @@ templates['*'] = {[=[ -- c*
   --if not i then goto done end]]
 }
 
+-- attempt to match the rest of the pattern (NEXT). on failure, 
+-- attempt the TEST and retry the rest of the match one character
+-- further. repeat until success or the end of the subject is met.
 templates['-'] = {[[ -- c-
   local i1 = i
   while true do
@@ -180,18 +188,23 @@ templates['-'] = {[[ -- c-
   if i == 0 then goto done end]]
 }
 
+-- the semantics of the "?" modifier are tricky to explain briefly...
+-- If the TEST fails, do as if it does not exist. If it succeeds, 
+-- first try to match the rest of the pattern (NEXT), the first time starting
+-- on the next character, and if that fails, the second time starting on
+-- the current character (i1).
 templates["?"] = {[[ -- c?
   do
-    local _i, q = i, false
-    if ]], P.TEST, [[ then q = true; i = i + 1 end
-    goto first
-    ::second::
-    i = _i
-    ::first::
+    local i1 = i
+    if ]], P.TEST, [[ then i = i + 1 else i1 = 0 end
+    goto firsttime
+    ::secondtime::
+    i, i1 = i1, 0
+    ::firsttime::
     do --]],
       P.NEXT, [[ --
     ::done:: end
-    if i == 0 and q then q = false; goto second end
+    if i == 0 and i1 ~= 0 then goto secondtime end
   end]]
 }
 
@@ -201,7 +214,7 @@ templates.set = {[[(i <= len) and ]], P.INV, [[ bittest(charsets, ]], P.SET, [=[
 
 templates.ballanced = {[[ -- %b
   if chars[i] ~= ]], P.OPEN, [[ then
-    i = 0; goto done --break
+    i = 0; goto done
   else
     count = 1
     repeat
@@ -447,7 +460,6 @@ local function makecs(pat, i, sets)
   while i <= last do
     if c == '%' then
       i = i + 1
-      -- if i == cl then error"invalid escape sequence" end
       local cc = charclass[s_sub(pat, i, i)]
       if cc then
         for i = 0, 7 do
@@ -459,7 +471,6 @@ local function makecs(pat, i, sets)
         then bitset(cs, 0); i = i + 1; goto continue
       end -- else, skip the % and evaluate the character as itself.
     end
-
 
     if s_sub(pat, i + 1, i + 1) == '-' and s_sub(pat, i+2, i+2) ~= ']' then
       for i = s_byte(pat, i), s_byte(pat, i+2) do bitset(cs, i) end
@@ -613,22 +624,25 @@ holds the position.
 
 The zeroth capture is implicit, and corresponds to the whole match.
 
-`capsptr[-n*2]` is the "open" bound of the nth capture.
-`capsptr[-n*2 + 1]` is the corresponding "close" bound.
+We return two pointers: `charsets`, which points to the first word of the first
+character set, and `caps`, such that
+
+`caps[-n*2]` is the "open" bound of the nth capture.
+`caps[-n*2 + 1]` is the corresponding "close" bound.
 
 --]]
 
 local function pack (sets, ncaps)
   local nsets = #sets
   local len = nsets * 8 + ncaps * 2
-  local charsets = u32ary(len + 2) -- add two slots for the bounds of the match.
-  local capsptr= u32ptr(charsets) + len
+  local charsets = u32ary(len + 2) -- add two slots for the bounds of the whole match.
+  local caps= u32ptr(charsets) + len
   for i = 1, nsets do
     for j = 0, 7 do
       charsets[(i - 1) * 8 + j] = sets[i][j]
     end
   end
-  return charsets, capsptr
+  return charsets, caps
 end
 
 cdef[[

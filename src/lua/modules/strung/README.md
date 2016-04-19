@@ -4,7 +4,7 @@ Version `1.0.0-rc1`.
 
 a rewrite of the Lua string pattern matching functions in Lua + FFI, for LuaJIT.
 
-`strung.find`, `strung.match`, `strung.gmatch` and `strung.gsub` are implmented according to the Lua manual, and pass the full official test suite.
+`strung.find`, `strung.match`, `strung.gmatch` and `strung.gsub` are implemented according to the Lua manual, and pass the full official test suite.
 
 For the null byte in patterns, `strung` suports both `"%z"`, like Lua 5.1 and `"\0"`, like Lua 5.2. You can capture up to 200 values, if that's your thing.
 
