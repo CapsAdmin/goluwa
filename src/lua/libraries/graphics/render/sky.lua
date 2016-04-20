@@ -54,10 +54,6 @@ function render.UpdateSky()
 	render.SetDepth(false)
 	render.SetBlendMode()
 
-	for k,v in pairs(render.gbuffer_values) do
-		shader[k] = v
-	end
-
 	render.SetShaderOverride(shader)
 	local old_view = render.camera_3d:GetView()
 	local old_projection = render.camera_3d:GetProjection()

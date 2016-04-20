@@ -992,10 +992,8 @@ if sdl then
 		system.sdl_windows[self.sdl_window_id] = nil
 	end
 
-	local x = ffi.new("int[1]")
-	local y = ffi.new("int[1]")
-
 	function META:GetPosition()
+		local x, y = ffi.new("int[1]"), ffi.new("int[1]")
 		sdl.GetWindowPosition(self.sdl_wnd, x, y)
 		return Vec2(x[0], y[0])
 	end
@@ -1005,6 +1003,7 @@ if sdl then
 	end
 
 	function META:GetSize()
+		local x, y = ffi.new("int[1]"), ffi.new("int[1]")
 		sdl.GetWindowSize(self.sdl_wnd, x, y)
 		return Vec2(x[0], y[0])
 	end
@@ -1029,10 +1028,9 @@ if sdl then
 		sdl.SetWindowTitle(self.sdl_wnd, tostring(title))
 	end
 
-	local x, y = ffi.new(sdl and "int[1]" or "double[1]"), ffi.new(sdl and "int[1]" or "double[1]")
-
 	if sdl.GetGlobalMouseState then
 		function META:GetMousePosition()
+			local x, y = ffi.new("int[1]"), ffi.new("int[1]")
 			if self.global_mouse then
 				sdl.GetGlobalMouseState(x, y)
 				return Vec2(x[0], y[0])
@@ -1043,6 +1041,7 @@ if sdl then
 		end
 	else
 		function META:GetMousePosition()
+			local x, y = ffi.new("int[1]"), ffi.new("int[1]")
 			sdl.GetMouseState(x, y)
 			return Vec2(x[0], y[0])
 		end
@@ -1085,6 +1084,7 @@ if sdl then
 			return Vec2()
 		end
 		if self.mouse_trapped then
+			local x, y = ffi.new("int[1]"), ffi.new("int[1]")
 			sdl.GetRelativeMouseState(x, y)
 			return Vec2(x[0], y[0])
 		end

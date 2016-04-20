@@ -260,8 +260,8 @@ do
 	function prototype.AddPropertyLink(obj_a, obj_b, field_a, field_b, key_a, key_b)
 
 		event.AddListener("Update", "update_object_properties", function()
-			for i, v in ipairs(prototype.linked_objects) do
-				local obj_a, obj_b, field_a, field_b, key_a, key_b = unpack(v)
+			for i, data in ipairs(prototype.linked_objects) do
+				local obj_a, obj_b, field_a, field_b, key_a, key_b = unpack(data.args)
 
 				if obj_a:IsValid() and obj_b:IsValid() then
 					local info_a = obj_a.prototype_variables[field_a]
@@ -270,21 +270,32 @@ do
 					if info_a and info_b then
 						if key_a and key_b then
 							local val = obj_a[info_a.get_name](obj_a)
-
 							val[key_a] = obj_b[info_b.get_name](obj_b)[key_b]
 
-							obj_a[info_a.set_name](obj_a, val)
+							if data.store.last_val ~= val then
+								obj_a[info_a.set_name](obj_a, val)
+								data.store.last_val = val
+							end
 						elseif key_a and not key_b then
 							local val = obj_a[info_a.get_name](obj_a)
-
 							val[key_a] = obj_b[info_b.get_name](obj_b)
 
-							obj_a[info_a.set_name](obj_a, val)
+							if data.store.last_val ~= val then
+								obj_a[info_a.set_name](obj_a, val)
+								data.store.last_val = val
+							end
 						elseif key_b and not key_a then
-							obj_a[info_a.set_name](obj_a, obj_b[info_b.get_name](obj_b)[key_b])
+							local val = obj_b[info_b.get_name](obj_b)[key_b]
+							if data.store.last_val ~= val then
+								obj_a[info_a.set_name](obj_a, val)
+								data.store.last_val = val
+							end
 						else
-
-							obj_a[info_a.set_name](obj_a, obj_b[info_b.get_name](obj_b))
+							local val = obj_b[info_b.get_name](obj_b)
+							if data.store.last_val ~= val then
+								obj_a[info_a.set_name](obj_a, val)
+								data.store.last_val = val
+							end
 						end
 					end
 				else
@@ -297,7 +308,7 @@ do
 			end
 		end)
 
-		table.insert(prototype.linked_objects, {obj_a, obj_b, field_a, field_b, key_a, key_b})
+		table.insert(prototype.linked_objects, {store = utility.CreateWeakTable(), args = {obj_a, obj_b, field_a, field_b, key_a, key_b}})
 	end
 
 	function prototype.RemovePropertyLink(obj_a, obj_b, field_a, field_b, key_a, key_b)

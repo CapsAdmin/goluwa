@@ -20,23 +20,15 @@ do -- current window
 	utility.MakePushPopFunction(render, "Window", render.SetWindow, render.GetWindow)
 
 	function render.GetWidth()
-		if system.current_window:IsValid() then
-			return system.current_window:GetSize().x
-		end
-
-		return 0
+		return system.current_window:GetSize().x
 	end
 
 	function render.GetHeight()
-		if system.current_window:IsValid() then
-			return system.current_window:GetSize().y
-		end
-
-		return 0
+		return system.current_window:GetSize().y
 	end
 
 	function render.GetScreenSize()
-		return Vec2(render.GetWidth(), render.GetHeight())
+		return system.current_window:GetSize()
 	end
 end
 

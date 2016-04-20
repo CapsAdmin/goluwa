@@ -77,17 +77,16 @@ function menu.UpdateBackground()
 	p:SetColor(Color(1,1,1, math.randomf(0.5, 0.8)))
 end
 
-local background = ColorBytes(64, 44, 128, 255)
-background = background + Color(0.25, 0.25, 0.20) -- hack fix  because the background is black
+local background = ColorBytes(64, 44, 128, 127)
 
 function menu.RenderBackground(dt)
-	emitter:Update(dt)
-
-	render.SetBlendMode("src_color", "src_color", "add")
 	surface.SetWhiteTexture()
-	surface.SetColor(background)
+	if render.IsGBufferReady() then
+		surface.SetColor(background.r, background.g, background.b, background.a)
+	else
+		surface.SetColor(background.r, background.g, background.b, 255)
+	end
 	surface.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
-	render.SetBlendMode("alpha")
 
 	emitter:Draw()
 end
@@ -163,6 +162,9 @@ function menu.CreateTopBar()
 	bar:CallOnRemove(function() thingy:Remove() end)
 
 	menu.panel = bar
+
+	bar:SetUpdateRate(1/24)
+	bar.OnUpdate = function(_, dt) emitter:Update(dt) end
 
 	local function create_button(text, options, w)
 		w = w or 0
