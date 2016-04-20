@@ -729,7 +729,7 @@ function compile (pat, mode) -- local, declared above
 
   -- load the source
   local source = t_concat(buf)
-  local loader, err = loadstring(source)
+  local loader, err = loadstring(source, mode .. " " .. pat)
   if not loader then error(source.."\nERROR:"..err) end
   local code = loader(bittest, charsets, capsptr, constchar, expose)
   return {code,   source,   ncaps,   capsptr, anchored}
