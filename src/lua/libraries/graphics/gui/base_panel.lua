@@ -19,6 +19,7 @@ prototype.GetSet(PANEL, "LayoutWhenInvisible", true)
 prototype.GetSet(PANEL, "VisibilityPanel", NULL)
 prototype.GetSet(PANEL, "NoDraw", false)
 prototype.GetSet(PANEL, "GreyedOut", false)
+prototype.GetSet(PANEL, "UpdateRate", 1/33)
 
 function PANEL:CreatePanel(name, store_in_self)
 	return gui.CreatePanel(name, self, store_in_self)
@@ -239,7 +240,16 @@ do -- drawing
 			no_draw = true
 		end
 
-		self:OnUpdate()
+
+		do
+			local time = system.GetElapsedTime()
+			self.next_update = self.next_update or time
+
+			if self.next_update + self.UpdateRate < time then
+				self:OnUpdate(time - self.next_update)
+				self.next_update = time
+			end
+		end
 
 		if from_cache or not no_draw then
 			if self:IsDragging() or self:IsWorld() or self:IsInsideParent() then
