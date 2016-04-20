@@ -52,7 +52,7 @@ function render.GenerateTextures()
 		local loading = render.CreateFrameBuffer(Vec2() + 256)
 		--loading:SetSize(Vec2()+256)
 
-		event.Timer("update_loading_texture", 1/15, 0, function()
+		event.Timer("update_loading_texture", 1/5, 0, function()
 			if not surface.IsReady() then return end
 			loading:Begin()
 				local time = system.GetElapsedTime()
