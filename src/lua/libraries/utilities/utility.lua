@@ -869,6 +869,7 @@ function utility.GeFolderFromPath(str)
 end
 
 function utility.GetParentFolder(str, level)
+	level = level or 1
 	for i = #str, 1, -1 do
 		local char = str:sub(i, i)
 		if char == "/" then

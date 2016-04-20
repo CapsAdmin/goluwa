@@ -368,10 +368,8 @@ function menu.CreateTopBar()
 				right_list:SetupSorted("name"--[[, "modified", "type", "size"]])
 				left_list:SetupSorted("name"--[[, "modified", "type", "size"]])
 
-				if utility.GetParentFolder(dir) then
-					right_list:AddEntry("..", 0, "folder", 0).OnSelect = function()
-						populate(utility.GetParentFolder(dir))
-					end
+				right_list:AddEntry("..", 0, "folder", 0).OnSelect = function()
+					populate(utility.GetParentFolder(dir))
 				end
 
 				for full_path in vfs.Iterate(dir, nil, true) do
