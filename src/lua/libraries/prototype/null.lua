@@ -34,8 +34,7 @@ do
 end
 
 function prototype.MakeNULL(tbl)
-
-	for k,v in pairs(tbl) do tbl[k] = nil end
+	table.clear(tbl)
 	tbl.Type = "null"
 	setmetatable(tbl, prototype.GetRegistered("null"))
 
