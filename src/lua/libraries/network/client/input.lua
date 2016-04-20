@@ -3,7 +3,7 @@
 local META = (...) or prototype.GetRegistered("client")
 
 local function add_event(name, check)
-	input.SetupAccessorFunctions(META, name)
+	input.SetupAccessorFunctions(META, name, nil, nil, true)
 
 	if CLIENT then
 		event.AddListener(name .. "Input", "client_" .. name .. "_event", function(key, press)

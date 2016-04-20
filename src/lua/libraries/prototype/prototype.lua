@@ -261,7 +261,7 @@ do
 
 		event.AddListener("Update", "update_object_properties", function()
 			for i, data in ipairs(prototype.linked_objects) do
-				local obj_a, obj_b, field_a, field_b, key_a, key_b = unpack(data.args)
+				local obj_a, obj_b, field_a, field_b, key_a, key_b = data.args[1], data.args[2], data.args[3], data.args[4], data.args[5], data.args[6]
 
 				if obj_a:IsValid() and obj_b:IsValid() then
 					local info_a = obj_a.prototype_variables[field_a]

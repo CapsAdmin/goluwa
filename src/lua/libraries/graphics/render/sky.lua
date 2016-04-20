@@ -1,19 +1,20 @@
 local render = ... or _G.render
 
 local directions = {
-	QuatDeg3(0,-90,-90), -- back
-	QuatDeg3(0,90,90), -- front
+	Matrix44():SetRotation(QuatDeg3(0,-90,-90)), -- back
+	Matrix44():SetRotation(QuatDeg3(0,90,90)), -- front
 
-	QuatDeg3(0,0,0), -- up
-	QuatDeg3(180,0,0), -- down
+	Matrix44():SetRotation(QuatDeg3(0,0,0)), -- up
+	Matrix44():SetRotation(QuatDeg3(180,0,0)), -- down
 
-	QuatDeg3(90,0,0), -- left
-	QuatDeg3(-90,180,0), -- right
+	Matrix44():SetRotation(QuatDeg3(90,0,0)), -- left
+	Matrix44():SetRotation(QuatDeg3(-90,180,0)), -- right
 }
 
 local fb
 local tex
 local shader
+local sky_projection
 
 function render.InitializeSky()
 	tex = render.CreateTexture("cube_map")
@@ -45,10 +46,11 @@ function render.InitializeSky()
 	fb:SetTexture(1, tex, "write", nil, 1)
 	fb:CheckCompletness()
 	fb:WriteThese(1)
+
+	sky_projection = Matrix44():Perspective(math.rad(90), render.camera_3d.FarZ, render.camera_3d.NearZ, tex:GetSize().x / tex:GetSize().y)
 end
 
 function render.UpdateSky()
-	if not fb then return end
 	if not tex then render.InitializeSky() end
 
 	render.SetDepth(false)
@@ -58,18 +60,12 @@ function render.UpdateSky()
 	local old_view = render.camera_3d:GetView()
 	local old_projection = render.camera_3d:GetProjection()
 
-	local projection = Matrix44()
-	projection:Perspective(math.rad(90), render.camera_3d.FarZ, render.camera_3d.NearZ, tex:GetSize().x / tex:GetSize().y)
-
 	fb:Begin()
-		for i, rot in ipairs(directions) do
+		for i, view in ipairs(directions) do
 			fb:SetTexture(1, tex, nil, nil, i)
 			--fb:Clear()
-
-			local view = Matrix44()
-			view:SetRotation(rot)
 			render.camera_3d:SetView(view)
-			render.camera_3d:SetProjection(projection)
+			render.camera_3d:SetProjection(sky_projection)
 
 			surface.DrawRect(0,0,surface.GetSize())
 		end
@@ -94,8 +90,11 @@ function render.GetShaderSunDirection()
 
 	if sun and sun:IsValid() then
 		local dir = sun:GetTRPosition():GetNormalized()
-
-		return Vec3(dir.y, dir.z, -dir.x)
+		local x,y,z = dir:Unpack()
+		dir.x = y
+		dir.y = z
+		dir.z = -x
+		return dir
 	end
 
 	return Vec3()

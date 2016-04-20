@@ -2,43 +2,39 @@ local input = _G.input or {}
 
 input.PressedThreshold = 0.2
 
-function input.SetupAccessorFunctions(tbl, name, up_id, down_id)
+function input.SetupAccessorFunctions(tbl, name, up_id, down_id, on_self)
 	up_id = up_id or name .. "_up_time"
 	down_id = down_id or name .. "_down_time"
 
-	local self
-	tbl["Is" .. name .. "Down"] = function(self, ...)
-		local args
-		if not hasindex(self) then args = {self, ...} self = tbl else args = {...} end
-		if not self[down_id] then self[down_id] = {} end
+	input[down_id] = {}
+	input[up_id] = {}
 
-		if #args == 0 then return false end
-
-		for _, val in ipairs(args) do
-			if not self[down_id][val] then
-				return false
-			end
-		end
-
-		return true
+	local is_down = function(self, key)
+		return self[down_id][key]
 	end
 
-	tbl["Get" .. name .. "UpTime"] = function(self, key)
-		if not hasindex(self) then key = self self = tbl end
-		if not self[up_id] then self[up_id] = {} end
-		return os.clock() - (self[up_id][key] or 0)
+	local get_up_time = function(self, key)
+		return system.GetElapsedTime() - (self[up_id][key] or 0)
 	end
 
-	tbl["Was" .. name .. "Pressed"] = function(self, key)
-		if not hasindex(self) then key = self self = tbl end
-		if not self[down_id] then self[down_id] = {} end
-		return os.clock() - (self[down_id][key] or 0) < input.PressedThreshold
+	local was_pressed = function(self, key)
+		return system.GetElapsedTime() - (self[down_id][key] or 0) < input.PressedThreshold
 	end
 
-	tbl["Get" .. name .. "DownTime"] = function(self, key)
-		if not hasindex(self) then key = self self = tbl end
-		if not self[down_id] then self[down_id] = {} end
-		return os.clock() - (self[down_id][key] or 0)
+	local get_down_time = function(self, key)
+		return system.GetElapsedTime() - (self[down_id][key] or 0)
+	end
+
+	if on_self then
+		tbl["Is" .. name .. "Down"] = is_down
+		tbl["Get" .. name .. "UpTime"] = get_up_time
+		tbl["Was" .. name .. "Pressed"] = was_pressed
+		tbl["Get" .. name .. "DownTime"] = get_down_time
+	else
+		tbl["Is" .. name .. "Down"] = function(...) return is_down(input, ...) end
+		tbl["Get" .. name .. "UpTime"] = function(...) return get_up_time(input, ...) end
+		tbl["Was" .. name .. "Pressed"] = function(...) return was_pressed(input, ...) end
+		tbl["Get" .. name .. "DownTime"] = function(...) return get_down_time(input, ...) end
 	end
 end
 

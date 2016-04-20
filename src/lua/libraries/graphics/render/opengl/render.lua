@@ -138,30 +138,50 @@ do
 	end
 end
 
-function render._SetCullMode(mode)
-	if mode == "none" then
-		gl.Disable("GL_CULL_FACE")
-	else
-		gl.Enable("GL_CULL_FACE")
+do
+	local enabled = false
 
-		if mode == "front" then
-			gl.CullFace("GL_FRONT")
-		elseif mode == "back" then
-			gl.CullFace("GL_BACK")
-		elseif mode == "front_and_back" then
-			gl.CullFace("GL_FRONT_AND_BACK")
+	function render._SetCullMode(mode)
+		if mode == "none" then
+			if enabled then
+				gl.Disable("GL_CULL_FACE")
+				enabled = false
+			end
+		else
+			if not enabled then
+				gl.Enable("GL_CULL_FACE")
+				enabled = true
+			end
+
+			if mode == "front" then
+				gl.CullFace("GL_FRONT")
+			elseif mode == "back" then
+				gl.CullFace("GL_BACK")
+			elseif mode == "front_and_back" then
+				gl.CullFace("GL_FRONT_AND_BACK")
+			end
 		end
 	end
 end
 
-function render._SetDepth(b)
-	if b then
-		gl.Enable("GL_DEPTH_TEST")
-		gl.DepthMask(1)
-		gl.DepthFunc("GL_LESS")
-	else
-		gl.Disable("GL_DEPTH_TEST")
-		gl.DepthMask(0)
-		--gl.DepthFunc("GL_ALWAYS")
+do
+	local enabled = false
+
+	function render._SetDepth(b)
+		if b then
+			if not enabled then
+				gl.Enable("GL_DEPTH_TEST")
+				enabled = true
+			end
+			gl.DepthMask(1)
+			gl.DepthFunc("GL_LESS")
+		else
+			if enabled then
+				gl.Disable("GL_DEPTH_TEST")
+				enabled = false
+			end
+			gl.DepthMask(0)
+			--gl.DepthFunc("GL_ALWAYS")
+		end
 	end
 end
