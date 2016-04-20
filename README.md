@@ -25,12 +25,14 @@ GUI:
 Similar to derma/gwen in gmod. It's also compatible with gwen skins. The blue skin tries to be identical to zsnes which is only used in the main menu.
 
 Source engine content:
+
 ![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/de_bank.png)
 ![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/gm_construct.png)
 
 Here I've loaded a dear esther and hl2 ep2 map. Goluwa will figure out where your steam libraries are, mount the game's vpk files and the required source games, read the BSP, VTF, VMT, MDL, etc files and load the assets. This is all very WIP but somewhat works.
 
 Entity editor:
+
 ![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/amiga_ball_ssr.png)
 ![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/gates.png)
 ![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/number_slider.gif)
@@ -38,6 +40,7 @@ Entity editor:
 It's sort of similar to PAC3 (a character editor I made for Garry's Mod). All objects have properties and some of them can be marked for being storable. If they are you can edit them with this editor.
 
 Löve wrapper:
+
 ![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/love_mrrescue.png)
 ![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/love_sienna.png)
 ![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/love_sienna_3d.jpg)
@@ -45,6 +48,7 @@ Löve wrapper:
 So you can run games made in Löve for some reason. The first game is Mr. Rescue and the second one is Sienna (I didn't make them). As with almost everything in Goluwa it's WIP. Some games work and some games don't.
 
 Markup language:
+
 ![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/markup.png)
 ![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/black_hole_tag.gif)
 ![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/gravity_smileys.gif)
