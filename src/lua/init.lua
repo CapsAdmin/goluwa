@@ -171,6 +171,8 @@ _G.require = include("lua/libraries/require.lua") -- replace require with the pu
 
 -- now we can use include properly
 
+require("strung").install()-- this shaves off 5 seconds off of loading gm_construct
+
 -- libraries
 pvars = include("lua/libraries/pvars.lua") -- like cvars
 prototype = include("lua/libraries/prototype/prototype.lua") -- handles classes, objects, etc
