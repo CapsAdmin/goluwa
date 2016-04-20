@@ -144,7 +144,6 @@ function profiler.Restart()
 end
 
 do
-	local base_garbage = 0
 	local stack = {}
 	local enabled = false
 	local i = 0
@@ -153,18 +152,14 @@ do
 		if not enabled then return end
 
 		local info = debug.getinfo(2)
-		local start_gc = collectgarbage("count")
 		local start_time = system.GetTime()
 
 		table.insert(stack, {
 			section_name = section_name,
-			start_gc = start_gc,
 			start_time = start_time,
 			info = info,
 			level = #stack,
 		})
-
-		collectgarbage("stop")
 	end
 
 	function profiler.PopSection()
@@ -172,37 +167,26 @@ do
 
 		local res = table.remove(stack)
 
-		if not res then return end
+		if res then
+			local time = system.GetTime() - res.start_time
+			local path, line = res.info.source, res.info.currentline
+			if type(res.section_name) == "string" then line = res.section_name end
 
-		local time = system.GetTime() - res.start_time
-		local gc = ((collectgarbage("count") - res.start_gc) * 1024) - base_garbage
+			local data = profiler.data.sections
 
-		collectgarbage("restart")
+			data[path] = data[path] or {}
+			data[path][line] = data[path][line] or {total_time = 0, samples = 0, name = res.section_name, section_name = res.section_name, instrumental = true, section = true}
 
-		local path, line = res.info.source, res.info.currentline
+			data[path][line].total_time = data[path][line].total_time + time
+			data[path][line].samples = data[path][line].samples + 1
+			data[path][line].level = res.level
+			data[path][line].start_time = res.start_time
+			data[path][line].i = i
 
-		if type(res.section_name) == "string" then line = res.section_name end
+			i = i + 1
 
-		if base_garbage == 0 then
-			base_garbage = gc
-			return
+			return time
 		end
-
-		local data = profiler.data.sections
-
-		data[path] = data[path] or {}
-		data[path][line] = data[path][line] or {total_time = 0, samples = 0, total_garbage = 0, name = res.section_name, section_name = res.section_name, instrumental = true, section = true}
-
-		data[path][line].total_time = data[path][line].total_time + time
-		data[path][line].total_garbage = data[path][line].total_garbage + gc
-		data[path][line].samples = data[path][line].samples + 1
-		data[path][line].level = res.level
-		data[path][line].start_time = res.start_time
-		data[path][line].i = i
-
-		i = i + 1
-
-		return time, gc
 	end
 
 	function profiler.RemoveSection(name)
@@ -303,13 +287,6 @@ function profiler.GetBenchmark(type, file, dump_line)
 					data.total_time = data.total_time
 				end
 
-				if data.total_garbage and data.total_garbage > 0 then
-					data.average_garbage = math.floor(data.total_garbage / data.samples)
-					data.total_garbage = data.total_garbage
-				else
-					data.average_garbage = 0
-				end
-
 				data.start_time = data.start_time or 0
 				data.samples = data.samples or 0
 
@@ -390,7 +367,6 @@ function profiler.PrintSections()
 			{key = "times_called", friendly = "calls"},
 			{key = "name", tostring = function(val, column) return ("    "):rep(column.level - 1) .. tostring(val) end},
 			{key = "average_time", friendly = "time", tostring = function(val) return math.round(val * 100 * 100, 3) end},
-			{key = "average_garbage", friendly = "garbage", tostring = function(val) return utility.FormatFileSize(val) end},
 		},
 		function(a) return a.times_called > 50 end,
 		"i"
@@ -413,26 +389,27 @@ end
 function profiler.StartInstrumental(file_filter)
 	profiler.EnableSectionProfiling(true, true)
 	profiler.busy = true
+	local okay = false
 	debug.sethook(function(what)
 		local info = debug.getinfo(2)
+		if info.what == "Lua" then
+			if info.source:endswith("profiler.lua") then return end
 
-		if info.linedefined <= 0 or info.source:endswith("profiler.lua") then return end
-
-		if file_filter and not info.source:find(file_filter, nil, true) then
-			return
+			if not file_filter or not info.source:find(file_filter, nil, true) then
+				if what == "line" then
+					if okay then profiler.PopSection() end
+					profiler.PushSection(info.source .. ":" .. info.linedefined)
+					okay = true
+				end
+			end
 		end
-
-		if what == "call" then
-			profiler.PushSection(info.source .. ":" .. info.linedefined)
-		elseif what == "return" then
-			profiler.PopSection()
-		end
-	end, "cr")
+	end, "l")
 end
 
 function profiler.StopInstrumental(file_filter)
 	profiler.busy = false
 	debug.sethook()
+	profiler.PopSection()
 
 	log(utility.TableToColumns(
 		"instrumental",
@@ -442,7 +419,6 @@ function profiler.StopInstrumental(file_filter)
 			{key = "section_name"},
 			{key = "average_time", friendly = "time", tostring = function(val) return math.round(val * 100 * 100, 3) end},
 			{key = "total_time", friendly = "total time", tostring = function(val) return math.round(val * 100 * 100, 3) end},
-			{key = "average_garbage", friendly = "garbage", tostring = function(val) return utility.FormatFileSize(val) end},
 		},
 		function(a) return a.average_time > 0.5 or (file_filter or a.times_called > 100) end,
 		function(a, b) return a.average_time < b.average_time end

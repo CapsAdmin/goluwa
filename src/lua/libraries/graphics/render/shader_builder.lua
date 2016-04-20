@@ -703,7 +703,7 @@ function render.CreateShader(data, vars)
 			self.unrolled_bind_func = assert(vfs.dofile(path))
 			if RELOAD then _G.RELOAD = RELOAD end
 		else
-			self.unrolled_bind_func = assert(loadstring(lua))()
+			self.unrolled_bind_func = assert(loadstring(lua, shader_id))()
 		end
 	end
 
