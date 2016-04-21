@@ -100,12 +100,12 @@ function PANEL:OnMouseInput(button, press)
 	self.click_times[button] = self.click_times[button] or {last_click = 0, times = 0}
 
 	if press then
-		if self.click_times[button].last_click < system.GetTime() then
+		if self.click_times[button].last_click < system.GetElapsedTime() then
 			self.click_times[button].last_click = 0
 			self.click_times[button].times = 0
 		end
 
-		self.click_times[button].last_click = system.GetTime() + 0.2
+		self.click_times[button].last_click = system.GetElapsedTime() + 0.2
 		self.click_times[button].times = self.click_times[button].times + 1
 	end
 

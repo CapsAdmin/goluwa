@@ -122,7 +122,7 @@ end
 
 function META:Report(what)
 	if not self.debug then return end
-	if not self.last_report or self.last_report < system.GetTime() then
+	if not self.last_report or self.last_report < system.GetElapsedTime() then
 		logf("%s report: %s\n", self, what)
 		self.last_report = system.GetElapsedTime() + 1
 	end

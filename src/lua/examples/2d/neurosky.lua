@@ -22,7 +22,7 @@ local function update_rt(eeg)
 			surface.SetWhiteTexture()
 			surface.SetColor(1, 1, 1, 1)
 
-			local x, y = system.GetTime() * 100 % W, H / 2 + eeg / 10
+			local x, y = system.GetElapsedTime() * 100 % W, H / 2 + eeg / 10
 
 			surface.DrawLine(x, y, last_x, last_y)
 

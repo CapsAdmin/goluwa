@@ -259,7 +259,7 @@ do -- timers
 				if data.fps then
 					local time = 0
 					repeat
-						local start = system.GetTime()
+						local start = system.GetElapsedTime()
 						local ok, res = system.pcall(data.callback)
 
 						if system.GetFrameTime() >= data.fps then break end
@@ -269,7 +269,7 @@ do -- timers
 							break
 						end
 
-						time = time + (system.GetTime() - start)
+						time = time + (system.GetElapsedTime() - start)
 					until time >= data.fps
 				else
 					if data.realtime < cur then

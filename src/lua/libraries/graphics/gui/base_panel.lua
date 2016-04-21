@@ -1147,7 +1147,7 @@ do -- animations
 			time = time or 0.25,
 			var = var,
 			func = self["Set" .. var],
-			start_time = system.GetTime(),
+			start_time = system.GetElapsedTime(),
 			pow = pow,
 			callback = callback,
 			pausers =  pausers,

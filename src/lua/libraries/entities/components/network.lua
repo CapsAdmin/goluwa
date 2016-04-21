@@ -276,7 +276,7 @@ do -- synchronization server > client
 		end
 
 
-		self.last_update[info.key2] = system.GetTime() + info.rate
+		self.last_update[info.key2] = system.GetElapsedTime() + info.rate
 	end
 
 	function COMPONENT:UpdateVars(client, force_update)

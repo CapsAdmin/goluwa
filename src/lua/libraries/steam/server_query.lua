@@ -193,8 +193,8 @@ function steam.GetServerPing(ip, port, callback)
 	check(port, "number")
 
 	callback = callback or logn
-	local start = system.GetTime()
+	local start = system.GetElapsedTime()
 	query_server(ip, port, queries.ping, function()
-		callback(system.GetTime() - start)
+		callback(system.GetElapsedTime() - start)
 	end)
 end

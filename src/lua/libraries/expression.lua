@@ -68,9 +68,9 @@ function expression.Compile(str, extra_lib)
 		for k,v in pairs(extra_lib) do functions[k] = v end
 	end
 
-	local t0 = system.GetTime()
-	functions.t    = function () return system.GetTime() - t0 end
-	functions.time = function () return system.GetTime() - t0 end
+	local t0 = system.GetElapsedTime()
+	functions.t    = function () return system.GetElapsedTime() - t0 end
+	functions.time = function () return system.GetElapsedTime() - t0 end
 	functions.select = select
 
 	str = "local input = select(1, ...) return " .. str

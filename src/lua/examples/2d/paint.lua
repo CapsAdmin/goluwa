@@ -45,7 +45,7 @@ event.Timer("fb_update", 0, 0, function()
 			if vx ~= 0 and vy ~= 0 then
 				local len = Vec2(vx, vy):GetLength() / 100
 				local deg = math.deg(math.atan2(vx, -vy))
-				surface.SetColor(HSVToColor(system.GetTime(), 1, len):Unpack())
+				surface.SetColor(HSVToColor(system.GetElapsedTime(), 1, len):Unpack())
 				for i = 1, 12 do
 					local size = size * i / 8
 					surface.DrawRect(x + math.randomf(-size, size), y + math.randomf(-size, size), size, size + 100, deg, size/2, size/2 + 50)

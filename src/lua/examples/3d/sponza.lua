@@ -56,7 +56,7 @@ mdl:SetModelPath("models/spider.obj")
 mdl:SetPosition(center + Vec3(0,0,32))
 mdl:SetSize(0.1)
 --mdl:SetAngles(Ang3(0,0,0))
-event.Timer("lol",0,0,function() if mdl:IsValid() then mdl:SetAngles(Ang3(system.GetTime()*50,0,0)) end end)
+event.Timer("lol",0,0,function() if mdl:IsValid() then mdl:SetAngles(Ang3(system.GetElapsedTime()*50,0,0)) end end)
 
 do return end
 
@@ -68,7 +68,7 @@ local mdl = entities.CreateEntity("visual")
 mdl:SetModelPath("models/spider.obj")
 mdl:SetPosition(Vec3(5000, -3000, 200))
 mdl:SetAngles(Ang3(0,0,0))
-event.Timer("lol",0,0,function() mdl:SetAngles(Ang3(system.GetTime()*50,0,0)) end)
+event.Timer("lol",0,0,function() mdl:SetAngles(Ang3(system.GetElapsedTime()*50,0,0)) end)
 mdl:SetSize(10)
 
 

@@ -20,7 +20,7 @@ filter:SetParam("gainhf", 0.1)
 voice:SetFilter(filter)
 
 event.AddListener("Update", "hmm", function()
-	local time = system.GetTime()
+	local time = system.GetElapsedTime()
 
 	voice:SetPosition(math.sin(time), math.cos(time),0)
 	music:SetPitch(1 + math.sin(time*10)/30)
