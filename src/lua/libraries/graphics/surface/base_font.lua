@@ -92,7 +92,7 @@ function META:DrawString(str, x, y, w)
 		self.total_strings_stored = self.total_strings_stored or 0
 
 		if self.total_strings_stored > 1000 then
-			--logf("surface warning: string cache for %s is above 1000, flushing cache\n", self)
+			logf("surface warning: string cache for %s is above 1000, flushing cache\n", self)
 			table.clear(self.string_cache)
 			self.total_strings_stored = 0
 		end
@@ -323,10 +323,12 @@ if RELOAD then
 	for k,v in pairs(surface.registered_fonts) do
 		surface.RegisterFont(v)
 	end
-	for k,v in pairs(surface.fonts) do
-		v.string_cache = {}
-		v.total_strings_stored = 0
-		v:CreateTextureAtlas()
-		v:Rebuild()
+	for k,v in pairs(prototype.GetCreated()) do
+		if v.Type == "font" then
+			v.string_cache = {}
+			v.total_strings_stored = 0
+			v:CreateTextureAtlas()
+			v:Rebuild()
+		end
 	end
 end
