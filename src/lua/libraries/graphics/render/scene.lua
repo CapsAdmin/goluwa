@@ -17,7 +17,7 @@ do -- current window
 		return system.current_window
 	end
 
-	utility.MakePushPopFunction(render, "Window", render.SetWindow, render.GetWindow)
+	utility.MakePushPopFunction(render, "Window")
 
 	function render.GetWidth()
 		return system.current_window:GetSize().x

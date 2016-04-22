@@ -43,43 +43,26 @@ function render.Shutdown()
 end
 
 do
-	local X,Y,W,H
-	local last = Rect()
+	local X,Y,W,H = 0,0,1,1
 
 	function render.SetViewport(x, y, w, h)
-		X,Y,W,H = x,y,w,h
-
-		if last.x ~= x or last.y ~= y or last.w ~= w or last.h ~= h then
+		if X ~= x or Y ~= y or W ~= w or H ~= h then
 			render._SetViewport(x,y,w,h)
 
+			render.camera_2d.Viewport.x = x
+			render.camera_2d.Viewport.x = y
 			render.camera_2d.Viewport.w = w
 			render.camera_2d.Viewport.h = h
 			render.camera_2d:Rebuild()
-
-			last.x = x
-			last.y = y
-			last.w = w
-			last.h = h
+			X,Y,W,H = x,y,w,h
 		end
 	end
 
 	function render.GetViewport()
-		return x,y,w,h
+		return X,Y,W,H
 	end
 
-	local stack = {}
-
-	function render.PushViewport(x, y, w, h)
-		table.insert(stack, {X or 0, Y or 0, W or render.GetWidth(), H or render.GetHeight()})
-
-		render.SetViewport(x, y, w, h)
-	end
-
-	function render.PopViewport()
-		local v = table.remove(stack)
-
-		render.SetViewport(v[1], v[2], v[3], v[4])
-	end
+	utility.MakePushPopFunction(render, "Viewport")
 end
 
 do

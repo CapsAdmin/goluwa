@@ -324,6 +324,9 @@ do
 end
 
 function utility.MakePushPopFunction(lib, name, func_set, func_get, reset)
+	func_set = func_set or lib["Set" .. name]
+	func_get = func_get or lib["Get" .. name]
+
 	local stack = {}
 	local i = 1
 

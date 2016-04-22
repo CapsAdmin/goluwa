@@ -8,19 +8,8 @@ vfs.OSGetAttributes = fs.getattributes
 do
 	vfs.SetWorkingDirectory = fs.setcd
 	vfs.GetWorkingDirectory = fs.getcd
-
-	local stack = {}
-
-	function vfs.PushWorkingDirectory(dir)
-		table.insert(stack, vfs.GetWorkingDirectory())
-		vfs.SetWorkingDirectory(dir)
-	end
-
-	function vfs.PopWorkingDirectory()
-		local old = table.remove(stack)
-		if old then
-			vfs.SetWorkingDirectory(old)
-		end
+	if utility.MakePushPopFunction then
+		utility.MakePushPopFunction(vfs, "WorkingDirectory")
 	end
 end
 

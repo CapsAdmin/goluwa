@@ -88,26 +88,26 @@ function render.CreateFrameBuffer(size, textures, id_override)
 end
 
 do -- binding
+
 	do
-		local stack = {}
 		local current
 
-		function META:Push()
-			current = current or render.GetScreenFrameBuffer()
-			stack[#stack + 1] = current
-
-			self:Bind()
-
-			current = self
-		end
-
-		function META:Pop()
-			local fb = stack[#stack] stack[#stack] = nil
-
-			fb:Bind()
-
+		function render.SetFrameBuffer(fb)
+			fb = fb or render.GetScreenFrameBuffer()
 			current = fb
+			fb:Bind()
 		end
+
+		function render.GetFrameBuffer()
+			return current
+		end
+
+		utility.MakePushPopFunction(render, "FrameBuffer")
+	end
+
+	do
+		META.Push = render.PushFrameBuffer
+		META.Pop = render.PopFrameBuffer
 
 		function META:Begin()
 			self:Push()
