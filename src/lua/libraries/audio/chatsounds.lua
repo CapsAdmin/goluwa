@@ -1485,11 +1485,11 @@ function chatsounds.Initialize()
 
 	--chatsounds.BuildFromAutoadd()
 
-        event.AddListener("ResourceDownloaded", function(path)
-                if path:find("chatsounds/lists/", nil, true) then
-                        chatsounds.LoadData(path:match(".+/(.+)%.dat"))
-                end
-        end)
+	event.AddListener("ResourceDownloaded", function(path)
+		if path:find("chatsounds/lists/", nil, true) then
+			chatsounds.LoadData(path:match(".+/(.+)%.dat"))
+		end
+	end)
 
 	for k,v in pairs(chatsounds.GetLists()) do
 		chatsounds.LoadData(vfs.FixIllegalCharactersInPath(v))
