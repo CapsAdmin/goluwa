@@ -151,6 +151,10 @@ function META:SetTexture(pos, tex, mode, uid, face)
 				uid = uid,
 			}
 
+			if tex:GetMipMapLevels() > 0 then
+				self.generate_mip_maps = true
+			end
+
 			table.insert(self.textures_sorted, self.textures[uid])
 
 			self:SetSize(tex:GetSize():Copy())

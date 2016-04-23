@@ -93,8 +93,12 @@ do -- binding
 		local current
 
 		function render.SetFrameBuffer(fb)
-			fb = fb or render.GetScreenFrameBuffer()
+			if fb == nil then
+				fb = render.GetScreenFrameBuffer()
+			end
+
 			current = fb
+
 			fb:Bind()
 		end
 
@@ -117,9 +121,11 @@ do -- binding
 		function META:End()
 			render.PopViewport()
 			self:Pop()
-			for i,v in ipairs(self.textures_sorted) do
-				if v.tex and v.tex.MipMapLevels ~= 1 then
-					v.tex:GenerateMipMap()
+			if self.generate_mip_maps then
+				for i,v in ipairs(self.textures_sorted) do
+					if v.tex and v.tex.MipMapLevels ~= 1 then
+						v.tex:GenerateMipMap()
+					end
 				end
 			end
 		end
@@ -127,11 +133,6 @@ do -- binding
 
 	function META:Bind()
 		self:_Bind()
-		render.active_framebuffer = self
-	end
-
-	function render.GetActiveFramebuffer()
-		return render.active_framebuffer
 	end
 end
 
