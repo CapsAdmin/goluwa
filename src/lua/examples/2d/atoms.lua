@@ -45,21 +45,17 @@ local shader = render.CreateShader({
 				float neighbours = 0;
 				float color = texture(self, uv).r;
 
-				float radius = 1 + cos(color);
-
-				vec2 uv_unit = radius / size;
-				float div = 0;
+				vec2 uv_unit = (1 + cos(color)) / size;
 
 				for (float y = -1; y <= 1; y++)
 				{
 					for (float x = -1; x <= 1; x++)
 					{
 						neighbours += texture(self, uv + (uv_unit * vec2(x, y))).r;
-						div++;
 					}
 				}
 
-				neighbours /= div;
+				neighbours /= 9;
 
 				color = sin(pow(neighbours, pi2) * pi) / color * 2;
 
