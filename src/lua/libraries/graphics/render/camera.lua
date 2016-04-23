@@ -183,10 +183,10 @@ do -- 3d 2d
 	end
 end
 
-function META:Rebuild(type)
+function META:Rebuild(what)
 	local vars = self.shader_variables
 
-	if type == nil or type == "projection" then
+	if what == nil or what == "projection" then
 		if self.Projection then
 			vars.projection = self.Projection
 		else
@@ -213,7 +213,7 @@ function META:Rebuild(type)
 		end
 	end
 
-	if type == nil or type == "view" then
+	if what == nil or what == "view" then
 		if self.View then
 			vars.view = self.View
 		else
@@ -246,7 +246,7 @@ function META:Rebuild(type)
 	end
 
 	if self:Get3D() then
-		if type == nil or type == "projection" or type == "view" then
+		if what == nil or what == "projection" or what == "view" then
 			vars.projection_inverse = vars.projection:GetInverse()
 			vars.view_inverse = vars.view:GetInverse()
 
@@ -254,13 +254,12 @@ function META:Rebuild(type)
 			vars.projection_view_inverse = vars.projection_view:GetInverse()
 		end
 
-		if type == nil or type == "view" or type == "world" then
+		if what == nil or what == "view" or what == "world" then
 			vars.world = self.World
 			vars.view_world =  vars.world * vars.view
 			vars.view_world_inverse = vars.view_world:GetInverse()
 			vars.normal_matrix = vars.view_world_inverse:GetTranspose()
 		end
-
 
 		--if type == nil or type == "world" then
 			--vars.world_inverse = vars.world:GetInverse()
