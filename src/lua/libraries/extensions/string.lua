@@ -1,5 +1,3 @@
-include("string_anime.lua")
-
 do
 	local vowels = {"e", "a", "o", "i", "u", "y"}
 	local consonants = {"t", "n", "s", "h", "r", "d", "l", "c", "m", "w", "f", "g", "p", "b", "v", "k", "j", "x", "q", "z"}
@@ -286,15 +284,16 @@ function string.explode(self, sep, pattern)
 
 	local tbl = {}
 	local last_pos = 1
-	local sep_length = #sep
 
-	pattern = not pattern
+	if pattern == nil then
+		pattern = false
+	end
 
 	for i = 1, math.huge do
-		local pos = self:find(sep, last_pos, pattern)
-		if not pos then break end
-		tbl[i] = self:sub(last_pos, pos-1)
-		last_pos = pos + sep_length
+		local start_pos, end_pos = self:find(sep, last_pos, pattern)
+		if not start_pos then break end
+		tbl[i] = self:sub(last_pos, start_pos - 1)
+		last_pos = start_pos + (end_pos - start_pos) + 1
 	end
 
 	tbl[#tbl + 1] = self:sub(last_pos)
