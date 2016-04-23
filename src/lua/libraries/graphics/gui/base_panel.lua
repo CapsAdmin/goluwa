@@ -1392,7 +1392,7 @@ do -- mouse
 
 		local alpha = 1
 
-		if self.AlphaMouseCheck and not self.NinePatch and self.NinePatchRect:IsZero() and self.Texture:IsValid() and self.Texture ~= render.GetWhiteTexture() and not self.Texture:IsLoading() then
+		--[[if self.AlphaMouseCheck and not self.NinePatch and self.NinePatchRect:IsZero() and self.Texture:IsValid() and self.Texture ~= render.GetWhiteTexture() and not self.Texture:IsLoading() then
 			local x = (x / self.Size.x)
 			local y = (y / self.Size.y)
 
@@ -1403,7 +1403,7 @@ do -- mouse
 			y = math.clamp(math.floor(y), 1, self.Texture:GetSize().y-1)
 
 			alpha = select(4, self.Texture:GetPixelColor(x, y)) / 255
-		end
+		end]]
 
 		if x > 0 and x < self.Size.x and y > 0 and y < self.Size.y and alpha > 0 then
 			if self:HasParent() and (self:GetParent():IsWorld() or self:GetParent().mouse_over) then
