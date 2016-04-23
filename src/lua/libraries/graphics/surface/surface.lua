@@ -606,7 +606,7 @@ do
 		gl.StencilFunc("GL_ALWAYS", 1, 0xFF) -- Set any stencil to 1
 		gl.StencilOp("GL_KEEP", "GL_KEEP", "GL_REPLACE")
 		gl.StencilMask(0xFF) -- Write to stencil buffer
-		render.GetActiveFramebuffer():Clear("stencil",0xFF) -- Clear stencil buffer (0 by default)
+		render.GetFrameBuffer():Clear("stencil",0xFF) -- Clear stencil buffer (0 by default)
 
 		local r,g,b,a = surface.SetColor(0,0,0,0)
 		surface.DrawRect(x, y, w, h)
@@ -725,7 +725,7 @@ function surface.GetHSV()
 	return surface.mesh_2d_shader.hsv_mult:Unpack()
 end
 
-utility.MakePushPopFunction(surface, "HSV", surface.SetHSV, surface.GetHSV)
+utility.MakePushPopFunction(surface, "HSV")
 
 do -- effects
 	function surface.EnableEffects(b)
