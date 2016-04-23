@@ -48,15 +48,15 @@ function input.CallOnTable(tbl, name, key, press, up_id, down_id)
 	tbl[up_id] = tbl[up_id] or {}
 	tbl[down_id] = tbl[down_id] or {}
 
-	if type(key) == "string" and #key == 1 then
-		local byte = string.byte(key)
-
-		if byte >= 65 and byte <= 90 then -- Uppercase letters
-			key = string.char(byte+32)
-		end
-	end
-
 	if key then
+		if type(key) == "string" and #key == 1 then
+			local byte = string.byte(key)
+
+			if byte >= 65 and byte <= 90 then -- Uppercase letters
+				key = string.char(byte+32)
+			end
+		end
+
 		if press and not tbl[down_id][key] then
 
 			if input.debug then
@@ -64,14 +64,14 @@ function input.CallOnTable(tbl, name, key, press, up_id, down_id)
 			end
 
 			tbl[up_id][key] = nil
-			tbl[down_id][key] = os.clock()
+			tbl[down_id][key] = system.GetElapsedTime()
 		elseif not press and tbl[down_id][key] and not tbl[up_id][key] then
 
 			if input.debug then
 				print(name, "key", key, "released")
 			end
 
-			tbl[up_id][key] = os.clock()
+			tbl[up_id][key] = system.GetElapsedTime()
 			tbl[down_id][key] = nil
 		end
 	end
