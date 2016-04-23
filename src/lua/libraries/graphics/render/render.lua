@@ -76,6 +76,8 @@ do
 	function render.GetDepth()
 		return enabled
 	end
+
+	utility.MakePushPopFunction(render, "Depth")
 end
 
 do
@@ -103,6 +105,8 @@ do
 	function render.GetScissor()
 		return X,Y,W,H
 	end
+
+	utility.MakePushPopFunction(render, "Scissor")
 end
 
 do
@@ -122,6 +126,8 @@ do
 	function render.GetCullMode()
 		return cull_mode
 	end
+
+	utility.MakePushPopFunction(render, "CullMode")
 end
 
 render.AddGlobalShaderCode([[
