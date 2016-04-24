@@ -208,7 +208,7 @@ do -- timer
 
 	function profiler.StartTimer(str, ...)
 		local level =
-		table.insert(stack, {str = str:format(...), level = #stack})
+		table.insert(stack, {str = str and str:format(...), level = #stack})
 		local last = stack[#stack]
 		last.time = system.GetTime() -- just to make sure there's overhead with table.insert and whatnot
 	end
@@ -506,32 +506,26 @@ function profiler.EnableRealTimeTraceAbortLogging(b)
 	end
 end
 
-function profiler.Compare(old, new, count)
+function profiler.MeasureFunction(func, count, name)
 	count = count or 1
+	name = name or "measure result"
 
 	local avg = 0
 
 	for i = 1, count do
-		profiler.StartTimer("OLD")
-			old()
+		profiler.StartTimer()
+			func()
 		avg = avg + profiler.StopTimer(true)
 	end
 
 	avg = avg / count
 
-	logn("OLD: ", avg)
+	logn(name, ": ", math.round(avg, 4))
+end
 
-	local avg = 0
-
-	for i = 1, count do
-		profiler.StartTimer("NEW")
-			old()
-		avg = avg + profiler.StopTimer(true)
-	end
-
-	avg = avg / count
-
-	logn("NEW: ", avg)
+function profiler.Compare(old, new, count)
+	profiler.MeasureFunction(old, count, "OLD")
+	profiler.MeasureFunction(new, count, "NEW")
 end
 
 profiler.Restart()
