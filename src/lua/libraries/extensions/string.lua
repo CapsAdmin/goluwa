@@ -325,3 +325,17 @@ function string.replace(self, a, b)
 
 	return self
 end
+
+function string.random(length, min, max)
+	length = length or 10
+	min = min or 32
+	max = max or 126
+
+	local tbl = {}
+
+	for i = 1, length do
+		tbl[i] = string.char(math.random(min, max))
+	end
+
+	return table.concat(tbl)
+end
