@@ -60,6 +60,20 @@ do
 	end
 end
 
+function string.random(length, min, max)
+	length = length or 10
+	min = min or 32
+	max = max or 126
+
+	local tbl = {}
+
+	for i = 1, length do
+		tbl[i] = string.char(math.random(min, max))
+	end
+
+	return table.concat(tbl)
+end
+
 function string.readablehex(str)
 	return (str:gsub("(.)", function(str) str = ("%X"):format(str:byte()) if #str == 1 then str = "0" .. str end return str .. " " end))
 end
