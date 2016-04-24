@@ -303,33 +303,26 @@ function string.containsonly(self, pattern)
 	return self:gsub(pattern, "") == ""
 end
 
-function string.replace(self, a, b)
-	local tbl = self:explode(a)
-	local out = ""
+function string.replace(self, what, replacement)
+	local out = {}
+	local i = 1
 
-	if #tbl > 1 then
-		for i = 1, #tbl - 1 do
-			out = out .. tbl[i] .. b
+	local a_len = #what
+	local pos = #self
+	local last_pos = pos + 1
+
+	repeat
+		if self:sub(pos, pos + a_len - 1) == what then
+			out[i] = self:sub(pos + a_len, last_pos)
+			i = i + 1
+			last_pos = pos - 1
+			pos = pos - a_len - 1
+		else
+			pos = pos - 1
 		end
+	until pos < -a_len - 1
 
-		out = out .. tbl[#tbl]
+	table.reverse(out)
 
-		return out
-	end
-
-	return self
-end
-
-function string.random(length, min, max)
-	length = length or 10
-	min = min or 32
-	max = max or 126
-
-	local tbl = {}
-
-	for i = 1, length do
-		tbl[i] = string.char(math.random(min, max))
-	end
-
-	return table.concat(tbl)
+	return table.concat(out, replacement)
 end
