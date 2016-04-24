@@ -104,30 +104,10 @@ function string.dumphex(str)
 end
 
 function string.endswith(a, b)
-	if type(b) == "table" then
-		for k, b in pairs(b) do
-			if a:sub(-#b) == b then
-				return true
-			end
-		end
-
-		return false
-	end
-
 	return a:sub(-#b) == b
 end
 
 function string.startswith(a, b)
-	if type(b) == "table" then
-		for k, b in pairs(b) do
-			if a:sub(0, #b) == b then
-				return true
-			end
-		end
-
-		return false
-	end
-
 	return a:sub(0, #b) == b
 end
 
