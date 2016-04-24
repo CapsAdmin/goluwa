@@ -277,20 +277,20 @@ function string.explode(self, sep, pattern)
 	end
 
 	local tbl = {}
-	local last_pos = 1
+	local current_pos = 1
 
 	if pattern == nil then
 		pattern = false
 	end
 
-	for i = 1, math.huge do
-		local start_pos, end_pos = self:find(sep, last_pos, pattern)
+	for i = 1, #self do
+		local start_pos, end_pos = self:find(sep, current_pos, pattern)
 		if not start_pos then break end
-		tbl[i] = self:sub(last_pos, start_pos - 1)
-		last_pos = start_pos + (end_pos - start_pos) + 1
+		tbl[i] = self:sub(current_pos, start_pos - 1)
+		current_pos = end_pos + 1
 	end
 
-	tbl[#tbl + 1] = self:sub(last_pos)
+	tbl[#tbl + 1] = self:sub(current_pos)
 
 	return tbl
 end
