@@ -255,8 +255,24 @@ function string.compare(self, target)
 end
 
 function string.trim(self, char)
-    char = char or "%s"
-    return (self:gsub("^"..char.."*(.-)"..char.."*$", "%1" ))
+	if char then
+		char = char:patternsafe() .. "*"
+	else
+		char = "%s*"
+	end
+
+	local _, start = self:find(char, 0)
+	local end_start, end_stop = self:reverse():find(char, 0)
+
+	if start and end_start then
+		return self:sub(start + 1, (end_start - end_stop) - 2)
+	elseif start then
+		return self:sub(start + 1)
+	elseif end_start then
+		return self:sub(0, (end_start - end_stop) - 2)
+	end
+
+	return self
 end
 
 function string.getchar(self, pos)
@@ -295,34 +311,48 @@ function string.explode(self, sep, pattern)
 	return tbl
 end
 
-function string.count(self, pattern)
-	return select(2, self:gsub(pattern, ""))
+function string.count(self, what, pattern)
+	local count = 0
+	local current_pos = 1
+	for i = 1, #self do
+		local start_pos, end_pos = self:find(what, current_pos, pattern)
+		if not start_pos then break end
+		count = count + 1
+		current_pos = end_pos + 1
+	end
+	return count
 end
 
 function string.containsonly(self, pattern)
 	return self:gsub(pattern, "") == ""
 end
 
-function string.replace(self, what, replacement)
-	local out = {}
-	local i = 1
+function string.replace(self, a, b)
+	local tbl = self:explode(a)
 
-	local a_len = #what
-	local pos = #self
-	local last_pos = pos + 1
+	if tbl[1] then
+		return table.concat(tbl, b)
+	end
 
-	repeat
-		if self:sub(pos, pos + a_len - 1) == what then
-			out[i] = self:sub(pos + a_len, last_pos)
-			i = i + 1
-			last_pos = pos - 1
-			pos = pos - a_len - 1
-		else
-			pos = pos - 1
-		end
-	until pos < -a_len - 1
+	return self
+end
 
-	table.reverse(out)
+local pattern_escape_replacements = {
+	["("] = "%(",
+	[")"] = "%)",
+	["."] = "%.",
+	["%"] = "%%",
+	["+"] = "%+",
+	["-"] = "%-",
+	["*"] = "%*",
+	["?"] = "%?",
+	["["] = "%[",
+	["]"] = "%]",
+	["^"] = "%^",
+	["$"] = "%$",
+	["\0"] = "%z"
+}
 
-	return table.concat(out, replacement)
+function string.escapepattern(str)
+	return (str:gsub(".", pattern_escape_replacements))
 end
