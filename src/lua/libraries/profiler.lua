@@ -520,7 +520,7 @@ function profiler.MeasureFunction(func, count, name)
 
 	avg = avg / count
 
-	logn(name, ": ", math.round(avg, 4))
+	logf("%s: %f\n", name, avg)
 end
 
 function profiler.Compare(old, new, count)
