@@ -2286,21 +2286,17 @@ do -- skin
 	end
 
 	function PANEL:SetupStyle(tbl)
-		tbl = table.copy(tbl or {})
-		tbl.texture_rect = tbl.texture_rect or self.NinePatchRect
-		tbl.corner_size = tbl.corner_size or self.NinePatchCornerSize
-		tbl.color = tbl.color or self.Color
-		tbl.size = tbl.size or self.StyleSize
+		tbl = tbl or {}
 
-		self:SetNinePatch(tbl.ninepatch)
-		self:SetColor(tbl.color)
-		self:SetTexture(tbl.texture)
-		self:SetNinePatchRect(tbl.texture_rect)
-		self:SetNinePatchCornerSize(tbl.corner_size)
+		if tbl.ninepatch ~= nil then self:SetNinePatch(tbl.ninepatch) end
+		if tbl.color then self:SetColor(tbl.color:Copy()) end
+		if tbl.texture then self:SetTexture(tbl.texture) end
+		if tbl.texture_rect then self:SetNinePatchRect(tbl.texture_rect:Copy()) end
+		if tbl.corner_size then self:SetNinePatchCornerSize(tbl.corner_size) end
 
 		local skin = self:GetSkin()
 
-		local scale = tbl.size
+		local scale = tbl.size and tbl.size:Copy() or self.StyleSize
 
 		if skin.pixel_scale then
 			scale = scale * skin.pixel_scale
