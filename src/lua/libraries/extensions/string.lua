@@ -283,24 +283,26 @@ function string.getbyte(self, pos)
 	return self:getchar(pos):byte() or 0
 end
 
-function string.explode(self, sep, pattern)
-	if not sep or sep == "" then
-		local tbl = table.new(#str, 0)
-		for i = 1, #str do
-			tbl[i] = str:sub(i, i)
-		end
-		return tbl
+function string.totable(self)
+	local tbl = table.new(#self, 0)
+	for i = 1, #self do
+		tbl[i] = self:sub(i, i)
 	end
+	return tbl
+end
+
+function string.explode(self, sep, plain)
+	if sep == nil or sep == "" then
+		return self:totable()
+	end
+
+	if plain == nil then plain = true end
 
 	local tbl = {}
 	local current_pos = 1
 
-	if pattern == nil then
-		pattern = false
-	end
-
 	for i = 1, #self do
-		local start_pos, end_pos = self:find(sep, current_pos, pattern)
+		local start_pos, end_pos = self:find(sep, current_pos, plain)
 		if not start_pos then break end
 		tbl[i] = self:sub(current_pos, start_pos - 1)
 		current_pos = end_pos + 1
@@ -311,11 +313,14 @@ function string.explode(self, sep, pattern)
 	return tbl
 end
 
-function string.count(self, what, pattern)
+function string.count(self, what, plain)
+	if plain == nil then plain = true end
+
 	local count = 0
 	local current_pos = 1
+
 	for i = 1, #self do
-		local start_pos, end_pos = self:find(what, current_pos, pattern)
+		local start_pos, end_pos = self:find(what, current_pos, plain)
 		if not start_pos then break end
 		count = count + 1
 		current_pos = end_pos + 1
