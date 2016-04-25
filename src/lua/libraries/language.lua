@@ -114,7 +114,7 @@ function language.Translate(to, nice)
 	google.Translate("en", to, str, function(data)
 		local res = ""
 
-		for i, line in ipairs(data.translated:gsub("\\n", "\n"):explode("\n")) do
+		for i, line in ipairs(data.translated:gsub("\\n", "\n"):split("\n")) do
 			res = res .. lookup[i] .. "="..line.."\n"
 		end
 

@@ -207,7 +207,7 @@ do -- translate path to useful data
 
 			return folders
 		else
-			local folders = self.full_path:explode("/")
+			local folders = self.full_path:split("/")
 
 			-- if the folder is something like "/foo/bar/" remove the first /
 			if self.full_path:sub(1,1) == "/" then

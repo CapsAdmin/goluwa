@@ -203,7 +203,7 @@ do -- helpers
 
 		local i = 1
 		for line in data:gmatch("(.-)\n") do
-			local parts = line:gsub("%s+", " "):trim():explode(" ")
+			local parts = line:gsub("%s+", " "):trim():split(" ")
 
 			table.insert(lines, parts)
 			tasks.ReportProgress("inserting lines", math.huge)
@@ -231,7 +231,7 @@ do -- helpers
 				local first, previous
 
 				for i = 2, #parts do
-					local current = parts[i]:explode("/")
+					local current = parts[i]:split("/")
 
 					if i == 2 then
 						first = current

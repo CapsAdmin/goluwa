@@ -65,7 +65,7 @@ function gmod.PreprocessLua(code)
 					end
 				end
 
-				local lines = code:explode("\n")
+				local lines = code:split("\n")
 
 				if return_line then
 					lines[return_line] = " do ".. lines[return_line] .. " end "
@@ -283,7 +283,7 @@ function gmod.Initialize()
 
 		for path in vfs.Iterate("resource/localization/en/",nil,true) do
 			local str = vfs.Read(path)
-			for _, line in ipairs(str:explode("\n")) do
+			for _, line in ipairs(str:split("\n")) do
 				local key, val = line:match("(.-)=(.+)")
 				if key and val then
 					gmod.translation[key] = val:trim()

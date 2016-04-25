@@ -98,7 +98,7 @@ if CLIENT then
 		end
 
 		if var:Get() ~= "" then
-			local from, to = unpack(var:Get():explode(">"))
+			local from, to = unpack(var:Get():split(">"))
 			if ip == from then
 				ip = to
 			end

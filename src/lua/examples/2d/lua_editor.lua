@@ -89,7 +89,7 @@ do
 			local ok, msg = pcall(ls.next, ls)
 
 			if not ok then
-				local tbl = msg:explode("\n")
+				local tbl = msg:split("\n")
 				markup:AddString(str:sub(-ls.p))
 				break
 			end

@@ -96,7 +96,7 @@ function string.removepadding(str, padding)
 end
 
 function string.dumphex(str)
-	local str = str:readablehex():lower():explode(" ")
+	local str = str:readablehex():lower():split(" ")
 	local out = {}
 
 	for i, char in pairs(str) do
@@ -291,7 +291,7 @@ function string.totable(self)
 	return tbl
 end
 
-function string.explode(self, sep, plain)
+function string.split(self, sep, plain)
 	if sep == nil or sep == "" then
 		return self:totable()
 	end
@@ -333,7 +333,7 @@ function string.containsonly(self, pattern)
 end
 
 function string.replace(self, a, b)
-	local tbl = self:explode(a)
+	local tbl = self:split(a)
 
 	if tbl[1] then
 		return table.concat(tbl, b)

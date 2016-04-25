@@ -71,7 +71,7 @@ function lovemu.CreateLoveEnv()
 
 	love._version = lovemu.version
 
-	local version = lovemu.version:explode(".")
+	local version = lovemu.version:split(".")
 
 	love._version_major = tonumber(version[1])
 	love._version_minor = tonumber(version[2])

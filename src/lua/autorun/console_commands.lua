@@ -37,13 +37,13 @@ do -- source engine
 	end)
 
 	commands.Add("setpos", function(line)
-		local x,y,z = unpack(line:match("(.-);"):explode(" "))
+		local x,y,z = unpack(line:match("(.-);"):split(" "))
 		x = tonumber(x)
 		y = tonumber(y)
 		z = tonumber(z)
 		render.camera_3d:SetPosition(Vec3(x,y,z) * 0.0254)
 
-		local p,y,r = unpack(line:match("setang (.+)"):explode(" "))
+		local p,y,r = unpack(line:match("setang (.+)"):split(" "))
 		p = tonumber(p)
 		y = tonumber(y)
 		r = tonumber(r)

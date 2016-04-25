@@ -101,7 +101,7 @@ function META:Initialize()
 					end
 				end
 
-				local parts = font:lower():explode(" ")
+				local parts = font:lower():split(" ")
 				local name = parts[1]
 
 				for i = 2, #parts do

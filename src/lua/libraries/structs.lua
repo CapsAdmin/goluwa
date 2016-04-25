@@ -91,7 +91,7 @@ local function parse_args(META, lua, sep, protect)
 
 	local count = #META.Args
 
-	for _, line in pairs(lua:explode("\n")) do
+	for _, line in pairs(lua:split("\n")) do
 		if line:find("KEY") or line:find("ARG") then
 			local str = ""
 			for i, trans in pairs(META.Args) do

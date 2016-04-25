@@ -120,7 +120,7 @@ function utility.LuaAutoComplete(text)
 		end
 
 	else
-		local keys = text:explode(".")
+		local keys = text:split(".")
 		local found_string = ""
 
 		local current_func
@@ -555,7 +555,7 @@ do -- tree
 	local META = prototype.CreateTemplate("tree")
 
 	function META:SetEntry(str, value)
-		local keys = type(str) == "table" and str or str and str:explode(self.delimiter) or {}
+		local keys = type(str) == "table" and str or str and str:split(self.delimiter) or {}
 
 		local next = self.tree
 
@@ -573,7 +573,7 @@ do -- tree
 	end
 
 	function META:GetEntry(str)
-		local keys = type(str) == "table" and str or str and str:explode(self.delimiter) or {}
+		local keys = type(str) == "table" and str or str and str:split(self.delimiter) or {}
 
 		local next = self.tree
 
@@ -590,7 +590,7 @@ do -- tree
 	end
 
 	function META:GetChildren(str)
-		local keys = type(str) == "table" and str or str and str:explode(self.delimiter) or {}
+		local keys = type(str) == "table" and str or str and str:split(self.delimiter) or {}
 		local next = self.tree
 
 		for i, key in ipairs(keys) do
@@ -793,7 +793,7 @@ do -- find in files
 			if not path:find("modules") or (path:find("ffi", nil, true) and (not path:find("header.lua") and not path:find("enums"))) then
 				local str = vfs.Read(path)
 				if str then
-					for i, line in ipairs(str:explode("\n")) do
+					for i, line in ipairs(str:split("\n")) do
 						local start, stop = line:find(find)
 						if start then
 							out[path] = out[path] or {}

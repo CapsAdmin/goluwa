@@ -257,7 +257,7 @@ function profiler.GetBenchmark(type, file, dump_line)
 					local content = vfs.Read(path)
 
 					if content then
-						name = content:explode("\n")[line]
+						name = content:split("\n")[line]
 						if name then
 							name = name:gsub("function ", "")
 							name = name:trim()
@@ -338,7 +338,7 @@ function profiler.PrintTraceAborts(min_samples)
 					local content, err = vfs.Read(e.ROOT_FOLDER .. path)
 
 					if content then
-						local lines = content:explode("\n")
+						local lines = content:split("\n")
 						str = lines[line]
 						str = "\"" .. str:trim() .. "\""
 					else
@@ -494,7 +494,7 @@ function profiler.EnableRealTimeTraceAbortLogging(b)
 					local content, err = vfs.Read(e.ROOT_FOLDER .. path:sub(2))
 
 					if content then
-						logf("%s:%s\n%s:--\t%s\n\n", path, line, content:explode("\n")[line]:trim(), reason)
+						logf("%s:%s\n%s:--\t%s\n\n", path, line, content:split("\n")[line]:trim(), reason)
 					else
 						logf("%s:%s:\n\t%s\n\n", path, line, reason)
 					end

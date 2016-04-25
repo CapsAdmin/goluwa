@@ -3,7 +3,7 @@ local gl = require("libopengl")
 
 local function handle_error(error_str, source)
 	if source then
-		local lines = source:explode("\n")
+		local lines = source:split("\n")
 
 		for line, error_num, error_type, str in error_str:gmatch("0%((.-)%) : error (.-): (.-), (.-)\n") do
 			line = tonumber(line)
@@ -103,7 +103,7 @@ function render.CreateShader2(source)
 	source = source:gsub("(%/%*.-%*/)", "")
 
 	local chunk = {"local out = {}\n"}
-	for i, line in ipairs(source:explode("\n")) do
+	for i, line in ipairs(source:split("\n")) do
 		if string.find(line, "^%s-##") then
 			table.insert(chunk, ("%s\n"):format(line:match("%s-##(.+)")))
 		else
@@ -137,7 +137,7 @@ function render.CreateShader2(source)
 
 		source = source:gsub("vertex_attributes%s-(%b{})", function(block)
 			for line in (block:sub(2,-2):trim() .. "\n"):gmatch("(.-)\n") do
-				local t, name = unpack(line:gsub("%s+", " "):trim():explode(" "))
+				local t, name = unpack(line:gsub("%s+", " "):trim():split(" "))
 				local info = table.copy(type_info[t])
 
 				decl = decl .. info.decl:format(name) .. "; "
@@ -150,7 +150,7 @@ function render.CreateShader2(source)
 		if not found then
 			local source_middle = source:match("vertex%s-(%b{})")
 			for line in (source_middle:sub(2,-2):trim() .. "\n"):gmatch("%sin(.-);") do
-				local t, name = unpack(line:gsub("%s+", " "):trim():explode(" "))
+				local t, name = unpack(line:gsub("%s+", " "):trim():split(" "))
 
 				local info = table.copy(type_info[t])
 
@@ -174,7 +174,7 @@ function render.CreateShader2(source)
 			keywords = keywords:trim()
 			lua = lua:trim()
 
-			local t, name = unpack(keywords:gsub("%s+", " "):trim():explode(" "))
+			local t, name = unpack(keywords:gsub("%s+", " "):trim():split(" "))
 			local val = assert(loadstring("return " .. lua))()
 
 			return t, name, val

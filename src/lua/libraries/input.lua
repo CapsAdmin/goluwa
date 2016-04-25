@@ -100,7 +100,7 @@ do
 
 		serializer.SetKeyValueInFile("luadata", "%DATA%/input.txt", key, cmd)
 
-		local modifiers = key:explode("+")
+		local modifiers = key:split("+")
 		table.remove(modifiers, 1)
 
 		input.binds[key .. cmd] = {

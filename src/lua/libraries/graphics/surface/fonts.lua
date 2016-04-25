@@ -220,7 +220,7 @@ end
 
 function surface.WrapString(str, max_width)
 	if not max_width or max_width == 0 then
-		return str:explode("")
+		return str:split("")
 	end
 
 	local lines = {}

@@ -51,7 +51,7 @@ function google.AutoComplete(question, callback)
 			:gsub("[^%a, ]", "")
 			:gsub(_q:lower() .. " ", "")
 
-			local tbl = str:explode(',')
+			local tbl = str:split(',')
 			table.remove(tbl, 1)
 
 			callback(tbl)

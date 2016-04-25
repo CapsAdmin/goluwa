@@ -256,7 +256,7 @@ function debug.dumpcall(level, line, info_match)
 	local script = vfs.Read(path)
 
 	if script then
-		local lines = script:explode("\n")
+		local lines = script:split("\n")
 
 		for i = -20, 20 do
 			local line = lines[currentline + i]

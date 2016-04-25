@@ -279,7 +279,7 @@ do -- list parsing
 					local tbl = {}
 
 					for line in (phonemes .. "\n"):gmatch("(.-)\n") do
-						local d = (line .. " "):explode(" ")
+						local d = (line .. " "):split(" ")
 						if #d > 2 then
 							table.insert(tbl, {str = d[2], start = tonumber(d[3]), stop = tonumber(d[4]), num1 = tonumber(d[1]),  num2 = tonumber(d[5])})
 						end
@@ -530,7 +530,7 @@ do -- list parsing
 								for i, tag in ipairs(data.tags) do
 									local key, args = tag:match("<(.-):(.+)>")
 									if key and args then
-										args = args:explode(",")
+										args = args:split(",")
 										for k,v in pairs(args) do args[k] = tonumber(v) or v end
 									else
 										key = tag:match("<(.-)>")
@@ -614,7 +614,7 @@ do -- list parsing
 						table.merge(out[v], info)
 
 						if type(out[v].pitch) == "string" and out[v].pitch:find(",") then
-							out[v].pitch = out[v].pitch:gsub("%s+", ""):explode(",")
+							out[v].pitch = out[v].pitch:gsub("%s+", ""):split(",")
 							for k,n in pairs(out[v].pitch) do out[v].pitch[k] = tonumber(n) or n end
 						end
 

@@ -16,7 +16,7 @@ function META:Initialize(options)
 
 	self:SetSize(tex:GetSize().y)
 
-	local glyphs = options.glyphs:explode()
+	local glyphs = options.glyphs:split()
 	local separator = ColorBytes()
 	local i = 0
 	local last_y = 0

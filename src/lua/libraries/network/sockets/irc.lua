@@ -212,7 +212,7 @@ function META:HandleMessage(line)
 				self.Users[nick] = ip or true
 				if nick == self:GetNick() then
 					self:Query("NAMES " .. str, "RPL_NAMREPLY", "RPL_ENDOFNAMES", function(users)
-						for i, user in ipairs(string.explode(users, " ")) do
+						for i, user in ipairs(string.split(users, " ")) do
 							if user:startswith("@") then user = user:sub(2) end
 							self.Users[user] = self.Users[user] or true
 						end

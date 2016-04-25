@@ -238,7 +238,7 @@ function META:WriteThese(str)
 				self:SetWrite(pos, false)
 			end
 		else
-			for _, pos in pairs(tostring(str):explode("|")) do
+			for _, pos in pairs(tostring(str):split("|")) do
 				pos = tonumber(pos) or pos
 				self:SetWrite(pos, true)
 			end

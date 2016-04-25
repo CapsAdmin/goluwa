@@ -35,7 +35,7 @@ for _, path in ipairs(vfs.Search("lua/", ".lua")) do
 		data.total_words = data.total_words + str:count(" ")
 		data.total_chars = data.total_chars + #str
 
-		for i, word in ipairs(str:explode(" ")) do
+		for i, word in ipairs(str:split(" ")) do
 			words[word] = (words[word] or 0) + 1
 		end
 		table.insert(data.files, {path = path, lines = lines})
