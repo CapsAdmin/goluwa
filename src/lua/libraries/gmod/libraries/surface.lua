@@ -87,11 +87,11 @@ function surface.CreateFont(name, tbl)
 
 	logf("surface.CreateFont(%q, %q)\n", name, tbl.path)
 
-	lib.CreateFont(name, tbl)
+	gmod.surface_fonts[name] = lib.CreateFont(tbl)
 end
 
 function surface.SetFont(name)
-	lib.SetFont(name)
+	lib.SetFont(gmod.surface_fonts[name])
 end
 
 function surface.GetTextSize(str)

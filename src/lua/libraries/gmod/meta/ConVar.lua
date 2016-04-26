@@ -31,7 +31,10 @@ function META:GetInt()
 end
 
 function gmod.env.GetConVar(name)
-	return gmod.WrapObject(pvars.GetObject(name), "ConVar")
+	local pvar = pvars.GetObject(name)
+	if pvar then
+		return gmod.WrapObject(pvar, "ConVar")
+	end
 end
 
 function gmod.env.CreateConVar(name, def, flags, help)

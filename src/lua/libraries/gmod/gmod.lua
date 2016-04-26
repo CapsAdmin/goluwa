@@ -92,6 +92,7 @@ function gmod.SetFunctionEnvironment(func)
 end
 
 gmod.objects = gmod.objects or {}
+gmod.surface_fonts = gmod.surface_fonts or {}
 
 function gmod.WrapObject(obj, meta)
 	gmod.objects[meta] = gmod.objects[meta] or {}
