@@ -93,8 +93,6 @@ function event.Call(event_type, a_, b_, c_, d_, e_)
 
 	if event.active[event_type] then
 		for index, data in ipairs(event.active[event_type]) do
-			profiler.PushSection(data.print_str)
-
 			if data.self_arg then
 				if data.self_arg:IsValid() then
 					if data.self_arg_with_callback then
@@ -130,8 +128,6 @@ function event.Call(event_type, a_, b_, c_, d_, e_)
 					return a,b,c,d,e
 				end
 			end
-
-			profiler.PopSection()
 		end
 	end
 end
@@ -303,7 +299,6 @@ do -- timers
 				end
 			elseif data.type == "timer" then
 				if not data.paused and data.realtime < cur then
-					profiler.PushSection(data.id)
 					local ran, msg = system.pcall(data.callback, data.times_ran - 1, a_, b_, c_, d_, e_)
 
 					if ran then
@@ -332,7 +327,6 @@ do -- timers
 						data.times_ran = data.times_ran + 1
 						data.realtime = cur + data.time
 					end
-					profiler.PopSection()
 				end
 			end
 		end
