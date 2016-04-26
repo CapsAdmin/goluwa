@@ -510,17 +510,15 @@ function profiler.MeasureFunction(func, count, name)
 	count = count or 1
 	name = name or "measure result"
 
-	local avg = 0
+	local time = 0
 
 	for i = 1, count do
 		profiler.StartTimer()
 			func()
-		avg = avg + profiler.StopTimer(true)
+		time = time + profiler.StopTimer(true)
 	end
 
-	avg = avg / count
-
-	logf("%s: %f\n", name, avg)
+	logf("%s: average: %f total: %f\n", name, time / count, time)
 end
 
 function profiler.Compare(old, new, count)
