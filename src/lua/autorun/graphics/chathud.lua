@@ -18,9 +18,9 @@ local blur_shader = [[
 	sum = pow(sum, 0.5);
 
 	float black = -sum;
-	sum -= texture(self, uv).a*2;
+	sum -= texture(self, uv).a*4;
 
-	return vec4(black,black,black, sum)*1.1;
+	return vec4(black,black,black, sum);
 ]]
 
 local max = 8
@@ -171,15 +171,24 @@ function chathud.MouseInput(button, press, x, y)
 	chathud.markup:OnMouseInput(button, press, x, y)
 end
 
-event.AddListener("DrawHUD", "chathud", function()
-	chathud.Draw()
-end)
-
-event.AddListener("MouseInput", "chathud", function(button, press)
-	chathud.MouseInput(button, press, window.GetMousePosition():Unpack())
-end)
-
 event.AddListener("Chat", "chathud", function(name, str, client)
+
+	if render.IsGBufferReady() then
+		event.AddListener("DrawHUD", "chathud", function()
+			chathud.Draw()
+		end)
+		event.RemoveListener("PreDrawMenu", "chathud")
+	else
+		event.AddListener("PreDrawMenu", "chathud", function()
+			chathud.Draw()
+		end)
+		event.RemoveListener("DrawHUD", "chathud")
+	end
+
+	event.AddListener("MouseInput", "chathud", function(button, press)
+		chathud.MouseInput(button, press, window.GetMousePosition():Unpack())
+	end)
+
 	local tbl = chat.AddTimeStamp()
 
 	if client:IsValid() then
