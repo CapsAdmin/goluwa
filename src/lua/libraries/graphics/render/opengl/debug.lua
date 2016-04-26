@@ -44,8 +44,6 @@ function render.StopDebug()
 	if render.verbose_debug then return end
 
 	if window.IsExtensionSupported("GL_KHR_debug") then
-		level = level or 0
-
 		local buffer = ffi.new("char[1024]")
 		local length = ffi.sizeof(buffer)
 

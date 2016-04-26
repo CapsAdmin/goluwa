@@ -123,7 +123,7 @@ do -- peer
 		outgoing_bandwidth = outgoing_bandwidth or 14400
 
 		self.host = create_host(nil, nil, max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)
-		self.peer = peer
+		--self.peer = peer
 
 		table.insert(enet.sockets, self)
 

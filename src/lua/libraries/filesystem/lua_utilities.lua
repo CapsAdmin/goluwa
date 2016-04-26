@@ -157,6 +157,7 @@ do -- include
 		-- once with lua prepended
 		local path = dir .. file
 		local full_path
+		local err
 		func, err, full_path = vfs.loadfile(path)
 
 		if not_found(err) then

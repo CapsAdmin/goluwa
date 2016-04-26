@@ -261,13 +261,6 @@ end
 
 local function check_write_path(path, is_folder)
 	local path_info = vfs.GetPathInfo(path, is_folder)
-
-	if mode == "write" then
-		if path_info.filesystem == "unknown" then
-			-- default to userdata folder?
-			error("tried to write to an unknown filesystem", 3)
-		end
-	end
 end
 
 function vfs.Open(path, mode, sub_mode)

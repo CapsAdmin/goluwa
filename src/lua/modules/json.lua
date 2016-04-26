@@ -19,6 +19,6 @@ local json = {
 	util = util
 }
 
-_G.json = json
+--_G.json = json
 
 return json

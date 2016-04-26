@@ -41,8 +41,6 @@ function prototype.MakeNULL(tbl)
 	if prototype.created_objects then
 		prototype.created_objects[tbl] = nil
 	end
-
-	return var
 end
 
 _G.NULL = setmetatable({Type  = "null", ClassName = "ClassName"}, prototype.GetRegistered("null"))

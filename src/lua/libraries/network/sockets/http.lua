@@ -286,7 +286,7 @@ function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 				cb:uncache(url)
 
 				if on_fail then
-					on_fail(data)
+					on_fail()
 				end
 
 				return false

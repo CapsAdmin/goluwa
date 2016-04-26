@@ -18,7 +18,7 @@ function steam.SetMap(name)
 	steam.bsp_world:SetPhysicsModelPath("maps/" .. name .. ".bsp")
 end
 
-local function read_lump_data(thread, what, bsp_file, header, index, size, struct)
+local function read_lump_data(what, bsp_file, header, index, size, struct)
 	local out = {}
 
 	local lump = header.lumps[index]
@@ -102,7 +102,7 @@ function steam.LoadMap(path)
 
 	header.map_revision = bsp_file:ReadLong()
 
-	if steam.debug or _debug then
+	if steam.debug then
 		logn("BSP ", header.ident)
 		logn("VERSION ", header.version)
 		logn("REVISION ", header.map_revision)
@@ -275,26 +275,26 @@ function steam.LoadMap(path)
 
 	end
 
-	header.brushes = read_lump_data(thread, "reading brushes", bsp_file, header, 19, 12, [[
+	header.brushes = read_lump_data("reading brushes", bsp_file, header, 19, 12, [[
 		int	firstside;	// first brushside
 		int	numsides;	// number of brushsides
 		int	contents;	// contents flags
 	]])
 
-	header.brushsides = read_lump_data(thread, "reading brushsides", bsp_file, header, 20, 8, [[
+	header.brushsides = read_lump_data("reading brushsides", bsp_file, header, 20, 8, [[
 		unsigned short	planenum;	// facing out of the leaf
 		short		texinfo;	// texture info
 		short		dispinfo;	// displacement info
 		short		bevel;		// is the side a bevel plane?
 	]])
 
-	header.vertices = read_lump_data(thread, "reading verticies", bsp_file, header, 4, 12, "vec3")
+	header.vertices = read_lump_data("reading verticies", bsp_file, header, 4, 12, "vec3")
 
-	header.surfedges = read_lump_data(thread, "reading surfedges", bsp_file, header, 14, 4, "long")
+	header.surfedges = read_lump_data("reading surfedges", bsp_file, header, 14, 4, "long")
 
-	header.edges = read_lump_data(thread, "reading edges", bsp_file, header, 13, 4, function() return {bsp_file:ReadUnsignedShort(), bsp_file:ReadUnsignedShort()} end)
+	header.edges = read_lump_data("reading edges", bsp_file, header, 13, 4, function() return {bsp_file:ReadUnsignedShort(), bsp_file:ReadUnsignedShort()} end)
 
-	header.faces = read_lump_data(thread, "reading faces", bsp_file, header, 8, 56, [[
+	header.faces = read_lump_data("reading faces", bsp_file, header, 8, 56, [[
 		unsigned short	planenum;		// the plane number
 		byte		side;			// header.faces opposite to the node's plane direction
 		byte		onNode;			// 1 of on node, 0 if in leaf
@@ -314,14 +314,14 @@ function steam.LoadMap(path)
 		unsigned int	smoothingGroups;	// lightmap smoothing group
 	]])
 
-	header.texinfos = read_lump_data(thread, "reading texinfo", bsp_file, header, 7, 72, [[
+	header.texinfos = read_lump_data("reading texinfo", bsp_file, header, 7, 72, [[
 		float textureVecs[8];
 		float lightmapVecs[8];
 		int flags;
 		int texdata;
 	]])
 
-	header.texdatas = read_lump_data(thread, "reading texdata", bsp_file, header, 3, 32, [[
+	header.texdatas = read_lump_data("reading texdata", bsp_file, header, 3, 32, [[
 		vec3 reflectivity;
 		int nameStringTableID;
 		int width;
@@ -330,7 +330,7 @@ function steam.LoadMap(path)
 		int view_height;
 	]])
 
-	local texdatastringtable = read_lump_data(thread, "reading texdatastringtable", bsp_file, header, 45, 4, "int")
+	local texdatastringtable = read_lump_data("reading texdatastringtable", bsp_file, header, 45, 4, "int")
 
 	local lump = header.lumps[44]
 
@@ -396,7 +396,7 @@ function steam.LoadMap(path)
 
 	end
 
-	header.models = read_lump_data(thread, "reading models", bsp_file, header, 15, 48, [[
+	header.models = read_lump_data("reading models", bsp_file, header, 15, 48, [[
 		vec3 mins;
 		vec3 maxs;
 		vec3 origin;
@@ -593,14 +593,14 @@ function steam.LoadMap(path)
 
 	if GRAPHICS then
 		for i, mesh in ipairs(models) do
-			mesh:BuildNormals(thread)
+			mesh:BuildNormals()
 			tasks.ReportProgress("generating normals", #models)
 			tasks.Wait()
 		end
 
 		for i, mesh in ipairs(models) do
 			if mesh.displacement then
-				mesh:SmoothNormals(thread)
+				mesh:SmoothNormals()
 			end
 			tasks.Report("smoothing displacements", #models)
 			tasks.Wait()

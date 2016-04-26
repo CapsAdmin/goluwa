@@ -1,6 +1,8 @@
 local gl = require("libopengl") -- OpenGL
 local render = (...) or _G.render
 
+local gbuffer_enabled = false
+
 local w_cvar = pvars.Setup("render_width", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
 local h_cvar = pvars.Setup("render_height", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
 local mult_cvar = pvars.Setup("render_ss_multiplier", 1, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
@@ -216,8 +218,6 @@ do -- mixer
 		end
 	end
 end
-
-local gbuffer_enabled = false
 
 function render.DrawGBuffer(what, dist)
 	if not gbuffer_enabled then return end

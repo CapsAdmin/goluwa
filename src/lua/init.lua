@@ -77,6 +77,41 @@ do -- constants
 
 	e.USERNAME = _G.USERNAME or tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
 	_G[e.USERNAME:upper()] = true
+
+	if LINUX then
+		WINDOWS = false
+	end
+
+	if WINDOWS then
+		LINUX = false
+	end
+
+	for k,v in pairs(env_vars) do
+		if _G[k] == nil then
+			_G[k] = false
+		end
+	end
+
+	if EXTERNAL_DEBUGGER == nil then
+		EXTERNAL_DEBUGGER = false
+	end
+
+	RELOAD = false
+	CREATED_ENV = false
+
+	--[[
+	--uncomment to check _G lookups
+	setmetatable(_G, {
+		__index = function(s,k)
+			io.write("__index: _G.", k, ": ", debug.getinfo(2).source:sub(2), ":", debug.getinfo(2).currentline,"\n")
+		end,
+		__newindex = function(s,k,v)
+			if k:upper() ~= k then
+				io.write("__newindex _G.", k, " = ", type(v) ,": ", debug.getinfo(2).source:sub(2), ":", debug.getinfo(2).currentline,"\n")
+			end
+			rawset(s,k,v)
+		end,
+	})]]
 end
 
 -- put all c functions in a table so we can override them if needed
@@ -129,6 +164,8 @@ end
 -- some of the lua files ran below use check and include which don't exist yet
 _G.check = function() end
 _G.include = function() end
+_G.system = false
+_G.event = false
 
 -- standard library extensions
 dofile(e.SRC_FOLDER .. "lua/libraries/extensions/globals.lua")
@@ -185,6 +222,8 @@ structs = include("lua/libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p
 commands = include("lua/libraries/commands.lua") -- console command type interface for running in repl, chat, etc
 if CURSES then
 	repl = include("lua/libraries/repl.lua") -- read eval print loop using curses
+else
+	repl = false
 end
 system = include("lua/libraries/system.lua") -- os and luajit related functions like creating windows or changing jit options
 utility = include("lua/libraries/utilities/utility.lua") -- misc functions i don't know where to put

@@ -1,4 +1,4 @@
-menu = menu or {}
+menu = _G.menu or {}
 
 menu.panel = menu.panel or NULL
 

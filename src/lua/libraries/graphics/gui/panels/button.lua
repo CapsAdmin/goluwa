@@ -188,7 +188,7 @@ end
 
 function PANEL:OnMouseEnter()
 	if self.HighlightOnMouseEnter then
-		self:Animate("DrawColor", {Color(1,1,1,1)*0.3, function() return self.Highlight or self:IsMouseOver() end, "from"}, duration, "", 0.25)
+		self:Animate("DrawColor", {Color(1,1,1,1)*0.3, function() return self.Highlight or self:IsMouseOver() end, "from"}, nil, "", 0.25)
 	end
 end
 
