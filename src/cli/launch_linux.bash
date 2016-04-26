@@ -14,7 +14,7 @@ cd "$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 mkdir -p ../../data/bin
 
 if [ ! -z "$EDITOR" ]; then
-	cd ../../data/
+	pushd ../../data/
 
 	if [ -d ./editor ]; then
 		git -C ./editor pull;
@@ -22,10 +22,10 @@ if [ ! -z "$EDITOR" ]; then
 		git clone https://github.com/pkulchenko/ZeroBraneStudio.git editor --depth 1;
 	fi
 
-	cd bin
-else
-	cd ../../data/bin
+	popd
 fi
+
+cd ../../data/bin
 
 #if we don't have binaries get them from github
 if [ ! -f "linux_${arch}/luajit" ]; then
@@ -37,24 +37,24 @@ fi
 
 if [ ! -z "$EDITOR" ]; then
 	cd ../editor/
-	./zbstudio.sh -cfg ../../src/lua/editor/config.lua
-	exit
-fi
-
-cd ./linux_${arch}/
-
-#lookup shared libraries in "goluwa/data/bin/linux_${arch}/" first
-export LD_LIBRARY_PATH=".:$LD_LIBRARY_PATH"
-
-if [ ! -z "$DEBUG" ]; then
-	gdb --args luajit ../../../src/lua/init.lua
-	exit
-fi
-
-#i don't know if this is stupid or not but it's so i can execute luajt without
-#the need for execute permissions on a non ext filesystem (like on a usb stick with fat32)
-if [ -e "/lib64/ld-linux-x86-64.so.2" ]; then
-	/lib64/ld-linux-x86-64.so.2 ./luajit ../../../src/lua/init.lua
+	./zbstudio.sh -cfg ../../src/lua/zerobrane/config.lua
 else
-	./luajit ../../../src/lua/init.lua
+	cd ./linux_${arch}/
+
+	#lookup shared libraries in "goluwa/data/bin/linux_${arch}/" first
+	export LD_LIBRARY_PATH=".:$LD_LIBRARY_PATH"
+
+	if [ ! -z "$DEBUG" ]; then
+		launch="gdb --args luajit --joff -g"
+	else		
+		#i don't know if this is stupid or not but it's so i can execute luajt without
+		#the need for execute permissions on a non ext filesystem (like on a usb stick with fat32)
+		if [ -e "/lib64/ld-linux-x86-64.so.2" ]; then		
+			launch="/lib64/ld-linux-x86-64.so.2 ./luajit"
+		else
+			launch="./luajit"
+		fi	
+	fi
+	
+	eval "$launch $@ ../../../src/lua/init.lua"
 fi
