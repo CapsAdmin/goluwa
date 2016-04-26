@@ -88,7 +88,7 @@ function steam.LoadMaterial(path, material)
 			end
 
 			if not vmt.bumpmap and vmt.basetexture then
-				local new_path = vfs.FixPath(vmt.basetexture)
+				local new_path = vfs.FixPathSlashes(vmt.basetexture)
 				if not new_path:endswith(".vtf") then
 					new_path = new_path .. ".vtf"
 				end
@@ -114,7 +114,7 @@ function steam.LoadMaterial(path, material)
 			for _, v in ipairs(path_translate) do
 				local key, field = v[1], v[2]
 				if vmt[field] then
-					local new_path = vfs.FixPath("materials/" .. vmt[field])
+					local new_path = vfs.FixPathSlashes("materials/" .. vmt[field])
 					if not new_path:endswith(".vtf") then
 						new_path = new_path .. ".vtf"
 					end

@@ -1,22 +1,28 @@
 local vfs = (...) or _G.vfs
 
-function vfs.GeFolderFromPath(str)
-	return str:match("(.+/).+") or ""
-end
-
-function vfs.GetParentFolder(str, level)
-	return str:match("(.*/)" .. (level == 0 and "" or (".*/"):rep(level or 1))) or ""
+function vfs.GetParentFolderFromPath(str, level)
+	level = level or 1
+	for i = #str, 1, -1 do
+		local char = str:sub(i, i)
+		if char == "/" then
+			level = level - 1
+		end
+		if level == -1 then
+			return str:sub(0, i)
+		end
+	end
+	return ""
 end
 
 function vfs.GetFolderNameFromPath(str)
 	if str:sub(#str, #str) == "/" then
 		str = str:sub(0, #str - 1)
 	end
-	return str:match(".+/(.+)") or ""
+	return str:match(".+/(.+)") or str:match(".+/(.+)/") or str:match(".+/(.+)") or str:match("(.+)/")
 end
 
 function vfs.GetFileNameFromPath(str)
-	return str:match(".+/(.+)") or ""
+	return str:sub(-(str):reverse():find("/", 0, true) + 1)
 end
 
 function vfs.GetExtensionFromPath(str)
@@ -31,7 +37,7 @@ function vfs.GetFileFromPath(self)
 	return self:match(".*/(.*)")
 end
 
-function vfs.IsPathAbsolute(path)
+function vfs.IsPathAbsolutePath(path)
 	if LINUX then
 		return path:sub(1,1) == "/"
 	end
@@ -41,7 +47,7 @@ function vfs.IsPathAbsolute(path)
 	end
 
 end
-function vfs.ParseVariables(path)
+function vfs.ParsePathVariables(path)
 	-- windows
 	path = path:gsub("%%(.-)%%", vfs.GetEnv)
 	path = path:gsub("%%", "")
@@ -69,7 +75,7 @@ function vfs.FixIllegalCharactersInPath(path)
 	return path
 end
 
-function vfs.FixPath(path)
+function vfs.FixPathSlashes(path)
 	return (path:gsub("\\", "/"):gsub("(/+)", "/"))
 end
 

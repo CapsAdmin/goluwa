@@ -85,7 +85,7 @@ function META:Initialize()
 			local font = self.Path:lower()
 
 			if translate[font] then
-				path = vfs.ParseVariables("%windir%/fonts/" .. translate[font] .. ".ttf")
+				path = vfs.ParsePathVariables("%windir%/fonts/" .. translate[font] .. ".ttf")
 			else
 				-- http://snook.ca/archives/html_and_css/windows-subs-helvetica-arial
 				if font == "helvetica" then
@@ -118,7 +118,7 @@ function META:Initialize()
 					name = name .. flag
 				end
 
-				path = vfs.ParseVariables("%windir%/fonts/" .. name .. ".ttf")
+				path = vfs.ParsePathVariables("%windir%/fonts/" .. name .. ".ttf")
 			end
 
 			if vfs.IsFile(path) then

@@ -749,17 +749,17 @@ function steam.LoadModel(path, sub_model_callback)
 
 							if not path:find("/", nil, true) then
 								for i, dir in ipairs(mdl.texturedir) do
-									if vfs.IsFile("materials/" .. vfs.FixPath(dir.path .. path) .. ".vmt") then
+									if vfs.IsFile("materials/" .. vfs.FixPathSlashes(dir.path .. path) .. ".vmt") then
 										path = dir.path .. path
 										break
-									elseif vfs.IsFile("materials/" .. vfs.FixPath(dir.path .. path):lower() .. ".vmt") then
+									elseif vfs.IsFile("materials/" .. vfs.FixPathSlashes(dir.path .. path):lower() .. ".vmt") then
 										path = (dir.path .. path):lower()
 										break
 									end
 								end
 							end
 
-							steam.LoadMaterial(vfs.FixPath("materials/" .. path .. ".vmt"), mesh.material)
+							steam.LoadMaterial(vfs.FixPathSlashes("materials/" .. path .. ".vmt"), mesh.material)
 						end
 
 						local WHAT = 0

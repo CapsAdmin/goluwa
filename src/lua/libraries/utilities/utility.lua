@@ -867,47 +867,6 @@ function utility.RemoveOldObject(obj, id)
 	return obj
 end
 
-function utility.GeFolderFromPath(str)
-	return str:match("(.+/).+") or ""
-end
-
-function utility.GetParentFolder(str, level)
-	level = level or 1
-	for i = #str, 1, -1 do
-		local char = str:sub(i, i)
-		if char == "/" then
-			level = level - 1
-		end
-		if level == -1 then
-			return str:sub(0, i)
-		end
-	end
-	return ""
-end
-
-function utility.GetFolderNameFromPath(str)
-	if str:sub(#str, #str) == "/" then
-		str = str:sub(0, #str - 1)
-	end
-	return str:match(".+/(.+)") or ""
-end
-
-function utility.GetFileNameFromPath(str)
-	return str:match(".+/(.+)") or ""
-end
-
-function utility.GetExtensionFromPath(str)
-	return str:match(".+%.(%a+)")
-end
-
-function utility.GetFolderFromPath(self)
-	return self:match("(.*)/") .. "/"
-end
-
-function utility.GetFileFromPath(self)
-	return self:match(".*/(.*)")
-end
-
 do
 	local hooks = {}
 

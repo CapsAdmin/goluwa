@@ -75,6 +75,7 @@ do -- mounting/links
 	function vfs.TranslatePath(path, is_folder)
 		local path_info = vfs.GetPathInfo(path, is_folder)
 		local out = {}
+		local out_i = 1
 
 		local filesystems = vfs.GetFileSystems()
 
@@ -98,10 +99,12 @@ do -- mounting/links
 						where = vfs.GetPathInfo(context.Name .. ":" .. where.full_path .. path_info.full_path, is_folder)
 					end
 
-					table.insert(out, {path_info = where, context = context, userdata = mount_info.userdata})
+					out[out_i] = {path_info = where, context = context, userdata = mount_info.userdata}
+					out_i = out_i + 1
 				end
 			else
-				table.insert(out, {path_info = path_info, context = context})
+				out[out_i] = {path_info = path_info, context = context}
+				out_i = out_i + 1
 			end
 		end
 
@@ -141,6 +144,7 @@ end
 
 do -- file systems
 	vfs.filesystems = vfs.filesystems or {}
+	vfs.filesystems2 = vfs.filesystems2 or {}
 
 	function vfs.RegisterFileSystem(META, is_base)
 		META.TypeBase = "base"
@@ -165,6 +169,8 @@ do -- file systems
 		table.sort(vfs.filesystems, function(a, b)
 			return a.Position < b.Position
 		end)
+
+		vfs.filesystems2[context.Name] = context
 	end
 
 	function vfs.GetFileSystems()
@@ -172,11 +178,7 @@ do -- file systems
 	end
 
 	function vfs.GetFileSystem(name)
-		for i, v in ipairs(vfs.filesystems) do
-			if v.Name == name then
-				return v
-			end
-		end
+		return vfs.filesystems2[name]
 	end
 
 	include("files/*", vfs)
@@ -225,10 +227,15 @@ do -- translate path to useful data
 
 		path = vfs.PreprocessPath(path)
 
-		out.filesystem = path:match("^(.-):")
+		local pos = path:find(":", 0, true)
 
-		if vfs.GetFileSystem(out.filesystem) then
-			path = path:gsub("^(.-:)", "")
+		if pos then
+			out.filesystem = path:sub(0, pos - 1)
+
+			if vfs.GetFileSystem(out.filesystem) then
+				path = path:sub(pos + 1)
+				out.filesystem = "unknown"
+			end
 		else
 			out.filesystem = "unknown"
 		end
@@ -243,8 +250,6 @@ do -- translate path to useful data
 			path = path .. "/"
 		end
 
-		out.file_name = path:match(".+/(.*)") or path
-		out.folder_name = path:match(".+/(.+)/") or path:match(".+/(.+)") or path:match("(.+)/") or path
 		out.full_path = path
 		out.relative = relative
 

@@ -60,7 +60,7 @@ function steam.GetLibraryFolders()
 	for key, path in pairs(config.InstallConfigStore.Software.Valve.Steam) do
 
 		if key:find("BaseInstallFolder_") then
-			table.insert(tbl, vfs.FixPath(path) .. "/steamapps/")
+			table.insert(tbl, vfs.FixPathSlashes(path) .. "/steamapps/")
 		end
 	end
 

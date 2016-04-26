@@ -371,7 +371,7 @@ function menu.CreateTopBar()
 				left_list:SetupSorted("name"--[[, "modified", "type", "size"]])
 
 				right_list:AddEntry("..", 0, "folder", 0).OnSelect = function()
-					populate(utility.GetParentFolder(dir))
+					populate(utility.GetParentFolderFromPath(dir))
 				end
 
 				for full_path in vfs.Iterate(dir, nil, true) do
