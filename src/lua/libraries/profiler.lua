@@ -401,7 +401,7 @@ function profiler.StartInstrumental(file_filter)
 			if not file_filter or not info.source:find(file_filter, nil, true) then
 				if what == "line" then
 					if okay then profiler.PopSection() end
-					profiler.PushSection(info.source .. ":" .. info.linedefined)
+					profiler.PushSection(info.source .. ":" .. info.currentline)
 					okay = true
 				end
 			end
