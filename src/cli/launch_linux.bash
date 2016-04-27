@@ -45,7 +45,7 @@ else
 	export LD_LIBRARY_PATH=".:$LD_LIBRARY_PATH"
 
 	if [ ! -z "$DEBUG" ]; then
-		launch="gdb --args luajit --joff -g"
+		launch="gdb --args luajit"
 	else		
 		#i don't know if this is stupid or not but it's so i can execute luajt without
 		#the need for execute permissions on a non ext filesystem (like on a usb stick with fat32)

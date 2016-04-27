@@ -1,9 +1,34 @@
 #!/bin/bash
- 
-read -e -p "git url: " -i "https://github.com/corsix/LuaJIT" LUA_URL
-read -e -p "branch: " -i "x64" LUA_BRANCH
-read -e -p "flags: " -i "XCFLAGS+=-DLUAJIT_ENABLE_GC64 XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT XCFLAGS+=-DLUAJIT_USE_GDBJIT CCDEBUG=-g" LUA_FLAGS
 
+url='https://github.com/LuaJIT/LuaJIT'
+branch='v2.1'
+flags='XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT'
+#flags='XCFLAGS+=-DLUAJIT_ENABLE_GC64 XCFLAGS+=-DLUAJIT_USE_GDBJIT XCFLAGS+=-DLUA_USE_ASSERT CCDEBUG=-g'
+ 
+while [[ $# > 1 ]]; do
+	key="$1"
+
+	case $key in
+		-u|--url)
+		url="$2"
+		shift # past argument
+		;;
+		-b|--branch)
+		branch="$2"
+		shift # past argument
+		;;
+		-f|--flags)
+		flags="$2"
+		shift # past argument
+		;;
+		*)
+				# unknown option
+		;;
+	esac
+	
+	shift
+done
+  
 arch=unknown
 
 case $(uname -m) in
@@ -14,13 +39,26 @@ esac
 
 cd ../../data/bin/linux_${arch}/
 
-echo "$LUA_URL : $LUA_BRANCH"
+echo "url		=	$url"
+echo "branch	=	$branch"
+echo "flags		=	$flags"
 
+echo "!?!?! = $(cd luajit_src && git config --get remote.origin.url)"
 
-git clone $LUA_URL luajit_src
+if [ -d "luajit_src" ]; then
+	cd luajit_src
+	sigh=$(git config --get remote.origin.url)
+	
+	if [ "$sigh" -ne "$url" ]; then
+		echo "WOW!!!!!!!!!"
+	fi
+	cd ..
+fi
+
+git clone $url luajit_src
 cd luajit_src 
-git checkout $LUA_BRANCH
+git checkout $branch
 export CFLAGS=-fPIC 
 make clean
-make $LUA_FLAGS
+make $flags
 yes | cp src/luajit ../luajit
