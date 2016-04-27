@@ -2,6 +2,8 @@ local gmod = ... or gmod
 
 local META = gmod.env.FindMetaTable("Angle")
 
+META.__gc = nil
+
 function META:__index(key)
 	if key == "p" then
 		return self.v.x
@@ -15,7 +17,13 @@ function META:__index(key)
 end
 
 function META:__newindex(key, val)
-	--self.q[key] = val
+	if key == "p" then
+		self.v.x = val
+	elseif key == "y" then
+		self.v.y = val
+	elseif key == "r" then
+		self.v.z = val
+	end
 end
 
 function META:__tostring()

@@ -2,6 +2,8 @@ local gmod = ... or gmod
 
 local META = gmod.env.FindMetaTable("Vector")
 
+META.__gc = nil
+
 function META:__index(key)
 	if key == "x" then
 		return self.v.x
