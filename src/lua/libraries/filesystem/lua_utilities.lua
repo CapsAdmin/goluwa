@@ -87,7 +87,34 @@ do -- include
 			)
 	end
 
+	local system_pcall = true
+
 	function vfs.include(source, ...)
+
+		if type(source) == "table" then
+			system_pcall = false
+			local ok, err
+			local errors = {}
+			for _, path in ipairs(source) do
+				ok, err = vfs.include(path)
+				if ok == false then
+					table.insert(errors, err)
+				else
+					break
+				end
+			end
+			system_pcall = true
+
+			if ok == false then
+				err = table.concat(errors, "\n")
+			else
+				ok = true
+				err = nil
+			end
+
+			return ok, err
+		end
+
 
 		local dir, file = source:match("(.+/)(.+)")
 
@@ -120,7 +147,7 @@ do -- include
 						_G.FILE_EXTENSION = full_path:match(".*/.+%.(.+)")
 						local ok, err
 
-						if system and system.pcall then
+						if system_pcall and system and system.pcall then
 							ok, err = system.pcall(func, ...)
 						else
 							ok, err = pcall(func, ...)
@@ -196,7 +223,7 @@ do -- include
 			_G.FILE_EXTENSION = full_path:match(".*/.+%.(.+)")
 
 			local res
-			if system and system.pcall then
+			if system_pcall and system and system.pcall then
 				res = {system.pcall(func, ...)}
 			else
 				res = {pcall(func, ...)}
@@ -219,11 +246,13 @@ do -- include
 			return select(2, unpack(res))
 		end
 
-		err = err or "no error"
+		if system_pcall then
+			err = err or "no error"
 
-		logn(source:sub(1) .. " " .. err)
+			logn(source:sub(1) .. " " .. err)
 
-		debug.openscript("lua/" .. path, err:match(":(%d+)"))
+			debug.openscript("lua/" .. path, err:match(":(%d+)"))
+		end
 
 		return false, err
 	end

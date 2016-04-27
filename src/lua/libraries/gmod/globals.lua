@@ -134,10 +134,15 @@ function globals.MsgC(...) log(...) end
 function globals.MsgN(...) logn(...) end
 
 globals.include = function(path)
-	if include(path) ~= false then return end
-	if include(path:lower()) ~= false then return end
-	if include("lua/" .. path) ~= false then return end
-	if include("lua/" .. path:lower()) ~= false then return end
+	local ok, err = include({
+		path,
+		"lua/" .. path,
+		path:lower(),
+		"lua/" .. path:lower()
+	})
+	if not ok then
+		print(err, "?!!??")
+	end
 end
 
 function globals.module(name, _ENV)
