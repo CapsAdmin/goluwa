@@ -43,17 +43,7 @@ echo "url		=	$url"
 echo "branch	=	$branch"
 echo "flags		=	$flags"
 
-echo "!?!?! = $(cd luajit_src && git config --get remote.origin.url)"
-
-if [ -d "luajit_src" ]; then
-	cd luajit_src
-	sigh=$(git config --get remote.origin.url)
-	
-	if [ "$sigh" -ne "$url" ]; then
-		echo "WOW!!!!!!!!!"
-	fi
-	cd ..
-fi
+rm -rf luajit_src/
 
 git clone $url luajit_src
 cd luajit_src 
