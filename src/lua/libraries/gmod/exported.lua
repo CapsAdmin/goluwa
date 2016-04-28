@@ -1,7 +1,7 @@
 return {
 	["meta"] = {
 		["IGModAudioChannel"] = {
-			["__gc"] = true,
+
 			["GetVolume"] = true,
 			["GetFileName"] = true,
 			["GetLevel"] = true,
@@ -33,13 +33,13 @@ return {
 			["IsValid"] = true,
 		},
 		["CSEnt"] = {
-			["__gc"] = true,
+
 			["__newindex"] = true,
 			["Remove"] = true,
 			["__index"] = true,
 		},
 		["CSoundPatch"] = {
-			["__gc"] = true,
+
 			["ChangePitch"] = true,
 			["SetDSP"] = true,
 			["SetSoundLevel"] = true,
@@ -53,7 +53,7 @@ return {
 			["FadeOut"] = true,
 		},
 		["NPC"] = {
-			["__gc"] = true,
+
 			["__tostring"] = true,
 			["__newindex"] = true,
 			["IsNPC"] = true,
@@ -134,7 +134,7 @@ return {
 			["DoCustomAnimEvent"] = true,
 			["GetCanWalk"] = true,
 			["GetRagdollEntity"] = true,
-			["__gc"] = true,
+
 			["SetHullDuck"] = true,
 			["IsTyping"] = true,
 			["SetHull"] = true,
@@ -222,7 +222,7 @@ return {
 			["__eq"] = true,
 			["Rotate"] = true,
 			["Angle"] = true,
-			["__gc"] = true,
+
 			["DotProduct"] = true,
 			["IsEqualTol"] = true,
 			["Length"] = true,
@@ -245,10 +245,10 @@ return {
 			["Normalize"] = true,
 		},
 		["pixelvis_handle_t"] = {
-			["__gc"] = true,
+
 		},
 		["CLuaEmitter"] = {
-			["__gc"] = true,
+
 			["SetBBox"] = true,
 			["Finish"] = true,
 			["SetParticleCullRadius"] = true,
@@ -339,7 +339,7 @@ return {
 			["GetColor"] = true,
 			["GetRollDelta"] = true,
 			["GetGravity"] = true,
-			["__gc"] = true,
+
 			["__newindex"] = true,
 			["GetRoll"] = true,
 			["SetEndSize"] = true,
@@ -455,7 +455,7 @@ return {
 			["SetAllowNonAsciiCharacters"] = true,
 			["SetMultiline"] = true,
 			["SetAlpha"] = true,
-			["__gc"] = true,
+
 			["SetVisible"] = true,
 			["DockPadding"] = true,
 			["SetDrawOnTop"] = true,
@@ -533,7 +533,7 @@ return {
 			["Prepare"] = true,
 		},
 		["IVideoWriter"] = {
-			["__gc"] = true,
+
 			["SetRecordSound"] = true,
 			["Finish"] = true,
 			["AddFrame"] = true,
@@ -541,7 +541,7 @@ return {
 			["Width"] = true,
 		},
 		["Weapon"] = {
-			["__gc"] = true,
+
 			["GetActivity"] = true,
 			["IsScripted"] = true,
 			["GetSecondaryAmmoType"] = true,
@@ -869,7 +869,7 @@ return {
 			["GetHitBoxGroupCount"] = true,
 			["IsNPC"] = true,
 			["SetSkin"] = true,
-			["__gc"] = true,
+
 			["SetLocalPos"] = true,
 			["EyePos"] = true,
 			["EnableCustomCollisions"] = true,
@@ -969,12 +969,12 @@ return {
 		["Vehicle"] = {
 			["IsVehicle"] = true,
 			["__tostring"] = true,
-			["__gc"] = true,
+
 			["__newindex"] = true,
 			["__index"] = true,
 		},
 		["_LOADLIB"] = {
-			["__gc"] = true,
+
 		},
 		["IMaterial"] = {
 			["GetFloat"] = true,
@@ -988,7 +988,7 @@ return {
 			["SetInt"] = true,
 			["SetUndefined"] = true,
 			["SetShader"] = true,
-			["__gc"] = true,
+
 			["GetInt"] = true,
 			["SetString"] = true,
 			["GetName"] = true,
@@ -1013,7 +1013,7 @@ return {
 			["Rotate"] = true,
 			["SetField"] = true,
 			["ScaleTranslation"] = true,
-			["__gc"] = true,
+
 			["SetRight"] = true,
 			["GetInverse"] = true,
 			["SetForward"] = true,
@@ -1078,7 +1078,7 @@ return {
 			["GetInt"] = true,
 		},
 		["File"] = {
-			["__gc"] = true,
+
 			["ReadShort"] = true,
 			["WriteByte"] = true,
 			["WriteFloat"] = true,
@@ -1180,13 +1180,13 @@ return {
 			["CalculateForceOffset"] = true,
 		},
 		["IMesh"] = {
-			["__gc"] = true,
+
 			["Draw"] = true,
 			["Destroy"] = true,
 			["BuildFromTriangles"] = true,
 		},
 		["Angle"] = {
-			["__gc"] = true,
+
 			["Right"] = true,
 			["__mul"] = true,
 			["RotateAroundAxis"] = true,

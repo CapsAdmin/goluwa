@@ -60,6 +60,12 @@ function vgui.CreateX(class, parent, name)
 
 	self:SetParent(parent)
 
+
+	if parent and parent.lol then
+		LOL = obj
+		print(LOL:GetParent())
+	end
+
 	obj.IsInsideParent = function() return true end -- :(
 	obj.OnDraw = function()
 		local paint_bg
@@ -194,7 +200,7 @@ end
 
 function vgui.FocusedHasParent(parent)
 	if gui.focus_panel:IsValid() and parent then
-		return parent:HasChild(gui.focus_panel)
+		return parent.__obj:HasChild(gui.focus_panel)
 	end
 end
 

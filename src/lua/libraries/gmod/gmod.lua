@@ -123,6 +123,8 @@ function gmod.WrapObject(obj, meta)
 			end
 		end
 
+		tbl.__gc = nil
+
 		gmod.objects[meta][obj] = setmetatable({}, tbl)
 
 		obj:CallOnRemove(function()
@@ -211,9 +213,9 @@ end
 function gmod.Initialize()
 	if not gmod.init then
 
-		steam.MountSourceGame("hl2")
-		steam.MountSourceGame("css")
-		steam.MountSourceGame("tf2")
+		--steam.MountSourceGame("hl2")
+		--steam.MountSourceGame("css")
+		--steam.MountSourceGame("tf2")
 		steam.MountSourceGame("gmod")
 		render.InitializeGBuffer() -- TODO
 
@@ -246,7 +248,7 @@ function gmod.Initialize()
 		include("lua/skins/*")
 
 		gmod.env.DCollapsibleCategory.LoadCookies = nil -- DUCT TAPE FIX
-
+--[[
 		-- load_gamemode will also load entities as shown below
 		load_gamemode("sandbox")
 
@@ -257,7 +259,7 @@ function gmod.Initialize()
 		load_entities("lua/entities", "ENT", gmod.env.scripted_ents.Register, function() return {} end)
 		load_entities("lua/weapons", "SWEP", gmod.env.weapons.Register, function() return {Primary = {}, Secondary = {}} end)
 		load_entities("lua/effects", "EFFECT", gmod.env.effects.Register, function() return {} end)
-
+]]
 		gmod.init = true
 	end
 

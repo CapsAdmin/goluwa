@@ -70,6 +70,7 @@ end
 META.__eq = nil -- no need
 
 function META:SetParent(panel)
+	if not panel then debug.trace() end
 	if panel and panel.__obj and panel.__obj:IsValid() then
 		self.__obj:SetParent(panel.__obj)
 	else
