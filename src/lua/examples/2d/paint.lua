@@ -1,5 +1,3 @@
-window.Open()
-
 local fb = render.CreateFrameBuffer()
 fb:SetSize(Vec2() + 512)
 
@@ -7,6 +5,7 @@ local tex = render.CreateTexture("2d")
 tex:SetSize(Vec2() + 512)
 tex:SetInternalFormat("rgba32f")
 tex:SetupStorage()
+tex:Clear()
 
 fb:SetTexture(1, tex)
 

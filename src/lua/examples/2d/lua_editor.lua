@@ -129,13 +129,13 @@ scroll:SetupLayout("fill_x", "fill_y")
 
 local edit = scroll:SetPanel(gui.CreatePanel("text_edit"))
 edit:SetStyle("frame2")
-edit:GetMarkup():SetSuperLightMode(true)
+--edit:GetMarkup():SetSuperLightMode(true)
 
-function edit:OnTextChanged()
-	syntax_process(self:GetText(), self:GetMarkup())
-	self:SizeToText()
-end
+--function edit:OnTextChanged()
+--	syntax_process(self:GetText(), self:GetMarkup())
+--	self:SizeToText()
+--end
 
-syntax_process(vfs.Read("lua/examples/lua_editor.lua") or "local hello = ''\n asdasdasd = 1234\n --[[it's a comment]] local test \n --it's really powerful\n", edit:GetMarkup())
+syntax_process(vfs.Read("lua/examples/2d/lua_editor.lua") or "local hello = ''\n asdasdasd = 1234\n --[[it's a comment]] local test \n --it's really powerful\n", edit:GetMarkup())
 
-edit:SizeToText()
+--edit:SizeToText()

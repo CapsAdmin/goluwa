@@ -35,7 +35,7 @@ local font = surface.CreateFont({
 	},
 })
 
-event.AddListener("DrawHUD", "lol", function()
+event.AddListener("PreDrawMenu", "lol", function()
 	local w, h = surface.GetSize()
 
 	surface.SetColor(1,1,1,1)

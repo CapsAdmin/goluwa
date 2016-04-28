@@ -159,20 +159,20 @@ local data = {
 local tex = render.CreateTextureFromPath("textures/debug/brain.jpg")
 
 local shader = render.CreateShader(data)
-shader.pwm_matrix = render.GetProjectionViewWorldMatrix
 
 -- this creates mesh from the attributes field
 local mesh = shader:CreateVertexBuffer({
-	{pos = {0, 0}, uv = {0, 0}},
-	{pos = {0, 1}, uv = {0, 1}},
-	{pos = {1, 1}, uv = {1, 1}},
-
-	{pos = {1, 1}, uv = {1, 1}},
-	{pos = {1, 0}, uv = {1, 0}},
-	{pos = {0, 0}, uv = {0, 0}},
+	{pos = {0, 1, 0}, uv = {0, 0}},
+	{pos = {0, 0, 0}, uv = {0, 1}},
+	{pos = {1, 1, 0}, uv = {1, 0}},
+	{pos = {1, 0, 0}, uv = {1, 1}},
+	{pos = {1, 1, 0}, uv = {1, 0}},
+	{pos = {0, 0, 0}, uv = {0, 1}},
 })
 
-event.AddListener("DrawHUD", "hm", function()
+event.AddListener("PreDrawMenu", "hm", function()
+	shader.pwm_matrix = render.camera_2d:GetMatrices().projection_view_world
+
 	local w, h = surface.GetSize()
 	surface.PushMatrix(0, 0, w, h)
 		shader.time = system.GetElapsedTime()

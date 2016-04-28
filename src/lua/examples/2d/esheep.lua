@@ -15,3 +15,6 @@ world:SetThreeDeeAngles(Deg3(-90,0,0))
 world:SetThreeDeePosition(Vec3(0,0,2.5))
 world:SetThreeDeeScale(Vec3()+5)
 world:SetSize(Vec2()+500)
+
+render.camera_3d:SetPosition(Vec3(-41.939414978027, -14.009494781494, 21.862697601318))
+render.camera_3d:SetAngles(Ang3(1.1255850791931, -0.16156056523323, 0))

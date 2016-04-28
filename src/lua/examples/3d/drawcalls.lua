@@ -4,7 +4,7 @@ commands.RunString("mount gmod")
 
 local materials = {}
 
-for i = 1, 50 do
+for i = 1, 1 do
 	materials[i] = render.CreateBlankTexture(Vec2() + 32, "return vec4(random(uv*1), random(uv*2), random(uv*3), random(uv*4));")
 end
 
@@ -12,9 +12,9 @@ end
 do
 	local parent = parent
 
-	for x = 0, 30 do
-	for y = 0, 30 do
-	for z = 0, 30 do
+	for x = 0, 20 do
+	for y = 0, 20 do
+	for z = 0, 20 do
 
 		local child = entities.CreateEntity("visual")
 		child:SetPosition(Vec3(x, y, z)*2)
@@ -27,14 +27,14 @@ do
 		light:SetSize(100)
 		light:SetIntensity(10)]]
 
-		local mat = render.CreateMaterial("model")
+		--[[local mat = render.CreateMaterial("model")
 
 		mat:SetAlbedoTexture(table.random(materials))
 		mat:SetNormalTexture(table.random(materials))
 		mat:SetRoughnessTexture(table.random(materials))
 		mat:SetMetallicTexture(table.random(materials))
 
-		child:SetMaterialOverride(mat)
+		child:SetMaterialOverride(mat)]]
 
 
 		parent = child
