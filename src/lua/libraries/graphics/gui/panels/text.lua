@@ -9,6 +9,7 @@ prototype.GetSet(PANEL, "TextWrap", false)
 prototype.GetSet(PANEL, "ConcatenateTextToSize", false)
 prototype.GetSet(PANEL, "LightMode", false)
 prototype.GetSet(PANEL, "CopyTags", true)
+prototype.IsSet(PANEL, "Selectable", false)
 
 prototype.GetSet(PANEL, "Font")
 prototype.GetSet(PANEL, "TextColor")
@@ -67,6 +68,11 @@ end
 function PANEL:SetCopyTags(b)
 	self.CopyTags = b
 	self.markup:SetCopyTags(b)
+end
+
+function PANEL:SetSelectable(b)
+	self.Selectable = b
+	self.markup:SetSelectable(b)
 end
 
 function PANEL:SetText(str)
