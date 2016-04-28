@@ -240,7 +240,7 @@ function META:DrawSelection()
 
 	if START and END then
 		surface.SetWhiteTexture()
-		surface.SetColor(self.SelectionColor)
+		surface.SetColor(self.SelectionColor:Unpack())
 
 		for i = START.i, END.i - 1 do
 			local char = self.chars[i]

@@ -290,9 +290,9 @@ do -- drawing
 		local tex = surface.GetTexture()
 		surface.SetWhiteTexture()
 		--surface.SetTexture(self.Texture)
-		local r,g,b,a = surface.SetColor(1,1,1,0.1)
+		surface.PushColor(1,1,1,0.1)
 		self:DrawRect()
-		surface.SetColor(r,g,b,a)
+		surface.PopColor()
 		surface.SetTexture(tex)
 	end
 

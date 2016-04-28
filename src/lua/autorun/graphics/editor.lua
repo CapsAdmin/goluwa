@@ -183,31 +183,31 @@ do -- PUT ME IN TRANSFORM
 
 		if visible > 0 then
 			if mctrl.grab.axis == "x" or mctrl.grab.axis == "view" then
-				surface.SetColor(ColorBytes(255, 200, 0, 255))
+				surface.SetColor(ColorBytes(255, 200, 0, 255):Unpack())
 			else
-				surface.SetColor(ColorBytes(255, 80, 80, 255))
+				surface.SetColor(ColorBytes(255, 80, 80, 255):Unpack())
 			end
 			draw_line_to_box(o, (math3d.WorldPositionToScreen(pos + forward * r)))
 			draw_rotation_lines(pos, forward, up, r)
 
 
 			if mctrl.grab.axis == "y" or mctrl.grab.axis == "view" then
-				surface.SetColor(ColorBytes(255, 200, 0, 255))
+				surface.SetColor(ColorBytes(255, 200, 0, 255):Unpack())
 			else
-				surface.SetColor(ColorBytes(80, 255, 80, 255))
+				surface.SetColor(ColorBytes(80, 255, 80, 255):Unpack())
 			end
 			draw_line_to_box(o, (math3d.WorldPositionToScreen(pos + right * r)))
 			draw_rotation_lines(pos, right, forward, r)
 
 			if mctrl.grab.axis == "z" or mctrl.grab.axis == "view" then
-				surface.SetColor(ColorBytes(255, 200, 0, 255))
+				surface.SetColor(ColorBytes(255, 200, 0, 255):Unpack())
 			else
-				surface.SetColor(ColorBytes(80, 80, 255, 255))
+				surface.SetColor(ColorBytes(80, 80, 255, 255):Unpack())
 			end
 			draw_line_to_box(o, (math3d.WorldPositionToScreen(pos + up * r)))
 			draw_rotation_lines(pos, up, right, r)
 
-			surface.SetColor(ColorBytes(255, 200, 0, 255))
+			surface.SetColor(ColorBytes(255, 200, 0, 255):Unpack())
 			surface.DrawCircle(o.x, o.y, 4, 2, 32)
 		end
 	end

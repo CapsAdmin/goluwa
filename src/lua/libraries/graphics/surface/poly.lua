@@ -30,46 +30,46 @@ end
 
 local function set_uv(self, i, x,y, w,h, sx,sy)
 	if not x then
-		self.Vertices[i + 1].uv.A = 0
-		self.Vertices[i + 1].uv.B = 1
+		self.Vertices.Pointer[i + 1].uv.A = 0
+		self.Vertices.Pointer[i + 1].uv.B = 1
 
-		self.Vertices[i + 0].uv.A = 0
-		self.Vertices[i + 0].uv.B = 0
+		self.Vertices.Pointer[i + 0].uv.A = 0
+		self.Vertices.Pointer[i + 0].uv.B = 0
 
-		self.Vertices[i + 2].uv.A = 1
-		self.Vertices[i + 2].uv.B = 0
+		self.Vertices.Pointer[i + 2].uv.A = 1
+		self.Vertices.Pointer[i + 2].uv.B = 0
 
 		--
 
-		self.Vertices[i + 4].uv = self.Vertices[i + 2].uv
+		self.Vertices.Pointer[i + 4].uv = self.Vertices.Pointer[i + 2].uv
 
-		self.Vertices[i + 3].uv.A = 1
-		self.Vertices[i + 3].uv.B = 1
+		self.Vertices.Pointer[i + 3].uv.A = 1
+		self.Vertices.Pointer[i + 3].uv.B = 1
 
-		self.Vertices[i + 5].uv = self.Vertices[i + 0].uv
+		self.Vertices.Pointer[i + 5].uv = self.Vertices.Pointer[i + 0].uv
 	else
 		sx = sx or 1
 		sy = sy or 1
 
 		y = -y - h
 
-		self.Vertices[i + 1].uv.A = x / sx
-		self.Vertices[i + 1].uv.B = (y + h) / sy
+		self.Vertices.Pointer[i + 1].uv.A = x / sx
+		self.Vertices.Pointer[i + 1].uv.B = (y + h) / sy
 
-		self.Vertices[i + 0].uv.A = x / sx
-		self.Vertices[i + 0].uv.B = y / sy
+		self.Vertices.Pointer[i + 0].uv.A = x / sx
+		self.Vertices.Pointer[i + 0].uv.B = y / sy
 
-		self.Vertices[i + 2].uv.A = (x + w) / sx
-		self.Vertices[i + 2].uv.B = y / sy
+		self.Vertices.Pointer[i + 2].uv.A = (x + w) / sx
+		self.Vertices.Pointer[i + 2].uv.B = y / sy
 
 		--
 
-		self.Vertices[i + 4].uv = self.Vertices[i + 2].uv
+		self.Vertices.Pointer[i + 4].uv = self.Vertices.Pointer[i + 2].uv
 
-		self.Vertices[i + 3].uv.A = (x + w) / sx
-		self.Vertices[i + 3].uv.B = (y + h) / sy
+		self.Vertices.Pointer[i + 3].uv.A = (x + w) / sx
+		self.Vertices.Pointer[i + 3].uv.B = (y + h) / sy
 
-		self.Vertices[i + 5].uv = self.Vertices[i + 1].uv
+		self.Vertices.Pointer[i + 5].uv = self.Vertices.Pointer[i + 1].uv
 	end
 end
 
@@ -90,17 +90,17 @@ function META:SetVertex(i, x,y, u,v)
 		y = new_y + self.Y
 	end
 
-	self.Vertices[i].pos.A = x
-	self.Vertices[i].pos.B = y
+	self.Vertices.Pointer[i].pos.A = x
+	self.Vertices.Pointer[i].pos.B = y
 
-	self.Vertices[i].color.A = self.R
-	self.Vertices[i].color.B = self.G
-	self.Vertices[i].color.C = self.B
-	self.Vertices[i].color.D = self.A
+	self.Vertices.Pointer[i].color.A = self.R
+	self.Vertices.Pointer[i].color.B = self.G
+	self.Vertices.Pointer[i].color.C = self.B
+	self.Vertices.Pointer[i].color.D = self.A
 
 	if u and v then
-		self.Vertices[i].uv.A = u
-		self.Vertices[i].uv.B = v
+		self.Vertices.Pointer[i].uv.A = u
+		self.Vertices.Pointer[i].uv.B = v
 	end
 
 	self.dirty = true
@@ -150,7 +150,7 @@ function META:Draw(count)
 		self.mesh:UpdateBuffer()
 		self.dirty = false
 	end
-	surface.mesh_2d_shader.tex = surface.bound_texture--surface.GetTexture()
+	surface.mesh_2d_shader.tex = surface.mesh_2d_shader.tex--surface.GetTexture()
 	--surface.mesh_2d_shader.global_color = surface.GetColor(true)
 	self.mesh:Draw(count)
 end

@@ -85,10 +85,6 @@ function surface.GetSize()
 	return render.camera_2d.Viewport.w, render.camera_2d.Viewport.h
 end
 
-local X, Y = 0, 0
-local W, H = 0, 0
-local R,G,B,A,A2 = 1,1,1,1,1
-
 include("fonts.lua", surface)
 
 do -- render world matrix helpers
@@ -149,79 +145,50 @@ do -- render world matrix helpers
 	end
 end
 
-local COLOR = Color()
-local oldr, oldg, oldb, olda
-
-function surface.SetColor(r, g, b, a)
-	oldr, oldg, oldb, olda = R,G,B,A
-
-	if not g then
-		a = r.a
-		b = r.b
-		g = r.g
-		r = r.r
+do
+	function surface.SetColor(r, g, b, a)
+		surface.mesh_2d_shader.global_color.r = r
+		surface.mesh_2d_shader.global_color.g = g
+		surface.mesh_2d_shader.global_color.b = b
+		surface.mesh_2d_shader.global_color.a = a or surface.mesh_2d_shader.global_color.a
 	end
 
-	R = r
-	G = g
-	B = b
-
-	if a then
-		A = a
+	function surface.GetColor()
+		return surface.mesh_2d_shader.global_color:Unpack()
 	end
 
-	COLOR.r = R
-	COLOR.g = G
-	COLOR.b = B
-	COLOR.a = A
+	utility.MakePushPopFunction(surface, "Color")
 
-	surface.mesh_2d_shader.global_color = COLOR
-
-	return oldr, oldg, oldb, olda
-end
-
-function surface.GetColor(obj)
-	if obj == true then
-		return COLOR
+	function surface.SetAlpha(a)
+		surface.mesh_2d_shader.global_color.a = a
 	end
 
-	return R, G, B, A
-end
+	function surface.GetAlpha()
+		return surface.mesh_2d_shader.global_color.a
+	end
 
-
-function surface.SetAlpha(a)
-	olda = A
-
-	A = a
-	COLOR.a = a
-
-	surface.mesh_2d_shader.global_color = COLOR
-
-	return olda
-end
-
-function surface.GetAlpha()
-	return A
+	utility.MakePushPopFunction(surface, "Alpha")
 end
 
 function surface.SetAlphaMultiplier(a)
-	A2 = a
-	--surface.fontmesh.alpha_multiplier = A2
-	surface.mesh_2d_shader.alpha_multiplier = A2
+	--surface.fontmesh.alpha_multiplier = a
+	surface.mesh_2d_shader.alpha_multiplier = a or surface.mesh_2d_shader.alpha_multiplier
+end
+
+function surface.GetAlphaMultiplier(a)
+	return surface.mesh_2d_shader.alpha_multiplier
 end
 
 function surface.SetTexture(tex)
-	tex = tex or render.GetWhiteTexture()
-
-	surface.bound_texture = tex
-end
-
-function surface.SetWhiteTexture()
-	surface.bound_texture = render.GetWhiteTexture()
+	surface.mesh_2d_shader.tex = tex
 end
 
 function surface.GetTexture()
-	return surface.bound_texture or render.GetWhiteTexture()
+	return surface.mesh_2d_shader.tex
+end
+
+function surface.SetWhiteTexture()
+	surface.mesh_2d_shader.tex = render.GetWhiteTexture()
 end
 
 do
@@ -349,12 +316,10 @@ do
 		end
 	end
 
-	local white_t = {1,1,1,1}
-
 	function surface.SetRectColors(cbl, ctl, ctr, cbr)
 		if not cbl then
 			for i = 1, 6 do
-				surface.rect_mesh.Vertices[i].color = white_t
+				surface.rect_mesh.Vertices[i].color = {1,1,1,1}
 			end
 		else
 			surface.rect_mesh.Vertices[1].color = {cbl:Unpack()}
@@ -387,7 +352,6 @@ function surface.DrawRect(x,y, w,h, a, ox,oy)
 			surface.Scale(w, h)
 		end
 
-		surface.mesh_2d_shader.tex = surface.bound_texture
 		surface.rect_mesh:Draw()
 	surface.PopMatrix()
 end
@@ -608,9 +572,9 @@ do
 		gl.StencilMask(0xFF) -- Write to stencil buffer
 		render.GetFrameBuffer():Clear("stencil",0xFF) -- Clear stencil buffer (0 by default)
 
-		local r,g,b,a = surface.SetColor(0,0,0,0)
+		surface.PushColor(0,0,0,0)
 		surface.DrawRect(x, y, w, h)
-		surface.SetColor(r,g,b,a)
+		surface.PopColor()
 
 		gl.StencilFunc("GL_EQUAL", 1, 0xFF) -- Pass test if stencil value is 1
 		gl.StencilMask(0x00) -- Don't write anything to stencil buffer

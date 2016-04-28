@@ -5,7 +5,7 @@ function wnd:OnUpdate(dt)
 		render.GetScreenFrameBuffer():Clear()
 
 		surface.SetWhiteTexture()
-		surface.SetColor(Color():GetRandom())
+		surface.SetColor(Color():GetRandom():Unpack())
 		surface.DrawRect(0,0,50,50)
 
 		render.SwapBuffers()

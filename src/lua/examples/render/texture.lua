@@ -129,6 +129,6 @@ event.AddListener("PostDrawMenu", "lol", function()
 	--surface.DrawRect(0,0,tex:GetSize().x,tex:GetSize().y)
 
 	--surface.SetWhiteTexture()
-	--surface.SetColor(ColorBytes(tex:GetPixelColor(surface.GetMousePosition())))
+	--surface.SetColor(ColorBytes(tex:GetPixelColor(surface.GetMousePosition())):Unpack())
 	--surface.DrawRect(50,50,50,50)
 end)

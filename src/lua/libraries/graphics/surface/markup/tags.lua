@@ -70,13 +70,13 @@ META.tags.wrong =
 {
 	arguments = {},
 	post_draw_chunks = function(markup, self, chunk)
-		local r,g,b,a = surface.SetColor(1, 0, 0, 1)
+		surface.PushColor(1, 0, 0, 1)
 		-- todo: LOL
 		for x = chunk.x, chunk.right do
 			surface.DrawLine(x, chunk.top + math.sin(x), x+1, chunk.top +math.sin(x))
 		end
 
-		surface.SetColor(r,g,b,a)
+		surface.PopColor()
 	end,
 }
 
@@ -84,14 +84,12 @@ META.tags.background =
 {
 	arguments = {1,1,1,1},
 	pre_draw = function(markup, self, x,y, r,g,b,a)
-		local r,g,b,a = surface.SetColor(r,g,b,a)
-
+		surface.PushColor(r,g,b,a)
 		local w, h = self.tag_width, self.tag_height
 		if h > self.h then y = y - h end
 		surface.SetWhiteTexture()
 		surface.DrawRect(x, y, w, h)
-
-		surface.SetColor(r,g,b,a)
+		surface.PopColor()
 	end,
 
 	post_draw = function()
@@ -103,10 +101,10 @@ META.tags.mark =
 {
 	arguments = {},
 	post_draw_chunks = function(markup, self, chunk)
-		local r, g, b, a = surface.SetColor(1, 1, 0, 0.25)
+		surface.PushColor(1, 1, 0, 0.25)
 		surface.SetWhiteTexture()
 		surface.DrawRect(chunk.x, chunk.y, chunk.w, chunk.h)
-		surface.SetColor(r, g, b, a)
+		surface.PopColor()
 	end,
 }
 
