@@ -161,6 +161,8 @@ function PLUGIN:onRegister()
 			"^%s*(.-):(%d+)%s*:",
 			-- <filename>:line
 			"(%S+%.lua):(%d+)",
+			"Line (%d+).-@(%S+%.lua)",
+			"(%d+)%s-@(%S+%.lua)",
 			"@(%S+%.lua)",
 		}
 
@@ -171,12 +173,20 @@ function PLUGIN:onRegister()
 			-- try to detect a filename and line in linetx
 			local fname, jumpline, jumplinepos
 			for _,pattern in ipairs(jumptopatterns) do
-				ide:Print(linetx, pattern)
 				fname,jumpline,jumplinepos = linetx:match(pattern)
-				if (fname and jumpline) then break end
+
+				if tonumber(fname) then
+					local line = tonumber(fname)
+					fname = jumpline
+					jumpline = line
+				end
+
+				if fname then break end
 			end
 
-			if not (fname and jumpline) then return end
+			jumpline = jumpline or 0
+
+			if not fname then return end
 
 			-- fname may include name of executable, as in "path/to/lua: file.lua";
 			-- strip it and try to find match again if needed.
@@ -186,12 +196,11 @@ function PLUGIN:onRegister()
 			local name
 			local fixedname = fname:match(":%s+(.+)")
 			if fixedname then
-				name = GetFullPathIfExists(FileTreeGetDir(), fixedname)
-					or FileTreeFindByPartialName(fixedname)
+				name = GetFullPathIfExists(FileTreeGetDir(), fixedname) or FileTreeFindByPartialName(fixedname)
 			end
-			name = name
-				or GetFullPathIfExists(FileTreeGetDir(), fname)
-				or FileTreeFindByPartialName(fname)
+			name = name or GetFullPathIfExists(FileTreeGetDir(), fname) or FileTreeFindByPartialName(fname)
+
+			ide:Print(name, fname, jumpline, jumplinepos)
 
 			local editor = LoadFile(name or fname,nil,true)
 			if not editor then
