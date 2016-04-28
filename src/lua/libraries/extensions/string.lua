@@ -291,24 +291,28 @@ function string.totable(self)
 	return tbl
 end
 
-function string.split(self, sep, plain)
-	if sep == nil or sep == "" then
+function string.split(self, separator, plain_search)
+	if separator == nil or separator == "" then
 		return self:totable()
 	end
 
-	if plain == nil then plain = true end
+	if plain_search == nil then
+		plain_search = true
+	end
 
 	local tbl = {}
 	local current_pos = 1
 
 	for i = 1, #self do
-		local start_pos, end_pos = self:find(sep, current_pos, plain)
+		local start_pos, end_pos = self:find(separator, current_pos, plain_search)
 		if not start_pos then break end
 		tbl[i] = self:sub(current_pos, start_pos - 1)
 		current_pos = end_pos + 1
 	end
 
-	tbl[#tbl + 1] = self:sub(current_pos)
+	if current_pos > 1 then
+		tbl[#tbl + 1] = self:sub(current_pos)
+	end
 
 	return tbl
 end
@@ -332,11 +336,22 @@ function string.containsonly(self, pattern)
 	return self:gsub(pattern, "") == ""
 end
 
-function string.replace(self, a, b)
-	local tbl = self:split(a)
+function string.replace(self, what, with)
+	local tbl = {}
+	local current_pos = 1
+	local last_i
 
-	if tbl[1] then
-		return table.concat(tbl, b)
+	for i = 1, #self do
+		local start_pos, end_pos = self:find(what, current_pos, true)
+		if not start_pos then last_i = i break end
+		tbl[i] = self:sub(current_pos, start_pos - 1)
+		current_pos = end_pos + 1
+	end
+
+	if current_pos > 1 then
+		tbl[last_i] = self:sub(current_pos)
+
+		return table.concat(tbl, with)
 	end
 
 	return self
