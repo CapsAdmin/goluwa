@@ -1,4 +1,4 @@
-local msgpack = require("luajit-msgpack-pure")
+local msgpack = require("msgpack")
 
 -- modify this function to your needs
 local function find_path(list, path)
