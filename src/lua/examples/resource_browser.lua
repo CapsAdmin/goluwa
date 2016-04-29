@@ -123,7 +123,7 @@ end
 local function populate_icons(full_path)
 	icons:RemoveChildren()
 
-	for _, full_path in pairs(vfs.Find(full_path .. "/", nil, true)) do
+	for _, full_path in pairs(vfs.Find(full_path .. "/", true)) do
 		add_icon(full_path)
 	end
 
@@ -131,7 +131,7 @@ local function populate_icons(full_path)
 end
 
 local function populate(dir, node)
-	for _, full_path in pairs(vfs.Find(dir, nil, true)) do
+	for _, full_path in pairs(vfs.Find(dir, true)) do
 		local dir, name = full_path:match("(.+)/(.+)")
 		name = name or full_path
 		dir = dir or full_path

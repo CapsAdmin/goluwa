@@ -205,7 +205,7 @@ local function find_file(path, ...)
 		if ok then return ok end
 	end
 	if not ok then
-		for k,v in pairs(vfs.Find(path:match("(.+/)"), nil, true)) do
+		for k,v in pairs(vfs.Find(path:match("(.+/)"), true)) do
 			if v:match(".+/(.+)%."):lower() == path:match(".+/(.+)"):lower() then
 				for _, ext in ipairs(extensions) do
 					if v:endswith(ext) then

@@ -48,7 +48,7 @@ function META:Initialize()
 		end
 	end
 
-	local tbl = vfs.Find("cache/" .. crypto.CRC32(self.Path), nil, true)
+	local tbl = vfs.Find("cache/" .. crypto.CRC32(self.Path), true)
 
 	if tbl[1] then
 		load(tbl[1])

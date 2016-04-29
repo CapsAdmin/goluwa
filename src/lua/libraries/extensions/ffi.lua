@@ -32,7 +32,7 @@ ffi.load = function(path, ...)
 		if system and system.SetSharedLibraryPath then
 			if vfs then
 				for _, where in ipairs(where) do
-					for full_path in vfs.Iterate(where .. path, nil, true, nil, true) do
+					for full_path in vfs.Iterate(where .. path, true) do
 						-- look first in the vfs' bin directories
 						local old = system.GetSharedLibraryPath()
 						system.SetSharedLibraryPath(full_path:match("(.+/)"))

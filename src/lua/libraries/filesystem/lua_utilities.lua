@@ -135,7 +135,7 @@ do -- include
 				dir = original_dir
 			end
 
-			for script in vfs.Iterate(dir, nil, true) do
+			for script in vfs.Iterate(dir, true) do
 				if script:find("%.lua") then
 					local func, err, full_path = vfs.loadfile(script)
 

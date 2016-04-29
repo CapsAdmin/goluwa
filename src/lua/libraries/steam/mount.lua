@@ -82,11 +82,11 @@ function steam.GetGameFolders(skip_mods)
 	local games = {}
 
 	for i, library in ipairs(steam.GetLibraryFolders()) do
-		for i, game in ipairs(vfs.Find(library .. "/common/", nil, true)) do
+		for i, game in ipairs(vfs.Find(library .. "/common/", true)) do
 			table.insert(games, game .. "/")
 		end
 		if not skip_mods then
-			for i, mod in ipairs(vfs.Find(library .. "/sourcemods/", nil, true)) do
+			for i, mod in ipairs(vfs.Find(library .. "/sourcemods/", true)) do
 				table.insert(games, mod .. "/")
 			end
 		end
@@ -99,7 +99,7 @@ function steam.GetSourceGames()
 	local found = {}
 
 	for i, game_dir in ipairs(steam.GetGameFolders()) do
-		for i, folder in ipairs(vfs.Find("os:" .. game_dir, nil, true)) do
+		for i, folder in ipairs(vfs.Find("os:" .. game_dir, true)) do
 			local path = folder .. "/gameinfo.txt"
 			local str = vfs.Read("os:" .. path)
 			local dir = path:match("(.+/).+/")

@@ -374,7 +374,7 @@ function menu.CreateTopBar()
 					populate(vfs.GetParentFolderFromPath(dir))
 				end
 
-				for full_path in vfs.Iterate(dir, nil, true) do
+				for full_path in vfs.Iterate(dir, true) do
 					local name = full_path:match(".+/(.+)")
 
 					if vfs.IsDirectory(full_path) then

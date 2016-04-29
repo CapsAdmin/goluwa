@@ -1,58 +1,86 @@
 local vfs = (...) or _G.vfs
 
-function vfs.Find(path, invert, full_path, start, plain, info)
-
-	local path_, pattern = path:match("(.+)/(.*)")
-	if pattern then path = path_ end
-
-	local path_info = vfs.GetPathInfo(path, true)
+function vfs.GetFiles(info)
+	local path_info = vfs.GetPathInfo(info.path, true)
 
 	local out = {}
-	local done = {}
 
-	for i, data in ipairs(vfs.TranslatePath(path, true)) do
-		local found = data.context:CacheCall("GetFiles", data.path_info)
+	if info.verbose then
+		for _, data in ipairs(vfs.TranslatePath(info.path, true)) do
+			local found = data.context:CacheCall("GetFiles", data.path_info)
+			if found then
+				for _, name in ipairs(found) do
+					if not info.filter or name:find(info.filter, info.filter_pos, info.filter_plain) then
+						table.insert(out, {
+							name = name,
+							filesystem = data.context.Name,
+							full_path = data.context.Name .. ":" .. data.path_info.full_path .. name,
+							full_path2 = data.path_info.full_path .. name,
+							userdata = data.userdata,
+						})
+					end
+				end
+			end
+		end
 
-		if found then
-			for i, v in ipairs(found) do
-				if not done[v] then
-					done[v] = true
-					if (not pattern or pattern == "" or v:find(pattern, start, plain)) then
-						if full_path and not info then
-							v = --[[data.context.Name .. ":" ..]] data.path_info.full_path .. v
+		if info.reverse_sort then
+			table.sort(out, function(a, b) return a.full_path > b.full_path end)
+		else
+			table.sort(out, function(a, b) return a.full_path < b.full_path end)
+		end
+	else
+		local done = {}
+
+		for _, data in ipairs(vfs.TranslatePath(info.path, true)) do
+			local found = data.context:CacheCall("GetFiles", data.path_info)
+			if found then
+				for _, name in ipairs(found) do
+					if not done[name] then
+						done[name] = true
+						if info.full_path then
+							name = data.path_info.full_path .. name
 						end
 
-						if info then
-							table.insert(out, {
-								name = v,
-								filesystem = data.context.Name,
-								full_path = data.context.Name .. ":" .. data.path_info.full_path .. v,
-								full_path2 = data.path_info.full_path .. v,
-								userdata = data.userdata,
-							})
-						else
-							table.insert(out, v)
+						if not info.filter or name:find(info.filter, info.filter_pos, info.filter_plain) then
+							table.insert(out, name)
 						end
 					end
 				end
 			end
 		end
-	end
 
-	if invert then
-		table.sort(out, function(a, b) if info then return a.full_path > b.full_path end return a > b end)
-	else
-		table.sort(out, function(a, b) if info then return a.full_path < b.full_path end return a < b end)
+		done = nil
+
+		if info.reverse_sort then
+			table.sort(out, function(a, b) return a > b end)
+		else
+			table.sort(out, function(a, b) return a < b end)
+		end
 	end
 
 	return out
 end
 
+function vfs.Find(path, full_path, reverse_sort, start, plain, verbose)
+	local path_, filter = path:match("(.+)/(.*)")
+	if filter then path = path_ end
+
+	if filter == "" then filter = nil end
+
+	return vfs.GetFiles({
+		path = path,
+
+		filter = filter,
+		filter_pos = start,
+		filter_plain = plain,
+
+		verbose = verbose,
+		full_path = full_path,
+		reverse_sort = reverse_sort,
+	})
+end
 
 function vfs.Iterate(path, ...)
-	check(path, "string")
-
-	local dir = path:match("(.+/)") or ""
 	local tbl = vfs.Find(path, ...)
 	local i = 1
 
@@ -62,10 +90,7 @@ function vfs.Iterate(path, ...)
 		i = i + 1
 
 		if val then
-			if type(val) == "table" then
-				return val
-			end
-			return val, dir .. val
+			return val
 		end
 	end
 end

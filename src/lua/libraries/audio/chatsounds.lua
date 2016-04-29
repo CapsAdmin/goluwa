@@ -329,7 +329,7 @@ do -- list parsing
 		local addons = steam.GetGamePath("GarrysMod") .. "garrysmod/addons/"
 		local addon_dir = addons .. "chatsounds"
 
-		for dir in vfs.Iterate(addons, nil, true) do
+		for dir in vfs.Iterate(addons, true) do
 			if dir:lower():find("chatsound") then
 				addon_dir = dir
 				break
@@ -353,13 +353,13 @@ do -- list parsing
 			list[realm] = L
 		end
 
-		for dir in vfs.Iterate(send, nil, true) do
-			for path in vfs.Iterate(dir .. "/", nil, true) do
+		for dir in vfs.Iterate(send, true) do
+			for path in vfs.Iterate(dir .. "/", true) do
 				parse(path)
 			end
 		end
 
-		for path in vfs.Iterate(nosend, nil, true) do
+		for path in vfs.Iterate(nosend, true) do
 			parse(path)
 		end
 
