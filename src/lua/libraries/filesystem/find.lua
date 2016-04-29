@@ -1,8 +1,6 @@
 local vfs = (...) or _G.vfs
 
 function vfs.GetFiles(info)
-	local path_info = vfs.GetPathInfo(info.path, true)
-
 	local out = {}
 
 	if info.verbose then
