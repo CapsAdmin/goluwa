@@ -555,8 +555,7 @@ do -- tree
 	local META = prototype.CreateTemplate("tree")
 
 	function META:SetEntry(str, value)
-		local keys = type(str) == "table" and str or str and str:split(self.delimiter) or {}
-
+		local keys = str:split(self.delimiter)
 		local next = self.tree
 
 		for i, key in ipairs(keys) do
@@ -573,8 +572,7 @@ do -- tree
 	end
 
 	function META:GetEntry(str)
-		local keys = type(str) == "table" and str or str and str:split(self.delimiter) or {}
-
+		local keys = str:split(self.delimiter)
 		local next = self.tree
 
 		for i, key in ipairs(keys) do
@@ -590,7 +588,7 @@ do -- tree
 	end
 
 	function META:GetChildren(str)
-		local keys = type(str) == "table" and str or str and str:split(self.delimiter) or {}
+		local keys = str:split(self.delimiter)
 		local next = self.tree
 
 		for i, key in ipairs(keys) do
