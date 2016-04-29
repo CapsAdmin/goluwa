@@ -44,7 +44,7 @@ function render.Draw3DScene(what, dist)
 
 	end)]]
 
-	for i, model in ipairs(render.scene_3d) do
+	for _, model in ipairs(render.scene_3d) do
 		model:Draw(what, dist)
 	end
 end

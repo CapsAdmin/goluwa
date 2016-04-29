@@ -81,12 +81,12 @@ end
 function steam.GetGameFolders(skip_mods)
 	local games = {}
 
-	for i, library in ipairs(steam.GetLibraryFolders()) do
-		for i, game in ipairs(vfs.Find(library .. "/common/", true)) do
+	for _, library in ipairs(steam.GetLibraryFolders()) do
+		for _, game in ipairs(vfs.Find(library .. "/common/", true)) do
 			table.insert(games, game .. "/")
 		end
 		if not skip_mods then
-			for i, mod in ipairs(vfs.Find(library .. "/sourcemods/", true)) do
+			for _, mod in ipairs(vfs.Find(library .. "/sourcemods/", true)) do
 				table.insert(games, mod .. "/")
 			end
 		end
@@ -98,8 +98,8 @@ end
 function steam.GetSourceGames()
 	local found = {}
 
-	for i, game_dir in ipairs(steam.GetGameFolders()) do
-		for i, folder in ipairs(vfs.Find("os:" .. game_dir, true)) do
+	for _, game_dir in ipairs(steam.GetGameFolders()) do
+		for _, folder in ipairs(vfs.Find("os:" .. game_dir, true)) do
 			local path = folder .. "/gameinfo.txt"
 			local str = vfs.Read("os:" .. path)
 			local dir = path:match("(.+/).+/")
@@ -118,8 +118,8 @@ function steam.GetSourceGames()
 
 						local done = {}
 
-						for k,v in pairs(tbl.filesystem.searchpaths) do
-							for k,v in pairs(type(v) == "string" and {v} or v) do
+						for _, v in pairs(tbl.filesystem.searchpaths) do
+							for _, v in pairs(type(v) == "string" and {v} or v) do
 								if v:find("|gameinfo_path|") then
 									v = v:gsub("|gameinfo_path|", path:match("(.+/)"))
 								elseif v:find("|all_source_engine_paths|") then
@@ -178,7 +178,7 @@ function steam.MountSourceGame(game_info)
 	if not game_info then return nil, "could not find " .. str_game_info end
 
 	steam.UnmountSourceGame(game_info)
-	for i, path in pairs(game_info.filesystem.searchpaths) do
+	for _, path in pairs(game_info.filesystem.searchpaths) do
 		if path:endswith(".vpk") then
 			path = "os:" .. path:gsub("(.+)%.vpk", "%1_dir.vpk")
 		else
@@ -186,21 +186,21 @@ function steam.MountSourceGame(game_info)
 
 			if path:endswith("*") then
 				path = path:sub(0, -2)
-				for k, v in pairs(vfs.Find(path)) do
+				for _, v in pairs(vfs.Find(path)) do
 					if vfs.IsDirectory(path .. "/" .. v) or v:endswith(".vpk") then
 						llog("mounting custom folder/vpk %s", v)
 						vfs.Mount(path .. "/" .. v, nil, game_info)
 					end
 				end
 			else
-				for k, v in pairs(vfs.Find(path .. "addons/")) do
+				for _, v in pairs(vfs.Find(path .. "addons/")) do
 					if vfs.IsDirectory(path .. "addons/" .. v) or v:endswith(".gma") then
 						llog("mounting addon %s", v)
 						vfs.Mount(path .. "addons/" .. v, nil, game_info)
 					end
 				end
 
-				for k, v in pairs(vfs.Find(path .. "maps/workshop/")) do
+				for _, v in pairs(vfs.Find(path .. "maps/workshop/")) do
 					llog("mounting workshop map %s", v)
 					vfs.Mount(path .. "maps/workshop/" .. v, "maps/", game_info)
 				end
@@ -241,7 +241,7 @@ function steam.UnmountSourceGame(game_info)
 	if not game_info then return nil, "could not find " .. str_game_info end
 
 	if game_info then
-		for k, v in pairs(vfs.GetMounts()) do
+		for _, v in pairs(vfs.GetMounts()) do
 			if v.userdata and v.userdata.filesystem.steamappid == game_info.filesystem.steamappid then
 				vfs.Unmount(v.full_where, v.full_to)
 			end
@@ -287,7 +287,7 @@ do
 		local games = steam.GetSourceGames()
 
 		if type(name) == "number" then
-			for i, game_info in ipairs(games) do
+			for _, game_info in ipairs(games) do
 				if game_info.filesystem.steamappid == name then
 					return game_info
 				end
@@ -296,26 +296,26 @@ do
 			local id = translate[name:lower()]
 
 			if id then
-				for i, game_info in ipairs(games) do
+				for _, game_info in ipairs(games) do
 					if game_info.filesystem.steamappid == id then
 						return game_info
 					end
 				end
 			end
 
-			for i, game_info in ipairs(games) do
+			for _, game_info in ipairs(games) do
 				if game_info.game:lower() == name then
 					return game_info
 				end
 			end
 
-			for i, game_info in ipairs(games) do
+			for _, game_info in ipairs(games) do
 				if game_info.game:compare(name) then
 					return game_info
 				end
 			end
 
-			for i, game_info in ipairs(games) do
+			for _, game_info in ipairs(games) do
 				if game_info.filesystem.searchpaths.mod and game_info.filesystem.searchpaths.mod:compare(name) then
 					return game_info
 				end
@@ -326,13 +326,13 @@ do
 end
 
 function steam.MountSourceGames()
-	for i, game_info in ipairs(steam.GetSourceGames()) do
+	for _, game_info in ipairs(steam.GetSourceGames()) do
 		steam.MountSourceGame(game_info)
 	end
 end
 
 function steam.UnmountAllSourceGames()
-	for i, game_info in ipairs(steam.GetSourceGames()) do
+	for _, game_info in ipairs(steam.GetSourceGames()) do
 		steam.UnmountSourceGame(game_info)
 	end
 end

@@ -91,16 +91,16 @@ event.AddListener("Update", "asdf", function(dt)
 						sound.last_event = v.subtype
 					end
 				elseif v.subtype == "pitch_bend" then
-					for i, sound in pairs(track.voices) do
+					for _, sound in pairs(track.voices) do
 						sound:SetPitch(sound.pitch + (track.pitch_bend))
 					end
 				elseif v.subtype == "controller" then
 					if v.controller_type == 7 then
-						for i, sound in pairs(track.voices) do
+						for _, sound in pairs(track.voices) do
 							sound:SetGain(sound.gain * (v.value/127))
 						end
 					elseif v.controller_type == 10 then
-						for i, sound in pairs(track.voices) do
+						for _, sound in pairs(track.voices) do
 							sound:SetPosition(0, (v.value-64)/64, 0)
 						end
 					else

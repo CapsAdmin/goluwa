@@ -118,7 +118,7 @@ function math.isvalid(num)
 		(num >= 0 or num <= 0)
 end
 
-function math.tostring(num, base)
+function math.tostring(num)
 	local t = {}
 	local len = math.len(num)
 

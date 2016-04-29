@@ -21,7 +21,7 @@ local function open_archive(archive_path)
 	return a
 end
 
-local function iterate_archive(a, ret_entry)
+local function iterate_archive(a)
 	return function()
 		local entry = ffi.new("struct archive_entry * [1]")
 		if archive.ReadNextHeader(a, entry) == archive.e.OK then
@@ -30,7 +30,7 @@ local function iterate_archive(a, ret_entry)
 	end
 end
 
-local function iterate_archive2(a, ret_entry)
+local function iterate_archive2(a)
 	return function()
 		local entry = archive.EntryNew()
 		if archive.ReadNextHeader2(a, entry) == archive.e.OK then
@@ -133,7 +133,7 @@ function CONTEXT:GetFiles(path_info)
 	-- really ugly logic: TODO
 	-- this kind of logic messes up my head
 
-	for i, path in ipairs(files) do
+	for _, path in ipairs(files) do
 		if not dir then
 			local path2 = path:match("^([^/]-)/$")
 			if path2 then
@@ -156,7 +156,6 @@ end
 
 function CONTEXT:Open(path_info, mode, ...)
 	local archive_path, relative = split_path(path_info)
-	local file
 
 	if self:GetMode() == "read" then
 		local a = open_archive(archive_path)

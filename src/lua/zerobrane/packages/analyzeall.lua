@@ -36,7 +36,11 @@ local function analyzeProject(self)
           errors = errors + 1
         elseif #warn > 0 then
 			for i, v in ipairs(warn) do
-				if not v:find("first use of unknown global", nil, true) then
+				if
+					not v:find("first use of unknown global", nil, true) and
+					not v:find("local variable .- masks earlier declaration") and
+					not v:find("unused parameter .- in anonymous function")
+				then
 					DisplayOutputNoMarker(v .. "\n")
 				end
 			end

@@ -1662,8 +1662,6 @@ local emotes = {
 	"zzz",
 }
 
-chathud = chathud or {}
-
 for k,v in pairs(emotes) do
 	chathud.emote_shortucts[v] =  "<texture=http://cdn.steamcommunity.com/economy/emoticon/" .. v .. ">"
 end

@@ -8,7 +8,7 @@ function render.AddTextureDecoder(id, callback)
 end
 
 function render.RemoveTextureDecoder(id)
-	for k,v in pairs(render.texture_decoders) do
+	for _, v in pairs(render.texture_decoders) do
 		if v.id == id then
 			table.remove(render.texture_decoders)
 			return true
@@ -19,7 +19,7 @@ end
 function render.DecodeTexture(data, path_hint)
 	local errors = {"\n"}
 
-	for i, decoder in ipairs(render.texture_decoders) do
+	for _, decoder in ipairs(render.texture_decoders) do
 		local ok, buffer, w, h, info = pcall(decoder.callback, data, path_hint)
 
 		if ok then

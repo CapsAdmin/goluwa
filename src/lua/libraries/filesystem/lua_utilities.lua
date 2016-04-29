@@ -1,7 +1,5 @@
 local vfs = (...) or _G.vfs
 
-local fs = require("fs")
-
 vfs.included_files = vfs.included_files or {}
 
 local function store(path)
@@ -39,7 +37,7 @@ function vfs.loadfile(path)
 		-- prepend "@" in front of the path so it will be treated as a lua file and not a string by lua internally
 		-- for nicer error messages and debug
 
-		local res, err = loadstring(res, "@" .. full_path:replace(e.ROOT_FOLDER, ""))
+		res, err = loadstring(res, "@" .. full_path:replace(e.ROOT_FOLDER, ""))
 
 		if event and res then res = event.Call("PostLoadString", res, full_path) or res end
 
@@ -60,8 +58,6 @@ function vfs.dofile(path, ...)
 end
 
 do -- include
-	local base = vfs.GetWorkingDirectory()
-
 	local include_stack = vfs.include_stack or {}
 	vfs.include_stack = include_stack
 
@@ -70,7 +66,6 @@ do -- include
 	end
 
 	function vfs.PopFromIncludeStack()
-		local path = include_stack[#include_stack]
 		table.remove(include_stack)
 	end
 

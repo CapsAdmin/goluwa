@@ -155,18 +155,12 @@ function utf8.length(str)
 	return length
 end
 
-local cache = {}
-
 function utf8.totable(str)
-	if cache[str] then return cache[str] end
-
 	local tbl = {}
 
 	for uchar in str:gmatch("([%z\1-\127\194-\244][\128-\191]*)") do
 		tbl[#tbl + 1] = uchar
 	end
-
-	cache[str] = tbl
 
 	return tbl
 end

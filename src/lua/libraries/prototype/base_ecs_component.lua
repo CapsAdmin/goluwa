@@ -37,7 +37,7 @@ end
 function META:GetEntityComponents()
 	local out = {}
 
-	for name, component in pairs(self:GetEntity():GetComponents()) do
+	for _, component in pairs(self:GetEntity():GetComponents()) do
 		table.insert(out, component)
 	end
 
@@ -45,7 +45,7 @@ function META:GetEntityComponents()
 end
 
 function META:FireEvent(...)
-	for i, component in ipairs(self:GetEntityComponents()) do
+	for _, component in ipairs(self:GetEntityComponents()) do
 		component:OnEvent(self, component.Name, ...)
 	end
 end

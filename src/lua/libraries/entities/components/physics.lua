@@ -79,8 +79,6 @@ function COMPONENT:UpdatePhysicsObject()
 	to_bullet(self)
 end
 
-local temp = Matrix44()
-
 function COMPONENT:SetPosition(vec)
 	self.Position = vec
 	to_bullet(self)
@@ -164,7 +162,7 @@ do
 			-- TODO: support for more bodies
 			if #physics_meshes > 1 then
 
-				for k,v in pairs(self:GetEntity():GetChildren()) do
+				for _, v in pairs(self:GetEntity():GetChildren()) do
 					if v.physics_chunk then
 						v:Remove()
 					end
@@ -186,7 +184,7 @@ do
 			to_bullet(self)
 		end, function(err)
 			llog("%s failed to load physics model %q: %s", self, path, err)
-			for k,v in pairs(self:GetEntity():GetChildren()) do
+			for _, v in pairs(self:GetEntity():GetChildren()) do
 				if v.physics_chunk then
 					v:Remove()
 				end

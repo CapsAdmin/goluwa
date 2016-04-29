@@ -18,7 +18,7 @@ function clients.GetLocalClient()
 end
 
 function clients.BroadcastLua(str)
-	for key, client in pairs(clients.GetAll()) do
+	for _, client in pairs(clients.GetAll()) do
 		client:SendLua(str)
 	end
 end
@@ -37,7 +37,7 @@ function clients.Create(uniqueid, is_bot, clientside, filter, local_client)
 		return self
 	end
 
-	local self = prototype.CreateObject("client")
+	self = prototype.CreateObject("client")
 
 	self:SetUniqueID(uniqueid)
 
@@ -79,7 +79,7 @@ do -- filter
 	local META = prototype.CreateTemplate("client_filter")
 
 	function META:AddAll()
-		for key, client in pairs(clients.GetAll()) do
+		for _, client in pairs(clients.GetAll()) do
 			self.clients[client:GetUniqueID()] = client
 		end
 

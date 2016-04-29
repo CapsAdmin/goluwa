@@ -8,7 +8,7 @@ e.EVENT_DESTROY = event.destroy_tag
 local function sort_events()
 	for key, tbl in pairs(event.active) do
 		local new = {}
-		for k,v in pairs(tbl) do table.insert(new, v) end
+		for _, v in pairs(tbl) do table.insert(new, v) end
 		table.sort(new, function(a, b) return a.priority > b.priority end)
 		event.active[key] = new
 	end
@@ -68,12 +68,12 @@ function event.RemoveListener(event_type, id)
 				do -- repair the table
 					local temp = {}
 
-					for k,v in pairs(event.active[event_type]) do
+					for k, v in pairs(event.active[event_type]) do
 						table.insert(temp, v)
 						event.active[event_type][k] = nil
 					end
 
-					for k,v in pairs(temp) do
+					for _, v in pairs(temp) do
 						table.insert(event.active[event_type], v)
 					end
 				end
@@ -166,7 +166,7 @@ do -- timers
 		end
 
 		if id then
-			for k,v in ipairs(event.timers) do
+			for _, v in ipairs(event.timers) do
 				if v.key == id then
 					v.realtime = system.GetElapsedTime() + (time or 0)
 					return
@@ -208,7 +208,7 @@ do -- timers
 
 		local data
 
-		for k,v in ipairs(event.timers) do
+		for _, v in ipairs(event.timers) do
 			if v.key == id then
 				data = v
 				break
@@ -236,7 +236,7 @@ do -- timers
 	end
 
 	function event.RemoveTimer(id)
-		for k,v in ipairs(event.timers) do
+		for k, v in ipairs(event.timers) do
 			if v.key == id then
 				table.remove(event.timers, k)
 				profiler.RemoveSection(v.id)
@@ -275,7 +275,7 @@ do -- timers
 
 						local errored = false
 
-						for i = 1, data.iterations + extra_iterations do
+						for _ = 1, data.iterations + extra_iterations do
 							local ok, res = system.pcall(data.callback)
 							if not ok or res ~= nil then
 								errored = true
@@ -332,7 +332,7 @@ do -- timers
 		end
 
 		if remove_these[1] then
-			for k, v in ipairs(remove_these) do
+			for _, v in ipairs(remove_these) do
 				--print(event.timers[v].type)
 				event.timers[v] = nil
 			end

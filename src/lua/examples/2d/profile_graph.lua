@@ -62,7 +62,7 @@ local function draw_branch(node, level, i, max, px, py, ppos, pw, ph)
 		max = table.count(node.children)
 		i = 0
 
-		for key, child in pairs(node.children) do
+		for _, child in pairs(node.children) do
 			math.randomseed(tonumber(tostring(child):match("(0x.+)")))
 			draw_branch(child, level + 1, i, max, x, y, pos, w, h)
 			i = i + 1
@@ -88,7 +88,7 @@ end
 
 event.AddListener("Draw2D", "lol", function()
 	if wait(5) then
-		for k, v in pairs(profiler.GetBenchmark("statistical")) do
+		for _, v in pairs(profiler.GetBenchmark("statistical")) do
 			if not next(v.parents) then
 				root = v
 			end

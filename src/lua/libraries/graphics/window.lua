@@ -23,15 +23,15 @@ function window.Open(...)
 	end
 
 	local ok, wnd = pcall(system.CreateWindow, ...)
-	
+
 	if not ok then warning(wnd) return NULL end
-	
+
 	if not render.initialized then
 		render.initialized = true
 		render.Initialize()
 	end
 
-	function wnd:OnUpdate(dt)
+	function wnd:OnUpdate()
 		render.PushWindow(self)
 			render.DrawScene()
 			self:SwapBuffers()
@@ -66,7 +66,7 @@ function window.Open(...)
 
 	ADD_EVENT("WindowMouseScroll", function(x, y)
 		if y ~= 0 then
-			for i = 1, math.abs(y) do
+			for _ = 1, math.abs(y) do
 				if y > 0 then
 					mouse_trigger("mwheel_up", true)
 				else
@@ -84,7 +84,7 @@ function window.Open(...)
 		end
 
 		if x ~= 0 then
-			for i = 1, math.abs(x) do
+			for _ = 1, math.abs(x) do
 				if x > 0 then
 					mouse_trigger("mwheel_left", true)
 				else

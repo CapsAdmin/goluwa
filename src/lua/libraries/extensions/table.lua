@@ -1,11 +1,11 @@
 table.new = desire("table.new") or function() return {} end
-table.clear = desire("table.clear") or function(t) for k,v in pairs(t) do t[k] = nil end end
+table.clear = desire("table.clear") or function(t) for k in pairs(t) do t[k] = nil end end
 
 function table.shuffle(a, times)
 	times = times or 1
 	local c = #a
 
-	for i = 1, c * times do
+	for _ = 1, c * times do
 		local ndx0 = math.random(1, c)
 		local ndx1 = math.random(1, c)
 
@@ -21,12 +21,12 @@ function table.scroll(tbl, offset)
 	if offset == 0 then return end
 
 	if offset > 0 then
-		for i = 1, offset do
+		for _ = 1, offset do
 			local val = table.remove(tbl, 1)
 			table.insert(tbl, val)
 		end
 	else
-		for i = 1, math.abs(offset) do
+		for _ = 1, math.abs(offset) do
 			local val = table.remove(tbl)
 			table.insert(tbl, 1, val)
 		end
@@ -106,7 +106,7 @@ function table.hasvalue(tbl, val)
 end
 
 function table.getkey(tbl, val)
-	for k,v in pairs(tbl) do
+	for k in pairs(tbl) do
 		if k == val then
 			return k
 		end
@@ -118,7 +118,7 @@ end
 function table.count(tbl)
 	local i = 0
 
-	for k,v in pairs(tbl) do
+	for _ in pairs(tbl) do
 		i = i + 1
 	end
 
@@ -138,7 +138,7 @@ function table.merge(a, b)
 end
 
 function table.add(a, b)
-	for i, v in pairs(b) do
+	for _, v in pairs(b) do
 		table.insert(a, v)
 	end
 end
@@ -168,7 +168,7 @@ function table.print(...)
 	luadata.SetModifier("function", function(var)
 		return ("function(%s) --[==[ptr: %p    src: %s]==] end"):format(table.concat(debug.getparams(var), ", "), var, debug.getprettysource(var))
 	end)
-	luadata.SetModifier("fallback", function(var, context)
+	luadata.SetModifier("fallback", function(var)
 		return "--[==[  " .. tostringx(var) .. "  ]==]"
 	end)
 

@@ -33,7 +33,6 @@ commands.Add("cmd", function(line)
 end)
 
 commands.Add("rcon", function(line)
-	local client = commands.GetClient()
 	commands.RunString(line)
 end)
 

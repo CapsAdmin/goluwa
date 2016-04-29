@@ -36,7 +36,6 @@ for y = max-1, 0, -1 do
 	ent:SetCull(false)
 
 	local mat = render.CreateMaterial("model")
-	local black = render.GetBlackTexture()
 
 	local info = table.random(materials)
 

@@ -108,7 +108,7 @@ META.tags.size =
 	end,
 
 	post_draw = function(markup, self)
-		markup.tags.scale.post_draw(markup, self, x, y, size, size)
+		markup.tags.scale.post_draw(markup, self)
 	end,
 }
 
@@ -230,7 +230,6 @@ META.tags.matrix =
 		local scaleX = math.sqrt (eigenvalue1)
 		local scaleY = math.sqrt (eigenvalue2)
 
-		local detQ2 = q211 * q222 - q212 * q221
 		local q111, q121 = mulM2x2V2(a11, a12, a21, a22, q211, q221)
 		local q112, q122 = mulM2x2V2(a11, a12, a21, a22, q212, q222)
 		q111, q121 = scaleV2(q111, q121, (scaleX ~= 0) and (1 / scaleX) or 0)

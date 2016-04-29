@@ -182,7 +182,6 @@ do -- server
 
 		self.peers = {}
 		self.host = create_host(ip, port, max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)
-		self.peer = peer
 
 		table.insert(enet.sockets, self)
 
@@ -202,13 +201,13 @@ local function getuid(peer)
 end
 
 event.AddListener("Update", "enet", function()
-	for i, socket in ipairs(enet.sockets) do
+	for _, socket in ipairs(enet.sockets) do
 		while lib.HostService(socket.host, evt, 0) > 0 do
 			if evt[0].type == lib.e.EVENT_TYPE_CONNECT then
 				if socket.Type == "enet_peer" then
 					socket:OnConnect()
 					socket.connected = true
-					if enet.debug then logf("[enet] %s: connected to server\n", socket, peer) end
+					if enet.debug then logf("[enet] %s: connected to server\n", socket) end
 				else
 					local peer = enet.CreateDummyPeer()
 					peer.peer = evt[0].peer
@@ -230,7 +229,7 @@ event.AddListener("Update", "enet", function()
 				if socket.Type == "enet_peer" then
 					socket:OnDisconnect()
 					socket.connected = false
-					if enet.debug then logf("[enet] %s: disconnected from server\n", socket, peer) end
+					if enet.debug then logf("[enet] %s: disconnected from server\n", socket) end
 				else
 					local peer = socket.peers[getuid(evt[0].peer)]
 					socket:OnPeerDisconnect(peer)

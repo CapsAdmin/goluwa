@@ -1,5 +1,7 @@
 local audio = _G.audio or ...
 
+local ffi = require("ffi")
+
 do
 	local frame_rate_flags = {
 		[0x00] = 24,
@@ -37,7 +39,7 @@ do
 
 			local time = 0ULL
 
-			for i = 1, 1000000 do
+			for _ = 1, 1000000 do
 				local event = {}
 
 				time = time + file:ReadVarInt()
@@ -216,7 +218,7 @@ do
 	function audio.SF2ToTable(path)
 		local sf2 = vfs.Open(path)
 
-		local header = sf2:ReadStructure([[
+		sf2:ReadStructure([[
 			string magic[4] = RIFF;
 			unsigned int size;
 			string magic2[4] = sfbk;
@@ -225,7 +227,7 @@ do
 		local out = {}
 
 		-- list
-		for i = 1, 3 do
+		for _ = 1, 3 do
 			local header = sf2:ReadStructure([[
 				string magic[4] = LIST;
 				unsigned int size;
@@ -236,7 +238,7 @@ do
 
 			local chunk = {}
 
-			for i = 1, 1024 do
+			for _ = 1, 1024 do
 				if sf2:GetPosition() >= the_end then break end
 
 				local id = sf2:ReadBytes(4)

@@ -27,7 +27,7 @@ local function get_folder(path_info, remove_last)
 		table.remove(folders)
 	end
 
-	for i, folder in ipairs(folders) do
+	for _, folder in ipairs(folders) do
 		if not next[folder] then
 			error("folder not found", 2)
 		end

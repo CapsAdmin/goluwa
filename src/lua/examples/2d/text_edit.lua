@@ -142,7 +142,7 @@ event.AddListener("CharInput", "lol", function(char)
 	end
 
 	if not line[caret_pos.x] then
-		for i = #line, caret_pos.x do
+		for _ = #line, caret_pos.x do
 			table.insert(line, {char = " "})
 		end
 	end

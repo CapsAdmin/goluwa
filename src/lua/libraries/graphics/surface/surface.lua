@@ -175,7 +175,7 @@ function surface.SetAlphaMultiplier(a)
 	surface.mesh_2d_shader.alpha_multiplier = a or surface.mesh_2d_shader.alpha_multiplier
 end
 
-function surface.GetAlphaMultiplier(a)
+function surface.GetAlphaMultiplier()
 	return surface.mesh_2d_shader.alpha_multiplier
 end
 
@@ -563,7 +563,6 @@ end
 
 do
 	local X, Y, W, H
-	local stencil_flag = gl.e.GL_STENCIL_BUFFER_BIT
 	function surface.EnableClipRect(x, y, w, h)
 		gl.Enable("GL_STENCIL_TEST")
 
@@ -737,7 +736,7 @@ do -- effects
 
 	function surface.End()
 		if surface.framebuffer then
-			for i, info in ipairs(surface.effects) do
+			for _, info in ipairs(surface.effects) do
 				surface.framebuffer:GetTexture():Shade(unpack(info.args))
 			end
 

@@ -63,7 +63,7 @@ if CLIENT then
 	end)
 end
 
-for k,v in pairs(clients.GetAll()) do
+for _,v in pairs(clients.GetAll()) do
 	if v.nv.ghost and v.nv.ghost:IsValid() then
 		v.nv.ghost:Remove()
 	end
@@ -115,7 +115,6 @@ event.AddListener("Move", "spooky", function(client, cmd)
 
 	local physics = ghost:GetComponent("physics")
 	local pos =  physics:GetPosition()
-	local dt = system.GetFrameTime()
 
 	if CLIENT then
 		if cmd.net_position then

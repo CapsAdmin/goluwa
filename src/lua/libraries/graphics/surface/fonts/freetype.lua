@@ -94,7 +94,7 @@ function META:Initialize()
 
 				font = font:lower()
 
-				for k,v in pairs(name_translate) do
+				for k in pairs(name_translate) do
 					if font:startswith(k) then
 						font = font:sub(#k+2)
 						break
@@ -133,7 +133,6 @@ function META:Initialize()
 				function(data)
 					local url = data:match("url%((.-)%)")
 					if url then
-						local format = data:match("format%('(.-)'%)")
 						resource.Download(url, load, nil, crypto.CRC32(self.Path))
 					end
 				end,
@@ -145,7 +144,7 @@ function META:Initialize()
 						function(zip_content)
 							vfs.Write("data/temp_dafont.zip", zip_content)
 							local base = R("data/temp_dafont.zip") -- FIX ME
-							for i,v in pairs(vfs.Find(base .. "/")) do
+							for _, v in pairs(vfs.Find(base .. "/")) do
 								if v:find(".ttf") then
 									local ext = v:match(".+(%.%a+)") or ".dat"
 									vfs.Write("downloads/cache/" .. crypto.CRC32(self.Path) .. ext, vfs.Read(base .."/".. v))

@@ -55,7 +55,7 @@ end
 add_helper("Read", "ReadAll", "read")
 add_helper("Write", "WriteBytes", "write", function(path, content, on_change)
 	path = path:gsub("(.+/)(.+)", function(folder, file_name)
-		for i, char in ipairs({--[['\\', '/', ]]':', '%*', '%?', '"', '<', '>', '|'}) do
+		for _, char in ipairs({--[['\\', '/', ]]':', '%*', '%?', '"', '<', '>', '|'}) do
 			file_name = file_name:gsub(char, "_il" .. char:byte() .. "_")
 		end
 		return folder .. file_name
@@ -91,7 +91,7 @@ add_helper("GetLastAccessed", "GetLastAccessed", "read")
 function vfs.CreateFolder(path)
 	check(path, "string")
 
-	for i, data in ipairs(vfs.TranslatePath(path, true)) do
+	for _, data in ipairs(vfs.TranslatePath(path, true)) do
 		data.context:PCall("CreateFolder", data.path_info)
 	end
 end
@@ -110,7 +110,7 @@ end
 function vfs.IsDirectory(path)
 	if path == "" then return false end
 
-	for i, data in ipairs(vfs.TranslatePath(path, true)) do
+	for _, data in ipairs(vfs.TranslatePath(path, true)) do
 		if data.context:CacheCall("IsFolder", data.path_info) then
 			return true
 		end
@@ -122,7 +122,7 @@ end
 function vfs.IsFile(path)
 	if path == "" then return false end
 
-	for i, data in ipairs(vfs.TranslatePath(path)) do
+	for _, data in ipairs(vfs.TranslatePath(path)) do
 		if data.context:CacheCall("IsFile", data.path_info) then
 			return true
 		end

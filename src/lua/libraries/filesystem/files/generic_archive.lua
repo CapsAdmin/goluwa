@@ -40,7 +40,7 @@ end
 local cache = {}
 local never
 
-generic_archive_cache = cache
+vfs.generic_archive_cache = cache
 
 function CONTEXT:GetFileTree(path)
 	if cache[path] then
@@ -51,7 +51,7 @@ function CONTEXT:GetFileTree(path)
 
 	never = true
 	local cache_path = "os:data/archive_cache/" .. crypto.CRC32(path)
-	tree_data = serializer.ReadFile("msgpack", cache_path)
+	local tree_data = serializer.ReadFile("msgpack", cache_path)
 	never = false
 
 	if tree_data then
@@ -108,7 +108,7 @@ function CONTEXT:GetFiles(path_info)
 
 	local out = {}
 
-	for k, v in pairs(tree:GetChildren(relative:match("(.*)/"))) do
+	for _, v in pairs(tree:GetChildren(relative:match("(.*)/"))) do
 		if v.value then -- fix me!!
 			table.insert(out, v.value.file_name)
 		end
@@ -124,8 +124,6 @@ end
 function CONTEXT:Open(path_info, mode, ...)
 	local archive_path, relative = self:SplitPath(path_info)
 	local tree = self:GetFileTree(archive_path)
-
-	local file
 
 	if self:GetMode() == "read" then
 		local file_info = tree:GetEntry(relative)

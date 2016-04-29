@@ -55,7 +55,7 @@
 		end
 	end
 
-	function COMPONENT:OnRemove(ent)
+	function COMPONENT:OnRemove()
 		gui.RemovePanel(self.panel)
 	end
 

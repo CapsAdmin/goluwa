@@ -50,7 +50,7 @@ do -- extend typeinfo
 		end
 	end
 
-	for k,v in pairs(type_info) do
+	for _, v in pairs(type_info) do
 		v.size = ffi.sizeof(v.type)
 	end
 end
@@ -761,15 +761,13 @@ do -- create data for vertex buffer
 		local found = {}
 
 		-- only bother doing this if the first line has structs
-		for key, typ in pairs(self.mesh_layout) do
+		for key in pairs(self.mesh_layout) do
 			local val = output[1][key]
 
 			if val then
 				if hasindex(val) and val.Unpack then
 					found[key] = true
 				end
-			else
-				--warning(typ .. " " .. key .. " is missing from vertices", 6)
 			end
 		end
 

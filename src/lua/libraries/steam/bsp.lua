@@ -171,7 +171,7 @@ function steam.LoadMap(path)
 
 		local game_lumps = bsp_file:ReadLong()
 
-		for i = 1, game_lumps do
+		for _ = 1, game_lumps do
 			local id = bsp_file:ReadBytes(4)
 			local flags = bsp_file:ReadShort()
 			local version = bsp_file:ReadShort()
@@ -198,7 +198,7 @@ function steam.LoadMap(path)
 
 				local count = bsp_file:ReadLong()
 
-				for i = 1, count do
+				for _ = 1, count do
 					local lump = bsp_file:ReadStructure([[
 						vec3 origin;
 						ang3 angles;
@@ -418,7 +418,7 @@ function steam.LoadMap(path)
 	end
 
 	if header.sky_aabb then
-		for i,v in ipairs(header.entities) do
+		for _, v in ipairs(header.entities) do
 			if v.origin then
 				v.origin, v.model_size_mult = sky_to_world(v.origin)
 			end
@@ -517,7 +517,7 @@ function steam.LoadMap(path)
 					local mesh = meshes[texname]
 
 					if face.dispinfo < 0 then
-						local first, previous, current
+						local first, previous
 
 						for j = 1, face.numedges do
 							local surfedge = header.surfedges[face.firstedge + j]
@@ -592,13 +592,13 @@ function steam.LoadMap(path)
 	end
 
 	if GRAPHICS then
-		for i, mesh in ipairs(models) do
+		for _, mesh in ipairs(models) do
 			mesh:BuildNormals()
 			tasks.ReportProgress("generating normals", #models)
 			tasks.Wait()
 		end
 
-		for i, mesh in ipairs(models) do
+		for _, mesh in ipairs(models) do
 			if mesh.displacement then
 				mesh:SmoothNormals()
 			end
@@ -606,7 +606,7 @@ function steam.LoadMap(path)
 			tasks.Wait()
 		end
 
-		for i, mesh in ipairs(models) do
+		for _, mesh in ipairs(models) do
 			mesh:BuildBoundingBox()
 			mesh:Upload(true)
 			tasks.ReportProgress("creating meshes", #models)
@@ -632,13 +632,13 @@ function steam.LoadMap(path)
 		--FIX ME
 		local _, huh = next(vertices_tbl)
 		if type(huh.pos) == "cdata" then
-			for j, data in ipairs(vertices_tbl) do
+			for _, data in ipairs(vertices_tbl) do
 				vertices[i] = data.pos.x i = i + 1
 				vertices[i] = data.pos.y i = i + 1
 				vertices[i] = data.pos.z i = i + 1
 			end
 		else
-			for j, data in ipairs(vertices_tbl) do
+			for _, data in ipairs(vertices_tbl) do
 				vertices[i] = data.pos[1] i = i + 1
 				vertices[i] = data.pos[2] i = i + 1
 				vertices[i] = data.pos[3] i = i + 1
@@ -665,7 +665,7 @@ function steam.LoadMap(path)
 	end
 
 	if GRAPHICS then
-		for i, mesh in ipairs(models) do
+		for _, mesh in ipairs(models) do
 			mesh:UnreferenceVertices()
 		end
 	end
@@ -693,7 +693,7 @@ function steam.SpawnMapEntities(path, parent)
 
 	function thread:OnStart()
 
-		for k,v in ipairs(parent:GetChildrenList()) do
+		for _, v in ipairs(parent:GetChildrenList()) do
 			if v.spawned_from_bsp then
 				v:Remove()
 			end
@@ -702,7 +702,7 @@ function steam.SpawnMapEntities(path, parent)
 		if GRAPHICS then
 			parent:RemoveMeshes()
 
-			for i, model in ipairs(data.render_meshes) do
+			for _, model in ipairs(data.render_meshes) do
 				parent:AddMesh(model)
 			end
 		end

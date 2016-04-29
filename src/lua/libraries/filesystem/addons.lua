@@ -76,7 +76,7 @@ function vfs.AutorunAddons(folder, force)
 end
 
 function vfs.MountAddon(path, force)
-	local func, msg = vfs.loadfile(path .. "info.lua")
+	local func = vfs.loadfile(path .. "info.lua")
 
 	local info = {}
 

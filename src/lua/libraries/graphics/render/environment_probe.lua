@@ -94,7 +94,7 @@ function render.CreateEnvironmentProbe()
 end
 
 if RELOAD then
-	for k,v in pairs(prototype.GetCreated()) do
+	for _, v in pairs(prototype.GetCreated()) do
 		if v.Type == META.Type then
 			v:Capture()
 		end

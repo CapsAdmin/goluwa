@@ -3,7 +3,6 @@ profiler.EnableStatisticalProfiling(true)
 local root
 local count = 0
 local drawn = {}
-local max_calls = 1
 
 local function draw_branch(node)
 	if drawn[node] then return end
@@ -20,7 +19,7 @@ local function draw_branch(node)
 	surface.DrawText(node.name)
 	surface.PopMatrix()
 
-	for key, child in pairs(node.children) do
+	for _, child in pairs(node.children) do
 		math.randomseed(tonumber(tostring(child):match("(0x.+)")))
 
 		surface.PushMatrix(0, -w, 1, 1, math.randomf(math.rad(-45), math.rad(45)))
@@ -33,7 +32,7 @@ end
 event.AddListener("Draw2D", "lol", function()
 	if wait(1) then
 		local top = profiler.GetBenchmark("statistical")
-		for k, v in pairs(top) do
+		for _, v in pairs(top) do
 			if not next(v.parents) then
 				root = v
 				break

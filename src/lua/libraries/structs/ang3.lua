@@ -38,7 +38,7 @@ end
 
 local PI1 = math.pi
 local PI2 = math.pi * 2
-local function normalize(a, b)
+local function normalize(a)
 	return (a + PI1) % PI2 - PI1
 end
 

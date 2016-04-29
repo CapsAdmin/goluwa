@@ -258,7 +258,7 @@ do -- openurl
 		}
 
 		func = function(url)
-			for i, cmd in ipairs(attempts) do
+			for _, cmd in ipairs(attempts) do
 				if os.execute(cmd .. " " .. url) then
 					return
 				end
@@ -393,7 +393,7 @@ do -- editors
 		}
 
 		function system.FindFirstEditor(os_execute, with_args)
-			for k, v in pairs(editors) do
+			for _, v in pairs(editors) do
 
 				if io.popen("command -v " .. v.name):read() then
 					local cmd = v.name
@@ -631,7 +631,6 @@ do
 		logn("STACK TRACE:")
 		logn("{")
 
-		local base_folder = e.ROOT_FOLDER:gsub("%p", "%%%1")
 		local data = {}
 
 		for level = 3, 100 do
@@ -779,7 +778,7 @@ end
 do -- environment
 
 	if system.lua_environment_sockets then
-		for key, val in pairs(system.lua_environment_sockets) do
+		for _, val in pairs(system.lua_environment_sockets) do
 			utility.SafeRemove(val)
 		end
 	end
@@ -875,7 +874,7 @@ do -- environment
 		end
 
 		socket.OnClientConnected = function(self, client)
-			for k,v in pairs(queue) do
+			for _, v in pairs(queue) do
 				socket:Broadcast(v, true)
 			end
 
@@ -1236,11 +1235,11 @@ if sdl then
 			id = id or "arrow"
 
 			cache[id] = cache[id] or sdl.CreateSystemCursor(enums[id] or enums.arrow)
-			--if last ~= id then
+			if last ~= id then
 				current = id
 				sdl.SetCursor(cache[id])
-			--	last = id
-			--end
+				last = id
+			end
 		end
 
 		function META:GetCursor()
@@ -1294,7 +1293,7 @@ if sdl then
 
 		local bit_flags = 0
 
-		for k,v in pairs(flags) do
+		for _, v in pairs(flags) do
 			bit_flags = bit.bor(bit_flags, flags_to_enums[v])
 		end
 

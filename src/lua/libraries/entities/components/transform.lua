@@ -168,7 +168,7 @@ function TMPL:IsPointsVisible(points, view)
 
 	local matrix = self:GetMatrix()
 
-	for i, pos in ipairs(points) do
+	for _, pos in ipairs(points) do
 		local x, y, z = matrix:GetMultiplied(view, Matrix44(pos.x, pos.y, pos.z)):GetClipCoordinates()
 
 		if

@@ -148,7 +148,7 @@ end
 function META:GetTextures()
 	local out = {}
 
-	for k,v in ipairs(self.pages) do
+	for _, v in ipairs(self.pages) do
 		table.insert(out, v.texture)
 	end
 

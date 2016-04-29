@@ -114,7 +114,7 @@ function sockets.GetSockets()
 end
 
 function sockets.Panic()
-	for key, sock in pairs(sockets.active_sockets) do
+	for _, sock in pairs(sockets.active_sockets) do
 		if sock:IsValid() then
 			sock:DebugPrintf("removed from sockets.Panic()")
 			sock:Remove()
@@ -173,7 +173,7 @@ do -- tcp socket meta
 				self[func_name] = val
 			end
 
-			tbl["Get" .. func_name] = function(self, val)
+			tbl["Get" .. func_name] = function(self)
 				return self[func_name]
 			end
 		end
@@ -261,7 +261,7 @@ do -- tcp socket meta
 						self:DebugPrintf("could not send %s of data : %s", utility.FormatFileSize(#str), b)
 					end
 				else
-					for i, packet in pairs(str:lengthsplit(65536)) do
+					for _, packet in pairs(str:lengthsplit(65536)) do
 						table.insert(self.Buffer, packet)
 					end
 				end
@@ -341,7 +341,7 @@ do -- tcp socket meta
 				-- try send
 
 				if self.socket_type == "tcp" then
-					for i = 1, 128 do
+					for _ = 1, 128 do
 						local data = self.Buffer[1]
 						if data then
 							local bytes, b, c, d = sock:send(data)
@@ -414,7 +414,7 @@ do -- tcp socket meta
 							self:DebugPrintf("errored: %s", err)
 
 							if self.__server then
-								self.__server:OnClientError(self3, err)
+								self.__server:OnClientError(self, err)
 							end
 
 							self:OnError(err)
@@ -641,7 +641,7 @@ do -- tcp socket meta
 			check(ip, "string")
 
 			if self.socket_type == "tcp" then
-				for key, client in pairs(self:GetClients()) do
+				for _, client in pairs(self:GetClients()) do
 					if client:GetIP() == ip and (not port or (port == client:GetPort())) then
 						client:Send(data)
 						break
@@ -707,7 +707,7 @@ do -- tcp socket meta
 				local sock = self.socket
 				sock:settimeout(0)
 
-				local client, err = sock:accept()
+				local client = sock:accept()
 
 				if client then
 
@@ -736,7 +736,7 @@ do -- tcp socket meta
 		end
 
 		function SERVER:Broadcast(...)
-			for k,v in pairs(self:GetClients()) do
+			for _, v in pairs(self:GetClients()) do
 				if self.suppressed_send ~= v then
 					v:Send(...)
 				end
@@ -744,7 +744,7 @@ do -- tcp socket meta
 		end
 
 		function SERVER:KickAllClients()
-			for k,v in pairs(self:GetClients()) do
+			for _, v in pairs(self:GetClients()) do
 				v.__server = nil
 				v:Remove()
 			end
@@ -761,13 +761,12 @@ do -- tcp socket meta
 		end
 
 		function SERVER:GetIP()
-			local ip, port = self.socket:getsockname()
-			return ip
+			return (self.socket:getsockname())
 		end
 
 		function SERVER:GetPort()
-			local ip, port = self.socket:getsockname()
-			return ip and port or nil
+			local _, port = self.socket:getsockname()
+			return port or nil
 		end
 
 		function SERVER:GetIPPort()

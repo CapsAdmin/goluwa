@@ -25,7 +25,7 @@ event.Timer("updatefb", 0.1, function()
 
 		render.SetBlendMode("additive")
 
-		for i = 1, 10 do
+		for _ = 1, 10 do
 			surface.SetColor(math.randomf(), math.randomf(), math.randomf(), 0.2)
 			surface.DrawRect(math.random(tex:GetSize().x), math.random(tex:GetSize().y), 100, 100, math.random()*math.pi)
 		end

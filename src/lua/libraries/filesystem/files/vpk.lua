@@ -6,8 +6,8 @@ CONTEXT.Name = "valve package"
 CONTEXT.Extension = "vpk"
 CONTEXT.Base = "generic_archive"
 
-function CONTEXT:OnParseArchive(file, archive_path)
-	local vpk = file:ReadStructure([[
+function CONTEXT:OnParseArchive(file)
+	file:ReadStructure([[
 		long signature = 0x55aa1234;
 		long version;
 		long tree_length;
@@ -61,7 +61,7 @@ function CONTEXT:TranslateArchivePath(file_info, archive_path)
 	if file_info.archive_index == 0x7FFF then
 		return "os:" .. archive_path
 	else
-		return "os:" .. archive_path:gsub("_dir.vpk$", function(str) return ("_%03d.vpk"):format(file_info.archive_index) end)
+		return "os:" .. archive_path:gsub("_dir.vpk$", function() return ("_%03d.vpk"):format(file_info.archive_index) end)
 	end
 end
 

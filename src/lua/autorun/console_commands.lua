@@ -311,7 +311,7 @@ end)
 commands.Add("find", function(line, ...)
 	local data = utility.FindValue(...)
 
-	for k,v in pairs(data) do
+	for _, v in pairs(data) do
 		logn("\t", v.nice_name)
 	end
 end)
@@ -344,7 +344,7 @@ commands.Add("source", function(line, path, line_number, ...)
 		line_number = b or line_number
 	end
 
-	for i, try in pairs(tries) do
+	for _, try in pairs(tries) do
 		local path = try:gsub("?", path)
 		if vfs.Exists(path) and vfs.GetLoadedLuaFiles()[R(path)] then
 			debug.openscript(path, tonumber(line_number) or 0)
@@ -352,9 +352,9 @@ commands.Add("source", function(line, path, line_number, ...)
 		end
 	end
 
-	for k,v in pairs(vfs.GetLoadedLuaFiles()) do
-		if k:compare(path) then
-			debug.openscript(k, line_number)
+	for loaded_path in pairs(vfs.GetLoadedLuaFiles()) do
+		if loaded_path:compare(path) then
+			debug.openscript(loaded_path, line_number)
 			return
 		end
 	end
@@ -364,7 +364,7 @@ commands.Add("source", function(line, path, line_number, ...)
 	local func
 	local name
 
-	for k,v in pairs(data) do
+	for _, v in pairs(data) do
 		if type(v.val) == "function" then
 			func = v.val
 			name = v.nice_name
@@ -388,7 +388,7 @@ commands.Add("source", function(line, path, line_number, ...)
 		if #data < 10 then
 			logf("also found:\n")
 
-			for k,v in pairs(data) do
+			for _, v in pairs(data) do
 				logn("\t", v.nice_name)
 			end
 		else
@@ -406,7 +406,7 @@ local tries = {
 commands.Add("open", function(line)
 	local tried = {}
 
-	for i, try in pairs(tries) do
+	for _, try in pairs(tries) do
 		local path = try:gsub("?", line)
 		if vfs.IsFile(path) then
 			include(path)

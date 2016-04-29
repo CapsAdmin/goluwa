@@ -60,7 +60,7 @@ end
 
 function META:HasParent(obj)
 	if obj then
-		for i, v in ipairs(self:GetParentList()) do
+		for _, v in ipairs(self:GetParentList()) do
 			if v == obj then
 				return true
 			end
@@ -110,7 +110,7 @@ function META:GetRoot()
 end
 
 function META:RemoveChildren()
-	for key, obj in ipairs(self:GetChildrenList()) do
+	for _, obj in ipairs(self:GetChildrenList()) do
 		if obj:IsValid() then
 			obj:OnUnParent(self)
 			obj:Remove()
@@ -129,7 +129,7 @@ function META:UnParent()
 end
 
 local function add_children_to_list(parent, list)
-	for i, child in ipairs(parent:GetChildren()) do
+	for _, child in ipairs(parent:GetChildren()) do
 		table.insert(list, child)
 		add_children_to_list(child, list)
 	end
@@ -163,7 +163,7 @@ function META:BuildParentList()
 
 	self.RootPart = temp
 
-	for key, obj in ipairs(self.Children) do
+	for _, obj in ipairs(self.Children) do
 		obj:BuildParentList()
 	end
 end

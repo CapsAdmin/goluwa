@@ -155,7 +155,7 @@ do -- basic data types
 
 		local pos = self:GetPosition()
 
-		for i = 1, length or self:GetSize() do
+		for _ = 1, length or self:GetSize() do
 			local byte = self:ReadByte()
 			if not byte or byte == 0 then break end
 			table.insert(str, string.char(byte))
@@ -180,7 +180,7 @@ do -- basic data types
 
 		local str = {}
 
-		for i = 1, length do
+		for _ = 1, length do
 			local byte = self:ReadByte()
 			if not byte then break end
 			table.insert(str, string.char(byte))
@@ -302,7 +302,7 @@ do -- extended
 	end
 
 	-- nil
-	function META:WriteNil(n)
+	function META:WriteNil()
 		self:WriteByte(0)
 		return self
 	end
@@ -440,8 +440,8 @@ do -- extended
 			self:WriteByte(id)
 			self:WriteType(k, t, type_func)
 
-			local t = type_func(v)
-			local id = self:GetTypeID(t)
+			t = type_func(v)
+			id = self:GetTypeID(t)
 			if not id then error("tried to write unknown type " .. t, 2) end
 			self:WriteByte(id)
 			self:WriteType(v, t, type_func)
@@ -457,12 +457,11 @@ do -- extended
 			if not t then error("typeid " .. b .. " is unknown!", 2) end
 			local k = self:ReadType(t)
 
-			local b = self:ReadByte()
-			local t = self:GetTypeFromID(b)
+			b = self:ReadByte()
+			t = self:GetTypeFromID(b)
 			if not t then error("typeid " .. b .. " is unknown!", 2) end
-			local v = self:ReadType(t)
 
-			tbl[k] = v
+			tbl[k] = self:ReadType(t)
 
 			if self:TheEnd() then return tbl end
 		end
@@ -484,7 +483,7 @@ end
 
 do -- structures
 	function META:WriteStructure(structure, values)
-		for i, data in ipairs(structure) do
+		for _, data in ipairs(structure) do
 			if type(data) == "number" then
 				self:WriteByte(data)
 			else
@@ -609,7 +608,7 @@ do -- structures
 					out[data[2]] = tbl
 				end
 
-				for i = 1, val do
+				for _ = 1, val do
 					table.insert(tbl, self:ReadStructure(data[3], ordered))
 				end
 			end
@@ -637,7 +636,7 @@ do -- structures
 
 		local size = 0
 
-		for k, v in ipairs(structure) do
+		for _, v in ipairs(structure) do
 			local t = v[1]
 
 			if t == "longlong" then t = "long long" end
@@ -673,7 +672,7 @@ do -- automatic
 					end
 				end
 
-				local key = k:match("Write(.+)")
+				key = k:match("Write(.+)")
 				if key then
 					write_functions[key:lower()] = v
 
@@ -690,7 +689,7 @@ do -- automatic
 
 		local ids = {}
 
-		for k,v in pairs(read_functions) do
+		for k in pairs(read_functions) do
 			table.insert(ids, k)
 		end
 
@@ -756,7 +755,7 @@ function META:TheEnd()
 	return self:GetPosition() >= self:GetSize()
 end
 
-function META:PeakByte(bytes)
+function META:PeakByte()
 	return self:ReadByte(), self:Advance(-1)
 end
 

@@ -163,8 +163,6 @@ do -- helpers
 			i = i + 1
 		end
 
-		local found = 0
-
 		for _, x in pairs(temp) do
 			for _, y in pairs(x) do
 				for _, z in pairs(y) do
@@ -213,7 +211,7 @@ do -- helpers
 
 		local vert_count = #lines
 
-		for i, parts in pairs(lines) do
+		for _, parts in pairs(lines) do
 			if parts[1] == "v" and #parts >= 4 then
 				table.insert(positions, Vec3(tonumber(parts[2]), tonumber(parts[3]), tonumber(parts[4])))
 			elseif parts[1] == "vt" and #parts >= 3 then
@@ -226,7 +224,7 @@ do -- helpers
 			self:Wait()
 		end
 
-		for i, parts in pairs(lines) do
+		for _, parts in pairs(lines) do
 			if parts[1] == "f" and #parts > 3 then
 				local first, previous
 
@@ -294,7 +292,6 @@ do -- helpers
 
 			local default_normal = Vec3(0, 0, -1)
 
-			local count = #output
 			for i = 1, count do
 				local n = vertex_normals[output[i].pos_index] or default_normal
 				n:Normalize()
@@ -410,7 +407,6 @@ do -- helpers
 		local phi2 = math.pi / 2
 		local r = 1
 
-		local i, j
 		local theta1 = 0
 		local unodivn = 1/n
 
@@ -433,7 +429,7 @@ do -- helpers
 		local jdivn,idivn,t1,t3,cost1
 		local e,p,e2,p2 = Vec3(), Vec3(), Vec3(), Vec3()
 
-		for j = 1, ndiv2 do
+		for _ = 1, ndiv2 do
 
 			t1 = t2
 			t2 = t2 + cte1
@@ -452,7 +448,7 @@ do -- helpers
 			jdivn = j1divn
 			j1divn = j1divn + dosdivn
 
-			for i = 1, n do
+			for _ = 1, n do
 				t3 = t3 + cte3
 
 				e.x = cost1 * math.cos(t3)
@@ -476,157 +472,153 @@ do -- helpers
 		end
 	end
 
-	do
-		local up = Vec3(0, 0, -1)
+	function META:LoadHeightmap(tex, size, res, height, pow)
+		size = size or Vec2(1024, 1024)
+		res = res or Vec2(128, 128)
+		height = height or -64
+		pow = pow or 1
 
-		function META:LoadHeightmap(tex, size, res, height, pow)
-			size = size or Vec2(1024, 1024)
-			res = res or Vec2(128, 128)
-			height = height or -64
-			pow = pow or 1
+		local s = size / res
+		local s2 = s / 2
 
-			local s = size / res
-			local s2 = s / 2
+		local pixel_advance = (Vec2(1, 1)/res) * tex:GetSize()
 
-			local pixel_advance = (Vec2(1, 1)/res) * tex:GetSize()
+		local function get_color(x, y)
+			local r,g,b,a = tex:GetPixelColor(x, y)
+			return (((r+g+b+a) / 4) / 255) ^ pow
+		end
 
-			local function get_color(x, y)
-				local r,g,b,a = tex:GetPixelColor(x, y)
-				return (((r+g+b+a) / 4) / 255) ^ pow
-			end
+		local offset = -Vec3(size.x, size.y, height) / 2
 
-			local offset = -Vec3(size.x, size.y, height) / 2
+		for x = 0, res.x do
+			local x2 = (x/res.x) * tex:GetSize().x
 
-			for x = 0, res.x do
-				local x2 = (x/res.x) * tex:GetSize().x
+			for y = 0, res.y do
+				local y2 = (y/res.y) * tex:GetSize().y
 
-				for y = 0, res.y do
-					local y2 = (y/res.y) * tex:GetSize().y
+				y2 = -y2 + tex:GetSize().y -- fix me
 
-					y2 = -y2 + tex:GetSize().y -- fix me
-
-					--[[
-							  __
-						    |\ /|
-							|/_\|
-					]]
+				--[[
+						  __
+						|\ /|
+						|/_\|
+				]]
 
 
-					local z3 = get_color(x2, y2) * height -- top left
-					local z4 = get_color(x2+pixel_advance.x, y2) * height -- top right
-					local z1 = get_color(x2, y2+pixel_advance.h) * height -- bottom left
-					local z2 = get_color(x2+pixel_advance.x, y2+pixel_advance.h) * height -- bottom right
+				local z3 = get_color(x2, y2) * height -- top left
+				local z4 = get_color(x2+pixel_advance.x, y2) * height -- top right
+				local z1 = get_color(x2, y2+pixel_advance.h) * height -- bottom left
+				local z2 = get_color(x2+pixel_advance.x, y2+pixel_advance.h) * height -- bottom right
 
-					local z5 = (z1+z2+z3+z4)/4
+				local z5 = (z1+z2+z3+z4)/4
 
-					local x = (x * s.x)
-					local y = y * s.y
+				local x = (x * s.x)
+				local y = y * s.y
 
-					--[[
-						___
-						\ /
-					]]
+				--[[
+					___
+					\ /
+				]]
 
-					local a1 = {}
-					a1.pos = Vec3(x, y, z1) + offset
-					a1.uv = Vec2(a1.pos.x + offset.x, a1.pos.y + offset.y) / size
-					self:AddVertex(a1)
+				local a1 = {}
+				a1.pos = Vec3(x, y, z1) + offset
+				a1.uv = Vec2(a1.pos.x + offset.x, a1.pos.y + offset.y) / size
+				self:AddVertex(a1)
 
-					local b1 = {}
-					b1.pos = Vec3(x + s.x, y, z2) + offset
-					b1.uv = Vec2(b1.pos.x + offset.x, b1.pos.y + offset.y) / size
-					self:AddVertex(b1)
+				local b1 = {}
+				b1.pos = Vec3(x + s.x, y, z2) + offset
+				b1.uv = Vec2(b1.pos.x + offset.x, b1.pos.y + offset.y) / size
+				self:AddVertex(b1)
 
-					local c1 = {}
-					c1.pos = Vec3(x + s2.x, y + s2.y, z5) + offset
-					c1.uv = Vec2(c1.pos.x + offset.x, c1.pos.y + offset.y) / size
-					self:AddVertex(c1)
+				local c1 = {}
+				c1.pos = Vec3(x + s2.x, y + s2.y, z5) + offset
+				c1.uv = Vec2(c1.pos.x + offset.x, c1.pos.y + offset.y) / size
+				self:AddVertex(c1)
 
-					local normal = -(a1.pos - b1.pos):Cross(b1.pos - c1.pos):GetNormalized()
-					a1.normal = normal
-					b1.normal = normal
-					c1.normal = normal
+				local normal = -(a1.pos - b1.pos):Cross(b1.pos - c1.pos):GetNormalized()
+				a1.normal = normal
+				b1.normal = normal
+				c1.normal = normal
 
-					--[[
-						 ___
-						|\ /
-						|/
-					]]
+				--[[
+					 ___
+					|\ /
+					|/
+				]]
 
-					local a2 = {}
-					a2.pos = Vec3(x, y, z1) + offset
-					a2.uv = Vec2(a2.pos.x + offset.x, a2.pos.y + offset.y) / size
-					self:AddVertex(a2)
+				local a2 = {}
+				a2.pos = Vec3(x, y, z1) + offset
+				a2.uv = Vec2(a2.pos.x + offset.x, a2.pos.y + offset.y) / size
+				self:AddVertex(a2)
 
-					local b2 = {}
-					b2.pos = Vec3(x + s2.x, y + s2.y, z5) + offset
-					b2.uv = Vec2(b2.pos.x + offset.x, b2.pos.y + offset.y) / size
-					self:AddVertex(b2)
+				local b2 = {}
+				b2.pos = Vec3(x + s2.x, y + s2.y, z5) + offset
+				b2.uv = Vec2(b2.pos.x + offset.x, b2.pos.y + offset.y) / size
+				self:AddVertex(b2)
 
-					local c2 = {}
-					c2.pos = Vec3(x, y + s.y, z3) + offset
-					c2.uv = Vec2(c2.pos.x + offset.x, c2.pos.y + offset.y) / size
-					self:AddVertex(c2)
+				local c2 = {}
+				c2.pos = Vec3(x, y + s.y, z3) + offset
+				c2.uv = Vec2(c2.pos.x + offset.x, c2.pos.y + offset.y) / size
+				self:AddVertex(c2)
 
-					local normal = -(a2.pos - b2.pos):Cross(b2.pos - c2.pos):GetNormalized()
-					a2.normal = normal
-					b2.normal = normal
-					c2.normal = normal
+				local normal = -(a2.pos - b2.pos):Cross(b2.pos - c2.pos):GetNormalized()
+				a2.normal = normal
+				b2.normal = normal
+				c2.normal = normal
 
-					--[[
-						___
-					   |\_/
-					   |/_\
-					]]
+				--[[
+					___
+				   |\_/
+				   |/_\
+				]]
 
-					local a3 = {}
-					a3.pos = Vec3(x, y + s.y, z3) + offset
-					a3.uv = Vec2(a3.pos.x + offset.x, a3.pos.y + offset.y) / size
-					self:AddVertex(a3)
+				local a3 = {}
+				a3.pos = Vec3(x, y + s.y, z3) + offset
+				a3.uv = Vec2(a3.pos.x + offset.x, a3.pos.y + offset.y) / size
+				self:AddVertex(a3)
 
-					local b3 = {}
-					b3.pos = Vec3(x + s2.x, y + s2.y, z5) + offset
-					b3.uv = Vec2(b3.pos.x + offset.x, b3.pos.y + offset.y) / size
-					self:AddVertex(b3)
+				local b3 = {}
+				b3.pos = Vec3(x + s2.x, y + s2.y, z5) + offset
+				b3.uv = Vec2(b3.pos.x + offset.x, b3.pos.y + offset.y) / size
+				self:AddVertex(b3)
 
-					local c3 = {}
-					c3.pos = Vec3(x + s.x, y + s.y, z4) + offset
-					c3.uv = Vec2(c3.pos.x + offset.x, c3.pos.y + offset.y) / size
-					self:AddVertex(c3)
+				local c3 = {}
+				c3.pos = Vec3(x + s.x, y + s.y, z4) + offset
+				c3.uv = Vec2(c3.pos.x + offset.x, c3.pos.y + offset.y) / size
+				self:AddVertex(c3)
 
-					local normal = -(a3.pos - b3.pos):Cross(b3.pos - c3.pos):GetNormalized()
-					a3.normal = normal
-					b3.normal = normal
-					c3.normal = normal
+				local normal = -(a3.pos - b3.pos):Cross(b3.pos - c3.pos):GetNormalized()
+				a3.normal = normal
+				b3.normal = normal
+				c3.normal = normal
 
-					--[[
-						___
-					   |\_/|
-					   |/_\|
-					]]
+				--[[
+					___
+				   |\_/|
+				   |/_\|
+				]]
 
-					local a4 = {}
-					a4.pos = Vec3(x + s2.x, y + s2.y, z5) + offset
-					a4.uv = Vec2(a4.pos.x + offset.x, a4.pos.y + offset.y) / size
-					self:AddVertex(a4)
+				local a4 = {}
+				a4.pos = Vec3(x + s2.x, y + s2.y, z5) + offset
+				a4.uv = Vec2(a4.pos.x + offset.x, a4.pos.y + offset.y) / size
+				self:AddVertex(a4)
 
-					local b4 = {}
-					b4.pos = Vec3(x + s.x, y, z2) + offset
-					b4.uv = Vec2(b4.pos.x + offset.x, b4.pos.y + offset.y) / size
-					self:AddVertex(b4)
+				local b4 = {}
+				b4.pos = Vec3(x + s.x, y, z2) + offset
+				b4.uv = Vec2(b4.pos.x + offset.x, b4.pos.y + offset.y) / size
+				self:AddVertex(b4)
 
-					local c4 = {}
-					c4.pos = Vec3(x + s.x, y + s.y, z4) + offset
-					c4.uv = Vec2(c4.pos.x + offset.x, c4.pos.y + offset.y) / size
-					self:AddVertex(c4)
+				local c4 = {}
+				c4.pos = Vec3(x + s.x, y + s.y, z4) + offset
+				c4.uv = Vec2(c4.pos.x + offset.x, c4.pos.y + offset.y) / size
+				self:AddVertex(c4)
 
-					local normal = -(a4.pos - b4.pos):Cross(b4.pos - c4.pos):GetNormalized()
-					a4.normal = normal
-					b4.normal = normal
-					c4.normal = normal
+				local normal = -(a4.pos - b4.pos):Cross(b4.pos - c4.pos):GetNormalized()
+				a4.normal = normal
+				b4.normal = normal
+				c4.normal = normal
 
-					tasks.Wait()
-				end
+				tasks.Wait()
 			end
 		end
 	end

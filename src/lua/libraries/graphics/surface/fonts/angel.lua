@@ -66,7 +66,7 @@ function META:Initialize()
 				self.pages[i - 1] = {name = name, chars = {}, png = render.CreateTextureFromPath(self.Path .. "/" .. name)}
 			end
 		elseif type == TYPE_CHARS then
-			for i = 1, size / 20 do
+			for _ = 1, size / 20 do
 				local char = buffer:ReadStructure[[
 					int id;
 					unsigned short x;

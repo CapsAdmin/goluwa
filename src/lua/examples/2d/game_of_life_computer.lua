@@ -1,4 +1,3 @@
-local start = 0.5
 local scale = 1
 
 local tex = render.CreateBlankTexture(Vec2(render.GetWidth()/scale, render.GetHeight()/scale))

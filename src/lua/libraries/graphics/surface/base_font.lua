@@ -63,7 +63,7 @@ function META:LoadGlyph(code)
 	local buffer, char = self:GetGlyphData(code)
 
 	if not buffer and self.FallbackFonts then
-		for i, font in ipairs(self.FallbackFonts) do
+		for _, font in ipairs(self.FallbackFonts) do
 			buffer, char = font:GetGlyphData(code)
 			if buffer then break end
 		end
@@ -241,7 +241,7 @@ function META:CompileString(data)
 		end
 
 		surface.PushMatrix(x, y)
-		for i, v in ipairs(out) do
+		for _, v in ipairs(out) do
 			surface.SetTexture(v.texture)
 			v.poly:Draw(width_cache[w])
 		end
@@ -320,10 +320,10 @@ end
 prototype.Register(META)
 
 if RELOAD then
-	for k,v in pairs(surface.registered_fonts) do
+	for _, v in pairs(surface.registered_fonts) do
 		surface.RegisterFont(v)
 	end
-	for k,v in pairs(prototype.GetCreated()) do
+	for _, v in pairs(prototype.GetCreated()) do
 		if v.Type == "font" then
 			v.string_cache = {}
 			v.total_strings_stored = 0

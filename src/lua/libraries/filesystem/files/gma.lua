@@ -49,11 +49,9 @@ function CONTEXT:OnParseArchive(file, archive_path)
 
 	info.file_block = file:GetPosition()
 
-	for i,v in pairs(info.entries) do
+	for _, v in pairs(info.entries) do
 		v.offset = v.offset + info.file_block
 	end
-
-	return tree
 end
 
 vfs.RegisterFileSystem(CONTEXT)

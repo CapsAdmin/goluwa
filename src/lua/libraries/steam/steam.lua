@@ -96,7 +96,7 @@ function steam.VDFToTable(str, lower_or_modify_keys, preprocess)
 	local current = out
 	local stack = {current}
 
-	local key, val
+	local key
 
 	for i = 1, #tbl do
 		local char = tbl[i]
@@ -141,7 +141,7 @@ function steam.VDFToTable(str, lower_or_modify_keys, preprocess)
 						current[key] = {current[key], val}
 					else
 						if key:find("+", nil, true) then
-							for i, key in ipairs(key:split("+")) do
+							for _, key in ipairs(key:split("+")) do
 								if type(current[key]) == "table" then
 									table.insert(current[key], val)
 								elseif current[key] then

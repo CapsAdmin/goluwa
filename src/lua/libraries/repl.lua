@@ -9,7 +9,6 @@ repl.max_lines = 10000
 
 local c = repl.curses
 local command_history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt") or {}
-local hush
 local dirty = false
 
 local COLORPAIR_STATUS = 9

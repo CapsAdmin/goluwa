@@ -169,7 +169,7 @@ function META:Draw(max_w)
 
 							if chunk.chunks_inbetween then
 								--print("pre_draw_chunks", chunk.val.type, chunk.i, #chunk.chunks_inbetween)
-								for i, other_chunk in ipairs(chunk.chunks_inbetween) do
+								for _, other_chunk in ipairs(chunk.chunks_inbetween) do
 									self:CallTagFunction(chunk, "pre_draw_chunks", other_chunk)
 								end
 							end
@@ -193,7 +193,7 @@ function META:Draw(max_w)
 							self:CallTagFunction(chunk.start_chunk, "post_draw", chunk.start_chunk.x, chunk.start_chunk.y)
 						end
 
-						for i, other_chunk in ipairs(chunk.chunks_inbetween) do
+						for _, other_chunk in ipairs(chunk.chunks_inbetween) do
 							self:CallTagFunction(chunk.start_chunk, "post_draw_chunks", other_chunk)
 						end
 					end

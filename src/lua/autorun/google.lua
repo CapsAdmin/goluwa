@@ -65,8 +65,6 @@ function google.YoutubeSearch(query, callback)
 
 		if not hashed.feed or not hashed.feed.entry then return end
 
-		local page_url = "https://www.youtube.com/results?search_query=#" .. query
-
 		local name = hashed["feed"]["entry"][1]["media$group"]["media$title"]["$t"]
 		local id = hashed["feed"]["entry"][1]["media$group"]["yt$videoid"]["$t"]
 		local views = hashed["feed"]["entry"][1]["yt$statistics"]["viewCount"] or 0

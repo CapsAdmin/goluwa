@@ -253,7 +253,7 @@ if SERVER then
 		end
 	end
 
-	function network.BroadcastPacket(str, flags, channel)
+	function network.BroadcastPacket(str)
 		for _, peer in pairs(network.GetPeers()) do
 			network.SendPacketToPeer(peer, str)
 		end

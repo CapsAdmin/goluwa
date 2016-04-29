@@ -32,7 +32,7 @@ do -- logging
 		-- guessing the location of a library
 		local sources = {}
 
-		for k,v in pairs(t) do
+		for _, v in pairs(t) do
 			if type(v) == "function" then
 				local src = debug.getinfo(v).source
 				sources[src] = (sources[src] or 0) + 1
@@ -41,8 +41,8 @@ do -- logging
 
 		local tmp = {}
 
-		for k,v in pairs(sources) do
-			table.insert(tmp, {k=k,v=v})
+		for k, v in pairs(sources) do
+			table.insert(tmp, {k = k, v = v})
 		end
 
 		table.sort(tmp, function(a,b) return a.v > b.v end)
@@ -296,7 +296,7 @@ end
 do -- wait
 	local temp = {}
 
-	function wait(seconds, frames)
+	function wait(seconds)
 		local time = system.GetElapsedTime()
 		if not temp[seconds] or (temp[seconds] + seconds) < time then
 			temp[seconds] = system.GetElapsedTime()
@@ -313,12 +313,11 @@ do -- check
 		local name = debug.getinfo(level, "n").name
 
 		local types = {...}
-		local allowed = ""
 		local typ = method(var)
 
 		local matched = false
 
-		for key, expected in ipairs(types) do
+		for _, expected in ipairs(types) do
 			if typ == expected then
 				matched = true
 			end
@@ -446,7 +445,7 @@ pretty_prints.table = function(t)
 
 	-- guessing the location of a library
 	local sources = {}
-	for k,v in pairs(t) do
+	for _, v in pairs(t) do
 		if type(v) == "function" then
 			local src = debug.getinfo(v).source
 			sources[src] = (sources[src] or 0) + 1
@@ -454,8 +453,8 @@ pretty_prints.table = function(t)
 	end
 
 	local tmp = {}
-	for k,v in pairs(sources) do
-		table.insert(tmp, {k=k,v=v})
+	for k, v in pairs(sources) do
+		table.insert(tmp, {k = k, v = v})
 	end
 
 	table.sort(tmp, function(a,b) return a.v > b.v end)

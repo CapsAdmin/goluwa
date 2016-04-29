@@ -25,7 +25,7 @@ function resource.AddProvider(provider)
 	if not SOCKETS then return end
 
 	sockets.Download(provider .. "auto_download.txt", function(str)
-		for i,v in ipairs(serializer.Decode("newline", str)) do
+		for _,v in ipairs(serializer.Decode("newline", str)) do
 			resource.Download(v)
 		end
 	end)
@@ -55,7 +55,8 @@ local function download(from, to, callback, on_fail, on_header)
 		end,
 		function(header)
 			vfs.CreateFolders("os", e.DOWNLOAD_FOLDER .. to)
-			file, err = vfs.Open("os:" .. e.DOWNLOAD_FOLDER .. to, "write")
+			local file_, err = vfs.Open("os:" .. e.DOWNLOAD_FOLDER .. to, "write")
+			file = file_
 
 			if not file then
 				warning("resource download error: ", 2, err)
@@ -80,7 +81,7 @@ local function download_from_providers(path, callback, on_fail)
 
 	local failed = 0
 
-	for i, provider in ipairs(resource.providers) do
+	for _, provider in ipairs(resource.providers) do
 		download(
 			provider .. path,
 			path,
@@ -92,7 +93,7 @@ local function download_from_providers(path, callback, on_fail)
 				end
 			end,
 			function()
-				for i, other_provider in ipairs(resource.providers) do
+				for _, other_provider in ipairs(resource.providers) do
 					if provider ~= other_provider then
 						sockets.AbortDownload(other_provider .. path)
 					end

@@ -55,7 +55,7 @@ function render.StopDebug()
 		if int[0] ~= 0 then
 			message = {}
 
-			for i = 0, int[0] do
+			for _ = 0, int[0] do
 				local types = ffi.new("GLenum[1]")
 				if gl.GetDebugMessageLog(1, length, nil, types, nil, nil, nil, buffer) ~= 0 and types[0] == gl.e.GL_DEBUG_TYPE_ERROR then
 					local str = ffi.string(buffer)
@@ -99,7 +99,7 @@ function render.EnableVerboseDebug(b)
 
 						local message
 
-						for i = 0, logged_count[0] do
+						for _ = 0, logged_count[0] do
 							local type = ffi.new("GLenum[1]")
 							if gl.GetDebugMessageLog(1, length, nil, type, nil, nil, nil, buffer) ~= 0 then
 								type = types[type[0]]

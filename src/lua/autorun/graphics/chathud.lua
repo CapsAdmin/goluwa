@@ -65,7 +65,6 @@ if surface.DrawFlag then
 	}
 end
 
-local chathud_show = pvars.Setup("cl_chathud_show", 1)
 local height_mult = pvars.Setup("cl_chathud_height_mult", 0.76)
 local width_mult = pvars.Setup("cl_chathud_width_mult", 0.6)
 
@@ -96,7 +95,7 @@ function chathud.AddText(...)
 
 	local args = {}
 
-	for k,v in pairs({...}) do
+	for _, v in pairs({...}) do
 		local t = typex(v)
 		if t == "client" then
 			table.insert(args, v:GetUniqueColor())
@@ -156,7 +155,7 @@ end
 function chathud.Draw()
 	local markup = chathud.markup
 
-	local w, h = surface.GetSize()
+	local _, h = surface.GetSize()
 	local x, y = 30, h * height_mult:Get()
 
 	y = y - markup.height

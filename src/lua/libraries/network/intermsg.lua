@@ -4,16 +4,16 @@ intermsg.client_sockets = intermsg.client_sockets or {udp = {}, tcp = {}}
 intermsg.server_sockets = intermsg.server_sockets or {udp = {}, tcp = {}}
 
 function intermsg.Panic()
-	for typ, sockets in pairs(intermsg.client_sockets) do
-		for ip_part, sck in pairs(sockets) do
+	for _, sockets in pairs(intermsg.client_sockets) do
+		for _, sck in pairs(sockets) do
 			if sck:IsValid() then
 				sck:Remove()
 			end
 		end
 	end
 
-	for typ, sockets in pairs(intermsg.server_sockets) do
-		for ip_part, sck in pairs(sockets) do
+	for _, sockets in pairs(intermsg.server_sockets) do
+		for _, sck in pairs(sockets) do
 			if sck:IsValid() then
 				sck:Remove()
 			end

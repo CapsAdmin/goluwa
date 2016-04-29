@@ -43,7 +43,7 @@ local list = {}
 
 local tree = {x = 0, y = 0, w = render.GetWidth(), h = render.GetHeight()}
 
-for k,v in pairs(prototype.GetCreated()) do
+for _, v in pairs(prototype.GetCreated()) do
 	if v.Type == "texture" then
 		local w, h = v:GetSize().x, v:GetSize().y
 		if w > 64 or h > 64 then
@@ -56,7 +56,7 @@ end
 
 event.AddListener("PostDrawMenu", "texture_tiles", function()
 	surface.SetColor(1,1,1,1)
-	for i,v in ipairs(list) do
+	for _,v in ipairs(list) do
 		if v.node then
 			surface.SetTexture(v.tex)
 			if v.tex.StorageType == "cube_map" then

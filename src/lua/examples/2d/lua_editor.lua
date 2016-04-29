@@ -85,11 +85,8 @@ do
 		local last_pos = 1
 		local last_color
 
-		for i = 1, 1000 do
-			local ok, msg = pcall(ls.next, ls)
-
-			if not ok then
-				local tbl = msg:split("\n")
+		for _ = 1, 1000 do
+			if not pcall(ls.next, ls) then
 				markup:AddString(str:sub(-ls.p))
 				break
 			end

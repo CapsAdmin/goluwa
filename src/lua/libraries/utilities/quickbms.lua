@@ -1,7 +1,5 @@
 local utility = _G.utility or ...
 
-local fs = require("fs")
-
 local temp_dir = R"data/" .. "bms/"
 local temp_script = R"bin/temp_script.bms"
 local quickbms_location = R("bin/")

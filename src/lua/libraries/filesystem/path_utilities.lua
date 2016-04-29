@@ -90,8 +90,6 @@ function vfs.CreateFoldersFromPath(filesystem, path)
 	local path_info = vfs.GetPathInfo(path)
 	local folders = path_info:GetFolders("full")
 
-	local max = #folders
-
 	for i = 1, #folders - 1 do
 		local folder = folders[i]
 
@@ -100,7 +98,7 @@ function vfs.CreateFoldersFromPath(filesystem, path)
 end
 
 function vfs.GetAbsolutePath(path, is_folder)
-	for i, data in ipairs(vfs.TranslatePath(path, is_folder)) do
+	for _, data in ipairs(vfs.TranslatePath(path, is_folder)) do
 		if data.context:CacheCall("IsFile", data.path_info) or data.context:CacheCall("IsFolder", data.path_info) then
 			return data.path_info.full_path
 		end

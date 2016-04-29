@@ -44,7 +44,7 @@ do
 
 	function META:Remove(...)
 		if self.call_on_remove then
-			for k, v in pairs(self.call_on_remove) do
+			for _, v in pairs(self.call_on_remove) do
 				if v() == false then
 					return
 				end
@@ -64,7 +64,7 @@ do
 		if not event_added and _G.event then
 			event.AddListener("Update", "prototype_remove_objects", function()
 				if #prototype.remove_these > 0 then
-					for i, obj in ipairs(prototype.remove_these) do
+					for _, obj in ipairs(prototype.remove_these) do
 						prototype.created_objects[obj] = nil
 						prototype.MakeNULL(obj)
 					end
@@ -95,7 +95,7 @@ do -- serializing
 		end
 
 		if tbl.__property_links then
-			for i, v in ipairs(tbl.__property_links) do
+			for _, v in ipairs(tbl.__property_links) do
 				self:WaitForGUID(v[1], function(obj)
 					v[1] = obj
 					self:WaitForGUID(v[2], function(obj)
@@ -119,7 +119,7 @@ do -- serializing
 		local info = prototype.GetPropertyLinks(self)
 
 		if next(info) then
-			for i,v in ipairs(info) do
+			for _, v in ipairs(info) do
 				v[1] = v[1].GUID
 				v[2] = v[2].GUID
 			end
@@ -145,7 +145,7 @@ do -- serializing
 		prototype.created_objects_guid[self.GUID] = self
 
 		if callbacks[self.GUID] then
-			for i, cb in ipairs(callbacks[self.GUID]) do
+			for _, cb in ipairs(callbacks[self.GUID]) do
 				cb(self)
 			end
 			callbacks[self.GUID] = nil
@@ -194,7 +194,7 @@ do -- events
 		table.insert(events[event_type], self)
 
 		event.AddListener(event_type, "prototype_events", function(a_, b_, c_)
-			for name, self in ipairs(events[event_type]) do
+			for _, self in ipairs(events[event_type]) do
 				self[func_name](self, a_, b_, c_)
 			end
 		end, {on_error = function(str)

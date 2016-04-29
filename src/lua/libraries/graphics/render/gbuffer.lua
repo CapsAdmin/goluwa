@@ -235,12 +235,12 @@ function render.DrawGBuffer(what, dist)
 	render.SetDepth(false)
 
 	render.gbuffer_mixer_buffer:Begin()
-	for i, pass in ipairs(render.gbuffer_shaders_sorted) do
+	for _, pass in ipairs(render.gbuffer_shaders_sorted) do
 		if pass.Update then
 			pass:Update()
 		end
 
-		for i, shader in ipairs(pass.shaders) do
+		for _, shader in ipairs(pass.shaders) do
 			render.SetBlendMode(shader.blend_mode)
 			if shader.fb then shader.fb:Begin() end
 			surface.PushMatrix(0, 0, shader.size.x, shader.size.y)
@@ -390,7 +390,7 @@ function render.InitializeGBuffer()
 
 		for i, shader_info in ipairs(data_pass.Stages) do
 			local shader = render.CreateShader(shader_info)
-			for i, info in ipairs(framebuffer_buffers) do
+			for _, info in ipairs(framebuffer_buffers) do
 				shader["tex_" .. info.name] = render.gbuffer:GetTexture(info.name)
 			end
 			data_pass.shaders[i] = shader

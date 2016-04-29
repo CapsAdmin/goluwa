@@ -124,7 +124,7 @@ function META:GetTints(count)
    return tbl
 end
 
-function META:GetShades()
+function META:GetShades(count)
 	local tbl = {}
 
 	for i = 1, count do

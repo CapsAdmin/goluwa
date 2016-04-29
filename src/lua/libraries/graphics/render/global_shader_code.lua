@@ -22,7 +22,7 @@ function render.AddGlobalShaderCode(glsl_code, function_name)
 			local arg_line = {}
 
 			for _, line in pairs(parameters:split("\n")) do
-				local type, name, max, min, default = unpack(line:split(" "))
+				local type, name = unpack(line:split(" "))
 				if type and name then
 					if type == "color" then type = "vec3" end
 					table.insert(arg_line, type .. " " .. name)

@@ -35,10 +35,6 @@ do -- PUT ME IN TRANSFORM
 		return (get_target_pos_ang(pos, ang))
 	end
 
-	local function get_target_angles(pos, ang)
-		return select(2, get_target_pos_ang(pos, ang))
-	end
-
 	local function draw_line_to_box(origin, point, siz)
 		siz = siz or 7
 		surface.DrawLine(origin.x, origin.y, point.x, point.y, 3)
@@ -311,22 +307,6 @@ function editor.Open()
 
 	local tree
 
-	local function show_tooltip(node, entered, x, y)
-		local ent = node.ent
-
-		if entered then
-			local tooltip = gui.CreatePanel("text_button")
-			tooltip:SetPosition(Vec2(surface.GetMousePosition()))
-			tooltip:SetMargin(Rect()+4)
-			tooltip:SetText(ent:GetDebugTrace())
-			tooltip:SizeToText()
-			tooltip:Layout(true)
-			node.tooltip = tooltip
-		else
-			gui.RemovePanel(node.tooltip)
-		end
-	end
-
 	local function right_click_node(node)
 		if node then tree:SelectNode(node) end
 
@@ -369,8 +349,6 @@ function editor.Open()
 		local groups = {}
 
 		for config_name, info in pairs(prototype.GetConfigurations()) do
-			local group
-
 			local meta = #info.components == 1 and prototype.GetRegistered("component", info.components[1])
 
 			if meta and meta.Base then
@@ -426,7 +404,7 @@ function editor.Open()
 	end
 
 	local function fill(entities, node)
-		for key, ent in pairs(entities) do
+		for _, ent in pairs(entities) do
 			if not ent:GetHideFromEditor() then
 				local name = ent:GetName()
 				if name == "" then
@@ -456,7 +434,7 @@ function editor.Open()
 		editor.top_scroll:SetPanel(tree)
 
 		local ents = {}
-		for k,v in pairs(entities.GetAll()) do
+		for _, v in pairs(entities.GetAll()) do
 			if not v:HasParent() then
 				table.insert(ents, v)
 			end
@@ -474,7 +452,7 @@ function editor.Open()
 
 			local found_anything = false
 
-			for k, v in pairs(node.ent:GetComponents()) do
+			for _, v in pairs(node.ent:GetComponents()) do
 				if next(prototype.GetStorableVariables(v)) then
 					properties:AddGroup(L(v.ClassName))
 					properties:AddPropertiesFromObject(v)

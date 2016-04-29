@@ -2,9 +2,6 @@ local vfs = _G.vfs or {}
 
 vfs.use_appdata = false
 
-local data_prefix = "%DATA%"
-local data_prefix_pattern = data_prefix:gsub("(%p)", "%%%1")
-
 function vfs.DebugPrint(fmt, ...)
 	logf("[VFS] %s\n", string.safeformat(fmt, ...))
 end
@@ -27,7 +24,7 @@ do -- mounting/links
 			error("a filesystem has to be provided when mounting /to/ somewhere")
 		end
 
-		for i, context in ipairs(vfs.GetFileSystems()) do
+		for _, context in ipairs(vfs.GetFileSystems()) do
 			if path_info_to.filesystem == context.Name or path_info_to.filesystem == "unknown" then
 				table.insert(context.mounted_paths, {
 					where = path_info_where,
@@ -64,8 +61,8 @@ do -- mounting/links
 
 	function vfs.GetMounts()
 		local out = {}
-		for filesystem, context in ipairs(vfs.GetFileSystems()) do
-			for i, v in ipairs(context.mounted_paths) do
+		for _, context in ipairs(vfs.GetFileSystems()) do
+			for _, v in ipairs(context.mounted_paths) do
 				out[v.full_where] = v
 			end
 		end
@@ -83,9 +80,9 @@ do -- mounting/links
 			filesystems = {vfs.GetFileSystem(path_info.filesystem)}
 		end
 
-		for i, context in ipairs(filesystems) do
+		for _, context in ipairs(filesystems) do
 			if path_info.relative then
-				for i, mount_info in ipairs(context.mounted_paths) do
+				for _, mount_info in ipairs(context.mounted_paths) do
 					local where = mount_info.where
 
 					-- does the path match the start of the to path?
@@ -183,7 +180,7 @@ do -- file systems
 
 	include("files/*", vfs)
 
-	for i, context in ipairs(vfs.GetFileSystems()) do
+	for _, context in ipairs(vfs.GetFileSystems()) do
 		if context.VFSOpened then
 			context:VFSOpened()
 		end
@@ -191,7 +188,7 @@ do -- file systems
 end
 
 do -- translate path to useful data
-	local function get_folders(self, typ, keep_last)
+	local function get_folders(self, typ)
 		if typ == "full" then
 			local folders = {}
 
@@ -259,21 +256,12 @@ do -- translate path to useful data
 	end
 end
 
-local function check_write_path(path, is_folder)
-	local path_info = vfs.GetPathInfo(path, is_folder)
-end
-
 function vfs.Open(path, mode, sub_mode)
 	check(path, "string")
 	mode = mode or "read"
 	check(sub_mode, "string", "nil")
 
-	-- a filesystem must be provided when writing data
-	-- since writing data in multiple locations at the same time
-	-- would be confusing
-	check_write_path(path)
-
-	for i, data in ipairs(vfs.TranslatePath(path)) do
+	for _, data in ipairs(vfs.TranslatePath(path)) do
 		local file = prototype.CreateDerivedObject("file_system", data.context.Name)
 		file:SetMode(mode)
 

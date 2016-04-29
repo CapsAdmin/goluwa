@@ -1,4 +1,3 @@
-local ffi = require("ffi")
 local render = (...) or _G.render
 
 local META = prototype.CreateTemplate("vertex_buffer")
@@ -12,9 +11,6 @@ prototype.GetSet(META, "Indices")
 prototype.EndStorable()
 
 function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
-	checkx(shader, "shader")
-	--check(vertices, "cdata", "table")
-	--check(indices, "cdata", "table", "number", "nil")
 	local self = prototype.CreateObject(META)
 	self:SetMode(self:GetMode())
 	render._CreateVertexBuffer(self)

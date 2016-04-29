@@ -86,7 +86,7 @@ function utility.CreateDeferredLibrary(name)
 				_G[name] = nil
 			end,
 			Call = function(self, lib)
-				for i, v in ipairs(self.queue) do
+				for _, v in ipairs(self.queue) do
 					if not lib[v.key] then error(v.key .. " was not found", 2) end
 					print(self, lib)
 					lib[v.key](unpack(v.args))
@@ -125,7 +125,7 @@ function utility.LuaAutoComplete(text)
 
 		local current_func
 
-		for i, index in ipairs(keys) do
+		for _, index in ipairs(keys) do
 			if node[index] and type(node[index]) == "table" then
 				last_node = node
 				node = node[index]
@@ -141,7 +141,7 @@ function utility.LuaAutoComplete(text)
 					local str = tostring(key)
 					if current_func then
 						local params = debug.getparams(current_func)
-						--event.AddListener(
+						--event.AddListener( todo
 					elseif str:find("^.-" .. index) then
 
 						if type(val) == "table" then
@@ -386,7 +386,7 @@ function utility.FindReferences(reference)
 		elseif t == "function" then
 			done[var] = true
 
-			for k, v in pairs(debug.getupvalues(var)) do
+			for _, v in pairs(debug.getupvalues(var)) do
 				if v.val then
 					search(v.val, str .. "^" .. v.key)
 				end
@@ -487,7 +487,7 @@ function utility.TableToColumns(title, tbl, columns, check, sort_key)
 	local max_lengths = {}
 	local temp = {}
 
-	for i, column in ipairs(top) do
+	for _, column in ipairs(top) do
 		for key, data in ipairs(columns) do
 			data.tostring = data.tostring or function(...) return ... end
 			data.friendly = data.friendly or data.key
@@ -510,7 +510,7 @@ function utility.TableToColumns(title, tbl, columns, check, sort_key)
 
 	local width = 0
 
-	for k,v in pairs(columns) do
+	for _,v in pairs(columns) do
 		if max_lengths[v.key] > #v.friendly then
 			v.length = max_lengths[v.key]
 		else
@@ -525,18 +525,18 @@ function utility.TableToColumns(title, tbl, columns, check, sort_key)
 	out = out .. "|" .. (" "):rep(width / 2 - math.floor(#title / 2)) .. title .. (" "):rep(math.floor(width / 2) - #title + math.floor(#title / 2)) .. "|\n"
 	out = out .. "|" .. ("_"):rep(width - 1) .. "|\n"
 
-	for k,v in ipairs(columns) do
+	for _,v in ipairs(columns) do
 		out = out .. "| " .. v.friendly .. ": " .. (" "):rep(-#v.friendly + max_lengths[v.key] - 1)  -- 2 = : + |
 	end
 	out = out .. "|\n"
 
 
-	for k,v in ipairs(columns) do
+	for _,v in ipairs(columns) do
 		out = out .. "|" .. ("_"):rep(v.length + 2)
 	end
 	out = out .. "|\n"
 
-	for k,v in ipairs(top) do
+	for _,v in ipairs(top) do
 		for _,column in ipairs(columns) do
 			out = out .. "| " .. v.str[column.key] .. (" "):rep(-#v.str[column.key] + column.length + 1)
 		end
@@ -558,7 +558,7 @@ do -- tree
 		local keys = str:split(self.delimiter)
 		local next = self.tree
 
-		for i, key in ipairs(keys) do
+		for _, key in ipairs(keys) do
 			if key ~= "" then
 				if type(next[key]) ~= "table" then
 					next[key] = {}
@@ -575,7 +575,7 @@ do -- tree
 		local keys = str:split(self.delimiter)
 		local next = self.tree
 
-		for i, key in ipairs(keys) do
+		for _, key in ipairs(keys) do
 			if key ~= "" then
 				if not next[key] then
 					error("key ".. key .." not found")
@@ -591,7 +591,7 @@ do -- tree
 		local keys = str:split(self.delimiter)
 		local next = self.tree
 
-		for i, key in ipairs(keys) do
+		for _, key in ipairs(keys) do
 			if key ~= "" then
 				if not next[key] then
 					error("not found")
@@ -667,7 +667,6 @@ do -- find value
 
 	local skip =
 	{
-		UTIL_REMAKES = true,
 		ffi = true,
 	}
 
@@ -752,7 +751,7 @@ do -- find value
 		found = {}
 		_find(...)
 		table.sort(found, function(a, b) return #a.key < #b.key end)
-		for k,v in ipairs(found) do table.insert(tbl, v) end
+		for _,v in ipairs(found) do table.insert(tbl, v) end
 	end
 
 	function utility.FindValue(...)
@@ -778,7 +777,7 @@ do -- find value
 			end
 		end
 		table.sort(temp, function(a, b) return #a.key < #b.key end)
-		for k,v in ipairs(temp) do table.insert(found, v) end
+		for _, v in ipairs(temp) do table.insert(found, v) end
 
 		return found
 	end
@@ -848,15 +847,15 @@ function utility.SafeRemove(obj, gc)
 	end
 end
 
+utility.remakes = utility.CreateWeakTable()
+
 function utility.RemoveOldObject(obj, id)
 
 	if hasindex(obj) and type(obj.Remove) == "function" then
-		UTIL_REMAKES = UTIL_REMAKES or {}
-
 		id = id or (debug.getinfo(2).currentline .. debug.getinfo(2).source)
 
-		if typex(UTIL_REMAKES[id]) == typex(obj) then
-			UTIL_REMAKES[id]:Remove()
+		if typex(utility.remakes[id]) == typex(obj) then
+			utility.remakes[id]:Remove()
 		end
 
 		UTIL_REMAKES[id] = obj

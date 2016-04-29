@@ -75,7 +75,7 @@ if SERVER then
 					network.SendPacketToPeer(client.socket, data, flags, channel)
 				end
 			else
-				for key, client in pairs(clients.GetAll()) do
+				for _, client in pairs(clients.GetAll()) do
 					network.SendPacketToPeer(client.socket, data, flags, channel)
 				end
 			end
@@ -165,7 +165,7 @@ do -- buffer object
 		function META:GetString()
 			local temp = {}
 
-			for k,v in ipairs(self.buffer) do
+			for _, v in ipairs(self.buffer) do
 				temp[#temp + 1] = string.char(v)
 			end
 

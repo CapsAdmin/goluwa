@@ -51,7 +51,7 @@ parent:BuildChildrenList()
 event.AddListener("Update", "lol", function()
 	local t = (system.GetElapsedTime() - start) / 10
 
-	for i, child in ipairs(parent:GetChildrenList()) do
+	for _, child in ipairs(parent:GetChildrenList()) do
 		child:SetAngles(Ang3(t,t,-t))
 		t = t * 1.001
 	end

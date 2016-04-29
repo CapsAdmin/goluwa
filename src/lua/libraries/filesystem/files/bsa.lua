@@ -33,7 +33,7 @@ function CONTEXT:OnParseArchive(file, archive_path)
 		file:PopPosition()
 	end
 
-	for i = 1, header.folder_count do
+	for _ = 1, header.folder_count do
 		local folder = file:ReadStructure([[
 			unsigned longlong hash;
 			unsigned int file_count;
@@ -44,7 +44,7 @@ function CONTEXT:OnParseArchive(file, archive_path)
 
 		file:PushPosition(folder.offset - header.file_name_length + 1)
 			local directory = file:ReadString():gsub("\\", "/") .. "/"
-			for j = 1, folder.file_count do
+			for _ = 1, folder.file_count do
 				local file = file:ReadStructure([[
 					unsigned longlong hash;
 					unsigned int entry_length;
@@ -58,7 +58,7 @@ function CONTEXT:OnParseArchive(file, archive_path)
 				file.file_name = file_name
 				file.full_path = file_path
 
-				self:AddEntry(entry)
+				self:AddEntry(file)
 			end
 		file:PopPosition()
 	end

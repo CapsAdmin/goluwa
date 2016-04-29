@@ -86,7 +86,7 @@ do -- constants
 		LINUX = false
 	end
 
-	for k,v in pairs(env_vars) do
+	for k in pairs(env_vars) do
 		if _G[k] == nil then
 			_G[k] = false
 		end

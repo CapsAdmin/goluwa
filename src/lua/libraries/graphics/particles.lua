@@ -77,7 +77,6 @@ function EMITTER:Update(dt)
 
 	dt = dt * self.Speed
 
-	local w, h = surface.GetSize()
 	local cull = not self.ScreenRect:IsZero()
 
 	for i = 1, self.max do
@@ -239,8 +238,8 @@ function EMITTER:AddParticle(...)
 end
 
 function EMITTER:Emit(...)
-	for i = 1, self.EmitCount do
-		self:AddParticle(...)
+	for _ = 1, self.EmitCount do
+		local p = self:AddParticle(...)
 
 		if self.OnEmit then
 			self:OnEmit(p, ...)

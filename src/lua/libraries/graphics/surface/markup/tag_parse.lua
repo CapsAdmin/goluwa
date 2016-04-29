@@ -5,7 +5,7 @@ local function parse_tag_arguments(self, arg_line)
 	local str = {}
 	local in_lua = false
 
-	for i, char in pairs(utf8.totable(arg_line)) do
+	for _, char in pairs(utf8.totable(arg_line)) do
 		if char == "[" then
 			in_lua = true
 		elseif in_lua and char == "]" then -- todo: longest match
@@ -67,7 +67,7 @@ function META:StringTagsToTable(str)
 	local last_font
 	local last_color
 
-	for i, char in pairs(utf8.totable(str)) do
+	for _, char in pairs(utf8.totable(str)) do
 		if char == "<" then
 
 			-- if we've been parsing a string add it

@@ -62,7 +62,7 @@ do
 
 			filter = filter or {}
 
-			for k,v in pairs(filter) do filter[v] = true end
+			for _, v in pairs(filter) do filter[v] = true end
 
 			started[library] = {}
 
@@ -347,7 +347,7 @@ function debug.stepin()
 
 	local curses = require("ffi.curses")
 
-	step = function(mode, line)
+	step = function(_, line)
 		commands.Clear()
 
 		debug.dumpcall(2, line)

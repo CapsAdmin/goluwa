@@ -19,7 +19,7 @@ function META:AddComponent(name, ...)
 	if not component then return end
 
 	if not DEFER_COMPONENT_CHECKS_AND_EVENTS then
-		for i, other in ipairs(component.Require) do
+		for _, other in ipairs(component.Require) do
 			if not self.Components[other] then
 				error("component " .. name .. " requires component " .. other, 2)
 			end
@@ -28,7 +28,7 @@ function META:AddComponent(name, ...)
 
 	component.Entity = self
 
-	for i, event_type in ipairs(component.Events) do
+	for _, event_type in ipairs(component.Events) do
 		component:AddEvent(event_type)
 	end
 
@@ -38,7 +38,7 @@ function META:AddComponent(name, ...)
 	if not DEFER_COMPONENT_CHECKS_AND_EVENTS then
 		component:OnAdd(self, ...)
 
-		for name, component_ in pairs(self:GetComponents()) do
+		for _, component_ in pairs(self:GetComponents()) do
 			component_:OnEntityAddComponent(component)
 		end
 	end
@@ -53,7 +53,7 @@ function META:RemoveComponent(name)
 
 	if component:IsValid() then
 
-		for i, event_type in ipairs(component.Events) do
+		for _, event_type in ipairs(component.Events) do
 			component:RemoveEvent(event_type)
 		end
 
@@ -77,11 +77,11 @@ function META:OnRemove()
 	if self.removed then return end
 	event.Call("EntityRemove", self)
 
-	for name, component in pairs(self:GetComponents()) do
+	for name in pairs(self:GetComponents()) do
 		self:RemoveComponent(name)
 	end
 
-	for k,v in pairs(self:GetChildrenList()) do
+	for _, v in pairs(self:GetChildrenList()) do
 		v:Remove()
 	end
 
@@ -99,7 +99,7 @@ do -- serializing
 		if type(data.self) ~= "table" or type(data.config) ~= "string" then return end
 
 		if not skip_remove then
-			for k,v in pairs(self:GetChildrenList()) do
+			for _, v in pairs(self:GetChildrenList()) do
 				if not v.HideFromEditor then
 					v:Remove()
 				end
@@ -118,7 +118,7 @@ do -- serializing
 			component:SetStorableTable(vars)
 		end
 
-		for i, data in ipairs(data.children) do
+		for _, data in ipairs(data.children) do
 			local ent = entities.CreateEntity(data.config, self)
 			ent:SetStorableTable(data, true)
 		end
@@ -133,7 +133,7 @@ do -- serializing
 			data.components[name] = component:GetStorableTable()
 		end
 
-		for i, v in ipairs(self:GetChildren()) do
+		for _, v in ipairs(self:GetChildren()) do
 			if not v:GetHideFromEditor() then
 				table.insert(data.children, v:GetStorableTable())
 			end
@@ -206,7 +206,7 @@ function prototype.CreateEntity(config, parent, info)
 		end
 
 		for name, component in pairs(self:GetComponents()) do
-			for i, other in ipairs(component.Require) do
+			for _, other in ipairs(component.Require) do
 				if not self.Components[other] then
 					self:Remove()
 					error("component " .. name .. " requires component " .. other, 1)

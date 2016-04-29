@@ -122,7 +122,7 @@ do -- binding
 			render.PopViewport()
 			self:Pop()
 			if self.generate_mip_maps then
-				for i,v in ipairs(self.textures_sorted) do
+				for _, v in ipairs(self.textures_sorted) do
 					if v.tex and v.tex.MipMapLevels ~= 1 then
 						v.tex:GenerateMipMap()
 					end

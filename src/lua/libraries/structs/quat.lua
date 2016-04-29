@@ -164,11 +164,11 @@ end
 
 -- https://github.com/grrrwaaa/gct753/blob/master/modules/quat.lua#L465
 
-local function twoaxisrot(r11, r12, r21, r31, r32, res)
+local function twoaxisrot(r11, r12, r21, r31, r32)
 	return Ang3(math.atan2(r11, r12), math.acos(r21), math.atan2(r31, r32))
 end
 
-local function threeaxisrot(r11, r12, r21, r31, r32, res)
+local function threeaxisrot(r11, r12, r21, r31, r32)
 	return Ang3(math.atan2(r31, r32), math.asin(r21), math.atan2(r11, r12))
 end
 

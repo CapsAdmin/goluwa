@@ -42,7 +42,7 @@ function META:SelectCurrentWord()
 	local x, y = self:GetNextCharacterClassPosition(-1, false)
 	self:SelectStart(x - 1, y)
 
-	local x, y = self:GetNextCharacterClassPosition(1, false)
+	x, y = self:GetNextCharacterClassPosition(1, false)
 	self:SelectStop(x + 1, y)
 
 	self:SetCaretPosition(x + 1, y)
@@ -95,7 +95,6 @@ function META:GetSelection(tags)
 		if not tags then
 			return utf8.sub(self.text, START.sub_pos, STOP.sub_pos - 1)
 		else
-			local last_chunk
 			local last_font
 			local last_color
 

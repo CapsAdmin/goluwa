@@ -158,7 +158,6 @@ function string.lengthsplit(str, len)
 		local tbl = {}
 
 		local max = math.floor(#str/len)
-		local leftover = #str - (max * len)
 
 		for i = 0, max do
 
@@ -205,7 +204,7 @@ local types = {
 }
 
 function string.charclass(char)
-	for i, v in ipairs(types) do
+	for _, v in ipairs(types) do
 		if char:find(v) then
 			return v
 		end
@@ -323,7 +322,7 @@ function string.count(self, what, plain)
 	local count = 0
 	local current_pos = 1
 
-	for i = 1, #self do
+	for _ = 1, #self do
 		local start_pos, end_pos = self:find(what, current_pos, plain)
 		if not start_pos then break end
 		count = count + 1

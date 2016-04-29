@@ -79,7 +79,7 @@ end
 
 local background = ColorBytes(64, 44, 128, 127)
 
-function menu.RenderBackground(dt)
+function menu.RenderBackground()
 	surface.SetWhiteTexture()
 	if render.IsGBufferReady() then
 		surface.SetColor(background.r, background.g, background.b, background.a)
@@ -568,7 +568,7 @@ function menu.CreateTopBar()
 				end
 			end
 
-			for ip, info in pairs(network.GetAvailableServers()) do
+			for _, info in pairs(network.GetAvailableServers()) do
 				add(info)
 			end
 

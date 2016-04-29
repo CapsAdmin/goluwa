@@ -112,7 +112,7 @@ event.AddListener("ClientChat", "chathud_image_url", function(client, str)
 
 		if not allowed[ext] then return end
 
-		for k,v in pairs(queue) do
+		for _,v in pairs(queue) do
 			if v == url then return end
 		end
 

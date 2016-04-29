@@ -82,10 +82,8 @@ do
 		local last_pos = 1
 		local last_color
 
-		for i = 1, 1000 do
-			local ok, msg = pcall(ls.next, ls)
-
-			if not ok then
+		for _ = 1, 1000 do
+			if not pcall(ls.next, ls) then
 				markup:AddString(str)
 				return
 			end
@@ -197,7 +195,6 @@ function chat.GetPanel()
 	--edit:SetMultiline(true)
 
 	local i = 1
-	local history = {}
 	local last_history
 	local found_autocomplete
 
@@ -379,7 +376,7 @@ function chat.GetPanel()
 	end
 
 	if commands.history then
-		for i, v in pairs(commands.history) do
+		for _, v in pairs(commands.history) do
 			text:OnReplPrint(v)
 		end
 	end

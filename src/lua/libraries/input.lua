@@ -127,7 +127,7 @@ do
 			if data.trigger == key then
 				if (press and not data.trigger_on_release) or (not press and data.trigger_on_release) then
 					local ok = true
-					for i,v in ipairs(data.modifiers) do
+					for _, v in ipairs(data.modifiers) do
 						if not input.IsKeyDown(v) then
 							ok = false
 							break
@@ -146,8 +146,7 @@ do
 
 	commands.Add("bind", function(line, key, ...)
 		if key then
-			cmd = table.concat({...}, " ")
-			input.Bind(key, cmd)
+			input.Bind(key, table.concat({...}, " "))
 		end
 	end)
 end

@@ -25,13 +25,13 @@ local function get_is_set(is, meta, name, default, cvar)
 
     if type(default) == "number" then
 		meta[set .. name] = function(self, var) self.nv[name] = tonumber(var) end
-		meta[get .. name] = function(self, var) return tonumber(self.nv[name]) or default end
+		meta[get .. name] = function(self) return tonumber(self.nv[name]) or default end
 	elseif type(default) == "string" then
 		meta[set .. name] = function(self, var) self.nv[name] = tostring(var) end
-		meta[get .. name] = function(self, var) if self.nv[name] ~= nil then return tostring(self.nv[name]) end return default end
+		meta[get .. name] = function(self) if self.nv[name] ~= nil then return tostring(self.nv[name]) end return default end
 	else
 		meta[set .. name] = function(self, var) if var == nil then var = default end self.nv[name] = var end
-		meta[get .. name] = function(self, var) if self.nv[name] ~= nil then return self.nv[name] end return default end
+		meta[get .. name] = function(self) if self.nv[name] ~= nil then return self.nv[name] end return default end
 	end
 
 	-- this is important because it sets up property info for this object for editors and such to use

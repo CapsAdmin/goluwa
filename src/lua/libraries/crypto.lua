@@ -21,10 +21,6 @@ do
 		0x9b64c2b0, 0x86d3d2d4, 0xa00ae278, 0xbdbdf21c
 	});
 
-	function mz_crc32(buff, buf_len)
-
-	end
-
 	function crypto.CRC32(src, len)
 
 		if not len then

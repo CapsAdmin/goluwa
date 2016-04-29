@@ -97,7 +97,7 @@ local number_types = {
 	float_32_unsigned_int_24_8_rev = {type = "", combined = true},
 }
 
-for friendly, info in pairs(texture_formats) do
+for _, info in pairs(texture_formats) do
 	local line = "struct {"
 	local type
 

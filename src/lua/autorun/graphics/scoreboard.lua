@@ -159,7 +159,7 @@ function scoreboard.AddClient(client)
 		tags:SetNoDraw(true)
 
 		tags.OnMouseEnter = function()
-			for i, child in ipairs(tags:GetChildren()) do
+			for _, child in ipairs(tags:GetChildren()) do
 				if child.ClassName == "text" then
 					child:SetVisible(true)
 				end
@@ -168,7 +168,7 @@ function scoreboard.AddClient(client)
 		end
 
 		tags.OnMouseExit = function()
-			for i, child in ipairs(tags:GetChildren()) do
+			for _, child in ipairs(tags:GetChildren()) do
 				if child.ClassName == "text" then
 					child:SetVisible(false)
 				end
@@ -192,8 +192,8 @@ function scoreboard.AddClient(client)
 			text:SetupLayout("left", "center_y_simple")
 		end
 
-	--	add_tag("textures/silkicons/clock.png", "AFK")
-	--	add_tag("textures/silkicons/wrench.png", "Building")
+		add_tag("textures/silkicons/clock.png", "AFK")
+		add_tag("textures/silkicons/wrench.png", "Building")
 	end
 
 	scoreboard.panel.help:BringToFront()

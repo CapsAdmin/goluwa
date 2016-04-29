@@ -57,7 +57,7 @@ function META:CaretFromPixels(x, y)
 		end
 
 		if not CHAR then
-			for i, v in ipairs(line) do
+			for _, v in ipairs(line) do
 				local i, char = unpack(v)
 				if x < char.data.x then
 					POS = i - 1
@@ -109,7 +109,7 @@ function META:CaretFromPosition(x, y)
 	if not CHAR then
 		if x == utf8.length(self.lines[#self.lines]) then
 			POS = #self.chars
-			CHAR = self.chars[i]
+			CHAR = self.chars[POS]
 		end
 	end
 

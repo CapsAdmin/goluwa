@@ -44,7 +44,7 @@ ffi.load = function(path, ...)
 						end
 
 						-- if not try the default OS specific dll directories
-						local args = {pcall(_OLD_G.ffi_load, full_path, ...)}
+						args = {pcall(_OLD_G.ffi_load, full_path, ...)}
 						if args[1] then
 							return select(2, unpack(args))
 						end

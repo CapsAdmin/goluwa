@@ -124,7 +124,7 @@ function steam.GetFriends()
 end
 
 function steam.FindFriend(nick)
-	for k, v in pairs(steam.GetFriends()) do
+	for _, v in pairs(steam.GetFriends()) do
 		if v:GetPersonaName():find(nick) or v.id == nick then
 			return v
 		end

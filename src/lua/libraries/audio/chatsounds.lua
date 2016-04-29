@@ -451,7 +451,7 @@ do -- list parsing
 				end
 			end
 
-			for game, sound_info in pairs(sound_info) do
+			for _, sound_info in pairs(sound_info) do
 				for sound_name, info in pairs(sound_info) do
 					sound_info[sound_name] = nil
 					sound_info[sound_name:lower()] = info
@@ -837,7 +837,7 @@ do -- list parsing
 			str[#str + 1] = "realm="..realm
 			local done = {}
 			for trigger, sounds in pairs(list) do
-				for i, data in ipairs(sounds) do
+				for _, data in ipairs(sounds) do
 					local val = data.path .. "=" .. trigger
 					if not done[val] then
 						str[#str + 1] = val
@@ -934,8 +934,8 @@ do -- list parsing
 				event.Delay(0, function()
 					local list = {}
 
-					for key, val in pairs(chatsounds.list) do
-						for key, val in pairs(val) do
+					for _, val in pairs(chatsounds.list) do
+						for key in pairs(val) do
 							table.insert(list, key)
 						end
 					end
@@ -1235,11 +1235,11 @@ function chatsounds.PlayScript(script, udata)
 
 	local sounds = {}
 
-	for i, chunk in pairs(script) do
+	for _, chunk in pairs(script) do
 		if chunk.type == "matched" then
 
 			if chunk.modifiers then
-				for i, data in pairs(chunk.modifiers) do
+				for _, data in pairs(chunk.modifiers) do
 					local mod = chatsounds.Modifiers[data.mod]
 					if mod and mod.args then
 						for i, func in pairs(mod.args) do
@@ -1251,7 +1251,7 @@ function chatsounds.PlayScript(script, udata)
 
 			if chunk.modifiers then
 				for mod, data in pairs(chunk.modifiers) do
-					local mod = chatsounds.Modifiers[data.mod]
+					mod = chatsounds.Modifiers[data.mod]
 					if mod and mod.pre_init then
 						mod.pre_init(unpack(data.args))
 					end
@@ -1264,7 +1264,7 @@ function chatsounds.PlayScript(script, udata)
 				local info
 
 				if chunk.modifiers then
-					for k, v in pairs(chunk.modifiers) do
+					for _, v in pairs(chunk.modifiers) do
 						if v.mod == "choose" then
 							if chunk.val.realms[v.args[2]] then
 								data = chunk.val.realms[v.args[2]]
@@ -1300,7 +1300,7 @@ function chatsounds.PlayScript(script, udata)
 
 					sound.play = function(self)
 						if self.modifiers then
-							for i, data in pairs(self.modifiers) do
+							for _, data in pairs(self.modifiers) do
 								local mod = chatsounds.Modifiers[data.mod]
 								if mod and mod.start then
 									mod.start(self, unpack(data.args))
@@ -1315,7 +1315,7 @@ function chatsounds.PlayScript(script, udata)
 
 					sound.remove = function(self)
 						if self.modifiers then
-							for i, data in pairs(self.modifiers) do
+							for _, data in pairs(self.modifiers) do
 								local mod = chatsounds.Modifiers[data.mod]
 								if mod and mod.stop then
 									mod.stop(self, unpack(data.args))
@@ -1330,7 +1330,7 @@ function chatsounds.PlayScript(script, udata)
 
 					if sound.modifiers then
 						sound.think = function(self)
-							for i, data in pairs(self.modifiers) do
+							for _, data in pairs(self.modifiers) do
 								local mod = chatsounds.Modifiers[data.mod]
 								if mod and mod.think then
 									mod.think(self, unpack(data.args))
@@ -1353,7 +1353,7 @@ function chatsounds.PlayScript(script, udata)
 	local track = {}
 	local time = system.GetElapsedTime()
 
-	for i, sound in ipairs(sounds) do
+	for _, sound in ipairs(sounds) do
 
 		-- let it be able to think once first so we can modify duration and such when changing pitch
 		if sound.think then
@@ -1363,7 +1363,7 @@ function chatsounds.PlayScript(script, udata)
 		-- init modifiers
 		if sound.modifiers then
 			for mod, data in pairs(sound.modifiers) do
-				local mod = chatsounds.Modifiers[data.mod]
+				mod = chatsounds.Modifiers[data.mod]
 				if mod and mod.init then
 					mod.init(sound, unpack(data.args))
 				end
@@ -1382,8 +1382,8 @@ function chatsounds.PlayScript(script, udata)
 end
 
 function chatsounds.Panic()
-	for i, track in pairs(chatsounds.active_tracks) do
-		for i, sound in pairs(track) do
+	for _, track in pairs(chatsounds.active_tracks) do
+		for _, sound in pairs(track) do
 			sound:remove()
 		end
 	end
@@ -1470,7 +1470,7 @@ end
 
 function chatsounds.GetLists()
 	local out = {}
-	for k,v in pairs(vfs.Find("data/chatsounds/lists/")) do
+	for _, v in pairs(vfs.Find("data/chatsounds/lists/")) do
 		table.insert(out, v:sub(0,-5))
 	end
 	return out
@@ -1491,7 +1491,7 @@ function chatsounds.Initialize()
 		end
 	end)
 
-	for k,v in pairs(chatsounds.GetLists()) do
+	for _, v in pairs(chatsounds.GetLists()) do
 		chatsounds.LoadData(vfs.FixIllegalCharactersInPath(v))
 	end
 

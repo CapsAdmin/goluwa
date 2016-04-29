@@ -128,13 +128,13 @@ function prototype.RebuildMetatables()
 
 				local base = meta
 
-				for i = 1, 50 do
+				for _ = 1, 50 do
 					base = sub_types[base.Base]
 					if not base or not base.Base then break end
 					table.insert(base_list, 1, base.Base)
 				end
 
-				for k, v in ipairs(base_list) do
+				for _, v in ipairs(base_list) do
 					local base = sub_types[v]
 
 					-- the base might not be registered yet
@@ -157,7 +157,7 @@ function prototype.RebuildMetatables()
 			do
 				local tbl = {}
 
-				for key, info in pairs(prototype_variables) do
+				for _, info in pairs(prototype_variables) do
 					if info.copy then
 						table.insert(tbl, info)
 					end
@@ -198,8 +198,8 @@ end
 function prototype.GetAllRegistered()
 	local out = {}
 
-	for super_type, sub_types in pairs(prototype.registered) do
-		for sub_type, meta in pairs(sub_types) do
+	for _, sub_types in pairs(prototype.registered) do
+		for _, meta in pairs(sub_types) do
 			table.insert(out, meta)
 		end
 	end
@@ -238,7 +238,7 @@ function prototype.CreateObject(meta, override, skip_gc_callback)
 	local self = setmetatable(override, meta)
 
 	if meta.copy_variables then
-		for i, info in ipairs(meta.copy_variables) do
+		for _, info in ipairs(meta.copy_variables) do
 			self[info.var_name] = info.copy()
 		end
 	end
@@ -329,7 +329,7 @@ do
 	end
 
 	function prototype.RemovePropertyLinks(obj)
-		for i, v in pairs(prototype.linked_objects) do
+		for i in pairs(prototype.linked_objects) do
 			if v[1] == obj then
 				prototype.linked_objects[i] = nil
 			end
@@ -341,7 +341,7 @@ do
 	function prototype.GetPropertyLinks(obj)
 		local out = {}
 
-		for i, v in ipairs(prototype.linked_objects) do
+		for _, v in ipairs(prototype.linked_objects) do
 			if v[1] == obj then
 				table.insert(out, {unpack(v)})
 			end
@@ -371,7 +371,7 @@ end
 function prototype.GetCreated(sorted, super_type, sub_type)
 	if sorted then
 		local out = {}
-		for k,v in pairs(prototype.created_objects) do
+		for _, v in pairs(prototype.created_objects) do
 			if (not super_type or v.Type == super_type) and (not sub_type or v.ClassName == sub_type) then
 				table.insert(out, v)
 			end
@@ -400,7 +400,7 @@ function prototype.FindObject(str)
 
 	local function find_property(obj)
 		if not property then return true end
-		for k,v in pairs(prototype.GetStorableVariables(obj)) do
+		for _, v in pairs(prototype.GetStorableVariables(obj)) do
 			if tostring(obj[v.get_name](obj)):compare(property) then
 				return true
 			end
@@ -421,7 +421,7 @@ function prototype.UpdateObjects(meta)
 
 	if not meta then return end
 
-	for key, obj in pairs(prototype.GetCreated()) do
+	for _, obj in pairs(prototype.GetCreated()) do
 		if obj.Type == meta.Type and obj.ClassName == meta.ClassName then
 			for k, v in pairs(meta) do
 				-- update entity functions only

@@ -99,7 +99,7 @@ function META:CheckCompletness()
 			str = "invalid framebuffer target"
 		end
 
-		for k, v in pairs(self.textures) do
+		for _, v in pairs(self.textures) do
 			logn(v.tex, " attached to ", v.enum)
 			v.tex:DumpInfo()
 		end

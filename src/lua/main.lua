@@ -109,7 +109,6 @@ end, false, 1/10)
 local function main()
 	event.Call("Initialize")
 
-	local next_update = 0
 	local last_time = 0
 
 	local function update_(dt)

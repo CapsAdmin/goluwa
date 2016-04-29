@@ -53,7 +53,7 @@ function META:IsOverlappedSphereInside(pos, radius)
 	return true
 end
 
-function META:IsPointInside(pos, radius, overlaps)
+function META:IsPointInside(pos)
 
 	if pos.x < self.min_x then return false end
 	if pos.y < self.min_y then return false end

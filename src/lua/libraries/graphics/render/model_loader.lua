@@ -1,28 +1,5 @@
 local render = ... or _G.render
 
-local assimp = desire("libassimp")
-local cb_render
-
-local mount_info = {
-	["gm_.+"] = {"garry's mod", "tf2", "css"},
-	["ep1_.+"] = {"half-life 2: episode one"},
-	["ep2_.+"] = {"half-life 2: episode two"},
-	["trade_.+"] = {"half-life 2", "team fortress 2"},
-	["d%d_.+"] = {"half-life 2"},
-	["dm_.*"] = {"half-life 2: deathmatch"},
-	["c%dm%d_.+"] = {"left 4 dead 2"},
-
-	["esther"] = {"dear esther"},
-	["jakobson"] = {"dear esther"},
-	["donnelley"] = {"dear esther"},
-	["paul"] = {"dear esther"},
-	["aramaki_4d"] = {"team fortress 2", "garry's mod"},
-	["de_overpass"] = {"counter-strike: global offensive"},
-	["sp_a4_finale1"] = {"portal 2"},
-	["c3m1_plankcountry"] = {"left 4 dead 2"},
-	["achievement_apg_r11b"] = {"half-life 2", "team fortress 2"},
-}
-
 render.model_cache = {}
 
 local assimp = desire("libassimp") -- model decoder
@@ -42,7 +19,7 @@ function render.LoadModel(path, callback, callback2, on_fail)
 
 	if data then
 		if callback2 then
-			for i, mesh in ipairs(data) do
+			for _, mesh in ipairs(data) do
 				callback2(mesh)
 			end
 		end
@@ -53,8 +30,6 @@ function render.LoadModel(path, callback, callback2, on_fail)
 	if not vfs.Exists(path) and vfs.Exists(path .. ".mdl") then
 		path = path .. ".mdl"
 	end
-
-	local dir = path:match("(.+/)")
 
 	cb:start(path, callback, {mesh = callback2, on_fail = on_fail})
 

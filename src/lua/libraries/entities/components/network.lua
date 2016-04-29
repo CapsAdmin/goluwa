@@ -140,7 +140,7 @@ do
 	function COMPONENT:SetupSyncVariables()
 		local done = {}
 
-		for i, component in ipairs(self:GetEntityComponents()) do
+		for _, component in ipairs(self:GetEntityComponents()) do
 			if component.Network then
 				for key, info in pairs(component.Network) do
 					if not done[key] then
@@ -281,7 +281,7 @@ do -- synchronization server > client
 
 	function COMPONENT:UpdateVars(client, force_update)
 
-		for i, info in ipairs(SERVER and self.server_synced_vars or CLIENT and self.client_synced_vars) do
+		for _, info in ipairs(SERVER and self.server_synced_vars or CLIENT and self.client_synced_vars) do
 			if force_update or not self.last_update[info.key2] or self.last_update[info.key2] < system.GetElapsedTime() then
 				self:UpdateVariableFromSyncInfo(info, client, force_update)
 			end
@@ -356,13 +356,13 @@ if SERVER then
 		id = id + 1
 	end
 
-	function COMPONENT:OnRemove(ent)
+	function COMPONENT:OnRemove()
 		spawned_networked[self.NetworkId] = nil
 
 		self:RemoveEntityOnClient(nil, self.NetworkId)
 	end
 
-	function COMPONENT:OnEntityAddComponent(component)
+	function COMPONENT:OnEntityAddComponent()
 		self:SetupSyncVariables()
 	end
 end
@@ -425,7 +425,7 @@ do -- call on client
 		COMPONENT.call_on_client_persist = {}
 
 		function COMPONENT:SendCallOnClientToClient()
-			for i, args in ipairs(self.call_on_client_persist) do
+			for _, args in ipairs(self.call_on_client_persist) do
 				self:CallOnClient(client, unpack(args))
 			end
 		end

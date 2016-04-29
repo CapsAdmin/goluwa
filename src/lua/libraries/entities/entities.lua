@@ -36,7 +36,7 @@ function entities.GetAll()
 end
 
 function entities.Panic()
-	for k,v in pairs(entities.GetAll()) do
+	for _, v in pairs(entities.GetAll()) do
 		v:Remove()
 	end
 end

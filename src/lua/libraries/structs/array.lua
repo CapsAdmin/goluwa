@@ -13,8 +13,8 @@ end
 
 function TMPL:OnDeserialize(data)
 	self:SetArrayType(data[1])
-		self:SetSize(size[2])
-	self:SetPointer(ptr[3])
+	self:SetSize(data[2])
+	self:SetPointer(data[3])
 end
 
 

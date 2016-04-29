@@ -419,9 +419,8 @@ do
 
 		local poly = surface.CreatePoly(#positive_points * 2)
 		local distance_positive = 0
-		local distance_negative = 0
 
-		for i, positive in ipairs(positive_points) do
+		for i in ipairs(positive_points) do
 			if i > 1 then
 				distance_positive = distance_positive +
 				(negative_points[i - 1]:Distance(negative_points[i]) + positive_points[i - 1]:Distance(positive_points[i])) / stretch / 2

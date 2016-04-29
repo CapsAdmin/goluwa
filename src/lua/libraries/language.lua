@@ -24,7 +24,7 @@ function language.AddLanguagesToMenu(menu)
 		language.SetLanguage("english")
 	end)
 
-	for key, val in pairs(vfs.Find("translations/")) do
+	for _, val in pairs(vfs.Find("translations/")) do
 		val = val:match("(.+)%.")
 		menu:AddOption(val, function()
 			language.SetLanguage(val)

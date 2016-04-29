@@ -88,13 +88,13 @@ function META:SetTable(tbl, tags)
 
 	self:Clear()
 
-	for i, var in ipairs(tbl) do
+	for _, var in ipairs(tbl) do
 		self:Add(var, tags)
 	end
 end
 
 function META:AddTable(tbl, tags)
-	for i, var in ipairs(tbl) do
+	for _, var in ipairs(tbl) do
 		self:Add(var, tags)
 	end
 end
@@ -152,7 +152,7 @@ function META:Add(var, tags)
 end
 
 function META:TagPanic()
-	for k, v in pairs(self.chunks) do
+	for _, v in pairs(self.chunks) do
 		if v.type == "custom" then
 			v.panic = true
 		end
@@ -272,7 +272,7 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 	do
 		local x, y = self.caret_pos.x, self.caret_pos.y
 
-		for i = 1, start_offset do
+		for _ = 1, start_offset do
 			x = x - 1
 
 			if x <= 0 then
@@ -283,9 +283,9 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 
 		self:SelectStart(x, y)
 
-		local x, y = self.caret_pos.x, self.caret_pos.y
+		x, y = self.caret_pos.x, self.caret_pos.y
 
-		for i = 1, stop_offset do
+		for _ = 1, stop_offset do
 			x = x + 1
 
 			if x >= utf8.length(self.lines[y]) then

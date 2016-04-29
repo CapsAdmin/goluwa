@@ -46,7 +46,7 @@ function PANEL:GetSizeOfChildren()
 
 	local total_size = Vec2()
 
-	for k, v in ipairs(self:GetChildren()) do
+	for _, v in ipairs(self:GetChildren()) do
 		if v:IsVisible() then
 			local pos = v:GetPosition() + v:GetSize() + v.Padding:GetPosition()
 
@@ -89,7 +89,7 @@ end
 function PANEL:GetVisibleChildren()
 	local tbl = {}
 
-	for i,v in ipairs(self:GetChildren()) do
+	for _, v in ipairs(self:GetChildren()) do
 		if v.Visible then
 			table.insert(tbl, v)
 		end
@@ -103,7 +103,7 @@ function PANEL:IsInsideParent()
 
 	if not override:IsValid() then return true end
 
-	local override = override.Parent
+	override = override.Parent
 
 	if not override:IsValid() then return true end
 
@@ -190,7 +190,7 @@ do -- call on hide
 			self:OnShow()
 		else
 			self:OnHide()
-			for k, v in pairs(self.call_on_hide) do
+			for _, v in pairs(self.call_on_hide) do
 				if v() == false then
 					break
 				end
@@ -299,7 +299,7 @@ do -- drawing
 	function PANEL:Draw(from_cache)
 		if not self.Visible then return end
 		self:PreDraw(from_cache)
-			for k,v in ipairs(self:GetChildren()) do
+			for _, v in ipairs(self:GetChildren()) do
 				v:Draw(from_cache)
 			end
 		self:PostDraw(from_cache)
@@ -385,7 +385,7 @@ do -- orientation
 
 		function PANEL:InvalidateMatrix()
 			if not self.rebuild_matrix then
-				for i, v in ipairs(self:GetChildrenList()) do
+				for _, v in ipairs(self:GetChildrenList()) do
 					v.rebuild_matrix = true
 				end
 			end
@@ -502,7 +502,7 @@ do -- orientation
 
 	function PANEL:WorldToLocal(wpos)
 		local lpos = wpos
-		for k, v in ipairs(self:GetParentList()) do
+		for _, v in ipairs(self:GetParentList()) do
 			lpos = lpos - v:GetPosition()
 			if v:HasParent() then
 				wpos = wpos + v.Parent:GetScroll()
@@ -659,7 +659,7 @@ do -- cached rendering
 				self.cache_texture = fb:GetTexture(1)
 			end
 		else
-			for k,v in ipairs(self:GetParentList()) do
+			for _, v in ipairs(self:GetParentList()) do
 				if v:IsValid() and v.CachedRendering then
 					v.cache_dirty = true
 				end
@@ -695,7 +695,7 @@ do -- cached rendering
 
 			--surface.Translate(-self.Scroll.x, -self.Scroll.y)
 
-			for k,v in ipairs(self:GetChildren()) do
+			for _, v in ipairs(self:GetChildren()) do
 				if v.Visible then
 					v:Draw(true)
 				end
@@ -965,7 +965,7 @@ do -- magnet snap
 
 		table.sort(tbl, function(a, b) return a:GetWorldPosition():Distance(wpos) < b:GetWorldPosition():Distance(wpos) end)
 
-		for i, v in ipairs(tbl) do
+		for _, v in ipairs(tbl) do
 			if v:IsVisible() and v ~= self then
 				self:SnapPosition(v)
 			end
@@ -1070,7 +1070,7 @@ do -- animations
 	end
 
 	function PANEL:StopAnimations()
-		for key, animation in ipairs(self.animations) do
+		for _, animation in ipairs(self.animations) do
 			if animation.callback then
 				if animation.callback(self) ~= false then
 					animation.func(self, animation.from)
@@ -1090,7 +1090,7 @@ do -- animations
 	end
 
 	function PANEL:Animate(var, to, time, operator, pow, set, callback)
-		for i, v in ipairs(self.animations) do
+		for _, v in ipairs(self.animations) do
 			if v.var == var then
 				v.alpha = 0
 				return
@@ -1555,7 +1555,7 @@ do -- layout
 		return math.abs(a.point-origin) < math.abs(b.point-origin)
 	end
 
-	function PANEL:RayCast(panel, x,y,w,h, collide, always)
+	function PANEL:RayCast(panel, x,y, collide, always)
 		local dir_x = x - panel.Position.x
 		local dir_y = y - panel.Position.y
 
@@ -1638,8 +1638,6 @@ do -- layout
 			table.sort(found, sort)
 		end
 
-		local pos
-
 		if found and found[1] then
 			local child = found[1].child
 
@@ -1697,7 +1695,7 @@ do -- layout
 
 		for _, child in ipairs(self:GetChildren()) do
 			if child.layout_commands then
-				for i, cmd in ipairs(child.layout_commands) do
+				for _, cmd in ipairs(child.layout_commands) do
 					if cmd == "layout_children" then
 						for _, child in ipairs(self:GetChildren()) do
 							child:Layout(true)
@@ -1865,7 +1863,7 @@ do -- layout
 			self:SetX(parent:GetWidth())
 			self:SetY(0)
 
-			local pos, pnl = self:RayCast(self, 1, self.Position.y, self.Size.x, self.Size.y, self.layout_collide)
+			local pos, pnl = self:RayCast(self, 1, self.Position.y, self.layout_collide)
 			self:SetRectFast(ox,oy,ow,oh)
 
 			self:SetWidth(pos.x + self.Margin:GetRight() + (pnl and pnl.Padding:GetRight() or 0))
@@ -1883,7 +1881,7 @@ do -- layout
 			self:SetY(parent:GetHeight())
 			self:SetX(0)
 
-			local pos, pnl = self:RayCast(self, self.Position.x, 1, self.Size.x, self.Size.y, self.layout_collide)
+			local pos, pnl = self:RayCast(self, self.Position.x, 1, self.layout_collide)
 
 			self:SetRectFast(ox,oy,ow,oh)
 
@@ -1898,8 +1896,8 @@ do -- layout
 
 			self:SetWidth(1)
 
-			local left = parent:RayCast(self, 0, self.Position.y, self.Size.x, self.Size.y, self.layout_collide)
-			local right = parent:RayCast(self, parent:GetWidth(), self.Position.y, self.Size.x, self.Size.y, self.layout_collide)
+			local left = parent:RayCast(self, 0, self.Position.y, self.layout_collide)
+			local right = parent:RayCast(self, parent:GetWidth(), self.Position.y, self.layout_collide)
 			right.x = right.x - left.x + 1
 
 			local x = left.x
@@ -1927,8 +1925,8 @@ do -- layout
 
 			self:SetHeight(1)
 
-			local top = parent:RayCast(self, self.Position.x, 0, self.Size.x, self.Size.y, self.layout_collide)
-			local bottom = parent:RayCast(self, self.Position.x, parent:GetHeight(), self.Size.x, self.Size.y, self.layout_collide)
+			local top = parent:RayCast(self, self.Position.x, 0, self.layout_collide)
+			local bottom = parent:RayCast(self, self.Position.x, parent:GetHeight(), self.layout_collide)
 			bottom.y = bottom.y - top.y + 1
 
 			local y = top.y
@@ -1959,8 +1957,8 @@ do -- layout
 		function PANEL:CenterX()
 			local parent = self:GetParent()
 
-			local left = parent:RayCast(self, 0, self.Position.y, self.Size.x, self.Size.y, self.layout_collide)
-			local right = parent:RayCast(self, parent.Size.x, left.y, self.Size.x, self.Size.y, self.layout_collide)
+			local left = parent:RayCast(self, 0, self.Position.y, self.layout_collide)
+			local right = parent:RayCast(self, parent.Size.x, left.y, self.layout_collide)
 
 			self:SetX(math.lerp(0.5, left.x, right.x))
 
@@ -1970,8 +1968,8 @@ do -- layout
 		function PANEL:CenterY()
 			local parent = self:GetParent()
 
-			local top = parent:RayCast(self, self.Position.x, 0, self.Size.x, self.Size.y, self.layout_collide)
-			local bottom = parent:RayCast(self, top.x, parent:GetHeight(), self.Size.x, self.Size.y, self.layout_collide)
+			local top = parent:RayCast(self, self.Position.x, 0, self.layout_collide)
+			local bottom = parent:RayCast(self, top.x, parent:GetHeight(), self.layout_collide)
 			self:SetY(top.y + (bottom.y/2 - self:GetHeight()/2) - self.Padding:GetTop() + self.Padding:GetBottom())
 
 			self.laid_out = true
@@ -2015,8 +2013,8 @@ do -- layout
 		function PANEL:CenterXFrame()
 			local parent = self:GetParent()
 
-			local left = parent:RayCast(self, 0, self.Position.y, self.Size.x, self.Size.y, self.layout_collide)
-			local right = parent:RayCast(self, parent:GetWidth(), left.y, self.Size.x, self.Size.y, self.layout_collide)
+			local left = parent:RayCast(self, 0, self.Position.y, self.layout_collide)
+			local right = parent:RayCast(self, parent:GetWidth(), left.y, self.layout_collide)
 
 			if
 				self:GetX()+self:GetWidth()+self.Padding:GetRight() < right.x+self:GetWidth()-self.Padding:GetRight() and
@@ -2036,7 +2034,7 @@ do -- layout
 			end
 
 			self:SetY(math.max(self:GetY(), 1))
-			self:SetY(parent:RayCast(self, self.Position.x, 0, self.Size.x, self.Size.y, self.layout_collide).y)
+			self:SetY(parent:RayCast(self, self.Position.x, 0, self.layout_collide).y)
 
 			self.laid_out = true
 		end
@@ -2049,7 +2047,7 @@ do -- layout
 			end
 
 			self:SetX(math.max(self:GetX(), 1))
-			self:SetX(parent:RayCast(self, 0, self.Position.y, self.Size.x, self.Size.y, self.layout_collide).x)
+			self:SetX(parent:RayCast(self, 0, self.Position.y, self.layout_collide).x)
 
 			self.laid_out = true
 		end
@@ -2062,7 +2060,7 @@ do -- layout
 			end
 
 			self:SetY(math.max(self:GetY(), 1))
-			self:SetY(parent:RayCast(self, self.Position.x, parent:GetHeight() - self:GetHeight(), self.Size.x, self.Size.y, self.layout_collide).y)
+			self:SetY(parent:RayCast(self, self.Position.x, parent:GetHeight() - self:GetHeight(), self.layout_collide).y)
 
 			self.laid_out = true
 		end
@@ -2075,7 +2073,7 @@ do -- layout
 			end
 
 			self:SetX(math.max(self:GetX(), 1))
-			self:SetX(parent:RayCast(self, parent:GetWidth() - self:GetWidth(), self.Position.y, self.Size.x, self.Size.y, self.layout_collide).x)
+			self:SetX(parent:RayCast(self, parent:GetWidth() - self:GetWidth(), self.Position.y, self.layout_collide).x)
 
 			self.laid_out = true
 		end
@@ -2203,7 +2201,7 @@ do -- skin
 
 	function PANEL:SetLayoutScale(scale)
 		self.LayoutScale = scale
-		for i,v in ipairs(self:GetChildrenList()) do
+		for _, v in ipairs(self:GetChildrenList()) do
 			v.LayoutScale = scale
 		end
 	end
@@ -2228,7 +2226,7 @@ do -- skin
 			self:ReloadStyle()
 			self:OnStyleChanged(skin)
 
-			for i,v in ipairs(self:GetChildrenList()) do
+			for _, v in ipairs(self:GetChildrenList()) do
 				v.LayoutScale = skin:GetScale()
 				v.Skin = skin
 				v:ReloadStyle()
@@ -2360,7 +2358,7 @@ do -- events
 	function PANEL:OnRemove()
 		gui.panels[self] = nil
 
-		for k,v in pairs(self:GetChildrenList()) do
+		for _, v in pairs(self:GetChildrenList()) do
 			v:Remove()
 		end
 
@@ -2408,6 +2406,8 @@ end
 
 gui.RegisterPanel(PANEL)
 
-for k,v in pairs(gui.panels) do
-	v:Layout()
+if RELOAD then
+	for _,v in pairs(gui.panels) do
+		v:Layout()
+	end
 end

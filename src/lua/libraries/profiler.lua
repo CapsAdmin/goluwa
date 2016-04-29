@@ -22,7 +22,7 @@ end
 local function parse_raw_trace_abort_data()
 	local data = profiler.data.trace_aborts
 
-	for i = 1, #profiler.raw_data.trace_aborts do
+	for _ = 1, #profiler.raw_data.trace_aborts do
 		local args = table.remove(profiler.raw_data.trace_aborts)
 
 		local info = args[1]
@@ -71,7 +71,7 @@ end
 local function parse_raw_statistical_data()
 	local data = profiler.data.statistical
 
-	for i = 1, #profiler.raw_data.statistical do
+	for _ = 1, #profiler.raw_data.statistical do
 		local args = table.remove(profiler.raw_data.statistical)
 		local str, samples = args[1], args[2]
 		local children = {}
@@ -207,7 +207,6 @@ do -- timer
 	local stack = {}
 
 	function profiler.StartTimer(str, ...)
-		local level =
 		table.insert(stack, {str = str and str:format(...), level = #stack})
 		local last = stack[#stack]
 		last.time = system.GetTime() -- just to make sure there's overhead with table.insert and whatnot
@@ -491,7 +490,7 @@ function profiler.EnableRealTimeTraceAbortLogging(b)
 
 					local path = info.source
 					local line = info.currentline or info.linedefined
-					local content, err = vfs.Read(e.ROOT_FOLDER .. path:sub(2))
+					local content = vfs.Read(e.ROOT_FOLDER .. path:sub(2))
 
 					if content then
 						logf("%s:%s\n%s:--\t%s\n\n", path, line, content:split("\n")[line]:trim(), reason)
@@ -512,7 +511,7 @@ function profiler.MeasureFunction(func, count, name)
 
 	local time = 0
 
-	for i = 1, count do
+	for _ = 1, count do
 		profiler.StartTimer()
 			func()
 		time = time + profiler.StopTimer(true)

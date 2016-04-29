@@ -56,7 +56,7 @@ do -- by Python1320
 		check(t, "number", "table")
 
 		if type(t)=="number" then
-			t=datetable(t)
+			t = os.datetable(t)
 		end
 
 		local tbl={}
