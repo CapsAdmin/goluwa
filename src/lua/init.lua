@@ -167,33 +167,35 @@ _G.include = function() end
 _G.system = false
 _G.event = false
 
+local temp_include = function(path) return dofile(e.SRC_FOLDER .. path) end
+
 -- standard library extensions
-dofile(e.SRC_FOLDER .. "lua/libraries/extensions/globals.lua")
-dofile(e.SRC_FOLDER .. "lua/libraries/extensions/debug.lua")
-dofile(e.SRC_FOLDER .. "lua/libraries/extensions/string.lua")
-dofile(e.SRC_FOLDER .. "lua/libraries/extensions/table.lua")
-dofile(e.SRC_FOLDER .. "lua/libraries/extensions/os.lua")
-dofile(e.SRC_FOLDER .. "lua/libraries/extensions/ffi.lua")
-dofile(e.SRC_FOLDER .. "lua/libraries/extensions/math.lua")
+temp_include("lua/libraries/extensions/globals.lua")
+temp_include("lua/libraries/extensions/debug.lua")
+temp_include("lua/libraries/extensions/string.lua")
+temp_include("lua/libraries/extensions/table.lua")
+temp_include("lua/libraries/extensions/os.lua")
+temp_include("lua/libraries/extensions/ffi.lua")
+temp_include("lua/libraries/extensions/math.lua")
 
 
 -- include some of prototype as required by vfs
-prototype = dofile(e.SRC_FOLDER .. "lua/libraries/prototype/prototype.lua")
-dofile(e.SRC_FOLDER .. "lua/libraries/prototype/get_is_set.lua")
-dofile(e.SRC_FOLDER .. "lua/libraries/prototype/base_object.lua")
-dofile(e.SRC_FOLDER .. "lua/libraries/prototype/null.lua")
+prototype = temp_include("lua/libraries/prototype/prototype.lua")
+temp_include("lua/libraries/prototype/get_is_set.lua")
+temp_include("lua/libraries/prototype/base_object.lua")
+temp_include("lua/libraries/prototype/null.lua")
 utility = {CreateWeakTable = function() return setmetatable({}, {__mode = "kv"}) end}
 
 
 -- include some of vfs so we can setup and mount the filesystem
-vfs = dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/vfs.lua")
-dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/path_utilities.lua")
-dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/base_file.lua")
-dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/find.lua")
-dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/helpers.lua")
-dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/lua_utilities.lua")
-dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/addons.lua")
-dofile(e.SRC_FOLDER .. "lua/libraries/filesystem/files/os.lua")
+vfs = temp_include("lua/libraries/filesystem/vfs.lua")
+temp_include("lua/libraries/filesystem/path_utilities.lua")
+temp_include("lua/libraries/filesystem/base_file.lua")
+temp_include("lua/libraries/filesystem/find.lua")
+temp_include("lua/libraries/filesystem/helpers.lua")
+temp_include("lua/libraries/filesystem/lua_utilities.lua")
+temp_include("lua/libraries/filesystem/addons.lua")
+temp_include("lua/libraries/filesystem/files/os.lua")
 
 vfs.Mount("os:" .. e.USERDATA_FOLDER, "data") -- mount "ROOT/data/users/*username*/" to "/data/"
 vfs.Mount("os:" .. e.BIN_FOLDER, "bin") -- mount "ROOT/data/bin" to "/bin/"
