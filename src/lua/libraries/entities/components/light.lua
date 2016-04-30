@@ -1,25 +1,23 @@
 if not render then return end
 
-local COMPONENT = {}
+local COMPONENT = prototype.CreateTemplate()
 
 COMPONENT.Name = "light"
 COMPONENT.Require = {"transform"}
 COMPONENT.Events = {"Draw3DLights", "DrawShadowMaps"}
 
-prototype.StartStorable()
-	prototype.GetSet(COMPONENT, "Color", Color(1, 1, 1))
-
-	prototype.GetSet(COMPONENT, "Intensity", 1)
-
-	prototype.GetSet(COMPONENT, "Shadow", false)
-	prototype.GetSet(COMPONENT, "ShadowCubemap", false)
-	prototype.GetSet(COMPONENT, "ShadowSize", 256)
-	prototype.GetSet(COMPONENT, "FOV", 90, {editor_min = 0, editor_max = 180})
-	prototype.GetSet(COMPONENT, "NearZ", 1)
-	prototype.GetSet(COMPONENT, "FarZ", -1)
-	prototype.GetSet(COMPONENT, "ProjectFromCamera", false)
-	prototype.GetSet(COMPONENT, "OrthoSize", 0)
-prototype.EndStorable()
+COMPONENT:StartStorable()
+	COMPONENT:GetSet("Color", Color(1, 1, 1))
+	COMPONENT:GetSet("Intensity", 1)
+	COMPONENT:GetSet("Shadow", false)
+	COMPONENT:GetSet("ShadowCubemap", false)
+	COMPONENT:GetSet("ShadowSize", 256)
+	COMPONENT:GetSet("FOV", 90, {editor_min = 0, editor_max = 180})
+	COMPONENT:GetSet("NearZ", 1)
+	COMPONENT:GetSet("FarZ", -1)
+	COMPONENT:GetSet("ProjectFromCamera", false)
+	COMPONENT:GetSet("OrthoSize", 0)
+COMPONENT:EndStorable()
 
 if GRAPHICS then
 	function COMPONENT:OnAdd()
@@ -161,7 +159,7 @@ if GRAPHICS then
 	end
 end
 
-prototype.RegisterComponent(COMPONENT)
+COMPONENT:RegisterComponent()
 
 if RELOAD then
 	render.InitializeGBuffer()

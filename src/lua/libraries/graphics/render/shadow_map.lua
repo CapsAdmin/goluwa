@@ -145,7 +145,7 @@ end
 META:Register()
 
 function render.CreateShadowMap(cubemap)
-	local self = prototype.CreateObject(META)
+	local self = META:CreateObject()
 
 	if not render.shadow_map_shader then
 		render.shadow_map_shader = render.CreateShader(SHADER)

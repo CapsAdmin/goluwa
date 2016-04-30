@@ -583,7 +583,7 @@ function render.CreateShader(data, vars)
 		end
 	end
 
-	local self = prototype.CreateObject(META)
+	local self = META:CreateObject()
 
 	for _, info in pairs(data) do
 		if info.source_path then

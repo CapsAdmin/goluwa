@@ -1,4 +1,4 @@
-local COMPONENT = {}
+local COMPONENT = prototype.CreateTemplate()
 
 local spawned_networked = {}
 local queued_packets = {}
@@ -15,8 +15,8 @@ COMPONENT.Network = {
 	GUID = {"string", 1/5, "reliable"},
 }
 
-prototype.GetSet(COMPONENT, "NetworkId", -1)
-prototype.GetSet(COMPONENT, "NetworkChannel", 0)
+COMPONENT:GetSet("NetworkId", -1)
+COMPONENT:GetSet("NetworkChannel", 0)
 
 function COMPONENT:Initialize()
 	self.server_synced_vars = {}
@@ -445,4 +445,4 @@ do -- call on client
 	end
 end
 
-prototype.RegisterComponent(COMPONENT)
+COMPONENT:RegisterComponent()

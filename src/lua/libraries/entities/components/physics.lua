@@ -1,4 +1,4 @@
-local COMPONENT = {}
+local COMPONENT = prototype.CreateTemplate()
 
 COMPONENT.Name = "physics"
 COMPONENT.Require = {"transform"}
@@ -27,17 +27,17 @@ function COMPONENT:Initialize()
 	self.rigid_body = NULL
 end
 
-prototype.StartStorable()
+COMPONENT:StartStorable()
 
-	prototype.GetSet(COMPONENT, "SimulateOnClient", false)
-	prototype.GetSet(COMPONENT, "Position", Vec3(0, 0, 0))
-	prototype.GetSet(COMPONENT, "Rotation", Quat(0, 0, 0, 1))
-	prototype.GetSet(COMPONENT, "PhysicsModelPath", "")
+	COMPONENT:GetSet("SimulateOnClient", false)
+	COMPONENT:GetSet("Position", Vec3(0, 0, 0))
+	COMPONENT:GetSet("Rotation", Quat(0, 0, 0, 1))
+	COMPONENT:GetSet("PhysicsModelPath", "")
 	prototype.DelegateProperties(COMPONENT, prototype.GetRegistered("physics_body"), "rigid_body")
 
-prototype.EndStorable()
+COMPONENT:EndStorable()
 
-prototype.GetSet(COMPONENT, "PhysicsModel", nil)
+COMPONENT:GetSet("PhysicsModel", nil)
 
 local function to_bullet(self)
 	if not self.rigid_body:IsValid() or not self.rigid_body:IsPhysicsValid() then return end
@@ -278,6 +278,6 @@ function COMPONENT:OnRemove(ent)
 	end
 end
 
-prototype.RegisterComponent(COMPONENT)
+COMPONENT:RegisterComponent()
 
 --include("physics_container.lua")

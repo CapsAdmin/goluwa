@@ -5,7 +5,7 @@ local ffi = require("ffi")
 local META = prototype.CreateTemplate("shader_program")
 
 function render.CreateShaderProgram()
-	local self = prototype.CreateObject(META)
+	local self = META:CreateObject()
 	self.shaders = {}
 	return self
 end

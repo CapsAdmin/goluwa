@@ -1,18 +1,18 @@
-local COMPONENT = {}
+local COMPONENT = prototype.CreateTemplate()
 
 COMPONENT.Name = "model"
 COMPONENT.Require = {"transform"}
 
-prototype.StartStorable()
-	prototype.GetSet(COMPONENT, "MaterialOverride", nil)
-	prototype.GetSet(COMPONENT, "Cull", true)
-	prototype.GetSet(COMPONENT, "ModelPath", "models/cube.obj")
-	prototype.GetSet(COMPONENT, "BBMin", Vec3())
-	prototype.GetSet(COMPONENT, "BBMax", Vec3())
-	prototype.IsSet(COMPONENT, "Loading", false)
-prototype.EndStorable()
+COMPONENT:StartStorable()
+	COMPONENT:GetSet("MaterialOverride", nil)
+	COMPONENT:GetSet("Cull", true)
+	COMPONENT:GetSet("ModelPath", "models/cube.obj")
+	COMPONENT:GetSet("BBMin", Vec3())
+	COMPONENT:GetSet("BBMax", Vec3())
+	COMPONENT:IsSet("Loading", false)
+COMPONENT:EndStorable()
 
-prototype.GetSet(COMPONENT, "Model", nil)
+COMPONENT:GetSet("Model", nil)
 
 COMPONENT.Network = {
 	ModelPath = {"string", 1/5, "reliable"},
@@ -170,7 +170,7 @@ if GRAPHICS then
 	end
 end
 
-prototype.RegisterComponent(COMPONENT)
+COMPONENT:RegisterComponent()
 
 if RELOAD then
 	render.InitializeGBuffer()

@@ -1,6 +1,6 @@
 event.AddListener("GBufferInitialized", function()
 
-local COMPONENT = {}
+local COMPONENT = prototype.CreateTemplate()
 
 COMPONENT.Name = "world"
 
@@ -56,7 +56,7 @@ local function ADD(name, default, callback)
 	end
 end
 
-prototype.StartStorable(COMPONENT)
+COMPONENT:StartStorable()
 	do -- sun
 		ADD("sun_angles", Deg3(-45,-45,0), function(self, var)
 			local vec = var:GetForward()
@@ -83,9 +83,9 @@ prototype.StartStorable(COMPONENT)
 			ADD(info.k:sub(7), info.v)
 		end
 	end
-prototype.EndStorable()
+COMPONENT:EndStorable()
 
-prototype.RegisterComponent(COMPONENT)
+COMPONENT:RegisterComponent()
 prototype.SetupComponents("world", {"world", "network"}, "textures/silkicons/world.png")
 
 end)

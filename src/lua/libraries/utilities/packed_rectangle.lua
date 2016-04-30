@@ -29,4 +29,4 @@ function utility.CreatePackedRectangle(w, h)
 	return prototype.CreateObject(META, {root = {x = 0, y = 0, w = w, h = h}})
 end
 
-prototype.Register(META)
+META:Register()

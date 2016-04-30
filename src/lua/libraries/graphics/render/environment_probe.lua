@@ -88,7 +88,7 @@ end
 META:Register()
 
 function render.CreateEnvironmentProbe()
-	local self = prototype.CreateObject(META)
+	local self = META:CreateObject()
 	self:CreateTexture()
 	return self
 end

@@ -319,7 +319,7 @@ end
 prototype.Register(META)
 
 function sockets.CreateIRCClient()
-	local self = prototype.CreateObject(META)
+	local self = META:CreateObject()
 
 	self.queries = {}
 

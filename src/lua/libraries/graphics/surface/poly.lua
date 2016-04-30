@@ -319,7 +319,7 @@ function surface.CreatePoly(vertex_count)
 	-- they never change anyway
 	mesh:SetUpdateIndices(false)
 
-	local self = prototype.CreateObject(META)
+	local self = META:CreateObject()
 
 	self.mesh = mesh
 	self.vertex_count = vertex_count
@@ -334,7 +334,7 @@ do
 	META:GetSet("JoinLast", true)
 
 	function surface.CreateQuadricBeizerCurve()
-		local self = prototype.CreateObject(META)
+		local self = META:CreateObject()
 
 		self.nodes = {}
 

@@ -17,7 +17,7 @@ META:GetSet("BindMode", "all", {"all", "read", "write"})
 META:GetSet("Size", Vec2(128,128))
 
 function render.CreateFrameBuffer(size, textures, id_override)
-	local self = prototype.CreateObject(META)
+	local self = META:CreateObject()
 
 	render._CreateFrameBuffer(self, id_override)
 

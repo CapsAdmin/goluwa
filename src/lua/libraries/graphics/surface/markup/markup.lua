@@ -13,27 +13,27 @@ local META = prototype.CreateTemplate("markup")
 
 META.tags = {}
 
-prototype.GetSet(META, "Table", {})
-prototype.GetSet(META, "MaxWidth", 500)
-prototype.GetSet(META, "ControlDown", false)
-prototype.GetSet(META, "LineWrap", true)
-prototype.GetSet(META, "ShiftDown", false)
-prototype.GetSet(META, "Editable", true)
-prototype.GetSet(META, "Multiline", true)
-prototype.GetSet(META, "MousePosition", Vec2())
-prototype.GetSet(META, "SelectionColor", Color(1, 1, 1, 0.5))
-prototype.GetSet(META, "CaretColor", Color(1, 1, 1, 1))
-prototype.IsSet(META, "Selectable", true)
-prototype.GetSet(META, "MinimumHeight", 10)
-prototype.GetSet(META, "HeightSpacing", 2)
-prototype.GetSet(META, "LightMode", false)
-prototype.GetSet(META, "SuperLightMode", false)
-prototype.GetSet(META, "CopyTags", true)
+META:GetSet("Table", {})
+META:GetSet("MaxWidth", 500)
+META:GetSet("ControlDown", false)
+META:GetSet("LineWrap", true)
+META:GetSet("ShiftDown", false)
+META:GetSet("Editable", true)
+META:GetSet("Multiline", true)
+META:GetSet("MousePosition", Vec2())
+META:GetSet("SelectionColor", Color(1, 1, 1, 0.5))
+META:GetSet("CaretColor", Color(1, 1, 1, 1))
+META:IsSet("Selectable", true)
+META:GetSet("MinimumHeight", 10)
+META:GetSet("HeightSpacing", 2)
+META:GetSet("LightMode", false)
+META:GetSet("SuperLightMode", false)
+META:GetSet("CopyTags", true)
 
 if SERVER then
-	prototype.GetSet(META, "FixedSize", 14) -- sigh
+	META:GetSet("FixedSize", 14) -- sigh
 else
-	prototype.GetSet(META, "FixedSize", 0)
+	META:GetSet("FixedSize", 0)
 end
 
 function surface.CreateMarkup()

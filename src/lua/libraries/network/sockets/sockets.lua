@@ -138,7 +138,7 @@ local function new_socket(override, META, typ, id)
 			end
 		end
 
-		local self = prototype.CreateObject(META)
+		local self = META:CreateObject()
 		self.socket = override or assert(sockets.luasocket[typ]())
 		self.socket:settimeout(0)
 		self.socket_type = typ

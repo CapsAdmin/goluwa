@@ -6,13 +6,13 @@ function META:__tostring2()
 	return ("[%i vertices]"):format(#self.Vertices)
 end
 
-prototype.GetSet(META, "Vertices", {})
-prototype.GetSet(META, "Indices")
-prototype.GetSet(META, "BBMin", Vec3())
-prototype.GetSet(META, "BBMax", Vec3())
+META:GetSet("Vertices", {})
+META:GetSet("Indices")
+META:GetSet("BBMin", Vec3())
+META:GetSet("BBMax", Vec3())
 
 function render.CreateMeshBuilder()
-	return prototype.CreateObject(META)
+	return META:CreateObject()
 end
 
 META.i = 1

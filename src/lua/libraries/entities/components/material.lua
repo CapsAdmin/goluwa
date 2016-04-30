@@ -1,4 +1,4 @@
-local COMPONENT = {}
+local COMPONENT = prototype.CreateTemplate()
 
 COMPONENT.Name = "material"
 COMPONENT.Icon = "textures/silkicons/palette.png"
@@ -34,11 +34,11 @@ function COMPONENT:OnRemove()
 	end
 end
 
-prototype.RegisterComponent(COMPONENT)
+COMPONENT:RegisterComponent()
 
 event.AddListener("GBufferInitialized", "register_material_components", function()
 	for name, meta in pairs(prototype.GetRegisteredSubTypes("material")) do
-		local COMPONENT = {}
+		local COMPONENT = prototype.CreateTemplate()
 
 		COMPONENT.Name = name .. "_material"
 		COMPONENT.Base = "material"
@@ -46,11 +46,11 @@ event.AddListener("GBufferInitialized", "register_material_components", function
 
 		COMPONENT.material_type = name
 
-		prototype.StartStorable()
-			prototype.DelegateProperties(COMPONENT, meta, "mat")
-		prototype.EndStorable()
+		COMPONENT:StartStorable()
+			COMPONENT:DelegateProperties(meta, "mat")
+		COMPONENT:EndStorable()
 
-		prototype.RegisterComponent(COMPONENT)
+		COMPONENT:RegisterComponent()
 
 		prototype.SetupComponents(COMPONENT.Name, {COMPONENT.Name}, COMPONENT.Icon)
 	end

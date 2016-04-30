@@ -7,7 +7,7 @@ function META:__tostring2()
 end
 
 include("lua/libraries/templates/parenting.lua", META)
-prototype.GetSet(META, "Components", {})
+META:GetSet("Components", {})
 
 local DEFER_COMPONENT_CHECKS_AND_EVENTS
 
@@ -186,7 +186,7 @@ end
 function prototype.CreateEntity(config, parent, info)
 	event.Call("EntityCreate", config, parent, info)
 
-	local self = prototype.CreateObject(META)
+	local self = META:CreateObject()
 
 	if parent then
 		self:SetParent(parent)

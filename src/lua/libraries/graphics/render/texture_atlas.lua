@@ -43,7 +43,7 @@ end
 
 local META = prototype.CreateTemplate("texture_atlas")
 
-prototype.GetSet(META, "Padding", 1)
+META:GetSet("Padding", 1)
 
 function render.CreateTextureAtlas(page_width, page_height, filtering)
 	page_height = page_height or page_width

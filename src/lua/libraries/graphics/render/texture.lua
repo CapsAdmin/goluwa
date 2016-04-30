@@ -442,7 +442,7 @@ end
 META:Register()
 
 function render.CreateTexture(type)
-	local self = prototype.CreateObject(META)
+	local self = META:CreateObject()
 
 	if type then
 		self.StorageType = type

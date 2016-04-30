@@ -6,7 +6,7 @@ local META = prototype.CreateTemplate("physics_body")
 local vec3_from_bullet = physics.Vec3FromBullet
 local vec3_to_bullet = physics.Vec3ToBullet
 
-prototype.StartStorable()
+META:StartStorable()
 
 local function check(obj)
 	return physics.init and obj.body
@@ -200,7 +200,7 @@ do -- generic get set
 		local set_func = physics.bullet and physics.bullet["RigidBodySet" .. name] or function() end
 		local get_func = physics.bullet and physics.bullet["RigidBodyGet" .. name] or function() end
 
-		prototype.GetSet(META, name, default)
+		META:GetSet(name, default)
 
 		if type(default) == "number" then
 			META["Set" .. name] = function(self, var)
@@ -262,7 +262,7 @@ do -- generic get set
 	GET_SET("AngularSleepingThreshold", 0)
 end
 
-prototype.EndStorable()
+META:EndStorable()
 
 function META:IsPhysicsValid()
 	return self.body ~= nil
@@ -280,10 +280,10 @@ function META:OnRemove()
 	end
 end
 
-prototype.Register(META)
+META:Register()
 
 function physics.CreateBody()
-	local self = prototype.CreateObject(META)
+	local self = META:CreateObject()
 
 	table.insert(physics.bodies, self)
 

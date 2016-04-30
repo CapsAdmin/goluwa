@@ -390,7 +390,7 @@ local function GEN_TEMPLATE(type, ctor, on_remove)
 	local key = "Gen" .. type
 
 	local create = function(...)
-		local self = prototype.CreateObject(META)
+		local self = META:CreateObject()
 
 		self.id = al[key]()
 
@@ -419,7 +419,7 @@ end
 local function ADD_SET_GET_OBJECT(META, ADD_FUNCTION, name, ...)
 	ADD_FUNCTION(name.."ID", ...)
 
-	prototype.GetSet(META, name, NULL)
+	META:GetSet(name, NULL)
 
 	local set = META["Set"..name.."ID"]
 	META["Set"..name] = function(self, var, ...)
@@ -539,8 +539,8 @@ do -- source
 	end
 
 	do
-		prototype.GetSet(META, "BufferCount", 4)
-		prototype.GetSet(META, "BufferFormat", al.e.FORMAT_STEREO16)
+		META:GetSet("BufferCount", 4)
+		META:GetSet("BufferFormat", al.e.FORMAT_STEREO16)
 
 		local pushed = {}
 
@@ -688,8 +688,8 @@ do -- buffer
 		end
 	end)
 
-	prototype.GetSet(META, "Format", al.e.FORMAT_MONO16)
-	prototype.GetSet(META, "SampleRate", 44100)
+	META:GetSet("Format", al.e.FORMAT_MONO16)
+	META:GetSet("SampleRate", 44100)
 
 	do
 		-- http://wiki.delphigl.com/index.php/alGetBuffer
@@ -902,7 +902,7 @@ do -- microphone
 
 		llog("opening device %q for input", name)
 
-		local self = prototype.CreateObject(META)
+		local self = META:CreateObject()
 
 		self.buffer_size = buffer_size
 

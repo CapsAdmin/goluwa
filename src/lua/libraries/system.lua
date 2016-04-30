@@ -1479,7 +1479,7 @@ if sdl then
 
 		llog("sdl version: %s", ffi.string(sdl.GetRevision()))
 
-		local self = prototype.CreateObject(META)
+		local self = META:CreateObject()
 
 		self.last_mpos = Vec2()
 		self.mouse_delta = Vec2()

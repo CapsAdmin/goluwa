@@ -1,5 +1,5 @@
 ﻿do
-	local COMPONENT = {}
+	local COMPONENT = prototype.CreateTemplate()
 
 	COMPONENT.Name = "io"
 	COMPONENT.Icon = "textures/silkicons/computer.png"
@@ -175,11 +175,11 @@
 		return self
 	end
 
-	prototype.RegisterComponent(COMPONENT)
+	COMPONENT:RegisterComponent()
 end
 
 local function ADD_GATE(name, inputs, outputs, callback, callback2)
-	local COMPONENT = {}
+	local COMPONENT = prototype.CreateTemplate()
 
 	COMPONENT.Name = "gate_" .. name
 	COMPONENT.Base = "io"
@@ -222,11 +222,11 @@ local function ADD_GATE(name, inputs, outputs, callback, callback2)
 			end
 		end
 	end
-	prototype.EndStorable()
+	COMPONENT:EndStorable()
 
 	COMPONENT.ComputeInputs = callback
 
-	prototype.RegisterComponent(COMPONENT)
+	COMPONENT:RegisterComponent()
 	prototype.SetupComponents(COMPONENT.Name, {COMPONENT.Name}, "textures/silkicons/plugin_disabled.png", name)
 end
 
@@ -238,9 +238,9 @@ do
 			o[1] = self.Value
 		end,
 		function(COMPONENT)
-			prototype.StartStorable(COMPONENT)
-				prototype.GetSet("Value", 0)
-			prototype.EndStorable()
+			COMPONENT:StartStorable()
+				COMPONENT:GetSet("Value", 0)
+			COMPONENT:EndStorable()
 		end
 	)
 
@@ -290,7 +290,7 @@ do
 end
 
 do
-	local COMPONENT = {}
+	local COMPONENT = prototype.CreateTemplate()
 
 	COMPONENT.Name = "wire_board"
 
@@ -318,6 +318,6 @@ do
 		self.panel:SetRect(rect)
 	end
 
-	prototype.RegisterComponent(COMPONENT)
+	COMPONENT:RegisterComponent()
 	prototype.SetupComponents(COMPONENT.Name, {COMPONENT.Name}, "textures/silkicons/computer.png")
 end

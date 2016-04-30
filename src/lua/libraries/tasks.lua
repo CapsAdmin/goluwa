@@ -9,10 +9,10 @@ local enabled = {Get = function() return false end} event.AddListener("Initializ
 
 local META = prototype.CreateTemplate("task")
 
-prototype.GetSet(META, "Frequency", 0)
-prototype.GetSet(META, "IterationsPerTick", 1)
-prototype.GetSet(META, "EnsureFPS", 30)
-prototype.IsSet(META, "Running", false)
+META:GetSet("Frequency", 0)
+META:GetSet("IterationsPerTick", 1)
+META:GetSet("EnsureFPS", 30)
+META:IsSet("Running", false)
 
 META.wait = 0
 
@@ -147,10 +147,10 @@ function META:OnRemove()
 	tasks.created[self] = nil
 end
 
-prototype.Register(META)
+META:Register()
 
 function tasks.CreateTask(on_start, on_finish)
-	local self = prototype.CreateObject(META)
+	local self = META:CreateObject()
 
 	if on_start then self.OnStart = function(_, ...) return on_start(...) end end
 	if on_finish then self.OnFinish = function(_, ...) return on_finish(...) end end

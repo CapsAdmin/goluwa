@@ -5,9 +5,9 @@ META.OnChildAdd = META.OnChildAdd or function() end
 META.OnChildRemove = META.OnChildRemove or function() end
 META.OnUnParent = META.OnUnParent or function() end
 
-prototype.GetSet(META, "Parent", NULL)
-prototype.GetSet(META, "Children", {})
-prototype.GetSet(META, "Children2", {})
+META:GetSet("Parent", NULL)
+META:GetSet("Children", {})
+META:GetSet("Children2", {})
 
 function META:GetChildrenList()
 	if not self.children_list then

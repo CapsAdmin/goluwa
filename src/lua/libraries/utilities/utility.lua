@@ -603,10 +603,10 @@ do -- tree
 		return next
 	end
 
-	prototype.Register(META)
+	META:Register()
 
 	function utility.CreateTree(delimiter, tree)
-		local self = prototype.CreateObject(META)
+		local self = META:CreateObject()
 
 		self.tree = tree or {}
 		self.delimiter = delimiter

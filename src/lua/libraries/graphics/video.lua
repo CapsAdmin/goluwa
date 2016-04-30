@@ -33,7 +33,7 @@ prototype.Register(META)
 local video = {}
 
 function video.CreateGif(path)
-	local self = prototype.CreateObject(META)
+	local self = META:CreateObject()
 
 	self.frames = {}
 	self.frame_count = 1

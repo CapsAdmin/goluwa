@@ -105,7 +105,7 @@ do -- buffer object
 	local META = prototype.CreateTemplate("packet_buffer")
 
 	function packet.CreateBuffer(val)
-		local self = prototype.CreateObject(META)
+		local self = META:CreateObject()
 
 		if type(val) == "string" or type(val) == "table" or not val then
 			self.buffer = {}

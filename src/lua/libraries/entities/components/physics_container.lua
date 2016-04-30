@@ -1,5 +1,5 @@
 do return end
-local COMPONENT = {}
+local COMPONENT = prototype.CreateTemplate()
 
 COMPONENT.Name = "physics_container"
 
@@ -36,4 +36,4 @@ function COMPONENT:OnRemove(ent)
 
 end
 
-prototype.RegisterComponent(COMPONENT)
+COMPONENT:RegisterComponent()
