@@ -60,7 +60,7 @@ do
 		local sub_type = checkfield(meta, "ClassName", sub_type)
 
 		for _, key in ipairs(template_functions) do
-			if meta[key] == prototype[key] then
+			if key ~= "CreateObject" and meta[key] == prototype[key] then
 				meta[key] = nil
 			end
 		end
