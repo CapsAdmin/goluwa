@@ -311,6 +311,8 @@ function string.split(self, separator, plain_search)
 
 	if current_pos > 1 then
 		tbl[#tbl + 1] = self:sub(current_pos)
+	else
+		tbl[1] = self
 	end
 
 	return tbl
