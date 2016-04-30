@@ -4,7 +4,7 @@ local META = {}
 
 META.ClassName = "Vec2"
 
-META.NumberType = {[""] = "float", ["i"] = "int"}
+META.NumberType = "double"
 META.Args = {{"x", "w", "p"}, {"y", "h", "y"}}
 
 structs.AddAllOperators(META)

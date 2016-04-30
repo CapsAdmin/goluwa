@@ -4,7 +4,7 @@ local META = {}
 
 META.ClassName = "AABB"
 
-META.NumberType = "float"
+META.NumberType = "double"
 META.Args = {"min_x", "min_y", "min_z", "max_x", "max_y", "max_z"}
 
 structs.AddAllOperators(META)

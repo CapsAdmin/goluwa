@@ -82,7 +82,7 @@ do -- init sphere options
 		if rad then self:SetPhysicsSphereRadius(rad) end
 
 		if physics.init then
-			self.body = physics.bullet.CreateRigidBodySphere(self:GetMass(), ffi.cast("float *", self:GetMatrix()), self:GetPhysicsSphereRadius())
+			self.body = physics.bullet.CreateRigidBodySphere(self:GetMass(), self:GetMatrix():GetFloatCopy(), self:GetPhysicsSphereRadius())
 			physics.StoreBodyPointer(self.body, self)
 		end
 
@@ -97,7 +97,7 @@ do -- init box options
 		if scale then self:SetPhysicsBoxScale(scale) end
 
 		if physics.init then
-			self.body = physics.bullet.CreateRigidBodyBox(self:GetMass(), ffi.cast("float *", self:GetMatrix()), vec3_to_physics.bullet(self:GetPhysicsBoxScale():Unpack()))
+			self.body = physics.bullet.CreateRigidBodyBox(self:GetMass(), self:GetMatrix():GetFloatCopy(), vec3_to_physics.bullet(self:GetPhysicsBoxScale():Unpack()))
 			physics.StoreBodyPointer(self.body, self)
 		end
 
@@ -112,7 +112,7 @@ do -- init capsule options
 
 	function META:InitPhysicsCapsuleZ()
 		if physics.init then
-			self.body = physics.bullet.CreateCapsuleZ(self:GetMass(), ffi.cast("float *", self:GetMatrix()), self:GetPhysicsCapsuleZRadius(), self:GetPhysicsCapsuleZHeight())
+			self.body = physics.bullet.CreateCapsuleZ(self:GetMass(), self:GetMatrix():GetFloatCopy(), self:GetPhysicsCapsuleZRadius(), self:GetPhysicsCapsuleZHeight())
 			physics.StoreBodyPointer(self.body, self)
 		end
 
@@ -133,7 +133,7 @@ do -- mesh init options
 		self.mesh = tbl
 
 		if physics.init then
-			self.body = physics.bullet.CreateRigidBodyConvexHull(self:GetMass(), ffi.cast("float *", self:GetMatrix()), mesh)
+			self.body = physics.bullet.CreateRigidBodyConvexHull(self:GetMass(), self:GetMatrix():GetFloatCopy(), mesh)
 			physics.StoreBodyPointer(self.body, self)
 		end
 
@@ -159,7 +159,7 @@ do -- mesh init options
 		self.mesh = tbl
 
 		if physics.init then
-			self.body = physics.bullet.CreateRigidBodyConvexTriangleMesh(self:GetMass(), ffi.cast("float *", self:GetMatrix()), mesh)
+			self.body = physics.bullet.CreateRigidBodyConvexTriangleMesh(self:GetMass(), self:GetMatrix():GetFloatCopy(), mesh)
 			physics.StoreBodyPointer(self.body, self)
 		end
 
@@ -185,7 +185,7 @@ do -- mesh init options
 		self.mesh = tbl
 
 		if physics.init then
-			self.body = physics.bullet.CreateRigidBodyTriangleMesh(self:GetMass(), ffi.cast("float *", self:GetMatrix()), mesh, not not quantized_aabb_compression)
+			self.body = physics.bullet.CreateRigidBodyTriangleMesh(self:GetMass(), self:GetMatrix():GetFloatCopy(), mesh, not not quantized_aabb_compression)
 			physics.StoreBodyPointer(self.body, self)
 		end
 
@@ -234,14 +234,14 @@ do -- generic get set
 			META["Set" .. name] = function(self, var)
 				self[name] = var
 				if not check(self) then return end
-				set_func(self.body, ffi.cast("float * ", var))
+				set_func(self.body, var:GetFloatCopy())
 			end
 
 			local out = Matrix44()
 
 			META["Get" .. name] = function(self)
 				if not self.body then return self[name] end
-				get_func(self.body, ffi.cast("float *", out))
+				get_func(self.body, out:GetFloatCopy())
 				local mat = Matrix44()
 				ffi.copy(mat, out, ffi.sizeof(mat))
 				return mat

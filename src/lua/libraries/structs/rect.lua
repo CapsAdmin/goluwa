@@ -4,7 +4,7 @@ local META = {}
 
 META.ClassName = "Rect"
 
-META.NumberType = {[""] = "float", ["i"] = "int"}
+META.NumberType = "double"
 META.Args = {{"x", "left"}, {"y", "top"}, {"w", "right"}, {"h", "bottom"}}
 
 structs.AddAllOperators(META)

@@ -8,7 +8,7 @@ function Deg3(p, y, r)
 	return Ang3(p, y, r):Rad()
 end
 
-META.NumberType = "float"
+META.NumberType = "double"
 META.Args = {{"x", "p", "pitch"}, {"y", "yaw"}, {"z", "r", "roll"}}
 
 structs.AddAllOperators(META)

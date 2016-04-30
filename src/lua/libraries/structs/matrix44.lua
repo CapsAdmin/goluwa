@@ -6,7 +6,7 @@ local META = prototype.CreateTemplate("matrix44")
 
 META.__index = META
 
-META.NumberType = "float"
+META.NumberType = "double"
 
 META.Args = {
 	"m00", "m01", "m02", "m03",
@@ -20,6 +20,33 @@ structs.AddOperator(META, "==")
 local ctype = ffi.typeof("struct { $ m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33; }", ffi.typeof(META.NumberType))
 local size = ffi.sizeof(META.NumberType) * 16
 local copy = ffi.copy
+local new = ffi.new
+
+local temp = new("float[16]")
+
+function META:GetFloatPointer()
+	temp[0] = self.m00
+	temp[1] = self.m01
+	temp[2] = self.m02
+	temp[3] = self.m03
+	temp[4] = self.m10
+	temp[5] = self.m11
+	temp[6] = self.m12
+	temp[7] = self.m13
+	temp[8] = self.m20
+	temp[9] = self.m21
+	temp[10] = self.m22
+	temp[11] = self.m23
+	temp[12] = self.m30
+	temp[13] = self.m31
+	temp[14] = self.m32
+	temp[15] = self.m33
+	return temp
+end
+
+function META:GetFloatCopy()
+	return new("float[16]", self.m00, self.m01, self.m02, self.m03, self.m10, self.m11, self.m12, self.m13, self.m20, self.m21, self.m22, self.m23, self.m30, self.m31, self.m32, self.m33)
+end
 
 function META:CopyTo(matrix)
 	copy(self, matrix, 16)
@@ -486,4 +513,4 @@ function Matrix44(x, y, z)
 	return ctype(1,0,0,0, 0,1,0,0, 0,0,1,0, x or 0, y or 0, z or 0,1)
 end
 
-prototype.Register(META)
+META:Register()

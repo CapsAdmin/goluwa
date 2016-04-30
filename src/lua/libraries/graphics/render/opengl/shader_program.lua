@@ -92,12 +92,8 @@ function META:UploadTexture(key, val, a,b)
 	val:Bind(b)
 end
 
-do
-	local ctype = ffi.typeof("const float *")
-	local cast = ffi.cast
-	function META:UploadMatrix44(key, val)
-		self.gl_program:UniformMatrix4fv(key, 1, 0, cast(ctype, val))
-	end
+function META:UploadMatrix44(key, val)
+	self.gl_program:UniformMatrix4fv(key, 1, 0, val:GetFloatPointer())
 end
 
 function META:Bind()

@@ -22,7 +22,7 @@ function ColorHex(hex, a)
 	return ColorBytes(r, g, b, a)
 end
 
-META.NumberType = "float"
+META.NumberType = "double"
 META.Args = {"r", "g", "b", "a"}
 META.ProtectedFields = {a = true}
 

@@ -4,7 +4,7 @@ local META = {}
 
 META.ClassName = "Quat"
 
-META.NumberType = "float"
+META.NumberType = "double"
 META.Args = {"x", "y", "z", "w"}
 
 structs.AddAllOperators(META)

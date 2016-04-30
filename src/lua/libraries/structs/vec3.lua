@@ -4,7 +4,7 @@ local META = {}
 
 META.ClassName = "Vec3"
 
-META.NumberType = "float"
+META.NumberType = "double"
 META.Args = {"x", "y", "z"}
 
 structs.AddAllOperators(META)
