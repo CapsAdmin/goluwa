@@ -331,7 +331,8 @@ function utility.MakePushPopFunction(lib, name, func_set, func_get, reset)
 	local i = 1
 
 	lib["Push" .. name] = function(...)
-		stack[i] = {func_get()}
+		stack[i] = stack[i] or {}
+		stack[i][1], stack[i][2], stack[i][3], stack[i][4] = func_get()
 
 		func_set(...)
 
@@ -349,7 +350,7 @@ function utility.MakePushPopFunction(lib, name, func_set, func_get, reset)
 			reset()
 		end
 
-		func_set(unpack(stack[i]))
+		func_set(stack[i][1], stack[i][2], stack[i][3], stack[i][4])
 	end
 end
 

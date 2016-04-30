@@ -31,10 +31,10 @@ function input.SetupAccessorFunctions(tbl, name, up_id, down_id, on_self)
 		tbl["Was" .. name .. "Pressed"] = was_pressed
 		tbl["Get" .. name .. "DownTime"] = get_down_time
 	else
-		tbl["Is" .. name .. "Down"] = function(...) return is_down(input, ...) end
-		tbl["Get" .. name .. "UpTime"] = function(...) return get_up_time(input, ...) end
-		tbl["Was" .. name .. "Pressed"] = function(...) return was_pressed(input, ...) end
-		tbl["Get" .. name .. "DownTime"] = function(...) return get_down_time(input, ...) end
+		tbl["Is" .. name .. "Down"] = function(key) return is_down(input, key) end
+		tbl["Get" .. name .. "UpTime"] = function(key) return get_up_time(input, key) end
+		tbl["Was" .. name .. "Pressed"] = function(key) return was_pressed(input, key) end
+		tbl["Get" .. name .. "DownTime"] = function(key) return get_down_time(input, key) end
 	end
 end
 
