@@ -2,12 +2,9 @@ local structs = (...) or _G.structs
 
 local ffi = require("ffi")
 
-local META = {}
+local META = prototype.CreateTemplate("matrix44")
+
 META.__index = META
-
-META.ClassName = "Matrix44"
-
-META.Type = META.ClassName:lower()
 
 META.NumberType = "float"
 
