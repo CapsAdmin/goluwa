@@ -51,10 +51,6 @@ function META:GetMesh()
 	return self.mesh
 end
 
-function META:Export(path)
-
-end
-
 function META:Draw()
 	if self.mesh then
 		self.mesh:Draw()

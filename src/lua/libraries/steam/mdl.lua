@@ -684,7 +684,7 @@ local function load_vvd(path)
 			for lod_index = 1, vvd.lod_count do
 				vvd.fixed_vertices_by_lod[lod_index] = {}
 
-				for i, fixup in ipairs(vvd.theFixups) do
+				for _, fixup in ipairs(vvd.theFixups) do
 					if fixup.lod_index >= lod_index then
 						for i = 1, fixup.vertices_count do
 							table.insert(vvd.fixed_vertices_by_lod[lod_index], vvd.vertices[fixup.vertex_index + i - 1])
@@ -699,8 +699,6 @@ local function load_vvd(path)
 
 	return vvd
 end
-
-local scale = 0.0254
 
 function steam.LoadModel(path, sub_model_callback)
 	local models = {}
@@ -719,7 +717,7 @@ function steam.LoadModel(path, sub_model_callback)
 	--	table.print(mdl)
 	--end
 
-	for i, body_part in ipairs(vtx.body_parts) do
+	for _, body_part in ipairs(vtx.body_parts) do
 		for _, model_ in ipairs(body_part.models) do
 			for lod_index, lod_model in ipairs(model_.model_lods) do
 				if lod_model.meshes then
@@ -748,7 +746,7 @@ function steam.LoadModel(path, sub_model_callback)
 							local path = mdl.material[model_i]
 
 							if not path:find("/", nil, true) then
-								for i, dir in ipairs(mdl.texturedir) do
+								for _, dir in ipairs(mdl.texturedir) do
 									if vfs.IsFile("materials/" .. vfs.FixPathSlashes(dir.path .. path) .. ".vmt") then
 										path = dir.path .. path
 										break

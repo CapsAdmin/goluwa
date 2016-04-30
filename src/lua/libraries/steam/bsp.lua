@@ -181,7 +181,9 @@ function steam.LoadMap(path)
 			if id == "prps" then
 				bsp_file:PushPosition(fileofs)
 
-				local count = bsp_file:ReadLong()
+				local count
+
+				count = bsp_file:ReadLong()
 				local paths = {}
 				for i = 1, count do
 					local str = bsp_file:ReadString(128, true)
@@ -190,14 +192,13 @@ function steam.LoadMap(path)
 					end
 				end
 
-				local count = bsp_file:ReadLong()
+				count = bsp_file:ReadLong()
 				local leafs = {}
 				for i = 1, count do
 					leafs[i] = bsp_file:ReadShort()
 				end
 
-				local count = bsp_file:ReadLong()
-
+				count = bsp_file:ReadLong()
 				for _ = 1, count do
 					local lump = bsp_file:ReadStructure([[
 						vec3 origin;
@@ -374,17 +375,17 @@ function steam.LoadMap(path)
 			data.vertex_info = {}
 
 			bsp_file:PushPosition(lump.fileofs + (data.DispVertStart * 20))
-				for i = 1, ((2 ^ data.power) + 1) ^ 2 do
-					local vertex = bsp_file:ReadVec3()
-					local dist = bsp_file:ReadFloat()
-					local alpha = bsp_file:ReadFloat()
+			for i = 1, ((2 ^ data.power) + 1) ^ 2 do
+				local vertex = bsp_file:ReadVec3()
+				local dist = bsp_file:ReadFloat()
+				local alpha = bsp_file:ReadFloat()
 
-					data.vertex_info[i] = {
-						vertex = vertex,
-						dist = dist,
-						alpha = alpha
-					}
-				end
+				data.vertex_info[i] = {
+					vertex = vertex,
+					dist = dist,
+					alpha = alpha
+				}
+			end
 
 			bsp_file:PopPosition(old_pos)
 
@@ -428,7 +429,7 @@ function steam.LoadMap(path)
 	local models = {}
 
 	do
-		local function add_vertex(model, texinfo, texdata, pos, blend, normal)
+		local function add_vertex(model, texinfo, texdata, pos, blend)
 			local a = texinfo.textureVecs
 
 			if blend then
@@ -538,7 +539,6 @@ function steam.LoadMap(path)
 						end
 					else
 						local dispinfo = header.displacements[face.dispinfo + 1]
-						local size = 2 ^ dispinfo.power + 1
 
 						local start_corner_dist = math.huge
 						local start_corner = 0
@@ -670,8 +670,6 @@ function steam.LoadMap(path)
 		end
 	end
 
-	local func = steam.bsp_cache[path]
-
 	steam.bsp_cache[path] = {
 		render_meshes = models,
 		entities = header.entities,
@@ -712,7 +710,7 @@ function steam.SpawnMapEntities(path, parent)
 			if GRAPHICS then
 				if info.classname and info.classname:find("light_environment") then
 
-					local p, y = info.pitch, info.angles.y
+					--local p, y = info.pitch, info.angles.y
 					--parent.world_params:SetSunAngles(Deg3(p or 0, y+180, 0))
 
 					--info._light.a = 1

@@ -15,12 +15,12 @@ commands.Add("mount_all", function(game)
 	llog("mounted %s %s", game_info.game, game_info.title2)
 end)
 
-commands.Add("unmount_all", function(game)
+commands.Add("unmount_all", function()
 	steam.UnmountAllSourceGames()
 end)
 
 
-commands.Add("list_games", function(game)
+commands.Add("list_games", function()
 	for _, info in pairs(steam.GetSourceGames()) do
 		logn(info.game)
 		logn("\tgame_dir = ", info.game_dir)
