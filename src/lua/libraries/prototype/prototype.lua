@@ -8,10 +8,12 @@ local template_functions = {
 	"IsSet",
 	"Delegate",
 	"GetSetDelegate",
+	"DelegateProperties",
 	"RemoveField",
 	"StartStorable",
 	"EndStorable",
 	"Register",
+	"RegisterComponent",
 	"CreateObject",
 }
 
