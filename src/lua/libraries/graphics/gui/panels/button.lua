@@ -1,17 +1,17 @@
 local gui = ... or _G.gui
-local PANEL = {}
+local META = {}
 
-PANEL.ClassName = "button"
+META.ClassName = "button"
 
-prototype.GetSet(PANEL, "Mode", "normal")
-prototype.GetSet(PANEL, "ResetOnMouseExit", true)
-prototype.GetSet(PANEL, "Highlight", false)
-prototype.GetSet(PANEL, "ActiveStyle", "button_active")
-prototype.GetSet(PANEL, "InactiveStyle", "button_inactive")
-prototype.GetSet(PANEL, "HighlightOnMouseEnter", true)
-prototype.GetSet(PANEL, "ClicksToActivate", 0)
+prototype.GetSet(META, "Mode", "normal")
+prototype.GetSet(META, "ResetOnMouseExit", true)
+prototype.GetSet(META, "Highlight", false)
+prototype.GetSet(META, "ActiveStyle", "button_active")
+prototype.GetSet(META, "InactiveStyle", "button_inactive")
+prototype.GetSet(META, "HighlightOnMouseEnter", true)
+prototype.GetSet(META, "ClicksToActivate", 0)
 
-function PANEL:SetActiveStyle(str)
+function META:SetActiveStyle(str)
 	self.ActiveStyle = str
 
 	if self:GetState() then
@@ -21,7 +21,7 @@ function PANEL:SetActiveStyle(str)
 	end
 end
 
-function PANEL:SetInactiveStyle(str)
+function META:SetInactiveStyle(str)
 	self.InactiveStyle = str
 
 	if self:GetState() then
@@ -31,17 +31,17 @@ function PANEL:SetInactiveStyle(str)
 	end
 end
 
-function PANEL:Initialize()
+function META:Initialize()
 	self:SetStyle("button_inactive")
 	self:SetCursor("hand")
 	self.button_down = {}
 end
 
-function PANEL:Toggle(button)
+function META:Toggle(button)
 	return self:SetState(not self:GetState(button), button)
 end
 
-function PANEL:SetState(press, button)
+function META:SetState(press, button)
 	button = button or "button_1"
 
 	if press then
@@ -65,7 +65,7 @@ function PANEL:SetState(press, button)
 	return false
 end
 
-function PANEL:TieCheckbox(button)
+function META:TieCheckbox(button)
 	self.tied_buttons = self.tied_buttons or {}
 
 	table.insert(self.tied_buttons, button)
@@ -79,12 +79,12 @@ function PANEL:TieCheckbox(button)
 	self:SetInactiveStyle("rad_uncheck")
 end
 
-function PANEL:GetState(button)
+function META:GetState(button)
 	button = button or "button_1"
 	return self.button_down[button] or false
 end
 
-function PANEL:CanPress(button)
+function META:CanPress(button)
 	button = button or "button_1"
 
 	self.click_times = self.click_times or {}
@@ -93,7 +93,7 @@ function PANEL:CanPress(button)
 	return self.click_times[button].times >= self.ClicksToActivate
 end
 
-function PANEL:OnMouseInput(button, press)
+function META:OnMouseInput(button, press)
 	if button == "button_3" or button == "mwheel_up" or button == "mwheel_down" then return end
 
 	self.click_times = self.click_times or {}
@@ -180,29 +180,29 @@ function PANEL:OnMouseInput(button, press)
 	end
 end
 
-function PANEL:OnGlobalMouseInput(button, press)
+function META:OnGlobalMouseInput(button, press)
 	if self.Mode == "normal" and not press and self.button_down[button] and not self.mouse_over then
 		self:SetStyle(self.InactiveStyle)
 	end
 end
 
-function PANEL:OnMouseEnter()
+function META:OnMouseEnter()
 	if self.HighlightOnMouseEnter then
 		self:Animate("DrawColor", {Color(1,1,1,1)*0.3, function() return self.Highlight or self:IsMouseOver() end, "from"}, nil, "", 0.25)
 	end
 end
 
-function PANEL:OnMouseExit()
+function META:OnMouseExit()
 	if self.Mode ~= "toggle" and self.ResetOnMouseExit then
 		self.button_down = {}
 	end
 end
 
-function PANEL:OnRelease() end
-function PANEL:OnPress() end
-function PANEL:OnStateChanged(press, button) end
+function META:OnRelease() end
+function META:OnPress() end
+function META:OnStateChanged(press, button) end
 
-function PANEL:Test()
+function META:Test()
 	local btn = gui.CreatePanel("button")
 
 	btn:SetMode("toggle")
@@ -211,4 +211,4 @@ function PANEL:Test()
 	return btn
 end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(META)

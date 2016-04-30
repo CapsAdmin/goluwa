@@ -1,32 +1,32 @@
-local COMPONENT = prototype.CreateTemplate()
+local META = prototype.CreateTemplate()
 
-COMPONENT.Name = "model"
-COMPONENT.Require = {"transform"}
+META.Name = "model"
+META.Require = {"transform"}
 
-COMPONENT:StartStorable()
-	COMPONENT:GetSet("MaterialOverride", nil)
-	COMPONENT:GetSet("Cull", true)
-	COMPONENT:GetSet("ModelPath", "models/cube.obj")
-	COMPONENT:GetSet("BBMin", Vec3())
-	COMPONENT:GetSet("BBMax", Vec3())
-	COMPONENT:IsSet("Loading", false)
-COMPONENT:EndStorable()
+META:StartStorable()
+	META:GetSet("MaterialOverride", nil)
+	META:GetSet("Cull", true)
+	META:GetSet("ModelPath", "models/cube.obj")
+	META:GetSet("BBMin", Vec3())
+	META:GetSet("BBMax", Vec3())
+	META:IsSet("Loading", false)
+META:EndStorable()
 
-COMPONENT:GetSet("Model", nil)
+META:GetSet("Model", nil)
 
-COMPONENT.Network = {
+META.Network = {
 	ModelPath = {"string", 1/5, "reliable"},
 	Cull = {"boolean", 1/5},
 }
 
 if GRAPHICS then
-	function COMPONENT:Initialize()
+	function META:Initialize()
 		self.sub_models = {}
 		self.next_visible = {}
 		self.visible = {}
 	end
 
-	function COMPONENT:SetVisible(b)
+	function META:SetVisible(b)
 		if b then
 			table.insert(render.scene_3d, self)
 		else
@@ -34,16 +34,16 @@ if GRAPHICS then
 		end
 	end
 
-	function COMPONENT:OnAdd()
+	function META:OnAdd()
 		self.tr = self:GetComponent("transform")
 		table.insert(render.scene_3d, self)
 	end
 
-	function COMPONENT:OnRemove()
+	function META:OnRemove()
 		table.removevalue(render.scene_3d, self)
 	end
 
-	function COMPONENT:SetModelPath(path)
+	function META:SetModelPath(path)
 		self:RemoveMeshes()
 
 		self.ModelPath = path
@@ -69,14 +69,14 @@ if GRAPHICS then
 		)
 	end
 
-	function COMPONENT:MakeError()
+	function META:MakeError()
 		self:RemoveMeshes()
 		self:SetLoading(false)
 		self:SetModelPath("models/error.mdl")
 	end
 
 	do
-		function COMPONENT:AddMesh(mesh)
+		function META:AddMesh(mesh)
 			checkx(mesh, "mesh_builder")
 			table.insert(self.sub_models, mesh)
 			mesh:CallOnRemove(function()
@@ -86,7 +86,7 @@ if GRAPHICS then
 			end, self)
 		end
 
-		function COMPONENT:RemoveMesh(mesh)
+		function META:RemoveMesh(mesh)
 			for i, _mesh in ipairs(self.sub_models) do
 				if mesh == _mesh then
 					table.remove(self.sub_models, i)
@@ -95,12 +95,12 @@ if GRAPHICS then
 			end
 		end
 
-		function COMPONENT:RemoveMeshes()
+		function META:RemoveMeshes()
 			table.clear(self.sub_models)
 			collectgarbage("step")
 		end
 
-		function COMPONENT:GetMeshes()
+		function META:GetMeshes()
 			return self.sub_models
 		end
 	end
@@ -110,7 +110,7 @@ if GRAPHICS then
 			return bit.band(bit.rshift(i, j), 1) == 0 and self.BBMin or self.BBMax
 		end
 
-		function COMPONENT:BuildBoundingBox()
+		function META:BuildBoundingBox()
 			local min, max = Vec3(), Vec3()
 
 			for _, sub_model in ipairs(self.sub_models) do
@@ -138,7 +138,7 @@ if GRAPHICS then
 		end
 	end
 
-	function COMPONENT:Draw(what, dist)
+	function META:Draw(what, dist)
 		render.camera_3d:SetWorld(self.tr:GetMatrix())
 
 		if self.corners and what then
@@ -170,7 +170,7 @@ if GRAPHICS then
 	end
 end
 
-COMPONENT:RegisterComponent()
+META:RegisterComponent()
 
 if RELOAD then
 	render.InitializeGBuffer()

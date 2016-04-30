@@ -1,13 +1,13 @@
 local gui = ... or _G.gui
 
-local PANEL = {}
-PANEL.ClassName = "image"
+local META = {}
+META.ClassName = "image"
 
-prototype.GetSet(PANEL, "Path", "loading")
+prototype.GetSet(META, "Path", "loading")
 
-function PANEL:SetPath(path)
+function META:SetPath(path)
 	self.Path = path
 	self:SetTexture(render.CreateTextureFromPath(path))
 end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(META)

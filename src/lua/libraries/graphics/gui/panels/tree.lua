@@ -1,14 +1,14 @@
 local gui = ... or _G.gui
 
 do -- tree node
-	local PANEL = {}
+	local META = {}
 
-	PANEL.Base = "button"
-	PANEL.ClassName = "tree_node"
+	META.Base = "button"
+	META.ClassName = "tree_node"
 
-	prototype.GetSet(PANEL, "Expand", true)
+	prototype.GetSet(META, "Expand", true)
 
-	function PANEL:Initialize()
+	function META:Initialize()
 		self:SetDraggable(true)
 		self:SetDragMinDistance(Vec2()-1)
 		self.nodes = {}
@@ -46,15 +46,15 @@ do -- tree node
 		self:SetText("nil")
 	end
 
-	function PANEL:OnChildDrop(child, drop_pos)
+	function META:OnChildDrop(child, drop_pos)
 		self.tree:OnNodeDrop(self, child, drop_pos)
 	end
 
-	function PANEL:OnParentLand(parent)
+	function META:OnParentLand(parent)
 
 	end
 
-	function PANEL:OnLayout(S)
+	function META:OnLayout(S)
 		self.expand:SetPadding(Rect()+2*S)
 
 		self.image:SetPadding(Rect()+2*S)
@@ -69,7 +69,7 @@ do -- tree node
 		self:SetMargin(Rect(0,0,self.offset*S,0))
 	end
 
-	function PANEL:OnPress()
+	function META:OnPress()
 		self.button:SetColor(Color(1,1,1,1))
 		--self.button:SetNoDraw(false)
 		for k, v in ipairs(self.tree:GetChildren()) do
@@ -83,33 +83,33 @@ do -- tree node
 		self:OnSelect()
 	end
 
-	function PANEL:OnMouseEnter(...)
+	function META:OnMouseEnter(...)
 		prototype.GetRegistered(self.Type, "button").OnMouseEnter(self, ...)
 		self.button:SetHighlight(true)
 		self.button:OnMouseEnter()
 	end
 
-	function PANEL:OnMouseExit(...)
+	function META:OnMouseExit(...)
 		prototype.GetRegistered(self.Type, "button").OnMouseExit(self, ...)
 		self.button:SetHighlight(false)
 	end
 
-	function PANEL:OnExpand()
+	function META:OnExpand()
 		self:SetExpand(not self.Expand)
 		self:Layout()
 	end
 
-	function PANEL:SetIcon(...)
+	function META:SetIcon(...)
 		self.image:SetTexture(...)
 		self:Layout()
 	end
 
-	function PANEL:SetText(...)
+	function META:SetText(...)
 		self.button:SetText(...)
 		self:Layout()
 	end
 
-	function PANEL:AddNode(str, icon, id)
+	function META:AddNode(str, icon, id)
 		local pnl = self.tree.AddNode(self.tree, str, icon, id)
 
 		local pos
@@ -125,7 +125,7 @@ do -- tree node
 		return pnl
 	end
 
-	function PANEL:SetExpandCallback(callback)
+	function META:SetExpandCallback(callback)
 		if callback then
 			self.expand_callback = function(b)
 				callback()
@@ -138,7 +138,7 @@ do -- tree node
 		end
 	end
 
-	function PANEL:SetExpandInternal(b)
+	function META:SetExpandInternal(b)
 		self:SetVisible(b)
 		self:SetStackable(b)
 
@@ -153,7 +153,7 @@ do -- tree node
 		self.Parent:Layout()
 	end
 
-	function PANEL:SetExpand(b)
+	function META:SetExpand(b)
 
 		for pos, pnl in pairs(self.tree:GetChildren()) do
 			if pnl.node_parent == self then
@@ -165,19 +165,19 @@ do -- tree node
 		self.expand:SetState(not b)
 	end
 
-	function PANEL:OnSelect() end
+	function META:OnSelect() end
 
-	gui.RegisterPanel(PANEL)
+	gui.RegisterPanel(META)
 end
 
 do
-	local PANEL = {}
+	local META = {}
 
-	PANEL.ClassName = "tree"
-	prototype.GetSet(PANEL, "IndentWidth", 8)
-	prototype.GetSet(PANEL, "SelectedNode", NULL)
+	META.ClassName = "tree"
+	prototype.GetSet(META, "IndentWidth", 8)
+	prototype.GetSet(META, "SelectedNode", NULL)
 
-	function PANEL:Initialize()
+	function META:Initialize()
 		self:SetNoDraw(true)
 		self:SetClipping(true)
 		self:SetStack(true)
@@ -186,7 +186,7 @@ do
 		self:SetSizeStackToWidth(true)
 	end
 
-	function PANEL:AddNode(str, icon, id)
+	function META:AddNode(str, icon, id)
 		if id and self.nodes[id] and self.nodes[id]:IsValid() then self.nodes[id]:Remove() end
 
 		local pnl = self:CreatePanel("tree_node")
@@ -208,7 +208,7 @@ do
 		return pnl
 	end
 
-	function PANEL:RemoveNode(pnl)
+	function META:RemoveNode(pnl)
 		::again::
 
 		for k,v in ipairs(self:GetChildren()) do
@@ -223,18 +223,18 @@ do
 		self:Layout()
 	end
 
-	function PANEL:SelectNode(node)
+	function META:SelectNode(node)
 		node:OnPress()
 	end
 
-	function PANEL:OnLayout(S)
+	function META:OnLayout(S)
 		self:SetForcedStackSize(Vec2(0, 10*S))
 	end
 
-	function PANEL:OnNodeSelect(node) end
-	function PANEL:OnNodeDrop(node, dropped_node, drop_pos) end
+	function META:OnNodeSelect(node) end
+	function META:OnNodeDrop(node, dropped_node, drop_pos) end
 
-	gui.RegisterPanel(PANEL)
+	gui.RegisterPanel(META)
 end
 
 if RELOAD then

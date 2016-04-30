@@ -1,10 +1,10 @@
 local gui = ... or _G.gui
 
-local PANEL = {}
+local META = {}
 
-PANEL.ClassName = "list"
+META.ClassName = "list"
 
-function PANEL:Initialize()
+function META:Initialize()
 	self.columns = {}
 	self.last_div = NULL
 	self.list = NULL
@@ -28,7 +28,7 @@ function PANEL:Initialize()
 	self:SetupSorted("")
 end
 
-function PANEL:OnStyleChanged(skin)
+function META:OnStyleChanged(skin)
 	self.list:SetColor(skin.font_edit_background)
 
 	for i, column in ipairs(self.columns) do
@@ -42,7 +42,7 @@ function PANEL:OnStyleChanged(skin)
 	end
 end
 
-function PANEL:OnLayout(S)
+function META:OnLayout(S)
 	self.top:SetWidth(self:GetWidth())
 	self.top:SetHeight(S*10)
 	self.scroll:SetPosition(Vec2(0, S*10))
@@ -101,13 +101,13 @@ function PANEL:OnLayout(S)
 	end
 end
 
-function PANEL:SizeColumnsToFit()
+function META:SizeColumnsToFit()
 	for i, column in ipairs(self.columns) do
 		column.div:SetDividerPosition(column:GetTextSize().x + column.icon:GetWidth() * 2)
 	end
 end
 
-function PANEL:SetupSorted(...)
+function META:SetupSorted(...)
 	self.list:RemoveChildren()
 	self.top:RemoveChildren()
 
@@ -175,11 +175,11 @@ function PANEL:SetupSorted(...)
 	self:Layout()
 end
 
-function PANEL:ClearList()
+function META:ClearList()
 	self.list:RemoveChildren()
 end
 
-function PANEL:AddEntry(...)
+function META:AddEntry(...)
 	local entry = self.list:CreatePanel("button")
 	entry.OnSelect = function() end
 	entry.labels = {}
@@ -239,17 +239,17 @@ function PANEL:AddEntry(...)
 	return entry
 end
 
-function PANEL:OnEntrySelect(entry, select)
+function META:OnEntrySelect(entry, select)
 
 end
 
-function PANEL:SetupConverters(...)
+function META:SetupConverters(...)
 	for i = 1, #self.columns do
 		self.columns[i].converter = select(i, ...)
 	end
 end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(META)
 
 if RELOAD then
 	local test = {

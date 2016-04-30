@@ -1,9 +1,9 @@
-local COMPONENT = prototype.CreateTemplate()
+local META = prototype.CreateTemplate()
 
-COMPONENT.Name = "material"
-COMPONENT.Icon = "textures/silkicons/palette.png"
+META.Name = "material"
+META.Icon = "textures/silkicons/palette.png"
 
-function COMPONENT:OnAdd(ent)
+function META:OnAdd(ent)
 	local ent = ent:GetParent()
 	if ent:IsValid() then
 		self.mat = render.CreateMaterial(self.material_type)
@@ -15,7 +15,7 @@ function COMPONENT:OnAdd(ent)
 	end
 end
 
-function COMPONENT:OnRemove()
+function META:OnRemove()
 	local ent = self:GetEntity():GetParent()
 	if ent:IsValid() then
 		if self.prev_mat and self.prev_mat:IsValid() then
@@ -34,24 +34,24 @@ function COMPONENT:OnRemove()
 	end
 end
 
-COMPONENT:RegisterComponent()
+META:RegisterComponent()
 
 event.AddListener("GBufferInitialized", "register_material_components", function()
 	for name, meta in pairs(prototype.GetRegisteredSubTypes("material")) do
-		local COMPONENT = prototype.CreateTemplate()
+		local META = prototype.CreateTemplate()
 
-		COMPONENT.Name = name .. "_material"
-		COMPONENT.Base = "material"
-		COMPONENT.Icon = "textures/silkicons/palette.png"
+		META.Name = name .. "_material"
+		META.Base = "material"
+		META.Icon = "textures/silkicons/palette.png"
 
-		COMPONENT.material_type = name
+		META.material_type = name
 
-		COMPONENT:StartStorable()
-			COMPONENT:DelegateProperties(meta, "mat")
-		COMPONENT:EndStorable()
+		META:StartStorable()
+			META:DelegateProperties(meta, "mat")
+		META:EndStorable()
 
-		COMPONENT:RegisterComponent()
+		META:RegisterComponent()
 
-		prototype.SetupComponents(COMPONENT.Name, {COMPONENT.Name}, COMPONENT.Icon)
+		prototype.SetupComponents(META.Name, {META.Name}, META.Icon)
 	end
 end)

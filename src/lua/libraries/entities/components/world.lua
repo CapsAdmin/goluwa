@@ -1,10 +1,10 @@
 event.AddListener("GBufferInitialized", function()
 
-local COMPONENT = prototype.CreateTemplate()
+local META = prototype.CreateTemplate()
 
-COMPONENT.Name = "world"
+META.Name = "world"
 
-function COMPONENT:OnAdd(ent)
+function META:OnAdd(ent)
 	prototype.SafeRemove(self.sun)
 
 	self.sun = entities.CreateEntity("light", ent)
@@ -18,7 +18,7 @@ function COMPONENT:OnAdd(ent)
 	end
 end
 
-function COMPONENT:OnRemove(ent)
+function META:OnRemove(ent)
 	prototype.SafeRemove(self.sun)
 end
 
@@ -36,7 +36,7 @@ local function ADD(name, default, callback)
 		callback_get_name = "Get" .. temp
 	end
 
-	COMPONENT["Set" .. var_name] = function(self, var)
+	META["Set" .. var_name] = function(self, var)
 		self[var_name] = var
 
 		if callback_set_name then
@@ -56,7 +56,7 @@ local function ADD(name, default, callback)
 	end
 end
 
-COMPONENT:StartStorable()
+META:StartStorable()
 	do -- sun
 		ADD("sun_angles", Deg3(-45,-45,0), function(self, var)
 			local vec = var:GetForward()
@@ -83,9 +83,9 @@ COMPONENT:StartStorable()
 			ADD(info.k:sub(7), info.v)
 		end
 	end
-COMPONENT:EndStorable()
+META:EndStorable()
 
-COMPONENT:RegisterComponent()
+META:RegisterComponent()
 prototype.SetupComponents("world", {"world", "network"}, "textures/silkicons/world.png")
 
 end)

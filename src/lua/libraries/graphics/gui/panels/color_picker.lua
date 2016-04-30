@@ -1,36 +1,36 @@
 local gui = ... or _G.gui
 
-local PANEL = {}
+local META = {}
 
-PANEL.ClassName = "color_picker"
+META.ClassName = "color_picker"
 
-prototype.GetSet(PANEL, "Color", Color(1,1,1,1))
-prototype.GetSet(PANEL, "Hue", 0)
-prototype.GetSet(PANEL, "Saturation", 1)
-prototype.GetSet(PANEL, "Value", 1)
-prototype.GetSet(PANEL, "Pallete", "textures/gui/hsv_wheel.png")
+prototype.GetSet(META, "Color", Color(1,1,1,1))
+prototype.GetSet(META, "Hue", 0)
+prototype.GetSet(META, "Saturation", 1)
+prototype.GetSet(META, "Value", 1)
+prototype.GetSet(META, "Pallete", "textures/gui/hsv_wheel.png")
 
-function PANEL:SetValue(val)
+function META:SetValue(val)
 	self.Value = val
 	self:Invalidate()
 end
 
-function PANEL:SetSaturation(sat)
+function META:SetSaturation(sat)
 	self.Saturation = sat
 	self:Invalidate()
 end
 
-function PANEL:SetHue(hue)
+function META:SetHue(hue)
 	self.Hue = hue
 	self:Invalidate()
 end
 
-function PANEL:SetColor(color)
+function META:SetColor(color)
 	self.Color = color
 	self:Invalidate(color)
 end
 
-function PANEL:Invalidate(override)
+function META:Invalidate(override)
 	local color = override or HSVToColor(self:GetHue(), self:GetSaturation(), self:GetValue())
 
 	self.Color = color
@@ -39,7 +39,7 @@ function PANEL:Invalidate(override)
 	self.xy_slider:SetFraction(self:ColorToPos(color)/self.xy_slider.line:GetTexture():GetSize())
 end
 
-function PANEL:ColorToPos(color)
+function META:ColorToPos(color)
 	if not self.lookup_tree then return Vec2(0,0) end
 
 	local r,g,b,a = (color*255):Round():Unpack()
@@ -57,11 +57,11 @@ function PANEL:ColorToPos(color)
 	return Vec2(0, 0)
 end
 
-function PANEL:PosToColor(pos)
+function META:PosToColor(pos)
 	return ColorBytes(self.xy_slider.line:GetTexture():GetPixelColor(pos:Unpack()))
 end
 
-function PANEL:SetPallete(path)
+function META:SetPallete(path)
 	local tex = render.CreateTextureFromPath(path)
 
 	self.lookup_tree = nil
@@ -95,7 +95,7 @@ function PANEL:SetPallete(path)
 	self.xy_slider.line:SetTexture(tex)
 end
 
-function PANEL:Initialize()
+function META:Initialize()
 	self:SetNoDraw(true)
 
 	local text = self:CreatePanel("text_edit", true)
@@ -124,9 +124,9 @@ function PANEL:Initialize()
 	self:SetPallete(self.Pallete)
 end
 
-function PANEL:OnColorChanged(color) end
+function META:OnColorChanged(color) end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(META)
 
 if RELOAD then
 	local frame = gui.CreatePanel("frame", nil, "color_picker_test")

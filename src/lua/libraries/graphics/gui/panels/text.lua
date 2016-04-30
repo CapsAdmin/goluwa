@@ -1,20 +1,20 @@
 local gui = ... or _G.gui
-local PANEL = {}
+local META = {}
 
-PANEL.ClassName = "text"
+META.ClassName = "text"
 
-prototype.GetSet(PANEL, "Text")
-prototype.GetSet(PANEL, "ParseTags", false)
-prototype.GetSet(PANEL, "TextWrap", false)
-prototype.GetSet(PANEL, "ConcatenateTextToSize", false)
-prototype.GetSet(PANEL, "LightMode", false)
-prototype.GetSet(PANEL, "CopyTags", true)
-prototype.IsSet(PANEL, "Selectable", false)
+prototype.GetSet(META, "Text")
+prototype.GetSet(META, "ParseTags", false)
+prototype.GetSet(META, "TextWrap", false)
+prototype.GetSet(META, "ConcatenateTextToSize", false)
+prototype.GetSet(META, "LightMode", false)
+prototype.GetSet(META, "CopyTags", true)
+prototype.IsSet(META, "Selectable", false)
 
-prototype.GetSet(PANEL, "Font")
-prototype.GetSet(PANEL, "TextColor")
+prototype.GetSet(META, "Font")
+prototype.GetSet(META, "TextColor")
 
-function PANEL:Initialize()
+function META:Initialize()
 	self:SetNoDraw(true)
 	self:SetLayoutWhenInvisible(false)
 	local markup = surface.CreateMarkup()
@@ -38,44 +38,44 @@ function PANEL:Initialize()
 	self:SetFont(surface.GetDefaultFont())
 end
 
-function PANEL:SetPadding(rect)
+function META:SetPadding(rect)
 	self.Padding = rect
 
 	self.markup:Invalidate()
 end
 
-function PANEL:SetFont(font)
+function META:SetFont(font)
 	self.markup:SetMinimumHeight(select(2, font:GetTextSize("")))
 	self.Font = font
 	self:SetText(self:GetText())
 end
 
-function PANEL:SetTextColor(color)
+function META:SetTextColor(color)
 	self.TextColor = color
 	self:SetText(self:GetText())
 end
 
-function PANEL:SetLightMode(b)
+function META:SetLightMode(b)
 	self.LightMode = b
 	self:SetText(self:GetText())
 end
 
-function PANEL:SetTextWrap(b)
+function META:SetTextWrap(b)
 	self.TextWrap = b
 	self:SetText(self:GetText())
 end
 
-function PANEL:SetCopyTags(b)
+function META:SetCopyTags(b)
 	self.CopyTags = b
 	self.markup:SetCopyTags(b)
 end
 
-function PANEL:SetSelectable(b)
+function META:SetSelectable(b)
 	self.Selectable = b
 	self.markup:SetSelectable(b)
 end
 
-function PANEL:SetText(str)
+function META:SetText(str)
 	str = tostring(str)
 
 	self.Text = str
@@ -99,34 +99,34 @@ function PANEL:SetText(str)
 	markup:Invalidate()
 end
 
-function PANEL:GetText()
+function META:GetText()
 	return self.markup:GetText(self.ParseTags)
 end
 
-function PANEL:OnLayout()
+function META:OnLayout()
 	self.markup:Invalidate()
 	self.markup:Update()
 end
 
-function PANEL:OnPostDraw()
+function META:OnPostDraw()
 	self.markup:Draw(self.ConcatenateTextToSize and (self.markup.cull_w - self.markup.cull_x))
 end
 
-function PANEL:OnPostMatrixBuild()
+function META:OnPostMatrixBuild()
 	self.Matrix:Translate(self.Padding:GetLeft(), self.Padding:GetTop(), 0)
 end
 
-function PANEL:OnMouseMove(x, y)
+function META:OnMouseMove(x, y)
 	self.markup:SetMousePosition(Vec2(x, y))
 	self:MarkCacheDirty()
 end
 
-function PANEL:OnStyleChanged(skin)
+function META:OnStyleChanged(skin)
 	self:SetTextColor(skin.text_color)
 	self:SetFont(skin.default_font)
 end
 
-function PANEL:OnUpdate()
+function META:OnUpdate()
 	if not self:HasParent() then return end
 
 	local markup = self.markup
@@ -153,11 +153,11 @@ function PANEL:OnUpdate()
 	end
 end
 
-function PANEL:OnMouseInput(button, press)
+function META:OnMouseInput(button, press)
 	self.markup:OnMouseInput(button, press)
 end
 
-function PANEL:OnKeyInput(key, press)
+function META:OnKeyInput(key, press)
 	local markup = self.markup
 
 	if key == "left_shift" or key == "right_shift" then  markup:SetShiftDown(press) return end
@@ -169,11 +169,11 @@ function PANEL:OnKeyInput(key, press)
 	end
 end
 
-function PANEL:OnCharInput(char)
+function META:OnCharInput(char)
 	self.markup:OnCharInput(char)
 end
 
-function PANEL:OnEnter() end
-function PANEL:OnTextChanged() end
+function META:OnEnter() end
+function META:OnTextChanged() end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(META)

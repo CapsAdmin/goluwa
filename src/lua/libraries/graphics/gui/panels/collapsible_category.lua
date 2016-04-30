@@ -1,10 +1,10 @@
 local gui = ... or _G.gui
 
-local PANEL = {}
+local META = {}
 
-PANEL.ClassName = "collapsible_category"
+META.ClassName = "collapsible_category"
 
-function PANEL:Initialize()
+function META:Initialize()
 	self:SetNoDraw(true)
 
 	local bar = self:CreatePanel("button", "bar")
@@ -36,19 +36,19 @@ function PANEL:Initialize()
 	self:SetTitle("no title")
 end
 
-function PANEL:SetPanel(panel)
+function META:SetPanel(panel)
 	panel:SetParent(self.content)
 end
 
-function PANEL:SizeToContents()
+function META:SizeToContents()
 	self:SetSize(self.content:GetSizeOfChildren() + self.bar:GetSize())
 end
 
-function PANEL:OnLayout(S)
+function META:OnLayout(S)
 	self.bar:SetLayoutSize(Vec2()+10*S)
 end
 
-function PANEL:SetTitle(str)
+function META:SetTitle(str)
 	gui.RemovePanel(self.title)
 	local title = self.bar:CreatePanel("text")
 
@@ -61,10 +61,10 @@ function PANEL:SetTitle(str)
 	self.title = title
 end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(META)
 
 if RELOAD then
-	local frame = gui.CreatePanel("frame", nil, PANEL.ClassName .. "_test")
+	local frame = gui.CreatePanel("frame", nil, META.ClassName .. "_test")
 	frame:SetSize(Vec2(200, 400))
 
 	local scroll = frame:CreatePanel("scroll")
@@ -77,9 +77,9 @@ if RELOAD then
 
 	scroll:SetPanel(list)
 
-	local a = gui.CreatePanel(PANEL.ClassName, list)
+	local a = gui.CreatePanel(META.ClassName, list)
 	a:SetSize(Vec2(100,100))
-	local b = gui.CreatePanel(PANEL.ClassName, list)
+	local b = gui.CreatePanel(META.ClassName, list)
 	b:SetSize(Vec2(100,100))
 
 	list:SetSize(Vec2(100, 500))

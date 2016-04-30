@@ -3,17 +3,17 @@ local gui = ... or _G.gui
 local expand_memory = {}
 
 do -- base property
-	local PANEL = {}
+	local META = {}
 
-	PANEL.Base = "text_button"
-	PANEL.ClassName = "base_property"
+	META.Base = "text_button"
+	META.ClassName = "base_property"
 
-	prototype.GetSet(PANEL, "DefaultValue")
+	prototype.GetSet(META, "DefaultValue")
 
-	function PANEL:Initialize()
+	function META:Initialize()
 		self.special = NULL
 
-		prototype.GetRegistered(self.Type, PANEL.Base).Initialize(self)
+		prototype.GetRegistered(self.Type, META.Base).Initialize(self)
 
 		self:SetActiveStyle("property")
 		self:SetInactiveStyle("property")
@@ -22,7 +22,7 @@ do -- base property
 		self:SetMouseHoverTimeTrigger(0.25)
 	end
 
-	function PANEL:SetSpecialCallback(callback)
+	function META:SetSpecialCallback(callback)
 		prototype.SafeRemove(self.special)
 		local special = self:CreatePanel("text_button", "special")
 		special:SetText("...")
@@ -32,11 +32,11 @@ do -- base property
 		special.OnStateChanged = function(_, b) callback(b) end
 	end
 
-	function PANEL:OnLayout(S)
+	function META:OnLayout(S)
 		self.label:SetPadding(Rect()+S)
 	end
 
-	function PANEL:OnUpdate()
+	function META:OnUpdate()
 		if self.edit then return end
 		local val = self:GetValue()
 		if val ~= self.last_value then
@@ -45,7 +45,7 @@ do -- base property
 		end
 	end
 
-	function PANEL:OnMouseInput(button, press)
+	function META:OnMouseInput(button, press)
 		prototype.GetRegistered(self.Type, "button").OnMouseInput(self, button, press)
 
 		if press then
@@ -87,11 +87,11 @@ do -- base property
 		end
 	end
 
-	function PANEL:OnPress()
+	function META:OnPress()
 		self:StartEditing()
 	end
 
-	function PANEL:StartEditing()
+	function META:StartEditing()
 		if self.edit then return end
 
 		local edit = self:CreatePanel("text_edit", "edit")
@@ -108,7 +108,7 @@ do -- base property
 		edit:SelectAll()
 	end
 
-	function PANEL:StopEditing()
+	function META:StopEditing()
 		local edit = self.edit
 		if edit then
 			local str = edit:GetText()
@@ -125,7 +125,7 @@ do -- base property
 		end
 	end
 
-	function PANEL:SetValue(val, skip_internal)
+	function META:SetValue(val, skip_internal)
 		self:SetText(self:Encode(val))
 		self:OnValueChanged(val)
 		if not skip_internal then
@@ -141,7 +141,7 @@ do -- base property
 		end
 	end
 
-	function PANEL:GetValue()
+	function META:GetValue()
 		local val = self:Decode(self:GetText())
 
 		if val == nil then
@@ -151,83 +151,83 @@ do -- base property
 		return val
 	end
 
-	function PANEL:GetEncodedValue()
+	function META:GetEncodedValue()
 		return self:Encode(self:GetValue() or self:GetDefaultValue())
 	end
 
-	function PANEL:SetEncodedValue(str)
+	function META:SetEncodedValue(str)
 		self:SetValue(self:Decode(str))
 	end
 
-	function PANEL:Encode(var)
+	function META:Encode(var)
 		return tostring(var)
 	end
 
-	function PANEL:Decode(str)
+	function META:Decode(str)
 		return str
 	end
 
-	function PANEL:OnValueChanged(val)
+	function META:OnValueChanged(val)
 
 	end
 
-	function PANEL:OnValueChangedInternal(val)
+	function META:OnValueChangedInternal(val)
 
 	end
 
-	function PANEL:OnClick()
+	function META:OnClick()
 
 	end
 
-	gui.RegisterPanel(PANEL)
+	gui.RegisterPanel(META)
 end
 
 do -- string
-	local PANEL = {}
+	local META = {}
 
-	PANEL.Base = "base_property"
-	PANEL.ClassName = "string_property"
+	META.Base = "base_property"
+	META.ClassName = "string_property"
 
-	function PANEL:Initialize()
-		prototype.GetRegistered(self.Type, PANEL.Base).Initialize(self)
+	function META:Initialize()
+		prototype.GetRegistered(self.Type, META.Base).Initialize(self)
 
 		self:SetClicksToActivate(1)
 	end
 
-	function PANEL:OnSystemFileDrop(path)
+	function META:OnSystemFileDrop(path)
 		self:SetValue(path)
 	end
 
-	gui.RegisterPanel(PANEL)
+	gui.RegisterPanel(META)
 end
 
 do -- number
-	local PANEL = {}
+	local META = {}
 
-	PANEL.Base = "base_property"
-	PANEL.ClassName = "number_property"
+	META.Base = "base_property"
+	META.ClassName = "number_property"
 
-	prototype.GetSet(PANEL, "Minimum")
-	prototype.GetSet(PANEL, "Maximum")
-	prototype.GetSet(PANEL, "Sensitivity", 1)
+	prototype.GetSet(META, "Minimum")
+	prototype.GetSet(META, "Maximum")
+	prototype.GetSet(META, "Sensitivity", 1)
 
-	PANEL.slider = NULL
+	META.slider = NULL
 
-	function PANEL:Initialize()
-		prototype.GetRegistered(self.Type, PANEL.Base).Initialize(self)
+	function META:Initialize()
+		prototype.GetRegistered(self.Type, META.Base).Initialize(self)
 
 		self:SetCursor("sizens")
 	end
 
-	function PANEL:Decode(str)
+	function META:Decode(str)
 		return tonumber(str)
 	end
 
-	function PANEL:Encode(num)
+	function META:Encode(num)
 		return tostring(num)
 	end
 
-	function PANEL:OnClick()
+	function META:OnClick()
 		self:SetAlwaysCalcMouse(true)
 
 		self.drag_number = true
@@ -236,7 +236,7 @@ do -- number
 		self.real_base_value = nil
 	end
 
-	function PANEL:OnPostDraw()
+	function META:OnPostDraw()
 		if self.Minimum and self.Maximum then
 			surface.SetWhiteTexture()
 			surface.SetColor(0.5,0.75,1,0.5)
@@ -251,8 +251,8 @@ do -- number
 		end
 	end
 
-	function PANEL:OnUpdate()
-		prototype.GetRegistered(self.Type, PANEL.Base).OnUpdate(self)
+	function META:OnUpdate()
+		prototype.GetRegistered(self.Type, META.Base).OnUpdate(self)
 
 		if not self.drag_number then return end
 
@@ -328,16 +328,16 @@ do -- number
 		end
 	end
 
-	gui.RegisterPanel(PANEL)
+	gui.RegisterPanel(META)
 end
 
 do -- boolean
-	local PANEL = {}
+	local META = {}
 
-	PANEL.Base = "base_property"
-	PANEL.ClassName = "boolean_property"
+	META.Base = "base_property"
+	META.ClassName = "boolean_property"
 
-	function PANEL:Initialize()
+	function META:Initialize()
 		local panel = self:CreatePanel("button", "panel")
 		panel:SetMode("toggle")
 		panel:SetActiveStyle("check")
@@ -345,10 +345,10 @@ do -- boolean
 		panel:SetupLayout("center_left")
 		panel.OnStateChanged = function(_, b) self:SetValue(b, true) end
 
-		prototype.GetRegistered(self.Type, PANEL.Base).Initialize(self)
+		prototype.GetRegistered(self.Type, META.Base).Initialize(self)
 	end
 
-	function PANEL:OnValueChangedInternal(val)
+	function META:OnValueChangedInternal(val)
 		self.panel:SetState(val)
 	end
 
@@ -361,30 +361,30 @@ do -- boolean
 		["no"] = false,
 	}
 
-	function PANEL:Decode(str)
+	function META:Decode(str)
 		return str2bool[str:lower()] or false
 	end
 
-	function PANEL:Encode(b)
+	function META:Encode(b)
 		return b and "true" or "false"
 	end
 
-	function PANEL:OnLayout(S)
-		prototype.GetRegistered(self.Type, PANEL.Base).OnLayout(self, S)
+	function META:OnLayout(S)
+		prototype.GetRegistered(self.Type, META.Base).OnLayout(self, S)
 
 		self.panel:SetPadding(Rect()+S)
 	end
 
-	gui.RegisterPanel(PANEL)
+	gui.RegisterPanel(META)
 end
 
 do -- color
-	local PANEL = {}
+	local META = {}
 
-	PANEL.Base = "base_property"
-	PANEL.ClassName = "color_property"
+	META.Base = "base_property"
+	META.ClassName = "color_property"
 
-	function PANEL:Initialize()
+	function META:Initialize()
 		local panel = self:CreatePanel("button", "panel")
 		panel:SetStyle("none")
 		panel:SetActiveStyle("none")
@@ -410,36 +410,36 @@ do -- color
 		prototype.GetRegistered(self.Type, "base_property").Initialize(self)
 	end
 
-	function PANEL:OnValueChangedInternal(val)
+	function META:OnValueChangedInternal(val)
 		self.panel:SetColor(val)
 	end
 
-	function PANEL:Decode(str)
+	function META:Decode(str)
 		return ColorBytes(str:match("(%d+)%s-(%d+)%s-(%d+)"))
 	end
 
-	function PANEL:Encode(color)
+	function META:Encode(color)
 		local r,g,b = (color*255):Round():Unpack()
 		return ("%d %d %d"):format(r,g,b)
 	end
 
-	function PANEL:OnLayout(S)
-		prototype.GetRegistered(self.Type, PANEL.Base).OnLayout(self, S)
+	function META:OnLayout(S)
+		prototype.GetRegistered(self.Type, META.Base).OnLayout(self, S)
 
 		self.panel:SetLayoutSize(Vec2(S*8, S*8) - S*2)
 		self.panel:SetPadding(Rect()+S)
 	end
 
-	gui.RegisterPanel(PANEL)
+	gui.RegisterPanel(META)
 end
 
 do -- texture
-	local PANEL = {}
+	local META = {}
 
-	PANEL.Base = "base_property"
-	PANEL.ClassName = "texture_property"
+	META.Base = "base_property"
+	META.ClassName = "texture_property"
 
-	function PANEL:Initialize()
+	function META:Initialize()
 		local panel = self:CreatePanel("button", "panel")
 		panel:SetStyle("none")
 		panel:SetActiveStyle("none")
@@ -464,37 +464,37 @@ do -- texture
 		prototype.GetRegistered(self.Type, "base_property").Initialize(self)
 	end
 
-	function PANEL:OnSystemFileDrop(path)
+	function META:OnSystemFileDrop(path)
 		self:SetValue(render.CreateTextureFromPath(path))
 	end
 
-	function PANEL:OnValueChangedInternal(val)
+	function META:OnValueChangedInternal(val)
 		self.panel:SetTexture(val)
 	end
 
-	function PANEL:Decode(str)
+	function META:Decode(str)
 		return render.CreateTextureFromPath(str)
 	end
 
-	function PANEL:Encode(tex)
+	function META:Encode(tex)
 		return tex:GetPath()
 	end
 
-	function PANEL:OnLayout(S)
-		prototype.GetRegistered(self.Type, PANEL.Base).OnLayout(self, S)
+	function META:OnLayout(S)
+		prototype.GetRegistered(self.Type, META.Base).OnLayout(self, S)
 
 		self.panel:SetLayoutSize(Vec2(S*8, S*8) - S*2)
 		self.panel:SetPadding(Rect()+S)
 	end
 
-	gui.RegisterPanel(PANEL)
+	gui.RegisterPanel(META)
 end
 
-local PANEL = {}
+local META = {}
 
-PANEL.ClassName = "properties"
+META.ClassName = "properties"
 
-function PANEL:Initialize()
+function META:Initialize()
 	self.added_properties = {}
 	self:SetStack(true)
 	self:SetStackRight(false)
@@ -524,7 +524,7 @@ function PANEL:Initialize()
 	self.right = right
 end
 
-function PANEL:AddGroup(name)
+function META:AddGroup(name)
 	local left = self.left:CreatePanel("base")
 	left:SetNoDraw(true)
 	left.is_group = true
@@ -573,7 +573,7 @@ function PANEL:AddGroup(name)
 	self.current_group = left
 end
 
-function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
+function META:AddProperty(name, set_value, get_value, default, extra_info, obj)
 	set_value = set_value or print
 	get_value = get_value or function() return default end
 	extra_info = extra_info or {}
@@ -746,7 +746,7 @@ function PANEL:AddProperty(name, set_value, get_value, default, extra_info, obj)
 	return left, right
 end
 
-function PANEL:OnLayout(S)
+function META:OnLayout(S)
 	self:SetMargin(Rect()+S*2) -- TODO
 	self.left_max_width = self.left_max_width or 0
 	self.right_max_width = self.right_max_width or 0
@@ -800,7 +800,7 @@ function PANEL:OnLayout(S)
 	self.first_time = false
 end
 
-function PANEL:OnPanelMouseInput(panel, button, press)
+function META:OnPanelMouseInput(panel, button, press)
 	if press and button == "button_1" and panel.ClassName:find("_property") then
 		for i, right in ipairs(self.added_properties) do
 			if panel ~= right then
@@ -810,7 +810,7 @@ function PANEL:OnPanelMouseInput(panel, button, press)
 	end
 end
 
-function PANEL:AddPropertiesFromObject(obj)
+function META:AddPropertiesFromObject(obj)
 	for _, info in ipairs(prototype.GetStorableVariables(obj)) do
 		local get = obj[info.get_name]
 		local set = obj[info.set_name]
@@ -874,4 +874,4 @@ function PANEL:AddPropertiesFromObject(obj)
 	end
 end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(META)

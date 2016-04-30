@@ -4,11 +4,11 @@ local gate_size = 64
 local connection_size = 8
 local connection_padding = 2
 
-local PANEL = {}
+local META = {}
 
-PANEL.ClassName = "logic_gate"
+META.ClassName = "logic_gate"
 
-function PANEL:Initialize()
+function META:Initialize()
 	self:SetStyle("frame")
 	self:SetDraggable(true)
 	self:SetSize(Vec2()+gate_size)
@@ -18,7 +18,7 @@ function PANEL:Initialize()
 	self.outputs = {}
 end
 
-function PANEL:OnMouseHoverTrigger(entered, x, y)
+function META:OnMouseHoverTrigger(entered, x, y)
 	if entered then
 		local tooltip = gui.CreatePanel("text_button")
 		tooltip:SetPosition(Vec2(surface.GetMousePosition()))
@@ -30,7 +30,7 @@ function PANEL:OnMouseHoverTrigger(entered, x, y)
 	end
 end
 
-function PANEL:OnUpdate()
+function META:OnUpdate()
 	local tooltip = self.tooltip
 	if self.tooltip then
 		local gate = self.gate
@@ -61,7 +61,7 @@ function PANEL:OnUpdate()
 	end
 end
 
-function PANEL:OnGlobalMouseInput(button, press)
+function META:OnGlobalMouseInput(button, press)
 	local point = self:GetParent().connection_point
 	if point then
 		local panel = gui.GetHoveringPanel()
@@ -72,7 +72,7 @@ function PANEL:OnGlobalMouseInput(button, press)
 	end
 end
 
-function PANEL:AddInput(i, info)
+function META:AddInput(i, info)
 	local btn = self:CreatePanel("button")
 	btn:SetSize(Vec2()+connection_size)
 
@@ -103,7 +103,7 @@ function PANEL:AddInput(i, info)
 	self.inputs[i] = btn
 end
 
-function PANEL:AddOutput(i, info)
+function META:AddOutput(i, info)
 	local btn = self:CreatePanel("button")
 	btn:SetSize(Vec2()+connection_size)
 
@@ -131,7 +131,7 @@ end
 
 local connection_height = connection_size + connection_padding
 
-function PANEL:OnLayout()
+function META:OnLayout()
 	do
 		local count = #self.inputs
 		if #self.outputs > count then
@@ -159,7 +159,7 @@ function PANEL:OnLayout()
 	end
 end
 
-function PANEL:SetGate(gate)
+function META:SetGate(gate)
 	if gate.GetIO then gate = gate:GetIO() end
 
 	self.gate = gate
@@ -178,4 +178,4 @@ function PANEL:SetGate(gate)
 	end
 end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(META)

@@ -1,11 +1,11 @@
 ﻿do
-	local COMPONENT = prototype.CreateTemplate()
+	local META = prototype.CreateTemplate()
 
-	COMPONENT.Name = "io"
-	COMPONENT.Icon = "textures/silkicons/computer.png"
-	COMPONENT.Events = {"Update"}
+	META.Name = "io"
+	META.Icon = "textures/silkicons/computer.png"
+	META.Events = {"Update"}
 
-	function COMPONENT:OnAdd(ent)
+	function META:OnAdd(ent)
 		self.input_connections = {}
 		self.output_connections = {}
 		self.output_objects = {}
@@ -55,13 +55,13 @@
 		end
 	end
 
-	function COMPONENT:OnRemove()
+	function META:OnRemove()
 		gui.RemovePanel(self.panel)
 	end
 
-	function COMPONENT:ComputeInputs() end
+	function META:ComputeInputs() end
 
-	function COMPONENT:OnUpdate()
+	function META:OnUpdate()
 		for i, v in pairs(self.input_connections) do
 			self:SetInput(i, v.output:GetOutput(v.output_i))
 		end
@@ -89,24 +89,24 @@
 		end
 	end
 
-	function COMPONENT:SetOutput(i, val)
+	function META:SetOutput(i, val)
 		self.output_values[i] = val
 	end
 
-	function COMPONENT:GetOutput(i)
+	function META:GetOutput(i)
 		return self.output_values[i or 1]
 	end
 
 
-	function COMPONENT:SetInput(i, val)
+	function META:SetInput(i, val)
 		self.input_values[i] = val
 	end
 
-	function COMPONENT:GetInput(i)
+	function META:GetInput(i)
 		return self.input_values[i or 1]
 	end
 
-	function COMPONENT.Connect(output, input, input_i, output_i)
+	function META.Connect(output, input, input_i, output_i)
 		if input.GetIO then input = input:GetIO() end
 
 		input_i = input_i or 1
@@ -124,13 +124,13 @@
 		end
 	end
 
-	function COMPONENT:ConnectToObject(obj, var_name, i, field)
+	function META:ConnectToObject(obj, var_name, i, field)
 		i = i or 1
 
 		table.insert(self.output_objects, {obj = obj, info = obj.prototype_variables[var_name], var_name = var_name, i = i, field = field})
 	end
 
-	function COMPONENT:Disconnect(i)
+	function META:Disconnect(i)
 		i = i or 1
 		if self.input_connections[i] then
 			self:SetInput(i, self.Inputs[i].default)
@@ -139,7 +139,7 @@
 		end
 	end
 
-	function COMPONENT:OnSerialize()
+	function META:OnSerialize()
 		local out = {}
 
 		if self.panel and self.panel:IsValid() then
@@ -158,7 +158,7 @@
 		return out
 	end
 
-	function COMPONENT:OnDeserialize(tbl)
+	function META:OnDeserialize(tbl)
 
 		if self.panel and self.panel:IsValid() then
 			self.panel:SetPosition(tbl.gui_pos)
@@ -171,38 +171,38 @@
 		end
 	end
 
-	function COMPONENT:GetIO()
+	function META:GetIO()
 		return self
 	end
 
-	COMPONENT:RegisterComponent()
+	META:RegisterComponent()
 end
 
 local function ADD_GATE(name, inputs, outputs, callback, callback2)
-	local COMPONENT = prototype.CreateTemplate()
+	local META = prototype.CreateTemplate()
 
-	COMPONENT.Name = "gate_" .. name
-	COMPONENT.Base = "io"
+	META.Name = "gate_" .. name
+	META.Base = "io"
 
 	if callback2 then
-		callback2(COMPONENT)
+		callback2(META)
 	end
 
-	COMPONENT.Inputs = inputs
-	COMPONENT.Outputs = outputs
+	META.Inputs = inputs
+	META.Outputs = outputs
 
-	prototype.StartStorable(COMPONENT)
+	prototype.StartStorable(META)
 	if type(inputs) == "number" then
 		for i = 1, inputs do
 			local name = "Input" .. string.char(64 + i)
 
 			prototype.GetSet(name, 0)
 
-			COMPONENT["Set" .. name] = function(self, num)
+			META["Set" .. name] = function(self, num)
 				self:SetInput(i, num)
 			end
 
-			COMPONENT["Get" .. name] = function(self)
+			META["Get" .. name] = function(self)
 				return self:GetInput(i)
 			end
 		end
@@ -213,21 +213,21 @@ local function ADD_GATE(name, inputs, outputs, callback, callback2)
 			local name = "Output" .. string.char(64 + i)
 			prototype.GetSet(name, 0)
 
-			COMPONENT["Set" .. name] = function(self, num)
+			META["Set" .. name] = function(self, num)
 				self:SetOutput(i, num)
 			end
 
-			COMPONENT["Get" .. name] = function(self)
+			META["Get" .. name] = function(self)
 				return self:GetOutput(i)
 			end
 		end
 	end
-	COMPONENT:EndStorable()
+	META:EndStorable()
 
-	COMPONENT.ComputeInputs = callback
+	META.ComputeInputs = callback
 
-	COMPONENT:RegisterComponent()
-	prototype.SetupComponents(COMPONENT.Name, {COMPONENT.Name}, "textures/silkicons/plugin_disabled.png", name)
+	META:RegisterComponent()
+	prototype.SetupComponents(META.Name, {META.Name}, "textures/silkicons/plugin_disabled.png", name)
 end
 
 do
@@ -237,10 +237,10 @@ do
 		function(self, i, o)
 			o[1] = self.Value
 		end,
-		function(COMPONENT)
-			COMPONENT:StartStorable()
-				COMPONENT:GetSet("Value", 0)
-			COMPONENT:EndStorable()
+		function(META)
+			META:StartStorable()
+				META:GetSet("Value", 0)
+			META:EndStorable()
 		end
 	)
 
@@ -290,34 +290,34 @@ do
 end
 
 do
-	local COMPONENT = prototype.CreateTemplate()
+	local META = prototype.CreateTemplate()
 
-	COMPONENT.Name = "wire_board"
+	META.Name = "wire_board"
 
-	function COMPONENT:OnAdd(ent)
+	function META:OnAdd(ent)
 		if gui then
 			self.panel = gui.CreatePanel("wire_board")
 		end
 	end
 
-	function COMPONENT:OnRemove(ent)
+	function META:OnRemove(ent)
 		if gui then
 			gui.RemovePanel(self.panel)
 		end
 	end
 
-	function COMPONENT:GetWirePanel()
+	function META:GetWirePanel()
 		return self.panel
 	end
 
-	function COMPONENT:OnSerialize()
+	function META:OnSerialize()
 		return self.panel:GetRect()
 	end
 
-	function COMPONENT:OnDeserialize(rect)
+	function META:OnDeserialize(rect)
 		self.panel:SetRect(rect)
 	end
 
-	COMPONENT:RegisterComponent()
-	prototype.SetupComponents(COMPONENT.Name, {COMPONENT.Name}, "textures/silkicons/computer.png")
+	META:RegisterComponent()
+	prototype.SetupComponents(META.Name, {META.Name}, "textures/silkicons/computer.png")
 end

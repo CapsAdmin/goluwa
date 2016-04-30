@@ -1,54 +1,22 @@
-local lerp,deg,randomf,clamp = math.lerp,math.deg,math.randomf,math.clamp
+local META = prototype.CreateTemplate("particle_META")
 
-local PARTICLE = prototype.CreateTemplate("particle")
-
-prototype.GetSet(PARTICLE, "Position", Vec3(0,0,0))
-prototype.GetSet(PARTICLE, "Velocity", Vec3(0,0,0))
-prototype.GetSet(PARTICLE, "Drag", 0.98)
-prototype.GetSet(PARTICLE, "Size", Vec2(1,1))
-prototype.GetSet(PARTICLE, "Angle", 0)
-
-prototype.GetSet(PARTICLE, "StartJitter", 0)
-prototype.GetSet(PARTICLE, "EndJitter", 0)
-
-prototype.GetSet(PARTICLE, "StartSize", 10)
-prototype.GetSet(PARTICLE, "EndSize", 0)
-
-prototype.GetSet(PARTICLE, "StartLength", Vec2(0, 0))
-prototype.GetSet(PARTICLE, "EndLength", Vec2(0, 0))
-
-prototype.GetSet(PARTICLE, "StartAlpha", 1)
-prototype.GetSet(PARTICLE, "EndAlpha", 0)
-
-prototype.GetSet(PARTICLE, "LifeTime", 1)
-prototype.GetSet(PARTICLE, "Color", Color(1,1,1,1))
-
-function PARTICLE:SetLifeTime(n)
-	self.LifeTime = n
-	self.life_end = system.GetElapsedTime() + n
-end
-
-prototype.Register(PARTICLE)
-
-local EMITTER = prototype.CreateTemplate("particle_emitter")
-
-prototype.GetSet(EMITTER, "Speed", 1)
-prototype.GetSet(EMITTER, "Rate", 0.1)
-prototype.GetSet(EMITTER, "EmitCount", 1)
-prototype.GetSet(EMITTER, "Mode2D", true)
-prototype.GetSet(EMITTER, "Position", Vec3(0, 0, 0))
-prototype.GetSet(EMITTER, "Additive", true)
-prototype.GetSet(EMITTER, "ThinkTime", 0.1)
-prototype.GetSet(EMITTER, "CenterAttractionForce", 0)
-prototype.GetSet(EMITTER, "PosAttractionForce", 0)
-prototype.GetSet(EMITTER, "MoveResolution", 0)
-prototype.GetSet(EMITTER, "Texture", NULL)
-prototype.GetSet(EMITTER, "ScreenRect", Rect())
+META:GetSet("Speed", 1)
+META:GetSet("Rate", 0.1)
+META:GetSet("EmitCount", 1)
+META:GetSet("Mode2D", true)
+META:GetSet("Position", Vec3(0, 0, 0))
+META:GetSet("Additive", true)
+META:GetSet("ThinkTime", 0.1)
+META:GetSet("CenterAttractionForce", 0)
+META:GetSet("PosAttractionForce", 0)
+META:GetSet("MoveResolution", 0)
+META:GetSet("Texture", NULL)
+META:GetSet("ScreenRect", Rect())
 
 function ParticleEmitter(max)
 	max = max or 1000
 
-	local self = prototype.CreateObject(EMITTER)
+	local self = META:CreateObject()
 
 	self.max = max
 	self.particles = {}
@@ -59,7 +27,7 @@ function ParticleEmitter(max)
 	return self
 end
 
-function EMITTER:Update(dt)
+function META:Update(dt)
 	local time = system.GetElapsedTime()
 
 	if self.Rate == 0 then
@@ -117,7 +85,7 @@ function EMITTER:Update(dt)
 				p.Velocity.z = p.Velocity.z * p.Drag
 			end
 
-			p.life_mult = clamp((p.life_end - time) / p.LifeTime, 0, 1)
+			p.life_mult = math.clamp((p.life_end - time) / p.LifeTime, 0, 1)
 
 			if self.CenterAttractionForce ~= 0 then
 				center = center + p.Position
@@ -141,7 +109,7 @@ function EMITTER:Update(dt)
 	table.multiremove(self.particles, remove_these)
 end
 
-function EMITTER:Draw()
+function META:Draw()
 	render.SetBlendMode(self.Additive and "additive" or "alpha")
 
 	if self.Texture:IsValid() then
@@ -158,15 +126,15 @@ function EMITTER:Draw()
 
 			if not p then break end
 
-			local size = lerp(p.life_mult, p.EndSize, p.StartSize)
-			local alpha = lerp(p.life_mult, p.EndAlpha, p.StartAlpha)
-			local length_x = lerp(p.life_mult, p.EndLength.x, p.StartLength.x)
-			local length_y = lerp(p.life_mult, p.EndLength.y, p.StartLength.y)
-			local jitter = lerp(p.life_mult, p.EndJitter, p.StartJitter)
+			local size = math.lerp(p.life_mult, p.EndSize, p.StartSize)
+			local alpha = math.lerp(p.life_mult, p.EndAlpha, p.StartAlpha)
+			local length_x = math.lerp(p.life_mult, p.EndLength.x, p.StartLength.x)
+			local length_y = math.lerp(p.life_mult, p.EndLength.y, p.StartLength.y)
+			local jitter = math.lerp(p.life_mult, p.EndJitter, p.StartJitter)
 
 			if jitter ~= 0 then
-				size = size + randomf(-jitter, jitter)
-				alpha = alpha + randomf(-jitter, jitter)
+				size = size + math.randomf(-jitter, jitter)
+				alpha = alpha + math.randomf(-jitter, jitter)
 			end
 
 			local w = size * p.Size.x
@@ -175,7 +143,7 @@ function EMITTER:Draw()
 
 
 			if not (length_x == 0 and length_y == 0) and self.Mode2D then
-				a = deg(p.Velocity:GetAngles().y)
+				a = math.deg(p.Velocity:GetAngles().y)
 
 				if length_x ~= 0 then
 					w = w * length_x
@@ -215,14 +183,52 @@ function EMITTER:Draw()
 	end
 end
 
-function EMITTER:GetParticles()
+function META:GetParticles()
 	return self.particles
 end
 
-PARTICLE.__index = PARTICLE
+local create_particle
 
-function EMITTER:AddParticle(...)
-	local p = setmetatable({}, PARTICLE) -- prototype.CreateObject(PARTICLE)
+do
+	local META = prototype.CreateTemplate("particle")
+
+	META:GetSet("Position", Vec3(0,0,0))
+	META:GetSet("Velocity", Vec3(0,0,0))
+	META:GetSet("Drag", 0.98)
+	META:GetSet("Size", Vec2(1,1))
+	META:GetSet("Angle", 0)
+
+	META:GetSet("StartJitter", 0)
+	META:GetSet("EndJitter", 0)
+
+	META:GetSet("StartSize", 10)
+	META:GetSet("EndSize", 0)
+
+	META:GetSet("StartLength", Vec2(0, 0))
+	META:GetSet("EndLength", Vec2(0, 0))
+
+	META:GetSet("StartAlpha", 1)
+	META:GetSet("EndAlpha", 0)
+
+	META:GetSet("LifeTime", 1)
+	META:GetSet("Color", Color(1,1,1,1))
+
+	function META:SetLifeTime(n)
+		self.LifeTime = n
+		self.life_end = system.GetElapsedTime() + n
+	end
+
+	META:Register()
+
+	META.__index = META
+
+	create_particle = function()
+		return setmetatable({}, META) -- META:CreateObject()
+	end
+end
+
+function META:AddParticle()
+	local p = create_particle()
 	p:SetPosition(self:GetPosition():Copy())
 	p.life_mult = 1
 
@@ -237,7 +243,7 @@ function EMITTER:AddParticle(...)
 	return p
 end
 
-function EMITTER:Emit(...)
+function META:Emit(...)
 	for _ = 1, self.EmitCount do
 		local p = self:AddParticle(...)
 
@@ -247,4 +253,4 @@ function EMITTER:Emit(...)
 	end
 end
 
-prototype.Register(EMITTER)
+prototype.Register(META)

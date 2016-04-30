@@ -1,7 +1,7 @@
 do return end
-local COMPONENT = prototype.CreateTemplate()
+local META = prototype.CreateTemplate()
 
-COMPONENT.Name = "physics_container"
+META.Name = "physics_container"
 
 local PHYSICS = prototype.GetRegistered("component", "physics")
 
@@ -14,7 +14,7 @@ for k,v in pairs(PHYSICS) do
 		--prototype.GetSet()
 		table.print(info)
 	elseif type(v) == "function" then
-		COMPONENT[k] = function(self, ...)
+		META[k] = function(self, ...)
 			for i, body in ipairs(self.bodies) do
 				v(body[k], ...)
 			end
@@ -24,16 +24,16 @@ end
 
 
 
-function COMPONENT:Initialize()
+function META:Initialize()
 	self.bodies = {}
 end
 
-function COMPONENT:OnAdd(ent)
+function META:OnAdd(ent)
 
 end
 
-function COMPONENT:OnRemove(ent)
+function META:OnRemove(ent)
 
 end
 
-COMPONENT:RegisterComponent()
+META:RegisterComponent()

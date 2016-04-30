@@ -1,11 +1,11 @@
 local gui = ... or _G.gui
-local PANEL = {}
+local META = {}
 
-PANEL.ClassName = "divider"
+META.ClassName = "divider"
 
-prototype.GetSet(PANEL, "DividerHeight", 0)
-prototype.GetSet(PANEL, "DividerWidth", 0)
-prototype.GetSet(PANEL, "HideDivider", false)
+prototype.GetSet(META, "DividerHeight", 0)
+prototype.GetSet(META, "DividerWidth", 0)
+prototype.GetSet(META, "HideDivider", false)
 
 local function create_horizontal_divider(self)
 	if self.horizontal_divider then return end
@@ -38,7 +38,7 @@ local function create_vertical_divider(self)
 	end
 end
 
-function PANEL:Initialize()
+function META:Initialize()
 	self.DividerWidth = gui.skin:GetScale()*2
 	self:SetNoDraw(true)
 	self.top = NULL
@@ -47,7 +47,7 @@ function PANEL:Initialize()
 	self.right = NULL
 end
 
-function PANEL:OnLayout()
+function META:OnLayout()
 	if self.horizontal_divider then
 		self.horizontal_divider:SetNoDraw(self.HideDivider)
 		self.horizontal_divider:BringToFront()
@@ -81,7 +81,7 @@ function PANEL:OnLayout()
 	end
 end
 
-function PANEL:SetLeft(pnl)
+function META:SetLeft(pnl)
 	create_horizontal_divider(self)
 	pnl:SetParent(self)
 	self.left = pnl
@@ -89,7 +89,7 @@ function PANEL:SetLeft(pnl)
 	return pnl
 end
 
-function PANEL:SetRight(pnl)
+function META:SetRight(pnl)
 	create_horizontal_divider(self)
 	pnl:SetParent(self)
 	self.right = pnl
@@ -97,7 +97,7 @@ function PANEL:SetRight(pnl)
 	return pnl
 end
 
-function PANEL:SetTop(pnl)
+function META:SetTop(pnl)
 	create_vertical_divider(self)
 	pnl:SetParent(self)
 	self.top = pnl
@@ -105,7 +105,7 @@ function PANEL:SetTop(pnl)
 	return pnl
 end
 
-function PANEL:SetBottom(pnl)
+function META:SetBottom(pnl)
 	create_vertical_divider(self)
 	pnl:SetParent(self)
 	self.bottom = pnl
@@ -113,7 +113,7 @@ function PANEL:SetBottom(pnl)
 	return pnl
 end
 
-function PANEL:SetDividerPosition(x, y)
+function META:SetDividerPosition(x, y)
 	if self.horizontal_divider then
 		self.horizontal_divider:SetX(x)
 		if self.left:IsValid() then self.left:Layout() end
@@ -126,13 +126,13 @@ function PANEL:SetDividerPosition(x, y)
 	end
 end
 
-function PANEL:GetDividerPosition()
+function META:GetDividerPosition()
 	local x, y = 0, 0
 	if self.horizontal_divider then x = self.horizontal_divider:GetX() end
 	if self.vertical_divider then y = self.vertical_divider:GetX() end
 	return x, y
 end
 
-function PANEL:OnDividerPositionChanged() end
+function META:OnDividerPositionChanged() end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(META)

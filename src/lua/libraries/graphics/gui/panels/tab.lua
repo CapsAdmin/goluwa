@@ -1,10 +1,10 @@
 local gui = ... or _G.gui
 
-local PANEL = {}
+local META = {}
 
-PANEL.ClassName = "tab"
+META.ClassName = "tab"
 
-function PANEL:Initialize()
+function META:Initialize()
 	self.tabs = {}
 	self:SetNoDraw(true)
 
@@ -18,7 +18,7 @@ function PANEL:Initialize()
 	tab_bar:SetMargin(Rect())
 end
 
-function PANEL:AddTab(name)
+function META:AddTab(name)
 	if self.tabs[name] then
 		gui.RemovePanel(self.tabs[name].button)
 		gui.RemovePanel(self.tabs[name].content)
@@ -54,7 +54,7 @@ function PANEL:AddTab(name)
 	return content
 end
 
-function PANEL:SelectTab(name)
+function META:SelectTab(name)
 	local button = self.tabs[name].button
 
 	button:SetText(button.text)
@@ -80,7 +80,7 @@ function PANEL:SelectTab(name)
 	return self.content
 end
 
-function PANEL:GetTab(name)
+function META:GetTab(name)
 	local info = self.tabs[name]
 	if info then
 		return info.content
@@ -88,15 +88,15 @@ function PANEL:GetTab(name)
 	return NULL
 end
 
-function PANEL:IsTabSelected(name)
+function META:IsTabSelected(name)
 	return self:GetSelectedTab() == self:GetTab(name)
 end
 
-function PANEL:GetSelectedTab()
+function META:GetSelectedTab()
 	return self.content
 end
 
-function PANEL:OnLayout(S, skin)
+function META:OnLayout(S, skin)
 	self.tab_bar:SetWidth(self:GetWidth())
 	self.tab_bar:SetHeight(10*S)
 	self.tab_bar:SetY(1)
@@ -119,6 +119,6 @@ function PANEL:OnLayout(S, skin)
 	end
 end
 
-function PANEL:OnSelectTab() end
+function META:OnSelectTab() end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(META)

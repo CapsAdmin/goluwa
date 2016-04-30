@@ -1,8 +1,8 @@
 local gui = ... or _G.gui
 
-local PANEL = {}
+local META = {}
 
-PANEL.ClassName = "sheep"
+META.ClassName = "sheep"
 
 local animations = {
 	sleep = {tiles = {Vec2(0,0), Vec2(1,0)}, speed = 1},
@@ -15,7 +15,7 @@ local animations = {
 
 local tile_size = Vec2() + 40
 
-function PANEL:DrawTile(tile_x, tile_y, rot)
+function META:DrawTile(tile_x, tile_y, rot)
 	tile_x = tile_x or 0
 	tile_y = tile_y or 0
 	tile_x = tile_x * tile_size.x
@@ -30,7 +30,7 @@ function PANEL:DrawTile(tile_x, tile_y, rot)
 	surface.DrawRect(self.Size.x/2, self.Size.y/2, self.Size.x, self.Size.y, rot or 0, self.Size.x/2, self.Size.y/2)
 end
 
-function PANEL:DrawAnimation(animation, frame, rot, flip_x, relative)
+function META:DrawAnimation(animation, frame, rot, flip_x, relative)
 	local time = system.GetElapsedTime()
 	local data = animations[animation]
 
@@ -41,7 +41,7 @@ function PANEL:DrawAnimation(animation, frame, rot, flip_x, relative)
 	end
 end
 
-function PANEL:Initialize()
+function META:Initialize()
 	self:SetSize(tile_size)
 	self.Position = Vec2():Random(0,500)
 	self:SetDraggable(true)
@@ -53,14 +53,14 @@ function PANEL:Initialize()
 	self.frame = 0
 end
 
-function PANEL:OnParentLand(parent)
+function META:OnParentLand(parent)
 	self:SetParent(parent)
 end
 
 local faint_vel = 2
 local bounce = 0.9
 
-function PANEL:CheckCollision()
+function META:CheckCollision()
 	local w, h = self.Parent:GetSize():Unpack()
 	local length = self.Velocity:GetLength()
 
@@ -111,7 +111,7 @@ function PANEL:CheckCollision()
 	end
 end
 
-function PANEL:OnUpdate()
+function META:OnUpdate()
 	local dt = system.GetFrameTime() / 5
 	local mpos = self:GetMousePosition()
 
@@ -149,7 +149,7 @@ function PANEL:OnUpdate()
 	if not self.Velocity:IsValid() then self.Velocity:Zero() end
 end
 
-function PANEL:OnDraw()
+function META:OnDraw()
 	surface.SetTexture(self.sheep_texture)
 	local length = self.Velocity:GetLength()
 	local w, h = self.Parent:GetSize():Unpack()
@@ -174,7 +174,7 @@ function PANEL:OnDraw()
 	surface.SetRectUV()
 end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(META)
 
 if RELOAD then
 	local sheep = gui.CreatePanel("sheep")

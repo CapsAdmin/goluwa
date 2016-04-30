@@ -1,10 +1,10 @@
-local COMPONENT = prototype.CreateTemplate()
+local META = prototype.CreateTemplate()
 
-COMPONENT.Name = "physics"
-COMPONENT.Require = {"transform"}
-COMPONENT.Events = {"Update"}
+META.Name = "physics"
+META.Require = {"transform"}
+META.Events = {"Update"}
 
-COMPONENT.Network = {
+META.Network = {
 	Position = {"vec3", 1/30, "unreliable", false, 70},
 	Rotation = {"quat", 1/30, "unreliable", false, 70},
 
@@ -23,21 +23,21 @@ COMPONENT.Network = {
 	PhysicsModelPath = {"string", 1/10, "reliable", true}, -- last true means don't send default path (blank path in this case)
 }
 
-function COMPONENT:Initialize()
+function META:Initialize()
 	self.rigid_body = NULL
 end
 
-COMPONENT:StartStorable()
+META:StartStorable()
 
-	COMPONENT:GetSet("SimulateOnClient", false)
-	COMPONENT:GetSet("Position", Vec3(0, 0, 0))
-	COMPONENT:GetSet("Rotation", Quat(0, 0, 0, 1))
-	COMPONENT:GetSet("PhysicsModelPath", "")
-	prototype.DelegateProperties(COMPONENT, prototype.GetRegistered("physics_body"), "rigid_body")
+	META:GetSet("SimulateOnClient", false)
+	META:GetSet("Position", Vec3(0, 0, 0))
+	META:GetSet("Rotation", Quat(0, 0, 0, 1))
+	META:GetSet("PhysicsModelPath", "")
+	prototype.DelegateProperties(META, prototype.GetRegistered("physics_body"), "rigid_body")
 
-COMPONENT:EndStorable()
+META:EndStorable()
 
-COMPONENT:GetSet("PhysicsModel", nil)
+META:GetSet("PhysicsModel", nil)
 
 local function to_bullet(self)
 	if not self.rigid_body:IsValid() or not self.rigid_body:IsPhysicsValid() then return end
@@ -75,38 +75,38 @@ local function from_bullet(self)
 	return out:Copy()
 end
 
-function COMPONENT:UpdatePhysicsObject()
+function META:UpdatePhysicsObject()
 	to_bullet(self)
 end
 
-function COMPONENT:SetPosition(vec)
+function META:SetPosition(vec)
 	self.Position = vec
 	to_bullet(self)
 end
 
-function COMPONENT:GetPosition()
+function META:GetPosition()
 	return Vec3(from_bullet(self):GetTranslation())
 end
 
-function COMPONENT:SetRotation(rot)
+function META:SetRotation(rot)
 	self.Rotation = rot
 	to_bullet(self)
 end
 
-function COMPONENT:GetRotation()
+function META:GetRotation()
 	return from_bullet(self):GetRotation()
 end
 
-function COMPONENT:SetAngles(ang)
+function META:SetAngles(ang)
 	self:SetRotation(Quat(0,0,0,1):SetAngles(ang))
 end
 
-function COMPONENT:GetAngles()
+function META:GetAngles()
 	return self:GetRotation():GetAngles()
 end
 
 do
-	function COMPONENT:InitPhysicsSphere(rad)
+	function META:InitPhysicsSphere(rad)
 		local tr = self:GetComponent("transform")
 		self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
 
@@ -120,7 +120,7 @@ do
 		to_bullet(self)
 	end
 
-	function COMPONENT:InitPhysicsBox(scale)
+	function META:InitPhysicsBox(scale)
 		local tr = self:GetComponent("transform")
 		self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
 
@@ -138,7 +138,7 @@ do
 		to_bullet(self)
 	end
 
-	function COMPONENT:InitPhysicsCapsuleZ()
+	function META:InitPhysicsCapsuleZ()
 		local tr = self:GetComponent("transform")
 		self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
 
@@ -153,7 +153,7 @@ do
 		to_bullet(self)
 	end
 
-	function COMPONENT:SetPhysicsModelPath(path)
+	function META:SetPhysicsModelPath(path)
 		self.PhysicsModelPath = path
 
 		physics.LoadModel(path, function(physics_meshes)
@@ -192,7 +192,7 @@ do
 		end)
 	end
 
-	function COMPONENT:InitPhysicsConvexHull()
+	function META:InitPhysicsConvexHull()
 		local tr = self:GetComponent("transform")
 		self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
 
@@ -208,7 +208,7 @@ do
 		to_bullet(self)
 	end
 
-	function COMPONENT:InitPhysicsConvexTriangles()
+	function META:InitPhysicsConvexTriangles()
 		local tr = self:GetComponent("transform")
 		self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
 
@@ -224,7 +224,7 @@ do
 		to_bullet(self)
 	end
 
-	function COMPONENT:InitPhysicsTriangles(quantized_aabb_compression)
+	function META:InitPhysicsTriangles(quantized_aabb_compression)
 		local tr = self:GetComponent("transform")
 		self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
 
@@ -243,7 +243,7 @@ end
 
 local zero = Vec3()
 
-function COMPONENT:OnUpdate()
+function META:OnUpdate()
 	if not self.rigid_body:IsValid() or not self.rigid_body:IsPhysicsValid() then return end
 
 	local transform = self:GetComponent("transform")
@@ -266,18 +266,18 @@ function COMPONENT:OnUpdate()
 	end
 end
 
-function COMPONENT:OnAdd(ent)
+function META:OnAdd(ent)
 	self:GetComponent("transform"):SetSkipRebuild(true)
 	self.rigid_body = physics.CreateBody()
 	self.rigid_body.ent = self
 end
 
-function COMPONENT:OnRemove(ent)
+function META:OnRemove(ent)
 	if self.rigid_body:IsValid() then
 		self.rigid_body:Remove()
 	end
 end
 
-COMPONENT:RegisterComponent()
+META:RegisterComponent()
 
 --include("physics_container.lua")

@@ -1,33 +1,33 @@
 if not render then return end
 
-local COMPONENT = prototype.CreateTemplate()
+local META = prototype.CreateTemplate()
 
-COMPONENT.Name = "light"
-COMPONENT.Require = {"transform"}
-COMPONENT.Events = {"Draw3DLights", "DrawShadowMaps"}
+META.Name = "light"
+META.Require = {"transform"}
+META.Events = {"Draw3DLights", "DrawShadowMaps"}
 
-COMPONENT:StartStorable()
-	COMPONENT:GetSet("Color", Color(1, 1, 1))
-	COMPONENT:GetSet("Intensity", 1)
-	COMPONENT:GetSet("Shadow", false)
-	COMPONENT:GetSet("ShadowCubemap", false)
-	COMPONENT:GetSet("ShadowSize", 256)
-	COMPONENT:GetSet("FOV", 90, {editor_min = 0, editor_max = 180})
-	COMPONENT:GetSet("NearZ", 1)
-	COMPONENT:GetSet("FarZ", -1)
-	COMPONENT:GetSet("ProjectFromCamera", false)
-	COMPONENT:GetSet("OrthoSize", 0)
-COMPONENT:EndStorable()
+META:StartStorable()
+	META:GetSet("Color", Color(1, 1, 1))
+	META:GetSet("Intensity", 1)
+	META:GetSet("Shadow", false)
+	META:GetSet("ShadowCubemap", false)
+	META:GetSet("ShadowSize", 256)
+	META:GetSet("FOV", 90, {editor_min = 0, editor_max = 180})
+	META:GetSet("NearZ", 1)
+	META:GetSet("FarZ", -1)
+	META:GetSet("ProjectFromCamera", false)
+	META:GetSet("OrthoSize", 0)
+META:EndStorable()
 
 if GRAPHICS then
-	function COMPONENT:OnAdd()
+	function META:OnAdd()
 		self.shadow_maps = {}
 		render.LoadModel("models/low-poly-sphere.obj", function(meshes)
 			self.light_mesh = meshes[1]
 		end)
 	end
 
-	function COMPONENT:SetShadow(b)
+	function META:SetShadow(b)
 		self.Shadow = b
 		if b then
 			for i = 1, render.csm_count do
@@ -43,14 +43,14 @@ if GRAPHICS then
 		end
 	end
 
-	function COMPONENT:SetShadowSize(size)
+	function META:SetShadowSize(size)
 		self.ShadowSize = size
 		for _, shadow_map in pairs(self.shadow_maps) do
 			shadow_map:SetShadowSize(size)
 		end
 	end
 
-	function COMPONENT:OnDraw3DLights()
+	function META:OnDraw3DLights()
 		if not self.light_mesh or not render.gbuffer_data_pass.light_shader then return end -- grr
 
 		-- automate this!!
@@ -81,7 +81,7 @@ if GRAPHICS then
 		self.light_mesh:Draw()
 	end
 
-	function COMPONENT:DrawScene(projection, rot, pos, i)
+	function META:DrawScene(projection, rot, pos, i)
 		do -- setup the view matrix
 			local view = Matrix44()
 
@@ -103,7 +103,7 @@ if GRAPHICS then
 		render.Draw3DScene(self, self.OrthoSize == 0 and self:GetComponent("transform"):GetSize())
 	end
 
-	function COMPONENT:DrawShadowMap()
+	function META:DrawShadowMap()
 		render.SetCullMode("front")
 		local transform = self:GetComponent("transform")
 		local pos = transform:GetPosition()
@@ -159,7 +159,7 @@ if GRAPHICS then
 	end
 end
 
-COMPONENT:RegisterComponent()
+META:RegisterComponent()
 
 if RELOAD then
 	render.InitializeGBuffer()

@@ -1,19 +1,19 @@
 local gui = ... or _G.gui
 
-local PANEL = {}
+local META = {}
 
-PANEL.ClassName = "slider"
-PANEL.Base = "base"
+META.ClassName = "slider"
+META.Base = "base"
 
-prototype.GetSet(PANEL, "Fraction", Vec2(0, 0))
+prototype.GetSet(META, "Fraction", Vec2(0, 0))
 
-prototype.GetSet(PANEL, "XSlide", true)
-prototype.GetSet(PANEL, "YSlide", false)
+prototype.GetSet(META, "XSlide", true)
+prototype.GetSet(META, "YSlide", false)
 
-prototype.GetSet(PANEL, "RightFill", false)
-prototype.GetSet(PANEL, "LeftFill", false)
+prototype.GetSet(META, "RightFill", false)
+prototype.GetSet(META, "LeftFill", false)
 
-function PANEL:Initialize()
+function META:Initialize()
 	self:SetMinimumSize(Vec2(35, 35))
 	self:SetNoDraw(true)
 
@@ -35,12 +35,12 @@ function PANEL:Initialize()
 	end
 end
 
-function PANEL:SetFraction(pos)
+function META:SetFraction(pos)
 	self.Fraction = pos
 	self:OnButtonPositionChanged(self.button, self.button:GetPosition())
 end
 
-function PANEL:OnButtonPositionChanged(button, pos)
+function META:OnButtonPositionChanged(button, pos)
 	if self.XSlide and self.YSlide then
 		pos.x = math.clamp(pos.x, 0, self:GetWidth() - button:GetWidth())
 		pos.y = math.clamp(pos.y, 0, self:GetHeight() - button:GetHeight())
@@ -61,7 +61,7 @@ function PANEL:OnButtonPositionChanged(button, pos)
 	self:MarkCacheDirty()
 end
 
-function PANEL:OnLineDraw(line)
+function META:OnLineDraw(line)
 	surface.SetTexture(self:GetSkin().menu_select[1])
 
 	if self.RightFill then
@@ -88,11 +88,11 @@ function PANEL:OnLineDraw(line)
 	end
 end
 
-function PANEL:OnSlide(pos)
+function META:OnSlide(pos)
 
 end
 
-function PANEL:OnLayout(S)
+function META:OnLayout(S)
 	self.button:SetSize(self:GetSize():Copy() - S*8)
 
 	if self.XSlide and self.YSlide then
@@ -113,4 +113,4 @@ function PANEL:OnLayout(S)
 	self.button:SetPosition(self.Fraction * self:GetSize())
 end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(META)

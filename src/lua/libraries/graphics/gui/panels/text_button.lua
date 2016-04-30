@@ -1,25 +1,25 @@
 local gui = ... or _G.gui
 
-local PANEL = {}
+local META = {}
 
-PANEL.ClassName = "text_button"
-PANEL.Base = "button"
+META.ClassName = "text_button"
+META.Base = "button"
 
-prototype.GetSet(PANEL, "SizeToTextOnLayout", false)
+prototype.GetSet(META, "SizeToTextOnLayout", false)
 
-prototype.GetSetDelegate(PANEL, "Text", "", "label")
-prototype.GetSetDelegate(PANEL, "ParseTags", false, "label")
-prototype.GetSetDelegate(PANEL, "Font", nil, "label")
-prototype.GetSetDelegate(PANEL, "TextColor", nil, "label")
-prototype.GetSetDelegate(PANEL, "TextWrap", false, "label")
-prototype.GetSetDelegate(PANEL, "ConcatenateTextToSize", false, "label")
+prototype.GetSetDelegate(META, "Text", "", "label")
+prototype.GetSetDelegate(META, "ParseTags", false, "label")
+prototype.GetSetDelegate(META, "Font", nil, "label")
+prototype.GetSetDelegate(META, "TextColor", nil, "label")
+prototype.GetSetDelegate(META, "TextWrap", false, "label")
+prototype.GetSetDelegate(META, "ConcatenateTextToSize", false, "label")
 
-prototype.Delegate(PANEL, "label", "CenterText", "CenterSimple")
-prototype.Delegate(PANEL, "label", "CenterTextY", "CenterYSimple")
-prototype.Delegate(PANEL, "label", "CenterTextX", "CenterXSimple")
-prototype.Delegate(PANEL, "label", "GetTextSize", "GetSize")
+prototype.Delegate(META, "label", "CenterText", "CenterSimple")
+prototype.Delegate(META, "label", "CenterTextY", "CenterYSimple")
+prototype.Delegate(META, "label", "CenterTextX", "CenterXSimple")
+prototype.Delegate(META, "label", "GetTextSize", "GetSize")
 
-function PANEL:Initialize()
+function META:Initialize()
 	prototype.GetRegistered(self.Type, "button").Initialize(self)
 
 	local label = self:CreatePanel("text", "label")
@@ -28,7 +28,7 @@ function PANEL:Initialize()
 	self:SetLayoutWhenInvisible(false)
 end
 
-function PANEL:SizeToText()
+function META:SizeToText()
 	local marg = self:GetMargin()
 
 	self.label:SetPosition(marg:GetPosition())
@@ -37,10 +37,10 @@ function PANEL:SizeToText()
 	self.LayoutSize = self:GetSize():Copy()
 end
 
-function PANEL:OnLayout(S)
+function META:OnLayout(S)
 	if self.SizeToTextOnLayout then
 		self:SizeToText()
 	end
 end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(META)

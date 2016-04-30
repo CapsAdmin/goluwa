@@ -1,10 +1,10 @@
 local gui = ... or _G.gui
 
 do
-	local PANEL = {}
-	PANEL.ClassName = "menu"
+	local META = {}
+	META.ClassName = "menu"
 
-	function PANEL:Initialize()
+	function META:Initialize()
 		self.sub_menu = NULL
 
 		self:SetStyle("button_inactive")
@@ -13,7 +13,7 @@ do
 		self:SetSizeStackToWidth(true)
 	end
 
-	function PANEL:AddEntry(text, on_click)
+	function META:AddEntry(text, on_click)
 		local entry = self:CreatePanel("menu_entry")
 
 		entry:SetText(text)
@@ -24,7 +24,7 @@ do
 		return entry
 	end
 
-	function PANEL:AddSubMenu(text, on_click)
+	function META:AddSubMenu(text, on_click)
 		local menu, entry = self:AddEntry(text, on_click):CreateSubMenu()
 
 		self:CallOnRemove(function() gui.RemovePanel(menu) end)
@@ -35,7 +35,7 @@ do
 		return menu, entry
 	end
 
-	function PANEL:AddSeparator()
+	function META:AddSeparator()
 		local panel = self:CreatePanel("base")
 		panel:SetStyle("button_active")
 		panel:SetIgnoreMouse(true)
@@ -44,7 +44,7 @@ do
 		self:Layout()
 	end
 
-	function PANEL:OnLayout(S)
+	function META:OnLayout(S)
 		self:SetMargin(Rect()+S*2)
 		self:SetSize(Vec2()+500)
 		self:SetLayoutSize(Vec2()+500)
@@ -65,15 +65,15 @@ do
 		self:SetWidth(w + self:GetMargin():GetRight())
 	end
 
-	gui.RegisterPanel(PANEL)
+	gui.RegisterPanel(META)
 end
 
 do
-	local PANEL = {}
+	local META = {}
 
-	PANEL.ClassName = "menu_entry"
+	META.ClassName = "menu_entry"
 
-	function PANEL:Initialize()
+	function META:Initialize()
 		self.menu = NULL
 
 		self:SetNoDraw(true)
@@ -90,7 +90,7 @@ do
 		self:SetWidth(100)
 	end
 
-	function PANEL:OnMouseEnter()
+	function META:OnMouseEnter()
 		self:SetNoDraw(false)
 
 		-- close all parent menus
@@ -107,7 +107,7 @@ do
 		end
 	end
 
-	function PANEL:OnLayout(S)
+	function META:OnLayout(S)
 		self:SetMargin(Rect()+S*2)
 		self.label:SetPadding(Rect()+S*2)
 		self.image:SetPadding(Rect()+S*2)
@@ -116,16 +116,16 @@ do
 		end
 	end
 
-	function PANEL:OnMouseExit()
+	function META:OnMouseExit()
 		self:SetNoDraw(true)
 	end
 
-	function PANEL:SetText(str)
+	function META:SetText(str)
 		self.label:SetText(str)
 		self:Layout()
 	end
 
-	function PANEL:SetIcon(texture)
+	function META:SetIcon(texture)
 		if texture then
 			self.image:SetTexture(texture)
 			self.image:SetVisible(true)
@@ -133,7 +133,7 @@ do
 		self:Layout()
 	end
 
-	function PANEL:CreateSubMenu()
+	function META:CreateSubMenu()
 
 		local icon = self:CreatePanel("base")
 		icon:SetIgnoreMouse(true)
@@ -148,13 +148,13 @@ do
 		return self.menu, self
 	end
 
-	function PANEL:OnMouseInput(button, press)
+	function META:OnMouseInput(button, press)
 		if button == "button_1" and press then
 			self:OnClick()
 		end
 	end
 
-	function PANEL:OnClick() gui.SetActiveMenu() end
+	function META:OnClick() gui.SetActiveMenu() end
 
-	gui.RegisterPanel(PANEL)
+	gui.RegisterPanel(META)
 end

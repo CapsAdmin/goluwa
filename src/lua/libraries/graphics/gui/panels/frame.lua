@@ -1,12 +1,12 @@
 local gui = ... or _G.gui
 
-local PANEL = {}
-PANEL.ClassName = "frame"
+local META = {}
+META.ClassName = "frame"
 
-prototype.GetSet(PANEL, "Title", "no title")
-prototype.GetSet(PANEL, "Icon", "textures/silkicons/heart.png")
+prototype.GetSet(META, "Title", "no title")
+prototype.GetSet(META, "Icon", "textures/silkicons/heart.png")
 
-function PANEL:Initialize()
+function META:Initialize()
 	self:SetDraggable(true)
 	self:SetResizable(true)
 	self:SetBringToFrontOnClick(true)
@@ -64,7 +64,7 @@ function PANEL:Initialize()
 	end)
 end
 
-function PANEL:ToWindow()
+function META:ToWindow()
 	local gl = require("libopengl")
 	local window = system.CreateWindow(self:GetSize().x, self:GetSize().y, nil, {"borderless"})
 	local world = gui.CreateWorld()
@@ -121,7 +121,7 @@ function PANEL:ToWindow()
 	self.os_window = window
 end
 
-function PANEL:OnLayout(S)
+function META:OnLayout(S)
 	self:SetMargin(Rect(S,S,S,S))
 
 	self.bar:SetLayoutSize(Vec2()+10*S)
@@ -136,7 +136,7 @@ function PANEL:OnLayout(S)
 	self.icon:SetLayoutSize(Vec2(math.min(S*8, self.icon.Texture:GetSize().x), math.min(S*8, self.icon.Texture:GetSize().y)))
 end
 
-function PANEL:Maximize(b)
+function META:Maximize(b)
 	local max = self.max
 
 	if not self.maximized or b then
@@ -156,11 +156,11 @@ function PANEL:Maximize(b)
 	end
 end
 
-function PANEL:IsMaximized()
+function META:IsMaximized()
 	return self.maximized
 end
 
-function PANEL:Minimize(b)
+function META:Minimize(b)
 	if b ~= nil then
 		self:SetVisible(b)
 	else
@@ -168,11 +168,11 @@ function PANEL:Minimize(b)
 	end
 end
 
-function PANEL:IsMinimized()
+function META:IsMinimized()
 	return self.Visible
 end
 
-function PANEL:SetIcon(str)
+function META:SetIcon(str)
 	self.Icon = str
 
 	local icon = self.bar:CreatePanel("base", "icon")
@@ -189,7 +189,7 @@ function PANEL:SetIcon(str)
 	self.icon = icon
 end
 
-function PANEL:SetTitle(str)
+function META:SetTitle(str)
 	self.Title = str
 
 	local title = self.bar:CreatePanel("text", "title")
@@ -208,14 +208,14 @@ function PANEL:SetTitle(str)
 	end
 end
 
-function PANEL:OnMouseInput()
+function META:OnMouseInput()
 	self:MarkCacheDirty()
 end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(META)
 do return end
 if RELOAD then
-	local panel = gui.CreatePanel(PANEL.ClassName, nil, "test")
+	local panel = gui.CreatePanel(META.ClassName, nil, "test")
 	panel:SetSize(Vec2(300, 300))
 	panel:ToWindow()
 end

@@ -1,13 +1,13 @@
 local gui = ... or _G.gui
 
-local PANEL = {}
-PANEL.ClassName = "scroll"
+local META = {}
+META.ClassName = "scroll"
 
-prototype.GetSet(PANEL, "XScrollBar", true)
-prototype.GetSet(PANEL, "YScrollBar", true)
-prototype.GetSet(PANEL, "ScrollWidth", 8)
+prototype.GetSet(META, "XScrollBar", true)
+prototype.GetSet(META, "YScrollBar", true)
+prototype.GetSet(META, "ScrollWidth", 8)
 
-function PANEL:Initialize()
+function META:Initialize()
 	self.panel = NULL
 
 	self:SetNoDraw(true)
@@ -20,11 +20,11 @@ function PANEL:Initialize()
 	scroll_area:SetScrollable(true)
 end
 
-function PANEL:OnStyleChanged(skin)
+function META:OnStyleChanged(skin)
 	self:SetScrollWidth(self:GetSkin().scroll_width or 8)
 end
 
-function PANEL:SetXScrollBar(b)
+function META:SetXScrollBar(b)
 	self.XScrollBar = b
 
 	if b then
@@ -71,7 +71,7 @@ function PANEL:SetXScrollBar(b)
 	end
 end
 
-function PANEL:SetYScrollBar(b)
+function META:SetYScrollBar(b)
 	self.YScrollBar = b
 
 	if b then
@@ -119,7 +119,7 @@ function PANEL:SetYScrollBar(b)
 	end
 end
 
-function PANEL:SetPanel(panel)
+function META:SetPanel(panel)
 	panel:SetParent(self.scroll_area)
 --	panel:SetVisibilityPanel(self.scroll_area)
 	self.panel = panel
@@ -145,13 +145,13 @@ function PANEL:SetPanel(panel)
 	return panel
 end
 
-function PANEL:SetScrollFraction(scroll)
+function META:SetScrollFraction(scroll)
 	--self.scroll_area.scrolling = true
 	self.scroll_area:SetScrollFraction(scroll)
 	--self.scroll_area.scrolling = false
 end
 
-function PANEL:SetScrollWidth(num)
+function META:SetScrollWidth(num)
 	if self.x_track then
 		self.x_track:SetHeight(num)
 		self.x_handle:SetHeight(num)
@@ -165,7 +165,7 @@ function PANEL:SetScrollWidth(num)
 	self.ScrollWidth = num
 end
 
-function PANEL:OnLayout(S)
+function META:OnLayout(S)
 	self:SetScrollWidth(S*4)
 
 	local panel = self.panel
@@ -234,7 +234,7 @@ function PANEL:OnLayout(S)
 	self.scroll_area.scrolling = false
 end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(META)
 
 if RELOAD then
 	local panel = gui.CreatePanel("base", nil, "lol")

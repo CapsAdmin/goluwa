@@ -1,23 +1,23 @@
 local gui = ... or _G.gui
 
-local PANEL = {}
+local META = {}
 
-PANEL.ClassName = "checkbox_label"
+META.ClassName = "checkbox_label"
 
-prototype.GetSetDelegate(PANEL, "Text", "", "label")
-prototype.GetSetDelegate(PANEL, "ParseTags", false, "label")
-prototype.GetSetDelegate(PANEL, "Font", nil, "label")
-prototype.GetSetDelegate(PANEL, "TextColor", nil, "label")
-prototype.GetSetDelegate(PANEL, "TextWrap", false, "label")
-prototype.GetSetDelegate(PANEL, "ConcatenateTextToSize", false, "label")
-prototype.GetSetDelegate(PANEL, "State", false, "checkbox")
+prototype.GetSetDelegate(META, "Text", "", "label")
+prototype.GetSetDelegate(META, "ParseTags", false, "label")
+prototype.GetSetDelegate(META, "Font", nil, "label")
+prototype.GetSetDelegate(META, "TextColor", nil, "label")
+prototype.GetSetDelegate(META, "TextWrap", false, "label")
+prototype.GetSetDelegate(META, "ConcatenateTextToSize", false, "label")
+prototype.GetSetDelegate(META, "State", false, "checkbox")
 
-prototype.Delegate(PANEL, "label", "CenterText", "Center")
-prototype.Delegate(PANEL, "label", "CenterTextY", "CenterY")
-prototype.Delegate(PANEL, "label", "CenterTextX", "CenterX")
-prototype.Delegate(PANEL, "label", "GetTextSize", "GetSize")
+prototype.Delegate(META, "label", "CenterText", "Center")
+prototype.Delegate(META, "label", "CenterTextY", "CenterY")
+prototype.Delegate(META, "label", "CenterTextX", "CenterX")
+prototype.Delegate(META, "label", "GetTextSize", "GetSize")
 
-function PANEL:Initialize()
+function META:Initialize()
 	self:SetNoDraw(true)
 
 	local check = self:CreatePanel("button", "checkbox")
@@ -30,19 +30,19 @@ function PANEL:Initialize()
 	self:Layout(true)
 end
 
-function PANEL:TieCheckbox(checkbox)
+function META:TieCheckbox(checkbox)
 	self.checkbox:TieCheckbox(checkbox.checkbox)
 end
 
-function PANEL:IsChecked()
+function META:IsChecked()
 	return self.checkbox:GetState()
 end
 
-function PANEL:OnCheck(b)
+function META:OnCheck(b)
 
 end
 
-function PANEL:SizeToText()
+function META:SizeToText()
 	local marg = self:GetMargin()
 
 	self.checkbox:SetX(0)
@@ -56,4 +56,4 @@ function PANEL:SizeToText()
 	end
 end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(META)

@@ -1,11 +1,11 @@
 local gui = ... or _G.gui
 
-local PANEL = {}
+local META = {}
 
-PANEL.ClassName = "wire_board"
-PANEL.Base = "base"
+META.ClassName = "wire_board"
+META.Base = "base"
 
-function PANEL:Initialize()
+function META:Initialize()
 	self.cable_texture = render.CreateTextureFromPath("materials/cable/cable.vtf")
 	self.current_wires = {}
 
@@ -14,7 +14,7 @@ function PANEL:Initialize()
 	self:SetDraggable(true)
 end
 
-function PANEL:OnPostDraw()
+function META:OnPostDraw()
 	surface.SetColor(1,1,1,1)
 	surface.SetTexture(self.cable_texture)
 
@@ -68,4 +68,4 @@ function PANEL:OnPostDraw()
 	end
 end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(META)

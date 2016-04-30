@@ -1,39 +1,39 @@
 local gui = ... or _G.gui
 
-local PANEL = prototype.CreateTemplate("panel", "base")
+local META = prototype.CreateTemplate("panel", "base")
 
-include("lua/libraries/templates/parenting.lua", PANEL)
+include("lua/libraries/templates/parenting.lua", META)
 
-prototype.GetSet(PANEL, "MousePosition", Vec2(0, 0))
-prototype.IsSet(PANEL, "Visible", true)
-prototype.GetSet(PANEL, "Clipping", false)
-prototype.GetSet(PANEL, "Color", Color(1,1,1,1))
-prototype.GetSet(PANEL, "Cursor", "arrow")
-prototype.GetSet(PANEL, "TrapChildren", false)
-prototype.GetSet(PANEL, "Texture", render.GetWhiteTexture())
-prototype.GetSet(PANEL, "RedirectFocus", NULL)
-prototype.GetSet(PANEL, "ObeyMargin", true)
-prototype.GetSet(PANEL, "BringToFrontOnClick", false)
-prototype.GetSet(PANEL, "LayoutParentOnLayout", false)
-prototype.GetSet(PANEL, "LayoutWhenInvisible", true)
-prototype.GetSet(PANEL, "VisibilityPanel", NULL)
-prototype.GetSet(PANEL, "NoDraw", false)
-prototype.GetSet(PANEL, "GreyedOut", false)
-prototype.GetSet(PANEL, "UpdateRate", 1/33)
+prototype.GetSet(META, "MousePosition", Vec2(0, 0))
+prototype.IsSet(META, "Visible", true)
+prototype.GetSet(META, "Clipping", false)
+prototype.GetSet(META, "Color", Color(1,1,1,1))
+prototype.GetSet(META, "Cursor", "arrow")
+prototype.GetSet(META, "TrapChildren", false)
+prototype.GetSet(META, "Texture", render.GetWhiteTexture())
+prototype.GetSet(META, "RedirectFocus", NULL)
+prototype.GetSet(META, "ObeyMargin", true)
+prototype.GetSet(META, "BringToFrontOnClick", false)
+prototype.GetSet(META, "LayoutParentOnLayout", false)
+prototype.GetSet(META, "LayoutWhenInvisible", true)
+prototype.GetSet(META, "VisibilityPanel", NULL)
+prototype.GetSet(META, "NoDraw", false)
+prototype.GetSet(META, "GreyedOut", false)
+prototype.GetSet(META, "UpdateRate", 1/33)
 
-function PANEL:CreatePanel(name, store_in_self)
+function META:CreatePanel(name, store_in_self)
 	return gui.CreatePanel(name, self, store_in_self)
 end
 
-function PANEL:__tostring2()
+function META:__tostring2()
 	return ("[%s %s %s %s][%s]"):format(self.Position.x, self.Position.y, self.Size.x, self.Size.y, self.layout_count)
 end
 
-function PANEL:IsWorld()
+function META:IsWorld()
 	return self.is_world
 end
 
-function PANEL:GetSizeOfChildren()
+function META:GetSizeOfChildren()
 
 	if self.last_children_size then
 		return self.last_children_size
@@ -65,28 +65,28 @@ function PANEL:GetSizeOfChildren()
 	return total_size
 end
 
-function PANEL:SizeToChildrenHeight()
+function META:SizeToChildrenHeight()
 	self:SetHeight(math.huge)
 	self:SetHeight(self:GetSizeOfChildren().y + self.Margin:GetHeight())
 	if not math.isvalid(self.Size.y) then self.Size.y = 100 end -- FIX ME
 	self.LayoutSize = self.Size:Copy()
 end
 
-function PANEL:SizeToChildrenWidth()
+function META:SizeToChildrenWidth()
 	self:SetWidth(math.huge)
 	self:SetWidth(self:GetSizeOfChildren().x + self.Margin:GetWidth())
 	if not math.isvalid(self.Size.x) then self.Size.x = 100 end -- FIX ME
 	self.LayoutSize = self.Size:Copy()
 end
 
-function PANEL:SizeToChildren()
+function META:SizeToChildren()
 	self:SetSize(Vec2() + math.huge)
 	self:SetSize(self:GetSizeOfChildren() + self.Margin:GetSize())
 	if not self.Size:IsValid() then self.Size:Set(100, 100) end -- FIX ME
 	self.LayoutSize = self.Size:Copy()
 end
 
-function PANEL:GetVisibleChildren()
+function META:GetVisibleChildren()
 	local tbl = {}
 
 	for _, v in ipairs(self:GetChildren()) do
@@ -98,7 +98,7 @@ function PANEL:GetVisibleChildren()
 	return tbl
 end
 
-function PANEL:IsInsideParent()
+function META:IsInsideParent()
 	local override = self.Parent
 
 	if not override:IsValid() then return true end
@@ -124,7 +124,7 @@ function PANEL:IsInsideParent()
 end
 
 do -- focus
-	function PANEL:BringToFront()
+	function META:BringToFront()
 		if self.RedirectFocus:IsValid() then
 			return self.RedirectFocus:BringToFront()
 		end
@@ -137,7 +137,7 @@ do -- focus
 		end
 	end
 
-	function PANEL:SendToBack()
+	function META:SendToBack()
 		local parent = self:GetParent()
 
 		if parent:IsValid() then
@@ -146,7 +146,7 @@ do -- focus
 		end
 	end
 
-	function PANEL:RequestFocus()
+	function META:RequestFocus()
 		if self.RedirectFocus:IsValid() then
 			self = self.RedirectFocus
 		end
@@ -160,7 +160,7 @@ do -- focus
 		gui.focus_panel = self
 	end
 
-	function PANEL:Unfocus()
+	function META:Unfocus()
 		if self.RedirectFocus:IsValid() then
 			self = self.RedirectFocus
 		end
@@ -171,18 +171,18 @@ do -- focus
 		end
 	end
 
-	function PANEL:IsFocused()
+	function META:IsFocused()
 		return gui.focus_panel == self
 	end
 end
 
 do -- call on hide
-	function PANEL:IsVisible()
+	function META:IsVisible()
 		if self.visible == nil then return true end -- ?????
 		return self.Visible
 	end
 
-	function PANEL:SetVisible(bool)
+	function META:SetVisible(bool)
 		self.call_on_hide = self.call_on_hide or {}
 
 		self.Visible = bool
@@ -200,7 +200,7 @@ do -- call on hide
 		self:Layout(true)
 	end
 
-	function PANEL:CallOnHide(callback, id)
+	function META:CallOnHide(callback, id)
 		self.call_on_hide = self.call_on_hide or {}
 
 		id = id or callback
@@ -211,7 +211,7 @@ end
 
 do -- drawing
 
-	function PANEL:PreDraw(from_cache)
+	function META:PreDraw(from_cache)
 		if self.GreyedOut then surface.PushHSV(1,0,0.5) end
 
 		if self.ThreeDee then surface.Start3D2D() end
@@ -285,7 +285,7 @@ do -- drawing
 		end
 	end
 
-	function PANEL:DrawClippingStencil()
+	function META:DrawClippingStencil()
 		--if not self.Clipping then return end
 		local tex = surface.GetTexture()
 		surface.SetWhiteTexture()
@@ -296,7 +296,7 @@ do -- drawing
 		surface.SetTexture(tex)
 	end
 
-	function PANEL:Draw(from_cache)
+	function META:Draw(from_cache)
 		if not self.Visible then return end
 		self:PreDraw(from_cache)
 			for _, v in ipairs(self:GetChildren()) do
@@ -305,7 +305,7 @@ do -- drawing
 		self:PostDraw(from_cache)
 	end
 
-	function PANEL:PostDraw(from_cache)
+	function META:PostDraw(from_cache)
 		if --[[true or]] not self.draw_no_draw and self.Clipping then
 			--surface.PopClipFunction()
 			surface.DisableClipRect()
@@ -340,7 +340,7 @@ do -- drawing
 		if self.GreyedOut then surface.PopHSV() end
 	end
 
-	function PANEL:DrawRect(x, y, w, h)
+	function META:DrawRect(x, y, w, h)
 		if self.NinePatch then
 			surface.DrawNinePatch(
 				x or 0, y or 0,
@@ -361,29 +361,29 @@ do -- drawing
 		end
 	end
 
-	function PANEL:DebugFlash()
+	function META:DebugFlash()
 		self.debug_flash = os.clock() + 3
 	end
 end
 
 do -- orientation
-	prototype.GetSet(PANEL, "Position", Vec2(0, 0))
-	prototype.GetSet(PANEL, "Size", Vec2(4, 4))
-	prototype.GetSet(PANEL, "MinimumSize", Vec2(4, 4))
-	prototype.GetSet(PANEL, "Padding", Rect(0, 0, 0, 0))
-	prototype.GetSet(PANEL, "Margin", Rect(0, 0, 0, 0))
-	prototype.GetSet(PANEL, "Angle", 0)
-	prototype.GetSet(PANEL, "Order", 0)
+	prototype.GetSet(META, "Position", Vec2(0, 0))
+	prototype.GetSet(META, "Size", Vec2(4, 4))
+	prototype.GetSet(META, "MinimumSize", Vec2(4, 4))
+	prototype.GetSet(META, "Padding", Rect(0, 0, 0, 0))
+	prototype.GetSet(META, "Margin", Rect(0, 0, 0, 0))
+	prototype.GetSet(META, "Angle", 0)
+	prototype.GetSet(META, "Order", 0)
 
-	prototype.GetSet(PANEL, "ThreeDee", false)
-	prototype.GetSet(PANEL, "ThreeDeePosition", Vec3(0,0,0))
-	prototype.GetSet(PANEL, "ThreeDeeAngles", Ang3(0,0,0))
-	prototype.GetSet(PANEL, "ThreeDeeScale", Vec3(1,1,1))
+	prototype.GetSet(META, "ThreeDee", false)
+	prototype.GetSet(META, "ThreeDeePosition", Vec3(0,0,0))
+	prototype.GetSet(META, "ThreeDeeAngles", Ang3(0,0,0))
+	prototype.GetSet(META, "ThreeDeeScale", Vec3(1,1,1))
 
 	do
-		prototype.GetSet(PANEL, "Matrix", Matrix44())
+		prototype.GetSet(META, "Matrix", Matrix44())
 
-		function PANEL:InvalidateMatrix()
+		function META:InvalidateMatrix()
 			if not self.rebuild_matrix then
 				for _, v in ipairs(self:GetChildrenList()) do
 					v.rebuild_matrix = true
@@ -392,7 +392,7 @@ do -- orientation
 			self.rebuild_matrix = true
 		end
 
-		function PANEL:RebuildMatrix()
+		function META:RebuildMatrix()
 			if self:IsWorld() then return end
 			if self.rebuild_matrix then
 				self.rebuild_matrix = false
@@ -464,12 +464,12 @@ do -- orientation
 			end
 		end
 
-		function PANEL:GetMatrix()
+		function META:GetMatrix()
 			return self.Matrix
 		end
 	end
 
-	function PANEL:SetPosition(pos)
+	function META:SetPosition(pos)
 		if self:HasParent() and self.Parent.TrapChildren and not self.ThreeDee then
 			pos:Clamp(Vec2(0, 0), self.Parent.Size - self.Size)
 		end
@@ -479,7 +479,7 @@ do -- orientation
 		self.Position = pos
 	end
 
-	function PANEL:SetSize(size)
+	function META:SetSize(size)
 		if self.StyleSize:IsZero() then
 			size.x = math.max(size.x, self.MinimumSize.x)
 			size.y = math.max(size.y, self.MinimumSize.y)
@@ -490,17 +490,17 @@ do -- orientation
 		end
 	end
 
-	function PANEL:SetPadding(rect)
+	function META:SetPadding(rect)
 		self.Padding = rect
 		self:Layout()
 	end
 
-	function PANEL:SetMargin(rect)
+	function META:SetMargin(rect)
 		self.Margin = rect
 		self:Layout()
 	end
 
-	function PANEL:WorldToLocal(wpos)
+	function META:WorldToLocal(wpos)
 		local lpos = wpos
 		for _, v in ipairs(self:GetParentList()) do
 			lpos = lpos - v:GetPosition()
@@ -511,16 +511,16 @@ do -- orientation
 		return lpos
 	end
 
-	function PANEL:GetWorldPosition()
+	function META:GetWorldPosition()
 		local x, y = self.Matrix:GetTranslation()
 		return Vec2(x, y)
 	end
 
-	function PANEL:SetWorldPosition(wpos)
+	function META:SetWorldPosition(wpos)
 		self.Matrix:SetTranslation(wpos.x, wpos.y, 0)
 	end
 
-	function PANEL:LocalToWorld(lpos)
+	function META:LocalToWorld(lpos)
 		local x, y = self.Matrix:GetTranslation()
 
 		return Vec2(x + lpos.x, y + lpos.y)
@@ -530,7 +530,7 @@ do -- orientation
 		return a.Order > b.Order
 	end
 
-	function PANEL:SetOrder(pos)
+	function META:SetOrder(pos)
 		self.Order = pos
 
 		local parent = self:GetParent()
@@ -541,63 +541,63 @@ do -- orientation
 		end
 	end
 
-	function PANEL:SetX(x)
+	function META:SetX(x)
 		self.Position.x = x
 	end
-	function PANEL:GetX()
+	function META:GetX()
 		return self.Position.x
 	end
 
-	function PANEL:SetY(y)
+	function META:SetY(y)
 		self.Position.y = y
 	end
-	function PANEL:GetY()
+	function META:GetY()
 		return self.Position.y
 	end
 
-	function PANEL:SetWidth(w)
+	function META:SetWidth(w)
 		self.Size.x = w
 		self:Layout()
 	end
-	function PANEL:GetWidth()
+	function META:GetWidth()
 		return self.Size.x
 	end
 
-	function PANEL:SetHeight(h)
+	function META:SetHeight(h)
 		self.Size.y = h
 		self:Layout()
 	end
-	function PANEL:GetHeight()
+	function META:GetHeight()
 		return self.Size.y
 	end
 
-	PANEL.SetW = PANEL.SetWidth
-	PANEL.GetW = PANEL.GetWidth
+	META.SetW = META.SetWidth
+	META.GetW = META.GetWidth
 
-	PANEL.SetH = PANEL.SetHeight
-	PANEL.GetH = PANEL.GetHeight
+	META.SetH = META.SetHeight
+	META.GetH = META.GetHeight
 
-	function PANEL:SetRect(rect)
+	function META:SetRect(rect)
 		self:SetPosition(Vec2(rect.x, rect.y))
 		self:SetSize(Vec2(rect.w, rect.h))
 	end
 
-	function PANEL:GetRect()
+	function META:GetRect()
 		return Rect(self.Position.x, self.Position.y, self.Size.x, self.Size.y)
 	end
 
-	function PANEL:SetRectFast(x,y,w,h)
+	function META:SetRectFast(x,y,w,h)
 		self.Position.x = x
 		self.Position.y = y
 		self.Size.x = w
 		self.Size.y = h
 	end
 
-	function PANEL:GetRectFast()
+	function META:GetRectFast()
 		return self.Position.x, self.Position.y, self.Size.x, self.Size.y
 	end
 
-	function PANEL:GetWorldRect()
+	function META:GetWorldRect()
 		local rect = Rect(self.Position.x, self.Position.y, self.Size.x, self.Size.y)
 
 		-- convert to world
@@ -607,28 +607,28 @@ do -- orientation
 		return rect
 	end
 
-	function PANEL:GetWorldRectFast()
+	function META:GetWorldRectFast()
 		return self.Position.x, self.Position.y, self.Position.x + self.Size.x, self.Position.y + self.Size.y
 	end
 
-	function PANEL:CenterX()
+	function META:CenterX()
 		self:SetX((self.Parent:GetWidth() * 0.5) - (self:GetWidth() * 0.5))
 	end
 
-	function PANEL:CenterY()
+	function META:CenterY()
 		self:SetY((self.Parent:GetHeight() * 0.5) - (self:GetHeight() * 0.5))
 	end
 
-	function PANEL:Center()
+	function META:Center()
 		self:CenterY()
 		self:CenterX()
 	end
 end
 
 do -- cached rendering
-	prototype.GetSet(PANEL, "CachedRendering", false)
+	prototype.GetSet(META, "CachedRendering", false)
 
-	function PANEL:SetCachedRendering(b)
+	function META:SetCachedRendering(b)
 		self.CachedRendering = b
 
 		if not window.IsExtensionSupported("GL_ARB_framebuffer_object") then
@@ -638,7 +638,7 @@ do -- cached rendering
 		self:MarkCacheDirty()
 	end
 
-	function PANEL:MarkCacheDirty()
+	function META:MarkCacheDirty()
 		if self.CachedRendering then
 			self.cache_dirty = true
 
@@ -668,11 +668,11 @@ do -- cached rendering
 		self:InvalidateMatrix()
 	end
 
-	function PANEL:IsCacheDirty()
+	function META:IsCacheDirty()
 		return self.cache_dirty
 	end
 
-	function PANEL:DrawCache()
+	function META:DrawCache()
 		self:OnPreDraw()
 		surface.SetColor(1, 1, 1, 1)
 		surface.SetTexture(self.cache_texture)
@@ -680,7 +680,7 @@ do -- cached rendering
 		self:OnPostDraw()
 	end
 
-	function PANEL:BuildCache()
+	function META:BuildCache()
 		if self:IsCacheDirty() then
 			self.cache_fb:Begin()
 			--self.cache_fb:Clear()
@@ -713,11 +713,11 @@ do -- cached rendering
 end
 
 do -- scrolling
-	prototype.GetSet(PANEL, "Scrollable", false)
-	prototype.GetSet(PANEL, "Scroll", Vec2(0, 0))
-	prototype.GetSet(PANEL, "ScrollFraction", Vec2(0, 0))
+	prototype.GetSet(META, "Scrollable", false)
+	prototype.GetSet(META, "Scroll", Vec2(0, 0))
+	prototype.GetSet(META, "ScrollFraction", Vec2(0, 0))
 
-	function PANEL:SetScroll(vec)
+	function META:SetScroll(vec)
 		local size = self:GetSizeOfChildren()
 
 		self.Scroll = vec:GetClamped(Vec2(0), size - self.Size)
@@ -731,7 +731,7 @@ do -- scrolling
 		self:MarkCacheDirty()
 	end
 
-	function PANEL:SetScrollFraction(frac)
+	function META:SetScrollFraction(frac)
 		local size = self:GetSizeOfChildren()
 
 		self.Scroll = frac * size
@@ -743,21 +743,21 @@ do -- scrolling
 		self:MarkCacheDirty()
 	end
 
-	function PANEL:StartScrolling(button)
+	function META:StartScrolling(button)
 		self.scroll_button = button
 		self.scroll_drag_pos = self:GetScroll() + self:GetMousePosition()
 	end
 
-	function PANEL:StopScrolling()
+	function META:StopScrolling()
 		self.scroll_button = nil
 		self.scroll_drag_pos = nil
 	end
 
-	function PANEL:IsScrolling()
+	function META:IsScrolling()
 		return self.scroll_button ~= nil
 	end
 
-	function PANEL:CalcScrolling()
+	function META:CalcScrolling()
 		if not self:IsScrolling() then return end
 
 		local size = self:GetSizeOfChildren()
@@ -774,17 +774,17 @@ do -- scrolling
 end
 
 do -- drag drop
-	prototype.GetSet(PANEL, "Draggable", false)
-	prototype.GetSet(PANEL, "DragDrop", false)
-	prototype.GetSet(PANEL, "DragMinDistance", 20)
+	prototype.GetSet(META, "Draggable", false)
+	prototype.GetSet(META, "DragDrop", false)
+	prototype.GetSet(META, "DragMinDistance", 20)
 
-	function PANEL:StartDragging(button)
+	function META:StartDragging(button)
 		self.drag_world_pos = gui.mouse_pos:Copy()
 		self.drag_local_pos = self:GetMousePosition():Copy()
 		self.drag_stop_button = button
 	end
 
-	function PANEL:StopDragging()
+	function META:StopDragging()
 		self.drag_world_pos = nil
 		self.drag_local_pos = nil
 		self.drag_panel_start_pos = nil
@@ -792,11 +792,11 @@ do -- drag drop
 		self.dragged_out_of_min_distance = nil
 	end
 
-	function PANEL:IsDragging()
+	function META:IsDragging()
 		return self.drag_world_pos ~= nil
 	end
 
-	function PANEL:CalcDragging()
+	function META:CalcDragging()
 		if not self.drag_world_pos then return end
 
 		if not self.drag_panel_start_pos then
@@ -847,29 +847,29 @@ do -- drag drop
 		self:MarkCacheDirty()
 	end
 
-	function PANEL:OnDraggedChildEnter(child, drop_pos)
+	function META:OnDraggedChildEnter(child, drop_pos)
 		--print("enter", self, drop_pos, child)
 	end
 
-	function PANEL:OnDraggedChildExit(child, drop_pos)
+	function META:OnDraggedChildExit(child, drop_pos)
 		--print("left", self, drop_pos, child)
 	end
 
-	function PANEL:OnParentLand(parent)
+	function META:OnParentLand(parent)
 
 	end
 
-	function PANEL:OnPanelHover(panel, drop_pos)
+	function META:OnPanelHover(panel, drop_pos)
 
 	end
 
-	function PANEL:OnChildDrop(child, pos)
+	function META:OnChildDrop(child, pos)
 
 	end
 end
 
 do -- magnet snap
-	prototype.GetSet(PANEL, "SnapWhileDragging", false)
+	prototype.GetSet(META, "SnapWhileDragging", false)
 
 	local snapped = false
 
@@ -933,7 +933,7 @@ do -- magnet snap
 		end
 	end
 
-	function PANEL:SnapPosition(panel)
+	function META:SnapPosition(panel)
 		panel = panel or self:GetParent()
 
 		local pos = self:GetWorldPosition():Copy()
@@ -956,7 +956,7 @@ do -- magnet snap
 		return snapped
 	end
 
-	function PANEL:SnapToClosestPanel()
+	function META:SnapToClosestPanel()
 		local tbl = {}
 
 		for k,v in pairs(self:GetParent():GetChildren()) do tbl[k] = v end
@@ -976,12 +976,12 @@ end
 
 do -- animations
 	-- these are useful for animations
-	prototype.GetSet(PANEL, "DrawSizeOffset", Vec2(0, 0))
-	prototype.GetSet(PANEL, "DrawScaleOffset", Vec2(1, 1))
-	prototype.GetSet(PANEL, "DrawPositionOffset", Vec2(0, 0))
-	prototype.GetSet(PANEL, "DrawAngleOffset", Ang3(0,0,0))
-	prototype.GetSet(PANEL, "DrawColor", Color(0,0,0,0))
-	prototype.GetSet(PANEL, "DrawAlpha", 1)
+	prototype.GetSet(META, "DrawSizeOffset", Vec2(0, 0))
+	prototype.GetSet(META, "DrawScaleOffset", Vec2(1, 1))
+	prototype.GetSet(META, "DrawPositionOffset", Vec2(0, 0))
+	prototype.GetSet(META, "DrawAngleOffset", Ang3(0,0,0))
+	prototype.GetSet(META, "DrawColor", Color(0,0,0,0))
+	prototype.GetSet(META, "DrawAlpha", 1)
 
 	local parent_layout = {
 		DrawSizeOffset = true,
@@ -1011,7 +1011,7 @@ do -- animations
 		end
 	end
 
-	function PANEL:CalcAnimations()
+	function META:CalcAnimations()
 		for i, animation in ipairs(self.animations) do
 			local pause = false
 
@@ -1069,7 +1069,7 @@ do -- animations
 		end
 	end
 
-	function PANEL:StopAnimations()
+	function META:StopAnimations()
 		for _, animation in ipairs(self.animations) do
 			if animation.callback then
 				if animation.callback(self) ~= false then
@@ -1085,11 +1085,11 @@ do -- animations
 		self:UpdateAnimations()
 	end
 
-	function PANEL:IsAnimating()
+	function META:IsAnimating()
 		return #self.animations ~= 0
 	end
 
-	function PANEL:Animate(var, to, time, operator, pow, set, callback)
+	function META:Animate(var, to, time, operator, pow, set, callback)
 		for _, v in ipairs(self.animations) do
 			if v.var == var then
 				v.alpha = 0
@@ -1157,10 +1157,10 @@ do -- animations
 end
 
 do -- resizing
-	prototype.GetSet(PANEL, "ResizeBorder", Rect(8,8,8,8))
-	prototype.GetSet(PANEL, "Resizable", false)
+	prototype.GetSet(META, "ResizeBorder", Rect(8,8,8,8))
+	prototype.GetSet(META, "Resizable", false)
 
-	function PANEL:GetResizeLocation(pos)
+	function META:GetResizeLocation(pos)
 		pos = pos or self:GetMousePosition()
 		local loc = self:GetMouseLocation(pos)
 
@@ -1169,7 +1169,7 @@ do -- resizing
 		end
 	end
 
-	function PANEL:StartResizing(pos, button)
+	function META:StartResizing(pos, button)
 		local loc = self:GetResizeLocation(pos)
 		if loc then
 			self.resize_start_pos = self:GetMousePosition():Copy()
@@ -1182,11 +1182,11 @@ do -- resizing
 		end
 	end
 
-	function PANEL:StopResizing()
+	function META:StopResizing()
 		self.resize_start_pos = nil
 	end
 
-	function PANEL:IsResizing()
+	function META:IsResizing()
 		return self.resize_start_pos ~= nil
 	end
 
@@ -1201,7 +1201,7 @@ do -- resizing
 		bottom_right = "sizenwse",
 	}
 
-	function PANEL:CalcResizing()
+	function META:CalcResizing()
 		if self.Resizable then
 			local loc = self:GetResizeLocation(self:GetMousePosition())
 			if location2cursor[loc] then
@@ -1261,22 +1261,22 @@ do -- resizing
 end
 
 do -- mouse
-	prototype.GetSet(PANEL, "IgnoreMouse", false)
-	prototype.GetSet(PANEL, "FocusOnClick", false)
-	prototype.GetSet(PANEL, "AlwaysCalcMouse", false)
-	prototype.GetSet(PANEL, "AlwaysReceiveMouseInput", false)
-	prototype.GetSet(PANEL, "SendMouseInputToPanel", NULL)
+	prototype.GetSet(META, "IgnoreMouse", false)
+	prototype.GetSet(META, "FocusOnClick", false)
+	prototype.GetSet(META, "AlwaysCalcMouse", false)
+	prototype.GetSet(META, "AlwaysReceiveMouseInput", false)
+	prototype.GetSet(META, "SendMouseInputToPanel", NULL)
 
-	prototype.GetSet(PANEL, "MouseHoverTime", 0)
-	prototype.GetSet(PANEL, "MouseHoverTimeTrigger", 1)
-	prototype.GetSet(PANEL, "AlphaMouseCheck", false)
+	prototype.GetSet(META, "MouseHoverTime", 0)
+	prototype.GetSet(META, "MouseHoverTimeTrigger", 1)
+	prototype.GetSet(META, "AlphaMouseCheck", false)
 
 	do
 		gui.active_tooltip = NULL
 
-		prototype.GetSet(PANEL, "Tooltip", "")
+		prototype.GetSet(META, "Tooltip", "")
 
-		function PANEL:ShowTooltip()
+		function META:ShowTooltip()
 			local tooltip = gui.CreatePanel("text_button", nil, "gui_tooltip")
 			tooltip:SetSkin(self:GetSkin())
 			tooltip:SetPosition(self:GetWorldPosition())
@@ -1291,25 +1291,25 @@ do -- mouse
 			self.my_tooltip = tooltip
 		end
 
-		function PANEL:CloseTooltip()
+		function META:CloseTooltip()
 			gui.RemovePanel(self.my_tooltip)
 		end
 	end
 
 
-	function PANEL:BringMouse()
+	function META:BringMouse()
 		window.SetMousePosition(self:GetWorldPosition() + self:GetSize() / 2)
 	end
 
-	function PANEL:IsMouseOver()
+	function META:IsMouseOver()
 		return self:IsDragging() or self:IsResizing() or self.mouse_over and gui.hovering_panel == self
 	end
 
-	function PANEL:GlobalMouseCapture(b)
+	function META:GlobalMouseCapture(b)
 		self.mouse_capture = b
 	end
 
-	function PANEL:GetMouseLocation(pos) -- rename this function
+	function META:GetMouseLocation(pos) -- rename this function
 		pos = pos or self:GetMousePosition()
 		local offset = self.ResizeBorder
 
@@ -1365,7 +1365,7 @@ do -- mouse
 		return "center"
 	end
 
-	function PANEL:CalcMouse()
+	function META:CalcMouse()
 		if
 			self:HasParent() and
 			not self.Parent:IsWorld() and
@@ -1466,7 +1466,7 @@ do -- mouse
 		end
 	end
 
-	function PANEL:MouseInput(button, press)
+	function META:MouseInput(button, press)
 		if self.GreyedOut then return end
 
 		if self.SendMouseInputToPanel:IsValid() then
@@ -1505,7 +1505,7 @@ do -- mouse
 		self:MarkCacheDirty()
 	end
 
-	function PANEL:GlobalMouseInput(button, press)
+	function META:GlobalMouseInput(button, press)
 		if self.Scrollable and self.mouse_over then
 			if button == "button_3" then
 				self:StartScrolling(button)
@@ -1521,7 +1521,7 @@ do -- mouse
 		self:OnGlobalMouseInput(button, press)
 	end
 
-	function PANEL:KeyInput(button, press)
+	function META:KeyInput(button, press)
 		if self.GreyedOut then return end
 
 		local b
@@ -1536,18 +1536,18 @@ do -- mouse
 		return b
 	end
 
-	function PANEL:CharInput(char)
+	function META:CharInput(char)
 		self:MarkCacheDirty()
 		return self:OnCharInput(char)
 	end
 end
 
 do -- layout
-	PANEL.layout_count = 0
+	META.layout_count = 0
 
-	prototype.GetSet(PANEL, "LayoutSize", nil)
-	prototype.GetSet(PANEL, "IgnoreLayout", false)
-	prototype.GetSet(PANEL, "CollisionGroup", "none")
+	prototype.GetSet(META, "LayoutSize", nil)
+	prototype.GetSet(META, "IgnoreLayout", false)
+	prototype.GetSet(META, "CollisionGroup", "none")
 
 	local origin
 
@@ -1555,7 +1555,7 @@ do -- layout
 		return math.abs(a.point-origin) < math.abs(b.point-origin)
 	end
 
-	function PANEL:RayCast(panel, x,y, collide, always)
+	function META:RayCast(panel, x,y, collide, always)
 		local dir_x = x - panel.Position.x
 		local dir_y = y - panel.Position.y
 
@@ -1679,7 +1679,7 @@ do -- layout
 		return Vec2(x, y), found and found[1] and found[1].child
 	end
 
-	function PANEL:ExecuteLayoutCommands()
+	function META:ExecuteLayoutCommands()
 	--	if self:HasParent() then self = self.Parent end
 
 		if not self.layout_us then return end
@@ -1777,7 +1777,7 @@ do -- layout
 		end
 	end
 
-	function PANEL:Layout(now)
+	function META:Layout(now)
 		if now and (self.LayoutWhenInvisible or not self.draw_no_draw) then
 
 			if not self.in_layout then
@@ -1808,13 +1808,13 @@ do -- layout
 		end
 	end
 
-	function PANEL:CalcLayout()
+	function META:CalcLayout()
 		if self.layout_me or gui.layout_stress then
 			self:Layout(true)
 		end
 	end
 
-	function PANEL:SetupLayout(...)
+	function META:SetupLayout(...)
 		if self:HasParent() then self.Parent:Layout() end
 		self:Layout(true)
 
@@ -1833,7 +1833,7 @@ do -- layout
 
 	do -- layout commands
 
-		function PANEL:ResetLayout()
+		function META:ResetLayout()
 			self.laid_out = false
 
 			for _, child in ipairs(self:GetChildren()) do
@@ -1844,17 +1844,17 @@ do -- layout
 			end
 		end
 
-		PANEL.layout_collide = true
+		META.layout_collide = true
 
-		function PANEL:Collide()
+		function META:Collide()
 			self.layout_collide = true
 		end
 
-		function PANEL:NoCollide()
+		function META:NoCollide()
 			self.layout_collide = false
 		end
 
-		function PANEL:SizeToWidth()
+		function META:SizeToWidth()
 			local parent = self:GetParent()
 
 			local ox,oy,ow,oh = self:GetRectFast()
@@ -1871,7 +1871,7 @@ do -- layout
 			self.laid_out = true
 		end
 
-		function PANEL:SizeToHeight()
+		function META:SizeToHeight()
 			local parent = self:GetParent()
 
 			local ox,oy,ow,oh = self:GetRectFast()
@@ -1891,7 +1891,7 @@ do -- layout
 			self.laid_out = true
 		end
 
-		function PANEL:FillX(percent)
+		function META:FillX(percent)
 			local parent = self:GetParent()
 
 			self:SetWidth(1)
@@ -1920,7 +1920,7 @@ do -- layout
 			self.laid_out = true
 		end
 
-		function PANEL:FillY(percent)
+		function META:FillY(percent)
 			local parent = self:GetParent()
 
 			self:SetHeight(1)
@@ -1949,12 +1949,12 @@ do -- layout
 			self.laid_out = true
 		end
 
-		function PANEL:Center()
+		function META:Center()
 			self:CenterX()
 			self:CenterY()
 		end
 
-		function PANEL:CenterX()
+		function META:CenterX()
 			local parent = self:GetParent()
 
 			local left = parent:RayCast(self, 0, self.Position.y, self.layout_collide)
@@ -1965,7 +1965,7 @@ do -- layout
 			self.laid_out = true
 		end
 
-		function PANEL:CenterY()
+		function META:CenterY()
 			local parent = self:GetParent()
 
 			local top = parent:RayCast(self, self.Position.x, 0, self.layout_collide)
@@ -1976,7 +1976,7 @@ do -- layout
 		end
 
 
-		function PANEL:CenterXSimple()
+		function META:CenterXSimple()
 			local parent = self:GetParent()
 
 			self:SetX(parent:GetWidth() / 2 - self:GetWidth() / 2)
@@ -1984,7 +1984,7 @@ do -- layout
 			self.laid_out = true
 		end
 
-		function PANEL:CenterYSimple()
+		function META:CenterYSimple()
 			local parent = self:GetParent()
 
 			self:SetY(parent:GetHeight() / 2 - self:GetHeight() / 2)
@@ -1992,7 +1992,7 @@ do -- layout
 			self.laid_out = true
 		end
 
-		function PANEL:CenterSimple()
+		function META:CenterSimple()
 			local parent = self:GetParent()
 
 			local laid_out
@@ -2010,7 +2010,7 @@ do -- layout
 			self.laid_out = laid_out
 		end
 
-		function PANEL:CenterXFrame()
+		function META:CenterXFrame()
 			local parent = self:GetParent()
 
 			local left = parent:RayCast(self, 0, self.Position.y, self.layout_collide)
@@ -2026,7 +2026,7 @@ do -- layout
 			self.laid_out = true
 		end
 
-		function PANEL:MoveUp()
+		function META:MoveUp()
 			local parent = self:GetParent()
 
 			if not self.laid_out then
@@ -2039,7 +2039,7 @@ do -- layout
 			self.laid_out = true
 		end
 
-		function PANEL:MoveLeft()
+		function META:MoveLeft()
 			local parent = self:GetParent()
 
 			if not self.laid_out then
@@ -2052,7 +2052,7 @@ do -- layout
 			self.laid_out = true
 		end
 
-		function PANEL:MoveDown()
+		function META:MoveDown()
 			local parent = self:GetParent()
 
 			if not self.laid_out then
@@ -2065,7 +2065,7 @@ do -- layout
 			self.laid_out = true
 		end
 
-		function PANEL:MoveRight()
+		function META:MoveRight()
 			local parent = self:GetParent()
 
 			if not self.laid_out then
@@ -2078,28 +2078,28 @@ do -- layout
 			self.laid_out = true
 		end
 
-		function PANEL:MoveRightOf(panel)
+		function META:MoveRightOf(panel)
 			self:SetY(panel:GetY())
 			self:SetX(panel:GetX() + panel:GetWidth())
 
 			self.laid_out = true
 		end
 
-		function PANEL:MoveDownOf(panel)
+		function META:MoveDownOf(panel)
 			self:SetX(panel:GetX())
 			self:SetY(panel:GetY() + panel:GetHeight())
 
 			self.laid_out = true
 		end
 
-		function PANEL:MoveLeftOf(panel)
+		function META:MoveLeftOf(panel)
 			self:SetY(panel:GetY())
 			self:SetX(panel:GetX() - self:GetWidth())
 
 			self.laid_out = true
 		end
 
-		function PANEL:MoveUpOf(panel)
+		function META:MoveUpOf(panel)
 			self:SetX(panel:GetX())
 			self:SetY(panel:GetY() - self:GetHeight())
 
@@ -2109,17 +2109,17 @@ do -- layout
 end
 
 do -- stacking
-	prototype.GetSet(PANEL, "ForcedStackSize", Vec2(0, 0))
+	prototype.GetSet(META, "ForcedStackSize", Vec2(0, 0))
 
-	prototype.GetSet(PANEL, "StackRight", true)
-	prototype.GetSet(PANEL, "StackDown", true)
+	prototype.GetSet(META, "StackRight", true)
+	prototype.GetSet(META, "StackDown", true)
 
-	prototype.GetSet(PANEL, "SizeStackToWidth", false)
-	prototype.GetSet(PANEL, "SizeStackToHeight", false)
-	prototype.IsSet(PANEL, "Stackable", true)
-	prototype.IsSet(PANEL, "Stack", false)
+	prototype.GetSet(META, "SizeStackToWidth", false)
+	prototype.GetSet(META, "SizeStackToHeight", false)
+	prototype.IsSet(META, "Stackable", true)
+	prototype.IsSet(META, "Stack", false)
 
-	function PANEL:StackChildren()
+	function META:StackChildren()
 		local w = 0
 		local h
 		local pad = self:GetMargin()
@@ -2195,26 +2195,26 @@ do -- stacking
 end
 
 do -- skin
-	prototype.GetSet(PANEL, "Style")
-	prototype.GetSet(PANEL, "Skin")
-	prototype.GetSet(PANEL, "LayoutScale")
+	prototype.GetSet(META, "Style")
+	prototype.GetSet(META, "Skin")
+	prototype.GetSet(META, "LayoutScale")
 
-	function PANEL:SetLayoutScale(scale)
+	function META:SetLayoutScale(scale)
 		self.LayoutScale = scale
 		for _, v in ipairs(self:GetChildrenList()) do
 			v.LayoutScale = scale
 		end
 	end
 
-	function PANEL:GetLayoutScale()
+	function META:GetLayoutScale()
 		return self.LayoutScale or self:GetSkin():GetScale()
 	end
 
-	function PANEL:HasSkin(name)
+	function META:HasSkin(name)
 		return self.Skin and self:GetSkin().name == name
 	end
 
-	function PANEL:SetSkin(skin)
+	function META:SetSkin(skin)
 		if type(skin) == "string" then
 			skin = gui.GetRegisteredSkin(skin).skin
 		end
@@ -2235,11 +2235,11 @@ do -- skin
 		end
 	end
 
-	function PANEL:GetSkin()
+	function META:GetSkin()
 		return self.Skin or gui.skin
 	end
 
-	function PANEL:SetStyle(name)
+	function META:SetStyle(name)
 		self.Style = name
 
 		self.style_nodraw = false
@@ -2266,24 +2266,24 @@ do -- skin
 		self:MarkCacheDirty()
 	end
 
-	function PANEL:SetStyleTranslation(from, to)
+	function META:SetStyleTranslation(from, to)
 		self.style_translation = self.style_translation or {}
 		self.style_translation[from] = to
 	end
 
-	prototype.GetSet(PANEL, "NinePatch", false)
-	prototype.GetSet(PANEL, "NinePatchRect", Rect(0, 0, 0, 0))
-	prototype.GetSet(PANEL, "NinePatchCornerSize", 4)
-	prototype.GetSet(PANEL, "StyleSize", Vec2(0, 0))
+	prototype.GetSet(META, "NinePatch", false)
+	prototype.GetSet(META, "NinePatchRect", Rect(0, 0, 0, 0))
+	prototype.GetSet(META, "NinePatchCornerSize", 4)
+	prototype.GetSet(META, "StyleSize", Vec2(0, 0))
 
-	function PANEL:SetStyleSize(vec)
+	function META:SetStyleSize(vec)
 		if not vec:IsZero() then
 			self:SetSize(vec)
 		end
 		self.StyleSize = vec
 	end
 
-	function PANEL:SetupStyle(tbl)
+	function META:SetupStyle(tbl)
 		tbl = tbl or {}
 
 		if tbl.ninepatch ~= nil then self:SetNinePatch(tbl.ninepatch) end
@@ -2303,7 +2303,7 @@ do -- skin
 		self:SetStyleSize(scale)
 	end
 
-	function PANEL:ReloadStyle()
+	function META:ReloadStyle()
 
 		local style = self:GetStyle()
 
@@ -2321,7 +2321,7 @@ do -- skin
 end
 
 do -- events
-	function PANEL:OnDraw()
+	function META:OnDraw()
 		if self.NoDraw or self.style_nodraw then return end
 
 		surface.SetAlphaMultiplier(self.DrawAlpha)
@@ -2344,18 +2344,18 @@ do -- events
 		end
 	end
 --[[
-	function PANEL:OnUnParent()
+	function META:OnUnParent()
 		gui.unrolled_draw = nil
 	end
 
-	function PANEL:OnChildAdd(child)
+	function META:OnChildAdd(child)
 		gui.unrolled_draw = nil
 --		self:Layout()
 		--child:Layout()
 	end
 	]]
 
-	function PANEL:OnRemove()
+	function META:OnRemove()
 		gui.panels[self] = nil
 
 		for _, v in pairs(self:GetChildrenList()) do
@@ -2367,44 +2367,44 @@ do -- events
 		self:OnUnfocus()
 	end
 
-	function PANEL:OnSystemFileDrop(path) end
+	function META:OnSystemFileDrop(path) end
 
-	function PANEL:OnPreDraw() end
-	function PANEL:OnPostDraw() end
+	function META:OnPreDraw() end
+	function META:OnPostDraw() end
 
-	function PANEL:OnPostMatrixBuild() end
-	function PANEL:OnPreMatrixBuild() end
+	function META:OnPostMatrixBuild() end
+	function META:OnPreMatrixBuild() end
 
-	function PANEL:OnFocus() end
-	function PANEL:OnUnfocus() end
+	function META:OnFocus() end
+	function META:OnUnfocus() end
 
-	function PANEL:OnMouseEnter(x, y) end
-	function PANEL:OnMouseExit(x, y) end
-	function PANEL:OnMouseMove(x, y) end
-	function PANEL:OnMouseInput(button, press) end
+	function META:OnMouseEnter(x, y) end
+	function META:OnMouseExit(x, y) end
+	function META:OnMouseMove(x, y) end
+	function META:OnMouseInput(button, press) end
 
-	function PANEL:OnPreKeyInput(button, press) end
-	function PANEL:OnKeyInput(button, press) end
-	function PANEL:OnPostKeyInput(button, press) end
-	function PANEL:OnCharInput(char) end
-	function PANEL:OnRightClick() end
-	function PANEL:OnGlobalMouseInput(button, press) end
+	function META:OnPreKeyInput(button, press) end
+	function META:OnKeyInput(button, press) end
+	function META:OnPostKeyInput(button, press) end
+	function META:OnCharInput(char) end
+	function META:OnRightClick() end
+	function META:OnGlobalMouseInput(button, press) end
 
-	function PANEL:OnCharTyped(char) end
-	function PANEL:OnKeyPressed(key, pressed) end
-	function PANEL:OnUpdate() end
-	function PANEL:OnStyleChanged(skin) end
+	function META:OnCharTyped(char) end
+	function META:OnKeyPressed(key, pressed) end
+	function META:OnUpdate() end
+	function META:OnStyleChanged(skin) end
 
-	function PANEL:OnPositionChanged(pos) end
-	function PANEL:OnScroll(fraction) end
-	function PANEL:OnLayout() end
-	function PANEL:OnShow() end
-	function PANEL:OnHide() end
-	function PANEL:OnMouseHoverTrigger(x, y) end
-	function PANEL:Initialize() end
+	function META:OnPositionChanged(pos) end
+	function META:OnScroll(fraction) end
+	function META:OnLayout() end
+	function META:OnShow() end
+	function META:OnHide() end
+	function META:OnMouseHoverTrigger(x, y) end
+	function META:Initialize() end
 end
 
-gui.RegisterPanel(PANEL)
+gui.RegisterPanel(META)
 
 if RELOAD then
 	for _,v in pairs(gui.panels) do

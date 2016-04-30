@@ -1,24 +1,24 @@
-local COMPONENT = prototype.CreateTemplate()
+local META = prototype.CreateTemplate()
 
 local spawned_networked = {}
 local queued_packets = {}
 
 
-COMPONENT.Name = "network"
-COMPONENT.Events = {"Update"}
+META.Name = "network"
+META.Events = {"Update"}
 
 -- these are either part the base object or the entity itself
-COMPONENT.Network = {
+META.Network = {
 	Name = {"string", 1/10, "reliable"},
 	Parent = {"entity", 1/5, "reliable"},
 --	HideFromEditor = {"boolean", 1/5, "reliable"},
 	GUID = {"string", 1/5, "reliable"},
 }
 
-COMPONENT:GetSet("NetworkId", -1)
-COMPONENT:GetSet("NetworkChannel", 0)
+META:GetSet("NetworkId", -1)
+META:GetSet("NetworkChannel", 0)
 
-function COMPONENT:Initialize()
+function META:Initialize()
 	self.server_synced_vars = {}
 	self.server_synced_vars_stringtable = {}
 	self.client_synced_vars = {}
@@ -29,7 +29,7 @@ function COMPONENT:Initialize()
 end
 
 do
-	function COMPONENT:ServerSyncVar(component_name, key, type, rate, flags, skip_default, smooth)
+	function META:ServerSyncVar(component_name, key, type, rate, flags, skip_default, smooth)
 		self:ServerDesyncVar(component_name, key)
 
 		local info = {
@@ -74,7 +74,7 @@ do
 		end
 	end
 
-	function COMPONENT:ServerDesyncVar(component_name, key)
+	function META:ServerDesyncVar(component_name, key)
 		if not key then
 			key = component_name
 			component_name = nil
@@ -116,7 +116,7 @@ do
 		end
 	end
 
-	function COMPONENT:ServerFilterSync(filter, component_name, key)
+	function META:ServerFilterSync(filter, component_name, key)
 		if not key then
 			key = component_name
 			component_name = nil
@@ -137,7 +137,7 @@ do
 		end
 	end
 
-	function COMPONENT:SetupSyncVariables()
+	function META:SetupSyncVariables()
 		local done = {}
 
 		for _, component in ipairs(self:GetEntityComponents()) do
@@ -155,7 +155,7 @@ do
 	end
 end
 
-function COMPONENT:OnUpdate(dt)
+function META:OnUpdate(dt)
 	if not network.IsConnected() then return end
 
 	self:UpdateVars()
@@ -239,7 +239,7 @@ do -- synchronization server > client
 
 	packet.AddListener("ecs_network", handle_packet)
 
-	function COMPONENT:UpdateVariableFromSyncInfo(info, client, force_update)
+	function META:UpdateVariableFromSyncInfo(info, client, force_update)
 		local var
 
 		if info.component == "unknown" then
@@ -279,7 +279,7 @@ do -- synchronization server > client
 		self.last_update[info.key2] = system.GetElapsedTime() + info.rate
 	end
 
-	function COMPONENT:UpdateVars(client, force_update)
+	function META:UpdateVars(client, force_update)
 
 		for _, info in ipairs(SERVER and self.server_synced_vars or CLIENT and self.client_synced_vars) do
 			if force_update or not self.last_update[info.key2] or self.last_update[info.key2] < system.GetElapsedTime() then
@@ -308,9 +308,9 @@ do -- synchronization server > client
 	end
 
 	if SERVER then
-		table.insert(COMPONENT.Events, "ClientEntered")
+		table.insert(META.Events, "ClientEntered")
 
-		function COMPONENT:OnClientEntered(client)
+		function META:OnClientEntered(client)
 			self:SpawnEntityOnClient(client, self.NetworkId, self:GetEntity().config)
 
 			-- force send all packets once to this new client as reliable
@@ -323,7 +323,7 @@ do -- synchronization server > client
 end
 
 if SERVER then
-	function COMPONENT:SpawnEntityOnClient(client, id, config)
+	function META:SpawnEntityOnClient(client, id, config)
 		local buffer = packet.CreateBuffer()
 
 		buffer:WriteNetString("entity_networked_spawn")
@@ -335,7 +335,7 @@ if SERVER then
 		packet.Send("ecs_network", buffer, client, "reliable")
 	end
 
-	function COMPONENT:RemoveEntityOnClient(client, id)
+	function META:RemoveEntityOnClient(client, id)
 		local buffer = packet.CreateBuffer()
 
 		buffer:WriteNetString("entity_networked_remove")
@@ -346,7 +346,7 @@ if SERVER then
 
 	local id = 1
 
-	function COMPONENT:OnAdd(ent)
+	function META:OnAdd(ent)
 		self.NetworkId = id
 
 		spawned_networked[self.NetworkId] = self
@@ -356,13 +356,13 @@ if SERVER then
 		id = id + 1
 	end
 
-	function COMPONENT:OnRemove()
+	function META:OnRemove()
 		spawned_networked[self.NetworkId] = nil
 
 		self:RemoveEntityOnClient(nil, self.NetworkId)
 	end
 
-	function COMPONENT:OnEntityAddComponent()
+	function META:OnEntityAddComponent()
 		self:SetupSyncVariables()
 	end
 end
@@ -422,27 +422,27 @@ do -- call on client
 	end
 
 	if SERVER then
-		COMPONENT.call_on_client_persist = {}
+		META.call_on_client_persist = {}
 
-		function COMPONENT:SendCallOnClientToClient()
+		function META:SendCallOnClientToClient()
 			for _, args in ipairs(self.call_on_client_persist) do
 				self:CallOnClient(client, unpack(args))
 			end
 		end
 
-		function COMPONENT:CallOnClient(filter, component, name, ...)
+		function META:CallOnClient(filter, component, name, ...)
 			message.Send("ecs_network_call_on_client", filter, self.NetworkId, component, name, ...)
 		end
 
-		function COMPONENT:CallOnClients(component, name, ...)
+		function META:CallOnClients(component, name, ...)
 			message.Broadcast("ecs_network_call_on_client", self.NetworkId, component, name, ...)
 		end
 
-		function COMPONENT:CallOnClientsPersist(component, name, ...)
+		function META:CallOnClientsPersist(component, name, ...)
 			table.insert(self.call_on_client_persist, {component, name, ...})
 			return self:CallOnClients(component, name, ...)
 		end
 	end
 end
 
-COMPONENT:RegisterComponent()
+META:RegisterComponent()
