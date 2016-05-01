@@ -6,6 +6,7 @@ editor.usewrap = false
 editor.fontsize = 9
 editor.fontname = "Oxygen Mono"
 editor.menuicon = true
+bordersize = 4
 
 --staticanalyzer.infervalue = true
 --filetree.mousemove = false
