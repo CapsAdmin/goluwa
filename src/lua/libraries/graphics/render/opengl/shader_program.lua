@@ -78,8 +78,9 @@ function META:UploadVec3(key, val)
 end
 
 if SRGB then
+	local linear2gamma = math.linear2gamma
 	function META:UploadColor(key, val)
-		self.gl_program:Uniform4f(key, math.linear2gamma(val.r), math.linear2gamma(val.g), math.linear2gamma(val.b), val.a)
+		self.gl_program:Uniform4f(key, linear2gamma(val.r), linear2gamma(val.g), linear2gamma(val.b), val.a)
 	end
 else
 	function META:UploadColor(key, val)

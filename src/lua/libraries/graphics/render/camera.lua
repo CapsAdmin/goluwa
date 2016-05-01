@@ -25,10 +25,6 @@ do
 	META.matrix_stack_i = 1
 
 	function META:PushWorldEx(pos, ang, scale, dont_multiply)
-		if not self.matrix_stack[self.matrix_stack_i] then
-			self.matrix_stack[self.matrix_stack_i] = self.World or Matrix44()
-		end
-
 		self.matrix_stack[self.matrix_stack_i] = self.World
 
 		if dont_multiply then
@@ -60,11 +56,7 @@ do
 	end
 
 	function META:PushWorld(mat, dont_multiply)
-		if not self.matrix_stack[self.matrix_stack_i] then
-			self.matrix_stack[self.matrix_stack_i] = Matrix44()
-		else
-			self.matrix_stack[self.matrix_stack_i] = self.World
-		end
+		self.matrix_stack[self.matrix_stack_i] = self.World
 
 		if dont_multiply then
 			if mat then
@@ -90,9 +82,9 @@ do
 	function META:PopWorld()
 		self.matrix_stack_i = self.matrix_stack_i - 1
 
-		if self.matrix_stack_i < 1 then
-			error("stack underflow", 2)
-		end
+		--if self.matrix_stack_i < 1 then
+		--	error("stack underflow", 2)
+		--end
 
 		self.World = self.matrix_stack[self.matrix_stack_i]
 

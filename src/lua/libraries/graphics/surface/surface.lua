@@ -1,6 +1,7 @@
 local surface = _G.surface or {}
 
 local gl = desire("libopengl")
+local render = render
 
 local SHADER = {
 	name = "mesh_2d",
@@ -88,8 +89,9 @@ end
 include("fonts.lua", surface)
 
 do -- render world matrix helpers
+	local ceil =math.ceil
 	function surface.Translate(x, y, z)
-		render.camera_2d:TranslateWorld(math.ceil(x), math.ceil(y), z or 0)
+		render.camera_2d:TranslateWorld(ceil(x), ceil(y), z or 0)
 	end
 
 	function surface.Translatef(x, y, z)
@@ -113,7 +115,7 @@ do -- render world matrix helpers
 	end
 
 	function surface.PushMatrix(x,y, w,h, a, dont_multiply)
-		render.camera_2d:PushWorldEx(nil, nil, nil, dont_multiply)
+		render.camera_2d:PushWorld(nil, dont_multiply)
 
 		if x and y then surface.Translate(x, y) end
 		if w and h then surface.Scale(w, h) end
