@@ -110,12 +110,6 @@ local function main()
 	event.Call("Initialize")
 
 	local last_time = 0
-
-	local function update_(dt)
-		event.UpdateTimers(dt)
-		event.Call("Update", dt)
-	end
-
 	local i = 0ULL
 
 	local function update()
@@ -128,7 +122,7 @@ local function main()
 		system.SetElapsedTime(system.GetElapsedTime() + dt)
 		i = i + 1
 
-		local ok, err = pcall(update_, dt)
+		local ok, err = pcall(event.Call, "Update", dt)
 
 		if not ok then
 			if system.MessageBox then
@@ -143,7 +137,6 @@ local function main()
 		last_time = time
 
 		system.UpdateTitlebarFPS(dt)
-
 
 		local rate = rate_cvar:Get()
 

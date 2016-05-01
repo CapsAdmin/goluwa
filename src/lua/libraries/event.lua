@@ -340,6 +340,8 @@ do -- timers
 			table.clear(remove_these)
 		end
 	end
+
+	event.AddListener("Update", "timers", event.UpdateTimers)
 end
 
 return event
