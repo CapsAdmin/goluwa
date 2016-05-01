@@ -81,8 +81,6 @@ end
 function utf8.sub(str, i, j)
 	j = j or -1
 
-	local pos = 1
-	local bytes = #str
 	local length = 0
 
 	-- only set l if i or j is negative
@@ -95,10 +93,12 @@ function utf8.sub(str, i, j)
 		return ""
 	end
 
-	-- byte offsets to pass to string.sub
-	local start_byte, end_byte = 1, bytes
+	local pos = 1
+	local bytes = #str
+	local start_byte = 1
+	local end_byte = bytes
 
-	while pos <= bytes do
+	for _ = 1, bytes do
 		length = length + 1
 
 		if length == start_char then
@@ -145,15 +145,21 @@ function utf8.lower(str)
 end
 
 function utf8.length(str)
-	local _, length = str:gsub("[^\128-\191]", "")
-	return length
+	local len = 0
+	for i = 1, #str do
+		local b = str:byte(i)
+		if b < 128 or b > 191 then
+			len = len + 1
+		end
+	end
+	return len
 end
 
 function utf8.totable(str)
 	local tbl = {}
 
-	for uchar in str:gmatch("([%z\1-\127\194-\244][\128-\191]*)") do
-		tbl[#tbl + 1] = uchar
+	for i = 1, utf8.length(str) do
+		tbl[i] = utf8.sub(str, i, i)
 	end
 
 	return tbl
