@@ -182,7 +182,7 @@ function surface.SetTextPosition(x, y)
 end
 
 do
-	local cache = {}
+	local cache = utility.CreateWeakTable()
 
 	function surface.GetTextSize(str)
 		local font = surface.current_font
@@ -201,8 +201,8 @@ do
 
 		local x, y = font:GetTextSize(str)
 
-		cache[font] = cache[font] or {}
-		cache[font][str] = cache[font][str] or {}
+		cache[font] = cache[font] or utility.CreateWeakTable()
+		cache[font][str] = cache[font][str] or utility.CreateWeakTable()
 		cache[font][str][1] = x
 		cache[font][str][2] = y
 

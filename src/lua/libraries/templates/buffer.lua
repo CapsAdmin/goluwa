@@ -503,7 +503,7 @@ do -- structures
 		end
 	end
 
-	local cache = {}
+	local cache = utility.CreateWeakTable()
 
 	function META:ReadStructure(structure, ordered)
 		if cache[structure] then

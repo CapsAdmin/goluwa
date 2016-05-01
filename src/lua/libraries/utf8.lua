@@ -2,10 +2,7 @@ local utf8 = _G.utf8 or {}
 
 local math_floor = math.floor
 
-local cache = {}
-
 function utf8.byte(char, offset)
-	if cache[char] and cache[char][offset] then return cache[char][offset] end
 	if char == "" then return -1 end
 
 	offset = offset or 1
@@ -32,9 +29,6 @@ function utf8.byte(char, offset)
 			byte = -1
 		end
 	end
-
-	cache[char] = cache[char] or {}
-	cache[char][offset] = byte
 
 	return byte
 end
