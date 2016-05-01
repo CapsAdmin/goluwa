@@ -106,7 +106,7 @@ function META:Draw(max_w)
 					start_remove
 				then
 					if chunk.type == "start_fade" then
-						chunk.alpha = math.min(math.max(chunk.val - os.clock(), 0), 1) ^ 5
+						chunk.alpha = math.min(math.max(chunk.val - system.GetElapsedTime(), 0), 1) ^ 5
 						surface.SetAlphaMultiplier(chunk.alpha)
 
 						if chunk.alpha <= 0 then

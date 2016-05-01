@@ -100,7 +100,7 @@ function META:AddTable(tbl, tags)
 end
 
 function META:BeginLifeTime(time)
-	table.insert(self.chunks, {type = "start_fade", val = os.clock() + time})
+	table.insert(self.chunks, {type = "start_fade", val = system.GetElapsedTime() + time})
 end
 
 function META:EndLifeTime()

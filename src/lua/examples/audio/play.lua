@@ -24,5 +24,5 @@ event.AddListener("Update", "hmm", function()
 
 	voice:SetPosition(math.sin(time), math.cos(time),0)
 	music:SetPitch(1 + math.sin(time*10)/30)
-	reverb:SetParam("gain", math.abs(math.sin(os.clock()/10)))
+	reverb:SetParam("gain", math.abs(math.sin(system.GetElapsedTime()/10)))
 end)

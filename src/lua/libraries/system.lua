@@ -35,7 +35,7 @@ do -- console title
 	local lasttbl = {}
 
 	function system.SetConsoleTitle(title, id)
-		local time = os.clock()
+		local time = system.GetElapsedTime()
 
 		if not lasttbl[id] or lasttbl[id] < time then
 			if id then
@@ -54,7 +54,7 @@ do -- console title
 				end
 			end
 			last_title = str
-			lasttbl[id] = os.clock() + 0.05
+			lasttbl[id] = system.GetElapsedTime() + 0.05
 		end
 	end
 
@@ -98,13 +98,13 @@ do
 		if wait(0.25) then
 			system.SetConsoleTitle(("FPS: %i"):format(avg_fps), "fps")
 
-			if utility and utility.FormatFileSize then
-				system.SetConsoleTitle(("GARBAGE: %s"):format(utility.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
-			end
+			system.SetConsoleTitle(("GARBAGE: %s"):format(utility.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
 
 			if GRAPHICS then
 				window.SetTitle(system.GetConsoleTitle())
 			end
+
+			collectgarbage("step")
 		end
 	end
 end
@@ -742,9 +742,9 @@ do
 				info = debug.getinfo(2)
 			end
 
-			if last_openfunc < os.clock() then
+			if last_openfunc < system.GetElapsedTime() then
 				debug.openfunction(info.func, info.currentline)
-				last_openfunc = os.clock() + 3
+				last_openfunc = system.GetElapsedTime() + 3
 			else
 				--logf("debug.openfunction(%q)\n", source)
 			end

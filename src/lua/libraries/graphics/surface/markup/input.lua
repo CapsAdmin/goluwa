@@ -126,7 +126,7 @@ function META:OnMouseInput(button, press)
 
 
 		if press then
-			if self.last_click and self.last_click > os.clock() then
+			if self.last_click and self.last_click > system.GetElapsedTime() then
 				self.times_clicked = (self.times_clicked or 1) + 1
 			else
 				self.times_clicked = 1
@@ -144,7 +144,7 @@ function META:OnMouseInput(button, press)
 				self:SelectCurrentLine()
 			end
 
-			self.last_click = os.clock() + 0.2
+			self.last_click = system.GetElapsedTime() + 0.2
 			if self.times_clicked > 1 then return end
 		end
 

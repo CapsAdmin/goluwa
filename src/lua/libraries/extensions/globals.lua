@@ -280,7 +280,7 @@ do -- nospam
 
 	function logf_nospam(str, ...)
 		local str = string.format(str, ...)
-		local t = os.clock()
+		local t = system.GetElapsedTime()
 
 		if not last[str] or last[str] < t then
 			logn(str)

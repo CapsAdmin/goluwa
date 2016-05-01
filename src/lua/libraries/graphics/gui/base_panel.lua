@@ -312,8 +312,8 @@ do -- drawing
 			--render.PopViewport()
 		end
 
-		if self.debug_flash and self.debug_flash > os.clock() then
-			surface.SetColor(1,0,0,(os.clock()*4)%1 > 0.5 and 0.5 or 0)
+		if self.debug_flash and self.debug_flash > system.GetElapsedTime() then
+			surface.SetColor(1,0,0,(system.GetElapsedTime()*4)%1 > 0.5 and 0.5 or 0)
 			surface.DrawRect(0, 0, self.Size.x, self.Size.y)
 		end
 
@@ -362,7 +362,7 @@ do -- drawing
 	end
 
 	function META:DebugFlash()
-		self.debug_flash = os.clock() + 3
+		self.debug_flash = system.GetElapsedTime() + 3
 	end
 end
 
@@ -1426,10 +1426,10 @@ do -- mouse
 				self:OnMouseEnter(x, y)
 				self.mouse_just_entered = true
 				self.mouse_hover_triggered = false
-				self.MouseHoverTime = os.clock()
+				self.MouseHoverTime = system.GetElapsedTime()
 			end
 
-			if self.MouseHoverTime + self.MouseHoverTimeTrigger < os.clock() then
+			if self.MouseHoverTime + self.MouseHoverTimeTrigger < system.GetElapsedTime() then
 				if not self.mouse_hover_triggered then
 					self:OnMouseHoverTrigger(true, x, y)
 					self.mouse_hover_triggered = true

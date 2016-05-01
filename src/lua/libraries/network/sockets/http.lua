@@ -242,7 +242,7 @@ function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 	if cb:check(url, callback) then return true end
 
 	local last_downloaded = 0
-	local last_report = os.clock() + 4
+	local last_report = system.GetElapsedTime() + 4
 
 	cb:start(url, callback)
 
@@ -272,12 +272,12 @@ function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 			if not header["content-length"] then return end
 
 			if sockets.debug_download then
-				if last_report < os.clock() then
+				if last_report < system.GetElapsedTime() then
 					logn(url, ":")
 					logn("\tprogress: ", math.round((current_length / header["content-length"]) * 100, 3), "%")
 					logn("\tspeed: ", utility.FormatFileSize(current_length - last_downloaded))
 					last_downloaded = current_length
-					last_report = os.clock() + 4
+					last_report = system.GetElapsedTime() + 4
 				end
 			end
 		end,

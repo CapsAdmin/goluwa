@@ -126,15 +126,15 @@ event.AddListener("Move", "spooky", function(client, cmd)
 				physics:SetPosition(cmd.net_position)
 				physics:SetAngles(cmd.angles)
 				physics:SetVelocity(cmd.net_velocity)
-				physics.sync_now = os.clock() + 2
+				physics.sync_now = system.GetElapsedTime() + 2
 				logn("prediction error: physics position differs too much ", distance)
 			end
 
 			local distance = cmd.net_position:Distance(pos)
 
-			if physics.sync_now < os.clock() and distance > 0.1 then
+			if physics.sync_now < system.GetElapsedTime() and distance > 0.1 then
 				physics:SetPosition(cmd.net_position)
-				physics.sync_now = os.clock() + 2
+				physics.sync_now = system.GetElapsedTime() + 2
 				logn("prediction error: (timer check) physics position differs too much ", distance)
 			end
 		end

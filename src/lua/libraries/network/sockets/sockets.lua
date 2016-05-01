@@ -434,7 +434,7 @@ do -- tcp socket meta
 					return
 				end
 
-				local time = os.clock()
+				local time = system.GetElapsedTime()
 
 				if not self.TimeoutStart then
 					self.TimeoutStart = time + self.TimeoutLength
@@ -453,7 +453,7 @@ do -- tcp socket meta
 			function CLIENT:GetTimeoutDuration()
 				if not self.TimeoutStart then return 0 end
 
-				local t = os.clock()
+				local t = system.GetElapsedTime()
 				return t - self.TimeoutStart
 			end
 
