@@ -23,9 +23,13 @@ function render.DecodeTexture(data, path_hint)
 		local ok, buffer, w, h, info = pcall(decoder.callback, data, path_hint)
 
 		if ok then
-			return buffer, w, h, info or {}
-		elseif not buffer:find("unknown format", nil, true) then
-			table.insert(errors, "\t" .. buffer)
+			if buffer then
+				return buffer, w, h, info or {}
+			elseif not w:lower():find("unknown format", nil, true) then
+				table.insert(errors, "\t" .. buffer)
+			end
+		else
+			table.insert(errors, "\tlua error: " .. buffer)
 		end
 	end
 
