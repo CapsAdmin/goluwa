@@ -6,15 +6,15 @@ CONTEXT.Name = "base"
 
 prototype.GetSet(CONTEXT, "Mode", "read")
 
-function CONTEXT:PCall(name, ...)
-	local vars = {pcall(self[name], self, ...)}
-	if vfs.debug and not vars[1] then
-		vfs.DebugPrint("%s: error calling %s: %s", self.Name or "", name, vars[2])
+function CONTEXT:PCall(name, a,b,c,d)
+	local ok,a,b,c,d = pcall(self[name], self, a,b,c,d)
+	if vfs.debug and not ok then
+		vfs.DebugPrint("%s: error calling %s: %s", self.Name or "", name, a)
 		return false
 	end
 
-	if vars[1] then
-		return select(2, unpack(vars))
+	if ok then
+		return a,b,d,c
 	end
 
 	return false
