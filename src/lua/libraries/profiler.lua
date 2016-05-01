@@ -3,10 +3,6 @@ local profiler = _G.profiler or {}
 profiler.data = profiler.data or {sections = {}, statistical = {}, trace_aborts = {}}
 profiler.raw_data = profiler.raw_data or {sections = {}, statistical = {}, trace_aborts = {}}
 
-local jit_profiler = desire("jit.profile")
-local jit_vmdef = require("jit.vmdef")
-local jit_util = require("jit.util")
-
 local blacklist = {
 	["leaving loop in root trace"] = true,
 	["error thrown or hook called during recording"] = true,
@@ -14,7 +10,7 @@ local blacklist = {
 
 local function trace_dump_callback(what, trace_id, func, pc, trace_error_id, trace_error_arg)
 	if what == "abort" then
-		local info = jit_util.funcinfo(func, pc)
+		local info = jit.util.funcinfo(func, pc)
 		table.insert(profiler.raw_data.trace_aborts, {info, trace_error_id, trace_error_arg})
 	end
 end
@@ -29,11 +25,11 @@ local function parse_raw_trace_abort_data()
 		local trace_error_id = args[2]
 		local trace_error_arg = args[3]
 
-		local reason = jit_vmdef.traceerr[trace_error_id]
+		local reason = jit.vmdef.traceerr[trace_error_id]
 
 		if not blacklist[reason] then
 			if type(trace_error_arg) == "number" and reason:find("bytecode") then
-				trace_error_arg = string.sub(jit_vmdef.bcnames, trace_error_arg*6+1, trace_error_arg*6+6)
+				trace_error_arg = string.sub(jit.vmdef.bcnames, trace_error_arg*6+1, trace_error_arg*6+6)
 				reason = reason:gsub("(%%d)", "%%s")
 			end
 
@@ -64,7 +60,7 @@ function profiler.EnableTraceAbortLogging(b)
 end
 
 local function statistical_callback(thread, samples, vmstate)
-	local str = jit_profiler.dumpstack(thread, "pl\n", 10)
+	local str = jit.profiler.dumpstack(thread, "pl\n", 10)
 	table.insert(profiler.raw_data.statistical, {str, samples})
 end
 
@@ -81,7 +77,7 @@ local function parse_raw_statistical_data()
 
 			if not path and not line_number then
 		line = line:gsub("%[builtin#(%d+)%]", function(x)
-			return jit_vmdef.ffnames[tonumber(x)]
+			return jit.vmdef.ffnames[tonumber(x)]
 		end)
 
 				table.insert(children, {name = line or -1, external_function = true})
@@ -126,7 +122,7 @@ end
 function profiler.EnableStatisticalProfiling(b)
 	profiler.busy = b
 	if b then
-		jit_profiler.start("l", function(...)
+		jit.profiler.start("l", function(...)
 			local ok, err = xpcall(type(b) == "function" and b or statistical_callback, system.OnError, ...)
 			if not ok then
 				logn(err)
@@ -134,7 +130,7 @@ function profiler.EnableStatisticalProfiling(b)
 			end
 		end)
 	else
-		jit_profiler.stop()
+		jit.profiler.stop()
 	end
 end
 
@@ -477,12 +473,12 @@ function profiler.EnableRealTimeTraceAbortLogging(b)
 	if b then
 		jit.attach(function(what, trace_id, func, pc, trace_error_id, trace_error_arg)
 			if what == "abort" then
-				local info = jit_util.funcinfo(func, pc)
-				local reason = jit_vmdef.traceerr[trace_error_id]
+				local info = jit.util.funcinfo(func, pc)
+				local reason = jit.vmdef.traceerr[trace_error_id]
 
 				if not blacklist[reason] then
 					if type(trace_error_arg) == "number" and reason:find("bytecode") then
-						trace_error_arg = string.sub(jit_vmdef.bcnames, trace_error_arg*6+1, trace_error_arg*6+6)
+						trace_error_arg = string.sub(jit.vmdef.bcnames, trace_error_arg*6+1, trace_error_arg*6+6)
 						reason = reason:gsub("(%%d)", "%%s")
 					end
 

@@ -513,7 +513,6 @@ end
 
 do -- jit debug
 	function system.DebugJIT(b)
-		jit.v = require("jit/v.lua")
 		if b then
 			jit.v.on(R"%DATA%/logs/jit_verbose_output.txt")
 		else
@@ -563,7 +562,7 @@ do -- jit options
 				table.insert(options, k .. "=" .. v)
 			end
 
-			require("jit.opt").start(unpack(options))
+			jit.opt.start(unpack(options))
 			jit.flush()
 
 			last[option] = num

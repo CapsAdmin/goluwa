@@ -170,6 +170,7 @@ _G.event = false
 local temp_include = function(path) return dofile(e.SRC_FOLDER .. path) end
 
 -- standard library extensions
+temp_include("lua/libraries/extensions/jit.lua")
 temp_include("lua/libraries/extensions/globals.lua")
 temp_include("lua/libraries/extensions/debug.lua")
 temp_include("lua/libraries/extensions/string.lua")
