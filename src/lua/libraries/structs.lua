@@ -316,6 +316,8 @@ function structs.AddOperator(META, operator, ...)
 	elseif structs.OperatorTranslate[operator] then
 		local lua = [==[
 		local META, structs, ffi = ...
+		local ffi_is_type = ffi.istype
+		local type = type
 		META[structs.OperatorTranslate["OPERATOR"]] = function(a, b)
 			if type(b) == "number" then
 				return CTOR(
@@ -325,7 +327,7 @@ function structs.AddOperator(META, operator, ...)
 				return CTOR(
 					a OPERATOR b.KEY
 				)
-			elseif a and ffi.istype(a, b) then
+			elseif a and ffi_is_type(a, b) then
 				return CTOR(
 					a.KEY OPERATOR b.KEY
 				)
