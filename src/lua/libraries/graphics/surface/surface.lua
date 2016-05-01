@@ -578,10 +578,10 @@ do
 		gl.StencilFunc("GL_EQUAL", 1, 0xFF) -- Pass test if stencil value is 1
 		gl.StencilMask(0x00) -- Don't write anything to stencil buffer
 
-		x = X
-		y = Y
-		w = W
-		h = H
+		X = x
+		Y = y
+		W = w
+		H = h
 	end
 
 	function surface.GetClipRect()
