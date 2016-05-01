@@ -313,6 +313,39 @@ function META:GetTextSize(str)
 	return X, Y
 end
 
+function META:WrapString(str, max_width, max_word_length)
+	max_word_length = max_word_length or 15
+	local tbl = {}
+	local tbl_i = 1
+	local start_pos = 1
+	local end_pos = 1
+
+	local str_tbl = utf8.totable(str)
+
+	for i = 1, #str_tbl do
+		end_pos = end_pos + 1
+		if self:GetTextSize(str:usub(start_pos, end_pos)) > max_width then
+			local n = str_tbl[end_pos]
+
+			for i = 1, max_word_length do
+				if n == " " or n == "," or n == "." or n == "\n" then
+					break
+				else
+					end_pos = end_pos - 1
+					n = str_tbl[end_pos]
+				end
+			end
+
+			tbl[tbl_i] = str:usub(start_pos, end_pos):trim()
+			tbl_i = tbl_i + 1
+			start_pos = end_pos + 1
+		end
+	end
+	tbl[tbl_i] = str:usub(start_pos, end_pos)
+	tbl_i = tbl_i + 1
+	return table.concat(tbl,"\n")
+end
+
 function META:OnLoad()
 
 end
