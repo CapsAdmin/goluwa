@@ -103,8 +103,6 @@ do
 			if GRAPHICS then
 				window.SetTitle(system.GetConsoleTitle())
 			end
-
-			collectgarbage("step")
 		end
 	end
 end
