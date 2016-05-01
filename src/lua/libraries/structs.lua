@@ -136,11 +136,11 @@ function structs.AddOperator(META, operator, ...)
 	if operator == "tostring" then
 		local lua = [==[
 		local META, structs = ...
+		local string_format = string.format
 		META["__tostring"] = function(a)
 				return
-				string.format(
-					"%s(LINE)",
-					META.ClassName,
+				string_format(
+					"CLASSNAME(LINE)",
 					a.KEY
 				)
 			end
@@ -148,12 +148,13 @@ function structs.AddOperator(META, operator, ...)
 
 		local str = ""
 		for i in pairs(META.Args) do
-			str = str .. "%%s"
+			str = str .. "%%f"
 			if i ~= #META.Args then
 				str = str .. ", "
 			end
 		end
 
+		lua = lua:gsub("CLASSNAME", META.ClassName)
 		lua = lua:gsub("LINE", str)
 
 		lua = parse_args(META, lua, ", ")
@@ -174,13 +175,12 @@ function structs.AddOperator(META, operator, ...)
 	elseif operator == "==" then
 		local lua = [==[
 		local META, structs, ffi = ...
+		local type = type
+		local ffi_is_type = ffi.istype
 		META["__eq"] = function(a, b)
 				return
-				--a and
-				--getmetatable(a) == "ffi" and
 				type(a) == "cdata" and
-				ffi.istype(a, b) and
-
+				ffi_is_type(a, b) and
 				a.KEY == b.KEY
 			end
 		]==]
@@ -276,9 +276,9 @@ function structs.AddOperator(META, operator, ...)
 		local self_arg = args[4]
 
 		local lua = [==[
-		local META, structs = ...
+		local META, structs, func = ...
 		META["ACCESSOR_NAME"] = function(a, ]==] .. (self_arg and "b, c" or "...") .. [==[)
-			a.KEY = math.FUNC_NAME(a.KEY, ]==] .. (self_arg and "b.KEY, c.KEY" or "...") .. [==[)
+			a.KEY = func(a.KEY, ]==] .. (self_arg and "b.KEY, c.KEY" or "...") .. [==[)
 
 			return a
 		end
@@ -287,17 +287,16 @@ function structs.AddOperator(META, operator, ...)
 		lua = parse_args(META, lua, "")
 
 		lua = lua:gsub("CTOR", "structs."..META.ClassName)
-		lua = lua:gsub("FUNC_NAME", func_name)
 		lua = lua:gsub("ACCESSOR_NAME", accessor_name)
 
-		assert(loadstring(lua, META.ClassName .. " operator " .. func_name))(META, structs)
+		assert(loadstring(lua, META.ClassName .. " operator math." .. func_name))(META, structs, math[func_name])
 
 		structs.AddGetFunc(META, accessor_name, accessor_name_get)
 	elseif operator == "random" then
 		local lua = [==[
-		local META, structs = ...
+		local META, structs, randomf = ...
 		META["Random"] = function(a, ...)
-				a.KEY = math.randomf(...)
+				a.KEY = randomf(...)
 
 				return a
 			end
@@ -307,7 +306,7 @@ function structs.AddOperator(META, operator, ...)
 
 		lua = lua:gsub("CTOR", "structs."..META.ClassName)
 
-		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
+		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs, math.randomf)
 
 		structs.AddGetFunc(META, "Random")
 
@@ -358,16 +357,16 @@ function structs.AddOperator(META, operator, ...)
 		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
 	elseif operator == "isvalid" then
 		local lua = [==[
-		local META, structs = ...
+		local META, structs, isvalid = ...
 		META["IsValid"] = function(a)
 				return
-				math.isvalid(a.KEY)
+				isvalid(a.KEY)
 			end
 		]==]
 
 		lua = parse_args(META, lua, " and ")
 
-		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
+		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs, math.isvalid)
 	else
 		logn("unhandled operator " .. operator)
 	end
