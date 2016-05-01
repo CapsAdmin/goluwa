@@ -1,3 +1,19 @@
+do
+	local sigh = {}
+
+	commands.Add("luacheck", function(what)
+		table.clear(sigh)
+		for path in pairs(vfs.GetLoadedLuaFiles()) do
+			if path:find(what) then
+				table.insert(sigh, path)
+			end
+		end
+		_G.arg = sigh
+		include("lua/modules/luacheck/main.lua")
+		_G.arg = nil
+	end)
+end
+
 commands.Add("dump_gbuffer", function(_, format, depth_format)
 	ffi.cdef[[
 		void *fopen(const char *filename, const char *mode);
