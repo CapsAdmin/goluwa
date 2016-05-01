@@ -384,15 +384,16 @@ do -- font
 		surface.PushMatrix(x, y, sx, sy, r)
 			if align then
 				local max_width = 0
+				local t = surface.WrapString(text, limit)
 
-				for i, line in ipairs(surface.WrapString(text, limit+15)) do
+				for i, line in ipairs(t) do
 					local w, h = surface.GetTextSize(line)
 					if w > max_width then
 						max_width = w
 					end
 				end
 
-				for i, line in pairs(surface.WrapString(text, limit+15)) do
+				for i, line in ipairs(t) do
 					local w, h = surface.GetTextSize(line)
 
 					local align_x = 0
