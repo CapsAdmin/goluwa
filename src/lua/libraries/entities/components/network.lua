@@ -1,8 +1,13 @@
 local META = prototype.CreateTemplate()
 
+function META:PreCreate()
+	if not network.IsConnected() then
+		return false
+	end
+end
+
 local spawned_networked = {}
 local queued_packets = {}
-
 
 META.Name = "network"
 META.Events = {"Update"}

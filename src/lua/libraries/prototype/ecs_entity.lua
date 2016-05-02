@@ -111,11 +111,15 @@ do -- serializing
 		for name, vars in pairs(data.components) do
 			local component = self:GetComponent(name)
 
-			if not component:IsValid() then
-				component = self:AddComponent(name)
-			end
+			if component then
+				if not component:IsValid() then
+					component = self:AddComponent(name)
+				end
 
-			component:SetStorableTable(vars)
+				if component then
+					component:SetStorableTable(vars)
+				end
+			end
 		end
 
 		for _, data in ipairs(data.children) do

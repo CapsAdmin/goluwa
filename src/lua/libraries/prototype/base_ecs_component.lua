@@ -57,6 +57,11 @@ function prototype.RegisterComponent(meta)
 end
 
 function prototype.CreateComponent(name)
+	local meta = prototype.GetRegistered("component", name)
+	if meta and meta.PreCreate and meta:PreCreate() == false then
+		return
+	end
+
 	local self = prototype.CreateDerivedObject("component", name)
 	self:Initialize()
 	return self
