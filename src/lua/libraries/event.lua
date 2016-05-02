@@ -193,10 +193,6 @@ do -- timers
 	end
 
 	function event.Timer(id, time, repeats, callback, run_now)
-		check(time, "number")
-		check(repeats, "number", "function")
-		check(callback, "function", "nil")
-
 		if not callback then
 			callback = repeats
 			repeats = 0

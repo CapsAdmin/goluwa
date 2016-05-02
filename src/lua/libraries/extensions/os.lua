@@ -22,8 +22,6 @@ do -- by Python1320
 	local mm=60
 
 	function os.datetable(a)
-		check(a, "number")
-
 		local negative=false
 		if a<0 then negative=true a=a*-1 end
 		local f,s,m,h,d
@@ -53,8 +51,6 @@ do -- by Python1320
 	local conjunction2= ","
 
 	function os.prettydate(t)
-		check(t, "number", "table")
-
 		if type(t)=="number" then
 			t = os.datetable(t)
 		end

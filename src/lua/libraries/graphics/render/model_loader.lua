@@ -9,8 +9,6 @@ local cb = utility.CreateCallbackThing(render.model_cache)
 render.model_loader_cb = cb
 
 function render.LoadModel(path, callback, callback2, on_fail)
-	check(path, "string")
-
 	if cb:check(path, callback, {mesh = callback2, on_fail = on_fail}) then return true end
 
 	steam.MountGamesFromPath(path)

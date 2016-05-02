@@ -107,7 +107,6 @@ end
 local cb = utility.CreateCallbackThing()
 
 function resource.Download(path, callback, on_fail, crc)
-	check(path, "string")
 	on_fail = on_fail or logn
 
 	local url

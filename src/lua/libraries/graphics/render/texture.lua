@@ -147,8 +147,6 @@ function META:Upload(data)
 		data.flip_y = true
 	end
 
-	check(data.buffer, "cdata")
-
 	if self.StorageType == "cube_map" then
 		if data.face then
 			data.z = data.face - 1
@@ -276,8 +274,6 @@ function META:Clear(mip_map_level)
 end
 
 function META:Fill(callback)
-	check(callback, "function")
-
 	local image = self:Download()
 
 	local x = 0

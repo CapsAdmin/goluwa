@@ -95,9 +95,6 @@ do
 	input.binds = {}
 
 	function input.Bind(key, cmd, callback)
-		check(key, "string")
-		check(cmd, "string", "nil")
-
 		serializer.SetKeyValueInFile("luadata", "%DATA%/input.txt", key, cmd)
 
 		local modifiers = key:split("+")

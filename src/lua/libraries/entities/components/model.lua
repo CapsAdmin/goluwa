@@ -77,7 +77,6 @@ if GRAPHICS then
 
 	do
 		function META:AddMesh(mesh)
-			checkx(mesh, "mesh_builder")
 			table.insert(self.sub_models, mesh)
 			mesh:CallOnRemove(function()
 				if self:IsValid() then

@@ -168,30 +168,18 @@ local function query_server(ip, port, query, callback)
 end
 
 function steam.GetServerInfo(ip, port, callback)
-	check(ip, "string")
-	check(port, "number")
-
 	query_server(ip, port, queries.info, callback)
 end
 
 function steam.GetServerClients(ip, port, callback)
-	check(ip, "string")
-	check(port, "number")
-
 	query_server(ip, port, queries.clients, callback)
 end
 
 function steam.GetServerRules(ip, port, callback)
-	check(ip, "string")
-	check(port, "number")
-
 	query_server(ip, port, queries.rules, callback)
 end
 
 function steam.GetServerPing(ip, port, callback)
-	check(ip, "string")
-	check(port, "number")
-
 	callback = callback or logn
 	local start = system.GetElapsedTime()
 	query_server(ip, port, queries.ping, function()

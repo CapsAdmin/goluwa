@@ -315,10 +315,6 @@ function sockets.AbortDownload(url)
 end
 
 function sockets.Get(url, callback, timeout, user_agent, binary, debug)
-	check(url, "string")
-	check(callback, "function", "nil", "false")
-	check(user_agent, "nil", "string")
-
 	return request({
 		url = url,
 		callback = callback,
@@ -331,11 +327,6 @@ function sockets.Get(url, callback, timeout, user_agent, binary, debug)
 end
 
 function sockets.Post(url, post_data, callback, timeout, user_agent, binary, debug)
-	check(url, "string")
-	check(callback, "function", "nil", "false")
-	check(post_data, "table", "string")
-	check(user_agent, "nil", "string")
-
 	if type(post_data) == "table" then
 		post_data = sockets.TableToHeader(post_data)
 	end

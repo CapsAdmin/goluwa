@@ -77,8 +77,6 @@ sigh.AddType(
 
 
 function sigh.SetDecimals(num)
-	check(num, "number", "nil")
-
 	sigh.decimals = num or 5
 end
 

@@ -78,9 +78,6 @@ do -- image data
 			return a -- uhhh
 		end
 
-		check(a, "string", "number")
-		check(b, "number", "nil")
-
 		local self = lovemu.CreateObject("ImageData")
 
 		local tex = render.CreateTexture("2d")

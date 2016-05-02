@@ -49,9 +49,6 @@ do -- peer
 
 	function CLIENT:Connect(ip, port, channels)
 		channels = channels or 1
-		check(ip, "string")
-		check(port, "number")
-
 		self.peer = lib.HostConnect(self.host, ipport2address(ip, port), channels, 0)
 	end
 

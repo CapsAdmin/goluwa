@@ -8,7 +8,6 @@ end
 
 do -- mounting/links
 	function vfs.Mount(where, to, userdata)
-		check(where, "string")
 		to = to or ""
 
 		vfs.ClearCallCache()
@@ -38,7 +37,6 @@ do -- mounting/links
 	end
 
 	function vfs.Unmount(where, to)
-		check(where, "string")
 		to = to or ""
 
 		vfs.ClearCallCache()
@@ -257,9 +255,7 @@ do -- translate path to useful data
 end
 
 function vfs.Open(path, mode, sub_mode)
-	check(path, "string")
 	mode = mode or "read"
-	check(sub_mode, "string", "nil")
 
 	for _, data in ipairs(vfs.TranslatePath(path)) do
 		local file = prototype.CreateDerivedObject("file_system", data.context.Name)

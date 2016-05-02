@@ -733,7 +733,6 @@ do -- environment
 	system.lua_environment_sockets = {}
 
 	function system.CreateLuaEnvironment(title, globals, id)
-		check(globals, "table", "nil")
 		id = id or title
 
 		local socket = system.lua_environment_sockets[id] or NULL

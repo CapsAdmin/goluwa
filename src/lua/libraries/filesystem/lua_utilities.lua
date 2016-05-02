@@ -21,8 +21,6 @@ function vfs.GetLoadedLuaFiles()
 end
 
 function vfs.loadfile(path)
-	check(path, "string")
-
 	local full_path = vfs.GetAbsolutePath(path)
 
 	if full_path then
@@ -50,8 +48,6 @@ function vfs.loadfile(path)
 end
 
 function vfs.dofile(path, ...)
-	check(path, "string")
-
 	local func = assert(vfs.loadfile(path))
 
 	return func(...)

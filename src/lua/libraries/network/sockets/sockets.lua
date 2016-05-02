@@ -227,9 +227,6 @@ do -- tcp socket meta
 		end
 
 		function CLIENT:Connect(ip, port)
-			check(ip, "string")
-			check(port, "number")
-
 			self:DebugPrintf("connecting to %s:%s", ip, port)
 
 			local ok, msg
@@ -638,8 +635,6 @@ do -- tcp socket meta
 		SERVER.Bind = SERVER.Host
 
 		function SERVER:Send(data, ip, port)
-			check(ip, "string")
-
 			if self.socket_type == "tcp" then
 				for _, client in pairs(self:GetClients()) do
 					if client:GetIP() == ip and (not port or (port == client:GetPort())) then
@@ -648,7 +643,6 @@ do -- tcp socket meta
 					end
 				end
 			elseif self.socket_type == "udp" then
-				check(port, "number")
 				self.socket:sendto(data, ip, port)
 				self.data_sent = self.data_sent + #data
 			end

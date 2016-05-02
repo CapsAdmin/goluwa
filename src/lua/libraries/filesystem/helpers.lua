@@ -14,7 +14,6 @@ do
 end
 
 function vfs.Delete(path, ...)
-	check(path, "string")
 	local abs_path = vfs.GetAbsolutePath(path, ...)
 
 	if abs_path then
@@ -34,8 +33,6 @@ end
 
 local function add_helper(name, func, mode, cb)
 	vfs[name] = function(path, ...)
-		check(path, "string")
-
 		if cb then cb(path, ...) end
 
 		local file, err = vfs.Open(path, mode)
@@ -89,8 +86,6 @@ add_helper("GetLastModified", "GetLastModified", "read")
 add_helper("GetLastAccessed", "GetLastAccessed", "read")
 
 function vfs.CreateFolder(path)
-	check(path, "string")
-
 	for _, data in ipairs(vfs.TranslatePath(path, true)) do
 		data.context:PCall("CreateFolder", data.path_info)
 	end

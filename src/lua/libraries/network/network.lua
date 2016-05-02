@@ -82,7 +82,7 @@ if CLIENT then
 		network.Disconnect("already connected")
 
 		ip = tostring(ip)
-		port = tonumber(port) or check(port, "number")
+		port = tonumber(port)
 
 		retries = retries or 3
 
@@ -160,7 +160,7 @@ end
 if SERVER then
 	function network.Host(ip, port)
 		ip = tostring(ip)
-		port = tonumber(port) or check(port, "number")
+		port = tonumber(port)
 
 		network.port = port
 
