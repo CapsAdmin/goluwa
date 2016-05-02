@@ -45,7 +45,7 @@ local function generate_draw_buffers(self)
 		end
 	end
 
-	table.sort(draw_buffers, function(a, b) return a < b end)
+	--table.sort(draw_buffers, function(a, b) return a < b end)
 
 	self.draw_buffers = ffi.new("GLenum[?]", #draw_buffers, draw_buffers)
 	self.draw_buffers_size = #draw_buffers
