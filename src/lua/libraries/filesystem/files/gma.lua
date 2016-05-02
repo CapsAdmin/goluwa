@@ -10,7 +10,9 @@ CONTEXT.Position = 5
 function CONTEXT:OnParseArchive(file, archive_path)
 	local info = {}
 
-	assert(file:ReadBytes(4) == "GMAD")
+	if file:ReadBytes(4) ~= "GMAD" then
+		return false, "not a gmad archive"
+	end
 
 	info.format_version = file:ReadByte()
 	info.steamid = file:ReadUnsignedLongLong()
@@ -52,6 +54,8 @@ function CONTEXT:OnParseArchive(file, archive_path)
 	for _, v in pairs(info.entries) do
 		v.offset = v.offset + info.file_block
 	end
+
+	return true
 end
 
 vfs.RegisterFileSystem(CONTEXT)

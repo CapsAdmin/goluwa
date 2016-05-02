@@ -87,7 +87,7 @@ add_helper("GetLastAccessed", "GetLastAccessed", "read")
 
 function vfs.CreateFolder(path)
 	for _, data in ipairs(vfs.TranslatePath(path, true)) do
-		data.context:PCall("CreateFolder", data.path_info)
+		if data.context:CreateFolder(data.path_info) then break end
 	end
 end
 

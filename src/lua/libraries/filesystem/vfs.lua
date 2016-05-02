@@ -261,7 +261,7 @@ function vfs.Open(path, mode, sub_mode)
 		local file = prototype.CreateDerivedObject("file_system", data.context.Name)
 		file:SetMode(mode)
 
-		if file:PCall("Open", data.path_info) ~= false then
+		if file:Open(data.path_info) ~= false then
 			if mode == "write" then
 				vfs.ClearCallCache()
 			end

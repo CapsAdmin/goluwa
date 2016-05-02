@@ -579,7 +579,7 @@ do -- tree
 		for _, key in ipairs(keys) do
 			if key ~= "" then
 				if not next[key] then
-					error("key ".. key .." not found")
+					return false, "key ".. key .." not found"
 				end
 				next = next[key]
 			end
@@ -595,7 +595,7 @@ do -- tree
 		for _, key in ipairs(keys) do
 			if key ~= "" then
 				if not next[key] then
-					error("not found")
+					return false, "not found"
 				end
 				next = next[key]
 			end

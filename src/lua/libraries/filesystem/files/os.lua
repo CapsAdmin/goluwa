@@ -28,12 +28,13 @@ CONTEXT.Position = 0
 function CONTEXT:CreateFolder(path_info)
 	if path_info.full_path:startswith(e.ROOT_FOLDER) then
 		fs.createdir(path_info.full_path)
+		return true
 	end
 end
 
 function CONTEXT:GetFiles(path_info)
 	if not self:IsFolder(path_info) then
-		error(path_info.full_path .. " is not a valid folder", 2)
+		return false, "not a folder"
 	end
 
 	return fs.find(path_info.full_path, true)
@@ -61,14 +62,14 @@ function CONTEXT:Open(path_info, ...)
 
 	local mode = translate_mode[self:GetMode()]
 
-	if not mode then
-		error("mode not supported: " .. self:GetMode())
-	end
+	if not mode then return false, "mode not supported" end
 
 	self.file = fs.open(path_info.full_path, mode .. "b")
+
 	if self.file == nil then
-		error("No such file or directory")
+		return false, "unable to open file"
 	end
+
 	self.bad_eof = fs.eof(self.file) == 1
 	self.attributes = fs.getattributes(path_info.full_path)
 end
@@ -96,8 +97,6 @@ function CONTEXT:ReadBytes(bytes)
 		return ffi_string(buff, bytes)
 	end
 end
-
-rofl = cache
 
 function CONTEXT:ReadAll()
 	return self:ReadBytes(math.huge)

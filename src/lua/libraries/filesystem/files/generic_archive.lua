@@ -42,53 +42,53 @@ local never
 
 vfs.generic_archive_cache = cache
 
-function CONTEXT:GetFileTree(path)
-	if cache[path] then
-		return cache[path]
+function CONTEXT:GetFileTree(path_info)
+	if never then return false, "grr" end
+
+	local archive_path, relative = path_info.full_path:match("(.-%."..self.Extension..")/(.*)")
+
+	if not archive_path then
+		return false, "not a valid archive path"
 	end
 
-	if never then error("grr") end
+	if cache[archive_path] then
+		return cache[archive_path], relative, archive_path
+	end
 
+	local cache_path = "os:data/archive_cache/" .. crypto.CRC32(archive_path)
 	never = true
-	local cache_path = "os:data/archive_cache/" .. crypto.CRC32(path)
-	local tree_data = serializer.ReadFile("msgpack", cache_path)
+	local tree_data, err, what = serializer.ReadFile("msgpack", cache_path)
 	never = false
 
 	if tree_data then
 		local tree = utility.CreateTree("/", tree_data)
-		cache[path] = tree
-		return cache[path]
+		cache[archive_path] = tree
+		return cache[archive_path], relative, archive_path
 	end
 
-	local file = assert(vfs.Open("os:" .. path))
+	never = true
+	local file, err = vfs.Open("os:" .. archive_path)
+	never = false
+	if not file then return false, err end
 	local tree = utility.CreateTree("/")
 	self.tree = tree
-	self:OnParseArchive(file, path)
+	local ok, err = self:OnParseArchive(file, archive_path)
 	file:Close()
+	if not ok then return false, err end
 
-	cache[path] = tree
+	cache[archive_path] = tree
 
 	event.Delay(math.random(), function()
-		serializer.WriteFile("msgpack", cache_path, nil, tree.tree)
+		serializer.WriteFile("msgpack", cache_path, tree.tree)
 	end)
 
-	return tree
-end
-
-function CONTEXT:SplitPath(path_info)
-	local archive_path, relative = path_info.full_path:match("(.-%."..self.Extension..")/(.*)")
-
-	if not archive_path and not relative then
-		error("not a valid archive path", 2)
-	end
-
-	return archive_path, relative
+	return tree, relative, archive_path
 end
 
 function CONTEXT:IsFile(path_info)
-	local archive_path, relative = self:SplitPath(path_info)
-	local tree = self:GetFileTree(archive_path)
-	local entry = tree:GetEntry(relative)
+	local tree, relative, archive_path = self:GetFileTree(path_info)
+	if not tree then return tree, relative end
+	local entry, err = tree:GetEntry(relative)
 
 	if entry and entry.is_file then
 		return true
@@ -96,8 +96,8 @@ function CONTEXT:IsFile(path_info)
 end
 
 function CONTEXT:IsFolder(path_info)
-	local archive_path, relative = self:SplitPath(path_info)
-	local tree = self:GetFileTree(archive_path)
+	local tree, relative, archive_path = self:GetFileTree(path_info)
+	if not tree then return tree, relative end
 	local entry = tree:GetEntry(relative)
 	if entry and entry.is_dir then
 		return true
@@ -105,12 +105,16 @@ function CONTEXT:IsFolder(path_info)
 end
 
 function CONTEXT:GetFiles(path_info)
-	local archive_path, relative = self:SplitPath(path_info)
-	local tree = self:GetFileTree(archive_path)
+	local tree, relative, archive_path = self:GetFileTree(path_info)
+	if not tree then return tree, relative end
+
+	local children, err = tree:GetChildren(relative:match("(.*)/"))
+
+	if not children then return false, err end
 
 	local out = {}
 
-	for _, v in pairs(tree:GetChildren(relative:match("(.*)/"))) do
+	for _, v in pairs(children) do
 		if v.value then -- fix me!!
 			table.insert(out, v.value.file_name)
 		end
@@ -124,12 +128,14 @@ function CONTEXT:TranslateArchivePath(file_info)
 end
 
 function CONTEXT:Open(path_info, mode, ...)
-	local archive_path, relative = self:SplitPath(path_info)
-	local tree = self:GetFileTree(archive_path)
-
 	if self:GetMode() == "read" then
+		local tree, relative, archive_path = self:GetFileTree(path_info)
+		if not tree then return tree, relative end
+
 		local file_info = tree:GetEntry(relative)
-		local file = assert(vfs.Open(self:TranslateArchivePath(file_info, archive_path)))
+		if not file_info then return false, "file not found" end
+		local file, err = vfs.Open(self:TranslateArchivePath(file_info, archive_path))
+		if not file then return false, err end
 		file:SetPosition(file_info.offset)
 		self.position = 0
 		self.file_info = file_info
@@ -141,7 +147,7 @@ function CONTEXT:Open(path_info, mode, ...)
 			self.file = file
 		end
 	elseif self:GetMode() == "write" then
-		error("not implemented")
+		return false, "write mode not implemented"
 	end
 end
 
@@ -183,7 +189,6 @@ function CONTEXT:ReadBytes(bytes)
 end
 
 function CONTEXT:SetPosition(pos)
-	if pos > self.file_info.size then error("position is larger than file size") end
 	self.position = math.clamp(pos, 0, self.file_info.size)
 end
 

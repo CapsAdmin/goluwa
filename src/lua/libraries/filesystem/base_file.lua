@@ -6,20 +6,6 @@ CONTEXT.Name = "base"
 
 prototype.GetSet(CONTEXT, "Mode", "read")
 
-function CONTEXT:PCall(name, a,b,c,d)
-	local ok,a,b,c,d = pcall(self[name], self, a,b,c,d)
-	if vfs.debug and not ok then
-		vfs.DebugPrint("%s: error calling %s: %s", self.Name or "", name, a)
-		return false
-	end
-
-	if ok then
-		return a,b,d,c
-	end
-
-	return false
-end
-
 do
 	local cache = vfs.call_cache or {}
 	local last_framenumber = 0
@@ -41,7 +27,7 @@ do
 		cache[func_name][self.Name] = cache[func_name][self.Name] or {}
 
 		if cache[func_name][self.Name][path_info.full_path] == nil then
-			cache[func_name][self.Name][path_info.full_path] = self:PCall(func_name, path_info)
+			cache[func_name][self.Name][path_info.full_path] = self[func_name](self, path_info)
 		end
 
 		return cache[func_name][self.Name][path_info.full_path]

@@ -54,15 +54,16 @@ function CONTEXT:OnParseArchive(file)
 			end
 		end
 	end
+	return true
 end
 
 
 function CONTEXT:TranslateArchivePath(file_info, archive_path)
 	if file_info.archive_index == 0x7FFF then
 		return "os:" .. archive_path
-	else
-		return "os:" .. archive_path:gsub("_dir.vpk$", function() return ("_%03d.vpk"):format(file_info.archive_index) end)
 	end
+
+	return "os:" .. archive_path:gsub("_dir.vpk$", function() return ("_%03d.vpk"):format(file_info.archive_index) end)
 end
 
 vfs.RegisterFileSystem(CONTEXT)

@@ -2,26 +2,6 @@ local vfs = (...) or _G.vfs
 local ffi = require("ffi")
 local archive = desire("libarchive")
 
-local function open_archive(archive_path)
-	local str = vfs.Read("os:" .. archive_path)
-	if not str then error("file is empty") end
-	local a = archive.ReadNew()
-
-	archive.ReadSupportCompressionAll(a)
-	archive.ReadSupportFormatAll(a)
-
-	archive.ReadOpenMemory(a, str, #str)
-
-	local err = archive.ErrorString(a)
-
-	if err ~= nil then
-		archive.ReadFree(a)
-		error(ffi.string(err), 2)
-	end
-
-	return a
-end
-
 local function iterate_archive(a)
 	return function()
 		local entry = ffi.new("struct archive_entry * [1]")
@@ -45,7 +25,7 @@ local CONTEXT = {}
 CONTEXT.Name = "libarchive"
 CONTEXT.Position = math.huge
 
-local function split_path(path_info)
+local function open_archive(path_info)
 	local archive_path, relative
 
 	if path_info.full_path:find("tar.gz", nil, true) then
@@ -55,19 +35,38 @@ local function split_path(path_info)
 	end
 
 	if not archive_path and not relative then
-		error("not a valid archive path", 2)
+		return false, "not a valid archive path"
 	end
 
 	if archive_path:endswith("/") then
 		archive_path = archive_path:sub(0, -2)
 	end
 
-	return archive_path, relative
+	local str = vfs.Read("os:" .. archive_path)
+	if not str then return false, "file empty" end
+
+	local a = archive.ReadNew()
+
+	archive.ReadSupportCompressionAll(a)
+	archive.ReadSupportFormatAll(a)
+
+	if archive.ReadOpenMemory(a, str, #str) ~= 0 then
+		local err = archive.ErrorString(a)
+
+		if err ~= nil then
+			local err = ffi.string(err)
+			archive.ReadFree(a)
+			return false, err
+		end
+		return false
+	end
+
+	return a, relative
 end
 
 function CONTEXT:IsFile(path_info)
-	local archive_path, relative = split_path(path_info)
-	local a = open_archive(archive_path)
+	local a, relative = open_archive(path_info)
+	if not a then return a, relative end
 
 	local found = false
 
@@ -84,8 +83,8 @@ function CONTEXT:IsFile(path_info)
 end
 
 function CONTEXT:IsFolder(path_info)
-	local archive_path, relative = split_path(path_info)
-	local a = open_archive(archive_path)
+	local a, relative = open_archive(path_info)
+	if not a then return a, relative end
 
 	local found = false
 
@@ -102,12 +101,12 @@ function CONTEXT:IsFolder(path_info)
 end
 
 function CONTEXT:GetFiles(path_info)
-	local archive_path, relative = split_path(path_info)
+	local a, relative = open_archive(path_info)
+	if not a then return a, relative end
 
 	local out = {}
 
 	local dir = relative:match("(.*/).*")
-	local a = open_archive(archive_path)
 
 	local files = {}
 	local done = {}
@@ -156,24 +155,24 @@ function CONTEXT:GetFiles(path_info)
 end
 
 function CONTEXT:Open(path_info, mode, ...)
-	local archive_path, relative = split_path(path_info)
-
 	if self:GetMode() == "read" then
-		local a = open_archive(archive_path)
+		local a, relative = open_archive(path_info)
+		if not a then return a, relative end
+
 
 		for path, entry in iterate_archive2(a) do
 			if path == relative then
 				self.archive = a
 				self.entry = entry
-				return
+				return true
 			end
 		end
 
 		archive.ReadFree(a)
-		error("file not found in archive")
+		return false, "file not found in archive"
 
 	elseif self:GetMode() == "write" then
-		error("not implemented")
+		return false, "write mode not implemented"
 	end
 end
 
