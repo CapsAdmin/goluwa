@@ -71,6 +71,8 @@ function CONTEXT:GetFileTree(path)
 	event.Delay(math.random(), function()
 		serializer.WriteFile("msgpack", cache_path, nil, tree.tree)
 	end)
+
+	return tree
 end
 
 function CONTEXT:SplitPath(path_info)

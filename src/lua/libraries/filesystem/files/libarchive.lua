@@ -4,6 +4,7 @@ local archive = desire("libarchive")
 
 local function open_archive(archive_path)
 	local str = vfs.Read("os:" .. archive_path)
+	if not str then error("file is empty") end
 	local a = archive.ReadNew()
 
 	archive.ReadSupportCompressionAll(a)
