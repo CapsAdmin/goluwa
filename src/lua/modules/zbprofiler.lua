@@ -1,4 +1,4 @@
-local msgpack = require("luajit-msgpack-pure")
+local msgpack = require("msgpack")
 local jit_profiler = require("jit.profile")
 local jit_util = require("jit.util")
 local jit_vmdef = require("jit.vmdef")
@@ -18,7 +18,7 @@ local function start_profiling(b)
 		local file = io.open("zerobrane_statistical.msgpack", "rb")
 
 		if file then
-			data = select(2, msgpack.unpack(file:read("*all")))
+			data = msgpack.decode(file:read("*all") or "")
 			file:close()
 		else
 			data = {}
@@ -55,7 +55,7 @@ local function start_profiling(b)
 			temp_i = 1
 
 			local file = assert(io.open("zerobrane_statistical.msgpack", "wb"))
-			file:write(msgpack.pack(data))
+			file:write(msgpack.encode(data))
 			file:close()
 		end
 	end
@@ -70,7 +70,7 @@ local function start_jit_logging(b)
 		local file = io.open("zerobrane_trace_aborts.msgpack", "rb")
 
 		if file then
-			data = select(2, msgpack.unpack(file:read("*all")))
+			data = msgpack.decode(file:read("*all") or "")
 			file:close()
 		else
 			data = {}
@@ -119,7 +119,7 @@ local function start_jit_logging(b)
 			temp_i = 1
 
 			local file = assert(io.open("zerobrane_trace_aborts.msgpack", "wb"))
-			file:write(msgpack.pack(data))
+			file:write(msgpack.encode(data))
 			file:close()
 		end
 	end
