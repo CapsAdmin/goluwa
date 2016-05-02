@@ -44,6 +44,8 @@ echo "branch	=	$branch"
 echo "flags		=	$flags"
 
 rm -rf luajit_src/
+rm -rf jit/
+mkdir jit
 
 git clone $url luajit_src
 cd luajit_src 
@@ -52,3 +54,4 @@ export CFLAGS=-fPIC
 make clean
 make $flags
 yes | cp src/luajit ../luajit
+yes | cp src/jit/* ../jit/
