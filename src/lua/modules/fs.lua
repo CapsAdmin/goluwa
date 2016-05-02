@@ -1,8 +1,8 @@
 local fs = _G.fs or {}
 
-if WINDOWS then
-	local ffi = require("ffi")
+local ffi = require("ffi")
 
+if WINDOWS then
 	ffi.cdef([[
 		typedef struct goluwa_file_time {
 			unsigned long high;
@@ -229,5 +229,24 @@ else
 		end
 	end
 end
+
+
+ffi.cdef([[
+void *fopen(const char *filename, const char *mode);
+size_t fread(void *ptr, size_t size, size_t nmemb, void *stream);
+size_t fwrite(const void *ptr, size_t size, size_t nmemb, void *stream);
+int fseek(void *stream, long offset, int whence);
+long int ftell ( void * stream );
+int fclose(void *fp);
+int feof(void *stream);
+]])
+
+fs.open = ffi.C.fopen
+fs.read = ffi.C.fread
+fs.write = ffi.C.fwrite
+fs.seek = ffi.C.fseek
+fs.tell = ffi.C.ftell
+fs.close = ffi.C.fclose
+fs.eof = ffi.C.feof
 
 return fs

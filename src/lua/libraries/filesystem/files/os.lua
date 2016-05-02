@@ -2,6 +2,8 @@ local vfs = (...) or _G.vfs
 
 local fs = require("fs")
 
+local ffi = require("ffi")
+
 if vfs.use_appdata then
 	if WINDOWS then
 		vfs.SetEnv("DATA", "os:%%APPDATA%%/.goluwa")
@@ -63,36 +65,54 @@ function CONTEXT:Open(path_info, ...)
 		error("mode not supported: " .. self:GetMode())
 	end
 
-	mode = mode .. "b" -- always open in binary
-
-	self.file = assert(io.open(path_info.full_path, mode))
+	self.file = fs.open(path_info.full_path, mode .. "b")
+	if self.file == nil then
+		error("No such file or directory")
+	end
+	self.bad_eof = fs.eof(self.file) == 1
 	self.attributes = fs.getattributes(path_info.full_path)
 end
 
 function CONTEXT:WriteBytes(str)
-	return self.file:write(str)
+	return fs.write(str, 1, #str, self.file)
 end
+
+local ctype = ffi.typeof("uint8_t[?]")
+local ffi_string = ffi.string
+
+-- without this cache thing loading gm_construct takes 30 sec opposed to 15
+local cache = utility.CreateWeakTable()
 
 function CONTEXT:ReadBytes(bytes)
-	if bytes == math.huge then bytes = self:GetSize() end
+	bytes = math.min(bytes, self.attributes.size)
 
-	return self.file:read(bytes)
+	local buff = cache[bytes] or ctype(bytes)
+
+	cache[bytes] = buff
+
+	local len = fs.read(buff, bytes, 1, self.file)
+
+	if len > 0 or fs.eof(self.file) == 1 then
+		return ffi_string(buff, bytes)
+	end
 end
+
+rofl = cache
 
 function CONTEXT:ReadAll()
 	return self:ReadBytes(math.huge)
 end
 
 function CONTEXT:SetPosition(pos)
-	self.file:seek("set", pos)
+	fs.seek(self.file, pos, 0)
 end
 
 function CONTEXT:GetPosition()
-	return self.file:seek()
+	return fs.tell(self.file)
 end
 
 function CONTEXT:Close()
-	self.file:close()
+	fs.close(self.file)
 	self:Remove()
 end
 
@@ -109,7 +129,7 @@ function CONTEXT:GetLastAccessed()
 end
 
 function CONTEXT:Flush()
-	self.file:flush()
+	--self.file:flush()
 end
 
 vfs.RegisterFileSystem(CONTEXT)
