@@ -1,6 +1,19 @@
-jit.profiler = require("jit.profile")
 jit.vmdef = require("jit.vmdef")
 jit.util = require("jit.util")
+
+local old = jit.util.funcinfo
+
+function jit.util.funcinfo(...)
+	local t = old(...)
+
+	if t.loc and t.source and t.source:startswith("@") then
+		t.loc = t.source:sub(2) .. ":" .. t.loc:match(".+:(.+)")
+	end
+
+	return t
+end
+
+jit.profiler = require("jit.profile")
 jit.bc = require("jit.bc")
 jit.v = require("jit.v")
 jit.opt = require("jit.opt")
