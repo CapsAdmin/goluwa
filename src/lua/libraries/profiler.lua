@@ -384,7 +384,8 @@ function profiler.PrintStatistical()
 	))
 end
 
-function profiler.StartInstrumental(file_filter)
+function profiler.StartInstrumental(file_filter, method)
+	method = method or "l"
 	profiler.EnableSectionProfiling(true, true)
 	profiler.busy = true
 	local okay = false
@@ -401,7 +402,7 @@ function profiler.StartInstrumental(file_filter)
 				end
 			end
 		end
-	end, "l")
+	end, method)
 end
 
 function profiler.StopInstrumental(file_filter)
@@ -569,8 +570,8 @@ commands.Add("profile_dump", function(line, a, b, c)
 	end
 end)
 
-commands.Add("profile", function(line, time, file_filter)
-	profiler.MeasureInstrumental(tonumber(time) or 5, file_filter)
+commands.Add("profile", function(line, time, file_filter, method)
+	profiler.MeasureInstrumental(tonumber(time) or 5, file_filter, method)
 end)
 
 commands.Add("zbprofile", function()
