@@ -103,7 +103,13 @@ end
 
 function META:SizeColumnsToFit()
 	for i, column in ipairs(self.columns) do
-		column.div:SetDividerPosition(column:GetTextSize().x + column.icon:GetWidth() * 2)
+		local width = column:GetTextSize().x + column.icon:GetWidth() * 2
+
+		for _, entry in ipairs(self.entries) do
+			width = math.max(width, entry:GetChildren()[i]:GetTextSize().x + 10)
+		end
+
+		column.div:SetDividerPosition(width)
 	end
 end
 
@@ -234,7 +240,8 @@ function META:AddEntry(...)
 
 	table.insert(self.entries, entry)
 
-	event.Delay(0, function() self:Layout() end, nil, self) -- FIX ME
+	--event.Delay(0, function() self:Layout() end, nil, self) -- FIX ME
+	self:SizeColumnsToFit()
 
 	return entry
 end
