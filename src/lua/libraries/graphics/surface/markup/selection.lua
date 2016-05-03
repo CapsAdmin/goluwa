@@ -61,20 +61,19 @@ function META:Unselect()
 end
 
 function META:GetText(tags)
-	local start, stop = self:GetSelectStart(), self:GetSelectStop()
-	local caret = self.caret_pos
-
-	self:SelectAll()
-	local str = self:GetSelection(tags)
-
-	if start and stop then
-		self:SelectStart(start.x, start.y)
-		self:SelectStop(stop.x, stop.y)
-	else
-		self:Unselect()
+	if tags and self.cached_gettext_tags then
+		return self.cached_gettext_tags
+	elseif self.cached_gettext then
+		return self.cached_gettext
 	end
 
-	self:SetCaretPosition(caret.x, caret.y)
+	local str = self:GetSelection(tags, self:CaretFromPosition(0, 0), self:CaretFromPosition(math.huge, math.huge))
+
+	if tags then
+		self.cached_gettext_tags = str
+	else
+		self.cached_gettext_tags = str
+	end
 
 	return str
 end
@@ -85,11 +84,11 @@ function META:SetText(str, tags)
 	self:Invalidate() -- do it right now
 end
 
-function META:GetSelection(tags)
+function META:GetSelection(tags, start, stop)
 	local out = {}
 
-	local START = self:GetSelectStart()
-	local STOP = self:GetSelectStop()
+	local START = start or self:GetSelectStart()
+	local STOP = stop or self:GetSelectStop()
 
 	if START and STOP then
 		if not tags then

@@ -613,6 +613,9 @@ function META:SuppressLayout(b)
 end
 
 function META:Invalidate()
+	self.cached_gettext_tags = nil
+	self.cached_gettext_tags = nil
+
 	if self.suppress_layout then return end
 	local chunks = prepare_chunks(self)
 	chunks = split_by_space_and_punctation(self, chunks)
