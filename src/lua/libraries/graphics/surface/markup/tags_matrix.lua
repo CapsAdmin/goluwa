@@ -123,7 +123,7 @@ META.tags.rotate =
 		local center_y = self.tag_center_y
 
 		surface.Translate(center_x, center_y)
-			surface.Rotate(deg)
+			surface.Rotate(math.rad(deg))
 		surface.Translate(-center_x, -center_y)
 
 
