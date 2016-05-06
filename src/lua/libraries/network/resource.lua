@@ -105,6 +105,7 @@ end
 
 
 local cb = utility.CreateCallbackThing()
+local ohno = false
 
 function resource.Download(path, callback, on_fail, crc)
 	on_fail = on_fail or logn
@@ -126,7 +127,7 @@ function resource.Download(path, callback, on_fail, crc)
 		end
 	end
 
-	do
+	if not ohno then
 		local old = callback
 		callback = function(path)
 			if event.Call("ResourceDownloaded", path) ~= false then
@@ -136,7 +137,9 @@ function resource.Download(path, callback, on_fail, crc)
 	end
 
 	if path2 then
+		ohno = true
 		callback(path2)
+		ohno = false
 		return true
 	end
 
