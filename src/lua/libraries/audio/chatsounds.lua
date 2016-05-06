@@ -892,7 +892,10 @@ do -- list parsing
 		local tree_path = "data/chatsounds/trees/"..name..".dat"
 
 		resource.Download(list_path, function(list_path)
-			steam.MountSourceGame(name)
+
+			if not steam.MountSourceGame(name) and name == "HALF-LIFE 2" then
+				steam.MountSourceGame("gmod")
+			end
 
 			local list
 			local tree
