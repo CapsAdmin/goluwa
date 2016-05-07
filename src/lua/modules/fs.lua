@@ -167,7 +167,7 @@ if WINDOWS then
 else
 	local S = require("syscall")
 
-	local size = 4096
+	local size = 4096*10
 	local buf = S.t.buffer(size)
 
 	function fs.find(dir, exclude_dot)
