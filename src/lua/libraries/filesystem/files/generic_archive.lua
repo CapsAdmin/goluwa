@@ -108,7 +108,7 @@ function CONTEXT:GetFiles(path_info)
 	local tree, relative, archive_path = self:GetFileTree(path_info)
 	if not tree then return tree, relative end
 
-	local children, err = tree:GetChildren(relative:match("(.*)/"))
+	local children, err = tree:GetChildren(relative:match("(.*)/") or relative)
 
 	if not children then return false, err end
 
