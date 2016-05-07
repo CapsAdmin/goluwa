@@ -355,15 +355,10 @@ PASS.Stages = {
 
 					albedo = color.rgb;
 
-					if (lua[Translucent = false])
+					if (lua[Translucent = false] && dither(uv, color.a))
 					{
-						if (dither(uv, color.a))
-						{
-							discard;
-						}
+						discard;
 					}
-
-
 
 					// normals
 					vec4 normal_map = texture(lua[NormalTexture = render.GetBlackTexture()], uv);
@@ -440,7 +435,6 @@ PASS.Stages = {
 							metallic = min((-roughness+1)/1.5, 0.075);
 						}
 					}
-
 
 					metallic *= lua[MetallicMultiplier = 1];
 					roughness *= lua[RoughnessMultiplier = 1];
@@ -554,6 +548,10 @@ PASS.Stages = {
 					if (lua[light_shadow = false])
 					{
 						shadow = get_shadow_(uv);
+					}
+					else
+					{
+						shadow = 0;
 					}
 				}
 			]]
