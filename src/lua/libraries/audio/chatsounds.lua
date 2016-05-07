@@ -293,23 +293,26 @@ do -- list parsing
 		end
 	end
 
-	function chatsounds.BuildFromAutoadd()
+	function chatsounds.BuildFromFolder(where)
+		where = where or "sounds/chatsounds/"
 		local tree = {}
 		local list = {}
 
-		for realm in vfs.Iterate("sounds/chatsounds/") do
+		for realm in vfs.Iterate(where) do
 			tree[realm] = {}
-			for trigger in vfs.Iterate("sounds/chatsounds/" .. realm .. "/") do
-				local path = "sounds/chatsounds/" .. realm .. "/" .. trigger
+			list[realm] = {}
+			for trigger in vfs.Iterate(where .. realm .. "/") do
+				local path = where .. realm .. "/" .. trigger
+				trigger = trigger:match("(.+)%.")
 
 				if vfs.IsFile(path) then
-					tree[realm][trigger:match("(.+)%.")] = {path}
-					list[trigger:match("(.+)%.")] = path
+					tree[realm][trigger] = {path}
+					list[realm][trigger] = path
 				else
 					tree[realm][trigger] = {}
 					for file_name in vfs.Iterate(path .. "/") do
 						table.insert(tree[realm][trigger], path .. "/" .. file_name)
-						list[trigger] = path .. "/" .. file_name
+						list[realm][trigger] = path .. "/" .. file_name
 					end
 				end
 			end
@@ -321,22 +324,39 @@ do -- list parsing
 		tree = chatsounds.TableToTree(tree)
 		chatsounds.tree = chatsounds.tree or {}
 		table.merge(chatsounds.tree, tree)
-	end
 
-	function chatsounds.BuildTreeFromAddon()
-		steam.MountSourceGames()
+		local list = {}
 
-		local addons = steam.GetGamePath("GarrysMod") .. "garrysmod/addons/"
-		local addon_dir = addons .. "chatsounds"
-
-		for dir in vfs.Iterate(addons, true) do
-			if dir:lower():find("chatsound") then
-				addon_dir = dir
-				break
+		for _, val in pairs(chatsounds.list) do
+			for key in pairs(val) do
+				table.insert(list, key)
 			end
 		end
 
-		addon_dir = addon_dir .. "/"
+		table.sort(list, function(a, b) return #a < #b end)
+
+		autocomplete.AddList("chatsounds", list)
+	end
+
+	function chatsounds.BuildTreeFromGmodChatsounds(addon_dir)
+		if not addon_dir then
+			steam.MountSourceGames()
+
+			local addons = steam.GetGamePath("GarrysMod") .. "garrysmod/addons/"
+			local addon_dir = addons .. "chatsounds"
+
+			for dir in vfs.Iterate(addons, true) do
+				if dir:lower():find("chatsound") then
+					addon_dir = dir
+					break
+				end
+			end
+
+			addon_dir = addon_dir .. "/"
+		end
+
+		local list = {}
+		local tree = {}
 
 		local nosend = addon_dir .. "lua/chatsounds/lists_nosend/"
 		local send = addon_dir .. "lua/chatsounds/lists_send/"
@@ -344,11 +364,18 @@ do -- list parsing
 		local function parse(path)
 			local func = assert(loadfile(path))
 			local realm = path:match(".+/(.-)%.lua")
-
 			local L = list[realm] or {}
 
-			setfenv(func, {c = {StartList = function() end, EndList = function() end}, L = L})
+			setfenv(func, {c = {StartList = function() end, EndList = function() end, LoadCachedList = function() end}, L = L})
 			func()
+
+			for trigger, sounds in pairs(L) do
+				if type(sounds) == "table" then
+					for _, info in ipairs(sounds) do
+						info.path = addon_dir .. "sound/" .. info.path
+					end
+				end
+			end
 
 			list[realm] = L
 		end
@@ -363,9 +390,6 @@ do -- list parsing
 			parse(path)
 		end
 
-
-		local tree = {}
-
 		for realm, sounds in pairs(list) do
 			if realm ~= "" then
 				for trigger, data in pairs(sounds) do
@@ -378,13 +402,16 @@ do -- list parsing
 
 					local prev = tree
 					local max = #words
+
 					for i, word in ipairs(words) do
 						if not prev[word] then prev[word] = {} end
 
 						if i == max then
 							prev[word].SOUND_FOUND = true
 							prev[word].LEVEL = max
-							prev[word].data = prev[word].data or {trigger = trigger, realms = {}}
+							prev[word].data = prev[word].data or {}
+							prev[word].data.trigger = prev[word].data.trigger or trigger
+							prev[word].data.realms = prev[word].data.realms or {}
 
 							prev[word].data.realms[realm] = {sounds = data, realm = realm}
 						end
@@ -397,6 +424,18 @@ do -- list parsing
 
 		chatsounds.list = list
 		chatsounds.tree = tree
+
+		local list = {}
+
+		for _, val in pairs(chatsounds.list) do
+			for key in pairs(val) do
+				table.insert(list, key)
+			end
+		end
+
+		table.sort(list, function(a, b) return #a < #b end)
+
+		autocomplete.AddList("chatsounds", list)
 	end
 
 	local function clean_sentence(sentence)
