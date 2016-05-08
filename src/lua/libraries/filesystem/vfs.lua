@@ -225,10 +225,12 @@ do -- translate path to useful data
 		local pos = path:find(":", 0, true)
 
 		if pos then
-			out.filesystem = path:sub(0, pos - 1)
+			local filesystem = path:sub(0, pos - 1)
 
-			if vfs.GetFileSystem(out.filesystem) then
+			if vfs.GetFileSystem(filesystem) then
 				path = path:sub(pos + 1)
+				out.filesystem = filesystem
+			else
 				out.filesystem = "unknown"
 			end
 		else
