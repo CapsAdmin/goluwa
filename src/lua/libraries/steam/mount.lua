@@ -102,6 +102,11 @@ function steam.GetSourceGames()
 		for _, folder in ipairs(vfs.Find("os:" .. game_dir, true)) do
 			local path = folder .. "/gameinfo.txt"
 			local str = vfs.Read("os:" .. path)
+
+			if not str then
+				str = vfs.Read("os:" .. folder .. "/GameInfo.txt")
+			end
+
 			local dir = path:match("(.+/).+/")
 
 			if str then
