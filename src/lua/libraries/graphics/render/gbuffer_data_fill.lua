@@ -312,7 +312,7 @@ PASS.Stages = {
 				{
 					if (lua[AlphaTest = false])
 					{
-						return alpha*alpha < (-gl_FragDepth+1)/20;
+						return alpha*alpha < (-gl_FragCoord.z+1)/20;
 					}
 
 					const vec3 magic = vec3( 0.06711056, 0.00583715, 52.9829189 );
