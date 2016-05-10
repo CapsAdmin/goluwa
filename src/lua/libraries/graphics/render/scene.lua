@@ -50,17 +50,12 @@ function render.Draw3DScene(what, dist)
 end
 
 pvars.Setup("render_accum", 0)
-local deferred = pvars.Setup("render_deferred", true, "whether or not deferred rendering is enabled.")
 
 function render.DrawScene(skip_2d)
 	render.GetScreenFrameBuffer():Begin()
 
-	if deferred:Get() and render.IsGBufferReady() then
+	if render.IsGBufferReady() then
 		render.DrawGBuffer()
-	else
-		render.SetDepth(true)
-		render.SetBlendMode("alpha")
-		render.Draw3DScene("models")
 	end
 
 	if not skip_2d then
@@ -71,7 +66,7 @@ function render.DrawScene(skip_2d)
 		render.SetBlendMode("alpha")
 		render.SetShaderOverride()
 
-		if deferred:Get() and render.IsGBufferReady() then
+		if render.IsGBufferReady() then
 			if menu and menu.IsVisible() then
 				surface.PushHSV(1,0,1)
 			end
