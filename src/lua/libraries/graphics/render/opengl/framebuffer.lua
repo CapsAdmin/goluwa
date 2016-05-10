@@ -34,27 +34,26 @@ local bind_mode_to_enum = {
 }
 
 local function generate_draw_buffers(self)
-	local draw_buffers = {}
+	local i = 0
 
 	for _, v in ipairs(self.textures_sorted) do
 		if
 			(v.mode == "GL_DRAW_FRAMEBUFFER" or v.mode == "GL_FRAMEBUFFER") and
 			(v.enum ~= "GL_DEPTH_ATTACHMENT" and v.enum ~= "GL_STENCIL_ATTACHMENT" and v.enum ~= "GL_DEPTH_STENCIL_ATTACHMENT")
 		then
-			table.insert(draw_buffers, v.enum)
+			self.draw_buffers[i] = v.enum
+			i = i + 1
 		end
 	end
 
-	--table.sort(draw_buffers, function(a, b) return a < b end)
-
-	self.draw_buffers = ffi.new("GLenum[?]", #draw_buffers, draw_buffers)
-	self.draw_buffers_size = #draw_buffers
+	self.draw_buffers_size = i
+	self.update_buffers = true
 end
 
 local function update_drawbuffers(self)
-	if self.draw_buffers ~= self.last_draw_buffers then
+	if self.update_buffers then
 		self.gl_fb:DrawBuffers(self.draw_buffers_size, self.draw_buffers)
-		self.last_draw_buffers = self.draw_buffers
+		self.update_buffers = false
 	end
 end
 
@@ -64,6 +63,9 @@ function render._CreateFrameBuffer(self, id_override)
 	self.textures_sorted = {}
 	self.render_buffers = {}
 	self.draw_buffers_cache = {}
+
+	self.draw_buffers = ffi.new("GLenum[?]", 10)
+	self.draw_buffers_size = 0
 end
 
 
