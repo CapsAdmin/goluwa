@@ -103,9 +103,9 @@ local function draw()
 	if v.page then
 		surface.SetTexture(v.page.texture)
 		--surface.SetTexture(render.GetErrorTexture())
-		render.SetCullMode("front")
+		--render.SetCullMode("front")
 		poly:Draw()
-		render.SetCullMode("front")
+		--render.SetCullMode("front")
 	end
 end
 
