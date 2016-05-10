@@ -120,6 +120,10 @@ function CONTEXT:Flush()
 	error(self.Name .. ": not implemented")
 end
 
+function CONTEXT:Close()
+	self:Remove()
+end
+
 include("lua/libraries/templates/buffer.lua", CONTEXT)
 
 prototype.Register(CONTEXT, "file_system", CONTEXT.Name)

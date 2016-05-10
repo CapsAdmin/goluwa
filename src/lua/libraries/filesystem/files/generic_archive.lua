@@ -43,7 +43,7 @@ local never
 vfs.generic_archive_cache = cache
 
 function CONTEXT:GetFileTree(path_info)
-	if never then return false, "grr" end
+	if never then return false, "recursive call to GetFileTree" end
 
 	local archive_path, relative = path_info.full_path:match("(.-%."..self.Extension..")/(.*)")
 
@@ -69,12 +69,16 @@ function CONTEXT:GetFileTree(path_info)
 	never = true
 	local file, err = vfs.Open("os:" .. archive_path)
 	never = false
-	if not file then return false, err end
+	if not file then
+		return false, err
+	end
 	local tree = utility.CreateTree("/")
 	self.tree = tree
 	local ok, err = self:OnParseArchive(file, archive_path)
 	file:Close()
-	if not ok then return false, err end
+	if not ok then
+		return false, err
+	end
 
 	cache[archive_path] = tree
 
@@ -130,12 +134,18 @@ end
 function CONTEXT:Open(path_info, mode, ...)
 	if self:GetMode() == "read" then
 		local tree, relative, archive_path = self:GetFileTree(path_info)
-		if not tree then return tree, relative end
-
+		if not tree then
+			return false, relative
+		end
 		local file_info = tree:GetEntry(relative)
-		if not file_info then return false, "file not found" end
+		if not file_info then
+			return false, "file not found in archive"
+		end
 		local file, err = vfs.Open(self:TranslateArchivePath(file_info, archive_path))
-		if not file then return false, err end
+		if not file then
+			return false, err
+		end
+
 		file:SetPosition(file_info.offset)
 		self.position = 0
 		self.file_info = file_info
@@ -146,9 +156,13 @@ function CONTEXT:Open(path_info, mode, ...)
 		else
 			self.file = file
 		end
+
+		return true
 	elseif self:GetMode() == "write" then
 		return false, "write mode not implemented"
 	end
+
+	return false, "read mode " .. self:GetMode() .. " not supported"
 end
 
 function CONTEXT:ReadByte()
@@ -196,9 +210,8 @@ function CONTEXT:GetPosition()
 	return self.position
 end
 
-function CONTEXT:Close()
-	if self.file and self.file:IsValid() then self.file:Close() end
-	self:Remove()
+function CONTEXT:OnRemove()
+
 end
 
 function CONTEXT:GetSize()

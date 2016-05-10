@@ -34,7 +34,7 @@ end
 
 function CONTEXT:GetFiles(path_info)
 	if not self:IsFolder(path_info) then
-		return false, "not a folder"
+		return false, "not a directory"
 	end
 
 	return fs.find(path_info.full_path, true)
@@ -59,7 +59,6 @@ local translate_mode = {
 }
 
 function CONTEXT:Open(path_info, ...)
-
 	local mode = translate_mode[self:GetMode()]
 
 	if not mode then return false, "mode not supported" end
@@ -67,7 +66,7 @@ function CONTEXT:Open(path_info, ...)
 	self.file = fs.open(path_info.full_path, mode .. "b")
 
 	if self.file == nil then
-		return false, "unable to open file"
+		return false, "unable to open file: " .. ffi.strerror()
 	end
 
 	self.attributes = fs.getattributes(path_info.full_path)
@@ -109,9 +108,10 @@ function CONTEXT:GetPosition()
 	return fs.tell(self.file)
 end
 
-function CONTEXT:Close()
-	fs.close(self.file)
-	self:Remove()
+function CONTEXT:OnRemove()
+	if self.file ~= nil then
+		fs.close(self.file)
+	end
 end
 
 function CONTEXT:GetSize()

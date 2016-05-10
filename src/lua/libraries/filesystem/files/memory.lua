@@ -134,7 +134,7 @@ function CONTEXT:GetPosition()
 	return self.file.buffer:GetPosition()
 end
 
-function CONTEXT:Close()
+function CONTEXT:OnRemove()
 	-- hmm
 end
 

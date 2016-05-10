@@ -43,7 +43,7 @@ local function open_archive(path_info)
 	end
 
 	local str = vfs.Read("os:" .. archive_path)
-	if not str then return false, "file empty" end
+	if not str then return false, "archive is empty" end
 
 	local a = archive.ReadNew()
 
@@ -58,7 +58,8 @@ local function open_archive(path_info)
 			archive.ReadFree(a)
 			return false, err
 		end
-		return false
+
+		return false, "archive.ReadOpenMemory failed"
 	end
 
 	return a, relative
@@ -157,8 +158,7 @@ end
 function CONTEXT:Open(path_info, mode, ...)
 	if self:GetMode() == "read" then
 		local a, relative = open_archive(path_info)
-		if not a then return a, relative end
-
+		if not a then return false, relative end
 
 		for path, entry in iterate_archive2(a) do
 			if path == relative then
@@ -169,11 +169,12 @@ function CONTEXT:Open(path_info, mode, ...)
 		end
 
 		archive.ReadFree(a)
-		return false, "file not found in archive"
 
+		return false, "file not found in archive"
 	elseif self:GetMode() == "write" then
 		return false, "write mode not implemented"
 	end
+	return false, "read mode " .. self:GetMode() .. " not supported"
 end
 
 function CONTEXT:ReadBytes(bytes)
@@ -195,10 +196,14 @@ function CONTEXT:GetPosition()
 	return archive.SeekData(self.archive, 0, 1)
 end
 
-function CONTEXT:Close()
-	archive.ReadFree(self.archive)
-	archive.EntryFree(self.entry)
-	self:Remove()
+function CONTEXT:OnRemove()
+	if self.archive ~= nil then
+		archive.ReadFree(self.archive)
+	end
+
+	if self.entry ~= nil then
+		archive.EntryFree(self.entry)
+	end
 end
 
 function CONTEXT:GetSize()

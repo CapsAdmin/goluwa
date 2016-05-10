@@ -259,21 +259,26 @@ end
 function vfs.Open(path, mode, sub_mode)
 	mode = mode or "read"
 
-	for _, data in ipairs(vfs.TranslatePath(path)) do
+	local errors = ""
+
+	for i, data in ipairs(vfs.TranslatePath(path)) do
 		local file = prototype.CreateDerivedObject("file_system", data.context.Name)
 		file:SetMode(mode)
 
-		if file:Open(data.path_info) ~= false then
+		local ok, err = file:Open(data.path_info)
+
+		if ok ~= false then
 			if mode == "write" then
 				vfs.ClearCallCache()
 			end
 			return file
 		else
 			file:Remove()
+			errors = errors .. " " ..  data.context.Name .. ":(" ..  err .. ")"
 		end
 	end
 
-	return false, "no such file exists"
+	return false, "unable to open file: " .. errors
 end
 
 include("path_utilities.lua", vfs)
