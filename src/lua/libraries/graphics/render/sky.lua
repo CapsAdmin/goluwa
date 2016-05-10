@@ -60,8 +60,8 @@ function render.UpdateSky()
 
 	fb:Begin()
 		for i, view in ipairs(directions) do
-			fb:SetTexture(1, tex, nil, nil, i)
-			--fb.gl_fb:TextureLayer(36064, tex.gl_tex.id, 0, i - 1)
+			--fb:SetTexture(1, tex, nil, nil, i)
+			fb:SetTextureLayer(1, tex, i)
 			--fb:Clear()
 			render.camera_3d:SetView(view)
 			render.camera_3d:SetProjection(sky_projection)

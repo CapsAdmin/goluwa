@@ -34,26 +34,29 @@ local bind_mode_to_enum = {
 }
 
 local function generate_draw_buffers(self)
-	local i = 0
+	local draw_buffers = {}
+	local i = 1
 
 	for _, v in ipairs(self.textures_sorted) do
 		if
 			(v.mode == "GL_DRAW_FRAMEBUFFER" or v.mode == "GL_FRAMEBUFFER") and
 			(v.enum ~= "GL_DEPTH_ATTACHMENT" and v.enum ~= "GL_STENCIL_ATTACHMENT" and v.enum ~= "GL_DEPTH_STENCIL_ATTACHMENT")
 		then
-			self.draw_buffers[i] = v.enum
+			draw_buffers[i] = v.enum
 			i = i + 1
 		end
 	end
 
-	self.draw_buffers_size = i
-	self.update_buffers = true
+	--table.sort(draw_buffers, function(a, b) return a < b end)
+
+	self.draw_buffers = ffi.new("GLenum[?]", i, draw_buffers)
+	self.draw_buffers_size = i - 1
 end
 
 local function update_drawbuffers(self)
-	if self.update_buffers then
+	if self.draw_buffers ~= self.last_draw_buffers then
 		self.gl_fb:DrawBuffers(self.draw_buffers_size, self.draw_buffers)
-		self.update_buffers = false
+		self.last_draw_buffers = self.draw_buffers
 	end
 end
 
@@ -63,9 +66,6 @@ function render._CreateFrameBuffer(self, id_override)
 	self.textures_sorted = {}
 	self.render_buffers = {}
 	self.draw_buffers_cache = {}
-
-	self.draw_buffers = ffi.new("GLenum[?]", 10)
-	self.draw_buffers_size = 0
 end
 
 
@@ -120,6 +120,11 @@ end
 
 function META:_Bind()
 	self.gl_fb:Bind(self.enum_bind_mode)
+end
+
+function META:SetTextureLayer(pos, tex, layer)
+	local enum = attachment_to_enum(self, pos)
+	self.gl_fb:TextureLayer(enum, tex.gl_tex.id, 0, layer - 1)
 end
 
 function META:SetTexture(pos, tex, mode, uid, face)
@@ -181,6 +186,7 @@ function META:SetTexture(pos, tex, mode, uid, face)
 		if self.render_buffers[uid] then
 			self.render_buffers[uid].rb:Delete()
 		end
+
 		self.render_buffers[uid] = nil
 		self.textures[uid] = nil
 	end
