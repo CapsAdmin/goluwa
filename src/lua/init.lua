@@ -36,7 +36,7 @@ end
 
 do -- constants
 	OPENGL = true
-	NVIDIA_WORKAROUND = true
+	NVIDIA_WORKAROUND = false
 	--VULKAN = true
 
 	-- if WINDOWS and X86 then blah blah end
@@ -99,6 +99,12 @@ do -- constants
 	RELOAD = false
 	CREATED_ENV = false
 
+	if CAPS then
+		GL_ARB_direct_state_access = true
+		NVIDIA_WORKAROUND = false
+	end
+
+
 	--[[
 	--uncomment to check _G lookups
 	setmetatable(_G, {
@@ -112,6 +118,7 @@ do -- constants
 			rawset(s,k,v)
 		end,
 	})]]
+
 end
 
 -- put all c functions in a table so we can override them if needed

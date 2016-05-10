@@ -138,7 +138,7 @@ function META:SetupStorage()
 	end
 
 	if self.StorageType == "3d" then
-		if window.IsExtensionSupported("GL_ARB_texture_storage") then
+		if system.IsOpenGLExtensionSupported("GL_ARB_texture_storage") then
 			self.gl_tex:Storage3D(
 				mip_map_levels,
 				TOENUM(self.InternalFormat),
@@ -162,7 +162,7 @@ function META:SetupStorage()
 			)
 		end
 	elseif self.StorageType == "2d" or self.StorageType == "rectangle" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then
-		if window.IsExtensionSupported("GL_ARB_texture_storage") then
+		if system.IsOpenGLExtensionSupported("GL_ARB_texture_storage") then
 			if self.Multisample > 0 then
 				self.gl_tex:Storage2DMultisample(
 					self.Multisample,
@@ -195,7 +195,7 @@ function META:SetupStorage()
 			)
 		end
 	elseif self.StorageType == "1d" or self.StorageType == "1d_array" then
-		if window.IsExtensionSupported("GL_ARB_texture_storage") then
+		if system.IsOpenGLExtensionSupported("GL_ARB_texture_storage") then
 			self.gl_tex:Storage1D(
 				levels,
 				TOENUM(self.InternalFormat),
@@ -373,7 +373,7 @@ function META:_Download(mip_map_level, buffer, size, format)
 end
 
 function META:Clear(mip_map_level)
-	if window.IsExtensionSupported("GL_ARB_clear_texture") then
+	if system.IsOpenGLExtensionSupported("GL_ARB_clear_texture") then
 		gl.ClearTexImage(self.gl_tex.id, mip_map_level or 0, "GL_RGBA", "GL_UNSIGNED_BYTE", nil)
 	else
 		local data = self:Download(mip_map_level)

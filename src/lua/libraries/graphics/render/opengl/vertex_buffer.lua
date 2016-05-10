@@ -39,7 +39,7 @@ if not NVIDIA_WORKAROUND then
 		self.element_buffer:Delete()
 	end
 
-	if window.IsExtensionSupported("GL_ARB_direct_state_access") then
+	if system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
 		function META:_Draw(count)
 			gl.BindVertexArray(self.vertex_array.id)
 			gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_INT", nil)
@@ -55,7 +55,7 @@ if not NVIDIA_WORKAROUND then
 	local function setup_vertex_array(self)
 		if not self.setup_vao and self.Indices and self.Vertices then
 			for _, data in ipairs(self.vertex_array_info.attributes) do
-				if not window.IsExtensionSupported("GL_ARB_direct_state_access") then
+				if not system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
 					self.element_buffer:Bind()
 					self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.vertex_array_info.size)
 				end
@@ -70,7 +70,7 @@ if not NVIDIA_WORKAROUND then
 	function META:_SetVertices(vertices)
 		self.vertex_buffer:Data(vertices:GetSize(), vertices:GetPointer(), "GL_DYNAMIC_DRAW")
 		setup_vertex_array(self)
-		if window.IsExtensionSupported("GL_ARB_direct_state_access") then
+		if system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
 			self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.vertex_array_info.size)
 		end
 	end
@@ -78,7 +78,7 @@ if not NVIDIA_WORKAROUND then
 	function META:_SetIndices(indices)
 		self.element_buffer:Data(indices:GetSize(), indices:GetPointer(), "GL_DYNAMIC_DRAW")
 		setup_vertex_array(self)
-		if window.IsExtensionSupported("GL_ARB_direct_state_access") then
+		if system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
 			self.vertex_array:ElementBuffer(self.element_buffer.id)
 		end
 	end

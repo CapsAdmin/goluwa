@@ -631,7 +631,7 @@ do -- cached rendering
 	function META:SetCachedRendering(b)
 		self.CachedRendering = b
 
-		if not window.IsExtensionSupported("GL_ARB_framebuffer_object") then
+		if not system.IsOpenGLExtensionSupported("GL_ARB_framebuffer_object") then
 			self.CachedRendering = false
 		end
 

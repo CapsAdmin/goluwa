@@ -175,7 +175,7 @@ local function variables_to_string(type, variables, prepend, macro, array)
 		if data.type:find("sampler") then
 			local layout = ""
 
-			if window.IsExtensionSupported("GL_ARB_enhanced_layouts") or window.IsExtensionSupported("GL_ARB_shading_language_420pack") then
+			if system.IsOpenGLExtensionSupported("GL_ARB_enhanced_layouts") or system.IsOpenGLExtensionSupported("GL_ARB_shading_language_420pack") then
 				layout = ("layout(binding = %i)"):format(texture_channel)
 			end
 
@@ -454,7 +454,7 @@ function render.CreateShader(data, vars)
 
 			local extensions = {}
 
-			if window.IsExtensionSupported("GL_ARB_shading_language_420pack") then
+			if system.IsOpenGLExtensionSupported("GL_ARB_shading_language_420pack") then
 				table.insert(extensions, "#extension GL_ARB_shading_language_420pack : enable")
 			end
 

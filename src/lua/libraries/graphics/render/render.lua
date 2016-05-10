@@ -1,6 +1,5 @@
 local render = _G.render or {}
 
-include("opengl/render.lua", render)
 include("debug.lua", render)
 include("vertex_buffer.lua", render)
 include("texture.lua", render)
@@ -22,6 +21,8 @@ include("environment_probe.lua", render)
 include("globals.lua", render)
 
 function render.Initialize()
+	include("lua/libraries/graphics/render/opengl/render.lua", render)
+
 	render._Initialize()
 
 	include("lua/libraries/graphics/render/texture_decoders/*")
