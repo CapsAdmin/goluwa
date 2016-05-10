@@ -1,7 +1,7 @@
 render.AddGlobalShaderCode([[
 vec3 gbuffer_compute_sky(vec3 ray, float depth)
 {
-	return vec3(0.4,0.8,1);
+	return vec3(1);
 }]])
 
 
@@ -32,13 +32,7 @@ float gbuffer_compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, 
 render.AddGlobalShaderCode([[
 vec3 gbuffer_compute_specular(vec3 l, vec3 v, vec3 n, float attenuation, vec3 light_color)
 {
-	vec2 uv = get_screen_uv();
-	n = -n;
-
-	float diffuse = max(dot(n, l), 0.0);
-	float specular = max(pow(dot((2.0 * n * dot(n, l)) - l, v), 2/get_roughness(uv)), 0.0);
-
-	return vec3(diffuse + specular)*attenuation*light_color;
+	return attenuation*light_color;
 }]])
 
 local PASS = {}
