@@ -9,9 +9,12 @@ parent:SetPosition(render.camera_3d:GetPosition())
 parent:SetAngles(Ang3(0,0,0))
 parent:SetScale(Vec3(1,1,1))
 
-commands.RunString("mount gmod")
+steam.MountSourceGame("gmod")
 
-local models = vfs.Find("models/props_c17/.+%.mdl", true)
+local models = {}
+for _, dir in ipairs(vfs.Find("models/props_", true)) do
+	table.add(models, vfs.Find(dir .. "/.+%.mdl", true))
+end
 
 do
 	local parent = parent
@@ -27,7 +30,7 @@ do
 		parent = child
 	end
 end
-
+do return end
 local start = system.GetElapsedTime()
 
 parent:BuildChildrenList()
