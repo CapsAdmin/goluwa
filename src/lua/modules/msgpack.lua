@@ -219,11 +219,11 @@ local function encode(value)
       elseif l < 0x100000000 then
         return "\xdd" .. write32(l) .. value
       else
-        error("Array too long: " .. l .. "items")
+        warning("Array too long: " .. l .. "items")
       end
     end
   else
-    error("Unknown type: " .. t)
+    warning("Unknown type: " .. t)
   end
 end
 
