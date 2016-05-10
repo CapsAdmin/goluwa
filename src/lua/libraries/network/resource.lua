@@ -1,10 +1,5 @@
 local resource = _G.resource or {}
 
-resource.download_queue = {}
-resource.cache = {}
-resource.file_queue = {}
-resource.async_readers = {}
-resource.downloading = {}
 resource.providers = {}
 
 e.DOWNLOAD_FOLDER = e.DATA_FOLDER .. "downloads/"
