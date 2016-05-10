@@ -70,7 +70,6 @@ function CONTEXT:Open(path_info, ...)
 		return false, "unable to open file"
 	end
 
-	self.bad_eof = fs.eof(self.file) == 1
 	self.attributes = fs.getattributes(path_info.full_path)
 end
 
