@@ -261,7 +261,7 @@ function render.DrawGBuffer(what, dist)
 	surface.PopMatrix()
 end
 
-local shader_cvar = pvars.Setup("render_gbuffer_shader", "template", function() if gbuffer_enabled then render.InitializeGBuffer() end end)
+local shader_cvar = pvars.Setup("render_gshader", "template", function() if gbuffer_enabled then render.InitializeGBuffer() end end)
 
 render.gbuffer = NULL
 
@@ -454,7 +454,6 @@ end
 event.AddListener("EntityCreate", "gbuffer", function()
 	if gbuffer_enabled then return end
 
-	if not pvars.Get("render_deferred") then return end
 	if table.count(entities.GetAll()) ~= 0 then return end
 
 	render.InitializeGBuffer()
@@ -463,7 +462,6 @@ end)
 event.AddListener("EntityRemove", "gbuffer", function()
 	if gbuffer_enabled then return end
 
-	if not pvars.Get("render_deferred") then return end
 	if table.count(entities.GetAll()) ~= 0 then return end
 
 	render.ShutdownGBuffer()
