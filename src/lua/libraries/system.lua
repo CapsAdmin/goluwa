@@ -1029,8 +1029,11 @@ if sdl then
 		sdl.GL_MakeCurrent(self.sdl_wnd, system.gl_context)
 	end
 
+	local gl = require("libopengl")
+
 	function META:SwapBuffers()
-		sdl.GL_SwapWindow(self.sdl_wnd)
+		gl.Flush()
+		--sdl.GL_SwapWindow(self.sdl_wnd)
 	end
 
 	function META:SwapInterval(b)
@@ -1213,6 +1216,8 @@ if sdl then
 
 		if OPENGL then
 			table.insert(flags, "opengl")
+			sdl.GL_SetAttribute(sdl.e.GL_DEPTH_SIZE, 0)
+			sdl.GL_SetAttribute(sdl.e.GL_DOUBLEBUFFER, 0)
 		end
 
 		local bit_flags = 0
