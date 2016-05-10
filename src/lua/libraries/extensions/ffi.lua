@@ -1,6 +1,13 @@
 --_G.ffi = require("ffi")
 local ffi = require("ffi")
 
+ffi.cdef("char *strerror(int)")
+
+function ffi.strerror()
+	local num = ffi.errno()
+	return ffi.string(ffi.C.strerror(num))
+end
+
 _OLD_G.ffi_load = _OLD_G.ffi_load or ffi.load
 
 local ffi_new = ffi.new
