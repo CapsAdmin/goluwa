@@ -227,3 +227,40 @@ do -- table copy
 		return copy(obj, skip_meta)
 	end
 end
+
+do
+	local setmetatable = setmetatable
+	local ipairs = ipairs
+
+	local META = {}
+
+	META.__index = META
+
+	META.concat = table.concat
+	META.insert = table.insert
+	META.remove = table.remove
+	META.unpack = table.unpack
+	META.sort = table.sort
+
+	function META:pairs()
+		return ipairs(self)
+	end
+
+	function table.list(count)
+		return setmetatable(table.new(count or 1, 0), META)
+	end
+end
+
+function table.weak(k, v)
+	if k and v then
+		mode = "kv"
+	elseif k then
+		mode = "k"
+	elseif v then
+		mode = "v"
+	else
+		mode = "kv"
+	end
+
+	return setmetatable({__mode  = mode})
+end
