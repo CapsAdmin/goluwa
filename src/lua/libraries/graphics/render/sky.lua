@@ -21,7 +21,7 @@ function render.InitializeSky()
 	tex:SetInternalFormat("rgb16f")
 
 	--tex:SetMipMapLevels(16)
-	tex:SetSize(Vec2() + 512)
+	tex:SetSize(Vec2() + 256)
 	tex:SetupStorage()
 
 	shader = render.CreateShader({
@@ -51,8 +51,6 @@ function render.InitializeSky()
 end
 
 function render.UpdateSky()
-	if not tex then render.InitializeSky() end
-
 	render.SetDepth(false)
 	render.SetBlendMode()
 
@@ -63,6 +61,7 @@ function render.UpdateSky()
 	fb:Begin()
 		for i, view in ipairs(directions) do
 			fb:SetTexture(1, tex, nil, nil, i)
+			--fb.gl_fb:TextureLayer(36064, tex.gl_tex.id, 0, i - 1)
 			--fb:Clear()
 			render.camera_3d:SetView(view)
 			render.camera_3d:SetProjection(sky_projection)
@@ -75,13 +74,10 @@ function render.UpdateSky()
 	render.camera_3d:SetProjection(old_projection)
 
 	tex:GenerateMipMap()
-
-
 	render.SetShaderOverride()
 end
 
 function render.GetSkyTexture()
-	if not tex then render.InitializeSky() end
 	return tex
 end
 

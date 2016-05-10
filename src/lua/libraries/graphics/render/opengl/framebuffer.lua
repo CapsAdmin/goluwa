@@ -129,57 +129,60 @@ function META:SetTexture(pos, tex, mode, uid, face)
 		uid = enum
 	end
 
-	if typex(tex) == "texture" then
-		local id = tex and tex.gl_tex.id or 0 -- 0 will be detach if tex is nil
+	if tex then
+		if tex.gl_tex then
+			local id = tex and tex.gl_tex.id or 0 -- 0 will be detach if tex is nil
 
-		if face then
-			self.gl_fb:TextureLayer(enum, tex and tex.gl_tex.id or 0, 0, face - 1)
-		else
-			self.gl_fb:Texture(enum, id, 0)
-		end
-
-		for i,v in ipairs(self.textures_sorted) do
-			if v.uid == uid then
-				table.remove(self.textures_sorted, i)
-				break
-			end
-		end
-
-		if id ~= 0 then
-			self.textures[uid] = {
-				tex = tex,
-				mode = bind_mode_to_enum[mode or "write"],
-				enum = enum,
-				uid = uid,
-			}
-
-			if tex:GetMipMapLevels() > 0 then
-				self.generate_mip_maps = true
+			if face then
+				self.gl_fb:TextureLayer(enum, tex and tex.gl_tex.id or 0, 0, face - 1)
+			else
+				self.gl_fb:Texture(enum, id, 0)
 			end
 
-			table.insert(self.textures_sorted, self.textures[uid])
+			for i,v in ipairs(self.textures_sorted) do
+				if v.uid == uid then
+					table.remove(self.textures_sorted, i)
+					break
+				end
+			end
 
-			self:SetSize(tex:GetSize():Copy())
+			if id ~= 0 then
+				self.textures[uid] = {
+					tex = tex,
+					mode = bind_mode_to_enum[mode or "write"],
+					enum = enum,
+					uid = uid,
+				}
+
+				if tex:GetMipMapLevels() > 0 then
+					self.generate_mip_maps = true
+				end
+
+				table.insert(self.textures_sorted, self.textures[uid])
+
+				self:SetSize(tex:GetSize():Copy())
+			end
 		else
-			self.textures[uid] = nil
+			local rb = self.render_buffers[uid] or gl.CreateRenderbuffer()
+
+			-- ASDF
+			if tex.size then
+				tex.width = tex.size.x
+				tex.height = tex.size.y
+				tex.size = nil
+			end
+
+			rb:Storage("GL_" .. tex.internal_format:upper(), tex.width, tex.height)
+			self.gl_fb:Renderbuffer(enum, rb.id)
+
+			self.render_buffers[uid] = {rb = rb}
 		end
-	elseif tex then
-		local rb = self.render_buffers[uid] or gl.CreateRenderbuffer()
-
-		-- ASDF
-		if tex.size then
-			tex.width = tex.size.x
-			tex.height = tex.size.y
-			tex.size = nil
+	else
+		if self.render_buffers[uid] then
+			self.render_buffers[uid].rb:Delete()
 		end
-
-		rb:Storage("GL_" .. tex.internal_format:upper(), tex.width, tex.height)
-		self.gl_fb:Renderbuffer(enum, rb.id)
-
-		self.render_buffers[uid] = {rb = rb}
-	elseif self.render_buffers[uid] then
-		self.render_buffers[uid].rb:Delete()
 		self.render_buffers[uid] = nil
+		self.textures[uid] = nil
 	end
 
 	generate_draw_buffers(self)

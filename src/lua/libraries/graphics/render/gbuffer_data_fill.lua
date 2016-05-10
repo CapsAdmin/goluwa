@@ -197,7 +197,11 @@ function PASS:EndPass()
 end
 
 function PASS:Draw3D(what, dist)
-	render.UpdateSky()
+
+	if (self.last_update_sky or 0) < system.GetElapsedTime() then
+		render.UpdateSky()
+		self.last_update_sky = system.GetElapsedTime() + 1/30
+	end
 
 	render.SetBlendMode()
 	render.SetDepth(true)
