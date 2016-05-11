@@ -24,7 +24,7 @@ if audio then
 end
 
 if CURSES then
-	console.InitializeCurses()
+	repl.Initialize()
 end
 
 if lovemu then

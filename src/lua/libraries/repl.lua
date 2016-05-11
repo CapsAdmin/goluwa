@@ -1,6 +1,7 @@
 local repl = _G.repl or {}
 
-local curses = require("libcurses")
+local curses = require("libncurses")
+local ffi = require("ffi")
 
 local log_history = {}
 repl.curses = repl.curses or {}

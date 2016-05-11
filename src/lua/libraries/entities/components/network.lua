@@ -1,8 +1,10 @@
 local META = prototype.CreateTemplate()
 
-function META:PreCreate()
-	if not network.IsConnected() then
-		return false
+if CLIENT then
+	function META:PreCreate()
+		if not network.IsConnected() then
+			return false
+		end
 	end
 end
 
@@ -161,7 +163,7 @@ do
 end
 
 function META:OnUpdate(dt)
-	if not network.IsConnected() then return end
+	if CLEINT and not network.IsConnected() then return end
 
 	self:UpdateVars()
 
