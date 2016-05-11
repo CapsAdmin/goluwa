@@ -106,20 +106,14 @@ function resource.Download(path, callback, on_fail, crc)
 	on_fail = on_fail or logn
 
 	local url
+	local existing_path
 
-	if path:find("^(.-)://") then
+	if path:find("^.-://") then
 		url = path
 		local ext = url:match(".+(%.%a+)") or ".dat"
 		path = "cache/" .. (crc or crypto.CRC32(path)) .. ext
-	end
-
-	local path2 = R(path)
-
-	if not path2 then
-		local path = R(path:lower())
-		if path then
-			path2 = path
-		end
+	else
+		existing_path = R(path) or R(path:lower())
 	end
 
 	if not ohno then
@@ -131,9 +125,9 @@ function resource.Download(path, callback, on_fail, crc)
 		end
 	end
 
-	if path2 then
+	if existing_path then
 		ohno = true
-		callback(path2)
+		callback(existing_path)
 		ohno = false
 		return true
 	end
