@@ -179,7 +179,7 @@ local function encode(value)
     local index = 1
     local max = 0
     for key in pairs(value) do
-      if type(key) ~= "number" or (key > 10 and key ~= index) then
+      if type(key) ~= "number" or key < 1 or (key > 10 and key ~= index) then
         isMap = true
         break
       else
