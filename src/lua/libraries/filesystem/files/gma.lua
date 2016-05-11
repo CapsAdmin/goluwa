@@ -9,7 +9,6 @@ CONTEXT.Position = 5
 
 function CONTEXT:OnParseArchive(file, archive_path)
 	local info = {}
-
 	if file:ReadBytes(4) ~= "GMAD" then
 		return false, "not a gmad archive"
 	end
@@ -49,7 +48,7 @@ function CONTEXT:OnParseArchive(file, archive_path)
 		self:AddEntry(entry)
 	end
 
-	info.file_block = file:GetPosition()
+	info.file_block = tonumber(file:GetPosition())
 
 	for _, v in pairs(info.entries) do
 		v.offset = v.offset + info.file_block

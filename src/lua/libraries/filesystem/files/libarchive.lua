@@ -4,9 +4,11 @@ local archive = desire("libarchive")
 
 local function iterate_archive(a)
 	return function()
-		local entry = ffi.new("struct archive_entry * [1]")
-		if archive.ReadNextHeader(a, entry) == archive.e.OK then
-			return ffi.string(archive.EntryPathname(entry[0]))
+		local entry = archive.EntryNew()
+		if archive.ReadNextHeader2(a, entry) == archive.e.OK then
+			local str = ffi.string(archive.EntryPathname(entry))
+			archive.EntryFree(entry)
+			return str
 		end
 	end
 end
@@ -48,9 +50,10 @@ local function open_archive(path_info)
 	local a = archive.ReadNew()
 
 	archive.ReadSupportCompressionAll(a)
+	archive.ReadSupportFilterAll(a)
 	archive.ReadSupportFormatAll(a)
 
-	if archive.ReadOpenMemory(a, str, #str) ~= 0 then
+	if archive.ReadOpenMemory(a, str, #str) ~= archive.e.OK then
 		local err = archive.ErrorString(a)
 
 		if err ~= nil then

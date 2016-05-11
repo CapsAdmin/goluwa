@@ -6,6 +6,10 @@ CONTEXT.Name = "base"
 
 prototype.GetSet(CONTEXT, "Mode", "read")
 
+function CONTEXT:__tostring2()
+	return self.path_used or ""
+end
+
 do
 	local cache = vfs.call_cache or {}
 	local last_framenumber = 0

@@ -267,6 +267,8 @@ function vfs.Open(path, mode, sub_mode)
 
 		local ok, err = file:Open(data.path_info)
 
+		file.path_used = data.path_info.full_path
+
 		if ok ~= false then
 			if mode == "write" then
 				vfs.ClearCallCache()
