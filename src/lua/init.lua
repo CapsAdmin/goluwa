@@ -36,7 +36,6 @@ end
 
 do -- constants
 	OPENGL = true
-	NVIDIA_WORKAROUND = false
 	--VULKAN = true
 
 	-- if WINDOWS and X86 then blah blah end
@@ -101,7 +100,7 @@ do -- constants
 
 	if CAPS then
 		GL_ARB_direct_state_access = true
-		NVIDIA_WORKAROUND = false
+		NVIDIA_WORKAROUND = true
 	end
 
 

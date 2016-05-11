@@ -1032,8 +1032,8 @@ if sdl then
 	local gl = require("libopengl")
 
 	function META:SwapBuffers()
-		gl.Flush()
-		--sdl.GL_SwapWindow(self.sdl_wnd)
+		--gl.Flush()
+		sdl.GL_SwapWindow(self.sdl_wnd)
 	end
 
 	function META:SwapInterval(b)
@@ -1217,7 +1217,7 @@ if sdl then
 		if OPENGL then
 			table.insert(flags, "opengl")
 			sdl.GL_SetAttribute(sdl.e.GL_DEPTH_SIZE, 0)
-			sdl.GL_SetAttribute(sdl.e.GL_DOUBLEBUFFER, 0)
+			--sdl.GL_SetAttribute(sdl.e.GL_DOUBLEBUFFER, 0)
 		end
 
 		local bit_flags = 0
@@ -1229,8 +1229,8 @@ if sdl then
 		if not width or not height then
 			local info = ffi.new("struct SDL_DisplayMode[1]")
 			sdl.GetCurrentDisplayMode(0, info)
-			width = width or info[0].w
-			height = height or info[0].h
+			width = width or info[0].w / 2
+			height = height or info[0].h / 2
 		end
 
 		local sdl_wnd = sdl.CreateWindow(title, sdl.e.WINDOWPOS_CENTERED, sdl.e.WINDOWPOS_CENTERED, width, height, bit_flags)
