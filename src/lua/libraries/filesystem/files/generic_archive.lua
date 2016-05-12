@@ -72,10 +72,14 @@ function CONTEXT:GetFileTree(path_info)
 	if not file then
 		return false, err
 	end
+
 	local tree = utility.CreateTree("/")
 	self.tree = tree
+
 	local ok, err = self:OnParseArchive(file, archive_path)
+
 	file:Close()
+
 	if not ok then
 		return false, err
 	end
@@ -101,6 +105,7 @@ end
 
 function CONTEXT:IsFolder(path_info)
 	local tree, relative, archive_path = self:GetFileTree(path_info)
+	if relative == "" then return true end
 	if not tree then return tree, relative end
 	local entry = tree:GetEntry(relative)
 	if entry and entry.is_dir then

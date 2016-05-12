@@ -28,6 +28,7 @@ CONTEXT.Name = "libarchive"
 CONTEXT.Position = math.huge
 
 local function open_archive(path_info)
+
 	local archive_path, relative
 
 	if path_info.full_path:find("tar.gz", nil, true) then
@@ -42,6 +43,10 @@ local function open_archive(path_info)
 
 	if archive_path:endswith("/") then
 		archive_path = archive_path:sub(0, -2)
+	end
+
+	if archive_path:endswith(".gma") then
+		return false, "gma TODO"
 	end
 
 	local str = vfs.Read("os:" .. archive_path)

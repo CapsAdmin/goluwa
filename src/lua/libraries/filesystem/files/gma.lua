@@ -8,6 +8,10 @@ CONTEXT.Base = "generic_archive"
 CONTEXT.Position = 5
 
 function CONTEXT:OnParseArchive(file, archive_path)
+	if archive_path:endswith(".gma/") then
+		return false, "archive path does not end with .gma"
+	end
+
 	local info = {}
 	if file:ReadBytes(4) ~= "GMAD" then
 		return false, "not a gmad archive"
@@ -35,7 +39,7 @@ function CONTEXT:OnParseArchive(file, archive_path)
 		local entry = {}
 
 		entry.full_path = file:ReadString()
-		entry.archive_path = "os:" .. archive_path
+		entry.archive_path = "os:" .. archive_path:sub(0, -2)
 		entry.size = tonumber(file:ReadLongLong())
 		entry.crc = file:ReadUnsignedLong()
 		entry.offset = offset

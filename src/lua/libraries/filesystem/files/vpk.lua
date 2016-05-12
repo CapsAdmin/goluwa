@@ -59,7 +59,7 @@ end
 
 
 function CONTEXT:TranslateArchivePath(file_info, archive_path)
-	if file_info.archive_index == 0x7FFF then
+	if not file_info.archive_index or file_info.archive_index == 0x7FFF then
 		return "os:" .. archive_path
 	end
 
