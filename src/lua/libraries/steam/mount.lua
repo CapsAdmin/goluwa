@@ -187,9 +187,10 @@ function steam.MountSourceGame(game_info)
 		if path:endswith(".vpk") then
 			path = "os:" .. path:gsub("(.+)%.vpk", "%1_dir.vpk")
 		else
-			path = "os:" .. path
 
 			if path:endswith("*") then
+				path = "os:" .. path
+
 				path = path:sub(0, -2)
 				for _, v in pairs(vfs.Find(path)) do
 					if vfs.IsDirectory(path .. "/" .. v) or v:endswith(".vpk") then
@@ -199,11 +200,17 @@ function steam.MountSourceGame(game_info)
 				end
 			else
 				for _, v in pairs(vfs.Find(path .. "addons/")) do
-					if vfs.IsDirectory(path .. "addons/" .. v) or v:endswith(".gma") then
+					if vfs.IsDirectory(path .. "addons/" .. v) then
+						local where = path .. "addons/" .. v
 						llog("mounting addon %s", v)
-						vfs.Mount(path .. "addons/" .. v, nil, game_info)
+						if v:endswith(".gma") then
+							where = "gmod addon archive:" .. where
+						end
+						vfs.Mount(where, nil, game_info)
 					end
 				end
+
+				path = "os:" .. path
 
 				for _, v in pairs(vfs.Find(path .. "maps/workshop/")) do
 					llog("mounting workshop map %s", v)
