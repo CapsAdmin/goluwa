@@ -112,16 +112,16 @@ end
 
 do
 	local cull_mode
-	local override_
+	local force_mode
 
-	function render.SetCullMode(mode, override)
-		if mode == cull_mode and override ~= true then return end
-		if override_ and override ~= false then return end
+	function render.SetCullMode(mode, force)
+		if force == true then
+			force_mode = mode
+		elseif force == false then
+			force_mode = nil
+		end
 
-		render._SetCullMode(mode)
-
-		cull_mode = mode
-		override_ = override
+		render._SetCullMode(force_mode or mode)
 	end
 
 	function render.GetCullMode()
