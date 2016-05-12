@@ -19,13 +19,21 @@ commands.Add("unmount_all", function()
 	steam.UnmountAllSourceGames()
 end)
 
-
 commands.Add("list_games", function()
 	for _, info in pairs(steam.GetSourceGames()) do
 		logn(info.game)
 		logn("\tgame_dir = ", info.game_dir)
 		logn("\tappid = ", info.filesystem.steamappid)
 		logn()
+	end
+end)
+
+commands.Add("list_maps", function(search)
+	steam.MountSourceGames()
+	for _, name in ipairs(vfs.Find("maps/%.bsp$")) do
+		if not search or name:find(search) then
+			logn(name:sub(0, -5))
+		end
 	end
 end)
 
