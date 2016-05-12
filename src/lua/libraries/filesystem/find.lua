@@ -93,24 +93,6 @@ function vfs.Iterate(path, ...)
 	end
 end
 
-function vfs.Traverse(path, callback, level)
-	level = level or 1
-
-	local attributes = vfs.GetAttributes(path)
-
-	if attributes then
-		callback(path, attributes, level)
-
-		if attributes.type == "directory" then
-			for child in vfs.Iterate(path) do
-				if child ~= "." and child ~= ".." then
-					vfs.Traverse(path .. "/" .. child, callback, level + 1)
-				end
-			end
-		end
-	end
-end
-
 do
 	local out
 	local function search(path, ext, callback)
