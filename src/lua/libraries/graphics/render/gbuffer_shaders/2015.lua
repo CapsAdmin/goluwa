@@ -70,12 +70,11 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 	float mie_factor = sky_phase(alpha - 0.5, mie_distribution) * mie_brightness * (1.0 - ldir.y);
 	float sky_mult = pow(depth, 100);
 	float spot = smoothstep(0.0, 100.0, sky_phase(alpha, 0.9995)) * spot_brightness * sky_mult;
-	vec3 noise = get_noise((ray.xz+sun_direction.xy)/5).xyz;
-	vec3 hsv = rgb2hsv(noise);
-	hsv.y = 0.25;
-	hsv.z = pow(hsv.z, 75)*5;
-	noise = hsv2rgb(hsv);
-	vec3 stars = noise * sky_mult;
+
+	vec3 stars = textureLatLon(lua[nightsky_tex = render.CreateTextureFromPath("textures/skybox/milkyway.jpg")], reflect(ray, sun_direction)).rgb;
+	stars += pow(stars*1.25, vec3(1.5));
+	stars *= depth * 0.05;
+
 	vec3 eye_position = min(vec3(0,surface_height,0) + (vec3(-g_cam_pos.x, g_cam_pos.z, g_cam_pos.y) / 100010000), vec3(0.999999));
 	float eye_depth = sky_atmospheric_depth(eye_position, ray, depth);
 	float step_length = eye_depth/float(step_count);
@@ -290,7 +289,7 @@ do
 			table.insert(PASS.Source, {
 				buffer = {
 					size_divider = 2,
-					internal_format = "rgb16f",
+					internal_format = "r11f_g11f_b10f",
 				},
 				source = [[
 					out vec3 out_color;
@@ -300,7 +299,7 @@ do
 					vec3 blur(vec2 dir, float amount)
 					{
 
-						amount = pow(amount*2, 2.5) / get_depth(uv) / g_cam_farz;
+						amount = pow(amount*1.5, 2.5) / get_depth(uv) / g_cam_farz;
 
 						vec2 step = dir * amount;
 						vec3 normal = normalize(get_view_normal(uv));
@@ -338,7 +337,7 @@ do
 	do
 		table.insert(PASS.Source, {
 			buffer = {
-				size_divider = 2,
+				size_divider = 1,
 				internal_format = "rgb8",
 			},
 			source = [[
@@ -387,7 +386,7 @@ do
 
 			void main()
 			{
-				vec3 reflection = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb * 3;
+				vec3 reflection = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb*2.5;
 
 				vec3 diffuse = get_albedo(uv);
 				vec3 specular = get_specular(uv)*2;
@@ -398,7 +397,7 @@ do
 				float metallic = get_metallic(uv);
 				specular = mix(specular, reflection, pow(metallic, 0.5));
 				out_color = diffuse * specular;
-				out_color += gbuffer_compute_sky(get_camera_dir(uv), get_depth(uv))*0.5;
+				out_color += gbuffer_compute_sky(get_camera_dir(uv), get_depth(uv));
 				//out_color = reflection;
 			}
 		]]
