@@ -2,7 +2,7 @@ render.csm_count = 4
 
 local PASS = {}
 
-PASS.DepthFormat = "depth_component32f"
+PASS.DepthFormat = "depth_component16"
 
 PASS.Buffers = {
 	{
@@ -11,16 +11,31 @@ PASS.Buffers = {
 		layout =
 		{
 			{
-				format = "rgba16f",
-
-				albedo = "rgb",
-				roughness = "a",
+				rgba8 = {
+					rgb = "albedo",
+					a = "roughness",
+				}
 			},
 			{
-				format = "rgba16f",
-
-				view_normal = "rgb",
-				metallic = "a",
+				r11f_g11f_b10f = {
+					rg = {
+						"view_normal", "vec3",
+						[[
+							vec2 encode(vec3 normal)
+							{
+								return normal.xy * 0.5 + 0.5;
+							}
+							vec3 decode(vec2 normal)
+							{
+								vec3 n;
+								n.xy = normal*2-1;
+								n.z = sqrt(1-dot(n.xy, n.xy));
+								return n;
+							}
+						]],
+					},
+					b = "metallic"
+				}
 			},
 		}
 	},
@@ -30,10 +45,10 @@ PASS.Buffers = {
 		layout =
 		{
 			{
-				format = "rgba16f",
-
-				specular = "rgb",
-				shadow = "a",
+				rgba16f = {
+					rgb = "specular",
+					a = "shadow",
+				}
 			}
 		},
 	}
@@ -357,7 +372,7 @@ PASS.Stages = {
 
 					color *= lua[Color = Color(1,1,1,1)];
 
-					albedo = color.rgb;
+					set_albedo(color.rgb);
 
 					if (lua[Translucent = false] && dither(uv, color.a))
 					{
@@ -365,6 +380,7 @@ PASS.Stages = {
 					}
 
 					// normals
+					vec3 normal = vec3(0,0,0);
 					vec4 normal_map = texture(lua[NormalTexture = render.GetBlackTexture()], uv);
 
 					if (normal_map.xyz != vec3(0))
@@ -392,14 +408,18 @@ PASS.Stages = {
 
 						normal_map.xyz = /*normalize*/(normal_map.xyz * 2 - 1).xyz;
 
-						view_normal = tangent_space * normal_map.xyz;
+						normal = tangent_space * normal_map.xyz;
 					}
 					else
 					{
-						view_normal = vertex_view_normal;
+						normal = vertex_view_normal;
 					}
 
-					view_normal = normalize(view_normal);
+					normal = normalize(normal);
+
+					set_view_normal(normal);
+
+					float metallic = 1;
 
 					// metallic
 					if (lua[NormalAlphaMetallic = false])
@@ -415,10 +435,8 @@ PASS.Stages = {
 						metallic = texture(lua[MetallicTexture = render.GetBlackTexture()], uv).r;
 					}
 
-
-
 					// roughness
-					roughness = texture(lua[RoughnessTexture = render.GetBlackTexture()], uv).r;
+					float roughness = texture(lua[RoughnessTexture = render.GetBlackTexture()], uv).r;
 
 
 					//generate roughness and metallic they're zero
@@ -442,7 +460,11 @@ PASS.Stages = {
 
 					metallic *= lua[MetallicMultiplier = 1];
 					roughness *= lua[RoughnessMultiplier = 1];
-					specular = vec3(0,0,0);
+
+					set_metallic(metallic);
+					set_roughness(roughness);
+
+					set_specular(vec3(0,0,0));
 				}
 			]]
 		}
@@ -502,7 +524,7 @@ PASS.Stages = {
 										{
 											shadow_coord = 0.5 * shadow_coord + 0.5;
 
-											visibility = (shadow_coord.z - texture(tex_shadow_map, shadow_coord.xy).r);
+											visibility = (shadow_coord.z - texture(tex_shadow_map, shadow_coord.xy).r + 0.000005);
 										}
 										]]..(function()
 											if i == 1 then
@@ -541,21 +563,21 @@ PASS.Stages = {
 						attenuation = gbuffer_compute_light_attenuation(pos, light_view_pos, radius, normal);
 					}
 
-					specular = gbuffer_compute_specular(
+					set_specular(gbuffer_compute_specular(
 						normalize(pos - light_view_pos), // L
 						normalize(pos), // V
 						normal, // N
 						attenuation,
 						light_color.rgb * light_intensity
-					);
+					));
 
 					if (lua[light_shadow = false])
 					{
-						shadow = get_shadow_(uv);
+						set_shadow(get_shadow_(uv));
 					}
 					else
 					{
-						shadow = 0;
+						set_shadow(0);
 					}
 				}
 			]]

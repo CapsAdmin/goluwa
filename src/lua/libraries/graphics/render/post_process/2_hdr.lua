@@ -8,7 +8,7 @@ PASS.Source = {}
 table.insert(PASS.Source, {
 	buffer = {
 		size_divider = 5,
-		internal_format = "rgb16f",
+		internal_format = "r11f_g11f_b10f",
 	},
 	source = [[
 		out vec3 out_color;

@@ -300,28 +300,41 @@ function render.InitializeGBuffer()
 		for _, pass_info in ipairs(data_pass.Buffers) do
 			local write_these = ""
 
-			for i, buffer in ipairs(pass_info.layout) do
+			for i, val in ipairs(pass_info.layout) do
+				local format, info = next(val)
 				local name = "data" .. buffer_i
 
 				table.insert(framebuffer_buffers, {
 					name = name,
 					attach = "color",
-					internal_format = buffer.format,
+					internal_format = format,
 					filter = "linear",
 				})
 
 				render.SetGlobalShaderVariable("tex_" .. name, function() return render.gbuffer:GetTexture(name) end, "texture")
 
-				for key, index in pairs(buffer) do
-					if key ~= "format" then
-						local channel_count = #index
-						local glsl_type
-						if channel_count == 1 then
-							glsl_type = "float"
-						else
-							glsl_type = "vec" .. channel_count
-						end
+				for index, key in pairs(info) do
+					local channel_count = #index
+					local glsl_type
+					if channel_count == 1 then
+						glsl_type = "float"
+					else
+						glsl_type = "vec" .. channel_count
+					end
 
+					if type(key) == "table" then
+						local _, decode = key[3]:match("(%w+ encode%b()%s-%b{})%s-(%w+ decode%b()%s-%b{})")
+						local glsl_type = key[2]
+						key = key[1]
+						decode = decode:replace("decode(", "_decode_" .. key .. "(") .. "\n\n"
+
+						render.AddGlobalShaderCode(decode)
+
+						render.AddGlobalShaderCode(glsl_type.." get_"..key.."(vec2 uv)\n"..
+						"{\n"..
+							"\treturn _decode_" .. key .. "(texture(tex_data"..buffer_i..", uv)."..index..");\n"..
+						"}")
+					else
 						render.AddGlobalShaderCode(glsl_type.." get_"..key.."(vec2 uv)\n"..
 						"{\n"..
 							"\treturn texture(tex_data"..buffer_i..", uv)."..index..";\n"..
@@ -341,8 +354,8 @@ function render.InitializeGBuffer()
 			data_pass.buffers_write_these[pass_info.name] = write_these
 		end
 
-		local function gen_code(code, buffer, buffer_i)
-			local channel_count = #render.GetTextureFormatInfo(buffer.format).bits
+		local function gen_code(code, format, layout, buffer_i)
+			local channel_count = #render.GetTextureFormatInfo(format).bits
 			local glsl_type
 			if channel_count == 1 then
 				glsl_type = "float"
@@ -352,9 +365,26 @@ function render.InitializeGBuffer()
 
 			code = code .. "out " .. glsl_type .. " data" .. buffer_i .. "_buffer;\n"
 
-			for key, index in pairs(buffer) do
-				if key ~= "format" then
-					code = code .. "#define " .. key .. " data" .. buffer_i .. "_buffer." ..  index .. "\n"
+			for index, key in pairs(layout) do
+				local channel_count = #index
+				local glsl_type
+				if channel_count == 1 then
+					glsl_type = "float"
+				else
+					glsl_type = "vec" .. channel_count
+				end
+
+
+				if type(key) == "table" then
+					local encode = key[3]:match("(%w+ encode%b()%s-%b{})%s-(%w+ decode%b()%s-%b{})")
+					local glsl_type = key[2]
+					key = key[1]
+					encode = encode:replace("encode(", "_encode_" .. key .. "(") .. "\n\n"
+
+					code = code .. encode
+					code = code .. "void set_"..key.."("..glsl_type.." val){ data" .. buffer_i .. "_buffer." ..  index .. " = _encode_" .. key .. "(val); }\n"
+				else
+					code = code .. "void set_"..key.."("..glsl_type.." val){ data" .. buffer_i .. "_buffer." ..  index .. " = val; }\n"
 				end
 			end
 
@@ -367,15 +397,17 @@ function render.InitializeGBuffer()
 			if data_pass.Buffers[i].write == "all" then
 				local buffer_i = 1
 				for _, pass_info in ipairs(data_pass.Buffers) do
-					for _, buffer in ipairs(pass_info.layout) do
-						code = gen_code(code, buffer, buffer_i)
+					for _, val in ipairs(pass_info.layout) do
+						local format, layout = next(val)
+						code = gen_code(code, format, layout, buffer_i)
 						buffer_i = buffer_i + 1
 					end
 				end
 			elseif data_pass.Buffers[i].write == "self" then
 				local buffer_i = 1
-				for _, buffer in ipairs(data_pass.Buffers[i].layout) do
-					code = gen_code(code, buffer, buffer_i)
+				for _, val in ipairs(data_pass.Buffers[i].layout) do
+					local format, layout = next(val)
+					code = gen_code(code, format, layout, buffer_i)
 					buffer_i = buffer_i + 1
 				end
 			end

@@ -50,7 +50,7 @@ table.insert(PASS.Source, {
 
 			vec3 albedo = get_albedo(uv);
 			float metallic = get_metallic(uv);
-			float shadow = get_shadow(uv) > 0.000025 ? 0.25 : 1;
+			float shadow = get_shadow(uv) > 0.0000001 ? 0.25 : 1;
 			vec3 specular = get_specular(uv);
 
 			vec3 color = albedo;
