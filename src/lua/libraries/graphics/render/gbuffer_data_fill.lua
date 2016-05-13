@@ -2,7 +2,7 @@ render.csm_count = 4
 
 local PASS = {}
 
-PASS.DepthFormat = "depth_component16"
+PASS.DepthFormat = "depth_component32f"
 
 PASS.Buffers = {
 	{
@@ -17,20 +17,23 @@ PASS.Buffers = {
 				}
 			},
 			{
-				r11f_g11f_b10f = {
+				rgba8 = {
 					rg = {
 						"view_normal", "vec3",
 						[[
-							vec2 encode(vec3 normal)
+							vec2 encode(vec3 n)
 							{
-								return normal.xy * 0.5 + 0.5;
+								vec2 enc = normalize(n.xy) * (sqrt(-n.z*0.5+0.5));
+								enc = enc*0.5+0.5;
+								return enc;
 							}
-							vec3 decode(vec2 normal)
+							vec3 decode(vec2 n)
 							{
-								vec3 n;
-								n.xy = normal*2-1;
-								n.z = sqrt(1-dot(n.xy, n.xy));
-								return n;
+								vec4 nn = vec4(n,vec2(0))*vec4(2,2,0,0) + vec4(-1,-1,1,-1);
+								float l = dot(nn.xyz,-nn.xyw);
+								nn.z = l;
+								nn.xy *= sqrt(l);
+								return nn.xyz * 2 + vec3(0,0,-1);
 							}
 						]],
 					},
