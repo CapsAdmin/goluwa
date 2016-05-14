@@ -259,7 +259,7 @@ end
 function vfs.Open(path, mode, sub_mode)
 	mode = mode or "read"
 
-	local errors = ""
+	local errors = "\n"
 
 	for i, data in ipairs(vfs.TranslatePath(path)) do
 		local file = prototype.CreateDerivedObject("file_system", data.context.Name)
@@ -276,7 +276,7 @@ function vfs.Open(path, mode, sub_mode)
 			return file
 		else
 			file:Remove()
-			errors = errors .. " " ..  data.context.Name .. ":(" ..  err .. ")"
+			errors = errors .. "\t" ..  data.context.Name .. ": " ..  err .. "\n"
 		end
 	end
 

@@ -32,7 +32,7 @@ function steam.LoadMaterial(path, material)
 			local vmt, err = steam.VDFToTable(vfs.Read(path), function(key) return (key:lower():gsub("%$", "")) end)
 
 			if err then
-				material:SetError(err)
+				material:SetError(path .. " steam.VDFToTable : " .. err)
 				return
 			end
 
@@ -40,6 +40,7 @@ function steam.LoadMaterial(path, material)
 
 			if type(k) ~= "string" or type(v) ~= "table" then
 				material:SetError("bad material " .. path)
+				table.print(vmt)
 				return
 			end
 
@@ -59,6 +60,7 @@ function steam.LoadMaterial(path, material)
 
 				if type(k2) ~= "string" or type(v2) ~= "table" then
 					material:SetError("bad material " .. path)
+					table.print(vmt)
 					return
 				end
 

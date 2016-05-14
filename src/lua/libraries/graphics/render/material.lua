@@ -23,6 +23,7 @@ end
 function META:SetError(reason)
 	self.Error = reason
 	self.AlbedoTexture = render.GetErrorTexture()
+	logf("[%s] material error: %s\n", self, reason)
 end
 
 META:Register()
