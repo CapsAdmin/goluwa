@@ -233,7 +233,7 @@ do -- number
 		self.drag_number = true
 		self.base_value = nil
 		self.drag_y_pos = nil
-		self.real_base_value = nil
+		self.real_base_value = 0
 	end
 
 	function META:OnPostDraw()
