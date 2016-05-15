@@ -5,7 +5,8 @@ ffi.cdef("char *strerror(int)")
 
 function ffi.strerror()
 	local num = ffi.errno()
-	return ffi.string(ffi.C.strerror(num))
+	local err = ffi.string(ffi.C.strerror(num))
+	return err == "" and tostring(num) or err
 end
 
 _OLD_G.ffi_load = _OLD_G.ffi_load or ffi.load
