@@ -39,7 +39,7 @@ function CONTEXT:OnParseArchive(file, archive_path)
 		local entry = {}
 
 		entry.full_path = file:ReadString()
-		entry.archive_path = "os:" .. archive_path:sub(0, -2)
+		entry.archive_path = "os:" .. archive_path
 		entry.size = tonumber(file:ReadLongLong())
 		entry.crc = file:ReadUnsignedLong()
 		entry.offset = offset
