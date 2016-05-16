@@ -117,16 +117,16 @@ do
 			elseif src_color == "additive" then
 				gl.BlendFunc("GL_SRC_ALPHA", "GL_ONE")
 			else
-				gl.BlendFuncSeparate(
-					enums[src_color or "src_alpha"],
-					enums[dst_color or "one_minus_src_alpha"],
-					enums[src_alpha or "src_alpha"],
-					enums[dst_alpha or "one_minus_src_alpha"]
-				)
-				gl.BlendEquationSeparate(
-					enums[func_color or "add"],
-					enums[func_alpha or "add"]
-				)
+				src_color = enums[src_color or "src_alpha"]
+				dst_color = enums[dst_color or "one_minus_src_alpha"]
+				func_color = enums[func_color or "add"]
+
+				src_alpha = enums[src_alpha] or src_color
+				dst_alpha = enums[dst_alpha] or dst_color
+				func_alpha = enums[func_alpha] or func_color
+
+				gl.BlendFuncSeparate(src_color, dst_color, src_alpha, dst_alpha)
+				gl.BlendEquationSeparate(func_color, func_alpha)
 			end
 		else
 			if enabled then
