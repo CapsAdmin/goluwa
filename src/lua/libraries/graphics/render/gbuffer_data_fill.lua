@@ -527,7 +527,7 @@ PASS.Stages = {
 										{
 											shadow_coord = 0.5 * shadow_coord + 0.5;
 
-											visibility = (shadow_coord.z - texture(tex_shadow_map, shadow_coord.xy).r + 0.000005);
+											visibility = (texture(tex_shadow_map, shadow_coord.xy).r - shadow_coord.z);
 										}
 										]]..(function()
 											if i == 1 then
@@ -574,14 +574,29 @@ PASS.Stages = {
 						light_color.rgb * light_intensity
 					));
 
+					float shadow = 0;
+
 					if (lua[light_shadow = false])
 					{
-						set_shadow(get_shadow_(uv));
+						shadow = get_shadow_(uv);
+					}
+
+					if (shadow > get_depth(uv)*-0.075)
+					{
+						set_specular(gbuffer_compute_specular(
+							normalize(pos - light_view_pos), // L
+							normalize(pos), // V
+							normal, // N
+							attenuation,
+							light_color.rgb * light_intensity
+						));
 					}
 					else
 					{
-						set_shadow(0);
+						set_specular(vec3(0));
 					}
+
+					set_shadow(shadow);
 				}
 			]]
 		}

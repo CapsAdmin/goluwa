@@ -16,7 +16,10 @@ META:StartStorable()
 	META:GetSet("NearZ", 1)
 	META:GetSet("FarZ", -1)
 	META:GetSet("ProjectFromCamera", false)
-	META:GetSet("OrthoSize", 0)
+	META:GetSet("Ortho", false)
+	META:GetSet("OrthoSizeMin", 5)
+	META:GetSet("OrthoSizeMax", 1000)
+	META:GetSet("OrthoBias", 0.05)
 META:EndStorable()
 
 if GRAPHICS then
@@ -89,7 +92,8 @@ if GRAPHICS then
 
 			if self.ProjectFromCamera then
 				pos = render.camera_3d:GetPosition()
-				view:Translate(pos.y, pos.x, pos.z)
+				local hmm = 0.25
+				view:Translate(math.ceil(pos.y*hmm)/hmm, math.ceil(pos.x*hmm)/hmm, math.ceil(pos.z*hmm)/hmm)
 			else
 				view:Translate(pos.y, pos.x, pos.z)
 			end
@@ -100,7 +104,7 @@ if GRAPHICS then
 		-- render the scene with this matrix
 		render.camera_3d:SetProjection(projection)
 		render.gbuffer_data_pass.light_shader["light_projection_view_" .. i] = render.camera_3d:GetMatrices().projection_view
-		render.Draw3DScene(self, self.OrthoSize == 0 and self:GetComponent("transform"):GetSize())
+		render.Draw3DScene(self, self.Ortho and self:GetComponent("transform"):GetSize())
 	end
 
 	function META:DrawShadowMap()
@@ -121,11 +125,11 @@ if GRAPHICS then
 			local projection = Matrix44()
 
 			do -- setup the projection matrix
-				if self.OrthoSize == 0 then
+				if self.Ortho then
 					projection:Perspective(math.rad(self.FOV), self.FarZ, self.NearZ, shadow_map.tex:GetSize().x / shadow_map.tex:GetSize().y)
 				else
-					local size = 1 * self.OrthoSize / (i^2)
-					projection:Ortho(-size, size, -size, size, size+100, -size)
+					local size = math.lerp(((i-1)/(#self.shadow_maps-1))^self.OrthoBias, self.OrthoSizeMax, self.OrthoSizeMin)
+					projection:Ortho(-size, size, -size, size, size+200, -size)
 				end
 			end
 
@@ -148,7 +152,7 @@ if GRAPHICS then
 				render.gbuffer_data_pass.light_shader["tex_shadow_map_" .. i] = shadow_map:GetTexture()
 			end
 
-			if self.OrthoSize == 0 then break end
+			if self.Ortho then break end
 		end
 
 		render.camera_3d:SetView(old_view)

@@ -9,13 +9,11 @@ local SHADER = {
 			{uv = "vec2"},
 			{normal = "vec3"},
 		},
-		source = "gl_Position = g_projection_view_world * vec4(pos, 1); out_pos.z = (gl_Position.z) * 0.5 + 0.5;"
+		source = "gl_Position = g_projection_view_world * vec4(pos, 1.0);"
 	},
 	fragment = {
 		mesh_layout = {
-			{pos = "vec3"},
 			{uv = "vec2"},
-			{normal = "vec3"},
 		},
 		source = [[
 			out float depth;
@@ -25,13 +23,13 @@ local SHADER = {
 			{
 				if (lua[AlphaTest = false])
 				{
-					return alpha*alpha < 0.25;
+					return alpha*alpha < 0.5;
 				}
 
 				const vec3 magic = vec3( 0.06711056, 0.00583715, 52.9829189 );
 				float lol = fract( magic.z * fract( dot( gl_FragCoord.xy, magic.xy ) ) );
 
-				return (alpha + lol) < 1;
+				return (alpha + lol) < 1.5;
 			}
 
 			void main()
@@ -40,17 +38,13 @@ local SHADER = {
 				{
 					float alpha = texture(lua[AlbedoTexture = "sampler2D"], uv).a * lua[Color = Color(1,1,1,1)].a;
 
-					if
-					(
-						(lua[Translucent = false] && dither(uv, alpha)) ||
-						(lua[AlphaTest = false] && alpha < 0.5)
-					)
+					if ((lua[Translucent = false] && dither(uv, alpha)) || (lua[AlphaTest = false] && alpha < 0.5))
 					{
 						discard;
 					}
 				}
 
-				depth = pos.z;
+				depth = gl_FragCoord.z;
 			}
 		]],
 	},

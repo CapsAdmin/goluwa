@@ -190,7 +190,7 @@ do
 		buffer = {
 			--max_size = Vec2() + 512,
 			size_divider = 2,
-			internal_format = "rgb16f",
+			internal_format = "r11f_g11f_b10f",
 		},
 		source = [[
 		const float rayStep = 0.002;
@@ -390,9 +390,6 @@ do
 
 				vec3 diffuse = get_albedo(uv);
 				vec3 specular = get_specular(uv)*2;
-				float shadow = get_shadow(uv) > 0.00025 ? 0.25 : 1;
-
-				specular *= shadow;
 
 				float metallic = get_metallic(uv);
 				specular = mix(specular, reflection, pow(metallic, 0.5));
