@@ -1,23 +1,15 @@
-local fps = 0
-
-fps = 1/fps
-
-if fps == math.huge then
-	fps = 0
-end
+local iterations = 10
 
 local fb = render.CreateFrameBuffer(window.GetSize(), {
-	internal_format = "RGBA8",
-	--filter = "nearest",
+	internal_format = "r8",
+	filter = "linear",
 })
-
-local W, H = fb:GetTexture():GetSize():Unpack()
 
 local shader = render.CreateShader({
 	name = "test",
 	fragment = {
 		variables = {
-			size = {vec2 = function() return fb:GetTexture():GetSize() end},
+			texture_size = {vec2 = function() return fb:GetTexture():GetSize() end},
 			self = {texture = function() return fb:GetTexture() end},
 			generate_random = 1,
 		},
@@ -25,27 +17,23 @@ local shader = render.CreateShader({
 			{uv = "vec2"},
 		},
 		source = [[
-			out vec4 frag_color;
-
-			float pi = 3.14159265358979323846264338327950288419716939937510582097494459230781640;
-			float pi2 = pi/2;
+			out float out_val;
 
 			void main()
 			{
 				if (generate_random == 1)
 				{
-
-					frag_color.rgb = vec3(1, 1, 1);
-					frag_color.a = random(uv);
-					//pow(frag_color.a, 1);
+					out_val = random(uv);
 
 					return;
 				}
 
-				float neighbours = 0;
-				float color = texture(self, uv).r;
 
-				vec2 uv_unit = (1 + cos(color)) / size;
+				float neighbours = 0;
+				float val = texture(self, uv).r;
+				float prev = texture(self, uv).r;
+
+				vec2 uv_unit = (1 + cos(val)) / texture_size * 1.2;
 
 				for (float y = -1; y <= 1; y++)
 				{
@@ -57,69 +45,39 @@ local shader = render.CreateShader({
 
 				neighbours /= 9;
 
-				color = sin(pow(neighbours, pi2) * pi) / color * 2;
+				val = sin(pow(neighbours, 1.57) * 3.14) / val * 2;
 
-				frag_color = vec4(color);
+				//out_val = clamp((prev + (1-val)), 0, 1);
+				out_val = val;
 			}
 		]]
 	}
 })
 
-local brush = render.CreateBlankTexture(Vec2() + 128):Fill(function(x, y)
-	x = x / 128
-	y = y / 128
+event.AddListener("Draw2D", "fb", function()
+	render.camera_2d:SetPosition(Vec3(-0.1,0.1,0))
+	render.camera_2d:SetAngles(Ang3(0,math.rad(180 + 0.025),0))
 
-	x = x - 1
-	y = y - 1.5
+	for i = 1, iterations do
 
-	x = x * math.pi
-	y = y * math.pi
+		fb:Begin()
+			--render.SetBlendMode()
+			render.SetBlendMode("src_color", "one_minus_dst_color", "add")
 
-	local a = math.sin(x) * math.cos(y)
+			surface.PushMatrix(0, 0, fb:GetTexture():GetSize():Unpack())
+				render.SetShaderOverride(shader)
+				surface.rect_mesh:Draw()
+				render.SetShaderOverride()
+			surface.PopMatrix()
+		fb:End()
 
-	a = a ^ 32
+		render.camera_2d:SetPosition(Vec3(-0.1,0.1,0))
+		render.camera_2d:SetAngles(Ang3(0,math.rad(180 + 0.025),0))
 
-	return 255, 255, 255, a * 128
-end)
-
-local brush_size = 4
-
-event.Timer("fb_update", fps, 0, function()
-
-	fb:Begin()
-		render.SetBlendMode("src_color", "one_minus_dst_alpha", "add")
-
-		surface.PushMatrix(0, 0, W, H)
-			render.SetShaderOverride(shader)
-			surface.rect_mesh:Draw()
-			render.SetShaderOverride()
-		surface.PopMatrix()
-
-		if input.IsMouseDown("button_1") or input.IsMouseDown("button_2") then
-			if input.IsMouseDown("button_1") then
-				render.SetBlendMode()
-				surface.SetColor(1,1,1,1)
-			else
-				render.SetBlendMode(nil,nil,nil, "src_alpha","one_minus_src_alpha","sub")
-				surface.SetColor(1,1,1,0)
-			end
-			surface.SetTexture(brush)
-			local x,y = surface.GetMousePosition()
-			surface.DrawRect(x, y, brush:GetSize().x*brush_size, brush:GetSize().y*brush_size, 0, brush:GetSize().x/2*brush_size, brush:GetSize().y/2*brush_size)
-		end
-	fb:End()
+		surface.SetColor(1,1,1, 1)
+		surface.SetTexture(fb:GetTexture())
+		surface.DrawRect(0, 0, surface.GetSize())
+	end
 
 	shader.generate_random = 0
-end)
-
-event.AddListener("Draw2D", "fb", function()
-	surface.SetColor(0,0,0, 1)
-
-	surface.SetWhiteTexture()
-	surface.DrawRect(0, 0, surface.GetSize())
-
-
-	surface.SetColor(1,1,1, 1)
-	surface.SetTexture(fb:GetTexture())
-	surface.DrawRect(0, 0, surface.GetSize())
 end)
