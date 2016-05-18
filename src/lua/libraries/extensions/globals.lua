@@ -1,26 +1,31 @@
--- 52 compat
-function setmetatable(tbl, meta)
-	if meta and rawget(meta, "__gc") and not rawget(tbl, "__gc_proxy") then
-		local proxy = newproxy(true)
-		rawset(tbl, "__gc_proxy", proxy)
+do
+	local rawset = rawset
+	local rawget = rawget
+	local getmetatable = getmetatable
+	local newproxy = newproxy
+	-- 52 compat
+	function setmetatable(tbl, meta)
+		if meta and rawget(meta, "__gc") and not rawget(tbl, "__gc_proxy") then
+			local proxy = newproxy(true)
+			rawset(tbl, "__gc_proxy", proxy)
 
-		getmetatable(proxy).__gc = function()
-			rawset(tbl, "__gc_proxy", nil)
+			getmetatable(proxy).__gc = function()
+				rawset(tbl, "__gc_proxy", nil)
 
-			local new_meta = getmetatable(tbl)
+				local new_meta = getmetatable(tbl)
 
-			if new_meta then
-				local __gc = rawget(new_meta, "__gc")
-				if __gc then
-					__gc(tbl)
+				if new_meta then
+					local __gc = rawget(new_meta, "__gc")
+					if __gc then
+						__gc(tbl)
+					end
 				end
 			end
 		end
+
+		return _OLD_G.setmetatable(tbl, meta)
 	end
-
-	return _OLD_G.setmetatable(tbl, meta)
 end
-
 do -- logging
 	local pretty_prints = {}
 
