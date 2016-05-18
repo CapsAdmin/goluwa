@@ -1,3 +1,9 @@
+function string.slice(self, what, from, offset)
+	offset = offset or 0
+	local _, pos = self:find(what, from, true)
+	return self:sub(0, pos - offset), self:sub(pos + offset)
+end
+
 do
 	local vowels = {"e", "a", "o", "i", "u", "y"}
 	local consonants = {"t", "n", "s", "h", "r", "d", "l", "c", "m", "w", "f", "g", "p", "b", "v", "k", "j", "x", "q", "z"}

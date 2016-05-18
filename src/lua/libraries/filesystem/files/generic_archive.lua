@@ -45,7 +45,7 @@ vfs.generic_archive_cache = cache
 function CONTEXT:GetFileTree(path_info)
 	if never then return false, "recursive call to GetFileTree" end
 
-	local archive_path, relative = path_info.full_path:match("(.-%."..self.Extension..")/(.*)")
+	local archive_path, relative = path_info.full_path:slice("."..self.Extension.."/", 0, 1)
 
 	if not archive_path then
 		return false, "not a valid archive path"
