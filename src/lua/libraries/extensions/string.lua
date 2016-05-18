@@ -1,7 +1,10 @@
 function string.slice(self, what, from, offset)
 	offset = offset or 0
 	local _, pos = self:find(what, from, true)
-	return self:sub(0, pos - offset), self:sub(pos + offset)
+
+	if pos then
+		return self:sub(0, pos - offset), self:sub(pos + offset)
+	end
 end
 
 do
