@@ -95,7 +95,7 @@ do
 	input.binds = {}
 
 	function input.Bind(key, cmd, callback)
-		serializer.SetKeyValueInFile("luadata", "%DATA%/input.txt", key, cmd)
+		serializer.SetKeyValueInFile("luadata", "data/input.txt", key, cmd)
 
 		local modifiers = key:split("+")
 		table.remove(modifiers, 1)
@@ -114,7 +114,7 @@ do
 	end
 
 	function input.Initialize()
-		input.binds = serializer.ReadFile("luadata", "%DATA%/input.txt") or {}
+		input.binds = serializer.ReadFile("luadata", "data/input.txt") or {}
 	end
 
 	function input.Call(key, press)

@@ -9,7 +9,7 @@ repl.input_height = 1
 repl.max_lines = 10000
 
 local c = repl.curses
-local command_history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt") or {}
+local command_history = serializer.ReadFile("luadata", "data/cmd_history.txt") or {}
 local dirty = false
 
 local COLORPAIR_STATUS = 9
@@ -647,7 +647,7 @@ function repl.HandleKey(key)
 			end
 
 			table.insert(command_history, line)
-			serializer.WriteFile("luadata", "%DATA%/cmd_history.txt", command_history)
+			serializer.WriteFile("luadata", "data/cmd_history.txt", command_history)
 
 			c.scroll_command_history = 0
 			repl.SetInputText()

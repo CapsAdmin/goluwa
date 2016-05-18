@@ -125,13 +125,15 @@ do -- env vars/path preprocessing
 	end
 
 	function vfs.PreprocessPath(path)
-		-- windows
-		path = path:gsub("%%(.-)%%", vfs.GetEnv)
-		path = path:gsub("%%", "")
-		path = path:gsub("%$%((.-)%)", vfs.GetEnv)
+		if path:find("%", nil, true) or path:find("$", nil, true) then
+			-- windows
+			path = path:gsub("%%(.-)%%", vfs.GetEnv)
+			path = path:gsub("%%", "")
+			path = path:gsub("%$%((.-)%)", vfs.GetEnv)
 
-		-- linux
-		path = path:gsub("%$%((.-)%)", "%1")
+			-- linux
+			path = path:gsub("%$%((.-)%)", "%1")
+		end
 
 		return path
 	end
@@ -219,9 +221,6 @@ do -- translate path to useful data
 
 	function vfs.GetPathInfo(path, is_folder)
 		local out = {}
-
-		path = vfs.PreprocessPath(path)
-
 		local pos = path:find(":", 0, true)
 
 		if pos then

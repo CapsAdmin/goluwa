@@ -243,7 +243,7 @@ function chat.GetPanel()
 			return
 		end
 
-		local command_history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt") or {}
+		local command_history = serializer.ReadFile("luadata", "data/cmd_history.txt") or {}
 
 		if str == last_history or str == "" then
 			local browse = false
@@ -272,7 +272,7 @@ function chat.GetPanel()
 			if #str > 0 then
 				if command_history[1] ~= str then
 					table.insert(command_history, 1, str)
-					serializer.WriteFile("luadata", "%DATA%/cmd_history.txt", command_history)
+					serializer.WriteFile("luadata", "data/cmd_history.txt", command_history)
 				end
 
 				if chat.panel.tab:IsTabSelected("chat") then

@@ -1,6 +1,6 @@
 local pvars = _G.pvars or {}
 
-local path = "%DATA%/pvars.txt"
+local path = "data/pvars.txt"
 local mode = "luadata"
 
 pvars.vars = pvars.vars or {}

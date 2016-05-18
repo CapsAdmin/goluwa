@@ -203,7 +203,7 @@ function menu.CreateTopBar()
 		end
 	end
 
-	local command_history = serializer.ReadFile("luadata", "%DATA%/cmd_history.txt") or {}
+	local command_history = serializer.ReadFile("luadata", "data/cmd_history.txt") or {}
 	local list = {}
 
 	for i = 1, 10 do
