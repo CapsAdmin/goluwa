@@ -155,16 +155,16 @@ vec3 gbuffer_compute_specular(vec3 L, vec3 V, vec3 N, float attenuation, vec3 li
 
 	vec3 atn = light_color * attenuation;
 
-	return vec3(dotNL * D * F * vis) * atn * 10;
+	return vec3(dotNL * D * F * vis) * atn;
 }
 ]])
 
 render.AddGlobalShaderCode([[
 vec3 gbuffer_compute_tonemap(vec3 color, vec3 bloom)
 {
-	const float gamma = 1.1;
-	const float exposure = 0.9;
-	const float bloomFactor = 0.0005;
+	const float gamma = 1.2;
+	const float exposure = 0.6;
+	const float bloomFactor = 0.005;
 	const float brightMax = 1;
 
 	color = color + bloom * bloomFactor;
@@ -195,7 +195,7 @@ do
 		source = [[
 		const float rayStep = 0.002;
 		const float minRayStep = 50;
-		const float maxSteps = 50;
+		const float maxSteps = 150;
 
 		vec2 project(vec3 coord)
 		{
@@ -386,15 +386,16 @@ do
 
 			void main()
 			{
-				vec3 reflection = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb*2.5;
+				vec3 reflection = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
 
 				vec3 diffuse = get_albedo(uv);
-				vec3 specular = get_specular(uv)*2;
+				vec3 specular = get_specular(uv);
 
 				float metallic = get_metallic(uv);
 				specular = mix(specular, reflection, pow(metallic, 0.5));
 				out_color = diffuse * specular;
 				out_color += gbuffer_compute_sky(get_camera_dir(uv), get_linearized_depth(uv))*0.1;
+				out_color *= 10;
 				//out_color = reflection;
 			}
 		]]
