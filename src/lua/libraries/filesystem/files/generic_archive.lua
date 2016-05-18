@@ -221,7 +221,9 @@ function CONTEXT:GetPosition()
 end
 
 function CONTEXT:OnRemove()
-
+	if self.file then
+		self.file:Close()
+	end
 end
 
 function CONTEXT:GetSize()
