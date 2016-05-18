@@ -146,6 +146,11 @@ function CONTEXT:Open(path_info, mode, ...)
 		if not file_info then
 			return false, "file not found in archive"
 		end
+
+		if file_info.is_dir then
+			return false, "file is a directory"
+		end
+
 		local file, err = vfs.Open(self:TranslateArchivePath(file_info, archive_path))
 		if not file then
 			return false, err
