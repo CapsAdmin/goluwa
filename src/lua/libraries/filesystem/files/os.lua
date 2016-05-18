@@ -111,6 +111,7 @@ end
 function CONTEXT:OnRemove()
 	if self.file ~= nil then
 		fs.close(self.file)
+		self.file = nil
 	end
 end
 
