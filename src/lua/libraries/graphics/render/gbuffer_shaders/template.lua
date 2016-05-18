@@ -49,19 +49,9 @@ table.insert(PASS.Source, {
 			vec3 env = get_env_color();
 
 			vec3 albedo = get_albedo(uv);
-			float metallic = get_metallic(uv);
-			float shadow = get_shadow(uv) > 0.0000001 ? 0.25 : 1;
 			vec3 specular = get_specular(uv);
 
-			vec3 color = albedo;
-
-			color *= (specular+albedo)*shadow;
-			color *= env;
-
-			if (texture(tex_depth, uv).r == 1)
-				color = env;
-
-			out_color = color;
+			out_color = albedo * max(specular, vec3(0.25));
 		}
 	]]
 })
