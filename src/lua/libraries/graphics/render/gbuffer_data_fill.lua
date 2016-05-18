@@ -581,7 +581,7 @@ PASS.Stages = {
 						shadow = get_shadow_(uv);
 					}
 
-					if (shadow > get_depth(uv)*-0.075)
+					if (shadow > get_linearized_depth(uv)*-0.075)
 					{
 						set_specular(gbuffer_compute_specular(
 							normalize(pos - light_view_pos), // L

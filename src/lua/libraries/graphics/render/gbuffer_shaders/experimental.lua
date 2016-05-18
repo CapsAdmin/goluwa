@@ -501,7 +501,7 @@ local function blur(source, format, discard, divider)
 			out vec3 out_color;
 			void main()
 			{
-				float amount = ]]..source..[[ / get_depth(uv) / length(g_gbuffer_size) * 1;
+				float amount = ]]..source..[[ / get_linearized_depth(uv) / length(g_gbuffer_size) * 1;
 				//amount = min(amount, 0.25);
 				amount += random(uv)*0.5*amount;
 
@@ -562,7 +562,7 @@ table.insert(PASS.Source, {
 			vec2 rand = get_noise(uv).xy;
 
 			float occlusion = 0.0;
-			float depth = get_depth(uv);
+			float depth = get_linearized_depth(uv);
 
 			for(float j = 0; j < ITERATIONS; ++j)
 			{
@@ -622,7 +622,7 @@ table.insert(PASS.Source, {
 			light *= shadow;
 			light += reflection*albedo;
 
-			vec3 fog = gbuffer_compute_sky(-get_view_pos(uv).xzy, get_depth(uv));
+			vec3 fog = gbuffer_compute_sky(-get_view_pos(uv).xzy, get_linearized_depth(uv));
 
 			out_color = albedo * light + fog;
 

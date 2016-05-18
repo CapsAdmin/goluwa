@@ -353,7 +353,19 @@ render.SetGlobalShaderVariable("g_cam_right", function() return render.camera_3d
 render.AddGlobalShaderCode([[
 float get_depth(vec2 uv)
 {
-	return (2.0 * g_cam_nearz) / (g_cam_farz + g_cam_nearz - texture(tex_depth, uv).r * (g_cam_farz - g_cam_nearz));
+	return texture(tex_depth, uv).r;
+}]])
+
+render.AddGlobalShaderCode([[
+float linearize_depth(float depth)
+{
+	return (2.0 * g_cam_nearz) / (g_cam_farz + g_cam_nearz - depth * (g_cam_farz - g_cam_nearz));
+}]])
+
+render.AddGlobalShaderCode([[
+float get_linearized_depth(vec2 uv)
+{
+	return linearize_depth(get_depth(uv));
 }]])
 
 render.AddGlobalShaderCode([[
@@ -365,8 +377,4 @@ vec3 get_camera_dir(vec2 uv)
     return world_normal;
 }]])
 
-render.AddGlobalShaderCode([[
-float linearize_depth(float depth)
-{
-	return (2.0 * g_cam_nearz) / (g_cam_farz + g_cam_nearz - depth * (g_cam_farz - g_cam_nearz));
-}]])
+

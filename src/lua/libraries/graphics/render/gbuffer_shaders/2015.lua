@@ -205,7 +205,7 @@ do
 
 		vec2 ray_cast(vec3 dir, vec3 hitCoord)
 		{
-			dir *= rayStep + get_depth(uv);
+			dir *= rayStep + get_linearized_depth(uv);
 
 			for(int i = 0; i < maxSteps; i++)
 			{
@@ -299,7 +299,7 @@ do
 					vec3 blur(vec2 dir, float amount)
 					{
 
-						amount = pow(amount*1.5, 2.5) / get_depth(uv) / g_cam_farz;
+						amount = pow(amount*1.5, 2.5) / get_linearized_depth(uv) / g_cam_farz;
 
 						vec2 step = dir * amount;
 						vec3 normal = normalize(get_view_normal(uv));
@@ -356,7 +356,7 @@ do
 					const int ITERATIONS = 16;
 					for(int j = 0; j < ITERATIONS; ++j)
 					{
-						vec2 offset = uv + (reflect(KERNEL[j], rand) / (get_depth(uv)) / g_cam_farz * SAMPLE_RAD);
+						vec2 offset = uv + (reflect(KERNEL[j], rand) / (get_linearized_depth(uv)) / g_cam_farz * SAMPLE_RAD);
 
 						vec3 diff = get_view_pos(offset) - p;
 						float d = length(diff);
@@ -394,7 +394,7 @@ do
 				float metallic = get_metallic(uv);
 				specular = mix(specular, reflection, pow(metallic, 0.5));
 				out_color = diffuse * specular;
-				out_color += gbuffer_compute_sky(get_camera_dir(uv), get_depth(uv));
+				out_color += gbuffer_compute_sky(get_camera_dir(uv), get_linearized_depth(uv))*0.1;
 				//out_color = reflection;
 			}
 		]]

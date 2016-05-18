@@ -285,7 +285,7 @@ table.insert(PASS.Source, {
 				vec3 noise = get_noise3_temporal(uv+i);
 				noise.z *= 5;
 
-				vec3 diff = get_view_pos(uv + (noise.xy / get_depth(uv) / g_cam_farz * noise.z)) - get_view_pos(uv);
+				vec3 diff = get_view_pos(uv + (noise.xy / get_linearized_depth(uv) / g_cam_farz * noise.z)) - get_view_pos(uv);
 
 				res += -clamp(dot(get_view_normal(uv), diff) / length(diff), 0, 1)+1;
 			}
@@ -323,7 +323,7 @@ table.insert(PASS.Source, {
 			specular = mix(specular, reflection, pow(metallic, 0.5));
 			out_color = diffuse * specular;
 			out_color *= pow(ssao*1.25, 3);
-			out_color += gbuffer_compute_sky(get_camera_dir(uv), get_depth(uv));
+			out_color += gbuffer_compute_sky(get_camera_dir(uv), get_linearized_depth(uv));
 			out_color = mix(texture(self, uv).rgb, out_color, 0.1);
 		}
 	]]
