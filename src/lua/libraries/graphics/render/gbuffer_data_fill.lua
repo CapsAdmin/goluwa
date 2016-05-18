@@ -48,9 +48,8 @@ PASS.Buffers = {
 		layout =
 		{
 			{
-				rgba16f = {
+				r11f_g11f_b10f = {
 					rgb = "specular",
-					a = "shadow",
 				}
 			}
 		},
@@ -489,7 +488,7 @@ PASS.Stages = {
 			source = [[
 				vec2 uv = get_screen_uv();
 
-				float get_shadow_(vec2 uv)
+				float calc_shadow(vec2 uv)
 				{
 					float visibility = 0;
 
@@ -578,7 +577,7 @@ PASS.Stages = {
 
 					if (lua[light_shadow = false])
 					{
-						shadow = get_shadow_(uv);
+						shadow = calc_shadow(uv);
 					}
 
 					if (shadow > get_linearized_depth(uv)*-0.075)
@@ -596,7 +595,7 @@ PASS.Stages = {
 						set_specular(vec3(0));
 					}
 
-					set_shadow(shadow);
+					//set_shadow(shadow);
 				}
 			]]
 		}
