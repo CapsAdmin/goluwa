@@ -1,4 +1,5 @@
 commands.RunString("mount csgo")
+commands.RunString("mount gmod")
 commands.RunString("map gm_old_flatgrass")
 
 local ent = entities.CreateEntity("visual")
