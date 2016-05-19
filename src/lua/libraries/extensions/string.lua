@@ -1,3 +1,7 @@
+function string.wholeword(self, what)
+	return self:find("%f[%a%d_]"..what.."%f[^%a%d_]") ~= nil
+end
+
 function string.slice(self, what, from, offset)
 	offset = offset or 0
 	local _, pos = self:find(what, from, true)
