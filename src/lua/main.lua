@@ -68,7 +68,7 @@ if SOUND then
 	vfs.AutorunAddons("sound/")
 end
 
-if GRAPHICS then
+if GRAPHICS and surface.IsReady() then
 	vfs.AutorunAddons("graphics/")
 end
 

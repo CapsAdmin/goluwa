@@ -1576,7 +1576,7 @@ if sdl then
 					system.ShutDown()
 				else print("unknown event", event.type) end
 			end
-		end, {on_error = function(...) system.OnError(...) end})
+		end)
 
 		if not system.current_window:IsValid() then
 			system.current_window = self

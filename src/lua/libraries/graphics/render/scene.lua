@@ -58,7 +58,7 @@ function render.DrawScene(skip_2d)
 		render.DrawGBuffer()
 	end
 
-	if not skip_2d then
+	if not skip_2d and surface.IsReady() then
 		surface.Start()
 
 		surface.SetColor(1,1,1,1)
