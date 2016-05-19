@@ -20,7 +20,7 @@ end
 local function load(path)
 	local file, err = io.open(ide.config.path.projectdir .. "/data/bin/"..jit.os:lower().."_"..jit.arch:lower().."/" .. path, "rb")
 	if file then
-		local tbl = select(2, msgpack.unpack(file:read("*all")))
+		local tbl = msgpack.decode(file:read("*all"))
 		file:close()
 		return tbl
 	end
