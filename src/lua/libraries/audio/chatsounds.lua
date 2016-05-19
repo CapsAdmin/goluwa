@@ -1231,7 +1231,7 @@ do
 		return script
 	end
 
-	chatsounds.script_cache = {}
+	chatsounds.script_cache = utility.CreateWeakTable()
 
 	function chatsounds.GetScript(str)
 

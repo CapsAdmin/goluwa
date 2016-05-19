@@ -37,10 +37,8 @@ end
 
 --self:ParseArchive(vfs.Open("os:G:/SteamLibrary/SteamApps/common/Skyrim/Data/Skyrim - Sounds.gma"), "os:G:/SteamLibrary/SteamApps/common/Skyrim/Data/Skyrim - Sounds.gma")
 
-local cache = {}
+local cache = table.weak()
 local never
-
-vfs.generic_archive_cache = cache
 
 function CONTEXT:GetFileTree(path_info)
 	if never then return false, "recursive call to GetFileTree" end

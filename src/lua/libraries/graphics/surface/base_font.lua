@@ -86,7 +86,7 @@ function META:DrawString(str, x, y, w)
 
 	if str == nil then str = "nil" end
 
-	self.string_cache = self.string_cache or {}
+	self.string_cache = self.string_cache or utility.CreateWeakTable()
 
 	if not self.string_cache[str] then
 		self.total_strings_stored = self.total_strings_stored or 0
@@ -228,7 +228,7 @@ function META:CompileString(data)
 
 	local string = {}
 
-	local width_cache = {}
+	local width_cache = utility.CreateWeakTable()
 
 	function string:Draw(x, y, w)
 		if w and not width_cache[w] then
