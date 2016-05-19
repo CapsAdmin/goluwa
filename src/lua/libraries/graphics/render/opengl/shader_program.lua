@@ -57,6 +57,55 @@ function META:Link()
 	end
 end
 
+function META:GetUniformBlockInfo(index)
+	local count = ffi.new("unsigned[1]")
+	gl.GetActiveUniformBlockiv(self.gl_program.id, index, "GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS", count)
+	count = count[0]
+	local indices = ffi.new("unsigned[?]", count)
+	gl.GetActiveUniformBlockiv(self.gl_program.id, 0, "GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES", indices)
+	local types = ffi.new("unsigned[?]", count)
+	gl.GetActiveUniformsiv(self.gl_program.id, count, indices, "GL_UNIFORM_TYPE", types)
+	local offsets = ffi.new("unsigned[?]", count)
+	gl.GetActiveUniformsiv(self.gl_program.id, count, indices, "GL_UNIFORM_OFFSET", offsets)
+	local sizes = ffi.new("unsigned[?]", count)
+	gl.GetActiveUniformsiv(self.gl_program.id, count, indices, "GL_UNIFORM_SIZE", sizes)
+
+	local out = {}
+
+	for i = 0, count - 1 do
+		local name = ffi.new("char[256]")
+		local len = ffi.new("unsigned[1]")
+		gl.GetActiveUniformName(self.gl_program.id, indices[i], 256, len, name)
+		out[i + 1] = {
+			name = ffi.string(name, len[0]),
+			type = types[i],
+			index = indices[i],
+			offset = offsets[i],
+			length = sizes[i]
+		}
+	end
+
+	return out
+end
+
+function META:GetUniformBlocks()
+	local out = {}
+
+	local count = ffi.new("unsigned[1]")
+	gl.GetProgramiv(self.gl_program.id, "GL_ACTIVE_UNIFORM_BLOCKS", count)
+	count = count[0]
+	for i = 0, count - 1 do
+		local len = ffi.new("unsigned[1]")
+		gl.GetActiveUniformBlockiv(self.gl_program.id, i, "GL_UNIFORM_BLOCK_NAME_LENGTH", len)
+		len = len[0]
+		local str = ffi.new("char[?]", len)
+		gl.GetActiveUniformBlockName(self.gl_program.id, i, len, nil, str)
+		str = ffi.string(str)
+		out[str] = self:GetUniformBlockInfo(i)
+	end
+	return out
+end
+
 function META:UploadBoolean(key, val)
 	self.gl_program:Uniform1i(key, val and 1 or 0)
 end
