@@ -19,12 +19,12 @@ function window.Open(...)
 
 	if not system.CreateWindow then
 		warning("no window manager found")
-		return
+		return nil, "no window manager found"
 	end
 
 	local ok, wnd = pcall(system.CreateWindow, ...)
 
-	if not ok then warning(wnd) return NULL end
+	if not ok then warning(wnd) return nil, wnd end
 
 	if not render.initialized then
 		render.initialized = true
@@ -102,6 +102,8 @@ function window.Open(...)
 	end)
 
 	window.wnd = wnd
+
+	return wnd
 end
 
 function window.IsOpen()

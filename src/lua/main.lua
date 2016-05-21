@@ -12,13 +12,12 @@ if sockets then
 end
 
 if WINDOW then
-	window.Open()
+	if window.Open() then
+		if GRAPHICS then
+			gui.Initialize()
+		end
+	end
 end
-
-if GRAPHICS then
-	gui.Initialize()
-end
-
 if audio then
 	audio.Initialize()
 end
