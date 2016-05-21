@@ -126,36 +126,35 @@ do -- include
 				dir = original_dir
 			end
 
-			for script in vfs.Iterate(dir, true) do
-				if script:find("%.lua") then
-					local func, err, full_path = vfs.loadfile(script)
+			for script in vfs.Iterate(dir .. ".+%.lua", true) do
+				local func, err, full_path = vfs.loadfile(script)
 
-					if func then
-						vfs.PushToIncludeStack(dir)
+				if func then
+					vfs.PushToIncludeStack(dir)
 
-						_G.FILE_PATH = full_path
-						_G.FILE_NAME = full_path:match(".*/(.+)%.") or full_path
-						_G.FILE_EXTENSION = full_path:match(".*/.+%.(.+)")
-						local ok, err
+					_G.FILE_PATH = full_path
+					_G.FILE_NAME = full_path:match(".*/(.+)%.") or full_path
+					_G.FILE_EXTENSION = full_path:match(".*/.+%.(.+)")
 
-						if system_pcall and system and system.pcall then
-							ok, err = system.pcall(func, ...)
-						else
-							ok, err = pcall(func, ...)
-						end
+					local ok, err
 
-						_G.FILE_NAME = nil
-						_G.FILE_PATH = nil
-						_G.FILE_EXTENSION = nil
-
-						if not ok then logn(err) end
-
-						vfs.PopFromIncludeStack()
+					if system_pcall and system and system.pcall then
+						ok, err = system.pcall(func, ...)
+					else
+						ok, err = pcall(func, ...)
 					end
 
-					if not func then
-						logn(err)
-					end
+					_G.FILE_NAME = nil
+					_G.FILE_PATH = nil
+					_G.FILE_EXTENSION = nil
+
+					if not ok then logn(err) end
+
+					vfs.PopFromIncludeStack()
+				end
+
+				if not func then
+					logn(err)
 				end
 			end
 
