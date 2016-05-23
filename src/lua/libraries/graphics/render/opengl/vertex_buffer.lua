@@ -32,10 +32,7 @@ if not NVIDIA_WORKAROUND then
 	end
 
 	function META:OnRemove()
-		self.vertex_buffer:Unmap()
 		self.vertex_buffer:Delete()
-
-		self.element_buffer:Unmap()
 		self.element_buffer:Delete()
 	end
 
