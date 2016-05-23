@@ -244,15 +244,15 @@ end
 function META:CreateBuffer(format_override)
 	local format = render.GetTextureFormatInfo(self.InternalFormat or format_override)
 	local size = self.Size.x * self.Size.y * ffi.sizeof(format.ctype)
-	local buffer = ffi.malloc(format.ptr_ctype, size)
+	local buffer, ref = ffi.malloc(format.ctype, size)
 
-	return buffer, size, format
+	return buffer, ref, size, format
 end
 
 function META:Download(mip_map_level, format_override)
 	mip_map_level = mip_map_level or 0
 
-	local buffer, size, format = self:CreateBuffer(format_override)
+	local buffer, ref, size, format = self:CreateBuffer(format_override)
 
 	self:_Download(mip_map_level, buffer, size, format)
 
@@ -266,6 +266,7 @@ function META:Download(mip_map_level, format_override)
 		size = self.Size.x * self.Size.y * ffi.sizeof(format.ctype),
 		length = (self.Size.x * self.Size.y) - 1, -- for i = 0, data.length do
 		channels = #format.bits,
+		__ref = ref,
 	}
 end
 

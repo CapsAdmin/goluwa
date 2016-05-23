@@ -151,7 +151,6 @@ for _, info in pairs(texture_formats) do
 
 	line = line .. "} "
 	info.ctype = ffi.typeof(line)
-	info.ptr_ctype = ffi.typeof(line .. " *")
 end
 
 local function get_upload_format(size, reverse, integer, depth, stencil)
