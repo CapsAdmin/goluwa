@@ -111,21 +111,21 @@ do
 end
 
 do
-	local cull_mode
-	local force_mode
+	local cull_
+	local force_
 
-	function render.SetCullMode(mode, force)
-		if force == true then
-			force_mode = mode
-		elseif force == false then
-			force_mode = nil
-		end
-
-		render._SetCullMode(force_mode or mode)
+	function render.SetCullMode(mode)
+		cull_ = mode
+		render._SetCullMode(force_ or mode)
 	end
 
 	function render.GetCullMode()
-		return cull_mode
+		return cull
+	end
+
+	function render.SetForcedCullMode(mode)
+		force_ = mode
+		render._SetCullMode(mode)
 	end
 
 	utility.MakePushPopFunction(render, "CullMode")

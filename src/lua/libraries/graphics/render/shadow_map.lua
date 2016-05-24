@@ -105,7 +105,7 @@ function META:SetShadowSize(size)
 end
 
 function META:Begin()
-	render.PushCullMode("none", true)
+	render.SetForcedCullMode("none")
 	render.PushDepth(true)
 	render.SetBlendMode()
 	render.SetShaderOverride(render.shadow_map_shader)
@@ -113,7 +113,7 @@ function META:Begin()
 end
 
 function META:End()
-	render.PopCullMode()
+	render.SetForcedCullMode()
 	render.PopDepth()
 	self.fb:End()
 end

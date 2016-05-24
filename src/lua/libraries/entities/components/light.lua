@@ -108,7 +108,6 @@ if GRAPHICS then
 	end
 
 	function META:DrawShadowMap()
-		--render.SetCullMode("front")
 		local transform = self:GetComponent("transform")
 		local pos = transform:GetPosition()
 		local rot = transform:GetRotation()
@@ -158,8 +157,6 @@ if GRAPHICS then
 		render.camera_3d:SetView(old_view)
 		render.camera_3d:SetProjection(old_projection)
 		render.camera_3d:SetPosition(old_pos)
-
-		--render.SetCullMode("back")
 	end
 end
 
