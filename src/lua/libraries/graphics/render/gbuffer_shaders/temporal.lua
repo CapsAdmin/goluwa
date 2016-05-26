@@ -314,11 +314,8 @@ table.insert(PASS.Source, {
 			vec3 reflection = get_env_color();//texture(tex_stage_]]..(#PASS.Source-1)..[[, uv).rgb;
 			vec3 diffuse = get_albedo(uv);
 			vec3 specular = get_specular(uv);
-			float shadow = get_shadow(uv) > 0.00025 ? 0 : 1;
 			float ssao = texture(tex_stage_]]..(#PASS.Source)..[[, uv).r;
 			float metallic = get_metallic(uv);
-
-			specular *= shadow;
 
 			specular = mix(specular, reflection, pow(metallic, 0.5));
 			out_color = diffuse * specular;

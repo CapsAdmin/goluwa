@@ -401,7 +401,7 @@ table.insert(PASS.Source, {
 	buffer = {
 		--max_size = Vec2() + 512,
 		size_divider = reflection_res_divider,
-		internal_format = "rgb16f",
+		internal_format = "r11f_g11f_b10f",
 		mip_maps = 0,
 	},
 	source = [[
@@ -503,7 +503,7 @@ local function blur(source, format, discard, divider)
 			{
 				float amount = ]]..source..[[ / get_linearized_depth(uv) / length(g_gbuffer_size) * 1;
 				//amount = min(amount, 0.25);
-				amount += random(uv)*0.5*amount;
+				//amount += random(uv)*0.5*amount;
 
 				vec3 normal = normalize(get_view_normal(uv));
 
@@ -530,7 +530,7 @@ local function blur(source, format, discard, divider)
 		table.insert(PASS.Source, {
 			buffer = {
 				size_divider = divider or reflection_res_divider,
-				internal_format = format or "rgb16f",
+				internal_format = format or "r11f_g11f_b10f",
 			},
 			source = str,
 		})
@@ -538,16 +538,93 @@ local function blur(source, format, discard, divider)
 		::continue::
 	end
 end
+for x = -1, 1 do
+		for y = -1, 1 do
+			if x == y or (y == 0 and x == 0) then goto continue end
+			print(x, y)
 
-blur("get_roughness(uv)*20", "rgb16f", 0.95)
-blur("get_roughness(uv)*15", "rgb16f", 0.95)
-blur("get_roughness(uv)*10", "rgb16f", 0.95)
-blur("get_roughness(uv)", "rgb16f", 0.95)
+			local weights = {
+				Vec2(0.53812504, 0.18565957),
+				Vec2(0.13790712, 0.24864247),
+				Vec2(0.33715037, 0.56794053),
+				Vec2(-0.6999805, -0.04511441),
+				Vec2(0.06896307, -0.15983082),
+				Vec2(0.056099437, 0.006954967),
+				Vec2(-0.014653638, 0.14027752),
+				Vec2(0.010019933, -0.1924225),
+				Vec2(-0.35775623, -0.5301969),
+				Vec2(-0.3169221, 0.106360726),
+				Vec2(0.010350345, -0.58698344),
+				Vec2(-0.08972908, -0.49408212),
+				Vec2(0.7119986, -0.0154690035),
+				Vec2(-0.053382345, 0.059675813),
+				Vec2(0.035267662, -0.063188605),
+				Vec2(-0.47761092, 0.2847911)
+			}
+
+			for i,v in ipairs(weights) do
+				weights[i] = {
+					dir = ("vec2(%s, %s)"):format(v.x, v.y),
+					weight = math.lerp(math.sin((i / #weights) * math.pi), 0, 0.25),
+				}
+			end
+
+			table.insert(PASS.Source, {
+				buffer = {
+					size_divider = 2,
+					internal_format = "r11f_g11f_b10f",
+				},
+				source = [[
+					out vec3 out_color;
+
+					const float discard_threshold = 0.5;
+
+					vec3 blur(vec2 dir, float amount)
+					{
+
+						amount = pow(amount*1.5, 2.5) / get_linearized_depth(uv) / g_cam_farz;
+
+						vec2 step = dir * amount;
+						vec3 normal = normalize(get_view_normal(uv));
+						float total_weight = 3;
+						vec3 res = vec3(0);
+						vec2 offset;
+
+						]] ..(function()
+							local str = ""
+							for i, weight in ipairs(weights) do
+								str = str .. "offset = uv + " ..weight.dir.." * step;\n"
+								str = str .. "if( dot(normalize(get_view_normal(offset)), normal) < discard_threshold) {\n"
+								str = str .."total_weight -= "..weight.weight..";\n"
+								str = str .. "} else {\n"
+								str = str .. "res += texture(tex_stage_"..#PASS.Source..", offset).rgb * "..weight.weight.."; }\n"
+							end
+							return str
+						end)()..[[
+
+						res /= total_weight;
+
+						return res;
+					}
+
+					void main()
+					{
+						out_color = blur(vec2(]]..x..","..y..[[), get_roughness(uv));
+					}
+				]]
+			})
+			::continue::
+		end
+	end
+--blur("get_roughness(uv)*20", "r11f_g11f_b10f", 0.95)
+--blur("get_roughness(uv)*15", "r11f_g11f_b10f", 0.95)
+--blur("get_roughness(uv)*10", "r11f_g11f_b10f", 0.95)
+--blur("get_roughness(uv)", "r11f_g11f_b10f", 0.95)
 
 table.insert(PASS.Source, {
 	buffer = {
 		--max_size = Vec2() + 512,
-		internal_format = "r16f",
+		internal_format = "r32f",
 	},
 	source =  [[
 		const vec2 KERNEL[16] = vec2[](vec2(0.53812504, 0.18565957), vec2(0.13790712, 0.24864247), vec2(0.33715037, 0.56794053), vec2(-0.6999805, -0.04511441), vec2(0.06896307, -0.15983082), vec2(0.056099437, 0.006954967), vec2(-0.014653638, 0.14027752), vec2(0.010019933, -0.1924225), vec2(-0.35775623, -0.5301969), vec2(-0.3169221, 0.106360726), vec2(0.010350345, -0.58698344), vec2(-0.08972908, -0.49408212), vec2(0.7119986, -0.0154690035), vec2(-0.053382345, 0.059675813), vec2(0.035267662, -0.063188605), vec2(-0.47761092, 0.2847911));
@@ -585,15 +662,13 @@ table.insert(PASS.Source, {
 
 		void main()
 		{
-			float shadow = get_shadow(uv) > 0.00025 ? 0.25 : 1;
-
-			out_color = shadow * (min(ssao() + 0.25, 1));
+			out_color = (min(ssao() + 0.25, 1));
 			//out_color = pow(mix(1, out_color, pow(get_roughness(uv), 0.25)), 2);
 		}
 	]]
 })
 
-blur("get_shadow(uv)*2", "r16f", 0.9, 1)
+--blur("get_shadow(uv)*2", "r16f", 0.9, 1)
 
 table.insert(PASS.Source, {
 	source =  [[
@@ -601,7 +676,7 @@ table.insert(PASS.Source, {
 
 		void main()
 		{
-			vec3 reflection = texture(tex_stage_]]..(#PASS.Source-3)..[[, uv).rgb;
+			vec3 reflection = texture(tex_stage_]]..(#PASS.Source-1)..[[, uv).rgb;
 			if (texture(tex_depth, uv).r == 1)
 			{
 				out_color = gbuffer_compute_sky(-get_camera_dir(uv).xzy*vec3(1,1,-1), 1);
@@ -625,7 +700,6 @@ table.insert(PASS.Source, {
 			vec3 fog = gbuffer_compute_sky(-get_view_pos(uv).xzy, get_linearized_depth(uv));
 
 			out_color = albedo * light + fog;
-
 		}
 	]]
 })

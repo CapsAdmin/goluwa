@@ -302,6 +302,8 @@ PASS.Stages = {
 
 						tangent_space = mat3(view_tangent, view_bitangent, view_normal);
 					#endif
+
+					out_uv = uv * vec2(1,-1);
 				}
 			]]
 		},
@@ -498,7 +500,6 @@ PASS.Stages = {
 						vec3 dir = normalize(light_dir) * mat3(g_view);
 						dir.z = -dir.z;
 
-
 						float shadow_view = texture(lua[tex_shadow_map_cube = render.GetSkyTexture()], dir.xzy).r;
 
 						visibility = shadow_view;
@@ -594,8 +595,6 @@ PASS.Stages = {
 					{
 						set_specular(vec3(0));
 					}
-
-					//set_shadow(shadow);
 				}
 			]]
 		}
