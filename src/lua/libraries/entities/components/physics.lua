@@ -114,7 +114,7 @@ do
 
 		if SERVER then
 			local obj = self:GetComponent("network")
-			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsSphere", rad) end
+			if obj then obj:CallOnClientsPersist(self.Name, "InitPhysicsSphere", rad) end
 		end
 
 		to_bullet(self)
@@ -132,7 +132,7 @@ do
 
 		if SERVER then
 			local obj = self:GetComponent("network")
-			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsBox", scale) end
+			if obj then obj:CallOnClientsPersist(self.Name, "InitPhysicsBox", scale) end
 		end
 
 		to_bullet(self)
@@ -147,7 +147,7 @@ do
 
 		if SERVER then
 			local obj = self:GetComponent("network")
-			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsCapsuleZ") end
+			if obj then obj:CallOnClientsPersist(self.Name, "InitPhysicsCapsuleZ") end
 		end
 
 		to_bullet(self)
@@ -202,7 +202,7 @@ do
 
 		if SERVER then
 			local obj = self:GetComponent("network")
-			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsConvexHull") end
+			if obj then obj:CallOnClientsPersist(self.Name, "InitPhysicsConvexHull") end
 		end
 
 		to_bullet(self)
@@ -218,7 +218,7 @@ do
 
 		if SERVER then
 			local obj = self:GetComponent("network")
-			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsConvexTriangles") end
+			if obj then obj:CallOnClientsPersist(self.Name, "InitPhysicsConvexTriangles") end
 		end
 
 		to_bullet(self)
@@ -234,7 +234,7 @@ do
 
 		if SERVER then
 			local obj = self:GetComponent("network")
-			if obj:IsValid() then obj:CallOnClientsPersist(self.Name, "InitPhysicsTriangles") end
+			if obj then obj:CallOnClientsPersist(self.Name, "InitPhysicsTriangles") end
 		end
 
 		to_bullet(self)

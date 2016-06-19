@@ -66,7 +66,7 @@ function META:RemoveComponent(name)
 end
 
 function META:GetComponent(name)
-	return self.Components[name] or NULL
+	return self.Components[name]
 end
 
 function META:HasComponent(name)
@@ -111,14 +111,12 @@ do -- serializing
 		for name, vars in pairs(data.components) do
 			local component = self:GetComponent(name)
 
-			if component then
-				if not component:IsValid() then
-					component = self:AddComponent(name)
-				end
+			if not component then
+				component = self:AddComponent(name)
+			end
 
-				if component then
-					component:SetStorableTable(vars)
-				end
+			if component then
+				component:SetStorableTable(vars)
 			end
 		end
 
@@ -164,8 +162,9 @@ function prototype.SetupComponents(name, components, icon, friendly)
 				if type(v) == "function" then
 					table.insert(functions, {
 						func = function(ent, a,b,c,d)
-							local obj = ent:GetComponent(name)
-							return obj[k](obj, a,b,c,d)
+							--local obj = ent:GetComponent(name)
+							--return obj[k](obj, a,b,c,d)
+							return ent.Components[name][k](ent.Components[name], a,b,c,d)
 						end,
 						name = k,
 						component = name,

@@ -407,7 +407,7 @@ do -- call on client
 					end
 				else
 					local obj = self:GetComponent(component)
-					if obj:IsValid() then
+					if obj then
 						local func = obj[name]
 
 						if func then

@@ -8,7 +8,7 @@ function META:OnAdd(ent)
 	if ent:IsValid() then
 		self.mat = render.CreateMaterial(self.material_type)
 		local mdl = ent:GetComponent("model")
-		if mdl:IsValid() then
+		if mdl then
 			self.prev_mat = mdl:GetMaterialOverride()
 			mdl:SetMaterialOverride(self.mat)
 		end
@@ -20,13 +20,13 @@ function META:OnRemove()
 	if ent:IsValid() then
 		if self.prev_mat and self.prev_mat:IsValid() then
 			local mdl = ent:GetComponent("model")
-			if mdl:IsValid() then
+			if mdl then
 				mdl:SetMaterialOverride(self.prev_mat)
 			end
 			self.prev_mat = nil
 		else
 			local mdl = ent:GetComponent("model")
-			if mdl:IsValid() then
+			if mdl then
 				mdl:SetMaterialOverride()
 			end
 			self.mat:Remove()

@@ -142,16 +142,16 @@ function TMPL:RebuildMatrix()
 		if self.Entity:HasParent() then
 			local parent_transform = self.Entity.Parent:GetComponent("transform")
 
-			if not parent_transform:IsValid() then
+			if not parent_transform then
 				for _, ent in ipairs(self.Entity:GetParentList()) do
 					parent_transform = ent:GetComponent("transform")
-					if parent_transform:IsValid() then
+					if parent_transform then
 						break
 					end
 				end
 			end
 
-			if parent_transform:IsValid() then
+			if parent_transform then
 				self.temp_matrix = self.temp_matrix or Matrix44()
 				--self.TRMatrix = self.TRMatrix * self.Parent.TRMatrix
 				self.TRMatrix:Multiply(parent_transform.TRMatrix, self.temp_matrix)
