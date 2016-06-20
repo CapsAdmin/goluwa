@@ -167,8 +167,9 @@ function META:StringTagsToTable(str)
 								table.insert(chunks, {type = "font", val = last_font})
 							end
 						else
-							table.insert(chunks, {type = "font", val = args[1]})
-							last_font = args[1]
+							local font = surface.FindFont(args[1])
+							table.insert(chunks, {type = "font", val = font})
+							last_font = font
 						end
 					elseif not is_expression and tag == "color" then
 						if stop_tag then

@@ -6,11 +6,11 @@ local function set_font(self, font)
 	end
 end
 
-local function get_text_size(self, font)
+local function get_text_size(self, text)
 	if self.FixedSize > 0 then
 		return self.FixedSize, self.FixedSize
 	else
-		return surface.GetTextSize(font)
+		return surface.GetTextSize(text)
 	end
 end
 

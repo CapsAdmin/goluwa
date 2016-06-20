@@ -152,6 +152,15 @@ function surface.GetFont()
 	return surface.current_font
 end
 
+function surface.FindFont(name)
+	for _, font in ipairs(prototype.GetCreated(true, "font")) do
+		if font:GetName():compare(name) then
+			return font
+		end
+	end
+	return surface.default_font
+end
+
 local X, Y = 0, 0
 
 function surface.DrawText(str, x, y, w)
