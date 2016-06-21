@@ -1,6 +1,21 @@
 table.new = table.new or desire("table.new") or function() return {} end
 table.clear = table.clear or desire("table.clear") or function(t) for k in pairs(t) do t[k] = nil end end
 
+if not table.pack then
+    function table.pack(...)
+        return {
+			n = select("#", ...),
+			...
+		}
+    end
+end
+
+if not table.unpack then
+	function table.unpack(tbl)
+		return unpack(tbl)
+	end
+end
+
 function table.shuffle(a, times)
 	times = times or 1
 	local c = #a
