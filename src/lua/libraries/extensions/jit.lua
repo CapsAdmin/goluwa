@@ -1,3 +1,5 @@
+pcall(function()
+
 jit.vmdef = require("jit.vmdef")
 jit.util = require("jit.util")
 
@@ -19,6 +21,8 @@ jit.v = require("jit.v")
 jit.opt = require("jit.opt")
 jit.dump = require("jit.dump")
 jit.dis = require("jit.dis_x64")
+
+end)
 
 function jit.dumpinfo(cb, output)
 	local old = jit.getoptions().hotloop
