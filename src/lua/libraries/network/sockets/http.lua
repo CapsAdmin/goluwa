@@ -236,8 +236,30 @@ end
 local active_downloads = utility.CreateWeakTable()
 local cb = utility.CreateCallbackThing()
 
+local count = 0
+local queue = {}
+
+local function push_download(...)
+	if count >= 10 then
+		table.insert(queue, table.pack(...))
+		llog("too many downloads (queue size: %s)", #queue)
+	else
+		count = count + 1
+		return true
+	end
+end
+
+local function pop_download()
+	count = count - 1
+	if #queue > 0 then
+		sockets.Download(table.unpack(table.remove(queue)))
+	end
+end
+
 function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 	if not url:find("^(.-)://") then return end
+
+	if not push_download(url, callback, on_fail, on_chunks, on_header) then return true, "queued" end
 
 	if cb:check(url, callback) then return true end
 
@@ -250,10 +272,11 @@ function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 		url = url,
 		on_chunks = on_chunks,
 		callback = function(data)
-			if sockets.debug_download then logn("[sockets] finished downloading ", url) end
+			if sockets.debug_download then llog("finished downloading ", url) end
 			cb:stop(url, data and data.content)
 			cb:uncache(url)
 			active_downloads[url] = nil
+			pop_download()
 		end,
 		header_callback = function(header)
 			if on_header and on_header(header) == false then
@@ -262,9 +285,9 @@ function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 
 			if sockets.debug_download then
 				if header["content-length"] then
-					logn("[sockets] size of ", url, " is ", utility.FormatFileSize(header["content-length"]))
+					llog("size of ", url, " is ", utility.FormatFileSize(header["content-length"]))
 				else
-					logn("[sockets] size of ", url, " is unkown!")
+					llog("size of ", url, " is unkown!")
 				end
 			end
 		end,
@@ -284,6 +307,7 @@ function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 		code_callback = function(code)
 			if code == 404 or code == 400 then
 				cb:uncache(url)
+				pop_download()
 
 				if on_fail then
 					on_fail()
@@ -292,12 +316,13 @@ function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 				return false
 			end
 
-			if sockets.debug_download then logn("[sockets] downloading ", url) end
+			if sockets.debug_download then llog("downloading ", url) end
 		end,
 		error_callback = function(reason)
 			if on_fail then
 				on_fail(reason)
 			end
+			pop_download()
 		end,
 	})
 
@@ -310,7 +335,7 @@ function sockets.AbortDownload(url)
 		active_downloads[url].just_remove = true
 		active_downloads[url]:Remove()
 		active_downloads[url] = nil
-		if sockets.debug_download then logn("[sockets] download aborted ", url) end
+		if sockets.debug_download then llog("download aborted ", url) end
 	end
 end
 
