@@ -317,7 +317,7 @@ do -- tcp socket meta
 					self:OnConnect(res, msg)
 
 					self:Timeout(false)
-				elseif msg == "timeout" or msg == "getpeername failed" then
+				elseif msg == "timeout" or msg == "getpeername failed" or msg == "Transport endpoint is not connected" then
 					self:Timeout(true)
 				else
 					self:DebugPrintf("errored: %s", msg)
