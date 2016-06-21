@@ -112,6 +112,7 @@ function resource.Download(path, callback, on_fail, crc)
 		url = path
 		local ext = url:match(".+(%.%a+)") or ".dat"
 		path = "cache/" .. (crc or crypto.CRC32(path)) .. ext
+		existing_path = R(path)
 	else
 		existing_path = R(path) or R(path:lower())
 	end
