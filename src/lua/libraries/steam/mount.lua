@@ -60,9 +60,13 @@ end
 function steam.GetLibraryFolders()
 	local base = steam.GetInstallPath()
 
+	local str = vfs.Read(base .. "/config/config.vdf", "r")
+
+	if not str then return {} end
+
 	local tbl = {base .. "/steamapps/"}
 
-	local config = steam.VDFToTable(assert(vfs.Read(base .. "/config/config.vdf", "r")))
+	local config = steam.VDFToTable(str)
 
 	for key, path in pairs(config.InstallConfigStore.Software.Valve.Steam) do
 
