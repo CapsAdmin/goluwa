@@ -61,10 +61,10 @@ ffi.load = function(path, ...)
 			end
 		end
 
-		return unpack(args)
+		error(args[2], 2)
 	end
 
-	return select(2, unpack(args))
+	return args[2]
 end
 
 ffi.cdef("void* malloc(size_t size); void free(void* ptr);")
