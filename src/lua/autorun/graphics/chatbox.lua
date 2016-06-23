@@ -152,6 +152,57 @@ function chat.GetPanel()
 
 	local S = gui.skin:GetScale()
 
+	local emotes = frame:CreatePanel("button")
+	emotes:SetSize(Vec2()+16)
+	emotes:SetupLayout("bottom", "right")
+	emotes.OnPress = function()
+		local frame = gui.CreatePanel("frame")
+		frame:SetSize(Vec2()+256)
+		frame:SetPosition(emotes:GetWorldPosition())
+		frame:SetTitle(L"smileys")
+
+		local edit = frame:CreatePanel("text_edit")
+		edit:SetMargin(Rect()+3)
+		edit:SetHeight(16)
+		edit:SetupLayout("top", "fill_x")
+		edit:RequestFocus()
+
+		local scroll = frame:CreatePanel("scroll")
+		scroll:SetupLayout("top", "fill")
+		scroll:SetXScrollBar(false)
+
+		local grid = scroll:SetPanel(gui.CreatePanel("base"))
+		grid:SetStack(true)
+		grid:SetNoDraw(true)
+
+		edit.OnTextChanged = function(_, str)
+			grid:RemoveChildren()
+
+			for name, path in pairs(chathud.emote_shortucts) do
+				if name:find(str) then
+					local url = path:match("<texture=(.+)>")
+					local icon = grid:CreatePanel("button")
+					icon:SetImagePath(url)
+					icon:SetSize(Vec2()+32)
+				end
+			end
+
+			grid:Layout()
+		end
+
+		grid.OnLayout = function()
+			grid:SetWidth(scroll:GetWidth())
+			grid:SizeToChildrenHeight()
+		end
+	end
+
+	local image = emotes:CreatePanel("image")
+	image:SetSize(Vec2()+16)
+	image:SetIgnoreMouse(true)
+	image:SetPath("textures/silkicons/emoticon_smile.png")
+
+	frame.emotes = emotes
+
 	local edit = frame:CreatePanel("text_edit")
 	edit:SetMargin(Rect()+3)
 	edit:SetupLayout("bottom", "fill_x")
