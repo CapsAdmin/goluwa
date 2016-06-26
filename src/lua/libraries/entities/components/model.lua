@@ -9,9 +9,9 @@ META:StartStorable()
 	META:GetSet("ModelPath", "models/cube.obj")
 	META:GetSet("BBMin", Vec3())
 	META:GetSet("BBMax", Vec3())
-	META:IsSet("Loading", false)
 META:EndStorable()
 
+META:IsSet("Loading", false)
 META:GetSet("Model", nil)
 
 META.Network = {
