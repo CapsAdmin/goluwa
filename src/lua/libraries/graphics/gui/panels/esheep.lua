@@ -26,7 +26,7 @@ function META:DrawTile(tile_x, tile_y, rot)
 	if tile_x < 0 then tile_x = -tile_x w = -w end
 	if tile_y < 0 then tile_y = -tile_y h = -h end
 
-	surface.SetRectUV(tile_x, tile_y, w, h, surface.GetTexture().w, surface.GetTexture().h)
+	surface.SetRectUV(tile_x, tile_y, w, h, surface.GetTexture():GetSize().x, surface.GetTexture():GetSize().y)
 	surface.DrawRect(self.Size.x/2, self.Size.y/2, self.Size.x, self.Size.y, rot or 0, self.Size.x/2, self.Size.y/2)
 end
 
@@ -48,8 +48,8 @@ function META:Initialize()
 	self:SetResizable(true)
 	self.Velocity = Vec2()
 	self.sheep_texture = render.CreateTextureFromPath("textures/esheep.png")
-	self.sheep_texture:SetMinFilter("nearest")
-	self.sheep_texture:SetMagFilter("nearest")
+	--self.sheep_texture:SetMinFilter("nearest")
+	--self.sheep_texture:SetMagFilter("nearest")
 	self.frame = 0
 end
 
@@ -57,8 +57,8 @@ function META:OnParentLand(parent)
 	self:SetParent(parent)
 end
 
-local faint_vel = 2
-local bounce = 0.9
+local faint_vel = 10
+local bounce = 0.5
 
 function META:CheckCollision()
 	local w, h = self.Parent:GetSize():Unpack()
@@ -73,7 +73,7 @@ function META:CheckCollision()
 	end
 
 	if self.Position.y > pos.y then
-		if length> faint_vel then self.faint_time = length/5 self.faint = system.GetElapsedTime() + self.faint_time end
+		if length > faint_vel then self.faint_time = length/5 self.faint = system.GetElapsedTime() + self.faint_time end
 		self.Velocity = self.Velocity:GetReflected(Vec2(0,1)) * bounce
 		self.Position.y = self.Position.y - 1
 		if found and found.Velocity then found.Velocity.y = found.Velocity.y + (self.Velocity.y * -0.5) end
@@ -83,7 +83,7 @@ function META:CheckCollision()
 	local pos, found = self.Parent:RayCast(self, self.Position.x, 1, true, true)
 
 	if self.Position.y < pos.y then
-		if length> faint_vel then self.faint_time = length/5  self.faint = system.GetElapsedTime() + self.faint_time end
+		if length > faint_vel then self.faint_time = length/5  self.faint = system.GetElapsedTime() + self.faint_time end
 		self.Velocity = self.Velocity:GetReflected(Vec2(0,-1)) * bounce
 		self.Position.y = self.Position.y + 1
 		if found and found.Velocity then found.Velocity.y = found.Velocity.y + (self.Velocity.y * -0.5) end
@@ -93,7 +93,7 @@ function META:CheckCollision()
 	local pos, found = self.Parent:RayCast(self, w - self.Size.x, self.Position.y, true, true)
 
 	if self.Position.x > pos.x - 4 then
-		if length> faint_vel then self.faint_time = length/5 self.faint = system.GetElapsedTime() + self.faint_time end
+		if length > faint_vel then self.faint_time = length/5 self.faint = system.GetElapsedTime() + self.faint_time end
 		self.Velocity = self.Velocity:GetReflected(Vec2(1,0)) * bounce
 		self.Position.x = self.Position.x - 1
 		if found and found.Velocity then found.Velocity.x = found.Velocity.x + (self.Velocity.x * -0.5) end
@@ -103,7 +103,7 @@ function META:CheckCollision()
 	local pos, found = self.Parent:RayCast(self, 1, self.Position.y, true, true)
 
 	if self.Position.x < pos.x + 4 then
-		if length> faint_vel then self.faint_time = length/5 self.faint = system.GetElapsedTime() + self.faint_time end
+		if length > faint_vel then self.faint_time = length/5 self.faint = system.GetElapsedTime() + self.faint_time end
 		self.Velocity = self.Velocity:GetReflected(Vec2(-1,0)) * bounce
 		self.Position.x = self.Position.x + 1
 		if found and found.Velocity then found.Velocity.x = found.Velocity.x + self.Velocity.x * -0.5 end
@@ -112,13 +112,13 @@ function META:CheckCollision()
 end
 
 function META:OnUpdate()
-	local dt = system.GetFrameTime() / 5
+	local dt = system.GetFrameTime()
 	local mpos = self:GetMousePosition()
 
 	if self:IsDragging() then self.Velocity = Vec2(surface.GetMouseVel())/10 end
 
-	self.frame = self.frame + self.Velocity.x / 15
-	self.Velocity = self.Velocity + Vec2(0, 10) * dt
+	self.frame = self.frame + self.Velocity.x / 5
+	self.Velocity = self.Velocity + Vec2(0, 100) * dt
 
 	if self.faint and self.faint > system.GetElapsedTime() then
 

@@ -178,12 +178,16 @@ function chat.GetPanel()
 		edit.OnTextChanged = function(_, str)
 			grid:RemoveChildren()
 
+			local i = 0
+
 			for name, path in pairs(chathud.emote_shortucts) do
 				if name:find(str) then
 					local url = path:match("<texture=(.+)>")
 					local icon = grid:CreatePanel("button")
 					icon:SetImagePath(url)
 					icon:SetSize(Vec2()+32)
+					if i > 100 then break end
+					i = i + 1
 				end
 			end
 
@@ -256,7 +260,7 @@ function chat.GetPanel()
 
 		local str = self:GetText():trim()
 
-		if not str:find("\n") then
+		if not str:find("\n") and edit:GetCaretPosition().x == #self:GetText() then
 
 			local scroll = 0
 
@@ -266,8 +270,9 @@ function chat.GetPanel()
 
 			found_autocomplete = autocomplete.Query("chatsounds", str, scroll)
 
-			if key == "tab" and found_autocomplete then
+			if key == "tab" and found_autocomplete[1] then
 				edit:SetText(found_autocomplete[1])
+				edit:SetCaretPosition(Vec2(math.huge, 0))
 				return false
 			end
 		end
@@ -296,7 +301,7 @@ function chat.GetPanel()
 
 		local command_history = serializer.ReadFile("luadata", "data/cmd_history.txt") or {}
 
-		if str == last_history or str == "" then
+		if str == last_history or str == "" or not str:find("\n") then
 			local browse = false
 
 			if key == "up" then
