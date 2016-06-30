@@ -10,6 +10,29 @@ prototype.GetSet(META, "ActiveStyle", "button_active")
 prototype.GetSet(META, "InactiveStyle", "button_inactive")
 prototype.GetSet(META, "HighlightOnMouseEnter", true)
 prototype.GetSet(META, "ClicksToActivate", 0)
+prototype.GetSet(META, "ImagePath", "")
+prototype.GetSet(META, "ImageSize", Vec2() + 16)
+
+function META:SetImagePath(str)
+	if not str or str == "" then
+		gui.RemovePanel(self.image)
+	else
+		local image = self:CreatePanel("image")
+		image:SetPath(str)
+		image:SetIgnoreMouse(true)
+		image:SetSize(self.ImageSize)
+		image:SetupLayout("center_simple")
+		self.image = image
+	end
+end
+
+function META:SetImageSize(size)
+	self.ImageSize = size:Copy()
+
+	if self.image then
+		self.image:SetSize(self.ImageSize)
+	end
+end
 
 function META:SetActiveStyle(str)
 	self.ActiveStyle = str
