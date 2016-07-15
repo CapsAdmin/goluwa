@@ -10,7 +10,7 @@ event.AddListener("Draw2D", "lol", function()
 	for y = 1, 512 do
 
 		local h =  math.ceil((time + (x/y))* 100)
-		local c = cache[h] or HSVToColor(h/100,1,1)
+		local c = cache[h] or ColorHSV(h/100,1,1)
 		cache[h] = c
 
 		surface.SetColor(c.r,c.g,c.b, 0.5)

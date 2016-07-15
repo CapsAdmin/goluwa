@@ -36,7 +36,7 @@ for x = -max/2, max/2 do
 		mat:SetMetallicTexture(render.GetWhiteTexture())
 		mat:SetRoughnessTexture(render.GetWhiteTexture())
 		--mat:SetColor(Color(1,1,1, 1))
-		mat:SetColor(HSVToColor(1,0.5,1))
+		mat:SetColor(ColorHSV(1,0.5,1))
 
 		mat:SetRoughnessMultiplier((x+1) / 2)
 		mat:SetMetallicMultiplier(-(y+1) / 2+1)

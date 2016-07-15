@@ -56,12 +56,12 @@ do
 	ADD("Bool")
 end
 
-function globals.HSVToColor(h,s,v)
-	return globals.Color(HSVToColor(h*360,s,v):Unpack())
+function globals.ColorHSV(h,s,v)
+	return globals.Color(ColorHSV(h*360,s,v):Unpack())
 end
 
 function globals.ColorToHSV(c)
-	return ColorToHSV(c)
+	return c:GetHSV()
 end
 
 function globals.GetHostName()

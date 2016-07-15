@@ -1769,7 +1769,7 @@ return {
 			["EmitSound"] = true,
 			["DamageInfo"] = true,
 			["SetGlobalFloat"] = true,
-			["HSVToColor"] = true,
+			["ColorHSV"] = true,
 			["FindMetaTable"] = true,
 			["EmitSentence"] = true,
 			["collectgarbage"] = true,

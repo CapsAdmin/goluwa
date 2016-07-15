@@ -31,7 +31,7 @@ function META:SetColor(color)
 end
 
 function META:Invalidate(override)
-	local color = override or HSVToColor(self:GetHue(), self:GetSaturation(), self:GetValue())
+	local color = override or ColorHSV(self:GetHue(), self:GetSaturation(), self:GetValue())
 
 	self.Color = color
 

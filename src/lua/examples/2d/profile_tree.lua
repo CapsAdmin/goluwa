@@ -9,7 +9,7 @@ local function draw_branch(node)
 	drawn[node] = true
 
 	if node.times_called then
-		local r,g,b = HSVToColor(0, (node.times_called / root.times_called), 1):Unpack()
+		local r,g,b = ColorHSV(0, (node.times_called / root.times_called), 1):Unpack()
 		surface.SetColor(r,g,b,1)
 	end
 

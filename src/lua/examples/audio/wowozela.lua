@@ -72,7 +72,7 @@ event.AddListener("Draw2D", "wowozela", function(dt)
 		p:SetStartSize((1/pitch) * 100)
 		p:SetStartAlpha(1)
 		p:SetEndAlpha(0)
-		p:SetColor(HSVToColor(pitch, 0.5))
+		p:SetColor(ColorHSV(pitch, 0.5))
 
 		volume = 1
 	else

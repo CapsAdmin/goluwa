@@ -113,7 +113,7 @@ META.tags.hsv =
 	arguments = {0, 1, 1},
 
 	pre_draw = function(markup, self, x,y, h, s, v)
-		local r,g,b = HSVToColor(h,s,v):Unpack()
+		local r,g,b = ColorHSV(h,s,v):Unpack()
 		surface.SetColor(r, g, b, 1)
 	end,
 }

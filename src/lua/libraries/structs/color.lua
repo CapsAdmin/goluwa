@@ -22,6 +22,40 @@ function ColorHex(hex, a)
 	return ColorBytes(r, g, b, a)
 end
 
+
+-- http://code.google.com/p/sm-ssc/source/browse/Themes/_fallback/Scripts/02+Colors.lua?spec=svnca631130221f6ed8b9065685186fb696660bc79a&name=ca63113022&r=ca631130221f6ed8b9065685186fb696660bc79a
+
+function ColorHSV(h, s, v, a)
+	h = (h%1 * 360) / 60
+	s = s or 1
+	v = v or 1
+	a = a or 1
+
+	if s == 0 then
+		return Color(v, v, v, a)
+	end
+
+	local i = math.floor(h)
+	local f = h - i
+	local p = v * (1-s)
+	local q = v * (1-s*f)
+	local t = v * (1-s*(1-f))
+
+	if i == 0 then
+		return Color(v, t, p, a)
+	elseif i == 1 then
+		return Color(q, v, p, a)
+	elseif i == 2 then
+		return Color(p, v, t, a)
+	elseif i == 3 then
+		return Color(p, q, v, a)
+	elseif i == 4 then
+		return Color(t, p, v, a)
+	end
+
+	return Color(v, p, q, a)
+end
+
 META.NumberType = "double"
 META.Args = {"r", "g", "b", "a"}
 META.ProtectedFields = {a = true}
@@ -49,9 +83,9 @@ function META:SetAlpha(a)
 end
 
 function META:SetHue(h)
-	local _h,s,l = ColorToHSV(self)
+	local _h,s,l = self:GetHSV()
 	_h = (_h + h)%360
-	local new = HSVToColor(_h, s, l, self.a)
+	local new = ColorHSV(_h, s, l, self.a)
 	self.r = new.r
 	self.g = new.g
 	self.b = new.b
@@ -90,9 +124,9 @@ end
 structs.AddGetFunc(META, "Lerp", "Lerped")
 
 function META:SetSaturation(s)
-	local h, _s, l = ColorToHSV(self)
+	local h, _s, l = self:GetHSV()
 	_s = s
-	local new = HSVToColor(h, _s, l, self.a)
+	local new = ColorHSV(h, _s, l, self.a)
 	self.r = new.r
 	self.g = new.g
 	self.b = new.b
@@ -101,9 +135,9 @@ function META:SetSaturation(s)
 end
 
 function META:SetLightness(l)
-	local h, s, _l = ColorToHSV(self)
+	local h, s, _l = self:GetHSV()
 	_l = l
-	local new = HSVToColor(h, s, _l, self.a)
+	local new = ColorHSV(h, s, _l, self.a)
 	self.r = new.r
 	self.g = new.g
 	self.b = new.b
@@ -115,7 +149,7 @@ function META:GetTints(count)
 	local tbl = {}
 
 	for i = 1, count do
-		local h,s,v = ColorToHSV(self)
+		local h,s,v = self:GetHSV()
 		local copy = self:Copy()
 		copy:SetLightness(v + ( 1 - v) / count * i)
 		table.insert(tbl, copy)
@@ -128,7 +162,7 @@ function META:GetShades(count)
 	local tbl = {}
 
 	for i = 1, count do
-		local h,s,v = ColorToHSV(self)
+		local h,s,v = self:GetHSV()
 		local copy = self:Copy()
 		copy:SetLightness(v - (v) / count * i)
 		table.insert(tbl, copy)
@@ -142,56 +176,23 @@ function META:GetHex()
 end
 
 function META:SetTint(num)
-	local h,s,v = ColorToHSV(self)
+	local h,s,v = self:GetHSV()
 	self:SetLightness(v + (1 - v) * num)
 
 	return self
 end
 
 function META:SetShade(num)
-	local h,s,v = ColorToHSV(self)
+	local h,s,v = self:GetHSV()
 	self:SetLightness(v - v * num)
 
 	return self
 end
 
--- http://code.google.com/p/sm-ssc/source/browse/Themes/_fallback/Scripts/02+Colors.lua?spec=svnca631130221f6ed8b9065685186fb696660bc79a&name=ca63113022&r=ca631130221f6ed8b9065685186fb696660bc79a
-
-function HSVToColor(h, s, v, a)
-	h = (h%1 * 360) / 60
-	s = s or 1
-	v = v or 1
-	a = a or 1
-
-	if s == 0 then
-		return Color(v, v, v, a)
-	end
-
-	local i = math.floor(h)
-	local f = h - i
-	local p = v * (1-s)
-	local q = v * (1-s*f)
-	local t = v * (1-s*(1-f))
-
-	if i == 0 then
-		return Color(v, t, p, a)
-	elseif i == 1 then
-		return Color(q, v, p, a)
-	elseif i == 2 then
-		return Color(p, v, t, a)
-	elseif i == 3 then
-		return Color(p, q, v, a)
-	elseif i == 4 then
-		return Color(t, p, v, a)
-	end
-
-	return Color(v, p, q, a)
-end
-
-function ColorToHSV(c)
-	local r = c.r
-	local g = c.g
-	local b = c.b
+function META:GetHSV()
+	local r = self.r
+	local g = self.g
+	local b = self.b
 
 	local h = 0
 	local s = 0

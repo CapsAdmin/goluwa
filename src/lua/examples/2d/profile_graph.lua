@@ -19,7 +19,7 @@ local function draw_branch(node, level, i, max, px, py, ppos, pw, ph)
 
 	frac = math.clamp(frac, 0, 1)
 
-	local r,g,b = HSVToColor(frac, 1, 1):Unpack()
+	local r,g,b = ColorHSV(frac, 1, 1):Unpack()
 	surface.SetColor(r,g,b,0.5)
 
 	local pos = (i / max)
