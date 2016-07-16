@@ -859,7 +859,7 @@ function utility.RemoveOldObject(obj, id)
 			utility.remakes[id]:Remove()
 		end
 
-		UTIL_REMAKES[id] = obj
+		utility.remakes[id] = obj
 	end
 
 	return obj
