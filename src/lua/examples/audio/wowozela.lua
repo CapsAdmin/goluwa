@@ -1,13 +1,14 @@
 window.Open()
 window.SetMouseTrapped(true)
 
-local size = 128
+--[[local size = 128
 local buffer = ffi.new("ALshort[?]", size)
 for i = 0, size-1 do
 	buffer[i] = math.random(256)
 end
 
---local sound = utility.RemoveOldObject(Sound(buffer, size))
+local sound = utility.RemoveOldObject(Sound(buffer, size))
+]]
 local sound = utility.RemoveOldObject((Sound("sounds/wowozela/sine_880.wav")))
 
 sound:Play()
@@ -16,7 +17,6 @@ sound:SetLooping(true)
 local volume = 1
 local pitch = 1
 
-window.Open(1024, 1024)
 local sphere = render.CreateBlankTexture(Vec2(64, 64)):Fill(function(x, y)
 	x = x / 64
 	y = y / 64
@@ -40,21 +40,30 @@ local emitter = ParticleEmitter()
 emitter:SetRate(-1)
 emitter:SetTexture(sphere)
 
-local trail_tex = render.CreateBlankTexture(Vec2(1, 255)):Fill(function(x, y) return 255, 255, 255, y end)
-
+local lol
 local grid_size = 1000
 local smooth_pitch = 0
 
-event.AddListener("Draw2D", "wowozela", function(dt)
+event.AddListener("PostDrawMenu", "wowozela", function(dt)
 	local size = window.GetSize()
+
+	surface.SetColor(0,0,0,1)
+	surface.SetWhiteTexture()
+	surface.DrawRect(0,0,size.x, size.y)
+
 	local pos = window.GetMousePosition()
 
-	pitch = ((-pos.y + grid_size) / grid_size)
-	pitch = 5 ^ pitch
+	local y = (-(pos.y / size.y) + 1)
 
-	volume = math.clamp(pos.x / grid_size, 0, 1)
+	if input.IsKeyDown("left_alt") then
+		y = y - 1
+	end
 
-	emitter:SetPosition(Vec3(pos:Unpack()))
+	local pitch = (4 ^ y)
+
+	volume = math.clamp(pos.x / size.x, 0, 1)
+
+	emitter:SetPosition(Vec3(pos.x, pos.y, 0))
 
 	if input.IsMouseDown("button_1") or input.IsMouseDown("button_2") then
 		local p = emitter:AddParticle()
@@ -74,13 +83,16 @@ event.AddListener("Draw2D", "wowozela", function(dt)
 		p:SetEndAlpha(0)
 		p:SetColor(ColorHSV(pitch, 0.5))
 
-		volume = 1
+		--volume = 1
+		if not lol then
+			--smooth_pitch = smooth_pitch + 1.51
+			lol = true
+			sound:SetSampleOffset(0)
+		end
 	else
 		volume = -100
+		lol = false
 	end
-
-	emitter:Update(dt)
-	emitter:Draw()
 
 	surface.SetColor(1,1,1,1)
 	surface.SetTexture(sphere)
@@ -88,10 +100,13 @@ event.AddListener("Draw2D", "wowozela", function(dt)
 
 	--sound:Play()
 
-	smooth_pitch = smooth_pitch + ((pitch - smooth_pitch) * dt * 10)
+	smooth_pitch = pitch --smooth_pitch + ((pitch - smooth_pitch) * dt * 10)
 
 	sound:SetPitch(smooth_pitch)
-	sound:SetPosition(pos.x / size.x,0,(-volume+1)^10*100)
+	sound:SetPosition(0,0,(-volume+1)^10*100)
 
 --	render.SetupView2D(-pos + size*0.5, 0)
+
+	emitter:Update(dt)
+	emitter:Draw()
 end)
