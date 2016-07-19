@@ -1,5 +1,5 @@
 window.Open()
-window.SetMouseTrapped(true)
+--window.SetMouseTrapped(true)
 
 --[[local size = 128
 local buffer = ffi.new("ALshort[?]", size)
@@ -9,7 +9,7 @@ end
 
 local sound = utility.RemoveOldObject(Sound(buffer, size))
 ]]
-local sound = utility.RemoveOldObject((Sound("sounds/wowozela/sine_880.wav")))
+local sound = utility.RemoveOldObject((Sound("sounds/sine_880.wav")))
 
 sound:Play()
 sound:SetLooping(true)

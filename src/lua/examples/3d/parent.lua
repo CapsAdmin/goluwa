@@ -19,7 +19,7 @@ end
 do
 	local parent = parent
 
-	for i = 1, 5000 do
+	for i = 1, 1000 do
 
 		local child = entities.CreateEntity("visual", parent)
 		child:SetPosition(Vec3(0, 2, 0))
