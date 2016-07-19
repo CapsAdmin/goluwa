@@ -7,7 +7,7 @@ local data = {
 }
 
 local blacklist = {
-	"opengl/init.lua",
+	"gmod/exported.lua",
 	"ffi/bullet.lua",
 	"header.lua",
 	"enums.lua",
