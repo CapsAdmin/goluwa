@@ -266,6 +266,9 @@ if SERVER or CLIENT then
 		nvars = include("lua/libraries/network/nvars.lua") -- variable synchronization between server and client
 		clients = include("lua/libraries/network/clients.lua") -- high level wrapper for a connected client
 		chat = include("lua/libraries/network/chat.lua") -- in game chat
+	else
+		CLIENT = nil
+		SERVER = nil
 	end
 end
 
@@ -278,8 +281,10 @@ if GRAPHICS then
 		video = include("lua/libraries/graphics/video.lua") -- gif support (for now)
 		gui = include("lua/libraries/graphics/gui/gui.lua")
 		include("lua/libraries/graphics/particles.lua")
-	else
-		GRAPHCIS = nil
+	end
+	
+	if not render or not window then
+		GRAPHICS = nil
 		WINDOW = nil
 	end
 end

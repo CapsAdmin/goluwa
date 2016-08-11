@@ -1,7 +1,11 @@
+local bullet = desire("libbullet3")
+
+if not bullet then return end
+
 local ffi = require("ffi")
 local physics = physics or {}
 
-physics.bullet = desire("libbullet3")
+physics.bullet = bullet
 physics.bodies = physics.bodies or {}
 
 local function vec3_to_bullet(x, y, z)

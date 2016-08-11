@@ -198,18 +198,19 @@ do
 	commands.Add("lua_open", function(line)
 		include(line)
 	end)
+	
+	if SERVER then
+		commands.AddServerCommand("lua_run_sv", function(client, line)
+			logn(client:GetNick(), " ran ", line)
+			commands.SetLuaEnvironmentVariable("me", client)
+			commands.RunLua(line)
+		end)
 
-	commands.AddServerCommand("lua_run_sv", function(client, line)
-		logn(client:GetNick(), " ran ", line)
-		commands.SetLuaEnvironmentVariable("me", client)
-		commands.RunLua(line)
-	end)
-
-	commands.AddServerCommand("lua_open_sv", function(client, line)
-		logn(client:GetNick(), " opened ", line)
-		include(line)
-	end)
-
+		commands.AddServerCommand("lua_open_sv", function(client, line)
+			logn(client:GetNick(), " opened ", line)
+			include(line)
+		end)
+	end
 
 	local default_ip = "*"
 	local default_port = 1234

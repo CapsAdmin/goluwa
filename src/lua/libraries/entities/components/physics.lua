@@ -1,3 +1,5 @@
+if not physics then return end
+
 local META = prototype.CreateTemplate()
 
 META.Name = "physics"

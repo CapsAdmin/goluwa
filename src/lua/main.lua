@@ -11,7 +11,7 @@ if sockets then
 	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/")
 end
 
-if WINDOW then
+if WINDOW and window then
 	if window.Open() then
 		if GRAPHICS then
 			gui.Initialize()
@@ -36,9 +36,12 @@ end
 
 --steam.InitializeWebAPI()
 
-if CLIENT and enet then
+if network then
 	enet.Initialize()
-	clients.local_client = clients.Create("unconnected")
+	
+	if CLIENT then
+		clients.local_client = clients.Create("unconnected")
+	end
 end
 
 -- tries to load all addons
@@ -60,6 +63,11 @@ end
 
 -- load everything in lua/autorun/server/*
 if SERVER then
+	vfs.AutorunAddons("server/")
+end
+
+-- load everything in lua/autorun/shared/*
+if CLIENT or SERVER then
 	vfs.AutorunAddons("server/")
 end
 

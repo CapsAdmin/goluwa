@@ -1,6 +1,9 @@
+local archive = desire("libarchive")
+
+if not archive then return end
+
 local vfs = (...) or _G.vfs
 local ffi = require("ffi")
-local archive = desire("libarchive")
 
 local function iterate_archive(a)
 	return function()
