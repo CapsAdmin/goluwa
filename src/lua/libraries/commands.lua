@@ -307,7 +307,7 @@ function commands.SetLuaEnvironmentVariable(key, var)
 end
 
 function commands.RunLua(line, log_error, env_name)
-	commands.SetLuaEnvironmentVariable("copy", window.SetClipboard)
+	if WINDOW then commands.SetLuaEnvironmentVariable("copy", window.SetClipboard) end
 	commands.SetLuaEnvironmentVariable("gl", desire("libopengl"))
 	commands.SetLuaEnvironmentVariable("findo", prototype.FindObject)
 	local lua = ""
