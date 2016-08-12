@@ -32,6 +32,28 @@ local where = {
 	"lua/modules/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/",
 }
 
+
+local function warn_pcall(func, ...)
+	local res = {pcall(func, ...)}
+	if not res[1] then
+		logn(res[2]:trim())
+	end
+
+	return unpack(res, 2)
+end
+
+local function handle_stupid(clib, err, ...)
+	if WINDOWS and clib then
+		return setmetatable({}, {
+			__index = function(s, k)
+				return warn_pcall(function() return clib[k] end)
+			end,
+			__newindex = clib,
+		})
+	end
+	return clib, err, ...
+end
+
 -- make ffi.load search using our file system
 ffi.load = function(path, ...)
 	local args = {pcall(_OLD_G.ffi_load, path, ...)}
@@ -48,13 +70,13 @@ ffi.load = function(path, ...)
 						system.SetSharedLibraryPath(old)
 
 						if args[1] then
-							return select(2, unpack(args))
+							return handle_stupid(select(2, unpack(args)))
 						end
 
 						-- if not try the default OS specific dll directories
 						args = {pcall(_OLD_G.ffi_load, full_path, ...)}
 						if args[1] then
-							return select(2, unpack(args))
+							return handle_stupid(select(2, unpack(args)))
 						end
 					end
 				end
@@ -64,7 +86,7 @@ ffi.load = function(path, ...)
 		error(args[2], 2)
 	end
 
-	return args[2]
+	return handle_stupid(args[2])
 end
 
 ffi.cdef("void* malloc(size_t size); void free(void* ptr);")
@@ -74,15 +96,6 @@ function ffi.malloc(t, size)
 	local ptr = ffi.gc(ffi.C.malloc(size), ffi.C.free)
 
 	return ffi.cast(ffi.typeof("$ *", t), ptr), ptr
-end
-
-local function warn_pcall(func, ...)
-	local res = {pcall(func, ...)}
-	if not res[1] then
-		logn(res[2])
-	end
-
-	return unpack(res, 2)
 end
 
 -- ffi's cdef is so anti realtime
