@@ -50,15 +50,21 @@ function render.Shutdown()
 end
 
 function render.GetVersion()
-	return ffi.string(gl.GetString("GL_VERSION"))
+	local str = gl.GetString("GL_VERSION")
+	if str == nil then  return "?" end
+	return ffi.string(str)
 end
 
 function render.GetShadingLanguageVersion()
-	return ffi.string(gl.GetString("GL_SHADING_LANGUAGE_VERSION"))
+	local str = gl.GetString("GL_SHADING_LANGUAGE_VERSION")
+	if str == nil then  return "?" end
+	return ffi.string(str)
 end
 
 function render.GetVendor()
-	return ffi.string(gl.GetString("GL_VENDOR"))
+	local str = gl.GetString("GL_VENDOR")
+	if str == nil then  return "?" end
+	return ffi.string(str)
 end
 
 function render._SetScissor(x,y,w,h, sw,sh)
@@ -125,8 +131,8 @@ do
 				dst_alpha = enums[dst_alpha] or dst_color
 				func_alpha = enums[func_alpha] or func_color
 
-				gl.BlendFuncSeparate(src_color, dst_color, src_alpha, dst_alpha)
-				gl.BlendEquationSeparate(func_color, func_alpha)
+				--gl.BlendFuncSeparate(src_color, dst_color, src_alpha, dst_alpha)
+				--gl.BlendEquationSeparate(func_color, func_alpha)
 			end
 		else
 			if enabled then

@@ -50,31 +50,33 @@ function render.GenerateTextures()
 		local base_arm_brightness = 0.4
 
 		local loading = render.CreateFrameBuffer(Vec2() + 256)
-		--loading:SetSize(Vec2()+256)
+		if loading then
+			--loading:SetSize(Vec2()+256)
 
-		event.Timer("update_loading_texture", 1/5, 0, function()
-			if not surface.IsReady() then return end
-			loading:Begin()
-				local time = system.GetElapsedTime()
-				surface.SetColor(0.2, 0.2, 0.2, 1)
-				surface.SetWhiteTexture()
-				surface.DrawRect(0, 0, loading:GetSize():Unpack())
-				local deg = 360 / arms
+			event.Timer("update_loading_texture", 1/5, 0, function()
+				if not surface.IsReady() then return end
+				loading:Begin()
+					local time = system.GetElapsedTime()
+					surface.SetColor(0.2, 0.2, 0.2, 1)
+					surface.SetWhiteTexture()
+					surface.DrawRect(0, 0, loading:GetSize():Unpack())
+					local deg = 360 / arms
 
-				for i = 0, arms do
-					local n = (-((time*speed + i)%arms / arms) + 1) ^ trail_duration
+					for i = 0, arms do
+						local n = (-((time*speed + i)%arms / arms) + 1) ^ trail_duration
 
-					surface.SetColor(base_arm_brightness + n, base_arm_brightness + n, base_arm_brightness + n, 1)
+						surface.SetColor(base_arm_brightness + n, base_arm_brightness + n, base_arm_brightness + n, 1)
 
-					local ang = math.rad(deg * i)
-					local X, Y = math.sin(ang), math.cos(ang)
-					local W2, H2 = loading:GetSize().x/2, loading:GetSize().y/2
+						local ang = math.rad(deg * i)
+						local X, Y = math.sin(ang), math.cos(ang)
+						local W2, H2 = loading:GetSize().x/2, loading:GetSize().y/2
 
-					surface.DrawLine(X*center_size+W2, Y*center_size+H2, X*outter_size*W2 + W2, Y*outter_size*H2 + H2, width)
-				end
-			loading:End()
-		end)
-		render.loading_texture = loading:GetTexture()
+						surface.DrawLine(X*center_size+W2, Y*center_size+H2, X*outter_size*W2 + W2, Y*outter_size*H2 + H2, width)
+					end
+				loading:End()
+			end)
+			render.loading_texture = loading:GetTexture()
+		end
 	end
 
 	for k,v in pairs(render) do

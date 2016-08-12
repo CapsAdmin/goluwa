@@ -304,7 +304,10 @@ function render.CreateShader(data, vars)
 				return ""
 			end)
 		else
-			source = "#version " .. render.GetShadingLanguageVersion():gsub("%p", ""):match("(%d+)") .. "\n" .. source
+			local str = render.GetShadingLanguageVersion():gsub("%p", ""):match("(%d+)")
+			if str then
+				source = "#version " .. str.. "\n" .. source
+			end
 		end
 
 		build_output[shader] = {source = source, original_source = info.source, out = {}}
@@ -515,7 +518,7 @@ function render.CreateShader(data, vars)
 		serializer.WriteFile("luadata", "shader_builder_output/" .. shader_id .. "/build_output.lua", build_output)
 	end
 
-	local prog = render.CreateShaderProgram()
+	local prog = assert(render.CreateShaderProgram())
 
 	for shader_type, data in pairs(build_output) do
 		-- strip data that wasnt found from the source_template

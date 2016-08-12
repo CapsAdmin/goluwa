@@ -5,6 +5,12 @@ local ffi = require("ffi")
 local META = prototype.CreateTemplate("shader_program")
 
 function render.CreateShaderProgram()
+	if not system.IsOpenGLExtensionSupported("glCreateShader") then
+		local msg = "shaders not supported!"
+		llog(msg)
+		return nil, msg
+	end
+
 	local self = META:CreateObject()
 	self.shaders = {}
 	return self
