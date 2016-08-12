@@ -19,7 +19,7 @@ META:GetSet("BindMode", "all", {"all", "read", "write"})
 META:GetSet("Size", Vec2(128,128))
 
 function render.CreateFrameBuffer(size, textures, id_override)
-	if not system.IsOpenGLExtensionSupported("glGenFramebuffers") then llog("framebuffers not supported!") return end
+	if not system.IsOpenGLExtensionSupported("GL_ARB_framebuffer_object") then llog("framebuffers not supported!") return end
 	local self = META:CreateObject()
 
 	render._CreateFrameBuffer(self, id_override)

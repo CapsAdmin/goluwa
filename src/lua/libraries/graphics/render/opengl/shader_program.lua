@@ -5,7 +5,7 @@ local ffi = require("ffi")
 local META = prototype.CreateTemplate("shader_program")
 
 function render.CreateShaderProgram()
-	if not system.IsOpenGLExtensionSupported("glCreateShader") then
+	if not system.IsOpenGLExtensionSupported("GL_ARB_shader_objects") then
 		local msg = "shaders not supported!"
 		llog(msg)
 		return nil, msg
