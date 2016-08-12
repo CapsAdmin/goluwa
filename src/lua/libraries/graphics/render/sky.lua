@@ -18,7 +18,7 @@ local sky_projection
 
 function render.InitializeSky()
 	tex = render.CreateTexture("cube_map")
-	tex:SetInternalFormat("rgb16f")
+	tex:SetInternalFormat("r11f_g11f_b10f")
 
 	--tex:SetMipMapLevels(16)
 	tex:SetSize(Vec2() + 256)

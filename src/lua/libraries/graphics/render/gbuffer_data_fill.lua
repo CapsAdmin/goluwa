@@ -302,8 +302,6 @@ PASS.Stages = {
 
 						tangent_space = mat3(view_tangent, view_bitangent, view_normal);
 					#endif
-
-					out_uv = uv * vec2(1,-1);
 				}
 			]]
 		},
