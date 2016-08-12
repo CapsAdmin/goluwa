@@ -93,7 +93,7 @@ function repl.Initialize()
 			hack = true
 		end
 
-		_G.surface = {}
+		_G.surface = {GetDefaultFont = function() end}
 		include("lua/libraries/graphics/surface/markup/markup.lua")
 
 		if hack then

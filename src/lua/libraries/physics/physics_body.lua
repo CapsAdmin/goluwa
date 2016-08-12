@@ -225,7 +225,7 @@ do -- generic get set
 			META["Get" .. name] = function(self)
 				if not self.body then return self[name] end
 				get_func(self.body, out)
-				return Vec3(vec3_from_physics.bullet(out[0], out[1], out[2]))
+				return Vec3(physics.Vec3FromBullet(out[0], out[1], out[2]))
 			end
 		elseif typex(default) == "matrix44" then
 			META["Set" .. name] = function(self, var)
