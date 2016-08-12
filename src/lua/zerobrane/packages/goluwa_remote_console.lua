@@ -7,7 +7,8 @@ local PLUGIN = {
 
 function PLUGIN:onIdle()
 	if self.ready then
-		if not self.connected and self.socket:connect("localhost", self.port) then
+		local res, msg = self.socket:connect("localhost", self.port)
+		if not self.connected and res or msg == "already connected" then
 			self.connected = true
 		end
 	end
@@ -33,7 +34,6 @@ function PLUGIN:onRegister()
 	self.port = math.random(5000, 64000)
 
 	function GoluwaInput(str)
-		ide:Print(str, self.connected)
 		if self.connected then
 			self.socket:send(str)
 		end
@@ -51,9 +51,8 @@ function PLUGIN:onRegister()
 			local lua = ""..
 			"ZEROBRANE_LINEINPUT=sockets.CreateServer([[tcp]],[[localhost]],"..self.port..")"..
 			"ZEROBRANE_LINEINPUT.OnClientConnected=function(s,client)return\32true\32end;"..
-			"ZEROBRANE_LINEINPUT.OnReceive=function(s,str)commands.RunString(str)end;"..
+			"ZEROBRANE_LINEINPUT.OnReceive=function(s,str)commands.RunString(str,nil,nil,true)end;"..
 			"zb=function(s)ZEROBRANE_LINEINPUT:Broadcast(s,true)end;"..
-			"ZEROBRANE_LINEINPUT.debug=true;" ..
 			"pvars.Set([[editor_path]],[[./../../editor/zbstudio.sh %PATH%:%LINE%]])"
 
 			if run_debug then
