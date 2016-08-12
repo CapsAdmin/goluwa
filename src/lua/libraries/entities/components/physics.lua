@@ -1,5 +1,3 @@
-if not physics then return end
-
 local META = prototype.CreateTemplate()
 
 META.Name = "physics"
@@ -109,10 +107,10 @@ end
 
 do
 	function META:InitPhysicsSphere(rad)
-		local tr = self:GetComponent("transform")
-		self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
-
-		self.rigid_body:InitPhysicsSphere(rad)
+		if physics.IsReady() then
+			self.rigid_body:SetMatrix(self:GetComponent("transform"):GetMatrix():Copy())
+			self.rigid_body:InitPhysicsSphere(rad)
+		end
 
 		if SERVER then
 			local obj = self:GetComponent("network")
@@ -123,13 +121,14 @@ do
 	end
 
 	function META:InitPhysicsBox(scale)
-		local tr = self:GetComponent("transform")
-		self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
+		if physics.IsReady() then
+			self.rigid_body:SetMatrix(self:GetComponent("transform"):GetMatrix():Copy())
 
-		if scale then
-			self.rigid_body:InitPhysicsBox(scale)
-		else
-			self.rigid_body:InitPhysicsBox()
+			if scale then
+				self.rigid_body:InitPhysicsBox(scale)
+			else
+				self.rigid_body:InitPhysicsBox()
+			end
 		end
 
 		if SERVER then
@@ -141,11 +140,11 @@ do
 	end
 
 	function META:InitPhysicsCapsuleZ()
-		local tr = self:GetComponent("transform")
-		self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
-
-
-		self.rigid_body:InitPhysicsCapsuleZ()
+		if physics.IsReady() then
+			local tr = self:GetComponent("transform")
+			self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
+			self.rigid_body:InitPhysicsCapsuleZ()
+		end
 
 		if SERVER then
 			local obj = self:GetComponent("network")
@@ -195,11 +194,13 @@ do
 	end
 
 	function META:InitPhysicsConvexHull()
-		local tr = self:GetComponent("transform")
-		self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
+		if physics.IsReady() then
+			local tr = self:GetComponent("transform")
+			self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
 
-		if self:GetPhysicsModel() then
-			self.rigid_body:InitPhysicsConvexHull(self:GetPhysicsModel().vertices.pointer, self:GetPhysicsModel().vertices.count)
+			if self:GetPhysicsModel() then
+				self.rigid_body:InitPhysicsConvexHull(self:GetPhysicsModel().vertices.pointer, self:GetPhysicsModel().vertices.count)
+			end
 		end
 
 		if SERVER then
@@ -211,11 +212,13 @@ do
 	end
 
 	function META:InitPhysicsConvexTriangles()
-		local tr = self:GetComponent("transform")
-		self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
+		if physics.IsReady() then
+			local tr = self:GetComponent("transform")
+			self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
 
-		if self:GetPhysicsModel() then
-			self.rigid_body:InitPhysicsConvexTriangles(self:GetPhysicsModel())
+			if self:GetPhysicsModel() then
+				self.rigid_body:InitPhysicsConvexTriangles(self:GetPhysicsModel())
+			end
 		end
 
 		if SERVER then
@@ -227,11 +230,13 @@ do
 	end
 
 	function META:InitPhysicsTriangles(quantized_aabb_compression)
-		local tr = self:GetComponent("transform")
-		self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
+		if physics.IsReady() then
+			local tr = self:GetComponent("transform")
+			self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
 
-		if self:GetPhysicsModel() then
-			self.rigid_body:InitPhysicsTriangles(self:GetPhysicsModel(), quantized_aabb_compression)
+			if self:GetPhysicsModel() then
+				self.rigid_body:InitPhysicsTriangles(self:GetPhysicsModel(), quantized_aabb_compression)
+			end
 		end
 
 		if SERVER then
@@ -246,7 +251,13 @@ end
 local zero = Vec3()
 
 function META:OnUpdate()
-	if not self.rigid_body:IsValid() or not self.rigid_body:IsPhysicsValid() then return end
+	if
+		not physics.IsReady() or
+		not self.rigid_body:IsValid() or
+		not self.rigid_body:IsPhysicsValid()
+	then
+		return
+	end
 
 	local transform = self:GetComponent("transform")
 
@@ -270,8 +281,10 @@ end
 
 function META:OnAdd(ent)
 	self:GetComponent("transform"):SetSkipRebuild(true)
-	self.rigid_body = physics.CreateBody()
-	self.rigid_body.ent = self
+	if physics.IsReady() then
+		self.rigid_body = physics.CreateBody()
+		self.rigid_body.ent = self
+	end
 end
 
 function META:OnRemove(ent)

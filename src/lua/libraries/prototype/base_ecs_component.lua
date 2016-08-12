@@ -63,7 +63,9 @@ function prototype.CreateComponent(name)
 	end
 
 	local self = prototype.CreateDerivedObject("component", name)
-	self:Initialize()
+	if self then
+		self:Initialize()
+	end
 	return self
 end
 

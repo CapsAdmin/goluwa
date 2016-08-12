@@ -1,7 +1,5 @@
 local bullet = desire("libbullet3")
 
-if not bullet then return end
-
 local ffi = require("ffi")
 local physics = physics or {}
 
@@ -64,6 +62,10 @@ function physics.Initialize()
 	physics.sub_steps = 1
 	physics.fixed_time_step = 1/120
 	physics.init = true
+end
+
+function physics.IsReady()
+	return physics.init
 end
 
 function physics.EnableDebug(draw_line, contact_point, _3d_text, report_error_warning)
@@ -131,6 +133,7 @@ do -- physcs models
 	local cb = utility.CreateCallbackThing(physics.model_cache)
 
 	function physics.LoadModel(path, callback, on_fail)
+		if not physics.IsReady() then if on_fail then on_fail("physics is not initialized") end return end
 		if cb:check(path, callback, {on_fail = on_fail}) then return true end
 
 		steam.MountGamesFromPath(path)

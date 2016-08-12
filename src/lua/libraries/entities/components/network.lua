@@ -1,5 +1,3 @@
-if not network then return end
-
 local META = prototype.CreateTemplate()
 
 if CLIENT then
