@@ -3,9 +3,6 @@ local physics = ... or _G.physics
 
 local META = prototype.CreateTemplate("physics_body")
 
-local vec3_from_bullet = physics.Vec3FromBullet
-local vec3_to_bullet = physics.Vec3ToBullet
-
 META:StartStorable()
 
 local function check(obj)
@@ -52,7 +49,7 @@ do -- mass
 		self.Mass = val
 
 		if check(self) then
-			physics.bullet.RigidBodySetMass(self.body, val, vec3_to_physics.bullet(self:GetMassOrigin():Unpack()))
+			physics.bullet.RigidBodySetMass(self.body, val, physics.Vec3ToBullet(self:GetMassOrigin():Unpack()))
 		end
 	end
 
@@ -97,7 +94,7 @@ do -- init box options
 		if scale then self:SetPhysicsBoxScale(scale) end
 
 		if physics.init then
-			self.body = physics.bullet.CreateRigidBodyBox(self:GetMass(), self:GetMatrix():GetFloatCopy(), vec3_to_physics.bullet(self:GetPhysicsBoxScale():Unpack()))
+			self.body = physics.bullet.CreateRigidBodyBox(self:GetMass(), self:GetMatrix():GetFloatCopy(), physics.Vec3ToBullet(self:GetPhysicsBoxScale():Unpack()))
 			physics.StoreBodyPointer(self.body, self)
 		end
 
@@ -220,7 +217,7 @@ do -- generic get set
 			META["Set" .. name] = function(self, var)
 				self[name] = var
 				if not check(self) then return end
-				set_func(self.body, vec3_to_physics.bullet(var.x, var.y, var.z))
+				set_func(self.body, physics.Vec3ToBullet(var.x, var.y, var.z))
 			end
 
 			local out = ffi.new("float[?]", 3)

@@ -8,16 +8,13 @@ local physics = physics or {}
 physics.bullet = bullet
 physics.bodies = physics.bodies or {}
 
-local function vec3_to_bullet(x, y, z)
+function physics.Vec3ToBullet(x, y, z)
 	return -y, -x, -z
 end
 
-local function vec3_from_bullet(x, y, z)
+function physics.Vec3FromBullet(x, y, z)
 	return -y, -x, -z
 end
-
-physics.Vec3ToBullet = vec3_to_bullet
-physics.Vec3FromBullet = vec3_from_bullet
 
 function physics.BodyToLua(ptr)
 	local udata = ffi.cast("uint32_t *", physics.bullet.RigidBodyGetUserData(ptr))
@@ -117,11 +114,11 @@ do
 
 	function physics.GetGravity()
 		physics.bullet.GetWorldGravity(out)
-		return Vec3(vec3_from_bullet(out[0], out[1], out[2]))
+		return Vec3(physics.Vec3FromBullet(out[0], out[1], out[2]))
 	end
 
 	function physics.SetGravity(vec)
-		physics.bullet.SetWorldGravity(vec3_to_bullet(vec:Unpack()))
+		physics.bullet.SetWorldGravity(physics.Vec3ToBullet(vec:Unpack()))
 	end
 end
 
