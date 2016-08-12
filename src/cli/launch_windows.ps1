@@ -10,7 +10,7 @@ function download([string]$url, [string]$loc)
 	
 	if (Get-Command Invoke-WebRequest -CommandType cmdlet -errorAction SilentlyContinue)
 	{
-		Invoke-WebRequest $url -OutFile $loc
+		Invoke-WebRequest "$url" -OutFile "$loc"
 	}
 	else
 	{
