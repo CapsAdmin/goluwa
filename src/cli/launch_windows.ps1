@@ -3,7 +3,7 @@ function PSScriptRoot { $MyInvocation.ScriptName | Split-Path }
 function download([string]$url, [string]$loc)
 {
 	Write-Output "downloading binaries from $url to $loc"
-
+	
 	#remove any previous attempted downloads
 	Remove-Item "$loc.zip" -ErrorAction SilentlyContinue -Confirm:$false -Recurse:$true
 
@@ -25,11 +25,6 @@ function extract([string] $source, [string] $dir, [string] $zip_dir)
 	$shell = New-Object -ComObject Shell.Application
 
 	$zip = $shell.NameSpace("$source\$zip_dir")
-
-	if (!(Test-Path $dir)) 
-	{
-		$null = mkdir $dir
-	}
 	
 	foreach($item in $zip.items())
 	{
@@ -51,11 +46,32 @@ $hWnd = [Foo.ConsoleUtils]::GetConsoleWindow()
 
 if ($ENV:PROCESSOR_ARCHITECTURE -Match "64"){ $arch = "x64" } else { $arch = "x86" }
 
+$binaries_url = "https://github.com/CapsAdmin/goluwa/releases/download/windows-binaries/" + $arch + ".zip"
+$binaries_dir = [IO.Path]::GetFullPath($(PSScriptRoot) + "\..\..\data\bin\windows_" + $arch)
+
+if (!(Test-Path $binaries_dir)) 
+{
+	New-Item -path $binaries_dir -type directory
+}
+
+if(!(Test-Path ($binaries_dir + "\luajit.exe")))
+{
+	[Foo.ConsoleUtils]::ShowWindow($hWnd, 1)
+	
+	download $binaries_url "$binaries_dir.zip"
+	extract "$binaries_dir.zip" $binaries_dir
+}
+
 if ($env:EDITOR)
 {
 	$editor_url = "https://github.com/pkulchenko/ZeroBraneStudio/archive/master.zip"
 	$editor_dir = [IO.Path]::GetFullPath($(PSScriptRoot) + "\..\..\data\editor")
 
+	if (!(Test-Path $editor_dir)) 
+	{
+		New-Item -path $editor_dir -type directory
+	}
+	
 	if(!(Test-Path ($editor_dir + "\zbstudio.exe")))
 	{
 		download $editor_url "$editor_dir.zip"
@@ -67,17 +83,6 @@ if ($env:EDITOR)
 }
 else
 {
-	$binaries_url = "https://github.com/CapsAdmin/goluwa/releases/download/windows-binaries/" + $arch + ".zip"
-	$binaries_dir = [IO.Path]::GetFullPath($(PSScriptRoot) + "\..\..\data\bin\windows_" + $arch)
-
-	if(!(Test-Path ($binaries_dir + "\luajit.exe")))
-	{
-		[Foo.ConsoleUtils]::ShowWindow($hWnd, 1)
-
-		download $binaries_url "$binaries_dir.zip"
-		extract "$binaries_dir.zip" $binaries_dir
-	}
-	
 	Write-Output "launching"
 
 	[Foo.ConsoleUtils]::ShowWindow($hWnd, 0)
