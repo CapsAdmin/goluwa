@@ -42,11 +42,20 @@ local function warn_pcall(func, ...)
 	return unpack(res, 2)
 end
 
-local function handle_stupid(clib, err, ...)
+local function handle_stupid(path, clib, err, ...)
 	if WINDOWS and clib then
 		return setmetatable({}, {
 			__index = function(s, k)
-				return warn_pcall(function() return clib[k] end)
+				local ok, msg = pcall(function() return clib[k] end)
+				if not ok then
+					if  msg:find("cannot resolve symbol", nil, true)  then
+						logf("[%s] could not find function %q in shared library\n", path, msg:match("cannot resolve symbol '(.-)': "))
+						return nil
+					else
+						error(msg, 2)
+					end
+				end
+				return msg
 			end,
 			__newindex = clib,
 		})
@@ -70,13 +79,13 @@ ffi.load = function(path, ...)
 						system.SetSharedLibraryPath(old)
 
 						if args[1] then
-							return handle_stupid(select(2, unpack(args)))
+							return handle_stupid(path, select(2, unpack(args)))
 						end
 
 						-- if not try the default OS specific dll directories
 						args = {pcall(_OLD_G.ffi_load, full_path, ...)}
 						if args[1] then
-							return handle_stupid(select(2, unpack(args)))
+							return handle_stupid(path, select(2, unpack(args)))
 						end
 					end
 				end
@@ -86,7 +95,7 @@ ffi.load = function(path, ...)
 		error(args[2], 2)
 	end
 
-	return handle_stupid(args[2])
+	return handle_stupid(path, args[2])
 end
 
 ffi.cdef("void* malloc(size_t size); void free(void* ptr);")
@@ -96,6 +105,15 @@ function ffi.malloc(t, size)
 	local ptr = ffi.gc(ffi.C.malloc(size), ffi.C.free)
 
 	return ffi.cast(ffi.typeof("$ *", t), ptr), ptr
+end
+
+local function warn_pcall(func, ...)
+	local res = {pcall(func, ...)}
+	if not res[1] then
+		logn(res[2]:trim())
+	end
+
+	return unpack(res, 2)
 end
 
 -- ffi's cdef is so anti realtime
