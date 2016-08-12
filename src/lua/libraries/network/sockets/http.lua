@@ -32,7 +32,7 @@ function sockets.TableToHeader(tbl)
 	return str
 end
 
-local function request(info)
+function sockets.Request(info)
 
 	if info.url then
 		local protocol, host, location = info.url:match("(.+)://(.-)/(.+)")
@@ -183,7 +183,7 @@ local function request(info)
 
 					info.url = header.location
 
-					request(info)
+					sockets.Request(info)
 					self:Remove()
 
 					return
@@ -340,7 +340,7 @@ function sockets.AbortDownload(url)
 end
 
 function sockets.Get(url, callback, timeout, user_agent, binary, debug)
-	return request({
+	return sockets.Request({
 		url = url,
 		callback = callback,
 		method = "GET",
@@ -356,7 +356,7 @@ function sockets.Post(url, post_data, callback, timeout, user_agent, binary, deb
 		post_data = sockets.TableToHeader(post_data)
 	end
 
-	return request({
+	return sockets.Request({
 		url = url,
 		callback = callback,
 		method = "POST",
@@ -367,5 +367,3 @@ function sockets.Post(url, post_data, callback, timeout, user_agent, binary, deb
 		debug = debug
 	})
 end
-
-sockets.Request = request
