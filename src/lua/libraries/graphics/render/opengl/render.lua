@@ -131,8 +131,8 @@ do
 				dst_alpha = enums[dst_alpha] or dst_color
 				func_alpha = enums[func_alpha] or func_color
 
-				--gl.BlendFuncSeparate(src_color, dst_color, src_alpha, dst_alpha)
-				--gl.BlendEquationSeparate(func_color, func_alpha)
+				gl.BlendFuncSeparate(src_color, dst_color, src_alpha, dst_alpha)
+				gl.BlendEquationSeparate(func_color, func_alpha)
 			end
 		else
 			if enabled then
