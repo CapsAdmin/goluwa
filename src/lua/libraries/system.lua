@@ -86,23 +86,25 @@ end
 
 do
 	local show = pvars.Setup("system_fps_show", true, "show fps in titlebar")
-	local avg_fps = 1
+	local total = 0
+	local count = 0
 
 	function system.UpdateTitlebarFPS(dt)
 		if not show:Get() then return end
 
-		local fps = 1/dt
+		total = total + 1/dt
+		count = count + 1
 
-		avg_fps = avg_fps + ((fps - avg_fps) * dt)
-
-		if wait(0.25) then
-			system.SetConsoleTitle(("FPS: %i"):format(avg_fps), "fps")
-
+		if wait(1) then
+			system.SetConsoleTitle(("FPS: %i"):format(total / count), "fps")
 			system.SetConsoleTitle(("GARBAGE: %s"):format(utility.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
 
 			if GRAPHICS then
 				window.SetTitle(system.GetConsoleTitle())
 			end
+
+			total = 0
+			count = 0
 		end
 	end
 end
