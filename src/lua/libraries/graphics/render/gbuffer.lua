@@ -416,7 +416,7 @@ function render.InitializeGBuffer()
 		end
 
 		render.gbuffer = render.CreateFrameBuffer(render.gbuffer_size, framebuffer_buffers)
-		render.gbuffer_mixer_buffer = render.CreateFrameBuffer(render.gbuffer_size, {internal_format = "rgb16f"})
+		render.gbuffer_mixer_buffer = render.CreateFrameBuffer(render.gbuffer_size, {internal_format = "r11f_g11f_b10f"})
 
 		data_pass.shaders = {}
 
