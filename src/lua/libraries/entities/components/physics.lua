@@ -8,7 +8,6 @@ META.Network = {
 	Position = {"vec3", 1/30, "unreliable", false, 70},
 	Rotation = {"quat", 1/30, "unreliable", false, 70},
 
-	Gravity = {"vec3", 1/5},
 	Mass = {"unsigned long", 1/5},
 	LinearDamping = {"float", 1/5},
 	AngularDamping = {"float", 1/5},
@@ -17,9 +16,6 @@ META.Network = {
 	PhysicsSphereRadius = {"float", 1/5},
 	PhysicsCapsuleZRadius = {"float", 1/5},
 	PhysicsCapsuleZHeight = {"float", 1/5},
-	AngularSleepingThreshold = {"float", 1/5},
-	LinearSleepingThreshold = {"float", 1/5},
-	SimulateOnClient = {"boolean", 1/5},
 	PhysicsModelPath = {"string", 1/10, "reliable", true}, -- last true means don't send default path (blank path in this case)
 }
 
@@ -29,7 +25,6 @@ end
 
 META:StartStorable()
 
-	META:GetSet("SimulateOnClient", false)
 	META:GetSet("Position", Vec3(0, 0, 0))
 	META:GetSet("Rotation", Quat(0, 0, 0, 1))
 	META:GetSet("PhysicsModelPath", "")
@@ -171,11 +166,12 @@ do
 
 				for i, mesh in ipairs(physics_meshes) do
 					local chunk = entities.CreateEntity("physical", self:GetEntity(), {exclude_components = {"network"}})
-					chunk:SetHideFromEditor(true)
+					--chunk:SetHideFromEditor(true)
+					chunk:SetMovable(false)
 					chunk:SetName("physics chunk " .. i)
+					chunk:SetModelPath("models/cube.obj")
 					chunk:SetPhysicsModel(mesh)
-					chunk:InitPhysicsTriangles(true)
-					chunk:SetMass(0)
+					chunk:InitPhysicsTriangles()
 					chunk.physics_chunk = true
 				end
 			else
@@ -262,21 +258,6 @@ function META:OnUpdate()
 	local transform = self:GetComponent("transform")
 
 	transform:SetTRMatrix(from_physics_body(self))
-
-	if CLIENT then
-		if not self.SimulateOnClient then
-			if self.rigid_body:GetMass() ~= 0 then
-				self.rigid_body:SetVelocity(zero)
-				self.rigid_body:SetAngularVelocity(zero)
-				self.rigid_body:SetMass(0)
-				to_physics_body(self)
-			end
-		else
-			if self.rigid_body:GetMass() ~= self:GetMass() then
-				self:SetMass(self:GetMass())
-			end
-		end
-	end
 end
 
 function META:OnAdd(ent)

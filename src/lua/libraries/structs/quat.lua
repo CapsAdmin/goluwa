@@ -298,6 +298,16 @@ function META:GetFloatPointer()
 	return temp
 end
 
+local temp = ffi.new("double[4]")
+
+function META:GetDoublePointer()
+	temp[0] = self.x
+	temp[1] = self.y
+	temp[2] = self.z
+	temp[3] = self.w
+	return temp
+end
+
 structs.Register(META)
 
 serializer.GetLibrary("luadata").SetModifier("quat", function(var) return ("Quat(%f, %f, %f, %f)"):format(var:Unpack()) end, structs.Quat, "Quat")

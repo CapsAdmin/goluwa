@@ -55,6 +55,7 @@ function META:AddChild(obj, pos)
 end
 
 function META:SetParent(obj)
+	if not obj:IsValid() then self:UnParent() return end
 	return obj:AddChild(self)
 end
 
