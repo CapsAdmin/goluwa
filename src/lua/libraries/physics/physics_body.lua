@@ -9,6 +9,31 @@ local function check(obj)
 	return physics.init and obj.body
 end
 
+do -- matrix44
+	META:GetSet("Matrix", Matrix44())
+
+	function META:SetMatrix(m)
+		if check(self) then
+			physics.ode.BodySetPosition(self.body, physics.Vec3ToODE(m:GetTranslation()))
+			physics.ode.BodySetQuaternion(self.body, m:GetRotation():GetFloatPointer())
+		end
+		self.Matrix = m
+	end
+
+	function META:GetMatrix()
+		if check(self) then
+			local p = physics.ode.BodyGetPosition(self.body)
+			local r = physics.ode.BodyGetQuaternion(self.body)
+			local m = Matrix44()
+			m:SetRotation(Quat(r[0], r[1], r[2], r[3]))
+			m:Translate(physics.Vec3FromODE(p[0], p[1], p[2]))
+			return m
+		end
+
+		return self.Matrix
+	end
+end
+
 do -- damping
 	META:GetSet("LinearDamping", 0)
 	META:GetSet("AngularDamping", 0)
@@ -16,7 +41,7 @@ do -- damping
 	function META:SetLinearDamping(damping)
 		self.LinearDamping = damping
 		if not check(self) then return end
-		physics.bullet.RigidBodySetDamping(self.body, self:GetLinearDamping(), self:GetAngularDamping())
+		physics.ode.BodySetLinearDamping(self.body, self:GetLinearDamping())
 	end
 
 	function META:GetLinearDamping()
@@ -26,7 +51,7 @@ do -- damping
 	function META:SetAngularDamping(damping)
 		self.AngularDamping = damping
 		if not check(self) then return end
-		physics.bullet.RigidBodySetDamping(self.body, self:GetLinearDamping(), self:GetAngularDamping())
+		physics.ode.BodySetAngularDamping(self.body, self:GetAngularDamping())
 	end
 
 	function META:GetAngularDamping()
@@ -41,35 +66,59 @@ do -- mass
 	function META:SetMassOrigin(origin)
 		self.MassOrigin = origin
 
-		-- update mass when mass origin is modified
-		self:SetMass(self:GetMass())
+		if check(self) then
+			local info = ffi.new("struct dMass[1]")
+			physics.ode.BodyGetMass(self.body, info)
+
+			local x,y,z = physics.Vec3ToODE(self:GetMassOrigin():Unpack())
+			info[0].c[0] = x
+			info[0].c[1] = y
+			info[0].c[2] = z
+
+			physics.ode.BodySetMass(self.body, info)
+		end
 	end
 
 	function META:SetMass(val)
 		self.Mass = val
 
 		if check(self) then
-			physics.bullet.RigidBodySetMass(self.body, val, physics.Vec3ToBullet(self:GetMassOrigin():Unpack()))
+			local info = ffi.new("struct dMass[1]")
+			physics.ode.BodyGetMass(self.body, info)
+
+			info[0].mass = self:GetMass()
+
+			physics.ode.BodySetMass(self.body, info)
 		end
 	end
 
 	--local out = ffi.new("float[1]")
 
 	function META:GetMass()
-		--if check(self) then
-		--	physics.bullet.RigidBodyGetMass(self.body, out)
-		--	return out[0]
-		--end
+		if check(self) then
+			local out = ffi.new("struct dMass[1]")
+			physics.ode.BodyGetMass(self.body, out)
+			return out[0].mass
+		end
+
+		return self.Mass
+	end
+
+	function META:GetMassOrigin()
+		if check(self) then
+			local out = ffi.new("struct dMass[1]")
+			physics.ode.BodyGetMass(self.body, out)
+			return Vec3(physics.Vec3ToODE(out[0].c[0], out[0].c[2], out[0].c[2]))
+		end
 
 		return self.Mass
 	end
 end
 
 local function update_params(self)
+	self:SetMass(self:GetMass())
 	self:SetLinearDamping(self:GetLinearDamping())
 	self:SetAngularDamping(self:GetAngularDamping())
-	self:SetLinearSleepingThreshold(self:GetLinearSleepingThreshold())
-	self:SetAngularSleepingThreshold(self:GetAngularSleepingThreshold())
 end
 
 do -- init sphere options
@@ -79,7 +128,10 @@ do -- init sphere options
 		if rad then self:SetPhysicsSphereRadius(rad) end
 
 		if physics.init then
-			self.body = physics.bullet.CreateRigidBodySphere(self:GetMass(), self:GetMatrix():GetFloatCopy(), self:GetPhysicsSphereRadius())
+			self.body = physics.ode.BodyCreate(physics.world)
+			self.geom = physics.ode.CreateSphere(physics.hash_space, self:GetPhysicsSphereRadius())
+			physics.ode.GeomSetBody(self.geom, self.body)
+
 			physics.StoreBodyPointer(self.body, self)
 		end
 
@@ -94,7 +146,10 @@ do -- init box options
 		if scale then self:SetPhysicsBoxScale(scale) end
 
 		if physics.init then
-			self.body = physics.bullet.CreateRigidBodyBox(self:GetMass(), self:GetMatrix():GetFloatCopy(), physics.Vec3ToBullet(self:GetPhysicsBoxScale():Unpack()))
+			self.body = physics.ode.BodyCreate(physics.world)
+			self.geom = physics.ode.CreateBox(physics.hash_space, physics.Vec3ToODE(self:GetPhysicsBoxScale():Unpack()))
+			physics.ode.GeomSetBody(self.geom, self.body)
+
 			physics.StoreBodyPointer(self.body, self)
 		end
 
@@ -109,7 +164,10 @@ do -- init capsule options
 
 	function META:InitPhysicsCapsuleZ()
 		if physics.init then
-			self.body = physics.bullet.CreateCapsuleZ(self:GetMass(), self:GetMatrix():GetFloatCopy(), self:GetPhysicsCapsuleZRadius(), self:GetPhysicsCapsuleZHeight())
+			self.body = physics.ode.BodyCreate(physics.world)
+			self.geom = physics.ode.CreateCCylinder(physics.hash_space, self:GetPhysicsCapsuleZRadius(), self:GetPhysicsCapsuleZHeight())
+			physics.ode.GeomSetBody(self.geom, self.body)
+
 			physics.StoreBodyPointer(self.body, self)
 		end
 
@@ -120,7 +178,8 @@ end
 do -- mesh init options
 
 	function META:InitPhysicsConvexHull(tbl)
-		if not physics.init then return end
+		warning("NYI")
+		--[[if not physics.init then return end
 
 		-- if you don't do this "tbl" will get garbage collected and physics.bullet will crash
 		-- because bullet says it does not make any copies of indices or vertices
@@ -135,10 +194,12 @@ do -- mesh init options
 		end
 
 		update_params(self)
+		]]
 	end
 
 	function META:InitPhysicsConvexTriangles(tbl)
-		if not physics.init then return end
+		warning("NYI")
+		--[[if not physics.init then return end
 
 		-- if you don't do this "tbl" will get garbage collected and bullet will crash
 		-- because bullet says it does not make any copies of indices or vertices
@@ -160,29 +221,32 @@ do -- mesh init options
 			physics.StoreBodyPointer(self.body, self)
 		end
 
-		update_params(self)
+		update_params(self)]]
 	end
 
-	function META:InitPhysicsTriangles(tbl, quantized_aabb_compression)
+	function META:InitPhysicsTriangles(tbl)
 		if not physics.init then return end
-
-		-- if you don't do this "tbl" will get garbage collected and bullet will crash
-		-- because bullet says it does not make any copies of indices or vertices
-
-		local mesh = physics.bullet.CreateMesh(
-			tbl.triangles.count,
-			tbl.triangles.pointer,
-			tbl.triangles.stride,
-
-			tbl.vertices.count,
-			tbl.vertices.pointer,
-			tbl.vertices.stride
-		)
 
 		self.mesh = tbl
 
 		if physics.init then
-			self.body = physics.bullet.CreateRigidBodyTriangleMesh(self:GetMass(), self:GetMatrix():GetFloatCopy(), mesh, not not quantized_aabb_compression)
+			local data = physics.ode.GeomTriMeshDataCreate()
+
+			physics.ode.GeomTriMeshDataBuildSingle(
+				data,
+				tbl.vertices.pointer,
+				tbl.vertices.stride,
+				tbl.vertices.count,
+
+				tbl.triangles.pointer,
+				tbl.triangles.count,
+				tbl.triangles.stride
+			)
+
+			self.body = physics.ode.BodyCreate(physics.world)
+			self.geom = physics.ode.CreateTriMesh(physics.hash_space, data, nil,nil,nil)
+			physics.ode.GeomSetBody(self.geom, self.body)
+
 			physics.StoreBodyPointer(self.body, self)
 		end
 
@@ -193,70 +257,41 @@ end
 
 do -- generic get set
 
-	local function GET_SET(name, default)
-		local set_func = physics.bullet and physics.bullet["RigidBodySet" .. name] or function() end
-		local get_func = physics.bullet and physics.bullet["RigidBodyGet" .. name] or function() end
+	local function GET_SET(name, friendly, default)
+		local set_func = physics.ode and physics.ode["BodySet" .. name] or function() end
+		local get_func = physics.ode and physics.ode["BodyGet" .. name] or function() end
 
-		META:GetSet(name, default)
+		META:GetSet(friendly, default)
 
 		if type(default) == "number" then
-			META["Set" .. name] = function(self, var)
-				self[name] = var
+			META["Set" .. friendly] = function(self, var)
+				self[friendly] = var
 				if not check(self) then return end
 				set_func(self.body, var)
 			end
 
-			local out = ffi.new("float[?]", 1)
+			META["Get" .. friendly] = function(self)
+				if not self.body then return self[friendly] end
 
-			META["Get" .. name] = function(self)
-				if not self.body then return self[name] end
-				get_func(self.body, out)
-				return out[0]
+				return get_func(self.body)
 			end
 		elseif typex(default) == "vec3" then
-			META["Set" .. name] = function(self, var)
-				self[name] = var
+			META["Set" .. friendly] = function(self, var)
+				self[friendly] = var
 				if not check(self) then return end
-				set_func(self.body, physics.Vec3ToBullet(var.x, var.y, var.z))
+				set_func(self.body, physics.Vec3ToODE(var.x, var.y, var.z))
 			end
 
-			local out = ffi.new("float[?]", 3)
-
-			META["Get" .. name] = function(self)
-				if not self.body then return self[name] end
-				get_func(self.body, out)
-				return Vec3(physics.Vec3FromBullet(out[0], out[1], out[2]))
-			end
-		elseif typex(default) == "matrix44" then
-			META["Set" .. name] = function(self, var)
-				self[name] = var
-				if not check(self) then return end
-				set_func(self.body, var:GetFloatCopy())
-			end
-
-			local out = Matrix44()
-
-			META["Get" .. name] = function(self)
-				if not self.body then return self[name] end
-				get_func(self.body, out:GetFloatCopy())
-				local mat = Matrix44()
-				ffi.copy(mat, out, ffi.sizeof(mat))
-				return mat
+			META["Get" .. friendly] = function(self)
+				if not self.body then return self[friendly] end
+				local out = get_func(self.body)
+				return Vec3(physics.Vec3FromODE(out[0], out[1], out[2]))
 			end
 		end
 	end
 
-	GET_SET("Matrix", Matrix44())
-	GET_SET("Gravity", Vec3())
-
-	GET_SET("Velocity", Vec3())
-	GET_SET("AngularVelocity", Vec3())
-
-	GET_SET("AngularFactor", Vec3())
-	GET_SET("LinearFactor", Vec3())
-
-	GET_SET("LinearSleepingThreshold", 0)
-	GET_SET("AngularSleepingThreshold", 0)
+	GET_SET("LinearVel", "Velocity", Vec3())
+	GET_SET("AngularVel", "AngularVelocity", Vec3())
 end
 
 META:EndStorable()
@@ -273,7 +308,7 @@ function META:OnRemove()
 		end
 	end
 	if check(self) then
-		physics.bullet.RemoveBody(self.body)
+		physics.ode.BodyDestroy(self.body)
 	end
 end
 
@@ -286,23 +321,3 @@ function physics.CreateBody()
 
 	return self
 end
-
---[[
-local DOF6CONSTRAINT = {
-	IsValid = function() return true end,
-	SetUpperAngularLimit = ADD_FUNCTION(physics.bullet.6DofConstraintSetUpperAngularLimit),
-	GetUpperAngularLimit = ADD_FUNCTION(physics.bullet.6DofConstraintGetUpperAngularLimit, 3),
-	SeLowerAngularLimit = ADD_FUNCTION(physics.bullet.6DofConstraintSeLowerAngularLimit),
-	GeLowerAngularLimit = ADD_FUNCTION(physics.bullet.6DofConstraintGeLowerAngularLimit, 3),
-	SetUpperLinearLimit = ADD_FUNCTION(physics.bullet.6DofConstraintSetUpperLinearLimit),
-	GetUpperLinearLimit = ADD_FUNCTION(physics.bullet.6DofConstraintGetUpperLinearLimit, 3),
-	SeLowerLinearLimit = ADD_FUNCTION(physics.bullet.6DofConstraintSeLowerLinearLimit),
-	GeLowerLinearLimit = ADD_FUNCTION(physics.bullet.6DofConstraintGeLowerLinearLimit, 3),
-}
-
-DOF6CONSTRAINT.__index = DOF6CONSTRAINT
-
-function physics.bullet.CreateBallsocketConstraint(body_a, body_b, matrix_a, matrix_b, linear_frame_ref)
-	return ffi.metatype("btGeneric6DofConstraint", physics.bullet.Create6DofConstraint(body_a, body_b, matrix_a, matrix_b, linear_frame_ref or 1))
-end
-]]

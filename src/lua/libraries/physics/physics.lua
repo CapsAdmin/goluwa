@@ -1,60 +1,63 @@
-local bullet = desire("libbullet3")
+local ode = desire("libode")
 
 local ffi = require("ffi")
 local physics = physics or {}
 
-physics.bullet = bullet
+physics.ode = ode
 physics.bodies = physics.bodies or {}
 
-function physics.Vec3ToBullet(x, y, z)
+function physics.Vec3ToODE(x, y, z)
 	return -y, -x, -z
 end
 
-function physics.Vec3FromBullet(x, y, z)
+function physics.Vec3FromODE(x, y, z)
 	return -y, -x, -z
 end
 
 function physics.BodyToLua(ptr)
-	local udata = ffi.cast("uint32_t *", physics.bullet.RigidBodyGetUserData(ptr))
+	local udata = ffi.cast("uint32_t *", physics.ode.BodyGetData(ptr))
 
 	return physics.body_lookup[udata[0]]
 end
 
 function physics.StoreBodyPointer(ptr, obj)
 	local idx = ffi.new("uint32_t[1]", tonumber(("%p"):format(obj)))
-	physics.bullet.RigidBodySetUserData(ptr, idx)
+	physics.ode.BodySetData(ptr, idx)
 	physics.body_lookup[idx[0]] = obj
 end
 
 include("physics_body.lua", physics)
 
 function physics.Initialize()
-	if LINUX then return end
-
 	if not RELOAD then
 		for k,v in pairs(physics.bodies) do
 			if v:IsValid() then
 				v:Remove()
 			end
 		end
-		physics.bullet.Initialize()
+		physics.ode.InitODE()
+
+		physics.world = ode.WorldCreate()
+		ode.WorldSetGravity(physics.world, 0, 0, -0.001)
+
+		physics.hash_space = ode.HashSpaceCreate(nil)
+
 		physics.bodies = {}
 		physics.body_lookup = utility.CreateWeakTable()
 	end
 
 	do
-		local out = ffi.new("bullet_collision_value[1]")
-		event.AddListener("Update", "bullet", function(dt)
-			physics.bullet.StepSimulation(dt, physics.sub_steps, physics.fixed_time_step)
+		event.AddListener("Update", "ode", function(dt)
+			physics.ode.WorldStep(physics.world, dt)
 
-			while physics.bullet.ReadCollision(out) do
+			--[[while physics.ode.ReadCollision(out) do
 				local a = physics.BodyToLua(out[0].a)
 				local b = physics.BodyToLua(out[0].b)
 
 				if a and b then
 					event.Call("PhysicsCollide", a.ent, b.ent)
 				end
-			end
+			end]]
 		end)
 	end
 
@@ -68,27 +71,14 @@ function physics.IsReady()
 	return physics.init
 end
 
-function physics.EnableDebug(draw_line, contact_point, _3d_text, report_error_warning)
-	physics.bullet.EnableDebug(draw_line, contact_point, _3d_text, report_error_warning)
-end
-
-function physics.DisableDebug()
-	physics.bullet.DisableDebug()
-end
-
-function physics.DrawDebugWorld()
-	physics.bullet.DrawDebugWorld()
-end
-
 function physics.GetBodies()
 	return physics.bodies
 end
 
 do
-	local out = ffi.new("bullet_raycast_result[1]")
-
 	function physics.RayCast(from, to)
-		if physics.bullet.RayCast(from.x, from.y, from.z, to.x, to.y, to.z, out) then
+		warning("NYI")
+		--[[if physics.ode.RayCast(from.x, from.y, from.z, to.x, to.y, to.z, out) then
 			local tbl = {
 				hit_pos = Vec3(),
 				hit_normal = Vec3(),
@@ -106,8 +96,7 @@ do
 			end
 
 			return tbl
-
-		end
+		end]]
 	end
 end
 
@@ -115,12 +104,12 @@ do
 	local out = ffi.new("float[3]")
 
 	function physics.GetGravity()
-		physics.bullet.GetWorldGravity(out)
-		return Vec3(physics.Vec3FromBullet(out[0], out[1], out[2]))
+		physics.ode.WorldGetGravity(physics.world, out)
+		return Vec3(physics.Vec3FromODE(out[0], out[1], out[2]))
 	end
 
 	function physics.SetGravity(vec)
-		physics.bullet.SetWorldGravity(physics.Vec3ToBullet(vec:Unpack()))
+		physics.ode.WorldSetGravity(physics.world, physics.Vec3ToODE(vec:Unpack()))
 	end
 end
 
@@ -171,7 +160,7 @@ do -- physcs models
 					end
 
 					local vertices = ffi.new("float[?]", scene.mMeshes[0].mNumVertices  * 3)
-					local triangles = ffi.new("unsigned int[?]", scene.mMeshes[0].mNumFaces * 3)
+					local triangles = ffi.new("uint32_t[?]", scene.mMeshes[0].mNumFaces * 3)
 
 					ffi.copy(vertices, scene.mMeshes[0].mVertices, ffi.sizeof(vertices))
 
@@ -187,7 +176,7 @@ do -- physcs models
 						triangles = {
 							count = tonumber(scene.mMeshes[0].mNumFaces),
 							pointer = triangles,
-							stride = ffi.sizeof("unsigned int") * 3,
+							stride = ffi.sizeof("uint32_t") * 3,
 						},
 						vertices = {
 							count = tonumber(scene.mMeshes[0].mNumVertices),

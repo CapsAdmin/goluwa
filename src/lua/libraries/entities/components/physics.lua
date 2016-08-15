@@ -39,7 +39,7 @@ META:EndStorable()
 
 META:GetSet("PhysicsModel", nil)
 
-local function to_bullet(self)
+local function to_physics_body(self)
 	if not self.rigid_body:IsValid() or not self.rigid_body:IsPhysicsValid() then return end
 
 	local pos = self.Position
@@ -52,7 +52,7 @@ local function to_bullet(self)
 	self.rigid_body:SetMatrix(out)
 end
 
-local function from_bullet(self)
+local function from_physics_body(self)
 	if not self.rigid_body:IsValid() or not self.rigid_body:IsPhysicsValid() then return Matrix44() end
 
 	local out = self.rigid_body:GetMatrix()
@@ -76,25 +76,25 @@ local function from_bullet(self)
 end
 
 function META:UpdatePhysicsObject()
-	to_bullet(self)
+	to_physics_body(self)
 end
 
 function META:SetPosition(vec)
 	self.Position = vec
-	to_bullet(self)
+	to_physics_body(self)
 end
 
 function META:GetPosition()
-	return Vec3(from_bullet(self):GetTranslation())
+	return Vec3(from_physics_body(self):GetTranslation())
 end
 
 function META:SetRotation(rot)
 	self.Rotation = rot
-	to_bullet(self)
+	to_physics_body(self)
 end
 
 function META:GetRotation()
-	return from_bullet(self):GetRotation()
+	return from_physics_body(self):GetRotation()
 end
 
 function META:SetAngles(ang)
@@ -117,7 +117,7 @@ do
 			if obj then obj:CallOnClientsPersist(self.Name, "InitPhysicsSphere", rad) end
 		end
 
-		to_bullet(self)
+		to_physics_body(self)
 	end
 
 	function META:InitPhysicsBox(scale)
@@ -136,7 +136,7 @@ do
 			if obj then obj:CallOnClientsPersist(self.Name, "InitPhysicsBox", scale) end
 		end
 
-		to_bullet(self)
+		to_physics_body(self)
 	end
 
 	function META:InitPhysicsCapsuleZ()
@@ -151,7 +151,7 @@ do
 			if obj then obj:CallOnClientsPersist(self.Name, "InitPhysicsCapsuleZ") end
 		end
 
-		to_bullet(self)
+		to_physics_body(self)
 	end
 
 	function META:SetPhysicsModelPath(path)
@@ -182,7 +182,7 @@ do
 				self:SetPhysicsModel(physics_meshes[1])
 			end
 
-			to_bullet(self)
+			to_physics_body(self)
 		end, function(err)
 			llog("%s failed to load physics model %q: %s", self, path, err)
 			for _, v in pairs(self:GetEntity():GetChildren()) do
@@ -208,7 +208,7 @@ do
 			if obj then obj:CallOnClientsPersist(self.Name, "InitPhysicsConvexHull") end
 		end
 
-		to_bullet(self)
+		to_physics_body(self)
 	end
 
 	function META:InitPhysicsConvexTriangles()
@@ -226,16 +226,16 @@ do
 			if obj then obj:CallOnClientsPersist(self.Name, "InitPhysicsConvexTriangles") end
 		end
 
-		to_bullet(self)
+		to_physics_body(self)
 	end
 
-	function META:InitPhysicsTriangles(quantized_aabb_compression)
+	function META:InitPhysicsTriangles()
 		if physics.IsReady() then
 			local tr = self:GetComponent("transform")
 			self.rigid_body:SetMatrix(tr:GetMatrix():Copy())
 
 			if self:GetPhysicsModel() then
-				self.rigid_body:InitPhysicsTriangles(self:GetPhysicsModel(), quantized_aabb_compression)
+				self.rigid_body:InitPhysicsTriangles(self:GetPhysicsModel())
 			end
 		end
 
@@ -244,7 +244,7 @@ do
 			if obj then obj:CallOnClientsPersist(self.Name, "InitPhysicsTriangles") end
 		end
 
-		to_bullet(self)
+		to_physics_body(self)
 	end
 end
 
@@ -261,7 +261,7 @@ function META:OnUpdate()
 
 	local transform = self:GetComponent("transform")
 
-	transform:SetTRMatrix(from_bullet(self))
+	transform:SetTRMatrix(from_physics_body(self))
 
 	if CLIENT then
 		if not self.SimulateOnClient then
@@ -269,7 +269,7 @@ function META:OnUpdate()
 				self.rigid_body:SetVelocity(zero)
 				self.rigid_body:SetAngularVelocity(zero)
 				self.rigid_body:SetMass(0)
-				to_bullet(self)
+				to_physics_body(self)
 			end
 		else
 			if self.rigid_body:GetMass() ~= self:GetMass() then
