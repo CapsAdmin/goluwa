@@ -68,7 +68,7 @@ end
 
 -- load everything in lua/autorun/shared/*
 if CLIENT or SERVER then
-	vfs.AutorunAddons("server/")
+	vfs.AutorunAddons("shared/")
 end
 
 if SOUND then
