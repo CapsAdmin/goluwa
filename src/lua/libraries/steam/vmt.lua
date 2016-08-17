@@ -103,10 +103,6 @@ function steam.LoadMaterial(path, material)
 						vmt.bumpmap = new_path
 					end
 				end
-
-				if vmt.bumpmap then
-					logf("normal map not defined in %s. using %s as normal map instead\n", material:GetName(), vmt.bumpmap)
-				end
 			end
 
 			--material:SetRoughnessTexture(render.GetWhiteTexture())
