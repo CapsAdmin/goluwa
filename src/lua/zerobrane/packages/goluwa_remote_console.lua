@@ -24,6 +24,25 @@ function PLUGIN:onIdle()
 	end
 end
 
+function PLUGIN:onInterpreterLoad(interpreter)
+	if interpreter:GetFileName() == "goluwa" then
+
+		local obj = wx.wxFileName("../../")
+		obj:Normalize()
+		local project_dir = obj:GetFullPath()
+
+		if ide.config.path.projectdir ~= project_dir then
+			ProjectUpdateProjectDir(project_dir)
+		end
+
+		if #ide:GetDocuments() == 0 then
+			LoadFile(ide.config.path.projectdir .. "/src/lua/examples/hello_world.lua")
+		end
+	else
+		ProjectSetInterpreter("goluwa")
+	end
+end
+
 function PLUGIN:onRegister()
 	local sockets = require("socket")
 
@@ -96,8 +115,6 @@ function PLUGIN:onRegister()
 			return root .. "/" .. bin
 		end,
 	})
-
-	ProjectSetInterpreter("goluwa")
 
 	do
 		--ide.frame.bottomnotebook:RemovePage(0)
