@@ -26,7 +26,7 @@ function audio.Initialize(name)
 	local device = alc.OpenDevice(nil)
 
 	if device == nil then
-		llog("opening device failed: ", alc.GetError(device))
+		llog("opening device failed: ", alc.GetErrorString(device))
 		return
 	end
 
