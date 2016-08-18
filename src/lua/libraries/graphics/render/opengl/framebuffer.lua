@@ -195,11 +195,12 @@ function META:SetTexture(pos, tex, mode, uid, face)
 end
 
 function META:GetTexture(pos)
+	pos = pos or 1
 	if self.textures[pos] then
 		return self.textures[pos].tex
 	end
 
-	local uid = attachment_to_enum(self, pos or 1)
+	local uid = attachment_to_enum(self, pos)
 
 	if uid and self.textures[uid] then
 		return self.textures[uid].tex
