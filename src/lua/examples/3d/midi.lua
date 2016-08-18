@@ -1,7 +1,10 @@
-local data = audio.MidiToTable("sounds/hyrule.mid")
-local sf2 = audio.SF2ToTable("sounds/zelda.sf2")
+
+local ffi = require"ffi"
+local data = audio.MidiToTable("sounds/oot_zeldatheme.mid")
+local sf2 = audio.SF2ToTable("sounds/LttPSF2.sf2")
 
 local al = require("libal")
+al.e.LOOP_POINTS = 0x2015 -- FIX ME
 sf2.sdta.data = ffi.cast("uint16_t *", sf2.sdta.data)
 
 local bank = {}
