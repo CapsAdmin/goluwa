@@ -1412,6 +1412,22 @@ if sdl then
 
 				gl.Initialize()
 
+				if NULL_OPENGL then
+					for k,v in pairs(gl) do
+						if type(v) == "cdata" then
+							gl[k] = function() return 0 end
+						end
+					end
+
+					function gl.CheckNamedFramebufferStatus()
+						return 36053
+					end
+
+					function gl.GetString()
+						return nil
+					end
+				end
+
 				system.gl_context = context
 			end
 		end

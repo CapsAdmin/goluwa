@@ -23,7 +23,7 @@ function META:CompileShader(type, source)
 	shader:Source(1, shader_strings, nil)
 	shader:Compile()
 
-	local status = ffi.new("GLint[1]")
+	local status = ffi.new("GLint[1]", 1)
 	shader:Getiv("GL_COMPILE_STATUS", status)
 
 	if status[0] == 0 then
@@ -46,7 +46,7 @@ function META:Link()
 
 	self.gl_program:Link()
 
-	local status = ffi.new("GLint[1]")
+	local status = ffi.new("GLint[1]", 1)
 	self.gl_program:Getiv("GL_LINK_STATUS", status)
 
 	if status[0] == 0 then
