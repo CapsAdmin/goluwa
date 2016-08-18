@@ -22,6 +22,10 @@ local size = ffi.sizeof(META.NumberType) * 16
 local copy = ffi.copy
 local new = ffi.new
 
+function META:GetI(i)
+	return self[META.Args[i+1]]
+end
+
 local temp = new("float[16]")
 
 function META:GetFloatPointer()
