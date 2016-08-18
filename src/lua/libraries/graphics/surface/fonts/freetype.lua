@@ -138,9 +138,10 @@ function META:Initialize()
 				end,
 				function(reason)
 					llog("unable to download %s from google web fonts: %s", self.Path, reason)
-
+					local url = "http://dl.dafont.com/dl/?f=" .. self.Path:lower():gsub(" ", "_") .. ".zip"
+					llog("trying %s", url)
 					sockets.Download(
-						"http://dl.dafont.com/dl/?f=" .. self.Path:lower():gsub(" ", "_"),
+						url,
 						function(zip_content)
 							vfs.Write("data/temp_dafont.zip", zip_content)
 							local base = R("data/temp_dafont.zip") -- FIX ME
