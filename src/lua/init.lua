@@ -53,6 +53,7 @@ do -- constants
 		SRGB = true,
 		LOOP = true,
 		WINDOW = true,
+		NULL_OPENGL = false,
 	}
 
 	for key, default in pairs(env_vars) do
