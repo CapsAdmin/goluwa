@@ -6,7 +6,11 @@ local META = prototype.CreateTemplate("matrix44")
 
 META.__index = META
 
-META.NumberType = "double"
+if GRAPHENE then
+	META.NumberType = "float"
+else
+	META.NumberType = "double"
+end
 
 META.Args = {
 	"m00", "m01", "m02", "m03",
@@ -510,6 +514,73 @@ end
 function META:GetAngles()
 	return self:GetRotation():GetAngles()
 end
+
+if GRAPHENE then
+	local graphene = require("libgraphene")
+
+	function META:GetFloatPointer()
+		return ffi.cast("float *", self)
+	end
+
+	local matrix_a = graphene.MatrixAlloc()
+	local matrix_b = graphene.MatrixAlloc()
+	local matrix_c = graphene.MatrixAlloc()
+	local vec3 = graphene.Vec3Alloc()
+	local point3d = graphene.Point3dAlloc()
+	local float3 = ffi.new("float[3]")
+
+	function META:GetInverse(out)
+		out = out or ctype(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+
+		matrix_a:InitFromFloat(self:GetFloatPointer())
+		matrix_b:InitFromFloat(out:GetFloatPointer())
+
+		matrix_a:Inverse(matrix_b)
+
+		matrix_b:ToFloat(out:GetFloatPointer())
+
+		return out
+	end
+
+	function META:Translate(x, y, z)
+		if x == 0 and y == 0 and z == 0 then return self end
+
+		self.GetMultiplied(ctype(1,0,0,0, 0,1,0,0, 0,0,1,0, x,y,z,1), self, self)
+
+		return self
+	end
+
+	function META:Rotate2(a, x, y, z)
+		if a == 0 then return self end
+
+		local mf = self:GetFloatPointer()
+
+		float3[0] = x
+		float3[1] = y
+		float3[2] = z
+		vec3:InitFromFloat(float3)
+
+		matrix_a:InitFromFloat(mf)
+		matrix_a:Rotate(math.deg(a), vec3)
+		matrix_a:ToFloat(mf)
+
+		return self
+	end
+
+	function META.GetMultiplied(a, b, out)
+		out = out or ctype(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+
+		matrix_a:InitFromFloat(a:GetFloatPointer())
+		matrix_b:InitFromFloat(b:GetFloatPointer())
+
+		matrix_a:Multiply(matrix_b, matrix_c)
+
+		matrix_c:ToFloat(out:GetFloatPointer())
+
+		return out
+	end
+end
+
 
 ffi.metatype(ctype, META)
 
