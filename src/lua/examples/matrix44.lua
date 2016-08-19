@@ -18,22 +18,22 @@ local function test(lua_func, gl_func, ...)
 	local args = {}
 	for k,v in pairs({...}) do
 		if typex(v) == "matrix44" then
-			v = v.ptr
+			v = ffi.cast("double *", v)
 		end
 		args[k] = v
 	end
 
 	gl_func(unpack(args))
-	gl.GetFloatv(gl.e.GL_MODELVIEW_MATRIX, m.ptr)
+	gl.GetDoublev("GL_MODELVIEW_MATRIX", ffi.cast("double *", m))
 
 	local equal = true
 
 	for i = 0, 15 do
-		if math.round(copy.ptr[i], 3) ~= math.round(m.ptr[i], 3) then
+		if math.round(copy:GetI(i), 3) ~= math.round(m:GetI(i), 3) then
 
 			logf("%s member %i is not equal\n", lua_func, i)
-			logn("lua: ", copy.ptr[i])
-			logn("ogl: ", m.ptr[i])
+			logn("lua: ", copy:GetI(i))
+			logn("ogl: ", m:GetI(i))
 
 			equal = false
 		end
@@ -67,12 +67,12 @@ local function random_matrix()
 end
 
 for i = 1, 20 do
-	if not test("Translate", gl.Translatef, math.randomf(-100, 100), math.randomf(-100, 100), math.randomf(-100, 100)) then break end
-	if not test("Multiply", gl.MultMatrixf, random_matrix()) then break end
-	if not test("Rotate", gl.Rotatef, math.randomf(-360, 360), math.randomf(-1, 1), math.randomf(-1, 1), math.randomf(-1, 1)) then break end
-	if not test("Multiply", gl.MultMatrixf, random_matrix()) then break end
-	if not test("Scale", gl.Scalef, math.randomf(-100, 100), math.randomf(-100, 100), math.randomf(-100, 100)) then break end
-	if not test("Multiply", gl.MultMatrixf, random_matrix()) then break end
+	if not test("Translate", gl.Translated, math.randomf(-100, 100), math.randomf(-100, 100), math.randomf(-100, 100)) then break end
+	if not test("Multiply", gl.MultMatrixd, random_matrix()) then break end
+	if not test("Rotate", gl.Rotated, math.randomf(-360, 360), math.randomf(-1, 1), math.randomf(-1, 1), math.randomf(-1, 1)) then break end
+	if not test("Multiply", gl.MultMatrixd, random_matrix()) then break end
+	if not test("Scale", gl.Scaled, math.randomf(-100, 100), math.randomf(-100, 100), math.randomf(-100, 100)) then break end
+	if not test("Multiply", gl.MultMatrixd, random_matrix()) then break end
 end
 
 --test("Ortho", gl.Ortho, 0, 512, 0, 512, -1, 1)
