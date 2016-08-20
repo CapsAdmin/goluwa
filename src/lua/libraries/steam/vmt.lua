@@ -82,7 +82,9 @@ function steam.LoadMaterial(path, material)
 					if val then
 						local func = info[#info]
 
-						material["Set" .. key](material, (type(func) == "function" and func(val)) or val)
+						if material["Set" .. key] then
+							material["Set" .. key](material, (type(func) == "function" and func(val)) or val)
+						end
 
 						break
 					end
