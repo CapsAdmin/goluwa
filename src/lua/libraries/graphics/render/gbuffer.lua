@@ -3,9 +3,9 @@ local render = (...) or _G.render
 
 local gbuffer_enabled = false
 
-local w_cvar = pvars.Setup("render_width", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
-local h_cvar = pvars.Setup("render_height", 0, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
-local mult_cvar = pvars.Setup("render_ss_multiplier", 1, function() if gbuffer_enabled then render.InitializeGBuffer() end end)
+local w_cvar = pvars.Setup("render_width", 0, function(_, first) if not first and gbuffer_enabled then render.InitializeGBuffer() end end)
+local h_cvar = pvars.Setup("render_height", 0, function(_, first) if not first and  gbuffer_enabled then render.InitializeGBuffer() end end)
+local mult_cvar = pvars.Setup("render_ss_multiplier", 1, function(_, first) if not first and gbuffer_enabled then render.InitializeGBuffer() end end)
 
 function render.GetGBufferSize()
 	if not render.gbuffer_size then
@@ -19,6 +19,7 @@ function render.GetGBufferSize()
 		if size.x == 0 or size.y == 0 then
 			size = render.GetScreenSize()
 		end
+
 		render.gbuffer_size = size
 	end
 
@@ -261,7 +262,7 @@ function render.DrawGBuffer(what, dist)
 	surface.PopMatrix()
 end
 
-local shader_cvar = pvars.Setup("render_gshader", "template", function() if gbuffer_enabled then render.InitializeGBuffer() end end)
+local shader_cvar = pvars.Setup("render_gshader", "template", function(_, first) if not first and gbuffer_enabled then render.InitializeGBuffer() end end)
 
 render.gbuffer = NULL
 

@@ -46,7 +46,7 @@ function pvars.Setup(key, def, callback, typ)
 
 	if type(callback) == "function" then
 		event.Delay(function()
-			callback(pvars.Get(key))
+			callback(pvars.Get(key), true)
 		end)
 	end
 

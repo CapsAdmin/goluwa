@@ -49,7 +49,42 @@ function render.Draw3DScene(what, dist)
 	end
 end
 
-pvars.Setup("render_accum", 0)
+function render.Sort3DScene()
+	local temp = {}
+	for i, v in ipairs(render.scene_3d) do
+		if v:GetComponent("model").sub_models[1] then
+			local mat = v:GetComponent("model").sub_models[1].material
+			for _, model in ipairs(v:GetComponent("model").sub_models) do
+				if mat ~= model.material then
+					mat = nil
+					break
+				end
+				mat = model.material
+			end
+			if mat then
+				temp[mat] = temp[mat] or {}
+				table.insert(temp[mat], v)
+			else
+				temp.lol = temp.lol or {}
+				table.insert(temp.lol, v)
+			end
+		else
+			print(v, v:GetComponent("model").ModelPath)
+		end
+	end
+	local sorted = {}
+	local i = 1
+	for _, group in pairs(temp) do
+		for _,v in ipairs(group) do
+			sorted[i] = v
+			i = i + 1
+		end
+	end
+	render.scene_3d = sorted
+	--for i,v in ipairs(sorted) do
+	--	print(v:GetComponent("model").sub_models[1].material)
+	--end
+end
 
 function render.DrawScene(skip_2d)
 	render.GetScreenFrameBuffer():Begin()
