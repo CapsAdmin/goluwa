@@ -175,12 +175,14 @@ end
 
 function META:Rebuild(what)
 	local vars = self.shader_variables
+	local vars2 = self.shader_variables2
 
 	if what == nil or what == "projection" then
 		if self.Projection then
 			vars.projection = self.Projection
 		else
-			local proj = Matrix44()
+			local proj = vars.projection
+			proj:Identity()
 
 			if self.Ortho then
 				local mult = 100 * self.FOV
@@ -192,8 +194,8 @@ function META:Rebuild(what)
 				)
 			else
 				if self:Get3D() then
+					proj:SetTranslation(self.Viewport.x, self.Viewport.y, 0)
 					proj:Perspective(self.FOV, self.FarZ, self.NearZ, self.Viewport.w / self.Viewport.h)
-					proj:Translate(self.Viewport.x, self.Viewport.y, 0)
 				else
 					proj:Ortho(self.Viewport.x, self.Viewport.w, self.Viewport.h, self.Viewport.y, -1, 1)
 				end
@@ -207,7 +209,10 @@ function META:Rebuild(what)
 		if self.View then
 			vars.view = self.View
 		else
-			local view = Matrix44()
+			local view = vars.view
+			local view2 = vars2.view
+
+			view:Identity()
 
 			if self:Get3D() then
 				view:Rotate(self.Angles.z, 0, 0, 1)
@@ -295,26 +300,6 @@ end
 
 META:Register()
 
-function render.CreateCamera()
-	local self = prototype.CreateObject("camera")
-	self.matrix_stack = {}
-	self.shader_variables = {}
-	self:Rebuild()
-	return self
-end
-
-local old_data
-if render.camera_3d then
-	old_data = render.camera_3d:GetStorableTable()
-end
-
-render.camera_2d = render.CreateCamera()
-render.camera_2d:Set3D(false)
-
-render.camera_3d = render.CreateCamera()
-if old_data then
-	render.camera_3d:SetStorableTable(old_data)
-end
 
 local variables = {
 	"projection",
@@ -335,6 +320,32 @@ local variables = {
 
 	"normal_matrix",
 }
+
+function render.CreateCamera()
+	local self = prototype.CreateObject("camera")
+	self.matrix_stack = {}
+	self.shader_variables = {}
+	self.shader_variables2 = {}
+	for _, name in ipairs(variables) do
+		self.shader_variables[name] = Matrix44()
+		self.shader_variables2[name] = Matrix44()
+	end
+	self:Rebuild()
+	return self
+end
+
+local old_data
+if render.camera_3d then
+	old_data = render.camera_3d:GetStorableTable()
+end
+
+render.camera_2d = render.CreateCamera()
+render.camera_2d:Set3D(false)
+
+render.camera_3d = render.CreateCamera()
+if old_data then
+	render.camera_3d:SetStorableTable(old_data)
+end
 
 for _, v in pairs(variables) do
 	render.SetGlobalShaderVariable("g_" .. v .. "_2d", function() return render.camera_2d:GetMatrices()[v] end, "mat4")

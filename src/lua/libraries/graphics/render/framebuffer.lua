@@ -124,11 +124,9 @@ do -- binding
 		function META:End()
 			render.PopViewport()
 			self:Pop()
-			if self.generate_mip_maps then
-				for _, v in ipairs(self.textures_sorted) do
-					if v.tex and v.tex.MipMapLevels ~= 1 then
-						v.tex:GenerateMipMap()
-					end
+			if self.gen_mip_map_textures then
+				for _, tex in ipairs(self.gen_mip_map_textures) do
+					tex:GenerateMipMap()
 				end
 			end
 		end

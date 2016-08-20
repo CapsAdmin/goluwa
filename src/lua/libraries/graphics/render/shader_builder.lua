@@ -711,8 +711,11 @@ function render.CreateShader(data, vars)
 				end
 
 				lua = lua .. "\tif render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self or self.force_bind) and "
-				lua = lua .. "\trender.current_material."..data.key.." ~= nil then\n \t\tlocal val = render.current_material." .. data.key .. "\n\t\t" .. line .. "\n\telse"
-				lua = lua .. "if self."..data.key.." ~= nil then\n\t\tlocal val = self."..data.key.."\n\t\tif val == nil then\n\t\t\tval = self.defaults."..data.key.."\n\t\tend\n\t\tif type(val) == 'function' then\n\t\t\tval = val()\n\t\tend\n\t\t"..line.."\n\tend\n\n"
+				lua = lua .. "render.current_material."..data.key.." ~= nil then\n \t\tlocal val = render.current_material." .. data.key .. "\n\t\t" .. line .. "\n\telse"
+				lua = lua .. "if self." .. data.key .. " ~= nil then\n"
+				lua = lua .. "\t\tlocal val = self."..data.key.."\n"
+				lua = lua .. "\t\tif type(val) == 'function' then val = val() end\n"
+				lua = lua .. "\t\t"..line.."\n\tend\n\n"
 			end
 		end
 

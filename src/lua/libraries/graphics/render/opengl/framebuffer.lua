@@ -160,7 +160,8 @@ function META:SetTexture(pos, tex, mode, uid, face)
 				}
 
 				if tex:GetMipMapLevels() > 0 then
-					self.generate_mip_maps = true
+					self.gen_mip_map_textures = self.gen_mip_map_textures or utility.CreateWeakTable()
+					table.insert(self.gen_mip_map_textures, tex)
 				end
 
 				table.insert(self.textures_sorted, self.textures[uid])
