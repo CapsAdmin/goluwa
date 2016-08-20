@@ -481,14 +481,13 @@ PASS.Stages = {
 		},
 		fragment = {
 			variables = {
-				light_view_pos = Vec3(0,0,0),
 				light_color = Color(1,1,1,1),
 				light_intensity = 0.5,
 			},
 			source = [[
 				vec2 uv = get_screen_uv();
 
-				float calc_shadow(vec2 uv)
+				float calc_shadow(vec2 uv, vec3 light_view_pos)
 				{
 					float visibility = 0;
 
@@ -554,6 +553,7 @@ PASS.Stages = {
 
 					vec3 pos = get_view_pos(uv);
 					vec3 normal = get_view_normal(uv);
+					vec3 light_view_pos = g_view_world[3].xyz;
 
 					float attenuation = 1;
 
@@ -576,7 +576,7 @@ PASS.Stages = {
 
 					if (lua[light_shadow = false])
 					{
-						shadow = calc_shadow(uv);
+						shadow = calc_shadow(uv, light_view_pos);
 					}
 
 					if (shadow > get_linearized_depth(uv)*-0.075)

@@ -73,10 +73,6 @@ if GRAPHICS then
 		local transform = self:GetComponent("transform")
 
 		render.camera_3d:SetWorld(transform:GetMatrix())
-		local mat = render.camera_3d:GetMatrices().view_world
-		local x,y,z = mat:GetTranslation()
-
-		shader.light_view_pos:Set(x,y,z)
 		shader.light_radius = transform:GetSize()
 
 		render.SetShaderOverride(shader)
