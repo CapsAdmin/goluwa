@@ -571,7 +571,7 @@ do
 		gl.StencilFunc("GL_ALWAYS", 1, 0xFF) -- Set any stencil to 1
 		gl.StencilOp("GL_KEEP", "GL_KEEP", "GL_REPLACE")
 		gl.StencilMask(0xFF) -- Write to stencil buffer
-		render.GetFrameBuffer():Clear("stencil",0xFF) -- Clear stencil buffer (0 by default)
+		render.GetFrameBuffer():ClearStencil(0xFF) -- Clear stencil buffer (0 by default)
 
 		surface.PushColor(0,0,0,0)
 		surface.DrawRect(x, y, w, h)

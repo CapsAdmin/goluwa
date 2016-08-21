@@ -21,9 +21,9 @@ local function fill_discard(invert)
 	render.gbuffer_discard:Begin()
 
 		if invert then
-			render.gbuffer_discard:Clear("color", 1,1,1,1)
+			render.gbuffer_discard:ClearColor(1,1,1,1)
 		else
-			render.gbuffer_discard:Clear("color", 0,0,0,0)
+			render.gbuffer_discard:ClearColor(0,0,0,0)
 		end
 
 		surface.Start3D2D(pos_a, ang_a)

@@ -279,84 +279,85 @@ function META:RestoreDrawBuffers()
 	end
 end
 
-function META:Clear(i, r,g,b,a, d,s)
-	i = i or "all"
+function META:ClearAll(r,g,b,a, d,s)
+	self:SaveDrawBuffers()
 
-	r = r or 0
-	g = g or 0
-	b = b or 0
-	a = a or 0
+	self:WriteThese("all")
 
-	if i == "all" then
-		self:SaveDrawBuffers()
+	local color = ffi.new("float[4]", r or 0, g or 0, b or 0, a or 0)
 
-		self:WriteThese("all")
-
-		local color = ffi.new("float[4]",r,g,b,a)
-
-		for i = 0, self.draw_buffers_size or 1 do
-			self.gl_fb:Clearfv("GL_COLOR", i, color)
-		end
-
-		if d or s then
-			local old = render.GetDepth()
-			render.SetDepth(true)
-			if d and s then
-				self.gl_fb:Clearfi("GL_DEPTH_STENCIL", 0, d or 0, s or 0)
-			elseif d then
-				self.gl_fb:Clearfv("GL_DEPTH", 0, ffi.new("float[1]", d))
-			elseif s then
-				self.gl_fb:Cleariv("GL_STENCIL", 0, ffi.new("int[1]", s))
-			end
-			render.SetDepth(old)
-		end
-
-		self:RestoreDrawBuffers()
-	elseif i == "color" then
-		self:SaveDrawBuffers()
-
-		self:WriteThese("all")
-
-		local color = ffi.new("float[4]",r,g,b,a)
-
-		for i = 0, self.draw_buffers_size or 1 do
-			self.gl_fb:Clearfv("GL_COLOR", i, color)
-		end
-
-		self:RestoreDrawBuffers()
-	elseif i == "depth" then
-		local old = render.GetDepth()
-		render.SetDepth(true)
-
-		self.gl_fb:Clearfv("GL_DEPTH", 0, ffi.new("float[1]", r))
-
-		render.SetDepth(old)
-	elseif i == "stencil" then
-
-		self.gl_fb:Cleariv("GL_STENCIL", 0, ffi.new("int[1]", r))
-
-	elseif i == "depth_stencil" then
-		local old = render.GetDepth()
-		render.SetDepth(true)
-
-		self.gl_fb:Clearfi("GL_DEPTH_STENCIL", 0, r or 0, g or 0)
-
-		render.SetDepth(old)
-	elseif type(i) == "number" then
-		self:SaveDrawBuffers()
-
-		self:SetWrite(i, true)
-		self.gl_fb:Clearfv("GL_COLOR", 0, ffi.new("float[4]",r,g,b,a))
-
-		self:RestoreDrawBuffers()
-	elseif self.textures[i] then
-		self:SaveDrawBuffers()
-
-		self:SetWrite(i, true)
-		self.gl_fb:Clearfv("GL_COLOR", 0, ffi.new("float[4]",r,g,b,a))
-
-		self:RestoreDrawBuffers()
+	for i = 0, self.draw_buffers_size or 1 do
+		self.gl_fb:Clearfv("GL_COLOR", i, color)
 	end
+
+	if d or s then
+		local old = render.GetDepth()
+		render.SetDepth(true)
+		if d and s then
+			self.gl_fb:Clearfi("GL_DEPTH_STENCIL", 0, d or 0, s or 0)
+		elseif d then
+			self.gl_fb:Clearfv("GL_DEPTH", 0, ffi.new("float[1]", d))
+		elseif s then
+			self.gl_fb:Cleariv("GL_STENCIL", 0, ffi.new("int[1]", s))
+		end
+		render.SetDepth(old)
+	end
+
+	self:RestoreDrawBuffers()
+end
+
+function META:ClearColor(r,g,b,a)
+	self:SaveDrawBuffers()
+
+	self:WriteThese("all")
+
+	local color = ffi.new("float[4]", r or 0, g or 0, b or 0, a or 0)
+
+	for i = 0, self.draw_buffers_size or 1 do
+		self.gl_fb:Clearfv("GL_COLOR", i, color)
+	end
+
+	self:RestoreDrawBuffers()
+end
+
+function META:ClearDepth(d)
+	local old = render.GetDepth()
+	render.SetDepth(true)
+
+	self.gl_fb:Clearfv("GL_DEPTH", 0, ffi.new("float[1]", d or 0))
+
+	render.SetDepth(old)
+end
+
+function META:ClearStencil(s)
+	self.gl_fb:Cleariv("GL_STENCIL", 0, ffi.new("int[1]", s or 0))
+end
+
+function META:ClearDepthStencil(d, s)
+	local old = render.GetDepth()
+	render.SetDepth(true)
+
+	self.gl_fb:Clearfi("GL_DEPTH_STENCIL", 0, d or 0, s or 0)
+
+	render.SetDepth(old)
+end
+
+function META:ClearColor(i)
+	self:SaveDrawBuffers()
+
+	self:SetWrite(i, true)
+	self.gl_fb:Clearfv("GL_COLOR", 0, ffi.new("float[4]", r or 0, g or 0, b or 0, a or 0))
+
+	self:RestoreDrawBuffers()
+end
+
+function META:ClearTexture(i, r,g,b,a)
+	self:SaveDrawBuffers()
+
+	self:SetWrite(i, true)
+	self.gl_fb:Clearfv("GL_COLOR", 0, ffi.new("float[4]", r or 0, g or 0, b or 0, a or 0))
+
+	self:RestoreDrawBuffers()
 end
 
 function META.Blit(a, b, a_rect, b_rect)

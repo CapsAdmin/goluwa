@@ -123,7 +123,7 @@ function META:GetTexture()
 end
 
 function META:Clear()
-	self.fb:Clear("depth", 1)
+	self.fb:ClearDepth(1)
 end
 
 function META:GetDirections()

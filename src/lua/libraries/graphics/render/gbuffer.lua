@@ -224,7 +224,7 @@ function render.DrawGBuffer(what, dist)
 	if not gbuffer_enabled then return end
 
 	render.gbuffer:WriteThese("all")
-	render.gbuffer:Clear("all", 0,0,0,0, 1)
+	render.gbuffer:ClearAll(0,0,0,0, 1)
 
 	render.gbuffer_data_pass:Draw3D(what, dist)
 
