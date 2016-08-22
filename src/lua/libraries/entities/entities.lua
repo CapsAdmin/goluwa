@@ -14,7 +14,14 @@ local id = 1
 
 function entities.CreateEntity(name, parent, info)
 	if parent == nil then parent = entities.GetWorld() end
-	local self = prototype.CreateEntity(name, parent, info)
+
+	event.Call("EntityCreate", name, parent, info)
+
+	local self = prototype.CreateEntity(name, info)
+
+	if parent then
+		self:SetParent(parent)
+	end
 
 	self.Id = id
 

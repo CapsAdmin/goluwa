@@ -186,14 +186,8 @@ function prototype.GetConfigurations()
 	return prototype.component_configurations
 end
 
-function prototype.CreateEntity(config, parent, info)
-	event.Call("EntityCreate", config, parent, info)
-
+function prototype.CreateEntity(config, info)
 	local self = META:CreateObject()
-
-	if parent then
-		self:SetParent(parent)
-	end
 
 	if prototype.component_configurations[config] then
 		info = info or {}
