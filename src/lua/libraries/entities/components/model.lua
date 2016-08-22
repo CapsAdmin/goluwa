@@ -28,19 +28,19 @@ if GRAPHICS then
 
 	function META:SetVisible(b)
 		if b then
-			table.insert(render.scene_3d, self)
+			render.Add3DModel(self)
 		else
-			table.removevalue(render.scene_3d, self)
+			render.Remove3DModel(self)
 		end
 	end
 
 	function META:OnAdd()
 		self.tr = self:GetComponent("transform")
-		table.insert(render.scene_3d, self)
+		render.Add3DModel(self)
 	end
 
 	function META:OnRemove()
-		table.removevalue(render.scene_3d, self)
+		render.Remove3DModel(self)
 	end
 
 	function META:SetModelPath(path)
@@ -164,6 +164,17 @@ if GRAPHICS then
 			for _, model in ipairs(self.sub_models) do
 				if not self.MaterialOverride then render.SetMaterial(model.material) end
 				model:Draw()
+
+			if self.MaterialOverride then
+				render.SetMaterial(self.MaterialOverride)
+				for _, model in ipairs(self.sub_models) do
+					model.mesh:Draw()
+				end
+			else
+				for _, model in ipairs(self.sub_models) do
+					render.SetMaterial(model.material)
+					model.mesh:Draw()
+				end
 			end
 		end
 	end
