@@ -951,8 +951,8 @@ if sdl then
 	end
 
 	if sdl.GetGlobalMouseState then
+		local x, y = ffi.new("int[1]"), ffi.new("int[1]")
 		function META:GetMousePosition()
-			local x, y = ffi.new("int[1]"), ffi.new("int[1]")
 			if self.global_mouse then
 				sdl.GetGlobalMouseState(x, y)
 				return Vec2(x[0], y[0])
@@ -962,8 +962,8 @@ if sdl then
 			end
 		end
 	else
+		local x, y = ffi.new("int[1]"), ffi.new("int[1]")
 		function META:GetMousePosition()
-			local x, y = ffi.new("int[1]"), ffi.new("int[1]")
 			sdl.GetMouseState(x, y)
 			return Vec2(x[0], y[0])
 		end

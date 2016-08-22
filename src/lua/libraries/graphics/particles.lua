@@ -27,6 +27,13 @@ function ParticleEmitter(max)
 	return self
 end
 
+local table_insert = table.insert
+local table_remove = table.remove
+local math_deg = math.deg
+local math_lerp = math.lerp
+local math_ceil = math.ceil
+local math_randomf = math.randomf
+
 function META:Update(dt)
 	local time = system.GetElapsedTime()
 
@@ -53,7 +60,7 @@ function META:Update(dt)
 		if not p then break end
 
 		if p.life_end < time or (not p.Jitter and p.life_mult < 0.001) then
-			table.insert(remove_these, i)
+			table_insert(remove_these, i)
 		else
 
 			if self.CenterAttractionForce ~= 0 and self.attraction_center then
@@ -85,7 +92,7 @@ function META:Update(dt)
 				p.Velocity.z = p.Velocity.z * p.Drag
 			end
 
-			p.life_mult = math.clamp((p.life_end - time) / p.LifeTime, 0, 1)
+			p.life_mult = (p.life_end - time) / p.LifeTime
 
 			if self.CenterAttractionForce ~= 0 then
 				center = center + p.Position
@@ -98,7 +105,7 @@ function META:Update(dt)
 					p.Position.x < self.ScreenRect.x or
 					p.Position.y < self.ScreenRect.y
 				then
-					table.insert(remove_these, i)
+					table_insert(remove_these, i)
 				end
 			end
 		end
@@ -126,15 +133,15 @@ function META:Draw()
 
 			if not p then break end
 
-			local size = math.lerp(p.life_mult, p.EndSize, p.StartSize)
-			local alpha = math.lerp(p.life_mult, p.EndAlpha, p.StartAlpha)
-			local length_x = math.lerp(p.life_mult, p.EndLength.x, p.StartLength.x)
-			local length_y = math.lerp(p.life_mult, p.EndLength.y, p.StartLength.y)
-			local jitter = math.lerp(p.life_mult, p.EndJitter, p.StartJitter)
+			local size = math_lerp(p.life_mult, p.EndSize, p.StartSize)
+			local alpha = math_lerp(p.life_mult, p.EndAlpha, p.StartAlpha)
+			local length_x = math_lerp(p.life_mult, p.EndLength.x, p.StartLength.x)
+			local length_y = math_lerp(p.life_mult, p.EndLength.y, p.StartLength.y)
+			local jitter = math_lerp(p.life_mult, p.EndJitter, p.StartJitter)
 
 			if jitter ~= 0 then
-				size = size + math.randomf(-jitter, jitter)
-				alpha = alpha + math.randomf(-jitter, jitter)
+				size = size + math_randomf(-jitter, jitter)
+				alpha = alpha + math_randomf(-jitter, jitter)
 			end
 
 			local w = size * p.Size.x
@@ -143,7 +150,7 @@ function META:Draw()
 
 
 			if not (length_x == 0 and length_y == 0) and self.Mode2D then
-				a = math.deg(p.Velocity:GetAngles().y)
+				a = math_deg(p.Velocity:GetAngles().y)
 
 				if length_x ~= 0 then
 					w = w * length_x
@@ -158,11 +165,11 @@ function META:Draw()
 
 			self.poly:SetColor(p.Color.r, p.Color.g, p.Color.b, p.Color.a * alpha)
 
-			local x, y = p.Position:Unpack()
+			local x, y = p.Position.x, p.Position.y
 
 			if self.MoveResolution ~= 0 then
-				x = math.ceil(x * self.MoveResolution) / self.MoveResolution
-				y = math.ceil(y * self.MoveResolution) / self.MoveResolution
+				x = math_ceil(x * self.MoveResolution) / self.MoveResolution
+				y = math_ceil(y * self.MoveResolution) / self.MoveResolution
 			end
 
 			self.poly:SetRect(
@@ -223,32 +230,34 @@ do
 	META.__index = META
 
 	create_particle = function()
-		return setmetatable({}, META) -- META:CreateObject()
+		return setmetatable({Position = Vec2()}, META) -- META:CreateObject()
 	end
 end
 
 function META:AddParticle()
 	local p = create_particle()
-	p:SetPosition(self:GetPosition():Copy())
+	p.Position.x = self.Position.x
+	p.Position.y = self.Position.y
+
 	p.life_mult = 1
 
 	p:SetLifeTime(1)
 
 	if #self.particles >= self.max then
-		table.remove(self.particles, 1)
+		table_remove(self.particles, 1)
 	end
 
-	table.insert(self.particles, p)
+	table_insert(self.particles, p)
 
 	return p
 end
 
-function META:Emit(...)
+function META:Emit()
 	for _ = 1, self.EmitCount do
-		local p = self:AddParticle(...)
+		local p = self:AddParticle()
 
 		if self.OnEmit then
-			self:OnEmit(p, ...)
+			self:OnEmit(p)
 		end
 	end
 end
