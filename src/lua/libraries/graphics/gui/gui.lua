@@ -389,7 +389,7 @@ function gui.Initialize()
 	event.AddListener("CharInput", "gui", gui.CharInput, {on_error = system.OnError})
 	event.AddListener("WindowFileDrop", "gui", gui.SystemFileDrop, {on_error = system.OnError})
 	local window = render.GetWindow()
-	event.AddListener("WindowFramebufferResized", "gui", function(wnd, w,h)
+	event.AddListener("WindowResize", "gui", function(wnd, w,h)
 		if window == wnd then
 			gui.world:SetSize(Vec2(w, h))
 		end

@@ -919,9 +919,7 @@ if sdl then
 	end
 
 	function META:GetPosition()
-		local x, y = ffi.new("int[1]"), ffi.new("int[1]")
-		sdl.GetWindowPosition(self.sdl_wnd, x, y)
-		return Vec2(x[0], y[0])
+		return self.position
 	end
 
 	function META:SetPosition(pos)
@@ -929,9 +927,7 @@ if sdl then
 	end
 
 	function META:GetSize()
-		local x, y = ffi.new("int[1]"), ffi.new("int[1]")
-		sdl.GetWindowSize(self.sdl_wnd, x, y)
-		return Vec2(x[0], y[0])
+		return self.size
 	end
 
 	function META:SetSize(pos)
@@ -1094,10 +1090,6 @@ if sdl then
 
 	end
 
-	function META:OnFramebufferResized(width, height)
-
-	end
-
 	function META:OnMove(x, y)
 
 	end
@@ -1181,7 +1173,7 @@ if sdl then
 		local cache = {}
 
 		for k,v in pairs(_G) do
-			if type(k) == "string" and (v == true or v == false) and k:sub(1, 3)  == "GL_" then
+			if type(k) == "string" and type(v) == "boolean" and k:sub(1, 3)  == "GL_" then
 				cache[k] = v
 			end
 		end
@@ -1241,153 +1233,6 @@ if sdl then
 			error("sdl.CreateWindow failed: " .. ffi.string(sdl.GetError()), 2)
 		end
 
-		if VULKAN then
-			local vk = require("libvulkan")
-
-			do
-				local extensions = {
-					"VK_EXT_debug_report"
-				}
-
-				for _, ext in ipairs(sdl.GetRequiredInstanceExtensions()) do
-					table.insert(extensions, ext)
-				end
-
-				local validation_layers = {
-					--"VK_LAYER_LUNARG_threading",
-					--"VK_LAYER_LUNARG_mem_tracker",
-					--"VK_LAYER_LUNARG_object_tracker",
-					--"VK_LAYER_LUNARG_draw_state",
-					"VK_LAYER_LUNARG_param_checker",
-					--"VK_LAYER_LUNARG_swapchain",
-					--"VK_LAYER_LUNARG_device_limits",
-					--"VK_LAYER_LUNARG_image",
-					--"VK_LAYER_LUNARG_api_dump",
-				}
-
-				local debug_flags = {
-					vk.e.DEBUG_REPORT_INFORMATION_BIT_EXT,
-					vk.e.DEBUG_REPORT_WARNING_BIT_EXT,
-					vk.e.DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT,
-					vk.e.DEBUG_REPORT_ERROR_BIT_EXT,
-					vk.e.DEBUG_REPORT_DEBUG_BIT_EXT,
-				}
-
-				local instance = vk.CreateInstance({
-					pApplicationInfo = vk.s.ApplicationInfo{
-						pApplicationName = "goluwa",
-						applicationVersion = 0,
-						pEngineName = "goluwa",
-						engineVersion = 0,
-						apiVersion = vk.macros.MAKE_VERSION(1, 0, 2),
-					},
-
-					enabledLayerCount = #validation_layers,
-					ppEnabledLayerNames = vk.util.StringList(validation_layers),
-
-					enabledExtensionCount = #extensions,
-					ppEnabledExtensionNames = vk.util.StringList(extensions),
-				})
-
-				if instance:LoadProcAddr("vkCreateDebugReportCallbackEXT") then
-					instance:CreateDebugReportCallback({
-						flags = bit.bor(unpack(debug_flags)),
-						pfnCallback = function(msgFlags, objType, srcObject, location, msgCode, pLayerPrefix, pMsg, pUserData)
-
-							local level = 3
-							local info = debug.getinfo(level, "Sln")
-							local lines = {}
-							for i = 3, 10 do
-								local info = debug.getinfo(i, "Sln")
-								if not info or info.currentline == -1 then break end
-								table.insert(lines, info.currentline)
-							end
-							io.write(string.format("Line %s %s: %s: %s\n", table.concat(lines, ", "), info.name or "unknown", ffi.string(pLayerPrefix), ffi.string(pMsg)))
-
-							return 0
-						end,
-					})
-				end
-
-				instance:LoadProcAddr("vkGetPhysicalDeviceSurfacePresentModesKHR")
-				instance:LoadProcAddr("vkGetPhysicalDeviceSurfaceSupportKHR")
-				instance:LoadProcAddr("vkCreateSwapchainKHR")
-				instance:LoadProcAddr("vkDestroySwapchainKHR")
-				instance:LoadProcAddr("vkGetSwapchainImagesKHR")
-				instance:LoadProcAddr("vkAcquireNextImageKHR")
-				instance:LoadProcAddr("vkQueuePresentKHR")
-				instance:LoadProcAddr("vkGetPhysicalDeviceSurfaceCapabilitiesKHR")
-				instance:LoadProcAddr("vkGetPhysicalDeviceSurfaceFormatsKHR")
-
-				vk.instance = instance
-			end
-
-			do -- find and use a gpu
-				local extensions = {
-
-				}
-
-				local validation_layers = {
-					--"VK_LAYER_LUNARG_threading",
-					--"VK_LAYER_LUNARG_mem_tracker",
-					--"VK_LAYER_LUNARG_object_tracker",
-					--"VK_LAYER_LUNARG_draw_state",
-					"VK_LAYER_LUNARG_param_checker",
-					--"VK_LAYER_LUNARG_swapchain",
-					--"VK_LAYER_LUNARG_device_limits",
-					--"VK_LAYER_LUNARG_image",
-					--"VK_LAYER_LUNARG_api_dump",
-				}
-
-
-				for _, physical_device in ipairs(vk.instance:GetPhysicalDevices()) do			-- get a list of vulkan capable hardware
-					for i, info in ipairs(physical_device:GetQueueFamilyProperties()) do			-- get a list of queues the hardware supports
-						if bit.band(info.queueFlags, vk.e.QUEUE_GRAPHICS_BIT) ~= 0 then			-- if this queue supports graphics use it
-							local queue_index = i - 1
-
-							local memory_properties = physical_device:GetMemoryProperties()
-
-							local device = physical_device:CreateDevice({
-								enabledLayerCount = #validation_layers,
-								ppEnabledLayerNames = vk.util.StringList(validation_layers),
-
-								enabledExtensionCount = #extensions,
-								ppEnabledExtensionNames = vk.util.StringList(extensions),
-
-								queueCreateInfoCount = 1,
-								pQueueCreateInfos = vk.s.DeviceQueueCreateInfoArray{
-									{
-										queueFamilyIndex = queue_index,
-										queueCount = 1,
-										pQueuePriorities = ffi.new("float[1]", 0), -- todo: public ffi use is bad!
-										pEnabledFeatures = nil,
-									}
-								}
-							})
-
-							local queue = device:GetQueue(queue_index, 0)
-							local command_pool = device:CreateCommandPool({queueFamilyIndex = queue_index})
-
-							vk.physical_device = physical_device
-							vk.device = {
-								queue = queue,
-								command_pool = command_pool,
-								device = device,
-								memory_properties = memory_properties,
-								queue_index = queue_index,
-							}
-
-							break
-						end
-					end
-				end
-			end
-
-			vk.surface = sdl.CreateWindowSurface(vk.instance, sdl_wnd)
-
-			system.vulkan = vk
-		end
-
 		if OPENGL then
 			if not system.gl_context then
 				sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_MAJOR_VERSION, 3)
@@ -1435,6 +1280,14 @@ if sdl then
 		llog("sdl version: %s", ffi.string(sdl.GetRevision()))
 
 		local self = META:CreateObject()
+
+
+		local x, y = ffi.new("int[1]"), ffi.new("int[1]")
+		sdl.GetWindowPosition(sdl_wnd, x, y)
+		self.position = Vec2(x[0], y[0])
+
+		sdl.GetWindowSize(sdl_wnd, x, y)
+		self.size = Vec2(x[0], y[0])
 
 		self.last_mpos = Vec2()
 		self.mouse_delta = Vec2()
@@ -1502,36 +1355,46 @@ if sdl then
 
 					if case == sdl.e.WINDOWEVENT_SHOWN then
 						call(window, "OnShow")
+
 					elseif case == sdl.e.WINDOWEVENT_HIDDEN then
 						call(window, "OnHide")
-					elseif case == sdl.e.WINDOWEVENT_EXPOSED then
-						call(window, "OnFramebufferResized", self:GetSize():Unpack())
-					elseif case == sdl.e.WINDOWEVENT_SIZE_CHANGED then
-						call(window, "OnFramebufferResized", event.window.data1, event.window.data2)
+
 					elseif case == sdl.e.WINDOWEVENT_MOVED then
-						call(window, "OnMove", event.window.data1, event.window.data2)
+						window.position.x = event.window.data1
+						window.position.y = event.window.data2
+						call(window, "OnMove", window.position.x, window.position.y)
+
 					elseif case == sdl.e.WINDOWEVENT_RESIZED then
-						call(window, "OnResize", event.window.data1, event.window.data2)
-						call(window, "OnFramebufferResized", event.window.data1, event.window.data2)
+						window.size.x = event.window.data1
+						window.size.y = event.window.data2
+						call(window, "OnResize", window.size.x, window.size.y)
+
 					elseif case == sdl.e.WINDOWEVENT_MINIMIZED then
 						call(window, "OnMinimize")
+
 					elseif case == sdl.e.WINDOWEVENT_MAXIMIZED then
-						call(window, "OnResize", self:GetSize():Unpack())
-						call(window, "OnFramebufferResized", self:GetSize():Unpack())
+						call(window, "OnMaximize")
+
 					elseif case == sdl.e.WINDOWEVENT_RESTORED then
 						call(window, "OnRefresh")
+
 					elseif case == sdl.e.WINDOWEVENT_ENTER then
 						call(window, "OnCursorEnter", false)
+
 					elseif case == sdl.e.WINDOWEVENT_LEAVE then
 						call(window, "OnCursorEnter", true)
+
 					elseif case == sdl.e.WINDOWEVENT_FOCUS_GAINED then
 						call(window, "OnFocus", true)
 						window.focused = true
+
 					elseif case == sdl.e.WINDOWEVENT_FOCUS_LOST then
 						call(window, "OnFocus", false)
 						window.focused = false
+
 					elseif case == sdl.e.WINDOWEVENT_CLOSE then
 						call(window, "OnClose")
+
 					else llog("unknown window event %s", case) end
 				elseif event.type == sdl.e.KEYDOWN or event.type == sdl.e.KEYUP then
 					local window = system.sdl_windows[event.key.windowID]

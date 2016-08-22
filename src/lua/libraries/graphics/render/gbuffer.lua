@@ -437,7 +437,7 @@ function render.InitializeGBuffer()
 
 	include("lua/libraries/graphics/render/post_process/*")
 
-	event.AddListener("WindowFramebufferResized", "gbuffer", function(_, w, h)
+	event.AddListener("WindowResize", "gbuffer", function(_, w, h)
 		local current = render.GetGBufferSize()
 		render.gbuffer_size = nil
 		if render.GetGBufferSize() ~= current then
@@ -458,7 +458,7 @@ function render.InitializeGBuffer()
 end
 
 function render.ShutdownGBuffer()
-	event.RemoveListener("WindowFramebufferResized", "gbuffer")
+	event.RemoveListener("WindowResize", "gbuffer")
 
 	if render.gbuffer:IsValid() then
 		render.gbuffer:Remove()
