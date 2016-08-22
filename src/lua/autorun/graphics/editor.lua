@@ -368,6 +368,17 @@ function editor.Open()
 					if ent.SetPosition then
 						ent:SetPosition(render.camera_3d:GetPosition())
 					end
+					if ent.SetModelPath then
+						ent:SetModelPath(ent:GetModelPath())
+
+						local mat = render.CreateMaterial("model")
+						mat:SetAlbedoTexture(render.GetWhiteTexture())
+						mat:SetRoughnessTexture(render.GetWhiteTexture())
+						mat:SetMetallicTexture(render.GetWhiteTexture())
+						mat:SetRoughnessMultiplier(0)
+						mat:SetMetallicMultiplier(1)
+						ent:SetMaterialOverride(mat)
+					end
 				end, info.icon})
 			end
 			add(L(group_name), tbl, group.icon) -- FIX ME
@@ -500,7 +511,7 @@ function editor.Open()
 
 	window.SetMouseTrapped(false)
 
-	frame:SetY(500)
+	frame:SetY(50)
 	frame:MoveLeft()
 	frame:FillY()
 end
