@@ -19,7 +19,7 @@ function render.Sort3DScene()
 		local sub_models_a = a.sub_models
 		local sub_models_b = b.sub_models
 
-		if sub_models_a and sub_models_b then
+		if sub_models_a[1] and sub_models_b[1] then
 			-- how to do this without tostring?
 			return tostring(sub_models_a[1].material) > tostring(sub_models_b[1].material)
 		end
