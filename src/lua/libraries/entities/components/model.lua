@@ -137,6 +137,8 @@ if GRAPHICS then
 		end
 	end
 
+	local ipairs = ipairs
+	local render_SetMaterial = render.SetMaterial
 	function META:Draw(what, dist)
 		render.camera_3d:SetWorld(self.tr:GetMatrix())
 
@@ -166,13 +168,13 @@ if GRAPHICS then
 				model:Draw()
 
 			if self.MaterialOverride then
-				render.SetMaterial(self.MaterialOverride)
+				render_SetMaterial(self.MaterialOverride)
 				for _, model in ipairs(self.sub_models) do
 					model.mesh:Draw()
 				end
 			else
 				for _, model in ipairs(self.sub_models) do
-					render.SetMaterial(model.material)
+					render_SetMaterial(model.material)
 					model.mesh:Draw()
 				end
 			end

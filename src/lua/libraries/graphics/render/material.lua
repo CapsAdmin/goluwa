@@ -50,8 +50,9 @@ function render.CreateMaterialTemplate(name)
 end
 
 function render.SetMaterial(mat)
+	local prev = render.current_material
 	render.current_material = mat
-	if mat then mat:OnBind() end
+	if mat and prev ~= mat then mat:OnBind() end
 end
 
 function render.GetMaterial()
