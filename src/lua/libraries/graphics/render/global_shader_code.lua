@@ -3,7 +3,19 @@ local render = (...) or _G.render
 render.global_shader_variables = render.global_shader_variables or {}
 
 function render.SetGlobalShaderVariable(key, val, type)
-	render.global_shader_variables[key] = {[type] = val, global_variable = true}
+	render.global_shader_variables[key] = {[type] = val, type = type, val = val}
+end
+
+function render.GetGlobalShaderVariableBlock()
+	local str = "layout(std140) buffer global_variables\n"
+	str = str .. "{\n"
+	for name, info in pairs(render.global_shader_variables) do
+		if not info.type:find("sampler") then
+			str = str .. "\t" .. info.type .. " " .. name .. ";\n"
+		end
+	end
+	str = str .. "};\n"
+	return str
 end
 
 render.global_shader_code = render.global_shader_code or {}
@@ -86,7 +98,7 @@ function render.GetGlobalShaderCode(code)
 
 	ts(out, {}, node)
 
-	return table.concat(out, "\n\n")
+	return render.GetGlobalShaderVariableBlock() .. "\n\n" .. table.concat(out, "\n\n")
 end
 
 render.AddGlobalShaderCode([[

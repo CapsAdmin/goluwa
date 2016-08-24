@@ -7,6 +7,7 @@ local render = ... or {}
 
 include("debug.lua", render)
 include("shader_program.lua", render)
+include("ssbo.lua", render)
 
 function render._Initialize()
 	if not gl then

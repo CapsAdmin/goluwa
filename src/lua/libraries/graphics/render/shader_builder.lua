@@ -1,5 +1,4 @@
 local BUILD_OUTPUT = false
-local LOL = false
 local gl = require("libopengl")
 
 local ffi = require("ffi")
@@ -165,14 +164,6 @@ local function variables_to_string(type, variables, prepend, macro, array, block
 	local texture_channel = 0
 	local out = {}
 
-	local ubo_block
-
-	if LOL then
-		if type == "uniform" and block_name then
-			ubo_block = {"layout(binding=0,packed) uniform "..block_name.." {"}
-		end
-	end
-
 	for _, data in ipairs(translate_fields(variables)) do
 		local name = data.name
 
@@ -190,23 +181,11 @@ local function variables_to_string(type, variables, prepend, macro, array, block
 			table.insert(out, ("%s %s %s %s %s %s%s;"):format(layout, data.varying, type, data.precision, data.type, name, array):trim())
 			texture_channel = texture_channel + 1
 		else
-			if ubo_block then
-				table.insert(ubo_block, "\t" .. ("%s %s %s%s;"):format(data.varying, data.type, name, array):trim())
-			else
-				table.insert(out, ("%s %s %s %s %s%s;"):format(data.varying, type, data.precision, data.type, name, array):trim())
-			end
+			table.insert(out, ("%s %s %s %s %s%s;"):format(data.varying, type, data.precision, data.type, name, array):trim())
 		end
 
 		if macro then
 			table.insert(out, ("#define %s %s"):format(data.name, name))
-		end
-	end
-
-	if ubo_block then
-		if #ubo_block > 1 then
-			table.insert(ubo_block, "};")
-
-			table.insert(out, table.concat(ubo_block, "\n"))
 		end
 	end
 
@@ -666,20 +645,14 @@ function render.CreateShader(data, vars)
 						self[val.name] = val.get
 					end
 
-					if LOL and id == -1 then
-						data.ubo_info = prog:GetUniformBlocks()[shader .. "_Variables"]
+					variables[val.name] = {
+						info = val,
+					}
 
-						table.insert(temp, {id = id, key = val.name, val = val, LOL = true})
-					else
-						variables[val.name] = {
-							info = val,
-						}
+					table.insert(temp, {id = id, key = val.name, val = val})
 
-						table.insert(temp, {id = id, key = val.name, val = val})
-
-						if render.debug and id < 0 and not val.type:find("sampler") then
-							logf("%s: variables in %s %s %s is not being used (variables location < 0)\n", shader_id, shader, val.name, val.type)
-						end
+					if render.debug and id < 0 and not val.type:find("sampler") then
+						logf("%s: variables in %s %s %s is not being used (variables location < 0)\n", shader_id, shader, val.name, val.type)
 					end
 				end
 			end
@@ -698,9 +671,7 @@ function render.CreateShader(data, vars)
 		lua = lua .. "local function update(self)\n"
 
 		for _, data in ipairs(temp) do
-			if data.LOL then
-
-			elseif data.id > -1 then
+			if data.id > -1 then
 				local line = tostring(unrolled_lines[data.val.type] or data.val.type)
 
 				if data.val.type == "texture" or data.val.type:find("sampler") then
