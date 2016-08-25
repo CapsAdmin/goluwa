@@ -4,7 +4,6 @@ render.global_shader_variables = render.global_shader_variables or {}
 
 function render.SetGlobalShaderVariable(key, val, type)
 	render.global_shader_variables[key] = {
-		[type] = val,
 		type = type,
 		key = key,
 		val = val

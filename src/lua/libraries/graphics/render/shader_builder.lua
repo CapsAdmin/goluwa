@@ -111,7 +111,13 @@ local function type_of_attribute(var)
 		t = var
 		def = nil
 	elseif t == "table" then
-		local k,v = next(var)
+		local k,v
+		if var.type then
+			k = var.type
+			v = var.val
+		else
+			k, v = next(var)
+		end
 		if type(k) == "string" and type(v) == "function" then
 			t = k
 			get = v
@@ -132,14 +138,12 @@ local function translate_fields(data)
 	local out = {}
 
 	for k, v in pairs(data) do
-
 		local params = {}
 
 		if type(k) == "number" then
 			params = v
 			k, v = next(v)
 		end
-
 		local t, default, get = type_of_attribute(v)
 
 		if t == "bool" or t:find("sampler") or t == "texture" then
@@ -412,18 +416,22 @@ function render.CreateShader(data, vars)
 		local variables = {}
 
 		if info.variables then
-			for k,v in pairs(info.variables) do variables[k] = v end
+			for k,v in pairs(info.variables) do
+				variables[k] = v
+			end
 		end
 
 		if info.source then
 			for k,v in pairs(render.global_shader_variables) do
 				if not SSBO or v.type:find("sampler") then
-					if info.source:find(k, nil, true) or template:find(k, nil, true) then
+					if info.source:find("[%p%s]"..k.."[%p%s]") or template:find("[%p%s]"..k.."[%p%s]") then
 						variables[k] = v
 					end
 				end
 			end
 		end
+
+--table.print(variables)
 
 		template = replace_field(template, "VARIABLES", variables_to_string("uniform", variables, nil, nil, nil, shader .. "_Variables"))
 		build_output[shader].variables = translate_fields(variables)
@@ -640,20 +648,20 @@ function render.CreateShader(data, vars)
 				for _, val in pairs(data.variables) do
 					local id = prog:GetUniformLocation(val.name)
 
-					self.defaults[val.name] = val.default
-					self[val.name] = val.default
+					if id > -1 then
+						self.defaults[val.name] = val.default
+						self[val.name] = val.default
 
-					if val.get then
-						self[val.name] = val.get
-					end
+						if val.get then
+							self[val.name] = val.get
+						end
 
-					variables[val.name] = {
-						info = val,
-					}
+						variables[val.name] = {
+							info = val,
+						}
 
-					table.insert(temp, {id = id, key = val.name, val = val})
-
-					if render.debug and id < 0 and not val.type:find("sampler") then
+						table.insert(temp, {id = id, key = val.name, val = val})
+					elseif render.debug and id < 0 and not val.type:find("sampler") then
 						logf("%s: variables in %s %s %s is not being used (variables location < 0)\n", shader_id, shader, val.name, val.type)
 					end
 				end
@@ -673,23 +681,21 @@ function render.CreateShader(data, vars)
 		lua = lua .. "local function update(self)\n"
 
 		for _, data in ipairs(temp) do
-			if data.id > -1 then
-				local line = tostring(unrolled_lines[data.val.type] or data.val.type)
+			local line = tostring(unrolled_lines[data.val.type] or data.val.type)
 
-				if data.val.type == "texture" or data.val.type:find("sampler") then
-					line = line:format(data.id, texture_channel, texture_channel)
-					texture_channel = texture_channel + 1
-				else
-					line = line:format(data.id)
-				end
-
-				lua = lua .. "\tif render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self or self.force_bind) and "
-				lua = lua .. "render.current_material."..data.key.." ~= nil then\n \t\tlocal val = render.current_material." .. data.key .. "\n\t\t" .. line .. "\n\telse"
-				lua = lua .. "if self." .. data.key .. " ~= nil then\n"
-				lua = lua .. "\t\tlocal val = self."..data.key.."\n"
-				lua = lua .. "\t\tif type(val) == 'function' then val = val() end\n"
-				lua = lua .. "\t\t"..line.."\n\tend\n\n"
+			if data.val.type == "texture" or data.val.type:find("sampler") then
+				line = line:format(data.id, texture_channel, texture_channel)
+				texture_channel = texture_channel + 1
+			else
+				line = line:format(data.id)
 			end
+
+			lua = lua .. "\tif render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self or self.force_bind) and "
+			lua = lua .. "render.current_material."..data.key.." ~= nil then\n \t\tlocal val = render.current_material." .. data.key .. "\n\t\t" .. line .. "\n\telse"
+			lua = lua .. "if self." .. data.key .. " ~= nil then\n"
+			lua = lua .. "\t\tlocal val = self."..data.key.."\n"
+			lua = lua .. "\t\tif type(val) == 'function' then val = val() end\n"
+			lua = lua .. "\t\t"..line.."\n\tend\n\n"
 		end
 
 		lua = lua .. "end\n"
