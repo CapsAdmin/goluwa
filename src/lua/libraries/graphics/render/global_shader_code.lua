@@ -3,7 +3,12 @@ local render = (...) or _G.render
 render.global_shader_variables = render.global_shader_variables or {}
 
 function render.SetGlobalShaderVariable(key, val, type)
-	render.global_shader_variables[key] = {[type] = val, type = type, val = val}
+	render.global_shader_variables[key] = {
+		[type] = val,
+		type = type,
+		key = key,
+		val = val
+	}
 end
 
 function render.GetGlobalShaderVariableBlock()
@@ -16,6 +21,81 @@ function render.GetGlobalShaderVariableBlock()
 	end
 	str = str .. "};\n"
 	return str
+end
+
+function render.GetGlobalShaderBlockIndex(shader_block_info)
+	if not render.global_variables_ssbo or shader_block_info.buffer_data_size ~= render.global_variables_ssbo.size then
+
+		for i, info in ipairs(shader_block_info.variables) do
+			info.fetch = render.global_shader_variables[info.name].val
+			info.key = render.global_shader_variables[info.name].key
+			info.fetch_type = render.global_shader_variables[info.name].type
+		end
+
+		render.global_variables_ssbo = render.CreateShaderStorageBuffer("dynamic_draw", nil, shader_block_info.buffer_data_size)
+		render.global_variables_ssbo:Bind(2)
+		render.global_variables_info = {}
+
+		local function gen_lua(filter)
+			local lua = ""
+			lua = lua .. "local ffi = require('ffi')\n"
+
+			lua = lua .. "local box = ffi.new('float[16]')\n"
+			lua = lua .. "local env = {}\n"
+			lua = lua .. "return function()\n"
+			lua = lua .. "local ssbo = render.global_variables_ssbo\n"
+			lua = lua .. "local variables = render.global_variables_info\n"
+			for i, info in ipairs(shader_block_info.variables) do
+				if filter(info.key) then
+					render.global_variables_info[i] = info.fetch
+
+					lua = lua .. "\tlocal v = variables["..i.."]()\n"
+					lua = lua .. "\tif true then\n--v ~= env['"..tostring(info.key).."'] then\n"
+
+					if info.type.name == "float" then
+						lua = lua .. "\t\tbox[0] = v\n"
+					elseif info.type.name == "vec2" then
+						lua = lua .. "\t\tbox[0], box[1] = v:Unpack()\n"
+					elseif info.type.name == "vec3" then
+						lua = lua .. "\t\tbox[0], box[1], box[2] = v:Unpack()\n"
+					elseif info.type.name == "vec4" then
+						lua = lua .. "\t\tbox[0], box[1], box[2], box[3] = v:Unpack()\n"
+					elseif info.type.name == "mat4" then
+						lua = lua .. [[
+		box[0] = v.m00
+		box[1] = v.m01
+		box[2] = v.m02
+		box[3] = v.m03
+		box[4] = v.m10
+		box[5] = v.m11
+		box[6] = v.m12
+		box[7] = v.m13
+		box[8] = v.m20
+		box[9] = v.m21
+		box[10] = v.m22
+		box[11] = v.m23
+		box[12] = v.m30
+		box[13] = v.m31
+		box[14] = v.m32
+		box[15] = v.m33
+]]
+					end
+
+					lua = lua .. "\t\tssbo:UpdateData(box, " .. info.type.size .. ", " .. info.offset .. ")\n"
+					lua = lua .. "\t\tenv['"..tostring(info.key).."'] = v\n"
+					lua = lua .. "\tend\n"
+				end
+			end
+			lua = lua .. "end\n"
+			print(lua)
+			return assert(loadstring(lua))()
+		end
+
+		render.update_globals = gen_lua(function(s) return not s:find("world") end)
+		render.update_globals2 = gen_lua(function(s) return s:find("world") end)
+	end
+
+	return shader_block_info.block_index, 2
 end
 
 render.global_shader_code = render.global_shader_code or {}
@@ -98,7 +178,11 @@ function render.GetGlobalShaderCode(code)
 
 	ts(out, {}, node)
 
-	return render.GetGlobalShaderVariableBlock() .. "\n\n" .. table.concat(out, "\n\n")
+	if SSBO then
+		return render.GetGlobalShaderVariableBlock() .. "\n\n" .. table.concat(out, "\n\n")
+	else
+		return table.concat(out, "\n\n")
+	end
 end
 
 render.AddGlobalShaderCode([[

@@ -23,15 +23,30 @@ function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
 	return self
 end
 
-function META:Draw(count)
+if SSBO then
+	function META:Draw(count)
 
-	if render.current_shader_override then
-		render.current_shader_override:Bind()
-	elseif self.Shader then
-		self.Shader:Bind()
+		if render.current_shader_override then
+			render.current_shader_override:Bind()
+		elseif self.Shader then
+			self.Shader:Bind()
+		end
+
+		render.update_globals2()
+
+		self:_Draw(count)
 	end
+else
+	function META:Draw(count)
 
-	self:_Draw(count)
+		if render.current_shader_override then
+			render.current_shader_override:Bind()
+		elseif self.Shader then
+			self.Shader:Bind()
+		end
+
+		self:_Draw(count)
+	end
 end
 
 function META:UpdateBuffer(vertices, indices)

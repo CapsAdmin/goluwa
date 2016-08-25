@@ -417,8 +417,10 @@ function render.CreateShader(data, vars)
 
 		if info.source then
 			for k,v in pairs(render.global_shader_variables) do
-				if info.source:find(k, nil, true) or template:find(k, nil, true) then
-					variables[k] = v
+				if not SSBO or v.type:find("sampler") then
+					if info.source:find(k, nil, true) or template:find(k, nil, true) then
+						variables[k] = v
+					end
 				end
 			end
 		end
@@ -709,6 +711,12 @@ function render.CreateShader(data, vars)
 			if RELOAD then _G.RELOAD = RELOAD end
 		else
 			self.unrolled_bind_func = assert(loadstring(lua, shader_id))()
+		end
+	end
+
+	if SSBO then
+		if not render.global_variables_ssbo then
+			prog:BindShaderBlock(render.GetGlobalShaderBlockIndex(prog:GetProperties().shader_storage_block.global_variables))
 		end
 	end
 

@@ -208,9 +208,9 @@ uniform samplerXX iChannel0..3;          // input channel. XX = 2D/Cube
 uniform vec4      iDate;                 // (year, month, day, time in seconds)
 uniform float     iSampleRate;           // sound sample rate (i.e., 44100)]]
 
-render.SetGlobalShaderVariable("iResolution", function() return Vec3(render.gbuffer_size.x, render.gbuffer_size.y, render.gbuffer_size.x / render.gbuffer_size.y) end, "vec3")
-render.SetGlobalShaderVariable("iGlobalTime", function() return system.GetElapsedTime() end, "float")
-render.SetGlobalShaderVariable("iMouse", function() return Vec2(surface.GetMousePosition()) end, "float")
-render.SetGlobalShaderVariable("iDate", function() return Color(os.date("%y"), os.date("%m"), os.date("%d"), os.date("%s")) end, "vec4")
+--render.SetGlobalShaderVariable("iResolution", function() return Vec3(render.GetGBufferSize().x, render.GetGBufferSize().y, render.GetGBufferSize().x / render.GetGBufferSize().y) end, "vec3")
+--render.SetGlobalShaderVariable("iGlobalTime", function() return system.GetElapsedTime() end, "float")
+--render.SetGlobalShaderVariable("iMouse", function() return Vec2(surface.GetMousePosition()) end, "float")
+--render.SetGlobalShaderVariable("iDate", function() return Color(os.date("%y"), os.date("%m"), os.date("%d"), os.date("%s")) end, "vec4")
 
 return render

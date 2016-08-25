@@ -32,6 +32,10 @@ function render.Draw3DScene(what, dist)
 		needs_sorting = false
 	end
 
+	if SSBO then
+		render.update_globals()
+	end
+
 	for _, model in ipairs(render.scene_3d) do
 		model:Draw(what, dist)
 	end
