@@ -65,11 +65,12 @@ include("markup/markup.lua", surface)
 
 function surface.Initialize()
 	local shader = render.CreateShader(SHADER)
-
 	surface.mesh_2d_shader = shader
 
 	surface.rect_mesh = surface.CreateMesh()
 	surface.ninepatch_poly = surface.CreatePoly(9 * 6)
+
+	surface.rect_mesh:SetDrawHint("static")
 
 	surface.SetWhiteTexture()
 	surface.InitializeFonts()

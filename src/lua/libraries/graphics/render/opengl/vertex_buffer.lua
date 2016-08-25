@@ -23,6 +23,17 @@ function META:SetMode(mode)
 	self.gl_mode = translate[mode] or translate.triangle
 end
 
+local translate = {
+	dynamic = "GL_DYNAMIC_DRAW",
+	stream = "GL_STREAM_DRAW",
+	static = "GL_STATIC_DRAW",
+}
+
+function META:SetDrawHint(hint)
+	self.DrawHint = hint
+	self.gl_draw_hint = translate[hint] or translate.dynamic
+end
+
 
 if not NVIDIA_WORKAROUND then
 	function render._CreateVertexBuffer(self)
@@ -65,7 +76,7 @@ if not NVIDIA_WORKAROUND then
 	end
 
 	function META:_SetVertices(vertices)
-		self.vertex_buffer:Data(vertices:GetSize(), vertices:GetPointer(), "GL_DYNAMIC_DRAW")
+		self.vertex_buffer:Data(vertices:GetSize(), vertices:GetPointer(), self.gl_draw_hint)
 		setup_vertex_array(self)
 		if system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
 			self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.vertex_array_info.size)
@@ -73,7 +84,7 @@ if not NVIDIA_WORKAROUND then
 	end
 
 	function META:_SetIndices(indices)
-		self.element_buffer:Data(indices:GetSize(), indices:GetPointer(), "GL_DYNAMIC_DRAW")
+		self.element_buffer:Data(indices:GetSize(), indices:GetPointer(), self.gl_draw_hint)
 		setup_vertex_array(self)
 		if system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
 			self.vertex_array:ElementBuffer(self.element_buffer.id)

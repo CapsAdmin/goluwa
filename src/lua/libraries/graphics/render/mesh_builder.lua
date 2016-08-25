@@ -33,6 +33,7 @@ function META:Upload(skip_unref)
 	if #self.Vertices == 0 then return end
 
 	self.mesh = render.CreateMesh(self.Vertices, self.Indices)
+	self.mesh:SetDrawHint("static")
 
 	-- don't store the geometry on the lua side
 	if not skip_unref then
