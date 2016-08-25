@@ -1,3 +1,19 @@
+function debug.getsource(func)
+	local info = debug.getinfo(func)
+	local src = vfs.Read(e.ROOT_FOLDER .. "/" .. info.source:sub(2))
+	if not src then
+		src = vfs.Read(info.source:sub(2))
+	end
+	if src then
+		local lines = src:split("\n")
+		local str = {}
+		for i = info.linedefined, info.lastlinedefined do
+			table.insert(str, lines[i])
+		end
+		return table.concat(str, "\n")
+	end
+	return "source unavailble for: " .. info.source
+end
 function debug.getprettysource(level, append_line, full_folder)
 	local info = debug.getinfo(type(level) == "number" and (level + 1) or level)
 	local pretty_source
