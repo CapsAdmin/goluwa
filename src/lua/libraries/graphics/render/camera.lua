@@ -175,7 +175,6 @@ end
 
 function META:Rebuild(what)
 	local vars = self.shader_variables
-	local vars2 = self.shader_variables2
 
 	if what == nil or what == "projection" then
 		if self.Projection then
@@ -210,7 +209,6 @@ function META:Rebuild(what)
 			vars.view = self.View
 		else
 			local view = vars.view
-			local view2 = vars2.view
 
 			view:Identity()
 
@@ -325,10 +323,8 @@ function render.CreateCamera()
 	local self = prototype.CreateObject("camera")
 	self.matrix_stack = {}
 	self.shader_variables = {}
-	self.shader_variables2 = {}
 	for _, name in ipairs(variables) do
 		self.shader_variables[name] = Matrix44()
-		self.shader_variables2[name] = Matrix44()
 	end
 	self:Rebuild()
 	return self
