@@ -472,6 +472,7 @@ end
 local blacklist = {
 	["NYI: return to lower frame"] = true,
 	["inner loop in root trace"] = true,
+	["leaving loop in root trace"] = true,
 	["blacklisted"] = true,
 }
 
