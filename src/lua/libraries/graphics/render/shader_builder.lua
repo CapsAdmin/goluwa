@@ -424,7 +424,8 @@ function render.CreateShader(data, vars)
 		if info.source then
 			for k,v in pairs(render.global_shader_variables) do
 				if not SSBO or v.type:find("sampler") then
-					if info.source:find("[%p%s]"..k.."[%p%s]") or template:find("[%p%s]"..k.."[%p%s]") then
+					local p = [==[[!"#$%&'%(%)*+,-./:;<=>?@%[\%]^`{|}~%s]]==]
+					if info.source:find(p..k..p) or template:find(p..k..p) then
 						variables[k] = v
 					end
 				end
