@@ -103,10 +103,10 @@ do
 	end
 end
 
-function lovemu.CallEvent(what, ...)
+function lovemu.CallEvent(what, a,b,c,d,e,f)
 	for i, love in ipairs(lovemu.love_envs) do
 		if love[what] and not love._lovemu_env.error_message then
-			local a,b,c,d,e,f = lovemu.pcall(love, love[what], ...)
+			local a,b,c,d,e,f = lovemu.pcall(love, love[what], a,b,c,d,e,f)
 			if a then
 				return a,b,c,d,e,f
 			end
