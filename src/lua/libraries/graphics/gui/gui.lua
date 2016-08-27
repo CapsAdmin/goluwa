@@ -124,7 +124,6 @@ do -- events
 	gui.keyboard_selected_panel = gui.keyboard_selected_panel or NULL
 
 	function gui.SystemFileDrop(wnd, path)
-		print(wnd, path)
 		gui.UpdateMousePosition()
 		local panel = gui.hovering_panel
 		if panel:IsValid() and panel:IsMouseOver() then
