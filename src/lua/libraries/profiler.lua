@@ -492,10 +492,10 @@ function profiler.EnableRealTimeTraceAbortLogging(b)
 
 					local path = info.source
 					local line = info.currentline or info.linedefined
-					local content = vfs.Read(e.ROOT_FOLDER .. path:sub(2))
+					local content = vfs.Read(e.ROOT_FOLDER .. path:sub(2)) or vfs.Read(path:sub(2))
 
 					if content then
-						logf("%s:%s\n%s:--\t%s\n\n", path, line, content:split("\n")[line]:trim(), reason)
+						logf("%s:%s\n%s:--\t%s\n\n", path:sub(2):replace(e.ROOT_FOLDER, ""), line, content:split("\n")[line]:trim(), reason)
 					else
 						logf("%s:%s:\n\t%s\n\n", path, line, reason)
 					end
@@ -580,6 +580,9 @@ commands.Add("profile", function(line, time, file_filter, method)
 end)
 
 commands.Add("zbprofile", function()
+	os.remove("./zerobrane_statistical.msgpack")
+	os.remove("./zerobrane_trace_aborts.msgpack")
+
 	local prf = require("zbprofiler")
 	prf.start()
 	event.Timer("zbprofiler_save", 3, 0, function() prf.save(0) end)
