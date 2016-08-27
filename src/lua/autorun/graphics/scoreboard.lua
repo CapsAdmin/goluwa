@@ -278,7 +278,7 @@ end
 
 scoreboard.Initialize()
 
-for _, client in pairs(clients.GetAll()) do
+for _, client in ipairs(clients.GetAll()) do
 	scoreboard.AddClient(client)
 end
 

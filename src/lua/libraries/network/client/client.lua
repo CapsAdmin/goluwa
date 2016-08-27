@@ -16,7 +16,7 @@ function META:IsConnected()
 end
 
 function META:GetNick()
-	for key, client in pairs(clients.GetAll()) do
+	for key, client in ipairs(clients.GetAll()) do
 		if client ~= self and client.nv.Nick == self.nv.Nick then
 			return ("%s(%s)"):format(self.nv.Nick, self:GetUniqueID())
 		end
@@ -35,7 +35,10 @@ end
 
 function META:OnRemove()
 	self.nv:Remove()
-	clients.active_clients[self:GetUniqueID()] = nil
+
+	clients.active_clients_uid[self:GetUniqueID()] = nil
+	table.removevalue(clients.active_clients, self)
+
 	if SERVER then
 		if self.socket:IsValid() then
 			self.socket:Disconnect(--[[removed]])

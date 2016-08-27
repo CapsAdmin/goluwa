@@ -63,7 +63,7 @@ if CLIENT then
 	end)
 end
 
-for _,v in pairs(clients.GetAll()) do
+for _,v in ipairs(clients.GetAll()) do
 	if v.nv.ghost and v.nv.ghost:IsValid() then
 		v.nv.ghost:Remove()
 	end

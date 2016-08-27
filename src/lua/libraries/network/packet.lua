@@ -75,7 +75,7 @@ if SERVER then
 					network.SendPacketToPeer(client.socket, data, flags, channel)
 				end
 			else
-				for _, client in pairs(clients.GetAll()) do
+				for _, client in ipairs(clients.GetAll()) do
 					network.SendPacketToPeer(client.socket, data, flags, channel)
 				end
 			end

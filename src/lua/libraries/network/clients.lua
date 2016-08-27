@@ -2,6 +2,7 @@ local clients = _G.clients or {}
 
 include("client/client.lua")
 
+clients.active_clients_uid = clients.active_clients_uid or {}
 clients.active_clients = clients.active_clients or {}
 clients.local_client = clients.local_client or NULL
 
@@ -10,7 +11,7 @@ function clients.GetAll()
 end
 
 function clients.GetByUniqueID(id)
-	return clients.active_clients[id] or NULL
+	return clients.active_clients_uid[id] or NULL
 end
 
 function clients.GetLocalClient()
@@ -18,13 +19,13 @@ function clients.GetLocalClient()
 end
 
 function clients.BroadcastLua(str)
-	for _, client in pairs(clients.GetAll()) do
+	for _, client in ipairs(clients.GetAll()) do
 		client:SendLua(str)
 	end
 end
 
 function clients.Create(uniqueid, is_bot, clientside, filter, local_client)
-	local self = clients.active_clients[uniqueid] or NULL
+	local self = clients.active_clients_uid[uniqueid] or NULL
 
 	if self:IsValid() then
 
@@ -41,7 +42,8 @@ function clients.Create(uniqueid, is_bot, clientside, filter, local_client)
 
 	self:SetUniqueID(uniqueid)
 
-	clients.active_clients[self.UniqueID] = self
+	clients.active_clients_uid[self.UniqueID] = self
+	table.insert(clients.active_clients, self)
 
 	-- add a networked table to the client
 	self.nv = nvars.CreateObject(uniqueid)
@@ -79,7 +81,7 @@ do -- filter
 	local META = prototype.CreateTemplate("client_filter")
 
 	function META:AddAll()
-		for _, client in pairs(clients.GetAll()) do
+		for _, client in ipairs(clients.GetAll()) do
 			self.clients[client:GetUniqueID()] = client
 		end
 

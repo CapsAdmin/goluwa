@@ -139,7 +139,7 @@ if CLIENT then
 
 			event.Call("Disconnected", reason)
 
-			for _, client in pairs(clients.GetAll()) do
+			for _, client in ipairs(clients.GetAll()) do
 				client:Remove()
 			end
 		end
@@ -202,7 +202,7 @@ if SERVER then
 
 					event.Call("ClientEntered", client)
 
-					for _, other in pairs(clients.GetAll()) do
+					for _, other in ipairs(clients.GetAll()) do
 						if other ~= client then
 							-- tell all the other clients that our client spawned
 							clients.Create(other:GetUniqueID(), other:IsBot(), true, client)
