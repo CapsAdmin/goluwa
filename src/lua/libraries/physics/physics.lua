@@ -39,6 +39,8 @@ include("physics_body.lua", physics)
 function physics.Initialize()
 	if not ode then return end
 
+	if not PHYSICS then return end
+
 	if not RELOAD then
 		for k,v in pairs(physics.bodies) do
 			if v:IsValid() then
