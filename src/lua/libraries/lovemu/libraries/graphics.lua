@@ -898,9 +898,7 @@ event.AddListener("PreDrawMenu", "love", function(dt)
 		surface.PushHSV(1,0,1)
 	end
 
-	render.SetCullMode("none")
 	lovemu.CallEvent("lovemu_draw", dt)
-	render.SetCullMode("front")
 
 	if ENV.error_message then
 		love.errhand(ENV.error_message)

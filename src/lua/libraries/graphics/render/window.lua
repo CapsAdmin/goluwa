@@ -32,17 +32,18 @@ do -- current window
 	end
 end
 
-function render.DrawScene(skip_2d)
+function render.DrawScene()
 	render.GetScreenFrameBuffer():Begin()
 
 	if render.IsGBufferReady() then
 		render.DrawGBuffer()
 	end
 
-	if not skip_2d and surface.IsReady() then
+	if surface.IsReady() then
 		surface.Start()
-
 		surface.SetColor(1,1,1,1)
+		render.SetCullMode("none")
+
 		render.SetDepth(false)
 		render.SetBlendMode("alpha")
 		render.SetShaderOverride()
