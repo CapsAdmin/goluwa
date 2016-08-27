@@ -147,7 +147,7 @@ do
 	function profiler.PushSection(section_name)
 		if not enabled then return end
 
-		local info = debug.getinfo(2)
+		local info = debug.getinfo(3)
 		local start_time = system.GetTime()
 
 		table.insert(stack, {
@@ -230,10 +230,9 @@ function profiler.GetBenchmark(type, file, dump_line)
 	local out = {}
 
 	for path, lines in pairs(profiler.data[type]) do
-		path = path:sub(1)
+		path = path:sub(2)
 		if not file or path:find(file) then
 			for line, data in pairs(lines) do
-
 				line = tonumber(line) or line
 
 				local name = "unknown(file not found)"
@@ -262,8 +261,6 @@ function profiler.GetBenchmark(type, file, dump_line)
 					name = ("%s(%s)"):format(data.func_name, table.concat(debug.getparams(data.func), ", "))
 				else
 					local full_path = R(path) or path
-					full_path = full_path:replace("../../../", e.SRC_FOLDER)
-					full_path = full_path:lower():replace(e.ROOT_FOLDER:lower(), "")
 					name = full_path .. ":" .. line
 				end
 
@@ -272,7 +269,6 @@ function profiler.GetBenchmark(type, file, dump_line)
 				end
 
 				name = name:trim()
-
 				data.path = path
 				data.file_name = path:match(".+/(.+)%.") or path
 				data.line = line
@@ -282,7 +278,7 @@ function profiler.GetBenchmark(type, file, dump_line)
 
 				if data.total_time then
 					data.average_time = data.total_time / data.samples
-					data.total_time = data.average_time * data.samples
+					--data.total_time = data.average_time * data.samples
 				end
 
 				data.start_time = data.start_time or 0
@@ -385,20 +381,19 @@ function profiler.PrintStatistical()
 end
 
 function profiler.StartInstrumental(file_filter, method)
-	method = method or "l"
+	method = method or "cr"
 	profiler.EnableSectionProfiling(true, true)
 	profiler.busy = true
-	local okay = false
 	debug.sethook(function(what)
 		local info = debug.getinfo(2)
 		if info.what == "Lua" then
 			if info.source:endswith("profiler.lua") then return end
 
 			if not file_filter or not info.source:find(file_filter, nil, true) then
-				if what == "line" then
-					if okay then profiler.PopSection() end
-					profiler.PushSection(info.source .. ":" .. info.currentline)
-					okay = true
+				if what == "call" then
+					profiler.PushSection()
+				elseif what == "return" then
+					profiler.PopSection()
 				end
 			end
 		end
@@ -436,7 +431,17 @@ end
 
 function profiler.DumpZerobraneProfileTree(min, filter)
 	min = min or 1
-	local path, root = next(serializer.ReadFile("msgpack", "zerobrane_statistical.msgpack"))
+	local huh = serializer.ReadFile("msgpack", "zerobrane_statistical.msgpack")
+	local most_samples
+	local path, root
+	for k,v in pairs(huh) do
+		most_samples = most_samples or v
+		if v.samples >= most_samples.samples then
+			most_samples = v
+			path = k
+			root = v
+		end
+	end
 
 	local level = 0
 
