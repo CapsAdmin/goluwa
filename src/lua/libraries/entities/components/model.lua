@@ -162,11 +162,6 @@ if GRAPHICS then
 			(not self.Cull or not what) or
 			self.visible[what] == nil or self.visible[what] == true
 		then
-			if self.MaterialOverride then render.SetMaterial(self.MaterialOverride) end
-			for _, model in ipairs(self.sub_models) do
-				if not self.MaterialOverride then render.SetMaterial(model.material) end
-				model:Draw()
-
 			if self.MaterialOverride then
 				render_SetMaterial(self.MaterialOverride)
 				for _, model in ipairs(self.sub_models) do
