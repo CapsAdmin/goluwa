@@ -143,8 +143,8 @@ do
 			end
 		else
 			gl.BlendFuncSeparate(
-				"GL_ZERO", "GL_ZERO",
-				"GL_ZERO", "GL_ZERO"
+				"GL_ONE", "GL_ZERO",
+				"GL_ONE", "GL_ZERO"
 			)
 		end
 
@@ -186,9 +186,10 @@ end
 
 function render._SetDepth(b)
 	if b then
-		gl.DepthMask(1)
+		gl.Enable("GL_DEPTH_TEST")
 		gl.DepthFunc("GL_LESS")
 	else
+		gl.Disable("GL_DEPTH_TEST")
 		gl.DepthFunc("GL_ALWAYS")
 	end
 end

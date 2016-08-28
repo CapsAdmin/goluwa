@@ -232,6 +232,8 @@ function render.DrawGBuffer(what, dist)
 
 	surface.PushMatrix()
 
+	render.SetCullMode("none")
+
 	-- gbuffer
 	render.SetDepth(false)
 
