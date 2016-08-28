@@ -291,8 +291,6 @@ function META:ClearAll(r,g,b,a, d,s)
 	end
 
 	if d or s then
-		local old = render.GetDepth()
-		render.SetDepth(true)
 		if d and s then
 			self.gl_fb:Clearfi("GL_DEPTH_STENCIL", 0, d or 0, s or 0)
 		elseif d then
@@ -300,7 +298,6 @@ function META:ClearAll(r,g,b,a, d,s)
 		elseif s then
 			self.gl_fb:Cleariv("GL_STENCIL", 0, ffi.new("int[1]", s))
 		end
-		render.SetDepth(old)
 	end
 
 	self:RestoreDrawBuffers()
@@ -321,12 +318,7 @@ function META:ClearColor(r,g,b,a)
 end
 
 function META:ClearDepth(d)
-	local old = render.GetDepth()
-	render.SetDepth(true)
-
 	self.gl_fb:Clearfv("GL_DEPTH", 0, ffi.new("float[1]", d or 0))
-
-	render.SetDepth(old)
 end
 
 function META:ClearStencil(s)
@@ -334,12 +326,7 @@ function META:ClearStencil(s)
 end
 
 function META:ClearDepthStencil(d, s)
-	local old = render.GetDepth()
-	render.SetDepth(true)
-
 	self.gl_fb:Clearfi("GL_DEPTH_STENCIL", 0, d or 0, s or 0)
-
-	render.SetDepth(old)
 end
 
 function META:ClearColor(i)

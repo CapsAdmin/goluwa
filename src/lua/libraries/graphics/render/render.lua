@@ -31,7 +31,6 @@ function render.Initialize()
 	render.frame = 0
 
 	render.SetBlendMode("src_alpha", "one_minus_src_alpha")
-	render.SetDepth(false)
 
 	include("lua/libraries/graphics/render/shader_builder.lua", render)
 

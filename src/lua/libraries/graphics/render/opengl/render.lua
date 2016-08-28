@@ -40,6 +40,7 @@ function render._Initialize()
 
 	gl.Enable("GL_TEXTURE_CUBE_MAP_SEAMLESS")
 	gl.Enable("GL_MULTISAMPLE")
+	gl.Enable("GL_DEPTH_TEST")
 
 	local largest = ffi.new("float[1]")
 	gl.GetFloatv("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT", largest)
@@ -178,24 +179,11 @@ do
 	end
 end
 
-do
-	local enabled = false
-
-	function render._SetDepth(b)
-		if b then
-			if not enabled then
-				gl.Enable("GL_DEPTH_TEST")
-				enabled = true
-			end
-			gl.DepthMask(1)
-			gl.DepthFunc("GL_LESS")
-		else
-			if enabled then
-				gl.Disable("GL_DEPTH_TEST")
-				enabled = false
-			end
-			gl.DepthMask(0)
-			--gl.DepthFunc("GL_ALWAYS")
-		end
+function render._SetDepth(b)
+	if b then
+		gl.DepthMask(1)
+		gl.DepthFunc("GL_LESS")
+	else
+		gl.DepthFunc("GL_ALWAYS")
 	end
 end
