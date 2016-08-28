@@ -6,20 +6,33 @@ render.camera_3d:SetAngles(Ang3(1.1, math.pi, 0))
 local ent = entities.CreateEntity("visual")
 ent:SetModelPath("models/cube.obj")
 ent:SetScale(Vec3(100,100,0.01))
-ent:SetCull(false)
+
 local mat = render.CreateMaterial("model")
-mat:SetAlbedoTexture(render.GetGreyTexture())
+mat:SetAlbedoTexture(render.GetWhiteTexture())
 ent:SetMaterialOverride(mat)
 
-local max = 500
+for i = 1, 500 do
+	local ent = entities.CreateEntity("visual")
+	ent:SetModelPath("models/sphere.obj")
+	ent:SetPosition(Vec3():GetRandom()*Vec3(100,100,10))
+	ent:SetSize(math.randomf(0.25, 1.5))
+
+
+	local mat = render.CreateMaterial("model")
+	mat:SetAlbedoTexture(render.GetGreyTexture())
+	mat:SetColor(ColorHSV(math.random(), math.randomf(0.25, 1), math.randomf(0.25, 1)))
+	ent:SetMaterialOverride(mat)
+end
+
+local max = 50
 local lights = {}
 
 for i = 1, max do
 	local light = entities.CreateEntity("light")
-	light:SetColor(ColorHSV(i/max, 0.5, 1))
-	light:SetIntensity(1.25)
+	light:SetColor(ColorHSV(i/max, math.randomf(0.25, 1), math.randomf(0.25, 1)))
+	light:SetIntensity(0.5)
 	light.seed = math.random()*math.pi
-	light:SetSize(light.seed*20+10)
+	light:SetSize(light.seed*40+10)
 	table.insert(lights, light)
 end
 
