@@ -30,8 +30,6 @@ function render.Initialize()
 
 	render.frame = 0
 
-	render.SetBlendMode("src_alpha", "one_minus_src_alpha")
-
 	include("lua/libraries/graphics/render/shader_builder.lua", render)
 
 	render.GenerateTextures()

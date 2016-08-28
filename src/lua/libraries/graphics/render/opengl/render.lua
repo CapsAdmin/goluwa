@@ -41,6 +41,7 @@ function render._Initialize()
 	gl.Enable("GL_TEXTURE_CUBE_MAP_SEAMLESS")
 	gl.Enable("GL_MULTISAMPLE")
 	gl.Enable("GL_DEPTH_TEST")
+	gl.Enable("GL_BLEND")
 
 	local largest = ffi.new("float[1]")
 	gl.GetFloatv("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT", largest)
@@ -108,22 +109,26 @@ do
 	function render.SetBlendMode(src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha)
 
 		if src_color then
-			if not enabled then
-				gl.Enable("GL_BLEND")
-				enabled = true
-			end
-
 			if src_color == "alpha" then
 				gl.BlendFuncSeparate(
 					"GL_SRC_ALPHA", "GL_ONE_MINUS_SRC_ALPHA",
 					"GL_ONE", "GL_ONE_MINUS_SRC_ALPHA"
 				)
 			elseif src_color == "multiplicative" then
-				gl.BlendFunc("GL_DST_COLOR", "GL_ZERO")
+				gl.BlendFuncSeparate(
+					"GL_DST_COLOR", "GL_ZERO",
+					"GL_DST_COLOR", "GL_ZERO"
+				)
 			elseif src_color == "premultiplied" then
-				gl.BlendFunc("GL_ONE", "GL_ONE_MINUS_SRC_ALPHA")
+				gl.BlendFuncSeparate(
+					"GL_ONE", "GL_ONE_MINUS_SRC_ALPHA",
+					"GL_ONE", "GL_ONE_MINUS_SRC_ALPHA"
+				)
 			elseif src_color == "additive" then
-				gl.BlendFunc("GL_SRC_ALPHA", "GL_ONE")
+				gl.BlendFuncSeparate(
+					"GL_SRC_ALPHA", "GL_ONE",
+					"GL_SRC_ALPHA", "GL_ONE"
+				)
 			else
 				src_color = enums[src_color or "src_alpha"]
 				dst_color = enums[dst_color or "one_minus_src_alpha"]
@@ -137,10 +142,10 @@ do
 				gl.BlendEquationSeparate(func_color, func_alpha)
 			end
 		else
-			if enabled then
-				gl.Disable("GL_BLEND")
-				enabled = false
-			end
+			gl.BlendFuncSeparate(
+				"GL_ZERO", "GL_ZERO",
+				"GL_ZERO", "GL_ZERO"
+			)
 		end
 
 		A,B,C,D,E,F = src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha
