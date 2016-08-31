@@ -16,7 +16,7 @@ for i = 1, 500 do
 	ent:SetModelPath("models/sphere.obj")
 	ent:SetPosition(Vec3():GetRandom()*Vec3(100,100,10))
 	ent:SetSize(math.randomf(0.25, 1.5))
-
+	ent:SetHideFromEditor(true)
 
 	local mat = render.CreateMaterial("model")
 	mat:SetAlbedoTexture(render.GetGreyTexture())
@@ -31,6 +31,7 @@ for i = 1, max do
 	local light = entities.CreateEntity("light")
 	light:SetColor(ColorHSV(i/max, math.randomf(0.25, 1), math.randomf(0.25, 1)))
 	light:SetIntensity(0.5)
+	light:SetHideFromEditor(true)
 	light.seed = math.random()*math.pi
 	light:SetSize(light.seed*40+10)
 	table.insert(lights, light)
