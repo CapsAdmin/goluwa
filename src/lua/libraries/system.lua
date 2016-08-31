@@ -950,7 +950,7 @@ if sdl then
 		sdl.SetWindowTitle(self.sdl_wnd, tostring(title))
 	end
 
-	if sdl.GetGlobalMouseState then
+	if sdl.GetGlobalMouseState and os.getenv("SDL_VIDEODRIVER") ~= "wayland" then
 		local x, y = ffi.new("int[1]"), ffi.new("int[1]")
 		function META:GetMousePosition()
 			if self.global_mouse then
