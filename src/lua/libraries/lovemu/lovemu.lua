@@ -259,6 +259,8 @@ function lovemu.RunGame(folder, ...)
 	lovemu.pcall(love, main)
 	lovemu.pcall(love, love.load, {})
 
+	love.filesystem.setIdentity(love.filesystem.getIdentity())
+
 	vfs.Mount(love.filesystem.getUserDirectory())
 
 	lovemu.current_game = love
