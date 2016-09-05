@@ -54,7 +54,7 @@ local shader = render.CreateShader({
 	}
 })
 
-event.AddListener("Draw2D", "fb", function()
+event.AddListener("PreDrawGUI", "fb", function()
 	render.camera_2d:SetPosition(Vec3(-0.1,0.1,0))
 	render.camera_2d:SetAngles(Ang3(0,math.rad(180 + 0.025),0))
 

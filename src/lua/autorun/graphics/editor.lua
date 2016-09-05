@@ -493,7 +493,7 @@ function editor.Open()
 	event.AddListener("EntityCreated", "editor", function() event.Delay(0.1, function() repopulate() end, frame, "editor_repopulate_hack") end)
 	event.AddListener("EntityRemoved", "editor", function() event.Delay(0.1, function() repopulate() end, frame, "editor_repopulate_hack") end)
 	event.AddListener("MouseInput", "editor", mctrl.MouseInput)
-	event.AddListener("PreDrawMenu", "editor", mctrl.Draw)
+	event.AddListener("PreDrawGUI", "editor", mctrl.Draw)
 	repopulate()
 
 	tree:SetSize(tree:GetSizeOfChildren())

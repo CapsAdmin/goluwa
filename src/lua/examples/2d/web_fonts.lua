@@ -3,7 +3,7 @@
 	size = 50,
 })
 
-event.AddListener("Draw2D", "lol", function()
+event.AddListener("PreDrawGUI", "lol", function()
 	surface.SetColor(1,1,1,1)
 
 	surface.SetFont(font)

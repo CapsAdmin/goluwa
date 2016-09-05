@@ -50,7 +50,7 @@ local function show_image(url)
 
 	local start = system.GetElapsedTime()
 
-	event.AddListener("DrawHUD", "chathud_image_url", function()
+	event.AddListener("PreDrawGUI", "chathud_image_url", function()
 		if tex:IsLoading() then
 			start = system.GetElapsedTime()
 			return
@@ -59,7 +59,7 @@ local function show_image(url)
 		local t = system.GetElapsedTime() - start
 
 		if t > totalDuration then
-			event.RemoveListener("DrawHUD", "chathud_image_url")
+			event.RemoveListener("PreDrawGUI", "chathud_image_url")
 			table.remove(queue, 1)
 			busy = false
 			return
@@ -90,7 +90,7 @@ event.AddListener("ClientChat", "chathud_image_url", function(client, str)
 	if num == 0 then return end
 
 	if str == "sh" then
-		event.RemoveListener("Draw2D", "chathud_image_url")
+		event.RemoveListener("PreDrawGUI", "chathud_image_url")
 		queue = {}
 
 		return

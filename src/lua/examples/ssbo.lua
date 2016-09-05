@@ -27,7 +27,7 @@ do
 	shader.program:BindShaderBlock(block_index, 2)
 	table.print(shader.program:GetProperties().shader_storage_block.global_variables)
 
-	event.AddListener("Draw2D", "fb", function()
+	event.AddListener("PreDrawGUI", "fb", function()
 		local data = ffi.new("float[3]")
 		data[1] = math.abs(math.sin(os.clock()))
 		val:UpdateData(data, ffi.sizeof(data), ffi.sizeof("float") * 3)

@@ -109,7 +109,7 @@ local function draw()
 	end
 end
 
-event.AddListener("PostDrawMenu", "lol", function()
+event.AddListener("PostDrawGUI", "lol", function()
 
 	surface.PushMatrix(50,50)
 

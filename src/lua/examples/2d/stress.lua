@@ -2,7 +2,7 @@ window.Open(500, 500)
 
 local cache = {}
 
-event.AddListener("Draw2D", "lol", function()
+event.AddListener("PreDrawGUI", "lol", function()
 	surface.SetWhiteTexture()
 	local time = system.GetElapsedTime()
 

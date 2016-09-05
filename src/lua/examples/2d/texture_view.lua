@@ -54,7 +54,7 @@ for _, v in pairs(prototype.GetCreated()) do
 	end
 end
 
-event.AddListener("PostDrawMenu", "texture_tiles", function()
+event.AddListener("PostDrawGUI", "texture_tiles", function()
 	surface.SetColor(1,1,1,1)
 	for _,v in ipairs(list) do
 		if v.node then

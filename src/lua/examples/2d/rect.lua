@@ -2,7 +2,7 @@ local tex = render.CreateBlankTexture(Vec2() + 64):Fill(function()
 	return math.random(255), math.random(255), math.random(255), math.random(255)
 end)
 
-event.AddListener("Draw2D", "lol", function()
+event.AddListener("PreDrawGUI", "lol", function()
 	surface.SetColor(1,1,1,1)
 	surface.SetTexture(tex)
 

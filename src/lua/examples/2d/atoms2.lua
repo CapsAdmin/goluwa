@@ -112,7 +112,7 @@ event.Timer("fb_update", fps, 0, function()
 	shader.generate_random = 0
 end)
 
-event.AddListener("Draw2D", "fb", function()
+event.AddListener("PreDrawGUI", "fb", function()
 	surface.SetColor(0,0,0, 1)
 
 	surface.SetWhiteTexture()

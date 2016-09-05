@@ -200,10 +200,7 @@ do -- events
 		gui.mouse_pos.x, gui.mouse_pos.y = surface.GetMousePosition()
 	end
 
-	function gui.Draw2D(dt)
-		event.Call("DrawHUD", dt)
-		event.Call("PreDrawMenu", dt)
-
+	function gui.DrawMenu(dt)
 		if gui.threedee then
 			--render.camera_2d:Start3D2DEx(Vec3(1, -5, 10), Deg3(-90, 180, 0), Vec3(8, 8, 10))
 			render.camera_2d:Start3D2DEx(Vec3(0, 0, 0), Ang3(0, 0, 0), Vec3(20, 20, 20))
@@ -252,8 +249,6 @@ do -- events
 		if gui.threedee then
 			render.camera_2d:End3D2D()
 		end
-
-		event.Call("PostDrawMenu", dt)
 	end
 end
 
@@ -382,7 +377,7 @@ function gui.Initialize()
 		gui.world:Layout()
 	end, {on_error = system.OnError})
 
-	event.AddListener("Draw2D", "gui", gui.Draw2D, {on_error = system.OnError})
+	event.AddListener("DrawGUI", "gui", gui.DrawMenu, {on_error = system.OnError})
 	event.AddListener("MouseInput", "gui", gui.MouseInput, {on_error = system.OnError})
 	event.AddListener("KeyInputRepeat", "gui", gui.KeyInput, {on_error = system.OnError})
 	event.AddListener("CharInput", "gui", gui.CharInput, {on_error = system.OnError})

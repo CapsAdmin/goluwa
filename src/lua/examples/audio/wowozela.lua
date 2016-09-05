@@ -44,7 +44,7 @@ local lol
 local grid_size = 1000
 local smooth_pitch = 0
 
-event.AddListener("PostDrawMenu", "wowozela", function(dt)
+event.AddListener("PostDrawGUI", "wowozela", function(dt)
 	local size = window.GetSize()
 
 	surface.SetColor(0,0,0,1)

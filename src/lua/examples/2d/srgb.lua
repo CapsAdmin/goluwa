@@ -5,7 +5,7 @@ tex:SetSize(Vec2(256, 1))
 tex:SetupStorage()
 tex:Fill(function(x, y) x = math.linear2gamma(x/256)*256 return x,x,x,255 end)
 
-event.AddListener("Draw2D", "test", function()
+event.AddListener("PreDrawGUI", "test", function()
 	surface.SetColor(1,1,1,1)
 	surface.SetTexture(tex)
 	surface.DrawRect(0,0, surface.GetSize())

@@ -44,7 +44,7 @@ end
 blur_texture(Vec2(0,5))
 blur_texture(Vec2(5,0))
 
-event.AddListener("Draw2D", "lol", function()
+event.AddListener("PreDrawGUI", "lol", function()
 
 	surface.SetColor(1,1,1,1)
 	surface.SetTexture(tex)

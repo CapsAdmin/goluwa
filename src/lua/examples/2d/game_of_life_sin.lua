@@ -55,7 +55,7 @@ event.Timer("update_cells", 0, 0, function()
 	]])
 end)
 
-event.AddListener("Draw2D", "fb", function()
+event.AddListener("PreDrawGUI", "fb", function()
 	surface.SetWhiteTexture()
 	surface.SetColor(0,0,0,1)
 	surface.DrawRect(0, 0, tex:GetSize().x*scale, tex:GetSize().y*scale)

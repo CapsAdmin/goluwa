@@ -893,7 +893,7 @@ do -- sprite batch
 	lovemu.RegisterType(SpriteBatch)
 end
 
-event.AddListener("PreDrawMenu", "love", function(dt)
+event.AddListener("PreDrawGUI", "love", function(dt)
 	if menu and menu.IsVisible() then
 		surface.PushHSV(1,0,1)
 	end

@@ -1,4 +1,4 @@
-event.AddListener("Draw2D", "joystick", function()
+event.AddListener("PreDrawGUI", "joystick", function()
 	local data = window.GetJoystickState(0)
 
 	surface.SetDefaultFont()

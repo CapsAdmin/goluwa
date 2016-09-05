@@ -111,7 +111,7 @@ grad:Upload({
 	},
 })
 
-event.AddListener("PostDrawMenu", "lol", function()
+event.AddListener("PostDrawGUI", "lol", function()
 	--surface.PushMatrix(0, 0, tex:GetSize():Unpack())
 		--render.SetShaderOverride(shader)
 		--surface.rect_mesh:Draw()

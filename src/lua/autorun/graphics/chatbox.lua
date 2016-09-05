@@ -210,7 +210,7 @@ function chat.GetPanel()
 	local edit = frame:CreatePanel("text_edit")
 	edit:SetMargin(Rect()+3)
 	edit:SetupLayout("bottom", "fill_x")
-	edit:AddEvent("PostDrawMenu")
+	edit:AddEvent("PostDrawGUI")
 	frame.edit = edit
 
 	local tab = frame:CreatePanel("tab")

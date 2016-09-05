@@ -54,7 +54,7 @@ event.Timer("fb_update", 0, 0, function()
 	fb:End()
 end)
 
-event.AddListener("Draw2D", "fb", function()
+event.AddListener("PreDrawGUI", "fb", function()
 	surface.SetTexture(fb:GetTexture(1))
 	surface.SetColor(1,1,1,1)
 	surface.DrawRect(0, 0, 512, 512)

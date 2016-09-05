@@ -5,7 +5,7 @@ local x, y = 0, 0
 local dirX, dirY = 100, 100
 
 local W, H = luwa:GetSize().x - 10, luwa:GetSize().y - 10
-event.AddListener( "Draw2D", "goluwa", function()
+event.AddListener( "PreDrawGUI", "goluwa", function()
 
 	x = x + dirX * system.GetFrameTime()
 	y = y + dirY * system.GetFrameTime()

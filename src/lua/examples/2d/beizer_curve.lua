@@ -16,7 +16,7 @@ curve:Add(Vec2(100,300))
 local poly = curve:ConstructPoly(40, 1, 10)
 poly.mesh:SetMode("triangle_strip")
 
-event.AddListener("PostDrawMenu", "lol", function()
+event.AddListener("PostDrawGUI", "lol", function()
 	surface.SetColor(1,1,1,1)
 	surface.SetTexture(tex)
 

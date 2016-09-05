@@ -33,7 +33,7 @@ function window.Open(...)
 
 	function wnd:OnUpdate()
 		render.PushWindow(self)
-			render.DrawScene()
+			render.DrawScene(system.GetFrameTime())
 			self:SwapBuffers()
 		render.PopWindow()
 	end

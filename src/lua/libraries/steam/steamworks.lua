@@ -140,7 +140,7 @@ end
 if RELOAD then
 	local tex = steam.GetFriends()[301]:GetAvatarTexture()
 
-	event.AddListener("PostDrawMenu", "lol", function()
+	event.AddListener("PostDrawGUI", "lol", function()
 		surface.SetTexture(tex)
 		surface.SetColor(1,1,1,1)
 		surface.DrawRect(50,50,tex:GetSize().x,tex:GetSize().y)

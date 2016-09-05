@@ -17,7 +17,7 @@ local fonts = {
 	}),]]
 }
 
-event.AddListener("Draw2D", "lol", function()
+event.AddListener("PreDrawGUI", "lol", function()
 	local y = 0
 	for _, font in ipairs(fonts) do
 		local str = font:GetName()

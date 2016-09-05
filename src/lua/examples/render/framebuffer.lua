@@ -110,7 +110,7 @@ event.Timer("lol", 1, 4, function(i)
 end)
 
 
-event.AddListener("PostDrawMenu", "lol", function()
+event.AddListener("PostDrawGUI", "lol", function()
 	for i = 1, 3 do
 		surface.SetTexture(fb:GetTexture(i))
 		surface.SetColor(1, 1, 1, 1)

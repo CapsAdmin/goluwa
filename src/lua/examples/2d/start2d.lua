@@ -35,7 +35,7 @@ event.Timer("updatefb", 0.1, function()
 	fb:End()
 end)
 
-event.AddListener("Draw2D", "lol", function()
+event.AddListener("PreDrawGUI", "lol", function()
 	local t = system.GetElapsedTime()
 
 	surface.SetWhiteTexture()

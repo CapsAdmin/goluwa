@@ -32,7 +32,7 @@ do -- current window
 	end
 end
 
-function render.DrawScene()
+function render.DrawScene(dt)
 	render.GetScreenFrameBuffer():Begin()
 
 	if render.IsGBufferReady() then
@@ -65,7 +65,9 @@ function render.DrawScene()
 			end
 		end
 
-		event.Call("Draw2D", system.GetFrameTime())
+		event.Call("PreDrawGUI", dt)
+		event.Call("DrawGUI", dt)
+		event.Call("PostDrawGUI", dt)
 
 		surface.End()
 

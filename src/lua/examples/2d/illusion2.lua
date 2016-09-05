@@ -15,7 +15,7 @@ local function draw_shape(s, r, t)
 	surface.DrawRect(-2, 0, s,s, r, s/2, s/2)
 end
 
-event.AddListener("Draw2D", "illusion", function()
+event.AddListener("PreDrawGUI", "illusion", function()
 	surface.SetWhiteTexture()
 	surface.SetColor(0.75, 0.75, 0.75, 1)
 	surface.DrawRect(0,0,5000,5000)

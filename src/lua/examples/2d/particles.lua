@@ -80,7 +80,7 @@ local function calc_collision(p)
 	end
 end
 
-event.AddListener("Draw2D", "particles", function(dt)
+event.AddListener("PreDrawGUI", "particles", function(dt)
 	dt = dt  * 25
 
 	render.SetBlendMode("additive")
