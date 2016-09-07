@@ -1,11 +1,9 @@
 local render = _G.render or {}
 
 include("debug.lua", render)
-include("vertex_buffer.lua", render)
-include("texture.lua", render)
+
 include("texture_format.lua", render)
 include("texture_decoder.lua", render)
-include("framebuffer.lua", render)
 include("global_shader_code.lua", render)
 include("generated_textures.lua", render)
 include("camera.lua", render)
@@ -22,15 +20,21 @@ include("environment_probe.lua", render)
 include("globals.lua", render)
 
 function render.Initialize()
-	include("lua/libraries/graphics/render/opengl/render.lua", render)
+	local dir = "lua/libraries/graphics/render/"
+	include(dir .. "opengl/render.lua", render)
+
+	-- FIX ME
+	-- these check if direct state access exist but do it too early
+	include(dir .. "vertex_buffer.lua", render)
+	include(dir .. "texture.lua", render)
+	include(dir .. "framebuffer.lua", render)
 
 	render._Initialize()
 
-	include("lua/libraries/graphics/render/texture_decoders/*")
+	include(dir .. "texture_decoders/*")
 
 	render.frame = 0
-
-	include("lua/libraries/graphics/render/shader_builder.lua", render)
+	include(dir .. "shader_builder.lua", render)
 
 	render.GenerateTextures()
 

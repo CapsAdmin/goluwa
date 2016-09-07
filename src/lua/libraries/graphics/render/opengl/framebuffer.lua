@@ -3,7 +3,7 @@ local gl = require("libopengl") -- OpenGL
 
 local render, META = ...
 render = render or _G.render
-META = META or prototype.GetRegistered("texture")
+META = META or prototype.GetRegistered("framebuffer")
 
 local base_color = gl.e.GL_COLOR_ATTACHMENT0
 
