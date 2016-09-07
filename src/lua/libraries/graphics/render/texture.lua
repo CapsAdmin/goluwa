@@ -39,7 +39,7 @@ META:GetSet("SwizzleA", "zero")
 META:GetSet("SwizzleRgba", Color())
 META:GetSet("WrapS", "repeat")
 META:GetSet("WrapT", "repeat")
-META:GetSet("WrapU", "repeat")
+META:GetSet("WrapR", "repeat")
 META:GetSet("Anisotropy", -1)
 META:EndStorable()
 
