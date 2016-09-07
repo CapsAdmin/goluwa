@@ -33,7 +33,6 @@ function render.Initialize()
 
 	include(dir .. "texture_decoders/*")
 
-	render.frame = 0
 	include(dir .. "shader_builder.lua", render)
 
 	render.GenerateTextures()
