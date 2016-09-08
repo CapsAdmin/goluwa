@@ -84,7 +84,7 @@ end
 
 function META:SetHue(h)
 	local _h,s,l = self:GetHSV()
-	_h = (_h + h)%360
+	_h = (_h + h)%1
 	local new = ColorHSV(_h, s, l, self.a)
 	self.r = new.r
 	self.g = new.g
@@ -94,7 +94,7 @@ function META:SetHue(h)
 end
 
 function META:SetComplementary()
-	return 	self:SetHue(180)
+	return self:SetHue(math.pi)
 end
 
 function META:GetNeighbors(angle)
@@ -227,10 +227,8 @@ function META:GetHSV()
 		h = 4 + ( r - g ) / delta -- magenta/cyan
 	end
 
-	h = h * 60 -- degrees
-
 	if h < 0 then
-		h = h + 360
+		h = h + 1
 	end
 
 	return h, s, v
