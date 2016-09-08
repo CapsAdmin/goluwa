@@ -120,9 +120,8 @@ function CONTEXT:GetFiles(path_info)
 	if not children then return false, err end
 
 	local out = {}
-
 	for _, v in pairs(children) do
-		if v.value then -- fix me!!
+		if type(v) == "table" and v.value then -- fix me!!
 			table.insert(out, v.value.file_name)
 		end
 	end

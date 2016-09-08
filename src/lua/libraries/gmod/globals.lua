@@ -56,12 +56,18 @@ do
 	ADD("Bool")
 end
 
-function globals.ColorHSV(h,s,v)
+function globals.HSVToColor(h,s,v)
 	return globals.Color(ColorHSV(h*360,s,v):Unpack())
 end
 
-function globals.ColorToHSV(c)
-	return c:GetHSV()
+function globals.ColorToHSV(r,g,b)
+	if type(r) == "table" then
+		local t = r
+		r = t.r
+		g = t.g
+		b = t.b
+	end
+	return ColorBytes(r,g,b):GetHSV()
 end
 
 function globals.GetHostName()

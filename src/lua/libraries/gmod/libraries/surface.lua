@@ -71,12 +71,13 @@ function surface.SetTextPos(x, y)
 end
 
 function surface.CreateFont(name, tbl)
-	logn("gmod create font: ", tbl.font)
 	local tbl = table.copy(tbl)
 	tbl.path = tbl.font
 
 	if tbl.path:lower() == "roboto bk" then
 		tbl.path = "resource/fonts/Roboto-Black.ttf"
+	elseif tbl.path:lower() == "roboto" then
+		tbl.path = "resource/fonts/Roboto-Regular.ttf"
 	elseif tbl.path:lower() == "helvetica" then
 		tbl.path = "resource/fonts/coolvetica.ttf"
 	elseif tbl.path:lower() == "tahoma" then
@@ -85,7 +86,9 @@ function surface.CreateFont(name, tbl)
 
 	if tbl.size then tbl.size = math.ceil(tbl.size * 0.75) end
 
-	logf("surface.CreateFont(%q, %q)\n", name, tbl.path)
+	if not vfs.IsFile(tbl.path) then
+		logf("surface.CreateFont called with path: %q which doesn't exist\n", tbl.path)
+	end
 
 	gmod.surface_fonts[name] = lib.CreateFont(tbl)
 end

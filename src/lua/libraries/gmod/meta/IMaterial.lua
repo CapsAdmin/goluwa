@@ -25,3 +25,7 @@ end
 function META:SetFloat()
 
 end
+
+function META:IsError()
+	return false
+end

@@ -248,7 +248,7 @@ function gmod.Initialize()
 		include("lua/skins/*")
 
 		gmod.env.DCollapsibleCategory.LoadCookies = nil -- DUCT TAPE FIX
---[[
+
 		-- load_gamemode will also load entities as shown below
 		load_gamemode("sandbox")
 
@@ -259,7 +259,7 @@ function gmod.Initialize()
 		load_entities("lua/entities", "ENT", gmod.env.scripted_ents.Register, function() return {} end)
 		load_entities("lua/weapons", "SWEP", gmod.env.weapons.Register, function() return {Primary = {}, Secondary = {}} end)
 		load_entities("lua/effects", "EFFECT", gmod.env.effects.Register, function() return {} end)
-]]
+
 		gmod.init = true
 	end
 
@@ -284,9 +284,8 @@ function gmod.Initialize()
 		gmod.translation = {}
 		gmod.translation2 = {}
 
-		for path in vfs.Iterate("resource/localization/en/",nil,true) do
-			local str = vfs.Read(path)
-			for _, line in ipairs(str:split("\n")) do
+		for path in vfs.Iterate("resource/localization/en/", true) do
+			for _, line in ipairs(vfs.Read(path):split("\n")) do
 				local key, val = line:match("(.-)=(.+)")
 				if key and val then
 					gmod.translation[key] = val:trim()
