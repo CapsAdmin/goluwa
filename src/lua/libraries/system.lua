@@ -319,9 +319,9 @@ do -- memory
 	end
 end
 
-do -- editors
+do -- text editors
 	if WINDOWS then
-		local editors = {
+		local text_editors = {
 			["ZeroBrane.Studio"] = "%PATH%:%LINE%",
 			["notepad++.exe"] = "\"%PATH%\" -n%LINE%",
 			["notepad2.exe"] = "/g %LINE% %PATH%",
@@ -329,7 +329,7 @@ do -- editors
 			["notepad.exe"] = "/A %PATH%",
 		}
 
-		function system.FindFirstEditor(os_execute, with_args)
+		function system.FindFirstTextEditor(os_execute, with_args)
 			local app = system.GetRegistryValue("ClassesRoot/.lua/default")
 			if app then
 				local path = system.GetRegistryValue("ClassesRoot/" .. app .. "/shell/edit/command/default")
@@ -340,8 +340,8 @@ do -- editors
 							path = "start \"\" " .. path
 						end
 
-						if with_args and editors[app] then
-							path = path .. " " .. editors[app]
+						if with_args and text_editors[app] then
+							path = path .. " " .. text_editors[app]
 						end
 
 						return path
@@ -350,7 +350,7 @@ do -- editors
 			end
 		end
 	else
-		local editors = {
+		local text_editors = {
 			{
 				name = "atom",
 				args = "%PATH%:%LINE%",
@@ -384,8 +384,8 @@ do -- editors
 			},
 		}
 
-		function system.FindFirstEditor(os_execute, with_args)
-			for _, v in pairs(editors) do
+		function system.FindFirstTextEditor(os_execute, with_args)
+			for _, v in pairs(text_editors) do
 
 				if io.popen("command -v " .. v.name):read() then
 					local cmd = v.name

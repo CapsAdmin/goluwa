@@ -62,23 +62,23 @@ if(!(Test-Path ($binaries_dir + "\luajit.exe")))
 	extract "$binaries_dir.zip" $binaries_dir
 }
 
-if ($env:EDITOR)
+if ($env:IDE)
 {
-	$editor_url = "https://github.com/pkulchenko/ZeroBraneStudio/archive/master.zip"
-	$editor_dir = [IO.Path]::GetFullPath($(PSScriptRoot) + "\..\..\data\editor")
+	$ide_url = "https://github.com/pkulchenko/ZeroBraneStudio/archive/master.zip"
+	$ide_dir = [IO.Path]::GetFullPath($(PSScriptRoot) + "\..\..\data\ide")
 
-	if (!(Test-Path $editor_dir)) 
+	if (!(Test-Path $ide_dir)) 
 	{
-		New-Item -path $editor_dir -type directory
+		New-Item -path $ide_dir -type directory
 	}
 	
-	if(!(Test-Path ($editor_dir + "\zbstudio.exe")))
+	if(!(Test-Path ($ide_dir + "\zbstudio.exe")))
 	{
-		download $editor_url "$editor_dir.zip"
-		extract "$editor_dir.zip" $editor_dir "ZeroBraneStudio-master"	
+		download $ide_url "$ide_dir.zip"
+		extract "$ide_dir.zip" $ide_dir "ZeroBraneStudio-master"	
 	}
 	
-	cd $editor_dir
+	cd $ide_dir
 	Start-Process -FilePath "zbstudio.exe" -ArgumentList "-cfg ../../src/lua/zerobrane/config.lua"
 }
 else

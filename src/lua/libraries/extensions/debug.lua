@@ -132,7 +132,7 @@ do
 end
 
 function debug.openscript(lua_script, line)
-	local path = pvars.Get("editor_path")
+	local path = pvars.Get("text_editor_path")
 
 	if not path then return false end
 	lua_script = R(lua_script) or lua_script

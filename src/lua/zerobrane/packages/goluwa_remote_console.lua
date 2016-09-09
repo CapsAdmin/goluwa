@@ -72,7 +72,7 @@ function PLUGIN:onRegister()
 			"ZEROBRANE_LINEINPUT.OnClientConnected=function(s,client)return\32true\32end;"..
 			"ZEROBRANE_LINEINPUT.OnReceive=function(s,str)commands.RunString(str,nil,nil,true)end;"..
 			"zb=function(s)ZEROBRANE_LINEINPUT:Broadcast(s,true)end;"..
-			"pvars.Set([[editor_path]],[[./../../editor/zbstudio.sh %PATH%:%LINE%]])"
+			"pvars.Set([[text_editor_path]],[[./../../editor/zbstudio.sh %PATH%:%LINE%]])"
 
 			if run_debug then
 				lua = "include[["..ide:GetDocument(ide:GetEditor()):GetFilePath().."]]" .. lua

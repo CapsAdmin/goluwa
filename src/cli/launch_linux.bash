@@ -13,13 +13,13 @@ esac
 cd "$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 mkdir -p ../../data/bin
 
-if [ ! -z "$EDITOR" ]; then
+if [ ! -z "$IDE" ]; then
 	pushd ../../data/
 
-	if [ -d ./editor ]; then
-		git -C ./editor pull;
+	if [ -d ./ide ]; then
+		git -C ./ide pull;
 	else
-		git clone https://github.com/pkulchenko/ZeroBraneStudio.git editor --depth 1;
+		git clone https://github.com/pkulchenko/ZeroBraneStudio.git ide --depth 1;
 	fi
 
 	popd
@@ -35,8 +35,8 @@ if [ ! -f "linux_${arch}/luajit" ]; then
 	rm temp.zip
 fi
 
-if [ ! -z "$EDITOR" ]; then
-	cd ../editor/
+if [ ! -z "$IDE" ]; then
+	cd ../ide/
 	./zbstudio.sh -cfg ../../src/lua/zerobrane/config.lua
 else
 	cd ./linux_${arch}/
