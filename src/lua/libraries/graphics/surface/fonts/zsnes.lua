@@ -8,6 +8,13 @@ META.ClassName = "zsnes"
 local pixel_padding = 3
 
 function META:Initialize()
+	if vfs.IsFile("zfont_cache") then
+		self.font_data = serializer.ReadFile("msgpack", "zfont_cache")
+		self:CreateTextureAtlas()
+		self:OnLoad()
+		return
+	end
+
 	local width = 8 -- the actual width is 8 but the 3 last pixels
 	local height = 5
 
@@ -136,6 +143,8 @@ function META:Initialize()
 				self.font_data[name] = {w = width, h = height , buffer = copy}
 			end
 		end
+
+		serializer.WriteFile("msgpack", "zfont_cache", self.font_data)
 
 		self:CreateTextureAtlas()
 
