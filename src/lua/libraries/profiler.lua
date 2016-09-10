@@ -410,7 +410,7 @@ function profiler.StopInstrumental(file_filter)
 		profiler.GetBenchmark("sections"),
 		{
 			{key = "times_called", friendly = "calls"},
-			{key = "section_name"},
+			{key = "name"},
 			{key = "average_time", friendly = "time", tostring = function(val) return math.round(val * 100 * 100, 3) end},
 			{key = "total_time", friendly = "total time", tostring = function(val) return math.round(val * 100 * 100, 3) end},
 		},
