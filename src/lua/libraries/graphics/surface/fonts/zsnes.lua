@@ -8,6 +8,10 @@ META.ClassName = "zsnes"
 local pixel_padding = 3
 
 function META:Initialize()
+	if not self.Path:endswith(".txt") then
+		return false, "not a valid font"
+	end
+
 	if vfs.IsFile("zfont_cache") then
 		self.font_data = serializer.ReadFile("msgpack", "zfont_cache")
 		self:CreateTextureAtlas()
@@ -87,10 +91,6 @@ function META:Initialize()
 
 	local dark = ColorBytes(168, 164, 160)
 	local light = ColorBytes(232, 228, 224)
-
-	if not self.Path:endswith(".txt") then
-		return false, "not a valid font"
-	end
 
 	resource.Download(self.Path, function(path)
 		local file = vfs.Open(path)
