@@ -38,7 +38,7 @@ end
 
 if network then
 	enet.Initialize()
-	
+
 	if CLIENT then
 		clients.local_client = clients.Create("unconnected")
 	end
@@ -50,35 +50,6 @@ end
 -- only if the CAPSADMIN constant is not nil.
 vfs.MountAddons(e.ROOT_FOLDER)
 
--- load everything in lua/autorun/*
-vfs.AutorunAddons()
-
--- load everything in lua/autorun/*USERNAME*/*
-vfs.AutorunAddons(e.USERNAME)
-
--- load everything in lua/autorun/client/*
-if CLIENT then
-	vfs.AutorunAddons("client/")
-end
-
--- load everything in lua/autorun/server/*
-if SERVER then
-	vfs.AutorunAddons("server/")
-end
-
--- load everything in lua/autorun/shared/*
-if CLIENT or SERVER then
-	vfs.AutorunAddons("shared/")
-end
-
-if SOUND then
-	vfs.AutorunAddons("sound/")
-end
-
-if GRAPHICS and surface.IsReady() then
-	vfs.AutorunAddons("graphics/")
-end
-
 -- execute /data/users/*USERNAME*/cfg/autoexec.lua
 commands.RunString(vfs.Read("cfg/autoexec.cfg"))
 
@@ -88,6 +59,41 @@ vfs.MonitorEverything(true)
 system.ExecuteArgs()
 
 llog("initializing libraries took %s seconds\n", os.clock() - profile_start_time)
+
+do -- autorun
+	local profile_start_time = os.clock()
+
+	-- load everything in lua/autorun/*
+	vfs.AutorunAddons()
+
+	-- load everything in lua/autorun/*USERNAME*/*
+	vfs.AutorunAddons(e.USERNAME)
+
+	-- load everything in lua/autorun/client/*
+	if CLIENT then
+		vfs.AutorunAddons("client/")
+	end
+
+	-- load everything in lua/autorun/server/*
+	if SERVER then
+		vfs.AutorunAddons("server/")
+	end
+
+	-- load everything in lua/autorun/shared/*
+	if CLIENT or SERVER then
+		vfs.AutorunAddons("shared/")
+	end
+
+	if SOUND then
+		vfs.AutorunAddons("sound/")
+	end
+
+	if GRAPHICS and surface.IsReady() then
+		vfs.AutorunAddons("graphics/")
+	end
+
+	llog("autorunning scripts took %s seconds\n", os.clock() - profile_start_time)
+end
 
 local rate_cvar = pvars.Setup(
 	"system_fps_max",

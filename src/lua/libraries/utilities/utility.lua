@@ -4,6 +4,25 @@ include("packed_rectangle.lua", utility)
 include("quickbms.lua", utility)
 
 do
+	local stack = {}
+
+	function utility.PushTimeWarning()
+		table.insert(stack, os.clock())
+	end
+
+	function utility.PopTimeWarning(what, threshold)
+		threshold = threshold or 0.1
+		local start_time = table.remove(stack)
+		if not start_time then return end
+		local delta = os.clock() - start_time
+
+		if delta > threshold then
+			logf("%s took %f seconds to load\n", what, delta)
+		end
+	end
+end
+
+do
 	local function mapToHemisphere(point, maxVertAngle)
 		maxVertAngle = maxVertAngle or math.pi / 2
 

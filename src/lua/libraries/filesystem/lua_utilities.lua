@@ -136,12 +136,22 @@ do -- include
 					_G.FILE_NAME = full_path:match(".*/(.+)%.") or full_path
 					_G.FILE_EXTENSION = full_path:match(".*/.+%.(.+)")
 
+					local start_time = os.clock()
+
+					if utility and utility.PushTimeWarning then
+						utility.PushTimeWarning()
+					end
+
 					local ok, err
 
 					if system_pcall and system and system.pcall then
 						ok, err = system.pcall(func, ...)
 					else
 						ok, err = pcall(func, ...)
+					end
+
+					if utility and utility.PushTimeWarning then
+						utility.PopTimeWarning(full_path, 0.1)
 					end
 
 					_G.FILE_NAME = nil
@@ -212,11 +222,19 @@ do -- include
 			_G.FILE_NAME = full_path:match(".*/(.+)%.") or full_path
 			_G.FILE_EXTENSION = full_path:match(".*/.+%.(.+)")
 
+			if utility and utility.PushTimeWarning then
+				utility.PushTimeWarning()
+			end
+
 			local res
 			if system_pcall and system and system.pcall then
 				res = {system.pcall(func, ...)}
 			else
 				res = {pcall(func, ...)}
+			end
+
+			if utility and utility.PushTimeWarning then
+				utility.PopTimeWarning(full_path, 0.1)
 			end
 
 			_G.FILE_PATH = nil
