@@ -30,11 +30,9 @@ function PLUGIN:onRegister()
 	end
 
 	ide:AddInterpreter("goluwa", {
-		name = "Goluwa",
-		description = "A game framework written in luajit",
-		hasdebugger = true,
-		api = {"baselib", "goluwa"},
-		unhideanywindow = true,
+		name = PLUGIN.name,
+		description = PLUGIN.description,
+		api = {"baselib"},
 		frun = function(intepreter, wfile, run_debug)
 			wx.wxSetEnv("LD_LIBRARY_PATH", ".:$LD_LIBRARY_PATH")
 
@@ -58,7 +56,7 @@ function PLUGIN:onRegister()
 				root .. bin,
 				true,--tooutput,
 				true,--nohide,
-				function(s) CONSOLE_OUT(s) end,
+				function(s) shellbox:Print(s) end,
 				nil,--uid,
 				function()
 					self.connected = false
@@ -71,29 +69,19 @@ function PLUGIN:onRegister()
 
 			self.ready = true
 
-			if GOLUWA_SHELLBOX then
-				GOLUWA_SHELLBOX:SetFocus()
+			if shellbox then
+				shellbox:SetFocus()
 			end
 
 			return pid
-		end,
-		fprojdir = function(intepreter, wfilename)
-			return wfilename:GetPath(wx.wxPATH_GET_VOLUME)
-		end,
-		fworkdir = function(intepreter)
-			local root = ide.config.path.projectdir .. "/"
-
-			return root .. "/" .. bin
 		end,
 	})
 
 	do
 		--ide.frame.bottomnotebook:RemovePage(0)
 
-		local shellbox = ide:CreateStyledTextCtrl(ide.frame.bottomnotebook, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxBORDER_NONE)
+		shellbox = ide:CreateStyledTextCtrl(ide.frame.bottomnotebook, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxBORDER_NONE)
 		ide.frame.bottomnotebook:AddPage(shellbox, TR("Remote console"), false)
-
-		GOLUWA_SHELLBOX = shellbox
 
 		-- Copyright 2011-15 Paul Kulchenko, ZeroBrane LLC
 		-- authors: Luxinia Dev (Eike Decker & Christoph Kubisch)
@@ -365,8 +353,6 @@ function PLUGIN:onRegister()
 
 		function out:Print(...) return DisplayShell(...) end
 		function out:Write(...) return shellPrint(OUTPUT_MARKER, concat("", ...), false) end
-
-		CONSOLE_OUT = DisplayShell
 
 		local function executeShellCode(tx)
 			if tx == nil or tx == '' then return end
