@@ -29,8 +29,9 @@ function META:Initialize()
 		self.binary_font_data = data
 
 		local face = ffi.new("struct FT_FaceRec_ * [1]")
+		local code = freetype.NewMemoryFace(surface.freetype_lib[0], data, #data, 0, face)
 
-		if freetype.NewMemoryFace(surface.freetype_lib[0], data, #data, 0, face) == 0 then
+		if code == 0 then
 			self.face_ref = face
 			face = face[0]
 			self.face = face
@@ -44,7 +45,11 @@ function META:Initialize()
 
 			self:OnLoad()
 		else
-			error("unable to initialize font")
+			local err = freetype.ErrorCodeToString(code) or code
+			if err == "unknown file format" then
+				return false, "unknown format"
+			end
+			error("unable to initialize font: " .. err)
 		end
 	end
 
