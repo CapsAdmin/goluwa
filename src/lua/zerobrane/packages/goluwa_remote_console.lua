@@ -12,35 +12,6 @@ function PLUGIN:onIdle()
 			self.connected = true
 		end
 	end
-
-	if not self.connected then return end
-
-	local res = self.socket:receive("*line")
-
-	if res and res ~= "" then
-		GetEditor():UserListShow(1, res)
-	else
-		--GetEditor():AutoCompCancel()
-	end
-end
-
-function PLUGIN:onInterpreterLoad(interpreter)
-	if interpreter:GetFileName() == "goluwa" then
-
-		local obj = wx.wxFileName("../../")
-		obj:Normalize()
-		local project_dir = obj:GetFullPath()
-
-		if ide.config.path.projectdir ~= project_dir then
-			ProjectUpdateProjectDir(project_dir)
-		end
-
-		if #ide:GetDocuments() == 0 then
-			LoadFile(ide.config.path.projectdir .. "/src/lua/examples/hello_world.lua")
-		end
-	else
-		ProjectSetInterpreter("goluwa")
-	end
 end
 
 function PLUGIN:onRegister()
