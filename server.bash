@@ -7,5 +7,6 @@ export SOUND=0
 export CURSES=0
 export WINDOW=0
 export ARGS="{'host'}"
+export IDE=
 
 bash src/cli/launch_linux.bash
