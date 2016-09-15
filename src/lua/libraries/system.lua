@@ -132,7 +132,7 @@ function system.ExecuteArgs(args)
 
 	if args then
 		for _, arg in pairs(args) do
-			commands.RunString(tostring(arg))
+			commands.RunString(tostring(arg), nil, true, true)
 		end
 	end
 end
