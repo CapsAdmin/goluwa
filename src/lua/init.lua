@@ -1,5 +1,7 @@
 local profile_start_time = os.clock()
 
+io.stdout:setvbuf("no")
+
 do
 	-- force lookup modules in current directory rather than system
 	if jit.os ~= "Windows" then
