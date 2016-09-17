@@ -203,8 +203,8 @@ function PLUGIN:Setup()
 	"                    h.i.        "};
 
 	return {
-		setup_console("server", "Server", jit.os ~= "Windows" and "bash server.bash" or "src/cli/server.bat", server_icon),
-		setup_console("client", "Client", jit.os ~= "Windows" and "bash client.bash" or "src/cli/client.bat", client_icon, function(console, key, mod)
+		setup_console("server", "Server", jit.os ~= "Windows" and "bash server.bash" or "src\\cli\\server.bat", server_icon),
+		setup_console("client", "Client", jit.os ~= "Windows" and "bash client.bash" or "src\\cli\\client.bat", client_icon, function(console, key, mod)
 			if (key == wx.WXK_F5 or key == wx.WXK_F6) then
 				if mod == wx.wxMOD_SHIFT then
 					console:Stop()
