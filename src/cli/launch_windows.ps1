@@ -1,6 +1,6 @@
 function PSScriptRoot { $MyInvocation.ScriptName | Split-Path }
 
-function download([string]$url, [string]$loc)
+function download($url, $loc)
 {
 	Write-Output "downloading binaries from $url to $loc"
 	
@@ -8,14 +8,12 @@ function download([string]$url, [string]$loc)
 	Remove-Item "$loc.zip" -ErrorAction SilentlyContinue -Confirm:$false -Recurse:$true
 
 	
-	if (Get-Command Invoke-WebRequest -CommandType cmdlet -errorAction SilentlyContinue)
-	{
-		Invoke-WebRequest "$url" -OutFile "$loc"
-	}
-	else
-	{
-		$client = new-object System.Net.WebClient
-		$client.DownloadFile( $url, $loc )
+	if (Get-Module -ListAvailable -Name BitsTransfer) {
+		Import-Module BitsTransfer
+		Start-BitsTransfer -Source $url -Destination $loc
+		echo "LOL!!!!"
+	} else {
+		#(New-Object System.Net.WebClient).DownloadFile($url, $loc)
 	}
 }
 
