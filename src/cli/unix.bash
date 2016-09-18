@@ -79,7 +79,7 @@ if [ "$1" == "launch"  ] || [ "$1" == "" ]; then
 
 	#if we don't have binaries get them from github
 	if [ ! -f "bin/${OS}_${ARCH}/luajit" ]; then
-		wget "https://github.com/CapsAdmin/goluwa/releases/download/${OS}-binaries/${ARCH}.zip" -O temp.zip
+		curl "https://github.com/CapsAdmin/goluwa/releases/download/${OS}-binaries/${ARCH}.zip" -O "temp.zip"
 		mkdir "bin/${OS}_${ARCH}"
 		unzip temp.zip -d "bin/${OS}_${ARCH}"
 		rm temp.zip
