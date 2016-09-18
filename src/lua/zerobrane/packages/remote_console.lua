@@ -284,6 +284,8 @@ function PLUGIN:StopProcess(id)
 	end
 end
 
+local MAKE_ID = NewID()
+
 function PLUGIN:onRegister()
 	self.consoles = {}
 
@@ -322,6 +324,18 @@ function PLUGIN:onRegister()
 	end
 
 	tb:Realize()
+
+	if jit.os ~= "Windows" then
+		local menu = ide:FindTopMenu("&Project")
+		menu:Append(MAKE_ID, "Make")
+
+		ide:GetMainFrame():Connect(MAKE_ID, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+			ide:GetOutput():SetFocus()
+			ide:ExecuteCommand('make', ide:GetDocument(ide:GetEditor()).filePath:match("(.+/)"), function(s)
+				ide:GetOutput():Print(s)
+			end)
+		end)
+	end
 end
 
 function PLUGIN:onUnregister()
