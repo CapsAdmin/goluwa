@@ -37,44 +37,6 @@ if [ "$1" == "ide" ]; then
 	./zbstudio.sh -cfg ../../src/lua/zerobrane/config.lua
 fi
 
-if [ "$1" == "build" ]; then
-	ROOT_DIR=./../..
-	BUILD_DIR=$ROOT_DIR/data/bin/src
-	OUT_DIR=$ROOT_DIR/data/bin/$OS_$ARCH
-
-	mkdir -p "$BUILD_DIR"
-
-	mkdir -p "$OUT_DIR"
-	git clone https://github.com/CapsAdmin/ffibuild $BUILD_DIR/ffibuild --depth 1
-	make -C $BUILD_DIR/ffibuild
-
-	cp "$BUILD_DIR/ffibuild/LuaJIT/src/luajit" "$OUT_DIR/."
-	yes | cp src/luajit ../luajit
-	yes | cp "$BUILD_DIR/ffibuild/LuaJIT/src/jit/*" "$OUT_DIR/jit/"
-	for file in $BUILD_DIR/ffibuild/examples/*/*lib*.*; do
-		cp "${file}" "$OUT_DIR/.";
-	done
-
-	mkdir -p "$OUT_DIR/socket"
-	mkdir -p "$OUT_DIR/mime"
-
-	git clone https://github.com/diegonehab/luasocket $BUILD_DIR/luasocket --depth 1
-	git clone https://github.com/brunoos/luasec $BUILD_DIR/luasec --depth 1
-
-	if ["$OS" == "osx"]; then
-		target=macosx
-	else
-		target=$OS
-	fi
-
-	make $target -C $BUILD_DIR/luasocket MYCFLAGS="-I$(realpath $BUILD_DIR/ffibuild/LuaJIT/src)" MYLDFLAGS="-l:libluajit.a -L$(realpath $BUILD_DIR/ffibuild/LuaJIT/src)"
-	make $target -C $BUILD_DIR/luasec INC_PATH="-I$(realpath $BUILD_DIR/ffibuild/LuaJIT/src)" LIB_PATH="-l:libluajit.a -L$(realpath $BUILD_DIR/ffibuild/LuaJIT/src)"
-
-	cp "$BUILD_DIR/luasec/src/ssl.so" "$OUT_DIR/ssl.so"
-	cp "$BUILD_DIR/luasocket/src/socket*.so" "$OUT_DIR/socket/core.so"
-	cp "$BUILD_DIR/luasocket/src/mime*.so" "$OUT_DIR/mime/core.so"
-fi
-
 if [ "$1" == "launch"  ] || [ "$1" == "" ]; then
 
 	#if we don't have binaries get them from github
