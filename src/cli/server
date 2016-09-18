@@ -8,4 +8,4 @@ export CURSES=0
 export WINDOW=0
 export ARGS="${ARGS:="{'host'}"}"
 
-bash src/cli/unix.bash launch $*
+bash unix.bash launch $*
