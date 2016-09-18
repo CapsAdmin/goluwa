@@ -5,8 +5,26 @@ cd "$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit
 mkdir -p ../../data/bin
 cd ../../data/
 
-ARCH=$(case $(uname -m) in x86_64) echo x64 ;;i[36]86) echo x86 ;; arm*) echo arm ;; esac)
-OS=$(case $(uname) in Darwin) echo osx ;;Linux) echo linux;; esac)
+case $(uname -m) in
+	x86_64)
+		ARCH=x64
+	;;
+	i[36]86)
+		ARCH=x86
+	;;
+	arm*)
+		ARCH=arm
+	;;
+esac
+
+case $(uname) in
+	Darwin)
+		OS=osx
+	;;
+	*)
+		OS=linux
+	;;
+esac
 
 if [ "$1" == "ide" ]; then
 	if [ -d ./ide ]; then
@@ -43,7 +61,12 @@ if [ "$1" == "build" ]; then
 	git clone https://github.com/diegonehab/luasocket $BUILD_DIR/luasocket --depth 1
 	git clone https://github.com/brunoos/luasec $BUILD_DIR/luasec --depth 1
 
-	target=$(case $(OS) in osx) echo macosx ;;*) echo "$OS";; esac)
+	if ["$OS" == "osx"]; then
+		target=macosx
+	else
+		target=$OS
+	fi
+
 	make $target -C $BUILD_DIR/luasocket MYCFLAGS="-I$(realpath $BUILD_DIR/ffibuild/LuaJIT/src)" MYLDFLAGS="-l:libluajit.a -L$(realpath $BUILD_DIR/ffibuild/LuaJIT/src)"
 	make $target -C $BUILD_DIR/luasec INC_PATH="-I$(realpath $BUILD_DIR/ffibuild/LuaJIT/src)" LIB_PATH="-l:libluajit.a -L$(realpath $BUILD_DIR/ffibuild/LuaJIT/src)"
 
