@@ -82,9 +82,7 @@ if($arg -eq "ide") {
 	.\zbstudio.exe -cfg ../../src/lua/zerobrane/config.lua
 }
 
-if ($arg -eq "launch" -Or $arg -eq "") {
-	Write-Output "launching"
-	
+if ($arg -eq "launch" -Or $arg -eq "") {	
 	$bin_dir = "bin\windows_$ARCH"
 
 	if (!(Test-Path "$bin_dir\luajit.exe")) {	
@@ -95,5 +93,13 @@ if ($arg -eq "launch" -Or $arg -eq "") {
 
 	Set-Location $pwd\$bin_dir\
 	
+	Add-Type -Name ConsoleUtils -Namespace Foo -MemberDefinition @'
+    [DllImport("Kernel32.dll")] public static extern IntPtr GetConsoleWindow();
+    [DllImport("User32.dll")] public static extern bool ShowWindow(IntPtr hWnd, Int32 nCmdShow);
+'@
+
+	$window = [Foo.ConsoleUtils]::GetConsoleWindow()
+	[Foo.ConsoleUtils]::ShowWindow($window, 0)
 	.\luajit.exe ../../../src/lua/init.lua
+	[Foo.ConsoleUtils]::ShowWindow($window, 1)
 }
