@@ -156,6 +156,9 @@ function ffibuild.GetMetaData(header)
 			-- remove volatile
 			header = header:gsub(" volatile ", " ")
 
+			-- clang specific
+			header = header:gsub(" _Nullable ", " ")
+
 		-- remove inline functions
 		header = header:gsub(" static __inline.-%b().-%b{}", "")
 		header = header:gsub(" static inline.-%b().-%b{}", "")
