@@ -1051,6 +1051,11 @@ do -- type metatables
                             end
                         end
 
+						if declaration == "union" or declaration == "struct" then
+							declaration = declaration .. " " .. name
+							name = "unknown_" .. i
+						end
+
 						type = ffibuild.CreateType("type", declaration)
 
                         -- TODO
