@@ -188,6 +188,27 @@ function ffibuild.GetMetaData(header)
 			line = line:gsub("%) %)", ")")
 			return line
 		end)
+
+		-- extern int foo, bar, faz;
+		-- >>
+		-- extern int foo;
+		-- extern int bar;
+		-- extern int faz;
+		header = header:gsub("extern (.-);", function(s)
+			if s:find(",", nil, true) and not s:find("(", nil, true) and not s:find("{", nil, true) then
+				local names = {}
+				s = s .. ", "
+				s = s:gsub(" ([%a%d_]+) ,", function(name)
+					table.insert(names, name)
+					return ""
+				end)
+				local new_str = ""
+				for _, name in ipairs(names) do
+					new_str = new_str .. " extern " .. s .. name .. " ;\n"
+				end
+				return new_str:sub(2, -2) -- get rid of exessive whitespace
+			end
+		end)
 	end
 
 	local function is_function(str) return str:find("^.-%b() %b() $") end
