@@ -1265,14 +1265,11 @@ do -- type metatables
 					if meta_data and meta_data.typedefs[declaration] then
 						type = meta_data.typedefs[declaration]:GetCopy()
 						type.prev_type = ffibuild.CreateType("type", declaration, array_size)
-						print(declaration, line)
 					else
 						type = ffibuild.CreateType("type", declaration, array_size)
 					end
 					type.array_size = type.array_size or array_size
 					type.name = name
-
-if line:find("imageUsage") then print(declaration, name, array_size, type.name, type:GetDeclaration(), meta_data.typedefs[declaration]:GetDeclaration(), meta_data.typedefs[declaration]:GetCopy():GetDeclaration()) end
 
 					table.insert(out, type)
 				end
