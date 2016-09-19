@@ -11,3 +11,4 @@ clean:
 	rm -f lib*.lua
 	rm -rf repo
 	rm -f lib*.so
+	rm -f lib*.dylib

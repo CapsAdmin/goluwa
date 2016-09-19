@@ -4,10 +4,12 @@ io.stdout:setvbuf("no")
 
 do
 	-- force lookup modules in current directory rather than system
-	if jit.os ~= "Windows" then
-		package.cpath = "./?.so"
-	else
+	if jit.os == "Windows" then
 		package.cpath = "./?.dll"
+	elseif jit.os == "OSX" then
+		package.cpath = "./?.dylib"
+	else
+		package.cpath = "./?.so"
 	end
 
 	package.path = "./?.lua"
