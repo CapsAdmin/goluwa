@@ -18,12 +18,12 @@ local function execute(str)
 end
 
 execute(("make %s -C repo/luasec INC_PATH=%q LIB_PATH=%q"):format(target, inc, lib))
-execute("cp repo/luasec/src/ssl" .. ext .. " \"" .. bin_dir .. "/ssl" .. ext .. "\"")
+execute("cp repo/luasec/src/ssl.so \"" .. bin_dir .. "/ssl" .. ext .. "\"")
 
 execute("mkdir -p \"" .. bin_dir .. "/socket\"")
 execute("mkdir -p \"" .. bin_dir .. "/mime\"")
 
 execute(("make %s -C repo/luasocket MYCFLAGS=%q MYLDFLAGS=%q"):format(target, inc, lib))
 
-execute("cp repo/luasocket/src/socket*" .. ext .. " \"" .. bin_dir .. "/socket/core" .. ext .. "\"")
-execute("cp repo/luasocket/src/mime*" .. ext .. " \"" .. bin_dir .. "/mime/core" .. ext .. "\"")
+execute("cp repo/luasocket/src/socket*.so \"" .. bin_dir .. "/socket/core" .. ext .. "\"")
+execute("cp repo/luasocket/src/mime*.so \"" .. bin_dir .. "/mime/core" .. ext .. "\"")
