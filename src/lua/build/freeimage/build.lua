@@ -26,32 +26,34 @@ do -- enums
 	for basic_type, type in pairs(meta_data.enums) do
 		for i, enum in ipairs(type.enums) do
 			local friendly = enum.key:match("^FI(.+)")
-			if friendly:find("^T_") then
-				friendly = friendly:gsub("^T", "IMAGE_TYPE")
-			elseif friendly:find("^CC_") then
-				friendly = friendly:gsub("^CC", "COLOR_CHANNEL")
-			elseif friendly:find("^C_") then
-				friendly = friendly:gsub("^C", "COLOR_TYPE")
-			elseif friendly:find("^F_") then
-				friendly = friendly:gsub("^F", "FORMAT")
-			elseif friendly:find("^Q_") then
-				friendly = friendly:gsub("^Q", "QUANTIZE")
-			elseif friendly:find("^LTER_") then
-				friendly = friendly:gsub("^LTER", "IMAGE_FILTER")
-			elseif friendly:find("^D_") then
-				friendly = friendly:gsub("^D", "DITHER")
-			elseif friendly:find("^MD_") then
-				friendly = friendly:gsub("^MD", "METADATA")
-			elseif friendly:find("^DT_") then
-				friendly = friendly:gsub("^DT", "METADATA_TYPE")
-			elseif friendly:find("^JPEG_OP_") then
-				friendly = friendly:gsub("^JPEG_OP", "JPEG_OPERATION")
-			elseif friendly:find("^JPEG_OP_") then
-				friendly = friendly:gsub("^JPEG_OP", "JPEG_OPERATION")
-			elseif friendly:find("^TMO_") then
-				friendly = friendly:gsub("^TMO", "TONEMAP_OPERATOR")
+			if friendly then
+				if friendly:find("^T_") then
+					friendly = friendly:gsub("^T", "IMAGE_TYPE")
+				elseif friendly:find("^CC_") then
+					friendly = friendly:gsub("^CC", "COLOR_CHANNEL")
+				elseif friendly:find("^C_") then
+					friendly = friendly:gsub("^C", "COLOR_TYPE")
+				elseif friendly:find("^F_") then
+					friendly = friendly:gsub("^F", "FORMAT")
+				elseif friendly:find("^Q_") then
+					friendly = friendly:gsub("^Q", "QUANTIZE")
+				elseif friendly:find("^LTER_") then
+					friendly = friendly:gsub("^LTER", "IMAGE_FILTER")
+				elseif friendly:find("^D_") then
+					friendly = friendly:gsub("^D", "DITHER")
+				elseif friendly:find("^MD_") then
+					friendly = friendly:gsub("^MD", "METADATA")
+				elseif friendly:find("^DT_") then
+					friendly = friendly:gsub("^DT", "METADATA_TYPE")
+				elseif friendly:find("^JPEG_OP_") then
+					friendly = friendly:gsub("^JPEG_OP", "JPEG_OPERATION")
+				elseif friendly:find("^JPEG_OP_") then
+					friendly = friendly:gsub("^JPEG_OP", "JPEG_OPERATION")
+				elseif friendly:find("^TMO_") then
+					friendly = friendly:gsub("^TMO", "TONEMAP_OPERATOR")
+				end
+				lua =  lua .. "\t" .. friendly .. " = ffi.cast(\""..basic_type.."\", \""..enum.key.."\"),\n"
 			end
-			lua =  lua .. "\t" .. friendly .. " = ffi.cast(\""..basic_type.."\", \""..enum.key.."\"),\n"
 		end
 	end
 	lua = lua .. "}\n"
