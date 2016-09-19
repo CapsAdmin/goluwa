@@ -7,7 +7,7 @@ do
 	if jit.os == "Windows" then
 		package.cpath = "./?.dll"
 	elseif jit.os == "OSX" then
-		package.cpath = "./?.dylib"
+		package.cpath = "./?.dylib;./?.so"
 	else
 		package.cpath = "./?.so"
 	end
@@ -288,7 +288,7 @@ if GRAPHICS then
 		gui = include("lua/libraries/graphics/gui/gui.lua")
 		include("lua/libraries/graphics/particles.lua")
 	end
-	
+
 	if not render or not window then
 		GRAPHICS = nil
 		WINDOW = nil
