@@ -90,23 +90,23 @@ do
 
 		-- number of attempts to compile a side trace
 		-- default = 4
-		tryside = 4,
+		tryside = 1,
 
 		-- maximum unroll factor for instable loops
 		-- default = 4
-		instunroll = 4,
+		instunroll = 999999,
 
 		-- maximum unroll factor for loop ops in side traces
 		-- default = 15
-		loopunroll = 15,
+		loopunroll = 999999,
 
 		-- maximum unroll factor for pseudo-recursive calls
 		-- default = 3
-		callunroll = 3,
+		callunroll = 999999,
 
 		-- minimum unroll factor for true recursion
 		-- default = 2
-		recunroll = 2,
+		recunroll = 0,
 
 		-- maximum total size of all machine code areas in KBytes
 		-- default = 512
