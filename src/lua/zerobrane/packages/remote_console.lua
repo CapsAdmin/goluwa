@@ -4,6 +4,8 @@ local PLUGIN = {
 	author = "CapsAdmin",
 	version = 0.1,
 }
+ide.config.keymap[ID.STARTDEBUG] = nil
+ide.config.keymap[ID.RUN] = nil
 
 function PLUGIN:Setup()
 	local META = {}
