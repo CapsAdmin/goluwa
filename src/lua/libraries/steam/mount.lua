@@ -362,6 +362,7 @@ end
 
 local mount_info = {
 	["gm_.+"] = {"garry's mod", "tf2", "css"},
+	["rp_.+"] = {"garry's mod", "tf2", "css"},
 	["ep1_.+"] = {"half-life 2: episode one"},
 	["ep2_.+"] = {"half-life 2: episode two"},
 	["trade_.+"] = {"half-life 2", "team fortress 2"},
