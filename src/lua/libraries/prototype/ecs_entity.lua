@@ -126,18 +126,18 @@ do -- serializing
 		end
 	end
 
-	function META:GetStorableTable()
+	function META:GetStorableTable(force)
 		local data = {self = prototype.base_metatable.GetStorableTable(self), children = {}, components = {}}
 
 		data.config = self.config
 
 		for name, component in pairs(self:GetComponents()) do
-			data.components[name] = component:GetStorableTable()
+			data.components[name] = component:GetStorableTable(force)
 		end
 
 		for _, v in ipairs(self:GetChildren()) do
-			if not v:GetHideFromEditor() then
-				table.insert(data.children, v:GetStorableTable())
+			if force or not v:GetHideFromEditor() then
+				table.insert(data.children, v:GetStorableTable(force))
 			end
 		end
 
