@@ -2,6 +2,7 @@ local scoreboard = _G.scoreboard or {}
 
 scoreboard.panel = scoreboard.panel or NULL
 scoreboard.containers = {}
+scoreboard.clients = {}
 
 input.Bind("tab", "+score", function()
 	if not scoreboard.panel:IsValid() then return end
@@ -88,6 +89,9 @@ end
 
 function scoreboard.AddClient(client)
 	local player_info = scoreboard.SetupContainer(client:GetGroup()):CreatePanel("base")
+
+	scoreboard.clients[client:GetUniqueID()] = player_info
+
 	player_info:SetHeight(30)
 	player_info:SetupLayout("top", "fill_x")
 	player_info:SetNoDraw(true)
@@ -277,6 +281,14 @@ function scoreboard.Initialize()
 end
 
 scoreboard.Initialize()
+
+event.AddListener("ClientEntered", "scoreboard", function(client)
+	scoreboard.AddClient(client)
+end)
+
+event.AddListener("ClientLeft", "scoreboard", function(nick, uid)
+	gui.RemovePanel(scoreboard.clients[uid])
+end)
 
 for _, client in ipairs(clients.GetAll()) do
 	scoreboard.AddClient(client)
