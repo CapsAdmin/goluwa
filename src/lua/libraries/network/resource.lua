@@ -120,7 +120,7 @@ function resource.Download(path, callback, on_fail, crc)
 	if not ohno then
 		local old = callback
 		callback = function(path)
-			if event.Call("ResourceDownloaded", path) ~= false then
+			if event.Call("ResourceDownloaded", path, url) ~= false then
 				if old then old(path) end
 			end
 		end
