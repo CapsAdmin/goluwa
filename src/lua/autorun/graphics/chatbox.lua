@@ -120,21 +120,21 @@ end
 chat.panel = chat.panel or NULL
 
 function chat.IsVisible()
-	return chat.panel:IsValid()
+	return chat.panel:IsValid() and chat.panel:IsVisible()
 end
 
 function chat.SetInputText(str)
-	if not chat.IsVisible() then return end
+	if not chat.panel:IsValid() then return end
 	chat.panel:SetText(str)
 end
 
 function chat.GetInputText()
-	if not chat.IsVisible() then return "" end
+	if not chat.panel:IsValid() then return "" end
 	return chat.panel:GetText()
 end
 
 function chat.GetInputPosition()
-	if not chat.IsVisible() then return 0, 0 end
+	if not chat.panel:IsValid() then return 0, 0 end
 	return chat.panel:GetPosition()
 end
 
@@ -343,6 +343,8 @@ function chat.GetPanel()
 				else
 					print("!?")
 				end
+			else
+				return false
 			end
 
 			return
@@ -358,7 +360,8 @@ function chat.GetPanel()
 		frame:Layout()
 	end
 
-	edit.OnPostDrawMenu = function()
+	edit.OnPostDrawGUI = function()
+		if not chat.IsVisible() then return end
 		if found_autocomplete and #found_autocomplete > 0 then
 			local pos = edit:GetWorldPosition()
 			autocomplete.DrawFound(pos.x, pos.y + edit:GetHeight(), found_autocomplete, nil, 2)
