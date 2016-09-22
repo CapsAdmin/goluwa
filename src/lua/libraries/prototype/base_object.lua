@@ -198,7 +198,6 @@ do -- events
 				self[func_name](self, a_, b_, c_)
 			end
 		end, {on_error = function(str)
-			logn(str)
 			self:RemoveEvent(event_type)
 		end})
 
