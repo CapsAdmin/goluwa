@@ -179,7 +179,7 @@ local replies = {
 
 function META:HandleMessage(line)
 	if line:startswith("PING :") then
-		self:PONG()
+		self:Send(line:gsub("PING", "PONG"))
 	end
 
 	local name, id, target, chanmode, str = line:match(":(.-) (.-) (.-) (.-) :(.+)")
@@ -200,7 +200,7 @@ function META:HandleMessage(line)
 		end
 		--print(name, id, target, chanmode, str)
 	else
-		local nick, username, ip, cmd, str = line:match(":(.-)!~(.-)@(.-) (.-) (.+)")
+		local nick, username, ip, cmd, str = line:match(":(.-)!(.-)@(.-) (.-) (.+)")
 
 		if nick and username and ip and cmd and str then
 			if cmd == "PRIVMSG" then
@@ -208,6 +208,7 @@ function META:HandleMessage(line)
 				if target == self:GetNick() then
 					self:OnPrivateMessage(message, nick, ip)
 				end
+				self:OnMessage(message, nick, ip)
 			elseif cmd == "JOIN" then
 				self.Users[nick] = ip or true
 				if nick == self:GetNick() then
@@ -244,6 +245,7 @@ function META:HandleMessage(line)
 end
 
 function META:OnPrivateMessage(message, nick, ip) end
+function META:OnMessage(message, nick, ip) end
 function META:OnReady() end
 function META:OnJoin(nick) end
 function META:OnPart(nick) end
