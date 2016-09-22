@@ -36,9 +36,9 @@ end
 
 chathud = chathud or {}
 chathud.font_modifiers = {
-	["...."] = {type = "font", val = "DefaultFixed"},
-	["!!!!"] = {type = "font", val = "Trebuchet24"},
-	["!!!!!11"] = {type = "font", val = "DermaLarge"},
+	--["...."] = {type = "font", val = "DefaultFixed"},
+	--["!!!!"] = {type = "font", val = "Trebuchet24"},
+	--["!!!!!11"] = {type = "font", val = "DermaLarge"},
 }
 
 chathud.emote_shortucts = chathud.emote_shortucts or {
@@ -171,17 +171,16 @@ function chathud.MouseInput(button, press, x, y)
 end
 
 event.AddListener("Chat", "chathud", function(name, str, client)
-
 	if render.IsGBufferReady() then
 		event.AddListener("PreDrawGUI", "chathud", function()
 			chathud.Draw()
 		end)
-		event.RemoveListener("PreDrawGUI", "chathud")
+		--event.RemoveListener("PreDrawGUI", "chathud")
 	else
 		event.AddListener("PreDrawGUI", "chathud", function()
 			chathud.Draw()
 		end)
-		event.RemoveListener("PreDrawGUI", "chathud")
+		--event.RemoveListener("PreDrawGUI", "chathud")
 	end
 
 	event.AddListener("MouseInput", "chathud", function(button, press)
