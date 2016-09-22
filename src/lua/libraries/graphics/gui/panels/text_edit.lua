@@ -37,6 +37,7 @@ function META:Initialize()
 	label.OnEnter = function(_, ...) self:OnEnter(...) end
 
 	self:SetCursor("ibeam")
+	self:SizeToText()
 end
 
 function META:GetMarkup()
