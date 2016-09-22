@@ -223,6 +223,9 @@ function META:Draw(max_w)
 		end
 
 		if remove_these then
+			for i in pairs(self.remove_these) do
+				self.chunks[i] = nil
+			end
 			table.clear(self.remove_these)
 			table.fixindices(self.chunks)
 			self:Invalidate()
