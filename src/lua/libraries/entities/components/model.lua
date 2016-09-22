@@ -32,11 +32,11 @@ if GRAPHICS then
 		else
 			render.Remove3DModel(self)
 		end
+		self.is_visible = b
 	end
 
 	function META:OnAdd()
 		self.tr = self:GetComponent("transform")
-		render.Add3DModel(self)
 	end
 
 	function META:OnRemove()
@@ -83,6 +83,7 @@ if GRAPHICS then
 					self:RemoveMesh(mesh)
 				end
 			end, self)
+			render.Add3DModel(self)
 		end
 
 		function META:RemoveMesh(mesh)
@@ -91,6 +92,9 @@ if GRAPHICS then
 					table.remove(self.sub_models, i)
 					break
 				end
+			end
+			if not self.sub_models[1] then
+				render.Remove3DModel(self)
 			end
 		end
 

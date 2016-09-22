@@ -1,17 +1,23 @@
 local render = (...) or _G.render
 
 render.scene_3d = render.scene_3d or {}
+local scene_keyval = utility.CreateWeakTable()
 
-local needs_sorting = false
+local needs_sorting = true
 
 function render.Add3DModel(obj)
-	table.insert(render.scene_3d, obj)
-	needs_sorting = true
+	if not scene_keyval[obj] then
+		table.insert(render.scene_3d, obj)
+		needs_sorting = true
+		scene_keyval[obj] = obj
+	end
 end
 
 function render.Remove3DModel(obj)
-	table.removevalue(render.scene_3d, obj)
-	needs_sorting = true
+	if scene_keyval[obj] then
+		table.removevalue(render.scene_3d, obj)
+		needs_sorting = true
+	end
 end
 
 function render.Sort3DScene()
