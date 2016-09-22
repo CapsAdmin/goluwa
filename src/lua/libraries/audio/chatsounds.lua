@@ -145,7 +145,7 @@ local function dump_script(out)
 end
 
 function chatsounds.CreateSound(path, udata)
-	local self = {csp = Sound(path), udata = udata, path = path}
+	local self = {csp = audio.CreateSource(path), udata = udata, path = path}
 
 	function self:Play()
 		self.csp:Play()
@@ -153,7 +153,6 @@ function chatsounds.CreateSound(path, udata)
 
 	function self:Stop()
 		self.csp:Stop()
-		self.csp:Remove()
 	end
 
 	function self:SetPitch(pitch)
@@ -436,6 +435,46 @@ do -- list parsing
 		table.sort(list, function(a, b) return #a < #b end)
 
 		autocomplete.AddList("chatsounds", list)
+	end
+
+	function chatsounds.BuildFromGithub()
+		resource.Download("https://api.github.com/repos/Metastruct/garrysmod-chatsounds/git/trees/master?recursive=1", function(path)
+			local tree = {}
+			local list = {}
+
+
+			local str = vfs.Read(path)
+			for path in str:gmatch('"path": "(sound/chatsounds/autoadd/.-)"') do
+				local realm, trigger = path:match(".+/(.-)/(.+)%.")
+				path = "https://raw.githubusercontent.com/Metastruct/garrysmod-chatsounds/master/" .. path
+				if realm then
+					tree[realm] = tree[realm] or {}
+					list[realm] = list[realm] or {}
+
+					tree[realm][trigger] = {path}
+					list[realm][trigger] = path
+				end
+			end
+
+			chatsounds.list = chatsounds.list or {}
+			table.merge(chatsounds.list, list)
+
+			tree = chatsounds.TableToTree(tree)
+			chatsounds.tree = chatsounds.tree or {}
+			table.merge(chatsounds.tree, tree)
+
+			local list = {}
+
+			for _, val in pairs(chatsounds.list) do
+				for key in pairs(val) do
+					table.insert(list, key)
+				end
+			end
+
+			table.sort(list, function(a, b) return #a < #b end)
+
+			autocomplete.AddList("chatsounds", list)
+		end)
 	end
 
 	local function clean_sentence(sentence)
@@ -1526,6 +1565,7 @@ function chatsounds.Initialize()
 	--chatsounds.BuildTree("custom")
 
 	--chatsounds.BuildFromAutoadd()
+	chatsounds.BuildFromGithub()
 
 	event.AddListener("ResourceDownloaded", function(path)
 		if path:find("chatsounds/lists/", nil, true) then
@@ -1544,6 +1584,7 @@ function chatsounds.Shutdown()
 	autocomplete.RemoveList("chatsounds")
 	event.RemoveListener("Update", "chatsounds")
 end
+
 
 --chatsounds.Say("hello no yes that=0.5 (hello wow yeah hello hi)%30 where is the%50 where is oh no feelings%30 princess yo%50")
 --chatsounds.Say("o%50=0.2 o%50=0.2 o%50=0.2 o%50=0.2 o%50=0.2 o%50=0.2 o%150=0.2 o%160=0.2 o%75=0.2 o%150=0.2 o%160=0.2 o%75=0.2 o%150=0.2 o%160=0.2 o%75=0.2o%150=0.2 o%160=0.2 o%75=0.2")
