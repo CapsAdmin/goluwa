@@ -37,7 +37,7 @@ function vfs.MonitorFileInclude(source, target)
 	end)
 end
 
-function vfs.MonitorEverything(b)
+function vfs.MonitorIncludedLuaScripts(b)
 	if not b then
 		event.RemoveTimer("vfs_monitor_everything")
 		return
