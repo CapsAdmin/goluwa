@@ -1,2 +1,3 @@
-local snd = audio.CreateSource("https://chatsoundsforgmod.googlecode.com/svn/trunk/sound/chatsounds/autoadd/Eggman/finish%20it.ogg")
+
+local snd = audio.CreateSource("https://raw.githubusercontent.com/Metastruct/garrysmod-chatsounds/master/sound/chatsounds/autoadd/eggman/finish it.ogg")
 snd:Play()
