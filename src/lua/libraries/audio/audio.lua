@@ -465,8 +465,10 @@ do -- source
 
 					-- in case it's instantly loaded and OnLoad is defined the same frame
 					event.Delay(0, function()
-						if self:IsValid() and self.OnLoad then
-							self:OnLoad(info)
+						if self:IsValid() then
+							if self.OnLoad then
+								self:OnLoad(info)
+							end
 							if self.play_when_ready then
 								self:Play()
 								self.play_when_ready = nil
