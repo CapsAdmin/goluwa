@@ -58,7 +58,7 @@ do -- constants
 		LOOP = true,
 		WINDOW = true,
 		NULL_OPENGL = false,
-		PHYSICS = true,
+		PHYSICS = false,
 	}
 
 	for key, default in pairs(env_vars) do
