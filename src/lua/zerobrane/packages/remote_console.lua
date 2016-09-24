@@ -82,12 +82,23 @@ function PLUGIN:Setup()
 			run_string = function(console, str)
 				console.socket:Send(str)
 			end,
+			run_script = function(console, path)
+				console:Print("loading: ", path)
+				console:run_string("local path = [["..path.."]] assert(loadfile(path))() print('script ran successfully')")
+			end,
 			print = function(console, ...)
 				console:Print(...)
 			end,
 			on_update = function(console)
 				if console.socket then
 					console.socket:Update()
+				end
+			end,
+			on_save = function(console, path)
+				if path:lower():find("^.+/"..id.."/[^/]+$") then
+					console:run_script(path)
+				elseif not path:lower():find("^.+/server/[^/]+$") and not path:lower():find("^.+/client/[^/]+$") then
+					console:run_script(path)
 				end
 			end,
 			on_key = on_key,
@@ -242,6 +253,8 @@ function PLUGIN:StartProcess(id)
 		wx.wxSetEnv(k, v)
 	end
 
+	local tb = ide:GetToolBar()
+
 	console.pid = CommandLineRun(
 		console.cmd_line,
 		console.working_directory,
@@ -250,15 +263,19 @@ function PLUGIN:StartProcess(id)
 		function(...) console:print(...) end,
 		"luacraft_" .. id,
 		function()
-			console:print("stopped")
-			ide:GetToolBar():ToggleTool(console.wx_id, false)
-			ide:GetToolBar():Realize()
+			tb:ToggleTool(console.wx_start_id, false)
+			tb:EnableTool(console.wx_run_id, false)
+			tb:Realize()
+			ide:GetUIManager():Update()
+
 			self:StopProcess(console.id)
 		end
 	)
 
-	ide:GetToolBar():ToggleTool(console.wx_id, true)
-	ide:GetToolBar():Realize()
+	tb:ToggleTool(console.wx_start_id, true)
+	tb:EnableTool(console.wx_run_id, true)
+	tb:Realize()
+	ide:GetUIManager():Update()
 
 	console.shellbox:SetFocus()
 end
@@ -267,16 +284,18 @@ function PLUGIN:StopProcess(id)
 	local console = self.consoles[id]
 
 	if self:IsRunning(console.id) then
-		console:print("stopping " .. console.name .. "...")
-
 		local pid = self.consoles[id].pid
+		console:print("stopping " .. console.name .. (" (pid: %d) ... "):format(pid))
+		if jit.os == "Windows" then
+			os.execute("taskkill /F /T /PID " .. pid)
+		end
 		local ret = wx.wxProcess.Kill(pid, wx.wxSIGKILL, wx.wxKILL_CHILDREN)
 		if ret == wx.wxKILL_OK then
-			ide:Print(("stopped process (pid: %d)."):format(pid))
+			console:print(("stopped process (pid: %d)."):format(pid))
 		elseif ret ~= wx.wxKILL_NO_PROCESS then
 			wx.wxMilliSleep(250)
 			if wx.wxProcess.Exists(pid) then
-				ide:Print(("unable to stop process (pid: %d), code %d."):format(pid, ret))
+				console:print(("unable to stop process (pid: %d), code %d."):format(pid, ret))
 			end
 		end
 
@@ -292,27 +311,28 @@ function PLUGIN:onRegister()
 	self.consoles = {}
 
 	local tb = ide:GetToolBar()
+	tb:ClearTools()
 
 	for _, info in ipairs(self:Setup()) do
 		local console = {}
 
 		for k,v in pairs(info) do console[k] = v end
 
-		console.wx_id = NewID()
+		console.wx_start_id = NewID()
 		console.Start = function() self:StartProcess(console.id) end
 		console.Stop = function() self:StopProcess(console.id) end
 		console.IsRunning = function() return self:IsRunning(console.id) end
 		console.Print = function(_, ...) console.shellbox:Print(...) end
 
-		tb:AddTool(console.wx_id, console.icon, console.icon, true)
-		ide:GetMainFrame():Connect(console.wx_id, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
+		tb:AddTool(console.wx_start_id, console.icon, console.icon, true)
+		ide:GetMainFrame():Connect(console.wx_start_id, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
 			if event:IsChecked() then
 				self:StartProcess(console.id)
 			else
 				self:StopProcess(console.id)
 			end
 		end)
-		tb:AddLabel(console.wx_id, console.name)
+		tb:AddLabel(console.wx_start_id, "Start " .. console.name)
 
 		console.shellbox = self:CreateRemoteConsole(console.name .. " Console", function(str)
 			if self:IsRunning(console.id) then
@@ -325,7 +345,25 @@ function PLUGIN:onRegister()
 		self.consoles[console.id] = console
 	end
 
+	tb:AddSeparator()
+
+	for _, console in pairs(self.consoles) do
+		console.wx_run_id = NewID()
+
+		tb:AddTool(console.wx_run_id, "", console.icon)
+		ide:GetMainFrame():Connect(console.wx_run_id, wx.wxEVT_COMMAND_MENU_SELECTED, function(event)
+			if self:IsRunning(console.id) then
+				local path = ide:GetDocument(ide:GetEditor()).filePath:gsub("\\", "/")
+				path = path:match("shared/lua/(.+)") or path
+				console:run_script(path)
+			end
+		end)
+		tb:AddLabel(console.wx_run_id, "Run On " .. console.name)
+		tb:EnableTool(console.wx_run_id, false)
+	end
+
 	tb:Realize()
+	ide:GetUIManager():Update()
 
 	if jit.os ~= "Windows" then
 		local menu = ide:FindTopMenu("&Project")
@@ -368,6 +406,15 @@ function PLUGIN:onIdle()
 	end
 end
 
+function PLUGIN:onEditorSave(editor)
+	local path = ide:GetDocument(editor).filePath:gsub("\\", "/")
+
+	for _, console in pairs(self.consoles) do
+		if console.on_save and self:IsRunning(console.id) then
+			console:on_save(path)
+		end
+	end
+end
 
 function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 	--ide.frame.bottomnotebook:RemovePage(0)

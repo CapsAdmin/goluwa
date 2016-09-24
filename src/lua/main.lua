@@ -55,7 +55,6 @@ commands.RunString(vfs.Read("cfg/autoexec.cfg"))
 
 system._CheckCreatedEnv()
 
-vfs.MonitorEverything(true)
 system.ExecuteArgs()
 
 llog("initializing libraries took %s seconds\n", os.clock() - profile_start_time)
