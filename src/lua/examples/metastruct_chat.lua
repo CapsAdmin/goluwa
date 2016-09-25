@@ -1,4 +1,5 @@
 local client = irc_socket or sockets.CreateIRCClient()
+client.debug = true
 client:SetNick(clients.GetLocalClient():GetNick() .. "_GoluwaClient")
 
 local players = {}
@@ -38,7 +39,7 @@ end
 
 if not irc_socket then
 	client:Connect("threekelv.in")
-	event.Delay(0.5, function() client:Join("#metastruct") end)
+	event.Delay(0.5, function() client:Join("#metastruct") chatsounds.Initialize() end)
 end
 
 event.AddListener("ClientChat", "metastruct_chat", function(client, msg)
@@ -46,7 +47,5 @@ event.AddListener("ClientChat", "metastruct_chat", function(client, msg)
 		irc_socket:Send("PRIVMSG #metastruct :" .. msg)
 	end
 end)
-
-chatsounds.Initialize()
 
 irc_socket = client
