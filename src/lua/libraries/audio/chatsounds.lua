@@ -399,23 +399,23 @@ do -- list parsing
 						table.insert(words, word)
 					end
 
-					local prev = tree
+					local next = tree
 					local max = #words
 
 					for i, word in ipairs(words) do
-						if not prev[word] then prev[word] = {} end
+						if not next[word] then next[word] = {} end
 
 						if i == max then
-							prev[word].SOUND_FOUND = true
-							prev[word].LEVEL = max
-							prev[word].data = prev[word].data or {}
-							prev[word].data.trigger = prev[word].data.trigger or trigger
-							prev[word].data.realms = prev[word].data.realms or {}
+							next[word].SOUND_FOUND = true
+							next[word].LEVEL = max
+							next[word].data = next[word].data or {}
+							next[word].data.trigger = next[word].data.trigger or trigger
+							next[word].data.realms = next[word].data.realms or {}
 
-							prev[word].data.realms[realm] = {sounds = data, realm = realm}
+							next[word].data.realms[realm] = {sounds = data, realm = realm}
 						end
 
-						prev = prev[word]
+						next = next[word]
 					end
 				end
 			end
@@ -938,26 +938,26 @@ do -- list parsing
 					table.insert(words, word)
 				end
 
-				local prev = tree
+				local next = tree
 				local max = #words
 
 				for i, word in ipairs(words) do
-					if not prev[word] then
-						prev[word] = {}
+					if not next[word] then
+						next[word] = {}
 					end
 
 					if i == max then
-						prev[word].SOUND_FOUND = true
-						prev[word].LEVEL = max
-						prev[word].data = prev[word].data or {trigger = trigger, realms = {}}
-						if prev[word].data.realms then
-							prev[word].data.realms[realm] = {sounds = sounds, realm = realm}
+						next[word].SOUND_FOUND = true
+						next[word].LEVEL = max
+						next[word].data = next[word].data or {trigger = trigger, realms = {}}
+						if next[word].data.realms then
+							next[word].data.realms[realm] = {sounds = sounds, realm = realm}
 						else
 							logn(word) -- ???
 						end
 					end
 
-					prev = prev[word]
+					next = next[word]
 				end
 			end
 		end
@@ -1043,20 +1043,20 @@ do -- list parsing
 			table.insert(words, word)
 		end
 
-		local prev = tree
+		local next = tree
 		local max = #words
 		for i, word in ipairs(words) do
-			if not prev[word] then prev[word] = {} end
+			if not next[word] then next[word] = {} end
 
 			if i == max then
-				prev[word].SOUND_FOUND = true
-				prev[word].LEVEL = max
-				prev[word].data = prev[word].data or {trigger = trigger, realms = {}}
+				next[word].SOUND_FOUND = true
+				next[word].LEVEL = max
+				next[word].data = next[word].data or {trigger = trigger, realms = {}}
 
-				prev[word].data.realms[realm] = {sounds = data, realm = realm}
+				next[word].data.realms[realm] = {sounds = data, realm = realm}
 			end
 
-			prev = prev[word]
+			next = next[word]
 		end
 	end
 end
@@ -1160,61 +1160,78 @@ do
 	local function find_sounds(words)
 		local count = #words
 
-		local prev = chatsounds.tree
+		local next = chatsounds.tree
+		local reached_end = false
 		local i = 1
 
 		local out = {}
 		local found = {}
 
-		local function hmm(word)
-			prev = chatsounds.tree
-
-			for offset, node in ipairs(found) do
-				offset = i - offset
-				if node.data.SOUND_FOUND then
-					table.insert(out, offset, {type = "matched", val = node.data.data})
-					break
-				elseif prev[node.word] and prev[node.word].SOUND_FOUND then
-					table.insert(out, offset-1, {type = "matched", val = prev[node.word].data})
-				else
-					if type(node.word) == "string" then
-						table.insert(out, offset, {type = "unmatched", val = node.word})
-					else
-						table.insert(out, offset, node.word)
-					end
-				end
-			end
-
-			if prev[word] and prev[word].SOUND_FOUND then
-				i = i - 1
-			elseif type(word) == "string" then
-				table.insert(out, i, {type = "unmatched", val = word})
-			end
-
-			table.clear(found)
-		end
-
-		for _ = 1, 5000 do
+		for _ = 1, 10000 do
 			local word = words[i]
 
-			if not word or type(word) == "string" then
-				if prev[word] then
-					prev = prev[word]
-					table.insert(found, 1, {data = prev, word = word})
+			if type(word) == "string" then
+				if next[word] then
+					next = next[word]
+					table.insert(found, {node = next, word = word})
 				else
-					hmm(word)
+					if #found == 0 then
+						table.insert(out, {type = "unmatched", val = word})
+
+						if word == ")" then
+							for i2 = i + 1, count do
+								local mod = words[i2]
+								if type(mod) ~= "table" then break end
+								table.insert(out, mod)
+							end
+						end
+					else
+						reached_end = true
+					end
 				end
-			elseif type(word) == "table" then
-				hmm(word)
-				table.insert(out, i, word)
+			else
+				reached_end = true
+			end
+
+			if reached_end then
+				reached_end = false
+				local lol = false
+
+				for found_i = #found, 1, -1 do
+					i = i - 1
+					local node = found[found_i]
+					if node.node.SOUND_FOUND then
+						local pos = i
+						table.insert(out, {type = "matched", val = node.node.data})
+
+						for i2 = pos + 1, count do
+							local mod = words[i2]
+							if type(mod) ~= "table" then break end
+							table.insert(out, mod)
+						end
+
+						lol = true
+
+						break
+					end
+				end
+
+				if not lol then
+					for _, node in ipairs(found) do
+						table.insert(out, {type = "unmatched", val = node.word})
+					end
+				end
+
+				next = chatsounds.tree
+				table.clear(found)
 			end
 
 			i = i + 1
 
-			if i > count+1 then break end
+			if i > count + 1 then
+				break
+			end
 		end
-
-		table.fixindices(out)
 
 		return out
 	end
@@ -1584,12 +1601,5 @@ function chatsounds.Shutdown()
 	autocomplete.RemoveList("chatsounds")
 	event.RemoveListener("Update", "chatsounds")
 end
-
-
---chatsounds.Say("hello no yes that=0.5 (hello wow yeah hello hi)%30 where is the%50 where is oh no feelings%30 princess yo%50")
---chatsounds.Say("o%50=0.2 o%50=0.2 o%50=0.2 o%50=0.2 o%50=0.2 o%50=0.2 o%150=0.2 o%160=0.2 o%75=0.2 o%150=0.2 o%160=0.2 o%75=0.2 o%150=0.2 o%160=0.2 o%75=0.2o%150=0.2 o%160=0.2 o%75=0.2")
---chatsounds.Say("1 2 3 4 | 5 6 7 8")
---chatsounds.Say("if you need instructions on how to get through the hotels check out the enclosed instruction book")
---chatsounds.Say("uh oh%50 uh oh%50 uh oh%50")
 
 return chatsounds
