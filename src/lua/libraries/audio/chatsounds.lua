@@ -246,6 +246,7 @@ chatsounds.LegacyModifiers = {
 	["-%-"] = "cutoff",
 	["#"] = "choose",
 	["="] = "duration",
+	["*"] = "repeat",
 }
 
 do -- list parsing
@@ -305,7 +306,7 @@ do -- list parsing
 				trigger = trigger:match("(.+)%.")
 
 				if vfs.IsFile(path) then
-					tree[realm][trigger] = {path}
+					tree[realm][trigger] = {{path = path}}
 					list[realm][trigger] = path
 				else
 					tree[realm][trigger] = {}
@@ -445,13 +446,17 @@ do -- list parsing
 
 			local str = vfs.Read(path)
 			for path in str:gmatch('"path": "(sound/chatsounds/autoadd/.-)"') do
-				local realm, trigger = path:match(".+/(.-)/(.+)%.")
+				local realm, trigger, file_name = path:match("sound/chatsounds/autoadd/(.-)/(.-)/(.+)%.")
+				if not file_name then
+					realm, trigger = path:match("sound/chatsounds/autoadd/(.-)/(.+)%.")
+				end
 				path = "https://raw.githubusercontent.com/Metastruct/garrysmod-chatsounds/master/" .. path
 				if realm then
 					tree[realm] = tree[realm] or {}
 					list[realm] = list[realm] or {}
 
-					tree[realm][trigger] = {path}
+					tree[realm][trigger] = tree[realm][trigger] or {}
+					table.insert(tree[realm][trigger], {path = path})
 					list[realm][trigger] = path
 				end
 			end
@@ -1066,6 +1071,10 @@ do
 		-- old style pitch to new
 		-- hello%50 > hello:pitch(50)
 
+		if chatsounds.debug then
+			logn(">>> ", str)
+		end
+
 		for old, new in pairs(chatsounds.LegacyModifiers) do
 			str = str:gsub("%"..old.."([%d%.]+)", function(str) str = str:gsub("%.", ",") return ":"..new.."("..str..")" end)
 		end
@@ -1237,6 +1246,67 @@ do
 	end
 
 	local function apply_modifiers(script)
+		do -- repeat
+			local i = 1
+
+			for _ = 1, 1000 do
+				local chunk = script[i]
+
+				if not chunk or i > #script+1 then break end
+
+				if chunk.type == "modifier" and chunk.mod == "repeat" then
+					if script[i - 1] then
+						if script[i - 1].val == ")" then
+							local temp = {}
+							local i2 = i - 2
+
+							for _ = 1, 100 do
+								local chunk2 = script[i2]
+
+								if chunk2 and chunk2.val ~= "(" then
+									table.insert(temp, 1, table.copy(chunk2))
+								else
+									break
+								end
+
+								i2 = i2 - 1
+							end
+
+							for _ = 1, tonumber(chunk.args[1]) - 1 do
+								for _, chunk in ipairs(temp) do
+									table.insert(script, i - 1, table.copy(chunk))
+									i = i + 1
+								end
+							end
+
+							table.remove(script, i)
+						else
+							local temp = {}
+							for i2 = 1, 10 do
+								i2 = i - i2
+								local chunk2 = script[i2]
+								table.insert(temp, 1, chunk2)
+								if chunk2.type == "matched" then
+									break
+								end
+							end
+
+							for _ = 1, tonumber(chunk.args[1]) - 1 do
+								for _, chunk in ipairs(temp) do
+									table.insert(script, i, table.copy(chunk))
+									i = i + 1
+								end
+							end
+
+							table.remove(script, i)
+						end
+					end
+				end
+
+				i = i + 1
+			end
+		end
+
 		local i = 1
 
 		for _ = 1, 1000 do
@@ -1263,7 +1333,6 @@ do
 
 							i2 = i2 - 1
 						end
-
 					elseif script[i - 1].type == "matched" then
 						script[i - 1].modifiers = script[i - 1].modifiers or {}
 						table.insert(script[i - 1].modifiers, chunk)
@@ -1329,7 +1398,7 @@ function choose_realm(data)
 	return sounds
 end
 
-function chatsounds.PlayScript(script, udata)
+function chatsounds.PlayScript(script)
 
 	local sounds = {}
 
@@ -1366,30 +1435,38 @@ function chatsounds.PlayScript(script, udata)
 						if v.mod == "choose" then
 							if chunk.val.realms[v.args[2]] then
 								data = chunk.val.realms[v.args[2]]
+								info = data.sounds[math.clamp(tonumber(v.args[1]) or 1, 1, #data.sounds)]
+							else
+								local temp = {}
+								for realm, data in pairs(chunk.val.realms) do
+									table.add(temp, data.sounds)
+								end
+								-- needs to be sorted in some way so it will be equal for all clients
+								table.sort(temp, function(a,b) return a.path > b.path end)
+								info = temp[math.clamp(tonumber(v.args[1]) or 1, 1, #temp)]
 							end
 
-							info = data.sounds[math.clamp(tonumber(v.args[1]) or 1, 1, #data.sounds)]
 							break
 						end
 					end
 				end
 
 				if not info then
-					info = table.random(data.sounds)
+					local temp = {}
+					for realm, data in pairs(chunk.val.realms) do
+						table.add(temp, data.sounds)
+					end
+					-- needs to be sorted in some way so it will be equal for all clients
+					table.sort(temp, function(a,b) return a.path > b.path end)
+					info = table.random(temp)
 				end
 
-				local path
-
-				if type(info) == "table" then
-					path = info.path
-				else
-					path = info
-				end
+				local path = info.path
 
 				if path then
 					local sound = {}
 
-					sound.snd = chatsounds.CreateSound(path, udata)
+					sound.snd = chatsounds.CreateSound(path)
 					sound.duration = (chunk.val.duration or sound.snd:GetDuration())
 					sound.trigger = chunk.val.trigger
 					sound.modifiers = chunk.modifiers
@@ -1563,7 +1640,7 @@ function chatsounds.Say(client, str, seed)
 
 	local script = chatsounds.GetScript(str)
 	if chatsounds.debug then dump_script(script) end
-	chatsounds.PlayScript(script, client)
+	chatsounds.PlayScript(script)
 end
 
 function chatsounds.GetLists()
@@ -1601,5 +1678,7 @@ function chatsounds.Shutdown()
 	autocomplete.RemoveList("chatsounds")
 	event.RemoveListener("Update", "chatsounds")
 end
+
+chatsounds.debug = true
 
 return chatsounds
