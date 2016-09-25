@@ -172,7 +172,10 @@ function surface.DrawText(str, x, y, w)
 
 	local font = surface.current_font
 
-	if not font or not font:IsReady() then
+	if not font then
+		surface.SetTexture(render.GetErrorTexture())
+		surface.DrawRect(x,y,32,32)
+	elseif not font:IsReady() then
 		surface.SetTexture(render.GetLoadingTexture())
 		surface.DrawRect(x,y,32,32)
 	else
