@@ -6,7 +6,7 @@ local players = {}
 function client:OnMessage(msg, nick)
 	if nick == client:GetNick() then return end
 	msg = msg:gsub("\15", "")
-	msg = msg:gsub("\3", "")
+	msg = msg:gsub("\3%d%d", "") -- color code
 
 	if nick:find("meta%d") then
 		nick, msg = msg:match("#%d (.-): (.+)")
