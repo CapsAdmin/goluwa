@@ -69,14 +69,19 @@ if CLIENT then
 	end
 end
 
-local SEED = 0
+chat.seed = 0
 
 function chat.ClientSay(client, str, skip_log, seed)
-	seed = seed or SEED
+	local seed = seed or chat.seed
 
 	if event.Call("ClientChat", client, str, seed) ~= false then
 		chat.Append(client, str, skip_log)
-		if SERVER then message.Broadcast("say", client, str, seed) SEED = SEED + 1 end
+		if SERVER then
+			message.Broadcast("say", client, str, chat.seed)
+		end
+		if SERVER or not network.IsConnected() then
+			chat.seed = chat.seed + 1
+		end
 	end
 end
 
