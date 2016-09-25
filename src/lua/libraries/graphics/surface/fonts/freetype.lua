@@ -26,10 +26,13 @@ function META:Initialize()
 	local function load(path)
 		local data = vfs.Read(path)
 
-		self.binary_font_data = data
+		local char_buffer = ffi.C.malloc(#data)
+		self.char_buffer = char_buffer
+		ffi.copy(char_buffer, data, #data)
+
 
 		local face = ffi.new("struct FT_FaceRec_ * [1]")
-		local code = freetype.NewMemoryFace(surface.freetype_lib[0], data, #data, 0, face)
+		local code = freetype.NewMemoryFace(surface.freetype_lib[0], char_buffer, #data, 0, face)
 
 		if code == 0 then
 			self.face_ref = face
