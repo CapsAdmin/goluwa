@@ -1,6 +1,6 @@
 chatsounds.Initialize()
 
-if true then
+if false then
 	chatsounds.Say(nil, [[
 
 	hi cdi%150--4 cdi%130--4 cdi%120--4 cdi%50--4 nice of the princess to invite
@@ -19,43 +19,58 @@ if true then
 	1 2 3 4 | 5 6 7 8
 	if you need instructions on how to get through the hotels check out the enclosed instruction book
 	uh oh%50 uh oh%50 uh oh%50
+
+
+cdi%100--5=0.25 cdi%125--5=0.25 cdi%150--5=0.25 cdi%165--5=0.25 cdi%175--5=0.25 cdi%165--5=0.25 cdi%150--5=0.25 cdi%125--5=0.25
+cdi%100--5=0.25 cdi%125--5=0.25 cdi%150--5=0.25 cdi%165--5=0.25 cdi%175--5=0.25 cdi%165--5=0.25 cdi%150--5=0.25 cdi%125--5=0.25
+cdi%135--5=0.25 cdi%165--5=0.25 cdi%200--5=0.25 cdi%225--5=0.25 cdi%235--5=0.25 cdi%225--5=0.25 cdi%200--5=0.25 cdi%165--5=0.25
+cdi%100--5=0.25 cdi%125--5=0.25 cdi%150--5=0.25 cdi%165--5=0.25 cdi%175--5=0.25 cdi%165--5=0.25 cdi%150--5=0.25 cdi%125--5=0.25
+cdi%150--5=0.25 cdi%190--5=0.25 cdi%225--5=0.25 cdi%250--5=0.25 cdi%135--5=0.25 cdi%165--5=0.25 cdi%200--5=0.25 cdi%225--5=0.25
+cdi%100--5=0.25 cdi%125--5=0.25 cdi%150--5=0.25 cdi%165--5=0.25 cdi%175--5=0.25 cdi%165--5=0.25 cdi%150--5=0.25 cdi%125--5=0.25
+;
+bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100
+bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100
+bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100
+bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100
+bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100
+bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100 bdrum1=0.25%100 snare2#2=0.25%100
 	]])
 else
 
 chatsounds.Say(caps, [[
-	button:choose(6,buttons)%100=0.125
-	button:choose(6,buttons)%100=0.125
-	button:choose(6,buttons)%50=0.5
-	button:choose(6,buttons)%50=0.5
-	button:choose(6,buttons)%50=0.35
-	button:choose(6,buttons)%50=0.40
-	button:choose(6,buttons)%100=0.125
-	button:choose(6,buttons)%100=0.125
-	button:choose(6,buttons)%50=0.5
-	button:choose(6,buttons)%50=0.5
-	button:choose(6,buttons)%25=0.35
-	button:choose(6,buttons)%50=0.4
-	button:choose(6,buttons)%25=0.25
-	button:choose(6,buttons)%25=0.25
-	button:choose(6,buttons)%25=0.125
-	button:choose(6,buttons)%25=0.25
-	button:choose(6,buttons)%25=0.125
-	button:choose(6,buttons)%50=0.35
-	button:choose(6,buttons)%50=0.40
-	button:choose(6,buttons)%50=0.40
-	button:choose(6,buttons)%25=0.25
-	button:choose(6,buttons)%25=0.125
-	button:choose(6,buttons)%25=0.25
-	button:choose(6,buttons)%25=0.125
-	button:choose(6,buttons)%50=0.35
-	button:choose(6,buttons)%50=0.40
-	button:choose(6,buttons)%50=0.40
-	button:choose(6,buttons)%100=0.125
-	button:choose(6,buttons)%100=0.125
-	button:choose(6,buttons)%50=0.5
-	button:choose(6,buttons)%50=0.5
-	button:choose(6,buttons)%50=0.35
-	button:choose(6,buttons)%50=0.40
+	button:choose(2,buttons)%100=0.125
+	button:choose(2,buttons)%100=0.125
+	button:choose(2,buttons)%50=0.5
+	button:choose(2,buttons)%50=0.5
+	button:choose(2,buttons)%50=0.35
+	button:choose(2,buttons)%50=0.40
+	button:choose(2,buttons)%100=0.125
+	button:choose(2,buttons)%100=0.125
+	button:choose(2,buttons)%50=0.5
+	button:choose(2,buttons)%50=0.5
+	button:choose(2,buttons)%25=0.35
+	button:choose(2,buttons)%50=0.4
+	button:choose(2,buttons)%25=0.25
+	button:choose(2,buttons)%25=0.25
+	button:choose(2,buttons)%25=0.125
+	button:choose(2,buttons)%25=0.25
+	button:choose(2,buttons)%25=0.125
+	button:choose(2,buttons)%50=0.35
+	button:choose(2,buttons)%50=0.40
+	button:choose(2,buttons)%50=0.40
+	button:choose(2,buttons)%25=0.25
+	button:choose(2,buttons)%25=0.125
+	button:choose(2,buttons)%25=0.25
+	button:choose(2,buttons)%25=0.125
+	button:choose(2,buttons)%50=0.35
+	button:choose(2,buttons)%50=0.40
+	button:choose(2,buttons)%50=0.40
+	button:choose(2,buttons)%100=0.125
+	button:choose(2,buttons)%100=0.125
+	button:choose(2,buttons)%50=0.5
+	button:choose(2,buttons)%50=0.5
+	button:choose(2,buttons)%50=0.35
+	button:choose(2,buttons)%50=0.40
 	;
 	hitbod#1%150=0.25^0
 	hitbod#1%150=0.5
@@ -142,23 +157,23 @@ chatsounds.Say(caps, [[
 	spark:choose(3,ambient)%255=0.125^50
 	spark:choose(3,ambient)%255=0.125^25
 	;
-	radiorandom#3%100=0.5
-	radiorandom#3%100=0.5
-	radiorandom#3%100=0.5
-	radiorandom#3%100=0.5
-	radiorandom#3%100=0.5
-	radiorandom#3%100=0.5
-	radiorandom#3%100=0.5
-	radiorandom#3%100=0.5
+	radio random#3%100=0.5
+	radio random#3%100=0.5
+	radio random#3%100=0.5
+	radio random#3%100=0.5
+	radio random#3%100=0.5
+	radio random#3%100=0.5
+	radio random#3%100=0.5
+	radio random#3%100=0.5
 	;
-	fleshstriderimpactbullet#3%255=0.75^0
-	fleshstriderimpactbullet#3%150=1^0
-	fleshstriderimpactbullet#3%150=1^0
-	fleshstriderimpactbullet#3%150=1^0
-	fleshstriderimpactbullet#3%150=1^0
-	fleshstriderimpactbullet#3%150=1
-	fleshstriderimpactbullet#3%150=1
-	fleshstriderimpactbullet#3%150=1
-	fleshstriderimpactbullet#3%150=0.125
-	fleshstriderimpactbullet#3%150=0.5]], 0)
+	body medium impact hard#3%255=0.75^0
+	body medium impact hard#3%150=1^0
+	body medium impact hard#3%150=1^0
+	body medium impact hard#3%150=1^0
+	body medium impact hard#3%150=1^0
+	body medium impact hard#3%150=1
+	body medium impact hard#3%150=1
+	body medium impact hard#3%150=1
+	body medium impact hard#3%150=0.125
+	body medium impact hard#3%150=0.5]], 0)
 end
