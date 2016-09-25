@@ -618,9 +618,10 @@ do -- source
 				if not self.reverse_source then
 					local data, size = self:GetBuffer():GetData()
 
-					local buffer = ffi.new("$[$]", data, size)()
+					local buffer = ffi.new(ffi.typeof(data), size)
+					local length = size
 
-					for i = 0, (size / ffi.sizeof(data)) - 1 do
+					for i = 0, tonumber(length) - 1 do
 						buffer[i] = data[-i+length + 1]
 					end
 
