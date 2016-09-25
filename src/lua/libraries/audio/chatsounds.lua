@@ -1,5 +1,7 @@
 local chatsounds = _G.chatsounds or {}
 
+chatsounds.max_iterations = 1000
+
 local realm_patterns = {
 	"sound/player/survivor/voice/(.-)/",
 	"sound/player/vo/(.-)/",
@@ -407,13 +409,11 @@ do -- list parsing
 						if not next[word] then next[word] = {} end
 
 						if i == max then
-							next[word].SOUND_FOUND = true
-							next[word].LEVEL = max
-							next[word].data = next[word].data or {}
-							next[word].data.trigger = next[word].data.trigger or trigger
-							next[word].data.realms = next[word].data.realms or {}
+							next[word].SOUND_DATA = next[word].SOUND_DATA or {}
+							next[word].SOUND_DATA.trigger = next[word].SOUND_DATA.trigger or trigger
+							next[word].SOUND_DATA.realms = next[word].SOUND_DATA.realms or {}
 
-							next[word].data.realms[realm] = {sounds = data, realm = realm}
+							next[word].SOUND_DATA.realms[realm] = {sounds = data, realm = realm}
 						end
 
 						next = next[word]
@@ -952,11 +952,9 @@ do -- list parsing
 					end
 
 					if i == max then
-						next[word].SOUND_FOUND = true
-						next[word].LEVEL = max
-						next[word].data = next[word].data or {trigger = trigger, realms = {}}
-						if next[word].data.realms then
-							next[word].data.realms[realm] = {sounds = sounds, realm = realm}
+						next[word].SOUND_DATA = next[word].SOUND_DATA or {trigger = trigger, realms = {}}
+						if next[word].SOUND_DATA.realms then
+							next[word].SOUND_DATA.realms[realm] = {sounds = sounds, realm = realm}
 						else
 							logn(word) -- ???
 						end
@@ -1054,11 +1052,9 @@ do -- list parsing
 			if not next[word] then next[word] = {} end
 
 			if i == max then
-				next[word].SOUND_FOUND = true
-				next[word].LEVEL = max
-				next[word].data = next[word].data or {trigger = trigger, realms = {}}
+				next[word].SOUND_DATA = next[word].SOUND_DATA or {trigger = trigger, realms = {}}
 
-				next[word].data.realms[realm] = {sounds = data, realm = realm}
+				next[word].SOUND_DATA.realms[realm] = {sounds = data, realm = realm}
 			end
 
 			next = next[word]
@@ -1129,7 +1125,7 @@ do
 
 		local count = #words
 
-		for i = 1, 1000 do
+		for i = 1, chatsounds.max_iterations do
 			local word = words[i]
 
 			if word == ":" then
@@ -1167,31 +1163,29 @@ do
 	end
 
 	local function find_sounds(words)
-		local count = #words
-
-		local next = chatsounds.tree
+		local word_count = #words
+		local node = chatsounds.tree
 		local reached_end = false
+		local out = {}
+		local matched = {}
+
 		local i = 1
 
-		local out = {}
-		local found = {}
-
-		for _ = 1, 10000 do
+		for _ = 1, chatsounds.max_iterations do
 			local word = words[i]
 
 			if type(word) == "string" then
-				if next[word] then
-					next = next[word]
-					table.insert(found, {node = next, word = word})
+				if node[word] then
+					node = node[word]
+					table.insert(matched, {node = node, word = word})
 				else
-					if #found == 0 then
+					if #matched == 0 then
 						table.insert(out, {type = "unmatched", val = word})
 
 						if word == ")" then
-							for i2 = i + 1, count do
-								local mod = words[i2]
-								if type(mod) ~= "table" then break end
-								table.insert(out, mod)
+							for i = i + 1, word_count do
+								if type(words[i]) ~= "table" then break end
+								table.insert(out, words[i])
 							end
 						end
 					else
@@ -1204,40 +1198,40 @@ do
 
 			if reached_end then
 				reached_end = false
-				local lol = false
+				local found
 
-				for found_i = #found, 1, -1 do
+				for match_i = #matched, 1, -1 do
+					local info = matched[match_i]
+
 					i = i - 1
-					local node = found[found_i]
-					if node.node.SOUND_FOUND then
-						local pos = i
-						table.insert(out, {type = "matched", val = node.node.data})
 
-						for i2 = pos + 1, count do
-							local mod = words[i2]
-							if type(mod) ~= "table" then break end
-							table.insert(out, mod)
-						end
-
-						lol = true
-
+					if info.node.SOUND_DATA then
+						found = info
 						break
 					end
 				end
 
-				if not lol then
-					for _, node in ipairs(found) do
-						table.insert(out, {type = "unmatched", val = node.word})
+				if found then
+					table.insert(out, {type = "matched", val = found.node.SOUND_DATA})
+
+					for i2 = i + 1, word_count do
+						local mod = words[i2]
+						if type(mod) ~= "table" then break end
+						table.insert(out, mod)
+					end
+				else
+					for _, info in ipairs(matched) do
+						table.insert(out, {type = "unmatched", val = info.word})
 					end
 				end
 
-				next = chatsounds.tree
-				table.clear(found)
+				node = chatsounds.tree
+				table.clear(matched)
 			end
 
 			i = i + 1
 
-			if i > count + 1 then
+			if i > word_count + 1 then
 				break
 			end
 		end
@@ -1249,7 +1243,7 @@ do
 		do -- repeat
 			local i = 1
 
-			for _ = 1, 1000 do
+			for _ = 1, chatsounds.max_iterations do
 				local chunk = script[i]
 
 				if not chunk or i > #script+1 then break end
@@ -1309,7 +1303,7 @@ do
 
 		local i = 1
 
-		for _ = 1, 1000 do
+		for _ = 1, chatsounds.max_iterations do
 			local chunk = script[i]
 
 			if not chunk or i > #script+1 then break end
