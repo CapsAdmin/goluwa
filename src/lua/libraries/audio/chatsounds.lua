@@ -1380,11 +1380,15 @@ function chatsounds.PlayScript(script)
 							else
 								local temp = {}
 								for realm, data in pairs(chunk.val.realms) do
-									table.add(temp, data.sounds)
+									for _, sound in pairs(data.sounds) do
+										table.insert(temp, {sound = sound, realm = realm})
+									end
 								end
 								-- needs to be sorted in some way so it will be equal for all clients
-								table.sort(temp, function(a,b) return a.path > b.path end)
-								info = temp[math.clamp(tonumber(v.args[1]) or 1, 1, #temp)]
+								table.sort(temp, function(a,b) return a.sound.path > b.sound.path end)
+								local res = temp[math.clamp(tonumber(v.args[1]) or 1, 1, #temp)]
+								info = res.sound
+								chatsounds.last_realm = res.realm
 							end
 
 							break
@@ -1395,11 +1399,17 @@ function chatsounds.PlayScript(script)
 				if not info then
 					local temp = {}
 					for realm, data in pairs(chunk.val.realms) do
-						table.add(temp, data.sounds)
+						if not chatsounds.last_realm or chatsounds.last_realm == realm then
+							for _, sound in pairs(data.sounds) do
+								table.insert(temp, {sound = sound, realm = realm})
+							end
+						end
 					end
 					-- needs to be sorted in some way so it will be equal for all clients
-					table.sort(temp, function(a,b) return a.path > b.path end)
-					info = table.random(temp)
+					table.sort(temp, function(a,b) return a.sound.path > b.sound.path end)
+					local res = table.random(temp)
+					info = res.sound
+					chatsounds.last_realm = res.realm
 				end
 
 				local path = info.path
@@ -1495,6 +1505,8 @@ function chatsounds.PlayScript(script)
 	end
 
 	table.insert(chatsounds.active_tracks, track)
+
+	chatsounds.last_realm = nil
 end
 
 function chatsounds.Panic()
