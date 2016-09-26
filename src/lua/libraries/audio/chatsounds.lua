@@ -1237,67 +1237,6 @@ do
 	end
 
 	local function apply_modifiers(script)
-		do -- repeat
-			local i = 1
-
-			for _ = 1, chatsounds.max_iterations do
-				local chunk = script[i]
-
-				if not chunk or i > #script+1 then break end
-
-				if chunk.type == "modifier" and chunk.mod == "repeat" then
-					if script[i - 1] then
-						if script[i - 1].val == ")" then
-							local temp = {}
-							local i2 = i - 2
-
-							for _ = 1, 100 do
-								local chunk2 = script[i2]
-
-								if chunk2 and chunk2.val ~= "(" then
-									table.insert(temp, 1, table.copy(chunk2))
-								else
-									break
-								end
-
-								i2 = i2 - 1
-							end
-
-							for _ = 1, tonumber(chunk.args[1]) - 1 do
-								for _, chunk in ipairs(temp) do
-									table.insert(script, i - 1, table.copy(chunk))
-									i = i + 1
-								end
-							end
-
-							table.remove(script, i)
-						else
-							local temp = {}
-							for i2 = 1, 10 do
-								i2 = i - i2
-								local chunk2 = script[i2]
-								table.insert(temp, 1, chunk2)
-								if chunk2.type == "matched" then
-									break
-								end
-							end
-
-							for _ = 1, tonumber(chunk.args[1]) - 1 do
-								for _, chunk in ipairs(temp) do
-									table.insert(script, i, table.copy(chunk))
-									i = i + 1
-								end
-							end
-
-							table.remove(script, i)
-						end
-					end
-				end
-
-				i = i + 1
-			end
-		end
-
 		local i = 1
 
 		for _ = 1, chatsounds.max_iterations do
@@ -1305,44 +1244,92 @@ do
 
 			if not chunk or i > #script+1 then break end
 
-			if chunk.type == "modifier" then
-				if script[i - 1] then
-					if script[i - 1].val == ")" then
-						local i2 = i - 2
+			if chunk.type == "matched" and script[i + 1] and script[i + 1].type == "modifier" then
+				chunk.modifiers = chunk.modifiers or {}
+				for offset = 1, 100 do
+					local mod = script[i + offset]
 
-						for _ = 1, 100 do
-							local chunk2 = script[i2]
+					if not mod or mod.type ~= "modifier" then
+						break
+					end
+					if mod.mod ~= "repeat" then
+						table.insert(chunk.modifiers, mod)
+					end
+				end
+			elseif chunk.val == "(" then
+				local start = i + 1
+				local stop
 
-							if chunk2 and chunk2.val ~= "(" then
-								if chunk2.type == "matched" then
-									chunk2.modifiers = chunk2.modifiers or {}
-									table.insert(chunk2.modifiers, chunk)
-								end
-							else
-								break
-							end
+				for offset = 1, 100 do
+					local chunk2 = script[i + offset]
+					if chunk2.val == ")" then
+						stop = i + offset - 1
+						break
+					end
+				end
 
-							i2 = i2 - 1
+				if stop then
+					for offset = 2, 100 do
+						local mod = script[stop + offset]
+
+						if not mod or mod.type ~= "modifier" then
+							break
 						end
-					elseif script[i - 1].type == "matched" then
-						script[i - 1].modifiers = script[i - 1].modifiers or {}
-						table.insert(script[i - 1].modifiers, chunk)
+
+						for i = start, stop do
+							script[i].modifiers = script[i].modifiers or {}
+							if mod.mod ~= "repeat" then
+								table.insert(script[i].modifiers, mod)
+							end
+						end
 					end
-
-					script[i] = nil
-
-					if script[i + 1] and script[i + 1].type == "modifier" then
-						i = i - 1
-					end
-
-					table.fixindices(script)
 				end
 			end
 
 			i = i + 1
 		end
 
+		for i = 1, #script do
+			local chunk = script[i]
+			if chunk.type == "modifier" and chunk.mod ~= "repeat" then
+				script[i] = nil
+			end
+		end
 		table.fixindices(script)
+
+		local i = 1
+		for _ = 1, 10 do
+			local chunk = script[i]
+
+			if chunk and chunk.type == "modifier" and chunk.mod == "repeat" then
+				table.remove(script, i)
+
+				local repetitions = tonumber(chunk.args[1]) - 1
+
+				if script[i - 1] then
+					if script[i - 1].type == "matched" then
+						for _ = 1, repetitions do
+							table.insert(script, i, table.copy(script[i - 1]))
+						end
+					elseif script[i - 1].val == ")" then
+						local temp = {}
+						for offset = 1, 10 do
+							local chunk = script[i - offset - 1]
+							if not chunk or chunk.val == "(" then
+								break
+							end
+							table.insert(temp, chunk)
+						end
+						for _ = 1, repetitions do
+							for _, chunk in ipairs(temp ) do
+								table.insert(script, i - 1, table.copy(chunk))
+							end
+						end
+					end
+				end
+			end
+			i = i + 1
+		end
 
 		return script
 	end
