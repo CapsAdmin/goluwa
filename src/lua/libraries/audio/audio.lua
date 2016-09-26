@@ -536,7 +536,17 @@ do -- source
 		end
 
 		function META:GetDuration()
-			return tonumber(select(2, self:GetBuffer():GetData())) / self:GetBuffer():GetSampleRate()
+			if self.decode_info then
+				if self.decode_info.duration then
+					return self.decode_info.duration
+				elseif self.decode_info.frames then
+					return tonumber(self.decode_info.frames) / self.decode_info.samplerate
+				end
+			end
+			if self:GetBuffer():IsValid() then
+				return tonumber(select(2, self:GetBuffer():GetData())) / self:GetBuffer():GetSampleRate()
+			end
+			return 0
 		end
 	end
 

@@ -2,122 +2,6 @@ local chatsounds = _G.chatsounds or {}
 
 chatsounds.max_iterations = 1000
 
-local realm_patterns = {
-	"sound/player/survivor/voice/(.-)/",
-	"sound/player/vo/(.-)/",
-
-	".+/(al)_[^/]+",
-	".+/(kl)_[^/]+",
-	".+/(br)_[^/]+",
-	".+/(ba)_[^/]+",
-	".+/(eli)_[^/]+",
-	".+/(cit)_[^/]+",
-
-	"sound/vo/([^/]-)_[^/]+",
-
-	"sound/vo/(wheatley)/[^/]+",
-	"sound/vo/(mvm_.-)_[^/]+",
-	"sound/(ui)/[^/]+",
-	"sound/vo/(glados)/[^/]+",
-
-	"sound/npc/(.-)/",
-	"sound/vo/npc/(.-)/",
-	"sound/vo/(.-)/",
-	"sound/player/(.-)/voice/",
-	"sound/player/(.-)/",
-	"sound/mvm/(.-)/",
-	"sound/(bot)/",
-	"sound/(music)/",
-	"sound/(physics)/",
-	"sound/hl1/(fvox)/",
-	"sound/(weapons)/",
-	"sound/(commentary)/",
-	"sound/ambient/levels/(.-)/",
-	"sound/ambient/(.-)/",
-}
-
-local realm_translate = {
-	breen = "hl2_breen",
-
-	al = "hl2_alyx",
-	kl = "hl2_kleiner",
-	br = "hl2_breen",
-	ba = "hl2_barney",
-	gman = "hl2_gman",
-	cit = "hl2_citizen",
-	male01 = "hl2_male",
-	female01 = "hl2_female",
-
-	biker = "l4d_francis",
-	teengirl = "l4d_zoey",
-	gambler = "l4d_nick",
-	producer = "l4d_rochelle",
-	manager = "l4d_louis",
-	mechanic = "l4d_ellis",
-	namvet = "l4d_bill",
-	churchguy = "l4d2_churchguy",
-	virgil = "l4d2_virgil",
-	coach = "l4d2_coach",
-
-	scout = "tf2_scout",
-	soldier = "tf2_soldier",
-	pyro = "tf2_pyro",
-	demoman = "tf2_demoman",
-	heavy = "tf2_heavy",
-	engineer = "tf2_engineer",
-	medic = "tf2_medic",
-	sniper = "tf2_sniper",
-	announcer = "tf2_announcer",
-}
-
-
-local voice_actors = {
-	breen = "robert_culp",
-
-	al = "merle_dandridge",
-	kl = "hal_robins",
-	br = "robert_culp",
-	ba = "michael_shapiro_barney",
-	gman = "michael_shapiro_gman",
-	cit = "hl2_citizen",
-	male01 = "adam_baldwin",
-	female01 = "mary_kae_irvin",
-
-	biker = "vince_valenzuela",
-	teengirl = "jen_taylor",
-	gambler = "hugh_dillon",
-	producer = "rochelle_aytes",
-	manager = "earl_alexander",
-	mechanic = "jesy_mckinney",
-	namvet = "jim_french",
-
-	scout = "nathan_vetterlein",
-	churchguy = "nathan_vetterlein",
-	virgil = "randall_newsome",
-	soldier = "rick_may",
-	pyro = "dennis_bateman",
-	demoman = "gary_schwartz_demoman",
-	heavy = "gary_schwartz_heavy",
-	engineer = "grant_goodeve",
-	medic = "robin_atkin_downes",
-	sniper = "john_patrick_lowrie",
-	announcer = "ellen_mclain",
-}
-
-local function realm_from_path(path)
-
-	for k,v in ipairs(realm_patterns) do
-		local realm = path:match(v)
-		if realm then
-			realm = realm:lower():gsub("%s+", "_")
-			return (realm_translate[realm] or realm), v
-		end
-	end
-
-	return "misc", ""
-end
-
-
 -- utilities
 local choose_realm
 
@@ -215,7 +99,7 @@ chatsounds.LegacyModifiers = {
 }
 
 do -- list parsing
-	function chatsounds.GetSoundData(file, plaintext)
+	local function get_sound_data(file, plaintext)
 		local out = {}
 
 		-- TODO
@@ -258,7 +142,7 @@ do -- list parsing
 		end
 	end
 
-	function chatsounds.BuildFromFolder(where)
+	function chatsounds.BuildFromSoundDirectory(where)
 		where = where or "sounds/chatsounds/"
 		local tree = {}
 		local list = {}
@@ -303,7 +187,7 @@ do -- list parsing
 		autocomplete.AddList("chatsounds", list)
 	end
 
-	function chatsounds.BuildTreeFromGmodChatsounds(addon_dir)
+	function chatsounds.BuildFromGmodChatsounds(addon_dir)
 		if not addon_dir then
 			steam.MountSourceGames()
 
@@ -652,7 +536,7 @@ do -- list parsing
 							local file = vfs.Open(v)
 
 							if file then
-								out[v].sound_data = chatsounds.GetSoundData(file)
+								out[v].sound_data = get_sound_data(file)
 
 								out[v].byte_size = file:GetSize()
 								file:Close()
@@ -693,6 +577,122 @@ do -- list parsing
 	end
 
 	function chatsounds.BuildSoundLists()
+
+		local realm_patterns = {
+			"sound/player/survivor/voice/(.-)/",
+			"sound/player/vo/(.-)/",
+
+			".+/(al)_[^/]+",
+			".+/(kl)_[^/]+",
+			".+/(br)_[^/]+",
+			".+/(ba)_[^/]+",
+			".+/(eli)_[^/]+",
+			".+/(cit)_[^/]+",
+
+			"sound/vo/([^/]-)_[^/]+",
+
+			"sound/vo/(wheatley)/[^/]+",
+			"sound/vo/(mvm_.-)_[^/]+",
+			"sound/(ui)/[^/]+",
+			"sound/vo/(glados)/[^/]+",
+
+			"sound/npc/(.-)/",
+			"sound/vo/npc/(.-)/",
+			"sound/vo/(.-)/",
+			"sound/player/(.-)/voice/",
+			"sound/player/(.-)/",
+			"sound/mvm/(.-)/",
+			"sound/(bot)/",
+			"sound/(music)/",
+			"sound/(physics)/",
+			"sound/hl1/(fvox)/",
+			"sound/(weapons)/",
+			"sound/(commentary)/",
+			"sound/ambient/levels/(.-)/",
+			"sound/ambient/(.-)/",
+		}
+
+		local realm_translate = {
+			breen = "hl2_breen",
+
+			al = "hl2_alyx",
+			kl = "hl2_kleiner",
+			br = "hl2_breen",
+			ba = "hl2_barney",
+			gman = "hl2_gman",
+			cit = "hl2_citizen",
+			male01 = "hl2_male",
+			female01 = "hl2_female",
+
+			biker = "l4d_francis",
+			teengirl = "l4d_zoey",
+			gambler = "l4d_nick",
+			producer = "l4d_rochelle",
+			manager = "l4d_louis",
+			mechanic = "l4d_ellis",
+			namvet = "l4d_bill",
+			churchguy = "l4d2_churchguy",
+			virgil = "l4d2_virgil",
+			coach = "l4d2_coach",
+
+			scout = "tf2_scout",
+			soldier = "tf2_soldier",
+			pyro = "tf2_pyro",
+			demoman = "tf2_demoman",
+			heavy = "tf2_heavy",
+			engineer = "tf2_engineer",
+			medic = "tf2_medic",
+			sniper = "tf2_sniper",
+			announcer = "tf2_announcer",
+		}
+
+
+		local voice_actors = {
+			breen = "robert_culp",
+
+			al = "merle_dandridge",
+			kl = "hal_robins",
+			br = "robert_culp",
+			ba = "michael_shapiro_barney",
+			gman = "michael_shapiro_gman",
+			cit = "hl2_citizen",
+			male01 = "adam_baldwin",
+			female01 = "mary_kae_irvin",
+
+			biker = "vince_valenzuela",
+			teengirl = "jen_taylor",
+			gambler = "hugh_dillon",
+			producer = "rochelle_aytes",
+			manager = "earl_alexander",
+			mechanic = "jesy_mckinney",
+			namvet = "jim_french",
+
+			scout = "nathan_vetterlein",
+			churchguy = "nathan_vetterlein",
+			virgil = "randall_newsome",
+			soldier = "rick_may",
+			pyro = "dennis_bateman",
+			demoman = "gary_schwartz_demoman",
+			heavy = "gary_schwartz_heavy",
+			engineer = "grant_goodeve",
+			medic = "robin_atkin_downes",
+			sniper = "john_patrick_lowrie",
+			announcer = "ellen_mclain",
+		}
+
+		local function realm_from_path(path)
+
+			for k,v in ipairs(realm_patterns) do
+				local realm = path:match(v)
+				if realm then
+					realm = realm:lower():gsub("%s+", "_")
+					return (realm_translate[realm] or realm), v
+				end
+			end
+
+			return "misc", ""
+		end
+
 		local found = {}
 
 		local thread = tasks.CreateTask()
@@ -824,7 +824,7 @@ do -- list parsing
 									local file = vfs.Open(data.path)
 
 									if file then
-										local sentence = chatsounds.GetSoundData(file, true)
+										local sentence = get_sound_data(file, true)
 										if sentence then
 											sentence = clean_sentence(sentence)
 											trigger = sentence
@@ -1001,10 +1001,7 @@ do -- list parsing
 			data[i] = {path = v}
 		end
 
-		local words = {}
-		for word in (trigger .. " "):gmatch("(.-)%s+") do
-			table.insert(words, word)
-		end
+		local words = trigger:explode(" ")
 
 		local next = tree
 		local max = #words
@@ -1555,14 +1552,8 @@ function chatsounds.Update()
 	end
 end
 
-function chatsounds.Say(client, str, seed)
+function chatsounds.Say(str, seed)
 	if not chatsounds.tree then return end
-
-	if type(client) == "string" then
-		seed = str
-		str = client
-		client = nil
-	end
 
 	str = str:lower()
 
@@ -1573,7 +1564,7 @@ function chatsounds.Say(client, str, seed)
 	if str:find(";") then
 		str = str .. ";"
 		for line in str:gmatch("(.-);") do
-			chatsounds.Say(client, line, seed)
+			chatsounds.Say(line, seed)
 		end
 		return
 	end
@@ -1631,7 +1622,5 @@ function chatsounds.Shutdown()
 	autocomplete.RemoveList("chatsounds")
 	event.RemoveListener("Update", "chatsounds")
 end
-
-chatsounds.debug = true
 
 return chatsounds
