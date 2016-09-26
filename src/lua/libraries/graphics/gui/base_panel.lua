@@ -178,7 +178,12 @@ end
 
 do -- call on hide
 	function META:IsVisible()
-		if self.visible == nil then return true end -- ?????
+		if not self.Visible then
+			return false
+		end
+		if self.visible == false then
+			return false
+		end
 		return self.Visible
 	end
 
