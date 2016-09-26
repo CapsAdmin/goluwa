@@ -1261,7 +1261,7 @@ do
 		table.fixindices(script)
 
 		local i = 1
-		for _ = 1, 10 do
+		for _ = 1, chatsounds.max_iterations do
 			local chunk = script[i]
 
 			if chunk and chunk.type == "modifier" and chunk.mod == "repeat" then
