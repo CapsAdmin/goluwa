@@ -444,6 +444,10 @@ function chat.GetPanel()
 	--	self.markup:SetMaxWidth(self.Parent:GetWidth())
 	end
 
+
+	frame:SetSize(Vec2(400, 250))
+	frame:SetPosition(Vec2(50, window.GetSize().y - frame:GetHeight() - 50))
+
 	chat.panel = frame
 
 	return frame
@@ -465,9 +469,6 @@ function chat.Open(tab)
 		panel:CenterSimple()
 		panel:MoveUp()
 		panel:FillX()
-	elseif tab == "chat" then
-		panel:SetSize(Vec2(400, 250))
-		panel:SetPosition(Vec2(50, window.GetSize().y - panel:GetHeight() - 50))
 	end
 
 	panel:Minimize(true)
