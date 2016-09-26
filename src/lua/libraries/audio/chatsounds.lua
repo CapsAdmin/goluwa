@@ -463,23 +463,30 @@ do -- list parsing
 
 			chatsounds.list = chatsounds.list or {}
 			table.merge(chatsounds.list, list)
+			chatsounds.BuildAutocomplete()
 
 			tree = chatsounds.TableToTree(tree)
 			chatsounds.tree = chatsounds.tree or {}
 			table.merge(chatsounds.tree, tree)
+		end)
+	end
 
-			local list = {}
+	function chatsounds.BuildAutocomplete()
+		local list = {}
+		local done = {}
 
-			for _, val in pairs(chatsounds.list) do
-				for key in pairs(val) do
+		for _, val in pairs(chatsounds.list) do
+			for key in pairs(val) do
+				if not done[key] then
 					table.insert(list, key)
+					done[key] = true
 				end
 			end
+		end
 
-			table.sort(list, function(a, b) return #a < #b end)
+		table.sort(list, function(a, b) return #a < #b end)
 
-			autocomplete.AddList("chatsounds", list)
-		end)
+		autocomplete.AddList("chatsounds", list)
 	end
 
 	local function clean_sentence(sentence)
@@ -1016,17 +1023,7 @@ do -- list parsing
 
 			if autocomplete then
 				event.Delay(0, function()
-					local list = {}
-
-					for _, val in pairs(chatsounds.list) do
-						for key in pairs(val) do
-							table.insert(list, key)
-						end
-					end
-
-					table.sort(list, function(a, b) return #a < #b end)
-
-					autocomplete.AddList("chatsounds", list)
+					chatsounds.BuildAutocomplete()
 				end, nil, "chatsounds_autocomplete")
 			end
 		end)
