@@ -146,53 +146,16 @@ local function dump_script(out)
 	end
 end
 
-function chatsounds.CreateSound(path, udata)
-	local self = {csp = audio.CreateSource(path), udata = udata, path = path}
-
-	function self:Play()
-		self.csp:Play()
-	end
-
-	function self:Stop()
-		self.csp:Stop()
-	end
-
-	function self:SetPitch(pitch)
-		self.csp:SetPitch(pitch / 100)
-	end
-
-	function self:SetVolume(volume)
-		self.csp:SetGain(volume / 100)
-	end
-
-	function self:SetDSP(i)
-		logn("setdsp ", i)
-	end
-
-	function self:GetDuration()
-		if self.csp.decode_info then
-			if self.csp.decode_info.duration then
-				return self.csp.decode_info.duration
-			elseif self.csp.decode_info.frames then
-				return tonumber(self.csp.decode_info.frames) / self.csp.decode_info.samplerate
-			end
-		end
-		return 0
-	end
-
-	return self
-end
-
 -- modifiiers
 
 chatsounds.Modifiers = {
 	dsp = {
 		start = function(self, dsp)
-			self.snd:SetDSP(dsp)
+			--self.snd:SetDSP(dsp)
 		end,
 
 		stop = function(self, dsp)
-			self.snd:SetDSP(0)
+			--self.snd:SetDSP(0)
 		end,
 	},
 	cutoff = {
@@ -223,14 +186,14 @@ chatsounds.Modifiers = {
 
 		think = function(self, pitch)
 			if self.snd then
-				self.snd:SetPitch(pitch)
+				self.snd:SetPitch(pitch / 100)
 			end
 		end,
 	},
 	volume = {
 		think = function(self, volume)
 			if self.snd then
-				self.snd:SetVolume(volume)
+				self.snd:SetGain(volume / 100)
 			end
 		end,
 	},
@@ -1444,7 +1407,7 @@ function chatsounds.PlayScript(script)
 				if path then
 					local sound = {}
 
-					sound.snd = chatsounds.CreateSound(path)
+					sound.snd = audio.CreateSource(path)
 					sound.duration = (chunk.val.duration or sound.snd:GetDuration())
 					sound.trigger = chunk.val.trigger
 					sound.modifiers = chunk.modifiers
