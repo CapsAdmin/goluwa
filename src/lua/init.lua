@@ -299,7 +299,7 @@ if SOUND then
 	audio = include("lua/libraries/audio/audio.lua") -- high level implementation of OpenAl
 
 	if audio then
-		chatsounds = include("lua/libraries/audio/chatsounds.lua")
+		chatsounds = include("lua/libraries/audio/chatsounds/chatsounds.lua")
 	else
 		SOUND = nil
 	end
