@@ -238,7 +238,7 @@ do -- arg parsing
 	end
 
 	function commands.IsCommandStringValid(line)
-		local symbol = parse_line(line)
+		local symbol, cmd = parse_line(line)
 		return commands.added[cmd] ~= nil, symbol and symbol:sub(2,2)
 	end
 
