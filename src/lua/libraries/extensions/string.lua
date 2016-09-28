@@ -390,3 +390,7 @@ local pattern_escape_replacements = {
 function string.escapepattern(str)
 	return (str:gsub(".", pattern_escape_replacements))
 end
+
+function string.getchar(self, pos)
+	return self:sub(pos, pos)
+end
