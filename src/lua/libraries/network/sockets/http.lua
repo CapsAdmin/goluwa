@@ -37,6 +37,10 @@ function sockets.Request(info)
 	if info.url then
 		local protocol, host, location = info.url:match("(.+)://(.-)/(.+)")
 
+		if not location then
+			protocol, host = info.url:match("(.+)://(.+)")
+		end
+
 		local _host, port = host:match("(.+):(.+)")
 
 		if _host and port then
@@ -53,7 +57,9 @@ function sockets.Request(info)
 		info.host = info.host or host
 		info.protocol = info.protocol or protocol
 
-		info.location = info.location:gsub(" ", "%%20")
+		if info.location then
+			info.location = info.location:gsub(" ", "%%20")
+		end
 	end
 
 	if info.protocol == "https" and not info.ssl_parameters then
@@ -73,7 +79,7 @@ function sockets.Request(info)
 	end
 
 	info.method = info.method or "GET"
-	info.user_agent = info.user_agent or "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36"
+	info.user_agent = info.user_agent or "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0"
 	info.connection = info.connection or "Keep-Alive"
 	info.receive_mode = info.receive_mode or "all"
 	info.timeout = info.timeout or 2
