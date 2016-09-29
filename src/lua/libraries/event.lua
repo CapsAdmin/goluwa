@@ -192,7 +192,7 @@ do -- timers
 		})
 	end
 
-	function event.Timer(id, time, repeats, callback, run_now)
+	function event.Timer(id, time, repeats, callback, run_now, error_callback)
 		if not callback then
 			callback = repeats
 			repeats = 0
@@ -222,6 +222,7 @@ do -- timers
 		data.callback = callback
 		data.times_ran = 1
 		data.paused = false
+		data.error_callback = error_callback or function(id, msg) logn(id, msg) end
 
 		table.insert(event.timers, data)
 
@@ -309,10 +310,11 @@ do -- timers
 							data.realtime = cur + msg
 						end
 					else
-						logn(data.id, msg)
-						table.insert(remove_these, i)
-						profiler.RemoveSection(data.id)
-						break
+						if data.error_callback(data.id, msg) ~= nil then
+							table.insert(remove_these, i)
+							profiler.RemoveSection(data.id)
+							break
+						end
 					end
 
 					if data.times_ran == data.repeats then
