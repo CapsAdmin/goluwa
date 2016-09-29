@@ -3,15 +3,12 @@ local META = prototype.CreateTemplate()
 META.Name = "material"
 META.Icon = "textures/silkicons/palette.png"
 
-function META:OnAdd(ent)
-	local ent = ent:GetParent()
-	if ent:IsValid() then
-		self.mat = render.CreateMaterial(self.material_type)
-		local mdl = ent:GetComponent("model")
-		if mdl then
-			self.prev_mat = mdl:GetMaterialOverride()
-			mdl:SetMaterialOverride(self.mat)
-		end
+function META:OnEntityParent(ent)
+	self.mat = render.CreateMaterial(self.material_type)
+	local mdl = ent:GetComponent("model")
+	if mdl then
+		self.prev_mat = mdl:GetMaterialOverride()
+		mdl:SetMaterialOverride(self.mat)
 	end
 end
 
