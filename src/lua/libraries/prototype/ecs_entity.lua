@@ -148,8 +148,8 @@ end
 function META:OnParent(ent)
 	event.Call("EntityParent", self, ent)
 	for _, component in pairs(self:GetComponents()) do
-		if component.OnParent then
-			component:OnParent(ent)
+		if component.OnEntityParent then
+			component:OnEntityParent(ent)
 		end
 	end
 end
