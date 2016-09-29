@@ -67,7 +67,7 @@ include("http.lua", sockets)
 include("irc.lua", sockets)
 
 function sockets.Initialize()
-	event.Timer("sockets", 1/30, 0, sockets.Update)
+	event.Timer("sockets", 1/30, 0, sockets.Update, nil, function(...) logn(...) return true end)
 	event.AddListener("LuaClose", "sockets", sockets.Panic)
 end
 
@@ -207,10 +207,10 @@ do -- tcp socket meta
 		do
 			prototype.GetSet(CLIENT, "SSLParams")
 			local https_default = {
-				protocol = "tlsv1",
-				options = "all",
+				protocol = "tlsv1_2",
 				verify = "none",
 				mode = "client",
+				options = {"all", "no_sslv2", "no_sslv3"},
 			}
 
 			local ssl = desire("ssl") _G.ssl = nil -- grr
@@ -326,9 +326,18 @@ do -- tcp socket meta
 			end
 
 			if self.shaking_hands then
-				if sock:dohandshake() then
+				local res, msg = sock:dohandshake()
+				if res then
 					self.shaking_hands = nil
 					self:DebugPrintf("done shaking hands")
+				elseif msg == "wantread" then
+					self:Timeout(true)
+				elseif msg == "closed" then
+					self:Remove()
+				else
+					self:DebugPrintf("errored: %s", msg)
+					self:OnError(msg)
+					self:Remove()
 				end
 
 				return
