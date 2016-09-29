@@ -35,5 +35,3 @@ function render.DecodeTexture(data, path_hint)
 
 	return nil, table.concat(errors, "\n")
 end
-
-serializer.GetLibrary("luadata").SetModifier("texture", function(var) return ("Texture(%q)"):format(var:GetPath()) end, render.CreateTextureFromPath, "Texture")

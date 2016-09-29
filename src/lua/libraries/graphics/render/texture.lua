@@ -481,3 +481,5 @@ function render.CreateBlankTexture(size, shade)
 
 	return self
 end
+
+serializer.GetLibrary("luadata").SetModifier("texture", function(var) return ("Texture(%q)"):format(var:GetPath()) end, render.CreateTextureFromPath, "Texture")
