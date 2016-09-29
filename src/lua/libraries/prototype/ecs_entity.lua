@@ -147,6 +147,11 @@ end
 
 function META:OnParent(ent)
 	event.Call("EntityParent", self, ent)
+	for _, component in pairs(self:GetComponents()) do
+		if component.OnParent then
+			component:OnParent(ent)
+		end
+	end
 end
 
 prototype.Register(META)
