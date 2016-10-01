@@ -32,7 +32,7 @@ end
 function META:Upload(skip_unref)
 	if #self.Vertices == 0 then return end
 
-	self.mesh = render.CreateMesh(self.Vertices, self.Indices)
+	self.mesh = assert(render.CreateMesh(self.Vertices, self.Indices))
 	self.mesh:SetDrawHint("static")
 
 	-- don't store the geometry on the lua side
@@ -504,8 +504,8 @@ do -- helpers
 
 				local z3 = get_color(x2, y2) * height -- top left
 				local z4 = get_color(x2+pixel_advance.x, y2) * height -- top right
-				local z1 = get_color(x2, y2+pixel_advance.h) * height -- bottom left
-				local z2 = get_color(x2+pixel_advance.x, y2+pixel_advance.h) * height -- bottom right
+				local z1 = get_color(x2, y2+pixel_advance.y) * height -- bottom left
+				local z2 = get_color(x2+pixel_advance.x, y2+pixel_advance.y) * height -- bottom right
 
 				local z5 = (z1+z2+z3+z4)/4
 
