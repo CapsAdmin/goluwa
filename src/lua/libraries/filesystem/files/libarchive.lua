@@ -147,7 +147,7 @@ function CONTEXT:GetFiles(path_info)
 
 	for _, path in ipairs(files) do
 		if not dir then
-			local path2 = path:match("^([^/]-)/$")
+			local path2 = path:match("^([^/]-)/$") or path:match("^([^/]-)$")
 			if path2 then
 				table.insert(out, path2)
 			end
