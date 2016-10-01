@@ -478,6 +478,7 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 		"Line (%d+).-@(%S+%.lua)",
 		"(%d+)%s-@(%S+%.lua)",
 		"@(%S+%.lua)",
+		"(%S+%.lua)",
 	}
 
 	out:Connect(wxstc.wxEVT_STC_DOUBLECLICK, function(event)
