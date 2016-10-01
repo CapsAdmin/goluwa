@@ -1,5 +1,5 @@
 local id = "e8eabe00779a4f5bb8ca8a4c7190f436"
-local output_folder = "downloads/models/sketchfab/" .. id .. "/"
+local output_folder = "data/downloads/models/sketchfab/" .. id .. "/"
 
 local function parse_scene(id)
 
@@ -12,79 +12,83 @@ local function parse_scene(id)
 			end
 		end
 
-		if node["osg.Geometry"] then
+		if node["osg.Geometry"] and node["osg.Geometry"].UserDataContainer.Values[1].Name ~= "wireframe" then
+			local function swap_endian(num, size)
+				local result = 0
+				for shift = 0, size - 8, 8 do
+					result = bit.bor(bit.lshift(result, 8),
+							bit.band(bit.rshift(num, shift), 0xff))
+				end
+				return result
+			end
+
+			local indices = {}
+			local vertices = {}
+
+			for _, info in pairs(node["osg.Geometry"].PrimitiveSetList) do
+				if info.DrawElementsUInt and info.DrawElementsUInt.Indices.Type == "ELEMENT_ARRAY_BUFFER" then
+					local item_size = info.DrawElementsUInt.Indices.ItemSize
+					local t, info = next(info.DrawElementsUInt.Indices.Array)
+					local file = vfs.Open(output_folder .. info.File:match("(.+)%.gz"))
+					file:SetPosition(info.Offset)
+
+					for i = 1, info.Size do
+						table.insert(indices, file:ReadUnsignedInt())
+					end
+
+					local type_size = require("ffi").sizeof(info.Encoding == "varint" and "uint8_t" or t:lower():gsub("Array", "_t"))
+					file:SetPosition(info.Offset)
+					print("indices",t,info.Encoding, ":")
+					print(file:ReadBytes(info.Size * (type_size * item_size)):dumphex())
+				end
+			end
+
 			for name, info in pairs(node["osg.Geometry"].VertexAttributeList) do
+				local item_size = info.ItemSize
 				if info.Array then
 					local t, info = next(info.Array)
 					if info then
 						if name == "Vertex" then
 							local file = vfs.Open(output_folder .. info.File:match("(.+)%.gz"))
-							local ints = {}
-
-							for i = 1, math.huge do
-								ints[i] = (file:ReadVarInt()-(0xFFFF/2))/32000
-								if file:GetPosition() >= file:GetSize() then break end
+							file:SetPosition(info.Offset)
+							for i = 1, info.Size do
+								vertices[i] = vertices[i] or {}
+								vertices[i].pos = Vec3(file:ReadByte(), file:ReadByte(), file:ReadByte())
 							end
 
-							--if true then
-								local vertices = {}
+							local type_size = require("ffi").sizeof(info.Encoding == "varint" and "uint8_t" or t:lower():gsub("Array", "_t"))
+							file:SetPosition(info.Offset)
+							print("vertices", t,info.Encoding, ":")
+							print(file:ReadBytes(info.Size * (type_size * item_size)):dumphex())
+						end
 
-								--[[for i = 1, math.huge do
-									vertices[i] = Vec3(file:ReadVarInt(), file:ReadVarInt(), file:ReadVarInt())
-									if file:GetPosition() >= info.Offset + info.Size then
-										break
-									end
-								end]]
-
-								local asdf = 1
-								for i = 0, info.Size, 3 do
-									vertices[asdf] = Vec3(ints[info.Offset + i + 1], ints[info.Offset + i + 2], ints[info.Offset + i + 3])
-									asdf = asdf + 1
-								end
-
-								table.print(vertices)
-							--end
-
-							if false then
-								local t, info = next(node["osg.Geometry"].PrimitiveSetList[1].DrawElementsUInt.Indices.Array)
-
-								local indices = {}
-
-								file:SetPosition(info.Offset)
-
-								--[[for i = 1, math.huge do
-									indices[i] = file:ReadVarInt()
-									if file:GetPosition() >= info.Offset + info.Size then
-										break
-									end
-								end]]
-								for i = 1, info.Size do
-									indices[i] = file:ReadVarInt()
-								end
-								--header_callback
-								--table.print(indices)
+						if name == "Normal" then
+							local file = vfs.Open(output_folder .. info.File:match("(.+)%.gz"))
+							file:SetPosition(info.Offset)
+							for i = 1, info.Size do
+								vertices[i] = vertices[i] or {}
+								vertices[i].normal = Vec3(file:ReadByte(), file:ReadByte(), file:ReadByte()) / 255
 							end
-							--do return end
-							local mesh = render.CreateMeshBuilder()
-							for _, pos in ipairs(vertices) do
-								mesh:AddVertex({pos = pos})
-							end
-							--for _, index in ipairs(indices) do
-								--print(vertices[index], index)
-								--mesh:AddVertex({pos = vertices[index]})
-						--	end
 
-							mesh:Upload()
-
-							prototype.SafeRemove(TEST)
-
-							local model = entities.CreateEntity("visual")
-							model:AddMesh(mesh)
-
-							TEST = model
+							local type_size = require("ffi").sizeof(info.Encoding == "varint" and "uint8_t" or t:lower():gsub("Array", "_t"))
+							file:SetPosition(info.Offset)
+							print("normals", t,info.Encoding, ":")
+							print(file:ReadBytes(info.Size * (type_size * item_size)):dumphex())
 						end
 					end
 				end
+			end
+
+			if render.IsGBufferReady() then
+				local mesh = render.CreateMeshBuilder()
+				--mesh:SetIndices(indices)
+				mesh:SetVertices(vertices)
+				mesh:Upload()
+
+				prototype.SafeRemove(TEST)
+				local model = entities.CreateEntity("visual")
+				model:AddMesh(mesh)
+				TEST = model
 			end
 		end
 	end
@@ -92,14 +96,28 @@ local function parse_scene(id)
 	huh(tbl)
 end
 
+if vfs.IsFile(output_folder .. "file.osgjs") then
+	parse_scene(id)
+	return
+end
+
+local function temp_ssl_download(url, callback)
+	local p = io.popen("wget -O - -o /dev/null " .. url)
+	local str = p:read("*all")
+	p:close()
+	callback(str)
+end
 
 sockets.Download("https://sketchfab.com/models/" .. id .. "/embed", function(str)
-	local tbl = serializer.Decode("json", str:match('prefetchedData%[ "/i/models/' .. id .. '" %] = (%b{})'))
-	local url = tbl.files.polygon.url
+	str = str:match('prefetchedData%[ "/i/models/' .. id .. '" %] = (%b{})')
+	str = str:gsub("\r", "\n")
+	str = str:gsub("\n.*\n", "")
 
-	print(url)
+	local tbl = serializer.Decode("json", str)
+	local url = tbl.files[1].osgjsUrl
 
-	sockets.Download(url, function(str)
+	--sockets.Download(url, function(str)
+	temp_ssl_download(url, function(str)
 		str = serializer.Decode("gunzip", str)
 		local tbl = serializer.Decode("json", str)
 
@@ -110,20 +128,20 @@ sockets.Download("https://sketchfab.com/models/" .. id .. "/embed", function(str
 
 		for path in str:gmatch('"File": "(.-)"') do
 			if not downloaded[path] then
-				print(url:match("(.+/)") .. path)
-				sockets.Download(url:match("(.+/)") .. path, function(str)
+				downloaded[path] = true
+				temp_ssl_download(url:match("(.+/)") .. path, function(str)
 					str = serializer.Decode("gunzip", str)
+					vfs.CreateFoldersFromPath("os", output_folder .. path:match("(.+)%.gz"))
 					vfs.Write(output_folder .. path:match("(.+)%.gz"), str)
 					downloaded[path] = nil
 					if table.count(downloaded) == 1 then
-						--parse_scene(id)
+						parse_scene(id)
 					end
 				end)
-				downloaded[path] = true
 			end
 		end
 	end)
-
+do return end
 	local tbl = serializer.Decode("json", str:match('prefetchedData%[ "/i/models/' .. id .. '/textures" %] = (%b{})'))
 
 	for i,v in ipairs(tbl.results) do
