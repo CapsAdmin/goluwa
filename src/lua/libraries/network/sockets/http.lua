@@ -204,7 +204,7 @@ function sockets.Request(info)
 					return
 				end
 
-				if info.method == "HEAD" then
+				if info.method == "HEAD" or header["content-length"] == 0 then
 					done(self)
 					return
 				end
@@ -278,10 +278,22 @@ function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 		url = url,
 		on_chunks = on_chunks,
 		callback = function(data)
-			if sockets.debug_download then llog("finished downloading ", url) end
-			cb:stop(url, data and data.content)
-			cb:uncache(url)
-			active_downloads[url] = nil
+			if not data then
+				if on_fail then
+					on_fail("data is nil")
+				end
+			elseif data.header["content-length"] == 0 then
+				if on_fail then
+					on_fail("content length is zero")
+				end
+			else
+				if sockets.debug_download then
+					llog("finished downloading ", url)
+				end
+				cb:stop(url, data.content)
+				cb:uncache(url)
+				active_downloads[url] = nil
+			end
 			pop_download()
 		end,
 		header_callback = function(header)
