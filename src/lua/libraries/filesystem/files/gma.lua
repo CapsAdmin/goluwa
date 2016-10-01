@@ -8,7 +8,7 @@ CONTEXT.Base = "generic_archive"
 CONTEXT.Position = 5
 
 function CONTEXT:OnParseArchive(file, archive_path)
-	if archive_path:endswith(".gma/") then
+	if not archive_path:endswith(".gma") then
 		return false, "archive path does not end with .gma"
 	end
 
