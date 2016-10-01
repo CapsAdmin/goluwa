@@ -104,7 +104,7 @@ function globals.EyePos()
 end
 
 function globals.EyeAngles()
-	return gmod.env.Angles(render.camera_3d:GetAngles():Unpack())
+	return gmod.env.Angle(render.camera_3d:GetAngles():Unpack())
 end
 
 function globals.FindMetaTable(name)

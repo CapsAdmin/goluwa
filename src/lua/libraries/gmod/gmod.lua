@@ -318,7 +318,7 @@ function gmod.Run()
 	gmod.env.hook.Run("InitPostEntity")
 
 	event.AddListener("Update", "gmod", function()
-		local tbl = gmod.env.hook.Run("CalcView", LocalPlayer(), gmod.env.EyePos(), gmod.env.EyeAngles(), math.deg(render.camera_3d:GetFOV()), render.camera_3d:GetNearZ(), render.camera_3d:GetFarZ())
+		local tbl = gmod.env.hook.Run("CalcView", gmod.env.LocalPlayer(), gmod.env.EyePos(), gmod.env.EyeAngles(), math.deg(render.camera_3d:GetFOV()), render.camera_3d:GetNearZ(), render.camera_3d:GetFarZ())
 		if tbl then
 			if tbl.origin then render.camera_3d:SetPosition(tbl.origin.v) end
 			if tbl.angles then render.camera_3d:SetRotation(tbl.angles.v) end
