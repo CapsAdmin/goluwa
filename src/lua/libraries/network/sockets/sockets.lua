@@ -293,6 +293,10 @@ do -- tcp socket meta
 			local sock = self.socket
 			sock:settimeout(0)
 
+			if self.TimeoutLength and system.GetFrameTime() > self.TimeoutLength / 2 then
+				self:Timeout(false)
+			end
+
 			-- check connection
 			if self.connecting then
 				local res, msg = sock:getpeername()
