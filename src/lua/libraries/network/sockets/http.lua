@@ -328,7 +328,7 @@ function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 				pop_download()
 
 				if on_fail then
-					on_fail()
+					on_fail(tostring(code))
 				end
 
 				return false
