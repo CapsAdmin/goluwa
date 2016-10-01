@@ -186,7 +186,7 @@ META.tags.physics =
 		{
 			pos = {x = 0, y = 0},
 			vel = {x = vx, y = vy},
-			siz = {w = self.tag_width, h = self.tag_height},
+			siz = {x = self.tag_width, y = self.tag_height},
 			rand_mult = rand_mult,
 			drag = drag,
 		}
