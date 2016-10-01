@@ -193,7 +193,7 @@ do -- translate path to useful data
 			local folders = {}
 
 			for i = 0, 100 do
-				local folder = vfs.GetParentFolder(self.full_path, i)
+				local folder = vfs.GetParentFolderFromPath(self.full_path, i)
 
 				if folder == "" then
 					break
