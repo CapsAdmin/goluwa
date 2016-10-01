@@ -135,6 +135,7 @@ function META:Initialize()
 			end
 		end
 
+
 		if SOCKETS then
 			local supported = {
 				ttf = true,
@@ -163,9 +164,8 @@ function META:Initialize()
 				end,
 				function(reason)
 					llog("unable to download %s from google web fonts: %s", self.Path, reason)
-					local url = "http://dl.dafont.com/dl/?f=" .. self.Path:lower():gsub(" ", "_")
 					sockets.Download(
-						url,
+						"http://dl.dafont.com/dl/?f=" .. self.Path:lower():gsub(" ", "_"),
 						function(zip_content)
 							vfs.Write("data/temp_dafont.zip", zip_content)
 							for _, full_path in pairs(vfs.Find(R("data/temp_dafont.zip") .. "/", true)) do
@@ -179,17 +179,16 @@ function META:Initialize()
 						end,
 						function(reason)
 							llog("unable to download %s from dafont: %s", self.Path, reason)
-							local url = "http://dl.1001fonts.com/" .. self.Path:lower():gsub(" ", "-") .. ".zip"
 							sockets.Download(
-								url,
+								"http://dl.1001fonts.com/" .. self.Path:lower():gsub(" ", "-") .. ".zip",
 								function(zip_content)
 									vfs.Write("data/temp_dafont.zip", zip_content)
 									for fmt in pairs(supported) do
 										local files = vfs.Find(R("data/temp_dafont.zip") .. "/"..fmt.."/", true)
-										table.sort(files, function(a, b) return a < b end) -- choose shortest name
+										table.sort(files, function(a, b) return #a < #b end) -- choose shortest name
 										for _, full_path in ipairs(files) do
 											vfs.Write("downloads/cache/" .. crypto.CRC32(self.Path) .. "." .. fmt, vfs.Read(full_path))
-											load("downloads/cache/" .. crypto.CRC32(self.Path) .. ext)
+											load("downloads/cache/" .. crypto.CRC32(self.Path) .. "." .. fmt)
 											break
 										end
 									end
