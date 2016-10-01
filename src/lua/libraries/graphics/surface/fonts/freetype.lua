@@ -136,6 +136,23 @@ function META:Initialize()
 		end
 
 		if SOCKETS then
+			local supported = {
+				ttf = true,
+				ttc = true,
+				cff = true,
+				woff = true,
+				otf = true,
+				cff = true,
+				otc = true,
+				pfa = true,
+				pfb = true,
+				cid = true,
+				sfnt = true,
+				pcf = true,
+				fnt = true,
+				bdf = true,
+				pfr = true,
+			}
 			sockets.Download(
 				"http://fonts.googleapis.com/css?family=" .. self.Path:gsub("%s", "+"),
 				function(data)
@@ -146,26 +163,44 @@ function META:Initialize()
 				end,
 				function(reason)
 					llog("unable to download %s from google web fonts: %s", self.Path, reason)
-					local url = "http://dl.dafont.com/dl/?f=" .. self.Path:lower():gsub(" ", "_") .. ".zip"
-					llog("trying %s", url)
+					local url = "http://dl.dafont.com/dl/?f=" .. self.Path:lower():gsub(" ", "_")
 					sockets.Download(
 						url,
 						function(zip_content)
 							vfs.Write("data/temp_dafont.zip", zip_content)
-							local base = R("data/temp_dafont.zip") -- FIX ME
-							for _, v in pairs(vfs.Find(base .. "/")) do
-								if v:find(".ttf") then
-									local ext = v:match(".+(%.%a+)") or ".dat"
-									vfs.Write("downloads/cache/" .. crypto.CRC32(self.Path) .. ext, vfs.Read(base .."/".. v))
+							for _, full_path in pairs(vfs.Find(R("data/temp_dafont.zip") .. "/", true)) do
+								if supported[full_path:match(".+%.(.+)")] then
+									local ext = full_path:match(".+(%.%a+)") or ".dat"
+									vfs.Write("downloads/cache/" .. crypto.CRC32(self.Path) .. ext, vfs.Read(full_path))
+									load("downloads/cache/" .. crypto.CRC32(self.Path) .. ext)
+									break
 								end
 							end
 						end,
 						function(reason)
 							llog("unable to download %s from dafont: %s", self.Path, reason)
-							llog("loading default font instead")
-							load(surface.default_font_path)
-						end,
-						crypto.CRC32(self.Path)
+							local url = "http://dl.1001fonts.com/" .. self.Path:lower():gsub(" ", "-") .. ".zip"
+							sockets.Download(
+								url,
+								function(zip_content)
+									vfs.Write("data/temp_dafont.zip", zip_content)
+									for fmt in pairs(supported) do
+										local files = vfs.Find(R("data/temp_dafont.zip") .. "/"..fmt.."/", true)
+										table.sort(files, function(a, b) return a < b end) -- choose shortest name
+										for _, full_path in ipairs(files) do
+											vfs.Write("downloads/cache/" .. crypto.CRC32(self.Path) .. "." .. fmt, vfs.Read(full_path))
+											load("downloads/cache/" .. crypto.CRC32(self.Path) .. ext)
+											break
+										end
+									end
+								end,
+								function(reason)
+									llog("unable to download %s from 1001fonts: %s", self.Path, reason)
+									llog("loading default font instead")
+									load(surface.default_font_path)
+								end
+							)
+						end
 					)
 			end)
 		end
