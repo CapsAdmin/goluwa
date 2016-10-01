@@ -88,6 +88,9 @@ function gmod.PreprocessLua(code)
 end
 
 function gmod.SetFunctionEnvironment(func)
+	if not gmod.env then
+		gmod.Initialize()
+	end
 	setfenv(func, gmod.env)
 end
 
@@ -139,7 +142,7 @@ function gmod.WrapObject(obj, meta)
 end
 
 event.AddListener("PreLoadString", "gmod_preprocess", function(code, path)
-	if not gmod.dir or not path:startswith(gmod.dir) then return end
+	if not (gmod.dir and path:startswith(gmod.dir) or path:find("%.gma")) then return end
 
 	code = gmod.PreprocessLua(code)
 
@@ -149,7 +152,7 @@ event.AddListener("PreLoadString", "gmod_preprocess", function(code, path)
 end)
 
 event.AddListener("PostLoadString", "gmod_function_env", function(func, path)
-	if not gmod.dir or not path:startswith(gmod.dir) then return end
+	if not (gmod.dir and path:startswith(gmod.dir) or path:find("%.gma")) then return end
 
 	gmod.SetFunctionEnvironment(func)
 end)
@@ -260,12 +263,29 @@ function gmod.Initialize()
 		load_entities("lua/weapons", "SWEP", gmod.env.weapons.Register, function() return {Primary = {}, Secondary = {}} end)
 		load_entities("lua/effects", "EFFECT", gmod.env.effects.Register, function() return {} end)
 
+		do
+			gmod.translation = {}
+			gmod.translation2 = {}
+
+			for path in vfs.Iterate("resource/localization/en/", true) do
+				for _, line in ipairs(vfs.Read(path):split("\n")) do
+					local key, val = line:match("(.-)=(.+)")
+					if key and val then
+						gmod.translation[key] = val:trim()
+						gmod.translation2["#" .. key] = gmod.translation[key]
+					end
+				end
+			end
+		end
+
+		gmod.current_gamemode = gmod.gamemodes.sandbox
+		gmod.env.GAMEMODE = gmod.current_gamemode
+
 		gmod.init = true
 	end
+end
 
-	gmod.current_gamemode = gmod.gamemodes.sandbox
-	gmod.env.GAMEMODE = gmod.current_gamemode
-
+function gmod.Run()
 	input.Bind("q", "+menu")
 	input.Bind("q", "-menu")
 
@@ -279,21 +299,6 @@ function gmod.Initialize()
 	input.Bind("tab", "-score", function()
 		gmod.env.hook.Run("ScoreboardHide")
 	end)
-
-	do
-		gmod.translation = {}
-		gmod.translation2 = {}
-
-		for path in vfs.Iterate("resource/localization/en/", true) do
-			for _, line in ipairs(vfs.Read(path):split("\n")) do
-				local key, val = line:match("(.-)=(.+)")
-				if key and val then
-					gmod.translation[key] = val:trim()
-					gmod.translation2["#" .. key] = gmod.translation[key]
-				end
-			end
-		end
-	end
 
 	--[[for dir in vfs.Iterate("addons/") do
 		local dir = gmod.dir .. "addons/" ..  dir
@@ -313,14 +318,30 @@ function gmod.Initialize()
 	gmod.env.hook.Run("InitPostEntity")
 
 	event.AddListener("Update", "gmod", function()
-		--gmod.env.hook.Run("CalcView", )
+		local tbl = gmod.env.hook.Run("CalcView", LocalPlayer(), gmod.env.EyePos(), gmod.env.EyeAngles(), math.deg(render.camera_3d:GetFOV()), render.camera_3d:GetNearZ(), render.camera_3d:GetFarZ())
+		if tbl then
+			if tbl.origin then render.camera_3d:SetPosition(tbl.origin.v) end
+			if tbl.angles then render.camera_3d:SetRotation(tbl.angles.v) end
+			if tbl.fov then render.camera_3d:SetFOV(tbl.fov) end
+			if tbl.znear then render.camera_3d:SetNearZ(tbl.znear) end
+			if tbl.zfar then render.camera_3d:SetFarZ(tbl.zfar) end
+			--if tbl.drawviewer then  end
+		end
+
 		--gmod.env.hook.Run("CalcViewModelView", )
 		local frac = gmod.env.hook.Run("AdjustMouseSensitivity", 0, 90, 90)
 		--gmod.env.hook.Run("CalcMainActivity", )
 		--gmod.env.hook.Run("TranslateActivity", )
 		--gmod.env.hook.Run("UpdateAnimation", )
+
+		gmod.env.hook.Run("Tick")
+		gmod.env.hook.Run("Think")
+	end)
+	event.AddListener("PreGBufferModelPass", "gmod", function()
 		gmod.env.hook.Run("PreRender")
-		gmod.env.hook.Run("RenderScene", gmod.env.Vector(render.camera_3d:GetPosition():Unpack()), gmod.env.Angle(render.camera_3d:GetAngles():GetDeg():Unpack()), math.deg(render.camera_3d:GetFOV()))
+	end)
+	event.AddListener("DrawScene", "gmod", function()
+		gmod.env.hook.Run("RenderScene", gmod.env.EyePos(), gmod.env.EyeAngles(), math.deg(render.camera_3d:GetFOV()))
 		gmod.env.hook.Run("DrawMonitors")
 		gmod.env.hook.Run("PreDrawSkyBox")
 		gmod.env.hook.Run("SetupSkyboxFog")
@@ -338,28 +359,41 @@ function gmod.Initialize()
 		gmod.env.hook.Run("PreDrawTranslucentRenderables", false, false)
 		--gmod.env.hook.Run("DrawPhysgunBeam", player)
 		gmod.env.hook.Run("PostDrawTranslucentRenderables", false, false)
+	end)
+	event.AddListener("PostGBufferModelPass", "gmod", function()
 		gmod.env.hook.Run("GetMotionBlurValues", 0, 0, 0, 0)
 		--gmod.env.hook.Run("PreDrawViewModel")
 		--gmod.env.hook.Run("PreDrawViewModel")
 		--gmod.env.hook.Run("PostDrawViewModel")
 		gmod.env.hook.Run("PreDrawEffects")
-		gmod.env.hook.Run("RenderScreenspaceEffects")
+	end)
+
+	event.AddListener("GBufferPostPostProcess", "gmod", function()
 		gmod.env.hook.Run("PostDrawEffects")
+	end)
+	event.AddListener("GBufferPrePostProcess", "gmod", function()
+		gmod.env.hook.Run("RenderScreenspaceEffects")
+		gmod.env.hook.Run("PostRender")
+	end)
+
+	event.AddListener("PreDrawGUI", "gmod", function()
 		gmod.env.hook.Run("PreDrawHUD")
 		gmod.env.hook.Run("HUDPaintBackground")
-		gmod.env.hook.Run("HUDPaint")
-		gmod.env.hook.Run("HUDDrawScoreBoard")
-		gmod.env.hook.Run("PostDrawHUD")
-		gmod.env.hook.Run("DrawOverlay")
-		gmod.env.hook.Run("PostRenderVGUI")
-		gmod.env.hook.Run("PostRender")
-
-		gmod.env.hook.Run("Tick")
-		gmod.env.hook.Run("Think")
 
 		for k,v in ipairs(gmod.hud_element_list) do
 			gmod.env.hook.Run("HUDShouldDraw", v)
 		end
+	end)
+
+	event.AddListener("DrawGUI", "gmod", function()
+		gmod.env.hook.Run("HUDPaint")
+		gmod.env.hook.Run("HUDDrawScoreBoard")
+	end)
+
+	event.AddListener("PostDrawGUI", "gmod", function()
+		gmod.env.hook.Run("PostDrawHUD")
+		gmod.env.hook.Run("DrawOverlay")
+		gmod.env.hook.Run("PostRenderVGUI")
 	end)
 end
 

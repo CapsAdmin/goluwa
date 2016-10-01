@@ -33,6 +33,8 @@ function render.Sort3DScene()
 end
 
 function render.Draw3DScene(what, dist)
+	event.Call("DrawScene")
+
 	if needs_sorting then
 		render.Sort3DScene()
 		needs_sorting = false

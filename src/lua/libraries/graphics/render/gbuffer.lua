@@ -262,6 +262,8 @@ function render.DrawGBuffer(what, dist)
 	render.gbuffer_mixer_buffer:End()
 
 	surface.PopMatrix()
+
+	event.Call("GBufferPostPostProcess")
 end
 
 local shader_cvar = pvars.Setup("render_gshader", "template", function(_, first) if not first and gbuffer_enabled then render.InitializeGBuffer() end end)

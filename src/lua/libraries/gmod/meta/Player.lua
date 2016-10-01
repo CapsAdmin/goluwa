@@ -8,19 +8,15 @@ function gmod.env.LocalPlayer()
 end
 
 function META:EyePos()
-	return gmod.env.Vector(render.camera_3d:GetPosition():Unpack())
+	return gmod.env.EyePos()
 end
 
-gmod.env.EyePos = META.EyePos
-
-function META:EyeAng()
-	return gmod.env.Angles(render.camera_3d:GetAngles():Unpack())
+function META:EyeAngles()
+	return gmod.env.EyeAngles()
 end
-
-gmod.env.EyeAng = META.EyeAng
 
 function META:GetAimVector()
-	return gmod.env.Vector(render.camera_3d:GetAngles():GetForward():Unpack())
+	return gmod.env.EyeVector()
 end
 
 function META:GetViewEntity()

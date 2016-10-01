@@ -95,6 +95,18 @@ function globals.VGUIFrameTime() return system.GetElapsedTime() end
 function globals.CurTime() return system.GetElapsedTime() end --system.GetServerTime()
 function globals.SysTime() return system.GetTime() end --system.GetServerTime()
 
+function globals.EyeVector()
+	return gmod.env.Vector(render.camera_3d:GetAngles():GetForward():Unpack())
+end
+
+function globals.EyePos()
+	return gmod.env.Vector(render.camera_3d:GetPosition():Unpack())
+end
+
+function globals.EyeAngles()
+	return gmod.env.Angles(render.camera_3d:GetAngles():Unpack())
+end
+
 function globals.FindMetaTable(name)
 	return globals._R[name]
 end
