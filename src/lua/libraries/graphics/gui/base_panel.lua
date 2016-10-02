@@ -1783,13 +1783,13 @@ do -- layout
 	end
 
 	function META:Layout(now)
+		if self.in_layout then return end
 		if now and (self.LayoutWhenInvisible or not self.draw_no_draw) then
 
-			if not self.in_layout then
-				self.in_layout = true
-				self:OnLayout(self:GetLayoutScale(), self:GetSkin())
-				self.in_layout = false
-			end
+			self.in_layout = true
+			self:OnLayout(self:GetLayoutScale(), self:GetSkin())
+			self.in_layout = false
+
 
 			self:ExecuteLayoutCommands()
 			if self.Stack then
@@ -1808,6 +1808,10 @@ do -- layout
 			self:MarkCacheDirty()
 
 			self.layout_me = false
+
+			self.in_layout = true
+			self:OnPostLayout()
+			self.in_layout = false
 		else
 			self.layout_me = true
 		end
@@ -2036,7 +2040,6 @@ do -- layout
 
 			if not self.laid_out_y then
 				self:SetY(parent:GetHeight() == math.huge and 999999999999 or parent:GetHeight()) -- :(
-				print("wow")
 			end
 
 			self:SetY(math.max(self:GetY(), 1))
@@ -2408,6 +2411,7 @@ do -- events
 	function META:OnPositionChanged(pos) end
 	function META:OnScroll(fraction) end
 	function META:OnLayout() end
+	function META:OnPostLayout() end
 	function META:OnShow() end
 	function META:OnHide() end
 	function META:OnMouseHoverTrigger(x, y) end
