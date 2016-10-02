@@ -22,3 +22,43 @@ end
 function META:GetViewEntity()
 	return NULL
 end
+
+function META:Team()
+	return 0
+end
+
+function META:Frags()
+	return 0
+end
+
+function META:Deaths()
+	return 0
+end
+
+function META:Ping()
+	return 0
+end
+
+function META:IsMuted()
+	return false
+end
+
+function META:IsBot()
+	return false
+end
+
+function META:SteamID()
+	return "STEAM_0:1:9355639"
+end
+
+function META:SteamID64()
+	return "76561197978977007"
+end
+
+function META:Nick()
+	return self.__obj:GetNick()
+end
+
+function META:ConCommand(str)
+	logn("gmod cmd: ", str)
+end

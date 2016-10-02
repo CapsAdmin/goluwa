@@ -104,9 +104,9 @@ end
 
 function surface.DrawText(str)
 	str = gmod.translation2[str] or str
-	local r,g,b,a = lib.SetColor(txt_r, txt_g, txt_b, txt_a)
+	lib.PushColor(txt_r, txt_g, txt_b, txt_a)
 	lib.DrawText(str)
-	lib.SetColor(r,g,b,a)
+	lib.PopColor()
 end
 
 function surface.PlaySound(path)

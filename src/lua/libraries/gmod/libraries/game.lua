@@ -6,3 +6,5 @@ function game.AddParticles() end
 function game.AddDecal() end
 
 function game.GetMap() return "gm_construct" end
+
+function game.MaxPlayers() return 32 end
