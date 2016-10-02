@@ -180,7 +180,7 @@ function META:GetTall()
 end
 
 function META:SetSize(w,h)
-	self.__obj:SetSize(Vec2(w,h))
+	self.__obj:SetSize(Vec2(tonumber(w),tonumber(h)))
 end
 
 function META:GetSize()
@@ -223,8 +223,16 @@ function META:GetParent()
 	return nil
 end
 
-function META:InvalidateLayout(b)
-	self.__obj:Layout(b)
+function META:InvalidateLayout(now)
+	if self.in_layout then return end
+	if now then
+		self.in_layout = true
+		self:ApplySchemeSettings()
+		self:PerformLayout(self.__obj:GetWidth(), self.__obj:GetHeight())
+		self.in_layout = nil
+	else
+		self.gmod_layout = true
+	end
 end
 
 function META:GetContentSize()
@@ -234,13 +242,14 @@ function META:GetContentSize()
 		return self:GetTextSize()
 	end
 
-	return 0, 0
+	return (panel:GetSizeOfChildren() + panel.text_inset):Unpack()
 end
 
 function META:GetTextSize()
 	local panel = self.__obj
 
-	return surface.GetFont(panel.font_internal):GetTextSize(panel.text_internal)
+	local w, h = surface.GetFont(panel.font_internal):GetTextSize(panel.text_internal)
+	return w + panel.text_inset.x, h + panel.text_inset.y
 end
 
 function META:SizeToContents()
@@ -292,13 +301,13 @@ function META:Dock(enum)
 	if enum == gmod.env.FILL then
 		self.__obj:SetupLayout("center_simple", "fill")
 	elseif enum == gmod.env.LEFT then
-		self.__obj:SetupLayout("center_simple", "left", "fill_y")
+		self.__obj:SetupLayout("center_y_simple", "left", "fill_y")
 	elseif enum == gmod.env.RIGHT then
-		self.__obj:SetupLayout("center_simple", "right", "fill_y")
+		self.__obj:SetupLayout("center_y_simple", "right", "fill_y")
 	elseif enum == gmod.env.TOP then
-		self.__obj:SetupLayout("center_simple", "top", "fill_x")
+		self.__obj:SetupLayout("center_x_simple", "top", "fill_x")
 	elseif enum == gmod.env.BOTTOM then
-		self.__obj:SetupLayout("center_simple", "bottom", "fill_x")
+		self.__obj:SetupLayout("center_x_simple", "bottom", "fill_x")
 	elseif enum == gmod.env.NODOCK then
 		self.__obj:SetupLayout()
 	end
@@ -315,16 +324,18 @@ end
 
 function META:SetContentAlignment(num)
 	self.__obj.content_alignment = num
+	self.__obj:Layout()
 end
 function META:SetExpensiveShadow() end
 function META:Prepare()
-	self:__setup_events()
-	self.prepared = true
+	self.__obj.gmod_prepared = true
 end
 function META:SetPaintBorderEnabled() end
 function META:SetPaintBackgroundEnabled(b)
 	self.__obj.paint_bg = b
 end
+
+META.SetDrawBackground = META.SetPaintBackgroundEnabled
 
 function META:PaintManual(b)
 	self.__obj.draw_manual = b

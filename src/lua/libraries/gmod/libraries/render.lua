@@ -6,6 +6,11 @@ function render.GetBloomTex0() return _G.render.GetErrorTexture() end
 function render.GetBloomTex1() return _G.render.GetErrorTexture() end
 function render.GetScreenEffectTexture() return _G.render.GetErrorTexture() end
 
+function render.PushFilterMin() end
+function render.PushFilterMag() end
+function render.PopFilterMin() end
+function render.PopFilterMag() end
+
 local current_fb
 
 function render.SetRenderTarget(tex)

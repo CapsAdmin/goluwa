@@ -20,7 +20,7 @@ for k,v in pairs(gmod.env) do
 	end
 end
 
-function vgui.CreateX(class, parent, name)
+local function vgui_Create(class, parent, name)
 
 	if not gmod.gui_world:IsValid() then
 		gmod.gui_world = gui.CreatePanel("base")
@@ -53,15 +53,39 @@ function vgui.CreateX(class, parent, name)
 	obj.text_inset = Vec2()
 	obj.text_offset = Vec2()
 	obj.vgui_type = class
-	self:SetPaintBackgroundEnabled(true)
+	--self:SetPaintBackgroundEnabled(true)
 	obj:SetSize(Vec2(64, 24))
 	obj:SetPadding(Rect())
 	obj:SetMargin(Rect())
 
+	self:MouseCapture(false)
+
 	self:SetParent(parent)
 
-	obj.IsInsideParent = function() return true end -- :(
+	obj.OnChildAdd = function(_, child)
+		if obj.gmod_prepared then
+			child = gmod.WrapObject(child, "Panel")
+			if child.__obj.gmod_prepared then
+				self:OnChildAdded(child)
+			end
+		end
+	end
+
+	obj.OnChildRemove = function(_, child)
+		if obj.gmod_prepared then
+			child = gmod.WrapObject(child, "Panel")
+			if child.__obj.gmod_prepared then
+				self:OnChildRemoved(child)
+			end
+		end
+	end
+
 	obj.OnDraw = function()
+		if self.gmod_layout then
+			self:InvalidateLayout(true)
+			self.gmod_layout = nil
+		end
+
 		local paint_bg = self:Paint(obj:GetWidth(), obj:GetHeight())
 
 		if not obj.draw_manual then
@@ -91,21 +115,7 @@ function vgui.CreateX(class, parent, name)
 
 	-- OnChildAdd and such doesn't seem to be called in Init
 
-	function self:__setup_events()
-		obj.OnChildAdd = function(_, child)
-			if not child.prepared then return end
-			child = gmod.WrapObject(child, "Panel")
-			self:OnChildAdded(child)
-		end
-
-		obj.OnChildRemove = function(_, child)
-			if not child.prepared then return end
-			child = gmod.WrapObject(child, "Panel")
-			self:OnChildRemoved(child)
-		end
-	end
-
-	obj.OnLayout = function()
+	obj.OnPostLayout = function()
 		local panel = obj
 
 		if panel.vgui_type == "label" then
@@ -116,10 +126,10 @@ function vgui.CreateX(class, parent, name)
 				panel.text_offset = (panel:GetSize() / 2) - (Vec2(w, h) / 2)
 			elseif panel.content_alignment == 4 then
 				panel.text_offset.x = m:GetLeft()
-				panel.text_offset.y = (panel:GetHeight() / 2) + (h / 2)
+				panel.text_offset.y = (panel:GetHeight() / 2) - (h / 2)
 			elseif panel.content_alignment == 6 then
 				panel.text_offset.x = panel:GetWidth() - w - m:GetRight()
-				panel.text_offset.y = (panel:GetHeight() / 2) + (h / 2)
+				panel.text_offset.y = (panel:GetHeight() / 2) - (h / 2)
 			elseif panel.content_alignment == 2 then
 				panel.text_offset.x = (panel:GetWidth() / 2) - (w / 2)
 				panel.text_offset.y = panel:GetHeight() - h - m:GetBottom()
@@ -143,9 +153,7 @@ function vgui.CreateX(class, parent, name)
 			panel.text_offset = panel.text_offset + panel.text_inset
 		end
 
-		self:ApplySchemeSettings()
-
-		self:PerformLayout(obj:GetWidth(), obj:GetHeight())
+		self:InvalidateLayout(true)
 	end
 
 	obj.OnMouseInput = function(_, button, press)
@@ -164,8 +172,6 @@ function vgui.CreateX(class, parent, name)
 		end
 	end
 
-	self:MouseCapture(false)
-
 	obj.OnKeyInput = function(_, key, press)
 		if press and self.OnKeyCodePressed then
 			if translate_key[key] then
@@ -176,12 +182,26 @@ function vgui.CreateX(class, parent, name)
 		end
 	end
 
+	function obj:IsInsideParent()
+		if
+			self.Position.x < self.Parent.Size.x and
+			self.Position.y < self.Parent.Size.y and
+			self.Position.x + self.Size.x > 0 and
+			self.Position.y + self.Size.y > 0
+		then
+			return true
+		end
+
+		return false
+	end
+
 	return self
 end
 
-if not vgui.Create then
-	vgui.Create = vgui.CreateX
-	vgui.CreateX = nil
+if vgui.CreateX then
+	vgui.CreateX = vgui_Create
+else
+	vgui.Create = vgui_Create
 end
 
 function vgui.GetHoveredPanel()

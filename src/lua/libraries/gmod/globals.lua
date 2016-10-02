@@ -85,6 +85,7 @@ function globals.AddConsoleCommand(name)
 end
 
 function globals.RunConsoleCommand(...)
+	logn("gmod cmd: ", table.concat({...}, " "))
 	commands.RunCommand(...)
 end
 

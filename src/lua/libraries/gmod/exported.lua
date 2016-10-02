@@ -1208,7 +1208,7 @@ return {
 	["functions"] = {
 		["vgui"] = {
 			["GetHoveredPanel"] = true,
-			["CreateX"] = true,
+			--["CreateX"] = true,
 			["GetKeyboardFocus"] = true,
 			["FocusedHasParent"] = true,
 			["CursorVisible"] = true,
