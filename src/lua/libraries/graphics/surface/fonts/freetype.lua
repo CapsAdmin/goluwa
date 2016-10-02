@@ -48,11 +48,7 @@ function META:Initialize()
 
 			self:OnLoad()
 		else
-			local err = freetype.ErrorCodeToString(code) or code
-			if err == "unknown file format" then
-				return false, "unknown format"
-			end
-			error("unable to initialize font: " .. err)
+			error("unable to initialize font ("..path.."): " .. (freetype.ErrorCodeToString(code) or code))
 		end
 	end
 
