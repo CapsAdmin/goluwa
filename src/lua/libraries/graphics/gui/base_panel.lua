@@ -190,7 +190,7 @@ do -- call on hide
 	function META:SetVisible(bool)
 		self.call_on_hide = self.call_on_hide or {}
 
-		self.Visible = bool
+		self.Visible = not not bool -- nil would make self.Visible be the default which is true
 		if bool then
 			self:OnShow()
 		else
