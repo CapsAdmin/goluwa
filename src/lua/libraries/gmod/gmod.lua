@@ -132,7 +132,8 @@ function gmod.WrapObject(obj, meta)
 
 		obj:CallOnRemove(function()
 			if gmod.objects[meta] and gmod.objects[meta][obj] then
-				prototype.MakeNULL(gmod.objects[meta][obj])
+				local obj = gmod.objects[meta][obj]
+				event.Delay(function() prototype.MakeNULL(obj) end)
 				gmod.objects[meta][obj] = nil
 			end
 		end)

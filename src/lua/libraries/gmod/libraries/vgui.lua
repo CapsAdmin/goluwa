@@ -60,19 +60,9 @@ function vgui.CreateX(class, parent, name)
 
 	self:SetParent(parent)
 
-
-	if parent and parent.lol then
-		LOL = obj
-		print(LOL:GetParent())
-	end
-
 	obj.IsInsideParent = function() return true end -- :(
 	obj.OnDraw = function()
-		local paint_bg
-
-		if self.Paint then
-			paint_bg = self:Paint(obj:GetWidth(), obj:GetHeight())
-		end
+		local paint_bg = self:Paint(obj:GetWidth(), obj:GetHeight())
 
 		if not obj.draw_manual then
 			if obj.paint_bg and paint_bg ~= nil then
@@ -91,21 +81,28 @@ function vgui.CreateX(class, parent, name)
 			end
 		end
 
-		if self.PaintOver then
-			self:PaintOver(obj:GetWidth(), obj:GetHeight())
-		end
+		self:PaintOver(obj:GetWidth(), obj:GetHeight())
 	end
-	obj:CallOnRemove(function() if self.OnDeletion then self:OnDeletion() end end)
-	obj.OnUpdate = function() if self.Think then self:Think() end if self.AnimationThink then self:AnimationThink() end end
-	obj.OnMouseMove = function(_, x, y) if self.OnCursorMoved then self:OnCursorMoved(x, y) end end
-	obj.OnMouseEnter = function() if self.OnMouseEnter then self:OnMouseEnter() end end
-	obj.OnCursorExited = function() if self.OnCursorExited then self:OnCursorExited() end end
+	obj:CallOnRemove(function() self:OnDeletion() end)
+	obj.OnUpdate = function() self:Think() self:AnimationThink() end
+	obj.OnMouseMove = function(_, x, y) self:OnCursorMoved(x, y) end
+	obj.OnMouseEnter = function() self:OnCursorEntered() end
+	obj.OnMouseExit = function() self:OnCursorExited() end
 
 	-- OnChildAdd and such doesn't seem to be called in Init
 
 	function self:__setup_events()
-		obj.OnChildAdd = function(_, child) if self.OnChildAdded then self:OnChildAdded(gmod.WrapObject(child, "Panel")) end end
-		obj.OnChildRemove = function(_, child) if self.OnChildRemoved then self:OnChildRemoved(gmod.WrapObject(child, "Panel")) end end
+		obj.OnChildAdd = function(_, child)
+			if not child.prepared then return end
+			child = gmod.WrapObject(child, "Panel")
+			self:OnChildAdded(child)
+		end
+
+		obj.OnChildRemove = function(_, child)
+			if not child.prepared then return end
+			child = gmod.WrapObject(child, "Panel")
+			self:OnChildRemoved(child)
+		end
 	end
 
 	obj.OnLayout = function()
@@ -146,13 +143,9 @@ function vgui.CreateX(class, parent, name)
 			panel.text_offset = panel.text_offset + panel.text_inset
 		end
 
-		if self.ApplySchemeSettings then
-			self:ApplySchemeSettings()
-		end
+		self:ApplySchemeSettings()
 
-		if self.PerformLayout then
-			self:PerformLayout(obj:GetWidth(), obj:GetHeight())
-		end
+		self:PerformLayout(obj:GetWidth(), obj:GetHeight())
 	end
 
 	obj.OnMouseInput = function(_, button, press)

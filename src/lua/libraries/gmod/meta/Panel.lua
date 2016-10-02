@@ -17,7 +17,7 @@ function META:OnKeyCodePressed() end
 function META:OnMousePressed() end
 function META:OnMouseReleased() end
 function META:OnMouseWheeled() end
-function META:OnRemove() end
+function META:OnDeletion() end
 function META:OpeningURL() end
 function META:PageTitleChanged() end
 function META:Paint() end
@@ -317,7 +317,10 @@ function META:SetContentAlignment(num)
 	self.__obj.content_alignment = num
 end
 function META:SetExpensiveShadow() end
-function META:Prepare() self:__setup_events() end
+function META:Prepare()
+	self:__setup_events()
+	self.prepared = true
+end
 function META:SetPaintBorderEnabled() end
 function META:SetPaintBackgroundEnabled(b)
 	self.__obj.paint_bg = b
