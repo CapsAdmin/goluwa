@@ -1575,12 +1575,11 @@ do -- layout
 			for _, child in ipairs(self:GetChildren()) do
 				if
 					child ~= panel and
-					(always or child.laid_out) and
+					(always or child.laid_out_x or child.laid_out_y) and
 					child.Visible and
 					not child.ThreeDee and
 					not child.IgnoreLayout and
-					(panel.CollisionGroup == "none" or panel.CollisionGroup == child.CollisionGroup) and
-					(panel.lol == nil or panel.lol ~= child.lol)
+					(panel.CollisionGroup == "none" or panel.CollisionGroup == child.CollisionGroup)
 				then
 					local child_left, child_top, child_right, child_bottom = child:GetWorldRectFast()
 
@@ -1694,7 +1693,8 @@ do -- layout
 				if child.LayoutSize then
 					child:SetSize(child.LayoutSize:Copy())
 				end
-				child.laid_out = false
+				child.laid_out_x = false
+				child.laid_out_y = false
 			end
 		end
 
@@ -1839,13 +1839,15 @@ do -- layout
 	do -- layout commands
 
 		function META:ResetLayout()
-			self.laid_out = false
+			self.laid_out_x = false
+			self.laid_out_y = false
 
 			for _, child in ipairs(self:GetChildren()) do
 				if child.LayoutSize then
 					child:SetSize(child.LayoutSize:Copy())
 				end
-				child.laid_out = false
+				child.laid_out_x = false
+				child.laid_out_y = false
 			end
 		end
 
@@ -1873,7 +1875,8 @@ do -- layout
 
 			self:SetWidth(pos.x + self.Margin:GetRight() + (pnl and pnl.Padding:GetRight() or 0))
 
-			self.laid_out = true
+			self.laid_out_x = true
+			self.laid_out_y = true
 		end
 
 		function META:SizeToHeight()
@@ -1893,7 +1896,8 @@ do -- layout
 			--self:SetHeight(left.y)
 			self:SetHeight(pos.y + self.Margin.y + (pnl and pnl.Padding:GetBottom() or 0))
 
-			self.laid_out = true
+			self.laid_out_x = true
+			self.laid_out_y = true
 		end
 
 		function META:FillX(percent)
@@ -1922,7 +1926,7 @@ do -- layout
 			self:SetX(math.max(x, left.x)) -- HACK???
 			self:SetWidth(math.max(w, min_width))
 
-			self.laid_out = true
+			self.laid_out_x = true
 		end
 
 		function META:FillY(percent)
@@ -1951,7 +1955,7 @@ do -- layout
 			self:SetY(math.max(y, top.y)) -- HACK???
 			self:SetHeight(math.max(h, min_height))
 
-			self.laid_out = true
+			self.laid_out_y = true
 		end
 
 		function META:Center()
@@ -1967,7 +1971,7 @@ do -- layout
 
 			self:SetX(math.lerp(0.5, left.x, right.x))
 
-			self.laid_out = true
+			self.laid_out_x = true
 		end
 
 		function META:CenterY()
@@ -1977,7 +1981,7 @@ do -- layout
 			local bottom = parent:RayCast(self, top.x, parent:GetHeight(), self.layout_collide)
 			self:SetY(top.y + (bottom.y/2 - self:GetHeight()/2) - self.Padding:GetTop() + self.Padding:GetBottom())
 
-			self.laid_out = true
+			self.laid_out_y = true
 		end
 
 
@@ -1986,7 +1990,7 @@ do -- layout
 
 			self:SetX(parent:GetWidth() / 2 - self:GetWidth() / 2)
 
-			self.laid_out = true
+			self.laid_out_x = true
 		end
 
 		function META:CenterYSimple()
@@ -1994,25 +1998,21 @@ do -- layout
 
 			self:SetY(parent:GetHeight() / 2 - self:GetHeight() / 2)
 
-			self.laid_out = true
+			self.laid_out_y = true
 		end
 
 		function META:CenterSimple()
 			local parent = self:GetParent()
 
-			local laid_out
-
 			if parent:GetWidth() ~= math.huge then
 				self:SetX(parent:GetWidth() / 2 - self:GetWidth() / 2)
-				laid_out = true
+				self.laid_out_x = true
 			end
 
 			if parent:GetHeight() ~= math.huge then
 				self:SetY(parent:GetHeight() / 2 - self:GetHeight() / 2)
-				laid_out = true
+				self.laid_out_y = true
 			end
-
-			self.laid_out = laid_out
 		end
 
 		function META:CenterXFrame()
@@ -2028,87 +2028,92 @@ do -- layout
 				self:SetX(parent:GetWidth() / 2 - self:GetWidth() / 2)
 			end
 
-			self.laid_out = true
+			self.laid_out_x = true
 		end
 
 		function META:MoveUp()
 			local parent = self:GetParent()
 
-			if not self.laid_out then
+			if not self.laid_out_y then
 				self:SetY(parent:GetHeight() == math.huge and 999999999999 or parent:GetHeight()) -- :(
+				print("wow")
 			end
 
 			self:SetY(math.max(self:GetY(), 1))
 			self:SetY(parent:RayCast(self, self.Position.x, 0, self.layout_collide).y)
 
-			self.laid_out = true
+			self.laid_out_y = true
 		end
 
 		function META:MoveLeft()
 			local parent = self:GetParent()
 
-			if not self.laid_out then
+			if not self.laid_out_x then
 				self:SetX(parent:GetWidth() == math.huge and 999999999999 or parent:GetWidth()) -- :(
 			end
 
 			self:SetX(math.max(self:GetX(), 1))
 			self:SetX(parent:RayCast(self, 0, self.Position.y, self.layout_collide).x)
 
-			self.laid_out = true
+			self.laid_out_x = true
 		end
 
 		function META:MoveDown()
 			local parent = self:GetParent()
 
-			if not self.laid_out then
+			if not self.laid_out_y then
 				self:SetY(0 - self:GetHeight())
 			end
 
 			self:SetY(math.max(self:GetY(), 1))
 			self:SetY(parent:RayCast(self, self.Position.x, parent:GetHeight() - self:GetHeight(), self.layout_collide).y)
 
-			self.laid_out = true
+			self.laid_out_y = true
 		end
 
 		function META:MoveRight()
 			local parent = self:GetParent()
 
-			if not self.laid_out then
+			if not self.laid_out_x then
 				self:SetX(0 - self:GetWidth())
 			end
 
 			self:SetX(math.max(self:GetX(), 1))
 			self:SetX(parent:RayCast(self, parent:GetWidth() - self:GetWidth(), self.Position.y, self.layout_collide).x)
 
-			self.laid_out = true
+			self.laid_out_x = true
 		end
 
 		function META:MoveRightOf(panel)
 			self:SetY(panel:GetY())
 			self:SetX(panel:GetX() + panel:GetWidth())
 
-			self.laid_out = true
+			self.laid_out_x = true
+			self.laid_out_y = true
 		end
 
 		function META:MoveDownOf(panel)
 			self:SetX(panel:GetX())
 			self:SetY(panel:GetY() + panel:GetHeight())
 
-			self.laid_out = true
+			self.laid_out_x = true
+			self.laid_out_y = true
 		end
 
 		function META:MoveLeftOf(panel)
 			self:SetY(panel:GetY())
 			self:SetX(panel:GetX() - self:GetWidth())
 
-			self.laid_out = true
+			self.laid_out_x = true
+			self.laid_out_y = true
 		end
 
 		function META:MoveUpOf(panel)
 			self:SetX(panel:GetX())
 			self:SetY(panel:GetY() - self:GetHeight())
 
-			self.laid_out = true
+			self.laid_out_x = true
+			self.laid_out_y = true
 		end
 	end
 end
