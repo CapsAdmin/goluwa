@@ -47,7 +47,7 @@ function META:GetSizeOfChildren()
 	local total_size = Vec2()
 
 	for _, v in ipairs(self:GetChildren()) do
-		if v:IsVisible() then
+		if v.Visible == true then
 			local pos = v:GetPosition() + v:GetSize() + v.Padding:GetPosition()
 
 			if pos.x > total_size.x then
