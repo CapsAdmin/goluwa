@@ -103,6 +103,12 @@ function sockets.Request(info)
 		end
 	end
 
+	function socket:OnTimedOut()
+		if info.timedout_callback then
+			info.timedout_callback()
+		end
+	end
+
 	socket:SetTimeout(info.timeout)
 
 	if info.ssl_parameters then
@@ -339,6 +345,12 @@ function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 		error_callback = function(reason)
 			if on_fail then
 				on_fail(reason)
+			end
+			pop_download()
+		end,
+		timedout_callback = function()
+			if on_fail then
+				on_fail("timed out")
 			end
 			pop_download()
 		end,

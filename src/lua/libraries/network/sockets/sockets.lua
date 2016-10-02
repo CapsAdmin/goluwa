@@ -455,6 +455,7 @@ do -- tcp socket meta
 				if self:OnTimeout(seconds) ~= false then
 					if seconds > self.TimeoutLength then
 						self:DebugPrintf("timed out")
+						self:OnTimedOut()
 						self:Remove()
 					end
 				end
@@ -557,6 +558,7 @@ do -- tcp socket meta
 		end
 
 		function CLIENT:OnTimeout(count) end
+		function CLIENT:OnTimedOut() end
 		function CLIENT:OnConnect(ip, port) end
 		function CLIENT:OnReceive(data) end
 		function CLIENT:OnError(msg) self:Remove() end
