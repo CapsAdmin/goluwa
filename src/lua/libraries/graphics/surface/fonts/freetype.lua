@@ -37,6 +37,7 @@ local function try_find(files, path)
 	end
 
 	table.insert(tries, path)
+	table.insert(tries, (path:gsub("[%s%p]+", "")))
 
 	for _, try in ipairs(tries) do
 		for _, full_path in ipairs(files) do
@@ -111,7 +112,17 @@ local providers = {
 			end
 
 			if not cache_path then
-				error("couldn't find anything in the archive")
+				for k,v in ipairs(vfs.Find(archive_path, true)) do
+					print(v)
+				end
+				for ext in pairs(supported) do
+					for k,v in ipairs(vfs.Find(archive_path .. ext .. "/", true)) do
+						print(v)
+					end
+				end
+				llog("couldn't find anything usable in the zip archive for: ", path)
+
+				return surface.default_font_path
 			end
 
 			vfs.Write(cache_path, content)
@@ -140,7 +151,6 @@ local function find_font(path, callback, on_error)
 	sockets.DownloadFirstFound(
 		urls,
 		function(url, content)
-			print(url)
 			local info = lookup[url]
 			if info.archive then
 				vfs.Write("data/temp.zip", content)
