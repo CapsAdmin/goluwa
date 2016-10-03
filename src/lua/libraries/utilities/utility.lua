@@ -246,7 +246,7 @@ function utility.CreateCallbackThing(cache)
 
 	function self:callextra(path, key, out)
 		if not cache[path] or not cache[path].extra_callbacks[key] then return end
-		cache[path].extra_callbacks[key](out)
+		return cache[path].extra_callbacks[key](out)
 	end
 
 	function self:stop(path, out, ...)
