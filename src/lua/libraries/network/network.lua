@@ -232,7 +232,7 @@ if SERVER then
 
 		event.Call("NetworkStarted")
 
-		network.JoinIRCServer()
+		--network.JoinIRCServer()
 	end
 
 	function network.CloseServer(reason)
