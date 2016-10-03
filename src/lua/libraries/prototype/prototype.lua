@@ -322,10 +322,11 @@ do
 								end
 							end
 						end
-					else
+
 						if not info_b then
 							warning("unable to find property info for %s (%s)", 1, field_b, obj_b)
 						end
+					else
 						table.remove(prototype.linked_objects, i)
 						break
 					end

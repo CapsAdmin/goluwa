@@ -54,7 +54,7 @@ do -- peer
 
 	function CLIENT:Disconnect(why)
 		why = why or 0
-		lib.PeerDisconnect(self.peer, why)
+		lib.PeerDisconnect(self.peer, 0)--why)
 
 		if self.host then
 			local evt = ffi.new("struct _ENetEvent[1]")

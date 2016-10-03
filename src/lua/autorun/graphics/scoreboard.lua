@@ -39,23 +39,28 @@ function scoreboard.SetupContainer(id)
 	container:SetNoDraw(true)
 	container:SetMinimumSize(Vec2())
 	container:SetLayoutSize()
+	container:SetWidth(scoreboard.panel:GetWidth())
 
 	local title = container:CreatePanel("text_button")
-	title:SetMode("toggle")
 	title:SetFont(scoreboard_title_2)
-	title:SetText(id)
+	title:SetMode("toggle")
 	title:SetMargin(Rect()+5)
+	title:SetText(id)
 	title:SizeToText()
-	title:SetColor(Color(0.25,0.5,1,1)*3.75)
 	title:SetWidth(scoreboard.panel:GetWidth())
+	title:SetColor(Color(0.25,0.5,1,1)*3.75)
 	title:SetupLayout("top")
+	title.label:SetupLayout("center_y_simple")
+	title:SetState(true)
 	--title.label:SetupLayout("top", "center_x_simple")
 
 	local team = scoreboard.panel:CreatePanel("base")
 	team:SetMargin(Rect())
 	team:SetSize(scoreboard.panel:GetSize())
-	team:SetupLayout( "top", "size_to_height")
+	team:SetupLayout("top", "size_to_height")
 	team:SetNoDraw(true)
+	team.container = container
+	team.id = id
 
 	title.OnStateChanged = function(_, b)
 		if b then
@@ -65,19 +70,7 @@ function scoreboard.SetupContainer(id)
 			team:Animate("DrawScaleOffset", {Vec2(1,1), Vec2(1,0)}, 0.25, "*", 0.25, true, function()
 				team:SetVisible(false)
 				title:SetState(false)
-			end)
-		end
-	end
-
-
-	title.OnStateChanged = function(_, b)
-		if b then
-			team:SetVisible(true)
-			team:Animate("DrawScaleOffset", {Vec2(1,0), Vec2(1,1)}, 0.25, "*", 0.25, true)
-		else
-			team:Animate("DrawScaleOffset", {Vec2(1,1), Vec2(1,0)}, 0.25, "*", 0.25, true, function()
-				team:SetVisible(false)
-				title:SetState(false)
+				scoreboard.panel:Layout(true)
 			end)
 		end
 	end
@@ -88,9 +81,10 @@ function scoreboard.SetupContainer(id)
 end
 
 function scoreboard.AddClient(client)
+	scoreboard.RemoveClient(client, true)
 	local player_info = scoreboard.SetupContainer(client:GetGroup()):CreatePanel("base")
 
-	scoreboard.clients[client:GetUniqueID()] = player_info
+	scoreboard.clients[client] = player_info
 
 	player_info:SetHeight(30)
 	player_info:SetupLayout("top", "fill_x")
@@ -134,9 +128,9 @@ function scoreboard.AddClient(client)
 
 	do
 		local ping = info:CreatePanel("base")
-		ping:SetStyle("menu_select")
+		ping:SetNoDraw(true)
 		ping:SetHeight(30)
-		ping:SetWidth(55)
+		ping:SetWidth(50)
 		ping:SetMargin(Rect()+5)
 		ping:SetupLayout("layout_children", "right")
 
@@ -147,6 +141,7 @@ function scoreboard.AddClient(client)
 
 		local text = ping:CreatePanel("text")
 		prototype.AddPropertyLink(text, client, "Text", "Ping") -- text:SetText(client:GetPing())
+		text:SetPadding(Rect()+4)
 		text:SetupLayout("left", "center_y_simple")
 	end
 
@@ -163,6 +158,7 @@ function scoreboard.AddClient(client)
 		tags:SetNoDraw(true)
 
 		tags.OnMouseEnter = function()
+			if window.GetMouseTrapped() then return end
 			for _, child in ipairs(tags:GetChildren()) do
 				if child.ClassName == "text" then
 					child:SetVisible(true)
@@ -203,7 +199,33 @@ function scoreboard.AddClient(client)
 	scoreboard.panel.help:BringToFront()
 end
 
+function scoreboard.RemoveClient(client, now)
+	local panel = scoreboard.clients[client] or NULL
+	if panel:IsValid() then
+		panel:SetGreyedOut(true)
+		local function callback()
+			if panel:IsValid() then
+				local parent = panel:GetParent()
+				gui.RemovePanel(panel)
+				scoreboard.panel:Layout()
+				if parent:IsValid() then
+					if #parent:GetChildren() == 0 then
+						scoreboard.containers[parent.id] = nil
+						parent.container:Remove()
+					end
+				end
+			end
+		end
+		if now then
+			callback()
+		else
+			event.Delay(3, callback)
+		end
+	end
+end
+
 function scoreboard.Initialize()
+	gui.RemovePanel(scoreboard.panel)
 	local panel = gui.CreatePanel("base")
 	scoreboard.panel = panel
 
@@ -277,6 +299,7 @@ function scoreboard.Initialize()
 		if panel.Visible and button == "button_2" then
 			window.SetMouseTrapped(false)
 			help:SetVisible(false)
+			return true
 		end
 	end
 end
@@ -287,12 +310,21 @@ event.AddListener("ClientEntered", "scoreboard", function(client)
 	scoreboard.AddClient(client)
 end)
 
-event.AddListener("ClientLeft", "scoreboard", function(nick, uid)
-	gui.RemovePanel(scoreboard.clients[uid])
+event.AddListener("ClientLeft", "scoreboard", function(client, reason)
+	scoreboard.RemoveClient(client)
 end)
 
-for _, client in ipairs(clients.GetAll()) do
+event.AddListener("ClientChangedGroup", "scoreboard", function(client, old_group)
+	scoreboard.RemoveClient(client, true)
 	scoreboard.AddClient(client)
+end)
+
+if RELOAD then
+	for _, client in ipairs(clients.GetAll()) do
+		scoreboard.AddClient(client)
+	end
+else
+	scoreboard.AddClient(clients.GetLocalClient())
 end
 
 _G.scoreboard = scoreboard

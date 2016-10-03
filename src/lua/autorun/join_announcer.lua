@@ -1,15 +1,19 @@
 event.AddListener("ClientEntered", "join_announcer", function(client)
 	if chathud then
-		chathud.AddText(Color(0,1,0), client:GetName(), Color(1,1,1), " spawned!")
+		chathud.AddText(Color(0,1,0,1), client, Color(1,1,1,1), " spawned!")
 	end
 
-	logf("%s (%s) spawned!\n", client:GetNick(), client:GetUniqueID())
+	if SERVER then
+		logf("%s (%s) spawned!\n", client:GetNick(), client:GetUniqueID())
+	end
 end)
 
-event.AddListener("ClientLeft", "join_announcer", function(name, uid, reason, client)
+event.AddListener("ClientLeft", "join_announcer", function(client, reason)
 	if chathud then
-		chathud.AddText(Color(1,0,0), client, Color(1,1,1), " left! (", reason ,")")
+		chathud.AddText(Color(1,0,0,1), client, Color(1,1,1,1), " left! (", reason ,")")
 	end
 
-	logf("%s left! (%s)\n", name, reason)
+	if SERVER then
+		logf("%s left! (%s)\n", client:GetNick(), reason)
+	end
 end)

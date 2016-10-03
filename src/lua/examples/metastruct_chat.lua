@@ -31,7 +31,7 @@ function client:OnMessage(msg, nick)
 
 	for key, ply in pairs(players) do
 		if (ply.last_said + 60) < system.GetElapsedTime() then
-			event.Call("ClientLeft", ply:GetNick(), ply:GetNick(), "timed out", ply)
+			event.Call("ClientLeft", ply, "timed out")
 			players[key] = nil
 		end
 	end

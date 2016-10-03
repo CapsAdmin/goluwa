@@ -10,6 +10,7 @@ nvars.IsSet(META, "Bot", false)
 nvars.GetSet(META, "Group", "player")
 nvars.GetSet(META, "Nick", e.USERNAME, "cl_nick")
 nvars.GetSet(META, "AvatarPath", "https://avatars2.githubusercontent.com/u/204157?v=3&s=460", "cl_avatar_path")
+nvars.GetSet(META, "Ping", -1)
 
 function META:IsConnected()
 	return self.connected
@@ -17,12 +18,12 @@ end
 
 function META:GetNick()
 	for key, client in ipairs(clients.GetAll()) do
-		if client ~= self and client.nv.Nick == self.nv.Nick then
-			return ("%s(%s)"):format(self.nv.Nick, self:GetUniqueID())
+		if client ~= self and client.nv.Nick and client.nv.Nick == self.nv.Nick then
+			return ("%s (%s)"):format(self.nv.Nick, self:GetUniqueID())
 		end
 	end
 
-	return self.nv.Nick or "PubePurse"
+	return self.nv.Nick or self.last_nick or "PubePurse"
 end
 
 function META:__tostring2()
@@ -33,6 +34,16 @@ function META:GetName()
 	return self.nv and self.nv.Nick or self:GetUniqueID()
 end
 
+if SERVER then
+	function META:SetGroup(group)
+		local old = self.nv.Group
+		self.nv.Group = group
+		if old ~= group then
+			event.CallShared("ClientChangedGroup", self, self.nv.Group)
+		end
+	end
+end
+
 function META:OnRemove()
 	self.nv:Remove()
 
@@ -40,9 +51,7 @@ function META:OnRemove()
 	table.removevalue(clients.active_clients, self)
 
 	if SERVER then
-		if self.socket:IsValid() then
-			self.socket:Disconnect(--[[removed]])
-		end
+		self:Disconnect("removed")
 	end
 end
 
@@ -54,17 +63,22 @@ function META:GetUniqueColor()
 end
 
 if SERVER then
+	function META:Disconnect(reason)
+		if not self.disconnected then
+			self.disconnected = true
+
+			event.Call("ClientLeft", self, reason)
+			message.Send("remove_client", nil, self:GetUniqueID(), reason)
+
+			if self.socket:IsValid() then
+				self.socket:Disconnect(reason)
+			end
+		end
+	end
+
 	function META:Kick(reason)
-		if self.socket:IsValid() then
-			require("libenet").PeerDisconnect(self.socket, nil)
-		end
-
-		if self:IsBot() then
-			event.Call("ClientLeft", self:GetName(), self:GetUniqueID(), reason, self)
-			event.BroadcastCall("ClientLeft", self:GetName(), self:GetUniqueID(), reason)
-
-			self:Remove()
-		end
+		self:Disconnect(reason)
+		self:Remove()
 	end
 end
 
@@ -74,3 +88,13 @@ include("user_command.lua", META)
 include("chat_above_head.lua", META)
 
 prototype.Register(META)
+
+if SERVER then
+	event.Timer("update_clients", 1, 0, function()
+		for _, client in ipairs(clients.GetAll()) do
+			if not client:IsBot() then
+				client:SetPing(client.socket.peer.roundTripTime)
+			end
+		end
+	end)
+end

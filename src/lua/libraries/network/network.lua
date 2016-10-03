@@ -72,11 +72,6 @@ function network.IsStarted()
 	return network.socket:IsValid()
 end
 
-function network.UpdateStatistics()
-	system.SetConsoleTitle(("NET in: %s"):format(network.socket:GetStatistics().received), "network udp in")
-	system.SetConsoleTitle(("NET out: %s"):format(network.socket:GetStatistics().sent), "network udp out")
-end
-
 if CLIENT then
 	local var = pvars.Setup("connect_translate", "")
 
@@ -223,7 +218,7 @@ if SERVER then
 			local client = clients.GetByUniqueID(uid)
 
 			if client:IsValid() then
-				event.CallShared("ClientLeft", client:GetName(), "unknown reason") -- todo: reason
+				client:Disconnect("unknown reason") -- todo: reason
 				client:Remove()
 			end
 		end

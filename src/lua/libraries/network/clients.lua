@@ -50,11 +50,11 @@ function clients.Create(uniqueid, is_bot, clientside, filter, local_client)
 
 	if is_bot ~= nil then
 		self:SetBot(is_bot)
-		self:SetGroup("bots")
 	end
 
 	if SERVER then
 		if is_bot then
+			message.Send("create_client", filter, uniqueid, is_bot, local_client)
 			if event.Call("ClientConnect", self) ~= false then
 				event.Delay(function()
 					event.Call("ClientEntered", self)
@@ -70,19 +70,40 @@ function clients.CreateBot()
 	local nick = string.randomwords(1, math.random()):trim()
 	local bot = clients.Create(crypto.CRC32(nick), true)
 	bot:SetNick(nick)
+	bot:SetGroup(math.random() < 0.5 and "bot team a" or "bot team b")
 	return bot
 end
 
 if CLIENT then
 	message.AddListener("create_client", function(uniqueid, is_bot, local_client)
-		local client = clients.Create(uniqueid, is_bot)
+		local client
 
 		if local_client then
-			prototype.SafeRemove(clients.local_client)
-			clients.local_client = client
+			client = clients.local_client
+
+			local old_nv = client.nv
+			client.nv = nvars.CreateObject(uniqueid)
+			for k, v in pairs(old_nv) do
+				client.nv[k] = v
+			end
+
+			clients.active_clients_uid[client.UniqueID] = nil
+			client:SetUniqueID(uniqueid)
+			clients.active_clients_uid[client.UniqueID] = client
+		else
+			client = clients.Create(uniqueid, is_bot)
 		end
 
 		event.Call("ClientEntered", client)
+	end)
+
+	message.AddListener("remove_client", function(uniqueid, reason)
+		local client = clients.active_clients_uid[uniqueid]
+
+		if client then
+			event.Call("ClientLeft", client, reason)
+			client:Remove()
+		end
 	end)
 end
 

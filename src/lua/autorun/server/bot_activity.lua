@@ -1,5 +1,5 @@
 event.Timer("bot_activity", 0.25, 0, function()
-	if math.random() > 0.99 then
+	if math.random() > 0.9 then
 		local bot = table.random(clients.GetAll())
 		if bot and bot:IsBot() then
 			bot:Kick(string.randomwords(2, math.random()))
@@ -8,6 +8,14 @@ event.Timer("bot_activity", 0.25, 0, function()
 
 	if math.random() > 0.9 and #clients.GetAll() < 32 then
 		clients.CreateBot()
+	end
+
+	if math.random() > 0.99 then
+		for k,v in pairs(clients.GetAll()) do
+			if v:IsBot() then
+				v:Kick("LOL")
+			end
+		end
 	end
 
 	for _, bot in ipairs(clients.GetAll()) do
