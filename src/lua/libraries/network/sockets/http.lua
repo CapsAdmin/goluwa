@@ -362,6 +362,41 @@ function sockets.AbortDownload(url)
 	pop_download()
 	if sockets.debug_download then llog("download aborted ", url) end
 end
+
+function sockets.DownloadFirstFound(urls, callback, on_fail)
+	local found = function(found_url)
+		for _, other_url in ipairs(urls) do
+			if found_url ~= other_url then
+				sockets.AbortDownload(other_url)
+			end
+		end
+	end
+
+	local fails = {}
+
+	for _, url in ipairs(urls) do
+		sockets.Download(
+			url,
+			function(...)
+				callback(url, ...)
+			end,
+			function(reason)
+				table.insert(fails, reason)
+				if #fails == #urls then
+					local reason = ""
+					for _, str in ipairs(fails) do
+						reason = reason .. "failed to download " .. url .. ": " .. str .. "\n"
+					end
+					on_fail(reason)
+				end
+			end,
+			nil,
+			function(header)
+				if header["content-length"] > 0 then
+					found(url)
+				end
+			end
+		)
 	end
 end
 
