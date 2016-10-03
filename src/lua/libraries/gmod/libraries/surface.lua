@@ -70,18 +70,22 @@ function surface.SetTextPos(x, y)
 	lib.SetTextPosition(x, y)
 end
 
-function surface.CreateFont(name, tbl)
+function surface.CreateFont(id, tbl)
 	local tbl = table.copy(tbl)
 	tbl.path = tbl.font
 
-	if tbl.path:lower() == "roboto bk" then
+	local name = tbl.path:lower()
+
+	if name == "roboto bk" then
 		tbl.path = "resource/fonts/Roboto-Black.ttf"
-	elseif tbl.path:lower() == "roboto" then
+	elseif name == "roboto" then
 		tbl.path = "resource/fonts/Roboto-Regular.ttf"
-	elseif tbl.path:lower() == "helvetica" then
+	elseif name == "helvetica" then
 		tbl.path = "resource/fonts/coolvetica.ttf"
-	elseif tbl.path:lower() == "tahoma" then
+	elseif name == "tahoma" then
 		tbl.path = "fonts/tahoma.ttf"
+	elseif name == "arial" then
+		tbl.path = "droid sans"
 	end
 
 	if tbl.size then tbl.size = math.ceil(tbl.size * 0.75) end
@@ -90,7 +94,7 @@ function surface.CreateFont(name, tbl)
 		logf("surface.CreateFont called with path: %q which doesn't exist\n", tbl.path)
 	end
 
-	gmod.surface_fonts[name] = lib.CreateFont(tbl)
+	gmod.surface_fonts[id] = lib.CreateFont(tbl)
 end
 
 function surface.SetFont(name)

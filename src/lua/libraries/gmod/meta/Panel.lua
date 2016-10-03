@@ -248,7 +248,7 @@ end
 function META:GetTextSize()
 	local panel = self.__obj
 
-	local w, h = surface.GetFont(panel.font_internal):GetTextSize(panel.text_internal)
+	local w, h = surface.FindFont(panel.font_internal):GetTextSize(panel.text_internal)
 	return w + panel.text_inset.x, h + panel.text_inset.y
 end
 

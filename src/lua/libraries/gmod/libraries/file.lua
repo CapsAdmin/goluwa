@@ -38,3 +38,7 @@ end
 function file.Read(path)
 	return vfs.Read(path)
 end
+
+function file.Exists(path)
+	return vfs.Exists(path)
+end

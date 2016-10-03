@@ -31,3 +31,7 @@ function util.TraceLine(info)
 
 	return data
 end
+
+function util.CRC(str)
+	return crypto.CRC32(tostring(str))
+end

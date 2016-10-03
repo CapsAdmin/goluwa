@@ -303,12 +303,12 @@ function gmod.Run()
 		gmod.env.hook.Run("ScoreboardHide")
 	end)
 
-	--[[for dir in vfs.Iterate("addons/") do
+	for dir in vfs.Iterate("addons/") do
 		local dir = gmod.dir .. "addons/" ..  dir
 		include(dir .. "/lua/autorun/*")
 		if CLIENT then include(dir .. "/lua/autorun/client/*") end
 		if SERVER then include(dir .. "/lua/autorun/server/*") end
-	end]]
+	end
 
 	gmod.env.hook.Run("CreateTeams")
 	gmod.env.hook.Run("PreGamemodeLoaded")

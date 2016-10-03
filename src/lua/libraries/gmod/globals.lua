@@ -28,8 +28,11 @@ make_is("Panel")
 function globals.type(obj)
 	local t = type(obj)
 
-	if t == "table" and obj.MetaName then
-		return obj.MetaName
+	if t == "table" then
+		local meta = getmetatable(obj)
+		if meta and meta.MetaName then
+			return meta.MetaName
+		end
 	end
 
 	return t
