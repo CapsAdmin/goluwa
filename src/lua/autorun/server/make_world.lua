@@ -1,26 +1,36 @@
-commands.RunString("mount gmod")
-pvars.Setup("default_map", "gm_old_flatgrass")
+local go
 
-local function go()
-	commands.RunString("map " .. pvars.Get("default_map"))
+if PHYSICS then
+	commands.RunString("mount gmod")
+	pvars.Setup("default_map", "gm_old_flatgrass")
 
-	for i = 1, 10 do
-		local body = entities.CreateEntity("physical")
-		body:SetName("those boxes " .. i)
+	go = function()
+		commands.RunString("map " .. pvars.Get("default_map"))
 
-		body:SetModelPath("models/cube.obj")
+		for i = 1, 10 do
+			local body = entities.CreateEntity("physical")
+			body:SetName("those boxes " .. i)
 
-		body:SetPhysicsModelPath("models/cube.obj")
-		body:InitPhysicsTriangles()
-		--body:InitPhysicsBox(Vec3(1, 1, 1))
+			body:SetModelPath("models/cube.obj")
+
+			body:SetPhysicsModelPath("models/cube.obj")
+			body:InitPhysicsTriangles()
+			--body:InitPhysicsBox(Vec3(1, 1, 1))
 
 
-		--body:SetMass(100)
-		body:SetPosition(Vec3(0,0,-100+i*2))
-		--body:SetVelocity(Vec3():Random(-10,10))
-		body:SetAngularVelocity(Vec3():Random()*10)
+			--body:SetMass(100)
+			body:SetPosition(Vec3(0,0,-100+i*2))
+			--body:SetVelocity(Vec3():Random(-10,10))
+			body:SetAngularVelocity(Vec3():Random()*10)
 
-		--body:SetSize(2)  -- FIX ME
+			--body:SetSize(2)  -- FIX ME
+		end
+	end
+else
+	go = function()
+		for i = 1, 10 do
+			clients.CreateBot()
+		end
 	end
 end
 

@@ -3,8 +3,12 @@ if CLIENT then
 	event.AddListener("CreateMove", "spooky", function(client, prev_cmd, dt)
 		local ghost = client.nv.ghost or NULL
 		if ghost:IsValid() then
-			local pos = ghost:GetComponent("physics"):GetPosition()
-			render.camera_3d:SetPosition(Vec3(-pos.y, -pos.x, -pos.z))
+			if PHYSICS then
+				local pos = ghost:GetComponent("physics"):GetPosition()
+				render.camera_3d:SetPosition(Vec3(-pos.y, -pos.x, -pos.z))
+			else
+				render.camera_3d:SetPosition(ghost:GetPosition())
+			end
 		end
 
 		if not window.IsOpen() or not window.GetMouseTrapped() then return end
@@ -17,7 +21,8 @@ if CLIENT then
 		local side = Vec3()
 		local forward = Vec3()
 		local up = Vec3()
-		do
+
+		if PHYSICS then
 			local speed = 5
 
 			if input.IsKeyDown("left_shift") and input.IsKeyDown("left_control") then
@@ -46,6 +51,32 @@ if CLIENT then
 
 			if input.IsKeyDown("space") then
 				up.z = 2000
+			end
+		else
+			local speed = 1
+
+			if input.IsKeyDown("space") then
+				up = up + angles:GetUp() * speed
+			end
+
+			local offset = angles:GetForward() * speed
+
+			if input.IsKeyDown("w") then
+				side = side + offset
+			elseif input.IsKeyDown("s") then
+				side = side - offset
+			end
+
+			offset = angles:GetRight() * speed
+
+			if input.IsKeyDown("a") then
+				forward = forward - offset
+			elseif input.IsKeyDown("d") then
+				forward = forward + offset
+			end
+
+			if input.IsKeyDown("left_alt") then
+				angles.z = math.rad(math.round(math.deg(angles.z) / 45) * 45)
 			end
 		end
 
@@ -80,28 +111,29 @@ event.AddListener("Move", "spooky", function(client, cmd)
 
 	if SERVER then
 		if not client.nv.ghost or not client.nv.ghost:IsValid() then
-			ghost = entities.CreateEntity("physical")
+			ghost = entities.CreateEntity(PHYSICS and "physical" or "visual")
 			ghost:SetName(client:GetNick() .. "'s ghost")
 
 			local filter = clients.CreateFilter():AddAllExcept(client)
 
 			ghost:ServerFilterSync(filter, "Position")
 			ghost:ServerFilterSync(filter, "Rotation")
-
-			--ghost:SetNetworkChannel(1)
-			ghost:SetPhysicsModelPath("models/cube.obj")
 			ghost:SetModelPath("models/cube.obj")
-			ghost:SetPhysicsCapsuleZHeight(1.5)
-			ghost:SetPhysicsCapsuleZRadius(0.5)
-			ghost:InitPhysicsCapsuleZ()
-			ghost:SetMass(85)
-			ghost:SetPosition(Vec3(0,0,-20))
-			ghost:SetAngularFactor(Vec3(0,0,0))
-			ghost:SetScale(-Vec3(0.5,0.5,1.85))
- 			ghost:SetSimulateOnClient(true)
 
-			ghost:SetAngles(Ang3(0,0,0))
+			if PHYSICS then
+				--ghost:SetNetworkChannel(1)
+				ghost:SetPhysicsModelPath("models/cube.obj")
+				ghost:SetPhysicsCapsuleZHeight(1.5)
+				ghost:SetPhysicsCapsuleZRadius(0.5)
+				ghost:InitPhysicsCapsuleZ()
+				ghost:SetMass(85)
+				ghost:SetPosition(Vec3(0,0,-20))
+				ghost:SetAngularFactor(Vec3(0,0,0))
+				ghost:SetScale(-Vec3(0.5,0.5,1.85))
+				ghost:SetSimulateOnClient(true)
 
+				ghost:SetAngles(Ang3(0,0,0))
+			end
 
 			client.nv.ghost = ghost
 		end
@@ -112,6 +144,17 @@ event.AddListener("Move", "spooky", function(client, cmd)
 	end
 
 	if not ghost:IsValid() then return end
+
+	if not PHYSICS then
+		if CLIENT then
+			ghost:SetPosition(cmd.net_position)
+			ghost:SetAngles(cmd.angles)
+		end
+
+		ghost:SetPosition(ghost:GetPosition() + cmd.velocity)
+
+		return ghost:GetPosition(), cmd.velocity
+	end
 
 	local physics = ghost:GetComponent("physics")
 	local pos =  physics:GetPosition()
@@ -191,14 +234,16 @@ if SERVER then
 		if button == "button_3" and press then
 			local cmd = client:GetCurrentCommand()
 
-			local ent = entities.CreateEntity("physical")
-			ent:SetPhysicsModelPath("models/cube.obj")
+			local ent = entities.CreateEntity(PHYSICS and "physical" or "visual")
+			if PHYSICS then
+				ent:SetPhysicsModelPath("models/cube.obj")
+				ent:SetMass(85)
+				ent:InitPhysicsBox(-Vec3(0.15,1,0.15))
+				ent:SetVelocity(cmd.angles:GetForward() * 10)
+			end
 			ent:SetModelPath("models/cube.obj")
-			ent:SetMass(85)
-			ent:InitPhysicsBox(-Vec3(0.15,1,0.15))
 			ent:SetScale(-Vec3(0.15,1,0.15))
 			ent:SetPosition(cmd.net_position + (cmd.angles:GetForward()*5))
-			ent:SetVelocity(cmd.angles:GetForward() * 10)
 
 			event.Delay(3, function()
 				entities.SafeRemove(ent)
