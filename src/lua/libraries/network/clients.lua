@@ -64,6 +64,13 @@ function clients.Create(uniqueid, is_bot, clientside, filter, local_client)
 	return self
 end
 
+function clients.CreateBot()
+	local nick = string.randomwords(1, math.random()):trim()
+	local bot = clients.Create(crypto.CRC32(nick), true)
+	bot:SetNick(nick)
+	return bot
+end
+
 if CLIENT then
 	message.AddListener("create_client", function(uniqueid, is_bot, local_client)
 		local client = clients.Create(uniqueid, is_bot)
