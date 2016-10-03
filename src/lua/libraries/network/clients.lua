@@ -56,7 +56,9 @@ function clients.Create(uniqueid, is_bot, clientside, filter, local_client)
 	if SERVER then
 		if is_bot then
 			if event.Call("ClientConnect", self) ~= false then
-				event.Call("ClientEntered", self)
+				event.Delay(function()
+					event.Call("ClientEntered", self)
+				end)
 			end
 		end
 	end
