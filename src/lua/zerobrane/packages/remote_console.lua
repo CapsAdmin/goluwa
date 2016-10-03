@@ -84,7 +84,7 @@ function PLUGIN:Setup()
 			end,
 			run_script = function(console, path)
 				console:Print("loading: ", path)
-				console:run_string("include([["..path.."]]) print('script ran successfully')")
+				console:run_string("_G.RELOAD = true include([["..path.."]]) _G.RELOAD = nil print('script ran successfully')")
 			end,
 			print = function(console, ...)
 				console:Print(...)
