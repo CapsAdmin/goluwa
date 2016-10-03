@@ -5,6 +5,157 @@ local freetype = desire("libfreetype")
 
 if not freetype then return end
 
+
+local supported = {
+	ttf = true,
+	ttc = true,
+	cff = true,
+	woff = true,
+	otf = true,
+	cff = true,
+	otc = true,
+	pfa = true,
+	pfb = true,
+	cid = true,
+	sfnt = true,
+	pcf = true,
+	fnt = true,
+	bdf = true,
+	pfr = true,
+}
+
+local function try_find(files, path)
+	table.sort(files, function(a, b) return #a < #b end) -- choose shortest name
+
+	local family, rest = path:match("(.-) (.+)")
+
+	local tries = {}
+
+	if not family then
+		table.insert(tries, path .. "[%s%p]" .. "regular")
+		table.insert(tries, path .. "[%s%p]" .. "medium")
+	end
+
+	table.insert(tries, path)
+
+	for _, try in ipairs(tries) do
+		for _, full_path in ipairs(files) do
+			local ext = full_path:match(".+%.(%a+)") or "dat"
+			if supported[ext] then
+				local name = full_path:match(".+/(.+)%.")
+				if name:lower():find(try) then
+					return full_path
+				end
+			end
+		end
+	end
+end
+
+local function google(path)
+	local family, rest = path:match("(.-) (.+)")
+
+	if family then
+		return family .. "/" .. family:upperchar(1) .. "-" .. rest:upperchar(1) .. ".ttf"
+	end
+
+	return path .. "/" .. path:upperchar(1) .. ".ttf"
+end
+
+local providers = {
+	{
+		url = "https://github.com/google/fonts/raw/master/apache/", -- roboto/Roboto-Bolditallic.ttf
+		translate = google,
+	},
+	{
+		url = "https://github.com/google/fonts/raw/master/ofl/", -- roboto/Roboto-Bolditallic.ttf
+		translate = google,
+	},
+	{
+		url = "http://dl.dafont.com/dl/?f=", -- roboto | Roboto-BoldItalic.ttf
+		translate = function(path)
+			path = path:gsub(" ", "_")
+
+			return path
+		end,
+		archive = function(archive_path, path)
+			return try_find(vfs.Find(archive_path, true), path)
+		end,
+	},
+	{
+		url = "http://dl.1001fonts.com/", -- roboto.zip | Roboto-BoldItalic.ttf
+		translate = function(path)
+			path = path:gsub(" ", "-")
+
+			return path .. ".zip"
+		end,
+		archive = function(archive_path, path)
+			local cache_path
+			local content
+
+			for ext in pairs(supported) do
+				local full_path = try_find(vfs.Find(archive_path .. ext .. "/", true), path)
+				if full_path then
+					cache_path = "downloads/cache/" .. crypto.CRC32(path) .. "." .. ext
+					content = vfs.Read(full_path)
+					break
+				end
+			end
+
+			if not cache_path then
+				local full_path = try_find(vfs.Find(archive_path, true), path)
+				if full_path then
+					local ext = full_path:match(".+%.(%a+)") or "dat"
+					cache_path = "downloads/cache/" .. crypto.CRC32(path) .. "." .. ext
+					content = vfs.Read(full_path)
+				end
+			end
+
+			if not cache_path then
+				error("couldn't find anything in the archive")
+			end
+
+			vfs.Write(cache_path, content)
+
+			return cache_path
+		end,
+	}
+}
+
+local function find_font(path, callback, on_error)
+
+	path = path:lower()
+	path = path:gsub("%s+", " ")
+	path = path:gsub("%p", "")
+
+	local urls = {}
+	local lookup = {}
+
+	for i, info in ipairs(providers) do
+		local url = info.url ..
+		info.translate(path)
+		table.insert(urls, url)
+		lookup[url] = info
+	end
+
+	sockets.DownloadFirstFound(
+		urls,
+		function(url, content)
+			print(url)
+			local info = lookup[url]
+			if info.archive then
+				vfs.Write("data/temp.zip", content)
+				callback(info.archive(R("data/temp.zip") .. "/", path))
+			else
+				local ext = url:match(".+(%.%a+)") or ".dat"
+				local path = "cache/" .. (crc or crypto.CRC32(path)) .. ext
+				vfs.Write(path, content)
+				callback(path)
+			end
+		end,
+		on_error
+	)
+end
+
 local META = {}
 
 META.ClassName = "freetype"
@@ -48,7 +199,8 @@ function META:Initialize()
 
 			self:OnLoad()
 		else
-			error("unable to initialize font ("..path.."): " .. (freetype.ErrorCodeToString(code) or code))
+			warning("unable to initialize font ("..path.."): " .. (freetype.ErrorCodeToString(code) or code))
+			load(surface.default_font_path)
 		end
 	end
 
@@ -133,70 +285,11 @@ function META:Initialize()
 
 
 		if SOCKETS then
-			local supported = {
-				ttf = true,
-				ttc = true,
-				cff = true,
-				woff = true,
-				otf = true,
-				cff = true,
-				otc = true,
-				pfa = true,
-				pfb = true,
-				cid = true,
-				sfnt = true,
-				pcf = true,
-				fnt = true,
-				bdf = true,
-				pfr = true,
-			}
-			sockets.Download(
-				"http://fonts.googleapis.com/css?family=" .. self.Path:gsub("%s", "+"),
-				function(data)
-					local url = data:match("url%((.-)%)")
-					if url then
-						resource.Download(url, load, nil, crypto.CRC32(self.Path))
-					end
-				end,
-				function(reason)
-					llog("unable to download %s from google web fonts: %s", self.Path, reason)
-					sockets.Download(
-						"http://dl.dafont.com/dl/?f=" .. self.Path:lower():gsub(" ", "_"),
-						function(zip_content)
-							vfs.Write("data/temp_dafont.zip", zip_content)
-							for _, full_path in pairs(vfs.Find(R("data/temp_dafont.zip") .. "/", true)) do
-								if supported[full_path:match(".+%.(.+)")] then
-									local ext = full_path:match(".+(%.%a+)") or ".dat"
-									vfs.Write("downloads/cache/" .. crypto.CRC32(self.Path) .. ext, vfs.Read(full_path))
-									load("downloads/cache/" .. crypto.CRC32(self.Path) .. ext)
-									break
-								end
-							end
-						end,
-						function(reason)
-							llog("unable to download %s from dafont: %s", self.Path, reason)
-							sockets.Download(
-								"http://dl.1001fonts.com/" .. self.Path:lower():gsub(" ", "-") .. ".zip",
-								function(zip_content)
-									vfs.Write("data/temp_dafont.zip", zip_content)
-									for fmt in pairs(supported) do
-										local files = vfs.Find(R("data/temp_dafont.zip") .. "/"..fmt.."/", true)
-										table.sort(files, function(a, b) return #a < #b end) -- choose shortest name
-										for _, full_path in ipairs(files) do
-											vfs.Write("downloads/cache/" .. crypto.CRC32(self.Path) .. "." .. fmt, vfs.Read(full_path))
-											load("downloads/cache/" .. crypto.CRC32(self.Path) .. "." .. fmt)
-											break
-										end
-									end
-								end,
-								function(reason)
-									llog("unable to download %s from 1001fonts: %s", self.Path, reason)
-									llog("loading default font instead")
-									load(surface.default_font_path)
-								end
-							)
-						end
-					)
+			find_font(self.Path, load, function(reason)
+				logn("unable to download ", self.Path)
+				logn(reason)
+				llog("loading default font instead")
+				load(surface.default_font_path)
 			end)
 		end
 	end)
