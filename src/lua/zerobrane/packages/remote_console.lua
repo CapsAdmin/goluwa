@@ -64,12 +64,12 @@ function PLUGIN:Setup()
 						server:Broadcast(str, true)
 					end
 
-					logn("launched from zerobrane!")
-
 					-- grr
 					if SERVER then
 						event.Delay(0.1, function() commands.RunString("host") end)
 					end
+
+					ZEROBRANE = true
 				]]}]==]
 			},
 
