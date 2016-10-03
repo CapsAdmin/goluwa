@@ -259,58 +259,94 @@ end
 do
 	prototype.linked_objects = prototype.linked_objects or {}
 
-	function prototype.AddPropertyLink(obj_a, obj_b, field_a, field_b, key_a, key_b)
+	function prototype.AddPropertyLink(...)
 
 		event.AddListener("Update", "update_object_properties", function()
 			for i, data in ipairs(prototype.linked_objects) do
-				local obj_a, obj_b, field_a, field_b, key_a, key_b = data.args[1], data.args[2], data.args[3], data.args[4], data.args[5], data.args[6]
+				if type(data.args[1]) == "table" and type(data.args[2]) == "table" then
+					local obj_a = data.args[1]
+					local obj_b = data.args[2]
 
-				if obj_a:IsValid() and obj_b:IsValid() then
-					local info_a = obj_a.prototype_variables[field_a]
-					local info_b = obj_b.prototype_variables[field_b]
+					local field_a = data.args[3]
+					local field_b = data.args[4]
 
-					if info_a and info_b then
-						if key_a and key_b then
-							local val = obj_a[info_a.get_name](obj_a)
-							val[key_a] = obj_b[info_b.get_name](obj_b)[key_b]
+					local key_a = data.args[5]
+					local key_b = data.args[6]
 
-							if data.store.last_val ~= val then
-								obj_a[info_a.set_name](obj_a, val)
-								data.store.last_val = val
-							end
-						elseif key_a and not key_b then
-							local val = obj_a[info_a.get_name](obj_a)
-							val[key_a] = obj_b[info_b.get_name](obj_b)
+					if obj_a:IsValid() and obj_b:IsValid() then
+						local info_a = obj_a.prototype_variables[field_a]
+						local info_b = obj_b.prototype_variables[field_b]
 
-							if data.store.last_val ~= val then
-								obj_a[info_a.set_name](obj_a, val)
-								data.store.last_val = val
-							end
-						elseif key_b and not key_a then
-							local val = obj_b[info_b.get_name](obj_b)[key_b]
-							if data.store.last_val ~= val then
-								obj_a[info_a.set_name](obj_a, val)
-								data.store.last_val = val
-							end
-						else
-							local val = obj_b[info_b.get_name](obj_b)
-							if data.store.last_val ~= val then
-								obj_a[info_a.set_name](obj_a, val)
-								data.store.last_val = val
+						if info_a and info_b then
+							if key_a and key_b then
+								-- local val = a:GeFieldA().key_a
+								-- val.key_a = b:GetFieldB().key_b
+								-- a:SetFieldA(val)
+
+								local val = obj_a[info_a.get_name](obj_a)
+								val[key_a] = obj_b[info_b.get_name](obj_b)[key_b]
+
+								if data.store.last_val ~= val then
+									obj_a[info_a.set_name](obj_a, val)
+									data.store.last_val = val
+								end
+							elseif key_a and not key_b then
+								-- local val = a:GeFieldA()
+								-- val.key_a = b:GetFieldB()
+								-- a:SetFieldA(val)
+
+								local val = obj_a[info_a.get_name](obj_a)
+								val[key_a] = obj_b[info_b.get_name](obj_b)
+
+								if data.store.last_val ~= val then
+									obj_a[info_a.set_name](obj_a, val)
+									data.store.last_val = val
+								end
+							elseif key_b and not key_a then
+								-- local val = b:GeFieldB().key_b
+								-- a:SetFieldA(val)
+
+								local val = obj_b[info_b.get_name](obj_b)[key_b]
+								if data.store.last_val ~= val then
+									obj_a[info_a.set_name](obj_a, val)
+									data.store.last_val = val
+								end
+							else
+								-- local val = b:GeFieldB()
+								-- a:SetFieldA(val)
+
+								local val = obj_b[info_b.get_name](obj_b)
+								if data.store.last_val ~= val then
+									obj_a[info_a.set_name](obj_a, val)
+									data.store.last_val = val
+								end
 							end
 						end
+					else
+						if not info_b then
+							warning("unable to find property info for %s (%s)", 1, field_b, obj_b)
+						end
+						table.remove(prototype.linked_objects, i)
+						break
 					end
-				else
-					if not info_b then
-						warning("unable to find property info for %s (%s)", 2, field_b, obj_b)
+				elseif type(data.args[2]) == "function" and type(data.args[3]) == "function" then
+					local obj = data.args[1]
+					local get_func = data.args[2]
+					local set_func = data.args[3]
+
+					if obj:IsValid() then
+						local val = get_func()
+
+						if data.store.last_val ~= val then
+							set_func(val)
+							data.store.last_val = val
+						end
 					end
-					table.remove(prototype.linked_objects, i)
-					break
 				end
 			end
 		end)
 
-		table.insert(prototype.linked_objects, {store = utility.CreateWeakTable(), args = {obj_a, obj_b, field_a, field_b, key_a, key_b}})
+		table.insert(prototype.linked_objects, {store = utility.CreateWeakTable(), args = {...}})
 	end
 
 	function prototype.RemovePropertyLink(obj_a, obj_b, field_a, field_b, key_a, key_b)
