@@ -3,7 +3,7 @@ event.AddListener("ClientEntered", "join_announcer", function(client)
 		chathud.AddText(Color(0,1,0), client:GetName(), Color(1,1,1), " spawned!")
 	end
 
-	logf("%s spawned!\n", client:GetName())
+	logf("%s (%s) spawned!\n", client:GetNick(), client:GetUniqueID())
 end)
 
 event.AddListener("ClientLeft", "join_announcer", function(name, uid, reason, client)
