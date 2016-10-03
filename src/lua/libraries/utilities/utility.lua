@@ -188,6 +188,10 @@ function utility.StripLuaCommentsAndStrings(code)
 	local single_quote_strings = {}
 	local multiline_strings = {}
 
+	code = code:gsub("\\\\", "____ESCAPE_ESCAPE")
+	code = code:gsub("\\'", "____SINGLE_QUOTE_ESCAPE")
+	code = code:gsub('\\"', "____DOUBLE_QUOTE_ESCAPE")
+
 	code = code:gsub("(%-%-%[(=*)%[.-%]%2%])", function(str) table.insert(multiline_comments, str) return "____COMMENT_MULTILINE_" .. #multiline_comments .. "____" .. " "  end)
 	code = code:gsub("(%[(=*)%[.-%]%2%])", function(str) table.insert(multiline_strings, str) return "____STRING_MULTILINE_" .. #multiline_strings .. "____" .. " "  end)
 	code = code:gsub("%b\"\"", function(str) table.insert(double_quote_strings, str) return "____STRING_DOUBLE_QUOTE_" .. #double_quote_strings .. "____" .. " "  end)
@@ -205,6 +209,10 @@ function utility.RestoreLuaCommentsAndStrings(code, data)
 	for i, v in ipairs(double_quote_strings) do	code = code:replace("____STRING_DOUBLE_QUOTE_" .. i .. "____", v) end
 	for i, v in ipairs(singleline_comments) do	code = code:replace("____COMMENT_SINGLELINE_" .. i .. "____", v .. "\n") end
 	for i, v in ipairs(single_quote_strings) do	code = code:replace("____STRING_SINGLE_QUOTE_" .. i .. "____", v) end
+
+	code = code:gsub("____ESCAPE_ESCAPE", "\\\\")
+	code = code:gsub("____SINGLE_QUOTE_ESCAPE", "\\'")
+	code = code:gsub("____DOUBLE_QUOTE_ESCAPE", '\\"')
 
 	return code
 end

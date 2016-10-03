@@ -78,11 +78,11 @@ function gmod.PreprocessLua(code)
 				code = table.concat(lines, "\n")
 			end
 		end
-	end
 
-	local code, data = utility.StripLuaCommentsAndStrings(code)
-	code = code:gsub("continue", " goto CONTINUE ")
-	code = utility.RestoreLuaCommentsAndStrings(code, data)
+		code, data = utility.StripLuaCommentsAndStrings(code)
+		code = code:gsub("continue", " goto CONTINUE ")
+		code = utility.RestoreLuaCommentsAndStrings(code, data)
+	end
 
 	return code
 end
@@ -144,6 +144,8 @@ end
 
 event.AddListener("PreLoadString", "gmod_preprocess", function(code, path)
 	if not (gmod.dir and path:startswith(gmod.dir) or path:find("%.gma")) then return end
+
+	if not code:find("DEFINE_BASECLASS", nil, true) and loadstring(code) then return code end
 
 	code = gmod.PreprocessLua(code)
 
