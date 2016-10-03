@@ -1,3 +1,7 @@
+function string.upperchar(self, pos)
+	return self:sub(0, pos-1) .. self:sub(pos, pos):upper() .. self:sub(pos + 1)
+end
+
 function string.wholeword(self, what)
 	return self:find("%f[%a%d_]"..what.."%f[^%a%d_]") ~= nil
 end
