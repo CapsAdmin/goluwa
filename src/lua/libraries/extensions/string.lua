@@ -16,8 +16,9 @@ do
 	local consonants = {"t", "n", "s", "h", "r", "d", "l", "c", "m", "w", "f", "g", "p", "b", "v", "k", "j", "x", "q", "z"}
 	local first_letters = {"t", "a", "s", "h", "w", "i", "o", "b", "m", "f", "c", "l", "d", "p", "n", "e", "g", "r", "y", "u", "v", "j", "k", "q", "z", "x"}
 
-	function string.randomwords(word_count)
+	function string.randomwords(word_count, seed)
 		word_count = word_count or 8
+		seed = seed or 0
 
 		local text = {}
 
@@ -25,7 +26,7 @@ do
 		local capitalize = true
 
 		for i = 1, word_count do
-			math.randomseed(i)
+			math.randomseed(seed + i)
 			local word = ""
 
 			local consonant_start = 1
