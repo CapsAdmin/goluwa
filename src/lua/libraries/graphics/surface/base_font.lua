@@ -91,8 +91,8 @@ function META:DrawString(str, x, y, w)
 	if not self.string_cache[str] then
 		self.total_strings_stored = self.total_strings_stored or 0
 
-		if self.total_strings_stored > 1000 then
-			logf("surface warning: string cache for %s is above 1000, flushing cache\n", self)
+		if self.total_strings_stored > 10000 then
+			--logf("surface warning: string cache for %s is above 10000, flushing cache\n", self)
 			table.clear(self.string_cache)
 			self.total_strings_stored = 0
 		end
