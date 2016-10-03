@@ -95,9 +95,11 @@ function PLUGIN:Setup()
 				end
 			end,
 			on_save = function(console, path)
-				if path:lower():find("^.+/"..id.."/[^/]+$") then
+				local dir = path:lower():match("^.+/([^/]-)/[^/]+$")
+
+				if dir == id or (id == "client" and (id == "graphics" or id == "audio")) then
 					console:run_script(path)
-				elseif not path:lower():find("^.+/server/[^/]+$") and not path:lower():find("^.+/client/[^/]+$") then
+				elseif dir ~= "server" and dir ~= "client" then
 					console:run_script(path)
 				end
 			end,
