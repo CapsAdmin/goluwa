@@ -56,13 +56,12 @@ end
 if SERVER then
 	function META:Kick(reason)
 		if self.socket:IsValid() then
-			network.HandleMessage(self.socket, network.DISCONNECT, reason or "kicked")
+			require("libenet").PeerDisconnect(self.socket, nil)
 		end
 
 		if self:IsBot() then
 			event.Call("ClientLeft", self:GetName(), self:GetUniqueID(), reason, self)
 			event.BroadcastCall("ClientLeft", self:GetName(), self:GetUniqueID(), reason)
-			network.BroadcastMessage(network.DISCONNECT, self:GetUniqueID(), reason)
 
 			self:Remove()
 		end
