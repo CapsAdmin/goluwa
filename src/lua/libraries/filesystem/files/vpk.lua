@@ -3,10 +3,11 @@ local vfs = (...) or _G.vfs
 local CONTEXT = {}
 
 CONTEXT.Name = "valve package"
+CONTEXT.NameEndsWith = "_dir"
 CONTEXT.Extension = "vpk"
 CONTEXT.Base = "generic_archive"
 
-function CONTEXT:OnParseArchive(file)
+function CONTEXT:OnParseArchive(file, archive_path)
 	file:ReadStructure([[
 		long signature = 0x55aa1234;
 		long version;
