@@ -34,6 +34,13 @@ function file.Read(path, where)
 	return vfs.Read(search_paths[where] .. path)
 end
 
+function file.Append(path, str)
+	where = where or "DATA"
+	local content = vfs.Read(search_paths.DATA .. path)
+	content = content .. str
+	vfs.Write(search_paths.DATA .. name, content)
+end
+
 function file.Find(path, where)
 	local files, folders = {}, {}
 

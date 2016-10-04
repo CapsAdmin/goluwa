@@ -34,10 +34,11 @@ end
 
 function META.__mul(a, b)
 	if type(b) == "number" then
-		return QuatDeg3(a.q:GetAngles() * b)
+		a.q:SetAngles(a.q:GetAngles() * b)
 	else
-		return QuatDeg3((a.q:GetAngles() * b.q:GetAngles()):Unpack())
+		a.q:SetAngles(a.q:GetAngles() * b.q:GetAngles())
 	end
+	return a
 end
 
 
@@ -79,6 +80,15 @@ end
 
 function gmod.env.Angle(p, y, r)
 	local self = {}
+
+	if type(p) == "table" then
+		local temp = p
+		p,y,r = temp.p, temp.y, temp.r
+	else
+		p = p or 0
+		y = y or 0
+		r = r or 0
+	end
 
 	self.q = QuatDeg3(p, y, r)
 

@@ -160,6 +160,76 @@ event.AddListener("PostLoadString", "gmod_function_env", function(func, path)
 	gmod.SetFunctionEnvironment(func)
 end)
 
+
+do
+	local easy = {
+		["roboto bk"] = "resource/fonts/Roboto-Black.ttf",
+		["roboto"] = "resource/fonts/Roboto-Regular.ttf",
+		["helvetica"] = "resource/fonts/coolvetica.ttf",
+		["times new roman"] = "resource/fonts/coolvetica.ttf",
+		["courier new"] = "resource/fonts/coolvetica.ttf",
+		["courier"] = "resource/fonts/coolvetica.ttf",
+		["arial"] = "resource/fonts/coolvetica.ttf",
+		["arial black"] = "resource/fonts/coolvetica.ttf",
+		["verdana"] = "resource/fonts/coolvetica.ttf",
+		["trebuchet ms"] = "resource/fonts/coolvetica.ttf",
+	}
+
+	function gmod.TranslateFontName(name)
+		local name = name:lower()
+
+		if easy[name] then
+			return easy[name]
+		end
+
+		if vfs.IsFile("resource/" .. name .. ".ttf") then
+			return "resource/" .. name .. ".ttf"
+		end
+
+		if vfs.IsFile("resource/fonts/" .. name .. ".ttf") then
+			return "resource/fonts/" .. name .. ".ttf"
+		end
+
+		return easy.helvetica
+	end
+end
+
+function gmod.LoadFonts()
+	local screen_res = window.GetSize()
+
+	local fonts = steam.VDFToTable(vfs.Read("resource/SourceScheme.res"), true).scheme.fonts
+	table.merge(fonts, steam.VDFToTable(vfs.Read("resource/ChatScheme.res"), true).scheme.fonts)
+	table.merge(fonts, steam.VDFToTable(vfs.Read("resource/ClientScheme.res"), true).scheme.fonts)
+
+	for font_name, sub_fonts in pairs(fonts) do
+		local candidates = {}
+
+		for i, info in pairs(sub_fonts) do
+			if info.yres then
+				local x,y = unpack(info.yres:split(" "))
+				table.insert(candidates, {info = info, dist = Vec2(tonumber(x), tonumber(y)):Distance(screen_res)})
+			end
+		end
+
+		table.sort(candidates, function(a, b) return a.dist > b.dist end)
+		local info = (candidates[1] and candidates[1].info) or select(2, next(sub_fonts))
+
+		for i, info in pairs(sub_fonts) do
+			print(info.name, ">>", gmod.TranslateFontName(info.name))
+
+			if type(info.tall) == "table" then
+				--table.print(info.tall)
+				info.tall = info.tall[1]-- what
+			end
+
+			gmod.surface_fonts[font_name:lower()] = surface.CreateFont({
+				path = gmod.TranslateFontName(info.name),
+				size = info.tall and math.ceil(info.tall * 0.75) or 11,
+			})
+		end
+	end
+end
+
 local function load_entities(base_folder, global, register, create_table)
 	for file_name in vfs.Iterate(base_folder.."/") do
 		--logn("gmod: registering ",base_folder," ", file_name)
@@ -284,6 +354,8 @@ function gmod.Initialize()
 		gmod.current_gamemode = gmod.gamemodes.sandbox
 		gmod.env.GAMEMODE = gmod.current_gamemode
 
+		gmod.LoadFonts()
+
 		gmod.init = true
 	end
 end
@@ -399,5 +471,19 @@ function gmod.Run()
 		gmod.env.hook.Run("PostRenderVGUI")
 	end)
 end
+
+commands.Add("ginit", function()
+	gmod.Initialize()
+	gmod.Run()
+end)
+
+commands.Add("glua", function(line)
+	if not gmod.env then
+		gmod.Initialize()
+	end
+	local func = assert(loadstring(line))
+	setfenv(func, gmod.env)
+	print(func())
+end)
 
 return gmod

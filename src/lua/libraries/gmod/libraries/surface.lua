@@ -74,31 +74,15 @@ function surface.CreateFont(id, tbl)
 	local tbl = table.copy(tbl)
 	tbl.path = tbl.font
 
-	local name = tbl.path:lower()
-
-	if name == "roboto bk" then
-		tbl.path = "resource/fonts/Roboto-Black.ttf"
-	elseif name == "roboto" then
-		tbl.path = "resource/fonts/Roboto-Regular.ttf"
-	elseif name == "helvetica" then
-		tbl.path = "resource/fonts/coolvetica.ttf"
-	elseif name == "tahoma" then
-		tbl.path = "fonts/tahoma.ttf"
-	elseif name == "arial" then
-		tbl.path = "droid sans"
-	end
+	tbl.path = gmod.TranslateFontName(tbl.path)
 
 	if tbl.size then tbl.size = math.ceil(tbl.size * 0.75) end
 
-	if not vfs.IsFile(tbl.path) then
-		logf("surface.CreateFont called with path: %q which doesn't exist\n", tbl.path)
-	end
-
-	gmod.surface_fonts[id] = lib.CreateFont(tbl)
+	gmod.surface_fonts[id:lower()] = lib.CreateFont(tbl)
 end
 
 function surface.SetFont(name)
-	lib.SetFont(gmod.surface_fonts[name])
+	lib.SetFont(gmod.surface_fonts[name:lower()])
 end
 
 function surface.GetTextSize(str)
@@ -111,6 +95,10 @@ function surface.DrawText(str)
 	lib.PushColor(txt_r, txt_g, txt_b, txt_a)
 	lib.DrawText(str)
 	lib.PopColor()
+
+	local x, y = lib.GetTextPosition()
+	local w, h = surface.GetTextSize(str)
+	lib.SetTextPosition(x + w, y)
 end
 
 function surface.PlaySound(path)

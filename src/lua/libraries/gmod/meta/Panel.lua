@@ -427,6 +427,10 @@ function META:HasFocus()
 	return self.__obj:IsFocused()
 end
 
+function META:SetHTML()
+
+end
+
 function META:HasHierarchicalFocus()
 	for _, pnl in ipairs(self.__obj:GetChildrenList()) do
 		if pnl.IsFocused and pnl:IsFocused() then

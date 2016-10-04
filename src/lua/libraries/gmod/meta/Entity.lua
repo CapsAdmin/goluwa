@@ -38,6 +38,10 @@ function ENT:SkinCount() return 1 end
 function ENT:LookupSequence() return -1 end
 function ENT:DrawModel() end
 
+function ENT:GetClass()
+	return self.ClassName or self.MetaName
+end
+
 function gmod.env.ClientsideModel(path)
 	local ent = entities.CreateEntity("visual")
 	ent:SetModelPath(path)

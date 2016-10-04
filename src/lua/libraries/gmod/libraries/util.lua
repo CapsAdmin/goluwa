@@ -32,6 +32,13 @@ function util.TraceLine(info)
 	return data
 end
 
+
+function util.KeyValuesToTable(str)
+	local tbl = steam.VDFToTable(str, true)
+	local key, val = next(tbl)
+	return val
+end
+
 function util.CRC(str)
 	return crypto.CRC32(tostring(str))
 end

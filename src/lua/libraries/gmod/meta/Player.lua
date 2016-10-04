@@ -66,3 +66,11 @@ end
 function META:UniqueID()
 	return crypto.CRC32(self.__obj:GetUniqueID())
 end
+
+function META:GetActiveWeapon()
+	return gmod.WrapObject(gmod.CreateWeapon(), "Weapon")
+end
+
+function META:IsPlayer()
+	return true
+end

@@ -130,7 +130,7 @@ do -- metatables
 			env._R[meta_name] = META
 		end
 		for func_name in pairs(functions) do
-			env._R[meta_name][func_name] = env._R[meta_name][func_name] or function(...) logf(("gmod NYI: %s:%s(%s)\n"):format(meta_name, func_name, table.concat(tostring_args(...), ","))) end
+			env._R[meta_name][func_name] = env._R[meta_name][func_name] or function(...) logf("gmod NYI: %s:%s(%s)\n", meta_name, func_name, table.concat(tostring_args(...), ",")) end
 		end
 
 		gmod.objects[meta_name] = gmod.objects[meta_name] or {}

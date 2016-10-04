@@ -100,7 +100,7 @@ local function vgui_Create(class, parent, name)
 				if obj.text_internal and obj.text_internal ~= "" then
 					surface.SetColor(obj.fg_color:Unpack())
 					surface.SetTextPosition(obj.text_offset.x, obj.text_offset.y)
-					surface.SetFont(gmod.surface_fonts[obj.font_internal])
+					surface.SetFont(gmod.surface_fonts[obj.font_internal:lower()])
 					surface.DrawText(obj.text_internal)
 				end
 			end
@@ -120,7 +120,7 @@ local function vgui_Create(class, parent, name)
 		local panel = obj
 
 		if panel.vgui_type == "label" then
-			local w, h = gmod.surface_fonts[panel.font_internal]:GetTextSize(panel.text_internal)
+			local w, h = gmod.surface_fonts[panel.font_internal:lower()]:GetTextSize(panel.text_internal)
 			local m = panel:GetMargin()
 
 			if panel.content_alignment == 5 then
