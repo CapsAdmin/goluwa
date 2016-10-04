@@ -192,6 +192,10 @@ function surface.SetTextPosition(x, y)
 	Y = y or Y
 end
 
+function surface.GetTextPosition()
+	return X, Y
+end
+
 do
 	local cache = utility.CreateWeakTable()
 
