@@ -2,8 +2,36 @@ local gmod = ... or _G.gmod
 
 local file = gmod.env.file
 
+local search_paths = {
+	GAME = "",
+	LUA = "lua/",
+	DATA = gmod.dir .. "data/",
+	DOWNLOAD = gmod.dir .. "download/",
+	MOD = gmod.dir,
+	BASE_PATH = gmod.dir .. "../bin/",
+}
+
+function file.Open(path, how)
+	if how:find("w") then
+		warning("nyi file open write")
+		return
+	end
+
+	local self = vfs.Open(path, how)
+
+	if self then
+		return gmod.WrapObject(self, "File")
+	end
+end
+
+
 function file.Write(name, str)
-	vfs.Write(name, str)
+	vfs.Write(search_paths.DATA .. name, str)
+end
+
+function file.Read(path, where)
+	where = where or "DATA"
+	return vfs.Read(search_paths[where] .. path)
 end
 
 function file.Find(path, where)
@@ -35,10 +63,26 @@ function file.Find(path, where)
 	return files, folders
 end
 
-function file.Read(path)
-	return vfs.Read(path)
+function file.Exists(path, where)
+	where = where or "DATA"
+	return vfs.Exists(search_paths[where] .. path)
 end
 
-function file.Exists(path)
-	return vfs.Exists(path)
+function file.IsDir(path, where)
+	where = where or "DATA"
+	return vfs.IsDirectory(search_paths[where] .. path)
+end
+
+function file.Size(path, where)
+	where = where or "DATA"
+	local str = vfs.Read(search_paths[where] .. path)
+	if str then
+		return #str
+	end
+	return 0
+end
+
+function file.Time(path, where)
+	where = where or "DATA"
+	return vfs.GetLastModified(search_paths[where] .. path) or 0
 end

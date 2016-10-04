@@ -151,6 +151,12 @@ end
 
 function globals.PrecacheParticleSystem() end
 
+function globals.CreateSound(ent, path, filter)
+	local self = audio.CreateSource(path)
+
+	return gmod.WrapObject(self, "CSoundPatch")
+end
+
 function globals.Msg(...) log(...) end
 function globals.MsgC(...) log(...) end
 function globals.MsgN(...) logn(...) end

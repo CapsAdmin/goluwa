@@ -62,3 +62,7 @@ end
 function META:ConCommand(str)
 	logn("gmod cmd: ", str)
 end
+
+function META:UniqueID()
+	return crypto.CRC32(self.__obj:GetUniqueID())
+end

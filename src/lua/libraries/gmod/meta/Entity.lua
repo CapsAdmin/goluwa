@@ -20,6 +20,10 @@ function ENT:GetTable()
 	return self.__storable_table
 end
 
+function ENT:EntIndex()
+	return -1
+end
+
 function ENT:GetNetworkedString(what)
 	if what == "UserGroup" then
 		return "Player"
