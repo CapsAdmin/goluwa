@@ -66,21 +66,43 @@ function steam.VDFToTable(str, lower_or_modify_keys, preprocess)
 	str = str:gsub("___L_O_L___", "http://")
 	str = str:gsub("___L_O_L_2___", "https://")
 
-	str = str:gsub("(%b\"\"%s-)%[$(%S-)%](%s-%b{})", function(start, def, stop)
-		if def ~= "WIN32" then
-			return ""
+	local function replace(start, stop, def)
+		local os = def:match("%$(.+)")
+
+		if os == "WIN32" or os == "WINDOWS" then
+			os = "Windows"
+		elseif os == "LINUX" then
+			os = "Linux"
+		elseif os == "OSX" then
+			os = "OSX"
+		elseif os == "POSIX" then
+			os = "Posix,BSD"
+		else
+			os = "Other" -- xbox360 ?
 		end
 
-		return start .. stop
-	end)
+		if def:startswith("!") then
+			if os:find(jit.os, nil, true) then
+				return ""
+			else
+				return start .. stop
+			end
+		end
 
-	str = str:gsub("(%b\"\"%s-)(%b\"\"%s-)%[$(%S-)%]", function(start, stop, def)
-		if def ~= "WIN32" then
+		if os:find(jit.os, nil, true) then
+			return start .. stop
+		else
 			return ""
 		end
-		return start .. stop
+	end
+
+	str = str:gsub("([%d%a.\"_]+%s-)(%b\"\"%s-)%[(%p+%S-)%]", function(start, stop, def)
+		return replace(start, stop, def)
 	end)
 
+	str = str:gsub("([%d%a.\"_]+%s-)%[(%p+%S-)%](%s-%b{})", function(start, def, stop)
+		return replace(start, stop, def)
+	end)
 
 	local tbl = {}
 
@@ -181,7 +203,7 @@ function steam.VDFToTable(str, lower_or_modify_keys, preprocess)
 					current = current[key]
 					key = nil
 				else
-					return nil, "stack imbalance"
+					return nil, "stack imbalance at char " .. i
 				end
 			elseif char == [[}]] then
 				current = table.remove(stack) or out
