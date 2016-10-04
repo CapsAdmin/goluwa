@@ -381,11 +381,11 @@ function sockets.DownloadFirstFound(urls, callback, on_fail)
 				callback(url, ...)
 			end,
 			function(reason)
-				table.insert(fails, reason)
+				table.insert(fails, "failed to download " .. url .. ": " .. reason .. "\n")
 				if #fails == #urls then
 					local reason = ""
 					for _, str in ipairs(fails) do
-						reason = reason .. "failed to download " .. url .. ": " .. str .. "\n"
+						reason = reason .. str
 					end
 					on_fail(reason)
 				end
