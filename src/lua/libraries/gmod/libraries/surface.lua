@@ -104,3 +104,7 @@ end
 function surface.PlaySound(path)
 	audio.CreateSource("sound/" .. path):Play()
 end
+
+function surface.DrawLine(...)
+	lib.DrawLine(...)
+end
