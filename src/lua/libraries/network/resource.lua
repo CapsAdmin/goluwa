@@ -103,7 +103,7 @@ local cb = utility.CreateCallbackThing()
 local ohno = false
 
 function resource.Download(path, callback, on_fail, crc)
-	on_fail = on_fail or logn
+	on_fail = on_fail or function(reason) llog(path, ": ", reason) end
 
 	local url
 	local existing_path
