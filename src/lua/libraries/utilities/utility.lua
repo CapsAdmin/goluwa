@@ -181,40 +181,54 @@ function utility.LuaAutoComplete(text)
 	return found
 end
 
-function utility.StripLuaCommentsAndStrings(code)
-	local singleline_comments = {}
-	local multiline_comments = {}
-	local double_quote_strings = {}
-	local single_quote_strings = {}
-	local multiline_strings = {}
+do
+	function utility.StripLuaCommentsAndStrings(code)
+		code = code:gsub("\\\\", "____ESCAPE_ESCAPE")
+		code = code:gsub("\\'", "____SINGLE_QUOTE_ESCAPE")
+		code = code:gsub('\\"', "____DOUBLE_QUOTE_ESCAPE")
 
-	code = code:gsub("\\\\", "____ESCAPE_ESCAPE")
-	code = code:gsub("\\'", "____SINGLE_QUOTE_ESCAPE")
-	code = code:gsub('\\"', "____DOUBLE_QUOTE_ESCAPE")
+		local singleline_comments = {}
+		local singleline_comments_gmod = {}
+		local multiline_comments = {}
+		local multiline_comments_gmod = {}
+		local double_quote_strings = {}
+		local single_quote_strings = {}
+		local multiline_strings = {}
 
-	code = code:gsub("(%-%-%[(=*)%[.-%]%2%])", function(str) table.insert(multiline_comments, str) return "____COMMENT_MULTILINE_" .. #multiline_comments .. "____" .. " "  end)
-	code = code:gsub("(%[(=*)%[.-%]%2%])", function(str) table.insert(multiline_strings, str) return "____STRING_MULTILINE_" .. #multiline_strings .. "____" .. " "  end)
-	code = code:gsub("%b\"\"", function(str) table.insert(double_quote_strings, str) return "____STRING_DOUBLE_QUOTE_" .. #double_quote_strings .. "____" .. " "  end)
-	code = code:gsub("(%-%-.-)\n", function(str) table.insert(singleline_comments, str) return "____COMMENT_SINGLELINE_" .. #singleline_comments .. "____" .. " " end)
-	code = code:gsub("%b''", function(str) table.insert(single_quote_strings, str) return "____STRING_SINGLE_QUOTE_" .. #single_quote_strings .. "____" .. " "  end)
+		code = code:gsub("(%-%-%[(=*)%[.-%]%2%])", function(str) table.insert(multiline_comments, str) return "____COMMENT_MULTILINE_" .. #multiline_comments .. "____" .. " "  end)
+		code = code:gsub("(/%*.-%*/)", function(str) table.insert(multiline_comments_gmod, str) return "____COMMENT_MULTILINE_GMOD_" .. #multiline_comments_gmod .. "____" .. " "  end)
+		code = code:gsub("(%[(=*)%[.-%]%2%])", function(str) table.insert(multiline_strings, str) return "____STRING_MULTILINE_" .. #multiline_strings .. "____" .. " "  end)
+		code = code:gsub("%b\"\"", function(str) table.insert(double_quote_strings, str) return "____STRING_DOUBLE_QUOTE_" .. #double_quote_strings .. "____" .. " "  end)
+		code = code:gsub("(%-%-.-)\n", function(str) table.insert(singleline_comments, str) return "____COMMENT_SINGLELINE_" .. #singleline_comments .. "____" .. " " end)
+		code = code:gsub("(//.-)\n", function(str) table.insert(singleline_comments_gmod, str) return "____COMMENT_SINGLELINE_GMOD_" .. #singleline_comments_gmod .. "____" .. " " end)
+		code = code:gsub("%b''", function(str) table.insert(single_quote_strings, str) return "____STRING_SINGLE_QUOTE_" .. #single_quote_strings .. "____" .. " "  end)
 
-	return code, {singleline_comments, multiline_comments, double_quote_strings, single_quote_strings, multiline_strings}
-end
+		return code, {
+			singleline_comments = singleline_comments,
+			singleline_comments_gmod = singleline_comments_gmod,
+			multiline_comments = multiline_comments,
+			multiline_comments_gmod = multiline_comments_gmod,
+			double_quote_strings = double_quote_strings,
+			single_quote_strings = single_quote_strings,
+			multiline_strings = multiline_strings,
+		}
+	end
 
-function utility.RestoreLuaCommentsAndStrings(code, data)
-	local singleline_comments, multiline_comments, double_quote_strings, single_quote_strings, multiline_strings = unpack(data)
+	function utility.RestoreLuaCommentsAndStrings(code, data)
+		for i, v in ipairs(data.multiline_comments) do code = code:replace("____COMMENT_MULTILINE_" .. i .. "____", v) end
+		for i, v in ipairs(data.multiline_comments_gmod) do code = code:replace("____COMMENT_MULTILINE_GMOD_" .. i .. "____", v) end
+		for i, v in ipairs(data.multiline_strings) do code = code:replace("____STRING_MULTILINE_" .. i .. "____", v) end
+		for i, v in ipairs(data.double_quote_strings) do code = code:replace("____STRING_DOUBLE_QUOTE_" .. i .. "____", v) end
+		for i, v in ipairs(data.singleline_comments) do code = code:replace("____COMMENT_SINGLELINE_" .. i .. "____", v .. "\n") end
+		for i, v in ipairs(data.singleline_comments_gmod) do code = code:replace("____COMMENT_SINGLELINE_GMOD_" .. i .. "____", v .. "\n") end
+		for i, v in ipairs(data.single_quote_strings) do code = code:replace("____STRING_SINGLE_QUOTE_" .. i .. "____", v) end
 
-	for i, v in ipairs(multiline_comments) do code = code:replace("____COMMENT_MULTILINE_" .. i .. "____", v) end
-	for i, v in ipairs(multiline_strings) do code = code:replace("____STRING_MULTILINE_" .. i .. "____", v) end
-	for i, v in ipairs(double_quote_strings) do	code = code:replace("____STRING_DOUBLE_QUOTE_" .. i .. "____", v) end
-	for i, v in ipairs(singleline_comments) do	code = code:replace("____COMMENT_SINGLELINE_" .. i .. "____", v .. "\n") end
-	for i, v in ipairs(single_quote_strings) do	code = code:replace("____STRING_SINGLE_QUOTE_" .. i .. "____", v) end
+		code = code:gsub("____ESCAPE_ESCAPE", "\\\\")
+		code = code:gsub("____SINGLE_QUOTE_ESCAPE", "\\'")
+		code = code:gsub("____DOUBLE_QUOTE_ESCAPE", '\\"')
 
-	code = code:gsub("____ESCAPE_ESCAPE", "\\\\")
-	code = code:gsub("____SINGLE_QUOTE_ESCAPE", "\\'")
-	code = code:gsub("____DOUBLE_QUOTE_ESCAPE", '\\"')
-
-	return code
+		return code
+	end
 end
 
 function utility.CreateCallbackThing(cache)
