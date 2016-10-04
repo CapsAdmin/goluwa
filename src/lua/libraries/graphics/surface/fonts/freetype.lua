@@ -62,6 +62,64 @@ local function google(path)
 	return path .. "/" .. path:upperchar(1) .. ".ttf"
 end
 
+local function translate_windows_font(font_name)
+	-- TODO: EnumFontFamiliesEx
+
+	local flags = {
+		bold = "b",
+		semibold = "sb",
+		semilight = "sl",
+		regular = "",
+		light = "l",
+		italic = "i",
+		black = "bl",
+	}
+
+	local translate = {
+		["arial black"] = "ariblk",
+		["arial bold"] = "arialbd",
+	}
+
+	local name_translate = {
+		["lucidaconsole"] = "lucon",
+		["trebuchetms"] = "trebuc",
+		["couriernew"] = "cour",
+	}
+
+	local path
+	local font = font_name:lower()
+
+	-- http://snook.ca/archives/html_and_css/windows-subs-helvetica-arial
+	if font == "helvetica" then
+		font = "arial"
+	end
+
+	font = font:lower()
+
+	local parts = font:lower():split(" ")
+	local name = parts[1]
+
+	for i = 2, #parts do
+		local flag = parts[i]
+
+		if flag == "bold" then
+			flag = "b"
+		elseif flag == "semibold" then
+			flag = "sb"
+		elseif flag == "semibold" then
+
+		end
+
+		name = name .. flag
+	end
+
+	for k,v in pairs(name_translate) do
+		name = name:gsub(k, v)
+	end
+
+	return name .. ".ttf"
+end
+
 local providers = {
 	{
 		url = "https://github.com/google/fonts/raw/master/apache/", -- roboto/Roboto-Bolditallic.ttf
@@ -70,6 +128,10 @@ local providers = {
 	{
 		url = "https://github.com/google/fonts/raw/master/ofl/", -- roboto/Roboto-Bolditallic.ttf
 		translate = google,
+	},
+	{
+		url = "https://github.com/caarlos0/msfonts/raw/master/fonts/",
+		translate = translate_windows_font,
 	},
 	{
 		url = "http://dl.dafont.com/dl/?f=", -- roboto | Roboto-BoldItalic.ttf
@@ -224,68 +286,7 @@ function META:Initialize()
 	resource.Download(self.Path, load, function(reason)
 
 		if WINDOWS then
-			-- TODO: EnumFontFamiliesEx
-
-			local flags = {
-				bold = "b",
-				semibold = "sb",
-				semilight = "sl",
-				regular = "",
-				light = "l",
-				italic = "i",
-				black = "bl",
-			}
-
-			local translate = {
-				["arial black"] = "ariblk",
-				["arial bold"] = "arialbd",
-			}
-
-			local name_translate = {
-				["lucida console"] = "lucon",
-				["trebuchet ms"] = "trebuc",
-				["courier new"] = "cour",
-			}
-
-			local path
-			local font = self.Path:lower()
-
-			if translate[font] then
-				path = vfs.ParsePathVariables("%windir%/fonts/" .. translate[font] .. ".ttf")
-			else
-				-- http://snook.ca/archives/html_and_css/windows-subs-helvetica-arial
-				if font == "helvetica" then
-					font = "arial"
-				end
-
-				font = font:lower()
-
-				for k in pairs(name_translate) do
-					if font:startswith(k) then
-						font = font:sub(#k+2)
-						break
-					end
-				end
-
-				local parts = font:lower():split(" ")
-				local name = parts[1]
-
-				for i = 2, #parts do
-					local flag = parts[i]
-
-					if flag == "bold" then
-						flag = "b"
-					elseif flag == "semibold" then
-						flag = "sb"
-					elseif flag == "semibold" then
-
-					end
-
-					name = name .. flag
-				end
-
-				path = vfs.ParsePathVariables("%windir%/fonts/" .. name .. ".ttf")
-			end
+			path = vfs.ParsePathVariables("%windir%/fonts/" .. translate_windows_font(self.Path))
 
 			if vfs.IsFile(path) then
 				resource.Download(path, load)
