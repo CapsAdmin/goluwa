@@ -181,6 +181,12 @@ end
 
 function META:SetSize(w,h)
 	self.__obj:SetSize(Vec2(tonumber(w),tonumber(h)))
+	if self.__obj.vgui_dock then
+		if self.__obj.Size ~= self.__obj.gmod_last_Size then
+			self:Dock(self.__obj.vgui_dock)
+			self.__obj.gmod_last_Size = self.__obj.Size
+		end
+	end
 end
 
 function META:GetSize()
@@ -225,6 +231,10 @@ function META:GetParent()
 	end
 
 	return nil
+end
+
+function META:IsEnabled()
+	return true
 end
 
 function META:InvalidateLayout(now)

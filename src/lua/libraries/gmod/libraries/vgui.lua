@@ -24,12 +24,13 @@ local function vgui_Create(class, parent, name)
 
 	if not gmod.gui_world:IsValid() then
 		gmod.gui_world = gui.CreatePanel("base")
-		gmod.gui_world:SetColor(Color(0,0,0,0))
+		gmod.gui_world:SetNoDraw(true)
+		--gmod.gui_world:SetIgnoreMouse(true)
 		gmod.gui_world.__class = "CGModBase"
-		function gmod.gui_world:OnUpdate()
-			local size = window.GetSize()
-			self.Size.x = size.x
-			self.Size.y = size.y
+		function gmod.gui_world:OnLayout()
+			self:SetPosition(Vec2(0, 0))
+			self:SetSize(window.GetSize())
+			print("gmod world layout")
 		end
 	end
 
@@ -162,15 +163,15 @@ local function vgui_Create(class, parent, name)
 	end
 
 	obj.OnMouseInput = function(_, button, press)
-		if translate_mouse[button] then
+		if button == "mwheel_down" then
+			self:OnMouseWheeled(1)
+		elseif button == "mwheel_up" then
+			self:OnMouseWheeled(-1)
+		elseif translate_mouse[button] then
 			if press then
-				if self.OnMousePressed then
-					self:OnMousePressed(translate_mouse[button])
-				end
+				self:OnMousePressed(translate_mouse[button])
 			else
-				if self.OnMouseReleased then
-					self:OnMouseReleased(translate_mouse[button])
-				end
+				self:OnMouseReleased(translate_mouse[button])
 			end
 		else
 			logf("mouse button %q could not be translated!\n", button)
@@ -178,7 +179,7 @@ local function vgui_Create(class, parent, name)
 	end
 
 	obj.OnKeyInput = function(_, key, press)
-		if press and self.OnKeyCodePressed then
+		if press then
 			if translate_key[key] then
 				self:OnKeyCodePressed(translate_key[key])
 			else

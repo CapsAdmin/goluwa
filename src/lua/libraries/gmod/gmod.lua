@@ -1,16 +1,30 @@
 local gmod = _G.gmod or {}
 
 function gmod.PreprocessLua(code)
-	local code, data = utility.StripLuaCommentsAndStrings(code)
+	local code, data = utility.StripLuaCommentsAndStrings(code, function(code, data)
+		code = code:gsub("(//.-)\n", function(str)
+			str = str:gsub("//", "--")
+
+			-- todo: api
+			table.insert(data.singleline_comments, str)
+			return "____COMMENT_SINGLELINE_" .. #data.singleline_comments .. "____" .. " "
+		end)
+		code = code:gsub("(/%*.-%*/)", function(str)
+			str = str:gsub("/%*", "--[=======[")
+			str = str:gsub("%*/", "]=======]")
+
+			-- todo: api
+			table.insert(data.multiline_comments, str)
+			return "____COMMENT_MULTILINE_" .. #data.multiline_comments .. "____" .. " "
+		end)
+		return code
+	end)
 	code = code:gsub("&&", " and ")
 	code = code:gsub("||", " or ")
 	code = code:gsub("!=", " ~= ")
 	code = code:gsub("!", "not ")
 	code = code:gsub("DEFINE_BASECLASS", "local BaseClass = baseclass.Get")
 	code = utility.RestoreLuaCommentsAndStrings(code, data)
-	code = code:gsub("/%*", "--[=======[")
-	code = code:gsub("%*/", "]=======]")
-	code = code:gsub("//", "--")
 
 	if code:find("continue", nil, true) and not loadstring(code) then
 		local lex_setup = require("lang.lexer")

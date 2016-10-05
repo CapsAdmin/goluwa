@@ -15,6 +15,22 @@ function ENT:GetPos()
 	return gmod.env.Vector(self.__obj:GetPosition():Unpack())
 end
 
+function ENT:GetForward()
+	return self.__obj:GetRotation():GetForward()
+end
+
+function ENT:GetUp()
+	return self.__obj:GetRotation():GetUp()
+end
+
+function ENT:GetRight()
+	return self.__obj:GetRotation():GetRight()
+end
+
+function ENT:GetBoneCount()
+	return 0
+end
+
 function ENT:GetTable()
 	if not rawget(self, "__storable_table") then rawset(self, "__storable_table", {}) end
 	return self.__storable_table
