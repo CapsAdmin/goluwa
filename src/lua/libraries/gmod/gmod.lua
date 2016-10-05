@@ -8,9 +8,8 @@ function gmod.PreprocessLua(code)
 	code = code:gsub("!", "not ")
 	code = code:gsub("DEFINE_BASECLASS", "local BaseClass = baseclass.Get")
 	code = utility.RestoreLuaCommentsAndStrings(code, data)
-
-	code = code:gsub("/%*", "--[[")
-	code = code:gsub("%*/", "]]")
+	code = code:gsub("/%*", "--[=======[")
+	code = code:gsub("%*/", "]=======]")
 	code = code:gsub("//", "--")
 
 	if code:find("continue", nil, true) and not loadstring(code) then
@@ -56,7 +55,7 @@ function gmod.PreprocessLua(code)
 						balance = balance - 1
 					end
 
-					if stack[i - 1].token == "TK_return" then
+					if stack[i - 1].token == "TK_return" or stack[i - 1].token == "TK_break" then
 						return_line = stack[i - 1].linenumber
 					end
 
@@ -216,8 +215,6 @@ function gmod.LoadFonts()
 		local info = (candidates[1] and candidates[1].info) or select(2, next(sub_fonts))
 
 		for i, info in pairs(sub_fonts) do
-			print(info.name, ">>", gmod.TranslateFontName(info.name))
-
 			if type(info.tall) == "table" then
 				--table.print(info.tall)
 				info.tall = info.tall[1]-- what

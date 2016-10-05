@@ -154,7 +154,11 @@ local function vgui_Create(class, parent, name)
 			panel.text_offset = panel.text_offset + panel.text_inset
 		end
 
-		self:InvalidateLayout(true)
+		if not obj.gmod_prepared then
+			obj.gmod_prepare_layout = true
+		else
+			self:InvalidateLayout(true)
+		end
 	end
 
 	obj.OnMouseInput = function(_, button, press)

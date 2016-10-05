@@ -136,8 +136,8 @@ function META:HasChildren()
 	return self.__obj:HasChildren()
 end
 
-function META:HasParent()
-	return self.__obj:HasParent()
+function META:HasParent(panel)
+	return panel.__obj:HasChild(self.__obj)
 end
 
 function META:DockPadding(left, top, right, bottom)
@@ -211,6 +211,10 @@ end
 
 function META:SetAlpha(a)
 	self.__obj.DrawAlpha = a/255
+end
+
+function META:GetAlpha()
+	return self.__obj.DrawAlpha * 255
 end
 
 function META:GetParent()
@@ -329,6 +333,9 @@ end
 function META:SetExpensiveShadow() end
 function META:Prepare()
 	self.__obj.gmod_prepared = true
+	if self.__obj.gmod_prepare_layout then
+		self:InvalidateLayout()
+	end
 end
 function META:SetPaintBorderEnabled() end
 function META:SetPaintBackgroundEnabled(b)
