@@ -684,7 +684,7 @@ do
 				--logf("debug.openfunction(%q)\n", source)
 			end
 
-			logn("  ", source)
+			logn("  ", info.currentline, " ", info.source)
 			logn("  ", _msg:trim())
 		else
 			logn(msg)
