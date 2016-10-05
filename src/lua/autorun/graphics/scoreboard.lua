@@ -241,7 +241,7 @@ function scoreboard.Initialize()
 	local title = panel:CreatePanel("text_button")
 	title:SetMode("toggle")
 	title:SetFont(scoreboard_title)
-	--title:SetText("Bubu's Server - Subway Simulator")
+	title:SetText("Bubu's Server - Subway Simulator")
 	prototype.AddPropertyLink(title, function() return network.GetHostname() end, function(val) title:SetText(val) end)
 
 	title:SetMargin(Rect()+7)
