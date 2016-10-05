@@ -41,7 +41,7 @@ do -- tree node
 
 		button:SetIgnoreMouse(true)
 		button.label:SetIgnoreMouse(true)
-		button.OnMouseInput = function(_,...)self:OnMouseInput(...) end -- FIX IGNORE MOUSE
+		--button.OnMouseInput = function(_,...)self:OnMouseInput(...) end -- FIX IGNORE MOUSE
 
 		self:SetText("nil")
 	end

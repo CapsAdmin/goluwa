@@ -45,7 +45,6 @@ function META:GetSizeOfChildren()
 	self:Layout(true)
 
 	local total_size = Vec2()
-
 	for _, v in ipairs(self:GetChildren()) do
 		if v.Visible == true then
 			local pos = v:GetPosition() + v:GetSize() + v.Padding:GetPosition()
@@ -59,13 +58,13 @@ function META:GetSizeOfChildren()
 			end
 		end
 	end
-
 	self.last_children_size = total_size
 
 	return total_size
 end
 
 function META:SizeToChildrenHeight()
+	self.last_children_size = nil
 	self:SetHeight(math.huge)
 	self:SetHeight(self:GetSizeOfChildren().y + self.Margin:GetHeight())
 	if not math.isvalid(self.Size.y) then self.Size.y = 100 end -- FIX ME
@@ -73,6 +72,7 @@ function META:SizeToChildrenHeight()
 end
 
 function META:SizeToChildrenWidth()
+	self.last_children_size = nil
 	self:SetWidth(math.huge)
 	self:SetWidth(self:GetSizeOfChildren().x + self.Margin:GetWidth())
 	if not math.isvalid(self.Size.x) then self.Size.x = 100 end -- FIX ME
@@ -80,6 +80,7 @@ function META:SizeToChildrenWidth()
 end
 
 function META:SizeToChildren()
+	self.last_children_size = nil
 	self:SetSize(Vec2() + math.huge)
 	self:SetSize(self:GetSizeOfChildren() + self.Margin:GetSize())
 	if not self.Size:IsValid() then self.Size:Set(100, 100) end -- FIX ME
