@@ -25,7 +25,7 @@ do
 	}
 
 	function input.IsMouseDown(code)
-		return input.IsMouseDown(translate[code])
+		return _G.input.IsMouseDown(translate[code])
 	end
 end
 
@@ -39,7 +39,7 @@ do
 	end
 
 	function input.IsKeyDown(code)
-		return input.IsKeyDown(translate[code])
+		return _G.input.IsKeyDown(translate[code])
 	end
 
 	function input.GetKeyName(code)
