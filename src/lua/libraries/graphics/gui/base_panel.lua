@@ -218,6 +218,7 @@ do -- drawing
 
 	function META:PreDraw(from_cache)
 		if self.GreyedOut then surface.PushHSV(1,0,0.5) end
+		surface.PushAlphaMultiplier(self.DrawAlpha)
 
 		if self.ThreeDee then surface.Start3D2D() end
 
@@ -343,6 +344,7 @@ do -- drawing
 		if self.ThreeDee then surface.End3D2D() end
 
 		if self.GreyedOut then surface.PopHSV() end
+		surface.PopAlphaMultiplier()
 	end
 
 	function META:DrawRect(x, y, w, h)
@@ -2337,7 +2339,6 @@ do -- events
 	function META:OnDraw()
 		if self.NoDraw or self.style_nodraw then return end
 
-		surface.SetAlphaMultiplier(self.DrawAlpha)
 		surface.SetColor(
 			self.Color.r + self.DrawColor.r,
 			self.Color.g + self.DrawColor.g,

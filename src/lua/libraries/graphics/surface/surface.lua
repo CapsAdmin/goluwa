@@ -174,13 +174,14 @@ do
 end
 
 function surface.SetAlphaMultiplier(a)
-	--surface.fontmesh.alpha_multiplier = a
 	surface.mesh_2d_shader.alpha_multiplier = a or surface.mesh_2d_shader.alpha_multiplier
 end
 
 function surface.GetAlphaMultiplier()
 	return surface.mesh_2d_shader.alpha_multiplier
 end
+
+utility.MakePushPopFunction(surface, "AlphaMultiplier")
 
 function surface.SetTexture(tex)
 	surface.mesh_2d_shader.tex = tex
