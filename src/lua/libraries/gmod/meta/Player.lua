@@ -74,3 +74,11 @@ end
 function META:IsPlayer()
 	return true
 end
+
+function META:UserID()
+	return 0
+end
+
+function META:GetFriendStatus()
+	return "none"
+end

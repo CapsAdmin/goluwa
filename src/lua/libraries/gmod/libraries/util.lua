@@ -42,3 +42,7 @@ end
 function util.CRC(str)
 	return crypto.CRC32(tostring(str))
 end
+
+function util.RelativePathToFull(path)
+	return R(path)
+end

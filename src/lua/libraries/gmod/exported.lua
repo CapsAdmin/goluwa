@@ -1772,7 +1772,6 @@ return {
 			["ColorHSV"] = true,
 			["FindMetaTable"] = true,
 			["EmitSentence"] = true,
-			["collectgarbage"] = true,
 			["WorldToLocal"] = true,
 			["SetGlobalVector"] = true,
 			["Format"] = true,

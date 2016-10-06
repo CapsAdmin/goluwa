@@ -97,3 +97,8 @@ function globals.ScrH() return lib.GetHeight() end
 function globals.DisableClipping(b)
 
 end
+
+function render.SupportsPixelShaders_1_4() return true end
+function render.SupportsVertexShaders_2_0() return true end
+function render.SupportsPixelShaders_2_0() return true end
+function render.SupportsHDR() return true end

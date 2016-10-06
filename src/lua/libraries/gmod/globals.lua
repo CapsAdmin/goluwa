@@ -169,7 +169,7 @@ globals.include = function(path)
 		"lua/" .. path:lower()
 	})
 	if not ok then
-		print(err, "?!!??")
+		logn(err)
 	end
 end
 
@@ -219,4 +219,8 @@ function globals.require(name, ...)
 	if not func and err then print(name, err) end
 
 	return func
+end
+
+function globals.ParticleEmitter()
+	return gmod.WrapObject(ParticleEmitter(), "CLuaEmitter")
 end
