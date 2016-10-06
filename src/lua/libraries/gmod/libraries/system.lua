@@ -16,3 +16,11 @@ end
 function gmod_system.HasFocus()
 	return window.IsFocused()
 end
+
+function gmod_system.GetCountry()
+	return "NO"
+end
+
+function gmod_system.IsWindowed()
+	return true
+end

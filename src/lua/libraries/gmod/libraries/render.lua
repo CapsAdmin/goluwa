@@ -102,3 +102,7 @@ function render.SupportsPixelShaders_1_4() return true end
 function render.SupportsVertexShaders_2_0() return true end
 function render.SupportsPixelShaders_2_0() return true end
 function render.SupportsHDR() return true end
+
+function render.GetMoBlurTex0()
+	return gmod.WrapObject(_G.render.GetErrorTexture(), "ITexture")
+end

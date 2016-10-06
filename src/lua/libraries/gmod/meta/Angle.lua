@@ -4,24 +4,26 @@ local META = gmod.env.FindMetaTable("Angle")
 
 function META:__index(key)
 	if key == "p" then
-		return self.v.x
+		return self.q:GetAngles().x
 	elseif key == "y" then
-		return self.v.y
+		return self.q:GetAngles().y
 	elseif key == "r" then
-		return self.v.z
+		return self.q:GetAngles().z
 	end
 
 	return META[key]
 end
 
 function META:__newindex(key, val)
+	local ang = self.q:GetAngles()
 	if key == "p" then
-		self.v.x = val
+		ang.x = val
 	elseif key == "y" then
-		self.v.y = val
+		ang.y = val
 	elseif key == "r" then
-		self.v.z = val
+		ang.z = val
 	end
+	self.q:SetAngles(ang)
 end
 
 function META:__tostring()

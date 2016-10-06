@@ -17,3 +17,10 @@ end
 function cam.IgnoreZ()
 
 end
+
+function cam.PushModelMatrix(mat)
+
+end
+
+function cam.PopModelMatrix()
+end

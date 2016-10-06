@@ -58,6 +58,18 @@ function ENT:GetClass()
 	return self.ClassName or self.MetaName
 end
 
+function ENT:GetNWFloat(key, def)
+	return def or 0
+end
+
+function ENT:GetNWEntity(key, def)
+	return def or _G.NULL
+end
+
+function ENT:GetAttachedRagdoll()
+	return _G.NULL
+end
+
 function gmod.env.ClientsideModel(path)
 	local ent = entities.CreateEntity("visual")
 	ent:SetModelPath(path)

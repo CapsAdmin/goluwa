@@ -26,6 +26,7 @@ function META.__eq(a, b)
 	return a.v == b.v
 end
 
+function META.__unm(a) return gmod.env.Vector((-a.v):Unpack()) end
 function META.__add(a, b) return gmod.env.Vector((a.v + b.v):Unpack()) end
 function META.__sub(a, b) return gmod.env.Vector((a.v - b.v):Unpack()) end
 function META.__mul(a, b) if type(b) == "number" then return gmod.env.Vector((a.v * b):Unpack()) elseif type(a) == "number" then return gmod.env.Vector((a * b.v):Unpack()) else return gmod.env.Vector((a.v * b.v):Unpack()) end end
@@ -80,6 +81,9 @@ end
 
 function META:Length()
 	return self.v:GetLength()
+end
+function META:DistToSqr(b)
+	return (self.v - b.v):GetLengthSquared()
 end
 
 function META:IsZero()

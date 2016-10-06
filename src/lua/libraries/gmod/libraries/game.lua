@@ -8,3 +8,5 @@ function game.AddDecal() end
 function game.GetMap() return "gm_construct" end
 
 function game.MaxPlayers() return 32 end
+function game.SinglePlayer() return false end
+function game.StartTime() return system.GetElapsedTime() end

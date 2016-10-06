@@ -30,8 +30,13 @@ function ents.FindByClass(name)
 	local out = {}
 
 	for obj, ent in pairs(gmod.objects.Entity) do
-		if ent.ClassName:find(name) then
-			table.insert(out, ent)
+		if not ent.ClassName then
+			print(ent)
+			table.print(ent)
+		else
+			if ent.ClassName:find(name) then
+				table.insert(out, ent)
+			end
 		end
 	end
 

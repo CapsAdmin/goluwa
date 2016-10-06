@@ -29,3 +29,6 @@ end
 function META:IsError()
 	return false
 end
+
+META.GetHDRTexture = META.GetTexture
+META.SetHDRTexture = META.SetTexture

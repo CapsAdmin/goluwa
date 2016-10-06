@@ -13,3 +13,12 @@ function META:GetColor(x,y)
 	local r,g,b,a = self.__obj:GetPixelColor(x,y)
 	return {r=r,g=g,b=b,a=a or 255}
 end
+
+function META:GetName()
+	return "huh"
+end
+
+
+function META:IsError()
+	return false
+end

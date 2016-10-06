@@ -34,7 +34,11 @@ end
 
 
 function util.KeyValuesToTable(str)
-	local tbl = steam.VDFToTable(str, true)
+	local tbl, ok = steam.VDFToTable(str, true)
+	if not tbl then
+		llog(ok)
+		return {}
+	end
 	local key, val = next(tbl)
 	return val
 end
@@ -45,4 +49,24 @@ end
 
 function util.RelativePathToFull(path)
 	return R(path)
+end
+
+function util.JSONToTable(str)
+	return serializer.Decode("json", str)
+end
+
+function util.TableToJSON(tbl)
+	return serializer.Encode("json", tbl)
+end
+
+function util.AddNetworkString(str)
+	return network.AddString(str)
+end
+
+function util.NetworkStringToID(str)
+	return network.StringToID(str)
+end
+
+function util.NetworkIDToString(id)
+	return network.IDToString(id) or ""
 end

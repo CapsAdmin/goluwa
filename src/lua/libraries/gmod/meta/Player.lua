@@ -23,6 +23,14 @@ function META:GetViewEntity()
 	return NULL
 end
 
+function META:Armor()
+	return 50
+end
+
+function META:Health()
+	return 100
+end
+
 function META:Team()
 	return 0
 end
@@ -81,4 +89,8 @@ end
 
 function META:GetFriendStatus()
 	return "none"
+end
+
+function META:GetAttachedRagdoll()
+	return _G.NULL
 end

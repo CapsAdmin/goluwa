@@ -1,3 +1,10 @@
+--[[
+	at the moment the focus is 2d and vgui/derma
+	fix module env __newindex
+	override easylua errors for full path
+
+]]
+
 local gmod = _G.gmod or {}
 
 function gmod.PreprocessLua(code, debug)
@@ -296,6 +303,9 @@ do
 	}
 
 	function gmod.TranslateFontName(name)
+		if not name then
+			return easy.helvetica
+		end
 		local name = name:lower()
 
 		if easy[name] then
@@ -417,6 +427,8 @@ function gmod.Initialize()
 		gmod.translation = {}
 		gmod.translation2 = {}
 
+		pvars.Setup("sv_allowcslua", 1)
+
 		-- figure out the base gmod folder
 		gmod.dir = R("garrysmod_dir.vpk"):match("(.+/)")
 
@@ -437,6 +449,12 @@ function gmod.Initialize()
 		include(gmod.dir .. "/lua/autorun/*")
 		if CLIENT then include(gmod.dir .. "/lua/autorun/client/*") end
 		if SERVER then include(gmod.dir .. "/lua/autorun/server/*") end
+
+		for dir in vfs.Iterate("addons/") do
+			local dir = gmod.dir .. "addons/" ..  dir
+			vfs.AddModuleDirectory(R(dir.."/lua/includes/modules/"))
+		end
+
 
 		--include("lua/postprocess/*")
 		include("lua/vgui/*")
@@ -492,7 +510,12 @@ function gmod.Run()
 		gmod.env.hook.Run("ScoreboardHide")
 	end)
 
-	for dir in vfs.Iterate("addons/") do
+	for dir in vfs.Iterate("addons/", nil, true) do
+		local dir = gmod.dir .. "addons/" ..  dir
+		include(dir .. "/lua/includes/extensions/*")
+	end
+
+	for dir in vfs.Iterate("addons/", nil, true) do
 		local dir = gmod.dir .. "addons/" ..  dir
 		include(dir .. "/lua/autorun/*")
 		if CLIENT then include(dir .. "/lua/autorun/client/*") end

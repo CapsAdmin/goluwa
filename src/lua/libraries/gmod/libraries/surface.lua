@@ -108,3 +108,11 @@ end
 function surface.DrawLine(...)
 	lib.DrawLine(...)
 end
+
+function surface.DisableClipping(b)
+
+end
+
+function surface.DrawPoly()
+
+end

@@ -123,8 +123,10 @@ function globals.Material(path)
 		mat:SetAlbedoTexture(render.CreateTextureFromPath("materials/" .. path))
 	elseif vfs.IsFile("materials/" .. path) then
 		steam.LoadMaterial("materials/" .. path, mat)
-	else
+	elseif vfs.IsFile("materials/" .. path .. ".vmt") then
 		steam.LoadMaterial("materials/" .. path .. ".vmt", mat)
+	elseif vfs.IsFile("materials/" .. path .. ".png") then
+		steam.LoadMaterial("materials/" .. path .. ".png", mat)
 	end
 
 	return gmod.WrapObject(mat, "IMaterial")
@@ -176,7 +178,7 @@ end
 function globals.module(name, _ENV)
 	--logn("gmod: module(",name,")")
 
-	local tbl = {}
+	local tbl = package.loaded[name] or globals[name] or {}
 
 	if _ENV == package.seeall then
 		_ENV = globals
@@ -223,4 +225,50 @@ end
 
 function globals.ParticleEmitter()
 	return gmod.WrapObject(ParticleEmitter(), "CLuaEmitter")
+end
+
+function globals.CreateMaterial()
+	return gmod.WrapObject(render.CreateMaterial("model"), "IMaterial")
+end
+
+function globals.HTTP(tbl)
+	if tbl.parameters then
+		warning("NYI parameters")
+		table.print(tbl.parameters)
+	end
+
+	if tbl.headers then
+		warning("NYI headers")
+		table.print(tbl.headers)
+	end
+
+	if tbl.body then
+		warning("NYI body")
+		print(tbl.headers)
+	end
+
+	if tbl.type then
+		warning("NYI type")
+		print(tbl.type)
+	end
+
+	sockets.Request({
+		url = tbl.url,
+		callback = tbl.success,
+		on_fail = tbl.failed,
+		method = tbl.method:upper(),
+	})
+end
+
+function globals.CompileString(code, identifier, handle_error)
+	if handle_error == nil then handle_error = true end
+	local func, err = loadstring(code)
+	if func then
+		setfenv(func, gmod.env)
+		return func
+	end
+	if handle_error then
+		error(err, 2)
+	end
+	return err
 end

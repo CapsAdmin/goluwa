@@ -198,7 +198,7 @@ function META:ChildrenSize()
 end
 
 function META:LocalToScreen(x, y)
-	return self.__obj:LocalToWorld(Vec2(x, y)):Unpack()
+	return self.__obj:LocalToWorld(Vec2(x or 0, y or 0)):Unpack()
 end
 
 function META:ScreenToLocal(x, y)

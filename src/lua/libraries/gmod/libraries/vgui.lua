@@ -226,3 +226,7 @@ end
 function vgui.GetKeyboardFocus()
 	return true
 end
+
+function vgui.CursorVisible()
+	return window.IsCursorVisible()
+end

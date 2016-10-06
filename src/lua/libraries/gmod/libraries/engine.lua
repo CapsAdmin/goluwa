@@ -53,3 +53,4 @@ end
 
 function engine.IsPlayingDemo() return false end
 function engine.IsRecordingDemo() return false end
+function engine.TickInterval() return 0.33 end
