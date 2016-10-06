@@ -200,6 +200,8 @@ do
 	local cache = utility.CreateWeakTable()
 
 	function surface.GetTextSize(str)
+		str = str or "|"
+
 		local font = surface.current_font
 
 		if not font then
