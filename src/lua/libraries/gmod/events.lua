@@ -139,10 +139,12 @@ gmod.AddEvent("ClientChat", function(client, msg)
 	gmod.env.gamemode.Call("OnPlayerChat", ply, msg, false, not ply:Alive())
 end)
 
-for k,v in pairs(gmod.env.player.GetAll()) do
-	event.Call("ClientLeft", v.__obj, "reloading")
-end
+if RELOAD then
+	for k,v in pairs(gmod.env.player.GetAll()) do
+		event.Call("ClientLeft", v.__obj, "reloading")
+	end
 
-for k,v in pairs(gmod.env.player.GetAll()) do
-	event.Call("ClientEnterd", v.__obj)
+	for k,v in pairs(gmod.env.player.GetAll()) do
+		event.Call("ClientEnterd", v.__obj)
+	end
 end
