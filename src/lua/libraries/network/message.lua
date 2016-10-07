@@ -27,6 +27,18 @@ if CLIENT then
 		local id = buffer:ReadString()
 		local args = buffer:TheEnd() and {} or buffer:ReadTable()
 
+		for _, v in pairs(args) do
+			if type(v) == "table" and type(v.IsValid) == "function" then
+				if not v:IsValid() then
+					llog("message.OnMessageReceived: event message from server contains NULL value")
+					for k,v in pairs(args) do
+						print(k, v)
+					end
+					return
+				end
+			end
+		end
+
 		if message.listeners[id] then
 			message.listeners[id](unpack(args))
 		end
@@ -111,9 +123,12 @@ do -- event extension
 				local v = select(i, ...)
 				if type(v) == "table" and type(v.IsValid) == "function" then
 					if not v:IsValid() then
-						llog("event message from server contains NULL value")
-						log("event.CallShared(", ...) logn(")")
-						return
+						llog("event.CallShared: event message from server contains NULL value")
+						for i = 1, select("#", ...) do
+							local v = select(i, ...)
+							print(i, v)
+						end
+						return true
 					end
 				end
 			end
