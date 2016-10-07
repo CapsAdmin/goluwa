@@ -30,5 +30,10 @@ function META:IsError()
 	return false
 end
 
+
+function META:GetVector(key)
+	return gmod.env.Vector()
+end
+
 META.GetHDRTexture = META.GetTexture
 META.SetHDRTexture = META.SetTexture

@@ -64,7 +64,7 @@ function META:Normalize()
 end
 
 function META:GetNormalized()
-	self.v:GetNormalized()
+	return gmod.env.Vector(self.v:GetNormalized():Unpack())
 end
 
 META.GetNormal = META.GetNormalized
@@ -91,7 +91,7 @@ function META:IsZero()
 end
 
 function gmod.env.LerpVector(alpha, a, b)
-	return a.v:GetLerped(alpha, b.v)
+	return gmod.env.Vector(a.v:GetLerped(alpha, b.v):Unpack())
 end
 
 function gmod.env.Vector(x, y, z)

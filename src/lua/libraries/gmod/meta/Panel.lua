@@ -14,6 +14,8 @@ function META:OnCursorExited() end
 function META:OnCursorMoved() end
 function META:OnFocusChanged() end
 function META:OnKeyCodePressed() end
+function META:OnKeyCodeReleased() end
+function META:OnKeyCodeTyped() end
 function META:OnMousePressed() end
 function META:OnMouseReleased() end
 function META:OnMouseWheeled() end
@@ -207,7 +209,11 @@ end
 
 do
 	function META:SetFontInternal(font)
-		self.__obj.font_internal = font
+		self.__obj.font_internal = font or "dermadefault"
+		if not gmod.surface_fonts[self.__obj.font_internal:lower()] then
+			llog("font ", self.__obj.font_internal, " does not exist")
+			self.__obj.font_internal = "dermadefault"
+		end
 	end
 
 	function META:SetText(text)
@@ -455,4 +461,15 @@ function META:HasHierarchicalFocus()
 		end
 	end
 	return false
+end
+
+function META:SetPaintedManually()
+
+end
+
+function META:AppendText(str)
+	self:SetText(self:GetText() .. str)
+end
+function META:InsertColorChange(r,g,b)
+	self:SetText(self:GetText() .. ("<color=%s,%s,%s>"):format(r/255, g/255, b/255))
 end

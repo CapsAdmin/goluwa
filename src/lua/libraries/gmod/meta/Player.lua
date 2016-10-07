@@ -11,6 +11,10 @@ function META:EyePos()
 	return gmod.env.EyePos()
 end
 
+function META:GetPos()
+	return gmod.env.EyePos()
+end
+
 function META:EyeAngles()
 	return gmod.env.EyeAngles()
 end
@@ -28,6 +32,10 @@ function META:Armor()
 end
 
 function META:Health()
+	return 100
+end
+
+function META:GetMaxHealth()
 	return 100
 end
 
@@ -76,7 +84,10 @@ function META:UniqueID()
 end
 
 function META:GetActiveWeapon()
-	return gmod.WrapObject(gmod.CreateWeapon(), "Weapon")
+	if not self.__obj.gmod_weapon then
+		self.__obj.gmod_weapon = gmod.CreateWeapon()
+	end
+	return gmod.WrapObject(self.__obj.gmod_weapon, "Weapon")
 end
 
 function META:IsPlayer()
@@ -84,7 +95,7 @@ function META:IsPlayer()
 end
 
 function META:UserID()
-	return 0
+	return math.abs(tonumber(self:UniqueID())%1000) -- todo
 end
 
 function META:GetFriendStatus()
@@ -93,4 +104,40 @@ end
 
 function META:GetAttachedRagdoll()
 	return _G.NULL
+end
+
+function META:SetClassID(id)
+	self.__obj.gmod_classid = id
+end
+
+function META:GetClassID()
+	return self.__obj.gmod_classid or 0
+end
+
+function META:IsDrivingEntity(ent)
+	return false
+end
+
+function META:GetVehicle()
+	return NULL
+end
+
+function META:InVehicle()
+	return false
+end
+
+function META:Alive()
+	return true
+end
+
+function META:IPAddress()
+	return "192.168.1.101:27005"
+end
+
+function META:IsSpeaking()
+	return false
+end
+
+function META:GetInfoNum(key, def)
+	return def or 0
 end

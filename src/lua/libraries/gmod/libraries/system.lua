@@ -24,3 +24,15 @@ end
 function gmod_system.IsWindowed()
 	return true
 end
+
+function gmod_system.SteamTime()
+	return os.clock()
+end
+
+function gmod_system.AppTime()
+	return os.clock()
+end
+
+function gmod_system.UpTime()
+	return os.clock()
+end

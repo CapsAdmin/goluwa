@@ -70,3 +70,7 @@ end
 function util.NetworkIDToString(id)
 	return network.IDToString(id) or ""
 end
+
+function util.SteamIDTo64(str)
+	return steam.SteamIDToCommunityID(str)
+end

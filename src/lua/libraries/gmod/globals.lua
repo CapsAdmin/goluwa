@@ -38,6 +38,56 @@ function globals.type(obj)
 	return t
 end
 
+do
+	local tr = {
+		Angle = gmod.env.TYPE_ANGLE, --  	11
+		boolean = gmod.env.TYPE_BOOL, --  	1
+		Color = gmod.env.TYPE_COLOR, --  	255
+		ConVar = gmod.env.TYPE_CONVAR, --  	27
+		CTakeDamageInfo = gmod.env.TYPE_DAMAGEINFO, --  	15
+		DynamicLight = gmod.env.TYPE_DLIGHT, --  	32
+		CEffectData = gmod.env.TYPE_EFFECTDATA, --  	16
+		Entity = gmod.env.TYPE_ENTITY, --  	9
+		File = gmod.env.TYPE_FILE, --  	34
+		["function"] = gmod.env.TYPE_FUNCTION, --  	6
+		IMesh = gmod.env.TYPE_IMESH, --  	28
+		lightuserdata = gmod.env.TYPE_LIGHTUSERDATA, --  	2
+		CLuaLocomotion = gmod.env.TYPE_LOCOMOTION, --  	35
+		IMaterial = gmod.env.TYPE_MATERIAL, --  	21
+		VMatrix = gmod.env.TYPE_MATRIX, --  	29
+		CMoveData = gmod.env.TYPE_MOVEDATA, --  	17
+		CNavArea = gmod.env.TYPE_NAVAREA, --  	37
+		CNavLadder = gmod.env.TYPE_NAVLADDER, --  	39
+		["nil"] = gmod.env.TYPE_NIL, --  	0
+		number = gmod.env.TYPE_NUMBER, --  	3
+		Panel = gmod.env.TYPE_PANEL, --  	22
+		CLuaParticle = gmod.env.TYPE_PARTICLE, --  	23
+		CLuaEmitter = gmod.env.TYPE_PARTICLEEMITTER, --  	24
+		CNewParticleEffect = gmod.env.TYPE_PARTICLESYSTEM, --  	40
+		PathFollower = gmod.env.TYPE_PATH, --  	36
+		PhysObj = gmod.env.TYPE_PHYSOBJ, --  	12
+		pixelvis_handle_t = gmod.env.TYPE_PIXELVISHANDLE, --  	31
+		CRecipientFilter = gmod.env.TYPE_RECIPIENTFILTER, --  	18
+		IRestore = gmod.env.TYPE_RESTORE, --  	14
+		ISave = gmod.env.TYPE_SAVE, --  	13
+		Vehicle = gmod.env.TYPE_SCRIPTEDVEHICLE, --  	20
+		CSoundPatch = gmod.env.TYPE_SOUND, --  	30
+		IGModAudioChannel = gmod.env.TYPE_SOUNDHANDLE, --  	38
+		string = gmod.env.TYPE_STRING, --  	4
+		table = gmod.env.TYPE_TABLE, --  	5
+		ITexture = gmod.env.TYPE_TEXTURE, --  	25
+		thread = gmod.env.TYPE_THREAD, --  	8
+		CUserCmd = gmod.env.TYPE_USERCMD, --  	19
+		userdata = gmod.env.TYPE_USERDATA, --  	7
+		bf_read = gmod.env.TYPE_USERMSG, --  	26
+		Vector = gmod.env.TYPE_VECTOR, --  	10
+		IVideoWriter = gmod.env.TYPE_VIDEO, --  	33
+	}
+	function globals.TypeID(val)
+		return tr[gmod.env.type(val)] or gmod.env.TYPE_INVALID
+	end
+end
+
 function globals.istable(obj)
 	return globals.type(obj) == "table"
 end
@@ -88,7 +138,9 @@ function globals.AddConsoleCommand(name)
 end
 
 function globals.RunConsoleCommand(...)
-	logn("gmod cmd: ", table.concat({...}, " "))
+	local str = table.concat({...}, " ")
+	if str:find("utime") then return end -- sigh
+	logn("gmod cmd: ", str)
 	commands.RunCommand(...)
 end
 
@@ -120,7 +172,11 @@ function globals.Material(path)
 	mat.gmod_name = path
 
 	if path:lower():endswith(".png") then
-		mat:SetAlbedoTexture(render.CreateTextureFromPath("materials/" .. path))
+		if vfs.IsFile(path) then
+			mat:SetAlbedoTexture(render.CreateTextureFromPath(path))
+		else
+			mat:SetAlbedoTexture(render.CreateTextureFromPath("materials/" .. path))
+		end
 	elseif vfs.IsFile("materials/" .. path) then
 		steam.LoadMaterial("materials/" .. path, mat)
 	elseif vfs.IsFile("materials/" .. path .. ".vmt") then
@@ -171,7 +227,7 @@ globals.include = function(path)
 		"lua/" .. path:lower()
 	})
 	if not ok then
-		logn(err)
+		logn(err, path)
 	end
 end
 
@@ -271,4 +327,32 @@ function globals.CompileString(code, identifier, handle_error)
 		error(err, 2)
 	end
 	return err
+end
+
+function globals.CompileFile(name)
+	return globals.CompileString(vfs.Read("lua/" .. name), "@lua/" .. name)
+end
+
+function globals.DeriveGamemode(name)
+	local old_gm = gmod.env.GM
+	gmod.env.GM = {FolderName = name}
+
+	if SERVER then
+		if vfs.IsFile("gamemodes/"..name.."/gamemode/init.lua") then
+			include("gamemodes/"..name.."/gamemode/init.lua")
+		end
+	end
+
+	if CLIENT then
+		if vfs.IsFile("gamemodes/"..name.."/gamemode/cl_init.lua") then
+			include("gamemodes/"..name.."/gamemode/cl_init.lua")
+		end
+	end
+
+	gmod.env.table.Inherit(old_gm, gmod.env.GM)
+	gmod.env.GM = old_gm
+end
+
+function globals.SetClipboardText(str)
+	window.SetClipboard(str)
 end

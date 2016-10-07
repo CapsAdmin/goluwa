@@ -7,6 +7,11 @@ function ENT:__newindex(k,v)
 	self.__storable_table[k] = v
 end
 
+function ENT:GetTable()
+	if not rawget(self, "__storable_table") then rawset(self, "__storable_table", {}) end
+	return self.__storable_table
+end
+
 function ENT:SetPos(vec)
 	self.__obj:SetPosition(vec.v)
 end
@@ -16,24 +21,19 @@ function ENT:GetPos()
 end
 
 function ENT:GetForward()
-	return self.__obj:GetRotation():GetForward()
+	return gmod.env.Vector(self.__obj:GetRotation():GetForward():Unpack())
 end
 
 function ENT:GetUp()
-	return self.__obj:GetRotation():GetUp()
+	return gmod.env.Vector(self.__obj:GetRotation():GetUp():Unpack())
 end
 
 function ENT:GetRight()
-	return self.__obj:GetRotation():GetRight()
+	return gmod.env.Vector(self.__obj:GetRotation():GetRight():Unpack())
 end
 
 function ENT:GetBoneCount()
 	return 0
-end
-
-function ENT:GetTable()
-	if not rawget(self, "__storable_table") then rawset(self, "__storable_table", {}) end
-	return self.__storable_table
 end
 
 function ENT:EntIndex()
@@ -68,6 +68,42 @@ end
 
 function ENT:GetAttachedRagdoll()
 	return _G.NULL
+end
+
+function ENT:GetVelocity()
+	return gmod.env.Vector(0, 0, 0)
+end
+
+function ENT:IsFlagSet()
+	return false
+end
+
+function ENT:GetOwner()
+	return NULL
+end
+
+function ENT:GetSkin()
+	return 0
+end
+
+function ENT:GetModel()
+	return ""
+end
+
+function ENT:IsDormant()
+	return true
+end
+
+function ENT:GetSpawnEffect()
+	return false
+end
+
+function ENT:GetNWBool()
+	return false
+end
+
+function ENT:GetMoveType()
+	return gmod.env.MOVETYPE_NONE
 end
 
 function gmod.env.ClientsideModel(path)

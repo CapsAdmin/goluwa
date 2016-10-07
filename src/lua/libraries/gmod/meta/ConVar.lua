@@ -3,7 +3,9 @@ local gmod = ... or gmod
 local META = gmod.env.FindMetaTable("ConVar")
 
 function META:GetBool()
-	return not not self.__obj:Get()
+	local val = self.__obj:Get()
+	if tonumber(val) then return tonumber(val) > 0 end
+	return not not val
 end
 
 function META:GetFloat()
@@ -32,6 +34,12 @@ end
 
 function gmod.env.GetConVar(name)
 	local pvar = pvars.GetObject(name)
+
+	if not pvar then
+		llog("unknown convar: ", name)
+		pvar = pvars.Setup(name, 0)
+	end
+
 	if pvar then
 		return gmod.WrapObject(pvar, "ConVar")
 	end

@@ -40,6 +40,7 @@ function surface.SetMaterial(mat)
 end
 
 function surface.SetTexture(tex)
+	if tex == 0 then tex = render.GetWhiteTexture() end
 	lib.SetTexture(tex)
 end
 

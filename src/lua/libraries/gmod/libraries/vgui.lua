@@ -3,23 +3,6 @@ local vgui = gmod.env.vgui
 
 gmod.gui_world = gmod.gui_world or NULL
 
-local translate_mouse = {
-	button_1 = gmod.env.MOUSE_LEFT,
-	button_2 = gmod.env.MOUSE_RIGHT,
-	button_3 = gmod.env.MOUSE_MIDDLE,
-	button_4 = gmod.env.MOUSE_4,
-	button_5 = gmod.env.MOUSE_5,
-	mwheel_up = gmod.env.MOUSE_WHEEL_UP,
-	mwheel_down = gmod.env.MOUSE_WHEEL_DOWN,
-}
-
-local translate_key = {}
-for k,v in pairs(gmod.env) do
-	if k:startswith("KEY_") then
-		translate_key[k:match("KEY_(.+)"):lower()] = v
-	end
-end
-
 local function vgui_Create(class, parent, name)
 
 	if not gmod.gui_world:IsValid() then
@@ -30,7 +13,6 @@ local function vgui_Create(class, parent, name)
 		function gmod.gui_world:OnLayout()
 			self:SetPosition(Vec2(0, 0))
 			self:SetSize(window.GetSize())
-			print("gmod world layout")
 		end
 	end
 
@@ -167,24 +149,21 @@ local function vgui_Create(class, parent, name)
 			self:OnMouseWheeled(1)
 		elseif button == "mwheel_up" then
 			self:OnMouseWheeled(-1)
-		elseif translate_mouse[button] then
-			if press then
-				self:OnMousePressed(translate_mouse[button])
-			else
-				self:OnMouseReleased(translate_mouse[button])
-			end
 		else
-			logf("mouse button %q could not be translated!\n", button)
+			if press then
+				self:OnMousePressed(gmod.GetMouseCode(button))
+			else
+				self:OnMouseReleased(gmod.GetMouseCode(button))
+			end
 		end
 	end
 
 	obj.OnKeyInput = function(_, key, press)
 		if press then
-			if translate_key[key] then
-				self:OnKeyCodePressed(translate_key[key])
-			else
-				logf("key %q could not be translated!\n", key)
-			end
+			self:OnKeyCodeTyped(gmod.GetKeyCode(key))
+			self:OnKeyCodePressed(gmod.GetKeyCode(key))
+		else
+			self:OnKeyCodeReleased(gmod.GetKeyCode(key))
 		end
 	end
 
@@ -200,7 +179,7 @@ local function vgui_Create(class, parent, name)
 
 		return false
 	end
-
+---debug.trace()
 	return self
 end
 

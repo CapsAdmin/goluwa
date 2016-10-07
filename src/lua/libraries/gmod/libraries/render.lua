@@ -11,6 +11,9 @@ function render.PushFilterMag() end
 function render.PopFilterMin() end
 function render.PopFilterMag() end
 
+function render.MaxTextureWidth() return 4096 end
+function render.MaxTextureHeight() return 4096 end
+
 local current_fb
 
 function render.SetRenderTarget(tex)

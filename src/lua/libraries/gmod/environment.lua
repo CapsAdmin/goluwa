@@ -158,3 +158,71 @@ do -- libraries
 end
 
 setmetatable(env, {__index = _G})
+
+do
+	local translate_key = {}
+
+	for k,v in pairs(gmod.env) do
+		if k:startswith("KEY_") then
+			translate_key[k:match("KEY_(.+)"):lower()] = v
+		end
+	end
+
+	local translate_key_rev = {}
+	for k,v in pairs(translate_key) do
+		translate_key_rev[v] = k
+	end
+
+	function gmod.GetKeyCode(key, rev)
+		if rev then
+			if translate_key_rev[key] then
+				if gmod.print_keys then llog("key reverse: ", key, " >> ", translate_key_rev[key]) end
+				return translate_key_rev[key]
+			else
+				logf("key %q could not be translated!\n", key)
+				return translate_key_rev.KEY_P -- dunno
+			end
+		else
+			if translate_key[key] then
+				if gmod.print_keys then llog("key: ", key, " >> ", translate_key[key]) end
+				return translate_key[key]
+			else
+				logf("key %q could not be translated!\n", key)
+				return translate_key.p -- dunno
+			end
+		end
+	end
+
+	local translate_mouse = {
+		button_1 = gmod.env.MOUSE_LEFT,
+		button_2 = gmod.env.MOUSE_RIGHT,
+		button_3 = gmod.env.MOUSE_MIDDLE,
+		button_4 = gmod.env.MOUSE_4,
+		button_5 = gmod.env.MOUSE_5,
+		mwheel_up = gmod.env.MOUSE_WHEEL_UP,
+		mwheel_down = gmod.env.MOUSE_WHEEL_DOWN,
+	}
+
+	local translate_mouse_rev = {}
+	for k,v in pairs(translate_key) do
+		translate_mouse_rev[v] = k
+	end
+
+	function gmod.GetMouseCode(button, rev)
+		if rev then
+			if translate_mouse_rev[button] then
+				return translate_mouse_rev[button]
+			else
+				llog("mouse button %q could not be translated!\n", button)
+				return translate_mouse.MOUSE_5
+			end
+		else
+			if translate_mouse[button] then
+				return translate_mouse[button]
+			else
+				llog("mouse button %q could not be translated!\n", button)
+				return translate_mouse.button_5
+			end
+		end
+	end
+end

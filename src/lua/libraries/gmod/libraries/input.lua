@@ -13,38 +13,16 @@ function input.IsShiftDown()
 	return _G.input.IsKeyDown("left_shift") or _G.input.IsKeyDown("right_shift")
 end
 
-do
-	local translate = {
-		[gmod.env.MOUSE_LEFT] = button_1,
-		[gmod.env.MOUSE_RIGHT] = button_2,
-		[gmod.env.MOUSE_MIDDLE] = button_3,
-		[gmod.env.MOUSE_4] = button_4,
-		[gmod.env.MOUSE_5] = button_5,
-		[gmod.env.MOUSE_WHEEL_UP] = mwheel_up,
-		[gmod.env.MOUSE_WHEEL_DOWN] = mwheel_down,
-	}
-
-	function input.IsMouseDown(code)
-		return _G.input.IsMouseDown(translate[code])
-	end
+function input.IsMouseDown(code)
+	return _G.input.IsMouseDown(gmod.GetMouseCode(code, true))
 end
 
-do
-	local translate = {}
+function input.IsKeyDown(code)
+	return _G.input.IsKeyDown(gmod.GetKeyCode(code, true))
+end
 
-	for k,v in pairs(gmod.env) do
-		if k:startswith("KEY_") then
-			translate[v] = k:match("KEY_(.+)"):lower()
-		end
-	end
-
-	function input.IsKeyDown(code)
-		return _G.input.IsKeyDown(translate[code])
-	end
-
-	function input.GetKeyName(code)
-		return translate[code]
-	end
+function input.GetKeyName(code)
+	return gmod.GetKeyCode(code, true)
 end
 
 

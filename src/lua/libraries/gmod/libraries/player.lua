@@ -7,7 +7,9 @@ function player.GetAll()
 	local i = 1
 
 	for _, ent in pairs(gmod.objects.Player) do
-		table.insert(out, ent)
+		if ent:IsValid() then
+			table.insert(out, ent)
+		end
 	end
 
 	return out
@@ -19,7 +21,9 @@ function player.GetHumans()
 
 	for _, ent in pairs(gmod.objects.Player) do
 		if not ent.__obj:IsBot() then
-			table.insert(out, ent)
+			if ent:IsValid() then
+				table.insert(out, ent)
+			end
 		end
 	end
 

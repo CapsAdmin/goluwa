@@ -1,7 +1,10 @@
 --[[
-	at the moment the focus is 2d and vgui/derma
-	fix module env __newindex
-	override easylua errors for full path
+	right now:
+		the focus is 2d and vgui/derma
+		i don't care too much about performance
+		get things working first
+
+
 
 ]]
 
@@ -263,28 +266,28 @@ function gmod.WrapObject(obj, meta)
 end
 
 event.AddListener("PreLoadString", "gmod_preprocess", function(code, path)
-	if not ((gmod.dir and path:startswith(gmod.dir)) or path:find("%.gma")) then return end
+	if path:lower():find("steamapps/common/garrysmod/garrysmod/", nil, true) or path:find("%.gma") then
+		if not code:find("DEFINE_BASECLASS", nil, true) and loadstring(code) then return code end
 
-	if not code:find("DEFINE_BASECLASS", nil, true) and loadstring(code) then return code end
+		local ok, msg = pcall(gmod.PreprocessLua, code)
 
-	local ok, msg = pcall(gmod.PreprocessLua, code)
+		if not ok then
+			logn(msg)
+			return
+		end
 
-	if not ok then
-		logn(msg)
-		return
+		code = msg
+
+		if not loadstring(code) then vfs.Write("gmod_preprocess_error.lua", code) end
+
+		return code
 	end
-
-	code = msg
-
-	if not loadstring(code) then vfs.Write("gmod_preprocess_error.lua", code) end
-
-	return code
 end)
 
 event.AddListener("PostLoadString", "gmod_function_env", function(func, path)
-	if not (gmod.dir and path:startswith(gmod.dir) or path:find("%.gma")) then return end
-
-	gmod.SetFunctionEnvironment(func)
+	if path:lower():find("steamapps/common/garrysmod/garrysmod/", nil, true) or path:find("%.gma") then
+		gmod.SetFunctionEnvironment(func)
+	end
 end)
 
 
@@ -346,7 +349,6 @@ function gmod.LoadFonts()
 
 		for i, info in pairs(sub_fonts) do
 			if type(info.tall) == "table" then
-				--table.print(info.tall)
 				info.tall = info.tall[1]-- what
 			end
 
@@ -388,10 +390,15 @@ local function load_entities(base_folder, global, register, create_table)
 	gmod.env[global] = nil
 end
 
-local function load_gamemode(name)
+function gmod.LoadGamemode(name)
 	local info = steam.VDFToTable(vfs.Read("gamemodes/" .. name .. "/" .. name .. ".txt"))
+	local name2, info = next(info)
 
 	if info.base == "" then info.base = nil end
+
+	if info.base then
+		gmod.LoadGamemode(info.base)
+	end
 
 	if SERVER then
 		if vfs.IsFile("gamemodes/"..name.."/gamemode/init.lua") then
@@ -412,16 +419,19 @@ local function load_gamemode(name)
 			gmod.env.GM = nil
 		end
 	end
+
+	gmod.current_gamemode = gmod.gamemodes.sandbox
+	gmod.env.GAMEMODE = gmod.current_gamemode
 end
 
 function gmod.Initialize()
 	if not gmod.init then
+		render.InitializeGBuffer()
 
 		--steam.MountSourceGame("hl2")
 		--steam.MountSourceGame("css")
 		--steam.MountSourceGame("tf2")
 		steam.MountSourceGame("gmod")
-		render.InitializeGBuffer() -- TODO
 
 		gmod.gamemodes = {}
 		gmod.translation = {}
@@ -443,7 +453,8 @@ function gmod.Initialize()
 		include("lua/derma/init.lua") -- the gui
 		gmod.env.require("notification") -- this is included by engine at this point
 
-		load_gamemode("base")
+		gmod.LoadGamemode("base")
+		gmod.LoadGamemode(CAPS and "sandbox_modded" or "sandbox")
 
 		-- autorun lua files
 		include(gmod.dir .. "/lua/autorun/*")
@@ -462,9 +473,6 @@ function gmod.Initialize()
 		include("lua/skins/*")
 
 		gmod.env.DCollapsibleCategory.LoadCookies = nil -- DUCT TAPE FIX
-
-		-- load_gamemode will also load entities as shown below
-		load_gamemode("sandbox")
 
 		for name in pairs(gmod.gamemodes) do
 			vfs.Mount(gmod.dir .. "/gamemodes/"..name.."/entities/", "lua/")
@@ -486,13 +494,14 @@ function gmod.Initialize()
 			end
 		end
 
-		gmod.current_gamemode = gmod.gamemodes.sandbox
-		gmod.env.GAMEMODE = gmod.current_gamemode
-
 		gmod.LoadFonts()
 
 		gmod.init = true
 	end
+end
+
+function gmod.AddEvent(what, callback)
+	event.AddListener(what, "gmod", function(...) if gmod.env then return callback(...) end end)
 end
 
 function gmod.Run()
@@ -502,12 +511,22 @@ function gmod.Run()
 	input.Bind("c", "+menu_context")
 	input.Bind("c", "-menu_context")
 
+	input.Bind("x", "+voicerecord", function()
+		gmod.env.gamemode.Call("PlayerStartVoice", gmod.env.LocalPlayer())
+	end)
+	input.Bind("x", "-voicerecord", function()
+		gmod.env.gamemode.Call("PlayerEndVoice", gmod.env.LocalPlayer())
+	end)
+
+	input.Bind("t", "messagemode")
+	input.Bind("u", "messagemode2")
+
 	input.Bind("tab", "+score", function()
-		gmod.env.hook.Run("ScoreboardShow")
+		gmod.env.gamemode.Call("ScoreboardShow")
 	end)
 
 	input.Bind("tab", "-score", function()
-		gmod.env.hook.Run("ScoreboardHide")
+		gmod.env.gamemode.Call("ScoreboardHide")
 	end)
 
 	for dir in vfs.Iterate("addons/", nil, true) do
@@ -522,95 +541,18 @@ function gmod.Run()
 		if SERVER then include(dir .. "/lua/autorun/server/*") end
 	end
 
-	gmod.env.hook.Run("CreateTeams")
-	gmod.env.hook.Run("PreGamemodeLoaded")
-	gmod.env.hook.Run("OnGamemodeLoaded")
-	gmod.env.hook.Run("PostGamemodeLoaded")
+	gmod.env.gamemode.Call("CreateTeams")
+	gmod.env.gamemode.Call("PreGamemodeLoaded")
+	gmod.env.gamemode.Call("OnGamemodeLoaded")
+	gmod.env.gamemode.Call("PostGamemodeLoaded")
 
-	gmod.env.hook.Run("Initialize")
+	gmod.env.gamemode.Call("Initialize")
 
-	--gmod.env.hook.Run("OnEntityCreated", player)
-	gmod.env.hook.Run("InitPostEntity")
-
-	event.AddListener("Update", "gmod", function()
-		local tbl = gmod.env.hook.Run("CalcView", gmod.env.LocalPlayer(), gmod.env.EyePos(), gmod.env.EyeAngles(), math.deg(render.camera_3d:GetFOV()), render.camera_3d:GetNearZ(), render.camera_3d:GetFarZ())
-		if tbl then
-			if tbl.origin then render.camera_3d:SetPosition(tbl.origin.v) end
-			if tbl.angles then render.camera_3d:SetRotation(tbl.angles.v) end
-			if tbl.fov then render.camera_3d:SetFOV(tbl.fov) end
-			if tbl.znear then render.camera_3d:SetNearZ(tbl.znear) end
-			if tbl.zfar then render.camera_3d:SetFarZ(tbl.zfar) end
-			--if tbl.drawviewer then  end
-		end
-
-		--gmod.env.hook.Run("CalcViewModelView", )
-		local frac = gmod.env.hook.Run("AdjustMouseSensitivity", 0, 90, 90)
-		--gmod.env.hook.Run("CalcMainActivity", )
-		--gmod.env.hook.Run("TranslateActivity", )
-		--gmod.env.hook.Run("UpdateAnimation", )
-
-		gmod.env.hook.Run("Tick")
-		gmod.env.hook.Run("Think")
-	end)
-	event.AddListener("PreGBufferModelPass", "gmod", function()
-		gmod.env.hook.Run("PreRender")
-	end)
-	event.AddListener("DrawScene", "gmod", function()
-		gmod.env.hook.Run("RenderScene", gmod.env.EyePos(), gmod.env.EyeAngles(), math.deg(render.camera_3d:GetFOV()))
-		gmod.env.hook.Run("DrawMonitors")
-		gmod.env.hook.Run("PreDrawSkyBox")
-		gmod.env.hook.Run("SetupSkyboxFog")
-		gmod.env.hook.Run("PostDraw2DSkyBox")
-		gmod.env.hook.Run("PreDrawOpaqueRenderables", false, true)
-		gmod.env.hook.Run("PostDrawOpaqueRenderables", false, true)
-		gmod.env.hook.Run("PreDrawTranslucentRenderables", false, true)
-		gmod.env.hook.Run("PostDrawTranslucentRenderables", false, true)
-		gmod.env.hook.Run("PostDrawSkyBox")
-		gmod.env.hook.Run("NeedsDepthPass")
-		gmod.env.hook.Run("SetupWorldFog")
-		gmod.env.hook.Run("PreDrawOpaqueRenderables", false, false)
-		--gmod.env.hook.Run("ShouldDrawLocalPlayer", player)
-		gmod.env.hook.Run("PostDrawOpaqueRenderables", false, false)
-		gmod.env.hook.Run("PreDrawTranslucentRenderables", false, false)
-		--gmod.env.hook.Run("DrawPhysgunBeam", player)
-		gmod.env.hook.Run("PostDrawTranslucentRenderables", false, false)
-	end)
-	event.AddListener("PostGBufferModelPass", "gmod", function()
-		gmod.env.hook.Run("GetMotionBlurValues", 0, 0, 0, 0)
-		--gmod.env.hook.Run("PreDrawViewModel")
-		--gmod.env.hook.Run("PreDrawViewModel")
-		--gmod.env.hook.Run("PostDrawViewModel")
-		gmod.env.hook.Run("PreDrawEffects")
-	end)
-
-	event.AddListener("GBufferPostPostProcess", "gmod", function()
-		gmod.env.hook.Run("PostDrawEffects")
-	end)
-	event.AddListener("GBufferPrePostProcess", "gmod", function()
-		gmod.env.hook.Run("RenderScreenspaceEffects")
-		gmod.env.hook.Run("PostRender")
-	end)
-
-	event.AddListener("PreDrawGUI", "gmod", function()
-		gmod.env.hook.Run("PreDrawHUD")
-		gmod.env.hook.Run("HUDPaintBackground")
-
-		for k,v in ipairs(gmod.hud_element_list) do
-			gmod.env.hook.Run("HUDShouldDraw", v)
-		end
-	end)
-
-	event.AddListener("DrawGUI", "gmod", function()
-		gmod.env.hook.Run("HUDPaint")
-		gmod.env.hook.Run("HUDDrawScoreBoard")
-	end)
-
-	event.AddListener("PostDrawGUI", "gmod", function()
-		gmod.env.hook.Run("PostDrawHUD")
-		gmod.env.hook.Run("DrawOverlay")
-		gmod.env.hook.Run("PostRenderVGUI")
-	end)
+	--gmod.env.gamemode.Call("OnEntityCreated", player)
+	gmod.env.gamemode.Call("InitPostEntity")
 end
+
+include("events.lua", gmod)
 
 commands.Add("ginit", function()
 	gmod.Initialize()
