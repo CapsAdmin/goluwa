@@ -547,8 +547,6 @@ function gmod.Run()
 	gmod.env.gamemode.Call("PostGamemodeLoaded")
 
 	gmod.env.gamemode.Call("Initialize")
-
-	--gmod.env.gamemode.Call("OnEntityCreated", player)
 	gmod.env.gamemode.Call("InitPostEntity")
 end
 

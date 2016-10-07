@@ -64,7 +64,7 @@ function META:IsBot()
 end
 
 function META:SteamID()
-	return "STEAM_0:1:9355639"
+	return "STEAM_0:1:" .. self:UniqueID()
 end
 
 function META:SteamID64()
@@ -80,7 +80,7 @@ function META:ConCommand(str)
 end
 
 function META:UniqueID()
-	return crypto.CRC32(self.__obj:GetUniqueID())
+	return crypto.CRC32(("%p"):format(self.__obj))
 end
 
 function META:GetActiveWeapon()
@@ -95,7 +95,7 @@ function META:IsPlayer()
 end
 
 function META:UserID()
-	return math.abs(tonumber(self:UniqueID())%1000) -- todo
+	return math.abs(tonumber(self:UniqueID())%333) -- todo
 end
 
 function META:GetFriendStatus()

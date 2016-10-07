@@ -111,3 +111,11 @@ function gmod.env.ClientsideModel(path)
 	ent:SetModelPath(path)
 	return gmod.WrapObject(ent, "Entity")
 end
+
+function ENT:LocalToWorld()
+	return gmod.env.Vector()
+end
+
+function ENT:OBBCenter()
+	return gmod.env.Vector()
+end

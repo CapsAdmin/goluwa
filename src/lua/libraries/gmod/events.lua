@@ -146,6 +146,6 @@ if RELOAD then
 	end
 
 	for k,v in pairs(gmod.env.player.GetAll()) do
-		event.Call("ClientEnterd", v.__obj)
+		event.Call("ClientEntered", v.__obj)
 	end
 end

@@ -42,3 +42,6 @@ function player.GetBots()
 
 	return out
 end
+
+player.GetHumans = player.GetAll
+function player.GetBots() return {} end

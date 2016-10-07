@@ -56,7 +56,11 @@ function META:OnRemove()
 end
 
 function META:GetUniqueColor()
-	local r,g,b = tostring(crypto.CRC32(self:GetUniqueID())):match(("(%d%d%d)"):rep(3))
+	local crc = crypto.CRC32(self:GetUniqueID())
+	local r,g,b = crc:match("(%d%d%d)(%d%d%d)(%d%d%d)")
+	if not r then
+		r,g,b = crc:match("(%d%d)(%d%d)(%d%d)")
+	end
 	local c = Color(tonumber(r), tonumber(g), tonumber(b), 1)
 	c:SetLightness(1)
 	return c
