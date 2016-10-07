@@ -80,10 +80,11 @@ gmod.AddEvent("PostDrawGUI", function()
 end)
 
 gmod.AddEvent("KeyInput", function(key, press)
+	local ply = gmod.env.LocalPlayer()
 	if press then
-		gmod.env.gamemode.Call("KeyPress", gmod.GetKeyCode(key))
+		gmod.env.gamemode.Call("KeyPress", ply, gmod.GetKeyCode(key))
 	else
-		gmod.env.gamemode.Call("KeyRelease", gmod.GetKeyCode(key))
+		gmod.env.gamemode.Call("KeyRelease", ply, gmod.GetKeyCode(key))
 	end
 end)
 

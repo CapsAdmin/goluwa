@@ -124,7 +124,7 @@ function globals.ColorToHSV(r,g,b)
 end
 
 function globals.GetHostName()
-	return "TODO: hostname"
+	return network.GetHostname()
 end
 
 function globals.AddCSLuaFile()
