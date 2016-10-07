@@ -157,16 +157,14 @@ local providers = {
 				local full_path = try_find(vfs.Find(archive_path .. ext .. "/", true), name)
 
 				if full_path then
-					llog(name, ": ", full_path)
-					return vfs.Read(full_path)
+					return full_path
 				end
 			end
 
 			local full_path = try_find(vfs.Find(archive_path, true), name)
 
 			if full_path then
-				llog(name, ": ", full_path)
-				return vfs.Read(full_path)
+				return full_path
 			end
 
 			for k,v in ipairs(vfs.Find(archive_path, true)) do
@@ -185,6 +183,8 @@ local providers = {
 }
 
 local function find_font(name, callback, on_error)
+
+	local real_name = name
 
 	name = name:lower()
 	name = name:gsub("%s+", " ")
@@ -205,20 +205,24 @@ local function find_font(name, callback, on_error)
 			llog(name, " url: ", url)
 
 			local info = lookup[url]
-
-			local ext = url:match(".+(%.%a+)") or ".dat"
-			local path = "cache/" .. crypto.CRC32(url) .. ext
+			local ext
 
 			if info.archive then
 				vfs.Write("data/temp.zip", content)
-				content = info.archive(R("data/temp.zip") .. "/", name)
-				if not content then
+				local full_path = info.archive(R("data/temp.zip") .. "/", name)
+				if full_path then
+					content = vfs.Read(full_path)
+					ext = full_path:match(".+(%.%a+)")
+				else
 					resource.Download(surface.default_font_path, callback)
 					return
 				end
 			end
 
 			if content then
+				ext = ext or url:match(".+(%.%a+)") or ".dat"
+				local path = "cache/" .. crypto.CRC32(real_name) .. ext
+
 				llog(name, " cache: ", path)
 				vfs.Write(path, content)
 
