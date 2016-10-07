@@ -24,20 +24,20 @@ local supported = {
 	pfr = true,
 }
 
-local function try_find(files, path)
+local function try_find(files, name)
 	table.sort(files, function(a, b) return #a < #b end) -- choose shortest name
 
-	local family, rest = path:match("(.-) (.+)")
+	local family, rest = name:match("(.-) (.+)")
 
 	local tries = {}
 
 	if not family then
-		table.insert(tries, path .. "[%s%p]" .. "regular")
-		table.insert(tries, path .. "[%s%p]" .. "medium")
+		table.insert(tries, name .. "[%s%p]" .. "regular")
+		table.insert(tries, name .. "[%s%p]" .. "medium")
 	end
 
-	table.insert(tries, path)
-	table.insert(tries, (path:gsub("[%s%p]+", "")))
+	table.insert(tries, name)
+	table.insert(tries, (name:gsub("[%s%p]+", "")))
 
 	for _, try in ipairs(tries) do
 		for _, full_path in ipairs(files) do
@@ -45,6 +45,7 @@ local function try_find(files, path)
 			if supported[ext] then
 				local name = full_path:match(".+/(.+)%.")
 				if name:lower():find(try) then
+					llog(name, ": ", full_path)
 					return full_path
 				end
 			end
@@ -151,61 +152,49 @@ local providers = {
 
 			return path .. ".zip"
 		end,
-		archive = function(archive_path, path)
-			local cache_path
-			local content
+		archive = function(archive_path, name)
+			for ext in pairs(supported) do
+				local full_path = try_find(vfs.Find(archive_path .. ext .. "/", true), name)
+
+				if full_path then
+					llog(name, ": ", full_path)
+					return vfs.Read(full_path)
+				end
+			end
+
+			local full_path = try_find(vfs.Find(archive_path, true), name)
+
+			if full_path then
+				llog(name, ": ", full_path)
+				return vfs.Read(full_path)
+			end
+
+			for k,v in ipairs(vfs.Find(archive_path, true)) do
+				print(v)
+			end
 
 			for ext in pairs(supported) do
-				local full_path = try_find(vfs.Find(archive_path .. ext .. "/", true), path)
-				if full_path then
-					cache_path = "downloads/cache/" .. crypto.CRC32(path) .. "." .. ext
-					content = vfs.Read(full_path)
-					break
-				end
-			end
-
-			if not cache_path then
-				local full_path = try_find(vfs.Find(archive_path, true), path)
-				if full_path then
-					local ext = full_path:match(".+%.(%a+)") or "dat"
-					cache_path = "downloads/cache/" .. crypto.CRC32(path) .. "." .. ext
-					content = vfs.Read(full_path)
-				end
-			end
-
-			if not cache_path then
-				for k,v in ipairs(vfs.Find(archive_path, true)) do
+				for k,v in ipairs(vfs.Find(archive_path .. ext .. "/", true)) do
 					print(v)
 				end
-				for ext in pairs(supported) do
-					for k,v in ipairs(vfs.Find(archive_path .. ext .. "/", true)) do
-						print(v)
-					end
-				end
-				llog("couldn't find anything usable in the zip archive for: ", path)
-
-				return surface.default_font_path
 			end
 
-			vfs.Write(cache_path, content)
-
-			return cache_path
+			llog("couldn't find anything usable in the zip archive for: ", name)
 		end,
 	}
 }
 
-local function find_font(path, callback, on_error)
+local function find_font(name, callback, on_error)
 
-	path = path:lower()
-	path = path:gsub("%s+", " ")
-	path = path:gsub("%p", "")
+	name = name:lower()
+	name = name:gsub("%s+", " ")
+	name = name:gsub("%p", "")
 
 	local urls = {}
 	local lookup = {}
 
 	for i, info in ipairs(providers) do
-		local url = info.url ..
-		info.translate(path)
+		local url = info.url .. info.translate(name)
 		table.insert(urls, url)
 		lookup[url] = info
 	end
@@ -213,14 +202,26 @@ local function find_font(path, callback, on_error)
 	sockets.DownloadFirstFound(
 		urls,
 		function(url, content)
+			llog(name, " url: ", url)
+
 			local info = lookup[url]
+
+			local ext = url:match(".+(%.%a+)") or ".dat"
+			local path = "cache/" .. crypto.CRC32(url) .. ext
+
 			if info.archive then
 				vfs.Write("data/temp.zip", content)
-				callback(info.archive(R("data/temp.zip") .. "/", path))
-			else
-				local ext = url:match(".+(%.%a+)") or ".dat"
-				local path = "cache/" .. (crc or crypto.CRC32(path)) .. ext
+				content = info.archive(R("data/temp.zip") .. "/", name)
+				if not content then
+					resource.Download(surface.default_font_path, callback)
+					return
+				end
+			end
+
+			if content then
+				llog(name, " cache: ", path)
 				vfs.Write(path, content)
+
 				callback(path)
 			end
 		end,
@@ -253,7 +254,6 @@ function META:Initialize()
 		self.char_buffer = char_buffer
 		ffi.copy(char_buffer, data, #data)
 
-
 		local face = ffi.new("struct FT_FaceRec_ * [1]")
 		local code = freetype.NewMemoryFace(surface.freetype_lib[0], char_buffer, #data, 0, face)
 
@@ -272,7 +272,8 @@ function META:Initialize()
 			self:OnLoad()
 		else
 			warning("unable to initialize font ("..path.."): " .. (freetype.ErrorCodeToString(code) or code))
-			load(surface.default_font_path)
+			--load(surface.default_font_path)
+			resource.Download(surface.default_font_path, load)
 		end
 	end
 
@@ -300,7 +301,7 @@ function META:Initialize()
 				logn("unable to download ", self.Path)
 				logn(reason)
 				llog("loading default font instead")
-				load(surface.default_font_path)
+				resource.Download(surface.default_font_path, load)
 			end)
 		end
 	end)
