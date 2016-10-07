@@ -309,27 +309,31 @@ if RELOAD then
 
 
 	local frame = gui.CreatePanel("frame", nil, "test")
-	frame:SetCachedRendering(false)
-	frame:SetSize(Vec2()+500)
+	--frame:SetCachedRendering(false)
+	frame:SetSize(Vec2()+600)
 	local list = frame:CreatePanel("list")
 	list:SetupLayout("fill")
 	list:SetupSorted("name", "modified", "type", "size")
-	list:SetupConverters(nil, function(num) return os.date("%c", os.difftime(os.time(), num)) end, nil, utility.FormatFileSize)
-	for i, name in ipairs(vfs.Find("lua/")) do
-		local file = vfs.Open("lua/" .. name)
-		local type = "folder"
-		local size = 0
-		local last_modified = 0
+	list:SetupConverters(nil, function(num) return os.date("%c", os.difftime(os.time(), num)) end, nil, function(size) return size > 0 and utility.FormatFileSize(size) or -size end)
+	for i, name in ipairs(vfs.Find("./")) do
+		local path = "./" .. name
 
-		if file then
+		local type
+		local size
+		local last_modified
+
+		if vfs.IsFile(path) then
+			local file = vfs.Open(path)
 			type = name:match(".+%.(.+)")
 			size = file:GetSize()
 			last_modified = file:GetLastModified()
+			file:Close()
+		else
+			type = "folder"
+			size = -#vfs.Find(path .. "/.")
+			last_modified = 0
 		end
 		local entry = list:AddEntry(name, last_modified, type, size)
 		entry:SetIcon("textures/silkicons/"..(type == "folder" and "folder" or "script")..".png")
-		if file then
-			file:Close()
-		end
 	end
 end
