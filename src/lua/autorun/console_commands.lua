@@ -105,7 +105,16 @@ commands.Add("dump_object_count", function()
 		found[name] = (found[name] or 0) + 1
 	end
 
-	table.print(found)
+	local sorted = {}
+	for k, v in pairs(found) do
+		table.insert(sorted, {k = k, v = v})
+	end
+
+	table.sort(sorted, function(a, b) return a.v > b.v end)
+
+	for _, v in ipairs(sorted) do
+		logn(v.k, " = ", v.v)
+	end
 end)
 
 commands.Add("find_object", function(str)
