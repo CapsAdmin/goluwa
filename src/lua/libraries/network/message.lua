@@ -107,6 +107,16 @@ end
 do -- event extension
 	if CLIENT then
 		message.AddListener("evtmsg", function(...)
+			for i = 1, select("#", ...) do
+				local v = select(i, ...)
+				if type(v) == "table" and type(v.IsValid) == "function" then
+					if not v:IsValid() then
+						llog("event message from server contains NULL value")
+						log("event.CallShared(", ...) logn(")")
+						return
+					end
+				end
+			end
 			event.Call(...)
 		end)
 	end
