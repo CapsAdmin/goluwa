@@ -77,7 +77,7 @@ function surface.CreateFont(id, tbl)
 
 	tbl.path = gmod.TranslateFontName(tbl.path)
 
-	if tbl.size then tbl.size = math.ceil(tbl.size * 0.75) end
+	if tbl.size then tbl.size = math.ceil(tbl.size * 0.55) end
 
 	gmod.surface_fonts[id:lower()] = lib.CreateFont(tbl)
 end

@@ -15,6 +15,12 @@ function ents.Create(class)
 	return self
 end
 
+function ents.CreateClientProp(mdl)
+	local ent = ents.Create("prop_physics")
+	ent:SetModel(mdl)
+	return ent
+end
+
 function ents.GetAll()
 	local out = {}
 	local i = 1

@@ -147,7 +147,7 @@ function META:DockPadding(left, top, right, bottom)
 end
 
 function META:DockMargin(left, top, right, bottom)
-	self.__obj:SetPadding(Rect(left, bottom, right, top))
+	self.__obj:SetPadding(Rect(right, bottom, left, top))
 end
 
 local in_drawing
@@ -209,10 +209,10 @@ end
 
 do
 	function META:SetFontInternal(font)
-		self.__obj.font_internal = font or "dermadefault"
+		self.__obj.font_internal = font or "default"
 		if not gmod.surface_fonts[self.__obj.font_internal:lower()] then
 			llog("font ", self.__obj.font_internal, " does not exist")
-			self.__obj.font_internal = "dermadefault"
+			self.__obj.font_internal = "default"
 		end
 	end
 
@@ -370,7 +370,7 @@ end
 
 do -- z pos stuff
 	function META:SetZPos(pos)
-		--self.__obj:BringToFront()
+		self.__obj:SetChildOrder(pos)
 	end
 
 	function META:MoveToBack()
@@ -472,4 +472,9 @@ function META:AppendText(str)
 end
 function META:InsertColorChange(r,g,b)
 	self:SetText(self:GetText() .. ("<color=%s,%s,%s>"):format(r/255, g/255, b/255))
+end
+
+function META:SetPlayer(ply)
+	local steamid = ply:SteamID()
+
 end

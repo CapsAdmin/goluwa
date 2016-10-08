@@ -40,6 +40,8 @@ local function vgui_Create(class, parent, name)
 	obj:SetSize(Vec2(64, 24))
 	obj:SetPadding(Rect())
 	obj:SetMargin(Rect())
+	self:SetContentAlignment(4)
+
 	self:SetFontInternal("default")
 
 	self:MouseCapture(false)

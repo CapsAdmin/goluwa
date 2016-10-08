@@ -330,8 +330,9 @@ end
 function gmod.LoadFonts()
 	local screen_res = window.GetSize()
 
-	local fonts = steam.VDFToTable(vfs.Read("resource/SourceScheme.res"), true).scheme.fonts
-	table.merge(fonts, steam.VDFToTable(vfs.Read("resource/ChatScheme.res"), true).scheme.fonts)
+	local fonts = {}
+	--table.merge(fonts, steam.VDFToTable(vfs.Read("resource/SourceScheme.res"), true).scheme.fonts)
+	--table.merge(fonts, steam.VDFToTable(vfs.Read("resource/ChatScheme.res"), true).scheme.fonts)
 	table.merge(fonts, steam.VDFToTable(vfs.Read("resource/ClientScheme.res"), true).scheme.fonts)
 
 	for font_name, sub_fonts in pairs(fonts) do
@@ -344,17 +345,17 @@ function gmod.LoadFonts()
 			end
 		end
 
-		table.sort(candidates, function(a, b) return a.dist > b.dist end)
+		table.sort(candidates, function(a, b) return a.dist < b.dist end)
 		local info = (candidates[1] and candidates[1].info) or select(2, next(sub_fonts))
 
-		for i, info in pairs(sub_fonts) do
+		if info then
 			if type(info.tall) == "table" then
 				info.tall = info.tall[1]-- what
 			end
 
 			gmod.surface_fonts[font_name:lower()] = surface.CreateFont({
 				path = gmod.TranslateFontName(info.name),
-				size = info.tall and math.ceil(info.tall * 0.75) or 11,
+				size = info.tall and math.ceil(info.tall) or 11,
 			})
 		end
 	end
