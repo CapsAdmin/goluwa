@@ -637,7 +637,6 @@ do -- cached rendering
 	prototype.GetSet(META, "CachedRendering", false)
 
 	function META:SetCachedRendering(b)
-		b = false
 		self.CachedRendering = b
 
 		if not system.IsOpenGLExtensionSupported("GL_ARB_framebuffer_object") then
