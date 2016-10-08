@@ -20,6 +20,7 @@ prototype.GetSet(META, "VisibilityPanel", NULL)
 prototype.GetSet(META, "NoDraw", false)
 prototype.GetSet(META, "GreyedOut", false)
 prototype.GetSet(META, "UpdateRate", 1/33)
+prototype.GetSet(META, "ChildOrder", 0)
 
 function META:CreatePanel(name, store_in_self)
 	return gui.CreatePanel(name, self, store_in_self)
@@ -630,6 +631,14 @@ do -- orientation
 	function META:Center()
 		self:CenterY()
 		self:CenterX()
+	end
+
+	function META:SetChildOrder(pos)
+		self.ChildOrder = pos
+
+		if self:HasParent() then
+			table.sort(self.Parent.Children, function(a, b) return a.ChildOrder > b.ChildOrder end)
+		end
 	end
 end
 
