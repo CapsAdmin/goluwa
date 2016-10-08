@@ -237,7 +237,7 @@ end
 gui.RegisterPanel(META)
 
 if RELOAD then
-	local panel = gui.CreatePanel("base", nil, "lol")
+	local panel = gui.CreatePanel("frame", nil, "lol")
 	panel:SetSize(Vec2() + 300)
 	panel:SetStyle("frame")
 	panel:CenterSimple()

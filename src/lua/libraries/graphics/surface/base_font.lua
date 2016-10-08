@@ -158,6 +158,7 @@ function META:CompileString(data)
 	local width_info = {}
 	local out = {}
 
+	local max_width = 0
 	local X, Y = 0, 0
 	local i = 1
 	local last_tex
@@ -222,6 +223,7 @@ function META:CompileString(data)
 
 					i = i + 1
 				end
+				max_width = math.max(max_width, X)
 			end
 		end
 	end
@@ -248,7 +250,7 @@ function META:CompileString(data)
 		surface.PopMatrix()
 	end
 
-	return string
+	return string, max_width, Y
 end
 
 function META:GetTextSize(str)

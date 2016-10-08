@@ -685,8 +685,13 @@ function META:CompileString()
 		end
 	end
 
+	local W, H = 0, 0
+
 	for k,v in ipairs(strings) do
-		strings[k] = v.font:CompileString(v.data)
+		local obj, w,h = v.font:CompileString(v.data)
+		strings[k] = obj
+		W = math.max(W, w)
+		H = H + h
 	end
 
 	local obj = {}
@@ -696,6 +701,8 @@ function META:CompileString()
 			v:Draw(0, 0, max_w)
 		end
 	end
+	self.width = W
+	self.height = H
 
 	return obj
 end

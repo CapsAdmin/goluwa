@@ -31,7 +31,7 @@ function META:Initialize()
 	local content = self:CreatePanel("base", "content")
 	--content:SetNoDraw(true)
 	content:SetupLayout("fill")
-	self:SetStyle("frame")
+	content:SetStyle("frame")
 	self:SetMinimumSize(Vec2(bar:GetHeight(), bar:GetHeight()))
 	self:SetTitle("no title")
 end
@@ -65,6 +65,7 @@ gui.RegisterPanel(META)
 
 if RELOAD then
 	local frame = gui.CreatePanel("frame", nil, META.ClassName .. "_test")
+	frame:SetPosition(Vec2(200, 400))
 	frame:SetSize(Vec2(200, 400))
 
 	local scroll = frame:CreatePanel("scroll")
@@ -74,13 +75,15 @@ if RELOAD then
 	list:SetStack(true)
 	list:SetStackRight(false)
 	list:SetNoDraw(true)
+	list:SetStackSizeToChildren(true)
 
 	scroll:SetPanel(list)
 
-	local a = gui.CreatePanel(META.ClassName, list)
+	local a = list:CreatePanel(META.ClassName)
 	a:SetSize(Vec2(100,100))
-	local b = gui.CreatePanel(META.ClassName, list)
+
+	local b = list:CreatePanel(META.ClassName)
 	b:SetSize(Vec2(100,100))
 
-	list:SetSize(Vec2(100, 500))
+	--list:SetSize(Vec2(100, 500))
 end

@@ -637,6 +637,7 @@ do -- cached rendering
 	prototype.GetSet(META, "CachedRendering", false)
 
 	function META:SetCachedRendering(b)
+		b = false
 		self.CachedRendering = b
 
 		if not system.IsOpenGLExtensionSupported("GL_ARB_framebuffer_object") then
@@ -1712,6 +1713,13 @@ do -- layout
 						child:Collide(true)
 					elseif cmd == "no_collide" then
 						child:Collide(false)
+					elseif cmd == "size_to_children_width" then
+						child:SizeToChildrenWidth()
+					elseif cmd == "size_to_children_height" then
+						child:SizeToChildrenHeight()
+					elseif cmd == "size_to_children" then
+						child:SizeToChildren()
+						print(child)
 					elseif cmd == "size_to_width" then
 						child:SizeToWidth()
 					elseif cmd == "size_to_height" then
@@ -1796,7 +1804,10 @@ do -- layout
 
 			self:ExecuteLayoutCommands()
 			if self.Stack then
-				self:StackChildren()
+				local size = self:StackChildren()
+				if self.StackSizeToChildren then
+					self:SetSize(size)
+				end
 			end
 
 			for _, v in ipairs(self:GetChildren()) do
@@ -2134,6 +2145,7 @@ do -- stacking
 	prototype.GetSet(META, "SizeStackToHeight", false)
 	prototype.IsSet(META, "Stackable", true)
 	prototype.IsSet(META, "Stack", false)
+	prototype.IsSet(META, "StackSizeToChildren", false)
 
 	function META:StackChildren()
 		local w = 0

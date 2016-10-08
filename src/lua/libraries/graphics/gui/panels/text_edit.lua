@@ -58,7 +58,8 @@ function META:OnStyleChanged(skin)
 end
 
 function META:OnLayout(S)
-	self.label:SetPosition(Vec2()+S*2)
+	--self.label:SetPosition(Vec2()+S*2)
+--	self:SizeToText()
 end
 
 function META:SetCaretPosition(pos)
@@ -82,7 +83,7 @@ function META:SizeToText()
 	local marg = self:GetMargin()
 
 	self.label:SetPosition(marg:GetPosition())
-	self:SetSize(self.label:GetSize() + marg:GetSize()*2)
+	self:SetSize(self.label:GetSize() + marg:GetSize() * 2)
 end
 
 function META:OnFocus()

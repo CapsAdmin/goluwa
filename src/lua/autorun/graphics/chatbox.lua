@@ -236,6 +236,7 @@ function chat.GetPanel()
 		self.markup:AddTable(args, true)
 		self.markup:AddTagStopper()
 		self.markup:AddString("\n")
+		self.markup:Invalidate()
 
 		page.scroll.scroll_area:SetScrollFraction(Vec2(0,1))
 	end
@@ -243,8 +244,6 @@ function chat.GetPanel()
 	function text:OnLayout()
 		self.markup:SetMaxWidth(self.Parent:GetWidth())
 	end
-
-	text:Layout()
 
 	edit:RequestFocus()
 	--edit:SetMultiline(true)
@@ -357,7 +356,7 @@ function chat.GetPanel()
 		event.Call("ChatTextChanged", str)
 		edit:SizeToText()
 		edit:SetupLayout("bottom", "fill_x")
-		frame:Layout()
+		--frame:Layout()
 	end
 
 	edit.OnPostDrawGUI = function()
@@ -423,15 +422,8 @@ function chat.GetPanel()
 		syntax_process(str, self.markup)
 		--self.markup:AddTagStopper()
 		self.markup:AddString("\n")
-		if chat.panel:IsValid() then
-			chat.panel:Layout(true)
-		end
-
+		self.markup:Invalidate()
 		page.scroll:SetScrollFraction(Vec2(0,1))
-
-		if chat.panel:IsValid() then
-			chat.panel:Layout()
-		end
 	end
 
 	if commands.history then
