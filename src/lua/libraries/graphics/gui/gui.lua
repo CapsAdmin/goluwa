@@ -316,7 +316,7 @@ do -- skin
 
 			for k,v in pairs(gui.panels) do
 				if v:HasSkin(tbl.Name) then
-					v:SetSkin(tbl.skin)
+					v:SetSkin(tbl.Name)
 				end
 			end
 		end
