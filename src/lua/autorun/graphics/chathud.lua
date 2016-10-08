@@ -1,39 +1,3 @@
-local blur_shader = [[
-	float sum = 0;
-
-	vec2 blur = radius/size;
-
-	sum += texture(self, vec2(uv.x - 4.0*blur.x*dir.x, uv.y - 4.0*blur.y*dir.y)).a * 0.0162162162;
-	sum += texture(self, vec2(uv.x - 3.0*blur.x*dir.x, uv.y - 3.0*blur.y*dir.y)).a * 0.0540540541;
-	sum += texture(self, vec2(uv.x - 2.0*blur.x*dir.x, uv.y - 2.0*blur.y*dir.y)).a * 0.1216216216;
-	sum += texture(self, vec2(uv.x - 1.0*blur.x*dir.x, uv.y - 1.0*blur.y*dir.y)).a * 0.1945945946;
-
-	sum += texture(self, vec2(uv.x, uv.y)).a * 0.2270270270;
-
-	sum += texture(self, vec2(uv.x + 1.0*blur.x*dir.x, uv.y + 1.0*blur.y*dir.y)).a * 0.1945945946;
-	sum += texture(self, vec2(uv.x + 2.0*blur.x*dir.x, uv.y + 2.0*blur.y*dir.y)).a * 0.1216216216;
-	sum += texture(self, vec2(uv.x + 3.0*blur.x*dir.x, uv.y + 3.0*blur.y*dir.y)).a * 0.0540540541;
-	sum += texture(self, vec2(uv.x + 4.0*blur.x*dir.x, uv.y + 4.0*blur.y*dir.y)).a * 0.0162162162;
-
-	sum = pow(sum, 0.5);
-
-	float black = -sum;
-	sum -= texture(self, uv).a*4;
-
-	return vec4(black,black,black, sum);
-]]
-
-local max = 8
-local passes = {}
-
-for i = -max, max do
-	local f = i/max
-	local s = math.sin(f * math.pi)
-	local c = math.sin(f * math.pi)
-
-	table.insert(passes, {source = blur_shader, vars = {dir = Vec2(c,s), radius = 0.05}, blend_mode = "additive"})
-end
-
 chathud = chathud or {}
 chathud.font_modifiers = {
 	--["...."] = {type = "font", val = "DefaultFixed"},
@@ -82,8 +46,7 @@ function chathud.AddText(...)
 			path = "Roboto",
 			fallback = surface.GetDefaultFont(),
 			size = 16,
-			padding = 8,
-			shade = passes,
+			padding = 4,
 			shadow = 1,
 		})
 
@@ -153,6 +116,8 @@ function chathud.AddText(...)
 end
 
 function chathud.Draw()
+	--surface.SetWhiteTexture() surface.DrawRect(0,0,surface.GetSize())
+
 	local markup = chathud.markup
 
 	local _, h = surface.GetSize()
@@ -201,7 +166,7 @@ event.AddListener("Chat", "chathud", function(name, str, client)
 end)
 
 if RELOAD then
-	chathud.AddText("hello world")
+	chathud.AddText(string.randomwords(40))
 end
 
 resource.Download("http://cdn.steam.tools/data/emote.json", function(path)
