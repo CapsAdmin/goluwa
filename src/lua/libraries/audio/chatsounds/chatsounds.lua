@@ -405,7 +405,7 @@ end
 function choose_realm(data)
 	local sounds
 
-	if chatsounds.last_realm and data.realms[chatsounds.last_realm] then
+	if chatsounds.last_realm and data.realms[chatsounds.last_realm] and chatsounds.last_trigger ~= data.trigger then
 		sounds = data.realms[chatsounds.last_realm]
 	end
 
@@ -544,6 +544,8 @@ function chatsounds.PlayScript(script)
 					end
 
 					table.insert(sounds, sound)
+
+					chatsounds.last_trigger = chunk.val.trigger
 				else
 					--print("huh")
 				end
