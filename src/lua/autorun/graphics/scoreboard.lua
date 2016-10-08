@@ -233,7 +233,7 @@ function scoreboard.Initialize()
 		panel:SetVisible(false)
 	end
 
-	panel:SetSize(window.GetSize()/1.25)
+	panel:SetSize(window.GetSize()/1.75)
 	panel:SetNoDraw(true)
 	panel:SetupLayout("layout_children", "size_to_height", "center_x_simple", "center_y_simple")
 	--panel:SetupLayout("center_x_simple", "center_y_simple")
