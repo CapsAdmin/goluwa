@@ -87,6 +87,7 @@ function META:OnLayout(S)
 
 	for k,v in pairs(self.columns) do
 		v.label:SetPadding(Rect()+S*2)
+		v.icon:SetPadding(Rect()+S*2)
 		v:SetHeight(self.top:GetHeight())
 		v.div:SetHeight(v:GetHeight())
 	end
@@ -133,14 +134,14 @@ function META:SetupSorted(...)
 			func = table.sort
 		end
 
-		local column = gui.CreatePanel("text_button", self)
+		local column = self:CreatePanel("text_button")
 		column:SetText(name)
 		column:SizeToText()
-		column.label:SetupLayout("left", "top", "center_y_simple")
+		column.label:SetupLayout("left", "center_y_simple")
 
 		local icon = column:CreatePanel("base", "icon")
 		icon:SetStyle("list_down_arrow")
-		icon:SetupLayout("left", "right", "top", "center_y_simple")
+		icon:SetupLayout("left", "right", "center_y_simple")
 		icon:SetIgnoreMouse(true)
 
 		local div = self.top:CreatePanel("divider")
@@ -187,6 +188,7 @@ end
 
 function META:AddEntry(...)
 	local entry = self.list:CreatePanel("button")
+
 	entry.OnSelect = function() end
 	entry.labels = {}
 
@@ -194,6 +196,7 @@ function META:AddEntry(...)
 		local text = select(i, ...) or "nil"
 
 		local label = entry:CreatePanel("text_button")
+
 		label:SetTextWrap(false)
 		label.label:SetLightMode(true)
 		label.label.markup:SetSuperLightMode(true)
