@@ -1,6 +1,4 @@
-local gmod = ... or gmod
-
-local META = gmod.env.FindMetaTable("Angle")
+local META = gmod.GetMetaTable("Angle")
 
 function gmod.env.Angle(p, y, r)
 	local self = {}
@@ -84,7 +82,7 @@ function META:IsZero()
 end
 
 function META:Normalize()
-	self.p = self.p:GetDeg():GetNormalized():GetRad()
+	self.p = self.p:GetRad():GetNormalized():GetDeg()
 end
 
 function META:Set(p, y, r)

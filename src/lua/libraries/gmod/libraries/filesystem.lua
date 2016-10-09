@@ -1,5 +1,3 @@
-local gmod = ... or _G.gmod
-
 do
 	local file = gmod.env.file
 
@@ -12,22 +10,6 @@ do
 		mod = gmod.dir,
 		base_path = gmod.dir .. "../bin/",
 	}
-
-	function file.Write(name, str)
-		vfs.Write(search_paths.data .. name, str)
-	end
-
-	function file.Read(path, where)
-		where = where or "data"
-		return vfs.Read(search_paths[where:lower()] .. path)
-	end
-
-	function file.Append(path, str)
-		where = where or "data"
-		local content = vfs.Read(search_paths.data .. path)
-		content = content .. str
-		vfs.Write(search_paths.data .. name, content)
-	end
 
 	function file.Find(path, where)
 		local files, folders = {}, {}
@@ -101,7 +83,7 @@ do
 		end
 	end
 
-	local META = gmod.env.FindMetaTable("File")
+	local META = gmod.GetMetaTable("File")
 
 	function META:Read(length) return self.__obj:ReadBytes(length) end
 	function META:Close() return self.__obj:Close() end

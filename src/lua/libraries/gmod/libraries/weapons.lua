@@ -1,5 +1,3 @@
-local gmod = ... or gmod
-
 do
 	local META = prototype.CreateTemplate("gmod_weapon")
 
@@ -10,7 +8,7 @@ do
 	end
 end
 
-local META = gmod.env.FindMetaTable("Weapon")
+local META = gmod.GetMetaTable("Weapon")
 
 function META:IsWeapon()
 	return true

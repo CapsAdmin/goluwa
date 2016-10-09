@@ -1,6 +1,6 @@
 local gmod = ... or gmod
 
-local META = gmod.env.FindMetaTable("VMatrix")
+local META = gmod.GetMetaTable("VMatrix")
 
 function gmod.env.Matrix(tbl)
 	local self = {}

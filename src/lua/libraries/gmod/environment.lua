@@ -60,10 +60,7 @@ env._G = env
 
 gmod.env = env
 
-local data = include("lua/libraries/gmod/exported.lua")
-
-local globals = data.functions._G
-data.functions._G = nil
+local data = include("lua/libraries/gmod/"..(CLIENT and "cl_" or SERVER and "sv_").."exported.lua")
 
 do -- copy standard libraries
 	local function add_lib_copy(name)
@@ -85,69 +82,98 @@ do -- copy standard libraries
 	add_lib_copy("jit")
 
 	env.table.insert = function(t,...) table.insert(t,...) return #t end
+	env.debug.getregistry = function() return env._R end
+
+	for k in pairs(_OLD_G) do
+		env[k] = _G[k]
+	end
 end
 
 do -- enums
 	for enum_name, value in pairs(data.enums) do
 		env[enum_name] = env[enum_name] or value
 	end
-
-	include("lua/libraries/gmod/enums.lua", gmod)
 end
 
-do -- global functions
-	for func_name in pairs(globals) do
-		env[func_name] = env[func_name] or function(...) logf(("gmod NYI: %s(%s)\n"):format(func_name, table.concat(tostring_args(...), ","))) end
-	end
-
-	include("lua/libraries/gmod/globals.lua", gmod)
+-- global functions
+for func_name in pairs(data.functions.globals) do
+	env[func_name] = env[func_name] or function(...) logf(("gmod NYI: %s(%s)\n"):format(func_name, table.concat(tostring_args(...), ","))) end
 end
 
-do -- metatables
-	for meta_name, functions in pairs(data.meta) do
-		functions.__tostring = nil
-		functions.__newindex = nil
+data.functions.globals = nil
 
-		if not env._R[meta_name] then
-			local META = {}
-			META.MetaName = meta_name
-			META.__index = META
+-- metatables
+for meta_name, functions in pairs(data.meta) do
+	functions.__tostring = nil
+	functions.__newindex = nil
 
-			if functions.IsValid then
-				function META:IsValid()
-					if self.__removed then return false end
-					return self.__obj and self.__obj:IsValid()
-				end
+	if not env._R[meta_name] then
+		local META = {}
+		META.MetaName = meta_name
+		META.__index = META
+
+		if functions.IsValid then
+			function META:IsValid()
+				if self.__removed then return false end
+				return self.__obj and self.__obj:IsValid()
 			end
+		end
 
-			if functions.Remove then
-				function META:Remove()
-					self.__removed = true
-					event.Delay(0,function() prototype.SafeRemove(self.__obj) end)
-				end
+		if functions.Remove then
+			function META:Remove()
+				self.__removed = true
+				event.Delay(0,function() prototype.SafeRemove(self.__obj) end)
 			end
-
-			env._R[meta_name] = META
-		end
-		for func_name in pairs(functions) do
-			env._R[meta_name][func_name] = env._R[meta_name][func_name] or function(...) logf("gmod NYI: %s:%s(%s)\n", meta_name, func_name, table.concat(tostring_args(...), ",")) end
 		end
 
-		gmod.objects[meta_name] = gmod.objects[meta_name] or {}
+		env._R[meta_name] = META
+	end
+
+	for func_name in pairs(functions) do
+		env._R[meta_name][func_name] = env._R[meta_name][func_name] or function(...) logf("gmod NYI: %s:%s(%s)\n", meta_name, func_name, table.concat(tostring_args(...), ",")) end
+	end
+
+	gmod.objects[meta_name] = gmod.objects[meta_name] or {}
+end
+
+-- libraries
+for lib_name, functions in pairs(data.functions) do
+	env[lib_name] = env[lib_name] or {}
+
+	for func_name in pairs(functions) do
+		env[lib_name][func_name] = env[lib_name][func_name] or function(...) logf(("gmod NYI: %s.%s(%s)\n"):format(lib_name, func_name, table.concat(tostring_args(...), ","))) end
 	end
 end
 
-do -- libraries
-	for lib_name, functions in pairs(data.functions) do
-		env[lib_name] = env[lib_name] or {}
-
-		for func_name in pairs(functions) do
-			env[lib_name][func_name] = env[lib_name][func_name] or function(...) logf(("gmod NYI: %s.%s(%s)\n"):format(lib_name, func_name, table.concat(tostring_args(...), ","))) end
-		end
+if gmod.debug then
+	for _, meta in pairs(env._R) do
+		setmetatable(meta, {__newindex = function(s, k, v)
+			if not k:startswith("__") then
+				warning("adding meta function that doesn't exist in glua: %s", 2, k)
+			end
+			rawset(s,k,v)
+		end})
 	end
+
+	setmetatable(env, {__newindex = function(s, k, v)
+		warning("adding function that doesn't exist in glua: %s", 2, k)
+		rawset(s,k,v)
+	end})
+end
+
+function gmod.GetMetaTable(name)
+	return gmod.env._R[name]
 end
 
 include("lua/libraries/gmod/libraries/*", gmod)
+
+if gmod.debug then
+	setmetatable(env)
+
+	for _, meta in pairs(env._R) do
+		setmetatable(meta)
+	end
+end
 
 setmetatable(env, {__index = _G})
 

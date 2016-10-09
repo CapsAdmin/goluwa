@@ -1,5 +1,3 @@
-local gmod = ... or _G.gmod
-
 do
 	local player = gmod.env.player
 
@@ -60,19 +58,7 @@ do
 		return gmod.local_player
 	end
 
-	local META = gmod.env.FindMetaTable("Player")
-
-	function META:EyePos()
-		return gmod.env.EyePos()
-	end
-
-	function META:GetPos()
-		return gmod.env.EyePos()
-	end
-
-	function META:EyeAngles()
-		return gmod.env.EyeAngles()
-	end
+	local META = gmod.GetMetaTable("Player")
 
 	function META:GetAimVector()
 		return gmod.env.EyeVector()
@@ -84,14 +70,6 @@ do
 
 	function META:Armor()
 		return 50
-	end
-
-	function META:Health()
-		return 100
-	end
-
-	function META:GetMaxHealth()
-		return 100
 	end
 
 	function META:Team()
@@ -128,10 +106,6 @@ do
 
 	function META:Nick()
 		return self.__obj:GetNick()
-	end
-
-	function META:ConCommand(str)
-		logn("gmod cmd: ", str)
 	end
 
 	function META:UniqueID()
@@ -185,8 +159,10 @@ do
 		return true
 	end
 
-	function META:IPAddress()
-		return "192.168.1.101:27005"
+	if SERVER then
+		function META:IPAddress()
+			return "192.168.1.101:27005"
+		end
 	end
 
 	function META:IsSpeaking()

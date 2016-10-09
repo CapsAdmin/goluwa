@@ -1,6 +1,4 @@
-local gmod = ... or gmod
-
-local META = gmod.env.FindMetaTable("Vector")
+local META = gmod.GetMetaTable("Vector")
 
 function gmod.env.Vector(x, y, z)
 	local self = {}

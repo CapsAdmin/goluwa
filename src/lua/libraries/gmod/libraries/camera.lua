@@ -1,5 +1,3 @@
-local gmod = ... or _G.gmod
-
 local cam = gmod.env.cam
 
 function cam.Start()

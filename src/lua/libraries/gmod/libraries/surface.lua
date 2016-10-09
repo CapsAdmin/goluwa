@@ -1,15 +1,5 @@
 local lib = _G.surface
-
-local gmod = ... or gmod
 local surface = gmod.env.surface
-
-function surface.GetTextureID(path)
-	if vfs.IsFile("materials/" .. path) then
-		return render.CreateTextureFromPath("materials/" .. path)
-	end
-
-	return render.CreateTextureFromPath("materials/" .. path .. ".vtf")
-end
 
 function surface.SetDrawColor(r,g,b,a)
 	if type(r) == "table" then
@@ -35,15 +25,6 @@ function surface.SetTextColor(r,g,b,a)
 	txt_a = (a or 0) / 255
 end
 
-function surface.SetMaterial(mat)
-	lib.SetTexture(mat.__obj.AlbedoTexture)
-end
-
-function surface.SetTexture(tex)
-	if tex == 0 then tex = render.GetWhiteTexture() end
-	lib.SetTexture(tex)
-end
-
 function surface.DrawTexturedRectRotated(x,y,w,h,r)
 	lib.DrawRect(x,y,w,h,math.rad(r))
 end
@@ -65,45 +46,6 @@ function surface.DrawTexturedRectUV(x,y,w,h, u1,v1, u2,v2)
 	lib.SetRectUV(u1,v1, u2-u1,v2-v1)
 	lib.DrawRect(x,y,w,h)
 	lib.SetRectUV()
-end
-
-function surface.SetTextPos(x, y)
-	lib.SetTextPosition(x, y)
-end
-
-function surface.CreateFont(id, tbl)
-	local tbl = table.copy(tbl)
-	tbl.path = tbl.font
-
-	tbl.path = gmod.TranslateFontName(tbl.path)
-
-	if tbl.size then tbl.size = math.ceil(tbl.size * 0.55) end
-
-	gmod.surface_fonts[id:lower()] = lib.CreateFont(tbl)
-end
-
-function surface.SetFont(name)
-	lib.SetFont(gmod.surface_fonts[name:lower()])
-end
-
-function surface.GetTextSize(str)
-	str = gmod.translation2[str] or str
-	return lib.GetTextSize(str)
-end
-
-function surface.DrawText(str)
-	str = gmod.translation2[str] or str
-	lib.PushColor(txt_r, txt_g, txt_b, txt_a)
-	lib.DrawText(str)
-	lib.PopColor()
-
-	local x, y = lib.GetTextPosition()
-	local w, h = surface.GetTextSize(str)
-	lib.SetTextPosition(x + w, y)
-end
-
-function surface.PlaySound(path)
-	audio.CreateSource("sound/" .. path):Play()
 end
 
 function surface.DrawLine(...)
