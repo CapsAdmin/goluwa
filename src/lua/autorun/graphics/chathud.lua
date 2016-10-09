@@ -136,22 +136,6 @@ function chathud.MouseInput(button, press, x, y)
 end
 
 event.AddListener("Chat", "chathud", function(name, str, client)
-	if render.IsGBufferReady() then
-		event.AddListener("PreDrawGUI", "chathud", function()
-			chathud.Draw()
-		end)
-		--event.RemoveListener("PreDrawGUI", "chathud")
-	else
-		event.AddListener("PreDrawGUI", "chathud", function()
-			chathud.Draw()
-		end)
-		--event.RemoveListener("PreDrawGUI", "chathud")
-	end
-
-	event.AddListener("MouseInput", "chathud", function(button, press)
-		chathud.MouseInput(button, press, window.GetMousePosition():Unpack())
-	end)
-
 	local tbl = chat.AddTimeStamp()
 
 	if client:IsValid() then
@@ -164,6 +148,23 @@ event.AddListener("Chat", "chathud", function(name, str, client)
 	table.insert(tbl, str)
 	chathud.AddText(unpack(tbl))
 end)
+
+function chathud.Show()
+	event.AddListener("PreDrawGUI", "chathud", function()
+		chathud.Draw()
+	end)
+
+	event.AddListener("MouseInput", "chathud", function(button, press)
+		chathud.MouseInput(button, press, window.GetMousePosition():Unpack())
+	end)
+end
+
+function chathud.Hide()
+	event.RemoveListener("PreDrawGUI", "chathud")
+	event.RemoveListener("MouseInput", "chathud")
+end
+
+chathud.Show()
 
 if RELOAD then
 	chathud.AddText(string.randomwords(40))
