@@ -112,6 +112,18 @@ do
 		return lib.GetTextSize(str)
 	end
 
+	local txt_r, txt_g, txt_b, txt_a = 0,0,0,0
+
+	function surface.SetTextColor(r,g,b,a)
+		if type(r) == "table" then
+			r,g,b,a = r.r, r.g, r.b, r.a
+		end
+		txt_r = r/255
+		txt_g = g/255
+		txt_b = b/255
+		txt_a = (a or 0) / 255
+	end
+
 	function surface.DrawText(str)
 		str = gmod.translation2[str] or str
 		lib.PushColor(txt_r, txt_g, txt_b, txt_a)

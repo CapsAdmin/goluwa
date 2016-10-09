@@ -25,3 +25,7 @@ end
 function gmod.env.AddCSLuaFile()
 
 end
+
+function gmod.env.resource.AddFile()
+
+end

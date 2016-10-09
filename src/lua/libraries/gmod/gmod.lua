@@ -99,8 +99,7 @@ function gmod.Initialize()
 		if CLIENT then include(gmod.dir .. "/lua/autorun/client/*") end
 		if SERVER then include(gmod.dir .. "/lua/autorun/server/*") end
 
-		for dir in vfs.Iterate("addons/") do
-			local dir = gmod.dir .. "addons/" ..  dir
+		for dir in vfs.Iterate(gmod.dir .. "addons/", true) do
 			vfs.AddModuleDirectory(R(dir.."/lua/includes/modules/"))
 		end
 
@@ -163,13 +162,12 @@ function gmod.Run()
 		gmod.env.gamemode.Call("ScoreboardHide")
 	end)
 
-	for dir in vfs.Iterate("addons/", nil, true) do
+	for dir in vfs.Iterate(gmod.dir .. "addons/", true, true) do
 		local dir = gmod.dir .. "addons/" ..  dir
 		include(dir .. "/lua/includes/extensions/*")
 	end
 
-	for dir in vfs.Iterate("addons/", nil, true) do
-		local dir = gmod.dir .. "addons/" ..  dir
+	for dir in vfs.Iterate(gmod.dir .. "addons/", true, true) do
 		include(dir .. "/lua/autorun/*")
 		if CLIENT then include(dir .. "/lua/autorun/client/*") end
 		if SERVER then include(dir .. "/lua/autorun/server/*") end

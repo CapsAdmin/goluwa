@@ -1,6 +1,6 @@
 local gmod = ... or gmod
 
-gmod.gamemodes = {}
+gmod.gamemodes = gmod.gamemodes or {}
 
 function gmod.LoadGamemode(name)
 	local info = steam.VDFToTable(vfs.Read("gamemodes/" .. name .. "/" .. name .. ".txt"))

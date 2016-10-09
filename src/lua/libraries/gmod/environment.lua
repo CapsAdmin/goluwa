@@ -83,9 +83,12 @@ do -- copy standard libraries
 
 	env.table.insert = function(t,...) table.insert(t,...) return #t end
 	env.debug.getregistry = function() return env._R end
+	env.package = package
 
 	for k in pairs(_OLD_G) do
-		env[k] = _G[k]
+		if type(_G[k]) == "function" then
+			env[k] = _G[k]
+		end
 	end
 end
 

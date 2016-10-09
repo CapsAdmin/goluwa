@@ -13,18 +13,6 @@ function surface.SetAlphaMultiplier(a)
 	lib.SetAlphaMultiplier(a)
 end
 
-local txt_r, txt_g, txt_b, txt_a = 0,0,0,0
-
-function surface.SetTextColor(r,g,b,a)
-	if type(r) == "table" then
-		r,g,b,a = r.r, r.g, r.b, r.a
-	end
-	txt_r = r/255
-	txt_g = g/255
-	txt_b = b/255
-	txt_a = (a or 0) / 255
-end
-
 function surface.DrawTexturedRectRotated(x,y,w,h,r)
 	lib.DrawRect(x,y,w,h,math.rad(r))
 end

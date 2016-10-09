@@ -92,7 +92,7 @@ function META:Set(p, y, r)
 end
 
 function META:RotateAroundAxis(axis, rot)
-	self.p:RotateAroundAxis(axis, math.rad(rad))
+	self.p:RotateAroundAxis(axis.p, math.rad(rot))
 end
 
 function META:Zero()

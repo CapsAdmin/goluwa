@@ -1,15 +1,15 @@
+local search_paths = {
+	game = "",
+	workshop = "",
+	lua = "lua/",
+	data = gmod.dir .. "data/",
+	download = gmod.dir .. "download/",
+	mod = gmod.dir,
+	base_path = gmod.dir .. "../bin/",
+}
+
 do
 	local file = gmod.env.file
-
-	local search_paths = {
-		game = "",
-		workshop = "",
-		lua = "lua/",
-		data = gmod.dir .. "data/",
-		download = gmod.dir .. "download/",
-		mod = gmod.dir,
-		base_path = gmod.dir .. "../bin/",
-	}
 
 	function file.Find(path, where)
 		local files, folders = {}, {}
@@ -69,25 +69,51 @@ end
 do
 	function gmod.env.file.Open(path, how, where)
 		where = where or "data"
+		path = search_paths[where:lower()] .. path
 
-		if how:find("w") then
-			llog("opening ", path, " with ", how, " from ", where)
-		end
+		llog("file.Open(%s, %s, %s)", R(path), how, where)
 
-		local self, err = vfs.Open(search_paths[where:lower()] .. path, how)
+		how = how:gsub("b", "")
+		if how == "w" then how = "write" end
+		if how == "r" then how = "read" end
+
+		local self, err = vfs.Open(path, how)
 
 		if self then
 			return gmod.WrapObject(self, "File")
 		else
-			--llog(err)
+			llog("file.Open failed: ", err)
 		end
 	end
 
 	local META = gmod.GetMetaTable("File")
 
 	function META:Read(length) return self.__obj:ReadBytes(length) end
+	function META:Write(content) return self.__obj:Write(content) end
+
 	function META:Close() return self.__obj:Close() end
-	function META:Tell() return self.__obj:Tell() end
+	function META:Tell() return self.__obj:GetPosition() end
 	function META:Size() return self.__obj:GetSize() end
 	function META:Skip(pos) return self.__obj:SetPos(pos) end
+
+	function META:ReadLine() return self.__obj:ReadString(nil, nil, string.byte("\n")) end
+
+	function META:ReadByte() return self.__obj:ReadByte() end
+	function META:WriteByte(num) return self.__obj:WriteByte(num) end
+
+	function META:ReadBool() return self.__obj:ReadBoolean() end
+	function META:WriteBool(num) return self.__obj:WriteBoolean(num) end
+
+	function META:ReadFloat() return self.__obj:ReadFloat() end
+	function META:WriteFloat(num) return self.__obj:WriteFloat(num) end
+
+	function META:ReadDouble() return self.__obj:ReadDouble() end
+	function META:WriteDouble(num) return self.__obj:WriteDouble(num) end
+
+	function META:ReadLong() return self.__obj:ReadLong() end
+	function META:WriteLong(num) return self.__obj:WriteLong(num) end
+
+	function META:ReadShort() return self.__obj:ReadShort() end
+	function META:WriteShort(num) return self.__obj:WriteShort(num) end
+
 end

@@ -159,11 +159,11 @@ do
 		return true
 	end
 
-	if SERVER then
+	--if SERVER then
 		function META:IPAddress()
 			return "192.168.1.101:27005"
 		end
-	end
+	--end
 
 	function META:IsSpeaking()
 		return false
@@ -171,6 +171,10 @@ do
 
 	function META:GetInfoNum(key, def)
 		return def or 0
+	end
+
+	function META:KeyDown(key)
+		return gmod.env.input.IsKeyDown(key)
 	end
 end
 

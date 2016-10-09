@@ -19,7 +19,7 @@ function gmod.env.module(name, _ENV)
 		_ENV = gmod.env
 		setmetatable(tbl, {__index = _ENV})
 	elseif _ENV then
-		print(_ENV, "!?!??!?!")
+		warning(_ENV, 2)
 	end
 
 	if not tbl._NAME then

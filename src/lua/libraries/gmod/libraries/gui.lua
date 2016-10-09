@@ -715,6 +715,10 @@ do
 
 	end
 
+	function META:IsEnabled()
+		return true
+	end
+
 	function META:HasHierarchicalFocus()
 		for _, pnl in ipairs(self.__obj:GetChildrenList()) do
 			if pnl.IsFocused and pnl:IsFocused() then

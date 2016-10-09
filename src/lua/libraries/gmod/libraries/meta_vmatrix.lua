@@ -28,6 +28,8 @@ function gmod.env.Matrix(tbl)
 		self.p.m31 = tbl[4][2]
 		self.p.m32 = tbl[4][3]
 		self.p.m33 = tbl[4][4]
+	else
+		self.p = Matrix44()
 	end
 
 	return setmetatable(self, META)

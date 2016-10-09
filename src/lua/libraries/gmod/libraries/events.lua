@@ -1,3 +1,7 @@
+function gmod.env.gameevent.Listen()
+	-- this is always on
+end
+
 gmod.AddEvent("Update", function()
 	local tbl = gmod.env.gamemode.Call("CalcView", gmod.env.LocalPlayer(), gmod.env.EyePos(), gmod.env.EyeAngles(), math.deg(render.camera_3d:GetFOV()), render.camera_3d:GetNearZ(), render.camera_3d:GetFarZ())
 	if tbl then
