@@ -468,7 +468,7 @@ function render.ShutdownGBuffer()
 		render.gbuffer:Remove()
 	end
 
-	warning("gbuffer shutdown")
+	wlog("gbuffer shutdown")
 end
 
 function render.IsGBufferReady()

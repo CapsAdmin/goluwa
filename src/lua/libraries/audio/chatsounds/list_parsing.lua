@@ -855,14 +855,14 @@ function chatsounds.LoadData(name)
 		end
 
 		if not list then
-			warning("chatsounds data for %s not found", 2, name)
+			wlog("chatsounds data for %s not found", name, 2)
 			return
 		end
 
 		local v = table.random(table.random(table.random(list))).path
 
 		if name ~= "HALF-LIFE 2" and not vfs.IsFile(v) then
-			warning("chatsounds data for %s not found: %s doesn't exist", 2, name, v)
+			wlog("chatsounds data for %s not found: %s doesn't exist", name, v, 2)
 			return
 		end
 

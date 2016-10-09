@@ -102,7 +102,7 @@ if CLIENT then
 		end
 
 		if not enet then
-			warning("unable to host connect: enet not found")
+			wlog("unable to host connect: enet not found")
 			return
 		end
 
@@ -168,7 +168,7 @@ if SERVER then
 		end
 
 		if not enet then
-			warning("unable to host server: enet not found")
+			wlog("unable to host server: enet not found")
 			return
 		end
 
@@ -277,7 +277,7 @@ do
 
 	function network.JoinIRCServer()
 		if not SOCKETS then
-			warning("sockets not availible")
+			wlog("sockets not availible")
 			return
 		end
 		if not network.irc_client:IsValid() then
@@ -323,7 +323,7 @@ do
 		local irc_client = network.irc_client
 
 		if not irc_client:IsValid() then
-			warning("irc client not available")
+			wlog("irc client not available")
 			return
 		end
 

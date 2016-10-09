@@ -38,7 +38,7 @@ local function download(from, to, callback, on_fail, on_header)
 				callback(full_path)
 				llog("finished donwnloading ", from)
 			else
-				warning("resource download error: %q not found!", 2, "data/downloads/" .. to)
+				wlog("resource download error: %q not found!", "data/downloads/" .. to)
 				on_fail()
 			end
 		end,
@@ -54,7 +54,7 @@ local function download(from, to, callback, on_fail, on_header)
 			file = file_
 
 			if not file then
-				warning("resource download error: ", 2, err)
+				wlog("resource download error: ", err, 2)
 				on_fail()
 				return false
 			end

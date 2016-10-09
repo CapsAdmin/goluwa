@@ -485,7 +485,7 @@ do -- canvas
 		love.graphics.setCanvas(self)
 
 		local ok, err = pcall(cb)
-		if not ok then warning(err) end
+		if not ok then wlog(err) end
 
 		love.graphics.setCanvas(old)
 	end

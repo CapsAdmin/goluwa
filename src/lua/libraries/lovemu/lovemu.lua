@@ -63,7 +63,7 @@ do
 end
 
 function lovemu.ErrorNotSupported(str, level)
-	warning("[lovemu] " .. str)
+	wlog("[lovemu] " .. str)
 end
 
 function lovemu.CreateLoveEnv()
@@ -124,7 +124,7 @@ end
 function lovemu.RunGame(folder, ...)
 	local love = lovemu.CreateLoveEnv(lovemu.version)
 
-	warning("mounting love game folder: ", 1, R(folder .. "/"))
+	wlog("mounting love game folder: ", R(folder .. "/"))
 	vfs.CreateFolder("data/lovemu/")
 	vfs.AddModuleDirectory("data/lovemu/")
 	vfs.Mount(R(folder .. "/"))

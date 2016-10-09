@@ -208,7 +208,7 @@ end
 do -- mesh init options
 
 	function META:InitPhysicsConvexHull(tbl)
-		warning("NYI")
+		wlog("NYI")
 		--[[if not physics.init then return end
 
 		-- if you don't do this "tbl" will get garbage collected and physics.bullet will crash
@@ -228,7 +228,7 @@ do -- mesh init options
 	end
 
 	function META:InitPhysicsConvexTriangles(tbl)
-		warning("NYI")
+		wlog("NYI")
 		--[[if not physics.init then return end
 
 		-- if you don't do this "tbl" will get garbage collected and bullet will crash

@@ -116,7 +116,7 @@ function love.filesystem.read(path, size)
 end
 
 function love.filesystem.remove(path)
-	warning("attempted to remove folder/file " .. path)
+	wlog("attempted to remove folder/file " .. path)
 end
 
 function love.filesystem.setIdentity(name)

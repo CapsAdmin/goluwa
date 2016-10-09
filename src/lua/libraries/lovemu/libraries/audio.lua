@@ -335,7 +335,7 @@ do -- Source
 			self.source = audio.CreateSource(var)
 			self.source:SetBuffer(var.buffer)
 		else
-			warning("tried to create unknown source type: ", 2, lovemu.Type(var), ", ", type)
+			wlog("tried to create unknown source type: %s %s", lovemu.Type(var), type, 2)
 		end
 
 		return self

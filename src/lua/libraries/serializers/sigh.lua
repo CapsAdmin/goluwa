@@ -126,7 +126,7 @@ function sigh.Encode(...)
 		if sigh.types[T] then
 			buffer = buffer .. sigh.types[T].encode(arg)
 		else
-			error("cannot encode '" .. T .. "'", 2)
+			wlog("cannot encode %q", T, 2)
 		end
 	end
 
@@ -145,7 +145,7 @@ function sigh.Decode(str)
 			if sigh.types[T] then
 				table.insert(args, sigh.types[T].decode(line))
 			else
-				warning("cannot decode '" .. T .. "'", 2)
+				wlog("cannot decode %q", T, 2)
 			end
 		end
 	end

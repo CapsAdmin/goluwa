@@ -217,11 +217,29 @@ do -- logging
 		event.Call("LogSection", type, b)
 	end
 
+	do
+		local level = 1
+		function logsourcelevel(n)
+			if n then
+				level = n
+			end
+			return level
+		end
+	end
+
 	-- library log
 	function llog(fmt, ...)
-		local source = debug.getprettysource(2, false, true)
-		local main_category = source:match("lua/libraries/(.-)/")
-		local sub_category = source:match("lua/libraries/.-/(.-)/") or source:match(".+/(.-)%.lua")
+		fmt = tostringx(fmt)
+
+		local level = tonumber(select(fmt:count("%") + 1, ...) or 1) or 1
+
+		local source = debug.getprettysource(level + 1, false, true)
+		local main_category = source:match(".+/libraries/(.-)/")
+		local sub_category = source:match(".+/libraries/.-/(.-)/") or source:match(".+/(.-)%.lua")
+
+		if sub_category == "libraries" then
+			sub_category = source:match(".+/libraries/(.+)%.lua")
+		end
 
 		if not main_category or not sub_category or main_category == sub_category then
 			return logf("[%s] %s\n", main_category or sub_category, fmt:safeformat(...))
@@ -229,6 +247,20 @@ do -- logging
 			return logf("[%s][%s] %s\n", main_category, sub_category, fmt:safeformat(...))
 		end
 		return ...
+	end
+
+	-- warning log
+	function wlog(fmt, ...)
+		fmt = tostringx(fmt)
+
+		local level = tonumber(select(fmt:count("%") + 1, ...) or 1) or 1
+
+		local str = fmt:safeformat(...)
+		local source = debug.getprettysource(level + 1, true)
+
+		logn(source, ": ", str)
+
+		return fmt, ...
 	end
 end
 
@@ -243,41 +275,27 @@ do
 	end
 end
 
-do -- verbose print
-	function vprint(...)
-		logf("%s:\n", debug.getinfo(2, "n").name or "unknown")
+function vprint(...)
+	logf("%s:\n", debug.getinfo(logsourcelevel() + 1, "n").name or "unknown")
 
-		for i = 1, select("#", ...) do
-			local name = debug.getlocal(2, i)
-			local arg = select(i, ...)
-			logf("\t%s:\n\t\ttype: %s\n\t\tprty: %s\n", name or "arg" .. i, type(arg), tostring(arg), serializer.Encode("luadata", arg))
-			if type(arg) == "string" then
-				logn("\t\tsize: ", #arg)
-			end
-			if typex(arg) ~= type(arg) then
-				logn("\t\ttypx: ", typex(arg))
-			end
+	for i = 1, select("#", ...) do
+		local name = debug.getlocal(logsourcelevel() + 1, i)
+		local arg = select(i, ...)
+		logf("\t%s:\n\t\ttype: %s\n\t\tprty: %s\n", name or "arg" .. i, type(arg), tostring(arg), serializer.Encode("luadata", arg))
+		if type(arg) == "string" then
+			logn("\t\tsize: ", #arg)
+		end
+		if typex(arg) ~= type(arg) then
+			logn("\t\ttypx: ", typex(arg))
 		end
 	end
-end
-
-function warning(format, level, ...)
-	level = level or 1
-	format = tostringx(format)
-
-	local str = format:safeformat(...)
-	local source = debug.getprettysource(level + 1, true)
-
-	logn(source, ": ", str)
-
-	return format, ...
 end
 
 function desire(str, ...)
 	local args = {pcall(require, str, ...)}
 
 	if not args[1] then
-		warning("unable to require %s:\n\t%s", 2, str, args[2]:trim())
+		wlog("unable to require %s:\n\t%s", str, args[2]:trim())
 
 		return unpack(args)
 	end

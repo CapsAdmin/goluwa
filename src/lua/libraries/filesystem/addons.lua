@@ -43,7 +43,7 @@ function vfs.AutorunAddon(addon, folder, force)
 					if path:find("%.lua") then
 						local ok, err = system.pcall(include, info.path .. "lua/autorun/" .. folder .. "/" ..  path)
 						if not ok then
-							warning(err)
+							wlog(err)
 						end
 					end
 				end

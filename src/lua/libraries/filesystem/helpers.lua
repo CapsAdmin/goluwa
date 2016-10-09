@@ -20,13 +20,13 @@ function vfs.Delete(path, ...)
 		local ok, err = os.remove(abs_path)
 
 		if not ok and err then
-			warning(err)
+			wlog(err)
 		end
 	end
 
 	local err = ("No such file or directory %q"):format(path)
 
-	warning(err)
+	wlog(err)
 
 	return false, "No such file or directory"
 end

@@ -91,7 +91,7 @@ do
 						found = true
 					end
 					if not found then
-						warning("%s: META.%s = %s is mutable", 2, meta.ClassName, k, tostring(v))
+						wlog("%s: META.%s = %s is mutable", meta.ClassName, k, tostring(v), 2)
 					end
 				end
 			end
@@ -324,7 +324,7 @@ do
 						end
 
 						if not info_b then
-							warning("unable to find property info for %s (%s)", 1, field_b, obj_b)
+							wlog("unable to find property info for %s (%s)", field_b, obj_b)
 						end
 					else
 						table.remove(prototype.linked_objects, i)

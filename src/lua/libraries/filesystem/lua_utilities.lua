@@ -234,7 +234,7 @@ do -- include
 			end
 
 			if utility and utility.PushTimeWarning then
-				utility.PopTimeWarning(full_path, 0.1)
+				utility.PopTimeWarning("[include] " .. full_path:gsub(e.ROOT_FOLDER, ""), 0.1)
 			end
 
 			_G.FILE_PATH = nil

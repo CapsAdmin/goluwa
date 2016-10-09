@@ -223,7 +223,7 @@ function META:SetupStorage()
 		logn("==================================")
 		self:DumpInfo()
 		logn("==================================")
-		warning("\n" .. msg, 2)
+		wlog("\n" .. msg, 2)
 	end
 
 	self.storage_setup = true
@@ -332,7 +332,7 @@ function META:_Upload(data, y)
 	elseif self.StorageType == "buffer" then
 		--self.gl_tex:Buffer(TOENUM(self.InternalFormat))
 		--self.gl_tex:BufferRange(TOENUM(self.InternalFormat), )
-		warning("NYI", 2)
+		wlog("NYI", 2)
 	end
 
 	self:GenerateMipMap()
@@ -347,7 +347,7 @@ function META:_Upload(data, y)
 		logf("w,h,d = %s, %s\n", data.width, data.height or 0, data.depth or 0)
 		logf("buffer = %s\n", data.buffer)
 		self:DumpInfo()
-		warning("\n" .. msg)
+		wlog("\n" .. msg)
 	end
 end
 
@@ -368,7 +368,7 @@ function META:_Download(mip_map_level, buffer, size, format)
 		logn(tostring(self) .. ":Upload() failed")
 		self:DumpInfo()
 		table.print(data)
-		warning("\n" .. msg, 2)
+		wlog("\n" .. msg, 2)
 	end
 end
 

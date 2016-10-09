@@ -106,7 +106,7 @@ function META:CheckCompletness()
 			v.tex:DumpInfo()
 		end
 
-		warning(str)
+		wlog(str)
 
 		debug.trace()
 	end

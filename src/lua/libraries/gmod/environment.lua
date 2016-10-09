@@ -98,14 +98,14 @@ if gmod.debug then
 	for _, meta in pairs(env._R) do
 		setmetatable(meta, {__newindex = function(s, k, v)
 			if not k:startswith("__") then
-				warning("adding meta function that doesn't exist in glua: %s", 2, k)
+				wlog("adding meta function that doesn't exist in glua: %s", k, 2)
 			end
 			rawset(s,k,v)
 		end})
 	end
 
 	setmetatable(env, {__newindex = function(s, k, v)
-		warning("adding function that doesn't exist in glua: %s", 2, k)
+		wlog("adding function that doesn't exist in glua: %s", k, 2)
 		rawset(s,k,v)
 	end})
 end

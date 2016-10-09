@@ -139,7 +139,7 @@ end
 
 do
 	function physics.RayCast(from, to)
-		warning("NYI")
+		wlog("NYI")
 		--[[if ode.RayCast(from.x, from.y, from.z, to.x, to.y, to.z, out) then
 			local tbl = {
 				hit_pos = Vec3(),

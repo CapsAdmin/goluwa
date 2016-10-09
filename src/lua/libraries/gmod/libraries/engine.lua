@@ -42,7 +42,7 @@ function engine.GetGames()
 end
 
 function engine.CloseServer()
-	warning("nope")
+	wlog("nope")
 end
 
 function engine.IsPlayingDemo() return false end

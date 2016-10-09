@@ -4,7 +4,7 @@ window.wnd = window.wnd or NULL
 
 local meta = prototype.GetRegistered("render_window")
 
-if not meta then warning("no window managed found") return end
+if not meta then wlog("no window managed found") return end
 
 for key, val in pairs(meta) do
 	if type(val) == "function" then
@@ -18,13 +18,13 @@ function window.Open(...)
 	if window.wnd:IsValid() then return end
 
 	if not system.CreateWindow then
-		warning("no window manager found")
+		wlog("no window manager found")
 		return nil, "no window manager found"
 	end
 
 	local ok, wnd = pcall(system.CreateWindow, ...)
 
-	if not ok then warning(wnd) return nil, wnd end
+	if not ok then wlog(wnd) return nil, wnd end
 
 	if not render.initialized then
 		render.initialized = true

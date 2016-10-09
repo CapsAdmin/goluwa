@@ -75,7 +75,7 @@ do
 	local old = os.exit
 
 	function os.exit(code)
-		warning("os.exit() called with code %i", 2, code or 0)
+		wlog("os.exit() called with code %i", code or 0, 2)
 		--system.ShutDown(code)
 	end
 
@@ -256,7 +256,7 @@ do -- openurl
 				end
 			end
 
-			warning("don't know how to open an url (tried: %s)", 2, table.concat(attempts, ", "))
+			wlog("don't know how to open an url (tried: %s)", table.concat(attempts, ", "), 2)
 		end
 	end
 

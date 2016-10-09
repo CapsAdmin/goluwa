@@ -59,7 +59,7 @@ local function read_buffer(client, buffer)
 		end
 
 		if i == 32 then
-			warning("command too big: ", 2, client)
+			wlog("command too big: ", client, 2)
 		end
 	end
 

@@ -1,21 +1,21 @@
 function gmod.env.HTTP(tbl)
 	if tbl.parameters then
-		warning("NYI parameters")
+		wlog("NYI parameters")
 		table.print(tbl.parameters)
 	end
 
 	if tbl.headers then
-		warning("NYI headers")
+		wlog("NYI headers")
 		table.print(tbl.headers)
 	end
 
 	if tbl.body then
-		warning("NYI body")
+		wlog("NYI body")
 		print(tbl.headers)
 	end
 
 	if tbl.type then
-		warning("NYI type")
+		wlog("NYI type")
 		print(tbl.type)
 	end
 

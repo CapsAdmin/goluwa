@@ -216,7 +216,7 @@ do -- tcp socket meta
 			local ssl = desire("ssl") _G.ssl = nil -- grr
 
 			function CLIENT:SetSSLParams(params)
-				if not ssl then warning("cannot use ssl parameters: luasec not found!") return end
+				if not ssl then wlog("cannot use ssl parameters: luasec not found!") return end
 
 				if not params or params == "https" then
 					params = https_default

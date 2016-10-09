@@ -146,7 +146,7 @@ function luadata.Decode(str, skip_error)
 	local func, err = loadstring("return {\n" .. str .. "\n}", "luadata")
 
 	if not func then
-		if not skip_error then warning("luadata syntax error: ", 2, err) end
+		if not skip_error then wlog("luadata syntax error: ", err, 2) end
 		return {}
 	end
 
@@ -161,7 +161,7 @@ function luadata.Decode(str, skip_error)
 	end
 
 	if not ok then
-		if not skip_error then warning("luadata runtime error: ", 2, err) end
+		if not skip_error then wlog("luadata runtime error: ", err, 2) end
 		return {}
 	end
 

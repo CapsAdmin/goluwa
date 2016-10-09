@@ -275,7 +275,7 @@ function META:Initialize()
 
 			self:OnLoad()
 		else
-			warning("unable to initialize font ("..path.."): " .. (freetype.ErrorCodeToString(code) or code))
+			wlog("unable to initialize font ("..path.."): " .. (freetype.ErrorCodeToString(code) or code))
 			--load(surface.default_font_path)
 			resource.Download(surface.default_font_path, load)
 		end
