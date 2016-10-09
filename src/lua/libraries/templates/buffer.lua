@@ -145,7 +145,8 @@ do -- basic data types
 		return self
 	end
 
-	function META:ReadString(length, advance)
+	function META:ReadString(length, advance, terminator)
+		terminator = terminator or 0
 
 		if length and not advance then
 			return self:ReadBytes(length)
@@ -157,7 +158,7 @@ do -- basic data types
 
 		for _ = 1, length or self:GetSize() do
 			local byte = self:ReadByte()
-			if not byte or byte == 0 then break end
+			if not byte or byte == terminator then break end
 			table.insert(str, string.char(byte))
 		end
 
