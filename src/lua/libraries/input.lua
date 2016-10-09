@@ -113,6 +113,16 @@ do
 		end
 	end
 
+	function input.Unbind(key)
+		for k, v in pairs(input.binds) do
+			if k:startswith(key) then
+				input.binds[k] = nil
+				commands.Remove(v.cmd)
+				break
+			end
+		end
+	end
+
 	function input.Initialize()
 		input.binds = serializer.ReadFile("luadata", "data/input.txt") or {}
 	end
