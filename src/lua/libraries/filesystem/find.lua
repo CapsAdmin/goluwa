@@ -22,9 +22,9 @@ function vfs.GetFiles(info)
 		end
 
 		if info.reverse_sort then
-			table.sort(out, function(a, b) return a.full_path > b.full_path end)
+			table.sort(out, function(a, b) return a.full_path:lower() > b.full_path:lower() end)
 		else
-			table.sort(out, function(a, b) return a.full_path < b.full_path end)
+			table.sort(out, function(a, b) return a.full_path:lower() < b.full_path:lower() end)
 		end
 	else
 		local done = {}
@@ -50,9 +50,9 @@ function vfs.GetFiles(info)
 		done = nil
 
 		if info.reverse_sort then
-			table.sort(out, function(a, b) return a > b end)
+			table.sort(out, function(a, b) return a:lower() > b:lower() end)
 		else
-			table.sort(out, function(a, b) return a < b end)
+			table.sort(out, function(a, b) return a:lower() < b:lower() end)
 		end
 	end
 
