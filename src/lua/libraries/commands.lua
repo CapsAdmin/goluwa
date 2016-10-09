@@ -52,6 +52,12 @@ function commands.Add(cmd, callback, help, autocomplete)
 	commands.added[cmd] = {callback = callback, help = help, autocomplete = autocomplete}
 end
 
+function commands.IsAdded(cmd)
+	cmd = cmd:lower()
+
+	return commands.added[cmd] ~= nil
+end
+
 function commands.AddAutocomplete(cmd, callback)
 	cmd = cmd:lower()
 
