@@ -76,28 +76,26 @@ function render.UpdateScreenEffectTexture()
 
 end
 
-local globals = gmod.env
-
 gmod.render_targets = gmod.render_targets or {}
 
-function globals.GetRenderTarget(name, w, h)
+function gmod.env.GetRenderTarget(name, w, h)
 	local fb = gmod.render_targets[name] or lib.CreateFrameBuffer(Vec2(w, h))
 	gmod.render_targets[name] = fb
 	fb:GetTexture().fb = fb
 	return gmod.WrapObject(fb:GetTexture(), "ITexture")
 end
 
-function globals.GetRenderTargetEx(name, w, h, size_mode, depth_mode, texture_flags, rt_flags, image_format)
+function gmod.env.GetRenderTargetEx(name, w, h, size_mode, depth_mode, texture_flags, rt_flags, image_format)
 	local fb = gmod.render_targets[name] or lib.CreateFrameBuffer(Vec2(w, h))
 	gmod.render_targets[name] = fb
 	fb:GetTexture().fb = fb
 	return gmod.WrapObject(fb:GetTexture(), "ITexture")
 end
 
-function globals.ScrW() return lib.GetWidth() end
-function globals.ScrH() return lib.GetHeight() end
+function gmod.env.ScrW() return lib.GetWidth() end
+function gmod.env.ScrH() return lib.GetHeight() end
 
-function globals.DisableClipping(b)
+function gmod.env.DisableClipping(b)
 
 end
 

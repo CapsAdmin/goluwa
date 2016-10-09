@@ -1,38 +1,62 @@
 local gmod = ... or gmod
-local gmod_system = gmod.env.system
+local system = gmod.env.system
 
-function gmod_system.IsLinux()
+function system.IsLinux()
 	return true
 end
 
-function gmod_system.IsWindows()
+function system.IsWindows()
 	return false
 end
 
-function gmod_system.IsOSX()
+function system.IsOSX()
 	return false
 end
 
-function gmod_system.HasFocus()
+function system.HasFocus()
 	return window.IsFocused()
 end
 
-function gmod_system.GetCountry()
+function system.GetCountry()
 	return "NO"
 end
 
-function gmod_system.IsWindowed()
+function system.IsWindowed()
 	return true
 end
 
-function gmod_system.SteamTime()
+function system.SteamTime()
 	return os.clock()
 end
 
-function gmod_system.AppTime()
+function system.AppTime()
 	return os.clock()
 end
 
-function gmod_system.UpTime()
+function system.UpTime()
 	return os.clock()
+end
+
+function gmod.env.RealTime()
+	return _G.system.GetElapsedTime()
+end
+
+function gmod.env.FrameNumber()
+	return tonumber(_G.system.GetFrameNumber())
+end
+
+function gmod.env.FrameTime()
+	return _G.system.GetFrameTime()
+end
+
+function gmod.env.VGUIFrameTime()
+	return _G.system.GetElapsedTime()
+end
+
+function gmod.env.CurTime()  --system.GetServerTime()
+	return _G.system.GetElapsedTime()
+end
+
+function gmod.env.SysTime()  --system.GetServerTime()
+	return _G.system.GetTime()
 end

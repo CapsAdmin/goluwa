@@ -1,5 +1,11 @@
 local gmod = ... or gmod
 
+function gmod.env.CreateSound(ent, path, filter)
+	local self = audio.CreateSource("sound/" .. path)
+
+	return gmod.WrapObject(self, "CSoundPatch")
+end
+
 local META = gmod.env.FindMetaTable("CSoundPatch")
 
 function META:SetSoundLevel()

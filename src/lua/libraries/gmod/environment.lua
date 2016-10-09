@@ -61,8 +61,8 @@ env._G = env
 gmod.env = env
 
 local data = include("lua/libraries/gmod/exported.lua")
-local globals = data.functions._G
 
+local globals = data.functions._G
 data.functions._G = nil
 
 do -- copy standard libraries
@@ -135,8 +135,6 @@ do -- metatables
 
 		gmod.objects[meta_name] = gmod.objects[meta_name] or {}
 	end
-
-	include("lua/libraries/gmod/meta/*")
 end
 
 do -- libraries
@@ -147,15 +145,9 @@ do -- libraries
 			env[lib_name][func_name] = env[lib_name][func_name] or function(...) logf(("gmod NYI: %s.%s(%s)\n"):format(lib_name, func_name, table.concat(tostring_args(...), ","))) end
 		end
 	end
-
-	for file_name in vfs.Iterate("lua/libraries/gmod/libraries/") do
-		local lib_name = file_name:match("(.+)%.")
-
-		env[lib_name] = env[lib_name] or {}
-
-		include("lua/libraries/gmod/libraries/" .. file_name, gmod)
-	end
 end
+
+include("lua/libraries/gmod/libraries/*", gmod)
 
 setmetatable(env, {__index = _G})
 

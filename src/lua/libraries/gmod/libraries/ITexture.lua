@@ -18,7 +18,6 @@ function META:GetName()
 	return "huh"
 end
 
-
 function META:IsError()
 	return false
 end
