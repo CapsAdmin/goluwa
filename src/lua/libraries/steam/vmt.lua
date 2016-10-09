@@ -23,6 +23,10 @@ local property_translate = {
 	--{"SelfIllumination", {"selfillum", function(num) return num end}},
 }
 
+local special_textures = {
+	_rt_fullframefb = "error",
+}
+
 function steam.LoadMaterial(path, material)
 	material:SetName(path)
 
@@ -91,7 +95,13 @@ function steam.LoadMaterial(path, material)
 				end
 			end
 
-			if not vmt.bumpmap and vmt.basetexture then
+			for k, v in pairs(vmt) do
+				if type(v) == "string" and special_textures[v:lower()] then
+					vmt[k] = special_textures[v]
+				end
+			end
+
+			if not vmt.bumpmap and vmt.basetexture and not special_textures[vmt.basetexture] then
 				local new_path = vfs.FixPathSlashes(vmt.basetexture)
 				if not new_path:endswith(".vtf") then
 					new_path = new_path .. ".vtf"
@@ -113,7 +123,7 @@ function steam.LoadMaterial(path, material)
 
 			for _, v in ipairs(path_translate) do
 				local key, field = v[1], v[2]
-				if vmt[field] then
+				if vmt[field] and not special_textures[vmt[field]:lower()] then
 					local new_path = vfs.FixPathSlashes("materials/" .. vmt[field])
 					if not new_path:endswith(".vtf") then
 						new_path = new_path .. ".vtf"
