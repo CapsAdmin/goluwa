@@ -79,6 +79,21 @@ end
 do
 	gmod.gui_world = gmod.gui_world or NULL
 
+	local function hook(obj, func_name, callback)
+		local old = obj[func_name]
+		if not old then
+			obj[func_name] = callback
+		else
+			obj[func_name] = function(...)
+				local a,b,c,d = callback(...)
+				if a ~= nil then
+					return a,b,c,d
+				end
+				return old(...)
+			end
+		end
+	end
+
 	local function vgui_Create(class, parent, name)
 
 		if not gmod.gui_world:IsValid() then
@@ -151,23 +166,23 @@ do
 		function self:StatusChanged() end
 		function self:Think() end
 
-		obj.OnChildAdd = function(_, child)
+		hook(obj, "OnChildAdd", function(_, child)
 			if obj.gmod_prepared then
 				child = gmod.WrapObject(child, "Panel")
 				if child.__obj.gmod_prepared then
 					self:OnChildAdded(child)
 				end
 			end
-		end
+		end)
 
-		obj.OnChildRemove = function(_, child)
+		hook(obj, "OnChildRemove", function(_, child)
 			if obj.gmod_prepared then
 				child = gmod.WrapObject(child, "Panel")
 				if child.__obj.gmod_prepared then
 					self:OnChildRemoved(child)
 				end
 			end
-		end
+		end)
 
 		obj.OnDraw = function()
 			if self.gmod_layout then
@@ -196,15 +211,17 @@ do
 
 			self:PaintOver(obj:GetWidth(), obj:GetHeight())
 		end
+
 		obj:CallOnRemove(function() self:OnDeletion() end)
-		obj.OnUpdate = function() self:Think() self:AnimationThink() end
-		obj.OnMouseMove = function(_, x, y) self:OnCursorMoved(x, y) end
-		obj.OnMouseEnter = function() self:OnCursorEntered() end
-		obj.OnMouseExit = function() self:OnCursorExited() end
+
+		hook(obj, "OnUpdate", function() self:Think() self:AnimationThink() end)
+		hook(obj, "OnMouseMove", function(_, x, y) self:OnCursorMoved(x, y) end)
+		hook(obj, "OnMouseEnter", function() self:OnCursorEntered() end)
+		hook(obj, "OnMouseExit", function() self:OnCursorExited() end)
 
 		-- OnChildAdd and such doesn't seem to be called in Init
 
-		obj.OnPostLayout = function()
+		hook(obj, "OnPostLayout", function()
 			local panel = obj
 
 			if panel.vgui_type == "label" then
@@ -247,9 +264,9 @@ do
 			else
 				self:InvalidateLayout(true)
 			end
-		end
+		end)
 
-		obj.OnMouseInput = function(_, button, press)
+		hook(obj, "OnMouseInput", function(_, button, press)
 			if button == "mwheel_down" then
 				self:OnMouseWheeled(1)
 			elseif button == "mwheel_up" then
@@ -261,16 +278,16 @@ do
 					self:OnMouseReleased(gmod.GetMouseCode(button))
 				end
 			end
-		end
+		end)
 
-		obj.OnKeyInput = function(_, key, press)
+		hook(obj, "OnKeyInput", function(_, key, press)
 			if press then
 				self:OnKeyCodeTyped(gmod.GetKeyCode(key))
 				self:OnKeyCodePressed(gmod.GetKeyCode(key))
 			else
 				self:OnKeyCodeReleased(gmod.GetKeyCode(key))
 			end
-		end
+		end)
 
 		function obj:IsInsideParent()
 			if
@@ -484,7 +501,11 @@ do
 		end
 
 		function META:SetText(text)
-			self.__obj.text_internal = gmod.translation2[text] or text
+			if self.__obj.vgui_type == "textentry" then
+				self.__obj:SetText(text)
+			else
+				self.__obj.text_internal = gmod.translation2[text] or text
+			end
 		end
 	end
 
@@ -540,7 +561,7 @@ do
 
 		local w, h = self:GetContentSize()
 
-		if panel.vgui_type == "label" then
+		if panel.vgui_type == "label" or self.__obj.vgui_type == "textentry" then
 			panel:Layout(true)
 			panel:SetSize(Vec2(panel.text_inset.x + panel.Margin.x + w, panel.text_inset.y + panel.Margin.y + h))
 			panel.LayoutSize = panel:GetSize():Copy()
@@ -552,7 +573,9 @@ do
 	end
 
 	function META:GetText()
-		if self.__obj.vgui_type == "label" then
+		if self.__obj.vgui_type == "textentry" then
+			return self.__obj:GetText()
+		elseif self.__obj.vgui_type == "label" then
 			return self.__obj.text_internal
 		end
 		return ""
@@ -742,5 +765,17 @@ do
 	function META:SetPlayer(ply)
 		local steamid = ply:SteamID()
 
+	end
+
+	function META:RequestFocus()
+		self.__obj:RequestFocus()
+	end
+
+	function META:SetMultiline(b)
+		self.__obj.multiline = b
+	end
+
+	function META:IsMultiline(b)
+		return self.__obj.multiline
 	end
 end

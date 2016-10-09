@@ -2,6 +2,77 @@ function gmod.env.gameevent.Listen()
 	-- this is always on
 end
 
+local hud_element_list = {
+	"CHudAmmo",
+	"CHudBattery",
+	"CHudChat",
+	"CHudCrosshair",
+	"CHudDamageIndicator",
+	"CHudDeathNotice",
+	"CHudGeiger",
+	"CHudGMod",
+	"CHudHealth",
+	"CHudHintDisplay",
+	"CHudMenu",
+	"CHudMessage",
+	"CHudPoisonDamageIndicator",
+	"CHudSecondaryAmmo",
+	"CHudSquadStatus",
+	"CHudTrain",
+	"CHudWeapon",
+	"CHudWeaponSelection",
+	"Hiding",
+	"CHudZoom",
+	"Only",
+	"NetGraph",
+	"CTargetID",
+	"CHudHistoryResource",
+	"CHudSuitPower",
+	"CHudCloseCaption",
+	"CHudLocator",
+	"CHudFlashlight",
+	"CAchievementNotificationPanel",
+	"CHudAnimationInfo",
+	"CHUDAutoAim",
+	"CHudBonusProgress",
+	"CHudCapturePanel",
+	"CHudCommentary",
+	"CHudControlPointIcons",
+	"CHudCredits",
+	"CHudVehicle",
+	"CHudVguiScreenCursor",
+	"CHudVoiceSelfStatus",
+	"CHudVoiceStatus",
+	"CHudVote",
+	"CMapOverview",
+	"CPDumpPanel",
+	"CReplayReminderPanel",
+	"CTeamPlayHud",
+	"CHudFilmDemo",
+	"CHudGameMessage",
+	"CHudHDRDemo",
+	"CHudHintKeyDisplay",
+	"CHudPosture",
+	"CHUDQuickInfo",
+}
+
+gmod.hud_elements = {}
+
+function gmod.ToggleHUDElement(what, b)
+	llog("hud element: %s = %s", what, b)
+	if what == "CHudChat" and chathud then
+		if b then
+			chathud.Show()
+		else
+			chathud.Hide()
+		end
+	end
+end
+
+for k,v in ipairs(hud_element_list) do
+	gmod.hud_elements[v] = true
+end
+
 gmod.AddEvent("Update", function()
 	local tbl = gmod.env.gamemode.Call("CalcView", gmod.env.LocalPlayer(), gmod.env.EyePos(), gmod.env.EyeAngles(), math.deg(render.camera_3d:GetFOV()), render.camera_3d:GetNearZ(), render.camera_3d:GetFarZ())
 	if tbl then
@@ -65,8 +136,18 @@ gmod.AddEvent("PreDrawGUI", function()
 	gmod.env.gamemode.Call("PreDrawHUD")
 	gmod.env.gamemode.Call("HUDPaintBackground")
 
-	for k,v in ipairs(gmod.hud_element_list) do
-		gmod.env.gamemode.Call("HUDShouldDraw", v)
+	for k,v in ipairs(hud_element_list) do
+		if gmod.env.gamemode.Call("HUDShouldDraw", v) == false then
+			if gmod.hud_elements[v] then
+				gmod.ToggleHUDElement(v, false)
+				gmod.hud_elements[v] = false
+			end
+		else
+			if not gmod.hud_elements[v] then
+				gmod.ToggleHUDElement(v, true)
+				gmod.hud_elements[v] = true
+			end
+		end
 	end
 end)
 

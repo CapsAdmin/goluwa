@@ -14,6 +14,8 @@ function render.MaxTextureWidth() return 4096 end
 function render.MaxTextureHeight() return 4096 end
 
 
+function render.DrawScreenQuad() end
+
 function render.SuppressEngineLighting(b)
 
 end

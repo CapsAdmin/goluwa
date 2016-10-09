@@ -1,7 +1,11 @@
 function gmod.env.AddConsoleCommand(name)
-	commands.Add(name, function(line, ...)
-		gmod.env.concommand.Run(NULL, name, {...}, line)
-	end)
+	if commands.IsAdded(name) then
+		llog("gmod tried to add existing command %s", name)
+	else
+		commands.Add(name, function(line, ...)
+			gmod.env.concommand.Run(NULL, name, {...}, line)
+		end)
+	end
 end
 
 function gmod.env.RunConsoleCommand(...)

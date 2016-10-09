@@ -138,30 +138,6 @@ function gmod.Initialize()
 end
 
 function gmod.Run()
-	input.Bind("q", "+menu")
-	input.Bind("q", "-menu")
-
-	input.Bind("c", "+menu_context")
-	input.Bind("c", "-menu_context")
-
-	input.Bind("x", "+voicerecord", function()
-		gmod.env.gamemode.Call("PlayerStartVoice", gmod.env.LocalPlayer())
-	end)
-	input.Bind("x", "-voicerecord", function()
-		gmod.env.gamemode.Call("PlayerEndVoice", gmod.env.LocalPlayer())
-	end)
-
-	input.Bind("t", "messagemode")
-	input.Bind("u", "messagemode2")
-
-	input.Bind("tab", "+score", function()
-		gmod.env.gamemode.Call("ScoreboardShow")
-	end)
-
-	input.Bind("tab", "-score", function()
-		gmod.env.gamemode.Call("ScoreboardHide")
-	end)
-
 	for dir in vfs.Iterate(gmod.dir .. "addons/", true, true) do
 		local dir = gmod.dir .. "addons/" ..  dir
 		include(dir .. "/lua/includes/extensions/*")
@@ -180,6 +156,8 @@ function gmod.Run()
 
 	gmod.env.gamemode.Call("Initialize")
 	gmod.env.gamemode.Call("InitPostEntity")
+
+	include("lua/libraries/gmod/key_bindings.lua")
 end
 
 commands.Add("ginit", function()

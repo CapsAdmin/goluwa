@@ -107,3 +107,7 @@ do
 		return false
 	end
 end
+
+function gmod.env.render.SetMaterial(mat)
+	render.SetMaterial(mat.__obj)
+end

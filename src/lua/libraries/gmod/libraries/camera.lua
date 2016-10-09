@@ -39,6 +39,10 @@ function cam.End3D()
 
 end
 
+function cam.End2D()
+
+end
+
 function gmod.env.EyeVector()
 	return gmod.env.Vector(render.camera_3d:GetAngles():GetForward())
 end
