@@ -7,6 +7,9 @@ local PLUGIN = {
 ide.config.keymap[ID.STARTDEBUG] = nil
 ide.config.keymap[ID.RUN] = nil
 
+local BRANCH = nil
+local DEBUG = false
+
 function PLUGIN:Setup()
 	local META = {}
 	META.__index = META
@@ -255,6 +258,18 @@ function PLUGIN:StartProcess(id)
 		wx.wxSetEnv(k, v)
 	end
 
+	if BRANCH then
+		wx.wxSetEnv("BRANCH", "_" .. BRANCH)
+	else
+		wx.wxUnsetEnv("BRANCH")
+	end
+
+	if DEBUG then
+		wx.wxSetEnv("DEBUG", "1")
+	else
+		wx.wxUnsetEnv("DEBUG")
+	end
+
 	local tb = ide:GetToolBar()
 
 	console.pid = CommandLineRun(
@@ -306,8 +321,6 @@ function PLUGIN:StopProcess(id)
 		end
 	end
 end
-
-local MAKE_ID = NewID()
 
 function PLUGIN:onRegister()
 	self.consoles = {}
@@ -368,8 +381,10 @@ function PLUGIN:onRegister()
 	ide:GetUIManager():Update()
 
 	if jit.os ~= "Windows" then
-		local menu = ide:FindTopMenu("&Project")
-		menu:Append(MAKE_ID, "Make")
+		local project_menu = ide:FindTopMenu("&Project")
+
+		local MAKE_ID = NewID()
+		project_menu:Append(MAKE_ID, "Make")
 
 		ide:GetMainFrame():Connect(MAKE_ID, wx.wxEVT_COMMAND_MENU_SELECTED, function()
 			ide:GetOutput():SetFocus()
@@ -377,7 +392,39 @@ function PLUGIN:onRegister()
 				ide:GetOutput():Print(s)
 			end)
 		end)
+
+		local branches = {}
+
+		table.insert(branches, {
+			wx_id = NewID(),
+			branch_id = nil,
+			name = "LuaJIT",
+		})
+
+		for _, path in pairs(FileSysGetRecursive("../bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/", false, "luajit_*")) do
+			local id = path:match(".+/luajit_(.+)")
+
+			table.insert(branches, {
+				wx_id = ID(id),
+				branch_id = id,
+				name = id:gsub("_", " "),
+			})
+		end
+
+		local branch_menu = ide:MakeMenu()
+
+		for i, info in pairs(branches) do
+			branch_menu:AppendRadioItem(info.wx_id, info.name)
+			ide:GetMainFrame():Connect(info.wx_id, wx.wxEVT_COMMAND_MENU_SELECTED, function()
+				BRANCH = info.branch_id
+				DEBUG = info.name:find("debug") ~= nil
+				ide:Print("selected branch ", info.name)
+			end)
+		end
+
+		project_menu:AppendSubMenu(branch_menu, "LuaJIT Branch")
 	end
+
 end
 
 function PLUGIN:onUnregister()

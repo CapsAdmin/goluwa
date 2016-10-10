@@ -53,18 +53,20 @@ if [ "$1" == "launch"  ] || [ "$1" == "" ]; then
 	#lookup shared libraries in "goluwa/data/bin/linux_${ARCH}/" first
 	export LD_LIBRARY_PATH=".:$LD_LIBRARY_PATH"
 
+	executable="luajit$BRANCH"
+
 	if [ ! -z "$DEBUG" ]; then
-		launch="gdb -ex=r --args luajit"
-	elif [ -x "luajit" ]; then
-		launch="./luajit"
+		launch="gdb -ex=r --args $executable"
+	elif [ -x "$executable" ]; then
+		launch="./$executable"
 	elif [ -f "/lib64/ld-linux-x86-64.so.2" ]; then
 		# i don't know if this is stupid or not
 		# but it's so i can execute luajt without the need for execute permissions
 		# on a non ext filesystem (like on a usb stick with fat32)
-		launch="/lib64/ld-linux-x86-64.so.2 ./luajit"
+		launch="/lib64/ld-linux-x86-64.so.2 ./$executable"
 	else
-		echo "don't know how to launch, trying ./luajit"
-		launch="./luajit"
+		echo "don't know how to launch, trying ./$executable"
+		launch="./$executable"
 	fi
 
 	eval "$launch $2 ../../../src/lua/init.lua"
