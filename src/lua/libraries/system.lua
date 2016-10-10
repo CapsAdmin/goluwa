@@ -1217,7 +1217,7 @@ if sdl then
 		local bit_flags = 0
 
 		for _, v in pairs(flags) do
-			bit_flags = bit.bor(bit_flags, flags_to_enums[v])
+			bit_flags = bit.bor(bit_flags, tonumber(flags_to_enums[v]))
 		end
 
 		if not width or not height then

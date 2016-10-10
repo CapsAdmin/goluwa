@@ -115,6 +115,12 @@ do
 		--sizemcode = X64 and 64 or 32, -- Size of each machine code area in KBytes (Windows: 64K)
 	}
 
+	if current.minstitch then
+		if jit.version:find("LuaJIT 2.0", nil, true) then
+			current.minstitch = nil
+		end
+	end
+
 	function jit.getoptions()
 		return current
 	end

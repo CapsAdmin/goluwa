@@ -49,7 +49,7 @@ function render.LoadModel(path, callback, callback2, on_fail)
 					table.insert(out, mesh)
 				end
 			elseif assimp then
-				local flags = bit.bor(assimp.e.TargetRealtime_Quality, assimp.e.ConvertToLeftHanded)
+				local flags = bit.bor(tonumber(assimp.e.TargetRealtime_Quality), tonumber(assimp.e.ConvertToLeftHanded))
 				--[[
 					bit.bor(
 						assimp.e.CalcTangentSpace,

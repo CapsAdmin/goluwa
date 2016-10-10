@@ -667,7 +667,7 @@ function utility.TableToFlags(flags, valid_flags)
 		if not flag then
 			error("invalid flag", 2)
 		end
-		out = bit.band(out, flag)
+		out = bit.band(out, tonumber(flag))
 	end
 
 	return out
