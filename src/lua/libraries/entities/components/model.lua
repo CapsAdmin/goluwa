@@ -146,7 +146,7 @@ if GRAPHICS then
 	function META:Draw(what, dist)
 		render.camera_3d:SetWorld(self.tr:GetMatrix())
 
-		if self.corners and what then
+		--[[if self.corners and what then
 			local time = system.GetElapsedTime()
 			self.next_visible[what] = self.next_visible[what] or 0
 			self.visible[what] = self.visible[what] or {}
@@ -165,7 +165,7 @@ if GRAPHICS then
 			(what == "no_cull_only" and not self.Cull) or
 			(not self.Cull or not what) or
 			self.visible[what] == nil or self.visible[what] == true
-		then
+		then]]
 			if self.MaterialOverride then
 				render_SetMaterial(self.MaterialOverride)
 				for _, model in ipairs(self.sub_models) do
@@ -177,7 +177,7 @@ if GRAPHICS then
 					model.mesh:Draw()
 				end
 			end
-		end
+		--end
 	end
 end
 
