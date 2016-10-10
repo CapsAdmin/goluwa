@@ -79,7 +79,7 @@ for meta_name, functions in pairs(data.meta) do
 	end
 
 	for func_name in pairs(functions) do
-		env._R[meta_name][func_name] = env._R[meta_name][func_name] or function(...) logf("gmod NYI: %s:%s(%s)\n", meta_name, func_name, table.concat(tostring_args(...), ",")) end
+		env._R[meta_name][func_name] = env._R[meta_name][func_name] or function(...) wlog("NYI: %s:%s(%s)", meta_name, func_name, table.concat(tostring_args(...), ","), 2) end
 	end
 
 	gmod.objects[meta_name] = gmod.objects[meta_name] or {}
@@ -90,7 +90,7 @@ for lib_name, functions in pairs(data.functions) do
 	env[lib_name] = env[lib_name] or {}
 
 	for func_name in pairs(functions) do
-		env[lib_name][func_name] = env[lib_name][func_name] or function(...) logf(("gmod NYI: %s.%s(%s)\n"):format(lib_name, func_name, table.concat(tostring_args(...), ","))) end
+		env[lib_name][func_name] = env[lib_name][func_name] or function(...) wlog(("NYI: %s.%s(%s)"):format(lib_name, func_name, table.concat(tostring_args(...), ",")), 2) end
 	end
 end
 

@@ -64,6 +64,9 @@ do
 		return vfs.GetLastModified(search_paths[where:lower()] .. path) or 0
 	end
 
+	function file.CreateDir(path, where)
+		vfs.OSCreateDirectory(search_paths.data .. path)
+	end
 end
 
 do
@@ -71,7 +74,7 @@ do
 		where = where or "data"
 		path = search_paths[where:lower()] .. path
 
-		llog("file.Open(%s, %s, %s)", R(path), how, where)
+		--llog("file.Open(%s, %s, %s)", R(path), how, where)
 
 		how = how:gsub("b", "")
 		if how == "w" then how = "write" end
@@ -82,7 +85,7 @@ do
 		if self then
 			return gmod.WrapObject(self, "File")
 		else
-			llog("file.Open failed: ", err)
+			--llog("file.Open failed: ", err)
 		end
 	end
 

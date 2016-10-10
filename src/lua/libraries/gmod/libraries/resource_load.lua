@@ -29,3 +29,7 @@ end
 function gmod.env.resource.AddFile()
 
 end
+
+function gmod.env.game.AddParticles()
+
+end

@@ -6,30 +6,30 @@ function gmod.env.Matrix(tbl)
 	local self = {}
 
 	if type(tbl) == "cdata" then
-		self.p = tbl
+		self.ptr = tbl
 	elseif type(tbl) == "table" then
-		self.p = Matrix44()
-		self.p.m00 = tbl[1][1]
-		self.p.m01 = tbl[1][2]
-		self.p.m02 = tbl[1][3]
-		self.p.m03 = tbl[1][4]
+		self.ptr = Matrix44()
+		self.ptr.m00 = tbl[1][1]
+		self.ptr.m01 = tbl[1][2]
+		self.ptr.m02 = tbl[1][3]
+		self.ptr.m03 = tbl[1][4]
 
-		self.p.m10 = tbl[2][1]
-		self.p.m11 = tbl[2][2]
-		self.p.m12 = tbl[2][3]
-		self.p.m13 = tbl[2][4]
+		self.ptr.m10 = tbl[2][1]
+		self.ptr.m11 = tbl[2][2]
+		self.ptr.m12 = tbl[2][3]
+		self.ptr.m13 = tbl[2][4]
 
-		self.p.m20 = tbl[3][1]
-		self.p.m21 = tbl[3][2]
-		self.p.m22 = tbl[3][3]
-		self.p.m23 = tbl[3][4]
+		self.ptr.m20 = tbl[3][1]
+		self.ptr.m21 = tbl[3][2]
+		self.ptr.m22 = tbl[3][3]
+		self.ptr.m23 = tbl[3][4]
 
-		self.p.m30 = tbl[4][1]
-		self.p.m31 = tbl[4][2]
-		self.p.m32 = tbl[4][3]
-		self.p.m33 = tbl[4][4]
+		self.ptr.m30 = tbl[4][1]
+		self.ptr.m31 = tbl[4][2]
+		self.ptr.m32 = tbl[4][3]
+		self.ptr.m33 = tbl[4][4]
 	else
-		self.p = Matrix44()
+		self.ptr = Matrix44()
 	end
 
 	return setmetatable(self, META)
@@ -47,7 +47,7 @@ do
 
 	function META:GetField(r, c)
 		if tr[r] and tr[r][c] then
-			return self.p[tr[r][c]]
+			return self.ptr[tr[r][c]]
 		end
 	end
 
@@ -76,29 +76,29 @@ function META:GetUp()
 end
 
 function META:Scale(v)
-	self.p:Scale(v.x, v.y, v.z)
+	self.ptr:Scale(v.x, v.y, v.z)
 end
 
 function META:SetScale(v)
-	self.p.m00 = v.x
-	self.p.m11 = v.y
-	self.p.m22 = v.z
+	self.ptr.m00 = v.x
+	self.ptr.m11 = v.y
+	self.ptr.m22 = v.z
 end
 
 function META:GetScale()
-	return gmod.env.Vector(self.p.m00, self.p.m11, self.p.m22)-- / self.p.m33
+	return gmod.env.Vector(self.ptr.m00, self.ptr.m11, self.ptr.m22)-- / self.ptr.m33
 end
 
 function META:Translate(v)
-	self.p:Translate(v.x, v.y, v.z)
+	self.ptr:Translate(v.x, v.y, v.z)
 end
 
 function META:SetTranslation(v)
-	self.p:SetTranslation(v.x, v.y, v.z)
+	self.ptr:SetTranslation(v.x, v.y, v.z)
 end
 
 function META:GetTranslation()
-	return gmod.env.Vector(self.p.m03, self.p.m13, self.p.m23)-- / self.p.m33
+	return gmod.env.Vector(self.ptr.m03, self.ptr.m13, self.ptr.m23)-- / self.ptr.m33
 end
 
 function META:ScaleTranslation(scale)
@@ -106,35 +106,35 @@ function META:ScaleTranslation(scale)
 end
 
 function META:SetAngles(ang)
-	self.p:SetAngles(ang:GetRad())
+	self.ptr:SetAngles(ang:GetRad())
 end
 
 function META:GetAngles()
-	return self.p:GetAngles():Deg()
+	return self.ptr:GetAngles():Deg()
 end
 
 function META:Set(m)
-	self.p:Copy(m.p)
+	self.ptr:Copy(m.ptr)
 end
 
 function META:Identity()
-	self.p:Identity()
+	self.ptr:Identity()
 end
 
 do
 	local identity = Matrix44()
 
 	function META:IsIdentity()
-		return self.p == identity
+		return self.ptr == identity
 	end
 end
 
 function META:Invert()
-	self.p = self.p:GetInverse()
+	self.ptr = self.ptr:GetInverse()
 end
 
 function META:InvertTR()
-	self.p = self.p:GetInverse()
+	self.ptr = self.ptr:GetInverse()
 end
 
 function META:GetInverse()

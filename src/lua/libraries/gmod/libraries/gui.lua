@@ -495,7 +495,7 @@ do
 		function META:SetFontInternal(font)
 			self.__obj.font_internal = font or "default"
 			if not gmod.surface_fonts[self.__obj.font_internal:lower()] then
-				llog("font ", self.__obj.font_internal, " does not exist")
+				--llog("font ", self.__obj.font_internal, " does not exist")
 				self.__obj.font_internal = "default"
 			end
 		end
@@ -777,5 +777,25 @@ do
 
 	function META:IsMultiline(b)
 		return self.__obj.multiline
+	end
+
+	function META:SetFocusTopLevel()
+
+	end
+
+	function META:SetDrawLanguageIDAtLeft()
+
+	end
+
+	function META:GotoTextEnd()
+
+	end
+
+	function META:SetWorldClicker()
+
+	end
+
+	function META:FocusNext()
+
 	end
 end

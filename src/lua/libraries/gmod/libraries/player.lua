@@ -232,15 +232,6 @@ do
 		gmod.env.gamemode.Call("OnPlayerChat", ply, msg, false, not ply:Alive())
 	end)
 
-	gmod.AddEvent("KeyInput", function(key, press)
-		local ply = gmod.env.LocalPlayer()
-		if press then
-			gmod.env.gamemode.Call("KeyPress", ply, gmod.GetKeyCode(key))
-		else
-			gmod.env.gamemode.Call("KeyRelease", ply, gmod.GetKeyCode(key))
-		end
-	end)
-
 	if RELOAD then
 		for k,v in pairs(gmod.env.player.GetAll()) do
 			event.Call("ClientLeft", v.__obj, "reloading")

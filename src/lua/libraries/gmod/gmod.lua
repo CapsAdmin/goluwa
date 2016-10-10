@@ -156,8 +156,6 @@ function gmod.Run()
 
 	gmod.env.gamemode.Call("Initialize")
 	gmod.env.gamemode.Call("InitPostEntity")
-
-	include("lua/libraries/gmod/key_bindings.lua")
 end
 
 commands.Add("ginit", function()

@@ -4,7 +4,7 @@ function gmod.env.Vector(x, y, z)
 	local self = {}
 
 	if type(x) == "table" then
-		x, y, z = x.p:Unpack()
+		x, y, z = x.ptr:Unpack()
 	elseif type(x) == "cdata" then
 		x, y, z = x:Unpack()
 	elseif type(x) == "string" then
@@ -18,18 +18,18 @@ function gmod.env.Vector(x, y, z)
 	y = y or 0
 	z = z or 0
 
-	self.p = Vec3(x, y, z)
+	self.ptr = Vec3(x, y, z)
 
 	return setmetatable(self, META)
 end
 
 function META:__index(key)
 	if key == "x" then
-		return self.p.x
+		return self.ptr.x
 	elseif key == "y" then
-		return self.p.y
+		return self.ptr.y
 	elseif key == "z" then
-		return self.p.z
+		return self.ptr.z
 	end
 
 	return META[key]
@@ -37,55 +37,55 @@ end
 
 function META:__newindex(key, val)
 	if key == "x" then
-		self.p.x = val
+		self.ptr.x = val
 	elseif key == "y" then
-		self.p.y = val
+		self.ptr.y = val
 	elseif key == "z" then
-		self.p.z = val
+		self.ptr.z = val
 	end
 end
 function META:__tostring()
-	return ("Vector(%f, %f, %f)"):format(self.p:Unpack())
+	return ("Vector(%f, %f, %f)"):format(self.ptr:Unpack())
 end
 
 function META.__eq(a, b)
-	return a.p == b.p
+	return a.ptr == b.ptr
 end
 
 function META.__unm(a)
-	return gmod.env.Vector(-a.p)
+	return gmod.env.Vector(-a.ptr)
 end
 
 function META.__add(a, b)
-	return gmod.env.Vector(a.p + b.p)
+	return gmod.env.Vector(a.ptr + b.ptr)
 end
 
 function META.__sub(a, b)
-	return gmod.env.Vector(a.p - b.p)
+	return gmod.env.Vector(a.ptr - b.ptr)
 end
 
 function META.__mul(a, b)
 	if type(b) == "number" then
-		return gmod.env.Vector(a.p * b)
+		return gmod.env.Vector(a.ptr * b)
 	elseif type(a) == "number" then
-		return gmod.env.Vector(a * b.p)
+		return gmod.env.Vector(a * b.ptr)
 	end
 
-	return gmod.env.Vector(a.p * b.p)
+	return gmod.env.Vector(a.ptr * b.ptr)
 end
 
 function META.__div(a, b)
 	if type(b) == "number" then
-		return gmod.env.Vector(a.p / b)
+		return gmod.env.Vector(a.ptr / b)
 	elseif type(a) == "number" then
-		return gmod.env.Vector(a / b.p)
+		return gmod.env.Vector(a / b.ptr)
 	end
 
-	return gmod.env.Vector(a.p / b.p)
+	return gmod.env.Vector(a.ptr / b.ptr)
 end
 
 function META:ToScreen()
-	local pos,vis = math3d.WorldPositionToScreen(self.p)
+	local pos,vis = math3d.WorldPositionToScreen(self.ptr)
 	return {
 		x = pos.x,
 		y = pos.y,
@@ -94,29 +94,29 @@ function META:ToScreen()
 end
 
 function META:Zero()
-	self.p:Set(0, 0, 0)
+	self.ptr:Set(0, 0, 0)
 end
 
 function META:Cross(vec)
-	return gmod.env.Vector(self.p:Cross(vec))
+	return gmod.env.Vector(self.ptr:Cross(vec))
 end
 
 function META:Distance(vec)
-	return self.p:Distance(vec.p)
+	return self.ptr:Distance(vec.ptr)
 end
 
 function META:Dot(vec)
-	return self.p:Dot(vec.p)
+	return self.ptr:Dot(vec.ptr)
 end
 
 META.DotProduct = META.Dot
 
 function META:Normalize()
-	self.p:Normalize()
+	self.ptr:Normalize()
 end
 
 function META:GetNormalized()
-	return gmod.env.Vector(self.p:GetNormalized())
+	return gmod.env.Vector(self.ptr:GetNormalized())
 end
 
 META.GetNormal = META.GetNormalized
@@ -140,20 +140,20 @@ function META:Mul(vec)
 end
 
 function META:Angle()
-	return gmod.env.Angle(self.p:GetAngles())
+	return gmod.env.Angle(self.ptr:GetAngles())
 end
 
 function META:Length()
-	return self.p:GetLength()
+	return self.ptr:GetLength()
 end
 function META:DistToSqr(b)
-	return (self.p - b.p):GetLengthSquared()
+	return (self.ptr - b.ptr):GetLengthSquared()
 end
 
 function META:IsZero()
-	return self.p:IsZero()
+	return self.ptr:IsZero()
 end
 
 function gmod.env.LerpVector(alpha, a, b)
-	return gmod.env.Vector(a.p:GetLerped(alpha, b.p))
+	return gmod.env.Vector(a.ptr:GetLerped(alpha, b.ptr))
 end

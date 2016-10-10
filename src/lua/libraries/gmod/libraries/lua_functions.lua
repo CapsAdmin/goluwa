@@ -6,7 +6,7 @@ function gmod.env.include(path)
 		"lua/" .. path:lower()
 	})
 	if not ok then
-		logn(err, path)
+		error(err, 2)
 	end
 end
 

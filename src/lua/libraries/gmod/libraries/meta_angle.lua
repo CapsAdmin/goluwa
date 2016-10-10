@@ -4,7 +4,7 @@ function gmod.env.Angle(p, y, r)
 	local self = {}
 
 	if type(p) == "table" then
-		p, y, r = p.p:Unpack()
+		p, y, r = p.ptr:Unpack()
 	elseif type(p) == "cdata" then
 		p, y, r = p:Unpack()
 	elseif type(p) == "string" then
@@ -18,18 +18,18 @@ function gmod.env.Angle(p, y, r)
 	y = y or 0
 	r = r or 0
 
-	self.p = Ang3(p, y, r)
+	self.ptr = Ang3(p, y, r)
 
 	return setmetatable(self, META)
 end
 
 function META:__index(key)
 	if key == "p" or key == "pitch" then
-		return self.p.x
+		return self.ptr.x
 	elseif key == "y" or key == "yaw" then
-		return self.p.y
+		return self.ptr.y
 	elseif key == "r" or key == "roll" then
-		return self.p.z
+		return self.ptr.z
 	end
 
 	return META[key]
@@ -37,16 +37,16 @@ end
 
 function META:__newindex(key, val)
 	if key == "p" then
-		self.p.x = val
+		self.ptr.x = val
 	elseif key == "y" then
-		self.p.y = val
+		self.ptr.y = val
 	elseif key == "r" then
-		self.p.z = val
+		self.ptr.z = val
 	end
 end
 
 function META:__tostring()
-	return ("Angle(%f, %f, %f)"):format(self.p:Deg():Unpack())
+	return ("Angle(%f, %f, %f)"):format(self.ptr:Deg():Unpack())
 end
 
 function META.__eq(a, b)
@@ -55,46 +55,46 @@ end
 
 function META.__mul(a, b)
 	if type(b) == "number" then
-		return gmod.env.Angle(a.p * b)
+		return gmod.env.Angle(a.ptr * b)
 	end
 
-	return gmod.env.Angle(a.p * b.p)
+	return gmod.env.Angle(a.ptr * b.ptr)
 end
 
 function META.__add(a, b)
-	return gmod.env.Angle(a.p + b.p)
+	return gmod.env.Angle(a.ptr + b.ptr)
 end
 
 function META:Forward()
-	return gmod.env.Vector(self.p:GetRad():GetForward())
+	return gmod.env.Vector(self.ptr:GetRad():GetForward())
 end
 
 function META:Right()
-	return gmod.env.Vector(self.p:GetRad():GetRight())
+	return gmod.env.Vector(self.ptr:GetRad():GetRight())
 end
 
 function META:Up()
-	return gmod.env.Vector(self.p:GetRad():GetUp())
+	return gmod.env.Vector(self.ptr:GetRad():GetUp())
 end
 
 function META:IsZero()
-	return self.p:IsZero()
+	return self.ptr:IsZero()
 end
 
 function META:Normalize()
-	self.p = self.p:GetRad():GetNormalized():GetDeg()
+	self.ptr = self.ptr:GetRad():GetNormalized():GetDeg()
 end
 
 function META:Set(p, y, r)
-	self.p.x = p
-	self.p.y = y
-	self.p.z = r
+	self.ptr.x = p
+	self.ptr.y = y
+	self.ptr.z = r
 end
 
 function META:RotateAroundAxis(axis, rot)
-	self.p:RotateAroundAxis(axis.p, math.rad(rot))
+	self.ptr:RotateAroundAxis(axis.ptr, math.rad(rot))
 end
 
 function META:Zero()
-	self.p:Set(0, 0, 0)
+	self.ptr:Set(0, 0, 0)
 end

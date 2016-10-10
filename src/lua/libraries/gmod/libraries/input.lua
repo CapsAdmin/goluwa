@@ -79,12 +79,20 @@ do
 		gmod.bindings[key] = {cmd = cmd, p = p, on_press = on_press, on_release = on_release or p and on_press}
 	end
 
-	event.AddListener("KeyInput", "gmod", function(key, press)
-		if not gmod.init then return end
+
+	gmod.AddEvent("KeyInput", function(key, press)
+		local ply = gmod.env.LocalPlayer()
+
+		if press then
+			gmod.env.gamemode.Call("KeyPress", ply, gmod.GetKeyCode(key))
+		else
+			gmod.env.gamemode.Call("KeyRelease", ply, gmod.GetKeyCode(key))
+		end
 
 		local info = gmod.bindings[key] or (press and gmod.bindings["+" .. key] or gmod.bindings["-" .. key])
+
 		if info then
-			if gmod.env.gamemode.Call("PlayerBindPress", gmod.env.LocalPlayer(), info.cmd, press) ~= true then
+			if gmod.env.gamemode.Call("PlayerBindPress", ply, info.cmd, press) ~= true then
 				if press then
 					if info.on_press and (not info.p or info.p == "+") then
 						info.on_press()
