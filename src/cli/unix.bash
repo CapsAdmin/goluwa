@@ -56,7 +56,8 @@ if [ "$1" == "launch"  ] || [ "$1" == "" ]; then
 	executable="luajit$BRANCH"
 
 	if [ ! -z "$DEBUG" ]; then
-		launch="gdb -ex=r --args $executable"
+		launch="x-terminal-emulator -e \"gdb -ex=r --args $executable"
+		append="\""
 	elif [ -x "$executable" ]; then
 		launch="./$executable"
 	elif [ -f "/lib64/ld-linux-x86-64.so.2" ]; then
@@ -69,5 +70,5 @@ if [ "$1" == "launch"  ] || [ "$1" == "" ]; then
 		launch="./$executable"
 	fi
 
-	eval "$launch $2 ../../../src/lua/init.lua"
+	eval "$launch $2 ../../../src/lua/init.lua$append"
 fi
