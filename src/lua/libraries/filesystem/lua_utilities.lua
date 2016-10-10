@@ -89,7 +89,7 @@ do -- include
 			for _, path in ipairs(source) do
 				ok, err = vfs.include(path)
 				if ok == false then
-					table.insert(errors, err)
+					table.insert(errors, err .. ": " .. path)
 				else
 					break
 				end
@@ -223,7 +223,9 @@ do -- include
 			_G.FILE_EXTENSION = full_path:match(".*/.+%.(.+)")
 
 			if utility and utility.PushTimeWarning then
-				utility.PushTimeWarning()
+				if full_path:find(e.ROOT_FOLDER, nil, true) then
+					utility.PushTimeWarning()
+				end
 			end
 
 			local res
@@ -234,7 +236,9 @@ do -- include
 			end
 
 			if utility and utility.PushTimeWarning then
-				utility.PopTimeWarning("[include] " .. full_path:gsub(e.ROOT_FOLDER, ""), 0.1)
+				if full_path:find(e.ROOT_FOLDER, nil, true) then
+					utility.PopTimeWarning("[include] " .. full_path:gsub(e.ROOT_FOLDER, ""), 0.1)
+				end
 			end
 
 			_G.FILE_PATH = nil

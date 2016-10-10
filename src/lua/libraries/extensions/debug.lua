@@ -19,10 +19,10 @@ function debug.getprettysource(level, append_line, full_folder)
 	local pretty_source
 
 	if info.source:sub(1, 1) == "@" then
-		if full_folder then
-			pretty_source = info.source:sub(2)
-		else
-			pretty_source = info.source:sub(2 + #e.ROOT_FOLDER):match(".-/(.+)") or info.source:sub(2)
+		pretty_source = info.source:sub(2)
+
+		if not full_folder then
+			pretty_source = pretty_source:replace(e.ROOT_FOLDER, "")
 		end
 
 		if append_line then
@@ -30,6 +30,7 @@ function debug.getprettysource(level, append_line, full_folder)
 		end
 	else
 		pretty_source = info.source:sub(0, 25)
+
 		if pretty_source ~= info.source then
 			pretty_source = pretty_source .. "...(+"..#info.source - #pretty_source.." chars)"
 		end
