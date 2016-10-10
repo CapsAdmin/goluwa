@@ -295,7 +295,7 @@ function desire(str, ...)
 	local args = {pcall(require, str, ...)}
 
 	if not args[1] then
-		wlog("unable to require %s:\n\t%s", str, args[2]:trim())
+		wlog("unable to require %s:\n\t%s", str, args[2]:trim(), 2)
 
 		return unpack(args)
 	end
