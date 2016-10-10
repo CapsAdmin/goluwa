@@ -113,6 +113,36 @@ do
 		maxmcode = 8192,
 
 		--sizemcode = X64 and 64 or 32, -- Size of each machine code area in KBytes (Windows: 64K)
+
+		-- Constant Folding, Simplifications and Reassociation
+		fold = true,
+
+		-- Common-Subexpression Elimination
+		cse = true,
+
+		-- Dead-Code Elimination
+		dce = true,
+
+		-- Narrowing of numbers to integers
+		narrow = true,
+
+		-- Loop Optimizations (code hoisting)
+		loop = true,
+
+		-- Load Forwarding (L2L) and Store Forwarding (S2L)
+		fwd = true,
+
+		-- Dead-Store Elimination
+		dse = true,
+
+		-- Array Bounds Check Elimination
+		abc = true,
+
+		-- Allocation/Store Sinking
+		sink = true,
+
+		-- Fusion of operands into instructions
+		fuse = true,
 	}
 
 	if current.minstitch then
@@ -128,26 +158,30 @@ do
 	local sshh
 	local last = {}
 
-	function jit.setoption(option, num)
-		if not current[option] then error("not a valid option", 2) end
+	function jit.setoption(option, val)
+		if current[option] == nil then error("not a valid option", 2) end
 
-		current[option] = num
+		current[option] = val
 
-		if last[option] ~= num then
+		if last[option] ~= val then
 			local options = {}
 
 			if not sshh then
-				logn("jit option ", option, " = ", num)
+				logn("jit option ", option, " = ", val)
 			end
 
 			for k, v in pairs(current) do
-				table.insert(options, k .. "=" .. v)
+				if type(v) == "number" then
+					table.insert(options, k .. "=" .. v)
+				elseif type(v) == "boolean" then
+					table.insert(options, v and ("+" .. k) or ("-" .. k))
+				end
 			end
 
 			jit.opt.start(unpack(options))
 			jit.flush()
 
-			last[option] = num
+			last[option] = val
 		end
 	end
 	sshh = true
