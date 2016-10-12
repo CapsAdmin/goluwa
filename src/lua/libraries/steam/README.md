@@ -13,9 +13,9 @@ In these screenshots I've loaded de_bank and gm_construct. Goluwa does these ste
 
 The following source engine formats are supported:
 
-* [VPK](src/lua/libraries/filesystem/files/vpk.lua) - should be complete
-* [BSP](src/lua/libraries/steam/bsp.lua) - mostly complete for what goluwa needs
-* [VTF](src/lua/build/vtflib/libVTFLib.lua) - uses vtflib, mostly complete
-* [VMT](src/lua/libraries/steam/vmt.lua) - mostly complete
-* [MDL](src/lua/libraries/steam/mdl.lua) - no bones or animations
-* [VDF](src/lua/libraries/steam/steam.lua) - same as vmt really
+* [VPK](../libraries/filesystem/files/vpk.lua) - should be complete
+* [BSP](bsp.lua) - mostly complete for what goluwa needs
+* [VTF](../../build/vtflib/libVTFLib.lua) - uses vtflib, mostly complete
+* [VMT](vmt.lua) - mostly complete
+* [MDL](mdl.lua) - no bones or animations
+* [VDF](steam.lua) - same as vmt really
