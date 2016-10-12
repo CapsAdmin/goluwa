@@ -1,9 +1,7 @@
-#About
 Goluwa is a framework coded in LuaJIT that I use to further develop Goluwa with and satisfy my programming hobby. I don't really have any long term plans so I just code whatever I feel like coding. I'm interested in game engines and middleware for games so Goluwa ends up being something that vaguely resembles a game engine. I constantly refactor and change the api so I wouldn't recommend using Goluwa to make a game or anything like that but I'd be happy if you find code to use or learn from.
 
 ![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/goluwa.png)
 
-#features
 * [gui](src/lua/libraries/graphics/gui) with focus on automatic layout and gwen skin support
 * [markup language](src/lua/libraries/graphics/gui) used by gui and chat
 * [löve wrapper](src/lua/libraries/gmod) that lets you run löve games in goluwa
