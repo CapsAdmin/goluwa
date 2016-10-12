@@ -4,6 +4,20 @@ local ffibuild = require("ffibuild")
 local bin_dir = "../../../../data/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower()
 
 local corsix_patches = {
+[[diff --git a/src/lj_dispatch.c b/src/lj_dispatch.c
+index e5aa495..ad70cba 100644
+--- a/src/lj_dispatch.c
++++ b/src/lj_dispatch.c
+@@ -267,7 +267,7 @@ int luaJIT_setmode(lua_State *L, int idx, int mode)
+   case LUAJIT_MODE_FUNC:
+   case LUAJIT_MODE_ALLFUNC:
+   case LUAJIT_MODE_ALLSUBFUNC: {
+-    cTValue *tv = idx == 0 ? frame_prev(L->base-1) :
++    cTValue *tv = idx == 0 ? frame_prev(L->base-1)-LJ_FR2 :
+ 		  idx > 0 ? L->base + (idx-1) : L->top + idx;
+     GCproto *pt;
+     if ((idx == 0 || tvisfunc(tv)) && isluafunc(&gcval(tv)->fn))
+]],
 [[diff --git a/src/lj_record.c b/src/lj_record.c
 index 76699a9..b2bc721 100644
 --- a/src/lj_record.c
@@ -24,46 +38,132 @@ index 76699a9..b2bc721 100644
 index d542959..4757f5a 100644
 --- a/src/lj_target_x86.h
 +++ b/src/lj_target_x86.h
-@@ -31,7 +31,7 @@ enum {
-   FPRDEF(RIDENUM)              /* Floating-point registers (FPRs). */
+@@ -35,7 +35,7 @@ enum {
+   GPRDEF(RIDENUM)		/* General-purpose registers (GPRs). */
+   FPRDEF(RIDENUM)		/* Floating-point registers (FPRs). */
    RID_MAX,
-   RID_MRM = RID_MAX,           /* Pseudo-id for ModRM operand. */
--  RID_RIP = RID_MAX+1,         /* Pseudo-id for RIP (x64 only). */
-+  RID_RIP = RID_MAX+5,         /* Pseudo-id for RIP (x64 only). */
-
-   /* Calling conventions. */
-   RID_SP = RID_ESP,
+-  RID_MRM = RID_MAX,		/* Pseudo-id for ModRM operand. */
++  RID_MRM = RID_MAX+5,		/* Pseudo-id for ModRM operand. */
+ #if LJ_GC64
+   RID_RIP = 0x25,		/* Pseudo-id for RIP. */
+ #endif
 ]]
 }
+
+local vector_patch = {[==[diff --git a/src/lib_ffi.c b/src/lib_ffi.c
+index 2fb3a32..b6ec45a 100644
+--- a/src/lib_ffi.c
++++ b/src/lib_ffi.c
+@@ -825,8 +825,6 @@ LJLIB_CF(ffi_load)
+   return 1;
+ }
+
+-#include <intrin.h>
+-
+ static MSize getcdvecsz(CTState *cts, CType *ct)
+ {
+   if(ctype_ispointer(ct->info) && !ctype_isvector(ct->info)){
+@@ -844,7 +842,7 @@ static MSize getcdvecsz(CTState *cts, CType *ct)
+
+ LJLIB_CF(ffi_vtest)	LJLIB_REC(.)
+ {
+-  CTState *cts = ctype_cts(L);
++  /*CTState *cts = ctype_cts(L);
+   GCcdata *cd1 = ffi_checkcdata(L, 1);
+   GCcdata *cd2 = ffi_checkcdata(L, 2);
+   CType *ct1 = ctype_raw(cts, cd1->ctypeid);
+@@ -868,13 +866,14 @@ LJLIB_CF(ffi_vtest)	LJLIB_REC(.)
+   if (vecsz == 16) {
+     result = _mm_testz_si128(_mm_loadu_si128((__m128i*)v1), _mm_loadu_si128((__m128i*)v2));
+   } else {
+-    result = _mm256_testz_si256(_mm256_castps_si256(_mm256_loadu_ps((float*)v1)),
++    result = _mm256_testz_si256(_mm256_castps_si256(_mm256_loadu_ps((float*)v1)),
+                                 _mm256_castps_si256(_mm256_loadu_ps((float*)v2)));
+   }
+
+   setboolV(&G(L)->tmptv2, !result);
+   setboolV(L->top++, !result);
+-  return 1;
++  return 1;*/
++  return 0;
+ }
+
+ LJLIB_PUSH(top-4) LJLIB_SET(C)
+diff --git a/src/lj_cdata.c b/src/lj_cdata.c
+index a5b9d1d..4da8b1b 100644
+--- a/src/lj_cdata.c
++++ b/src/lj_cdata.c
+@@ -13,7 +13,6 @@
+ #include "lj_ctype.h"
+ #include "lj_cconv.h"
+ #include "lj_cdata.h"
+-#include <intrin.h>
+
+ /* -- C data allocation --------------------------------------------------- */
+
+@@ -60,7 +59,7 @@ GCcdata *LJ_VECTORCALL lj_cdata_newv128(lua_State *L, CTypeID id, __m128 v)
+ GCcdata *LJ_VECTORCALL lj_cdata_newv256(lua_State *L, CTypeID id, __m256 v)
+ {
+   GCcdata *cd = lj_cdata_newv(L, id, 32, 5);
+-  _mm256_storeu_ps((float*)cdataptr(cd), v);
++  //_mm256_storeu_ps((float*)cdataptr(cd), v);
+   return cd;
+ }
+
+diff --git a/src/lj_def.h b/src/lj_def.h
+index 4c9ab4c..eefc4ff 100644
+--- a/src/lj_def.h
++++ b/src/lj_def.h
+@@ -320,7 +320,7 @@ static LJ_AINLINE uint32_t lj_getu32(const void *v)
+ #define LJ_FASTCALL
+ #endif
+ #ifndef LJ_VECTORCALL
+-#define LJ_VECTORCALL __vectorcall
++#define LJ_VECTORCALL
+ #endif
+ #ifndef LJ_NORET
+ #define LJ_NORET
+]==]}
 
 local repos = {
 	{
 		author = "mike",
 		url = "https://github.com/LuaJIT/LuaJIT",
-		branch = "master",
+		branch = "v2.1",
+		flags = {"LUAJIT_ENABLE_GC64", "LUAJIT_ENABLE_LUA52COMPAT"},
+		patches = corsix_patches,
 	},
 	{
 		author = "mike",
 		url = "https://github.com/LuaJIT/LuaJIT",
 		branch = "v2.1",
-		flags = {"LUAJIT_ENABLE_GC64", "LUAJIT_ENABLE_LUA52COMPAT"}
+		flags = {"LUAJIT_ENABLE_LUA52COMPAT"}
+	},
+
+	{
+		url = "https://github.com/fsfod/LuaJIT",
+		branch = "intrinsicpr",
+		flags = {"LUAJIT_ENABLE_LUA52COMPAT"}
 	},
 	{
-		url = "https://github.com/corsix/LuaJIT",
-		branch = "x64",
-		flags = {"LUAJIT_ENABLE_GC64", "LUAJIT_ENABLE_LUA52COMPAT"},
-		patches = corsix_patches,
+		url = "https://github.com/fsfod/LuaJIT",
+		branch = "vectors",
+		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
+		patch = vector_patch,
 	},
 	{
-		url = "https://github.com/corsix/LuaJIT",
-		branch = "newgc",
-		flags = {"LUAJIT_ENABLE_GC64", "LUAJIT_ENABLE_LUA52COMPAT"},
-		patches = corsix_patches,
+		url = "https://github.com/fsfod/LuaJIT",
+		branch = "gcarena",
+		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
 	},
 	{
 		url = "https://github.com/corsix/LuaJIT",
 		branch = "newgc",
 		flags = {"LUAJIT_ENABLE_LUA52COMPAT"}
+	},
+	{
+		url = "https://github.com/corsix/LuaJIT",
+		branch = "newgc",
 	},
 }
 
@@ -117,8 +217,8 @@ local function build(info, extra_flags, extra_id)
 
 	if info.patches then
 		for i, patch in ipairs(info.patches) do
-			os.execute("mkdir -r " .. dir)
-			local f = io.open(dir .. "/" .. i .. ".patch", "wb")
+			os.execute("mkdir -p " .. dir)
+			local f = assert(io.open(dir .. "/" .. i .. ".patch", "wb"))
 			f:write(patch)
 			f:close()
 			patch_cmd = patch_cmd .. "git -C ./".. dir .. " apply " .. i .. ".patch; "
@@ -137,6 +237,6 @@ end
 
 for _, info in pairs(repos) do
 	build(info)
-	build(info, {"LUAJIT_USE_GDBJIT", "CCDEBUG=-g"}, "debug")
-	build(info, {"LUAJIT_USE_GDBJIT", "LUA_USE_ASSERT", "CCDEBUG=-g"}, "debug-assert")
+	build(info, {"LUAJIT_USE_GDBJIT", "CCDEBUG=-g", "CCOPT=-fomit-frame-pointer"}, "debug")
+	build(info, {"LUAJIT_USE_GDBJIT", "LUA_USE_ASSERT", "CCDEBUG=-g", "CCOPT=-fomit-frame-pointer"}, "debug-assert")
 end
