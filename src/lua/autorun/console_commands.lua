@@ -1,3 +1,7 @@
+commands.Add("gc", function()
+	collectgarbage()
+	logn(utility.FormatFileSize(collectgarbage("count")*1024))
+end)
 commands.Add("scene_info", function()
 	logf("%s models\n", #render.scene_3d)
 
