@@ -1,3 +1,17 @@
+In goluwa these libraries are being used:
+
+* [OpenGL](http://www.opengl.org/) - graphics
+* [SDL](https://www.libsdl.org/) - window and input handler
+* [OpenAL Soft](http://kcat.strangesoft.net/openal.html) - sound library
+* [FreeType](http://www.freetype.org/) - font decoding
+* [Libsndfile](http://www.mega-nerd.com/libsndfile/) - sound decoding
+* [Freeimage](http://freeimage.sourceforge.net/) - image decoding
+* [vtflib](https://github.com/panzi/VTFLib/) - source engine texture decoding
+* [ncurses](https://www.gnu.org/software/ncurses/) - console when not using the ide
+* [Assimp](https://github.com/assimp/assimp) - model decoding
+* [Ode](http://www.ode.org/) - physics engine
+* [ENet](https://github.com/lsalzman/enet) - client <=> server networking
+
 ## simple example:
 
 ```lua

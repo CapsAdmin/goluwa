@@ -1,66 +1,28 @@
-Goluwa is a framework coded entirely in LuaJIT that I use to satisfy my programming hobby and further develop Goluwa with. I don't really have any big plans so I just code whatever I feel like coding. I'm interested in game engines and middleware for games so Goluwa ends up being something that vaguely resembles a game engine. I constantly refactor and change the api so I wouldn't recommend using Goluwa to make a game or anything like that but I'd be happy if you find code to use or learn from.
+#About
+Goluwa is a framework coded in LuaJIT that I use to further develop Goluwa with and satisfy my programming hobby. I don't really have any long term plans so I just code whatever I feel like coding. I'm interested in game engines and middleware for games so Goluwa ends up being something that vaguely resembles a game engine. I constantly refactor and change the api so I wouldn't recommend using Goluwa to make a game or anything like that but I'd be happy if you find code to use or learn from.
 
-I mainly use and develop this on Linux so windows support isn't high priority even though it should work there.
+![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/goluwa.png)
 
-I use [ffibuild](https://github.com/CapsAdmin/ffibuild) to build ffi bindings for these libraries:
+#Features
+* [ffi build system](https://github.com/CapsAdmin/goluwa/tree/master/src/lua/build) to automatically build cdef and lua bindings.
+* [gui](src/lua/libraries/graphics/gui) with focus on automatic layout and gwen skin support
+* [markup language](src/lua/libraries/graphics/gui) used by gui and chat
+* [löve wrapper](src/lua/libraries/lovemu) that lets you run löve games in goluwa
+* [glua wrapper](src/lua/libraries/gmod) that lets you run garrysmod lua in goluwa
+* [enitity editor](src/lua/autorun/graphics) similar to the [pac3 editor](http://steamcommunity.com/sharedfiles/filedetails/?id=104691717)
+* [filesystem](src/lua/libraries/filesystem) with the ability to mount and treat many archive formats as directories 
+* all assets can be loaded from the internet using urls.
+* fonts can be loaded directly from google webfont, dafont and other places for prototyping.
+* lots of model and image formats supported for prototyping. including [source engine formats](src/lua/libraries/steam)
+* most code can be reloaded without the need to restart.
+* tight integration with zerobrane
 
-* [OpenGL](http://www.opengl.org/) - graphics
-* [SDL](https://www.libsdl.org/) - window and input handler
-* [OpenAL Soft](http://kcat.strangesoft.net/openal.html) - sound library
-* [FreeType](http://www.freetype.org/) - font decoding
-* [Libsndfile](http://www.mega-nerd.com/libsndfile/) - sound decoding
-* [Freeimage](http://freeimage.sourceforge.net/) - image decoding
-* [vtflib](https://github.com/panzi/VTFLib/) - source engine texture decoding
-* [ncurses](https://www.gnu.org/software/ncurses/) - console
-* [Assimp](https://github.com/assimp/assimp) - model decoding
-* [Bullet3](https://github.com/bulletphysics/bullet3) - physics engine (needs a c wrapper)
-* [ENet](https://github.com/lsalzman/enet) - networking library targeted at games
+I mainly use and develop this on Linux so windows support isn't high priority even though it should work there. It may also work on OSX but I can't test rendering as I'm limited to using mac in a vm.
 
-GUI:
-
-![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/zsnes_load.png)
-![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/gui_skins.png)
-![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/esheep_eorange.png)
-
-Similar to derma/gwen in gmod. It's also compatible with gwen skins. The blue skin tries to be identical to zsnes which is only used in the main menu.
-
-Source engine content:
-
-![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/de_bank.png)
-![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/gm_construct.png)
-
-Here I've loaded a dear esther and hl2 ep2 map. Goluwa will figure out where your steam libraries are, mount the game's vpk files and the required source games, read the BSP, VTF, VMT, MDL, etc files and load the assets. This is all very WIP but somewhat works.
-
-Entity editor:
-
-![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/amiga_ball_ssr.png)
-![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/gates.png)
-![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/number_slider.gif)
-
-It's sort of similar to PAC3 (a character editor I made for Garry's Mod). All objects have properties and some of them can be marked for being storable. If they are you can edit them with this editor.
-
-Löve wrapper:
-
-![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/love_mrrescue.png)
-![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/love_sienna.png)
-![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/love_sienna_3d.jpg)
-
-So you can run games made in Löve for some reason. The first game is [Mr. Rescue](https://tangramgames.itch.io/mrrescue) and the second one is [Sienna](https://tangramgames.itch.io/sienna) (Both created by [Tangram Games](http://tangramgames.dk/)). As with almost everything in Goluwa it's WIP. Some games work and some games don't.
-
-Markup language:
-
-![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/markup.png)
-![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/black_hole_tag.gif)
-![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/gravity_smileys.gif)
-
-This is used by the GUI and chat. It has lots of tags to change colors, rotation, offsets, fonts etc.
-
-Feature highlights:
-* All assets can be loaded from the internet using urls.
-* Fonts can be loaded from google webfont, dafont and other places.
-* Lots of model and image formats supported for prototyping.
-* Most code can be reloaded without the need to restart.
-* Löve wrapper to run löve games.
-* Source engine asset compatible. (So you can load source engine maps and models)
-* GUI that is compatible with gwen skins and has an extensive layout system.
-* GLua wrapper to run gmod scripts (mostly client stuff at the moment)
+#Credits
+* [Malkia](https://github.com/malkia) - [ufo](https://github.com/malkia/ufo) was the source inspiration
+* [Ronny](http://steamcommunity.com/id/76561197990112245/) - helped me making the gui when it was made for [oohh](https://github.com/CapsAdmin/oohh)
+* [Morten Erlandsen](https://github.com/mortenae) - provided help and code with BSP (especially the displacement bit) and supporting linux early on
+* [Leandro Fonseca](https://github.com/Shell64) - started and worked on lovemu early on and has helped with explaining how löve works
+* [Somepotato](https://github.com/Someguynamedpie) - started proper font support (mainly using a font atlas)
+* [ZeqMacaw](http://steamcommunity.com/id/zeqmacaw) - the source engine mdl decoding code was based on the [CrowbarTool](http://steamcommunity.com/groups/CrowbarTool)

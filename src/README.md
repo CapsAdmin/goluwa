@@ -1,4 +1,4 @@
-This directory is mounted to the parent folder.
+This directory is mounted to the root directory.
 
 * goluwa/src/lua/*
 * goluwa/myaddon/lua/*
@@ -9,11 +9,11 @@ meaning `vfs.Find("lua/*")` would look in both `goluwa/src/lua/*` and `goluwa/my
 
 ### [lua/](lua/)
 
-The lua source code used in goluwa.
+The lua source code
 
 
 ### [cli/](cli/)
-Platform specific launch and build scripts.
+Platform specific launch scripts. It's mostly for downloading requried binaries and launching luajit with the proper init.lua file.
 
 ### [languages/](languages/)
 Language translation data used the gui and other things.
