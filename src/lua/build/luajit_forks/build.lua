@@ -3,53 +3,6 @@ local ffibuild = require("ffibuild")
 
 local bin_dir = "../../../../data/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower()
 
-local corsix_patches = {
-[[diff --git a/src/lj_dispatch.c b/src/lj_dispatch.c
-index e5aa495..ad70cba 100644
---- a/src/lj_dispatch.c
-+++ b/src/lj_dispatch.c
-@@ -267,7 +267,7 @@ int luaJIT_setmode(lua_State *L, int idx, int mode)
-   case LUAJIT_MODE_FUNC:
-   case LUAJIT_MODE_ALLFUNC:
-   case LUAJIT_MODE_ALLSUBFUNC: {
--    cTValue *tv = idx == 0 ? frame_prev(L->base-1) :
-+    cTValue *tv = idx == 0 ? frame_prev(L->base-1)-LJ_FR2 :
- 		  idx > 0 ? L->base + (idx-1) : L->top + idx;
-     GCproto *pt;
-     if ((idx == 0 || tvisfunc(tv)) && isluafunc(&gcval(tv)->fn))
-]],
-[[diff --git a/src/lj_record.c b/src/lj_record.c
-index 76699a9..b2bc721 100644
---- a/src/lj_record.c
-+++ b/src/lj_record.c
-@@ -1765,6 +1765,10 @@ static void rec_varg(jit_State *J, BCReg dst, ptrdiff_t nresults)
-   int32_t numparams = J->pt->numparams;
-   ptrdiff_t nvararg = frame_delta(J->L->base-1) - numparams - 1 - LJ_FR2;
-   lua_assert(frame_isvarg(J->L->base-1));
-+#if LJ_FR2
-+  if (dst > J->maxslot)
-+    J->base[dst-1] = 0;
-+#endif
-   if (J->framedepth > 0) {  /* Simple case: varargs defined on-trace. */
-     ptrdiff_t i;
-     if (nvararg < 0) nvararg = 0;
-]],
-[[diff --git a/src/lj_target_x86.h b/src/lj_target_x86.h
-index d542959..4757f5a 100644
---- a/src/lj_target_x86.h
-+++ b/src/lj_target_x86.h
-@@ -35,7 +35,7 @@ enum {
-   GPRDEF(RIDENUM)		/* General-purpose registers (GPRs). */
-   FPRDEF(RIDENUM)		/* Floating-point registers (FPRs). */
-   RID_MAX,
--  RID_MRM = RID_MAX,		/* Pseudo-id for ModRM operand. */
-+  RID_MRM = RID_MAX+5,		/* Pseudo-id for ModRM operand. */
- #if LJ_GC64
-   RID_RIP = 0x25,		/* Pseudo-id for RIP. */
- #endif
-]]
-}
-
 local vector_patch = {[==[diff --git a/src/lib_ffi.c b/src/lib_ffi.c
 index 2fb3a32..b6ec45a 100644
 --- a/src/lib_ffi.c
@@ -131,7 +84,6 @@ local repos = {
 		url = "https://github.com/LuaJIT/LuaJIT",
 		branch = "v2.1",
 		flags = {"LUAJIT_ENABLE_GC64", "LUAJIT_ENABLE_LUA52COMPAT"},
-		patches = corsix_patches,
 	},
 	{
 		author = "mike",
@@ -139,8 +91,7 @@ local repos = {
 		branch = "v2.1",
 		flags = {"LUAJIT_ENABLE_LUA52COMPAT"}
 	},
-
-	{
+	--[[{
 		url = "https://github.com/fsfod/LuaJIT",
 		branch = "intrinsicpr",
 		flags = {"LUAJIT_ENABLE_LUA52COMPAT"}
@@ -155,7 +106,7 @@ local repos = {
 		url = "https://github.com/fsfod/LuaJIT",
 		branch = "gcarena",
 		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
-	},
+	},]]
 	{
 		url = "https://github.com/corsix/LuaJIT",
 		branch = "newgc",
