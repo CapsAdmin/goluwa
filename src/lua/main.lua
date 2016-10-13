@@ -22,7 +22,7 @@ if audio then
 	audio.Initialize()
 end
 
-if CURSES then
+if CURSES and repl then
 	repl.Initialize()
 end
 

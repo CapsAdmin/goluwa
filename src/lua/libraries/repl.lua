@@ -1,6 +1,9 @@
 local repl = _G.repl or {}
 
-local curses = require("libncurses")
+local curses = desire("libncurses")
+
+if not curses then return end
+
 local ffi = require("ffi")
 
 local log_history = {}
