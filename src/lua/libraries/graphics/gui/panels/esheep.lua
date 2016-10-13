@@ -66,7 +66,7 @@ function META:CheckCollision()
 
 	self.on_ground = false
 
-	local pos, found = self.Parent:RayCast(self, self.Position.x, h - self.Size.y, true, true)
+	local pos, found = self:RayCast(Vec2(self.Position.x, h - self.Size.y))
 
 	if self.Position.y > pos.y - 2 then
 		self.on_ground = true
@@ -80,7 +80,7 @@ function META:CheckCollision()
 		return
 	end
 
-	local pos, found = self.Parent:RayCast(self, self.Position.x, 1, true, true)
+	local pos, found = self:RayCast(Vec2(self.Position.x, 1))
 
 	if self.Position.y < pos.y then
 		if length > faint_vel then self.faint_time = length/5  self.faint = system.GetElapsedTime() + self.faint_time end
@@ -90,7 +90,7 @@ function META:CheckCollision()
 		return
 	end
 
-	local pos, found = self.Parent:RayCast(self, w - self.Size.x, self.Position.y, true, true)
+	local pos, found = self:RayCast(Vec2(w - self.Size.x, self.Position.y))
 
 	if self.Position.x > pos.x - 4 then
 		if length > faint_vel then self.faint_time = length/5 self.faint = system.GetElapsedTime() + self.faint_time end
@@ -100,7 +100,7 @@ function META:CheckCollision()
 		return
 	end
 
-	local pos, found = self.Parent:RayCast(self, 1, self.Position.y, true, true)
+	local pos, found = self:RayCast(Vec2(1, self.Position.y))
 
 	if self.Position.x < pos.x + 4 then
 		if length > faint_vel then self.faint_time = length/5 self.faint = system.GetElapsedTime() + self.faint_time end

@@ -1572,26 +1572,27 @@ do -- layout
 		return math.abs(a.point-origin) < math.abs(b.point-origin)
 	end
 
-	function META:RayCast(panel, x, y)
-		local dir_x = x - panel.Position.x
-		local dir_y = y - panel.Position.y
+	function META:RayCast(stop_pos)
+		local parent = self:GetParent()
+
+		local dir = stop_pos - self.Position
 
 		local found
 
-		if panel.layout_collide then
+		if self.layout_collide then
 			found = {}
 			local i = 1
 
-			local panel_left, panel_top, panel_right, panel_bottom = panel:GetWorldRectFast()
+			local panel_left, panel_top, panel_right, panel_bottom = self:GetWorldRectFast()
 
-			for _, child in ipairs(self:GetChildren()) do
+			for _, child in ipairs(parent:GetChildren()) do
 				if
-					child ~= panel and
+					child ~= self and
 					(child.laid_out_x or child.laid_out_y) and
 					child.Visible and
 					not child.ThreeDee and
 					not child.IgnoreLayout and
-					(panel.CollisionGroup == "none" or panel.CollisionGroup == child.CollisionGroup)
+					(self.CollisionGroup == "none" or self.CollisionGroup == child.CollisionGroup)
 				then
 					local child_left, child_top, child_right, child_bottom = child:GetWorldRectFast()
 
@@ -1608,10 +1609,10 @@ do -- layout
 						child_right > panel_left and
 						child_left < panel_left
 					then
-						if dir_y > 0 and child_top > panel_top then
+						if dir.y > 0 and child_top > panel_top then
 							found[i] = {child = child, point = child_top}
 							i = i + 1
-						elseif dir_y < 0 and child_bottom < panel_bottom then
+						elseif dir.y < 0 and child_bottom < panel_bottom then
 							found[i] = {child = child, point = child_bottom}
 							i = i + 1
 						end
@@ -1630,10 +1631,10 @@ do -- layout
 						child_bottom > panel_top and
 						child_top < panel_top
 					then
-						if dir_x > 0 and child_right > panel_right then
+						if dir.x > 0 and child_right > panel_right then
 							found[i] = {child = child, point = child_left}
 							i = i + 1
-						elseif dir_x < 0 and child_left < panel_left then
+						elseif dir.x < 0 and child_left < panel_left then
 							found[i] = {child = child, point = child_right}
 							i = i + 1
 						end
@@ -1641,58 +1642,59 @@ do -- layout
 				end
 			end
 
-			if dir_y > 0 then
+			if dir.y > 0 then
 				origin = panel_bottom
-			elseif dir_y < 0 then
+			elseif dir.y < 0 then
 				origin = panel_top
-			elseif dir_x > 0 then
+			elseif dir.x > 0 then
 				origin = panel_right
-			elseif dir_x < 0 then
+			elseif dir.x < 0 then
 				origin = panel_left
 			end
 
 			table.sort(found, sort)
 		end
 
+		local hit_pos = stop_pos
+
 		if found and found[1] then
 			local child = found[1].child
 
-			x = child.Position.x
-			y = child.Position.y
+			hit_pos = child:GetPosition():Copy()
 
-			if dir_x < 0 then
-				y = panel:GetY()
-				x = x + child:GetWidth() + panel.Padding:GetRight()
-			elseif dir_x > 0 then
-				y = panel:GetY()
-				x = x - panel:GetWidth() - panel.Padding:GetLeft()
-			elseif dir_y < 0 then
-				x = panel:GetX()
-				y = y + child:GetHeight() + panel.Padding:GetBottom()
-			elseif dir_y > 0 then
-				x = panel:GetX()
-				y = y - panel:GetHeight() - panel.Padding:GetTop()
+			if dir.x < 0 then
+				hit_pos.y = self:GetY()
+				hit_pos.x = hit_pos.x + child:GetWidth() + self.Padding:GetRight()
+			elseif dir.x > 0 then
+				hit_pos.y = self:GetY()
+				hit_pos.x = hit_pos.x - self:GetWidth() - self.Padding:GetLeft()
+			elseif dir.y < 0 then
+				hit_pos.x = self:GetX()
+				hit_pos.y = hit_pos.y + child:GetHeight() + self.Padding:GetBottom()
+			elseif dir.y > 0 then
+				hit_pos.x = self:GetX()
+				hit_pos.y = hit_pos.y - self:GetHeight() - self.Padding:GetTop()
 			end
 		else
-			if dir_x < 0 then
-				x = x + panel.Padding:GetRight()
-				x = x + self.Margin:GetRight()
-			elseif dir_x > 0 then
-				x = x - panel.Padding:GetLeft()
-				x = x - self.Margin:GetLeft()
-			elseif dir_y < 0 then
-				y = y + panel.Padding:GetBottom()
-				y = y + self.Margin:GetBottom()
-			elseif dir_y > 0 then
-				y = y - panel.Padding:GetTop()
-				y = y - self.Margin:GetTop()
+			if dir.x < 0 then
+				hit_pos.x = hit_pos.x + self.Padding:GetRight()
+				hit_pos.x = hit_pos.x + parent.Margin:GetRight()
+			elseif dir.x > 0 then
+				hit_pos.x = hit_pos.x - self.Padding:GetLeft()
+				hit_pos.x = hit_pos.x - parent.Margin:GetLeft()
+			elseif dir.y < 0 then
+				hit_pos.y = hit_pos.y + self.Padding:GetBottom()
+				hit_pos.y = hit_pos.y + parent.Margin:GetBottom()
+			elseif dir.y > 0 then
+				hit_pos.y = hit_pos.y - self.Padding:GetTop()
+				hit_pos.y = hit_pos.y - parent.Margin:GetTop()
 			end
 
-			x = math.max(x, 0)
-			y = math.max(y, 0)
+			hit_pos.x = math.max(hit_pos.x, 0)
+			hit_pos.y = math.max(hit_pos.y, 0)
 		end
 
-		return Vec2(x, y), found and found[1] and found[1].child
+		return hit_pos, found and found[1] and found[1].child
 	end
 
 	function META:ExecuteLayoutCommands()
@@ -1887,8 +1889,8 @@ do -- layout
 
 			self:SetWidth(1)
 
-			local left = parent:RayCast(self, 0, self.Position.y)
-			local right = parent:RayCast(self, parent:GetWidth(), self.Position.y)
+			local left = self:RayCast(Vec2(0, self.Position.y))
+			local right = self:RayCast(Vec2(parent:GetWidth(), self.Position.y))
 			right.x = right.x - left.x + 1
 
 			local x = left.x
@@ -1916,8 +1918,8 @@ do -- layout
 
 			self:SetHeight(1)
 
-			local top = parent:RayCast(self, self.Position.x, 0)
-			local bottom = parent:RayCast(self, self.Position.x, parent:GetHeight())
+			local top = self:RayCast(Vec2(self.Position.x, 0))
+			local bottom = self:RayCast(Vec2(self.Position.x, parent:GetHeight()))
 			bottom.y = bottom.y - top.y + 1
 
 			local y = top.y
@@ -1948,8 +1950,8 @@ do -- layout
 		function META:CenterX()
 			local parent = self:GetParent()
 
-			local left = parent:RayCast(self, 0, self.Position.y)
-			local right = parent:RayCast(self, parent.Size.x, left.y)
+			local left = self:RayCast(Vec2(0, self.Position.y))
+			local right = self:RayCast(Vec2(parent.Size.x, left.y))
 
 			self:SetX(math.lerp(0.5, left.x, right.x))
 
@@ -1959,8 +1961,8 @@ do -- layout
 		function META:CenterY()
 			local parent = self:GetParent()
 
-			local top = parent:RayCast(self, self.Position.x, 0)
-			local bottom = parent:RayCast(self, top.x, parent:GetHeight())
+			local top = self:RayCast(Vec2(self.Position.x, 0))
+			local bottom = self:RayCast(Vec2(top.x, parent:GetHeight()))
 			self:SetY(top.y + (bottom.y/2 - self:GetHeight()/2) - self.Padding:GetTop() + self.Padding:GetBottom())
 
 			self.laid_out_y = true
@@ -2000,8 +2002,8 @@ do -- layout
 		function META:CenterXFrame()
 			local parent = self:GetParent()
 
-			local left = parent:RayCast(self, 0, self.Position.y)
-			local right = parent:RayCast(self, parent:GetWidth(), left.y)
+			local left = self:RayCast(Vec2(0, self.Position.y))
+			local right = self:RayCast(Vec2(parent:GetWidth(), left.y))
 
 			if
 				self:GetX()+self:GetWidth()+self.Padding:GetRight() < right.x+self:GetWidth()-self.Padding:GetRight() and
@@ -2021,7 +2023,7 @@ do -- layout
 			end
 
 			self:SetY(math.max(self:GetY(), 1))
-			self:SetY(parent:RayCast(self, self.Position.x, 0).y)
+			self:SetY(self:RayCast(Vec2(self.Position.x, 0)).y)
 
 			self.laid_out_y = true
 		end
@@ -2034,7 +2036,7 @@ do -- layout
 			end
 
 			self:SetX(math.max(self:GetX(), 1))
-			self:SetX(parent:RayCast(self, 0, self.Position.y).x)
+			self:SetX(self:RayCast(Vec2(0, self.Position.y)).x)
 
 			self.laid_out_x = true
 		end
@@ -2047,7 +2049,7 @@ do -- layout
 			end
 
 			self:SetY(math.max(self:GetY(), 1))
-			self:SetY(parent:RayCast(self, self.Position.x, parent:GetHeight() - self:GetHeight()).y)
+			self:SetY(self:RayCast(Vec2(self.Position.x, parent:GetHeight() - self:GetHeight())).y)
 
 			self.laid_out_y = true
 		end
@@ -2060,7 +2062,7 @@ do -- layout
 			end
 
 			self:SetX(math.max(self:GetX(), 1))
-			self:SetX(parent:RayCast(self, parent:GetWidth() - self:GetWidth(), self.Position.y).x)
+			self:SetX(self:RayCast(Vec2(parent:GetWidth() - self:GetWidth(), self.Position.y)).x)
 
 			self.laid_out_x = true
 		end
