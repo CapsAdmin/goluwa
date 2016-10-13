@@ -1572,13 +1572,13 @@ do -- layout
 		return math.abs(a.point-origin) < math.abs(b.point-origin)
 	end
 
-	function META:RayCast(panel, x,y, collide, always)
+	function META:RayCast(panel, x, y)
 		local dir_x = x - panel.Position.x
 		local dir_y = y - panel.Position.y
 
 		local found
 
-		if collide then
+		if panel.layout_collide then
 			found = {}
 			local i = 1
 
@@ -1587,7 +1587,7 @@ do -- layout
 			for _, child in ipairs(self:GetChildren()) do
 				if
 					child ~= panel and
-					(always or child.laid_out_x or child.laid_out_y) and
+					(child.laid_out_x or child.laid_out_y) and
 					child.Visible and
 					not child.ThreeDee and
 					not child.IgnoreLayout and
@@ -1727,11 +1727,6 @@ do -- layout
 						child:SizeToChildrenHeight()
 					elseif cmd == "size_to_children" then
 						child:SizeToChildren()
-						print(child)
-					elseif cmd == "size_to_width" then
-						child:SizeToWidth()
-					elseif cmd == "size_to_height" then
-						child:SizeToHeight()
 					elseif cmd == "fill" then
 						child:MoveUp()
 						child:MoveLeft()
@@ -1887,52 +1882,13 @@ do -- layout
 			self.layout_collide = false
 		end
 
-		function META:SizeToWidth()
-			local parent = self:GetParent()
-
-			local ox,oy,ow,oh = self:GetRectFast()
-			self:SetHeight(parent:GetHeight())
-			self:SetWidth(1)
-			self:SetX(parent:GetWidth())
-			self:SetY(0)
-
-			local pos, pnl = self:RayCast(self, 1, self.Position.y, self.layout_collide)
-			self:SetRectFast(ox,oy,ow,oh)
-
-			self:SetWidth(pos.x + self.Margin:GetRight() + (pnl and pnl.Padding:GetRight() or 0))
-
-			self.laid_out_x = true
-			self.laid_out_y = true
-		end
-
-		function META:SizeToHeight()
-			local parent = self:GetParent()
-
-			local ox,oy,ow,oh = self:GetRectFast()
-
-			--self:SetWidth(parent:GetWidth())
-			self:SetHeight(1)
-			self:SetY(parent:GetHeight())
-			self:SetX(0)
-
-			local pos, pnl = self:RayCast(self, self.Position.x, 1, self.layout_collide)
-
-			self:SetRectFast(ox,oy,ow,oh)
-
-			--self:SetHeight(left.y)
-			self:SetHeight(pos.y + self.Margin.y + (pnl and pnl.Padding:GetBottom() or 0))
-
-			self.laid_out_x = true
-			self.laid_out_y = true
-		end
-
 		function META:FillX(percent)
 			local parent = self:GetParent()
 
 			self:SetWidth(1)
 
-			local left = parent:RayCast(self, 0, self.Position.y, self.layout_collide)
-			local right = parent:RayCast(self, parent:GetWidth(), self.Position.y, self.layout_collide)
+			local left = parent:RayCast(self, 0, self.Position.y)
+			local right = parent:RayCast(self, parent:GetWidth(), self.Position.y)
 			right.x = right.x - left.x + 1
 
 			local x = left.x
@@ -1960,8 +1916,8 @@ do -- layout
 
 			self:SetHeight(1)
 
-			local top = parent:RayCast(self, self.Position.x, 0, self.layout_collide)
-			local bottom = parent:RayCast(self, self.Position.x, parent:GetHeight(), self.layout_collide)
+			local top = parent:RayCast(self, self.Position.x, 0)
+			local bottom = parent:RayCast(self, self.Position.x, parent:GetHeight())
 			bottom.y = bottom.y - top.y + 1
 
 			local y = top.y
@@ -1992,8 +1948,8 @@ do -- layout
 		function META:CenterX()
 			local parent = self:GetParent()
 
-			local left = parent:RayCast(self, 0, self.Position.y, self.layout_collide)
-			local right = parent:RayCast(self, parent.Size.x, left.y, self.layout_collide)
+			local left = parent:RayCast(self, 0, self.Position.y)
+			local right = parent:RayCast(self, parent.Size.x, left.y)
 
 			self:SetX(math.lerp(0.5, left.x, right.x))
 
@@ -2003,8 +1959,8 @@ do -- layout
 		function META:CenterY()
 			local parent = self:GetParent()
 
-			local top = parent:RayCast(self, self.Position.x, 0, self.layout_collide)
-			local bottom = parent:RayCast(self, top.x, parent:GetHeight(), self.layout_collide)
+			local top = parent:RayCast(self, self.Position.x, 0)
+			local bottom = parent:RayCast(self, top.x, parent:GetHeight())
 			self:SetY(top.y + (bottom.y/2 - self:GetHeight()/2) - self.Padding:GetTop() + self.Padding:GetBottom())
 
 			self.laid_out_y = true
@@ -2044,8 +2000,8 @@ do -- layout
 		function META:CenterXFrame()
 			local parent = self:GetParent()
 
-			local left = parent:RayCast(self, 0, self.Position.y, self.layout_collide)
-			local right = parent:RayCast(self, parent:GetWidth(), left.y, self.layout_collide)
+			local left = parent:RayCast(self, 0, self.Position.y)
+			local right = parent:RayCast(self, parent:GetWidth(), left.y)
 
 			if
 				self:GetX()+self:GetWidth()+self.Padding:GetRight() < right.x+self:GetWidth()-self.Padding:GetRight() and
@@ -2065,7 +2021,7 @@ do -- layout
 			end
 
 			self:SetY(math.max(self:GetY(), 1))
-			self:SetY(parent:RayCast(self, self.Position.x, 0, self.layout_collide).y)
+			self:SetY(parent:RayCast(self, self.Position.x, 0).y)
 
 			self.laid_out_y = true
 		end
@@ -2078,7 +2034,7 @@ do -- layout
 			end
 
 			self:SetX(math.max(self:GetX(), 1))
-			self:SetX(parent:RayCast(self, 0, self.Position.y, self.layout_collide).x)
+			self:SetX(parent:RayCast(self, 0, self.Position.y).x)
 
 			self.laid_out_x = true
 		end
@@ -2091,7 +2047,7 @@ do -- layout
 			end
 
 			self:SetY(math.max(self:GetY(), 1))
-			self:SetY(parent:RayCast(self, self.Position.x, parent:GetHeight() - self:GetHeight(), self.layout_collide).y)
+			self:SetY(parent:RayCast(self, self.Position.x, parent:GetHeight() - self:GetHeight()).y)
 
 			self.laid_out_y = true
 		end
@@ -2104,7 +2060,7 @@ do -- layout
 			end
 
 			self:SetX(math.max(self:GetX(), 1))
-			self:SetX(parent:RayCast(self, parent:GetWidth() - self:GetWidth(), self.Position.y, self.layout_collide).x)
+			self:SetX(parent:RayCast(self, parent:GetWidth() - self:GetWidth(), self.Position.y).x)
 
 			self.laid_out_x = true
 		end

@@ -195,6 +195,7 @@ function META:SetTitle(str)
 	local title = self.bar:CreatePanel("text", "title")
 	title:SetText(str)
 	title:SetupLayout("center_y_simple", "center_x")
+	title:SetSendMouseInputToPanel(self)
 	self.title = title
 
 	if gui.task_bar:IsValid() then

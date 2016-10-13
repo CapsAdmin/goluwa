@@ -155,7 +155,7 @@ function menu.CreateTopBar()
 	bar:SetDraggable(true)
 	bar:SetSize(window.GetSize()*1)
 	bar:SetCachedRendering(true)
-	bar:SetupLayout("layout_children", "size_to_width", "size_to_height")
+	bar:SetupLayout("layout_children", "size_to_children_width", "size_to_children_height")
 
 	bar.OnPreDraw = draw_shadow
 
@@ -303,7 +303,7 @@ function menu.CreateTopBar()
 				area:SetPadding(Rect()+2)
 				area:SetMargin(Rect(0,0,0,0))
 				area:SetWidth(100)
-				area:SetupLayout("left", "bottom", "fill_y", "size_to_width")
+				area:SetupLayout("left", "bottom", "fill_y", "size_to_children_width")
 				area:SetNoDraw(true)
 
 				local choices = gui.CreateChoices({"long filename", "snes header name"}, 1, area, Rect() + 4)
@@ -330,7 +330,7 @@ function menu.CreateTopBar()
 					left:SetSize(Vec2()+20)
 					left:SetPadding(Rect()+2)
 					left:SetMargin(Rect(10,0,10,0))
-					left:SetupLayout("top", "right", "fill", "layout_children", "size_to_width")
+					left:SetupLayout("top", "right", "fill", "layout_children", "size_to_children_width")
 					left:SetNoDraw(true)
 
 					local choices = gui.CreateChoices({"PAL", "NTSC"}, 1, left, Rect() + 4)
@@ -347,7 +347,7 @@ function menu.CreateTopBar()
 					right:SetSize(Vec2()+20)
 					right:SetPadding(Rect()+2)
 					right:SetMargin(Rect(10,0,10,0))
-					right:SetupLayout("top", "right", "fill", "layout_children", "size_to_width")
+					right:SetupLayout("top", "right", "fill", "layout_children", "size_to_children_width")
 					right:SetNoDraw(true)
 
 					local choices = gui.CreateChoices({"hirom", "lorom"}, 1, right, Rect() + 4)
@@ -605,11 +605,10 @@ function menu.CreateTopBar()
 	})
 
 
---	bar:SetupLayout("left", "up", "fill_x", "size_to_width")
+--	bar:SetupLayout("left", "up", "fill_x", "size_to_children_width")
 end
 
 menu.Open()
-
 if RELOAD then
 	menu.Remake()
 end

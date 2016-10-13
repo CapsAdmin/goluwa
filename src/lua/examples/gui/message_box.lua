@@ -19,7 +19,7 @@ frame:SetTitle("Confirm Save As")
 			text:SetPadding(Rect()+5)
 			text:SetText("temp.txt already exist.\nDo you want to replace it?")
 			text:SetupLayout("left")
-		area:SetupLayout("size_to_width", "size_to_height", "center_x_simple", "center_y")
+		area:SetupLayout("size_to_children", "center_simple")
 
 	info:SetupLayout("top", "fill_x")
 
