@@ -159,6 +159,10 @@ function love.filesystem.append(name, data, size)
 
 end
 
+function love.filesystem.setSymlinksEnabled()
+
+end
+
 do -- File object
 	local File = lovemu.TypeTemplate("File")
 

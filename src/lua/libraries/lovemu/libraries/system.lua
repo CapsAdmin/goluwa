@@ -14,3 +14,7 @@ end
 function love.system.openURL(url)
 	system.OpenURL(url)
 end
+
+function love.system.getOS()
+	return jit.os
+end
