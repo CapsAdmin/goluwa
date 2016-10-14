@@ -30,7 +30,7 @@ do
 			val = math.random()
 		end
 
-		math.randomseed(os.clock())
+		SEED = SEED + val
 		return val
 	end
 end
