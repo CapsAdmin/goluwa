@@ -20,9 +20,12 @@ Goluwa is a framework coded in LuaJIT that I use to further develop Goluwa with 
 I mainly use and develop this on Linux so windows support isn't high priority even though it should work there. It may also work on OSX but I can't test rendering as I'm limited to using mac in a vm.
 
 #Credits
-* [Malkia](https://github.com/malkia) - [ufo](https://github.com/malkia/ufo) was the source inspiration
-* [Ronny](http://steamcommunity.com/id/76561197990112245/) - helped me making the gui when it was made for [oohh](https://github.com/CapsAdmin/oohh)
-* [Morten Erlandsen](https://github.com/mortenae) - provided help and code with BSP (especially the displacement bit) and supporting linux early on
-* [Leandro Fonseca](https://github.com/Shell64) - started and worked on lovemu early on and has helped with explaining how löve works
-* [Somepotato](https://github.com/Someguynamedpie) - started proper font support (mainly using a font atlas)
-* [ZeqMacaw](http://steamcommunity.com/id/zeqmacaw) - the source engine mdl decoding code was based on the [CrowbarTool](http://steamcommunity.com/groups/CrowbarTool)
+* [Garry Newman](https://github.com/garrynewman/) - I learned programming in garrysmod and many of the ideas and libraries in goluwa were developed in garrysmod initially.
+* [Crytek](http://www.crytek.com/) - Playing around with the Crysis Wars SDK was how I started to learn C++. I made [oohh
+](https://github.com/capsadmin/oohh) which was a garrysmod-like mod attempt. The C++ Lua binder I made there included a standard game oriented lua library which eventualy evolved into goluwa.
+* [Ronny](http://steamcommunity.com/id/76561197990112245/) - Helped me making the gui when it was made for [oohh](https://github.com/CapsAdmin/oohh).
+* [Malkia](https://github.com/malkia) - the source inspiration for doing this entirely in luajit was [ufo](https://github.com/malkia/ufo)
+* [Morten Erlandsen](https://github.com/mortenae) - Provided help and code with BSP (especially the displacement bit) and supporting linux early on.
+* [Leandro Fonseca](https://github.com/Shell64) - Started working on the löve wrapper early on and has helped with explaining how löve works.
+* [Somepotato](https://github.com/Someguynamedpie) - Started proper font support using a font atlas.
+* [ZeqMacaw](http://steamcommunity.com/id/zeqmacaw) - The source engine MDL decoding code was based on the [CrowbarTool](http://steamcommunity.com/groups/CrowbarTool)
