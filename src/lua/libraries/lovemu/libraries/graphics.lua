@@ -212,13 +212,67 @@ do -- background
 end
 
 do
-	function love.graphics.setBlendMode(mode)
-		if mode == "replace" then mode = "none" end
-		render.SetBlendMode(mode)
+	local COLOR_MDOE
+	local ALPHA_MDOE
+
+	function love.graphics.setBlendMode(color_mode, alpha_mode)
+		alpha_mode = alpha_mode or "alphamultiply"
+		local func   = "add"
+		local srcRGB = "one"
+		local srcA   = "one"
+		local dstRGB = "zero"
+		local dstA   = "zero"
+
+		if color_mode == "alpha" then
+			srcRGB = "one"
+			srcA = "one"
+
+			dstRGB = "one_minus_src_alpha"
+			dstA = "one_minus_src_alpha"
+		elseif color_mode == "multiply" or "multiplicative" then
+			srcRGB = "dst_color"
+			srcA = "dst_color"
+
+			dstRGB = "zero"
+			dstA = "zero"
+		elseif color_mode == "subtract" or color_mode == "subtractive" then
+			func = "subtract"
+		elseif color_mode == "add" or color_mode == "additive" then
+			srcRGB = "one"
+			srcA = "zero"
+
+			dstRGB = "one"
+			dstA = "one"
+		elseif color_mode == "lighten" then
+			func = "max"
+		elseif color_mode == "darken" then
+			func = "min"
+		elseif color_mode == "screen" then
+			srcRGB = "one"
+			srcA = "one"
+
+			dstRGB = "one_minus_src_color"
+			dstA = "one_minus_src_color"
+		else --if color_mode == "replace" then
+			srcRGB = "one"
+			srcA = "one"
+
+			dstRGB = "zero"
+			dstA = "zero"
+		end
+
+		if srcRGB == "one" and alpha_mode == "alphamultiply" then
+			srcRGB = "src_alpha"
+		end
+
+		render.SetBlendMode(srcRGB, dstRGB, func, srcA, dstA, func)
+
+		COLOR_MDOE = color_mode
+		ALPHA_MDOE = alpha_mode
 	end
 
 	function love.graphics.getBlendMode()
-		return render.GetBlendMode()
+		return COLOR_MDOE, ALPHA_MDOE
 	end
 end
 
