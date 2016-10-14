@@ -63,7 +63,7 @@ function event.RemoveListener(event_type, id)
 				-- of the same type
 				event.active[event_type][index] = nil
 
-				profiler.RemoveSection(val.print_str)
+				--profiler.RemoveSection(val.print_str)
 
 				do -- repair the table
 					local temp = {}
@@ -236,7 +236,7 @@ do -- timers
 		for k, v in ipairs(event.timers) do
 			if v.key == id then
 				table.remove(event.timers, k)
-				profiler.RemoveSection(v.id)
+				--profiler.RemoveSection(v.id)
 				break
 			end
 		end
@@ -312,14 +312,14 @@ do -- timers
 					else
 						if data.error_callback(data.id, msg) ~= nil then
 							table.insert(remove_these, i)
-							profiler.RemoveSection(data.id)
+							--profiler.RemoveSection(data.id)
 							break
 						end
 					end
 
 					if data.times_ran == data.repeats then
 						table.insert(remove_these, i)
-						profiler.RemoveSection(data.id)
+						--profiler.RemoveSection(data.id)
 						break
 					else
 						data.times_ran = data.times_ran + 1
