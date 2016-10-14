@@ -136,7 +136,6 @@ do -- include
 					_G.FILE_NAME = full_path:match(".*/(.+)%.") or full_path
 					_G.FILE_EXTENSION = full_path:match(".*/.+%.(.+)")
 
-					local start_time = os.clock()
 
 					if utility and utility.PushTimeWarning then
 						utility.PushTimeWarning()
