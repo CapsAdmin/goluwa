@@ -75,6 +75,23 @@ function surface.Initialize()
 	surface.SetWhiteTexture()
 	surface.InitializeFonts()
 
+	event.Delay(function()
+		local tex = render.CreateBlankTexture(Vec2(surface.GetSize()))
+		tex:SetWrapS("mirrored_repeat")
+		tex:SetWrapT("mirrored_repeat")
+		tex:Shade([[
+			// http://www.geeks3d.com/20130705/shader-library-circle-disc-fake-sphere-in-glsl-opengl-glslhacker/3/
+			float disc_radius = 1;
+			float border_size = 0.0021;
+			vec2 uv2 = vec2(uv.x, -uv.y + 1);
+			float dist = sqrt(dot(uv2, uv2));
+			float t = smoothstep(disc_radius + border_size, disc_radius - border_size, dist);
+			return vec4(1,1,1,t);
+		]])
+		tex:GenerateMipMap()
+		surface.quadrant_circle_texture = tex
+	end)
+
 	surface.ready = true
 	event.Call("SurfaceInitialized")
 end
@@ -631,15 +648,9 @@ include("poly.lua", surface)
 
 do -- points
 	local SIZE = 1
-	local STYLE = "smooth"
+	local STYLE = "rough"
 
 	function surface.SetPointStyle(style)
-		if style == "smooth" then
-			gl.Enable("GL_POINT_SMOOTH")
-		else
-			gl.Disable("GL_POINT_SMOOTH")
-		end
-
 		STYLE = style
 	end
 
@@ -648,7 +659,6 @@ do -- points
 	end
 
 	function surface.SetPointSize(size)
-		gl.PointSize(size)
 		SIZE = size
 	end
 
@@ -657,10 +667,18 @@ do -- points
 	end
 
 	function surface.DrawPoint(x, y)
-		gl.Disable("GL_TEXTURE_2D")
-		gl.Begin("GL_POINTS")
-			gl.Vertex2f(x, y)
-		gl.End()
+		if STYLE == "rough" then
+			surface.PushTexture(render.GetWhiteTexture())
+			surface.DrawRect(x, y, SIZE, SIZE, nil, SIZE/2, SIZE/2)
+			surface.PopTexture()
+		else
+			surface.PushTexture(surface.quadrant_circle_texture)
+			surface.DrawRect(x, y, SIZE, SIZE)
+			surface.DrawRect(x, y, SIZE, SIZE, math.pi)
+			surface.DrawRect(x, y, SIZE, SIZE, math.pi/2)
+			surface.DrawRect(x, y, SIZE, SIZE, -math.pi/2)
+			surface.PopTexture()
+		end
 	end
 end
 
