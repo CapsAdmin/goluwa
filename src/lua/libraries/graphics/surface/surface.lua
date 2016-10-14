@@ -191,6 +191,8 @@ function surface.GetTexture()
 	return surface.mesh_2d_shader.tex
 end
 
+utility.MakePushPopFunction(surface, "Texture")
+
 function surface.SetWhiteTexture()
 	surface.mesh_2d_shader.tex = render.GetWhiteTexture()
 end
