@@ -557,7 +557,7 @@ do -- canvas
 	end
 
 	function Canvas:clear(...)
-		self.fb:Clear()
+		self.fb:ClearAll()
 	end
 
 	function Canvas:setWrap()
