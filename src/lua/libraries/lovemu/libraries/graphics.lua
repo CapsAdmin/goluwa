@@ -311,8 +311,20 @@ do -- points
 	end
 
 	function love.graphics.point(x, y)
-		--surface.DrawPoint(x, y)
-		surface.DrawRect(x, y, 1, 1)
+		surface.DrawPoint(x, y)
+	end
+
+	function love.graphics.points(...)
+		if type(...) == "number" then
+			surface.DrawPoint(...)
+		else
+			for i, point in ipairs(...) do
+				if point[3] then
+					surface.SetColor(point[3], point[4], point[5], point[6])
+				end
+				surface.DrawPoint(point[1], point[2])
+			end
+		end
 	end
 end
 
