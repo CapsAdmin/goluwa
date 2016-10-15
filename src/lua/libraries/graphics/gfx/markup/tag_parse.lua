@@ -167,7 +167,7 @@ function META:StringTagsToTable(str)
 								table.insert(chunks, {type = "font", val = last_font})
 							end
 						else
-							local font = surface.FindFont(args[1])
+							local font = fonts.FindFont(args[1])
 							table.insert(chunks, {type = "font", val = font})
 							last_font = font
 						end

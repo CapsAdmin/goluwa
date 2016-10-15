@@ -54,7 +54,7 @@ do
 	function gfx.GetTextSize(str)
 		str = str or "|"
 
-		local font = fonts.current_font
+		local font = gfx.GetFont()
 
 		if not font then
 			return 0,0
@@ -93,6 +93,7 @@ function gfx.WrapString(str, max_width)
 	end
 
 	local lines = {}
+	local i = 1
 
 	local last_pos = 0
 	local line_width = 0
@@ -107,28 +108,30 @@ function gfx.WrapString(str, max_width)
 			space_pos = pos
 		end
 
-		if line_width + w >= max_width then
+		if line_width >= max_width then
 
 			if space_pos then
-				lines[#lines+1] = str:usub(last_pos+1, space_pos)
+				lines[i] = str:usub(last_pos+1, space_pos)
 				last_pos = space_pos
 			else
-				lines[#lines+1] = str:usub(last_pos+1, pos)
+				lines[i] = str:usub(last_pos+1, pos)
 				last_pos = pos
 			end
+
+			i = i + 1
 
 			line_width = 0
 			found = true
 			space_pos = nil
-		else
-			line_width = line_width + w
 		end
+
+		line_width = line_width + w
 	end
 
 	if found then
-		lines[#lines+1] = str:usub(last_pos+1, pos)
+		lines[i] = str:usub(last_pos+1, pos)
 	else
-		lines[#lines+1] = str
+		lines[i] = str
 	end
 
 	return lines

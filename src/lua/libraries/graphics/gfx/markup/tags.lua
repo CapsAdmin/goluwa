@@ -268,11 +268,11 @@ META.tags.font =
 	arguments = {},
 
 	pre_draw = function(markup, self, x,y, font)
-		set_font(self, surface.FindFont(font))
+		set_font(self, fonts.FindFont(font))
 	end,
 
 	init = function(markup, self, font)
-		set_font(self, surface.FindFont(font))
+		set_font(self, fonts.FindFont(font))
 	end,
 }
 

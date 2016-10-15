@@ -36,7 +36,7 @@ else
 	META:GetSet("FixedSize", 0)
 end
 
-function gfx.CreateMarkup()
+function gfx.CreateMarkup(str)
 	local self = prototype.CreateObject(META, {
 		w = 0,
 		h = 0,
@@ -50,6 +50,10 @@ function gfx.CreateMarkup()
 		remove_these = {},
 		started_tags = {},
 	})
+
+	if str then
+		self:SetText(str)
+	end
 
 	self:Invalidate()
 
@@ -409,6 +413,5 @@ include("clipboard.lua", META)
 
 include("input.lua", META)
 include("drawing.lua", META)
-include("test.lua", META)
 
 prototype.Register(META)
