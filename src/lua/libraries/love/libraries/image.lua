@@ -1,7 +1,7 @@
 if not GRAPHICS then return end
 
 local love = ... or _G.love
-local ENV = love._lovemu_env
+local ENV = love._line_env
 
 local ffi = require("ffi")
 
@@ -11,7 +11,7 @@ love.image = love.image or {}
 
 do -- image data
 
-	local ImageData = lovemu.TypeTemplate("ImageData")
+	local ImageData = line.TypeTemplate("ImageData")
 
 	function ImageData:getSize()
 		return self.size
@@ -74,11 +74,11 @@ do -- image data
 	local freeimage = desire("libfreeimage")
 
 	function love.image.newImageData(a, b)
-		if lovemu.Type(a) == "ImageData" then
+		if line.Type(a) == "ImageData" then
 			return a -- uhhh
 		end
 
-		local self = lovemu.CreateObject("ImageData")
+		local self = line.CreateObject("ImageData")
 
 		local tex = render.CreateTexture("2d")
 
@@ -115,5 +115,5 @@ do -- image data
 		return self
 	end
 
-	lovemu.RegisterType(ImageData)
+	line.RegisterType(ImageData)
 end

@@ -7,7 +7,7 @@ Goluwa is a framework coded in LuaJIT that I use to further develop Goluwa with 
 * [ffi build system](https://github.com/CapsAdmin/goluwa/tree/master/src/lua/build) to automatically build cdef and lua bindings.
 * [gui](src/lua/libraries/graphics/gui) with focus on automatic layout and gwen skin support
 * [markup language](src/lua/libraries/graphics/gui) used by gui and chat
-* [löve wrapper](src/lua/libraries/lovemu) that lets you run löve games in goluwa
+* [löve wrapper](src/lua/libraries/love) that lets you run löve games in goluwa
 * [glua wrapper](src/lua/libraries/gmod) that lets you run garrysmod lua in goluwa
 * [enitity editor](src/lua/autorun/graphics) similar to the [pac3 editor](http://steamcommunity.com/sharedfiles/filedetails/?id=104691717)
 * [filesystem](src/lua/libraries/filesystem) with the ability to mount and treat many archive formats as directories 

@@ -1,13 +1,13 @@
 if not SOUND then return end
 
 local love = ... or _G.love
-local ENV = love._lovemu_env
+local ENV = love._line_env
 
 local ffi = require("ffi")
 
 love.sound = love.sound or {}
 
-local SoundData = lovemu.TypeTemplate("SoundData")
+local SoundData = line.TypeTemplate("SoundData")
 
 function SoundData:getPointer()
 	return self.samples
@@ -73,7 +73,7 @@ local function get_format(channels, bits)
 end
 
 function love.sound.newSoundData(samples, rate, bits, channels)
-	local self = lovemu.CreateObject("SoundData")
+	local self = line.CreateObject("SoundData")
 	local buffer = audio.CreateBuffer()
 	self.buffer = buffer
 
@@ -106,4 +106,4 @@ function love.sound.newSoundData(samples, rate, bits, channels)
 	return self
 end
 
-lovemu.RegisterType(SoundData)
+line.RegisterType(SoundData)

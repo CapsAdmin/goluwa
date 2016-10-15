@@ -26,8 +26,8 @@ if CURSES and repl then
 	repl.Initialize()
 end
 
-if lovemu then
-	love = lovemu.CreateLoveEnv() -- https://www.love2d.org/wiki/love
+if line then
+	love = line.CreateLoveEnv() -- https://www.love2d.org/wiki/love
 end
 
 if physics then

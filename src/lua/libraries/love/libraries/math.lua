@@ -1,5 +1,5 @@
 local love = ... or _G.love
-local ENV = love._lovemu_env
+local ENV = love._line_env
 
 love.math = love.math or {}
 
@@ -36,7 +36,7 @@ do
 end
 
 do
-	local RandomGenerator = lovemu.TypeTemplate("RandomGenerator")
+	local RandomGenerator = line.TypeTemplate("RandomGenerator")
 
 	function RandomGenerator:setSeed(seed)
 		self.seed = seed
@@ -73,21 +73,21 @@ do
 	end
 
 	function love.math.newRandomGenerator()
-		local self = lovemu.CreateObject("RandomGenerator")
+		local self = line.CreateObject("RandomGenerator")
 
 		self.seed = 0
 
 		return self
 	end
 
-	lovemu.RegisterType(RandomGenerator)
+	line.RegisterType(RandomGenerator)
 end
 
 do
-	local BezierCurve = lovemu.TypeTemplate("BezierCurve")
+	local BezierCurve = line.TypeTemplate("BezierCurve")
 
 	function love.math.newBezierCurve(...)
-		local self = lovemu.CreateObject("BezierCurve")
+		local self = line.CreateObject("BezierCurve")
 		local points
 		if type(...) == "number" then
 			points = {...}
@@ -300,7 +300,7 @@ do
 		return out
 	end
 
-	lovemu.RegisterType(BezierCurve)
+	line.RegisterType(BezierCurve)
 end
 
 function love.math.isConvex(...)

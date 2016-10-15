@@ -1,12 +1,12 @@
 if not SOUND then return end
 
 local love = ... or _G.love
-local ENV = love._lovemu_env
+local ENV = love._line_env
 
 love.audio = love.audio or {}
 
 function love.audio.getNumSources()
-	return #lovemu.GetCreatedObjects("Source")
+	return #line.GetCreatedObjects("Source")
 end
 
 love.audio.getSourceCount = love.audio.getNumSources
@@ -28,25 +28,25 @@ function love.audio.getVolume()
 end
 
 function love.audio.pause()
-	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do
+	for k,v in pairs(line.GetCreatedObjects("Source")) do
 		v:pause()
 	end
 end
 
 function love.audio.play()
-	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do
+	for k,v in pairs(line.GetCreatedObjects("Source")) do
 		v:play()
 	end
 end
 
 function love.audio.resume()
-	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do
+	for k,v in pairs(line.GetCreatedObjects("Source")) do
 		v:resume()
 	end
 end
 
 function love.audio.rewind()
-	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do
+	for k,v in pairs(line.GetCreatedObjects("Source")) do
 		v:rewind()
 	end
 end
@@ -75,23 +75,23 @@ function love.audio.setVolume(vol)
 	audio.SetListenerGain(vol or 1)
 end
 
-function love.audio.newEffect(...) --lovemu only
+function love.audio.newEffect(...) --line only
 	return audio.CreateEffect(...)
 end
 
-function love.audio.newFilter(...) --lovemu only
+function love.audio.newFilter(...) --line only
 	return audio.CreateFilter(...)
 end
 
 function love.audio.stop()
-	for k,v in pairs(lovemu.GetCreatedObjects("Source")) do
+	for k,v in pairs(line.GetCreatedObjects("Source")) do
 		v:stop()
 	end
 end
 
 do -- Source
 
-	local Source = lovemu.TypeTemplate("Source")
+	local Source = line.TypeTemplate("Source")
 
 	function Source:getChannels()
 		return 2 --stereo
@@ -295,13 +295,13 @@ do -- Source
 		return 1
 	end
 
-	function Source:addEffect(...) --lovemu only
+	function Source:addEffect(...) --line only
 		if self.source then
 			return self.source:AddEffect(...)
 		end
 	end
 
-	function Source:setFilter(...) --lovemu only
+	function Source:setFilter(...) --line only
 		if self.source then
 			return self.source:SetFilter(...)
 		end
@@ -312,9 +312,9 @@ do -- Source
 	end
 
 	function love.audio.newSource(var, type)
-		local self = lovemu.CreateObject("Source")
+		local self = line.CreateObject("Source")
 
-		if lovemu.Type(var) == "string" then
+		if line.Type(var) == "string" then
 
 			self.path = var
 
@@ -327,19 +327,19 @@ do -- Source
 				end
 
 			end
-		elseif lovemu.Type(var) == "File" then
-			lovemu.ErrorNotSupported("Decoder is not supported yet")
-		elseif lovemu.Type(var) == "Decoder" then
-			lovemu.ErrorNotSupported("Decoder is not supported yet")
-		elseif lovemu.Type(var) == "SoundData" then
+		elseif line.Type(var) == "File" then
+			line.ErrorNotSupported("Decoder is not supported yet")
+		elseif line.Type(var) == "Decoder" then
+			line.ErrorNotSupported("Decoder is not supported yet")
+		elseif line.Type(var) == "SoundData" then
 			self.source = audio.CreateSource(var)
 			self.source:SetBuffer(var.buffer)
 		else
-			wlog("tried to create unknown source type: %s %s", lovemu.Type(var), type, 2)
+			wlog("tried to create unknown source type: %s %s", line.Type(var), type, 2)
 		end
 
 		return self
 	end
 
-	lovemu.RegisterType(Source)
+	line.RegisterType(Source)
 end

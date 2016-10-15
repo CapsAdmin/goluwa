@@ -1,5 +1,5 @@
 local love = ... or _G.love
-local ENV = love._lovemu_env
+local ENV = love._line_env
 
 love.keyboard = love.keyboard or {}
 
@@ -59,18 +59,18 @@ end
 
 local char_hack
 
-event.AddListener("KeyInput", "lovemu", function(key, press)
+event.AddListener("KeyInput", "line", function(key, press)
 	key = keyboard_map[key] or key
 
 	if press then
-		lovemu.CallEvent("keypressed", key, char_hack)
+		line.CallEvent("keypressed", key, char_hack)
 	else
-		lovemu.CallEvent("keyreleased", key)
+		line.CallEvent("keyreleased", key)
 	end
 end)
 
-event.AddListener("CharInput", "lovemu", function(char)
+event.AddListener("CharInput", "line", function(char)
 	char_hack = char
 
-	lovemu.CallEvent("textinput", char)
+	line.CallEvent("textinput", char)
 end)

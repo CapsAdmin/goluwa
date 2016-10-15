@@ -1,8 +1,8 @@
-local lovemu = _G.lovemu or {}
+local line = _G.line or {}
 
-lovemu.version = "0.9.0"
-lovemu.speed = 1
-lovemu.love_envs = lovemu.love_envs or utility.CreateWeakTable()
+line.version = "0.9.0"
+line.speed = 1
+line.love_envs = line.love_envs or utility.CreateWeakTable()
 
 do
 	local function base_typeOf(self, str)
@@ -16,71 +16,71 @@ do
 	local created = utility.CreateWeakTable()
 	local registered = {}
 
-	function lovemu.TypeTemplate(name)
+	function line.TypeTemplate(name)
 		local META = {}
-		META.__lovemu_type = name
+		META.__line_type = name
 		return META
 	end
 
-	function lovemu.RegisterType(META)
+	function line.RegisterType(META)
 		META.__index = META
 		META.typeOf = base_typeOf
 		META.type = base_type
 
-		registered[META.__lovemu_type] = META
+		registered[META.__line_type] = META
 
-		if created[META.__lovemu_type] then
-			for i,v in ipairs(created[META.__lovemu_type]) do
+		if created[META.__line_type] then
+			for i,v in ipairs(created[META.__line_type]) do
 				setmetatable(v, META)
 			end
 		end
 	end
 
-	function lovemu.CreateObject(name)
+	function line.CreateObject(name)
 		local META = registered[name]
 
 		local self = setmetatable({}, META)
 
-		created[META.__lovemu_type] = created[META.__lovemu_type] or {}
-		table.insert(created[META.__lovemu_type], self)
+		created[META.__line_type] = created[META.__line_type] or {}
+		table.insert(created[META.__line_type], self)
 
 		return self
 	end
 
-	function lovemu.Type(v)
+	function line.Type(v)
 		local t = type(v)
 
-		if t == "table" and v.__lovemu_type then
-			return v.__lovemu_type
+		if t == "table" and v.__line_type then
+			return v.__line_type
 		end
 
 		return t
 	end
 
-	function lovemu.GetCreatedObjects(name)
+	function line.GetCreatedObjects(name)
 		return created[name] or {}
 	end
 end
 
-function lovemu.ErrorNotSupported(str, level)
-	wlog("[lovemu] " .. str)
+function line.ErrorNotSupported(str, level)
+	wlog("[line] " .. str)
 end
 
-function lovemu.CreateLoveEnv()
+function line.CreateLoveEnv()
 	local love = {}
 
-	love._version = lovemu.version
+	love._version = line.version
 
-	local version = lovemu.version:split(".")
+	local version = line.version:split(".")
 
 	love._version_major = tonumber(version[1])
 	love._version_minor = tonumber(version[2])
 	love._version_revision = tonumber(version[3])
-	love._lovemu_env = {}
+	love._line_env = {}
 
-	include("lua/libraries/lovemu/libraries/*", love)
+	include("lua/libraries/love/libraries/*", love)
 
-	table.insert(lovemu.love_envs, love)
+	table.insert(line.love_envs, love)
 
 	return love
 end
@@ -89,12 +89,12 @@ do
 	local current_love
 
 	local on_error = function(msg)
-		current_love._lovemu_env.error_message = msg .. "\n" .. debug.traceback()
-		llog(current_love._lovemu_env.error_message)
+		current_love._line_env.error_message = msg .. "\n" .. debug.traceback()
+		llog(current_love._line_env.error_message)
 	end
 
-	function lovemu.pcall(love, func, ...)
-		if love._lovemu_env.error_message then return end
+	function line.pcall(love, func, ...)
+		if love._line_env.error_message then return end
 		current_love = love
 		local ret = {xpcall(func, on_error, ...)}
 		if ret[1] then
@@ -103,10 +103,10 @@ do
 	end
 end
 
-function lovemu.CallEvent(what, a,b,c,d,e,f)
-	for i, love in ipairs(lovemu.love_envs) do
-		if love[what] and not love._lovemu_env.error_message then
-			local a,b,c,d,e,f = lovemu.pcall(love, love[what], a,b,c,d,e,f)
+function line.CallEvent(what, a,b,c,d,e,f)
+	for i, love in ipairs(line.love_envs) do
+		if love[what] and not love._line_env.error_message then
+			local a,b,c,d,e,f = line.pcall(love, love[what], a,b,c,d,e,f)
 			if a then
 				return a,b,c,d,e,f
 			end
@@ -114,19 +114,19 @@ function lovemu.CallEvent(what, a,b,c,d,e,f)
 	end
 end
 
-function lovemu.FixPath(path)
+function line.FixPath(path)
 	if path:startswith("/") or path:startswith("\\") then
 		return path:sub(2)
 	end
 	return path
 end
 
-function lovemu.RunGame(folder, ...)
-	local love = lovemu.CreateLoveEnv(lovemu.version)
+function line.RunGame(folder, ...)
+	local love = line.CreateLoveEnv(line.version)
 
 	wlog("mounting love game folder: ", R(folder .. "/"))
-	vfs.CreateFolder("data/lovemu/")
-	vfs.AddModuleDirectory("data/lovemu/")
+	vfs.CreateFolder("data/love/")
+	vfs.AddModuleDirectory("data/love/")
 	vfs.Mount(R(folder .. "/"))
 	vfs.AddModuleDirectory(folder .. "/")
 
@@ -169,7 +169,7 @@ function lovemu.RunGame(folder, ...)
 		type = function(v)
 			local t = _G.type(v)
 
-			if t == "table" and v.__lovemu_type then
+			if t == "table" and v.__line_type then
 				return "userdata"
 			end
 
@@ -219,13 +219,13 @@ function lovemu.RunGame(folder, ...)
 	)
 
 	do -- config
-		lovemu.config = {
+		line.config = {
 			screen = {},
 			window = {},
 			modules = {},
 			height = 600,
 			width = 800,
-			title = "LOVEMU no title",
+			title = "LINE no title",
 			author = "who knows",
 		}
 
@@ -235,17 +235,17 @@ function lovemu.RunGame(folder, ...)
 			func()
 		end
 
-		love.conf(lovemu.config)
+		love.conf(line.config)
 	end
 
-	--check if lovemu.config.screen exists
-	if not lovemu.config.screen then
-		lovemu.config.screen={}
+	--check if line.config.screen exists
+	if not line.config.screen then
+		line.config.screen={}
 	end
 
-	local w = lovemu.config.screen.width or lovemu.config.window.width or 800
-	local h = lovemu.config.screen.height or lovemu.config.window.height or 600
-	local title = lovemu.config.title or "LovEmu"
+	local w = line.config.screen.width or line.config.window.width or 800
+	local h = line.config.screen.height or line.config.window.height or 600
+	local title = line.config.title or "Line"
 
 	love.window.setMode(w, h)
 	love.window.setTitle(title)
@@ -253,28 +253,28 @@ function lovemu.RunGame(folder, ...)
 	local main = assert(vfs.loadfile("main.lua"))
 
 	setfenv(main, env)
-	setfenv(love.lovemu_update, env)
-	setfenv(love.lovemu_draw, env)
+	setfenv(love.line_update, env)
+	setfenv(love.line_draw, env)
 
-	lovemu.pcall(love, main)
-	lovemu.pcall(love, love.load, {})
+	line.pcall(love, main)
+	line.pcall(love, love.load, {})
 
 	love.filesystem.setIdentity(love.filesystem.getIdentity())
 
 	vfs.Mount(love.filesystem.getUserDirectory())
 
-	lovemu.current_game = love
-	love._lovemu_env.love_game_update_draw_hack = false
+	line.current_game = love
+	love._line_env.love_game_update_draw_hack = false
 
 	return love
 end
 
-commands.Add("love_run", function(line, name, ...)
+commands.Add("love_run", function(_, name, ...)
 	local found
 	if vfs.IsDirectory("lovers/" .. name) then
-		found = lovemu.RunGame("lovers/" .. name, select(2, ...))
+		found = line.RunGame("lovers/" .. name, select(2, ...))
 	elseif vfs.IsFile("lovers/" .. name .. ".love") then
-		found = lovemu.RunGame("lovers/" .. name .. ".love", select(2, ...))
+		found = line.RunGame("lovers/" .. name .. ".love", select(2, ...))
 	elseif name:find("github") then
 		local url = name
 
@@ -289,12 +289,12 @@ commands.Add("love_run", function(line, name, ...)
 		resource.Download(url, function(full_path)
 			full_path = full_path .. "/" .. name:match(".+/(.+)") .. "-master"
 			logn("running downloaded löve game: ", full_path)
-			lovemu.RunGame(full_path, unpack(args))
+			line.RunGame(full_path, unpack(args))
 		end)
 	else
 		for _, file_name in ipairs(vfs.Find("lovers/")) do
 			if file_name:compare(name) and vfs.IsDirectory("lovers/" .. file_name) then
-				found = lovemu.RunGame("lovers/" .. file_name)
+				found = line.RunGame("lovers/" .. file_name)
 				break
 			end
 		end
@@ -307,11 +307,11 @@ commands.Add("love_run", function(line, name, ...)
 	end
 end)
 
-event.AddListener("WindowFileDrop", "lovemu", function(wnd, path)
+event.AddListener("WindowFileDrop", "line", function(wnd, path)
 	if vfs.IsDirectory(path) and vfs.IsFile(path .. "/main.lua") then
-		lovemu.RunGame(path)
+		line.RunGame(path)
 		if menu then menu.Close() end
 	end
 end)
 
-return lovemu
+return line

@@ -21,7 +21,7 @@ local blacklist_dir = {
 	"/modules",
 	"/capsdamin",
 	"/gmod",
-	"/lovemu",
+	"/love",
 	"/build",
 	"/repo",
 }

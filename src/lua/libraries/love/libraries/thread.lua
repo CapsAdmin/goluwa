@@ -1,12 +1,12 @@
 local love = ... or _G.love
-local ENV = love._lovemu_env
+local ENV = love._line_env
 
 love.thread = love.thread or {}
 
 ENV.threads = ENV.threads or {}
 ENV.threads2 = ENV.threads2 or {}
 
-local Thread = lovemu.TypeTemplate("Thread")
+local Thread = line.TypeTemplate("Thread")
 
 function Thread:start(...)
 	self.args = {...}
@@ -30,7 +30,7 @@ function Thread:demand(name) return self.vars[name] end
 function Thread:getError(name) end
 
 function love.thread.newThread(name, script_path)
-	local self = lovemu.CreateObject("Thread")
+	local self = line.CreateObject("Thread")
 
 	self.vars = {}
 
@@ -45,7 +45,7 @@ function love.thread.newThread(name, script_path)
 	end
 
 	function thread:OnFinish()
-		logn("[lovemu] thread ", name ," finished")
+		logn("[line] thread ", name ," finished")
 	end
 
 	self.thread = thread
@@ -53,7 +53,7 @@ function love.thread.newThread(name, script_path)
 
 	self.name = name
 
-	logn("[lovemu] creating thread ", name)
+	logn("[line] creating thread ", name)
 
 	return self
 end
@@ -69,11 +69,11 @@ function love.thread.getThreads()
 	return ENV.threads
 end
 
-lovemu.RegisterType(Thread)
+line.RegisterType(Thread)
 
 ENV.channels = {}
 
-local Channel = lovemu.TypeTemplate("Channel")
+local Channel = line.TypeTemplate("Channel")
 
 function Channel:clear() table.clear(self.queue) end
 function Channel:demand() repeat until #self.queue ~= 0 return self:pop() end -- supposedly blocking
@@ -85,7 +85,7 @@ function Channel:supply(value) return self:push(value) end -- supposedly blockin
 
 
 function love.thread.newChannel()
-	local self = lovemu.CreateObject("Channel")
+	local self = line.CreateObject("Channel")
 
 	self.queue = {}
 
@@ -96,4 +96,4 @@ function love.thread.getChannel(name)
 	return ENV.channels[name]
 end
 
-lovemu.RegisterType(Channel)
+line.RegisterType(Channel)

@@ -1,7 +1,7 @@
 if not GRAPHICS then return end
 
 local love = ... or _G.love
-local ENV = love._lovemu_env
+local ENV = love._line_env
 
 ENV.textures = ENV.textures or utility.CreateWeakTable()
 ENV.graphics_filter_min = ENV.graphics_filter_min or "linear"
@@ -35,7 +35,7 @@ do -- filter
 end
 
 do -- quad
-	local Quad = lovemu.TypeTemplate("Quad")
+	local Quad = line.TypeTemplate("Quad")
 
 	local function refresh(vertices, x,y,w,h, sw, sh)
 		vertices[0].x = 0;
@@ -76,7 +76,7 @@ do -- quad
 
 
 	function love.graphics.newQuad(x,y,w,h, sw,sh)
-		local self = lovemu.CreateObject("Quad")
+		local self = line.CreateObject("Quad")
 
 		local vertices = {}
 
@@ -99,7 +99,7 @@ do -- quad
 		return self
 	end
 
-	lovemu.RegisterType(Quad)
+	line.RegisterType(Quad)
 end
 
 love.graphics.origin = surface.LoadIdentity
@@ -331,7 +331,7 @@ end
 
 do -- font
 
-	local Font = lovemu.TypeTemplate("Font")
+	local Font = line.TypeTemplate("Font")
 	function Font:getWidth(str)
 		str = str or "W"
 		return (self.font:GetTextSize(str))
@@ -367,9 +367,9 @@ do -- font
 	end
 
 	local function create_font(path, size, glyphs, texture)
-		local self = lovemu.CreateObject("Font")
+		local self = line.CreateObject("Font")
 
-		path = lovemu.FixPath(path)
+		path = line.FixPath(path)
 
 		self.font = surface.CreateFont({
 			size = size,
@@ -409,7 +409,7 @@ do -- font
 
 	function love.graphics.newImageFont(path, glyphs)
 		local tex
-		if lovemu.Type(path) == "Image" then
+		if line.Type(path) == "Image" then
 			tex = ENV.textures[path]
 			path = "memory"
 		end
@@ -488,7 +488,7 @@ do -- font
 		return draw_text(text, x, y, r, sx, sy, ox, oy, kx, ky, align or "left", limit or 0)
 	end
 
-	lovemu.RegisterType(Font)
+	line.RegisterType(Font)
 end
 
 do -- line
@@ -542,7 +542,7 @@ do -- line
 end
 
 do -- canvas
-	local Canvas = lovemu.TypeTemplate("Canvas")
+	local Canvas = line.TypeTemplate("Canvas")
 
 	ADD_FILTER(Canvas)
 
@@ -584,7 +584,7 @@ do -- canvas
 		w = w or render.GetWidth()
 		h = h or render.GetHeight()
 
-		local self = lovemu.CreateObject("Canvas")
+		local self = line.CreateObject("Canvas")
 
 		self.fb = render.CreateFrameBuffer(Vec2(w, h), {
 			mag_filter = ENV.graphics_filter_mag,
@@ -612,11 +612,11 @@ do -- canvas
 		return ENV.graphics_current_canvas
 	end
 
-	lovemu.RegisterType(Canvas)
+	line.RegisterType(Canvas)
 end
 
 do -- image
-	local Image = lovemu.TypeTemplate("Image")
+	local Image = line.TypeTemplate("Image")
 
 	function Image:getWidth()
 		return ENV.textures[self]:GetSize().x
@@ -654,12 +654,12 @@ do -- image
 	end
 
 	function love.graphics.newImage(path)
-		if lovemu.Type(path) == "ImageData" then
+		if line.Type(path) == "ImageData" then
 			return path
 		else
-			local self = lovemu.CreateObject("Image")
+			local self = line.CreateObject("Image")
 
-			path = lovemu.FixPath(path)
+			path = line.FixPath(path)
 
 			local tex = render.CreateTextureFromPath(path)
 			tex:SetMinFilter(ENV.graphics_filter_min)
@@ -671,9 +671,9 @@ do -- image
 	end
 
 	function love.graphics.newImageData(path)
-		local self = lovemu.CreateObject("Image")
+		local self = line.CreateObject("Image")
 
-		path = lovemu.FixPath(path)
+		path = line.FixPath(path)
 
 		local tex = render.CreateTextureFromPath(path)
 		tex:SetMinFilter(ENV.graphics_filter_min)
@@ -683,7 +683,7 @@ do -- image
 		return self
 	end
 
-	lovemu.RegisterType(Image)
+	line.RegisterType(Image)
 end
 
 do -- stencil
@@ -753,13 +753,13 @@ function love.graphics.drawq(drawable, quad, x,y, r, sx,sy, ox,oy)
 end
 
 function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
-	if lovemu.Type(drawable) == "SpriteBatch" then
+	if line.Type(drawable) == "SpriteBatch" then
 		surface.SetColor(1,1,1,1)
 		surface.SetTexture(ENV.textures[drawable.img])
 		drawable.poly:Draw()
 	else
 		if ENV.textures[drawable] then
-			if lovemu.Type(x) == "Quad" then
+			if line.Type(x) == "Quad" then
 				love.graphics.drawq(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 			else
 				x=x or 0
@@ -788,7 +788,7 @@ function love.graphics.setIcon()
 end
 
 do
-	local Shader = lovemu.TypeTemplate("Shader")
+	local Shader = line.TypeTemplate("Shader")
 
 	function Shader:getWarnings()
 		return ""
@@ -799,12 +799,12 @@ do
 	end
 
 	function love.graphics.newShader()
-		local obj = lovemu.CreateObject("Shader")
+		local obj = line.CreateObject("Shader")
 
 		return obj
 	end
 
-	lovemu.RegisterType(Shader)
+	line.RegisterType(Shader)
 end
 
 love.graphics.newPixelEffect = love.graphics.newShader
@@ -905,7 +905,7 @@ function love.graphics.getStats()
 end
 
 do -- sprite batch
-	local SpriteBatch = lovemu.TypeTemplate("SpriteBatch")
+	local SpriteBatch = line.TypeTemplate("SpriteBatch")
 
 	local function set_rect(self, i, x,y, r, sx,sy, ox,oy, kx,ky)
 		sx = sx or self.w
@@ -919,7 +919,7 @@ do -- sprite batch
 
 	function SpriteBatch:set(id, q, ...)
 		id = id or 1
-		if lovemu.Type(q) == "Quad" then
+		if line.Type(q) == "Quad" then
 			self.poly:SetUV(q.x,q.y, q.w,q.h, q.sw,q.sh)
 			local x,y, r, sx,sy, ox,oy, kx,ky = ...
 			set_rect(self, id, x,y, r, q.w,q.h, ox,oy,kx,ky)
@@ -979,7 +979,7 @@ do -- sprite batch
 	end
 
 	function love.graphics.newSpriteBatch(image, size, usagehint)
-		local self = lovemu.CreateObject("SpriteBatch")
+		local self = line.CreateObject("SpriteBatch")
 		local poly = surface.CreatePoly(size * 6)
 
 		self.size = size
@@ -993,7 +993,7 @@ do -- sprite batch
 		return self
 	end
 
-	lovemu.RegisterType(SpriteBatch)
+	line.RegisterType(SpriteBatch)
 end
 
 event.AddListener("PreDrawGUI", "love", function(dt)
@@ -1001,7 +1001,7 @@ event.AddListener("PreDrawGUI", "love", function(dt)
 		surface.PushHSV(1,0,1)
 	end
 
-	lovemu.CallEvent("lovemu_draw", dt)
+	line.CallEvent("line_draw", dt)
 
 	if ENV.error_message and not ENV.no_error then
 		love.errhand(ENV.error_message)

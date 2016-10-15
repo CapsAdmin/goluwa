@@ -106,7 +106,8 @@ do -- constants
 
 	if CAPS then
 		GL_ARB_direct_state_access = true
-		NVIDIA_WORKAROUND = true
+		--NVIDIA_WORKAROUND = true
+		SRGB = false
 	end
 
 
@@ -253,7 +254,7 @@ profiler = include("lua/libraries/profiler.lua") -- for profiling
 language = include("lua/libraries/language.lua") _G.L = language.LanguageString -- L"options", for use in gui menus and such.
 physics = include("lua/libraries/physics/physics.lua") -- bullet physics
 steam = include("lua/libraries/steam/steam.lua") -- utilities for dealing with steam, the source engine and steamworks
-lovemu = include("lua/libraries/lovemu/lovemu.lua") -- a löve wrapper that lets you run löve games
+line = include("lua/libraries/love/line.lua") -- a löve wrapper that lets you run löve games
 gmod = include("lua/libraries/gmod/gmod.lua") -- a gmod wrapper that lets you run gmod scripts
 
 if SOCKETS then

@@ -1,5 +1,5 @@
 local love = ... or _G.love
-local ENV = love._lovemu_env
+local ENV = love._line_env
 
 love.timer = love.timer or {}
 
@@ -16,7 +16,7 @@ function love.timer.getMicroTime()
 end
 
 function love.timer.getTime()
-	if lovemu.version == "0.8.0" then
+	if line.version == "0.8.0" then
 		return math.ceil(system.GetElapsedTime())
 	else
 		return system.GetElapsedTime()

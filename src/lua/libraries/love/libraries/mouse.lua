@@ -1,5 +1,5 @@
 local love = ... or _G.love
-local ENV = love._lovemu_env
+local ENV = love._line_env
 
 love.mouse = love.mouse or {}
 
@@ -25,16 +25,16 @@ end
 
 love.mouse.setGrabbed = love.mouse.setRelativeMode
 
-local Cursor = lovemu.TypeTemplate("Cursor")
-lovemu.RegisterType(Cursor)
+local Cursor = line.TypeTemplate("Cursor")
+line.RegisterType(Cursor)
 
 function love.mouse.newCursor()
-	local obj = lovemu.CreateObject("Cursor")
+	local obj = line.CreateObject("Cursor")
 	return obj
 end
 
 function love.mouse.getCursor()
-	local obj = lovemu.CreateObject("Cursor")
+	local obj = line.CreateObject("Cursor")
 
 	obj.getType = function()
 		return window.GetCursor()
@@ -48,7 +48,7 @@ function love.mouse.setCursor()
 end
 
 function love.mouse.getSystemCursor()
-	local obj = lovemu.CreateObject("Cursor")
+	local obj = line.CreateObject("Cursor")
 	obj.getType = function()
 		return window.GetCursor()
 	end
@@ -99,28 +99,28 @@ function love.mouse.isDown(key)
 	return input.IsMouseDown(mouse_keymap_10_reverse[key]) or input.IsMouseDown(mouse_keymap_reverse[key])
 end
 
-event.AddListener("MouseInput", "lovemu", function(key, press)
+event.AddListener("MouseInput", "line", function(key, press)
 	local x, y = window.GetMousePosition():Unpack()
 
 	if key == "mwheel_up" or key == "mwheel_down" then
-		lovemu.CallEvent("wheelmoved", 0, key == "mwheel_up" and 1 or -1)
+		line.CallEvent("wheelmoved", 0, key == "mwheel_up" and 1 or -1)
 	end
 
 	if press then
 		if mouse_keymap[key] then
-			lovemu.CallEvent("mousepressed", x, y, mouse_keymap[key])
+			line.CallEvent("mousepressed", x, y, mouse_keymap[key])
 		end
 
 		if mouse_keymap_10[key] then
-			lovemu.CallEvent("mousepressed", x, y, mouse_keymap_10[key])
+			line.CallEvent("mousepressed", x, y, mouse_keymap_10[key])
 		end
 	else
 		if mouse_keymap[key] then
-			lovemu.CallEvent("mousereleased", x, y, mouse_keymap[key])
+			line.CallEvent("mousereleased", x, y, mouse_keymap[key])
 		end
 
 		if mouse_keymap_10[key] then
-			lovemu.CallEvent("mousereleased", x, y, mouse_keymap_10[key])
+			line.CallEvent("mousereleased", x, y, mouse_keymap_10[key])
 		end
 	end
 end)

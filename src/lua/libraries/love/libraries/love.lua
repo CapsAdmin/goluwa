@@ -1,5 +1,5 @@
 local love = ... or _G.love
-local ENV = love._lovemu_env
+local ENV = love._line_env
 
 function love.load()
 end
@@ -24,23 +24,23 @@ function love.getVersion()
 	return 0, 9, 1, "goluwa"
 end
 
-function love.lovemu_update(dt)
+function love.line_update(dt)
 	if not love.update then return end
 
 	if ENV.love_game_update_draw_hack == false then
 		ENV.love_game_update_draw_hack = true -- this is stupid but it's because some games rely on update being called before draw
 	end
 
-	lovemu.pcall(love, love.update, dt)
+	line.pcall(love, love.update, dt)
 end
 
 event.AddListener("Update", "love", function()
-	for i = 1, lovemu.speed do
-		lovemu.CallEvent("lovemu_update", system.GetFrameTime())
+	for i = 1, line.speed do
+		line.CallEvent("line_update", system.GetFrameTime())
 	end
 end)
 
-function love.lovemu_draw(dt)
+function love.line_draw(dt)
 	if not love.draw then return end
 
 	if ENV.love_game_update_draw_hack == false then return end
@@ -52,7 +52,7 @@ function love.lovemu_draw(dt)
 	love.graphics.setColor(love.graphics.getColor())
 	love.graphics.setFont(love.graphics.getFont())
 
-	lovemu.pcall(love, love.draw, dt)
+	line.pcall(love, love.draw, dt)
 
 	surface.PopMatrix()
 end

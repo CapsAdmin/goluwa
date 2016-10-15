@@ -1,28 +1,28 @@
 local love = ... or _G.love
-local ENV = love._lovemu_env
+local ENV = love._line_env
 
 love.filesystem = love.filesystem or {}
 
 ENV.filesystem_identity = ENV.filesystem_identity or "none"
 
 function love.filesystem.getAppdataDirectory()
-	return R("data/lovemu/" .. ENV.filesystem_identity .. "/")
+	return R("data/love/" .. ENV.filesystem_identity .. "/")
 end
 
 function love.filesystem.getSaveDirectory()
-	return R("data/lovemu/" .. ENV.filesystem_identity .. "/")
+	return R("data/love/" .. ENV.filesystem_identity .. "/")
 end
 
 function love.filesystem.getUserDirectory()
-	return R("data/lovemu/" .. ENV.filesystem_identity .. "/")
+	return R("data/love/" .. ENV.filesystem_identity .. "/")
 end
 
 function love.filesystem.getWorkingDirectory()
-	return R("data/lovemu/" .. ENV.filesystem_identity .. "/")
+	return R("data/love/" .. ENV.filesystem_identity .. "/")
 end
 
 function love.filesystem.getLastModified(path)
-	return vfs.GetLastModified("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path) or vfs.GetLastModified(path)
+	return vfs.GetLastModified("data/love/" .. ENV.filesystem_identity .. "/" .. path) or vfs.GetLastModified(path)
 end
 
 function love.filesystem.enumerate(path)
@@ -30,8 +30,8 @@ function love.filesystem.enumerate(path)
 		path = path .. "/"
 	end
 
-	if vfs.IsDirectory("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path) then
-		return vfs.Find("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path)
+	if vfs.IsDirectory("data/love/" .. ENV.filesystem_identity .. "/" .. path) then
+		return vfs.Find("data/love/" .. ENV.filesystem_identity .. "/" .. path)
 	end
 
 	return vfs.Find(path)
@@ -44,19 +44,19 @@ function love.filesystem.init()
 end
 
 function love.filesystem.isDirectory(path)
-	return vfs.IsDirectory("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path) or vfs.IsDirectory(path)
+	return vfs.IsDirectory("data/love/" .. ENV.filesystem_identity .. "/" .. path) or vfs.IsDirectory(path)
 end
 
 function love.filesystem.isFile(path)
-	return vfs.IsFile("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path) or vfs.IsFile(path)
+	return vfs.IsFile("data/love/" .. ENV.filesystem_identity .. "/" .. path) or vfs.IsFile(path)
 end
 
 function love.filesystem.exists(path)
-	return vfs.Exists("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path) or vfs.Exists(path)
+	return vfs.Exists("data/love/" .. ENV.filesystem_identity .. "/" .. path) or vfs.Exists(path)
 end
 
 function love.filesystem.lines(path)
-	local file = vfs.Open("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path)
+	local file = vfs.Open("data/love/" .. ENV.filesystem_identity .. "/" .. path)
 
 	if not file then
 		file = vfs.Open(path)
@@ -71,10 +71,10 @@ function love.filesystem.load(path)
 
 	local func, err
 
-	if lovemu.Type(path) == "FileData" then
+	if line.Type(path) == "FileData" then
 		func, err = loadstring(path:getString())
 	else
-		func, err = vfs.loadfile("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path, mode)
+		func, err = vfs.loadfile("data/love/" .. ENV.filesystem_identity .. "/" .. path, mode)
 
 		if not func then
 			func, err = vfs.loadfile(path)
@@ -89,9 +89,9 @@ function love.filesystem.load(path)
 end
 
 function love.filesystem.mkdir(path)
-	vfs.OSCreateDirectory(R("data/") .. "lovemu/")
-	vfs.OSCreateDirectory(R("data/lovemu/") .. ENV.filesystem_identity .. "/")
-	vfs.OSCreateDirectory(R("data/lovemu/" .. ENV.filesystem_identity .. "/") .. path)
+	vfs.OSCreateDirectory(R("data/") .. "love/")
+	vfs.OSCreateDirectory(R("data/love/") .. ENV.filesystem_identity .. "/")
+	vfs.OSCreateDirectory(R("data/love/" .. ENV.filesystem_identity .. "/") .. path)
 
 	return true
 end
@@ -99,7 +99,7 @@ end
 love.filesystem.createDirectory = love.filesystem.mkdir
 
 function love.filesystem.read(path, size)
-	local file = vfs.Open("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path)
+	local file = vfs.Open("data/love/" .. ENV.filesystem_identity .. "/" .. path)
 
 	if not file then
 		file = vfs.Open(path)
@@ -120,8 +120,8 @@ function love.filesystem.remove(path)
 end
 
 function love.filesystem.setIdentity(name)
-	vfs.OSCreateDirectory(R("data/") .. "lovemu/")
-	vfs.OSCreateDirectory(R("data/lovemu/") .. name .. "/")
+	vfs.OSCreateDirectory(R("data/") .. "love/")
+	vfs.OSCreateDirectory(R("data/love/") .. name .. "/")
 
 	ENV.filesystem_identity = name
 
@@ -133,7 +133,7 @@ function love.filesystem.getIdentity()
 end
 
 function love.filesystem.write(path, data)
-	vfs.Write("data/lovemu/" .. ENV.filesystem_identity .. "/" .. path, data)
+	vfs.Write("data/love/" .. ENV.filesystem_identity .. "/" .. path, data)
 	return true
 end
 
@@ -142,17 +142,17 @@ function love.filesystem.isFused()
 end
 
 function love.filesystem.mount(from, to)
-	if not vfs.IsDirectory("data/lovemu/" .. ENV.filesystem_identity .. "/" .. from) then
-		vfs.Mount(from, "data/lovemu/" .. ENV.filesystem_identity .. "/" .. to)
+	if not vfs.IsDirectory("data/love/" .. ENV.filesystem_identity .. "/" .. from) then
+		vfs.Mount(from, "data/love/" .. ENV.filesystem_identity .. "/" .. to)
 		return vfs.IsDirectory(from)
 	else
-		vfs.Mount("data/lovemu/" .. ENV.filesystem_identity .. "/" .. from, "data/lovemu/" .. ENV.filesystem_identity .. "/" .. to)
+		vfs.Mount("data/love/" .. ENV.filesystem_identity .. "/" .. from, "data/love/" .. ENV.filesystem_identity .. "/" .. to)
 		return true
 	end
 end
 
 function love.filesystem.unmount(from)
-	vfs.Unmount("data/lovemu/" .. ENV.filesystem_identity .. "/" .. from)
+	vfs.Unmount("data/love/" .. ENV.filesystem_identity .. "/" .. from)
 end
 
 function love.filesystem.append(name, data, size)
@@ -164,7 +164,7 @@ function love.filesystem.setSymlinksEnabled()
 end
 
 do -- File object
-	local File = lovemu.TypeTemplate("File")
+	local File = line.TypeTemplate("File")
 
 	function File:close()
 		if not self.file then return end
@@ -225,11 +225,11 @@ do -- File object
 	end
 
 	function File:write(data, size)
-		if lovemu.Type(data) == "string" then
+		if line.Type(data) == "string" then
 			self.file:WriteBytes(data)
 			return true
-		elseif lovemu.Type(data) == "Data" then
-			lovemu.ErrorNotSupported("Data not supported")
+		elseif line.Type(data) == "Data" then
+			line.ErrorNotSupported("Data not supported")
 		end
 	end
 
@@ -237,11 +237,11 @@ do -- File object
 		if mode == "w" then mode = "write" end
 		if mode == "r" then mode = "read" end
 
-		logn("[lovemu] file open ", self.path, " ", mode)
+		logn("[line] file open ", self.path, " ", mode)
 		local path = self.path
 
 		if mode == "w" then
-			path = "data/lovemu/" .. ENV.filesystem_identity .. "/" .. self.path
+			path = "data/love/" .. ENV.filesystem_identity .. "/" .. self.path
 		end
 
 		self.file = assert(vfs.Open(path, mode))
@@ -249,7 +249,7 @@ do -- File object
 	end
 
 	function love.filesystem.newFile(path, mode)
-		local self = lovemu.CreateObject("File")
+		local self = line.CreateObject("File")
 		self.path = path
 
 		if mode then
@@ -259,12 +259,12 @@ do -- File object
 		return self
 	end
 
-	lovemu.RegisterType(File)
+	line.RegisterType(File)
 end
 
 
 do -- FileData object
-	local FileData = lovemu.TypeTemplate("FileData")
+	local FileData = line.TypeTemplate("FileData")
 
 	function FileData:getPointer()
 		return ffi.cast("uint8_t *", self.contents)
@@ -293,7 +293,7 @@ do -- FileData object
 			contents = love.filesystem.read(name)
 		end
 
-		local self = lovemu.CreateObject("FileData")
+		local self = line.CreateObject("FileData")
 
 		self.contents = contents
 		self.filename, self.ext = name:match("(.+)%.(.+)")
@@ -301,7 +301,7 @@ do -- FileData object
 		return self
 	end
 
-	lovemu.RegisterType(FileData)
+	line.RegisterType(FileData)
 end
 
 event.AddListener("WindowFileDrop", "love", function(wnd, path)
