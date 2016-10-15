@@ -860,8 +860,42 @@ do
 	end
 end
 
-function love.graphics.polygon()
+local poly = surface.CreatePoly(4096)
+local lines = surface.CreateQuadricBeizerCurve()
 
+function love.graphics.polygon(mode, ...)
+	local points
+	if type(...) == "number" then
+		points = {...}
+	else
+		points = ...
+	end
+
+	surface.SetWhiteTexture()
+	if mode == "line" then
+		table.clear(lines.nodes)
+		local idx = 0
+		for i = 1, #points, 2 do
+			lines:Add(Vec2(points[i + 0], points[i + 1]))
+			idx = idx + 1
+		end
+
+		lines:ConstructPoly(ENV.graphics_line_width*0.75, 1, 1, poly)
+		poly.mesh:SetMode("triangle_strip")
+		poly:Draw(idx*4)
+	else
+		local idx = 0
+
+		for i = 1, #points, 2 do
+			poly:SetVertex(idx, points[i + 0], points[i + 1])
+			idx = idx + 1
+		end
+
+		poly:SetVertex(idx, points[1], points[2])
+
+		poly.mesh:SetMode("triangle_fan")
+		poly:Draw(idx)
+	end
 end
 
 function love.graphics.getStats()
@@ -975,11 +1009,11 @@ event.AddListener("PreDrawGUI", "love", function(dt)
 
 	lovemu.CallEvent("lovemu_draw", dt)
 
-	if ENV.error_message then
+	if ENV.error_message and not ENV.no_error then
 		love.errhand(ENV.error_message)
 	end
 
 	if menu and menu.IsVisible() then
 		surface.PopHSV(1,0,1)
 	end
-end)
+end, {on_error = system.pcall})

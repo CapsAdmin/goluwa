@@ -410,14 +410,14 @@ do
 		return offseted
 	end
 
-	function META:ConstructPoly(width, quality, stretch)
+	function META:ConstructPoly(width, quality, stretch, poly)
 		width = width or 30
 		stretch = stretch or 1
 
 		local negative_points = self:CreateOffsetedCurve(-width):ConvertToPoints(quality)
 		local positive_points = self:CreateOffsetedCurve(width):ConvertToPoints(quality)
 
-		local poly = surface.CreatePoly(#positive_points * 2)
+		local poly = poly or surface.CreatePoly(#positive_points * 2)
 		local distance_positive = 0
 
 		for i in ipairs(positive_points) do

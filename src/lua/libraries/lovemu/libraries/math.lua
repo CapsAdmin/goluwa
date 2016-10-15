@@ -445,15 +445,10 @@ do
 			local c = polygons[next + 1]
 
 			if is_ear(a, b, c, concave) then
-				table.insert(triangles, a.x)
-				table.insert(triangles, a.y)
-				table.insert(triangles, b.x)
-				table.insert(triangles, b.y)
-				table.insert(triangles, c.x)
-				table.insert(triangles, c.y)
+				table.insert(triangles, {a.x,a.y, b.x,b.y, c.x,c.y})
 				next_idx[prev] = next
 				prev_idx[next] = prev
-				table.remove(concave, current + 1)
+				table.removevalue(concave, b)
 				n_vertices = n_vertices - 1
 				skipped = 0
 			else
@@ -472,12 +467,7 @@ do
 		local b = polygons[current + 1]
 		local c = polygons[next + 1]
 
-		table.insert(triangles, a.x)
-		table.insert(triangles, a.y)
-		table.insert(triangles, b.x)
-		table.insert(triangles, b.y)
-		table.insert(triangles, c.x)
-		table.insert(triangles, c.y)
+		table.insert(triangles, {a.x,a.y, b.x,b.y, c.x,c.y})
 
 		return triangles
 	end
