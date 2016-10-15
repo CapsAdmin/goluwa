@@ -16,14 +16,20 @@ local ffi_new = ffi.new
 function ffi.debug_gc(b)
 	if b then
 		ffi.new = ffi.new_dbg_gc
+		ffi.gc = ffi.gc_dbg_gc
 	else
 		ffi.new = ffi_new
+		ffi.gc = ffi.gc
 	end
+end
+
+function ffi.gc_dbg_gc(cdata, finalizer)
+	return ffi.gc(cdata, function(...) logn("ffi.gc: ", ...) return finalizer(...) end)
 end
 
 function ffi.new_dbg_gc(...)
 	local obj = ffi_new(...)
-	ffi.gc(obj, function(...) logn("ffi debug gc: ", ...) end)
+	pcall(function() ffi.gc(obj, function(...) logn("ffi.new: ", ...) end) end)
 	return obj
 end
 
