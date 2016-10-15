@@ -332,17 +332,36 @@ do
 	local META = prototype.CreateTemplate("quadric_beizer_curve")
 
 	META:GetSet("JoinLast", true)
+	META:GetSet("MaxLines", 0)
 
-	function surface.CreateQuadricBeizerCurve()
+	function surface.CreateQuadricBeizerCurve(count)
 		local self = META:CreateObject()
 
 		self.nodes = {}
+		self.MaxLines = count
 
 		return self
 	end
 
 	function META:Add(point, control)
-		table.insert(self.nodes, {point = point, control = control})
+		self:Set(#self.nodes + 1, point, control)
+		self.MaxLines = #self.nodes
+	end
+
+	function META:Set(i, point, control)
+		self.nodes[i] = self.nodes[i] or {}
+		if point then
+			self.nodes[i].point = self.nodes[i].point or Vec2()
+			self.nodes[i].point.x = point.x
+			self.nodes[i].point.y = point.y
+		end
+		if control then
+			self.nodes[i].control = self.nodes[i].control or Vec2()
+			self.nodes[i].control.x = control.x
+			self.nodes[i].control.y = control.y
+		else
+			self.nodes[i].control = nil
+		end
 	end
 
 	local function quadratic_bezier(a, b, control, t)
@@ -355,14 +374,15 @@ do
 		local points = {}
 		local precision = 1 / quality
 
-		for i, current in ipairs(self.nodes) do
+		for i = 1, self.MaxLines do
+			local current = self.nodes[i]
 			local next = self.nodes[i + 1]
 			if self.JoinLast then
-				if not next then
+				if i == self.MaxLines then
 					next = self.nodes[1]
 				end
 			else
-				if not next then
+				if i ~= self.MaxLines then
 					break
 				end
 			end
@@ -383,18 +403,19 @@ do
 	function META:CreateOffsetedCurve(offset)
 		local offseted = surface.CreateQuadricBeizerCurve()
 
-		for i, current in ipairs(self.nodes) do
+		for i = 1, self.MaxLines do
+			local current = self.nodes[i]
 			local next = self.nodes[i+1]
 			if self.JoinLast then
-				if not next then
+				if i == self.MaxLines then
 					next = self.nodes[1]
 				end
 			else
-				if not next then
+				if i ~= self.MaxLines then
 					break
 				end
 			end
-			local prev = self.nodes[i-1] or self.nodes[#self.nodes]
+			local prev = self.nodes[i-1] or self.nodes[self.MaxLines]
 			local current_control = current.control or current.point:GetLerped(0.5, next.point)
 			local prev_control = prev.control or prev.point:GetLerped(0.5, current.point)
 

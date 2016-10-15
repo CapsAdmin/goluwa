@@ -861,41 +861,35 @@ do
 end
 
 local poly = surface.CreatePoly(4096)
-local lines = surface.CreateQuadricBeizerCurve()
+local lines = surface.CreateQuadricBeizerCurve(4096)
 
 function love.graphics.polygon(mode, ...)
-	local points
-	if type(...) == "number" then
-		points = {...}
-	else
-		points = ...
-	end
+	local points = type(...) == "table" and ... or {...}
 
 	surface.SetWhiteTexture()
+	local idx = 0
+
 	if mode == "line" then
-		table.clear(lines.nodes)
-		local idx = 0
 		for i = 1, #points, 2 do
-			lines:Add(Vec2(points[i + 0], points[i + 1]))
+			lines:Set(idx + 1, Vec2(points[i + 0], points[i + 1]))
 			idx = idx + 1
 		end
 
+		lines:SetMaxLines(idx)
 		lines:ConstructPoly(ENV.graphics_line_width*0.75, 1, 1, poly)
-		poly.mesh:SetMode("triangle_strip")
-		poly:Draw(idx*4)
-	else
-		local idx = 0
 
+		idx = idx * 4
+		poly.mesh:SetMode("triangle_strip")
+	else
 		for i = 1, #points, 2 do
 			poly:SetVertex(idx, points[i + 0], points[i + 1])
 			idx = idx + 1
 		end
 
-		poly:SetVertex(idx, points[1], points[2])
-
 		poly.mesh:SetMode("triangle_fan")
-		poly:Draw(idx)
 	end
+
+	poly:Draw(idx)
 end
 
 function love.graphics.getStats()
