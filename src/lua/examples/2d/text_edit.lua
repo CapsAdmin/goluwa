@@ -1,3 +1,5 @@
+local font = gfx.GetDefaultFont()
+
 local grid = {}
 
 local w, h = 10, 15
@@ -91,7 +93,7 @@ local function invalidate()
 		for x, info in ipairs(line) do
 			if info.char:getchartype() ~= "space" then
 				--gfx.DrawText(info.char, x*w, y*h)
-				surface.default_font:SetPolyChar(poly, draw_i, x*w, y*h, info.char)
+				font:SetPolyChar(poly, draw_i, x*w, y*h, info.char)
 				draw_i = draw_i + 1
 			end
 		end
@@ -99,7 +101,7 @@ local function invalidate()
 end
 
 local function draw()
-	local k,v = next(surface.default_font.texture_atlas.textures)
+	local k,v = next(font.texture_atlas.textures)
 	if v.page then
 		surface.SetTexture(v.page.texture)
 		--surface.SetTexture(render.GetErrorTexture())
@@ -132,7 +134,7 @@ event.AddListener("PostDrawGUI", "lol", function()
 end)
 
 event.AddListener("CharInput", "lol", function(char)
-	surface.default_font:DrawString(char)
+	font:DrawString(char)
 
 	local line = grid[caret_pos.y]
 
@@ -195,9 +197,9 @@ end)
 
 
 do
-	local lua = vfs.Read("lua/examples/grid.lua")
+	local lua = assert(vfs.Read("lua/examples/2d/text_edit.lua"))
 
-	surface.default_font:DrawString(lua)
+	font:DrawString(lua)
 
 	local x, y = 1, 1
 

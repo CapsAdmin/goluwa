@@ -10,8 +10,9 @@ music:AddEffect(distortion)
 local reverb = audio.CreateEffect("eaxreverb", {decay_time = 5, diffusion = 5, gain = 1}) -- whatever floats your boat!
 music:AddEffect(reverb)
 
-local voice = audio.CreateSource("http://chatsoundsforgmod.googlecode.com/svn/trunk/sound/chatsounds/autoadd/deusex/what%20a%20shame.ogg")
+local voice = audio.CreateSource("https://raw.githubusercontent.com/Metastruct/garrysmod-chatsounds/master/sound/chatsounds/autoadd/deusex/what%20a%20shame.ogg")
 voice:Play()
+voice:SetLooping(true)
 voice:SetGain(5)
 voice.OnLoad = function(self, info) table.print(info) end
 

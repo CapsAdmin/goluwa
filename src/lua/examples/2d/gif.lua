@@ -1,8 +1,8 @@
-local gif1 = Gif("https://dl.dropboxusercontent.com/u/244444/angrykid.gif")
-local gif2 = Gif("https://dl.dropboxusercontent.com/u/244444/pug.gif")
-local gif3 = Gif("https://dl.dropboxusercontent.com/u/244444/envy.gif")
-local gif4 = Gif("https://dl.dropboxusercontent.com/u/244444/greenkid.gif")
-local gif5 = Gif("https://dl.dropboxusercontent.com/u/244444/zzzzz.gif")
+local gif1 = gfx.CreateGif("https://dl.dropboxusercontent.com/u/244444/angrykid.gif")
+local gif2 = gfx.CreateGif("https://dl.dropboxusercontent.com/u/244444/pug.gif")
+local gif3 = gfx.CreateGif("https://dl.dropboxusercontent.com/u/244444/envy.gif")
+local gif4 = gfx.CreateGif("https://dl.dropboxusercontent.com/u/244444/greenkid.gif")
+local gif5 = gfx.CreateGif("https://dl.dropboxusercontent.com/u/244444/zzzzz.gif")
 
 event.AddListener("PreDrawGUI", "gif", function()
 	surface.SetColor(1, 1, 1, 1)

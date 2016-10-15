@@ -1,4 +1,4 @@
-commands.RunString("mount hl2")
+steam.MountSourceGame("gmod")
 
 local speaker = {}
 
@@ -21,7 +21,7 @@ local function calc_job(id, job, play_next_now)
 			if data.snd and data.pitch then
 
 				data.snd:SetGain(data.volume)
-				data.snd:SetPitch(data.pitch / 255)
+				data.snd:SetPitch(data.pitch / 100)
 				data.snd:Play()
 
 				-- make it so we can hook onto when a sound is played for effects
@@ -95,7 +95,6 @@ end
 -- makes the fairy talk without using a real language
 -- it's using sounds from a zelda game which does the same thing
 local function play_phrase(id, text, list, pitch, volume, soundlevel, cutoff)
-	list = list or METROCOP_VOICE
 	pitch = pitch or 100
 	volume = volume or 1
 	soundlevel = soundlevel or 90
@@ -161,7 +160,7 @@ local voices = {}
 local function add_voices(path, name)
 	local tbl = {}
 
-	for k,v in pairs(vfs.Find("sound/" .. path .. "*.wav")) do
+	for k,v in pairs(vfs.Find("sound/" .. path .. ".+%.wav")) do
 		if
 			not v:lower():find("pain") and
 			not v:lower():find("hurt") and
@@ -291,14 +290,14 @@ voices.cat = {}
 for i = 1, 3 do voices.cat[i] = "items/halloween/cat0"..i..".wav" end
 
 _G.speaker = {
-	PlayPhrase = function(ent, text, list, ...)
+	PlayPhrase = function(id, text, list, ...)
 		if type(list) == "string" then
 			list = voices[list]
 		end
-		return play_phrase(ent, text, list, ...)
+		return play_phrase(id, text, list, ...)
 	end,
 	StopSpeaking = stop_speaking,
 	GetVoices = function() return voices end,
 }
 
-_G.speaker.PlayPhrase({}, "twsetes tsejtijs etijset wok w koww ow owo wo", "metrocop")
+_G.speaker.PlayPhrase({}, "twsetes tsejtijs etijset wok w koww ow owo wo", "rat")

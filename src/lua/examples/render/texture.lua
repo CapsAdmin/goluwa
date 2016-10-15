@@ -66,7 +66,7 @@ local shader = render.CreateShader({
 		]],
 	}
 })
-
+require("ffi").debug_gc(true)
 serializer.WriteFile("msgpack", "lol.wtf", tex:Download())
 local info = serializer.ReadFile("msgpack", "lol.wtf")
 info.flip_y = true

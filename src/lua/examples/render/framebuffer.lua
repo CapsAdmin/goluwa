@@ -38,7 +38,7 @@ do
 
 	fb:WriteThese("all")
 
-	fb:Clear(1)
+	fb:ClearAll(1)
 end
 
 do -- write a red square only to attachment 2
@@ -101,11 +101,11 @@ end
 
 event.Timer("lol", 1, 4, function(i)
 	if i == 1 then
-		fb:Clear(i,1,0,0,0.25)
+		fb:ClearColor(i,1,0,0,0.25)
 	elseif i == 2 then
-		fb:Clear(i,0,1,0,0.25)
+		fb:ClearColor(i,0,1,0,0.25)
 	elseif i == 3 then
-		fb:Clear(i,0,0,1,0.25)
+		fb:ClearColor(i,0,0,1,0.25)
 	end
 end)
 
