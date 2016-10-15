@@ -34,7 +34,7 @@ local sphere = render.CreateBlankTexture(Vec2(64, 64)):Fill(function(x, y)
 	return 255, 255, 255, a * 128
 end)
 
-local emitter = ParticleEmitter()
+local emitter = gfx.CreateParticleEmitter()
 --emitter:SetCenterAttractionForce(0.1)
 --emitter:SetPosAttractionForce(0.1)
 emitter:SetRate(-1)

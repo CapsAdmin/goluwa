@@ -1,45 +1,45 @@
 local fonts = {
-	surface.CreateFont({
+	fonts.CreateFont({
 		path = "aladin",
 		size = 54,
 	}),
-	surface.CreateFont({
+	fonts.CreateFont({
 		path = "angeline vintage",
 		size = 30,
 	}),
-	surface.CreateFont({
+	fonts.CreateFont({
 		path = "roboto bold",
 		size = 60,
 	}),
-	surface.CreateFont({
+	fonts.CreateFont({
 		path = "roboto italic",
 		size = 60,
 	}),
-	surface.CreateFont({
+	fonts.CreateFont({
 		path = "Ruslan Display",
 		size = 60,
 	}),
-	surface.CreateFont({
+	fonts.CreateFont({
 		path = "arial",
 		size = 60,
 	}),
-	surface.CreateFont({
+	fonts.CreateFont({
 		path = "courier new",
 		size = 40,
 	}),
-	surface.CreateFont({
+	fonts.CreateFont({
 		path = "tahoma",
 		size = 40,
 	}),
-	surface.CreateFont({
+	fonts.CreateFont({
 		path = "helvetica",
 		size = 40,
 	}),
-	--[[surface.CreateFont({
+	--[[fonts.CreateFont({
 		path = "fonts/resource_imagefont1.png",
 		glyphs = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?-+/():;%&`'*#=[]\"",
 	}),
-	surface.CreateFont({
+	fonts.CreateFont({
 		path = "fonts/boldfont.png",
 		glyphs = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!'-:*@<>+/_$&?",
 	}),]]
@@ -51,9 +51,9 @@ event.AddListener("PreDrawGUI", "lol", function()
 		local str = font:GetName()
 		local size = Vec2(font:GetTextSize(str))
 		surface.SetColor(1,1,1,1)
-		surface.SetFont(font)
-		surface.SetTextPosition(30, 30 + y)
-		surface.DrawText(str)
+		gfx.SetFont(font)
+		gfx.SetTextPosition(30, 30 + y)
+		gfx.DrawText(str)
 
 		surface.SetWhiteTexture()
 		surface.SetColor(1,0,0,0.25)

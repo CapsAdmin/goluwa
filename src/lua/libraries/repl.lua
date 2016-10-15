@@ -97,14 +97,14 @@ function repl.Initialize()
 		end
 
 		_G.surface = {GetDefaultFont = function() end}
-		include("lua/libraries/graphics/surface/markup/markup.lua")
+		include("lua/libraries/graphics/gfx/markup/markup.lua")
 
 		if hack then
 			SERVER = nil
 		end
 	end
 
-	c.markup = surface.CreateMarkup()
+	c.markup = gfx.CreateMarkup()
 	c.markup:SetFixedSize(14)
 
 	repl.SetInputHeight(repl.input_height)

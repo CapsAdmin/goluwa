@@ -14,6 +14,9 @@ end
 if WINDOW and window then
 	if window.Open() then
 		if GRAPHICS then
+			surface.Initialize()
+			fonts.Initialize()
+			gfx.Initialize()
 			gui.Initialize()
 		end
 	end

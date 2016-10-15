@@ -1,27 +1,27 @@
 event.AddListener("PreDrawGUI", "joystick", function()
 	local data = window.GetJoystickState(0)
 
-	surface.SetDefaultFont()
+	gfx.SetFont()
 	surface.SetColor(1,1,1,1)
 
 	if data then
 		local x, y = 0, 0
-		surface.DrawText(data.name)
+		gfx.DrawText(data.name)
 		y = y + 20
 
 		for k, v in pairs(data.axes) do
 			v = math.round(v, 4)
-			surface.SetTextPosition(x, y)
-			surface.DrawText(k .. " = " .. v)
+			gfx.SetTextPosition(x, y)
+			gfx.DrawText(k .. " = " .. v)
 			y = y + 20
 		end
 
 		for k, v in pairs(data.buttons) do
-			surface.SetTextPosition(x, y)
-			surface.DrawText(k .. " = " .. v)
+			gfx.SetTextPosition(x, y)
+			gfx.DrawText(k .. " = " .. v)
 			y = y + 20
 		end
 	else
-		surface.DrawText("no joystick present :(")
+		gfx.DrawText("no joystick present :(")
 	end
 end)

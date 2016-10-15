@@ -2,7 +2,7 @@ local META = (...) or prototype.GetRegistered("markup")
 
 local function set_font(self, font)
 	if self.FixedSize == 0 then
-		surface.SetFont(font)
+		gfx.SetFont(font)
 	end
 end
 
@@ -10,7 +10,7 @@ local function get_text_size(self, text)
 	if self.FixedSize > 0 then
 		return self.FixedSize, self.FixedSize
 	else
-		return surface.GetTextSize(text)
+		return gfx.GetTextSize(text)
 	end
 end
 
@@ -53,7 +53,7 @@ local function prepare_chunks(self)
 		::continue_::
 	end
 
-	table.insert(out, 1, {type = "font", val = surface.GetDefaultFont(), internal = true})
+	table.insert(out, 1, {type = "font", val = gfx.GetDefaultFont(), internal = true})
 	table.insert(out, 1, {type = "color", val = Color(1, 1, 1, 1), internal = true})
 	table.insert(out, {type = "string", val = "", internal = true})
 
@@ -311,7 +311,7 @@ local function store_tag_info(self, chunks)
 	local height = 0
 	local last_y
 
-	local font = surface.GetDefaultFont()
+	local font = gfx.GetDefaultFont()
 	local color = Color(1,1,1,1)
 
 	local chunk_line = {}

@@ -118,8 +118,8 @@ event.AddListener("PostDrawGUI", "lol", function()
 		--render.SetShaderOverride()
 	--surface.PopMatrix()
 
-	surface.SetDefaultFont()
-	surface.DrawText("p", 64, 64)
+	gfx.SetFont()
+	gfx.DrawText("p", 64, 64)
 
 	--surface.SetTexture(grad)
 	--surface.SetColor(1,1,1,1)

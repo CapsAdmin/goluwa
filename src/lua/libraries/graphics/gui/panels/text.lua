@@ -17,7 +17,7 @@ prototype.GetSet(META, "TextColor")
 function META:Initialize()
 	self:SetNoDraw(true)
 	self:SetLayoutWhenInvisible(false)
-	local markup = surface.CreateMarkup()
+	local markup = gfx.CreateMarkup()
 	markup:SetEditable(false)
 	markup.OnInvalidate = function()
 		self.Size.x = markup.width + self.Padding:GetLeft() + self.Padding:GetRight()
@@ -35,7 +35,7 @@ function META:Initialize()
 	end
 	self.markup = markup
 	self:GlobalMouseCapture(true)
-	self:SetFont(surface.GetDefaultFont())
+	self:SetFont(gfx.GetDefaultFont())
 end
 
 function META:SetPadding(rect)

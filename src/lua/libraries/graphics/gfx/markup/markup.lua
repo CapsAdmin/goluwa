@@ -1,4 +1,4 @@
-﻿local surface = (...) or _G.surface
+﻿local gfx = (...) or _G.gfx
 
 --[[
 todo:
@@ -36,7 +36,7 @@ else
 	META:GetSet("FixedSize", 0)
 end
 
-function surface.CreateMarkup()
+function gfx.CreateMarkup()
 	local self = prototype.CreateObject(META, {
 		w = 0,
 		h = 0,

@@ -2,7 +2,7 @@ local META = (...) or prototype.GetRegistered("markup")
 
 local function set_font(self, font)
 	if self.FixedSize == 0 then
-		surface.SetFont(font)
+		gfx.SetFont(font)
 	end
 end
 
@@ -66,7 +66,7 @@ function META:Draw(max_w)
 
 	if self.chunks[1] then
 		-- reset font and color for every line
-		set_font(self, surface.GetDefaultFont())
+		set_font(self, gfx.GetDefaultFont())
 		surface.SetColor(1, 1, 1, 1)
 
 		start_remove = false
@@ -125,7 +125,7 @@ function META:Draw(max_w)
 						local c = chunk.color
 						surface.SetColor(c.r, c.g, c.b, c.a)
 
-						surface.DrawText(chunk.val, chunk.x, chunk.y, max_w)
+						gfx.DrawText(chunk.val, chunk.x, chunk.y, max_w)
 					elseif chunk.type == "tag_stopper" then
 						for _, chunks in pairs(self.started_tags) do
 							local fix = false

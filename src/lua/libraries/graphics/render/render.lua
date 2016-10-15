@@ -36,8 +36,6 @@ function render.Initialize()
 	include(dir .. "shader_builder.lua", render)
 
 	render.GenerateTextures()
-
-	event.Call("RenderContextInitialized")
 end
 
 function render.Shutdown()

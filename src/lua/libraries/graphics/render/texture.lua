@@ -379,7 +379,7 @@ do
 	function META:Shade(fragment_shader, vars, blend_mode)
 		blend_mode = blend_mode or "alpha"
 		if not surface.IsReady() then
-			event.AddListener("SurfaceInitialized", self, function()
+			event.AddListener("2DReady", self, function()
 				self:Shade(fragment_shader, vars)
 			end, {remove_after_one_call = true})
 			return

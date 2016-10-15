@@ -106,7 +106,7 @@ do -- constants
 
 	if CAPS then
 		GL_ARB_direct_state_access = true
-		--NVIDIA_WORKAROUND = true
+		NVIDIA_WORKAROUND = true
 		SRGB = false
 	end
 
@@ -283,11 +283,11 @@ if GRAPHICS then
 	render = include("lua/libraries/graphics/render/render.lua") -- OpenGL abstraction
 
 	if render then
-		surface = include("lua/libraries/graphics/surface/surface.lua") -- high level 2d rendering of the render library
+		surface = include("lua/libraries/graphics/surface.lua") -- low level 2d rendering based on the render library
+		fonts = include("lua/libraries/graphics/fonts/fonts.lua") -- font rendering
+		gfx = include("lua/libraries/graphics/gfx/gfx.lua") -- high level 2d rendering based on surface and fonts
 		window = include("lua/libraries/graphics/window.lua") -- high level window implementation
-		video = include("lua/libraries/graphics/video.lua") -- gif support (for now)
 		gui = include("lua/libraries/graphics/gui/gui.lua")
-		include("lua/libraries/graphics/particles.lua")
 	end
 
 	if not render or not window then

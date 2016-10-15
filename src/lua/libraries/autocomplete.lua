@@ -85,7 +85,7 @@ function autocomplete.DrawFound(x, y, found, max, offset)
 	offset = offset or 1
 	max = max or 100
 
-	surface.SetDefaultFont()
+	gfx.SetFont()
 	surface.SetColor(1,1,1,1)
 
 	surface.PushMatrix(x, y)
@@ -94,12 +94,12 @@ function autocomplete.DrawFound(x, y, found, max, offset)
 
 			if not v then break end
 
-			local _, h = surface.GetTextSize(v)
+			local _, h = gfx.GetTextSize(v)
 			local alpha = (-(i / max) + 1) ^ 15
 
 			surface.SetAlphaMultiplier(alpha)
-			surface.SetTextPosition(5, (i-offset+1) * h)
-			surface.DrawText(i .. ". " ..  v)
+			gfx.SetTextPosition(5, (i-offset+1) * h)
+			gfx.DrawText(i .. ". " ..  v)
 		end
 
 		surface.SetAlphaMultiplier(1)

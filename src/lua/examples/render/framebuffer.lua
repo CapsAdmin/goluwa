@@ -24,7 +24,7 @@ do
 
 	fb:Begin()
 		surface.SetColor(1,1,1,1)
-		surface.DrawText("YOU SHOULD SEE THIS", 150, 80)
+		gfx.DrawText("YOU SHOULD SEE THIS", 150, 80)
 	fb:End()
 end
 
@@ -33,7 +33,7 @@ do
 
 	fb:Begin()
 		surface.SetColor(1,1,1,1)
-		surface.DrawText("YOU SHOULD NOT SEE THIS", 250, 50)
+		gfx.DrawText("YOU SHOULD NOT SEE THIS", 250, 50)
 	fb:End()
 
 	fb:WriteThese("all")

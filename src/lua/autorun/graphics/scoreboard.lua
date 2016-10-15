@@ -15,16 +15,16 @@ input.Bind("tab", "-score", function()
 	window.SetMouseTrapped(true)
 end)
 
-local scoreboard_title = surface.CreateFont({
+local scoreboard_title = fonts.CreateFont({
 	path = "Oswald",
-	fallback = surface.GetDefaultFont(),
+	fallback = gfx.GetDefaultFont(),
 	size = 17,
 	shadow = 1,
 })
 
-local scoreboard_title_2 = surface.CreateFont({
+local scoreboard_title_2 = fonts.CreateFont({
 	path = "Oswald",
-	fallback = surface.GetDefaultFont(),
+	fallback = gfx.GetDefaultFont(),
 	size = 11,
 	shadow = 5,
 })

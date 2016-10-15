@@ -202,9 +202,9 @@ do
 				if class == "label" then
 					if obj.text_internal and obj.text_internal ~= "" then
 						surface.SetColor(obj.fg_color:Unpack())
-						surface.SetTextPosition(obj.text_offset.x, obj.text_offset.y)
-						surface.SetFont(gine.surface_fonts[obj.font_internal:lower()])
-						surface.DrawText(obj.text_internal)
+						gfx.SetTextPosition(obj.text_offset.x, obj.text_offset.y)
+						gfx.SetFont(gine.surface_fonts[obj.font_internal:lower()])
+						gfx.DrawText(obj.text_internal)
 					end
 				end
 			end

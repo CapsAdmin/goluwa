@@ -38,7 +38,7 @@ do -- PUT ME IN TRANSFORM
 	local function draw_line_to_box(origin, point, siz)
 		siz = siz or 7
 		surface.DrawLine(origin.x, origin.y, point.x, point.y, 3)
-		surface.DrawCircle(point.x, point.y, siz, 2, 32)
+		gfx.DrawCircle(point.x, point.y, siz, 2, 32)
 	end
 
 	local function draw_rotation_lines(pos, dir, dir2, r)
@@ -204,7 +204,7 @@ do -- PUT ME IN TRANSFORM
 			draw_rotation_lines(pos, up, right, r)
 
 			surface.SetColor(ColorBytes(255, 200, 0, 255):Unpack())
-			surface.DrawCircle(o.x, o.y, 4, 2, 32)
+			gfx.DrawCircle(o.x, o.y, 4, 2, 32)
 		end
 	end
 

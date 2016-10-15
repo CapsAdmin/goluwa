@@ -13,11 +13,11 @@ function surface.SetAlphaMultiplier(a)
 	lib.SetAlphaMultiplier(a)
 end
 
-function surface.DrawTexturedRectRotated(x,y,w,h,r)
+function gfx.DrawTexturedRectRotated(x,y,w,h,r)
 	lib.DrawRect(x,y,w,h,math.rad(r))
 end
 
-function surface.DrawTexturedRect(x,y,w,h)
+function gfx.DrawTexturedRect(x,y,w,h)
 	lib.DrawRect(x,y,w,h)
 end
 
@@ -30,7 +30,7 @@ end
 
 surface.DrawOutlinedRect = surface.DrawRect
 
-function surface.DrawTexturedRectUV(x,y,w,h, u1,v1, u2,v2)
+function gfx.DrawTexturedRectUV(x,y,w,h, u1,v1, u2,v2)
 	lib.SetRectUV(u1,v1, u2-u1,v2-v1)
 	lib.DrawRect(x,y,w,h)
 	lib.SetRectUV()

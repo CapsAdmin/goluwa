@@ -371,7 +371,7 @@ do -- font
 
 		path = line.FixPath(path)
 
-		self.font = surface.CreateFont({
+		self.font = fonts.CreateFont({
 			size = size,
 			path = path,
 			filtering = ENV.graphics_filter_min,
@@ -419,7 +419,7 @@ do -- font
 	function love.graphics.setFont(font)
 		font = font or love.graphics.getFont()
 		ENV.current_font = font
-		surface.SetFont(font.font)
+		gfx.SetFont(font.font)
 	end
 
 	function love.graphics.getFont()
@@ -450,17 +450,17 @@ do -- font
 		surface.PushMatrix(x, y, sx, sy, r)
 			if align then
 				local max_width = 0
-				local t = surface.WrapString(text, limit)
+				local t = gfx.WrapString(text, limit)
 
 				for i, line in ipairs(t) do
-					local w, h = surface.GetTextSize(line)
+					local w, h = gfx.GetTextSize(line)
 					if w > max_width then
 						max_width = w
 					end
 				end
 
 				for i, line in ipairs(t) do
-					local w, h = surface.GetTextSize(line)
+					local w, h = gfx.GetTextSize(line)
 
 					local align_x = 0
 
@@ -470,12 +470,12 @@ do -- font
 						align_x = (-w / 2) + limit/2 - x
 					end
 
-					surface.SetTextPosition(x + align_x, (i-1) * h)
-					surface.DrawText(line)
+					gfx.SetTextPosition(x + align_x, (i-1) * h)
+					gfx.DrawText(line)
 				end
 			else
-				surface.SetTextPosition(0, 0)
-				surface.DrawText(text)
+				gfx.SetTextPosition(0, 0)
+				gfx.DrawText(text)
 			end
 		surface.PopMatrix()
 	end
@@ -860,8 +860,8 @@ do
 	end
 end
 
-local poly = surface.CreatePoly(4096)
-local lines = surface.CreateQuadricBeizerCurve(4096)
+local poly = gfx.CreatePolygon(4096)
+local lines = gfx.CreateQuadricBezierCurve(4096)
 
 function love.graphics.polygon(mode, ...)
 	local points = type(...) == "table" and ... or {...}
@@ -980,7 +980,7 @@ do -- sprite batch
 
 	function love.graphics.newSpriteBatch(image, size, usagehint)
 		local self = line.CreateObject("SpriteBatch")
-		local poly = surface.CreatePoly(size * 6)
+		local poly = gfx.CreatePolygon(size * 6)
 
 		self.size = size
 

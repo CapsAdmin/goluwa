@@ -81,7 +81,7 @@ local function move(x, y)
 	caret_pos.y = math.max(caret_pos.y + y, 1)
 end
 
-local poly = surface.CreatePoly(4096 * 6)
+local poly = gfx.CreatePolygon(4096 * 6)
 poly:SetColor(1,1,1,1)
 
 local function invalidate()
@@ -90,7 +90,7 @@ local function invalidate()
 	for y, line in ipairs(grid) do
 		for x, info in ipairs(line) do
 			if info.char:getchartype() ~= "space" then
-				--surface.DrawText(info.char, x*w, y*h)
+				--gfx.DrawText(info.char, x*w, y*h)
 				surface.default_font:SetPolyChar(poly, draw_i, x*w, y*h, info.char)
 				draw_i = draw_i + 1
 			end

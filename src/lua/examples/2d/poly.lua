@@ -1,6 +1,6 @@
 local tex = render.CreateTextureFromPath("textures/pac.png")
 local count = 100
-local poly = surface.CreatePoly(count * 6)
+local poly = gfx.CreatePolygon(count * 6)
 
 event.AddListener("PreDrawGUI", "lol", function()
 	local time = system.GetElapsedTime()

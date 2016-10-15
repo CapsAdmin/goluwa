@@ -1,5 +1,5 @@
 local ffi = require("ffi")
-local surface = ... or _G.surface
+local fonts = ... or _G.fonts
 
 local META = {}
 
@@ -170,4 +170,4 @@ function META:GetGlyphData(code)
 	end
 end
 
-surface.RegisterFont(META)
+fonts.RegisterFont(META)

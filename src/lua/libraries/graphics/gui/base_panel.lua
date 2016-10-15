@@ -351,7 +351,7 @@ do -- drawing
 
 	function META:DrawRect(x, y, w, h)
 		if self.NinePatch then
-			surface.DrawNinePatch(
+			gfx.DrawNinePatch(
 				x or 0, y or 0,
 				w or (self.Size.x + self.DrawSizeOffset.x), h or (self.Size.y + self.DrawSizeOffset.y),
 				self.NinePatchRect.w, self.NinePatchRect.h,
@@ -2329,8 +2329,8 @@ do -- events
 		self:DrawRect()
 
 		if gui.debug_layout then
-			surface.SetDefaultFont()
-			surface.DrawText("layout count " .. self.layout_count)
+			gfx.SetFont()
+			gfx.DrawText("layout count " .. self.layout_count)
 			--surface.SetWhiteTexture()
 			--surface.SetColor(1,0,0,1)
 			--surface.DrawRect(self:GetMousePosition().x, self:GetMousePosition().y, 2, 2)

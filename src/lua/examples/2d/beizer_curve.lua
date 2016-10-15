@@ -1,6 +1,6 @@
 local tex = render.CreateTextureFromPath("http://bgfons.com/upload/rope_texture2073.jpg")
 
-local curve = surface.CreateQuadricBeizerCurve()
+local curve = gfx.CreateQuadricBezierCurve()
 --curve:Add(Vec2(114 , 90 ), Vec2(183 , 25))
 --curve:Add(Vec2(278 , 104), Vec2(322 , 161))
 --curve:Add(Vec2(287 , 241), Vec2(275 , 375))

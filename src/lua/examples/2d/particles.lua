@@ -28,8 +28,8 @@ end)
 
 local particles = {}
 
-local poly_head = surface.CreatePoly(particle_count * 6)
-local poly_tail = surface.CreatePoly(particle_count * 6)
+local poly_head = gfx.CreatePolygon(particle_count * 6)
+local poly_tail = gfx.CreatePolygon(particle_count * 6)
 local W, H = surface.GetSize()
 
 for i = 1, particle_count do

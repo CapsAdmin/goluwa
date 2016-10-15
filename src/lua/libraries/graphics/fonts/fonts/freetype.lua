@@ -1,5 +1,5 @@
 local ffi = require("ffi")
-local surface = ... or _G.surface
+local fonts = ... or _G.fonts
 
 local freetype = desire("libfreetype")
 
@@ -214,7 +214,7 @@ local function find_font(name, callback, on_error)
 					content = vfs.Read(full_path)
 					ext = full_path:match(".+(%.%a+)")
 				else
-					resource.Download(surface.default_font_path, callback)
+					resource.Download(fonts.default_font_path, callback)
 					return
 				end
 			end
@@ -244,11 +244,11 @@ function META:Initialize()
 		return false, "not a valid font"
 	end
 
-	if not surface.freetype_lib then
+	if not fonts.freetype_lib then
 		local lib = ffi.new("struct FT_LibraryRec_ * [1]")
 		freetype.InitFreeType(lib)
 --		freetype.LibrarySetLcdFilter(lib[0], 1)
-		surface.freetype_lib = lib
+		fonts.freetype_lib = lib
 	end
 
 	local function load(path)
@@ -259,25 +259,25 @@ function META:Initialize()
 		ffi.copy(char_buffer, data, #data)
 
 		local face = ffi.new("struct FT_FaceRec_ * [1]")
-		local code = freetype.NewMemoryFace(surface.freetype_lib[0], char_buffer, #data, 0, face)
+		local code = freetype.NewMemoryFace(fonts.freetype_lib[0], char_buffer, #data, 0, face)
 
 		if code == 0 then
 			self.face_ref = face
 			face = face[0]
 			self.face = face
 
-			freetype.SetCharSize(face, 0, self.Size * surface.font_dpi, surface.font_dpi, surface.font_dpi)
+			freetype.SetCharSize(face, 0, self.Size * fonts.font_dpi, fonts.font_dpi, fonts.font_dpi)
 
-			self.line_height = face.height / surface.font_dpi
-			self.max_height = (face.ascender - face.descender) / surface.font_dpi
+			self.line_height = face.height / fonts.font_dpi
+			self.max_height = (face.ascender - face.descender) / fonts.font_dpi
 
 			self:CreateTextureAtlas()
 
 			self:OnLoad()
 		else
 			wlog("unable to initialize font ("..path.."): " .. (freetype.ErrorCodeToString(code) or code))
-			--load(surface.default_font_path)
-			resource.Download(surface.default_font_path, load)
+			--load(fonts.default_font_path)
+			resource.Download(fonts.default_font_path, load)
 		end
 	end
 
@@ -305,7 +305,7 @@ function META:Initialize()
 				logn("unable to download ", self.Path)
 				logn(reason)
 				llog("loading default font instead")
-				resource.Download(surface.default_font_path, load)
+				resource.Download(fonts.default_font_path, load)
 			end)
 		end
 	end)
@@ -346,8 +346,8 @@ function META:GetGlyphData(code)
 			char = code,
 			w = tonumber(bitmap.width),
 			h = tonumber(bitmap.rows),
-			x_advance = math.round(tonumber(glyph.advance.x) / surface.font_dpi),
-			y_advance = math.round(tonumber(glyph.advance.y) / surface.font_dpi),
+			x_advance = math.round(tonumber(glyph.advance.x) / fonts.font_dpi),
+			y_advance = math.round(tonumber(glyph.advance.y) / fonts.font_dpi),
 			bitmap_left = tonumber(glyph.bitmap_left),
 			bitmap_top = tonumber(glyph.bitmap_top)
 		}
@@ -373,4 +373,4 @@ function META:OnRemove()
 	freetype.DoneFace(self.face)
 end
 
-surface.RegisterFont(META)
+fonts.RegisterFont(META)

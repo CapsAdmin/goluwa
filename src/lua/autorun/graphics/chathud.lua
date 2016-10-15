@@ -32,7 +32,7 @@ end
 local height_mult = pvars.Setup("cl_chathud_height_mult", 0.76)
 local width_mult = pvars.Setup("cl_chathud_width_mult", 0.6)
 
-chathud.markup =  surface.CreateMarkup()
+chathud.markup =  gfx.CreateMarkup()
 chathud.markup:SetEditable(false)
 chathud.markup:SetSelectable(false)
 chathud.life_time = 20
@@ -42,9 +42,9 @@ local first = true
 function chathud.AddText(...)
 
 	if first then
-		chathud.font = surface.CreateFont({
+		chathud.font = fonts.CreateFont({
 			path = "Roboto",
-			fallback = surface.GetDefaultFont(),
+			fallback = gfx.GetDefaultFont(),
 			size = 16,
 			padding = 4,
 			shadow = 1,
@@ -150,9 +150,15 @@ event.AddListener("Chat", "chathud", function(name, str, client)
 end)
 
 function chathud.Show()
-	event.AddListener("PreDrawGUI", "chathud", function()
-		chathud.Draw()
-	end)
+	if render.IsGBufferReady() then
+		event.AddListener("PreDrawGUI", "chathud", function()
+			chathud.Draw()
+		end)
+	else
+		event.AddListener("PostDrawGUI", "chathud", function()
+			chathud.Draw()
+		end)
+	end
 
 	event.AddListener("MouseInput", "chathud", function(button, press)
 		chathud.MouseInput(button, press, window.GetMousePosition():Unpack())
@@ -160,6 +166,7 @@ function chathud.Show()
 end
 
 function chathud.Hide()
+	event.RemoveListener("PostDrawGUI", "chathud")
 	event.RemoveListener("PreDrawGUI", "chathud")
 	event.RemoveListener("MouseInput", "chathud")
 end

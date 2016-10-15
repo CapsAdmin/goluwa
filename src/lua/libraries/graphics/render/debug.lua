@@ -15,7 +15,7 @@ do -- AUTOMATE THIS
 
 		local buffer_i = 1
 
-		surface.SetDefaultFont()
+		gfx.SetFont()
 
 		for _, pass in pairs(render.gbuffer_data_pass.Buffers) do
 			local pass_name = pass.name
@@ -51,8 +51,8 @@ do -- AUTOMATE THIS
 						surface.mesh_2d_shader.color_override.b = 0
 						surface.mesh_2d_shader.color_override.a = 0
 
-						surface.SetTextPosition(x, y + 5)
-						surface.DrawText(channel_name)
+						gfx.SetTextPosition(x, y + 5)
+						gfx.DrawText(channel_name)
 
 						if i%size == 0 then
 							y = y + h

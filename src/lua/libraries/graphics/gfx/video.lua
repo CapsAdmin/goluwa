@@ -1,3 +1,5 @@
+local gfx = (...) or _G.gfx
+
 local freeimage = desire("libfreeimage") -- image decoder
 
 local META = prototype.CreateTemplate("gif")
@@ -30,9 +32,7 @@ end
 
 prototype.Register(META)
 
-local video = {}
-
-function video.CreateGif(path)
+function gfx.CreateGif(path)
 	local self = META:CreateObject()
 
 	self.frames = {}
@@ -73,7 +73,3 @@ function video.CreateGif(path)
 
 	return self
 end
-
-_G.Gif = video.CreateGif
-
-return video

@@ -1,3 +1,5 @@
+local gfx = (...) or _G.gfx
+
 local META = prototype.CreateTemplate("particle_META")
 
 META:GetSet("Speed", 1)
@@ -13,7 +15,7 @@ META:GetSet("MoveResolution", 0)
 META:GetSet("Texture", NULL)
 META:GetSet("ScreenRect", Rect())
 
-function ParticleEmitter(max)
+function gfx.CreateParticleEmitter(max)
 	max = max or 1000
 
 	local self = META:CreateObject()
@@ -22,7 +24,7 @@ function ParticleEmitter(max)
 	self.particles = {}
 	self.last_emit = 0
 	self.next_think = 0
-	self.poly = surface.CreatePoly(max * 6)
+	self.poly = gfx.CreatePolygon(max * 6)
 
 	return self
 end

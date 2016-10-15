@@ -33,9 +33,9 @@ for i, sub_skin in ipairs(skins) do
 
 		local scale = self:GetScale()
 
-		local font = surface.CreateFont({
+		local font = fonts.CreateFont({
 			path = "Roboto",
-			fallback = surface.GetDefaultFont(),
+			fallback = gfx.GetDefaultFont(),
 			size = 5.5*scale,
 		})
 

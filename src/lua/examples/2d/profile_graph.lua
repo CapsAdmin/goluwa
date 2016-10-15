@@ -34,7 +34,7 @@ local function draw_branch(node, level, i, max, px, py, ppos, pw, ph)
 
 	--x = math.lerp(0.5, x, px)
 	--y = math.lerp(0.5, y, py)
-	local w, h = surface.GetTextSize(node.name)
+	local w, h = gfx.GetTextSize(node.name)
 	w = w + 8
 	h = h * 4
 
@@ -72,17 +72,17 @@ local function draw_branch(node, level, i, max, px, py, ppos, pw, ph)
 		local x, y = x + 4 - w*0.5, y - h*0.5
 		surface.SetColor(1,1,1,1)
 
-		surface.SetTextPosition(x, y)
-		surface.DrawText(node.name)
+		gfx.SetTextPosition(x, y)
+		gfx.DrawText(node.name)
 
-		surface.SetTextPosition(x, y + offset)
-		surface.DrawText("samples: " .. node.times_called)
+		gfx.SetTextPosition(x, y + offset)
+		gfx.DrawText("samples: " .. node.times_called)
 
-		surface.SetTextPosition(x, y + offset * 2)
-		surface.DrawText("children: " .. max)
+		gfx.SetTextPosition(x, y + offset * 2)
+		gfx.DrawText("children: " .. max)
 
-		surface.SetTextPosition(x, y + offset * 3)
-		surface.DrawText("parents: " .. table.count(node.parents))
+		gfx.SetTextPosition(x, y + offset * 3)
+		gfx.DrawText("parents: " .. table.count(node.parents))
 	end
 end
 
@@ -97,7 +97,7 @@ event.AddListener("PreDrawGUI", "lol", function()
 
 	if not root then return end
 
-	surface.SetFont("impact")
+	gfx.SetFont("impact")
 	surface.SetWhiteTexture()
 
 	local w, h = surface.GetSize()

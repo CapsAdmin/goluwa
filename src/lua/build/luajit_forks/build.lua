@@ -110,6 +110,11 @@ local repos = {
 	{
 		url = "https://github.com/corsix/LuaJIT",
 		branch = "newgc",
+		flags = {"LUAJIT_ENABLE_LUA52COMPAT", "LUAJIT_ENABLE_GC64"}
+	},
+	{
+		url = "https://github.com/corsix/LuaJIT",
+		branch = "newgc",
 		flags = {"LUAJIT_ENABLE_LUA52COMPAT"}
 	},
 	{

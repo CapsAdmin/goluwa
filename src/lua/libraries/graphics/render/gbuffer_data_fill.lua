@@ -248,8 +248,8 @@ function PASS:DrawDebug(i,x,y,w,h,size)
 		surface.SetTexture(tex)
 		surface.DrawRect(x, y, w, h)
 
-		surface.SetTextPosition(x, y + 5)
-		surface.DrawText(tostring(name))
+		gfx.SetTextPosition(x, y + 5)
+		gfx.DrawText(tostring(name))
 
 		if i%size == 0 then
 			y = y + h

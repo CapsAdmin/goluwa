@@ -41,14 +41,14 @@ event.AddListener("PreDrawGUI", "mindwave", function()
 	surface.SetTexture(fb:GetTexture(1))
 	surface.DrawRect(0,0, W,H)
 
-	surface.SetDefaultFont()
+	gfx.SetFont()
 	surface.SetColor(1,1,1,1)
 
 	local x, y = 5, 5
 
 	for k,v in pairs(eeg_power) do
-		surface.SetTextPosition(x, y)
-		surface.DrawText(k .. " = " .. v)
+		gfx.SetTextPosition(x, y)
+		gfx.DrawText(k .. " = " .. v)
 		y = y + 20
 	end
 end)

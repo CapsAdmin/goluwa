@@ -92,7 +92,7 @@ function META:DrawString(str, x, y, w)
 		self.total_strings_stored = self.total_strings_stored or 0
 
 		if self.total_strings_stored > 10000 then
-			--logf("surface warning: string cache for %s is above 10000, flushing cache\n", self)
+			--logf("fonts warning: string cache for %s is above 10000, flushing cache\n", self)
 			table.clear(self.string_cache)
 			self.total_strings_stored = 0
 		end
@@ -104,10 +104,10 @@ function META:DrawString(str, x, y, w)
 
 	self.string_cache[str]:Draw(x, y, w)
 
-	if surface.debug_font_size then
+	if fonts.debug_font_size then
 		surface.SetColor(1,0,0,0.25)
 		surface.SetWhiteTexture()
-		surface.DrawRect(x, y, surface.GetTextSize(str))
+		surface.DrawRect(x, y, gfx.GetTextSize(str))
 	end
 end
 
@@ -154,7 +154,7 @@ function META:CompileString(data)
 		end
 	end
 
-	local poly = surface.CreatePoly(vertex_count)
+	local poly = gfx.CreatePolygon(vertex_count)
 	local width_info = {}
 	local out = {}
 
@@ -355,8 +355,8 @@ end
 prototype.Register(META)
 
 if RELOAD then
-	for _, v in pairs(surface.registered_fonts) do
-		surface.RegisterFont(v)
+	for _, v in pairs(fonts.registered_fonts) do
+		fonts.RegisterFont(v)
 	end
 	for _, v in pairs(prototype.GetCreated()) do
 		if v.Type == "font" then

@@ -13,10 +13,10 @@ local function draw_branch(node)
 		surface.SetColor(r,g,b,1)
 	end
 
-	local w, h = surface.GetTextSize(node.name)
+	local w, h = gfx.GetTextSize(node.name)
 
 	surface.PushMatrix(h*0.5, -w, 1, 1, math.rad(90))
-	surface.DrawText(node.name)
+	gfx.DrawText(node.name)
 	surface.PopMatrix()
 
 	for _, child in pairs(node.children) do
@@ -46,10 +46,10 @@ event.AddListener("PreDrawGUI", "lol", function()
 	local w, h = surface.GetSize()
 	local x, y = w / 2, h
 
-	surface.SetDefaultFont()
+	gfx.SetFont()
 	surface.SetWhiteTexture()
 	surface.SetColor(1,1,1,1)
-	surface.DrawText(count)
+	gfx.DrawText(count)
 	count = 0
 
 	surface.PushMatrix(x, y, 0.25, 0.25, 0)

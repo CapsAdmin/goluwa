@@ -51,7 +51,7 @@ do -- open close
 	event.AddListener("Disconnected", "main_menu", menu.Open)
 end
 
-local emitter = ParticleEmitter(800)
+local emitter = gfx.CreateParticleEmitter(800)
 emitter:SetPosition(Vec3(50,50,0))
 --emitter:SetMoveResolution(0.25)
 emitter:SetAdditive(false)

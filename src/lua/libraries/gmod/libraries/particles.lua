@@ -1,6 +1,6 @@
 do
 	function gine.env.ParticleEmitter()
-		return gine.WrapObject(ParticleEmitter(), "CLuaEmitter")
+		return gine.WrapObject(gfx.CreateParticleEmitter(), "CLuaEmitter")
 	end
 
 	local META = gine.GetMetaTable("CLuaEmitter")

@@ -60,7 +60,7 @@ function gine.LoadFonts()
 				info.tall = info.tall[1]-- what
 			end
 
-			gine.surface_fonts[font_name:lower()] = surface.CreateFont({
+			gine.surface_fonts[font_name:lower()] = fonts.CreateFont({
 				path = gine.TranslateFontName(info.name),
 				size = info.tall and math.ceil(info.tall) or 11,
 			})
@@ -84,10 +84,10 @@ end
 
 do
 	local surface = gine.env.surface
-	local lib = _G.surface
+	local lib = _G.fonts
 
 	function surface.SetTextPos(x, y)
-		lib.SetTextPosition(x, y)
+		gfx.SetTextPosition(x, y)
 	end
 
 	gine.surface_fonts = gine.surface_fonts or {}
@@ -100,16 +100,16 @@ do
 
 		if tbl.size then tbl.size = math.ceil(tbl.size * 0.55) end
 
-		gine.surface_fonts[id:lower()] = lib.CreateFont(tbl)
+		gine.surface_fonts[id:lower()] = fonts.CreateFont(tbl)
 	end
 
-	function surface.SetFont(name)
-		lib.SetFont(gine.surface_fonts[name:lower()])
+	function gfx.SetFont(name)
+		gfx.SetFont(gine.surface_fonts[name:lower()])
 	end
 
 	function surface.GetTextSize(str)
 		str = gine.translation2[str] or str
-		return lib.GetTextSize(str)
+		return gfx.GetTextSize(str)
 	end
 
 	local txt_r, txt_g, txt_b, txt_a = 0,0,0,0
@@ -127,11 +127,11 @@ do
 	function surface.DrawText(str)
 		str = gine.translation2[str] or str
 		lib.PushColor(txt_r, txt_g, txt_b, txt_a)
-		lib.DrawText(str)
+		gfx.DrawText(str)
 		lib.PopColor()
 
-		local x, y = lib.GetTextPosition()
-		local w, h = surface.GetTextSize(str)
-		lib.SetTextPosition(x + w, y)
+		local x, y = gfx.GetTextPosition()
+		local w, h = gfx.GetTextSize(str)
+		gfx.SetTextPosition(x + w, y)
 	end
 end

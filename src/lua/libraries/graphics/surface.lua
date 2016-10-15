@@ -61,39 +61,16 @@ end
 
 surface.mesh_2d_shader = surface.mesh_2d_shader or NULL
 
-include("markup/markup.lua", surface)
-
 function surface.Initialize()
 	local shader = render.CreateShader(SHADER)
 	surface.mesh_2d_shader = shader
 
 	surface.rect_mesh = surface.CreateMesh()
-	surface.ninepatch_poly = surface.CreatePoly(9 * 6)
-
 	surface.rect_mesh:SetDrawHint("static")
 
 	surface.SetWhiteTexture()
-	surface.InitializeFonts()
-
-	event.Delay(function()
-		local tex = render.CreateBlankTexture(Vec2(surface.GetSize()))
-		tex:SetWrapS("mirrored_repeat")
-		tex:SetWrapT("mirrored_repeat")
-		tex:Shade([[
-			// http://www.geeks3d.com/20130705/shader-library-circle-disc-fake-sphere-in-glsl-opengl-glslhacker/3/
-			float disc_radius = 1;
-			float border_size = 0.0021;
-			vec2 uv2 = vec2(uv.x, -uv.y + 1);
-			float dist = sqrt(dot(uv2, uv2));
-			float t = smoothstep(disc_radius + border_size, disc_radius - border_size, dist);
-			return vec4(1,1,1,t);
-		]])
-		tex:GenerateMipMap()
-		surface.quadrant_circle_texture = tex
-	end)
 
 	surface.ready = true
-	event.Call("SurfaceInitialized")
 end
 
 function surface.IsReady()
@@ -103,8 +80,6 @@ end
 function surface.GetSize()
 	return render.camera_2d.Viewport.w, render.camera_2d.Viewport.h
 end
-
-include("fonts.lua", surface)
 
 do -- render world matrix helpers
 	local ceil =math.ceil
@@ -396,19 +371,6 @@ function surface.DrawLine(x1,y1, x2,y2, w, skip_tex, ox, oy)
 	surface.DrawRect(x1, y1, w, dst, -ang, ox, oy)
 end
 
---[[
-	1 2 3
-	4 5 6
-	7 8 9
-]]
-
-function surface.DrawNinePatch(x, y, w, h, patch_size_w, patch_size_h, corner_size, u_offset, v_offset, uv_scale)
-	local skin = surface.GetTexture()
-
-	surface.ninepatch_poly:SetNinePatch(1, x, y, w, h, patch_size_w, patch_size_h, corner_size, u_offset, v_offset, uv_scale, skin.Size.x, skin.Size.y)
-	surface.ninepatch_poly:Draw()
-end
-
 function surface.SetScissor(x, y, w, h)
 	if not x then
 		render.SetScissor()
@@ -644,64 +606,6 @@ function surface.GetMouseVel()
 	return vx, vy
 end
 
-include("poly.lua", surface)
-
-do -- points
-	local SIZE = 1
-	local STYLE = "rough"
-
-	function surface.SetPointStyle(style)
-		STYLE = style
-	end
-
-	function surface.GetPointStyle()
-		return STYLE
-	end
-
-	function surface.SetPointSize(size)
-		SIZE = size
-	end
-
-	function surface.GetPointSize()
-		return SIZE
-	end
-
-	function surface.DrawPoint(x, y)
-		if STYLE == "rough" then
-			surface.PushTexture(render.GetWhiteTexture())
-			surface.DrawRect(x, y, SIZE, SIZE, nil, SIZE/2, SIZE/2)
-			surface.PopTexture()
-		else
-			surface.PushTexture(surface.quadrant_circle_texture)
-			surface.DrawRect(x, y, SIZE, SIZE)
-			surface.DrawRect(x, y, SIZE, SIZE, math.pi)
-			surface.DrawRect(x, y, SIZE, SIZE, math.pi/2)
-			surface.DrawRect(x, y, SIZE, SIZE, -math.pi/2)
-			surface.PopTexture()
-		end
-	end
-end
-
-function surface.DrawCircle(x, y, radius, width, resolution)
-	resolution = resolution or 16
-
-	local spacing = (resolution/radius) - 0.1
-
-	for i = 0, resolution do
-		local i1 = ((i+0) / resolution) * math.pi * 2
-		local i2 = ((i+1 + spacing) / resolution) * math.pi * 2
-
-		surface.DrawLine(
-			x + math.sin(i1) * radius,
-			y + math.cos(i1) * radius,
-
-			x + math.sin(i2) * radius,
-			y + math.cos(i2) * radius,
-			width
-		)
-	end
-end
-
 function surface.SetHSV(h,s,v)
 	surface.mesh_2d_shader.hsv_mult.x = h
 	surface.mesh_2d_shader.hsv_mult.y = s
@@ -770,8 +674,6 @@ do -- effects
 		end
 	end
 end
-
-event.AddListener("RenderContextInitialized", nil, surface.Initialize)
 
 if RELOAD then
 	surface.Initialize()
