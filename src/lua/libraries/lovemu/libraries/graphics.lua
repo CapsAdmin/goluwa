@@ -634,6 +634,15 @@ do -- image
 		return ENV.textures[self]:GetSize().y
 	end
 
+	function Image:getData()
+		local tex = ENV.textures[self]
+		local data = tex:Download()
+		local img_data = love.image.newImageData(self:getDimensions())
+		img_data.buffer = data.buffer
+		img_data.tex = tex
+		return img_data
+	end
+
 	ADD_FILTER(Image)
 
 	function Image:setWrap()
