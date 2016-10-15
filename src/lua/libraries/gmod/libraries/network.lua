@@ -1,16 +1,16 @@
-function gmod.env.util.AddNetworkString(str)
+function gine.env.util.AddNetworkString(str)
 	return network.AddString(str)
 end
 
-function gmod.env.util.NetworkStringToID(str)
+function gine.env.util.NetworkStringToID(str)
 	return network.StringToID(str)
 end
 
-function gmod.env.util.NetworkIDToString(id)
+function gine.env.util.NetworkIDToString(id)
 	return network.IDToString(id) or ""
 end
 
-function gmod.env.GetHostName()
+function gine.env.GetHostName()
 	return network.GetHostname()
 end
 
@@ -18,8 +18,8 @@ do
 	local nw_globals = {}
 
 	local function ADD(name)
-		gmod.env["SetGlobal" .. name] = function(key, val) nw_globals[key] = val end
-		gmod.env["GetGlobal" .. name] = function(key) return nw_globals[key] end
+		gine.env["SetGlobal" .. name] = function(key, val) nw_globals[key] = val end
+		gine.env["GetGlobal" .. name] = function(key) return nw_globals[key] end
 	end
 
 	ADD("String")
@@ -31,10 +31,10 @@ do
 	ADD("Bool")
 end
 
-function gmod.env.game.MaxPlayers()
+function gine.env.game.MaxPlayers()
 	return 32
 end
 
-function gmod.env.game.SinglePlayer()
+function gine.env.game.SinglePlayer()
 	return false
 end

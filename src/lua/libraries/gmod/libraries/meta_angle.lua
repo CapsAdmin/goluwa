@@ -1,6 +1,6 @@
-local META = gmod.GetMetaTable("Angle")
+local META = gine.GetMetaTable("Angle")
 
-function gmod.env.Angle(p, y, r)
+function gine.env.Angle(p, y, r)
 	local self = {}
 
 	if type(p) == "table" then
@@ -55,26 +55,26 @@ end
 
 function META.__mul(a, b)
 	if type(b) == "number" then
-		return gmod.env.Angle(a.ptr * b)
+		return gine.env.Angle(a.ptr * b)
 	end
 
-	return gmod.env.Angle(a.ptr * b.ptr)
+	return gine.env.Angle(a.ptr * b.ptr)
 end
 
 function META.__add(a, b)
-	return gmod.env.Angle(a.ptr + b.ptr)
+	return gine.env.Angle(a.ptr + b.ptr)
 end
 
 function META:Forward()
-	return gmod.env.Vector(self.ptr:GetRad():GetForward())
+	return gine.env.Vector(self.ptr:GetRad():GetForward())
 end
 
 function META:Right()
-	return gmod.env.Vector(self.ptr:GetRad():GetRight())
+	return gine.env.Vector(self.ptr:GetRad():GetRight())
 end
 
 function META:Up()
-	return gmod.env.Vector(self.ptr:GetRad():GetUp())
+	return gine.env.Vector(self.ptr:GetRad():GetUp())
 end
 
 function META:IsZero()

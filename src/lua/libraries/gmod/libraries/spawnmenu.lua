@@ -1,11 +1,11 @@
-local spawnmenu = gmod.env.spawnmenu
+local spawnmenu = gine.env.spawnmenu
 
 function spawnmenu.PopulateFromTextFiles()
 	return {}
 end
 
 do -- presets
-	function gmod.env.LoadPresets()
+	function gine.env.LoadPresets()
 		local out = {}
 
 		for folder_name in vfs.Iterate("settings/presets/") do
@@ -20,7 +20,7 @@ do -- presets
 		return out
 	end
 
-	function gmod.env.SavePresets()
+	function gine.env.SavePresets()
 
 	end
 end

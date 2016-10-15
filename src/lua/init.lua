@@ -255,7 +255,7 @@ language = include("lua/libraries/language.lua") _G.L = language.LanguageString 
 physics = include("lua/libraries/physics/physics.lua") -- bullet physics
 steam = include("lua/libraries/steam/steam.lua") -- utilities for dealing with steam, the source engine and steamworks
 line = include("lua/libraries/love/line.lua") -- a löve wrapper that lets you run löve games
-gmod = include("lua/libraries/gmod/gmod.lua") -- a gmod wrapper that lets you run gmod scripts
+gine = include("lua/libraries/gmod/gine.lua") -- a gmod wrapper that lets you run gmod scripts
 
 if SOCKETS then
 	sockets = include("lua/libraries/network/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff

@@ -1,8 +1,8 @@
-function gmod.env.HSVToColor(h,s,v)
-	return gmod.env.Color(ColorHSV(h*360,s,v):Unpack())
+function gine.env.HSVToColor(h,s,v)
+	return gine.env.Color(ColorHSV(h*360,s,v):Unpack())
 end
 
-function gmod.env.ColorToHSV(r,g,b)
+function gine.env.ColorToHSV(r,g,b)
 	if type(r) == "table" then
 		local t = r
 		r = t.r

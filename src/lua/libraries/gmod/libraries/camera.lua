@@ -1,4 +1,4 @@
-local cam = gmod.env.cam
+local cam = gine.env.cam
 
 function cam.Start()
 
@@ -43,14 +43,14 @@ function cam.End2D()
 
 end
 
-function gmod.env.EyeVector()
-	return gmod.env.Vector(render.camera_3d:GetAngles():GetForward())
+function gine.env.EyeVector()
+	return gine.env.Vector(render.camera_3d:GetAngles():GetForward())
 end
 
-function gmod.env.EyePos()
-	return gmod.env.Vector(render.camera_3d:GetPosition())
+function gine.env.EyePos()
+	return gine.env.Vector(render.camera_3d:GetPosition())
 end
 
-function gmod.env.EyeAngles()
-	return gmod.env.Angle(render.camera_3d:GetAngles())
+function gine.env.EyeAngles()
+	return gine.env.Angle(render.camera_3d:GetAngles())
 end

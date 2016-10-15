@@ -1,5 +1,5 @@
 local lib = _G.surface
-local surface = gmod.env.surface
+local surface = gine.env.surface
 
 function surface.SetDrawColor(r,g,b,a)
 	if type(r) == "table" then

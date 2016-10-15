@@ -1,6 +1,6 @@
-local gmod = ... or _G.gmod
+local gine = ... or _G.gine
 
-local game = gmod.env.game
+local game = gine.env.game
 
 function game.GetMap()
 	return "gm_construct"

@@ -1,8 +1,8 @@
-local gmod = ... or gmod
+local gine = ... or _G.gine
 
-local META = gmod.GetMetaTable("VMatrix")
+local META = gine.GetMetaTable("VMatrix")
 
-function gmod.env.Matrix(tbl)
+function gine.env.Matrix(tbl)
 	local self = {}
 
 	if type(tbl) == "cdata" then
@@ -86,7 +86,7 @@ function META:SetScale(v)
 end
 
 function META:GetScale()
-	return gmod.env.Vector(self.ptr.m00, self.ptr.m11, self.ptr.m22)-- / self.ptr.m33
+	return gine.env.Vector(self.ptr.m00, self.ptr.m11, self.ptr.m22)-- / self.ptr.m33
 end
 
 function META:Translate(v)
@@ -98,7 +98,7 @@ function META:SetTranslation(v)
 end
 
 function META:GetTranslation()
-	return gmod.env.Vector(self.ptr.m03, self.ptr.m13, self.ptr.m23)-- / self.ptr.m33
+	return gine.env.Vector(self.ptr.m03, self.ptr.m13, self.ptr.m23)-- / self.ptr.m33
 end
 
 function META:ScaleTranslation(scale)
@@ -138,9 +138,9 @@ function META:InvertTR()
 end
 
 function META:GetInverse()
-	return gmod.env.Matrix(self:GetInverse())
+	return gine.env.Matrix(self:GetInverse())
 end
 
 function META:GetInverseTR()
-	return gmod.env.Matrix(self:GetInverse())
+	return gine.env.Matrix(self:GetInverse())
 end

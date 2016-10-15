@@ -1,4 +1,4 @@
-local util = gmod.env.util
+local util = gine.env.util
 
 function util.KeyValuesToTable(str)
 	local tbl, ok = steam.VDFToTable(str, true)

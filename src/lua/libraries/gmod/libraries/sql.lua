@@ -1,3 +1,3 @@
-function gmod.env.sql.Query()
+function gine.env.sql.Query()
 	-- shh
 end

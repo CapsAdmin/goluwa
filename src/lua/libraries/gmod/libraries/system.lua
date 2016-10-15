@@ -1,4 +1,4 @@
-local system = gmod.env.system
+local system = gine.env.system
 
 function system.IsLinux()
 	return true

@@ -1,11 +1,11 @@
 do
-	function gmod.env.CreateMaterial()
-		return gmod.WrapObject(render.CreateMaterial("model"), "IMaterial")
+	function gine.env.CreateMaterial()
+		return gine.WrapObject(render.CreateMaterial("model"), "IMaterial")
 	end
 
-	function gmod.env.Material(path)
+	function gine.env.Material(path)
 		local mat = render.CreateMaterial("model")
-		mat.gmod_name = path
+		mat.gine_name = path
 
 		if path:lower():endswith(".png") then
 			if vfs.IsFile(path) then
@@ -21,13 +21,13 @@ do
 			steam.LoadMaterial("materials/" .. path .. ".png", mat)
 		end
 
-		return gmod.WrapObject(mat, "IMaterial")
+		return gine.WrapObject(mat, "IMaterial")
 	end
 
-	local META = gmod.GetMetaTable("IMaterial")
+	local META = gine.GetMetaTable("IMaterial")
 
 	function META:GetTexture()
-		return gmod.WrapObject(self.__obj:GetAlbedoTexture(), "ITexture")
+		return gine.WrapObject(self.__obj:GetAlbedoTexture(), "ITexture")
 	end
 
 	function META:GetColor(x,y)
@@ -36,7 +36,7 @@ do
 	end
 
 	function META:GetName()
-		return self.__obj.gmod_name
+		return self.__obj.gine_name
 	end
 
 	function META:GetShader()
@@ -57,13 +57,13 @@ do
 
 
 	function META:GetVector(key)
-		return gmod.env.Vector()
+		return gine.env.Vector()
 	end
 end
 
 do
 	local lib = _G.surface
-	local surface = gmod.env.surface
+	local surface = gine.env.surface
 
 	function surface.GetTextureID(path)
 		if vfs.IsFile("materials/" .. path) then
@@ -84,7 +84,7 @@ do
 end
 
 do
-	local META = gmod.GetMetaTable("ITexture")
+	local META = gine.GetMetaTable("ITexture")
 
 	function META:Width()
 		return self.__obj.Size.x
@@ -108,6 +108,6 @@ do
 	end
 end
 
-function gmod.env.render.SetMaterial(mat)
+function gine.env.render.SetMaterial(mat)
 	render.SetMaterial(mat.__obj)
 end

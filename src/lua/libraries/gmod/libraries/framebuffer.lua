@@ -1,20 +1,20 @@
 local lib = _G.render
-local render = gmod.env.render
+local render = gine.env.render
 
-gmod.render_targets = gmod.render_targets or {}
+gine.render_targets = gine.render_targets or {}
 
-function gmod.env.GetRenderTarget(name, w, h)
-	local fb = gmod.render_targets[name] or lib.CreateFrameBuffer(Vec2(w, h))
-	gmod.render_targets[name] = fb
+function gine.env.GetRenderTarget(name, w, h)
+	local fb = gine.render_targets[name] or lib.CreateFrameBuffer(Vec2(w, h))
+	gine.render_targets[name] = fb
 	fb:GetTexture().fb = fb
-	return gmod.WrapObject(fb:GetTexture(), "ITexture")
+	return gine.WrapObject(fb:GetTexture(), "ITexture")
 end
 
-function gmod.env.GetRenderTargetEx(name, w, h, size_mode, depth_mode, texture_flags, rt_flags, image_format)
-	local fb = gmod.render_targets[name] or lib.CreateFrameBuffer(Vec2(w, h))
-	gmod.render_targets[name] = fb
+function gine.env.GetRenderTargetEx(name, w, h, size_mode, depth_mode, texture_flags, rt_flags, image_format)
+	local fb = gine.render_targets[name] or lib.CreateFrameBuffer(Vec2(w, h))
+	gine.render_targets[name] = fb
 	fb:GetTexture().fb = fb
-	return gmod.WrapObject(fb:GetTexture(), "ITexture")
+	return gine.WrapObject(fb:GetTexture(), "ITexture")
 end
 
 local current_fb

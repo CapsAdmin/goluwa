@@ -1,35 +1,35 @@
-function gmod.env.AddParticles()
+function gine.env.AddParticles()
 
 end
 
-function gmod.env.game.AddDecal()
+function gine.env.game.AddDecal()
 
 end
 
-function gmod.env.PrecacheParticleSystem()
+function gine.env.PrecacheParticleSystem()
 
 end
 
-function gmod.env.sound.Add(tbl)
+function gine.env.sound.Add(tbl)
 
 end
 
-function gmod.env.util.PrecacheModel()
+function gine.env.util.PrecacheModel()
 
 end
 
-function gmod.env.util.PrecacheSound()
+function gine.env.util.PrecacheSound()
 
 end
 
-function gmod.env.AddCSLuaFile()
+function gine.env.AddCSLuaFile()
 
 end
 
-function gmod.env.resource.AddFile()
+function gine.env.resource.AddFile()
 
 end
 
-function gmod.env.game.AddParticles()
+function gine.env.game.AddParticles()
 
 end

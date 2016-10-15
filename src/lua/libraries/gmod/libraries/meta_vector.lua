@@ -1,6 +1,6 @@
-local META = gmod.GetMetaTable("Vector")
+local META = gine.GetMetaTable("Vector")
 
-function gmod.env.Vector(x, y, z)
+function gine.env.Vector(x, y, z)
 	local self = {}
 
 	if type(x) == "table" then
@@ -53,35 +53,35 @@ function META.__eq(a, b)
 end
 
 function META.__unm(a)
-	return gmod.env.Vector(-a.ptr)
+	return gine.env.Vector(-a.ptr)
 end
 
 function META.__add(a, b)
-	return gmod.env.Vector(a.ptr + b.ptr)
+	return gine.env.Vector(a.ptr + b.ptr)
 end
 
 function META.__sub(a, b)
-	return gmod.env.Vector(a.ptr - b.ptr)
+	return gine.env.Vector(a.ptr - b.ptr)
 end
 
 function META.__mul(a, b)
 	if type(b) == "number" then
-		return gmod.env.Vector(a.ptr * b)
+		return gine.env.Vector(a.ptr * b)
 	elseif type(a) == "number" then
-		return gmod.env.Vector(a * b.ptr)
+		return gine.env.Vector(a * b.ptr)
 	end
 
-	return gmod.env.Vector(a.ptr * b.ptr)
+	return gine.env.Vector(a.ptr * b.ptr)
 end
 
 function META.__div(a, b)
 	if type(b) == "number" then
-		return gmod.env.Vector(a.ptr / b)
+		return gine.env.Vector(a.ptr / b)
 	elseif type(a) == "number" then
-		return gmod.env.Vector(a / b.ptr)
+		return gine.env.Vector(a / b.ptr)
 	end
 
-	return gmod.env.Vector(a.ptr / b.ptr)
+	return gine.env.Vector(a.ptr / b.ptr)
 end
 
 function META:ToScreen()
@@ -98,7 +98,7 @@ function META:Zero()
 end
 
 function META:Cross(vec)
-	return gmod.env.Vector(self.ptr:Cross(vec))
+	return gine.env.Vector(self.ptr:Cross(vec))
 end
 
 function META:Distance(vec)
@@ -116,7 +116,7 @@ function META:Normalize()
 end
 
 function META:GetNormalized()
-	return gmod.env.Vector(self.ptr:GetNormalized())
+	return gine.env.Vector(self.ptr:GetNormalized())
 end
 
 META.GetNormal = META.GetNormalized
@@ -140,7 +140,7 @@ function META:Mul(vec)
 end
 
 function META:Angle()
-	return gmod.env.Angle(self.ptr:GetAngles())
+	return gine.env.Angle(self.ptr:GetAngles())
 end
 
 function META:Length()
@@ -154,6 +154,6 @@ function META:IsZero()
 	return self.ptr:IsZero()
 end
 
-function gmod.env.LerpVector(alpha, a, b)
-	return gmod.env.Vector(a.ptr:GetLerped(alpha, b.ptr))
+function gine.env.LerpVector(alpha, a, b)
+	return gine.env.Vector(a.ptr:GetLerped(alpha, b.ptr))
 end

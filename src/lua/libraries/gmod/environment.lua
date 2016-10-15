@@ -1,10 +1,10 @@
-local gmod = ... or _G.gmod
+local gine = ... or _G.gine
 
 local env = {}
 env._R = {}
 env._G = env
 
-gmod.env = env
+gine.env = env
 
 local data = include("lua/libraries/gmod/"..(CLIENT and "cl_" or SERVER and "sv_").."exported.lua")
 
@@ -46,7 +46,7 @@ end
 
 -- global functions
 for func_name in pairs(data.functions.globals) do
-	env[func_name] = env[func_name] or function(...) logf(("gmod NYI: %s(%s)\n"):format(func_name, table.concat(tostring_args(...), ","))) end
+	env[func_name] = env[func_name] or function(...) logf(("glua NYI: %s(%s)\n"):format(func_name, table.concat(tostring_args(...), ","))) end
 end
 
 data.functions.globals = nil
@@ -82,7 +82,7 @@ for meta_name, functions in pairs(data.meta) do
 		env._R[meta_name][func_name] = env._R[meta_name][func_name] or function(...) wlog("NYI: %s:%s(%s)", meta_name, func_name, table.concat(tostring_args(...), ","), 2) end
 	end
 
-	gmod.objects[meta_name] = gmod.objects[meta_name] or {}
+	gine.objects[meta_name] = gine.objects[meta_name] or {}
 end
 
 -- libraries
@@ -94,7 +94,7 @@ for lib_name, functions in pairs(data.functions) do
 	end
 end
 
-if gmod.debug then
+if gine.debug then
 	for _, meta in pairs(env._R) do
 		setmetatable(meta, {__newindex = function(s, k, v)
 			if not k:startswith("__") then
@@ -110,13 +110,13 @@ if gmod.debug then
 	end})
 end
 
-function gmod.GetMetaTable(name)
-	return gmod.env._R[name]
+function gine.GetMetaTable(name)
+	return gine.env._R[name]
 end
 
-include("lua/libraries/gmod/libraries/*", gmod)
+include("lua/libraries/gmod/libraries/*", gine)
 
-if gmod.debug then
+if gine.debug then
 	setmetatable(env)
 
 	for _, meta in pairs(env._R) do

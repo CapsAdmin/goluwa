@@ -1,5 +1,5 @@
 local lib = render
-local render = gmod.env.render
+local render = gine.env.render
 
 function render.GetBloomTex0() return _G.render.GetErrorTexture() end
 function render.GetBloomTex1() return _G.render.GetErrorTexture() end
@@ -48,10 +48,10 @@ function render.UpdateScreenEffectTexture()
 
 end
 
-function gmod.env.ScrW() return lib.GetWidth() end
-function gmod.env.ScrH() return lib.GetHeight() end
+function gine.env.ScrW() return lib.GetWidth() end
+function gine.env.ScrH() return lib.GetHeight() end
 
-function gmod.env.DisableClipping(b)
+function gine.env.DisableClipping(b)
 
 end
 
@@ -61,5 +61,5 @@ function render.SupportsPixelShaders_2_0() return true end
 function render.SupportsHDR() return true end
 
 function render.GetMoBlurTex0()
-	return gmod.WrapObject(_G.render.GetErrorTexture(), "ITexture")
+	return gine.WrapObject(_G.render.GetErrorTexture(), "ITexture")
 end

@@ -1,4 +1,4 @@
-function gmod.env.HTTP(tbl)
+function gine.env.HTTP(tbl)
 	if tbl.parameters then
 		wlog("NYI parameters")
 		table.print(tbl.parameters)

@@ -1,9 +1,9 @@
 do
-	function gmod.env.ParticleEmitter()
-		return gmod.WrapObject(ParticleEmitter(), "CLuaEmitter")
+	function gine.env.ParticleEmitter()
+		return gine.WrapObject(ParticleEmitter(), "CLuaEmitter")
 	end
 
-	local META = gmod.GetMetaTable("CLuaEmitter")
+	local META = gine.GetMetaTable("CLuaEmitter")
 
 	function META:Add()
 
@@ -11,6 +11,6 @@ do
 end
 
 do
-	local META = gmod.GetMetaTable("CLuaParticle")
+	local META = gine.GetMetaTable("CLuaParticle")
 
 end

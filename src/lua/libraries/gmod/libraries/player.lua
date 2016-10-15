@@ -1,11 +1,11 @@
 do
-	local player = gmod.env.player
+	local player = gine.env.player
 
 	function player.GetAll()
 		local out = {}
 		local i = 1
 
-		for _, ent in pairs(gmod.objects.Player) do
+		for _, ent in pairs(gine.objects.Player) do
 			if ent:IsValid() then
 				table.insert(out, ent)
 			end
@@ -18,7 +18,7 @@ do
 		local out = {}
 		local i = 1
 
-		for _, ent in pairs(gmod.objects.Player) do
+		for _, ent in pairs(gine.objects.Player) do
 			if not ent.__obj:IsBot() then
 				if ent:IsValid() then
 					table.insert(out, ent)
@@ -33,7 +33,7 @@ do
 		local out = {}
 		local i = 1
 
-		for _, ent in pairs(gmod.objects.Player) do
+		for _, ent in pairs(gine.objects.Player) do
 			if ent.__obj:IsBot() then
 				table.insert(out, ent)
 			end
@@ -47,21 +47,21 @@ do
 end
 
 do
-	function gmod.env.player.CreateNextBot(name)
+	function gine.env.player.CreateNextBot(name)
 		local client = clients.CreateBot()
 		client:SetNick(name)
-		return gmod.WrapObject(cllient, "Player")
+		return gine.WrapObject(cllient, "Player")
 	end
 
-	function gmod.env.LocalPlayer()
-		gmod.local_player = gmod.local_player or gmod.WrapObject(clients.GetLocalClient(), "Player")
-		return gmod.local_player
+	function gine.env.LocalPlayer()
+		gine.local_player = gine.local_player or gine.WrapObject(clients.GetLocalClient(), "Player")
+		return gine.local_player
 	end
 
-	local META = gmod.GetMetaTable("Player")
+	local META = gine.GetMetaTable("Player")
 
 	function META:GetAimVector()
-		return gmod.env.EyeVector()
+		return gine.env.EyeVector()
 	end
 
 	function META:GetViewEntity()
@@ -113,10 +113,10 @@ do
 	end
 
 	function META:GetActiveWeapon()
-		if not self.__obj.gmod_weapon then
-			self.__obj.gmod_weapon = gmod.CreateWeapon()
+		if not self.__obj.gine_weapon then
+			self.__obj.gine_weapon = gine.CreateWeapon()
 		end
-		return gmod.WrapObject(self.__obj.gmod_weapon, "Weapon")
+		return gine.WrapObject(self.__obj.gine_weapon, "Weapon")
 	end
 
 	function META:IsPlayer()
@@ -136,11 +136,11 @@ do
 	end
 
 	function META:SetClassID(id)
-		self.__obj.gmod_classid = id
+		self.__obj.gine_classid = id
 	end
 
 	function META:GetClassID()
-		return self.__obj.gmod_classid or 0
+		return self.__obj.gine_classid or 0
 	end
 
 	function META:IsDrivingEntity(ent)
@@ -174,14 +174,14 @@ do
 	end
 
 	function META:KeyDown(key)
-		return gmod.env.input.IsKeyDown(key)
+		return gine.env.input.IsKeyDown(key)
 	end
 end
 
 do
-	gmod.AddEvent("ClientEntered", function(client)
-		local ply = gmod.WrapObject(client, "Player")
-		gmod.env.hook.Run("player_connect", {
+	gine.AddEvent("ClientEntered", function(client)
+		local ply = gine.WrapObject(client, "Player")
+		gine.env.hook.Run("player_connect", {
 			name = ply:Nick(),
 			networkid = ply:SteamID(),
 			address = ply:IPAddress(),
@@ -190,35 +190,35 @@ do
 			index = ply:EntIndex(),
 		})
 
-		gmod.env.gamemode.Call("PlayerConnect", ply:Nick(), ply:IPAddress())
+		gine.env.gamemode.Call("PlayerConnect", ply:Nick(), ply:IPAddress())
 
 		event.Delay(0.5, function()
-			gmod.env.hook.Run("player_spawn", {
+			gine.env.hook.Run("player_spawn", {
 				userid = ply:UserID(),
 			})
 
 			event.Delay(0, function()
-				gmod.env.hook.Run("player_activate", {
+				gine.env.hook.Run("player_activate", {
 					userid = ply:UserID(),
 				})
 
 				event.Delay(0, function()
-					gmod.env.gamemode.Call("OnEntityCreated", ply)
-					gmod.env.gamemode.Call("NetworkEntityCreated", ply)
-					gmod.env.gamemode.Call("PlayerInitialSpawn", ply)
-					gmod.env.gamemode.Call("PlayerSpawn", ply)
+					gine.env.gamemode.Call("OnEntityCreated", ply)
+					gine.env.gamemode.Call("NetworkEntityCreated", ply)
+					gine.env.gamemode.Call("PlayerInitialSpawn", ply)
+					gine.env.gamemode.Call("PlayerSpawn", ply)
 				end, nil, client)
 			end, nil, client)
 		end, nil, client)
 	end)
 
-	gmod.AddEvent("ClientLeft", function(client, reason)
-		local ply = gmod.WrapObject(client, "Player")
+	gine.AddEvent("ClientLeft", function(client, reason)
+		local ply = gine.WrapObject(client, "Player")
 
-		gmod.env.gamemode.Call("EntityRemoved", ply)
-		gmod.env.gamemode.Call("PlayerDisconnected", ply)
+		gine.env.gamemode.Call("EntityRemoved", ply)
+		gine.env.gamemode.Call("PlayerDisconnected", ply)
 
-		gmod.env.hook.Run("player_disconnect", {
+		gine.env.hook.Run("player_disconnect", {
 			name = ply:Nick(),
 			networkid = ply:SteamID(),
 			userid = ply:UserID(),
@@ -227,17 +227,17 @@ do
 		})
 	end)
 
-	gmod.AddEvent("ClientChat", function(client, msg)
-		local ply = gmod.WrapObject(client, "Player")
-		gmod.env.gamemode.Call("OnPlayerChat", ply, msg, false, not ply:Alive())
+	gine.AddEvent("ClientChat", function(client, msg)
+		local ply = gine.WrapObject(client, "Player")
+		gine.env.gamemode.Call("OnPlayerChat", ply, msg, false, not ply:Alive())
 	end)
 
 	if RELOAD then
-		for k,v in pairs(gmod.env.player.GetAll()) do
+		for k,v in pairs(gine.env.player.GetAll()) do
 			event.Call("ClientLeft", v.__obj, "reloading")
 		end
 
-		for k,v in pairs(gmod.env.player.GetAll()) do
+		for k,v in pairs(gine.env.player.GetAll()) do
 			event.Call("ClientEntered", v.__obj)
 		end
 	end

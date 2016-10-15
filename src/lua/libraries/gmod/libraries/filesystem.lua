@@ -2,14 +2,14 @@ local search_paths = {
 	game = "",
 	workshop = "",
 	lua = "lua/",
-	data = gmod.dir .. "data/",
-	download = gmod.dir .. "download/",
-	mod = gmod.dir,
-	base_path = gmod.dir .. "../bin/",
+	data = gine.dir .. "data/",
+	download = gine.dir .. "download/",
+	mod = gine.dir,
+	base_path = gine.dir .. "../bin/",
 }
 
 do
-	local file = gmod.env.file
+	local file = gine.env.file
 
 	function file.Find(path, where)
 		local files, folders = {}, {}
@@ -19,7 +19,7 @@ do
 
 		if where == "LUA" then
 			for k,v in ipairs(vfs.Find("lua/" .. path, true)) do
-				if v:startswith(gmod.dir) then
+				if v:startswith(gine.dir) then
 					if vfs.IsDirectory(v) then
 						table.insert(folders, v:match(".+/(.+)"))
 					else
@@ -70,7 +70,7 @@ do
 end
 
 do
-	function gmod.env.file.Open(path, how, where)
+	function gine.env.file.Open(path, how, where)
 		where = where or "data"
 		path = search_paths[where:lower()] .. path
 
@@ -83,13 +83,13 @@ do
 		local self, err = vfs.Open(path, how)
 
 		if self then
-			return gmod.WrapObject(self, "File")
+			return gine.WrapObject(self, "File")
 		else
 			--llog("file.Open failed: ", err)
 		end
 	end
 
-	local META = gmod.GetMetaTable("File")
+	local META = gine.GetMetaTable("File")
 
 	function META:Read(length) return self.__obj:ReadBytes(length) end
 	function META:Write(content) return self.__obj:Write(content) end

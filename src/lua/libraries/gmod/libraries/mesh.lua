@@ -1,8 +1,8 @@
-function gmod.env.Mesh()
-	return gmod.WrapObject(render.CreateMeshBuilder(), "IMesh")
+function gine.env.Mesh()
+	return gine.WrapObject(render.CreateMeshBuilder(), "IMesh")
 end
 
-local META = gmod.GetMetaTable("IMesh")
+local META = gine.GetMetaTable("IMesh")
 
 function META:BuildFromTriangles(tbl)
 

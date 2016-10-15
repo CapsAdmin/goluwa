@@ -3,12 +3,12 @@ do
 
 	META:Register()
 
-	function gmod.CreateWeapon()
+	function gine.CreateWeapon()
 		return META:CreateObject()
 	end
 end
 
-local META = gmod.GetMetaTable("Weapon")
+local META = gine.GetMetaTable("Weapon")
 
 function META:IsWeapon()
 	return true

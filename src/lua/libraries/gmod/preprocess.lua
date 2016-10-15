@@ -1,6 +1,6 @@
-local gmod = ... or _G.gmod
+local gine = ... or _G.gine
 
-function gmod.PreprocessLua(code, debug)
+function gine.PreprocessLua(code, debug)
 	local in_string
 	local in_comment
 
@@ -200,11 +200,11 @@ function gmod.PreprocessLua(code, debug)
 	return code
 end
 
-event.AddListener("PreLoadString", "gmod_preprocess", function(code, path)
+event.AddListener("PreLoadString", "glua_preprocess", function(code, path)
 	if path:lower():find("steamapps/common/garrysmod/garrysmod/", nil, true) or path:find("%.gma") then
 		if not code:find("DEFINE_BASECLASS", nil, true) and loadstring(code) then return code end
 
-		local ok, msg = pcall(gmod.PreprocessLua, code)
+		local ok, msg = pcall(gine.PreprocessLua, code)
 
 		if not ok then
 			logn(msg)
@@ -213,7 +213,7 @@ event.AddListener("PreLoadString", "gmod_preprocess", function(code, path)
 
 		code = msg
 
-		if not loadstring(code) then vfs.Write("gmod_preprocess_error.lua", code) end
+		if not loadstring(code) then vfs.Write("glua_preprocess_error.lua", code) end
 
 		return code
 	end

@@ -12,7 +12,7 @@ do
 		["trebuchet ms"] = "resource/fonts/coolvetica.ttf",
 	}
 
-	function gmod.TranslateFontName(name)
+	function gine.TranslateFontName(name)
 		if not name then
 			return easy.helvetica
 		end
@@ -34,7 +34,7 @@ do
 	end
 end
 
-function gmod.LoadFonts()
+function gine.LoadFonts()
 	local screen_res = window.GetSize()
 
 	local fonts = {}
@@ -60,8 +60,8 @@ function gmod.LoadFonts()
 				info.tall = info.tall[1]-- what
 			end
 
-			gmod.surface_fonts[font_name:lower()] = surface.CreateFont({
-				path = gmod.TranslateFontName(info.name),
+			gine.surface_fonts[font_name:lower()] = surface.CreateFont({
+				path = gine.TranslateFontName(info.name),
 				size = info.tall and math.ceil(info.tall) or 11,
 			})
 		end
@@ -69,46 +69,46 @@ function gmod.LoadFonts()
 end
 
 do
-	gmod.translation = {}
-	gmod.translation2 = {}
+	gine.translation = {}
+	gine.translation2 = {}
 
-	function gmod.env.language.GetPhrase(key)
-		return gmod.translation[key] or key
+	function gine.env.language.GetPhrase(key)
+		return gine.translation[key] or key
 	end
 
-	function gmod.env.language.Add(key, val)
-		gmod.translation[key] = val:trim()
-		gmod.translation2["#" .. key] = gmod.translation[key]
+	function gine.env.language.Add(key, val)
+		gine.translation[key] = val:trim()
+		gine.translation2["#" .. key] = gine.translation[key]
 	end
 end
 
 do
-	local surface = gmod.env.surface
+	local surface = gine.env.surface
 	local lib = _G.surface
 
 	function surface.SetTextPos(x, y)
 		lib.SetTextPosition(x, y)
 	end
 
-	gmod.surface_fonts = gmod.surface_fonts or {}
+	gine.surface_fonts = gine.surface_fonts or {}
 
 	function surface.CreateFont(id, tbl)
 		local tbl = table.copy(tbl)
 		tbl.path = tbl.font
 
-		tbl.path = gmod.TranslateFontName(tbl.path)
+		tbl.path = gine.TranslateFontName(tbl.path)
 
 		if tbl.size then tbl.size = math.ceil(tbl.size * 0.55) end
 
-		gmod.surface_fonts[id:lower()] = lib.CreateFont(tbl)
+		gine.surface_fonts[id:lower()] = lib.CreateFont(tbl)
 	end
 
 	function surface.SetFont(name)
-		lib.SetFont(gmod.surface_fonts[name:lower()])
+		lib.SetFont(gine.surface_fonts[name:lower()])
 	end
 
 	function surface.GetTextSize(str)
-		str = gmod.translation2[str] or str
+		str = gine.translation2[str] or str
 		return lib.GetTextSize(str)
 	end
 
@@ -125,7 +125,7 @@ do
 	end
 
 	function surface.DrawText(str)
-		str = gmod.translation2[str] or str
+		str = gine.translation2[str] or str
 		lib.PushColor(txt_r, txt_g, txt_b, txt_a)
 		lib.DrawText(str)
 		lib.PopColor()

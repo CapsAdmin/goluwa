@@ -1,11 +1,11 @@
 do
-	function gmod.env.CreateSound(ent, path, filter)
+	function gine.env.CreateSound(ent, path, filter)
 		local self = audio.CreateSource("sound/" .. path)
 
-		return gmod.WrapObject(self, "CSoundPatch")
+		return gine.WrapObject(self, "CSoundPatch")
 	end
 
-	local META = gmod.GetMetaTable("CSoundPatch")
+	local META = gine.GetMetaTable("CSoundPatch")
 
 	function META:SetSoundLevel()
 
@@ -24,6 +24,6 @@ do
 	end
 end
 
-function gmod.env.surface.PlaySound(path)
+function gine.env.surface.PlaySound(path)
 	audio.CreateSource("sound/" .. path):Play()
 end

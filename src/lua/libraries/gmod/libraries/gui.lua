@@ -1,11 +1,11 @@
 do -- chatbox
-	local chat = gmod.env.chat
+	local chat = gine.env.chat
 	local lib = _G.chat
 
 	function chat.AddText(...)
 		local tbl = {...}
 		for i, v in ipairs(tbl) do
-			if gmod.env.IsColor(v) then
+			if gine.env.IsColor(v) then
 				tbl[i] = ColorBytes(v.r, v.g, v.b, v.a)
 			elseif type(v) == "table" and v.__obj then
 				tbl[i] = v.__obj
@@ -32,12 +32,12 @@ do -- chatbox
 end
 
 do
-	local vgui = gmod.env.vgui
+	local vgui = gine.env.vgui
 
 	function vgui.GetHoveredPanel()
 		local pnl = gui.GetHoveringPanel()
 		if pnl:IsValid() then
-			return gmod.WrapObject(gui.GetHoveringPanel(), "Panel")
+			return gine.WrapObject(gui.GetHoveringPanel(), "Panel")
 		end
 	end
 
@@ -57,7 +57,7 @@ do
 end
 
 do
-	local gui = gmod.env.gui
+	local gui = gine.env.gui
 
 	function gui.MousePos()
 		return window.GetMousePosition():Unpack()
@@ -72,12 +72,12 @@ do
 	end
 
 	function gui.ScreenToVector(x, y)
-		return gmod.env.Vector(math3d.ScreenToWorldDirection(Vec2(x, y)):Unpack())
+		return gine.env.Vector(math3d.ScreenToWorldDirection(Vec2(x, y)):Unpack())
 	end
 end
 
 do
-	gmod.gui_world = gmod.gui_world or NULL
+	gine.gui_world = gine.gui_world or NULL
 
 	local function hook(obj, func_name, callback)
 		local old = obj[func_name]
@@ -96,12 +96,12 @@ do
 
 	local function vgui_Create(class, parent, name)
 
-		if not gmod.gui_world:IsValid() then
-			gmod.gui_world = gui.CreatePanel("base")
-			gmod.gui_world:SetNoDraw(true)
-			--gmod.gui_world:SetIgnoreMouse(true)
-			gmod.gui_world.__class = "CGModBase"
-			function gmod.gui_world:OnLayout()
+		if not gine.gui_world:IsValid() then
+			gine.gui_world = gui.CreatePanel("base")
+			gine.gui_world:SetNoDraw(true)
+			--gine.gui_world:SetIgnoreMouse(true)
+			gine.gui_world.__class = "CGModBase"
+			function gine.gui_world:OnLayout()
 				self:SetPosition(Vec2(0, 0))
 				self:SetSize(window.GetSize())
 			end
@@ -117,9 +117,9 @@ do
 			obj = gui.CreatePanel("base")
 		end
 
-		local self = gmod.WrapObject(obj, "Panel")
+		local self = gine.WrapObject(obj, "Panel")
 
-		obj.gmod_pnl = self
+		obj.gine_pnl = self
 		self.__class = class
 
 		obj.fg_color = Color(1,1,1,1)
@@ -167,27 +167,27 @@ do
 		function self:Think() end
 
 		hook(obj, "OnChildAdd", function(_, child)
-			if obj.gmod_prepared then
-				child = gmod.WrapObject(child, "Panel")
-				if child.__obj.gmod_prepared then
+			if obj.gine_prepared then
+				child = gine.WrapObject(child, "Panel")
+				if child.__obj.gine_prepared then
 					self:OnChildAdded(child)
 				end
 			end
 		end)
 
 		hook(obj, "OnChildRemove", function(_, child)
-			if obj.gmod_prepared then
-				child = gmod.WrapObject(child, "Panel")
-				if child.__obj.gmod_prepared then
+			if obj.gine_prepared then
+				child = gine.WrapObject(child, "Panel")
+				if child.__obj.gine_prepared then
 					self:OnChildRemoved(child)
 				end
 			end
 		end)
 
 		obj.OnDraw = function()
-			if self.gmod_layout then
+			if self.gine_layout then
 				self:InvalidateLayout(true)
-				self.gmod_layout = nil
+				self.gine_layout = nil
 			end
 
 			local paint_bg = self:Paint(obj:GetWidth(), obj:GetHeight())
@@ -203,7 +203,7 @@ do
 					if obj.text_internal and obj.text_internal ~= "" then
 						surface.SetColor(obj.fg_color:Unpack())
 						surface.SetTextPosition(obj.text_offset.x, obj.text_offset.y)
-						surface.SetFont(gmod.surface_fonts[obj.font_internal:lower()])
+						surface.SetFont(gine.surface_fonts[obj.font_internal:lower()])
 						surface.DrawText(obj.text_internal)
 					end
 				end
@@ -225,7 +225,7 @@ do
 			local panel = obj
 
 			if panel.vgui_type == "label" then
-				local w, h = gmod.surface_fonts[panel.font_internal:lower()]:GetTextSize(panel.text_internal)
+				local w, h = gine.surface_fonts[panel.font_internal:lower()]:GetTextSize(panel.text_internal)
 				local m = panel:GetMargin()
 
 				if panel.content_alignment == 5 then
@@ -259,8 +259,8 @@ do
 				panel.text_offset = panel.text_offset + panel.text_inset
 			end
 
-			if not obj.gmod_prepared then
-				obj.gmod_prepare_layout = true
+			if not obj.gine_prepared then
+				obj.gine_prepare_layout = true
 			else
 				self:InvalidateLayout(true)
 			end
@@ -273,19 +273,19 @@ do
 				self:OnMouseWheeled(-1)
 			else
 				if press then
-					self:OnMousePressed(gmod.GetMouseCode(button))
+					self:OnMousePressed(gine.GetMouseCode(button))
 				else
-					self:OnMouseReleased(gmod.GetMouseCode(button))
+					self:OnMouseReleased(gine.GetMouseCode(button))
 				end
 			end
 		end)
 
 		hook(obj, "OnKeyInput", function(_, key, press)
 			if press then
-				self:OnKeyCodeTyped(gmod.GetKeyCode(key))
-				self:OnKeyCodePressed(gmod.GetKeyCode(key))
+				self:OnKeyCodeTyped(gine.GetKeyCode(key))
+				self:OnKeyCodePressed(gine.GetKeyCode(key))
 			else
-				self:OnKeyCodeReleased(gmod.GetKeyCode(key))
+				self:OnKeyCodeReleased(gine.GetKeyCode(key))
 			end
 		end)
 
@@ -305,13 +305,13 @@ do
 		return self
 	end
 
-	if gmod.env.vgui.CreateX then
-		gmod.env.vgui.CreateX = vgui_Create
+	if gine.env.vgui.CreateX then
+		gine.env.vgui.CreateX = vgui_Create
 	else
-		gmod.env.vgui.Create = vgui_Create
+		gine.env.vgui.Create = vgui_Create
 	end
 
-	local META = gmod.GetMetaTable("Panel")
+	local META = gine.GetMetaTable("Panel")
 
 	function META:__tostring()
 		return ("Panel: [name:Panel][class:%s][%s,%s,%s,%s]"):format(self.__class, self.x, self.y, self.w, self.h)
@@ -359,7 +359,7 @@ do
 		if panel and panel.__obj and panel.__obj:IsValid() then
 			self.__obj:SetParent(panel.__obj)
 		else
-			self.__obj:SetParent(gmod.gui_world)
+			self.__obj:SetParent(gine.gui_world)
 		end
 	end
 
@@ -367,7 +367,7 @@ do
 		local children = {}
 
 		for k,v in pairs(self.__obj:GetChildren()) do
-			table.insert(children, gmod.WrapObject(v, "Panel"))
+			table.insert(children, gine.WrapObject(v, "Panel"))
 		end
 
 		return children
@@ -468,9 +468,9 @@ do
 	function META:SetSize(w,h)
 		self.__obj:SetSize(Vec2(tonumber(w),tonumber(h)))
 		if self.__obj.vgui_dock then
-			if self.__obj.Size ~= self.__obj.gmod_last_Size then
+			if self.__obj.Size ~= self.__obj.gine_last_Size then
 				self:Dock(self.__obj.vgui_dock)
-				self.__obj.gmod_last_Size = self.__obj.Size
+				self.__obj.gine_last_Size = self.__obj.Size
 			end
 		end
 	end
@@ -494,7 +494,7 @@ do
 	do
 		function META:SetFontInternal(font)
 			self.__obj.font_internal = font or "default"
-			if not gmod.surface_fonts[self.__obj.font_internal:lower()] then
+			if not gine.surface_fonts[self.__obj.font_internal:lower()] then
 				--llog("font ", self.__obj.font_internal, " does not exist")
 				self.__obj.font_internal = "default"
 			end
@@ -504,7 +504,7 @@ do
 			if self.__obj.vgui_type == "textentry" then
 				self.__obj:SetText(text)
 			else
-				self.__obj.text_internal = gmod.translation2[text] or text
+				self.__obj.text_internal = gine.translation2[text] or text
 			end
 		end
 	end
@@ -521,7 +521,7 @@ do
 		local parent = self.__obj:GetParent()
 
 		if parent:IsValid() then
-			return gmod.WrapObject(parent, "Panel")
+			return gine.WrapObject(parent, "Panel")
 		end
 
 		return nil
@@ -535,7 +535,7 @@ do
 			self:PerformLayout(self.__obj:GetWidth(), self.__obj:GetHeight())
 			self.in_layout = nil
 		else
-			self.gmod_layout = true
+			self.gine_layout = true
 		end
 	end
 
@@ -604,24 +604,24 @@ do
 	end
 
 	function META:Dock(enum)
-		if enum == gmod.env.FILL then
+		if enum == gine.env.FILL then
 			self.__obj:SetupLayout("center_simple", "fill")
-		elseif enum == gmod.env.LEFT then
+		elseif enum == gine.env.LEFT then
 			self.__obj:SetupLayout("center_y_simple", "left", "fill_y")
-		elseif enum == gmod.env.RIGHT then
+		elseif enum == gine.env.RIGHT then
 			self.__obj:SetupLayout("center_y_simple", "right", "fill_y")
-		elseif enum == gmod.env.TOP then
+		elseif enum == gine.env.TOP then
 			self.__obj:SetupLayout("center_x_simple", "top", "fill_x")
-		elseif enum == gmod.env.BOTTOM then
+		elseif enum == gine.env.BOTTOM then
 			self.__obj:SetupLayout("center_x_simple", "bottom", "fill_x")
-		elseif enum == gmod.env.NODOCK then
+		elseif enum == gine.env.NODOCK then
 			self.__obj:SetupLayout()
 		end
 		self.__obj.vgui_dock = enum
 	end
 
 	function META:GetDock()
-		return self.__obj.vgui_dock or gmod.env.NODOCK
+		return self.__obj.vgui_dock or gine.env.NODOCK
 	end
 
 	function META:SetCursor(typ)
@@ -634,8 +634,8 @@ do
 	end
 	function META:SetExpensiveShadow() end
 	function META:Prepare()
-		self.__obj.gmod_prepared = true
-		if self.__obj.gmod_prepare_layout then
+		self.__obj.gine_prepared = true
+		if self.__obj.gine_prepare_layout then
 			self:InvalidateLayout()
 		end
 	end

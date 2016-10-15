@@ -1,4 +1,4 @@
-local engine = gmod.env.engine
+local engine = gine.env.engine
 
 function engine.GetAddons()
 	return {}

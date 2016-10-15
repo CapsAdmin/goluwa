@@ -1,11 +1,11 @@
-local timer = gmod.env.timer
+local timer = gine.env.timer
 
 function timer.Create(identifier, delay, repetitions, func)
-	return event.Timer("gmod_" .. tostring(identifier), delay, repetitions, func)
+	return event.Timer("gine_" .. tostring(identifier), delay, repetitions, func)
 end
 
 function timer.Destroy(identifier)
-	return event.RemoveTimer("gmod_" .. tostring(identifier))
+	return event.RemoveTimer("gine_" .. tostring(identifier))
 end
 
 timer.Remove = timer.Destroy

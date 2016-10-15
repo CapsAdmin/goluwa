@@ -1,4 +1,4 @@
-function gmod.env.include(path)
+function gine.env.include(path)
 	local ok, err = include({
 		path,
 		"lua/" .. path,
@@ -10,13 +10,13 @@ function gmod.env.include(path)
 	end
 end
 
-function gmod.env.module(name, _ENV)
-	--logn("gmod: module(",name,")")
+function gine.env.module(name, _ENV)
+	--logn("gine: module(",name,")")
 
-	local tbl = package.loaded[name] or gmod.env[name] or {}
+	local tbl = package.loaded[name] or gine.env[name] or {}
 
 	if _ENV == package.seeall then
-		_ENV = gmod.env
+		_ENV = gine.env
 		setmetatable(tbl, {__index = _ENV})
 	elseif _ENV then
 		wlog(_ENV, 2)
@@ -29,19 +29,19 @@ function gmod.env.module(name, _ENV)
 	end
 
 	package.loaded[name] = tbl
-	gmod.env[name] = tbl
+	gine.env[name] = tbl
 
 	setfenv(2, tbl)
 end
 
-function gmod.env.require(name, ...)
-	--logn("gmod: require(",name,")")
+function gine.env.require(name, ...)
+	--logn("gine: require(",name,")")
 
-	local func, err, path = require.load(name, gmod.dir, true)
+	local func, err, path = require.load(name, gine.dir, true)
 
 	if type(func) == "function" then
 		if debug.getinfo(func).what ~= "C" then
-			setfenv(func, gmod.env)
+			setfenv(func, gine.env)
 		end
 
 		return require.require_function(name, func, path, name)
@@ -51,18 +51,18 @@ function gmod.env.require(name, ...)
 		return require(name)
 	end
 
-	if gmod.env[name] then return gmod.env[name] end
+	if gine.env[name] then return gine.env[name] end
 
 	if not func and err then print(name, err) end
 
 	return func
 end
 
-function gmod.env.CompileString(code, identifier, handle_error)
+function gine.env.CompileString(code, identifier, handle_error)
 	if handle_error == nil then handle_error = true end
 	local func, err = loadstring(code)
 	if func then
-		setfenv(func, gmod.env)
+		setfenv(func, gine.env)
 		return func
 	end
 	if handle_error then
@@ -71,6 +71,6 @@ function gmod.env.CompileString(code, identifier, handle_error)
 	return err
 end
 
-function gmod.env.CompileFile(name)
-	return gmod.env.CompileString(vfs.Read("lua/" .. name), "@lua/" .. name)
+function gine.env.CompileFile(name)
+	return gine.env.CompileString(vfs.Read("lua/" .. name), "@lua/" .. name)
 end

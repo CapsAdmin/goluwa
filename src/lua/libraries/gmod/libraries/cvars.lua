@@ -1,10 +1,10 @@
-local gmod = ... or gmod
+local gine = ... or _G.gine
 
-function gmod.env.CreateConVar(name, def, flags, help)
-	return gmod.WrapObject(pvars.Setup(name, tostring(def), nil, help), "ConVar")
+function gine.env.CreateConVar(name, def, flags, help)
+	return gine.WrapObject(pvars.Setup(name, tostring(def), nil, help), "ConVar")
 end
 
-function gmod.env.GetConVar(name)
+function gine.env.GetConVar(name)
 	local pvar = pvars.GetObject(name)
 
 	if not pvar then
@@ -13,11 +13,11 @@ function gmod.env.GetConVar(name)
 	end
 
 	if pvar then
-		return gmod.WrapObject(pvar, "ConVar")
+		return gine.WrapObject(pvar, "ConVar")
 	end
 end
 
-local META = gmod.GetMetaTable("ConVar")
+local META = gine.GetMetaTable("ConVar")
 
 function META:GetBool()
 	local val = self.__obj:Get()
