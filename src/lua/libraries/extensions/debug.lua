@@ -1,3 +1,11 @@
+function debug.loglines()
+	jit.off()
+	jit.flush()
+	debug.sethook(function()
+		local info = debug.getinfo(2)
+		logn(info.source, ":", info.curentline)
+	end, "l")
+end
 function debug.getsource(func)
 	local info = debug.getinfo(func)
 	local src = vfs.Read(e.ROOT_FOLDER .. "/" .. info.source:sub(2))
