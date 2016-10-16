@@ -140,6 +140,11 @@ function line.RunGame(folder, ...)
 				return true
 			end
 
+			if name == "socket" then
+				env.socket = sockets.luasocket
+				return sockets.luasocket
+			end
+
 			llog("requre: ", name)
 
 			name = name:gsub("[%.]+", ".")
