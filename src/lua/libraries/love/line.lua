@@ -89,7 +89,7 @@ do
 
 	local on_error = function(msg)
 		current_love._line_env.error_message = msg .. "\n" .. debug.traceback()
-		llog(current_love._line_env.error_message)
+		logn(current_love._line_env.error_message)
 	end
 
 	function line.pcall(love, func, ...)
