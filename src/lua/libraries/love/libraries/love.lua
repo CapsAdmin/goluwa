@@ -1,5 +1,5 @@
 local love = ... or _G.love
-local ENV = love._line_env
+local line = line -- line_update and line_draw
 
 function love.load()
 end
@@ -27,8 +27,8 @@ end
 function love.line_update(dt)
 	if not love.update then return end
 
-	if ENV.love_game_update_draw_hack == false then
-		ENV.love_game_update_draw_hack = true -- this is stupid but it's because some games rely on update being called before draw
+	if love._line_env.love_game_update_draw_hack == false then
+		love._line_env.love_game_update_draw_hack = true -- this is stupid but it's because some games rely on update being called before draw
 	end
 
 	line.pcall(love, love.update, dt)
