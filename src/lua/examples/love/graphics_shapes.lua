@@ -102,4 +102,8 @@ event.AddListener("PreDrawGUI", "lol", function()
 	love.graphics.print(("%s, %s"):format(w,h), 100, 400)
 	love.graphics.rectangle("fill", 0, 400, w, h)
 
+	love.graphics.push()
+	love.graphics.translate(500,500)
+	love.graphics.triangle("line", -50,0, 0,-50, 50,0)
+	love.graphics.pop()
 end)

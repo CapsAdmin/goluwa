@@ -1172,6 +1172,10 @@ do -- shapes
 		polygon("line", tbl, true)
 	end
 
+	function love.graphics.triangle(mode, x1, y1, x2, y2, x3, y3)
+		polygon(mode, {x1, y1, x2, y2, x3, y3}, false)
+	end
+
 	function love.graphics.rectangle(mode, x, y, w, h, rx, ry, points)
 		rx = rx or 0
 		ry = ry or rx
