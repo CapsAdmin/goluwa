@@ -204,7 +204,7 @@ do -- Source
 
 	function Source:resume()
 		if self.source then
-			self.source:Resume()
+			self.source:Play()
 		end
 	end
 
@@ -249,7 +249,7 @@ do -- Source
 
 	function Source:setLooping(bool)
 		if self.source then
-			self.source:SetLooping(bool)
+			self.source:SetLooping(not not bool)
 		end
 	end
 
