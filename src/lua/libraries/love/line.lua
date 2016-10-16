@@ -77,7 +77,6 @@ function line.CreateLoveEnv()
 	love._version_minor = tonumber(version[2])
 	love._version_revision = tonumber(version[3])
 	love._line_env = {}
-
 	include("lua/libraries/love/libraries/*", love)
 
 	table.insert(line.love_envs, love)
@@ -267,6 +266,10 @@ function line.RunGame(folder, ...)
 	love._line_env.love_game_update_draw_hack = false
 
 	return love
+end
+
+function line.IsGameRunning()
+	return line.current_game ~= nil
 end
 
 commands.Add("love_run", function(_, name, ...)

@@ -81,7 +81,7 @@ local background = ColorBytes(64, 44, 128, 127)
 
 function menu.RenderBackground()
 	surface.SetWhiteTexture()
-	if render.IsGBufferReady() then
+	if render.IsGBufferReady() or line.IsGameRunning() then
 		surface.SetColor(background.r, background.g, background.b, background.a)
 	else
 		surface.SetColor(background.r, background.g, background.b, 255)
