@@ -546,6 +546,11 @@ do -- line
 	function love.graphics.getLineWidth()
 		return ENV.graphics_line_width
 	end
+
+	function love.graphics.setLine(w, s)
+		love.graphics.setLineWidth(w)
+		love.graphics.setLineStyle(s)
+	end
 end
 
 do -- canvas
