@@ -37,7 +37,7 @@ function utf8.bytelength(char, offset)
 	local byte = char:byte(offset or 1)
 	local length = 1
 
-	if byte >= 128 then
+	if byte and byte >= 128 then
 		if byte >= 240 then
 			length = 4
 		elseif byte >= 224 then
