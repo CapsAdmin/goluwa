@@ -106,8 +106,12 @@ function META:ConstructPoly(width, quality, stretch, poly)
 	width = width or 30
 	stretch = stretch or 1
 
-	local negative_points = self:CreateOffsetedCurve(-width):ConvertToPoints(quality)
-	local positive_points = self:CreateOffsetedCurve(width):ConvertToPoints(quality)
+	if type(width) == "number" then
+		width = Vec2(-width, width)
+	end
+
+	local negative_points = self:CreateOffsetedCurve(width.x):ConvertToPoints(quality)
+	local positive_points = self:CreateOffsetedCurve(width.y):ConvertToPoints(quality)
 
 	local poly = poly or gfx.CreatePolygon(#positive_points * 2)
 	local distance_positive = 0
@@ -122,7 +126,11 @@ function META:ConstructPoly(width, quality, stretch, poly)
 		poly:SetVertex((i - 1) * 2 + 1, positive_points[i].x, positive_points[i].y, distance_positive, 1)
 	end
 
-	return poly
+	return poly, #positive_points
+end
+
+function META:UpdatePoly(poly, width, quality, stretch)
+	return self:ConstructPoly(width, quality, stretch, poly)
 end
 
 META:Register()
