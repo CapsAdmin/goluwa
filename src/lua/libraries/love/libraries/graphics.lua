@@ -212,8 +212,8 @@ do -- background
 end
 
 do
-	local COLOR_MDOE
-	local ALPHA_MDOE
+	local COLOR_MODE = "alpha"
+	local ALPHA_MODE = "alphamultiply"
 
 	function love.graphics.setBlendMode(color_mode, alpha_mode)
 		alpha_mode = alpha_mode or "alphamultiply"
@@ -267,12 +267,12 @@ do
 
 		render.SetBlendMode(srcRGB, dstRGB, func, srcA, dstA, func)
 
-		COLOR_MDOE = color_mode
-		ALPHA_MDOE = alpha_mode
+		COLOR_MODE = color_mode
+		ALPHA_MODE = alpha_mode
 	end
 
 	function love.graphics.getBlendMode()
-		return COLOR_MDOE, ALPHA_MDOE
+		return COLOR_MODE, ALPHA_MODE
 	end
 end
 
@@ -289,20 +289,23 @@ do
 end
 
 do -- points
+	local SIZE = 1
+	local STYLE = "rough"
+
 	function love.graphics.setPointStyle(style)
-		surface.SetPointStyle(style)
+		STYLE = style
 	end
 
 	function love.graphics.getPointStyle()
-		return surface.GetPointStyle()
+		return STYLE
 	end
 
 	function love.graphics.setPointSize(size)
-		surface.SetPointSize(size)
+		SIZE = size
 	end
 
 	function love.graphics.getPointSize()
-		return surface.GetPointSize()
+		return SIZE
 	end
 
 	function love.graphics.setPoint(size, style)
@@ -311,18 +314,32 @@ do -- points
 	end
 
 	function love.graphics.point(x, y)
-		surface.DrawPoint(x, y)
+		if STYLE == "rough" then
+			surface.PushTexture(render.GetWhiteTexture())
+			surface.DrawRect(x, y, SIZE, SIZE, nil, SIZE/2, SIZE/2)
+			surface.PopTexture()
+		else
+			gfx.DrawFilledCircle(x, y, SIZE)
+		end
 	end
 
 	function love.graphics.points(...)
-		if type(...) == "number" then
-			surface.DrawPoint(...)
+		local points = ...
+
+		if type(points) == "number" then
+			points = {...}
+		end
+
+		if type(points[1]) == "number" then
+			for i = 1, #points, 2 do
+				love.graphics.point(points[i + 0], points[i + 1])
+			end
 		else
-			for i, point in ipairs(...) do
+			for i, point in ipairs(points) do
 				if point[3] then
 					surface.SetColor(point[3], point[4], point[5], point[6])
 				end
-				surface.DrawPoint(point[1], point[2])
+				love.graphics.point(point[1], point[2])
 			end
 		end
 	end
@@ -339,7 +356,7 @@ do -- font
 
 	function Font:getHeight(str)
 		str = str or "W"
-		return select(2, self.font:GetTextSize())
+		return select(2, self.font:GetTextSize()) + 2
 	end
 
 	function Font:setLineHeight(num)
@@ -350,8 +367,14 @@ do -- font
 		self.line_height = num
 	end
 
-	function Font:getWrap()
-		return 1, 1
+	function Font:getWrap(str, width)
+		local markup = gfx.CreateMarkup()
+		markup:SetSuperLightMode(true)
+		markup:SetMaxWidth(width)
+		markup:AddFont(self.font)
+		markup:SetText(str)
+		markup:Invalidate()
+		return markup.width, markup:GetText():count("\n")
 	end
 
 	function Font:setFilter(filter)
@@ -369,6 +392,7 @@ do -- font
 	local function create_font(path, size, glyphs, texture)
 		local self = line.CreateObject("Font")
 
+		self:setLineHeight(1)
 		path = line.FixPath(path)
 
 		self.font = fonts.CreateFont({
@@ -399,7 +423,7 @@ do -- font
 
 		if not a then
 			font = "fonts/vera.ttf"
-			size = b or 10
+			size = b or 11
 		end
 
 		size = size or 12
@@ -434,6 +458,8 @@ do -- font
 	end
 
 	local function draw_text(text, x, y, r, sx, sy, ox, oy, kx, ky, align, limit)
+		local font = love.graphics.getFont()
+		love.graphics.setFont(font)
 		text = tostring(text)
 		x = x or 0
 		y = y or 0
@@ -446,8 +472,9 @@ do -- font
 		ky = ky or 0
 
 		local cr, cg, cb, ca = love.graphics.getColor()
-		surface.SetColor(cr/255, cg/255, cb/255, ca/255)
+		surface.PushColor(cr/255, cg/255, cb/255, ca/255)
 		surface.PushMatrix(x, y, sx, sy, r)
+		surface.Translate(ox, oy)
 			if align then
 				local max_width = 0
 				local t = gfx.WrapString(text, limit)
@@ -470,7 +497,7 @@ do -- font
 						align_x = (-w / 2) + limit/2 - x
 					end
 
-					gfx.SetTextPosition(x + align_x, (i-1) * h)
+					gfx.SetTextPosition(x + align_x, (i-1) * h * font.line_height)
 					gfx.DrawText(line)
 				end
 			else
@@ -478,6 +505,7 @@ do -- font
 				gfx.DrawText(text)
 			end
 		surface.PopMatrix()
+		surface.PopColor()
 	end
 
 	function love.graphics.print(text, x, y, r, sx, sy, ox, oy, kx, ky)
@@ -518,26 +546,6 @@ do -- line
 
 	function love.graphics.getLineWidth()
 		return ENV.graphics_line_width
-	end
-
-	function love.graphics.line(...)
-		local tbl = {...}
-
-		if type(tbl[1]) == "table" then
-			tbl = tbl[1]
-		end
-
-		local last_x
-		local last_y
-
-		for i = 1, #tbl, 2 do
-			local x, y = tbl[i+0], tbl[i+1]
-			if last_x and last_y then
-				surface.DrawLine(last_x, last_y, x, y)
-			end
-			last_x = x
-			last_y = y
-		end
 	end
 end
 
@@ -720,63 +728,76 @@ function love.graphics.rectangle(mode, x, y, w, h)
 	end
 end
 
-function love.graphics.circle(mode,x,y,w,h)
-	surface.SetWhiteTexture()
-	surface.DrawRect(x or 0, y or 0, w or 0, h or 0)
-end
-
-function love.graphics.arc(...)
-	if type(select(2, ...)) == "string" then
-		local drawmode, arctype, x, y, radius, angle1, angle2, segments = ...
-
-	else
-		local drawmode, x, y, radius, angle1, angle2, segments = ...
-
-	end
-end
-
 function love.graphics.drawq(drawable, quad, x,y, r, sx,sy, ox,oy)
-	x=x or 0
-	y=y or 0
-	sx=sx or 1
-	sy=sy or sx
-	ox=ox or 0
-	oy=oy or 0
-	r=r or 0
+	x = x or 0
+	y = y or 0
+	sx = sx or 1
+	sy = sy or sx
+	ox = ox or 0
+	oy = oy or 0
+	r = r or 0
+	kx = kx or 0
+	ky = ky or 0
 
 	local cr, cg, cb, ca = love.graphics.getColor()
 	surface.SetColor(cr/255, cg/255, cb/255, ca/255)
-	surface.SetTexture(ENV.textures[drawable])
+	surface.PushTexture(ENV.textures[drawable])
 	surface.SetRectUV(quad.x,quad.y, quad.w,quad.h, quad.sw,quad.sh)
 	surface.DrawRect(x,y, quad.w*sx, quad.h*sy,r,ox*sx,oy*sy)
 	surface.SetRectUV()
+	surface.PopTexture()
 end
 
 function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
-	if line.Type(drawable) == "SpriteBatch" then
-		surface.SetColor(1,1,1,1)
-		surface.SetTexture(ENV.textures[drawable.img])
-		drawable.poly:Draw()
+	if ENV.textures[drawable] then
+		if line.Type(x) == "Quad" then
+			love.graphics.drawq(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
+		else
+			x = x or 0
+			y = y or 0
+			sx = sx or 1
+			sy = sy or sx
+			ox = ox or 0
+			oy = oy or 0
+			r = r or 0
+			kx = kx or 0
+			ky = ky or 0
+
+			local tex = ENV.textures[drawable]
+
+			--if drawable.fb then  sx = 5 sy = 6 end
+
+			surface.PushTexture(tex)
+			surface.DrawRect(x,y, tex:GetSize().x*sx, tex:GetSize().y*sy, r, ox*sx,oy*sy)
+			surface.PopTexture()
+		end
 	else
-		if ENV.textures[drawable] then
-			if line.Type(x) == "Quad" then
-				love.graphics.drawq(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
-			else
-				x=x or 0
-				y=y or 0
-				sx=sx or 1
-				sy=sy or sx
-				ox=ox or 0
-				oy=oy or 0
-				r=r or 0
+		x = x or 0
+		y = y or 0
+		sx = sx or 1
+		sy = sy or sx
+		ox = ox or 0
+		oy = oy or 0
+		r = r or 0
+		kx = kx or 0
+		ky = ky or 0
 
-				local tex = ENV.textures[drawable]
+		if line.Type(drawable) == "SpriteBatch" or line.Type(drawable) == "Mesh" then
+			surface.PushColor(1,1,1,1)
+			surface.PushTexture(ENV.textures[drawable.img])
+			surface.PushMatrix(x,y)
+				surface.Translate(ox,oy)
+				surface.Rotate(r)
+				surface.Scale(sx,sy)
+				drawable.poly:Draw()
+			surface.PopMatrix()
+			surface.PopTexture()
+			surface.PopColor()
+		elseif line.Type(drawable) == "ParticleSystem" then
 
-				--if drawable.fb then  sx = 5 sy = 6 end
-
-				surface.SetTexture(tex)
-				surface.DrawRect(x,y, tex:GetSize().x*sx, tex:GetSize().y*sy, r, ox*sx,oy*sy)
-			end
+		else
+			table.print(drawable)
+			debug.trace()
 		end
 	end
 end
@@ -850,48 +871,6 @@ function love.graphics.getModes()
 	}
 end
 
-do
-	function love.graphics.setScissor(x,y,w,h)
-		render.SetScissor(x, y, w, h)
-	end
-
-	function love.graphics.getScissor()
-		return render.GetScissor()
-	end
-end
-
-local poly = gfx.CreatePolygon(4096)
-local lines = gfx.CreateQuadricBezierCurve(4096)
-
-function love.graphics.polygon(mode, ...)
-	local points = type(...) == "table" and ... or {...}
-
-	surface.SetWhiteTexture()
-	local idx = 0
-
-	if mode == "line" then
-		for i = 1, #points, 2 do
-			lines:Set(idx + 1, Vec2(points[i + 0], points[i + 1]))
-			idx = idx + 1
-		end
-
-		lines:SetMaxLines(idx)
-		lines:ConstructPoly(ENV.graphics_line_width*0.75, 1, 1, poly)
-
-		idx = idx * 4
-		poly.mesh:SetMode("triangle_strip")
-	else
-		for i = 1, #points, 2 do
-			poly:SetVertex(idx, points[i + 0], points[i + 1])
-			idx = idx + 1
-		end
-
-		poly.mesh:SetMode("triangle_fan")
-	end
-
-	poly:Draw(idx)
-end
-
 function love.graphics.getStats()
 	return {
 		fonts = 1,
@@ -902,6 +881,362 @@ function love.graphics.getStats()
 		canvasswitches = 1,
 		drawcalls = 1,
 	}
+end
+
+do
+	function love.graphics.setScissor(x,y,w,h)
+		render.SetScissor(x, y, w, h)
+	end
+
+	function love.graphics.getScissor()
+		return render.GetScissor()
+	end
+end
+
+do -- shapes
+	local poly = gfx.CreatePolygon(4096)
+	local lines = gfx.CreateQuadricBezierCurve(4096)
+
+	local function polygon(mode, points, closed)
+		surface.PushTexture(render.GetWhiteTexture())
+		local idx = 0
+
+		if mode == "line" then
+			for i = 1, #points, 2 do
+				lines:Set(idx + 1, Vec2(points[i + 0], points[i + 1]))
+				idx = idx + 1
+			end
+
+			lines:SetMaxLines(idx)
+			lines:UpdatePoly(poly, ENV.graphics_line_width*0.75, 1)
+			idx = idx * 4
+
+			if closed then
+				idx = idx - 2
+			end
+
+			poly.mesh:SetMode("triangle_strip")
+		else
+			for i = 1, #points, 2 do
+				poly:SetVertex(idx, points[i + 0], points[i + 1])
+				idx = idx + 1
+			end
+
+			poly.mesh:SetMode("triangle_fan")
+		end
+
+		poly:Draw(idx)
+
+		surface.PopTexture()
+	end
+
+	function love.graphics.polygon(mode, ...)
+		local points = type(...) == "table" and ... or {...}
+		polygon(mode, points)
+	end
+
+	do
+		local Mesh = line.TypeTemplate("Mesh")
+
+
+		function love.graphics.newMesh(...)
+			local vertices
+			local vertex_count
+			local vertex_format
+			local mode
+			local usage
+
+			if type(...) == "number" then
+				vertex_count, mode, usage = ...
+			elseif type(...) == "table" then
+				vertices, mode, usage = ...
+				vertex_count = #vertices
+			elseif type(...) == "string" then
+				vertex_format, vertices, mode, usage = ...
+				vertex_count = #vertices
+			else
+				vertex_count, mode, usage = ...
+			end
+
+			local self = line.CreateObject("Mesh")
+			self.poly = gfx.CreatePolygon(vertex_count)
+			self.poly.mesh:SetDrawHint(usage)
+			self.poly.mesh:SetUpdateIndices(false)
+			self:setDrawMode(mode)
+
+			if vertices then
+				for i, v in ipairs(vertices) do
+					self:setVertex(i, v)
+				end
+			end
+
+			return self
+		end
+
+		function Mesh:setTexture(tex)
+			self.img = tex
+		end
+
+		function Mesh:getTexture()
+			return self.img
+		end
+
+		function Mesh:setVertex(index, vertex)
+			if type(vertex) == "table" then
+				if vertex[5] then
+					local r = (vertex[5] or 255) / 255
+					local g = (vertex[6] or 255) / 255
+					local b = (vertex[7] or 255) / 255
+					local a = (vertex[8] or 255) / 255
+					self.poly:SetColor(r,g,b,a)
+				end
+				self.poly:SetVertex(index, vertex[1], vertex[2], vertex[3], vertex[4])
+			end
+		end
+
+		--[[
+			Mesh:attachAttribute 	Attaches a vertex attribute from a different Mesh onto this Mesh, for use when drawing. 	Added since 0.10.0
+			Mesh:flush 	Immediately sends all modified vertex data in the Mesh to the graphics card. 	Added since 0.10.0
+			Mesh:getDrawRange 	Gets the range of vertices used when drawing the Mesh. 	Added since 0.9.1
+			Mesh:getImage 	Gets the Image used when drawing the Mesh. 	Added since 0.9.0 	Removed in 0.10.0
+			Mesh:getTexture 	Gets the texture (Image or Canvas) used when drawing the Mesh. 	Added since 0.9.1
+			Mesh:getVertex 	Gets the properties of a vertex in the Mesh. 	Added since 0.9.0
+			Mesh:getVertexAttribute 	Gets the properties of a specific attribute within a vertex in the Mesh. 	Added since 0.10.0
+			Mesh:getVertexCount 	Gets the total number of vertices in the Mesh. 	Added since 0.9.0
+			Mesh:getVertexFormat 	Gets the vertex format that the Mesh was created with. 	Added since 0.10.0
+			Mesh:getVertexMap 	Gets the vertex map for the Mesh. 	Added since 0.9.0
+			Mesh:getVertices 	Gets all the vertices in the Mesh. 	Added since 0.9.0 	Removed in 0.10.0
+			Mesh:hasVertexColors 	Gets whether per-vertex colors are used when drawing the Mesh. 	Added since 0.9.0 	Removed in 0.10.0
+			Mesh:isAttributeEnabled 	Gets whether a specific vertex attribute in the Mesh is enabled. 	Added since 0.10.0
+			Mesh:setAttributeEnabled 	Enables or disables a specific vertex attribute in the Mesh. 	Added since 0.10.0
+			Mesh:setDrawRange 	Restricts the drawn vertices of the Mesh to a subset of the total. 	Added since 0.9.1
+			Mesh:setImage 	Sets the Image used when drawing the Mesh. 	Added since 0.9.0 	Removed in 0.10.0
+			Mesh:setTexture 	Sets the texture (Image or Canvas) used when drawing the Mesh. 	Added since 0.9.1
+			Mesh:setVertex 	Sets the properties of a vertex in the Mesh. 	Added since 0.9.0
+			Mesh:setVertexAttribute 	Sets the properties of a specific attribute within a vertex in the Mesh. 	Added since 0.10.0
+			Mesh:setVertexColors 	Sets whether per-vertex colors are used instead of the constant color when drawing the Mesh. 	Added since 0.9.0 	Removed in 0.10.0
+			Mesh:setVertexMap 	Sets the vertex map for the Mesh. 	Added since 0.9.0
+			Mesh:setVertices 	Replaces a range of vertices in the Mesh with new ones. 	Added since 0.9.0
+		]]
+
+		do
+			local tr = {
+				fan = "triangle_fan",
+				strip = "triangle_strip",
+			}
+
+			function Mesh:setDrawMode(mode)
+				mode = tr[mode] or mode
+				self.poly.mesh:SetMode(mode)
+			end
+
+			local tr2 = {}
+
+			for k,v in pairs(tr) do
+				tr[v] = k
+			end
+
+			function Mesh:getDrawMode()
+				local mode = self.poly.mesh:GetMode()
+				return tr2[mode] or mode
+			end
+		end
+
+		line.RegisterType(Mesh)
+	end
+
+	do
+		local function create_points(coords, points, x, y, radius, phi, angle_shift, offset)
+			for i = offset, points do
+				coords[(2 * i + 0) + 1] = x + radius * math.cos(phi)
+				coords[(2 * i + 1) + 1] = y + radius * math.sin(phi)
+				phi = phi + angle_shift
+			end
+		end
+
+		local function arc(draw_mode, arc_mode, x, y, radius, angle1, angle2, segments)
+			local points = radius
+			local angle = math.abs(angle1 - angle2)
+
+			if angle < math.pi * 2 then
+				points = points * angle / (2 * math.pi)
+			end
+
+			points = math.max(points, 10)
+
+			points = math.ceil(points)
+
+			if points <= 0 or angle1 == angle2 then
+				--return
+			end
+
+			if math.abs(angle1 - angle2) >= 2 * math.pi then
+				return -- draw circle
+			end
+
+			local angle_shift = (angle2 - angle1) / points
+
+			if angle_shift  == 0  then
+				return
+			end
+
+			if draw_mode == "line" and arc_mode == "closed" and math.abs(angle1 - angle2) < math.rad(4) then
+				arc_mode = "open"
+			end
+
+			if draw_mode == "fill" and arc_mode == "open" then
+				arc_mode = "closed"
+			end
+
+			local phi = angle1
+			local coords = {}
+			local num_coords = 0
+
+			if arc_mode == "pie" then
+				coords[1] = x
+				coords[2] = y
+
+				create_points(coords, points, x, y, radius, phi, angle_shift, 1)
+
+				coords[#coords - 1] = x
+				coords[#coords - 0] = y
+			elseif arc_mode == "open" then
+				create_points(coords, points, x, y, radius, phi, angle_shift, 0)
+			else -- if arc_mode == "closed" then
+				create_points(coords, points, x, y, radius, phi, angle_shift, 0)
+			end
+
+			--[[
+			for i = 1, #coords, 2 do
+				gfx.DrawFilledCircle(coords[i + 0], coords[i + 1])
+			end
+			--]]
+			polygon(draw_mode, coords, arc_mode == "open")
+		end
+
+		function love.graphics.arc(...)
+			if type(select(2, ...)) == "number" then
+				local draw_mode, x, y, radius, angle1, angle2, segments = ...
+				arc(draw_mode, "pie", x, y, radius, angle1, angle2, segments)
+			else
+				arc(...)
+			end
+		end
+	end
+
+	function love.graphics.ellipse(mode, x, y, radiusx, radiusy, points)
+		if not points then
+			if (radiusx + radiusy) > 30 then
+				points = math.ceil((radiusx + radiusy) / 2)
+			else
+				points = 15
+			end
+		end
+
+		local two_pi = math.pi * 2
+		if points <= 0 then points = 1 end
+		local angle_shift = two_pi / points
+		local phi = 0
+
+		local coords = {}
+		for i = 0, points - 1 do
+			coords[(2*i+0) + 1] = x + radiusx * math.cos(phi)
+			coords[(2*i+1) + 1] = y + radiusy * math.sin(phi)
+			phi = phi + angle_shift
+		end
+
+		coords[(2*points+0) + 1] = coords[1]
+		coords[(2*points+1) + 1] = coords[2]
+
+		polygon(mode, coords)
+	end
+
+	function love.graphics.circle(mode, x, y, radius, points)
+		if not points then
+			if radius > 10 then
+				points = math.ceil(radius)
+			else
+				points = 10
+			end
+		end
+
+		love.graphics.ellipse(mode, x, y, radius, radius, points)
+	end
+
+	function love.graphics.line(...)
+		local tbl = ...
+
+		if type(tbl) == "number" then
+			tbl = {...}
+		end
+
+		polygon("line", tbl, true)
+	end
+
+	function love.graphics.rectangle(mode, x, y, w, h, rx, ry, points)
+		ry = ry or rx
+		if mode == "fill" then
+			surface.SetWhiteTexture()
+			surface.DrawRect(x, y, w, h)
+		else
+			if not points then
+				if math.max(rx, ry) > 20 then
+					points = math.ceil(math.max(rx, ry) / 2)
+				else
+					points = 10
+				end
+			end
+
+			if w >= 0.02 then
+				rx = math.min(rx, w / 2 - 0.01)
+			end
+
+			if h >= 0.02 then
+				ry = math.min(ry, h / 2 - 0.01)
+			end
+
+			local points = math.max(points, 1)
+			local half_pi = math.pi / 2
+			local angle_shift = half_pi / (points + 1)
+
+			local coords = {}
+
+			local phi
+
+			phi = 0
+			for i = 0, points + 2 do
+				coords[(2 * i + 0) + 1] = x + rx * (1 - math.cos(phi))
+				coords[(2 * i + 1) + 1] = y + ry * (1 - math.sin(phi))
+				phi = phi + angle_shift
+			end
+
+			phi = half_pi
+			for i = points + 2, 2 * (points + 2) do
+				coords[(2 * i + 0) + 1] = x + w - rx * (1 + math.cos(phi))
+				coords[(2 * i + 1) + 1] = y + ry * (1 - math.sin(phi))
+				phi = phi + angle_shift
+			end
+
+			phi = 2 * half_pi
+			for i = 2 * (points + 2), 3 * (points + 2) do
+				coords[(2 * i + 0) + 1] = x + w - rx * (1 + math.cos(phi))
+				coords[(2 * i + 1) + 1] = y + h - ry * (1 + math.sin(phi))
+				phi = phi + angle_shift
+			end
+
+			phi = 3 * half_pi
+			for i = 3 * (points + 2), 4 * (points + 2) do
+				coords[(2 * i + 0) + 1] = x + rx * (1 - math.cos(phi))
+				coords[(2 * i + 1) + 1] = y + h - ry * (1 + math.sin(phi))
+				phi = phi + angle_shift
+			end
+
+			coords[#coords - 1] = coords[1]
+			coords[#coords - 0] = coords[2]
+
+			polygon("line", coords, true)
+		end
+	end
 end
 
 do -- sprite batch
