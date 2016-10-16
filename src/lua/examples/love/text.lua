@@ -7,7 +7,7 @@ local bottom_right = love.graphics.newQuad(32, 32, 32, 32, img:getDimensions())
 
 
 local q = love.graphics.newQuad(0,0, 900, 600, 1024, 1024)
-local img2 = love.graphics.newImage("/media/caps/ssd_840_120gb/goluwa/love_games/lovers/sienna/art/titlescreen.png")
+local img2 = love.graphics.newImage("http://image.shutterstock.com/z/stock-vector-lol-87079871.jpg")
 
 function love.draw()
 	love.graphics.draw(img, top_left, 32, 32)
