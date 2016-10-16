@@ -930,8 +930,12 @@ if sdl then
 		return self.size
 	end
 
-	function META:SetSize(pos)
-		sdl.SetWindowSize(self.sdl_wnd, pos:Unpack())
+	function META:SetSize(size)
+		sdl.SetWindowSize(self.sdl_wnd, size:Unpack())
+
+		local x, y = ffi.new("int[1]"), ffi.new("int[1]")
+		sdl.GetWindowSize(self.sdl_wnd, x, y)
+		self.size = Vec2(x[0], y[0])
 	end
 
 	function META:Maximize()
