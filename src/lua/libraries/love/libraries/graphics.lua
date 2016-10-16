@@ -127,8 +127,9 @@ function love.graphics.getHeight()
 	return render.GetHeight()
 end
 
-function love.graphics.setMode()
-
+function love.graphics.setMode(width, height, fullscreen, vsync, fsaa)
+	window.SetSize(Vec2(width, height))
+	return true
 end
 
 function love.graphics.getDimensions()
@@ -140,9 +141,7 @@ function love.graphics.reset()
 end
 
 function love.graphics.isSupported(what)
-	if what == "multicanvas" then
-		return false
-	end
+	llog("is supported: %s", what)
 	return true
 end
 
@@ -309,8 +308,8 @@ do -- points
 	end
 
 	function love.graphics.setPoint(size, style)
-		surface.SetPointSize(size)
-		surface.SetPointStyle(style)
+		love.graphics.setPointSize(size)
+		love.graphics.setPointStyle(style)
 	end
 
 	function love.graphics.point(x, y)
@@ -497,7 +496,7 @@ do -- font
 						align_x = (-w / 2) + limit/2 - x
 					end
 
-					gfx.SetTextPosition(x + align_x, (i-1) * h * font.line_height)
+					gfx.SetTextPosition(align_x, (i-1) * h * font.line_height)
 					gfx.DrawText(line)
 				end
 			else
@@ -1126,7 +1125,7 @@ do -- shapes
 
 	function love.graphics.ellipse(mode, x, y, radiusx, radiusy, points)
 		if not points then
-			if (radiusx + radiusy) > 30 then
+			if radiusx and radiusy and (radiusx + radiusy) > 30 then
 				points = math.ceil((radiusx + radiusy) / 2)
 			else
 				points = 15
@@ -1153,7 +1152,7 @@ do -- shapes
 
 	function love.graphics.circle(mode, x, y, radius, points)
 		if not points then
-			if radius > 10 then
+			if radius and radius > 10 then
 				points = math.ceil(radius)
 			else
 				points = 10
@@ -1174,6 +1173,7 @@ do -- shapes
 	end
 
 	function love.graphics.rectangle(mode, x, y, w, h, rx, ry, points)
+		rx = rx or 0
 		ry = ry or rx
 		if mode == "fill" then
 			surface.SetWhiteTexture()
@@ -1330,19 +1330,3 @@ do -- sprite batch
 
 	line.RegisterType(SpriteBatch)
 end
-
-event.AddListener("PreDrawGUI", "love", function(dt)
-	if menu and menu.IsVisible() then
-		surface.PushHSV(1,0,1)
-	end
-
-	line.CallEvent("line_draw", dt)
-
-	if ENV.error_message and not ENV.no_error then
-		love.errhand(ENV.error_message)
-	end
-
-	if menu and menu.IsVisible() then
-		surface.PopHSV(1,0,1)
-	end
-end, {on_error = system.pcall})

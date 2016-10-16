@@ -57,6 +57,24 @@ function love.line_draw(dt)
 	surface.PopMatrix()
 end
 
+event.AddListener("PreDrawGUI", "love", function(dt)
+	if menu and menu.IsVisible() then
+		surface.PushHSV(1,0,1)
+	end
+
+	line.CallEvent("line_draw", dt)
+
+	local ENV = line.GetEnv()
+
+	if ENV.error_message and not ENV.no_error then
+		love.errhand(ENV.error_message)
+	end
+
+	if menu and menu.IsVisible() then
+		surface.PopHSV()
+	end
+end)
+
 function love.errhand(msg)
 	love.graphics.setFont()
 	msg = tostring(msg)
@@ -82,9 +100,9 @@ function love.errhand(msg)
 	p = string.gsub(p, "\t", "")
 	p = string.gsub(p, "%[string \"(.-)\"%]", "%1")
 
-	local function draw()
-		love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)
-	end
-
-	draw()
+	love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)
 end
+
+event.AddListener("WindowResize", "love", function(_,w,h)
+	line.CallEvent("resize",w,h)
+end)
