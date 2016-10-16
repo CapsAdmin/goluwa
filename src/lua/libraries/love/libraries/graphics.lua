@@ -477,7 +477,7 @@ do -- font
 		surface.Translate(ox, oy)
 			if align then
 				local max_width = 0
-				local t = gfx.WrapString(text, limit)
+				local t = gfx.WrapString(text, limit):split("\n")
 
 				for i, line in ipairs(t) do
 					local w, h = gfx.GetTextSize(line)

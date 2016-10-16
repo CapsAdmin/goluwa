@@ -87,52 +87,156 @@ do
 	end
 end
 
-function gfx.WrapString(str, max_width)
-	if not max_width or max_width == 0 then
-		return str:split("")
-	end
+do -- text wrap
 
-	local lines = {}
-	local i = 1
+	local function wrap_1(str, max_width)
+		local lines = {}
+		local i = 1
 
-	local last_pos = 0
-	local line_width = 0
-	local found = false
+		local last_pos = 0
+		local line_width = 0
 
-	local space_pos
+		local space_pos
+		local tbl = str:utotable()
 
-	for pos, char in pairs(str:utotable()) do
-		local w = gfx.GetTextSize(char)
+		--local pos = 1
+		--for _ = 1, 10000 do
+		--	local char = tbl[pos]
+		--	if not char then break end
+		for pos, char in ipairs(tbl) do
+			local w = gfx.GetTextSize(char)
 
-		if char:find("%s") then
-			space_pos = pos
-		end
-
-		if line_width >= max_width then
-
-			if space_pos then
-				lines[i] = str:usub(last_pos+1, space_pos)
-				last_pos = space_pos
-			else
-				lines[i] = str:usub(last_pos+1, pos)
-				last_pos = pos
+			if char:find("%s") then
+				space_pos = pos
 			end
 
-			i = i + 1
+			if line_width + w >= max_width then
 
-			line_width = 0
-			found = true
-			space_pos = nil
+				if space_pos then
+					lines[i] = str:usub(last_pos + 1, space_pos)
+					last_pos = space_pos
+				else
+					lines[i] = str:usub(last_pos + 1, pos)
+					last_pos = pos
+				end
+
+				i = i + 1
+
+				line_width = 0
+				space_pos = nil
+			end
+
+			line_width = line_width + w
+			--pos = pos + 1
 		end
 
-		line_width = line_width + w
+		if lines[1] then
+			lines[i] = str:usub(last_pos+1)
+			return table.concat(lines, "\n")
+		end
+
+		return str
 	end
 
-	if found then
-		lines[i] = str:usub(last_pos+1, pos)
-	else
-		lines[i] = str
+	local function wrap_2(str, max_width)
+		local tbl = str:utotable()
+		local lines = {}
+		local chars = {}
+		local i = 1
+
+		local width = 0
+		local width_before_last_space = 0
+		local width_of_trailing_space = 0
+
+		while i < #tbl do
+			local c = tbl[i]
+
+			local char_width = gfx.GetTextSize(c)
+			local new_width = width + char_width
+
+			if c == "\n" then
+				table.insert(lines, table.concat(chars))
+				table.clear(chars)
+
+				width = 0
+				width_before_last_space = 0
+				width_of_trailing_space = 0
+
+				prev_char = nil
+				last_space_index = -1
+				i = i + 1
+			elseif char ~= " " and width > max_width then
+				if #chars == 0 then
+					i = i + 1
+				elseif last_space_index ~= -1 then
+					for i = #chars, 1, -1 do
+						if chars[i] == " " then
+							break
+						end
+						table.remove(chars, i)
+					end
+
+					width = width_before_last_space
+					i = last_space_index
+					i = i + 1
+				end
+
+				table.insert(lines, table.concat(chars))
+				table.clear(chars)
+
+				prev_char = nil
+				width = char_width
+				width_before_last_space = 0
+				width_of_trailing_space = 0
+				last_space_index = -1
+			else
+				if prev_char ~= " " and c == " " then
+					width_before_last_space = width
+				end
+
+				width = new_width
+				prev_char = c
+
+				table.insert(chars, c)
+
+				if c == " " then
+					last_space_index = i
+				elseif c ~= "\n" then
+					width_of_trailing_space = 0
+				end
+
+				i = i + 1
+			end
+		end
+
+		if #chars ~= 0 then
+			table.insert(lines, table.concat(chars))
+		end
+
+		return table.concat(lines, "\n")
 	end
 
-	return lines
+	local cache = utility.CreateWeakTable()
+
+	function gfx.WrapString(str, max_width)
+		local font = gfx.GetFont()
+
+		if cache[str] and cache[str][max_width] and cache[str][max_width][font] then
+			return cache[str][max_width][font]
+		end
+
+		if max_width < gfx.GetTextSize() then
+			return table.concat(str:split(""), "\n")
+		end
+		if max_width > gfx.GetTextSize(str) then
+			return str
+		end
+
+		local res = wrap_2(str, max_width)
+		cache[str] = cache[str] or {}
+		cache[str][max_width] = cache[str][max_width] or {}
+		cache[str][max_width][font] = res
+
+		return res
+	end
 end
