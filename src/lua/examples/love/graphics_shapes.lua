@@ -93,7 +93,7 @@ event.AddListener("PreDrawGUI", "lol", function()
 	love.graphics.rectangle("line", 500, 50, 60, 120, 5)
 
 	love.graphics.draw(image, quad, 100, 100)
-	love.graphics.printf(("hello world "):rep(10), 0, 500, 50)
+	love.graphics.printf(("hello world "):rep(10), 200, 500, 50)
 
 	local w = font:getWidth("hello world")
 	local h = font:getHeight("hello world")
