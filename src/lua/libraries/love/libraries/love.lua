@@ -43,7 +43,7 @@ end)
 function love.line_draw(dt)
 	if not love.draw then return end
 
-	if ENV.love_game_update_draw_hack == false then return end
+	if love._line_env.love_game_update_draw_hack == false then return end
 
 	surface.PushMatrix()
 	surface.SetWhiteTexture()
@@ -55,6 +55,10 @@ function love.line_draw(dt)
 	line.pcall(love, love.draw, dt)
 
 	surface.PopMatrix()
+
+	if love._line_env.error_message and not love._line_env.no_error then
+		love.errhand(love._line_env.error_message)
+	end
 end
 
 event.AddListener("PreDrawGUI", "love", function(dt)
@@ -63,12 +67,6 @@ event.AddListener("PreDrawGUI", "love", function(dt)
 	end
 
 	line.CallEvent("line_draw", dt)
-
-	local ENV = line.GetEnv()
-
-	if ENV.error_message and not ENV.no_error then
-		love.errhand(ENV.error_message)
-	end
 
 	if menu and menu.IsVisible() then
 		surface.PopHSV()
