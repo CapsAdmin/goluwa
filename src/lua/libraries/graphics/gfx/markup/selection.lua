@@ -78,6 +78,30 @@ function META:GetText(tags)
 	return str
 end
 
+function META:GetWrappedText()
+	local out = {}
+	local i = 1
+	local last_y = 0
+
+	for _, chunk in ipairs(self.chunks) do
+		if chunk.type == "string" then
+			if last_y ~= chunk.y then
+				out[i] = "\n"
+				i = i + 1
+			end
+
+			out[i] = chunk.val
+			i = i + 1
+			last_y = chunk.y
+		elseif chunk.type == "newline" then
+			out[i] = "\n"
+			i = i + 1
+		end
+	end
+
+	return table.concat(out)
+end
+
 function META:SetText(str, tags)
 	self:Clear()
 	self:AddString(str, tags)
