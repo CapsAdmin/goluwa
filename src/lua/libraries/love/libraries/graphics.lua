@@ -350,12 +350,12 @@ do -- font
 	local Font = line.TypeTemplate("Font")
 	function Font:getWidth(str)
 		str = str or "W"
-		return (self.font:GetTextSize(str))
+		return (self.font:GetTextSize(str)) + 2
 	end
 
 	function Font:getHeight(str)
 		str = str or "W"
-		return select(2, self.font:GetTextSize()) + 2
+		return select(2, self.font:GetTextSize(str)) + 2
 	end
 
 	function Font:setLineHeight(num)
@@ -367,13 +367,13 @@ do -- font
 	end
 
 	function Font:getWrap(str, width)
-		local markup = gfx.CreateMarkup()
-		markup:SetSuperLightMode(true)
-		markup:SetMaxWidth(width)
-		markup:AddFont(self.font)
-		markup:SetText(str)
-		markup:Invalidate()
-		return markup.width, markup:GetText():count("\n")
+		str = tostring(str)
+		local old = gfx.GetFont()
+		gfx.SetFont(self.font)
+		local res = gfx.WrapString(str, width)
+		local w = self.font:GetTextSize(str) + 2
+		gfx.SetFont(old)
+		return w, math.max(res:count("\n"),1)
 	end
 
 	function Font:setFilter(filter)
@@ -395,7 +395,7 @@ do -- font
 		path = line.FixPath(path)
 
 		self.font = fonts.CreateFont({
-			size = size,
+			size = size-1,
 			path = path,
 			filtering = ENV.graphics_filter_min,
 			glyphs = glyphs,
