@@ -395,7 +395,7 @@ do -- font
 		path = line.FixPath(path)
 
 		self.font = fonts.CreateFont({
-			size = size-1,
+			size = size and (size-1),
 			path = path,
 			filtering = ENV.graphics_filter_min,
 			glyphs = glyphs,
