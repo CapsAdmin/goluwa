@@ -147,6 +147,7 @@ do -- text wrap
 		local width = 0
 		local width_before_last_space = 0
 		local width_of_trailing_space = 0
+		local last_space_index = -1
 
 		while i < #tbl do
 			local c = tbl[i]
