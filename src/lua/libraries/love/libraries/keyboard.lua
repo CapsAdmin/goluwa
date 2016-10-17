@@ -19,7 +19,7 @@ local keyboard_map = {
 	rctrl = "right_control",
 	lalt = "left_alt",
 	ralt = "right_alt",
-	space = "space",
+	space = " ",
 	escape = "esc",
 	kp_0 = "kp0",
 	kp_1 = "kp1",
@@ -38,8 +38,6 @@ local keyboard_map = {
 	kp_multiply = "kp*",
 	kp_decimal = "kp.",
 	num_lock = "numlock",
-	page_down = "page_down",
-	page_up = "page_up",
 	enter = "return",
 }
 
