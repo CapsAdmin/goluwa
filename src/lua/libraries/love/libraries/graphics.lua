@@ -732,7 +732,7 @@ function love.graphics.rectangle(mode, x, y, w, h)
 	end
 end
 
-function love.graphics.drawq(drawable, quad, x,y, r, sx,sy, ox,oy)
+function love.graphics.drawq(drawable, quad, x,y, r, sx,sy, ox,oy, kx,ky)
 	x = x or 0
 	y = y or 0
 	sx = sx or 1
@@ -898,8 +898,8 @@ do
 end
 
 do -- shapes
-	local poly = gfx.CreatePolygon(4096)
-	local lines = gfx.CreateQuadricBezierCurve(4096)
+	local poly = gfx.CreatePolygon(2048)
+	local lines = gfx.CreateQuadricBezierCurve(2048)
 
 	local function polygon(mode, points, closed)
 		surface.PushTexture(render.GetWhiteTexture())
@@ -1058,8 +1058,8 @@ do -- shapes
 			end
 		end
 
-		local function arc(draw_mode, arc_mode, x, y, radius, angle1, angle2, segments)
-			local points = radius
+		local function arc(draw_mode, arc_mode, x, y, radius, angle1, angle2, points)
+			points = points or radius
 			local angle = math.abs(angle1 - angle2)
 
 			if angle < math.pi * 2 then
@@ -1318,7 +1318,7 @@ do -- sprite batch
 		self.h = image:getHeight()
 	end
 
-	function SpriteBatch:getImage(image)
+	function SpriteBatch:getImage()
 		return self.img
 	end
 
