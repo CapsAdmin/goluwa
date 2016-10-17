@@ -44,6 +44,7 @@ do -- attributes
 		vec2 = {type = "float", arg_count = 2},
 		vec3 = {type = "float", arg_count = 3},
 		vec4 = {type = "float", arg_count = 4},
+		mat4 = {type = "float", arg_count = 16},
 	}
 
 	do -- extend typeinfo
@@ -60,6 +61,7 @@ do -- attributes
 				end
 
 				info.ctype = ffi.typeof(("struct { %s; }"):format(line))
+				print(line)
 			else
 				info.ctype = ffi.typeof(info.type)
 			end
@@ -70,13 +72,11 @@ do -- attributes
 		end
 	end
 
-	local type_translate = {
-		boolean = "bool",
-		color = "vec4",
-		number = "float",
-		texture = "sampler2D",
-		matrix44 = "mat4",
-	}
+	type_info.matrix44 = type_info.mat4
+	type_info.number = type_info.float
+	type_info.color = type_info.vec4
+	type_info.bool = type_info.int
+	type_info.boolean = type_info.int
 
 	function META:SetAttribute(i, name, type, default)
 		if name then
@@ -96,14 +96,11 @@ do -- attributes
 					type_info = info,
 				}
 			else
-				print(i, name, type, default)
 				error("undefined type " .. type, 2)
 			end
 		else
 			self.mesh_layout.attributes[i] = nil
 		end
-
-		self.needs_setup = true
 	end
 
 	function META:SetupAttributes()
@@ -144,7 +141,7 @@ do -- attributes
 		local found = {}
 
 		-- only bother doing this if the first line has structs
-		for _, info in pairs(self.mesh_layout.attributes) do
+		for _, info in ipairs(self.mesh_layout.attributes) do
 			local val = output[1][info.name]
 
 			if val then
@@ -189,14 +186,6 @@ do -- attributes
 
 			self:UpdateBuffer(Array(self.mesh_layout.ctype, #vertices, vertices), Array("unsigned int", #indices, indices))
 		end
-	end
-
-	if RELOAD then
-		surface.rect_mesh:SetAttribute(1, "pos", Vec2())
-		surface.rect_mesh:SetAttribute(2, "uv", Vec2())
-		surface.rect_mesh:SetAttribute(3, "color", Color(1,1,1,1))
-		surface.rect_mesh:SetupAttributes()
-		table.print(surface.rect_mesh.mesh_layout)
 	end
 end
 
