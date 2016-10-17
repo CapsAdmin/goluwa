@@ -185,7 +185,7 @@ vec3 get_env_color()
 
 function PASS:Initialize()
 	function render.CreateMesh(vertices, indices, is_valid_table)
-		return render.gbuffer_data_pass.model_shader:CreateVertexBuffer(vertices, indices, is_valid_table)
+		return render.CreateVertexBuffer(render.gbuffer_data_pass.model_shader, vertices, indices)
 	end
 
 	local META = self.model_shader:CreateMaterialTemplate("model")

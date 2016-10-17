@@ -1,7 +1,4 @@
 local BUILD_OUTPUT = false
-local gl = require("libopengl")
-
-local ffi = require("ffi")
 local render = (...) or _G.render
 
 -- used to figure out how to upload types
@@ -22,47 +19,6 @@ unrolled_lines.sampler2DMS = unrolled_lines.texture
 unrolled_lines.samplerCube = unrolled_lines.texture
 unrolled_lines.float = unrolled_lines.number
 unrolled_lines.boolean = unrolled_lines.bool
-
-local type_info =  {
-	int = {type = "int", arg_count = 1},
-	float = {type = "float", arg_count = 1},
-	number = {type = "float", arg_count = 1},
-	vec2 = {type = "float", arg_count = 2},
-	vec3 = {type = "float", arg_count = 3},
-	vec4 = {type = "float", arg_count = 4},
-}
-
-do -- extend typeinfo
-	-- declare the types
-	for _, info in pairs(type_info) do
-		if info.arg_count > 1 then
-			local line = info.type .. " "
-			for i = 1, info.arg_count do
-				line = line .. string.char(64+i)
-
-				if i ~= info.arg_count then
-					line = line .. ", "
-				end
-			end
-
-			info.ctype = ffi.typeof(("struct { %s; }"):format(line))
-		else
-			info.ctype = ffi.typeof(info.type)
-		end
-	end
-
-	for _, v in pairs(type_info) do
-		v.size = ffi.sizeof(v.type)
-	end
-end
-
-local type_translate = {
-	boolean = "bool",
-	color = "vec4",
-	number = "float",
-	texture = "sampler2D",
-	matrix44 = "mat4",
-}
 
 -- used because of some reserved keywords
 local reserve_prepend = "out_"
@@ -101,6 +57,14 @@ local lazy_template = [[
 		out_color = shade();
 	}
 ]]
+
+local type_translate = {
+	boolean = "bool",
+	color = "vec4",
+	number = "float",
+	texture = "sampler2D",
+	matrix44 = "mat4",
+}
 
 local function type_of_attribute(var)
 	local t = typex(var)
@@ -163,7 +127,7 @@ local function translate_fields(data)
 	return out
 end
 
-local function variables_to_string(type, variables, prepend, macro, array, block_name)
+local function variables_to_string(type, variables, prepend, macro, array)
 	array = array or ""
 	local texture_channel = 0
 	local out = {}
@@ -328,44 +292,6 @@ function render.CreateShader(data, vars)
 		source = replace_field(source, "OUT2", table.concat(vars, "\n"))
 
 		build_output.vertex.source = source
-	end
-
-	-- this info is used when building a mesh
-	local mesh_layout = {}
-
-	-- get type info from the vertex mesh_layout
-	if data.vertex.mesh_layout then
-
-		-- this info is used when binding
-		build_output.vertex.vtx_info = {}
-
-		do -- build_output and define the struct information with ffi
-			local ctypes = {}
-
-			local declaration = {"struct { "}
-
-			for _, val in pairs(data.vertex.mesh_layout) do
-				local name, t = next(val)
-				local info = type_info[t]
-
-				if info then
-					table.insert(declaration, ("$ %s;"):format(name))
-					table.insert(build_output.vertex.vtx_info, {name = name, type = t, info = info})
-					mesh_layout[name] = t
-					table.insert(ctypes, info.ctype)
-				else
-					errorf("undefined type %q in mesh_layout", 2, t)
-				end
-			end
-
-			table.insert(declaration, " }")
-			declaration = table.concat(declaration, "")
-
-			local type = ffi.typeof(declaration, unpack(ctypes))
-
-			build_output.vertex.vtx_atrb_size = ffi.sizeof(type)
-			build_output.vertex.vtx_atrb_type = type
-		end
 	end
 
 	local function preprocess(str, info)
@@ -608,35 +534,11 @@ function render.CreateShader(data, vars)
 
 	prog:Link()
 
-	local info = {}
-
-	info.attributes = {}
-	info.size = build_output.vertex.vtx_atrb_size
-
-	local pos = 0
-
-	for i, data in pairs(build_output.vertex.vtx_info) do
-		prog:BindAttribLocation(i - 1, data.name)
-
-		info.attributes[i] = {
-			location = i - 1,
-			row_length = data.info.arg_count,
-			row_offset = data.info.size * pos,
-			number_type = data.info.type,
-		}
-
-		if OPENGL then
-			info.attributes[i].number_type = "GL_" .. info.attributes[i].number_type:upper()
-		end
-
-		pos = pos + data.info.arg_count
+	for i, val in pairs(build_output.vertex.mesh_layout) do
+		prog:BindAttribLocation(i - 1, val.name)
 	end
 
-	self.vao_info = info
-
-	if BUILD_OUTPUT then
-		serializer.WriteFile("luadata", "shader_builder_output/" .. shader_id .. "/vao_info.lua", info)
-	end
+	self.mesh_layout = table.copy(build_output.vertex.mesh_layout)
 
 	do -- build lua code from variables data
 		local variables = {}
@@ -736,7 +638,6 @@ function render.CreateShader(data, vars)
 	self.shader_id = shader_id
 	self.build_output = build_output
 	self.force_bind = force_bind
-	self.mesh_layout = mesh_layout
 
 	render.active_shaders[shader_id] = self
 
@@ -775,83 +676,18 @@ function META:CreateMaterialTemplate(name)
 	return META
 end
 
-do -- create data for vertex buffer
-	-- this will unpack all structs  so ffi.new can accept the table
-	local function unpack_structs(self, output)
-		local found = {}
-
-		-- only bother doing this if the first line has structs
-		for key in pairs(self.mesh_layout) do
-			local val = output[1][key]
-
-			if val then
-				if hasindex(val) and val.Unpack then
-					found[key] = true
-				end
-			end
-		end
-
-		if next(found) then
-			for _, struct in pairs(output) do
-				for key, val in pairs(struct) do
-					if found[key] then
-						struct[key] = {val:Unpack()}
-					else
-						struct[key] = nil
-					end
-				end
-			end
-		end
-	end
-
-	function META:CreateBuffersFromTable(vertices, indices, is_valid_table)
-
-		if type(vertices) == "number" then
-			local size = vertices
-
-			local indices = Array("unsigned int", size)
-			for i = 0, size - 1 do indices[i] = i end
-
-			return
-				Array(self.vtx_atrb_type, size),
-				indices
-		end
-
-		if not is_valid_table then
-			unpack_structs(self, vertices)
-
-			if not indices then
-				indices = {}
-				for i in ipairs(vertices) do
-					indices[i] = i-1
-				end
-			end
-		end
-
-		return
-			Array(self.vtx_atrb_type, #vertices, vertices),
-			Array("unsigned int", #indices, indices)
-	end
-
-	function META:GetVertexAttributes()
-		return self.vao_info
-	end
-
-	function META:CreateVertexBuffer(vertices, indices, is_valid_table)
-		local vtx = render.CreateVertexBuffer(self, vertices, indices, is_valid_table)
-		vtx:SetShader(self)
-		return vtx
-	end
-
-	function META:Rebuild()
-		table.clear(self)
-		prototype.OverrideCreateObjectTable(self)
-		render.CreateShader(self.original_data)
-		prototype.OverrideCreateObjectTable()
-	end
-
-	prototype.Register(META)
+function META:GetMeshLayout()
+	return self.mesh_layout
 end
+
+function META:Rebuild()
+	table.clear(self)
+	prototype.OverrideCreateObjectTable(self)
+	render.CreateShader(self.original_data)
+	prototype.OverrideCreateObjectTable()
+end
+
+prototype.Register(META)
 
 function render.RebuildShaders()
 	for _, shader in pairs(render.active_shaders) do

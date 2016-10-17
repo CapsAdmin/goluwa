@@ -56,7 +56,7 @@ local RECT = {
 
 function surface.CreateMesh(vertices, indices)
 	vertices = vertices or RECT
-	return surface.mesh_2d_shader:CreateVertexBuffer(vertices, indices)
+	return render.CreateVertexBuffer(surface.mesh_2d_shader, vertices, indices)
 end
 
 surface.mesh_2d_shader = surface.mesh_2d_shader or NULL

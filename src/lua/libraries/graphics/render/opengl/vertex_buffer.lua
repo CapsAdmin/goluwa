@@ -62,10 +62,10 @@ if not NVIDIA_WORKAROUND then
 
 	local function setup_vertex_array(self)
 		if not self.setup_vao and self.Indices and self.Vertices then
-			for _, data in ipairs(self.vertex_array_info.attributes) do
+			for _, data in ipairs(self.mesh_layout.attributes) do
 				if not system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
 					self.element_buffer:Bind()
-					self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.vertex_array_info.size)
+					self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.mesh_layout.size)
 				end
 				self.vertex_array:AttribBinding(data.location, 0)
 				self.vertex_array:AttribFormat(data.location, data.row_length, data.number_type, false, data.row_offset)
@@ -79,7 +79,7 @@ if not NVIDIA_WORKAROUND then
 		self.vertex_buffer:Data(vertices:GetSize(), vertices:GetPointer(), self.gl_draw_hint)
 		setup_vertex_array(self)
 		if system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
-			self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.vertex_array_info.size)
+			self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.mesh_layout.size)
 		end
 	end
 
@@ -115,9 +115,9 @@ else
 		if not self.setup_vao and self.Indices and self.Vertices then
 			gl.BindBuffer("GL_ARRAY_BUFFER", self.vertices_id)
 			gl.BindVertexArray(self.vao_id)
-				for _, data in ipairs(self.vertex_array_info.attributes) do
+				for _, data in ipairs(self.mesh_layout.attributes) do
 					gl.EnableVertexAttribArray(data.location)
-					gl.VertexAttribPointer(data.location, data.row_length, data.number_type, false, self.vertex_array_info.size, ffi.cast("void*", data.row_offset))
+					gl.VertexAttribPointer(data.location, data.row_length, data.number_type, false, self.mesh_layout.size, ffi.cast("void*", data.row_offset))
 				end
 			gl.BindVertexArray(0)
 			self.setup_vao = true

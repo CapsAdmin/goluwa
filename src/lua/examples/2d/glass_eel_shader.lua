@@ -161,7 +161,7 @@ local tex = render.CreateTextureFromPath("textures/debug/brain.jpg")
 local shader = render.CreateShader(data)
 
 -- this creates mesh from the attributes field
-local mesh = shader:CreateVertexBuffer({
+local mesh = render.CreateVertexBuffer(shader, {
 	{pos = {0, 1, 0}, uv = {0, 0}},
 	{pos = {0, 0, 0}, uv = {0, 1}},
 	{pos = {1, 1, 0}, uv = {1, 0}},
@@ -169,7 +169,6 @@ local mesh = shader:CreateVertexBuffer({
 	{pos = {1, 1, 0}, uv = {1, 0}},
 	{pos = {0, 0, 0}, uv = {0, 1}},
 })
-
 event.AddListener("PreDrawGUI", "lol", function()
 	shader.pwm_matrix = render.camera_2d:GetMatrices().projection_view_world
 
