@@ -128,6 +128,7 @@ else
 		gl.BindBuffer("GL_ARRAY_BUFFER", self.vertices_id)
 		gl.BufferData("GL_ARRAY_BUFFER", vertices:GetSize(), vertices:GetPointer(), "GL_STATIC_DRAW")
 		gl.BindBuffer("GL_ARRAY_BUFFER", 0)
+		gl.BufferData("GL_ARRAY_BUFFER", vertices:GetSize(), vertices:GetPointer(), self.gl_draw_hint)
 
 		setup_vertex_array(self)
 	end
@@ -136,6 +137,7 @@ else
 		gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
 		gl.BufferData("GL_ELEMENT_ARRAY_BUFFER", indices:GetSize(), indices:GetPointer(), "GL_STATIC_DRAW")
 		gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", 0)
+		gl.BufferData("GL_ELEMENT_ARRAY_BUFFER", indices:GetSize(), indices:GetPointer(), self.gl_draw_hint)
 
 		setup_vertex_array(self)
 	end
