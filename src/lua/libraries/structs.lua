@@ -332,7 +332,7 @@ function structs.AddOperator(META, operator, ...)
 					a.KEY OPERATOR b.KEY
 				)
 			else
-				error(("tried to use operator OPERATOR on a %s value"):format(tostring(b)), 2)
+				error(("%s OPERATOR %s"):format(tostring(a), tostring(b)), 2)
 			end
 		end
 		]==]
