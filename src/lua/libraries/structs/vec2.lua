@@ -8,7 +8,6 @@ META.NumberType = "double"
 META.Args = {{"x", "w", "p"}, {"y", "h", "y"}}
 
 structs.AddAllOperators(META)
-
 -- length stuff
 do
 	function META:GetLengthSquared()
@@ -27,19 +26,20 @@ do
 	end
 
 	META.__len = META.GetLength
+	local ffi_is_type = require("ffi").istype
 
 	function META.__lt(a, b)
-		if ffi.istype(a, b) and type(b) == "number" then
+		if type(a) == "cdata" and ffi_is_type(a, b) and type(b) == "number" then
 			return a:GetLength() < b
-		elseif ffi.istype(b, a) and type(a) == "number" then
+		elseif type(b) == "cdata" and ffi_is_type(b, a) and type(a) == "number" then
 			return b:GetLength() < a
 		end
 	end
 
 	function META.__le(a, b)
-		if ffi.istype(a, b) and type(b) == "number" then
+		if type(a) == "cdata" and ffi_is_type(a, b) and type(b) == "number" then
 			return a:GetLength() <= b
-		elseif ffi.istype(b, a) and type(a) == "number" then
+		elseif type(b) == "cdata" and ffi_is_type(b, a) and type(a) == "number" then
 			return b:GetLength() <= a
 		end
 	end
@@ -91,19 +91,27 @@ function META.GetDot(a, b)
 		a.y * b.y
 	end
 
-function META:Normalize()
+function META:Normalize(scale)
+	scale = scale or 1
 	local length = self:GetLengthSquared()
+
 	if length == 0 then
 		self.x = 0
 		self.y = 0
 		return self
 	end
-	local inverted_length = 1/math.sqrt(length)
+	local inverted_length = scale/math.sqrt(length)
 
 	self.x = self.x * inverted_length
 	self.y = self.y * inverted_length
 
 	return self
+end
+
+structs.AddGetFunc(META, "Normalize", "Normalized")
+
+function META:GetNormal(scale)
+	return Vec2(-self.y * scale, self.x * scale)
 end
 
 function META.GetCrossed(a, b)
@@ -142,8 +150,6 @@ end
 function META:GetDeg()
 	return math.deg(self:GetRad())
 end
-
-structs.AddGetFunc(META, "Normalize", "Normalized")
 
 if GRAPHICS then
 	META.ToWorld = math3d.ScreenToWorldDirection
