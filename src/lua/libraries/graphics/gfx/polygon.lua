@@ -107,10 +107,10 @@ function META:SetVertex(i, x,y, u,v)
 end
 
 function META:SetTriangle(i, x1,y1, x2,y2, x3,y3, u1,v1,u2,v2,u3,v3)
-	i = i * 3
-	self:SetVertex(i + 0, x1,x1, u1,v1)
-	self:SetVertex(i + 1, x2,x2, u2,v2)
-	self:SetVertex(i + 2, x3,x3, u3,v3)
+	i = (i-1) * 3
+	self:SetVertex(i + 0, x1,y1, u1,v1)
+	self:SetVertex(i + 1, x2,y2, u2,v2)
+	self:SetVertex(i + 2, x3,y3, u3,v3)
 end
 
 function META:SetRect(i, x,y,w,h, r, ox,oy)
