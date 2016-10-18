@@ -30,21 +30,21 @@ end
 
 local function set_uv(self, i, x,y, w,h, sx,sy)
 	if not x then
-		self.Vertices.Pointer[i + 1].uv.A = 0
-		self.Vertices.Pointer[i + 1].uv.B = 1
+		self.Vertices.Pointer[i + 1].uv[0] = 0
+		self.Vertices.Pointer[i + 1].uv[1] = 1
 
-		self.Vertices.Pointer[i + 0].uv.A = 0
-		self.Vertices.Pointer[i + 0].uv.B = 0
+		self.Vertices.Pointer[i + 0].uv[0] = 0
+		self.Vertices.Pointer[i + 0].uv[1] = 0
 
-		self.Vertices.Pointer[i + 2].uv.A = 1
-		self.Vertices.Pointer[i + 2].uv.B = 0
+		self.Vertices.Pointer[i + 2].uv[0] = 1
+		self.Vertices.Pointer[i + 2].uv[1] = 0
 
 		--
 
 		self.Vertices.Pointer[i + 4].uv = self.Vertices.Pointer[i + 2].uv
 
-		self.Vertices.Pointer[i + 3].uv.A = 1
-		self.Vertices.Pointer[i + 3].uv.B = 1
+		self.Vertices.Pointer[i + 3].uv[0] = 1
+		self.Vertices.Pointer[i + 3].uv[1] = 1
 
 		self.Vertices.Pointer[i + 5].uv = self.Vertices.Pointer[i + 0].uv
 	else
@@ -53,21 +53,21 @@ local function set_uv(self, i, x,y, w,h, sx,sy)
 
 		y = -y - h
 
-		self.Vertices.Pointer[i + 1].uv.A = x / sx
-		self.Vertices.Pointer[i + 1].uv.B = (y + h) / sy
+		self.Vertices.Pointer[i + 1].uv[0] = x / sx
+		self.Vertices.Pointer[i + 1].uv[1] = (y + h) / sy
 
-		self.Vertices.Pointer[i + 0].uv.A = x / sx
-		self.Vertices.Pointer[i + 0].uv.B = y / sy
+		self.Vertices.Pointer[i + 0].uv[0] = x / sx
+		self.Vertices.Pointer[i + 0].uv[1] = y / sy
 
-		self.Vertices.Pointer[i + 2].uv.A = (x + w) / sx
-		self.Vertices.Pointer[i + 2].uv.B = y / sy
+		self.Vertices.Pointer[i + 2].uv[0] = (x + w) / sx
+		self.Vertices.Pointer[i + 2].uv[1] = y / sy
 
 		--
 
 		self.Vertices.Pointer[i + 4].uv = self.Vertices.Pointer[i + 2].uv
 
-		self.Vertices.Pointer[i + 3].uv.A = (x + w) / sx
-		self.Vertices.Pointer[i + 3].uv.B = (y + h) / sy
+		self.Vertices.Pointer[i + 3].uv[0] = (x + w) / sx
+		self.Vertices.Pointer[i + 3].uv[1] = (y + h) / sy
 
 		self.Vertices.Pointer[i + 5].uv = self.Vertices.Pointer[i + 1].uv
 	end
@@ -90,17 +90,17 @@ function META:SetVertex(i, x,y, u,v)
 		y = new_y + self.Y
 	end
 
-	self.Vertices.Pointer[i].pos.A = x
-	self.Vertices.Pointer[i].pos.B = y
+	self.Vertices.Pointer[i].pos[0] = x
+	self.Vertices.Pointer[i].pos[1] = y
 
-	self.Vertices.Pointer[i].color.A = self.R
-	self.Vertices.Pointer[i].color.B = self.G
-	self.Vertices.Pointer[i].color.C = self.B
-	self.Vertices.Pointer[i].color.D = self.A
+	self.Vertices.Pointer[i].color[0] = self.R
+	self.Vertices.Pointer[i].color[1] = self.G
+	self.Vertices.Pointer[i].color[2] = self[1]
+	self.Vertices.Pointer[i].color[3] = self[0]
 
 	if u and v then
-		self.Vertices.Pointer[i].uv.A = u
-		self.Vertices.Pointer[i].uv.B = v
+		self.Vertices.Pointer[i].uv[0] = u
+		self.Vertices.Pointer[i].uv[1] = v
 	end
 
 	self.dirty = true

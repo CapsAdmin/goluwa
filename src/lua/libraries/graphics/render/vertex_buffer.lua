@@ -51,17 +51,7 @@ do -- attributes
 		-- declare the types
 		for _, info in pairs(type_info) do
 			if info.arg_count > 1 then
-				local line = info.type .. " "
-				for i = 1, info.arg_count do
-					line = line .. string.char(64+i)
-
-					if i ~= info.arg_count then
-						line = line .. ", "
-					end
-				end
-
-				info.ctype = ffi.typeof(("struct { %s; }"):format(line))
-				print(line)
+				info.ctype = ffi.typeof(info.type .. "[" .. info.arg_count .. "]")
 			else
 				info.ctype = ffi.typeof(info.type)
 			end
@@ -120,7 +110,7 @@ do -- attributes
 
 		self.mesh_layout.size = ffi.sizeof(ctype)
 		self.mesh_layout.ctype = ctype
-
+		self.mesh_layout.lookup = {}
 		local pos = 0
 
 		for i, info in pairs(self.mesh_layout.attributes) do
@@ -134,27 +124,31 @@ do -- attributes
 			end
 
 			pos = pos + info.type_info.arg_count
+
+			self.mesh_layout.lookup[info.name] = info
 		end
 	end
 
 	local function unpack_structs(self, output)
-		local found = {}
+		local keys = {}
+		local found = false
 
-		-- only bother doing this if the first line has structs
+		-- only do this if the first line has structs
 		for _, info in ipairs(self.mesh_layout.attributes) do
 			local val = output[1][info.name]
 
 			if val then
 				if hasindex(val) and val.Unpack then
-					found[info.name] = true
+					keys[info.name] = true
+					found = true
 				end
 			end
 		end
 
-		if next(found) then
+		if found then
 			for _, struct in pairs(output) do
 				for key, val in pairs(struct) do
-					if found[key] then
+					if keys[key] then
 						struct[key] = {val:Unpack()}
 					else
 						struct[key] = nil
