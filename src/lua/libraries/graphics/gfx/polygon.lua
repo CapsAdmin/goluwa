@@ -95,8 +95,8 @@ function META:SetVertex(i, x,y, u,v)
 
 	self.Vertices.Pointer[i].color[0] = self.R
 	self.Vertices.Pointer[i].color[1] = self.G
-	self.Vertices.Pointer[i].color[2] = self[1]
-	self.Vertices.Pointer[i].color[3] = self[0]
+	self.Vertices.Pointer[i].color[2] = self.B
+	self.Vertices.Pointer[i].color[3] = self.A
 
 	if u and v then
 		self.Vertices.Pointer[i].uv[0] = u
