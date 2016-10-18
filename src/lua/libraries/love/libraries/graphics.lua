@@ -520,8 +520,8 @@ end
 
 do -- line
 	ENV.graphics_line_width = 1
-	ENV.graphics_line_style = "huh"
-	ENV.graphics_line_join = "huh"
+	ENV.graphics_line_style = "rough"
+	ENV.graphics_line_join = "miter"
 
 	function love.graphics.setLineStyle(s)
 		ENV.graphics_line_style = s
@@ -898,38 +898,317 @@ do
 end
 
 do -- shapes
-	local poly = gfx.CreatePolygon(2048)
-	local lines = gfx.CreateQuadricBezierCurve(2048)
+	local function edge(anchors, normals, s, len_s, ns, q, r, half_width, mode)
+		if mode == "none" then
+			table.insert(anchors, q)
+			table.insert(anchors, q)
+			table.insert(normals, ns)
+			table.insert(normals, -ns)
 
-	local function polygon(mode, points, closed)
-		surface.PushTexture(render.GetWhiteTexture())
-		local idx = 0
+			s = (r - q)
+			len_s = s:GetLength()
+			ns = s:GetNormal(half_width / len_s)
 
-		if mode == "line" then
-			for i = 1, #points, 2 do
-				lines:Set(idx + 1, Vec2(points[i + 0], points[i + 1]))
-				idx = idx + 1
+			table.insert(anchors, q)
+			table.insert(anchors, q)
+			table.insert(normals, -ns)
+			table.insert(normals, ns)
+		elseif mode == "miter" then
+			local t = r - q
+			local len_t = t:GetLength()
+			local nt = t:GetNormal(half_width / len_t)
+
+			table.insert(anchors, q)
+			table.insert(anchors, q)
+
+			local det = s:GetCrossed(t)
+			if math.abs(det) / (len_s * len_t) < 0.05 and s:GetDot(t) > 0 then
+				table.insert(normals, ns)
+				table.insert(normals, -ns)
+			else
+				local lambda = (nt - ns):GetCrossed(t) / det
+				local d = ns + s * lambda
+
+				--logf("normal = %i\nlambda = %f\nnt= Vec2(%f, %f)\nns= Vec2(%f, %f)\nt = Vec2(%f, %f)\ndet = %f\ns = Vec2(%f, %f)\n", #normals, lambda, nt.x,nt.y, ns.x,ns.y, t.x,t.y, det, s.x, s.y);
+
+				table.insert(normals, d)
+				table.insert(normals, -d)
 			end
 
-			lines:SetMaxLines(idx)
-			lines:UpdatePoly(poly, ENV.graphics_line_width*0.75, 1)
-			idx = idx * 4
+			s = t
+			ns = nt
+			len_s = len_t
 
-			if closed then
-				idx = idx - 2
+		elseif mode == "bevel" then
+			local t = r - q
+			local len_t = t:GetLength()
+
+			local det = s:GetCrossed(t)
+			if math.abs(det) / (len_s * len_t) < 0.05 and s:GetDot(t) > 0 then
+				local n = t:GetNormal(half_width / len_t)
+				table.insert(anchors, q)
+				table.insert(anchors, q)
+				table.insert(normals, n)
+				table.insert(normals, -n)
+				s = t
+				len_s = len_t
+				return s, len_s, ns
 			end
 
-			poly.mesh:SetMode("triangle_strip")
-		else
-			for i = 1, #points, 2 do
-				poly:SetVertex(idx, points[i + 0], points[i + 1])
-				idx = idx + 1
+			local nt = t:GetNormal(half_width / len_t)
+			local lambda = (nt - ns):GetCrossed(t) / det
+			if not math.isvalid(lambda) then lambda = 0 end -- not really sure why this is needed
+			local d = ns + s * lambda
+
+			table.insert(anchors, q)
+			table.insert(anchors, q)
+			table.insert(anchors, q)
+			table.insert(anchors, q)
+
+			if det > 0 then
+				table.insert(normals, d)
+				table.insert(normals, -ns)
+				table.insert(normals, d)
+				table.insert(normals, -nt)
+			else
+				table.insert(normals, ns)
+				table.insert(normals, -d)
+				table.insert(normals, nt)
+				table.insert(normals, -d)
 			end
 
-			poly.mesh:SetMode("triangle_fan")
+			s = t
+			len_s = len_t
+			ns = nt
 		end
 
-		poly:Draw(idx)
+		return s, len_s, ns
+	end
+
+	local function line_(mode, coords, count, size_hint, half_width, pixel_size, draw_overdraw, draw_mode, join)
+		local overdraw_vertex_count = 0
+		local overdraw_vertex_start = 0
+
+		local anchors = table.new(size_hint, 1)
+		local normals = table.new(size_hint, 1)
+
+		if draw_overdraw then
+			half_width = half_width - pixel_size * 0.3
+		end
+
+		local is_looping = join or (coords[1] == coords[count - 1]) and (coords[2] == coords[count])
+		local s
+
+
+
+		if not is_looping then
+			s = Vec2(coords[3] - coords[1], coords[4] - coords[2])
+		else
+			s = Vec2(coords[1] - coords[count - 3], coords[2] - coords[count - 1])
+		end
+
+		local len_s = s:GetLength()
+		local ns = s:GetNormal(half_width / len_s)
+
+		local q
+		local r = Vec2(coords[1], coords[2])
+
+		for i = 0, count - 4, 2 do
+			q = r
+			r = Vec2(coords[i + 3], coords[i + 4])
+			s, len_s, ns = edge(anchors, normals, s, len_s, ns, q, r, half_width, mode)
+		end
+
+		if join then
+			q = r
+			r = Vec2(coords[1], coords[2])
+			s, len_s, ns = edge(anchors, normals, s, len_s, ns, q, r, half_width, mode)
+		end
+
+		q = r
+		r = is_looping and Vec2(coords[3], coords[4]) or r + s
+		s, len_s, ns = edge(anchors, normals, s, len_s, ns, q, r, half_width, mode)
+
+		local vertex_count = #normals
+		local extra_vertices = 0
+
+		if draw_overdraw then
+			--calc_overdraw_vertex_count(is_looping)
+			if mode == "none" then
+				overdraw_vertex_count = 4 * vertex_count - 2
+			else
+				overdraw_vertex_count = 2 * vertex_count + (is_looping and 0 or 2)
+			end
+
+			if draw_mode == "triangle_strip" then
+				extra_vertices = 2
+			end
+		end
+
+		local vertices = {}
+
+		for i = 1, vertex_count do
+			vertices[i] = anchors[i] + normals[i]
+		end
+
+		if draw_overdraw then
+			local overdraw = vertices--- + vertex_count + extra_vertices
+			overdraw_vertex_start = vertex_count + extra_vertices
+
+			if mode == "none" then
+				for i = 2, vertex_count + 3 - 1, 4 do
+					local s = vertices[i+1] - vertices[i+3+1]
+					local t = vertices[i+1] - vertices[i+1+1]
+					s:Normalize(pixel_size)
+					t:Normalize(pixel_size)
+
+					local k = 4 * (- 2)
+					k = k + overdraw_vertex_start
+					k = k + 1
+					i = i + 1
+					overdraw[k] = vertices[i]
+					overdraw[k+1] = vertices[i]   + s + t
+					overdraw[k+2] = vertices[i+1] + s - t
+					overdraw[k+3] = vertices[i+1]
+
+					overdraw[k+4] = vertices[i+1]
+					overdraw[k+5] = vertices[i+1] + s - t
+					overdraw[k+6] = vertices[i+2] - s - t
+					overdraw[k+7] = vertices[i+2]
+
+					overdraw[k+8]  = vertices[i+2]
+					overdraw[k+9]  = vertices[i+2] - s - t
+					overdraw[k+10] = vertices[i+3] - s + t
+					overdraw[k+11] = vertices[i+3]
+
+					overdraw[k+12] = vertices[i+3]
+					overdraw[k+13] = vertices[i+3] - s + t
+					overdraw[k+14] = vertices[i]   + s + t
+					overdraw[k+15] = vertices[i]
+				end
+			else
+				for i = 0, vertex_count - 1 - 1, 2 do
+					overdraw[overdraw_vertex_start + i+1] = vertices[i+1]
+					overdraw[overdraw_vertex_start + i+1+1] = vertices[i+1] + normals[i+1] * (pixel_size / normals[i+1]:GetLength())
+				end
+
+				for i = 0, vertex_count - 1 - 1, 2 do
+					local k = vertex_count - i - 1
+					overdraw[overdraw_vertex_start + vertex_count + i+1] = vertices[k]
+					overdraw[overdraw_vertex_start + vertex_count + i+1+1] = vertices[k+1] + normals[k+1] * (pixel_size / normals[i+1]:GetLength())
+				end
+
+				if not is_looping then
+					local spacer = (overdraw[overdraw_vertex_start + 1+1] - overdraw[overdraw_vertex_start + 3+1])
+					spacer:Normalize(pixel_size)
+					overdraw[overdraw_vertex_start + 1+1] = overdraw[overdraw_vertex_start + 1+1] + spacer
+
+					spacer = (overdraw[overdraw_vertex_start + vertex_count - 1] - overdraw[overdraw_vertex_start + vertex_count - 3])
+					spacer:Normalize(pixel_size)
+					overdraw[overdraw_vertex_start + vertex_count - 1+1] = overdraw[overdraw_vertex_start + vertex_count - 1+1]  + spacer
+					overdraw[overdraw_vertex_start + vertex_count + 1+1] = overdraw[overdraw_vertex_start + vertex_count + 1+1]  + spacer
+
+					overdraw[overdraw_vertex_start + overdraw_vertex_count - 2+1] = overdraw[overdraw_vertex_start + 0+1]
+					overdraw[overdraw_vertex_start + overdraw_vertex_count - 1+1] = overdraw[overdraw_vertex_start + 1+1]
+				end
+			end
+		end
+
+		if extra_vertices ~= 0 then
+			vertices[vertex_count + 0 + 1] = vertices[vertex_count - 1 + 1]
+			vertices[vertex_count + 1 + 1] = vertices[overdraw_vertex_start + 1]
+		end
+
+		return vertices, overdraw_vertex_start + overdraw_vertex_count
+	end
+
+	local function generate_line(mode, coords, width, pixel_size, draw_overdraw, join)
+		width = width * 0.5
+		local draw_mode
+		if mode == "none" then
+			draw_mode = "triangles"
+		else
+			draw_mode = "triangle_strip"
+		end
+		local count = #coords
+		if mode == "miter" then
+			return line_(mode, coords, count, count, width, pixel_size, draw_overdraw, draw_mode, join), nil, draw_mode
+		elseif mode == "bevel" then
+			return line_(mode, coords, count, 2 * count - 4, width, pixel_size, draw_overdraw, draw_mode, join), nil, draw_mode
+		elseif mode == "none" then
+			local vertices, overdraw_count = line_(mode, coords, count, 2 * count - 4, width, pixel_size, draw_overdraw, draw_mode, join)
+			for i = 0, #vertices - 4 - 1 do
+				vertices[i + 1] = vertices[i + 2 + 1]
+			end
+			table.remove(vertices, #vertices)
+
+			local total_vertex_count = #vertices
+			if draw_overdraw then
+				total_vertex_count = overdraw_count
+			end
+			local num_indices = (total_vertex_count / 4) * 6
+			local indices = {}
+
+			for i = 0, (num_indices / 6) - 1 do
+				indices[(i * 6 + 0) + 1] = i * 4 + 0
+				indices[(i * 6 + 1) + 1] = i * 4 + 1
+				indices[(i * 6 + 2) + 1] = i * 4 + 2
+
+				indices[(i * 6 + 3) + 1] = i * 4 + 0
+				indices[(i * 6 + 4) + 1] = i * 4 + 2
+				indices[(i * 6 + 5) + 1] = i * 4 + 3
+			end
+
+			return vertices, indices, draw_mode
+		end
+	end
+
+	local mesh = surface.CreateMesh(2048)
+	for i = 1, 2048 do
+		mesh:SetVertex(i, "color", 1,1,1,1)
+	end
+	local function polygon(mode, points, closed)
+		surface.PushTexture(render.GetWhiteTexture())
+		local idx = 1
+
+		if mode == "line" then
+			local vertices, indices, mode = generate_line(love.graphics.getLineJoin(), points, love.graphics.getLineWidth(), 1, false, true)--love.graphics.getLineStyle() == "smooth", true)
+
+			if indices then
+				for i, v in ipairs(indices) do
+					mesh:SetIndex(i, v)
+				end
+				idx = #indices
+			else
+				for i = 1, #vertices do
+					mesh:SetIndex(i, i-1)
+				end
+				idx = #vertices
+			end
+
+			for i, v in ipairs(vertices) do
+				mesh:SetVertex(i, "pos", v.x, v.y)
+			end
+
+			mesh:SetMode(mode)
+		else
+			for i = 1, #points, 2 do
+				mesh:SetVertex(idx, "pos", points[i + 0], points[i + 1])
+				idx = idx + 1
+			end
+			for i = 1, #points do
+				mesh:SetIndex(i, i-1)
+			end
+
+			-- connect the end
+			mesh:SetIndex(idx, 0)
+
+			mesh:SetMode("triangle_fan")
+		end
+
+		mesh:UpdateBuffer()
+
+		mesh:Draw(idx)
 
 		surface.PopTexture()
 	end
@@ -1051,7 +1330,7 @@ do -- shapes
 
 	do
 		local function create_points(coords, points, x, y, radius, phi, angle_shift, offset)
-			for i = offset, points do
+			for i = offset, points-1 do
 				coords[(2 * i + 0) + 1] = x + radius * math.cos(phi)
 				coords[(2 * i + 1) + 1] = y + radius * math.sin(phi)
 				phi = phi + angle_shift
@@ -1066,7 +1345,6 @@ do -- shapes
 				points = points * angle / (2 * math.pi)
 			end
 
-			points = math.max(points, 10)
 
 			points = math.ceil(points)
 
@@ -1100,22 +1378,19 @@ do -- shapes
 				coords[1] = x
 				coords[2] = y
 
-				create_points(coords, points, x, y, radius, phi, angle_shift, 1)
+				create_points(coords, points + 3, x, y, radius, phi, angle_shift, 1)
 
 				coords[#coords - 1] = x
 				coords[#coords - 0] = y
 			elseif arc_mode == "open" then
-				create_points(coords, points, x, y, radius, phi, angle_shift, 0)
+				create_points(coords, points + 1, x, y, radius, phi, angle_shift, 0)
 			else -- if arc_mode == "closed" then
-				create_points(coords, points, x, y, radius, phi, angle_shift, 0)
+				create_points(coords, points + 2, x, y, radius, phi, angle_shift, 0)
+				coords[#coords - 1] = coords[1]
+				coords[#coords - 0] = coords[2]
 			end
 
-			--[[
-			for i = 1, #coords, 2 do
-				gfx.DrawFilledCircle(coords[i + 0], coords[i + 1])
-			end
-			--]]
-			polygon(draw_mode, coords, arc_mode == "open")
+			polygon(draw_mode, coords)
 		end
 
 		function love.graphics.arc(...)
@@ -1174,11 +1449,11 @@ do -- shapes
 			tbl = {...}
 		end
 
-		polygon("line", tbl, true)
+		polygon("line", tbl)
 	end
 
 	function love.graphics.triangle(mode, x1, y1, x2, y2, x3, y3)
-		polygon(mode, {x1, y1, x2, y2, x3, y3}, false)
+		polygon(mode, {x1,y1, x2,y2, x3,y3, x1,y1})
 	end
 
 	function love.graphics.rectangle(mode, x, y, w, h, rx, ry, points)
@@ -1240,10 +1515,10 @@ do -- shapes
 				phi = phi + angle_shift
 			end
 
-			coords[#coords - 1] = coords[1]
-			coords[#coords - 0] = coords[2]
+			coords[#coords - 1] = coords[3]
+			coords[#coords - 0] = coords[4]
 
-			polygon("line", coords, true)
+			polygon("line", coords)
 		end
 	end
 end
