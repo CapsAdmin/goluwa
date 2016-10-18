@@ -31,7 +31,7 @@ local function CreateTexturedCircle(image, segments)
 	return mesh
 end
 
---local mesh = CreateTexturedCircle(image)
+local mesh = CreateTexturedCircle(image)
 local font = love.graphics.newFont()
 font:setLineHeight(1)
 event.AddListener("PreDrawGUI", "lol", function()
@@ -39,7 +39,7 @@ event.AddListener("PreDrawGUI", "lol", function()
 	local w,h = love.window.getMode()
 	love.graphics.rectangle("fill", 0,0,w,h)
 
- 	--love.graphics.draw(mesh, 600, 450, 0, 100, 100)
+ 	love.graphics.draw(mesh, 600, 450, 0, 100, 100)
 
 	love.graphics.setLineWidth(5)
 

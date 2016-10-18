@@ -793,7 +793,7 @@ function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 				surface.Translate(ox,oy)
 				surface.Rotate(r)
 				surface.Scale(sx,sy)
-				drawable.poly:Draw()
+				drawable:Draw()
 			surface.PopMatrix()
 			surface.PopTexture()
 			surface.PopColor()
@@ -1216,7 +1216,6 @@ do -- shapes
 		end
 
 		mesh:UpdateBuffer()
-
 		mesh:Draw(idx)
 
 		surface.PopTexture()
@@ -1251,15 +1250,12 @@ do -- shapes
 			end
 
 			local self = line.CreateObject("Mesh")
-			self.poly = gfx.CreatePolygon(vertex_count)
-			self.poly.mesh:SetDrawHint(usage)
-			self.poly.mesh:SetUpdateIndices(false)
+			self.mesh = surface.CreateMesh(vertex_count)
+			self.mesh:SetDrawHint(usage)
 			self:setDrawMode(mode)
 
 			if vertices then
-				for i, v in ipairs(vertices) do
-					self:setVertex(i, v)
-				end
+				self:setVertices(vertices)
 			end
 
 			return self
@@ -1273,43 +1269,127 @@ do -- shapes
 			return self.img
 		end
 
+		Mesh.setImage = Mesh.setTexture
+		Mesh.getImage = Mesh.getTexture
+
+		function Mesh:setVertices(vertices)
+			for i, v in ipairs(vertices) do
+				self:setVertex(i, v)
+			end
+			self.mesh:UpdateBuffer()
+		end
+
+		function Mesh:getVertices()
+			local out = {}
+			for i = 1, self.mesh.Vertices:GetLength() do
+				out[i] = {self:getVertex()}
+			end
+			return out
+		end
+
 		function Mesh:setVertex(index, vertex)
-			if type(vertex) == "table" then
-				if vertex[5] then
-					local r = (vertex[5] or 255) / 255
-					local g = (vertex[6] or 255) / 255
-					local b = (vertex[7] or 255) / 255
-					local a = (vertex[8] or 255) / 255
-					self.poly:SetColor(r,g,b,a)
-				end
-				self.poly:SetVertex(index, vertex[1], vertex[2], vertex[3], vertex[4])
+			if vertex[1] then
+				self.mesh:SetVertex(index, "pos", vertex[1], vertex[2])
+			end
+			if vertex[3] then
+				self.mesh:SetVertex(index, "uv", vertex[3], -vertex[4]+1)
+			end
+			if vertex[5] then
+				local r = (vertex[5] or 255) / 255
+				local g = (vertex[6] or 255) / 255
+				local b = (vertex[7] or 255) / 255
+				local a = (vertex[8] or 255) / 255
+				self.mesh:SetVertex(index, "color", r,g,b,a)
 			end
 		end
 
-		--[[
-			Mesh:attachAttribute 	Attaches a vertex attribute from a different Mesh onto this Mesh, for use when drawing. 	Added since 0.10.0
-			Mesh:flush 	Immediately sends all modified vertex data in the Mesh to the graphics card. 	Added since 0.10.0
-			Mesh:getDrawRange 	Gets the range of vertices used when drawing the Mesh. 	Added since 0.9.1
-			Mesh:getImage 	Gets the Image used when drawing the Mesh. 	Added since 0.9.0 	Removed in 0.10.0
-			Mesh:getTexture 	Gets the texture (Image or Canvas) used when drawing the Mesh. 	Added since 0.9.1
-			Mesh:getVertex 	Gets the properties of a vertex in the Mesh. 	Added since 0.9.0
-			Mesh:getVertexAttribute 	Gets the properties of a specific attribute within a vertex in the Mesh. 	Added since 0.10.0
-			Mesh:getVertexCount 	Gets the total number of vertices in the Mesh. 	Added since 0.9.0
-			Mesh:getVertexFormat 	Gets the vertex format that the Mesh was created with. 	Added since 0.10.0
-			Mesh:getVertexMap 	Gets the vertex map for the Mesh. 	Added since 0.9.0
-			Mesh:getVertices 	Gets all the vertices in the Mesh. 	Added since 0.9.0 	Removed in 0.10.0
-			Mesh:hasVertexColors 	Gets whether per-vertex colors are used when drawing the Mesh. 	Added since 0.9.0 	Removed in 0.10.0
-			Mesh:isAttributeEnabled 	Gets whether a specific vertex attribute in the Mesh is enabled. 	Added since 0.10.0
-			Mesh:setAttributeEnabled 	Enables or disables a specific vertex attribute in the Mesh. 	Added since 0.10.0
-			Mesh:setDrawRange 	Restricts the drawn vertices of the Mesh to a subset of the total. 	Added since 0.9.1
-			Mesh:setImage 	Sets the Image used when drawing the Mesh. 	Added since 0.9.0 	Removed in 0.10.0
-			Mesh:setTexture 	Sets the texture (Image or Canvas) used when drawing the Mesh. 	Added since 0.9.1
-			Mesh:setVertex 	Sets the properties of a vertex in the Mesh. 	Added since 0.9.0
-			Mesh:setVertexAttribute 	Sets the properties of a specific attribute within a vertex in the Mesh. 	Added since 0.10.0
-			Mesh:setVertexColors 	Sets whether per-vertex colors are used instead of the constant color when drawing the Mesh. 	Added since 0.9.0 	Removed in 0.10.0
-			Mesh:setVertexMap 	Sets the vertex map for the Mesh. 	Added since 0.9.0
-			Mesh:setVertices 	Replaces a range of vertices in the Mesh with new ones. 	Added since 0.9.0
-		]]
+		function Mesh:getVertex(index)
+			local x,y = self.mesh:GetVertex(index, "pos")
+			local u,v = self.mesh:GetVertex(index, "uv")
+			local r,g,b,a = self.mesh:GetVertex(index, "color")
+
+			return x,y,u,v,r,g,b,a
+		end
+
+		function Mesh:setDrawRange(min, max)
+			self.draw_range_min = min
+			self.draw_range_man = max
+		end
+
+		function Mesh:getDrawRange()
+			return self.draw_range_min, self.draw_range_max
+		end
+
+		function Mesh:Draw()
+			self.mesh:Draw(self.draw_range)
+		end
+
+		function Mesh:setVertexColors()
+
+		end
+
+		function Mesh:hasVertexColors()
+			return true
+		end
+
+		function Mesh:setVertexMap(...)
+			local indices = type(...) == "table" and ... or {...}
+			for i, i2 in ipairs(indices) do
+				self.mesh:SetIndex(i, i2-1)
+			end
+		end
+
+		function Mesh:getVertexMap()
+			local out = {}
+			for i = 1, self.mesh.Indices:GetLength() do
+				out[i] = self.mesh.Indices.Pointer[i - 1] + 1
+			end
+			return out
+		end
+
+		function Mesh:getVertexCount()
+			return self.mesh.Vertices:GetLength()
+		end
+
+		function Mesh:setVertexAttribute(index, pos, ...)
+			self:setVertex(index, self.mesh.mesh_layout.attributes[pos].name, ...)
+		end
+
+		function Mesh:getVertexAttribute(index, pos)
+			return self:getVertex(index, self.mesh.mesh_layout.attributes[pos].name)
+		end
+
+		function Mesh:setAttributeEnabled(name, enable)
+
+		end
+
+		function Mesh:isAttributeEnabled()
+
+		end
+
+		function Mesh:attachAttribute()
+
+		end
+
+		do
+			local tr = {
+				pos = "VertexPosition",
+				uv = "VertexTexCoord",
+				color = "VertexColor",
+			}
+
+			function Mesh:getVertexFormat()
+				local out = {}
+				for i, info in ipairs(self.mesh.mesh_layout.attributes) do
+					table.insert(out, {tr[info.name] or info.name, info.type_info.type, info.type_info.arg_count})
+				end
+				return out
+			end
+		end
+
+		function Mesh:flush()
+			self:UpdateBuffers()
+		end
 
 		do
 			local tr = {
@@ -1319,7 +1399,7 @@ do -- shapes
 
 			function Mesh:setDrawMode(mode)
 				mode = tr[mode] or mode
-				self.poly.mesh:SetMode(mode)
+				self.mesh:SetMode(mode)
 			end
 
 			local tr2 = {}
@@ -1329,7 +1409,7 @@ do -- shapes
 			end
 
 			function Mesh:getDrawMode()
-				local mode = self.poly.mesh:GetMode()
+				local mode = self.mesh:GetMode()
 				return tr2[mode] or mode
 			end
 		end
@@ -1604,6 +1684,10 @@ do -- sprite batch
 
 	function SpriteBatch:getImage()
 		return self.img
+	end
+
+	function SpriteBatch:Draw()
+		self.poly:Draw()
 	end
 
 	function love.graphics.newSpriteBatch(image, size, usagehint)
