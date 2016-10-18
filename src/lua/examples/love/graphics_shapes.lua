@@ -54,7 +54,7 @@ event.AddListener("PreDrawGUI", "lol", function()
 	love.graphics.arc( "line", "closed", 300, 210, 50, math.pi / 6, (math.pi * 2) - math.pi / 6 )
 
 	love.graphics.setPointSize(10)
-	love.graphics.points({{10,50,1,0,1}, {50,50,1,1,1}})
+	love.graphics.points({{10,50,255,0,255}, {50,50,255,255,255}})
 
 	love.graphics.setColor(255, 255, 255)
     love.graphics.ellipse("fill", 300, 300, 75, 50, 100) -- Draw white ellipse with 100 segments.
@@ -68,7 +68,7 @@ event.AddListener("PreDrawGUI", "lol", function()
     love.graphics.circle("fill", 500, 300, 50, 5)   -- Draw red circle with five segments.
 
 	love.graphics.setLineWidth(10)
-	love.graphics.setLineStyle("smooth")
+	love.graphics.setLineStyle("rough")
 	love.graphics.setLineJoin("none")
 	love.graphics.push()
 		love.graphics.translate(200, 500)
@@ -93,7 +93,7 @@ event.AddListener("PreDrawGUI", "lol", function()
 	love.graphics.rectangle("line", 500, 50, 60, 120, 5)
 
 	love.graphics.draw(image, quad, 100, 100)
-	love.graphics.printf(("hello world "):rep(10), 200, 500, 50)
+	love.graphics.printf(("hello world "):rep(10), 200, 300, 50)
 
 	local w = font:getWidth("hello world")
 	local h = font:getHeight("hello world")
@@ -104,6 +104,6 @@ event.AddListener("PreDrawGUI", "lol", function()
 
 	love.graphics.push()
 	love.graphics.translate(500,500)
-	love.graphics.triangle("line", -50,0, 0,-50, 50,0)
+	love.graphics.line(-50,0, 0,-50, 50,0, -50,0)
 	love.graphics.pop()
 end)
