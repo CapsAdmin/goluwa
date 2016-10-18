@@ -135,8 +135,20 @@ do -- attributes
 		end
 	end
 
+	function META:GetVertex(idx, name)
+		local out = {}
+		for i = 1, self.mesh_layout.lookup[name].type_info.arg_count do
+			out[i] = self.Vertices.Pointer[idx-1][name][i-1]
+		end
+		return unpack(out)
+	end
+
 	function META:SetIndex(idx, idx2)
 		self.Indices.Pointer[idx-1] = idx2
+	end
+
+	function META:GetIndex(idx)
+		return self.Indices.Pointer[idx-1]
 	end
 
 	local function unpack_structs(self, output)
