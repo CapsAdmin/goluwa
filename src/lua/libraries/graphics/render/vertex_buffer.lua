@@ -129,6 +129,16 @@ do -- attributes
 		end
 	end
 
+	function META:SetVertex(idx, name, ...)
+		for i = 1, select("#", ...) do
+			self.Vertices.Pointer[idx-1][name][i-1] = select(i, ...)
+		end
+	end
+
+	function META:SetIndex(idx, idx2)
+		self.Indices.Pointer[idx-1] = idx2
+	end
+
 	local function unpack_structs(self, output)
 		local keys = {}
 		local found = false
