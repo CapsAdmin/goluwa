@@ -996,15 +996,19 @@ do -- shapes
 			half_width = half_width - pixel_size * 0.3
 		end
 
-		local is_looping = join or (coords[1] == coords[count - 1]) and (coords[2] == coords[count])
+		if join then
+			table.insert(coords, coords[1])
+			table.insert(coords, coords[2])
+			count = count + 2
+		end
+
+		local is_looping = (coords[1] == coords[count - 1]) and (coords[2] == coords[count])
 		local s
 
-
-
-		if not is_looping then
-			s = Vec2(coords[3] - coords[1], coords[4] - coords[2])
+		if is_looping then
+			s = Vec2(coords[1] - coords[count - 3], coords[2] - coords[count - 2])
 		else
-			s = Vec2(coords[1] - coords[count - 3], coords[2] - coords[count - 1])
+			s = Vec2(coords[3] - coords[1], coords[4] - coords[2])
 		end
 
 		local len_s = s:GetLength()
@@ -1013,21 +1017,22 @@ do -- shapes
 		local q
 		local r = Vec2(coords[1], coords[2])
 
-		for i = 0, count - 4, 2 do
+		for i = 0, count - 2, 2 do
 			q = r
-			r = Vec2(coords[i + 3], coords[i + 4])
+			if i < count - 2 then
+				r = Vec2(coords[i + 3], coords[i + 4])
+			elseif is_looping then
+				r = Vec2(coords[3], coords[4])
+			else
+				r = r + s
+			end
 			s, len_s, ns = edge(anchors, normals, s, len_s, ns, q, r, half_width, mode)
 		end
 
 		if join then
-			q = r
-			r = Vec2(coords[1], coords[2])
-			s, len_s, ns = edge(anchors, normals, s, len_s, ns, q, r, half_width, mode)
+			table.remove(coords)
+			table.remove(coords)
 		end
-
-		q = r
-		r = is_looping and Vec2(coords[3], coords[4]) or r + s
-		s, len_s, ns = edge(anchors, normals, s, len_s, ns, q, r, half_width, mode)
 
 		local vertex_count = #normals
 		local extra_vertices = 0
@@ -1167,12 +1172,16 @@ do -- shapes
 	for i = 1, 2048 do
 		mesh:SetVertex(i, "color", 1,1,1,1)
 	end
-	local function polygon(mode, points, closed)
+	local function polygon(mode, points, join)
 		surface.PushTexture(render.GetWhiteTexture())
 		local idx = 1
 
 		if mode == "line" then
-			local vertices, indices, mode = generate_line(love.graphics.getLineJoin(), points, love.graphics.getLineWidth(), 1, false, true)--love.graphics.getLineStyle() == "smooth", true)
+			--table.insert(points, points[1])
+			--table.insert(points, points[2])
+			local vertices, indices, mode = generate_line(love.graphics.getLineJoin(), points, love.graphics.getLineWidth(), 1, false, join)--love.graphics.getLineStyle() == "smooth", true)
+			--table.remove(points)
+			--table.remove(points)
 
 			if indices then
 				for i, v in ipairs(indices) do
@@ -1215,7 +1224,7 @@ do -- shapes
 
 	function love.graphics.polygon(mode, ...)
 		local points = type(...) == "table" and ... or {...}
-		polygon(mode, points)
+		polygon(mode, points, true)
 	end
 
 	do
@@ -1515,10 +1524,10 @@ do -- shapes
 				phi = phi + angle_shift
 			end
 
-			coords[#coords - 1] = coords[3]
-			coords[#coords - 0] = coords[4]
+			--coords[#coords - 1] = coords[3]
+			--coords[#coords - 0] = coords[4]
 
-			polygon("line", coords)
+			polygon("line", coords, true)
 		end
 	end
 end

@@ -128,4 +128,10 @@ event.AddListener("PostDrawGUI", "lol", function()
 			y = y + scale
 		end
 	end
+
+	love.graphics.setLineWidth(10)
+	love.graphics.push()
+	love.graphics.translate(500,600)
+	love.graphics.polygon("line", {-50,0, 0,-50, 50,0})
+	love.graphics.pop()
 end)
