@@ -127,7 +127,7 @@ local function translate_fields(data)
 	return out
 end
 
-local function variables_to_string(type, variables, prepend, macro, array)
+local function variables_to_string(type, variables, prepend, macro, array, huh)
 	array = array or ""
 	local texture_channel = 0
 	local out = {}
@@ -150,6 +150,9 @@ local function variables_to_string(type, variables, prepend, macro, array)
 			texture_channel = texture_channel + 1
 		else
 			table.insert(out, ("%s %s %s %s %s%s;"):format(data.varying, type, data.precision, data.type, name, array):trim())
+			if huh then
+				out[#out] = huh:format(#out - 1) .. " " .. out[#out]
+			end
 		end
 
 		if macro then
@@ -360,13 +363,13 @@ function render.CreateShader(data, vars)
 
 --table.print(variables)
 
-		template = replace_field(template, "VARIABLES", variables_to_string("uniform", variables, nil, nil, nil, shader .. "_Variables"))
+		template = replace_field(template, "VARIABLES", variables_to_string("uniform", variables))
 		build_output[shader].variables = translate_fields(variables)
 
 		if info.mesh_layout then
 			if shader == "vertex" then
 				-- in highp vec3 foo;
-				template = replace_field(template, "IN", variables_to_string("in", info.mesh_layout))
+				template = replace_field(template, "IN", variables_to_string("in", info.mesh_layout, nil, nil, nil, "layout(location = %i)"))
 				build_output[shader].mesh_layout = translate_fields(info.mesh_layout)
 			else
 				-- in highp vec3 glw_out_foo;
