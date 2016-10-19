@@ -28,9 +28,9 @@ if GRAPHICS then
 
 	function META:SetVisible(b)
 		if b then
-			render.Add3DModel(self)
+			render3d.AddModel(self)
 		else
-			render.Remove3DModel(self)
+			render3d.RemoveModel(self)
 		end
 		self.is_visible = b
 	end
@@ -40,7 +40,7 @@ if GRAPHICS then
 	end
 
 	function META:OnRemove()
-		render.Remove3DModel(self)
+		render3d.RemoveModel(self)
 	end
 
 	function META:SetModelPath(path)
@@ -83,7 +83,7 @@ if GRAPHICS then
 					self:RemoveMesh(mesh)
 				end
 			end, self)
-			render.Add3DModel(self)
+			render3d.AddModel(self)
 		end
 
 		function META:RemoveMesh(mesh)
@@ -94,7 +94,7 @@ if GRAPHICS then
 				end
 			end
 			if not self.sub_models[1] then
-				render.Remove3DModel(self)
+				render3d.RemoveModel(self)
 			end
 		end
 
@@ -144,7 +144,7 @@ if GRAPHICS then
 	local ipairs = ipairs
 	local render_SetMaterial = render.SetMaterial
 	function META:Draw(what, dist)
-		render.camera_3d:SetWorld(self.tr:GetMatrix())
+		camera.camera_3d:SetWorld(self.tr:GetMatrix())
 
 		--[[if self.corners and what then
 			local time = system.GetElapsedTime()
@@ -153,9 +153,9 @@ if GRAPHICS then
 
 			if self.next_visible[what] < time then
 				if dist then
-					self.visible[what] = self.tr:GetPosition():Distance(render.camera_3d:GetPosition()) < dist
+					self.visible[what] = self.tr:GetPosition():Distance(camera.camera_3d:GetPosition()) < dist
 				else
-					self.visible[what] = self.tr:IsPointsVisible(self.corners, render.camera_3d:GetMatrices().projection_view)
+					self.visible[what] = self.tr:IsPointsVisible(self.corners, camera.camera_3d:GetMatrices().projection_view)
 				end
 				self.next_visible[what] = time + (1/15)
 			end
@@ -184,5 +184,5 @@ end
 META:RegisterComponent()
 
 if RELOAD then
-	render.InitializeGBuffer()
+	render3d.Initialize()
 end

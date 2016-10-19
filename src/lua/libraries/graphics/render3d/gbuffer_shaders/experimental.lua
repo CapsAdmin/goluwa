@@ -103,7 +103,7 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
 vec3 gbuffer_compute_sky(vec3 ray, float depth)
 {
 
-	vec3 sun_direction = lua[(vec3)render.GetShaderSunDirection];
+	vec3 sun_direction = lua[(vec3)render3d.GetShaderSunDirection];
 	float intensity = lua[world_sun_intensity = 1];
 	vec3 sky_color = lua[world_sky_color = Vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131)];
 
@@ -455,7 +455,7 @@ table.insert(PASS.Source, {
 					vec2 device_coord = abs(vec2(0.5, 0.5) - cur_pos.xy);
 					float fade = clamp(1.0 - (device_coord.x + device_coord.y) * 1.8, 0.0, 1.0);
 
-					out_color.rgb = texture(lua[(sampler2D)render.GetFinalGBufferTexture], cur_pos.xy).rgb;
+					out_color.rgb = texture(lua[(sampler2D)render3d.GetFinalGBufferTexture], cur_pos.xy).rgb;
 					//out_color.rgb = get_albedo(cur_pos.xy);
 					break;
 				}
@@ -704,9 +704,9 @@ table.insert(PASS.Source, {
 	]]
 })
 
-render.AddGBufferShader(PASS)
+render3d.AddGBufferShader(PASS)
 
 if RELOAD then
 	RELOAD = nil
-	render.InitializeGBuffer()
+	render3d.Initialize()
 end

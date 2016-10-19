@@ -47,7 +47,7 @@ local shader = render.CreateShader({
 	name = "test",
 	fragment = {
 		variables = {
-			cam_dir = {vec3 = function() return render.camera_3d:GetAngles():GetForward() end},
+			cam_dir = {vec3 = function() return camera.camera_3d:GetAngles():GetForward() end},
 			tex = tex,
 		},
 		mesh_layout = {

@@ -26,7 +26,7 @@ commands.RunString("mount gmod")
 commands.RunString("mount hl2")
 commands.RunString("mount css")
 commands.RunString("mount tf2")
-render.InitializeGBuffer()
+render3d.Initialize()
 
 entities.Panic()
 
@@ -34,7 +34,7 @@ entities.Panic()
 --ent:SetModelPath("models/sprops/trans/wheel_b/t_wheel35.mdl")
 --ent:SetAngles(Deg3(39.990, 0.000, -90.000))
 
---render.camera_3d:SetAngles(Ang3(0,0,0))
+--camera.camera_3d:SetAngles(Ang3(0,0,0))
 
 local data = vfs.Read("data/map.txt")
 data = data:gsub("Vector%(", "Vec3(")

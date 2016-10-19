@@ -1,4 +1,4 @@
-render.csm_count = 4
+render3d.csm_count = 4
 
 local PASS = {}
 
@@ -184,8 +184,8 @@ vec3 get_env_color()
 ]], "get_env_color")
 
 function PASS:Initialize()
-	function render.CreateMesh(vertices, indices, is_valid_table)
-		return render.CreateVertexBuffer(render.gbuffer_data_pass.model_shader, vertices, indices)
+	function render3d.CreateMesh(vertices, indices, is_valid_table)
+		return render.CreateVertexBuffer(render3d.gbuffer_data_pass.model_shader, vertices, indices)
 	end
 
 	local META = self.model_shader:CreateMaterialTemplate("model")
@@ -196,8 +196,8 @@ function PASS:Initialize()
 		else
 			render.SetCullMode("front")
 		end
-		self.SkyTexture = render.GetSkyTexture()
-		self.EnvironmentProbeTexture = render.GetEnvironmentProbeTexture()
+		self.SkyTexture = render3d.GetSkyTexture()
+		self.EnvironmentProbeTexture = render3d.GetEnvironmentProbeTexture()
 		--self.EnvironmentProbePosition = render.GetEnvironmentProbeTexture().probe:GetPosition()
 	end
 
@@ -205,18 +205,18 @@ function PASS:Initialize()
 end
 
 function PASS:BeginPass(name)
-	render.gbuffer:WriteThese(self.buffers_write_these[name])
-	render.gbuffer:Begin()
+	render3d.gbuffer:WriteThese(self.buffers_write_these[name])
+	render3d.gbuffer:Begin()
 end
 
 function PASS:EndPass()
-	render.gbuffer:End()
+	render3d.gbuffer:End()
 end
 
 function PASS:Draw3D(what, dist)
 
 	if (self.last_update_sky or 0) < system.GetElapsedTime() then
-		render.UpdateSky()
+		render3d.UpdateSky()
 		self.last_update_sky = system.GetElapsedTime() + 1/30
 	end
 
@@ -225,7 +225,7 @@ function PASS:Draw3D(what, dist)
 	self:BeginPass("model")
 		render.SetCullMode("front")
 		event.Call("PreGBufferModelPass")
-			render.Draw3DScene(what or "models", dist)
+			render3d.DrawScene(what or "models", dist)
 		event.Call("PostGBufferModelPass")
 	self:EndPass()
 
@@ -497,7 +497,7 @@ PASS.Stages = {
 						vec3 dir = normalize(light_dir) * mat3(g_view);
 						dir.z = -dir.z;
 
-						float shadow_view = texture(lua[tex_shadow_map_cube = render.GetSkyTexture()], dir.xzy).r;
+						float shadow_view = texture(lua[tex_shadow_map_cube = render3d.GetSkyTexture()], dir.xzy).r;
 
 						visibility = shadow_view;
 					}
@@ -507,7 +507,7 @@ PASS.Stages = {
 
 							]] .. (function()
 								local code = ""
-								for i = 1, render.csm_count do
+								for i = 1, render3d.csm_count do
 									local str = [[
 									{
 										vec4 temp = light_projection_view * proj_inv;
@@ -773,7 +773,7 @@ if RELOAD then
 		end
 	end
 
-	render.InitializeGBuffer()
+	render3d.Initialize()
 	return
 end
 

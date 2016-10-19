@@ -1,7 +1,7 @@
 entities.Panic()
 
-render.camera_3d:SetPosition(Vec3(100, 0, 100))
-render.camera_3d:SetAngles(Ang3(1.1, math.pi, 0))
+camera.camera_3d:SetPosition(Vec3(100, 0, 100))
+camera.camera_3d:SetAngles(Ang3(1.1, math.pi, 0))
 
 local ent = entities.CreateEntity("visual")
 ent:SetModelPath("models/cube.obj")

@@ -48,7 +48,7 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 {
 	ray = ray.xzy * vec3(-1, -1, 1);
 
-	vec3 sun_direction = lua[(vec3)render.GetShaderSunDirection].xyz;
+	vec3 sun_direction = lua[(vec3)render3d.GetShaderSunDirection].xyz;
 	float intensity = lua[world_sun_intensity = 1];
 	vec3 sky_color = lua[world_sky_color = Vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131)];
 
@@ -233,7 +233,7 @@ do
 			vec3 hitPos = viewPos;
 			vec2 coords = ray_cast(reflected * max(minRayStep, viewPos.z), hitPos);
 
-			vec3 sky = texture(lua[sky_tex = render.GetSkyTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
+			vec3 sky = texture(lua[sky_tex = render3d.GetSkyTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
 
 			if (coords == vec2(0.0))
 			{
@@ -241,7 +241,7 @@ do
 				return;
 			}
 
-			//vec3 probe = texture(lua[probe_tex = render.GetEnvironmentProbeTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
+			//vec3 probe = texture(lua[probe_tex = render3d.GetEnvironmentProbeTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
 			vec3 diffuse = get_albedo(coords.xy);
 			vec3 light = diffuse * (sky + get_specular(uv));
 
@@ -258,7 +258,6 @@ do
 	for x = -1, 1 do
 		for y = -1, 1 do
 			if x == y or (y == 0 and x == 0) then goto continue end
-			print(x, y)
 
 			local weights = {
 				Vec2(0.53812504, 0.18565957),
@@ -401,10 +400,10 @@ do
 		]]
 	})
 
-	render.AddGBufferShader(PASS)
+	render3d.AddGBufferShader(PASS)
 end
 
 if RELOAD then
 	RELOAD = nil
-	render.InitializeGBuffer()
+	render3d.Initialize()
 end

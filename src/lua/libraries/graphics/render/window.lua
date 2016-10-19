@@ -35,8 +35,8 @@ end
 function render.DrawScene(dt)
 	render.GetScreenFrameBuffer():Begin()
 
-	if render.IsGBufferReady() then
-		render.DrawGBuffer()
+	if render3d.IsGBufferReady() then
+		render3d.DrawGBuffer()
 	end
 
 	if surface.IsReady() then
@@ -48,20 +48,20 @@ function render.DrawScene(dt)
 		render.SetBlendMode("alpha")
 		render.SetShaderOverride()
 
-		if render.IsGBufferReady() then
+		if render3d.IsGBufferReady() then
 			if menu and menu.IsVisible() then
 				surface.PushHSV(1,0,1)
 			end
 
-			surface.SetTexture(render.GetFinalGBufferTexture())
+			surface.SetTexture(render3d.GetFinalGBufferTexture())
 			surface.DrawRect(0, 0, surface.GetSize())
 
 			if menu and menu.IsVisible() then
 				surface.PopHSV()
 			end
 
-			if render.debug then
-				render.DrawGBufferDebugOverlay()
+			if render3d.debug then
+				render3d.DrawGBufferDebugOverlay()
 			end
 		end
 

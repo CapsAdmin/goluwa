@@ -28,4 +28,4 @@ void main()
 }
 ]]
 
-render.AddGBufferShader(PASS)
+render3d.AddGBufferShader(PASS)

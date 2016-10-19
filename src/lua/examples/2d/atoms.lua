@@ -55,8 +55,8 @@ local shader = render.CreateShader({
 })
 
 event.AddListener("PreDrawGUI", "fb", function()
-	render.camera_2d:SetPosition(Vec3(-0.1,0.1,0))
-	render.camera_2d:SetAngles(Ang3(0,math.rad(180 + 0.025),0))
+	camera.camera_2d:SetPosition(Vec3(-0.1,0.1,0))
+	camera.camera_2d:SetAngles(Ang3(0,math.rad(180 + 0.025),0))
 
 	for i = 1, iterations do
 
@@ -71,8 +71,8 @@ event.AddListener("PreDrawGUI", "fb", function()
 			surface.PopMatrix()
 		fb:End()
 
-		render.camera_2d:SetPosition(Vec3(-0.1,0.1,0))
-		render.camera_2d:SetAngles(Ang3(0,math.rad(180 + 0.025),0))
+		camera.camera_2d:SetPosition(Vec3(-0.1,0.1,0))
+		camera.camera_2d:SetAngles(Ang3(0,math.rad(180 + 0.025),0))
 
 		surface.SetColor(1,1,1, 1)
 		surface.SetTexture(fb:GetTexture())

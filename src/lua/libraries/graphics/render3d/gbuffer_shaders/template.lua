@@ -56,9 +56,9 @@ table.insert(PASS.Source, {
 	]]
 })
 
-render.AddGBufferShader(PASS)
+render3d.AddGBufferShader(PASS)
 
 if RELOAD then
 	RELOAD = nil
-	render.InitializeGBuffer()
+	render3d.Initialize()
 end

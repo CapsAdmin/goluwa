@@ -84,10 +84,10 @@ function META:ToWindow()
 			render.SetBlendMode("alpha")
 
 			local x,y = pnl:GetPosition():Unpack()
-			render.camera_2d:TranslateWorld(-x,-y, 0)
+			camera.camera_2d:TranslateWorld(-x,-y, 0)
 			gui.UpdateMousePosition()
 			world:Draw()
-			render.camera_2d:TranslateWorld(x,y, 0)
+			camera.camera_2d:TranslateWorld(x,y, 0)
 
 			self:SetPosition(pnl:GetPosition())
 			self:SetSize(pnl:GetSize())

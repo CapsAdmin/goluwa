@@ -79,7 +79,7 @@ local function parse_scene(id)
 				end
 			end
 
-			if render.IsGBufferReady() then
+			if render3d.IsGBufferReady() then
 				local mesh = gfx.CreatePolygon3D()
 				--mesh:SetIndices(indices)
 				mesh:SetVertices(vertices)

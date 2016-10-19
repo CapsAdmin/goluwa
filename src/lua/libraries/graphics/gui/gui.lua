@@ -202,8 +202,8 @@ do -- events
 
 	function gui.DrawMenu(dt)
 		if gui.threedee then
-			--render.camera_2d:Start3D2DEx(Vec3(1, -5, 10), Deg3(-90, 180, 0), Vec3(8, 8, 10))
-			render.camera_2d:Start3D2DEx(Vec3(0, 0, 0), Ang3(0, 0, 0), Vec3(20, 20, 20))
+			--camera.camera_2d:Start3D2DEx(Vec3(1, -5, 10), Deg3(-90, 180, 0), Vec3(8, 8, 10))
+			camera.camera_2d:Start3D2DEx(Vec3(0, 0, 0), Ang3(0, 0, 0), Vec3(20, 20, 20))
 		end
 
 		gui.UpdateMousePosition()
@@ -247,7 +247,7 @@ do -- events
 		surface.SetWorldMatrix()
 
 		if gui.threedee then
-			render.camera_2d:End3D2D()
+			camera.camera_2d:End3D2D()
 		end
 	end
 end

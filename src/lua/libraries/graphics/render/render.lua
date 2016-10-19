@@ -6,15 +6,10 @@ include("texture_format.lua", render)
 include("texture_decoder.lua", render)
 include("global_shader_code.lua", render)
 include("generated_textures.lua", render)
-include("camera.lua", render)
 include("window.lua", render)
-include("scene.lua", render)
-include("gbuffer.lua", render)
 include("texture_atlas.lua", render)
 include("material.lua", render)
-include("shadow_map.lua", render)
-include("sky.lua", render)
-include("environment_probe.lua", render)
+include("camera.lua", render)
 include("globals.lua", render)
 
 function render.Initialize()
@@ -47,11 +42,11 @@ do
 		if X ~= x or Y ~= y or W ~= w or H ~= h then
 			render._SetViewport(x,y,w,h)
 
-			render.camera_2d.Viewport.x = x
-			render.camera_2d.Viewport.x = y
-			render.camera_2d.Viewport.w = w
-			render.camera_2d.Viewport.h = h
-			render.camera_2d:Rebuild()
+			camera.camera_2d.Viewport.x = x
+			camera.camera_2d.Viewport.x = y
+			camera.camera_2d.Viewport.w = w
+			camera.camera_2d.Viewport.h = h
+			camera.camera_2d:Rebuild()
 			X,Y,W,H = x,y,w,h
 		end
 	end

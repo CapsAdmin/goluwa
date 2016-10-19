@@ -74,13 +74,13 @@ for k,v in ipairs(hud_element_list) do
 end
 
 gine.AddEvent("Update", function()
-	local tbl = gine.env.gamemode.Call("CalcView", gine.env.LocalPlayer(), gine.env.EyePos(), gine.env.EyeAngles(), math.deg(render.camera_3d:GetFOV()), render.camera_3d:GetNearZ(), render.camera_3d:GetFarZ())
+	local tbl = gine.env.gamemode.Call("CalcView", gine.env.LocalPlayer(), gine.env.EyePos(), gine.env.EyeAngles(), math.deg(camera.camera_3d:GetFOV()), camera.camera_3d:GetNearZ(), camera.camera_3d:GetFarZ())
 	if tbl then
-		if tbl.origin then render.camera_3d:SetPosition(tbl.origin.v) end
-		if tbl.angles then render.camera_3d:SetAngles(tbl.angles.v) end
-		if tbl.fov then render.camera_3d:SetFOV(tbl.fov) end
-		if tbl.znear then render.camera_3d:SetNearZ(tbl.znear) end
-		if tbl.zfar then render.camera_3d:SetFarZ(tbl.zfar) end
+		if tbl.origin then camera.camera_3d:SetPosition(tbl.origin.v) end
+		if tbl.angles then camera.camera_3d:SetAngles(tbl.angles.v) end
+		if tbl.fov then camera.camera_3d:SetFOV(tbl.fov) end
+		if tbl.znear then camera.camera_3d:SetNearZ(tbl.znear) end
+		if tbl.zfar then camera.camera_3d:SetFarZ(tbl.zfar) end
 		--if tbl.drawviewer then  end
 	end
 
@@ -97,7 +97,7 @@ gine.AddEvent("PreGBufferModelPass", function()
 	gine.env.gamemode.Call("PreRender")
 end)
 gine.AddEvent("DrawScene", function()
-	gine.env.gamemode.Call("RenderScene", gine.env.EyePos(), gine.env.EyeAngles(), math.deg(render.camera_3d:GetFOV()))
+	gine.env.gamemode.Call("RenderScene", gine.env.EyePos(), gine.env.EyeAngles(), math.deg(camera.camera_3d:GetFOV()))
 	gine.env.gamemode.Call("DrawMonitors")
 	gine.env.gamemode.Call("PreDrawSkyBox")
 	gine.env.gamemode.Call("SetupSkyboxFog")

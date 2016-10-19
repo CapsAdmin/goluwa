@@ -1,27 +1,27 @@
-local render = (...) or _G.render
+local render3d = (...) or _G.render3d
 
-render.scene_3d = render.scene_3d or {}
+render3d.scene = render3d.scene or {}
 local scene_keyval = utility.CreateWeakTable()
 
 local needs_sorting = true
 
-function render.Add3DModel(obj)
+function render3d.AddModel(obj)
 	if not scene_keyval[obj] then
-		table.insert(render.scene_3d, obj)
+		table.insert(render3d.scene, obj)
 		needs_sorting = true
 		scene_keyval[obj] = obj
 	end
 end
 
-function render.Remove3DModel(obj)
+function render3d.RemoveModel(obj)
 	if scene_keyval[obj] then
-		table.removevalue(render.scene_3d, obj)
+		table.removevalue(render3d.scene, obj)
 		needs_sorting = true
 	end
 end
 
-function render.Sort3DScene()
-	table.sort(render.scene_3d, function(a, b)
+function render3d.SortScene()
+	table.sort(render3d.scene, function(a, b)
 		local sub_models_a = a.sub_models
 		local sub_models_b = b.sub_models
 
@@ -32,11 +32,11 @@ function render.Sort3DScene()
 	end)
 end
 
-function render.Draw3DScene(what, dist)
+function render3d.DrawScene(what, dist)
 	event.Call("DrawScene")
 
 	if needs_sorting then
-		render.Sort3DScene()
+		render3d.SortScene()
 		needs_sorting = false
 	end
 
@@ -44,7 +44,7 @@ function render.Draw3DScene(what, dist)
 		render.update_globals()
 	end
 
-	for _, model in ipairs(render.scene_3d) do
+	for _, model in ipairs(render3d.scene) do
 		model:Draw(what, dist)
 	end
 end

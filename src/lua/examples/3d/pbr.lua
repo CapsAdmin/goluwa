@@ -2,9 +2,9 @@ entities.Panic()
 
 local z = -300
 
-render.camera_3d:SetPosition(Vec3(0, 0, z + 50))
-render.camera_3d:SetFOV(0.15)
-render.camera_3d:SetAngles(Ang3(math.pi/2, 0, 0))
+camera.camera_3d:SetPosition(Vec3(0, 0, z + 50))
+camera.camera_3d:SetFOV(0.15)
+camera.camera_3d:SetAngles(Ang3(math.pi/2, 0, 0))
 
 local group = entities.CreateEntity("group", entities.GetWorld())
 group:SetName("pbr test")

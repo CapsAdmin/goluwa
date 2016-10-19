@@ -1,6 +1,6 @@
 local fb = render.CreateFrameBuffer(Vec2(2048, 2048))
 
-local portal_a_cam = render.CreateCamera()
+local portal_a_cam = camera.CreateCamera()
 
 local pos_a = Vec3(-37, -26, 0)
 local ang_a = Ang3(math.pi/2, math.pi/2, 0)
@@ -8,22 +8,22 @@ local ang_a = Ang3(math.pi/2, math.pi/2, 0)
 portal_a_cam:SetPosition(pos_a)
 portal_a_cam:SetAngles(ang_a + Deg3(-90,0,0))
 
-render.gbuffer_discard = render.CreateFrameBuffer(
+render3d.gbuffer_discard = render.CreateFrameBuffer(
 	size,
 	{
 		internal_format = "r8",
 	}
 )
 
-render.SetGlobalShaderVariable("tex_discard", function() return render.gbuffer_discard:GetTexture() end, "texture")
+render.SetGlobalShaderVariable("tex_discard", function() return render3d.gbuffer_discard:GetTexture() end, "texture")
 
 local function fill_discard(invert)
-	render.gbuffer_discard:Begin()
+	render3d.gbuffer_discard:Begin()
 
 		if invert then
-			render.gbuffer_discard:ClearColor(1,1,1,1)
+			render3d.gbuffer_discard:ClearColor(1,1,1,1)
 		else
-			render.gbuffer_discard:ClearColor(0,0,0,0)
+			render3d.gbuffer_discard:ClearColor(0,0,0,0)
 		end
 
 		surface.Start3D2D(pos_a, ang_a)
@@ -40,7 +40,7 @@ local function fill_discard(invert)
 			surface.DrawRect(0, 0, w, h, math.pi, w/2, h/2)
 
 		surface.End3D2D()
-	render.gbuffer_discard:End()
+	render3d.gbuffer_discard:End()
 end
 
 event.AddListener("PreGBufferModelPass", "portal", function()
@@ -50,7 +50,7 @@ end)
 event.AddListener("PostGBufferModelPass", "portal", function()
 	fill_discard(true)
 
-	render.camera_3d:SetView(portal_a_cam:GetMatrices().view)
-		render.Draw3DScene("portal")
-	render.camera_3d:SetView()
+	camera.camera_3d:SetView(portal_a_cam:GetMatrices().view)
+		render3d.DrawScene("portal")
+	camera.camera_3d:SetView()
 end)

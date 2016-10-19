@@ -78,37 +78,37 @@ function surface.IsReady()
 end
 
 function surface.GetSize()
-	return render.camera_2d.Viewport.w, render.camera_2d.Viewport.h
+	return camera.camera_2d.Viewport.w, camera.camera_2d.Viewport.h
 end
 
 do -- render world matrix helpers
 	local ceil =math.ceil
 	function surface.Translate(x, y, z)
-		render.camera_2d:TranslateWorld(ceil(x), ceil(y), z or 0)
+		camera.camera_2d:TranslateWorld(ceil(x), ceil(y), z or 0)
 	end
 
 	function surface.Translatef(x, y, z)
-		render.camera_2d:TranslateWorld(x, y, z or 0)
+		camera.camera_2d:TranslateWorld(x, y, z or 0)
 	end
 
 	function surface.Rotate(a)
-		render.camera_2d:RotateWorld(a, 0, 0, 1)
+		camera.camera_2d:RotateWorld(a, 0, 0, 1)
 	end
 
 	function surface.Scale(w, h, z)
-		render.camera_2d:ScaleWorld(w, h or w, z or 1)
+		camera.camera_2d:ScaleWorld(w, h or w, z or 1)
 	end
 
 	function surface.Shear(x, y)
-		render.camera_2d:ShearWorld(x, y, 0)
+		camera.camera_2d:ShearWorld(x, y, 0)
 	end
 
 	function surface.LoadIdentity()
-		render.camera_2d:LoadIdentityWorld()
+		camera.camera_2d:LoadIdentityWorld()
 	end
 
 	function surface.PushMatrix(x,y, w,h, a, dont_multiply)
-		render.camera_2d:PushWorld(nil, dont_multiply)
+		camera.camera_2d:PushWorld(nil, dont_multiply)
 
 		if x and y then surface.Translate(x, y) end
 		if w and h then surface.Scale(w, h) end
@@ -116,27 +116,27 @@ do -- render world matrix helpers
 	end
 
 	function surface.PopMatrix()
-		render.camera_2d:PopWorld()
+		camera.camera_2d:PopWorld()
 	end
 
 	function surface.SetWorldMatrix(mat)
-		render.camera_2d:SetWorld(mat)
+		camera.camera_2d:SetWorld(mat)
 	end
 
 	function surface.GetWorldMatrix()
-		return render.camera_2d:GetWorld()
+		return camera.camera_2d:GetWorld()
 	end
 
 	function surface.ScreenToWorld(x, y)
-		return render.camera_2d:ScreenToWorld(x, y)
+		return camera.camera_2d:ScreenToWorld(x, y)
 	end
 
 	function surface.Start3D2D(pos, ang, scale)
-		render.camera_2d:Start3D2DEx(pos, ang, scale)
+		camera.camera_2d:Start3D2DEx(pos, ang, scale)
 	end
 
 	function surface.End3D2D()
-		render.camera_2d:End3D2D()
+		camera.camera_2d:End3D2D()
 	end
 end
 

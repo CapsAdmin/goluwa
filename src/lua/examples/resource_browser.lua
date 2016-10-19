@@ -34,22 +34,22 @@ ent:SetVisible(false)
 local light = entities.CreateEntity("light", entities.GetWorld())
 light:SetSize(100)
 local function draw_scene(mat, pos, rot, fov, w,h)
-	local old_view = render.camera_3d:GetView()
-	local old_projection = render.camera_3d:GetProjection()
-	local old_viewport = render.camera_3d:GetViewport()
+	local old_view = camera.camera_3d:GetView()
+	local old_projection = camera.camera_3d:GetProjection()
+	local old_viewport = camera.camera_3d:GetViewport()
 
 
 
 	local projection = Matrix44()
-	projection:Perspective(fov, render.camera_3d.FarZ, render.camera_3d.NearZ, w / h)
+	projection:Perspective(fov, camera.camera_3d.FarZ, camera.camera_3d.NearZ, w / h)
 
 	local view = Matrix44()
 	view:SetRotation(rot)
 	view:Translate(pos.y, pos.x, pos.z)
-	render.camera_3d:SetProjection(projection)
-	render.camera_3d:SetView(view)
+	camera.camera_3d:SetProjection(projection)
+	camera.camera_3d:SetView(view)
 
-	render.camera_3d:SetViewport(Rect(0,0,w,h))
+	camera.camera_3d:SetViewport(Rect(0,0,w,h))
 
 local lol = render.active_framebuffer
 	ent:SetMaterialOverride(mat)
@@ -59,9 +59,9 @@ local lol = render.active_framebuffer
 
 print(render.active_framebuffer == lol)
 
-	render.camera_3d:SetViewport(old_viewport)
-	render.camera_3d:SetView(old_view)
-	render.camera_3d:SetProjection(old_projection)
+	camera.camera_3d:SetViewport(old_viewport)
+	camera.camera_3d:SetView(old_view)
+	camera.camera_3d:SetProjection(old_projection)
 end
 
 

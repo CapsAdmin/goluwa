@@ -1,7 +1,7 @@
 entities.Panic()
 
-render.camera_3d:SetPosition(Vec3(3.8325955867767, 0.8530580997467, 0.19071032106876))
-render.camera_3d:SetAngles(Ang3(-0.048060033470392, -2.5193500518799, 0))
+camera.camera_3d:SetPosition(Vec3(3.8325955867767, 0.8530580997467, 0.19071032106876))
+camera.camera_3d:SetAngles(Ang3(-0.048060033470392, -2.5193500518799, 0))
 
 local ent = entities.CreateEntity("group", entities.GetWorld())
 ent:SetName("cerberus test")

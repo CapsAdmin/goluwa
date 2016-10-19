@@ -78,7 +78,7 @@ do -- PUT ME IN TRANSFORM
 					final = get_target_position(pos + localpos:GetDot(up)*up - up*mctrl.size, ang)
 				end
 			elseif axis == "view" then
-				local localpos = math3d.LinePlaneIntersection(pos, render.camera_3d:GetAngles():GetForward(), mouse_pos)
+				local localpos = math3d.LinePlaneIntersection(pos, camera.camera_3d:GetAngles():GetForward(), mouse_pos)
 
 				if localpos then
 					final = get_target_position(pos + localpos, ang)
@@ -282,8 +282,8 @@ editor.properties = editor.properties or NULL
 editor.selected_ent = editor.selected_ent or NULL
 
 function editor.Open()
-	if not render.gbuffer:IsValid() then
-		render.InitializeGBuffer()
+	if not render3d.gbuffer:IsValid() then
+		render3d.Initialize()
 		local data = serializer.ReadFile("luadata", "world.map")
 		if data then
 			entities.GetWorld():SetStorableTable(data)
@@ -338,7 +338,7 @@ function editor.Open()
 
 			if node.ent:HasComponent("transform") then
 				add(L"goto", function()
-					render.camera_3d:SetPosition(node.ent:GetPosition())
+					camera.camera_3d:SetPosition(node.ent:GetPosition())
 				end, "textures/silkicons/brick_go.png")
 			end
 			add()
@@ -366,7 +366,7 @@ function editor.Open()
 				table.insert(tbl, {L(info.name), function()
 					local ent = entities.CreateEntity(config_name, node and node.ent)
 					if ent.SetPosition then
-						ent:SetPosition(render.camera_3d:GetPosition())
+						ent:SetPosition(camera.camera_3d:GetPosition())
 					end
 					if ent.SetModelPath then
 						ent:SetModelPath(ent:GetModelPath())

@@ -193,3 +193,9 @@ function render._SetDepth(b)
 		gl.DepthFunc("GL_ALWAYS")
 	end
 end
+
+if system.IsOpenGLExtensionSupported("GL_ARB_texture_barrier") then
+	function render.TextureBarrier()
+		gl.TextureBarrier()
+	end
+end

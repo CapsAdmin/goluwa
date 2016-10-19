@@ -17,7 +17,7 @@ do -- AUTOMATE THIS
 
 		gfx.SetFont()
 
-		for _, pass in pairs(render.gbuffer_data_pass.Buffers) do
+		for _, pass in pairs(render3d.gbuffer_data_pass.Buffers) do
 			local pass_name = pass.name
 
 			for _, buffer in pairs(pass.layout) do
@@ -43,7 +43,7 @@ do -- AUTOMATE THIS
 						surface.DrawRect(x, y, w, h)
 
 						surface.SetColor(1,1,1,1)
-						surface.SetTexture(render.gbuffer:GetTexture("data"..buffer_i))
+						surface.SetTexture(render3d.gbuffer:GetTexture("data"..buffer_i))
 						surface.DrawRect(x, y, w, h)
 
 						surface.mesh_2d_shader.color_override.r = 0

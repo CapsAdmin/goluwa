@@ -11,7 +11,7 @@ commands.Add("scene_info", function()
 	end
 
 	logf("%s sub models\n", count)
-	logf("%s predicted model draw calls\n", count * render.csm_count)
+	logf("%s predicted model draw calls\n", count * render3d.csm_count)
 
 	local mat_count = {}
 	local tex_count = {}
@@ -56,7 +56,7 @@ commands.Add("dump_gbuffer", function(_, format, depth_format)
 	]]
 
 	event.AddListener("GBufferPrePostProcess", function()
-		for k,v in pairs(render.gbuffer.textures) do
+		for k,v in pairs(render3d.gbuffer.textures) do
 			local ok, err = pcall(function()
 				local format = format
 				if k == "depth" then format = depth_format end
@@ -80,8 +80,8 @@ end)
 
 do -- source engine
 	commands.Add("getpos", function()
-		local pos = render.camera_3d:GetPosition() * (1/0.0254)
-		local ang = render.camera_3d:GetAngles():GetDeg()
+		local pos = camera.camera_3d:GetPosition() * (1/0.0254)
+		local ang = camera.camera_3d:GetAngles():GetDeg()
 
 		logf("setpos %f %f %f;setang %f %f %f", pos.x, pos.y, pos.z, ang.x, ang.y, ang.z)
 	end)
@@ -91,13 +91,13 @@ do -- source engine
 		x = tonumber(x)
 		y = tonumber(y)
 		z = tonumber(z)
-		render.camera_3d:SetPosition(Vec3(x,y,z) * 0.0254)
+		camera.camera_3d:SetPosition(Vec3(x,y,z) * 0.0254)
 
 		local p,y,r = unpack(line:match("setang (.+)"):split(" "))
 		p = tonumber(p)
 		y = tonumber(y)
 		r = tonumber(r)
-		render.camera_3d:SetAngles(Deg3(p,y,r))
+		camera.camera_3d:SetAngles(Deg3(p,y,r))
 	end)
 end
 
@@ -241,7 +241,7 @@ do
 	commands.Add("lua_open", function(line)
 		include(line)
 	end)
-	
+
 	if SERVER then
 		commands.AddServerCommand("lua_run_sv", function(client, line)
 			logn(client:GetNick(), " ran ", line)

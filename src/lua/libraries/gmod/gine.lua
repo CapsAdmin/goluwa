@@ -68,7 +68,7 @@ end
 
 function gine.Initialize()
 	if not gine.init then
-		render.InitializeGBuffer()
+		render3d.Initialize()
 
 		--steam.MountSourceGame("hl2")
 		--steam.MountSourceGame("css")

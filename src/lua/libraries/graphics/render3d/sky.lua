@@ -1,4 +1,4 @@
-local render = ... or _G.render
+local render3d = ... or _G.render3d
 
 local directions = {
 	Matrix44():SetRotation(QuatDeg3(0,-90,-90)), -- back
@@ -16,7 +16,7 @@ local tex
 local shader
 local sky_projection
 
-function render.InitializeSky()
+function render3d.InitializeSky()
 	tex = render.CreateTexture("cube_map")
 	tex:SetInternalFormat("r11f_g11f_b10f")
 
@@ -47,41 +47,41 @@ function render.InitializeSky()
 	fb:CheckCompletness()
 	fb:WriteThese(1)
 
-	sky_projection = Matrix44():Perspective(math.rad(90), render.camera_3d.FarZ, render.camera_3d.NearZ, tex:GetSize().x / tex:GetSize().y)
+	sky_projection = Matrix44():Perspective(math.rad(90), camera.camera_3d.FarZ, camera.camera_3d.NearZ, tex:GetSize().x / tex:GetSize().y)
 end
 
-function render.UpdateSky()
+function render3d.UpdateSky()
 	render.SetDepth(false)
 	render.SetBlendMode()
 
 	render.SetShaderOverride(shader)
-	local old_view = render.camera_3d:GetView()
-	local old_projection = render.camera_3d:GetProjection()
+	local old_view = camera.camera_3d:GetView()
+	local old_projection = camera.camera_3d:GetProjection()
 
 	fb:Begin()
 		for i, view in ipairs(directions) do
 			--fb:SetTexture(1, tex, nil, nil, i)
 			fb:SetTextureLayer(1, tex, i)
 			--fb:Clear()
-			render.camera_3d:SetView(view)
-			render.camera_3d:SetProjection(sky_projection)
+			camera.camera_3d:SetView(view)
+			camera.camera_3d:SetProjection(sky_projection)
 
 			surface.DrawRect(0,0,surface.GetSize())
 		end
 	fb:End()
 
-	render.camera_3d:SetView(old_view)
-	render.camera_3d:SetProjection(old_projection)
+	camera.camera_3d:SetView(old_view)
+	camera.camera_3d:SetProjection(old_projection)
 
 	tex:GenerateMipMap()
 	render.SetShaderOverride()
 end
 
-function render.GetSkyTexture()
+function render3d.GetSkyTexture()
 	return tex
 end
 
-function render.GetShaderSunDirection()
+function render3d.GetShaderSunDirection()
 	local sun = entities.world and entities.world.sun
 
 	if sun and sun:IsValid() then
@@ -98,5 +98,5 @@ end
 
 if RELOAD then
 	RELOAD = nil
-	render.InitializeGBuffer()
+	render3d.Initialize()
 end

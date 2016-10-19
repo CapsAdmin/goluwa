@@ -4,7 +4,7 @@ local active_probes = {}
 local list = {}
 
 event.AddListener("Update", "probe", function()
-	local x,y,z = render.camera_3d:GetPosition():Unpack()
+	local x,y,z = camera.camera_3d:GetPosition():Unpack()
 	x = math.round(x / size) * size
 	y = math.round(y / size) * size
 	z = math.round(z / size) * size
@@ -23,7 +23,7 @@ event.AddListener("Update", "probe", function()
 			active_probes[data.key[1]][data.key[2]][data.key[3]] = nil
 			probe = data.probe
 		else
-			probe = render.CreateEnvironmentProbe()
+			probe = render3d.CreateEnvironmentProbe()
 		end
 
 		probe:SetPosition(Vec3(x,y,z))
@@ -35,6 +35,6 @@ event.AddListener("Update", "probe", function()
 	end
 
 	data.probe.tex.probe = data.probe
-	render.environment_probe_texture = data.probe.tex
+	render3d.environment_probe_texture = data.probe.tex
 end)
 --_G.active_probes = active_probes

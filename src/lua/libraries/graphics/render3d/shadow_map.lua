@@ -1,4 +1,4 @@
-local render = ... or _G.render
+local render3d = ... or _G.render3d
 
 local SHADER = {
 	name = "shadow_map",
@@ -108,7 +108,7 @@ function META:Begin()
 	render.SetForcedCullMode("none")
 	render.PushDepth(true)
 	render.SetBlendMode()
-	render.SetShaderOverride(render.shadow_map_shader)
+	render.SetShaderOverride(render3d.shadow_map_shader)
 	self.fb:Begin()
 end
 
@@ -138,11 +138,11 @@ end
 
 META:Register()
 
-function render.CreateShadowMap(cubemap)
+function render3d.CreateShadowMap(cubemap)
 	local self = META:CreateObject()
 
-	if not render.shadow_map_shader then
-		render.shadow_map_shader = render.CreateShader(SHADER)
+	if not render3d.shadow_map_shader then
+		render3d.shadow_map_shader = render.CreateShader(SHADER)
 	end
 
 	self.cubemap = cubemap
@@ -153,5 +153,5 @@ function render.CreateShadowMap(cubemap)
 end
 
 if RELOAD then
-	render.shadow_map_shader = render.CreateShader(SHADER)
+	render3d.shadow_map_shader = render.CreateShader(SHADER)
 end

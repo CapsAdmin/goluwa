@@ -150,7 +150,7 @@ event.AddListener("Chat", "chathud", function(name, str, client)
 end)
 
 function chathud.Show()
-	if render.IsGBufferReady() then
+	if render3d.IsGBufferReady() then
 		event.AddListener("PreDrawGUI", "chathud", function()
 			chathud.Draw()
 		end)

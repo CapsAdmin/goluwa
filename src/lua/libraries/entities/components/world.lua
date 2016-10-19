@@ -80,7 +80,7 @@ META:StartStorable()
 		ADD("sun_ortho_bias", 0.1, function(self, var) self.sun:SetOrthoBias(var) end)
 	end
 
-	for _, info in pairs(render.GetGBufferValues()) do
+	for _, info in pairs(render3d.GetGBufferValues()) do
 		if info.k:startswith("world_") then
 			ADD(info.k:sub(7), info.v)
 		end

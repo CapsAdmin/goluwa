@@ -20,13 +20,6 @@ function render.GenerateTextures()
 	render.hemisphere_normals_texture = utility.CreateHemisphereNormalsTexture(8)
 	render.InitializeNoiseTexture(render.GetScreenSize())
 
-	if not render.environment_probe_texture then
-		local tex = render.CreateTexture("cube_map")
-		tex:SetMipMapLevels(1)
-
-		render.environment_probe_texture = tex
-	end
-
 	do
 		render.error_texture = render.CreateBlankTexture(Vec2() + 256)
 
@@ -110,10 +103,6 @@ end
 
 function render.GetNoiseTexture()
 	return render.noise_texture
-end
-
-function render.GetEnvironmentProbeTexture()
-	return render.environment_probe_texture
 end
 
 function render.GetHemisphereNormalsTexture()

@@ -170,7 +170,7 @@ local mesh = render.CreateVertexBuffer(shader, {
 	{pos = {0, 0, 0}, uv = {0, 1}},
 })
 event.AddListener("PreDrawGUI", "lol", function()
-	shader.pwm_matrix = render.camera_2d:GetMatrices().projection_view_world
+	shader.pwm_matrix = camera.camera_2d:GetMatrices().projection_view_world
 
 	local w, h = surface.GetSize()
 	surface.PushMatrix(0, 0, w, h)

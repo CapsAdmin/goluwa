@@ -32,7 +32,7 @@ end
 function META:Upload(skip_unref)
 	if #self.Vertices == 0 then return end
 
-	self.mesh = assert(render.CreateMesh(self.Vertices, self.Indices))
+	self.mesh = assert(render3d.CreateMesh(self.Vertices, self.Indices))
 	self.mesh:SetDrawHint("static")
 
 	-- don't store the geometry on the lua side

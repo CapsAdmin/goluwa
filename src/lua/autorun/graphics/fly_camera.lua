@@ -93,20 +93,20 @@ event.AddListener("Update", "fly_camera_3d", function(dt)
 	if not window.GetMouseTrapped() then return end
 	if not window.HasFocus() then return end
 
-	local cam_pos = render.camera_3d:GetPosition()
-	local cam_ang = render.camera_3d:GetAngles()
-	local cam_fov = render.camera_3d:GetFOV()
+	local cam_pos = camera.camera_3d:GetPosition()
+	local cam_ang = camera.camera_3d:GetAngles()
+	local cam_fov = camera.camera_3d:GetFOV()
 
 	local dir, ang, fov = CalcMovement(dt, cam_ang, cam_fov)
 
 	cam_pos = cam_pos + dir
 
-	render.camera_3d:SetPosition(cam_pos)
-	render.camera_3d:SetAngles(ang)
-	render.camera_3d:SetFOV(fov)
+	camera.camera_3d:SetPosition(cam_pos)
+	camera.camera_3d:SetAngles(ang)
+	camera.camera_3d:SetFOV(fov)
 end)
 
-input.Bind("o", "cam_ortho", function() render.camera_3d:SetOrtho(not render.camera_3d:GetOrtho()) end)
+input.Bind("o", "cam_ortho", function() camera.camera_3d:SetOrtho(not camera.camera_3d:GetOrtho()) end)
 
 local roll = 0
 local pos = Vec2(0, 0)
@@ -162,7 +162,7 @@ event.AddListener("Update", "fly_camera_2d", function(dt)
 
 	local pos = pos:GetRotated(-roll)
 
-	render.camera_2d:SetPosition(Vec3(pos.x, pos.y, 0))
-	render.camera_2d:SetAngles(Ang3(0, roll))
-	render.camera_2d:SetZoom(1/zoom)
+	camera.camera_2d:SetPosition(Vec3(pos.x, pos.y, 0))
+	camera.camera_2d:SetAngles(Ang3(0, roll))
+	camera.camera_2d:SetZoom(1/zoom)
 end)

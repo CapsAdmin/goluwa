@@ -731,7 +731,7 @@ function steam.SpawnMapEntities(path, parent)
 						ent:SetSize(ent:GetSize() + info._zero_percent_distance*0.02)
 					end
 
-					if ent:GetPosition():Distance(render.camera_3d:GetPosition()) < 1 then table.print(info) end
+					if ent:GetPosition():Distance(camera.camera_3d:GetPosition()) < 1 then table.print(info) end
 					ent.spawned_from_bsp = true
 				elseif info.classname == "env_fog_controller" then
 					--parent.world_params:SetFogColor(Color(info.fogcolor.r, info.fogcolor.g, info.fogcolor.b, info.fogcolor.a * (info.fogmaxdensity or 1)/4))

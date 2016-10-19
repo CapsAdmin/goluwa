@@ -5,7 +5,7 @@ local parent = entities.CreateEntity("visual")
 LOL_PARENT = parent
 
 parent:SetModelPath("models/cube.obj")
-parent:SetPosition(render.camera_3d:GetPosition())
+parent:SetPosition(camera.camera_3d:GetPosition())
 parent:SetAngles(Ang3(0,0,0))
 parent:SetScale(Vec3(1,1,1))
 

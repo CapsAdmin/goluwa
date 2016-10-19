@@ -1,4 +1,4 @@
-local render = ... or _G.render
+local render3d = ... or _G.render3d
 
 local META = prototype.CreateTemplate("environment_probe")
 
@@ -35,11 +35,11 @@ local directions = {
 }
 
 function META:Capture()
-	local old_view = render.camera_3d:GetView()
-	local old_projection = render.camera_3d:GetProjection()
+	local old_view = camera.camera_3d:GetView()
+	local old_projection = camera.camera_3d:GetProjection()
 
 	local projection = Matrix44()
-	projection:Perspective(self.FOV, render.camera_3d.FarZ, render.camera_3d.NearZ, self.tex:GetSize().x / self.tex:GetSize().y)
+	projection:Perspective(self.FOV, camera.camera_3d.FarZ, camera.camera_3d.NearZ, self.tex:GetSize().x / self.tex:GetSize().y)
 
 	self.fb:Begin()
 		for i, rot in ipairs(directions) do
@@ -49,15 +49,15 @@ function META:Capture()
 			local view = Matrix44()
 			view:SetRotation(rot)
 			view:Translate(self.Position.y ,self.Position.x,self.Position.z)
-			render.camera_3d:SetProjection(projection)
-			render.camera_3d:SetView(view)
+			camera.camera_3d:SetProjection(projection)
+			camera.camera_3d:SetView(view)
 
 			render.DrawGBuffer("no_cull_only")
 		end
 	self.fb:End()
 
-	render.camera_3d:SetView(old_view)
-	render.camera_3d:SetProjection(old_projection)
+	camera.camera_3d:SetView(old_view)
+	camera.camera_3d:SetProjection(old_projection)
 end
 
 function META:SetPreview(b)
@@ -87,7 +87,7 @@ end
 
 META:Register()
 
-function render.CreateEnvironmentProbe()
+function render3d.CreateEnvironmentProbe()
 	local self = META:CreateObject()
 	self:CreateTexture()
 	return self

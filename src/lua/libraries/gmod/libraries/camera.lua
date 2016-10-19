@@ -44,13 +44,13 @@ function cam.End2D()
 end
 
 function gine.env.EyeVector()
-	return gine.env.Vector(render.camera_3d:GetAngles():GetForward())
+	return gine.env.Vector(camera.camera_3d:GetAngles():GetForward())
 end
 
 function gine.env.EyePos()
-	return gine.env.Vector(render.camera_3d:GetPosition())
+	return gine.env.Vector(camera.camera_3d:GetPosition())
 end
 
 function gine.env.EyeAngles()
-	return gine.env.Angle(render.camera_3d:GetAngles())
+	return gine.env.Angle(camera.camera_3d:GetAngles())
 end

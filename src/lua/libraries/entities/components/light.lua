@@ -33,8 +33,8 @@ if GRAPHICS then
 	function META:SetShadow(b)
 		self.Shadow = b
 		if b then
-			for i = 1, render.csm_count do
-				local shadow_map = render.CreateShadowMap(self.ShadowCubemap)
+			for i = 1, render3d.csm_count do
+				local shadow_map = render3d.CreateShadowMap(self.ShadowCubemap)
 				shadow_map:SetShadowSize(self.ShadowSize)
 				self.shadow_maps[i] = shadow_map
 			end
@@ -54,7 +54,7 @@ if GRAPHICS then
 	end
 
 	function META:OnDraw3DLights()
-		if not self.light_mesh or not render.gbuffer_data_pass.light_shader then return end -- grr
+		if not self.light_mesh or not render3d.gbuffer_data_pass.light_shader then return end -- grr
 
 		-- automate this!!
 
@@ -62,7 +62,7 @@ if GRAPHICS then
 			self:DrawShadowMap()
 		end
 
-		local shader = render.gbuffer_data_pass.light_shader
+		local shader = render3d.gbuffer_data_pass.light_shader
 
 		shader.light_color = self.Color
 		shader.light_intensity = self.Intensity
@@ -72,7 +72,7 @@ if GRAPHICS then
 
 		local transform = self:GetComponent("transform")
 
-		render.camera_3d:SetWorld(transform:GetMatrix())
+		camera.camera_3d:SetWorld(transform:GetMatrix())
 		shader.light_radius = transform:GetSize()
 
 		render.SetShaderOverride(shader)
@@ -87,20 +87,20 @@ if GRAPHICS then
 			view:SetRotation(rot)
 
 			if self.ProjectFromCamera then
-				pos = render.camera_3d:GetPosition()
+				pos = camera.camera_3d:GetPosition()
 				local hmm = 0.25
 				view:Translate(math.ceil(pos.y*hmm)/hmm, math.ceil(pos.x*hmm)/hmm, math.ceil(pos.z*hmm)/hmm)
 			else
 				view:Translate(pos.y, pos.x, pos.z)
 			end
 
-			render.camera_3d:SetView(view)
+			camera.camera_3d:SetView(view)
 		end
 
 		-- render the scene with this matrix
-		render.camera_3d:SetProjection(projection)
-		render.gbuffer_data_pass.light_shader["light_projection_view_" .. i] = render.camera_3d:GetMatrices().projection_view
-		render.Draw3DScene(self, self.Ortho and self:GetComponent("transform"):GetSize())
+		camera.camera_3d:SetProjection(projection)
+		render3d.gbuffer_data_pass.light_shader["light_projection_view_" .. i] = camera.camera_3d:GetMatrices().projection_view
+		render3d.DrawScene(self, self.Ortho and self:GetComponent("transform"):GetSize())
 	end
 
 	function META:DrawShadowMap()
@@ -108,11 +108,11 @@ if GRAPHICS then
 		local pos = transform:GetPosition()
 		local rot = transform:GetRotation()
 
---		render.camera_3d:Rebuild()
+--		camera.camera_3d:Rebuild()
 
-		local old_view = render.camera_3d:GetView()
-		local old_projection = render.camera_3d:GetProjection()
-		local old_pos = render.camera_3d:GetPosition()
+		local old_view = camera.camera_3d:GetView()
+		local old_projection = camera.camera_3d:GetProjection()
+		local old_pos = camera.camera_3d:GetPosition()
 
 		for i, shadow_map in ipairs(self.shadow_maps) do
 			shadow_map:Begin()
@@ -142,22 +142,22 @@ if GRAPHICS then
 			shadow_map:End()
 
 			if self.ShadowCubemap then
-				render.gbuffer_data_pass.light_shader["tex_shadow_map_cube"] = shadow_map:GetTexture()
+				render3d.gbuffer_data_pass.light_shader["tex_shadow_map_cube"] = shadow_map:GetTexture()
 			else
-				render.gbuffer_data_pass.light_shader["tex_shadow_map_" .. i] = shadow_map:GetTexture()
+				render3d.gbuffer_data_pass.light_shader["tex_shadow_map_" .. i] = shadow_map:GetTexture()
 			end
 
 			if self.Ortho then break end
 		end
 
-		render.camera_3d:SetView(old_view)
-		render.camera_3d:SetProjection(old_projection)
-		render.camera_3d:SetPosition(old_pos)
+		camera.camera_3d:SetView(old_view)
+		camera.camera_3d:SetProjection(old_projection)
+		camera.camera_3d:SetPosition(old_pos)
 	end
 end
 
 META:RegisterComponent()
 
 if RELOAD then
-	render.InitializeGBuffer()
+	render3d.Initialize()
 end
