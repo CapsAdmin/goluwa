@@ -93,6 +93,12 @@ do -- attributes
 		end
 	end
 
+	function META:ClearAttributes()
+		self.mesh_layout = {
+			attributes = {}
+		}
+	end
+
 	function META:SetupAttributes()
 		local ctypes = {}
 
