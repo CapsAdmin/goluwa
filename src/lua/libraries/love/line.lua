@@ -4,6 +4,8 @@ line.version = "0.9.0"
 line.speed = 1
 line.love_envs = line.love_envs or utility.CreateWeakTable()
 
+pvars.Setup("line_enable_audio", true)
+
 do
 	local function base_typeOf(self, str)
 		return str == self.name

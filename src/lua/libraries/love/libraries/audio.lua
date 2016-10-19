@@ -1,3 +1,4 @@
+
 if not SOUND then return end
 
 local love = ... or _G.love
@@ -197,7 +198,9 @@ do -- Source
 
 	function Source:play()
 		if self.source then
-			self.source:Play()
+			if pvars.Get("line_enable_audio") then
+				self.source:Play()
+			end
 			self.playing = true
 		end
 	end
