@@ -206,11 +206,11 @@ do -- physcs models
 				if steam.LoadMap and path:endswith(".bsp") then
 
 					-- :(
-					if GRAPHICS and render.model_loader_cb and render.model_loader_cb:get(path) and render.model_loader_cb:get(path).callback then
+					if GRAPHICS and gfx.model_loader_cb and gfx.model_loader_cb:get(path) and gfx.model_loader_cb:get(path).callback then
 						tasks.Report("waiting for render mesh to finish loading")
 						repeat
 							tasks.Wait()
-						until not render.model_loader_cb:get(path) or not render.model_loader_cb:get(path).callback
+						until not gfx.model_loader_cb:get(path) or not gfx.model_loader_cb:get(path).callback
 					end
 					-- :(
 					cb:stop(path, steam.LoadMap(full_path).physics_meshes)

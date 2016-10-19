@@ -761,13 +761,13 @@ end
 if RELOAD then
 	if TESSELLATION then
 		for mesh in pairs(prototype.GetCreated()) do
-			if mesh.Type == "mesh_builder" then
+			if mesh.Type == "polygon_3d" then
 				mesh.mesh:SetMode("patches")
 			end
 		end
 	else
 		for mesh in pairs(prototype.GetCreated()) do
-			if mesh.Type == "mesh_builder" then
+			if mesh.Type == "polygon_3d" then
 				mesh.mesh:SetMode("triangles")
 			end
 		end

@@ -113,7 +113,7 @@ function META:ConstructPoly(width, quality, stretch, poly)
 	local negative_points = self:CreateOffsetedCurve(width.x):ConvertToPoints(quality)
 	local positive_points = self:CreateOffsetedCurve(width.y):ConvertToPoints(quality)
 
-	local poly = poly or gfx.CreatePolygon(#positive_points * 2)
+	local poly = poly or gfx.CreatePolygon2D(#positive_points * 2)
 	local distance_positive = 0
 
 	for i in ipairs(positive_points) do

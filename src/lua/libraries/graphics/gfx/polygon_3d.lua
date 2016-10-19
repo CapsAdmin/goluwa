@@ -1,6 +1,10 @@
-local render = ... or _G.render
+local gfx = (...) or _G.gfx
 
-local META = prototype.CreateTemplate("mesh_builder")
+local META = prototype.CreateTemplate("polygon_3d")
+
+function gfx.CreatePolygon3D()
+	return META:CreateObject()
+end
 
 function META:__tostring2()
 	return ("[%i vertices]"):format(#self.Vertices)
@@ -10,10 +14,6 @@ META:GetSet("Vertices", {})
 META:GetSet("Indices")
 META:GetSet("BBMin", Vec3())
 META:GetSet("BBMax", Vec3())
-
-function render.CreateMeshBuilder()
-	return META:CreateObject()
-end
 
 META.i = 1
 

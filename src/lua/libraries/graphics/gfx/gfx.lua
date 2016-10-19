@@ -1,6 +1,8 @@
 local gfx = _G.gfx or {}
 
-include("polygon.lua", gfx)
+include("polygon_2d.lua", gfx)
+include("polygon_3d.lua", gfx)
+include("model_loader.lua", gfx)
 include("quadric_bezier_curve.lua", gfx)
 include("text.lua", gfx)
 include("video.lua", gfx)
@@ -8,7 +10,7 @@ include("particles.lua", gfx)
 include("markup/markup.lua", gfx)
 
 function gfx.Initialize()
-	gfx.ninepatch_poly = gfx.CreatePolygon(9 * 6)
+	gfx.ninepatch_poly = gfx.CreatePolygon2D(9 * 6)
 
 	event.Delay(function()
 		local tex = render.CreateBlankTexture(Vec2(surface.GetSize()))

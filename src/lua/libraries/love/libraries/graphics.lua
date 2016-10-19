@@ -1300,7 +1300,7 @@ do -- sprite batch
 
 	function love.graphics.newSpriteBatch(image, size, usagehint)
 		local self = line.CreateObject("SpriteBatch")
-		local poly = gfx.CreatePolygon(size * 6)
+		local poly = gfx.CreatePolygon2D(size * 6)
 
 		self.size = size
 

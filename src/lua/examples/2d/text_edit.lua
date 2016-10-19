@@ -83,7 +83,7 @@ local function move(x, y)
 	caret_pos.y = math.max(caret_pos.y + y, 1)
 end
 
-local poly = gfx.CreatePolygon(4096 * 6)
+local poly = gfx.CreatePolygon2D(4096 * 6)
 poly:SetColor(1,1,1,1)
 
 local function invalidate()

@@ -1,7 +1,7 @@
 local heightmap = render.CreateTextureFromPath("textures/heightmap/HeightMap6.jpg")
 local diffuse = render.CreateTextureFromPath("textures/heightmap/HeightMap_6BaseTexture.jpg")
 
-local model = render.CreateMeshBuilder()
+local model = gfx.CreatePolygon3D()
 model:LoadHeightmap(heightmap, heightmap:GetSize()/5, Vec2(128, 128), -200)
 model:SmoothNormals()
 model:Upload()

@@ -25,7 +25,7 @@ META:EndStorable()
 if GRAPHICS then
 	function META:OnAdd()
 		self.shadow_maps = {}
-		render.LoadModel("models/low-poly-sphere.obj", function(meshes)
+		gfx.LoadModel3D("models/low-poly-sphere.obj", function(meshes)
 			self.light_mesh = meshes[1]
 		end)
 	end

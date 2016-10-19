@@ -1,5 +1,5 @@
 function gine.env.Mesh()
-	return gine.WrapObject(render.CreateMeshBuilder(), "IMesh")
+	return gine.WrapObject(gfx.CreatePolygon3D(), "IMesh")
 end
 
 local META = gine.GetMetaTable("IMesh")

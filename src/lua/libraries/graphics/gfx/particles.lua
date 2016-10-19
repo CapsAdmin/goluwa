@@ -24,7 +24,7 @@ function gfx.CreateParticleEmitter(max)
 	self.particles = {}
 	self.last_emit = 0
 	self.next_think = 0
-	self.poly = gfx.CreatePolygon(max * 6)
+	self.poly = gfx.CreatePolygon2D(max * 6)
 
 	return self
 end

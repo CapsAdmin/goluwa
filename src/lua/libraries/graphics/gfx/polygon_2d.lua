@@ -1,6 +1,21 @@
 local gfx = (...) or _G.gfx
 
-local META = prototype.CreateTemplate("poly")
+local META = prototype.CreateTemplate("polygon_2d")
+
+function gfx.CreatePolygon2D(vertex_count)
+	local mesh = surface.CreateMesh(vertex_count)
+
+	-- they never change anyway
+	mesh:SetUpdateIndices(false)
+
+	local self = META:CreateObject()
+
+	self.mesh = mesh
+	self.vertex_count = vertex_count
+	self.Vertices = mesh.Vertices
+
+	return self
+end
 
 META.X, META.Y = 0, 0
 META.ROT = 0
@@ -312,18 +327,3 @@ function META:AddNinePatch(...)
 end
 
 prototype.Register(META)
-
-function gfx.CreatePolygon(vertex_count)
-	local mesh = surface.CreateMesh(vertex_count)
-
-	-- they never change anyway
-	mesh:SetUpdateIndices(false)
-
-	local self = META:CreateObject()
-
-	self.mesh = mesh
-	self.vertex_count = vertex_count
-	self.Vertices = mesh.Vertices
-
-	return self
-end

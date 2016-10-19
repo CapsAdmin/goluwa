@@ -503,7 +503,7 @@ function steam.LoadMap(path)
 
 				-- split the world up into sub models by texture
 				if not meshes[texname] then
-					local mesh = GRAPHICS and render.CreateMeshBuilder() or {}
+					local mesh = GRAPHICS and gfx.CreatePolygon3D() or {}
 
 					meshes[texname] = mesh
 

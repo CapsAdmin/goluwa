@@ -1,14 +1,14 @@
-local render = ... or _G.render
+local gfx = ... or _G.gfx
 
-render.model_cache = {}
+gfx.model_cache = {}
 
 local assimp = desire("libassimp") -- model decoder
 
-local cb = utility.CreateCallbackThing(render.model_cache)
+local cb = utility.CreateCallbackThing(gfx.model_cache)
 
-render.model_loader_cb = cb
+gfx.model_loader_cb = cb
 
-function render.LoadModel(path, callback, callback2, on_fail)
+function gfx.LoadModel3D(path, callback, callback2, on_fail)
 	if cb:check(path, callback, {mesh = callback2, on_fail = on_fail}) then return true end
 
 	steam.MountGamesFromPath(path)
@@ -60,9 +60,9 @@ function render.LoadModel(path, callback, callback2, on_fail)
 				]]
 
 				assimp.ImportFileEx(full_path, flags, function(model_data, i, total_meshes)
-					if render.debug then logf("[render] %s loading %q %s\n", full_path, model_data.name, i .. "/" .. total_meshes) end
+					if gfx.debug then llog("%s loading %q %s\n", full_path, model_data.name, i .. "/" .. total_meshes) end
 
-					local mesh = render.CreateMeshBuilder()
+					local mesh = gfx.CreatePolygon3D()
 
 					if model_data.material then
 						local material = render.CreateMaterial("model")

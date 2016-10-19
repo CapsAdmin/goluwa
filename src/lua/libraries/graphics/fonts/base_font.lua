@@ -153,7 +153,7 @@ function META:CompileString(data)
 		end
 	end
 
-	local poly = gfx.CreatePolygon(vertex_count)
+	local poly = gfx.CreatePolygon2D(vertex_count)
 	local width_info = {}
 	local out = {}
 

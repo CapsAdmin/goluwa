@@ -728,7 +728,7 @@ function steam.LoadModel(path, sub_model_callback)
 						local vertices = table.copy(vvd.fixed_vertices_by_lod[lod_index] or vvd.vertices)
 						local indices = {}
 
-						local mesh = render.CreateMeshBuilder()
+						local mesh = gfx.CreatePolygon3D()
 
 						mesh.material = render.CreateMaterial("model")
 						mesh:SetName(path)
