@@ -4,13 +4,11 @@ editor.usetabs = true
 editor.tabwidth = 4
 editor.usewrap = false
 editor.fontsize = 9
-editor.fontname = "Oxygen Mono"
 editor.menuicon = true
-bordersize = 4
 toolbar.icons = {}
-
-markersinactivity=false
-outlineinactivity=false
+bordersize = 4
+markersinactivity = false
+outlineinactivity = false
 
 --staticanalyzer.infervalue = true
 --filetree.mousemove = false
