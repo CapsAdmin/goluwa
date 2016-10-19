@@ -110,16 +110,20 @@ local function translate_fields(data)
 		end
 		local t, default, get = type_of_attribute(v)
 
+		local precision = params.precision
+
 		if t == "bool" or t:find("sampler") or t == "texture" then
-			params.precision = ""
+			precision = nil
+		elseif not precision then
+			precision = "highp"
 		end
 
 		table.insert(out, {
 			name = k,
 			type = t,
 			default = default,
-			precision = params.precision or "highp",
-			varying = params.varying and "varying" or "",
+			precision = params.precision,
+			varying = params.varying and "varying" or nil,
 			get = get,
 		})
 	end
@@ -127,9 +131,9 @@ local function translate_fields(data)
 	return out
 end
 
-local function variables_to_string(type, variables, prepend, macro, array, huh)
-	array = array or ""
+local function variables_to_string(type, variables, prepend, macro, array)
 	local texture_channel = 0
+	local attribute_location = 0
 	local out = {}
 
 	for _, data in ipairs(translate_fields(variables)) do
@@ -139,25 +143,46 @@ local function variables_to_string(type, variables, prepend, macro, array, huh)
 			name = prepend .. name
 		end
 
+		local line = ""
+
 		if data.type:find("sampler") then
-			local layout = ""
-
 			if system.IsOpenGLExtensionSupported("GL_ARB_enhanced_layouts") or system.IsOpenGLExtensionSupported("GL_ARB_shading_language_420pack") then
-				layout = ("layout(binding = %i)"):format(texture_channel)
+				line = line .. "layout(binding = " .. texture_channel .. ") "
+				texture_channel = texture_channel + 1
 			end
-
-			table.insert(out, ("%s %s %s %s %s %s%s;"):format(layout, data.varying, type, data.precision, data.type, name, array):trim())
-			texture_channel = texture_channel + 1
-		else
-			table.insert(out, ("%s %s %s %s %s%s;"):format(data.varying, type, data.precision, data.type, name, array):trim())
-			if huh then
-				out[#out] = huh:format(#out - 1) .. " " .. out[#out]
+		elseif not macro then
+			if system.IsOpenGLExtensionSupported("GL_ARB_enhanced_layouts") or system.IsOpenGLExtensionSupported("GL_ARB_shading_language_420pack") then
+				if type == "in" then
+					line = line .. "layout(location = " .. attribute_location .. ")" .. " "
+				end
+				attribute_location = attribute_location + 1
 			end
 		end
+
+		if data.varying then
+			line = line .. data.varying .. " "
+		end
+
+		line = line .. type .. " "
+
+		if data.precision then
+			line = line .. data.precision .. " "
+		end
+
+		line = line .. data.type .. " "
+		line = line .. name .. " "
+
+		if array then
+			line = line .. array
+		end
+
+		line = line .. ";"
 
 		if macro then
-			table.insert(out, ("#define %s %s"):format(data.name, name))
+			table.insert(out, "#define " .. data.name .. " " .. name)
 		end
+
+		table.insert(out, line)
 	end
 
 	return table.concat(out, "\n")
@@ -369,7 +394,7 @@ function render.CreateShader(data, vars)
 		if info.mesh_layout then
 			if shader == "vertex" then
 				-- in highp vec3 foo;
-				template = replace_field(template, "IN", variables_to_string("in", info.mesh_layout, nil, nil, nil, "layout(location = %i)"))
+				template = replace_field(template, "IN", variables_to_string("in", info.mesh_layout))
 				build_output[shader].mesh_layout = translate_fields(info.mesh_layout)
 			else
 				-- in highp vec3 glw_out_foo;
