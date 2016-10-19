@@ -86,19 +86,18 @@ function META:DrawString(str, x, y, w)
 
 	if str == nil then str = "nil" end
 
-	self.string_cache = self.string_cache or utility.CreateWeakTable()
+	self.string_cache = self.string_cache or {}
 
 	if not self.string_cache[str] then
 		self.total_strings_stored = self.total_strings_stored or 0
 
 		if self.total_strings_stored > 10000 then
-			--logf("fonts warning: string cache for %s is above 10000, flushing cache\n", self)
+			logf("fonts warning: string cache for %s is above 10000, flushing cache\n", self)
 			table.clear(self.string_cache)
 			self.total_strings_stored = 0
 		end
 
 		self.string_cache[str] = self:CompileString({tostring(str)})
-
 		self.total_strings_stored = self.total_strings_stored + 1
 	end
 
