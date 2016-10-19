@@ -43,7 +43,7 @@ local function draw_branch(node, level, i, max, px, py, ppos, pw, ph)
 		y = node.py
 	end
 
-	surface.DrawLine(
+	gfx.DrawLine(
 		x + (math.random() > 0.5 and w or 0) - w*0.5,
 		y + (math.random() > 0.5 and h or 0) - h*0.5,
 

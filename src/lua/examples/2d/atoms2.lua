@@ -104,7 +104,7 @@ event.Timer("fb_update", fps, 0, function()
 				surface.SetColor(1,1,1,1)
 			end
 			surface.SetTexture(brush)
-			local x,y = surface.GetMousePosition()
+			local x,y = gfx.GetMousePosition()
 			surface.DrawRect(x, y, brush:GetSize().x*brush_size, brush:GetSize().y*brush_size, 0, brush:GetSize().x/2*brush_size, brush:GetSize().y/2*brush_size)
 		end
 	fb:End()

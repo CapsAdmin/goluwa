@@ -354,23 +354,6 @@ function surface.DrawRect(x,y, w,h, a, ox,oy)
 	surface.PopMatrix()
 end
 
-function surface.DrawLine(x1,y1, x2,y2, w, skip_tex, ox, oy)
-	w = w or 1
-
-	if not skip_tex then
-		surface.SetWhiteTexture()
-	end
-
-	local dx,dy = x2-x1, y2-y1
-	local ang = math.atan2(dx, dy)
-	local dst = math.sqrt((dx * dx) + (dy * dy))
-
-	ox = ox or (w*0.5)
-	oy = oy or 0
-
-	surface.DrawRect(x1, y1, w, dst, -ang, ox, oy)
-end
-
 function surface.SetScissor(x, y, w, h)
 	if not x then
 		render.SetScissor()
@@ -576,34 +559,6 @@ do
 	function surface.DisableClipRect()
 		gl.Disable("GL_STENCIL_TEST")
 	end
-end
-
-function surface.GetMousePosition()
-	if window.GetMouseTrapped() then
-		return render.GetWidth() / 2, render.GetHeight() / 2
-	end
-	return window.GetMousePosition():Unpack()
-end
-
-local last_x = 0
-local last_y = 0
-local last_diff = 0
-
-function surface.GetMouseVel()
-	local x, y = window.GetMousePosition():Unpack()
-
-	local vx = x - last_x
-	local vy = y - last_y
-
-	local time = system.GetElapsedTime()
-
-	if last_diff < time then
-		last_x = x
-		last_y = y
-		last_diff = time + 0.1
-	end
-
-	return vx, vy
 end
 
 function surface.SetHSV(h,s,v)

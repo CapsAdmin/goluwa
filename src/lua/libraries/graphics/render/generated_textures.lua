@@ -64,7 +64,7 @@ function render.GenerateTextures()
 						local X, Y = math.sin(ang), math.cos(ang)
 						local W2, H2 = loading:GetSize().x/2, loading:GetSize().y/2
 
-						surface.DrawLine(X*center_size+W2, Y*center_size+H2, X*outter_size*W2 + W2, Y*outter_size*H2 + H2, width)
+						gfx.DrawLine(X*center_size+W2, Y*center_size+H2, X*outter_size*W2 + W2, Y*outter_size*H2 + H2, width)
 					end
 				loading:End()
 			end)

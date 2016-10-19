@@ -27,11 +27,11 @@ function META:OnPostDraw()
 			local offset2 = (a_pos.y - b_pos.y) / 2
 
 
-			surface.DrawLine(a_pos.x - offset, b_pos.y, b_pos.x, b_pos.y, 4, true)
-			surface.DrawLine(a_pos.x - offset, b_pos.y, a_pos.x - offset, a_pos.y, 4, true)
-			surface.DrawLine(b_pos.x + offset, a_pos.y, a_pos.x, a_pos.y, 4, true)
+			gfx.DrawLine(a_pos.x - offset, b_pos.y, b_pos.x, b_pos.y, 4, true)
+			gfx.DrawLine(a_pos.x - offset, b_pos.y, a_pos.x - offset, a_pos.y, 4, true)
+			gfx.DrawLine(b_pos.x + offset, a_pos.y, a_pos.x, a_pos.y, 4, true)
 		else
-			surface.DrawLine(a_pos.x, a_pos.y, b_pos.x, b_pos.y, 4, true)
+			gfx.DrawLine(a_pos.x, a_pos.y, b_pos.x, b_pos.y, 4, true)
 		end
 
 		if input.IsMouseDown("button_2") then
@@ -57,11 +57,11 @@ function META:OnPostDraw()
 			local offset2 = (a_pos.y - b_pos.y) / 2
 
 
-			surface.DrawLine(a_pos.x - offset, b_pos.y, b_pos.x, b_pos.y, 4, true)
-			surface.DrawLine(a_pos.x - offset, b_pos.y, a_pos.x - offset, a_pos.y, 4, true)
-			surface.DrawLine(b_pos.x + offset, a_pos.y, a_pos.x, a_pos.y, 4, true)
+			gfx.DrawLine(a_pos.x - offset, b_pos.y, b_pos.x, b_pos.y, 4, true)
+			gfx.DrawLine(a_pos.x - offset, b_pos.y, a_pos.x - offset, a_pos.y, 4, true)
+			gfx.DrawLine(b_pos.x + offset, a_pos.y, a_pos.x, a_pos.y, 4, true)
 		else
-			surface.DrawLine(a_pos.x, a_pos.y, b_pos.x, b_pos.y, 2, true)
+			gfx.DrawLine(a_pos.x, a_pos.y, b_pos.x, b_pos.y, 2, true)
 		end
 
 		::continue::

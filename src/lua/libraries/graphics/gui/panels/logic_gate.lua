@@ -21,7 +21,7 @@ end
 function META:OnMouseHoverTrigger(entered, x, y)
 	if entered then
 		local tooltip = gui.CreatePanel("text_button")
-		tooltip:SetPosition(Vec2(surface.GetMousePosition()))
+		tooltip:SetPosition(Vec2(gfx.GetMousePosition()))
 		tooltip:SetMargin(Rect()+4)
 		self.tooltip = tooltip
 	else

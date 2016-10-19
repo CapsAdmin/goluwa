@@ -201,7 +201,7 @@ uniform float     iSampleRate;           // sound sample rate (i.e., 44100)]]
 
 --render.SetGlobalShaderVariable("iResolution", function() return Vec3(render.GetGBufferSize().x, render.GetGBufferSize().y, render.GetGBufferSize().x / render.GetGBufferSize().y) end, "vec3")
 --render.SetGlobalShaderVariable("iGlobalTime", function() return system.GetElapsedTime() end, "float")
---render.SetGlobalShaderVariable("iMouse", function() return Vec2(surface.GetMousePosition()) end, "float")
+--render.SetGlobalShaderVariable("iMouse", function() return Vec2(gfx.GetMousePosition()) end, "float")
 --render.SetGlobalShaderVariable("iDate", function() return Color(os.date("%y"), os.date("%m"), os.date("%d"), os.date("%s")) end, "vec4")
 
 return render

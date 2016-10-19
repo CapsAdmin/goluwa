@@ -88,7 +88,7 @@ event.AddListener("PreDrawGUI", "particles", function(dt)
 	W,H = surface.GetSize()
 	surface.SetTexture(head_tex)
 
-	local ext_vel_x, ext_vel_y = surface.GetMouseVel()
+	local ext_vel_x, ext_vel_y = gfx.GetMouseVel()
 	ext_vel_x = ext_vel_x * 0.1
 	ext_vel_y = ext_vel_y * 0.1
 

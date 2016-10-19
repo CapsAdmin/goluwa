@@ -115,7 +115,7 @@ function META:OnUpdate()
 	local dt = system.GetFrameTime()
 	local mpos = self:GetMousePosition()
 
-	if self:IsDragging() then self.Velocity = Vec2(surface.GetMouseVel())/10 end
+	if self:IsDragging() then self.Velocity = Vec2(gfx.GetMouseVel())/10 end
 
 	self.frame = self.frame + self.Velocity.x / 5
 	self.Velocity = self.Velocity + Vec2(0, 100) * dt

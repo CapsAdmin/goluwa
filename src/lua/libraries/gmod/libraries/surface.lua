@@ -36,7 +36,7 @@ function gfx.DrawTexturedRectUV(x,y,w,h, u1,v1, u2,v2)
 	lib.SetRectUV()
 end
 
-function surface.DrawLine(...)
+function gfx.DrawLine(...)
 	lib.DrawLine(...)
 end
 

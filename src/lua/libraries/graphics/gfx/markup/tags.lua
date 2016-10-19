@@ -27,7 +27,7 @@ META.tags.click =
 	end,
 
 	post_draw_chunks = function(markup, self, chunk)
-		surface.DrawLine(chunk.x, chunk.top, chunk.right, chunk.top)
+		gfx.DrawLine(chunk.x, chunk.top, chunk.right, chunk.top)
 	end,
 }
 META.tags.console =
@@ -52,7 +52,7 @@ META.tags.console =
 
 	post_draw_chunks = function(markup, self, chunk)
 
-		surface.DrawLine(chunk.x, chunk.top, chunk.right, chunk.top)
+		gfx.DrawLine(chunk.x, chunk.top, chunk.right, chunk.top)
 	end,
 }
 
@@ -73,7 +73,7 @@ META.tags.wrong =
 		surface.PushColor(1, 0, 0, 1)
 		-- todo: LOL
 		for x = chunk.x, chunk.right do
-			surface.DrawLine(x, chunk.top + math.sin(x), x+1, chunk.top +math.sin(x))
+			gfx.DrawLine(x, chunk.top + math.sin(x), x+1, chunk.top +math.sin(x))
 		end
 
 		surface.PopColor()

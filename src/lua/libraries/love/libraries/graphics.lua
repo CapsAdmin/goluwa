@@ -725,10 +725,10 @@ function love.graphics.rectangle(mode, x, y, w, h)
 		surface.SetWhiteTexture()
 		surface.DrawRect(x, y, w, h)
 	else
-		surface.DrawLine(x,y, x+w,y)
-		surface.DrawLine(x,y, x,y+h)
-		surface.DrawLine(x+w,y, x+w,y+h)
-		surface.DrawLine(x,y+h, x+w,y+h)
+		gfx.DrawLine(x,y, x+w,y)
+		gfx.DrawLine(x,y, x,y+h)
+		gfx.DrawLine(x+w,y, x+w,y+h)
+		gfx.DrawLine(x,y+h, x+w,y+h)
 	end
 end
 

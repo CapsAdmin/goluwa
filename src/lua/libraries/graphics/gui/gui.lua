@@ -197,7 +197,7 @@ do -- events
 			end
 		end
 
-		gui.mouse_pos.x, gui.mouse_pos.y = surface.GetMousePosition()
+		gui.mouse_pos.x, gui.mouse_pos.y = gfx.GetMousePosition()
 	end
 
 	function gui.DrawMenu(dt)

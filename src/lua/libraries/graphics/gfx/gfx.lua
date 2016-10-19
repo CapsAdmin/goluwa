@@ -50,6 +50,23 @@ function gfx.DrawFilledCircle(x, y, sx, sy)
 	surface.PopTexture()
 end
 
+function gfx.DrawLine(x1,y1, x2,y2, w, skip_tex, ox, oy)
+	w = w or 1
+
+	if not skip_tex then
+		surface.SetWhiteTexture()
+	end
+
+	local dx,dy = x2-x1, y2-y1
+	local ang = math.atan2(dx, dy)
+	local dst = math.sqrt((dx * dx) + (dy * dy))
+
+	ox = ox or (w*0.5)
+	oy = oy or 0
+
+	surface.DrawRect(x1, y1, w, dst, -ang, ox, oy)
+end
+
 function gfx.DrawCircle(x, y, radius, width, resolution)
 	resolution = resolution or 16
 
@@ -59,7 +76,7 @@ function gfx.DrawCircle(x, y, radius, width, resolution)
 		local i1 = ((i+0) / resolution) * math.pi * 2
 		local i2 = ((i+1 + spacing) / resolution) * math.pi * 2
 
-		surface.DrawLine(
+		gfx.DrawLine(
 			x + math.sin(i1) * radius,
 			y + math.cos(i1) * radius,
 
@@ -67,6 +84,36 @@ function gfx.DrawCircle(x, y, radius, width, resolution)
 			y + math.cos(i2) * radius,
 			width
 		)
+	end
+end
+
+do
+	function gfx.GetMousePosition()
+		if window.GetMouseTrapped() then
+			return render.GetWidth() / 2, render.GetHeight() / 2
+		end
+		return window.GetMousePosition():Unpack()
+	end
+
+	local last_x = 0
+	local last_y = 0
+	local last_diff = 0
+
+	function gfx.GetMouseVel()
+		local x, y = window.GetMousePosition():Unpack()
+
+		local vx = x - last_x
+		local vy = y - last_y
+
+		local time = system.GetElapsedTime()
+
+		if last_diff < time then
+			last_x = x
+			last_y = y
+			last_diff = time + 0.1
+		end
+
+		return vx, vy
 	end
 end
 

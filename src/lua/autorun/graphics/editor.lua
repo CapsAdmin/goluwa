@@ -37,7 +37,7 @@ do -- PUT ME IN TRANSFORM
 
 	local function draw_line_to_box(origin, point, siz)
 		siz = siz or 7
-		surface.DrawLine(origin.x, origin.y, point.x, point.y, 3)
+		gfx.DrawLine(origin.x, origin.y, point.x, point.y, 3)
 		gfx.DrawCircle(point.x, point.y, siz, 2, 32)
 	end
 
@@ -45,8 +45,8 @@ do -- PUT ME IN TRANSFORM
 		local pr = math3d.WorldPositionToScreen(pos + dir * r * mctrl.angle_pos)
 		local pra = math3d.WorldPositionToScreen(pos + dir * r * (mctrl.angle_pos * 0.9) + dir2*r*0.08)
 		local prb = math3d.WorldPositionToScreen(pos + dir * r * (mctrl.angle_pos * 0.9) + dir2*r*-0.08)
-		surface.DrawLine(pr.x, pr.y, pra.x, pra.y, 3)
-		surface.DrawLine(pr.x, pr.y, prb.x, prb.y, 3)
+		gfx.DrawLine(pr.x, pr.y, pra.x, pra.y, 3)
+		gfx.DrawLine(pr.x, pr.y, prb.x, prb.y, 3)
 	end
 
 	function mctrl.Move(axis, mouse_pos)
@@ -163,7 +163,7 @@ do -- PUT ME IN TRANSFORM
 
 		if not target:IsValid() or not target:HasComponent("transform") then return end
 
-		local x, y = surface.GetMousePosition()
+		local x, y = gfx.GetMousePosition()
 		if mctrl.grab.axis and mctrl.grab.mode == "move" then
 			mctrl.Move(mctrl.grab.axis, Vec2(x, y))
 		elseif mctrl.grab.axis and mctrl.grab.mode == "rotate" then
@@ -222,7 +222,7 @@ do -- PUT ME IN TRANSFORM
 		local target = mctrl.target
 		if not target:IsValid() or not target:HasComponent("transform") then return end
 
-		local x, y = surface.GetMousePosition()
+		local x, y = gfx.GetMousePosition()
 		local pos, ang = get_draw_position()
 
 		local forward, right, up = get_axes(ang)

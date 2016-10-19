@@ -11,7 +11,7 @@ event.Timer("updatefb", 0.1, function()
 		surface.Rotate(t)
 
 		surface.SetWhiteTexture()
-		local x, y = surface.GetMousePosition()
+		local x, y = gfx.GetMousePosition()
 		surface.DrawRect(x,y,5,5, 0, 2.5, 2.5)
 
 		--render.SetBlendMode("additive")

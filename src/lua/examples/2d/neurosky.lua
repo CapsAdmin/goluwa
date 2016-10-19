@@ -24,7 +24,7 @@ local function update_rt(eeg)
 
 			local x, y = system.GetElapsedTime() * 100 % W, H / 2 + eeg / 10
 
-			surface.DrawLine(x, y, last_x, last_y)
+			gfx.DrawLine(x, y, last_x, last_y)
 
 			last_x = x
 			last_y = y
