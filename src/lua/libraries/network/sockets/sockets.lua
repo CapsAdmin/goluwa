@@ -412,7 +412,7 @@ do -- tcp socket meta
 
 						self.data_received = self.data_received + #data
 					else
-						if err == "timeout" or "Socket is not connected" then
+						if err == "timeout" or err == "Socket is not connected" then
 							self:Timeout(true)
 						elseif err == "closed" then
 							self:DebugPrintf("closed")
