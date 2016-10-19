@@ -27,8 +27,24 @@ function vfs.Delete(path, ...)
 	local err = ("No such file or directory %q"):format(path)
 
 	wlog(err)
+function vfs.Rename(path, name, ...)
+	local abs_path = vfs.GetAbsolutePath(path, ...)
 
-	return false, "No such file or directory"
+	print(abs_path, path, name)
+
+	if abs_path then
+		local ok, err = os.rename(abs_path, abs_path:match("(.+/)") .. name)
+
+		if not ok then
+			wlog(err)
+		end
+
+		return ok, err
+	end
+
+	local err = ("No such file or directory %q"):format(path)
+	wlog(err)
+	return false, err
 end
 
 local function add_helper(name, func, mode, cb)
