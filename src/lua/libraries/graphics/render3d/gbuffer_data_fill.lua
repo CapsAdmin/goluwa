@@ -176,8 +176,8 @@ vec3 get_env_color()
 	vec3 sky_normal = get_world_normal(uv);
 	vec3 sky_reflect = reflect(cam_dir, sky_normal).xyz;
 
-	vec3 irradiance = MMAL(lua[tex_sky = render.GetSkyTexture()], sky_normal, sky_reflect, -metallic+1);
-	vec3 reflection = MMAL(lua[tex_sky = render.GetSkyTexture()], sky_normal, sky_reflect, roughness);
+	vec3 irradiance = MMAL(lua[tex_sky = render3d.GetSkyTexture()], sky_normal, sky_reflect, -metallic+1);
+	vec3 reflection = MMAL(lua[tex_sky = render3d.GetSkyTexture()], sky_normal, sky_reflect, roughness);
 
 	return mix((irradiance+reflection), reflection, metallic);
 }
