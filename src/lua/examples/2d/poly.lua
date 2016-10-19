@@ -10,8 +10,8 @@ event.AddListener("PreDrawGUI", "lol", function()
 		poly:SetRect(i, (math.sin(time+i)*128)+256, (math.cos(time+i)*128)+256, 64, 64,math.sin(time+i))
 	end
 
-	surface.SetColor(1,1,1,1)
-	surface.SetTexture(tex)
+	render2d.SetColor(1,1,1,1)
+	render2d.SetTexture(tex)
 
 	poly:Draw()
 end)

@@ -303,7 +303,7 @@ function steam.LoadMap(path)
 		short		numedges;		// number of header.surfedges
 		short		texinfo;		// texture info
 		short		dispinfo;		// displacement info
-		short		surfaceFogVolumeID;	// ?
+		short		render2dFogVolumeID;	// ?
 		byte		styles[4];		// switchable lighting info
 		int		lightofs;		// offset into lightmap lump
 		float		area;			// face area in units^2
@@ -348,10 +348,10 @@ function steam.LoadMap(path)
 			vec3 startPosition; // start position used for orientation
 			int DispVertStart; // Index into LUMP_DISP_VERTS.
 			int DispTriStart; // Index into LUMP_DISP_TRIS.
-			int power; // power - indicates size of surface (2^power	1)
+			int power; // power - indicates size of render2d (2^power	1)
 			int minTess; // minimum tesselation allowed
 			float smoothingAngle; // lighting smoothing angle
-			int contents; // surface contents
+			int contents; // render2d contents
 			unsigned short MapFace; // Which map face this displacement comes from.
 			char asdf[2];
 			int LightmapAlphaStart;	// Index into ddisplightmapalpha.

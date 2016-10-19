@@ -155,7 +155,7 @@ float gbuffer_compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, 
 {
 	float cutoff = 0.175;
 
-	// calculate normalized light vector and distance to sphere light surface
+	// calculate normalized light vector and distance to sphere light render2d
 	float r = radius/10;
 	vec3 L = light_pos - pos;
 	float distance = length(L);
@@ -233,7 +233,7 @@ vec3 compute_specular2(
 	vec3 Y,
 	vec3 baseColor,
 	float metallic,
-	float subsurface,
+	float subrender2d,
 	float specular,
 	float roughness,
 	float specularTint,
@@ -292,7 +292,7 @@ vec3 compute_specular2(
 
     return
 		((1/PI) *
-		mix(Fd, ss, subsurface)*Cdlin + Fsheen) *
+		mix(Fd, ss, subrender2d)*Cdlin + Fsheen) *
 		(1-metallic) +
 		Gs*Fs/*Ds*/ +
 		.25*clearcoat*Gr*Fr*Dr;
@@ -372,7 +372,7 @@ vec3 gbuffer_compute_specular(vec3 light_dir, vec3 view_dir, vec3 normal, float 
 
 		get_albedo(uv), // albedo
 		get_metallic(uv), // metallic
-		1, // subsurface
+		1, // subrender2d
 		0.5, //specular
 
 		get_roughness(uv), //roughness

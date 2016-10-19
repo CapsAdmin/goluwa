@@ -26,25 +26,25 @@ event.AddListener("PreDrawGUI", "lol", function()
 	if not window.IsFocused() then
 		local offset = 0
 		for i, x in ipairs(widths) do
-			surface.SetColor(0,1,0,0.5)
+			render2d.SetColor(0,1,0,0.5)
 			gfx.DrawLine(offset, 0, offset, 10000)
-			surface.SetColor(1,0,0,0.5)
+			render2d.SetColor(1,0,0,0.5)
 			gfx.DrawLine(offset + x, 0, offset + x, 10000)
 
-			surface.SetColor(1,1,1,1)
+			render2d.SetColor(1,1,1,1)
 			gfx.SetTextPosition(offset,0)
 			gfx.DrawText(gfx.WrapString(str, x))
 
 			offset = offset + sentence_width / i + 20
 		end
 	else
-		surface.SetColor(1,1,1,1)
+		render2d.SetColor(1,1,1,1)
 		local x, y = gfx.GetMousePosition()
 
 		gfx.SetTextPosition(0,0)
 		gfx.DrawText(gfx.WrapString(str, x))
 
-		surface.SetColor(1,0,0,1)
+		render2d.SetColor(1,0,0,1)
 		gfx.DrawLine(x, 0, x, 10000)
 	end
 end)

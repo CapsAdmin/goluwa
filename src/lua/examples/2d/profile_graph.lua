@@ -20,7 +20,7 @@ local function draw_branch(node, level, i, max, px, py, ppos, pw, ph)
 	frac = math.clamp(frac, 0, 1)
 
 	local r,g,b = ColorHSV(frac, 1, 1):Unpack()
-	surface.SetColor(r,g,b,0.5)
+	render2d.SetColor(r,g,b,0.5)
 
 	local pos = (i / max)
 	local x, y = math.sin(pos * math.pi * 2) * math.random(600, 1000)* level, math.cos(pos * math.pi * 2) * math.random(600, 1000) * level
@@ -57,7 +57,7 @@ local function draw_branch(node, level, i, max, px, py, ppos, pw, ph)
 		node.px = x
 		node.py = y
 
-		surface.DrawRect(x,y,w,h, nil, w*0.5, h*0.5)
+		render2d.DrawRect(x,y,w,h, nil, w*0.5, h*0.5)
 
 		max = table.count(node.children)
 		i = 0
@@ -70,7 +70,7 @@ local function draw_branch(node, level, i, max, px, py, ppos, pw, ph)
 
 		local offset = h/4
 		local x, y = x + 4 - w*0.5, y - h*0.5
-		surface.SetColor(1,1,1,1)
+		render2d.SetColor(1,1,1,1)
 
 		gfx.SetTextPosition(x, y)
 		gfx.DrawText(node.name)
@@ -98,14 +98,14 @@ event.AddListener("PreDrawGUI", "lol", function()
 	if not root then return end
 
 	gfx.SetFont("impact")
-	surface.SetWhiteTexture()
+	render2d.SetTexture()
 
-	local w, h = surface.GetSize()
+	local w, h = render2d.GetSize()
 	local x, y = w / 2, h / 2
 
-	surface.PushMatrix(x, y, 1, 1, 0)
+	render2d.PushMatrix(x, y, 1, 1, 0)
 		draw_branch(root)
-	surface.PopMatrix()
+	render2d.PopMatrix()
 
 	table.clear(drawn)
 end)

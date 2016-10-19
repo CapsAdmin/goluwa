@@ -255,7 +255,7 @@ local function draw_line(mode, coords, width, pixel_size, draw_overdraw)
 		return vertices, indices, draw_mode
 	end
 end
-local function to_surface_mesh(points)
+local function to_render2d_mesh(points)
 	local temp = {}
 	for i,v in ipairs(points) do
 		temp[i] = {pos = v, color = Color(1,1,1,0.5)}
@@ -270,7 +270,7 @@ event.AddListener("PreDrawGUI", "lol", function()
 	local coords = {200,50, 400,50, 500,300, 100,300, 200,50}
 	local vertices, indices, mode = draw_line("none", coords, 50, 1)
 
-	mesh = mesh or dynamic and surface.CreateMesh(100) or surface.CreateMesh(to_surface_mesh(vertices), indices)
+	mesh = mesh or dynamic and render2d.CreateMesh(100) or render2d.CreateMesh(to_render2d_mesh(vertices), indices)
 	mesh:SetMode(mode)
 
 	if dynamic then
@@ -291,9 +291,9 @@ event.AddListener("PreDrawGUI", "lol", function()
 		mesh:UpdateBuffer()
 	end
 
-	surface.SetColor(1,1,1,1)
-	surface.SetWhiteTexture()
-	surface.PushMatrix(350,350, 1,1)
+	render2d.SetColor(1,1,1,1)
+	render2d.SetTexture()
+	render2d.PushMatrix(350,350, 1,1)
 	mesh:Draw()
-	surface.PopMatrix()
+	render2d.PopMatrix()
 end)

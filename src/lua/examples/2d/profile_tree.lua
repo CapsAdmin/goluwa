@@ -10,21 +10,21 @@ local function draw_branch(node)
 
 	if node.times_called then
 		local r,g,b = ColorHSV(0, (node.times_called / root.times_called), 1):Unpack()
-		surface.SetColor(r,g,b,1)
+		render2d.SetColor(r,g,b,1)
 	end
 
 	local w, h = gfx.GetTextSize(node.name)
 
-	surface.PushMatrix(h*0.5, -w, 1, 1, math.rad(90))
+	render2d.PushMatrix(h*0.5, -w, 1, 1, math.rad(90))
 	gfx.DrawText(node.name)
-	surface.PopMatrix()
+	render2d.PopMatrix()
 
 	for _, child in pairs(node.children) do
 		math.randomseed(tonumber(tostring(child):match("(0x.+)")))
 
-		surface.PushMatrix(0, -w, 1, 1, math.randomf(math.rad(-45), math.rad(45)))
+		render2d.PushMatrix(0, -w, 1, 1, math.randomf(math.rad(-45), math.rad(45)))
 			draw_branch(child)
-		surface.PopMatrix()
+		render2d.PopMatrix()
 		count = count + 1
 	end
 end
@@ -43,18 +43,18 @@ event.AddListener("PreDrawGUI", "lol", function()
 
 	if not root then return end
 
-	local w, h = surface.GetSize()
+	local w, h = render2d.GetSize()
 	local x, y = w / 2, h
 
 	gfx.SetFont()
-	surface.SetWhiteTexture()
-	surface.SetColor(1,1,1,1)
+	render2d.SetTexture()
+	render2d.SetColor(1,1,1,1)
 	gfx.DrawText(count)
 	count = 0
 
-	surface.PushMatrix(x, y, 0.25, 0.25, 0)
+	render2d.PushMatrix(x, y, 0.25, 0.25, 0)
 		draw_branch(root)
-	surface.PopMatrix()
+	render2d.PopMatrix()
 
 	drawn = {}
 end)

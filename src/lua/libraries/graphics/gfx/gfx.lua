@@ -13,7 +13,7 @@ function gfx.Initialize()
 	gfx.ninepatch_poly = gfx.CreatePolygon2D(9 * 6)
 
 	event.Delay(function()
-		local tex = render.CreateBlankTexture(Vec2(surface.GetSize()))
+		local tex = render.CreateBlankTexture(Vec2(render2d.GetSize()))
 		tex:SetWrapS("mirrored_repeat")
 		tex:SetWrapT("mirrored_repeat")
 		tex:Shade([[
@@ -33,7 +33,7 @@ function gfx.Initialize()
 end
 
 function gfx.DrawNinePatch(x, y, w, h, patch_size_w, patch_size_h, corner_size, u_offset, v_offset, uv_scale)
-	local skin = surface.GetTexture()
+	local skin = render2d.GetTexture()
 
 	gfx.ninepatch_poly:SetNinePatch(1, x, y, w, h, patch_size_w, patch_size_h, corner_size, u_offset, v_offset, uv_scale, skin.Size.x, skin.Size.y)
 	gfx.ninepatch_poly:Draw()
@@ -42,19 +42,19 @@ end
 function gfx.DrawFilledCircle(x, y, sx, sy)
 	sy = sy or sx
 
-	surface.PushTexture(gfx.quadrant_circle_texture)
-	surface.DrawRect(x, y, sx, sy)
-	surface.DrawRect(x, y, sx, sy, math.pi)
-	surface.DrawRect(x, y, sx, sy, math.pi/2)
-	surface.DrawRect(x, y, sx, sy, -math.pi/2)
-	surface.PopTexture()
+	render2d.PushTexture(gfx.quadrant_circle_texture)
+	render2d.DrawRect(x, y, sx, sy)
+	render2d.DrawRect(x, y, sx, sy, math.pi)
+	render2d.DrawRect(x, y, sx, sy, math.pi/2)
+	render2d.DrawRect(x, y, sx, sy, -math.pi/2)
+	render2d.PopTexture()
 end
 
 function gfx.DrawLine(x1,y1, x2,y2, w, skip_tex, ox, oy)
 	w = w or 1
 
 	if not skip_tex then
-		surface.SetWhiteTexture()
+		render2d.SetTexture()
 	end
 
 	local dx,dy = x2-x1, y2-y1
@@ -64,7 +64,7 @@ function gfx.DrawLine(x1,y1, x2,y2, w, skip_tex, ox, oy)
 	ox = ox or (w*0.5)
 	oy = oy or 0
 
-	surface.DrawRect(x1, y1, w, dst, -ang, ox, oy)
+	render2d.DrawRect(x1, y1, w, dst, -ang, ox, oy)
 end
 
 function gfx.DrawCircle(x, y, radius, width, resolution)

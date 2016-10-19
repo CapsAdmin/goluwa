@@ -26,8 +26,8 @@ function META:DrawTile(tile_x, tile_y, rot)
 	if tile_x < 0 then tile_x = -tile_x w = -w end
 	if tile_y < 0 then tile_y = -tile_y h = -h end
 
-	surface.SetRectUV(tile_x, tile_y, w, h, surface.GetTexture():GetSize().x, surface.GetTexture():GetSize().y)
-	surface.DrawRect(self.Size.x/2, self.Size.y/2, self.Size.x, self.Size.y, rot or 0, self.Size.x/2, self.Size.y/2)
+	render2d.SetRectUV(tile_x, tile_y, w, h, render2d.GetTexture():GetSize().x, render2d.GetTexture():GetSize().y)
+	render2d.DrawRect(self.Size.x/2, self.Size.y/2, self.Size.x, self.Size.y, rot or 0, self.Size.x/2, self.Size.y/2)
 end
 
 function META:DrawAnimation(animation, frame, rot, flip_x, relative)
@@ -150,7 +150,7 @@ function META:OnUpdate()
 end
 
 function META:OnDraw()
-	surface.SetTexture(self.sheep_texture)
+	render2d.SetTexture(self.sheep_texture)
 	local length = self.Velocity:GetLength()
 	local w, h = self.Parent:GetSize():Unpack()
 
@@ -171,7 +171,7 @@ function META:OnDraw()
 			self:DrawAnimation("walk", self.frame, 0, self.Velocity.x > 0)
 		end
 	end
-	surface.SetRectUV()
+	render2d.SetRectUV()
 end
 
 gui.RegisterPanel(META)

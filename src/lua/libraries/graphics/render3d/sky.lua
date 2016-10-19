@@ -66,7 +66,7 @@ function render3d.UpdateSky()
 			camera.camera_3d:SetView(view)
 			camera.camera_3d:SetProjection(sky_projection)
 
-			surface.DrawRect(0,0,surface.GetSize())
+			render2d.DrawRect(0,0,render2d.GetSize())
 		end
 	fb:End()
 

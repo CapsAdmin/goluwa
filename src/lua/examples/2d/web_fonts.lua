@@ -50,14 +50,14 @@ event.AddListener("PreDrawGUI", "lol", function()
 	for _, font in ipairs(fonts) do
 		local str = font:GetName()
 		local size = Vec2(font:GetTextSize(str))
-		surface.SetColor(1,1,1,1)
+		render2d.SetColor(1,1,1,1)
 		gfx.SetFont(font)
 		gfx.SetTextPosition(30, 30 + y)
 		gfx.DrawText(str)
 
-		surface.SetWhiteTexture()
-		surface.SetColor(1,0,0,0.25)
-		surface.DrawRect(30, 30 + y, size.x, size.y)
+		render2d.SetTexture()
+		render2d.SetColor(1,0,0,0.25)
+		render2d.DrawRect(30, 30 + y, size.x, size.y)
 
 		y = y + size.y + 10
 	end

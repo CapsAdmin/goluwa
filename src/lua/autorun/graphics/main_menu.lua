@@ -80,13 +80,13 @@ end
 local background = ColorBytes(64, 44, 128, 127)
 
 function menu.RenderBackground()
-	surface.SetWhiteTexture()
+	render2d.SetTexture()
 	if render3d.IsGBufferReady() or line.IsGameRunning() then
-		surface.SetColor(background.r, background.g, background.b, background.a)
+		render2d.SetColor(background.r, background.g, background.b, background.a)
 	else
-		surface.SetColor(background.r, background.g, background.b, 255)
+		render2d.SetColor(background.r, background.g, background.b, 255)
 	end
-	surface.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
+	render2d.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
 
 	emitter:Draw()
 end
@@ -102,9 +102,9 @@ function menu.CreateTopBar()
 	thingy:SetCachedRendering(true)
 
 	local function draw_shadow(self)
-		surface.SetWhiteTexture()
-		surface.SetColor(0,0,0,0.25)
-		surface.DrawRect(11, 11, self.Size.x, self.Size.y)
+		render2d.SetTexture()
+		render2d.SetColor(0,0,0,0.25)
+		render2d.DrawRect(11, 11, self.Size.x, self.Size.y)
 	end
 
 	local min = thingy:CreatePanel("text_button")
@@ -181,9 +181,9 @@ function menu.CreateTopBar()
 			if button.menu:IsValid() then return end
 			local menu = gui.CreateMenu(options, bar)
 			function menu:OnPreDraw()
-				surface.SetWhiteTexture()
-				surface.SetColor(0,0,0,0.25)
-				surface.DrawRect(11, 11, self.Size.x, self.Size.y)
+				render2d.SetTexture()
+				render2d.SetColor(0,0,0,0.25)
+				render2d.DrawRect(11, 11, self.Size.x, self.Size.y)
 			end
 			menu:SetPosition(button:GetWorldPosition() + Vec2(0, button:GetHeight() + 2*S), options)
 			menu:Animate("DrawScaleOffset", {Vec2(1,0), Vec2(1,1)}, 0.25, "*", 0.25, true)
@@ -446,12 +446,12 @@ function menu.CreateTopBar()
 			choices:SetupLayout("bottom", "left", "top")
 			function choices:OnCheck(what)
 				if what == "none" then
-					surface.RemoveEffect("zsnes_filter")
-					surface.EnableEffects(false)
+					render2d.RemoveEffect("zsnes_filter")
+					render2d.EnableEffects(false)
 				else
-					surface.EnableEffects(true)
+					render2d.EnableEffects(true)
 					if what == "hq filter" then
-						surface.AddEffect("zsnes_filter", 1, [[
+						render2d.AddEffect("zsnes_filter", 1, [[
 							float mx = 1.0; // start smoothing wt.
 							const float k = -1.10; // wt. decrease factor
 							const float max_w = 0.75; // max filter weigth

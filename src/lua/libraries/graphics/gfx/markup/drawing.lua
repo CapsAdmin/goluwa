@@ -67,7 +67,7 @@ function META:Draw(max_w)
 	if self.chunks[1] then
 		-- reset font and color for every line
 		set_font(self, gfx.GetDefaultFont())
-		surface.SetColor(1, 1, 1, 1)
+		render2d.SetColor(1, 1, 1, 1)
 
 		start_remove = false
 		remove_these = false
@@ -107,7 +107,7 @@ function META:Draw(max_w)
 				then
 					if chunk.type == "start_fade" then
 						chunk.alpha = math.min(math.max(chunk.val - system.GetElapsedTime(), 0), 1) ^ 5
-						surface.SetAlphaMultiplier(chunk.alpha)
+						render2d.SetAlphaMultiplier(chunk.alpha)
 
 						if chunk.alpha <= 0 then
 							start_remove = true
@@ -123,7 +123,7 @@ function META:Draw(max_w)
 						set_font(self, chunk.font)
 
 						local c = chunk.color
-						surface.SetColor(c.r, c.g, c.b, c.a)
+						render2d.SetColor(c.r, c.g, c.b, c.a)
 
 						gfx.DrawText(chunk.val, chunk.x, chunk.y, max_w)
 					elseif chunk.type == "tag_stopper" then
@@ -199,7 +199,7 @@ function META:Draw(max_w)
 					end
 
 					if chunk.type == "end_fade" then
-						surface.SetAlphaMultiplier(1)
+						render2d.SetAlphaMultiplier(1)
 						start_remove = false
 					end
 
@@ -242,14 +242,14 @@ function META:DrawSelection()
 	local END = self:GetSelectStop()
 
 	if START and END then
-		surface.SetWhiteTexture()
-		surface.SetColor(self.SelectionColor:Unpack())
+		render2d.SetTexture()
+		render2d.SetColor(self.SelectionColor:Unpack())
 
 		for i = START.i, END.i - 1 do
 			local char = self.chars[i]
 			if char then
 				local data = char.data
-				surface.DrawRect(data.x, data.y, data.w, data.h)
+				render2d.DrawRect(data.x, data.y, data.w, data.h)
 			end
 		end
 
@@ -265,8 +265,8 @@ end
 function META:DrawLineHighlight(y)
 	do return end
 	local start_chunk = self:CaretFromPosition(0, y).char.chunk
-	surface.SetColor(1, 1, 1, 0.1)
-	surface.DrawRect(start_chunk.x, start_chunk.y, self.width, start_chunk.line_height)
+	render2d.SetColor(1, 1, 1, 0.1)
+	render2d.DrawRect(start_chunk.x, start_chunk.y, self.width, start_chunk.line_height)
 end
 
 function META:IsCaretVisible()
@@ -296,9 +296,9 @@ function META:DrawCaret()
 			h = self.MinimumHeight
 		end
 
-		surface.SetWhiteTexture()
-		surface.SetColor(self.CaretColor.r, self.CaretColor.g, self.CaretColor.b, self:IsCaretVisible() and self.CaretColor.a or 0)
-		surface.DrawRect(x, y, 1, h)
+		render2d.SetTexture()
+		render2d.SetColor(self.CaretColor.r, self.CaretColor.g, self.CaretColor.b, self:IsCaretVisible() and self.CaretColor.a or 0)
+		render2d.DrawRect(x, y, 1, h)
 	end
 end
 

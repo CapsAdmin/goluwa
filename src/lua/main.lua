@@ -14,7 +14,7 @@ end
 if WINDOW and window then
 	if window.Open() then
 		if GRAPHICS then
-			surface.Initialize()
+			render2d.Initialize()
 			fonts.Initialize()
 			gfx.Initialize()
 			gui.Initialize()
@@ -90,7 +90,7 @@ do -- autorun
 		vfs.AutorunAddons("sound/")
 	end
 
-	if GRAPHICS and surface.IsReady() then
+	if GRAPHICS and render2d.IsReady() then
 		vfs.AutorunAddons("graphics/")
 	end
 

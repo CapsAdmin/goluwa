@@ -102,16 +102,16 @@ do -- quad
 	line.RegisterType(Quad)
 end
 
-love.graphics.origin = surface.LoadIdentity
-love.graphics.translate = surface.Translate
-love.graphics.shear = surface.Shear
-love.graphics.rotate = surface.Rotate
-love.graphics.push = surface.PushMatrix
-love.graphics.pop = surface.PopMatrix
+love.graphics.origin = render2d.LoadIdentity
+love.graphics.translate = render2d.Translate
+love.graphics.shear = render2d.Shear
+love.graphics.rotate = render2d.Rotate
+love.graphics.push = render2d.PushMatrix
+love.graphics.pop = render2d.PopMatrix
 
 function love.graphics.scale(x, y)
 	y = y or x
-	surface.Scale(x, y)
+	render2d.Scale(x, y)
 end
 
 function love.graphics.setCaption(title)
@@ -164,7 +164,7 @@ do
 			ENV.graphics_color_a = r[4] or 255
 		end
 
-		surface.SetColor(ENV.graphics_color_r/255, ENV.graphics_color_g/255, ENV.graphics_color_b/255, ENV.graphics_color_a/255)
+		render2d.SetColor(ENV.graphics_color_r/255, ENV.graphics_color_g/255, ENV.graphics_color_b/255, ENV.graphics_color_a/255)
 	end
 
 	function love.graphics.getColor()
@@ -202,9 +202,9 @@ do -- background
 			canvas:clear()
 		else
 			local br, bg, bb, ba = love.graphics.getBackgroundColor()
-			surface.SetWhiteTexture()
-			surface.SetColor(br/255,bg/255,bb/255,ba/255)
-			surface.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
+			render2d.SetTexture()
+			render2d.SetColor(br/255,bg/255,bb/255,ba/255)
+			render2d.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
 			love.graphics.setColor(love.graphics.getColor())
 		end
 	end
@@ -314,9 +314,9 @@ do -- points
 
 	function love.graphics.point(x, y)
 		if STYLE == "rough" then
-			surface.PushTexture(render.GetWhiteTexture())
-			surface.DrawRect(x, y, SIZE, SIZE, nil, SIZE/2, SIZE/2)
-			surface.PopTexture()
+			render2d.PushTexture(render.GetWhiteTexture())
+			render2d.DrawRect(x, y, SIZE, SIZE, nil, SIZE/2, SIZE/2)
+			render2d.PopTexture()
 		else
 			gfx.DrawFilledCircle(x, y, SIZE)
 		end
@@ -336,7 +336,7 @@ do -- points
 		else
 			for i, point in ipairs(points) do
 				if point[3] then
-					surface.SetColor(point[3], point[4], point[5], point[6])
+					render2d.SetColor(point[3], point[4], point[5], point[6])
 				end
 				love.graphics.point(point[1], point[2])
 			end
@@ -471,9 +471,9 @@ do -- font
 		ky = ky or 0
 
 		local cr, cg, cb, ca = love.graphics.getColor()
-		surface.PushColor(cr/255, cg/255, cb/255, ca/255)
-		surface.PushMatrix(x, y, sx, sy, r)
-		surface.Translate(ox, oy)
+		render2d.PushColor(cr/255, cg/255, cb/255, ca/255)
+		render2d.PushMatrix(x, y, sx, sy, r)
+		render2d.Translate(ox, oy)
 			if align then
 				local max_width = 0
 				local t = gfx.WrapString(text, limit):split("\n")
@@ -503,8 +503,8 @@ do -- font
 				gfx.SetTextPosition(0, 0)
 				gfx.DrawText(text)
 			end
-		surface.PopMatrix()
-		surface.PopColor()
+		render2d.PopMatrix()
+		render2d.PopColor()
 	end
 
 	function love.graphics.print(text, x, y, r, sx, sy, ox, oy, kx, ky)
@@ -722,8 +722,8 @@ end
 
 function love.graphics.rectangle(mode, x, y, w, h)
 	if mode == "fill" then
-		surface.SetWhiteTexture()
-		surface.DrawRect(x, y, w, h)
+		render2d.SetTexture()
+		render2d.DrawRect(x, y, w, h)
 	else
 		gfx.DrawLine(x,y, x+w,y)
 		gfx.DrawLine(x,y, x,y+h)
@@ -744,12 +744,12 @@ function love.graphics.drawq(drawable, quad, x,y, r, sx,sy, ox,oy, kx,ky)
 	ky = ky or 0
 
 	local cr, cg, cb, ca = love.graphics.getColor()
-	surface.SetColor(cr/255, cg/255, cb/255, ca/255)
-	surface.PushTexture(ENV.textures[drawable])
-	surface.SetRectUV(quad.x,quad.y, quad.w,quad.h, quad.sw,quad.sh)
-	surface.DrawRect(x,y, quad.w*sx, quad.h*sy,r,ox*sx,oy*sy)
-	surface.SetRectUV()
-	surface.PopTexture()
+	render2d.SetColor(cr/255, cg/255, cb/255, ca/255)
+	render2d.PushTexture(ENV.textures[drawable])
+	render2d.SetRectUV(quad.x,quad.y, quad.w,quad.h, quad.sw,quad.sh)
+	render2d.DrawRect(x,y, quad.w*sx, quad.h*sy,r,ox*sx,oy*sy)
+	render2d.SetRectUV()
+	render2d.PopTexture()
 end
 
 function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
@@ -771,9 +771,9 @@ function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 
 			--if drawable.fb then  sx = 5 sy = 6 end
 
-			surface.PushTexture(tex)
-			surface.DrawRect(x,y, tex:GetSize().x*sx, tex:GetSize().y*sy, r, ox*sx,oy*sy)
-			surface.PopTexture()
+			render2d.PushTexture(tex)
+			render2d.DrawRect(x,y, tex:GetSize().x*sx, tex:GetSize().y*sy, r, ox*sx,oy*sy)
+			render2d.PopTexture()
 		end
 	else
 		x = x or 0
@@ -787,16 +787,16 @@ function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
 		ky = ky or 0
 
 		if line.Type(drawable) == "SpriteBatch" or line.Type(drawable) == "Mesh" then
-			surface.PushColor(1,1,1,1)
-			surface.PushTexture(ENV.textures[drawable.img])
-			surface.PushMatrix(x,y)
-				surface.Translate(ox,oy)
-				surface.Rotate(r)
-				surface.Scale(sx,sy)
+			render2d.PushColor(1,1,1,1)
+			render2d.PushTexture(ENV.textures[drawable.img])
+			render2d.PushMatrix(x,y)
+				render2d.Translate(ox,oy)
+				render2d.Rotate(r)
+				render2d.Scale(sx,sy)
 				drawable:Draw()
-			surface.PopMatrix()
-			surface.PopTexture()
-			surface.PopColor()
+			render2d.PopMatrix()
+			render2d.PopTexture()
+			render2d.PopColor()
 		elseif line.Type(drawable) == "ParticleSystem" then
 
 		else
@@ -898,12 +898,12 @@ do
 end
 
 do -- shapes
-	local mesh = surface.CreateMesh(2048)
+	local mesh = render2d.CreateMesh(2048)
 	for i = 1, 2048 do
 		mesh:SetVertex(i, "color", 1,1,1,1)
 	end
 	local function polygon(mode, points, join)
-		surface.PushTexture(render.GetWhiteTexture())
+		render2d.PushTexture(render.GetWhiteTexture())
 		local idx = 1
 
 		if mode == "line" then
@@ -943,7 +943,7 @@ do -- shapes
 		mesh:UpdateBuffer()
 		mesh:Draw(idx)
 
-		surface.PopTexture()
+		render2d.PopTexture()
 	end
 
 	function love.graphics.polygon(mode, ...)
@@ -1012,8 +1012,8 @@ do -- shapes
 		rx = rx or 0
 		ry = ry or rx
 		if mode == "fill" then
-			surface.SetWhiteTexture()
-			surface.DrawRect(x, y, w, h)
+			render2d.SetTexture()
+			render2d.DrawRect(x, y, w, h)
 		else
 			local coords = math2d.RoundedRectangleToCoordinates(x, y, w, h, rx, ry, points)
 
@@ -1045,7 +1045,7 @@ do
 		end
 
 		local self = line.CreateObject("Mesh")
-		self.mesh = surface.CreateMesh(vertex_count)
+		self.mesh = render2d.CreateMesh(vertex_count)
 
 		if vertex_format then
 			self.mesh:ClearAttributes()

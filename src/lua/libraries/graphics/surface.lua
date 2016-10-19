@@ -1,4 +1,4 @@
-local surface = _G.surface or {}
+local render2d = _G.render2d or {}
 
 local gl = desire("libopengl")
 local render = render
@@ -54,139 +54,139 @@ local RECT = {
 	{pos = {0, 0, 0}, uv = {0, 1}, color = {1,1,1,1}},
 }
 
-function surface.CreateMesh(vertices, indices)
+function render2d.CreateMesh(vertices, indices)
 	vertices = vertices or RECT
-	return render.CreateVertexBuffer(surface.mesh_2d_shader, vertices, indices)
+	return render.CreateVertexBuffer(render2d.shader, vertices, indices)
 end
 
-surface.mesh_2d_shader = surface.mesh_2d_shader or NULL
+render2d.shader = render2d.shader or NULL
 
-function surface.Initialize()
+function render2d.Initialize()
 	local shader = render.CreateShader(SHADER)
-	surface.mesh_2d_shader = shader
+	render2d.shader = shader
 
-	surface.rect_mesh = surface.CreateMesh()
-	surface.rect_mesh:SetDrawHint("static")
+	render2d.rectangle = render2d.CreateMesh()
+	render2d.rectangle:SetDrawHint("static")
 
-	surface.SetWhiteTexture()
+	render2d.SetTexture()
 
-	surface.ready = true
+	render2d.ready = true
 end
 
-function surface.IsReady()
-	return surface.ready == true
+function render2d.IsReady()
+	return render2d.ready == true
 end
 
-function surface.GetSize()
+function render2d.GetSize()
 	return camera.camera_2d.Viewport.w, camera.camera_2d.Viewport.h
 end
 
 do -- render world matrix helpers
 	local ceil =math.ceil
-	function surface.Translate(x, y, z)
+	function render2d.Translate(x, y, z)
 		camera.camera_2d:TranslateWorld(ceil(x), ceil(y), z or 0)
 	end
 
-	function surface.Translatef(x, y, z)
+	function render2d.Translatef(x, y, z)
 		camera.camera_2d:TranslateWorld(x, y, z or 0)
 	end
 
-	function surface.Rotate(a)
+	function render2d.Rotate(a)
 		camera.camera_2d:RotateWorld(a, 0, 0, 1)
 	end
 
-	function surface.Scale(w, h, z)
+	function render2d.Scale(w, h, z)
 		camera.camera_2d:ScaleWorld(w, h or w, z or 1)
 	end
 
-	function surface.Shear(x, y)
+	function render2d.Shear(x, y)
 		camera.camera_2d:ShearWorld(x, y, 0)
 	end
 
-	function surface.LoadIdentity()
+	function render2d.LoadIdentity()
 		camera.camera_2d:LoadIdentityWorld()
 	end
 
-	function surface.PushMatrix(x,y, w,h, a, dont_multiply)
+	function render2d.PushMatrix(x,y, w,h, a, dont_multiply)
 		camera.camera_2d:PushWorld(nil, dont_multiply)
 
-		if x and y then surface.Translate(x, y) end
-		if w and h then surface.Scale(w, h) end
-		if a then surface.Rotate(a) end
+		if x and y then render2d.Translate(x, y) end
+		if w and h then render2d.Scale(w, h) end
+		if a then render2d.Rotate(a) end
 	end
 
-	function surface.PopMatrix()
+	function render2d.PopMatrix()
 		camera.camera_2d:PopWorld()
 	end
 
-	function surface.SetWorldMatrix(mat)
+	function render2d.SetWorldMatrix(mat)
 		camera.camera_2d:SetWorld(mat)
 	end
 
-	function surface.GetWorldMatrix()
+	function render2d.GetWorldMatrix()
 		return camera.camera_2d:GetWorld()
 	end
 
-	function surface.ScreenToWorld(x, y)
+	function render2d.ScreenToWorld(x, y)
 		return camera.camera_2d:ScreenToWorld(x, y)
 	end
 
-	function surface.Start3D2D(pos, ang, scale)
+	function render2d.Start3D2D(pos, ang, scale)
 		camera.camera_2d:Start3D2DEx(pos, ang, scale)
 	end
 
-	function surface.End3D2D()
+	function render2d.End3D2D()
 		camera.camera_2d:End3D2D()
 	end
 end
 
 do
-	function surface.SetColor(r, g, b, a)
-		surface.mesh_2d_shader.global_color.r = r
-		surface.mesh_2d_shader.global_color.g = g
-		surface.mesh_2d_shader.global_color.b = b
-		surface.mesh_2d_shader.global_color.a = a or surface.mesh_2d_shader.global_color.a
+	function render2d.SetColor(r, g, b, a)
+		render2d.shader.global_color.r = r
+		render2d.shader.global_color.g = g
+		render2d.shader.global_color.b = b
+		render2d.shader.global_color.a = a or render2d.shader.global_color.a
 	end
 
-	function surface.GetColor()
-		return surface.mesh_2d_shader.global_color:Unpack()
+	function render2d.GetColor()
+		return render2d.shader.global_color:Unpack()
 	end
 
-	utility.MakePushPopFunction(surface, "Color")
+	utility.MakePushPopFunction(render2d, "Color")
 
-	function surface.SetAlpha(a)
-		surface.mesh_2d_shader.global_color.a = a
+	function render2d.SetAlpha(a)
+		render2d.shader.global_color.a = a
 	end
 
-	function surface.GetAlpha()
-		return surface.mesh_2d_shader.global_color.a
+	function render2d.GetAlpha()
+		return render2d.shader.global_color.a
 	end
 
-	utility.MakePushPopFunction(surface, "Alpha")
+	utility.MakePushPopFunction(render2d, "Alpha")
 end
 
-function surface.SetAlphaMultiplier(a)
-	surface.mesh_2d_shader.alpha_multiplier = a or surface.mesh_2d_shader.alpha_multiplier
+function render2d.SetAlphaMultiplier(a)
+	render2d.shader.alpha_multiplier = a or render2d.shader.alpha_multiplier
 end
 
-function surface.GetAlphaMultiplier()
-	return surface.mesh_2d_shader.alpha_multiplier
+function render2d.GetAlphaMultiplier()
+	return render2d.shader.alpha_multiplier
 end
 
-utility.MakePushPopFunction(surface, "AlphaMultiplier")
+utility.MakePushPopFunction(render2d, "AlphaMultiplier")
 
-function surface.SetTexture(tex)
-	surface.mesh_2d_shader.tex = tex
+function render2d.SetTexture(tex)
+	render2d.shader.tex = tex
 end
 
-function surface.GetTexture()
-	return surface.mesh_2d_shader.tex
+function render2d.GetTexture()
+	return render2d.shader.tex
 end
 
-utility.MakePushPopFunction(surface, "Texture")
+utility.MakePushPopFunction(render2d, "Texture")
 
-function surface.SetWhiteTexture()
-	surface.mesh_2d_shader.tex = render.GetWhiteTexture()
+function render2d.SetTexture()
+	render2d.shader.tex = render.GetWhiteTexture()
 end
 
 do
@@ -220,68 +220,68 @@ do
 	local function update_vbo()
 
 		if
-			last_xtl ~= surface.rect_mesh.Vertices[0].uv[0] or
-			last_ytl ~= surface.rect_mesh.Vertices[0].uv[1] or
-			last_xtr ~= surface.rect_mesh.Vertices[4].uv[0] or
-			last_ytr ~= surface.rect_mesh.Vertices[4].uv[1] or
+			last_xtl ~= render2d.rectangle.Vertices[0].uv[0] or
+			last_ytl ~= render2d.rectangle.Vertices[0].uv[1] or
+			last_xtr ~= render2d.rectangle.Vertices[4].uv[0] or
+			last_ytr ~= render2d.rectangle.Vertices[4].uv[1] or
 
-			last_xbl ~= surface.rect_mesh.Vertices[1].uv[0] or
-			last_ybl ~= surface.rect_mesh.Vertices[0].uv[1] or
-			last_xbr ~= surface.rect_mesh.Vertices[3].uv[0] or
-			last_ybr ~= surface.rect_mesh.Vertices[3].uv[1] or
+			last_xbl ~= render2d.rectangle.Vertices[1].uv[0] or
+			last_ybl ~= render2d.rectangle.Vertices[0].uv[1] or
+			last_xbr ~= render2d.rectangle.Vertices[3].uv[0] or
+			last_ybr ~= render2d.rectangle.Vertices[3].uv[1] or
 
-			last_color_bottom_left ~= surface.rect_mesh.Vertices[1].color or
-			last_color_top_left ~= surface.rect_mesh.Vertices[0].color or
-			last_color_top_right ~= surface.rect_mesh.Vertices[2].color or
-			last_color_bottom_right ~= surface.rect_mesh.Vertices[3].color
+			last_color_bottom_left ~= render2d.rectangle.Vertices[1].color or
+			last_color_top_left ~= render2d.rectangle.Vertices[0].color or
+			last_color_top_right ~= render2d.rectangle.Vertices[2].color or
+			last_color_bottom_right ~= render2d.rectangle.Vertices[3].color
 		then
 
-			surface.rect_mesh:UpdateBuffer()
+			render2d.rectangle:UpdateBuffer()
 
-			last_xtl = surface.rect_mesh.Vertices[0].uv[0]
-			last_ytl = surface.rect_mesh.Vertices[0].uv[1]
-			last_xtr = surface.rect_mesh.Vertices[4].uv[0]
-			last_ytr = surface.rect_mesh.Vertices[4].uv[1]
+			last_xtl = render2d.rectangle.Vertices[0].uv[0]
+			last_ytl = render2d.rectangle.Vertices[0].uv[1]
+			last_xtr = render2d.rectangle.Vertices[4].uv[0]
+			last_ytr = render2d.rectangle.Vertices[4].uv[1]
 
-			last_xbl = surface.rect_mesh.Vertices[1].uv[0]
-			last_ybl = surface.rect_mesh.Vertices[0].uv[1]
-			last_xbr = surface.rect_mesh.Vertices[3].uv[0]
-			last_ybr = surface.rect_mesh.Vertices[3].uv[1]
+			last_xbl = render2d.rectangle.Vertices[1].uv[0]
+			last_ybl = render2d.rectangle.Vertices[0].uv[1]
+			last_xbr = render2d.rectangle.Vertices[3].uv[0]
+			last_ybr = render2d.rectangle.Vertices[3].uv[1]
 
-			last_color_bottom_left = surface.rect_mesh.Vertices[1].color
-			last_color_top_left = surface.rect_mesh.Vertices[0].color
-			last_color_top_right = surface.rect_mesh.Vertices[2].color
-			last_color_bottom_right = surface.rect_mesh.Vertices[3].color
+			last_color_bottom_left = render2d.rectangle.Vertices[1].color
+			last_color_top_left = render2d.rectangle.Vertices[0].color
+			last_color_top_right = render2d.rectangle.Vertices[2].color
+			last_color_bottom_right = render2d.rectangle.Vertices[3].color
 		end
 	end
 
 	do
 		local X, Y, W, H, SX, SY
 
-		function surface.SetRectUV(x,y, w,h, sx,sy)
+		function render2d.SetRectUV(x,y, w,h, sx,sy)
 			if not x then
-				surface.rect_mesh.Vertices[1].uv[0] = 0
-				surface.rect_mesh.Vertices[0].uv[1] = 0
-				surface.rect_mesh.Vertices[1].uv[1] = 1
-				surface.rect_mesh.Vertices[2].uv[0] = 1
+				render2d.rectangle.Vertices[1].uv[0] = 0
+				render2d.rectangle.Vertices[0].uv[1] = 0
+				render2d.rectangle.Vertices[1].uv[1] = 1
+				render2d.rectangle.Vertices[2].uv[0] = 1
 			else
 				sx = sx or 1
 				sy = sy or 1
 
 				y = -y - h
 
-				surface.rect_mesh.Vertices[1].uv[0] = x / sx
-				surface.rect_mesh.Vertices[0].uv[1] = y / sy
-				surface.rect_mesh.Vertices[1].uv[1] = (y + h) / sy
-				surface.rect_mesh.Vertices[2].uv[0] = (x + w) / sx
+				render2d.rectangle.Vertices[1].uv[0] = x / sx
+				render2d.rectangle.Vertices[0].uv[1] = y / sy
+				render2d.rectangle.Vertices[1].uv[1] = (y + h) / sy
+				render2d.rectangle.Vertices[2].uv[0] = (x + w) / sx
 			end
 
-			surface.rect_mesh.Vertices[0].uv[0] = surface.rect_mesh.Vertices[1].uv[0]
-			surface.rect_mesh.Vertices[2].uv[1] = surface.rect_mesh.Vertices[0].uv[1]
-			surface.rect_mesh.Vertices[4].uv = surface.rect_mesh.Vertices[2].uv
-			surface.rect_mesh.Vertices[3].uv[0] = surface.rect_mesh.Vertices[2].uv[0]
-			surface.rect_mesh.Vertices[3].uv[1] = surface.rect_mesh.Vertices[1].uv[1]
-			surface.rect_mesh.Vertices[5].uv = surface.rect_mesh.Vertices[1].uv
+			render2d.rectangle.Vertices[0].uv[0] = render2d.rectangle.Vertices[1].uv[0]
+			render2d.rectangle.Vertices[2].uv[1] = render2d.rectangle.Vertices[0].uv[1]
+			render2d.rectangle.Vertices[4].uv = render2d.rectangle.Vertices[2].uv
+			render2d.rectangle.Vertices[3].uv[0] = render2d.rectangle.Vertices[2].uv[0]
+			render2d.rectangle.Vertices[3].uv[1] = render2d.rectangle.Vertices[1].uv[1]
+			render2d.rectangle.Vertices[5].uv = render2d.rectangle.Vertices[1].uv
 
 			update_vbo()
 
@@ -293,72 +293,72 @@ do
 			SY = sy
 		end
 
-		function surface.GetRectUV()
+		function render2d.GetRectUV()
 			return X, Y, W, H, SX, SY
 		end
 
-		function surface.SetRectUV2(u1,v1, u2,v2)
-			surface.rect_mesh.Vertices[1].uv[0] = u1
-			surface.rect_mesh.Vertices[0].uv[1] = v1
-			surface.rect_mesh.Vertices[1].uv[1] = u2
-			surface.rect_mesh.Vertices[2].uv[0] = v2
+		function render2d.SetRectUV2(u1,v1, u2,v2)
+			render2d.rectangle.Vertices[1].uv[0] = u1
+			render2d.rectangle.Vertices[0].uv[1] = v1
+			render2d.rectangle.Vertices[1].uv[1] = u2
+			render2d.rectangle.Vertices[2].uv[0] = v2
 
-			surface.rect_mesh.Vertices[0].uv[0] = surface.rect_mesh.Vertices[1].uv[0]
-			surface.rect_mesh.Vertices[2].uv[1] = surface.rect_mesh.Vertices[0].uv[1]
-			surface.rect_mesh.Vertices[4].uv = surface.rect_mesh.Vertices[2].uv
-			surface.rect_mesh.Vertices[3].uv[0] = surface.rect_mesh.Vertices[2].uv[0]
-			surface.rect_mesh.Vertices[3].uv[1] = surface.rect_mesh.Vertices[1].uv[1]
-			surface.rect_mesh.Vertices[5].uv = surface.rect_mesh.Vertices[1].uv
+			render2d.rectangle.Vertices[0].uv[0] = render2d.rectangle.Vertices[1].uv[0]
+			render2d.rectangle.Vertices[2].uv[1] = render2d.rectangle.Vertices[0].uv[1]
+			render2d.rectangle.Vertices[4].uv = render2d.rectangle.Vertices[2].uv
+			render2d.rectangle.Vertices[3].uv[0] = render2d.rectangle.Vertices[2].uv[0]
+			render2d.rectangle.Vertices[3].uv[1] = render2d.rectangle.Vertices[1].uv[1]
+			render2d.rectangle.Vertices[5].uv = render2d.rectangle.Vertices[1].uv
 
 			update_vbo()
 		end
 	end
 
-	function surface.SetRectColors(cbl, ctl, ctr, cbr)
+	function render2d.SetRectColors(cbl, ctl, ctr, cbr)
 		if not cbl then
 			for i = 1, 6 do
-				surface.rect_mesh.Vertices[i].color = {1,1,1,1}
+				render2d.rectangle.Vertices[i].color = {1,1,1,1}
 			end
 		else
-			surface.rect_mesh.Vertices[1].color = {cbl:Unpack()}
-			surface.rect_mesh.Vertices[0].color = {ctl:Unpack()}
-			surface.rect_mesh.Vertices[2].color = {ctr:Unpack()}
-			surface.rect_mesh.Vertices[4].color = surface.rect_mesh.Vertices[2].color
-			surface.rect_mesh.Vertices[3].color = {cbr:Unpack()}
-			surface.rect_mesh.Vertices[5].color = surface.rect_mesh.Vertices[0]
+			render2d.rectangle.Vertices[1].color = {cbl:Unpack()}
+			render2d.rectangle.Vertices[0].color = {ctl:Unpack()}
+			render2d.rectangle.Vertices[2].color = {ctr:Unpack()}
+			render2d.rectangle.Vertices[4].color = render2d.rectangle.Vertices[2].color
+			render2d.rectangle.Vertices[3].color = {cbr:Unpack()}
+			render2d.rectangle.Vertices[5].color = render2d.rectangle.Vertices[0]
 		end
 
 		update_vbo()
 	end
 end
 
-function surface.DrawRect(x,y, w,h, a, ox,oy)
-	surface.PushMatrix()
+function render2d.DrawRect(x,y, w,h, a, ox,oy)
+	render2d.PushMatrix()
 		if x and y then
-			surface.Translate(x, y)
+			render2d.Translate(x, y)
 		end
 
 		if a then
-			surface.Rotate(a)
+			render2d.Rotate(a)
 		end
 
 		if ox then
-			surface.Translate(-ox, -oy)
+			render2d.Translate(-ox, -oy)
 		end
 
 		if w and h then
-			surface.Scale(w, h)
+			render2d.Scale(w, h)
 		end
 
-		surface.rect_mesh:Draw()
-	surface.PopMatrix()
+		render2d.rectangle:Draw()
+	render2d.PopMatrix()
 end
 
-function surface.SetScissor(x, y, w, h)
+function render2d.SetScissor(x, y, w, h)
 	if not x then
 		render.SetScissor()
 	else
-		x, y = surface.ScreenToWorld(-x, -y)
+		x, y = render2d.ScreenToWorld(-x, -y)
 		render.SetScissor(-x, -y, w, h)
 	end
 end
@@ -369,7 +369,7 @@ do
 
 	local stencil_debug_tex
 
-	function surface.DrawStencilTexture()
+	function render2d.DrawStencilTexture()
 
 	    stencil_debug_tex = stencil_debug_tex or render.CreateBlankTexture(Vec2(render.GetWidth(), render.GetHeight()))
 
@@ -413,21 +413,21 @@ do
 			stencil_debug_tex:Upload(stencilData, {upload_format = "red", internal_format = "r8"})
 		--end
 
-		surface.PushMatrix()
-		surface.LoadIdentity()
-    		surface.SetColor(1,1,1,1)
-    		surface.SetTexture(stencil_debug_tex)
+		render2d.PushMatrix()
+		render2d.LoadIdentity()
+    		render2d.SetColor(1,1,1,1)
+    		render2d.SetTexture(stencil_debug_tex)
     		gl.Disable("GL_STENCIL_TEST")
-    		surface.DrawRect(64,64,128,128)
+    		render2d.DrawRect(64,64,128,128)
     		gl.Enable("GL_STENCIL_TEST")
-		surface.PopMatrix()
+		render2d.PopMatrix()
 
 		if stencilStateArray[0] == 0 then
 		    gl.Disable("GL_STENCIL_TEST")
 	    end
     end
 
-	function surface.EnableStencilClipping()
+	function render2d.EnableStencilClipping()
 		--assert(#stack == 0, "I think this is good assertion, wait, you may want to draw something regardless of clipping, so nvm")
 		--table.clear(stack)
 		-- that means the stack should not be emptied, in case you want to disobey clipping?
@@ -453,7 +453,7 @@ do
 		gl.StencilMask("GL_FALSE")
 	end
 
-	function surface.DisableStencilClipping()
+	function render2d.DisableStencilClipping()
 		-- disable stencil completely, how2
 		gl.Disable("GL_STENCIL_TEST")
 	end
@@ -509,7 +509,7 @@ do
 		gl.StencilFunc("GL_EQUAL", depth-1, 0xFF) -- Pass test if stencil value is equal to depth
 	end
 
-	function surface.PushClipFunction(draw_func, ...)
+	function render2d.PushClipFunction(draw_func, ...)
 	    depth = depth+1
 
 		stack[depth] = {func = draw_func, args = {...}}
@@ -517,7 +517,7 @@ do
 		update_stencil_buffer("GL_INCR")
 	end
 
-	function surface.PopClipFunction()
+	function render2d.PopClipFunction()
 		update_stencil_buffer("GL_DECR")
 
 		stack[depth] = nil
@@ -531,7 +531,7 @@ end
 
 do
 	local X, Y, W, H
-	function surface.EnableClipRect(x, y, w, h)
+	function render2d.EnableClipRect(x, y, w, h)
 		gl.Enable("GL_STENCIL_TEST")
 
 		gl.StencilFunc("GL_ALWAYS", 1, 0xFF) -- Set any stencil to 1
@@ -539,9 +539,9 @@ do
 		gl.StencilMask(0xFF) -- Write to stencil buffer
 		render.GetFrameBuffer():ClearStencil(0xFF) -- Clear stencil buffer (0 by default)
 
-		surface.PushColor(0,0,0,0)
-		surface.DrawRect(x, y, w, h)
-		surface.PopColor()
+		render2d.PushColor(0,0,0,0)
+		render2d.DrawRect(x, y, w, h)
+		render2d.PopColor()
 
 		gl.StencilFunc("GL_EQUAL", 1, 0xFF) -- Pass test if stencil value is 1
 		gl.StencilMask(0x00) -- Don't write anything to stencil buffer
@@ -552,86 +552,86 @@ do
 		H = h
 	end
 
-	function surface.GetClipRect()
+	function render2d.GetClipRect()
 		return X or 0, Y or 0, W or render.GetWidth(), H or render.GetHeight()
 	end
 
-	function surface.DisableClipRect()
+	function render2d.DisableClipRect()
 		gl.Disable("GL_STENCIL_TEST")
 	end
 end
 
-function surface.SetHSV(h,s,v)
-	surface.mesh_2d_shader.hsv_mult.x = h
-	surface.mesh_2d_shader.hsv_mult.y = s
-	surface.mesh_2d_shader.hsv_mult.z = v
+function render2d.SetHSV(h,s,v)
+	render2d.shader.hsv_mult.x = h
+	render2d.shader.hsv_mult.y = s
+	render2d.shader.hsv_mult.z = v
 end
 
-function surface.GetHSV()
-	return surface.mesh_2d_shader.hsv_mult:Unpack()
+function render2d.GetHSV()
+	return render2d.shader.hsv_mult:Unpack()
 end
 
-utility.MakePushPopFunction(surface, "HSV")
+utility.MakePushPopFunction(render2d, "HSV")
 
 do -- effects
-	function surface.EnableEffects(b)
+	function render2d.EnableEffects(b)
 		if b then
 			local fb = render.CreateFrameBuffer()
 			fb:SetTexture(1, render.CreateBlankTexture(render.GetScreenSize()))
 			fb:SetTexture("depth_stencil", {internal_format = "depth_stencil", size = render.GetScreenSize()})
 			fb:CheckCompletness()
 
-			surface.framebuffer = fb
-		elseif surface.framebuffer then
-			surface.framebuffer = nil
+			render2d.framebuffer = fb
+		elseif render2d.framebuffer then
+			render2d.framebuffer = nil
 		end
 	end
 
-	surface.effects = {}
+	render2d.effects = {}
 
-	function surface.AddEffect(name, pos, ...)
-		surface.RemoveEffect(name)
+	function render2d.AddEffect(name, pos, ...)
+		render2d.RemoveEffect(name)
 
-		table.insert(surface.effects, {name = name, pos = pos, args = {...}})
+		table.insert(render2d.effects, {name = name, pos = pos, args = {...}})
 
-		table.sort(surface.effects, function(a, b)
+		table.sort(render2d.effects, function(a, b)
 			return a.pos > b.pos
 		end)
 	end
 
-	function surface.RemoveEffect(name)
-		for i, info in ipairs(surface.effects) do
+	function render2d.RemoveEffect(name)
+		for i, info in ipairs(render2d.effects) do
 			if info.name == name then
-				table.remove(surface.effects, i)
+				table.remove(render2d.effects, i)
 			end
 		end
 
-		table.sort(surface.effects, function(a, b)
+		table.sort(render2d.effects, function(a, b)
 			return a.pos > b.pos
 		end)
 	end
 
-	function surface.Start()
-		if surface.framebuffer then
-			surface.framebuffer:Begin()
+	function render2d.Start()
+		if render2d.framebuffer then
+			render2d.framebuffer:Begin()
 		end
 	end
 
-	function surface.End()
-		if surface.framebuffer then
-			for _, info in ipairs(surface.effects) do
-				surface.framebuffer:GetTexture():Shade(unpack(info.args))
+	function render2d.End()
+		if render2d.framebuffer then
+			for _, info in ipairs(render2d.effects) do
+				render2d.framebuffer:GetTexture():Shade(unpack(info.args))
 			end
 
-			surface.framebuffer:End()
+			render2d.framebuffer:End()
 
-			surface.framebuffer:Blit(render.GetScreenFrameBuffer())
+			render2d.framebuffer:Blit(render.GetScreenFrameBuffer())
 		end
 	end
 end
 
 if RELOAD then
-	surface.Initialize()
+	render2d.Initialize()
 end
 
-return surface
+return render2d

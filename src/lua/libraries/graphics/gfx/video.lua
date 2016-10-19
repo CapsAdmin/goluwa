@@ -25,9 +25,9 @@ end
 
 function META:Draw(x, y)
 	local tex = self:GetTexture()
-	surface.SetTexture(tex)
+	render2d.SetTexture(tex)
 
-	surface.DrawRect(x, y, tex:GetSize().x, tex:GetSize().y)
+	render2d.DrawRect(x, y, tex:GetSize().x, tex:GetSize().y)
 end
 
 prototype.Register(META)

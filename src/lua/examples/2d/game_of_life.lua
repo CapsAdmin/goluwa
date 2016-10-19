@@ -44,11 +44,11 @@ tex:Shade([[
 end)
 
 event.AddListener("PreDrawGUI", "fb", function()
-	surface.SetWhiteTexture()
-	surface.SetColor(0,0,0,1)
-	surface.DrawRect(0, 0, tex:GetSize().x, tex:GetSize().y)
+	render2d.SetTexture()
+	render2d.SetColor(0,0,0,1)
+	render2d.DrawRect(0, 0, tex:GetSize().x, tex:GetSize().y)
 
-	surface.SetTexture(tex)
-	surface.SetColor(1,1,1,1)
-	surface.DrawRect(0, 0, tex:GetSize().x, tex:GetSize().y)
+	render2d.SetTexture(tex)
+	render2d.SetColor(1,1,1,1)
+	render2d.DrawRect(0, 0, tex:GetSize().x, tex:GetSize().y)
 end)

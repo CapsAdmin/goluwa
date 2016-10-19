@@ -156,11 +156,11 @@ function META:GetTextures()
 end
 
 function META:DebugDraw()
-	surface.SetColor(1,1,1,1)
+	render2d.SetColor(1,1,1,1)
 	local x, y = 0,0
 	for _, page in ipairs(self.pages) do
-		surface.SetTexture(page.texture)
-		surface.DrawRect(x,y,page.texture:GetSize().x, page.texture:GetSize().y)
+		render2d.SetTexture(page.texture)
+		render2d.DrawRect(x,y,page.texture:GetSize().x, page.texture:GetSize().y)
 		if x + page.texture:GetSize().x*2 > render.GetWidth() then
 			x = 0
 			y = y + page.texture:GetSize().y
@@ -183,11 +183,11 @@ function META:Draw(id, x, y, w, h)
 		w = w or data.page_w
 		h = h or data.page_h
 
-		surface.SetTexture(data.page.texture)
+		render2d.SetTexture(data.page.texture)
 
-		surface.SetRectUV(unpack(data.page_uv))
-		surface.DrawRect(x,y, w,h)
-		surface.SetRectUV()
+		render2d.SetRectUV(unpack(data.page_uv))
+		render2d.DrawRect(x,y, w,h)
+		render2d.SetRectUV()
 	end
 end
 

@@ -194,16 +194,16 @@ do
 
 			if not obj.draw_manual then
 				if obj.paint_bg and paint_bg ~= nil then
-					surface.SetWhiteTexture()
-					surface.SetColor(obj.bg_color:Unpack())
-					surface.DrawRect(0,0,obj.Size.x,obj.Size.y)
+					render2d.SetTexture()
+					render2d.SetColor(obj.bg_color:Unpack())
+					render2d.DrawRect(0,0,obj.Size.x,obj.Size.y)
 				end
 
 				if class == "label" then
 					if obj.text_internal and obj.text_internal ~= "" then
-						surface.SetColor(obj.fg_color:Unpack())
+						render2d.SetColor(obj.fg_color:Unpack())
 						gfx.SetTextPosition(obj.text_offset.x, obj.text_offset.y)
-						gfx.SetFont(gine.surface_fonts[obj.font_internal:lower()])
+						gfx.SetFont(gine.render2d_fonts[obj.font_internal:lower()])
 						gfx.DrawText(obj.text_internal)
 					end
 				end
@@ -225,7 +225,7 @@ do
 			local panel = obj
 
 			if panel.vgui_type == "label" then
-				local w, h = gine.surface_fonts[panel.font_internal:lower()]:GetTextSize(panel.text_internal)
+				local w, h = gine.render2d_fonts[panel.font_internal:lower()]:GetTextSize(panel.text_internal)
 				local m = panel:GetMargin()
 
 				if panel.content_alignment == 5 then
@@ -439,9 +439,9 @@ do
 	function META:PaintAt(x,y,w,h)
 	if in_drawing then return end
 	in_drawing = true
-		surface.PushMatrix(x,y,w,h)
+		render2d.PushMatrix(x,y,w,h)
 		self.__obj:OnDraw()
-		surface.PopMatrix()
+		render2d.PopMatrix()
 	in_drawing = false
 	end
 
@@ -494,7 +494,7 @@ do
 	do
 		function META:SetFontInternal(font)
 			self.__obj.font_internal = font or "default"
-			if not gine.surface_fonts[self.__obj.font_internal:lower()] then
+			if not gine.render2d_fonts[self.__obj.font_internal:lower()] then
 				--llog("font ", self.__obj.font_internal, " does not exist")
 				self.__obj.font_internal = "default"
 			end
@@ -685,11 +685,11 @@ do
 	end
 
 	function META:DrawFilledRect()
-		surface.DrawRect(0,0,self:GetSize())
+		render2d.DrawRect(0,0,self:GetSize())
 	end
 
 	function META:DrawOutlinedRect()
-		surface.DrawRect(0,0,self:GetSize())
+		render2d.DrawRect(0,0,self:GetSize())
 	end
 
 	function META:SetWrap(b)

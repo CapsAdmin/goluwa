@@ -2,7 +2,7 @@ event.AddListener("PreDrawGUI", "joystick", function()
 	local data = window.GetJoystickState(0)
 
 	gfx.SetFont()
-	surface.SetColor(1,1,1,1)
+	render2d.SetColor(1,1,1,1)
 
 	if data then
 		local x, y = 0, 0

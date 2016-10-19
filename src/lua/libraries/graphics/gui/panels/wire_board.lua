@@ -15,8 +15,8 @@ function META:Initialize()
 end
 
 function META:OnPostDraw()
-	surface.SetColor(1,1,1,1)
-	surface.SetTexture(self.cable_texture)
+	render2d.SetColor(1,1,1,1)
+	render2d.SetTexture(self.cable_texture)
 
 	if self.connection_point then
 		local a_pos = self.connection_point:GetPosition() + self.connection_point:GetParent():GetPosition() + self.connection_point:GetSize() / 2

@@ -15,9 +15,9 @@ end
 local X, Y = 0, 0
 
 function gfx.DrawText(str, x, y, w)
-	local ux,uy,uw,uh,usx,usy = surface.GetRectUV()
-	local old_tex = surface.GetTexture()
-	local r,g,b,a = surface.GetColor()
+	local ux,uy,uw,uh,usx,usy = render2d.GetRectUV()
+	local old_tex = render2d.GetTexture()
+	local r,g,b,a = render2d.GetColor()
 
 	x = x or X
 	y = y or Y
@@ -25,18 +25,18 @@ function gfx.DrawText(str, x, y, w)
 	local font = gfx.GetFont()
 
 	if not font then
-		surface.SetTexture(render.GetErrorTexture())
-		surface.DrawRect(x,y,32,32)
+		render2d.SetTexture(render.GetErrorTexture())
+		render2d.DrawRect(x,y,32,32)
 	elseif not font:IsReady() then
-		surface.SetTexture(render.GetLoadingTexture())
-		surface.DrawRect(x,y,32,32)
+		render2d.SetTexture(render.GetLoadingTexture())
+		render2d.DrawRect(x,y,32,32)
 	else
 		font:DrawString(str, x, y, w)
 	end
 
-	surface.SetRectUV(ux,uy,uw,uh,usx,usy)
-	surface.SetTexture(old_tex)
-	surface.SetColor(r,g,b,a)
+	render2d.SetRectUV(ux,uy,uw,uh,usx,usy)
+	render2d.SetTexture(old_tex)
+	render2d.SetColor(r,g,b,a)
 end
 
 function gfx.SetTextPosition(x, y)

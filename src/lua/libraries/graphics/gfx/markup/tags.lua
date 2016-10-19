@@ -70,13 +70,13 @@ META.tags.wrong =
 {
 	arguments = {},
 	post_draw_chunks = function(markup, self, chunk)
-		surface.PushColor(1, 0, 0, 1)
+		render2d.PushColor(1, 0, 0, 1)
 		-- todo: LOL
 		for x = chunk.x, chunk.right do
 			gfx.DrawLine(x, chunk.top + math.sin(x), x+1, chunk.top +math.sin(x))
 		end
 
-		surface.PopColor()
+		render2d.PopColor()
 	end,
 }
 
@@ -84,12 +84,12 @@ META.tags.background =
 {
 	arguments = {1,1,1,1},
 	pre_draw = function(markup, self, x,y, r,g,b,a)
-		surface.PushColor(r,g,b,a)
+		render2d.PushColor(r,g,b,a)
 		local w, h = self.tag_width, self.tag_height
 		if h > self.h then y = y - h end
-		surface.SetWhiteTexture()
-		surface.DrawRect(x, y, w, h)
-		surface.PopColor()
+		render2d.SetTexture()
+		render2d.DrawRect(x, y, w, h)
+		render2d.PopColor()
 	end,
 
 	post_draw = function()
@@ -101,10 +101,10 @@ META.tags.mark =
 {
 	arguments = {},
 	post_draw_chunks = function(markup, self, chunk)
-		surface.PushColor(1, 1, 0, 0.25)
-		surface.SetWhiteTexture()
-		surface.DrawRect(chunk.x, chunk.y, chunk.w, chunk.h)
-		surface.PopColor()
+		render2d.PushColor(1, 1, 0, 0.25)
+		render2d.SetTexture()
+		render2d.DrawRect(chunk.x, chunk.y, chunk.w, chunk.h)
+		render2d.PopColor()
 	end,
 }
 
@@ -114,7 +114,7 @@ META.tags.hsv =
 
 	pre_draw = function(markup, self, x,y, h, s, v)
 		local r,g,b = ColorHSV(h,s,v):Unpack()
-		surface.SetColor(r, g, b, 1)
+		render2d.SetColor(r, g, b, 1)
 	end,
 }
 
@@ -123,7 +123,7 @@ META.tags.color =
 	arguments = {1, 1, 1, 1},
 
 	pre_draw = function(markup, self, x,y, r,g,b,a)
-		surface.SetColor(r, g, b, a)
+		render2d.SetColor(r, g, b, a)
 	end,
 }
 
@@ -132,11 +132,11 @@ META.tags.alpha =
 	arguments = {1},
 
 	pre_draw = function(markup, self, x, y, alpha)
-		surface.SetAlphaMultiplier(alpha)
+		render2d.SetAlphaMultiplier(alpha)
 	end,
 
 	post_draw = function(markup, self)
-		surface.SetAlphaMultiplier(1)
+		render2d.SetAlphaMultiplier(1)
 	end,
 }
 
@@ -242,24 +242,24 @@ META.tags.physics =
 			part.vel.y = part.vel.y * -part.drag
 		end
 
-		surface.PushMatrix()
+		render2d.PushMatrix()
 
 
 		local center_x = self.tag_center_x
 		local center_y = self.tag_center_y
 
-		surface.Translate(part.pos.x, part.pos.y)
+		render2d.Translate(part.pos.x, part.pos.y)
 
 
-		surface.Translate(center_x, center_y)
-			surface.Rotate(math.deg(math.atan2(part.vel.y, part.vel.x)))
-		surface.Translate(-center_x, -center_y)
+		render2d.Translate(center_x, center_y)
+			render2d.Rotate(math.deg(math.atan2(part.vel.y, part.vel.x)))
+		render2d.Translate(-center_x, -center_y)
 
 
 	end,
 
 	post_draw = function()
-		surface.PopMatrix()
+		render2d.PopMatrix()
 	end,
 }
 
@@ -292,8 +292,8 @@ META.tags.texture =
 
 	pre_draw = function(markup, self, x,y, path, size)
 		if not self.mat or not self.mat:IsValid() then return end
-		surface.SetTexture(self.mat)
-		surface.DrawRect(x, y, self.mat.Size.x or size, self.mat.Size.y or size)
+		render2d.SetTexture(self.mat)
+		render2d.DrawRect(x, y, self.mat.Size.x or size, self.mat.Size.y or size)
 	end,
 }
 
@@ -310,8 +310,8 @@ META.tags.silkicon =
 	end,
 
 	pre_draw = function(markup, self, x,y, path)
-		surface.SetTexture(self.mat)
-		surface.DrawRect(x, y, self.w, self.h)
+		render2d.SetTexture(self.mat)
+		render2d.DrawRect(x, y, self.w, self.h)
 	end,
 }
 

@@ -2632,43 +2632,43 @@ function steamworks.inventory.GetItemDefinitionProperty(iDefinition, pchProperty
 steamworks.video = {}
 steamworks.video_ptr = lib.SteamVideo()
 function steamworks.video.GetVideoURL(unVideoAppID) return lib.SteamAPI_ISteamVideo_GetVideoURL(steamworks.video_ptr, unVideoAppID) end
-steamworks.htmlsurface = {}
-steamworks.htmlsurface_ptr = lib.SteamHTMLSurface()
-function steamworks.htmlsurface.DestructISteamHTMLSurface() return lib.SteamAPI_ISteamHTMLSurface_DestructISteamHTMLSurface(steamworks.htmlsurface_ptr) end
-function steamworks.htmlsurface.Init() return lib.SteamAPI_ISteamHTMLSurface_Init(steamworks.htmlsurface_ptr) end
-function steamworks.htmlsurface.Shutdown() return lib.SteamAPI_ISteamHTMLSurface_Shutdown(steamworks.htmlsurface_ptr) end
-function steamworks.htmlsurface.CreateBrowser(pchUserAgent, pchUserCSS) return lib.SteamAPI_ISteamHTMLSurface_CreateBrowser(steamworks.htmlsurface_ptr, pchUserAgent, pchUserCSS) end
-function steamworks.htmlsurface.RemoveBrowser(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_RemoveBrowser(steamworks.htmlsurface_ptr, unBrowserHandle) end
-function steamworks.htmlsurface.LoadURL(unBrowserHandle, pchURL, pchPostData) return lib.SteamAPI_ISteamHTMLSurface_LoadURL(steamworks.htmlsurface_ptr, unBrowserHandle, pchURL, pchPostData) end
-function steamworks.htmlsurface.SetSize(unBrowserHandle, unWidth, unHeight) return lib.SteamAPI_ISteamHTMLSurface_SetSize(steamworks.htmlsurface_ptr, unBrowserHandle, unWidth, unHeight) end
-function steamworks.htmlsurface.StopLoad(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_StopLoad(steamworks.htmlsurface_ptr, unBrowserHandle) end
-function steamworks.htmlsurface.Reload(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_Reload(steamworks.htmlsurface_ptr, unBrowserHandle) end
-function steamworks.htmlsurface.GoBack(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_GoBack(steamworks.htmlsurface_ptr, unBrowserHandle) end
-function steamworks.htmlsurface.GoForward(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_GoForward(steamworks.htmlsurface_ptr, unBrowserHandle) end
-function steamworks.htmlsurface.AddHeader(unBrowserHandle, pchKey, pchValue) return lib.SteamAPI_ISteamHTMLSurface_AddHeader(steamworks.htmlsurface_ptr, unBrowserHandle, pchKey, pchValue) end
-function steamworks.htmlsurface.ExecuteJavascript(unBrowserHandle, pchScript) return lib.SteamAPI_ISteamHTMLSurface_ExecuteJavascript(steamworks.htmlsurface_ptr, unBrowserHandle, pchScript) end
-function steamworks.htmlsurface.MouseUp(unBrowserHandle, eMouseButton) return lib.SteamAPI_ISteamHTMLSurface_MouseUp(steamworks.htmlsurface_ptr, unBrowserHandle, eMouseButton) end
-function steamworks.htmlsurface.MouseDown(unBrowserHandle, eMouseButton) return lib.SteamAPI_ISteamHTMLSurface_MouseDown(steamworks.htmlsurface_ptr, unBrowserHandle, eMouseButton) end
-function steamworks.htmlsurface.MouseDoubleClick(unBrowserHandle, eMouseButton) return lib.SteamAPI_ISteamHTMLSurface_MouseDoubleClick(steamworks.htmlsurface_ptr, unBrowserHandle, eMouseButton) end
-function steamworks.htmlsurface.MouseMove(unBrowserHandle, x, y) return lib.SteamAPI_ISteamHTMLSurface_MouseMove(steamworks.htmlsurface_ptr, unBrowserHandle, x, y) end
-function steamworks.htmlsurface.MouseWheel(unBrowserHandle, nDelta) return lib.SteamAPI_ISteamHTMLSurface_MouseWheel(steamworks.htmlsurface_ptr, unBrowserHandle, nDelta) end
-function steamworks.htmlsurface.KeyDown(unBrowserHandle, nNativeKeyCode, eHTMLKeyModifiers) return lib.SteamAPI_ISteamHTMLSurface_KeyDown(steamworks.htmlsurface_ptr, unBrowserHandle, nNativeKeyCode, eHTMLKeyModifiers) end
-function steamworks.htmlsurface.KeyUp(unBrowserHandle, nNativeKeyCode, eHTMLKeyModifiers) return lib.SteamAPI_ISteamHTMLSurface_KeyUp(steamworks.htmlsurface_ptr, unBrowserHandle, nNativeKeyCode, eHTMLKeyModifiers) end
-function steamworks.htmlsurface.KeyChar(unBrowserHandle, cUnicodeChar, eHTMLKeyModifiers) return lib.SteamAPI_ISteamHTMLSurface_KeyChar(steamworks.htmlsurface_ptr, unBrowserHandle, cUnicodeChar, eHTMLKeyModifiers) end
-function steamworks.htmlsurface.SetHorizontalScroll(unBrowserHandle, nAbsolutePixelScroll) return lib.SteamAPI_ISteamHTMLSurface_SetHorizontalScroll(steamworks.htmlsurface_ptr, unBrowserHandle, nAbsolutePixelScroll) end
-function steamworks.htmlsurface.SetVerticalScroll(unBrowserHandle, nAbsolutePixelScroll) return lib.SteamAPI_ISteamHTMLSurface_SetVerticalScroll(steamworks.htmlsurface_ptr, unBrowserHandle, nAbsolutePixelScroll) end
-function steamworks.htmlsurface.SetKeyFocus(unBrowserHandle, bHasKeyFocus) return lib.SteamAPI_ISteamHTMLSurface_SetKeyFocus(steamworks.htmlsurface_ptr, unBrowserHandle, bHasKeyFocus) end
-function steamworks.htmlsurface.ViewSource(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_ViewSource(steamworks.htmlsurface_ptr, unBrowserHandle) end
-function steamworks.htmlsurface.CopyToClipboard(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_CopyToClipboard(steamworks.htmlsurface_ptr, unBrowserHandle) end
-function steamworks.htmlsurface.PasteFromClipboard(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_PasteFromClipboard(steamworks.htmlsurface_ptr, unBrowserHandle) end
-function steamworks.htmlsurface.Find(unBrowserHandle, pchSearchStr, bCurrentlyInFind, bReverse) return lib.SteamAPI_ISteamHTMLSurface_Find(steamworks.htmlsurface_ptr, unBrowserHandle, pchSearchStr, bCurrentlyInFind, bReverse) end
-function steamworks.htmlsurface.StopFind(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_StopFind(steamworks.htmlsurface_ptr, unBrowserHandle) end
-function steamworks.htmlsurface.GetLinkAtPosition(unBrowserHandle, x, y) return lib.SteamAPI_ISteamHTMLSurface_GetLinkAtPosition(steamworks.htmlsurface_ptr, unBrowserHandle, x, y) end
-function steamworks.htmlsurface.SetCookie(pchHostname, pchKey, pchValue, pchPath, nExpires, bSecure, bHTTPOnly) return lib.SteamAPI_ISteamHTMLSurface_SetCookie(steamworks.htmlsurface_ptr, pchHostname, pchKey, pchValue, pchPath, nExpires, bSecure, bHTTPOnly) end
-function steamworks.htmlsurface.SetPageScaleFactor(unBrowserHandle, flZoom, nPointX, nPointY) return lib.SteamAPI_ISteamHTMLSurface_SetPageScaleFactor(steamworks.htmlsurface_ptr, unBrowserHandle, flZoom, nPointX, nPointY) end
-function steamworks.htmlsurface.AllowStartRequest(unBrowserHandle, bAllowed) return lib.SteamAPI_ISteamHTMLSurface_AllowStartRequest(steamworks.htmlsurface_ptr, unBrowserHandle, bAllowed) end
-function steamworks.htmlsurface.JSDialogResponse(unBrowserHandle, bResult) return lib.SteamAPI_ISteamHTMLSurface_JSDialogResponse(steamworks.htmlsurface_ptr, unBrowserHandle, bResult) end
-function steamworks.htmlsurface.FileLoadDialogResponse(unBrowserHandle, pchSelectedFiles) return lib.SteamAPI_ISteamHTMLSurface_FileLoadDialogResponse(steamworks.htmlsurface_ptr, unBrowserHandle, pchSelectedFiles) end
+steamworks.htmlrender2d = {}
+steamworks.htmlrender2d_ptr = lib.SteamHTMLSurface()
+function steamworks.htmlrender2d.DestructISteamHTMLSurface() return lib.SteamAPI_ISteamHTMLSurface_DestructISteamHTMLSurface(steamworks.htmlrender2d_ptr) end
+function steamworks.htmlrender2d.Init() return lib.SteamAPI_ISteamHTMLSurface_Init(steamworks.htmlrender2d_ptr) end
+function steamworks.htmlrender2d.Shutdown() return lib.SteamAPI_ISteamHTMLSurface_Shutdown(steamworks.htmlrender2d_ptr) end
+function steamworks.htmlrender2d.CreateBrowser(pchUserAgent, pchUserCSS) return lib.SteamAPI_ISteamHTMLSurface_CreateBrowser(steamworks.htmlrender2d_ptr, pchUserAgent, pchUserCSS) end
+function steamworks.htmlrender2d.RemoveBrowser(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_RemoveBrowser(steamworks.htmlrender2d_ptr, unBrowserHandle) end
+function steamworks.htmlrender2d.LoadURL(unBrowserHandle, pchURL, pchPostData) return lib.SteamAPI_ISteamHTMLSurface_LoadURL(steamworks.htmlrender2d_ptr, unBrowserHandle, pchURL, pchPostData) end
+function steamworks.htmlrender2d.SetSize(unBrowserHandle, unWidth, unHeight) return lib.SteamAPI_ISteamHTMLSurface_SetSize(steamworks.htmlrender2d_ptr, unBrowserHandle, unWidth, unHeight) end
+function steamworks.htmlrender2d.StopLoad(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_StopLoad(steamworks.htmlrender2d_ptr, unBrowserHandle) end
+function steamworks.htmlrender2d.Reload(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_Reload(steamworks.htmlrender2d_ptr, unBrowserHandle) end
+function steamworks.htmlrender2d.GoBack(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_GoBack(steamworks.htmlrender2d_ptr, unBrowserHandle) end
+function steamworks.htmlrender2d.GoForward(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_GoForward(steamworks.htmlrender2d_ptr, unBrowserHandle) end
+function steamworks.htmlrender2d.AddHeader(unBrowserHandle, pchKey, pchValue) return lib.SteamAPI_ISteamHTMLSurface_AddHeader(steamworks.htmlrender2d_ptr, unBrowserHandle, pchKey, pchValue) end
+function steamworks.htmlrender2d.ExecuteJavascript(unBrowserHandle, pchScript) return lib.SteamAPI_ISteamHTMLSurface_ExecuteJavascript(steamworks.htmlrender2d_ptr, unBrowserHandle, pchScript) end
+function steamworks.htmlrender2d.MouseUp(unBrowserHandle, eMouseButton) return lib.SteamAPI_ISteamHTMLSurface_MouseUp(steamworks.htmlrender2d_ptr, unBrowserHandle, eMouseButton) end
+function steamworks.htmlrender2d.MouseDown(unBrowserHandle, eMouseButton) return lib.SteamAPI_ISteamHTMLSurface_MouseDown(steamworks.htmlrender2d_ptr, unBrowserHandle, eMouseButton) end
+function steamworks.htmlrender2d.MouseDoubleClick(unBrowserHandle, eMouseButton) return lib.SteamAPI_ISteamHTMLSurface_MouseDoubleClick(steamworks.htmlrender2d_ptr, unBrowserHandle, eMouseButton) end
+function steamworks.htmlrender2d.MouseMove(unBrowserHandle, x, y) return lib.SteamAPI_ISteamHTMLSurface_MouseMove(steamworks.htmlrender2d_ptr, unBrowserHandle, x, y) end
+function steamworks.htmlrender2d.MouseWheel(unBrowserHandle, nDelta) return lib.SteamAPI_ISteamHTMLSurface_MouseWheel(steamworks.htmlrender2d_ptr, unBrowserHandle, nDelta) end
+function steamworks.htmlrender2d.KeyDown(unBrowserHandle, nNativeKeyCode, eHTMLKeyModifiers) return lib.SteamAPI_ISteamHTMLSurface_KeyDown(steamworks.htmlrender2d_ptr, unBrowserHandle, nNativeKeyCode, eHTMLKeyModifiers) end
+function steamworks.htmlrender2d.KeyUp(unBrowserHandle, nNativeKeyCode, eHTMLKeyModifiers) return lib.SteamAPI_ISteamHTMLSurface_KeyUp(steamworks.htmlrender2d_ptr, unBrowserHandle, nNativeKeyCode, eHTMLKeyModifiers) end
+function steamworks.htmlrender2d.KeyChar(unBrowserHandle, cUnicodeChar, eHTMLKeyModifiers) return lib.SteamAPI_ISteamHTMLSurface_KeyChar(steamworks.htmlrender2d_ptr, unBrowserHandle, cUnicodeChar, eHTMLKeyModifiers) end
+function steamworks.htmlrender2d.SetHorizontalScroll(unBrowserHandle, nAbsolutePixelScroll) return lib.SteamAPI_ISteamHTMLSurface_SetHorizontalScroll(steamworks.htmlrender2d_ptr, unBrowserHandle, nAbsolutePixelScroll) end
+function steamworks.htmlrender2d.SetVerticalScroll(unBrowserHandle, nAbsolutePixelScroll) return lib.SteamAPI_ISteamHTMLSurface_SetVerticalScroll(steamworks.htmlrender2d_ptr, unBrowserHandle, nAbsolutePixelScroll) end
+function steamworks.htmlrender2d.SetKeyFocus(unBrowserHandle, bHasKeyFocus) return lib.SteamAPI_ISteamHTMLSurface_SetKeyFocus(steamworks.htmlrender2d_ptr, unBrowserHandle, bHasKeyFocus) end
+function steamworks.htmlrender2d.ViewSource(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_ViewSource(steamworks.htmlrender2d_ptr, unBrowserHandle) end
+function steamworks.htmlrender2d.CopyToClipboard(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_CopyToClipboard(steamworks.htmlrender2d_ptr, unBrowserHandle) end
+function steamworks.htmlrender2d.PasteFromClipboard(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_PasteFromClipboard(steamworks.htmlrender2d_ptr, unBrowserHandle) end
+function steamworks.htmlrender2d.Find(unBrowserHandle, pchSearchStr, bCurrentlyInFind, bReverse) return lib.SteamAPI_ISteamHTMLSurface_Find(steamworks.htmlrender2d_ptr, unBrowserHandle, pchSearchStr, bCurrentlyInFind, bReverse) end
+function steamworks.htmlrender2d.StopFind(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_StopFind(steamworks.htmlrender2d_ptr, unBrowserHandle) end
+function steamworks.htmlrender2d.GetLinkAtPosition(unBrowserHandle, x, y) return lib.SteamAPI_ISteamHTMLSurface_GetLinkAtPosition(steamworks.htmlrender2d_ptr, unBrowserHandle, x, y) end
+function steamworks.htmlrender2d.SetCookie(pchHostname, pchKey, pchValue, pchPath, nExpires, bSecure, bHTTPOnly) return lib.SteamAPI_ISteamHTMLSurface_SetCookie(steamworks.htmlrender2d_ptr, pchHostname, pchKey, pchValue, pchPath, nExpires, bSecure, bHTTPOnly) end
+function steamworks.htmlrender2d.SetPageScaleFactor(unBrowserHandle, flZoom, nPointX, nPointY) return lib.SteamAPI_ISteamHTMLSurface_SetPageScaleFactor(steamworks.htmlrender2d_ptr, unBrowserHandle, flZoom, nPointX, nPointY) end
+function steamworks.htmlrender2d.AllowStartRequest(unBrowserHandle, bAllowed) return lib.SteamAPI_ISteamHTMLSurface_AllowStartRequest(steamworks.htmlrender2d_ptr, unBrowserHandle, bAllowed) end
+function steamworks.htmlrender2d.JSDialogResponse(unBrowserHandle, bResult) return lib.SteamAPI_ISteamHTMLSurface_JSDialogResponse(steamworks.htmlrender2d_ptr, unBrowserHandle, bResult) end
+function steamworks.htmlrender2d.FileLoadDialogResponse(unBrowserHandle, pchSelectedFiles) return lib.SteamAPI_ISteamHTMLSurface_FileLoadDialogResponse(steamworks.htmlrender2d_ptr, unBrowserHandle, pchSelectedFiles) end
 steamworks.musicremote = {}
 steamworks.musicremote_ptr = lib.SteamMusicRemote()
 function steamworks.musicremote.RegisterSteamMusicRemote(pchName) return lib.SteamAPI_ISteamMusicRemote_RegisterSteamMusicRemote(steamworks.musicremote_ptr, pchName) end

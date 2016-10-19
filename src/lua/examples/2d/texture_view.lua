@@ -55,14 +55,14 @@ for _, v in pairs(prototype.GetCreated()) do
 end
 
 event.AddListener("PostDrawGUI", "texture_tiles", function()
-	surface.SetColor(1,1,1,1)
+	render2d.SetColor(1,1,1,1)
 	for _,v in ipairs(list) do
 		if v.node then
-			surface.SetTexture(v.tex)
+			render2d.SetTexture(v.tex)
 			if v.tex.StorageType == "cube_map" then
-				surface.DrawRect(v.node.x, v.node.y, v.node.w-4, v.node.h-4)
+				render2d.DrawRect(v.node.x, v.node.y, v.node.w-4, v.node.h-4)
 			else
-				surface.DrawRect(v.node.x, v.node.y, v.node.w-4, v.node.h-4)
+				render2d.DrawRect(v.node.x, v.node.y, v.node.w-4, v.node.h-4)
 			end
 		end
 	end

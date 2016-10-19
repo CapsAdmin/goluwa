@@ -3,31 +3,31 @@ local function draw_shape(s, r)
 	r = r or 45
 
 
-	surface.SetColor(1, 1, 1, 1)
-	surface.DrawRect(0,5, s,s, r, s/2, s/2)
+	render2d.SetColor(1, 1, 1, 1)
+	render2d.DrawRect(0,5, s,s, r, s/2, s/2)
 
-	surface.SetColor(0, 0, 0, 1)
-	surface.DrawRect(0,-5, s,s, r, s/2, s/2)
+	render2d.SetColor(0, 0, 0, 1)
+	render2d.DrawRect(0,-5, s,s, r, s/2, s/2)
 
-	surface.SetColor(0.75, 0, 0.75, 1)
-	surface.DrawRect(0,0, s,s, r, s/2, s/2)
+	render2d.SetColor(0.75, 0, 0.75, 1)
+	render2d.DrawRect(0,0, s,s, r, s/2, s/2)
 
 end
 
 event.AddListener("PreDrawGUI", "illusion", function()
-	surface.SetWhiteTexture()
-	surface.SetColor(0.75,0.75,0,1)
-	surface.DrawRect(0,0,5000,5000)
+	render2d.SetTexture()
+	render2d.SetColor(0.75,0.75,0,1)
+	render2d.DrawRect(0,0,5000,5000)
 
-	local w, h = surface.GetSize()
+	local w, h = render2d.GetSize()
 
 	for x = 0, 100 do
 		x = x * 50
 		for y = 0, 100 do
 			y = y * 50
-			surface.PushMatrix(x,y, 1,1, math.deg(math.sin(x) + math.cos(y)))
+			render2d.PushMatrix(x,y, 1,1, math.deg(math.sin(x) + math.cos(y)))
 				draw_shape(25)
-			surface.PopMatrix()
+			render2d.PopMatrix()
 			if y > h then break end
 		end
 		if x > w then break end

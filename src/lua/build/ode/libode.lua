@@ -29,7 +29,7 @@ struct dxJointGroup {};
 struct dJointFeedback {double f1[dV3E__MAX];double t1[dV3E__MAX];double f2[dV3E__MAX];double t2[dV3E__MAX];};
 struct dSurfaceParameters {int mode;double mu;double mu2;double rho;double rho2;double rhoN;double bounce;double bounce_vel;double soft_erp;double soft_cfm;double motion1;double motion2;double motionN;double slip1;double slip2;};
 struct dContactGeom {double pos[dV3E__MAX];double normal[dV3E__MAX];double depth;struct dxGeom*g1;struct dxGeom*g2;int side1;int side2;};
-struct dContact {struct dSurfaceParameters surface;struct dContactGeom geom;double fdir1[dV3E__MAX];};
+struct dContact {struct dSurfaceParameters render2d;struct dContactGeom geom;double fdir1[dV3E__MAX];};
 struct dStopwatch {double time;unsigned long cc[2];};
 struct dMass {double mass;double c[dV3E__MAX];double I[dM3E__MAX];};
 struct dxThreadingImplementation {};

@@ -18,13 +18,13 @@ chathud.emote_shortucts = chathud.emote_shortucts or {
 
 chathud.tags = chathud.tags or {}
 
-if surface.DrawFlag then
+if render2d.DrawFlag then
 	chathud.tags.flag =
 	{
 		arguments = {"gb"},
 
 		draw = function(markup, self, x,y, flag)
-			surface.DrawFlag(flag, x, y - 12)
+			render2d.DrawFlag(flag, x, y - 12)
 		end,
 	}
 end
@@ -108,7 +108,7 @@ function chathud.AddText(...)
 		markup:AddString("\n")
 	markup:EndLifeTime()
 
-	markup:SetMaxWidth(surface.GetSize() * width_mult:Get())
+	markup:SetMaxWidth(render2d.GetSize() * width_mult:Get())
 
 	for k,v in pairs(chathud.tags) do
 		markup.tags[k] = v
@@ -116,19 +116,19 @@ function chathud.AddText(...)
 end
 
 function chathud.Draw()
-	--surface.SetWhiteTexture() surface.DrawRect(0,0,surface.GetSize())
+	--render2d.SetTexture() render2d.DrawRect(0,0,render2d.GetSize())
 
 	local markup = chathud.markup
 
-	local _, h = surface.GetSize()
+	local _, h = render2d.GetSize()
 	local x, y = 30, h * height_mult:Get()
 
 	y = y - markup.height
 
-	surface.PushMatrix(x,y)
+	render2d.PushMatrix(x,y)
 		markup:Update()
 		markup:Draw()
-	surface.PopMatrix()
+	render2d.PopMatrix()
 end
 
 function chathud.MouseInput(button, press, x, y)

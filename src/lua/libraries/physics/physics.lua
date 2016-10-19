@@ -78,8 +78,8 @@ function physics.Initialize()
 			local numc = ode.Collide( o1, o2, MAX_CONTACTS, contact[0].geom, ffi.sizeof("struct dContact"))
 
 			for i = 0, numc - 1 do
-				contact[i].surface.mode = ode.e.ContactApprox1;
-				contact[i].surface.mu = 5;
+				contact[i].render2d.mode = ode.e.ContactApprox1;
+				contact[i].render2d.mu = 5;
 
 				local  c = ode.JointCreateContact(physics.world, physics.contact_group, contact+i);
 				ode.JointAttach (c, b1, b2);

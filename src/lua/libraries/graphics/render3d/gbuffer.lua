@@ -229,7 +229,7 @@ function render3d.DrawGBuffer(what, dist)
 
 	event.Call("GBufferPrePostProcess")
 
-	surface.PushMatrix()
+	render2d.PushMatrix()
 
 	render.SetCullMode("none")
 
@@ -245,10 +245,10 @@ function render3d.DrawGBuffer(what, dist)
 		for _, shader in ipairs(pass.shaders) do
 			render.SetBlendMode(shader.blend_mode)
 			if shader.fb then shader.fb:Begin() end
-			surface.PushMatrix(0, 0, shader.size.x, shader.size.y)
+			render2d.PushMatrix(0, 0, shader.size.x, shader.size.y)
 				render.SetShaderOverride(shader)
-				surface.rect_mesh:Draw()
-			surface.PopMatrix()
+				render2d.rectangle:Draw()
+			render2d.PopMatrix()
 			if shader.fb then shader.fb:End() end
 		end
 
@@ -260,7 +260,7 @@ function render3d.DrawGBuffer(what, dist)
 	end
 	render3d.gbuffer_mixer_buffer:End()
 
-	surface.PopMatrix()
+	render2d.PopMatrix()
 
 	event.Call("GBufferPostPostProcess")
 end

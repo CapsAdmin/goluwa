@@ -17,18 +17,18 @@ local poly = curve:ConstructPoly(Vec2(-0.1, 0), 4, 5)
 poly.mesh:SetMode("triangle_strip")
 
 event.AddListener("PostDrawGUI", "lol", function()
-	--surface.DrawRect(0,0,tex:GetSize():Unpack())
+	--render2d.DrawRect(0,0,tex:GetSize():Unpack())
 
-	surface.SetWhiteTexture()
-	surface.DrawRect(50,50,500,500)
+	render2d.SetTexture()
+	render2d.DrawRect(50,50,500,500)
 
-	surface.SetColor(1,1,1,1)
-	surface.SetTexture(tex)
+	render2d.SetColor(1,1,1,1)
+	render2d.SetTexture(tex)
 
-	surface.PushMatrix(50, 50, 500, 500)
+	render2d.PushMatrix(50, 50, 500, 500)
 		poly:Draw()
-	surface.PopMatrix()
+	render2d.PopMatrix()
 
 
-	surface.SetWhiteTexture()
+	render2d.SetTexture()
 end)

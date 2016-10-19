@@ -33,11 +33,11 @@ local function orthonormalM2x2ToVMatrix(m11, m12, m21, m22)
 	local det = detM2x2(m11, m12, m21, m22)
 
 	if det < 0 then
-		surface.Scale(1, -1)
+		render2d.Scale(1, -1)
 	end
 
 	local angle = math.atan2 (m21, m11)
-	surface.Rotate(math.deg(angle))
+	render2d.Rotate(math.deg(angle))
 end
 
 META.tags.translate =
@@ -45,15 +45,15 @@ META.tags.translate =
 	arguments = {0, 0},
 
 	pre_draw = function(markup, self, x, y, dx, dy)
-		surface.PushMatrix()
+		render2d.PushMatrix()
 
-		surface.Translate(dx, dy)
+		render2d.Translate(dx, dy)
 
 
 	end,
 
 	post_draw = function()
-		surface.PopMatrix()
+		render2d.PopMatrix()
 	end,
 }
 
@@ -66,7 +66,7 @@ META.tags.scale =
 	end,
 
 	pre_draw = function(markup, self, x, y, scaleX, scaleY)
-		surface.PushMatrix()
+		render2d.PushMatrix()
 
 		self.matrixDeterminant = scaleX * scaleY
 
@@ -77,13 +77,13 @@ META.tags.scale =
 
 		local centerY = y - self.tag_height / 2
 
-		surface.Translate(x, centerY)
-			surface.Scale(scaleX, scaleY)
+		render2d.Translate(x, centerY)
+			render2d.Scale(scaleX, scaleY)
 
 			if scaleX < 0 then
-				surface.Translate(-self.tag_width, 0)
+				render2d.Translate(-self.tag_width, 0)
 			end
-		surface.Translate(-x, -centerY)
+		render2d.Translate(-x, -centerY)
 
 
 
@@ -95,7 +95,7 @@ META.tags.scale =
 			set_cull_clockwise(false)
 		end
 
-		surface.PopMatrix()
+		render2d.PopMatrix()
 	end,
 }
 
@@ -117,20 +117,20 @@ META.tags.rotate =
 	arguments = {45},
 
 	pre_draw = function(markup, self, x, y, deg)
-		surface.PushMatrix()
+		render2d.PushMatrix()
 
 		local center_x = self.tag_center_x
 		local center_y = self.tag_center_y
 
-		surface.Translate(center_x, center_y)
-			surface.Rotate(math.rad(deg))
-		surface.Translate(-center_x, -center_y)
+		render2d.Translate(center_x, center_y)
+			render2d.Rotate(math.rad(deg))
+		render2d.Translate(-center_x, -center_y)
 
 
 	end,
 
 	post_draw = function()
-		surface.PopMatrix()
+		render2d.PopMatrix()
 	end,
 }
 
@@ -149,20 +149,20 @@ META.tags.matrixez =
 		local centerX = self.tag_center_x
 		local centerY = self.tag_center_y
 
-		surface.PushMatrix()
+		render2d.PushMatrix()
 
-		surface.Translate(x, centerY)
-			surface.Translate(X,Y)
-			surface.Scale(scaleX, scaleY)
+		render2d.Translate(x, centerY)
+			render2d.Translate(X,Y)
+			render2d.Scale(scaleX, scaleY)
 			if scaleX < 0 then
-				surface.Translate(-self.tag_width, 0)
+				render2d.Translate(-self.tag_width, 0)
 			end
 			if angleInDegrees ~= 0 then
-				surface.Translate(centerX)
-					surface.Rotate(angleInDegrees)
-				surface.Translate(-centerX)
+				render2d.Translate(centerX)
+					render2d.Rotate(angleInDegrees)
+				render2d.Translate(-centerX)
 			end
-		surface.Translate(x, -centerY)
+		render2d.Translate(x, -centerY)
 
 
 
@@ -174,7 +174,7 @@ META.tags.matrixez =
 			set_cull_clockwise(false)
 		end
 
-		surface.PopMatrix()
+		render2d.PopMatrix()
 	end,
 }
 
@@ -248,16 +248,16 @@ META.tags.matrix =
 
 		self.matrixDeterminant = detM2x2(a11, a12, a21, a22)
 
-		surface.PushMatrix()
+		render2d.PushMatrix()
 
-		surface.Translate(x, y)
-			surface.Translate(dx, dy)
+		render2d.Translate(x, y)
+			render2d.Translate(dx, dy)
 
 			orthonormalM2x2ToVMatrix(q211, q212, q221, q222)
-				surface.Scale(scaleX, scaleY)
+				render2d.Scale(scaleX, scaleY)
 			orthonormalM2x2ToVMatrix(q111, q112, q121, q122)
 
-		surface.Translate(-x, -y)
+		render2d.Translate(-x, -y)
 
 
 
@@ -269,7 +269,7 @@ META.tags.matrix =
 			set_cull_clockwise(false)
 		end
 
-		surface.PopMatrix()
+		render2d.PopMatrix()
 	end,
 }
 

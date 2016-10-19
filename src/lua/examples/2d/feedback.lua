@@ -75,11 +75,11 @@ event.Timer("fb_update", 0, 0, function()
 
 	fb:Begin()
 		render.SetBlendMode("src_color", "one_minus_dst_alpha", "add")
-		surface.PushMatrix(0, 0, fb:GetTexture(1):GetSize():Unpack())
+		render2d.PushMatrix(0, 0, fb:GetTexture(1):GetSize():Unpack())
 			render.SetShaderOverride(shader)
-			surface.rect_mesh:Draw()
+			render2d.rectangle:Draw()
 			render.SetShaderOverride()
-		surface.PopMatrix()
+		render2d.PopMatrix()
 		if input.IsMouseDown("button_left") then
 
 		end
@@ -89,7 +89,7 @@ event.Timer("fb_update", 0, 0, function()
 end)
 
 event.AddListener("PreDrawGUI", "fb", function()
-	surface.SetTexture(fb:GetTexture())
-	surface.SetColor(1, 1, 1, 1)
-	surface.DrawRect(0, 0, surface.GetSize())
+	render2d.SetTexture(fb:GetTexture())
+	render2d.SetColor(1, 1, 1, 1)
+	render2d.DrawRect(0, 0, render2d.GetSize())
 end)

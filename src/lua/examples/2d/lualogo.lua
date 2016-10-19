@@ -25,11 +25,11 @@ event.AddListener( "PreDrawGUI", "goluwa", function()
 	y = math.clamp( y, H / 2, render.GetHeight() - H / 2 )
 
 
-	surface.SetTexture( luwa )
-	surface.SetColor(1,1,1,1)
-	surface.DrawRect( x - W / 2, y - H/2, W, H )
-	surface.SetTexture( circle )
+	render2d.SetTexture( luwa )
+	render2d.SetColor(1,1,1,1)
+	render2d.DrawRect( x - W / 2, y - H/2, W, H )
+	render2d.SetTexture( circle )
 	local X, Y = math.sin( math.rad( system.GetElapsedTime() * 500) ) * (W/2-10) - (W/5/2),
 		math.cos( math.rad( system.GetElapsedTime() * 500 ) ) * (H/2-10) - (H/5/2)
-	surface.DrawRect( x + X, y + Y, W/5, H/5 )
+	render2d.DrawRect( x + X, y + Y, W/5, H/5 )
 end, {priority=-math.huge})

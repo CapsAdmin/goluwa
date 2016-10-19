@@ -65,9 +65,9 @@ local function show_image(url)
 			return
 		end
 
-		surface.SetColor(1,1,1,1)
-		surface.SetTexture(tex)
-		surface.DrawRect(10 + surface.GetSize() * (getPositionFraction(t) - 1), 10, tex:GetSize().x / 2, tex:GetSize().y / 2)
+		render2d.SetColor(1,1,1,1)
+		render2d.SetTexture(tex)
+		render2d.DrawRect(10 + render2d.GetSize() * (getPositionFraction(t) - 1), 10, tex:GetSize().x / 2, tex:GetSize().y / 2)
 	end)
 end
 

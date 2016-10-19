@@ -62,10 +62,10 @@ do
 end
 
 do
-	local lib = _G.surface
-	local surface = gine.env.surface
+	local lib = _G.render2d
+	local render2d = gine.env.render2d
 
-	function surface.GetTextureID(path)
+	function render2d.GetTextureID(path)
 		if vfs.IsFile("materials/" .. path) then
 			return render.CreateTextureFromPath("materials/" .. path)
 		end
@@ -73,11 +73,11 @@ do
 		return render.CreateTextureFromPath("materials/" .. path .. ".vtf")
 	end
 
-	function surface.SetMaterial(mat)
+	function render2d.SetMaterial(mat)
 		lib.SetTexture(mat.__obj.AlbedoTexture)
 	end
 
-	function surface.SetTexture(tex)
+	function render2d.SetTexture(tex)
 		if tex == 0 then tex = render.GetWhiteTexture() end
 		lib.SetTexture(tex)
 	end

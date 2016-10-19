@@ -47,18 +47,18 @@ function render.GenerateTextures()
 			--loading:SetSize(Vec2()+256)
 
 			event.Timer("update_loading_texture", 1/5, 0, function()
-				if not surface.IsReady() then return end
+				if not render2d.IsReady() then return end
 				loading:Begin()
 					local time = system.GetElapsedTime()
-					surface.SetColor(0.2, 0.2, 0.2, 1)
-					surface.SetWhiteTexture()
-					surface.DrawRect(0, 0, loading:GetSize():Unpack())
+					render2d.SetColor(0.2, 0.2, 0.2, 1)
+					render2d.SetTexture()
+					render2d.DrawRect(0, 0, loading:GetSize():Unpack())
 					local deg = 360 / arms
 
 					for i = 0, arms do
 						local n = (-((time*speed + i)%arms / arms) + 1) ^ trail_duration
 
-						surface.SetColor(base_arm_brightness + n, base_arm_brightness + n, base_arm_brightness + n, 1)
+						render2d.SetColor(base_arm_brightness + n, base_arm_brightness + n, base_arm_brightness + n, 1)
 
 						local ang = math.rad(deg * i)
 						local X, Y = math.sin(ang), math.cos(ang)

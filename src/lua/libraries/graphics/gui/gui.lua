@@ -208,7 +208,7 @@ do -- events
 
 		gui.UpdateMousePosition()
 
-		--surface.EnableStencilClipping()
+		--render2d.EnableStencilClipping()
 
 		if gui.unroll_draw then
 			if not gui.unrolled_draw then
@@ -243,8 +243,8 @@ do -- events
 			gui.world:Draw()
 		end
 
-		--surface.DisableStencilClipping()
-		surface.SetWorldMatrix()
+		--render2d.DisableStencilClipping()
+		render2d.SetWorldMatrix()
 
 		if gui.threedee then
 			camera.camera_2d:End3D2D()

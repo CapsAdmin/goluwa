@@ -89,23 +89,23 @@ event.Timer("fb_update", fps, 0, function()
 		--render.SetBlendMode("src_color", "one_minus_dst_color", "add")
 		render.SetBlendMode()
 
-		surface.PushMatrix(0, 0, W, H)
+		render2d.PushMatrix(0, 0, W, H)
 			render.SetShaderOverride(shader)
-			surface.rect_mesh:Draw()
+			render2d.rectangle:Draw()
 			render.SetShaderOverride()
-		surface.PopMatrix()
+		render2d.PopMatrix()
 
 		if input.IsMouseDown("button_1") or input.IsMouseDown("button_2") then
 			if input.IsMouseDown("button_1") then
 				render.SetBlendMode("multiplicative")
-				surface.SetColor(1,1,1,1)
+				render2d.SetColor(1,1,1,1)
 			else
 				render.SetBlendMode("src_color","one_minus_src_color","sub")
-				surface.SetColor(1,1,1,1)
+				render2d.SetColor(1,1,1,1)
 			end
-			surface.SetTexture(brush)
+			render2d.SetTexture(brush)
 			local x,y = gfx.GetMousePosition()
-			surface.DrawRect(x, y, brush:GetSize().x*brush_size, brush:GetSize().y*brush_size, 0, brush:GetSize().x/2*brush_size, brush:GetSize().y/2*brush_size)
+			render2d.DrawRect(x, y, brush:GetSize().x*brush_size, brush:GetSize().y*brush_size, 0, brush:GetSize().x/2*brush_size, brush:GetSize().y/2*brush_size)
 		end
 	fb:End()
 
@@ -113,13 +113,13 @@ event.Timer("fb_update", fps, 0, function()
 end)
 
 event.AddListener("PreDrawGUI", "fb", function()
-	surface.SetColor(0,0,0, 1)
+	render2d.SetColor(0,0,0, 1)
 
-	surface.SetWhiteTexture()
-	surface.DrawRect(0, 0, surface.GetSize())
+	render2d.SetTexture()
+	render2d.DrawRect(0, 0, render2d.GetSize())
 
 
-	surface.SetColor(1,1,1, 1)
-	surface.SetTexture(fb:GetTexture())
-	surface.DrawRect(0, 0, surface.GetSize())
+	render2d.SetColor(1,1,1, 1)
+	render2d.SetTexture(fb:GetTexture())
+	render2d.DrawRect(0, 0, render2d.GetSize())
 end)

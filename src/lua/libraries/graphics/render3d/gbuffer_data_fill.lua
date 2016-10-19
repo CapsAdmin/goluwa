@@ -240,13 +240,13 @@ function PASS:DrawDebug(i,x,y,w,h,size)
 	for name, map in pairs(prototype.GetCreated(true, "shadow_map")) do
 		local tex = map:GetTexture("depth")
 
-		surface.SetWhiteTexture()
-		surface.SetColor(1, 1, 1, 1)
-		surface.DrawRect(x, y, w, h)
+		render2d.SetTexture()
+		render2d.SetColor(1, 1, 1, 1)
+		render2d.DrawRect(x, y, w, h)
 
-		surface.SetColor(1,1,1,1)
-		surface.SetTexture(tex)
-		surface.DrawRect(x, y, w, h)
+		render2d.SetColor(1,1,1,1)
+		render2d.SetTexture(tex)
+		render2d.DrawRect(x, y, w, h)
 
 		gfx.SetTextPosition(x, y + 5)
 		gfx.DrawText(tostring(name))

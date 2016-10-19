@@ -172,12 +172,12 @@ local mesh = render.CreateVertexBuffer(shader, {
 event.AddListener("PreDrawGUI", "lol", function()
 	shader.pwm_matrix = camera.camera_2d:GetMatrices().projection_view_world
 
-	local w, h = surface.GetSize()
-	surface.PushMatrix(0, 0, w, h)
+	local w, h = render2d.GetSize()
+	render2d.PushMatrix(0, 0, w, h)
 		shader.time = system.GetElapsedTime()
 		shader.tex = tex
-		shader.resolution = Vec2(surface.GetSize())
+		shader.resolution = Vec2(render2d.GetSize())
 		shader.mouse = window.GetMousePosition()
 		mesh:Draw()
-	surface.PopMatrix()
+	render2d.PopMatrix()
 end)

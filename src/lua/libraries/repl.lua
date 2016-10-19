@@ -87,7 +87,7 @@ local markup_translate = {
 }
 
 function repl.Initialize()
-	if SERVER or not surface then
+	if SERVER or not render2d then
 		-- the renderer might fail to load :( !
 		local hack = false
 
@@ -96,7 +96,7 @@ function repl.Initialize()
 			hack = true
 		end
 
-		_G.surface = {GetDefaultFont = function() end}
+		_G.render2d = {GetDefaultFont = function() end}
 		include("lua/libraries/graphics/gfx/markup/markup.lua")
 
 		if hack then

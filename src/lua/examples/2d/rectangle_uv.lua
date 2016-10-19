@@ -1,20 +1,20 @@
 local tex = render.CreateTextureFromPath("textures/pac.png")
 
 event.AddListener("PreDrawGUI", "lol", function()
-	surface.SetColor(1,1,1,1)
-	surface.SetTexture(tex)
+	render2d.SetColor(1,1,1,1)
+	render2d.SetTexture(tex)
 
-	surface.SetRectUV(0, 0, 0.5, 0.5)
-	surface.DrawRect(50, 50, 100, 100)
+	render2d.SetRectUV(0, 0, 0.5, 0.5)
+	render2d.DrawRect(50, 50, 100, 100)
 
-	surface.SetRectUV(0.5, 0.5, 0.5, 0.5)
-	surface.DrawRect(150, 150, 100, 100)
+	render2d.SetRectUV(0.5, 0.5, 0.5, 0.5)
+	render2d.DrawRect(150, 150, 100, 100)
 
-	surface.SetRectUV(0, 0.5, 0.5, 0.5)
-	surface.DrawRect(50, 150, 100, 100)
+	render2d.SetRectUV(0, 0.5, 0.5, 0.5)
+	render2d.DrawRect(50, 150, 100, 100)
 
-	surface.SetRectUV(0.5, 1, 0.5, 0.5)
-	surface.DrawRect(150, 50, 100, 100)
+	render2d.SetRectUV(0.5, 1, 0.5, 0.5)
+	render2d.DrawRect(150, 50, 100, 100)
 
-	surface.SetRectUV()
+	render2d.SetRectUV()
 end)

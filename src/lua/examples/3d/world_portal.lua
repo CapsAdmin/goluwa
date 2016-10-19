@@ -26,20 +26,20 @@ local function fill_discard(invert)
 			render3d.gbuffer_discard:ClearColor(0,0,0,0)
 		end
 
-		surface.Start3D2D(pos_a, ang_a)
+		render2d.Start3D2D(pos_a, ang_a)
 
-			local w, h = surface.GetSize()
+			local w, h = render2d.GetSize()
 			w = w / 200
 			h = h / 200
 			if invert then
-				surface.SetColor(0,0,0,0)
+				render2d.SetColor(0,0,0,0)
 			else
-				surface.SetColor(1,1,1,1)
+				render2d.SetColor(1,1,1,1)
 			end
-			surface.SetWhiteTexture()
-			surface.DrawRect(0, 0, w, h, math.pi, w/2, h/2)
+			render2d.SetTexture()
+			render2d.DrawRect(0, 0, w, h, math.pi, w/2, h/2)
 
-		surface.End3D2D()
+		render2d.End3D2D()
 	render3d.gbuffer_discard:End()
 end
 

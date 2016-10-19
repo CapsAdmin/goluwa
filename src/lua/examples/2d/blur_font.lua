@@ -36,9 +36,9 @@ local font = fonts.CreateFont({
 })
 
 event.AddListener("PreDrawGUI", "lol", function()
-	local w, h = surface.GetSize()
+	local w, h = render2d.GetSize()
 
-	surface.SetColor(1,1,1,1)
+	render2d.SetColor(1,1,1,1)
 
 	gfx.SetFont(font)
 	gfx.SetTextPosition(350, 350)
@@ -49,7 +49,7 @@ event.AddListener("PreDrawGUI", "lol", function()
 	end
 
 do return end
-	surface.SetWhiteTexture()
-	surface.SetColor(1,0,0,0.5)
-	surface.DrawRect(350, 350, gfx.GetTextSize("outline blur text"))
+	render2d.SetTexture()
+	render2d.SetColor(1,0,0,0.5)
+	render2d.DrawRect(350, 350, gfx.GetTextSize("outline blur text"))
 end)

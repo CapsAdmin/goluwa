@@ -1,7 +1,7 @@
 local eeg_power = {}
 local esense = {attention = 50, meditation = 50}
 
-local W, H = surface.GetSize()
+local W, H = render2d.GetSize()
 
 local last_x = 0
 local last_y = 0
@@ -19,8 +19,8 @@ local client = sockets.CreateClient("tcp", "localhost", 13854, "neurosky")
 local function update_rt(eeg)
 	fb:Begin()
 		render.Start2D(0, 0, W, H)
-			surface.SetWhiteTexture()
-			surface.SetColor(1, 1, 1, 1)
+			render2d.SetTexture()
+			render2d.SetColor(1, 1, 1, 1)
 
 			local x, y = system.GetElapsedTime() * 100 % W, H / 2 + eeg / 10
 
@@ -38,11 +38,11 @@ local function update_rt(eeg)
 end
 
 event.AddListener("PreDrawGUI", "mindwave", function()
-	surface.SetTexture(fb:GetTexture(1))
-	surface.DrawRect(0,0, W,H)
+	render2d.SetTexture(fb:GetTexture(1))
+	render2d.DrawRect(0,0, W,H)
 
 	gfx.SetFont()
-	surface.SetColor(1,1,1,1)
+	render2d.SetColor(1,1,1,1)
 
 	local x, y = 5, 5
 

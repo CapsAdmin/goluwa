@@ -60,7 +60,7 @@ function gine.LoadFonts()
 				info.tall = info.tall[1]-- what
 			end
 
-			gine.surface_fonts[font_name:lower()] = fonts.CreateFont({
+			gine.render2d_fonts[font_name:lower()] = fonts.CreateFont({
 				path = gine.TranslateFontName(info.name),
 				size = info.tall and math.ceil(info.tall) or 11,
 			})
@@ -83,16 +83,16 @@ do
 end
 
 do
-	local surface = gine.env.surface
+	local render2d = gine.env.render2d
 	local lib = _G.fonts
 
-	function surface.SetTextPos(x, y)
+	function render2d.SetTextPos(x, y)
 		gfx.SetTextPosition(x, y)
 	end
 
-	gine.surface_fonts = gine.surface_fonts or {}
+	gine.render2d_fonts = gine.render2d_fonts or {}
 
-	function surface.CreateFont(id, tbl)
+	function render2d.CreateFont(id, tbl)
 		local tbl = table.copy(tbl)
 		tbl.path = tbl.font
 
@@ -100,21 +100,21 @@ do
 
 		if tbl.size then tbl.size = math.ceil(tbl.size * 0.55) end
 
-		gine.surface_fonts[id:lower()] = fonts.CreateFont(tbl)
+		gine.render2d_fonts[id:lower()] = fonts.CreateFont(tbl)
 	end
 
 	function gfx.SetFont(name)
-		gfx.SetFont(gine.surface_fonts[name:lower()])
+		gfx.SetFont(gine.render2d_fonts[name:lower()])
 	end
 
-	function surface.GetTextSize(str)
+	function render2d.GetTextSize(str)
 		str = gine.translation2[str] or str
 		return gfx.GetTextSize(str)
 	end
 
 	local txt_r, txt_g, txt_b, txt_a = 0,0,0,0
 
-	function surface.SetTextColor(r,g,b,a)
+	function render2d.SetTextColor(r,g,b,a)
 		if type(r) == "table" then
 			r,g,b,a = r.r, r.g, r.b, r.a
 		end
@@ -124,7 +124,7 @@ do
 		txt_a = (a or 0) / 255
 	end
 
-	function surface.DrawText(str)
+	function render2d.DrawText(str)
 		str = gine.translation2[str] or str
 		lib.PushColor(txt_r, txt_g, txt_b, txt_a)
 		gfx.DrawText(str)

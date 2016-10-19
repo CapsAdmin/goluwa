@@ -2,7 +2,7 @@ local start = 0.5
 local scale = 1
 
 local tex = render.CreateTexture("2d")
-tex:SetSize(Vec2(surface.GetSize()) / scale)
+tex:SetSize(Vec2(render2d.GetSize()) / scale)
 tex:SetInternalFormat("rgba32f")
 tex:SetMipMapLevels(0)
 tex:SetAnisotropy(0)
@@ -56,11 +56,11 @@ event.Timer("update_cells", 0, 0, function()
 end)
 
 event.AddListener("PreDrawGUI", "fb", function()
-	surface.SetWhiteTexture()
-	surface.SetColor(0,0,0,1)
-	surface.DrawRect(0, 0, tex:GetSize().x*scale, tex:GetSize().y*scale)
+	render2d.SetTexture()
+	render2d.SetColor(0,0,0,1)
+	render2d.DrawRect(0, 0, tex:GetSize().x*scale, tex:GetSize().y*scale)
 
-	surface.SetTexture(tex)
-	surface.SetColor(1,1,1,1)
-	surface.DrawRect(0, 0, tex:GetSize().x*scale, tex:GetSize().y*scale)
+	render2d.SetTexture(tex)
+	render2d.SetColor(1,1,1,1)
+	render2d.DrawRect(0, 0, tex:GetSize().x*scale, tex:GetSize().y*scale)
 end)

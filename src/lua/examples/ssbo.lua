@@ -34,10 +34,10 @@ do
 
 		val:Bind(2)
 
-		surface.PushMatrix(0, 0, surface.GetSize())
+		render2d.PushMatrix(0, 0, render2d.GetSize())
 			render.SetShaderOverride(shader)
-			surface.rect_mesh:Draw()
+			render2d.rectangle:Draw()
 			render.SetShaderOverride()
-		surface.PopMatrix()
+		render2d.PopMatrix()
 	end)
 end

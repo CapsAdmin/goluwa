@@ -47,9 +47,9 @@ local smooth_pitch = 0
 event.AddListener("PostDrawGUI", "wowozela", function(dt)
 	local size = window.GetSize()
 
-	surface.SetColor(0,0,0,1)
-	surface.SetWhiteTexture()
-	surface.DrawRect(0,0,size.x, size.y)
+	render2d.SetColor(0,0,0,1)
+	render2d.SetTexture()
+	render2d.DrawRect(0,0,size.x, size.y)
 
 	local pos = window.GetMousePosition()
 
@@ -94,9 +94,9 @@ event.AddListener("PostDrawGUI", "wowozela", function(dt)
 		lol = false
 	end
 
-	surface.SetColor(1,1,1,1)
-	surface.SetTexture(sphere)
-	surface.DrawRect(pos.x - 64, pos.y - 64, 128, 128)
+	render2d.SetColor(1,1,1,1)
+	render2d.SetTexture(sphere)
+	render2d.DrawRect(pos.x - 64, pos.y - 64, 128, 128)
 
 	--sound:Play()
 

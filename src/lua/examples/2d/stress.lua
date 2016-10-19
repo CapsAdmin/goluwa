@@ -3,7 +3,7 @@ window.Open(500, 500)
 local cache = {}
 
 event.AddListener("PreDrawGUI", "lol", function()
-	surface.SetWhiteTexture()
+	render2d.SetTexture()
 	local time = system.GetElapsedTime()
 
 	for x = 1, 512 do
@@ -13,8 +13,8 @@ event.AddListener("PreDrawGUI", "lol", function()
 		local c = cache[h] or ColorHSV(h/100,1,1)
 		cache[h] = c
 
-		surface.SetColor(c.r,c.g,c.b, 0.5)
-		surface.DrawRect(x, y, 1, 1)
+		render2d.SetColor(c.r,c.g,c.b, 0.5)
+		render2d.DrawRect(x, y, 1, 1)
 	end
 	end
 end)

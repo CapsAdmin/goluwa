@@ -30,7 +30,7 @@ local particles = {}
 
 local poly_head = gfx.CreatePolygon2D(particle_count * 6)
 local poly_tail = gfx.CreatePolygon2D(particle_count * 6)
-local W, H = surface.GetSize()
+local W, H = render2d.GetSize()
 
 for i = 1, particle_count do
 	particles[i] = {
@@ -85,8 +85,8 @@ event.AddListener("PreDrawGUI", "particles", function(dt)
 
 	render.SetBlendMode("additive")
 
-	W,H = surface.GetSize()
-	surface.SetTexture(head_tex)
+	W,H = render2d.GetSize()
+	render2d.SetTexture(head_tex)
 
 	local ext_vel_x, ext_vel_y = gfx.GetMouseVel()
 	ext_vel_x = ext_vel_x * 0.1
@@ -118,12 +118,12 @@ event.AddListener("PreDrawGUI", "particles", function(dt)
 		poly_head:SetRect(i, p.px - (size*0.5), p.py - (size*0.5), size, size)
 	end
 
-	surface.SetColor(1,1,1,1)
+	render2d.SetColor(1,1,1,1)
 
-	surface.SetTexture(trail_tex)
+	render2d.SetTexture(trail_tex)
 	poly_tail:Draw()
 
-	surface.SetTexture(head_tex)
+	render2d.SetTexture(head_tex)
 	poly_head:Draw()
 
 	render.SetBlendMode("alpha")

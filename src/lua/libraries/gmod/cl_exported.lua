@@ -4155,7 +4155,7 @@ return {
 			IsMouseDown = true,
 			CheckKeyTrapping = true,
 		},
-		surface = {
+		render2d = {
 			DrawText = true,
 			SetDrawColor = true,
 			SetMaterial = true,

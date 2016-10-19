@@ -3,7 +3,7 @@ local gfx = (...) or _G.gfx
 local META = prototype.CreateTemplate("polygon_2d")
 
 function gfx.CreatePolygon2D(vertex_count)
-	local mesh = surface.CreateMesh(vertex_count)
+	local mesh = render2d.CreateMesh(vertex_count)
 
 	-- they never change anyway
 	mesh:SetUpdateIndices(false)
@@ -165,8 +165,8 @@ function META:Draw(count)
 		self.mesh:UpdateBuffer()
 		self.dirty = false
 	end
-	surface.mesh_2d_shader.tex = surface.mesh_2d_shader.tex--surface.GetTexture()
-	--surface.mesh_2d_shader.global_color = surface.GetColor(true)
+	render2d.shader.tex = render2d.shader.tex--render2d.GetTexture()
+	--render2d.shader.global_color = render2d.GetColor(true)
 	self.mesh:Draw(count)
 end
 

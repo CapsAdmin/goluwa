@@ -94,9 +94,9 @@ function META:CreateOffsetedCurve(offset)
 		normal = normal + line_segment_normal(prev_control, current.point)
 		normal:Normalize()
 
-		local surface_normal = line_segment_normal(current.point, next.point)
+		local render2d_normal = line_segment_normal(current.point, next.point)
 
-		offseted:Add(current.point + normal * offset, current_control + surface_normal * offset)
+		offseted:Add(current.point + normal * offset, current_control + render2d_normal * offset)
 	end
 
 	return offseted

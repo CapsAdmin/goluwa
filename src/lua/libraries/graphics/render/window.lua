@@ -39,9 +39,9 @@ function render.DrawScene(dt)
 		render3d.DrawGBuffer()
 	end
 
-	if surface.IsReady() then
-		surface.Start()
-		surface.SetColor(1,1,1,1)
+	if render2d.IsReady() then
+		render2d.Start()
+		render2d.SetColor(1,1,1,1)
 		render.SetCullMode("none")
 
 		render.SetDepth(false)
@@ -50,14 +50,14 @@ function render.DrawScene(dt)
 
 		if render3d.IsGBufferReady() then
 			if menu and menu.IsVisible() then
-				surface.PushHSV(1,0,1)
+				render2d.PushHSV(1,0,1)
 			end
 
-			surface.SetTexture(render3d.GetFinalGBufferTexture())
-			surface.DrawRect(0, 0, surface.GetSize())
+			render2d.SetTexture(render3d.GetFinalGBufferTexture())
+			render2d.DrawRect(0, 0, render2d.GetSize())
 
 			if menu and menu.IsVisible() then
-				surface.PopHSV()
+				render2d.PopHSV()
 			end
 
 			if render3d.debug then
@@ -69,7 +69,7 @@ function render.DrawScene(dt)
 		event.Call("DrawGUI", dt)
 		event.Call("PostDrawGUI", dt)
 
-		surface.End()
+		render2d.End()
 
 		event.Call("PostDrawScene")
 	end

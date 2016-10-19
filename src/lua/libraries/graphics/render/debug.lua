@@ -5,7 +5,7 @@ do -- AUTOMATE THIS
 	local x,y,w,h,i
 
 	function render.DrawGBufferDebugOverlay()
-		w, h = surface.GetSize()
+		w, h = render2d.GetSize()
 		w = w / size
 		h = h / size
 
@@ -23,33 +23,33 @@ do -- AUTOMATE THIS
 			for _, buffer in pairs(pass.layout) do
 				for channel_name, str in pairs(buffer) do
 					if channel_name ~= "format" then
-						surface.mesh_2d_shader.color_override.r = 0
-						surface.mesh_2d_shader.color_override.g = 0
-						surface.mesh_2d_shader.color_override.b = 0
-						surface.mesh_2d_shader.color_override.a = 0
+						render2d.shader.color_override.r = 0
+						render2d.shader.color_override.g = 0
+						render2d.shader.color_override.b = 0
+						render2d.shader.color_override.a = 0
 
 						for _, color in ipairs({"r", "g", "b", "a"}) do
 							if str:find(color) then
-								surface.mesh_2d_shader.color_override[color] = 0
+								render2d.shader.color_override[color] = 0
 							else
-								surface.mesh_2d_shader.color_override[color] = 1
+								render2d.shader.color_override[color] = 1
 							end
 						end
 
-						--print(i, channel_name, surface.mesh_2d_shader.color_override)
+						--print(i, channel_name, render2d.shader.color_override)
 
-						surface.SetColor(0,0,0,1)
-						surface.SetWhiteTexture()
-						surface.DrawRect(x, y, w, h)
+						render2d.SetColor(0,0,0,1)
+						render2d.SetTexture()
+						render2d.DrawRect(x, y, w, h)
 
-						surface.SetColor(1,1,1,1)
-						surface.SetTexture(render3d.gbuffer:GetTexture("data"..buffer_i))
-						surface.DrawRect(x, y, w, h)
+						render2d.SetColor(1,1,1,1)
+						render2d.SetTexture(render3d.gbuffer:GetTexture("data"..buffer_i))
+						render2d.DrawRect(x, y, w, h)
 
-						surface.mesh_2d_shader.color_override.r = 0
-						surface.mesh_2d_shader.color_override.g = 0
-						surface.mesh_2d_shader.color_override.b = 0
-						surface.mesh_2d_shader.color_override.a = 0
+						render2d.shader.color_override.r = 0
+						render2d.shader.color_override.g = 0
+						render2d.shader.color_override.b = 0
+						render2d.shader.color_override.a = 0
 
 						gfx.SetTextPosition(x, y + 5)
 						gfx.DrawText(channel_name)

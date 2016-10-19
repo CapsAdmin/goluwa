@@ -62,7 +62,7 @@ function META:OnButtonPositionChanged(button, pos)
 end
 
 function META:OnLineDraw(line)
-	surface.SetTexture(self:GetSkin().menu_select[1])
+	render2d.SetTexture(self:GetSkin().menu_select[1])
 
 	if self.RightFill then
 		if self.XSlide and self.YSlide then

@@ -286,9 +286,9 @@ if GRAPHICS then
 	render = include("lua/libraries/graphics/render/render.lua") -- OpenGL abstraction
 
 	if render then
-		surface = include("lua/libraries/graphics/surface.lua") -- low level 2d rendering based on the render library
+		render2d = include("lua/libraries/graphics/render2d/render2d.lua") -- low level 2d rendering based on the render library
 		fonts = include("lua/libraries/graphics/fonts/fonts.lua") -- font rendering
-		gfx = include("lua/libraries/graphics/gfx/gfx.lua") -- high level 2d and 3d functions based on surface, fonts and render
+		gfx = include("lua/libraries/graphics/gfx/gfx.lua") -- high level 2d and 3d functions based on render2d, fonts and render
 		render3d = include("lua/libraries/graphics/render3d/render3d.lua")
 		window = include("lua/libraries/graphics/window.lua") -- high level window implementation
 		gui = include("lua/libraries/graphics/gui/gui.lua")

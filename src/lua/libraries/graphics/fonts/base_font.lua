@@ -104,9 +104,9 @@ function META:DrawString(str, x, y, w)
 	self.string_cache[str]:Draw(x, y, w)
 
 	if fonts.debug_font_size then
-		surface.SetColor(1,0,0,0.25)
-		surface.SetWhiteTexture()
-		surface.DrawRect(x, y, gfx.GetTextSize(str))
+		render2d.SetColor(1,0,0,0.25)
+		render2d.SetTexture()
+		render2d.DrawRect(x, y, gfx.GetTextSize(str))
 	end
 end
 
@@ -241,12 +241,12 @@ function META:CompileString(data)
 			end
 		end
 
-		surface.PushMatrix(x, y)
+		render2d.PushMatrix(x, y)
 		for _, v in ipairs(out) do
-			surface.SetTexture(v.texture)
+			render2d.SetTexture(v.texture)
 			v.poly:Draw(width_cache[w])
 		end
-		surface.PopMatrix()
+		render2d.PopMatrix()
 	end
 
 	return string, max_width, Y

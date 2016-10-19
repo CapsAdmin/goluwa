@@ -238,16 +238,16 @@ do -- number
 
 	function META:OnPostDraw()
 		if self.Minimum and self.Maximum then
-			surface.SetWhiteTexture()
-			surface.SetColor(0.5,0.75,1,0.5)
-			surface.DrawRect(0, 0, self:GetWidth() * math.normalize(self:GetValue(), self.Minimum, self.Maximum), self:GetHeight())
+			render2d.SetTexture()
+			render2d.SetColor(0.5,0.75,1,0.5)
+			render2d.DrawRect(0, 0, self:GetWidth() * math.normalize(self:GetValue(), self.Minimum, self.Maximum), self:GetHeight())
 		elseif self.drag_number then
-			surface.SetWhiteTexture()
+			render2d.SetTexture()
 
 			local frac = math.abs((self.real_base_value - self:GetValue())) / 100
-			surface.SetColor(1,0.5,0.5,frac)
+			render2d.SetColor(1,0.5,0.5,frac)
 
-			surface.DrawRect(0, 0, self:GetWidth(), self:GetHeight())
+			render2d.DrawRect(0, 0, self:GetWidth(), self:GetHeight())
 		end
 	end
 

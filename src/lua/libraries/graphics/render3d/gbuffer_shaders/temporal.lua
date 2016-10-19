@@ -52,7 +52,7 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 	float intensity = lua[world_sun_intensity = 1];
 	vec3 sky_color = lua[world_sky_color = Vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131)];
 
-	const float surface_height = 0.95;
+	const float render2d_height = 0.95;
 	const int step_count = 8;
 	const float rayleigh_brightness = 2;
 	const float mie_brightness = 0.99;
@@ -76,7 +76,7 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 	hsv.z = pow(hsv.z, 75)*5;
 	noise = hsv2rgb(hsv);
 	vec3 stars = noise * sky_mult;
-	vec3 eye_position = min(vec3(0,surface_height,0) + (vec3(-g_cam_pos.x, g_cam_pos.z, g_cam_pos.y) / 100010000), vec3(0.999999));
+	vec3 eye_position = min(vec3(0,render2d_height,0) + (vec3(-g_cam_pos.x, g_cam_pos.z, g_cam_pos.y) / 100010000), vec3(0.999999));
 	float eye_depth = sky_atmospheric_depth(eye_position, ray, depth);
 	float step_length = eye_depth/float(step_count);
 	vec3 rayleigh_collected = vec3(0.0, 0.0, 0.0);
@@ -85,7 +85,7 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 	{
 		float sample_distance = step_length * float(i);
 		vec3 position = eye_position + ray * sample_distance;
-		float extinction = sky_horizon_extinction(position, ldir, surface_height - 0.2);
+		float extinction = sky_horizon_extinction(position, ldir, render2d_height - 0.2);
 		float sample_depth = sky_atmospheric_depth(position, ray, depth);
 		vec3 influx = sky_absorb(sky_color, sample_depth, vec3(intensity * 5), scatter_strength) * extinction;
 		rayleigh_collected += sky_absorb(sky_color, sqrt(sample_distance), sky_color * influx, rayleigh_strength);
@@ -122,7 +122,7 @@ float gbuffer_compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, 
 {
 	float cutoff = 0.175;
 
-	// calculate normalized light vector and distance to sphere light surface
+	// calculate normalized light vector and distance to sphere light render2d
 	float r = radius/10;
 	vec3 L = light_pos - pos;
 	float distance = length(L);

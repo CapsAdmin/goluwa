@@ -103,8 +103,8 @@ end
 local function draw()
 	local k,v = next(font.texture_atlas.textures)
 	if v.page then
-		surface.SetTexture(v.page.texture)
-		--surface.SetTexture(render.GetErrorTexture())
+		render2d.SetTexture(v.page.texture)
+		--render2d.SetTexture(render.GetErrorTexture())
 		--render.SetCullMode("front")
 		poly:Draw()
 		--render.SetCullMode("front")
@@ -113,24 +113,24 @@ end
 
 event.AddListener("PostDrawGUI", "lol", function()
 
-	surface.PushMatrix(50,50)
+	render2d.PushMatrix(50,50)
 
-	surface.SetWhiteTexture()
-	surface.SetColor(1,1,1,0.75)
-	surface.DrawRect(caret_pos.x*w, caret_pos.y*h, w/8, h)
-	surface.SetColor(1,1,1,1)
+	render2d.SetTexture()
+	render2d.SetColor(1,1,1,0.75)
+	render2d.DrawRect(caret_pos.x*w, caret_pos.y*h, w/8, h)
+	render2d.SetColor(1,1,1,1)
 
 	if select_start then
-		surface.SetWhiteTexture()
-		surface.SetColor(1,1,1,0.75)
+		render2d.SetTexture()
+		render2d.SetColor(1,1,1,0.75)
 		local x,y,w,h = select_start.x * w, select_start.y * h, (caret_pos.x * w) + w, (caret_pos.y * h) + h
-		surface.DrawRect(x,y,w-x,h-y)
-		surface.SetColor(1,1,1,1)
+		render2d.DrawRect(x,y,w-x,h-y)
+		render2d.SetColor(1,1,1,1)
 	end
 
 	draw()
 
-	surface.PopMatrix()
+	render2d.PopMatrix()
 end)
 
 event.AddListener("CharInput", "lol", function(char)

@@ -122,12 +122,12 @@ function META:Draw()
 	render.SetBlendMode(self.Additive and "additive" or "alpha")
 
 	if self.Texture:IsValid() then
-		surface.SetTexture(self.Texture)
+		render2d.SetTexture(self.Texture)
 	else
-		surface.SetWhiteTexture()
+		render2d.SetTexture()
 	end
 
-	surface.SetColor(1,1,1,1)
+	render2d.SetColor(1,1,1,1)
 
 	if self.Mode2D then
 		for i = 1, self.max do

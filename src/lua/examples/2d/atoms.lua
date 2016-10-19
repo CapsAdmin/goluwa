@@ -64,19 +64,19 @@ event.AddListener("PreDrawGUI", "fb", function()
 			--render.SetBlendMode()
 			render.SetBlendMode("src_color", "one_minus_dst_color", "add")
 
-			surface.PushMatrix(0, 0, fb:GetTexture():GetSize():Unpack())
+			render2d.PushMatrix(0, 0, fb:GetTexture():GetSize():Unpack())
 				render.SetShaderOverride(shader)
-				surface.rect_mesh:Draw()
+				render2d.rectangle:Draw()
 				render.SetShaderOverride()
-			surface.PopMatrix()
+			render2d.PopMatrix()
 		fb:End()
 
 		camera.camera_2d:SetPosition(Vec3(-0.1,0.1,0))
 		camera.camera_2d:SetAngles(Ang3(0,math.rad(180 + 0.025),0))
 
-		surface.SetColor(1,1,1, 1)
-		surface.SetTexture(fb:GetTexture())
-		surface.DrawRect(0, 0, surface.GetSize())
+		render2d.SetColor(1,1,1, 1)
+		render2d.SetTexture(fb:GetTexture())
+		render2d.DrawRect(0, 0, render2d.GetSize())
 	end
 
 	shader.generate_random = 0

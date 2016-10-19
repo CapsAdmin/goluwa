@@ -117,13 +117,13 @@ local header = [[
 
 	/*
 	 * For anyone trying to follow along, as of this writing,
-	 * the next "surfaceprop_offset" value is at position 0x0134 (308)
+	 * the next "render2dprop_offset" value is at position 0x0134 (308)
 	 * from the start of the file.
 	 */
 
 	// Surface property value (single null-terminated string)
-	//int surfaceprop_count;
-	int surfaceprop_offset;
+	//int render2dprop_count;
+	int render2dprop_offset;
 
 	// Unusual: In this one index comes first, then count.
 	// Key-value data is a series of strings. If you can't find
@@ -300,7 +300,7 @@ local function load_mdl(path)
 	end)]]
 
 	local bone_names
-	local surface_prop_names
+	local render2d_prop_names
 
 	parse("bone", function(data, i)
 		do -- bone name
@@ -351,15 +351,15 @@ local function load_mdl(path)
 
 		do -- bone name
 			local offset = buffer:ReadInt()
-			if not surface_prop_names then
-				surface_prop_names = {}
+			if not render2d_prop_names then
+				render2d_prop_names = {}
 				buffer:PushPosition(header.bone_offset + offset)
 					for i = 1, header.bone_count do
-						surface_prop_names[i] = buffer:ReadString()
+						render2d_prop_names[i] = buffer:ReadString()
 					end
 				buffer:PopPosition()
 			end
-			data.surface_prop_name = surface_prop_names[i]
+			data.render2d_prop_name = render2d_prop_names[i]
 		end
 
 		data.contents = buffer:ReadInt()

@@ -1,7 +1,7 @@
-local lib = _G.surface
-local surface = gine.env.surface
+local lib = _G.render2d
+local render2d = gine.env.render2d
 
-function surface.SetDrawColor(r,g,b,a)
+function render2d.SetDrawColor(r,g,b,a)
 	if type(r) == "table" then
 		r,g,b,a = r.r, r.g, r.b, r.a
 	end
@@ -9,7 +9,7 @@ function surface.SetDrawColor(r,g,b,a)
 	lib.SetColor(r/255,g/255,b/255,a/255)
 end
 
-function surface.SetAlphaMultiplier(a)
+function render2d.SetAlphaMultiplier(a)
 	lib.SetAlphaMultiplier(a)
 end
 
@@ -21,14 +21,14 @@ function gfx.DrawTexturedRect(x,y,w,h)
 	lib.DrawRect(x,y,w,h)
 end
 
-function surface.DrawRect(x,y,w,h)
+function render2d.DrawRect(x,y,w,h)
 	local old = lib.bound_texture
 	lib.SetWhiteTexture()
 	lib.DrawRect(x,y,w,h)
 	lib.bound_texture = old
 end
 
-surface.DrawOutlinedRect = surface.DrawRect
+render2d.DrawOutlinedRect = render2d.DrawRect
 
 function gfx.DrawTexturedRectUV(x,y,w,h, u1,v1, u2,v2)
 	lib.SetRectUV(u1,v1, u2-u1,v2-v1)
@@ -40,10 +40,10 @@ function gfx.DrawLine(...)
 	lib.DrawLine(...)
 end
 
-function surface.DisableClipping(b)
+function render2d.DisableClipping(b)
 
 end
 
-function surface.DrawPoly()
+function render2d.DrawPoly()
 
 end

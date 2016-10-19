@@ -5,7 +5,7 @@ local gif4 = gfx.CreateGif("https://dl.dropboxusercontent.com/u/244444/greenkid.
 local gif5 = gfx.CreateGif("https://dl.dropboxusercontent.com/u/244444/zzzzz.gif")
 
 event.AddListener("PreDrawGUI", "gif", function()
-	surface.SetColor(1, 1, 1, 1)
+	render2d.SetColor(1, 1, 1, 1)
 	gif1:Draw(0, 0)
 	gif2:Draw(291, 0)
 	gif3:Draw(291, 215)

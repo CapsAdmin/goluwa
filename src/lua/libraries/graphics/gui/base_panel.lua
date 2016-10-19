@@ -219,17 +219,17 @@ end
 do -- drawing
 
 	function META:PreDraw(from_cache)
-		if self.GreyedOut then surface.PushHSV(1,0,0.5) end
-		surface.PushAlphaMultiplier(self.DrawAlpha)
+		if self.GreyedOut then render2d.PushHSV(1,0,0.5) end
+		render2d.PushAlphaMultiplier(self.DrawAlpha)
 
-		if self.ThreeDee then surface.Start3D2D() end
+		if self.ThreeDee then render2d.Start3D2D() end
 
 		local no_draw = self:HasParent() and self.Parent.draw_no_draw
 
 		self:InvalidateMatrix()
 		self:RebuildMatrix()
 
-		surface.SetWorldMatrix(self.Matrix)
+		render2d.SetWorldMatrix(self.Matrix)
 
 		if not from_cache then
 			self:CalcMouse()
@@ -267,9 +267,9 @@ do -- drawing
 
 				if gui.keyboard_selected_panel == self then
 					render.SetBlendMode("additive")
-					surface.SetColor(1, 1, 1, 0.5)
-					surface.SetWhiteTexture()
-					surface.DrawRect(0, 0, self.Size.x + self.DrawSizeOffset.x, self.Size.y + self.DrawSizeOffset.y)
+					render2d.SetColor(1, 1, 1, 0.5)
+					render2d.SetTexture()
+					render2d.DrawRect(0, 0, self.Size.x + self.DrawSizeOffset.x, self.Size.y + self.DrawSizeOffset.y)
 					render.SetBlendMode("alpha")
 				end
 
@@ -282,8 +282,8 @@ do -- drawing
 		end
 
 		if --[[true or]] not no_draw and self.Clipping then
-			--surface.PushClipFunction(self.DrawClippingStencil, self)
-			surface.EnableClipRect(0,0,self.Size.x + self.DrawSizeOffset.x, self.Size.y + self.DrawSizeOffset.y)
+			--render2d.PushClipFunction(self.DrawClippingStencil, self)
+			render2d.EnableClipRect(0,0,self.Size.x + self.DrawSizeOffset.x, self.Size.y + self.DrawSizeOffset.y)
 		end
 
 		if from_cache then
@@ -295,13 +295,13 @@ do -- drawing
 
 	function META:DrawClippingStencil()
 		--if not self.Clipping then return end
-		local tex = surface.GetTexture()
-		surface.SetWhiteTexture()
-		--surface.SetTexture(self.Texture)
-		surface.PushColor(1,1,1,0.1)
+		local tex = render2d.GetTexture()
+		render2d.SetTexture()
+		--render2d.SetTexture(self.Texture)
+		render2d.PushColor(1,1,1,0.1)
 		self:DrawRect()
-		surface.PopColor()
-		surface.SetTexture(tex)
+		render2d.PopColor()
+		render2d.SetTexture(tex)
 	end
 
 	function META:Draw(from_cache)
@@ -315,38 +315,38 @@ do -- drawing
 
 	function META:PostDraw(from_cache)
 		if --[[true or]] not self.draw_no_draw and self.Clipping then
-			--surface.PopClipFunction()
-			surface.DisableClipRect()
+			--render2d.PopClipFunction()
+			render2d.DisableClipRect()
 			--render.PopViewport()
 		end
 
 		if self.debug_flash and self.debug_flash > system.GetElapsedTime() then
-			surface.SetColor(1,0,0,(system.GetElapsedTime()*4)%1 > 0.5 and 0.5 or 0)
-			surface.DrawRect(0, 0, self.Size.x, self.Size.y)
+			render2d.SetColor(1,0,0,(system.GetElapsedTime()*4)%1 > 0.5 and 0.5 or 0)
+			render2d.DrawRect(0, 0, self.Size.x, self.Size.y)
 		end
 
 		if gui.debug then
 			if self.updated_layout then
 				render.SetBlendMode("additive")
-				surface.SetColor(1, 0, 0, 0.1)
-				surface.SetWhiteTexture(self.cache_texture)
-				surface.DrawRect(self.Scroll.x, self.Scroll.y, self.Size.x, self.Size.y)
+				render2d.SetColor(1, 0, 0, 0.1)
+				render2d.SetWhiteTexture(self.cache_texture)
+				render2d.DrawRect(self.Scroll.x, self.Scroll.y, self.Size.x, self.Size.y)
 				self.updated_layout = false
 				render.SetBlendMode("alpha")
 			else
 				if self.updated_cache then
-					surface.SetColor(0, 1, 0, 0.1)
-					surface.SetWhiteTexture(self.cache_texture)
-					surface.DrawRect(0, 0, self.Size.x, self.Size.y)
+					render2d.SetColor(0, 1, 0, 0.1)
+					render2d.SetWhiteTexture(self.cache_texture)
+					render2d.DrawRect(0, 0, self.Size.x, self.Size.y)
 					self.updated_cache = false
 				end
 			end
 		end
 
-		if self.ThreeDee then surface.End3D2D() end
+		if self.ThreeDee then render2d.End3D2D() end
 
-		if self.GreyedOut then surface.PopHSV() end
-		surface.PopAlphaMultiplier()
+		if self.GreyedOut then render2d.PopHSV() end
+		render2d.PopAlphaMultiplier()
 	end
 
 	function META:DrawRect(x, y, w, h)
@@ -361,11 +361,11 @@ do -- drawing
 			)
 		else
 			if not self.NinePatchRect:IsZero() then
-				surface.SetRectUV(self.NinePatchRect.x, self.NinePatchRect.y, self.NinePatchRect.w, self.NinePatchRect.h, self.Texture.Size.x, self.Texture.Size.y)
+				render2d.SetRectUV(self.NinePatchRect.x, self.NinePatchRect.y, self.NinePatchRect.w, self.NinePatchRect.h, self.Texture.Size.x, self.Texture.Size.y)
 			end
-			surface.DrawRect(x or 0, y or 0, w or (self.Size.x + self.DrawSizeOffset.x), h or (self.Size.y + self.DrawSizeOffset.y))
+			render2d.DrawRect(x or 0, y or 0, w or (self.Size.x + self.DrawSizeOffset.x), h or (self.Size.y + self.DrawSizeOffset.y))
 			if not self.NinePatchRect:IsZero() then
-				surface.SetRectUV()
+				render2d.SetRectUV()
 			end
 		end
 	end
@@ -423,7 +423,7 @@ do -- orientation
 					end
 
 					if scale then
-						local w,h = surface.GetSize()
+						local w,h = render2d.GetSize()
 						local scale2d = (w/h) / 100
 						self.Matrix:Scale(scale.x * scale2d, scale.y * scale2d, scale.z)
 					end
@@ -691,9 +691,9 @@ do -- cached rendering
 
 	function META:DrawCache()
 		self:OnPreDraw()
-		surface.SetColor(1, 1, 1, 1)
-		surface.SetTexture(self.cache_texture)
-		surface.DrawRect(0, 0, self.Size.x, self.Size.y)
+		render2d.SetColor(1, 1, 1, 1)
+		render2d.SetTexture(self.cache_texture)
+		render2d.DrawRect(0, 0, self.Size.x, self.Size.y)
 		self:OnPostDraw()
 	end
 
@@ -704,13 +704,13 @@ do -- cached rendering
 
 			local x,y = self.Matrix:GetTranslation()
 			self.Matrix:Translate(-x, -y, 0)
-			surface.PushMatrix(nil, true)
+			render2d.PushMatrix(nil, true)
 
 			if self:IsDragging() or self:IsInsideParent() then
 				self:OnDraw()
 			end
 
-			--surface.Translate(-self.Scroll.x, -self.Scroll.y)
+			--render2d.Translate(-self.Scroll.x, -self.Scroll.y)
 
 			for _, v in ipairs(self:GetChildren()) do
 				if v.Visible then
@@ -718,7 +718,7 @@ do -- cached rendering
 				end
 			end
 
-			surface.PopMatrix()
+			render2d.PopMatrix()
 
 			self.Matrix:Translate(x, y, 0)
 			self.cache_fb:End()
@@ -820,7 +820,7 @@ do -- drag drop
 			self.drag_panel_start_pos = self:GetPosition()
 		end
 
-		local drag_pos = Vec2(surface.ScreenToWorld(self.drag_world_pos:Unpack()))
+		local drag_pos = Vec2(render2d.ScreenToWorld(self.drag_world_pos:Unpack()))
 		local pos = self.drag_panel_start_pos + self:GetMousePosition() - drag_pos
 
 		if not self.dragged_out_of_min_distance and pos:Distance(self.drag_panel_start_pos) < self.DragMinDistance then
@@ -1402,7 +1402,7 @@ do -- mouse
 			return
 		end
 
-		local x, y = surface.ScreenToWorld(gui.mouse_pos.x, gui.mouse_pos.y)
+		local x, y = render2d.ScreenToWorld(gui.mouse_pos.x, gui.mouse_pos.y)
 
 		self.MousePosition.x = x
 		self.MousePosition.y = y
@@ -2318,22 +2318,22 @@ do -- events
 	function META:OnDraw()
 		if self.NoDraw or self.style_nodraw then return end
 
-		surface.SetColor(
+		render2d.SetColor(
 			self.Color.r + self.DrawColor.r,
 			self.Color.g + self.DrawColor.g,
 			self.Color.b + self.DrawColor.b,
 			self.Color.a + self.DrawColor.a
 		)
-		surface.SetTexture(self.Texture)
+		render2d.SetTexture(self.Texture)
 
 		self:DrawRect()
 
 		if gui.debug_layout then
 			gfx.SetFont()
 			gfx.DrawText("layout count " .. self.layout_count)
-			--surface.SetWhiteTexture()
-			--surface.SetColor(1,0,0,1)
-			--surface.DrawRect(self:GetMousePosition().x, self:GetMousePosition().y, 2, 2)
+			--render2d.SetTexture()
+			--render2d.SetColor(1,0,0,1)
+			--render2d.DrawRect(self:GetMousePosition().x, self:GetMousePosition().y, 2, 2)
 		end
 	end
 --[[

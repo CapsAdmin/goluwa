@@ -347,13 +347,13 @@ function META:BeginWrite()
 	self.fb = fb
 
 	fb:Begin()
-	surface.PushMatrix()
-	surface.LoadIdentity()
-	surface.Scale(self.Size.x, self.Size.y)
+	render2d.PushMatrix()
+	render2d.LoadIdentity()
+	render2d.Scale(self.Size.x, self.Size.y)
 end
 
 function META:EndWrite()
-	surface.PopMatrix()
+	render2d.PopMatrix()
 	self.fb:End()
 end
 
@@ -378,7 +378,7 @@ do
 
 	function META:Shade(fragment_shader, vars, blend_mode)
 		blend_mode = blend_mode or "alpha"
-		if not surface.IsReady() then
+		if not render2d.IsReady() then
 			event.AddListener("2DReady", self, function()
 				self:Shade(fragment_shader, vars)
 			end, {remove_after_one_call = true})
@@ -424,7 +424,7 @@ do
 			end
 
 			render.SetShaderOverride(shader)
-			surface.rect_mesh:Draw()
+			render2d.rectangle:Draw()
 			render.SetShaderOverride()
 		self:EndWrite()
 

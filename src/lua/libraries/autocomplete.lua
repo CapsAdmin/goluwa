@@ -86,9 +86,9 @@ function autocomplete.DrawFound(x, y, found, max, offset)
 	max = max or 100
 
 	gfx.SetFont()
-	surface.SetColor(1,1,1,1)
+	render2d.SetColor(1,1,1,1)
 
-	surface.PushMatrix(x, y)
+	render2d.PushMatrix(x, y)
 		for i = offset-1, max do
 			local v = found[i]
 
@@ -97,13 +97,13 @@ function autocomplete.DrawFound(x, y, found, max, offset)
 			local _, h = gfx.GetTextSize(v)
 			local alpha = (-(i / max) + 1) ^ 15
 
-			surface.SetAlphaMultiplier(alpha)
+			render2d.SetAlphaMultiplier(alpha)
 			gfx.SetTextPosition(5, (i-offset+1) * h)
 			gfx.DrawText(i .. ". " ..  v)
 		end
 
-		surface.SetAlphaMultiplier(1)
-	surface.PopMatrix()
+		render2d.SetAlphaMultiplier(1)
+	render2d.PopMatrix()
 end
 
 function autocomplete.ScrollFound(found, offset)
