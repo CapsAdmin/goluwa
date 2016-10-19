@@ -91,7 +91,7 @@ local repos = {
 		branch = "v2.1",
 		flags = {"LUAJIT_ENABLE_LUA52COMPAT"}
 	},
-	--[[{
+	{
 		url = "https://github.com/fsfod/LuaJIT",
 		branch = "intrinsicpr",
 		flags = {"LUAJIT_ENABLE_LUA52COMPAT"}
@@ -100,13 +100,13 @@ local repos = {
 		url = "https://github.com/fsfod/LuaJIT",
 		branch = "vectors",
 		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
-		patch = vector_patch,
+		patches = vector_patch,
 	},
 	{
 		url = "https://github.com/fsfod/LuaJIT",
 		branch = "gcarena",
 		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
-	},]]
+	},
 	{
 		url = "https://github.com/corsix/LuaJIT",
 		branch = "newgc",
