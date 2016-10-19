@@ -334,7 +334,7 @@ do -- tcp socket meta
 				if res then
 					self.shaking_hands = nil
 					self:DebugPrintf("done shaking hands")
-				elseif msg == "wantread" then
+				elseif msg == "wantread" or msg == "Socket is not connected" then
 					self:Timeout(true)
 				elseif msg == "closed" then
 					self:Remove()
@@ -412,7 +412,7 @@ do -- tcp socket meta
 
 						self.data_received = self.data_received + #data
 					else
-						if err == "timeout" or err == "Socket is not connected" then
+						if err == "timeout" or err == "Socket is not connected" or err == "wantread" then
 							self:Timeout(true)
 						elseif err == "closed" then
 							self:DebugPrintf("closed")
