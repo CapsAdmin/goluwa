@@ -4,7 +4,7 @@ local ENV = love._line_env
 love.mouse = love.mouse or {}
 
 function love.mouse.setPosition(x, y)
-	window.SetMousePosition(Vec2(x, y))
+	--window.SetMousePosition(Vec2(x, y))
 end
 
 function love.mouse.getPosition()
