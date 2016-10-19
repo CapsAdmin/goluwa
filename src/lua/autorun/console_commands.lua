@@ -3,10 +3,10 @@ commands.Add("gc", function()
 	logn(utility.FormatFileSize(collectgarbage("count")*1024))
 end)
 commands.Add("scene_info", function()
-	logf("%s models\n", #render.scene_3d)
+	logf("%s models\n", #render3d.scene)
 
 	local count = 0
-	for _, model in ipairs(render.scene_3d) do
+	for _, model in ipairs(render3d.scene) do
 		count = count + #model.sub_models
 	end
 
@@ -15,7 +15,7 @@ commands.Add("scene_info", function()
 
 	local mat_count = {}
 	local tex_count = {}
-	for _, model in ipairs(render.scene_3d) do
+	for _, model in ipairs(render3d.scene) do
 		for _, sub_model in ipairs(model.sub_models) do
 			mat_count[sub_model.material] = true
 			for key, val in pairs(sub_model.material) do
