@@ -493,7 +493,7 @@ do -- font
 					if align == "right" then
 						align_x = max_width - w
 					elseif align == "center" then
-						align_x = (-w / 2) + limit/2 - x
+						align_x = (max_width - w) / 2
 					end
 
 					gfx.SetTextPosition(align_x, (i-1) * h * font.line_height)
@@ -898,276 +898,6 @@ do
 end
 
 do -- shapes
-	local function edge(anchors, normals, s, len_s, ns, q, r, half_width, mode)
-		if mode == "none" then
-			table.insert(anchors, q)
-			table.insert(anchors, q)
-			table.insert(normals, ns)
-			table.insert(normals, -ns)
-
-			s = (r - q)
-			len_s = s:GetLength()
-			ns = s:GetNormal(half_width / len_s)
-
-			table.insert(anchors, q)
-			table.insert(anchors, q)
-			table.insert(normals, -ns)
-			table.insert(normals, ns)
-		elseif mode == "miter" then
-			local t = r - q
-			local len_t = t:GetLength()
-			local nt = t:GetNormal(half_width / len_t)
-
-			table.insert(anchors, q)
-			table.insert(anchors, q)
-
-			local det = s:GetCrossed(t)
-			if math.abs(det) / (len_s * len_t) < 0.05 and s:GetDot(t) > 0 then
-				table.insert(normals, ns)
-				table.insert(normals, -ns)
-			else
-				local lambda = (nt - ns):GetCrossed(t) / det
-				local d = ns + s * lambda
-
-				--logf("normal = %i\nlambda = %f\nnt= Vec2(%f, %f)\nns= Vec2(%f, %f)\nt = Vec2(%f, %f)\ndet = %f\ns = Vec2(%f, %f)\n", #normals, lambda, nt.x,nt.y, ns.x,ns.y, t.x,t.y, det, s.x, s.y);
-
-				table.insert(normals, d)
-				table.insert(normals, -d)
-			end
-
-			s = t
-			ns = nt
-			len_s = len_t
-
-		elseif mode == "bevel" then
-			local t = r - q
-			local len_t = t:GetLength()
-
-			local det = s:GetCrossed(t)
-			if math.abs(det) / (len_s * len_t) < 0.05 and s:GetDot(t) > 0 then
-				local n = t:GetNormal(half_width / len_t)
-				table.insert(anchors, q)
-				table.insert(anchors, q)
-				table.insert(normals, n)
-				table.insert(normals, -n)
-				s = t
-				len_s = len_t
-				return s, len_s, ns
-			end
-
-			local nt = t:GetNormal(half_width / len_t)
-			local lambda = (nt - ns):GetCrossed(t) / det
-			if not math.isvalid(lambda) then lambda = 0 end -- not really sure why this is needed
-			local d = ns + s * lambda
-
-			table.insert(anchors, q)
-			table.insert(anchors, q)
-			table.insert(anchors, q)
-			table.insert(anchors, q)
-
-			if det > 0 then
-				table.insert(normals, d)
-				table.insert(normals, -ns)
-				table.insert(normals, d)
-				table.insert(normals, -nt)
-			else
-				table.insert(normals, ns)
-				table.insert(normals, -d)
-				table.insert(normals, nt)
-				table.insert(normals, -d)
-			end
-
-			s = t
-			len_s = len_t
-			ns = nt
-		end
-
-		return s, len_s, ns
-	end
-
-	local function line_(mode, coords, count, size_hint, half_width, pixel_size, draw_overdraw, draw_mode, join)
-		local overdraw_vertex_count = 0
-		local overdraw_vertex_start = 0
-
-		local anchors = table.new(size_hint, 1)
-		local normals = table.new(size_hint, 1)
-
-		if draw_overdraw then
-			half_width = half_width - pixel_size * 0.3
-		end
-
-		if join then
-			table.insert(coords, coords[1])
-			table.insert(coords, coords[2])
-			count = count + 2
-		end
-
-		local is_looping = (coords[1] == coords[count - 1]) and (coords[2] == coords[count])
-		local s
-
-		if is_looping then
-			s = Vec2(coords[1] - coords[count - 3], coords[2] - coords[count - 2])
-		else
-			s = Vec2(coords[3] - coords[1], coords[4] - coords[2])
-		end
-
-		local len_s = s:GetLength()
-		local ns = s:GetNormal(half_width / len_s)
-
-		local q
-		local r = Vec2(coords[1], coords[2])
-
-		for i = 0, count - 2, 2 do
-			q = r
-			if i < count - 2 then
-				r = Vec2(coords[i + 3], coords[i + 4])
-			elseif is_looping then
-				r = Vec2(coords[3], coords[4])
-			else
-				r = r + s
-			end
-			s, len_s, ns = edge(anchors, normals, s, len_s, ns, q, r, half_width, mode)
-		end
-
-		if join then
-			table.remove(coords)
-			table.remove(coords)
-		end
-
-		local vertex_count = #normals
-		local extra_vertices = 0
-
-		if draw_overdraw then
-			--calc_overdraw_vertex_count(is_looping)
-			if mode == "none" then
-				overdraw_vertex_count = 4 * vertex_count - 2
-			else
-				overdraw_vertex_count = 2 * vertex_count + (is_looping and 0 or 2)
-			end
-
-			if draw_mode == "triangle_strip" then
-				extra_vertices = 2
-			end
-		end
-
-		local vertices = {}
-
-		for i = 1, vertex_count do
-			vertices[i] = anchors[i] + normals[i]
-		end
-
-		if draw_overdraw then
-			local overdraw = vertices--- + vertex_count + extra_vertices
-			overdraw_vertex_start = vertex_count + extra_vertices
-
-			if mode == "none" then
-				for i = 2, vertex_count + 3 - 1, 4 do
-					local s = vertices[i+1] - vertices[i+3+1]
-					local t = vertices[i+1] - vertices[i+1+1]
-					s:Normalize(pixel_size)
-					t:Normalize(pixel_size)
-
-					local k = 4 * (- 2)
-					k = k + overdraw_vertex_start
-					k = k + 1
-					i = i + 1
-					overdraw[k] = vertices[i]
-					overdraw[k+1] = vertices[i]   + s + t
-					overdraw[k+2] = vertices[i+1] + s - t
-					overdraw[k+3] = vertices[i+1]
-
-					overdraw[k+4] = vertices[i+1]
-					overdraw[k+5] = vertices[i+1] + s - t
-					overdraw[k+6] = vertices[i+2] - s - t
-					overdraw[k+7] = vertices[i+2]
-
-					overdraw[k+8]  = vertices[i+2]
-					overdraw[k+9]  = vertices[i+2] - s - t
-					overdraw[k+10] = vertices[i+3] - s + t
-					overdraw[k+11] = vertices[i+3]
-
-					overdraw[k+12] = vertices[i+3]
-					overdraw[k+13] = vertices[i+3] - s + t
-					overdraw[k+14] = vertices[i]   + s + t
-					overdraw[k+15] = vertices[i]
-				end
-			else
-				for i = 0, vertex_count - 1 - 1, 2 do
-					overdraw[overdraw_vertex_start + i+1] = vertices[i+1]
-					overdraw[overdraw_vertex_start + i+1+1] = vertices[i+1] + normals[i+1] * (pixel_size / normals[i+1]:GetLength())
-				end
-
-				for i = 0, vertex_count - 1 - 1, 2 do
-					local k = vertex_count - i - 1
-					overdraw[overdraw_vertex_start + vertex_count + i+1] = vertices[k]
-					overdraw[overdraw_vertex_start + vertex_count + i+1+1] = vertices[k+1] + normals[k+1] * (pixel_size / normals[i+1]:GetLength())
-				end
-
-				if not is_looping then
-					local spacer = (overdraw[overdraw_vertex_start + 1+1] - overdraw[overdraw_vertex_start + 3+1])
-					spacer:Normalize(pixel_size)
-					overdraw[overdraw_vertex_start + 1+1] = overdraw[overdraw_vertex_start + 1+1] + spacer
-
-					spacer = (overdraw[overdraw_vertex_start + vertex_count - 1] - overdraw[overdraw_vertex_start + vertex_count - 3])
-					spacer:Normalize(pixel_size)
-					overdraw[overdraw_vertex_start + vertex_count - 1+1] = overdraw[overdraw_vertex_start + vertex_count - 1+1]  + spacer
-					overdraw[overdraw_vertex_start + vertex_count + 1+1] = overdraw[overdraw_vertex_start + vertex_count + 1+1]  + spacer
-
-					overdraw[overdraw_vertex_start + overdraw_vertex_count - 2+1] = overdraw[overdraw_vertex_start + 0+1]
-					overdraw[overdraw_vertex_start + overdraw_vertex_count - 1+1] = overdraw[overdraw_vertex_start + 1+1]
-				end
-			end
-		end
-
-		if extra_vertices ~= 0 then
-			vertices[vertex_count + 0 + 1] = vertices[vertex_count - 1 + 1]
-			vertices[vertex_count + 1 + 1] = vertices[overdraw_vertex_start + 1]
-		end
-
-		return vertices, overdraw_vertex_start + overdraw_vertex_count
-	end
-
-	local function generate_line(mode, coords, width, pixel_size, draw_overdraw, join)
-		width = width * 0.5
-		local draw_mode
-		if mode == "none" then
-			draw_mode = "triangles"
-		else
-			draw_mode = "triangle_strip"
-		end
-		local count = #coords
-		if mode == "miter" then
-			return line_(mode, coords, count, count, width, pixel_size, draw_overdraw, draw_mode, join), nil, draw_mode
-		elseif mode == "bevel" then
-			return line_(mode, coords, count, 2 * count - 4, width, pixel_size, draw_overdraw, draw_mode, join), nil, draw_mode
-		elseif mode == "none" then
-			local vertices, overdraw_count = line_(mode, coords, count, 2 * count - 4, width, pixel_size, draw_overdraw, draw_mode, join)
-			for i = 0, #vertices - 4 - 1 do
-				vertices[i + 1] = vertices[i + 2 + 1]
-			end
-			table.remove(vertices, #vertices)
-
-			local total_vertex_count = #vertices
-			if draw_overdraw then
-				total_vertex_count = overdraw_count
-			end
-			local num_indices = (total_vertex_count / 4) * 6
-			local indices = {}
-
-			for i = 0, (num_indices / 6) - 1 do
-				indices[(i * 6 + 0) + 1] = i * 4 + 0
-				indices[(i * 6 + 1) + 1] = i * 4 + 1
-				indices[(i * 6 + 2) + 1] = i * 4 + 2
-
-				indices[(i * 6 + 3) + 1] = i * 4 + 0
-				indices[(i * 6 + 4) + 1] = i * 4 + 2
-				indices[(i * 6 + 5) + 1] = i * 4 + 3
-			end
-
-			return vertices, indices, draw_mode
-		end
-	end
-
 	local mesh = surface.CreateMesh(2048)
 	for i = 1, 2048 do
 		mesh:SetVertex(i, "color", 1,1,1,1)
@@ -1177,11 +907,8 @@ do -- shapes
 		local idx = 1
 
 		if mode == "line" then
-			--table.insert(points, points[1])
-			--table.insert(points, points[2])
-			local vertices, indices, mode = generate_line(love.graphics.getLineJoin(), points, love.graphics.getLineWidth(), 1, false, join)--love.graphics.getLineStyle() == "smooth", true)
-			--table.remove(points)
-			--table.remove(points)
+			local draw_mode, vertices, indices = math2d.CoordinatesToLines(points, love.graphics.getLineWidth(), join, love.graphics.getLineJoin(), 1, false)--love.graphics.getLineStyle() == "smooth", true)
+			mesh:SetMode(draw_mode)
 
 			if indices then
 				for i, v in ipairs(indices) do
@@ -1198,8 +925,6 @@ do -- shapes
 			for i, v in ipairs(vertices) do
 				mesh:SetVertex(i, "pos", v.x, v.y)
 			end
-
-			mesh:SetMode(mode)
 		else
 			for i = 1, #points, 2 do
 				mesh:SetVertex(idx, "pos", points[i + 0], points[i + 1])
@@ -1226,295 +951,33 @@ do -- shapes
 		polygon(mode, points, true)
 	end
 
-	do
-		local Mesh = line.TypeTemplate("Mesh")
+	function love.graphics.arc(...)
+		local draw_mode, arc_mode, x, y, radius, angle1, angle2, points
 
-
-		function love.graphics.newMesh(...)
-			local vertices
-			local vertex_count
-			local vertex_format
-			local mode
-			local usage
-
-			if type(...) == "number" then
-				vertex_count, mode, usage = ...
-			elseif type(...) == "table" then
-				vertices, mode, usage = ...
-				vertex_count = #vertices
-			elseif type(...) == "string" then
-				vertex_format, vertices, mode, usage = ...
-				vertex_count = #vertices
-			else
-				vertex_count, mode, usage = ...
-			end
-
-			local self = line.CreateObject("Mesh")
-			self.mesh = surface.CreateMesh(vertex_count)
-			self.mesh:SetDrawHint(usage)
-			self:setDrawMode(mode)
-
-			if vertices then
-				self:setVertices(vertices)
-			end
-
-			return self
+		if type(select(2, ...)) == "number" then
+			draw_mode, x, y, radius, angle1, angle2, points = ...
+			arc_mode = "pie"
+		else
+			draw_mode, arc_mode, x, y, radius, angle1, angle2, points = ...
 		end
 
-		function Mesh:setTexture(tex)
-			self.img = tex
+		if draw_mode == "line" and arc_mode == "closed" and math.abs(angle1 - angle2) < math.rad(4) then
+			arc_mode = "open"
 		end
 
-		function Mesh:getTexture()
-			return self.img
+		if draw_mode == "fill" and arc_mode == "open" then
+			arc_mode = "closed"
 		end
 
-		Mesh.setImage = Mesh.setTexture
-		Mesh.getImage = Mesh.getTexture
+		local coords = math2d.ArcToCoordinates(arc_mode, x, y, radius, angle1, angle2, points)
 
-		function Mesh:setVertices(vertices)
-			for i, v in ipairs(vertices) do
-				self:setVertex(i, v)
-			end
-			self.mesh:UpdateBuffer()
-		end
-
-		function Mesh:getVertices()
-			local out = {}
-			for i = 1, self.mesh.Vertices:GetLength() do
-				out[i] = {self:getVertex()}
-			end
-			return out
-		end
-
-		function Mesh:setVertex(index, vertex)
-			if vertex[1] then
-				self.mesh:SetVertex(index, "pos", vertex[1], vertex[2])
-			end
-			if vertex[3] then
-				self.mesh:SetVertex(index, "uv", vertex[3], -vertex[4]+1)
-			end
-			if vertex[5] then
-				local r = (vertex[5] or 255) / 255
-				local g = (vertex[6] or 255) / 255
-				local b = (vertex[7] or 255) / 255
-				local a = (vertex[8] or 255) / 255
-				self.mesh:SetVertex(index, "color", r,g,b,a)
-			end
-		end
-
-		function Mesh:getVertex(index)
-			local x,y = self.mesh:GetVertex(index, "pos")
-			local u,v = self.mesh:GetVertex(index, "uv")
-			local r,g,b,a = self.mesh:GetVertex(index, "color")
-
-			return x,y,u,v,r,g,b,a
-		end
-
-		function Mesh:setDrawRange(min, max)
-			self.draw_range_min = min
-			self.draw_range_man = max
-		end
-
-		function Mesh:getDrawRange()
-			return self.draw_range_min, self.draw_range_max
-		end
-
-		function Mesh:Draw()
-			self.mesh:Draw(self.draw_range)
-		end
-
-		function Mesh:setVertexColors()
-
-		end
-
-		function Mesh:hasVertexColors()
-			return true
-		end
-
-		function Mesh:setVertexMap(...)
-			local indices = type(...) == "table" and ... or {...}
-			for i, i2 in ipairs(indices) do
-				self.mesh:SetIndex(i, i2-1)
-			end
-		end
-
-		function Mesh:getVertexMap()
-			local out = {}
-			for i = 1, self.mesh.Indices:GetLength() do
-				out[i] = self.mesh.Indices.Pointer[i - 1] + 1
-			end
-			return out
-		end
-
-		function Mesh:getVertexCount()
-			return self.mesh.Vertices:GetLength()
-		end
-
-		function Mesh:setVertexAttribute(index, pos, ...)
-			self:setVertex(index, self.mesh.mesh_layout.attributes[pos].name, ...)
-		end
-
-		function Mesh:getVertexAttribute(index, pos)
-			return self:getVertex(index, self.mesh.mesh_layout.attributes[pos].name)
-		end
-
-		function Mesh:setAttributeEnabled(name, enable)
-
-		end
-
-		function Mesh:isAttributeEnabled()
-
-		end
-
-		function Mesh:attachAttribute()
-
-		end
-
-		do
-			local tr = {
-				pos = "VertexPosition",
-				uv = "VertexTexCoord",
-				color = "VertexColor",
-			}
-
-			function Mesh:getVertexFormat()
-				local out = {}
-				for i, info in ipairs(self.mesh.mesh_layout.attributes) do
-					table.insert(out, {tr[info.name] or info.name, info.type_info.type, info.type_info.arg_count})
-				end
-				return out
-			end
-		end
-
-		function Mesh:flush()
-			self:UpdateBuffers()
-		end
-
-		do
-			local tr = {
-				fan = "triangle_fan",
-				strip = "triangle_strip",
-			}
-
-			function Mesh:setDrawMode(mode)
-				mode = tr[mode] or mode
-				self.mesh:SetMode(mode)
-			end
-
-			local tr2 = {}
-
-			for k,v in pairs(tr) do
-				tr[v] = k
-			end
-
-			function Mesh:getDrawMode()
-				local mode = self.mesh:GetMode()
-				return tr2[mode] or mode
-			end
-		end
-
-		line.RegisterType(Mesh)
-	end
-
-	do
-		local function create_points(coords, points, x, y, radius, phi, angle_shift, offset)
-			for i = offset, points-1 do
-				coords[(2 * i + 0) + 1] = x + radius * math.cos(phi)
-				coords[(2 * i + 1) + 1] = y + radius * math.sin(phi)
-				phi = phi + angle_shift
-			end
-		end
-
-		local function arc(draw_mode, arc_mode, x, y, radius, angle1, angle2, points)
-			points = points or radius
-			local angle = math.abs(angle1 - angle2)
-
-			if angle < math.pi * 2 then
-				points = points * angle / (2 * math.pi)
-			end
-
-
-			points = math.ceil(points)
-
-			if points <= 0 or angle1 == angle2 then
-				--return
-			end
-
-			if math.abs(angle1 - angle2) >= 2 * math.pi then
-				return -- draw circle
-			end
-
-			local angle_shift = (angle2 - angle1) / points
-
-			if angle_shift  == 0  then
-				return
-			end
-
-			if draw_mode == "line" and arc_mode == "closed" and math.abs(angle1 - angle2) < math.rad(4) then
-				arc_mode = "open"
-			end
-
-			if draw_mode == "fill" and arc_mode == "open" then
-				arc_mode = "closed"
-			end
-
-			local phi = angle1
-			local coords = {}
-			local num_coords = 0
-
-			if arc_mode == "pie" then
-				coords[1] = x
-				coords[2] = y
-
-				create_points(coords, points + 3, x, y, radius, phi, angle_shift, 1)
-
-				coords[#coords - 1] = x
-				coords[#coords - 0] = y
-			elseif arc_mode == "open" then
-				create_points(coords, points + 1, x, y, radius, phi, angle_shift, 0)
-			else -- if arc_mode == "closed" then
-				create_points(coords, points + 2, x, y, radius, phi, angle_shift, 0)
-				coords[#coords - 1] = coords[1]
-				coords[#coords - 0] = coords[2]
-			end
-
+		if coords then
 			polygon(draw_mode, coords)
-		end
-
-		function love.graphics.arc(...)
-			if type(select(2, ...)) == "number" then
-				local draw_mode, x, y, radius, angle1, angle2, segments = ...
-				arc(draw_mode, "pie", x, y, radius, angle1, angle2, segments)
-			else
-				arc(...)
-			end
 		end
 	end
 
 	function love.graphics.ellipse(mode, x, y, radiusx, radiusy, points)
-		if not points then
-			if radiusx and radiusy and (radiusx + radiusy) > 30 then
-				points = math.ceil((radiusx + radiusy) / 2)
-			else
-				points = 15
-			end
-		end
-
-		local two_pi = math.pi * 2
-		if points <= 0 then points = 1 end
-		local angle_shift = two_pi / points
-		local phi = 0
-
-		local coords = {}
-		for i = 0, points - 1 do
-			coords[(2*i+0) + 1] = x + radiusx * math.cos(phi)
-			coords[(2*i+1) + 1] = y + radiusy * math.sin(phi)
-			phi = phi + angle_shift
-		end
-
-		coords[(2*points+0) + 1] = coords[1]
-		coords[(2*points+1) + 1] = coords[2]
+		local coords = math2d.EllipseToCoordinates(x, y, radiusx, radiusy, points)
 
 		polygon(mode, coords)
 	end
@@ -1552,64 +1015,209 @@ do -- shapes
 			surface.SetWhiteTexture()
 			surface.DrawRect(x, y, w, h)
 		else
-			if not points then
-				if math.max(rx, ry) > 20 then
-					points = math.ceil(math.max(rx, ry) / 2)
-				else
-					points = 10
-				end
-			end
-
-			if w >= 0.02 then
-				rx = math.min(rx, w / 2 - 0.01)
-			end
-
-			if h >= 0.02 then
-				ry = math.min(ry, h / 2 - 0.01)
-			end
-
-			local points = math.max(points, 1)
-			local half_pi = math.pi / 2
-			local angle_shift = half_pi / (points + 1)
-
-			local coords = {}
-
-			local phi
-
-			phi = 0
-			for i = 0, points + 2 do
-				coords[(2 * i + 0) + 1] = x + rx * (1 - math.cos(phi))
-				coords[(2 * i + 1) + 1] = y + ry * (1 - math.sin(phi))
-				phi = phi + angle_shift
-			end
-
-			phi = half_pi
-			for i = points + 2, 2 * (points + 2) do
-				coords[(2 * i + 0) + 1] = x + w - rx * (1 + math.cos(phi))
-				coords[(2 * i + 1) + 1] = y + ry * (1 - math.sin(phi))
-				phi = phi + angle_shift
-			end
-
-			phi = 2 * half_pi
-			for i = 2 * (points + 2), 3 * (points + 2) do
-				coords[(2 * i + 0) + 1] = x + w - rx * (1 + math.cos(phi))
-				coords[(2 * i + 1) + 1] = y + h - ry * (1 + math.sin(phi))
-				phi = phi + angle_shift
-			end
-
-			phi = 3 * half_pi
-			for i = 3 * (points + 2), 4 * (points + 2) do
-				coords[(2 * i + 0) + 1] = x + rx * (1 - math.cos(phi))
-				coords[(2 * i + 1) + 1] = y + h - ry * (1 + math.sin(phi))
-				phi = phi + angle_shift
-			end
-
-			--coords[#coords - 1] = coords[3]
-			--coords[#coords - 0] = coords[4]
+			local coords = math2d.RoundedRectangleToCoordinates(x, y, w, h, rx, ry, points)
 
 			polygon("line", coords, true)
 		end
 	end
+end
+
+do
+	local Mesh = line.TypeTemplate("Mesh")
+
+	function love.graphics.newMesh(...)
+		local vertices
+		local vertex_count
+		local vertex_format
+		local mode
+		local usage
+
+		if type(...) == "number" then
+			vertex_count, mode, usage = ...
+		elseif type(...) == "table" then
+			vertices, mode, usage = ...
+			vertex_count = #vertices
+		elseif type(select(1, ...)) == "table" and type(select(2, ...)) then
+			vertex_format, vertices, mode, usage = ...
+			vertex_count = #vertices
+		else
+			vertex_count, mode, usage = ...
+		end
+
+		local self = line.CreateObject("Mesh")
+		self.mesh = surface.CreateMesh(vertex_count)
+
+		if vertex_format then
+			self.mesh:ClearAttributes()
+			for i, v in ipairs(vertex_format) do
+				self.mesh:SetAttribute(i, v[1], v[2], v[3])
+			end
+		end
+
+		self.mesh:SetDrawHint(usage)
+		self:setDrawMode(mode)
+
+		if vertices then
+			self:setVertices(vertices)
+		end
+
+		return self
+	end
+
+	function Mesh:setTexture(tex)
+		self.img = tex
+	end
+
+	function Mesh:getTexture()
+		return self.img
+	end
+
+	Mesh.setImage = Mesh.setTexture
+	Mesh.getImage = Mesh.getTexture
+
+	function Mesh:setVertices(vertices)
+		for i, v in ipairs(vertices) do
+			self:setVertex(i, v)
+		end
+		self.mesh:UpdateBuffer()
+	end
+
+	function Mesh:getVertices()
+		local out = {}
+		for i = 1, self.mesh.Vertices:GetLength() do
+			out[i] = {self:getVertex()}
+		end
+		return out
+	end
+
+	function Mesh:setVertex(index, vertex)
+		if vertex[1] then
+			self.mesh:SetVertex(index, "pos", vertex[1], vertex[2])
+		end
+		if vertex[3] then
+			self.mesh:SetVertex(index, "uv", vertex[3], -vertex[4]+1)
+		end
+		if vertex[5] then
+			local r = (vertex[5] or 255) / 255
+			local g = (vertex[6] or 255) / 255
+			local b = (vertex[7] or 255) / 255
+			local a = (vertex[8] or 255) / 255
+			self.mesh:SetVertex(index, "color", r,g,b,a)
+		end
+	end
+
+	function Mesh:getVertex(index)
+		local x,y = self.mesh:GetVertex(index, "pos")
+		local u,v = self.mesh:GetVertex(index, "uv")
+		local r,g,b,a = self.mesh:GetVertex(index, "color")
+
+		return x,y,u,v,r,g,b,a
+	end
+
+	function Mesh:setDrawRange(min, max)
+		self.draw_range_min = min
+		self.draw_range_man = max
+	end
+
+	function Mesh:getDrawRange()
+		return self.draw_range_min, self.draw_range_max
+	end
+
+	function Mesh:Draw()
+		self.mesh:Draw(self.draw_range)
+	end
+
+	function Mesh:setVertexColors()
+
+	end
+
+	function Mesh:hasVertexColors()
+		return true
+	end
+
+	function Mesh:setVertexMap(...)
+		local indices = type(...) == "table" and ... or {...}
+		for i, i2 in ipairs(indices) do
+			self.mesh:SetIndex(i, i2-1)
+		end
+	end
+
+	function Mesh:getVertexMap()
+		local out = {}
+		for i = 1, self.mesh.Indices:GetLength() do
+			out[i] = self.mesh.Indices.Pointer[i - 1] + 1
+		end
+		return out
+	end
+
+	function Mesh:getVertexCount()
+		return self.mesh.Vertices:GetLength()
+	end
+
+	function Mesh:setVertexAttribute(index, pos, ...)
+		self:setVertex(index, self.mesh.mesh_layout.attributes[pos].name, ...)
+	end
+
+	function Mesh:getVertexAttribute(index, pos)
+		return self:getVertex(index, self.mesh.mesh_layout.attributes[pos].name)
+	end
+
+	function Mesh:setAttributeEnabled(name, enable)
+
+	end
+
+	function Mesh:isAttributeEnabled()
+
+	end
+
+	function Mesh:attachAttribute()
+
+	end
+
+	do
+		local tr = {
+			pos = "VertexPosition",
+			uv = "VertexTexCoord",
+			color = "VertexColor",
+		}
+
+		function Mesh:getVertexFormat()
+			local out = {}
+			for i, info in ipairs(self.mesh.mesh_layout.attributes) do
+				table.insert(out, {tr[info.name] or info.name, info.type_info.type, info.type_info.arg_count})
+			end
+			return out
+		end
+	end
+
+	function Mesh:flush()
+		self:UpdateBuffers()
+	end
+
+	do
+		local tr = {
+			fan = "triangle_fan",
+			strip = "triangle_strip",
+		}
+
+		function Mesh:setDrawMode(mode)
+			mode = tr[mode] or mode
+			self.mesh:SetMode(mode)
+		end
+
+		local tr2 = {}
+
+		for k,v in pairs(tr) do
+			tr[v] = k
+		end
+
+		function Mesh:getDrawMode()
+			local mode = self.mesh:GetMode()
+			return tr2[mode] or mode
+		end
+	end
+
+	line.RegisterType(Mesh)
 end
 
 do -- sprite batch

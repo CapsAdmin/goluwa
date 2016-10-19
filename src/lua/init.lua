@@ -231,6 +231,7 @@ pvars = include("lua/libraries/pvars.lua") -- like cvars
 prototype = include("lua/libraries/prototype/prototype.lua") -- handles classes, objects, etc
 if GRAPHICS then
 	math3d = include("lua/libraries/graphics/math3d.lua") -- 3d math functions
+	math2d = include("lua/libraries/graphics/math2d.lua") -- 2d math functions
 end
 crypto = include("lua/libraries/crypto.lua") -- base64 and other hash functions
 serializer = include("lua/libraries/serializer.lua") -- for serializing lua data in different formats
