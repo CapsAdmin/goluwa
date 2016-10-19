@@ -45,7 +45,7 @@ local function try_find(files, name)
 			if supported[ext] then
 				local name = full_path:match(".+/(.+)%.")
 				if name:lower():find(try) then
-					llog(name, ": ", full_path)
+					llog("%s: %s", name, full_path)
 					return full_path
 				end
 			end
@@ -202,14 +202,15 @@ local function find_font(name, callback, on_error)
 	sockets.DownloadFirstFound(
 		urls,
 		function(url, content)
-			llog(name, " url: ", url)
+			llog("%s downloading url: %s", name, url)
 
 			local info = lookup[url]
 			local ext
+			local full_path
 
 			if info.archive then
 				vfs.Write("data/temp.zip", content)
-				local full_path = info.archive(R("data/temp.zip") .. "/", name)
+				full_path = info.archive(R("data/temp.zip") .. "/", name)
 				if full_path then
 					content = vfs.Read(full_path)
 					ext = full_path:match(".+(%.%a+)")
@@ -223,10 +224,13 @@ local function find_font(name, callback, on_error)
 				ext = ext or url:match(".+(%.%a+)") or ".dat"
 				local path = "cache/" .. crypto.CRC32(real_name) .. ext
 
-				llog(name, " cache: ", path)
+				llog("%s cache: %s", name, path)
 				vfs.Write(path, content)
 
 				callback(path)
+			else
+				llog("%s is empty", full_path)
+				resource.Download(fonts.default_font_path, callback)
 			end
 		end,
 		on_error

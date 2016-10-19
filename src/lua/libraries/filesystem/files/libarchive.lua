@@ -196,6 +196,11 @@ function CONTEXT:ReadBytes(bytes)
 
 	if size > 0 then
 		return ffi.string(data, size)
+	elseif size < 0 then
+		local err = archive.ErrorString(self.archive)
+		if err ~= nil then
+			wlog(ffi.string(err))
+		end
 	end
 end
 
