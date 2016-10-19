@@ -33,10 +33,26 @@ local function download(from, to, callback, on_fail, on_header)
 		from,
 		function()
 			file:Close()
-			local full_path = R("os:" .. e.DOWNLOAD_FOLDER .. to)
+			local full_path = R("os:" .. e.DOWNLOAD_FOLDER .. to .. ".temp")
 			if full_path then
-				callback(full_path)
-				llog("finished donwnloading ", from)
+				local ok, err = vfs.Rename(full_path, (full_path:gsub(".+/(.+).temp", "%1")))
+
+				if not ok then
+					wlog("unable to rename %q: %s", full_path, err)
+					on_fail()
+					return
+				end
+
+				local full_path = R("os:" .. e.DOWNLOAD_FOLDER .. to)
+
+				if full_path then
+					callback(full_path)
+
+					llog("finished donwnloading ", from)
+				else
+					wlog("resource download error: %q not found!", "data/downloads/" .. to)
+					on_fail()
+				end
 			else
 				wlog("resource download error: %q not found!", "data/downloads/" .. to)
 				on_fail()
@@ -50,7 +66,7 @@ local function download(from, to, callback, on_fail, on_header)
 		end,
 		function(header)
 			vfs.CreateFolders("os", e.DOWNLOAD_FOLDER .. to)
-			local file_, err = vfs.Open("os:" .. e.DOWNLOAD_FOLDER .. to, "write")
+			local file_, err = vfs.Open("os:" .. e.DOWNLOAD_FOLDER .. to .. ".temp", "write")
 			file = file_
 
 			if not file then
