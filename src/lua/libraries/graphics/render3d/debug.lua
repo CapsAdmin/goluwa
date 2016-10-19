@@ -1,10 +1,10 @@
-local render = ... or _G.render
+local render3d = ... or _G.render3d
 
 do -- AUTOMATE THIS
 	local size = 6
 	local x,y,w,h,i
 
-	function render.DrawGBufferDebugOverlay()
+	function render3d.DrawGBufferDebugOverlay()
 		w, h = render2d.GetSize()
 		w = w / size
 		h = h / size
