@@ -92,6 +92,13 @@ event.AddListener("PreDrawGUI", "lol", function()
 	love.graphics.setColor(255, 255, 255, 200)
 	love.graphics.rectangle("line", 500, 50, 60, 120, 5)
 
+	love.graphics.setLineWidth(1)
+	love.graphics.line(50,50, 50,500)
+	love.graphics.line(150,50, 150,500)
+	love.graphics.printf("hel w dlo wwdo  rdw wld dw awd", 150, 270, 50, "center")
+	love.graphics.printf("hello world dw awd", 150, 350, 100)
+	love.graphics.printf("hello world dw awd", 50, 350, 100)
+
 	love.graphics.draw(image, quad, 100, 100)
 	love.graphics.printf(("hello world "):rep(10), 200, 300, 50)
 
