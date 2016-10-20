@@ -123,7 +123,6 @@ else
 					gl.EnableVertexAttribArray(data.location)
 					gl.VertexAttribPointer(data.location, data.row_length, data.number_type, false, self.mesh_layout.size, ffi.cast("void*", data.row_offset))
 				end
-			gl.BindVertexArray(0)
 			self.setup_vao = true
 		end
 	end
@@ -131,7 +130,6 @@ else
 	function META:_SetVertices(vertices)
 		gl.BindBuffer("GL_ARRAY_BUFFER", self.vertices_id)
 		gl.BufferData("GL_ARRAY_BUFFER", vertices:GetSize(), vertices:GetPointer(), "GL_STATIC_DRAW")
-		gl.BindBuffer("GL_ARRAY_BUFFER", 0)
 		gl.BufferData("GL_ARRAY_BUFFER", vertices:GetSize(), vertices:GetPointer(), self.gl_draw_hint)
 
 		setup_vertex_array(self)
@@ -140,7 +138,6 @@ else
 	function META:_SetIndices(indices)
 		gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
 		gl.BufferData("GL_ELEMENT_ARRAY_BUFFER", indices:GetSize(), indices:GetPointer(), "GL_STATIC_DRAW")
-		gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", 0)
 		gl.BufferData("GL_ELEMENT_ARRAY_BUFFER", indices:GetSize(), indices:GetPointer(), self.gl_draw_hint)
 
 		setup_vertex_array(self)
