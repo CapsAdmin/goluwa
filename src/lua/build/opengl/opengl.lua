@@ -33687,8 +33687,8 @@ function gl.Initialize(get_proc_address)
 			function META:SetSubData(offset, size, data)
 				bind(self) return gl.BufferSubData(self.target, offset, size, data)
 			end
-			function META:MapRange(length, access)
-				bind(self) return gl.self.self.MapBufferRange(target, offset, length, access)
+			function META:MapRange(offset, length, access)
+				bind(self) return gl.MapBufferRange(self.target, offset, length, access)
 			end
 			function META:GetParameteri64v(pname, params)
 				bind(self) return gl.GetBufferParameteri64v(self.target, pname, params)
@@ -33700,7 +33700,7 @@ function gl.Initialize(get_proc_address)
 				bind(self) return gl.GetBufferSubData(self.target, offset, size, data)
 			end
 			function META:Storage(size, data, flags)
-				bind(self) return gl.self.BufferStorage(target, size, data, flags)
+				bind(self) return gl.BufferStorage(self.target, size, data, flags)
 			end
 			function META:CopySubData(readTarget, writeTarget, readOffset, writeOffset, size)
 				bind(self) return gl.CopyBufferSubData(readTarget, writeTarget, readOffset, writeOffset, size)
@@ -33780,7 +33780,7 @@ function gl.Initialize(get_proc_address)
 		local META = {}
 		META.__index = META
 		function META:AttachShader(shader) return gl.AttachShader(self.id, shader) end
-		function META:DetachShader(shader) return gl.AttachShader(self.id, shader) end
+		function META:DetachShader(shader) return gl.DetachShader(self.id, shader) end
 		function META:Link() return gl.LinkProgram(self.id) end
 		function META:Use() return gl.UseProgram(self.id) end
 		function META:GetInfoLog(...) return gl.GetProgramInfoLog(self.id, ...) end
@@ -33929,7 +33929,7 @@ function gl.Initialize(get_proc_address)
 			function META:GetParameterivEXT(pname, params)
 				return gl.GetNamedRenderbufferParameterivEXT(self.id, pname, params)
 			end
-			function META:StorageMultisample(target, samples, internalformat, width, height)
+			function META:StorageMultisample(samples, internalformat, width, height)
 				return gl.NamedRenderbufferStorageMultisample(self.id, samples, internalformat, width, height)
 			end
 			function META:StorageEXT(internalformat, width, height)
@@ -33989,7 +33989,7 @@ function gl.Initialize(get_proc_address)
 				bind(self) return gl.RenderbufferStorageMultisampleEXT(target, samples, internalformat, width, height)
 			end
 			function META:CreateRenderbuffers(n, renderbuffers)
-				bind(self) return gl.CreateRenderbuffers(n, self.ids)
+				bind(self) return gl.CreateRenderbuffers(n, renderbuffers)
 			end
 			function META:GetParameteriv(target, pname, params)
 				bind(self) return gl.GetRenderbufferParameteriv(target, pname, params)
