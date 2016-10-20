@@ -13,10 +13,18 @@ function render.InitializeNoiseTexture(size)
 	end
 end
 
+local function create_simple_texture(r,g,b,a)
+	local tex = render.CreateBlankTexture(Vec2() + 1)
+	tex:SetMinFilter("nearest")
+	tex:Fill(function() return r,g,b,a end)
+	return tex
+end
+
 function render.GenerateTextures()
-	render.white_texture = render.CreateBlankTexture(Vec2()+8):Fill(function() return 255,255,255,255 end)
-	render.black_texture = render.CreateBlankTexture(Vec2()+8):Fill(function() return 0,0,0,255 end)
-	render.grey_texture = render.CreateBlankTexture(Vec2()+8):Fill(function() return 127,127,127,255 end)
+	render.white_texture = create_simple_texture(255, 255, 255, 255)
+	render.black_texture = create_simple_texture(0, 0, 0, 255)
+	render.grey_texture = create_simple_texture(127, 127, 127, 255)
+
 	render.InitializeNoiseTexture(render.GetScreenSize())
 
 	do
