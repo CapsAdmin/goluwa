@@ -12,7 +12,7 @@ function fonts.Initialize()
 	ready = true
 
 	fonts.default_font = fonts.CreateFont({path = fonts.default_font_path})
-	gfx.SetFont(default_font)
+	gfx.SetFont(fonts.default_font)
 
 	for _, args in pairs(queue) do
 		fonts.CreateFont(unpack(args))
@@ -104,7 +104,7 @@ function fonts.CreateFont(options, callback)
 		self:SetSpacing(spacing)
 		self:SetFiltering(filtering)
 
-		self.OnLoad = function(...)
+		self.OnLoad = function()
 			self:SetReady(true)
 			event.Call("FontChanged", self, options)
 		end

@@ -37,7 +37,7 @@ function SKIN:Build()
 
 	texture.OnLoad = function()
 		skin.property_background = ColorBytes(texture:GetPixelColor(28, 500))
-		for k,v in pairs(gui.panels) do
+		for _,v in pairs(gui.panels) do
 			if v:HasSkin(skin.name) then
 				v:SetSkin(skin)
 			end

@@ -146,7 +146,6 @@ function utility.LuaAutoComplete(text)
 
 		for _, index in ipairs(keys) do
 			if node[index] and type(node[index]) == "table" then
-				last_node = node
 				node = node[index]
 
 				--found_string  = found_string  .. index

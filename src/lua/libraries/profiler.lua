@@ -236,6 +236,7 @@ function profiler.GetBenchmark(type, file, dump_line)
 				line = tonumber(line) or line
 
 				local name = "unknown(file not found)"
+				local debug_info
 
 				if data.func then
 					debug_info = debug.getinfo(data.func)

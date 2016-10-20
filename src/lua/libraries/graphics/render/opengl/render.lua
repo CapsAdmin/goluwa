@@ -11,7 +11,7 @@ include("ssbo.lua", render)
 
 function render._Initialize()
 	if not gl then
-		llog("cannot initialize : ", err)
+		llog("cannot initialize")
 		return
 	end
 
@@ -104,7 +104,7 @@ do
 		max = gl.e.GL_MAX,
 	}
 
-	local enabled, A,B,C,D,E,F
+	local A,B,C,D,E,F
 
 	function render.SetBlendMode(src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha)
 

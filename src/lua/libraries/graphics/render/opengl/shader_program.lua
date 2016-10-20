@@ -318,7 +318,9 @@ do
 	}
 
 
-	local temp = {}
+	local temp
+
+	temp = {}
 	for what, properties in pairs(fill_info) do
 		local property_enums = {}
 		local names = {}
@@ -331,7 +333,7 @@ do
 	end
 	fill_info = temp
 
-	local temp = {}
+	temp = {}
 	for k,v in pairs(type_translate) do
 		pcall(function() temp[gl.e[("gl_" .. k):upper()]] = v end)
 	end
@@ -386,7 +388,7 @@ do
 			end
 			out.buffer_variable = nil
 
-			for i, info in pairs(out.shader_storage_block) do
+			for _, info in pairs(out.shader_storage_block) do
 				info.block_index = gl.GetProgramResourceIndex(self.gl_program.id, "GL_SHADER_STORAGE_BLOCK", info.name)
 				out.shader_storage_block[info.name] = info
 			end

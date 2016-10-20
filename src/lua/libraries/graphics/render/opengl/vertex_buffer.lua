@@ -4,34 +4,38 @@ META = META or prototype.GetRegistered("vertex_buffer")
 
 local gl = require("libopengl")
 
-local translate = {
-	patches = "GL_PATCHES", -- tessellation
-	points = "GL_POINTS", --Draws points on screen. Every vertex specified is a point.
-	lines = "GL_LINES", --Draws lines on screen. Every two vertices specified compose a line.
-	line_strip = "GL_LINE_STRIP", --Draws connected lines on screen. Every vertex specified after first two are connected.
-	line_loop = "GL_LINE_LOOP", --Draws connected lines on screen. The last vertex specified is connected to first vertex.
-	triangles = "GL_TRIANGLES", --Draws triangles on screen. Every three vertices specified compose a triangle.
-	triangle_strip = "GL_TRIANGLE_STRIP", --Draws connected triangles on screen. Every vertex specified after first three vertices creates a triangle.
-	triangle_fan = "GL_TRIANGLE_FAN", --Draws connected triangles like GL_TRIANGLE_STRIP, except draws triangles in fan shape.
-	quads = "GL_QUADS", --Draws quadrilaterals (4 – sided shapes) on screen. Every four vertices specified compose a quadrilateral.
-	quad_strip = "GL_QUAD_STRIP", --Draws connected quadrilaterals on screen. Every two vertices specified after first four compose a connected quadrilateral.
-	polygon = "GL_POLYGON", --Draws a polygon on screen. Polygon can be composed of as many sides as you want.
-}
+do
+	local translate = {
+		patches = "GL_PATCHES", -- tessellation
+		points = "GL_POINTS", --Draws points on screen. Every vertex specified is a point.
+		lines = "GL_LINES", --Draws lines on screen. Every two vertices specified compose a line.
+		line_strip = "GL_LINE_STRIP", --Draws connected lines on screen. Every vertex specified after first two are connected.
+		line_loop = "GL_LINE_LOOP", --Draws connected lines on screen. The last vertex specified is connected to first vertex.
+		triangles = "GL_TRIANGLES", --Draws triangles on screen. Every three vertices specified compose a triangle.
+		triangle_strip = "GL_TRIANGLE_STRIP", --Draws connected triangles on screen. Every vertex specified after first three vertices creates a triangle.
+		triangle_fan = "GL_TRIANGLE_FAN", --Draws connected triangles like GL_TRIANGLE_STRIP, except draws triangles in fan shape.
+		quads = "GL_QUADS", --Draws quadrilaterals (4 – sided shapes) on screen. Every four vertices specified compose a quadrilateral.
+		quad_strip = "GL_QUAD_STRIP", --Draws connected quadrilaterals on screen. Every two vertices specified after first four compose a connected quadrilateral.
+		polygon = "GL_POLYGON", --Draws a polygon on screen. Polygon can be composed of as many sides as you want.
+	}
 
-function META:SetMode(mode)
-	self.Mode = mode
-	self.gl_mode = translate[mode] or translate.triangle
+	function META:SetMode(mode)
+		self.Mode = mode
+		self.gl_mode = translate[mode] or translate.triangle
+	end
 end
 
-local translate = {
-	dynamic = "GL_DYNAMIC_DRAW",
-	stream = "GL_STREAM_DRAW",
-	static = "GL_STATIC_DRAW",
-}
+do
+	local translate = {
+		dynamic = "GL_DYNAMIC_DRAW",
+		stream = "GL_STREAM_DRAW",
+		static = "GL_STATIC_DRAW",
+	}
 
-function META:SetDrawHint(hint)
-	self.DrawHint = hint
-	self.gl_draw_hint = translate[hint] or translate.dynamic
+	function META:SetDrawHint(hint)
+		self.DrawHint = hint
+		self.gl_draw_hint = translate[hint] or translate.dynamic
+	end
 end
 
 

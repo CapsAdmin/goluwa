@@ -1,4 +1,5 @@
 local gfx = (...) or _G.gfx
+local font = _G.font
 
 function gfx.GetDefaultFont()
 	return fonts.default_font
@@ -148,6 +149,7 @@ do -- text wrap
 		local width_before_last_space = 0
 		local width_of_trailing_space = 0
 		local last_space_index = -1
+		local prev_char
 
 		while i < #tbl do
 			local c = tbl[i]

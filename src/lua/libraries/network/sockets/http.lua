@@ -146,10 +146,10 @@ function sockets.Request(info)
 	local code
 	local code_desc
 
-	local function done(self)
+	local function done()
 		if info.on_chunks then system.pcall(info.callback) return end
 
-		local content = table.concat(content, "")
+		content = table.concat(content, "")
 		local length = header["content-length"]
 
 		if sockets.debug then

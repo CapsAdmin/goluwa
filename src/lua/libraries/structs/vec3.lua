@@ -11,6 +11,8 @@ structs.AddAllOperators(META)
 
 -- length stuff
 do
+	local ffi = require("ffi")
+
 	function META:GetLengthSquared()
 		return self.x * self.x + self.y * self.y + self.z * self.z
 	end

@@ -112,7 +112,7 @@ do
 	end
 
 	function render.GetCullMode()
-		return cull
+		return cull_
 	end
 
 	function render.SetForcedCullMode(mode)

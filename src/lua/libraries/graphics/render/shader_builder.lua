@@ -122,7 +122,7 @@ local function translate_fields(data)
 			name = k,
 			type = t,
 			default = default,
-			precision = params.precision,
+			precision = precision,
 			varying = params.varying and "varying" or nil,
 			get = get,
 		})

@@ -98,7 +98,7 @@ function META:SetComplementary()
 end
 
 function META:GetNeighbors(angle)
-   local angle = angle or 30
+   angle = angle or 30
    return self:SetHue(angle), self:SetHue(360 - angle)
 end
 
@@ -124,9 +124,8 @@ end
 structs.AddGetFunc(META, "Lerp", "Lerped")
 
 function META:SetSaturation(s)
-	local h, _s, l = self:GetHSV()
-	_s = s
-	local new = ColorHSV(h, _s, l, self.a)
+	local h, _, l = self:GetHSV()
+	local new = ColorHSV(h, s, l, self.a)
 	self.r = new.r
 	self.g = new.g
 	self.b = new.b
@@ -135,9 +134,8 @@ function META:SetSaturation(s)
 end
 
 function META:SetLightness(l)
-	local h, s, _l = self:GetHSV()
-	_l = l
-	local new = ColorHSV(h, s, _l, self.a)
+	local h, s, _ = self:GetHSV()
+	local new = ColorHSV(h, s, l, self.a)
 	self.r = new.r
 	self.g = new.g
 	self.b = new.b
@@ -149,7 +147,7 @@ function META:GetTints(count)
 	local tbl = {}
 
 	for i = 1, count do
-		local h,s,v = self:GetHSV()
+		local _,_,v = self:GetHSV()
 		local copy = self:Copy()
 		copy:SetLightness(v + ( 1 - v) / count * i)
 		table.insert(tbl, copy)
@@ -162,7 +160,7 @@ function META:GetShades(count)
 	local tbl = {}
 
 	for i = 1, count do
-		local h,s,v = self:GetHSV()
+		local _,_,v = self:GetHSV()
 		local copy = self:Copy()
 		copy:SetLightness(v - (v) / count * i)
 		table.insert(tbl, copy)
@@ -176,14 +174,14 @@ function META:GetHex()
 end
 
 function META:SetTint(num)
-	local h,s,v = self:GetHSV()
+	local _,_,v = self:GetHSV()
 	self:SetLightness(v + (1 - v) * num)
 
 	return self
 end
 
 function META:SetShade(num)
-	local h,s,v = self:GetHSV()
+	local _,_,v = self:GetHSV()
 	self:SetLightness(v - v * num)
 
 	return self
@@ -194,9 +192,9 @@ function META:GetHSV()
 	local g = self.g
 	local b = self.b
 
-	local h = 0
-	local s = 0
-	local v = 0
+	local h
+	local s
+	local v
 
 	local min = math.min( r, g, b )
 	local max = math.max( r, g, b )

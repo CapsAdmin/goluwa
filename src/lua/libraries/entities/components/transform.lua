@@ -102,9 +102,8 @@ end
 function TMPL:InvalidateTRMatrix()
 	if not self.rebuild_tr_matrix then
 		for _, v in ipairs(self.Entity:GetChildrenList()) do
-			local v = v.Components[TMPL.Name]
-			if v then
-				v.rebuild_tr_matrix = true
+			if v.Components[TMPL.Name] then
+				v.Components[TMPL.Name].rebuild_tr_matrix = true
 			end
 		end
 	end

@@ -329,15 +329,6 @@ function META:ClearDepthStencil(d, s)
 	self.gl_fb:Clearfi("GL_DEPTH_STENCIL", 0, d or 0, s or 0)
 end
 
-function META:ClearColor(i)
-	self:SaveDrawBuffers()
-
-	self:SetWrite(i, true)
-	self.gl_fb:Clearfv("GL_COLOR", 0, ffi.new("float[4]", r or 0, g or 0, b or 0, a or 0))
-
-	self:RestoreDrawBuffers()
-end
-
 function META:ClearTexture(i, r,g,b,a)
 	self:SaveDrawBuffers()
 

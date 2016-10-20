@@ -66,28 +66,12 @@ end
 local function translate_windows_font(font_name)
 	-- TODO: EnumFontFamiliesEx
 
-	local flags = {
-		bold = "b",
-		semibold = "sb",
-		semilight = "sl",
-		regular = "",
-		light = "l",
-		italic = "i",
-		black = "bl",
-	}
-
-	local translate = {
-		["arial black"] = "ariblk",
-		["arial bold"] = "arialbd",
-	}
-
 	local name_translate = {
 		["lucidaconsole"] = "lucon",
 		["trebuchetms"] = "trebuc",
 		["couriernew"] = "cour",
 	}
 
-	local path
 	local font = font_name:lower()
 
 	-- http://snook.ca/archives/html_and_css/windows-subs-helvetica-arial
@@ -295,7 +279,7 @@ function META:Initialize()
 	resource.Download(self.Path, load, function(reason)
 
 		if WINDOWS then
-			path = vfs.ParsePathVariables("%windir%/fonts/" .. translate_windows_font(self.Path))
+			local path = vfs.ParsePathVariables("%windir%/fonts/" .. translate_windows_font(self.Path))
 
 			if vfs.IsFile(path) then
 				resource.Download(path, load)

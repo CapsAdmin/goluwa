@@ -752,10 +752,10 @@ function love.graphics.drawq(drawable, quad, x,y, r, sx,sy, ox,oy, kx,ky)
 	render2d.PopTexture()
 end
 
-function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
+function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, kx,ky, quad_arg)
 	if ENV.textures[drawable] then
 		if line.Type(x) == "Quad" then
-			love.graphics.drawq(drawable, x, y, r, sx, sy, ox, oy, quad_arg)
+			love.graphics.drawq(drawable, x, y, r, sx, sy, ox, oy, kx,ky, quad_arg)
 		else
 			x = x or 0
 			y = y or 0
