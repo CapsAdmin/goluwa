@@ -23,6 +23,19 @@ function META:GetSuggestedMipMapLevels()
 	return math.floor(math.log(math.max(self.Size.x, self.Size.y)) / math.log(2)) + 1
 end
 
+function META:GetMipSize(mip_map_level)
+	mip_map_level = mip_map_level or 1
+
+	local x = ffi.new("float[1]")
+	local y = ffi.new("float[1]")
+	local z = ffi.new("float[1]")
+	self.gl_tex:GetLevelParameterfv(mip_map_level - 1, "GL_TEXTURE_WIDTH", x)
+	self.gl_tex:GetLevelParameterfv(mip_map_level - 1, "GL_TEXTURE_HEIGHT", y)
+	self.gl_tex:GetLevelParameterfv(mip_map_level - 1, "GL_TEXTURE_DEPTH", z)
+
+	return Vec3(x[0], y[0], z[0])
+end
+
 function META:SetWrapS(val)
 	self.WrapS = val
 	self.gl_tex:SetParameteri("GL_TEXTURE_WRAP_S", gl.e[TOENUM(val)])
