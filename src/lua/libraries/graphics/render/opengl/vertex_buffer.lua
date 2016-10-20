@@ -2,7 +2,7 @@ local render, META = ...
 render = render or _G.render
 META = META or prototype.GetRegistered("vertex_buffer")
 
-local gl = require("libopengl")
+local gl = require("opengl")
 
 do
 	local translate = {

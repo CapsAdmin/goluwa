@@ -1025,6 +1025,7 @@ do -- type metatables
 			["float"] = true,
 			["double"] = true,
 			["long double"] = true,
+			["size_t"] = true,
 		}
 
 		local function explode(str, split)
@@ -1064,7 +1065,7 @@ do -- type metatables
 					else
 						local declaration, name = arg:match("^([%a%d%s_%*]-) ([%a%d_]-)$")
 
-						if not declaration or (meta_data and meta_data.typedefs[name]) or basic_types[name] then
+						if not declaration or (meta_data and meta_data.typedefs[name]) or (meta_data and meta_data.enums[arg]) or basic_types[name] then
 							declaration = arg
 							name = "unknown_" .. i
 						end
@@ -1613,7 +1614,7 @@ do -- lua helper functions
 		lua = lua .. "library.clib = CLIB\n"
 		lua = lua .. "return library\n"
 
-		local file = io.open("./lib"..ffibuild.lib_name..".lua", "wb")
+		local file = io.open("./"..ffibuild.lib_name..".lua", "wb")
 		file:write(lua)
 		file:close()
 

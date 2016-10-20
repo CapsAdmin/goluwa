@@ -516,7 +516,7 @@ function META:GetAngles()
 end
 
 if GRAPHENE then
-	local graphene = require("libgraphene")
+	local graphene = require("graphene")
 
 	function META:GetFloatPointer()
 		return ffi.cast("float *", self)

@@ -14,6 +14,14 @@ do
 
 	package.path = "./?.lua"
 
+	table.insert(package.loaders, function(name)
+		return loadfile("../../../src/lua/build/" .. name .. "/" .. name .. ".lua")
+	end)
+	table.insert(package.loaders, function(name)
+		name = name:gsub("%.", "/")
+		return loadfile("../../../src/lua/build/" .. name .. ".lua")
+	end)
+
 	-- force current directory
 	local path = debug.getinfo(1).source
 

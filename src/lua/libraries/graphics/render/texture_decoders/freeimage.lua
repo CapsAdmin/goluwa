@@ -1,4 +1,4 @@
-local freeimage = desire("libfreeimage")
+local freeimage = desire("freeimage")
 
 if not freeimage then return end
 

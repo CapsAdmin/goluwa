@@ -65,7 +65,7 @@ function META:Initialize()
 end
 
 function META:ToWindow()
-	local gl = require("libopengl")
+	local gl = require("opengl")
 	local window = system.CreateWindow(self:GetSize().x, self:GetSize().y, nil, {"borderless"})
 	local world = gui.CreateWorld()
 

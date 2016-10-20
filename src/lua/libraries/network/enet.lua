@@ -1,5 +1,5 @@
 local ffi = require("ffi")
-local lib = desire("libenet")
+local lib = desire("enet")
 
 if not lib then return end
 

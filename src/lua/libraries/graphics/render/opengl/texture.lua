@@ -4,7 +4,7 @@ META = META or prototype.GetRegistered("texture")
 
 local ffi = require("ffi")
 
-local gl = require("libopengl")
+local gl = require("opengl")
 
 local TOENUM = function(str)
 	return "GL_" .. str:upper()

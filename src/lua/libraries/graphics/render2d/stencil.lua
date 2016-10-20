@@ -1,7 +1,7 @@
 local render2d = ... or _G.render2d
 
-local gl = require("libopengl")
-local ffi = require("libopengl")
+local gl = require("opengl")
+local ffi = require("opengl")
 
 function render2d.SetScissor(x, y, w, h)
 	if not x then

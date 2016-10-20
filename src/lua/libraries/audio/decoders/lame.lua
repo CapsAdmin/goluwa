@@ -1,5 +1,5 @@
 do return end
-local lib = desire("liblame")
+local lib = desire("lame")
 
 if not lib then return end
 

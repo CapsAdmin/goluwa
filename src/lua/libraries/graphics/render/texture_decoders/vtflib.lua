@@ -1,4 +1,4 @@
-local vl = desire("libVTFLib")
+local vl = desire("VTFLib")
 
 if not vl then return end
 

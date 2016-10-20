@@ -906,7 +906,7 @@ do -- environment
 	end
 end
 
-local sdl = desire("libSDL2") -- window manager
+local sdl = desire("SDL2") -- window manager
 
 if sdl then
 	local META = prototype.CreateTemplate("render_window")
@@ -1031,7 +1031,7 @@ if sdl then
 		sdl.GL_MakeCurrent(self.sdl_wnd, system.gl_context)
 	end
 
-	local gl = require("libopengl")
+	local gl = require("opengl")
 
 	function META:SwapBuffers()
 		--gl.Flush()
@@ -1254,7 +1254,7 @@ if sdl then
 
 				sdl.GL_MakeCurrent(sdl_wnd, context)
 
-				local gl = require("libopengl")
+				local gl = require("opengl")
 
 				-- this needs to be initialized once after a context has been created
 				gl.GetProcAddress = sdl.GL_GetProcAddress

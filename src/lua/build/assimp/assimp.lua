@@ -1,7 +1,7 @@
 local ffi = require("ffi")
 ffi.cdef([[typedef enum aiTextureType{aiTextureType_NONE=0,aiTextureType_DIFFUSE=1,aiTextureType_SPECULAR=2,aiTextureType_AMBIENT=3,aiTextureType_EMISSIVE=4,aiTextureType_HEIGHT=5,aiTextureType_NORMALS=6,aiTextureType_SHININESS=7,aiTextureType_OPACITY=8,aiTextureType_DISPLACEMENT=9,aiTextureType_LIGHTMAP=10,aiTextureType_REFLECTION=11,aiTextureType_UNKNOWN=12};
 typedef enum aiOrigin{aiOrigin_SET=0,aiOrigin_CUR=1,aiOrigin_END=2};
-typedef enum aiMetadataType{aiBOOL=0,aiINT=1,aiUINT64=2,aiFLOAT=3,aiDOUBLE=4,aiAISTRING=5,aiAIVECTOR3D=6};
+typedef enum aiMetadataType{aiBOOL=0,aiINT32=1,aiUINT64=2,aiFLOAT=3,aiDOUBLE=4,aiAISTRING=5,aiAIVECTOR3D=6};
 typedef enum aiTextureMapping{aiTextureMapping_UV=0,aiTextureMapping_SPHERE=1,aiTextureMapping_CYLINDER=2,aiTextureMapping_BOX=3,aiTextureMapping_PLANE=4,aiTextureMapping_OTHER=5};
 typedef enum aiShadingMode{aiShadingMode_Flat=1,aiShadingMode_Gouraud=2,aiShadingMode_Phong=3,aiShadingMode_Blinn=4,aiShadingMode_Toon=5,aiShadingMode_OrenNayar=6,aiShadingMode_Minnaert=7,aiShadingMode_CookTorrance=8,aiShadingMode_NoShading=9,aiShadingMode_Fresnel=10};
 typedef enum aiTextureOp{aiTextureOp_Multiply=0,aiTextureOp_Add=1,aiTextureOp_Subtract=2,aiTextureOp_Divide=3,aiTextureOp_SmoothAdd=4,aiTextureOp_SignedAdd=5};
@@ -41,7 +41,7 @@ struct aiFileIO {struct aiFile*(*OpenProc)(struct aiFileIO*,const char*,const ch
 struct aiFile {unsigned long(*ReadProc)(struct aiFile*,char*,unsigned long,unsigned long);unsigned long(*WriteProc)(struct aiFile*,const char*,unsigned long,unsigned long);unsigned long(*TellProc)(struct aiFile*);unsigned long(*FileSizeProc)(struct aiFile*);enum aiReturn(*SeekProc)(struct aiFile*,unsigned long,enum aiOrigin);void(*FlushProc)(struct aiFile*);char*UserData;};
 struct aiImporterDesc {const char*mName;const char*mAuthor;const char*mMaintainer;const char*mComments;unsigned int mFlags;unsigned int mMinMajor;unsigned int mMinMinor;unsigned int mMaxMajor;unsigned int mMaxMinor;const char*mFileExtensions;};
 struct aiTexel {unsigned int b;unsigned int g;unsigned int r;unsigned int a;};
-struct aiTexture {unsigned int mWidth;unsigned int mHeight;char achFormatHint[4];struct aiTexel*pcData;};
+struct aiTexture {unsigned int mWidth;unsigned int mHeight;char achFormatHint[9];struct aiTexel*pcData;};
 struct aiFace {unsigned int mNumIndices;unsigned int*mIndices;};
 struct aiVertexWeight {unsigned int mVertexId;float mWeight;};
 struct aiBone {struct aiString mName;unsigned int mNumWeights;struct aiVertexWeight*mWeights;struct aiMatrix4x4 mOffsetMatrix;};
@@ -56,6 +56,7 @@ struct aiNode {struct aiString mName;struct aiMatrix4x4 mTransformation;struct a
 struct aiScene {unsigned int mFlags;struct aiNode*mRootNode;unsigned int mNumMeshes;struct aiMesh**mMeshes;unsigned int mNumMaterials;struct aiMaterial**mMaterials;unsigned int mNumAnimations;struct aiAnimation**mAnimations;unsigned int mNumTextures;struct aiTexture**mTextures;unsigned int mNumLights;struct aiLight**mLights;unsigned int mNumCameras;struct aiCamera**mCameras;char*mPrivate;};
 struct aiLogStream {void(*callback)(const char*,char*);char*user;};
 struct aiPropertyStore {char sentinel;};
+unsigned long(aiGetExportFormatCount)();
 void(aiIdentityMatrix3)(struct aiMatrix3x3*);
 unsigned long(aiGetImportFormatCount)();
 void(aiReleaseImport)(const struct aiScene*);
@@ -109,13 +110,13 @@ unsigned int(aiGetMaterialTextureCount)(const struct aiMaterial*,enum aiTextureT
 void(aiSetImportPropertyInteger)(struct aiPropertyStore*,const char*,int);
 const char*(aiGetErrorString)();
 const struct aiScene*(aiImportFileFromMemoryWithProperties)(const char*,unsigned int,unsigned int,const char*,const struct aiPropertyStore*);
-unsigned long(aiGetExportFormatCount)();
 enum aiReturn(aiGetMaterialIntegerArray)(const struct aiMaterial*,const char*,unsigned int,unsigned int,int*,unsigned int*);
 const struct aiScene*(aiImportFileEx)(const char*,unsigned int,struct aiFileIO*);
 ]])
 local CLIB = ffi.load(_G.FFI_LIB or "assimp")
 local library = {}
 library = {
+	GetExportFormatCount = CLIB.aiGetExportFormatCount,
 	IdentityMatrix3 = CLIB.aiIdentityMatrix3,
 	GetImportFormatCount = CLIB.aiGetImportFormatCount,
 	ReleaseImport = CLIB.aiReleaseImport,
@@ -169,7 +170,6 @@ library = {
 	SetImportPropertyInteger = CLIB.aiSetImportPropertyInteger,
 	GetErrorString = CLIB.aiGetErrorString,
 	ImportFileFromMemoryWithProperties = CLIB.aiImportFileFromMemoryWithProperties,
-	GetExportFormatCount = CLIB.aiGetExportFormatCount,
 	GetMaterialIntegerArray = CLIB.aiGetMaterialIntegerArray,
 	ImportFileEx = CLIB.aiImportFileEx,
 }
@@ -352,11 +352,7 @@ local function parse_scene(scene, path, callback)
 			end
 		end
 
-		if mesh.mName.length > 100 then
-			sub_model.name = "crazy name " .. tostring(mesh.mName.data)
-		else
-			sub_model.name = ffi.string(mesh.mName.data, mesh.mName.length):trim()
-		end
+		sub_model.name = ffi.string(mesh.mName.data, mesh.mName.length):trim()
 
 		if mesh.mMaterialIndex > 0 then
 			local mat = scene.mMaterials[mesh.mMaterialIndex]

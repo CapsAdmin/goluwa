@@ -1,4 +1,4 @@
-local archive = desire("libarchive")
+local archive = desire("archive")
 
 if not archive then return end
 

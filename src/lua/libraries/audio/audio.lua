@@ -1,6 +1,6 @@
 local ffi = require("ffi")
-local al = desire("libal")
-local alc = desire("libalc")
+local al = desire("openal.al")
+local alc = desire("openal.alc")
 
 if not al or not alc then return end
 
@@ -12,11 +12,16 @@ alc.debug = true
 audio.effect_channels = audio.effect_channels or utility.CreateWeakTable()
 
 function audio.Initialize(name)
+	local f = io.open("./al_config.ini", "wb")
+	f:write("slots = 256\n")
+	f:write("sends = 256\n")
+	f:close()
+
 	os.setenv("ALSOFT_CONF", "./al_config.ini")
-	audio.Shutdown()
+	--audio.Shutdown()
 
 	if not name then
-		name = audio.GetAllOutputDevices()[1]
+		--name = audio.GetAllOutputDevices()[1]
 	end
 
 	if audio.debug then

@@ -1,6 +1,6 @@
 local gfx = (...) or _G.gfx
 
-local freeimage = desire("libfreeimage") -- image decoder
+local freeimage = desire("freeimage") -- image decoder
 
 local META = prototype.CreateTemplate("gif")
 

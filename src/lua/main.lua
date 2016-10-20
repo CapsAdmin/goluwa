@@ -21,6 +21,7 @@ if WINDOW and window then
 		end
 	end
 end
+
 if audio then
 	audio.Initialize()
 end

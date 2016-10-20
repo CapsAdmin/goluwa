@@ -3,7 +3,7 @@ local ball   = nil; -- body
 local radius = 0.2;
 local mass = 1.0; --(kg)
 
-local ode = desire("libode")
+local ode = desire("ode")
 local ffi = require"ffi"
 
 ode.InitODE()

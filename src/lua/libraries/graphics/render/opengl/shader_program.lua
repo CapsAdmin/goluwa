@@ -1,5 +1,5 @@
 local render = ... or _G.render
-local gl = require("libopengl")
+local gl = require("opengl")
 local ffi = require("ffi")
 
 local META = prototype.CreateTemplate("shader_program")

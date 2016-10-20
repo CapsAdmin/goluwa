@@ -9,6 +9,7 @@ end
 local bin_dir = "../../../../data/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower()
 
 os.execute("mkdir -p " .. bin_dir)
+os.execute("mkdir -p " .. bin_dir .. "/jit")
 
 execute("cp repo/src/luajit \"" .. bin_dir .. "/.\"")
-execute("cp repo/src/jit/* \"" .. bin_dir .. "/jit/\"")
+execute("cp repo/src/jit/* \"" .. bin_dir .. "/jit/.\"")

@@ -1,5 +1,5 @@
 local ffi = require("ffi")
-local gl = require("libopengl") -- OpenGL
+local gl = require("opengl") -- OpenGL
 local render = (...) or _G.render
 
 local severities = {

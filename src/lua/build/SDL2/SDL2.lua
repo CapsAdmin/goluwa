@@ -4,7 +4,7 @@ SDL_BITMAPORDER_NONE=0,SDL_BITMAPORDER_4321=1,SDL_BITMAPORDER_1234=2,
 SDL_PACKEDORDER_NONE=0,SDL_PACKEDORDER_XRGB=1,SDL_PACKEDORDER_RGBX=2,SDL_PACKEDORDER_ARGB=3,SDL_PACKEDORDER_RGBA=4,SDL_PACKEDORDER_XBGR=5,SDL_PACKEDORDER_BGRX=6,SDL_PACKEDORDER_ABGR=7,SDL_PACKEDORDER_BGRA=8,
 SDL_ARRAYORDER_NONE=0,SDL_ARRAYORDER_RGB=1,SDL_ARRAYORDER_RGBA=2,SDL_ARRAYORDER_ARGB=3,SDL_ARRAYORDER_BGR=4,SDL_ARRAYORDER_BGRA=5,SDL_ARRAYORDER_ABGR=6,
 SDL_PACKEDLAYOUT_NONE=0,SDL_PACKEDLAYOUT_332=1,SDL_PACKEDLAYOUT_4444=2,SDL_PACKEDLAYOUT_1555=3,SDL_PACKEDLAYOUT_5551=4,SDL_PACKEDLAYOUT_565=5,SDL_PACKEDLAYOUT_8888=6,SDL_PACKEDLAYOUT_2101010=7,SDL_PACKEDLAYOUT_1010102=8,
-SDL_PIXELFORMAT_UNKNOWN=0,SDL_PIXELFORMAT_INDEX1LSB=286261504,SDL_PIXELFORMAT_INDEX1MSB=287310080,SDL_PIXELFORMAT_INDEX4LSB=303039488,SDL_PIXELFORMAT_INDEX4MSB=304088064,SDL_PIXELFORMAT_INDEX8=318769153,SDL_PIXELFORMAT_RGB332=336660481,SDL_PIXELFORMAT_RGB444=353504258,SDL_PIXELFORMAT_RGB555=353570562,SDL_PIXELFORMAT_BGR555=357764866,SDL_PIXELFORMAT_ARGB4444=355602434,SDL_PIXELFORMAT_RGBA4444=356651010,SDL_PIXELFORMAT_ABGR4444=359796738,SDL_PIXELFORMAT_BGRA4444=360845314,SDL_PIXELFORMAT_ARGB1555=355667970,SDL_PIXELFORMAT_RGBA5551=356782082,SDL_PIXELFORMAT_ABGR1555=359862274,SDL_PIXELFORMAT_BGRA5551=360976386,SDL_PIXELFORMAT_RGB565=353701890,SDL_PIXELFORMAT_BGR565=357896194,SDL_PIXELFORMAT_RGB24=386930691,SDL_PIXELFORMAT_BGR24=390076419,SDL_PIXELFORMAT_RGB888=370546692,SDL_PIXELFORMAT_RGBX8888=371595268,SDL_PIXELFORMAT_BGR888=374740996,SDL_PIXELFORMAT_BGRX8888=375789572,SDL_PIXELFORMAT_ARGB8888=372645892,SDL_PIXELFORMAT_RGBA8888=373694468,SDL_PIXELFORMAT_ABGR8888=376840196,SDL_PIXELFORMAT_BGRA8888=377888772,SDL_PIXELFORMAT_ARGB2101010=372711428,SDL_PIXELFORMAT_YV12=842094169,SDL_PIXELFORMAT_IYUV=1448433993,SDL_PIXELFORMAT_YUY2=844715353,SDL_PIXELFORMAT_UYVY=1498831189,SDL_PIXELFORMAT_YVYU=1431918169,SDL_PIXELFORMAT_NV12=842094158,SDL_PIXELFORMAT_NV21=825382478,
+SDL_PIXELFORMAT_UNKNOWN=0,SDL_PIXELFORMAT_INDEX1LSB=286261504,SDL_PIXELFORMAT_INDEX1MSB=287310080,SDL_PIXELFORMAT_INDEX4LSB=303039488,SDL_PIXELFORMAT_INDEX4MSB=304088064,SDL_PIXELFORMAT_INDEX8=318769153,SDL_PIXELFORMAT_RGB332=336660481,SDL_PIXELFORMAT_RGB444=353504258,SDL_PIXELFORMAT_RGB555=353570562,SDL_PIXELFORMAT_BGR555=357764866,SDL_PIXELFORMAT_ARGB4444=355602434,SDL_PIXELFORMAT_RGBA4444=356651010,SDL_PIXELFORMAT_ABGR4444=359796738,SDL_PIXELFORMAT_BGRA4444=360845314,SDL_PIXELFORMAT_ARGB1555=355667970,SDL_PIXELFORMAT_RGBA5551=356782082,SDL_PIXELFORMAT_ABGR1555=359862274,SDL_PIXELFORMAT_BGRA5551=360976386,SDL_PIXELFORMAT_RGB565=353701890,SDL_PIXELFORMAT_BGR565=357896194,SDL_PIXELFORMAT_RGB24=386930691,SDL_PIXELFORMAT_BGR24=390076419,SDL_PIXELFORMAT_RGB888=370546692,SDL_PIXELFORMAT_RGBX8888=371595268,SDL_PIXELFORMAT_BGR888=374740996,SDL_PIXELFORMAT_BGRX8888=375789572,SDL_PIXELFORMAT_ARGB8888=372645892,SDL_PIXELFORMAT_RGBA8888=373694468,SDL_PIXELFORMAT_ABGR8888=376840196,SDL_PIXELFORMAT_BGRA8888=377888772,SDL_PIXELFORMAT_ARGB2101010=372711428,SDL_PIXELFORMAT_RGBA32=376840196,SDL_PIXELFORMAT_ARGB32=377888772,SDL_PIXELFORMAT_BGRA32=372645892,SDL_PIXELFORMAT_ABGR32=373694468,SDL_PIXELFORMAT_YV12=842094169,SDL_PIXELFORMAT_IYUV=1448433993,SDL_PIXELFORMAT_YUY2=844715353,SDL_PIXELFORMAT_UYVY=1498831189,SDL_PIXELFORMAT_YVYU=1431918169,SDL_PIXELFORMAT_NV12=842094158,SDL_PIXELFORMAT_NV21=825382478,
 SDL_LOG_CATEGORY_APPLICATION=0,SDL_LOG_CATEGORY_ERROR=1,SDL_LOG_CATEGORY_ASSERT=2,SDL_LOG_CATEGORY_SYSTEM=3,SDL_LOG_CATEGORY_AUDIO=4,SDL_LOG_CATEGORY_VIDEO=5,SDL_LOG_CATEGORY_RENDER=6,SDL_LOG_CATEGORY_INPUT=7,SDL_LOG_CATEGORY_TEST=8,SDL_LOG_CATEGORY_RESERVED1=9,SDL_LOG_CATEGORY_RESERVED2=10,SDL_LOG_CATEGORY_RESERVED3=11,SDL_LOG_CATEGORY_RESERVED4=12,SDL_LOG_CATEGORY_RESERVED5=13,SDL_LOG_CATEGORY_RESERVED6=14,SDL_LOG_CATEGORY_RESERVED7=15,SDL_LOG_CATEGORY_RESERVED8=16,SDL_LOG_CATEGORY_RESERVED9=17,SDL_LOG_CATEGORY_RESERVED10=18,SDL_LOG_CATEGORY_CUSTOM=19,};typedef enum SDL_TextureAccess{SDL_TEXTUREACCESS_STATIC=0,SDL_TEXTUREACCESS_STREAMING=1,SDL_TEXTUREACCESS_TARGET=2};
 typedef enum SDL_BlendMode{SDL_BLENDMODE_NONE=0,SDL_BLENDMODE_BLEND=1,SDL_BLENDMODE_ADD=2,SDL_BLENDMODE_MOD=4};
 typedef enum SDL_WindowEventID{SDL_WINDOWEVENT_NONE=0,SDL_WINDOWEVENT_SHOWN=1,SDL_WINDOWEVENT_HIDDEN=2,SDL_WINDOWEVENT_EXPOSED=3,SDL_WINDOWEVENT_MOVED=4,SDL_WINDOWEVENT_RESIZED=5,SDL_WINDOWEVENT_SIZE_CHANGED=6,SDL_WINDOWEVENT_MINIMIZED=7,SDL_WINDOWEVENT_MAXIMIZED=8,SDL_WINDOWEVENT_RESTORED=9,SDL_WINDOWEVENT_ENTER=10,SDL_WINDOWEVENT_LEAVE=11,SDL_WINDOWEVENT_FOCUS_GAINED=12,SDL_WINDOWEVENT_FOCUS_LOST=13,SDL_WINDOWEVENT_CLOSE=14,SDL_WINDOWEVENT_TAKE_FOCUS=15,SDL_WINDOWEVENT_HIT_TEST=16};
@@ -115,18 +115,18 @@ enum SDL_bool(SDL_HasEvent)(unsigned int);
 void(SDL_FreePalette)(struct SDL_Palette*);
 enum SDL_PowerState(SDL_GetPowerInfo)(int*,int*);
 int(SDL_MouseIsHaptic)();
-void(SDL_MaximizeWindow)(struct SDL_Window*);
 int(SDL_HapticStopAll)(struct _SDL_Haptic*);
 void(SDL_FlushEvent)(unsigned int);
 double(SDL_ceil)(double);
 void(SDL_RestoreWindow)(struct SDL_Window*);
 void(SDL_DestroySemaphore)(struct SDL_semaphore*);
+enum SDL_bool(SDL_GetHintBoolean)(const char*,enum SDL_bool);
 struct SDL_Palette*(SDL_AllocPalette)(int);
 int(SDL_AddTimer)(unsigned int,unsigned int(*callback)(unsigned int,void*),void*);
 int(SDL_SetPaletteColors)(struct SDL_Palette*,const struct SDL_Color*,int,int);
-int(SDL_GetNumDisplayModes)(int);
+void(SDL_HideWindow)(struct SDL_Window*);
 int(SDL_ShowCursor)(int);
-int(SDL_UpdateWindowSurface)(struct SDL_Window*);
+int(SDL_GameControllerAddMapping)(const char*);
 struct SDL_Texture*(SDL_CreateTextureFromSurface)(struct SDL_Renderer*,struct SDL_Surface*);
 unsigned long(SDL_WriteBE16)(struct SDL_RWops*,unsigned short);
 void(SDL_UnionRect)(const struct SDL_Rect*,const struct SDL_Rect*,struct SDL_Rect*);
@@ -146,7 +146,6 @@ struct SDL_Surface*(SDL_GetWindowSurface)(struct SDL_Window*);
 struct SDL_RWops*(SDL_AllocRW)();
 void*(SDL_realloc)(void*,unsigned long);
 int(SDL_SetTextureColorMod)(struct SDL_Texture*,unsigned char,unsigned char,unsigned char);
-void(SDL_DestroyWindow)(struct SDL_Window*);
 int(SDL_AtomicGet)(struct SDL_atomic_t*);
 const char*(SDL_GameControllerGetStringForAxis)(enum SDL_GameControllerAxis);
 struct SDL_Cursor*(SDL_CreateSystemCursor)(enum SDL_SystemCursor);
@@ -192,7 +191,7 @@ int(SDL_HapticNumAxes)(struct _SDL_Haptic*);
 int(SDL_sscanf)(const char*,const char*,...);
 struct SDL_Finger*(SDL_GetTouchFinger)(long,int);
 struct SDL_RWops*(SDL_RWFromConstMem)(const void*,int);
-int(SDL_isspace)(int);
+struct SDL_Surface*(SDL_LoadBMP_RW)(struct SDL_RWops*,int);
 struct _SDL_GameController*(SDL_GameControllerOpen)(int);
 int(SDL_SemTryWait)(struct SDL_semaphore*);
 struct SDL_Surface*(SDL_CreateRGBSurface)(unsigned int,int,int,int,unsigned int,unsigned int,unsigned int,unsigned int);
@@ -208,8 +207,8 @@ void(SDL_JoystickGetGUIDString)(struct SDL_JoystickGUID,char*,int);
 void(SDL_FilterEvents)(int(*filter)(void*,union SDL_Event*),void*);
 struct SDL_Renderer*(SDL_GetRenderer)(struct SDL_Window*);
 int(SDL_GetWindowDisplayIndex)(struct SDL_Window*);
-int(SDL_SetWindowDisplayMode)(struct SDL_Window*,const struct SDL_DisplayMode*);
-int(SDL_SetSurfaceRLE)(struct SDL_Surface*,int);
+int(SDL_GetWindowDisplayMode)(struct SDL_Window*,struct SDL_DisplayMode*);
+enum SDL_AssertState(SDL_ReportAssertion)(struct SDL_AssertData*,const char*,const char*,int);
 void(SDL_StartTextInput)();
 int(SDL_ConvertAudio)(struct SDL_AudioCVT*);
 void(SDL_LogDebug)(int,const char*,...);
@@ -237,7 +236,7 @@ int(SDL_LockTexture)(struct SDL_Texture*,const struct SDL_Rect*,void**,int*);
 void(SDL_RenderGetScale)(struct SDL_Renderer*,float*,float*);
 void(SDL_LogGetOutputFunction)(void(*callback)(void*,int,enum SDL_LogPriority,const char*),void**);
 void(SDL_SetAssertionHandler)(enum SDL_AssertState(*handler)(const struct SDL_AssertData*,void*),void*);
-void*(SDL_AtomicGetPtr)(void**);
+void*(SDL_AtomicSetPtr)(void**,void*);
 void(SDL_WarpMouseInWindow)(struct SDL_Window*,int,int);
 int(SDL_JoystickEventState)(int);
 int(SDL_setenv)(const char*,const char*,int);
@@ -270,6 +269,7 @@ int(SDL_PeepEvents)(union SDL_Event*,int,enum SDL_eventaction,unsigned int,unsig
 int(SDL_FillRect)(struct SDL_Surface*,const struct SDL_Rect*,unsigned int);
 enum SDL_AudioStatus(SDL_GetAudioDeviceStatus)(unsigned int);
 int(SDL_ShowSimpleMessageBox)(unsigned int,const char*,const char*,struct SDL_Window*);
+struct SDL_Surface*(SDL_CreateRGBSurfaceWithFormatFrom)(void*,int,int,int,int,unsigned int);
 int(SDL_TryLockMutex)(struct SDL_mutex*);
 struct SDL_Texture*(SDL_CreateTexture)(struct SDL_Renderer*,unsigned int,int,int,int);
 int(SDL_CaptureMouse)(enum SDL_bool);
@@ -279,6 +279,7 @@ void*(SDL_GL_CreateContext)(struct SDL_Window*);
 int(SDL_SemWaitTimeout)(struct SDL_semaphore*,unsigned int);
 void(SDL_FreeCursor)(struct SDL_Cursor*);
 struct SDL_Cursor*(SDL_CreateColorCursor)(struct SDL_Surface*,int,int);
+struct SDL_Surface*(SDL_CreateRGBSurfaceWithFormat)(unsigned int,int,int,int,unsigned int);
 int(SDL_SemPost)(struct SDL_semaphore*);
 int(SDL_vsnprintf)(char*,unsigned long,const char*,__builtin_va_list);
 int(SDL_NumJoysticks)();
@@ -336,26 +337,27 @@ void(SDL_GameControllerClose)(struct _SDL_GameController*);
 int(SDL_RenderDrawPoint)(struct SDL_Renderer*,int,int);
 enum SDL_bool(SDL_IsScreenKeyboardShown)(struct SDL_Window*);
 void(SDL_DestroyCond)(struct SDL_cond*);
-char*(SDL_lltoa)(long,char*,int);
-int(SDL_GetNumAudioDevices)(int);
+int(SDL_SetSurfaceColorMod)(struct SDL_Surface*,unsigned char,unsigned char,unsigned char);
+struct SDL_cond*(SDL_CreateCond)();
+enum SDL_bool(SDL_GetWindowWMInfo)(struct SDL_Window*,struct SDL_SysWMinfo*);
 unsigned long(SDL_strtoul)(const char*,char**,int);
 int(SDL_SetWindowInputFocus)(struct SDL_Window*);
-enum SDL_bool(SDL_GetWindowWMInfo)(struct SDL_Window*,struct SDL_SysWMinfo*);
 enum SDL_bool(SDL_RenderIsClipEnabled)(struct SDL_Renderer*);
-void(SDL_GetVersion)(struct SDL_version*);
+unsigned int(SDL_WasInit)(unsigned int);
 void(SDL_QuitSubSystem)(unsigned int);
+int(SDL_InitSubSystem)(unsigned int);
 void(SDL_SetCursor)(struct SDL_Cursor*);
 int(SDL_SemWait)(struct SDL_semaphore*);
 double(SDL_pow)(double,double);
-int(SDL_InitSubSystem)(unsigned int);
 int(SDL_Init)(unsigned int);
-int(SDL_UpdateWindowSurfaceRects)(struct SDL_Window*,const struct SDL_Rect*,int);
+unsigned long(SDL_WriteBE64)(struct SDL_RWops*,unsigned long);
 const char*(SDL_GetRevision)();
-unsigned int(SDL_WasInit)(unsigned int);
-double(SDL_atof)(const char*);
-void*(SDL_AtomicSetPtr)(void**,void*);
+void(SDL_GetVersion)(struct SDL_version*);
+void(SDL_SetWindowResizable)(struct SDL_Window*,enum SDL_bool);
+const char*(SDL_GetCurrentAudioDriver)();
+const char*(SDL_GetPixelFormatName)(unsigned int);
 unsigned int(SDL_GetTicks)();
-void(SDL_SetWindowMaximumSize)(struct SDL_Window*,int,int);
+void(SDL_SetWindowMinimumSize)(struct SDL_Window*,int,int);
 void(SDL_LogMessage)(int,enum SDL_LogPriority,const char*,...);
 int(SDL_GL_BindTexture)(struct SDL_Texture*,float*,float*);
 int(SDL_PushEvent)(union SDL_Event*);
@@ -364,9 +366,9 @@ enum SDL_bool(SDL_JoystickGetAttached)(struct _SDL_Joystick*);
 void(SDL_DestroyRenderer)(struct SDL_Renderer*);
 double(SDL_strtod)(const char*,char**);
 struct _SDL_GameController*(SDL_GameControllerFromInstanceID)(int);
-enum SDL_AssertState(*SDL_GetAssertionHandler(void**))(const struct SDL_AssertData*,void*);
+void(SDL_MixAudio)(unsigned char*,const unsigned char*,unsigned int,int);
 int(SDL_RenderDrawPoints)(struct SDL_Renderer*,const struct SDL_Point*,int);
-int(SDL_GL_GetSwapInterval)();
+enum SDL_Scancode(SDL_GetScancodeFromKey)(int);
 char*(SDL_strupr)(char*);
 struct SDL_Surface*(SDL_ConvertSurface)(struct SDL_Surface*,const struct SDL_PixelFormat*,unsigned int);
 enum SDL_bool(SDL_HasSSE2)();
@@ -375,6 +377,7 @@ enum SDL_bool(SDL_IntersectRectAndLine)(const struct SDL_Rect*,int*,int*,int*,in
 int(SDL_HapticRumbleSupported)(struct _SDL_Haptic*);
 struct SDL_RWops*(SDL_RWFromMem)(void*,int);
 char*(SDL_ulltoa)(unsigned long,char*,int);
+enum SDL_AudioStatus(SDL_GetAudioStatus)();
 int(SDL_QueryTexture)(struct SDL_Texture*,unsigned int*,int*,int*,int*);
 int(SDL_RenderCopy)(struct SDL_Renderer*,struct SDL_Texture*,const struct SDL_Rect*,const struct SDL_Rect*);
 int(SDL_RenderFillRects)(struct SDL_Renderer*,const struct SDL_Rect*,int);
@@ -401,17 +404,18 @@ int(SDL_SetWindowHitTest)(struct SDL_Window*,enum SDL_HitTestResult(*callback)(s
 enum SDL_GameControllerButton(SDL_GameControllerGetButtonFromString)(const char*);
 int(SDL_memcmp)(const void*,const void*,unsigned long);
 struct SDL_JoystickGUID(SDL_JoystickGetGUID)(struct _SDL_Joystick*);
+enum SDL_bool(SDL_GetRelativeMouseMode)();
 void(SDL_JoystickClose)(struct _SDL_Joystick*);
 struct SDL_Cursor*(SDL_CreateCursor)(const unsigned char*,const unsigned char*,int,int,int,int);
 char*(SDL_strlwr)(char*);
-int(SDL_CondBroadcast)(struct SDL_cond*);
+void(SDL_SetWindowSize)(struct SDL_Window*,int,int);
 void(SDL_RenderGetLogicalSize)(struct SDL_Renderer*,int*,int*);
 char*(SDL_strrev)(char*);
 struct SDL_Texture*(SDL_GetRenderTarget)(struct SDL_Renderer*);
 enum SDL_bool(SDL_HasAltiVec)();
 int(SDL_SetRenderTarget)(struct SDL_Renderer*,struct SDL_Texture*);
 enum SDL_bool(SDL_RenderTargetSupported)(struct SDL_Renderer*);
-int(SDL_GetDisplayBounds)(int,struct SDL_Rect*);
+int(SDL_CondSignal)(struct SDL_cond*);
 void(SDL_UnlockTexture)(struct SDL_Texture*);
 void(SDL_GameControllerUpdate)();
 int(SDL_UpdateYUVTexture)(struct SDL_Texture*,const struct SDL_Rect*,const unsigned char*,int,const unsigned char*,int,const unsigned char*,int);
@@ -434,9 +438,8 @@ void(SDL_LogCritical)(int,const char*,...);
 void(SDL_LogError)(int,const char*,...);
 void(SDL_LogWarn)(int,const char*,...);
 void(SDL_LogInfo)(int,const char*,...);
-void(SDL_HideWindow)(struct SDL_Window*);
+void(SDL_SetWindowMaximumSize)(struct SDL_Window*,int,int);
 void*(SDL_memmove)(void*,const void*,unsigned long);
-const char*(SDL_GetCurrentAudioDriver)();
 enum SDL_LogPriority(SDL_LogGetPriority)(int);
 unsigned int(SDL_GetQueuedAudioSize)(unsigned int);
 void(SDL_LogSetPriority)(int,enum SDL_LogPriority);
@@ -451,7 +454,7 @@ void(SDL_UnlockAudio)();
 const char*(SDL_GetHint)(const char*);
 enum SDL_bool(SDL_SetHint)(const char*,const char*);
 enum SDL_bool(SDL_SetHintWithPriority)(const char*,const char*,enum SDL_HintPriority);
-const char*(SDL_GetWindowTitle)(struct SDL_Window*);
+enum SDL_bool(SDL_EnclosePoints)(const struct SDL_Point*,int,const struct SDL_Rect*,struct SDL_Rect*);
 struct _SDL_Joystick*(SDL_JoystickOpen)(int);
 int(SDL_HapticRumbleStop)(struct _SDL_Haptic*);
 char*(SDL_iconv_string)(const char*,const char*,const char*,unsigned long);
@@ -471,16 +474,17 @@ void(SDL_SetEventFilter)(int(*filter)(void*,union SDL_Event*),void*);
 struct SDL_Window*(SDL_GL_GetCurrentWindow)();
 unsigned long(SDL_GetThreadID)(struct SDL_Thread*);
 double(SDL_acos)(double);
-void(SDL_GetWindowMinimumSize)(struct SDL_Window*,int*,int*);
+enum SDL_AssertState(*SDL_GetAssertionHandler(void**))(const struct SDL_AssertData*,void*);
 float(SDL_cosf)(float);
 int(SDL_GetCPUCount)();
 enum SDL_bool(SDL_Has3DNow)();
 int(SDL_JoystickIsHaptic)(struct _SDL_Joystick*);
 struct _SDL_Haptic*(SDL_HapticOpenFromMouse)();
-int(SDL_GameControllerAddMapping)(const char*);
-double(SDL_sin)(double);
+int(SDL_JoystickNumButtons)(struct _SDL_Joystick*);
+void(SDL_GetRGB)(unsigned int,const struct SDL_PixelFormat*,unsigned char*,unsigned char*,unsigned char*);
 struct _SDL_Haptic*(SDL_HapticOpen)(int);
 unsigned int(SDL_ReadLE32)(struct SDL_RWops*);
+char*(SDL_strstr)(const char*,const char*);
 int(SDL_LockMutex)(struct SDL_mutex*);
 struct SDL_JoystickGUID(SDL_JoystickGetDeviceGUID)(int);
 struct SDL_DisplayMode*(SDL_GetClosestDisplayMode)(int,const struct SDL_DisplayMode*,struct SDL_DisplayMode*);
@@ -505,19 +509,20 @@ int(SDL_SetPixelFormatPalette)(struct SDL_PixelFormat*,struct SDL_Palette*);
 void(SDL_FlushEvents)(unsigned int,unsigned int);
 float(SDL_GetWindowBrightness)(struct SDL_Window*);
 enum SDL_bool(SDL_RenderGetIntegerScale)(struct SDL_Renderer*);
-unsigned long(SDL_WriteBE32)(struct SDL_RWops*,unsigned int);
+int(SDL_CondBroadcast)(struct SDL_cond*);
 char*(SDL_GetClipboardText)();
 const char*(SDL_GetAudioDeviceName)(int,int);
 unsigned int(SDL_OpenAudioDevice)(const char*,int,const struct SDL_AudioSpec*,struct SDL_AudioSpec*,int);
-void(SDL_MixAudioFormat)(unsigned char*,const unsigned char*,unsigned short,unsigned int,int);
+unsigned long(SDL_WriteBE32)(struct SDL_RWops*,unsigned int);
 int(SDL_SetClipboardText)(const char*);
 unsigned char(SDL_JoystickGetHat)(struct _SDL_Joystick*,int);
-unsigned long(SDL_wcslen)(const int*);
+void(SDL_MixAudioFormat)(unsigned char*,const unsigned char*,unsigned short,unsigned int,int);
 int(SDL_GetSurfaceAlphaMod)(struct SDL_Surface*,unsigned char*);
-enum SDL_bool(SDL_GetRelativeMouseMode)();
+unsigned long(SDL_wcslen)(const int*);
 void(SDL_SetModState)(enum SDL_Keymod);
 struct SDL_Cursor*(SDL_GetDefaultCursor)();
 char*(SDL_itoa)(int,char*,int);
+void(SDL_EnableScreenSaver)();
 void(SDL_CloseAudio)();
 int(SDL_strcasecmp)(const char*,const char*);
 int(SDL_GetNumVideoDrivers)();
@@ -525,27 +530,26 @@ void(SDL_LogResetPriorities)();
 enum SDL_bool(SDL_RemoveTimer)(int);
 enum SDL_Keymod(SDL_GetModState)();
 int(SDL_GL_SetAttribute)(enum SDL_GLattr,int);
-int(SDL_GetKeyFromScancode)(enum SDL_Scancode);
+int(SDL_GL_GetSwapInterval)();
 void(SDL_RenderPresent)(struct SDL_Renderer*);
-enum SDL_Scancode(SDL_GetScancodeFromKey)(int);
+enum SDL_bool(SDL_GL_ExtensionSupported)(const char*);
+void(SDL_DestroyWindow)(struct SDL_Window*);
 double(SDL_cos)(double);
-unsigned int(SDL_GetWindowPixelFormat)(struct SDL_Window*);
 enum SDL_Scancode(SDL_GetScancodeFromName)(const char*);
 int(SDL_AtomicAdd)(struct SDL_atomic_t*,int);
 unsigned long(SDL_wcslcat)(int*,const int*,unsigned long);
-unsigned long(SDL_WriteBE64)(struct SDL_RWops*,unsigned long);
 int(SDL_GetRevisionNumber)();
 struct SDL_Surface*(SDL_ConvertSurfaceFormat)(struct SDL_Surface*,unsigned int,unsigned int);
 int(SDL_SetWindowFullscreen)(struct SDL_Window*,unsigned int);
-unsigned long(SDL_WriteLE64)(struct SDL_RWops*,unsigned long);
+void(SDL_MaximizeWindow)(struct SDL_Window*);
 unsigned char(SDL_GameControllerGetButton)(struct _SDL_GameController*,enum SDL_GameControllerButton);
 unsigned long(SDL_strlen)(const char*);
-void(SDL_CloseAudioDevice)(unsigned int);
+unsigned long(SDL_WriteLE64)(struct SDL_RWops*,unsigned long);
 int(SDL_SetSurfacePalette)(struct SDL_Surface*,struct SDL_Palette*);
-int(SDL_GetSystemRAM)();
-void(SDL_MixAudio)(unsigned char*,const unsigned char*,unsigned int,int);
+void(SDL_CloseAudioDevice)(unsigned int);
+const char*(SDL_GetDisplayName)(int);
 void(SDL_DestroyTexture)(struct SDL_Texture*);
-enum SDL_AudioStatus(SDL_GetAudioStatus)();
+int(SDL_isspace)(int);
 int(SDL_RenderReadPixels)(struct SDL_Renderer*,const struct SDL_Rect*,unsigned int,void*,int);
 void(SDL_DelEventWatch)(int(*filter)(void*,union SDL_Event*),void*);
 struct SDL_JoystickGUID(SDL_JoystickGetGUIDFromString)(const char*);
@@ -553,113 +557,113 @@ void(SDL_SetWindowIcon)(struct SDL_Window*,struct SDL_Surface*);
 void(SDL_AtomicUnlock)(int*);
 struct SDL_RWops*(SDL_RWFromFP)(void*,enum SDL_bool);
 void(SDL_AtomicLock)(int*);
-int(SDL_CondWait)(struct SDL_cond*,struct SDL_mutex*);
+void*(SDL_GetWindowData)(struct SDL_Window*,const char*);
 unsigned long(SDL_WriteLE16)(struct SDL_RWops*,unsigned short);
-unsigned short(SDL_ReadBE16)(struct SDL_RWops*);
+unsigned long(SDL_utf8strlcpy)(char*,const char*,unsigned long);
 int(SDL_JoystickNumBalls)(struct _SDL_Joystick*);
 int(SDL_SetSurfaceAlphaMod)(struct SDL_Surface*,unsigned char);
-unsigned long(SDL_utf8strlcpy)(char*,const char*,unsigned long);
+int(SDL_BuildAudioCVT)(struct SDL_AudioCVT*,unsigned short,unsigned char,int,unsigned short,unsigned char,int);
 int(SDL_GetDisplayMode)(int,int,struct SDL_DisplayMode*);
 enum SDL_bool(SDL_HasIntersection)(const struct SDL_Rect*,const struct SDL_Rect*);
-int(SDL_BuildAudioCVT)(struct SDL_AudioCVT*,unsigned short,unsigned char,int,unsigned short,unsigned char,int);
-struct SDL_PixelFormat*(SDL_AllocFormat)(unsigned int);
+struct SDL_Window*(SDL_CreateWindowFrom)(const void*);
 unsigned int(SDL_TLSCreate)();
-int(SDL_ConvertPixels)(int,int,unsigned int,const void*,int,unsigned int,void*,int);
 struct SDL_mutex*(SDL_CreateMutex)();
+int(SDL_ConvertPixels)(int,int,unsigned int,const void*,int,unsigned int,void*,int);
+void*(SDL_AtomicGetPtr)(void**);
 int(SDL_SetWindowBrightness)(struct SDL_Window*,float);
 void(SDL_RenderGetViewport)(struct SDL_Renderer*,struct SDL_Rect*);
 int(SDL_strncasecmp)(const char*,const char*,unsigned long);
 enum SDL_bool(SDL_IsGameController)(int);
 char*(SDL_ltoa)(long,char*,int);
-void(SDL_GL_SwapWindow)(struct SDL_Window*);
+const char*(SDL_GetCurrentVideoDriver)();
 struct _SDL_Joystick*(SDL_GameControllerGetJoystick)(struct _SDL_GameController*);
 double(SDL_atan)(double);
-enum SDL_bool(SDL_SetClipRect)(struct SDL_Surface*,const struct SDL_Rect*);
+double(SDL_tan)(double);
 float(SDL_sqrtf)(float);
 unsigned long(SDL_GetPerformanceFrequency)();
-void(SDL_FreeRW)(struct SDL_RWops*);
+enum SDL_bool(SDL_IntersectRect)(const struct SDL_Rect*,const struct SDL_Rect*,struct SDL_Rect*);
 int(SDL_SetThreadPriority)(enum SDL_ThreadPriority);
 struct SDL_RWops*(SDL_RWFromFile)(const char*,const char*);
-enum SDL_bool(SDL_IntersectRect)(const struct SDL_Rect*,const struct SDL_Rect*,struct SDL_Rect*);
-void(SDL_GetRGB)(unsigned int,const struct SDL_PixelFormat*,unsigned char*,unsigned char*,unsigned char*);
-const char*(SDL_GetDisplayName)(int);
+double(SDL_sin)(double);
+enum SDL_bool(SDL_HasSSE42)();
 void(SDL_RaiseWindow)(struct SDL_Window*);
 int(SDL_toupper)(int);
-int(SDL_atoi)(const char*);
+unsigned short(SDL_ReadBE16)(struct SDL_RWops*);
 void*(SDL_GL_GetProcAddress)(const char*);
 enum SDL_bool(SDL_GameControllerGetAttached)(struct _SDL_GameController*);
 int(SDL_snprintf)(char*,unsigned long,const char*,...);
 float(SDL_tanf)(float);
 void(SDL_UnlockSurface)(struct SDL_Surface*);
 enum SDL_bool(SDL_HasSSE3)();
+int(SDL_atoi)(const char*);
 struct SDL_Window*(SDL_GetMouseFocus)();
 enum SDL_bool(SDL_HasSSE41)();
-enum SDL_bool(SDL_HasSSE42)();
 char*(SDL_GameControllerMappingForGUID)(struct SDL_JoystickGUID);
 int(SDL_GetNumVideoDisplays)();
 struct SDL_semaphore*(SDL_CreateSemaphore)(unsigned int);
+int(SDL_GetSystemRAM)();
 char*(SDL_getenv)(const char*);
 int(SDL_HapticOpened)(int);
-const char*(SDL_GetPixelFormatName)(unsigned int);
+void(SDL_FreeRW)(struct SDL_RWops*);
 long(SDL_GetTouchDevice)(int);
-int(SDL_SetSurfaceColorMod)(struct SDL_Surface*,unsigned char,unsigned char,unsigned char);
-double(SDL_tan)(double);
-int(SDL_UpperBlitScaled)(struct SDL_Surface*,const struct SDL_Rect*,struct SDL_Surface*,struct SDL_Rect*);
+int(SDL_SetSurfaceRLE)(struct SDL_Surface*,int);
+enum SDL_bool(SDL_SetClipRect)(struct SDL_Surface*,const struct SDL_Rect*);
 void*(SDL_malloc)(unsigned long);
-const char*(SDL_GetCurrentVideoDriver)();
+int(SDL_UpperBlitScaled)(struct SDL_Surface*,const struct SDL_Rect*,struct SDL_Surface*,struct SDL_Rect*);
+void(SDL_GL_SwapWindow)(struct SDL_Window*);
 enum SDL_bool(SDL_HasAVX2)();
-int(SDL_GetDisplayUsableBounds)(int,struct SDL_Rect*);
+int(SDL_GetDisplayBounds)(int,struct SDL_Rect*);
 const struct SDL_AssertData*(SDL_GetAssertionReport)();
 int(SDL_QueueAudio)(unsigned int,const void*,unsigned int);
 int(SDL_SetWindowGammaRamp)(struct SDL_Window*,const unsigned short*,const unsigned short*,const unsigned short*);
-int(SDL_GetWindowDisplayMode)(struct SDL_Window*,struct SDL_DisplayMode*);
 enum SDL_bool(SDL_HasMMX)();
-enum SDL_AssertState(SDL_ReportAssertion)(struct SDL_AssertData*,const char*,const char*,int);
+unsigned int(SDL_GetWindowPixelFormat)(struct SDL_Window*);
 const char*(SDL_JoystickNameForIndex)(int);
-struct SDL_Window*(SDL_CreateWindowFrom)(const void*);
+int(SDL_SetWindowDisplayMode)(struct SDL_Window*,const struct SDL_DisplayMode*);
 unsigned long(SDL_strlcat)(char*,const char*,unsigned long);
 const char*(SDL_GetError)();
-int(SDL_GetWindowGammaRamp)(struct SDL_Window*,unsigned short*,unsigned short*,unsigned short*);
-void(SDL_SetWindowTitle)(struct SDL_Window*,const char*);
+struct SDL_PixelFormat*(SDL_AllocFormat)(unsigned int);
+enum SDL_bool(SDL_GetWindowGrab)(struct SDL_Window*);
 struct SDL_Renderer*(SDL_CreateSoftwareRenderer)(struct SDL_Surface*);
-char*(SDL_strstr)(const char*,const char*);
-struct SDL_Surface*(SDL_LoadBMP_RW)(struct SDL_RWops*,int);
-void*(SDL_GetWindowData)(struct SDL_Window*,const char*);
-void(SDL_SetWindowPosition)(struct SDL_Window*,int,int);
+void(SDL_SetWindowTitle)(struct SDL_Window*,const char*);
+const char*(SDL_GetWindowTitle)(struct SDL_Window*);
+int(SDL_LockSurface)(struct SDL_Surface*);
+int(SDL_CondWait)(struct SDL_cond*,struct SDL_mutex*);
 void(SDL_SetMainReady)();
-void(SDL_GetWindowPosition)(struct SDL_Window*,int*,int*);
+void(SDL_SetWindowPosition)(struct SDL_Window*,int,int);
 int(SDL_GetNumTouchFingers)(long);
-void(SDL_SetWindowSize)(struct SDL_Window*,int,int);
+void(SDL_GetWindowPosition)(struct SDL_Window*,int*,int*);
 enum SDL_bool(SDL_HasScreenKeyboardSupport)();
 enum SDL_bool(SDL_HasEvents)(unsigned int,unsigned int);
-void(SDL_SetWindowMinimumSize)(struct SDL_Window*,int,int);
 struct _SDL_Haptic*(SDL_HapticOpenFromJoystick)(struct _SDL_Joystick*);
 int(SDL_GL_UnbindTexture)(struct SDL_Texture*);
 void(SDL_Log)(const char*,...);
-enum SDL_bool(SDL_EnclosePoints)(const struct SDL_Point*,int,const struct SDL_Rect*,struct SDL_Rect*);
+void(SDL_GetWindowMinimumSize)(struct SDL_Window*,int*,int*);
 void(SDL_LogVerbose)(int,const char*,...);
 int(SDL_CondWaitTimeout)(struct SDL_cond*,struct SDL_mutex*,unsigned int);
 unsigned long(SDL_ReadLE64)(struct SDL_RWops*);
 unsigned int(SDL_MapRGBA)(const struct SDL_PixelFormat*,unsigned char,unsigned char,unsigned char,unsigned char);
+int(SDL_UpdateWindowSurface)(struct SDL_Window*);
+int(SDL_UpdateWindowSurfaceRects)(struct SDL_Window*,const struct SDL_Rect*,int);
 void(SDL_SetWindowGrab)(struct SDL_Window*,enum SDL_bool);
-enum SDL_bool(SDL_GetWindowGrab)(struct SDL_Window*);
 struct SDL_Window*(SDL_GetWindowFromID)(unsigned int);
-int(SDL_CondSignal)(struct SDL_cond*);
+int(SDL_GetDisplayUsableBounds)(int,struct SDL_Rect*);
 void(SDL_free)(void*);
-void(SDL_GL_DeleteContext)(void*);
 int(SDL_GetDesktopDisplayMode)(int,struct SDL_DisplayMode*);
 unsigned long(SDL_strlcpy)(char*,const char*,unsigned long);
+void(SDL_GL_DeleteContext)(void*);
+double(SDL_atof)(const char*);
+int(SDL_GetKeyFromScancode)(enum SDL_Scancode);
 const char*(SDL_GetScancodeName)(enum SDL_Scancode);
-void(SDL_EnableScreenSaver)();
 unsigned int(SDL_GetGlobalMouseState)(int*,int*);
-struct SDL_cond*(SDL_CreateCond)();
-void(SDL_DestroyMutex)(struct SDL_mutex*);
 int(SDL_RenderSetViewport)(struct SDL_Renderer*,const struct SDL_Rect*);
-int(SDL_JoystickNumButtons)(struct _SDL_Joystick*);
-int(SDL_LockSurface)(struct SDL_Surface*);
+int(SDL_GetNumAudioDevices)(int);
+char*(SDL_lltoa)(long,char*,int);
+void(SDL_DestroyMutex)(struct SDL_mutex*);
 int(SDL_HapticIndex)(struct _SDL_Haptic*);
 enum SDL_bool(SDL_AtomicTryLock)(int*);
-enum SDL_bool(SDL_GL_ExtensionSupported)(const char*);
+int(SDL_GetWindowGammaRamp)(struct SDL_Window*,unsigned short*,unsigned short*,unsigned short*);
+int(SDL_GetNumDisplayModes)(int);
 ]])
 local CLIB = ffi.load(_G.FFI_LIB or "SDL2")
 local library = {}
@@ -669,18 +673,18 @@ library = {
 	FreePalette = CLIB.SDL_FreePalette,
 	GetPowerInfo = CLIB.SDL_GetPowerInfo,
 	MouseIsHaptic = CLIB.SDL_MouseIsHaptic,
-	MaximizeWindow = CLIB.SDL_MaximizeWindow,
 	HapticStopAll = CLIB.SDL_HapticStopAll,
 	FlushEvent = CLIB.SDL_FlushEvent,
 	ceil = CLIB.SDL_ceil,
 	RestoreWindow = CLIB.SDL_RestoreWindow,
 	DestroySemaphore = CLIB.SDL_DestroySemaphore,
+	GetHintBoolean = CLIB.SDL_GetHintBoolean,
 	AllocPalette = CLIB.SDL_AllocPalette,
 	AddTimer = CLIB.SDL_AddTimer,
 	SetPaletteColors = CLIB.SDL_SetPaletteColors,
-	GetNumDisplayModes = CLIB.SDL_GetNumDisplayModes,
+	HideWindow = CLIB.SDL_HideWindow,
 	ShowCursor = CLIB.SDL_ShowCursor,
-	UpdateWindowSurface = CLIB.SDL_UpdateWindowSurface,
+	GameControllerAddMapping = CLIB.SDL_GameControllerAddMapping,
 	CreateTextureFromSurface = CLIB.SDL_CreateTextureFromSurface,
 	WriteBE16 = CLIB.SDL_WriteBE16,
 	UnionRect = CLIB.SDL_UnionRect,
@@ -700,7 +704,6 @@ library = {
 	AllocRW = CLIB.SDL_AllocRW,
 	realloc = CLIB.SDL_realloc,
 	SetTextureColorMod = CLIB.SDL_SetTextureColorMod,
-	DestroyWindow = CLIB.SDL_DestroyWindow,
 	AtomicGet = CLIB.SDL_AtomicGet,
 	GameControllerGetStringForAxis = CLIB.SDL_GameControllerGetStringForAxis,
 	CreateSystemCursor = CLIB.SDL_CreateSystemCursor,
@@ -746,7 +749,7 @@ library = {
 	sscanf = CLIB.SDL_sscanf,
 	GetTouchFinger = CLIB.SDL_GetTouchFinger,
 	RWFromConstMem = CLIB.SDL_RWFromConstMem,
-	isspace = CLIB.SDL_isspace,
+	LoadBMP_RW = CLIB.SDL_LoadBMP_RW,
 	GameControllerOpen = CLIB.SDL_GameControllerOpen,
 	SemTryWait = CLIB.SDL_SemTryWait,
 	CreateRGBSurface = CLIB.SDL_CreateRGBSurface,
@@ -762,8 +765,8 @@ library = {
 	FilterEvents = CLIB.SDL_FilterEvents,
 	GetRenderer = CLIB.SDL_GetRenderer,
 	GetWindowDisplayIndex = CLIB.SDL_GetWindowDisplayIndex,
-	SetWindowDisplayMode = CLIB.SDL_SetWindowDisplayMode,
-	SetSurfaceRLE = CLIB.SDL_SetSurfaceRLE,
+	GetWindowDisplayMode = CLIB.SDL_GetWindowDisplayMode,
+	ReportAssertion = CLIB.SDL_ReportAssertion,
 	StartTextInput = CLIB.SDL_StartTextInput,
 	ConvertAudio = CLIB.SDL_ConvertAudio,
 	LogDebug = CLIB.SDL_LogDebug,
@@ -791,7 +794,7 @@ library = {
 	RenderGetScale = CLIB.SDL_RenderGetScale,
 	LogGetOutputFunction = CLIB.SDL_LogGetOutputFunction,
 	SetAssertionHandler = CLIB.SDL_SetAssertionHandler,
-	AtomicGetPtr = CLIB.SDL_AtomicGetPtr,
+	AtomicSetPtr = CLIB.SDL_AtomicSetPtr,
 	WarpMouseInWindow = CLIB.SDL_WarpMouseInWindow,
 	JoystickEventState = CLIB.SDL_JoystickEventState,
 	setenv = CLIB.SDL_setenv,
@@ -824,6 +827,7 @@ library = {
 	FillRect = CLIB.SDL_FillRect,
 	GetAudioDeviceStatus = CLIB.SDL_GetAudioDeviceStatus,
 	ShowSimpleMessageBox = CLIB.SDL_ShowSimpleMessageBox,
+	CreateRGBSurfaceWithFormatFrom = CLIB.SDL_CreateRGBSurfaceWithFormatFrom,
 	TryLockMutex = CLIB.SDL_TryLockMutex,
 	CreateTexture = CLIB.SDL_CreateTexture,
 	CaptureMouse = CLIB.SDL_CaptureMouse,
@@ -833,6 +837,7 @@ library = {
 	SemWaitTimeout = CLIB.SDL_SemWaitTimeout,
 	FreeCursor = CLIB.SDL_FreeCursor,
 	CreateColorCursor = CLIB.SDL_CreateColorCursor,
+	CreateRGBSurfaceWithFormat = CLIB.SDL_CreateRGBSurfaceWithFormat,
 	SemPost = CLIB.SDL_SemPost,
 	vsnprintf = CLIB.SDL_vsnprintf,
 	NumJoysticks = CLIB.SDL_NumJoysticks,
@@ -890,26 +895,27 @@ library = {
 	RenderDrawPoint = CLIB.SDL_RenderDrawPoint,
 	IsScreenKeyboardShown = CLIB.SDL_IsScreenKeyboardShown,
 	DestroyCond = CLIB.SDL_DestroyCond,
-	lltoa = CLIB.SDL_lltoa,
-	GetNumAudioDevices = CLIB.SDL_GetNumAudioDevices,
+	SetSurfaceColorMod = CLIB.SDL_SetSurfaceColorMod,
+	CreateCond = CLIB.SDL_CreateCond,
+	GetWindowWMInfo = CLIB.SDL_GetWindowWMInfo,
 	strtoul = CLIB.SDL_strtoul,
 	SetWindowInputFocus = CLIB.SDL_SetWindowInputFocus,
-	GetWindowWMInfo = CLIB.SDL_GetWindowWMInfo,
 	RenderIsClipEnabled = CLIB.SDL_RenderIsClipEnabled,
-	GetVersion = CLIB.SDL_GetVersion,
+	WasInit = CLIB.SDL_WasInit,
 	QuitSubSystem = CLIB.SDL_QuitSubSystem,
+	InitSubSystem = CLIB.SDL_InitSubSystem,
 	SetCursor = CLIB.SDL_SetCursor,
 	SemWait = CLIB.SDL_SemWait,
 	pow = CLIB.SDL_pow,
-	InitSubSystem = CLIB.SDL_InitSubSystem,
 	Init = CLIB.SDL_Init,
-	UpdateWindowSurfaceRects = CLIB.SDL_UpdateWindowSurfaceRects,
+	WriteBE64 = CLIB.SDL_WriteBE64,
 	GetRevision = CLIB.SDL_GetRevision,
-	WasInit = CLIB.SDL_WasInit,
-	atof = CLIB.SDL_atof,
-	AtomicSetPtr = CLIB.SDL_AtomicSetPtr,
+	GetVersion = CLIB.SDL_GetVersion,
+	SetWindowResizable = CLIB.SDL_SetWindowResizable,
+	GetCurrentAudioDriver = CLIB.SDL_GetCurrentAudioDriver,
+	GetPixelFormatName = CLIB.SDL_GetPixelFormatName,
 	GetTicks = CLIB.SDL_GetTicks,
-	SetWindowMaximumSize = CLIB.SDL_SetWindowMaximumSize,
+	SetWindowMinimumSize = CLIB.SDL_SetWindowMinimumSize,
 	LogMessage = CLIB.SDL_LogMessage,
 	GL_BindTexture = CLIB.SDL_GL_BindTexture,
 	PushEvent = CLIB.SDL_PushEvent,
@@ -918,9 +924,9 @@ library = {
 	DestroyRenderer = CLIB.SDL_DestroyRenderer,
 	strtod = CLIB.SDL_strtod,
 	GameControllerFromInstanceID = CLIB.SDL_GameControllerFromInstanceID,
-	GetAssertionHandler = CLIB.SDL_GetAssertionHandler,
+	MixAudio = CLIB.SDL_MixAudio,
 	RenderDrawPoints = CLIB.SDL_RenderDrawPoints,
-	GL_GetSwapInterval = CLIB.SDL_GL_GetSwapInterval,
+	GetScancodeFromKey = CLIB.SDL_GetScancodeFromKey,
 	strupr = CLIB.SDL_strupr,
 	ConvertSurface = CLIB.SDL_ConvertSurface,
 	HasSSE2 = CLIB.SDL_HasSSE2,
@@ -929,6 +935,7 @@ library = {
 	HapticRumbleSupported = CLIB.SDL_HapticRumbleSupported,
 	RWFromMem = CLIB.SDL_RWFromMem,
 	ulltoa = CLIB.SDL_ulltoa,
+	GetAudioStatus = CLIB.SDL_GetAudioStatus,
 	QueryTexture = CLIB.SDL_QueryTexture,
 	RenderCopy = CLIB.SDL_RenderCopy,
 	RenderFillRects = CLIB.SDL_RenderFillRects,
@@ -955,17 +962,18 @@ library = {
 	GameControllerGetButtonFromString = CLIB.SDL_GameControllerGetButtonFromString,
 	memcmp = CLIB.SDL_memcmp,
 	JoystickGetGUID = CLIB.SDL_JoystickGetGUID,
+	GetRelativeMouseMode = CLIB.SDL_GetRelativeMouseMode,
 	JoystickClose = CLIB.SDL_JoystickClose,
 	CreateCursor = CLIB.SDL_CreateCursor,
 	strlwr = CLIB.SDL_strlwr,
-	CondBroadcast = CLIB.SDL_CondBroadcast,
+	SetWindowSize = CLIB.SDL_SetWindowSize,
 	RenderGetLogicalSize = CLIB.SDL_RenderGetLogicalSize,
 	strrev = CLIB.SDL_strrev,
 	GetRenderTarget = CLIB.SDL_GetRenderTarget,
 	HasAltiVec = CLIB.SDL_HasAltiVec,
 	SetRenderTarget = CLIB.SDL_SetRenderTarget,
 	RenderTargetSupported = CLIB.SDL_RenderTargetSupported,
-	GetDisplayBounds = CLIB.SDL_GetDisplayBounds,
+	CondSignal = CLIB.SDL_CondSignal,
 	UnlockTexture = CLIB.SDL_UnlockTexture,
 	GameControllerUpdate = CLIB.SDL_GameControllerUpdate,
 	UpdateYUVTexture = CLIB.SDL_UpdateYUVTexture,
@@ -988,9 +996,8 @@ library = {
 	LogError = CLIB.SDL_LogError,
 	LogWarn = CLIB.SDL_LogWarn,
 	LogInfo = CLIB.SDL_LogInfo,
-	HideWindow = CLIB.SDL_HideWindow,
+	SetWindowMaximumSize = CLIB.SDL_SetWindowMaximumSize,
 	memmove = CLIB.SDL_memmove,
-	GetCurrentAudioDriver = CLIB.SDL_GetCurrentAudioDriver,
 	LogGetPriority = CLIB.SDL_LogGetPriority,
 	GetQueuedAudioSize = CLIB.SDL_GetQueuedAudioSize,
 	LogSetPriority = CLIB.SDL_LogSetPriority,
@@ -1005,7 +1012,7 @@ library = {
 	GetHint = CLIB.SDL_GetHint,
 	SetHint = CLIB.SDL_SetHint,
 	SetHintWithPriority = CLIB.SDL_SetHintWithPriority,
-	GetWindowTitle = CLIB.SDL_GetWindowTitle,
+	EnclosePoints = CLIB.SDL_EnclosePoints,
 	JoystickOpen = CLIB.SDL_JoystickOpen,
 	HapticRumbleStop = CLIB.SDL_HapticRumbleStop,
 	iconv_string = CLIB.SDL_iconv_string,
@@ -1025,16 +1032,17 @@ library = {
 	GL_GetCurrentWindow = CLIB.SDL_GL_GetCurrentWindow,
 	GetThreadID = CLIB.SDL_GetThreadID,
 	acos = CLIB.SDL_acos,
-	GetWindowMinimumSize = CLIB.SDL_GetWindowMinimumSize,
+	GetAssertionHandler = CLIB.SDL_GetAssertionHandler,
 	cosf = CLIB.SDL_cosf,
 	GetCPUCount = CLIB.SDL_GetCPUCount,
 	Has3DNow = CLIB.SDL_Has3DNow,
 	JoystickIsHaptic = CLIB.SDL_JoystickIsHaptic,
 	HapticOpenFromMouse = CLIB.SDL_HapticOpenFromMouse,
-	GameControllerAddMapping = CLIB.SDL_GameControllerAddMapping,
-	sin = CLIB.SDL_sin,
+	JoystickNumButtons = CLIB.SDL_JoystickNumButtons,
+	GetRGB = CLIB.SDL_GetRGB,
 	HapticOpen = CLIB.SDL_HapticOpen,
 	ReadLE32 = CLIB.SDL_ReadLE32,
+	strstr = CLIB.SDL_strstr,
 	LockMutex = CLIB.SDL_LockMutex,
 	JoystickGetDeviceGUID = CLIB.SDL_JoystickGetDeviceGUID,
 	GetClosestDisplayMode = CLIB.SDL_GetClosestDisplayMode,
@@ -1059,19 +1067,20 @@ library = {
 	FlushEvents = CLIB.SDL_FlushEvents,
 	GetWindowBrightness = CLIB.SDL_GetWindowBrightness,
 	RenderGetIntegerScale = CLIB.SDL_RenderGetIntegerScale,
-	WriteBE32 = CLIB.SDL_WriteBE32,
+	CondBroadcast = CLIB.SDL_CondBroadcast,
 	GetClipboardText = CLIB.SDL_GetClipboardText,
 	GetAudioDeviceName = CLIB.SDL_GetAudioDeviceName,
 	OpenAudioDevice = CLIB.SDL_OpenAudioDevice,
-	MixAudioFormat = CLIB.SDL_MixAudioFormat,
+	WriteBE32 = CLIB.SDL_WriteBE32,
 	SetClipboardText = CLIB.SDL_SetClipboardText,
 	JoystickGetHat = CLIB.SDL_JoystickGetHat,
-	wcslen = CLIB.SDL_wcslen,
+	MixAudioFormat = CLIB.SDL_MixAudioFormat,
 	GetSurfaceAlphaMod = CLIB.SDL_GetSurfaceAlphaMod,
-	GetRelativeMouseMode = CLIB.SDL_GetRelativeMouseMode,
+	wcslen = CLIB.SDL_wcslen,
 	SetModState = CLIB.SDL_SetModState,
 	GetDefaultCursor = CLIB.SDL_GetDefaultCursor,
 	itoa = CLIB.SDL_itoa,
+	EnableScreenSaver = CLIB.SDL_EnableScreenSaver,
 	CloseAudio = CLIB.SDL_CloseAudio,
 	strcasecmp = CLIB.SDL_strcasecmp,
 	GetNumVideoDrivers = CLIB.SDL_GetNumVideoDrivers,
@@ -1079,27 +1088,26 @@ library = {
 	RemoveTimer = CLIB.SDL_RemoveTimer,
 	GetModState = CLIB.SDL_GetModState,
 	GL_SetAttribute = CLIB.SDL_GL_SetAttribute,
-	GetKeyFromScancode = CLIB.SDL_GetKeyFromScancode,
+	GL_GetSwapInterval = CLIB.SDL_GL_GetSwapInterval,
 	RenderPresent = CLIB.SDL_RenderPresent,
-	GetScancodeFromKey = CLIB.SDL_GetScancodeFromKey,
+	GL_ExtensionSupported = CLIB.SDL_GL_ExtensionSupported,
+	DestroyWindow = CLIB.SDL_DestroyWindow,
 	cos = CLIB.SDL_cos,
-	GetWindowPixelFormat = CLIB.SDL_GetWindowPixelFormat,
 	GetScancodeFromName = CLIB.SDL_GetScancodeFromName,
 	AtomicAdd = CLIB.SDL_AtomicAdd,
 	wcslcat = CLIB.SDL_wcslcat,
-	WriteBE64 = CLIB.SDL_WriteBE64,
 	GetRevisionNumber = CLIB.SDL_GetRevisionNumber,
 	ConvertSurfaceFormat = CLIB.SDL_ConvertSurfaceFormat,
 	SetWindowFullscreen = CLIB.SDL_SetWindowFullscreen,
-	WriteLE64 = CLIB.SDL_WriteLE64,
+	MaximizeWindow = CLIB.SDL_MaximizeWindow,
 	GameControllerGetButton = CLIB.SDL_GameControllerGetButton,
 	strlen = CLIB.SDL_strlen,
-	CloseAudioDevice = CLIB.SDL_CloseAudioDevice,
+	WriteLE64 = CLIB.SDL_WriteLE64,
 	SetSurfacePalette = CLIB.SDL_SetSurfacePalette,
-	GetSystemRAM = CLIB.SDL_GetSystemRAM,
-	MixAudio = CLIB.SDL_MixAudio,
+	CloseAudioDevice = CLIB.SDL_CloseAudioDevice,
+	GetDisplayName = CLIB.SDL_GetDisplayName,
 	DestroyTexture = CLIB.SDL_DestroyTexture,
-	GetAudioStatus = CLIB.SDL_GetAudioStatus,
+	isspace = CLIB.SDL_isspace,
 	RenderReadPixels = CLIB.SDL_RenderReadPixels,
 	DelEventWatch = CLIB.SDL_DelEventWatch,
 	JoystickGetGUIDFromString = CLIB.SDL_JoystickGetGUIDFromString,
@@ -1107,113 +1115,113 @@ library = {
 	AtomicUnlock = CLIB.SDL_AtomicUnlock,
 	RWFromFP = CLIB.SDL_RWFromFP,
 	AtomicLock = CLIB.SDL_AtomicLock,
-	CondWait = CLIB.SDL_CondWait,
+	GetWindowData = CLIB.SDL_GetWindowData,
 	WriteLE16 = CLIB.SDL_WriteLE16,
-	ReadBE16 = CLIB.SDL_ReadBE16,
+	utf8strlcpy = CLIB.SDL_utf8strlcpy,
 	JoystickNumBalls = CLIB.SDL_JoystickNumBalls,
 	SetSurfaceAlphaMod = CLIB.SDL_SetSurfaceAlphaMod,
-	utf8strlcpy = CLIB.SDL_utf8strlcpy,
+	BuildAudioCVT = CLIB.SDL_BuildAudioCVT,
 	GetDisplayMode = CLIB.SDL_GetDisplayMode,
 	HasIntersection = CLIB.SDL_HasIntersection,
-	BuildAudioCVT = CLIB.SDL_BuildAudioCVT,
-	AllocFormat = CLIB.SDL_AllocFormat,
+	CreateWindowFrom = CLIB.SDL_CreateWindowFrom,
 	TLSCreate = CLIB.SDL_TLSCreate,
-	ConvertPixels = CLIB.SDL_ConvertPixels,
 	CreateMutex = CLIB.SDL_CreateMutex,
+	ConvertPixels = CLIB.SDL_ConvertPixels,
+	AtomicGetPtr = CLIB.SDL_AtomicGetPtr,
 	SetWindowBrightness = CLIB.SDL_SetWindowBrightness,
 	RenderGetViewport = CLIB.SDL_RenderGetViewport,
 	strncasecmp = CLIB.SDL_strncasecmp,
 	IsGameController = CLIB.SDL_IsGameController,
 	ltoa = CLIB.SDL_ltoa,
-	GL_SwapWindow = CLIB.SDL_GL_SwapWindow,
+	GetCurrentVideoDriver = CLIB.SDL_GetCurrentVideoDriver,
 	GameControllerGetJoystick = CLIB.SDL_GameControllerGetJoystick,
 	atan = CLIB.SDL_atan,
-	SetClipRect = CLIB.SDL_SetClipRect,
+	tan = CLIB.SDL_tan,
 	sqrtf = CLIB.SDL_sqrtf,
 	GetPerformanceFrequency = CLIB.SDL_GetPerformanceFrequency,
-	FreeRW = CLIB.SDL_FreeRW,
+	IntersectRect = CLIB.SDL_IntersectRect,
 	SetThreadPriority = CLIB.SDL_SetThreadPriority,
 	RWFromFile = CLIB.SDL_RWFromFile,
-	IntersectRect = CLIB.SDL_IntersectRect,
-	GetRGB = CLIB.SDL_GetRGB,
-	GetDisplayName = CLIB.SDL_GetDisplayName,
+	sin = CLIB.SDL_sin,
+	HasSSE42 = CLIB.SDL_HasSSE42,
 	RaiseWindow = CLIB.SDL_RaiseWindow,
 	toupper = CLIB.SDL_toupper,
-	atoi = CLIB.SDL_atoi,
+	ReadBE16 = CLIB.SDL_ReadBE16,
 	GL_GetProcAddress = CLIB.SDL_GL_GetProcAddress,
 	GameControllerGetAttached = CLIB.SDL_GameControllerGetAttached,
 	snprintf = CLIB.SDL_snprintf,
 	tanf = CLIB.SDL_tanf,
 	UnlockSurface = CLIB.SDL_UnlockSurface,
 	HasSSE3 = CLIB.SDL_HasSSE3,
+	atoi = CLIB.SDL_atoi,
 	GetMouseFocus = CLIB.SDL_GetMouseFocus,
 	HasSSE41 = CLIB.SDL_HasSSE41,
-	HasSSE42 = CLIB.SDL_HasSSE42,
 	GameControllerMappingForGUID = CLIB.SDL_GameControllerMappingForGUID,
 	GetNumVideoDisplays = CLIB.SDL_GetNumVideoDisplays,
 	CreateSemaphore = CLIB.SDL_CreateSemaphore,
+	GetSystemRAM = CLIB.SDL_GetSystemRAM,
 	getenv = CLIB.SDL_getenv,
 	HapticOpened = CLIB.SDL_HapticOpened,
-	GetPixelFormatName = CLIB.SDL_GetPixelFormatName,
+	FreeRW = CLIB.SDL_FreeRW,
 	GetTouchDevice = CLIB.SDL_GetTouchDevice,
-	SetSurfaceColorMod = CLIB.SDL_SetSurfaceColorMod,
-	tan = CLIB.SDL_tan,
-	UpperBlitScaled = CLIB.SDL_UpperBlitScaled,
+	SetSurfaceRLE = CLIB.SDL_SetSurfaceRLE,
+	SetClipRect = CLIB.SDL_SetClipRect,
 	malloc = CLIB.SDL_malloc,
-	GetCurrentVideoDriver = CLIB.SDL_GetCurrentVideoDriver,
+	UpperBlitScaled = CLIB.SDL_UpperBlitScaled,
+	GL_SwapWindow = CLIB.SDL_GL_SwapWindow,
 	HasAVX2 = CLIB.SDL_HasAVX2,
-	GetDisplayUsableBounds = CLIB.SDL_GetDisplayUsableBounds,
+	GetDisplayBounds = CLIB.SDL_GetDisplayBounds,
 	GetAssertionReport = CLIB.SDL_GetAssertionReport,
 	QueueAudio = CLIB.SDL_QueueAudio,
 	SetWindowGammaRamp = CLIB.SDL_SetWindowGammaRamp,
-	GetWindowDisplayMode = CLIB.SDL_GetWindowDisplayMode,
 	HasMMX = CLIB.SDL_HasMMX,
-	ReportAssertion = CLIB.SDL_ReportAssertion,
+	GetWindowPixelFormat = CLIB.SDL_GetWindowPixelFormat,
 	JoystickNameForIndex = CLIB.SDL_JoystickNameForIndex,
-	CreateWindowFrom = CLIB.SDL_CreateWindowFrom,
+	SetWindowDisplayMode = CLIB.SDL_SetWindowDisplayMode,
 	strlcat = CLIB.SDL_strlcat,
 	GetError = CLIB.SDL_GetError,
-	GetWindowGammaRamp = CLIB.SDL_GetWindowGammaRamp,
-	SetWindowTitle = CLIB.SDL_SetWindowTitle,
+	AllocFormat = CLIB.SDL_AllocFormat,
+	GetWindowGrab = CLIB.SDL_GetWindowGrab,
 	CreateSoftwareRenderer = CLIB.SDL_CreateSoftwareRenderer,
-	strstr = CLIB.SDL_strstr,
-	LoadBMP_RW = CLIB.SDL_LoadBMP_RW,
-	GetWindowData = CLIB.SDL_GetWindowData,
-	SetWindowPosition = CLIB.SDL_SetWindowPosition,
+	SetWindowTitle = CLIB.SDL_SetWindowTitle,
+	GetWindowTitle = CLIB.SDL_GetWindowTitle,
+	LockSurface = CLIB.SDL_LockSurface,
+	CondWait = CLIB.SDL_CondWait,
 	SetMainReady = CLIB.SDL_SetMainReady,
-	GetWindowPosition = CLIB.SDL_GetWindowPosition,
+	SetWindowPosition = CLIB.SDL_SetWindowPosition,
 	GetNumTouchFingers = CLIB.SDL_GetNumTouchFingers,
-	SetWindowSize = CLIB.SDL_SetWindowSize,
+	GetWindowPosition = CLIB.SDL_GetWindowPosition,
 	HasScreenKeyboardSupport = CLIB.SDL_HasScreenKeyboardSupport,
 	HasEvents = CLIB.SDL_HasEvents,
-	SetWindowMinimumSize = CLIB.SDL_SetWindowMinimumSize,
 	HapticOpenFromJoystick = CLIB.SDL_HapticOpenFromJoystick,
 	GL_UnbindTexture = CLIB.SDL_GL_UnbindTexture,
 	Log = CLIB.SDL_Log,
-	EnclosePoints = CLIB.SDL_EnclosePoints,
+	GetWindowMinimumSize = CLIB.SDL_GetWindowMinimumSize,
 	LogVerbose = CLIB.SDL_LogVerbose,
 	CondWaitTimeout = CLIB.SDL_CondWaitTimeout,
 	ReadLE64 = CLIB.SDL_ReadLE64,
 	MapRGBA = CLIB.SDL_MapRGBA,
+	UpdateWindowSurface = CLIB.SDL_UpdateWindowSurface,
+	UpdateWindowSurfaceRects = CLIB.SDL_UpdateWindowSurfaceRects,
 	SetWindowGrab = CLIB.SDL_SetWindowGrab,
-	GetWindowGrab = CLIB.SDL_GetWindowGrab,
 	GetWindowFromID = CLIB.SDL_GetWindowFromID,
-	CondSignal = CLIB.SDL_CondSignal,
+	GetDisplayUsableBounds = CLIB.SDL_GetDisplayUsableBounds,
 	free = CLIB.SDL_free,
-	GL_DeleteContext = CLIB.SDL_GL_DeleteContext,
 	GetDesktopDisplayMode = CLIB.SDL_GetDesktopDisplayMode,
 	strlcpy = CLIB.SDL_strlcpy,
+	GL_DeleteContext = CLIB.SDL_GL_DeleteContext,
+	atof = CLIB.SDL_atof,
+	GetKeyFromScancode = CLIB.SDL_GetKeyFromScancode,
 	GetScancodeName = CLIB.SDL_GetScancodeName,
-	EnableScreenSaver = CLIB.SDL_EnableScreenSaver,
 	GetGlobalMouseState = CLIB.SDL_GetGlobalMouseState,
-	CreateCond = CLIB.SDL_CreateCond,
-	DestroyMutex = CLIB.SDL_DestroyMutex,
 	RenderSetViewport = CLIB.SDL_RenderSetViewport,
-	JoystickNumButtons = CLIB.SDL_JoystickNumButtons,
-	LockSurface = CLIB.SDL_LockSurface,
+	GetNumAudioDevices = CLIB.SDL_GetNumAudioDevices,
+	lltoa = CLIB.SDL_lltoa,
+	DestroyMutex = CLIB.SDL_DestroyMutex,
 	HapticIndex = CLIB.SDL_HapticIndex,
 	AtomicTryLock = CLIB.SDL_AtomicTryLock,
-	GL_ExtensionSupported = CLIB.SDL_GL_ExtensionSupported,
+	GetWindowGammaRamp = CLIB.SDL_GetWindowGammaRamp,
+	GetNumDisplayModes = CLIB.SDL_GetNumDisplayModes,
 }
 library.e = {
 	TEXTUREACCESS_STATIC = ffi.cast("enum SDL_TextureAccess", "SDL_TEXTUREACCESS_STATIC"),
@@ -1800,6 +1808,10 @@ library.e = {
 	PIXELFORMAT_ABGR8888 = 376840196,
 	PIXELFORMAT_BGRA8888 = 377888772,
 	PIXELFORMAT_ARGB2101010 = 372711428,
+	PIXELFORMAT_RGBA32 = 376840196,
+	PIXELFORMAT_ARGB32 = 377888772,
+	PIXELFORMAT_BGRA32 = 372645892,
+	PIXELFORMAT_ABGR32 = 373694468,
 	PIXELFORMAT_YV12 = 842094169,
 	PIXELFORMAT_IYUV = 1448433993,
 	PIXELFORMAT_YUY2 = 844715353,

@@ -1,6 +1,6 @@
 local repl = _G.repl or {}
 
-local curses = desire("libncurses")
+local curses = desire("ncurses")
 
 if not curses then return end
 

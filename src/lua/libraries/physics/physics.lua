@@ -1,4 +1,4 @@
-local ode = desire("libode")
+local ode = desire("ode")
 
 local ffi = require("ffi")
 local physics = physics or {}
@@ -177,7 +177,7 @@ end
 
 do -- physcs models
 
-	local assimp = desire("libassimp")
+	local assimp = desire("assimp")
 
 	physics.model_cache = {}
 

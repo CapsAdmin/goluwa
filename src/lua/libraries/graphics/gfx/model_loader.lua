@@ -2,7 +2,7 @@ local gfx = ... or _G.gfx
 
 gfx.model_cache = {}
 
-local assimp = desire("libassimp") -- model decoder
+local assimp = desire("assimp") -- model decoder
 
 local cb = utility.CreateCallbackThing(gfx.model_cache)
 

@@ -3,7 +3,7 @@ local steam = ... or steam
 
 if EXTERNAL_DEBUGGER then return end
 
-local steamworks = desire("libsteamworks")
+local steamworks = desire("steamworks")
 
 if not steamworks then return end
 
