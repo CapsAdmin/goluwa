@@ -11,18 +11,20 @@ commands.Add("scene_info", function()
 	end
 
 	logf("%s sub models\n", count)
-	logf("%s predicted model draw calls\n", count * render3d.csm_count)
+	logf("%s predicted model draw calls\n", count * render3d.csm_count + count)
 
 	local mat_count = {}
 	local tex_count = {}
 	for _, model in ipairs(render3d.scene) do
 		for _, sub_model in ipairs(model.sub_models) do
-			mat_count[sub_model.material] = true
-			for key, val in pairs(sub_model.material) do
-				if typex(val) == "texture" then
-					tex_count[val] = true
+			if sub_model.material then
+				mat_count[sub_model.material] = true
+				for key, val in pairs(sub_model.material) do
+					if typex(val) == "texture" then
+						tex_count[val] = true
+					end
 				end
- 			end
+			end
 		end
 	end
 	mat_count = table.count(mat_count)
