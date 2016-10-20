@@ -2,7 +2,7 @@ local scale = 1
 
 local tex = render.CreateBlankTexture(Vec2(render.GetWidth()/scale, render.GetHeight()/scale))
 tex:SetInternalFormat("rgba32f")
-tex:SetMipMapLevels(0)
+tex:SetMipMapLevels(1)
 tex:SetMinFilter("nearest")
 tex:SetMagFilter("nearest")
 tex:SetAnisotropy(0)

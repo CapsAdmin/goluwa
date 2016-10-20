@@ -43,31 +43,14 @@ end
 blur_texture(Vec2(0,5))
 blur_texture(Vec2(5,0))
 
-local shader = render.CreateShader({
-	name = "test",
-	fragment = {
-		variables = {
-			cam_dir = {vec3 = function() return camera.camera_3d:GetAngles():GetForward() end},
-			tex = tex,
-		},
-		mesh_layout = {
-			{uv = "vec2"},
-		},
-		source = [[
-			out highp vec4 frag_color;
-
-			void main()
-			{
-				vec4 tex_color = texture(tex, uv);
-				//vec4 tex_color = texture(tex, cam_dir);
-
-				frag_color = tex_color;
-			}
-		]],
-	}
-})
-require("ffi").debug_gc(true)
 serializer.WriteFile("msgpack", "lol.wtf", tex:Download())
+event.AddListener("PostDrawGUI", "lol", function()
+	render2d.SetTexture(tex)
+	render2d.SetColor(1, 1, 1, 1)
+	render2d.DrawRect(50, 50, 128, 128)
+end)
+do return end
+
 local info = serializer.ReadFile("msgpack", "lol.wtf")
 info.flip_y = true
 info.flip_x = true
@@ -109,6 +92,30 @@ grad:Upload({
 		d, m, m, m, l,
 		m, m, m, l, l,
 	},
+})
+
+local shader = render.CreateShader({
+	name = "test",
+	fragment = {
+		variables = {
+			cam_dir = {vec3 = function() return camera.camera_3d:GetAngles():GetForward() end},
+			tex = tex,
+		},
+		mesh_layout = {
+			{uv = "vec2"},
+		},
+		source = [[
+			out highp vec4 frag_color;
+
+			void main()
+			{
+				vec4 tex_color = texture(tex, uv);
+				//vec4 tex_color = texture(tex, cam_dir);
+
+				frag_color = tex_color;
+			}
+		]],
+	}
 })
 
 event.AddListener("PostDrawGUI", "lol", function()

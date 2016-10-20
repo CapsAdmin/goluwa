@@ -15,7 +15,7 @@ META:StartStorable()
 META:GetSet("StorageType", "2d")
 META:GetSet("Size", Vec2())
 META:GetSet("Depth", 0)
-META:GetSet("MipMapLevels", -1)
+META:GetSet("MipMapLevels", 0)
 META:GetSet("Path", "")
 META:GetSet("Multisample", 0)
 META:GetSet("InternalFormat", "rgba8")
@@ -126,7 +126,7 @@ function META:SetupStorage()
 end
 
 function META:Upload(data)
-	data.mip_map_level = data.mip_map_level or 0
+	data.mip_map_level = data.mip_map_level or 1
 	data.format = data.format or "rgba"
 	data.type = data.type or "unsigned_byte"
 	data.width = data.width or self:GetSize().x
@@ -224,10 +224,10 @@ function META:DumpInfo()
 	logn("==================================")
 		logn("storage type = ", self.StorageType)
 		logn("internal format = ", self.InternalFormat)
-		if self.MipMapLevels > 0 then
-			logn("mip map levels = ", self.MipMapLevels)
-		else
+		if self.MipMapLevels < 1 then
 			logn("mip map levels = ", math.floor(math.log(math.max(self.Size.x, self.Size.y)) / math.log(2)) + 1, "(", self, ".MipMapLevels = ", self.MipMapLevels ,")")
+		else
+			logn("mip map levels = ", self.MipMapLevels)
 		end
 		logn("size = ", self.Size)
 		if self.StorageType == "3d" then
@@ -241,33 +241,73 @@ function META:MakeError(reason)
 	error("nyi", 2)
 end
 
-function META:CreateBuffer(format_override)
-	local format = render.GetTextureFormatInfo(self.InternalFormat or format_override)
-	local size = self.Size.x * self.Size.y * ffi.sizeof(format.ctype)
-	local buffer, ref = ffi.malloc(format.ctype, size)
+function META:CreateBuffer(mip_map_level, format_override, use_ffi_new)
+	mip_map_level = mip_map_level or 1
 
+	local w = math.ceil(self.Size.x / mip_map_level)
+	local h = math.ceil(self.Size.y / mip_map_level)
+
+	local format = render.GetTextureFormatInfo(self.InternalFormat or format_override)
+	local size = w * h * ffi.sizeof(format.ctype)
+
+	if use_ffi_new then
+		return format.ctype_array(size), nil, size, format
+	end
+
+	local buffer, ref = ffi.malloc(format.ctype, size)
 	return buffer, ref, size, format
 end
 
-function META:Download(mip_map_level, format_override)
-	mip_map_level = mip_map_level or 0
+function META:Download(mip_map_level, format_override, use_ffi_new)
+	mip_map_level = mip_map_level or 1
 
-	local buffer, ref, size, format = self:CreateBuffer(format_override)
+	local buffer, ref, size, format = self:CreateBuffer(mip_map_level, format_override, use_ffi_new)
 
 	self:_Download(mip_map_level, buffer, size, format)
+
+	local w = math.ceil(self.Size.x / mip_map_level)
+	local h = math.ceil(self.Size.y / mip_map_level)
 
 	return {
 		type = format.number_type.friendly,
 		buffer = buffer,
-		width = self.Size.x,
-		height = self.Size.y,
+		width = w,
+		height = h,
 		format = format.preferred_upload_format,
 		mip_map_level = mip_map_level,
-		size = self.Size.x * self.Size.y * ffi.sizeof(format.ctype),
-		length = (self.Size.x * self.Size.y) - 1, -- for i = 0, data.length do
+		size = w * h * ffi.sizeof(format.ctype),
+		length = (w * h) - 1, -- for i = 0, data.length do
 		channels = #format.bits,
 		__ref = ref,
 	}
+end
+
+function META:Save(format_override)
+	local mip_map_levels = self.MipMapLevels
+
+	if mip_map_levels < 1 then
+		mip_map_levels = self:GetSuggestedMipMapLevels()
+	end
+
+	local data = {variables = self:GetStorableTable(), mip_maps = {}}
+	data.variables.Path = nil
+
+	for i = 1, mip_map_levels do
+		data.mip_maps[i] = self:Download(i, format_override, true)
+	end
+
+	data.variables = serializer.Encode("luadata", data.variables)
+
+	return data
+end
+
+function META:Load(data)
+	data.variables = serializer.Decode("luadata", data.variables)
+	self:SetStorableTable(data.variables)
+	self:SetupStorage()
+	for i, data in ipairs(data.mip_maps) do
+		self:Upload(data)
+	end
 end
 
 function META:Clear(mip_map_level)

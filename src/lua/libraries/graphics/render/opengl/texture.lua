@@ -10,6 +10,19 @@ local TOENUM = function(str)
 	return "GL_" .. str:upper()
 end
 
+function META:SetMipMapLevels(val)
+	self.MipMapLevels = val
+	if val < 1 then
+		self.gl_tex:SetParameteri("GL_TEXTURE_MAX_LEVEL", self:GetSuggestedMipMapLevels())
+	else
+		self.gl_tex:SetParameteri("GL_TEXTURE_MAX_LEVEL", val)
+	end
+end
+
+function META:GetSuggestedMipMapLevels()
+	return math.floor(math.log(math.max(self.Size.x, self.Size.y)) / math.log(2)) + 1
+end
+
 function META:SetWrapS(val)
 	self.WrapS = val
 	self.gl_tex:SetParameteri("GL_TEXTURE_WRAP_S", gl.e[TOENUM(val)])
@@ -122,12 +135,9 @@ function META:SetupStorage()
 
 	local mip_map_levels = self.MipMapLevels
 
-	if mip_map_levels <= 0 then
-		mip_map_levels = math.floor(math.log(math.max(self.Size.x, self.Size.y)) / math.log(2)) + 1
+	if mip_map_levels < 1 then
+		mip_map_levels = self:GetSuggestedMipMapLevels()
 	end
-
-	self:SetMaxLevel(mip_map_levels)
-	self:SetBaseLevel(0)
 
 	if self.SRGB and SRGB then
 		if internal_format == "GL_RGB8" then
@@ -253,7 +263,7 @@ function META:_Upload(data, y)
 
 		if data.image_size then
 			self.gl_tex:CompressedSubImage3D(
-				data.mip_map_level,
+				data.mip_map_level - 1,
 				data.x,
 				y,
 				data.z,
@@ -267,7 +277,7 @@ function META:_Upload(data, y)
 			)
 		else
 			self.gl_tex:SubImage3D(
-				data.mip_map_level,
+				data.mip_map_level - 1,
 				data.x,
 				y,
 				data.z,
@@ -285,7 +295,7 @@ function META:_Upload(data, y)
 
 		if data.image_size then
 			self.gl_tex:CompressedSubImage2D(
-				data.mip_map_level,
+				data.mip_map_level - 1,
 				data.x,
 				y,
 				data.width,
@@ -296,7 +306,7 @@ function META:_Upload(data, y)
 			)
 		else
 			self.gl_tex:SubImage2D(
-				data.mip_map_level,
+				data.mip_map_level - 1,
 				data.x,
 				y,
 				data.width,
@@ -311,7 +321,7 @@ function META:_Upload(data, y)
 
 		if data.image_size then
 			self.gl_tex:CompressedSubImage1D(
-				data.mip_map_level,
+				data.mip_map_level - 1,
 				data.x,
 				data.width,
 				TOENUM(data.format),
@@ -321,7 +331,7 @@ function META:_Upload(data, y)
 			)
 		else
 			self.gl_tex:SubImage1D(
-				data.mip_map_level,
+				data.mip_map_level - 1,
 				data.x,
 				data.width,
 				TOENUM(data.format),
@@ -346,6 +356,7 @@ function META:_Upload(data, y)
 		logf("x,y,z = %s, %s, %s\n", data.x, y or 0, data.z or 0)
 		logf("w,h,d = %s, %s\n", data.width, data.height or 0, data.depth or 0)
 		logf("buffer = %s\n", data.buffer)
+		table.print(data)
 		self:DumpInfo()
 		wlog("\n" .. msg)
 	end
@@ -359,7 +370,7 @@ end
 function META:_Download(mip_map_level, buffer, size, format)
 	render.StartDebug()
 
-	self.gl_tex:GetImage(mip_map_level, TOENUM(format.preferred_upload_format), gl.e[TOENUM(format.number_type.friendly)], size, buffer)
+	self.gl_tex:GetImage(mip_map_level - 1, TOENUM(format.preferred_upload_format), gl.e[TOENUM(format.number_type.friendly)], size, buffer)
 
 	local msg = render.StopDebug()
 
@@ -373,8 +384,9 @@ function META:_Download(mip_map_level, buffer, size, format)
 end
 
 function META:Clear(mip_map_level)
+	mip_map_level = mip_map_level or 1
 	if system.IsOpenGLExtensionSupported("GL_ARB_clear_texture") then
-		gl.ClearTexImage(self.gl_tex.id, mip_map_level or 0, "GL_RGBA", "GL_UNSIGNED_BYTE", nil)
+		gl.ClearTexImage(self.gl_tex.id, mip_map_level - 1, "GL_RGBA", "GL_UNSIGNED_BYTE", nil)
 	else
 		local data = self:Download(mip_map_level)
 
