@@ -190,7 +190,7 @@ do -- attributes
 		if type(vertices) == "number" then
 			local size = vertices
 
-			local indices = Array("unsigned int", size)
+			local indices = Array("unsigned short", size)
 			for i = 0, size - 1 do indices[i] = i end
 
 			self:UpdateBuffer(Array(self.mesh_layout.ctype, size), indices)
@@ -206,7 +206,7 @@ do -- attributes
 				end
 			end
 
-			self:UpdateBuffer(Array(self.mesh_layout.ctype, #vertices, vertices), Array("unsigned int", #indices, indices))
+			self:UpdateBuffer(Array(self.mesh_layout.ctype, #vertices, vertices), Array("unsigned short", #indices, indices))
 		end
 	end
 end

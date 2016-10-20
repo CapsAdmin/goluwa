@@ -54,13 +54,13 @@ if not NVIDIA_WORKAROUND then
 	if system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
 		function META:_Draw(count)
 			gl.BindVertexArray(self.vertex_array.id)
-			gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_INT", nil)
+			gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_SHORT", nil)
 		end
 	else
 		function META:_Draw(count)
 			gl.BindVertexArray(self.vertex_array.id)
 			self.element_buffer:Bind()
-			gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_INT", nil)
+			gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_SHORT", nil)
 		end
 	end
 
@@ -112,7 +112,7 @@ else
 	function META:_Draw(count)
 		gl.BindVertexArray(self.vao_id)
 		gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
-		gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_INT", nil)
+		gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_SHORT", nil)
 	end
 
 	local function setup_vertex_array(self)
