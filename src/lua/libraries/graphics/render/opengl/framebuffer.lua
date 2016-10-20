@@ -159,7 +159,7 @@ function META:SetTexture(pos, tex, mode, uid, face)
 					uid = uid,
 				}
 
-				if tex:GetMipMapLevels() > 0 then
+				if tex:GetMipMapLevels() < 1 then
 					self.gen_mip_map_textures = self.gen_mip_map_textures or utility.CreateWeakTable()
 					table.insert(self.gen_mip_map_textures, tex)
 				end
@@ -332,7 +332,7 @@ end
 function META:ClearTexture(i, r,g,b,a)
 	self:SaveDrawBuffers()
 
-	self:SetWrite(i, true)
+	self:WriteThese(tostring(i))
 	self.gl_fb:Clearfv("GL_COLOR", 0, ffi.new("float[4]", r or 0, g or 0, b or 0, a or 0))
 
 	self:RestoreDrawBuffers()
