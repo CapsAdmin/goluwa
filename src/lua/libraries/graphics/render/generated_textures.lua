@@ -17,7 +17,6 @@ function render.GenerateTextures()
 	render.white_texture = render.CreateBlankTexture(Vec2()+8):Fill(function() return 255,255,255,255 end)
 	render.black_texture = render.CreateBlankTexture(Vec2()+8):Fill(function() return 0,0,0,255 end)
 	render.grey_texture = render.CreateBlankTexture(Vec2()+8):Fill(function() return 127,127,127,255 end)
-	render.hemisphere_normals_texture = utility.CreateHemisphereNormalsTexture(8)
 	render.InitializeNoiseTexture(render.GetScreenSize())
 
 	do
