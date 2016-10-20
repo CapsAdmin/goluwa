@@ -244,39 +244,37 @@ end
 function META:CreateBuffer(mip_map_level, format_override, use_ffi_new)
 	mip_map_level = mip_map_level or 1
 
-	local w = math.ceil(self.Size.x / mip_map_level)
-	local h = math.ceil(self.Size.y / mip_map_level)
+	local size = self:GetMipSize(mip_map_level)
 
 	local format = render.GetTextureFormatInfo(self.InternalFormat or format_override)
-	local size = w * h * ffi.sizeof(format.ctype)
+	local byte_size = size.x * size.y * size.z * ffi.sizeof(format.ctype)
 
 	if use_ffi_new then
-		return format.ctype_array(size), nil, size, format
+		return format.ctype_array(byte_size), nil, byte_size, format
 	end
 
-	local buffer, ref = ffi.malloc(format.ctype, size)
-	return buffer, ref, size, format
+	local buffer, ref = ffi.malloc(format.ctype, byte_size)
+	return buffer, ref, byte_size, format
 end
 
 function META:Download(mip_map_level, format_override, use_ffi_new)
 	mip_map_level = mip_map_level or 1
+	local size = self:GetMipSize(mip_map_level)
 
-	local buffer, ref, size, format = self:CreateBuffer(mip_map_level, format_override, use_ffi_new)
+	local buffer, ref, byte_size, format = self:CreateBuffer(mip_map_level, format_override, use_ffi_new)
 
-	self:_Download(mip_map_level, buffer, size, format)
-
-	local w = math.ceil(self.Size.x / mip_map_level)
-	local h = math.ceil(self.Size.y / mip_map_level)
+	self:_Download(mip_map_level, buffer, byte_size, format)
 
 	return {
 		type = format.number_type.friendly,
 		buffer = buffer,
-		width = w,
-		height = h,
+		width = size.x,
+		height = size.y,
+		depth = size.z,
 		format = format.preferred_upload_format,
 		mip_map_level = mip_map_level,
-		size = w * h * ffi.sizeof(format.ctype),
-		length = (w * h) - 1, -- for i = 0, data.length do
+		size = size.x * size.y * size.z * ffi.sizeof(format.ctype),
+		length = (size.x * size.y * size.z) - 1, -- for i = 0, data.length do
 		channels = #format.bits,
 		__ref = ref,
 	}
