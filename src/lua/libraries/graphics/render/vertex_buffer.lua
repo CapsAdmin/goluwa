@@ -5,6 +5,7 @@ local META = prototype.CreateTemplate("vertex_buffer")
 prototype.StartStorable()
 META:GetSet("UpdateIndices", true)
 META:GetSet("Mode", "triangles")
+META:GetSet("IndicesType", "unsigned short")
 META:GetSet("DrawHint", "dynamic")
 META:GetSet("Shader")
 META:GetSet("Vertices")
@@ -16,8 +17,6 @@ function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
 	self.mesh_layout = {
 		attributes = {}
 	}
-	self:SetMode(self:GetMode())
-	self:SetDrawHint(self:GetDrawHint())
 	render._CreateVertexBuffer(self)
 
 	for i, info in ipairs(shader:GetMeshLayout()) do
@@ -190,7 +189,7 @@ do -- attributes
 		if type(vertices) == "number" then
 			local size = vertices
 
-			local indices = Array("unsigned short", size)
+			local indices = Array(self:GetIndicesType(), size)
 			for i = 0, size - 1 do indices[i] = i end
 
 			self:UpdateBuffer(Array(self.mesh_layout.ctype, size), indices)
@@ -206,7 +205,7 @@ do -- attributes
 				end
 			end
 
-			self:UpdateBuffer(Array(self.mesh_layout.ctype, #vertices, vertices), Array("unsigned short", #indices, indices))
+			self:UpdateBuffer(Array(self.mesh_layout.ctype, #vertices, vertices), Array(self:GetIndicesType(), #indices, indices))
 		end
 	end
 end

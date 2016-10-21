@@ -27,6 +27,19 @@ end
 
 do
 	local translate = {
+		["unsigned byte"] = "GL_UNSIGNED_BYTE",
+		["unsigned short"] = "GL_UNSIGNED_SHORT",
+		["unsigned int"] = "GL_UNSIGNED_INT",
+	}
+
+	function META:SetIndicesType(typ)
+		self.IndicesType = typ
+		self.gl_indices_type = translate[typ] or translate["unsigned short"]
+	end
+end
+
+do
+	local translate = {
 		dynamic = "GL_DYNAMIC_DRAW",
 		stream = "GL_STREAM_DRAW",
 		static = "GL_STATIC_DRAW",
@@ -41,6 +54,9 @@ end
 
 if not NVIDIA_WORKAROUND then
 	function render._CreateVertexBuffer(self)
+		self:SetMode(self:GetMode())
+		self:SetIndicesType(self:GetIndicesType())
+		self:SetDrawHint(self:GetDrawHint())
 		self.vertex_buffer = gl.CreateBuffer("GL_ARRAY_BUFFER")
 		self.element_buffer = gl.CreateBuffer("GL_ELEMENT_ARRAY_BUFFER")
 		self.vertex_array = gl.CreateVertexArray()
@@ -53,14 +69,20 @@ if not NVIDIA_WORKAROUND then
 
 	if system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
 		function META:_Draw(count)
-			gl.BindVertexArray(self.vertex_array.id)
-			gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_SHORT", nil)
+			if render.last_vertex_array_id ~= self.vertex_array.id then
+				gl.BindVertexArray(self.vertex_array.id)
+				render.last_vertex_array_id = self.vertex_array.id
+			end
+			gl.DrawElements(self.gl_mode, count or self.indices_length, self.gl_indices_type, nil)
 		end
 	else
 		function META:_Draw(count)
-			gl.BindVertexArray(self.vertex_array.id)
-			self.element_buffer:Bind()
-			gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_SHORT", nil)
+			if render.last_vertex_array_id ~= self.vertex_array.id then
+				gl.BindVertexArray(self.vertex_array.id)
+				self.element_buffer:Bind()
+				render.last_vertex_array_id = self.vertex_array.id
+			end
+			gl.DrawElements(self.gl_mode, count or self.indices_length, self.gl_indices_type, nil)
 		end
 	end
 
@@ -85,6 +107,7 @@ if not NVIDIA_WORKAROUND then
 		if system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
 			self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.mesh_layout.size)
 		end
+		render.last_vertex_array_id = nil
 	end
 
 	function META:_SetIndices(indices)
@@ -93,11 +116,15 @@ if not NVIDIA_WORKAROUND then
 		if system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
 			self.vertex_array:ElementBuffer(self.element_buffer.id)
 		end
+		render.last_vertex_array_id = nil
 	end
 else
 	local ffi = require("ffi")
 
 	function render._CreateVertexBuffer(self)
+		self:SetMode(self:GetMode())
+		self:SetIndicesType(self:GetIndicesType())
+		self:SetDrawHint(self:GetDrawHint())
 		self.vertices_id = gl.GenBuffer()
 		self.indices_id = gl.GenBuffer()
 		self.vao_id = gl.GenVertexArray()
@@ -110,9 +137,12 @@ else
 	end
 
 	function META:_Draw(count)
-		gl.BindVertexArray(self.vao_id)
-		gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
-		gl.DrawElements(self.gl_mode, count or self.indices_length, "GL_UNSIGNED_SHORT", nil)
+		if render.last_vertex_array_id ~= self.vao_id then
+			gl.BindVertexArray(self.vao_id)
+			gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
+			render.last_vertex_array_id = self.vao_id
+		end
+		gl.DrawElements(self.gl_mode, count or self.indices_length, self.gl_indices_type, nil)
 	end
 
 	local function setup_vertex_array(self)
@@ -132,6 +162,7 @@ else
 		gl.BufferData("GL_ARRAY_BUFFER", vertices:GetSize(), vertices:GetPointer(), self.gl_draw_hint)
 
 		setup_vertex_array(self)
+		render.last_vertex_array_id = nil
 	end
 
 	function META:_SetIndices(indices)
@@ -139,5 +170,6 @@ else
 		gl.BufferData("GL_ELEMENT_ARRAY_BUFFER", indices:GetSize(), indices:GetPointer(), self.gl_draw_hint)
 
 		setup_vertex_array(self)
+		render.last_vertex_array_id = nil
 	end
 end
