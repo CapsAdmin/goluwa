@@ -76,11 +76,22 @@ function render.StopDebug()
 	end
 end
 
+local flags = {
+	"error",
+	"deprecated_behavior",
+	"undefined_behavior",
+	"portability",
+	"performance"
+}
+
+for i,v in ipairs(flags) do flags[i] = gl.e["GL_DEBUG_TYPE_" .. v:upper()] end
+flags = bit.bor(unpack(flags))
+
 function render.EnableVerboseDebug(b)
 	if system.IsOpenGLExtensionSupported("GL_KHR_debug") then
 		if b then
 			gl.Enable("GL_DEBUG_OUTPUT")
-			gl.DebugMessageControl("GL_DONT_CARE", "GL_DEBUG_TYPE_ERROR", "GL_DONT_CARE", ffi.new("GLuint"), nil, true)
+			gl.DebugMessageControl("GL_DONT_CARE", flags, "GL_DONT_CARE", ffi.new("GLuint"), nil, true)
 			gl.Enable("GL_DEBUG_OUTPUT_SYNCHRONOUS")
 
 			local buffer = ffi.new("char[1024]")
