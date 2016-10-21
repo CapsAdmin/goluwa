@@ -1,6 +1,7 @@
 local PASS = {}
 
 PASS.Position, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
+PASS.Default = false
 
 PASS.Source = [[
 	out vec3 out_color;

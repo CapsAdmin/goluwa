@@ -1,7 +1,7 @@
 local PASS = {}
 
 PASS.Position, PASS.Name = FILE_NAME:match("(%d-)_(.+)")
-PASS.Default = true
+PASS.Default = false
 
 PASS.Source = {}
 
