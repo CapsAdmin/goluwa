@@ -26,9 +26,9 @@ end
 function META:GetMipSize(mip_map_level)
 	mip_map_level = mip_map_level or 1
 
-	local x = ffi.new("float[1]")
-	local y = ffi.new("float[1]")
-	local z = ffi.new("float[1]")
+	local x = ffi.new("GLfloat[1]")
+	local y = ffi.new("GLfloat[1]")
+	local z = ffi.new("GLfloat[1]")
 	self.gl_tex:GetLevelParameterfv(mip_map_level - 1, "GL_TEXTURE_WIDTH", x)
 	self.gl_tex:GetLevelParameterfv(mip_map_level - 1, "GL_TEXTURE_HEIGHT", y)
 	self.gl_tex:GetLevelParameterfv(mip_map_level - 1, "GL_TEXTURE_DEPTH", z)

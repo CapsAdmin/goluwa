@@ -19,7 +19,7 @@ end
 function META:CompileShader(type, source)
 	local shader = gl.CreateShader2("GL_" .. type:upper() .. "_SHADER")
 
-	local shader_strings = ffi.new("const char * [1]", ffi.cast("const char *", source))
+	local shader_strings = ffi.new("const GLchar * [1]", ffi.cast("const GLchar *", source))
 	shader:Source(1, shader_strings, nil)
 	shader:Compile()
 
@@ -27,7 +27,7 @@ function META:CompileShader(type, source)
 	shader:Getiv("GL_COMPILE_STATUS", status)
 
 	if status[0] == 0 then
-		local log = ffi.new("char[1024]")
+		local log = ffi.new("GLchar[1024]")
 		shader:GetInfoLog(1024, nil, log)
 		shader:Delete()
 
@@ -50,7 +50,7 @@ function META:Link()
 	self.gl_program:Getiv("GL_LINK_STATUS", status)
 
 	if status[0] == 0 then
-		local log = ffi.new("char[1024]")
+		local log = ffi.new("GLchar[1024]")
 		self.gl_program:GetInfoLog(1024, nil, log)
 		self.gl_program:Delete()
 
@@ -328,7 +328,7 @@ do
 			table.insert(property_enums, gl.e[enum])
 			table.insert(names, enum:sub(4):lower())
 		end
-		property_enums = ffi.new("int["..#names.."]", property_enums)
+		property_enums = ffi.new("GLint["..#names.."]", property_enums)
 		temp[what] = {enums = property_enums, count = #names, names = names}
 	end
 	fill_info = temp
@@ -343,7 +343,7 @@ do
 		local out = {}
 
 		for what, property_info in pairs(fill_info) do
-			local resource_count = ffi.new("int[1]")
+			local resource_count = ffi.new("GLint[1]")
 			gl.GetProgramInterfaceiv(self.gl_program.id, what, "GL_ACTIVE_RESOURCES", resource_count)
 			resource_count = resource_count[0]
 
@@ -351,7 +351,7 @@ do
 
 			for resource_index = 0, resource_count - 1 do
 
-				local res = ffi.new("int["..property_info.count.."]")
+				local res = ffi.new("GLint["..property_info.count.."]")
 				gl.GetProgramResourceiv(self.gl_program.id, what, resource_index, property_info.count, property_info.enums, property_info.count, nil, res)
 
 				local values = {}
@@ -361,7 +361,7 @@ do
 
 					if key == "name_length" then
 						local bytes = val + 1
-						local str = ffi.new("char[?]", bytes)
+						local str = ffi.new("GLchar[?]", bytes)
 						gl.GetProgramResourceName(self.gl_program.id, what, resource_index, bytes, nil, str)
 						val = ffi.string(str)
 						key = "name"

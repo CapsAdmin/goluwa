@@ -34,6 +34,8 @@ function render._Initialize()
 	if vendor:find("mesa") or vendor:find("open source technology center") or render.GetVersion():lower():find("mesa") then MESA = true end
 	if vendor:find("intel") then INTEL = true end
 
+--	render.EnableVerboseDebug(true)
+
 	if SRGB then
 		gl.Enable("GL_FRAMEBUFFER_SRGB")
 	end
@@ -43,7 +45,7 @@ function render._Initialize()
 	gl.Enable("GL_DEPTH_TEST")
 	gl.Enable("GL_BLEND")
 
-	local largest = ffi.new("float[1]")
+	local largest = ffi.new("GLfloat[1]")
 	gl.GetFloatv("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT", largest)
 	render.max_anisotropy = largest[0]
 end

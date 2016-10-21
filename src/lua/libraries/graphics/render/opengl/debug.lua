@@ -44,10 +44,10 @@ function render.StopDebug()
 	if render.verbose_debug then return end
 
 	if system.IsOpenGLExtensionSupported("GL_KHR_debug") then
-		local buffer = ffi.new("char[1024]")
+		local buffer = ffi.new("GLchar[1024]")
 		local length = ffi.sizeof(buffer)
 
-		local int = ffi.new("int[1]")
+		local int = ffi.new("GLint[1]")
 		gl.GetIntegerv("GL_DEBUG_LOGGED_MESSAGES", int)
 
 		local message
@@ -94,14 +94,14 @@ function render.EnableVerboseDebug(b)
 			gl.DebugMessageControl("GL_DONT_CARE", flags, "GL_DONT_CARE", ffi.new("GLuint"), nil, true)
 			gl.Enable("GL_DEBUG_OUTPUT_SYNCHRONOUS")
 
-			local buffer = ffi.new("char[1024]")
+			local buffer = ffi.new("GLchar[1024]")
 			local length = ffi.sizeof(buffer)
 
 			debug.sethook(function()
 				local info = debug.getinfo(2)
 				if info.source:find("opengl", nil, true) then
 
-					local logged_count = ffi.new("int[1]")
+					local logged_count = ffi.new("GLint[1]")
 					gl.GetIntegerv("GL_DEBUG_LOGGED_MESSAGES", logged_count)
 
 					if logged_count[0] ~= 0 then
