@@ -19,9 +19,6 @@ event.Timer("update_cells", 0, 0, function()
 	render.SetBlendMode()
 
 	tex:Shade([[
-		float pi = 3.14159265358979323846264338327950288419716939937510582097494459230781640;
-		float pi2 = pi/2;
-
 		vec4 color = texture(self, uv);
 
 		vec4 neighbours = vec4(0);
@@ -48,7 +45,7 @@ event.Timer("update_cells", 0, 0, function()
 			color.r = 0.5;
 			color.b = 0.5;
 
-			color.a = pow(sin(pow(neighbours.a, pi2) * pi) / color.a, 0.18);
+			color.a = pow(sin(pow(neighbours.a, HALF_PI) * PI) / color.a, 0.18);
 		}
 
 		return color;

@@ -141,9 +141,8 @@ vec3 gbuffer_compute_specular(vec3 L, vec3 V, vec3 N, float attenuation, vec3 li
 	float F, D, vis;
 	// D
 	float alphaSqr = alpha*alpha;
-	float pi = 3.14159f;
 	float denom = dotNH * dotNH *(alphaSqr-1.0) + 1.0f;
-	D = alphaSqr/(pi * denom * denom);
+	D = alphaSqr/(PI * denom * denom);
 	// F
 	float dotLH5 = pow(1.0f-dotLH,5);
 	F = F0 + (1.0-F0)*(dotLH5);

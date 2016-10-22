@@ -45,7 +45,7 @@ local shader = render.CreateShader({
 
 				neighbours /= 9;
 
-				val = sin(pow(neighbours, 1.57) * 3.14) / val * 2;
+				val = sin(pow(neighbours, 1.57) * PI) / val * 2;
 
 				//out_val = clamp((prev + (1-val)), 0, 1);
 				out_val = val;

@@ -202,7 +202,7 @@ end
 render.AddGlobalShaderCode([[
 	vec4 textureLatLon(sampler2D tex, vec3 dir)
 	{
-		return texture(tex, vec2((atan(dir.y, dir.x) / 3.1415926 + 1.0) * 0.5, 1.0 - acos(dir.z) / 3.1415926));
+		return texture(tex, vec2((atan(dir.y, dir.x) / PI + 1.0) * 0.5, 1.0 - acos(dir.z) / PI));
 	}
 ]])
 
@@ -227,3 +227,7 @@ render.AddGlobalShaderCode([[
 		return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 	}
 ]])
+
+render.SetGlobalShaderVariable("PI", "3.1415926535897932384626433832795", "const float")
+render.SetGlobalShaderVariable("HALF_PI", "1.57079632679489661923132169163975", "const float")
+render.SetGlobalShaderVariable("TAU", "6.283185307179586476925286766559", "const float")

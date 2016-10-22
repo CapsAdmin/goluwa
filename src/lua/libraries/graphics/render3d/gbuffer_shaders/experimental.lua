@@ -1,6 +1,5 @@
 
 render.AddGlobalShaderCode([[
-#define PI 3.141592
 #define iSteps 16
 #define jSteps 1
 
@@ -181,8 +180,6 @@ float gbuffer_compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, 
 ]])
 
 render.AddGlobalShaderCode([[
-const float PI = 3.14159265358979323846;
-
 float sqr(float x) { return x*x; }
 
 float SchlickFresnel(float u)
@@ -303,10 +300,9 @@ float LightingFuncGGX_D(float dotNH, float roughness)
 {
 	float alpha = roughness*roughness;
 	float alphaSqr = alpha*alpha;
-	float pi = 3.14159f;
 	float denom = dotNH * dotNH *(alphaSqr-1.0) + 1.0f;
 
-	float D = alphaSqr/(pi * denom * denom);
+	float D = alphaSqr/(PI * denom * denom);
 	return D;
 }
 

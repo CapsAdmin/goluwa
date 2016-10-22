@@ -6,7 +6,6 @@ float mieDirectionalG = 0.8;
 
 // constants for atmospheric scattering
 const float e = 2.71828182845904523536028747135266249775724709369995957;
-const float pi = 3.141592653589793238462643383279502884197169;
 
 const float n = 1.0003; // refractive index of air
 const float N = 2.545E25; // number of molecules per unit volume for air at
@@ -31,12 +30,12 @@ const float sunAngularDiameterCos = 0.999956676946448443553574619906976478926848
 // 66 arc seconds -> degrees, and the cosine of that
 
 // earth shadow hack
-const float cutoffAngle = pi/1.95;
+const float cutoffAngle = PI/1.95;
 const float steepness = 1.5;
 
 vec3 totalRayleigh(vec3 lambda)
 {
-	return (8.0 * pow(pi, 3.0) * pow(pow(n, 2.0) - 1.0, 2.0) * (6.0 + 3.0 * pn)) / (3.0 * N * pow(lambda, vec3(4.0)) * (6.0 - 7.0 * pn));
+	return (8.0 * pow(PI, 3.0) * pow(pow(n, 2.0) - 1.0, 2.0) * (6.0 + 3.0 * pn)) / (3.0 * N * pow(lambda, vec3(4.0)) * (6.0 - 7.0 * pn));
 }
 
 // see http://blenderartists.org/forum/showthread.php?321110-Shaders-and-Skybox-madness
@@ -49,20 +48,20 @@ vec3 simplifiedRayleigh()
 
 float rayleighPhase(float cosTheta)
 {
-	return (3.0 / (16.0*pi)) * (1.0 + pow(cosTheta, 2.0));
-//	return (1.0 / (3.0*pi)) * (1.0 + pow(cosTheta, 2.0));
+	return (3.0 / (16.0*PI)) * (1.0 + pow(cosTheta, 2.0));
+//	return (1.0 / (3.0*PI)) * (1.0 + pow(cosTheta, 2.0));
 //	return (3.0 / 4.0) * (1.0 + pow(cosTheta, 2.0));
 }
 
 vec3 totalMie(vec3 lambda, vec3 K, float T)
 {
 	float c = (0.2 * T ) * 10E-18;
-	return 0.434 * c * pi * pow((2.0 * pi) / lambda, vec3(v - 2.0)) * K;
+	return 0.434 * c * PI * pow(TAU / lambda, vec3(v - 2.0)) * K;
 }
 
 float hgPhase(float cosTheta, float g)
 {
-	return (1.0 / (4.0*pi)) * ((1.0 - pow(g, 2.0)) / pow(1.0 - 2.0*g*cosTheta + pow(g, 2.0), 1.5));
+	return (1.0 / (PI * 4.0)) * ((1.0 - pow(g, 2.0)) / pow(1.0 - 2.0*g*cosTheta + pow(g, 2.0), 1.5));
 }
 
 float sunIntensity(float zenithAngleCos)
@@ -102,8 +101,8 @@ vec3 gbuffer_compute_sky(vec3 cam_dir, float depth)
 	// optical length
 	// cutoff angle at 90 to avoid singularity in next formula.
 	float zenithAngle = acos(max(0.0, dot(up, cam_dir)));
-	float sR = rayleighZenithLength / (cos(zenithAngle) + 0.15 * pow(93.885 - ((zenithAngle * 180.0) / pi), -1.253));
-	float sM = mieZenithLength / (cos(zenithAngle) + 0.15 * pow(93.885 - ((zenithAngle * 180.0) / pi), -1.253));
+	float sR = rayleighZenithLength / (cos(zenithAngle) + 0.15 * pow(93.885 - ((zenithAngle * 180.0) / PI), -1.253));
+	float sM = mieZenithLength / (cos(zenithAngle) + 0.15 * pow(93.885 - ((zenithAngle * 180.0) / PI), -1.253));
 
 	// combined extinction factor
 	vec3 Fex = exp(-(betaR * sR + betaM * sM));
@@ -122,9 +121,9 @@ vec3 gbuffer_compute_sky(vec3 cam_dir, float depth)
 
 	//nightsky
 	vec3 direction = cam_dir;
-	float theta = acos(direction.y); // elevation --> y-axis, [-pi/2, pi/2]
-	float phi = atan(direction.z, direction.x); // azimuth --> x-axis [-pi/2, pi/2]
-	vec2 uv = vec2(phi, theta) / vec2(2.0*pi, pi) + vec2(0.5, 0.0);
+	float theta = acos(direction.y); // elevation --> y-axis, [-HALF_PI, HALF_PI]
+	float phi = atan(direction.z, direction.x); // azimuth --> x-axis [-HALF_PI, HALF_PI]
+	vec2 uv = vec2(phi, theta) / vec2(TAU, PI) + vec2(0.5, 0.0);
 	vec3 L0 = vec3(0.1) * Fex;
 
 	// composition + solar disc
