@@ -1,8 +1,13 @@
 local render = ... or _G.render
 
-for _, v in ipairs(camera.GetVariables()) do
-	render.SetGlobalShaderVariable("g_" .. v .. "_2d", function() return camera.camera_2d:GetMatrices()[v] end, "mat4")
-	render.SetGlobalShaderVariable("g_" .. v, function() return camera.camera_3d:GetMatrices()[v] end, "mat4")
+for _, info in ipairs(camera.GetVariables()) do
+	if info.glsl then
+		render.SetGlobalShaderVariable("g_" .. info.name .. "_2d", (info.glsl:gsub("%$", "g_"):gsub("%^", "_2d")), "mat4")
+		render.SetGlobalShaderVariable("g_" .. info.name, (info.glsl:gsub("%$", "g_"):gsub("%^", "")), "mat4")
+	else
+		render.SetGlobalShaderVariable("g_" .. info.name .. "_2d", function() return camera.camera_2d:GetMatrices()[info.name] end, "mat4")
+		render.SetGlobalShaderVariable("g_" .. info.name, function() return camera.camera_3d:GetMatrices()[info.name] end, "mat4")
+	end
 end
 
 render.SetGlobalShaderVariable("g_cam_nearz", function() return camera.camera_3d.NearZ end, "float")

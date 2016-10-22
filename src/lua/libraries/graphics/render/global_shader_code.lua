@@ -1,13 +1,18 @@
 local render = (...) or _G.render
 
 render.global_shader_variables = render.global_shader_variables or {}
+render.global_glsl_variables = render.global_glsl_variables or {}
 
 function render.SetGlobalShaderVariable(key, val, type)
-	render.global_shader_variables[key] = {
-		type = type,
-		key = key,
-		val = val
-	}
+	if _G.type(val) == "string" then
+		table.insert(render.global_glsl_variables, {key = key, val = val, type = type})
+	else
+		render.global_shader_variables[key] = {
+			type = type,
+			key = key,
+			val = val
+		}
+	end
 end
 
 function render.GetGlobalShaderVariableBlock()
@@ -174,6 +179,10 @@ function render.GetGlobalShaderCode(code)
 	end
 
 	local out = {}
+
+	for i, v in ipairs(render.global_glsl_variables) do
+		table.insert(out, v.type .. " " .. v.key .. " = " .. v.val .. ";")
+	end
 
 	ts(out, {}, node)
 

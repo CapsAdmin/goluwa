@@ -99,7 +99,14 @@ if GRAPHICS then
 
 		-- render the scene with this matrix
 		camera.camera_3d:SetProjection(projection)
-		render3d.gbuffer_data_pass.light_shader["light_projection_view_" .. i] = camera.camera_3d:GetMatrices().projection_view
+
+		if camera.camera_3d:GetMatrices().projection_view then
+			render3d.gbuffer_data_pass.light_shader["light_projection_view" .. i] = camera.camera_3d:GetMatrices().projection_view
+		else
+			render3d.gbuffer_data_pass.light_shader["light_view" .. i] = camera.camera_3d:GetMatrices().view
+			render3d.gbuffer_data_pass.light_shader["light_projection" .. i] = camera.camera_3d:GetMatrices().projection
+		end
+
 		render3d.DrawScene(self, self.Ortho and self:GetComponent("transform"):GetSize())
 	end
 

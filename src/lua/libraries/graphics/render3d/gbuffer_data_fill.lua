@@ -538,7 +538,13 @@ PASS.Stages = {
 									}
 									]]
 									str = str:gsub("tex_shadow_map", "lua[tex_shadow_map_" .. i .." = \"sampler2D\"]")
-									str = str:gsub("light_projection_view", "lua[light_projection_view_" .. i .. " = \"mat4\"]")
+									if camera.camera_3d:GetMatrices().projection_view then
+										str = str:gsub("light_projection_view", "lua[light_projection_view" .. i .. " = \"mat4\"]")
+									else
+										str = str:gsub("light_projection_view", "light_projection * light_view")
+										str = str:gsub("light_view", "lua[light_view" .. i .. " = \"mat4\"]")
+										str = str:gsub("light_projection", "lua[light_projection" .. i .. " = \"mat4\"]")
+									end
 									code = code .. str
 								end
 								return code

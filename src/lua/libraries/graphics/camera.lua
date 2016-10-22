@@ -2,24 +2,26 @@ local camera = {}
 
 do
 	local variables = {
-		"projection",
-		"projection_inverse",
+		{name = "projection"},
+		{name = "projection_inverse", glsl = "inverse($projection^)"},
 
-		"view",
-		"view_inverse",
+		{name = "view"},
+		{name = "view_inverse", glsl = "inverse($view^)"},
 
-		"world",
-		"world_inverse",
+		{name = "world"},
+		{name = "world_inverse", glsl = "inverse($world^)"},
 
-		"projection_view",
-		"projection_view_inverse",
+		{name = "projection_view", glsl = "$projection^ * $view^"},
+		{name = "projection_view_inverse", glsl = "inverse($projection_view^)"},
 
-		"view_world",
-		"view_world_inverse",
-		"projection_view_world",
+		{name = "view_world", glsl = "$view * $world"},
+		{name = "view_world_inverse", glsl = "inverse($view_world^)"},
+		{name = "projection_view_world", glsl = "$projection^ * $view^ * $world^"},
 
-		"normal_matrix",
+		{name = "normal_matrix", glsl = "transpose($view_world_inverse^)"},
 	}
+
+	-- for i,v in ipairs(variables) do v.glsl = nil end -- disable gpu matrix calculation
 
 	function camera.GetVariables()
 		return variables
@@ -33,8 +35,10 @@ do
 		local self = prototype.CreateObject("camera")
 		self.matrix_stack = {}
 		self.shader_variables = {}
-		for _, name in ipairs(camera.GetVariables()) do
-			self.shader_variables[name] = Matrix44()
+		for _, info in ipairs(camera.GetVariables()) do
+			if not info.glsl then
+				self.shader_variables[info.name] = Matrix44()
+			end
 		end
 		self:Rebuild()
 		return self
@@ -276,7 +280,7 @@ do
 			end
 		end
 
-		if self:Get3D() then
+		if self:Get3D() and vars.projection_view_world then
 			if what == nil or what == "projection" or what == "view" then
 				vars.projection_inverse = vars.projection:GetInverse()
 				vars.view_inverse = vars.view:GetInverse()
@@ -292,14 +296,16 @@ do
 				vars.normal_matrix = vars.view_world_inverse:GetTranspose()
 			end
 
-			--if type == nil or type == "world" then
-				--vars.world_inverse = vars.world:GetInverse()
-			--end
+			if type == nil or type == "world" then
+				vars.world_inverse = vars.world:GetInverse()
+			end
 		else
 			vars.world = self.World
 		end
 
-		vars.projection_view_world = vars.world * vars.view * vars.projection
+		if vars.projection_view_world then
+			vars.projection_view_world = vars.world * vars.view * vars.projection
+		end
 	end
 
 	function META:InvalidateProjection()
