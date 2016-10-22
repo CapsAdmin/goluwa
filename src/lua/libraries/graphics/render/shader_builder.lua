@@ -386,8 +386,6 @@ function render.CreateShader(data, vars)
 			end
 		end
 
---table.print(variables)
-
 		template = replace_field(template, "VARIABLES", variables_to_string("uniform", variables))
 		build_output[shader].variables = translate_fields(variables)
 
