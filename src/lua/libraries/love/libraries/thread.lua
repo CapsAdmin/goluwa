@@ -45,7 +45,7 @@ function love.thread.newThread(name, script_path)
 	end
 
 	function thread:OnFinish()
-		logn("[line] thread ", name ," finished")
+		llog("thread ", name ," finished")
 	end
 
 	self.thread = thread
@@ -53,7 +53,7 @@ function love.thread.newThread(name, script_path)
 
 	self.name = name
 
-	logn("[line] creating thread ", name)
+	llog("creating thread ", name)
 
 	return self
 end

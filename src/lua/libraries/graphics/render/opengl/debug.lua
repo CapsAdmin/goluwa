@@ -121,7 +121,7 @@ function render.EnableVerboseDebug(b)
 						end
 
 						if message then
-							logf("[render] %s:%i gl.%s:\n", source, info.currentline, info.name)
+							llog("%s:%i gl.%s:", source, info.currentline, info.name)
 							logn(message)
 						end
 					end
@@ -134,6 +134,6 @@ function render.EnableVerboseDebug(b)
 			render.verbose_debug = false
 		end
 	else
-		logn("[render] glDebugMessageControl is not availible")
+		llog("glDebugMessageControl is not availible")
 	end
 end

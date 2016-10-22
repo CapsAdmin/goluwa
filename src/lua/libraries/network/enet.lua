@@ -204,7 +204,7 @@ event.AddListener("Update", "enet", function()
 				if socket.Type == "enet_peer" then
 					socket:OnConnect()
 					socket.connected = true
-					if enet.debug then logf("[enet] %s: connected to server\n", socket) end
+					if enet.debug then llog("%s: connected to server", socket) end
 				else
 					local peer = enet.CreateDummyPeer()
 					peer.peer = evt[0].peer
@@ -220,20 +220,20 @@ event.AddListener("Update", "enet", function()
 					socket:OnPeerConnect(peer)
 					peer:OnConnect()
 					peer.connected = true
-					if enet.debug then logf("[enet] %s: %s connected\n", socket, peer) end
+					if enet.debug then llog("%s: %s connected", socket, peer) end
 				end
 			elseif evt[0].type == lib.e.EVENT_TYPE_DISCONNECT then
 				if socket.Type == "enet_peer" then
 					socket:OnDisconnect()
 					socket.connected = false
-					if enet.debug then logf("[enet] %s: disconnected from server\n", socket) end
+					if enet.debug then llog("%s: disconnected from server", socket) end
 				else
 					local peer = socket.peers[getuid(evt[0].peer)]
 					socket:OnPeerDisconnect(peer)
 					peer:OnDisconnect()
 					peer.connected = false
 					socket.peers[getuid(peer.peer)] = nil
-					if enet.debug then logf("[enet] %s: %s disconnected\n", socket, peer) end
+					if enet.debug then llog("%s: %s disconnected", socket, peer) end
 				end
 			elseif evt[0].type == lib.e.EVENT_TYPE_RECEIVE then
 
@@ -241,11 +241,11 @@ event.AddListener("Update", "enet", function()
 				flags = utility.FlagsToTable(flags, valid_flags)
 
 				if socket.Type == "enet_peer" then
-					if enet.debug then logf("[enet] %s: received %s of data: %s\n", socket, utility.FormatFileSize(#str), str:dumphex()) end
+					if enet.debug then llog("%s: received %s of data: %s", socket, utility.FormatFileSize(#str), str:dumphex()) end
 					socket:OnReceive(str, flags, channel)
 				else
 					local peer = socket.peers[getuid(evt[0].peer)]
-					if enet.debug then logf("[enet] %s: received %s of data from %s: %s\n", socket, utility.FormatFileSize(#str), peer, str:dumphex()) end
+					if enet.debug then llog("%s: received %s of data from %s: %s", socket, utility.FormatFileSize(#str), peer, str:dumphex()) end
 					socket:OnReceive(peer, str, flags, channel)
 				end
 			end

@@ -307,14 +307,14 @@ function steam.InitializeWebAPI(force)
 end
 
 function steam.UpdateSupportedWebAPI(callback)
-	logn("[steam] fetching supported api..")
+	llog("fetching supported api..")
 
 	sockets.Get("https://api.steampowered.com/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key=" .. steam.GetWebAPIKey(), function(data)
 		if data.content then
 			local tbl = serializer.Decode("json", data.content)
 
 			if not tbl.apilist then
-				logn("[steam] could not fetch api, no apilist")
+				llog("could not fetch api, no apilist")
 				print(data.content)
 				return
 			end
@@ -322,11 +322,11 @@ function steam.UpdateSupportedWebAPI(callback)
 			serializer.WriteFile("luadata", "steam_webapi_supported.lua", tbl)
 			steam.supported = tbl
 
-			logn("[steam] supported api updated")
+			llog("supported api updated")
 
 			if callback then callback() end
 		else
-			logn("[steam] could not fetch api, no content!")
+			llog("could not fetch api, no content!")
 		end
 	end)
 end

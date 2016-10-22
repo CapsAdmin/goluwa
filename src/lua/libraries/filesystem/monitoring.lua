@@ -12,17 +12,17 @@ function vfs.MonitorFile(file_path, callback)
 			if time then
 				if first then first = nil return end
 				if last ~= time then
-					logf("[vfs monitor] %s changed!\n", file_path)
+					llog("%s changed!", file_path)
 					last = time
 					return callback(file_path)
 				end
 			else
-				logf("[vfs monitor] %s was removed\n", file_path)
+				llog("%s was removed", file_path)
 				event.RemoveTimer(file_path)
 			end
 		end)
 	else
-		logf("[vfs monitor] %s was not found\n", file_path)
+		llog("%s was not found", file_path)
 	end
 end
 
@@ -54,7 +54,7 @@ function vfs.MonitorIncludedLuaScripts(b)
 					data.last_modified = info.last_modified
 				else
 					if data.last_modified ~= info.last_modified then
-						logn("reloading ", vfs.GetFileNameFromPath(path))
+						llog("reloading %s", vfs.GetFileNameFromPath(path))
 						_G.RELOAD = true
 						include(path)
 						_G.RELOAD = nil

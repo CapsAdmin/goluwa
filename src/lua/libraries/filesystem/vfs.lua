@@ -2,10 +2,6 @@ local vfs = _G.vfs or {}
 
 vfs.use_appdata = false
 
-function vfs.DebugPrint(fmt, ...)
-	logf("[VFS] %s\n", string.safeformat(fmt, ...))
-end
-
 do -- mounting/links
 	function vfs.Mount(where, to, userdata)
 		to = to or ""

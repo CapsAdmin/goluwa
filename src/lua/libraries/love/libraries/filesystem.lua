@@ -237,7 +237,7 @@ do -- File object
 		if mode == "w" then mode = "write" end
 		if mode == "r" then mode = "read" end
 
-		logn("[line] file open ", self.path, " ", mode)
+		llog("file open ", self.path, " ", mode)
 		local path = self.path
 
 		if mode == "w" then
