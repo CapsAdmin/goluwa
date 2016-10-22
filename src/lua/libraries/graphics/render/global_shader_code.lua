@@ -180,17 +180,23 @@ function render.GetGlobalShaderCode(code)
 
 	local out = {}
 
-	for i, v in ipairs(render.global_glsl_variables) do
-		table.insert(out, v.type .. " " .. v.key .. " = " .. v.val .. ";")
-	end
-
 	ts(out, {}, node)
-
+	local glsl
 	if SSBO then
-		return render.GetGlobalShaderVariableBlock() .. "\n\n" .. table.concat(out, "\n\n")
+		glsl = render.GetGlobalShaderVariableBlock() .. "\n\n" .. table.concat(out, "\n\n")
 	else
-		return table.concat(out, "\n\n")
+		glsl = table.concat(out, "\n\n")
 	end
+
+	local glsl_vars = {}
+	for i, v in ipairs(render.global_glsl_variables) do
+		--local p = [==[[!"#$%&'%(%)*+,-./:;<=>?@%[\%]^`{|}~%s]]==]
+		--if glsl:find(p..v.key..p) or code:find(p..v.key..p) then
+		table.insert(glsl_vars, v.type .. " " .. v.key .. " = " .. v.val .. ";")
+		--end
+	end
+
+	return table.concat(glsl_vars, "\n") .. glsl
 end
 
 render.AddGlobalShaderCode([[
