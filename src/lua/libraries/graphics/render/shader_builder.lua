@@ -1,4 +1,4 @@
-local BUILD_OUTPUT = false
+local BUILD_OUTPUT = true
 local render = (...) or _G.render
 
 -- used to figure out how to upload types
@@ -10,8 +10,13 @@ local unrolled_lines = {
 	vec3 = "render.current_program:UploadVec3(%i, val)",
 	color = "render.current_program:UploadColor(%i, val)",
 	mat4 = "render.current_program:UploadMatrix44(%i, val)",
-	texture = "render.current_program:UploadTexture(%i, val, %i, %i)",
 }
+
+if system.IsOpenGLExtensionSupported("GL_ARB_bindless_texture") then
+	unrolled_lines.texture = "render.current_program:UploadTexture(%i, val)"
+else
+	unrolled_lines.texture = "render.current_program:UploadTexture(%i, val, %i, %i)"
+end
 
 unrolled_lines.vec4 = unrolled_lines.color
 unrolled_lines.sampler2D = unrolled_lines.texture
@@ -109,10 +114,11 @@ local function translate_fields(data)
 			k, v = next(v)
 		end
 		local t, default, get = type_of_attribute(v)
+		local is_texture = t:find("sampler") and not system.IsOpenGLExtensionSupported("GL_ARB_bindless_texture")
 
 		local precision = params.precision
 
-		if t == "bool" or t:find("sampler") or t == "texture" then
+		if t == "bool" or is_texture then
 			precision = nil
 		elseif not precision then
 			precision = "highp"
@@ -121,6 +127,7 @@ local function translate_fields(data)
 		table.insert(out, {
 			name = k,
 			type = t,
+			is_texture = is_texture,
 			default = default,
 			precision = precision,
 			varying = params.varying and "varying" or nil,
@@ -145,7 +152,7 @@ local function variables_to_string(type, variables, prepend, macro, array)
 
 		local line = ""
 
-		if data.type:find("sampler") then
+		if data.is_texture then
 			if system.IsOpenGLExtensionSupported("GL_ARB_enhanced_layouts") or system.IsOpenGLExtensionSupported("GL_ARB_shading_language_420pack") then
 				line = line .. "layout(binding = " .. texture_channel .. ") "
 				texture_channel = texture_channel + 1
@@ -377,7 +384,7 @@ function render.CreateShader(data, vars)
 
 		if info.source then
 			for k,v in pairs(render.global_shader_variables) do
-				if not SSBO or v.type:find("sampler") then
+				if not SSBO or v.is_texture then
 					local p = [==[[!"#$%&'%(%)*+,-./:;<=>?@%[\%]^`{|}~%s]]==]
 					if info.source:find(p..k..p) or template:find(p..k..p) then
 						variables[k] = v
@@ -590,7 +597,7 @@ function render.CreateShader(data, vars)
 						}
 
 						table.insert(temp, {id = id, key = val.name, val = val})
-					elseif render.debug and id < 0 and not val.type:find("sampler") then
+					elseif render.debug and id < 0 and not val.is_texture then
 						logf("%s: variables in %s %s %s is not being used (variables location < 0)\n", shader_id, shader, val.name, val.type)
 					end
 				end
@@ -612,7 +619,7 @@ function render.CreateShader(data, vars)
 		for _, data in ipairs(temp) do
 			local line = tostring(unrolled_lines[data.val.type] or data.val.type)
 
-			if data.val.type == "texture" or data.val.type:find("sampler") then
+			if data.val.is_texture then
 				line = line:format(data.id, texture_channel, texture_channel)
 				texture_channel = texture_channel + 1
 			else

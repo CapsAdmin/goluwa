@@ -433,9 +433,18 @@ else
 	end
 end
 
-function META:UploadTexture(key, val, a,b)
-	self.gl_program:Uniform1i(key, a)
-	val:Bind(b)
+if system.IsOpenGLExtensionSupported("GL_ARB_bindless_texture") then
+	function META:UploadTexture(key, val)
+		if not val.gl_bindless_handle then
+			val:SetBindless(true)
+		end
+		self.gl_program:UniformHandleui64(key, val.gl_bindless_handle)
+	end
+else
+	function META:UploadTexture(key, val, a, location)
+		self.gl_program:Uniform1i(key, a)
+		val:Bind(location)
+	end
 end
 
 function META:UploadMatrix44(key, val)

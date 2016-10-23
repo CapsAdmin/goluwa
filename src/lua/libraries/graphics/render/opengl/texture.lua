@@ -252,6 +252,26 @@ function META:SetupStorage()
 	self.storage_setup = true
 end
 
+function META:SetBindless(b)
+	if system.IsOpenGLExtensionSupported("GL_ARB_bindless_texture") then
+		self.gl_bindless_handle = self.gl_bindless_handle or gl.GetTextureHandleARB(self.gl_tex.id)
+
+		if b then
+			if not self:GetBindless() then
+				gl.MakeTextureHandleResidentARB(self.gl_bindless_handle)
+			end
+		else
+			if self:GetBindless() then
+				gl.MakeTextureHandleNonResidentARB(self.gl_bindless_handle)
+			end
+		end
+	end
+end
+
+function META:GetBindless()
+	return self.gl_bindless_handle and gl.IsTextureHandleResidentARB(self.gl_bindless_handle) == 1
+end
+
 function META:MakeError(reason)
 	if render.GetErrorTexture() then self.gl_tex = render.GetErrorTexture().gl_tex end -- :(
 	self.error_reason = reason
