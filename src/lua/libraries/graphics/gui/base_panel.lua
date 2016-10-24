@@ -1389,7 +1389,8 @@ do -- mouse
 			not self.Parent.mouse_over and
 			not self:IsDragging() and
 			not self:IsScrolling() and
-			not self.AlwaysCalcMouse
+			not self.AlwaysCalcMouse and
+			not self.mouse_capture
 		then
 
 			if self.mouse_just_entered then
@@ -1438,6 +1439,7 @@ do -- mouse
 					if not self.SendMouseInputToPanel.mouse_just_entered then
 						self.SendMouseInputToPanel:OnMouseEnter(x, y)
 						self.SendMouseInputToPanel.mouse_just_entered = true
+						return
 					end
 				end
 				self:OnMouseEnter(x, y)
@@ -1463,6 +1465,7 @@ do -- mouse
 					if self.SendMouseInputToPanel.mouse_just_entered then
 						self.SendMouseInputToPanel:OnMouseExit(x, y)
 						self.SendMouseInputToPanel.mouse_just_entered = false
+						return
 					end
 				end
 				self:OnMouseExit(x, y)
@@ -1488,6 +1491,7 @@ do -- mouse
 
 		if self.SendMouseInputToPanel:IsValid() then
 			self.SendMouseInputToPanel:MouseInput(button, press)
+			return
 		end
 
 		event.Call("PanelMouseInput", self, button, press)

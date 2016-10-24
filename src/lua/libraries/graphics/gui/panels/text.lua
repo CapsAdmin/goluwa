@@ -34,7 +34,6 @@ function META:Initialize()
 		self:MarkCacheDirty()
 	end
 	self.markup = markup
-	self:GlobalMouseCapture(true)
 	self:SetFont(gfx.GetDefaultFont())
 end
 
@@ -155,6 +154,11 @@ end
 
 function META:OnMouseInput(button, press)
 	self.markup:OnMouseInput(button, press)
+	if press then
+		self:GlobalMouseCapture(true)
+	else
+		self:GlobalMouseCapture(false)
+	end
 end
 
 function META:OnKeyInput(key, press)
