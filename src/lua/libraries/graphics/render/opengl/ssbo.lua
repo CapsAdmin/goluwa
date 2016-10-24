@@ -25,6 +25,10 @@ function render.CreateShaderStorageBuffer(usage, ptr, size)
 	local self = META:CreateObject()
 
 	self.ssbo = gl.CreateBuffer("GL_SHADER_STORAGE_BUFFER")
+	if type(ptr) == "number" then
+		size = ptr
+		ptr = ffi.new("uint8_t[?]", size)
+	end
 	self.ssbo:Data(size, ptr, usage)
 	self.size = size
 

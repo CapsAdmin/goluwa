@@ -288,7 +288,7 @@ function render.CreateShader(data, vars)
 		else
 			local str = render.GetShadingLanguageVersion():gsub("%p", ""):match("(%d+)")
 			if str then
-				source = "#version " .. str.. "\n" .. source
+				source = "#version " .. str .. "\n" .. source
 			end
 		end
 
@@ -384,7 +384,7 @@ function render.CreateShader(data, vars)
 
 		if info.source then
 			for k,v in pairs(render.global_shader_variables) do
-				if not SSBO or v.is_texture then
+				if not v.is_texture then
 					local p = [==[[!"#$%&'%(%)*+,-./:;<=>?@%[\%]^`{|}~%s]]==]
 					if info.source:find(p..k..p) or template:find(p..k..p) then
 						variables[k] = v
@@ -592,9 +592,7 @@ function render.CreateShader(data, vars)
 							self[val.name] = val.get
 						end
 
-						variables[val.name] = {
-							info = val,
-						}
+						variables[val.name] = val
 
 						table.insert(temp, {id = id, key = val.name, val = val})
 					elseif render.debug and id < 0 and not val.is_texture then
@@ -653,12 +651,6 @@ function render.CreateShader(data, vars)
 			if RELOAD then _G.RELOAD = RELOAD end
 		else
 			self.unrolled_bind_func = assert(loadstring(lua, shader_id))()
-		end
-	end
-
-	if SSBO then
-		if not render.global_variables_ssbo then
-			prog:BindShaderBlock(render.GetGlobalShaderBlockIndex(prog:GetProperties().shader_storage_block.global_variables))
 		end
 	end
 

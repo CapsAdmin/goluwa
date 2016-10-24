@@ -181,12 +181,7 @@ function render.GetGlobalShaderCode(code)
 	local out = {}
 
 	ts(out, {}, node)
-	local glsl
-	if SSBO then
-		glsl = render.GetGlobalShaderVariableBlock() .. "\n\n" .. table.concat(out, "\n\n")
-	else
-		glsl = table.concat(out, "\n\n")
-	end
+	local glsl = table.concat(out, "\n\n")
 
 	local glsl_vars = {}
 	for i, v in ipairs(render.global_glsl_variables) do

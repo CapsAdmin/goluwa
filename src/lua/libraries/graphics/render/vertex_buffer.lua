@@ -210,30 +210,15 @@ do -- attributes
 	end
 end
 
-if SSBO then
-	function META:Draw(count)
+function META:Draw(count)
 
-		if render.current_shader_override then
-			render.current_shader_override:Bind()
-		elseif self.Shader then
-			self.Shader:Bind()
-		end
-
-		render.update_globals2()
-
-		self:_Draw(count)
+	if render.current_shader_override then
+		render.current_shader_override:Bind()
+	elseif self.Shader then
+		self.Shader:Bind()
 	end
-else
-	function META:Draw(count)
 
-		if render.current_shader_override then
-			render.current_shader_override:Bind()
-		elseif self.Shader then
-			self.Shader:Bind()
-		end
-
-		self:_Draw(count)
-	end
+	self:_Draw(count)
 end
 
 function META:UpdateBuffer(vertices, indices)
