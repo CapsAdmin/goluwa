@@ -94,17 +94,17 @@ if GRAPHICS then
 				view:Translate(pos.y, pos.x, pos.z)
 			end
 
-			camera.camera_3d:SetView(view)
+			camera.camera_3d:SetView(view:Copy())
 		end
 
 		-- render the scene with this matrix
-		camera.camera_3d:SetProjection(projection)
+		camera.camera_3d:SetProjection(projection:Copy())
 
 		if camera.camera_3d:GetMatrices().projection_view then
 			render3d.gbuffer_data_pass.light_shader["light_projection_view" .. i] = camera.camera_3d:GetMatrices().projection_view
 		else
-			render3d.gbuffer_data_pass.light_shader["light_view" .. i] = camera.camera_3d:GetMatrices().view
-			render3d.gbuffer_data_pass.light_shader["light_projection" .. i] = camera.camera_3d:GetMatrices().projection
+			render3d.gbuffer_data_pass.light_shader["light_view" .. i] =  camera.camera_3d:GetMatrices().view:Copy()
+			render3d.gbuffer_data_pass.light_shader["light_projection" .. i] = camera.camera_3d:GetMatrices().projection:Copy()
 		end
 
 		render3d.DrawScene(self, self.Ortho and self:GetComponent("transform"):GetSize())
@@ -131,7 +131,7 @@ if GRAPHICS then
 					projection:Perspective(math.rad(self.FOV), self.FarZ, self.NearZ, shadow_map.tex:GetSize().x / shadow_map.tex:GetSize().y)
 				else
 					local size = math.lerp(((i-1)/(#self.shadow_maps-1))^self.OrthoBias, self.OrthoSizeMax, self.OrthoSizeMin)
-					projection:Ortho(-size, size, -size, size, size+200, -size)
+					projection:Ortho(-size, size, -size, size, size+100, -size-100)
 				end
 			end
 

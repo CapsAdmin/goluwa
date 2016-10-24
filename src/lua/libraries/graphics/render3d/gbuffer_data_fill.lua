@@ -236,34 +236,6 @@ function PASS:Draw3D(what, dist)
 	self:EndPass()
 end
 
-function PASS:DrawDebug(i,x,y,w,h,size)
-	for name, map in pairs(prototype.GetCreated(true, "shadow_map")) do
-		local tex = map:GetTexture("depth")
-
-		render2d.SetTexture()
-		render2d.SetColor(1, 1, 1, 1)
-		render2d.DrawRect(x, y, w, h)
-
-		render2d.SetColor(1,1,1,1)
-		render2d.SetTexture(tex)
-		render2d.DrawRect(x, y, w, h)
-
-		gfx.SetTextPosition(x, y + 5)
-		gfx.DrawText(tostring(name))
-
-		if i%size == 0 then
-			y = y + h
-			x = 0
-		else
-			x = x + w
-		end
-
-		i = i + 1
-	end
-
-	return i,x,y,w,h
-end
-
 PASS.Stages = {
 	{
 		name = "model",
@@ -541,7 +513,7 @@ PASS.Stages = {
 									if camera.camera_3d:GetMatrices().projection_view then
 										str = str:gsub("light_projection_view", "lua[light_projection_view" .. i .. " = \"mat4\"]")
 									else
-										str = str:gsub("light_projection_view", "light_projection * light_view")
+										str = str:gsub("light_projection_view", "(light_projection * light_view)")
 										str = str:gsub("light_view", "lua[light_view" .. i .. " = \"mat4\"]")
 										str = str:gsub("light_projection", "lua[light_projection" .. i .. " = \"mat4\"]")
 									end

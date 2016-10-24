@@ -56,5 +56,28 @@ do -- AUTOMATE THIS
 				buffer_i = buffer_i + 1
 			end
 		end
+
+		for _, ent in ipairs(entities.GetAll()) do
+			local obj = ent:GetComponent("light")
+			if obj and obj:IsValid() and obj.shadow_maps then
+				local name = obj:GetName()
+				for light_i, map in ipairs(obj.shadow_maps) do
+					local tex = map:GetTexture("depth")
+
+					gfx.DrawRect(x, y, w, h, nil, 1,1,1,1)
+					gfx.DrawRect(x,y,w,h, tex, 1,1,1,1)
+					gfx.DrawText(tostring(name) .. " " .. light_i, x, y + 5)
+
+					if i%size == 0 then
+						y = y + h
+						x = 0
+					else
+						x = x + w
+					end
+
+					i = i + 1
+				end
+			end
+		end
 	end
 end
