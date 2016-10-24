@@ -1,4 +1,3 @@
-local BUILD_OUTPUT = true
 local render = (...) or _G.render
 
 -- used to figure out how to upload types
@@ -472,7 +471,7 @@ function render.CreateShader(data, vars)
 		end
 	end
 
-	if BUILD_OUTPUT then
+	if BUILD_SHADER_OUTPUT then
 		serializer.WriteFile("luadata", "shader_builder_output/" .. shader_id .. "/build_output.lua", build_output)
 	end
 
@@ -482,7 +481,7 @@ function render.CreateShader(data, vars)
 		-- strip data that wasnt found from the source_template
 		data.source = data.source:gsub("(@@.-@@)", "")
 
-		if BUILD_OUTPUT then
+		if BUILD_SHADER_OUTPUT then
 			vfs.Write("data/shader_builder_output/" .. shader_id .. "/" .. shader_type .. ".c", data.source)
 		end
 
@@ -642,12 +641,12 @@ function render.CreateShader(data, vars)
 		end
 
 		lua = lua .. "end\n"
-		if BUILD_OUTPUT then
+		if BUILD_SHADER_OUTPUT then
 			lua = lua .. "if RELOAD then\n\trender.active_shaders[\""..shader_id.."\"].unrolled_bind_func = update\nend\n"
 		end
 		lua = lua .. "return update"
 
-		if BUILD_OUTPUT then
+		if BUILD_SHADER_OUTPUT then
 			vfs.Write("data/shader_builder_output/" .. shader_id .. "/unrolled_lines.lua", lua)
 			serializer.WriteFile("luadata", "shader_builder_output/" .. shader_id .. "/variables.lua", variables)
 
