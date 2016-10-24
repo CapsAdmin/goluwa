@@ -9,6 +9,7 @@ META:StartStorable()
 	META:GetSet("ModelPath", "models/cube.obj")
 	META:GetSet("BBMin", Vec3())
 	META:GetSet("BBMax", Vec3())
+	META:GetSet("Color", Color(1,1,1,1))
 META:EndStorable()
 
 META:IsSet("Loading", false)
@@ -167,12 +168,14 @@ if GRAPHICS then
 			self.visible[what] == nil or self.visible[what] == true
 		then]]
 			if self.MaterialOverride then
+				self.MaterialOverride:SetColor(self.Color)
 				render_SetMaterial(self.MaterialOverride)
 				for _, model in ipairs(self.sub_models) do
 					model.mesh:Draw()
 				end
 			else
 				for _, model in ipairs(self.sub_models) do
+					model.material:SetColor(self.Color)
 					render_SetMaterial(model.material)
 					model.mesh:Draw()
 				end

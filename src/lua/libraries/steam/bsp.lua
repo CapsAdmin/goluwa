@@ -746,6 +746,7 @@ function steam.SpawnMapEntities(path, parent)
 					ent:SetName(info.classname .. "_" .. i)
 					ent:SetModelPath(info.model)
 					ent:SetPosition(info.origin * scale)
+					if info.rendercolor then ent:SetColor(info.rendercolor) end
 					if info.model_size_mult then ent:SetSize(info.model_size_mult) end
 					ent:SetAngles(info.angles:GetRad())
 					ent:SetHideFromEditor(true)
