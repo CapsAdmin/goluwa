@@ -218,7 +218,7 @@ function CONTEXT:GetPosition()
 end
 
 function CONTEXT:OnRemove()
-	if self.file then
+	if self.file and self.file:IsValid() then
 		self.file:Close()
 	end
 end
