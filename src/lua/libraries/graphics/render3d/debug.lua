@@ -21,38 +21,27 @@ do -- AUTOMATE THIS
 			local pass_name = pass.name
 
 			for _, buffer in pairs(pass.layout) do
-				for channel_name, str in pairs(buffer) do
-					if channel_name ~= "format" then
-						render2d.shader.color_override.r = 0
-						render2d.shader.color_override.g = 0
-						render2d.shader.color_override.b = 0
-						render2d.shader.color_override.a = 0
+				for buffer_type, colors in pairs(buffer) do
+					for color, sub_name in pairs(colors) do
 
-						for _, color in ipairs({"r", "g", "b", "a"}) do
-							if str:find(color) then
-								render2d.shader.color_override[color] = 0
+						render2d.PushColorOverride(0,0,0,0)
+
+						for _, channel in ipairs({"r", "g", "b", "a"}) do
+							if color:find(channel, nil, true) then
+								render2d.shader.color_override[channel] = 0
 							else
-								render2d.shader.color_override[color] = 1
+								render2d.shader.color_override[channel] = 1
 							end
 						end
 
-						--print(i, channel_name, render2d.shader.color_override)
+						gfx.DrawRect(x,y,w,h, nil, 0,0,0,1)
+						gfx.DrawRect(x,y,w,h, render3d.gbuffer:GetTexture("data"..buffer_i), 1,1,1,1)
 
-						render2d.SetColor(0,0,0,1)
-						render2d.SetTexture()
-						render2d.DrawRect(x, y, w, h)
+						render2d.PopColorOverride()
 
-						render2d.SetColor(1,1,1,1)
-						render2d.SetTexture(render3d.gbuffer:GetTexture("data"..buffer_i))
-						render2d.DrawRect(x, y, w, h)
+						sub_name = type(sub_name) == "table" and sub_name[1] or sub_name
 
-						render2d.shader.color_override.r = 0
-						render2d.shader.color_override.g = 0
-						render2d.shader.color_override.b = 0
-						render2d.shader.color_override.a = 0
-
-						gfx.SetTextPosition(x, y + 5)
-						gfx.DrawText(channel_name)
+						gfx.DrawText(("%s %s %s %s"):format(pass_name, buffer_type, color, sub_name), x, y + 5)
 
 						if i%size == 0 then
 							y = y + h
