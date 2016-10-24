@@ -11,6 +11,7 @@ include("texture_atlas.lua", render)
 include("material.lua", render)
 include("camera.lua", render)
 include("globals.lua", render)
+include("shader_variables.lua", render)
 
 function render.Initialize()
 	local dir = "lua/libraries/graphics/render/"

@@ -7,6 +7,7 @@ do
 		fragment = {
 			source = [[
 				#version 430
+				#extension GL_ARB_gpu_shader5 : require
 
 				layout(std430, binding = 0) buffer lol
 				{
@@ -17,24 +18,26 @@ do
 					vec4 color;
 					float num;
 					vec4 color2;
-					//uint64_t wow;
 				};
 
 				out vec4 out_color;
 
 				void main()
 				{
-					out_color = color+color2+vec4(pos+pos2,num+num2+num3);
+					out_color = color;
+					out_color.r = num;
 				}
 			]]
 		}
 	})
 
-	shader.program:SetupStorageBlock("lol", 1)
-	shader.program:BindStorageBlock("lol")
+	local sb = render.CreateShaderVariables(shader, "lol")
+	sb:SetBindLocation(shader, 1)
 
 	event.AddListener("PreDrawGUI", "fb", function()
-		shader.program:SetStorageBlockVariable("lol", "color", Color(1, math.abs(math.sin(os.clock())), 1, 1))
+		sb:UpdateVariable("color", Color(1, math.abs(math.sin(os.clock())), 1, 1))
+		sb:UpdateVariable("num", math.abs(math.cos(os.clock()*10)))
+		sb:Bind(1)
 
 		render2d.PushMatrix(0, 0, render2d.GetSize())
 			render.SetShaderOverride(shader)
