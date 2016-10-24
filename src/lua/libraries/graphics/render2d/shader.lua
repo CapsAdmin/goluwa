@@ -82,6 +82,19 @@ end
 
 utility.MakePushPopFunction(render2d, "Color")
 
+function render2d.SetColorOverride(r, g, b, a)
+	render2d.shader.color_override.r = r
+	render2d.shader.color_override.g = g
+	render2d.shader.color_override.b = b
+	render2d.shader.color_override.a = a or render2d.shader.color_override.a
+end
+
+function render2d.GetColorOverride()
+	return render2d.shader.color_override:Unpack()
+end
+
+utility.MakePushPopFunction(render2d, "ColorOverride")
+
 function render2d.SetAlpha(a)
 	render2d.shader.global_color.a = a
 end
