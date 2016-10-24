@@ -198,7 +198,7 @@ do
 				x = ((x / self.Viewport.w) - 0.5) * 2
 				y = ((y / self.Viewport.h) - 0.5) * 2
 
-				local cursor_x, cursor_y, cursor_z = m:TransformVector(self:GetMatrices().projection_inverse:TransformVector(x, -y, 1))
+				local cursor_x, cursor_y, cursor_z = m:TransformVector(self:GetMatrices().projection:GetInverse():TransformVector(x, -y, 1))
 				local camera_x, camera_y, camera_z = m:TransformVector(0, 0, 0)
 
 				--local intersect = camera + ( camera.z / ( camera.z - cursor.z ) ) * ( cursor - camera )

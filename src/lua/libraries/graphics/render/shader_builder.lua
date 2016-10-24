@@ -693,7 +693,7 @@ function META:CreateMaterialTemplate(name)
 	prototype.StartStorable()
 		for k,v in pairs(self.variables) do
 			if not render.global_shader_variables[k] then
-				META:GetSet(v.info.name, v.info.default)
+				META:GetSet(v.name, v.default)
 			end
 		end
 	prototype.EndStorable()
