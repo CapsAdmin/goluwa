@@ -377,6 +377,7 @@ local mount_info = {
 
 	["aramaki_4d"] = {"team fortress 2", "garry's mod"},
 	["de_overpass"] = {"counter-strike: global offensive"},
+	["de_bank"] = {"counter-strike: global offensive"},
 	["sp_a4_finale1"] = {"portal 2"},
 	["c3m1_plankcountry"] = {"left 4 dead 2"},
 	["achievement_apg_r11b"] = {"half-life 2", "team fortress 2"},
