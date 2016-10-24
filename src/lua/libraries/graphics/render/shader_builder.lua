@@ -114,7 +114,9 @@ local function translate_fields(data)
 			k, v = next(v)
 		end
 		local t, default, get = type_of_attribute(v)
-		local is_texture = t:find("sampler") and not system.IsOpenGLExtensionSupported("GL_ARB_bindless_texture")
+
+		local bindless = system.IsOpenGLExtensionSupported("GL_ARB_bindless_texture")
+		local is_texture = t:find("sampler")
 
 		local precision = params.precision
 
@@ -127,7 +129,8 @@ local function translate_fields(data)
 		table.insert(out, {
 			name = k,
 			type = t,
-			is_texture = is_texture,
+			is_texture = is_texture and not bindless,
+			is_bindless_texture = is_texture and bindless,
 			default = default,
 			precision = precision,
 			varying = params.varying and "varying" or nil,
@@ -157,10 +160,12 @@ local function variables_to_string(type, variables, prepend, macro, array)
 				line = line .. "layout(binding = " .. texture_channel .. ") "
 				texture_channel = texture_channel + 1
 			end
+		elseif data.is_bindless_texture then
+			line = line .. "layout(bindless_sampler) "
 		elseif not macro then
 			if system.IsOpenGLExtensionSupported("GL_ARB_enhanced_layouts") or system.IsOpenGLExtensionSupported("GL_ARB_shading_language_420pack") then
 				if type == "in" then
-					line = line .. "layout(location = " .. attribute_location .. ")" .. " "
+					line = line .. "layout(location = " .. attribute_location .. ") "
 				end
 				attribute_location = attribute_location + 1
 			end
@@ -428,6 +433,10 @@ function render.CreateShader(data, vars)
 
 			if system.IsOpenGLExtensionSupported("GL_ARB_shading_language_420pack") then
 				table.insert(extensions, "#extension GL_ARB_shading_language_420pack : enable")
+			end
+
+			if system.IsOpenGLExtensionSupported("GL_ARB_bindless_texture") then
+				table.insert(extensions, "#extension GL_ARB_bindless_texture : enable")
 			end
 
 			template = template:gsub("(#extension%s-[%w_]+%s-:%s-%w+)", function(extension)
