@@ -50,6 +50,14 @@ function gfx.DrawFilledCircle(x, y, sx, sy)
 	render2d.PopTexture()
 end
 
+function gfx.DrawRect(x,y,w,h, tex, r,g,b,a)
+	render2d.SetTexture(tex)
+	if r then
+		render2d.SetColor(r,g,b,a)
+	end
+	render2d.DrawRect(x,y,w,h)
+end
+
 function gfx.DrawLine(x1,y1, x2,y2, w, skip_tex, ox, oy)
 	w = w or 1
 
