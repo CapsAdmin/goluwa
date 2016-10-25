@@ -27,14 +27,14 @@ end
 
 do
 	local translate = {
-		["unsigned byte"] = "GL_UNSIGNED_BYTE",
-		["unsigned short"] = "GL_UNSIGNED_SHORT",
-		["unsigned int"] = "GL_UNSIGNED_INT",
+		["uint8_t"] = "GL_UNSIGNED_BYTE",
+		["uint16_t"] = "GL_UNSIGNED_SHORT",
+		["uint32_t"] = "GL_UNSIGNED_INT",
 	}
 
 	function META:SetIndicesType(typ)
 		self.IndicesType = typ
-		self.gl_indices_type = translate[typ] or translate["unsigned short"]
+		self.gl_indices_type = translate[typ] or translate["uint16_t"]
 	end
 end
 
