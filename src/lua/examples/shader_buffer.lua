@@ -9,7 +9,7 @@ do
 				#version 430
 				#extension GL_ARB_gpu_shader5 : require
 
-				layout(std430, binding = 0) buffer lol
+				uniform lol
 				{
 					vec3 pos2;
 					float num2;
@@ -31,7 +31,7 @@ do
 		}
 	})
 
-	local sb = render.CreateShaderVariables(shader, "lol")
+	local sb = render.CreateShaderVariables("uniform", shader, "lol")
 	sb:SetBindLocation(shader, 1)
 
 	event.AddListener("PreDrawGUI", "fb", function()

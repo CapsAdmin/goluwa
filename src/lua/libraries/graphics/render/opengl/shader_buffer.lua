@@ -16,42 +16,49 @@ local usage_translate = {
 	dynamic_copy = "GL_DYNAMIC_COPY",
 }
 
-function render.CreateShaderStorageBuffer(usage, ptr, size)
+local type_translate = {
+	uniform = "GL_UNIFORM_BUFFER",
+	shader_storage = "GL_SHADER_STORAGE_BUFFER",
+}
+
+function render.CreateShaderVariableBuffer(typ, usage, ptr, size)
 	size = size or 0
 	usage = usage or "dynamic_copy"
 
 	usage = usage_translate[usage]
+	typ = type_translate[typ]
 
 	local self = META:CreateObject()
 
-	self.ssbo = gl.CreateBuffer("GL_SHADER_STORAGE_BUFFER")
+	self.buffer = gl.CreateBuffer(typ)
 	if type(ptr) == "number" then
 		size = ptr
 		ptr = ffi.new("uint8_t[?]", size)
 	end
-	self.ssbo:Data(size, ptr, usage)
+	self.buffer:Data(size, ptr, usage)
 	self.size = size
+	self.type = typ
 
 	return self
 end
 
 function META:OnRemove()
-	self.ssbo:Delete()
+	self.buffer:Delete()
 end
 
 function META:UpdateData2(ptr)
-	local p = self.ssbo:Map("GL_WRITE_ONLY")
+	local p = self.buffer:Map("GL_WRITE_ONLY")
 	ffi.copy(p, ptr, self.size)
-	self.ssbo:Unmap()
+	self.buffer:Unmap()
 end
 
 function META:UpdateData(data, size, offset)
 	offset = offset or 0
-	local p = self.ssbo:SetSubData(offset, size, data)
+	self.buffer:SetSubData(offset, size, data)
 end
 
 function META:Bind(where)
-	gl.BindBufferBase("GL_SHADER_STORAGE_BUFFER", where, self.ssbo.id)
+	gl.BindBufferBase(self.type, where, self.buffer.id)
 end
 
 prototype.Register(META)
