@@ -394,6 +394,23 @@ do
 			end
 		end
 
+		if out.uniform_block then
+			for i2, info in ipairs(out.uniform) do
+				if info.block_index >= 0 then
+					local i = info.block_index + 1
+					out.uniform_block[i].variables = out.uniform_block[i].variables or {}
+					table.insert(out.uniform_block[i].variables, info)
+					out.uniform[i2] = nil
+				end
+			end
+			out.buffer_variable = nil
+
+			for _, info in pairs(out.uniform_block) do
+				info.block_index = self.gl_program:GetResourceIndex("GL_UNIFORM_BLOCK", info.name)
+				out.uniform_block[info.name] = info
+			end
+		end
+
 		return out
 	end
 end
