@@ -33796,6 +33796,18 @@ function gl.Initialize(get_proc_address)
 
 		function META:UniformHandleui64(location, value) return gl.ProgramUniformHandleui64ARB(self.id, location, value) end
 
+		function META:GetInterface(interface, name, params) return gl.GetProgramInterfaceiv(self.id, interface, name, params) end
+		function META:GetResource(interface, index, properties_count, properties, buffer_size, length, params)
+			return gl.GetProgramResourceiv(self.id, interface, index, properties_count, properties, buffer_size, length, params)
+		end
+		function META:GetResourceName(interface, index, buffer_size, length, name)
+			return gl.GetProgramResourceName(self.id, interface, index, buffer_size, length, name)
+		end
+
+		function META:GetResourceIndex(interface, name)
+			return gl.GetProgramResourceIndex(self.id, interface, name)
+		end
+
 		for i = 1, 4 do
 		for _, t in ipairs({"i", "f", "d"}) do
 		for _, v in ipairs({"", "v"}) do
