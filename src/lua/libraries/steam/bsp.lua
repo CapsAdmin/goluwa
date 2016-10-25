@@ -227,7 +227,8 @@ function steam.LoadMap(path)
 					end
 
 					if version > 6 then
-						bsp_file:Advance(4*3) -- ???
+						lump.rendercolor = ColorBytes(bsp_file:ReadByte(), bsp_file:ReadByte(), bsp_file:ReadByte(), bsp_file:ReadByte())
+						bsp_file:Advance(8) -- ???
 					end
 
 					lump.model = paths[lump.prop_type + 1] or paths[1]
