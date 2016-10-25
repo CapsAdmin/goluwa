@@ -33341,7 +33341,7 @@ function gl.Initialize(get_proc_address)
 			end
 		end
 
-		if not gl.CreateVertexArrays then
+		if GL_ARB_direct_state_access == false or not gl.CreateVertexArrays then
 			gl.CreateVertexArray = gl.CreateVertexArrayNODSA
 		end
 	end
@@ -33590,7 +33590,7 @@ function gl.Initialize(get_proc_address)
 			end
 		end
 
-		if not gl.CreateFramebuffers then
+		if GL_ARB_direct_state_access == false or not gl.CreateFramebuffers then
 			gl.CreateFramebuffer = gl.CreateFramebufferNODSA
 		end
 	end
@@ -33726,7 +33726,7 @@ function gl.Initialize(get_proc_address)
 				return self
 			end
 		end
-		if not gl.CreateBuffers then
+		if GL_ARB_direct_state_access == false or not gl.CreateBuffers then
 			gl.CreateBuffer = gl.CreateBufferNODSA
 		end
 	end
@@ -33772,7 +33772,7 @@ function gl.Initialize(get_proc_address)
 			end
 		end
 
-		if not gl.CreateProgramPipelines then
+		if GL_ARB_direct_state_access == false or not gl.CreateProgramPipelines then
 			gl.CreateProgramPipeline = gl.CreateProgramPipelineNODSA
 		end
 	end
@@ -33930,7 +33930,7 @@ function gl.Initialize(get_proc_address)
 				return self
 			end
 		end
-		if not gl.CreateSamplers then
+		if GL_ARB_direct_state_access == false or not gl.CreateSamplers then
 			gl.CreateSampler = gl.CreateSamplerNODSA
 		end
 	end
@@ -34017,7 +34017,7 @@ function gl.Initialize(get_proc_address)
 				return self
 			end
 		end
-		if not gl.CreateRenderbuffers then
+		if GL_ARB_direct_state_access == false or not gl.CreateRenderbuffers then
 			gl.CreateRenderbuffer = gl.CreateRenderbufferNODSA
 		end
 	end
@@ -34482,7 +34482,7 @@ function gl.Initialize(get_proc_address)
 				return self
 			end
 		end
-		if not gl.CreateTextures then
+		if GL_ARB_direct_state_access == false or not gl.CreateTextures then
 			gl.CreateTexture = gl.CreateTextureNODSA
 		end
 	end
