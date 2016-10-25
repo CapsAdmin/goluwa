@@ -303,15 +303,15 @@ PASS.Stages = {
 				// https://www.shadertoy.com/view/MslGR8
 				bool dither(vec2 uv, float alpha)
 				{
-					if (lua[AlphaTest = false])
+					if (lua[AlphaTest = false] && (alpha*alpha > gl_FragCoord.z/10))
 					{
-						return alpha*alpha < (-gl_FragCoord.z+1)/20;
+						return false;
 					}
 
 					const vec3 magic = vec3( 0.06711056, 0.00583715, 52.9829189 );
-					float lol = fract( magic.z * fract( dot( gl_FragCoord.xy, magic.xy ) ) );
+					float lol = fract( magic.z * fract( dot( gl_FragCoord.xy, magic.xy ) ) )*0.99;
 
-					return (alpha + lol) < 1;
+					return (alpha*alpha*alpha + lol) < 1;
 				}
 
 				// http://www.geeks3d.com/20130122/normal-mapping-without-precomputed-tangent-space-vectors/
@@ -486,12 +486,12 @@ PASS.Stages = {
 										vec3 shadow_coord = temp.xyz / temp.w;
 
 										if (
-											shadow_coord.x >= -0.9 &&
-											shadow_coord.x <= 0.9 &&
-											shadow_coord.y >= -0.9 &&
-											shadow_coord.y <= 0.9 &&
-											shadow_coord.z >= -0.9 &&
-											shadow_coord.z <= 0.9
+											shadow_coord.x >= -0.995 &&
+											shadow_coord.x <= 0.995 &&
+											shadow_coord.y >= -0.995 &&
+											shadow_coord.y <= 0.995 &&
+											shadow_coord.z >= -0.995 &&
+											shadow_coord.z <= 0.995
 										)
 										{
 											shadow_coord = 0.5 * shadow_coord + 0.5;

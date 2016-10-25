@@ -21,15 +21,15 @@ local SHADER = {
 			// https://www.shadertoy.com/view/MslGR8
 			bool dither(vec2 uv, float alpha)
 			{
-				if (lua[AlphaTest = false])
+				if (lua[AlphaTest = false] && (alpha*alpha > gl_FragCoord.z/10))
 				{
-					return alpha*alpha < 0.5;
+					return false;
 				}
 
 				const vec3 magic = vec3( 0.06711056, 0.00583715, 52.9829189 );
-				float lol = fract( magic.z * fract( dot( gl_FragCoord.xy, magic.xy ) ) );
+				float lol = fract( magic.z * fract( dot( gl_FragCoord.xy, magic.xy ) ) )*0.99;
 
-				return (alpha + lol) < 1.5;
+				return (alpha*alpha*alpha + lol) < 1;
 			}
 
 			void main()
@@ -38,7 +38,7 @@ local SHADER = {
 				{
 					float alpha = texture(lua[AlbedoTexture = "sampler2D"], uv).a * lua[Color = Color(1,1,1,1)].a;
 
-					if ((lua[Translucent = false] && dither(uv, alpha)) || (lua[AlphaTest = false] && alpha < 0.5))
+					if ((lua[Translucent = false] && dither(uv, alpha)))
 					{
 						discard;
 					}
