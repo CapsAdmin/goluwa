@@ -1,3 +1,4 @@
+render.SetGlobalShaderVariable("iGlobalTime", function() return system.GetElapsedTime() end, "float")
 render.AddGlobalShaderCode([[
 float sky_atmospheric_depth(vec3 position, vec3 dir, float depth)
 {
