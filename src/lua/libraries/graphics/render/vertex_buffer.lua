@@ -223,14 +223,15 @@ end
 
 function META:UpdateBuffer(vertices, indices)
 	vertices = vertices or self.Vertices
-	indices = indices or self.Indices
-
 	if vertices then
 		self:SetVertices(vertices)
 	end
 
-	if indices then
-		self:SetIndices(indices)
+	if self.UpdateIndices then
+		indices = indices or self.Indices
+		if indices then
+			self:SetIndices(indices)
+		end
 	end
 end
 
