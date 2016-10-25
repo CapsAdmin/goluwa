@@ -2,16 +2,20 @@ local render = ... or _G.render
 local ffi = require("ffi")
 local META = prototype.CreateTemplate("shader_variables")
 
-function render.CreateShaderVariables(typ, shader, name)
-	local total_size = 0
+function render.CreateShaderVariables(typ, shader, name, extra_size)
+	extra_size = extra_size or 0
 
 	local properties = shader.program:GetProperties()
 	local block = typ == "uniform" and properties.uniform_block[name] or properties.shader_storage_block[name]
+	local total_size = block.buffer_data_size + extra_size
 	local variables = {}
 
 	for _, v in pairs(block.variables) do
-
-		variables[v.name] = {}
+		-- when using interface blocks the name will be prefixed with "foo."
+		local name = v.name
+		name = name:match(".+%.(.+)") or name
+		name = name:match("(.+)%[") or name
+		variables[name] = {}
 
 		local temp
 		local set
@@ -26,35 +30,35 @@ function render.CreateShaderVariables(typ, shader, name)
 			temp = ffi.new("float[?]", length)
 
 			if length == 16 then
-				set = function(buffer, var)
+				set = function(buffer, var, index)
 					temp = var:GetFloatPointer()
-					buffer:UpdateData(temp, size, offset)
+					buffer:UpdateData(temp, size, offset + (index * v.array_stride))
 				end
 			elseif length == 4 then
-				set = function(buffer, var)
+				set = function(buffer, var, index)
 					temp[0] = var.r
 					temp[1] = var.g
 					temp[2] = var.b
 					temp[3] = var.a
-					buffer:UpdateData(temp, size, offset)
+					buffer:UpdateData(temp, size, offset + (index * v.array_stride))
 				end
 			elseif length == 3 then
-				set = function(buffer, var)
+				set = function(buffer, var, index)
 					temp[0] = var.x
 					temp[1] = var.y
 					temp[2] = var.z
-					buffer:UpdateData(temp, size, offset)
+					buffer:UpdateData(temp, size, offset + (index * v.array_stride))
 				end
 			elseif length == 2 then
-				set = function(buffer, var)
+				set = function(buffer, var, index)
 					temp[0] = var.x
 					temp[1] = var.y
-					buffer:UpdateData(temp, size, offset)
+					buffer:UpdateData(temp, size, offset + (index * v.array_stride))
 				end
 			elseif v.type.name == "float" then
-				set = function(buffer, var)
+				set = function(buffer, var, index)
 					temp[0] = var
-					buffer:UpdateData(temp, size, offset)
+					buffer:UpdateData(temp, size, offset + (index * v.array_stride))
 				end
 			end
 		--[[else
@@ -71,8 +75,8 @@ function render.CreateShaderVariables(typ, shader, name)
 			end]]
 		end
 
-		variables[v.name].set = set
-		variables[v.name].get = function() return temp end
+		variables[name].set = set
+		variables[name].get = function() return temp end
 	end
 
 	local self = META:CreateObject()
@@ -94,9 +98,11 @@ function META:SetBindLocation(shader, bind_location)
 	end
 end
 
-function META:UpdateVariable(key, val)
+function META:UpdateVariable(key, val, index)
+	index = index or 1
+
 	if self.variables[key] and self.last_variables[key] ~= val then
-		self.variables[key].set(self.buffer, val)
+		self.variables[key].set(self.buffer, val, index)
 		self.last_variables[key] = val
 	end
 end

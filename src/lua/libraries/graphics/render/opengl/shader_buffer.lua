@@ -57,8 +57,12 @@ function META:UpdateData(data, size, offset)
 	self.buffer:SetSubData(offset, size, data)
 end
 
-function META:Bind(where)
-	gl.BindBufferBase(self.type, where, self.buffer.id)
+function META:Bind(where, offset, size)
+	if offset then
+		gl.BindBufferRange(self.type, where, self.buffer.id)
+	else
+		gl.BindBufferBase(self.type, where, self.buffer.id)
+	end
 end
 
 prototype.Register(META)
