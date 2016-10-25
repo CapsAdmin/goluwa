@@ -420,7 +420,6 @@ function META:BindShaderBlock(block_index, where)
 end
 
 function META:BindUniformBuffer(block_index, where)
-	print(block_index, where)
 	self.gl_program:UniformBlockBinding(block_index, where)
 end
 
