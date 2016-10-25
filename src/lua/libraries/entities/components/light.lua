@@ -131,7 +131,7 @@ if GRAPHICS then
 					projection:Perspective(math.rad(self.FOV), self.FarZ, self.NearZ, shadow_map.tex:GetSize().x / shadow_map.tex:GetSize().y)
 				else
 					local size = math.lerp(((i-1)/(#self.shadow_maps-1))^self.OrthoBias, self.OrthoSizeMax, self.OrthoSizeMin)
-					projection:Ortho(-size, size, -size, size, size+100, -size-100)
+					projection:Ortho(-size, size, -size, size, size+200, -size-100)
 				end
 			end
 
