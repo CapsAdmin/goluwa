@@ -33291,7 +33291,7 @@ function gl.Initialize(get_proc_address)
 				end
 			end
 			function META:ElementBuffer(buffer)
-				bind(self) return gl.VertexElementBuffer(buffer)
+				bind(self) return gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", buffer)
 			end
 			function META:DisableAttrib(index)
 				bind(self) return gl.DisableVertexAttrib(index)
