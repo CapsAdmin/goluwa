@@ -9,8 +9,12 @@ include("effects.lua", render2d)
 function render2d.Initialize()
 	render2d.shader = render.CreateShader(render2d.shader_data)
 
-	render2d.rectangle = render2d.CreateMesh(render.rectangle_mesh_data)
-	render2d.rectangle:SetDrawHint("static")
+	render2d.rectangle = render2d.CreateMesh()
+	render2d.rectangle:SetDrawHint("dynamic")
+	render2d.rectangle:SetIndicesType("uint8_t")
+	render2d.rectangle:SetBuffersFromTables(render.rectangle_mesh_data)
+	render2d.rectangle:SetUpdateIndices(false)
+
 
 	render2d.SetTexture()
 
@@ -19,6 +23,10 @@ end
 
 function render2d.IsReady()
 	return render2d.ready == true
+end
+
+if RELOAD then
+	render2d.Initialize()
 end
 
 return render2d
