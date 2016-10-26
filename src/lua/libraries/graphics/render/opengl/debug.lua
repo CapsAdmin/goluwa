@@ -99,7 +99,7 @@ function render.EnableVerboseDebug(b)
 
 			debug.sethook(function()
 				local info = debug.getinfo(2)
-				if info.source:find("opengl", nil, true) then
+				if info.source:find("render", nil, true) then
 
 					local logged_count = ffi.new("GLint[1]")
 					gl.GetIntegerv("GL_DEBUG_LOGGED_MESSAGES", logged_count)
@@ -121,7 +121,7 @@ function render.EnableVerboseDebug(b)
 						end
 
 						if message then
-							llog("%s:%i gl.%s:", source, info.currentline, info.name)
+							llog("%s:%i %s:", source, info.currentline, info.name)
 							logn(message)
 						end
 					end
