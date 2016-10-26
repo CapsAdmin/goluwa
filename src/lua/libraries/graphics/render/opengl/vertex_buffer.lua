@@ -88,14 +88,13 @@ if not NVIDIA_WORKAROUND then
 
 	local function setup_vertex_array(self)
 		if not self.setup_vao and self.Indices and self.Vertices then
+			if not system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
+				self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.mesh_layout.size)
+			end
 			for _, data in ipairs(self.mesh_layout.attributes) do
-				if not system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
-					self.element_buffer:Bind()
-					self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.mesh_layout.size)
-				end
+				self.vertex_array:EnableAttrib(data.location)
 				self.vertex_array:AttribBinding(data.location, 0)
 				self.vertex_array:AttribFormat(data.location, data.row_length, data.number_type, false, data.row_offset)
-				self.vertex_array:EnableAttrib(data.location)
 			end
 			self.setup_vao = true
 		end
