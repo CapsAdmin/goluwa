@@ -1,11 +1,39 @@
-function debug.loglines()
-	jit.off()
-	jit.flush()
-	debug.sethook(function()
-		local info = debug.getinfo(2)
-		logn(info.source, ":", info.curentline)
-	end, "l")
+
+do
+	local file
+	local max_lines = 10000
+
+	function debug.loglines(b)
+		if b == nil then b = not file end
+
+		if b then
+			local path = R"data/" .. "debug_lines.lua"
+			file = assert(io.open(path, "wb"))
+			jit.off()
+			jit.flush()
+			local i = 0
+			debug.sethook(function()
+				if not file then debug.sethook() return end
+				local info = debug.getinfo(2)
+
+				if i > max_lines then
+					file:close()
+					file = assert(io.open(path))
+				end
+
+				file:write(info.source, ":", info.currentline, "\n")
+
+				i = i + 1
+			end, "l")
+		else
+			if file then file:close() file = nil end
+			jit.on()
+			jit.flush()
+			debug.sethook()
+		end
+	end
 end
+
 function debug.getsource(func)
 	local info = debug.getinfo(func)
 	local src = vfs.Read(e.ROOT_FOLDER .. "/" .. info.source:sub(2))
