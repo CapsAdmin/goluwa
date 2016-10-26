@@ -36,7 +36,7 @@ function render.GetGlobalShaderBlockIndex(shader_block_info)
 			info.fetch_type = render.global_shader_variables[info.name].type
 		end
 
-		render.global_variables_ssbo = render.CreateShaderVariableBuffer("dynamic_draw", nil, shader_block_info.buffer_data_size)
+		render.global_variables_ssbo = render.CreateShaderVariableBuffer("shader_storage", shader_block_info.buffer_data_size)
 		render.global_variables_ssbo:Bind(2)
 		render.global_variables_info = {}
 

@@ -4,42 +4,46 @@ local META = prototype.CreateTemplate("shader_storage_buffer")
 local gl = require("opengl")
 local ffi = require("ffi")
 
-local usage_translate = {
-	stream_draw = "GL_STREAM_DRAW",
-	stream_read = "GL_STREAM_READ",
-	stream_copy = "GL_STREAM_COPY",
-	static_draw = "GL_STATIC_DRAW",
-	static_read = "GL_STATIC_READ",
-	static_copy = "GL_STATIC_COPY",
-	dynamic_draw = "GL_DYNAMIC_DRAW",
-	dynamic_read = "GL_DYNAMIC_READ",
-	dynamic_copy = "GL_DYNAMIC_COPY",
-}
-
 local type_translate = {
 	uniform = "GL_UNIFORM_BUFFER",
 	shader_storage = "GL_SHADER_STORAGE_BUFFER",
 }
 
-function render.CreateShaderVariableBuffer(typ, usage, ptr, size)
+function render.CreateShaderVariableBuffer(typ, size, persistent)
 	size = size or 0
-	usage = usage or "dynamic_copy"
 
-	usage = usage_translate[usage]
 	typ = type_translate[typ]
 
 	local self = META:CreateObject()
 
-	self.buffer = gl.CreateBuffer(typ)
-	if type(ptr) == "number" then
-		size = ptr
-		ptr = ffi.new("uint8_t[?]", size)
+	local usage = gl.e.GL_DYNAMIC_STORAGE_BIT
+
+	if persistent then
+		usage = bit.bor(gl.e.GL_MAP_WRITE_BIT, gl.e.GL_MAP_PERSISTENT_BIT, gl.e.GL_MAP_COHERENT_BIT)
+		self.real_size = size
+		size = size * 3 -- tripple buffering
 	end
-	self.buffer:Data(size, ptr, usage)
+
+	self.buffer = gl.CreateBuffer(typ)
+	self.buffer:Storage(size, nil, usage)
 	self.size = size
 	self.type = typ
 
+	if persistent then
+		self.ptr = ffi.cast("uint8_t *", self.buffer:MapRange(0, size, usage))
+		self.offset = 0
+	end
+
 	return self
+end
+
+function META:WaitForLockedRange()
+	render.WaitForLockedRange(self.offset, self.real_size)
+end
+
+function META:LockRange()
+	render.LockRange(self.offset, self.real_size)
+	self.offset = (self.offset + self.real_size) % self.size
 end
 
 function META:OnRemove()
@@ -54,7 +58,11 @@ end
 
 function META:UpdateData(data, size, offset)
 	offset = offset or 0
-	self.buffer:SetSubData(offset, size, data)
+	if self.ptr then
+		ffi.copy(self.ptr + self.offset + offset, data, size)
+	else
+		self.buffer:SetSubData(offset, size, data)
+	end
 end
 
 function META:Bind(where, offset, size)

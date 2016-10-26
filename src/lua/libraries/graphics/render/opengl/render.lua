@@ -1,5 +1,5 @@
 local ffi = require("ffi")
-local gl = desire("opengl") -- OpenGL
+local gl = desire("opengl")
 
 if not gl then return end
 
@@ -8,6 +8,7 @@ local render = ... or {}
 include("debug.lua", render)
 include("shader_program.lua", render)
 include("shader_buffer.lua", render)
+include("lock.lua", render)
 
 function render._Initialize()
 	if not gl then
