@@ -141,14 +141,12 @@ function render.AddGlobalShaderCode(glsl_code, function_name)
 	}
 end
 
-function render.GetGlobalShaderCode(code)
+function render.GetGlobalShaderCode(code, glsl_variables)
 
 	local done = {}
-
 	local node = {value = "", dependencies = {}}
 
 	local function add_code(code, node)
-		-- iterate other code
 		for _, info in pairs(render.global_shader_code) do
 			-- does this code use this other code? (using simple find as it doesn't really need to be more sophisticated)
 			if code:find(info.function_name, nil, true) then
@@ -181,17 +179,56 @@ function render.GetGlobalShaderCode(code)
 	local out = {}
 
 	ts(out, {}, node)
-	local glsl = table.concat(out, "\n\n")
 
-	local glsl_vars = {}
-	for i, v in ipairs(render.global_glsl_variables) do
-		--local p = [==[[!"#$%&'%(%)*+,-./:;<=>?@%[\%]^`{|}~%s]]==]
-		--if glsl:find(p..v.key..p) or code:find(p..v.key..p) then
-		table.insert(glsl_vars, v.type .. " " .. v.key .. " = " .. v.val .. ";")
-		--end
+	return table.concat(out, "\n\n")
+end
+
+function render.GetGlobalShaderVariables(code, const)
+
+	local done = {}
+	local node = {value = "", dependencies = {}}
+
+	local found_variables = {}
+
+	local function add_code(code, node)
+		for _, info in ipairs(render.global_glsl_variables) do
+			if const == true and info.type:startswith("const") or const == false and not info.type:startswith("const") or const == nil then
+				local p = [==[[!"#$%&'%(%)*+,-./:;<=>?@%[\%]^`{|}~%s]]==]
+				if code:find(p..info.key..p) then
+					local new_code = info.type .. " " .. info.key .. " = " .. info.val .. ";"
+					if not done[info.key] then
+						local new_node = {value = new_code, dependencies = {}}
+						table.insert(node.dependencies, new_node)
+						found_variables[info.key] =  info
+						done[info.key] = true
+						-- check if this other code also has dependencies
+						add_code(new_code, new_node)
+					end
+				end
+			end
+		end
 	end
 
-	return table.concat(glsl_vars, "\n") .. glsl
+	add_code(code, node)
+
+	--(03:32:42 AM) thej89: .
+	local function ts( l, s, x )
+		--Already in l
+		if s[x] then return end
+		--Add x's dependencies to l first
+		for _, x in ipairs( x.dependencies ) do
+			ts( l, s, x )
+		end
+		--Now add x to l
+		s[x] = true
+		table.insert( l, x.value )
+	end
+
+	local out = {}
+
+	ts(out, {}, node)
+
+	return table.concat(out, "\n"), found_variables
 end
 
 render.AddGlobalShaderCode([[

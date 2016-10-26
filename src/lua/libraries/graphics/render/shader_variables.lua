@@ -82,16 +82,16 @@ function render.CreateShaderVariables(typ, shader, name, extra_size, persistent)
 			local size = ffi.sizeof("uint64_t")
 			local offset = v.offset
 
-			total_size = math.max(offset, total_size)
+			total_size = math.max(offset + size, total_size)
 
 			temp = ffi.new("uint64_t[1]")
 
-			set = function(buffer, var)
+			set = function(buffer, var, index)
 				if not var.gl_bindless_handle then
 					var:SetBindless(true)
 				end
 				temp[0] = var.gl_bindless_handle
-				buffer:UpdateData(temp, size, offset)
+				buffer:UpdateData(temp, size, offset + (index * v.array_stride))
 			end
 		end
 
@@ -140,8 +140,13 @@ function META:UpdateVariable(key, val, index)
 	end
 end
 
+local last_bound
+
 function META:Bind(bind_location)
-	self.buffer:Bind(bind_location)
+	if last_bound ~= self then
+		self.buffer:Bind(bind_location)
+		last_bound = self
+	end
 end
 
 META:Register()

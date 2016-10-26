@@ -28,10 +28,12 @@ end
 
 META:Register()
 
-function render.CreateMaterial(name, shader)
+function render.CreateMaterial(name)
 	local self = prototype.CreateDerivedObject("material", name)
 
-	self.required_shader = shader
+	if self.required_shader then
+		self.ubo = self.required_shader:CreateUniformBuffer()
+	end
 
 	return self
 end

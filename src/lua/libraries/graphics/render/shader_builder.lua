@@ -1,5 +1,7 @@
 local render = (...) or _G.render
 
+render.use_uniform_buffers = false
+
 -- used to figure out how to upload types
 local unrolled_lines = {
 	bool = "render.current_program:UploadBoolean(%i, val)",
@@ -30,13 +32,14 @@ local reserve_prepend = "out_"
 local source_template =
 [[
 
-@@SHARED VARIABLES@@
 @@VARIABLES@@
 
 @@IN@@
 
 @@OUT@@
-@@OUT3@@
+@@GLOBAL VARIABLES VERTEX@@
+@@GLOBAL VARIABLES FROM VERTEX@@
+@@GLOBAL VARIABLES@@
 @@GLOBAL CODE@@
 //__SOURCE_START
 @@SOURCE@@
@@ -44,6 +47,7 @@ local source_template =
 void main()
 {
 @@OUT2@@
+@@GLOBAL VARIABLES TO FRAGMENT@@
 	mainx();
 }
 ]]
@@ -274,6 +278,21 @@ function render.CreateShader(data, vars)
 		}
 	end
 
+	-- shared is not a real step but merge it with all the other steps
+	if shared then
+		if shared.variables then
+			for shader, info in pairs(data) do
+				if info.variables then
+					for k, v in pairs(shared.variables) do
+						if not info.variables[k] then
+							info.variables[k] = v
+						end
+					end
+				end
+			end
+		end
+	end
+
 	local build_output = {}
 
 	for shader, info in pairs(data) do
@@ -302,13 +321,9 @@ function render.CreateShader(data, vars)
 	-- figure out vertex mesh_layout other shaders need only if vertex and fragment is defined
 	-- since tesselation and geometry requires specialized input and output
 	if data.vertex and data.fragment and table.count(data) == 2 then
-		for shader, info in pairs(data) do
-			if shader ~= "vertex" then
-				if info.mesh_layout then
-					for i, v in ipairs(info.mesh_layout) do
-						build_output.vertex.out[i] = v
-					end
-				end
+		if data.fragment.mesh_layout then
+			for i, v in ipairs(data.fragment.mesh_layout) do
+				build_output.vertex.out[i] = v
 			end
 		end
 
@@ -333,72 +348,159 @@ function render.CreateShader(data, vars)
 		build_output.vertex.source = source
 	end
 
-	local function preprocess(str, info)
-		return str:gsub("lua(%b[])", function(code)
-			if code:find("=", nil, true) then
-				local key, default = code:sub(2, -2):match("(.-)=(.+)")
-				key = key:trim()
-				default = default:trim()
-				local ok, default = pcall(loadstring("return " .. default))
+	do
+		local function preprocess(str, info)
+			return str:gsub("lua(%b[])", function(code)
+				if code:find("=", nil, true) then
+					local key, default = code:sub(2, -2):match("(.-)=(.+)")
+					key = key:trim()
+					default = default:trim()
+					local ok, default = pcall(loadstring("return " .. default))
 
-				if not ok then
-					error(default, 3)
+					if not ok then
+						error(default, 3)
+					end
+
+					info.variables = info.variables or {}
+					info.variables[key] = default
+
+					return key
+				else
+					local type, code = code:sub(2, -2):match("(%b())(.+)")
+					type = type:sub(2, -2)
+					local ok, var = pcall(loadstring("return " .. code))
+
+					if not ok then
+						error(var, 3)
+					end
+
+					local name = "auto_lua_variable_" .. tostring(crypto.CRC32(code .. os.clock()))
+
+					info.variables = info.variables or {}
+					info.variables[name] = {[type] = var}
+
+					return name
 				end
+			end)
+		end
 
-				info.variables = info.variables or {}
-				info.variables[key] = default
+		for shader, info in pairs(data) do
+			local template = build_output[shader].source
 
-				return key
+			if shader == "vertex" then
+				template = replace_field(template, "GLOBAL CODE", render.GetGlobalShaderCode(info.source))
+				template = replace_field(template, "GLOBAL VARIABLES", render.GetGlobalShaderVariables(info.source))
 			else
-				local type, code = code:sub(2, -2):match("(%b())(.+)")
-				type = type:sub(2, -2)
-				local ok, var = pcall(loadstring("return " .. code))
-
-				if not ok then
-					error(var, 3)
-				end
-
-				local name = "auto_lua_variable_" .. tostring(crypto.CRC32(code .. os.clock()))
-
-				info.variables = info.variables or {}
-				info.variables[name] = {[type] = var}
-
-				return name
+				template = replace_field(template, "GLOBAL CODE", (render.GetGlobalShaderCode(info.source)))
+				template = replace_field(template, "GLOBAL VARIABLES", render.GetGlobalShaderVariables(template, true))
 			end
-		end)
+
+			template = preprocess(template, info)
+
+			if info.source then
+				info.source = preprocess(info.source, info)
+			end
+
+			info.template = template
+		end
+	end
+
+	if data.vertex and data.fragment and table.count(data) == 2 then
+		local code, vars = render.GetGlobalShaderVariables(data.fragment.template, false)
+		local code2, vars2 = render.GetGlobalShaderVariables(data.fragment.source, false)
+
+		for k,v in pairs(vars2) do
+			if not vars[k] then
+				vars[k] = v
+			end
+		end
+
+		local out_code = ""
+		for k,v in pairs(vars) do
+			out_code = out_code .. "out " .. v.type .. " " .. v.key .. "_out;\n"
+		end
+
+		data.vertex.template = replace_field(data.vertex.template, "GLOBAL VARIABLES VERTEX", code..code2..out_code)
+
+		local code = ""
+		for k,v in pairs(vars) do
+			code = code .. "\t" .. v.key .. "_out = " .. v.key .. ";\n"
+		end
+		data.vertex.template = replace_field(data.vertex.template, "GLOBAL VARIABLES TO FRAGMENT", code)
+
+
+		local code = ""
+		for k,v in pairs(vars) do
+			code = code .. "in " .. v.type .. " " .. v.key .. "_out;\n"
+			code = code .. "#define " .. v.key .. " " .. v.key .. "_out\n"
+		end
+
+		data.fragment.template = replace_field(data.fragment.template, "GLOBAL VARIABLES FROM VERTEX", code)
 	end
 
 	for shader, info in pairs(data) do
-		local template = build_output[shader].source
-
-		template = replace_field(template, "GLOBAL CODE", render.GetGlobalShaderCode(info.source))
-		template = preprocess(template, info)
-
-		if info.source then
-			info.source = preprocess(info.source, info)
-		end
-
-		local variables = {}
-
-		if info.variables then
-			for k,v in pairs(info.variables) do
-				variables[k] = v
-			end
-		end
-
 		if info.source then
 			for k,v in pairs(render.global_shader_variables) do
 				if not v.is_texture then
 					local p = [==[[!"#$%&'%(%)*+,-./:;<=>?@%[\%]^`{|}~%s]]==]
-					if info.source:find(p..k..p) or template:find(p..k..p) then
-						variables[k] = v
+					if info.source:find(p..k..p) or info.template:find(p..k..p) then
+						info.variables = info.variables or {}
+						info.variables[k] = v
 					end
 				end
 			end
 		end
+	end
 
-		template = replace_field(template, "VARIABLES", variables_to_string("uniform", variables))
-		build_output[shader].variables = translate_fields(variables)
+	if render.use_uniform_buffers then
+		local ubo_variables = {}
+
+		local uniform_block = "uniform variables {\n"
+		for shader, info in pairs(data) do
+			if info.variables then
+				local other_variables = {}
+				for _, data in ipairs(translate_fields(info.variables)) do
+					if not ubo_variables[data.name] then
+						if not data.is_texture or data.is_bindless_texture then
+							local p = [==[[!"#$%&'%(%)*+,-./:;<=>?@%[\%]^`{|}~%s]]==]
+							if info.source:find(p..data.name..p) or info.template:find(p..data.name..p) then
+								uniform_block = uniform_block .. "\t" .. data.type .. " " .. data.name .. ";\n"
+								ubo_variables[data.name] = info.variables[data.name]
+							end
+						else
+							other_variables[data.name] = info.variables[data.name]
+						end
+					end
+				end
+				info.other_variables = other_variables
+			end
+		end
+		uniform_block = uniform_block .. "};\n"
+
+		ubo_variables = translate_fields(ubo_variables)
+
+		for shader, info in pairs(data) do
+			local other = ""
+
+			if info.other_variables then
+				other = variables_to_string("uniform", info.other_variables)
+				build_output[shader].other_variables = translate_fields(info.other_variables)
+			end
+
+			info.template = replace_field(info.template, "VARIABLES", uniform_block .. other)
+			build_output[shader].ubo_variables = ubo_variables
+		end
+	else
+		for shader, info in pairs(data) do
+			if info.variables then
+				info.template = replace_field(info.template, "VARIABLES", variables_to_string("uniform", info.variables))
+				build_output[shader].variables = translate_fields(info.variables)
+			end
+		end
+	end
+
+	for shader, info in pairs(data) do
+		local template = info.template
 
 		if info.mesh_layout then
 			if shader == "vertex" then
@@ -455,20 +557,6 @@ function render.CreateShader(data, vars)
 		end
 
 		build_output[shader].source = template
-	end
-
-	-- shared variables across all shaders
-	if shared and shared.variables then
-		for shader in pairs(data) do
-			if build_output[shader] then
-				build_output[shader].source = replace_field(build_output[shader].source, "SHARED VARIABLES", variables_to_string("uniform", shared.variables))
-			end
-		end
-
-		-- merge shared variables to vertex so they can be used
-		for _, v in pairs(translate_fields(shared.variables)) do
-			table.insert(build_output.vertex.variables, v)
-		end
 	end
 
 	if BUILD_SHADER_OUTPUT then
@@ -583,13 +671,30 @@ function render.CreateShader(data, vars)
 
 	do -- build lua code from variables data
 		local variables = {}
-		local temp = {}
+		local uniform_variables = {}
+		local uniform_block_variables = {}
 
 		self.defaults = {} -- default values for shaders
 
 		for shader, data in pairs(build_output) do
-			if data.variables then
-				for _, val in pairs(data.variables) do
+			if data.ubo_variables then
+				for key, val in pairs(data.ubo_variables) do
+					self.defaults[val.name] = val.default
+					self[val.name] = val.default
+
+					if val.get then
+						self[val.name] = val.get
+					end
+
+					variables[val.name] = val
+					table.insert(uniform_block_variables, {id = id, key = val.name, val = val})
+				end
+			end
+
+			local vars = data.other_variables or data.variables
+
+			if vars then
+				for key, val in pairs(vars) do
 					local id = prog:GetUniformLocation(val.name)
 
 					if id > -1 then
@@ -601,8 +706,7 @@ function render.CreateShader(data, vars)
 						end
 
 						variables[val.name] = val
-
-						table.insert(temp, {id = id, key = val.name, val = val})
+						table.insert(uniform_variables, {id = id, key = val.name, val = val})
 					elseif render.debug and id < 0 and not val.is_texture then
 						logf("%s: variables in %s %s %s is not being used (variables location < 0)\n", shader_id, shader, val.name, val.type)
 					end
@@ -612,7 +716,7 @@ function render.CreateShader(data, vars)
 
 		self.variables = variables
 
-		table.sort(temp, function(a, b) return a.id < b.id end) -- sort the data by variables id
+		table.sort(uniform_variables, function(a, b) return a.id < b.id end) -- sort the data by variables id
 
 		local texture_channel = 0
 		local lua = ""
@@ -620,9 +724,10 @@ function render.CreateShader(data, vars)
 		lua = lua .. "local ffi = require(\"ffi\")\n"
 		lua = lua .. "local render = _G.render\n"
 		lua = lua .. "local type = _G.type\n"
-		lua = lua .. "local function update(self)\n"
+		lua = lua .. "local val = nil\n"
+		lua = lua .. "local function update(self, mat)\n"
 
-		for _, data in ipairs(temp) do
+		for _, data in ipairs(uniform_variables) do
 			local line = tostring(unrolled_lines[data.val.type] or data.val.type)
 
 			if data.val.is_texture then
@@ -632,12 +737,34 @@ function render.CreateShader(data, vars)
 				line = line:format(data.id)
 			end
 
-			lua = lua .. "\tif render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self or self.force_bind) and "
-			lua = lua .. "render.current_material."..data.key.." ~= nil then\n \t\tlocal val = render.current_material." .. data.key .. "\n\t\t" .. line .. "\n\telse"
-			lua = lua .. "if self." .. data.key .. " ~= nil then\n"
-			lua = lua .. "\t\tlocal val = self."..data.key.."\n"
-			lua = lua .. "\t\tif type(val) == 'function' then val = val() end\n"
-			lua = lua .. "\t\t"..line.."\n\tend\n\n"
+			lua = lua ..
+[[
+	val = mat and mat.]] .. data.key .. [[ or self.]]..data.key..[[
+
+	if type(val) == 'function' then
+		val = val()
+	end
+
+	if val ~= nil then
+		]]..line..[[
+	end
+]]
+		end
+
+		for _, data in ipairs(uniform_block_variables) do
+			local line = ""
+			lua = lua ..
+[[
+	val = mat and mat.]] .. data.key .. [[ or self.]]..data.key..[[
+
+	if type(val) == 'function' then
+		val = val()
+	end
+
+	if val ~= nil then
+		(mat and mat.ubo or self.ubo):UpdateVariable("]]..data.key..[[", val)
+	end
+]]
 		end
 
 		lua = lua .. "end\n"
@@ -672,6 +799,10 @@ function render.CreateShader(data, vars)
 	self.build_output = build_output
 	self.force_bind = force_bind
 
+	if render.use_uniform_buffers then
+		self.ubo = self:CreateUniformBuffer()
+	end
+
 	render.active_shaders[shader_id] = self
 
 	for obj in pairs(prototype.GetCreated()) do
@@ -692,7 +823,18 @@ function META:Bind()
 		self.program:Bind()
 		render.current_program = self.program
 	end
-	self.unrolled_bind_func(self)
+
+	if render.use_uniform_buffers then
+		if render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self or self.force_bind) then
+			--render.current_material.ubo:SetBindLocation(self, 0)
+			render.current_material.ubo:Bind(0)
+		else
+			--self.ubo:SetBindLocation(self, 0)
+			self.ubo:Bind(0)
+		end
+	end
+
+	self.unrolled_bind_func(self, render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self or self.force_bind) and render.current_material)
 end
 
 function META:CreateMaterialTemplate(name)
@@ -706,7 +848,17 @@ function META:CreateMaterialTemplate(name)
 		end
 	prototype.EndStorable()
 
+	META.required_shader = self
+
 	return META
+end
+
+function META:CreateUniformBuffer()
+	if render.use_uniform_buffers then
+		local ubo = render.CreateShaderVariables("uniform", self, "variables")
+		ubo:SetBindLocation(self, 0)
+		return ubo
+	end
 end
 
 function META:GetMeshLayout()
