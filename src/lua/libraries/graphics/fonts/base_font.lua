@@ -130,6 +130,11 @@ function META:SetPolyChar(poly, i, x, y, char)
 end
 
 function META:CompileString(data)
+
+	if not self.Ready then
+		return false, "font not loaded"
+	end
+
 	local vertex_count = 0
 
 	do

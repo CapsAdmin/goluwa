@@ -669,6 +669,11 @@ function META:CompileString()
 	for i, chunk in ipairs(self.chunks) do
 		if chunk.type == "string" or chunk.type == "newline" then
 			if chunk.font then
+
+				if not chunk.font:IsReady() then
+					return nil, "fonts not ready"
+				end
+
 				if chunk.font ~= last_font then
 					data = {}
 					table.insert(strings, {font = chunk.font, data = data})

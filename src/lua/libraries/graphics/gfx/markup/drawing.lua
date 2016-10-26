@@ -52,7 +52,7 @@ local remove_these = false
 local started_tags = false
 
 function META:Draw(max_w)
-	if self.LightMode or self.SuperLightMode and self.light_mode_obj then
+	if (self.LightMode or self.SuperLightMode) and self.light_mode_obj then
 		self.light_mode_obj:Draw(max_w)
 
 		if self.Selectable then
