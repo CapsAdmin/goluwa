@@ -6,23 +6,16 @@ local vfs = (...) or _G.vfs
 local ffi = require("ffi")
 
 local function iterate_archive(a)
-	return function()
-		local entry = archive.EntryNew()
-		if archive.ReadNextHeader2(a, entry) == archive.e.OK then
-			local str = ffi.string(archive.EntryPathname(entry))
-			archive.EntryFree(entry)
-			return str
-		end
-	end
-end
+	local entry = archive.EntryNew()
+	local tbl = {}
 
-local function iterate_archive2(a)
-	return function()
-		local entry = archive.EntryNew()
-		if archive.ReadNextHeader2(a, entry) == archive.e.OK then
-			return ffi.string(archive.EntryPathname(entry)), entry
-		end
+	while archive.ReadNextHeader2(a, entry) == archive.e.OK do
+		table.insert(tbl, ffi.string(archive.EntryPathname(entry)))
 	end
+
+	archive.EntryFree(entry)
+
+	return tbl
 end
 
 local CONTEXT = {}
@@ -70,19 +63,19 @@ local function open_archive(path_info)
 			return false, err
 		end
 
+		archive.ReadFree(a)
 		return false, "archive.ReadOpenMemory failed"
 	end
 
-	return a, relative
+	return a, relative, str
 end
 
 function CONTEXT:IsFile(path_info)
-	local a, relative = open_archive(path_info)
+	local a, relative, ref = open_archive(path_info)
 	if not a then return a, relative end
 
 	local found = false
-
-	for path in iterate_archive(a) do
+	for _, path in ipairs(iterate_archive(a)) do
 		if path == relative then
 			found = true
 			break
@@ -90,17 +83,18 @@ function CONTEXT:IsFile(path_info)
 	end
 
 	archive.ReadFree(a)
+	ref = nil
 
 	return found
 end
 
 function CONTEXT:IsFolder(path_info)
-	local a, relative = open_archive(path_info)
+	local a, relative, ref = open_archive(path_info)
 	if not a then return a, relative end
 
 	local found = false
 
-	for path in iterate_archive(a) do
+	for _, path in ipairs(iterate_archive(a)) do
 		if path:startswith(relative) then
 			found = true
 			break
@@ -108,12 +102,13 @@ function CONTEXT:IsFolder(path_info)
 	end
 
 	archive.ReadFree(a)
+	ref = nil
 
 	return found
 end
 
 function CONTEXT:GetFiles(path_info)
-	local a, relative = open_archive(path_info)
+	local a, relative, ref = open_archive(path_info)
 	if not a then return a, relative end
 
 	local out = {}
@@ -123,7 +118,7 @@ function CONTEXT:GetFiles(path_info)
 	local files = {}
 	local done = {}
 
-	for path in iterate_archive(a) do
+	for _, path in ipairs(iterate_archive(a)) do
 		for i = #path, 1, -1 do
 			local char = path:sub(i, i)
 			if char == "/" then
@@ -141,6 +136,7 @@ function CONTEXT:GetFiles(path_info)
 	end
 
 	archive.ReadFree(a)
+	ref = nil
 
 	-- really ugly logic: TODO
 	-- this kind of logic messes up my head
@@ -168,15 +164,24 @@ end
 
 function CONTEXT:Open(path_info, mode, ...)
 	if self:GetMode() == "read" then
-		local a, relative = open_archive(path_info)
+		local a, relative, ref = open_archive(path_info)
 		if not a then return false, relative end
 
-		for path, entry in iterate_archive2(a) do
-			if path == relative then
-				self.archive = a
-				self.entry = entry
-				return true
+		while true do
+			local entry = archive.EntryNew()
+			if archive.ReadNextHeader2(a, entry) == archive.e.OK then
+				local path = ffi.string(archive.EntryPathname(entry))
+				if path == relative then
+					self.archive = a
+					self.entry = entry
+					self.ref = ref
+					return true
+				end
+			else
+				archive.EntryFree(entry)
+				break
 			end
+			archive.EntryFree(entry)
 		end
 
 		archive.ReadFree(a)
@@ -197,9 +202,11 @@ function CONTEXT:ReadBytes(bytes)
 	if size > 0 then
 		return ffi.string(data, size)
 	elseif size < 0 then
-		local err = archive.ErrorString(self.archive)
-		if err ~= nil then
-			wlog(ffi.string(err))
+		if size ~= -30 then -- eof error
+			local err = archive.ErrorString(self.archive)
+			if err ~= nil then
+				wlog(ffi.string(err))
+			end
 		end
 	end
 end
