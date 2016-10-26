@@ -131,16 +131,13 @@ function META:SetBindLocation(shader, bind_location)
 end
 
 function META:UpdateVariable(key, val, index)
-	self.variables[key].set(self.buffer, val, index or 0)
-	--[==[
-	if self.variables[key] and self.last_variables[key] ~= val then]]
+	if self.variables[key] and self.last_variables[key] ~= val then
 		self.variables[key].set(self.buffer, val, index or 0)
 		if type(val) == "cdata" then
 			val = val:Copy()
 		end
 		self.last_variables[key] = val
 	end
-	]==]
 end
 
 function META:Bind(bind_location)
