@@ -120,7 +120,7 @@ function gfx.LoadModel3D(path, callback, callback2, on_fail)
 						try_set("Metallic", metallic_path, "_m", "_Metallic")
 					end
 
-					mesh:SetName(model_data.name)
+					if model_data.name then mesh:SetName(model_data.name) end
 					mesh:SetVertices(model_data.vertices)
 					mesh:SetIndices(model_data.indices)
 					mesh:BuildBoundingBox()
