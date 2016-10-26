@@ -23,6 +23,7 @@ do
 				end
 
 				file:write(info.source, ":", info.currentline, "\n")
+				file:flush()
 
 				i = i + 1
 			end, "l")
