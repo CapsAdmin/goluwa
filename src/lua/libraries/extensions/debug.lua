@@ -18,7 +18,8 @@ do
 
 				if i > max_lines then
 					file:close()
-					file = assert(io.open(path))
+					file = assert(io.open(path, "wb"))
+					i = 0
 				end
 
 				file:write(info.source, ":", info.currentline, "\n")
