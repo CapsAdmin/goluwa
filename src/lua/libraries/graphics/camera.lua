@@ -3,25 +3,28 @@ local camera = {}
 do
 	local variables = {
 		{name = "projection"},
-		{name = "projection_inverse", glsl = "inverse($projection^)"},
-
 		{name = "view"},
-		{name = "view_inverse", glsl = "inverse($view^)"},
-
 		{name = "world"},
+
+		{name = "projection_inverse", glsl = "inverse($projection^)"},
+		{name = "view_inverse", glsl = "inverse($view^)"},
 		{name = "world_inverse", glsl = "inverse($world^)"},
 
 		{name = "projection_view", glsl = "$projection^ * $view^"},
-		{name = "projection_view_inverse", glsl = "inverse($projection_view^)"},
-
 		{name = "view_world", glsl = "$view * $world"},
+		{name = "projection_view_world", glsl = "$projection_view^ * $world^"},
+
+		{name = "projection_view_inverse", glsl = "inverse($projection_view^)"},
 		{name = "view_world_inverse", glsl = "inverse($view_world^)"},
-		{name = "projection_view_world", glsl = "$projection^ * $view^ * $world^"},
 
 		{name = "normal_matrix", glsl = "transpose($view_world_inverse^)"},
 	}
 
-	-- for i,v in ipairs(variables) do v.glsl = nil end -- disable gpu matrix calculation
+	for i,v in ipairs(variables) do
+		if not v.name:find("world") and v.name ~= "normal_matrix" then
+			v.glsl = nil -- disable gpu matrix calculation for world matrices
+		end
+	end
 
 	function camera.GetVariables()
 		return variables
@@ -280,31 +283,48 @@ do
 			end
 		end
 
-		if self:Get3D() and vars.projection_view_world then
-			if what == nil or what == "projection" or what == "view" then
+		if what == nil or what == "projection" or what == "view" then
+			if vars.projection_inverse then
 				vars.projection_inverse = vars.projection:GetInverse()
-				vars.view_inverse = vars.view:GetInverse()
+			end
 
+			if vars.view_inverse then
+				vars.view_inverse = vars.view:GetInverse()
+			end
+
+			if vars.projection_view then
 				vars.projection_view = vars.view * vars.projection
+			end
+
+			if vars.projection_view_inverse then
 				vars.projection_view_inverse = vars.projection_view:GetInverse()
 			end
+		end
 
-			if what == nil or what == "view" or what == "world" then
-				vars.world = self.World
+		if what == nil or what == "view" or what == "world" then
+			vars.world = self.World
+
+			if vars.view_world then
 				vars.view_world =  vars.world * vars.view
-				vars.view_world_inverse = vars.view_world:GetInverse()
-				vars.normal_matrix = vars.view_world_inverse:GetTranspose()
 			end
 
+			if vars.view_world_inverse and vars.view_world then
+				vars.view_world_inverse = vars.view_world:GetInverse()
+			end
+
+			if vars.normal_matrix and vars.view_world_inverse then
+				vars.normal_matrix = vars.view_world_inverse:GetTranspose()
+			end
+		end
+
+		if vars.world_inverse then
 			if type == nil or type == "world" then
 				vars.world_inverse = vars.world:GetInverse()
 			end
-		else
-			vars.world = self.World
 		end
 
 		if vars.projection_view_world then
-			vars.projection_view_world = vars.world * vars.view * vars.projection
+			vars.projection_view_world = vars.view_world * vars.projection
 		end
 	end
 
