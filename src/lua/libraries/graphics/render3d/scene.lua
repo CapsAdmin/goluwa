@@ -32,7 +32,7 @@ function render3d.SortScene()
 	end)
 end
 
-function render3d.DrawScene(what, dist)
+function render3d.DrawScene(what)
 	event.Call("DrawScene")
 
 	if needs_sorting then
@@ -41,6 +41,6 @@ function render3d.DrawScene(what, dist)
 	end
 
 	for _, model in ipairs(render3d.scene) do
-		model:Draw(what, dist)
+		model:Draw(what)
 	end
 end

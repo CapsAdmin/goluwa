@@ -213,7 +213,7 @@ function PASS:EndPass()
 	render3d.gbuffer:End()
 end
 
-function PASS:Draw3D(what, dist)
+function PASS:Draw3D(what)
 
 	if (self.last_update_sky or 0) < system.GetElapsedTime() then
 		render3d.UpdateSky()
@@ -225,7 +225,7 @@ function PASS:Draw3D(what, dist)
 	self:BeginPass("model")
 		render.SetCullMode("front")
 		event.Call("PreGBufferModelPass")
-			render3d.DrawScene(what or "models", dist)
+			render3d.DrawScene(what or "models")
 		event.Call("PostGBufferModelPass")
 	self:EndPass()
 

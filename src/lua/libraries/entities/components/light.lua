@@ -107,7 +107,7 @@ if GRAPHICS then
 			render3d.gbuffer_data_pass.light_shader["light_projection" .. i] = camera.camera_3d:GetMatrices().projection:Copy()
 		end
 
-		render3d.DrawScene(self, self.Ortho and self:GetComponent("transform"):GetSize())
+		render3d.DrawScene("shadow"..i)
 	end
 
 	function META:DrawShadowMap()

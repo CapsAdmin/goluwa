@@ -144,43 +144,22 @@ if GRAPHICS then
 
 	local ipairs = ipairs
 	local render_SetMaterial = render.SetMaterial
-	function META:Draw(what, dist)
+	function META:Draw(what)
 		camera.camera_3d:SetWorld(self.tr:GetMatrix())
 
-		--[[if self.corners and what then
-			local time = system.GetElapsedTime()
-			self.next_visible[what] = self.next_visible[what] or 0
-			self.visible[what] = self.visible[what] or {}
-
-			if self.next_visible[what] < time then
-				if dist then
-					self.visible[what] = self.tr:GetPosition():Distance(camera.camera_3d:GetPosition()) < dist
-				else
-					self.visible[what] = self.tr:IsPointsVisible(self.corners, camera.camera_3d:GetMatrices().projection_view)
-				end
-				self.next_visible[what] = time + (1/15)
+		if self.MaterialOverride then
+			self.MaterialOverride:SetColor(self.Color)
+			render_SetMaterial(self.MaterialOverride)
+			for _, model in ipairs(self.sub_models) do
+				model.mesh:Draw()
+			end
+		else
+			for _, model in ipairs(self.sub_models) do
+				model.material:SetColor(self.Color)
+				render_SetMaterial(model.material)
+				model.mesh:Draw()
 			end
 		end
-
-		if
-			(what == "no_cull_only" and not self.Cull) or
-			(not self.Cull or not what) or
-			self.visible[what] == nil or self.visible[what] == true
-		then]]
-			if self.MaterialOverride then
-				self.MaterialOverride:SetColor(self.Color)
-				render_SetMaterial(self.MaterialOverride)
-				for _, model in ipairs(self.sub_models) do
-					model.mesh:Draw()
-				end
-			else
-				for _, model in ipairs(self.sub_models) do
-					model.material:SetColor(self.Color)
-					render_SetMaterial(model.material)
-					model.mesh:Draw()
-				end
-			end
-		--end
 	end
 end
 
