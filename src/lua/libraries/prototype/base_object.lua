@@ -198,6 +198,7 @@ do -- events
 				self[func_name](self, a_, b_, c_)
 			end
 		end, {on_error = function(str)
+			system.OnError(str)
 			self:RemoveEvent(event_type)
 		end})
 
