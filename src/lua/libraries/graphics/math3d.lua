@@ -6,13 +6,13 @@ function math3d.WorldToLocal(local_pos, local_ang, world_pos, world_ang)
 	if world_ang and local_ang then
 		local lmat = Matrix44():SetRotation(Quat():SetAngles(local_ang))
 		local wmat = Matrix44():SetRotation(Quat():SetAngles(world_ang))
-		ang = (lmat * wmat):GetRotation():GetAngles()
+		ang = (wmat * lmat):GetRotation():GetAngles()
 	end
 
 	if world_pos and local_pos then
 		local lmat = Matrix44():SetTranslation(local_pos:Unpack())
 		local wmat = Matrix44():SetTranslation(world_pos:Unpack())
-		pos = Vec3((lmat * wmat):GetTranslation())
+		pos = Vec3((wmat * lmat):GetTranslation())
 	end
 
 	return pos, ang
@@ -25,13 +25,13 @@ function math3d.LocalToWorld(local_pos, local_ang, world_pos, world_ang)
 	if world_ang and local_ang then
 		local lmat = Matrix44():SetRotation(Quat():SetAngles(local_ang)):GetInverse()
 		local wmat = Matrix44():SetRotation(Quat():SetAngles(world_ang))
-		ang = (lmat * wmat):GetRotation():GetAngles()
+		ang = (wmat * lmat):GetRotation():GetAngles()
 	end
 
 	if world_pos and local_pos then
 		local lmat = Matrix44():SetTranslation(local_pos:Unpack()):GetInverse()
 		local wmat = Matrix44():SetTranslation(world_pos:Unpack())
-		pos = Vec3((lmat * wmat):GetTranslation())
+		pos = Vec3((wmat * lmat):GetTranslation())
 	end
 
 	return pos, ang
