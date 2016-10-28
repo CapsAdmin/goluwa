@@ -352,7 +352,7 @@ local function parse_scene(scene, path, callback)
 			end
 		end
 
-		sub_model.name = ffi.string(mesh.mName.data, mesh.mName.length):trim()
+		-- sub_model.name = ffi.string(mesh.mName.data, mesh.mName.length):trim()
 
 		if mesh.mMaterialIndex > 0 then
 			local mat = scene.mMaterials[mesh.mMaterialIndex]
