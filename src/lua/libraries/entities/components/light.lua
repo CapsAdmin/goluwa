@@ -152,6 +152,7 @@ if GRAPHICS then
 					self:DrawScene(pos, rot, i)
 				end
 			else
+				shadow_map:Clear()
 				self:DrawScene(pos, rot, i)
 			end
 
