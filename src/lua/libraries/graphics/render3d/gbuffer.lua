@@ -218,13 +218,13 @@ do -- mixer
 	end
 end
 
-function render3d.DrawGBuffer(what, dist)
+function render3d.DrawGBuffer(what)
 	if not gbuffer_enabled then return end
 
 	render3d.gbuffer:WriteThese("all")
 	render3d.gbuffer:ClearAll(0,0,0,0, 1)
 
-	render3d.gbuffer_data_pass:Draw3D(what, dist)
+	render3d.gbuffer_data_pass:Draw3D(what)
 
 	event.Call("GBufferPrePostProcess")
 
