@@ -2,6 +2,14 @@ commands.Add("gc", function()
 	collectgarbage()
 	logn(utility.FormatFileSize(collectgarbage("count")*1024))
 end)
+
+commands.Add("test_mem", function()
+	LOL1 = {} for i = 1, 10000000 do LOL1[i] = {1,2,3} end
+	LOL2 = {} for i = 1, 10000000 do LOL2[i] = {1,2,3} end
+	LOL3 = {} for i = 1, 10000000 do LOL3[i] = {1,2,3} end
+	debug.loglines()
+end)
+
 commands.Add("scene_info", function()
 	logf("%s models\n", #render3d.scene)
 
