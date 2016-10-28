@@ -135,7 +135,7 @@ function TMPL:RebuildMatrix()
 		self.TRMatrix:SetRotation(rot)
 
 		if self.temp_scale.x ~= 1 or self.temp_scale.y ~= 1 or self.temp_scale.z ~= 1 then
-			self.TRMatrix = self.ScaleMatrix * self.TRMatrix
+			self.TRMatrix = self.TRMatrix * self.ScaleMatrix
 		end
 
 		if self.Entity:HasParent() then
@@ -153,7 +153,7 @@ function TMPL:RebuildMatrix()
 			if parent_transform then
 				self.temp_matrix = self.temp_matrix or Matrix44()
 				--self.TRMatrix = self.TRMatrix * self.Parent.TRMatrix
-				self.TRMatrix:Multiply(parent_transform.TRMatrix, self.temp_matrix)
+				parent_transform.TRMatrix:Multiply(self.TRMatrix, self.temp_matrix)
 				self.TRMatrix, self.temp_matrix = self.temp_matrix, self.TRMatrix
 			end
 		end
@@ -168,7 +168,7 @@ function TMPL:IsPointsVisible(points, view)
 	local matrix = self:GetMatrix()
 
 	for _, pos in ipairs(points) do
-		local x, y, z = matrix:GetMultiplied(view, Matrix44(pos.x, pos.y, pos.z)):GetClipCoordinates()
+		local x, y, z = view:GetMultiplied(matrix, Matrix44(pos.x, pos.y, pos.z)):GetClipCoordinates()
 
 		if
 			(x > -1 and x < 1) and

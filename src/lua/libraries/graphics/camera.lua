@@ -195,7 +195,7 @@ do
 		end
 
 		function META:ScreenToWorld(x, y)
-			local m = (self:GetMatrices().view * self:GetMatrices().world):GetInverse()
+			local m = (self:GetMatrices().world * self:GetMatrices().view):GetInverse()
 
 			if self:Get3D() then
 				x = ((x / self.Viewport.w) - 0.5) * 2
@@ -293,7 +293,7 @@ do
 			end
 
 			if vars.projection_view then
-				vars.projection_view = vars.view * vars.projection
+				vars.projection_view = vars.projection * vars.view
 			end
 
 			if vars.projection_view_inverse then
@@ -305,7 +305,7 @@ do
 			vars.world = self.World
 
 			if vars.view_world then
-				vars.view_world =  vars.world * vars.view
+				vars.view_world =  vars.view * vars.world
 			end
 
 			if vars.view_world_inverse and vars.view_world then
@@ -324,7 +324,7 @@ do
 		end
 
 		if vars.projection_view_world then
-			vars.projection_view_world = vars.view_world * vars.projection
+			vars.projection_view_world = vars.projection * vars.view_world
 		end
 	end
 
