@@ -941,6 +941,7 @@ do -- shapes
 		end
 
 		mesh:UpdateBuffer()
+		render2d.shader:Bind()
 		mesh:Draw(idx)
 
 		render2d.PopTexture()
@@ -1045,16 +1046,16 @@ do
 		end
 
 		local self = line.CreateObject("Mesh")
-		self.mesh = render2d.CreateMesh(vertex_count)
+		self.vertex_buffer = render2d.CreateMesh(vertex_count)
 
 		if vertex_format then
-			self.mesh:ClearAttributes()
+			self.vertex_buffer:ClearAttributes()
 			for i, v in ipairs(vertex_format) do
-				self.mesh:SetAttribute(i, v[1], v[2], v[3])
+				self.vertex_buffer:SetAttribute(i, v[1], v[2], v[3])
 			end
 		end
 
-		self.mesh:SetDrawHint(usage)
+		self.vertex_buffer:SetDrawHint(usage)
 		self:setDrawMode(mode)
 
 		if vertices then
@@ -1079,12 +1080,12 @@ do
 		for i, v in ipairs(vertices) do
 			self:setVertex(i, v)
 		end
-		self.mesh:UpdateBuffer()
+		self.vertex_buffer:UpdateBuffer()
 	end
 
 	function Mesh:getVertices()
 		local out = {}
-		for i = 1, self.mesh.Vertices:GetLength() do
+		for i = 1, self.vertex_buffer.Vertices:GetLength() do
 			out[i] = {self:getVertex()}
 		end
 		return out
@@ -1092,24 +1093,24 @@ do
 
 	function Mesh:setVertex(index, vertex)
 		if vertex[1] then
-			self.mesh:SetVertex(index, "pos", vertex[1], vertex[2])
+			self.vertex_buffer:SetVertex(index, "pos", vertex[1], vertex[2])
 		end
 		if vertex[3] then
-			self.mesh:SetVertex(index, "uv", vertex[3], -vertex[4]+1)
+			self.vertex_buffer:SetVertex(index, "uv", vertex[3], -vertex[4]+1)
 		end
 		if vertex[5] then
 			local r = (vertex[5] or 255) / 255
 			local g = (vertex[6] or 255) / 255
 			local b = (vertex[7] or 255) / 255
 			local a = (vertex[8] or 255) / 255
-			self.mesh:SetVertex(index, "color", r,g,b,a)
+			self.vertex_buffer:SetVertex(index, "color", r,g,b,a)
 		end
 	end
 
 	function Mesh:getVertex(index)
-		local x,y = self.mesh:GetVertex(index, "pos")
-		local u,v = self.mesh:GetVertex(index, "uv")
-		local r,g,b,a = self.mesh:GetVertex(index, "color")
+		local x,y = self.vertex_buffer:GetVertex(index, "pos")
+		local u,v = self.vertex_buffer:GetVertex(index, "uv")
+		local r,g,b,a = self.vertex_buffer:GetVertex(index, "color")
 
 		return x,y,u,v,r,g,b,a
 	end
@@ -1124,7 +1125,7 @@ do
 	end
 
 	function Mesh:Draw()
-		self.mesh:Draw(self.draw_range)
+		self.vertex_buffer:Draw(self.draw_range)
 	end
 
 	function Mesh:setVertexColors()
@@ -1138,28 +1139,28 @@ do
 	function Mesh:setVertexMap(...)
 		local indices = type(...) == "table" and ... or {...}
 		for i, i2 in ipairs(indices) do
-			self.mesh:SetIndex(i, i2-1)
+			self.vertex_buffer:SetIndex(i, i2-1)
 		end
 	end
 
 	function Mesh:getVertexMap()
 		local out = {}
-		for i = 1, self.mesh.Indices:GetLength() do
-			out[i] = self.mesh.Indices.Pointer[i - 1] + 1
+		for i = 1, self.vertex_buffer.Indices:GetLength() do
+			out[i] = self.vertex_buffer.Indices.Pointer[i - 1] + 1
 		end
 		return out
 	end
 
 	function Mesh:getVertexCount()
-		return self.mesh.Vertices:GetLength()
+		return self.vertex_buffer.Vertices:GetLength()
 	end
 
 	function Mesh:setVertexAttribute(index, pos, ...)
-		self:setVertex(index, self.mesh.mesh_layout.attributes[pos].name, ...)
+		self:setVertex(index, self.vertex_buffer.mesh_layout.attributes[pos].name, ...)
 	end
 
 	function Mesh:getVertexAttribute(index, pos)
-		return self:getVertex(index, self.mesh.mesh_layout.attributes[pos].name)
+		return self:getVertex(index, self.vertex_buffer.mesh_layout.attributes[pos].name)
 	end
 
 	function Mesh:setAttributeEnabled(name, enable)
@@ -1183,7 +1184,7 @@ do
 
 		function Mesh:getVertexFormat()
 			local out = {}
-			for i, info in ipairs(self.mesh.mesh_layout.attributes) do
+			for i, info in ipairs(self.vertex_buffer.mesh_layout.attributes) do
 				table.insert(out, {tr[info.name] or info.name, info.type_info.type, info.type_info.arg_count})
 			end
 			return out
@@ -1202,7 +1203,7 @@ do
 
 		function Mesh:setDrawMode(mode)
 			mode = tr[mode] or mode
-			self.mesh:SetMode(mode)
+			self.vertex_buffer:SetMode(mode)
 		end
 
 		local tr2 = {}
@@ -1212,7 +1213,7 @@ do
 		end
 
 		function Mesh:getDrawMode()
-			local mode = self.mesh:GetMode()
+			local mode = self.vertex_buffer:GetMode()
 			return tr2[mode] or mode
 		end
 	end

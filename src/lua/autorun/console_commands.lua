@@ -15,7 +15,7 @@ commands.Add("scene_info", function()
 
 	local count = 0
 	for _, model in ipairs(render3d.scene) do
-		count = count + #model.sub_models
+		count = count + #model.sub_meshes
 	end
 
 	logf("%s sub models\n", count)
@@ -24,10 +24,10 @@ commands.Add("scene_info", function()
 	local mat_count = {}
 	local tex_count = {}
 	for _, model in ipairs(render3d.scene) do
-		for _, sub_model in ipairs(model.sub_models) do
-			if sub_model.material then
-				mat_count[sub_model.material] = true
-				for key, val in pairs(sub_model.material) do
+		for _, mesh in ipairs(model.sub_meshes) do
+			if mesh.material then
+				mat_count[mesh.material] = true
+				for key, val in pairs(mesh.material) do
 					if typex(val) == "texture" then
 						tex_count[val] = true
 					end

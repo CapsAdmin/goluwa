@@ -7,19 +7,18 @@ META:GetSet("UpdateIndices", true)
 META:GetSet("Mode", "triangles")
 META:GetSet("IndicesType", "uint16_t")
 META:GetSet("DrawHint", "dynamic")
-META:GetSet("Shader")
 META:GetSet("Vertices")
 META:GetSet("Indices")
 prototype.EndStorable()
 
-function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
+function render.CreateVertexBuffer(mesh_layout, vertices, indices, is_valid_table)
 	local self = META:CreateObject()
 	self.mesh_layout = {
 		attributes = {}
 	}
 	render._CreateVertexBuffer(self)
 
-	for i, info in ipairs(shader:GetMeshLayout()) do
+	for i, info in ipairs(mesh_layout) do
 		self:SetAttribute(i, info.name, info.type, info.default)
 	end
 
@@ -28,8 +27,6 @@ function render.CreateVertexBuffer(shader, vertices, indices, is_valid_table)
 	if vertices then
 		self:SetBuffersFromTables(vertices, indices, is_valid_table)
 	end
-
-	self:SetShader(shader)
 
 	return self
 end
@@ -208,17 +205,6 @@ do -- attributes
 			self:UpdateBuffer(Array(self.mesh_layout.ctype, #vertices, vertices), Array(self:GetIndicesType(), #indices, indices))
 		end
 	end
-end
-
-function META:Draw(count)
-
-	if render.current_shader_override then
-		render.current_shader_override:Bind()
-	elseif self.Shader then
-		self.Shader:Bind()
-	end
-
-	self:_Draw(count)
 end
 
 function META:UpdateBuffer(vertices, indices)

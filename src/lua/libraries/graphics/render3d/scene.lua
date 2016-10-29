@@ -5,29 +5,29 @@ local scene_keyval = utility.CreateWeakTable()
 
 local needs_sorting = true
 
-function render3d.AddModel(obj)
-	if not scene_keyval[obj] then
-		table.insert(render3d.scene, obj)
+function render3d.AddModel(model)
+	if not scene_keyval[model] then
+		table.insert(render3d.scene, model)
 		needs_sorting = true
-		scene_keyval[obj] = obj
+		scene_keyval[model] = model
 	end
 end
 
-function render3d.RemoveModel(obj)
-	if scene_keyval[obj] then
-		table.removevalue(render3d.scene, obj)
+function render3d.RemoveModel(model)
+	if scene_keyval[model] then
+		table.removevalue(render3d.scene, model)
 		needs_sorting = true
 	end
 end
 
 function render3d.SortScene()
 	table.sort(render3d.scene, function(a, b)
-		local sub_models_a = a.sub_models
-		local sub_models_b = b.sub_models
+		local sub_meshes_a = a.sub_meshes
+		local sub_meshes_b = b.sub_meshes
 
-		if sub_models_a[1] and sub_models_b[1] then
+		if sub_meshes_a[1] and sub_meshes_b[1] then
 			-- how to do this without tostring?
-			return tostring(sub_models_a[1].material) > tostring(sub_models_b[1].material)
+			return tostring(sub_meshes_a[1].material) > tostring(sub_meshes_b[1].material)
 		end
 	end)
 end

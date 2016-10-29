@@ -14,7 +14,7 @@ curve:Add(Vec2(0,1))
 
 
 local poly = curve:ConstructPoly(Vec2(-0.1, 0), 4, 5)
-poly.mesh:SetMode("triangle_strip")
+poly.vertex_buffer:SetMode("triangle_strip")
 
 event.AddListener("PostDrawGUI", "lol", function()
 	--render2d.DrawRect(0,0,tex:GetSize():Unpack())

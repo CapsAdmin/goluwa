@@ -53,9 +53,8 @@ do
 		ssbo:Bind(2)
 
 		render2d.PushMatrix(0, 0, render2d.GetSize())
-			render.SetShaderOverride(shader)
+			shader:Bind()
 			render2d.rectangle:Draw()
-			render.SetShaderOverride()
 		render2d.PopMatrix()
 	end)
 end

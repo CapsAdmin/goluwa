@@ -100,8 +100,8 @@ if GRAPHICS then
 		camera.camera_3d:SetWorld(transform:GetMatrix())
 		shader.light_radius = transform:GetSize()
 
-		render.SetShaderOverride(shader)
 		render.SetBlendMode("one", "one")
+		shader:Bind()
 		self.light_mesh:Draw()
 	end
 
@@ -133,6 +133,7 @@ if GRAPHICS then
 
 		local old = camera.camera_3d
 		camera.camera_3d = cam
+		render3d.shader = render3d.shadow_map_shader
 		render3d.DrawScene("shadow"..i)
 		camera.camera_3d = old
 	end

@@ -68,7 +68,7 @@ if not NVIDIA_WORKAROUND then
 	end
 
 	if system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
-		function META:_Draw(count)
+		function META:Draw(count)
 			if render.last_vertex_array_id ~= self.vertex_array.id then
 				gl.BindVertexArray(self.vertex_array.id)
 				render.last_vertex_array_id = self.vertex_array.id
@@ -76,7 +76,7 @@ if not NVIDIA_WORKAROUND then
 			gl.DrawElements(self.gl_mode, count or self.indices_length, self.gl_indices_type, nil)
 		end
 	else
-		function META:_Draw(count)
+		function META:Draw(count)
 			if render.last_vertex_array_id ~= self.vertex_array.id then
 				gl.BindVertexArray(self.vertex_array.id)
 				self.element_buffer:Bind()
@@ -135,7 +135,7 @@ else
 		gl.DeleteBuffers(1, ffi.new("GLuint[1]", self.indices_id))
 	end
 
-	function META:_Draw(count)
+	function META:Draw(count)
 		if render.last_vertex_array_id ~= self.vao_id then
 			gl.BindVertexArray(self.vao_id)
 			gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)

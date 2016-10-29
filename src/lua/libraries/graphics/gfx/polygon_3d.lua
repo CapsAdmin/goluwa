@@ -31,8 +31,8 @@ end
 function META:Upload(skip_unref)
 	if #self.Vertices == 0 then return end
 
-	self.mesh = assert(render3d.CreateMesh(self.Vertices, self.Indices))
-	self.mesh:SetDrawHint("static")
+	self.vertex_buffer = assert(render3d.CreateMesh(self.Vertices, self.Indices))
+	self.vertex_buffer:SetDrawHint("static")
 
 	-- don't store the geometry on the lua side
 	if not skip_unref then
@@ -41,19 +41,19 @@ function META:Upload(skip_unref)
 end
 
 function META:UnreferenceVertices()
-	if self.mesh then
-		self.mesh:UnreferenceMesh()
+	if self.vertex_buffer then
+		self.vertex_buffer:UnreferenceMesh()
 	end
 	self:Clear()
 end
 
 function META:GetMesh()
-	return self.mesh
+	return self.vertex_buffer
 end
 
 function META:Draw()
-	if self.mesh then
-		self.mesh:Draw()
+	if self.vertex_buffer then
+		self.vertex_buffer:Draw()
 	end
 end
 

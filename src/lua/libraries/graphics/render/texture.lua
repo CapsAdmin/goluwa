@@ -461,9 +461,8 @@ do
 				end
 			end
 
-			render.SetShaderOverride(shader)
+			shader:Bind()
 			render2d.rectangle:Draw()
-			render.SetShaderOverride()
 		self:EndWrite()
 
 		return self

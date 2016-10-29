@@ -60,11 +60,3 @@ end
 function render.GetMaterial()
 	return render.current_material
 end
-
-function render.SetShaderOverride(shader)
-	render.current_shader_override = shader
-end
-
-function render.GetShader()
-	return render.current_shader_override
-end

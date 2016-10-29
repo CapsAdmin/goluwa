@@ -161,7 +161,7 @@ local tex = render.CreateTextureFromPath("textures/debug/brain.jpg")
 local shader = render.CreateShader(data)
 
 -- this creates mesh from the attributes field
-local mesh = render.CreateVertexBuffer(shader, {
+local mesh = render.CreateVertexBuffer(shader:GetMeshLayout(), {
 	{pos = {0, 1, 0}, uv = {0, 0}},
 	{pos = {0, 0, 0}, uv = {0, 1}},
 	{pos = {1, 1, 0}, uv = {1, 0}},

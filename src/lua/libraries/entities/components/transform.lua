@@ -1,31 +1,31 @@
-local TMPL = prototype.CreateTemplate()
+local META = prototype.CreateTemplate()
 
-TMPL.Name = "transform"
+META.Name = "transform"
 
-TMPL:GetSet("TRMatrix", Matrix44())
-TMPL:GetSet("ScaleMatrix", Matrix44())
+META:GetSet("TRMatrix", Matrix44())
+META:GetSet("ScaleMatrix", Matrix44())
 
-TMPL:StartStorable()
-	TMPL:GetSet("Position", Vec3(0, 0, 0), {callback = "InvalidateTRMatrix"})
-	TMPL:GetSet("Rotation", Quat(0, 0, 0, 1), {callback = "InvalidateTRMatrix"})
+META:StartStorable()
+	META:GetSet("Position", Vec3(0, 0, 0), {callback = "InvalidateTRMatrix"})
+	META:GetSet("Rotation", Quat(0, 0, 0, 1), {callback = "InvalidateTRMatrix"})
 
-	TMPL:GetSet("Scale", Vec3(1, 1, 1), {callback = "InvalidateScaleMatrix"})
-	TMPL:GetSet("Shear", Vec3(0, 0, 0), {callback = "InvalidateScaleMatrix"})
-	TMPL:GetSet("Size", 1, {callback = "InvalidateScaleMatrix"})
-	TMPL:GetSet("SkipRebuild", false)
-TMPL:EndStorable()
+	META:GetSet("Scale", Vec3(1, 1, 1), {callback = "InvalidateScaleMatrix"})
+	META:GetSet("Shear", Vec3(0, 0, 0), {callback = "InvalidateScaleMatrix"})
+	META:GetSet("Size", 1, {callback = "InvalidateScaleMatrix"})
+	META:GetSet("SkipRebuild", false)
+META:EndStorable()
 
-TMPL:GetSet("OverridePosition", nil, {callback = "InvalidateTRMatrix"})
-TMPL:GetSet("OverrideRotation", nil, {callback = "InvalidateTRMatrix"})
+META:GetSet("OverridePosition", nil, {callback = "InvalidateTRMatrix"})
+META:GetSet("OverrideRotation", nil, {callback = "InvalidateTRMatrix"})
 
-TMPL.Network = {
+META.Network = {
 	Position = {"vec3", 1/30, "unreliable"},
 	Rotation = {"quat", 1/30, "unreliable"},
 	Scale = {"vec3", 1/15},
 	Size = {"float", 1/15},
 }
 
-function TMPL:Initialize()
+function META:Initialize()
 	self.temp_scale = Vec3(1, 1, 1)
 	self.visible_matrix_cache = {}
 	for i = 1, 8 do
@@ -33,62 +33,62 @@ function TMPL:Initialize()
 	end
 end
 
-function TMPL:GetTRPosition()
+function META:GetTRPosition()
 	local x, y, z = self.TRMatrix:GetTranslation()
 	return Vec3(-y, -x, -z)
 end
 
-function TMPL:SetTRPosition(vec)
+function META:SetTRPosition(vec)
 	self.TRMatrix:SetTranslation(vec.x, vec.y, vec.z)
 end
 
-function TMPL:GetTRAngles()
+function META:GetTRAngles()
 	return self.TRMatrix:GetRotation():GetAngles()
 end
 
-function TMPL:SetTRAngles(ang)
+function META:SetTRAngles(ang)
 	self.TRMatrix:SetRotation(Quat():SetAngles(ang))
 end
 
-function TMPL:GetTRRotation()
+function META:GetTRRotation()
 	return self.TRMatrix:GetRotation()
 end
 
-function TMPL:SetTRRotation(quat)
+function META:SetTRRotation(quat)
 	self.TRMatrix:SetRotation(quat)
 end
 
-function TMPL:GetAngles()
+function META:GetAngles()
 	return self.Rotation:GetAngles()
 end
 
-function TMPL:SetAngles(ang)
+function META:SetAngles(ang)
 	self.Rotation:SetAngles(ang)
 	self:InvalidateTRMatrix()
 end
 
-function TMPL:GetMatrix()
+function META:GetMatrix()
 	self:RebuildMatrix()
 
 	return self.TRMatrix
 end
 
-function TMPL:SetScale(vec3)
+function META:SetScale(vec3)
 	self.Scale = vec3
 	self.temp_scale = vec3 * self.Size
 	self:InvalidateScaleMatrix()
 end
 
-function TMPL:SetSize(num)
+function META:SetSize(num)
 	self.Size = num
 	self.temp_scale = num * self.Scale
 	self:InvalidateScaleMatrix()
 end
 
-function TMPL:InvalidateScaleMatrix()
+function META:InvalidateScaleMatrix()
 	if not self.rebuild_tr_matrix then
 		for _, v in ipairs(self.Entity:GetChildrenList()) do
-			local v = v.Components[TMPL.Name]
+			local v = v.Components[META.Name]
 			if v then
 				v.rebuild_scale_matrix = true
 				v.rebuild_tr_matrix = true
@@ -99,18 +99,18 @@ function TMPL:InvalidateScaleMatrix()
 	self.rebuild_tr_matrix = true
 end
 
-function TMPL:InvalidateTRMatrix()
+function META:InvalidateTRMatrix()
 	if not self.rebuild_tr_matrix then
 		for _, v in ipairs(self.Entity:GetChildrenList()) do
-			if v.Components[TMPL.Name] then
-				v.Components[TMPL.Name].rebuild_tr_matrix = true
+			if v.Components[META.Name] then
+				v.Components[META.Name].rebuild_tr_matrix = true
 			end
 		end
 	end
 	self.rebuild_tr_matrix = true
 end
 
-function TMPL:RebuildMatrix()
+function META:RebuildMatrix()
 	if self.rebuild_scale_matrix and (self.temp_scale.x ~= 1 or self.temp_scale.y ~= 1 or self.temp_scale.z ~= 1) then
 		self.ScaleMatrix:Identity()
 		self.ScaleMatrix:Scale(self.temp_scale.y, self.temp_scale.x, self.temp_scale.z)
@@ -162,7 +162,7 @@ function TMPL:RebuildMatrix()
 	end
 end
 
-function TMPL:IsPointsVisible(points, view)
+function META:IsPointsVisible(points, view)
 	view = view or render.GetProjectionViewMatrix()
 
 	local matrix = self:GetMatrix()
@@ -182,4 +182,4 @@ function TMPL:IsPointsVisible(points, view)
 	return false
 end
 
-prototype.RegisterComponent(TMPL)
+prototype.RegisterComponent(META)

@@ -53,8 +53,7 @@ end
 function render3d.UpdateSky()
 	render.SetDepth(false)
 	render.SetBlendMode()
-
-	render.SetShaderOverride(shader)
+	shader:Bind()
 	local old_view = camera.camera_3d:GetView()
 	local old_projection = camera.camera_3d:GetProjection()
 
@@ -74,7 +73,6 @@ function render3d.UpdateSky()
 	camera.camera_3d:SetProjection(old_projection)
 
 	tex:GenerateMipMap()
-	render.SetShaderOverride()
 end
 
 function render3d.GetSkyTexture()

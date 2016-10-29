@@ -21,7 +21,7 @@ META.Network = {
 
 if GRAPHICS then
 	function META:Initialize()
-		self.sub_models = {}
+		self.sub_meshes = {}
 		self.next_visible = {}
 		self.visible = {}
 	end
@@ -33,6 +33,13 @@ if GRAPHICS then
 			render3d.RemoveModel(self)
 		end
 		self.is_visible = b
+	end
+
+	function META:SetMaterialOverride(mat)
+		self.MaterialOverride = mat
+		for _, mesh in ipairs(self.sub_meshes) do
+			mesh.material = mat
+		end
 	end
 
 	function META:OnAdd()
@@ -63,7 +70,7 @@ if GRAPHICS then
 				self:BuildBoundingBox()
 			end,
 			function(err)
-				logf("%s failed to load model %q: %s\n", self, path, err)
+				logf("%s failed to load mesh %q: %s\n", self, path, err)
 				self:MakeError()
 			end
 		)
@@ -77,7 +84,7 @@ if GRAPHICS then
 
 	do
 		function META:AddMesh(mesh)
-			table.insert(self.sub_models, mesh)
+			table.insert(self.sub_meshes, mesh)
 			mesh:CallOnRemove(function()
 				if self:IsValid() then
 					self:RemoveMesh(mesh)
@@ -86,57 +93,51 @@ if GRAPHICS then
 			render3d.AddModel(self)
 		end
 
-		function META:RemoveMesh(mesh)
-			for i, _mesh in ipairs(self.sub_models) do
-				if mesh == _mesh then
-					table.remove(self.sub_models, i)
+		function META:RemoveMesh(model_)
+			for i, mesh in ipairs(self.sub_meshes) do
+				if mesh == model_ then
+					table.remove(self.sub_meshes, i)
 					break
 				end
 			end
-			if not self.sub_models[1] then
+			if not self.sub_meshes[1] then
 				render3d.RemoveModel(self)
 			end
 		end
 
 		function META:RemoveMeshes()
-			table.clear(self.sub_models)
+			table.clear(self.sub_meshes)
 			collectgarbage("step")
 		end
 
 		function META:GetMeshes()
-			return self.sub_models
+			return self.sub_meshes
 		end
 	end
 
 	function META:BuildBoundingBox()
-		for _, sub_model in ipairs(self.sub_models) do
-			if sub_model.AABB.min_x < self.AABB.min_x then self.AABB.min_x = sub_model.AABB.min_x end
-			if sub_model.AABB.min_y < self.AABB.min_y then self.AABB.min_y = sub_model.AABB.min_y end
-			if sub_model.AABB.min_z < self.AABB.min_z then self.AABB.min_z = sub_model.AABB.min_z end
+		for _, mesh in ipairs(self.sub_meshes) do
+			if mesh.AABB.min_x < self.AABB.min_x then self.AABB.min_x = mesh.AABB.min_x end
+			if mesh.AABB.min_y < self.AABB.min_y then self.AABB.min_y = mesh.AABB.min_y end
+			if mesh.AABB.min_z < self.AABB.min_z then self.AABB.min_z = mesh.AABB.min_z end
 
-			if sub_model.AABB.max_x > self.AABB.max_x then self.AABB.max_x = sub_model.AABB.max_x end
-			if sub_model.AABB.max_y > self.AABB.max_y then self.AABB.max_y = sub_model.AABB.max_y end
-			if sub_model.AABB.max_z > self.AABB.max_z then self.AABB.max_z = sub_model.AABB.max_z end
+			if mesh.AABB.max_x > self.AABB.max_x then self.AABB.max_x = mesh.AABB.max_x end
+			if mesh.AABB.max_y > self.AABB.max_y then self.AABB.max_y = mesh.AABB.max_y end
+			if mesh.AABB.max_z > self.AABB.max_z then self.AABB.max_z = mesh.AABB.max_z end
 		end
 	end
 
 	local ipairs = ipairs
 	local render_SetMaterial = render.SetMaterial
+
 	function META:Draw(what)
 		camera.camera_3d:SetWorld(self.tr:GetMatrix())
 
-		if self.MaterialOverride then
-			self.MaterialOverride:SetColor(self.Color)
-			render_SetMaterial(self.MaterialOverride)
-			for _, model in ipairs(self.sub_models) do
-				model.mesh:Draw()
-			end
-		else
-			for _, model in ipairs(self.sub_models) do
-				model.material:SetColor(self.Color)
-				render_SetMaterial(model.material)
-				model.mesh:Draw()
-			end
+		for _, mesh in ipairs(self.sub_meshes) do
+			mesh.material.Color = self.Color
+			render_SetMaterial(mesh.material)
+			render3d.shader:Bind()
+			mesh.vertex_buffer:Draw()
 		end
 	end
 end

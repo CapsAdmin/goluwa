@@ -245,7 +245,7 @@ function render3d.DrawGBuffer(what)
 			render.SetBlendMode(shader.blend_mode)
 			if shader.fb then shader.fb:Begin() end
 			render2d.PushMatrix(0, 0, shader.size.x, shader.size.y)
-				render.SetShaderOverride(shader)
+				shader:Bind()
 				render2d.rectangle:Draw()
 			render2d.PopMatrix()
 			if shader.fb then shader.fb:End() end

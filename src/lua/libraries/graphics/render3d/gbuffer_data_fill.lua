@@ -185,7 +185,7 @@ vec3 get_env_color()
 
 function PASS:Initialize()
 	function render3d.CreateMesh(vertices, indices, is_valid_table)
-		return render.CreateVertexBuffer(render3d.gbuffer_data_pass.model_shader, vertices, indices)
+		return render.CreateVertexBuffer(render3d.gbuffer_data_pass.model_shader:GetMeshLayout(), vertices, indices)
 	end
 
 	local META = self.model_shader:CreateMaterialTemplate("model")
@@ -225,6 +225,7 @@ function PASS:Draw3D(what)
 	self:BeginPass("model")
 		render.SetCullMode("front")
 		event.Call("PreGBufferModelPass")
+			render3d.shader = render3d.gbuffer_data_pass.model_shader
 			render3d.DrawScene(what or "models")
 		event.Call("PostGBufferModelPass")
 	self:EndPass()
@@ -740,13 +741,13 @@ if RELOAD then
 	if TESSELLATION then
 		for mesh in pairs(prototype.GetCreated()) do
 			if mesh.Type == "polygon_3d" then
-				mesh.mesh:SetMode("patches")
+				mesh.vertex_buffer:SetMode("patches")
 			end
 		end
 	else
 		for mesh in pairs(prototype.GetCreated()) do
 			if mesh.Type == "polygon_3d" then
-				mesh.mesh:SetMode("triangles")
+				mesh.vertex_buffer:SetMode("triangles")
 			end
 		end
 	end

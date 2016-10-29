@@ -46,7 +46,6 @@ function window.Open(...)
 
 				render.SetDepth(false)
 				render.SetBlendMode("alpha")
-				render.SetShaderOverride()
 
 				if render3d.IsGBufferReady() then
 					if menu and menu.IsVisible() then

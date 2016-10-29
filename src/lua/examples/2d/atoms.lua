@@ -65,9 +65,8 @@ event.AddListener("PreDrawGUI", "fb", function()
 			render.SetBlendMode("src_color", "one_minus_dst_color", "add")
 
 			render2d.PushMatrix(0, 0, fb:GetTexture():GetSize():Unpack())
-				render.SetShaderOverride(shader)
+				shader:Bind()
 				render2d.rectangle:Draw()
-				render.SetShaderOverride()
 			render2d.PopMatrix()
 		fb:End()
 
