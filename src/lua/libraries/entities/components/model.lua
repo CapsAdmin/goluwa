@@ -7,8 +7,7 @@ META:StartStorable()
 	META:GetSet("MaterialOverride", nil)
 	META:GetSet("Cull", true)
 	META:GetSet("ModelPath", "models/cube.obj")
-	META:GetSet("BBMin", Vec3())
-	META:GetSet("BBMax", Vec3())
+	META:GetSet("AABB", AABB())
 	META:GetSet("Color", Color(1,1,1,1))
 META:EndStorable()
 
@@ -109,36 +108,15 @@ if GRAPHICS then
 		end
 	end
 
-	do
-		local function corner_helper(self, i, j)
-			return bit.band(bit.rshift(i, j), 1) == 0 and self.BBMin or self.BBMax
-		end
+	function META:BuildBoundingBox()
+		for _, sub_model in ipairs(self.sub_models) do
+			if sub_model.AABB.min_x < self.AABB.min_x then self.AABB.min_x = sub_model.AABB.min_x end
+			if sub_model.AABB.min_y < self.AABB.min_y then self.AABB.min_y = sub_model.AABB.min_y end
+			if sub_model.AABB.min_z < self.AABB.min_z then self.AABB.min_z = sub_model.AABB.min_z end
 
-		function META:BuildBoundingBox()
-			local min, max = Vec3(), Vec3()
-
-			for _, sub_model in ipairs(self.sub_models) do
-				if sub_model.BBMin.x < min.x then min.x = sub_model.BBMin.x end
-				if sub_model.BBMin.y < min.y then min.y = sub_model.BBMin.y end
-				if sub_model.BBMin.z < min.z then min.z = sub_model.BBMin.z end
-
-				if sub_model.BBMax.x > max.x then max.x = sub_model.BBMax.x end
-				if sub_model.BBMax.y > max.y then max.y = sub_model.BBMax.y end
-				if sub_model.BBMax.z > max.z then max.z = sub_model.BBMax.z end
-			end
-
-			self.BBMin = min
-			self.BBMax = max
-
-			self.corners = {}
-
-			for i = 0, 7 do
-				local x = corner_helper(self, i, 2).x
-				local y = corner_helper(self, i, 1).y
-				local z = corner_helper(self, i, 0).z
-
-				self.corners[i+1] = Vec3(x, y, z)
-			end
+			if sub_model.AABB.max_x > self.AABB.max_x then self.AABB.max_x = sub_model.AABB.max_x end
+			if sub_model.AABB.max_y > self.AABB.max_y then self.AABB.max_y = sub_model.AABB.max_y end
+			if sub_model.AABB.max_z > self.AABB.max_z then self.AABB.max_z = sub_model.AABB.max_z end
 		end
 	end
 

@@ -12,8 +12,7 @@ end
 
 META:GetSet("Vertices", {})
 META:GetSet("Indices")
-META:GetSet("BBMin", Vec3())
-META:GetSet("BBMax", Vec3())
+META:GetSet("AABB", AABB())
 
 META.i = 1
 
@@ -60,23 +59,15 @@ end
 
 do -- helpers
 	function META:BuildBoundingBox()
-		local min = Vec3()
-		local max = Vec3()
-
 		for _, vertex in ipairs(self.Vertices) do
-			if vertex.pos.x < min.x then min.x = vertex.pos.x end
-			if vertex.pos.y < min.y then min.y = vertex.pos.y end
-			if vertex.pos.z < min.z then min.z = vertex.pos.z end
+			if vertex.pos.x < self.AABB.min_x then self.AABB.min_x = vertex.pos.x end
+			if vertex.pos.y < self.AABB.min_y then self.AABB.min_y = vertex.pos.y end
+			if vertex.pos.z < self.AABB.min_z then self.AABB.min_z = vertex.pos.z end
 
-			if vertex.pos.x > max.x then max.x = vertex.pos.x end
-			if vertex.pos.y > max.y then max.y = vertex.pos.y end
-			if vertex.pos.z > max.z then max.z = vertex.pos.z end
+			if vertex.pos.x > self.AABB.max_x then self.AABB.max_x = vertex.pos.x end
+			if vertex.pos.y > self.AABB.max_y then self.AABB.max_y = vertex.pos.y end
+			if vertex.pos.z > self.AABB.max_z then self.AABB.max_z = vertex.pos.z end
 		end
-
-		self.BBMin = min
-		self.BBMax = max
-
-		return min, max
 	end
 
 	function META:BuildNormals()
