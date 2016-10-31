@@ -19,7 +19,26 @@ commands.Add("scene_info", function()
 	end
 
 	logf("%s sub models\n", count)
-	logf("%s predicted model draw calls\n", count * render3d.csm_count + count)
+	logf("%s maximum draw calls\n", count * render3d.csm_count + count)
+
+	local total_visible = 0
+	local vis = {}
+	for _, model in ipairs(render3d.scene) do
+		for key, is_visible in pairs(model.visible) do
+			local visible = is_visible and 1 or 0
+			vis[key] = (vis[key] or 0) + visible
+			total_visible = total_visible + visible
+		end
+	end
+
+	logf("%s current draw calls\n", total_visible)
+
+	local temp = {}
+	for id, count in pairs(vis) do table.insert(temp, {id = id, count = count}) end
+	table.sort(temp, function(a, b) return a.id < b.id end)
+	for _, v in ipairs(temp) do
+		logf("\t%s visible in %s\n", v.count, v.id)
+	end
 
 	local mat_count = {}
 	local tex_count = {}
