@@ -228,53 +228,9 @@ do
 			plane.w = plane.w / mag
 		end
 
-		function META:GetFrustum(normalize)
-			local mat = self:GetMatrices().projection_view
+		function META:GetFrustum(normalize, mat)
+			mat = mat or self:GetMatrices().projection_view
 			local frustum = {}
-
-			--[[
-			frustum.left = {
-				x = mat.m30 + mat.m00,
-				y = mat.m31 + mat.m01,
-				z = mat.m32 + mat.m02,
-				w = mat.m33 + mat.m03,
-			}
-
-			frustum.right = {
-				x = mat.m30 - mat.m00,
-				y = mat.m31 - mat.m01,
-				z = mat.m32 - mat.m02,
-				w = mat.m33 - mat.m03,
-			}
-
-			frustum.top = {
-				x = mat.m30 - mat.m10,
-				y = mat.m31 - mat.m11,
-				z = mat.m32 - mat.m12,
-				w = mat.m33 - mat.m13,
-			}
-
-			frustum.bottom = {
-				x = mat.m30 + mat.m10,
-				y = mat.m31 + mat.m11,
-				z = mat.m32 + mat.m12,
-				w = mat.m33 + mat.m13,
-			}
-
-			frustum.near = {
-				x = mat.m30 + mat.m20,
-				y = mat.m31 + mat.m21,
-				z = mat.m32 + mat.m22,
-				w = mat.m33 + mat.m23,
-			}
-
-			frustum.far = {
-				x = mat.m30 - mat.m20,
-				y = mat.m31 - mat.m21,
-				z = mat.m32 - mat.m22,
-				w = mat.m33 - mat.m23,
-			}
-			]]
 
 			frustum.left = {
 				x = mat.m03 + mat.m00,
@@ -331,19 +287,11 @@ do
 		end
 
 		function META:IntersectAABB(aabb)
-			local f = self:GetFrustum(true)
-			local box = {aabb:GetMin(), aabb:GetMax()}
-			local planes = {f.near, f.left, f.right, f.bottom, f.top, f.far}
-
-			for i, plane in ipairs(planes) do
-				local px = plane.x > 0 and 2 or 1
-				local py = plane.y > 0 and 2 or 1
-				local pz = plane.z > 0 and 2 or 1
-
+			for i, plane in ipairs(self:GetMatrices().frustum_planes) do
 				if
-					(plane.x * box[px].x) +
-					(plane.y * box[py].y) +
-					(plane.z * box[pz].z) <
+					(plane.x * (plane.x > 0 and aabb.max_x or aabb.min_x)) +
+					(plane.y * (plane.y > 0 and aabb.max_y or aabb.min_y)) +
+					(plane.z * (plane.z > 0 and aabb.max_z or aabb.min_z)) <
 					-plane.w
 				then
 					return false
@@ -435,6 +383,10 @@ do
 			if vars.projection_view_inverse then
 				vars.projection_view_inverse = vars.projection_view:GetInverse()
 			end
+
+			local f = self:GetFrustum(true, vars.projection_view)
+			vars.frustum = f
+			vars.frustum_planes = {f.near, f.left, f.right, f.bottom, f.top, f.far}
 		end
 
 		if what == nil or what == "view" or what == "world" then

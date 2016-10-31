@@ -13,7 +13,7 @@ local skyboxes = {
 function steam.SetMap(name)
 	steam.bsp_world = steam.bsp_world or entities.CreateEntity("physical", entities.GetWorld())
 	steam.bsp_world:SetName(name)
-	steam.bsp_world:SetCull(false)
+	--steam.bsp_world:SetCull(false)
 	steam.bsp_world:SetModelPath("maps/" .. name .. ".bsp")
 	steam.bsp_world:SetPhysicsModelPath("maps/" .. name .. ".bsp")
 end

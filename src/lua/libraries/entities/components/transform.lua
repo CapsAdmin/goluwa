@@ -12,6 +12,8 @@ META:StartStorable()
 	META:GetSet("Scale", Vec3(1, 1, 1), {callback = "InvalidateScaleMatrix"})
 	META:GetSet("Shear", Vec3(0, 0, 0), {callback = "InvalidateScaleMatrix"})
 	META:GetSet("Size", 1, {callback = "InvalidateScaleMatrix"})
+	META:GetSet("AABB", AABB(0, 0, 0, 0, 0, 0), {callback = "InvalidateTRMatrix"})
+
 	META:GetSet("SkipRebuild", false)
 META:EndStorable()
 
@@ -65,6 +67,15 @@ end
 function META:SetAngles(ang)
 	self.Rotation:SetAngles(ang)
 	self:InvalidateTRMatrix()
+end
+
+function META:GetTranslatedAABB()
+	return self.translated_aabb
+end
+
+function META:OnAdd()
+	self:InvalidateTRMatrix()
+	self:RebuildMatrix()
 end
 
 function META:GetMatrix()
@@ -157,6 +168,16 @@ function META:RebuildMatrix()
 				self.TRMatrix, self.temp_matrix = self.temp_matrix, self.TRMatrix
 			end
 		end
+
+		local aabb = self:GetAABB():Copy()
+		aabb.min_x = aabb.min_x + -pos.y
+		aabb.min_y = aabb.min_y + -pos.x
+		aabb.min_z = aabb.min_z + -pos.z
+
+		aabb.max_x = aabb.max_x + -pos.y
+		aabb.max_y = aabb.max_y + -pos.x
+		aabb.max_z = aabb.max_z + -pos.z
+		self.translated_aabb = aabb
 
 		self.rebuild_tr_matrix = false
 	end

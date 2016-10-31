@@ -46,6 +46,11 @@ if GRAPHICS then
 		self.tr = self:GetComponent("transform")
 	end
 
+	function META:SetAABB(aabb)
+		self.tr:SetAABB(aabb)
+		self.AABB = aabb
+	end
+
 	function META:OnRemove()
 		render3d.RemoveModel(self)
 	end
@@ -64,10 +69,11 @@ if GRAPHICS then
 					steam.SpawnMapEntities(path, self:GetEntity())
 				end
 				self:SetLoading(false)
+				self:BuildBoundingBox()
 			end,
 			function(mesh)
 				self:AddMesh(mesh)
-				self:BuildBoundingBox()
+				print(mesh, path)
 			end,
 			function(err)
 				logf("%s failed to load mesh %q: %s\n", self, path, err)
@@ -125,38 +131,35 @@ if GRAPHICS then
 			if mesh.AABB.max_y > self.AABB.max_y then self.AABB.max_y = mesh.AABB.max_y end
 			if mesh.AABB.max_z > self.AABB.max_z then self.AABB.max_z = mesh.AABB.max_z end
 		end
+
+		self:SetAABB(self.AABB)
+	end
+
+	function META:IsVisible(what)
+		if self.is_visible == false then return false end
+
+		if not self.next_visible[what] or self.next_visible[what] < system.GetElapsedTime() then
+			self.visible[what] = camera.camera_3d:IntersectAABB(self.tr:GetTranslatedAABB())
+			self.next_visible[what] = system.GetElapsedTime() + 0.25
+		end
+
+		return self.visible[what]
 	end
 
 	local ipairs = ipairs
 	local render_SetMaterial = render.SetMaterial
 
 	function META:Draw(what)
-		camera.camera_3d:SetWorld(self.tr:GetMatrix())
+		if self:IsVisible(what) then
+			camera.camera_3d:SetWorld(self.tr:GetMatrix())
 
-		--[[
-		local pos = self.tr:GetPosition()
-		local aabb = self:GetAABB():Copy()
-		aabb.min_x = aabb.min_x + pos.x
-		aabb.min_y = aabb.min_y + pos.y
-		aabb.min_z = aabb.min_z + pos.z
-
-		aabb.max_x = aabb.max_x + pos.x
-		aabb.max_y = aabb.max_y + pos.y
-		aabb.max_z = aabb.max_z + pos.z
-		]]
-
-		--if camera.camera_3d:IntersectAABB(aabb) then
 			for _, mesh in ipairs(self.sub_meshes) do
 				mesh.material.Color = self.Color
 				render_SetMaterial(mesh.material)
 				render3d.shader:Bind()
 				mesh.vertex_buffer:Draw()
 			end
-		--else
-		--	if wait(0.5) then
-		--		print(self.ModelPath, os.clock())
-		--	end
-		--end
+		end
 	end
 end
 
