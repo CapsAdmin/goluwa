@@ -91,10 +91,18 @@ function META:SetMin(pos)
 	self.min_z = pos.z
 end
 
+function META:GetMin()
+	return Vec3(self.min_x, self.min_y, self.min_z)
+end
+
 function META:SetMax(pos)
 	self.max_x = pos.x
 	self.max_y = pos.y
 	self.max_z = pos.z
+end
+
+function META:GetMax()
+	return Vec3(self.max_x, self.max_y, self.max_z)
 end
 
 structs.Register(META)

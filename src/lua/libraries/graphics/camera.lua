@@ -218,6 +218,142 @@ do
 		end
 	end
 
+	do
+		local function normallize_plane(plane)
+			local mag = math.sqrt(plane.x * plane.x + plane.y * plane.y + plane.z * plane.z)
+
+			plane.x = plane.x / mag
+			plane.y = plane.y / mag
+			plane.z = plane.z / mag
+			plane.w = plane.w / mag
+		end
+
+		function META:GetFrustum(normalize)
+			local mat = self:GetMatrices().projection_view
+			local frustum = {}
+
+			--[[
+			frustum.left = {
+				x = mat.m30 + mat.m00,
+				y = mat.m31 + mat.m01,
+				z = mat.m32 + mat.m02,
+				w = mat.m33 + mat.m03,
+			}
+
+			frustum.right = {
+				x = mat.m30 - mat.m00,
+				y = mat.m31 - mat.m01,
+				z = mat.m32 - mat.m02,
+				w = mat.m33 - mat.m03,
+			}
+
+			frustum.top = {
+				x = mat.m30 - mat.m10,
+				y = mat.m31 - mat.m11,
+				z = mat.m32 - mat.m12,
+				w = mat.m33 - mat.m13,
+			}
+
+			frustum.bottom = {
+				x = mat.m30 + mat.m10,
+				y = mat.m31 + mat.m11,
+				z = mat.m32 + mat.m12,
+				w = mat.m33 + mat.m13,
+			}
+
+			frustum.near = {
+				x = mat.m30 + mat.m20,
+				y = mat.m31 + mat.m21,
+				z = mat.m32 + mat.m22,
+				w = mat.m33 + mat.m23,
+			}
+
+			frustum.far = {
+				x = mat.m30 - mat.m20,
+				y = mat.m31 - mat.m21,
+				z = mat.m32 - mat.m22,
+				w = mat.m33 - mat.m23,
+			}
+			]]
+
+			frustum.left = {
+				x = mat.m03 + mat.m00,
+				y = mat.m13 + mat.m10,
+				z = mat.m23 + mat.m20,
+				w = mat.m33 + mat.m30,
+			}
+
+			frustum.right = {
+				x = mat.m03 - mat.m00,
+				y = mat.m13 - mat.m10,
+				z = mat.m23 - mat.m20,
+				w = mat.m33 - mat.m30,
+			}
+
+			frustum.top = {
+				x = mat.m03 - mat.m01,
+				y = mat.m13 - mat.m11,
+				z = mat.m23 - mat.m21,
+				w = mat.m33 - mat.m31,
+			}
+
+			frustum.bottom = {
+				x = mat.m03 + mat.m01,
+				y = mat.m13 + mat.m11,
+				z = mat.m23 + mat.m21,
+				w = mat.m33 + mat.m31,
+			}
+
+			frustum.near = {
+				x = mat.m02,
+				y = mat.m12,
+				z = mat.m22,
+				w = mat.m32,
+			}
+
+			frustum.far = {
+				x = mat.m03 - mat.m02,
+				y = mat.m13 - mat.m12,
+				z = mat.m23 - mat.m22,
+				w = mat.m33 - mat.m32,
+			}
+
+			if normalize then
+				normallize_plane(frustum.left)
+				normallize_plane(frustum.right)
+				normallize_plane(frustum.top)
+				normallize_plane(frustum.bottom)
+				normallize_plane(frustum.near)
+				normallize_plane(frustum.far)
+			end
+
+			return frustum
+		end
+
+		function META:IntersectAABB(aabb)
+			local f = self:GetFrustum(true)
+			local box = {aabb:GetMin(), aabb:GetMax()}
+			local planes = {f.near, f.left, f.right, f.bottom, f.top, f.far}
+
+			for i, plane in ipairs(planes) do
+				local px = plane.x > 0 and 2 or 1
+				local py = plane.y > 0 and 2 or 1
+				local pz = plane.z > 0 and 2 or 1
+
+				if
+					(plane.x * box[px].x) +
+					(plane.y * box[py].y) +
+					(plane.z * box[pz].z) <
+					-plane.w
+				then
+					return false
+				end
+			end
+			return true
+		end
+
+	end
+
 	function META:Rebuild(what)
 		local vars = self.shader_variables
 
