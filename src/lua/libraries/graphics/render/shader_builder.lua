@@ -825,7 +825,7 @@ function META:Bind()
 	end
 
 	if render.use_uniform_buffers then
-		if render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self or self.force_bind) then
+		if render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self.shader_id or self.force_bind) then
 			--render.current_material.ubo:SetBindLocation(self, 0)
 			render.current_material.ubo:Bind(0)
 		else
@@ -834,7 +834,7 @@ function META:Bind()
 		end
 	end
 
-	self.unrolled_bind_func(self, render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self or self.force_bind) and render.current_material)
+	self.unrolled_bind_func(self, render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self.shader_id or self.force_bind) and render.current_material)
 end
 
 function META:CreateMaterialTemplate(name)
@@ -848,7 +848,7 @@ function META:CreateMaterialTemplate(name)
 		end
 	prototype.EndStorable()
 
-	META.required_shader = self
+	META.required_shader = self.shader_id
 
 	return META
 end
