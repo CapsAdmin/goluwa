@@ -123,16 +123,13 @@ if GRAPHICS then
 
 	function META:BuildBoundingBox()
 		for _, mesh in ipairs(self.sub_meshes) do
-			if mesh.AABB.min_x < self.AABB.min_x then self.AABB.min_x = mesh.AABB.min_x end
-			if mesh.AABB.min_y < self.AABB.min_y then self.AABB.min_y = mesh.AABB.min_y end
-			if mesh.AABB.min_z < self.AABB.min_z then self.AABB.min_z = mesh.AABB.min_z end
-
-			if mesh.AABB.max_x > self.AABB.max_x then self.AABB.max_x = mesh.AABB.max_x end
-			if mesh.AABB.max_y > self.AABB.max_y then self.AABB.max_y = mesh.AABB.max_y end
-			if mesh.AABB.max_z > self.AABB.max_z then self.AABB.max_z = mesh.AABB.max_z end
+			self.AABB:Expand(mesh.AABB)
 		end
 
 		self:SetAABB(self.AABB)
+
+		render3d.largest_aabb = render3d.largest_aabb or AABB()
+		render3d.largest_aabb:Expand(self.AABB)
 	end
 
 	function META:IsVisible(what)

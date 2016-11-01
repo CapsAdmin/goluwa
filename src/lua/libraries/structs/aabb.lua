@@ -105,4 +105,28 @@ function META:GetMax()
 	return Vec3(self.max_x, self.max_y, self.max_z)
 end
 
+function META.Expand(a, b)
+	if b.min_x < a.min_x then a.min_x = b.min_x end
+	if b.min_y < a.min_y then a.min_y = b.min_y end
+	if b.min_z < a.min_z then a.min_z = b.min_z end
+
+	if b.max_x > a.max_x then a.max_x = b.max_x end
+	if b.max_y > a.max_y then a.max_y = b.max_y end
+	if b.max_z > a.max_z then a.max_z = b.max_z end
+end
+
+function META:ExpandVec3(vec)
+	if vec.x < self.min_x then self.min_x = vec.x end
+	if vec.y < self.min_y then self.min_y = vec.y end
+	if vec.z < self.min_z then self.min_z = vec.z end
+
+	if vec.x > self.max_x then self.max_x = vec.x end
+	if vec.y > self.max_y then self.max_y = vec.y end
+	if vec.z > self.max_z then self.max_z = vec.z end
+end
+
+function META:GetLength()
+	return self:GetMin():Distance(self:GetMax())
+end
+
 structs.Register(META)
