@@ -9,9 +9,9 @@ META.Events = {"Draw3DLights", "DrawShadowMaps"}
 META:StartStorable()
 	META:GetSet("Color", Color(1, 1, 1))
 	META:GetSet("Intensity", 1)
-	META:GetSet("Shadow", false)
-	META:GetSet("ShadowCubemap", false)
-	META:GetSet("ShadowSize", 256)
+	META:GetSet("Shadow", false, {callback = "BuildProjection"})
+	META:GetSet("ShadowCubemap", false, {callback = "BuildProjection"})
+	META:GetSet("ShadowSize", 256, {callback = "BuildProjection"})
 	META:GetSet("FOV", 90, {editor_min = 0, editor_max = 180, callback = "BuildProjection"})
 	META:GetSet("NearZ", 1, {callback = "BuildProjection"})
 	META:GetSet("FarZ", -1, {callback = "BuildProjection"})
@@ -60,13 +60,21 @@ if GRAPHICS then
 		end
 	end
 
+	function META:GetOrthoSize(i)
+		local max = self.OrthoSizeMax
+		if max <= 0 and render3d.largest_aabb then
+			max = render3d.largest_aabb:GetLength()/2
+		end
+		return math.lerp(((i-1)/(#self.shadow_maps-1))^self.OrthoBias, max, self.OrthoSizeMin)
+	end
+
 	function META:BuildProjection()
 		for i, cam in ipairs(self.cameras) do
 			local projection = Matrix44()
 
 			do -- setup the projection matrix
 				if self.Ortho then
-					local size = math.lerp(((i-1)/(#self.shadow_maps-1))^self.OrthoBias, self.OrthoSizeMax, self.OrthoSizeMin)
+					local size = self:GetOrthoSize(i)
 					projection:Ortho(-size, size, -size, size, size+200, -size-100)
 				else
 					local shadow_map = self.shadow_maps[i]
@@ -117,6 +125,15 @@ if GRAPHICS then
 				pos = camera.camera_3d:GetPosition()
 				local hmm = 0.25
 				view:Translate(math.ceil(pos.y*hmm)/hmm, math.ceil(pos.x*hmm)/hmm, math.ceil(pos.z*hmm)/hmm)
+
+				--local size = self:GetOrthoSize(i)
+
+				--local ang = camera.camera_3d:GetAngles()
+				--view:Translate(math.sin(ang.y) * size, math.cos(ang.y) * size, 0)
+				--view:Rotate(ang.z, 0,0,1)
+				--view:Rotate(ang.x, 1,0,0)
+				--view:Rotate(ang.y, 0,0,1)
+				--view:Translate(-size/2, -size/2, 0)
 			else
 				view:Translate(pos.y, pos.x, pos.z)
 			end
