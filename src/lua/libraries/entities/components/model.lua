@@ -91,6 +91,7 @@ if GRAPHICS then
 	do
 		function META:AddMesh(mesh)
 			table.insert(self.sub_meshes, mesh)
+			mesh.material = mesh.material or render3d.default_material
 			mesh:CallOnRemove(function()
 				if self:IsValid() then
 					self:RemoveMesh(mesh)

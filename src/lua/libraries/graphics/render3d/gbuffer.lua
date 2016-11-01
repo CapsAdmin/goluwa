@@ -452,6 +452,8 @@ function render3d.Initialize()
 		render3d.SetGBufferValue(k,v)
 	end
 
+	render3d.GenerateTextures()
+
 	event.Call("GBufferInitialized")
 
 	llog("gbuffer initialized %s,%s", size.x, size.y)

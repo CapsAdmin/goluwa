@@ -14,6 +14,14 @@ function render3d.GenerateTextures()
 
 		render3d.environment_probe_texture = tex
 	end
+
+	local mat = render.CreateMaterial("model")
+	mat:SetAlbedoTexture(render.GetWhiteTexture())
+	mat:SetRoughnessTexture(render.GetWhiteTexture())
+	mat:SetMetallicTexture(render.GetWhiteTexture())
+	mat:SetRoughnessMultiplier(0)
+	mat:SetMetallicMultiplier(1)
+	render3d.default_material = mat
 end
 
 function render3d.GetEnvironmentProbeTexture()
