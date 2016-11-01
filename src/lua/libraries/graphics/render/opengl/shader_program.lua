@@ -28,10 +28,11 @@ function META:CompileShader(type, source)
 
 	if status[0] == 0 then
 		local log = ffi.new("GLchar[1024]")
-		shader:GetInfoLog(1024, nil, log)
+		local size = ffi.new("GLsizei[1]")
+		shader:GetInfoLog(1024, size, log)
 		shader:Delete()
 
-		error(ffi.string(log), 2)
+		error(ffi.string(log, size[0]), 2)
 	end
 
 	table.insert(self.shaders, shader)
@@ -51,10 +52,11 @@ function META:Link()
 
 	if status[0] == 0 then
 		local log = ffi.new("GLchar[1024]")
-		self.gl_program:GetInfoLog(1024, nil, log)
+		local size = ffi.new("GLsizei[1]")
+		self.gl_program:GetInfoLog(1024, size, log)
 		self.gl_program:Delete()
 
-		error(ffi.string(log), 2)
+		error(ffi.string(log, size[0]), 2)
 	end
 
 	for _, shader in pairs(self.shaders) do
