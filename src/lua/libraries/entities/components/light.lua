@@ -51,6 +51,7 @@ if GRAPHICS then
 			table.clear(self.shadow_maps)
 			table.clear(self.cameras)
 		end
+		self:BuildProjection()
 	end
 
 	function META:SetShadowSize(size)
@@ -83,6 +84,7 @@ if GRAPHICS then
 			end
 
 			cam:SetProjection(projection)
+			cam:Rebuild()
 		end
 	end
 
