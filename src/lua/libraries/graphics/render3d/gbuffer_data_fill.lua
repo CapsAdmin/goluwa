@@ -553,12 +553,16 @@ PASS.Stages = {
 
 					float shadow = 0;
 
+					float cosTheta = -dot(normal, normalize(pos - light_view_pos));
+					float bias = 0.0005*tan(acos(cosTheta));
+					bias = clamp(bias, 0,0.01);
+
 					if (lua[light_shadow = false])
 					{
 						shadow = calc_shadow(uv, light_view_pos);
 					}
 
-					if (shadow > get_linearized_depth(uv)*-0.075)
+					if (shadow > -bias)
 					{
 						set_specular(gbuffer_compute_specular(
 							normalize(pos - light_view_pos), // L

@@ -63,12 +63,14 @@ local function setup(self)
 	tex:SetInternalFormat("r32f")
 	tex:SetBaseLevel(0)
 	tex:SetMaxLevel(0)
-	--[[tex:SetWrapS("clamp_to_border")
-	tex:SetWrapT("clamp_to_border")
-	tex:SetWrapR("clamp_to_border")
-	tex:SetBorderColor(Color(1,1,1,1))
-	]]
-	tex:SetMinFilter("linear")
+	tex:SetAnisotropy(1)
+
+	tex:SetWrapS("clamp_to_edge")
+	tex:SetWrapT("clamp_to_edge")
+	tex:SetWrapR("clamp_to_edge")
+
+	tex:SetMinFilter("nearest")
+	tex:SetMagFilter("nearest")
 	tex:SetupStorage()
 
 	local fb = render.CreateFrameBuffer()
