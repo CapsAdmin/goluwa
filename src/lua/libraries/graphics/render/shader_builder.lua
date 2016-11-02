@@ -647,6 +647,7 @@ function render.CreateShader(data, vars)
 			vfs.Write("data/logs/last_shader_error.c", data.source)
 			debug.openscript("data/logs/last_shader_error.c", tonumber(message:match("0%((%d+)%) ")))
 
+			logn(message)
 			error("\n" .. shader_id .. "\n" .. message, error_depth)
 		end
 	end
