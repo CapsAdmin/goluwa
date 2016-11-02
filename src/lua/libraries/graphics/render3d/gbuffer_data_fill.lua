@@ -480,7 +480,7 @@ PASS.Stages = {
 
 							]] .. (function()
 								local code = ""
-								for i = 1, render3d.csm_count do
+								for i = render3d.csm_count, 1, -1 do
 									local str = [[
 									{
 										vec4 temp = light_projection_view * proj_inv;
@@ -500,7 +500,7 @@ PASS.Stages = {
 											visibility = (texture(tex_shadow_map, shadow_coord.xy).r - shadow_coord.z);
 										}
 										]]..(function()
-											if i == 1 then
+											if i == 10 then
 												return [[else if(lua[project_from_camera = false])
 												{
 													visibility = 0;

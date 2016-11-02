@@ -62,6 +62,7 @@ if GRAPHICS then
 	end
 
 	function META:GetOrthoSize(i)
+		i = -i + #self.shadow_maps
 		local max = self.OrthoSizeMax
 		if max <= 0 and render3d.largest_aabb then
 			max = render3d.largest_aabb:GetLength()/2
@@ -153,7 +154,9 @@ if GRAPHICS then
 		local old = camera.camera_3d
 		camera.camera_3d = cam
 		render3d.shader = render3d.shadow_map_shader
+		render3d.draw_once = true
 		render3d.DrawScene("shadow"..i)
+		render3d.draw_once = false
 		camera.camera_3d = old
 	end
 

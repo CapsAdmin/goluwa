@@ -148,6 +148,14 @@ if GRAPHICS then
 	local render_SetMaterial = render.SetMaterial
 
 	function META:Draw(what)
+		if render3d.draw_once and self.Cull then
+			if self.drawn_once then
+				return
+			end
+		else
+			self.drawn_once = false
+		end
+
 		if self:IsVisible(what) then
 			camera.camera_3d:SetWorld(self.tr:GetMatrix())
 
@@ -156,6 +164,10 @@ if GRAPHICS then
 				render_SetMaterial(mesh.material)
 				render3d.shader:Bind()
 				mesh.vertex_buffer:Draw()
+			end
+
+			if render3d.draw_once then
+				self.drawn_once = true
 			end
 		end
 	end
