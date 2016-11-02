@@ -137,7 +137,7 @@ if GRAPHICS then
 		if self.is_visible == false then return false end
 
 		if not self.next_visible[what] or self.next_visible[what] < system.GetElapsedTime() then
-			self.visible[what] = camera.camera_3d:IntersectAABB(self.tr:GetTranslatedAABB())
+			self.visible[what] = camera.camera_3d:IsAABBVisible(self.tr:GetTranslatedAABB())
 			self.next_visible[what] = system.GetElapsedTime() + 0.25
 		end
 

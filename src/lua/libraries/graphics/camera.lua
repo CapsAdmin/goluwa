@@ -286,7 +286,7 @@ do
 			return frustum
 		end
 
-		function META:IntersectAABB(aabb)
+		function META:IsAABBVisible(aabb)
 			for i, plane in ipairs(self:GetMatrices().frustum_planes) do
 				if
 					(plane.x * (plane.x > 0 and aabb.max_x or aabb.min_x)) +
