@@ -209,3 +209,10 @@ function META:IsPointsVisible(points, view)
 end
 
 prototype.RegisterComponent(META)
+
+if RELOAD then
+	for _, tr in ipairs(prototype.GetCreated(true, "component", META.Name)) do
+		tr:InvalidateTRMatrix()
+		tr:InvalidateScaleMatrix()
+	end
+end
