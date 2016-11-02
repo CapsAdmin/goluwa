@@ -125,4 +125,46 @@ function math3d.WorldPositionToScreen(position, cam_pos, cam_ang, screen_width, 
     return Vec2(x, y), vis
 end
 
+do
+	local EPSILON = 1E-12
+
+	function math3d.SimpleLineIntersectAABB(from, to, min, max)
+		local d = (to - from) * 0.5
+
+		local e = (max - min) * 0.5
+
+		local c = from + d - (min + max) * 0.5
+
+		local ad = Vec3(math.abs(d.x), math.abs(d.y), math.abs(d.z))
+
+		if math.abs(c.x) > e.x + ad.x then
+			return false
+		end
+
+		if math.abs(c.y) > e.y + ad.y then
+			return false
+		end
+
+		if math.abs(c.z) > e.z + ad.z then
+			return false
+		end
+
+
+
+		if math.abs(d.y * c.z - d.z * c.y) > e.y * ad.z + e.z * ad.y + EPSILON then
+			return false
+		end
+
+		if math.abs(d.z * c.x - d.x * c.z) > e.z * ad.x + e.x * ad.z + EPSILON then
+			return false
+		end
+
+		if math.abs(d.x * c.y - d.y * c.x) > e.x * ad.y + e.y * ad.x + EPSILON then
+			return false
+		end
+
+		return true
+	end
+end
+
 return math3d
