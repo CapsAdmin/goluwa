@@ -8,6 +8,7 @@ local skyboxes = {
 	["gm_flatgrass"] = {AABB(-400, -400, -430,   400, 400, -360) * (1/scale), 0.003},
 	["gm_bluehills_test3"] = {AABB(130, 130, 340,   340, 320, 380) * (1/scale), 0},
 	["gm_atomic"] = {AABB(-210, -210, 40,   210, 210, 210) * (1/scale), 0},
+	["de_bank"] = {AABB(115, -74, -77, 261, 64, -28) * (1/scale), 0.003},
 }
 
 function steam.SetMap(name)
