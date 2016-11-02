@@ -170,13 +170,18 @@ function META:RebuildMatrix()
 		end
 
 		local aabb = self:GetAABB():Copy()
-		aabb.min_x = aabb.min_x + -pos.y
-		aabb.min_y = aabb.min_y + -pos.x
-		aabb.min_z = aabb.min_z + -pos.z
+		local x,y,z = self.TRMatrix:GetTranslation()
 
-		aabb.max_x = aabb.max_x + -pos.y
-		aabb.max_y = aabb.max_y + -pos.x
-		aabb.max_z = aabb.max_z + -pos.z
+		aabb:SetMax(aabb:GetMax() * self.temp_scale * 3)
+		aabb:SetMin(aabb:GetMin() * self.temp_scale * 3) -- todo: proper rotation
+
+		aabb.min_x = aabb.min_x + x
+		aabb.min_y = aabb.min_y + y
+		aabb.min_z = aabb.min_z + z
+
+		aabb.max_x = aabb.max_x + x
+		aabb.max_y = aabb.max_y + y
+		aabb.max_z = aabb.max_z + z
 		self.translated_aabb = aabb
 
 		self.rebuild_tr_matrix = false
