@@ -56,18 +56,17 @@ if GRAPHICS then
 
 	function META:SetShadowSize(size)
 		self.ShadowSize = size
-		for _, shadow_map in pairs(self.shadow_maps) do
+		for i, shadow_map in pairs(self.shadow_maps) do
 			shadow_map:SetShadowSize(size)
 		end
 	end
 
 	function META:GetOrthoSize(i)
-		i = -i + #self.shadow_maps
 		local max = self.OrthoSizeMax
 		if max <= 0 and render3d.largest_aabb then
 			max = render3d.largest_aabb:GetLength()/2
 		end
-		return math.lerp(((i-1)/(#self.shadow_maps-1))^self.OrthoBias, max, self.OrthoSizeMin)
+		return math.lerp(((i-1)/(#self.shadow_maps-1))^self.OrthoBias, self.OrthoSizeMin, max)
 	end
 
 	function META:BuildProjection()
@@ -126,8 +125,8 @@ if GRAPHICS then
 
 			if self.ProjectFromCamera then
 				pos = camera.camera_3d:GetPosition()
-				local hmm = 0.25
-				view:Translate(math.ceil(pos.y*hmm)/hmm, math.ceil(pos.x*hmm)/hmm, math.ceil(pos.z*hmm)/hmm)
+				local hmm = 0.5
+				view:Translate(math.round(pos.y*hmm)/hmm, math.round(pos.x*hmm)/hmm, math.round(pos.z*hmm)/hmm)
 
 				--local size = self:GetOrthoSize(i)
 

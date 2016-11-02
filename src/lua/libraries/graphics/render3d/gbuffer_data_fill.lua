@@ -499,15 +499,6 @@ PASS.Stages = {
 
 											visibility = (texture(tex_shadow_map, shadow_coord.xy).r - shadow_coord.z);
 										}
-										]]..(function()
-											if i == 10 then
-												return [[else if(lua[project_from_camera = false])
-												{
-													visibility = 0;
-												}]]
-											end
-											return ""
-										end)()..[[
 									}
 									]]
 									str = str:gsub("tex_shadow_map", "lua[tex_shadow_map_" .. i .." = \"sampler2D\"]")
@@ -543,19 +534,11 @@ PASS.Stages = {
 						attenuation = gbuffer_compute_light_attenuation(pos, light_view_pos, radius, normal);
 					}
 
-					set_specular(gbuffer_compute_specular(
-						normalize(pos - light_view_pos), // L
-						normalize(pos), // V
-						normal, // N
-						attenuation,
-						light_color.rgb * light_intensity
-					));
-
 					float shadow = 0;
 
 					float cosTheta = -dot(normal, normalize(pos - light_view_pos));
 					float bias = 0.0005*tan(acos(cosTheta));
-					bias = clamp(bias, 0,0.01);
+					bias = clamp(bias, 0.001, 0);
 
 					if (lua[light_shadow = false])
 					{
