@@ -454,6 +454,13 @@ function META:TransformVector(x, y, z)
 		(x * self.m02 + y * self.m12 + z * self.m22 + self.m32) / div
 end
 
+function META:TransformPoint(x, y, z)
+	return
+		self.m00 * x + self.m01 * y + self.m02 * z + self.m03,
+		self.m10 * x + self.m11 * y + self.m12 * z + self.m13,
+		self.m20 * x + self.m21 * y + self.m22 * z + self.m23
+end
+
 function META:Lerp(alpha, other)
 	for i = 1, 16 do
 		math.lerp(alpha, self[i-1], other[i-1])
