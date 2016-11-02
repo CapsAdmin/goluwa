@@ -65,11 +65,13 @@ function steam.LoadMap(path)
 	long version; // BSP file version
 	]])
 
-	local info = skyboxes[path:match(".+/(.+)%.bsp")]
+	do
+		local info = skyboxes[path:match(".+/(.+)%.bsp")]
 
-	if info then
-		header.sky_aabb = info[1]
-		header.sky_scale = info[2]
+		if info then
+			header.sky_aabb = info[1]
+			header.sky_scale = info[2]
+		end
 	end
 
 	do
