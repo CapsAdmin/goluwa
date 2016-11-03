@@ -66,7 +66,7 @@ vec3 get_view_pos(vec2 uv)
 render.AddGlobalShaderCode([[
 vec3 get_world_pos(vec2 uv)
 {
-	vec4 pos = g_view_inverse * g_projection_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
+	vec4 pos = g_projection_view_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
 	return pos.xyz / pos.w;
 }]])
 
@@ -196,8 +196,8 @@ function PASS:Initialize()
 		else
 			render.SetCullMode("front")
 		end
-		self.SkyTexture = render3d.GetSkyTexture()
-		self.EnvironmentProbeTexture = render3d.GetEnvironmentProbeTexture()
+		--self.SkyTexture = render3d.GetSkyTexture()
+		--self.EnvironmentProbeTexture = render3d.GetEnvironmentProbeTexture()
 		--self.EnvironmentProbePosition = render.GetEnvironmentProbeTexture().probe:GetPosition()
 	end
 
@@ -460,7 +460,7 @@ PASS.Stages = {
 			source = [[
 				vec2 uv = get_screen_uv();
 
-				float calc_shadow(vec2 uv, vec3 light_view_pos)
+				float calc_shadow(vec2 uv, vec3 light_view_pos, vec3 normal)
 				{
 					float visibility = 0;
 
@@ -476,14 +476,14 @@ PASS.Stages = {
 					}
 					else
 					{
-						vec4 proj_inv = g_projection_view_inverse * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 - 1, 1.0);
+						vec3 world_pos = get_world_pos(uv);
 
 							]] .. (function()
 								local code = ""
 								for i = render3d.csm_count, 1, -1 do
 									local str = [[
 									{
-										vec4 temp = light_projection_view * proj_inv;
+										vec4 temp = light_projection_view * vec4(world_pos, 1);
 										vec3 shadow_coord = temp.xyz / temp.w;
 
 										if (
@@ -522,8 +522,11 @@ PASS.Stages = {
 				{
 
 					vec3 pos = get_view_pos(uv);
-					vec3 normal = get_view_normal(uv);
 					vec3 light_view_pos = g_view_world[3].xyz;
+
+					vec3 L = normalize(pos - light_view_pos);
+					vec3 V = normalize(pos);
+					vec3 N = get_view_normal(uv);
 
 					float attenuation = 1;
 
@@ -531,29 +534,22 @@ PASS.Stages = {
 					{
 						float radius = lua[light_radius = 1000];
 
-						attenuation = gbuffer_compute_light_attenuation(pos, light_view_pos, radius, normal);
+						attenuation = gbuffer_compute_light_attenuation(pos, light_view_pos, radius, N);
 					}
 
 					float shadow = 0;
 
-					float cosTheta = -dot(normal, normalize(pos - light_view_pos));
+					float cosTheta = -dot(N, L);
 					float bias = 0.0005*tan(acos(cosTheta));
-					bias = clamp(bias, 0.001, 0);
 
 					if (lua[light_shadow = false])
 					{
-						shadow = calc_shadow(uv, light_view_pos);
+						shadow = calc_shadow(uv, light_view_pos, N);
 					}
 
 					if (shadow > -bias)
 					{
-						set_specular(gbuffer_compute_specular(
-							normalize(pos - light_view_pos), // L
-							normalize(pos), // V
-							normal, // N
-							attenuation,
-							light_color.rgb * light_intensity
-						));
+						set_specular(gbuffer_compute_specular(L, V, N, attenuation, light_color.rgb * light_intensity));
 					}
 					else
 					{
