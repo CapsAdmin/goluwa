@@ -13,13 +13,22 @@ end)
 commands.Add("scene_info", function()
 	logf("%s models\n", #render3d.scene)
 
-	local count = 0
+	local model_count = 0
 	for _, model in ipairs(render3d.scene) do
-		count = count + #model.sub_meshes
+		model_count = model_count + #model.sub_meshes
 	end
 
-	logf("%s sub models\n", count)
-	logf("%s maximum draw calls\n", count * render3d.csm_count + count)
+	logf("%s sub models\n", model_count)
+
+	local light_count = 0
+	for _, ent in ipairs(entities.GetAll()) do
+		if ent.SetShadow then
+			light_count = light_count + 1
+		end
+	end
+	logf("%s lights\n", light_count)
+
+	logf("%s maximum draw calls\n", model_count + light_count)
 
 	local total_visible = 0
 	local vis = {}
@@ -31,7 +40,7 @@ commands.Add("scene_info", function()
 		end
 	end
 
-	logf("%s current draw calls\n", total_visible)
+	logf("%s current draw calls with shadows\n", total_visible)
 
 	local temp = {}
 	for id, count in pairs(vis) do table.insert(temp, {id = id, count = count}) end
