@@ -184,6 +184,10 @@ do -- attributes
 
 	function META:SetBuffersFromTables(vertices, indices, is_valid_table)
 		if type(vertices) == "number" then
+			if vertices > 0xFFFF then
+				self:SetIndicesType("uint32_t")
+			end
+
 			local size = vertices
 
 			local indices = Array(self:GetIndicesType(), size)
@@ -191,6 +195,10 @@ do -- attributes
 
 			self:UpdateBuffer(Array(self.mesh_layout.ctype, size), indices)
 		else
+			if #vertices > 0xFFFF then
+				self:SetIndicesType("uint32_t")
+			end
+
 			if not is_valid_table then
 				unpack_structs(self, vertices)
 
