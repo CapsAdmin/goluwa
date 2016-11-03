@@ -175,6 +175,13 @@ function CONTEXT:Open(path_info, mode, ...)
 					self.archive = a
 					self.entry = entry
 					self.ref = ref
+
+					if archive.SeekData(self.archive, 0, 1) < 0 then
+						self.content = self:ReadBytes(math.huge)
+						self.size = #self.content
+						self.position = 0
+					end
+
 					return true
 				end
 			else
@@ -193,16 +200,57 @@ function CONTEXT:Open(path_info, mode, ...)
 	return false, "read mode " .. self:GetMode() .. " not supported"
 end
 
+function CONTEXT:ReadByte()
+	if self.content then
+		local char = self.content:sub(self.position+1, self.position+1)
+		self.position = math.clamp(self.position + 1, 0, self.size)
+		return char:byte()
+	else
+		local char = self:ReadBytes(1)
+		if char then
+			return char:byte()
+		end
+	end
+end
+
 function CONTEXT:ReadBytes(bytes)
 	if bytes == math.huge then bytes = self:GetSize() end
 
-	local data = ffi.new("uint8_t[?]", bytes)
-	local size = archive.ReadData(self.archive, data, bytes)
+	if self.content then
+		local str = {}
+		for i = 1, bytes do
+			local byte = self:ReadByte()
+			if not byte then break end
+			str[i] = string.char(byte)
+		end
 
-	if size > 0 then
-		return ffi.string(data, size)
-	elseif size < 0 then
-		if size ~= -30 then -- eof error
+		local out = table.concat(str, "")
+
+		if out ~= "" then
+			return out
+		end
+	else
+		local data = ffi.new("uint8_t[?]", bytes)
+		local size = archive.ReadData(self.archive, data, bytes)
+
+		if size > 0 then
+			return ffi.string(data, size)
+		elseif size < 0 then
+			if size ~= -30 then -- eof error
+				local err = archive.ErrorString(self.archive)
+				if err ~= nil then
+					wlog(ffi.string(err))
+				end
+			end
+		end
+	end
+end
+
+function CONTEXT:SetPosition(pos)
+	if self.content then
+		self.position = math.clamp(pos, 0, self.size)
+	else
+		if archive.SeekData(self.archive, math.clamp(pos, 0, self:GetSize()), 0) ~= archive.e.OK then
 			local err = archive.ErrorString(self.archive)
 			if err ~= nil then
 				wlog(ffi.string(err))
@@ -211,12 +259,20 @@ function CONTEXT:ReadBytes(bytes)
 	end
 end
 
-function CONTEXT:SetPosition(pos)
-	archive.SeekData(self.archive, math.clamp(pos, 0, self:GetSize()), 0)
-end
-
 function CONTEXT:GetPosition()
-	return archive.SeekData(self.archive, 0, 1)
+	if self.content then
+		return self.position
+	else
+		local pos = archive.SeekData(self.archive, 0, 1)
+		if pos < 0 then
+			local err = archive.ErrorString(self.archive)
+			if err ~= nil then
+				wlog(ffi.string(err))
+			end
+			return pos
+		end
+		return pos
+	end
 end
 
 function CONTEXT:OnRemove()
