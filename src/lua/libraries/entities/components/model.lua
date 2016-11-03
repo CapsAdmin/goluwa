@@ -73,7 +73,6 @@ if GRAPHICS then
 			end,
 			function(mesh)
 				self:AddMesh(mesh)
-				print(mesh, path)
 			end,
 			function(err)
 				logf("%s failed to load mesh %q: %s\n", self, path, err)
