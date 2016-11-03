@@ -277,7 +277,7 @@ local function load_mdl(path)
 			if offset > -1 then
 				buffer:PushPosition(header.material_offset + offset)
 					for i = 1, header.material_count do
-						header.material[i] = buffer:ReadString()
+						header.material[i] = vfs.FixPathSlashes(buffer:ReadString())
 					end
 				buffer:PopPosition()
 			end
@@ -286,17 +286,17 @@ local function load_mdl(path)
 		parse("texturedir", function(data, i)
 			local offset = buffer:ReadLong()
 			buffer:PushPosition(offset)
-				data.path = buffer:ReadString()
+				data.path = vfs.FixPathSlashes(buffer:ReadString())
 			buffer:PopPosition()
 		end)
 
 		if not header.material[1] and header.texturedir[1] then
 			for _, data in ipairs(header.texturedir) do
-				for i, path in ipairs(vfs.Find("materials/" .. vfs.FixPathSlashes(data.path) .. "/", true)) do
+				for i, path in ipairs(vfs.Find("materials/" .. data.path .. "/", true)) do
 					header.material[i] = path
 				end
 				if not header.material[1] then
-					for i, path in ipairs(vfs.Find("materials/" .. vfs.FixPathSlashes(data.path):lower() .. "/"), true) do
+					for i, path in ipairs(vfs.Find("materials/" .. data.path:lower() .. "/"), true) do
 						header.material[i] = path
 					end
 				end
@@ -754,29 +754,43 @@ function steam.LoadModel(path, sub_model_callback)
 							if not path:find("/", nil, true) then
 								if path:endswith(".vmt") or path:endswith(".vtf") then
 									for _, dir in ipairs(mdl.texturedir) do
-										if vfs.IsFile("materials/" .. vfs.FixPathSlashes(dir.path .. path)) then
+										if vfs.IsFile("materials/" .. dir.path .. path) then
 											path = "materials/" .. dir.path .. path
 											break
-										elseif vfs.IsFile("materials/" .. vfs.FixPathSlashes(dir.path .. path):lower()) then
+										elseif vfs.IsFile("materials/" .. (dir.path .. path):lower()) then
 											path = "materials/" .. (dir.path .. path):lower()
 											break
 										end
 									end
 								else
 									for _, dir in ipairs(mdl.texturedir) do
-										if vfs.IsFile("materials/" .. vfs.FixPathSlashes(dir.path .. path) .. ".vmt") then
+										if vfs.IsFile("materials/" .. dir.path .. path .. ".vmt") then
 											path = "materials/" .. dir.path .. path .. ".vmt"
 											break
-										elseif vfs.IsFile("materials/" .. vfs.FixPathSlashes(dir.path .. path):lower() .. ".vmt") then
+										elseif vfs.IsFile("materials/" .. (dir.path .. path):lower() .. ".vmt") then
 											path = "materials/" .. (dir.path .. path):lower() .. ".vmt"
 											break
 										end
 									end
 								end
+							else
+								if not path:startswith("materials/") then
+									if vfs.IsFile("materials/" .. path .. ".vmt") then
+										path = "materials/" .. path .. ".vmt"
+									elseif vfs.IsFile("materials/" .. path:lower() .. ".vmt") then
+										path = "materials/" .. path:lower() .. ".vmt"
+									elseif vfs.IsFile("materials/" .. path .. ".vtf") then
+										path = "materials/" .. path .. ".vtf"
+									elseif vfs.IsFile("materials/" .. path:lower() .. ".vtf") then
+										path = "materials/" .. path:lower() .. ".vtf"
+									else
+										wlog("unable to find material %s: %s", model_i, path)
+									end
+								end
 							end
 						end
 
-						steam.LoadMaterial(vfs.FixPathSlashes(path), mesh.material)
+						steam.LoadMaterial(path, mesh.material)
 
 						local WHAT = 0
 
