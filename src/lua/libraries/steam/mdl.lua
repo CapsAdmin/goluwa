@@ -270,34 +270,39 @@ local function load_mdl(path)
 		return str
 	end
 
-	header.material = {}
-
-	buffer:PushPosition(header.material_offset)
-		local offset = buffer:ReadInt()
-
-		buffer:PushPosition(header.material_offset + offset)
-			for i = 1, header.material_count do
-				header.material[i] = buffer:ReadString()
-			end
-		buffer:PopPosition()
-	buffer:PopPosition()
-
-	--[[parse("material", function(data, i)
-		do -- texture name
+	do
+		buffer:PushPosition(header.material_offset)
+			header.material = {}
 			local offset = buffer:ReadInt()
-
-			if offset > 0 then
+			if offset > -1 then
 				buffer:PushPosition(header.material_offset + offset)
-					local str = buffer:ReadString()
-					data.path = str
+					for i = 1, header.material_count do
+						header.material[i] = buffer:ReadString()
+					end
 				buffer:PopPosition()
 			end
+		buffer:PopPosition()
+
+		parse("texturedir", function(data, i)
+			local offset = buffer:ReadLong()
+			buffer:PushPosition(offset)
+				data.path = buffer:ReadString()
+			buffer:PopPosition()
+		end)
+
+		if not header.material[1] and header.texturedir[1] then
+			for _, data in ipairs(header.texturedir) do
+				for i, path in ipairs(vfs.Find("materials/" .. vfs.FixPathSlashes(data.path) .. "/", true)) do
+					header.material[i] = path
+				end
+				if not header.material[1] then
+					for i, path in ipairs(vfs.Find("materials/" .. vfs.FixPathSlashes(data.path):lower() .. "/"), true) do
+						header.material[i] = path
+					end
+				end
+			end
 		end
-
-		data.flags = buffer:ReadInt()
-
-		buffer:Advance(14 * 4)
-	end)]]
+	end
 
 	local bone_names
 	local render2d_prop_names
@@ -371,13 +376,6 @@ local function load_mdl(path)
 		data.bone_index = buffer:ReadInt()
 		data.forward = buffer:ReadVec3()
 		data.flex_desc_index = buffer:ReadInt()
-	end)
-
-	parse("texturedir", function(data, i)
-		local offset = buffer:ReadLong()
-		buffer:PushPosition(offset)
-			data.path = buffer:ReadString()
-		buffer:PopPosition()
 	end)
 
 	parse("localseq", function(data, i)
@@ -742,23 +740,43 @@ function steam.LoadModel(path, sub_model_callback)
 
 						--if path:lower():find("airboat") then table.print(mdl.texturedir) table.print(mdl.material) print(i) end
 
-						if mdl.material[model_i] then
-							local path = mdl.material[model_i]
+						local path = mdl.material[model_i]
 
+						if not path then
+							wlog("no materials found")
+							logn(path)
+							logn(model_i)
+							table.print(mdl.texturedir)
+							table.print(mdl.material)
+						end
+
+						if path then
 							if not path:find("/", nil, true) then
-								for _, dir in ipairs(mdl.texturedir) do
-									if vfs.IsFile("materials/" .. vfs.FixPathSlashes(dir.path .. path) .. ".vmt") then
-										path = dir.path .. path
-										break
-									elseif vfs.IsFile("materials/" .. vfs.FixPathSlashes(dir.path .. path):lower() .. ".vmt") then
-										path = (dir.path .. path):lower()
-										break
+								if path:endswith(".vmt") or path:endswith(".vtf") then
+									for _, dir in ipairs(mdl.texturedir) do
+										if vfs.IsFile("materials/" .. vfs.FixPathSlashes(dir.path .. path)) then
+											path = "materials/" .. dir.path .. path
+											break
+										elseif vfs.IsFile("materials/" .. vfs.FixPathSlashes(dir.path .. path):lower()) then
+											path = "materials/" .. (dir.path .. path):lower()
+											break
+										end
+									end
+								else
+									for _, dir in ipairs(mdl.texturedir) do
+										if vfs.IsFile("materials/" .. vfs.FixPathSlashes(dir.path .. path) .. ".vmt") then
+											path = "materials/" .. dir.path .. path .. ".vmt"
+											break
+										elseif vfs.IsFile("materials/" .. vfs.FixPathSlashes(dir.path .. path):lower() .. ".vmt") then
+											path = "materials/" .. (dir.path .. path):lower() .. ".vmt"
+											break
+										end
 									end
 								end
 							end
-
-							steam.LoadMaterial(vfs.FixPathSlashes("materials/" .. path .. ".vmt"), mesh.material)
 						end
+
+						steam.LoadMaterial(vfs.FixPathSlashes(path), mesh.material)
 
 						local WHAT = 0
 
