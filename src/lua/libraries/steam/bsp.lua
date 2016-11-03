@@ -377,22 +377,21 @@ function steam.LoadMap(path)
 
 			local lump = header.lumps[34]
 
-			data.vertex_info = {}
+			data.heightmap = {}
 
 			bsp_file:PushPosition(lump.fileofs + (data.DispVertStart * 20))
 			for i = 1, ((2 ^ data.power) + 1) ^ 2 do
-				local vertex = bsp_file:ReadVec3()
+				local pos = bsp_file:ReadVec3()
 				local dist = bsp_file:ReadFloat()
 				local alpha = bsp_file:ReadFloat()
 
-				data.vertex_info[i] = {
-					vertex = vertex,
+				data.heightmap[i] = {
+					pos = pos,
 					dist = dist,
 					alpha = alpha
 				}
 			end
-
-			bsp_file:PopPosition(old_pos)
+			bsp_file:PopPosition()
 
 			header.displacements[i] = data
 
@@ -489,8 +488,8 @@ function steam.LoadMap(path)
 
 		local function qwerty(dims, corners, start_corner, dispinfo, x, y)
 			local index = (y - 1) * dims + x
-			local data = dispinfo.vertex_info[index]
-			return asdf(corners, start_corner, dims, x, y) + (data.vertex * data.dist), data.alpha
+			local data = dispinfo.heightmap[index]
+			return asdf(corners, start_corner, dims, x, y) + (data.pos * data.dist), data.alpha
 		end
 
 		local meshes = {}
@@ -522,7 +521,7 @@ function steam.LoadMap(path)
 				do
 					local mesh = meshes[texname]
 
-					if face.dispinfo < 0 then
+					if face.dispinfo == -1 then
 						local first, previous
 
 						for j = 1, face.numedges do
@@ -619,54 +618,58 @@ function steam.LoadMap(path)
 		end
 	end
 
-	local physics_meshes = {}
+	local physics_meshes
 
-	local count = #models
+	if PHYSICS then
+		physics_meshes = {}
 
-	for i_, model in ipairs(models) do
-		local vertices_tbl = GRAPHICS and model:GetVertices() or model
-		local vertices_count = #vertices_tbl
+		local count = #models
 
-		local triangles = ffi.new("unsigned int[?]", vertices_count)
-		for i = 0, vertices_count - 1 do triangles[i] = i end
+		for i_, model in ipairs(models) do
+			local vertices_tbl = GRAPHICS and model:GetVertices() or model
+			local vertices_count = #vertices_tbl
 
-		local vertices = ffi.new("float[?]", vertices_count * 3)
+			local triangles = ffi.new("unsigned int[?]", vertices_count)
+			for i = 0, vertices_count - 1 do triangles[i] = i end
 
-		local i = 0
+			local vertices = ffi.new("float[?]", vertices_count * 3)
 
-		--FIX ME
-		local _, huh = next(vertices_tbl)
-		if type(huh.pos) == "cdata" then
-			for _, data in ipairs(vertices_tbl) do
-				vertices[i] = data.pos.x i = i + 1
-				vertices[i] = data.pos.y i = i + 1
-				vertices[i] = data.pos.z i = i + 1
+			local i = 0
+
+			--FIX ME
+			local _, huh = next(vertices_tbl)
+			if type(huh.pos) == "cdata" then
+				for _, data in ipairs(vertices_tbl) do
+					vertices[i] = data.pos.x i = i + 1
+					vertices[i] = data.pos.y i = i + 1
+					vertices[i] = data.pos.z i = i + 1
+				end
+			else
+				for _, data in ipairs(vertices_tbl) do
+					vertices[i] = data.pos[1] i = i + 1
+					vertices[i] = data.pos[2] i = i + 1
+					vertices[i] = data.pos[3] i = i + 1
+				end
 			end
-		else
-			for _, data in ipairs(vertices_tbl) do
-				vertices[i] = data.pos[1] i = i + 1
-				vertices[i] = data.pos[2] i = i + 1
-				vertices[i] = data.pos[3] i = i + 1
-			end
+
+			local mesh = {
+				triangles = {
+					count = vertices_count / 3,
+					pointer = triangles,
+					stride = ffi.sizeof("unsigned int") * 3,
+				},
+				vertices = {
+					count = vertices_count,
+					pointer = vertices,
+					stride = ffi.sizeof("float") * 3,
+				},
+			}
+
+			physics_meshes[i_] = mesh
+
+			tasks.Wait()
+			tasks.ReportProgress("building physics meshes", count)
 		end
-
-		local mesh = {
-			triangles = {
-				count = vertices_count / 3,
-				pointer = triangles,
-				stride = ffi.sizeof("unsigned int") * 3,
-			},
-			vertices = {
-				count = vertices_count,
-				pointer = vertices,
-				stride = ffi.sizeof("float") * 3,
-			},
-		}
-
-		physics_meshes[i_] = mesh
-
-		tasks.Wait()
-		tasks.ReportProgress("building physics meshes", count)
 	end
 
 	if GRAPHICS then
