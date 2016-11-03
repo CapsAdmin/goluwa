@@ -471,25 +471,17 @@ function steam.LoadMap(path)
 			end
 		end
 
-		local function bilerpvec(a, b, c, d, alpha1, alpha2)
-			return a:Copy():Lerp(alpha1, b):Lerp(alpha2, c:Copy():Lerp(alpha1, d))
-		end
-
-		local function asdf(corners, start_corner, dims, x, y)
-			return bilerpvec(
+		local function lerp_corners(dims, corners, start_corner, dispinfo, x, y)
+			local index = (y - 1) * dims + x
+			local data = dispinfo.heightmap[index]
+			return math3d.BilerpVec3(
 				corners[1 + (start_corner + 0) % 4],
 				corners[1 + (start_corner + 1) % 4],
 				corners[1 + (start_corner + 3) % 4],
 				corners[1 + (start_corner + 2) % 4],
 				(y - 1) / (dims - 1),
 				(x - 1) / (dims - 1)
-			)
-		end
-
-		local function qwerty(dims, corners, start_corner, dispinfo, x, y)
-			local index = (y - 1) * dims + x
-			local data = dispinfo.heightmap[index]
-			return asdf(corners, start_corner, dims, x, y) + (data.pos * data.dist), data.alpha
+			) + (data.pos * data.dist), data.alpha
 		end
 
 		local meshes = {}
@@ -542,7 +534,7 @@ function steam.LoadMap(path)
 							previous = current
 						end
 					else
-						local dispinfo = header.displacements[face.dispinfo + 1]
+						local info = header.displacements[face.dispinfo + 1]
 
 						local start_corner_dist = math.huge
 						local start_corner = 0
@@ -550,13 +542,13 @@ function steam.LoadMap(path)
 						local corners = {}
 
 						for j = 1, 4 do
-							local face = header.faces[1 + dispinfo.MapFace]
+							local face = header.faces[1 + info.MapFace]
 							local surfedge = header.surfedges[1 + face.firstedge + (j - 1)]
 							local edge = header.edges[1 + math.abs(surfedge)]
 							local vertex = edge[1 + (surfedge < 0 and 1 or 0)]
 
 							local corner = header.vertices[1 + vertex]
-							local cough = corner:Distance(dispinfo.startPosition)
+							local cough = corner:Distance(info.startPosition)
 
 							if cough < start_corner_dist then
 								start_corner_dist = cough
@@ -566,21 +558,21 @@ function steam.LoadMap(path)
 							corners[j] = corner
 						end
 
-						local dims = 2 ^ dispinfo.power + 1
+						local dims = 2 ^ info.power + 1
 
 						for x = 1, dims - 1 do
 							for y = 1, dims - 1 do
-								add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y + 1))
-								add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y))
-								add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y + 1))
+								add_vertex(mesh, texinfo, texdata, lerp_corners(dims, corners, start_corner, info, x + 1, y + 1))
+								add_vertex(mesh, texinfo, texdata, lerp_corners(dims, corners, start_corner, info, x, y))
+								add_vertex(mesh, texinfo, texdata, lerp_corners(dims, corners, start_corner, info, x, y + 1))
 
-								add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y))
-								add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y))
-								add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y + 1))
+								add_vertex(mesh, texinfo, texdata, lerp_corners(dims, corners, start_corner, info, x + 1, y))
+								add_vertex(mesh, texinfo, texdata, lerp_corners(dims, corners, start_corner, info, x, y))
+								add_vertex(mesh, texinfo, texdata, lerp_corners(dims, corners, start_corner, info, x + 1, y + 1))
 							end
 						end
 
-						mesh.displacement = true
+						mesh.smooth_normals = true
 					end
 				end
 
@@ -603,7 +595,7 @@ function steam.LoadMap(path)
 		end
 
 		for _, mesh in ipairs(models) do
-			if mesh.displacement then
+			if mesh.smooth_normals then
 				mesh:SmoothNormals()
 			end
 			tasks.Report("smoothing displacements", #models)
@@ -678,8 +670,16 @@ function steam.LoadMap(path)
 		end
 	end
 
+	local render_meshes = {}
+
+	for _, v in ipairs(models) do
+		if v.vertex_buffer then
+			table.insert(render_meshes, v)
+		end
+	end
+
 	steam.bsp_cache[path] = {
-		render_meshes = models,
+		render_meshes = render_meshes,
 		entities = header.entities,
 		physics_meshes = physics_meshes,
 	}
@@ -702,14 +702,6 @@ function steam.SpawnMapEntities(path, parent)
 		for _, v in ipairs(parent:GetChildrenList()) do
 			if v.spawned_from_bsp then
 				v:Remove()
-			end
-		end
-
-		if GRAPHICS then
-			parent:RemoveMeshes()
-
-			for _, model in ipairs(data.render_meshes) do
-				parent:AddMesh(model)
 			end
 		end
 

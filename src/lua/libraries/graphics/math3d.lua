@@ -1,5 +1,9 @@
 local math3d = _G.math3d or {}
 
+function math3d.BilerpVec3(a, b, c, d, alpha1, alpha2)
+	return a:GetLerped(alpha1, b):Lerp(alpha2, c:GetLerped(alpha1, d))
+end
+
 function math3d.WorldToLocal(local_pos, local_ang, world_pos, world_ang)
 	local pos, ang
 
