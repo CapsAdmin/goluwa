@@ -126,6 +126,10 @@ function META:SetupStorage()
 end
 
 function META:Upload(data)
+	if not data and self.downloaded_image then
+		data = self.downloaded_image
+	end
+
 	data.mip_map_level = data.mip_map_level or 1
 	data.format = data.format or "rgba"
 	data.type = data.type or "unsigned_byte"
@@ -312,6 +316,106 @@ function META:Clear(mip_map_level)
 	error("nyi", 2)
 end
 
+function META:IteratePixels()
+	local image = self.downloaded_image or self:Download()
+	self.downloaded_image = image
+
+	local x = 0
+	local y = 0
+	-- z ?
+	local i = 0
+
+	local buffer = image.buffer
+
+	x = x - 1
+	i = i - 1
+
+	return function()
+		if i < image.length then
+
+			if x >= image.width then
+				y = y + 1
+				x = 0
+			end
+
+			x = x + 1
+			i = i + 1
+
+			local y = -y + image.height
+
+			if image.format == "bgra" then
+				return x, y, i, buffer[i].b, buffer[i].g, buffer[i].r, buffer[i].a
+			elseif image.format == "rgba" then
+				return x, y, i, buffer[i].r, buffer[i].b, buffer[i].g, buffer[i].a
+			elseif image.format == "bgr" then
+				return x, y, i, buffer[i].b, buffer[i].g, buffer[i].r
+			elseif image.format == "rgb" then
+				return x, y, i, buffer[i].r, buffer[i].g, buffer[i].b
+			elseif image.format == "red" then
+				return x, y, i, buffer[i].r
+			end
+		end
+	end
+end
+
+function META:GetPixelColor(x, y)
+	local image = self.downloaded_image or self:Download()
+	self.downloaded_image = image
+
+	x = math.clamp(math.floor(x), 0, image.width)
+	y = math.clamp(math.floor(y), 0, image.height)
+
+	y = -y + image.height
+
+	local i = y * image.width + x
+
+	if image.format == "bgra" then
+		return image.buffer[i].b, image.buffer[i].g, image.buffer[i].r, image.buffer[i].a
+	elseif image.format == "rgba" then
+		return image.buffer[i].r, image.buffer[i].b, image.buffer[i].g, image.buffer[i].a
+	elseif image.format == "bgr" then
+		return image.buffer[i].b, image.buffer[i].g, image.buffer[i].r
+	elseif image.format == "rgb" then
+		return image.buffer[i].r, image.buffer[i].g, image.buffer[i].b
+	elseif image.format == "red" then
+		return image.buffer[i].r
+	end
+end
+
+function META:SetPixelColor(x, y, r,g,b,a)
+	local image = self.downloaded_image or self:Download()
+	self.downloaded_image = image
+
+	x = math.clamp(math.floor(x), 0, image.width)
+	y = math.clamp(math.floor(y), 0, image.height)
+
+	y = -y + image.height
+
+	local i = y * image.width + x
+
+	if image.format == "bgra" then
+		image.buffer[i].b = r
+		image.buffer[i].g = g
+		image.buffer[i].r = b
+		image.buffer[i].a = a
+	elseif image.format == "rgba" then
+		image.buffer[i].r = r
+		image.buffer[i].b = g
+		image.buffer[i].g = b
+		image.buffer[i].a = a
+	elseif image.format == "bgr" then
+		image.buffer[i].b = r
+		image.buffer[i].g = g
+		image.buffer[i].r = b
+	elseif image.format == "rgb" then
+		image.buffer[i].r = r
+		image.buffer[i].g = g
+		image.buffer[i].b = b
+	elseif image.format == "red" then
+		image.buffer[i].r = r
+	end
+end
+
 function META:Fill(callback)
 	local image = self:Download()
 
@@ -351,33 +455,6 @@ function META:Fill(callback)
 
 	return self
 end
-
-function META:GetPixelColor(x, y)
-	x = math.clamp(math.floor(x), 1, self.Size.x)
-	y = math.clamp(math.floor(y), 1, self.Size.y)
-
-	y = self.Size.y - y
-
-	local i = y * self.Size.x + x
-
-	local image = self.downloaded_image or self:Download()
-	self.downloaded_image = image
-
-	local buffer = image.buffer
-
-	if image.format == "bgra" then
-		return buffer[i].b, buffer[i].g, buffer[i].r, buffer[i].a
-	elseif image.format == "rgba" then
-		return buffer[i].r, buffer[i].b, buffer[i].g, buffer[i].a
-	elseif image.format == "bgr" then
-		return buffer[i].b, buffer[i].g, buffer[i].r
-	elseif image.format == "rgb" then
-		return buffer[i].r, buffer[i].g, buffer[i].b
-	elseif image.format == "red" then
-		return buffer[i].r
-	end
-end
-
 function META:BeginWrite()
 	local fb = self.fb or render.CreateFrameBuffer()
 	fb:SetSize(self:GetSize():Copy())
