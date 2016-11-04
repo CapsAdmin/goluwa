@@ -29,12 +29,12 @@ function vfs.GetExtensionFromPath(str)
 	return str:match(".+%.(%a+)")
 end
 
-function vfs.GetFolderFromPath(self)
-	return self:match("(.*)/") .. "/"
+function vfs.GetFolderFromPath(str)
+	return str:match("(.*)/") .. "/"
 end
 
-function vfs.GetFileFromPath(self)
-	return self:match(".*/(.*)")
+function vfs.GetFileFromPath(str)
+	return str:match(".*/(.*)")
 end
 
 function vfs.IsPathAbsolutePath(path)
