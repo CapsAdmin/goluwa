@@ -286,7 +286,11 @@ do
 			return frustum
 		end
 
-		function META:IsAABBVisible(aabb)
+		function META:IsAABBVisible(aabb, cam_distance, bounding_sphere)
+			if cam_distance > bounding_sphere^6 then
+				return false
+			end
+
 			for i, plane in ipairs(self:GetMatrices().frustum_planes) do
 				if
 					(plane.x * (plane.x > 0 and aabb.max_x or aabb.min_x)) +

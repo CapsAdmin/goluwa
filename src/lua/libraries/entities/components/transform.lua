@@ -73,6 +73,22 @@ function META:GetTranslatedAABB()
 	return self.translated_aabb
 end
 
+function META:GetBoundingSphere()
+	return self.bounding_sphere
+end
+
+function META:GetCameraDistance()
+	local cam = camera.camera_3d:GetMatrices().view
+
+	local ex,ey,ez = self.TRMatrix.m30, self.TRMatrix.m31, self.TRMatrix.m32
+	local cx,cy,cz = cam.m30, cam.m31, cam.m32
+
+	local x = ex-cx
+	local y = ey-cy
+	local z = ez-cz
+	return x * x + y * y + z * z
+end
+
 function META:OnAdd()
 	self:InvalidateTRMatrix()
 	self:RebuildMatrix()
@@ -183,6 +199,8 @@ function META:RebuildMatrix()
 		aabb.max_y = aabb.max_y + y
 		aabb.max_z = aabb.max_z + z
 		self.translated_aabb = aabb
+
+		self.bounding_sphere = aabb:GetMin():Distance(aabb:GetMax())
 
 		self.rebuild_tr_matrix = false
 	end
