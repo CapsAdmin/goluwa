@@ -22,7 +22,10 @@ function vfs.GetFolderNameFromPath(str)
 end
 
 function vfs.GetFileNameFromPath(str)
-	return str:sub(-(str):reverse():find("/", 0, true) + 1)
+	local pos = (str):reverse():find("/", 0, true)
+	return pos and str:sub(-pos + 1) or str
+end
+
 end
 
 function vfs.GetExtensionFromPath(str)
