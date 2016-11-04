@@ -26,6 +26,8 @@ function vfs.GetFileNameFromPath(str)
 	return pos and str:sub(-pos + 1) or str
 end
 
+function vfs.RemoveExtensionFromPath(str)
+	return str:match("(.+)%..+") or str
 end
 
 function vfs.GetExtensionFromPath(str)
