@@ -162,7 +162,7 @@ do -- attributes
 			local val = output[1][info.name]
 
 			if val then
-				if hasindex(val) and val.Unpack then
+				if type(val) == "number" or hasindex(val) and val.Unpack then
 					keys[info.name] = true
 					found = true
 				end
@@ -172,7 +172,9 @@ do -- attributes
 		if found then
 			for _, struct in pairs(output) do
 				for key, val in pairs(struct) do
-					if keys[key] then
+					if type(val) == "number" then
+						struct[key] = val
+					elseif keys[key] then
 						struct[key] = {val:Unpack()}
 					else
 						struct[key] = nil
