@@ -1,4 +1,4 @@
-render3d.csm_count = 4
+render3d.csm_count = 3
 
 local PASS = {}
 
@@ -460,9 +460,13 @@ PASS.Stages = {
 			source = [[
 				vec2 uv = get_screen_uv();
 
-				float calc_shadow(vec2 uv, vec3 light_view_pos, vec3 normal)
+				float calc_shadow(vec2 uv, vec3 light_view_pos, vec3 L, vec3 N)
 				{
-					float visibility = 0;
+					float cosTheta = -dot(N, L);
+					float bias = 0.0005*tan(acos(cosTheta));
+					float div = 1;
+
+					float shadow = 1;
 
 					if (lua[light_point_shadow = false])
 					{
@@ -472,50 +476,65 @@ PASS.Stages = {
 
 						float shadow_view = texture(lua[tex_shadow_map_cube = render3d.GetSkyTexture()], dir.xzy).r;
 
-						visibility = shadow_view;
+						shadow = shadow_view;
 					}
 					else
 					{
 						vec3 world_pos = get_world_pos(uv);
 
-							]] .. (function()
-								local code = ""
-								for i = render3d.csm_count, 1, -1 do
-									local str = [[
+						]] .. (function()
+							local code = ""
+							for i = render3d.csm_count, 1, -1 do
+								local str = [[
+								{
+									vec4 temp = light_projection_view * vec4(world_pos, 1);
+									vec3 shadow_coord = temp.xyz / temp.w;
+
+									if (
+										shadow_coord.x >= -0.995 &&
+										shadow_coord.x <= 0.995 &&
+										shadow_coord.y >= -0.995 &&
+										shadow_coord.y <= 0.995 &&
+										shadow_coord.z >= -0.995 &&
+										shadow_coord.z <= 0.995
+									)
 									{
-										vec4 temp = light_projection_view * vec4(world_pos, 1);
-										vec3 shadow_coord = temp.xyz / temp.w;
+										shadow_coord = 0.5 * shadow_coord + 0.5;
 
-										if (
-											shadow_coord.x >= -0.995 &&
-											shadow_coord.x <= 0.995 &&
-											shadow_coord.y >= -0.995 &&
-											shadow_coord.y <= 0.995 &&
-											shadow_coord.z >= -0.995 &&
-											shadow_coord.z <= 0.995
-										)
-										{
-											shadow_coord = 0.5 * shadow_coord + 0.5;
-
-											visibility = (texture(tex_shadow_map, shadow_coord.xy).r - shadow_coord.z);
-										}
+										float depth = texture(tex_shadow_map, shadow_coord.xy).r - shadow_coord.z;
+										shadow = depth > -bias ? 1 : 0;
 									}
-									]]
-									str = str:gsub("tex_shadow_map", "lua[tex_shadow_map_" .. i .." = \"sampler2D\"]")
-									if camera.camera_3d:GetMatrices().projection_view then
-										str = str:gsub("light_projection_view", "lua[light_projection_view" .. i .. " = \"mat4\"]")
-									else
-										str = str:gsub("light_projection_view", "(light_projection * light_view)")
-										str = str:gsub("light_view", "lua[light_view" .. i .. " = \"mat4\"]")
-										str = str:gsub("light_projection", "lua[light_projection" .. i .. " = \"mat4\"]")
+								}
+								]]
+
+								str = str:gsub("tex_shadow_map", "lua[tex_shadow_map_" .. i .." = \"sampler2D\"]")
+
+								if DEBUG_SHADOWS then
+									if i == 1 then
+										str = str:gsub("shadow = vec3(depth);", "shadow = vec3(depth, 0, 0)*3;")
+									elseif i == 2 then
+										str = str:gsub("shadow = vec3(depth);", "shadow = vec3(0, depth, 0)*3;")
+									elseif i == 3 then
+										str = str:gsub("shadow = vec3(depth);", "shadow = vec3(0, 0, depth)*3;")
+									elseif i == 4 then
+										str = str:gsub("shadow = vec3(depth);", "shadow = vec3(depth, depth, 0)*3;")
 									end
-									code = code .. str
 								end
-								return code
-							end)() .. [[
+
+								if camera.camera_3d:GetMatrices().projection_view then
+									str = str:gsub("light_projection_view", "lua[light_projection_view" .. i .. " = \"mat4\"]")
+								else
+									str = str:gsub("light_projection_view", "(light_projection * light_view)")
+									str = str:gsub("light_view", "lua[light_view" .. i .. " = \"mat4\"]")
+									str = str:gsub("light_projection", "lua[light_projection" .. i .. " = \"mat4\"]")
+								end
+								code = code .. str
+							end
+							return code
+						end)() .. [[
 					}
 
-					return visibility;
+					return shadow;
 				}
 
 				void main()
@@ -537,24 +556,15 @@ PASS.Stages = {
 						attenuation = gbuffer_compute_light_attenuation(pos, light_view_pos, radius, N);
 					}
 
-					float shadow = 0;
-
-					float cosTheta = -dot(N, L);
-					float bias = 0.0005*tan(acos(cosTheta));
+					float shadow = 1;
 
 					if (lua[light_shadow = false])
 					{
-						shadow = calc_shadow(uv, light_view_pos, N);
+						shadow = calc_shadow(uv, light_view_pos, L, N);
 					}
 
-					if (shadow > -bias)
-					{
-						set_specular(gbuffer_compute_specular(L, V, N, attenuation, light_color.rgb * light_intensity));
-					}
-					else
-					{
-						set_specular(vec3(0));
-					}
+					set_specular(gbuffer_compute_specular(L, V, N, attenuation, light_color.rgb * light_intensity) * shadow);
+
 				}
 			]]
 		}

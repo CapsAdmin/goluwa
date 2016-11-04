@@ -129,7 +129,11 @@ if GRAPHICS then
 		self:SetAABB(self.AABB)
 
 		render3d.largest_aabb = render3d.largest_aabb or AABB()
+		local old = render3d.largest_aabb:Copy()
 		render3d.largest_aabb:Expand(self.AABB)
+		if old ~= render3d.largest_aabb then
+			event.Call("LargestAABB", render3d.largest_aabb)
+		end
 	end
 
 	function META:IsVisible(what)

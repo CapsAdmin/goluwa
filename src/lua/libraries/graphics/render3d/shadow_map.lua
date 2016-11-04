@@ -69,8 +69,8 @@ local function setup(self)
 	tex:SetWrapT("clamp_to_edge")
 	tex:SetWrapR("clamp_to_edge")
 
-	tex:SetMinFilter("nearest")
-	tex:SetMagFilter("nearest")
+	tex:SetMinFilter("linear")
+	tex:SetMagFilter("linear")
 	tex:SetupStorage()
 
 	local fb = render.CreateFrameBuffer()
