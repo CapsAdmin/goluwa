@@ -57,7 +57,7 @@ if GRAPHICS then
 	function META:SetShadowSize(size)
 		self.ShadowSize = size
 		for i, shadow_map in pairs(self.shadow_maps) do
-			shadow_map:SetShadowSize(size)
+			shadow_map:SetShadowSize(math.pow2round(size/i))
 		end
 		self:BuildProjection()
 	end
