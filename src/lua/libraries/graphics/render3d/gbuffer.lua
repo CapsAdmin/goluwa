@@ -454,6 +454,8 @@ function render3d.Initialize()
 
 	render3d.GenerateTextures()
 
+	include("lua/libraries/graphics/render3d/scene.lua", render3d)
+
 	event.Call("GBufferInitialized")
 
 	llog("gbuffer initialized %s,%s", size.x, size.y)

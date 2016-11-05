@@ -1,7 +1,6 @@
 local render3d = _G.render3d or {}
 
 include("gbuffer.lua", render3d)
-include("scene.lua", render3d)
 include("sky.lua", render3d)
 include("environment_probe.lua", render3d)
 include("shadow_map.lua", render3d)

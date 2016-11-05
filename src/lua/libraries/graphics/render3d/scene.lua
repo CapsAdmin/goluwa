@@ -54,8 +54,91 @@ function render3d.SortDistanceScene(reverse)
 	end
 end
 
+local occlusion_shader = render.CreateShader({
+	name = "occlusion_query",
+	vertex = {
+		mesh_layout = {
+			{pos = "vec3"},
+		},
+		variables = {
+			size = 1,
+			model = "mat4",
+		},
+		source = [[
+			void main()
+			{
+				gl_Position = g_projection_view * model * vec4(pos, 1);
+			}
+		]],
+	},
+	fragment = {
+		source = [[
+			void main()
+			{
+
+			}
+		]],
+	},
+})
+
+local next_visible = {}
+local framebuffers = {}
+
 function render3d.DrawScene(what)
 	event.Call("DrawScene")
+
+	if not next_visible[what] or next_visible[what] < system.GetElapsedTime() then
+
+		if not framebuffers[what] then
+			local fb = render.CreateFrameBuffer()
+			local size = Vec2() + 512
+
+			fb:SetTexture("depth", {
+				size = size,
+				internal_format = "depth_component16",
+			})
+
+			fb:SetSize(size)
+			framebuffers[what] = fb
+		end
+
+		local scene = render3d.GetDistanceSortedScene()
+
+		if scene[1] then
+			render3d.SortDistanceScene()
+
+			framebuffers[what]:Begin()
+			framebuffers[what]:ClearDepth(1)
+			render.PushDepth(true)
+			render.SetColorMask(0,0,0,0)
+			render.PushCullMode("none")
+
+			for _, model in ipairs(scene) do
+				model.occluders[what] = model.occluders[what] or render.CreateQuery("any_samples_passed_conservative")
+				if model:IsVisible(what) and not model:IsTranslucent() then
+					--model.is_visible = model.occluders[what]:GetResult()
+
+					-- TODO: upload aabb only
+					occlusion_shader.model = model.tr.TRMatrix -- don't call model:GetMatrix() as it migth rebuild, it's not that important
+					occlusion_shader:Bind()
+
+					model.occluders[what]:Begin()
+					-- TODO: simple geometry
+					for _, mesh in ipairs(model.sub_meshes) do
+						mesh.vertex_buffer:Draw()
+					end
+					model.occluders[what]:End()
+				end
+			end
+
+			render.PopCullMode()
+			render.SetColorMask(1,1,1,1)
+			render.PopDepth()
+			framebuffers[what]:End()
+		end
+
+		next_visible[what] = system.GetElapsedTime() + 1/5
+	end
 
 	if needs_sorting then
 		render3d.SortScene()

@@ -202,3 +202,65 @@ if system.IsOpenGLExtensionSupported("GL_ARB_texture_barrier") then
 		gl.TextureBarrier()
 	end
 end
+
+do
+	local translate = {
+		samples_passed = gl.eGL_SAMPLES_PASSED,
+		any_samples_passed = gl.e.GL_ANY_SAMPLES_PASSED,
+		any_samples_passed_conservative = gl.e.GL_ANY_SAMPLES_PASSED_CONSERVATIVE,
+		primitives_generated = gl.e.GL_PRIMITIVES_GENERATED,
+		transform_feedback_primitives_written = gl.e.GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN,
+		time_passed = gl.e.GL_TIME_ELAPSED,
+	}
+
+	local META = {}
+	META.__index = META
+
+	function META:Begin()
+		gl.BeginQuery(self.type, self.id)
+	end
+
+	function META:End()
+		gl.EndQuery(self.type)
+	end
+
+	function META:BeginConditional()
+		gl.BeginConditionalRender(self.id, "GL_QUERY_NO_WAIT")
+	end
+
+	function META:EndConditional()
+		gl.EndConditionalRender()
+	end
+
+	do
+		local temp = ffi.new("GLuint[1]")
+		function META:GetResult()
+			gl.GetQueryObjectuiv(self.id, "GL_QUERY_RESULT_AVAILABLE", temp)
+			if temp[0] == 1 then
+				gl.GetQueryObjectuiv(self.id, "GL_QUERY_RESULT", temp)
+				return temp[0]
+			end
+		end
+	end
+
+	function META:Delete()
+		gl.DeleteQueries(1, ffi.new('GLuint[1]', self.id))
+	end
+
+	local ctype = ffi.typeof('struct { int id; uint16_t type; uint8_t ready; }')
+
+	ffi.metatype(ctype, META)
+
+	function render.CreateQuery(type)
+		local temp = ffi.new("GLuint[1]")
+		gl.GenQueries(1, temp)
+		local self = ffi.new(ctype)
+		self.id = temp[0]
+		self.type = translate[type]
+		return self
+	end
+end
+
+function render.SetColorMask(r,g,b,a)
+	gl.ColorMask(r,g,b,a)
+end

@@ -24,6 +24,7 @@ if GRAPHICS then
 		self.sub_meshes = {}
 		self.next_visible = {}
 		self.visible = {}
+		self.occluders = {}
 	end
 
 	function META:SetVisible(b)
@@ -53,6 +54,9 @@ if GRAPHICS then
 
 	function META:OnRemove()
 		render3d.RemoveModel(self)
+		for k,v in pairs(self.occluders) do
+			v:Delete()
+		end
 	end
 
 	function META:SetModelPath(path)
@@ -88,6 +92,16 @@ if GRAPHICS then
 	end
 
 	do
+		local function check_translucent(self)
+			self.translucent = false
+
+			for i, mesh in ipairs(self.sub_meshes) do
+				if mesh.material:GetTranslucent() then
+					self.translucent = true
+				end
+			end
+		end
+
 		function META:AddMesh(mesh)
 			table.insert(self.sub_meshes, mesh)
 			mesh.material = mesh.material or render3d.default_material
@@ -101,6 +115,8 @@ if GRAPHICS then
 			if self.MaterialOverride then
 				self:SetMaterialOverride(self:GetMaterialOverride())
 			end
+
+			check_translucent(self)
 		end
 
 		function META:RemoveMesh(model_)
@@ -113,6 +129,8 @@ if GRAPHICS then
 			if not self.sub_meshes[1] then
 				render3d.RemoveModel(self)
 			end
+
+			check_translucent(self)
 		end
 
 		function META:RemoveMeshes()
@@ -140,9 +158,11 @@ if GRAPHICS then
 		end
 	end
 
-	function META:IsVisible(what)
-		if self.is_visible == false then return false end
+	function META:IsTranslucent()
+		return self.translucent
+	end
 
+	function META:IsVisible(what)
 		if not self.next_visible[what] or self.next_visible[what] < system.GetElapsedTime() then
 			self.visible[what] = camera.camera_3d:IsAABBVisible(self.tr:GetTranslatedAABB(), self.tr:GetCameraDistance(), self.tr:GetBoundingSphere())
 			self.next_visible[what] = system.GetElapsedTime() + 0.25
@@ -165,6 +185,7 @@ if GRAPHICS then
 
 		if self:IsVisible(what) then
 			camera.camera_3d:SetWorld(self.tr:GetMatrix())
+			self.occluders[what]:BeginConditional()
 
 			for _, mesh in ipairs(self.sub_meshes) do
 				mesh.material.Color = self.Color
@@ -172,6 +193,8 @@ if GRAPHICS then
 				render3d.shader:Bind()
 				mesh.vertex_buffer:Draw()
 			end
+
+			self.occluders[what]:EndConditional()
 
 			if render3d.draw_once then
 				self.drawn_once = true
