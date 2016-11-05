@@ -1,3 +1,11 @@
+commands.Add("remove_lights", function()
+	for k,v in pairs(entities.GetAll()) do
+		if v.SetShadow then
+			v:Remove()
+		end
+	end
+end)
+
 commands.Add("gc", function()
 	collectgarbage()
 	logn(utility.FormatFileSize(collectgarbage("count")*1024))
