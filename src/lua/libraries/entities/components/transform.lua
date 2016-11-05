@@ -12,7 +12,7 @@ META:StartStorable()
 	META:GetSet("Scale", Vec3(1, 1, 1), {callback = "InvalidateScaleMatrix"})
 	META:GetSet("Shear", Vec3(0, 0, 0), {callback = "InvalidateScaleMatrix"})
 	META:GetSet("Size", 1, {callback = "InvalidateScaleMatrix"})
-	META:GetSet("AABB", AABB(0, 0, 0, 0, 0, 0), {callback = "InvalidateTRMatrix"})
+	META:GetSet("AABB", AABB(-1,-1,-1, 1,1,1), {callback = "InvalidateTRMatrix"})
 
 	META:GetSet("SkipRebuild", false)
 META:EndStorable()
@@ -86,6 +86,7 @@ function META:GetCameraDistance()
 	local x = ex-cx
 	local y = ey-cy
 	local z = ez-cz
+
 	return x * x + y * y + z * z
 end
 
@@ -142,7 +143,6 @@ function META:RebuildMatrix()
 		self.ScaleMatrix:Identity()
 		self.ScaleMatrix:Scale(self.temp_scale.y, self.temp_scale.x, self.temp_scale.z)
 		--self.ScaleMatrix:Shear(self.Shear)
-		self.rebuild_scale_matrix = false
 	end
 
 	if self.rebuild_tr_matrix and not self.SkipRebuild then
@@ -184,7 +184,9 @@ function META:RebuildMatrix()
 				self.TRMatrix, self.temp_matrix = self.temp_matrix, self.TRMatrix
 			end
 		end
+	end
 
+	if self.rebuild_tr_matrix or self.rebuild_scale_matrix then
 		local aabb = self:GetAABB():Copy()
 		local x,y,z = self.TRMatrix:GetTranslation()
 
@@ -201,9 +203,10 @@ function META:RebuildMatrix()
 		self.translated_aabb = aabb
 
 		self.bounding_sphere = aabb:GetMin():Distance(aabb:GetMax())
-
-		self.rebuild_tr_matrix = false
 	end
+
+	self.rebuild_tr_matrix = false
+	self.rebuild_scale_matrix = false
 end
 
 function META:IsPointsVisible(points, view)
