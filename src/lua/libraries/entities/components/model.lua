@@ -97,6 +97,10 @@ if GRAPHICS then
 				end
 			end, self)
 			render3d.AddModel(self)
+
+			if self.MaterialOverride then
+				self:SetMaterialOverride(self:GetMaterialOverride())
+			end
 		end
 
 		function META:RemoveMesh(model_)
