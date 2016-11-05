@@ -78,10 +78,10 @@ function META:GetBoundingSphere()
 end
 
 function META:GetCameraDistance()
-	local cam = camera.camera_3d:GetMatrices().view
+	local cam = camera.camera_3d:GetPosition()
 
 	local ex,ey,ez = self.TRMatrix.m30, self.TRMatrix.m31, self.TRMatrix.m32
-	local cx,cy,cz = cam.m30, cam.m31, cam.m32
+	local cx,cy,cz = -cam.y, -cam.x, -cam.z
 
 	local x = ex-cx
 	local y = ey-cy
