@@ -1,4 +1,4 @@
-local VISUALIZE = true
+local VISUALIZE = false
 local render = ... or _G.render
 local gl = require("opengl")
 local ffi = require("ffi")
@@ -15,7 +15,7 @@ if SCENE then
 	mat:SetTranslucent(true)
 
 	local i = 0
-	local oh = 10
+	local oh = 7
 	for x = -oh, oh do
 	for y = -oh, oh do
 	for z = -oh, oh do
@@ -151,26 +151,29 @@ pcall(function()
 	entities.world:SetSunShadow(false)
 end)
 
-local tex = render.CreateTexture("2d")
-tex:SetSize(window.GetSize())
-tex:SetInternalFormat("rgb8")
-tex:SetupStorage()
-
 local fb = render.CreateFrameBuffer()
 
+local size = Vec2()+512
+
 if VISUALIZE then
+	local tex = render.CreateTexture("2d")
+	tex:SetSize(size)
+	tex:SetInternalFormat("rgb8")
+	tex:SetupStorage()
+
 	fb:SetTexture(1, tex)
 end
 
 fb:SetTexture("depth", {
-	size = tex:GetSize(),
+	size = size,
 	internal_format = "depth_component16",
 })
-fb:SetSize(tex:GetSize())
+fb:SetSize(size)
 
-local last_recorded = math.huge
+local available = ffi.new("GLuint[1]")
+local passed = ffi.new("GLuint[1]")
 
-event.Timer("occluder", 1/30, function()
+event.Timer("occluder", 0.25, function()
 	if input.IsMouseDown("button_1") then
 
 		render.PushDepth(true)
@@ -180,87 +183,36 @@ event.Timer("occluder", 1/30, function()
 		if VISUALIZE then
 			fb:ClearAll()
 		end
-		render.PushCullMode("back")
-
-		last_recorded = 0
+		gl.ColorMask(0,0,0,0)
+		--gl.DepthMask(0)
+		render.PushCullMode("none")
 
 		profiler.StartTimer("sort")
 		render3d.SortDistanceScene()
 
-		for i, model in ipairs(render3d.GetDistanceSortedScene()) do
+		for i, model in ipairs(render3d.GetDistanceSortedScene(true)) do
 			if model.occluder_id then
-				if not model.occluder_recorded then
-					shader.model = model:GetComponent("transform"):GetMatrix()
-					if VISUALIZE then
-						shader.visible = model.occlusion_visible and 1 or 0
-						shader.waiting = model.occlusion_waiting and 1 or 0
-					end
-					shader:Bind()
-
-					gl.BeginQuery("GL_SAMPLES_PASSED_ARB", model.occluder_id)
-					---bounding_box:Draw()
-					for _, mesh in ipairs(model.sub_meshes) do
-						mesh.vertex_buffer:Draw()
-					end
-					gl.EndQuery("GL_SAMPLES_PASSED_ARB")
-					model.occluder_recorded = true
-					last_recorded = last_recorded + 1
+				shader.model = model:GetComponent("transform"):GetMatrix()
+				if VISUALIZE then
+					shader.visible = model.occlusion_visible and 1 or 0
+					shader.waiting = model.occlusion_waiting and 1 or 0
 				end
+				shader:Bind()
+
+				gl.BeginQuery("GL_ANY_SAMPLES_PASSED", model.occluder_id)
+				--bounding_box:Draw()
+				for _, mesh in ipairs(model.sub_meshes) do
+					mesh.vertex_buffer:Draw()
+				end
+				gl.EndQuery("GL_ANY_SAMPLES_PASSED")
 			end
 		end
 
 		fb:End()
 		render.PopDepth()
+		gl.ColorMask(1,1,1,1)
+		--gl.DepthMask(1)
 		render.PopCullMode()
-	end
-
-	if last_recorded == #render3d.scene then
-		for i, model in ipairs(render3d.GetDistanceSortedScene()) do
-			if model.occluder_recorded then
-				local available = ffi.new("GLuint[1]")
-				gl.GetQueryObjectuiv(model.occluder_id, "GL_QUERY_RESULT_AVAILABLE", available)
-				available = available[0] == 1
-
-				model.occlusion_waiting = not available
-
-				if available then
-					last_recorded = last_recorded - 1
-				end
-			end
-		end
-	end
-
-	if last_recorded == 0 then
-
-		local total_visible = 0
-		for i, model in ipairs(render3d.GetDistanceSortedScene()) do
-
-			if not model.occlusion_waiting and model.occluder_recorded then
-
-				local passed = ffi.new("GLuint[1]")
-				gl.GetQueryObjectuiv(model.occluder_id, "GL_QUERY_RESULT", passed)
-				passed = passed[0]
-
-				model.occlusion_visible = passed > 0
-
-				if model.occlusion_visible then
-					total_visible = total_visible + 1
-					--model:GetColor():SetAlpha(1)
-				else
-					--model:GetColor():SetAlpha(i/#render3d.GetDistanceSortedScene()%0.5)
-				end
-
-				model.is_visible = model.occlusion_visible
-
-				model.occluder_recorded = false
-			end
-		end
-
-		if total_visible > 0 then
-			if wait(0.5) then
-				print(math.round((total_visible / #render3d.GetDistanceSortedScene())*100), "% visible")
-			end
-		end
 	end
 end)
 
