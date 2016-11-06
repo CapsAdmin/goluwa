@@ -41,6 +41,7 @@ META:GetSet("WrapS", "repeat")
 META:GetSet("WrapT", "repeat")
 META:GetSet("WrapR", "repeat")
 META:GetSet("Anisotropy", -1)
+META:GetSet("SeamlessCubemap", false)
 META:EndStorable()
 
 META:IsSet("Loading", false)

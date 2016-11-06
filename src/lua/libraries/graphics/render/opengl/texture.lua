@@ -36,6 +36,13 @@ function META:GetMipSize(mip_map_level)
 	return Vec3(x[0], y[0], z[0])
 end
 
+function META:SetSeamlessCubemap(b)
+	self.SeamlessCubemap = b
+	if system.IsOpenGLExtensionSupported("GL_ARB_seamless_cubemap_per_texture") then
+		self.gl_tex:SetParameteri("GL_TEXTURE_CUBE_MAP_SEAMLESS", b and 1 or 0)
+	end
+end
+
 function META:SetWrapS(val)
 	self.WrapS = val
 	self.gl_tex:SetParameteri("GL_TEXTURE_WRAP_S", gl.e[TOENUM(val)])
@@ -472,6 +479,7 @@ function render._CreateTexture(self, type)
 		self:SetWrapR("clamp_to_edge")
 		self:SetMinFilter("linear_mipmap_linear")
 		self:SetMagFilter("linear")
+		self:SetSeamlessCubemap(true)
 		--self:SetBaseLevel(0)
 		--self:SetMaxLevel(0)
 	else
