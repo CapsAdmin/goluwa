@@ -174,21 +174,9 @@ if GRAPHICS then
 	local ipairs = ipairs
 	local render_SetMaterial = render.SetMaterial
 
-	function META:Draw(what)
-		if render3d.draw_once and self.Cull then
-			if self.drawn_once then
-				return
-			end
-		else
-			self.drawn_once = false
-		end
-
-		if self:IsVisible(what) then
+	if DISABLE_CULLING then
+		function META:Draw(what)
 			camera.camera_3d:SetWorld(self.tr:GetMatrix())
-
-			if self.occluders[what] then
-				self.occluders[what]:BeginConditional()
-			end
 
 			for _, mesh in ipairs(self.sub_meshes) do
 				mesh.material.Color = self.Color
@@ -196,13 +184,38 @@ if GRAPHICS then
 				render3d.shader:Bind()
 				mesh.vertex_buffer:Draw()
 			end
-
-			if self.occluders[what] then
-				self.occluders[what]:EndConditional()
+		end
+	else
+		function META:Draw(what)
+			if render3d.draw_once and self.Cull then
+				if self.drawn_once then
+					return
+				end
+			else
+				self.drawn_once = false
 			end
 
-			if render3d.draw_once then
-				self.drawn_once = true
+			if self:IsVisible(what) then
+				camera.camera_3d:SetWorld(self.tr:GetMatrix())
+
+				if self.occluders[what] then
+					self.occluders[what]:BeginConditional()
+				end
+
+				for _, mesh in ipairs(self.sub_meshes) do
+					mesh.material.Color = self.Color
+					render_SetMaterial(mesh.material)
+					render3d.shader:Bind()
+					mesh.vertex_buffer:Draw()
+				end
+
+				if self.occluders[what] then
+					self.occluders[what]:EndConditional()
+				end
+
+				if render3d.draw_once then
+					self.drawn_once = true
+				end
 			end
 		end
 	end

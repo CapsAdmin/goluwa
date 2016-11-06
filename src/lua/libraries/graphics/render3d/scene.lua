@@ -81,13 +81,14 @@ local occlusion_shader = render.CreateShader({
 	},
 })
 
+local DISABLE_CULLING = _G.DISABLE_CULLING
 local next_visible = {}
 local framebuffers = {}
 
 function render3d.DrawScene(what)
 	event.Call("DrawScene")
 
-	if not next_visible[what] or next_visible[what] < system.GetElapsedTime() then
+	if not DISABLE_CULLING and (not next_visible[what] or next_visible[what] < system.GetElapsedTime()) then
 
 		if not framebuffers[what] then
 			local fb = render.CreateFrameBuffer()

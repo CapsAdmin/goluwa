@@ -67,6 +67,7 @@ do -- constants
 		WINDOW = true,
 		NULL_OPENGL = false,
 		PHYSICS = false,
+		DISABLE_CULLING = false,
 	}
 
 	for key, default in pairs(env_vars) do
