@@ -4,9 +4,11 @@ function render2d.GetSize()
 	return camera.camera_2d.Viewport.w, camera.camera_2d.Viewport.h
 end
 
-local ceil =math.ceil
-function render2d.Translate(x, y, z)
-	camera.camera_2d:TranslateWorld(ceil(x), ceil(y), z or 0)
+do
+	local ceil = math.ceil
+	function render2d.Translate(x, y, z)
+		camera.camera_2d:TranslateWorld(ceil(x), ceil(y), z or 0)
+	end
 end
 
 function render2d.Translatef(x, y, z)
