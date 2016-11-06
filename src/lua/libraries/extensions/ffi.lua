@@ -73,6 +73,10 @@ end
 ffi.load = function(path, ...)
 	local args = {pcall(_OLD_G.ffi_load, path, ...)}
 
+	if WINDOWS and not args[1] then
+		args = {pcall(_OLD_G.ffi_load, "lib" .. path, ...)}
+	end
+
 	if not args[1] then
 		if system and system.SetSharedLibraryPath then
 			if vfs then
