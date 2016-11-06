@@ -2,13 +2,13 @@ local ffi = require("ffi")
 local gl = require("opengl") -- OpenGL
 local render = (...) or _G.render
 
-local severities = {
+local severity_translate = {
 	[0x9146] = "important", -- high
 	[0x9147] = "warning", -- medium
 	[0x9148] = "notice", -- low
 }
 
-local sources = {
+local source_translate = {
 	[0x8246] = "api",
 	[0x8247] = "window system",
 	[0x8248] = "shader compiler",
@@ -17,7 +17,7 @@ local sources = {
 	[0x824B] = "other",
 }
 
-local types = {
+local type_translate = {
 	[0x824C] = "error",
 	[0x824D] = "deprecated behavior",
 	[0x824E] = "undefined behavior",
@@ -90,47 +90,27 @@ flags = bit.bor(unpack(flags))
 function render.EnableVerboseDebug(b)
 	if system.IsOpenGLExtensionSupported("GL_KHR_debug") then
 		if b then
+			--jit.off()
+			--jit.flush()
 			gl.Enable("GL_DEBUG_OUTPUT")
-			gl.DebugMessageControl("GL_DONT_CARE", flags, "GL_DONT_CARE", ffi.new("GLuint"), nil, true)
 			gl.Enable("GL_DEBUG_OUTPUT_SYNCHRONOUS")
+			gl.DebugMessageControl("GL_DONT_CARE", "GL_DONT_CARE", "GL_DONT_CARE", ffi.new("GLuint"), nil, true)
 
-			local buffer = ffi.new("GLchar[1024]")
-			local length = ffi.sizeof(buffer)
+			local callback = ffi.new("void (*)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)", function(source, type, id, severity, length, message, userParam)
+				source = source_translate[source] or "unknown source " .. source
+				type = type_translate[type] or "unknown type " .. type
+				severity = severity_translate[severity] or "unknown severity level " .. severity
+				message = ffi.string(message, length)
 
-			debug.sethook(function()
-				local info = debug.getinfo(2)
-				if info.source:find("render", nil, true) then
+				local info = debug.getinfo(3)
 
-					local logged_count = ffi.new("GLint[1]")
-					gl.GetIntegerv("GL_DEBUG_LOGGED_MESSAGES", logged_count)
+				logf("OPENGL %s %s: %s\n", type:upper(), severity, info.source)
+				logn("\t", message)
+			end)
 
-					if logged_count[0] ~= 0 then
-						local info = debug.getinfo(3)
-						local source = info.source:match(".+render/(.+)")
-
-						local message
-
-						for _ = 0, logged_count[0] do
-							local type = ffi.new("GLenum[1]")
-							if gl.GetDebugMessageLog(1, length, nil, type, nil, nil, nil, buffer) ~= 0 then
-								type = types[type[0]]
-								if type ~= "other" then
-									message = (message or "") .. "\t" .. type .. ": " .. ffi.string(buffer) .. "\n"
-								end
-							end
-						end
-
-						if message then
-							llog("%s:%i %s:", source, info.currentline, info.name)
-							logn(message)
-						end
-					end
-				end
-			end, "return")
-			render.verbose_debug = true
+			gl.DebugMessageCallback(callback, nil)
 		else
 			gl.Disable("GL_DEBUG_OUTPUT")
-			debug.sethook()
 			render.verbose_debug = false
 		end
 	else
