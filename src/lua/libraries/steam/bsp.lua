@@ -8,6 +8,8 @@ local skyboxes = {
 	["gm_flatgrass"] = {AABB(-400, -400, -430,   400, 400, -360) * (1/scale), 0.003},
 	["gm_bluehills_test3"] = {AABB(130, 130, 340,   340, 320, 380) * (1/scale), 0},
 	["gm_atomic"] = {AABB(-210, -210, 40,   210, 210, 210) * (1/scale), 0},
+	["de_bank"] = {AABB(115, -74, -77, 261, 64, -28) * (1/scale), 0.003},
+	["rp_hometown1999"] = {AABB(78, -61, -1, 98, -45, 5) * (1/scale), 0.003},
 }
 
 function steam.SetMap(name)
@@ -64,11 +66,13 @@ function steam.LoadMap(path)
 	long version; // BSP file version
 	]])
 
-	local info = skyboxes[path:match(".+/(.+)%.bsp")]
+	do
+		local info = skyboxes[path:match(".+/(.+)%.bsp")]
 
-	if info then
-		header.sky_aabb = info[1]
-		header.sky_scale = info[2]
+		if info then
+			header.sky_aabb = info[1]
+			header.sky_scale = info[2]
+		end
 	end
 
 	do
@@ -373,22 +377,21 @@ function steam.LoadMap(path)
 
 			local lump = header.lumps[34]
 
-			data.vertex_info = {}
+			data.heightmap = {}
 
 			bsp_file:PushPosition(lump.fileofs + (data.DispVertStart * 20))
 			for i = 1, ((2 ^ data.power) + 1) ^ 2 do
-				local vertex = bsp_file:ReadVec3()
+				local pos = bsp_file:ReadVec3()
 				local dist = bsp_file:ReadFloat()
 				local alpha = bsp_file:ReadFloat()
 
-				data.vertex_info[i] = {
-					vertex = vertex,
+				data.heightmap[i] = {
+					pos = pos,
 					dist = dist,
 					alpha = alpha
 				}
 			end
-
-			bsp_file:PopPosition(old_pos)
+			bsp_file:PopPosition()
 
 			header.displacements[i] = data
 
@@ -468,25 +471,17 @@ function steam.LoadMap(path)
 			end
 		end
 
-		local function bilerpvec(a, b, c, d, alpha1, alpha2)
-			return a:Copy():Lerp(alpha1, b):Lerp(alpha2, c:Copy():Lerp(alpha1, d))
-		end
-
-		local function asdf(corners, start_corner, dims, x, y)
-			return bilerpvec(
+		local function lerp_corners(dims, corners, start_corner, dispinfo, x, y)
+			local index = (y - 1) * dims + x
+			local data = dispinfo.heightmap[index]
+			return math3d.BilerpVec3(
 				corners[1 + (start_corner + 0) % 4],
 				corners[1 + (start_corner + 1) % 4],
 				corners[1 + (start_corner + 3) % 4],
 				corners[1 + (start_corner + 2) % 4],
 				(y - 1) / (dims - 1),
 				(x - 1) / (dims - 1)
-			)
-		end
-
-		local function qwerty(dims, corners, start_corner, dispinfo, x, y)
-			local index = (y - 1) * dims + x
-			local data = dispinfo.vertex_info[index]
-			return asdf(corners, start_corner, dims, x, y) + (data.vertex * data.dist), data.alpha
+			) + (data.pos * data.dist), data.alpha
 		end
 
 		local meshes = {}
@@ -518,7 +513,7 @@ function steam.LoadMap(path)
 				do
 					local mesh = meshes[texname]
 
-					if face.dispinfo < 0 then
+					if face.dispinfo == -1 then
 						local first, previous
 
 						for j = 1, face.numedges do
@@ -539,7 +534,7 @@ function steam.LoadMap(path)
 							previous = current
 						end
 					else
-						local dispinfo = header.displacements[face.dispinfo + 1]
+						local info = header.displacements[face.dispinfo + 1]
 
 						local start_corner_dist = math.huge
 						local start_corner = 0
@@ -547,13 +542,13 @@ function steam.LoadMap(path)
 						local corners = {}
 
 						for j = 1, 4 do
-							local face = header.faces[1 + dispinfo.MapFace]
+							local face = header.faces[1 + info.MapFace]
 							local surfedge = header.surfedges[1 + face.firstedge + (j - 1)]
 							local edge = header.edges[1 + math.abs(surfedge)]
 							local vertex = edge[1 + (surfedge < 0 and 1 or 0)]
 
 							local corner = header.vertices[1 + vertex]
-							local cough = corner:Distance(dispinfo.startPosition)
+							local cough = corner:Distance(info.startPosition)
 
 							if cough < start_corner_dist then
 								start_corner_dist = cough
@@ -563,21 +558,21 @@ function steam.LoadMap(path)
 							corners[j] = corner
 						end
 
-						local dims = 2 ^ dispinfo.power + 1
+						local dims = 2 ^ info.power + 1
 
 						for x = 1, dims - 1 do
 							for y = 1, dims - 1 do
-								add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y + 1))
-								add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y))
-								add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y + 1))
+								add_vertex(mesh, texinfo, texdata, lerp_corners(dims, corners, start_corner, info, x + 1, y + 1))
+								add_vertex(mesh, texinfo, texdata, lerp_corners(dims, corners, start_corner, info, x, y))
+								add_vertex(mesh, texinfo, texdata, lerp_corners(dims, corners, start_corner, info, x, y + 1))
 
-								add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y))
-								add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x, y))
-								add_vertex(mesh, texinfo, texdata, qwerty(dims, corners, start_corner, dispinfo, x + 1, y + 1))
+								add_vertex(mesh, texinfo, texdata, lerp_corners(dims, corners, start_corner, info, x + 1, y))
+								add_vertex(mesh, texinfo, texdata, lerp_corners(dims, corners, start_corner, info, x, y))
+								add_vertex(mesh, texinfo, texdata, lerp_corners(dims, corners, start_corner, info, x + 1, y + 1))
 							end
 						end
 
-						mesh.displacement = true
+						mesh.smooth_normals = true
 					end
 				end
 
@@ -600,7 +595,7 @@ function steam.LoadMap(path)
 		end
 
 		for _, mesh in ipairs(models) do
-			if mesh.displacement then
+			if mesh.smooth_normals then
 				mesh:SmoothNormals()
 			end
 			tasks.Report("smoothing displacements", #models)
@@ -615,54 +610,58 @@ function steam.LoadMap(path)
 		end
 	end
 
-	local physics_meshes = {}
+	local physics_meshes
 
-	local count = #models
+	if PHYSICS then
+		physics_meshes = {}
 
-	for i_, model in ipairs(models) do
-		local vertices_tbl = GRAPHICS and model:GetVertices() or model
-		local vertices_count = #vertices_tbl
+		local count = #models
 
-		local triangles = ffi.new("unsigned int[?]", vertices_count)
-		for i = 0, vertices_count - 1 do triangles[i] = i end
+		for i_, model in ipairs(models) do
+			local vertices_tbl = GRAPHICS and model:GetVertices() or model
+			local vertices_count = #vertices_tbl
 
-		local vertices = ffi.new("float[?]", vertices_count * 3)
+			local triangles = ffi.new("unsigned int[?]", vertices_count)
+			for i = 0, vertices_count - 1 do triangles[i] = i end
 
-		local i = 0
+			local vertices = ffi.new("float[?]", vertices_count * 3)
 
-		--FIX ME
-		local _, huh = next(vertices_tbl)
-		if type(huh.pos) == "cdata" then
-			for _, data in ipairs(vertices_tbl) do
-				vertices[i] = data.pos.x i = i + 1
-				vertices[i] = data.pos.y i = i + 1
-				vertices[i] = data.pos.z i = i + 1
+			local i = 0
+
+			--FIX ME
+			local _, huh = next(vertices_tbl)
+			if type(huh.pos) == "cdata" then
+				for _, data in ipairs(vertices_tbl) do
+					vertices[i] = data.pos.x i = i + 1
+					vertices[i] = data.pos.y i = i + 1
+					vertices[i] = data.pos.z i = i + 1
+				end
+			else
+				for _, data in ipairs(vertices_tbl) do
+					vertices[i] = data.pos[1] i = i + 1
+					vertices[i] = data.pos[2] i = i + 1
+					vertices[i] = data.pos[3] i = i + 1
+				end
 			end
-		else
-			for _, data in ipairs(vertices_tbl) do
-				vertices[i] = data.pos[1] i = i + 1
-				vertices[i] = data.pos[2] i = i + 1
-				vertices[i] = data.pos[3] i = i + 1
-			end
+
+			local mesh = {
+				triangles = {
+					count = vertices_count / 3,
+					pointer = triangles,
+					stride = ffi.sizeof("unsigned int") * 3,
+				},
+				vertices = {
+					count = vertices_count,
+					pointer = vertices,
+					stride = ffi.sizeof("float") * 3,
+				},
+			}
+
+			physics_meshes[i_] = mesh
+
+			tasks.Wait()
+			tasks.ReportProgress("building physics meshes", count)
 		end
-
-		local mesh = {
-			triangles = {
-				count = vertices_count / 3,
-				pointer = triangles,
-				stride = ffi.sizeof("unsigned int") * 3,
-			},
-			vertices = {
-				count = vertices_count,
-				pointer = vertices,
-				stride = ffi.sizeof("float") * 3,
-			},
-		}
-
-		physics_meshes[i_] = mesh
-
-		tasks.Wait()
-		tasks.ReportProgress("building physics meshes", count)
 	end
 
 	if GRAPHICS then
@@ -671,8 +670,16 @@ function steam.LoadMap(path)
 		end
 	end
 
+	local render_meshes = {}
+
+	for _, v in ipairs(models) do
+		if v.vertex_buffer then
+			table.insert(render_meshes, v)
+		end
+	end
+
 	steam.bsp_cache[path] = {
-		render_meshes = models,
+		render_meshes = render_meshes,
 		entities = header.entities,
 		physics_meshes = physics_meshes,
 	}
@@ -695,14 +702,6 @@ function steam.SpawnMapEntities(path, parent)
 		for _, v in ipairs(parent:GetChildrenList()) do
 			if v.spawned_from_bsp then
 				v:Remove()
-			end
-		end
-
-		if GRAPHICS then
-			parent:RemoveMeshes()
-
-			for _, model in ipairs(data.render_meshes) do
-				parent:AddMesh(model)
 			end
 		end
 

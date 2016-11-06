@@ -3,16 +3,16 @@ local gfx = (...) or _G.gfx
 local META = prototype.CreateTemplate("polygon_2d")
 
 function gfx.CreatePolygon2D(vertex_count)
-	local mesh = render2d.CreateMesh(vertex_count)
+	local vertex_buffer = render2d.CreateMesh(vertex_count)
 
 	-- they never change anyway
-	mesh:SetUpdateIndices(false)
+	vertex_buffer:SetUpdateIndices(false)
 
 	local self = META:CreateObject()
 
-	self.mesh = mesh
+	self.vertex_buffer = vertex_buffer
 	self.vertex_count = vertex_count
-	self.Vertices = mesh.Vertices
+	self.Vertices = vertex_buffer.Vertices
 
 	return self
 end
@@ -162,12 +162,13 @@ end
 
 function META:Draw(count)
 	if self.dirty then
-		self.mesh:UpdateBuffer()
+		self.vertex_buffer:UpdateBuffer()
 		self.dirty = false
 	end
 	render2d.shader.tex = render2d.shader.tex--render2d.GetTexture()
 	--render2d.shader.global_color = render2d.GetColor(true)
-	self.mesh:Draw(count)
+	render2d.shader:Bind()
+	self.vertex_buffer:Draw(count)
 end
 
 function META:SetNinePatch(i, x, y, w, h, patch_size_w, patch_size_h, corner_size, u_offset, v_offset, uv_scale, skin_w, skin_h)

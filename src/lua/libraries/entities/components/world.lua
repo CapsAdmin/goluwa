@@ -74,10 +74,10 @@ META:StartStorable()
 
 		ADD("sun_color", Color(1, 1, 1), function(self, var) self.sun:SetColor(var) end)
 		ADD("sun_shadow", true, function(self, var) self.sun:SetShadow(var) end)
-		ADD("sun_shadow_size", 1024, function(self, var) self.sun:SetShadowSize(var) end)
-		ADD("sun_ortho_size_min", 8, function(self, var) self.sun:SetOrthoSizeMin(var) end)
-		ADD("sun_ortho_size_max", 200, function(self, var) self.sun:SetOrthoSizeMax(var) end)
-		ADD("sun_ortho_bias", 0.32, function(self, var) self.sun:SetOrthoBias(var) end)
+		ADD("sun_shadow_size", 2048, function(self, var) self.sun:SetShadowSize(var) end)
+		ADD("sun_ortho_size_min", 20, function(self, var) self.sun:SetOrthoSizeMin(var) end)
+		ADD("sun_ortho_size_max", 400, function(self, var) self.sun:SetOrthoSizeMax(var) end)
+		ADD("sun_ortho_bias", 4, function(self, var) self.sun:SetOrthoBias(var) end)
 	end
 
 	for _, info in pairs(render3d.GetGBufferValues()) do

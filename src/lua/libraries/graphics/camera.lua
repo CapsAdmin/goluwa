@@ -3,25 +3,28 @@ local camera = {}
 do
 	local variables = {
 		{name = "projection"},
-		{name = "projection_inverse", glsl = "inverse($projection^)"},
-
 		{name = "view"},
-		{name = "view_inverse", glsl = "inverse($view^)"},
-
 		{name = "world"},
+
+		{name = "projection_inverse", glsl = "inverse($projection^)"},
+		{name = "view_inverse", glsl = "inverse($view^)"},
 		{name = "world_inverse", glsl = "inverse($world^)"},
 
 		{name = "projection_view", glsl = "$projection^ * $view^"},
-		{name = "projection_view_inverse", glsl = "inverse($projection_view^)"},
-
 		{name = "view_world", glsl = "$view * $world"},
+		{name = "projection_view_world", glsl = "$projection_view^ * $world^"},
+
+		{name = "projection_view_inverse", glsl = "inverse($projection_view^)"},
 		{name = "view_world_inverse", glsl = "inverse($view_world^)"},
-		{name = "projection_view_world", glsl = "$projection^ * $view^ * $world^"},
 
 		{name = "normal_matrix", glsl = "transpose($view_world_inverse^)"},
 	}
 
-	-- for i,v in ipairs(variables) do v.glsl = nil end -- disable gpu matrix calculation
+	for i,v in ipairs(variables) do
+		if not v.name:find("world") and v.name ~= "normal_matrix" then
+			v.glsl = nil -- disable gpu matrix calculation for world matrices
+		end
+	end
 
 	function camera.GetVariables()
 		return variables
@@ -192,7 +195,7 @@ do
 		end
 
 		function META:ScreenToWorld(x, y)
-			local m = (self:GetMatrices().view * self:GetMatrices().world):GetInverse()
+			local m = (self:GetMatrices().world * self:GetMatrices().view):GetInverse()
 
 			if self:Get3D() then
 				x = ((x / self.Viewport.w) - 0.5) * 2
@@ -213,6 +216,94 @@ do
 				return x, y
 			end
 		end
+	end
+
+	do
+		local function normallize_plane(plane)
+			local mag = math.sqrt(plane.x * plane.x + plane.y * plane.y + plane.z * plane.z)
+
+			plane.x = plane.x / mag
+			plane.y = plane.y / mag
+			plane.z = plane.z / mag
+			plane.w = plane.w / mag
+		end
+
+		function META:GetFrustum(normalize, mat)
+			mat = mat or self:GetMatrices().projection_view
+			local frustum = {}
+
+			frustum.left = {
+				x = mat.m03 + mat.m00,
+				y = mat.m13 + mat.m10,
+				z = mat.m23 + mat.m20,
+				w = mat.m33 + mat.m30,
+			}
+
+			frustum.right = {
+				x = mat.m03 - mat.m00,
+				y = mat.m13 - mat.m10,
+				z = mat.m23 - mat.m20,
+				w = mat.m33 - mat.m30,
+			}
+
+			frustum.top = {
+				x = mat.m03 - mat.m01,
+				y = mat.m13 - mat.m11,
+				z = mat.m23 - mat.m21,
+				w = mat.m33 - mat.m31,
+			}
+
+			frustum.bottom = {
+				x = mat.m03 + mat.m01,
+				y = mat.m13 + mat.m11,
+				z = mat.m23 + mat.m21,
+				w = mat.m33 + mat.m31,
+			}
+
+			frustum.near = {
+				x = mat.m02,
+				y = mat.m12,
+				z = mat.m22,
+				w = mat.m32,
+			}
+
+			frustum.far = {
+				x = mat.m03 - mat.m02,
+				y = mat.m13 - mat.m12,
+				z = mat.m23 - mat.m22,
+				w = mat.m33 - mat.m32,
+			}
+
+			if normalize then
+				normallize_plane(frustum.left)
+				normallize_plane(frustum.right)
+				normallize_plane(frustum.top)
+				normallize_plane(frustum.bottom)
+				normallize_plane(frustum.near)
+				normallize_plane(frustum.far)
+			end
+
+			return frustum
+		end
+
+		function META:IsAABBVisible(aabb, cam_distance, bounding_sphere)
+			if cam_distance > bounding_sphere^6 then
+				return false
+			end
+
+			for i, plane in ipairs(self:GetMatrices().frustum_planes) do
+				if
+					(plane.x * (plane.x > 0 and aabb.max_x or aabb.min_x)) +
+					(plane.y * (plane.y > 0 and aabb.max_y or aabb.min_y)) +
+					(plane.z * (plane.z > 0 and aabb.max_z or aabb.min_z)) <
+					-plane.w
+				then
+					return false
+				end
+			end
+			return true
+		end
+
 	end
 
 	function META:Rebuild(what)
@@ -280,31 +371,52 @@ do
 			end
 		end
 
-		if self:Get3D() and vars.projection_view_world then
-			if what == nil or what == "projection" or what == "view" then
+		if what == nil or what == "projection" or what == "view" then
+			if vars.projection_inverse then
 				vars.projection_inverse = vars.projection:GetInverse()
-				vars.view_inverse = vars.view:GetInverse()
+			end
 
-				vars.projection_view = vars.view * vars.projection
+			if vars.view_inverse then
+				vars.view_inverse = vars.view:GetInverse()
+			end
+
+			if vars.projection_view then
+				vars.projection_view = vars.projection * vars.view
+			end
+
+			if vars.projection_view_inverse then
 				vars.projection_view_inverse = vars.projection_view:GetInverse()
 			end
 
-			if what == nil or what == "view" or what == "world" then
-				vars.world = self.World
-				vars.view_world =  vars.world * vars.view
-				vars.view_world_inverse = vars.view_world:GetInverse()
-				vars.normal_matrix = vars.view_world_inverse:GetTranspose()
+			local f = self:GetFrustum(true, vars.projection_view)
+			vars.frustum = f
+			vars.frustum_planes = {f.near, f.left, f.right, f.bottom, f.top, f.far}
+		end
+
+		if what == nil or what == "view" or what == "world" then
+			vars.world = self.World
+
+			if vars.view_world then
+				vars.view_world =  vars.view * vars.world
 			end
 
+			if vars.view_world_inverse and vars.view_world then
+				vars.view_world_inverse = vars.view_world:GetInverse()
+			end
+
+			if vars.normal_matrix and vars.view_world_inverse then
+				vars.normal_matrix = vars.view_world_inverse:GetTranspose()
+			end
+		end
+
+		if vars.world_inverse then
 			if type == nil or type == "world" then
 				vars.world_inverse = vars.world:GetInverse()
 			end
-		else
-			vars.world = self.World
 		end
 
 		if vars.projection_view_world then
-			vars.projection_view_world = vars.world * vars.view * vars.projection
+			vars.projection_view_world = vars.projection * vars.view_world
 		end
 	end
 

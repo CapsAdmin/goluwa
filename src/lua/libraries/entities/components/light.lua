@@ -4,27 +4,29 @@ local META = prototype.CreateTemplate()
 
 META.Name = "light"
 META.Require = {"transform"}
-META.Events = {"Draw3DLights", "DrawShadowMaps"}
+META.Events = {"Draw3DLights", "DrawShadowMaps", "LargestAABB"}
 
 META:StartStorable()
 	META:GetSet("Color", Color(1, 1, 1))
 	META:GetSet("Intensity", 1)
-	META:GetSet("Shadow", false)
-	META:GetSet("ShadowCubemap", false)
-	META:GetSet("ShadowSize", 256)
-	META:GetSet("FOV", 90, {editor_min = 0, editor_max = 180})
-	META:GetSet("NearZ", 1)
-	META:GetSet("FarZ", -1)
-	META:GetSet("ProjectFromCamera", false)
-	META:GetSet("Ortho", false)
-	META:GetSet("OrthoSizeMin", 5)
-	META:GetSet("OrthoSizeMax", 1000)
-	META:GetSet("OrthoBias", 0.05)
+	META:GetSet("Shadow", false, {callback = "BuildProjection"})
+	META:GetSet("ShadowCubemap", false, {callback = "BuildProjection"})
+	META:GetSet("ShadowSize", 256, {callback = "BuildProjection"})
+	META:GetSet("FOV", 90, {editor_min = 0, editor_max = 180, callback = "BuildProjection"})
+	META:GetSet("NearZ", 0, {callback = "BuildProjection"})
+	META:GetSet("FarZ", 32000, {callback = "BuildProjection"})
+	META:GetSet("ProjectFromCamera", false, {callback = "BuildProjection"})
+	META:GetSet("Ortho", true, {callback = "BuildProjection"})
+	META:GetSet("OrthoSizeMin", 5, {callback = "BuildProjection"})
+	META:GetSet("OrthoSizeMax", 1000, {callback = "BuildProjection"})
+	META:GetSet("OrthoBias", 0.05, {callback = "BuildProjection"})
 META:EndStorable()
 
 if GRAPHICS then
 	function META:OnAdd()
 		self.shadow_maps = {}
+		self.cameras = {}
+
 		gfx.LoadModel3D("models/low-poly-sphere.obj", function(meshes)
 			self.light_mesh = meshes[1]
 		end)
@@ -37,20 +39,59 @@ if GRAPHICS then
 				local shadow_map = render3d.CreateShadowMap(self.ShadowCubemap)
 				shadow_map:SetShadowSize(self.ShadowSize)
 				self.shadow_maps[i] = shadow_map
+
+				local cam = camera.CreateCamera()
+				cam:Set3D(true)
+				self.cameras[i] = cam
 			end
 		else
 			for _, shadow_map in pairs(self.shadow_maps) do
 				shadow_map:Remove()
 			end
 			table.clear(self.shadow_maps)
+			table.clear(self.cameras)
 		end
+		self:BuildProjection()
 	end
 
 	function META:SetShadowSize(size)
 		self.ShadowSize = size
-		for _, shadow_map in pairs(self.shadow_maps) do
-			shadow_map:SetShadowSize(size)
+		for i, shadow_map in pairs(self.shadow_maps) do
+			shadow_map:SetShadowSize(math.pow2round(size/i))
 		end
+		self:BuildProjection()
+	end
+
+	function META:GetOrthoSize(i)
+		local max = self.OrthoSizeMax
+		if max <= 0 and render3d.largest_aabb then
+			max = render3d.largest_aabb:GetLength()/2
+		end
+		return math.lerp(((i-1)/(#self.shadow_maps-1))^self.OrthoBias, self.OrthoSizeMin, max)
+	end
+
+	function META:BuildProjection()
+		for i, cam in ipairs(self.cameras) do
+			local projection = Matrix44()
+
+			do -- setup the projection matrix
+				if self.Ortho then
+					local size = self:GetOrthoSize(i)
+					projection:Ortho(-size, size, -size, size, size*2, -size*2)
+					cam:SetViewport(Rect(0,0,size,size))
+				else
+					local shadow_map = self.shadow_maps[i]
+					projection:Perspective(math.rad(self.FOV), self.FarZ, self.NearZ, shadow_map.tex:GetSize().x / shadow_map.tex:GetSize().y)
+				end
+			end
+
+			cam:SetProjection(projection)
+			cam:Rebuild()
+		end
+	end
+
+	function META:OnLargestAABB()
+		self:BuildProjection()
 	end
 
 	function META:OnDraw3DLights()
@@ -75,39 +116,59 @@ if GRAPHICS then
 		camera.camera_3d:SetWorld(transform:GetMatrix())
 		shader.light_radius = transform:GetSize()
 
-		render.SetShaderOverride(shader)
 		render.SetBlendMode("one", "one")
+		shader:Bind()
 		self.light_mesh:Draw()
 	end
 
-	function META:DrawScene(projection, rot, pos, i)
+	function META:DrawScene(pos, rot, i)
+		local cam = self.cameras[i]
+
 		do -- setup the view matrix
 			local view = Matrix44()
 
 			view:SetRotation(rot)
 
 			if self.ProjectFromCamera then
+				local size = self:GetOrthoSize(i)
+
+				--local cam_view = camera.camera_3d:GetMatrices().view
+				--local x,y,z = cam_view:TransformPoint(0,0, size)
+
+				--view:Translate(x,y,z)
+
+				--view:SetRotation(cam_view:GetRotation():HamRight(view:GetRotation()))
+
+				--view:Translate(-size/2, -size/2, 0)
+
 				pos = camera.camera_3d:GetPosition()
-				local hmm = 0.25
-				view:Translate(math.ceil(pos.y*hmm)/hmm, math.ceil(pos.x*hmm)/hmm, math.ceil(pos.z*hmm)/hmm)
+				--view:Translate(pos.y, pos.x, pos.z)
+				local hmm = 0.5
+				view:Translate(math.round(pos.y*hmm)/hmm, math.round(pos.x*hmm)/hmm, math.round(pos.z*hmm)/hmm)
+
 			else
 				view:Translate(pos.y, pos.x, pos.z)
 			end
 
-			camera.camera_3d:SetView(view:Copy())
+			cam:SetView(view)
 		end
 
-		-- render the scene with this matrix
-		camera.camera_3d:SetProjection(projection:Copy())
-
-		if camera.camera_3d:GetMatrices().projection_view then
-			render3d.gbuffer_data_pass.light_shader["light_projection_view" .. i] = camera.camera_3d:GetMatrices().projection_view
+		if cam:GetMatrices().projection_view then
+			render3d.gbuffer_data_pass.light_shader["light_projection_view" .. i] = cam:GetMatrices().projection_view
 		else
-			render3d.gbuffer_data_pass.light_shader["light_view" .. i] =  camera.camera_3d:GetMatrices().view:Copy()
-			render3d.gbuffer_data_pass.light_shader["light_projection" .. i] = camera.camera_3d:GetMatrices().projection:Copy()
+			render3d.gbuffer_data_pass.light_shader["light_view" .. i] = cam:GetMatrices().view
+			render3d.gbuffer_data_pass.light_shader["light_projection" .. i] = cam:GetMatrices().projection
 		end
 
-		render3d.DrawScene(self, self.Ortho and self:GetComponent("transform"):GetSize())
+		local old = camera.camera_3d
+		camera.camera_3d = cam
+		render3d.shader = render3d.shadow_map_shader
+		render3d.draw_once = true
+		render.SetForcedCullMode("none")
+		render3d.DrawScene("shadow"..i)
+		render.SetForcedCullMode()
+		render3d.draw_once = false
+		camera.camera_3d = old
 	end
 
 	function META:DrawShadowMap()
@@ -115,35 +176,18 @@ if GRAPHICS then
 		local pos = transform:GetPosition()
 		local rot = transform:GetRotation()
 
---		camera.camera_3d:Rebuild()
-
-		local old_view = camera.camera_3d:GetView()
-		local old_projection = camera.camera_3d:GetProjection()
-		local old_pos = camera.camera_3d:GetPosition()
-
 		for i, shadow_map in ipairs(self.shadow_maps) do
 			shadow_map:Begin()
 
-			local projection = Matrix44()
-
-			do -- setup the projection matrix
-				if self.Ortho then
-					projection:Perspective(math.rad(self.FOV), self.FarZ, self.NearZ, shadow_map.tex:GetSize().x / shadow_map.tex:GetSize().y)
-				else
-					local size = math.lerp(((i-1)/(#self.shadow_maps-1))^self.OrthoBias, self.OrthoSizeMax, self.OrthoSizeMin)
-					projection:Ortho(-size, size, -size, size, size+200, -size-100)
-				end
-			end
-
 			if self.ShadowCubemap then
-				for i, rot in ipairs(shadow_map:GetDirections()) do
-					shadow_map:SetupCube(i)
+				for i2, rot in ipairs(shadow_map:GetDirections()) do
+					shadow_map:SetupCube(i2)
 					shadow_map:Clear()
-					self:DrawScene(projection, rot, pos, i)
+					self:DrawScene(pos, rot, i)
 				end
 			else
 				shadow_map:Clear()
-				self:DrawScene(projection, rot, pos, i)
+				self:DrawScene(pos, rot, i)
 			end
 
 			shadow_map:End()
@@ -154,12 +198,8 @@ if GRAPHICS then
 				render3d.gbuffer_data_pass.light_shader["tex_shadow_map_" .. i] = shadow_map:GetTexture()
 			end
 
-			if self.Ortho then break end
+			if not self.Ortho then break end
 		end
-
-		camera.camera_3d:SetView(old_view)
-		camera.camera_3d:SetProjection(old_projection)
-		camera.camera_3d:SetPosition(old_pos)
 	end
 end
 
@@ -167,4 +207,10 @@ META:RegisterComponent()
 
 if RELOAD then
 	render3d.Initialize()
+	for _, obj in ipairs(prototype.GetCreated(true, "component", META.Name)) do
+		if obj.Shadow then
+			obj:SetShadow(false)
+			obj:SetShadow(true)
+		end
+	end
 end

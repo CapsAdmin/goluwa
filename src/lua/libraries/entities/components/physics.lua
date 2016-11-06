@@ -261,7 +261,9 @@ function META:OnUpdate()
 end
 
 function META:OnAdd(ent)
-	self:GetComponent("transform"):SetSkipRebuild(true)
+	if PHYSICS then
+		self:GetComponent("transform"):SetSkipRebuild(true)
+	end
 	if physics.IsReady() then
 		self.rigid_body = physics.CreateBody()
 		self.rigid_body.ent = self

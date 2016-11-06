@@ -33,6 +33,12 @@ function steam.LoadMaterial(path, material)
 	resource.Download(
 		path,
 		function(path)
+			if path:endswith(".vtf") then
+				material:SetAlbedoTexture(render.CreateTextureFromPath(path, true))
+				-- default normal map?
+				return
+			end
+
 			local vmt, err = steam.VDFToTable(vfs.Read(path), function(key) return (key:lower():gsub("%$", "")) end)
 
 			if err then

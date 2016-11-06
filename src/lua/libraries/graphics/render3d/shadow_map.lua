@@ -63,12 +63,14 @@ local function setup(self)
 	tex:SetInternalFormat("r32f")
 	tex:SetBaseLevel(0)
 	tex:SetMaxLevel(0)
-	--[[tex:SetWrapS("clamp_to_border")
-	tex:SetWrapT("clamp_to_border")
-	tex:SetWrapR("clamp_to_border")
-	tex:SetBorderColor(Color(1,1,1,1))
-	]]
+	tex:SetAnisotropy(1)
+
+	tex:SetWrapS("clamp_to_edge")
+	tex:SetWrapT("clamp_to_edge")
+	tex:SetWrapR("clamp_to_edge")
+
 	tex:SetMinFilter("linear")
+	tex:SetMagFilter("linear")
 	tex:SetupStorage()
 
 	local fb = render.CreateFrameBuffer()
@@ -108,7 +110,7 @@ function META:Begin()
 	render.SetForcedCullMode("none")
 	render.PushDepth(true)
 	render.SetBlendMode()
-	render.SetShaderOverride(render3d.shadow_map_shader)
+	render3d.shadow_map_shader:Bind()
 	self.fb:Begin()
 end
 

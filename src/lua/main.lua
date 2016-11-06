@@ -161,7 +161,13 @@ local function main()
 		end
 	end
 
-	if not LOOP then
+	if LOOP then
+		while system.run == true do
+			if update() == false then
+				return
+			end
+		end
+	else
 		function UpdateGoluwa()
 			if update() == false or not system.run then
 				event.Call("ShutDown")
@@ -169,12 +175,6 @@ local function main()
 				return false
 			end
 			return true
-		end
-	else
-		while system.run == true do
-			if update() == false then
-				return
-			end
 		end
 	end
 end
@@ -185,7 +185,7 @@ vfs.PopFromIncludeStack()
 
 main()
 
-if not LOOP then
+if LOOP then
 	event.Call("ShutDown")
 	os.realexit(system.run)
 end

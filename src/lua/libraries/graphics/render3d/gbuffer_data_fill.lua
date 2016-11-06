@@ -1,4 +1,4 @@
-render3d.csm_count = 4
+render3d.csm_count = 3
 
 local PASS = {}
 
@@ -66,7 +66,7 @@ vec3 get_view_pos(vec2 uv)
 render.AddGlobalShaderCode([[
 vec3 get_world_pos(vec2 uv)
 {
-	vec4 pos = g_view_inverse * g_projection_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
+	vec4 pos = g_projection_view_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
 	return pos.xyz / pos.w;
 }]])
 
@@ -185,7 +185,7 @@ vec3 get_env_color()
 
 function PASS:Initialize()
 	function render3d.CreateMesh(vertices, indices, is_valid_table)
-		return render.CreateVertexBuffer(render3d.gbuffer_data_pass.model_shader, vertices, indices)
+		return render.CreateVertexBuffer(render3d.gbuffer_data_pass.model_shader:GetMeshLayout(), vertices, indices)
 	end
 
 	local META = self.model_shader:CreateMaterialTemplate("model")
@@ -196,8 +196,8 @@ function PASS:Initialize()
 		else
 			render.SetCullMode("front")
 		end
-		self.SkyTexture = render3d.GetSkyTexture()
-		self.EnvironmentProbeTexture = render3d.GetEnvironmentProbeTexture()
+		--self.SkyTexture = render3d.GetSkyTexture()
+		--self.EnvironmentProbeTexture = render3d.GetEnvironmentProbeTexture()
 		--self.EnvironmentProbePosition = render.GetEnvironmentProbeTexture().probe:GetPosition()
 	end
 
@@ -213,7 +213,7 @@ function PASS:EndPass()
 	render3d.gbuffer:End()
 end
 
-function PASS:Draw3D(what, dist)
+function PASS:Draw3D(what)
 
 	if (self.last_update_sky or 0) < system.GetElapsedTime() then
 		render3d.UpdateSky()
@@ -225,7 +225,8 @@ function PASS:Draw3D(what, dist)
 	self:BeginPass("model")
 		render.SetCullMode("front")
 		event.Call("PreGBufferModelPass")
-			render3d.DrawScene(what or "models", dist)
+			render3d.shader = render3d.gbuffer_data_pass.model_shader
+			render3d.DrawScene(what or "models")
 		event.Call("PostGBufferModelPass")
 	self:EndPass()
 
@@ -459,9 +460,13 @@ PASS.Stages = {
 			source = [[
 				vec2 uv = get_screen_uv();
 
-				float calc_shadow(vec2 uv, vec3 light_view_pos)
+				float calc_shadow(vec2 uv, vec3 light_view_pos, vec3 L, vec3 N)
 				{
-					float visibility = 0;
+					float cosTheta = -dot(N, L);
+					float bias = 0.0005*tan(acos(cosTheta));
+					float div = 1;
+
+					float shadow = 1;
 
 					if (lua[light_point_shadow = false])
 					{
@@ -471,67 +476,76 @@ PASS.Stages = {
 
 						float shadow_view = texture(lua[tex_shadow_map_cube = render3d.GetSkyTexture()], dir.xzy).r;
 
-						visibility = shadow_view;
+						shadow = shadow_view;
 					}
 					else
 					{
-						vec4 proj_inv = g_projection_view_inverse * vec4(uv * 2 - 1, texture(tex_depth, uv).r * 2 - 1, 1.0);
+						vec3 world_pos = get_world_pos(uv);
 
-							]] .. (function()
-								local code = ""
-								for i = 1, render3d.csm_count do
-									local str = [[
+						]] .. (function()
+							local code = ""
+							for i = render3d.csm_count, 1, -1 do
+								local str = [[
+								{
+									vec4 temp = light_projection_view * vec4(world_pos, 1);
+									vec3 shadow_coord = temp.xyz / temp.w;
+
+									if (
+										shadow_coord.x >= -0.995 &&
+										shadow_coord.x <= 0.995 &&
+										shadow_coord.y >= -0.995 &&
+										shadow_coord.y <= 0.995 &&
+										shadow_coord.z >= -0.995 &&
+										shadow_coord.z <= 0.995
+									)
 									{
-										vec4 temp = light_projection_view * proj_inv;
-										vec3 shadow_coord = temp.xyz / temp.w;
+										shadow_coord = 0.5 * shadow_coord + 0.5;
 
-										if (
-											shadow_coord.x >= -0.995 &&
-											shadow_coord.x <= 0.995 &&
-											shadow_coord.y >= -0.995 &&
-											shadow_coord.y <= 0.995 &&
-											shadow_coord.z >= -0.995 &&
-											shadow_coord.z <= 0.995
-										)
-										{
-											shadow_coord = 0.5 * shadow_coord + 0.5;
-
-											visibility = (texture(tex_shadow_map, shadow_coord.xy).r - shadow_coord.z);
-										}
-										]]..(function()
-											if i == 1 then
-												return [[else if(lua[project_from_camera = false])
-												{
-													visibility = 0;
-												}]]
-											end
-											return ""
-										end)()..[[
+										float depth = texture(tex_shadow_map, shadow_coord.xy).r - shadow_coord.z;
+										shadow = depth > -bias ? 1 : 0;
 									}
-									]]
-									str = str:gsub("tex_shadow_map", "lua[tex_shadow_map_" .. i .." = \"sampler2D\"]")
-									if camera.camera_3d:GetMatrices().projection_view then
-										str = str:gsub("light_projection_view", "lua[light_projection_view" .. i .. " = \"mat4\"]")
-									else
-										str = str:gsub("light_projection_view", "(light_projection * light_view)")
-										str = str:gsub("light_view", "lua[light_view" .. i .. " = \"mat4\"]")
-										str = str:gsub("light_projection", "lua[light_projection" .. i .. " = \"mat4\"]")
+								}
+								]]
+
+								str = str:gsub("tex_shadow_map", "lua[tex_shadow_map_" .. i .." = \"sampler2D\"]")
+
+								if DEBUG_SHADOWS then
+									if i == 1 then
+										str = str:gsub("shadow = vec3(depth);", "shadow = vec3(depth, 0, 0)*3;")
+									elseif i == 2 then
+										str = str:gsub("shadow = vec3(depth);", "shadow = vec3(0, depth, 0)*3;")
+									elseif i == 3 then
+										str = str:gsub("shadow = vec3(depth);", "shadow = vec3(0, 0, depth)*3;")
+									elseif i == 4 then
+										str = str:gsub("shadow = vec3(depth);", "shadow = vec3(depth, depth, 0)*3;")
 									end
-									code = code .. str
 								end
-								return code
-							end)() .. [[
+
+								if camera.camera_3d:GetMatrices().projection_view then
+									str = str:gsub("light_projection_view", "lua[light_projection_view" .. i .. " = \"mat4\"]")
+								else
+									str = str:gsub("light_projection_view", "(light_projection * light_view)")
+									str = str:gsub("light_view", "lua[light_view" .. i .. " = \"mat4\"]")
+									str = str:gsub("light_projection", "lua[light_projection" .. i .. " = \"mat4\"]")
+								end
+								code = code .. str
+							end
+							return code
+						end)() .. [[
 					}
 
-					return visibility;
+					return shadow;
 				}
 
 				void main()
 				{
 
 					vec3 pos = get_view_pos(uv);
-					vec3 normal = get_view_normal(uv);
 					vec3 light_view_pos = g_view_world[3].xyz;
+
+					vec3 L = normalize(pos - light_view_pos);
+					vec3 V = normalize(pos);
+					vec3 N = get_view_normal(uv);
 
 					float attenuation = 1;
 
@@ -539,38 +553,18 @@ PASS.Stages = {
 					{
 						float radius = lua[light_radius = 1000];
 
-						attenuation = gbuffer_compute_light_attenuation(pos, light_view_pos, radius, normal);
+						attenuation = gbuffer_compute_light_attenuation(pos, light_view_pos, radius, N);
 					}
 
-					set_specular(gbuffer_compute_specular(
-						normalize(pos - light_view_pos), // L
-						normalize(pos), // V
-						normal, // N
-						attenuation,
-						light_color.rgb * light_intensity
-					));
-
-					float shadow = 0;
+					float shadow = 1;
 
 					if (lua[light_shadow = false])
 					{
-						shadow = calc_shadow(uv, light_view_pos);
+						shadow = calc_shadow(uv, light_view_pos, L, N);
 					}
 
-					if (shadow > get_linearized_depth(uv)*-0.075)
-					{
-						set_specular(gbuffer_compute_specular(
-							normalize(pos - light_view_pos), // L
-							normalize(pos), // V
-							normal, // N
-							attenuation,
-							light_color.rgb * light_intensity
-						));
-					}
-					else
-					{
-						set_specular(vec3(0));
-					}
+					set_specular(gbuffer_compute_specular(L, V, N, attenuation, light_color.rgb * light_intensity) * shadow);
+
 				}
 			]]
 		}
@@ -740,13 +734,13 @@ if RELOAD then
 	if TESSELLATION then
 		for mesh in pairs(prototype.GetCreated()) do
 			if mesh.Type == "polygon_3d" then
-				mesh.mesh:SetMode("patches")
+				mesh.vertex_buffer:SetMode("patches")
 			end
 		end
 	else
 		for mesh in pairs(prototype.GetCreated()) do
 			if mesh.Type == "polygon_3d" then
-				mesh.mesh:SetMode("triangles")
+				mesh.vertex_buffer:SetMode("triangles")
 			end
 		end
 	end

@@ -12,8 +12,7 @@ end
 
 META:GetSet("Vertices", {})
 META:GetSet("Indices")
-META:GetSet("BBMin", Vec3())
-META:GetSet("BBMax", Vec3())
+META:GetSet("AABB", AABB())
 
 META.i = 1
 
@@ -32,8 +31,8 @@ end
 function META:Upload(skip_unref)
 	if #self.Vertices == 0 then return end
 
-	self.mesh = assert(render3d.CreateMesh(self.Vertices, self.Indices))
-	self.mesh:SetDrawHint("static")
+	self.vertex_buffer = assert(render3d.CreateMesh(self.Vertices, self.Indices))
+	self.vertex_buffer:SetDrawHint("static")
 
 	-- don't store the geometry on the lua side
 	if not skip_unref then
@@ -42,41 +41,27 @@ function META:Upload(skip_unref)
 end
 
 function META:UnreferenceVertices()
-	if self.mesh then
-		self.mesh:UnreferenceMesh()
+	if self.vertex_buffer then
+		self.vertex_buffer:UnreferenceMesh()
 	end
 	self:Clear()
 end
 
 function META:GetMesh()
-	return self.mesh
+	return self.vertex_buffer
 end
 
 function META:Draw()
-	if self.mesh then
-		self.mesh:Draw()
+	if self.vertex_buffer then
+		self.vertex_buffer:Draw()
 	end
 end
 
 do -- helpers
 	function META:BuildBoundingBox()
-		local min = Vec3()
-		local max = Vec3()
-
 		for _, vertex in ipairs(self.Vertices) do
-			if vertex.pos.x < min.x then min.x = vertex.pos.x end
-			if vertex.pos.y < min.y then min.y = vertex.pos.y end
-			if vertex.pos.z < min.z then min.z = vertex.pos.z end
-
-			if vertex.pos.x > max.x then max.x = vertex.pos.x end
-			if vertex.pos.y > max.y then max.y = vertex.pos.y end
-			if vertex.pos.z > max.z then max.z = vertex.pos.z end
+			self.AABB:ExpandVec3(vertex.pos)
 		end
-
-		self.BBMin = min
-		self.BBMax = max
-
-		return min, max
 	end
 
 	function META:BuildNormals()

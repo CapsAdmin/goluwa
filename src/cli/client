@@ -3,4 +3,8 @@
 export SERVER=0
 export CLIENT=1
 
+export LD_PRELOAD="libpthread.so.0"
+export __GL_THREADED_OPTIMIZATIONS=1
+export multithread_glsl_compiler=1
+
 bash unix.bash launch $*

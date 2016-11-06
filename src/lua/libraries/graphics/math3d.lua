@@ -1,18 +1,22 @@
 local math3d = _G.math3d or {}
 
+function math3d.BilerpVec3(a, b, c, d, alpha1, alpha2)
+	return a:GetLerped(alpha1, b):Lerp(alpha2, c:GetLerped(alpha1, d))
+end
+
 function math3d.WorldToLocal(local_pos, local_ang, world_pos, world_ang)
 	local pos, ang
 
 	if world_ang and local_ang then
 		local lmat = Matrix44():SetRotation(Quat():SetAngles(local_ang))
 		local wmat = Matrix44():SetRotation(Quat():SetAngles(world_ang))
-		ang = (lmat * wmat):GetRotation():GetAngles()
+		ang = (wmat * lmat):GetRotation():GetAngles()
 	end
 
 	if world_pos and local_pos then
 		local lmat = Matrix44():SetTranslation(local_pos:Unpack())
 		local wmat = Matrix44():SetTranslation(world_pos:Unpack())
-		pos = Vec3((lmat * wmat):GetTranslation())
+		pos = Vec3((wmat * lmat):GetTranslation())
 	end
 
 	return pos, ang
@@ -25,13 +29,13 @@ function math3d.LocalToWorld(local_pos, local_ang, world_pos, world_ang)
 	if world_ang and local_ang then
 		local lmat = Matrix44():SetRotation(Quat():SetAngles(local_ang)):GetInverse()
 		local wmat = Matrix44():SetRotation(Quat():SetAngles(world_ang))
-		ang = (lmat * wmat):GetRotation():GetAngles()
+		ang = (wmat * lmat):GetRotation():GetAngles()
 	end
 
 	if world_pos and local_pos then
 		local lmat = Matrix44():SetTranslation(local_pos:Unpack()):GetInverse()
 		local wmat = Matrix44():SetTranslation(world_pos:Unpack())
-		pos = Vec3((lmat * wmat):GetTranslation())
+		pos = Vec3((wmat * lmat):GetTranslation())
 	end
 
 	return pos, ang
@@ -123,6 +127,48 @@ function math3d.WorldPositionToScreen(position, cam_pos, cam_ang, screen_width, 
     end
 
     return Vec2(x, y), vis
+end
+
+do
+	local EPSILON = 1E-12
+
+	function math3d.SimpleLineIntersectAABB(from, to, min, max)
+		local d = (to - from) * 0.5
+
+		local e = (max - min) * 0.5
+
+		local c = from + d - (min + max) * 0.5
+
+		local ad = Vec3(math.abs(d.x), math.abs(d.y), math.abs(d.z))
+
+		if math.abs(c.x) > e.x + ad.x then
+			return false
+		end
+
+		if math.abs(c.y) > e.y + ad.y then
+			return false
+		end
+
+		if math.abs(c.z) > e.z + ad.z then
+			return false
+		end
+
+
+
+		if math.abs(d.y * c.z - d.z * c.y) > e.y * ad.z + e.z * ad.y + EPSILON then
+			return false
+		end
+
+		if math.abs(d.z * c.x - d.x * c.z) > e.z * ad.x + e.x * ad.z + EPSILON then
+			return false
+		end
+
+		if math.abs(d.x * c.y - d.y * c.x) > e.x * ad.y + e.y * ad.x + EPSILON then
+			return false
+		end
+
+		return true
+	end
 end
 
 return math3d

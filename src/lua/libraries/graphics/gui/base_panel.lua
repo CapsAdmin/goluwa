@@ -430,7 +430,7 @@ do -- orientation
 				end
 
 				self.temp_matrix = self.temp_matrix or Matrix44()
-				self.Matrix:Multiply(self.Parent.Matrix, self.temp_matrix)
+				self.Parent.Matrix:Multiply(self.Matrix, self.temp_matrix)
 				self.Matrix, self.temp_matrix = self.temp_matrix, self.Matrix
 
 				self.Matrix:Translate(math.ceil(self.Position.x), math.ceil(self.Position.y), 0)

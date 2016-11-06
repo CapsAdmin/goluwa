@@ -1,25 +1,69 @@
+commands.Add("remove_lights", function()
+	for k,v in pairs(entities.GetAll()) do
+		if v.SetShadow then
+			v:Remove()
+		end
+	end
+end)
+
 commands.Add("gc", function()
 	collectgarbage()
 	logn(utility.FormatFileSize(collectgarbage("count")*1024))
 end)
+
+commands.Add("test_mem", function()
+	LOL1 = {} for i = 1, 10000000 do LOL1[i] = {1,2,3} end
+	LOL2 = {} for i = 1, 10000000 do LOL2[i] = {1,2,3} end
+	LOL3 = {} for i = 1, 10000000 do LOL3[i] = {1,2,3} end
+	debug.loglines()
+end)
+
 commands.Add("scene_info", function()
 	logf("%s models\n", #render3d.scene)
 
-	local count = 0
+	local model_count = 0
 	for _, model in ipairs(render3d.scene) do
-		count = count + #model.sub_models
+		model_count = model_count + #model.sub_meshes
 	end
 
-	logf("%s sub models\n", count)
-	logf("%s predicted model draw calls\n", count * render3d.csm_count + count)
+	logf("%s sub models\n", model_count)
+
+	local light_count = 0
+	for _, ent in ipairs(entities.GetAll()) do
+		if ent.SetShadow then
+			light_count = light_count + 1
+		end
+	end
+	logf("%s lights\n", light_count)
+
+	logf("%s maximum draw calls\n", model_count + light_count)
+
+	local total_visible = 0
+	local vis = {}
+	for _, model in ipairs(render3d.scene) do
+		for key, is_visible in pairs(model.visible) do
+			local visible = is_visible and 1 or 0
+			vis[key] = (vis[key] or 0) + visible
+			total_visible = total_visible + visible
+		end
+	end
+
+	logf("%s current draw calls with shadows\n", total_visible)
+
+	local temp = {}
+	for id, count in pairs(vis) do table.insert(temp, {id = id, count = count}) end
+	table.sort(temp, function(a, b) return a.id < b.id end)
+	for _, v in ipairs(temp) do
+		logf("\t%s visible in %s\n", v.count, v.id)
+	end
 
 	local mat_count = {}
 	local tex_count = {}
 	for _, model in ipairs(render3d.scene) do
-		for _, sub_model in ipairs(model.sub_models) do
-			if sub_model.material then
-				mat_count[sub_model.material] = true
-				for key, val in pairs(sub_model.material) do
+		for _, mesh in ipairs(model.sub_meshes) do
+			if mesh.material then
+				mat_count[mesh.material] = true
+				for key, val in pairs(mesh.material) do
 					if typex(val) == "texture" then
 						tex_count[val] = true
 					end

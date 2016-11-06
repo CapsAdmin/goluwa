@@ -22,19 +22,24 @@ function vfs.GetFolderNameFromPath(str)
 end
 
 function vfs.GetFileNameFromPath(str)
-	return str:sub(-(str):reverse():find("/", 0, true) + 1)
+	local pos = (str):reverse():find("/", 0, true)
+	return pos and str:sub(-pos + 1) or str
+end
+
+function vfs.RemoveExtensionFromPath(str)
+	return str:match("(.+)%..+") or str
 end
 
 function vfs.GetExtensionFromPath(str)
 	return str:match(".+%.(%a+)")
 end
 
-function vfs.GetFolderFromPath(self)
-	return self:match("(.*)/") .. "/"
+function vfs.GetFolderFromPath(str)
+	return str:match("(.*)/") .. "/"
 end
 
-function vfs.GetFileFromPath(self)
-	return self:match(".*/(.*)")
+function vfs.GetFileFromPath(str)
+	return str:match(".*/(.*)")
 end
 
 function vfs.IsPathAbsolutePath(path)

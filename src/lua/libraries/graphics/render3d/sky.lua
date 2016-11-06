@@ -1,30 +1,55 @@
 local render3d = ... or _G.render3d
 
-local directions = {
-	Matrix44():SetRotation(QuatDeg3(0,-90,-90)), -- back
-	Matrix44():SetRotation(QuatDeg3(0,90,90)), -- front
-
-	Matrix44():SetRotation(QuatDeg3(0,0,0)), -- up
-	Matrix44():SetRotation(QuatDeg3(180,0,0)), -- down
-
-	Matrix44():SetRotation(QuatDeg3(90,0,0)), -- left
-	Matrix44():SetRotation(QuatDeg3(-90,180,0)), -- right
-}
-
-local fb
-local tex
-local shader
-local sky_projection
-
 function render3d.InitializeSky()
-	tex = render.CreateTexture("cube_map")
-	tex:SetInternalFormat("r11f_g11f_b10f")
+	do
+		local tex = render.CreateTexture("cube_map")
+		tex:SetInternalFormat("r11f_g11f_b10f")
+		--tex:SetInternalFormat("r11f_g11f_b10f")
 
-	--tex:SetMipMapLevels(16)
-	tex:SetSize(Vec2() + 256)
-	tex:SetupStorage()
+		--tex:SetMipMapLevels(1)
+		tex:SetSize(Vec2() + 256)
+		tex:SetupStorage()
 
-	shader = render.CreateShader({
+		local fb = render.CreateFrameBuffer()
+		fb:SetTexture(1, tex, "write", nil, 1)
+		fb:CheckCompletness()
+		fb:WriteThese(1)
+
+		render3d.sky_fb = fb
+		render3d.sky_texture = tex
+	end
+
+	do
+		local views = {
+			Matrix44():SetRotation(QuatDeg3(0,-90,-90)), -- back
+			Matrix44():SetRotation(QuatDeg3(0,90,90)), -- front
+
+			Matrix44():SetRotation(QuatDeg3(0,0,0)), -- up
+			Matrix44():SetRotation(QuatDeg3(180,0,0)), -- down
+
+			Matrix44():SetRotation(QuatDeg3(90,0,0)), -- left
+			Matrix44():SetRotation(QuatDeg3(-90,180,0)), -- right
+		}
+
+		local sky_projection = Matrix44():Perspective(
+			math.rad(90),
+			camera.camera_3d.FarZ,
+			camera.camera_3d.NearZ,
+			render3d.sky_texture:GetSize().x / render3d.sky_texture:GetSize().y
+		)
+
+		for i, view in pairs(views) do
+			local cam = camera.CreateCamera()
+			cam:SetView(view)
+			cam:SetProjection(sky_projection)
+			views[i] = cam
+		end
+
+		render3d.sky_cameras = views
+	end
+
+
+	render3d.sky_shader = {
 		name = "sky",
 		fragment = {
 			mesh_layout = {
@@ -40,45 +65,11 @@ function render3d.InitializeSky()
 				}
 			]]
 		}
-	})
-
-	fb = render.CreateFrameBuffer()
-	fb:SetTexture(1, tex, "write", nil, 1)
-	fb:CheckCompletness()
-	fb:WriteThese(1)
-
-	sky_projection = Matrix44():Perspective(math.rad(90), camera.camera_3d.FarZ, camera.camera_3d.NearZ, tex:GetSize().x / tex:GetSize().y)
-end
-
-function render3d.UpdateSky()
-	render.SetDepth(false)
-	render.SetBlendMode()
-
-	render.SetShaderOverride(shader)
-	local old_view = camera.camera_3d:GetView()
-	local old_projection = camera.camera_3d:GetProjection()
-
-	fb:Begin()
-		for i, view in ipairs(directions) do
-			--fb:SetTexture(1, tex, nil, nil, i)
-			fb:SetTextureLayer(1, tex, i)
-			--fb:Clear()
-			camera.camera_3d:SetView(view)
-			camera.camera_3d:SetProjection(sky_projection)
-
-			render2d.DrawRect(0,0,render2d.GetSize())
-		end
-	fb:End()
-
-	camera.camera_3d:SetView(old_view)
-	camera.camera_3d:SetProjection(old_projection)
-
-	tex:GenerateMipMap()
-	render.SetShaderOverride()
+	}
 end
 
 function render3d.GetSkyTexture()
-	return tex
+	return render3d.sky_texture
 end
 
 function render3d.GetShaderSunDirection()
@@ -93,7 +84,32 @@ function render3d.GetShaderSunDirection()
 		return dir
 	end
 
-	return Vec3()
+	return Vec3(0, 0, 0)
+end
+
+function render3d.UpdateSky()
+	render.PushDepth(false)
+	render.SetBlendMode()
+
+	local old = camera.camera_3d
+
+	render3d.sky_fb:Begin()
+	for i, view in ipairs(render3d.sky_cameras) do
+		--fb:SetTexture(1, tex, nil, nil, i)
+		render3d.sky_fb:SetTextureLayer(1, render3d.sky_texture, i)
+		render3d.sky_fb:ClearColor()
+
+		camera.camera_3d = view
+
+		render3d.sky_shader:Bind()
+		render2d.DrawRect(0,0,render2d.GetSize())
+	end
+	render3d.sky_fb:End()
+--	render3d.sky_texture:GenerateMipMap()
+
+	camera.camera_3d = old
+
+	render.PopDepth()
 end
 
 if RELOAD then

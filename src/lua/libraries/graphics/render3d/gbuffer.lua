@@ -218,13 +218,13 @@ do -- mixer
 	end
 end
 
-function render3d.DrawGBuffer(what, dist)
+function render3d.DrawGBuffer(what)
 	if not gbuffer_enabled then return end
 
 	render3d.gbuffer:WriteThese("all")
 	render3d.gbuffer:ClearAll(0,0,0,0, 1)
 
-	render3d.gbuffer_data_pass:Draw3D(what, dist)
+	render3d.gbuffer_data_pass:Draw3D(what)
 
 	event.Call("GBufferPrePostProcess")
 
@@ -245,7 +245,7 @@ function render3d.DrawGBuffer(what, dist)
 			render.SetBlendMode(shader.blend_mode)
 			if shader.fb then shader.fb:Begin() end
 			render2d.PushMatrix(0, 0, shader.size.x, shader.size.y)
-				render.SetShaderOverride(shader)
+				shader:Bind()
 				render2d.rectangle:Draw()
 			render2d.PopMatrix()
 			if shader.fb then shader.fb:End() end
@@ -268,7 +268,7 @@ local shader_cvar = pvars.Setup("render_gshader", "template", function(_, first)
 
 render3d.gbuffer = NULL
 
-function render3d.Initialize()
+function render3d.InitializeGBuffer()
 	render3d.gbuffer = NULL
 	render3d.gbuffer_values = {}
 	render3d.gbuffer_shaders = {}
@@ -280,8 +280,6 @@ function render3d.Initialize()
 	render.InitializeNoiseTexture(size)
 
 	include("lua/libraries/graphics/render3d/gbuffer_shaders/"..shader_cvar:Get()..".lua")
-
-	render3d.InitializeSky()
 
 	local data_pass = include("lua/libraries/graphics/render3d/gbuffer_data_fill.lua", render3d)
 

@@ -60,8 +60,7 @@ ent:SetStorableTable({children = {
 			},
 			model = {
 				ModelPath = "models/cerebus/Cerberus_LP.FBX",
-				BBMin = Vec3(-19.993124, -130.268967, -47.208714),
-				BBMax = Vec3(12.520315, 25.837120, 18.778801),
+				AABB = AABB(-19.993124, -130.268967, -47.208714, 12.520315, 25.837120, 18.778801),
 				Loading = false,
 				Cull = false,
 				GUID = "6b5a156c5e99f801d88544f94690a0",

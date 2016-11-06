@@ -32,7 +32,7 @@ function render.CreateMaterial(name)
 	local self = prototype.CreateDerivedObject("material", name)
 
 	if self.required_shader then
-		self.ubo = self.required_shader:CreateUniformBuffer()
+		self.ubo = render.active_shaders[self.required_shader]:CreateUniformBuffer()
 	end
 
 	return self
@@ -59,12 +59,4 @@ end
 
 function render.GetMaterial()
 	return render.current_material
-end
-
-function render.SetShaderOverride(shader)
-	render.current_shader_override = shader
-end
-
-function render.GetShader()
-	return render.current_shader_override
 end
