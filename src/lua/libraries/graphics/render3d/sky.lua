@@ -49,7 +49,7 @@ function render3d.InitializeSky()
 	end
 
 
-	render3d.sky_shader = {
+	render3d.sky_shader_source = {
 		name = "sky",
 		fragment = {
 			mesh_layout = {

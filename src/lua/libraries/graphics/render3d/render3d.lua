@@ -9,7 +9,7 @@ include("debug.lua", render3d)
 function render3d.Initialize()
 	render3d.InitializeSky()
 	render3d.InitializeGBuffer()
-	render3d.sky_shader = render.CreateShader(render3d.sky_shader) -- uahsduyHUASH
+	render3d.sky_shader = render.CreateShader(render3d.sky_shader_source) -- uahsduyHUASH
 	render3d.GenerateTextures()
 	include("lua/libraries/graphics/render3d/scene.lua", render3d)
 end
