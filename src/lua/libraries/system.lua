@@ -1185,6 +1185,25 @@ if sdl then
 		function system.IsOpenGLExtensionSupported(str)
 			if cache[str] == nil then
 				cache[str] = sdl.GL_ExtensionSupported(str) == 1
+				if not cache[str] then
+					local new
+					if str:find("_ARB_", nil, true) then
+						new = str:gsub("_ARB_", "_EXT_")
+					elseif str:find("_EXT_", nil, true) then
+						new = str:gsub("_EXT_", "_ARB_")
+					end
+
+					if new then
+						local try = sdl.GL_ExtensionSupported(new) == 1
+						cache[str] = try
+						if try then
+							llog("requested extension %s which doesn't exist. using %s instead", str, new)
+						end
+					end
+				end
+				if not cache[str] then
+					llog("extension %s does not exist", str)
+				end
 			end
 			return cache[str]
 		end
