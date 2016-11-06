@@ -1,3 +1,5 @@
+local REFLECTIONS_ONLY = false
+
 render.AddGlobalShaderCode([[
 float sky_atmospheric_depth(vec3 position, vec3 dir, float depth)
 {
@@ -253,6 +255,17 @@ do
 		}
 	]]
 	})
+
+	if REFLECTIONS_ONLY then
+		render3d.AddGBufferShader(PASS)
+
+		if RELOAD then
+			RELOAD = nil
+			render3d.Initialize()
+		end
+		return
+	end
+
 
 	for x = -1, 1 do
 		for y = -1, 1 do

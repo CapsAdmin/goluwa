@@ -268,7 +268,7 @@ local shader_cvar = pvars.Setup("render_gshader", "template", function(_, first)
 
 render3d.gbuffer = NULL
 
-function render3d.Initialize()
+function render3d.InitializeGBuffer()
 	render3d.gbuffer = NULL
 	render3d.gbuffer_values = {}
 	render3d.gbuffer_shaders = {}
@@ -280,8 +280,6 @@ function render3d.Initialize()
 	render.InitializeNoiseTexture(size)
 
 	include("lua/libraries/graphics/render3d/gbuffer_shaders/"..shader_cvar:Get()..".lua")
-
-	render3d.InitializeSky()
 
 	local data_pass = include("lua/libraries/graphics/render3d/gbuffer_data_fill.lua", render3d)
 
@@ -451,10 +449,6 @@ function render3d.Initialize()
 	for k,v in pairs(render3d.gbuffer_values) do
 		render3d.SetGBufferValue(k,v)
 	end
-
-	render3d.GenerateTextures()
-
-	include("lua/libraries/graphics/render3d/scene.lua", render3d)
 
 	event.Call("GBufferInitialized")
 

@@ -1,10 +1,18 @@
 local render3d = _G.render3d or {}
 
 include("gbuffer.lua", render3d)
-include("sky.lua", render3d)
 include("environment_probe.lua", render3d)
 include("shadow_map.lua", render3d)
+include("sky.lua", render3d)
 include("debug.lua", render3d)
+
+function render3d.Initialize()
+	render3d.InitializeSky()
+	render3d.InitializeGBuffer()
+	render3d.sky_shader = render.CreateShader(render3d.sky_shader) -- uahsduyHUASH
+	render3d.GenerateTextures()
+	include("lua/libraries/graphics/render3d/scene.lua", render3d)
+end
 
 function render3d.GenerateTextures()
 	if not render3d.environment_probe_texture then
