@@ -249,31 +249,38 @@ PASS.Stages = {
 				{texture_blend = "float"},
 			},
 			source = [[
-				#define GENERATE_TANGENT 1
+				#define FLAT_SHADING ]].. (render3d.shader_name == "flat" and "1" or "0") ..[[
 
-				out vec3 view_pos;
+				#ifndef FLAT_SHADING
+					#define GENERATE_TANGENT 1
 
-				#ifdef GENERATE_TANGENT
-					out vec3 vertex_view_normal;
-				#else
-					out mat3 tangent_space;
+					#ifdef GENERATE_TANGENT
+						out vec3 view_pos;
+						out vec3 vertex_view_normal;
+					#else
+						out mat3 tangent_space;
+					#endif
 				#endif
 
 				void main()
 				{
-					vec4 temp = g_view_world * vec4(pos, 1.0);
-					view_pos = temp.xyz;
-					gl_Position = g_projection * temp;
-
-
-					#ifdef GENERATE_TANGENT
-						vertex_view_normal = mat3(g_normal_matrix) * normal;
+					#ifdef FLAT_SHADING
+						gl_Position = g_projection_view_world * vec4(pos, 1);
 					#else
-						vec3 view_normal = mat3(g_normal_matrix) * normal;
-						vec3 view_tangent = mat3(g_normal_matrix) * tangent;
-						vec3 view_bitangent = cross(view_tangent, view_normal);
+						#ifdef GENERATE_TANGENT
+							vec4 temp = g_view_world * vec4(pos, 1.0);
+							view_pos = temp.xyz;
+							gl_Position = g_projection * temp;
+							vertex_view_normal = mat3(g_normal_matrix) * normal;
+						#else
+							gl_Position = g_projection_view_world * vec4(pos, 1);
 
-						tangent_space = mat3(view_tangent, view_bitangent, view_normal);
+							vec3 view_normal = mat3(g_normal_matrix) * normal;
+							vec3 view_tangent = mat3(g_normal_matrix) * tangent;
+							vec3 view_bitangent = cross(view_tangent, view_normal);
+
+							tangent_space = mat3(view_tangent, view_bitangent, view_normal);
+						#endif
 					#endif
 				}
 			]]
@@ -287,13 +294,19 @@ PASS.Stages = {
 				{texture_blend = "float"},
 			},
 			source = [[
+				#define FLAT_SHADING ]].. (render3d.shader_name == "flat" and "1" or "0") ..[[
 
+#ifdef FLAT_SHADING
+				void main()
+				{
+					set_albedo(texture(lua[AlbedoTexture = render.GetErrorTexture()], uv).rgb);
+				}
+#elif
 				#define GENERATE_TANGENT 1
 				//#define DEBUG_NORMALS 1
 
-				in vec3 view_pos;
-
 				#ifdef GENERATE_TANGENT
+					in vec3 view_pos;
 					in vec3 vertex_view_normal;
 					#define tangent_space cotangent_frame(vertex_view_normal, view_pos, uv)
 				#else
@@ -337,8 +350,6 @@ PASS.Stages = {
 
 				void main()
 				{
-					//{albedo = vertex_view_normal; return;}
-
 					// albedo
 					vec4 color = texture(lua[AlbedoTexture = render.GetErrorTexture()], uv);
 
@@ -354,8 +365,11 @@ PASS.Stages = {
 						discard;
 					}
 
+
+
 					// normals
 					vec3 normal = vec3(0,0,0);
+
 					vec4 normal_map = texture(lua[NormalTexture = render.GetBlackTexture()], uv);
 
 					if (normal_map.xyz != vec3(0))
@@ -391,8 +405,9 @@ PASS.Stages = {
 					}
 
 					normal = normalize(normal);
-
 					set_view_normal(normal);
+
+
 
 					float metallic = 1;
 
@@ -409,10 +424,13 @@ PASS.Stages = {
 					{
 						metallic = texture(lua[MetallicTexture = render.GetBlackTexture()], uv).r;
 					}
+					metallic *= lua[MetallicMultiplier = 1];
+					set_metallic(metallic);
+
+
 
 					// roughness
 					float roughness = texture(lua[RoughnessTexture = render.GetBlackTexture()], uv).r;
-
 
 					//generate roughness and metallic they're zero
 					if (roughness == 0)
@@ -432,15 +450,13 @@ PASS.Stages = {
 							metallic = min((-roughness+1)/1.5, 0.075);
 						}
 					}
-
-					metallic *= lua[MetallicMultiplier = 1];
 					roughness *= lua[RoughnessMultiplier = 1];
-
-					set_metallic(metallic);
 					set_roughness(roughness);
+
 
 					set_specular(vec3(0,0,0));
 				}
+#endif
 			]]
 		}
 	},

@@ -672,6 +672,7 @@ function render.CreateShader(data, vars)
 
 	do -- build lua code from variables data
 		local variables = {}
+		local all_variables = {}
 		local uniform_variables = {}
 		local uniform_block_variables = {}
 
@@ -688,6 +689,7 @@ function render.CreateShader(data, vars)
 					end
 
 					variables[val.name] = val
+					all_variables[val.name] = val
 					table.insert(uniform_block_variables, {id = id, key = val.name, val = val})
 				end
 			end
@@ -708,14 +710,17 @@ function render.CreateShader(data, vars)
 
 						variables[val.name] = val
 						table.insert(uniform_variables, {id = id, key = val.name, val = val})
-					elseif render.debug and id < 0 and not val.is_texture then
+					elseif render.debug and not val.is_texture then
 						logf("%s: variables in %s %s %s is not being used (variables location < 0)\n", shader_id, shader, val.name, val.type)
 					end
+
+					all_variables[val.name] = val
 				end
 			end
 		end
 
 		self.variables = variables
+		self.all_variables = all_variables
 
 		table.sort(uniform_variables, function(a, b) return a.id < b.id end) -- sort the data by variables id
 
@@ -842,7 +847,7 @@ function META:CreateMaterialTemplate(name)
 	local META = render.CreateMaterialTemplate(name or self.shader_id, self)
 
 	prototype.StartStorable()
-		for k,v in pairs(self.variables) do
+		for k,v in pairs(self.all_variables) do
 			if not render.global_shader_variables[k] then
 				META:GetSet(v.name, v.default)
 			end

@@ -264,7 +264,7 @@ function render3d.DrawGBuffer(what)
 	event.Call("GBufferPostPostProcess")
 end
 
-local shader_cvar = pvars.Setup("render_gshader", "template", function(_, first) if not first and gbuffer_enabled then render3d.Initialize() end end)
+local shader_cvar = pvars.Setup("render_gshader", "flat", function(_, first) if not first and gbuffer_enabled then render3d.Initialize() end end)
 
 render3d.gbuffer = NULL
 
@@ -273,6 +273,7 @@ function render3d.InitializeGBuffer()
 	render3d.gbuffer_values = {}
 	render3d.gbuffer_shaders = {}
 	render3d.gbuffer_shaders_sorted = {}
+	render3d.shader_name = shader_cvar:Get()
 
 	local size = render3d.GetGBufferSize()
 
