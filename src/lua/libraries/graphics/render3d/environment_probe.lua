@@ -44,7 +44,7 @@ function META:Capture()
 	self.fb:Begin()
 		for i, rot in ipairs(directions) do
 			self.fb:SetTexture(1, self.tex, nil, nil, i)
-			self.fb:Clear()
+			self.fb:ClearAll()
 
 			local view = Matrix44()
 			view:SetRotation(rot)
@@ -52,7 +52,7 @@ function META:Capture()
 			camera.camera_3d:SetProjection(projection)
 			camera.camera_3d:SetView(view)
 
-			render.DrawGBuffer("no_cull_only")
+			render3d.DrawGBuffer("env_probe")
 		end
 	self.fb:End()
 
