@@ -304,6 +304,8 @@ local function load_mdl(path)
 		end
 	end
 
+--[[
+
 	local bone_names
 	local render2d_prop_names
 
@@ -438,7 +440,6 @@ local function load_mdl(path)
 		header.keyvalue_count = nil
 	buffer:PopPosition()
 
-	--[[
 	logn("these remain to be parsed:")
 
 	for k,v in pairs(header) do
@@ -730,12 +731,12 @@ function steam.LoadModel(path, sub_model_callback)
 
 						mesh.material = render.CreateMaterial("model")
 						mesh:SetName(path)
-						if mdl.bone[model_i] and mdl.bone[model_i].quat then -- TODO
+						--if mdl.bone[model_i] and mdl.bone[model_i].quat then -- TODO
 							--local q = mdl.bone[model_i].quat
 							--mesh.rotation_init = Quat(q.z, q.y, q.x, q.w)
-							local a = mdl.bone[model_i].rotation
-							mesh.rotation_init = Ang3(a.y, a.x, a.z)
-						end
+							--local a = mdl.bone[model_i].rotation
+							--mesh.rotation_init = Ang3(a.y, a.x, a.z)
+						--end
 						--mesh.bbox = {min = mdl.hull_min*scale, max = mdl.hull_max*scale}
 
 						--if path:lower():find("airboat") then table.print(mdl.texturedir) table.print(mdl.material) print(i) end
