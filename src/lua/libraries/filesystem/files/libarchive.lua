@@ -178,6 +178,9 @@ function CONTEXT:Open(path_info, mode, ...)
 
 					if archive.SeekData(self.archive, 0, 1) < 0 then
 						self.content = self:ReadBytes(math.huge)
+						if not self.content then
+							return false, "unable to read content"
+						end
 						self.size = #self.content
 						self.position = 0
 					end
