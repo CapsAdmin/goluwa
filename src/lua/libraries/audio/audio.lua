@@ -12,6 +12,7 @@ alc.debug = true
 audio.effect_channels = audio.effect_channels or utility.CreateWeakTable()
 
 function audio.Initialize(name)
+	do return end
 	local f = io.open("./al_config.ini", "wb")
 	f:write("slots = 256\n")
 	f:write("sends = 256\n")
