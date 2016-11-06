@@ -185,7 +185,10 @@ if GRAPHICS then
 
 		if self:IsVisible(what) then
 			camera.camera_3d:SetWorld(self.tr:GetMatrix())
-			self.occluders[what]:BeginConditional()
+
+			if self.occluders[what] then
+				self.occluders[what]:BeginConditional()
+			end
 
 			for _, mesh in ipairs(self.sub_meshes) do
 				mesh.material.Color = self.Color
@@ -194,7 +197,9 @@ if GRAPHICS then
 				mesh.vertex_buffer:Draw()
 			end
 
-			self.occluders[what]:EndConditional()
+			if self.occluders[what] then
+				self.occluders[what]:EndConditional()
+			end
 
 			if render3d.draw_once then
 				self.drawn_once = true
