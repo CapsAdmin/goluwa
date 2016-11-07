@@ -37,12 +37,12 @@ end
 function gine.LoadFonts()
 	local screen_res = window.GetSize()
 
-	local fonts = {}
-	--table.merge(fonts, steam.VDFToTable(vfs.Read("resource/SourceScheme.res"), true).scheme.fonts)
-	--table.merge(fonts, steam.VDFToTable(vfs.Read("resource/ChatScheme.res"), true).scheme.fonts)
-	table.merge(fonts, steam.VDFToTable(vfs.Read("resource/ClientScheme.res"), true).scheme.fonts)
+	local found = {}
+	--table.merge(found, steam.VDFToTable(vfs.Read("resource/SourceScheme.res"), true).scheme.fonts)
+	--table.merge(found, steam.VDFToTable(vfs.Read("resource/ChatScheme.res"), true).scheme.fonts)
+	table.merge(found, steam.VDFToTable(vfs.Read("resource/ClientScheme.res"), true).scheme.fonts)
 
-	for font_name, sub_fonts in pairs(fonts) do
+	for font_name, sub_fonts in pairs(found) do
 		local candidates = {}
 
 		for i, info in pairs(sub_fonts) do
@@ -83,16 +83,15 @@ do
 end
 
 do
-	local render2d = gine.env.render2d
-	local lib = _G.fonts
+	local surface = gine.env.surface
 
-	function render2d.SetTextPos(x, y)
+	function surface.SetTextPos(x, y)
 		gfx.SetTextPosition(x, y)
 	end
 
 	gine.render2d_fonts = gine.render2d_fonts or {}
 
-	function render2d.CreateFont(id, tbl)
+	function surface.CreateFont(id, tbl)
 		local tbl = table.copy(tbl)
 		tbl.path = tbl.font
 
@@ -103,18 +102,18 @@ do
 		gine.render2d_fonts[id:lower()] = fonts.CreateFont(tbl)
 	end
 
-	function gfx.SetFont(name)
+	function surface.SetFont(name)
 		gfx.SetFont(gine.render2d_fonts[name:lower()])
 	end
 
-	function render2d.GetTextSize(str)
+	function surface.GetTextSize(str)
 		str = gine.translation2[str] or str
 		return gfx.GetTextSize(str)
 	end
 
 	local txt_r, txt_g, txt_b, txt_a = 0,0,0,0
 
-	function render2d.SetTextColor(r,g,b,a)
+	function surface.SetTextColor(r,g,b,a)
 		if type(r) == "table" then
 			r,g,b,a = r.r, r.g, r.b, r.a
 		end
@@ -124,11 +123,11 @@ do
 		txt_a = (a or 0) / 255
 	end
 
-	function render2d.DrawText(str)
+	function surface.DrawText(str)
 		str = gine.translation2[str] or str
-		lib.PushColor(txt_r, txt_g, txt_b, txt_a)
+		fonts.PushColor(txt_r, txt_g, txt_b, txt_a)
 		gfx.DrawText(str)
-		lib.PopColor()
+		fonts.PopColor()
 
 		local x, y = gfx.GetTextPosition()
 		local w, h = gfx.GetTextSize(str)

@@ -202,9 +202,7 @@ do
 				if class == "label" then
 					if obj.text_internal and obj.text_internal ~= "" then
 						render2d.SetColor(obj.fg_color:Unpack())
-						gfx.SetTextPosition(obj.text_offset.x, obj.text_offset.y)
-						gfx.SetFont(gine.render2d_fonts[obj.font_internal:lower()])
-						gfx.DrawText(obj.text_internal)
+						gine.render2d_fonts[obj.font_internal:lower()]:DrawString(obj.text_internal, obj.text_offset.x, obj.text_offset.y)
 					end
 				end
 			end

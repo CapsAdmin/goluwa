@@ -24,6 +24,6 @@ do
 	end
 end
 
-function gine.env.render2d.PlaySound(path)
+function gine.env.surface.PlaySound(path)
 	audio.CreateSource("sound/" .. path):Play()
 end
