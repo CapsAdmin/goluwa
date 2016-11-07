@@ -275,13 +275,13 @@ event.AddListener("PreDrawGUI", "lol", function()
 
 	if dynamic then
 		for i, v in ipairs(vertices) do
-			mesh.Vertices.Pointer[i].pos.A = v.x
-			mesh.Vertices.Pointer[i].pos.B = v.y
+			mesh.Vertices.Pointer[i].pos[0] = v.x
+			mesh.Vertices.Pointer[i].pos[1] = v.y
 
-			mesh.Vertices.Pointer[i].color.A = 1
-			mesh.Vertices.Pointer[i].color.B = 1
-			mesh.Vertices.Pointer[i].color.C = 1
-			mesh.Vertices.Pointer[i].color.D = 1
+			mesh.Vertices.Pointer[i].color[0] = 1
+			mesh.Vertices.Pointer[i].color[1] = 1
+			mesh.Vertices.Pointer[i].color[2] = 1
+			mesh.Vertices.Pointer[i].color[3] = 1
 		end
 
 		if indices then
