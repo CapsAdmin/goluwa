@@ -159,6 +159,7 @@ function META:CompileString(data)
 	end
 
 	local poly = gfx.CreatePolygon2D(vertex_count)
+	poly.vertex_buffer:SetDrawHint("dynamic")
 	local width_info = {}
 	local out = {}
 

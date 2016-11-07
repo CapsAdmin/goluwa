@@ -11,6 +11,7 @@ include("markup/markup.lua", gfx)
 
 function gfx.Initialize()
 	gfx.ninepatch_poly = gfx.CreatePolygon2D(9 * 6)
+	gfx.ninepatch_poly.vertex_buffer:SetDrawHint("dynamic")
 
 	event.Delay(function()
 		local tex = render.CreateBlankTexture(Vec2(render2d.GetSize()))

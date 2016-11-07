@@ -3,7 +3,9 @@ local gfx = (...) or _G.gfx
 local META = prototype.CreateTemplate("polygon_2d")
 
 function gfx.CreatePolygon2D(vertex_count)
-	local vertex_buffer = render2d.CreateMesh(vertex_count)
+	local vertex_buffer = render2d.CreateMesh()
+	vertex_buffer:SetDrawHint("dynamic")
+	vertex_buffer:SetBuffersFromTables(vertex_count)
 
 	-- they never change anyway
 	vertex_buffer:SetUpdateIndices(false)
