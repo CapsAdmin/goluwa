@@ -78,6 +78,8 @@ function META:__tostring2()
 end
 
 function META:CheckCompletness()
+	if render.verbose_debug then return end
+
 	local err = self.gl_fb:CheckStatus("GL_FRAMEBUFFER")
 
 	if err ~= gl.e.GL_FRAMEBUFFER_COMPLETE then

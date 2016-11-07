@@ -83,8 +83,6 @@ function render.CreateFrameBuffer(size, textures, id_override)
 
 			self:SetTexture(attach, tex, nil, name)
 		end
-
-		self:CheckCompletness()
 	end
 
 	return self

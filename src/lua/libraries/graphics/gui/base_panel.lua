@@ -670,7 +670,6 @@ do -- cached rendering
 				local fb = render.CreateFrameBuffer()
 				fb:SetTexture(1, render.CreateBlankTexture(self.Size))
 				fb:SetTexture("depth_stencil", {internal_format = "depth_stencil", size = self.Size})
-				fb:CheckCompletness()
 
 				self.cache_fb = fb
 				self.cache_texture = fb:GetTexture(1)

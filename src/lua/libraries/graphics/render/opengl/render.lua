@@ -35,7 +35,9 @@ function render._Initialize()
 	if vendor:find("mesa") or vendor:find("open source technology center") or render.GetVersion():lower():find("mesa") then MESA = true end
 	if vendor:find("intel") then INTEL = true end
 
---	render.EnableVerboseDebug(true)
+	if DEBUG_OPENGL then
+		render.EnableVerboseDebug(true)
+	end
 
 	if SRGB then
 		gl.Enable("GL_FRAMEBUFFER_SRGB")

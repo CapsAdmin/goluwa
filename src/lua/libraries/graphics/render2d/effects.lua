@@ -5,7 +5,6 @@ function render2d.EnableEffects(b)
 		local fb = render.CreateFrameBuffer()
 		fb:SetTexture(1, render.CreateBlankTexture(render.GetScreenSize()))
 		fb:SetTexture("depth_stencil", {internal_format = "depth_stencil", size = render.GetScreenSize()})
-		fb:CheckCompletness()
 
 		render2d.framebuffer = fb
 	elseif render2d.framebuffer then

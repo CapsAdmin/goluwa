@@ -26,56 +26,6 @@ local type_translate = {
 	[0x8251] = "other",
 }
 
-function render.StartDebug()
-	if EXTERNAL_DEBUGGER then return end
-	if render.verbose_debug then return end
-
-	if system.IsOpenGLExtensionSupported("GL_KHR_debug") then
-		gl.Enable("GL_DEBUG_OUTPUT")
-		gl.DebugMessageControl("GL_DONT_CARE", "GL_DONT_CARE", "GL_DONT_CARE", ffi.new("GLuint"), nil, true)
-		gl.Enable("GL_DEBUG_OUTPUT_SYNCHRONOUS")
-	else
-		-- todo
-	end
-end
-
-function render.StopDebug()
-	if EXTERNAL_DEBUGGER then return end
-	if render.verbose_debug then return end
-
-	if system.IsOpenGLExtensionSupported("GL_KHR_debug") then
-		local buffer = ffi.new("GLchar[1024]")
-		local length = ffi.sizeof(buffer)
-
-		local int = ffi.new("GLint[1]")
-		gl.GetIntegerv("GL_DEBUG_LOGGED_MESSAGES", int)
-
-		local message
-
-		if int[0] ~= 0 then
-			message = {}
-
-			for _ = 0, int[0] do
-				local types = ffi.new("GLenum[1]")
-				if gl.GetDebugMessageLog(1, length, nil, types, nil, nil, nil, buffer) ~= 0 and types[0] == gl.e.GL_DEBUG_TYPE_ERROR then
-					local str = ffi.string(buffer)
-					table.insert(message, str)
-				end
-			end
-
-			message = table.concat(message, "\n")
-
-			if message == "" then message = nil end
-		end
-
-		gl.Disable("GL_DEBUG_OUTPUT")
-
-		return message
-	else
-		-- todo
-	end
-end
-
 local flags = {
 	"error",
 	"deprecated_behavior",
@@ -116,4 +66,18 @@ function render.EnableVerboseDebug(b)
 	else
 		llog("glDebugMessageControl is not availible")
 	end
+end
+
+function render.StartDebug()
+	if EXTERNAL_DEBUGGER then return end
+	if render.verbose_debug then return end
+
+	render.EnableVerboseDebug(true)
+end
+
+function render.StopDebug()
+	if EXTERNAL_DEBUGGER then return end
+	if render.verbose_debug then return end
+
+	render.EnableVerboseDebug(false)
 end

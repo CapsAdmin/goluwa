@@ -68,6 +68,7 @@ do -- constants
 		NULL_OPENGL = false,
 		PHYSICS = false,
 		DISABLE_CULLING = false,
+		DEBUG_OPENGL = false,
 	}
 
 	for key, default in pairs(env_vars) do
@@ -114,9 +115,8 @@ do -- constants
 	CREATED_ENV = false
 
 	if CAPS then
-		GL_ARB_direct_state_access = true
-		NVIDIA_WORKAROUND = true
-		SRGB = false
+		DEBUG_OPENGL = true
+		--NVIDIA_WORKAROUND = true
 	end
 
 

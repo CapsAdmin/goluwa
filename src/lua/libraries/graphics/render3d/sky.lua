@@ -12,7 +12,6 @@ function render3d.InitializeSky()
 
 		local fb = render.CreateFrameBuffer()
 		fb:SetTexture(1, tex, "write", nil, 1)
-		fb:CheckCompletness()
 		fb:WriteThese(1)
 
 		render3d.sky_fb = fb

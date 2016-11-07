@@ -1262,7 +1262,9 @@ if sdl then
 				sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_MINOR_VERSION, 3)
 				sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_PROFILE_MASK, sdl.e.GL_CONTEXT_PROFILE_CORE)
 
-				--sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_FLAGS, sdl.e.GL_CONTEXT_ROBUST_ACCESS_FLAG)
+				if DEBUG_OPENGL then
+					sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_FLAGS, sdl.e.GL_CONTEXT_DEBUG_FLAG)
+				end
 				--sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_PROFILE_MASK, sdl.e.GL_CONTEXT_PROFILE_COMPATIBILITY)
 
 				local context = sdl.GL_CreateContext(sdl_wnd)
