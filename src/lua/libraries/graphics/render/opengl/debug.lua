@@ -46,7 +46,7 @@ function render.EnableVerboseDebug(b)
 			gl.Enable("GL_DEBUG_OUTPUT_SYNCHRONOUS")
 			gl.DebugMessageControl("GL_DONT_CARE", "GL_DONT_CARE", "GL_DONT_CARE", ffi.new("GLuint"), nil, true)
 
-			local callback = ffi.new("void (*)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)", function(source, type, id, severity, length, message, userParam)
+			local function callback(source, type, id, severity, length, message, userParam)
 				source = source_translate[source] or "unknown source " .. source
 				type = type_translate[type] or "unknown type " .. type
 				severity = severity_translate[severity] or "unknown severity level " .. severity
@@ -54,11 +54,14 @@ function render.EnableVerboseDebug(b)
 
 				local info = debug.getinfo(3)
 
-				logf("OPENGL %s %s: %s\n", type:upper(), severity, info.source)
+				logf("OPENGL %s %s: %s:%s\n", type:upper(), severity, info.source, info.currentline)
 				logn("\t", message)
-			end)
+			end
+			jit.off(callback)
+			local cb = ffi.new("void (*)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)", callback)
 
 			gl.DebugMessageCallback(callback, nil)
+			render.debug_cb_ref = cb
 		else
 			gl.Disable("GL_DEBUG_OUTPUT")
 			render.verbose_debug = false
