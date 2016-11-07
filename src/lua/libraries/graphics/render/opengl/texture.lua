@@ -149,8 +149,6 @@ function META:OnRemove()
 end
 
 function META:SetupStorage()
-	render.PushDebug(true)
-
 	local internal_format = TOENUM(self.InternalFormat)
 
 	local mip_map_levels = self.MipMapLevels
@@ -246,16 +244,6 @@ function META:SetupStorage()
 		end
 	end
 
-	local msg = render.PopDebug()
-	if msg then
-		logn("==================================")
-		logn(self, ":SetupStorage() failed")
-		logn("==================================")
-		self:DumpInfo()
-		logn("==================================")
-		wlog("\n" .. msg, 2)
-	end
-
 	self.storage_setup = true
 end
 
@@ -293,8 +281,6 @@ function META:_Upload(data, y)
 	if not self.storage_setup then
 		self:SetupStorage()
 	end
-
-	render.PushDebug(true)
 
 	if self.StorageType == "3d" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then
 		data.x = data.x or 0
@@ -386,20 +372,6 @@ function META:_Upload(data, y)
 	end
 
 	self:GenerateMipMap()
-
-	local msg = render.PopDebug()
-	if msg then
-		logn("==================================")
-		logn(tostring(self) .. ":Upload() failed")
-		logf("format = %s\n", TOENUM(data.format))
-		logf("type = %s\n", TOENUM(data.type))
-		logf("x,y,z = %s, %s, %s\n", data.x, y or 0, data.z or 0)
-		logf("w,h,d = %s, %s\n", data.width, data.height or 0, data.depth or 0)
-		logf("buffer = %s\n", data.buffer)
-		table.print(data)
-		self:DumpInfo()
-		wlog("\n" .. msg)
-	end
 end
 
 function META:GenerateMipMap()
@@ -408,19 +380,7 @@ function META:GenerateMipMap()
 end
 
 function META:_Download(mip_map_level, buffer, size, format)
-	render.PushDebug(true)
-
 	self.gl_tex:GetImage(mip_map_level - 1, TOENUM(format.preferred_upload_format), gl.e[TOENUM(format.number_type.friendly)], size, buffer)
-
-	local msg = render.PopDebug()
-
-	if msg then
-		logn("==================================")
-		logn(tostring(self) .. ":Upload() failed")
-		self:DumpInfo()
-		table.print(data)
-		wlog("\n" .. msg, 2)
-	end
 end
 
 function META:Clear(mip_map_level)
