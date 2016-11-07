@@ -88,33 +88,26 @@ if not NVIDIA_WORKAROUND then
 
 	local function setup_vertex_array(self)
 		if not self.setup_vao and self.Indices and self.Vertices then
-			if not system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
-				self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.mesh_layout.size)
-			end
 			for _, data in ipairs(self.mesh_layout.attributes) do
-				self.vertex_array:EnableAttrib(data.location)
-				self.vertex_array:AttribBinding(data.location, 0)
 				self.vertex_array:AttribFormat(data.location, data.row_length, data.number_type, false, data.row_offset)
+				self.vertex_array:AttribBinding(data.location, 0)
+				self.vertex_array:EnableAttrib(data.location)
 			end
 			self.setup_vao = true
 		end
 	end
 
 	function META:_SetVertices(vertices)
-		self.vertex_buffer:Data(vertices:GetSize(), vertices:GetPointer(), self.gl_draw_hint)
 		setup_vertex_array(self)
-		if system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
-			self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.mesh_layout.size)
-		end
+		self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.mesh_layout.size)
+		self.vertex_buffer:Data(vertices:GetSize(), vertices:GetPointer(), self.gl_draw_hint)
 		render.last_vertex_array_id = nil
 	end
 
 	function META:_SetIndices(indices)
-		self.element_buffer:Data(indices:GetSize(), indices:GetPointer(), self.gl_draw_hint)
 		setup_vertex_array(self)
-		if system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
-			self.vertex_array:ElementBuffer(self.element_buffer.id)
-		end
+		self.vertex_array:ElementBuffer(self.element_buffer.id)
+		self.element_buffer:Data(indices:GetSize(), indices:GetPointer(), self.gl_draw_hint)
 		render.last_vertex_array_id = nil
 	end
 else
