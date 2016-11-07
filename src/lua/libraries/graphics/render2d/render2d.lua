@@ -11,7 +11,7 @@ function render2d.Initialize()
 
 	render2d.rectangle = render2d.CreateMesh()
 	render2d.rectangle:SetDrawHint("dynamic")
-	render2d.rectangle:SetIndicesType("uint8_t")
+	render2d.rectangle:SetIndicesType("uint16_t")
 	render2d.rectangle:SetBuffersFromTables(render.rectangle_mesh_data)
 	render2d.rectangle:SetUpdateIndices(false)
 
