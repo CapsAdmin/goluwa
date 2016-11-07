@@ -149,7 +149,7 @@ function META:OnRemove()
 end
 
 function META:SetupStorage()
-	render.StartDebug()
+	render.PushDebug(true)
 
 	local internal_format = TOENUM(self.InternalFormat)
 
@@ -246,7 +246,7 @@ function META:SetupStorage()
 		end
 	end
 
-	local msg = render.StopDebug()
+	local msg = render.PopDebug()
 	if msg then
 		logn("==================================")
 		logn(self, ":SetupStorage() failed")
@@ -294,7 +294,7 @@ function META:_Upload(data, y)
 		self:SetupStorage()
 	end
 
-	render.StartDebug()
+	render.PushDebug(true)
 
 	if self.StorageType == "3d" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then
 		data.x = data.x or 0
@@ -387,7 +387,7 @@ function META:_Upload(data, y)
 
 	self:GenerateMipMap()
 
-	local msg = render.StopDebug()
+	local msg = render.PopDebug()
 	if msg then
 		logn("==================================")
 		logn(tostring(self) .. ":Upload() failed")
@@ -408,11 +408,11 @@ function META:GenerateMipMap()
 end
 
 function META:_Download(mip_map_level, buffer, size, format)
-	render.StartDebug()
+	render.PushDebug(true)
 
 	self.gl_tex:GetImage(mip_map_level - 1, TOENUM(format.preferred_upload_format), gl.e[TOENUM(format.number_type.friendly)], size, buffer)
 
-	local msg = render.StopDebug()
+	local msg = render.PopDebug()
 
 	if msg then
 		logn("==================================")

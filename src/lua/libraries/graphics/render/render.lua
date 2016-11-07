@@ -1,7 +1,5 @@
 local render = _G.render or {}
 
-include("debug.lua", render)
-
 include("texture_format.lua", render)
 include("texture_decoder.lua", render)
 include("global_shader_code.lua", render)

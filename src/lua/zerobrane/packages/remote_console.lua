@@ -523,11 +523,11 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 		-- <filename>:line:
 		"^%s*(.-):(%d+)%s*:",
 		-- <filename>:line
+		"Line (%d+).-@(%S+%.lua)",
+		"(%d+)%s-@(%S+%.lua)",
 		"@(%S+%.lua):(%d+)",
 		"@(%S+%.lua)",
 		"(%S+%.lua):(%d+)",
-		"Line (%d+).-@(%S+%.lua)",
-		"(%d+)%s-@(%S+%.lua)",
 		"(%S+%.lua)",
 	}
 

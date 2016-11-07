@@ -36,7 +36,7 @@ function render._Initialize()
 	if vendor:find("intel") then INTEL = true end
 
 	if DEBUG_OPENGL then
-		render.EnableVerboseDebug(true)
+		render.SetDebug(true)
 	end
 
 	if SRGB then

@@ -115,8 +115,10 @@ do -- constants
 	CREATED_ENV = false
 
 	if CAPS then
-		DEBUG_OPENGL = true
+		--DEBUG_OPENGL = true
 		--NVIDIA_WORKAROUND = true
+		--GL_ARB_direct_state_access = false
+		--GL_ARB_bindless_texture = false
 	end
 
 

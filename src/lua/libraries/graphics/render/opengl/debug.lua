@@ -37,7 +37,9 @@ local flags = {
 for i,v in ipairs(flags) do flags[i] = gl.e["GL_DEBUG_TYPE_" .. v:upper()] end
 flags = bit.bor(unpack(flags))
 
-function render.EnableVerboseDebug(b)
+function render.SetDebug(b)
+	if EXTERNAL_DEBUGGER then return end
+
 	if system.IsOpenGLExtensionSupported("GL_KHR_debug") then
 		if b then
 			--jit.off()
@@ -46,22 +48,27 @@ function render.EnableVerboseDebug(b)
 			gl.Enable("GL_DEBUG_OUTPUT_SYNCHRONOUS")
 			gl.DebugMessageControl("GL_DONT_CARE", "GL_DONT_CARE", "GL_DONT_CARE", ffi.new("GLuint"), nil, true)
 
-			local function callback(source, type, id, severity, length, message, userParam)
-				source = source_translate[source] or "unknown source " .. source
-				type = type_translate[type] or "unknown type " .. type
-				severity = severity_translate[severity] or "unknown severity level " .. severity
-				message = ffi.string(message, length)
+			if not render.debug_cb_ref then
+				local function callback(source, type, id, severity, length, message, userParam)
+					source = source_translate[source] or "unknown source " .. source
+					type = type_translate[type] or "unknown type " .. type
+					severity = severity_translate[severity] or "unknown severity level " .. severity
+					message = ffi.string(message, length)
 
-				local info = debug.getinfo(3)
+					local info = debug.getinfo(3)
 
-				logf("OPENGL %s %s: %s:%s\n", type:upper(), severity, info.source, info.currentline)
-				logn("\t", message)
+					logf("OPENGL %s %s: %s:%s\n", type:upper(), severity, info.source, info.currentline)
+					logn("\t", message)
+				end
+				jit.off(callback, true)
+				--local cb = ffi.new("void (*)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)", callback)
+
+				render.debug_cb_ref = callback
 			end
-			jit.off(callback)
-			local cb = ffi.new("void (*)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)", callback)
 
-			gl.DebugMessageCallback(callback, nil)
-			render.debug_cb_ref = cb
+			gl.DebugMessageCallback(render.debug_cb_ref, nil)
+
+			render.verbose_debug = true
 		else
 			gl.Disable("GL_DEBUG_OUTPUT")
 			render.verbose_debug = false
@@ -71,16 +78,8 @@ function render.EnableVerboseDebug(b)
 	end
 end
 
-function render.StartDebug()
-	if EXTERNAL_DEBUGGER then return end
-	if render.verbose_debug then return end
-
-	render.EnableVerboseDebug(true)
+function render.GetDebug()
+	return render.verbose_debug
 end
 
-function render.StopDebug()
-	if EXTERNAL_DEBUGGER then return end
-	if render.verbose_debug then return end
-
-	render.EnableVerboseDebug(false)
-end
+utility.MakePushPopFunction(render, "Debug")

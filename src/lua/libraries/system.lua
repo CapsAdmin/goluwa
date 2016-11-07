@@ -1179,6 +1179,9 @@ if sdl then
 		for k,v in pairs(_G) do
 			if type(k) == "string" and type(v) == "boolean" and k:sub(1, 3)  == "GL_" then
 				cache[k] = v
+				if sdl.GL_ExtensionSupported(k) == 1 then
+					logf("[graphics][opengl] extension %s was forced to %s\n", k, v)
+				end
 			end
 		end
 
@@ -1197,12 +1200,12 @@ if sdl then
 						local try = sdl.GL_ExtensionSupported(new) == 1
 						cache[str] = try
 						if try then
-							llog("requested extension %s which doesn't exist. using %s instead", str, new)
+							logf("[graphics][opengl] requested extension %s which doesn't exist. using %s instead\n", str, new)
 						end
 					end
 				end
 				if not cache[str] then
-					llog("extension %s does not exist", str)
+					logf("[graphics][opengl] extension %s does not exist\n", str)
 				end
 			end
 			return cache[str]
