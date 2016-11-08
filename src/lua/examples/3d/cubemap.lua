@@ -21,10 +21,10 @@ local shader = render.CreateShader({
 			cubemap = tex,
 		},
 		source = [[
-			vec4 out_color;
+			out vec4 out_color;
 			void main()
 			{
-				out_color = vec4(1,0,1,1);//texture(cubemap, get_camera_dir(uv));
+				out_color = texture(cubemap, get_camera_dir(uv));
 			}
 		]],
 	},
@@ -38,3 +38,7 @@ event.AddListener("PreDrawGUI", "lol", function()
 		render2d.rectangle:Draw()
 	render2d.PopMatrix()
 end)
+
+if menu then
+	menu.Close()
+end
