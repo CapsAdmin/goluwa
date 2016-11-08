@@ -169,7 +169,7 @@ end
 do
 	local last
 	local function CullFace(a)
-		if last ~= a then
+		if last ~= a then
 			gl.CullFace(a)
 			last = a
 		end
