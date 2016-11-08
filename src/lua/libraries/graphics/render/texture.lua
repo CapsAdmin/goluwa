@@ -50,6 +50,10 @@ function META:__copy()
 	return self
 end
 
+function META:GetSuggestedMipMapLevels()
+	return math.floor(math.log(math.max(self.Size.x, self.Size.y)) / math.log(2)) + 1
+end
+
 function META:SetPath(path, face, flip_y)
 	self.Path = path
 
@@ -117,7 +121,13 @@ do -- todo
 	function META:LoadCubemap(path)
 		path = path:sub(0,-1)
 		for i, face in pairs(faces) do
-			self:SetPath(path:gsub("(%..+)", function(rest) return face .. rest end), i, false)
+			local path_face = path:gsub("(%..+)", function(rest) return face .. rest end)
+			if vfs.IsFile(path_face) then
+				self:SetPath(path_face, i, false)
+			else
+				wlog("tried to load cubemap %s but %s does not exist", path, path_face)
+				break
+			end
 		end
 	end
 end

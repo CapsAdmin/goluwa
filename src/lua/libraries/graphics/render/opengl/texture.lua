@@ -19,10 +19,6 @@ function META:SetMipMapLevels(val)
 	end
 end
 
-function META:GetSuggestedMipMapLevels()
-	return math.floor(math.log(math.max(self.Size.x, self.Size.y)) / math.log(2)) + 1
-end
-
 function META:GetMipSize(mip_map_level)
 	mip_map_level = mip_map_level or 1
 
