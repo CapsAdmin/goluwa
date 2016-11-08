@@ -54,7 +54,15 @@ function render.GenerateTextures()
 			--loading:SetSize(Vec2()+256)
 
 			event.Timer("update_loading_texture", 1/5, 0, function()
-				if not render2d.IsReady() then return end
+				if
+					not render2d.IsReady() or
+					not render.requested_loading_texture or
+					render.requested_loading_texture < system.GetElapsedTime() - 1
+				then
+					return
+				end
+
+				print("wooo")
 				loading:Begin()
 					local time = system.GetElapsedTime()
 					render2d.SetColor(0.2, 0.2, 0.2, 1)
@@ -76,6 +84,7 @@ function render.GenerateTextures()
 				loading:End()
 			end)
 			render.loading_texture = loading:GetTexture()
+			render.loading_texture:SetBindless(true)
 		end
 	end
 
@@ -105,6 +114,7 @@ function render.GetErrorTexture()
 end
 
 function render.GetLoadingTexture()
+	render.requested_loading_texture = system.GetElapsedTime()
 	return render.loading_texture or render.error_texture
 end
 

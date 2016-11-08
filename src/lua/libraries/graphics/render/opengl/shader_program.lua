@@ -461,6 +461,7 @@ if system.IsOpenGLExtensionSupported("GL_ARB_bindless_texture") then
 		if not val.gl_bindless_handle then
 			val:SetBindless(true)
 		end
+		if val.Loading then val = render.GetLoadingTexture() end
 		self.gl_program:UniformHandleui64(key, val.gl_bindless_handle)
 	end
 else
