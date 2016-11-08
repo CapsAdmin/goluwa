@@ -34117,7 +34117,13 @@ function gl.Initialize(get_proc_address)
 				return gl.IsTexture(self.id)
 			end
 			function META:SubImage3D(level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
-				return gl.TextureSubImage3D(self.id, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
+				if AMD or ATI then
+					if self.target == "GL_TEXTURE_CUBE_MAP" then
+						return gl.TextureSubImage2D(self.id, gl.e.GL_TEXTURE_CUBE_MAP_POSITIVE_X + zoffset, level, xoffset, yoffset, width, height, format, type, pixels)
+					end
+				else
+					return gl.TextureSubImage3D(self.id, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
+				end
 			end
 			function META:CompressedSubImage2DEXT(target, level, xoffset, yoffset, width, height, format, imageSize, bits)
 				return gl.CompressedTextureSubImage2DEXT(self.id, target, level, xoffset, yoffset, width, height, format, imageSize, bits)
@@ -34227,7 +34233,7 @@ function gl.Initialize(get_proc_address)
 			function META:SubImage3DEXT(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
 				return gl.TextureSubImage3DEXT(self.id, target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
 			end
-			local ctype = ffi.typeof('struct { int id; }')
+			local ctype = ffi.typeof('struct { int id, target; }')
 			ffi.metatype(ctype, META)
 			function META:Delete()
 				gl.DeleteTextures(1, ffi.new('GLuint[1]', self.id))
@@ -34236,6 +34242,7 @@ function gl.Initialize(get_proc_address)
 				local temp = ffi.new('GLuint[1]')
 				gl.CreateTextures(target, 1, temp)
 				local self = ffi.new(ctype)
+				self.target = gl.e[target]
 				self.id = temp[0]
 				return self
 			end
