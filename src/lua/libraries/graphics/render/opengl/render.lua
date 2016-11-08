@@ -109,28 +109,31 @@ do
 		max = gl.e.GL_MAX,
 	}
 
+	local BlendFuncSeparate = utility.GenerateCheckLastFunction(gl.BlendFuncSeparate, 4)
+	local BlendEquationSeparate = utility.GenerateCheckLastFunction(gl.BlendEquationSeparate, 2)
+
 	local A,B,C,D,E,F
 
 	function render.SetBlendMode(src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha)
 
 		if src_color then
 			if src_color == "alpha" then
-				gl.BlendFuncSeparate(
+				BlendFuncSeparate(
 					"GL_SRC_ALPHA", "GL_ONE_MINUS_SRC_ALPHA",
 					"GL_ONE", "GL_ONE_MINUS_SRC_ALPHA"
 				)
 			elseif src_color == "multiplicative" then
-				gl.BlendFuncSeparate(
+				BlendFuncSeparate(
 					"GL_DST_COLOR", "GL_ZERO",
 					"GL_DST_COLOR", "GL_ZERO"
 				)
 			elseif src_color == "premultiplied" then
-				gl.BlendFuncSeparate(
+				BlendFuncSeparate(
 					"GL_ONE", "GL_ONE_MINUS_SRC_ALPHA",
 					"GL_ONE", "GL_ONE_MINUS_SRC_ALPHA"
 				)
 			elseif src_color == "additive" then
-				gl.BlendFuncSeparate(
+				BlendFuncSeparate(
 					"GL_SRC_ALPHA", "GL_ONE",
 					"GL_SRC_ALPHA", "GL_ONE"
 				)
@@ -143,11 +146,11 @@ do
 				dst_alpha = enums[dst_alpha] or dst_color
 				func_alpha = enums[func_alpha] or func_color
 
-				gl.BlendFuncSeparate(src_color, dst_color, src_alpha, dst_alpha)
-				gl.BlendEquationSeparate(func_color, func_alpha)
+				BlendFuncSeparate(src_color, dst_color, src_alpha, dst_alpha)
+				BlendEquationSeparate(func_color, func_alpha)
 			end
 		else
-			gl.BlendFuncSeparate(
+			BlendFuncSeparate(
 				"GL_ONE", "GL_ZERO",
 				"GL_ONE", "GL_ZERO"
 			)
@@ -164,6 +167,14 @@ do
 end
 
 do
+	local last
+	local function CullFace(a)
+		if last ~= a then
+			gl.CullFace(a)
+			last = a
+		end
+	end
+
 	local enabled = false
 
 	function render._SetCullMode(mode)
@@ -179,24 +190,42 @@ do
 			end
 
 			if mode == "front" then
-				gl.CullFace("GL_FRONT")
+				CullFace("GL_FRONT")
 			elseif mode == "back" then
-				gl.CullFace("GL_BACK")
+				CullFace("GL_BACK")
 			elseif mode == "front_and_back" then
-				gl.CullFace("GL_FRONT_AND_BACK")
+				CullFace("GL_FRONT_AND_BACK")
 			end
 		end
 	end
 end
 
-function render._SetDepth(b)
-	if b then
-		gl.Enable("GL_DEPTH_TEST")
-		gl.DepthFunc("GL_LESS")
-	else
-		gl.Disable("GL_DEPTH_TEST")
-		gl.DepthFunc("GL_ALWAYS")
+do
+	local last_enable
+	local last_func
+
+	function render._SetDepth(b)
+		if b then
+			if last_enable ~= b then
+				gl.Enable("GL_DEPTH_TEST")
+				last_enable = b
+			end
+			if last_func ~= "GL_LESS" then
+				gl.DepthFunc("GL_LESS")
+				last_func = "GL_LESS"
+			end
+		else
+			if last_enable ~= b then
+				gl.Enable("GL_DEPTH_TEST")
+				last_enable = b
+			end
+			if last_func ~= "GL_ALWAYS" then
+				gl.DepthFunc("GL_ALWAYS")
+				last_func = "GL_ALWAYS"
+			end
+		end
 	end
+
 end
 
 if system.IsOpenGLExtensionSupported("GL_ARB_texture_barrier") then
