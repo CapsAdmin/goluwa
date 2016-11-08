@@ -61,8 +61,6 @@ function render.GenerateTextures()
 				then
 					return
 				end
-
-				print("wooo")
 				loading:Begin()
 					local time = system.GetElapsedTime()
 					render2d.SetColor(0.2, 0.2, 0.2, 1)
