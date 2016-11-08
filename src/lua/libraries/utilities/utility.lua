@@ -3,6 +3,53 @@ local utility = _G.utility or {}
 include("packed_rectangle.lua", utility)
 include("quickbms.lua", utility)
 
+function utility.GenerateCheckLastFunction(func, arg_count)
+	local lua = ""
+
+	lua = lua .. "local func = ...\n"
+	for i = 1, arg_count do
+		lua = lua .. "local last_" .. i .. "\n"
+	end
+	lua = lua .. "return function("
+	for i = 1, arg_count do
+		lua = lua .. "_" .. i
+		if i ~= arg_count then
+			lua = lua .. ", "
+		end
+	end
+	lua = lua .. ")\n"
+
+	lua = lua .. "\tif\n"
+
+	for i = 1, arg_count do
+		lua = lua .. "\t\t_" .. i .. " ~= last_" .. i
+		if i ~= arg_count then
+			lua = lua .. " or\n"
+		else
+			lua = lua .. "\n"
+		end
+	end
+
+	lua = lua .. "\tthen\n"
+	lua = lua .. "\t\tfunc("
+	for i = 1, arg_count do
+		lua = lua .. "_" .. i
+		if i ~= arg_count then
+			lua = lua .. ", "
+		end
+	end
+	lua = lua .. ")\n"
+
+	for i = 1, arg_count do
+		lua = lua .. "\t\tlast_" .. i .. " = _" .. i .. "\n"
+	end
+
+	lua = lua .. "\tend\n"
+	lua = lua .. "end"
+
+	return assert(loadstring(lua))(func)
+end
+
 do
 	local stack = {}
 
