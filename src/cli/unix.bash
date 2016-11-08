@@ -70,5 +70,9 @@ if [ "$1" == "launch"  ] || [ "$1" == "" ]; then
 		launch="./$executable"
 	fi
 
-	eval "$launch $2 ../../../src/lua/init.lua$append"
+	if [ ! -z "$APITRACE" ]; then
+		eval "apitrace trace --api gl $launch $2 ../../../src/lua/init.lua$append"
+	else
+		eval "$launch $2 ../../../src/lua/init.lua$append"
+	fi
 fi
