@@ -24,7 +24,7 @@ local shader = render.CreateShader({
 			out vec4 out_color;
 			void main()
 			{
-				out_color = texture(cubemap, get_camera_dir(uv));
+				out_color = texture(cubemap, -get_camera_dir(uv).xzy);
 			}
 		]],
 	},
