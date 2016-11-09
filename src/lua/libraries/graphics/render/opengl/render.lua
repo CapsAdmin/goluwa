@@ -295,3 +295,7 @@ end
 function render.SetColorMask(r,g,b,a)
 	gl.ColorMask(r,g,b,a)
 end
+
+function render.SetDepthMask(d)
+	gl.DepthMask(d)
+end
