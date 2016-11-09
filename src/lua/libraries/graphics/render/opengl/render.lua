@@ -216,7 +216,7 @@ do
 			end
 		else
 			if last_enable ~= b then
-				gl.Enable("GL_DEPTH_TEST")
+				gl.Disable("GL_DEPTH_TEST")
 				last_enable = b
 			end
 			if last_func ~= "GL_ALWAYS" then
