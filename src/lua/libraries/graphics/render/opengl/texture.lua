@@ -427,9 +427,8 @@ function META:Bind(location)
 end
 
 function render._CreateTexture(self, type)
-	self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
-
 	if type == "cube_map" then
+		self.gl_tex = gl.CreateTextureNODSA("GL_TEXTURE_" .. self.StorageType:upper())
 		self:SetWrapS("clamp_to_edge")
 		self:SetWrapT("clamp_to_edge")
 		self:SetWrapR("clamp_to_edge")
@@ -439,6 +438,7 @@ function render._CreateTexture(self, type)
 		--self:SetBaseLevel(0)
 		--self:SetMaxLevel(0)
 	else
+		self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
 		self:SetWrapS("repeat")
 		self:SetWrapT("repeat")
 		self:SetWrapR("repeat")
