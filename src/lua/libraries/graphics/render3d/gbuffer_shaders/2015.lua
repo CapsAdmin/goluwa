@@ -48,6 +48,7 @@ vec3 sky_absorb(vec3 sky_color, float dist, vec3 color, float factor)
 }
 vec3 gbuffer_compute_sky(vec3 ray, float depth)
 {
+	//{return pow(ray*2, vec3(1000));}
 	ray = ray.xzy * vec3(-1, -1, 1);
 
 	vec3 sun_direction = lua[(vec3)render3d.GetShaderSunDirection].xyz;
@@ -75,7 +76,8 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 
 	vec3 stars = textureLatLon(lua[nightsky_tex = render.CreateTextureFromPath("textures/skybox/milkyway.jpg")], reflect(ray, sun_direction)).rgb;
 	stars += pow(stars*1.25, vec3(1.5));
-	stars *= depth * 0.05;
+	stars *= depth > 0.5 ? 1 : 0;
+	stars *= 0.01;
 
 	vec3 eye_position = min(vec3(0,render2d_height,0) + (vec3(-g_cam_pos.x, g_cam_pos.z, g_cam_pos.y) / 100010000), vec3(0.999999));
 	float eye_depth = sky_atmospheric_depth(eye_position, ray, depth);
@@ -94,7 +96,9 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 	}
 	rayleigh_collected = rayleigh_collected * pow(eye_depth, rayleigh_collection_power) / float(step_count);
 	mie_collected = (mie_collected * pow(eye_depth, mie_collection_power)) / float(step_count);
-	return stars + vec3(spot) + clamp(vec3(spot * mie_collected + mie_factor * mie_collected + rayleigh_factor * rayleigh_collected), vec3(0), vec3(1));
+	vec3 total = stars + vec3(spot) + clamp(vec3(spot * mie_collected + mie_factor * mie_collected + rayleigh_factor * rayleigh_collected), vec3(0), vec3(1));
+
+	return total*3;
 }]])
 
 render.AddGlobalShaderCode([[
@@ -156,7 +160,7 @@ vec3 gbuffer_compute_specular(vec3 L, vec3 V, vec3 N, float attenuation, vec3 li
 
 	vec3 atn = light_color * attenuation;
 
-	return vec3(dotNL * D * F * vis) * atn;
+	return vec3(dotNL * D * F * vis) * atn*30;
 }
 ]])
 
@@ -164,7 +168,7 @@ render.AddGlobalShaderCode([[
 vec3 gbuffer_compute_tonemap(vec3 color, vec3 bloom)
 {
 	const float gamma = 1.2;
-	const float exposure = 0.6;
+	const float exposure = 0.4;
 	const float bloomFactor = 0.005;
 	const float brightMax = 1;
 
@@ -235,6 +239,8 @@ do
 			vec2 coords = ray_cast(reflected * max(minRayStep, viewPos.z), hitPos);
 
 			vec3 sky = texture(lua[sky_tex = render3d.GetSkyTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
+			{out_color = sky; return;}
+
 
 			if (coords == vec2(0.0))
 			{
@@ -314,7 +320,7 @@ do
 
 						vec2 step = dir * amount;
 						vec3 normal = normalize(get_view_normal(uv));
-						float total_weight = 3;
+						float total_weight = 1;
 						vec3 res = vec3(0);
 						vec2 offset;
 
@@ -325,6 +331,7 @@ do
 								str = str .. "if( dot(normalize(get_view_normal(offset)), normal) < discard_threshold) {\n"
 								str = str .."total_weight -= "..weight.weight..";\n"
 								str = str .. "} else {\n"
+								str = str .."total_weight = 2.5;\n"
 								str = str .. "res += texture(tex_stage_"..#PASS.Source..", offset).rgb * "..weight.weight.."; }\n"
 							end
 							return str
@@ -405,9 +412,7 @@ do
 				float metallic = get_metallic(uv);
 				specular = mix(specular, reflection, pow(metallic, 0.5));
 				out_color = diffuse * specular;
-				out_color += gbuffer_compute_sky(get_camera_dir(uv), get_linearized_depth(uv))*0.1;
-				out_color *= 10;
-				//out_color = reflection;
+				out_color += gbuffer_compute_sky(get_camera_dir(uv), get_linearized_depth(uv));
 			}
 		]]
 	})
