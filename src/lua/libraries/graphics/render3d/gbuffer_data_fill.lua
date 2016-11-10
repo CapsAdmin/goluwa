@@ -249,7 +249,7 @@ PASS.Stages = {
 				{texture_blend = "float"},
 			},
 			source = [[
-				#define FLAT_SHADING ]].. (render3d.shader_name == "flat" and "1" or "0") ..[[
+				]].. (render3d.shader_name == "flat" and "#define FLAT_SHADING" or "") ..[[
 
 				#ifndef FLAT_SHADING
 					#define GENERATE_TANGENT 1
@@ -300,7 +300,7 @@ PASS.Stages = {
 				render3d.shader_name == "flat" and {normal = "vec3"} or nil,
 			},
 			source = [[
-				#define FLAT_SHADING ]].. (render3d.shader_name == "flat" and "1" or "0") ..[[
+				]].. (render3d.shader_name == "flat" and "#define FLAT_SHADING" or "") ..[[
 
 #ifdef FLAT_SHADING
 				in vec3 vertex_view_normal;
@@ -310,7 +310,7 @@ PASS.Stages = {
 					set_view_normal(vertex_view_normal);
 					set_specular(vec3(0,0,0));
 				}
-#elif
+#else
 				#define GENERATE_TANGENT 1
 				//#define DEBUG_NORMALS 1
 
@@ -433,10 +433,6 @@ PASS.Stages = {
 					{
 						metallic = texture(lua[MetallicTexture = render.GetBlackTexture()], uv).r;
 					}
-					metallic *= lua[MetallicMultiplier = 1];
-					set_metallic(metallic);
-
-
 
 					// roughness
 					float roughness = texture(lua[RoughnessTexture = render.GetBlackTexture()], uv).r;
@@ -451,7 +447,6 @@ PASS.Stages = {
 						else
 						{
 							roughness = 0.98;//max(pow((-(length(albedo)/3) + 1), 5), 0.9);
-							//albedo *= pow(roughness, 0.5);
 						}
 
 						if (metallic == 0)
@@ -459,9 +454,12 @@ PASS.Stages = {
 							metallic = min((-roughness+1)/1.5, 0.075);
 						}
 					}
-					roughness *= lua[RoughnessMultiplier = 1];
-					set_roughness(roughness);
 
+					roughness *= lua[RoughnessMultiplier = 1];
+					metallic *= lua[MetallicMultiplier = 1];
+
+					set_metallic(metallic);
+					set_roughness(roughness);
 
 					set_specular(vec3(0,0,0));
 				}
