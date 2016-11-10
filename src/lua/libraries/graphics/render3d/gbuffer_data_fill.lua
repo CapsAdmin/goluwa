@@ -262,10 +262,15 @@ PASS.Stages = {
 					#endif
 				#endif
 
+				#ifdef FLAT_SHADING
+					out vec3 vertex_view_normal;
+				#endif
+
 				void main()
 				{
 					#ifdef FLAT_SHADING
 						gl_Position = g_projection_view_world * vec4(pos, 1);
+						vertex_view_normal = mat3(g_normal_matrix) * normal;
 					#else
 						#ifdef GENERATE_TANGENT
 							vec4 temp = g_view_world * vec4(pos, 1.0);
@@ -292,14 +297,18 @@ PASS.Stages = {
 			mesh_layout = {
 				{uv = "vec2"},
 				{texture_blend = "float"},
+				render3d.shader_name == "flat" and {normal = "vec3"} or nil,
 			},
 			source = [[
 				#define FLAT_SHADING ]].. (render3d.shader_name == "flat" and "1" or "0") ..[[
 
 #ifdef FLAT_SHADING
+				in vec3 vertex_view_normal;
 				void main()
 				{
 					set_albedo(texture(lua[AlbedoTexture = render.GetErrorTexture()], uv).rgb);
+					set_view_normal(vertex_view_normal);
+					set_specular(vec3(0,0,0));
 				}
 #elif
 				#define GENERATE_TANGENT 1
