@@ -94,14 +94,14 @@ function render3d.UpdateSky()
 
 	render3d.sky_fb:Begin()
 	for i, view in ipairs(render3d.sky_cameras) do
-		--fb:SetTexture(1, tex, nil, nil, i)
 		render3d.sky_fb:SetTextureLayer(1, render3d.sky_texture, i)
-		render3d.sky_fb:ClearColor()
 
 		camera.camera_3d = view
 
-		render3d.sky_shader:Bind()
-		render2d.DrawRect(0,0,render2d.GetSize())
+		render2d.PushMatrix(0, 0, render2d.GetSize())
+			render3d.sky_shader:Bind()
+			render2d.rectangle:Draw()
+		render2d.PopMatrix()
 	end
 	render3d.sky_fb:End()
 --	render3d.sky_texture:GenerateMipMap()
