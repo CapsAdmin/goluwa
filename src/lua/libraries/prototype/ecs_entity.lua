@@ -61,8 +61,10 @@ function META:RemoveComponent(name)
 		component:Remove()
 	end
 
-	self.Components[name] = nil
-	self[name] = nil
+	if not self.removed then
+		self.Components[name] = nil
+		self[name] = nil
+	end
 end
 
 function META:GetComponent(name)
@@ -75,6 +77,8 @@ end
 
 function META:OnRemove()
 	if self.removed then return end
+	self.removed = true
+
 	event.Call("EntityRemove", self)
 
 	for name in pairs(self:GetComponents()) do
@@ -89,7 +93,6 @@ function META:OnRemove()
 	self:UnParent()
 
 	event.Call("EntityRemoved")
-	self.removed = true
 end
 
 do -- serializing

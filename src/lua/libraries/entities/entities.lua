@@ -44,7 +44,9 @@ end
 
 function entities.Panic()
 	for _, v in pairs(entities.GetAll()) do
-		v:Remove()
+		if v ~= entities.world and v ~= entities.world.sun then
+			v:Remove()
+		end
 	end
 end
 
@@ -54,7 +56,7 @@ function entities.SafeRemove(ent)
 	end
 end
 
-entities.world = NULL
+entities.world = entities.world or NULL
 
 function entities.GetWorld()
 	if not entities.world:IsValid() then
