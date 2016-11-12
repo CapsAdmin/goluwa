@@ -55,6 +55,10 @@ function render2d.ScreenToWorld(x, y)
 	return camera.camera_2d:ScreenToWorld(x, y)
 end
 
+function render2d.ScreenTo3DWorld(x, y)
+	return camera.camera_3d:ScreenToWorld(x, y)
+end
+
 function render2d.Start3D2D(pos, ang, scale)
 	camera.camera_2d:Start3D2DEx(pos, ang, scale)
 end
