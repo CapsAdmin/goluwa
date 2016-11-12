@@ -27,7 +27,7 @@ if GRAPHICS then
 		self.shadow_maps = {}
 		self.cameras = {}
 
-		gfx.LoadModel3D("models/low-poly-sphere.obj", function(meshes)
+		render3d.LoadModel("models/low-poly-sphere.obj", function(meshes)
 			self.light_mesh = meshes[1]
 		end)
 	end

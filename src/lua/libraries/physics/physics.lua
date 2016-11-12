@@ -187,7 +187,7 @@ do -- physcs models
 		if not physics.IsReady() then if on_fail then on_fail("physics is not initialized") end return end
 		if cb:check(path, callback, {on_fail = on_fail}) then return true end
 
-		steam.MountGamesFromPath(path)
+		steam.MountGamesFromMapPath(path)
 
 		local data = cb:get(path)
 

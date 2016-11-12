@@ -383,7 +383,7 @@ local mount_info = {
 	["achievement_apg_r11b"] = {"half-life 2", "team fortress 2"},
 }
 
-function steam.MountGamesFromPath(path)
+function steam.MountGamesFromMapPath(path)
 	local name = path:match("maps/(.+)%.bsp")
 
 	if name == "gm_old_flatgrass" then return end

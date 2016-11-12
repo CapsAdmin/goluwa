@@ -2,7 +2,6 @@ local gfx = _G.gfx or {}
 
 include("polygon_2d.lua", gfx)
 include("polygon_3d.lua", gfx)
-include("model_loader.lua", gfx)
 include("quadric_bezier_curve.lua", gfx)
 include("text.lua", gfx)
 include("video.lua", gfx)

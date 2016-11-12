@@ -68,7 +68,7 @@ if GRAPHICS then
 
 		self:SetLoading(true)
 
-		gfx.LoadModel3D(
+		render3d.LoadModel(
 			path,
 			function()
 				if steam.LoadMap and path:endswith(".bsp") then
