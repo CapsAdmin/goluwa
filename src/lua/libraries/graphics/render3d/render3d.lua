@@ -5,6 +5,7 @@ include("gbuffer.lua", render3d)
 include("environment_probe.lua", render3d)
 include("shadow_map.lua", render3d)
 include("sky.lua", render3d)
+include("vmt.lua", render3d)
 include("debug.lua", render3d)
 
 function render3d.Initialize()

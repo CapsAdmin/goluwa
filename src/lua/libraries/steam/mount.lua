@@ -66,7 +66,7 @@ function steam.GetLibraryFolders()
 
 	local tbl = {base .. "/steamapps/"}
 
-	local config = steam.VDFToTable(str)
+	local config = utility.VDFToTable(str)
 
 	for key, path in pairs(config.InstallConfigStore.Software.Valve.Steam) do
 
@@ -121,7 +121,7 @@ function steam.GetSourceGames()
 			local dir = path:match("(.+/).+/")
 
 			if str then
-				local tbl = steam.VDFToTable(str, true)
+				local tbl = utility.VDFToTable(str, true)
 				if tbl and tbl.gameinfo and tbl.gameinfo.game then
 					tbl = tbl.gameinfo
 					tbl.gameinfo_path = path

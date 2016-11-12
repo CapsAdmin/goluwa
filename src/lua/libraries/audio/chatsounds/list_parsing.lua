@@ -266,7 +266,7 @@ function chatsounds.BuildSoundInfo()
 					local str = vfs.Read(path)
 
 					if str then
-						local t, err = steam.VDFToTable(str)
+						local t, err = utility.VDFToTable(str)
 						if t then
 							table.merge(sound_info[data.userdata.game], t)
 						else
@@ -312,7 +312,7 @@ function chatsounds.BuildSoundInfo()
 					str = str:gsub("//.-\n", "")
 					-- stupid hack
 
-					local tbl = steam.VDFToTable(str)
+					local tbl = utility.VDFToTable(str)
 					if tbl.Lang then tbl = tbl.Lang end
 					if tbl.lang then tbl = tbl.lang end
 					if tbl.Tokens then tbl = tbl.Tokens end

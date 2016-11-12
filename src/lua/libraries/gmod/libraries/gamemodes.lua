@@ -3,7 +3,7 @@ local gine = ... or _G.gine
 gine.gamemodes = gine.gamemodes or {}
 
 function gine.LoadGamemode(name)
-	local info = assert(steam.VDFToTable(assert(vfs.Read("gamemodes/" .. name .. "/" .. name .. ".txt"))))
+	local info = assert(utility.VDFToTable(assert(vfs.Read("gamemodes/" .. name .. "/" .. name .. ".txt"))))
 	local name2, info = next(info)
 
 	if info.base == "" then info.base = nil end

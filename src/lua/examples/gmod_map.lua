@@ -68,7 +68,7 @@ for k,v in pairs(data) do
 
 	if v.mat and v.mat ~= "" then
 		local mat = render.CreateMaterial("model")
-		steam.LoadMaterial("materials/" .. v.mat .. ".vmt", mat)
+		mat:LoadVMT("materials/" .. v.mat .. ".vmt")
 
 		v.color = v.color / 255
 		v.color.a = (v.color.a / 255) ^ 0.2

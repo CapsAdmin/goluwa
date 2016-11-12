@@ -191,6 +191,8 @@ function PASS:Initialize()
 
 	local META = self.model_shader:CreateMaterialTemplate("model")
 
+	include("lua/libraries/graphics/render3d/vmt.lua", META)
+
 	function META:OnBind()
 		if self.NoCull or self.Translucent then
 			render.SetCullMode("none")

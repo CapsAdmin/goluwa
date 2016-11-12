@@ -103,7 +103,7 @@ local function add_icon(full_path)
 	if file_type == "material" then
 		icon:SetCachedRendering(true)
 		local mat = render.CreateMaterial("model")
-		steam.LoadMaterial(full_path, mat)
+		mat:LoadVMT(full_path)
 		icon.OnDraw = function() draw_scene(mat, Vec3()+10, QuatDeg3(45,45,0), 90, icon:GetWidth(), icon:GetHeight()) end
 	elseif file_type == "image" then
 		icon:SetTexture(render.CreateTextureFromPath("loading"))

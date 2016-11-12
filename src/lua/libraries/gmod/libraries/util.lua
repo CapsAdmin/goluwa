@@ -1,7 +1,7 @@
 local util = gine.env.util
 
 function util.KeyValuesToTable(str)
-	local tbl, ok = steam.VDFToTable(str, true)
+	local tbl, ok = utility.VDFToTable(str, true)
 	if not tbl then
 		llog(ok)
 		return {}

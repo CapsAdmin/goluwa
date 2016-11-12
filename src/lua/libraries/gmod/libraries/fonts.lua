@@ -38,9 +38,9 @@ function gine.LoadFonts()
 	local screen_res = window.GetSize()
 
 	local found = {}
-	--table.merge(found, steam.VDFToTable(vfs.Read("resource/SourceScheme.res"), true).scheme.fonts)
-	--table.merge(found, steam.VDFToTable(vfs.Read("resource/ChatScheme.res"), true).scheme.fonts)
-	table.merge(found, steam.VDFToTable(vfs.Read("resource/ClientScheme.res"), true).scheme.fonts)
+	--table.merge(found, utility.VDFToTable(vfs.Read("resource/SourceScheme.res"), true).scheme.fonts)
+	--table.merge(found, utility.VDFToTable(vfs.Read("resource/ChatScheme.res"), true).scheme.fonts)
+	table.merge(found, utility.VDFToTable(vfs.Read("resource/ClientScheme.res"), true).scheme.fonts)
 
 	for font_name, sub_fonts in pairs(found) do
 		local candidates = {}

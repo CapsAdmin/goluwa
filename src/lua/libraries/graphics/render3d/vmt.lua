@@ -1,4 +1,4 @@
-local steam = ... or _G.steam
+local META = ... or prototype.GetRegistered("material", "model")
 
 local path_translate = {
 	{"AlbedoTexture", "basetexture"},
@@ -27,29 +27,29 @@ local special_textures = {
 	_rt_fullframefb = "error",
 }
 
-function steam.LoadMaterial(path, material)
-	material:SetName(path)
+function META:LoadVMT(path)
+	self:SetName(path)
 
 	resource.Download(
 		path,
 		function(path)
 			if path:endswith(".vtf") then
-				material:SetAlbedoTexture(render.CreateTextureFromPath(path, true))
+				self:SetAlbedoTexture(render.CreateTextureFromPath(path, true))
 				-- default normal map?
 				return
 			end
 
-			local vmt, err = steam.VDFToTable(vfs.Read(path), function(key) return (key:lower():gsub("%$", "")) end)
+			local vmt, err = utility.VDFToTable(vfs.Read(path), function(key) return (key:lower():gsub("%$", "")) end)
 
 			if err then
-				material:SetError(path .. " steam.VDFToTable : " .. err)
+				self:SetError(path .. " utility.VDFToTable : " .. err)
 				return
 			end
 
 			local k,v = next(vmt)
 
 			if type(k) ~= "string" or type(v) ~= "table" then
-				material:SetError("bad material " .. path)
+				self:SetError("bad material " .. path)
 				table.print(vmt)
 				return
 			end
@@ -59,17 +59,17 @@ function steam.LoadMaterial(path, material)
 					v.include = v.include:lower()
 				end
 
-				local vmt2, err2 = steam.VDFToTable(vfs.Read(v.include), function(key) return (key:lower():gsub("%$", "")) end)
+				local vmt2, err2 = utility.VDFToTable(vfs.Read(v.include), function(key) return (key:lower():gsub("%$", "")) end)
 
 				if err2 then
-					material:SetError(err2)
+					self:SetError(err2)
 					return
 				end
 
 				local k2,v2 = next(vmt2)
 
 				if type(k2) ~= "string" or type(v2) ~= "table" then
-					material:SetError("bad material " .. path)
+					self:SetError("bad material " .. path)
 					table.print(vmt)
 					return
 				end
@@ -92,8 +92,8 @@ function steam.LoadMaterial(path, material)
 					if val then
 						local func = info[#info]
 
-						if material["Set" .. key] then
-							material["Set" .. key](material, (type(func) == "function" and func(val)) or val)
+						if self["Set" .. key] then
+							self["Set" .. key](self, (type(func) == "function" and func(val)) or val)
 						end
 
 						break
@@ -138,9 +138,9 @@ function steam.LoadMaterial(path, material)
 						new_path,
 						function(path)
 							if key == "AlbedoTexture" or key == "Albedo2Texture" then
-								material["Set" .. key](material, render.CreateTextureFromPath(path, true))
+								self["Set" .. key](self, render.CreateTextureFromPath(path, true))
 							else
-								material["Set" .. key](material, render.CreateTextureFromPath(path, false)) -- not srgb
+								self["Set" .. key](self, render.CreateTextureFromPath(path, false)) -- not srgb
 							end
 						end
 					)
@@ -149,10 +149,10 @@ function steam.LoadMaterial(path, material)
 
 			--material:SetRoughnessTexture(math.clamp(material:GetRoughnessTexture(), 0.05, 0.95))
 
-			material.vmt = vmt
+			self.vmt = vmt
 		end,
 		function()
-			material:SetError("material "..path.." not found")
+			self:SetError("material "..path.." not found")
 		end
 	)
 end

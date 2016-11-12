@@ -14,11 +14,11 @@ do
 				mat:SetAlbedoTexture(render.CreateTextureFromPath("materials/" .. path))
 			end
 		elseif vfs.IsFile("materials/" .. path) then
-			steam.LoadMaterial("materials/" .. path, mat)
+			mat:LoadVMT("materials/" .. path)
 		elseif vfs.IsFile("materials/" .. path .. ".vmt") then
-			steam.LoadMaterial("materials/" .. path .. ".vmt", mat)
+			mat:LoadVMT("materials/" .. path .. ".vmt")
 		elseif vfs.IsFile("materials/" .. path .. ".png") then
-			steam.LoadMaterial("materials/" .. path .. ".png", mat)
+			mat:LoadVMT("materials/" .. path .. ".png")
 		end
 
 		return gine.WrapObject(mat, "IMaterial")
