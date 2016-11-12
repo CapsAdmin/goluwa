@@ -64,68 +64,105 @@ do -- helpers
 		end
 	end
 
+	local function build_normal(a,b,c)
+		local normal = -(a.pos - b.pos):Cross(b.pos - c.pos):GetNormalized()
+
+		a.normal = normal
+		b.normal = normal
+		c.normal = normal
+
+		tasks.Wait()
+	end
+
 	function META:BuildNormals()
-		for i = 1, #self.Vertices, 3 do
+		if self.Indices then
+			for i = 1, #self.Indices, 3 do
+				local a = self.Vertices[self.Indices[i + 0] + 1]
+				local b = self.Vertices[self.Indices[i + 1] + 1]
+				local c = self.Vertices[self.Indices[i + 2] + 1]
 
-			local ai = i + 0
-			local bi = i + 1
-			local ci = i + 2
+				build_normal(a, b, c)
+			end
+		else
+			for i = 1, #self.Vertices, 3 do
+				local a = self.Vertices[i + 0]
+				local b = self.Vertices[i + 1]
+				local c = self.Vertices[i + 2]
 
-			local a, b, c = self.Vertices[ai], self.Vertices[bi], self.Vertices[ci]
-			local normal = (a.pos - b.pos):Cross(b.pos - c.pos):GetNormalized()
-			normal = -Vec3(normal.x, normal.y, normal.z)
+				build_normal(a, b, c)
+			end
+		end
+	end
 
-			self.Vertices[ai].normal = normal
-			self.Vertices[bi].normal = normal
-			self.Vertices[ci].normal = normal
-			--[[
-			-- This is a triangle from your vertices
-			local v1 = self.Vertices[ai].pos;
-			local v2 = self.Vertices[bi].pos;
-			local v3 = self.Vertices[ci].pos;
+	local function build_tangent(self, ai, bi, ci, tan1, tan2)
+		local a = self.Vertices[ai]
+		local b = self.Vertices[ci]
+		local c = self.Vertices[bi]
 
-			-- These are the texture coordinate of the triangle
-			local w1 = self.Vertices[ai].uv;
-			local w2 = self.Vertices[bi].uv;
-			local w3 = self.Vertices[ci].uv;
 
-			local x1 = v2.x - v1.x
-			local x2 = v3.x - v1.x
-			local y1 = v2.y - v1.y
-			local y2 = v3.y - v1.y
-			local z1 = v2.z - v1.z
-			local z2 = v3.z - v1.z
+		local x1 = b.pos.x - a.pos.x
+		local x2 = c.pos.x - a.pos.x
+		local y1 = b.pos.y - a.pos.y
+		local y2 = c.pos.y - a.pos.y
+		local z1 = b.pos.z - a.pos.z
+		local z2 = c.pos.z - a.pos.z
 
-			local s1 = w2.x - w1.x
-			local s2 = w3.x - w1.x
-			local t1 = w2.y - w1.y
-			local t2 = w3.y - w1.y
+		local s1 = b.uv.x - a.uv.x
+		local s2 = c.uv.x - a.uv.x
+		local t1 = b.uv.y - a.uv.y
+		local t2 = c.uv.y - a.uv.y
 
-			local r = 1 / (s1 * t2 - s2 * t1)
-			local sdir = Vec3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r)
-			local tdir = Vec3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r)
+		local r = 1 / (s1 * t2 - s2 * t1)
+		local sdir = Vec3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r)
+		local tdir = Vec3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r)
 
-			-- Gram-Schmidt orthogonalize
-			local tangent = sdir - normal * normal:GetDot(sdir)
-			tangent:Normalize()
+		tan1[ai] = (tan1[ai] or Vec3()) + sdir
+		tan1[bi] = (tan1[bi] or Vec3()) + sdir
+		tan1[ci] = (tan1[ai] or Vec3()) + sdir
 
-			-- Calculate handedness (here maybe you need to switch >= with <= depend on the geometry winding order)
-			local tangentdir = normal:Cross(sdir):GetDot(tdir) >= 0 and 1 or -1
-			local binormal = normal:Cross(tangent) * tangentdir
+		tan2[ai] = (tan2[ai] or Vec3()) + tdir
+		tan2[bi] = (tan2[bi] or Vec3()) + tdir
+		tan2[ci] = (tan2[ci] or Vec3()) + tdir
 
-			self.Vertices[ai].normal = normal
-			self.Vertices[ai].tangent = tangent
-			self.Vertices[ai].binormal = binormal
+		tasks.Wait()
+	end
 
-			self.Vertices[bi].normal = normal
-			self.Vertices[bi].tangent = tangent
-			self.Vertices[bi].binormal = binormal
+	function META:BuildTangent()
+		local tan1 = {}
+		local tan2 = {}
 
-			self.Vertices[ci].normal = normal
-			self.Vertices[ci].tangent = tangent
-			self.Vertices[ci].binormal = binormal]]
+		if self.Indices then
+			for i = 1, #self.Indices, 3 do
+				local ai = self.Indices[i + 0] + 1
+				local bi = self.Indices[i + 1] + 1
+				local ci = self.Indices[i + 2] + 1
 
-			tasks.Wait()
+				build_tangent(self, ai, bi, ci, tan1, tan2)
+			end
+		else
+			for i = 1, #self.Vertices, 3 do
+				local ai = i + 0
+				local bi = i + 1
+				local ci = i + 2
+
+				build_tangent(self, ai, bi, ci, tan1, tan2)
+			end
+		end
+
+		for i = 1, #self.Vertices do
+			local n = self.Vertices[i].normal
+			local t = tan1[i]
+
+			if tan1[i] and tan2[i] then
+
+				local tangent = (t - n  * n:GetDot(t)):Normalize()
+				local binormal = n:GetCross(tangent) * (n:GetCross(t):GetDot(tan2[i]) < 0 and -1 or 1)
+
+				self.Vertices[i].tangent = tangent
+				self.Vertices[i].binormal = binormal
+
+				tasks.Wait()
+			end
 		end
 	end
 
