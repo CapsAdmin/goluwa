@@ -9,6 +9,8 @@ META:StartStorable()
 	META:GetSet("ModelPath", "models/cube.obj")
 	META:GetSet("AABB", AABB())
 	META:GetSet("Color", Color(1,1,1,1))
+	META:GetSet("RoughnessMultiplier", 1)
+	META:GetSet("MetallicMultiplier", 1)
 META:EndStorable()
 
 META:IsSet("Loading", false)
@@ -180,6 +182,8 @@ if GRAPHICS then
 
 			for _, mesh in ipairs(self.sub_meshes) do
 				mesh.material.Color = self.Color
+				mesh.material.RoughnessMultiplier = self.RoughnessMultiplier
+				mesh.material.MetallicMultiplier = self.MetallicMultiplier
 				render_SetMaterial(mesh.material)
 				render3d.shader:Bind()
 				mesh.vertex_buffer:Draw()
@@ -204,6 +208,8 @@ if GRAPHICS then
 
 				for _, mesh in ipairs(self.sub_meshes) do
 					mesh.material.Color = self.Color
+					mesh.material.RoughnessMultiplier = self.RoughnessMultiplier
+					mesh.material.MetallicMultiplier = self.MetallicMultiplier
 					render_SetMaterial(mesh.material)
 					render3d.shader:Bind()
 					mesh.vertex_buffer:Draw()
