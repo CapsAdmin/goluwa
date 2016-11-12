@@ -453,7 +453,7 @@ PASS.Stages = {
 					roughness *= lua[RoughnessMultiplier = 1];
 					metallic *= lua[MetallicMultiplier = 1];
 
-					set_metallic(metallic);
+					set_metallic(max(metallic, 0.0005));
 					set_roughness(roughness);
 
 					set_specular(vec3(0,0,0));
