@@ -590,6 +590,7 @@ function steam.LoadMap(path)
 	if GRAPHICS then
 		for _, mesh in ipairs(models) do
 			mesh:BuildNormals()
+			mesh:BuildTangent()
 			tasks.ReportProgress("generating normals", #models)
 			tasks.Wait()
 		end

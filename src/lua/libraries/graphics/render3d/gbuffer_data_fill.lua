@@ -1,3 +1,4 @@
+local GENERATE_TANGENT = false
 render3d.csm_count = 3
 
 local PASS = {}
@@ -244,16 +245,16 @@ PASS.Stages = {
 			mesh_layout = {
 				{pos = "vec3"},
 				{uv = "vec2"},
-				{normal = "vec3"},
-				--{tangent = "vec3"},
 				{texture_blend = "float"},
+				{normal = "vec3"},
+				not GENERATE_TANGENT and {tangent = "vec3"} or nil,
+				not GENERATE_TANGENT and {binormal = "vec3"} or nil,
 			},
 			source = [[
 				]].. (render3d.shader_name == "flat" and "#define FLAT_SHADING" or "") ..[[
+				]].. (GENERATE_TANGENT and "#define GENERATE_TANGENT" or  "") ..[[
 
 				#ifndef FLAT_SHADING
-					#define GENERATE_TANGENT 1
-
 					#ifdef GENERATE_TANGENT
 						out vec3 view_pos;
 						out vec3 vertex_view_normal;
@@ -280,11 +281,7 @@ PASS.Stages = {
 						#else
 							gl_Position = g_projection_view_world * vec4(pos, 1);
 
-							vec3 view_normal = mat3(g_normal_matrix) * normal;
-							vec3 view_tangent = mat3(g_normal_matrix) * tangent;
-							vec3 view_bitangent = cross(view_tangent, view_normal);
-
-							tangent_space = mat3(view_tangent, view_bitangent, view_normal);
+							tangent_space = mat3(g_normal_matrix) * mat3(tangent, binormal, normal);
 						#endif
 					#endif
 				}
@@ -301,6 +298,7 @@ PASS.Stages = {
 			},
 			source = [[
 				]].. (render3d.shader_name == "flat" and "#define FLAT_SHADING" or "") ..[[
+				]].. (GENERATE_TANGENT and "#define GENERATE_TANGENT" or  "") ..[[
 
 #ifdef FLAT_SHADING
 				in vec3 vertex_view_normal;
@@ -311,9 +309,6 @@ PASS.Stages = {
 					set_specular(vec3(0,0,0));
 				}
 #else
-				#define GENERATE_TANGENT 1
-				//#define DEBUG_NORMALS 1
-
 				#ifdef GENERATE_TANGENT
 					in vec3 view_pos;
 					in vec3 vertex_view_normal;
@@ -602,7 +597,7 @@ if TESSELLATION then
 			{pos = "vec3"},
 			{uv = "vec2"},
 			{normal = "vec3"},
-			--{tangent = "vec3"},
+			{tangent = "vec3"},
 			{texture_blend = "float"},
 		},
 		source = [[

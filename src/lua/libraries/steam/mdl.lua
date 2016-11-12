@@ -808,6 +808,7 @@ function steam.LoadModel(path, sub_model_callback)
 
 						mesh:SetVertices(vertices)
 						mesh:SetIndices(indices)
+						mesh:BuildTangent()
 						mesh:BuildBoundingBox()
 						mesh:Upload()
 

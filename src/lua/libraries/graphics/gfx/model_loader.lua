@@ -125,6 +125,10 @@ function gfx.LoadModel3D(path, callback, callback2, on_fail)
 					mesh:SetIndices(model_data.indices)
 					mesh:BuildBoundingBox()
 
+					mesh:BuildNormals()
+					mesh:SmoothNormals()
+					mesh:BuildTangent()
+
 					mesh:Upload()
 					cb:callextra(path, "mesh", mesh)
 					table.insert(out, mesh)
