@@ -12,7 +12,7 @@ table.insert(PASS.Source, {
 	buffer = {
 		--max_size = Vec2() + 512,
 		size_divider = 1,
-		internal_format = "rgb16f",
+		internal_format = "r11f_g11f_b10f",
 	},
 	source = [[
 	out vec3 out_color;
@@ -54,7 +54,7 @@ table.insert(PASS.Source, {
 
 	void main()
 	{
-		float z = pow((-texture(tex_depth, uv).r+1)*15, 1.25);
+		float z = pow((-texture(tex_depth, uv).r+1)*5, 1.25);
 
 		out_color = Bokeh(tex_mixer, uv, z, 1);
 	}

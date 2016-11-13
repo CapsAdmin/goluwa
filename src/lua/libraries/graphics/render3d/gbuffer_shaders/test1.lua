@@ -55,6 +55,9 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 	float intensity = lua[world_sun_intensity = 1];
 	vec3 sky_color = lua[world_sky_color = Vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131)];
 
+	vec3 influence = texture(lua[sky_tex = steam.GetSkyTexture()], ray).rgb*depth;
+	sky_color *= influence;
+
 	const float render2d_height = 0.95;
 	const int step_count = 8;
 	const float rayleigh_brightness = 2;
@@ -98,7 +101,9 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 	mie_collected = (mie_collected * pow(eye_depth, mie_collection_power)) / float(step_count);
 	vec3 total = stars + vec3(spot) + clamp(vec3(spot * mie_collected + mie_factor * mie_collected + rayleigh_factor * rayleigh_collected), vec3(0), vec3(1));
 
-	return total*3;
+	total *= 3;
+
+	return total;
 }]])
 
 render.AddGlobalShaderCode([[
@@ -167,10 +172,9 @@ vec3 gbuffer_compute_specular(vec3 L, vec3 V, vec3 N, float attenuation, vec3 li
 render.AddGlobalShaderCode([[
 vec3 gbuffer_compute_tonemap(vec3 color, vec3 bloom)
 {
-	const float gamma = 1.2;
-	const float exposure = 0.4;
-	const float bloomFactor = 0.005;
-	const float brightMax = 1;
+	const float gamma = 1.25;
+	const float exposure = 0.35;
+	const float bloomFactor = 0.025;
 
 	color = color + bloom * bloomFactor;
 	color *= exposure * (exposure + 1.0);
@@ -215,10 +219,11 @@ do
 			for(int i = 0; i < maxSteps; i++)
 			{
 				hitCoord += dir;
+				hitCoord += get_noise3(hitCoord.xy).xyz * pow(get_roughness(uv), 3)*0.5;
 
 				float depth = hitCoord.z - get_view_pos(project(hitCoord)).z;
 
-				if(depth < 0.0 && depth > -0.3)
+				if(depth < 0)
 				{
 					return project(hitCoord).xy;
 				}
@@ -239,7 +244,6 @@ do
 			vec2 coords = ray_cast(reflected * max(minRayStep, viewPos.z), hitPos);
 
 			vec3 sky = texture(lua[sky_tex = render3d.GetSkyTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
-			{out_color = sky; return;}
 
 
 			if (coords == vec2(0.0))
@@ -248,13 +252,12 @@ do
 				return;
 			}
 
-			//vec3 probe = texture(lua[probe_tex = render3d.GetEnvironmentProbeTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
 			vec3 diffuse = get_albedo(coords.xy);
 			vec3 light = diffuse * (sky + get_specular(uv));
 
 			vec2 dCoords = abs(vec2(0.5, 0.5) - coords.xy);
 			float fade = clamp(1.0 - (dCoords.x + dCoords.y)*1.5, 0.0, 1.0);
-			fade -= pow(fade, 1.5)/1.75;
+			fade -= pow(fade, 1.5)/2.25;
 			fade *= 2;
 
 			out_color =	mix(sky, light, fade);
@@ -272,7 +275,7 @@ do
 		return
 	end
 
-
+do
 	for x = -1, 1 do
 		for y = -1, 1 do
 			if x == y or (y == 0 and x == 0) then goto continue end
@@ -311,28 +314,29 @@ do
 				source = [[
 					out vec3 out_color;
 
-					const float discard_threshold = 0.5;
+					const float discard_threshold = 0.75;
 
 					vec3 blur(vec2 dir, float amount)
 					{
 
-						amount = pow(amount*1.5, 2.5) / get_linearized_depth(uv) / g_cam_farz;
+						amount = pow(amount*0.2, 2.5);
 
 						vec2 step = dir * amount;
 						vec3 normal = normalize(get_view_normal(uv));
 						float total_weight = 1;
 						vec3 res = vec3(0);
 						vec2 offset;
+						vec2 jitter;
 
 						]] ..(function()
 							local str = ""
 							for i, weight in ipairs(weights) do
-								str = str .. "offset = uv + " ..weight.dir.." * step;\n"
+								str = str .. "jitter = get_noise2(offset)*0.0025;\n"
+								str = str .. "offset = uv + " ..weight.dir.." * step + jitter;\n"
 								str = str .. "if( dot(normalize(get_view_normal(offset)), normal) < discard_threshold) {\n"
-								str = str .."total_weight -= "..weight.weight..";\n"
 								str = str .. "} else {\n"
-								str = str .."total_weight = 2.5;\n"
-								str = str .. "res += texture(tex_stage_"..#PASS.Source..", offset).rgb * "..weight.weight.."; }\n"
+								str = str .."total_weight += 1;\n"
+								str = str .. "res += texture(tex_stage_"..#PASS.Source..", offset).rgb; }\n"
 							end
 							return str
 						end)()..[[
@@ -351,8 +355,9 @@ do
 			::continue::
 		end
 	end
+end
 
-	do
+if false then
 		table.insert(PASS.Source, {
 			buffer = {
 				size_divider = 1,
@@ -360,8 +365,9 @@ do
 			},
 			source = [[
 				const vec2 KERNEL[16] = vec2[](vec2(0.53812504, 0.18565957), vec2(0.13790712, 0.24864247), vec2(0.33715037, 0.56794053), vec2(-0.6999805, -0.04511441), vec2(0.06896307, -0.15983082), vec2(0.056099437, 0.006954967), vec2(-0.014653638, 0.14027752), vec2(0.010019933, -0.1924225), vec2(-0.35775623, -0.5301969), vec2(-0.3169221, 0.106360726), vec2(0.010350345, -0.58698344), vec2(-0.08972908, -0.49408212), vec2(0.7119986, -0.0154690035), vec2(-0.053382345, 0.059675813), vec2(0.035267662, -0.063188605), vec2(-0.47761092, 0.2847911));
-				const float SAMPLE_RAD = 0.75;  /// Used in main
-				const float INTENSITY = 0.5; /// Used in doAmbientOcclusion
+				const float SAMPLE_RAD = 0.25;
+				const float INTENSITY = 2;
+				const int ITERATIONS = 8;
 
 				float ssao(void)
 				{
@@ -371,7 +377,6 @@ do
 
 					float occlusion = 0.0;
 
-					const int ITERATIONS = 16;
 					for(int j = 0; j < ITERATIONS; ++j)
 					{
 						vec2 offset = uv + (reflect(KERNEL[j], rand) / (get_linearized_depth(uv)) / g_cam_farz * SAMPLE_RAD);
@@ -379,7 +384,7 @@ do
 						vec3 diff = get_view_pos(offset) - p;
 						float d = length(diff);
 
-						if (d < 1)
+						//if (d < 1)
 						{
 							occlusion += max(0.0, dot(n, normalize(diff))) * (INTENSITY / (1.0 + d));
 						}
@@ -396,7 +401,7 @@ do
 				}
 			]]
 		})
-	end
+end
 
 	table.insert(PASS.Source, {
 		source = [[

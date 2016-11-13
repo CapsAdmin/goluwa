@@ -104,7 +104,10 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 
 	vec3 sun_direction = lua[(vec3)render3d.GetShaderSunDirection];
 	float intensity = lua[world_sun_intensity = 1];
+
 	vec3 sky_color = lua[world_sky_color = Vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131)];
+	vec3 influence = texture(lua[sky_tex = steam.GetSkyTexture()], ray).rgb*depth;
+	sky_color *= influence;
 
 	//{return textureLatLon(lua[nightsky_tex = render.CreateTextureFromPath("textures/skybox/street.jpg")], reflect(ray, sun_direction)).rgb;};
 
