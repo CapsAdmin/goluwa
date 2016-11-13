@@ -1,4 +1,3 @@
-local GENERATE_TANGENT = false
 render3d.csm_count = 3
 
 local PASS = {}
@@ -56,6 +55,22 @@ PASS.Buffers = {
 		},
 	}
 }
+
+render.AddGlobalShaderCode([[
+// https://www.shadertoy.com/view/MslGR8
+bool dither(vec2 uv, float alpha)
+{
+	if (lua[AlphaTest = false] && (alpha*alpha > gl_FragCoord.z/10))
+	{
+		return false;
+	}
+
+	const vec3 magic = vec3( 0.06711056, 0.00583715, 52.9829189 );
+	float lol = fract( magic.z * fract( dot( gl_FragCoord.xy, magic.xy ) ) )*0.99;
+
+	return (alpha*alpha*alpha + lol) < 1;
+}
+]])
 
 render.AddGlobalShaderCode([[
 vec3 get_view_pos(vec2 uv)
@@ -249,24 +264,15 @@ PASS.Stages = {
 				{uv = "vec2"},
 				{texture_blend = "float"},
 				{normal = "vec3"},
-				not GENERATE_TANGENT and {tangent = "vec3"} or nil,
-				not GENERATE_TANGENT and {binormal = "vec3"} or nil,
+				{tangent = "vec3"},
 			},
 			source = [[
 				]].. (render3d.shader_name == "flat" and "#define FLAT_SHADING" or "") ..[[
-				]].. (GENERATE_TANGENT and "#define GENERATE_TANGENT" or  "") ..[[
-
-				#ifndef FLAT_SHADING
-					#ifdef GENERATE_TANGENT
-						out vec3 view_pos;
-						out vec3 vertex_view_normal;
-					#else
-						out mat3 tangent_space;
-					#endif
-				#endif
 
 				#ifdef FLAT_SHADING
 					out vec3 vertex_view_normal;
+				#else
+					out mat3 tangent_space;
 				#endif
 
 				void main()
@@ -275,16 +281,8 @@ PASS.Stages = {
 						gl_Position = g_projection_view_world * vec4(pos, 1);
 						vertex_view_normal = mat3(g_normal_matrix) * normal;
 					#else
-						#ifdef GENERATE_TANGENT
-							vec4 temp = g_view_world * vec4(pos, 1.0);
-							view_pos = temp.xyz;
-							gl_Position = g_projection * temp;
-							vertex_view_normal = mat3(g_normal_matrix) * normal;
-						#else
-							gl_Position = g_projection_view_world * vec4(pos, 1);
-
-							tangent_space = mat3(g_normal_matrix) * mat3(tangent, binormal, normal);
-						#endif
+						gl_Position = g_projection_view_world * vec4(pos, 1);
+						tangent_space = mat3(g_normal_matrix) * mat3(tangent, cross(tangent, normal), normal);
 					#endif
 				}
 			]]
@@ -300,7 +298,6 @@ PASS.Stages = {
 			},
 			source = [[
 				]].. (render3d.shader_name == "flat" and "#define FLAT_SHADING" or "") ..[[
-				]].. (GENERATE_TANGENT and "#define GENERATE_TANGENT" or  "") ..[[
 
 #ifdef FLAT_SHADING
 				in vec3 vertex_view_normal;
@@ -311,48 +308,7 @@ PASS.Stages = {
 					set_specular(vec3(0,0,0));
 				}
 #else
-				#ifdef GENERATE_TANGENT
-					in vec3 view_pos;
-					in vec3 vertex_view_normal;
-					#define tangent_space cotangent_frame(vertex_view_normal, view_pos, uv)
-				#else
-					in mat3 tangent_space;
-					#define vertex_view_normal tangent_space[2]
-				#endif
-
-				// https://www.shadertoy.com/view/MslGR8
-				bool dither(vec2 uv, float alpha)
-				{
-					if (lua[AlphaTest = false] && (alpha*alpha > gl_FragCoord.z/10))
-					{
-						return false;
-					}
-
-					const vec3 magic = vec3( 0.06711056, 0.00583715, 52.9829189 );
-					float lol = fract( magic.z * fract( dot( gl_FragCoord.xy, magic.xy ) ) )*0.99;
-
-					return (alpha*alpha*alpha + lol) < 1;
-				}
-
-				// http://www.geeks3d.com/20130122/normal-mapping-without-precomputed-tangent-space-vectors/
-				mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)
-				{
-					// get edge vectors of the pixel triangle
-					vec3 dp1 = dFdx( p );
-					vec3 dp2 = dFdy( p );
-					vec2 duv1 = dFdx( uv );
-					vec2 duv2 = dFdy( uv );
-
-					// solve the linear system
-					vec3 dp2perp = cross( dp2, N );
-					vec3 dp1perp = cross( N, dp1 );
-					vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
-					vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
-
-					// construct a scale-invariant frame
-					float invmax = inversesqrt( max( dot(T,T), dot(B,B) ) );
-					return mat3( T * invmax, B * invmax, N );
-				}
+				in mat3 tangent_space;
 
 				void main()
 				{
@@ -370,8 +326,6 @@ PASS.Stages = {
 					{
 						discard;
 					}
-
-
 
 					// normals
 					vec3 normal = vec3(0,0,0);
@@ -407,7 +361,7 @@ PASS.Stages = {
 					}
 					else
 					{
-						normal = vertex_view_normal;
+						normal = tangent_space[2];
 					}
 
 					normal = normalize(normal);

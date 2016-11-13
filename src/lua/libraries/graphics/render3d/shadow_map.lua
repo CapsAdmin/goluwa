@@ -18,20 +18,6 @@ local SHADER = {
 		source = [[
 			out float depth;
 
-			// https://www.shadertoy.com/view/MslGR8
-			bool dither(vec2 uv, float alpha)
-			{
-				if (lua[AlphaTest = false] && (alpha*alpha > gl_FragCoord.z/10))
-				{
-					return false;
-				}
-
-				const vec3 magic = vec3( 0.06711056, 0.00583715, 52.9829189 );
-				float lol = fract( magic.z * fract( dot( gl_FragCoord.xy, magic.xy ) ) )*0.99;
-
-				return (alpha*alpha*alpha + lol) < 1;
-			}
-
 			void main()
 			{
 				if (!lua[AlbedoAlphaMetallic = false])
