@@ -1,5 +1,19 @@
 local vfs = (...) or _G.vfs
 
+function vfs.FindMixedCasePath(path)
+	local dir = ""
+	for str in (path .. "/"):gmatch("(.-)/") do
+		for _, found in ipairs(vfs.Find(dir)) do
+			if found:lower() == str:lower() then
+				str = found
+			end
+		end
+		dir = dir .. str .. "/"
+	end
+	dir = dir:sub(0,-2)
+	return dir ~= "" and dir
+end
+
 local fs = require("fs")
 
 vfs.OSCreateDirectory = fs.createdir
