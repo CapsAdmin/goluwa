@@ -142,7 +142,7 @@ function META:LoadVMT(path)
 							else
 								self["Set" .. key](self, render.CreateTextureFromPath(path, false)) -- not srgb
 							end
-						end
+						end, nil, true
 					)
 				end
 			end
@@ -153,7 +153,9 @@ function META:LoadVMT(path)
 		end,
 		function()
 			self:SetError("material "..path.." not found")
-		end
+		end,
+		nil,
+		true
 	)
 end
 

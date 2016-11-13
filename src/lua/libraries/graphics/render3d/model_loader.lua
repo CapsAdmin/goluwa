@@ -82,6 +82,7 @@ function render3d.LoadModel(path, callback, callback2, on_fail)
 		end
 	end, function(reason)
 		cb:callextra(path, "on_fail", reason)
+	end, nil, path:endswith(".mdl")) -- sigh
 
 	return true
 end

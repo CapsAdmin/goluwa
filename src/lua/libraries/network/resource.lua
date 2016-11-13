@@ -118,7 +118,7 @@ end
 local cb = utility.CreateCallbackThing()
 local ohno = false
 
-function resource.Download(path, callback, on_fail, crc)
+function resource.Download(path, callback, on_fail, crc, mixed_case)
 	on_fail = on_fail or function(reason) llog(path, ": ", reason) end
 
 	local url
@@ -131,6 +131,10 @@ function resource.Download(path, callback, on_fail, crc)
 		existing_path = R(path)
 	else
 		existing_path = R(path) or R(path:lower())
+
+		if mixed_case and not existing_path then
+			existing_path = vfs.FindMixedCasePath(path)
+		end
 	end
 
 	if not ohno then
