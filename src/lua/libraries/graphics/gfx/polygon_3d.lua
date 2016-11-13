@@ -94,7 +94,7 @@ do -- helpers
 		end
 	end
 
-	local function build_tangent(self, ai, bi, ci, tan1, tan2)
+	local function build_tangents(self, ai, bi, ci, tan1, tan2)
 		local a = self.Vertices[ai]
 		local b = self.Vertices[ci]
 		local c = self.Vertices[bi]
@@ -127,7 +127,7 @@ do -- helpers
 		tasks.Wait()
 	end
 
-	function META:BuildTangent()
+	function META:BuildTangents()
 		local tan1 = {}
 		local tan2 = {}
 
@@ -137,7 +137,7 @@ do -- helpers
 				local bi = self.Indices[i + 1] + 1
 				local ci = self.Indices[i + 2] + 1
 
-				build_tangent(self, ai, bi, ci, tan1, tan2)
+				build_tangents(self, ai, bi, ci, tan1, tan2)
 			end
 		else
 			for i = 1, #self.Vertices, 3 do
@@ -145,7 +145,7 @@ do -- helpers
 				local bi = i + 1
 				local ci = i + 2
 
-				build_tangent(self, ai, bi, ci, tan1, tan2)
+				build_tangents(self, ai, bi, ci, tan1, tan2)
 			end
 		end
 
@@ -154,12 +154,7 @@ do -- helpers
 			local t = tan1[i]
 
 			if tan1[i] and tan2[i] then
-
-				local tangent = (t - n  * n:GetDot(t)):Normalize()
-				local binormal = n:GetCross(tangent) * (n:GetCross(t):GetDot(tan2[i]) < 0 and -1 or 1)
-
-				self.Vertices[i].tangent = tangent
-				self.Vertices[i].binormal = binormal
+				self.Vertices[i].tangent = (t - n  * n:GetDot(t)):Normalize()
 
 				tasks.Wait()
 			end

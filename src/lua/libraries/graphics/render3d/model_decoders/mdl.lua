@@ -809,7 +809,7 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 
 						mesh:SetVertices(vertices)
 						mesh:SetIndices(indices)
-						mesh:BuildTangent()
+						mesh:BuildTangents()
 						mesh:BuildBoundingBox()
 						mesh:Upload()
 

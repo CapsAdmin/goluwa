@@ -76,7 +76,7 @@ render3d.AddModelDecoder("assimp", function(path, full_path, mesh_callback)
 
 		mesh:BuildNormals()
 		mesh:SmoothNormals()
-		mesh:BuildTangent()
+		mesh:BuildTangents()
 
 		mesh:Upload()
 
