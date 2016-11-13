@@ -11,6 +11,7 @@ local skyboxes = {
 	["gm_atomic"] = {AABB(-210, -210, 40,   210, 210, 210) * (1/scale), 0},
 	["de_bank"] = {AABB(115, -74, -77, 261, 64, -28) * (1/scale), 0.003},
 	["rp_hometown1999"] = {AABB(78, -61, -1, 98, -45, 5) * (1/scale), 0.003},
+	["gm_freespace_13"] = {AABB(-500, -500, 200, 500, 500, 600) * (1/scale), 0},
 }
 
 function steam.SetMap(name)
