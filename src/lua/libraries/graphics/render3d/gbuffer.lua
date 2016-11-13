@@ -274,6 +274,7 @@ function render3d.InitializeGBuffer()
 	render3d.gbuffer_shaders = {}
 	render3d.gbuffer_shaders_sorted = {}
 	render3d.shader_name = shader_cvar:Get()
+	render3d.gbuffer_size = nil
 
 	local size = render3d.GetGBufferSize()
 
