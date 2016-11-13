@@ -70,21 +70,18 @@ function render3d.LoadModel(path, callback, callback2, on_fail)
 		local decode_callback = render3d.FindModelDecoder(path)
 
 		if decode_callback then
+			function thread:OnStart()
+				decode_callback(path, full_path, mesh_callback)
 
+				cb:stop(path, out)
+			end
+
+			thread:Start()
 		else
 			cb:callextra(path, "on_fail", "unknown format " .. path)
 		end
-
-		function thread:OnStart()
-			decode_callback(path, full_path, mesh_callback)
-
-			cb:stop(path, out)
-		end
-
-		thread:Start()
 	end, function(reason)
 		cb:callextra(path, "on_fail", reason)
-	end)
 
 	return true
 end
