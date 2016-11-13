@@ -552,149 +552,152 @@ do
 		if msg:find("stack overflow") then
 			logn(msg)
 			table.print(debug.getinfo(3))
-			return
-		end
+		elseif msg:find("\n") then
+			-- if the message contains a newline it's
+			-- probably not a good idea to do anything fancy
+			logn(msg)
+		else
+			logn("STACK TRACE:")
+			logn("{")
 
-		logn("STACK TRACE:")
-		logn("{")
+			local data = {}
 
-		local data = {}
+			for level = 3, 100 do
+				local info = debug.getinfo(level)
+				if info then
+					if info.currentline >= 0 then
+						local args = {}
 
-		for level = 3, 100 do
-			local info = debug.getinfo(level)
-			if info then
-				if info.currentline >= 0 then
-					local args = {}
-
-					for arg = 1, info.nparams do
-						local key, val = debug.getlocal(level, arg)
-						if type(val) == "table" then
-							val = tostring(val)
-						else
-							val = serializer.GetLibrary("luadata").ToString(val)
-							if val and #val > 200 then
-								val = val:sub(0, 200) .. "...."
+						for arg = 1, info.nparams do
+							local key, val = debug.getlocal(level, arg)
+							if type(val) == "table" then
+								val = tostring(val)
+							else
+								val = serializer.GetLibrary("luadata").ToString(val)
+								if val and #val > 200 then
+									val = val:sub(0, 200) .. "...."
+								end
 							end
+							table.insert(args, ("%s = %s"):format(key, val))
 						end
-						table.insert(args, ("%s = %s"):format(key, val))
-					end
 
-					info.arg_line = table.concat(args, ", ")
+						info.arg_line = table.concat(args, ", ")
 
-					info.name = info.name or "unknown"
+						info.name = info.name or "unknown"
 
-					table.insert(data, info)
-				end
-			else
-				break
-			end
-		end
-
-		local function resize_field(tbl, field)
-			local length = 0
-
-			for _, info in pairs(tbl) do
-				local str = tostring(info[field])
-				if str then
-					if #str > length then
-						length = #str
-					end
-					info[field] = str
-				end
-			end
-
-			for _, info in pairs(tbl) do
-				local str = info[field]
-				if str then
-					local diff = length - #str
-
-					if diff > 0 then
-						info[field] = str .. (" "):rep(diff)
-					end
-				end
-			end
-		end
-
-		table.insert(data, {currentline = "LINE:", source = "SOURCE:", name = "FUNCTION:", arg_line = " ARGUMENTS "})
-
-		resize_field(data, "currentline")
-		resize_field(data, "source")
-		resize_field(data, "name")
-
-		for _, info in npairs(data) do
-			logf("  %s   %s   %s  (%s)\n", info.currentline, info.source, info.name, info.arg_line)
-		end
-
-		table.clear(data)
-
-		logn("}")
-		logn("LOCALS: ")
-		logn("{")
-		for _, param in pairs(debug.getparamsx(4)) do
-			--if not param.key:find("(",nil,true) then
-				local val
-
-				if type(param.val) == "table" then
-					val = tostring(param.val)
-				elseif type(param.val) == "string" then
-					val = param.val:sub(0, 10)
-
-					if val ~= param.val then
-						val = val .. " .. " .. utility.FormatFileSize(#param.val)
+						table.insert(data, info)
 					end
 				else
-					val = serializer.GetLibrary("luadata").ToString(param.val)
+					break
+				end
+			end
+
+			local function resize_field(tbl, field)
+				local length = 0
+
+				for _, info in pairs(tbl) do
+					local str = tostring(info[field])
+					if str then
+						if #str > length then
+							length = #str
+						end
+						info[field] = str
+					end
 				end
 
-				table.insert(data, {key = param.key, value = val})
-			--end
-		end
+				for _, info in pairs(tbl) do
+					local str = info[field]
+					if str then
+						local diff = length - #str
 
-		table.insert(data, {key = "KEY:", value = "VALUE:"})
-
-		resize_field(data, "key")
-		resize_field(data, "value")
-
-		for _, info in npairs(data) do
-			logf("  %s   %s\n", info.key, info.value)
-		end
-		logn("}")
-
-		logn("ERROR:")
-		logn("{")
-		local source, _msg = msg:match("(.+): (.+)")
-
-		if source then
-			source = source:trim()
-
-			local info
-
-			-- this should be replaced with some sort of configuration
-			-- gl.lua never shows anything useful but the level above does..
-			if source:find("ffi_bind") then
-				info = debug.getinfo(4)
-			else
-				info = debug.getinfo(2)
+						if diff > 0 then
+							info[field] = str .. (" "):rep(diff)
+						end
+					end
+				end
 			end
 
-			if last_openfunc < system.GetElapsedTime() then
-				debug.openfunction(info.func, info.currentline)
-				last_openfunc = system.GetElapsedTime() + 3
-			else
-				--logf("debug.openfunction(%q)\n", source)
+			table.insert(data, {currentline = "LINE:", source = "SOURCE:", name = "FUNCTION:", arg_line = " ARGUMENTS "})
+
+			resize_field(data, "currentline")
+			resize_field(data, "source")
+			resize_field(data, "name")
+
+			for _, info in npairs(data) do
+				logf("  %s   %s   %s  (%s)\n", info.currentline, info.source, info.name, info.arg_line)
 			end
 
-			logn("  ", info.currentline, " ", info.source)
-			logn("  ", _msg:trim())
-		else
-			logn(msg)
+			table.clear(data)
+
+			logn("}")
+			logn("LOCALS: ")
+			logn("{")
+			for _, param in pairs(debug.getparamsx(4)) do
+				--if not param.key:find("(",nil,true) then
+					local val
+
+					if type(param.val) == "table" then
+						val = tostring(param.val)
+					elseif type(param.val) == "string" then
+						val = param.val:sub(0, 10)
+
+						if val ~= param.val then
+							val = val .. " .. " .. utility.FormatFileSize(#param.val)
+						end
+					else
+						val = serializer.GetLibrary("luadata").ToString(param.val)
+					end
+
+					table.insert(data, {key = param.key, value = val})
+				--end
+			end
+
+			table.insert(data, {key = "KEY:", value = "VALUE:"})
+
+			resize_field(data, "key")
+			resize_field(data, "value")
+
+			for _, info in npairs(data) do
+				logf("  %s   %s\n", info.key, info.value)
+			end
+			logn("}")
+
+			logn("ERROR:")
+			logn("{")
+			local source, _msg = msg:match("(.+): (.+)")
+
+			if source then
+				source = source:trim()
+
+				local info
+
+				-- this should be replaced with some sort of configuration
+				-- gl.lua never shows anything useful but the level above does..
+				if source:find("ffi_bind") then
+					info = debug.getinfo(4)
+				else
+					info = debug.getinfo(2)
+				end
+
+				if last_openfunc < system.GetElapsedTime() then
+					debug.openfunction(info.func, info.currentline)
+					last_openfunc = system.GetElapsedTime() + 3
+				else
+					--logf("debug.openfunction(%q)\n", source)
+				end
+
+				logn("  ", info.currentline, " ", info.source)
+				logn("  ", _msg:trim())
+			else
+				logn(msg)
+			end
+
+			logn("}")
+			logn("")
 		end
 
-		logn("}")
-		logn("")
-
-		suppress = false
 		logsection("lua error", false)
+		suppress = false
 	end
 
 	function system.pcall(func, ...)

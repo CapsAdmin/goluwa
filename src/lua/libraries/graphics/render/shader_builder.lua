@@ -607,34 +607,26 @@ function render.CreateShader(data, vars)
 					local lua_file = vfs.Read(e.ROOT_FOLDER .. path)
 
 					if lua_file then
-						lua_file = lua_file:gsub("[ %t\r]", "")
+						local source = data.original_source
 
-						local source = data.original_source:gsub("[ %t\r]", "")
 						local start = lua_file:find(source, 0, true)
+
 						local line_offset
 
 						if start then
 							line_offset = lua_file:sub(0, start):count("\n")
 
-							local err = "\n" .. shader_id .. "\n" .. message
-
-							if path then
-								err = (path:match(".+/(.+)") or path) .. ":" .. err
-							end
+							local err = path .. ":" .. line_offset .. "\n" .. shader_id .. "\n" .. message
 
 							local goto_line
 
 							err = err:gsub("0%((%d+)%) ", function(line)
 								line = tonumber(line)
-								goto_line = line - data.line_start + 1 + line_offset
-								return goto_line
+								goto_line = line - data.line_start + line_offset
+								return "\n" .. path .. ":" .. goto_line .. "\n\t"
 							end)
 
-							if path then
-								debug.openscript(path, tonumber(goto_line))
-							else
-								debug.openfunction(info.func, tonumber(goto_line))
-							end
+							debug.openscript(path, tonumber(goto_line))
 
 							error(err, i)
 						end

@@ -174,7 +174,7 @@ function debug.openscript(lua_script, line)
 	local path = pvars.Get("text_editor_path")
 
 	if not path then return false end
-	lua_script = R(lua_script) or lua_script
+	lua_script = R(lua_script) or  R(e.ROOT_FOLDER .. lua_script) or lua_script
 
 	if not vfs.IsFile(lua_script) then
 		logf("debug.openscript: script %q doesn't exist\n", lua_script)
