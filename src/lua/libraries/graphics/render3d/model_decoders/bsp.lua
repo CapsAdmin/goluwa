@@ -22,6 +22,37 @@ function steam.SetMap(name)
 	steam.bsp_world:SetPhysicsModelPath("maps/" .. name .. ".bsp")
 end
 
+
+do
+	local function init()
+		local tex = render.CreateTexture("cube_map")
+		tex:SetMinFilter("linear")
+		tex:SetMagFilter("linear")
+		tex:SetWrapS("clamp_to_edge")
+		tex:SetWrapT("clamp_to_edge")
+		tex:SetWrapR("clamp_to_edge")
+		tex:SetSeamlessCubemap(true)
+		return tex
+	end
+
+	function steam.LoadSkyTexture(name)
+		if not name or name == "painted" then
+			name = "sky_wasteland02"
+		end
+		steam.sky_tex = init()
+		steam.sky_tex:LoadCubemap("materials/skybox/"..name..".vtf")
+	end
+
+	function steam.GetSkyTexture()
+		if not steam.sky_tex then
+			steam.sky_tex = init()
+			steam.LoadSkyTexture()
+		end
+
+		return steam.sky_tex
+	end
+end
+
 local function read_lump_data(what, bsp_file, header, index, size, struct)
 	local out = {}
 
@@ -709,9 +740,12 @@ function steam.SpawnMapEntities(path, parent)
 		end
 
 		local count = table.count(data.entities)
+
 		for i, info in pairs(data.entities) do
 			if GRAPHICS then
-				if info.classname and info.classname:find("light_environment") then
+				if info.skyname then
+					steam.LoadSkyTexture(info.skyname)
+				elseif info.classname and info.classname:find("light_environment") then
 
 					--local p, y = info.pitch, info.angles.y
 					--parent.world_params:SetSunAngles(Deg3(p or 0, y+180, 0))
