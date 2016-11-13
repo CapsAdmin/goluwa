@@ -120,7 +120,7 @@ function render3d.DrawScene(what)
 					--model.is_visible = model.occluders[what]:GetResult()
 
 					-- TODO: upload aabb only
-					occlusion_shader.model = model.tr.TRMatrix -- don't call model:GetMatrix() as it migth rebuild, it's not that important
+					occlusion_shader.model = model.tr.FinalMatrix -- don't call model:GetMatrix() as it migth rebuild, it's not that important
 					occlusion_shader:Bind()
 
 					model.occluders[what]:Begin()

@@ -98,7 +98,7 @@ end
 function META:GetMatrix()
 	self:RebuildMatrix()
 
-	return self.TRMatrix
+	return self.FinalMatrix
 end
 
 function META:SetScale(vec3)
@@ -161,10 +161,6 @@ function META:RebuildMatrix()
 		self.TRMatrix:SetTranslation(-pos.y, -pos.x, -pos.z)
 		self.TRMatrix:SetRotation(rot)
 
-		if self.temp_scale.x ~= 1 or self.temp_scale.y ~= 1 or self.temp_scale.z ~= 1 then
-			self.TRMatrix = self.TRMatrix * self.ScaleMatrix
-		end
-
 		if self.Entity:HasParent() then
 			local parent_transform = self.Entity.Parent:GetComponent("transform")
 
@@ -178,10 +174,10 @@ function META:RebuildMatrix()
 			end
 
 			if parent_transform then
-				self.temp_matrix = self.temp_matrix or Matrix44()
-				--self.TRMatrix = self.TRMatrix * self.Parent.TRMatrix
-				parent_transform.TRMatrix:Multiply(self.TRMatrix, self.temp_matrix)
-				self.TRMatrix, self.temp_matrix = self.temp_matrix, self.TRMatrix
+			--	self.temp_matrix = self.temp_matrix or Matrix44()
+				self.TRMatrix = self.TRMatrix * parent_transform.TRMatrix
+				--parent_transform.TRMatrix:Multiply(self.TRMatrix, self.temp_matrix)
+				--self.TRMatrix, self.temp_matrix = self.temp_matrix, self.TRMatrix
 			end
 		end
 	end
@@ -203,6 +199,12 @@ function META:RebuildMatrix()
 		self.translated_aabb = aabb
 
 		self.bounding_sphere = aabb:GetMin():Distance(aabb:GetMax())
+
+		if self.temp_scale.x ~= 1 or self.temp_scale.y ~= 1 or self.temp_scale.z ~= 1 then
+			self.FinalMatrix = self.TRMatrix * self.ScaleMatrix
+		else
+			self.FinalMatrix = self.TRMatrix
+		end
 	end
 
 	self.rebuild_tr_matrix = false
