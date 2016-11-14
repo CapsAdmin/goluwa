@@ -57,7 +57,8 @@ if GRAPHICS then
 	function META:SetShadowSize(size)
 		self.ShadowSize = size
 		for i, shadow_map in pairs(self.shadow_maps) do
-			shadow_map:SetShadowSize(math.pow2round(size/i))
+			--shadow_map:SetShadowSize(math.pow2round(size/i))
+			shadow_map:SetShadowSize(size)
 		end
 		self:BuildProjection()
 	end
@@ -77,7 +78,7 @@ if GRAPHICS then
 			do -- setup the projection matrix
 				if self.Ortho then
 					local size = self:GetOrthoSize(i)
-					projection:Ortho(-size, size, -size, size, size*2, -size*2)
+					projection:Ortho(-size, size, -size, size, size*5, -size*2)
 					cam:SetViewport(Rect(0,0,size,size))
 				else
 					local shadow_map = self.shadow_maps[i]

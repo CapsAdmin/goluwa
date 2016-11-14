@@ -454,7 +454,7 @@ PASS.Stages = {
 					}
 					else
 					{
-						vec3 world_pos = get_world_pos(uv);
+						vec3 world_pos = get_world_pos(uv)*0.9999;
 
 						]] .. (function()
 							local code = ""

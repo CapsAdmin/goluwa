@@ -281,6 +281,7 @@ function render3d.InitializeGBuffer()
 	camera.camera_3d:SetViewport(Rect(0,0,size.x,size.y))
 	render.InitializeNoiseTexture(size)
 
+	include("lua/libraries/graphics/render3d/shader_functions.lua")
 	include("lua/libraries/graphics/render3d/gbuffer_shaders/"..shader_cvar:Get()..".lua")
 
 	local data_pass = include("lua/libraries/graphics/render3d/gbuffer_data_fill.lua", render3d)

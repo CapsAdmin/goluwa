@@ -386,283 +386,48 @@ vec3 gbuffer_compute_specular(vec3 light_dir, vec3 view_dir, vec3 normal, float 
 local PASS = {}
 
 PASS.Position = -1
-PASS.Name = "reflection_merge"
+PASS.Name = "test"
 PASS.Default = true
 
 PASS.Source = {}
 
 table.insert(PASS.Source, {
-	buffer = {
-		--max_size = Vec2() + 512,
-		size_divider = reflection_res_divider,
-		internal_format = "r11f_g11f_b10f",
-		mip_maps = 0,
-	},
-	source = [[
-	#extension GL_ARB_texture_query_levels: enable
-	out vec3 out_color;
-
-	vec3 project(vec3 coord)
-	{
-		vec4 res = g_projection * vec4(coord, 1.0);
-		return (res.xyz / res.w) * 0.5 + 0.5;
-	}
-
-	void main()
-	{
-		if (texture(tex_depth, uv).r == 1)
-		{
-			return;
-		}
-
-		out_color.rgb = get_env_color();
-
-		vec3 view_pos = get_view_pos(uv);
-		vec3 normal = get_view_normal(uv);
-
-		vec3 view_dir = normalize(view_pos);
-		vec3 view_reflect = reflect(view_dir, normal);
-		vec3 screen_pos = project(view_pos);
-		vec3 screen_reflect = normalize(project(view_pos + view_reflect) - screen_pos);
-		screen_reflect *= 0.005;
-
-		vec3 old_pos = screen_pos + screen_reflect;
-		vec3 cur_pos = old_pos + screen_reflect;
-
-		float refinements = 0;
-
-		for (float i = 0; i < 100; i++)
-		{
-			if(
-				cur_pos.x < 0 || cur_pos.x > 1 ||
-				cur_pos.y < 0 || cur_pos.y > 1 ||
-				cur_pos.z < 0 || cur_pos.z > 1
-			)
-			break;
-
-			float diff = cur_pos.z - texture(tex_depth, cur_pos.xy).x;
-
-			if(diff > 0.000025 && diff < 0.00025)
-			{
-				if(refinements >= 2)
-				{
-					vec2 device_coord = abs(vec2(0.5, 0.5) - cur_pos.xy);
-					float fade = clamp(1.0 - (device_coord.x + device_coord.y) * 1.8, 0.0, 1.0);
-
-					out_color.rgb = texture(lua[(sampler2D)render3d.GetFinalGBufferTexture], cur_pos.xy).rgb;
-					//out_color.rgb = get_albedo(cur_pos.xy);
-					break;
-				}
-
-				screen_reflect *= 0.75;
-				cur_pos = old_pos;
-				refinements++;
-			}
-
-			old_pos = cur_pos;
-			cur_pos += screen_reflect;
-		}
-
-	}
-]]})
-
-local function blur(source, format, discard, divider)
-	local AUTOMATE_ME = {
-		[-7] = 0.0044299121055113265,
-		[-6] = 0.00895781211794,
-		[-5] = 0.0215963866053,
-		[-4] = 0.0443683338718,
-		[-3] = 0.0776744219933,
-		[-2] = 0.115876621105,
-		[-1] = 0.147308056121,
-		[1] = 0.147308056121,
-		[2] = 0.115876621105,
-		[3] = 0.0776744219933,
-		[4] = 0.0443683338718,
-		[5] = 0.0215963866053,
-		[6] = 0.00895781211794,
-		[7] = 0.0044299121055113265,
-	}
-
-	local discard_threshold = discard
-
-	for i = 0, 1 do
-		local x = i == 0 and 0 or 1
-		local y = i == 0 and 1 or 0
-		local stage = #PASS.Source
-
-		local str = [[
-			out vec3 out_color;
-			void main()
-			{
-				float amount = ]]..source..[[ / get_linearized_depth(uv) / length(g_gbuffer_size) * 1;
-				//amount = min(amount, 0.25);
-				//amount += random(uv)*0.5*amount;
-
-				vec3 normal = normalize(get_view_normal(uv));
-
-				float total_weight = 0;
-				out_color = texture(tex_stage_]]..stage..[[, uv).rgb*0.159576912161;
-		]]
-
-		for i = -7, 7 do
-			if i ~= 0 then
-				local weight = i * 4 / 1000
-				local offset = "uv + vec2("..(x*weight)..", "..(y*weight)..") * amount"
-				local fade = AUTOMATE_ME[i]
-
-				str = str .. "\tif(dot(normalize(get_view_normal("..offset..")), normal) > "..discard_threshold..")\n"
-				str = str .. "\t{\n"
-				str = str .. "\t\tout_color += texture(tex_stage_"..stage..", "..offset..").rgb *"..fade..";\n"
-				str = str .. "\t}else{total_weight += "..(fade)..";}\n"
-			end
-		end
-
-		str = str .. "\tout_color += texture(tex_stage_"..stage..", uv).rgb*total_weight;\n"
-		str = str .. "}"
-
-		table.insert(PASS.Source, {
-			buffer = {
-				size_divider = divider or reflection_res_divider,
-				internal_format = format or "r11f_g11f_b10f",
-			},
-			source = str,
-		})
-
-		::continue::
-	end
-end
-for x = -1, 1 do
-		for y = -1, 1 do
-			if x == y or (y == 0 and x == 0) then goto continue end
-			print(x, y)
-
-			local weights = {
-				Vec2(0.53812504, 0.18565957),
-				Vec2(0.13790712, 0.24864247),
-				Vec2(0.33715037, 0.56794053),
-				Vec2(-0.6999805, -0.04511441),
-				Vec2(0.06896307, -0.15983082),
-				Vec2(0.056099437, 0.006954967),
-				Vec2(-0.014653638, 0.14027752),
-				Vec2(0.010019933, -0.1924225),
-				Vec2(-0.35775623, -0.5301969),
-				Vec2(-0.3169221, 0.106360726),
-				Vec2(0.010350345, -0.58698344),
-				Vec2(-0.08972908, -0.49408212),
-				Vec2(0.7119986, -0.0154690035),
-				Vec2(-0.053382345, 0.059675813),
-				Vec2(0.035267662, -0.063188605),
-				Vec2(-0.47761092, 0.2847911)
-			}
-
-			for i,v in ipairs(weights) do
-				weights[i] = {
-					dir = ("vec2(%s, %s)"):format(v.x, v.y),
-					weight = math.lerp(math.sin((i / #weights) * math.pi), 0, 0.25),
-				}
-			end
-
-			table.insert(PASS.Source, {
-				buffer = {
-					size_divider = 2,
-					internal_format = "r11f_g11f_b10f",
-				},
-				source = [[
-					out vec3 out_color;
-
-					const float discard_threshold = 0.5;
-
-					vec3 blur(vec2 dir, float amount)
-					{
-
-						amount = pow(amount*1.5, 2.5) / get_linearized_depth(uv) / g_cam_farz;
-
-						vec2 step = dir * amount;
-						vec3 normal = normalize(get_view_normal(uv));
-						float total_weight = 3;
-						vec3 res = vec3(0);
-						vec2 offset;
-
-						]] ..(function()
-							local str = ""
-							for i, weight in ipairs(weights) do
-								str = str .. "offset = uv + " ..weight.dir.." * step;\n"
-								str = str .. "if( dot(normalize(get_view_normal(offset)), normal) < discard_threshold) {\n"
-								str = str .."total_weight -= "..weight.weight..";\n"
-								str = str .. "} else {\n"
-								str = str .. "res += texture(tex_stage_"..#PASS.Source..", offset).rgb * "..weight.weight.."; }\n"
-							end
-							return str
-						end)()..[[
-
-						res /= total_weight;
-
-						return res;
-					}
-
-					void main()
-					{
-						out_color = blur(vec2(]]..x..","..y..[[), get_roughness(uv));
-					}
-				]]
-			})
-			::continue::
-		end
-	end
---blur("get_roughness(uv)*20", "r11f_g11f_b10f", 0.95)
---blur("get_roughness(uv)*15", "r11f_g11f_b10f", 0.95)
---blur("get_roughness(uv)*10", "r11f_g11f_b10f", 0.95)
---blur("get_roughness(uv)", "r11f_g11f_b10f", 0.95)
-
-table.insert(PASS.Source, {
-	buffer = {
-		--max_size = Vec2() + 512,
-		internal_format = "r32f",
-	},
-	source =  [[
-		const vec2 KERNEL[16] = vec2[](vec2(0.53812504, 0.18565957), vec2(0.13790712, 0.24864247), vec2(0.33715037, 0.56794053), vec2(-0.6999805, -0.04511441), vec2(0.06896307, -0.15983082), vec2(0.056099437, 0.006954967), vec2(-0.014653638, 0.14027752), vec2(0.010019933, -0.1924225), vec2(-0.35775623, -0.5301969), vec2(-0.3169221, 0.106360726), vec2(0.010350345, -0.58698344), vec2(-0.08972908, -0.49408212), vec2(0.7119986, -0.0154690035), vec2(-0.053382345, 0.059675813), vec2(0.035267662, -0.063188605), vec2(-0.47761092, 0.2847911));
-		const float SAMPLE_RAD = 0.4;
-		const float INTENSITY = 0.25;
-		const float ITERATIONS = 32;
-
-		float ssao(void)
-		{
-			vec3 p = get_view_pos(uv)*0.995;
-			vec3 n = (get_view_normal(uv));
-			vec2 rand = get_noise(uv).xy;
-
-			float occlusion = 0.0;
-			float depth = get_linearized_depth(uv);
-
-			for(float j = 0; j < ITERATIONS; ++j)
-			{
-				vec2 offset = uv + (reflect(KERNEL[int(j)], rand) / depth / g_cam_farz * SAMPLE_RAD);
-
-				vec3 diff = get_view_pos(offset) - p;
-				float d = length(diff);
-				float a = dot(n, diff);
-
-				if (d < 1 && a > 0)
-				{
-					occlusion += a+d;
-				}
-			}
-
-			return 1-clamp(occlusion*INTENSITY, 0, 1);
-		}
-
-		out float out_color;
+		buffer = {
+			--max_size = Vec2() + 512,
+			size_divider = 1,
+			internal_format = "r11f_g11f_b10f",
+		},
+		source = [[
+		out vec3 out_color;
 
 		void main()
 		{
-			out_color = (min(ssao() + 0.25, 1));
-			//out_color = pow(mix(1, out_color, pow(get_roughness(uv), 0.25)), 2);
+
+			vec2 coords = g_raycast(uv, 0.01, 30);
+
+			vec3 sky = texture(lua[sky_tex = render3d.GetSkyTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
+
+			if (coords.x <= 0 || coords.y <= 0 || coords.x >= 1 || coords.y >= 1)
+			{
+				out_color = sky;
+			}
+			else
+			{
+				vec3 light = get_albedo(coords) * (sky + get_specular(uv));
+				light += texture(lua[(sampler2D)render3d.GetFinalGBufferTexture], coords).rgb/5;
+
+				//vec2 dCoords = abs(vec2(0.5, 0.5) - coords);
+				//float fade = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
+
+				//out_color = mix(sky, light, fade);
+
+				out_color = light;
+			}
 		}
 	]]
 })
 
---blur("get_shadow(uv)*2", "r16f", 0.9, 1)
+render3d.AddBilateralBlurPass(PASS, "pow(get_roughness(uv)*0.12, 1.5)", 0.98, "r11f_g11f_b10f", 1)
 
 table.insert(PASS.Source, {
 	source =  [[
@@ -670,7 +435,7 @@ table.insert(PASS.Source, {
 
 		void main()
 		{
-			vec3 reflection = texture(tex_stage_]]..(#PASS.Source-1)..[[, uv).rgb;
+			vec3 reflection = texture(tex_stage_]]..(#PASS.Source-1)..[[, uv).rgb*2;
 			if (texture(tex_depth, uv).r == 1)
 			{
 				out_color = gbuffer_compute_sky(-get_camera_dir(uv).xzy*vec3(1,1,-1), 1);
@@ -681,19 +446,20 @@ table.insert(PASS.Source, {
 			float shadow = texture(tex_stage_]]..(#PASS.Source)..[[, uv).r;
 			vec3 albedo = get_albedo(uv);
 
-			vec3 specular = get_specular(uv);
+			vec3 specular = get_specular(uv)*g_ssao(uv);
 
 			reflection += 0.5 * reflection * pow(1.0 - -min(dot(get_view_normal(uv), normalize(get_view_pos(uv))), 0.0), 2.0);
-//				reflection *= -roughness+1;
+			//reflection *= -roughness+1;
 
 
 			vec3 light = specular;
-			light *= shadow;
-			light += reflection*albedo;
+			//light += shadow;
+			light += (reflection)*albedo;
 
 			vec3 fog = gbuffer_compute_sky(-get_view_pos(uv).xzy, get_linearized_depth(uv));
 
 			out_color = albedo * light + fog;
+			out_color *= 2;
 		}
 	]]
 })

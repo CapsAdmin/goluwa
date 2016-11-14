@@ -1,4 +1,30 @@
 render.SetGlobalShaderVariable("iGlobalTime", function() return system.GetElapsedTime() end, "float")
+
+render.AddGlobalShaderCode([[
+float random(vec2 co)
+{
+	return fract(sin(dot(co.xy * iGlobalTime,vec2(12.9898,78.233))) * 43758.5453);
+}]])
+
+render.AddGlobalShaderCode([[
+vec2 get_noise2(vec2 uv)
+{
+	float x = random(uv * iGlobalTime);
+	float y = random(uv*x);
+
+	return vec2(x,y) * 2 - 1;
+}]])
+
+render.AddGlobalShaderCode([[
+vec3 get_noise3(vec2 uv)
+{
+	float x = random(uv * iGlobalTime);
+	float y = random(uv*x);
+	float z = random(uv*y);
+
+	return vec3(x,y,z) * 2 - 1;
+}]])
+
 render.AddGlobalShaderCode([[
 float sky_atmospheric_depth(vec3 position, vec3 dir, float depth)
 {
@@ -47,13 +73,16 @@ vec3 sky_absorb(vec3 sky_color, float dist, vec3 color, float factor)
 }
 vec3 gbuffer_compute_sky(vec3 ray, float depth)
 {
+	//{return pow(ray*2, vec3(1000));}
 	ray = ray.xzy * vec3(-1, -1, 1);
 
 	vec3 sun_direction = lua[(vec3)render3d.GetShaderSunDirection].xyz;
 	float intensity = lua[world_sun_intensity = 1];
 	vec3 sky_color = lua[world_sky_color = Vec3(0.18867780436772762, 0.4978442963618773, 0.6616065586417131)];
+
 	vec3 influence = texture(lua[sky_tex = steam.GetSkyTexture()], ray).rgb*depth;
-	sky_color *= influence;
+	if (influence != vec3(0))
+		sky_color *= influence;
 
 	const float render2d_height = 0.95;
 	const int step_count = 8;
@@ -73,12 +102,12 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 	float mie_factor = sky_phase(alpha - 0.5, mie_distribution) * mie_brightness * (1.0 - ldir.y);
 	float sky_mult = pow(depth, 100);
 	float spot = smoothstep(0.0, 100.0, sky_phase(alpha, 0.9995)) * spot_brightness * sky_mult;
-	vec3 noise = get_noise((ray.xz+sun_direction.xy)/5).xyz;
-	vec3 hsv = rgb2hsv(noise);
-	hsv.y = 0.25;
-	hsv.z = pow(hsv.z, 75)*5;
-	noise = hsv2rgb(hsv);
-	vec3 stars = noise * sky_mult;
+
+	vec3 stars = textureLatLon(lua[nightsky_tex = render.CreateTextureFromPath("textures/skybox/milkyway.jpg")], reflect(ray, sun_direction)).rgb;
+	stars += pow(stars*1.25, vec3(1.5));
+	stars *= depth > 0.5 ? 1 : 0;
+	stars *= 0.01;
+
 	vec3 eye_position = min(vec3(0,render2d_height,0) + (vec3(-g_cam_pos.x, g_cam_pos.z, g_cam_pos.y) / 100010000), vec3(0.999999));
 	float eye_depth = sky_atmospheric_depth(eye_position, ray, depth);
 	float step_length = eye_depth/float(step_count);
@@ -96,29 +125,29 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 	}
 	rayleigh_collected = rayleigh_collected * pow(eye_depth, rayleigh_collection_power) / float(step_count);
 	mie_collected = (mie_collected * pow(eye_depth, mie_collection_power)) / float(step_count);
-	return stars + vec3(spot) + clamp(vec3(spot * mie_collected + mie_factor * mie_collected + rayleigh_factor * rayleigh_collected), vec3(0), vec3(1));
+	vec3 total = stars + vec3(spot) + clamp(vec3(spot * mie_collected + mie_factor * mie_collected + rayleigh_factor * rayleigh_collected), vec3(0), vec3(1));
+
+	total *= 3;
+
+	return total;
 }]])
 
 render.AddGlobalShaderCode([[
 vec3 gbuffer_compute_tonemap(vec3 color, vec3 bloom)
 {
-	float gamma = 1.1;
-	float exposure = 1.1;
-	float bloom_factor = 0.0005;
-	float brightMax = 1;
+	const float gamma = 1.2;
+	const float exposure = 0.2;
+	const float bloomFactor = 0.03;
 
-	color = color + bloom * bloom_factor;
-
-	color = pow(color, vec3(1. / gamma));
-	color = clamp(exposure * color, 0., 1.);
-
-	//color = max(vec3(0.), color - vec3(0.004));
+	color = color + bloom * bloomFactor;
+	color *= exposure * (exposure + 1.0);
 	color = exp( -1.0 / ( 2.72*color + 0.15 ) );
+	color = pow(color, vec3(1. / gamma));
+	color = max(vec3(0.), color - vec3(0.004));
 	color = (color * (6.2 * color + .5)) / (color * (6.2 * color + 1.7) + 0.06);
 
 	return color;
-}
-]])
+}]])
 
 render.AddGlobalShaderCode([[
 float gbuffer_compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, vec3 normal)
@@ -187,89 +216,45 @@ vec3 gbuffer_compute_specular(vec3 L, vec3 V, vec3 N, float attenuation, vec3 li
 local PASS = {}
 
 PASS.Position = -1
-PASS.Name = "reflection_merge"
+PASS.Name = "temporal"
 PASS.Default = true
 
 PASS.Source = {}
---[==[
-
 table.insert(PASS.Source, {
 	buffer = {
 		--max_size = Vec2() + 512,
-		size_divider = reflection_res_divider,
-		internal_format = "rgb16f",
-		mip_maps = 0,
+		size_divider = 1,
+		internal_format = "r11f_g11f_b10f",
 	},
 	source = [[
-	#extension GL_ARB_texture_query_levels: enable
 	out vec3 out_color;
-
-	vec3 project(vec3 coord)
-	{
-		vec4 res = g_projection * vec4(coord, 1.0);
-		return (res.xyz / res.w) * 0.5 + 0.5;
-	}
 
 	void main()
 	{
-		if (texture(tex_depth, uv).r == 1)
+
+		vec2 coords = g_raycast(uv, 0.01, 30);
+
+		vec3 sky = texture(lua[sky_tex = render3d.GetSkyTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
+
+		if (coords.x <= 0 || coords.y <= 0 || coords.x >= 1 || coords.y >= 1)
 		{
-			return;
+			out_color = sky;
 		}
-
-		out_color.rgb = get_env_color();
-
-		vec3 view_pos = get_view_pos(uv);
-		vec3 normal = get_view_normal(uv);
-
-		vec3 view_dir = normalize(view_pos);
-		vec3 view_reflect = reflect(view_dir, normal);
-		vec3 screen_pos = project(view_pos);
-		vec3 screen_reflect = normalize(project(view_pos + view_reflect) - screen_pos);
-		screen_reflect *= 0.005;
-
-		vec3 old_pos = screen_pos + screen_reflect;
-		vec3 cur_pos = old_pos + screen_reflect;
-
-		float refinements = 0;
-
-		for (float i = 0; i < 250; i++)
+		else
 		{
-			if(
-				cur_pos.x < 0 || cur_pos.x > 1 ||
-				cur_pos.y < 0 || cur_pos.y > 1 ||
-				cur_pos.z < 0 || cur_pos.z > 1
-			)
-			break;
+			vec3 light = get_albedo(coords) * (sky + get_specular(uv));
+			light += texture(lua[(sampler2D)render3d.GetFinalGBufferTexture], coords).rgb/5;
 
-			float diff = cur_pos.z - texture(tex_depth, cur_pos.xy).x;
+			//vec2 dCoords = abs(vec2(0.5, 0.5) - coords);
+			//float fade = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
 
-			if(diff > 0.000025 && diff < 0.00025)
-			{
-				if(refinements >= 2)
-				{
-					vec2 device_coord = abs(vec2(0.5, 0.5) - cur_pos.xy);
-					float fade = clamp(1.0 - (device_coord.x + device_coord.y) * 1.8, 0.0, 1.0);
+			//out_color = mix(sky, light, fade);
 
-					//out_color.rgb = mix(texture(self, uv).rgb, texture(lua[(sampler2D)render3d.GetFinalGBufferTexture], cur_pos.xy).rgb, vec3(0.1));
-					out_color.rgb = mix(texture(self, uv).rgb, get_albedo(cur_pos.xy), vec3(0.1));
-					//out_color.rgb = get_albedo(cur_pos.xy);
-					break;
-				}
-
-				//screen_reflect *= 0.75;
-				cur_pos = old_pos;
-				refinements++;
-			}
-
-			old_pos = cur_pos;
-			cur_pos += screen_reflect + (get_noise3_temporal(uv) * vec3(1,1,0.25) / 2000 * get_roughness(uv));
+			out_color = mix(texture(self, uv).rgb, light, 0.25);
 		}
-
 	}
-]]})
-
-]==]
+]]
+})
 
 table.insert(PASS.Source, {
 	buffer = {
@@ -277,56 +262,44 @@ table.insert(PASS.Source, {
 		internal_format = "r8",
 	},
 	source =  [[
-		float ssao()
-		{
-			float res = 0;
-			const float iterations = 10;
-
-			for (float i = 0; i < iterations; i++)
-			{
-				vec3 noise = get_noise3_temporal(uv+i);
-				noise.z *= 5;
-
-				vec3 diff = get_view_pos(uv + (noise.xy / get_linearized_depth(uv) / g_cam_farz * noise.z)) - get_view_pos(uv);
-
-				res += -clamp(dot(get_view_normal(uv), diff) / length(diff), 0, 1)+1;
-			}
-
-			return res / iterations;
-		}
-
 		out float out_color;
 
 		void main()
 		{
-			out_color = mix(texture(self, uv).r, ssao(), 0.6);
+			out_color = mix(texture(self, uv).r, g_ssao(uv), 0.6);
 		}
 	]]
 })
 
 table.insert(PASS.Source, {
 	buffer = {
-		internal_format = "rgb16f",
+		--max_size = Vec2() + 512,
+		size_divider = 1,
+		internal_format = "r11f_g11f_b10f",
 	},
-	source =  [[
+	source = [[
 		out vec3 out_color;
 
 		void main()
 		{
-			vec3 reflection = get_env_color();//texture(tex_stage_]]..(#PASS.Source-1)..[[, uv).rgb;
-			vec3 diffuse = get_albedo(uv);
-			vec3 specular = get_specular(uv);
-			float ssao = texture(tex_stage_]]..(#PASS.Source)..[[, uv).r;
+			vec3 reflection = texture(tex_stage_]]..(#PASS.Source-1)..[[, uv).rgb;
 			float metallic = get_metallic(uv);
+			vec3 albedo = get_albedo(uv);
 
+			vec3 specular = get_specular(uv) * texture(tex_stage_]]..(#PASS.Source)..[[, uv).r;
 			specular = mix(specular, reflection, pow(metallic, 0.5));
-			out_color = diffuse * specular;
-			out_color *= pow(ssao*1.25, 3);
+
+			out_color = albedo * specular;
 			out_color += gbuffer_compute_sky(get_camera_dir(uv), get_linearized_depth(uv));
+			out_color *= pow(random(uv), 0.4);
+
+			out_color *= 15;
+
 			out_color = mix(texture(self, uv).rgb, out_color, 0.1);
 		}
 	]]
 })
+
 
 function PASS:Update()
 	local view = camera.camera_3d:GetViewport()
