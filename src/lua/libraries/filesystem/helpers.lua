@@ -6,6 +6,7 @@ function vfs.FindMixedCasePath(path)
 		for _, found in ipairs(vfs.Find(dir)) do
 			if found:lower() == str:lower() then
 				str = found
+				break
 			end
 		end
 		dir = dir .. str .. "/"

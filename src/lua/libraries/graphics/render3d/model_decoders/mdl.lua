@@ -204,6 +204,15 @@ local function find_file(path, ...)
 		ok, err = vfs.Open(path .. ext)
 		if ok then return ok end
 	end
+
+	for _, ext in ipairs(extensions) do
+		local path = vfs.FindMixedCasePath(path .. ext)
+		if path then
+			ok, err = vfs.Open(path)
+			if ok then return ok end
+		end
+	end
+
 	if not ok then
 		for _, v in pairs(vfs.Find(path:match("(.+/)"), true)) do
 			if v:match(".+/(.+)%."):lower() == path:match(".+/(.+)"):lower() then
@@ -759,9 +768,12 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 										if vfs.IsFile("materials/" .. dir.path .. path) then
 											path = "materials/" .. dir.path .. path
 											break
-										elseif vfs.IsFile("materials/" .. (dir.path .. path):lower()) then
-											path = "materials/" .. (dir.path .. path):lower()
-											break
+										else
+											local new_path = vfs.FindMixedCasePath("materials/" .. dir.path .. path)
+											if new_path then
+												path = new_path
+												break
+											end
 										end
 									end
 								else
@@ -769,9 +781,12 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 										if vfs.IsFile("materials/" .. dir.path .. path .. ".vmt") then
 											path = "materials/" .. dir.path .. path .. ".vmt"
 											break
-										elseif vfs.IsFile("materials/" .. (dir.path .. path):lower() .. ".vmt") then
-											path = "materials/" .. (dir.path .. path):lower() .. ".vmt"
-											break
+										else
+											local new_path = vfs.FindMixedCasePath("materials/" .. dir.path .. path .. ".vmt")
+											if new_path then
+												path = new_path
+												break
+											end
 										end
 									end
 								end
@@ -779,14 +794,19 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 								if not path:startswith("materials/") then
 									if vfs.IsFile("materials/" .. path .. ".vmt") then
 										path = "materials/" .. path .. ".vmt"
-									elseif vfs.IsFile("materials/" .. path:lower() .. ".vmt") then
-										path = "materials/" .. path:lower() .. ".vmt"
 									elseif vfs.IsFile("materials/" .. path .. ".vtf") then
 										path = "materials/" .. path .. ".vtf"
-									elseif vfs.IsFile("materials/" .. path:lower() .. ".vtf") then
-										path = "materials/" .. path:lower() .. ".vtf"
 									else
-										wlog("unable to find material %s: %s", model_i, path)
+										local new_path = vfs.FindMixedCasePath("materials/" .. path .. ".vmt")
+										if not new_path then
+											new_path = vfs.FindMixedCasePath("materials/" .. path .. ".vtf")
+										end
+
+										if new_path then
+											path = new_path
+										else
+											wlog("unable to find material %s: %s", model_i, path)
+										end
 									end
 								end
 							end

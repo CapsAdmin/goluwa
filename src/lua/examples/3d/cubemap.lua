@@ -9,7 +9,7 @@ tex:SetWrapT("clamp_to_edge")
 tex:SetWrapR("clamp_to_edge")
 tex:SetSeamlessCubemap(true)
 tex:SetupStorage()
-tex:LoadCubemap("materials/skybox/vietnam.vtf")
+tex:LoadCubemap("materials/skybox/sky_002.vtf")
 
 local shader = render.CreateShader({
 	name = "cubemap",

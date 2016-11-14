@@ -40,7 +40,8 @@ do
 			name = "sky_wasteland02"
 		end
 		steam.sky_tex = init()
-		steam.sky_tex:LoadCubemap("materials/skybox/"..name..".vtf")
+		logn("using ", name, " as sky texture")
+		steam.sky_tex:LoadCubemap("materials/skybox/"..name..".vmt")
 	end
 
 	function steam.GetSkyTexture()
@@ -768,7 +769,6 @@ function steam.SpawnMapEntities(path, parent)
 						ent:SetSize(ent:GetSize() + info._zero_percent_distance*0.02)
 					end
 
-					if ent:GetPosition():Distance(camera.camera_3d:GetPosition()) < 1 then table.print(info) end
 					ent.spawned_from_bsp = true
 				elseif info.classname == "env_fog_controller" then
 					--parent.world_params:SetFogColor(Color(info.fogcolor.r, info.fogcolor.g, info.fogcolor.b, info.fogcolor.a * (info.fogmaxdensity or 1)/4))
@@ -783,7 +783,7 @@ function steam.SpawnMapEntities(path, parent)
 					ent:SetName(info.classname .. "_" .. i)
 					ent:SetModelPath(info.model)
 					ent:SetPosition(info.origin * scale)
-					if info.rendercolor then ent:SetColor(info.rendercolor) end
+					if info.rendercolor and not info.rendercolor:IsZero() then ent:SetColor(info.rendercolor) end
 					if info.model_size_mult then ent:SetSize(info.model_size_mult) end
 					ent:SetAngles(info.angles:GetRad())
 					ent:SetHideFromEditor(true)

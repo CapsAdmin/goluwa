@@ -123,7 +123,21 @@ do -- todo
 		for i, face in pairs(faces) do
 			local path_face = path:gsub("(%..+)", function(rest) return face .. rest end)
 			if vfs.IsFile(path_face) then
-				self:SetPath(path_face, i, false)
+				if path_face:endswith(".vmt") then
+					local _, vmt = next(utility.VDFToTable(vfs.Read(path_face), function(key) return (key:lower():gsub("%$", "")) end))
+					if vmt.basetexture then
+						path_face = "materials/" .. vmt.basetexture .. ".vtf"
+					else
+						table.print(vmt)
+					end
+					if vfs.IsFile(path_face) then
+						self:SetPath(path_face, i, false)
+					else
+						wlog("tried to load cubemap %s but %s does not exist", path, path_face)
+					end
+				else
+					self:SetPath(vmt.basetexture, i, false)
+				end
 			else
 				wlog("tried to load cubemap %s but %s does not exist", path, path_face)
 				break

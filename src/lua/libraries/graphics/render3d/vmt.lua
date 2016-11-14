@@ -57,6 +57,9 @@ function META:LoadVMT(path)
 			if k == "patch" then
 				if not vfs.IsFile(v.include) then
 					v.include = v.include:lower()
+					if not vfs.IsFile(v.include) then
+						v.include = vfs.FindMixedCasePath(v.include) or v.include
+					end
 				end
 
 				local vmt2, err2 = utility.VDFToTable(vfs.Read(v.include), function(key) return (key:lower():gsub("%$", "")) end)
@@ -142,7 +145,7 @@ function META:LoadVMT(path)
 							else
 								self["Set" .. key](self, render.CreateTextureFromPath(path, false)) -- not srgb
 							end
-						end, nil, true
+						end, nil, nil, true
 					)
 				end
 			end
