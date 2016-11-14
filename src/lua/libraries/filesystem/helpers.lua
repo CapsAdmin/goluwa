@@ -1,18 +1,30 @@
 local vfs = (...) or _G.vfs
 
 function vfs.FindMixedCasePath(path)
+	-- try all lower case first just in case
+	if vfs.IsFile(path:lower()) then
+		return path:lower()
+	end
+
 	local dir = ""
-	for str in (path .. "/"):gmatch("(.-)/") do
+	for _, str in ipairs(path:split("/")) do
 		for _, found in ipairs(vfs.Find(dir)) do
 			if found:lower() == str:lower() then
 				str = found
+				dir = dir .. str .. "/"
 				break
 			end
 		end
-		dir = dir .. str .. "/"
 	end
 	dir = dir:sub(0,-2)
-	return dir ~= "" and dir
+
+
+	if #dir == #path then
+		wlog("found mixed case path for %s: found %s", dir, path)
+		return dir
+	end
+
+	wlog("tried to find mixed case path for %s but nothing was found", path)
 end
 
 local fs = require("fs")
@@ -48,8 +60,6 @@ end
 
 function vfs.Rename(path, name, ...)
 	local abs_path = vfs.GetAbsolutePath(path, ...)
-
-	print(abs_path, path, name)
 
 	if abs_path then
 		local ok, err = os.rename(abs_path, abs_path:match("(.+/)") .. name)

@@ -25,6 +25,7 @@ local property_translate = {
 
 local special_textures = {
 	_rt_fullframefb = "error",
+	[1] = "error", -- huh
 }
 
 function META:LoadVMT(path)
@@ -56,10 +57,7 @@ function META:LoadVMT(path)
 
 			if k == "patch" then
 				if not vfs.IsFile(v.include) then
-					v.include = v.include:lower()
-					if not vfs.IsFile(v.include) then
-						v.include = vfs.FindMixedCasePath(v.include) or v.include
-					end
+					v.include = vfs.FindMixedCasePath(v.include) or v.include
 				end
 
 				local vmt2, err2 = utility.VDFToTable(vfs.Read(v.include), function(key) return (key:lower():gsub("%$", "")) end)
@@ -105,7 +103,7 @@ function META:LoadVMT(path)
 			end
 
 			for k, v in pairs(vmt) do
-				if type(v) == "string" and special_textures[v:lower()] then
+				if type(v) == "string" and (special_textures[v] or special_textures[v:lower()]) then
 					vmt[k] = special_textures[v]
 				end
 			end
@@ -132,7 +130,8 @@ function META:LoadVMT(path)
 
 			for _, v in ipairs(path_translate) do
 				local key, field = v[1], v[2]
-				if vmt[field] and not special_textures[vmt[field]:lower()] then
+
+				if vmt[field] and (not special_textures[vmt[field]] and not special_textures[vmt[field]:lower()]) then
 					local new_path = vfs.FixPathSlashes("materials/" .. vmt[field])
 					if not new_path:endswith(".vtf") then
 						new_path = new_path .. ".vtf"

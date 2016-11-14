@@ -305,7 +305,7 @@ local function load_mdl(path)
 					header.material[i] = path
 				end
 				if not header.material[1] then
-					for i, path in ipairs(vfs.Find("materials/" .. data.path:lower() .. "/"), true) do
+					for i, path in ipairs(vfs.Find(vfs.vfs.FindMixedCasePath("materials/" .. data.path) .. "/"), true) do
 						header.material[i] = path
 					end
 				end
