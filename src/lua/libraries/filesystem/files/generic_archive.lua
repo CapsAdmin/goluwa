@@ -16,7 +16,7 @@ function CONTEXT:AddEntry(entry)
 	entry.is_file = true
 
 	self.tree:SetEntry(entry.full_path, entry)
-	self.tree:SetEntry(entry.directory, {path = entry.directory, is_dir = true, file_name = entry.directory:match(".+/(.+)")})
+	self.tree:SetEntry(entry.directory, {path = entry.directory, is_dir = true, file_name = entry.directory:match(".+/(.+)") or entry.directory})
 
 	for i = #entry.directory, 1, -1 do
 		local char = entry.directory:sub(i, i)
