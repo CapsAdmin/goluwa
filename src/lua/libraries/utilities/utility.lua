@@ -108,14 +108,14 @@ function utility.VDFToTable(str, lower_or_modify_keys, preprocess)
 
 					if type(current[key]) == "table" then
 						table.insert(current[key], val)
-					elseif current[key] then
+					elseif current[key] and current[key] ~= val then
 						current[key] = {current[key], val}
 					else
 						if key:find("+", nil, true) then
 							for _, key in ipairs(key:split("+")) do
 								if type(current[key]) == "table" then
 									table.insert(current[key], val)
-								elseif current[key] then
+								elseif current[key] and current[key] ~= val then
 									current[key] = {current[key], val}
 								else
 									current[key] = val
