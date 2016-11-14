@@ -127,8 +127,8 @@ do -- todo
 					local _, vmt = next(utility.VDFToTable(vfs.Read(path_face), function(key) return (key:lower():gsub("%$", "")) end))
 					if vmt.basetexture then
 						path_face = "materials/" .. vmt.basetexture .. ".vtf"
-					else
-						table.print(vmt)
+					elseif vmt.hdrcompressedtexture then
+						path_face = "materials/" .. vmt.hdrcompressedtexture .. ".vtf"
 					end
 					if vfs.IsFile(path_face) then
 						self:SetPath(path_face, i, false)
