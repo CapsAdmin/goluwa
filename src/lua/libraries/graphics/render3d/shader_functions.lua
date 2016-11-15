@@ -31,6 +31,47 @@ vec4 get_noise(vec2 uv)
 }]])
 
 render.AddGlobalShaderCode([[
+vec3 gbuffer_compute_tonemap(vec3 color, vec3 bloom)
+{
+	const float gamma = 1.2;
+	const float exposure = 0.2;
+	const float bloomFactor = 0.03;
+
+	color = color + bloom * bloomFactor;
+	color *= exposure * (exposure + 1.0);
+	color = exp( -1.0 / ( 2.72*color + 0.15 ) );
+	color = pow(color, vec3(1. / gamma));
+	color = max(vec3(0.), color - vec3(0.004));
+	color = (color * (6.2 * color + .5)) / (color * (6.2 * color + 1.7) + 0.06);
+
+	return color;
+}]])
+
+render.AddGlobalShaderCode([[
+float gbuffer_compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, vec3 normal)
+{
+	const float cutoff = 0.175;
+
+	vec3 L = light_pos - pos;
+	float distance = length(L);
+	L /= distance;
+
+	float dot = max(dot(L, normal), 0);
+
+	float r = radius/10;
+	float d = max(distance - r, 0);
+
+	float denom = d/r + 1;
+	float attenuation = 1 / (denom*denom);
+	attenuation = (attenuation - cutoff) / (1 - cutoff);
+	attenuation = max(attenuation, 0);
+	attenuation *= dot;
+
+	return attenuation;
+}
+]])
+
+render.AddGlobalShaderCode([[
 vec2 _raycast_project(vec3 coord)
 {
 	vec4 res = g_projection * vec4(coord, 1.0);
