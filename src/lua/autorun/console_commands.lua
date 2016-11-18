@@ -1,3 +1,21 @@
+commands.Add("expand_lights", function(num)
+	num = math.max(tonumber(num), 0.01)
+	for k,v in pairs(entities.GetAll()) do
+		if v.SetShadow then
+			v:SetSize(v:GetSize() * num)
+		end
+	end
+end)
+
+commands.Add("expand_light_intensity", function(num)
+	num = math.max(tonumber(num), 0.01)
+	for k,v in pairs(entities.GetAll()) do
+		if v.SetShadow then
+			v:SetIntensity(v:GetIntensity() * num)
+		end
+	end
+end)
+
 commands.Add("remove_lights", function()
 	for k,v in pairs(entities.GetAll()) do
 		if v.SetShadow then

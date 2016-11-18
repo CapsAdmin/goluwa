@@ -312,17 +312,38 @@ PASS.Stages = {
 
 				void main()
 				{
-					// albedo
-					vec4 color = texture(lua[AlbedoTexture = render.GetErrorTexture()], uv);
+					vec2 blend_data = texture(lua[BlendTexture = render.GetBlackTexture()], uv).rg;
+					float blend = blend_data.g;
+					float blend_power = blend_data.r;
 
 					if (texture_blend != 0)
-						color = mix(color, texture(lua[Albedo2Texture = "texture"], uv), texture_blend);
+					{
+						blend = mix(texture_blend, blend, 0.5);
+					}
 
-					color *= lua[Color = Color(1,1,1,1)];
+					if (blend != 0)
+					{
+						blend = pow(blend, blend_power);
+					}
 
-					set_albedo(color.rgb);
+					// albedo
+					vec4 albedo = texture(lua[AlbedoTexture = render.GetErrorTexture()], uv);
 
-					if (lua[Translucent = false] && dither(uv, color.a))
+					if (blend != 0)
+						albedo = mix(albedo, texture(lua[Albedo2Texture = "texture"], uv), blend);
+
+					if (lua[BlendTintByBaseAlpha = false])
+					{
+						albedo.rgb = mix(albedo.rgb, albedo.rgb * lua[Color = Color(1,1,1,1)].rgb, albedo.a);
+					}
+					else
+					{
+						albedo *= lua[Color = Color(1,1,1,1)];
+					}
+
+					set_albedo(albedo.rgb);
+
+					if (lua[Translucent = false] && dither(uv, albedo.a))
 					{
 						discard;
 					}
@@ -334,9 +355,9 @@ PASS.Stages = {
 
 					if (normal_map.xyz != vec3(0))
 					{
-						if (texture_blend != 0)
+						if (blend != 0)
 						{
-							normal_map = mix(normal_map, texture(lua[Normal2Texture = "texture"], uv), texture_blend);
+							normal_map = mix(normal_map, texture(lua[Normal2Texture = "texture"], uv), blend);
 						}
 
 						if (lua[SSBump = false])
@@ -355,7 +376,7 @@ PASS.Stages = {
 							normal_map.rgb = normal_map.rgb * vec3(-1, 1, 1) + vec3(1, 0, 0);
 						}
 
-						normal_map.xyz = /*normalize*/(normal_map.xyz * 2 - 1).xyz;
+						normal_map.xyz = (normal_map.xyz * 2 - 1).xyz;
 
 						normal = tangent_space * normal_map.xyz;
 					}
@@ -363,8 +384,8 @@ PASS.Stages = {
 					{
 						normal = tangent_space[2];
 					}
-
 					normal = normalize(normal);
+
 					set_view_normal(normal);
 
 
@@ -378,7 +399,7 @@ PASS.Stages = {
 					}
 					else if (lua[AlbedoAlphaMetallic = false])
 					{
-						metallic = -color.a+1;
+						metallic = -albedo.a+1;
 					}
 					else
 					{
@@ -391,7 +412,15 @@ PASS.Stages = {
 					//generate roughness and metallic they're zero
 					if (roughness == 0)
 					{
-						if (metallic != 0)
+						if (lua[AlbedoLuminancePhongMask = false])
+						{
+							roughness = length(albedo);
+						}
+						else if (lua[AlbedoPhongMask = false])
+						{
+							roughness = albedo.a;
+						}
+						else if (metallic != 0)
 						{
 							roughness = pow(-metallic+1, 0.25)/1.5;
 						}
@@ -412,7 +441,19 @@ PASS.Stages = {
 					set_metallic(max(metallic, 0.0005));
 					set_roughness(roughness);
 
-					set_specular(vec3(0,0,0));
+
+					if (lua[SelfIllumination = false])
+					{
+						vec4 illum = texture(lua[SelfIlluminationTexture = render.GetWhiteTexture()], uv);
+
+						illum *= lua[IlluminationColor = Color(1,1,1,1)];
+
+						set_specular(pow(illum.rgb, vec3(0.25))*2.5);
+					}
+					else
+					{
+						set_specular(vec3(0,0,0));
+					}
 				}
 #endif
 			]]

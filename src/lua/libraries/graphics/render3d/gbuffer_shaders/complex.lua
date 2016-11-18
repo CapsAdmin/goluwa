@@ -65,7 +65,7 @@ do
 			else
 			{
 				vec3 light = get_albedo(coords) * (sky + get_specular(uv));
-				light += texture(lua[(sampler2D)render3d.GetFinalGBufferTexture], coords).rgb/5;
+				light += texture(lua[(sampler2D)render3d.GetFinalGBufferTexture], coords).rgb/2;
 
 				//vec2 dCoords = abs(vec2(0.5, 0.5) - coords);
 				//float fade = clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);

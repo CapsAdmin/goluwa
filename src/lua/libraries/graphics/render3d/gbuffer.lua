@@ -221,7 +221,6 @@ end
 function render3d.DrawGBuffer(what)
 	if not gbuffer_enabled then return end
 
-	render3d.gbuffer:WriteThese("all")
 	render3d.gbuffer:ClearAll(0,0,0,0, 1)
 
 	render3d.gbuffer_data_pass:Draw3D(what)
@@ -350,12 +349,30 @@ function render3d.InitializeGBuffer()
 				if i ~= #pass_info.layout then
 					write_these = write_these .. "|"
 				end
-
 				buffer_i = buffer_i + 1
 			end
 
 			data_pass.buffers_write_these = data_pass.buffers_write_these or {}
 			data_pass.buffers_write_these[pass_info.name] = write_these
+		end
+
+		-- this makes it so if you use set_specular in model it will also write to specular
+		for i, stage in ipairs(data_pass.Stages) do
+			for _, pass_info in ipairs(data_pass.Buffers) do
+				for _, v in ipairs(pass_info.layout) do
+					local _, tbl = next(v)
+					local _, name = next(tbl)
+					if type(name) == "table" then
+						name = name[1]
+					end
+
+					if stage.fragment.source:find("set_" .. name) then
+						if data_pass.buffers_write_these[stage.name] and data_pass.buffers_write_these[stage.name] ~= data_pass.buffers_write_these[pass_info.name] then
+							data_pass.buffers_write_these[stage.name] = data_pass.buffers_write_these[stage.name] .. "|" .. data_pass.buffers_write_these[pass_info.name]
+						end
+					end
+				end
+			end
 		end
 
 		local function gen_code(code, format, layout, buffer_i)
