@@ -54,7 +54,7 @@ function META:GetSuggestedMipMapLevels()
 	return math.floor(math.log(math.max(self.Size.x, self.Size.y)) / math.log(2)) + 1
 end
 
-function META:SetPath(path, face, flip_y)
+function META:SetPath(path, face)
 	self.Path = path
 
 	self.Loading = true
@@ -62,30 +62,20 @@ function META:SetPath(path, face, flip_y)
 	resource.Download(path, function(full_path)
 		local val, err = vfs.Read(full_path)
 		if val then
-			local buffer, w, h, info = render.DecodeTexture(val, full_path)
+			local info, err = render.DecodeTexture(val, full_path)
 
-			if buffer then
-				self:SetSize(Vec2(w, h))
+			if info then
+				info.face = info.face or face
 
-				self:Upload({
-					buffer = buffer,
-					width = w,
-					height = h,
-					format = info.format or "bgra",
-					face = face, -- todo
-					flip_y = flip_y,
-					type = info.type,
-				})
+				if self.Size:IsZero() then
+					self:SetSize(Vec2(info.width, info.height))
+				end
+				self:Upload(info)
 			else
-				local reason = w
-				logn("======")
-				logf("[%s] unable to decode %s: %s\n", self, path, reason)
-				logn("======")
+				wlog("[%s] unable to decode %s: %s\n", self, path, err)
 			end
 		else
-			logn("======")
-			logf("[%s] unable to read %s: %s\n", self, full_path, err)
-			logn("======")
+			wlog("[%s] unable to read %s: %s\n", self, full_path, err)
 		end
 
 		self.Loading = false
@@ -131,12 +121,12 @@ do -- todo
 						path_face = "materials/" .. vmt.hdrcompressedtexture .. ".vtf"
 					end
 					if vfs.IsFile(path_face) then
-						self:SetPath(path_face, i, false)
+						self:SetPath(path_face, i)
 					else
 						wlog("tried to load cubemap %s but %s does not exist", path, path_face)
 					end
 				else
-					self:SetPath(vmt.basetexture, i, false)
+					self:SetPath(vmt.basetexture, i)
 				end
 			else
 				wlog("tried to load cubemap %s but %s does not exist", path, path_face)

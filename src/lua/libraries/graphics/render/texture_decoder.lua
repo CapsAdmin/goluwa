@@ -20,16 +20,16 @@ function render.DecodeTexture(data, path_hint)
 	local errors = {"\n"}
 
 	for _, decoder in ipairs(render.texture_decoders) do
-		local ok, buffer, w, h, info = pcall(decoder.callback, data, path_hint)
+		local ok, data, err = pcall(decoder.callback, data, path_hint)
 
 		if ok then
-			if buffer then
-				return buffer, w, h, info or {}
-			elseif not w:lower():find("unknown format", nil, true) then
-				table.insert(errors, "\t" .. buffer)
+			if data then
+				return data
+			elseif not err:lower():find("unknown format", nil, true) then
+				table.insert(errors, "\t" .. decoder.id .. ": " .. err)
 			end
 		else
-			table.insert(errors, "\tlua error: " .. buffer)
+			table.insert(errors, "\tlua error: " .. data)
 		end
 	end
 
