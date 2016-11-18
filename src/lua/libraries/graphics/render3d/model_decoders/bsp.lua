@@ -1,3 +1,4 @@
+local CUBEMAPS = false
 local render3d = ... or _G.render3d
 
 local ffi = require("ffi")
@@ -313,6 +314,17 @@ function steam.LoadMap(path)
 			end]]
 		end
 
+	end
+
+	if CUBEMAPS then
+		header.cubemaps = read_lump_data("reading cubemaps", bsp_file, header, 43, 12 + 1, [[
+			int origin[3];
+			unsigned byte size;
+		]])
+
+		for k,v in ipairs(header.cubemaps) do
+			v.origin = Vec3(unpack(v.origin))
+		end
 	end
 
 	header.brushes = read_lump_data("reading brushes", bsp_file, header, 19, 12, [[
@@ -717,6 +729,7 @@ function steam.LoadMap(path)
 		render_meshes = render_meshes,
 		entities = header.entities,
 		physics_meshes = physics_meshes,
+		cubemaps = header.cubemaps,
 	}
 
 	tasks.ReportProgress("finished reading " .. path)
@@ -737,6 +750,17 @@ function steam.SpawnMapEntities(path, parent)
 		for _, v in ipairs(parent:GetChildrenList()) do
 			if v.spawned_from_bsp then
 				v:Remove()
+			end
+		end
+
+		if CUBEMAPS then
+			for k,v in pairs(data.cubemaps) do
+				local ent = entities.CreateEntity("visual", parent)
+				ent:SetModelPath("models/sphere.obj")
+				ent:SetSize(0.25)
+				ent:SetRoughnessMultiplier(0)
+				ent:SetPosition(v.origin * 0.0254)
+				print(v.origin * 0.0254)
 			end
 		end
 
