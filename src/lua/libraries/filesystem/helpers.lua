@@ -129,6 +129,7 @@ add_helper("Write", "WriteBytes", "write", function(path, content, on_change)
 end)
 add_helper("GetLastModified", "GetLastModified", "read")
 add_helper("GetLastAccessed", "GetLastAccessed", "read")
+add_helper("GetSize", "GetSize", "read")
 
 function vfs.CreateFolder(path)
 	for _, data in ipairs(vfs.TranslatePath(path, true)) do
