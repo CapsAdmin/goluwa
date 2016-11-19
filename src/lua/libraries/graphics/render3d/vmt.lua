@@ -14,9 +14,24 @@ local path_translate = {
 	{"SelfIlluminationTexture", "selfillummask"},
 }
 
+local function unpack_numbers(str)
+	str = str:gsub("%s+", " ")
+	local t = str:split(" ")
+	for k,v in ipairs(t) do t[k] = tonumber(v) end
+	return unpack(t)
+end
+
 local property_translate = {
 	{"SelfIllumination", {"selfillum", function(num) return num end}},
-	{"IlluminationColor", {"selfillumtint", function(v) if typex(v) == "vec3" then return Color(v.x, v.y, v.z, 1) end return v end}},
+	{"IlluminationColor", {"selfillumtint", function(v)
+		if type(v) == "string" then
+			local r,g,b = unpack_numbers(v)
+			return Color(r,g,b,1)
+		elseif typex(v) == "vec3" then
+			return Color(v.x, v.y, v.z, 1)
+		end
+		return v
+	end}},
 
 	{"AlphaTest", {"alphatest", function(num) return num == 1 end}},
 	{"SSBump", {"ssbump", function(num) return num == 1 end}},
@@ -31,7 +46,17 @@ local property_translate = {
 	{"BlendTintByBaseAlpha", {"blendtintbybasealpha", function(num) return num == 1 end}},
 
 	{"RoughnessMultiplier", {"phongexponent", function(num) return 1/(-num+1)^3 end}},
-	{"MetallicMultiplier", {"envmaptint", function(num) return type(num) == "number" and num or typex(num) == "vec3" and num.x or typex(num) == "color" and num.r end}},
+	{"MetallicMultiplier", {"envmaptint", function(num)
+		if type(v) == "string" then
+			return Vec3(unpack_numbers(v)):GetLength()
+		elseif type(num) == "number" then
+			return num
+		elseif typex(num) == "vec3" then
+			return num:GetLength()
+		elseif typex(num) == "color" then
+			return Vec3(num.r, num.g, num.b):GetLength()
+		end
+	end}},
 }
 
 local special_textures = {
