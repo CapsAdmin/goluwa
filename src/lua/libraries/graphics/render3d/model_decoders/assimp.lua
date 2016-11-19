@@ -75,7 +75,7 @@ render3d.AddModelDecoder("assimp", function(path, full_path, mesh_callback)
 		mesh:BuildBoundingBox()
 
 		mesh:BuildNormals()
-		mesh:SmoothNormals()
+		--mesh:SmoothNormals()
 		mesh:BuildTangents()
 
 		mesh:Upload()

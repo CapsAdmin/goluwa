@@ -65,6 +65,7 @@ do -- helpers
 	end
 
 	local function build_normal(a,b,c)
+		if a.normal and b.normal and c.normal then return end
 		local normal = -(a.pos - b.pos):Cross(b.pos - c.pos):GetNormalized()
 
 		a.normal = normal
@@ -153,7 +154,7 @@ do -- helpers
 			local n = self.Vertices[i].normal
 			local t = tan1[i]
 
-			if tan1[i] and tan2[i] then
+			if tan1[i] and tan2[i] and not self.Vertices.tangent then
 				self.Vertices[i].tangent = (t - n  * n:GetDot(t)):Normalize()
 
 				tasks.Wait()
