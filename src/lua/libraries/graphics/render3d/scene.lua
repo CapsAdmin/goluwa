@@ -1,10 +1,10 @@
 local render3d = (...) or _G.render3d
 
 render3d.scene = render3d.scene or {}
-local scene_keyval = utility.CreateWeakTable()
+local scene_keyval = {}
 
 render3d.scene_dist = render3d.scene_dist or {}
-local scene_keyval_dist = utility.CreateWeakTable()
+local scene_keyval_dist = {}
 
 local needs_sorting = true
 
@@ -23,10 +23,12 @@ end
 function render3d.RemoveModel(model)
 	if scene_keyval[model] then
 		table.removevalue(render3d.scene, model)
+		scene_keyval[model] = nil
 		needs_sorting = true
 	end
 	if scene_keyval_dist[model] then
 		table.removevalue(render3d.scene_dist, model)
+		scene_keyval_dist[model] = nil
 	end
 end
 
