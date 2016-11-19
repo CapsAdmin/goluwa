@@ -121,6 +121,11 @@ local ohno = false
 function resource.Download(path, callback, on_fail, crc, mixed_case)
 	on_fail = on_fail or function(reason) llog(path, ": ", reason) end
 
+	if resource.virtual_files[path] then
+		resource.virtual_files[path](callback, on_fail)
+		return true
+	end
+
 	local url
 	local existing_path
 
@@ -201,6 +206,22 @@ function resource.Download(path, callback, on_fail, crc, mixed_case)
 	end
 
 	return true
+end
+
+resource.virtual_files = {}
+
+function resource.CreateVirtualFile(where, callback)
+	resource.virtual_files[where] = function(on_success, on_error)
+		callback(function(path)
+			vfs.CreateFolders("os", e.DOWNLOAD_FOLDER .. where)
+			local ok, err = vfs.Write("os:" .. e.DOWNLOAD_FOLDER ..  where, vfs.Read(path))
+			if not ok then
+				on_error(err)
+			else
+				on_success(where)
+			end
+		end, on_error)
+	end
 end
 
 return resource
