@@ -233,7 +233,6 @@ do -- drawing
 
 		if not from_cache then
 			self:CalcMouse()
-
 			self:CalcDragging()
 			self:CalcScrolling()
 		end
@@ -795,12 +794,18 @@ do -- drag drop
 	prototype.GetSet(META, "DragMinDistance", 20)
 
 	function META:StartDragging(button)
+		self.drag_original_pos = self:GetPosition()
 		self.drag_world_pos = gui.mouse_pos:Copy()
 		self.drag_local_pos = self:GetMousePosition():Copy()
 		self.drag_stop_button = button
 	end
 
 	function META:StopDragging()
+		self.drag_original_pos = nil
+		self.drag_drop_pos = nil
+		self.drag_panel = nil
+
+		self.drag_stop_button = nil
 		self.drag_world_pos = nil
 		self.drag_local_pos = nil
 		self.drag_panel_start_pos = nil
@@ -851,14 +856,8 @@ do -- drag drop
 
 		panel:OnPanelHover(self, drop_pos)
 
-		if not input.IsMouseDown(self.drag_stop_button) then
-
-			--self:SetPosition(drop_pos - self.drag_local_pos)
-			self:OnParentLand(panel)
-			panel:OnChildDrop(self, drop_pos)
-
-			self:StopDragging()
-		end
+		self.drag_drop_pos = drop_pos
+		self.drag_panel = panel
 
 		self:MarkCacheDirty()
 	end
@@ -1517,7 +1516,6 @@ do -- mouse
 			if button == "button_2" then
 				self:OnRightClick()
 			end
-			self:StopDragging()
 		end
 
 		self:OnMouseInput(button, press)
@@ -1536,6 +1534,15 @@ do -- mouse
 			elseif button == "mwheel_up" then
 				self:SetScroll(self:GetScroll() + Vec2(0, -20))
 			end
+		end
+
+		if button == self.drag_stop_button and not press then
+			if self.drag_panel and self.drag_drop_pos then
+				self:OnParentLand(self.drag_panel)
+				self.drag_panel:OnChildDrop(self, self.drag_drop_pos)
+				self:SetPosition(self.drag_original_pos)
+			end
+			self:StopDragging()
 		end
 
 		self:OnGlobalMouseInput(button, press)
