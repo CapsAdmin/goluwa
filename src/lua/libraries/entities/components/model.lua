@@ -7,7 +7,6 @@ META:StartStorable()
 	META:GetSet("MaterialOverride", nil)
 	META:GetSet("Cull", true)
 	META:GetSet("ModelPath", "models/cube.obj")
-	META:GetSet("AABB", AABB())
 	META:GetSet("Color", Color(1,1,1,1))
 	META:GetSet("RoughnessMultiplier", 1)
 	META:GetSet("MetallicMultiplier", 1)
@@ -15,6 +14,7 @@ META:EndStorable()
 
 META:IsSet("Loading", false)
 META:GetSet("Model", nil)
+META:GetSet("AABB", AABB())
 
 META.Network = {
 	ModelPath = {"string", 1/5, "reliable"},

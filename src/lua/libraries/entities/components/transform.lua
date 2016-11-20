@@ -12,13 +12,13 @@ META:StartStorable()
 	META:GetSet("Scale", Vec3(1, 1, 1), {callback = "InvalidateScaleMatrix"})
 	META:GetSet("Shear", Vec3(0, 0, 0), {callback = "InvalidateScaleMatrix"})
 	META:GetSet("Size", 1, {callback = "InvalidateScaleMatrix"})
-	META:GetSet("AABB", AABB(-1,-1,-1, 1,1,1), {callback = "InvalidateTRMatrix"})
 
 	META:GetSet("SkipRebuild", false)
 META:EndStorable()
 
 META:GetSet("OverridePosition", nil, {callback = "InvalidateTRMatrix"})
 META:GetSet("OverrideRotation", nil, {callback = "InvalidateTRMatrix"})
+META:GetSet("AABB", AABB(-1,-1,-1, 1,1,1), {callback = "InvalidateTRMatrix"})
 
 META.Network = {
 	Position = {"vec3", 1/30, "unreliable"},
