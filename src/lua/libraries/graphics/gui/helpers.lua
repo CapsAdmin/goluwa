@@ -135,3 +135,21 @@ function gui.CreateChoices(list, default, parent, padding)
 
 	return area
 end
+
+function gui.CreateMenuBar(bar, parent)
+	local menu_bar = gui.CreatePanel("base", parent)
+
+	for _, info in ipairs(bar) do
+		local button = menu_bar:CreatePanel("text_button")
+		button:SetSizeToTextOnLayout(true)
+		button:SetText(info.name)
+		button:SetMargin(Rect()+4)
+		button:SetupLayout("left", "center_y")
+		button.OnRelease = function()
+			local menu = gui.CreateMenu(info.options, menu_bar)
+			menu:SetPosition(button:GetWorldPosition() + Vec2(0, button:GetHeight()))
+		end
+	end
+
+	return menu_bar
+end
