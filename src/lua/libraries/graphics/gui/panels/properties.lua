@@ -103,6 +103,11 @@ do -- base property
 		edit.OnEnter = function()
 			self:StopEditing()
 		end
+		edit.OnKeyInput = function(_, key, press)
+			if key == "escape" then
+				self:CancelEditing()
+			end
+		end
 		edit:RequestFocus()
 
 		edit:SelectAll()
