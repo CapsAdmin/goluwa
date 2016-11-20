@@ -1,47 +1,69 @@
 local gui = ... or _G.gui
 
-function gui.StringInput(msg, default, callback, check)
+function gui.StringInput(title, msg, default, callback, check)
+	title = title or "no title"
 	msg = msg or "no message"
 	default = default or " "
 	callback = callback or logn
 
 	local frame = gui.CreatePanel("frame")
-	frame:SetTitle("Text Input Request")
-	frame:SetSize(Vec2(250, 120)) -- Should probably be based off their screen size...
+	frame:SetSize(Vec2(250, 140))
+	frame:SetTitle(title)
+		local info = frame:CreatePanel("base")
+		info:SetStyle("frame")
+		info:SetHeight(85)
 
-	local pad = Rect()+frame:GetSkin().scale*4
+			local area = info:CreatePanel("base")
+			area:SetSize(Vec2(500,500))
+			area:SetColor(Color(0,0,0,0))
+				local tex = render.CreateTextureFromPath("https://dl.dropboxusercontent.com/u/244444/ShareX/2015-07/2015-07-02_15-07-48.png")
+				local image = area:CreatePanel("image")
+				image:SetTexture(tex)
+				image:SetSize(tex:GetSize())
+				image:SetupLayout("left")
 
-	local label = frame:CreatePanel("text")
-	label:SetText(msg)
-	label:SetPadding(pad)
-	label:SetupLayout("bottom", "left", "top")
+				local text = area:CreatePanel("text", "temp.txt already exist.\nDo you want to replace it?")
+				text:SetPadding(Rect()+5)
+				text:SetText(msg)
+				text:SetupLayout("left")
+			area:SetupLayout("size_to_children", "center_simple")
 
-	local textinput = frame:CreatePanel("text_edit")
-	textinput:SetText(default)
-	textinput:SizeToText()
-	textinput:SetPadding(pad)
-	textinput:SetupLayout("bottom", "left", "top", "fill_x")
+		info:SetupLayout("top", "fill_x")
 
-	local text_button = frame:CreatePanel("text_button")
-	text_button:SetText("Ok")
-	text_button:SizeToText()
-	text_button:SetPadding(pad)
-	text_button:SetupLayout("bottom", "left", "top", "fill_x")
-
-	text_button.OnPress = function(self)
-		callback(textinput:GetText())
-		frame:Remove()
-	end
-
-	textinput.OnEnter = function(self)
-		local str = textinput:GetText()
+	local edit = frame:CreatePanel("text_edit")
+	edit:SetText(default)
+	edit:SetHeight(12)
+	edit:SetupLayout("top", "fill_x")
+	edit.OnEnter = function(self)
+		local str = edit:GetText()
 		if not check or check(str, self) ~= false then
 			callback(str)
 			frame:Remove()
 		end
 	end
 
-	frame:Center()
+	local no = frame:CreatePanel("text_button")
+	no.label:SetupLayout("center_simple")
+	no:SetPadding(Rect()+5)
+	no:SetSize(Vec2(90, 25))
+	no:SetText(L"cancel")
+	no:SetupLayout("top", "right")
+	no.OnRelease = function() frame:Remove() end
+
+	local yes = frame:CreatePanel("text_button")
+	yes.label:SetupLayout("center_simple")
+	yes:SetPadding(Rect()+5)
+	yes:SetText(L"ok")
+	yes:SetSize(Vec2(90, 25))
+	yes:SetupLayout("top", "right")
+	yes.OnRelease = function()
+		callback(edit:GetText())
+		frame:Remove()
+	end
+
+	frame:SetupLayout("size_to_children_height")
+
+	frame:CenterSimple()
 
 	return frame
 end

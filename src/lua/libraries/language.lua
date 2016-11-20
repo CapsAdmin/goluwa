@@ -66,6 +66,7 @@ function language.ShowLanguageEditor()
 					function()
 						local window = gui.StringInput(
 							L"translate",
+							L"translate",
 							english,
 							other,
 
