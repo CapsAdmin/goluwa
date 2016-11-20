@@ -39,9 +39,18 @@ if GRAPHICS then
 	end
 
 	function META:SetMaterialOverride(mat)
+		self.prev_mat = self.prev_mat or {}
+
 		self.MaterialOverride = mat
+
 		for _, mesh in ipairs(self.sub_meshes) do
-			mesh.material = mat
+			if mat then
+				self.prev_mat[mesh] = mesh.material
+				mesh.material = mat
+			elseif self.prev_mat[mesh] then
+				mesh.material = self.prev_mat[mesh]
+				self.prev_mat[mesh] = nil
+			end
 		end
 	end
 
