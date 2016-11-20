@@ -3,7 +3,7 @@ local gui = ... or _G.gui
 function gui.StringInput(title, msg, default, callback, check)
 	title = title or "no title"
 	msg = msg or "no message"
-	default = default or " "
+	default = default or ""
 	callback = callback or logn
 
 	local frame = gui.CreatePanel("frame")
@@ -41,6 +41,7 @@ function gui.StringInput(title, msg, default, callback, check)
 			frame:Remove()
 		end
 	end
+	edit:RequestFocus()
 
 	local no = frame:CreatePanel("text_button")
 	no.label:SetupLayout("center_simple")
@@ -138,16 +139,42 @@ end
 
 function gui.CreateMenuBar(bar, parent)
 	local menu_bar = gui.CreatePanel("base", parent)
+	menu_bar:SetStyle("property")
+
+	local menu = NULL
+	local current_button = NULL
 
 	for _, info in ipairs(bar) do
 		local button = menu_bar:CreatePanel("text_button")
+		button:SetActiveStyle("menu_select")
+		button:SetInactiveStyle("nodraw")
 		button:SetSizeToTextOnLayout(true)
 		button:SetText(info.name)
 		button:SetMargin(Rect()+4)
 		button:SetupLayout("left", "center_y")
+		button.OnPress = function()
+			if menu:IsValid() and current_button == button then
+				button.suppress = true
+			end
+		end
 		button.OnRelease = function()
-			local menu = gui.CreateMenu(info.options, menu_bar)
+			if button.suppress then
+				button.suppress = nil
+				return
+			end
+			button:SetState(true)
+			current_button = button
+			menu = gui.CreateMenu(info.options, menu_bar)
 			menu:SetPosition(button:GetWorldPosition() + Vec2(0, button:GetHeight()))
+			menu:CallOnRemove(function()
+				button:SetState(false)
+			end)
+		end
+		button.OnMouseEnter = function()
+			if menu:IsValid() and current_button ~= button then
+				menu:Remove()
+				button:OnRelease()
+			end
 		end
 	end
 
