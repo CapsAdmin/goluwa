@@ -155,7 +155,9 @@ do -- events
 			panel:GlobalMouseInput(button, press)
 
 			if (panel.AlwaysReceiveMouseInput and panel.mouse_over) or panel.mouse_capture then
-				panel:MouseInput(button, press)
+				if gui.last_clicked ~= panel then
+					panel:MouseInput(button, press)
+				end
 			end
 		end
 	end
