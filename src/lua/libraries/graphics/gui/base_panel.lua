@@ -2359,6 +2359,8 @@ do -- events
 	]]
 
 	function META:OnRemove()
+		self:MarkCacheDirty()
+
 		gui.panels[self] = nil
 
 		for _, v in pairs(self:GetChildrenList()) do
