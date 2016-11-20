@@ -298,6 +298,154 @@ function editor.Open()
 	frame:SetIcon(frame:GetSkin().icons.application_edit)
 	editor.frame = frame
 
+	local menu_bar = gui.CreateMenuBar({
+		{
+			name = "file",
+			options = {
+				{
+					L"save",
+					{
+						{
+							L"auto load",
+							function()
+								serializer.WriteFile("luadata", "data/entities/autoload.ent", entities.GetWorld():GetStorableTable())
+							end,
+							frame:GetSkin().icons.transmit_go,
+						},
+						{},
+						{
+							L"new file",
+							function()
+								gui.StringInput(L"filename", L"filename", entities.GetWorld():GetName(), function(name)
+									serializer.WriteFile("luadata", "data/entities/" .. name .. ".ent", entities.GetWorld():GetStorableTable())
+								end)
+							end,
+							frame:GetSkin().icons.save,
+						},
+						{},
+						(function()
+							local out = {}
+							for file_name in vfs.Iterate("data/entities/") do
+								table.insert(out, {file_name:gsub("%.ent", ""), function()
+									serializer.WriteFile("luadata", "data/entities/" .. file_name, entities.GetWorld():GetStorableTable())
+								end})
+							end
+							return unpack(out)
+						end)()
+					},
+					frame:GetSkin().icons.save,
+				},
+				{
+					L"load",
+					{
+						(function()
+							function editor.GetSavedFiles(where)
+								where = where or "data/entities/"
+								local out = {}
+								for file_name in vfs.Iterate(where) do
+									local path = where .. file_name
+
+									if vfs.IsFile(path) then
+										local tbl = serializer.ReadFile("luadata", where .. file_name)
+										if tbl then
+											table.insert(out, {
+												is_file = true,
+												name = file_name:gsub("%.ent", ""),
+												path = path,
+												ent_tbl = tbl,
+											})
+										end
+									else
+										table.insert(out, {
+											name = file_name,
+											is_dir = true,
+											files = editor.GetSavedFiles(path .. "/"),
+											path = path,
+										})
+									end
+								end
+								return out
+							end
+
+							local function populate(files)
+								local out = {}
+								for _, v in ipairs(files) do
+									if v.is_file then
+										local config = prototype.GetConfigurations()[v.ent_tbl.config]
+
+										table.insert(out, {v.name, function()
+											entities.GetWorld():SetStorableTable(v.ent_tbl)
+										end, config.icon})
+									else
+										table.insert(out, {v.name, populate(v.files), frame:GetSkin().icons.load})
+									end
+								end
+								return out
+							end
+
+							return unpack(populate(editor.GetSavedFiles(path)))
+						end)()
+					},
+					frame:GetSkin().icons.load,
+				},
+				--[[{
+					L"wear",
+					function() end,
+					frame:GetSkin().icons.transmit,
+				},
+				{
+					L"clear",
+					{
+						{
+							L"ok",
+							function() entities.Panic() end,
+							frame:GetSkin().icons.cross,
+						}
+					},
+					frame:GetSkin().icons.cross,
+				},]]
+				{},
+				--[[{
+					L"help",
+					function() end,
+					frame:GetSkin().icons.information,
+				},
+				{
+					L"about",
+					function() end,
+					frame:GetSkin().icons.star,
+				},]]
+				{
+					L"exit",
+					function() editor.Close() end,
+					frame:GetSkin().icons.cancel,
+				},
+			},
+		},
+		{
+			name = "view",
+			options = {
+				{
+					L"hide editor",
+					function() editor.Toggle() end,
+				},
+				{
+					L"camera follow",
+					function() end,
+				},
+				{
+					L"reset view position",
+					function() camera.camera_3d:SetPosition(Vec3(0,0,0)) end,
+				},
+			},
+		}
+	}, frame)
+
+	menu_bar:SetHeight(25)
+	menu_bar:SetStyle("frame")
+	menu_bar:SetupLayout("top", "fill_x")
+
+
 	local div = gui.CreatePanel("divider", frame)
 	div:SetupLayout("fill")
 	div:SetHideDivider(true)
@@ -385,7 +533,8 @@ function editor.Open()
 		end
 
 		add()
-		--add("help", nil, frame:GetSkin().icons.help)
+
+
 
 		if clipboard then
 			add(L("add") .. " " .. ((clipboard.self.Name and clipboard.self.Name ~= "" and clipboard.self.Name) or clipboard.config), function()
@@ -393,13 +542,6 @@ function editor.Open()
 				ent:SetStorableTable(clipboard)
 			end, frame:GetSkin().icons.add)
 		end
-
-		add(L"save map", function()
-			serializer.WriteFile("luadata", "world.map", entities.GetWorld():GetStorableTable())
-		end, frame:GetSkin().icons.save)
-		add(L"load map", function()
-			entities.GetWorld():SetStorableTable(serializer.ReadFile("luadata", "world.map"))
-		end, frame:GetSkin().icons.load)
 
 		if node then
 			add()
