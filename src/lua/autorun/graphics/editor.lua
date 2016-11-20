@@ -632,8 +632,8 @@ function editor.Open()
 
 	--editor.top_scroll.OnRightClick = function() right_click_node() end
 
-	event.AddListener("EntityCreated", "editor", function() event.Delay(0.1, function() repopulate() end, frame, "editor_repopulate_hack") end)
-	event.AddListener("EntityRemoved", "editor", function() event.Delay(0.1, function() repopulate() end, frame, "editor_repopulate_hack") end)
+	event.AddListener("EntityCreated", "editor", function() event.Delay(0, function() repopulate() end, "editor_repopulate_hack", frame) end)
+	event.AddListener("EntityRemoved", "editor", function() event.Delay(0, function() repopulate() end, "editor_repopulate_hack", frame) end)
 	event.AddListener("MouseInput", "editor", mctrl.MouseInput)
 	event.AddListener("PreDrawGUI", "editor", mctrl.Draw)
 	repopulate()

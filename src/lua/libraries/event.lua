@@ -165,10 +165,12 @@ do -- timers
 			time = 0
 		end
 
+		time = time or 0
+
 		if id then
 			for _, v in ipairs(event.timers) do
 				if v.key == id then
-					v.realtime = system.GetElapsedTime() + (time or 0)
+					v.realtime = system.GetElapsedTime() + time
 					return
 				end
 			end
@@ -184,10 +186,10 @@ do -- timers
 		end
 
 		table.insert(event.timers, {
-			key = callback,
+			key = id or callback,
 			type = "delay",
 			callback = callback,
-			realtime = system.GetElapsedTime() + (time or 0),
+			realtime = system.GetElapsedTime() + time,
 			args = {...},
 		})
 	end
@@ -282,7 +284,6 @@ do -- timers
 
 						if errored then
 							table.insert(remove_these, i)
-							break
 						end
 
 						data.realtime = cur + data.frequency
@@ -292,7 +293,6 @@ do -- timers
 				if data.realtime < cur then
 					system.pcall(data.callback, unpack(data.args))
 					table.insert(remove_these, i)
-					break
 				end
 			elseif data.type == "timer" then
 				if not data.paused and data.realtime < cur then
@@ -301,7 +301,6 @@ do -- timers
 					if ran then
 						if msg == "stop" then
 							table.insert(remove_these, i)
-							break
 						end
 						if msg == "restart" then
 							data.times_ran = 1
@@ -313,14 +312,12 @@ do -- timers
 						if data.error_callback(data.id, msg) ~= nil then
 							table.insert(remove_these, i)
 							--profiler.RemoveSection(data.id)
-							break
 						end
 					end
 
 					if data.times_ran == data.repeats then
 						table.insert(remove_these, i)
 						--profiler.RemoveSection(data.id)
-						break
 					else
 						data.times_ran = data.times_ran + 1
 						data.realtime = cur + data.time
