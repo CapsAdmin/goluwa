@@ -125,6 +125,14 @@ do -- base property
 		end
 	end
 
+	function META:CancelEditing()
+		local edit = self.edit
+		if edit then
+			edit:Remove()
+			self.edit = nil
+		end
+	end
+
 	function META:SetValue(val, skip_internal)
 		self:SetText(self:Encode(val))
 		self:OnValueChanged(val)
@@ -804,7 +812,7 @@ function META:OnPanelMouseInput(panel, button, press)
 	if press and button == "button_1" and panel.ClassName:find("_property") then
 		for i, right in ipairs(self.added_properties) do
 			if panel ~= right then
-				right:StopEditing()
+				right:CancelEditing()
 			end
 		end
 	end
