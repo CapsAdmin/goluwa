@@ -155,7 +155,7 @@ end
 function META:OnMouseInput(button, press)
 	self.markup:OnMouseInput(button, press)
 	if press then
-		self:GlobalMouseCapture(true)
+		event.Delay(0, function() self:GlobalMouseCapture(true) end, "asdf", self)
 	else
 		self:GlobalMouseCapture(false)
 	end
