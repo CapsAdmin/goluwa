@@ -1,3 +1,6 @@
+local held_ang
+local held_mpos
+
 function CalcMovement(dt, cam_ang, cam_fov)
 	cam_ang:Normalize()
 	local speed = dt * 10
@@ -46,8 +49,24 @@ function CalcMovement(dt, cam_ang, cam_fov)
 		cam_ang.z = cam_ang.z + original_delta.x / 100
 		cam_fov = math.clamp(cam_fov + original_delta.y / 100 * (cam_fov/math.pi), math.rad(0.1), math.rad(175))
 	else
-		cam_ang.x = math.clamp(cam_ang.x + delta.y, -math.pi/2, math.pi/2)
-		cam_ang.y = cam_ang.y - delta.x
+		if window.GetMouseTrapped() then
+			cam_ang.x = math.clamp(cam_ang.x + delta.y, -math.pi/2, math.pi/2)
+			cam_ang.y = cam_ang.y - delta.x
+		else
+			if input.IsMouseDown("button_1") then
+				held_mpos = held_mpos or window.GetMousePosition()
+				local delta = (held_mpos - window.GetMousePosition())
+				delta = delta / 300
+
+				held_ang = held_ang or cam_ang:Copy()
+
+				cam_ang.x = math.clamp(held_ang.x - delta.y, -math.pi/2, math.pi/2)
+				cam_ang.y = held_ang.y + delta.x
+			else
+				held_mpos = nil
+				held_ang = cam_ang:Copy()
+			end
+		end
 	end
 
 	local forward = Vec3(0,0,0)
@@ -89,9 +108,8 @@ end
 
 event.AddListener("Update", "fly_camera_3d", function(dt)
 	if network.IsConnected() then return end
-	if not window.IsOpen() then return end
-	if not window.GetMouseTrapped() then return end
 	if not window.HasFocus() then return end
+	if gui and (gui.GetHoveringPanel() ~= gui.world or gui.focus_panel:IsValid()) then return end
 
 	local cam_pos = camera.camera_3d:GetPosition()
 	local cam_ang = camera.camera_3d:GetAngles()
@@ -116,8 +134,6 @@ local max_zoom = 100
 local min_zoom = 0.01
 
 event.AddListener("Update", "fly_camera_2d", function(dt)
-	if not window.IsOpen() then return end
-
 	local speed = dt * 1000
 
 	if input.IsKeyDown("kp_5") then
