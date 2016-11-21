@@ -661,6 +661,11 @@ end
 function editor.Close()
 	gui.RemovePanel(editor.frame)
 	window.SetMouseTrapped(false)
+
+	event.RemoveListener("EntityCreated", "editor")
+	event.RemoveListener("EntityRemoved", "editor")
+	event.RemoveListener("MouseInput", "editor")
+	event.RemoveListener("PreDrawGUI", "editor")
 end
 
 function editor.Toggle()
