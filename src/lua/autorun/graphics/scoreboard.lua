@@ -11,8 +11,11 @@ end)
 
 input.Bind("tab", "-score", function()
 	if not scoreboard.panel:IsValid() then return end
+	if scoreboard.showed_cursor then
+		window.SetMouseTrapped(true)
+	end
+	scoreboard.showed_cursor = nil
 	scoreboard.panel:SetVisible(false)
-	window.SetMouseTrapped(true)
 end)
 
 local scoreboard_title = fonts.CreateFont({
@@ -293,12 +296,16 @@ function scoreboard.Initialize()
 	help:SetPadding(Rect()+10)
 	help:SetupLayout("top", "center_x_simple")
 
-	panel.OnShow = function() help:SetVisible(true) end
+	panel.OnShow = function()
+		help:SetVisible(window.GetMouseTrapped())
+	end
 
 	help.OnGlobalMouseInput = function(_, button, press)
+		if not window.GetMouseTrapped() then return end
 		if panel.Visible and button == "button_2" then
 			window.SetMouseTrapped(false)
 			help:SetVisible(false)
+			scoreboard.showed_cursor = true
 			return true
 		end
 	end
