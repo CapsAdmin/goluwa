@@ -271,11 +271,7 @@ do -- url monitoring
 end
 
 input.Bind("e+left_alt", "toggle_focus", function()
-	if window.GetMouseTrapped() then
-		window.SetMouseTrapped(false)
-	else
-		window.SetMouseTrapped(true)
-	end
+	window.SetMouseTrapped(not window.GetMouseTrapped())
 end)
 
 do
