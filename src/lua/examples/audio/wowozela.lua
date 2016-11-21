@@ -1,6 +1,3 @@
-window.Open()
---window.SetMouseTrapped(true)
-
 --[[local size = 128
 local buffer = ffi.new("ALshort[?]", size)
 for i = 0, size-1 do
