@@ -184,7 +184,6 @@ function render.GetGlobalShaderCode(code, glsl_variables)
 end
 
 function render.GetGlobalShaderVariables(code, const)
-
 	local done = {}
 	local node = {value = "", dependencies = {}}
 
@@ -193,7 +192,7 @@ function render.GetGlobalShaderVariables(code, const)
 	local function add_code(code, node)
 		for _, info in ipairs(render.global_glsl_variables) do
 			if const == true and info.type:startswith("const") or const == false and not info.type:startswith("const") or const == nil then
-				local p = [==[[!"#$%&'%(%)*+,-./:;<=>?@%[\%]^`{|}~%s]]==]
+				local p = [==[[!"#$%&'%(%)%*%+,%-%./:;<=>?@%[\%]%^`%{|%}~%s]]==]
 				if code:find(p..info.key..p) then
 					local new_code = info.type .. " " .. info.key .. " = " .. info.val .. ";"
 					if not done[info.key] then
@@ -263,3 +262,43 @@ render.AddGlobalShaderCode([[
 render.SetGlobalShaderVariable("PI", "3.1415926535897932384626433832795", "const float")
 render.SetGlobalShaderVariable("HALF_PI", "1.57079632679489661923132169163975", "const float")
 render.SetGlobalShaderVariable("TAU", "6.283185307179586476925286766559", "const float")
+
+render.AddGlobalShaderCode([[
+#extension GL_ARB_gpu_shader5 : enable
+vec2 hammersley_2d(uint i, uint n) {
+	return vec2( float(i) / float(n), float(bitfieldReverse(i)) * 2.383064365386963e-10 );
+}
+]])
+
+render.AddGlobalShaderCode([[
+vec3 hemisphere_sample_uniform(float u, float v) {
+	float phi = v * 2.0 * PI;
+	float cosTheta = 1.0 - u;
+	float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
+	return vec3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+}
+]])
+
+render.AddGlobalShaderCode([[
+vec3 hemisphere_sample_cos(float u, float v) {
+	float phi = v * 2.0 * PI;
+	float cosTheta = sqrt(1.0 - u);
+	float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
+	return vec3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+}
+]])
+
+render.AddGlobalShaderCode([[
+float random_angle()
+{
+  uint x = uint(gl_FragCoord.x);
+  uint y = uint(gl_FragCoord.y);
+  return (30u * x ^ y + 10u * x * y);
+}
+]])
+
+render.AddGlobalShaderCode([[
+float saturate(float x) {
+	return clamp(x, 0, 1);
+}
+]])

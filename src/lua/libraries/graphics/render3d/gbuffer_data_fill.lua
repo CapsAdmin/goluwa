@@ -17,7 +17,7 @@ PASS.Buffers = {
 				}
 			},
 			{
-				rgba8 = {
+				rgba16f = {
 					rg = {
 						"view_normal", "vec3",
 						[[
@@ -171,10 +171,11 @@ mat3 get_world_tbn(vec2 uv)
 	return tbn;
 }]])
 
+
 render.AddGlobalShaderCode([[
 #extension GL_ARB_texture_query_levels: enable
 
-vec3 MMAL(samplerCube tex, vec3 normal, vec3 reflected, float roughness)
+vec3 sample_cubemap_roughness(samplerCube tex, vec3 normal, vec3 reflected, float roughness)
 {
 	vec2 size = textureSize(tex, 0);
 	float levels = textureQueryLevels(tex) - 1;
@@ -182,7 +183,8 @@ vec3 MMAL(samplerCube tex, vec3 normal, vec3 reflected, float roughness)
 
 	return textureLod(tex, normalize(mix(reflected, normal, roughness)), mx * levels).rgb;
 }
-
+]], "sample_cubemap_roughness")
+render.AddGlobalShaderCode([[
 vec3 get_env_color()
 {
 	float roughness = get_roughness(uv);
@@ -192,8 +194,8 @@ vec3 get_env_color()
 	vec3 sky_normal = get_world_normal(uv);
 	vec3 sky_reflect = reflect(cam_dir, sky_normal).xyz;
 
-	vec3 irradiance = MMAL(lua[tex_sky = render3d.GetSkyTexture()], sky_normal, sky_reflect, -metallic+1);
-	vec3 reflection = MMAL(lua[tex_sky = render3d.GetSkyTexture()], sky_normal, sky_reflect, roughness);
+	vec3 irradiance = sample_cubemap_roughness(lua[tex_sky = render3d.GetSkyTexture()], sky_normal, sky_reflect, -metallic+1);
+	vec3 reflection = sample_cubemap_roughness(lua[tex_sky = render3d.GetSkyTexture()], sky_normal, sky_reflect, roughness);
 
 	return mix((irradiance+reflection), reflection, metallic);
 }
@@ -438,8 +440,8 @@ PASS.Stages = {
 					roughness *= lua[RoughnessMultiplier = 1];
 					metallic *= lua[MetallicMultiplier = 1];
 
-					set_metallic(max(metallic, 0.0005));
-					set_roughness(roughness);
+					set_metallic(handle_metallic(metallic));
+					set_roughness(handle_roughness(roughness));
 
 
 					if (lua[SelfIllumination = false])

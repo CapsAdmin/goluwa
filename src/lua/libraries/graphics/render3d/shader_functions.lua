@@ -1,4 +1,18 @@
 render.AddGlobalShaderCode([[
+float handle_roughness(float x)
+{
+	return x;
+}
+]])
+
+render.AddGlobalShaderCode([[
+float handle_metallic(float x)
+{
+	return x;
+}
+]])
+
+render.AddGlobalShaderCode([[
 float random(vec2 co)
 {
 	return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
@@ -133,6 +147,54 @@ float g_ssao(vec2 uv) {
 	}
 
 	return pow(max((1.0 - (occlusion / weight)), 0), 10);
+}
+]])
+
+render.AddGlobalShaderCode([[
+float g_ssao2(vec2 uv)
+{
+	float SampleRadius = 1.0;
+	float ShadowScalar = 1.3;
+	float DepthThreshold = 0.0025;
+	float ShadowContrast = 0.5;
+	uint NumSamples = 20u;
+
+
+	float visibility = 0.0;
+	vec3 P = get_view_pos(uv);
+	vec3 N = get_view_normal(uv);
+	float PerspectiveRadius = (SampleRadius / P.z);
+
+	// Main sample loop, this is where we will preform our random
+	// sampling and estimate the ambient occlusion for the current fragment.
+	for (uint i = 0u; i < NumSamples; ++i)
+	{
+		// Generate Sample Position
+		vec2 E = hammersley_2d(i, NumSamples) * vec2(PI, PI*2);
+		E.y += random_angle(); // Apply random angle rotation
+		vec2 sE= vec2(cos(E.y), sin(E.y)) * PerspectiveRadius * cos(E.x);
+		vec2 Sample = gl_FragCoord.xy / g_gbuffer_size + sE;
+
+		// Create Alchemy helper variables
+		vec3 Pi         = get_view_pos(Sample);
+		vec3 V          = Pi - P;
+		float sqrLen    = dot(V, V);
+		float Heaveside = step(sqrt(sqrLen), SampleRadius);
+		float dD        = DepthThreshold * P.z;
+
+		// For arithmetically removing edge-bleeding error
+		// introduced by clamping the ambient occlusion map.
+		float EdgeError = step(0.0, Sample.x) * step(0.0, 1.0 - Sample.x) *
+						  step(0.0, Sample.y) * step(0.0, 1.0 - Sample.y);
+
+		// Summation of Obscurance Factor
+		visibility += (max(0.0, dot(N, V) + dD) * Heaveside * EdgeError) / (sqrLen + 0.0001);
+	}
+
+	// Final scalar multiplications for averaging and intensifying shadows
+	visibility *= (2 * ShadowScalar) / NumSamples;
+	visibility = max(0.0, 1.0 - pow(visibility, ShadowContrast));
+	return visibility;
 }
 ]])
 
