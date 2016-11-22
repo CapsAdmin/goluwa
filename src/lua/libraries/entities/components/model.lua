@@ -39,19 +39,7 @@ if GRAPHICS then
 	end
 
 	function META:SetMaterialOverride(mat)
-		self.prev_mat = self.prev_mat or {}
-
 		self.MaterialOverride = mat
-
-		for _, mesh in ipairs(self.sub_meshes) do
-			if mat then
-				self.prev_mat[mesh] = mesh.material
-				mesh.material = mat
-			elseif self.prev_mat[mesh] then
-				mesh.material = self.prev_mat[mesh]
-				self.prev_mat[mesh] = nil
-			end
-		end
 	end
 
 	function META:OnAdd()
@@ -214,14 +202,25 @@ if GRAPHICS then
 				if self.occluders[what] then
 					self.occluders[what]:BeginConditional()
 				end
-
-				for _, mesh in ipairs(self.sub_meshes) do
-					mesh.material.Color = self.Color
-					mesh.material.RoughnessMultiplier = self.RoughnessMultiplier
-					mesh.material.MetallicMultiplier = self.MetallicMultiplier
-					render_SetMaterial(mesh.material)
-					render3d.shader:Bind()
-					mesh.vertex_buffer:Draw()
+				if self.MaterialOverride then
+					local mat = self.MaterialOverride
+					mat.Color = self.Color
+					mat.RoughnessMultiplier = self.RoughnessMultiplier
+					mat.MetallicMultiplier = self.MetallicMultiplier
+					render_SetMaterial(mat)
+					for _, mesh in ipairs(self.sub_meshes) do
+						render3d.shader:Bind()
+						mesh.vertex_buffer:Draw()
+					end
+				else
+					for _, mesh in ipairs(self.sub_meshes) do
+						mesh.material.Color = self.Color
+						mesh.material.RoughnessMultiplier = self.RoughnessMultiplier
+						mesh.material.MetallicMultiplier = self.MetallicMultiplier
+						render_SetMaterial(mesh.material)
+						render3d.shader:Bind()
+						mesh.vertex_buffer:Draw()
+					end
 				end
 
 				if self.occluders[what] then
