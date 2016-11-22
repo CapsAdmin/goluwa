@@ -1,66 +1,55 @@
 --https://github.com/TReed0803/QtOpenGL/blob/master/resources/shaders/lighting/Physical.glsl
 
+--include("lua/libraries/graphics/render3d/sky_shaders/atmosphere1.lua")
+render.AddGlobalShaderCode([[
+vec3 gbuffer_compute_sky(vec3 ray, float depth)
+{
+	depth = depth < 1 ? 0 : 1;
+	vec3 res = textureLatLon(lua[nightsky_tex = render.CreateTextureFromPath("textures/skybox/hdr/papermill_ruins_a.hdr")], -ray.xyz).rgb*depth;
+
+	//res = pow(res, vec3(0.5));
+	//res += res*vec3(length(pow(res, vec3(5))));
+
+	return res;
+}]])
+
 render.AddGlobalShaderCode([[
 float handle_roughness(float x)
 {
-	return max(x*x, 0.0025);
+	return clamp(x, 0.0025, 1);
 }]])
 
 render.AddGlobalShaderCode([[
 float handle_metallic(float x)
 {
-	return max(x*2, 0.00025);
+	return clamp(x*x*x, 0.00025, 1);
 }]])
 
 render.AddGlobalShaderCode([[
-vec3 Reinhard(vec3 color)
-{
-  return color / (color + vec3(1.0));
-}
-
-vec3 HejlDawson(vec3 color)
-{
-  vec3 x = max(vec3(0.0),color-vec3(0.004));
-  return (x*(6.2*x+.5))/(x*(6.2*x+1.7)+0.06);
-}
-
-vec3 _Uncharted(vec3 x)
-{
-  const float A = 0.15;
-  const float B = 0.50;
-  const float C = 0.10;
-  const float D = 0.20;
-  const float E = 0.02;
-  const float F = 0.30;
-  const float W = 11.2;
-  return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
-}
-
-vec3 Uncharted(vec3 color)
-{
-  const float W = 11.2;
-  const float ExposureBias = 2.0f;
-  return _Uncharted(ExposureBias*color) / _Uncharted(vec3(W));
-}
-
 vec3 gbuffer_compute_tonemap(vec3 color, vec3 bloom)
 {
-	return HejlDawson(color);
+	float gamma = 2.2;
+	float A = 0.15;
+	float B = 0.50;
+	float C = 0.10;
+	float D = 0.20;
+	float E = 0.02;
+	float F = 0.30;
+	float W = 11.2;
+	float exposure = 2.;
+	color *= exposure;
+	color = ((color * (A * color + C * B) + D * E) / (color * (A * color + B) + D * F)) - E / F;
+	float white = ((W * (A * W + C * B) + D * E) / (W * (A * W + B) + D * F)) - E / F;
+	color /= white;
+	color = pow(color, vec3(1. / gamma));
+	return color;
 }]])
-include("lua/libraries/graphics/render3d/sky_shaders/atmosphere1.lua")
---[==[render.AddGlobalShaderCode([[
-vec3 gbuffer_compute_sky(vec3 ray, float depth)
-{
-	depth = depth < 1 ? 0 : 1;
-	vec3 res = textureLatLon(lua[nightsky_tex = render.CreateTextureFromPath("textures/skybox/hdr/power_plant.hdr")], ray.xzy * vec3(1,-1,1)).rgb*depth;
-
-	res = pow(res, vec3(0.75))*3;
-//	res += res*vec3(length(pow(res, vec3(5))));
-
-	return res;
-}]])]==]
 
 render.AddGlobalShaderCode([[
+float Pdf(float NoL, float NoV)
+{
+  return (4.0 * NoL * NoV);
+}
 float Specular(float NoL, float NoV, float NoH, float VoH)
 {
   return Fresnel(VoH) * Geometry(NoL, NoV, NoH, VoH) * Distribution(NoH) / Pdf(NoL, NoV);
@@ -85,7 +74,7 @@ vec3 Brdf(vec3 Kd, vec3 Li, vec3 L, vec3 V, vec3 N)
 
 vec3 gbuffer_compute_specular(vec3 l, vec3 v, vec3 n, float attenuation, vec3 light_color)
 {
-	return max(Brdf(get_albedo(get_screen_uv()), light_color*attenuation, l,v,-n), vec3(0));
+	return max(Brdf(get_albedo(get_screen_uv()), light_color*attenuation*4, l,v,-n), vec3(0));
 }]])
 
 
@@ -154,33 +143,9 @@ vec3 DGgxSample(vec2 E)
   float Phi = TAU * E.y;
   return MakeSample(Theta, Phi);
 }
-vec3 DGSmpl(vec2 random)
+vec3 CDFSample(vec2 random)
 {
   return DGgxSample(random);
-}]])
-
-render.AddGlobalShaderCode([[
-float Fd90(float NoL)
-{
-  return 2.0 * NoL * get_roughness(get_screen_uv()) + 0.4;
-}
-
-float KDisney(float NoL, float NoV)
-{
-  return (1.0 + Fd90(NoL) * pow(1.0 - NoL, 5.0)) *
-         (1.0 + Fd90(NoV) * pow(1.0 - NoV, 5.0));
-}
-// Note: For some reason, possibly a driver error, I cannot create a subroutine
-//       for this term. Hopefully after an update I will be able to do so.
-float K(float NoL, float NoV)
-{
-  return KDisney(NoL, NoV);
-}]])
-
-render.AddGlobalShaderCode([[
-float Pdf(float NoL, float NoV)
-{
-  return (4.0 * NoL * NoV);
 }]])
 
 render.AddGlobalShaderCode([[
@@ -250,7 +215,7 @@ do
 		  for (uint i = 0; i < NumSamples; ++i)
 		  {
 			vec2 Xi = hammersley_2d(i, NumSamples);
-			vec3 Li = DGSmpl(Xi); // Defined elsewhere as subroutine
+			vec3 Li = CDFSample(Xi); // Defined elsewhere as subroutine
 			vec3 H  = normalize(Li.x * TangentX + Li.y * TangentY + Li.z * N);
 			vec3 L  = normalize(-reflect(V, H));
 
@@ -263,7 +228,7 @@ do
 			float F_ = Fresnel(VoH); // Defined elsewhere as subroutine
 			float G_ = Geometry(NoL, NoV, NoH, VoH); // Defined elsewhere as subroutine
 
-			vec3 LColor = textureLod(environment, L.xzy*vec3(1,-1,1), lod).rgb;
+			vec3 LColor = textureLod(environment, L.xzy*vec3(-1,1,-1), lod).rgb;
 
 			// Since the sample is skewed towards the Distribution, we don't need
 			// to evaluate all of the factors for the lighting equation. Also note
@@ -288,11 +253,11 @@ do
 			float NoV = saturate(dot(N, V));
 			float NoL = saturate(dot(N, L));
 
-			vec3 irrMap = textureLod(tex_env, reflect(N, L).xzy*vec3(1,-1,1), 100).rgb;
+			vec3 irrMap = textureLod(tex_env, reflect(N, L).xzy*vec3(-1,1,-1), 100).rgb;
 			vec3 Kdiff = irrMap * get_albedo(uv) / PI;
 			vec3 Kspec = radiance(tex_env, N, V);
 
-			out_color = BlendMaterial(Kdiff, Kspec);
+			out_color = BlendMaterial(Kdiff, Kspec) * g_ssao2(uv);
 		}
 	]]
 	})
@@ -305,7 +270,7 @@ do
 			{
 				vec3 reflection = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
 
-				out_color = reflection+get_specular(uv)*g_ssao(uv);
+				out_color = reflection;
 				out_color += gbuffer_compute_sky(get_camera_dir(uv), get_linearized_depth(uv));
 			}
 		]]
