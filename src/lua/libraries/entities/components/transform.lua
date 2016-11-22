@@ -10,7 +10,7 @@ META:StartStorable()
 	META:GetSet("Rotation", Quat(0, 0, 0, 1), {callback = "InvalidateTRMatrix"})
 
 	META:GetSet("Scale", Vec3(1, 1, 1), {callback = "InvalidateScaleMatrix"})
-	META:GetSet("Shear", Vec3(0, 0, 0), {callback = "InvalidateScaleMatrix"})
+	--META:GetSet("Shear", Vec3(0, 0, 0), {callback = "InvalidateScaleMatrix"})
 	META:GetSet("Size", 1, {callback = "InvalidateScaleMatrix"})
 
 	META:GetSet("SkipRebuild", false)
