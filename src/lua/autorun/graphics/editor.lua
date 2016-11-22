@@ -296,6 +296,7 @@ function editor.Open()
 	frame:SetWidth(300)
 	frame:SetTitle(L"editor")
 	frame:SetIcon(frame:GetSkin().icons.application_edit)
+	frame:CallOnRemove(function() frame.UGH = true editor.Close() end)
 	editor.frame = frame
 
 	local menu_bar = gui.CreateMenuBar({
@@ -659,7 +660,9 @@ function editor.Open()
 end
 
 function editor.Close()
-	gui.RemovePanel(editor.frame)
+	if not editor.frame.UGH then
+		gui.RemovePanel(editor.frame)
+	end
 	window.SetMouseTrapped(false)
 
 	event.RemoveListener("EntityCreated", "editor")
