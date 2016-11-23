@@ -1,4 +1,3 @@
-
 render.AddGlobalShaderCode([[
 #define iSteps 16
 #define jSteps 1
@@ -94,10 +93,16 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
         iTime += iStepSize;
 
     }
-	vec3 influence = texture(lua[sky_tex = steam.GetSkyTexture()], r).rgb;
 
     // Calculate and return the final color.
-    return iSun * (pRlh * influence * kRlh * totalRlh + pMie * kMie * totalMie);
+    vec3 sky_color = iSun * (pRlh * kRlh * totalRlh + pMie * kMie * totalMie);
+
+
+	vec3 influence = texture(lua[sky_tex = steam.GetSkyTexture()], r).rgb;
+	if (influence != vec3(0))
+		sky_color *= influence;
+
+	return sky_color;
 }
 
 vec3 gbuffer_compute_sky(vec3 ray, float depth)
@@ -106,12 +111,12 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 	vec3 sun_direction = lua[(vec3)render3d.GetShaderSunDirection];
 	float intensity = lua[world_sun_intensity = 1];
 
-	vec3 stars = textureLatLon(lua[nightsky_tex = render.CreateTextureFromPath("textures/skybox/milkyway.jpg")], reflect(ray, sun_direction)).rgb;
-	stars += pow(stars*1.25, vec3(1.5));
-	stars *= depth * 0.005;
+	vec3 stars = textureLatLon(lua[nightsky_tex = render.CreateTextureFromPath("textures/skybox/hdr/milkyway.hdr")], reflect(ray, sun_direction)).rgb;
+	//stars += pow(stars*1.25, vec3(1.5));
+	stars *= depth * (depth > 1 ? 0.025 : 0);
 
 	return depth*max(atmosphere(
-		normalize(ray),         		// normalized ray direction
+		ray.xzy*vec3(1,-1,1),         		// normalized ray direction
         g_cam_pos.xzy + vec3(0,6372e3,0),               // ray origin
         vec3(sun_direction.x, sun_direction.y, sun_direction.z),					// position of the sun
 		15.0*intensity,                           // intensity of the sun
@@ -124,3 +129,7 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
         0.758                           // Mie preferred scattering direction
 	), vec3(0))+stars;
 }]])
+
+if RELOAD then
+	render3d.Initialize()
+end

@@ -2,7 +2,7 @@ render.AddGlobalShaderCode([[
 vec3 gbuffer_compute_sky(vec3 ray, float depth)
 {
 	depth = depth < 1 ? 0 : 1;
-	vec3 res = textureLatLon(lua[nightsky_tex = render.CreateTextureFromPath("textures/skybox/hdr/camposanto_cemetery.hdr")], ray.xzy * vec3(1,-1,1)).rgb*depth;
+	vec3 res = textureLatLon(lua[nightsky_tex = render.CreateTextureFromPath("textures/skybox/hdr/power_plant.hdr")], ray.xzy * vec3(1,-1,1)).rgb*depth;
 
 	res = pow(res, vec3(0.5));
 	res += res*vec3(length(pow(res, vec3(5))));

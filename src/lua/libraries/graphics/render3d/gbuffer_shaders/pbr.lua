@@ -1,28 +1,32 @@
 --https://github.com/TReed0803/QtOpenGL/blob/master/resources/shaders/lighting/Physical.glsl
 
---include("lua/libraries/graphics/render3d/sky_shaders/atmosphere1.lua")
 render.AddGlobalShaderCode([[
 vec3 gbuffer_compute_sky(vec3 ray, float depth)
 {
 	depth = depth < 1 ? 0 : 1;
-	vec3 res = textureLatLon(lua[nightsky_tex = render.CreateTextureFromPath("textures/skybox/hdr/papermill_ruins_a.hdr")], -ray.xyz).rgb*depth;
+
+	vec3 sun_direction = lua[(vec3)render3d.GetShaderSunDirection].xyz;
+	vec3 dir = ray.xzy * vec3(1,-1,1);
+	dir = reflect(-dir, sun_direction);
+
+	vec3 res = textureLatLon(lua[nightsky_tex = render.CreateTextureFromPath("textures/skybox/hdr/desert_highway.hdr")], -dir.xzy).rgb*depth;
 
 	//res = pow(res, vec3(0.5));
 	//res += res*vec3(length(pow(res, vec3(5))));
 
 	return res;
 }]])
-
+include("lua/libraries/graphics/render3d/sky_shaders/atmosphere2.lua")
 render.AddGlobalShaderCode([[
 float handle_roughness(float x)
 {
-	return clamp(x, 0.0025, 1);
+	return clamp(pow(x, 2.5), 0.0025, 1);
 }]])
 
 render.AddGlobalShaderCode([[
 float handle_metallic(float x)
 {
-	return clamp(x*x*x, 0.00025, 1);
+	return clamp(x, 0.00025, 1);
 }]])
 
 render.AddGlobalShaderCode([[
@@ -36,12 +40,13 @@ vec3 gbuffer_compute_tonemap(vec3 color, vec3 bloom)
 	float E = 0.02;
 	float F = 0.30;
 	float W = 11.2;
-	float exposure = 2.;
+	float exposure = 2.0;
 	color *= exposure;
 	color = ((color * (A * color + C * B) + D * E) / (color * (A * color + B) + D * F)) - E / F;
 	float white = ((W * (A * W + C * B) + D * E) / (W * (A * W + B) + D * F)) - E / F;
 	color /= white;
 	color = pow(color, vec3(1. / gamma));
+
 	return color;
 }]])
 
@@ -160,10 +165,9 @@ vec3 BlendMetal(vec3 Kdiff, vec3 Kspec, vec3 Kbase)
 vec3 BlendMaterial(vec3 Kdiff, vec3 Kspec)
 {
 	vec3  Kbase = get_albedo(get_screen_uv());
-	float scRange = smoothstep(0.25, 0.45, get_metallic(get_screen_uv()));
 	vec3  dielectric = BlendDielectric(Kdiff, Kspec, Kbase);
 	vec3  metal = BlendMetal(Kdiff, Kspec, Kbase);
-	return mix(dielectric, metal, scRange);
+	return mix(dielectric, metal, get_metallic(get_screen_uv()));
 }
 ]])
 
@@ -183,7 +187,37 @@ do
 		},
 		source = [[
 		#extension GL_ARB_gpu_shader5 : enable
-		out vec3 out_color;
+
+		vec2 _raycast_project(vec3 coord)
+		{
+			vec4 res = g_projection * vec4(coord, 1.0);
+			return (res.xy / res.w) * 0.5 + 0.5;
+		}
+
+		vec2 raycast(vec3 viewPos, vec3 normal, vec2 seed)
+		{
+			const float step_size = 0.01;
+			const float max_steps = 5;
+
+			vec3 dir = reflect(normalize(viewPos), normal) * 125;
+			dir *= step_size + get_linearized_depth(uv);
+
+			for(int i = 0; i < max_steps; i++)
+			{
+				viewPos += dir;
+				viewPos += get_noise3(viewPos.xy+seed).xyz * get_roughness(uv);
+
+				float depth = viewPos.z - get_view_pos(_raycast_project(viewPos)).z;
+
+				if(depth > -5 && depth < 0)
+				{
+					return _raycast_project(viewPos).xy;
+				}
+			}
+
+			return vec2(0.0, 0.0);
+		}
+
 
 		#define XAxis vec3(1.0, 0.0, 0.0)
 		#define YAxis vec3(0.0, 1.0, 0.0)
@@ -196,12 +230,25 @@ do
 			return 0.5 * (log2(float(Dimensions.x * Dimensions.y) / NumSamples) - log2(Distribution(NoH)));
 		}
 
+		vec3 sample_tex(samplerCube tex, vec3 dir, float blur, float samples)
+		{
+			//textureLod(tex, dir, blur).rgb;
+			vec3 res = vec3(0);
+			for (float i = 0; i < samples; ++i)
+			{
+				res += texture(tex, dir + (get_noise3(uv+vec2(i))*blur*0.5)).rgb;
+			}
+			return res / samples;
+		}
+
 		vec3 radiance(samplerCube environment, vec3 N, vec3 V)
 		{
 		  // Precalculate rotation for +Z Hemisphere to microfacet normal.
 		  vec3 UpVector = abs(N.z) < 0.999 ? ZAxis : XAxis;
 		  vec3 TangentX = normalize(cross( UpVector, N ));
 		  vec3 TangentY = cross(N, TangentX);
+
+		vec3 view_pos = get_view_pos(uv);
 
 		  // Note: I ended up using abs() for situations where the normal is
 		  // facing a little away from the view to still accept the approximation.
@@ -212,10 +259,10 @@ do
 		  // Approximate the integral for lighting contribution.
 		  vec3 fColor = vec3(0.0);
 		  const uint NumSamples = 20;
-		  for (uint i = 0; i < NumSamples; ++i)
+		  for (uint i = 1; i < NumSamples; ++i)
 		  {
 			vec2 Xi = hammersley_2d(i, NumSamples);
-			vec3 Li = CDFSample(Xi); // Defined elsewhere as subroutine
+			vec3 Li = CDFSample(Xi);
 			vec3 H  = normalize(Li.x * TangentX + Li.y * TangentY + Li.z * N);
 			vec3 L  = normalize(-reflect(V, H));
 
@@ -223,12 +270,25 @@ do
 			float NoL = abs(dot(N, L));
 			float NoH = abs(dot(N, H));
 			float VoH = abs(dot(V, H));
-			float lod = compute_lod(environment, NumSamples, NoH);
+			//float lod = compute_lod(environment, NumSamples, NoH);
 
 			float F_ = Fresnel(VoH); // Defined elsewhere as subroutine
 			float G_ = Geometry(NoL, NoV, NoH, VoH); // Defined elsewhere as subroutine
 
-			vec3 LColor = textureLod(environment, L.xzy*vec3(-1,1,-1), lod).rgb;
+			vec3 LColor = texture(environment, L).rgb;
+
+
+			/*vec2 coords = raycast(view_pos, get_view_normal(uv), Xi);
+			if (coords.x <= 0 || coords.y <= 0 || coords.x >= 1 || coords.y >= 1) {} else
+			{
+
+				//vec3 light = get_albedo(coords);
+				vec3 light = fColor + get_specular(coords);
+				//vec3 light = texture(lua[(sampler2D)render3d.GetFinalGBufferTexture], coords).rgb;
+
+				fColor = light;
+			}*/
+
 
 			// Since the sample is skewed towards the Distribution, we don't need
 			// to evaluate all of the factors for the lighting equation. Also note
@@ -241,9 +301,9 @@ do
 		  return fColor / float(NumSamples);
 		}
 
-		void main()
+		vec3 environment()
 		{
-			if (get_depth(uv) == 1) {return;}
+			if (get_depth(uv) == 1) {return vec3(0,0,0);}
 
 			samplerCube tex_env = lua[tex_sky = render3d.GetSkyTexture()];
 			vec3 V = get_camera_dir(uv);
@@ -253,11 +313,21 @@ do
 			float NoV = saturate(dot(N, V));
 			float NoL = saturate(dot(N, L));
 
-			vec3 irrMap = textureLod(tex_env, reflect(N, L).xzy*vec3(-1,1,-1), 100).rgb;
-			vec3 Kdiff = irrMap * get_albedo(uv) / PI;
+			vec3 color = get_albedo(uv) / PI;
+			vec3 irrMap = sample_tex(tex_env, -reflect(V, N), 1, 8).rgb;
+			vec3 Kdiff = irrMap * color;
 			vec3 Kspec = radiance(tex_env, N, V);
 
-			out_color = BlendMaterial(Kdiff, Kspec) * g_ssao2(uv);
+			return BlendMaterial(Kdiff, Kspec) * color;
+
+			//return irrMap;
+		}
+
+		out vec3 out_color;
+
+		void main()
+		{
+			out_color = environment();
 		}
 	]]
 	})
@@ -271,6 +341,10 @@ do
 				vec3 reflection = texture(tex_stage_]]..(#PASS.Source)..[[, uv).rgb;
 
 				out_color = reflection;
+				out_color += get_specular(uv);
+				//out_color += reflection; // no idea if this is correct but it looks more correct..
+				//out_color *= g_ssao2(uv);
+
 				out_color += gbuffer_compute_sky(get_camera_dir(uv), get_linearized_depth(uv));
 			}
 		]]

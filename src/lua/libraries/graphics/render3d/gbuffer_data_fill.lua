@@ -17,7 +17,7 @@ PASS.Buffers = {
 				}
 			},
 			{
-				rgba16f = {
+				rgb16f = {
 					rg = {
 						"view_normal", "vec3",
 						[[
@@ -314,6 +314,8 @@ PASS.Stages = {
 
 				void main()
 				{
+					vec2 uv = uv*lua[UVMultiplier = 1];
+
 					vec2 blend_data = texture(lua[BlendTexture = render.GetBlackTexture()], uv).rg;
 					float blend = blend_data.g;
 					float blend_power = blend_data.r;
@@ -344,6 +346,7 @@ PASS.Stages = {
 					}
 
 					set_albedo(albedo.rgb);
+					//set_albedo(pow(albedo.rgb, vec3(0.75)) * normalize(albedo.rgb));
 
 					if (lua[Translucent = false] && dither(uv, albedo.a))
 					{

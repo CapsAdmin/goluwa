@@ -258,7 +258,7 @@ table.insert(PASS.Source, {
 
 			vec2 coords = g_raycast(uv, 0.01, 30);
 
-			vec3 sky = texture(lua[sky_tex = render3d.GetSkyTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
+			vec3 sky = texture(lua[sky_tex = render3d.GetSkyTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv))).rgb;
 
 			if (coords.x <= 0 || coords.y <= 0 || coords.x >= 1 || coords.y >= 1)
 			{
@@ -291,7 +291,7 @@ table.insert(PASS.Source, {
 			vec3 reflection = texture(tex_stage_]]..(#PASS.Source-1)..[[, uv).rgb*2;
 			if (texture(tex_depth, uv).r == 1)
 			{
-				out_color = gbuffer_compute_sky(-get_camera_dir(uv).xzy*vec3(1,1,-1), 1);
+				out_color = gbuffer_compute_sky(get_camera_dir(uv), 1);
 				return;
 			}
 
@@ -309,7 +309,7 @@ table.insert(PASS.Source, {
 			//light += shadow;
 			light += (reflection)*albedo;
 
-			vec3 fog = gbuffer_compute_sky(-get_view_pos(uv).xzy, get_linearized_depth(uv));
+			vec3 fog = gbuffer_compute_sky(get_view_pos(uv), get_linearized_depth(uv));
 
 			out_color = albedo * light + fog;
 			out_color *= 5;

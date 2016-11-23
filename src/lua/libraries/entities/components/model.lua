@@ -10,6 +10,7 @@ META:StartStorable()
 	META:GetSet("Color", Color(1,1,1,1))
 	META:GetSet("RoughnessMultiplier", 1)
 	META:GetSet("MetallicMultiplier", 1)
+	META:GetSet("UVMultiplier", 1)
 META:EndStorable()
 
 META:IsSet("Loading", false)
@@ -207,6 +208,7 @@ if GRAPHICS then
 					mat.Color = self.Color
 					mat.RoughnessMultiplier = self.RoughnessMultiplier
 					mat.MetallicMultiplier = self.MetallicMultiplier
+					mat.UVMultiplier = self.UVMultiplier
 					render_SetMaterial(mat)
 					for _, mesh in ipairs(self.sub_meshes) do
 						render3d.shader:Bind()
@@ -217,6 +219,7 @@ if GRAPHICS then
 						mesh.material.Color = self.Color
 						mesh.material.RoughnessMultiplier = self.RoughnessMultiplier
 						mesh.material.MetallicMultiplier = self.MetallicMultiplier
+						mesh.material.UVMultiplier = self.UVMultiplier
 						render_SetMaterial(mesh.material)
 						render3d.shader:Bind()
 						mesh.vertex_buffer:Draw()

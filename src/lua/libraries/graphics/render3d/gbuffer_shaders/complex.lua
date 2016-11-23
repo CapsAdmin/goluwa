@@ -56,7 +56,7 @@ do
 		{
 			vec2 coords = g_raycast(uv, 0.01, 30);
 
-			vec3 sky = texture(lua[sky_tex = render3d.GetSkyTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv)).yzx).rgb;
+			vec3 sky = texture(lua[sky_tex = render3d.GetSkyTexture()], -reflect(get_camera_dir(uv), get_world_normal(uv))).rgb;
 
 			if (coords.x <= 0 || coords.y <= 0 || coords.x >= 1 || coords.y >= 1)
 			{

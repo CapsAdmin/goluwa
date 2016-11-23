@@ -7,7 +7,7 @@ function render3d.InitializeSky()
 		--tex:SetInternalFormat("r11f_g11f_b10f")
 
 		--tex:SetMipMapLevels(1)
-		tex:SetSize(Vec2() + 256)
+		tex:SetSize(Vec2() + 512)
 		tex:SetupStorage()
 
 		local fb = render.CreateFrameBuffer()
@@ -60,7 +60,7 @@ function render3d.InitializeSky()
 
 				void main()
 				{
-					out_color = gbuffer_compute_sky(get_camera_dir(uv), 1);
+					out_color = gbuffer_compute_sky(-get_camera_dir(uv).xzy*vec3(1,-1,1), 1);
 				}
 			]]
 		}
