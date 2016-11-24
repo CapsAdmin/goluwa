@@ -280,6 +280,7 @@ editor.frame = editor.frame or NULL
 editor.tree = editor.tree or NULL
 editor.properties = editor.properties or NULL
 editor.selected_ent = editor.selected_ent or NULL
+editor.prev_selected_ent = editor.prev_selected_ent or NULL
 
 function editor.Open()
 	if not render3d.gbuffer:IsValid() then
@@ -615,12 +616,9 @@ function editor.Open()
 			end
 
 			editor.bottom_scroll:SetPanel(properties)
-
 			editor.properties = properties
 
-			event.Call("EditorSelectEentity", node.ent)
-			editor.selected_ent = node.ent
-			mctrl.target = node.ent
+			editor.SelectEntity(node.ent, false)
 		end
 
 		tree.OnNodeDrop = function(_, node, dropped_node, drop_pos)
@@ -629,6 +627,14 @@ function editor.Open()
 		end
 
 		editor.tree = tree
+
+		if editor.selected_ent:IsValid() then
+			editor.SelectEntity(editor.selected_ent)
+		elseif editor.prev_selected_ent:IsValid() then
+			editor.SelectEntity(editor.prev_selected_ent)
+		elseif tree:GetChildren()[1] then
+			tree:SelectNode(tree:GetChildren()[1])
+		end
 	end
 
 	--editor.top_scroll.OnRightClick = function() right_click_node() end
@@ -645,12 +651,6 @@ function editor.Open()
 	frame.OnRightClick = function() right_click_node() end
 
 	div:SetDividerPosition(gui.world:GetHeight()/2)
-
-	if editor.selected_ent:IsValid() then
-		editor.SelectEntity(editor.selected_ent)
-	elseif tree:GetChildren()[1] then
-		tree:SelectNode(tree:GetChildren()[1])
-	end
 
 	window.SetMouseTrapped(false)
 
@@ -685,10 +685,20 @@ function editor.Toggle()
 	end
 end
 
-function editor.SelectEntity(ent)
+function editor.SelectEntity(ent, update_editor)
+	event.Call("EditorSelectEentity", ent)
+	if editor.prev_selected_ent ~= editor.selected_ent and editor.selected_ent:IsValid() then
+		editor.prev_selected_ent = editor.selected_ent
+	end
 	editor.selected_ent = ent
+	mctrl.target = ent
 
-	if not editor.frame:IsValid() then return end
+	if
+		update_editor == false or
+		not editor.frame:IsValid()
+	then
+		return
+	end
 
 	for i, v in ipairs(editor.tree:GetChildren()) do
 		if v.ent == ent then
