@@ -74,7 +74,11 @@ luadata.SetModifier("table", function(tbl, context)
 	end
 
 	if context.tab == 0 then
-		str[#str+1] = "\n"
+		if str[1] == "{" then
+			str[#str+1] = "}" -- empty table
+		else
+			str[#str+1] = "\n"
+		end
 	else
 		if str[1] == "{" then
 			str[#str+1] = "}" -- empty table
