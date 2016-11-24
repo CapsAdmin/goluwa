@@ -41,9 +41,11 @@
 				end
 			end
 		end
+	end
 
-		if gui and ent:HasParent() and ent:GetParent().GetWirePanel then
-			local panel = gui.CreatePanel("logic_gate", ent:GetParent():GetWirePanel())
+	function META:OnEntityParent(ent)
+		if gui and ent.GetWirePanel then
+			local panel = gui.CreatePanel("logic_gate", ent:GetWirePanel())
 			if panel:IsValid() then
 				panel:SetGate(self)
 				self.panel = panel
@@ -297,6 +299,7 @@ do
 	function META:OnAdd(ent)
 		if gui then
 			self.panel = gui.CreatePanel("wire_board")
+			self.panel:SetSize(Vec2(200,200))
 		end
 	end
 
