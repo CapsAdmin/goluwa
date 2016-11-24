@@ -4,7 +4,6 @@ META.Name = "model"
 META.Require = {"transform"}
 
 META:StartStorable()
-	META:GetSet("MaterialOverride", nil)
 	META:GetSet("Cull", true)
 	META:GetSet("ModelPath", "models/cube.obj")
 	META:GetSet("Color", Color(1,1,1,1))
@@ -16,6 +15,7 @@ META:EndStorable()
 META:IsSet("Loading", false)
 META:GetSet("Model", nil)
 META:GetSet("AABB", AABB())
+META:GetSet("MaterialOverride", nil)
 
 META.Network = {
 	ModelPath = {"string", 1/5, "reliable"},
