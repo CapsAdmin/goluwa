@@ -46,12 +46,13 @@ do -- tree node
 		self:SetText("nil")
 	end
 
-	function META:OnChildDrop(child, drop_pos)
+	function META:OnChildDrop(child, drop_pos, old_pos)
 		self.tree:OnNodeDrop(self, child, drop_pos)
+		child:SetPosition(old_pos)
 	end
 
-	function META:OnParentLand(parent)
-
+	function META:OnParentLand(parent, drop_pos, old_pos)
+		self:SetPosition(old_pos)
 	end
 
 	function META:OnLayout(S)

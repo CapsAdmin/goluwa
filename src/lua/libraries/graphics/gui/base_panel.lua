@@ -1388,16 +1388,11 @@ do -- mouse
 			not self:IsDragging() and
 			not self:IsScrolling() and
 			not self.AlwaysCalcMouse and
-			not self.mouse_capture
+			not self.mouse_capture and
+			not self.mouse_hover_triggered and
+			not self.mouse_just_entered
 		then
-
-			if self.mouse_just_entered then
-				self:OnMouseExit()
-				self.mouse_just_entered = false
-			end
-
 			self.mouse_over = false
-
 			return
 		end
 
@@ -1470,7 +1465,7 @@ do -- mouse
 				self.mouse_just_entered = false
 			end
 
-			if self.mouse_hover_triggered and not self:HasParent(gui.active_tooltip) then
+			if self.mouse_hover_triggered and not (gui.active_tooltip:IsValid() or not self:HasParent(gui.active_tooltip)) then
 				self:OnMouseHoverTrigger(false, x, y)
 				self.mouse_hover_triggered = false
 				if self.Tooltip ~= "" then
@@ -1538,9 +1533,8 @@ do -- mouse
 
 		if button == self.drag_stop_button and not press then
 			if self.drag_panel and self.drag_drop_pos then
-				self:OnParentLand(self.drag_panel)
-				self.drag_panel:OnChildDrop(self, self.drag_drop_pos)
-				self:SetPosition(self.drag_original_pos)
+				self:OnParentLand(self.drag_panel, self.drag_drop_pos, self.drag_original_pos)
+				self.drag_panel:OnChildDrop(self, self.drag_drop_pos, self.drag_original_pos)
 			end
 			self:StopDragging()
 		end
