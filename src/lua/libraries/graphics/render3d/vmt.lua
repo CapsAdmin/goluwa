@@ -73,7 +73,7 @@ function META:LoadVMT(path)
 		path,
 		function(path)
 			if path:endswith(".vtf") then
-				self:SetAlbedoTexture(render.CreateTextureFromPath(path, true))
+				self:SetAlbedoTexture(render.CreateTextureFromPath("[srgb]" .. path))
 				-- default normal map?
 				return
 			end
@@ -181,9 +181,9 @@ function META:LoadVMT(path)
 						new_path,
 						function(path)
 							if key == "AlbedoTexture" or key == "Albedo2Texture" then
-								self["Set" .. key](self, render.CreateTextureFromPath(path, true))
+								self["Set" .. key](self, render.CreateTextureFromPath("[srgb]" .. path))
 							else
-								self["Set" .. key](self, render.CreateTextureFromPath(path, false)) -- not srgb
+								self["Set" .. key](self, render.CreateTextureFromPath("[~srgb]" .. path)) -- not srgb
 							end
 							steam.unused_vmt_properties[full_path][vmt_key] = nil
 						end, nil, nil, true

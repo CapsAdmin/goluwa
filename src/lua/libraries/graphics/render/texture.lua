@@ -46,6 +46,24 @@ META:EndStorable()
 
 META:IsSet("Loading", false)
 
+local function parse_path(str)
+	local flags, rest = str:match("^(%b[])(.+)")
+	if flags then
+		local temp = {}
+		for i,v in ipairs(flags:sub(2,-2):split(",")) do
+			local b = true
+			if v:startswith("~") then
+				v = v:sub(2)
+				b = false
+			end
+			temp[v] = b
+		end
+		return rest, temp
+	end
+
+	return str
+end
+
 function META:__copy()
 	return self
 end
@@ -54,9 +72,20 @@ function META:GetSuggestedMipMapLevels()
 	return math.floor(math.log(math.max(self.Size.x, self.Size.y)) / math.log(2)) + 1
 end
 
-function META:SetPath(path, face)
+function META:SetPath(path)
 	self.Path = path
+	local path, flags = parse_path(path)
 
+	if flags then
+		if flags.srgb ~= nil then
+			self:SetSRGB(flags.srgb)
+		end
+	end
+
+	self:LoadTextureFromPath(path)
+end
+
+function META:LoadTextureFromPath(path, face)
 	self.Loading = true
 
 	resource.Download(path, function(full_path)
@@ -121,12 +150,12 @@ do -- todo
 						path_face = "materials/" .. vmt.hdrcompressedtexture .. ".vtf"
 					end
 					if vfs.IsFile(path_face) then
-						self:SetPath(path_face, i)
+						self:LoadTextureFromPath(path_face, i)
 					else
 						wlog("tried to load cubemap %s but %s does not exist", path, path_face)
 					end
 				else
-					self:SetPath(vmt.basetexture, i)
+					self:LoadTextureFromPath(vmt.basetexture, i)
 				end
 			else
 				wlog("tried to load cubemap %s but %s does not exist", path, path_face)
@@ -581,16 +610,16 @@ end
 
 render.texture_path_cache = {}
 
-function render.CreateTextureFromPath(path, srgb)
-	if render.texture_path_cache[path] then
-		return render.texture_path_cache[path]
+function render.CreateTextureFromPath(str)
+	if render.texture_path_cache[str] then
+		return render.texture_path_cache[str]
 	end
 
 	local self = render.CreateTexture("2d")
-	if srgb ~= nil then self:SetSRGB(srgb) end
-	self:SetPath(path)
 
-	render.texture_path_cache[path] = self
+	self:SetPath(str)
+
+	render.texture_path_cache[str] = self
 
 	return self
 end
