@@ -3,7 +3,7 @@ editor = _G.editor or {}
 local mctrl = {}
 
 do -- PUT ME IN TRANSFORM
-	mctrl.size = 2
+	mctrl.size = 1
 	mctrl.grab_dist = 15
 	mctrl.angle_pos = 0.5
 
@@ -282,6 +282,103 @@ editor.properties = editor.properties or NULL
 editor.selected_ent = editor.selected_ent or NULL
 editor.prev_selected_ent = editor.prev_selected_ent or NULL
 
+local function get_save_menu(ent)
+	return
+	L"save",
+	{
+		{
+			L"auto load",
+			function()
+				serializer.WriteFile("luadata", "data/entities/autoload.ent", ent:GetStorableTable())
+			end,
+			editor.frame:GetSkin().icons.transmit_go,
+		},
+		{},
+		{
+			L"new file",
+			function()
+				gui.StringInput(L"filename", L"filename", ent:GetName(), function(name)
+					serializer.WriteFile("luadata", "data/entities/" .. name .. ".ent", ent:GetStorableTable())
+				end)
+			end,
+			editor.frame:GetSkin().icons.save,
+		},
+		{},
+		(function()
+			local out = {}
+			for file_name in vfs.Iterate("data/entities/") do
+				table.insert(out, {file_name:gsub("%.ent", ""), function()
+					serializer.WriteFile("luadata", "data/entities/" .. file_name, ent:GetStorableTable())
+				end})
+			end
+			return unpack(out)
+		end)()
+	},
+	editor.frame:GetSkin().icons.save
+end
+
+local function get_load_menu(ent)
+	return
+	L"load",
+	{
+		(function()
+			function editor.GetSavedFiles(where)
+				where = where or "data/entities/"
+				local out = {}
+				for file_name in vfs.Iterate(where) do
+					local path = where .. file_name
+
+					if vfs.IsFile(path) then
+						local tbl = serializer.ReadFile("luadata", where .. file_name)
+						if tbl then
+							table.insert(out, {
+								is_file = true,
+								name = file_name:gsub("%.ent", ""),
+								path = path,
+								ent_tbl = tbl,
+							})
+						end
+					else
+						table.insert(out, {
+							name = file_name,
+							is_dir = true,
+							files = editor.GetSavedFiles(path .. "/"),
+							path = path,
+						})
+					end
+				end
+				return out
+			end
+
+			local function populate(files)
+				local out = {}
+				for _, v in ipairs(files) do
+					if v.is_file then
+						if v.name == "autoload" then
+							table.insert(out, 1, {L"auto load", function()
+								ent:SetStorableTable(v.ent_tbl)
+							end, editor.frame:GetSkin().icons.transmit_go})
+							table.insert(out, 2, {})
+						else
+							local config = prototype.GetConfigurations()[v.ent_tbl.config]
+
+							table.insert(out, {v.name, function()
+								ent:SetStorableTable(v.ent_tbl)
+							end, config.icon})
+						end
+					else
+						table.insert(out, {v.name, populate(v.files), editor.frame:GetSkin().icons.load})
+					end
+				end
+				return out
+			end
+
+			return unpack(populate(editor.GetSavedFiles(path)))
+		end)()
+	},
+	editor.frame:GetSkin().icons.load
+end
+
 function editor.Open()
 	if not render3d.gbuffer:IsValid() then
 		render3d.Initialize()
@@ -305,90 +402,10 @@ function editor.Open()
 			name = "file",
 			options = {
 				{
-					L"save",
-					{
-						{
-							L"auto load",
-							function()
-								serializer.WriteFile("luadata", "data/entities/autoload.ent", entities.GetWorld():GetStorableTable())
-							end,
-							frame:GetSkin().icons.transmit_go,
-						},
-						{},
-						{
-							L"new file",
-							function()
-								gui.StringInput(L"filename", L"filename", entities.GetWorld():GetName(), function(name)
-									serializer.WriteFile("luadata", "data/entities/" .. name .. ".ent", entities.GetWorld():GetStorableTable())
-								end)
-							end,
-							frame:GetSkin().icons.save,
-						},
-						{},
-						(function()
-							local out = {}
-							for file_name in vfs.Iterate("data/entities/") do
-								table.insert(out, {file_name:gsub("%.ent", ""), function()
-									serializer.WriteFile("luadata", "data/entities/" .. file_name, entities.GetWorld():GetStorableTable())
-								end})
-							end
-							return unpack(out)
-						end)()
-					},
-					frame:GetSkin().icons.save,
+					get_save_menu(entities.GetWorld())
 				},
 				{
-					L"load",
-					{
-						(function()
-							function editor.GetSavedFiles(where)
-								where = where or "data/entities/"
-								local out = {}
-								for file_name in vfs.Iterate(where) do
-									local path = where .. file_name
-
-									if vfs.IsFile(path) then
-										local tbl = serializer.ReadFile("luadata", where .. file_name)
-										if tbl then
-											table.insert(out, {
-												is_file = true,
-												name = file_name:gsub("%.ent", ""),
-												path = path,
-												ent_tbl = tbl,
-											})
-										end
-									else
-										table.insert(out, {
-											name = file_name,
-											is_dir = true,
-											files = editor.GetSavedFiles(path .. "/"),
-											path = path,
-										})
-									end
-								end
-								return out
-							end
-
-							local function populate(files)
-								local out = {}
-								for _, v in ipairs(files) do
-									if v.is_file then
-										local config = prototype.GetConfigurations()[v.ent_tbl.config]
-
-										table.insert(out, {v.name, function()
-											entities.GetWorld():SetStorableTable(v.ent_tbl)
-										end, config.icon})
-									else
-										table.insert(out, {v.name, populate(v.files), frame:GetSkin().icons.load})
-									end
-								end
-								return out
-							end
-
-							return unpack(populate(editor.GetSavedFiles(path)))
-						end)()
-					},
-					frame:GetSkin().icons.load,
+					get_load_menu(entities.GetWorld())
 				},
 				--[[{
 					L"wear",
@@ -536,7 +553,8 @@ function editor.Open()
 
 		add()
 
-
+		add(get_save_menu(editor.selected_ent))
+		add(get_load_menu(editor.selected_ent))
 
 		if clipboard then
 			add(L("add") .. " " .. ((clipboard.self.Name and clipboard.self.Name ~= "" and clipboard.self.Name) or clipboard.config), function()
