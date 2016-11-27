@@ -289,7 +289,7 @@ local function get_save_menu(ent)
 		{
 			L"auto load",
 			function()
-				serializer.WriteFile("luadata", "data/entities/autoload.ent", ent:GetStorableTable())
+				serializer.WriteFile("luadata", "data/saved/autoload.tbl", ent:GetStorableTable())
 			end,
 			editor.frame:GetSkin().icons.transmit_go,
 		},
@@ -298,7 +298,7 @@ local function get_save_menu(ent)
 			L"new file",
 			function()
 				gui.StringInput(L"filename", L"filename", ent:GetName(), function(name)
-					serializer.WriteFile("luadata", "data/entities/" .. name .. ".ent", ent:GetStorableTable())
+					serializer.WriteFile("luadata", "data/saved/" .. name .. ".tbl", ent:GetStorableTable())
 				end)
 			end,
 			editor.frame:GetSkin().icons.save,
@@ -306,9 +306,9 @@ local function get_save_menu(ent)
 		{},
 		(function()
 			local out = {}
-			for file_name in vfs.Iterate("data/entities/") do
-				table.insert(out, {file_name:gsub("%.ent", ""), function()
-					serializer.WriteFile("luadata", "data/entities/" .. file_name, ent:GetStorableTable())
+			for file_name in vfs.Iterate("saved/") do
+				table.insert(out, {file_name:gsub("%.tbl", ""), function()
+					serializer.WriteFile("luadata", "data/saved/" .. file_name, ent:GetStorableTable())
 				end})
 			end
 			return unpack(out)
@@ -323,17 +323,17 @@ local function get_load_menu(ent)
 	{
 		(function()
 			function editor.GetSavedFiles(where)
-				where = where or "data/entities/"
+				where = where or "saved/"
 				local out = {}
 				for file_name in vfs.Iterate(where) do
 					local path = where .. file_name
 
-					if vfs.IsFile(path) then
+					if vfs.IsFile(path) and file_name:endswith(".tbl") then
 						local tbl = serializer.ReadFile("luadata", where .. file_name)
 						if tbl then
 							table.insert(out, {
 								is_file = true,
-								name = file_name:gsub("%.ent", ""),
+								name = file_name:gsub("%.tbl", ""),
 								path = path,
 								ent_tbl = tbl,
 							})
@@ -382,7 +382,7 @@ end
 function editor.Open()
 	if not render3d.gbuffer:IsValid() then
 		render3d.Initialize()
-		local data = serializer.ReadFile("luadata", "world.map")
+		local data = serializer.ReadFile("luadata", "saved/autoload.tbl")
 		if data then
 			entities.GetWorld():SetStorableTable(data)
 		end
