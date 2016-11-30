@@ -174,10 +174,7 @@ function META:RebuildMatrix()
 			end
 
 			if parent_transform then
-			--	self.temp_matrix = self.temp_matrix or Matrix44()
-				self.TRMatrix = self.TRMatrix * parent_transform.TRMatrix
-				--parent_transform.TRMatrix:Multiply(self.TRMatrix, self.temp_matrix)
-				--self.TRMatrix, self.temp_matrix = self.temp_matrix, self.TRMatrix
+				self.TRMatrix = parent_transform.TRMatrix * self.TRMatrix
 			end
 		end
 	end
