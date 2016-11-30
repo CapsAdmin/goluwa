@@ -126,8 +126,8 @@ do -- base property
 
 			self:SetText(str)
 			edit:Remove()
-			self:OnValueChanged(val)
-			self:OnValueChangedInternal(val)
+
+			self:SetValue(val)
 
 			self.edit = nil
 		end
@@ -151,10 +151,7 @@ do -- base property
 		self.label:SetupLayout("center_left")
 		self:Layout()
 
-		local str = self:GetEncodedValue()
-		if str and #str > 10 then
-			self:SetTooltip(str)
-		end
+		self.tooltip_text = self:GetEncodedValue()
 	end
 
 	function META:GetValue()
@@ -796,11 +793,16 @@ function META:OnLayout(S)
 			right:SetHeight(S*10)
 		else
 			right:SetHeight(S*8)
-
+			local w = right.property.label:GetWidth() + S*5
 			if self.first_time then
-				self.right_max_width = math.max(self.right_max_width, right.property.label:GetWidth() + S*5)
+				self.right_max_width = math.max(self.right_max_width, w)
 			end
 
+			if self:HasParent() and self.Parent:GetWidth() < self.left_max_width + w then
+				right.property:SetTooltip(right.property.tooltip_text)
+			else
+				right.property:SetTooltip("")
+			end
 		end
 	end
 
