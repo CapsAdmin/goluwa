@@ -13,6 +13,12 @@ function QuatDeg3(...)
     return Quat():SetAngles(Deg3(...))
 end
 
+function QuatFromAxis(rad, axis)
+	rad = rad * 0.5
+	local s = math.sin(rad)
+	return Quat(axis.x * s, axis.y * s, axis.z * s, math.cos(rad))
+end
+
 function META:Identity()
 	self.x = 0
 	self.y = 0
@@ -20,33 +26,18 @@ function META:Identity()
 	self.w = 1
 end
 
-function META:SetAxis(rad, axis)
-	rad = rad * 0.5
-	local s = math.sin(rad)
-	self:Set(axis.x * s, axis.y * s, axis.z * s, math.cos(rad))
-
-	return self
-end
-
-function META.HamRight(a, b)
-
+function META.__mul(a, b)
 	if type(b) == "number" then
-		a.x = a.x * b
-		a.y = a.y * b
-		a.z = a.z * b
-		a.w = a.w * b
-	elseif type(a) == "number" then
-		return META.HamRight(b, a)
-	else
-		a.x = a.w*b.x + a.x*b.w + a.y*b.z - a.z*b.y
-		a.y = a.w*b.y + a.y*b.w + a.z*b.x - a.x*b.z
-		a.z = a.w*b.z + a.z*b.w + a.x*b.y - a.y*b.x
-		a.w = a.w*b.w - a.x*b.x - a.y*b.y - a.z*b.z
+		return Quat(a.x * b, a.y * b, a.z * b, a.w * b)
 	end
 
-	return a
-end
+	local w = a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z
+	local x = a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y
+	local y = a.w * b.y + a.y * b.w + a.z * b.x - a.x * b.z
+	local z = a.w * b.z + a.z * b.w + a.x * b.y - a.y * b.x
 
+	return Quat(y,x,z,w)
+end
 
 function META.VecMul(a, b)
     local vec, quat
@@ -73,26 +64,20 @@ META.GetForward = META.Front
 META.Backward = META.Back
 META.GetBackward = META.Back
 
-function META.Divide(a, b)
+function META.__div(a, b)
 
 	if type(b) == "number" then
-		a.x = a.x / b
-		a.y = a.y / b
-		a.z = a.z / b
-		a.w = a.w / b
-	elseif type(a) == "number" then
-		return META.Multiply(b, a)
-	else
-		--return self:GetConjugated():Multiply(self:Dot(self))
+		return Quat(a.x / b, a.y / b, a.z / b, a.w / b)
 	end
 
-	return a
+	return a:GetConjugated():__div(a:Dot(a))
 end
 
 function META:Conjugate()
 	self.x = -self.x
 	self.y = -self.y
 	self.z = -self.z
+	return self
 end
 
 structs.AddGetFunc(META, "Conjugate", "Conjugated")
@@ -162,127 +147,129 @@ function META:SetAngles(ang)
 	return self
 end
 
--- https://github.com/grrrwaaa/gct753/blob/master/modules/quat.lua#L465
+do
+	-- https://github.com/grrrwaaa/gct753/blob/master/modules/quat.lua#L465
 
-local function twoaxisrot(r11, r12, r21, r31, r32)
-	return Ang3(math.atan2(r11, r12), math.acos(r21), math.atan2(r31, r32))
-end
+	local function twoaxisrot(r11, r12, r21, r31, r32)
+		return Ang3(math.atan2(r11, r12), math.acos(r21), math.atan2(r31, r32))
+	end
 
-local function threeaxisrot(r11, r12, r21, r31, r32)
-	return Ang3(math.atan2(r31, r32), math.asin(r21), math.atan2(r11, r12))
-end
+	local function threeaxisrot(r11, r12, r21, r31, r32)
+		return Ang3(math.atan2(r31, r32), math.asin(r21), math.atan2(r11, r12))
+	end
 
-function META.GetAngles(q, seq)
-	--seq = seq or "xzy"
+	function META.GetAngles(q, seq)
+		--seq = seq or "xzy"
 
-	if not seq then
-		local sqw = q.w*q.w
-		local sqx = q.x*q.x
-		local sqy = q.y*q.y
-		local sqz = q.z*q.z
+		if not seq then
+			local sqw = q.w*q.w
+			local sqx = q.x*q.x
+			local sqy = q.y*q.y
+			local sqz = q.z*q.z
 
-		return
-			Ang3(
-				math.asin (-2.0 * (q.x*q.z - q.w*q.y)),
-				math.atan2( 2.0 * (q.x*q.y + q.w*q.z), (sqw + sqx - sqy - sqz)),
-				math.atan2( 2.0 * (q.y*q.z + q.w*q.x), (sqw - sqx - sqy + sqz))
+			return
+				Ang3(
+					math.asin (-2.0 * (q.x*q.z - q.w*q.y)),
+					math.atan2( 2.0 * (q.x*q.y + q.w*q.z), (sqw + sqx - sqy - sqz)),
+					math.atan2( 2.0 * (q.y*q.z + q.w*q.x), (sqw - sqx - sqy + sqz))
+				)
+		elseif seq == "zyx" then
+			return threeaxisrot(
+				2*(q.x*q.y + q.w*q.z),
+				q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z,
+				-2*(q.x*q.z - q.w*q.y),
+				2*(q.y*q.z + q.w*q.x),
+				q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z
 			)
-	elseif seq == "zyx" then
-		return threeaxisrot(
-			2*(q.x*q.y + q.w*q.z),
-			q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z,
-			-2*(q.x*q.z - q.w*q.y),
-			2*(q.y*q.z + q.w*q.x),
-			q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z
-		)
-	elseif seq == "zyz" then
-		return twoaxisrot(
-			2*(q.y*q.z - q.w*q.x),
-			2*(q.x*q.z + q.w*q.y),
-			q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z,
-			2*(q.y*q.z + q.w*q.x),
-			-2*(q.x*q.z - q.w*q.y)
-		)
-	elseif seq == "zxy" then
-		return threeaxisrot(
-			-2*(q.x*q.y - q.w*q.z),
-			q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z,
-			2*(q.y*q.z + q.w*q.x),
-			-2*(q.x*q.z - q.w*q.y),
-			q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z
-		)
-	elseif seq == "zxz" then
-		return twoaxisrot(
-			2*(q.x*q.z + q.w*q.y),
-			-2*(q.y*q.z - q.w*q.x),
-			q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z,
-			2*(q.x*q.z - q.w*q.y),
-			2*(q.y*q.z + q.w*q.x)
-		)
-	elseif seq == "yxz" then
-		return threeaxisrot(
-			2*(q.x*q.z + q.w*q.y),
-			q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z,
-			-2*(q.y*q.z - q.w*q.x),
-			2*(q.x*q.y + q.w*q.z),
-			q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z
-		)
-	elseif seq == "yxy" then
-		return twoaxisrot(
-			2*(q.x*q.y - q.w*q.z),
-			2*(q.y*q.z + q.w*q.x),
-			q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z,
-			2*(q.x*q.y + q.w*q.z),
-			-2*(q.y*q.z - q.w*q.x)
-		)
-	elseif seq == "yzx" then
-		return threeaxisrot(
-			-2*(q.x*q.z - q.w*q.y),
-			q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z,
-			2*(q.x*q.y + q.w*q.z),
-			-2*(q.y*q.z - q.w*q.x),
-			q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z
-		)
-	elseif seq == "yzy" then
-		return twoaxisrot(
-			2*(q.y*q.z + q.w*q.x),
-			-2*(q.x*q.y - q.w*q.z),
-			q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z,
-			2*(q.y*q.z - q.w*q.x),
-			2*(q.x*q.y + q.w*q.z)
-		)
-	elseif seq == "xyz" then
-		return threeaxisrot(
-			-2*(q.y*q.z - q.w*q.x),
-			q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z,
-			2*(q.x*q.z + q.w*q.y),
-			-2*(q.x*q.y - q.w*q.z),
-			q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z
-		)
-	elseif seq == "xyx" then
-		return twoaxisrot(
-			2*(q.x*q.y + q.w*q.z),
-			-2*(q.x*q.z - q.w*q.y),
-			q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z,
-			2*(q.x*q.y - q.w*q.z),
-			2*(q.x*q.z + q.w*q.y)
-		)
-	elseif seq == "xzy" then
-		return threeaxisrot(
-			2*(q.y*q.z + q.w*q.x),
-			q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z,
-			-2*(q.x*q.y - q.w*q.z),
-			2*(q.x*q.z + q.w*q.y),
-			q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z
-		)
-	elseif seq == "xzx" then
-		return twoaxisrot(
-			2*(q.x*q.z - q.w*q.y),
-			2*(q.x*q.y + q.w*q.z),
-			q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z,
-			2*(q.x*q.z + q.w*q.y),
-			-2*(q.x*q.y - q.w*q.z)
-		)
+		elseif seq == "zyz" then
+			return twoaxisrot(
+				2*(q.y*q.z - q.w*q.x),
+				2*(q.x*q.z + q.w*q.y),
+				q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z,
+				2*(q.y*q.z + q.w*q.x),
+				-2*(q.x*q.z - q.w*q.y)
+			)
+		elseif seq == "zxy" then
+			return threeaxisrot(
+				-2*(q.x*q.y - q.w*q.z),
+				q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z,
+				2*(q.y*q.z + q.w*q.x),
+				-2*(q.x*q.z - q.w*q.y),
+				q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z
+			)
+		elseif seq == "zxz" then
+			return twoaxisrot(
+				2*(q.x*q.z + q.w*q.y),
+				-2*(q.y*q.z - q.w*q.x),
+				q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z,
+				2*(q.x*q.z - q.w*q.y),
+				2*(q.y*q.z + q.w*q.x)
+			)
+		elseif seq == "yxz" then
+			return threeaxisrot(
+				2*(q.x*q.z + q.w*q.y),
+				q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z,
+				-2*(q.y*q.z - q.w*q.x),
+				2*(q.x*q.y + q.w*q.z),
+				q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z
+			)
+		elseif seq == "yxy" then
+			return twoaxisrot(
+				2*(q.x*q.y - q.w*q.z),
+				2*(q.y*q.z + q.w*q.x),
+				q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z,
+				2*(q.x*q.y + q.w*q.z),
+				-2*(q.y*q.z - q.w*q.x)
+			)
+		elseif seq == "yzx" then
+			return threeaxisrot(
+				-2*(q.x*q.z - q.w*q.y),
+				q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z,
+				2*(q.x*q.y + q.w*q.z),
+				-2*(q.y*q.z - q.w*q.x),
+				q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z
+			)
+		elseif seq == "yzy" then
+			return twoaxisrot(
+				2*(q.y*q.z + q.w*q.x),
+				-2*(q.x*q.y - q.w*q.z),
+				q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z,
+				2*(q.y*q.z - q.w*q.x),
+				2*(q.x*q.y + q.w*q.z)
+			)
+		elseif seq == "xyz" then
+			return threeaxisrot(
+				-2*(q.y*q.z - q.w*q.x),
+				q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z,
+				2*(q.x*q.z + q.w*q.y),
+				-2*(q.x*q.y - q.w*q.z),
+				q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z
+			)
+		elseif seq == "xyx" then
+			return twoaxisrot(
+				2*(q.x*q.y + q.w*q.z),
+				-2*(q.x*q.z - q.w*q.y),
+				q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z,
+				2*(q.x*q.y - q.w*q.z),
+				2*(q.x*q.z + q.w*q.y)
+			)
+		elseif seq == "xzy" then
+			return threeaxisrot(
+				2*(q.y*q.z + q.w*q.x),
+				q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z,
+				-2*(q.x*q.y - q.w*q.z),
+				2*(q.x*q.z + q.w*q.y),
+				q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z
+			)
+		elseif seq == "xzx" then
+			return twoaxisrot(
+				2*(q.x*q.z - q.w*q.y),
+				2*(q.x*q.y + q.w*q.z),
+				q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z,
+				2*(q.x*q.z + q.w*q.y),
+				-2*(q.x*q.y - q.w*q.z)
+			)
+		end
 	end
 end
 

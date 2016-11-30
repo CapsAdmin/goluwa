@@ -101,10 +101,21 @@ structs.AddGetFunc(META, "Deg")
 
 
 -- LOL
-function META:RotateAroundAxis(axis, rad)
+function META:RotateAroundAxis2(axis, rad, how)
 	local mat = Matrix44():SetRotation(Quat():SetAngles(self))
 	mat:Rotate(rad, axis:Unpack())
-	self:Set(mat:GetRotation():GetAngles():Unpack())
+	self:Set(mat:GetRotation():GetAngles(how):Unpack())
+	return self
+end
+
+function META:RotateAroundAxis(axis, rad, how)
+	local a = QuatFromAxis(rad, axis)
+	local b = Quat():SetAngles(self)
+	local q = a * b
+	--q:Normalize()
+
+	self:Set(q:GetAngles(how):Unpack())
+
 	return self
 end
 
