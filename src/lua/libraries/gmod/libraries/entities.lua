@@ -164,6 +164,7 @@ do
 	function META:SkinCount() return 1 end
 	function META:LookupSequence() return -1 end
 	function META:DrawModel() end
+	function META:FrameAdvance() end
 
 	function META:GetClass()
 		return self.ClassName or self.MetaName

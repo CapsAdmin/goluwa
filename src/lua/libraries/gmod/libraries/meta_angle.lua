@@ -65,6 +65,10 @@ function META.__add(a, b)
 	return gine.env.Angle(a.ptr + b.ptr)
 end
 
+function META.__sub(a, b)
+	return gine.env.Angle(a.ptr - b.ptr)
+end
+
 function META:Forward()
 	return gine.env.Vector(self.ptr:GetRad():GetForward())
 end

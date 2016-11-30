@@ -24,11 +24,11 @@ function gine.env.Vector(x, y, z)
 end
 
 function META:__index(key)
-	if key == "x" then
+	if key == "x" or key == "r" then
 		return self.ptr.x
-	elseif key == "y" then
+	elseif key == "y" or key == "g" then
 		return self.ptr.y
-	elseif key == "z" then
+	elseif key == "z" or key == "b" then
 		return self.ptr.z
 	end
 
