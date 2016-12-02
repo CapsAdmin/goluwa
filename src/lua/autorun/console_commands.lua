@@ -179,7 +179,6 @@ commands.Add("map", function(name)
 		if vfs.IsFile(path) then
 			OBJ_WORLD = OBJ_WORLD or entities.CreateEntity("visual")
 			OBJ_WORLD:SetName(name)
-			OBJ_WORLD:SetCull(false)
 			OBJ_WORLD:SetModelPath(path)
 			OBJ_WORLD.world = OBJ_WORLD.world or entities.CreateEntity("world")
 			if info.callback then
