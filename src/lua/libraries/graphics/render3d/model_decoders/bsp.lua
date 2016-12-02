@@ -16,13 +16,14 @@ local skyboxes = {
 }
 
 function steam.SetMap(name)
+	local path = "maps/" .. name .. ".bsp"
+
 	steam.bsp_world = steam.bsp_world or entities.CreateEntity("physical", entities.GetWorld())
 	steam.bsp_world:SetName(name)
-	steam.bsp_world:SetCull(false)
-	steam.bsp_world:SetModelPath("maps/" .. name .. ".bsp")
-	steam.bsp_world:SetPhysicsModelPath("maps/" .. name .. ".bsp")
+	steam.bsp_world:SetModelPath(path)
+	steam.bsp_world:SetPhysicsModelPath(path)
 	steam.bsp_world:RemoveChildren()
-	steam.SpawnMapEntities("maps/" .. name .. ".bsp", steam.bsp_world)
+	steam.SpawnMapEntities(path, steam.bsp_world)
 end
 
 do
@@ -778,10 +779,12 @@ function steam.SpawnMapEntities(path, parent)
 					--parent.world_params:SetSunIntensity(1)
 
 				elseif info.classname:lower():find("light") and info._light then
-					local ent = entities.CreateEntity("light", parent)
-					ent:SetName(info.classname .. "_" .. i)
+					parent.light_group = parent.light_group or entities.CreateEntity("group", parent)
+					parent.light_group:SetName("lights")
+
+					local ent = entities.CreateEntity("light", parent.light_group)
 					ent:SetPosition(info.origin * 0.0254)
-					ent:SetHideFromEditor(true)
+--					ent:SetHideFromEditor(true)
 
 					ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1))
 					ent:SetSize(math.max(info._light.a, 25))
@@ -801,14 +804,16 @@ function steam.SpawnMapEntities(path, parent)
 
 			if info.origin and info.angles and info.model and not info.classname:lower():find("npc") then
 				if vfs.IsFile(info.model) then
-					local ent = entities.CreateEntity("visual", parent)
-					ent:SetName(info.classname .. "_" .. i)
+					parent[info.classname .. "_group"] = parent[info.classname .. "_group"] or entities.CreateEntity("group", parent)
+					parent[info.classname .. "_group"]:SetName(info.classname)
+
+					local ent = entities.CreateEntity("visual", parent[info.classname .. "_group"])
 					ent:SetModelPath(info.model)
 					ent:SetPosition(info.origin * scale)
 					if info.rendercolor and not info.rendercolor:IsZero() then ent:SetColor(info.rendercolor) end
 					if info.model_size_mult then ent:SetSize(info.model_size_mult) end
 					ent:SetAngles(info.angles:GetRad())
-					ent:SetHideFromEditor(true)
+					--ent:SetHideFromEditor(true)
 					ent.spawned_from_bsp = true
 				end
 			end
