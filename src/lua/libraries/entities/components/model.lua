@@ -188,6 +188,7 @@ if GRAPHICS then
 		end
 	else
 		function META:Draw(what)
+			--[[
 			if render3d.draw_once and self.Cull then
 				if self.drawn_once then
 					return
@@ -195,6 +196,7 @@ if GRAPHICS then
 			else
 				self.drawn_once = false
 			end
+			]]
 
 			if self:IsVisible(what) then
 				camera.camera_3d:SetWorld(self.tr:GetMatrix())
@@ -229,9 +231,11 @@ if GRAPHICS then
 					self.occluders[what]:EndConditional()
 				end
 
+				--[[
 				if render3d.draw_once then
 					self.drawn_once = true
 				end
+				]]
 			end
 		end
 	end
