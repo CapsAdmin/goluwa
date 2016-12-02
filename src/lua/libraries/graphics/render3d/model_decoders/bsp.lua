@@ -21,8 +21,9 @@ function steam.SetMap(name)
 	steam.bsp_world:SetCull(false)
 	steam.bsp_world:SetModelPath("maps/" .. name .. ".bsp")
 	steam.bsp_world:SetPhysicsModelPath("maps/" .. name .. ".bsp")
+	steam.bsp_world:RemoveChildren()
+	steam.SpawnMapEntities("maps/" .. name .. ".bsp", steam.bsp_world)
 end
-
 
 do
 	local function init()
@@ -83,14 +84,8 @@ local function read_lump_data(what, bsp_file, header, index, size, struct)
 	return out
 end
 
-steam.bsp_cache = steam.bsp_cache or {}
-
 function steam.LoadMap(path)
 	path = R(path)
-
-	if steam.bsp_cache[path] then
-		return steam.bsp_cache[path]
-	end
 
 	logn("loading map: ", path)
 
@@ -725,7 +720,9 @@ function steam.LoadMap(path)
 		end
 	end
 
-	steam.bsp_cache[path] = {
+	steam.loaded_bsp = steam.loaded_bsp or {}
+
+	steam.loaded_bsp[path] = {
 		render_meshes = render_meshes,
 		entities = header.entities,
 		physics_meshes = physics_meshes,
@@ -733,12 +730,13 @@ function steam.LoadMap(path)
 	}
 
 	tasks.ReportProgress("finished reading " .. path)
-	return steam.bsp_cache[path]
+
+	return steam.loaded_bsp[path]
 end
 
 function steam.SpawnMapEntities(path, parent)
 	path = R(path)
-	local data = steam.bsp_cache[path]
+	local data = steam.loaded_bsp[path]
 
 	local thread = tasks.CreateTask()
 	thread.debug = true

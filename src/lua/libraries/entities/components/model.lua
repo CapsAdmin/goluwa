@@ -69,9 +69,6 @@ if GRAPHICS then
 		render3d.LoadModel(
 			path,
 			function()
-				if steam.LoadMap and path:endswith(".bsp") then
-					steam.SpawnMapEntities(path, self:GetEntity())
-				end
 				self:SetLoading(false)
 				self:BuildBoundingBox()
 			end,
