@@ -105,7 +105,8 @@ do -- PUT ME IN TRANSFORM
 			local pos, ang = get_draw_position()
 			local rot = mctrl.target:GetRotation():Copy()
 			local forward, right, up = get_axes(ang)
-			local final
+			local final = Quat(0,0,0,1)
+
 
 			if axis == "x" then
 				local localpos = math3d.LinePlaneIntersection(pos, right, mouse_pos)
@@ -118,43 +119,80 @@ do -- PUT ME IN TRANSFORM
 						diffang.x = -diffang.x + math.pi
 					end
 
-					rot:SetAxis(diffang.x, Vec3(1,0,0))
-					final = rot
+					final:SetAxis(diffang.x, Vec3(1,0,0))
 				end
 			elseif axis == "y" then
 				local localpos = math3d.LinePlaneIntersection(pos, up, mouse_pos)
 				if localpos then
 					local diffang = (pos - (localpos + pos)):GetAngles()
-					diffang.y = diffang.y + (math.pi / 2)
+					diffang.y = diffang.y + math.pi / 2
 					diffang:Normalize()
-					print(diffang)
-					if diffang.y < math.pi then
-						--diffang.y = diffang.y
-					end
 
-					rot:SetAxis(diffang.y, Vec3(0,0,-1))
-					final = rot
+					final:SetAxis(diffang.y, Vec3(0,0,1))
 				end
 			elseif axis == "z" then
 				local localpos = math3d.LinePlaneIntersection(pos, forward, mouse_pos)
 				if localpos then
 					local diffang = (pos - (localpos + pos)):GetAngles()
-					diffang.x = diffang.x - math.pi / 2
+					diffang.x = diffang.x + math.pi / 2
 					diffang:Normalize()
 
-					if diffang.x < 0 then
-						diffang.x = -diffang.x + math.pi
+					if diffang.y < 0 then
+						diffang.x = -diffang.x - math.pi
 					end
 
-					diffang:RotateAroundAxis(forward, math.rad(-90))
-					rot:SetAxis(diffang.x, Vec3(0,-1,0))
-					final = rot
+					diffang.x = diffang.x + math.pi/2
+
+					final:SetAxis(diffang.x, Vec3(0,-1,0))
 				end
 			end
 
 			if final and final:IsValid() then
-				target:SetRotation(final)
+				target:SetRotation(final * rot)
 			end
+
+			--[[
+			local vector_origin = Vec3(0,0,0)
+
+			if axis == "x" then
+				local localpos = math3d.LinePlaneIntersection(pos, right, mouse_pos)
+				if localpos then
+					local diffang = (pos - (localpos + pos)):GetAngles()
+					diffang:RotateAroundAxis(right, math.rad(180))
+
+					local _, localang = math3d.WorldToLocal(vector_origin, diffang, vector_origin, ang)
+					local _, newang = math3d.LocalToWorld(vector_origin, Ang3(math.normalizeangle(localang.x + localang.y), 0, 0), vector_origin, ang)
+
+					final = newang
+				end
+			elseif axis == "y" then
+				local localpos = math3d.LinePlaneIntersection(pos, up, mouse_pos)
+				if localpos then
+					local diffang = (pos - (localpos + pos)):GetAngles()
+					diffang:RotateAroundAxis(up, math.rad(90))
+
+					local _, localang = math3d.WorldToLocal(vector_origin, diffang, vector_origin, ang)
+					local _, newang = math3d.LocalToWorld(vector_origin, Ang3(0, math.normalizeangle(localang.x + localang.y), 0), vector_origin, ang)
+
+					final = newang
+				end
+			elseif axis == "z" then
+				local localpos = math3d.LinePlaneIntersection(pos, forward, mouse_pos)
+				if localpos then
+					local diffang = (pos - (localpos + pos)):GetAngles()
+					diffang:RotateAroundAxis(forward, math.rad(-90))
+
+					local _, localang = math3d.WorldToLocal(vector_origin, diffang, vector_origin, ang)
+					local _, newang = math3d.LocalToWorld(vector_origin, Ang3(0, 0, math.normalizeangle(localang.x)), vector_origin, ang)
+
+					final = newang
+				end
+			end
+
+			if final and final:IsValid() then
+				target:SetRotation(Quat():SetAngles(final))
+			end
+			]]
 		end
 	end
 
@@ -244,13 +282,13 @@ do -- PUT ME IN TRANSFORM
 			if d <= dist then
 				axis = k
 				dist = d
+				break
 			end
 		end
 
 		if axis then
 			mctrl.grab.mode = "move"
 			mctrl.grab.axis = axis
-			return true
 		end
 
 		-- Rotation
@@ -265,15 +303,17 @@ do -- PUT ME IN TRANSFORM
 			if d <= dist then
 				axis = k
 				dist = d
+				break
 			end
 		end
 
 		if axis then
 			mctrl.grab.mode = "rotate"
 			mctrl.grab.axis = axis
-			return true
 		end
 	end
+
+	_G.mctrl = mctrl
 end
 
 editor.frame = editor.frame or NULL
@@ -641,8 +681,10 @@ function editor.Open()
 		end
 
 		tree.OnNodeDrop = function(_, node, dropped_node, drop_pos)
-			node.ent:AddChild(dropped_node.ent)
-			repopulate()
+			if dropped_node.ent then
+				node.ent:AddChild(dropped_node.ent)
+				repopulate()
+			end
 		end
 
 		editor.tree = tree
