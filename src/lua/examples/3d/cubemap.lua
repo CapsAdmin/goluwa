@@ -1,15 +1,14 @@
 steam.MountSourceGame("csgo")
 
 local tex = render.CreateTexture("cube_map")
-tex:SetSize(Vec2() + 1024)
 tex:SetMinFilter("linear")
 tex:SetMagFilter("linear")
 tex:SetWrapS("clamp_to_edge")
 tex:SetWrapT("clamp_to_edge")
 tex:SetWrapR("clamp_to_edge")
 tex:SetSeamlessCubemap(true)
-tex:SetupStorage()
-tex:LoadCubemap("materials/skybox/sky_002.vtf")
+tex:SetSize(Vec2(512,512)) -- skyboxes have varying size for some reason, but this is wrong
+tex:LoadCubemap("materials/skybox/sky_cs15_daylight02_hdr.vmt")
 
 local shader = render.CreateShader({
 	name = "cubemap",

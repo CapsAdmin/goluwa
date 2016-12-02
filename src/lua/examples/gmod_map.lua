@@ -61,11 +61,6 @@ for k,v in pairs(data) do
 --	if v.mdl:find("owata_oke") then debug.logcalls(true) end
 	--print("yes!")
 
-	if v.mdl:find("%.bsp") then
-		ent:SetCull(false)
-	end
-
-
 	if v.mat and v.mat ~= "" then
 		local mat = render.CreateMaterial("model")
 		mat:LoadVMT("materials/" .. v.mat .. ".vmt")

@@ -1,41 +1,36 @@
 entities.Panic()
 
-camera.camera_3d:SetPosition(Vec3(2.4, 0, -0))
-camera.camera_3d:SetAngles(Ang3(0, math.pi, 0))
+camera.camera_3d:SetPosition(Vec3(-3, 0, 0))
+camera.camera_3d:SetAngles(Ang3(0, 0, 0))
 
 local ent = entities.CreateEntity("visual")
 ent:SetModelPath("models/cube.obj")
 ent:SetSize(1)
 
-local max = 1
-local lights = {}
+entities.world:SetSunAngles(Ang3(0.5,0,0))
+entities.world:SetSunColor(Color())
 
-for i = 1, max do
-	local light = entities.CreateEntity("light")
-	light:SetColor(ColorHSV(i/max, 0.5, 1))
-	light:SetSize(2)
-	light:SetIntensity(1.25)
-	light.seed = math.random()*math.pi
-	table.insert(lights, light)
-end
+local light = entities.CreateEntity("light")
+light:SetColor(ColorHSV(1, 0.1, 1))
+light:SetSize(2)
+light:SetIntensity(1)
 
 event.AddListener("Update", "test", function()
-	local time = system.GetElapsedTime() / 10
-	for i, light in ipairs(lights) do
-		i = i / max
-		i = i * math.pi * 2
-		time = time + light.seed
-		light:SetPosition(Vec3(1.05, math.sin(time + i) * math.cos(time/2), math.cos(time + i) * math.sin(time/2)))
-	end
+	--render2d.Start3D2D()
+
+	local pos = Vec2(gfx.GetMousePosition())/window.GetSize() * 2 - 1
+
+	light:SetPosition(Vec3(0, -pos.x, -pos.y) + Vec3(-1.2, 0, 0))
 	--ent:SetAngles(Ang3(time,time,0))
+
+--	render2d.End3D2D()
 end)
 
 local mat = render.CreateMaterial("model")
-mat:SetAlbedoTexture(render.CreateTextureFromPath("textures/Cerberus_A.tga"))
-mat:SetNormalTexture(render.CreateTextureFromPath("textures/Cerberus_N.tga", false))
-mat:SetRoughnessTexture(render.CreateTextureFromPath("textures/Cerberus_R.tga"))
-mat:SetMetallicTexture(render.CreateTextureFromPath("textures/Cerberus_M.tga"))
+mat:SetAlbedoTexture(render.GetWhiteTexture())
+mat:SetNormalTexture(render.CreateTextureFromPath("http://robbylamb.com/Images/Normal_Test.jpg", false))
+--mat:SetFlipXNormal(true)
+mat:SetFlipYNormal(true)
+--mat:SetFlipZNormal(true)
 
 ent:SetMaterialOverride(mat)
-
-pbr_test = ent
