@@ -6,6 +6,18 @@ function META:__tostring2()
 	return ("[%s][%s]"):format(self.config, self:GetName())
 end
 
+function META:GetEditorName()
+	if self.Name ~= "" then
+		return self.Name
+	end
+	for k,v in pairs(self.Components) do
+		if v.EditorName then
+			return v.EditorName
+		end
+	end
+	return self.EditorName or ""
+end
+
 include("lua/libraries/templates/parenting.lua", META)
 META:GetSet("Components", {})
 

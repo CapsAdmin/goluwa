@@ -80,6 +80,8 @@ if GRAPHICS then
 				self:MakeError()
 			end
 		)
+
+		self.EditorName = ("/" .. self.ModelPath):match("^.+/(.+)%."):lower():gsub("_", " "):gsub("%d", ""):gsub("%s+", " ")
 	end
 
 	function META:MakeError()

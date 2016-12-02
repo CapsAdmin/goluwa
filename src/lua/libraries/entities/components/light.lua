@@ -23,6 +23,11 @@ META:StartStorable()
 META:EndStorable()
 
 if GRAPHICS then
+	function META:SetColor(val)
+		self.Color = val
+		self.EditorName = utility.FindColor(self.Color)
+	end
+
 	function META:OnAdd()
 		self.shadow_maps = {}
 		self.cameras = {}

@@ -846,7 +846,9 @@ function META:AddPropertiesFromObject(obj)
 			L(nice_name),
 			function(val)
 				if obj:IsValid() then
-					set(obj, val)
+					if event.Call("GUIObjectPropertyChanged", obj, val, info) ~= false then
+						set(obj, val)
+					end
 				end
 			end,
 			function()

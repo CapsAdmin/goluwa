@@ -10,6 +10,7 @@ prototype.GetSet(META, "GUID", "")
 
 prototype.StartStorable(META)
 	prototype.GetSet("Name", "")
+	prototype.GetSet("Description", "")
 prototype.EndStorable()
 
 function META:GetNiceClassName()
@@ -18,6 +19,14 @@ function META:GetNiceClassName()
 	end
 
 	return self.ClassName
+end
+
+function META:GetEditorName()
+	if self.Name == "" then
+		return self.EditorName or ""
+	end
+
+	return self.Name
 end
 
 function META:__tostring()

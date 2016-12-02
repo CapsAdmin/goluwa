@@ -579,19 +579,17 @@ function editor.Open()
 	local function fill(entities, node)
 		for _, ent in pairs(entities) do
 			if not ent:GetHideFromEditor() then
-				local name = ent:GetName()
+				local name = ent:GetEditorName()
+
 				if name == "" then
-					if ent.config == "visual" then
-						name = ent:GetModelPath():match(".+/(.+)%.")
-					else
-						name = ent.config
-					end
+					name = ent.config
 				end
 				local node = node:AddNode(name, ent:GetPropertyIcon())
 				node.OnRightClick = right_click_node
 				--node.OnMouseHoverTrigger = show_tooltip
 				node.ent = ent
 				ent.editor_node = node
+
 				--node:SetIcon(render.CreateTextureFromPath("textures/" .. frame:GetSkin().icons[val.self.ClassName]))
 				fill(ent:GetChildren(), node)
 			end
@@ -622,6 +620,9 @@ function editor.Open()
 			gui.RemovePanel(editor.properties)
 
 			local properties = frame:CreatePanel("properties")
+
+			properties:AddGroup(L("entity"))
+			properties:AddPropertiesFromObject(node.ent)
 
 			local found_anything = false
 
@@ -661,6 +662,15 @@ function editor.Open()
 	event.AddListener("EntityRemoved", "editor", function() event.Delay(0, function() repopulate() end, "editor_repopulate_hack", frame) end)
 	event.AddListener("MouseInput", "editor", mctrl.MouseInput)
 	event.AddListener("PreDrawGUI", "editor", mctrl.Draw)
+	event.AddListener("GUIObjectPropertyChanged", "editor", function(obj, val, info)
+		if info.var_name == "Name" and obj.editor_node then
+			if val == "" then
+				obj.editor_node:SetText(obj:GetEditorName())
+			else
+				obj.editor_node:SetText(val)
+			end
+		end
+	end)
 	repopulate()
 
 	tree:SetSize(tree:GetSizeOfChildren())
