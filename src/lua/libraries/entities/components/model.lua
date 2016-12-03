@@ -94,9 +94,13 @@ if GRAPHICS then
 		local function check_translucent(self)
 			self.translucent = false
 
-			for i, mesh in ipairs(self.sub_meshes) do
-				if mesh.material:GetTranslucent() then
-					self.translucent = true
+			if self.MaterialOverride then
+				self.translucent = self.MaterialOverride:GetTranslucent()
+			else
+				for i, mesh in ipairs(self.sub_meshes) do
+					if mesh.material:GetTranslucent() then
+						self.translucent = true
+					end
 				end
 			end
 		end
@@ -109,22 +113,24 @@ if GRAPHICS then
 					self:RemoveMesh(mesh)
 				end
 			end, self)
-			render3d.AddModel(self)
 
 			if self.MaterialOverride then
 				self:SetMaterialOverride(self:GetMaterialOverride())
 			end
 
+			render3d.AddModel(self)
+
 			check_translucent(self)
 		end
 
-		function META:RemoveMesh(model_)
-			for i, mesh in ipairs(self.sub_meshes) do
-				if mesh == model_ then
+		function META:RemoveMesh(mesh)
+			for i, v in ipairs(self.sub_meshes) do
+				if v == mesh then
 					table.remove(self.sub_meshes, i)
 					break
 				end
 			end
+
 			if not self.sub_meshes[1] then
 				render3d.RemoveModel(self)
 			end
@@ -133,8 +139,9 @@ if GRAPHICS then
 		end
 
 		function META:RemoveMeshes()
-			table.clear(self.sub_meshes)
-			collectgarbage("step")
+			for _, mesh in pairs(self.sub_meshes) do
+				self:RemoveMesh(mesh)
+			end
 		end
 
 		function META:GetMeshes()

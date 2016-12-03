@@ -34,13 +34,7 @@ end
 
 function render3d.SortScene()
 	table.sort(render3d.scene, function(a, b)
-		local sub_meshes_a = a.sub_meshes
-		local sub_meshes_b = b.sub_meshes
-
-		if sub_meshes_a[1] and sub_meshes_b[1] then
-			-- how to do this without tostring?
-			return tostring(sub_meshes_a[1].material) > tostring(sub_meshes_b[1].material)
-		end
+		return tostring(a.sub_meshes[1].material) > tostring(b.sub_meshes[1].material)
 	end)
 end
 
