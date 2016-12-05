@@ -171,9 +171,6 @@ do -- runfile
 			return
 		end
 
-		-- try direct first
-		local loaded_path = source
-
 		local previous_dir = filerun_stack[#filerun_stack]
 
 		if previous_dir then
@@ -201,13 +198,10 @@ do -- runfile
 				-- try the absolute path given
 				if not_found(err) then
 					path = source
-					func, err, full_path = vfs.LoadFile(loaded_path)
-				else
-					path = source
+
+					func, err, full_path = vfs.LoadFile(path)
 				end
 			end
-		else
-			path = dir .. file
 		end
 
 		if func then
