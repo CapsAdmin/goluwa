@@ -229,7 +229,7 @@ vfs.MountAddon("os:" .. e.SRC_FOLDER) -- mount "ROOT/src" to "/"
 vfs.AddModuleDirectory("lua/modules/")
 vfs.AddModuleDirectory("lua/libraries/")
 
-_G.runfile = vfs.runfile
+_G.runfile = vfs.RunFile
 _G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir
 _G.require = runfile("lua/libraries/require.lua") -- replace require with the pure lua version
 
