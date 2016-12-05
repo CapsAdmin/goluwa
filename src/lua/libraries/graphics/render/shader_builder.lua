@@ -311,7 +311,7 @@ function render.CreateShader(data, vars)
 						local path = dir .. what
 						if vfs.IsFile(path) then
 							include_dirs[1] = path:match("(.+/)")
-							return vfs.Read(path)
+							return "\n//" .. path .. "\n" .. vfs.Read(path)
 						end
 					end
 
@@ -746,6 +746,34 @@ function render.CreateShader(data, vars)
 					end
 
 					all_variables[val.name] = val
+				end
+			end
+		end
+
+		do
+			local uniforms = prog:GetProperties().uniform
+			if uniforms then
+				for _, info in ipairs(uniforms) do
+					if not variables[info.name] then
+						local def
+						if info.type.name == "float" then
+							def = 0
+						elseif info.type.name == "vec3" then
+							def = Vec3(0,0,0)
+						else
+							error(info.type.name)
+						end
+
+						local val = {
+							default = def,
+							type = info.type.name,
+							name = info.name,
+						}
+
+						table.insert(uniform_variables, {id = info.location, key = info.name, val = val})
+						variables[info.name] = val
+						all_variables[info.name] = val
+					end
 				end
 			end
 		end
