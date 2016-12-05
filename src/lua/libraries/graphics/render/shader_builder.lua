@@ -48,7 +48,7 @@ void main()
 {
 @@OUT2@@
 @@GLOBAL VARIABLES TO FRAGMENT@@
-	mainx();
+	mainx__();
 }
 ]]
 
@@ -291,6 +291,45 @@ function render.CreateShader(data, vars)
 				end
 			end
 		end
+		if shared.include_directories then
+			for shader, info in pairs(data) do
+				info.include_directories = table.copy(shared.include_directories)
+			end
+		end
+	end
+
+	do
+		local root = vfs.GetFileRunStack()[#vfs.GetFileRunStack()]
+		local include_dirs
+
+		local function process_include(glsl)
+			repeat
+				local _glsl, count = glsl:gsub("#include%s+(%S+)", function(what)
+					what = what:trim()
+
+					for _, dir in ipairs(include_dirs) do
+						local path = dir .. what
+						if vfs.IsFile(path) then
+							include_dirs[1] = path:match("(.+/)")
+							return vfs.Read(path)
+						end
+					end
+
+					error(what .. " not found")
+				end)
+				glsl = _glsl
+			until count == 0
+			return glsl
+		end
+		for _, info in pairs(data) do
+			include_dirs = {root}
+			if info.include_directories then
+				for _, dir in ipairs(info.include_directories) do
+					table.insert(include_dirs, root .. dir)
+				end
+			end
+			info.source = process_include(info.source)
+		end
 	end
 
 	local build_output = {}
@@ -520,14 +559,14 @@ function render.CreateShader(data, vars)
 					info.source = lazy_template:format(info.source)
 				end
 
-			--	source = replace_field(source, "SOURCE", ("void mainx()\n{\n\t%s\n}\n"):format(info.source))
-				-- replace void *main* () with mainx
-				info.source = info.source:gsub("void%s+([main]-)%s-%(", function(str) if str == "main" then return "void mainx(" end end)
+			--	source = replace_field(source, "SOURCE", ("void mainx__()\n{\n\t%s\n}\n"):format(info.source))
+				-- replace void *main* () with mainx__
+				info.source = info.source:gsub("void%s+([main]-)%s-%(", function(str) if str == "main" then return "void mainx__(" end end)
 
 				template = replace_field(template, "SOURCE", info.source)
 			else
-				-- if it's just a single line then wrap void mainx() {*line*} around it
-				template = replace_field(template, "SOURCE", ("void mainx()\n{\n\t%s\n}\n"):format(info.source))
+				-- if it's just a single line then wrap void mainx__() {*line*} around it
+				template = replace_field(template, "SOURCE", ("void mainx__()\n{\n\t%s\n}\n"):format(info.source))
 			end
 
 			local extensions = {}
