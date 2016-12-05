@@ -1,4 +1,4 @@
-include("lua/libraries/graphics/render3d/sky_shaders/atmosphere2.lua")
+runfile("lua/libraries/graphics/render3d/sky_shaders/atmosphere2.lua")
 
 render.AddGlobalShaderCode([[
 float gbuffer_compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, vec3 normal)

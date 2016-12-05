@@ -1,6 +1,6 @@
 local chatsounds = _G.chatsounds or {}
 
-include("list_parsing.lua", chatsounds)
+runfile("list_parsing.lua", chatsounds)
 
 chatsounds.max_iterations = 1000
 

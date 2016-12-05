@@ -400,6 +400,6 @@ function structs.AddAllOperators(META)
 	structs.AddOperator(META, "math", "clamp", "Clamp", "Clamped", true)
 end
 
-include("structs/*", structs)
+runfile("structs/*", structs)
 
 return structs

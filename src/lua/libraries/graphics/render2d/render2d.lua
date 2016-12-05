@@ -1,10 +1,10 @@
 local render2d = _G.render2d or {}
 
-include("shader.lua", render2d)
-include("rectangle.lua", render2d)
-include("camera.lua", render2d)
-include("stencil.lua", render2d)
-include("effects.lua", render2d)
+runfile("shader.lua", render2d)
+runfile("rectangle.lua", render2d)
+runfile("camera.lua", render2d)
+runfile("stencil.lua", render2d)
+runfile("effects.lua", render2d)
 
 function render2d.Initialize()
 	render2d.shader = render.CreateShader(render2d.shader_data)

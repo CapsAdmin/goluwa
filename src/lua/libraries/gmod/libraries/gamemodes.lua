@@ -15,7 +15,7 @@ function gine.LoadGamemode(name)
 	if SERVER then
 		if vfs.IsFile("gamemodes/"..name.."/gamemode/init.lua") then
 			gine.env.GM = {FolderName = name}
-			include("gamemodes/"..name.."/gamemode/init.lua")
+			runfile("gamemodes/"..name.."/gamemode/init.lua")
 			gine.env.gamemode.Register(gine.env.GM, name, info.base)
 			gine.gamemodes[name] = gine.env.GM
 			gine.env.GM = nil
@@ -25,7 +25,7 @@ function gine.LoadGamemode(name)
 	if CLIENT then
 		if vfs.IsFile("gamemodes/"..name.."/gamemode/cl_init.lua") then
 			gine.env.GM = {FolderName = name}
-			include("gamemodes/"..name.."/gamemode/cl_init.lua")
+			runfile("gamemodes/"..name.."/gamemode/cl_init.lua")
 			gine.env.gamemode.Register(gine.env.GM, name, info.base)
 			gine.gamemodes[name] = gine.env.GM
 			gine.env.GM = nil
@@ -42,13 +42,13 @@ function gine.env.DeriveGamemode(name)
 
 	if SERVER then
 		if vfs.IsFile("gamemodes/"..name.."/gamemode/init.lua") then
-			include("gamemodes/"..name.."/gamemode/init.lua")
+			runfile("gamemodes/"..name.."/gamemode/init.lua")
 		end
 	end
 
 	if CLIENT then
 		if vfs.IsFile("gamemodes/"..name.."/gamemode/cl_init.lua") then
-			include("gamemodes/"..name.."/gamemode/cl_init.lua")
+			runfile("gamemodes/"..name.."/gamemode/cl_init.lua")
 		end
 	end
 

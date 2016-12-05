@@ -287,4 +287,4 @@ table.insert(lua, "return steamworks")
 
 vfs.Write("lua/libraries/ffi/steamworks/init.lua", table.concat(lua, "\n"))
 
-include("lua/libraries/ffi/steamworks/init.lua")
+runfile("lua/libraries/ffi/steamworks/init.lua")

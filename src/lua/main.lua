@@ -181,7 +181,7 @@ end
 
 -- when including this file it will get stuck in the while loop so "lua/" is never popped from the stack
 -- maybe instead of push popping directories maybe the directory should persist for each file
-vfs.PopFromIncludeStack()
+vfs.PopFromFileRunStack()
 
 main()
 

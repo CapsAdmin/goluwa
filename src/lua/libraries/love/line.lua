@@ -79,7 +79,7 @@ function line.CreateLoveEnv()
 	love._version_minor = tonumber(version[2])
 	love._version_revision = tonumber(version[3])
 	love._line_env = {}
-	include("lua/libraries/love/libraries/*", love)
+	runfile("lua/libraries/love/libraries/*", love)
 
 	table.insert(line.love_envs, love)
 
@@ -236,7 +236,7 @@ function line.RunGame(folder, ...)
 		}
 
 		if vfs.IsFile("conf.lua") then
-			local func = assert(vfs.loadfile("conf.lua"))
+			local func = assert(vfs.LoadFile("conf.lua"))
 			setfenv(func, env)
 			func()
 		end
@@ -256,7 +256,7 @@ function line.RunGame(folder, ...)
 	love.window.setMode(w, h)
 	love.window.setTitle(title)
 
-	local main = assert(vfs.loadfile("main.lua"))
+	local main = assert(vfs.LoadFile("main.lua"))
 
 	setfenv(main, env)
 	setfenv(love.line_update, env)

@@ -856,7 +856,7 @@ end)
 
 if RELOAD then
 	steam.MountSourceGame("hl2")
-	include("lua/libraries/graphics/gfx/model_loader.lua")
+	runfile("lua/libraries/graphics/gfx/model_loader.lua")
 	local ent = utility.RemoveOldObject(entities.CreateEntity("visual"), "test")
 	ent:SetPosition(camera.camera_3d:GetPosition() + camera.camera_3d:GetAngles():GetForward() * 5)
 	ent:SetModelPath("models/props_wasteland/exterior_fence001b.mdl")

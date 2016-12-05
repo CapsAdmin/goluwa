@@ -135,6 +135,6 @@ do -- binding
 	end
 end
 
-include("opengl/framebuffer.lua", render, META)
+runfile("opengl/framebuffer.lua", render, META)
 
 META:Register()

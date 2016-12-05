@@ -31,7 +31,7 @@ function render3d.FindModelDecoder(path)
 	end
 end
 
-include("lua/libraries/graphics/render3d/model_decoders/*", render3d)
+runfile("lua/libraries/graphics/render3d/model_decoders/*", render3d)
 
 render3d.model_cache = {}
 render3d.model_loader_cb = utility.CreateCallbackThing(render3d.model_cache)

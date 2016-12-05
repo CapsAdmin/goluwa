@@ -591,7 +591,7 @@ do
 end
 
 if OPENGL then
-	include("opengl/texture.lua", render, META)
+	runfile("opengl/texture.lua", render, META)
 end
 
 META:Register()

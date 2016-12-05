@@ -400,18 +400,18 @@ function META:GetSubPosFromPosition(x, y)
 	return 0
 end
 
-include("tags.lua", META)
-include("tags_matrix.lua", META)
+runfile("tags.lua", META)
+runfile("tags_matrix.lua", META)
 
-include("tag_parse.lua", META)
-include("invalidate.lua", META)
+runfile("tag_parse.lua", META)
+runfile("invalidate.lua", META)
 
-include("shortcuts.lua", META)
-include("caret.lua", META)
-include("selection.lua", META)
-include("clipboard.lua", META)
+runfile("shortcuts.lua", META)
+runfile("caret.lua", META)
+runfile("selection.lua", META)
+runfile("clipboard.lua", META)
 
-include("input.lua", META)
-include("drawing.lua", META)
+runfile("input.lua", META)
+runfile("drawing.lua", META)
 
 prototype.Register(META)

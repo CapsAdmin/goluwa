@@ -280,10 +280,10 @@ function render3d.InitializeGBuffer()
 	camera.camera_3d:SetViewport(Rect(0,0,size.x,size.y))
 	render.InitializeNoiseTexture(size)
 
-	include("lua/libraries/graphics/render3d/shader_functions.lua")
-	include("lua/libraries/graphics/render3d/gbuffer_shaders/"..shader_cvar:Get()..".lua")
+	runfile("lua/libraries/graphics/render3d/shader_functions.lua")
+	runfile("lua/libraries/graphics/render3d/gbuffer_shaders/"..shader_cvar:Get()..".lua")
 
-	local data_pass = include("lua/libraries/graphics/render3d/gbuffer_data_fill.lua", render3d)
+	local data_pass = runfile("lua/libraries/graphics/render3d/gbuffer_data_fill.lua", render3d)
 
 	do -- init data pass
 		local framebuffer_buffers = {}
@@ -455,7 +455,7 @@ function render3d.InitializeGBuffer()
 
 	render3d.gbuffer_data_pass = data_pass
 
-	include("lua/libraries/graphics/render3d/post_process/*")
+	runfile("lua/libraries/graphics/render3d/post_process/*")
 
 	event.AddListener("WindowResize", "gbuffer", function(_, w, h)
 		local current = render3d.GetGBufferSize()

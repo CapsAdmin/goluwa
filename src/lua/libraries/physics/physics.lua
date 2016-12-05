@@ -34,7 +34,7 @@ function physics.StoreBodyPointer(self)
 	physics.body_lookup[idx[0]] = self
 end
 
-include("physics_body.lua", physics)
+runfile("physics_body.lua", physics)
 
 function physics.Initialize()
 	if not ode then return end

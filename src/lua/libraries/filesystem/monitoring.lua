@@ -56,7 +56,7 @@ function vfs.MonitorIncludedLuaScripts(b)
 					if data.last_modified ~= info.last_modified then
 						llog("reloading %s", vfs.GetFileNameFromPath(path))
 						_G.RELOAD = true
-						include(path)
+						runfile(path)
 						_G.RELOAD = nil
 						data.last_modified = info.last_modified
 					end

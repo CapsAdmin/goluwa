@@ -1,4 +1,4 @@
-include("lua/libraries/graphics/render3d/sky_shaders/atmosphere1.lua")
+runfile("lua/libraries/graphics/render3d/sky_shaders/atmosphere1.lua")
 
 do
 	render.SetGlobalShaderVariable("g_time", function() return system.GetElapsedTime() end, "float")

@@ -1,19 +1,19 @@
 local render3d = _G.render3d or {}
 
-include("model_loader.lua", render3d)
-include("gbuffer.lua", render3d)
-include("environment_probe.lua", render3d)
-include("shadow_map.lua", render3d)
-include("sky.lua", render3d)
-include("vmt.lua", render3d)
-include("debug.lua", render3d)
+runfile("model_loader.lua", render3d)
+runfile("gbuffer.lua", render3d)
+runfile("environment_probe.lua", render3d)
+runfile("shadow_map.lua", render3d)
+runfile("sky.lua", render3d)
+runfile("vmt.lua", render3d)
+runfile("debug.lua", render3d)
 
 function render3d.Initialize()
 	render3d.InitializeSky()
 	render3d.InitializeGBuffer()
 	render3d.sky_shader = render.CreateShader(render3d.sky_shader_source) -- uahsduyHUASH
 	render3d.GenerateTextures()
-	include("lua/libraries/graphics/render3d/scene.lua", render3d)
+	runfile("lua/libraries/graphics/render3d/scene.lua", render3d)
 end
 
 function render3d.GenerateTextures()

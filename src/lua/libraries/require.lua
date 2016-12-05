@@ -142,14 +142,14 @@ local function require(name)
 		local func, err, path = load(name)
 		if path then path = path:match("(.+)[\\/]") end
 
-		if vfs and vfs.PushToIncludeStack and path then
-			vfs.PushToIncludeStack(path .. "/")
+		if vfs and vfs.PushToFileRunStack and path then
+			vfs.PushToFileRunStack(path .. "/")
 		end
 
 		local args = {pcall(func, path)}
 
-		if vfs and vfs.PopFromIncludeStack and path then
-			vfs.PopFromIncludeStack()
+		if vfs and vfs.PopFromFileRunStack and path then
+			vfs.PopFromFileRunStack()
 		end
 
 		if args[1] == false then error(args[2], 2) end

@@ -174,7 +174,7 @@ do -- file systems
 		return vfs.filesystems2[name]
 	end
 
-	include("files/*", vfs)
+	runfile("files/*", vfs)
 
 	for _, context in ipairs(vfs.GetFileSystems()) do
 		if context.VFSOpened then
@@ -278,12 +278,12 @@ function vfs.Open(path, mode, sub_mode)
 	return false, "unable to open file: " .. errors
 end
 
-include("path_utilities.lua", vfs)
-include("base_file.lua", vfs)
-include("find.lua", vfs)
-include("helpers.lua", vfs)
-include("addons.lua", vfs)
-include("lua_utilities.lua", vfs)
-include("monitoring.lua", vfs)
+runfile("path_utilities.lua", vfs)
+runfile("base_file.lua", vfs)
+runfile("find.lua", vfs)
+runfile("helpers.lua", vfs)
+runfile("addons.lua", vfs)
+runfile("lua_utilities.lua", vfs)
+runfile("monitoring.lua", vfs)
 
 return vfs

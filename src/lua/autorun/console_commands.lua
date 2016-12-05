@@ -107,7 +107,7 @@ do
 			end
 		end
 		_G.arg = sigh
-		include("lua/modules/luacheck/main.lua")
+		runfile("lua/modules/luacheck/main.lua")
 		_G.arg = nil
 	end)
 end
@@ -298,7 +298,7 @@ do
 	end)
 
 	commands.Add("lua_open", function(line)
-		include(line)
+		runfile(line)
 	end)
 
 	if SERVER then
@@ -310,7 +310,7 @@ do
 
 		commands.AddServerCommand("lua_open_sv", function(client, line)
 			logn(client:GetNick(), " opened ", line)
-			include(line)
+			runfile(line)
 		end)
 	end
 
@@ -528,11 +528,11 @@ commands.Add("open", function(line)
 	for _, try in pairs(tries) do
 		local path = try:gsub("?", line)
 		if vfs.IsFile(path) then
-			include(path)
+			runfile(path)
 			return
 		end
 		if vfs.IsFile("lua/" .. path) then
-			include("lua/" .. path)
+			runfile("lua/" .. path)
 			return
 		end
 		table.insert(tried, "\t" .. path)

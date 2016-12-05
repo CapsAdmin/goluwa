@@ -128,6 +128,6 @@ function CONTEXT:Close()
 	self:Remove()
 end
 
-include("lua/libraries/templates/buffer.lua", CONTEXT)
+runfile("lua/libraries/templates/buffer.lua", CONTEXT)
 
 prototype.Register(CONTEXT, "file_system", CONTEXT.Name)

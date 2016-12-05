@@ -493,10 +493,10 @@ function prototype.RemoveObjects(super_type, sub_type)
 	end
 end
 
-include("base_object.lua", prototype)
-include("get_is_set.lua", prototype)
-include("null.lua", prototype)
-include("ecs_entity.lua", prototype)
-include("base_ecs_component.lua", prototype)
+runfile("base_object.lua", prototype)
+runfile("get_is_set.lua", prototype)
+runfile("null.lua", prototype)
+runfile("ecs_entity.lua", prototype)
+runfile("base_ecs_component.lua", prototype)
 
 return prototype

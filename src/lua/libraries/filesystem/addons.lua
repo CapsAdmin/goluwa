@@ -33,7 +33,7 @@ function vfs.AutorunAddon(addon, folder, force)
 			local function run()
 				if info.startup then
 					if not info.startup_launched then
-						include(info.path .. "lua/" .. info.startup)
+						runfile(info.path .. "lua/" .. info.startup)
 						info.startup_launched = true
 					end
 				end
@@ -41,7 +41,7 @@ function vfs.AutorunAddon(addon, folder, force)
 				-- autorun folders
 				for path in vfs.Iterate(info.path .. "lua/autorun/" .. folder) do
 					if path:find("%.lua") then
-						local ok, err = system.pcall(include, info.path .. "lua/autorun/" .. folder .. "/" ..  path)
+						local ok, err = system.pcall(vfs.RunFile, info.path .. "lua/autorun/" .. folder .. "/" ..  path)
 						if not ok then
 							wlog(err)
 						end
@@ -76,7 +76,7 @@ function vfs.AutorunAddons(folder, force)
 end
 
 function vfs.MountAddon(path, force)
-	local func = vfs.loadfile(path .. "info.lua")
+	local func = vfs.LoadFile(path .. "info.lua")
 
 	local info = {}
 

@@ -6,7 +6,7 @@ env._G = env
 
 gine.env = env
 
-local data = include("lua/libraries/gmod/"..(CLIENT and "cl_" or SERVER and "sv_").."exported.lua")
+local data = runfile("lua/libraries/gmod/"..(CLIENT and "cl_" or SERVER and "sv_").."exported.lua")
 
 do -- copy standard libraries
 	local function add_lib_copy(name)
@@ -114,7 +114,7 @@ function gine.GetMetaTable(name)
 	return gine.env._R[name]
 end
 
-include("lua/libraries/gmod/libraries/*", gine)
+runfile("lua/libraries/gmod/libraries/*", gine)
 
 if gine.debug then
 	setmetatable(env)

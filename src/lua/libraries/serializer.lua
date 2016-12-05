@@ -87,6 +87,6 @@ do -- vfs extension
 	end
 end
 
-include("serializers/*", serializer)
+runfile("serializers/*", serializer)
 
 return serializer

@@ -74,10 +74,10 @@ function love.filesystem.load(path)
 	if line.Type(path) == "FileData" then
 		func, err = loadstring(path:getString())
 	else
-		func, err = vfs.loadfile("data/love/" .. ENV.filesystem_identity .. "/" .. path, mode)
+		func, err = vfs.LoadFile("data/love/" .. ENV.filesystem_identity .. "/" .. path, mode)
 
 		if not func then
-			func, err = vfs.loadfile(path)
+			func, err = vfs.LoadFile(path)
 		end
 	end
 

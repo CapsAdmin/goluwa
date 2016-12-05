@@ -1,9 +1,12 @@
 local vfs = (...) or _G.vfs
 
-vfs.included_files = vfs.included_files or {}
+vfs.files_ran = vfs.files_ran or {}
 
 local function store(path)
-	vfs.included_files[path] = vfs.OSGetAttributes(path)
+	local full_path = vfs.GetAbsolutePath(path)
+	if full_path then
+		vfs.files_ran[full_path] = vfs.OSGetAttributes(full_path)
+	end
 end
 
 function loadfile(path, ...)
@@ -17,10 +20,10 @@ function dofile(path, ...)
 end
 
 function vfs.GetLoadedLuaFiles()
-	return vfs.included_files
+	return vfs.files_ran
 end
 
-function vfs.loadfile(path)
+function vfs.LoadFile(path)
 	local full_path = vfs.GetAbsolutePath(path)
 
 	if full_path then
@@ -47,26 +50,24 @@ function vfs.loadfile(path)
 	return false, "No such file or directory"
 end
 
-function vfs.dofile(path, ...)
-	local func = assert(vfs.loadfile(path))
-
-	return func(...)
+function vfs.DoFile(path, ...)
+	return assert(vfs.LoadFile(path))(...)
 end
 
-do -- include
-	local include_stack = vfs.include_stack or {}
-	vfs.include_stack = include_stack
+do -- runfile
+	local filerun_stack = vfs.filerun_stack or {}
+	vfs.filerun_stack = filerun_stack
 
-	function vfs.PushToIncludeStack(path)
-		table.insert(include_stack, path)
+	function vfs.PushToFileRunStack(path)
+		table.insert(filerun_stack, path)
 	end
 
-	function vfs.PopFromIncludeStack()
-		table.remove(include_stack)
+	function vfs.PopFromFileRunStack()
+		table.remove(filerun_stack)
 	end
 
-	function vfs.GetIncludeStack()
-		return include_stack
+	function vfs.GetFileRunStack()
+		return filerun_stack
 	end
 
 	local function not_found(err)
@@ -80,14 +81,14 @@ do -- include
 
 	local system_pcall = true
 
-	function vfs.include(source, ...)
+	function vfs.RunFile(source, ...)
 
 		if type(source) == "table" then
 			system_pcall = false
 			local ok, err
 			local errors = {}
 			for _, path in ipairs(source) do
-				ok, err = vfs.include(path)
+				ok, err = vfs.RunFile(path)
 				if ok == false then
 					table.insert(errors, err .. ": " .. path)
 				else
@@ -115,7 +116,7 @@ do -- include
 		end
 
 		if vfs and file == "*" then
-			local previous_dir = include_stack[#include_stack]
+			local previous_dir = filerun_stack[#filerun_stack]
 			local original_dir = dir
 
 			if previous_dir then
@@ -127,10 +128,10 @@ do -- include
 			end
 
 			for script in vfs.Iterate(dir .. ".+%.lua", true) do
-				local func, err, full_path = vfs.loadfile(script)
+				local func, err, full_path = vfs.LoadFile(script)
 
 				if func then
-					vfs.PushToIncludeStack(dir)
+					vfs.PushToFileRunStack(dir)
 
 					_G.FILE_PATH = full_path
 					_G.FILE_NAME = full_path:match(".*/(.+)%.") or full_path
@@ -159,7 +160,7 @@ do -- include
 
 					if not ok then logn(err) end
 
-					vfs.PopFromIncludeStack()
+					vfs.PopFromFileRunStack()
 				end
 
 				if not func then
@@ -173,7 +174,7 @@ do -- include
 		-- try direct first
 		local loaded_path = source
 
-		local previous_dir = include_stack[#include_stack]
+		local previous_dir = filerun_stack[#filerun_stack]
 
 		if previous_dir then
 			dir = previous_dir .. dir
@@ -184,22 +185,22 @@ do -- include
 		local path = dir .. file
 		local full_path
 		local err
-		func, err, full_path = vfs.loadfile(path)
+		func, err, full_path = vfs.LoadFile(path)
 
 		if not_found(err) then
 			path = dir .. file
-			func, err, full_path = vfs.loadfile(path)
+			func, err, full_path = vfs.LoadFile(path)
 
 			-- and without the last directory
 			-- once with lua prepended
 			if not_found(err) then
 				path = source
-				func, err, full_path = vfs.loadfile(path)
+				func, err, full_path = vfs.LoadFile(path)
 
 				-- try the absolute path given
 				if not_found(err) then
 					path = source
-					func, err, full_path = vfs.loadfile(loaded_path)
+					func, err, full_path = vfs.LoadFile(loaded_path)
 				else
 					path = source
 				end
@@ -215,7 +216,7 @@ do -- include
 				vfs.PushWorkingDirectory(dir)
 			end
 
-			vfs.PushToIncludeStack(dir)
+			vfs.PushToFileRunStack(dir)
 
 			_G.FILE_PATH = full_path
 			_G.FILE_NAME = full_path:match(".*/(.+)%.") or full_path
@@ -236,7 +237,7 @@ do -- include
 
 			if utility and utility.PushTimeWarning then
 				if full_path:find(e.ROOT_FOLDER, nil, true) then
-					utility.PopTimeWarning("[include] " .. full_path:gsub(e.ROOT_FOLDER, ""), 0.1)
+					utility.PopTimeWarning("[runfile] " .. full_path:gsub(e.ROOT_FOLDER, ""), 0.1)
 				end
 			end
 
@@ -248,7 +249,7 @@ do -- include
 				logn(res[2])
 			end
 
-			vfs.PopFromIncludeStack()
+			vfs.PopFromFileRunStack()
 
 			if not full_path:startswith(e.ROOT_FOLDER) then
 				vfs.PopWorkingDirectory(dir)
@@ -269,8 +270,6 @@ do -- include
 	end
 end
 
-include = vfs.include
-
 -- although vfs will add a loader for each mount, the module folder has to be an exception for modules only
 -- this loader should support more ways of loading than just adding ".lua"
 
@@ -286,61 +285,61 @@ end
 
 do -- full path
 	add(function(path)
-		return vfs.loadfile(path)
+		return vfs.LoadFile(path)
 	end)
 
 	add(function(path)
-		return vfs.loadfile(path .. ".lua")
+		return vfs.LoadFile(path .. ".lua")
 	end)
 
 	add(function(path)
 		path = path:gsub("(.)%.(.)", "%1/%2")
-		return vfs.loadfile(path .. ".lua")
+		return vfs.LoadFile(path .. ".lua")
 	end)
 
 	add(function(path)
 		path = path:gsub("(.+/)(.+)", function(a, str) return a .. str:gsub("(.)%.(.)", "%1/%2") end)
-		return vfs.loadfile(path .. ".lua")
+		return vfs.LoadFile(path .. ".lua")
 	end)
 end
 
 function vfs.AddModuleDirectory(dir)
 	do -- relative path
 		add(function(path)
-			return vfs.loadfile(dir .. path)
+			return vfs.LoadFile(dir .. path)
 		end)
 
 		add(function(path)
-			return vfs.loadfile(dir .. path .. ".lua")
+			return vfs.LoadFile(dir .. path .. ".lua")
 		end)
 
 		add(function(path)
 			path = path:gsub("(.)%.(.)", "%1/%2")
-			return vfs.loadfile(dir .. path .. ".lua")
+			return vfs.LoadFile(dir .. path .. ".lua")
 		end)
 	end
 
 	add(function(path)
-		return vfs.loadfile(dir .. path .. "/init.lua")
+		return vfs.LoadFile(dir .. path .. "/init.lua")
 	end)
 
 	add(function(path)
-		return vfs.loadfile(dir .. path .. "/"..path..".lua")
+		return vfs.LoadFile(dir .. path .. "/"..path..".lua")
 	end)
 
 	-- again but with . replaced with /
 	add(function(path)
 		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
-		return vfs.loadfile(dir .. path .. ".lua")
+		return vfs.LoadFile(dir .. path .. ".lua")
 	end)
 
 	add(function(path)
 		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
-		return vfs.loadfile(dir .. path .. "/init.lua")
+		return vfs.LoadFile(dir .. path .. "/init.lua")
 	end)
 
 	add(function(path)
 		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
-		return vfs.loadfile(dir .. path .. "/" .. path ..  ".lua")
+		return vfs.LoadFile(dir .. path .. "/" .. path ..  ".lua")
 	end)
 end

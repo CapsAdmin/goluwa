@@ -97,7 +97,7 @@ function repl.Initialize()
 		end
 
 		_G.render2d = {GetDefaultFont = function() end}
-		include("lua/libraries/graphics/gfx/markup/markup.lua")
+		runfile("lua/libraries/graphics/gfx/markup/markup.lua")
 
 		if hack then
 			SERVER = nil

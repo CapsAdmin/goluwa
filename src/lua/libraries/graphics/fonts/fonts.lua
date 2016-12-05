@@ -146,8 +146,8 @@ function fonts.RegisterFont(meta)
 	fonts.registered_fonts[meta.ClassName] = meta
 end
 
-include("base_font.lua")
-include("fonts/*", fonts)
+runfile("base_font.lua")
+runfile("fonts/*", fonts)
 
 if RELOAD then
 	fonts.Initialize()

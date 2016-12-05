@@ -16,7 +16,7 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 
 	return res;
 }]])
-include("lua/libraries/graphics/render3d/sky_shaders/atmosphere2.lua")
+--runfile("lua/libraries/graphics/render3d/sky_shaders/atmosphere2.lua")
 render.AddGlobalShaderCode([[
 float handle_roughness(float x)
 {

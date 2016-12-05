@@ -142,7 +142,7 @@ do -- buffer object
 	end
 
 	-- this adds ReadLong, WriteShort, WriteFloat, WriteStructure, etc
-	include("lua/libraries/templates/buffer.lua", META)
+	runfile("lua/libraries/templates/buffer.lua", META)
 
 	do -- generic
 		function META:GetBuffer()

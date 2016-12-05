@@ -1,8 +1,8 @@
 local utility = _G.utility or {}
 
-include("packed_rectangle.lua", utility)
-include("quickbms.lua", utility)
-include("find_color.lua", utility)
+runfile("packed_rectangle.lua", utility)
+runfile("quickbms.lua", utility)
+runfile("find_color.lua", utility)
 
 function utility.VDFToTable(str, lower_or_modify_keys, preprocess)
 	if not str or str == "" then return nil, "data is empty" end

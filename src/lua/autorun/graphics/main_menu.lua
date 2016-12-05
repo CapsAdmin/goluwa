@@ -359,7 +359,7 @@ function menu.CreateTopBar()
 					label:SizeToText()
 					label:SetupLayout("bottom", "left", "fill_x")
 					label.OnPress = function()
-						if current_script then include(current_script) end
+						if current_script then runfile(current_script) end
 					end
 				end
 			end

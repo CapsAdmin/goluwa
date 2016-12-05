@@ -1,31 +1,31 @@
 local render = _G.render or {}
 
-include("texture_format.lua", render)
-include("texture_decoder.lua", render)
-include("global_shader_code.lua", render)
-include("generated_textures.lua", render)
-include("window.lua", render)
-include("texture_atlas.lua", render)
-include("material.lua", render)
-include("camera.lua", render)
-include("globals.lua", render)
-include("shader_variables.lua", render)
+runfile("texture_format.lua", render)
+runfile("texture_decoder.lua", render)
+runfile("global_shader_code.lua", render)
+runfile("generated_textures.lua", render)
+runfile("window.lua", render)
+runfile("texture_atlas.lua", render)
+runfile("material.lua", render)
+runfile("camera.lua", render)
+runfile("globals.lua", render)
+runfile("shader_variables.lua", render)
 
 function render.Initialize()
 	local dir = "lua/libraries/graphics/render/"
-	include(dir .. "opengl/render.lua", render)
+	runfile(dir .. "opengl/render.lua", render)
 
 	-- FIX ME
 	-- these check if direct state access exist but do it too early
-	include(dir .. "vertex_buffer.lua", render)
-	include(dir .. "texture.lua", render)
-	include(dir .. "framebuffer.lua", render)
+	runfile(dir .. "vertex_buffer.lua", render)
+	runfile(dir .. "texture.lua", render)
+	runfile(dir .. "framebuffer.lua", render)
 
 	render._Initialize()
 
-	include(dir .. "texture_decoders/*")
+	runfile(dir .. "texture_decoders/*")
 
-	include(dir .. "shader_builder.lua", render)
+	runfile(dir .. "shader_builder.lua", render)
 
 	render.GenerateTextures()
 end

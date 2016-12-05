@@ -134,7 +134,7 @@ local function utf8replace(str, mapping)
 	return new_str
 end
 
-local upper, lower = include("utf8data.lua")
+local upper, lower = runfile("utf8data.lua")
 
 function utf8.upper(str)
 	return utf8replace(str, upper)

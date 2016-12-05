@@ -18,7 +18,7 @@ function META:GetEditorName()
 	return self.EditorName or ""
 end
 
-include("lua/libraries/templates/parenting.lua", META)
+runfile("lua/libraries/templates/parenting.lua", META)
 META:GetSet("Components", {})
 
 local DEFER_COMPONENT_CHECKS_AND_EVENTS

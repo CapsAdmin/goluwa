@@ -780,7 +780,7 @@ function render.CreateShader(data, vars)
 
 			local RELOAD = _G.RELOAD
 			if RELOAD then _G.RELOAD = nil end
-			self.unrolled_bind_func = assert(vfs.dofile(path))
+			self.unrolled_bind_func = assert(vfs.DoFile(path))
 			if RELOAD then _G.RELOAD = RELOAD end
 		else
 			self.unrolled_bind_func = assert(loadstring(lua, shader_id))()

@@ -1,6 +1,6 @@
 local REFLECTIONS_ONLY = false
 
-include("lua/libraries/graphics/render3d/sky_shaders/atmosphere1.lua")
+runfile("lua/libraries/graphics/render3d/sky_shaders/atmosphere1.lua")
 
 render.AddGlobalShaderCode([[
 vec3 gbuffer_compute_specular(vec3 L, vec3 V, vec3 N, float attenuation, vec3 light_color)

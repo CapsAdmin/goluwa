@@ -1,6 +1,6 @@
 local gine = _G.gine or {}
 
-include("preprocess.lua", gine)
+runfile("preprocess.lua", gine)
 
 event.AddListener("PostLoadString", "glua_function_env", function(func, path)
 	if path:lower():find("steamapps/common/garrysmod/garrysmod/", nil, true) or path:find("%.gma") then
@@ -81,33 +81,33 @@ function gine.Initialize()
 		gine.dir = R("garrysmod_dir.vpk"):match("(.+/)")
 
 		-- setup engine functions
-		include("lua/libraries/gmod/environment.lua", gine)
+		runfile("lua/libraries/gmod/environment.lua", gine)
 
 		vfs.AddModuleDirectory(R(gine.dir.."/lua/includes/modules/"))
 
 		-- include and init files in the right order
 
-		include("lua/includes/init.lua") --
-		include("lua/derma/init.lua") -- the gui
+		runfile("lua/includes/init.lua") --
+		runfile("lua/derma/init.lua") -- the gui
 		gine.env.require("notification") -- this is included by engine at this point
 
 		gine.LoadGamemode("base")
 		gine.LoadGamemode("sandbox")
 
 		-- autorun lua files
-		include(gine.dir .. "/lua/autorun/*")
-		if CLIENT then include(gine.dir .. "/lua/autorun/client/*") end
-		if SERVER then include(gine.dir .. "/lua/autorun/server/*") end
+		runfile(gine.dir .. "/lua/autorun/*")
+		if CLIENT then runfile(gine.dir .. "/lua/autorun/client/*") end
+		if SERVER then runfile(gine.dir .. "/lua/autorun/server/*") end
 
 		for dir in vfs.Iterate(gine.dir .. "addons/", true) do
 			vfs.AddModuleDirectory(R(dir.."/lua/includes/modules/"))
 		end
 
 
-		--include("lua/postprocess/*")
-		include("lua/vgui/*")
-		--include("lua/matproxy/*")
-		include("lua/skins/*")
+		--runfile("lua/postprocess/*")
+		runfile("lua/vgui/*")
+		--runfile("lua/matproxy/*")
+		runfile("lua/skins/*")
 
 		gine.env.DCollapsibleCategory.LoadCookies = nil -- DUCT TAPE FIX
 
@@ -140,13 +140,13 @@ end
 function gine.Run()
 	for dir in vfs.Iterate(gine.dir .. "addons/", true, true) do
 		local dir = gine.dir .. "addons/" ..  dir
-		include(dir .. "/lua/includes/extensions/*")
+		runfile(dir .. "/lua/includes/extensions/*")
 	end
 
 	for dir in vfs.Iterate(gine.dir .. "addons/", true, true) do
-		include(dir .. "/lua/autorun/*")
-		if CLIENT then include(dir .. "/lua/autorun/client/*") end
-		if SERVER then include(dir .. "/lua/autorun/server/*") end
+		runfile(dir .. "/lua/autorun/*")
+		if CLIENT then runfile(dir .. "/lua/autorun/client/*") end
+		if SERVER then runfile(dir .. "/lua/autorun/server/*") end
 	end
 
 	gine.env.gamemode.Call("CreateTeams")

@@ -1,4 +1,4 @@
-include("components/*", prototype)
+runfile("components/*", prototype)
 
 prototype.SetupComponents("group", {}, "textures/silkicons/world.png")
 

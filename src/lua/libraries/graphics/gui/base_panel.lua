@@ -2,7 +2,7 @@ local gui = ... or _G.gui
 
 local META = prototype.CreateTemplate("panel", "base")
 
-include("lua/libraries/templates/parenting.lua", META)
+runfile("lua/libraries/templates/parenting.lua", META)
 
 prototype.GetSet(META, "MousePosition", Vec2(0, 0))
 prototype.IsSet(META, "Visible", true)

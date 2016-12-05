@@ -278,4 +278,4 @@ end
 
 META:RegisterComponent()
 
---include("physics_container.lua")
+--runfile("physics_container.lua")

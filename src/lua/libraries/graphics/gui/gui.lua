@@ -263,7 +263,7 @@ do -- skin
 		gui.skin = skin
 
 		if reload_panels then
-			include("lua/libraries/graphics/gui/panels/*", gui)
+			runfile("lua/libraries/graphics/gui/panels/*", gui)
 		end
 
 		for panel in pairs(gui.panels) do
@@ -340,7 +340,7 @@ do -- gui scaling
 		end
 
 		gui.force_reload = true
-			include("lua/libraries/graphics/gui/skins/*", gui)
+			runfile("lua/libraries/graphics/gui/skins/*", gui)
 		gui.force_reload = nil
 	end
 
@@ -366,7 +366,7 @@ function gui.CreateWorld()
 end
 
 function gui.Initialize()
-	include("lua/libraries/graphics/gui/skins/*", gui)
+	runfile("lua/libraries/graphics/gui/skins/*", gui)
 	gui.SetSkin("gwen_dark")
 
 	gui.RemovePanel(gui.world)
@@ -449,8 +449,8 @@ function gui.Initialize()
 end
 
 
-include("base_panel.lua", gui)
-include("panels/*", gui)
-include("helpers.lua", gui)
+runfile("base_panel.lua", gui)
+runfile("panels/*", gui)
+runfile("helpers.lua", gui)
 return gui
 --for k,v in pairs(event.GetTable()) do for k2,v2 in pairs(v) do if type(v2.id)=='string' and v2.id:lower():find"aahh" or v2.id == "gui" then event.RemoveListener(k,v2.id) end end end

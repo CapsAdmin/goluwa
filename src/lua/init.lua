@@ -187,40 +187,40 @@ end
 
 -- some of the lua files ran below use check and include which don't exist yet
 _G.check = function() end
-_G.include = function() end
+_G.runfile = function() end
 _G.system = false
 _G.event = false
 
-local temp_include = function(path) return dofile(e.SRC_FOLDER .. path) end
+local temp_runfile = function(path) return dofile(e.SRC_FOLDER .. path) end
 
 -- standard library extensions
-temp_include("lua/libraries/extensions/jit.lua")
-temp_include("lua/libraries/extensions/globals.lua")
-temp_include("lua/libraries/extensions/debug.lua")
-temp_include("lua/libraries/extensions/string.lua")
-temp_include("lua/libraries/extensions/table.lua")
-temp_include("lua/libraries/extensions/os.lua")
-temp_include("lua/libraries/extensions/ffi.lua")
-temp_include("lua/libraries/extensions/math.lua")
+temp_runfile("lua/libraries/extensions/jit.lua")
+temp_runfile("lua/libraries/extensions/globals.lua")
+temp_runfile("lua/libraries/extensions/debug.lua")
+temp_runfile("lua/libraries/extensions/string.lua")
+temp_runfile("lua/libraries/extensions/table.lua")
+temp_runfile("lua/libraries/extensions/os.lua")
+temp_runfile("lua/libraries/extensions/ffi.lua")
+temp_runfile("lua/libraries/extensions/math.lua")
 
 
 -- include some of prototype as required by vfs
-prototype = temp_include("lua/libraries/prototype/prototype.lua")
-temp_include("lua/libraries/prototype/get_is_set.lua")
-temp_include("lua/libraries/prototype/base_object.lua")
-temp_include("lua/libraries/prototype/null.lua")
+prototype = temp_runfile("lua/libraries/prototype/prototype.lua")
+temp_runfile("lua/libraries/prototype/get_is_set.lua")
+temp_runfile("lua/libraries/prototype/base_object.lua")
+temp_runfile("lua/libraries/prototype/null.lua")
 utility = {CreateWeakTable = function() return setmetatable({}, {__mode = "kv"}) end}
 
 
 -- include some of vfs so we can setup and mount the filesystem
-vfs = temp_include("lua/libraries/filesystem/vfs.lua")
-temp_include("lua/libraries/filesystem/path_utilities.lua")
-temp_include("lua/libraries/filesystem/base_file.lua")
-temp_include("lua/libraries/filesystem/find.lua")
-temp_include("lua/libraries/filesystem/helpers.lua")
-temp_include("lua/libraries/filesystem/lua_utilities.lua")
-temp_include("lua/libraries/filesystem/addons.lua")
-temp_include("lua/libraries/filesystem/files/os.lua")
+vfs = temp_runfile("lua/libraries/filesystem/vfs.lua")
+temp_runfile("lua/libraries/filesystem/path_utilities.lua")
+temp_runfile("lua/libraries/filesystem/base_file.lua")
+temp_runfile("lua/libraries/filesystem/find.lua")
+temp_runfile("lua/libraries/filesystem/helpers.lua")
+temp_runfile("lua/libraries/filesystem/lua_utilities.lua")
+temp_runfile("lua/libraries/filesystem/addons.lua")
+temp_runfile("lua/libraries/filesystem/files/os.lua")
 
 vfs.Mount("os:" .. e.USERDATA_FOLDER, "data") -- mount "ROOT/data/users/*username*/" to "/data/"
 vfs.Mount("os:" .. e.BIN_FOLDER, "bin") -- mount "ROOT/data/bin" to "/bin/"
@@ -229,62 +229,62 @@ vfs.MountAddon("os:" .. e.SRC_FOLDER) -- mount "ROOT/src" to "/"
 vfs.AddModuleDirectory("lua/modules/")
 vfs.AddModuleDirectory("lua/libraries/")
 
-_G.include = vfs.include
+_G.runfile = vfs.runfile
 _G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir
-_G.require = include("lua/libraries/require.lua") -- replace require with the pure lua version
+_G.require = runfile("lua/libraries/require.lua") -- replace require with the pure lua version
 
--- now we can use include properly
+-- now we can use runfile properly
 
 require("strung").install()-- this shaves off 5 seconds off of loading gm_construct
 
 -- libraries
-pvars = include("lua/libraries/pvars.lua") -- like cvars
-prototype = include("lua/libraries/prototype/prototype.lua") -- handles classes, objects, etc
+pvars = runfile("lua/libraries/pvars.lua") -- like cvars
+prototype = runfile("lua/libraries/prototype/prototype.lua") -- handles classes, objects, etc
 if GRAPHICS then
-	math3d = include("lua/libraries/graphics/math3d.lua") -- 3d math functions
-	math2d = include("lua/libraries/graphics/math2d.lua") -- 2d math functions
+	math3d = runfile("lua/libraries/graphics/math3d.lua") -- 3d math functions
+	math2d = runfile("lua/libraries/graphics/math2d.lua") -- 2d math functions
 end
-crypto = include("lua/libraries/crypto.lua") -- base64 and other hash functions
-serializer = include("lua/libraries/serializer.lua") -- for serializing lua data in different formats
-structs = include("lua/libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
-commands = include("lua/libraries/commands.lua") -- console command type interface for running in repl, chat, etc
+crypto = runfile("lua/libraries/crypto.lua") -- base64 and other hash functions
+serializer = runfile("lua/libraries/serializer.lua") -- for serializing lua data in different formats
+structs = runfile("lua/libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
+commands = runfile("lua/libraries/commands.lua") -- console command type interface for running in repl, chat, etc
 if CURSES then
-	repl = include("lua/libraries/repl.lua") -- read eval print loop using curses
+	repl = runfile("lua/libraries/repl.lua") -- read eval print loop using curses
 else
 	repl = false
 end
-system = include("lua/libraries/system.lua") -- os and luajit related functions like creating windows or changing jit options
-utility = include("lua/libraries/utilities/utility.lua") -- misc functions i don't know where to put
-event = include("lua/libraries/event.lua") -- event handler
-input = include("lua/libraries/input.lua") -- keyboard and mouse input
-utf8 = include("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
-tasks = include("lua/libraries/tasks.lua") -- high level abstraction around coroutines
-vfs = include("lua/libraries/filesystem/vfs.lua") -- include the filesystem again so it will include all the details such as zip file reading
-expression = include("lua/libraries/expression.lua") -- used by chat and editor to run small and safe lua expressions
-autocomplete = include("lua/libraries/autocomplete.lua") -- mainly used in console and chatsounds
-profiler = include("lua/libraries/profiler.lua") -- for profiling
-language = include("lua/libraries/language.lua") _G.L = language.LanguageString -- L"options", for use in gui menus and such.
-physics = include("lua/libraries/physics/physics.lua") -- bullet physics
-steam = include("lua/libraries/steam/steam.lua") -- utilities for dealing with steam, the source engine and steamworks
-line = include("lua/libraries/love/line.lua") -- a löve wrapper that lets you run löve games
-gine = include("lua/libraries/gmod/gine.lua") -- a gmod wrapper that lets you run gmod scripts
+system = runfile("lua/libraries/system.lua") -- os and luajit related functions like creating windows or changing jit options
+utility = runfile("lua/libraries/utilities/utility.lua") -- misc functions i don't know where to put
+event = runfile("lua/libraries/event.lua") -- event handler
+input = runfile("lua/libraries/input.lua") -- keyboard and mouse input
+utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
+tasks = runfile("lua/libraries/tasks.lua") -- high level abstraction around coroutines
+vfs = runfile("lua/libraries/filesystem/vfs.lua") -- include the filesystem again so it will include all the details such as zip file reading
+expression = runfile("lua/libraries/expression.lua") -- used by chat and editor to run small and safe lua expressions
+autocomplete = runfile("lua/libraries/autocomplete.lua") -- mainly used in console and chatsounds
+profiler = runfile("lua/libraries/profiler.lua") -- for profiling
+language = runfile("lua/libraries/language.lua") _G.L = language.LanguageString -- L"options", for use in gui menus and such.
+physics = runfile("lua/libraries/physics/physics.lua") -- bullet physics
+steam = runfile("lua/libraries/steam/steam.lua") -- utilities for dealing with steam, the source engine and steamworks
+line = runfile("lua/libraries/love/line.lua") -- a löve wrapper that lets you run löve games
+gine = runfile("lua/libraries/gmod/gine.lua") -- a gmod wrapper that lets you run gmod scripts
 
 if SOCKETS then
-	sockets = include("lua/libraries/network/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
-	resource = include("lua/libraries/network/resource.lua") -- used for downloading resources with resource.Download("http://...", function(path) end)
+	sockets = runfile("lua/libraries/network/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
+	resource = runfile("lua/libraries/network/resource.lua") -- used for downloading resources with resource.Download("http://...", function(path) end)
 end
 
 if SERVER or CLIENT then
-	enet = include("lua/libraries/network/enet.lua") -- low level udp library
+	enet = runfile("lua/libraries/network/enet.lua") -- low level udp library
 
 	if enet then
-		network = include("lua/libraries/network/network.lua") -- high level implementation of enet
-		packet = include("lua/libraries/network/packet.lua") -- medium (?) level communication between server and client
-		message = include("lua/libraries/network/message.lua") -- high level communication between server and client
+		network = runfile("lua/libraries/network/network.lua") -- high level implementation of enet
+		packet = runfile("lua/libraries/network/packet.lua") -- medium (?) level communication between server and client
+		message = runfile("lua/libraries/network/message.lua") -- high level communication between server and client
 
-		nvars = include("lua/libraries/network/nvars.lua") -- variable synchronization between server and client
-		clients = include("lua/libraries/network/clients.lua") -- high level wrapper for a connected client
-		chat = include("lua/libraries/network/chat.lua") -- in game chat
+		nvars = runfile("lua/libraries/network/nvars.lua") -- variable synchronization between server and client
+		clients = runfile("lua/libraries/network/clients.lua") -- high level wrapper for a connected client
+		chat = runfile("lua/libraries/network/chat.lua") -- in game chat
 	else
 		CLIENT = nil
 		SERVER = nil
@@ -292,17 +292,17 @@ if SERVER or CLIENT then
 end
 
 if GRAPHICS then
-	camera = include("lua/libraries/graphics/camera.lua") -- 2d and 3d camera used for rendering
+	camera = runfile("lua/libraries/graphics/camera.lua") -- 2d and 3d camera used for rendering
 
-	render = include("lua/libraries/graphics/render/render.lua") -- OpenGL abstraction
+	render = runfile("lua/libraries/graphics/render/render.lua") -- OpenGL abstraction
 
 	if render then
-		render2d = include("lua/libraries/graphics/render2d/render2d.lua") -- low level 2d rendering based on the render library
-		fonts = include("lua/libraries/graphics/fonts/fonts.lua") -- font rendering
-		gfx = include("lua/libraries/graphics/gfx/gfx.lua") -- high level 2d and 3d functions based on render2d, fonts and render
-		render3d = include("lua/libraries/graphics/render3d/render3d.lua")
-		window = include("lua/libraries/graphics/window.lua") -- high level window implementation
-		gui = include("lua/libraries/graphics/gui/gui.lua")
+		render2d = runfile("lua/libraries/graphics/render2d/render2d.lua") -- low level 2d rendering based on the render library
+		fonts = runfile("lua/libraries/graphics/fonts/fonts.lua") -- font rendering
+		gfx = runfile("lua/libraries/graphics/gfx/gfx.lua") -- high level 2d and 3d functions based on render2d, fonts and render
+		render3d = runfile("lua/libraries/graphics/render3d/render3d.lua")
+		window = runfile("lua/libraries/graphics/window.lua") -- high level window implementation
+		gui = runfile("lua/libraries/graphics/gui/gui.lua")
 	end
 
 	if not render or not window then
@@ -312,17 +312,17 @@ if GRAPHICS then
 end
 
 if SOUND then
-	audio = include("lua/libraries/audio/audio.lua") -- high level implementation of OpenAl
+	audio = runfile("lua/libraries/audio/audio.lua") -- high level implementation of OpenAl
 
 	if audio then
-		chatsounds = include("lua/libraries/audio/chatsounds/chatsounds.lua")
+		chatsounds = runfile("lua/libraries/audio/chatsounds/chatsounds.lua")
 	else
 		SOUND = nil
 	end
 end
 
-entities = include("lua/libraries/entities/entities.lua") -- entity component system
+entities = runfile("lua/libraries/entities/entities.lua") -- entity component system
 
 llog("including libraries took %s seconds\n", os.clock() - profile_start_time)
 
-include("lua/main.lua")
+runfile("lua/main.lua")

@@ -1,12 +1,12 @@
 local gfx = _G.gfx or {}
 
-include("polygon_2d.lua", gfx)
-include("polygon_3d.lua", gfx)
-include("quadric_bezier_curve.lua", gfx)
-include("text.lua", gfx)
-include("video.lua", gfx)
-include("particles.lua", gfx)
-include("markup/markup.lua", gfx)
+runfile("polygon_2d.lua", gfx)
+runfile("polygon_3d.lua", gfx)
+runfile("quadric_bezier_curve.lua", gfx)
+runfile("text.lua", gfx)
+runfile("video.lua", gfx)
+runfile("particles.lua", gfx)
+runfile("markup/markup.lua", gfx)
 
 function gfx.Initialize()
 	gfx.ninepatch_poly = gfx.CreatePolygon2D(9 * 6)

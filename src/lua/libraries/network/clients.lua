@@ -1,6 +1,6 @@
 local clients = _G.clients or {}
 
-include("client/client.lua")
+runfile("client/client.lua")
 
 clients.active_clients_uid = clients.active_clients_uid or {}
 clients.active_clients = clients.active_clients or {}

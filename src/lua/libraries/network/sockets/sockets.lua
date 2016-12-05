@@ -62,9 +62,9 @@ sockets.luasocket = luasocket
 
 sockets.active_sockets = sockets.active_sockets or {}
 
-include("helpers.lua", sockets)
-include("http.lua", sockets)
-include("irc.lua", sockets)
+runfile("helpers.lua", sockets)
+runfile("http.lua", sockets)
+runfile("irc.lua", sockets)
 
 function sockets.Initialize()
 	event.Timer("sockets", 1/30, 0, sockets.Update, nil, function(...) logn(...) return true end)
