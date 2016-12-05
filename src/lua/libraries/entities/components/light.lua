@@ -136,7 +136,7 @@ if GRAPHICS then
 			view:SetRotation(rot)
 
 			if self.ProjectFromCamera then
-				local size = self:GetOrthoSize(i)
+				--local size = self:GetOrthoSize(i)
 
 				--local cam_view = camera.camera_3d:GetMatrices().view
 				--local x,y,z = cam_view:TransformPoint(0,0, size)

@@ -185,6 +185,7 @@ do -- runfile
 		local path = dir .. file
 		local full_path
 		local err
+		local func
 		func, err, full_path = vfs.LoadFile(path)
 
 		if not_found(err) then

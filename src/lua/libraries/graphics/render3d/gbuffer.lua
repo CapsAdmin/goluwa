@@ -357,7 +357,7 @@ function render3d.InitializeGBuffer()
 		end
 
 		-- this makes it so if you use set_specular in model it will also write to specular
-		for i, stage in ipairs(data_pass.Stages) do
+		for _, stage in ipairs(data_pass.Stages) do
 			for _, pass_info in ipairs(data_pass.Buffers) do
 				for _, v in ipairs(pass_info.layout) do
 					local _, tbl = next(v)

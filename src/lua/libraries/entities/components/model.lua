@@ -54,7 +54,7 @@ if GRAPHICS then
 
 	function META:OnRemove()
 		render3d.RemoveModel(self)
-		for k,v in pairs(self.occluders) do
+		for _, v in pairs(self.occluders) do
 			v:Delete()
 		end
 	end
@@ -97,7 +97,7 @@ if GRAPHICS then
 			if self.MaterialOverride then
 				self.translucent = self.MaterialOverride:GetTranslucent()
 			else
-				for i, mesh in ipairs(self.sub_meshes) do
+				for _, mesh in ipairs(self.sub_meshes) do
 					if mesh.material:GetTranslucent() then
 						self.translucent = true
 					end
@@ -168,10 +168,12 @@ if GRAPHICS then
 		return self.translucent
 	end
 
+	local system_GetElapsedTime = system.GetElapsedTime
+
 	function META:IsVisible(what)
-		if not self.next_visible[what] or self.next_visible[what] < system.GetElapsedTime() then
+		if not self.next_visible[what] or self.next_visible[what] < system_GetElapsedTime() then
 			self.visible[what] = camera.camera_3d:IsAABBVisible(self.tr:GetTranslatedAABB(), self.tr:GetCameraDistance(), self.tr:GetBoundingSphere())
-			self.next_visible[what] = system.GetElapsedTime() + 0.25
+			self.next_visible[what] = system_GetElapsedTime() + 0.25
 		end
 
 		return self.visible[what]
@@ -181,7 +183,7 @@ if GRAPHICS then
 	local render_SetMaterial = render.SetMaterial
 
 	if DISABLE_CULLING then
-		function META:Draw(what)
+		function META:Draw()
 			camera.camera_3d:SetWorld(self.tr:GetMatrix())
 
 			for _, mesh in ipairs(self.sub_meshes) do
