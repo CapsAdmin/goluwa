@@ -3,6 +3,7 @@ local render3d = _G.render3d or {}
 runfile("model_loader.lua", render3d)
 runfile("gbuffer.lua", render3d)
 runfile("environment_probe.lua", render3d)
+runfile("framebuffer_cubemap.lua", render3d)
 runfile("shadow_map.lua", render3d)
 runfile("sky.lua", render3d)
 runfile("vmt.lua", render3d)
