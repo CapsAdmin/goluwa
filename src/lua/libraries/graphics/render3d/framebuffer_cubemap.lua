@@ -8,6 +8,8 @@ META:GetSet("Framebuffer")
 local function update(self, shader, i, view)
 	self.Framebuffer:SetTextureLayer(1, self.Texture, i)
 
+	local pos = camera.camera_3d:GetPosition()
+	view:SetPosition(pos)
 	camera.camera_3d = view
 
 	render2d.PushMatrix(0, 0, self.Texture:GetSize():Unpack())
@@ -18,8 +20,13 @@ end
 
 function META:Update(shader, i)
 	if i == true then
-		i = tonumber((system.GetFrameNumber()%6) + 1)
-		i = math.random(1,6)
+		self.i = (self.i or 0) + 1
+
+		if self.i >= 7 then
+			self.i = 1
+		end
+
+		i = self.i
 	end
 
 	render.SetBlendMode()
@@ -58,7 +65,7 @@ function render3d.CreateFramebufferCubemap(format, size)
 
 	local tex = render.CreateTexture("cube_map")
 	tex:SetInternalFormat(format)
-	tex:SetSize(size or (Vec2() + 256))
+	tex:SetSize(size)
 	tex:SetupStorage()
 	self.Texture = tex
 
