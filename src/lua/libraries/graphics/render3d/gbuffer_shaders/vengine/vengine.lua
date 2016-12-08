@@ -1,7 +1,7 @@
 editor.Open()
 editor.Close()
 
-local atmosphere_fbc = render3d.CreateFramebufferCubemap("r11f_g11f_b10f", Vec2() + 256)
+local atmosphere_fbc = render3d.CreateFramebufferCubemap("r11f_g11f_b10f", Vec2() + 128)
 local atmosphere_shader = render.CreateShader({
 	name = "vengine_clouds_atmosphere",
 	fragment = {
@@ -26,6 +26,8 @@ local atmosphere_shader = render.CreateShader({
 				vec3 pos = g_cam_pos.yzx;
 				vec3 dir = -get_camera_dir(uv).xzy;
 
+				dir.y = abs(dir.y);
+
 				out_color = getAtmosphereForDirectionReal(pos, dir, dayData.sunDir * vec3(-1,1,-1));
 			}
 		]],
@@ -35,7 +37,6 @@ local atmosphere_shader = render.CreateShader({
 local cloud_coverage_fbc = render3d.CreateFramebufferCubemap("rg32f", Vec2() + 512)
 local cloud_coverage_tex_odd = cloud_coverage_fbc.Texture
 local cloud_coverage_tex_even = render3d.CreateFramebufferCubemap("rg32f", Vec2() + 512).Texture
-
 local cloud_coverage_shader = render.CreateShader({
 	name = "vengine_clouds_coverage",
 	fragment = {
@@ -54,6 +55,7 @@ local cloud_coverage_shader = render.CreateShader({
 			#define CLOUD_SAMPLES 2
 			#define CLOUDCOVERAGE_DENSITY 90
 			#define UV uv
+			#define CAMERA g_cam_pos.yzx
 			#include Atmosphere.glsl
 
 			out vec2 out_color;
@@ -62,7 +64,7 @@ local cloud_coverage_shader = render.CreateShader({
 			{
 				vec3 dir = -get_camera_dir(uv).xzy;
 
-				vec2 lastData = texture(cloud_coverage_tex, dir).rg;
+				vec2 lastData = texture(cloud_coverage_tex, -dir*vec3(1,-1,1)).rg;
 				vec2 val = raymarchCloudsRay(dir);
 				vec2 retedg = vec2(max(val.r, lastData.r), min(val.g, lastData.g));
 				vec2 retavg = vec2(mix(val.r, lastData.r, CloudsIntegrate), val.g);
@@ -79,7 +81,6 @@ local cloud_coverage_shader = render.CreateShader({
 local cloud_ao_fbc = render3d.CreateFramebufferCubemap("r11f_g11f_b10f", Vec2() + 512)
 local cloud_ao_tex_odd = cloud_ao_fbc.Texture
 local cloud_ao_tex_even = render3d.CreateFramebufferCubemap("r11f_g11f_b10f", Vec2() + 512).Texture
-
 local cloud_ao_shader = render.CreateShader({
 	name = "vengine_clouds_ao",
 	fragment = {
@@ -99,6 +100,7 @@ local cloud_ao_shader = render.CreateShader({
 			#define CLOUD_SAMPLES 2
 			#define CLOUDCOVERAGE_DENSITY 90
 			#define UV uv
+			#define CAMERA g_cam_pos.yzx
 			#include Atmosphere.glsl
 
 			out vec3 out_color;
@@ -132,7 +134,7 @@ local cloud_ao_shader = render.CreateShader({
 	},
 })
 
-local sky_fbc = render3d.CreateFramebufferCubemap("r11f_g11f_b10f", Vec2() + 1024)
+local sky_resolve_fbc = render3d.CreateFramebufferCubemap("r11f_g11f_b10f", Vec2() + 1024)
 local sky_resolve_shader = render.CreateShader({
 	name = "vengine_clouds_resolve",
 	fragment = {
@@ -150,6 +152,7 @@ local sky_resolve_shader = render.CreateShader({
 		source = [[
 			#version 430 core
 
+			#define CAMERA g_cam_pos.yzx
 			#define UV uv
 
 			#define atmScattTex atmosphere_tex
@@ -157,14 +160,14 @@ local sky_resolve_shader = render.CreateShader({
 			#define coverageDistTex cloud_coverage_tex
 			#define shadowsTex cloud_ao_tex
 			#define VPMatrix g_projection_view
-			#define CameraPosition g_cam_pos.xzy
+			#define CameraPosition g_cam_pos.yzx
 			#define Resolution g_gbuffer_size
 
 			#include Atmosphere.glsl
 			#include ResolveAtmosphere.glsl
 
 			vec3 integrateStepsAndSun(vec3 dir){
-				return sampleAtmosphere(dir, 0.0, 1.0, 23);
+				return sampleAtmosphere(dir, 0, 1.0, 23, lua[moon_tex = render.CreateTextureFromPath("textures/moon.png")], lua[stars_tex = render.CreateTextureFromPath("textures/stars.png")]);
 			}
 
 			out vec4 out_color;
@@ -172,9 +175,9 @@ local sky_resolve_shader = render.CreateShader({
 			{
 				vec3 dir = -get_camera_dir(uv).xzy;
 				out_color.rgb = integrateStepsAndSun(dir);
-				//out_color.rgb = vec3(texture(cloud_ao_tex, dir).r);
-
-				out_color.rgb = gbuffer_compute_tonemap(out_color.rgb*0.15, vec3(0));
+				//out_color.rgb = vec3(texture(cloud_coverage_tex, dir).r);
+				//out_color.rgb = vec3(texture(cloud_ao_tex, dir).g);
+				//out_color.rgb = dir;
 			}
 		]],
 	},
@@ -187,13 +190,14 @@ local cubemap_view = render.CreateShader({
 			{uv = "vec2"},
 		},
 		variables = {
-			cubemap = sky_fbc:GetTexture(),
+			cubemap = sky_resolve_fbc:GetTexture(),
 		},
 		source = [[
 			out vec4 out_color;
 			void main()
 			{
 				out_color = texture(cubemap, -get_camera_dir(uv).xzy);
+				out_color.rgb = gbuffer_compute_tonemap(out_color.rgb*0.15, vec3(0));
 			}
 		]],
 	},
@@ -207,7 +211,7 @@ local water_shader = render.CreateShader({
 			{uv = "vec2"},
 		},
 		variables = {
-			cubemap = sky_fbc:GetTexture(),
+			cubemap = sky_resolve_fbc:GetTexture(),
 		},
 		include_directories = {
 			"shaders/include/",
@@ -297,7 +301,6 @@ local water_shader = render.CreateShader({
 			{
 				vec3 pos = g_cam_pos.yzx;
 				vec3 dir = -get_camera_dir(uv).xzy;
-				vec3 sun_direction = dayData.sunDir;
 
 				float hitdist1 = intersectWater(pos, dir, 0.0);
 				float hitdist2 = intersectWater(pos, dir, -1.0);
@@ -322,13 +325,13 @@ local water_shader = render.CreateShader({
 })
 
 local variables = {
-	DayElapsed = 0.5,
-	YearElapsed = 0.5,
+	DayElapsed = 0.2,
+	YearElapsed = 0.1,
 	EquatorPoleMix = 0.5,
 
-	NoiseOctave1 = 2,
+	NoiseOctave1 = 0,
 
-	MieScattCoeff = 7,
+	MieScattCoeff = 0.5,
 
 	WindBigPower = 1,
 	WindBigScale = 1,
@@ -354,7 +357,7 @@ end
 
 event.AddListener("PreDrawGUI", "vengine", function()
 
-	if wait(1/15) then
+	if true or wait(1/15) then
 		variables.Time = system.GetElapsedTime()*1
 		--variables.DayElapsed = (math.abs(math.sin(variables.Time/100)) * 0.5) + 0.25
 		variables.DayElapsed = 0.5
@@ -396,7 +399,7 @@ event.AddListener("PreDrawGUI", "vengine", function()
 
 		do -- combine results to cubemap
 			set_variables(sky_resolve_shader)
-			sky_fbc:Update(sky_resolve_shader)
+			sky_resolve_fbc:Update(sky_resolve_shader)
 		end
 	end
 
