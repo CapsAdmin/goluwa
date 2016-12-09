@@ -67,7 +67,7 @@ local cloud_coverage_shader = render.CreateShader({
 				vec2 retedg = vec2(max(val.r, lastData.r), min(val.g, lastData.g));
 				vec2 retavg = vec2(mix(val.r, lastData.r, CloudsIntegrate), val.g);
 
-				retavg.r = mix(retavg.r, retedg.r, 0.0);
+				retavg.r = mix(retavg.r, retedg.r, 0.2);
 				retavg.g = mix(retavg.g, retedg.g, 0.5);
 
 				out_color = retavg;
@@ -76,7 +76,7 @@ local cloud_coverage_shader = render.CreateShader({
 	},
 })
 
-local cloud_ao_fbc = render3d.CreateFramebufferCubemap("r11f_g11f_b10f", Vec2() + 512)
+local cloud_ao_fbc = render3d.CreateFramebufferCubemap("rgba16f", Vec2() + 512)
 local cloud_ao_shader = render.CreateShader({
 	name = "vengine_clouds_ao",
 	fragment = {
@@ -86,6 +86,7 @@ local cloud_ao_shader = render.CreateShader({
 		variables = {
 			cloud_coverage_tex = cloud_coverage_fbc:GetTexture(),
 			cloud_ao_tex = cloud_ao_fbc:GetTexture(),
+			cloud_atmosphere_tex = atmosphere_fbc:GetTexture(),
 		},
 		include_directories = {
 			"shaders/include/",
@@ -99,16 +100,16 @@ local cloud_ao_shader = render.CreateShader({
 			#define CAMERA (g_cam_pos.yzx*vec3(-1,1,1))
 			#include Atmosphere.glsl
 
-			out vec3 out_color;
+			out vec4 out_color;
 
 			void main()
 			{
 				vec3 dir = get_camera_dir(uv).xzy;
 
-				vec3 retedg = vec3(0);
-				vec3 retavg = vec3(0);
+				vec4 retedg = vec4(0);
+				vec4 retavg = vec4(0);
 
-				vec3 lastData = texture(cloud_ao_tex, dir*vec3(1,-1,1)).rgb;
+				vec4 lastData = texture(cloud_ao_tex, dir*vec3(1,-1,1));
 
 				dir = dir * vec3(1,-1,-1);
 				float val = shadows(cloud_coverage_tex, dir);
@@ -116,17 +117,14 @@ local cloud_ao_shader = render.CreateShader({
 
 				retedg.r = min(val, lastData.r);
 				retavg.r = mix(val, lastData.r, CloudsIntegrate);
-				float AOGround = getCloudsAO(cloud_coverage_tex, dir*vec3(-1,1,1), 0.0);
-				dir = dir * vec3(-1,1,-1);
-				float AOSky = getCloudsAO(cloud_coverage_tex, dir, 1.0);
-				retedg.g = min(AOGround, lastData.g);
-				retavg.g = mix(AOGround, lastData.g, CloudsIntegrate);
-				retedg.b = min(AOSky, lastData.b);
-				retavg.b = mix(AOSky, lastData.b, CloudsIntegrate);
+				vec3 AOGround = getCloudsAL(cloud_coverage_tex, cloud_atmosphere_tex, dir*vec3(-1,1,1));
+				//float AOSky = 1.0 - AOGround;//getCloudsAO(dir, 1.0);
 
-				retavg.r = mix(retavg.r, retedg.r, 0.4);
-				retavg.g = mix(retavg.g, retedg.g, 0.4);
-				retavg.b = mix(retavg.b, retedg.b, 0.4);
+				retedg.r = min(val, lastData.r);
+				retavg.r = mix(val, lastData.r, CloudsIntegrate);
+				retavg.r = mix(retavg.r, retedg.r, 0.5);
+
+				retavg.gba = mix(AOGround, lastData.gba, CloudsIntegrate);
 
 				out_color = retavg;
 			}
@@ -134,7 +132,7 @@ local cloud_ao_shader = render.CreateShader({
 	},
 })
 
-local sky_resolve_fbc = render3d.CreateFramebufferCubemap("r11f_g11f_b10f", Vec2() + 512)
+local sky_resolve_fbc = render3d.CreateFramebufferCubemap("r11f_g11f_b10f", Vec2() + 1024)
 local sky_resolve_shader = render.CreateShader({
 	name = "vengine_clouds_resolve",
 	fragment = {
@@ -177,7 +175,7 @@ local sky_resolve_shader = render.CreateShader({
 				out_color.rgb = integrateStepsAndSun(dir);
 				//out_color.rgb = vec3(texture(cloud_ao_tex, dir).r);
 				//out_color.rgb = vec3(texture(cloud_coverage_tex, dir).g/100000);
-				//out_color.rgb = vec3(texture(cloud_coverage_tex, dir).g/10000);
+				//out_color.rgb = vec3(texture(cloud_coverage_tex, dir).g/100000);
 				//out_color.rgb = vec3(texture(cloud_ao_tex, dir).g);
 				//out_color.rgb = vec3(texture(cloud_ao_tex, dir).r);
 				//out_color.rgb = dir;
@@ -200,11 +198,13 @@ local cubemap_view = render.CreateShader({
 			void main()
 			{
 				out_color = texture(cubemap, -get_camera_dir(uv).xzy);
-				out_color.rgb = gbuffer_compute_tonemap(out_color.rgb*0.15, vec3(0));
+				out_color.rgb = gbuffer_compute_tonemap(out_color.rgb*0.2, vec3(0));
 			}
 		]],
 	},
 })
+
+table.print(cloud_coverage_shader.variables)
 
 
 local water_shader = render.CreateShader({
@@ -328,7 +328,7 @@ local water_shader = render.CreateShader({
 })
 
 local variables = {
-	DayElapsed = 0.2,
+	DayElapsed = 0.24,
 	YearElapsed = 0.5,
 	EquatorPoleMix = 0.5,
 
@@ -341,12 +341,12 @@ local variables = {
 	CloudsFloor = 3000,
 	CloudsCeil = 10000,
 	CloudsThresholdLow = 0.6,
-	CloudsThresholdHigh = 0.30,
+	CloudsThresholdHigh = 0.60,
 	CloudsDensityThresholdLow = 0.0,
 	CloudsDensityThresholdHigh = 1.0,
 	CloudsDensityScale = 0.6,
 	CloudsWindSpeed = 0.4,
-	CloudsIntegrate = 0.9,
+	CloudsIntegrate = 0.95,
 	FBMSCALE = 1,
 }
 
@@ -363,7 +363,7 @@ event.AddListener("PreDrawGUI", "vengine", function()
 	do
 		variables.Time = system.GetElapsedTime()
 		--variables.DayElapsed = variables.Time/100
-		variables.DayElapsed = 0.5
+		--variables.DayElapsed = 0.5
 
 		if wait(1/15) then -- update atmosphere
 			set_variables(atmosphere_shader)
