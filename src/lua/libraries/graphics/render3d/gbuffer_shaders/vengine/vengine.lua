@@ -26,8 +26,6 @@ local atmosphere_shader = render.CreateShader({
 				vec3 pos = g_cam_pos.yzx;
 				vec3 dir = -get_camera_dir(uv).xzy;
 
-				dir.y = abs(dir.y);
-
 				out_color = getAtmosphereForDirectionReal(pos, dir, dayData.sunDir * vec3(-1,1,-1));
 			}
 		]],
@@ -165,13 +163,14 @@ local sky_resolve_shader = render.CreateShader({
 			#include ResolveAtmosphere.glsl
 
 			vec3 integrateStepsAndSun(vec3 dir){
-				return sampleAtmosphere(dir, 0, 1.0, 23, lua[moon_tex = render.CreateTextureFromPath("textures/moon.png")], lua[stars_tex = render.CreateTextureFromPath("textures/stars.png")]);
+				return sampleAtmosphere(dir, 0, 1, 23, lua[moon_tex = render.CreateTextureFromPath("textures/moon.png")], lua[stars_tex = render.CreateTextureFromPath("textures/stars.png")]);
 			}
 
 			out vec4 out_color;
 			void main()
 			{
 				vec3 dir = -get_camera_dir(uv).xzy;
+
 				out_color.rgb = integrateStepsAndSun(dir);
 				//out_color.rgb = vec3(texture(cloud_ao_tex, dir).r);
 				//out_color.rgb = vec3(texture(cloud_coverage_tex, dir).g/100000);
@@ -198,14 +197,12 @@ local cubemap_view = render.CreateShader({
 			void main()
 			{
 				out_color = texture(cubemap, -get_camera_dir(uv).xzy);
-				out_color.rgb = gbuffer_compute_tonemap(out_color.rgb*0.2, vec3(0));
+				out_color.rgb *= 0.2;
+				out_color.rgb = gbuffer_compute_tonemap(out_color.rgb, vec3(0));
 			}
 		]],
 	},
 })
-
-table.print(cloud_coverage_shader.variables)
-
 
 local water_shader = render.CreateShader({
 	name = "vengine_water",
@@ -328,13 +325,13 @@ local water_shader = render.CreateShader({
 })
 
 local variables = {
-	DayElapsed = 0.24,
-	YearElapsed = 0.5,
+	DayElapsed = 0.1,
+	YearElapsed = 0.1,
 	EquatorPoleMix = 0.5,
 
-	NoiseOctave1 = 0,
+	NoiseOctave1 = 1,
 
-	MieScattCoeff = 0.5,
+	MieScattCoeff = 1,
 
 	WindBigPower = 1,
 	WindBigScale = 1,
