@@ -3,6 +3,8 @@ local render3d = ... or _G.render3d
 
 local ffi = require("ffi")
 
+steam.loaded_bsp = steam.loaded_bsp or {}
+
 local scale = 0.0254
 
 local skyboxes = {
@@ -720,8 +722,6 @@ function steam.LoadMap(path)
 			table.insert(render_meshes, v)
 		end
 	end
-
-	steam.loaded_bsp = steam.loaded_bsp or {}
 
 	steam.loaded_bsp[path] = {
 		render_meshes = render_meshes,
