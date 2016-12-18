@@ -7,8 +7,11 @@ dGeomCommonControlClass=0,dGeomColliderControlClass=1,
 dGeomCommonAnyControlCode=0,dGeomColliderSetMergeSphereContactsControlCode=1,dGeomColliderGetMergeSphereContactsControlCode=2,
 dGeomColliderMergeContactsValue__Default=0,dGeomColliderMergeContactsValue_None=1,dGeomColliderMergeContactsValue_Normals=2,dGeomColliderMergeContactsValue_Full=3,
 dMaxUserClasses=4,
-dSphereClass=0,dBoxClass=1,dCapsuleClass=2,dCylinderClass=3,dPlaneClass=4,dRayClass=5,dConvexClass=6,dGeomTransformClass=7,dTriMeshClass=8,dHeightfieldClass=9,dFirstSpaceClass=10,dSimpleSpaceClass=10,dHashSpaceClass=11,dSweepAndPruneSpaceClass=12,dQuadTreeSpaceClass=13,dLastSpaceClass=13,dFirstUserClass=14,dLastUserClass=17,dGeomNumClasses=18,};typedef enum dSpaceAxis{dSA__MIN=0,dSA_X=0,dSA_Y=1,dSA_Z=2,dSA__MAX=3};
+dSphereClass=0,dBoxClass=1,dCapsuleClass=2,dCylinderClass=3,dPlaneClass=4,dRayClass=5,dConvexClass=6,dGeomTransformClass=7,dTriMeshClass=8,dHeightfieldClass=9,dFirstSpaceClass=10,dSimpleSpaceClass=10,dHashSpaceClass=11,dSweepAndPruneSpaceClass=12,dQuadTreeSpaceClass=13,dLastSpaceClass=13,dFirstUserClass=14,dLastUserClass=17,dGeomNumClasses=18,
+dTRIMESHDATA_FACE_NORMALS=0,dTRIMESHDATA_USE_FLAGS=1,
+dMESHDATAUSE_EDGE1=1,dMESHDATAUSE_EDGE2=2,dMESHDATAUSE_EDGE3=4,dMESHDATAUSE_VERTEX1=8,dMESHDATAUSE_VERTEX2=16,dMESHDATAUSE_VERTEX3=32,};typedef enum dSpaceAxis{dSA__MIN=0,dSA_X=0,dSA_Y=1,dSA_Z=2,dSA__MAX=3};
 typedef enum dVec4Element{dV4E__MIN=0,dV4E_X=0,dV4E_Y=1,dV4E_Z=2,dV4E_O=3,dV4E__MAX=4};
+typedef enum dMeshTriangleVertex{dMTV__MIN=0,dMTV_FIRST=0,dMTV_SECOND=1,dMTV_THIRD=2,dMTV__MAX=3};
 typedef enum dMat4Element{dM4E__MIN=0,dM4E__X_MIN=0,dM4E_XX=0,dM4E_XY=1,dM4E_XZ=2,dM4E_XO=3,dM4E__X_MAX=4,dM4E__Y_MIN=4,dM4E_YX=4,dM4E_YY=5,dM4E_YZ=6,dM4E_YO=7,dM4E__Y_MAX=8,dM4E__Z_MIN=8,dM4E_ZX=8,dM4E_ZY=9,dM4E_ZZ=10,dM4E_ZO=11,dM4E__Z_MAX=12,dM4E__O_MIN=12,dM4E_OX=12,dM4E_OY=13,dM4E_OZ=14,dM4E_OO=15,dM4E__O_MAX=16,dM4E__MAX=16};
 typedef enum dDynamicsAxis{dDA__MIN=0,dDA__L_MIN=0,dDA_LX=0,dDA_LY=1,dDA_LZ=2,dDA__L_MAX=3,dDA__A_MIN=3,dDA_AX=3,dDA_AY=4,dDA_AZ=5,dDA__A_MAX=6,dDA__MAX=6};
 typedef enum dMotionDynamics{dMD__MIN=0,dMD_LINEAR=0,dMD_ANGULAR=1,dMD__MAX=2};
@@ -17,7 +20,7 @@ typedef enum dQuatElement{dQUE__MIN=0,dQUE_R=0,dQUE__AXIS_MIN=1,dQUE_I=1,dQUE_J=
 typedef enum dJointType{dJointTypeNone=0,dJointTypeBall=1,dJointTypeHinge=2,dJointTypeSlider=3,dJointTypeContact=4,dJointTypeUniversal=5,dJointTypeHinge2=6,dJointTypeFixed=7,dJointTypeNull=8,dJointTypeAMotor=9,dJointTypeLMotor=10,dJointTypePlane2D=11,dJointTypePR=12,dJointTypePU=13,dJointTypePiston=14,dJointTypeDBall=15,dJointTypeDHinge=16,dJointTypeTransmission=17};
 typedef enum dMat3Element{dM3E__MIN=0,dM3E__X_MIN=0,dM3E__X_AXES_MIN=0,dM3E_XX=0,dM3E_XY=1,dM3E_XZ=2,dM3E__X_AXES_MAX=3,dM3E_XPAD=3,dM3E__X_MAX=4,dM3E__Y_MIN=4,dM3E__Y_AXES_MIN=4,dM3E_YX=4,dM3E_YY=5,dM3E_YZ=6,dM3E__Y_AXES_MAX=7,dM3E_YPAD=7,dM3E__Y_MAX=8,dM3E__Z_MIN=8,dM3E__Z_AXES_MIN=8,dM3E_ZX=8,dM3E_ZY=9,dM3E_ZZ=10,dM3E__Z_AXES_MAX=11,dM3E_ZPAD=11,dM3E__Z_MAX=12,dM3E__MAX=12};
 typedef enum dInitODEFlags{dInitFlagManualThreadCleanup=1};
-typedef enum dVec3Element{dV3E__MIN=0,dV3E__AXES_MIN=0,dV3E_X=0,dV3E_Y=1,dV3E_Z=2,dV3E__AXES_MAX=3,dV3E_PAD=3,dV3E__MAX=4};
+typedef enum dVec3Element{dV3E__MIN=0,dV3E__AXES_MIN=0,dV3E_X=0,dV3E_Y=1,dV3E_Z=2,dV3E__AXES_MAX=3,dV3E_PAD=3,dV3E__MAX=4,dV3E__AXES_COUNT=3};
 struct _IO_marker {struct _IO_marker*_next;struct _IO_FILE*_sbuf;int _pos;};
 struct _IO_FILE {int _flags;char*_IO_read_ptr;char*_IO_read_end;char*_IO_read_base;char*_IO_write_base;char*_IO_write_ptr;char*_IO_write_end;char*_IO_buf_base;char*_IO_buf_end;char*_IO_save_base;char*_IO_backup_base;char*_IO_save_end;struct _IO_marker*_markers;struct _IO_FILE*_chain;int _fileno;int _flags2;long _old_offset;unsigned short _cur_column;signed char _vtable_offset;char _shortbuf[1];void*_lock;long _offset;void*__pad1;void*__pad2;void*__pad3;void*__pad4;unsigned long __pad5;int _mode;char _unused2[15*sizeof(int)-4*sizeof(void*)-sizeof(size_t)];};
 struct dxWorld {};
@@ -323,22 +326,22 @@ void(dThreadingThreadPoolServeMultiThreadedImplementation)(struct dxThreadingThr
 void(dExternalThreadingServeMultiThreadedImplementation)(struct dxThreadingImplementation*,void(readiness_callback)(void*),void*);
 struct dxThreadingImplementation*(dThreadingAllocateMultiThreadedImplementation)();
 double(dJointGetAMotorAngle)(struct dxJoint*,int);
+void*(dGeomGetClassData)(struct dxGeom*);
 void(dJointSetDBallAnchor1)(struct dxJoint*,double,double,double);
 void(dSetValue)(double*,int,double);
 void(dGeomSetQuaternion)(struct dxGeom*,const double[dQUE__MAX]);
 void(dJointGetDBallAnchor1)(struct dxJoint*,double[dV3E__MAX]);
 void(dJointGetDBallAnchor2)(struct dxJoint*,double[dV3E__MAX]);
-void*(dGeomGetClassData)(struct dxGeom*);
-void(dNormalize3)(double[dV3E__MAX]);
 void(dClosestLineSegmentPoints)(const double[dV3E__MAX],const double[dV3E__MAX],const double[dV3E__MAX],const double[dV3E__MAX],double[dV3E__MAX],double[dV3E__MAX]);
+void(dNormalize3)(double[dV3E__MAX]);
+void(dGeomTriMeshSetLastTransform)(struct dxGeom*,const double[dM4E__MAX]);
 void(dJointGetSliderAxis)(struct dxJoint*,double[dV3E__MAX]);
-void(dGeomTriMeshDataBuildSingle)(struct dxTriMeshData*,const void*,int,int,const void*,int,int);
 void(dGeomHeightfieldDataBuildShort)(struct dxHeightfieldData*,const short*,int,double,double,int,int,double,double,double,int);
 void(dJointSetTransmissionAxis1)(struct dxJoint*,double,double,double);
 void(dJointSetAMotorAxis)(struct dxJoint*,int,int,double,double,double);
 void(dGeomHeightfieldDataDestroy)(struct dxHeightfieldData*);
-double(dJointGetPUAngle1Rate)(struct dxJoint*);
 struct dxHeightfieldData*(dGeomHeightfieldDataCreate)();
+double(dJointGetPUAngle1Rate)(struct dxJoint*);
 struct dxGeom*(dCreateHeightfield)(struct dxSpace*,struct dxHeightfieldData*,int);
 int(dGeomTransformGetInfo)(struct dxGeom*);
 int(dGeomTransformGetCleanup)(struct dxGeom*);
@@ -347,33 +350,34 @@ struct dxGeom*(dGeomTransformGetGeom)(struct dxGeom*);
 struct dxGeom*(dCreateGeomTransform)(struct dxSpace*);
 void(dGeomTriMeshDataUpdate)(struct dxTriMeshData*);
 int(dGeomTriMeshGetTriangleCount)(struct dxGeom*);
-void(dMakeRandomVector)(double*,int,double);
 void(dGeomTriMeshGetTriangle)(struct dxGeom*,int,double*[dV3E__MAX],double*[dV3E__MAX],double*[dV3E__MAX]);
+void(dMakeRandomVector)(double*,int,double);
 struct dxTriMeshData*(dGeomTriMeshGetTriMeshDataID)(struct dxGeom*);
 void(dGeomTriMeshEnableTC)(struct dxGeom*,int,int);
 struct dxTriMeshData*(dGeomTriMeshGetData)(struct dxGeom*);
 void(dGeomTriMeshSetData)(struct dxGeom*,struct dxTriMeshData*);
 struct dxGeom*(dCreateTriMesh)(struct dxSpace*,struct dxTriMeshData*,int(Callback)(struct dxGeom*,struct dxGeom*,int),void(ArrayCallback)(struct dxGeom*,struct dxGeom*,const int*,int),int(RayCallback)(struct dxGeom*,struct dxGeom*,int,double,double));
 int(*dGeomTriMeshGetTriMergeCallback(struct dxGeom*))(struct dxGeom*,int,int);
-void(dJointSetTransmissionAnchor1)(struct dxJoint*,double,double,double);
 void(dGeomTriMeshSetTriMergeCallback)(struct dxGeom*,int(Callback)(struct dxGeom*,int,int));
+void(dJointSetTransmissionAnchor1)(struct dxJoint*,double,double,double);
 double(dJointGetPUParam)(struct dxJoint*,int);
 void(*dGeomTriMeshGetArrayCallback(struct dxGeom*))(struct dxGeom*,struct dxGeom*,const int*,int);
 void(dGeomTriMeshSetArrayCallback)(struct dxGeom*,void(ArrayCallback)(struct dxGeom*,struct dxGeom*,const int*,int));
-struct dxJoint*(dJointCreateUniversal)(struct dxWorld*,struct dxJointGroup*);
 void(dJointGetPRAxis1)(struct dxJoint*,double[dV3E__MAX]);
+struct dxJoint*(dJointCreateUniversal)(struct dxWorld*,struct dxJointGroup*);
+void(dGeomTriMeshDataSetBuffer)(struct dxTriMeshData*,unsigned char*);
 void(dJointGetTransmissionAnchor1)(struct dxJoint*,double[dV3E__MAX]);
 double(dBodyGetMaxAngularSpeed)(struct dxBody*);
-void(dGeomTriMeshDataSetBuffer)(struct dxTriMeshData*,unsigned char*);
-void(dGeomTriMeshDataPreprocess)(struct dxTriMeshData*);
-void(dHashSpaceSetLevels)(struct dxSpace*,int,int);
+int(dGeomTriMeshDataPreprocess)(struct dxTriMeshData*);
 void(dGeomTriMeshDataBuildSimple)(struct dxTriMeshData*,const double*,int,const unsigned int*,int);
-void(dJointSetFeedback)(struct dxJoint*,struct dJointFeedback*);
+void(dHashSpaceSetLevels)(struct dxSpace*,int,int);
 void(dGeomTriMeshDataBuildDouble)(struct dxTriMeshData*,const void*,int,int,const void*,int,int);
+void(dJointSetFeedback)(struct dxJoint*,struct dJointFeedback*);
+void(dGeomTriMeshDataBuildSingle)(struct dxTriMeshData*,const void*,int,int,const void*,int,int);
 void(dGeomHeightfieldDataSetBounds)(struct dxHeightfieldData*,double,double);
 void(dRFromZAxis)(double[dM3E__MAX],double,double,double);
 void(dBodySetData)(struct dxBody*,void*);
-void(dGeomTriMeshSetLastTransform)(struct dxGeom*,const double[dM4E__MAX]);
+void*(dGeomTriMeshDataGet2)(struct dxTriMeshData*,int,unsigned long*);
 double(dJointGetHinge2Angle2Rate)(struct dxJoint*);
 void(dGeomTriMeshDataSet)(struct dxTriMeshData*,int,void*);
 void(dGeomTriMeshDataDestroy)(struct dxTriMeshData*);
@@ -498,7 +502,6 @@ void(dJointGetDHingeAnchor2)(struct dxJoint*,double[dV3E__MAX]);
 double(dJointGetUniversalAngle1)(struct dxJoint*);
 double(dJointGetTransmissionAngle2)(struct dxJoint*);
 void(dJointGetUniversalAnchor2)(struct dxJoint*,double[dV3E__MAX]);
-void*(dGeomTriMeshDataGet)(struct dxTriMeshData*,int);
 void(dJointSetBallAnchor)(struct dxJoint*,double,double,double);
 double(dJointGetHinge2Angle1Rate)(struct dxJoint*);
 double(dJointGetHinge2Angle2)(struct dxJoint*);
@@ -943,22 +946,22 @@ library = {
 	ExternalThreadingServeMultiThreadedImplementation = CLIB.dExternalThreadingServeMultiThreadedImplementation,
 	ThreadingAllocateMultiThreadedImplementation = CLIB.dThreadingAllocateMultiThreadedImplementation,
 	JointGetAMotorAngle = CLIB.dJointGetAMotorAngle,
+	GeomGetClassData = CLIB.dGeomGetClassData,
 	JointSetDBallAnchor1 = CLIB.dJointSetDBallAnchor1,
 	SetValue = CLIB.dSetValue,
 	GeomSetQuaternion = CLIB.dGeomSetQuaternion,
 	JointGetDBallAnchor1 = CLIB.dJointGetDBallAnchor1,
 	JointGetDBallAnchor2 = CLIB.dJointGetDBallAnchor2,
-	GeomGetClassData = CLIB.dGeomGetClassData,
-	Normalize3 = CLIB.dNormalize3,
 	ClosestLineSegmentPoints = CLIB.dClosestLineSegmentPoints,
+	Normalize3 = CLIB.dNormalize3,
+	GeomTriMeshSetLastTransform = CLIB.dGeomTriMeshSetLastTransform,
 	JointGetSliderAxis = CLIB.dJointGetSliderAxis,
-	GeomTriMeshDataBuildSingle = CLIB.dGeomTriMeshDataBuildSingle,
 	GeomHeightfieldDataBuildShort = CLIB.dGeomHeightfieldDataBuildShort,
 	JointSetTransmissionAxis1 = CLIB.dJointSetTransmissionAxis1,
 	JointSetAMotorAxis = CLIB.dJointSetAMotorAxis,
 	GeomHeightfieldDataDestroy = CLIB.dGeomHeightfieldDataDestroy,
-	JointGetPUAngle1Rate = CLIB.dJointGetPUAngle1Rate,
 	GeomHeightfieldDataCreate = CLIB.dGeomHeightfieldDataCreate,
+	JointGetPUAngle1Rate = CLIB.dJointGetPUAngle1Rate,
 	CreateHeightfield = CLIB.dCreateHeightfield,
 	GeomTransformGetInfo = CLIB.dGeomTransformGetInfo,
 	GeomTransformGetCleanup = CLIB.dGeomTransformGetCleanup,
@@ -967,33 +970,34 @@ library = {
 	CreateGeomTransform = CLIB.dCreateGeomTransform,
 	GeomTriMeshDataUpdate = CLIB.dGeomTriMeshDataUpdate,
 	GeomTriMeshGetTriangleCount = CLIB.dGeomTriMeshGetTriangleCount,
-	MakeRandomVector = CLIB.dMakeRandomVector,
 	GeomTriMeshGetTriangle = CLIB.dGeomTriMeshGetTriangle,
+	MakeRandomVector = CLIB.dMakeRandomVector,
 	GeomTriMeshGetTriMeshDataID = CLIB.dGeomTriMeshGetTriMeshDataID,
 	GeomTriMeshEnableTC = CLIB.dGeomTriMeshEnableTC,
 	GeomTriMeshGetData = CLIB.dGeomTriMeshGetData,
 	GeomTriMeshSetData = CLIB.dGeomTriMeshSetData,
 	CreateTriMesh = CLIB.dCreateTriMesh,
 	GeomTriMeshGetTriMergeCallback = CLIB.dGeomTriMeshGetTriMergeCallback,
-	JointSetTransmissionAnchor1 = CLIB.dJointSetTransmissionAnchor1,
 	GeomTriMeshSetTriMergeCallback = CLIB.dGeomTriMeshSetTriMergeCallback,
+	JointSetTransmissionAnchor1 = CLIB.dJointSetTransmissionAnchor1,
 	JointGetPUParam = CLIB.dJointGetPUParam,
 	GeomTriMeshGetArrayCallback = CLIB.dGeomTriMeshGetArrayCallback,
 	GeomTriMeshSetArrayCallback = CLIB.dGeomTriMeshSetArrayCallback,
-	JointCreateUniversal = CLIB.dJointCreateUniversal,
 	JointGetPRAxis1 = CLIB.dJointGetPRAxis1,
+	JointCreateUniversal = CLIB.dJointCreateUniversal,
+	GeomTriMeshDataSetBuffer = CLIB.dGeomTriMeshDataSetBuffer,
 	JointGetTransmissionAnchor1 = CLIB.dJointGetTransmissionAnchor1,
 	BodyGetMaxAngularSpeed = CLIB.dBodyGetMaxAngularSpeed,
-	GeomTriMeshDataSetBuffer = CLIB.dGeomTriMeshDataSetBuffer,
 	GeomTriMeshDataPreprocess = CLIB.dGeomTriMeshDataPreprocess,
-	HashSpaceSetLevels = CLIB.dHashSpaceSetLevels,
 	GeomTriMeshDataBuildSimple = CLIB.dGeomTriMeshDataBuildSimple,
-	JointSetFeedback = CLIB.dJointSetFeedback,
+	HashSpaceSetLevels = CLIB.dHashSpaceSetLevels,
 	GeomTriMeshDataBuildDouble = CLIB.dGeomTriMeshDataBuildDouble,
+	JointSetFeedback = CLIB.dJointSetFeedback,
+	GeomTriMeshDataBuildSingle = CLIB.dGeomTriMeshDataBuildSingle,
 	GeomHeightfieldDataSetBounds = CLIB.dGeomHeightfieldDataSetBounds,
 	RFromZAxis = CLIB.dRFromZAxis,
 	BodySetData = CLIB.dBodySetData,
-	GeomTriMeshSetLastTransform = CLIB.dGeomTriMeshSetLastTransform,
+	GeomTriMeshDataGet2 = CLIB.dGeomTriMeshDataGet2,
 	JointGetHinge2Angle2Rate = CLIB.dJointGetHinge2Angle2Rate,
 	GeomTriMeshDataSet = CLIB.dGeomTriMeshDataSet,
 	GeomTriMeshDataDestroy = CLIB.dGeomTriMeshDataDestroy,
@@ -1118,7 +1122,6 @@ library = {
 	JointGetUniversalAngle1 = CLIB.dJointGetUniversalAngle1,
 	JointGetTransmissionAngle2 = CLIB.dJointGetTransmissionAngle2,
 	JointGetUniversalAnchor2 = CLIB.dJointGetUniversalAnchor2,
-	GeomTriMeshDataGet = CLIB.dGeomTriMeshDataGet,
 	JointSetBallAnchor = CLIB.dJointSetBallAnchor,
 	JointGetHinge2Angle1Rate = CLIB.dJointGetHinge2Angle1Rate,
 	JointGetHinge2Angle2 = CLIB.dJointGetHinge2Angle2,
@@ -1287,6 +1290,11 @@ library.e = {
 	V4E_Z = ffi.cast("enum dVec4Element", "dV4E_Z"),
 	V4E_O = ffi.cast("enum dVec4Element", "dV4E_O"),
 	V4E__MAX = ffi.cast("enum dVec4Element", "dV4E__MAX"),
+	MTV__MIN = ffi.cast("enum dMeshTriangleVertex", "dMTV__MIN"),
+	MTV_FIRST = ffi.cast("enum dMeshTriangleVertex", "dMTV_FIRST"),
+	MTV_SECOND = ffi.cast("enum dMeshTriangleVertex", "dMTV_SECOND"),
+	MTV_THIRD = ffi.cast("enum dMeshTriangleVertex", "dMTV_THIRD"),
+	MTV__MAX = ffi.cast("enum dMeshTriangleVertex", "dMTV__MAX"),
 	M4E__MIN = ffi.cast("enum dMat4Element", "dM4E__MIN"),
 	M4E__X_MIN = ffi.cast("enum dMat4Element", "dM4E__X_MIN"),
 	M4E_XX = ffi.cast("enum dMat4Element", "dM4E_XX"),
@@ -1393,6 +1401,7 @@ library.e = {
 	V3E__AXES_MAX = ffi.cast("enum dVec3Element", "dV3E__AXES_MAX"),
 	V3E_PAD = ffi.cast("enum dVec3Element", "dV3E_PAD"),
 	V3E__MAX = ffi.cast("enum dVec3Element", "dV3E__MAX"),
+	V3E__AXES_COUNT = ffi.cast("enum dVec3Element", "dV3E__AXES_COUNT"),
 	ParamLoStop = 0,
 	ParamHiStop = 1,
 	ParamVel = 2,
@@ -1505,6 +1514,14 @@ library.e = {
 	FirstUserClass = 14,
 	LastUserClass = 17,
 	GeomNumClasses = 18,
+	TRIMESHDATA_FACE_NORMALS = 0,
+	TRIMESHDATA_USE_FLAGS = 1,
+	MESHDATAUSE_EDGE1 = 1,
+	MESHDATAUSE_EDGE2 = 2,
+	MESHDATAUSE_EDGE3 = 4,
+	MESHDATAUSE_VERTEX1 = 8,
+	MESHDATAUSE_VERTEX2 = 16,
+	MESHDATAUSE_VERTEX3 = 32,
 }
 library.clib = CLIB
 return library

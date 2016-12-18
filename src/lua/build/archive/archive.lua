@@ -189,11 +189,11 @@ struct archive_entry_linkresolver*(archive_entry_linkresolver_new)();
 int(archive_entry_sparse_reset)(struct archive_entry*);
 const int*(archive_entry_uname_w)(struct archive_entry*);
 void(archive_entry_sparse_clear)(struct archive_entry*);
-void(archive_entry_unset_birthtime)(struct archive_entry*);
 int(archive_entry_xattr_next)(struct archive_entry*,const char**,const void**,unsigned long*);
+void(archive_entry_unset_birthtime)(struct archive_entry*);
 int(archive_entry_xattr_reset)(struct archive_entry*);
-int(archive_write_set_format_shar_dump)(struct archive*);
 void(archive_entry_copy_gname)(struct archive_entry*,const char*);
+int(archive_write_set_format_shar_dump)(struct archive*);
 struct archive_acl*(archive_entry_acl)(struct archive_entry*);
 const int*(archive_entry_acl_text_w)(struct archive_entry*,int);
 struct archive_entry*(archive_entry_partial_links)(struct archive_entry_linkresolver*,unsigned int*);
@@ -339,6 +339,7 @@ unsigned int(archive_entry_mode)(struct archive_entry*);
 int(archive_write_set_bytes_per_block)(struct archive*,int);
 int(archive_write_set_format_mtree_classic)(struct archive*);
 int(archive_read_next_header)(struct archive*,struct archive_entry**);
+int(archive_entry_acl_types)(struct archive_entry*);
 int(archive_read_close)(struct archive*);
 struct archive*(archive_write_disk_new)();
 int(archive_read_disk_open)(struct archive*,const char*);
@@ -592,11 +593,11 @@ library = {
 	EntrySparseReset = CLIB.archive_entry_sparse_reset,
 	EntryUnameW = CLIB.archive_entry_uname_w,
 	EntrySparseClear = CLIB.archive_entry_sparse_clear,
-	EntryUnsetBirthtime = CLIB.archive_entry_unset_birthtime,
 	EntryXattrNext = CLIB.archive_entry_xattr_next,
+	EntryUnsetBirthtime = CLIB.archive_entry_unset_birthtime,
 	EntryXattrReset = CLIB.archive_entry_xattr_reset,
-	WriteSetFormatSharDump = CLIB.archive_write_set_format_shar_dump,
 	EntryCopyGname = CLIB.archive_entry_copy_gname,
+	WriteSetFormatSharDump = CLIB.archive_write_set_format_shar_dump,
 	EntryAcl = CLIB.archive_entry_acl,
 	EntryAclTextW = CLIB.archive_entry_acl_text_w,
 	EntryPartialLinks = CLIB.archive_entry_partial_links,
@@ -742,6 +743,7 @@ library = {
 	WriteSetBytesPerBlock = CLIB.archive_write_set_bytes_per_block,
 	WriteSetFormatMtreeClassic = CLIB.archive_write_set_format_mtree_classic,
 	ReadNextHeader = CLIB.archive_read_next_header,
+	EntryAclTypes = CLIB.archive_entry_acl_types,
 	ReadClose = CLIB.archive_read_close,
 	WriteDiskNew = CLIB.archive_write_disk_new,
 	ReadDiskOpen = CLIB.archive_read_disk_open,
@@ -808,9 +810,9 @@ library = {
 }
 library.e = {
 	H_INCLUDED = 1,
-	VERSION_NUMBER = 3002001,
-	VERSION_ONLY_STRING = "3.2.1",
-	VERSION_STRING = "libarchive 3.2.1",
+	VERSION_NUMBER = 3002002,
+	VERSION_ONLY_STRING = "3.2.2",
+	VERSION_STRING = "libarchive 3.2.2",
 	EOF = 1,
 	OK = 0,
 	RETRY = -10,

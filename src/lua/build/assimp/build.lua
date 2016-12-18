@@ -132,7 +132,7 @@ local function parse_scene(scene, path, callback)
 
 			if mesh.mTextureCoords ~= nil and mesh.mTextureCoords[0] ~= nil then
 				local val = mesh.mTextureCoords[0][i]
-				data.uv = Vec2(val.x, val.y)
+				data.uv = Vec2(val.x, -val.y)
 			end
 
 			table.insert(sub_model.vertices, data)

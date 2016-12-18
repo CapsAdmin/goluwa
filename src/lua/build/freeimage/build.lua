@@ -117,30 +117,62 @@ do
 		end
 	end
 
-	function library.LoadImage(data, flags, format)
-		local buffer = ffi.cast("unsigned char *", data)
+	function library.LoadImage(data)
+		local stream_buffer = ffi.cast("unsigned char *", data)
+		local stream = library.OpenMemory(stream_buffer, #data)
 
-		local stream = library.OpenMemory(buffer, #data)
-		local type = format or library.GetFileTypeFromMemory(stream, #data)
+		local type = library.GetFileTypeFromMemory(stream, #data)
 
 		if type == library.e.FORMAT_UNKNOWN or type > library.e.FORMAT_RAW then -- huh...
 			library.CloseMemory(stream)
 			error("unknown format", 2)
 		end
 
-		local temp = library.LoadFromMemory(type, stream, flags or 0)
-		local bitmap = library.ConvertTo32Bits(temp)
-		library.Unload(temp)
+		local bitmap = library.LoadFromMemory(type, stream, 0)
 
-		local data = library.GetBits(bitmap)
+		local buffer = library.GetBits(bitmap)
 		local width = library.GetWidth(bitmap)
 		local height = library.GetHeight(bitmap)
 
+		local image_type = library.GetImageType(bitmap)
+		local color_type = library.GetColorType(bitmap)
+
 		ffi.gc(bitmap, library.Unload)
-
 		library.CloseMemory(stream)
+		stream_buffer = nil
 
-		return data, width, height
+		local format = "bgra"
+		local type = "unsigned_byte"
+
+		if color_type == library.e.COLOR_TYPE_RGBALPHA then
+			format = "bgra"
+		elseif color_type == library.e.COLOR_TYPE_RGB then
+			format = "bgr"
+		elseif color_type == library.e.COLOR_TYPE_MINISBLACK or color_type == library.e.COLOR_TYPE_MINISWHITE then
+			format = "r"
+		else
+			wlog("unhandled freeimage color type: %s", color_type)
+		end
+
+		if image_type == library.e.IMAGE_TYPE_BITMAP then
+			type = "unsigned_byte"
+		elseif image_type == library.e.IMAGE_TYPE_RGBF then
+			type = "float"
+			format = "rgb"
+		elseif image_type == library.e.IMAGE_TYPE_RGBAF then
+			type = "float"
+			format = "rgba"
+		else
+			wlog("unhandled freeimage format type: %s", image_type)
+		end
+
+		return {
+			buffer = buffer,
+			width = width,
+			height = height,
+			format = format,
+			type = type,
+		}
 	end
 
 	function library.LoadMultiPageImage(data, flags)

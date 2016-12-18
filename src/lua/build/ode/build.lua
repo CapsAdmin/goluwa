@@ -18,6 +18,7 @@ meta_data.functions.dThreadingImplementationGetFunctions = nil
 meta_data.functions.dWorldSetStepThreadingImplementation = nil
 meta_data.functions.dCreateGeomClass = nil
 meta_data.functions.dJointAddPUTorque = nil
+meta_data.functions.dGeomTriMeshDataGet = nil
 
 --for k,v in pairs(meta_data.structs["struct dJointFeedback"].data) do print(v, meta_data.typedefs.dVector3:GetDeclaration(meta_data), v:GetDeclaration(meta_data), v.array_size, "!!") end
 --print(meta_data.typedefs.dVector3.array_size)
