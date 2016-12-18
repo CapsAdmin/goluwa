@@ -32,7 +32,7 @@ local atmosphere_shader = render.CreateShader({
 	},
 })
 
-local cloud_coverage_fbc = render3d.CreateFramebufferCubemap("rg32f", Vec2() + 512)
+local cloud_coverage_fbc = render3d.CreateFramebufferCubemap("rg16f", Vec2() + 512)
 local cloud_coverage_shader = render.CreateShader({
 	name = "vengine_clouds_coverage",
 	fragment = {
@@ -41,6 +41,7 @@ local cloud_coverage_shader = render.CreateShader({
 		},
 		variables = {
 			cloud_coverage_tex = cloud_coverage_fbc:GetTexture(),
+			cloud_atmosphere_tex = atmosphere_fbc:GetTexture(),
 		},
 		include_directories = {
 			"shaders/include/",
@@ -52,6 +53,11 @@ local cloud_coverage_shader = render.CreateShader({
 			#define CLOUDCOVERAGE_DENSITY 90
 			#define UV uv
 			#define CAMERA (g_cam_pos.yzx*vec3(-1,1,1))
+			#define atmScattTex cloud_atmosphere_tex
+			#define cloudsCloudsTex cloud_coverage_tex
+			#define coverageDistTex cloud_coverage_tex
+			#define mainPassTex cloud_coverage_tex
+			#define shadowsTex cloud_ao_tex
 			#include Atmosphere.glsl
 
 			out vec2 out_color;
@@ -60,13 +66,16 @@ local cloud_coverage_shader = render.CreateShader({
 			{
 				vec3 dir = -get_camera_dir(uv).xzy;
 
+				if(dir.y < -0.05) {out_color = vec2(0.0); return; }
+
+
 				vec2 lastData = texture(cloud_coverage_tex, -dir*vec3(1,-1,1)).rg;
 				vec2 val = raymarchCloudsRay(dir*vec3(-1,1,1));
 				vec2 retedg = vec2(max(val.r, lastData.r), min(val.g, lastData.g));
 				vec2 retavg = vec2(mix(val.r, lastData.r, CloudsIntegrate), val.g);
 
 				retavg.r = mix(retavg.r, retedg.r, 0.2);
-				retavg.g = mix(retavg.g, retedg.g, 0.5);
+				retavg.g = mix(retavg.g, retedg.g, 0.3);
 
 				out_color = retavg;
 			}
@@ -75,6 +84,7 @@ local cloud_coverage_shader = render.CreateShader({
 })
 
 local cloud_ao_fbc = render3d.CreateFramebufferCubemap("rgba16f", Vec2() + 512)
+cloud_ao_fbc:Clear(0,0,0,0)
 local cloud_ao_shader = render.CreateShader({
 	name = "vengine_clouds_ao",
 	fragment = {
@@ -96,7 +106,50 @@ local cloud_ao_shader = render.CreateShader({
 			#define CLOUDCOVERAGE_DENSITY 90
 			#define UV uv
 			#define CAMERA (g_cam_pos.yzx*vec3(-1,1,1))
+			#define atmScattTex cloud_atmosphere_tex
+			#define cloudsCloudsTex cloud_ao_tex
+			#define coverageDistTex cloud_coverage_tex
+			#define mainPassTex cloud_coverage_tex
+			#define shadowsTex cloud_ao_tex
 			#include Atmosphere.glsl
+
+
+			float rdhash = 0.453451 + Time;
+			vec3 randpoint3(){
+				float x = rand2s(UV * rdhash);
+				rdhash += 2.1231255;
+				float y = rand2s(UV * rdhash);
+				rdhash += 1.6271255;
+				float z = rand2s(UV * rdhash);
+				rdhash += 1.1231255;
+				return vec3(x, y, z) * 2.0 - 1.0;
+			}
+			vec3 blurshadowsAOXA(vec3 dir, float roughness){
+				//if(CloudsDensityScale <= 0.010) return 0.0;
+				float levels = max(0, float(textureQueryLevels(cloudsCloudsTex)));
+				float mx = log2(roughness*1024+1)/log2(1024);
+				float mlvel = mx * levels;
+			//	return textureLod(cloudsCloudsTex, dir, mlvel).gba;
+			   // float dst = textureLod(coverageDistTex, dir, mlvel).g;
+				float aoc = 1.0;
+
+				vec3 centerval = textureLod(cloudsCloudsTex, dir, mlvel).gba;
+				float cluma = length(centerval);
+				float blurrange = 0.0003;
+				for(int i=0;i<7;i++){
+					vec3 rdp = normalize(dir + randpoint3() * blurrange);
+					//float there = textureLod(coverageDistTex, rdp, mlvel).g;
+					//float w = clamp(1.0 / (abs(there - dst)*0.01 + 0.01), 0.0, 1.0);
+					//vec3 th = textureLod(cloudsCloudsTex, rdp, mlvel).gba;
+
+					cluma += length(textureLod(cloudsCloudsTex, rdp, mlvel).gba);
+					aoc += 1.0;
+				}
+				cluma /= aoc;
+				//return centerval;
+				return max(normalize(centerval) * cluma, vec3(0.00001));
+				//return vec3(cluma);
+			}
 
 			out vec4 out_color;
 
@@ -104,25 +157,28 @@ local cloud_ao_shader = render.CreateShader({
 			{
 				vec3 dir = get_camera_dir(uv).xzy;
 
+				if(dir.y > 0.05) {out_color = vec4(0.0); return; }
+
 				vec4 retedg = vec4(0);
 				vec4 retavg = vec4(0);
 
 				vec4 lastData = texture(cloud_ao_tex, dir*vec3(1,-1,1));
 
 				dir = dir * vec3(1,-1,-1);
-				float val = shadows(cloud_coverage_tex, dir);
+				float val = shadows(dir);
 				dir = dir * vec3(-1,1,-1);
 
 				retedg.r = min(val, lastData.r);
 				retavg.r = mix(val, lastData.r, CloudsIntegrate);
-				vec3 AOGround = getCloudsAL(cloud_coverage_tex, cloud_atmosphere_tex, dir*vec3(-1,1,1));
+				vec3 AOGround = getCloudsAL(dir*vec3(-1,1,1));
 				//float AOSky = 1.0 - AOGround;//getCloudsAO(dir, 1.0);
 
 				retedg.r = min(val, lastData.r);
 				retavg.r = mix(val, lastData.r, CloudsIntegrate);
-				retavg.r = mix(retavg.r, retedg.r, 0.5);
+				retavg.r = mix(retavg.r, retedg.r, 0.2);
 
-				retavg.gba = mix(AOGround, lastData.gba, CloudsIntegrate);
+				retavg.gba = mix(AOGround, blurshadowsAOXA(dir*vec3(-1,1,1), 0.0), CloudsIntegrate);
+				//retavg.gba = mix(AOGround, lastData.bga, CloudsIntegrate);
 
 				out_color = retavg;
 			}
@@ -141,6 +197,8 @@ local sky_resolve_shader = render.CreateShader({
 			atmosphere_tex = atmosphere_fbc:GetTexture(),
 			cloud_coverage_tex = cloud_coverage_fbc:GetTexture(),
 			cloud_ao_tex = cloud_ao_fbc:GetTexture(),
+			moonTex = render.CreateTextureFromPath("textures/moon.png"),
+			starsTex = render.CreateTextureFromPath("textures/stars.png"),
 		},
 		include_directories = {
 			"shaders/include/",
@@ -152,6 +210,7 @@ local sky_resolve_shader = render.CreateShader({
 			#define UV uv
 
 			#define atmScattTex atmosphere_tex
+			#define mainPassTex cloud_coverage_tex
 			#define cloudsCloudsTex cloud_coverage_tex
 			#define coverageDistTex cloud_coverage_tex
 			#define shadowsTex cloud_ao_tex
@@ -163,7 +222,7 @@ local sky_resolve_shader = render.CreateShader({
 			#include ResolveAtmosphere.glsl
 
 			vec3 integrateStepsAndSun(vec3 dir){
-				return sampleAtmosphere(dir, 0, 1, 23, lua[moon_tex = render.CreateTextureFromPath("textures/moon.png")], lua[stars_tex = render.CreateTextureFromPath("textures/stars.png")]);
+				return sampleAtmosphere(dir, 0, 1, 23);
 			}
 
 			out vec4 out_color;
@@ -171,10 +230,12 @@ local sky_resolve_shader = render.CreateShader({
 			{
 				vec3 dir = -get_camera_dir(uv).xzy;
 
+				//if(dir.y < -0.05) {out_color = vec4(0.0); return; }
+
 				out_color.rgb = integrateStepsAndSun(dir);
 				//out_color.rgb = vec3(texture(cloud_ao_tex, dir).r);
 				//out_color.rgb = vec3(texture(cloud_coverage_tex, dir).g/100000);
-				//out_color.rgb = vec3(texture(cloud_coverage_tex, dir).g/100000);
+				//out_color.rgb = vec3(texture(cloud_coverage_tex, dir).r);
 				//out_color.rgb = vec3(texture(cloud_ao_tex, dir).g);
 				//out_color.rgb = vec3(texture(cloud_ao_tex, dir).r);
 				//out_color.rgb = dir;
@@ -325,7 +386,7 @@ local water_shader = render.CreateShader({
 })
 
 local variables = {
-	DayElapsed = 0.1,
+	DayElapsed = 0.5,
 	YearElapsed = 0.1,
 	EquatorPoleMix = 0.5,
 
@@ -343,7 +404,7 @@ local variables = {
 	CloudsDensityThresholdHigh = 1.0,
 	CloudsDensityScale = 0.6,
 	CloudsWindSpeed = 0.4,
-	CloudsIntegrate = 0.95,
+	CloudsIntegrate = 0.97,
 	FBMSCALE = 1,
 }
 
