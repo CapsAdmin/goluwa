@@ -325,7 +325,7 @@ PASS.Stages = {
 						blend = mix(texture_blend, blend, 0.5);
 					}
 
-					if (blend != 0)
+					if (blend != 0 && blend_power != 0)
 					{
 						blend = pow(blend, blend_power);
 					}
