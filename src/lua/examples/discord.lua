@@ -1,5 +1,5 @@
 local base = "https://discordapp.com/api"
-local token = vfs.Read("discord_bot_token")
+local token = "Bot " .. vfs.Read("discord_bot_token")
 
 local function okay(what, callback)
 	sockets.Request({
@@ -11,18 +11,30 @@ local function okay(what, callback)
 			protocol = "tlsv1_2",
 		},
 		header = {
-			Authorization = "Bot " .. token,
+			Authorization = token,
 		},
 	})
 end
 
 okay("/gateway/bot", function(data)
+	if DISCORD_SOCKET then DISCORD_SOCKET:Remove() end
+
 	local socket = sockets.CreateWebsocketClient()
 	socket.socket.debug = true
-	socket.socket:SetTimeout()
 	socket:Connect(data.url .. "/?v=6")
 
-	socket:Send(serializer.Encode("json", {
+	function socket:SendJSON(tbl)
+		self:Send(serializer.Encode("json", tbl), 1)
+	end
+
+	function socket:Heartbeat()
+		socket:SendJSON({
+			op = 1,
+			d = self.last_sequence or 0,
+		})
+	end
+
+	socket:SendJSON({
 		op = 2,
 		d = {
 			token = token,
@@ -37,32 +49,48 @@ okay("/gateway/bot", function(data)
 			large_threshold = 100,
 			shard = {1,10},
 		},
-	}))
-	socket:Send(serializer.Encode("json", {
-		op = 1,
-		d = os.time(),
-	}))
+	})
 
-	function socket:OnReceive(message, opcode)
+	local opcodes = {
+		[0] = "Dispatch", -- dispatches an event
+		[1] = "Heartbeat", -- used for ping checking
+		[2] = "Identify", -- used for client handshake
+		[3] = "Status Update", -- used to update the client status
+		[4] = "Voice State Update", -- used to join/move/leave voice channels
+		[5] = "Voice Server Ping", -- used for voice ping checking
+		[6] = "Resume", -- used to resume a closed connection
+		[7] = "Reconnect", -- used to tell clients to reconnect to the gateway
+		[8] = "Request Guild Members", -- used to request guild members
+		[9] = "Invalid Session", -- used to notify client they have an invalid session id
+		[10] = "Hello", -- sent immediately after connecting, contains heartbeat and server debug information
+		[11] = "Heartback ACK", -- sent immediately following a client heartbeat that was received
+	}
+
+	function socket:OnReceive(message)
 		local data = serializer.Decode("json", message)
+		data.opcode = opcodes[data.op]
+		data.op = nil
 
-		print(opcode)
 		table.print(data)
 
-		if data.op ==  10 then
+		if data.opcode == "Dispatch" then
+			self.last_sequence = data.s
+		end
 
+		if data.opcode == "Hello" then
+			self:Heartbeat()
 			event.Timer("discord_heartbeat", data.d.heartbeat_interval/1000, function()
 				if self:IsValid() then
-					self:Send(serializer.Encode("json", {
-						op = 1,
-						d = os.time(),
-					}))
+					self:Heartbeat()
 				end
 			end)
 		end
 	end
 
 	function socket:OnClose(reason, code)
-		print(reason, code)
+		logf("closing discord socket: %s (%s)\n", reason, code)
+		event.RemoveTimer("discord_heartbeat")
 	end
+
+	DISCORD_SOCKET = socket
 end)
