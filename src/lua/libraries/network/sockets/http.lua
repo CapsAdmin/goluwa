@@ -187,7 +187,7 @@ function sockets.Request(info)
 			if header_data then
 				header = sockets.HeaderToTable(header_data)
 
-				 -- redirection
+				-- redirection
 				if header.location then
 					info.protocol = nil
 					info.location = nil

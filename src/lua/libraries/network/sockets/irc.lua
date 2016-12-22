@@ -1,4 +1,4 @@
-local sockets = ... or {}
+local sockets = ... or _G.sockets
 
 local META = prototype.CreateTemplate("irc_client")
 
