@@ -65,6 +65,7 @@ sockets.active_sockets = sockets.active_sockets or {}
 runfile("helpers.lua", sockets)
 runfile("http.lua", sockets)
 runfile("irc.lua", sockets)
+runfile("websocket.lua", sockets)
 
 function sockets.Initialize()
 	event.Timer("sockets", 1/30, 0, sockets.Update, nil, function(...) logn(...) return true end)
@@ -128,32 +129,34 @@ local function new_socket(override, META, typ, id)
 	typ = typ or "tcp"
 	typ = typ:lower()
 
-	if typ == "udp" or typ == "tcp" then
-
-		if id then
-			for _, socket in ipairs(sockets.active_sockets) do
-				if socket.uid == id then
-					socket:Remove()
-				end
+	if id then
+		for _, socket in ipairs(sockets.active_sockets) do
+			if socket.uid == id then
+				socket:Remove()
 			end
 		end
+	end
 
-		local self = META:CreateObject()
+	local self = META:CreateObject()
+
+	if typ == "udp" or typ == "tcp" then
 		self.socket = override or assert(sockets.luasocket[typ]())
 		self.socket:settimeout(0)
-		self.socket_type = typ
-		self.data_sent = 0
-		self.data_received = 0
-		self:Initialize()
-
-		table.insert(sockets.active_sockets, self)
-
-		self:DebugPrintf("created")
-
-		self.uid = id
-
-		return self
 	end
+
+	self.socket_type = typ
+	self.data_sent = 0
+	self.data_received = 0
+
+	self:Initialize()
+
+	table.insert(sockets.active_sockets, self)
+
+	self:DebugPrintf("created")
+
+	self.uid = id
+
+	return self
 end
 
 do -- tcp socket meta
@@ -218,8 +221,14 @@ do -- tcp socket meta
 			function CLIENT:SetSSLParams(params)
 				if not ssl then wlog("cannot use ssl parameters: luasec not found!") return end
 
-				if not params or params == "https" then
+				if params == "https" then
 					params = https_default
+				end
+
+				params = table.copy(params)
+
+				for k,v in pairs(https_default) do
+					params[k] = params[k] or v
 				end
 
 				self.SSLParams = params
@@ -313,12 +322,13 @@ do -- tcp socket meta
 						self.shaking_hands = true
 
 						self:DebugPrintf("start handshake")
+					else
+						self:OnConnect(res, msg)
 					end
 
 					-- ip, port = res, msg
 					self.connected = true
 					self.connecting = nil
-					self:OnConnect(res, msg)
 
 					self:Timeout(false)
 				elseif msg == "timeout" or msg == "getpeername failed" or msg == "Transport endpoint is not connected" then
@@ -334,6 +344,7 @@ do -- tcp socket meta
 				if res then
 					self.shaking_hands = nil
 					self:DebugPrintf("done shaking hands")
+					self:OnConnect(self.old_socket:getpeername())
 				elseif msg == "wantread" or msg == "Socket is not connected" then
 					self:Timeout(true)
 				elseif msg == "closed" then
@@ -366,7 +377,7 @@ do -- tcp socket meta
 								if self.__server then
 									self.__server.data_sent = self.__server.data_sent + bytes
 								end
-							elseif b ~= "Socket is not connected" then
+							elseif b ~= "Socket is not connected" and b ~= "wantwrite" then
 								self:DebugPrintf("could not send %s of data : %s", utility.FormatFileSize(#data), b)
 --								break
 							end
@@ -399,7 +410,7 @@ do -- tcp socket meta
 						if #data > 256 then
 							self:DebugPrintf("received (mode %s) %i bytes of data", mode, #data)
 						else
-							self:DebugPrintf("received (mode %s) %i bytes of data (%q)", mode, #data, data:readablehex())
+							self:DebugPrintf("received (mode %s) %i bytes of data (%q)", mode, #data, data)
 						end
 
 						self:OnReceive(data)
