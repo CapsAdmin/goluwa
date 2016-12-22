@@ -298,43 +298,55 @@ do -- full path
 	end)
 end
 
+local function handle_dir(dir, path)
+	if path:startswith("..") then
+		local last_dir = vfs.GetFileRunStack()[#vfs.GetFileRunStack()]
+		local dir = vfs.FixPathSlashes(vfs.GetParentFolderFromPath(last_dir, 1) .. path:sub(3))
+		return dir
+	elseif path:startswith(".") then
+		return vfs.FixPathSlashes(vfs.GetFileRunStack()[#vfs.GetFileRunStack()] .. path:sub(2))
+	end
+
+	return dir .. path
+end
+
 function vfs.AddModuleDirectory(dir)
 	do -- relative path
 		add(function(path)
-			return vfs.LoadFile(dir .. path)
+			return vfs.LoadFile(handle_dir(dir, path))
 		end)
 
 		add(function(path)
-			return vfs.LoadFile(dir .. path .. ".lua")
+			return vfs.LoadFile(handle_dir(dir, path) .. ".lua")
 		end)
 
 		add(function(path)
 			path = path:gsub("(.)%.(.)", "%1/%2")
-			return vfs.LoadFile(dir .. path .. ".lua")
+			return vfs.LoadFile(handle_dir(dir, path) .. ".lua")
 		end)
 	end
 
 	add(function(path)
-		return vfs.LoadFile(dir .. path .. "/init.lua")
+		return vfs.LoadFile(handle_dir(dir, path) .. "/init.lua")
 	end)
 
 	add(function(path)
-		return vfs.LoadFile(dir .. path .. "/"..path..".lua")
+		return vfs.LoadFile(handle_dir(dir, path) .. "/"..path..".lua")
 	end)
 
 	-- again but with . replaced with /
 	add(function(path)
 		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
-		return vfs.LoadFile(dir .. path .. ".lua")
+		return vfs.LoadFile(handle_dir(dir, path) .. ".lua")
 	end)
 
 	add(function(path)
 		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
-		return vfs.LoadFile(dir .. path .. "/init.lua")
+		return vfs.LoadFile(handle_dir(dir, path) .. "/init.lua")
 	end)
 
 	add(function(path)
 		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
-		return vfs.LoadFile(dir .. path .. "/" .. path ..  ".lua")
+		return vfs.LoadFile(handle_dir(dir, path) .. "/" .. path ..  ".lua")
 	end)
 end
