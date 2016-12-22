@@ -17,26 +17,22 @@ function META:Connect(url, ws_protocol)
 	self.port = port
 	self.uri = uri
 
-	local protocols_tbl = {""}
-
 	if type(ws_protocol) == "string" then
-		protocols_tbl = {ws_protocol}
+		self.protocols_tbl = {ws_protocol}
 	elseif type(ws_protocol) == "table" then
-		protocols_tbl = ws_protocol
+		self.protocols_tbl = ws_protocol
 	end
 
-	self.protocols_tbl = protocols_tbl
-
-	self.socket:SetNoDelay(true)
+	--self.socket:SetNoDelay(true)
 
 	self.socket:Connect(self.host, self.port)
 end
 
-function META:Send(message)
+function META:Send(message, opcode)
 	self.socket:Send(frame.encode(message, opcode or frame.TEXT, true))
 end
 
-function META:Close(reason)
+function META:Close(reason, code)
 	local encoded = frame.encode_close(code or 1000, reason)
 	self.socket:Send(frame.encode(encoded, frame.CLOSE, true))
 end
@@ -44,8 +40,8 @@ end
 function META:OnReceive()
 end
 
-function META:OnError()
-
+function META:OnError(err)
+	logn(err)
 end
 
 function META:OnClose()
@@ -55,6 +51,8 @@ end
 function sockets.CreateWebsocketClient()
 	local self = META:CreateObject()
 	self.socket = sockets.CreateClient("tcp")
+	self.socket:SetTimeout()
+	self.socket:SetReceiveMode("all")
 
 	function self.socket.OnConnect()
 		self.key = tools.generate_key()
@@ -62,7 +60,7 @@ function sockets.CreateWebsocketClient()
 			key = self.key,
 			host = self.host,
 			port = self.port,
-			protocols = self.protocols_tbl,
+			protocols = self.protocols_tbl or {""},
 			origin = self.origin,
 			uri = self.uri,
 		})
@@ -72,22 +70,22 @@ function sockets.CreateWebsocketClient()
 	local in_header = true
 
 	function self.socket.OnReceive(_, str)
-
 		if in_header then
 			local header_data, rest = str:match("(.-\r\n\r\n)(.+)")
 
 			if header_data then
 				str = rest
 			else
-				header_data = rest
+				header_data = str
+				str = nil
 			end
 
-			header = sockets.HeaderToTable(header_data)
+			local header = sockets.HeaderToTable(header_data)
 
 			local expected_accept = handshake.sec_websocket_accept(self.key)
 
 			if header["sec-websocket-accept"] ~= expected_accept then
-				self:OnError("accept failed")
+				self:OnError(("Accept failed. Expected %s got %s"):format(expected_accept, header["sec-websocket-accept"]))
 				return
 			end
 
@@ -97,9 +95,10 @@ function sockets.CreateWebsocketClient()
 		if str then
 			local first_opcode
 			local frames = {}
+			local encoded = str
 
 			repeat
-				local decoded, fin, opcode, rest = frame.decode(str)
+				local decoded, fin, opcode, rest = frame.decode(encoded)
 
 				if decoded then
 					if not first_opcode then
@@ -118,7 +117,6 @@ function sockets.CreateWebsocketClient()
 							self.socket:Send(encoded, true)
 							self:OnClose(reason, code)
 							self.socket:Remove()
-							self:Remove()
 						else
 							self:OnReceive(message, opcode)
 						end
