@@ -1,0 +1,141 @@
+local sockets = ... or _G.sockets
+
+local META = prototype.CreateTemplate("websocket_client")
+
+local tools = require("websocket.tools")
+local frame = require("websocket.frame")
+local handshake = require("websocket.handshake")
+
+function META:Connect(url, ws_protocol)
+	local protocol, host, port, uri = tools.parse_url(url)
+
+	if protocol == "wss" then
+		self.socket:SetSSLParams("https")
+	end
+
+	self.host = host
+	self.port = port
+	self.uri = uri
+
+	local protocols_tbl = {""}
+
+	if type(ws_protocol) == "string" then
+		protocols_tbl = {ws_protocol}
+	elseif type(ws_protocol) == "table" then
+		protocols_tbl = ws_protocol
+	end
+
+	self.protocols_tbl = protocols_tbl
+
+	self.socket:SetNoDelay(true)
+
+	self.socket:Connect(self.host, self.port)
+end
+
+function META:Send(message)
+	self.socket:Send(frame.encode(message, opcode or frame.TEXT, true))
+end
+
+function META:Close(reason)
+	local encoded = frame.encode_close(code or 1000, reason)
+	self.socket:Send(frame.encode(encoded, frame.CLOSE, true))
+end
+
+function META:OnReceive()
+end
+
+function META:OnError()
+
+end
+
+function META:OnClose()
+
+end
+
+function sockets.CreateWebsocketClient()
+	local self = META:CreateObject()
+	self.socket = sockets.CreateClient("tcp")
+
+	function self.socket.OnConnect()
+		self.key = tools.generate_key()
+		local req = handshake.upgrade_request({
+			key = self.key,
+			host = self.host,
+			port = self.port,
+			protocols = self.protocols_tbl,
+			origin = self.origin,
+			uri = self.uri,
+		})
+		self.socket:Send(req, true)
+	end
+
+	local in_header = true
+
+	function self.socket.OnReceive(_, str)
+
+		if in_header then
+			local header_data, rest = str:match("(.-\r\n\r\n)(.+)")
+
+			if header_data then
+				str = rest
+			else
+				header_data = rest
+			end
+
+			header = sockets.HeaderToTable(header_data)
+
+			local expected_accept = handshake.sec_websocket_accept(self.key)
+
+			if header["sec-websocket-accept"] ~= expected_accept then
+				self:OnError("accept failed")
+				return
+			end
+
+			in_header = false
+		end
+
+		if str then
+			local first_opcode
+			local frames = {}
+
+			repeat
+				local decoded, fin, opcode, rest = frame.decode(str)
+
+				if decoded then
+					if not first_opcode then
+						first_opcode = opcode
+					end
+					table.insert(frames, decoded)
+					encoded = rest
+					if fin == true then
+						local message = table.concat(frames)
+						local opcode = first_opcode
+
+						if opcode == frame.CLOSE then
+							local code, reason = frame.decode_close(message)
+							local encoded = frame.encode_close(code)
+							encoded = frame.encode(encoded, frame.CLOSE, true)
+							self.socket:Send(encoded, true)
+							self:OnClose(reason, code)
+							self.socket:Remove()
+							self:Remove()
+						else
+							self:OnReceive(message, opcode)
+						end
+					end
+				end
+			until not decoded or fin
+		end
+	end
+
+	return self
+end
+
+if RELOAD then
+	local ws = sockets.CreateWebsocketClient()
+	ws.socket.debug = true
+	ws:Connect("ws://localhost:9001")
+	ws.OnReceive = print
+end
+
+META:Register()
