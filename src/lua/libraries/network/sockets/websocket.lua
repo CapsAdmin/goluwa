@@ -6,11 +6,11 @@ local tools = require("websocket.tools")
 local frame = require("websocket.frame")
 local handshake = require("websocket.handshake")
 
-function META:Connect(url, ws_protocol)
+function META:Connect(url, ws_protocol, ssl_params)
 	local protocol, host, port, uri = tools.parse_url(url)
 
 	if protocol == "wss" then
-		self.socket:SetSSLParams("https")
+		self.socket:SetSSLParams(ssl_params or "https")
 	end
 
 	self.host = host
@@ -53,6 +53,8 @@ function sockets.CreateWebsocketClient()
 	self.socket = sockets.CreateClient("tcp")
 	self.socket:SetTimeout()
 	self.socket:SetReceiveMode("all")
+	--self.socket:SetKeepAlive(true)
+	--self.socket:SetNoDelay(true)
 
 	function self.socket.OnConnect()
 		self.key = tools.generate_key()
@@ -81,7 +83,6 @@ function sockets.CreateWebsocketClient()
 			end
 
 			local header = sockets.HeaderToTable(header_data)
-
 			local expected_accept = handshake.sec_websocket_accept(self.key)
 
 			if header["sec-websocket-accept"] ~= expected_accept then
@@ -129,11 +130,15 @@ function sockets.CreateWebsocketClient()
 	return self
 end
 
-if RELOAD then
-	local ws = sockets.CreateWebsocketClient()
-	ws.socket.debug = true
-	ws:Connect("ws://localhost:9001")
-	ws.OnReceive = print
-end
-
 META:Register()
+
+if RELOAD then
+	local socket = sockets.CreateWebsocketClient()
+	socket.socket.debug = true
+	socket:Connect("wss://echo.websocket.org")
+	socket:Send("asdf")
+
+	function socket:OnReceive(message, opcode)
+		print(message, opcode)
+	end
+end
