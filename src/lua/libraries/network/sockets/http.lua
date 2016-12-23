@@ -131,11 +131,13 @@ function sockets.Request(info)
 	end
 
 	if info.method == "POST" then
-		socket:Send(("Content-Length: %i"):format(#info.post_data))
+		socket:Send("Content-Type: application/json\r\n")
+		socket:Send(("Content-Length: %i\r\n"):format(#info.post_data))
+		socket:Send("\r\n")
 		socket:Send(info.post_data)
+	else
+		socket:Send("\r\n")
 	end
-
-	socket:Send("\r\n")
 
 	local header = {}
 	local content = {}
