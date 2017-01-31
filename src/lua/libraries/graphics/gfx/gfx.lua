@@ -6,7 +6,7 @@ runfile("quadric_bezier_curve.lua", gfx)
 runfile("text.lua", gfx)
 runfile("video.lua", gfx)
 runfile("particles.lua", gfx)
-runfile("markup/markup.lua", gfx)
+runfile("markup.lua", gfx)
 
 function gfx.Initialize()
 	gfx.ninepatch_poly = gfx.CreatePolygon2D(9 * 6)
