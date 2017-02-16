@@ -52,6 +52,7 @@ local function handle_stupid(path, clib, err, ...)
 	if WINDOWS and clib then
 		return setmetatable({}, {
 			__index = function(s, k)
+				if k == "Type" then return "ffi" end
 				local ok, msg = pcall(function() return clib[k] end)
 				if not ok then
 					if  msg:find("cannot resolve symbol", nil, true)  then
