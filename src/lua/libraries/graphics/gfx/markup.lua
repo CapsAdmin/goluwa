@@ -178,8 +178,8 @@ function META:CallTagFunction(chunk, name, ...)
 				if type(val) ~= t then
 					val = chunk.val.tag.arguments[k]
 
-					if type(v) == "table" then
-						val = v.default
+					if type(val) == "table" then
+						val = val.default
 					end
 				end
 
@@ -383,7 +383,7 @@ function META:GetSubPosFromPosition(x, y)
 			local char = self.chars[i]
 
 			if char.x == x then
-				return sub_pos - 1
+				return 1
 			end
 		end
 	end
@@ -426,7 +426,7 @@ do -- tags
 	{
 		arguments = {},
 
-		mouse = function(markup, self, button, press, x, y) print'hi'
+		mouse = function(markup, self, button, press, x, y)
 			if button == "button_1" and press then
 				local str = ""
 				for i = self.i+1, math.huge do
@@ -1241,9 +1241,8 @@ do -- invalidate
 
 		local last_type
 		local offset = 0
-		local last_char_class
 
-		for i, chunk in ipairs(self.chunks) do
+		for _, chunk in ipairs(self.chunks) do
 			if chunk.internal or chunk.type == "string" and chunk.val == "" then goto continue_ end
 
 			if last_type == chunk.type and (last_type == "font" or last_type == "color") then
@@ -1281,13 +1280,13 @@ do -- invalidate
 
 		local out = {}
 
-		for i, chunk in ipairs(chunks) do
+		for _, chunk in ipairs(chunks) do
 			if chunk.type == "string" and chunk.val:find("%s") and not chunk.internal then
 
 				if self.LineWrap then
 					local str = {}
 
-					for i, char in ipairs(utf8.totable(chunk.val)) do
+					for _, char in ipairs(utf8.totable(chunk.val)) do
 						if char:find("%s") then
 							if #str ~= 0 then
 								table.insert(out, {type = "string", val = table.concat(str)})
@@ -1336,7 +1335,7 @@ do -- invalidate
 
 	local function get_size_info(self, chunks)
 		-- get the size of each object
-		for i, chunk in ipairs(chunks) do
+		for _, chunk in ipairs(chunks) do
 
 
 			if chunk.type == "font" then
@@ -1360,7 +1359,7 @@ do -- invalidate
 				chunk.w = w
 				chunk.h = h + self.HeightSpacing
 			elseif chunk.type == "custom" and not chunk.val.stop_tag  then
-				local ok, w, h = self:CallTagFunction(chunk, "get_size")
+				local _, w, h = self:CallTagFunction(chunk, "get_size")
 				if h then h = h + self.HeightSpacing end
 				chunk.w = w
 				chunk.h = h
@@ -1420,7 +1419,7 @@ do -- invalidate
 
 						local str = {}
 
-						for i, char in ipairs(utf8.totable(chunk.val)) do
+						for _, char in ipairs(utf8.totable(chunk.val)) do
 							local w, h = get_text_size(self, char)
 
 							if h > chunk_height then
@@ -1582,7 +1581,7 @@ do -- invalidate
 				line =  line + 1
 				last_y = chunk.y
 
-				for i, chunk in ipairs(chunk_line) do
+				for _, chunk in ipairs(chunk_line) do
 					--if type(chunk.val) == "string" and chunk.val:find("bigtable") then print("\n\n",chunk,"\n\n")  end
 			--		log(chunk.type == "string" and chunk.val or ( "<"..  chunk.type .. ">"))
 					chunk.line_height = line_height
@@ -1615,7 +1614,6 @@ do -- invalidate
 					local last_y
 
 					local tag_type = chunk.val.type
-					local start_chunk = chunk
 					local line = {}
 
 					local start_found = 1
@@ -1689,7 +1687,7 @@ do -- invalidate
 						chunk.tag_width = width
 						chunk.chunks_inbetween = line
 
-						for i, chunk in pairs(line) do
+						for _, chunk in pairs(line) do
 							--print(chunk.type, chunk.val)
 							chunk.tag_center_x = center_x
 							chunk.tag_center_y = center_y
@@ -1781,7 +1779,7 @@ do -- invalidate
 			table.insert(chunk_line, chunk)
 		end
 
-		for i, chunk in ipairs(chunk_line) do
+		for _, chunk in ipairs(chunk_line) do
 	--		log(chunk.type == "string" and chunk.val or ( "<"..  chunk.type .. ">"))
 
 			chunk.line_height = line_height
@@ -1812,7 +1810,7 @@ do -- invalidate
 			chunk.y = chunk.y + chunk.line_height - chunk.h
 
 			if chunk.chars then
-				for i, char in ipairs(chunk.chars) do
+				for _, char in ipairs(chunk.chars) do
 					char.top = char.y + chunk.line_height
 					char.h = chunk.line_height
 				end
@@ -1877,12 +1875,9 @@ do -- invalidate
 		local last_font
 
 		local strings = {}
-		local current_font
 		local data
 
-		local X, Y = 0,0
-
-		for i, chunk in ipairs(self.chunks) do
+		for _, chunk in ipairs(self.chunks) do
 			if chunk.type == "string" or chunk.type == "newline" then
 				if chunk.font then
 
@@ -1908,9 +1903,9 @@ do -- invalidate
 
 		local W, H = 0, 0
 
-		for k,v in ipairs(strings) do
+		for i, v in ipairs(strings) do
 			local obj, w,h = v.font:CompileString(v.data)
-			strings[k] = obj
+			strings[i] = obj
 			W = math.max(W, w)
 			H = H + h
 		end
@@ -1918,7 +1913,7 @@ do -- invalidate
 		local obj = {}
 
 		function obj:Draw(max_w)
-			for k,v in ipairs(strings) do
+			for _, v in ipairs(strings) do
 				v:Draw(0, 0, max_w)
 			end
 		end
@@ -2588,7 +2583,7 @@ do -- input
 		["end"] = true,
 	}
 
-	function META:OnKeyInput(key, press)
+	function META:OnKeyInput(key)
 		if not self.Editable or #self.chunks == 0 then return end
 
 		if not self.caret_pos then return end
@@ -2683,10 +2678,6 @@ do -- input
 			chunk = chunk.chunks_inbetween[1]
 		end
 
-		if chunk.type == "custom" and chunk.console and press then
-			commands.RunString(str)
-			return
-		end
 		if
 			chunk.type == "custom" and
 			self:CallTagFunction(chunk, "mouse", button, press, x, y) == false
