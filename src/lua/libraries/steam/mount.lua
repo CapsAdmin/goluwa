@@ -66,11 +66,10 @@ function steam.GetLibraryFolders()
 
 	local tbl = {base .. "/steamapps/"}
 
-	local config = utility.VDFToTable(str)
+	local config = utility.VDFToTable(str, true)
 
-	for key, path in pairs(config.InstallConfigStore.Software.Valve.Steam) do
-
-		if key:find("BaseInstallFolder_") then
+	for key, path in pairs(config.installconfigstore.software.valve.steam) do
+		if key:find("baseinstallfolder_") then
 			table.insert(tbl, vfs.FixPathSlashes(path) .. "/steamapps/")
 		end
 	end
