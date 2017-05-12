@@ -116,7 +116,7 @@ do
 
 	function render.SetBlendMode(src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha)
 
-		if src_color then
+		if src_color and src_color ~= "none" then
 			if src_color == "alpha" then
 				BlendFuncSeparate(
 					"GL_SRC_ALPHA", "GL_ONE_MINUS_SRC_ALPHA",
