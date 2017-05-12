@@ -8,8 +8,10 @@ dGeomCommonAnyControlCode=0,dGeomColliderSetMergeSphereContactsControlCode=1,dGe
 dGeomColliderMergeContactsValue__Default=0,dGeomColliderMergeContactsValue_None=1,dGeomColliderMergeContactsValue_Normals=2,dGeomColliderMergeContactsValue_Full=3,
 dMaxUserClasses=4,
 dSphereClass=0,dBoxClass=1,dCapsuleClass=2,dCylinderClass=3,dPlaneClass=4,dRayClass=5,dConvexClass=6,dGeomTransformClass=7,dTriMeshClass=8,dHeightfieldClass=9,dFirstSpaceClass=10,dSimpleSpaceClass=10,dHashSpaceClass=11,dSweepAndPruneSpaceClass=12,dQuadTreeSpaceClass=13,dLastSpaceClass=13,dFirstUserClass=14,dLastUserClass=17,dGeomNumClasses=18,
-dTRIMESHDATA_FACE_NORMALS=0,dTRIMESHDATA_USE_FLAGS=1,
-dMESHDATAUSE_EDGE1=1,dMESHDATAUSE_EDGE2=2,dMESHDATAUSE_EDGE3=4,dMESHDATAUSE_VERTEX1=8,dMESHDATAUSE_VERTEX2=16,dMESHDATAUSE_VERTEX3=32,};typedef enum dSpaceAxis{dSA__MIN=0,dSA_X=0,dSA_Y=1,dSA_Z=2,dSA__MAX=3};
+dTRIMESHDATA__MIN=0,dTRIMESHDATA_FACE_NORMALS=0,dTRIMESHDATA_USE_FLAGS=1,dTRIMESHDATA__MAX=2,
+dMESHDATAUSE_EDGE1=1,dMESHDATAUSE_EDGE2=2,dMESHDATAUSE_EDGE3=4,dMESHDATAUSE_VERTEX1=8,dMESHDATAUSE_VERTEX2=16,dMESHDATAUSE_VERTEX3=32,
+dTRIDATAPREPROCESS_BUILD__MIN=0,dTRIDATAPREPROCESS_BUILD_CONCAVE_EDGES=0,dTRIDATAPREPROCESS_BUILD_FACE_ANGLES=1,dTRIDATAPREPROCESS_BUILD__MAX=2,
+dTRIDATAPREPROCESS_FACE_ANGLES_EXTRA__MIN=0,dTRIDATAPREPROCESS_FACE_ANGLES_EXTRA_BYTE_POSITIVE=0,dTRIDATAPREPROCESS_FACE_ANGLES_EXTRA_BYTE_ALL=1,dTRIDATAPREPROCESS_FACE_ANGLES_EXTRA_WORD_ALL=2,dTRIDATAPREPROCESS_FACE_ANGLES_EXTRA__MAX=3,dTRIDATAPREPROCESS_FACE_ANGLES_EXTRA__DEFAULT=0,};typedef enum dSpaceAxis{dSA__MIN=0,dSA_X=0,dSA_Y=1,dSA_Z=2,dSA__MAX=3};
 typedef enum dVec4Element{dV4E__MIN=0,dV4E_X=0,dV4E_Y=1,dV4E_Z=2,dV4E_O=3,dV4E__MAX=4};
 typedef enum dMeshTriangleVertex{dMTV__MIN=0,dMTV_FIRST=0,dMTV_SECOND=1,dMTV_THIRD=2,dMTV__MAX=3};
 typedef enum dMat4Element{dM4E__MIN=0,dM4E__X_MIN=0,dM4E_XX=0,dM4E_XY=1,dM4E_XZ=2,dM4E_XO=3,dM4E__X_MAX=4,dM4E__Y_MIN=4,dM4E_YX=4,dM4E_YY=5,dM4E_YZ=6,dM4E_YO=7,dM4E__Y_MAX=8,dM4E__Z_MIN=8,dM4E_ZX=8,dM4E_ZY=9,dM4E_ZZ=10,dM4E_ZO=11,dM4E__Z_MAX=12,dM4E__O_MIN=12,dM4E_OX=12,dM4E_OY=13,dM4E_OZ=14,dM4E_OO=15,dM4E__O_MAX=16,dM4E__MAX=16};
@@ -109,6 +111,7 @@ struct dxGeom*(dCreateRay)(struct dxSpace*,double);
 void(dJointGetTransmissionAxis)(struct dxJoint*,double[dV3E__MAX]);
 void(dGeomPlaneSetParams)(struct dxGeom*,double,double,double,double);
 double(dJointGetLMotorParam)(struct dxJoint*,int);
+int(dGeomTriMeshDataPreprocess2)(struct dxTriMeshData*,unsigned int,const long*);
 double(dJointGetPUPosition)(struct dxJoint*);
 void(dMultiply1)(double*,const double*,const double*,int,int,int);
 double(dJointGetHinge2Angle1)(struct dxJoint*);
@@ -729,6 +732,7 @@ library = {
 	JointGetTransmissionAxis = CLIB.dJointGetTransmissionAxis,
 	GeomPlaneSetParams = CLIB.dGeomPlaneSetParams,
 	JointGetLMotorParam = CLIB.dJointGetLMotorParam,
+	GeomTriMeshDataPreprocess2 = CLIB.dGeomTriMeshDataPreprocess2,
 	JointGetPUPosition = CLIB.dJointGetPUPosition,
 	Multiply1 = CLIB.dMultiply1,
 	JointGetHinge2Angle1 = CLIB.dJointGetHinge2Angle1,
@@ -1514,14 +1518,26 @@ library.e = {
 	FirstUserClass = 14,
 	LastUserClass = 17,
 	GeomNumClasses = 18,
+	TRIMESHDATA__MIN = 0,
 	TRIMESHDATA_FACE_NORMALS = 0,
 	TRIMESHDATA_USE_FLAGS = 1,
+	TRIMESHDATA__MAX = 2,
 	MESHDATAUSE_EDGE1 = 1,
 	MESHDATAUSE_EDGE2 = 2,
 	MESHDATAUSE_EDGE3 = 4,
 	MESHDATAUSE_VERTEX1 = 8,
 	MESHDATAUSE_VERTEX2 = 16,
 	MESHDATAUSE_VERTEX3 = 32,
+	TRIDATAPREPROCESS_BUILD__MIN = 0,
+	TRIDATAPREPROCESS_BUILD_CONCAVE_EDGES = 0,
+	TRIDATAPREPROCESS_BUILD_FACE_ANGLES = 1,
+	TRIDATAPREPROCESS_BUILD__MAX = 2,
+	TRIDATAPREPROCESS_FACE_ANGLES_EXTRA__MIN = 0,
+	TRIDATAPREPROCESS_FACE_ANGLES_EXTRA_BYTE_POSITIVE = 0,
+	TRIDATAPREPROCESS_FACE_ANGLES_EXTRA_BYTE_ALL = 1,
+	TRIDATAPREPROCESS_FACE_ANGLES_EXTRA_WORD_ALL = 2,
+	TRIDATAPREPROCESS_FACE_ANGLES_EXTRA__MAX = 3,
+	TRIDATAPREPROCESS_FACE_ANGLES_EXTRA__DEFAULT = 0,
 }
 library.clib = CLIB
 return library

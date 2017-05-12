@@ -183,19 +183,23 @@ void(archive_entry_set_rdev)(struct archive_entry*,unsigned long);
 int(archive_read_append_filter)(struct archive*,int);
 struct archive*(archive_read_new)();
 void(archive_entry_copy_mac_metadata)(struct archive_entry*,const void*,unsigned long);
-int(archive_read_open)(struct archive*,void*,int(unknown_3)(struct archive*,void*),long(unknown_4)(struct archive*,void*,const void**),int(unknown_5)(struct archive*,void*));
 int(archive_entry_acl_reset)(struct archive_entry*,int);
+int(archive_read_open)(struct archive*,void*,int(unknown_3)(struct archive*,void*),long(unknown_4)(struct archive*,void*,const void**),int(unknown_5)(struct archive*,void*));
 struct archive_entry_linkresolver*(archive_entry_linkresolver_new)();
 int(archive_entry_sparse_reset)(struct archive_entry*);
 const int*(archive_entry_uname_w)(struct archive_entry*);
 void(archive_entry_sparse_clear)(struct archive_entry*);
 int(archive_entry_xattr_next)(struct archive_entry*,const char**,const void**,unsigned long*);
-void(archive_entry_unset_birthtime)(struct archive_entry*);
 int(archive_entry_xattr_reset)(struct archive_entry*);
 void(archive_entry_copy_gname)(struct archive_entry*,const char*);
-int(archive_write_set_format_shar_dump)(struct archive*);
 struct archive_acl*(archive_entry_acl)(struct archive_entry*);
+void(archive_entry_unset_birthtime)(struct archive_entry*);
 const int*(archive_entry_acl_text_w)(struct archive_entry*,int);
+int(archive_entry_acl_from_text)(struct archive_entry*,const char*,int);
+int(archive_write_set_format_shar_dump)(struct archive*);
+int(archive_entry_acl_from_text_w)(struct archive_entry*,const int*,int);
+char*(archive_entry_acl_to_text)(struct archive_entry*,long*,int);
+int*(archive_entry_acl_to_text_w)(struct archive_entry*,long*,int);
 struct archive_entry*(archive_entry_partial_links)(struct archive_entry_linkresolver*,unsigned int*);
 int(archive_entry_acl_add_entry_w)(struct archive_entry*,int,int,int,int,const int*);
 int(archive_entry_acl_add_entry)(struct archive_entry*,int,int,int,int,const char*);
@@ -587,19 +591,23 @@ library = {
 	ReadAppendFilter = CLIB.archive_read_append_filter,
 	ReadNew = CLIB.archive_read_new,
 	EntryCopyMacMetadata = CLIB.archive_entry_copy_mac_metadata,
-	ReadOpen = CLIB.archive_read_open,
 	EntryAclReset = CLIB.archive_entry_acl_reset,
+	ReadOpen = CLIB.archive_read_open,
 	EntryLinkresolverNew = CLIB.archive_entry_linkresolver_new,
 	EntrySparseReset = CLIB.archive_entry_sparse_reset,
 	EntryUnameW = CLIB.archive_entry_uname_w,
 	EntrySparseClear = CLIB.archive_entry_sparse_clear,
 	EntryXattrNext = CLIB.archive_entry_xattr_next,
-	EntryUnsetBirthtime = CLIB.archive_entry_unset_birthtime,
 	EntryXattrReset = CLIB.archive_entry_xattr_reset,
 	EntryCopyGname = CLIB.archive_entry_copy_gname,
-	WriteSetFormatSharDump = CLIB.archive_write_set_format_shar_dump,
 	EntryAcl = CLIB.archive_entry_acl,
+	EntryUnsetBirthtime = CLIB.archive_entry_unset_birthtime,
 	EntryAclTextW = CLIB.archive_entry_acl_text_w,
+	EntryAclFromText = CLIB.archive_entry_acl_from_text,
+	WriteSetFormatSharDump = CLIB.archive_write_set_format_shar_dump,
+	EntryAclFromTextW = CLIB.archive_entry_acl_from_text_w,
+	EntryAclToText = CLIB.archive_entry_acl_to_text,
+	EntryAclToTextW = CLIB.archive_entry_acl_to_text_w,
 	EntryPartialLinks = CLIB.archive_entry_partial_links,
 	EntryAclAddEntryW = CLIB.archive_entry_acl_add_entry_w,
 	EntryAclAddEntry = CLIB.archive_entry_acl_add_entry,
@@ -810,9 +818,9 @@ library = {
 }
 library.e = {
 	H_INCLUDED = 1,
-	VERSION_NUMBER = 3002002,
-	VERSION_ONLY_STRING = "3.2.2",
-	VERSION_STRING = "libarchive 3.2.2",
+	VERSION_NUMBER = 3003002,
+	VERSION_ONLY_STRING = "3.3.2dev",
+	VERSION_STRING = "libarchive 3.3.2dev",
 	EOF = 1,
 	OK = 0,
 	RETRY = -10,
@@ -903,6 +911,8 @@ library.e = {
 	READDISK_MAC_COPYFILE = 4,
 	READDISK_NO_TRAVERSE_MOUNTS = 8,
 	READDISK_NO_XATTR = 16,
+	READDISK_NO_ACL = 32,
+	READDISK_NO_FFLAGS = 64,
 	MATCH_MTIME = 256,
 	MATCH_CTIME = 512,
 	MATCH_NEWER = 1,

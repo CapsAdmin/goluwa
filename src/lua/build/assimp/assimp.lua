@@ -3,21 +3,22 @@ ffi.cdef([[typedef enum aiTextureType{aiTextureType_NONE=0,aiTextureType_DIFFUSE
 typedef enum aiOrigin{aiOrigin_SET=0,aiOrigin_CUR=1,aiOrigin_END=2};
 typedef enum aiMetadataType{aiBOOL=0,aiINT32=1,aiUINT64=2,aiFLOAT=3,aiDOUBLE=4,aiAISTRING=5,aiAIVECTOR3D=6};
 typedef enum aiTextureMapping{aiTextureMapping_UV=0,aiTextureMapping_SPHERE=1,aiTextureMapping_CYLINDER=2,aiTextureMapping_BOX=3,aiTextureMapping_PLANE=4,aiTextureMapping_OTHER=5};
-typedef enum aiShadingMode{aiShadingMode_Flat=1,aiShadingMode_Gouraud=2,aiShadingMode_Phong=3,aiShadingMode_Blinn=4,aiShadingMode_Toon=5,aiShadingMode_OrenNayar=6,aiShadingMode_Minnaert=7,aiShadingMode_CookTorrance=8,aiShadingMode_NoShading=9,aiShadingMode_Fresnel=10};
+typedef enum aiReturn{aiReturn_SUCCESS=0,aiReturn_FAILURE=-1,aiReturn_OUTOFMEMORY=-3};
 typedef enum aiTextureOp{aiTextureOp_Multiply=0,aiTextureOp_Add=1,aiTextureOp_Subtract=2,aiTextureOp_Divide=3,aiTextureOp_SmoothAdd=4,aiTextureOp_SignedAdd=5};
 typedef enum aiPostProcessSteps{aiProcess_CalcTangentSpace=1,aiProcess_JoinIdenticalVertices=2,aiProcess_MakeLeftHanded=4,aiProcess_Triangulate=8,aiProcess_RemoveComponent=16,aiProcess_GenNormals=32,aiProcess_GenSmoothNormals=64,aiProcess_SplitLargeMeshes=128,aiProcess_PreTransformVertices=256,aiProcess_LimitBoneWeights=512,aiProcess_ValidateDataStructure=1024,aiProcess_ImproveCacheLocality=2048,aiProcess_RemoveRedundantMaterials=4096,aiProcess_FixInfacingNormals=8192,aiProcess_SortByPType=32768,aiProcess_FindDegenerates=65536,aiProcess_FindInvalidData=131072,aiProcess_GenUVCoords=262144,aiProcess_TransformUVCoords=524288,aiProcess_FindInstances=1048576,aiProcess_OptimizeMeshes=2097152,aiProcess_OptimizeGraph=4194304,aiProcess_FlipUVs=8388608,aiProcess_FlipWindingOrder=16777216,aiProcess_SplitByBoneCount=33554432,aiProcess_Debone=67108864};
 typedef enum aiPrimitiveType{aiPrimitiveType_POINT=1,aiPrimitiveType_LINE=2,aiPrimitiveType_TRIANGLE=4,aiPrimitiveType_POLYGON=8};
-typedef enum aiBlendMode{aiBlendMode_Default=0,aiBlendMode_Additive=1};
 typedef enum aiGrrr{aiProcess_ConvertToLeftHanded=25165828,aiProcessPreset_TargetRealtime_Fast=294955,aiProcessPreset_TargetRealtime_Quality=498379,aiProcessPreset_TargetRealtime_MaxQuality=3645131};
+typedef enum aiMorphingMethod{aiMorphingMethod_VERTEX_BLEND=1,aiMorphingMethod_MORPH_NORMALIZED=2,aiMorphingMethod_MORPH_RELATIVE=3};
 typedef enum aiTextureFlags{aiTextureFlags_Invert=1,aiTextureFlags_UseAlpha=2,aiTextureFlags_IgnoreAlpha=4};
+typedef enum aiBlendMode{aiBlendMode_Default=0,aiBlendMode_Additive=1};
 typedef enum aiLightSourceType{aiLightSource_UNDEFINED=0,aiLightSource_DIRECTIONAL=1,aiLightSource_POINT=2,aiLightSource_SPOT=3,aiLightSource_AMBIENT=4,aiLightSource_AREA=5};
 typedef enum aiTextureMapMode{aiTextureMapMode_Wrap=0,aiTextureMapMode_Clamp=1,aiTextureMapMode_Decal=3,aiTextureMapMode_Mirror=2};
 typedef enum aiPropertyTypeInfo{aiPTI_Float=1,aiPTI_Double=2,aiPTI_String=3,aiPTI_Integer=4,aiPTI_Buffer=5};
-typedef enum aiComponent{aiComponent_NORMALS=2,aiComponent_TANGENTS_AND_BITANGENTS=4,aiComponent_COLORS=8,aiComponent_TEXCOORDS=16,aiComponent_BONEWEIGHTS=32,aiComponent_ANIMATIONS=64,aiComponent_TEXTURES=128,aiComponent_LIGHTS=256,aiComponent_CAMERAS=512,aiComponent_MESHES=1024,aiComponent_MATERIALS=2048};
+typedef enum aiShadingMode{aiShadingMode_Flat=1,aiShadingMode_Gouraud=2,aiShadingMode_Phong=3,aiShadingMode_Blinn=4,aiShadingMode_Toon=5,aiShadingMode_OrenNayar=6,aiShadingMode_Minnaert=7,aiShadingMode_CookTorrance=8,aiShadingMode_NoShading=9,aiShadingMode_Fresnel=10};
 typedef enum aiDefaultLogStream{aiDefaultLogStream_FILE=1,aiDefaultLogStream_STDOUT=2,aiDefaultLogStream_STDERR=4,aiDefaultLogStream_DEBUGGER=8};
+typedef enum aiComponent{aiComponent_NORMALS=2,aiComponent_TANGENTS_AND_BITANGENTS=4,aiComponent_COLORS=8,aiComponent_TEXCOORDS=16,aiComponent_BONEWEIGHTS=32,aiComponent_ANIMATIONS=64,aiComponent_TEXTURES=128,aiComponent_LIGHTS=256,aiComponent_CAMERAS=512,aiComponent_MESHES=1024,aiComponent_MATERIALS=2048};
 typedef enum aiAnimBehaviour{aiAnimBehaviour_DEFAULT=0,aiAnimBehaviour_CONSTANT=1,aiAnimBehaviour_LINEAR=2,aiAnimBehaviour_REPEAT=3};
 typedef enum aiImporterFlags{aiImporterFlags_SupportTextFlavour=1,aiImporterFlags_SupportBinaryFlavour=2,aiImporterFlags_SupportCompressedFlavour=4,aiImporterFlags_LimitedSupport=8,aiImporterFlags_Experimental=16};
-typedef enum aiReturn{aiReturn_SUCCESS=0,aiReturn_FAILURE=-1,aiReturn_OUTOFMEMORY=-3};
 struct aiVector3D {float x;float y;float z;};
 struct aiVector2D {float x;float y;};
 struct aiColor4D {float r;float g;float b;float a;};
@@ -34,9 +35,11 @@ struct aiExportDataBlob {unsigned long size;void*data;struct aiString name;struc
 struct aiVectorKey {double mTime;struct aiVector3D mValue;};
 struct aiQuatKey {double mTime;struct aiQuaternion mValue;};
 struct aiMeshKey {double mTime;unsigned int mValue;};
+struct aiMeshMorphKey {double mTime;unsigned int*mValues;double*mWeights;unsigned int mNumValuesAndWeights;};
 struct aiNodeAnim {struct aiString mNodeName;unsigned int mNumPositionKeys;struct aiVectorKey*mPositionKeys;unsigned int mNumRotationKeys;struct aiQuatKey*mRotationKeys;unsigned int mNumScalingKeys;struct aiVectorKey*mScalingKeys;enum aiAnimBehaviour mPreState;enum aiAnimBehaviour mPostState;};
 struct aiMeshAnim {struct aiString mName;unsigned int mNumKeys;struct aiMeshKey*mKeys;};
-struct aiAnimation {struct aiString mName;double mDuration;double mTicksPerSecond;unsigned int mNumChannels;struct aiNodeAnim**mChannels;unsigned int mNumMeshChannels;struct aiMeshAnim**mMeshChannels;};
+struct aiMeshMorphAnim {struct aiString mName;unsigned int mNumKeys;struct aiMeshMorphKey*mKeys;};
+struct aiAnimation {struct aiString mName;double mDuration;double mTicksPerSecond;unsigned int mNumChannels;struct aiNodeAnim**mChannels;unsigned int mNumMeshChannels;struct aiMeshAnim**mMeshChannels;unsigned int mNumMorphMeshChannels;struct aiMeshMorphAnim**mMorphMeshChannels;};
 struct aiFileIO {struct aiFile*(*OpenProc)(struct aiFileIO*,const char*,const char*);void(*CloseProc)(struct aiFileIO*,struct aiFile*);char*UserData;};
 struct aiFile {unsigned long(*ReadProc)(struct aiFile*,char*,unsigned long,unsigned long);unsigned long(*WriteProc)(struct aiFile*,const char*,unsigned long,unsigned long);unsigned long(*TellProc)(struct aiFile*);unsigned long(*FileSizeProc)(struct aiFile*);enum aiReturn(*SeekProc)(struct aiFile*,unsigned long,enum aiOrigin);void(*FlushProc)(struct aiFile*);char*UserData;};
 struct aiImporterDesc {const char*mName;const char*mAuthor;const char*mMaintainer;const char*mComments;unsigned int mFlags;unsigned int mMinMajor;unsigned int mMinMinor;unsigned int mMaxMajor;unsigned int mMaxMinor;const char*mFileExtensions;};
@@ -45,8 +48,8 @@ struct aiTexture {unsigned int mWidth;unsigned int mHeight;char achFormatHint[9]
 struct aiFace {unsigned int mNumIndices;unsigned int*mIndices;};
 struct aiVertexWeight {unsigned int mVertexId;float mWeight;};
 struct aiBone {struct aiString mName;unsigned int mNumWeights;struct aiVertexWeight*mWeights;struct aiMatrix4x4 mOffsetMatrix;};
-struct aiAnimMesh {struct aiVector3D*mVertices;struct aiVector3D*mNormals;struct aiVector3D*mTangents;struct aiVector3D*mBitangents;struct aiColor4D*mColors[0x8];struct aiVector3D*mTextureCoords[0x8];unsigned int mNumVertices;};
-struct aiMesh {unsigned int mPrimitiveTypes;unsigned int mNumVertices;unsigned int mNumFaces;struct aiVector3D*mVertices;struct aiVector3D*mNormals;struct aiVector3D*mTangents;struct aiVector3D*mBitangents;struct aiColor4D*mColors[0x8];struct aiVector3D*mTextureCoords[0x8];unsigned int mNumUVComponents[0x8];struct aiFace*mFaces;unsigned int mNumBones;struct aiBone**mBones;unsigned int mMaterialIndex;struct aiString mName;unsigned int mNumAnimMeshes;struct aiAnimMesh**mAnimMeshes;};
+struct aiAnimMesh {struct aiVector3D*mVertices;struct aiVector3D*mNormals;struct aiVector3D*mTangents;struct aiVector3D*mBitangents;struct aiColor4D*mColors[0x8];struct aiVector3D*mTextureCoords[0x8];unsigned int mNumVertices;float mWeight;};
+struct aiMesh {unsigned int mPrimitiveTypes;unsigned int mNumVertices;unsigned int mNumFaces;struct aiVector3D*mVertices;struct aiVector3D*mNormals;struct aiVector3D*mTangents;struct aiVector3D*mBitangents;struct aiColor4D*mColors[0x8];struct aiVector3D*mTextureCoords[0x8];unsigned int mNumUVComponents[0x8];struct aiFace*mFaces;unsigned int mNumBones;struct aiBone**mBones;unsigned int mMaterialIndex;struct aiString mName;unsigned int mNumAnimMeshes;struct aiAnimMesh**mAnimMeshes;unsigned int mMethod;};
 struct aiLight {struct aiString mName;enum aiLightSourceType mType;struct aiVector3D mPosition;struct aiVector3D mDirection;struct aiVector3D mUp;float mAttenuationConstant;float mAttenuationLinear;float mAttenuationQuadratic;struct aiColor3D mColorDiffuse;struct aiColor3D mColorSpecular;struct aiColor3D mColorAmbient;float mAngleInnerCone;float mAngleOuterCone;struct aiVector2D mSize;};
 struct aiCamera {struct aiString mName;struct aiVector3D mPosition;struct aiVector3D mUp;struct aiVector3D mLookAt;float mHorizontalFOV;float mClipPlaneNear;float mClipPlaneFar;float mAspect;};
 struct aiUVTransform {struct aiVector2D mTranslation;struct aiVector2D mScaling;float mRotation;};
@@ -196,16 +199,9 @@ library.e = {
 	BOX = ffi.cast("enum aiTextureMapping", "aiTextureMapping_BOX"),
 	PLANE = ffi.cast("enum aiTextureMapping", "aiTextureMapping_PLANE"),
 	OTHER = ffi.cast("enum aiTextureMapping", "aiTextureMapping_OTHER"),
-	Flat = ffi.cast("enum aiShadingMode", "aiShadingMode_Flat"),
-	Gouraud = ffi.cast("enum aiShadingMode", "aiShadingMode_Gouraud"),
-	Phong = ffi.cast("enum aiShadingMode", "aiShadingMode_Phong"),
-	Blinn = ffi.cast("enum aiShadingMode", "aiShadingMode_Blinn"),
-	Toon = ffi.cast("enum aiShadingMode", "aiShadingMode_Toon"),
-	OrenNayar = ffi.cast("enum aiShadingMode", "aiShadingMode_OrenNayar"),
-	Minnaert = ffi.cast("enum aiShadingMode", "aiShadingMode_Minnaert"),
-	CookTorrance = ffi.cast("enum aiShadingMode", "aiShadingMode_CookTorrance"),
-	NoShading = ffi.cast("enum aiShadingMode", "aiShadingMode_NoShading"),
-	Fresnel = ffi.cast("enum aiShadingMode", "aiShadingMode_Fresnel"),
+	SUCCESS = ffi.cast("enum aiReturn", "aiReturn_SUCCESS"),
+	FAILURE = ffi.cast("enum aiReturn", "aiReturn_FAILURE"),
+	OUTOFMEMORY = ffi.cast("enum aiReturn", "aiReturn_OUTOFMEMORY"),
 	Multiply = ffi.cast("enum aiTextureOp", "aiTextureOp_Multiply"),
 	Add = ffi.cast("enum aiTextureOp", "aiTextureOp_Add"),
 	Subtract = ffi.cast("enum aiTextureOp", "aiTextureOp_Subtract"),
@@ -242,15 +238,18 @@ library.e = {
 	LINE = ffi.cast("enum aiPrimitiveType", "aiPrimitiveType_LINE"),
 	TRIANGLE = ffi.cast("enum aiPrimitiveType", "aiPrimitiveType_TRIANGLE"),
 	POLYGON = ffi.cast("enum aiPrimitiveType", "aiPrimitiveType_POLYGON"),
-	Default = ffi.cast("enum aiBlendMode", "aiBlendMode_Default"),
-	Additive = ffi.cast("enum aiBlendMode", "aiBlendMode_Additive"),
 	ConvertToLeftHanded = ffi.cast("enum aiGrrr", "aiProcess_ConvertToLeftHanded"),
 	TargetRealtime_Fast = ffi.cast("enum aiGrrr", "aiProcessPreset_TargetRealtime_Fast"),
 	TargetRealtime_Quality = ffi.cast("enum aiGrrr", "aiProcessPreset_TargetRealtime_Quality"),
 	TargetRealtime_MaxQuality = ffi.cast("enum aiGrrr", "aiProcessPreset_TargetRealtime_MaxQuality"),
+	VERTEX_BLEND = ffi.cast("enum aiMorphingMethod", "aiMorphingMethod_VERTEX_BLEND"),
+	MORPH_NORMALIZED = ffi.cast("enum aiMorphingMethod", "aiMorphingMethod_MORPH_NORMALIZED"),
+	MORPH_RELATIVE = ffi.cast("enum aiMorphingMethod", "aiMorphingMethod_MORPH_RELATIVE"),
 	Invert = ffi.cast("enum aiTextureFlags", "aiTextureFlags_Invert"),
 	UseAlpha = ffi.cast("enum aiTextureFlags", "aiTextureFlags_UseAlpha"),
 	IgnoreAlpha = ffi.cast("enum aiTextureFlags", "aiTextureFlags_IgnoreAlpha"),
+	Default = ffi.cast("enum aiBlendMode", "aiBlendMode_Default"),
+	Additive = ffi.cast("enum aiBlendMode", "aiBlendMode_Additive"),
 	UNDEFINED = ffi.cast("enum aiLightSourceType", "aiLightSource_UNDEFINED"),
 	DIRECTIONAL = ffi.cast("enum aiLightSourceType", "aiLightSource_DIRECTIONAL"),
 	POINT = ffi.cast("enum aiLightSourceType", "aiLightSource_POINT"),
@@ -266,6 +265,20 @@ library.e = {
 	String = ffi.cast("enum aiPropertyTypeInfo", "aiPTI_String"),
 	Integer = ffi.cast("enum aiPropertyTypeInfo", "aiPTI_Integer"),
 	Buffer = ffi.cast("enum aiPropertyTypeInfo", "aiPTI_Buffer"),
+	Flat = ffi.cast("enum aiShadingMode", "aiShadingMode_Flat"),
+	Gouraud = ffi.cast("enum aiShadingMode", "aiShadingMode_Gouraud"),
+	Phong = ffi.cast("enum aiShadingMode", "aiShadingMode_Phong"),
+	Blinn = ffi.cast("enum aiShadingMode", "aiShadingMode_Blinn"),
+	Toon = ffi.cast("enum aiShadingMode", "aiShadingMode_Toon"),
+	OrenNayar = ffi.cast("enum aiShadingMode", "aiShadingMode_OrenNayar"),
+	Minnaert = ffi.cast("enum aiShadingMode", "aiShadingMode_Minnaert"),
+	CookTorrance = ffi.cast("enum aiShadingMode", "aiShadingMode_CookTorrance"),
+	NoShading = ffi.cast("enum aiShadingMode", "aiShadingMode_NoShading"),
+	Fresnel = ffi.cast("enum aiShadingMode", "aiShadingMode_Fresnel"),
+	FILE = ffi.cast("enum aiDefaultLogStream", "aiDefaultLogStream_FILE"),
+	STDOUT = ffi.cast("enum aiDefaultLogStream", "aiDefaultLogStream_STDOUT"),
+	STDERR = ffi.cast("enum aiDefaultLogStream", "aiDefaultLogStream_STDERR"),
+	DEBUGGER = ffi.cast("enum aiDefaultLogStream", "aiDefaultLogStream_DEBUGGER"),
 	NORMALS = ffi.cast("enum aiComponent", "aiComponent_NORMALS"),
 	TANGENTS_AND_BITANGENTS = ffi.cast("enum aiComponent", "aiComponent_TANGENTS_AND_BITANGENTS"),
 	COLORS = ffi.cast("enum aiComponent", "aiComponent_COLORS"),
@@ -277,10 +290,6 @@ library.e = {
 	CAMERAS = ffi.cast("enum aiComponent", "aiComponent_CAMERAS"),
 	MESHES = ffi.cast("enum aiComponent", "aiComponent_MESHES"),
 	MATERIALS = ffi.cast("enum aiComponent", "aiComponent_MATERIALS"),
-	FILE = ffi.cast("enum aiDefaultLogStream", "aiDefaultLogStream_FILE"),
-	STDOUT = ffi.cast("enum aiDefaultLogStream", "aiDefaultLogStream_STDOUT"),
-	STDERR = ffi.cast("enum aiDefaultLogStream", "aiDefaultLogStream_STDERR"),
-	DEBUGGER = ffi.cast("enum aiDefaultLogStream", "aiDefaultLogStream_DEBUGGER"),
 	DEFAULT = ffi.cast("enum aiAnimBehaviour", "aiAnimBehaviour_DEFAULT"),
 	CONSTANT = ffi.cast("enum aiAnimBehaviour", "aiAnimBehaviour_CONSTANT"),
 	LINEAR = ffi.cast("enum aiAnimBehaviour", "aiAnimBehaviour_LINEAR"),
@@ -290,9 +299,6 @@ library.e = {
 	SupportCompressedFlavour = ffi.cast("enum aiImporterFlags", "aiImporterFlags_SupportCompressedFlavour"),
 	LimitedSupport = ffi.cast("enum aiImporterFlags", "aiImporterFlags_LimitedSupport"),
 	Experimental = ffi.cast("enum aiImporterFlags", "aiImporterFlags_Experimental"),
-	SUCCESS = ffi.cast("enum aiReturn", "aiReturn_SUCCESS"),
-	FAILURE = ffi.cast("enum aiReturn", "aiReturn_FAILURE"),
-	OUTOFMEMORY = ffi.cast("enum aiReturn", "aiReturn_OUTOFMEMORY"),
 }
 
 

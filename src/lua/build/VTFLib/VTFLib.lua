@@ -475,6 +475,7 @@ library.e = {
 	MIPMAP_FILTER_COUNT = ffi.cast("enum tagVTFMipmapFilter", "MIPMAP_FILTER_COUNT"),
 }
 
+
 local function float(high, low)
 	local b = low
 	local sign = 1
