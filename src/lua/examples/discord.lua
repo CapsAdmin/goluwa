@@ -1,20 +1,20 @@
 local base = "https://discordapp.com/api"
 local token = "Bot " .. vfs.Read("discord_bot_token")
 
-local function http(method, what, callback, data)
+local function http(method, index, callback, data)
 	sockets.Request({
 		method = method,
 		post_data = data and serializer.Encode("json", data) or nil,
-		url = base .. what,
+		url = base .. index,
 		callback = function(data)
 			local json = data.content:match("^.-\r\n(.+)0") or data.content
-
-			callback(serializer.Decode("json", json))
+			local tbl = serializer.Decode("json", json)
+			if tbl.code == 0 then
+				print(tbl.message)
+			end
+			callback(tbl)
 		end,
 		user_agent = "DiscordBot (https://github.com/CapsAdmin/goluwa, 0)",
-		ssl_parameters = {
-			protocol = "tlsv1_2",
-		},
 		header = {
 			["Content-Type"] = data and "application/json" or nil,
 			Authorization = token,
@@ -28,12 +28,10 @@ http("GET", "/channels/260911858133762048/messages", function(messages)
 	end
 end, {limit = 1,})
 http("GET", "/channels/260911858133762048", table.print)
-http("POST", "/channels/260911858133762048/messages", table.print, {
-	content = "test",
-	tts = true,
-})]]
+]]
 --do return end
 http("GET", "/gateway/bot", function(data)
+	if not data.url then return end
 	if DISCORD_SOCKET then DISCORD_SOCKET:Remove() end
 
 	local socket = sockets.CreateWebsocketClient()
