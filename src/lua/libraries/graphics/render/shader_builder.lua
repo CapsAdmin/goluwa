@@ -48,7 +48,7 @@ void main()
 {
 @@OUT2@@
 @@GLOBAL VARIABLES TO FRAGMENT@@
-	mainx__();
+	mainx_();
 }
 ]]
 
@@ -561,12 +561,12 @@ function render.CreateShader(data, vars)
 
 			--	source = replace_field(source, "SOURCE", ("void mainx__()\n{\n\t%s\n}\n"):format(info.source))
 				-- replace void *main* () with mainx__
-				info.source = info.source:gsub("void%s+([main]-)%s-%(", function(str) if str == "main" then return "void mainx__(" end end)
+				info.source = info.source:gsub("void%s+([main]-)%s-%(", function(str) if str == "main" then return "void mainx_(" end end)
 
 				template = replace_field(template, "SOURCE", info.source)
 			else
 				-- if it's just a single line then wrap void mainx__() {*line*} around it
-				template = replace_field(template, "SOURCE", ("void mainx__()\n{\n\t%s\n}\n"):format(info.source))
+				template = replace_field(template, "SOURCE", ("void mainx_()\n{\n\t%s\n}\n"):format(info.source))
 			end
 
 			local extensions = {}
