@@ -142,13 +142,7 @@ do
 end
 
 do
-	local last
-	local function CullFace(a)
-		if last ~= a then
-			gl.CullFace(a)
-			last = a
-		end
-	end
+	local CullFace = utility.GenerateCheckLastFunction(gl.CullFace, 1)
 
 	local enabled = false
 
