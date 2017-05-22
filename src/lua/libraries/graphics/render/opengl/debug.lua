@@ -36,15 +36,30 @@ function render.SetDebug(b)
 			gl.DebugMessageControl("GL_DONT_CARE", "GL_DONT_CARE", "GL_DONT_CARE", ffi.new("GLuint"), nil, true)
 
 			if not render.debug_cb_ref then
-				local function callback(source, type, id, severity, length, message, userParam)
+				local function callback(source, type, id, severity, length, message)
 					source = source_translate[source] or "unknown source " .. source
 					type = type_translate[type] or "unknown type " .. type
 					severity = severity_translate[severity] or "unknown severity level " .. severity
 					message = ffi.string(message, length)
 
 					local info = debug.getinfo(3)
+					local key, obj = debug.getlocal(3, 1)
 
-					logf("OPENGL %s %s: %s:%s\n", type:upper(), severity, info.source, info.currentline)
+					if key ~= "self" then
+						obj = nil
+					end
+
+					if obj and obj:GetDebugTrace() ~= "" then
+						logn(obj:GetDebugTrace())
+					end
+
+					logf("OPENGL %s: %s %s %s:%s\n",
+						obj,
+						type:upper(),
+						severity,
+						info.source,
+						info.currentline
+					)
 					logn("\t", message)
 				end
 				jit.off(callback, true)
