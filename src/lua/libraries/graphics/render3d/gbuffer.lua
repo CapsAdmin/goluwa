@@ -241,7 +241,7 @@ function render3d.DrawGBuffer(what)
 		end
 
 		for _, shader in ipairs(pass.shaders) do
-			render.SetBlendMode(shader.blend_mode)
+			render.SetPresetBlendMode(shader.blend_mode)
 			if shader.fb then shader.fb:Begin() end
 			render2d.PushMatrix(0, 0, shader.size.x, shader.size.y)
 				shader:Bind()

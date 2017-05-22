@@ -6,7 +6,7 @@ function render.InitializeNoiseTexture(size)
 		tex:SetSize(size)
 		--tex:SetInternalFormat("rgba16f")
 		tex:SetupStorage()
-		render.SetBlendMode()
+		render.SetPresetBlendMode("none")
 		tex:Shade("return vec4(random(uv), random(uv*23.512), random(uv*6.53330), random(uv*122.260));")
 		tex:SetMinFilter("nearest")
 		render.noise_texture = tex

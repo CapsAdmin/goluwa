@@ -45,7 +45,7 @@ function window.Open(...)
 				render.SetCullMode("none")
 
 				render.SetDepth(false)
-				render.SetBlendMode("alpha")
+				render.SetPresetBlendMode("alpha")
 
 				if render3d.IsGBufferReady() then
 					if menu and menu.IsVisible() then

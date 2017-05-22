@@ -81,7 +81,7 @@ function META:ToWindow()
 		render.PushWindow(self)
 			--render.GetScreenFrameBuffer():Clear()
 			render.SetDepth(false)
-			render.SetBlendMode("alpha")
+			render.SetPresetBlendMode("alpha")
 
 			local x,y = pnl:GetPosition():Unpack()
 			camera.camera_2d:TranslateWorld(-x,-y, 0)

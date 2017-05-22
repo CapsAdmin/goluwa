@@ -95,7 +95,7 @@ end
 function META:Begin()
 	render.SetForcedCullMode("none")
 	render.PushDepth(true)
-	render.SetBlendMode()
+	render.SetPresetBlendMode("none")
 	render3d.shadow_map_shader:Bind()
 	self.fb:Begin()
 end

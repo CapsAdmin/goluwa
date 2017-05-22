@@ -240,7 +240,7 @@ end
 
 
 event.AddListener("PreDrawGUI", "lol", function()
-	render.SetBlendMode()
+	render.SetPresetBlendMode("none")
 	local old = camera.camera_3d
 
 	fb:Begin()

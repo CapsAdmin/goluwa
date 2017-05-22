@@ -38,7 +38,7 @@ end
 
 event.AddListener("Update", "lol", function()
 	render.GetScreenFrameBuffer():Begin()
-		render.SetBlendMode("alpha")
+		render.SetPresetBlendMode("alpha")
 		render.SetCullMode("none")
 		render.SetDepth(false)
 

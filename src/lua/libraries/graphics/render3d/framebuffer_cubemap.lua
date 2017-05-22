@@ -29,7 +29,7 @@ function META:Update(shader, i)
 		i = self.i
 	end
 
-	render.SetBlendMode()
+	render.SetPresetBlendMode("none")
 
 	self.Framebuffer:Begin()
 		local old = camera.camera_3d

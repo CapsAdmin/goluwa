@@ -119,7 +119,7 @@ function META:Update(dt)
 end
 
 function META:Draw()
-	render.SetBlendMode(self.Additive and "additive" or "alpha")
+	render.SetPresetBlendMode(self.Additive and "additive" or "alpha")
 
 	if self.Texture:IsValid() then
 		render2d.SetTexture(self.Texture)

@@ -83,7 +83,7 @@ end
 event.AddListener("PreDrawGUI", "particles", function(dt)
 	dt = dt  * 25
 
-	render.SetBlendMode("additive")
+	render.SetPresetBlendMode("additive")
 
 	W,H = render2d.GetSize()
 	render2d.SetTexture(head_tex)
@@ -126,6 +126,6 @@ event.AddListener("PreDrawGUI", "particles", function(dt)
 	render2d.SetTexture(head_tex)
 	poly_head:Draw()
 
-	render.SetBlendMode("alpha")
+	render.SetPresetBlendMode("alpha")
 
 end)

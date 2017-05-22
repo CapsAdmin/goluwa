@@ -87,7 +87,7 @@ event.Timer("fb_update", fps, 0, function()
 
 	fb:Begin()
 		--render.SetBlendMode("src_color", "one_minus_dst_color", "add")
-		render.SetBlendMode()
+		render.SetPresetBlendMode("none")
 
 		render2d.PushMatrix(0, 0, W, H)
 			shader:Bind()
@@ -96,7 +96,7 @@ event.Timer("fb_update", fps, 0, function()
 
 		if input.IsMouseDown("button_1") or input.IsMouseDown("button_2") then
 			if input.IsMouseDown("button_1") then
-				render.SetBlendMode("multiplicative")
+				render.SetPresetBlendMode("multiplicative")
 				render2d.SetColor(1,1,1,1)
 			else
 				render.SetBlendMode("src_color","one_minus_src_color","sub")

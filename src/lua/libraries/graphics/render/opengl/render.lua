@@ -116,45 +116,20 @@ do
 
 	function render.SetBlendMode(src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha)
 
-		if src_color and src_color ~= "none" then
-			if src_color == "alpha" then
-				BlendFuncSeparate(
-					"GL_SRC_ALPHA", "GL_ONE_MINUS_SRC_ALPHA",
-					"GL_ONE", "GL_ONE_MINUS_SRC_ALPHA"
-				)
-			elseif src_color == "multiplicative" then
-				BlendFuncSeparate(
-					"GL_DST_COLOR", "GL_ZERO",
-					"GL_DST_COLOR", "GL_ZERO"
-				)
-			elseif src_color == "premultiplied" then
-				BlendFuncSeparate(
-					"GL_ONE", "GL_ONE_MINUS_SRC_ALPHA",
-					"GL_ONE", "GL_ONE_MINUS_SRC_ALPHA"
-				)
-			elseif src_color == "additive" then
-				BlendFuncSeparate(
-					"GL_SRC_ALPHA", "GL_ONE",
-					"GL_SRC_ALPHA", "GL_ONE"
-				)
-			else
-				src_color = enums[src_color or "src_alpha"]
-				dst_color = enums[dst_color or "one_minus_src_alpha"]
-				func_color = enums[func_color or "add"]
-
-				src_alpha = enums[src_alpha] or src_color
-				dst_alpha = enums[dst_alpha] or dst_color
-				func_alpha = enums[func_alpha] or func_color
-
-				BlendFuncSeparate(src_color, dst_color, src_alpha, dst_alpha)
-				BlendEquationSeparate(func_color, func_alpha)
-			end
-		else
-			BlendFuncSeparate(
-				"GL_ONE", "GL_ZERO",
-				"GL_ONE", "GL_ZERO"
-			)
+		if not dst_color then
+			return render.SetPresetBlendMode(src_color)
 		end
+
+		src_color = enums[src_color or "src_alpha"]
+		dst_color = enums[dst_color or "one_minus_src_alpha"]
+		func_color = enums[func_color or "add"]
+
+		src_alpha = enums[src_alpha] or src_color
+		dst_alpha = enums[dst_alpha] or dst_color
+		func_alpha = enums[func_alpha] or func_color
+
+		BlendFuncSeparate(src_color, dst_color, src_alpha, dst_alpha)
+		BlendEquationSeparate(func_color, func_alpha)
 
 		A,B,C,D,E,F = src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha
 	end

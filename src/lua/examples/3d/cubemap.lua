@@ -30,7 +30,7 @@ local shader = render.CreateShader({
 })
 
 event.AddListener("PreDrawGUI", "lol", function()
-	render.SetBlendMode()
+	render.SetPresetBlendMode("none")
 
 	render2d.PushMatrix(0, 0, render2d.GetSize())
 		shader:Bind()

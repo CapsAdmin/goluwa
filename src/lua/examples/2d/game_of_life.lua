@@ -8,7 +8,7 @@ end)
 
 event.Timer("update_cells", 0, 0,function()
 --render.SetBlendMode("src_color", "src_color", "add")
-render.SetBlendMode()
+render.SetPresetBlendMode("none")
 tex:Shade([[
 	vec4 color = texture(self, uv);
 	vec2 uv = gl_FragCoord.xy / size;

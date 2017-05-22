@@ -88,7 +88,7 @@ end
 
 function render3d.UpdateSky()
 	render.PushDepth(false)
-	render.SetBlendMode()
+	render.SetPresetBlendMode("none")
 
 	local old = camera.camera_3d
 

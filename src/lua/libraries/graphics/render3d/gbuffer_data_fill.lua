@@ -240,7 +240,7 @@ function PASS:Draw3D(what)
 		self.last_update_sky = system.GetElapsedTime() + 1/30
 	end
 
-	render.SetBlendMode()
+	render.SetPresetBlendMode("none")
 	render.SetDepth(true)
 	self:BeginPass("model")
 		render.SetCullMode("front")

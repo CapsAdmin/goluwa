@@ -61,7 +61,7 @@ event.AddListener("PreDrawGUI", "fb", function()
 	for i = 1, iterations do
 
 		fb:Begin()
-			--render.SetBlendMode()
+			--render.SetPresetBlendMode("none")
 			render.SetBlendMode("src_color", "one_minus_dst_color", "add")
 
 			render2d.PushMatrix(0, 0, fb:GetTexture():GetSize():Unpack())

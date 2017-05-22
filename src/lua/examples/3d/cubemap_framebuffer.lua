@@ -45,7 +45,7 @@ local shader_fill = render.CreateShader({
 	},
 })
 event.AddListener("PreDrawGUI", "lol", function()
-	render.SetBlendMode()
+	render.SetPresetBlendMode("none")
 
 	fb:Begin()
 		for i = 1, 6 do

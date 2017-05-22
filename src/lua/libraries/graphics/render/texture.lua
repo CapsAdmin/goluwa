@@ -573,7 +573,7 @@ do
 			self.shaders[name] = shader
 		end
 
-		render.SetBlendMode(blend_mode)
+		render.SetPresetBlendMode(blend_mode)
 
 		self:BeginWrite()
 			if vars then

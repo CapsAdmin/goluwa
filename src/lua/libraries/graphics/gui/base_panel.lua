@@ -265,11 +265,11 @@ do -- drawing
 				self:OnPostDraw()
 
 				if gui.keyboard_selected_panel == self then
-					render.SetBlendMode("additive")
+					render.SetPresetBlendMode("additive")
 					render2d.SetColor(1, 1, 1, 0.5)
 					render2d.SetTexture()
 					render2d.DrawRect(0, 0, self.Size.x + self.DrawSizeOffset.x, self.Size.y + self.DrawSizeOffset.y)
-					render.SetBlendMode("alpha")
+					render.SetPresetBlendMode("alpha")
 				end
 
 				self.visible = true
@@ -326,12 +326,12 @@ do -- drawing
 
 		if gui.debug then
 			if self.updated_layout then
-				render.SetBlendMode("additive")
+				render.SetPresetBlendMode("additive")
 				render2d.SetColor(1, 0, 0, 0.1)
 				render2d.SetWhiteTexture(self.cache_texture)
 				render2d.DrawRect(self.Scroll.x, self.Scroll.y, self.Size.x, self.Size.y)
 				self.updated_layout = false
-				render.SetBlendMode("alpha")
+				render.SetPresetBlendMode("alpha")
 			else
 				if self.updated_cache then
 					render2d.SetColor(0, 1, 0, 0.1)

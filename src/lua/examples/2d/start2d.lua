@@ -14,14 +14,14 @@ event.Timer("updatefb", 0.1, function()
 		local x, y = gfx.GetMousePosition()
 		render2d.DrawRect(x,y,5,5, 0, 2.5, 2.5)
 
-		--render.SetBlendMode("additive")
+		--render.SetPresetBlendMode("additive")
 
 		for _ = 1, 10 do
 			render2d.SetColor(math.randomf(), math.randomf(), math.randomf(), 0.2)
 			render2d.DrawRect(math.random(tex:GetSize().x), math.random(tex:GetSize().y), 100, 100, math.random()*math.pi)
 		end
 
-		--render.SetBlendMode("alpha")
+		--render.SetPresetBlendMode("alpha")
 	render2d.PopMatrix()
 	tex:EndWrite()
 end)

@@ -122,6 +122,75 @@ do
 	utility.MakePushPopFunction(render, "CullMode")
 end
 
+do
+	local presets = {
+		none = {
+			src_color = "one",
+			dst_color = "zero",
+			func_color = "add",
+			src_alpha = "one",
+			dst_alpha = "zero",
+			func_alpha = "add",
+		},
+		alpha = {
+			src_color = "src_alpha",
+			dst_color = "one_minus_src_alpha",
+			func_color = "add",
+			src_alpha = "one",
+			dst_alpha = "one_minus_src_alpha",
+			func_alpha = "add",
+		},
+		multiplicative = {
+			src_color = "dst_color",
+			dst_color = "zero",
+			func_color = "add",
+			src_alpha = "dst_color",
+			dst_alpha = "zero",
+			func_alpha = "add",
+		},
+		premultiplied = {
+			src_color = "one",
+			dst_color = "one_src_minus_alpha",
+			func_color = "add",
+			src_alpha = "one",
+			dst_alpha = "one_src_minus_alpha",
+			func_alpha = "add",
+		},
+		additive = {
+			src_color = "src_alpha",
+			dst_color = "one",
+			func_color = "add",
+			src_alpha = "src_alpha",
+			dst_alpha = "one",
+			func_alpha = "add",
+		},
+	}
+
+	local current
+
+	function render.SetPresetBlendMode(name)
+		local preset = presets[name] or presets.none
+
+		render.SetBlendMode(
+			preset.src_color,
+			preset.dst_color,
+			preset.func_color,
+
+			preset.src_alpha,
+			preset.dst_alpha,
+			preset.func_alpha
+		)
+
+		current = name
+	end
+
+	function render.GetPresetBlendMode()
+		return current
+	end
+
+	utility.MakePushPopFunction(render, "PresetBlendMode")
+end
+
 render.AddGlobalShaderCode([[
 float random(vec2 co)
 {

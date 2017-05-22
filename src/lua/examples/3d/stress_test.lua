@@ -17,7 +17,7 @@ local function generate_material()
 	local tex = render.CreateTexture("2d")
 	tex:SetSize(Vec2() + 1024)
 	tex:SetupStorage()
-	render.SetBlendMode()
+	render.SetPresetBlendMode("none")
 	tex:Shade("return vec4(random(uv), random(uv*23.512), random(uv*6.53330), random(uv*122.260));")
 	tex:GenerateMipMap()
 
