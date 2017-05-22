@@ -35,7 +35,7 @@ function render._Initialize()
 	if vendor:find("mesa") or vendor:find("open source technology center") or render.GetVersion():lower():find("mesa") then MESA = true end
 	if vendor:find("intel") then INTEL = true end
 
-	if DEBUG_OPENGL then
+	if DEBUG_OPENGL and not EXTERNAL_DEBUGGER then
 		render.SetDebug(true)
 	end
 

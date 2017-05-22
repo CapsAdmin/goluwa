@@ -26,20 +26,7 @@ local type_translate = {
 	[0x8251] = "other",
 }
 
-local flags = {
-	"error",
-	"deprecated_behavior",
-	"undefined_behavior",
-	"portability",
-	"performance"
-}
-
-for i,v in ipairs(flags) do flags[i] = gl.e["GL_DEBUG_TYPE_" .. v:upper()] end
-flags = bit.bor(unpack(flags))
-
 function render.SetDebug(b)
-	if EXTERNAL_DEBUGGER then return end
-
 	if system.IsOpenGLExtensionSupported("GL_KHR_debug") then
 		if b then
 			--jit.off()
