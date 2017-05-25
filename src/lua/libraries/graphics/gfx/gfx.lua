@@ -12,22 +12,20 @@ function gfx.Initialize()
 	gfx.ninepatch_poly = gfx.CreatePolygon2D(9 * 6)
 	gfx.ninepatch_poly.vertex_buffer:SetDrawHint("dynamic")
 
-	event.Delay(function()
-		local tex = render.CreateBlankTexture(Vec2(render2d.GetSize()))
-		tex:SetWrapS("mirrored_repeat")
-		tex:SetWrapT("mirrored_repeat")
-		tex:Shade([[
-			// http://www.geeks3d.com/20130705/shader-library-circle-disc-fake-sphere-in-glsl-opengl-glslhacker/3/
-			float disc_radius = 1;
-			float border_size = 0.0021;
-			vec2 uv2 = vec2(uv.x, -uv.y + 1);
-			float dist = sqrt(dot(uv2, uv2));
-			float t = smoothstep(disc_radius + border_size, disc_radius - border_size, dist);
-			return vec4(1,1,1,t);
-		]])
-		tex:GenerateMipMap()
-		gfx.quadrant_circle_texture = tex
-	end)
+	local tex = render.CreateBlankTexture(render.GetScreenSize())
+	tex:SetWrapS("mirrored_repeat")
+	tex:SetWrapT("mirrored_repeat")
+	tex:Shade([[
+		// http://www.geeks3d.com/20130705/shader-library-circle-disc-fake-sphere-in-glsl-opengl-glslhacker/3/
+		float disc_radius = 1;
+		float border_size = 0.0021;
+		vec2 uv2 = vec2(uv.x, -uv.y + 1);
+		float dist = sqrt(dot(uv2, uv2));
+		float t = smoothstep(disc_radius + border_size, disc_radius - border_size, dist);
+		return vec4(1,1,1,t);
+	]])
+	tex:GenerateMipMap()
+	gfx.quadrant_circle_texture = tex
 
 	event.Call("2DReady")
 end
