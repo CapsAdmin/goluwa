@@ -28,7 +28,4 @@ event.AddListener("PostDrawGUI", "lol", function()
 	render2d.PushMatrix(50, 50, 500, 500)
 		poly:Draw()
 	render2d.PopMatrix()
-
-
-	render2d.SetTexture()
 end)
