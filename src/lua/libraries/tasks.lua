@@ -18,6 +18,8 @@ META.wait = 0
 
 function META:Start(now)
 
+	self.progress = {}
+
 	if not enabled:Get() then
 		self:OnStart()
 		self:Remove()
@@ -38,8 +40,6 @@ function META:Start(now)
 
 	tasks.coroutine_lookup[co] = self
 	self.co = co
-
-	self.progress = {}
 
 	local start = function()
 		if not self:IsValid() then return false end -- removed
