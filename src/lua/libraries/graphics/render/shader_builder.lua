@@ -431,7 +431,7 @@ function render.CreateShader(data, vars)
 				template = replace_field(template, "GLOBAL VARIABLES", render.GetGlobalShaderVariables(info.source))
 			else
 				template = replace_field(template, "GLOBAL CODE", (render.GetGlobalShaderCode(info.source)))
-				template = replace_field(template, "GLOBAL VARIABLES", render.GetGlobalShaderVariables(template, true))
+				template = replace_field(template, "GLOBAL VARIABLES", render.GetGlobalShaderVariables(template .. "\n\n" .. info.source, true))
 			end
 
 			template = preprocess(template, info)
