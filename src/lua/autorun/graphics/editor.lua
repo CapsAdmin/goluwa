@@ -119,7 +119,7 @@ do -- PUT ME IN TRANSFORM
 						diffang.x = -diffang.x + math.pi
 					end
 
-					final:SetAxis(diffang.x, Vec3(1,0,0))
+					final = QuatFromAxis(diffang.x, Vec3(1,0,0))
 				end
 			elseif axis == "y" then
 				local localpos = math3d.LinePlaneIntersection(pos, up, mouse_pos)
@@ -128,7 +128,7 @@ do -- PUT ME IN TRANSFORM
 					diffang.y = diffang.y + math.pi / 2
 					diffang:Normalize()
 
-					final:SetAxis(diffang.y, Vec3(0,0,1))
+					final = QuatFromAxis(diffang.y, Vec3(0,0,1))
 				end
 			elseif axis == "z" then
 				local localpos = math3d.LinePlaneIntersection(pos, forward, mouse_pos)
@@ -143,7 +143,7 @@ do -- PUT ME IN TRANSFORM
 
 					diffang.x = diffang.x + math.pi/2
 
-					final:SetAxis(diffang.x, Vec3(0,-1,0))
+					final = QuatFromAxis(diffang.x, Vec3(0,-1,0))
 				end
 			end
 
