@@ -25,11 +25,11 @@ function CONTEXT:OnParseArchive(file, archive_path)
 
 				local entry = file:ReadStructure([[
 					unsigned long crc;
-					short preload_length;
-					short archive_index;
-					long offset;
-					long size;
-					short terminator;
+					unsigned short preload_length;
+					unsigned short archive_index;
+					unsigned long offset;
+					unsigned long size;
+					unsigned short terminator;
 					bufferpos preload_offset;
 				]])
 
