@@ -1,8 +1,7 @@
 local gui = ... or _G.gui
 
 do
-	local META = {}
-	META.ClassName = "menu"
+	local META = prototype.CreateTemplate("menu")
 
 	function META:Initialize()
 		self.sub_menu = NULL

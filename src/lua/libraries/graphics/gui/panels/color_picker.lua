@@ -1,14 +1,12 @@
 local gui = ... or _G.gui
 
-local META = {}
+local META = prototype.CreateTemplate("color_picker")
 
-META.ClassName = "color_picker"
-
-prototype.GetSet(META, "Color", Color(1,1,1,1))
-prototype.GetSet(META, "Hue", 0)
-prototype.GetSet(META, "Saturation", 1)
-prototype.GetSet(META, "Value", 1)
-prototype.GetSet(META, "Pallete", "textures/gui/hsv_wheel.png")
+META:GetSet("Color", Color(1,1,1,1))
+META:GetSet("Hue", 0)
+META:GetSet("Saturation", 1)
+META:GetSet("Value", 1)
+META:GetSet("Pallete", "textures/gui/hsv_wheel.png")
 
 function META:SetValue(val)
 	self.Value = val

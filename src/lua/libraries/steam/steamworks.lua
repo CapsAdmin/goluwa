@@ -101,7 +101,7 @@ do
 		end
 	end)]]
 
-	prototype.Register(META)
+	META:Register()
 end
 
 local active = utility.CreateWeakTable()

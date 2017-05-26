@@ -329,4 +329,4 @@ function META:AddNinePatch(...)
 	self.added = self.added + 9
 end
 
-prototype.Register(META)
+META:Register()

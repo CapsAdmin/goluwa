@@ -4,23 +4,23 @@ local META = prototype.CreateTemplate("panel", "base")
 
 runfile("lua/libraries/templates/parenting.lua", META)
 
-prototype.GetSet(META, "MousePosition", Vec2(0, 0))
-prototype.IsSet(META, "Visible", true)
-prototype.GetSet(META, "Clipping", false)
-prototype.GetSet(META, "Color", Color(1,1,1,1))
-prototype.GetSet(META, "Cursor", "arrow")
-prototype.GetSet(META, "TrapChildren", false)
-prototype.GetSet(META, "Texture", render.GetWhiteTexture())
-prototype.GetSet(META, "RedirectFocus", NULL)
-prototype.GetSet(META, "ObeyMargin", true)
-prototype.GetSet(META, "BringToFrontOnClick", false)
-prototype.GetSet(META, "LayoutParentOnLayout", false)
-prototype.GetSet(META, "LayoutWhenInvisible", true)
-prototype.GetSet(META, "VisibilityPanel", NULL)
-prototype.GetSet(META, "NoDraw", false)
-prototype.GetSet(META, "GreyedOut", false)
-prototype.GetSet(META, "UpdateRate", 1/33)
-prototype.GetSet(META, "ChildOrder", 0)
+META:GetSet("MousePosition", Vec2(0, 0))
+META:IsSet("Visible", true)
+META:GetSet("Clipping", false)
+META:GetSet("Color", Color(1,1,1,1))
+META:GetSet("Cursor", "arrow")
+META:GetSet("TrapChildren", false)
+META:GetSet("Texture", render.GetWhiteTexture())
+META:GetSet("RedirectFocus", NULL)
+META:GetSet("ObeyMargin", true)
+META:GetSet("BringToFrontOnClick", false)
+META:GetSet("LayoutParentOnLayout", false)
+META:GetSet("LayoutWhenInvisible", true)
+META:GetSet("VisibilityPanel", NULL)
+META:GetSet("NoDraw", false)
+META:GetSet("GreyedOut", false)
+META:GetSet("UpdateRate", 1/33)
+META:GetSet("ChildOrder", 0)
 
 function META:CreatePanel(name, store_in_self)
 	return gui.CreatePanel(name, self, store_in_self)
@@ -375,21 +375,21 @@ do -- drawing
 end
 
 do -- orientation
-	prototype.GetSet(META, "Position", Vec2(0, 0))
-	prototype.GetSet(META, "Size", Vec2(4, 4))
-	prototype.GetSet(META, "MinimumSize", Vec2(4, 4))
-	prototype.GetSet(META, "Padding", Rect(0, 0, 0, 0))
-	prototype.GetSet(META, "Margin", Rect(0, 0, 0, 0))
-	prototype.GetSet(META, "Angle", 0)
-	prototype.GetSet(META, "Order", 0)
+	META:GetSet("Position", Vec2(0, 0))
+	META:GetSet("Size", Vec2(4, 4))
+	META:GetSet("MinimumSize", Vec2(4, 4))
+	META:GetSet("Padding", Rect(0, 0, 0, 0))
+	META:GetSet("Margin", Rect(0, 0, 0, 0))
+	META:GetSet("Angle", 0)
+	META:GetSet("Order", 0)
 
-	prototype.GetSet(META, "ThreeDee", false)
-	prototype.GetSet(META, "ThreeDeePosition", Vec3(0,0,0))
-	prototype.GetSet(META, "ThreeDeeAngles", Ang3(0,0,0))
-	prototype.GetSet(META, "ThreeDeeScale", Vec3(1,1,1))
+	META:GetSet("ThreeDee", false)
+	META:GetSet("ThreeDeePosition", Vec3(0,0,0))
+	META:GetSet("ThreeDeeAngles", Ang3(0,0,0))
+	META:GetSet("ThreeDeeScale", Vec3(1,1,1))
 
 	do
-		prototype.GetSet(META, "Matrix", Matrix44())
+		META:GetSet("Matrix", Matrix44())
 
 		function META:InvalidateMatrix()
 			if not self.rebuild_matrix then
@@ -642,7 +642,7 @@ do -- orientation
 end
 
 do -- cached rendering
-	prototype.GetSet(META, "CachedRendering", false)
+	META:GetSet("CachedRendering", false)
 
 	function META:SetCachedRendering(b)
 		self.CachedRendering = b
@@ -728,9 +728,9 @@ do -- cached rendering
 end
 
 do -- scrolling
-	prototype.GetSet(META, "Scrollable", false)
-	prototype.GetSet(META, "Scroll", Vec2(0, 0))
-	prototype.GetSet(META, "ScrollFraction", Vec2(0, 0))
+	META:GetSet("Scrollable", false)
+	META:GetSet("Scroll", Vec2(0, 0))
+	META:GetSet("ScrollFraction", Vec2(0, 0))
 
 	function META:SetScroll(vec)
 		local size = self:GetSizeOfChildren()
@@ -789,9 +789,9 @@ do -- scrolling
 end
 
 do -- drag drop
-	prototype.GetSet(META, "Draggable", false)
-	prototype.GetSet(META, "DragDrop", false)
-	prototype.GetSet(META, "DragMinDistance", 20)
+	META:GetSet("Draggable", false)
+	META:GetSet("DragDrop", false)
+	META:GetSet("DragMinDistance", 20)
 
 	function META:StartDragging(button)
 		self.drag_original_pos = self:GetPosition()
@@ -884,7 +884,7 @@ do -- drag drop
 end
 
 do -- magnet snap
-	prototype.GetSet(META, "SnapWhileDragging", false)
+	META:GetSet("SnapWhileDragging", false)
 
 	local snapped = false
 
@@ -991,12 +991,12 @@ end
 
 do -- animations
 	-- these are useful for animations
-	prototype.GetSet(META, "DrawSizeOffset", Vec2(0, 0))
-	prototype.GetSet(META, "DrawScaleOffset", Vec2(1, 1))
-	prototype.GetSet(META, "DrawPositionOffset", Vec2(0, 0))
-	prototype.GetSet(META, "DrawAngleOffset", Ang3(0,0,0))
-	prototype.GetSet(META, "DrawColor", Color(0,0,0,0))
-	prototype.GetSet(META, "DrawAlpha", 1)
+	META:GetSet("DrawSizeOffset", Vec2(0, 0))
+	META:GetSet("DrawScaleOffset", Vec2(1, 1))
+	META:GetSet("DrawPositionOffset", Vec2(0, 0))
+	META:GetSet("DrawAngleOffset", Ang3(0,0,0))
+	META:GetSet("DrawColor", Color(0,0,0,0))
+	META:GetSet("DrawAlpha", 1)
 
 	local parent_layout = {
 		DrawSizeOffset = true,
@@ -1172,8 +1172,8 @@ do -- animations
 end
 
 do -- resizing
-	prototype.GetSet(META, "ResizeBorder", Rect(8,8,8,8))
-	prototype.GetSet(META, "Resizable", false)
+	META:GetSet("ResizeBorder", Rect(8,8,8,8))
+	META:GetSet("Resizable", false)
 
 	function META:GetResizeLocation(pos)
 		pos = pos or self:GetMousePosition()
@@ -1276,20 +1276,20 @@ do -- resizing
 end
 
 do -- mouse
-	prototype.GetSet(META, "IgnoreMouse", false)
-	prototype.GetSet(META, "FocusOnClick", false)
-	prototype.GetSet(META, "AlwaysCalcMouse", false)
-	prototype.GetSet(META, "AlwaysReceiveMouseInput", false)
-	prototype.GetSet(META, "SendMouseInputToPanel", NULL)
+	META:GetSet("IgnoreMouse", false)
+	META:GetSet("FocusOnClick", false)
+	META:GetSet("AlwaysCalcMouse", false)
+	META:GetSet("AlwaysReceiveMouseInput", false)
+	META:GetSet("SendMouseInputToPanel", NULL)
 
-	prototype.GetSet(META, "MouseHoverTime", 0)
-	prototype.GetSet(META, "MouseHoverTimeTrigger", 1)
-	prototype.GetSet(META, "AlphaMouseCheck", false)
+	META:GetSet("MouseHoverTime", 0)
+	META:GetSet("MouseHoverTimeTrigger", 1)
+	META:GetSet("AlphaMouseCheck", false)
 
 	do
 		gui.active_tooltip = NULL
 
-		prototype.GetSet(META, "Tooltip", "")
+		META:GetSet("Tooltip", "")
 
 		function META:ShowTooltip()
 			local tooltip = gui.CreatePanel("text_button", nil, "gui_tooltip")
@@ -1566,9 +1566,9 @@ end
 do -- layout
 	META.layout_count = 0
 
-	prototype.GetSet(META, "LayoutSize", nil)
-	prototype.GetSet(META, "IgnoreLayout", false)
-	prototype.GetSet(META, "CollisionGroup", "none")
+	META:GetSet("LayoutSize", nil)
+	META:GetSet("IgnoreLayout", false)
+	META:GetSet("CollisionGroup", "none")
 
 	local origin
 
@@ -2106,16 +2106,16 @@ do -- layout
 end
 
 do -- stacking
-	prototype.GetSet(META, "ForcedStackSize", Vec2(0, 0))
+	META:GetSet("ForcedStackSize", Vec2(0, 0))
 
-	prototype.GetSet(META, "StackRight", true)
-	prototype.GetSet(META, "StackDown", true)
+	META:GetSet("StackRight", true)
+	META:GetSet("StackDown", true)
 
-	prototype.GetSet(META, "SizeStackToWidth", false)
-	prototype.GetSet(META, "SizeStackToHeight", false)
-	prototype.IsSet(META, "Stackable", true)
-	prototype.IsSet(META, "Stack", false)
-	prototype.IsSet(META, "StackSizeToChildren", false)
+	META:GetSet("SizeStackToWidth", false)
+	META:GetSet("SizeStackToHeight", false)
+	META:IsSet("Stackable", true)
+	META:IsSet("Stack", false)
+	META:IsSet("StackSizeToChildren", false)
 
 	function META:StackChildren()
 		local w = 0
@@ -2193,9 +2193,9 @@ do -- stacking
 end
 
 do -- skin
-	prototype.GetSet(META, "Style")
-	prototype.GetSet(META, "Skin")
-	prototype.GetSet(META, "LayoutScale")
+	META:GetSet("Style")
+	META:GetSet("Skin")
+	META:GetSet("LayoutScale")
 
 	function META:SetLayoutScale(scale)
 		self.LayoutScale = scale
@@ -2269,10 +2269,10 @@ do -- skin
 		self.style_translation[from] = to
 	end
 
-	prototype.GetSet(META, "NinePatch", false)
-	prototype.GetSet(META, "NinePatchRect", Rect(0, 0, 0, 0))
-	prototype.GetSet(META, "NinePatchCornerSize", 4)
-	prototype.GetSet(META, "StyleSize", Vec2(0, 0))
+	META:GetSet("NinePatch", false)
+	META:GetSet("NinePatchRect", Rect(0, 0, 0, 0))
+	META:GetSet("NinePatchCornerSize", 4)
+	META:GetSet("StyleSize", Vec2(0, 0))
 
 	function META:SetStyleSize(vec)
 		if not vec:IsZero() then

@@ -153,7 +153,7 @@ do -- filter
 		return prototype.CreateObject(META, {clients = {}}, true)
 	end
 
-	prototype.Register(META)
+	META:Register()
 end
 
 packet.ExtendBuffer(

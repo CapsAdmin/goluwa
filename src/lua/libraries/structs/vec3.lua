@@ -1,8 +1,6 @@
 local structs = (...) or _G.structs
 
-local META = {}
-
-META.ClassName = "Vec3"
+local META = prototype.CreateTemplate("Vec3")
 
 META.NumberType = "double"
 META.Args = {"x", "y", "z"}

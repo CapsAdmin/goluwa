@@ -1,23 +1,21 @@
 local gui = ... or _G.gui
 
-local META = {}
-
-META.ClassName = "text_button"
+local META = prototype.CreateTemplate("text_button")
 META.Base = "button"
 
-prototype.GetSet(META, "SizeToTextOnLayout", false)
+META:GetSet("SizeToTextOnLayout", false)
 
-prototype.GetSetDelegate(META, "Text", "", "label")
-prototype.GetSetDelegate(META, "ParseTags", false, "label")
-prototype.GetSetDelegate(META, "Font", nil, "label")
-prototype.GetSetDelegate(META, "TextColor", nil, "label")
-prototype.GetSetDelegate(META, "TextWrap", false, "label")
-prototype.GetSetDelegate(META, "ConcatenateTextToSize", false, "label")
+META:GetSetDelegate("Text", "", "label")
+META:GetSetDelegate("ParseTags", false, "label")
+META:GetSetDelegate("Font", nil, "label")
+META:GetSetDelegate("TextColor", nil, "label")
+META:GetSetDelegate("TextWrap", false, "label")
+META:GetSetDelegate("ConcatenateTextToSize", false, "label")
 
-prototype.Delegate(META, "label", "CenterText", "CenterSimple")
-prototype.Delegate(META, "label", "CenterTextY", "CenterYSimple")
-prototype.Delegate(META, "label", "CenterTextX", "CenterXSimple")
-prototype.Delegate(META, "label", "GetTextSize", "GetSize")
+META:Delegate("label", "CenterText", "CenterSimple")
+META:Delegate("label", "CenterTextY", "CenterYSimple")
+META:Delegate("label", "CenterTextX", "CenterXSimple")
+META:Delegate("label", "GetTextSize", "GetSize")
 
 function META:Initialize()
 	prototype.GetRegistered(self.Type, "button").Initialize(self)

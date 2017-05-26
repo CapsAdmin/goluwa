@@ -30,7 +30,7 @@ function META:Draw(x, y)
 	render2d.DrawRect(x, y, tex:GetSize().x, tex:GetSize().y)
 end
 
-prototype.Register(META)
+META:Register()
 
 function gfx.CreateGif(path)
 	local self = META:CreateObject()

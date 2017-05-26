@@ -318,7 +318,7 @@ function META:OnRemove()
 	self.socket:Remove()
 end
 
-prototype.Register(META)
+META:Register()
 
 function sockets.CreateIRCClient()
 	local self = META:CreateObject()

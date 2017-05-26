@@ -1,21 +1,18 @@
-﻿local META = {}
+﻿local META = prototype.CreateTemplate("font", "base")
 
-META.Type = "font"
-META.ClassName = "base"
-
-prototype.GetSet(META, "Path", "")
-prototype.GetSet(META, "Padding", 0)
-prototype.IsSet(META, "Spacing", 1)
-prototype.IsSet(META, "Size", 12)
-prototype.IsSet(META, "Scale", Vec2(1,1))
-prototype.GetSet(META, "Filtering", "linear")
-prototype.GetSet(META, "ShadingInfo")
-prototype.GetSet(META, "FallbackFonts")
-prototype.IsSet(META, "Monospace", false)
-prototype.IsSet(META, "Ready", false)
-prototype.GetSet(META, "LoadSpeed", 10)
-prototype.GetSet(META, "Shadow", 0)
-prototype.GetSet(META, "ShadowColor", Color(0,0,0,1))
+META:GetSet("Path", "")
+META:GetSet("Padding", 0)
+META:IsSet("Spacing", 1)
+META:IsSet("Size", 12)
+META:IsSet("Scale", Vec2(1,1))
+META:GetSet("Filtering", "linear")
+META:GetSet("ShadingInfo")
+META:GetSet("FallbackFonts")
+META:IsSet("Monospace", false)
+META:IsSet("Ready", false)
+META:GetSet("LoadSpeed", 10)
+META:GetSet("Shadow", 0)
+META:GetSet("ShadowColor", Color(0,0,0,1))
 
 function META:GetGlyphData(code)
 	error("not implemented")
@@ -357,7 +354,7 @@ function META:OnLoad()
 
 end
 
-prototype.Register(META)
+META:Register()
 
 if RELOAD then
 	for _, v in pairs(fonts.registered_fonts) do

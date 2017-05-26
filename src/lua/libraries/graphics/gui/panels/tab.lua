@@ -1,8 +1,6 @@
 local gui = ... or _G.gui
 
-local META = {}
-
-META.ClassName = "tab"
+local META = prototype.CreateTemplate("tab")
 
 function META:Initialize()
 	self.tabs = {}

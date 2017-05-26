@@ -205,4 +205,4 @@ function META:GetPageTexture(id)
 	end
 end
 
-prototype.Register(META)
+META:Register()

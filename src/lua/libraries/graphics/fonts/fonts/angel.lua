@@ -1,8 +1,6 @@
 local fonts = ... or _G.fonts
 
-local META = {}
-
-META.ClassName = "angel"
+local META = prototype.CreateTemplate("angel")
 
 function META:Initialize()
 	local TYPE_INFO = 1

@@ -1,17 +1,14 @@
 local gui = ... or _G.gui
 
-local META = {}
+local META = prototype.CreateTemplate("slider")
 
-META.ClassName = "slider"
-META.Base = "base"
+META:GetSet("Fraction", Vec2(0, 0))
 
-prototype.GetSet(META, "Fraction", Vec2(0, 0))
+META:GetSet("XSlide", true)
+META:GetSet("YSlide", false)
 
-prototype.GetSet(META, "XSlide", true)
-prototype.GetSet(META, "YSlide", false)
-
-prototype.GetSet(META, "RightFill", false)
-prototype.GetSet(META, "LeftFill", false)
+META:GetSet("RightFill", false)
+META:GetSet("LeftFill", false)
 
 function META:Initialize()
 	self:SetMinimumSize(Vec2(35, 35))

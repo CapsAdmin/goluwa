@@ -221,9 +221,7 @@ local function find_font(name, callback, on_error)
 	)
 end
 
-local META = {}
-
-META.ClassName = "freetype"
+local META = prototype.CreateTemplate("freetype")
 
 function META:Initialize()
 

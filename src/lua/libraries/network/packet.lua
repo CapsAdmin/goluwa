@@ -222,7 +222,7 @@ do -- buffer object
 		end
 	end
 
-	prototype.Register(META)
+	META:Register()
 end
 
 _G.Buffer = packet.CreateBuffer

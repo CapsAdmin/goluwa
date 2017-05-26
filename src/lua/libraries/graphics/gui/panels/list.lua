@@ -1,8 +1,6 @@
 local gui = ... or _G.gui
 
-local META = {}
-
-META.ClassName = "list"
+local META = prototype.CreateTemplate("list")
 
 function META:Initialize()
 	self.columns = {}

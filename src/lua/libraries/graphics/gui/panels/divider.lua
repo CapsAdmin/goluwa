@@ -1,11 +1,10 @@
 local gui = ... or _G.gui
-local META = {}
 
-META.ClassName = "divider"
+local META = prototype.CreateTemplate("divider")
 
-prototype.GetSet(META, "DividerHeight", 0)
-prototype.GetSet(META, "DividerWidth", 0)
-prototype.GetSet(META, "HideDivider", false)
+META:GetSet("DividerHeight", 0)
+META:GetSet("DividerWidth", 0)
+META:GetSet("HideDivider", false)
 
 local function create_horizontal_divider(self)
 	if self.horizontal_divider then return end

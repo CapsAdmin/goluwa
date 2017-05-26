@@ -687,7 +687,7 @@ do -- source
 		end
 	end
 
-	prototype.Register(META)
+	META:Register()
 end
 
 do -- buffer
@@ -745,7 +745,7 @@ do -- buffer
 		return nil, 0
 	end
 
-	prototype.Register(META)
+	META:Register()
 end
 
 do -- effect
@@ -788,7 +788,7 @@ do -- effect
 		return self.params
 	end
 
-	prototype.Register(META)
+	META:Register()
 end
 
 do -- filter
@@ -817,7 +817,7 @@ do -- filter
 		ADD_FUNCTION("Type", "i", al.e.FILTER_TYPE)
 	end
 
-	prototype.Register(META)
+	META:Register()
 end
 
 do -- auxiliary effect slot
@@ -838,7 +838,7 @@ do -- auxiliary effect slot
 		return self.params
 	end
 
-	prototype.Register(META)
+	META:Register()
 end
 
 _G.Sound = audio.CreateSource
@@ -930,7 +930,7 @@ do -- microphone
 		return self
 	end
 
-	prototype.Register(META)
+	META:Register()
 end
 
 audio.decoders = audio.decoders or {}

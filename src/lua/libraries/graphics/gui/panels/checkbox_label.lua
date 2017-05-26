@@ -1,21 +1,19 @@
 local gui = ... or _G.gui
 
-local META = {}
+local META = prototype.CreateTemplate("checkbox_label")
 
-META.ClassName = "checkbox_label"
+META:GetSetDelegate("Text", "", "label")
+META:GetSetDelegate("ParseTags", false, "label")
+META:GetSetDelegate("Font", nil, "label")
+META:GetSetDelegate("TextColor", nil, "label")
+META:GetSetDelegate("TextWrap", false, "label")
+META:GetSetDelegate("ConcatenateTextToSize", false, "label")
+META:GetSetDelegate("State", false, "checkbox")
 
-prototype.GetSetDelegate(META, "Text", "", "label")
-prototype.GetSetDelegate(META, "ParseTags", false, "label")
-prototype.GetSetDelegate(META, "Font", nil, "label")
-prototype.GetSetDelegate(META, "TextColor", nil, "label")
-prototype.GetSetDelegate(META, "TextWrap", false, "label")
-prototype.GetSetDelegate(META, "ConcatenateTextToSize", false, "label")
-prototype.GetSetDelegate(META, "State", false, "checkbox")
-
-prototype.Delegate(META, "label", "CenterText", "Center")
-prototype.Delegate(META, "label", "CenterTextY", "CenterY")
-prototype.Delegate(META, "label", "CenterTextX", "CenterX")
-prototype.Delegate(META, "label", "GetTextSize", "GetSize")
+META:Delegate("label", "CenterText", "Center")
+META:Delegate("label", "CenterTextY", "CenterY")
+META:Delegate("label", "CenterTextX", "CenterX")
+META:Delegate("label", "GetTextSize", "GetSize")
 
 function META:Initialize()
 	self:SetNoDraw(true)

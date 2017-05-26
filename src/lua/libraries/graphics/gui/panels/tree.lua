@@ -1,12 +1,11 @@
 local gui = ... or _G.gui
 
 do -- tree node
-	local META = {}
+	local META = prototype.CreateTemplate("tree_node")
 
 	META.Base = "button"
-	META.ClassName = "tree_node"
 
-	prototype.GetSet(META, "Expand", true)
+	META:GetSet("Expand", true)
 
 	function META:Initialize()
 		self:SetDraggable(true)
@@ -172,11 +171,10 @@ do -- tree node
 end
 
 do
-	local META = {}
+	local META = prototype.CreateTemplate("tree")
 
-	META.ClassName = "tree"
-	prototype.GetSet(META, "IndentWidth", 8)
-	prototype.GetSet(META, "SelectedNode", NULL)
+	META:GetSet("IndentWidth", 8)
+	META:GetSet("SelectedNode", NULL)
 
 	function META:Initialize()
 		self:SetNoDraw(true)

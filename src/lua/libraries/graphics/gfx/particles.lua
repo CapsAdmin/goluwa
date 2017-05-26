@@ -264,4 +264,4 @@ function META:Emit()
 	end
 end
 
-prototype.Register(META)
+META:Register()

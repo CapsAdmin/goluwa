@@ -1,17 +1,16 @@
 local gui = ... or _G.gui
-local META = {}
 
-META.ClassName = "button"
+local META = prototype.CreateTemplate("button")
 
-prototype.GetSet(META, "Mode", "normal")
-prototype.GetSet(META, "ResetOnMouseExit", true)
-prototype.GetSet(META, "Highlight", false)
-prototype.GetSet(META, "ActiveStyle", "button_active")
-prototype.GetSet(META, "InactiveStyle", "button_inactive")
-prototype.GetSet(META, "HighlightOnMouseEnter", true)
-prototype.GetSet(META, "ClicksToActivate", 0)
-prototype.GetSet(META, "ImagePath", "")
-prototype.GetSet(META, "ImageSize", Vec2() + 16)
+META:GetSet("Mode", "normal")
+META:GetSet("ResetOnMouseExit", true)
+META:GetSet("Highlight", false)
+META:GetSet("ActiveStyle", "button_active")
+META:GetSet("InactiveStyle", "button_inactive")
+META:GetSet("HighlightOnMouseEnter", true)
+META:GetSet("ClicksToActivate", 0)
+META:GetSet("ImagePath", "")
+META:GetSet("ImageSize", Vec2() + 16)
 
 function META:SetImagePath(str)
 	if not str or str == "" then

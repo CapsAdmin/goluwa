@@ -60,6 +60,7 @@ end
 
 function gui.RegisterPanel(META)
 	META.TypeBase = "base"
+	META.Type = nil
 	prototype.Register(META, "panel")
 end
 

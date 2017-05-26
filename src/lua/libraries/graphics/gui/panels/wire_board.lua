@@ -1,8 +1,6 @@
 local gui = ... or _G.gui
 
-local META = {}
-
-META.ClassName = "wire_board"
+local META = prototype.CreateTemplate("wire_board")
 META.Base = "base"
 
 function META:Initialize()

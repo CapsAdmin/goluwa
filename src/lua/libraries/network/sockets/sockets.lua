@@ -208,7 +208,8 @@ do -- tcp socket meta
 		end
 
 		do
-			prototype.GetSet(CLIENT, "SSLParams")
+			CLIENT:GetSet("SSLParams")
+
 			local https_default = {
 				protocol = "tlsv1_2",
 				verify = "none",

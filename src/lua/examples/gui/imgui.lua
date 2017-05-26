@@ -1,6 +1,5 @@
 do
-	local META = {}
-	META.ClassName = "menu_bar"
+	local META = prototype.CreateTemplate("menu_bar")
 
 	function META:AddEntry(what, options)
 		local button = self:CreatePanel("text_button")

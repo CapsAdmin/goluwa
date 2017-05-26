@@ -1,9 +1,7 @@
 local structs = (...) or _G.structs
 -- not very efficent
 
-local META = {}
-
-META.ClassName = "Color"
+local META = prototype.CreateTemplate("Color")
 
 function ColorBytes(r, g, b, a)
 	r = r or 0

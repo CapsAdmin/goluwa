@@ -1,18 +1,16 @@
 local gui = ... or _G.gui
-local META = {}
+local META = prototype.CreateTemplate("text")
 
-META.ClassName = "text"
+META:GetSet("Text")
+META:GetSet("ParseTags", false)
+META:GetSet("TextWrap", false)
+META:GetSet("ConcatenateTextToSize", false)
+META:GetSet("LightMode", false)
+META:GetSet("CopyTags", true)
+META:IsSet("Selectable", false)
 
-prototype.GetSet(META, "Text")
-prototype.GetSet(META, "ParseTags", false)
-prototype.GetSet(META, "TextWrap", false)
-prototype.GetSet(META, "ConcatenateTextToSize", false)
-prototype.GetSet(META, "LightMode", false)
-prototype.GetSet(META, "CopyTags", true)
-prototype.IsSet(META, "Selectable", false)
-
-prototype.GetSet(META, "Font")
-prototype.GetSet(META, "TextColor")
+META:GetSet("Font")
+META:GetSet("TextColor")
 
 function META:Initialize()
 	self:SetNoDraw(true)

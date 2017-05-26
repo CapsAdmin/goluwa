@@ -4,9 +4,7 @@ local gate_size = 64
 local connection_size = 8
 local connection_padding = 2
 
-local META = {}
-
-META.ClassName = "logic_gate"
+local META = prototype.CreateTemplate("logic_gate")
 
 function META:Initialize()
 	self:SetStyle("frame")

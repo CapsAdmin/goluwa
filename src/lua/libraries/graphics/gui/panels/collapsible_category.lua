@@ -1,8 +1,6 @@
 local gui = ... or _G.gui
 
-local META = {}
-
-META.ClassName = "collapsible_category"
+local META = prototype.CreateTemplate("collapsible_category")
 
 function META:Initialize()
 	self:SetNoDraw(true)

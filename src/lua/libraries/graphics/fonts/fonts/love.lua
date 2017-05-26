@@ -1,9 +1,7 @@
 local ffi = require("ffi")
 local fonts = ... or _G.fonts
 
-local META = {}
-
-META.ClassName = "love"
+local META = prototype.CreateTemplate("love")
 
 function META:Initialize(options)
 	if type(options.glyphs) ~= "string" then

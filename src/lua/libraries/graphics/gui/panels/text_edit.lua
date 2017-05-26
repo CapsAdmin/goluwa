@@ -1,23 +1,21 @@
 local gui = ... or _G.gui
-local META = {}
+local META = prototype.CreateTemplate("text_edit")
 
-META.ClassName = "text_edit"
+META:GetSet("CaretColor")
+META:GetSet("SelectionColor")
+META:GetSet("Editable", true)
+META:GetSet("CaretPosition", Vec2(0, 0))
 
-prototype.GetSet(META, "CaretColor")
-prototype.GetSet(META, "SelectionColor")
-prototype.GetSet(META, "Editable", true)
-prototype.GetSet(META, "CaretPosition", Vec2(0, 0))
+META:GetSetDelegate("Text", "", "label")
+META:GetSetDelegate("ParseTags", false, "label")
+META:GetSetDelegate("Font", nil, "label")
+META:GetSetDelegate("TextColor", nil, "label")
+META:GetSetDelegate("TextWrap", false, "label")
 
-prototype.GetSetDelegate(META, "Text", "", "label")
-prototype.GetSetDelegate(META, "ParseTags", false, "label")
-prototype.GetSetDelegate(META, "Font", nil, "label")
-prototype.GetSetDelegate(META, "TextColor", nil, "label")
-prototype.GetSetDelegate(META, "TextWrap", false, "label")
-
-prototype.Delegate(META, "label", "CenterText", "Center")
-prototype.Delegate(META, "label", "CenterTextY", "CenterY")
-prototype.Delegate(META, "label", "CenterTextX", "CenterX")
-prototype.Delegate(META, "label", "GetTextSize", "GetSize")
+META:Delegate("label", "CenterText", "Center")
+META:Delegate("label", "CenterTextY", "CenterY")
+META:Delegate("label", "CenterTextX", "CenterX")
+META:Delegate("label", "GetTextSize", "GetSize")
 
 function META:Initialize()
 	self:SetStyle("text_edit")

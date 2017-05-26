@@ -169,7 +169,7 @@ function META:OnParent(ent)
 	end
 end
 
-prototype.Register(META)
+META:Register()
 
 prototype.component_configurations = prototype.component_configurations or {}
 

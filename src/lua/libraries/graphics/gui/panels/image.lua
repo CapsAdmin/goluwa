@@ -1,10 +1,9 @@
 local gui = ... or _G.gui
 
-local META = {}
-META.ClassName = "image"
+local META = prototype.CreateTemplate("image")
 
-prototype.GetSet(META, "Path", "loading")
-prototype.GetSet(META, "SizeToImage", false)
+META:GetSet("Path", "loading")
+META:GetSet("SizeToImage", false)
 
 function META:SetPath(path)
 	self.Path = path

@@ -1,16 +1,15 @@
 local prototype = ... or _G.prototype
 
-local META = {}
-META.ClassName = "base"
+local META = prototype.CreateTemplate("base")
 
 META.Require = {}
 META.Events = {}
 
-prototype.GetSet(META, "Id")
-prototype.GetSet(META, "Entity", NULL)
-prototype.Delegate(META, "Entity", "GetComponent")
-prototype.Delegate(META, "Entity", "AddComponent")
-prototype.Delegate(META, "Entity", "RemoveComponent")
+META:GetSet("Id")
+META:GetSet("Entity", NULL)
+META:Delegate("Entity", "GetComponent")
+META:Delegate("Entity", "AddComponent")
+META:Delegate("Entity", "RemoveComponent")
 
 function META:Initialize()
 
@@ -50,10 +49,10 @@ function META:FireEvent(...)
 	end
 end
 
-function prototype.RegisterComponent(meta)
-	meta.TypeBase = "base"
-	meta.ClassName = meta.Name
-	prototype.Register(meta, "component")
+function prototype.RegisterComponent(META)
+	META.TypeBase = "base"
+	META.ClassName = META.Name
+	prototype.Register(META, "component")
 end
 
 function prototype.CreateComponent(name)
@@ -69,4 +68,5 @@ function prototype.CreateComponent(name)
 	return self
 end
 
-prototype.Register(META, "component")
+META.Type = nil
+META:Register("component")

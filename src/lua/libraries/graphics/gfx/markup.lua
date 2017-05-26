@@ -1,4 +1,4 @@
-﻿local gfx = (...) or _G.gfx
+local gfx = (...) or _G.gfx
 
 local META = prototype.CreateTemplate("markup")
 
@@ -3042,4 +3042,4 @@ do -- drawing
 	end
 end
 
-prototype.Register(META)
+META:Register()

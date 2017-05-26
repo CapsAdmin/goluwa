@@ -1215,7 +1215,7 @@ if sdl then
 		end
 	end
 
-	prototype.Register(META)
+	META:Register()
 
 	local flags_to_enums = {}
 

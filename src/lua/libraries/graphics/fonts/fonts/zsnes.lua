@@ -1,9 +1,7 @@
 local ffi = require("ffi")
 local fonts = ... or _G.fonts
 
-local META = {}
-
-META.ClassName = "zsnes"
+local META = prototype.CreateTemplate("zsnes")
 
 local pixel_padding = 3
 

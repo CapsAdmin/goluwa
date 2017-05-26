@@ -91,7 +91,7 @@ runfile("extended.lua", META)
 runfile("user_command.lua", META)
 runfile("chat_above_head.lua", META)
 
-prototype.Register(META)
+META:Register()
 
 if SERVER then
 	event.Timer("update_clients", 1, 0, function()

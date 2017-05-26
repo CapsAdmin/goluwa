@@ -21,7 +21,7 @@ do -- pvar meta
 	function META:GetDefault() return pvars.infos[self.key].def end
 	function META:GetType() return pvars.infos[self.key].typ end
 
-	prototype.Register(META)
+	META:Register()
 end
 function pvars.Setup(key, def, callback, typ)
 	typ = typ or type(def)

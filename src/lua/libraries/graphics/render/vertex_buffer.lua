@@ -251,4 +251,4 @@ end
 
 runfile("opengl/vertex_buffer.lua", render, META)
 
-prototype.Register(META)
+META:Register()

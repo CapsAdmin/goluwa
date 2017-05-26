@@ -1,11 +1,10 @@
 local gui = ... or _G.gui
 
-local META = {}
-META.ClassName = "scroll"
+local META = prototype.CreateTemplate("scroll")
 
-prototype.GetSet(META, "XScrollBar", true)
-prototype.GetSet(META, "YScrollBar", true)
-prototype.GetSet(META, "ScrollWidth", 8)
+META:GetSet("XScrollBar", true)
+META:GetSet("YScrollBar", true)
+META:GetSet("ScrollWidth", 8)
 
 function META:Initialize()
 	self.panel = NULL

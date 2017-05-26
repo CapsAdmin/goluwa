@@ -1,10 +1,9 @@
 local gui = ... or _G.gui
 
-local META = {}
-META.ClassName = "frame"
+local META = prototype.CreateTemplate("frame")
 
-prototype.GetSet(META, "Title", "no title")
-prototype.GetSet(META, "Icon", "textures/silkicons/heart.png")
+META:GetSet("Title", "no title")
+META:GetSet("Icon", "textures/silkicons/heart.png")
 
 function META:Initialize()
 	self:SetDraggable(true)

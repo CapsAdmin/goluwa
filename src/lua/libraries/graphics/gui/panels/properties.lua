@@ -3,12 +3,10 @@ local gui = ... or _G.gui
 local expand_memory = {}
 
 do -- base property
-	local META = {}
-
+	local META = prototype.CreateTemplate("base_property")
 	META.Base = "text_button"
-	META.ClassName = "base_property"
 
-	prototype.GetSet(META, "DefaultValue")
+	META:GetSet("DefaultValue")
 
 	function META:Initialize()
 		self.special = NULL
@@ -196,10 +194,8 @@ do -- base property
 end
 
 do -- string
-	local META = {}
-
+	local META = prototype.CreateTemplate("string_property")
 	META.Base = "base_property"
-	META.ClassName = "string_property"
 
 	function META:Initialize()
 		prototype.GetRegistered(self.Type, META.Base).Initialize(self)
@@ -215,14 +211,12 @@ do -- string
 end
 
 do -- number
-	local META = {}
-
+	local META = prototype.CreateTemplate("number_property")
 	META.Base = "base_property"
-	META.ClassName = "number_property"
 
-	prototype.GetSet(META, "Minimum")
-	prototype.GetSet(META, "Maximum")
-	prototype.GetSet(META, "Sensitivity", 1)
+	META:GetSet("Minimum")
+	META:GetSet("Maximum")
+	META:GetSet("Sensitivity", 1)
 
 	META.slider = NULL
 
@@ -345,10 +339,8 @@ do -- number
 end
 
 do -- boolean
-	local META = {}
-
+	local META = prototype.CreateTemplate("boolean_property")
 	META.Base = "base_property"
-	META.ClassName = "boolean_property"
 
 	function META:Initialize()
 		local panel = self:CreatePanel("button", "panel")
@@ -392,10 +384,8 @@ do -- boolean
 end
 
 do -- color
-	local META = {}
-
+	local META = prototype.CreateTemplate("color_property")
 	META.Base = "base_property"
-	META.ClassName = "color_property"
 
 	function META:Initialize()
 		local panel = self:CreatePanel("button", "panel")
@@ -447,10 +437,8 @@ do -- color
 end
 
 do -- texture
-	local META = {}
-
+	local META = prototype.CreateTemplate("texture_property")
 	META.Base = "base_property"
-	META.ClassName = "texture_property"
 
 	function META:Initialize()
 		local panel = self:CreatePanel("button", "panel")
@@ -503,9 +491,7 @@ do -- texture
 	gui.RegisterPanel(META)
 end
 
-local META = {}
-
-META.ClassName = "properties"
+local META = prototype.CreateTemplate("properties")
 
 function META:Initialize()
 	self.added_properties = {}

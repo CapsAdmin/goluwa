@@ -1,8 +1,6 @@
 local structs = (...) or _G.structs
 
-local META = {}
-
-META.ClassName = "Ang3"
+local META = prototype.CreateTemplate("Ang3")
 
 function Deg3(p, y, r)
 	return Ang3(p, y, r):Rad()

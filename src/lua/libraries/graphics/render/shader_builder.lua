@@ -937,7 +937,7 @@ function META:Rebuild()
 	prototype.OverrideCreateObjectTable()
 end
 
-prototype.Register(META)
+META:Register()
 
 function render.RebuildShaders()
 	for _, shader in pairs(render.active_shaders) do

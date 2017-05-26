@@ -1,8 +1,6 @@
 local gui = ... or _G.gui
 
-local META = {}
-
-META.ClassName = "lemming"
+local META = prototype.CreateTemplate("lemming")
 
 local animations = {
 	--sleep = {tiles = {Vec2(0,0), Vec2(1,0)}, speed = 1},

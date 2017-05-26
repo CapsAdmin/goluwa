@@ -73,4 +73,4 @@ function META:Bind(where, offset, size)
 	end
 end
 
-prototype.Register(META)
+META:Register()
