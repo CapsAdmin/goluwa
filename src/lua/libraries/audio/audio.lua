@@ -12,17 +12,17 @@ alc.debug = true
 audio.effect_channels = audio.effect_channels or utility.CreateWeakTable()
 
 function audio.Initialize(name)
-	if LINUX then return end
 	local f = io.open("./al_config.ini", "wb")
 	f:write("slots = 256\n")
 	f:write("sends = 256\n")
 	f:close()
 
+	--os.setenv("ALSOFT_LOGLEVEL", "3")
 	os.setenv("ALSOFT_CONF", "./al_config.ini")
-	--audio.Shutdown()
+	audio.Shutdown()
 
 	if not name then
-		--name = audio.GetAllOutputDevices()[1]
+		name = audio.GetAllOutputDevices()[1]
 	end
 
 	if audio.debug then
