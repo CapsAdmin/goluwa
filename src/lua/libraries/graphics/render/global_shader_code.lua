@@ -191,7 +191,7 @@ function render.GetGlobalShaderVariables(code, const)
 
 	local function add_code(code, node)
 		for _, info in ipairs(render.global_glsl_variables) do
-			if const == true and info.type:startswith("const") or const == false and not info.type:startswith("const") or const == nil then
+			if (const == true and info.type:startswith("const")) or (const == false and not info.type:startswith("const")) or const == nil then
 				local p = [==[[!"#$%&'%(%)%*%+,%-%./:;<=>?@%[\%]%^`%{|%}~%s]]==]
 				if code:find(p..info.key..p) then
 					local new_code = info.type .. " " .. info.key .. " = " .. info.val .. ";"
