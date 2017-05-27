@@ -718,10 +718,6 @@ do
 
 		local bitmap = library.LoadFromMemory(type, stream, 0)
 
-		local buffer = library.GetBits(bitmap)
-		local width = library.GetWidth(bitmap)
-		local height = library.GetHeight(bitmap)
-
 		local image_type = library.GetImageType(bitmap)
 		local color_type = library.GetColorType(bitmap)
 
@@ -739,7 +735,10 @@ do
 		elseif color_type == library.e.COLOR_TYPE_MINISBLACK or color_type == library.e.COLOR_TYPE_MINISWHITE then
 			format = "r"
 		else
-			wlog("unhandled freeimage color type: %s", color_type)
+			bitmap = library.ConvertTo8Bits(bitmap)
+			ffi.gc(bitmap, library.Unload)
+
+			wlog("unhandled freeimage color type: %s\nconverting to 8bit rgba", color_type)
 		end
 
 		if image_type == library.e.IMAGE_TYPE_BITMAP then
@@ -755,9 +754,9 @@ do
 		end
 
 		return {
-			buffer = buffer,
-			width = width,
-			height = height,
+			buffer = library.GetBits(bitmap),
+			width = library.GetWidth(bitmap),
+			height = library.GetHeight(bitmap),
 			format = format,
 			type = type,
 		}
