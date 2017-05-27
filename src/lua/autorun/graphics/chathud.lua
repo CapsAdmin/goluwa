@@ -46,8 +46,15 @@ function chathud.AddText(...)
 			path = "Roboto",
 			fallback = gfx.GetDefaultFont(),
 			size = 16,
-			padding = 4,
-			shadow = 1,
+			padding = 50,
+			shadow = {
+				order = 1,
+				dir = 0,
+				color = Color(0,0,0,1),
+				blur_radius = 0.5,
+				blur_passes = 4,
+				alpha_pow = 2,
+			},
 		})
 
 		for _, v in pairs(vfs.Find("textures/silkicons/")) do

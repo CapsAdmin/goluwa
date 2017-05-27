@@ -11,15 +11,13 @@ META:GetSet("FallbackFonts")
 META:IsSet("Monospace", false)
 META:IsSet("Ready", false)
 META:GetSet("LoadSpeed", 10)
-META:GetSet("Shadow", 0)
-META:GetSet("ShadowColor", Color(0,0,0,1))
 
 function META:GetGlyphData(code)
 	error("not implemented")
 end
 
 function META:CreateTextureAtlas()
-	self.texture_atlas = render.CreateTextureAtlas(512, 512, self.Filtering)
+	self.texture_atlas = render.CreateTextureAtlas(1024, 1024, self.Filtering)
 	self.texture_atlas:SetPadding(self.Padding)
 
 	for code in pairs(self.chars) do
@@ -32,15 +30,23 @@ end
 
 function META:Shade(source, vars, blend_mode)
 	if source then
-		for _, tex in ipairs(self:GetTextures()) do
+		for _, tex in ipairs(self.texture_atlas:GetTextures()) do
+			if tex.font_shade_keep then
+				vars.copy = tex.font_shade_keep
+				--tex.font_shade_keep = nil
+			end
 			tex:Shade(source, vars, blend_mode)
 		end
 	elseif self.ShadingInfo then
 		self:CreateTextureAtlas()
-
 		for _, info in ipairs(self.ShadingInfo) do
-			for _, tex in ipairs(self.texture_atlas:GetTextures()) do
-				tex:Shade(info.source, info.vars, info.blend_mode)
+			if info.copy then
+				for _, tex in ipairs(self.texture_atlas:GetTextures()) do
+					tex.font_shade_keep = render.CreateBlankTexture(tex:GetSize())
+					tex.font_shade_keep:Shade("return texture(tex, uv);", {tex = tex}, "none")
+				end
+			else
+				self:Shade(info.source, info.vars, info.blend_mode)
 			end
 		end
 	end
@@ -114,13 +120,13 @@ function META:SetPolyChar(poly, i, x, y, char)
 		local x_,y_, w,h, sx,sy = self.texture_atlas:GetUV(char)
 		poly:SetUV(x_,y_, w,h, sx,sy)
 
-		x = x - self.Padding / 2
-		y = y - self.Padding * 2
-
 		x = x * self.Scale.x
 		y = y * self.Scale.y
 
-		y = y - ch.bitmap_top + self.Size + (0.5 * self.Scale.y)
+		y = y - ch.bitmap_top + (self.Size / self.Scale.y)
+
+		x = x - (self.Padding / 2) * self.Scale.x
+		y = y - (self.Padding / 2) * self.Scale.y
 
 		poly:SetRect(i, x, y, w * self.Scale.x, h * self.Scale.y)
 	end
@@ -218,7 +224,7 @@ function META:CompileString(data)
 					if self.Monospace then
 						X = X + self.Spacing
 					else
-						X = X + ch.x_advance + self.Spacing
+						X = X + ch.x_advance + self.Spacing + (self.Size / fonts.font_dpi)
 					end
 
 					width_info[i] = X

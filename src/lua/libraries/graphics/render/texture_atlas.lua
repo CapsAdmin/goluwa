@@ -78,8 +78,9 @@ function META:FindFreePage(w, h)
 			tree = tree,
 		}
 
-		--page.texture:SetMinFilter(self.filtering)
+		page.texture:SetMinFilter(self.filtering)
 		page.texture:SetMagFilter(self.filtering)
+		page.texture:SetMipMapLevels(1)
 
 		table.insert(self.pages, page)
 

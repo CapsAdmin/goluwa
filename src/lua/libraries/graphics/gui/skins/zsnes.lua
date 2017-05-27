@@ -23,7 +23,7 @@ function SKIN:Build()
 		path = "fonts/zfont.txt",
 		fallback = fonts.CreateFont({path = render2d.default_font_path, size = 10, filtering = "nearest"}),
 		shadow = 1,
-		padding = 2,
+		padding = 4,
 		shadow_color = Color(0.2,0.2,0.2,0.9),
 		size = 5*S,
 		scale = S,
