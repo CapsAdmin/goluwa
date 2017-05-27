@@ -33,6 +33,24 @@ do
 		SEED = SEED + val
 		return val
 	end
+
+	do
+		local noise = require("noise")
+
+		function love.math.noise(x,y,w,h)
+			if x and y and z and w then
+				math.randomseed(x)
+				return math.random(), noise.Simplex3D(y, z, w)
+			elseif x and y and z then
+				return noise.Simplex3D(x, y, z)
+			elseif x and y then
+				return noise.Simplex2D(x, y)
+			elseif x then
+				math.randomseed(x)
+				return math.random()
+			end
+		end
+	end
 end
 
 do
@@ -89,10 +107,10 @@ do
 	function love.math.newBezierCurve(...)
 		local self = line.CreateObject("BezierCurve")
 		local points
-		if type(...) == "number" then
+		if ... and type(...) == "number" then
 			points = {...}
 		else
-			points = ...
+			points = ... or {}
 		end
 
 		local polygons = {}
@@ -148,9 +166,9 @@ do
 	end
 
 	function BezierCurve:getDerivative()
-		local self = line.CreateObject("BezierCurve")
+		local self = love.math.newBezierCurve()
 		self.obj = self.obj:GetDerivative()
-		return obj
+		return self
 	end
 
 	function BezierCurve:evaluate(t)
@@ -158,9 +176,9 @@ do
 	end
 
 	function BezierCurve:getSegment(t1, t2)
-		local self = line.CreateObject("BezierCurve")
-		self.obj = self.obj:getSegment(t1, t2)
-		return obj
+		local self = love.math.newBezierCurve()
+		self.obj = self.obj:GetSegment(t1, t2)
+		return self
 	end
 
 	function BezierCurve:render(accuracy)
