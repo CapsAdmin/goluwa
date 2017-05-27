@@ -2,14 +2,14 @@ local render = (...) or _G.render
 
 local META = prototype.CreateTemplate("vertex_buffer")
 
-prototype.StartStorable()
-META:GetSet("UpdateIndices", true)
-META:GetSet("Mode", "triangles")
-META:GetSet("IndicesType", "uint16_t")
-META:GetSet("DrawHint", "dynamic")
-META:GetSet("Vertices")
-META:GetSet("Indices")
-prototype.EndStorable()
+META:StartStorable()
+	META:GetSet("UpdateIndices", true)
+	META:GetSet("Mode", "triangles")
+	META:GetSet("IndicesType", "uint16_t")
+	META:GetSet("DrawHint", "dynamic")
+	META:GetSet("Vertices")
+	META:GetSet("Indices")
+META:EndStorable()
 
 function render.CreateVertexBuffer(mesh_layout, vertices, indices, is_valid_table)
 	local self = META:CreateObject()
