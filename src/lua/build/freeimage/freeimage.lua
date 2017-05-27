@@ -721,8 +721,6 @@ do
 		local image_type = library.GetImageType(bitmap)
 		local color_type = library.GetColorType(bitmap)
 
-		ffi.gc(bitmap, library.Unload)
-		library.CloseMemory(stream)
 		stream_buffer = nil
 
 		local format = "bgra"
@@ -735,11 +733,13 @@ do
 		elseif color_type == library.e.COLOR_TYPE_MINISBLACK or color_type == library.e.COLOR_TYPE_MINISWHITE then
 			format = "r"
 		else
-			bitmap = library.ConvertTo8Bits(bitmap)
-			ffi.gc(bitmap, library.Unload)
+			bitmap = library.ConvertTo32Bits(bitmap)
 
+			format = "bgra"
 			wlog("unhandled freeimage color type: %s\nconverting to 8bit rgba", color_type)
 		end
+
+		ffi.gc(bitmap, library.Unload)
 
 		if image_type == library.e.IMAGE_TYPE_BITMAP then
 			type = "unsigned_byte"
@@ -753,13 +753,17 @@ do
 			wlog("unhandled freeimage format type: %s", image_type)
 		end
 
-		return {
+		local ret = {
 			buffer = library.GetBits(bitmap),
 			width = library.GetWidth(bitmap),
 			height = library.GetHeight(bitmap),
 			format = format,
 			type = type,
 		}
+
+		library.CloseMemory(stream)
+
+		return ret
 	end
 
 	function library.LoadMultiPageImage(data, flags)
