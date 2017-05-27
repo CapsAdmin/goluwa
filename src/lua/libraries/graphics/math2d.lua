@@ -652,7 +652,8 @@ do
 		if t < 0 or t > 1 then
 			error("Invalid evaluation parameter: must be between 0 and 1", 2)
 		end
-		if self.polygons < 2 then
+
+		if #self.polygons < 2 then
 			error("Invalid Bezier curve: Not enough control points.", 2)
 		end
 
