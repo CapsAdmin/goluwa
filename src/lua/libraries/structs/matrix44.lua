@@ -208,6 +208,18 @@ end
 
 META.Multiply = META.GetMultiplied
 
+function META:Skew(x, y)
+	y = y or x
+	x = math.rad(x)
+	y = math.rad(y)
+
+	local skew = ctype(1,math.tan(x),0,0, math.tan(y),1,0,0, 0,0,1,0, 0,0,0,1)
+
+	self:CopyTo(skew)
+
+	return self
+end
+
 function META:GetTranslation()
 	return self.m30, self.m31, self.m32
 end
