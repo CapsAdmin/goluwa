@@ -110,6 +110,7 @@ local fonts = {
 }
 
 event.AddListener("PreDrawGUI", "lol", function()
+	render2d.SetTexture(render.GetWhiteTexture())
 	render2d.SetColor(0.5,0.5,0.5,1)
 	render2d.DrawRect(0,0,render2d.GetSize())
 
