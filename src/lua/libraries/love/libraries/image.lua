@@ -85,20 +85,20 @@ do -- image data
 		if type(a) == "number" and type(b) == "number" then
 			tex:SetSize(Vec2(a, b))
 		else
-			local buffer, w, h, info = render.DecodeTexture(a)
+			local info, err = render.DecodeTexture(a)
 
-			if not buffer then
-				buffer, w, h, info = render.DecodeTexture(vfs.Read(a, "rb"))
+			if not info then
+				info, err = render.DecodeTexture(vfs.Read(a, "rb"))
 			end
 
-			if buffer then
-				tex:SetSize(Vec2(w, h))
+			if info then
+				tex:SetSize(Vec2(info.width, info.height))
 
 				tex:Upload({
-					buffer = buffer,
-					width = w,
-					height = h,
-					format = info.format or "bgra",
+					buffer = info.buffer,
+					width = info.width,
+					height = info.height,
+					format = info.format,
 					type = info.type,
 				})
 			end
