@@ -31,6 +31,8 @@ function window.Open(...)
 		render.Initialize()
 	end
 
+	render.SetWindow(wnd)
+
 	function wnd:OnUpdate()
 		render.PushWindow(self)
 			local dt = system.GetFrameTime()

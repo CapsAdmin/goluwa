@@ -10,6 +10,7 @@ function render.SetWindow(window)
 	_G.window.wnd = window
 
 	render.SetViewport(0, 0, window:GetSize():Unpack())
+	render.SetScissor(0, 0, window:GetSize():Unpack())
 end
 
 function render.GetWindow()
