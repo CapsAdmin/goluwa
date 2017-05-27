@@ -66,6 +66,11 @@ function window.Open(...)
 					end
 				end
 
+
+				if not render3d.IsGBufferReady() and not line.IsGameRunning() then
+					render.GetScreenFrameBuffer():ClearAll()
+				end
+
 				event.Call("PreDrawGUI", dt)
 				event.Call("DrawGUI", dt)
 				event.Call("PostDrawGUI", dt)
