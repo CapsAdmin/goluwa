@@ -3,7 +3,15 @@ local ffibuild = {}
 function ffibuild.Clone(str, dir)
 	dir = dir or "repo"
 	if str:find("%.git$") then
-		os.execute("if [ -d ./" .. dir .. " ]; then git -C ./" .. dir .. " pull; else git clone " .. str .. " " .. dir .. " --depth 1; fi")
+		local url, branch = str:match("(.-github%.com/.-/.-)/tree/(.+)%.git$")
+		if url then
+			str = url
+			branch = "-b " .. branch
+		end
+
+		branch = branch or ""
+
+		os.execute("if [ -d ./" .. dir .. " ]; then git -C ./" .. dir .. " pull; else git clone " .. str .. " " .. dir .. " --depth 1 " .. branch .. " ; fi")
 	elseif str:find("hg%.") then
 		local clone_, branch = str:match("(.+);(.+)")
 		str = clone_ or str
