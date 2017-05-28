@@ -1243,6 +1243,10 @@ if sdl then
 			--sdl.GL_SetAttribute(sdl.e.GL_DOUBLEBUFFER, 0)
 		end
 
+		if VULKAN then
+			table.insert(flags, "vulkan")
+		end
+
 		local bit_flags = 0
 
 		for _, v in pairs(flags) do

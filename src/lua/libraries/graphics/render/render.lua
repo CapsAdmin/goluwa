@@ -13,7 +13,14 @@ runfile("shader_variables.lua", render)
 
 function render.Initialize()
 	local dir = "lua/libraries/graphics/render/"
-	runfile(dir .. "opengl/render.lua", render)
+
+	if OPENGL then
+		runfile(dir .. "opengl/render.lua", render)
+	elseif VULKAN then
+		runfile(dir .. "vulkan/render.lua", render)
+	else
+		runfile(dir .. "null/render.lua", render)
+	end
 
 	-- FIX ME
 	-- these check if direct state access exist but do it too early
