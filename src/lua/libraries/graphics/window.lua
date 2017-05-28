@@ -4,7 +4,7 @@ window.wnd = window.wnd or NULL
 
 local meta = prototype.GetRegistered("render_window")
 
-if not meta then wlog("no window managed found") return end
+if not meta then wlog("no window manager found") return end
 
 for key, val in pairs(meta) do
 	if type(val) == "function" then
@@ -28,7 +28,7 @@ function window.Open(...)
 
 	if not render.initialized then
 		render.initialized = true
-		render.Initialize()
+		render.Initialize(wnd)
 	end
 
 	render.SetWindow(wnd)

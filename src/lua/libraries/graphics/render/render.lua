@@ -16,7 +16,7 @@ runfile("framebuffer.lua", render)
 runfile("texture_decoders/*", render)
 runfile("shader_builder.lua", render)
 
-function render.Initialize()
+function render.Initialize(wnd)
 	local dir = "lua/libraries/graphics/render/"
 
 	if OPENGL then
@@ -29,7 +29,7 @@ function render.Initialize()
 
 	runfile(dir .. "render.lua", render)
 
-	render._Initialize()
+	render._Initialize(wnd)
 	render.GenerateTextures()
 end
 

@@ -1125,6 +1125,20 @@ if sdl then
 		return ffi.string(sdl.GetClipboardText())
 	end
 
+	function META:CreateVulkanSurface(instance)
+		local surface = sdl.CreateVulkanSurface(self.sdl_wnd, instance)
+
+		if surface == nil then
+			return nil, ffi.string(sdl.GetError())
+		end
+
+		return surface
+	end
+
+	function META:GetRequiredVulkanInstanceExtensions(extra)
+		return sdl.GetRequiredInstanceExtensions(self.sdl_wnd, extra)
+	end
+
 	do
 		local freq = tonumber(sdl.GetPerformanceFrequency())
 		local start_time = sdl.GetPerformanceCounter()
