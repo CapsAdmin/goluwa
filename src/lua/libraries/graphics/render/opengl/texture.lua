@@ -1,6 +1,5 @@
-local render, META = ...
-render = render or _G.render
-META = META or prototype.GetRegistered("texture")
+local render = ... or _G.render
+local META = prototype.GetRegistered("texture")
 
 local ffi = require("ffi")
 local gl = require("opengl")

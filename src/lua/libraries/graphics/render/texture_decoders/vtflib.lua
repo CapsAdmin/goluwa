@@ -1,3 +1,5 @@
+local render = ... or _G.render
+
 local vl = desire("VTFLib")
 
 if not vl then return end

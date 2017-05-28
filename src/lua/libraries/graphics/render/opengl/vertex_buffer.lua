@@ -1,6 +1,5 @@
-local render, META = ...
-render = render or _G.render
-META = META or prototype.GetRegistered("vertex_buffer")
+local render = ... or _G.render
+local META = prototype.GetRegistered("vertex_buffer")
 
 local gl = require("opengl")
 

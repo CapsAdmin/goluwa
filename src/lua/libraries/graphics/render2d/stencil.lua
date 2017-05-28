@@ -181,19 +181,19 @@ end
 do
 	local X, Y, W, H
 	function render2d.EnableClipRect(x, y, w, h)
-		gl.Enable("GL_STENCIL_TEST")
+		render.SetStencil(true)
 
-		gl.StencilFunc("GL_ALWAYS", 1, 0xFF) -- Set any stencil to 1
-		gl.StencilOp("GL_KEEP", "GL_KEEP", "GL_REPLACE")
-		gl.StencilMask(0xFF) -- Write to stencil buffer
+		render.StencilFunction("always", 1, 0xFF) -- Set any stencil to 1
+		render.StencilOperation("keep", "keep", "replace")
+		render.StencilMask(0xFF) -- Write to stencil buffer
 		render.GetFrameBuffer():ClearStencil(0xFF) -- Clear stencil buffer (0 by default)
 
 		render2d.PushColor(0,0,0,0)
 		render2d.DrawRect(x, y, w, h)
 		render2d.PopColor()
 
-		gl.StencilFunc("GL_EQUAL", 1, 0xFF) -- Pass test if stencil value is 1
-		gl.StencilMask(0x00) -- Don't write anything to stencil buffer
+		render.StencilFunction("equal", 1, 0xFF) -- Pass test if stencil value is 1
+		render.StencilMask(0x00) -- Don't write anything to stencil buffer
 
 		X = x
 		Y = y
@@ -206,6 +206,6 @@ do
 	end
 
 	function render2d.DisableClipRect()
-		gl.Disable("GL_STENCIL_TEST")
+		render.SetStencil(false)
 	end
 end

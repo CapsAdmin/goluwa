@@ -590,10 +590,6 @@ do
 	end
 end
 
-if OPENGL then
-	runfile("opengl/texture.lua", render, META)
-end
-
 META:Register()
 
 function render.CreateTexture(type)

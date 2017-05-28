@@ -9,6 +9,9 @@ runfile("debug.lua", render)
 runfile("shader_program.lua", render)
 runfile("shader_buffer.lua", render)
 runfile("lock.lua", render)
+runfile("vertex_buffer.lua", render)
+runfile("texture.lua", render)
+runfile("framebuffer.lua", render)
 
 function render._Initialize()
 	if not gl then
@@ -267,4 +270,64 @@ end
 
 function render.SetDepthMask(d)
 	gl.DepthMask(d)
+end
+
+do -- stencil
+	do
+		local enabled = false
+
+		function render.SetStencil(b)
+			if b then
+				gl.Enable("GL_STENCIL_TEST")
+			else
+				gl.Disable("GL_STENCIL_TEST")
+			end
+
+			enabled = b
+		end
+
+		function render.GetStencil()
+			return enabled
+		end
+
+	end
+
+	do
+		local translate = {
+			never = "GL_NEVER",
+			less = "GL_LESS",
+			equal = "GL_LEQUAL",
+			greater = "GL_GREATER",
+			greater_or_equal = "GL_GEQUAL",
+			equal = "GL_EQUAL",
+			not_equal = "GL_NOTEQUAL",
+			always = "GL_ALWAYS",
+		}
+
+		function render.StencilFunction(func, ref, mask)
+			gl.StencilFunc(translate[func], ref, mask)
+		end
+
+	end
+
+	do
+		local translate = {
+			keep = "GL_KEEP",
+			zero = "GL_ZERO",
+			replace = "GL_REPLACE",
+			increase = "GL_INCR",
+			increase_wrap = "GL_INCR_WRAP",
+			decrease = "GL_DECR",
+			decrease_wrap = "GL_DECR_WRAP",
+			invert = "GL_INVERT",
+		}
+
+		function render.StencilOperation(sfail, dpfail, dppass)
+			gl.StencilOp(translate[sfail], translate[dpfail], translate[dppass])
+		end
+	end
+
+	function render.StencilMask(mask)
+		gl.StencilMask(mask)
+	end
 end

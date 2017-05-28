@@ -10,30 +10,26 @@ runfile("material.lua", render)
 runfile("camera.lua", render)
 runfile("globals.lua", render)
 runfile("shader_variables.lua", render)
+runfile("vertex_buffer.lua", render)
+runfile("texture.lua", render)
+runfile("framebuffer.lua", render)
+runfile("texture_decoders/*", render)
+runfile("shader_builder.lua", render)
 
 function render.Initialize()
 	local dir = "lua/libraries/graphics/render/"
 
 	if OPENGL then
-		runfile(dir .. "opengl/render.lua", render)
+		dir = dir .. "opengl/"
 	elseif VULKAN then
-		runfile(dir .. "vulkan/render.lua", render)
+		dir = dir .. "vulkan/"
 	else
-		runfile(dir .. "null/render.lua", render)
+		dir = dir .. "null/"
 	end
 
-	-- FIX ME
-	-- these check if direct state access exist but do it too early
-	runfile(dir .. "vertex_buffer.lua", render)
-	runfile(dir .. "texture.lua", render)
-	runfile(dir .. "framebuffer.lua", render)
+	runfile(dir .. "render.lua", render)
 
 	render._Initialize()
-
-	runfile(dir .. "texture_decoders/*")
-
-	runfile(dir .. "shader_builder.lua", render)
-
 	render.GenerateTextures()
 end
 

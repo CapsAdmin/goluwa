@@ -249,6 +249,4 @@ function META:UnreferenceMesh()
 	collectgarbage("step")
 end
 
-runfile("opengl/vertex_buffer.lua", render, META)
-
 META:Register()

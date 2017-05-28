@@ -1,9 +1,8 @@
+local render = ... or _G.render
+local META = prototype.GetRegistered("framebuffer")
+
 local ffi = require("ffi")
 local gl = require("opengl") -- OpenGL
-
-local render, META = ...
-render = render or _G.render
-META = META or prototype.GetRegistered("framebuffer")
 
 local base_color = gl.e.GL_COLOR_ATTACHMENT0
 
