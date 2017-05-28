@@ -1900,5 +1900,41 @@ library.e = {
 	LOG_CATEGORY_RESERVED10 = 18,
 	LOG_CATEGORY_CUSTOM = 19,
 }
+function library.CreateVulkanSurface(window, instance)
+	local box = ffi.new("struct VkSurfaceKHR_T * [1]")
+
+	if library.Vulkan_CreateSurface(window, instance, ffi.cast("void**", box)) == nil then
+		return nil
+	end
+
+	return box[0]
+end
+
+function library.GetRequiredInstanceExtensions(wnd, extra)
+	local count = ffi.new("uint32_t[1]")
+
+	if library.Vulkan_GetInstanceExtensions(wnd, count, nil) == 0 then
+		error("unable to query instance extension count")
+	end
+
+	local array = ffi.new("const char *[?]", count[0])
+
+	if library.Vulkan_GetInstanceExtensions(wnd, count, array) == 0 then
+		error("unable to retreive " .. count[0] .. " extensions")
+	end
+
+	local out = {}
+	for i = 0, count[0] - 1 do
+		table.insert(out, ffi.string(array[i]))
+	end
+
+	if extra then
+		for i,v in ipairs(extra) do
+			table.insert(out, v)
+		end
+	end
+
+	return out
+end
 library.clib = CLIB
 return library

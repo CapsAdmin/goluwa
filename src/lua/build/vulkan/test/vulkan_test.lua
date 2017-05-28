@@ -41,20 +41,18 @@ if STRUCT_RECORD then
 	end
 end
 
-do
-	package.path = package.path .. ";./../../?.lua"
+package.path = package.path .. ";./../../?.lua"
 
-	_G.FFI_LIB = "../../vulkan/libvulkan.so"
-	local vk = require("vulkan/vulkan")
+_G.FFI_LIB = "../../vulkan/libvulkan.so"
+local vk = require("vulkan/vulkan")
 
-	_G.FFI_LIB = "../../SDL2/libSDL2.so"
-	local sdl = require("SDL2/SDL2")
+_G.FFI_LIB = "../../SDL2/libSDL2.so"
+local sdl = require("SDL2/SDL2")
 
-	_G.FFI_LIB = "../../freeimage/libfreeimage.so"
-	local freeimage = require("freeimage/freeimage")
+_G.FFI_LIB = "../../freeimage/libfreeimage.so"
+local freeimage = require("freeimage/freeimage")
 
-	_G.FFI_LIB = nil
-end
+_G.FFI_LIB = nil
 
 local context = {}
 context.width = 1024
@@ -458,11 +456,8 @@ do -- objects
 end
 
 do -- create glfw window
-	glfw.SetErrorCallback(function(_, str) io.write(string.format("GLFW Error: %s\n", ffi.string(str))) end)
-	glfw.Init()
-	glfw.WindowHint(glfw.e.CLIENT_API, glfw.e.NO_API)
-
-	context.window = glfw.CreateWindow(1024, 768, "vulkan", nil, nil)
+	sdl.Init(sdl.e.INIT_VIDEO)
+	context.window = sdl.CreateWindow("vulkan", sdl.e.WINDOWPOS_CENTERED, sdl.e.WINDOWPOS_CENTERED, 1024, 768, sdl.e.WINDOW_VULKAN)
 end
 
 do -- create vulkan instance
@@ -488,7 +483,7 @@ do -- create vulkan instance
 			--"VK_LAYER_LUNARG_image",
 			--"VK_LAYER_LUNARG_api_dump",
 		},
-		ppEnabledExtensionNames = glfw.GetRequiredInstanceExtensions({
+		ppEnabledExtensionNames = sdl.GetRequiredInstanceExtensions(context.window, {
 			"VK_EXT_debug_report",
 		}),
 	}))
@@ -573,7 +568,7 @@ do -- find and use a gpu
 end
 
 do -- setup the glfw window buffer
-	local surface = glfw.CreateWindowSurface(context.instance, context.window, nil)
+	local surface = sdl.CreateVulkanSurface(context.window, context.instance)
 	local formats = context.physical_device:GetSurfaceFormats(surface)
 	local capabilities = context.physical_device:GetSurfaceCapabilities(surface)
 
@@ -1142,11 +1137,14 @@ for _, buffer in ipairs(context.swap_chain_buffers) do
 	buffer.command_buffer:End()
 end
 
-while glfw.WindowShouldClose(context.window) == 0 do
+
+local evt = ffi.new("union SDL_Event")
+
+while true do
+	sdl.PollEvent(evt)
+
 	context.device_queue:WaitIdle()
 	context.device:WaitIdle()
-
-	glfw.PollEvents()
 
 	local semaphore = context.device:CreateSemaphore({
 		flags = 0,
@@ -1155,6 +1153,8 @@ while glfw.WindowShouldClose(context.window) == 0 do
 	local index = context.device:AcquireNextImage(context.swap_chain, vk.e.WHOLE_SIZE, semaphore, nil)
 	index = index + 1
 
+	if evt.type == sdl.e.KEYDOWN then
+	--[[
 	if glfw.GetKey(context.window, glfw.e.KEY_W) == glfw.e.PRESS then
 		context.view_matrix:Translate(0,0,0.1)
 	elseif glfw.GetKey(context.window, glfw.e.KEY_S) == glfw.e.PRESS then
@@ -1163,6 +1163,9 @@ while glfw.WindowShouldClose(context.window) == 0 do
 		context.view_matrix:Translate(0.1,0,0)
 	elseif glfw.GetKey(context.window, glfw.e.KEY_D) == glfw.e.PRESS then
 		context.view_matrix:Translate(-0.1,0,0)
+	end
+	]]
+
 	end
 
 	--context.projection_matrix:Perspective(math.rad(90), 32000, 0.1, context.width / context.height)

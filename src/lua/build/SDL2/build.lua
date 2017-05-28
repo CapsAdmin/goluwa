@@ -37,11 +37,57 @@ header = "struct SDL_BlitMap {};\n" .. header
 
 local meta_data = ffibuild.GetMetaData(header)
 meta_data.functions.SDL_main = nil
+
 local header = meta_data:BuildMinimalHeader(function(name) return name:find("^SDL_") end, function(name) return name:find("^SDL_") or name:find("^KMOD_") end, true, true)
+
+header = header:gsub("struct VkSurfaceKHR_T {};\n", "")
+header = header:gsub("struct VkInstance_T {};\n", "")
+
+header = header:gsub("struct VkInstance_T", "void")
+header = header:gsub("struct VkSurfaceKHR_T", "void")
 
 local lua = ffibuild.StartLibrary(header)
 
 lua = lua .. "library = " .. meta_data:BuildFunctions("^SDL_(.+)")
 lua = lua .. "library.e = " .. meta_data:BuildEnums("^SDL_(.+)")
+
+lua = lua .. [[
+function library.CreateVulkanSurface(window, instance)
+	local box = ffi.new("struct VkSurfaceKHR_T * [1]")
+
+	if library.Vulkan_CreateSurface(window, instance, ffi.cast("void**", box)) == nil then
+		return nil
+	end
+
+	return box[0]
+end
+
+function library.GetRequiredInstanceExtensions(wnd, extra)
+	local count = ffi.new("uint32_t[1]")
+
+	if library.Vulkan_GetInstanceExtensions(wnd, count, nil) == 0 then
+		error("unable to query instance extension count")
+	end
+
+	local array = ffi.new("const char *[?]", count[0])
+
+	if library.Vulkan_GetInstanceExtensions(wnd, count, array) == 0 then
+		error("unable to retreive " .. count[0] .. " extensions")
+	end
+
+	local out = {}
+	for i = 0, count[0] - 1 do
+		table.insert(out, ffi.string(array[i]))
+	end
+
+	if extra then
+		for i,v in ipairs(extra) do
+			table.insert(out, v)
+		end
+	end
+
+	return out
+end
+]]
 
 ffibuild.EndLibrary(lua, header)
