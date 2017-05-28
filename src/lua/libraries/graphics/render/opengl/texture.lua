@@ -445,3 +445,5 @@ function render._CreateTexture(self, type)
 		self:SetAnisotropy(100)
 	end
 end
+
+prototype.Register(META)

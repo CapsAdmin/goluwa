@@ -164,3 +164,5 @@ else
 		render.last_vertex_array_id = nil
 	end
 end
+
+prototype.Register(META)

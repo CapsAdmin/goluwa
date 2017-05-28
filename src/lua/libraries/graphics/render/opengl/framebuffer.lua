@@ -313,3 +313,5 @@ function META.Blit(a, b, a_rect, b_rect)
 		"GL_NEAREST"
 	)
 end
+
+prototype.Register(META)
