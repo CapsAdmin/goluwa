@@ -3,7 +3,7 @@ local ffibuild = require("ffibuild")
 
 ffibuild.BuildSharedLibrary(
 	"SDL2",
-	"https://github.com/spurious/SDL-mirror.git",
+	"https://github.com/msc-/SDL-jake/tree/vulkan-support-mark.git",
 	"./autogen.sh && mkdir build && cd build && ../configure && make && cd ../"
 )
 

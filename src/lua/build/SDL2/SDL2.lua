@@ -35,7 +35,7 @@ typedef enum SDL_Scancode{SDL_SCANCODE_UNKNOWN=0,SDL_SCANCODE_A=4,SDL_SCANCODE_B
 typedef enum SDL_AssertState{SDL_ASSERTION_RETRY=0,SDL_ASSERTION_BREAK=1,SDL_ASSERTION_ABORT=2,SDL_ASSERTION_IGNORE=3,SDL_ASSERTION_ALWAYS_IGNORE=4};
 typedef enum SDL_AudioStatus{SDL_AUDIO_STOPPED=0,SDL_AUDIO_PLAYING=1,SDL_AUDIO_PAUSED=2};
 typedef enum SDL_SystemCursor{SDL_SYSTEM_CURSOR_ARROW=0,SDL_SYSTEM_CURSOR_IBEAM=1,SDL_SYSTEM_CURSOR_WAIT=2,SDL_SYSTEM_CURSOR_CROSSHAIR=3,SDL_SYSTEM_CURSOR_WAITARROW=4,SDL_SYSTEM_CURSOR_SIZENWSE=5,SDL_SYSTEM_CURSOR_SIZENESW=6,SDL_SYSTEM_CURSOR_SIZEWE=7,SDL_SYSTEM_CURSOR_SIZENS=8,SDL_SYSTEM_CURSOR_SIZEALL=9,SDL_SYSTEM_CURSOR_NO=10,SDL_SYSTEM_CURSOR_HAND=11,SDL_NUM_SYSTEM_CURSORS=12};
-typedef enum SDL_WindowFlags{SDL_WINDOW_FULLSCREEN=1,SDL_WINDOW_OPENGL=2,SDL_WINDOW_SHOWN=4,SDL_WINDOW_HIDDEN=8,SDL_WINDOW_BORDERLESS=16,SDL_WINDOW_RESIZABLE=32,SDL_WINDOW_MINIMIZED=64,SDL_WINDOW_MAXIMIZED=128,SDL_WINDOW_INPUT_GRABBED=256,SDL_WINDOW_INPUT_FOCUS=512,SDL_WINDOW_MOUSE_FOCUS=1024,SDL_WINDOW_FULLSCREEN_DESKTOP=4097,SDL_WINDOW_FOREIGN=2048,SDL_WINDOW_ALLOW_HIGHDPI=8192,SDL_WINDOW_MOUSE_CAPTURE=16384,SDL_WINDOW_ALWAYS_ON_TOP=32768,SDL_WINDOW_SKIP_TASKBAR=65536,SDL_WINDOW_UTILITY=131072,SDL_WINDOW_TOOLTIP=262144,SDL_WINDOW_POPUP_MENU=524288};
+typedef enum SDL_WindowFlags{SDL_WINDOW_FULLSCREEN=1,SDL_WINDOW_OPENGL=2,SDL_WINDOW_SHOWN=4,SDL_WINDOW_HIDDEN=8,SDL_WINDOW_BORDERLESS=16,SDL_WINDOW_RESIZABLE=32,SDL_WINDOW_MINIMIZED=64,SDL_WINDOW_MAXIMIZED=128,SDL_WINDOW_INPUT_GRABBED=256,SDL_WINDOW_INPUT_FOCUS=512,SDL_WINDOW_MOUSE_FOCUS=1024,SDL_WINDOW_FULLSCREEN_DESKTOP=4097,SDL_WINDOW_FOREIGN=2048,SDL_WINDOW_ALLOW_HIGHDPI=8192,SDL_WINDOW_MOUSE_CAPTURE=16384,SDL_WINDOW_ALWAYS_ON_TOP=32768,SDL_WINDOW_SKIP_TASKBAR=65536,SDL_WINDOW_UTILITY=131072,SDL_WINDOW_TOOLTIP=262144,SDL_WINDOW_POPUP_MENU=524288,SDL_WINDOW_VULKAN=1048576};
 typedef enum SDL_JoystickPowerLevel{SDL_JOYSTICK_POWER_UNKNOWN=-1,SDL_JOYSTICK_POWER_EMPTY=0,SDL_JOYSTICK_POWER_LOW=1,SDL_JOYSTICK_POWER_MEDIUM=2,SDL_JOYSTICK_POWER_FULL=3,SDL_JOYSTICK_POWER_WIRED=4,SDL_JOYSTICK_POWER_MAX=5};
 typedef enum SDL_HitTestResult{SDL_HITTEST_NORMAL=0,SDL_HITTEST_DRAGGABLE=1,SDL_HITTEST_RESIZE_TOPLEFT=2,SDL_HITTEST_RESIZE_TOP=3,SDL_HITTEST_RESIZE_TOPRIGHT=4,SDL_HITTEST_RESIZE_RIGHT=5,SDL_HITTEST_RESIZE_BOTTOMRIGHT=6,SDL_HITTEST_RESIZE_BOTTOM=7,SDL_HITTEST_RESIZE_BOTTOMLEFT=8,SDL_HITTEST_RESIZE_LEFT=9};
 typedef enum SDL_GameControllerButton{SDL_CONTROLLER_BUTTON_INVALID=-1,SDL_CONTROLLER_BUTTON_A=0,SDL_CONTROLLER_BUTTON_B=1,SDL_CONTROLLER_BUTTON_X=2,SDL_CONTROLLER_BUTTON_Y=3,SDL_CONTROLLER_BUTTON_BACK=4,SDL_CONTROLLER_BUTTON_GUIDE=5,SDL_CONTROLLER_BUTTON_START=6,SDL_CONTROLLER_BUTTON_LEFTSTICK=7,SDL_CONTROLLER_BUTTON_RIGHTSTICK=8,SDL_CONTROLLER_BUTTON_LEFTSHOULDER=9,SDL_CONTROLLER_BUTTON_RIGHTSHOULDER=10,SDL_CONTROLLER_BUTTON_DPAD_UP=11,SDL_CONTROLLER_BUTTON_DPAD_DOWN=12,SDL_CONTROLLER_BUTTON_DPAD_LEFT=13,SDL_CONTROLLER_BUTTON_DPAD_RIGHT=14,SDL_CONTROLLER_BUTTON_MAX=15};
@@ -166,6 +166,7 @@ int(SDL_UpdateTexture)(struct SDL_Texture*,const struct SDL_Rect*,const void*,in
 unsigned long(SDL_wcslcpy)(int*,const int*,unsigned long);
 void(SDL_FreeFormat)(struct SDL_PixelFormat*);
 short(SDL_GameControllerGetAxis)(struct _SDL_GameController*,enum SDL_GameControllerAxis);
+void*(SDL_Vulkan_GetVkGetInstanceProcAddr)();
 void(SDL_DisableScreenSaver)();
 int(SDL_PollEvent)(union SDL_Event*);
 void(SDL_JoystickUpdate)();
@@ -342,18 +343,22 @@ void(SDL_CalculateGammaRamp)(float,unsigned short*);
 int(SDL_GetCurrentDisplayMode)(int,struct SDL_DisplayMode*);
 void(SDL_SetWindowBordered)(struct SDL_Window*,enum SDL_bool);
 char*(SDL_GameControllerMappingForIndex)(int);
-void(SDL_ShowWindow)(struct SDL_Window*);
-int(SDL_GetDisplayDPI)(int,float*,float*,float*);
-unsigned int(SDL_HapticQuery)(struct _SDL_Haptic*);
-const char*(SDL_GameControllerName)(struct _SDL_GameController*);
 enum SDL_bool(SDL_GetWindowWMInfo)(struct SDL_Window*,struct SDL_SysWMinfo*);
-void(SDL_GameControllerClose)(struct _SDL_GameController*);
-int(SDL_RenderDrawPoint)(struct SDL_Renderer*,int,int);
+void(SDL_ShowWindow)(struct SDL_Window*);
 int(SDL_SetRenderTarget)(struct SDL_Renderer*,struct SDL_Texture*);
+int(SDL_GetDisplayDPI)(int,float*,float*,float*);
 unsigned int(SDL_WasInit)(unsigned int);
 void(SDL_QuitSubSystem)(unsigned int);
+unsigned int(SDL_HapticQuery)(struct _SDL_Haptic*);
+const char*(SDL_GameControllerName)(struct _SDL_GameController*);
 int(SDL_InitSubSystem)(unsigned int);
 int(SDL_Init)(unsigned int);
+void(SDL_GameControllerClose)(struct _SDL_GameController*);
+int(SDL_RenderDrawPoint)(struct SDL_Renderer*,int,int);
+void(SDL_Vulkan_GetDrawableSize)(struct SDL_Window*,int*,int*);
+enum SDL_bool(SDL_HasSSE41)();
+void(SDL_Vulkan_UnloadLibrary)();
+int(SDL_Vulkan_LoadLibrary)(const char*);
 enum SDL_bool(SDL_IsScreenKeyboardShown)(struct SDL_Window*);
 int(SDL_SetWindowFullscreen)(struct SDL_Window*,unsigned int);
 const char*(SDL_GetRevision)();
@@ -587,6 +592,7 @@ int(SDL_GetDisplayMode)(int,int,struct SDL_DisplayMode*);
 enum SDL_bool(SDL_HasIntersection)(const struct SDL_Rect*,const struct SDL_Rect*);
 enum SDL_AudioStatus(SDL_GetAudioDeviceStatus)(unsigned int);
 unsigned int(SDL_TLSCreate)();
+enum SDL_bool(SDL_Vulkan_GetInstanceExtensions)(struct SDL_Window*,unsigned*,const char**);
 int(SDL_ConvertPixels)(int,int,unsigned int,const void*,int,unsigned int,void*,int);
 int(SDL_SetWindowHitTest)(struct SDL_Window*,enum SDL_HitTestResult(*callback)(struct SDL_Window*,const struct SDL_Point*,void*),void*);
 int(SDL_SetWindowBrightness)(struct SDL_Window*,float);
@@ -608,7 +614,7 @@ void(SDL_FreeRW)(struct SDL_RWops*);
 enum SDL_bool(SDL_IntersectRect)(const struct SDL_Rect*,const struct SDL_Rect*,struct SDL_Rect*);
 double(SDL_sin)(double);
 enum SDL_AssertState(SDL_ReportAssertion)(struct SDL_AssertData*,const char*,const char*,int);
-enum SDL_bool(SDL_HasSSE41)();
+enum SDL_bool(SDL_Vulkan_CreateSurface)(struct SDL_Window*,void*,void**);
 unsigned short(SDL_ReadBE16)(struct SDL_RWops*);
 void*(SDL_GL_GetProcAddress)(const char*);
 enum SDL_bool(SDL_GameControllerGetAttached)(struct _SDL_GameController*);
@@ -742,6 +748,7 @@ library = {
 	wcslcpy = CLIB.SDL_wcslcpy,
 	FreeFormat = CLIB.SDL_FreeFormat,
 	GameControllerGetAxis = CLIB.SDL_GameControllerGetAxis,
+	Vulkan_GetVkGetInstanceProcAddr = CLIB.SDL_Vulkan_GetVkGetInstanceProcAddr,
 	DisableScreenSaver = CLIB.SDL_DisableScreenSaver,
 	PollEvent = CLIB.SDL_PollEvent,
 	JoystickUpdate = CLIB.SDL_JoystickUpdate,
@@ -918,18 +925,22 @@ library = {
 	GetCurrentDisplayMode = CLIB.SDL_GetCurrentDisplayMode,
 	SetWindowBordered = CLIB.SDL_SetWindowBordered,
 	GameControllerMappingForIndex = CLIB.SDL_GameControllerMappingForIndex,
-	ShowWindow = CLIB.SDL_ShowWindow,
-	GetDisplayDPI = CLIB.SDL_GetDisplayDPI,
-	HapticQuery = CLIB.SDL_HapticQuery,
-	GameControllerName = CLIB.SDL_GameControllerName,
 	GetWindowWMInfo = CLIB.SDL_GetWindowWMInfo,
-	GameControllerClose = CLIB.SDL_GameControllerClose,
-	RenderDrawPoint = CLIB.SDL_RenderDrawPoint,
+	ShowWindow = CLIB.SDL_ShowWindow,
 	SetRenderTarget = CLIB.SDL_SetRenderTarget,
+	GetDisplayDPI = CLIB.SDL_GetDisplayDPI,
 	WasInit = CLIB.SDL_WasInit,
 	QuitSubSystem = CLIB.SDL_QuitSubSystem,
+	HapticQuery = CLIB.SDL_HapticQuery,
+	GameControllerName = CLIB.SDL_GameControllerName,
 	InitSubSystem = CLIB.SDL_InitSubSystem,
 	Init = CLIB.SDL_Init,
+	GameControllerClose = CLIB.SDL_GameControllerClose,
+	RenderDrawPoint = CLIB.SDL_RenderDrawPoint,
+	Vulkan_GetDrawableSize = CLIB.SDL_Vulkan_GetDrawableSize,
+	HasSSE41 = CLIB.SDL_HasSSE41,
+	Vulkan_UnloadLibrary = CLIB.SDL_Vulkan_UnloadLibrary,
+	Vulkan_LoadLibrary = CLIB.SDL_Vulkan_LoadLibrary,
 	IsScreenKeyboardShown = CLIB.SDL_IsScreenKeyboardShown,
 	SetWindowFullscreen = CLIB.SDL_SetWindowFullscreen,
 	GetRevision = CLIB.SDL_GetRevision,
@@ -1163,6 +1174,7 @@ library = {
 	HasIntersection = CLIB.SDL_HasIntersection,
 	GetAudioDeviceStatus = CLIB.SDL_GetAudioDeviceStatus,
 	TLSCreate = CLIB.SDL_TLSCreate,
+	Vulkan_GetInstanceExtensions = CLIB.SDL_Vulkan_GetInstanceExtensions,
 	ConvertPixels = CLIB.SDL_ConvertPixels,
 	SetWindowHitTest = CLIB.SDL_SetWindowHitTest,
 	SetWindowBrightness = CLIB.SDL_SetWindowBrightness,
@@ -1184,7 +1196,7 @@ library = {
 	IntersectRect = CLIB.SDL_IntersectRect,
 	sin = CLIB.SDL_sin,
 	ReportAssertion = CLIB.SDL_ReportAssertion,
-	HasSSE41 = CLIB.SDL_HasSSE41,
+	Vulkan_CreateSurface = CLIB.SDL_Vulkan_CreateSurface,
 	ReadBE16 = CLIB.SDL_ReadBE16,
 	GL_GetProcAddress = CLIB.SDL_GL_GetProcAddress,
 	GameControllerGetAttached = CLIB.SDL_GameControllerGetAttached,
@@ -1722,6 +1734,7 @@ library.e = {
 	WINDOW_UTILITY = ffi.cast("enum SDL_WindowFlags", "SDL_WINDOW_UTILITY"),
 	WINDOW_TOOLTIP = ffi.cast("enum SDL_WindowFlags", "SDL_WINDOW_TOOLTIP"),
 	WINDOW_POPUP_MENU = ffi.cast("enum SDL_WindowFlags", "SDL_WINDOW_POPUP_MENU"),
+	WINDOW_VULKAN = ffi.cast("enum SDL_WindowFlags", "SDL_WINDOW_VULKAN"),
 	JOYSTICK_POWER_UNKNOWN = ffi.cast("enum SDL_JoystickPowerLevel", "SDL_JOYSTICK_POWER_UNKNOWN"),
 	JOYSTICK_POWER_EMPTY = ffi.cast("enum SDL_JoystickPowerLevel", "SDL_JOYSTICK_POWER_EMPTY"),
 	JOYSTICK_POWER_LOW = ffi.cast("enum SDL_JoystickPowerLevel", "SDL_JOYSTICK_POWER_LOW"),
