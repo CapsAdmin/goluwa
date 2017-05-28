@@ -77,46 +77,8 @@ function META:__tostring2()
 	return ("[%i]"):format(self.gl_fb.id)
 end
 
-function META:CheckCompletness()
-	if render.verbose_debug then return end
-
-	local err = self.gl_fb:CheckStatus("GL_FRAMEBUFFER")
-
-	if err ~= gl.e.GL_FRAMEBUFFER_COMPLETE then
-		local str = "Unknown error: " .. err
-
-		if err == gl.e.GL_FRAMEBUFFER_UNSUPPORTED then
-			str = "format not supported"
-		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT then
-			str = "incomplete texture"
-		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT then
-			str = "missing texture"
-		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS then
-			str = "attached textures must have same dimensions"
-		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_FORMATS then
-			str = "attached textures must have same format"
-		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER then
-			str = "missing draw buffer"
-		elseif err == gl.e.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER then
-			str = "missing read buffer"
-		elseif err == 0 then
-			str = "invalid framebuffer target"
-		end
-
-		for _, v in pairs(self.textures) do
-			logn(v.tex, " attached to ", v.enum)
-			v.tex:DumpInfo()
-		end
-
-		wlog(str)
-
-		debug.trace()
-	end
-end
-
 function META:SetBindMode(str)
 	self.BindMode = str
-
 	self.enum_bind_mode = bind_mode_to_enum[str]
 end
 
@@ -199,6 +161,7 @@ end
 
 function META:GetTexture(pos)
 	pos = pos or 1
+
 	if self.textures[pos] then
 		return self.textures[pos].tex
 	end

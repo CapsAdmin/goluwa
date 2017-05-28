@@ -3,7 +3,6 @@ render = render or _G.render
 META = META or prototype.GetRegistered("texture")
 
 local ffi = require("ffi")
-
 local gl = require("opengl")
 
 local TOENUM = function(str)
