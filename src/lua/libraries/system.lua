@@ -1254,7 +1254,9 @@ if sdl then
 		if OPENGL then
 			table.insert(flags, "opengl")
 			sdl.GL_SetAttribute(sdl.e.GL_DEPTH_SIZE, 0)
-			--sdl.GL_SetAttribute(sdl.e.GL_DOUBLEBUFFER, 0)
+
+			-- workaround for srgb on intel mesa driver
+			sdl.GL_SetAttribute(sdl.e.GL_ALPHA_SIZE, 1)
 		end
 
 		if VULKAN then
