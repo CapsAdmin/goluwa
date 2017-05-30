@@ -4,391 +4,34 @@ runfile("../null/render.lua", render)
 
 local vk = desire("vulkan")
 local ffi = require("ffi")
-local freeimage = require("freeimage")
+
+runfile("buffer.lua", render)
+runfile("command_buffer.lua", render)
+runfile("image.lua", render)
+runfile("texture.lua", render)
+
+function render.AllocateMemory(size, type_bits, requirements_mask)
+	requirements_mask = vk.e.memory_property.make_enums(requirements_mask)
+
+	local index = 0
+
+	for i = 0, 32 - 1 do
+		if bit.band(type_bits, 1) == 1 then
+			if bit.band(render.device_memory_properties.memoryTypes[i].propertyFlags, requirements_mask) == requirements_mask then
+				index = i
+			end
+		end
+		type_bits = bit.rshift(type_bits, 1)
+	end
+
+	return render.device:AllocateMemory({
+		allocationSize = size,
+		memoryTypeIndex = index,
+	})
+end
 
 function render._Initialize(wnd)
 	local width, height = wnd:GetSize():Unpack()
-
-	do -- objects
-		local function allocate_memory(size, type_bits, requirements_mask)
-			requirements_mask = vk.e.memory_property.make_enums(requirements_mask)
-
-			local index = 0
-
-			for i = 0, 32 - 1 do
-				if bit.band(type_bits, 1) == 1 then
-					if bit.band(render.device_memory_properties.memoryTypes[i].propertyFlags, requirements_mask) == requirements_mask then
-						index = i
-					end
-				end
-				type_bits = bit.rshift(type_bits, 1)
-			end
-
-			return render.device:AllocateMemory({
-				allocationSize = size,
-				memoryTypeIndex = index,
-			})
-		end
-
-		function CreateImage(info)
-			local image = render.device:CreateImage({
-				imageType = "2d",
-				format = info.format,
-				extent = {info.width, info.height, 1},
-				mipLevels = info.levels or 1,
-				arrayLayers = 1,
-				samples = "1",
-				tiling = info.tiling,
-				usage = info.usage,
-				flags = 0,
-				queueFamilyIndexCount = 0,
-				sharingMode = "exclusive",
-				initialLayout = "preinitialized",
-			})
-
-			local memory_requirements = render.device:GetImageMemoryRequirements(image)
-
-			local memory = allocate_memory(memory_requirements.size, memory_requirements.memoryTypeBits, info.required_props)
-
-			render.device:BindImageMemory(image, memory, 0)
-
-			return {
-				image = image,
-				memory = memory,
-				size = memory_requirements.size,
-			}
-		end
-
-		function CreateTexture(file_name, format)
-			format = format or "b8g8r8a8_unorm"
-
-			local image_infos = freeimage.LoadImageMipMaps(file_name)
-
-			local self = {}
-
-			self.width = image_infos[1].width
-			self.height = image_infos[1].height
-			self.mip_levels = #image_infos
-
-			local properties = render.physical_device:GetFormatProperties(format)
-
-			local cmd = CreateCommandBuffer()
-			cmd:Begin()
-
-			if bit.band(properties.linearTilingFeatures, vk.e.format_feature.sampled_image) ~= 0 then
-				local image = CreateImage({
-					width = self.width,
-					height = self.height,
-					format = format,
-					usage = {"transfer_dst", "transfer_src", "sampled"},
-					tiling = "undefined",
-					required_props = {"host_visible", "coherent"},
-					levels = self.mip_levels,
-				})
-
-				cmd:SetImageLayout(image.image, "color", "undefined", "transfer_dst_optimal")
-
-				self.image = image.image
-				self.memory = image.memory
-				self.size = image.size
-
-				-- copy the mip maps into temporary images
-				for i, image_info in ipairs(image_infos) do
-					local image = CreateImage({
-						width = image_info.width,
-						height = image_info.height,
-						format = format,
-						usage = "transfer_src",
-						tiling = "linear",
-						required_props = {"host_visible", "coherent"},
-					})
-
-					image.width = image_info.width
-					image.height = image_info.height
-					image.format = format
-
-					render.device:MapMemory(image.memory, 0, image.size, 0, "uint8_t", function(data)
-						ffi.copy(data, image_info.data, image.size)
-					end)
-
-					cmd:SetImageLayout(image.image, "color", "undefined", "transfer_src_optimal")
-
-					image_infos[i] = image
-				end
-
-				-- copy from temporary mip map images to main image
-				for i, mip_map in ipairs(image_infos) do
-					cmd:CopyImage(mip_map.image, self.image, mip_map.width, mip_map.height, i - 1)
-
-					--render.device:DestroyImage(mip_map.image, nil)
-					--render.device:FreeMemory(mip_map.memory, nil)
-				end
-
-				cmd:SetImageLayout(image.image, "color", "transfer_dst_optimal", "shader_read_only_optimal")
-			else
-				self.mip_levels = 1
-
-				local info = CreateImage({
-					width = self.width,
-					height = self.height,
-					format = format,
-					usage = "sampled",
-					tiling = "linear",
-					required_props = {"host_visible"}
-				})
-
-				self.image = info.image
-				self.memory = info.memory
-				self.size = info.size
-
-				render.device:MapMemory(info.memory, 0, info.size, 0, "uint8_t", function(data)
-					ffi.copy(data, image_infos[1].data, image_infos[1].size)
-				end)
-
-				cmd:SetImageLayout(info.image, "color", "undefined", "shader_read_only_optimal")
-			end
-
-			self.sampler = render.device:CreateSampler({
-				magFilter = "linear",
-				minFilter = "linear",
-				mipmapMode = "linear",
-				addressModeU = "repeat",
-				addressModeV = "repeat",
-				addressModeW = "repeat",
-				ipLodBias = 0.0,
-				anisotropyEnable = true,
-				maxAnisotropy = 8,
-				compareOp = "never",
-				minLod = 0.0,
-				maxLod = self.mip_levels,
-				borderColor = "float_opaque_white",
-				unnormalizedCoordinates = 0,
-			})
-
-			self.view = render.device:CreateImageView({
-				viewType = "2d",
-				image = self.image,
-				format = format,
-				flags = 0,
-				components = {r = "r", g = "g", b = "b", a = "a"},
-				subresourceRange = {
-					aspectMask = "color",
-
-					levelCount = self.mip_levels,
-					baseMipLevel = 0,
-
-					layerCount = 1,
-					baseLayerLevel = 0
-				},
-			})
-
-			self.format = format
-			self.image_infos = image_infos
-
-			cmd:End()
-			cmd:Flush()
-
-			return self
-		end
-
-		function CreateBuffer(usage, data)
-			local size = ffi.sizeof(data)
-			local buffer = render.device:CreateBuffer({
-				size = size,
-				usage = usage,
-			})
-
-			local memory = allocate_memory(size, render.device:GetBufferMemoryRequirements(buffer).memoryTypeBits, {"host_visible"})
-
-			render.device:MapMemory(memory, 0, size, 0, "float", function(cdata)
-				ffi.copy(cdata, data, size)
-			end)
-
-			render.device:BindBufferMemory(buffer, memory, 0)
-
-			local self = {
-				buffer = buffer,
-				memory = memory,
-				data = data,
-				size = size,
-			}
-
-			function self:Update()
-				ffi.copy(render.device:MapMemory(self.memory, 0, self.size, 0), self.data, self.size)
-				render.device:UnmapMemory(self.memory)
-			end
-
-			return self
-		end
-
-		do -- static object
-			local META = {}
-			META.__index = META
-
-			function META:SetImageLayout(image, aspect_mask, old_layout, new_layout)
-				local src_mask = {}
-				local dst_mask = {}
-
-				if old_layout == "undefined" then
-				--	src_mask = {0}
-				elseif old_layout == "preinitialized" then
-					src_mask = {"host_write"}
-				elseif old_layout == "transfer_dst_optimal" then
-					src_mask = {"transfer_write"}
-				end
-
-				if new_layout == "transfer_src_optimal" then
-					dst_mask = {"transfer_read"}
-				elseif new_layout == "transfer_dst_optimal" then
-					dst_mask = {"transfer_write"}
-				elseif new_layout == "shader_read_only_optimal" then
-					dst_mask = {"shader_read"}
-				end
-
-				--[[
-				if old_layout == "color_attachment_optimal" then
-					table.insert(src_mask, "color_attachment_write")
-				end
-
-				if new_layout == "transfer_dst_optimal" then
-					table.insert(dst_mask, "memory_read")
-					table.insert(dst_mask, "transfer_write")
-				end
-
-				if new_layout == "transfer_src_optimal" then
-					table.insert(dst_mask, "transfer_read")
-				end
-
-				if new_layout == "shader_read_only_optimal" then
-					table.insert(src_mask, "host_write")
-					table.insert(src_mask, "transfer_write")
-
-					table.insert(dst_mask, "shader_read")
-				end
-
-				if new_layout == "color_attachment_optimal" then
-					table.insert(dst_mask, "color_attachment_read")
-				end
-
-				if new_layout == "depth_stencil_attachment_optimal" then
-					table.insert(dst_mask, "depth_stencil_attachment_read")
-					table.insert(dst_mask, "depth_stencil_attachment_write")
-				end
-	]]
-				self.cmd:PipelineBarrier(
-					"top_of_pipe", "top_of_pipe", 0,
-					0, nil,
-					0, nil,
-					nil, {
-						{
-							srcAccessMask = src_mask,
-							dstAccessMask = dst_mask,
-							oldLayout = old_layout,
-							newLayout = new_layout,
-							image = image,
-							subresourceRange = {
-								aspectMask = aspect_mask,
-
-								levelCount = 1,
-								baseMipLevel = 0,
-
-								layerCount = 1,
-								baseLayerLevel = 0
-							},
-						}
-					}
-				)
-			end
-
-			function META:CopyImage(src, dst, w, h, mip_level)
-				self.cmd:CopyImage(
-					src, "transfer_src_optimal",
-					dst, "transfer_dst_optimal",
-					nil, {
-						{
-							extent = {w, h, 1},
-
-							srcSubresource = {
-								aspectMask = "color",
-								baseArrayLayer = 0,
-								mipLevel = 0,
-								layerCount = 1,
-							},
-							srcOffset = { 0, 0, 0 },
-
-							dstSubresource = {
-								aspectMask = "color",
-								baseArrayLayer = 0,
-								mipLevel = mip_level,
-								layerCount = 1,
-							},
-							dstOffset = { 0, 0, 0 },
-						}
-					}
-				)
-			end
-
-			function META:Begin()
-				self.cmd:Begin({
-					flags = 0,
-					pInheritanceInfo = {
-						renderPass = nil,
-						subpass = 0,
-						framebuffer = nil,
-						offclusionQueryEnable = false,
-						queryFlags = 0,
-						pipelineStatistics = 0,
-					}
-				})
-			end
-
-			function META:End()
-				self.cmd:End()
-			end
-
-			function META:Flush()
-				if not self.cmd then return end
-
-				render.device_queue:Submit(
-					nil, {
-						{
-							waitSemaphoreCount = 0,
-							pWaitSemaphores = nil,
-							pWaitDstStageMask = nil,
-
-							pCommandBuffers = {
-								self.cmd
-							},
-
-							signalSemaphoreCount = 0,
-							pSignalSemaphores = nil
-						}
-					},
-					nil
-				)
-
-				render.device_queue:WaitIdle()
-
-				render.device:FreeCommandBuffers(
-					render.device_command_pool,
-					nil, {
-						self.cmd
-					}
-				)
-			end
-
-			function CreateCommandBuffer()
-				local self = {}
-				self.cmd = render.device:AllocateCommandBuffers({
-					commandPool = render.device_command_pool,
-					level = "primary",
-					commandBufferCount = 1,
-				})
-				return setmetatable(self, META)
-			end
-		end
-
-	end
 
 	do -- create vulkan instance
 		local instance = vk.Assert(vk.CreateInstance({
@@ -547,7 +190,7 @@ function render._Initialize(wnd)
 		do -- depth buffer to use in render pass
 			local format = "d16_unorm"
 
-			local depth_buffer = CreateImage({
+			local depth_buffer = render.CreateImage({
 				width = width,
 				height = height,
 				format = format,
@@ -651,7 +294,7 @@ function render._Initialize(wnd)
 			})
 
 			render.swap_chain_buffers[i] = {
-				command_buffer = CreateCommandBuffer(),
+				command_buffer = render.CreateCommandBuffer(),
 				framebuffer = render.device:CreateFramebuffer({
 					renderPass = render.render_pass,
 
@@ -719,7 +362,7 @@ function render._Initialize(wnd)
 
 	do
 		-- CreateTexture is a function defined further up that returns a lua object
-		render.texture = CreateTexture("../../../src/lua/build/vulkan/test/volcano.png", "b8g8r8a8_unorm")
+		render.texture = render.CreateTexture("../../../src/lua/build/vulkan/test/volcano.png", "b8g8r8a8_unorm")
 	end
 
 	do -- vertices
@@ -785,7 +428,7 @@ function render._Initialize(wnd)
 		end
 
 		-- CreateBuffer is a function defined further up that returns a lua object
-		render.vertices = CreateBuffer("vertex_buffer", create_vertices(vertices))
+		render.vertices = render.CreateBuffer("vertex_buffer", create_vertices(vertices))
 		render.vertices.tbl = vertices
 	end
 
@@ -800,7 +443,7 @@ function render._Initialize(wnd)
 			table.insert(indices, i)
 		end
 
-		render.indices = CreateBuffer("index_buffer", create_indices(indices))
+		render.indices = render.CreateBuffer("index_buffer", create_indices(indices))
 		render.indices.tbl = indices
 		render.indices.count = #indices
 	end
@@ -826,7 +469,7 @@ function render._Initialize(wnd)
 		render.view_matrix:Translate(0,0,-5)
 		render.model_matrix:Rotate(0.5, 0,1,0)
 
-		render.uniforms = CreateBuffer("uniform_buffer", uniforms)
+		render.uniforms = render.CreateBuffer("uniform_buffer", uniforms)
 
 		--render.view_matrix:Translate(5,3,10)
 		--render.view_matrix:Rotate(math.rad(90), 0,-1,0)
