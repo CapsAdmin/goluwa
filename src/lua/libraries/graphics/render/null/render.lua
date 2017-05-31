@@ -3,6 +3,22 @@ local render = ... or _G.render
 function render._Initialize()
 end
 
+function render._SetWindow()
+
+end
+
+function render.IsExtensionSupported()
+
+end
+
+function render.SwapBuffers()
+
+end
+
+function render.SwapInterval()
+
+end
+
 function render.Shutdown()
 
 end
