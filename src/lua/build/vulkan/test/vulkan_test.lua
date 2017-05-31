@@ -458,6 +458,9 @@ end
 do -- create glfw window
 	sdl.Init(sdl.e.INIT_VIDEO)
 	context.window = sdl.CreateWindow("vulkan", sdl.e.WINDOWPOS_CENTERED, sdl.e.WINDOWPOS_CENTERED, 1024, 768, sdl.e.WINDOW_VULKAN)
+	if context.window == nil then
+		error(ffi.string(sdl.GetError()))
+	end
 end
 
 do -- create vulkan instance
@@ -483,9 +486,9 @@ do -- create vulkan instance
 			--"VK_LAYER_LUNARG_image",
 			--"VK_LAYER_LUNARG_api_dump",
 		},
-		ppEnabledExtensionNames = sdl.GetRequiredInstanceExtensions(context.window, {
+		ppEnabledExtensionNames = assert(sdl.GetRequiredInstanceExtensions(context.window, {
 			"VK_EXT_debug_report",
-		}),
+		})),
 	}))
 
 	if instance:LoadProcAddr("vkCreateDebugReportCallbackEXT") then
@@ -568,7 +571,7 @@ do -- find and use a gpu
 end
 
 do -- setup the glfw window buffer
-	local surface = sdl.CreateVulkanSurface(context.window, context.instance)
+	local surface = assert(sdl.CreateVulkanSurface(context.window, context.instance))
 	local formats = context.physical_device:GetSurfaceFormats(surface)
 	local capabilities = context.physical_device:GetSurfaceCapabilities(surface)
 
