@@ -95,7 +95,11 @@ do -- attributes
 		}
 	end
 
+	local cache = {}
+
 	function META:SetupAttributes()
+		local lookup = ""
+
 		local ctypes = {}
 
 		local declaration = {"struct { "}
@@ -103,12 +107,17 @@ do -- attributes
 		for _, info in pairs(self.mesh_layout.attributes) do
 			table.insert(declaration, ("$ %s;"):format(info.name))
 			table.insert(ctypes, info.type_info.ctype)
+
+			lookup = lookup .. info.type_info.type
 		end
 
 		table.insert(declaration, " }")
 		declaration = table.concat(declaration, "")
 
-		local ctype = ffi.typeof(declaration, unpack(ctypes))
+		lookup = lookup .. declaration
+
+		local ctype = cache[lookup] or ffi.typeof(declaration, unpack(ctypes))
+		cache[lookup] = ctype
 
 		self.mesh_layout.size = ffi.sizeof(ctype)
 		self.mesh_layout.ctype = ctype
