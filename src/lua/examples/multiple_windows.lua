@@ -8,6 +8,6 @@ function wnd:OnUpdate(dt)
 		render2d.SetColor(Color():GetRandom():Unpack())
 		render2d.DrawRect(0,0,50,50)
 
-		render.SwapBuffers()
+		render.SwapBuffers(self)
 	render.PopWindow()
 end

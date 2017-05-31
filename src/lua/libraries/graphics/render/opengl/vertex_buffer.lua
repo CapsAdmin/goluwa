@@ -66,7 +66,7 @@ if not NVIDIA_WORKAROUND then
 		self.element_buffer:Delete()
 	end
 
-	if system.IsOpenGLExtensionSupported("GL_ARB_direct_state_access") then
+	if render.IsExtensionSupported("GL_ARB_direct_state_access") then
 		function META:Draw(count)
 			if render.last_vertex_array_id ~= self.vertex_array.id then
 				gl.BindVertexArray(self.vertex_array.id)

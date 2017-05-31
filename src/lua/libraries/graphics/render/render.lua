@@ -16,7 +16,7 @@ runfile("framebuffer.lua", render)
 runfile("texture_decoders/*", render)
 runfile("shader_builder.lua", render)
 
-function render.Initialize(wnd)
+function render.GetDir()
 	local dir = "lua/libraries/graphics/render/"
 
 	if OPENGL then
@@ -27,10 +27,26 @@ function render.Initialize(wnd)
 		dir = dir .. "null/"
 	end
 
-	runfile(dir .. "render.lua", render)
+	return dir
+end
+
+function render.Initialize(wnd)
+	runfile(render.GetDir() .. "render.lua", render)
 
 	render._Initialize(wnd)
 	render.GenerateTextures()
+end
+
+do
+	function render.PreWindowSetup()
+
+	end
+
+	function render.PostWindowSetup(ptr)
+
+	end
+
+	runfile(render.GetDir() .. "window.lua", render)
 end
 
 function render.Shutdown()

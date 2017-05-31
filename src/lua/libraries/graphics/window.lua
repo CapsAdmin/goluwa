@@ -81,7 +81,7 @@ function window.Open(...)
 			end
 
 			render.GetScreenFrameBuffer():End()
-			self:SwapBuffers()
+			render.SwapBuffers(self)
 		render.PopWindow()
 	end
 

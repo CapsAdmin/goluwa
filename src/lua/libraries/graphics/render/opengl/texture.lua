@@ -32,7 +32,7 @@ end
 
 function META:SetSeamlessCubemap(b)
 	self.SeamlessCubemap = b
-	if system.IsOpenGLExtensionSupported("GL_ARB_seamless_cubemap_per_texture") then
+	if render.IsExtensionSupported("GL_ARB_seamless_cubemap_per_texture") then
 		self.gl_tex:SetParameteri("GL_TEXTURE_CUBE_MAP_SEAMLESS", b and 1 or 0)
 	end
 end
@@ -160,7 +160,7 @@ function META:SetupStorage()
 	end
 
 	if self.StorageType == "3d" then
-		if system.IsOpenGLExtensionSupported("GL_ARB_texture_storage") then
+		if render.IsExtensionSupported("GL_ARB_texture_storage") then
 			self.gl_tex:Storage3D(
 				mip_map_levels,
 				TOENUM(self.InternalFormat),
@@ -184,7 +184,7 @@ function META:SetupStorage()
 			)
 		end
 	elseif self.StorageType == "2d" or self.StorageType == "rectangle" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then
-		if system.IsOpenGLExtensionSupported("GL_ARB_texture_storage") then
+		if render.IsExtensionSupported("GL_ARB_texture_storage") then
 			if self.Multisample > 0 then
 				self.gl_tex:Storage2DMultisample(
 					self.Multisample,
@@ -217,7 +217,7 @@ function META:SetupStorage()
 			)
 		end
 	elseif self.StorageType == "1d" or self.StorageType == "1d_array" then
-		if system.IsOpenGLExtensionSupported("GL_ARB_texture_storage") then
+		if render.IsExtensionSupported("GL_ARB_texture_storage") then
 			self.gl_tex:Storage1D(
 				levels,
 				TOENUM(self.InternalFormat),
@@ -242,7 +242,7 @@ function META:SetupStorage()
 end
 
 function META:SetBindless(b)
-	if system.IsOpenGLExtensionSupported("GL_ARB_bindless_texture") then
+	if render.IsExtensionSupported("GL_ARB_bindless_texture") then
 		self.gl_bindless_handle = self.gl_bindless_handle or gl.GetTextureHandleARB(self.gl_tex.id)
 
 		if b then
@@ -379,7 +379,7 @@ end
 
 function META:Clear(mip_map_level)
 	mip_map_level = mip_map_level or 1
-	if system.IsOpenGLExtensionSupported("GL_ARB_clear_texture") then
+	if render.IsExtensionSupported("GL_ARB_clear_texture") then
 		gl.ClearTexImage(self.gl_tex.id, mip_map_level - 1, "GL_RGBA", "GL_UNSIGNED_BYTE", nil)
 	else
 		local data = self:Download(mip_map_level)

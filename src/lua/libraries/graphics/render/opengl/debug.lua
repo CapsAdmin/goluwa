@@ -27,7 +27,7 @@ local type_translate = {
 }
 
 function render.SetDebug(b)
-	if system.IsOpenGLExtensionSupported("GL_KHR_debug") then
+	if render.IsExtensionSupported("GL_KHR_debug") then
 		if b then
 			--jit.off()
 			--jit.flush()

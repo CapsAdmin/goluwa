@@ -669,15 +669,7 @@ do
 			if source then
 				source = source:trim()
 
-				local info
-
-				-- this should be replaced with some sort of configuration
-				-- gl.lua never shows anything useful but the level above does..
-				if source:find("ffi_bind") then
-					info = debug.getinfo(4)
-				else
-					info = debug.getinfo(2)
-				end
+				local info = debug.getinfo(2)
 
 				if last_openfunc < system.GetElapsedTime() then
 					debug.openfunction(info.func, info.currentline)
@@ -1030,21 +1022,6 @@ if sdl then
 		self.last_mpos = pos
 	end
 
-	function META:MakeContextCurrent()
-		sdl.GL_MakeCurrent(self.sdl_wnd, system.gl_context)
-	end
-
-	local gl = require("opengl")
-
-	function META:SwapBuffers()
-		--gl.Flush()
-		sdl.GL_SwapWindow(self.sdl_wnd)
-	end
-
-	function META:SwapInterval(b)
-		sdl.GL_SetSwapInterval(b and 1 or 0)
-	end
-
 	function META:OnUpdate(delta)
 
 	end
@@ -1125,20 +1102,6 @@ if sdl then
 		return ffi.string(sdl.GetClipboardText())
 	end
 
-	function META:CreateVulkanSurface(instance)
-		local surface = sdl.CreateVulkanSurface(self.sdl_wnd, instance)
-
-		if surface == nil then
-			return nil, ffi.string(sdl.GetError())
-		end
-
-		return surface
-	end
-
-	function META:GetRequiredVulkanInstanceExtensions(extra)
-		return sdl.GetRequiredInstanceExtensions(self.sdl_wnd, extra)
-	end
-
 	do
 		local freq = tonumber(sdl.GetPerformanceFrequency())
 		local start_time = sdl.GetPerformanceCounter()
@@ -1190,45 +1153,6 @@ if sdl then
 
 	end
 
-	do
-		local cache = {}
-
-		for k,v in pairs(_G) do
-			if type(k) == "string" and type(v) == "boolean" and k:sub(1, 3)  == "GL_" then
-				cache[k] = v
-				if sdl.GL_ExtensionSupported(k) == 1 then
-					logf("[graphics][opengl] extension %s was forced to %s\n", k, v)
-				end
-			end
-		end
-
-		function system.IsOpenGLExtensionSupported(str)
-			if cache[str] == nil then
-				cache[str] = sdl.GL_ExtensionSupported(str) == 1
-				if not cache[str] then
-					local new
-					if str:find("_ARB_", nil, true) then
-						new = str:gsub("_ARB_", "_EXT_")
-					elseif str:find("_EXT_", nil, true) then
-						new = str:gsub("_EXT_", "_ARB_")
-					end
-
-					if new then
-						local try = sdl.GL_ExtensionSupported(new) == 1
-						cache[str] = try
-						if try then
-							logf("[graphics][opengl] requested extension %s which doesn't exist. using %s instead\n", str, new)
-						end
-					end
-				end
-				if not cache[str] then
-					logf("[graphics][opengl] extension %s does not exist\n", str)
-				end
-			end
-			return cache[str]
-		end
-	end
-
 	META:Register()
 
 	local flags_to_enums = {}
@@ -1251,17 +1175,7 @@ if sdl then
 
 		flags = flags or {"shown", "resizable"}
 
-		if OPENGL then
-			table.insert(flags, "opengl")
-			sdl.GL_SetAttribute(sdl.e.GL_DEPTH_SIZE, 0)
-
-			-- workaround for srgb on intel mesa driver
-			sdl.GL_SetAttribute(sdl.e.GL_ALPHA_SIZE, 1)
-		end
-
-		if VULKAN then
-			table.insert(flags, "vulkan")
-		end
+		render.PreWindowSetup(flags)
 
 		local bit_flags = 0
 
@@ -1282,51 +1196,7 @@ if sdl then
 			error("sdl.CreateWindow failed: " .. ffi.string(sdl.GetError()), 2)
 		end
 
-		if OPENGL then
-			if not system.gl_context then
-				sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_MAJOR_VERSION, 3)
-				sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_MINOR_VERSION, 3)
-				sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_PROFILE_MASK, sdl.e.GL_CONTEXT_PROFILE_CORE)
-
-				if DEBUG_OPENGL then
-					sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_FLAGS, sdl.e.GL_CONTEXT_DEBUG_FLAG)
-				end
-				--sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_PROFILE_MASK, sdl.e.GL_CONTEXT_PROFILE_COMPATIBILITY)
-
-				local context = sdl.GL_CreateContext(sdl_wnd)
-
-				if context == nil then
-					error("sdl.GL_CreateContext failed: " .. ffi.string(sdl.GetError()), 2)
-				end
-
-				sdl.GL_MakeCurrent(sdl_wnd, context)
-
-				local gl = require("opengl")
-
-				-- this needs to be initialized once after a context has been created
-				gl.GetProcAddress = sdl.GL_GetProcAddress
-
-				gl.Initialize()
-
-				if NULL_OPENGL then
-					for k,v in pairs(gl) do
-						if type(v) == "cdata" then
-							gl[k] = function() return 0 end
-						end
-					end
-
-					function gl.CheckNamedFramebufferStatus()
-						return 36053
-					end
-
-					function gl.GetString()
-						return nil
-					end
-				end
-
-				system.gl_context = context
-			end
-		end
+		render.PostWindowSetup(sdl_wnd)
 
 		llog("sdl version: %s", ffi.string(sdl.GetRevision()))
 

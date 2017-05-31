@@ -3,7 +3,7 @@ local render = (...) or _G.render
 system.current_window = system.current_window or NULL
 
 function render.SetWindow(window)
-	window:MakeContextCurrent()
+	render._SetWindow(window)
 
 	system.current_window = window
 

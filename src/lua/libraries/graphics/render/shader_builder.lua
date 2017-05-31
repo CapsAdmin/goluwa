@@ -13,18 +13,14 @@ local unrolled_lines = {
 	mat4 = "render.current_program:UploadMatrix44(%i, val)",
 }
 
-if system.IsOpenGLExtensionSupported("GL_ARB_bindless_texture") then
-	unrolled_lines.texture = "render.current_program:UploadTexture(%i, val)"
-else
-	unrolled_lines.texture = "render.current_program:UploadTexture(%i, val, %i, %i)"
-end
-
 unrolled_lines.vec4 = unrolled_lines.color
+unrolled_lines.float = unrolled_lines.number
+unrolled_lines.boolean = unrolled_lines.bool
+
+unrolled_lines.texture = "render.current_program:UploadTexture(%i, val, %i, %i)"
 unrolled_lines.sampler2D = unrolled_lines.texture
 unrolled_lines.sampler2DMS = unrolled_lines.texture
 unrolled_lines.samplerCube = unrolled_lines.texture
-unrolled_lines.float = unrolled_lines.number
-unrolled_lines.boolean = unrolled_lines.bool
 
 -- used because of some reserved keywords
 local reserve_prepend = "out_"
@@ -118,7 +114,7 @@ local function translate_fields(data)
 		end
 		local t, default, get = type_of_attribute(v)
 
-		local bindless = system.IsOpenGLExtensionSupported("GL_ARB_bindless_texture")
+		local bindless = render.IsExtensionSupported("GL_ARB_bindless_texture")
 		local is_texture = t:find("sampler")
 
 		local precision = params.precision
@@ -159,14 +155,14 @@ local function variables_to_string(type, variables, prepend, macro, array)
 		local line = ""
 
 		if data.is_texture then
-			if system.IsOpenGLExtensionSupported("GL_ARB_enhanced_layouts") or system.IsOpenGLExtensionSupported("GL_ARB_shading_language_420pack") then
+			if render.IsExtensionSupported("GL_ARB_enhanced_layouts") or render.IsExtensionSupported("GL_ARB_shading_language_420pack") then
 				line = line .. "layout(binding = " .. texture_channel .. ") "
 				texture_channel = texture_channel + 1
 			end
 		elseif data.is_bindless_texture then
 			line = line .. "layout(bindless_sampler) "
 		elseif not macro then
-			if system.IsOpenGLExtensionSupported("GL_ARB_enhanced_layouts") or system.IsOpenGLExtensionSupported("GL_ARB_shading_language_420pack") then
+			if render.IsExtensionSupported("GL_ARB_enhanced_layouts") or render.IsExtensionSupported("GL_ARB_shading_language_420pack") then
 				if type == "in" then
 					line = line .. "layout(location = " .. attribute_location .. ") "
 				end
@@ -571,11 +567,11 @@ function render.CreateShader(data, vars)
 
 			local extensions = {}
 
-			if system.IsOpenGLExtensionSupported("GL_ARB_shading_language_420pack") then
+			if render.IsExtensionSupported("GL_ARB_shading_language_420pack") then
 				table.insert(extensions, "#extension GL_ARB_shading_language_420pack : enable")
 			end
 
-			if system.IsOpenGLExtensionSupported("GL_ARB_bindless_texture") then
+			if render.IsExtensionSupported("GL_ARB_bindless_texture") then
 				table.insert(extensions, "#extension GL_ARB_bindless_texture : enable")
 			end
 
@@ -799,7 +795,7 @@ function render.CreateShader(data, vars)
 				line = line:format(data.id, texture_channel, texture_channel)
 				texture_channel = texture_channel + 1
 			else
-				line = line:format(data.id)
+				line = line:format(data.id, 0, 0)
 			end
 
 			lua = lua ..

@@ -91,7 +91,7 @@ function META:ToWindow()
 			self:SetPosition(pnl:GetPosition())
 			self:SetSize(pnl:GetSize())
 
-			render.SwapBuffers()
+			render.SwapBuffers(self)
 		render.PopWindow()
 
 		gui.world = old_world

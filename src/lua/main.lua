@@ -104,9 +104,9 @@ local rate_cvar = pvars.Setup(
 	function(rate)
 		if window and window.IsOpen() then
 			if rate == 0 then
-				window.SwapInterval(true)
+				render.SwapInterval(true)
 			else
-				window.SwapInterval(false)
+				render.SwapInterval(false)
 			end
 		end
 	end,

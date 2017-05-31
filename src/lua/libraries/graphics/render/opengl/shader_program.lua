@@ -5,7 +5,7 @@ local ffi = require("ffi")
 local META = prototype.CreateTemplate("shader_program")
 
 function render.CreateShaderProgram()
-	if not system.IsOpenGLExtensionSupported("GL_ARB_shader_objects") then
+	if not render.IsExtensionSupported("GL_ARB_shader_objects") then
 		local msg = "shaders not supported!"
 		llog(msg)
 		return nil, msg
@@ -447,7 +447,7 @@ else
 	end
 end
 
-if system.IsOpenGLExtensionSupported("GL_ARB_bindless_texture") then
+if render.IsExtensionSupported("GL_ARB_bindless_texture") then
 	function META:UploadTexture(key, val)
 		if not val.gl_bindless_handle then
 			val:SetBindless(true)

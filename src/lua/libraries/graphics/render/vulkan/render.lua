@@ -56,7 +56,7 @@ function render._Initialize(wnd)
 				--"VK_LAYER_LUNARG_image",
 				--"VK_LAYER_LUNARG_api_dump",
 			},
-			ppEnabledExtensionNames = wnd:GetRequiredVulkanInstanceExtensions({
+			ppEnabledExtensionNames = render.GetRequiredInstanceExtensions({
 				"VK_EXT_debug_report",
 			}),
 		}))
@@ -141,7 +141,7 @@ function render._Initialize(wnd)
 	end
 
 	do -- setup the glfw window buffer
-		local surface = assert(wnd:CreateVulkanSurface(render.instance))
+		local surface = assert(render.CreateVulkanSurface(wnd, render.instance))
 		local formats = render.physical_device:GetSurfaceFormats(surface)
 		local capabilities = render.physical_device:GetSurfaceCapabilities(surface)
 

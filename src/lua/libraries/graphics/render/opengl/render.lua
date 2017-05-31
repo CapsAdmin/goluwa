@@ -200,7 +200,7 @@ do
 
 end
 
-if system.IsOpenGLExtensionSupported("GL_ARB_texture_barrier") then
+if render.IsExtensionSupported("GL_ARB_texture_barrier") then
 	function render.TextureBarrier()
 		gl.TextureBarrier()
 	end
