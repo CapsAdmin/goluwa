@@ -1904,7 +1904,7 @@ function library.CreateVulkanSurface(window, instance)
 	local box = ffi.new("struct VkSurfaceKHR_T * [1]")
 
 	if library.Vulkan_CreateSurface(window, instance, ffi.cast("void**", box)) == nil then
-		return nil
+		return nil, ffi.string(library.GetError())
 	end
 
 	return box[0]
@@ -1914,13 +1914,13 @@ function library.GetRequiredInstanceExtensions(wnd, extra)
 	local count = ffi.new("uint32_t[1]")
 
 	if library.Vulkan_GetInstanceExtensions(wnd, count, nil) == 0 then
-		error("unable to query instance extension count")
+		return nil, ffi.string(library.GetError())
 	end
 
 	local array = ffi.new("const char *[?]", count[0])
 
 	if library.Vulkan_GetInstanceExtensions(wnd, count, array) == 0 then
-		error("unable to retreive " .. count[0] .. " extensions")
+		return nil, ffi.string(library.GetError())
 	end
 
 	local out = {}
