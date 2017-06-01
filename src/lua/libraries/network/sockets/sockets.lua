@@ -261,7 +261,7 @@ do -- tcp socket meta
 					local bytes, b, c, d = self.socket:send(str)
 
 					if bytes then
-						self:DebugPrintf("sucessfully sent %s",  utility.FormatFileSize(#str))
+						self:DebugPrintf("sucessfully sent %s", str)
 						self:OnSend(packet, bytes, b,c,d)
 						self.data_sent = self.data_sent + bytes
 					elseif b ~= "Socket is not connected" then
