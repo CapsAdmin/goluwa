@@ -8,7 +8,7 @@ do -- open close
 		window.SetMouseTrapped(false)
 		menu.CreateTopBar()
 		event.AddListener("PreDrawGUI", "StartupMenu", menu.RenderBackground)
-		event.Timer("StartupMenu", 0.025, menu.UpdateBackground)
+		event.Timer("StartupMenu", 0.050, menu.UpdateBackground)
 
 		--local sheep = gui.CreatePanel("sheep")
 		--sheep:SetSize()
@@ -51,37 +51,39 @@ do -- open close
 	event.AddListener("Disconnected", "main_menu", menu.Open)
 end
 
-local emitter = gfx.CreateParticleEmitter(800)
+local emitter = gfx.CreateParticleEmitter(2000)
 emitter:SetPosition(Vec3(50,50,0))
---emitter:SetMoveResolution(0.25)
+emitter:SetMoveResolution(0.6)
 emitter:SetAdditive(false)
 
 function menu.UpdateBackground()
 	emitter:SetScreenRect(Rect(-100, -100, render.GetScreenSize():Unpack()))
-	emitter:SetPosition(Vec3(math.random(render.GetWidth() + 100) - 150, -50, 0))
 
-	local p = emitter:AddParticle()
-	p:SetDrag(1)
+	for i = 1, 4 do
+		emitter:SetPosition(Vec3(math.random(render.GetWidth() + 100) - 150, -50, 0))
+		local p = emitter:AddParticle()
+		p:SetDrag(1)
 
-	--p:SetStartLength(Vec2(0))
-	--p:SetEndLength(Vec2(30, 0))
-	p:SetAngle(math.random(360))
+		--p:SetStartLength(Vec2(0))
+		--p:SetEndLength(Vec2(30, 0))
+		--p:SetAngle(math.random(360))
 
-	p:SetVelocity(Vec3(math.random(100),math.random(40, 80)*2,0))
+		p:SetVelocity(Vec3(math.random(100),math.random(30, 75)*2,0))
 
-	p:SetLifeTime(20)
+		p:SetLifeTime(20)
 
-	p:SetStartSize(2 * (1 + math.random() ^ 50))
-	p:SetEndSize(2 * (1 + math.random() ^ 50))
+		p:SetStartSize(2)
+		p:SetEndSize(2)
 
-	p:SetColor(Color(1,1,1, math.randomf(0.5, 0.8)))
+		p:SetColor(Color(1,1,1, math.randomf(0.1, 0.7)))
+	end
 end
 
 local background = ColorBytes(64, 44, 128, 127)
 
 function menu.RenderBackground()
 	render2d.SetTexture()
-	if render3d.IsGBufferReady() or line.IsGameRunning() then
+	if render3d.IsGBufferReady() or (line and line.IsGameRunning()) then
 		render2d.SetColor(background.r, background.g, background.b, background.a)
 	else
 		render2d.SetColor(background.r, background.g, background.b, 255)
@@ -99,11 +101,11 @@ function menu.CreateTopBar()
 	thingy:SetSize(Vec2(52,27))
 	thingy:SetColor(Color(0,0,0,0))
 	thingy:SetupLayout("right", "top")
-	thingy:SetCachedRendering(true)
+	--thingy:SetCachedRendering(true)
 
 	local function draw_shadow(self)
 		render2d.SetTexture()
-		render2d.SetColor(0,0,0,0.25)
+		render2d.SetColor(0,0,0,0.5)
 		render2d.DrawRect(11, 11, self.Size.x, self.Size.y)
 	end
 
@@ -163,7 +165,7 @@ function menu.CreateTopBar()
 
 	menu.panel = bar
 
-	bar:SetUpdateRate(1/24)
+	bar:SetUpdateRate(1/40)
 	bar.OnUpdate = function(_, dt) emitter:Update(dt) end
 
 	local function create_button(text, options, w)
