@@ -1,4 +1,4 @@
-﻿local markup = gfx.CreateMarkup()
+﻿local markup = ... or gfx.CreateMarkup()
 markup:AddString("Hello markup test!\n\n有一些中國\nそして、いくつかの日本の\nكيف حول بعض عربية")
 
 markup:AddString[[
@@ -43,7 +43,7 @@ timer<color=0.75,0.75,0.62,1>.<color=1,1,1,1>Delay<color=0.75,0.75,0.62,1>(<colo
 end
 ]], true)
 
-markup:AddFont(fonts.CreateFont({path = "Arial Black", size = 30, read_speed = 100}))
+markup:AddFont(fonts.CreateFont({path = "Roboto", size = 30, read_speed = 100}))
 markup:AddColor(ColorBytes(0,255,0,255))
 markup:AddString("This font is huge and green for some reason!\n")
 markup:AddString("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww\n")
@@ -77,9 +77,9 @@ markup:AddString("<rotate=90>:O</rotate>", true)
 markup:AddString("<rotate=90>:]</rotate>", true)
 markup:AddString("<rotate=90></rotate>", true)-- FIX ME
 markup:AddString("\n")
-markup:AddString("maybe..\n\n")
+markup:AddString("maybe..\n")
 
-markup:AddFont(fonts.CreateFont({path = "Pinyon Script", size = 50, read_speed = 100}))
+markup:AddFont(fonts.CreateFont({path = "Aladin", size = 30, read_speed = 100}))
 local str = "That's all folks!"
 
 markup:AddFont(gfx.GetDefaultFont())
@@ -87,7 +87,10 @@ markup:AddString("\n")
 markup:AddString([[
 © 2012, Author
 Self publishing
-(Possibly email address or contact data)]])
+(Possibly email address or contact data)
+]])
+
+if ... then return end
 
 event.AddListener("PostDrawGUI", "lol", function()
 	render2d.PushMatrix(50,50)
