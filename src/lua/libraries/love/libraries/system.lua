@@ -18,3 +18,7 @@ end
 function love.system.getOS()
 	return jit.os
 end
+
+function love.system.quit()
+	logn("quit!")
+end

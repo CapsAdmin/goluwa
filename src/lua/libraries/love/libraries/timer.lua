@@ -3,6 +3,10 @@ local ENV = love._line_env
 
 love.timer = love.timer or {}
 
+function love.timer.step()
+
+end
+
 function love.timer.getDelta()
 	return system.GetFrameTime()
 end
@@ -16,7 +20,7 @@ function love.timer.getMicroTime()
 end
 
 function love.timer.getTime()
-	if line.version == "0.8.0" then
+	if love._version_minor == 8 then
 		return math.ceil(system.GetElapsedTime())
 	else
 		return system.GetTime()

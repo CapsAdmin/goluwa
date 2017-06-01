@@ -373,6 +373,11 @@ do -- font
 		local res = gfx.WrapString(str, width)
 		local w = self.font:GetTextSize(str) + 2
 		gfx.SetFont(old)
+
+		if love._version_minor >= 10 then
+			return w, res
+		end
+
 		return w, math.max(res:count("\n"),1)
 	end
 
@@ -730,6 +735,10 @@ function love.graphics.rectangle(mode, x, y, w, h)
 		gfx.DrawLine(x+w,y, x+w,y+h)
 		gfx.DrawLine(x,y+h, x+w,y+h)
 	end
+end
+
+function love.graphics.roundrect(mode, x, y, w, h)
+	return love.graphics.rectangle(mode, x, y, w, h)
 end
 
 function love.graphics.drawq(drawable, quad, x,y, r, sx,sy, ox,oy, kx,ky)

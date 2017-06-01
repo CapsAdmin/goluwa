@@ -1,10 +1,10 @@
 local line = _G.line or {}
 
-line.version = "0.9.0"
 line.speed = 1
 line.love_envs = line.love_envs or utility.CreateWeakTable()
 
 pvars.Setup("line_enable_audio", true)
+pvars.Setup("love_version", "0.9.0")
 
 do
 	local function base_typeOf(self, str)
@@ -68,12 +68,14 @@ function line.ErrorNotSupported(str, level)
 	wlog("[line] " .. str)
 end
 
-function line.CreateLoveEnv()
+function line.CreateLoveEnv(version)
+	version = version or pvars.Get("love_version")
+
 	local love = {}
 
-	love._version = line.version
+	love._version = version
 
-	local version = line.version:split(".")
+	local version = version:split(".")
 
 	love._version_major = tonumber(version[1])
 	love._version_minor = tonumber(version[2])
@@ -123,7 +125,7 @@ function line.FixPath(path)
 end
 
 function line.RunGame(folder, ...)
-	local love = line.CreateLoveEnv(line.version)
+	local love = line.CreateLoveEnv()
 
 	wlog("mounting love game folder: ", R(folder .. "/"))
 	vfs.CreateFolder("data/love/")
