@@ -98,13 +98,13 @@ do -- attributes
 	local cache = {}
 
 	function META:SetupAttributes()
-		local lookup = ""
 
 		local ctypes = {}
 
 		local declaration = {"struct { "}
+		local lookup = ""
 
-		for _, info in pairs(self.mesh_layout.attributes) do
+		for _, info in ipairs(self.mesh_layout.attributes) do
 			table.insert(declaration, ("$ %s;"):format(info.name))
 			table.insert(ctypes, info.type_info.ctype)
 
@@ -124,7 +124,7 @@ do -- attributes
 		self.mesh_layout.lookup = {}
 		local pos = 0
 
-		for i, info in pairs(self.mesh_layout.attributes) do
+		for i, info in ipairs(self.mesh_layout.attributes) do
 			info.location = i - 1
 			info.row_length = info.type_info.arg_count
 			info.row_offset = info.type_info.size * pos

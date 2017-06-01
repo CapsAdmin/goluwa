@@ -127,11 +127,10 @@ local function warn_pcall(func, ...)
 	return unpack(res, 2)
 end
 
--- ffi's cdef is so anti realtime
-ffi.cdef = function(str, ...)
+function ffi.cdef(str, ...)
 	return warn_pcall(_OLD_G.ffi.cdef, str, ...)
 end
 
-ffi.metatype = function(str, ...)
+function ffi.metatype(str, ...)
 	return warn_pcall(_OLD_G.ffi.metatype, str, ...)
 end
