@@ -157,15 +157,9 @@ event.AddListener("Chat", "chathud", function(name, str, client)
 end)
 
 function chathud.Show()
-	if render3d.IsGBufferReady() then
-		event.AddListener("PreDrawGUI", "chathud", function()
-			chathud.Draw()
-		end)
-	else
-		event.AddListener("PostDrawGUI", "chathud", function()
-			chathud.Draw()
-		end)
-	end
+	event.AddListener("PreDrawGUI", "chathud", function()
+		chathud.Draw()
+	end)
 
 	event.AddListener("MouseInput", "chathud", function(button, press)
 		chathud.MouseInput(button, press, window.GetMousePosition():Unpack())

@@ -79,15 +79,12 @@ function menu.UpdateBackground()
 	end
 end
 
-local background = ColorBytes(64, 44, 128, 127)
+-- closest while alpha is low
+local background = Color(0.525, 0.3225, 1, 0.2475)
 
 function menu.RenderBackground()
 	render2d.SetTexture()
-	if render3d.IsGBufferReady() or (line and line.IsGameRunning()) then
-		render2d.SetColor(background.r, background.g, background.b, background.a)
-	else
-		render2d.SetColor(background.r, background.g, background.b, 255)
-	end
+	render2d.SetColor(background:Unpack())
 	render2d.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
 
 	emitter:Draw()
@@ -101,7 +98,7 @@ function menu.CreateTopBar()
 	thingy:SetSize(Vec2(52,27))
 	thingy:SetColor(Color(0,0,0,0))
 	thingy:SetupLayout("right", "top")
-	--thingy:SetCachedRendering(true)
+	thingy:SetCachedRendering(true)
 
 	local function draw_shadow(self)
 		render2d.SetTexture()
