@@ -209,6 +209,7 @@ function chat.GetPanel()
 
 	local edit = frame:CreatePanel("text_edit")
 	edit:SetMargin(Rect()+3)
+	edit:SetHeight(18)
 	edit:SetupLayout("bottom", "fill_x")
 	edit:AddEvent("PostDrawGUI")
 	frame.edit = edit
@@ -245,6 +246,8 @@ function chat.GetPanel()
 		self.markup:SetMaxWidth(self.Parent:GetWidth())
 	end
 
+	runfile("lua/examples/2d/markup.lua",  text.markup)
+
 	edit:RequestFocus()
 	--edit:SetMultiline(true)
 
@@ -280,7 +283,7 @@ function chat.GetPanel()
 	edit.OnPreKeyInput = function(self, key, press)
 		if not press then return end
 
-		local ctrl = input.IsKeyDown("left_control") or input.IsKeyDown("right_control")
+		local ctrl = input.IsKeyDown("left_shift") or input.IsKeyDown("right_shift")
 		local str = self:GetText()
 
 		if key == "`" then
@@ -371,7 +374,6 @@ function chat.GetPanel()
 		page.scroll:SetScrollFraction(Vec2(0,1))
 	end
 
-
 	local page = tab:AddTab("console")
 	page:SetColor(gui.skin.font_edit_background)
 
@@ -426,6 +428,10 @@ function chat.GetPanel()
 		page.scroll:SetScrollFraction(Vec2(0,1))
 	end
 
+	for _, line in ipairs(vfs.Read("logs/console_" .. jit.os:lower() .. ".txt"):split("\n")) do
+		text:OnReplPrint(line:gsub("\r", "") .. "\n")
+	end
+
 	if commands.history then
 		for _, v in pairs(commands.history) do
 			text:OnReplPrint(v)
@@ -464,9 +470,7 @@ function chat.Open(tab)
 	end
 
 	panel:Minimize(true)
-	panel.edit:SetText("")
 	panel.edit:RequestFocus()
-	panel:Layout(true)
 
 	page.scroll:SetScrollFraction(Vec2(0,1))
 
