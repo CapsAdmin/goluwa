@@ -165,6 +165,13 @@ do
 			wlog("unhandled freeimage format type: %s", image_type)
 		end
 
+		-- the image type of some png images are RGB but bpp is actuall 32bit (RGBA)
+		local bpp = library.GetBPP(bitmap)
+
+		if bpp == 32 then
+			format = "bgra"
+		end
+
 		local ret = {
 			buffer = library.GetBits(bitmap),
 			width = library.GetWidth(bitmap),
