@@ -67,7 +67,7 @@ function window.Open(...)
 				end
 
 
-				if not render3d.IsGBufferReady() and not line.IsGameRunning() then
+				if not render3d.IsGBufferReady() and (line and not line.IsGameRunning()) then
 					render.GetScreenFrameBuffer():ClearAll()
 				end
 
