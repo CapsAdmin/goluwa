@@ -91,7 +91,7 @@ local function set_uv(self, i, x,y, w,h, sx,sy)
 end
 
 function META:SetVertex(i, x,y, u,v)
-	if i > self.vertex_count or i < 0 then logf("i = %i vertex_count = %i\n", i, self.vertex_count) return end
+	--if i > self.vertex_count or i < 0 then logf("i = %i vertex_count = %i\n", i, self.vertex_count) return end
 
 	x = x or 0
 	y = y or 0

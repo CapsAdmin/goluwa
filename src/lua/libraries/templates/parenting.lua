@@ -59,14 +59,15 @@ function META:SetParent(obj)
 	return obj:AddChild(self)
 end
 
-function META:HasParent(obj)
-	if obj then
-		for _, v in ipairs(self:GetParentList()) do
-			if v == obj then
-				return true
-			end
+function META:ContainsParent(obj)
+	for _, v in ipairs(self:GetParentList()) do
+		if v == obj then
+			return true
 		end
 	end
+end
+
+function META:HasParent()
 	return self.Parent:IsValid()
 end
 

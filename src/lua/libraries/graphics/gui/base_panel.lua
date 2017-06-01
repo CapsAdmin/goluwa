@@ -1465,7 +1465,7 @@ do -- mouse
 				self.mouse_just_entered = false
 			end
 
-			if self.mouse_hover_triggered and not (gui.active_tooltip:IsValid() or not self:HasParent(gui.active_tooltip)) then
+			if self.mouse_hover_triggered and not (gui.active_tooltip:IsValid() or not self:ContainsParent(gui.active_tooltip)) then
 				self:OnMouseHoverTrigger(false, x, y)
 				self.mouse_hover_triggered = false
 				if self.Tooltip ~= "" then
