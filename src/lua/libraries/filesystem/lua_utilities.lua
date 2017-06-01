@@ -29,6 +29,10 @@ function vfs.LoadFile(path)
 	if full_path then
 		local res, err = vfs.Read(full_path)
 
+		if not res and not err then
+			res = ""
+		end
+
 		if not res then
 			return res, err, full_path
 		end
