@@ -27,11 +27,7 @@ function META:Initialize()
 
 		self.LayoutSize = self.Size
 
-		local str = self.markup:GetText(self.ParseTags)
-		if str ~= self.last_text then
-			self:OnTextChanged(str)
-			self.last_text = str
-		end
+		self.markup_invalidated = true
 
 		self:MarkCacheDirty()
 	end
@@ -158,6 +154,15 @@ function META:OnUpdate()
 			self:MarkCacheDirty()
 			self.sadface = false
 		end
+	end
+
+	if self.markup_invalidated then
+		local str = self.markup:GetText(self.ParseTags)
+		if str ~= self.last_text then
+			self:OnTextChanged(str)
+			self.last_text = str
+		end
+		self.markup_invalidated = nil
 	end
 end
 
