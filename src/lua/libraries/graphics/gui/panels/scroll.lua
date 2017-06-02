@@ -129,6 +129,18 @@ function META:SetYScrollBar(b)
 	end
 end
 
+function META:GetAreaSize()
+	local size = self:GetSize():Copy()
+	if self.y_track and self.y_track:IsVisible() then
+		size.y = self.y_track:GetPosition().y
+	end
+
+	if self.x_track and self.x_track:IsVisible() then
+		size.x = self.y_track:GetPosition().x
+	end
+	return size
+end
+
 function META:SetPanel(panel)
 	panel:SetParent(self.scroll_area)
 --	panel:SetVisibilityPanel(self.scroll_area)
