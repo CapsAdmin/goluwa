@@ -1,6 +1,7 @@
 local render = ... or _G.render
 
 local sdl = require("SDL2")
+local ffi = require("ffi")
 
 function render.PreWindowSetup(flags)
 	table.insert(flags, "opengl")
