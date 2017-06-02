@@ -115,7 +115,7 @@ function META:AddString(str, tags)
 	str = tostring(str)
 
 	if tags then
-		for _, chunk in pairs(self:StringTagsToTable(str)) do
+		for _, chunk in ipairs(self:StringTagsToTable(str)) do
 			table.insert(self.chunks, chunk)
 		end
 	else
@@ -147,7 +147,7 @@ function META:Add(var, tags)
 end
 
 function META:TagPanic()
-	for _, v in pairs(self.chunks) do
+	for _, v in ipairs(self.chunks) do
 		if v.type == "custom" then
 			v.panic = true
 		end
@@ -164,7 +164,7 @@ function META:CallTagFunction(chunk, name, ...)
 		if func then
 			local args = {self, chunk, ...}
 
-			for i, t in pairs(chunk.val.tag.arg_types) do
+			for i, t in ipairs(chunk.val.tag.arg_types) do
 				local val = chunk.val.args[i]
 
 				if type(val) == "function" then
@@ -989,7 +989,7 @@ do -- parse tags
 		local str = {}
 		local in_lua = false
 
-		for _, char in pairs(utf8.totable(arg_line)) do
+		for _, char in ipairs(utf8.totable(arg_line)) do
 			if char == "[" then
 				in_lua = true
 			elseif in_lua and char == "]" then -- todo: longest match
@@ -1018,7 +1018,7 @@ do -- parse tags
 			str = {}
 		end
 
-		for k,v in pairs(out) do
+		for k,v in ipairs(out) do
 			if tonumber(v) then
 				out[k] = tonumber(v)
 			end
@@ -1051,7 +1051,7 @@ do -- parse tags
 		local last_font
 		local last_color
 
-		for _, char in pairs(utf8.totable(str)) do
+		for _, char in ipairs(utf8.totable(str)) do
 			if char == "<" then
 
 				-- if we've been parsing a string add it
@@ -1687,7 +1687,7 @@ do -- invalidate
 						chunk.tag_width = width
 						chunk.chunks_inbetween = line
 
-						for _, chunk in pairs(line) do
+						for _, chunk in ipairs(line) do
 							--print(chunk.type, chunk.val)
 							chunk.tag_center_x = center_x
 							chunk.tag_center_y = center_y
@@ -2637,7 +2637,7 @@ do -- input
 				local str = self:GetSelection()
 				self:DeleteSelection()
 
-				for i, chunk in pairs(self:StringTagsToTable(str)) do
+				for i, chunk in ipairs(self:StringTagsToTable(str)) do
 					table.insert(self.chunks, self.caret_pos.char.chunk.i + i - 1, chunk)
 				end
 
@@ -2866,10 +2866,10 @@ do -- drawing
 
 							gfx.DrawText(chunk.val, chunk.x, chunk.y, max_w)
 						elseif chunk.type == "tag_stopper" then
-							for _, chunks in pairs(self.started_tags) do
+							for _, chunks in ipairs(self.started_tags) do
 								local fix = false
 
-								for key, chunk in pairs(chunks) do
+								for key, chunk in ipairs(chunks) do
 									--print("force stop", chunk.val.type, chunk.i)
 									if next(chunks) then
 										self:CallTagFunction(chunk, "post_draw", chunk.x, chunk.y)
@@ -2951,7 +2951,7 @@ do -- drawing
 
 			if started_tags then
 				for _, chunks in pairs(self.started_tags) do
-					for _, chunk in pairs(chunks) do
+					for _, chunk in ipairs(chunks) do
 						--print("force stop", chunk.val.type, chunk.i)
 
 						self:CallTagFunction(chunk, "post_draw", chunk.x, chunk.y)
