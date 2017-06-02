@@ -163,7 +163,7 @@ function chat.GetPanel()
 
 		local edit = frame:CreatePanel("text_edit")
 		edit:SetMargin(Rect()+3)
-		edit:SetHeight(16)
+		--edit:SetHeight(16)
 		edit:SetupLayout("top", "fill_x")
 		edit:RequestFocus()
 
@@ -209,7 +209,7 @@ function chat.GetPanel()
 
 	local edit = frame:CreatePanel("text_edit")
 	edit:SetMargin(Rect()+3)
-	edit:SetHeight(18)
+	--edit:SetHeight(18)
 	edit:SetupLayout("bottom", "fill_x")
 	edit:AddEvent("PostDrawGUI")
 	frame.edit = edit
@@ -228,25 +228,28 @@ function chat.GetPanel()
 
 	local text = scroll:SetPanel(gui.CreatePanel("text"))
 	text:SetPosition(Vec2()+S*2)
-
 	text.markup:SetLineWrap(true)
 	text:AddEvent("ChatAddText")
+
+	function text:OnTextChanged()
+		scroll:Layout()
+		page.scroll.scroll_area:SetScrollFraction(Vec2(0,1))
+	end
 
 	function text:OnChatAddText(args)
 		self.markup:AddFont(gui.skin.default_font)
 		self.markup:AddTable(args, true)
 		self.markup:AddTagStopper()
 		self.markup:AddString("\n")
-		self.markup:Invalidate()
-
-		page.scroll.scroll_area:SetScrollFraction(Vec2(0,1))
 	end
 
-	function text:OnLayout()
-		self.markup:SetMaxWidth(self.Parent:GetWidth())
+	local old = scroll.OnLayout
+	function scroll:OnLayout(...)
+		text.markup:SetMaxWidth(self:GetWidth())
+		return old(self, ...)
 	end
 
-	runfile("lua/examples/2d/markup.lua",  text.markup)
+	runfile("lua/examples/2d/markup.lua", text.markup)
 
 	edit:RequestFocus()
 	--edit:SetMultiline(true)
@@ -346,6 +349,7 @@ function chat.GetPanel()
 					print("!?")
 				end
 			else
+				chat.Close()
 				return false
 			end
 
@@ -359,7 +363,6 @@ function chat.GetPanel()
 		event.Call("ChatTextChanged", str)
 		edit:SizeToText()
 		edit:SetupLayout("bottom", "fill_x")
-		--frame:Layout()
 	end
 
 	edit.OnPostDrawGUI = function()
@@ -437,11 +440,6 @@ function chat.GetPanel()
 			text:OnReplPrint(v)
 		end
 	end
-
-	function text:OnLayout()
-	--	self.markup:SetMaxWidth(self.Parent:GetWidth())
-	end
-
 
 	frame:SetSize(Vec2(400, 250))
 	frame:SetPosition(Vec2(50, window.GetSize().y - frame:GetHeight() - 50))
