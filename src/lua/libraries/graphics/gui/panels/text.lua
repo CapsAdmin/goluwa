@@ -139,8 +139,8 @@ function META:OnUpdate()
 
 	local markup = self.markup
 
-	markup.cull_x = self.Parent.Scroll.x
-	markup.cull_y = self.Parent.Scroll.y
+	markup.cull_x = self.Parent:GetScroll().x
+	markup.cull_y = self.Parent:GetScroll().y
 	markup.cull_w = self.Parent.Size.x
 	markup.cull_h = self.Parent.Size.y
 

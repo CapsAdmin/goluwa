@@ -17,6 +17,7 @@ function META:Initialize()
 	scroll_area:SetAlwaysReceiveMouseInput(true)
 	scroll_area:SetMargin(Rect())
 	scroll_area:SetScrollable(true)
+	scroll_area.OnLayout = function() self:Layout(true) end
 end
 
 function META:OnStyleChanged(skin)
@@ -33,7 +34,9 @@ function META:SetXScrollBar(b)
 		local area = self.scroll_area
 
 		local x_handle = x_track:CreatePanel("button")
+		x_handle.real_width = 10
 		x_handle:SetDraggable(true)
+		x_handle:SetDragMinDistance(0)
 		x_handle:SetStyle("scroll_horizontal_handle_inactive")
 		x_handle:SetStyleTranslation("button_active", "scroll_horizontal_handle_active")
 		x_handle:SetStyleTranslation("button_inactive", "scroll_horizontal_handle_inactive")
@@ -50,7 +53,8 @@ function META:SetXScrollBar(b)
 		x_handle.OnPositionChanged = function(_, pos)
 			if not area:IsValid() then return end
 
-			local w = area:GetSizeOfChildren().x / (area:GetWidth() / x_handle:GetWidth())
+			local w = area:GetSizeOfChildren().x / (area:GetWidth() / x_handle.real_width)
+			w = w - x_handle:GetWidth()
 			local frac = math.clamp(pos.x / w, 0, 1)
 			self.scrolling = true
 			area:SetScrollFraction(Vec2(frac, area:GetScrollFraction().y))
@@ -80,7 +84,9 @@ function META:SetYScrollBar(b)
 		local area = self.scroll_area
 
 		local y_handle = y_track:CreatePanel("button")
+		y_handle.real_height = 10
 		y_handle:SetDraggable(true)
+		y_handle:SetDragMinDistance(0)
 		y_handle:SetStyle("scroll_vertical_handle_inactive")
 		y_handle:SetStyleTranslation("button_active", "scroll_vertical_handle_active")
 		y_handle:SetStyleTranslation("button_inactive", "scroll_vertical_handle_inactive")
@@ -97,7 +103,8 @@ function META:SetYScrollBar(b)
 		y_handle.OnPositionChanged = function(_, pos)
 			if not area:IsValid() then return end
 
-			local h = area:GetSizeOfChildren().y / (area:GetHeight() / y_handle:GetHeight())
+			local h = area:GetSizeOfChildren().y / (area:GetHeight() / y_handle.real_height)
+			h = h - y_handle:GetHeight()
 			local frac = pos.y / h
 			self.scrolling = true
 			area:SetScrollFraction(Vec2(area:GetScrollFraction().x, frac))
@@ -213,14 +220,18 @@ function META:OnLayout(S)
 		self.y_track:SetHeight(self:GetHeight() - y_offset)
 		self.y_track:SetX(self:GetWidth() - self.y_track:GetWidth())
 
-		self.y_handle:SetHeight((self.y_track:GetHeight() / self.scroll_area:GetSizeOfChildren().y) * self.y_track:GetHeight())
+		local real = (self.y_track:GetHeight() / self.scroll_area:GetSizeOfChildren().y) * self.y_track:GetHeight()
+		self.y_handle.real_height = real
+		self.y_handle:SetHeight(math.max(real, 20))
 	end
 
 	if self.x_track then
 		self.x_track:SetWidth(self:GetWidth() - x_offset)
 		self.x_track:SetY(self:GetHeight() - self.x_track:GetHeight())
 
-		self.x_handle:SetWidth((self.x_track:GetWidth() / self.scroll_area:GetSizeOfChildren().x) * self.x_track:GetWidth())
+		local real = (self.x_track:GetWidth() / self.scroll_area:GetSizeOfChildren().x) * self.x_track:GetWidth()
+		self.x_handle.real_width = real
+		self.x_handle:SetWidth(math.max(real, 20))
 	end
 
 	if self.y_track and self.y_track:IsVisible() then
@@ -249,8 +260,10 @@ if RELOAD then
 	scroll:SetPadding(Rect()+4)
 
 
-	local lol = gui.CreatePanel("base")
-	lol:SetSize(Vec2() + 250)
-	lol:SetColor(Color(1,0,0,0.5))
+	local lol = gui.CreatePanel("text")
+	lol:SetWidth(300)
+	lol:SetObeyPanelWidth(true)
+	lol:SetTextWrap(true)
+	runfile("lua/examples/2d/markup.lua", lol.markup)
 	scroll:SetPanel(lol)
 end

@@ -114,10 +114,10 @@ function META:IsInsideParent()
 	end
 
 	if
-		self.Position.x - override.Scroll.x < override.Size.x and
-		self.Position.y - override.Scroll.y < override.Size.y and
-		self.Position.x + self.Size.x - override.Scroll.x > 0 and
-		self.Position.y + self.Size.y - override.Scroll.y > 0
+		self.Position.x - override.RealScroll.x < override.Size.x and
+		self.Position.y - override.RealScroll.y < override.Size.y and
+		self.Position.x + self.Size.x - override.RealScroll.x > 0 and
+		self.Position.y + self.Size.y - override.RealScroll.y > 0
 	then
 		return true
 	end
@@ -238,8 +238,8 @@ do -- drawing
 		end
 
 		self:CalcAnimations()
-		self:CalcLayout()
 		self:CalcResizing()
+		self:CalcLayout()
 
 		if self.CachedRendering and not gui.debug then
 			self:BuildCache()
@@ -329,7 +329,7 @@ do -- drawing
 				render.SetPresetBlendMode("additive")
 				render2d.SetColor(1, 0, 0, 0.1)
 				render2d.SetWhiteTexture(self.cache_texture)
-				render2d.DrawRect(self.Scroll.x, self.Scroll.y, self.Size.x, self.Size.y)
+				render2d.DrawRect(self.RealScroll.x, self.RealScroll.y, self.Size.x, self.Size.y)
 				self.updated_layout = false
 				render.SetPresetBlendMode("alpha")
 			else
@@ -464,7 +464,7 @@ do -- orientation
 					self.Matrix:Translate(-w, -h, 0)
 				end
 
-				self.Matrix:Translate(math.ceil(-self.Parent.Scroll.x), math.ceil(-self.Parent.Scroll.y), 0)
+				self.Matrix:Translate(math.ceil(-self.Parent.RealScroll.x), math.ceil(-self.Parent.RealScroll.y), 0)
 
 				self:OnPostMatrixBuild()
 
@@ -513,7 +513,7 @@ do -- orientation
 		for _, v in ipairs(self:GetParentList()) do
 			lpos = lpos - v:GetPosition()
 			if v:HasParent() then
-				wpos = wpos + v.Parent:GetScroll()
+				wpos = wpos + v.Parent.RealScroll
 			end
 		end
 		return lpos
@@ -732,7 +732,43 @@ do -- scrolling
 	META:GetSet("Scroll", Vec2(0, 0))
 	META:GetSet("ScrollFraction", Vec2(0, 0))
 
+
+	META:GetSet("SmoothScroll", 0.25)
+	META.RealScroll = Vec2(0, 0)
+
+	local function start_scroll(self, add)
+		if self.SmoothScroll ~= 0 and not self:IsScrolling() then
+			if self.scroll_start and self.scroll_stop and add then
+				self.scroll_vel = self.scroll_start - self.scroll_stop
+				local dir = add - self.scroll_stop
+
+				if math.abs(dir.y) > math.abs(self.scroll_vel.y) then
+					self.scroll_vel.y = -self.scroll_vel.y
+				end
+			end
+			self.scroll_start = self:GetScroll():Copy()
+			self.scroll_time = system.GetElapsedTime() + self.SmoothScroll
+		end
+	end
+
+	local function stop_scroll(self, size, add)
+		if self.SmoothScroll ~= 0 and not self:IsScrolling() then
+			if add then
+				self.scroll_stop = (-(self.scroll_vel or Vec2())*0.9) + self.Scroll:Copy()
+				self.scroll_vel = nil
+			else
+				self.scroll_stop = self.Scroll:Copy()
+			end
+			self.scroll_start:Clamp(Vec2(0), size - self.Size)
+			self.scroll_stop:Clamp(Vec2(0), size - self.Size)
+		else
+			self.RealScroll = self.Scroll:Copy()
+		end
+	end
+
 	function META:SetScroll(vec)
+		start_scroll(self, vec)
+
 		local size = self:GetSizeOfChildren()
 
 		self.Scroll = vec:GetClamped(Vec2(0), size - self.Size)
@@ -744,10 +780,14 @@ do -- scrolling
 		self:OnScroll(self.ScrollFraction)
 
 		self:MarkCacheDirty()
+
+		stop_scroll(self, size, vec)
 	end
 
 	function META:SetScrollFraction(frac)
 		local size = self:GetSizeOfChildren()
+
+		start_scroll(self, size)
 
 		self.Scroll = frac * size
 		self.Scroll:Clamp(Vec2(0, 0), size - self.Size)
@@ -756,6 +796,12 @@ do -- scrolling
 		self:OnScroll(self.ScrollFraction)
 
 		self:MarkCacheDirty()
+
+		stop_scroll(self, size)
+	end
+
+	function META:GetScroll()
+		return self.RealScroll
 	end
 
 	function META:StartScrolling(button)
@@ -766,6 +812,11 @@ do -- scrolling
 	function META:StopScrolling()
 		self.scroll_button = nil
 		self.scroll_drag_pos = nil
+
+		self.scroll_time = nil
+		self.scroll_stop = nil
+		self.scroll_start = nil
+		self.scroll_vel = nil
 	end
 
 	function META:IsScrolling()
@@ -773,17 +824,27 @@ do -- scrolling
 	end
 
 	function META:CalcScrolling()
-		if not self:IsScrolling() then return end
+		if self:IsScrolling() then
+			local size = self:GetSizeOfChildren()
 
-		local size = self:GetSizeOfChildren()
+			if size.x < self.Size.x and size.y < self.Size.y then self:StopScrolling() return end
 
-		if size.x < self.Size.x and size.y < self.Size.y then self:StopScrolling() return end
-
-		if input.IsMouseDown(self.scroll_button) then
-			self:SetScroll(self.scroll_drag_pos - self:GetMousePosition())
-			self:OnScroll(self.ScrollFraction)
-		else
-			self:StopScrolling()
+			if input.IsMouseDown(self.scroll_button) then
+				self:SetScroll(self.scroll_drag_pos - self:GetMousePosition())
+				self:OnScroll(self.ScrollFraction)
+			else
+				self:StopScrolling()
+			end
+		elseif self.scroll_time and self.scroll_stop then
+			local f = (self.scroll_time - system.GetElapsedTime()) / self.SmoothScroll
+			if f >= 0 then
+				f = f ^ 5
+				self.RealScroll = self.scroll_stop:GetLerped(f, self.scroll_start)
+			else
+				self.scroll_time = nil
+				self.scroll_stop = nil
+				self.scroll_start = nil
+			end
 		end
 	end
 end
@@ -1809,7 +1870,6 @@ do -- layout
 			self.in_layout = true
 			self:OnLayout(self:GetLayoutScale(), self:GetSkin())
 			self.in_layout = false
-
 
 			self:ExecuteLayoutCommands()
 			if self.Stack then
