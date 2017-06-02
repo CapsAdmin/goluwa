@@ -24,6 +24,10 @@ function META:OnStyleChanged(skin)
 	self:SetScrollWidth(self:GetSkin().scroll_width or 8)
 end
 
+function META:ScrollToFraction(vec)
+	self.scroll_area:SetScrollFraction(vec)
+end
+
 function META:SetXScrollBar(b)
 	self.XScrollBar = b
 

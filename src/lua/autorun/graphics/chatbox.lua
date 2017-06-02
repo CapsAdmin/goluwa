@@ -233,7 +233,7 @@ function chat.GetPanel()
 
 	function text:OnTextChanged()
 		scroll:Layout()
-		page.scroll.scroll_area:SetScrollFraction(Vec2(0,1))
+		scroll:ScrollToFraction(Vec2(0,1))
 	end
 
 	function text:OnChatAddText(args)
