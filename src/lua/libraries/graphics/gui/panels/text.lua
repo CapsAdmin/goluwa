@@ -7,8 +7,10 @@ META:GetSet("TextWrap", false)
 META:GetSet("ConcatenateTextToSize", false)
 META:GetSet("LightMode", false)
 META:GetSet("CopyTags", true)
+META:GetSet("ObeyPanelWidth", false)
 META:IsSet("Selectable", false)
 
+META:GetSet("MaxWidth")
 META:GetSet("Font")
 META:GetSet("TextColor")
 
@@ -18,7 +20,9 @@ function META:Initialize()
 	local markup = gfx.CreateMarkup()
 	markup:SetEditable(false)
 	markup.OnInvalidate = function()
-		self.Size.x = markup.width + self.Padding:GetLeft() + self.Padding:GetRight()
+		if not self.ObeyPanelWidth then
+			self.Size.x = markup.width + self.Padding:GetLeft() + self.Padding:GetRight()
+		end
 		self.Size.y = markup.height + self.Padding:GetTop() + self.Padding:GetBottom()
 
 		self.LayoutSize = self.Size
@@ -49,6 +53,11 @@ end
 
 function META:SetTextColor(color)
 	self.TextColor = color
+	self:SetText(self:GetText())
+end
+
+function META:SetMaxWidth(width)
+	self.MaxWidth = width
 	self:SetText(self:GetText())
 end
 
@@ -88,6 +97,7 @@ function META:SetText(str)
 	markup:Clear()
 	if self.Font then markup:AddFont(self.Font) end
 	if self.TextColor then markup:AddColor(self.TextColor:Copy()) end
+	if self.MaxWidth then markup:SetMaxWidth(self.MaxWidth) end
 	markup:AddString(self.Text, self.ParseTags)
 	markup:SetCaretPosition(0,0)
 
@@ -101,6 +111,8 @@ function META:GetText()
 end
 
 function META:OnLayout()
+	if self.ObeyPanelWidth then self.markup:SetMaxWidth(self:GetWidth()) end
+	if self.MaxWidth then self.markup:SetMaxWidth(self.MaxWidth) end
 	self.markup:Invalidate()
 end
 
