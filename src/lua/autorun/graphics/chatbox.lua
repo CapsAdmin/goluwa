@@ -227,7 +227,7 @@ function chat.GetPanel()
 	page.scroll = scroll
 
 	local text = scroll:SetPanel(gui.CreatePanel("text"))
-	text:SetPosition(Vec2()+S*2)
+	text:SetPadding(Rect() + S * 2)
 	text.markup:SetLineWrap(true)
 	text:AddEvent("ChatAddText")
 
@@ -245,7 +245,7 @@ function chat.GetPanel()
 
 	local old = scroll.OnLayout
 	function scroll:OnLayout(...)
-		text.markup:SetMaxWidth(self:GetWidth())
+		text.markup:SetMaxWidth(self:GetAreaSize().x - text:GetPadding().x - text:GetPadding().w)
 		return old(self, ...)
 	end
 
@@ -381,20 +381,23 @@ function chat.GetPanel()
 	page:SetColor(gui.skin.font_edit_background)
 
 	local scroll = page:CreatePanel("scroll")
-	scroll:SetXScrollBar(false)
 	scroll:SetupLayout("fill")
 	page.scroll = scroll
 
 	local text = scroll:SetPanel(gui.CreatePanel("text"))
+	text:SetPadding(Rect() + S * 2)
 	text:SetLightMode(true)
 	text:SetCopyTags(false)
 	text.markup:SetSuperLightMode(true)
 	text:SetTextWrap(false)
-	text:SetPosition(Vec2()+S*2)
 	text.markup:AddFont(chat.console_font)
 	text:AddEvent("ReplPrint")
 	text:AddEvent("ReplClear")
 	--text:AddEvent("LogSection")
+
+	text.OnTextChanged = function()
+		scroll:ScrollToFraction(Vec2(0,1))
+	end
 
 	chat.markup = text.markup
 
@@ -427,8 +430,6 @@ function chat.GetPanel()
 		syntax_process(str, self.markup)
 		--self.markup:AddTagStopper()
 		self.markup:AddString("\n")
-		self.markup:Invalidate()
-		page.scroll:SetScrollFraction(Vec2(0,1))
 	end
 
 	for _, line in ipairs(vfs.Read("logs/console_" .. jit.os:lower() .. ".txt"):split("\n")) do
