@@ -102,7 +102,6 @@ end
 
 function META:OnLayout()
 	self.markup:Invalidate()
-	self.markup:Update()
 end
 
 function META:OnPostDraw()
