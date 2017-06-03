@@ -37,6 +37,7 @@ for i, sub_skin in ipairs(skins) do
 			path = "Roboto",
 			fallback = gfx.GetDefaultFont(),
 			size = 5.5*scale,
+			filtering = "none",
 		})
 
 		local texture = render.CreateTextureFromPath("textures/gui/skins/" .. sub_skin)
