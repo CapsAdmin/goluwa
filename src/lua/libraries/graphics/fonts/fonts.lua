@@ -297,6 +297,16 @@ do
 			blend_mode = "none",
 		}
 	end)
+
+	fonts.AddEffect("color", function(info, options)
+		return {
+			source = "return texture(self, uv) * color;",
+			vars = {
+				color = info.color,
+			},
+			blend_mode = "none",
+		}
+	end)
 end
 
 runfile("base_font.lua")
