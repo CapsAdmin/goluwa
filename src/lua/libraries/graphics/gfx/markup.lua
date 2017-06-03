@@ -2033,9 +2033,13 @@ do -- shortcuts
 			self.text = utf8.sub(self.text, 1, select_start.sub_pos - 1) .. text .. utf8.sub(self.text, select_stop.sub_pos + 1)
 
 			do -- fix chunks
+				local first_line = true
 				for i = select_start.char.chunk.i-1, select_stop.char.chunk.i-1 do
 					local chunk = self.chunks[i]
-					if chunk.type == "newline" then
+					if chunk.type == "newline" or (chunk.line == 1 and first_line) then
+
+						first_line = false
+
 						if not back and self.chunks[i+1].type ~= "string" then
 							table.insert(self.chunks, i+1, {type = "string", val = "\t"})
 						else
