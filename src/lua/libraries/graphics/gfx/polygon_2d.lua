@@ -97,14 +97,14 @@ function META:SetVertex(i, x,y, u,v)
 	y = y or 0
 
 	if self.ROT ~= 0 then
-		x = x - self.X
-		y = y - self.Y
+		x = x - self.X + self.RX
+		y = y - self.Y + self.RY
 
 		local new_x = x * math.cos(self.ROT) - y * math.sin(self.ROT)
 		local new_y = x * math.sin(self.ROT) + y * math.cos(self.ROT)
 
-		x = new_x + self.X
-		y = new_y + self.Y
+		x = new_x + self.X - self.RX
+		y = new_y + self.Y - self.RY
 	end
 
 	self.Vertices.Pointer[i].pos[0] = x
@@ -130,13 +130,15 @@ function META:SetTriangle(i, x1,y1, x2,y2, x3,y3, u1,v1,u2,v2,u3,v3)
 	self:SetVertex(i + 2, x3,y3, u3,v3)
 end
 
-function META:SetRect(i, x,y,w,h, r, ox,oy)
+function META:SetRect(i, x,y,w,h, r, ox,oy, rx,ry)
 
 	self.X = x or 0
 	self.Y = y or 0
 	self.ROT = r or 0
 	self.OX = ox or 0
 	self.OY = oy or 0
+	self.RX = rx or 0
+	self.RY = ry or 0
 
 	i = i - 1
 	i = i * 6
