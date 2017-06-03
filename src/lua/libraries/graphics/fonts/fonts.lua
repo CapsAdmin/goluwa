@@ -83,6 +83,16 @@ function fonts.CreateFont(options, callback)
 		end
 	end
 
+	if options.fx then
+		for _, tbl in ipairs(options.fx) do
+			local callback = fonts.effects[tbl.type]
+			if callback then
+				tbl.order = tbl.order or 0
+				table.insert(sorted, {info = tbl, callback = callback})
+			end
+		end
+	end
+
 	if sorted[1] then
 		shading_info = shading_info or {}
 		table.sort(sorted, function(a, b) return a.info.order > b.info.order end)
