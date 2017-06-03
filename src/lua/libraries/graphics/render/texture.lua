@@ -535,6 +535,17 @@ do
 		}
 	]]
 
+	local template2 = [[
+		%s
+
+		out vec4 out_color;
+
+		void main()
+		{
+			out_color = shade();
+		}
+	]]
+
 	function META:Shade(fragment_shader, vars, blend_mode)
 		blend_mode = blend_mode or "alpha"
 		if not render2d.IsReady() then
@@ -564,7 +575,7 @@ do
 					mesh_layout = {
 						{uv = "vec2"},
 					},
-					source = template:format(fragment_shader),
+					source = fragment_shader:find("vec4 shade") and template2:format(fragment_shader) or template:format(fragment_shader),
 				}
 			}
 
