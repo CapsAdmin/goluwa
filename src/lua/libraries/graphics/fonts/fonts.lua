@@ -117,6 +117,8 @@ function fonts.CreateFont(options, callback)
 		self:SetMonospace(monospace)
 		self:SetSpacing(spacing)
 		self:SetFiltering(filtering)
+		self:SetReverseDraw(options.reverse_draw)
+		if options.curve then self:SetCurve(options.curve) end
 
 		self.OnLoad = function()
 			self:SetReady(true)

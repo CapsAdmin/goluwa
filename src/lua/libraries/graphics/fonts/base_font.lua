@@ -2,6 +2,7 @@
 
 META:GetSet("Path", "")
 META:GetSet("Padding", 0)
+META:GetSet("Curve", 0)
 META:IsSet("Spacing", 1)
 META:IsSet("Size", 12)
 META:IsSet("Scale", Vec2(1,1))
@@ -10,6 +11,7 @@ META:GetSet("ShadingInfo")
 META:GetSet("FallbackFonts")
 META:IsSet("Monospace", false)
 META:IsSet("Ready", false)
+META:IsSet("ReverseDraw", false)
 META:GetSet("LoadSpeed", 10)
 
 function META:GetGlyphData(code)
@@ -113,7 +115,7 @@ function META:DrawString(str, x, y, w)
 	end
 end
 
-function META:SetPolyChar(poly, i, x, y, char)
+function META:SetPolyChar(poly, i, x, y, char, r)
 	local ch = self.chars[char]
 
 	if ch then
@@ -128,7 +130,14 @@ function META:SetPolyChar(poly, i, x, y, char)
 		x = x - (self.Padding / 2) * self.Scale.x
 		y = y - (self.Padding / 2) * self.Scale.y
 
-		poly:SetRect(i, x, y, w * self.Scale.x, h * self.Scale.y)
+		w = w * self.Scale.x
+		h = h * self.Scale.y
+
+		if r then
+			poly:SetRect(i, x, y, w, h, r, nil, nil, -w/2, -h/2)
+		else
+			poly:SetRect(i, x, y, w, h)
+		end
 	end
 end
 
@@ -180,7 +189,8 @@ function META:CompileString(data)
 				poly:SetColor(str:Unpack())
 			end
 		else
-			for str_i = 1, utf8.length(str) do
+			local count = utf8.length(str)
+			for str_i = 1, count do
 				local char = utf8.sub(str, str_i,str_i)
 				local ch = self.chars[char]
 
@@ -219,7 +229,16 @@ function META:CompileString(data)
 						last_tex = texture
 					end
 
-					self:SetPolyChar(poly, i, X, Y, char)
+					local draw_i = self.ReverseDraw and (-i + count + 1) or i
+
+					if self.Curve ~= 0 then
+						local offset = math.sin(((str_i-1)/count)*math.pi+math.pi/2)
+						Y = Y + (offset * -self.Curve)
+
+						self:SetPolyChar(poly, draw_i, X, Y, char, -offset*self.Curve/50)
+					else
+						self:SetPolyChar(poly, draw_i, X, Y, char)
+					end
 
 					if self.Monospace then
 						X = X + self.Spacing
