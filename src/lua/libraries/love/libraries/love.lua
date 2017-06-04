@@ -48,6 +48,8 @@ function love.line_draw(dt)
 	render2d.PushMatrix()
 	render2d.SetTexture()
 
+	love.graphics.setShader()
+
 	love.graphics.clear()
 	love.graphics.setColor(love.graphics.getColor())
 	love.graphics.setFont(love.graphics.getFont())

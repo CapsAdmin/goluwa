@@ -246,7 +246,7 @@ function render.CreateShader(data, vars)
 	local data = table.copy(data)
 
 	-- these arent actually shaders
-	local shader_id = data.name data.name = nil
+	local shader_id = data.name or tostring(data) data.name = nil
 	local force_bind = data.force data.force = nil
 	local base = data.base data.base = nil
 	local shared = data.shared data.shared = nil
@@ -295,7 +295,7 @@ function render.CreateShader(data, vars)
 	end
 
 	do
-		local root = vfs.GetFileRunStack()[#vfs.GetFileRunStack()]
+		local root = vfs.GetFileRunStack()[#vfs.GetFileRunStack()] or "./"
 		local include_dirs
 
 		local function process_include(glsl)
@@ -756,6 +756,8 @@ function render.CreateShader(data, vars)
 							def = 0
 						elseif info.type.name == "vec3" then
 							def = Vec3(0,0,0)
+						elseif info.type.name == "vec2" then
+							def = Vec2(0,0)
 						else
 							error(info.type.name)
 						end

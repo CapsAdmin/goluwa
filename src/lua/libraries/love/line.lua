@@ -31,6 +31,9 @@ do
 
 		registered[META.__line_type] = META
 
+		-- some löve scripts get it from here
+		debug.getregistry()[META.__line_type] = META
+
 		if created[META.__line_type] then
 			for i,v in ipairs(created[META.__line_type]) do
 				setmetatable(v, META)

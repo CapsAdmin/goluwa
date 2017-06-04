@@ -18,7 +18,7 @@ function render2d.DrawRect(x,y, w,h, a, ox,oy)
 			render2d.Scale(w, h)
 		end
 
-		render2d.shader:Bind()
+		render2d.BindShader()
 		render2d.rectangle:Draw()
 	render2d.PopMatrix()
 end

@@ -171,7 +171,7 @@ function META:Draw(count)
 	end
 	render2d.shader.tex = render2d.shader.tex--render2d.GetTexture()
 	--render2d.shader.global_color = render2d.GetColor(true)
-	render2d.shader:Bind()
+	render2d.BindShader()
 	self.vertex_buffer:Draw(count)
 end
 

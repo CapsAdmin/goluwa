@@ -822,31 +822,108 @@ function love.graphics.setIcon()
 end
 
 do
-	local Shader = line.TypeTemplate("Shader")
+	do
+		local Shader = line.TypeTemplate("Shader")
 
-	function Shader:getWarnings()
-		return ""
+		function Shader:getWarnings()
+			return ""
+		end
+
+		function Shader:sendColor(name, tbl, ...)
+			if ... then warning("uh oh") end
+
+			local loc = self.shader.program:GetUniformLocation(name)
+
+			self.shader.program:UploadColor(loc, ColorByte(unpack(tbl)))
+		end
+
+		function Shader:send(name, var, ...)
+			if ... then warning("uh oh") end
+
+			local loc = self.shader.program:GetUniformLocation(name)
+
+			local t = type(var)
+			if t == "number" then
+				self.shader.program:UploadNumber(loc, var)
+			elseif t == "boolean" then
+				self.shader.program:UploadBoolean(loc, var)
+			elseif ENV.textures[var] then
+				self.shader.program:UploadTexture(loc, ENV.textures[var], 0, 0)
+			elseif t == "table" then
+				if type(var[1]) == "number" then
+					if #var == 2 then
+						self.shader.program:UploadVec2(loc, Vec2(unpack(var)))
+					elseif #var == 3 then
+						self.shader.program:UploadVec3(loc, Vec3(unpack(var)))
+					elseif #var == 16 then
+						self.shader.program:UploadMatrix44(loc, Vec2(unpack(var)))
+					end
+				else
+					if #var == 4 then
+						self.shader.program:UploadMatrix44(loc, Matrix44(
+							var[1][1], var[1][2], var[1][3], var[1][4],
+							var[2][1], var[2][2], var[2][3], var[2][4],
+							var[3][1], var[3][2], var[3][3], var[3][4],
+							var[4][1], var[4][2], var[4][3], var[4][4]
+						))
+					elseif #var == 3 then
+						warning("uh oh")
+					end
+				end
+			end
+		end
+
+		function love.graphics.newShader(frag, vert)
+			local obj = line.CreateObject("Shader")
+
+			local shader = render.CreateShader({
+				fragment = {
+					mesh_layout = {
+						{uv = "vec2"},
+					},
+					variables = {
+						current_texture = {texture = function() return render2d.shader.tex end},
+						current_color = {color = function() return render2d.shader.color_override end},
+					},
+					include_directories = {
+						"shaders/include/",
+					},
+					source = [[
+						#version 430 core
+
+						#define number float
+						#define Image sampler2D
+						#define Texel texture2D
+						#define extern uniform
+
+						]] .. frag .. [[
+
+						out vec4 out_color;
+
+						void main()
+						{
+							out_color = effect(current_color, current_texture, uv, get_screen_uv());
+						}
+					]],
+				},
+			})
+
+			obj.shader = shader
+
+			return obj
+		end
+
+		line.RegisterType(Shader)
 	end
 
-	function Shader:send()
+	love.graphics.newPixelEffect = love.graphics.newShader
 
+	function love.graphics.setShader(obj)
+		render2d.shader_override = obj and obj.shader or nil
 	end
 
-	function love.graphics.newShader()
-		local obj = line.CreateObject("Shader")
+	love.graphics.setPixelEffect = love.graphics.setShader
 
-		return obj
-	end
-
-	line.RegisterType(Shader)
-end
-
-love.graphics.newPixelEffect = love.graphics.newShader
-
-function love.graphics.setShader()
-end
-
-function love.graphics.setPixelEffect()
 end
 
 function love.graphics.isCreated()
@@ -950,7 +1027,7 @@ do -- shapes
 		end
 
 		mesh:UpdateBuffer()
-		render2d.shader:Bind()
+		render2d.BindShader()
 		mesh:Draw(idx)
 
 		render2d.PopTexture()

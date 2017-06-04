@@ -124,3 +124,11 @@ function render2d.GetTexture()
 end
 
 utility.MakePushPopFunction(render2d, "Texture")
+
+function render2d.BindShader()
+	if render2d.shader_override then
+		render2d.shader_override:Bind()
+	else
+		render2d.shader:Bind()
+	end
+end
