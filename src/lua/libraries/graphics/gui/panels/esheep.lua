@@ -44,6 +44,7 @@ function META:Initialize()
 	self.Position = Vec2():Random(0,500)
 	self:SetDraggable(true)
 	self:SetResizable(true)
+	self:SetUpdateRate(0)
 	self.Velocity = Vec2()
 	self.sheep_texture = render.CreateTextureFromPath("textures/esheep.png")
 	--self.sheep_texture:SetMinFilter("nearest")
@@ -55,8 +56,8 @@ function META:OnParentLand(parent)
 	self:SetParent(parent)
 end
 
-local faint_vel = 10
-local bounce = 0.5
+local faint_vel = 2000
+local bounce = 0.54
 
 function META:CheckCollision()
 	local w, h = self.Parent:GetSize():Unpack()
@@ -91,7 +92,7 @@ function META:CheckCollision()
 	local pos, found = self:RayCast(Vec2(w - self.Size.x, self.Position.y))
 
 	if self.Position.x > pos.x - 4 then
-		if length > faint_vel then self.faint_time = length/5 self.faint = system.GetElapsedTime() + self.faint_time end
+		if length > faint_vel then self.faint_time = length/faint_vel self.faint = system.GetElapsedTime() + self.faint_time end
 		self.Velocity = self.Velocity:GetReflected(Vec2(1,0)) * bounce
 		self.Position.x = self.Position.x - 1
 		if found and found.Velocity then found.Velocity.x = found.Velocity.x + (self.Velocity.x * -0.5) end
@@ -109,21 +110,29 @@ function META:CheckCollision()
 	end
 end
 
-function META:OnUpdate()
-	local dt = system.GetFrameTime()
+function META:CalcVelocity(dt)
+	local gravity = Vec2(0, 600)
+
+	self.Velocity = self.Velocity + gravity * dt
+
+	for i = 1, 30 do self:CheckCollision() end
+
+	self.Position = self.Position + self.Velocity * dt
+end
+
+function META:OnUpdate(dt)
 	local mpos = self:GetMousePosition()
 
 	if self:IsDragging() then self.Velocity = Vec2(gfx.GetMouseVel())/10 end
 
-	self.frame = self.frame + self.Velocity.x / 5
-	self.Velocity = self.Velocity + Vec2(0, 100) * dt
+	self.frame = self.frame + self.Velocity.x / 10000
 
 	if self.faint and self.faint > system.GetElapsedTime() then
 
 	else
 		if self.on_ground then
 			if math.abs(mpos.x - self.Size.x/2) > self.Size:GetLength() then
-				self.Velocity.x = self.Velocity.x + mpos.x * dt * 0.25
+				self.Velocity.x = self.Velocity.x + mpos.x / 200
 			else
 				self.Velocity:Set(0,0)
 			end
@@ -132,17 +141,14 @@ function META:OnUpdate()
 		self.faint_time = nil
 	end
 
---	for i = 1, 3 do
-		self:CheckCollision()
-	--end
-
-
 	if self.on_ground and not self.faint then
-		self.Velocity = self.Velocity * 0.9
-		self.Velocity = self.Velocity * 0.99
+		self.Velocity = self.Velocity * 0.999
 	end
+
 	self:MarkCacheDirty()
-	self.Position = self.Position + self.Velocity
+
+	self:CalcVelocity(system.GetFrameTime())
+
 	if not self.Position:IsValid() then self.Position:Zero() end
 	if not self.Velocity:IsValid() then self.Velocity:Zero() end
 end
@@ -161,9 +167,9 @@ function META:OnDraw()
 	elseif not self.on_ground then
 		self:DrawTile(6,8, -self.Velocity:GetRad() - (math.pi / 3), false, true)
 	else
-		if length < 0.01 then
+		if length < 5 then
 			self:DrawTile(2,2)
-		elseif length > 0.1 then
+		elseif length > 100 then
 			self:DrawAnimation("run", self.frame/2, 0, self.Velocity.x > 0)
 		else
 			self:DrawAnimation("walk", self.frame, 0, self.Velocity.x > 0)
@@ -175,6 +181,7 @@ end
 gui.RegisterPanel(META)
 
 if RELOAD then
-	local sheep = gui.CreatePanel("sheep")
-
+	for i = 1, 10 do
+	local sheep = gui.CreatePanel("sheep", nil, "lol" .. i)
+	end
 end
