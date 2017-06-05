@@ -50,6 +50,7 @@ function META:Initialize()
 	--self.sheep_texture:SetMinFilter("nearest")
 	--self.sheep_texture:SetMagFilter("nearest")
 	self.frame = 0
+	self.drag = math.randomf(0.999, 0.9999)
 end
 
 function META:OnParentLand(parent)
@@ -115,7 +116,7 @@ function META:CalcVelocity(dt)
 
 	self.Velocity = self.Velocity + gravity * dt
 
-	for i = 1, 30 do self:CheckCollision() end
+	self:CheckCollision()
 
 	self.Position = self.Position + self.Velocity * dt
 end
@@ -142,7 +143,7 @@ function META:OnUpdate(dt)
 	end
 
 	if self.on_ground and not self.faint then
-		self.Velocity = self.Velocity * 0.999
+		self.Velocity = self.Velocity * self.drag
 	end
 
 	self:MarkCacheDirty()
@@ -181,7 +182,7 @@ end
 gui.RegisterPanel(META)
 
 if RELOAD then
-	for i = 1, 10 do
+	for i = 1, 1 do
 	local sheep = gui.CreatePanel("sheep", nil, "lol" .. i)
 	end
 end
