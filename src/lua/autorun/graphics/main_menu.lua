@@ -154,7 +154,7 @@ function menu.CreateTopBar()
 	bar:SetDraggable(true)
 	bar:SetSize(window.GetSize()*1)
 	bar:SetCachedRendering(true)
-	bar:SetupLayout("layout_children", "size_to_children_width", "size_to_children_height")
+	bar:SetupLayout("size_to_children")
 
 	bar.OnPreDraw = draw_shadow
 
