@@ -1653,7 +1653,7 @@ do -- layout
 			for _, child in ipairs(parent:GetChildren()) do
 				if
 					child ~= self and
-					(child.laid_out_x or child.laid_out_y) and
+					(child.laid_out_x == nil or child.laid_out_x == true or child.laid_out_y == true) and
 					child.Visible and
 					not child.ThreeDee and
 					not child.IgnoreLayout and
