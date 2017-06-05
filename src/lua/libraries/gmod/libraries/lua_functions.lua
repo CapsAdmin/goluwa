@@ -37,7 +37,7 @@ end
 function gine.env.require(name, ...)
 	--logn("gine: require(",name,")")
 
-	local func, err, path = require.load(name, gine.dir, true)
+	local func, err, path = require.load(name, gine.dir)
 
 	if type(func) == "function" then
 		if debug.getinfo(func).what ~= "C" then

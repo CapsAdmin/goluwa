@@ -152,7 +152,7 @@ function line.RunGame(folder, ...)
 				return sockets.luasocket
 			end
 
-			llog("requre: ", name)
+			llog("require: ", name)
 
 			name = name:gsub("[%.]+", ".")
 
@@ -160,7 +160,7 @@ function line.RunGame(folder, ...)
 				return love[name:match(".+%.(.+)")]
 			end
 
-			local func, err, path = require.load(name, folder, true)
+			local func, err, path = require.load(name, folder)
 			if type(func) == "function" then
 				if debug.getinfo(func).what ~= "C" then
 					setfenv(func, env)

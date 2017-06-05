@@ -319,16 +319,20 @@ function vprint(...)
 	end
 end
 
-function desire(str, ...)
-	local args = {pcall(require, str, ...)}
+function desire(name)
+	local ok, res = pcall(require, name)
 
-	if not args[1] then
-		wlog("unable to require %s:\n\t%s", str, args[2]:trim(), 2)
+	if not ok then
+		wlog("unable to require %s:\n\t%s", name, res, 2)
 
-		return unpack(args)
+		return nil, res
 	end
 
-	return select(2, unpack(args))
+	if not res and package.loaded[name] then
+		return package.loaded[name]
+	end
+
+	return res
 end
 
 do -- nospam
