@@ -7,6 +7,7 @@ Goluwa is a framework written in [LuaJIT](http://luajit.org/) that I use to furt
 # Features
 * [ffi build system](https://github.com/CapsAdmin/goluwa/tree/master/src/lua/build) to automatically build LuaJIT ffi bindings.
 * [gui](src/lua/libraries/graphics/gui) with focus on automatic layout and [GWEN](!https://github.com/garrynewman/GWEN) skin support
+* [font effects](src/lua/libraries/graphics/fonts) to create outlined, shadowed, etc text.
 * [markup language](src/lua/libraries/graphics/gui)
 * [löve wrapper](src/lua/libraries/love) that lets you run Löve games in Goluwa
 * [glua wrapper](src/lua/libraries/gmod) that lets you run GarrysMod Lua in Goluwa
