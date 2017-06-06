@@ -1,25 +1,35 @@
-#About
-Goluwa is a framework coded in LuaJIT that I use to further develop Goluwa with and satisfy my programming hobby. I don't really have any long term plans so I just code whatever I feel like coding. I'm interested in game engines and middleware for games so Goluwa ends up being something that vaguely resembles a game engine. I constantly refactor and change the api so I wouldn't recommend using Goluwa to make a game or anything like that but I'd be happy if you find code to use or learn from.
+# About
+
+Goluwa is a framework written in [LuaJIT](http://luajit.org/) that I use to further develop Goluwa with and satisfy my programming hobby. I don't have any long term plans so I just make whatever I feel like making in the moment. I'm mostly interested in game engines and middleware for games so Goluwa vaguely resembles a game engine.
 
 ![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/goluwa.png)
 
-#Features
-* [ffi build system](https://github.com/CapsAdmin/goluwa/tree/master/src/lua/build) to automatically build cdef and lua bindings.
-* [gui](src/lua/libraries/graphics/gui) with focus on automatic layout and gwen skin support
-* [markup language](src/lua/libraries/graphics/gui) used by gui and chat
-* [löve wrapper](src/lua/libraries/love) that lets you run löve games in goluwa
-* [glua wrapper](src/lua/libraries/gmod) that lets you run garrysmod lua in goluwa
-* [enitity editor](src/lua/autorun/graphics) similar to the [pac3 editor](http://steamcommunity.com/sharedfiles/filedetails/?id=104691717)
+# Features
+* [ffi build system](https://github.com/CapsAdmin/goluwa/tree/master/src/lua/build) to automatically build LuaJIT ffi bindings.
+* [gui](src/lua/libraries/graphics/gui) with focus on automatic layout and [GWEN](!https://github.com/garrynewman/GWEN) skin support
+* [markup language](src/lua/libraries/graphics/gui)
+* [löve wrapper](src/lua/libraries/love) that lets you run Löve games in Goluwa
+* [glua wrapper](src/lua/libraries/gmod) that lets you run GarrysMod Lua in Goluwa
+* [enitity editor](src/lua/autorun/graphics) similar to [PAC3's editor](http://steamcommunity.com/sharedfiles/filedetails/?id=104691717)
 * [filesystem](src/lua/libraries/filesystem) with the ability to mount and treat many archive formats as directories 
-* all assets can be loaded from the internet using urls.
-* fonts can be loaded directly from google webfont, dafont and other places for prototyping.
-* lots of model and image formats supported for prototyping. including [source engine formats](src/lua/libraries/steam)
-* most code can be reloaded without the need to restart.
-* tight integration with zerobrane
+* [source engine](src/lua/libraries/steam) formats are supported
+
+**Prototyping**
+* all resources can be loaded from the internet with urls
+* fonts can be loaded directly from google webfont, dafont and other places
+* many model, image and sound formats are supported
+* most code can be reloaded without the need to restart
+* integration with zerobrane
+
+# Issues
 
 I mainly use and develop this on Linux so windows support isn't high priority even though it should work there. It may also work on OSX but I can't test rendering as I'm limited to using mac in a vm.
 
-#Credits
+Writing everything in LuaJIT also comes with some challenges. I try to write JIT compilable code, especially in areas that are hot but this is not always easy if I also want to have support for reloading code. I believe I'm hitting limits in some cases but some of these may be solved in the future.
+
+Because of how JIT works there will inevitably be hiccups and unreliable performance. I don't think this is something that can be solved easily so therefore I don't think this project is very useful outside of tinkering.
+
+# Credits
 * [Garry Newman](https://github.com/garrynewman/) - I learned programming in garrysmod and many of the ideas and libraries in goluwa were developed in garrysmod initially.
 * [Crytek](http://www.crytek.com/) - Playing around with the Crysis Wars SDK was how I started to learn C++. I made [oohh
 ](https://github.com/capsadmin/oohh) which was a garrysmod-like mod attempt. The C++ Lua binder I made there included a standard game oriented lua library which eventualy evolved into goluwa.
