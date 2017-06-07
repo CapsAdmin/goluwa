@@ -185,7 +185,7 @@ function steam.MountSourceGame(game_info)
 	local str_game_info
 
 	if type(game_info) == "string" then
-		str_game_info = game_info
+		str_game_info = game_info:trim()
 
 		game_info = steam.FindSourceGame(str_game_info)
 	end
