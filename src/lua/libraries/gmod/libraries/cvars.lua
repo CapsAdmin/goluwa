@@ -4,7 +4,7 @@ function gine.env.CreateConVar(name, def, flags, help)
 	return gine.WrapObject(pvars.Setup(name, tostring(def), nil, help), "ConVar")
 end
 
-function gine.env.GetConVar(name)
+function gine.env.GetConVar_Internal(name)
 	local pvar = pvars.GetObject(name)
 
 	if not pvar then

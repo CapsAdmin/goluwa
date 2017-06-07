@@ -45,11 +45,11 @@ do -- enums
 end
 
 -- global functions
-for func_name in pairs(data.functions.globals) do
-	env[func_name] = env[func_name] or function(...) logf(("glua NYI: %s(%s)\n"):format(func_name, table.concat(tostring_args(...), ","))) end
+for func_name, type in pairs(data.globals) do
+	if type == "C" then
+		env[func_name] = env[func_name] or function(...) logf(("glua NYI: %s(%s)\n"):format(func_name, table.concat(tostring_args(...), ","))) end
+	end
 end
-
-data.functions.globals = nil
 
 -- metatables
 for meta_name, functions in pairs(data.meta) do
@@ -78,8 +78,10 @@ for meta_name, functions in pairs(data.meta) do
 		env._R[meta_name] = META
 	end
 
-	for func_name in pairs(functions) do
-		env._R[meta_name][func_name] = env._R[meta_name][func_name] or function(...) wlog("NYI: %s:%s(%s)", meta_name, func_name, table.concat(tostring_args(...), ","), 2) end
+	for func_name, type in pairs(functions) do
+		if type == "C" then
+			env._R[meta_name][func_name] = env._R[meta_name][func_name] or function(...) wlog("NYI: %s:%s(%s)", meta_name, func_name, table.concat(tostring_args(...), ","), 2) end
+		end
 	end
 
 	gine.objects[meta_name] = gine.objects[meta_name] or {}
@@ -89,8 +91,10 @@ end
 for lib_name, functions in pairs(data.functions) do
 	env[lib_name] = env[lib_name] or {}
 
-	for func_name in pairs(functions) do
-		env[lib_name][func_name] = env[lib_name][func_name] or function(...) wlog(("NYI: %s.%s(%s)"):format(lib_name, func_name, table.concat(tostring_args(...), ",")), 2) end
+	for func_name, type in pairs(functions) do
+		if type == "C" then
+			env[lib_name][func_name] = env[lib_name][func_name] or function(...) wlog(("NYI: %s.%s(%s)"):format(lib_name, func_name, table.concat(tostring_args(...), ",")), 2) end
+		end
 	end
 end
 

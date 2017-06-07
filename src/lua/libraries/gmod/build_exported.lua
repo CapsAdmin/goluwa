@@ -6,12 +6,13 @@
 
 local exported = {}
 exported.functions = {}
+exported.globals = {}
 exported.meta = {}
 exported.enums = {}
 
 -- enums
 for key, val in pairs(_G) do
-	if isnumber(val) then
+	if isnumber(val) or isbool(val) then
 		exported.enums[key] = val
 	elseif istable(val) then
 		local everything_number = true
@@ -31,44 +32,52 @@ end
 
 local whitelist = {
 	[_G.Material] = true,
-	[vgui.Create] = true,
 	[FindMetaTable("Player").ConCommand] = true,
-	[FindMetaTable("Panel").SetFGColor] = true,
-	[FindMetaTable("Panel").SetBGColor] = true,
 }
 
-local blacklist = {
-	[vgui.CreateX] = false
-	[FindMetaTable("Panel").SetFGColorEx] = true,
-	[FindMetaTable("Panel").SetBGColorEx] = true,
-}
+local blacklist = {}
 
-local function is_c_function(func)
-	if blacklist[func] then return false end
+if CLIENT then
+	whitelist[vgui.Create] = true
+	whitelist[FindMetaTable("Panel").SetFGColor] = true
+	whitelist[FindMetaTable("Panel").SetBGColor] = true
+
+	blacklist[vgui.CreateX] = true
+	blacklist[FindMetaTable("Panel").SetFGColorEx] = true
+	blacklist[FindMetaTable("Panel").SetBGColorEx] = true
+end
+
+local function get_func_type(func)
+	if blacklist[func] then return end
 
 	if whitelist[func] or debug.getinfo(func).source == "=[C]" then
-		return true
+		return "C"
 	end
+
+	return "L"
 end
 
 local blacklist = {
 	_M = true,
 	_NAME = true,
 	_PACKAGE = true,
+	SpawniconGenFunctions = true,
 }
 
 -- functions
-exported.functions.globals = {}
 for key, val in pairs(_G) do
 	if key == "_G" then continue end
 	if isfunction(val) then
-		exported.functions.globals[key] = is_c_function(val)
-	elseif istable(val) then
+		exported.globals[key] = get_func_type(val)
+	elseif istable(val) and not blacklist[key] then
 		for func_name, func in pairs(val) do
 			if not blacklist[func_name] then
-				if isfunction(func) and is_c_function(func) then
-					exported.functions[key] = exported.functions[key] or {}
-					exported.functions[key][func_name] = true
+				if isfunction(func) then
+					local func_type = get_func_type(func)
+					if func then
+						exported.functions[key] = exported.functions[key] or {}
+						exported.functions[key][func_name] = func_type
+					end
 				else
 					--print("unexpected value in library " .. key .. ": ", func_name, func)
 				end
@@ -91,8 +100,11 @@ for key, val in pairs(debug.getregistry()) do
 		exported.meta[val.MetaName] = {}
 		for func_name, func in pairs(val) do
 			if not blacklist[func_name] then
-				if isfunction(func) and is_c_function(func) then
-					exported.meta[val.MetaName][func_name] = true
+				if isfunction(func) then
+					local func_type = get_func_type(func)
+					if func then
+						exported.meta[val.MetaName][func_name] = func_type
+					end
 				else
 					--print("unexpected value in metatable " .. val.MetaName .. ": ", func_name, func)
 				end
@@ -103,11 +115,10 @@ end
 
 local output = "return {\n"
 
-
 output = output .. "\tenums = {\n"
 for k, v in pairs(exported.enums) do
-	if isnumber(v) then
-		output = output .. "\t\t" .. k .. " = " .. v .. ",\n"
+	if isnumber(v) or isbool(v) then
+		output = output .. "\t\t" .. k .. " = " .. tostring(v) .. ",\n"
 	else
 		output = output .. "\t\t" .. k .. " = {\n"
 		for k, v in pairs(v) do
@@ -122,8 +133,8 @@ output = output .. "\t},\n"
 output = output .. "\tmeta = {\n"
 for meta_name, functions in pairs(exported.meta) do
 	output = output .. "\t\t" .. meta_name .. " = {\n"
-	for name in pairs(functions) do
-		output = output .. "\t\t\t" .. name .. " = true,\n"
+	for name, type in pairs(functions) do
+		output = output .. "\t\t\t" .. name .. " = \"" .. type .. "\",\n"
 	end
 	output = output .. "\t\t},\n"
 end
@@ -133,10 +144,16 @@ output = output .. "\t},\n"
 output = output .. "\tfunctions = {\n"
 for lib_name, functions in pairs(exported.functions) do
 	output = output .. "\t\t" .. lib_name .. " = {\n"
-	for name in pairs(functions) do
-		output = output .. "\t\t\t" .. name .. " = true,\n"
+	for name, type in pairs(functions) do
+		output = output .. "\t\t\t" .. name .. " = \"" .. type .. "\",\n"
 	end
 	output = output .. "\t\t},\n"
+end
+output = output .. "\t},\n"
+
+output = output .. "\tglobals = {\n"
+for name, type in pairs(exported.globals) do
+	output = output .. "\t\t\t" .. name .. " = \"" .. type .. "\",\n"
 end
 output = output .. "\t},\n"
 

@@ -200,6 +200,62 @@ function gine.PreprocessLua(code, debug)
 	return code
 end
 
+commands.Add("gluacheck", function(path)
+	local globals = serializer.ReadFile("luadata", "luacheck_cache")
+
+	if not globals then
+		globals = {"NULL"}
+		local done = {}
+
+		local cl_env = runfile("lua/libraries/gmod/cl_exported.lua")
+		local sv_env = runfile("lua/libraries/gmod/sv_exported.lua")
+
+		for _, env in pairs({cl_env, sv_env}) do
+			for name in pairs(env.enums) do
+				if not done[name] then
+					table.insert(globals, name)
+					done[name] = true
+				end
+			end
+
+			for name in pairs(env.globals) do
+				if not done[name] then
+					table.insert(globals, name)
+					done[name] = true
+				end
+			end
+
+			for lib_name, functions in pairs(env.functions) do
+				globals[lib_name] = globals[lib_name] or {fields = {}}
+				for func_name in pairs(functions) do
+					globals[lib_name].fields[func_name] = {}
+				end
+			end
+		end
+
+		serializer.WriteFile("luadata", "luacheck_cache", globals)
+	end
+
+	local options = {
+		read_globals = globals,
+	}
+
+	if not options then
+		logf("cannot access data/gmod_luachceck_env.txt (%s), ignoring all warnings about indexing unknown globals\n", err)
+		options = {ignore = {"113", "143"}}
+	end
+
+	options.max_line_length = false
+
+	local str = assert(vfs.Read(path))
+	str = gine.PreprocessLua(str)
+	local luacheck = require("luacheck")
+
+	for k,v in pairs(luacheck.check_strings({str}, options)[1]) do
+		logf("%s:%s:%s %s\n", path, v.line, v.column, luacheck.get_message(v))
+	end
+end)
+
 event.AddListener("PreLoadString", "glua_preprocess", function(code, path)
 	if path:lower():find("steamapps/common/garrysmod/garrysmod/", nil, true) or path:find("%.gma") then
 		if not code:find("DEFINE_BASECLASS", nil, true) and loadstring(code) then return code end
