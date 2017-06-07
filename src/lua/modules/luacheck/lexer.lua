@@ -118,7 +118,7 @@ local function skip_newline(state, newline)
 end
 
 local function skip_till_newline(state, b)
-   while not is_newline(b) and b ~= nil do 
+   while not is_newline(b) and b ~= nil do
       b = next_byte(state)
    end
 
@@ -184,7 +184,7 @@ local function lex_long_string(state, opening_long_bracket, token)
       end
    end
 
-   -- Add last line. 
+   -- Add last line.
    lines[#lines+1] = ssub(state.src, line_start, state.offset-opening_long_bracket-2)
    next_byte(state)
    return token, tconcat(lines, "\n")
@@ -683,14 +683,6 @@ function lexer.new_state(src)
    end
 
    return state
-end
-
-function lexer.syntax_error(location, end_column, msg)
-   error({
-      line = location.line,
-      column = location.column,
-      end_column = end_column,
-      msg = msg})
 end
 
 -- Looks for next token starting from state.line, state.line_offset, state.offset.

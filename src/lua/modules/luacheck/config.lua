@@ -1,5 +1,5 @@
 local options = require "luacheck.options"
-local stds = require "luacheck.stds"
+local builtin_standards = require "luacheck.builtin_standards"
 local fs = require "luacheck.fs"
 local globbing = require "luacheck.globbing"
 local utils = require "luacheck.utils"
@@ -10,7 +10,7 @@ local config = {}
 -- autovivification for `files`, fallback to built-in stds for `stds`.
 
 local special_mts = {
-   stds = {__index = stds},
+   stds = {__index = builtin_standards},
    files = {__index = function(files, key)
       files[key] = {}
       return files[key]
@@ -145,37 +145,96 @@ end
 
 local function add_relative_loader(conf)
    local function loader(modname)
-      local modpath = fs.join(conf.rel_dir, modname:gsub("%.", utils.dir_sep))
+      local modpath = fs.join(conf.rel_dir, (modname:gsub("%.", utils.dir_sep)))
       return try_load(modpath..".lua") or try_load(modpath..utils.dir_sep.."init.lua"), modname
    end
 
-   table.insert(package.loaders or package.searchers, 1, loader)
+   table.insert(package.loaders or package.searchers, 1, loader) -- luacheck: compat
    return loader
 end
 
 local function remove_relative_loader(loader)
-   for i, func in ipairs(package.loaders or package.searchers) do
+   for i, func in ipairs(package.loaders or package.searchers) do -- luacheck: compat
       if func == loader then
-         table.remove(package.loaders or package.searchers, i)
+         table.remove(package.loaders or package.searchers, i) -- luacheck: compat
          return
       end
    end
 end
 
+local function get_global_config_dir()
+   if utils.is_windows then
+      local local_app_data_dir = os.getenv("LOCALAPPDATA")
+
+      if not local_app_data_dir then
+         local user_profile_dir = os.getenv("USERPROFILE")
+
+         if user_profile_dir then
+            local_app_data_dir = fs.join(user_profile_dir, "Local Settings", "Application Data")
+         end
+      end
+
+      if local_app_data_dir then
+         return fs.join(local_app_data_dir, "Luacheck")
+      end
+   else
+      local fh = assert(io.popen("uname -s"))
+      local system = fh:read("*l")
+      fh:close()
+
+      if system == "Darwin" then
+         local home_dir = os.getenv("HOME")
+
+         if home_dir then
+            return fs.join(home_dir, "Library", "Application Support", "Luacheck")
+         end
+      else
+         local config_home_dir = os.getenv("XDG_CONFIG_HOME")
+
+         if not config_home_dir then
+            local home_dir = os.getenv("HOME")
+
+            if home_dir then
+               config_home_dir = fs.join(home_dir, ".config")
+            end
+         end
+
+         if config_home_dir then
+            return fs.join(config_home_dir, "luacheck")
+         end
+      end
+   end
+end
+
 config.default_path = ".luacheckrc"
+
+function config.get_default_global_path()
+   local global_config_dir = get_global_config_dir()
+
+   if global_config_dir then
+      return fs.join(global_config_dir, config.default_path)
+   end
+end
+
 config.empty_config = {empty = true}
 
 -- Loads config from path, returns config object or nil and error message.
-function config.load_config(path)
+function config.load_config(path, global_path)
    local is_default_path = not path
    path = path or config.default_path
 
-   local current_dir = fs.current_dir()
+   local current_dir = fs.get_current_dir()
    local abs_conf_dir, rel_conf_dir = fs.find_file(current_dir, path)
 
    if not abs_conf_dir then
       if is_default_path then
-         return config.empty_config
+         if global_path and fs.is_file(global_path) then
+            abs_conf_dir = current_dir
+            rel_conf_dir = ""
+            path = global_path
+         else
+            return config.empty_config
+         end
       else
          return nil, "Couldn't find configuration file "..path
       end
@@ -207,9 +266,9 @@ function config.load_config(path)
 
    -- Update stds before validating config - std validation relies on that.
    if type(env.stds) == "table" then
-      -- Ideally config shouldn't mutate global stds, not if `luacheck.config` becomes public
-      -- interface.
-      utils.update(stds, env.stds)
+      -- Ideally config shouldn't mutate global builtin standards module,
+      -- not if `luacheck.config` becomes public interface.
+      utils.update(builtin_standards, env.stds)
    end
 
    local err = validate_config(env)

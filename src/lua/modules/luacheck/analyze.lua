@@ -1,4 +1,5 @@
 local core_utils = require "luacheck.core_utils"
+local utils = require "luacheck.utils"
 
 local function register_value(values_per_var, var, value)
    if not values_per_var[var] then
@@ -8,9 +9,9 @@ local function register_value(values_per_var, var, value)
    table.insert(values_per_var[var], value)
 end
 
-local function add_resolution(line, item, var, value)
+local function add_resolution(line, item, var, value, mutation)
    register_value(item.used_values, var, value)
-   value.used = true
+   value[mutation and "mutated" or "used"] = true
    value.using_lines[line] = true
 
    if value.secondaries then
@@ -30,20 +31,47 @@ end
 -- of items, i.e. when propogation followed some path from it to previous item
 local function value_propogation_callback(line, stack, index, item, visited, var, value)
    if not item then
+      -- Value reach end of line, so even if it's overwritten by a single assignment it's
+      -- not dominated by it.
+      value.overwriting_item = false
       register_value(line.last_live_values, var, value)
       return true
    end
 
-   if not visited[index] and item.accesses and item.accesses[var] then
-      add_resolution(line, item, var, value)
-   end
-
-   if stack[index] or (not visited[index] and (not in_scope(var, index) or item.set_variables and item.set_variables[var])) then
-      if not item.live_values then  
-         item.live_values = {}    
+   if not visited[index] then
+      if item.accesses and item.accesses[var] then
+         add_resolution(line, item, var, value)
       end
 
-      register_value(item.live_values, var, value)  
+      if item.mutations and item.mutations[var] then
+         add_resolution(line, item, var, value, true)
+      end
+   end
+
+   local is_overwritten = item.set_variables and item.set_variables[var]
+   local out_of_scope = not in_scope(var, index)
+   local stop_and_save = not visited[index] and (out_of_scope or is_overwritten)
+
+   if stack[index] or stop_and_save then
+      if is_overwritten then
+         if value.overwriting_item ~= false then
+            if value.overwriting_item and value.overwriting_item ~= item then
+               value.overwriting_item = false
+            else
+               value.overwriting_item = item
+            end
+         end
+      elseif out_of_scope then
+         -- Value reach end of scope, so even if it's overwritten by a single assignment it's
+         -- not dominated by it.
+         value.overwriting_item = false
+      end
+
+      if not item.live_values then
+         item.live_values = {}
+      end
+
+      register_value(item.live_values, var, value)
       return true
    end
 
@@ -58,7 +86,7 @@ end
 -- A pair `var = {values}` in this table means that accessed local variable `var` can contain one of values `values`.
 -- Values that can be accessed locally are marked as used.
 local function propogate_values(line)
-   -- {var = values} live at the end of line.   
+   -- {var = values} live at the end of line.
    line.last_live_values = {}
 
    -- It is not very clever to simply propogate every single assigned value.
@@ -86,21 +114,23 @@ end
 -- point be propogated to where value liveness ends and is stored as live.
 -- (Chances that I will understand this comment six months later: non-existent)
 local function closure_propogation_callback(line, _, item, subline)
-   local live_values    
+   local live_values
 
    if not item then
       live_values = line.last_live_values
-   else   
+   else
       live_values = item.live_values
    end
 
    if live_values then
-      for var, accessing_items in pairs(subline.accessed_upvalues) do
-         if var.line == line then
-            if live_values[var] then
-               for _, accessing_item in ipairs(accessing_items) do
-                  for _, value in ipairs(live_values[var]) do
-                     add_resolution(subline, accessing_item, var, value)
+      for _, var_map in ipairs({subline.accessed_upvalues, subline.mutated_upvalues}) do
+         for var, accessing_items in pairs(var_map) do
+            if var.line == line then
+               if live_values[var] then
+                  for _, accessing_item in ipairs(accessing_items) do
+                     for _, value in ipairs(live_values[var]) do
+                        add_resolution(subline, accessing_item, var, value, var_map == subline.mutated_upvalues)
+                     end
                   end
                end
             end
@@ -112,12 +142,16 @@ local function closure_propogation_callback(line, _, item, subline)
       return true
    end
 
-   if item.accesses then
-      for var, setting_items in pairs(subline.set_upvalues) do
-         if var.line == line then
-            if item.accesses[var] then
-               for _, setting_item in ipairs(setting_items) do
-                  add_resolution(line, item, var, setting_item.set_variables[var])
+   for _, action_key in ipairs({"accesses", "mutations"}) do
+      local item_var_map = item[action_key]
+
+      if item_var_map then
+         for var, setting_items in pairs(subline.set_upvalues) do
+            if var.line == line then
+               if item_var_map[var] then
+                  for _, setting_item in ipairs(setting_items) do
+                     add_resolution(line, item, var, setting_item.set_variables[var], action_key == "mutations")
+                  end
                end
             end
          end
@@ -139,13 +173,16 @@ local function propogate_closures(line)
    -- It is assumed that all closures are live at the end of the line.
    -- Therefore, all accesses and sets inside closures can resolve to each other.
    for _, subline in ipairs(line.lines) do
-      for var, accessing_items in pairs(subline.accessed_upvalues) do
-         if var.line == line then
-            for _, accessing_item in ipairs(accessing_items) do
-               for _, another_subline in ipairs(line.lines) do
-                  if another_subline.set_upvalues[var] then
-                     for _, setting_item in ipairs(another_subline.set_upvalues[var]) do
-                        add_resolution(subline, accessing_item, var, setting_item.set_variables[var])
+      for _, var_map in ipairs({subline.accessed_upvalues, subline.mutated_upvalues}) do
+         for var, accessing_items in pairs(var_map) do
+            if var.line == line then
+               for _, accessing_item in ipairs(accessing_items) do
+                  for _, another_subline in ipairs(line.lines) do
+                     if another_subline.set_upvalues[var] then
+                        for _, setting_item in ipairs(another_subline.set_upvalues[var]) do
+                           add_resolution(subline, accessing_item, var,
+                              setting_item.set_variables[var], var_map == subline.mutated_upvalues)
+                        end
                      end
                   end
                end
@@ -165,6 +202,34 @@ local function is_function_var(var)
       #var.values == 2 and var.values[1].empty and var.values[2].type == "func")
 end
 
+local externally_accessible_tags = utils.array_to_set({"Id", "Index", "Call", "Invoke", "Op", "Paren", "Dots"})
+
+local function externally_accessible(value)
+   return value.type ~= "var" or (value.node and externally_accessible_tags[value.node.tag])
+end
+
+local function find_overwriting_lhs_node(item, value)
+   for _, node in ipairs(item.lhs) do
+      if node.var == value.var then
+         return node
+      end
+   end
+end
+
+local function get_overwriting_node_in_dup_assignment(item, value)
+   local after_value_node
+
+   for _, node in ipairs(item.lhs) do
+      if node.var == value.var then
+         if after_value_node then
+            return node
+         elseif node.location == value.location then
+            after_value_node = true
+         end
+      end
+   end
+end
+
 -- Emits warnings for variable.
 local function check_var(chstate, var)
    if is_function_var(var) then
@@ -175,17 +240,53 @@ local function check_var(chstate, var)
       end
    elseif #var.values == 1 then
       if not var.values[1].used then
-         chstate:warn_unused_variable(var.values[1])
+         if var.values[1].mutated then
+            if not externally_accessible(var.values[1]) then
+               chstate:warn_unaccessed(var, true)
+            end
+         else
+            chstate:warn_unused_variable(var.values[1], nil, nil, var.values[1].empty)
+         end
       elseif var.values[1].empty then
          var.empty = true
          chstate:warn_unset(var)
       end
-   elseif not var.accessed then
+   elseif not var.accessed and not var.mutated then
       chstate:warn_unaccessed(var)
    else
+      local no_values_externally_accessible = true
+
       for _, value in ipairs(var.values) do
-         if (not value.used) and (not value.empty) then
-            chstate:warn_unused_value(value)
+         if externally_accessible(value) then
+            no_values_externally_accessible = false
+         end
+      end
+
+      if not var.accessed and no_values_externally_accessible then
+         chstate:warn_unaccessed(var, true)
+      end
+
+      for _, value in ipairs(var.values) do
+         if not value.empty then
+            if not value.used and not value.mutated then
+               local overwriting_node
+
+               if value.overwriting_item then
+                  overwriting_node = find_overwriting_lhs_node(value.overwriting_item, value)
+
+                  if overwriting_node == value.node then
+                     overwriting_node = nil
+                  end
+               else
+                  overwriting_node = get_overwriting_node_in_dup_assignment(value.item, value)
+               end
+
+               chstate:warn_unused_value(value, false, overwriting_node)
+            elseif not value.used and not externally_accessible(value) then
+               if var.accessed or not no_values_externally_accessible then
+                  chstate:warn_unused_value(value, true)
+               end
+            end
          end
       end
    end

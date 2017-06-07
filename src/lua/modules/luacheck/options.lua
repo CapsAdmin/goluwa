@@ -1,7 +1,8 @@
 local options = {}
 
+local builtin_standards = require "luacheck.builtin_standards"
+local standards = require "luacheck.standards"
 local utils = require "luacheck.utils"
-local stds = require "luacheck.stds"
 
 local boolean = utils.has_type("boolean")
 local array_of_strings = utils.array_of("string")
@@ -17,7 +18,7 @@ function options.split_std(std)
    for i, part in ipairs(parts) do
       parts[i] = utils.strip(part)
 
-      if not stds[parts[i]] then
+      if not builtin_standards[parts[i]] then
          return
       end
    end
@@ -26,7 +27,15 @@ function options.split_std(std)
 end
 
 local function std_or_array_of_strings(x)
-   return array_of_strings(x) or (type(x) == "string" and options.split_std(x))
+   return (type(x) == "string" and options.split_std(x)) or standards.validate_std_table(x)
+end
+
+local function field_map(x)
+   return standards.validate_std_table({globals = x})
+end
+
+local function number_or_false(x)
+   return x == false or type(x) == "number"
 end
 
 function options.add_order(option_set)
@@ -56,10 +65,11 @@ options.nullary_inline_options = {
 }
 
 options.variadic_inline_options = {
-   globals = array_of_strings,
-   read_globals = array_of_strings,
-   new_globals = array_of_strings,
-   new_read_globals = array_of_strings,
+   globals = field_map,
+   read_globals = field_map,
+   new_globals = field_map,
+   new_read_globals = field_map,
+   not_globals = array_of_strings,
    ignore = array_of_strings,
    enable = array_of_strings,
    only = array_of_strings
@@ -67,6 +77,10 @@ options.variadic_inline_options = {
 
 options.all_options = {
    std = std_or_array_of_strings,
+   max_line_length = number_or_false,
+   max_code_line_length = number_or_false,
+   max_string_line_length = number_or_false,
+   max_comment_line_length = number_or_false,
    inline = boolean
 }
 
@@ -101,19 +115,15 @@ end
 -- Option stack is an array of options with options closer to end
 -- overriding options closer to beginning.
 
--- Returns sets of std globals and read-only std globals from option stack.
--- Std globals can be set using compat option (sets std to stds.max) or std option.
--- If std is a table, array part contains read-only globals, hash part - regular globals as keys.
--- If it is a string, it must contain names of standard sets separated by +.
--- If prefixed with +, standard sets will be added on top of existing ones.
-local function get_std_sets(opts_stack)
+-- Extracts sequence of active std tables from an option stack.
+local function get_std_tables(opts_stack)
    local base_std
    local add_stds = {}
    local no_compat = false
 
    for _, opts in utils.ripairs(opts_stack) do
       if opts.compat and not no_compat then
-         base_std = "max"
+         base_std = builtin_standards.max
          break
       elseif opts.compat == false then
          no_compat = true
@@ -127,7 +137,7 @@ local function get_std_sets(opts_stack)
             local parts = options.split_std(opts.std)
 
             for _, part in ipairs(parts) do
-               table.insert(add_stds, part)
+               table.insert(add_stds, builtin_standards[part])
             end
 
             if not parts.add then
@@ -138,51 +148,146 @@ local function get_std_sets(opts_stack)
       end
    end
 
-   table.insert(add_stds, base_std or "_G")
+   table.insert(add_stds, 1, base_std or builtin_standards._G)
+   return add_stds
+end
 
-   local std_globals = {}
-   local std_read_globals = {}
+-- Returns index of the last option table in a stack that uses given option,
+-- or zero if the option isn't used anywhere.
+local function index_of_last_option_usage(opts_stack, option_name)
+   for index, opts in utils.ripairs(opts_stack) do
+      if opts[option_name] then
+         return index
+      end
+   end
 
-   for _, add_std in ipairs(add_stds) do
-      add_std = stds[add_std] or add_std
+   return 0
+end
 
-      for _, read_global in ipairs(add_std) do
-         std_read_globals[read_global] = true
+local function split_field(field_name)
+   return utils.split(field_name, "%.")
+end
+
+local function field_comparator(field1, field2)
+   local parts1 = field1[1]
+   local parts2 = field2[1]
+
+   for i = 1, math.max(#parts1, #parts2) do
+      local part1 = parts1[i]
+      local part2 = parts2[i]
+
+      if not part1 then
+         return true
+      elseif not part2 then
+         return false
       end
 
-      for global in pairs(add_std) do
-         if type(global) == "string" then
-            std_globals[global] = true
+      if part1 ~= part2 then
+         return part1 < part2
+      end
+   end
+
+   return false
+end
+
+-- Combine all stds and global related options into one final definition table.
+-- A definition table may have fields `read_only` (boolean), `other_fields` (boolean),
+-- and `fields` (maps field names to definition tables).
+-- Std table format is similar, except at the top level there are two fields
+-- `globals` and `read_globals` mapping to top-level field tables. Also in field tables
+-- it's possible to use field names in array part as a shortcut:
+-- `{fields = {"foo"}}` is equivalent to `{fields = {foo = {}}}` or `{fields = {foo = {other_fields = true}}}`
+-- in top level fields tables.
+local function get_final_std(opts_stack)
+   local final_std = {}
+   local std_tables = get_std_tables(opts_stack)
+
+   for _, std_table in ipairs(std_tables) do
+      standards.add_std_table(final_std, std_table)
+   end
+
+   local last_new_globals = index_of_last_option_usage(opts_stack, "new_globals")
+   local last_new_read_globals = index_of_last_option_usage(opts_stack, "new_read_globals")
+
+   for index, opts in ipairs(opts_stack) do
+      local globals = (index >= last_new_globals) and (opts.new_globals or opts.globals)
+      local read_globals = (index >= last_new_read_globals) and (opts.new_read_globals or opts.read_globals)
+
+      local new_fields = {}
+
+      if globals then
+         for _, global in ipairs(globals) do
+            table.insert(new_fields, {split_field(global), false})
+         end
+      end
+
+      if read_globals then
+         for _, read_global in ipairs(read_globals) do
+            table.insert(new_fields, {split_field(read_global), true})
+         end
+      end
+
+      if globals and read_globals then
+         -- If there are both globals and read-only globals defined in one options table,
+         -- it's important that more general definitions are applied first,
+         -- otherwise they will completely overwrite more specific definitions.
+         -- E.g. `globals x` should be applied before `read globals x.y`.
+         table.sort(new_fields, field_comparator)
+      end
+
+      for _, field in ipairs(new_fields) do
+         standards.overwrite_field(final_std, field[1], field[2])
+      end
+
+      standards.add_std_table(final_std, {globals = globals, read_globals = read_globals}, true, true)
+
+      if opts.not_globals then
+         for _, not_global in ipairs(opts.not_globals) do
+            standards.remove_field(final_std, split_field(not_global))
          end
       end
    end
 
-   return std_globals, std_read_globals
+   standards.finalize(final_std)
+   return final_std
 end
 
-local function get_globals(opts_stack, key)
-   local globals_lists = {}
-
-   for _, opts in utils.ripairs(opts_stack) do
-      if opts["new_" .. key] then
-         table.insert(globals_lists, opts["new_" .. key])
-         break
-      end
-
-      if opts[key] then
-         table.insert(globals_lists, opts[key])
-      end
-   end
-
-   return utils.concat_arrays(globals_lists)
-end
-
-local function get_boolean_opt(opts_stack, option)
+local function get_scalar_opt(opts_stack, option, default)
    for _, opts in utils.ripairs(opts_stack) do
       if opts[option] ~= nil then
          return opts[option]
       end
    end
+
+   return default
+end
+
+local line_length_suboptions = {"max_code_line_length", "max_string_line_length", "max_comment_line_length"}
+
+local function get_max_line_opts(opts_stack)
+   local res = {max_line_length = 120}
+
+   for _, opt_name in ipairs(line_length_suboptions) do
+      res[opt_name] = res.max_line_length
+   end
+
+   for _, opts in ipairs(opts_stack) do
+      if opts.max_line_length ~= nil then
+         res.max_line_length = opts.max_line_length
+
+         for _, opt_name in ipairs(line_length_suboptions) do
+            res[opt_name] = opts.max_line_length
+         end
+      end
+
+      for _, opt_name in ipairs(line_length_suboptions) do
+         if opts[opt_name] ~= nil then
+            res[opt_name] = opts[opt_name]
+         end
+      end
+   end
+
+   return res
 end
 
 local function anchor_pattern(pattern, only_start)
@@ -221,7 +326,7 @@ local function normalize_pattern(pattern)
 end
 
 -- From most specific to less specific, pairs {option, pattern}.
--- Applying macros in order is required to get deterministic resuls
+-- Applying macros in order is required to get deterministic results
 -- and get sensible results when intersecting macros are used.
 -- E.g. unused = false, unused_args = true should leave unused args enabled.
 local macros = {
@@ -281,37 +386,31 @@ local function normalize_patterns(rules)
    return res
 end
 
+local scalar_options = {
+   unused_secondaries = true,
+   self = true,
+   inline = true,
+   module = false,
+   allow_defined = false,
+   allow_defined_top = false
+}
+
 -- Returns normalized options.
 -- Normalized options have fields:
---    globals: set of strings;
---    read_globals: subset of globals;
---    unused_secondaries, module, allow_defined, allow_defined_top: booleans;
+--    std: normalized std table, see `luacheck.standards` module;
+--    unused_secondaries, self, inline, module, allow_defined, allow_defined_top: booleans;
+--    max_line_length: number or false;
 --    rules: see get_rules.
 function options.normalize(opts_stack)
    local res = {}
+   res.std = get_final_std(opts_stack)
 
-   res.globals = utils.array_to_set(get_globals(opts_stack, "globals"))
-   res.read_globals = utils.array_to_set(get_globals(opts_stack, "read_globals"))
-   local std_globals, std_read_globals = get_std_sets(opts_stack)
-   utils.update(res.globals, std_globals)
-   utils.update(res.read_globals, std_read_globals)
-
-   for k in pairs(res.globals) do
-      res.read_globals[k] = nil
+   for option, default in pairs(scalar_options) do
+      res[option] = get_scalar_opt(opts_stack, option, default)
    end
 
-   utils.update(res.globals, res.read_globals)
-
-   for i, option in ipairs {"unused_secondaries", "self", "inline", "module", "allow_defined", "allow_defined_top"} do
-      local value = get_boolean_opt(opts_stack, option)
-
-      if value == nil then
-         res[option] = i < 4
-      else
-         res[option] = value
-      end
-   end
-
+   local max_line_opts = get_max_line_opts(opts_stack)
+   utils.update(res, max_line_opts)
    res.rules = normalize_patterns(get_rules(opts_stack))
    return res
 end

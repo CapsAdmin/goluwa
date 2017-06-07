@@ -1,3 +1,5 @@
+local unpack = table.unpack or unpack -- luacheck: compat
+
 local utils = {}
 
 utils.dir_sep = package.config:sub(1,1)
@@ -62,7 +64,7 @@ else
 end
 -- luacheck: pop
 
--- Loads config containing assignments to global variables from path. 
+-- Loads config containing assignments to global variables from path.
 -- Returns config table and return value of config or nil and error type
 -- ("I/O" or "syntax" or "runtime") and error message.
 function utils.load_config(path, env)
@@ -118,6 +120,12 @@ function utils.update(t1, t2)
    return t1
 end
 
+function utils.remove(t1, t2)
+   for k in pairs(t2) do
+      t1[k] = nil
+   end
+end
+
 local class_metatable = {}
 
 function class_metatable.__call(class, ...)
@@ -134,6 +142,10 @@ function utils.class()
    local class = setmetatable({}, class_metatable)
    class.__index = class
    return class
+end
+
+function utils.is_instance(object, class)
+   return rawequal(debug.getmetatable(object), class)
 end
 
 utils.Stack = utils.class()
@@ -156,30 +168,36 @@ function utils.Stack:pop()
    return value
 end
 
-local function error_handler(err)
-   return {
-      err = err,
-      traceback = debug.traceback()
-   }
+local ErrorWrapper = utils.class()
+
+function ErrorWrapper:__init(err, traceback)
+   self.err = err
+   self.traceback = traceback
 end
 
--- Calls f with arg, returns what it does.
--- If f throws a table, returns nil, the table.
--- If f throws not a table, rethrows.
-function utils.pcall(f, arg)
-   local function task()
-      return f(arg)
-   end
+function ErrorWrapper:__tostring()
+   return tostring(self.err) .. "\n" .. self.traceback
+end
 
-   local ok, res = xpcall(task, error_handler)
-
-   if ok then
-      return res
-   elseif type(res.err) == "table" then
-      return nil, res.err
+local function error_handler(err)
+   if utils.is_instance(err, ErrorWrapper) then
+      return err
    else
-      error(tostring(res.err) .. "\n" .. res.traceback, 0)
+      return ErrorWrapper(err, debug.traceback())
    end
+end
+
+-- Like pcall, but wraps errors in {err = err, traceback = traceback}
+-- tables unless already wrapped.
+function utils.try(f, ...)
+   local args = {...}
+   local num_args = select("#", ...)
+
+   local function task()
+      return f(unpack(args, 1, num_args))
+   end
+
+   return xpcall(task, error_handler)
 end
 
 local function ripairs_iterator(array, i)
@@ -236,9 +254,53 @@ function utils.split(str, sep)
    return parts
 end
 
+-- Splits a string into an array of lines.
+-- "\n", "\r", "\r\n", and "\n\r" are considered
+-- line endings to be consistent with Lua lexer.
+function utils.split_lines(str)
+   local lines = {}
+   local pos = 1
+
+   while true do
+      local line_end_pos, _, line_end = str:find("([\n\r])", pos)
+
+      if not line_end_pos then
+         break
+      end
+
+      local line = str:sub(pos, line_end_pos - 1)
+      table.insert(lines, line)
+
+      pos = line_end_pos + 1
+      local next_char = str:sub(pos, pos)
+
+      if next_char:match("[\n\r]") and next_char ~= line_end then
+         pos = pos + 1
+      end
+   end
+
+   if pos <= #str then
+      local last_line = str:sub(pos)
+      table.insert(lines, last_line)
+   end
+
+   return lines
+end
+
+utils.InvalidPatternError = utils.class()
+
+function utils.InvalidPatternError:__init(err, pattern)
+   self.err = err
+   self.pattern = pattern
+end
+
+function utils.InvalidPatternError:__tostring()
+   return self.err
+end
+
 -- Behaves like string.match, except it normally returns boolean and
--- throws a table {pattern = pattern} on invalid pattern.
--- The error message turns into original error when tostring is used on it,
+-- throws an instance of utils.InvalidPatternError on invalid pattern.
+-- The error object turns into original error when tostring is used on it,
 -- to ensure behaviour is predictable when luacheck is used as a module.
 function utils.pmatch(str, pattern)
    assert(type(str) == "string")
@@ -247,7 +309,7 @@ function utils.pmatch(str, pattern)
    local ok, res = pcall(string.match, str, pattern)
 
    if not ok then
-      error(setmetatable({pattern = pattern}, {__tostring = function() return res end}))
+      error(utils.InvalidPatternError(res, pattern), 0)
    else
       return not not res
    end

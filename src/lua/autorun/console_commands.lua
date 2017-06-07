@@ -101,6 +101,7 @@ do
 
 	commands.Add("luacheck", function(what)
 		table.clear(sigh)
+		table.insert(sigh, "--no-color")
 		for path in pairs(vfs.GetLoadedLuaFiles()) do
 			if path:find(what) then
 				table.insert(sigh, path)

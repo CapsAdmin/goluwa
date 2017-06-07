@@ -1,5 +1,6 @@
 local luacheck = require "luacheck"
 local argparse = require "luacheck.argparse"
+local builtin_standards = require "luacheck.builtin_standards"
 local config = require "luacheck.config"
 local options = require "luacheck.options"
 local expand_rockspec = require "luacheck.expand_rockspec"
@@ -11,18 +12,17 @@ local fs = require "luacheck.fs"
 local globbing = require "luacheck.globbing"
 local utils = require "luacheck.utils"
 
+local exit_codes = {
+   ok = 0,
+   warnings = 1,
+   errors = 2,
+   fatals = 3,
+   critical = 4
+}
+
 local function critical(msg)
    io.stderr:write("Critical error: "..msg.."\n")
-   os.exit(3)
-end
-
-local function global_error_handler(err)
-   if type(err) == "table" and err.pattern then
-      critical("Invalid pattern '" .. err.pattern .. "'")
-   else
-      critical(debug.traceback(
-         ("Luacheck %s bug (please report at github.com/mpeterv/luacheck/issues):\n%s"):format(luacheck._VERSION, err), 2))
-   end
+   os.exit(exit_codes.critical)
 end
 
 local function main()
@@ -53,12 +53,22 @@ Equivalent to --ignore 4.]]):target("redefined"):action("store_false")
 loop variables. Equivalent to --ignore 21[23].]]):target("unused_args"):action("store_false")
       parser:flag("-s --no-unused-secondaries", [[Filter out warnings related to unused variables set
 together with used ones.]]):target("unused_secondaries"):action("store_false")
-      parser:flag("--no-self", "Filter out warnings related to implicit self argument."):target("self"):action("store_false")
+      parser:flag("--no-self", "Filter out warnings related to implicit self argument.")
+         :target("self"):action("store_false")
 
-      parser:option("--std", [[Set standard globals. <std> can be one of:
-   _G (default) - globals of the current Lua
-      interpreter;
-   lua51 - globals of Lua 5.1;
+      local default_std_name = "max"
+
+      for _, name in ipairs({"lua51c", "lua52c", "lua53c", "luajit"}) do
+         if builtin_standards._G == builtin_standards[name] then
+            default_std_name = name
+            break
+         end
+      end
+
+      parser:option("--std", ([[Set standard globals, default is _G.
+<std> can be one of:
+   lua51 - globals of Lua 5.1 without deprecated ones;
+   lua51c - globals of Lua 5.1;
    lua52 - globals of Lua 5.2;
    lua52c - globals of Lua 5.2 with LUA_COMPAT_ALL;
    lua53 - globals of Lua 5.3;
@@ -66,39 +76,51 @@ together with used ones.]]):target("unused_secondaries"):action("store_false")
    luajit - globals of LuaJIT 2.0;
    ngx_lua - globals of Openresty lua-nginx-module
       with LuaJIT 2.0;
-   rockspec - globals allowed in rockspecs;
    min - intersection of globals of Lua 5.1, Lua 5.2,
       Lua 5.3 and LuaJIT 2.0;
    max - union of globals of Lua 5.1, Lua 5.2, Lua 5.3
       and LuaJIT 2.0;
+   _G - same as lua51c, lua52c, lua53c, or luajit
+      depending on version of Lua used to run luacheck
+      or same as max if couldn't detect the version.
+      Currently %s;
+   love - globals added by LOVE (love2d);
    busted - globals added by Busted 2.0;
+   rockspec - globals allowed in rockspecs;
    none - no standard globals.
 
-   Sets can be combined using "+".]])
-      parser:option("--globals", "Add custom globals on top of standard ones.")
+   Sets can be combined using "+".]]):format(default_std_name))
+      parser:option("--globals", [[Add custom global variables (e.g. foo) or
+fields (e.g. foo.bar) on top of standard ones.]])
          :args "*"
          :count "*"
-         :argname "<global>"
+         :argname "<name>"
          :action "concat"
          :init(nil)
-      parser:option("--read-globals", "Add read-only globals.")
+      parser:option("--read-globals", "Add read-only global variables or fields.")
          :args "*"
          :count "*"
-         :argname "<global>"
+         :argname "<name>"
          :action "concat"
          :init(nil)
-      parser:option("--new-globals", [[Set custom globals. Removes custom globals added
-previously.]])
+      parser:option("--new-globals", [[Set custom global variables or fields. Removes
+custom globals added previously.]])
          :args "*"
          :count "*"
-         :argname "<global>"
+         :argname "<name>"
          :action "concat"
          :init(nil)
-      parser:option("--new-read-globals", [[Set read-only globals. Removes read-only globals added
-previously.]])
+      parser:option("--new-read-globals", [[Set read-only global variables or fields. Removes
+read-only globals added previously.]])
          :args "*"
          :count "*"
-         :argname "<global>"
+         :argname "<name>"
+         :action "concat"
+         :init(nil)
+      parser:option("--not-globals", "Remove custom and standard global variables or fields.")
+         :args "*"
+         :count "*"
+         :argname "<name>"
          :action "concat"
          :init(nil)
       parser:flag("-c --compat", "Equivalent to --std max.")
@@ -107,6 +129,37 @@ previously.]])
 the top level scope.]])
       parser:flag("-m --module", [[Limit visibility of implicitly defined globals to
 their files.]])
+
+      parser:option("--max-line-length", "Set maximum allowed line length (default: 120).")
+         :argname "<length>"
+         :convert(tonumber)
+      parser:flag("--no-max-line-length", "Do not limit line length.")
+         :action "store_false"
+         :target "max_line_length"
+
+      parser:option("--max-code-line-length", [[Set maximum allowed length for lines
+ending with code (default: 120).]])
+         :argname "<length>"
+         :convert(tonumber)
+      parser:flag("--no-max-code-line-length", "Do not limit code line length.")
+         :action "store_false"
+         :target "max_code_line_length"
+
+      parser:option("--max-string-line-length", [[Set maximum allowed length for lines
+within a string (default: 120).]])
+         :argname "<length>"
+         :convert(tonumber)
+      parser:flag("--no-max-string-line-length", "Do not limit string line length.")
+         :action "store_false"
+         :target "max_string_line_length"
+
+      parser:option("--max-comment-line-length", [[Set maximum allowed length for
+comment lines (default: 120).]])
+         :argname "<length>"
+         :convert(tonumber)
+      parser:flag("--no-max-comment-line-length", "Do not limit comment line length.")
+         :action "store_false"
+         :target "max_comment_line_length"
 
       parser:option("--ignore -i", [[Filter out warnings matching these patterns.
 If a pattern contains slash, part before slash matches
@@ -137,6 +190,19 @@ Otherwise, the pattern matches warning code.]])
       parser:mutex(
          parser:option("--config", "Path to configuration file. (default: "..config.default_path..")"),
          parser:flag("--no-config", "Do not look up configuration file.")
+      )
+
+      local default_global_path = config.get_default_global_path()
+
+      parser:mutex(
+         parser:option("--default-config", ([[
+Path to configuration file to use if
+--[no-]config is not used and
+project-specific %s is not found.
+(default: %s)]]):format(config.default_path, default_global_path or "could not detect"))
+            :default(default_global_path)
+            :show_default(false),
+         parser:flag("--no-default-config", "Do not use default configuration file.")
       )
 
       parser:option("--filename", [[Use another filename in output and for selecting
@@ -188,7 +254,7 @@ patterns.]])
       parser:flag("--no-color", "Do not color output.")
 
       parser:flag("-v --version", "Show version info and exit.")
-         :action(function() print(version.string) os.exit(0) end)
+         :action(function() print(version.string) os.exit(exit_codes.ok) end)
 
       return parser
    end
@@ -204,7 +270,8 @@ patterns.]])
    end
 
    local function is_included(args, name)
-      return not match_any(args.exclude_files, name) and (#args.include_files == 0 or match_any(args.include_files, name))
+      return not match_any(args.exclude_files, name) and (
+         #args.include_files == 0 or match_any(args.include_files, name))
    end
 
    -- Expands folders, rockspecs, -
@@ -237,14 +304,18 @@ patterns.]])
          if file == "-" then
             add(io.stdin)
          elseif fs.is_dir(file) then
-            local extracted, err = fs.extract_files(file, dir_pattern)
+            if fs.has_lfs then
+               local extracted, err = fs.extract_files(file, dir_pattern)
 
-            if extracted then
-               for _, nested_file in ipairs(extracted) do
-                  add(nested_file)
+               if extracted then
+                  for _, nested_file in ipairs(extracted) do
+                     add(nested_file)
+                  end
+               elseif add(file) then
+                  bad_files[#res] = {fatal = "I/O", msg = err}
                end
             elseif add(file) then
-               bad_files[#res] = {fatal = "I/O", msg = err}
+               bad_files[#res] = {fatal = "I/O", msg = "LuaFileSystem required to check directories"}
             end
          elseif file:sub(-#".rockspec") == ".rockspec" then
             local related_files, err, msg = expand_rockspec(file)
@@ -330,7 +401,7 @@ patterns.]])
       for i, file in ipairs(files) do
          if not bad_files[i] and file ~= io.stdin then
             table.insert(cache_files, file)
-            local mtime = fs.mtime(file)
+            local mtime = fs.get_mtime(file)
             table.insert(cache_mtimes, mtime)
             sparse_mtimes[i] = mtime
          end
@@ -340,7 +411,8 @@ patterns.]])
          ("Couldn't load cache from %s: data corrupted"):format(cache_filename))
    end
 
-   -- Returns sparse array of sources of files that need to be checked, updates bad_files with files that had I/O issues.
+   -- Returns sparse array of sources of files that need to be checked,
+   -- updates bad_files with files that had I/O issues.
    local function get_srcs_to_check(cached_reports, files, bad_files)
       local res = {}
 
@@ -491,14 +563,19 @@ patterns.]])
    end
 
    local parser = get_parser()
-   local args = parser:parse()
+   local ok, args = parser:pparse()
+   if not ok then
+      io.stderr:write(("%s\n\nError: %s\n"):format(parser:get_usage(), args))
+      os.exit(exit_codes.critical)
+   end
+
    local conf
 
    if args.no_config then
       conf = config.empty_config
    else
       local err
-      conf, err = config.load_config(args.config)
+      conf, err = config.load_config(args.config, not args.no_default_config and args.default_config)
 
       if not conf then
          critical(err)
@@ -523,17 +600,30 @@ patterns.]])
 
    io.stdout:write(output)
 
-   local exit_code
-
    if report.fatals > 0 then
-      exit_code = 2
-   elseif report.warnings > 0 or report.errors > 0 then
-      exit_code = 1
+      os.exit(exit_codes.fatals)
+   elseif report.errors > 0 then
+      os.exit(exit_codes.errors)
+   elseif report.warnings > 0 then
+      os.exit(exit_codes.warnings)
    else
-      exit_code = 0
+      os.exit(exit_codes.ok)
    end
-
-   os.exit(exit_code)
 end
 
-xpcall(main, global_error_handler)
+local _, error_wrapper = utils.try(main)
+
+if not error_wrapper then return end -- os.exit was called
+
+local err = error_wrapper.err
+local traceback = error_wrapper.traceback
+
+if utils.is_instance(err, utils.InvalidPatternError) then
+   critical(("Invalid pattern '%s'"):format(err.pattern))
+elseif type(err) == "string" and err:match("interrupted!$") then
+   critical("Interrupted")
+else
+   local msg = ("Luacheck %s bug (please report at github.com/mpeterv/luacheck/issues):\n%s\n%s"):format(
+      luacheck._VERSION, err, traceback)
+   critical(msg)
+end
