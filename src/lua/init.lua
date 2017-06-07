@@ -124,6 +124,7 @@ do -- constants
 
 	if CLI then
 		GRAPHICS = false
+		WINDOW = false
 		CLIENT = false
 		SERVER = false
 		CURSES = false
