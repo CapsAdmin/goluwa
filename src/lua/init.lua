@@ -120,6 +120,7 @@ do -- constants
 		--NVIDIA_WORKAROUND = true
 		--GL_ARB_direct_state_access = false
 		--GL_ARB_bindless_texture = false
+	end
 
 	if CLI then
 		GRAPHICS = false
