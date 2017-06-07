@@ -247,13 +247,17 @@ commands.Add("gluacheck", function(path)
 
 	options.max_line_length = false
 
-	local str = assert(vfs.Read(path))
+	local str = (path == "stdin" or path == "-") and io.stdin:read("*all") or assert(vfs.Read(path))
 	str = gine.PreprocessLua(str)
 	local luacheck = require("luacheck")
 
-	for k,v in pairs(luacheck.check_strings({str}, options)[1]) do
+	local data = luacheck.check_strings({str}, options)
+
+	for k,v in pairs(data[1]) do
 		logf("%s:%s:%s %s\n", path, v.line, v.column, luacheck.get_message(v))
 	end
+
+	os.exitcode = (data.errors > 0 or data.fatals > 0) and 1 or 0
 end)
 
 event.AddListener("PreLoadString", "glua_preprocess", function(code, path)

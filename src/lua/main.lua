@@ -189,7 +189,5 @@ vfs.PopFromFileRunStack()
 
 main()
 
-if LOOP then
-	event.Call("ShutDown")
-	os.realexit(system.run)
-end
+event.Call("ShutDown")
+os.realexit(os.exitcode)
