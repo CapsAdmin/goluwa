@@ -26,7 +26,7 @@ case $(uname) in
 	;;
 esac
 
-if [ "$1" == "ide" ]; then
+if [ "$1" == "ide" ] || [ "$1" == "" ]; then
 	if [ -d ./ide ]; then
 		git -C ./ide pull;
 	else
@@ -37,7 +37,14 @@ if [ "$1" == "ide" ]; then
 	./zbstudio.sh -cfg ../../src/lua/zerobrane/config.lua
 fi
 
-if [ "$1" == "launch"  ] || [ "$1" == "" ]; then
+if [ "$1" == "launch"  ] || [ "$1" == "cli"  ]; then
+
+	if [ "$1" == "cli"  ]; then
+		export CLI=1
+	fi
+
+	export ARGS=${ARGS:=$*}
+
 LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libpulse.so.0
 	#if we don't have binaries get them from github
 	if [ ! -f "bin/${OS}_${ARCH}/luajit" ]; then
@@ -71,8 +78,8 @@ LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libpulse.so.0
 	fi
 
 	if [ ! -z "$APITRACE" ]; then
-		eval "apitrace trace --api gl $launch $2 ../../../src/lua/init.lua$append"
+		eval "apitrace trace --api gl $launch ../../../src/lua/init.lua$append"
 	else
-		eval "$launch $2 ../../../src/lua/init.lua$append"
+		eval "$launch ../../../src/lua/init.lua$append"
 	fi
 fi

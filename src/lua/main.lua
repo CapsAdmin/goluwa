@@ -59,9 +59,9 @@ commands.RunString(vfs.Read("cfg/autoexec.cfg"))
 
 system._CheckCreatedEnv()
 
-system.ExecuteArgs()
-
-llog("initializing libraries took %s seconds\n", os.clock() - profile_start_time)
+if VERBOSE_STARTUP then
+	llog("initializing libraries took %s seconds\n", os.clock() - profile_start_time)
+end
 
 do -- autorun
 	local profile_start_time = os.clock()
@@ -95,7 +95,9 @@ do -- autorun
 		vfs.AutorunAddons("graphics/")
 	end
 
-	llog("autorunning scripts took %s seconds\n", os.clock() - profile_start_time)
+	if VERBOSE_STARTUP then
+		llog("autorunning scripts took %s seconds\n", os.clock() - profile_start_time)
+	end
 end
 
 local rate_cvar = pvars.Setup(
@@ -124,6 +126,8 @@ end, false, 1/10)
 
 local function main()
 	event.Call("Initialize")
+
+	system.ExecuteArgs()
 
 	local last_time = 0
 	local i = 0ULL

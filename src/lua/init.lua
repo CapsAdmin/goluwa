@@ -69,6 +69,7 @@ do -- constants
 		PHYSICS = false,
 		DISABLE_CULLING = false,
 		DEBUG_OPENGL = false,
+		CLI = false,
 	}
 
 	for key, default in pairs(env_vars) do
@@ -119,6 +120,16 @@ do -- constants
 		--NVIDIA_WORKAROUND = true
 		--GL_ARB_direct_state_access = false
 		--GL_ARB_bindless_texture = false
+
+	if CLI then
+		GRAPHICS = false
+		CLIENT = false
+		SERVER = false
+		CURSES = false
+		LOOP = false
+		SOUND = false
+		SOCKETS = false
+		PHYSICS = false
 	end
 
 
@@ -240,19 +251,24 @@ require("strung").install()-- this shaves off 5 seconds off of loading gm_constr
 -- libraries
 pvars = runfile("lua/libraries/pvars.lua") -- like cvars
 prototype = runfile("lua/libraries/prototype/prototype.lua") -- handles classes, objects, etc
+
 if GRAPHICS then
 	math3d = runfile("lua/libraries/graphics/math3d.lua") -- 3d math functions
 	math2d = runfile("lua/libraries/graphics/math2d.lua") -- 2d math functions
 end
+
 crypto = runfile("lua/libraries/crypto.lua") -- base64 and other hash functions
 serializer = runfile("lua/libraries/serializer.lua") -- for serializing lua data in different formats
 structs = runfile("lua/libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
 commands = runfile("lua/libraries/commands.lua") -- console command type interface for running in repl, chat, etc
+
 if CURSES then
 	repl = runfile("lua/libraries/repl.lua") -- read eval print loop using curses
 else
+	CURSES = nil
 	repl = false
 end
+
 system = runfile("lua/libraries/system.lua") -- os and luajit related functions like creating windows or changing jit options
 utility = runfile("lua/libraries/utilities/utility.lua") -- misc functions i don't know where to put
 event = runfile("lua/libraries/event.lua") -- event handler
@@ -261,13 +277,19 @@ utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to
 tasks = runfile("lua/libraries/tasks.lua") -- high level abstraction around coroutines
 vfs = runfile("lua/libraries/filesystem/vfs.lua") -- include the filesystem again so it will include all the details such as zip file reading
 expression = runfile("lua/libraries/expression.lua") -- used by chat and editor to run small and safe lua expressions
-autocomplete = runfile("lua/libraries/autocomplete.lua") -- mainly used in console and chatsounds
+
+if CURSES or WINDOW then
+	autocomplete = runfile("lua/libraries/autocomplete.lua") -- mainly used in console and chatsounds
+end
+
 profiler = runfile("lua/libraries/profiler.lua") -- for profiling
 language = runfile("lua/libraries/language.lua") _G.L = language.LanguageString -- L"options", for use in gui menus and such.
-physics = runfile("lua/libraries/physics/physics.lua") -- bullet physics
+
+if PHYSICS then
+	physics = runfile("lua/libraries/physics/physics.lua") -- bullet physics
+end
+
 steam = runfile("lua/libraries/steam/steam.lua") -- utilities for dealing with steam, the source engine and steamworks
-line = runfile("lua/libraries/love/line.lua") -- a löve wrapper that lets you run löve games
-gine = runfile("lua/libraries/gmod/gine.lua") -- a gmod wrapper that lets you run gmod scripts
 
 if SOCKETS then
 	sockets = runfile("lua/libraries/network/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
@@ -304,11 +326,11 @@ if GRAPHICS then
 		window = runfile("lua/libraries/graphics/window.lua") -- high level window implementation
 		gui = runfile("lua/libraries/graphics/gui/gui.lua")
 	end
+end
 
-	if not render or not window then
-		GRAPHICS = nil
-		WINDOW = nil
-	end
+if not render or not window then
+	GRAPHICS = nil
+	WINDOW = nil
 end
 
 if SOUND then
@@ -321,8 +343,13 @@ if SOUND then
 	end
 end
 
+line = runfile("lua/libraries/love/line.lua") -- a löve wrapper that lets you run löve games
+gine = runfile("lua/libraries/gmod/gine.lua") -- a gmod wrapper that lets you run gmod scripts
+
 entities = runfile("lua/libraries/entities/entities.lua") -- entity component system
 
-llog("including libraries took %s seconds\n", os.clock() - profile_start_time)
+if VERBOSE_STARTUP then
+	llog("including libraries took %s seconds\n", os.clock() - profile_start_time)
+end
 
 runfile("lua/main.lua")

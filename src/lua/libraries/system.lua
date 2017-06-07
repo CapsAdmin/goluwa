@@ -114,25 +114,37 @@ local function not_implemented() debug.trace() logn("this function is not yet im
 function system.ExecuteArgs(args)
 	args = args or _G.ARGS
 
-	if not args and os.getenv("ARGS") then
-		local func, err = loadstring("return " .. os.getenv("ARGS"))
+	local skip_lua = nil
 
-		if func then
-			local ok, tbl = pcall(func)
+	if not args then
+		local str = os.getenv("ARGS")
 
-			if not ok then
-				logn("failed to execute ARGS: ", tbl)
+		if str then
+			if str:startswith("cli --") then
+				args = str:sub(5):split("--", true)
+				table.remove(args, 1) -- uh
+				skip_lua = true
+			else
+				local func, err = loadstring("return " .. str)
+
+				if func then
+					local ok, tbl = pcall(func)
+
+					if not ok then
+						logn("failed to execute ARGS: ", tbl)
+					end
+
+					args = tbl
+				else
+					logn("failed to execute ARGS: ", err)
+				end
 			end
-
-			args = tbl
-		else
-			logn("failed to execute ARGS: ", err)
 		end
 	end
 
 	if args then
-		for _, arg in pairs(args) do
-			commands.RunString(tostring(arg), nil, true, true)
+		for _, arg in ipairs(args) do
+			commands.RunString(tostring(arg), skip_lua, true, true)
 		end
 	end
 end
@@ -266,6 +278,10 @@ end
 do -- arg is made from luajit.exe
 	local arg = _G.arg
 	_G.arg = nil
+
+	arg[0] = nil
+	arg[-1] = nil
+	table.remove(arg, 1)
 
 	function system.GetStartupArguments()
 		return arg

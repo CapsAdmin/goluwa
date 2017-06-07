@@ -1,18 +1,24 @@
 commands.Add("l", function(line)
-	commands.SetLuaEnvironmentVariable("me", commands.GetClient())
+	if NETWORK then commands.SetLuaEnvironmentVariable("me", commands.GetClient()) end
 	commands.RunLua(line)
 end)
 
 commands.Add("print", function(line)
-	commands.SetLuaEnvironmentVariable("me", commands.GetClient())
+	if NETWORK then commands.SetLuaEnvironmentVariable("me", commands.GetClient()) end
 	commands.RunLua(("print(%s)"):format(line), true)
 end)
 
 commands.Add("table", function(line)
-	commands.SetLuaEnvironmentVariable("me", commands.GetClient())
+	if NETWORK then commands.SetLuaEnvironmentVariable("me", commands.GetClient()) end
 	commands.RunLua(("table.print(%s)"):format(line))
-	commands.SetLuaEnvironmentVariable("me", nil)
+	if NETWORK then commands.SetLuaEnvironmentVariable("me", nil) end
 end)
+
+commands.Add("rcon", function(line)
+	commands.RunString(line)
+end)
+
+if not NETWORK then return end
 
 commands.Add("printc", function(line)
 	clients.BroadcastLua(("network.PrintOnServer(%s)"):format(line))
@@ -30,10 +36,6 @@ end)
 commands.Add("cmd", function(line)
 	local client = commands.GetClient()
 	client:SendLua(("commands.SetLuaEnvironmentVariable('me', clients.GetByUniqueID(%q)) commands.RunLua(%q)"):format(commands.GetClient():GetUniqueID(), line))
-end)
-
-commands.Add("rcon", function(line)
-	commands.RunString(line)
 end)
 
 event.AddListener("ClientChat", "chat_commands", function(client, txt)

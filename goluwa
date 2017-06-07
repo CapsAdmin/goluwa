@@ -1,3 +1,3 @@
 #!/bin/bash
 
-bash src/cli/unix.bash ide
+bash src/cli/unix.bash $*
