@@ -586,7 +586,7 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 
 		-- doubleclick can set selection, so reset it
 		local pos = event:GetPosition()
-		if pos == -1 then pos = out:GetLineEndPosition(event:GetLine()) end
+		if pos == wx.wxNOT_FOUND then pos = out:GetLineEndPosition(event:GetLine()) end
 		out:SetSelection(pos, pos)
 	end)
 
@@ -646,13 +646,13 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 
 		if forward then
 		currentHistory = out:MarkerNext(currentHistory+1, PROMPT_MARKER_VALUE)
-		if currentHistory == -1 then
+		if currentHistory == wx.wxNOT_FOUND then
 			currentHistory = count
 			return ""
 		end
 		else
 		currentHistory = out:MarkerPrevious(currentHistory-1, PROMPT_MARKER_VALUE)
-		if currentHistory == -1 then
+		if currentHistory == wx.wxNOT_FOUND then
 			return ""
 		end
 		end
@@ -672,7 +672,7 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 		local current = currentHistory
 		while true do
 		currentHistory = out:MarkerPrevious(currentHistory-1, PROMPT_MARKER_VALUE)
-		if currentHistory == -1 then -- restart search from the last item
+		if currentHistory == wx.wxNOT_FOUND then -- restart search from the last item
 			currentHistory = count
 		elseif currentHistory ~= getPromptLine() then -- skip current prompt
 			local input = getInput(currentHistory)
@@ -846,6 +846,7 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 				-- move cursor to end if not already there
 				if not caretOnPromptLine() then
 					out:GotoPos(out:GetLength())
+					out:SetReadOnly(false) -- allow the current character to appear at the new location
 				-- check if the selection starts before the prompt line and reset it
 				elseif out:LineFromPosition(out:GetSelectionStart()) < getPromptLine() then
 					out:GotoPos(out:GetLength())
