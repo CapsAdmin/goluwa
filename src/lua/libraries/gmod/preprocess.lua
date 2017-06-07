@@ -247,14 +247,29 @@ commands.Add("gluacheck", function(path)
 
 	options.max_line_length = false
 
-	local str = (path == "stdin" or path == "-") and io.stdin:read("*all") or assert(vfs.Read(path))
-	str = gine.PreprocessLua(str)
+	local lua_strings = {}
+	local name_lookup = {}
+	path = path:trim()
+
+	if path:endswith("/") then
+		vfs.Search(path, "lua", function(path)
+			if vfs.IsFile(path) then
+				table.insert(lua_strings, gine.PreprocessLua(assert(vfs.Read(path))))
+				name_lookup[#lua_strings] = path
+			end
+		end)
+	else
+		lua_strings[1] = gine.PreprocessLua((path == "stdin" or path == "-") and io.stdin:read("*all") or assert(vfs.Read(path)))
+	end
+
 	local luacheck = require("luacheck")
 
-	local data = luacheck.check_strings({str}, options)
+	local data = luacheck.check_strings(lua_strings, options)
 
-	for k,v in pairs(data[1]) do
-		logf("%s:%s:%s %s\n", path, v.line, v.column, luacheck.get_message(v))
+	for i, path in pairs(name_lookup) do
+		for _, msg in ipairs(data[i]) do
+			logf("%s:%s:%s %s\n", path, msg.line, msg.column, luacheck.get_message(msg))
+		end
 	end
 
 	os.exitcode = (data.errors > 0 or data.fatals > 0) and 1 or 0
