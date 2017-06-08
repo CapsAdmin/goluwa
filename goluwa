@@ -1,3 +1,2 @@
 #!/bin/bash
-cd "${0%/*}"
-bash src/cli/unix.bash $*
+bash $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/src/cli/unix.bash $*
