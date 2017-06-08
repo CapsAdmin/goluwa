@@ -527,8 +527,6 @@ do
 			end
 		end
 	else
-		(logn or print)(lib) -- aaaaa
-
 		utility.Compress = function() error("lz4 is not avaible: " .. lib, 2) end
 		utility.Decompress = utility.Compress
 	end
