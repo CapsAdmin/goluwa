@@ -179,7 +179,7 @@ function require.require_function(name, func, path, arg_override)
 		local ok, res = pcall(func, arg_override or dir)
 
 		if ok == false then
-			return res
+			return nil, res
 		end
 
 		if MODULE_CALLED then
