@@ -258,6 +258,12 @@ commands.Add("gluacheck", function(path)
 				name_lookup[#lua_strings] = path
 			end
 		end)
+	elseif path:find("\"") then
+		for path in path:gmatch('"(.-)"') do
+			if vfs.IsFile(path) then
+				table.insert(lua_strings, gine.PreprocessLua(assert(vfs.Read(path))))
+			end
+		end
 	else
 		lua_strings[1] = gine.PreprocessLua((path == "stdin" or path == "-") and io.stdin:read("*all") or assert(vfs.Read(path)))
 	end
