@@ -237,7 +237,7 @@ commands.Add("gluacheck", function(path)
 	end
 
 	local options = {
-		max_line_length = false
+		max_line_length = false,
 		read_globals = globals,
 		-- ignore = {"113", "143"}, -- ignore all global lookups
 	}
