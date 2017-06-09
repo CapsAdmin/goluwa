@@ -237,15 +237,10 @@ commands.Add("gluacheck", function(path)
 	end
 
 	local options = {
+		max_line_length = false
 		read_globals = globals,
+		-- ignore = {"113", "143"}, -- ignore all global lookups
 	}
-
-	if not options then
-		logf("cannot access data/gmod_luachceck_env.txt (%s), ignoring all warnings about indexing unknown globals\n", err)
-		options = {ignore = {"113", "143"}}
-	end
-
-	options.max_line_length = false
 
 	local lua_strings = {}
 	local name_lookup = {}
