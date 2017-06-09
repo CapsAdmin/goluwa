@@ -245,7 +245,7 @@ commands.Add("gluacheck", function(path)
 	local lua_strings = {}
 	local name_lookup = {}
 	path = path:trim()
-	print(path:find('"', nil, true))
+
 	if path:endswith("/") then
 		vfs.Search(path, "lua", function(path)
 			if vfs.IsFile(path) then
@@ -258,6 +258,7 @@ commands.Add("gluacheck", function(path)
 			path = path:trim()
 			if vfs.IsFile(path) and path:endswith(".lua") then
 				table.insert(lua_strings, gine.PreprocessLua(assert(vfs.Read(path))))
+				name_lookup[#lua_strings] = path
 			end
 		end
 	elseif vfs.IsFile(path) and path:endswith(".lua") then
