@@ -255,7 +255,7 @@ commands.Add("gluacheck", function(path)
 		end)
 	elseif path:find("\"") then
 		for path in path:gmatch('"(.-)"') do
-			if vfs.IsFile(path) then
+			if vfs.IsFile(path) and path:endswith(".lua") then
 				table.insert(lua_strings, gine.PreprocessLua(assert(vfs.Read(path))))
 			end
 		end
