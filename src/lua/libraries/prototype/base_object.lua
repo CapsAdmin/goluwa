@@ -204,7 +204,12 @@ do -- events
 
 		event.AddListener(event_type, "prototype_events", function(a_, b_, c_)
 			for _, self in ipairs(events[event_type]) do
-				self[func_name](self, a_, b_, c_)
+				if self[func_name] then
+					self[func_name](self, a_, b_, c_)
+				else
+					wlog("%s.%s is nil", self, func_name)
+					self:RemoveEvent(event_type)
+				end
 			end
 		end, {on_error = function(str)
 			system.OnError(str)
