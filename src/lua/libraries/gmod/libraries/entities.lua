@@ -45,6 +45,10 @@ do
 
 		return out
 	end
+
+	function gine.env.ents.FindInSphere(pos)
+		return {}
+	end
 end
 
 do
@@ -176,6 +180,12 @@ do
 
 	function META:GetNWEntity(key, def)
 		return def or _G.NULL
+	end
+
+	for k, v in pairs(META) do
+		if k:startswith("GetNW") then
+			META[k:gsub("GetNW", "GetNW2")] = v
+		end
 	end
 
 	function META:GetVelocity()

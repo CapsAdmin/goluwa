@@ -1,6 +1,8 @@
 do
 	function gine.env.CreateMaterial()
-		return gine.WrapObject(render.CreateMaterial("model"), "IMaterial")
+		local self = gine.WrapObject(render.CreateMaterial("model"), "IMaterial")
+		self.vars = {}
+		return self
 	end
 
 	function gine.env.Material(path)
@@ -21,14 +23,12 @@ do
 			mat:LoadVMT("materials/" .. path .. ".png")
 		end
 
-		return gine.WrapObject(mat, "IMaterial")
+		local self = gine.WrapObject(mat, "IMaterial")
+		self.vars = {}
+		return self
 	end
 
 	local META = gine.GetMetaTable("IMaterial")
-
-	function META:GetTexture()
-		return gine.WrapObject(self.__obj:GetAlbedoTexture(), "ITexture")
-	end
 
 	function META:GetColor(x,y)
 		local r,g,b,a = self.__obj:GetAlbedoTexture():GetPixelColor(x,y)
@@ -47,17 +47,26 @@ do
 
 	end
 
-	function META:SetFloat()
+	local function set(self, key, val) self.vars[key] = val end
+	local function get(def) return function(self, key) return self.vars[key] or def(self) end end
 
-	end
+	META.SetFloat = set
+	META.GetFloat = get(function() return 0 end)
+
+	META.SetInt = set
+	META.GetInt = get(function() return 0 end)
+
+	META.SetStrint = set
+	META.GetString = get(function() return "" end)
+
+	META.SetTexture = set
+	META.GetTexture = get(function(self) return gine.WrapObject(render.GetErrorTexture(), "ITexture") end)
+
+	META.SetVector = set
+	META.GetVector = get(function() return genv.env.Vector() end)
 
 	function META:IsError()
 		return false
-	end
-
-
-	function META:GetVector(key)
-		return gine.env.Vector()
 	end
 end
 

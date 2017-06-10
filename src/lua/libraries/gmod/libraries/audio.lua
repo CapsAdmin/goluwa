@@ -7,8 +7,12 @@ do
 
 	local META = gine.GetMetaTable("CSoundPatch")
 
-	function META:SetSoundLevel()
+	function META:SetSoundLevel(level)
+		self.sound_level = level
+	end
 
+	function META:GetSoundLevel()
+		return self.sound_level
 	end
 
 	function META:Stop()

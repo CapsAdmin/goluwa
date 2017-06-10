@@ -22,12 +22,20 @@ do -- chatbox
 		lib.Open()
 	end
 
-	function chat.GetChatboxPos()
-		return lib.panel:GetPosition():Unpack()
+	function chat.GetChatBoxPos()
+		if lib.panel:IsValid() then
+			return lib.panel:GetPosition():Unpack()
+		end
+
+		return 0, 0
 	end
 
-	function chat.GetChatboxSize()
-		return lib.panel:GetSize():Unpack()
+	function chat.GetChatBoxSize()
+		if lib.panel:IsValid() then
+			return lib.panel:GetSize():Unpack()
+		end
+
+		return 0, 0
 	end
 end
 
@@ -73,6 +81,10 @@ do
 
 	function gui.ScreenToVector(x, y)
 		return gine.env.Vector(math3d.ScreenToWorldDirection(Vec2(x, y)):Unpack())
+	end
+
+	function gui.IsGameUIVisible()
+		return menu.IsVisible()
 	end
 end
 

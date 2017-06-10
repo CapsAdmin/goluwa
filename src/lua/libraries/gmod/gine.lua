@@ -89,8 +89,9 @@ function gine.Initialize()
 		-- include and init files in the right order
 
 		runfile("lua/includes/init.lua") --
+		--runfile("lua/includes/init_menu.lua")
+		gine.env.require("notification")
 		runfile("lua/derma/init.lua") -- the gui
-		gine.env.require("notification") -- this is included by engine at this point
 
 		gine.LoadGamemode("base")
 		gine.LoadGamemode("sandbox")
@@ -105,12 +106,12 @@ function gine.Initialize()
 		end
 
 
-		--runfile("lua/postprocess/*")
+		runfile("lua/postprocess/*")
 		runfile("lua/vgui/*")
-		--runfile("lua/matproxy/*")
+		runfile("lua/matproxy/*")
 		runfile("lua/skins/*")
 
-		gine.env.DCollapsibleCategory.LoadCookies = nil -- DUCT TAPE FIX
+		--gine.env.DCollapsibleCategory.LoadCookies = nil -- DUCT TAPE FIX
 
 		for name in pairs(gine.gamemodes) do
 			vfs.Mount(gine.dir .. "/gamemodes/"..name.."/entities/", "lua/")

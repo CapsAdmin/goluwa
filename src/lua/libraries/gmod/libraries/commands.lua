@@ -1,6 +1,16 @@
 function gine.env.AddConsoleCommand(name)
 	if commands.IsAdded(name) then
-		llog("gmod tried to add existing command %s", name)
+		local found = false
+
+		for k,v in pairs(gine.bindings) do
+			if v.cmd == name then
+				found = true
+			end
+		end
+
+		if not found then
+			wlog("gmod tried to add existing command %s", name)
+		end
 	else
 		commands.Add(name, function(line, ...)
 			gine.env.concommand.Run(NULL, name, {...}, line)

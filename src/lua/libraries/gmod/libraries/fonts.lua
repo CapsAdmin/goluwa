@@ -98,6 +98,7 @@ do
 		tbl.path = gine.TranslateFontName(tbl.path)
 
 		if tbl.size then tbl.size = math.ceil(tbl.size * 0.55) end
+		if tbl.shadow then tbl.shadow = 2 end
 
 		gine.render2d_fonts[id:lower()] = fonts.CreateFont(tbl)
 	end
