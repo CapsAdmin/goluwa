@@ -191,7 +191,7 @@ function require.require_function(name, func, path, arg_override)
 		if res and not package.loaded[path] and not package.loaded[name] then
 			package.loaded[name] = res
 		elseif not res and package.loaded[name] == nil and package.loaded[path] == nil then
-			wlog("module %s (%s) was required but nothing was returned", name, path)
+			--wlog("module %s (%s) was required but nothing was returned", name, path)
 			package.loaded[name] = true
 		end
 	end
