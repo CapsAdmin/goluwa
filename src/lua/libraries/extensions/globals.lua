@@ -176,8 +176,10 @@ do -- logging
 		return true
 	end
 
+	local silence
 
 	local function raw_log(args, sep, append)
+		if silence then return end
 		local line = type(args) == "string" and args or table.concat(args, sep)
 
 		if append then
@@ -215,6 +217,10 @@ do -- logging
 				io.write(line)
 			end
 		end
+	end
+
+	function silence_log(b)
+		silence = b
 	end
 
 	function log(...)
