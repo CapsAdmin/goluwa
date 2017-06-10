@@ -132,9 +132,10 @@ scroll:SetupLayout("fill")
 scroll:SetPadding(Rect()+4)
 
 
-local lol = gui.CreatePanel("text")
+local lol = gui.CreatePanel("text_edit")
 --lol:SetWidth(300)
 --lol:SetObeyPanelWidth(true)
 --lol:SetTextWrap(true)
-syntax_process(vfs.Read("lua/libraries/graphics/gfx/markup.lua"), lol.markup)
+lol:SetMultiline(true)
+syntax_process(vfs.Read("lua/libraries/graphics/gfx/markup.lua"), lol.label.markup)
 scroll:SetPanel(lol)
