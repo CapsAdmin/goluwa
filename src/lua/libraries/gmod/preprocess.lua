@@ -1,8 +1,26 @@
 local gine = ... or _G.gine
 
-function gine.PreprocessLua(code, debug)
+local function insert(chars, i, what)
+	local left_space = chars[i - 1] and chars[i - 1]:find("[%s%p]")
+	local right_space = chars[i + 1] and chars[i + 1]:find("[%s%p]")
+
+	if left_space and right_space then
+		chars[i] = what
+	elseif left_space and not right_space then
+		chars[i] = what .. " "
+	elseif not left_space and right_space then
+		chars[i] =  " " .. what
+	elseif not left_space and not right_space then
+		chars[i] =  " " .. what .. " "
+	end
+end
+
+function gine.PreprocessLua(code)
 	local in_string
 	local in_comment
+
+	local multiline_comment_invalid_char_count = 0
+	local multiline_comment_start_pos
 
 	local multiline_open = false
 	local in_multiline
@@ -16,10 +34,6 @@ function gine.PreprocessLua(code, debug)
 			chars[i + 1] = ""
 		end
 
-		if debug then
-			log(in_string and "S" or in_comment and "C" or in_multiline and "M" or chars[i] == "\n" and "\n" or chars[i])
-		end
-
 		if not in_string and not in_comment and not in_multiline then
 			if (chars[i] == "/" and chars[i + 1] == "/") or (chars[i] == "-" and chars[i + 1] == "-") then
 				chars[i] = "-"
@@ -27,8 +41,11 @@ function gine.PreprocessLua(code, debug)
 				in_comment = "line"
 			elseif chars[i] == "/" and chars[i + 1] == "*" then
 				chars[i] = ""
-				chars[i + 1] = "--[=======["
+				chars[i + 1] = "--[EQUAL["
 				in_comment = "c_multiline"
+
+				multiline_comment_start_pos = i + 1
+				multiline_comment_invalid_char_count = 0
 			end
 		end
 
@@ -53,10 +70,17 @@ function gine.PreprocessLua(code, debug)
 					in_comment = nil
 				end
 			elseif in_comment == "c_multiline" then
+				if chars[i] == "]" then
+					multiline_comment_invalid_char_count = multiline_comment_invalid_char_count + 1
+				end
 				if chars[i] == "*" and chars[i + 1] == "/" then
 					in_comment = nil
 					chars[i] = ""
-					chars[i + 1] = "]=======]"
+					chars[i + 1] = "]EQUAL]"
+
+					local eq = ("="):rep(multiline_comment_invalid_char_count)
+					chars[i + 1] = chars[i + 1]:gsub("EQUAL", eq)
+					chars[multiline_comment_start_pos] = chars[multiline_comment_start_pos]:gsub("EQUAL", eq)
 				end
 			end
 		end
@@ -100,16 +124,16 @@ function gine.PreprocessLua(code, debug)
 
 		if not in_string and not in_comment and not in_multiline then
 			if chars[i] == "!" and chars[i + 1] == "=" then
-				chars[i] = ""
-				chars[i + 1] = " ~= "
+				table.remove(chars, i)
+				chars[i] = "~="
 			elseif chars[i] == "&" and chars[i + 1] == "&" then
-				chars[i] = ""
-				chars[i + 1] = " and "
+				table.remove(chars, i)
+				insert(chars, i, "and")
 			elseif chars[i] == "|" and chars[i + 1] == "|" then
-				chars[i] = ""
-				chars[i + 1] = " or "
+				table.remove(chars, i)
+				insert(chars, i, "or")
 			elseif chars[i] == "!" then
-				chars[i] = " not "
+				insert(chars, i, "not")
 			end
 		end
 	end
@@ -117,6 +141,7 @@ function gine.PreprocessLua(code, debug)
 	local code = table.concat(chars):sub(4, -4)
 
 	if code:wholeword("continue") and not loadstring(code) then
+
 		local lex_setup = require("lang.lexer")
 		local reader = require("lang.reader")
 
@@ -129,17 +154,31 @@ function gine.PreprocessLua(code, debug)
 			table.insert(stack, table.copy(ls))
 		until ls.token == "TK_eof"
 
+		local found_continue = false
+
 		for i, ls in ipairs(stack) do
 			if ls.token == "TK_name" and ls.tokenval == "continue" then
+				found_continue = true
 				local start
+				local balance = 0
 
 				for i = i, 1, -1 do
 					local v = stack[i]
 
-					if v.token == "TK_do" then
-						start = v
-						start.stack_pos = i
-						break
+					if v.token == "TK_end" or v.token == "TK_until" then
+						balance = balance - 1
+					end
+
+					if balance < 0 then
+						if v.token == "TK_do" or v.token == "TK_if" or v.token == "TK_for" or v.token == "TK_function" or v.token == "TK_repeat" then
+							balance = balance + 1
+						end
+					else
+						if balance == 0 and v.token == "TK_do" or v.token == "TK_repeat" then
+							start = v
+							start.stack_pos = i
+							break
+						end
 					end
 				end
 
@@ -156,14 +195,14 @@ function gine.PreprocessLua(code, debug)
 				for i = start.stack_pos, #stack do
 					local v = stack[i]
 
-					if v.token == "TK_do" or v.token == "TK_if" or v.token == "TK_function" then
+					if v.token == "TK_do" or v.token == "TK_if" or v.token == "TK_for" or v.token == "TK_function" or v.token == "TK_repeat" then
 						balance = balance + 1
-					elseif v.token == "TK_end" then
+					elseif v.token == "TK_end" or v.token == "TK_until" then
 						balance = balance - 1
 					end
 
-					if stack[i].token == "TK_return" or stack[i].token == "TK_break" then
-						return_token = stack[i]
+					if v.token == "TK_return" or v.token == "TK_break" then
+						return_token = v
 					end
 
 					if balance == 0 then
@@ -177,22 +216,48 @@ function gine.PreprocessLua(code, debug)
 				end
 
 				local lines = code:split("\n")
-
 				lines[ls.linenumber] = lines[ls.linenumber]:gsub("continue", "goto CONTINUE")
 
 				if return_token and not return_token.fixed then
-					lines[return_token.linenumber] = " do ".. lines[return_token.linenumber] .. " end "
+					local space = " "
+
+					for i = return_token.linenumber - 1, 1, -1 do
+						if lines[i]:trim() ~= "" then
+							space = lines[i]
+							break
+						end
+					end
+
+					space = space:match("^(%s*)") or " "
+					lines[return_token.linenumber] = space .. "do ".. lines[return_token.linenumber]:trim() .. " end"
 					return_token.fixed = true
 				end
 
 				if stop and not stop.fixed then
-					lines[stop.linenumber] = " ::CONTINUE:: ".. lines[stop.linenumber]
+					local space = " "
+
+					for i = stop.linenumber - 1, 1, -1 do
+						if lines[i]:trim() ~= "" then
+							space = lines[i]
+							break
+						end
+					end
+
+					space = space:match("^(%s*)") or " "
+
+					lines[stop.linenumber] = space .. "::CONTINUE::___NEWLINEME___".. lines[stop.linenumber]
+
 					stop.fixed = true
 				end
 				code = table.concat(lines, "\n")
-
 			end
 		end
+
+		if not found_continue then
+			error("unable to find continue keyword")
+		end
+
+		code = code:gsub("___NEWLINEME___", "\n")
 	end
 
 	code = code:gsub("DEFINE_BASECLASS", "local BaseClass = baseclass.Get")

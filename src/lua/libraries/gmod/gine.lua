@@ -1,6 +1,7 @@
 local gine = _G.gine or {}
 
 runfile("preprocess.lua", gine)
+runfile("cli.lua", gine)
 
 event.AddListener("PostLoadString", "glua_function_env", function(func, path)
 	if path:lower():find("steamapps/common/garrysmod/garrysmod/", nil, true) or path:find("%.gma") then
