@@ -92,7 +92,9 @@ do -- runfile
 			local ok, err
 			local errors = {}
 			for _, path in ipairs(source) do
+				silence_log(true)
 				ok, err = vfs.RunFile(path)
+				silence_log(false)
 				if ok == false then
 					table.insert(errors, err .. ": " .. path)
 				else
@@ -257,12 +259,12 @@ do -- runfile
 			return select(2, unpack(res))
 		end
 
-		if system_pcall then
+		if system_pcall and full_path then
 			err = err or "no error"
 
 			logn(source:sub(1) .. " " .. err)
 
-			debug.openscript("lua/" .. path, err:match(":(%d+)"))
+			debug.openscript(full_path, err:match(":(%d+)"))
 		end
 
 		return false, err
