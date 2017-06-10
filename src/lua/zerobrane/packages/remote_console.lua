@@ -51,7 +51,7 @@ function PLUGIN:Setup()
 				CURSES = "0",
 				IDE = "",
 				ARGS = [==[{[[
-					pvars.Set("text_editor_path", "./../../editor/zbstudio.sh %PATH%:%LINE%")
+					pvars.Set("text_editor_path", "./../../ide/zbstudio.sh %PATH%:%LINE%")
 
 					local server = sockets.CreateServer("tcp", "localhost", LUA{console.socket.port})
 
