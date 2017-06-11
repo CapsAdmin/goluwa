@@ -239,7 +239,27 @@ do -- timers
 			if v.key == id then
 				table.remove(event.timers, k)
 				--profiler.RemoveSection(v.id)
-				break
+				return true
+			end
+		end
+	end
+
+	function event.StopTimer(id)
+		for k, v in ipairs(event.timers) do
+			if v.key == id then
+				v.realtime = 0
+				v.times_ran = 1
+				v.paused = true
+				return true
+			end
+		end
+	end
+
+	function event.StartTimer(id)
+		for k, v in ipairs(event.timers) do
+			if v.key == id then
+				v.paused = false
+				return true
 			end
 		end
 	end
