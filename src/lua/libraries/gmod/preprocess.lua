@@ -15,7 +15,11 @@ local function insert(chars, i, what)
 	end
 end
 
-function gine.PreprocessLua(code)
+function gine.PreprocessLua(code, add_newlines)
+	if code:count("\n") == 0 and code:count("\r") > 0 then
+		code = code:gsub("\r", "\n")
+	end
+
 	local in_string
 	local in_comment
 
@@ -155,6 +159,7 @@ function gine.PreprocessLua(code)
 		until ls.token == "TK_eof"
 
 		local found_continue = false
+		local lines = code:split("\n")
 
 		for i, ls in ipairs(stack) do
 			if ls.token == "TK_name" and ls.tokenval == "continue" then
@@ -186,23 +191,45 @@ function gine.PreprocessLua(code)
 					error("unable to find start of loop")
 				end
 
-
 				local stop
 
 				local balance = 0
+				local in_function = false
+				local in_loop = false
 				local return_token
 
 				for i = start.stack_pos, #stack do
 					local v = stack[i]
 
-					if v.token == "TK_do" or v.token == "TK_if" or v.token == "TK_for" or v.token == "TK_function" or v.token == "TK_repeat" then
+					if v.token == "TK_do" or v.token == "TK_if" or v.token == "TK_function" or v.token == "TK_repeat" then
 						balance = balance + 1
+
+						if v.token == "TK_function" then
+							in_function = balance
+						end
+
+						if v.token == "TK_do" or v.token == "TK_repeat" then
+							if i ~= start.stack_pos then
+								in_loop = balance
+							end
+						end
 					elseif v.token == "TK_end" or v.token == "TK_until" then
+
+						if v.token == "TK_end" and in_function == balance then
+							in_function = false
+						end
+
+						if (v.token == "TK_end" or v.token == "TK_until") and in_loop == balance then
+							in_loop = false
+						end
+
 						balance = balance - 1
 					end
 
 					if v.token == "TK_return" or v.token == "TK_break" then
-						return_token = v
+						if not in_function and not in_loop then
+							return_token = v
+						end
 					end
 
 					if balance == 0 then
@@ -215,7 +242,6 @@ function gine.PreprocessLua(code)
 					error("unable to find stop of loop")
 				end
 
-				local lines = code:split("\n")
 				lines[ls.linenumber] = lines[ls.linenumber]:gsub("continue", "goto CONTINUE")
 
 				if return_token and not return_token.fixed then
@@ -245,107 +271,24 @@ function gine.PreprocessLua(code)
 
 					space = space:match("^(%s*)") or " "
 
-					lines[stop.linenumber] = space .. "::CONTINUE::___NEWLINEME___".. lines[stop.linenumber]
+					lines[stop.linenumber] = space .. "::CONTINUE::" .. (add_newlines and "\n" or "") .. lines[stop.linenumber]
 
 					stop.fixed = true
 				end
-				code = table.concat(lines, "\n")
 			end
 		end
+
+		code = table.concat(lines, "\n")
 
 		if not found_continue then
 			error("unable to find continue keyword")
 		end
-
-		code = code:gsub("___NEWLINEME___", "\n")
 	end
 
 	code = code:gsub("DEFINE_BASECLASS", "local BaseClass = baseclass.Get")
 
 	return code
 end
-
-commands.Add("gluacheck", function(path)
-	local globals = serializer.ReadFile("luadata", "luacheck_cache")
-
-	if not globals then
-		globals = {"NULL"}
-		local done = {}
-
-		local cl_env = runfile("lua/libraries/gmod/cl_exported.lua")
-		local sv_env = runfile("lua/libraries/gmod/sv_exported.lua")
-
-		for _, env in pairs({cl_env, sv_env}) do
-			for name in pairs(env.enums) do
-				if not done[name] then
-					table.insert(globals, name)
-					done[name] = true
-				end
-			end
-
-			for name in pairs(env.globals) do
-				if not done[name] then
-					table.insert(globals, name)
-					done[name] = true
-				end
-			end
-
-			for lib_name, functions in pairs(env.functions) do
-				globals[lib_name] = globals[lib_name] or {fields = {}}
-				for func_name in pairs(functions) do
-					globals[lib_name].fields[func_name] = {}
-				end
-			end
-		end
-
-		serializer.WriteFile("luadata", "luacheck_cache", globals)
-	end
-
-	local options = {
-		max_line_length = false,
-		read_globals = globals,
-		-- ignore = {"113", "143"}, -- ignore all global lookups
-	}
-
-	local lua_strings = {}
-	local name_lookup = {}
-	path = path:trim()
-
-	if path:endswith("/") then
-		vfs.Search(path, "lua", function(path)
-			if vfs.IsFile(path) then
-				table.insert(lua_strings, gine.PreprocessLua(assert(vfs.Read(path))))
-				name_lookup[#lua_strings] = path
-			end
-		end)
-	elseif path:find(",", nil, true) then
-		for path in (path .. ","):gmatch('(.-),') do
-			path = path:trim()
-			if vfs.IsFile(path) and path:endswith(".lua") then
-				table.insert(lua_strings, gine.PreprocessLua(assert(vfs.Read(path))))
-				name_lookup[#lua_strings] = path
-			end
-		end
-	elseif vfs.IsFile(path) and path:endswith(".lua") then
-		lua_strings[1] = gine.PreprocessLua(assert(vfs.Read(path)))
-		name_lookup[1] = path
-	else
-		lua_strings[1] = gine.PreprocessLua((path == "stdin" or path == "-") and io.stdin:read("*all") or assert(vfs.Read(path)))
-		name_lookup[1] = path
-	end
-
-	local luacheck = require("luacheck")
-
-	local data = luacheck.check_strings(lua_strings, options)
-
-	for i, path in pairs(name_lookup) do
-		for _, msg in ipairs(data[i]) do
-			logf("%s:%s:%s %s\n", path, msg.line, msg.column, luacheck.get_message(msg))
-		end
-	end
-
-	os.exitcode = (data.errors > 0 or data.fatals > 0) and 1 or 0
-end)
 
 event.AddListener("PreLoadString", "glua_preprocess", function(code, path)
 	if path:lower():find("steamapps/common/garrysmod/garrysmod/", nil, true) or path:find("%.gma") then

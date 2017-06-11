@@ -21,6 +21,8 @@ make_is("function")
 make_is("Panel")
 make_is("Matrix")
 
+gine.env.IsEntity = gine.env.isentity
+
 function gine.env.type(obj)
 	local t = type(obj)
 

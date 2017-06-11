@@ -204,6 +204,10 @@ do
 		return 0
 	end
 
+	function META:GetSequenceActivity()
+		return 0
+	end
+
 	function META:GetModel()
 		return ""
 	end

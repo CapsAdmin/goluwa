@@ -17,6 +17,10 @@ function gine.env.GetConVar_Internal(name)
 	end
 end
 
+function gine.env.ConVarExists(name)
+	return pvars.IsSetup(name)
+end
+
 local META = gine.GetMetaTable("ConVar")
 
 function META:GetBool()

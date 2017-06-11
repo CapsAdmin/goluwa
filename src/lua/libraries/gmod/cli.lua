@@ -74,18 +74,22 @@ commands.Add("glua2lua", function(line)
 		else
 			local glua, err = vfs.Read(path)
 			if glua then
-				local lua = gine.PreprocessLua(glua)
-
-				if glua ~= lua then
+				local ok, lua = pcall(gine.PreprocessLua, glua, true)
+				collectgarbage()
+				if not ok then
+					logn(path, ": ", lua)
+					vfs.Write("data/last_glua2lua_error.lua", glua)
+				elseif glua ~= lua then
 					local ok, err = loadstring(lua, "")
 
 					if not ok and err:find("jumps into the scope of local") then
 						ok = true
-						logn(err)
+						logn(path, ": ", err)
 					end
 
 					if ok then
-						vfs.Write(path, lua)
+						---vfs.Write(path, lua)
+						vfs.Write("data/last_glua2lua_error.lua", lua)
 					else
 						local line, err = err:match(".+\"]:(%d+): (.+)")
 						logn(path)
@@ -100,10 +104,11 @@ commands.Add("glua2lua", function(line)
 								logf("%d:\t%s\n", line + i, str)
 							end
 						end
+						vfs.Write("data/last_glua2lua_error.lua", lua)
 					end
 				end
 			else
-				logn(path, err)
+				logn(path, ": ", err or "empty file?")
 			end
 		end
 	end

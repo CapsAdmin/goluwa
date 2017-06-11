@@ -10,6 +10,14 @@ end
 
 timer.Remove = timer.Destroy
 
+function timer.Stop(identifier)
+	return event.StopTimer("gine_" .. tostring(identifier))
+end
+
+function timer.Start(identifier)
+	return event.StartTimer("gine_" .. tostring(identifier))
+end
+
 function timer.Simple(delay, func)
 	return event.Delay(delay, func)
 end
