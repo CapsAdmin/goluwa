@@ -610,7 +610,7 @@ function library.LoadImage(data, path_hint)
 		type = "float"
 		buffer = half_buffer_to_float_buffer((width * height) * 4, buffer)
 	else
-		wlog("unhandled image format: %s", conversion_format)
+		return nil, "unhandled image format: " .. tostring(conversion_format)
 	end
 
 	cleanup(vtf_material, vtf_image)
