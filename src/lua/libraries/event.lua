@@ -264,6 +264,14 @@ do -- timers
 		end
 	end
 
+	function event.IsTimer(id)
+		for k, v in ipairs(event.timers) do
+			if v.key == id then
+				return true
+			end
+		end
+	end
+
 	local remove_these = {}
 
 	function event.UpdateTimers(a_, b_, c_, d_, e_)
