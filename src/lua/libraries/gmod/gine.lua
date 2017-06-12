@@ -67,7 +67,7 @@ function gine.WrapObject(obj, meta)
 	return gine.objects[meta][obj]
 end
 
-function gine.Initialize()
+function gine.Initialize(skip_addons)
 	if not gine.init then
 		render3d.Initialize()
 
@@ -101,8 +101,10 @@ function gine.Initialize()
 		if CLIENT then runfile(gine.dir .. "/lua/autorun/client/*") end
 		if SERVER then runfile(gine.dir .. "/lua/autorun/server/*") end
 
-		for dir in vfs.Iterate(gine.dir .. "addons/", true) do
-			vfs.AddModuleDirectory(R(dir.."/lua/includes/modules/"))
+		if not skip_addons then
+			for dir in vfs.Iterate(gine.dir .. "addons/", true) do
+				vfs.AddModuleDirectory(R(dir.."/lua/includes/modules/"))
+			end
 		end
 
 		runfile("lua/postprocess/*")
@@ -134,16 +136,18 @@ function gine.Initialize()
 	end
 end
 
-function gine.Run()
-	for dir in vfs.Iterate(gine.dir .. "addons/", true, true) do
-		local dir = gine.dir .. "addons/" ..  dir
-		runfile(dir .. "/lua/includes/extensions/*")
-	end
+function gine.Run(skip_addons)
+	if not skip_addons then
+		for dir in vfs.Iterate(gine.dir .. "addons/", true, true) do
+			local dir = gine.dir .. "addons/" ..  dir
+			runfile(dir .. "/lua/includes/extensions/*")
+		end
 
-	for dir in vfs.Iterate(gine.dir .. "addons/", true, true) do
-		runfile(dir .. "/lua/autorun/*")
-		if CLIENT then runfile(dir .. "/lua/autorun/client/*") end
-		if SERVER then runfile(dir .. "/lua/autorun/server/*") end
+		for dir in vfs.Iterate(gine.dir .. "addons/", true, true) do
+			runfile(dir .. "/lua/autorun/*")
+			if CLIENT then runfile(dir .. "/lua/autorun/client/*") end
+			if SERVER then runfile(dir .. "/lua/autorun/server/*") end
+		end
 	end
 
 	gine.LoadEntities("lua/entities", "ENT", gine.env.scripted_ents.Register, function() return {} end)
@@ -159,9 +163,9 @@ function gine.Run()
 	gine.env.gamemode.Call("InitPostEntity")
 end
 
-commands.Add("ginit", function()
-	gine.Initialize()
-	gine.Run()
+commands.Add("ginit", function(line)
+	gine.Initialize(line == "1")
+	gine.Run(line == "1")
 end)
 
 commands.Add("glua", function(line)
