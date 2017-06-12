@@ -98,7 +98,7 @@ do -- runfile
 				if ok == false then
 					table.insert(errors, err .. ": " .. path)
 				else
-					break
+					return ok
 				end
 			end
 			system_pcall = true
