@@ -16,7 +16,7 @@ local function insert(chars, i, what)
 end
 
 function gine.PreprocessLua(code, add_newlines)
-	if code:count("\n") == 0 and code:count("\r") > 0 then
+	if not code:find("\n", nil, true) and code:find("\r", nil, true) then
 		code = code:gsub("\r", "\n")
 	end
 
@@ -28,7 +28,6 @@ function gine.PreprocessLua(code, add_newlines)
 
 	local multiline_open = false
 	local in_multiline
-
 	local chars = ("   " .. code .. "   "):totable()
 
 	for i = 1, #chars do
@@ -145,104 +144,104 @@ function gine.PreprocessLua(code, add_newlines)
 	local code = table.concat(chars):sub(4, -4)
 
 	if code:wholeword("continue") and not loadstring(code) then
+		local tokens = {}
 
-		local lex_setup = require("lang.lexer")
-		local reader = require("lang.reader")
+		local ls = require("lang.lexer")(require("lang.reader").string(code), code)
 
-		local ls = lex_setup(reader.string(code), code)
-
-		local stack = {}
-
-		repeat
+		for i = 1, math.huge do
 			ls:next()
-			table.insert(stack, table.copy(ls))
-		until ls.token == "TK_eof"
+			tokens[i] = {token = ls.token, tokenval = ls.tokenval, linenumber = ls.linenumber}
+			if ls.token == "TK_eof" then
+				break
+			end
+		end
 
 		local found_continue = false
 		local lines = code:split("\n")
 
-		for i, ls in ipairs(stack) do
-			if ls.token == "TK_name" and ls.tokenval == "continue" then
+		for i, token in ipairs(tokens) do
+			if token.token == "TK_name" and token.tokenval == "continue" then
 				found_continue = true
-				local start
+
+				local start_token
+				local stop_token
+				local return_token
+
 				local balance = 0
 
 				for i = i, 1, -1 do
-					local v = stack[i]
+					local val = tokens[i]
 
-					if v.token == "TK_end" or v.token == "TK_until" then
+					if val.token == "TK_end" or val.token == "TK_until" then
 						balance = balance - 1
 					end
 
 					if balance < 0 then
-						if v.token == "TK_do" or v.token == "TK_if" or v.token == "TK_for" or v.token == "TK_function" or v.token == "TK_repeat" then
+						if val.token == "TK_do" or val.token == "TK_if" or val.token == "TK_for" or val.token == "TK_function" or val.token == "TK_repeat" then
 							balance = balance + 1
 						end
 					else
-						if balance == 0 and v.token == "TK_do" or v.token == "TK_repeat" then
-							start = v
-							start.stack_pos = i
+						if balance == 0 and val.token == "TK_do" or val.token == "TK_repeat" then
+							start_token = val
+							start_token.stack_pos = i
 							break
 						end
 					end
 				end
 
-				if not start then
+				if not start_token then
 					error("unable to find start of loop")
 				end
-
-				local stop
 
 				local balance = 0
 				local in_function = false
 				local in_loop = false
-				local return_token
 
-				for i = start.stack_pos, #stack do
-					local v = stack[i]
+				for i = start_token.stack_pos, #tokens do
+					local token = tokens[i]
 
-					if v.token == "TK_do" or v.token == "TK_if" or v.token == "TK_function" or v.token == "TK_repeat" then
+					if token.token == "TK_do" or token.token == "TK_if" or token.token == "TK_function" or token.token == "TK_repeat" then
 						balance = balance + 1
 
-						if v.token == "TK_function" then
+						if token.token == "TK_function" then
 							in_function = balance
 						end
 
-						if v.token == "TK_do" or v.token == "TK_repeat" then
-							if i ~= start.stack_pos then
+						if token.token == "TK_do" or token.token == "TK_repeat" then
+							if i ~= start_token.stack_pos then
 								in_loop = balance
 							end
 						end
-					elseif v.token == "TK_end" or v.token == "TK_until" then
+					elseif token.token == "TK_end" or token.token == "TK_until" then
 
-						if v.token == "TK_end" and in_function == balance then
+						if token.token == "TK_end" and in_function == balance then
 							in_function = false
 						end
 
-						if (v.token == "TK_end" or v.token == "TK_until") and in_loop == balance then
+						if (token.token == "TK_end" or token.token == "TK_until") and in_loop == balance then
 							in_loop = false
 						end
 
 						balance = balance - 1
 					end
 
-					if v.token == "TK_return" or v.token == "TK_break" then
+					if token.token == "TK_return" or token.token == "TK_break" then
 						if not in_function and not in_loop then
-							return_token = v
+							return_token = token
 						end
 					end
 
 					if balance == 0 then
-						stop = v
+						stop_token = token
 						break
 					end
 				end
 
-				if not stop then
+				if not stop_token then
 					error("unable to find stop of loop")
 				end
 
-				lines[ls.linenumber] = lines[ls.linenumber]:gsub("continue", "goto CONTINUE")
+				lines[token.linenumber] = lines[token.linenumber]:gsub("continue", "goto CONTINUE")
 
 				if return_token and not return_token.fixed then
 					local space = " "
@@ -259,10 +258,10 @@ function gine.PreprocessLua(code, add_newlines)
 					return_token.fixed = true
 				end
 
-				if stop and not stop.fixed then
+				if stop_token and not stop_token.fixed then
 					local space = " "
 
-					for i = stop.linenumber - 1, 1, -1 do
+					for i = stop_token.linenumber - 1, 1, -1 do
 						if lines[i]:trim() ~= "" then
 							space = lines[i]
 							break
@@ -271,18 +270,18 @@ function gine.PreprocessLua(code, add_newlines)
 
 					space = space:match("^(%s*)") or " "
 
-					lines[stop.linenumber] = space .. "::CONTINUE::" .. (add_newlines and "\n" or "") .. lines[stop.linenumber]
+					lines[stop_token.linenumber] = space .. "::CONTINUE::" .. (add_newlines and "\n" or "") .. lines[stop_token.linenumber]
 
-					stop.fixed = true
+					stop_token.fixed = true
 				end
 			end
 		end
 
-		code = table.concat(lines, "\n")
-
 		if not found_continue then
 			error("unable to find continue keyword")
 		end
+
+		code = table.concat(lines, "\n")
 	end
 
 	code = code:gsub("DEFINE_BASECLASS", "local BaseClass = baseclass.Get")
