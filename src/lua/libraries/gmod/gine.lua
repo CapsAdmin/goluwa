@@ -105,7 +105,6 @@ function gine.Initialize()
 			vfs.AddModuleDirectory(R(dir.."/lua/includes/modules/"))
 		end
 
-
 		runfile("lua/postprocess/*")
 		runfile("lua/vgui/*")
 		runfile("lua/matproxy/*")
@@ -116,10 +115,6 @@ function gine.Initialize()
 		for name in pairs(gine.gamemodes) do
 			vfs.Mount(gine.dir .. "/gamemodes/"..name.."/entities/", "lua/")
 		end
-
-		gine.LoadEntities("lua/entities", "ENT", gine.env.scripted_ents.Register, function() return {} end)
-		gine.LoadEntities("lua/weapons", "SWEP", gine.env.weapons.Register, function() return {Primary = {}, Secondary = {}} end)
-		gine.LoadEntities("lua/effects", "EFFECT", gine.env.effects.Register, function() return {} end)
 
 		do
 			for path in vfs.Iterate("resource/localization/en/", true) do
@@ -150,6 +145,10 @@ function gine.Run()
 		if CLIENT then runfile(dir .. "/lua/autorun/client/*") end
 		if SERVER then runfile(dir .. "/lua/autorun/server/*") end
 	end
+
+	gine.LoadEntities("lua/entities", "ENT", gine.env.scripted_ents.Register, function() return {} end)
+	gine.LoadEntities("lua/weapons", "SWEP", gine.env.weapons.Register, function() return {Primary = {}, Secondary = {}} end)
+	gine.LoadEntities("lua/effects", "EFFECT", gine.env.effects.Register, function() return {} end)
 
 	gine.env.gamemode.Call("CreateTeams")
 	gine.env.gamemode.Call("PreGamemodeLoaded")

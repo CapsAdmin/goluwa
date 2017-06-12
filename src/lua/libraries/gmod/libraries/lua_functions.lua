@@ -5,9 +5,11 @@ function gine.env.include(path)
 		path:lower(),
 		"lua/" .. path:lower()
 	})
-	if not ok then
+	if ok == false then
 		error(err, 2)
 	end
+
+	return ok
 end
 
 function gine.env.module(name, _ENV)

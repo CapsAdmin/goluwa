@@ -30,6 +30,10 @@ function gine.env.resource.AddFile()
 
 end
 
+function gine.env.resource.AddSingleFile()
+
+end
+
 function gine.env.game.AddParticles()
 
 end

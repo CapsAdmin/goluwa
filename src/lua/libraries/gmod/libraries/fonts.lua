@@ -126,9 +126,9 @@ do
 
 	function surface.DrawText(str)
 		str = gine.translation2[str] or str
-		fonts.PushColor(txt_r, txt_g, txt_b, txt_a)
+		render2d.PushColor(txt_r, txt_g, txt_b, txt_a)
 		gfx.DrawText(str)
-		fonts.PopColor()
+		render2d.PopColor()
 
 		local x, y = gfx.GetTextPosition()
 		local w, h = gfx.GetTextSize(str)

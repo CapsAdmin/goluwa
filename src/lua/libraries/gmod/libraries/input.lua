@@ -1,11 +1,18 @@
 do
 	local translate_key = {}
 
-	for k,v in pairs(gine.env) do
-		if k:startswith("KEY_") then
-			translate_key[k:match("KEY_(.+)"):lower()] = v
+	local function find_enums(name)
+		for k,v in pairs(gine.env) do
+			if k:startswith(name .. "_") then
+				translate_key[k:match(name .. "_(.+)"):lower()] = v
+			end
 		end
 	end
+
+	find_enums("KEY")
+	find_enums("MOUSE")
+	find_enums("BUTTON")
+	find_enums("JOYSTICK")
 
 	local translate_key_rev = {}
 	for k,v in pairs(translate_key) do
@@ -18,7 +25,7 @@ do
 				--if gine.print_keys then llog("key reverse: ", key, " >> ", translate_key_rev[key]) end
 				return translate_key_rev[key]
 			else
-				logf("key %q could not be translated!\n", key)
+				--logf("key %q could not be translated!\n", key)
 				return translate_key_rev.KEY_P -- dunno
 			end
 		else
@@ -26,7 +33,7 @@ do
 				if gine.print_keys then llog("key: ", key, " >> ", translate_key[key]) end
 				return translate_key[key]
 			else
-				logf("key %q could not be translated!\n", key)
+				--logf("key %q could not be translated!\n", key)
 				return translate_key.p -- dunno
 			end
 		end
@@ -59,7 +66,7 @@ do
 			if translate_mouse[button] then
 				return translate_mouse[button]
 			else
-				llog("mouse button %q could not be translated!\n", button)
+				--llog("mouse button %q could not be translated!\n", button)
 				return translate_mouse.button_5
 			end
 		end

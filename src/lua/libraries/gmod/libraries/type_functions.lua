@@ -1,7 +1,7 @@
 local function make_is(name)
 	if name:sub(1,1) == name:sub(1,1):upper() then
 		gine.env["is" .. name:lower()] = function(var)
-			return typex(var) == name
+			return name and type(var) == "table" and var.MetaName == name
 		end
 	else
 		gine.env["is" .. name:lower()] = function(var)

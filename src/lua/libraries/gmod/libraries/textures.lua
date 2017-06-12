@@ -15,12 +15,10 @@ do
 			else
 				mat:SetAlbedoTexture(render.CreateTextureFromPath("materials/" .. path))
 			end
-		elseif vfs.IsFile("materials/" .. path) then
-			mat:LoadVMT("materials/" .. path)
 		elseif vfs.IsFile("materials/" .. path .. ".vmt") then
 			mat:LoadVMT("materials/" .. path .. ".vmt")
-		elseif vfs.IsFile("materials/" .. path .. ".png") then
-			mat:LoadVMT("materials/" .. path .. ".png")
+		elseif vfs.IsFile("materials/" .. path) then
+			mat:LoadVMT("materials/" .. path)
 		end
 
 		local self = gine.WrapObject(mat, "IMaterial")
@@ -75,7 +73,13 @@ do
 
 	function surface.GetTextureID(path)
 		if vfs.IsFile("materials/" .. path) then
-			return render.CreateTextureFromPath("materials/" .. path)
+			if path:lower():endswith(".vmt") then
+				local mat = render.CreateMaterial("model")
+				mat:LoadVMT("materials/" .. path)
+				return mat:GetAlbedoTexture()
+			else
+				return render.CreateTextureFromPath("materials/" .. path)
+			end
 		end
 
 		return render.CreateTextureFromPath("materials/" .. path .. ".vtf")

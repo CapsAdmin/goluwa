@@ -60,6 +60,8 @@ function render.SupportsVertexShaders_2_0() return true end
 function render.SupportsPixelShaders_2_0() return true end
 function render.SupportsHDR() return true end
 
-function render.GetMoBlurTex0()
-	return gine.WrapObject(_G.render.GetErrorTexture(), "ITexture")
-end
+function render.GetMoBlurTex0() return gine.WrapObject(_G.render.GetErrorTexture(), "ITexture") end
+function render.GetMoBlurTex1() return gine.WrapObject(_G.render.GetErrorTexture(), "ITexture") end
+function render.GetSuperFPTex() return gine.WrapObject(_G.render.GetErrorTexture(), "ITexture") end
+function render.GetMorphTex0() return gine.WrapObject(_G.render.GetErrorTexture(), "ITexture") end
+

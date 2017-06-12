@@ -31,18 +31,18 @@ function render.GetRenderTarget()
 end
 
 function render.PushRenderTarget(rt, x,y,w,h)
-	render.PushFramebuffer(rt.__obj.fb)
+	lib.PushFrameBuffer(rt.__obj.fb)
 
 	x = x or 0
 	y = y or 0
-	w = w or rt.__obj.fb.w
-	h = h or rt.__obj.fb.h
+	w = w or rt.__obj.fb:GetSize().w
+	h = h or rt.__obj.fb:GetSize().h
 
-	render.PushViewport(x,y,w,h)
+	lib.PushViewport(x,y,w,h)
 end
 
 function render.PopRenderTarget()
-	render.PopViewport()
+	lib.PopViewport()
 
-	render.PopFramebuffer()
+	lib.PopFrameBuffer()
 end

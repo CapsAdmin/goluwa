@@ -2,13 +2,17 @@ function gine.LoadEntities(base_folder, global, register, create_table)
 	for file_name in vfs.Iterate(base_folder.."/") do
 		--logn("gine: registering ",base_folder," ", file_name)
 		if file_name:endswith(".lua") then
-			gine.env[global] = create_table()
-			runfile(base_folder.."/" .. file_name)
+			local tbl = create_table()
+			tbl.Folder = base_folder:sub(0, -5)
+			gine.env[global] = tbl
+			runfile(base_folder .. "/" .. file_name)
 			register(gine.env[global], file_name:match("(.+)%."))
 		else
 			if SERVER then
-				if vfs.IsFile(base_folder.."/" .. file_name .. "/init.lua") then
-					gine.env[global] = create_table()
+				if vfs.IsFile(base_folder .. "/" .. file_name .. "/init.lua") then
+					local tbl = create_table()
+					tbl.Folder = base_folder .."/" .. file_name:sub(0, -5)
+					gine.env[global] = tbl
 					gine.env[global].Folder = base_folder:sub(5) .. "/" .. file_name -- weapons/gmod_tool/stools/
 					runfile(base_folder.."/" .. file_name .. "/init.lua")
 					register(gine.env[global], file_name)
@@ -16,10 +20,12 @@ function gine.LoadEntities(base_folder, global, register, create_table)
 			end
 
 			if CLIENT then
-				if vfs.IsFile(base_folder.."/" .. file_name .. "/cl_init.lua") then
-					gine.env[global] = create_table()
+				if vfs.IsFile(base_folder .. "/" .. file_name .. "/cl_init.lua") then
+					local tbl = create_table()
+					tbl.Folder = base_folder .. "/" .. file_name:sub(0, -5)
+					gine.env[global] = tbl
 					gine.env[global].Folder = base_folder:sub(5) .. "/" .. file_name
-					runfile(base_folder.."/" .. file_name .. "/cl_init.lua")
+					runfile(base_folder .. "/" .. file_name .. "/cl_init.lua")
 					register(gine.env[global], file_name)
 				end
 			end
@@ -178,8 +184,16 @@ do
 		return def or 0
 	end
 
+	function META:GetNWInt(key, def)
+		return def or 0
+	end
+
 	function META:GetNWEntity(key, def)
 		return def or _G.NULL
+	end
+
+	function META:OnGround()
+		return false
 	end
 
 	for k, v in pairs(META) do

@@ -21,3 +21,11 @@ end
 function META:GetMaxClip2()
 	return 1
 end
+
+function META:Clip1()
+	return 0
+end
+
+function META:GetMaxClip1()
+	return 1
+end
