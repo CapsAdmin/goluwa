@@ -57,8 +57,28 @@ do
 	META.SetStrint = set
 	META.GetString = get(function() return "" end)
 
-	META.SetTexture = set
-	META.GetTexture = get(function(self) return gine.WrapObject(render.GetErrorTexture(), "ITexture") end)
+	local SetTexture = set
+	local GetTexture = get(function(self) return gine.WrapObject(render.GetErrorTexture(), "ITexture") end)
+
+	function META:SetTexture(key, val)
+		key = key:lower()
+
+		if key == "$basetexture" then
+			return self.__obj:SetAlbedoTexture(val.__obj)
+		end
+
+		return SetTexture(self, key, val)
+	end
+
+	function META:GetTexture(key)
+		key = key:lower()
+
+		if key == "$basetexture" then
+			return gine.WrapObject(self.__obj:GetAlbedoTexture(), "ITexture")
+		end
+
+		return GetTexture(self, key)
+	end
 
 	META.SetVector = set
 	META.GetVector = get(function() return genv.env.Vector() end)

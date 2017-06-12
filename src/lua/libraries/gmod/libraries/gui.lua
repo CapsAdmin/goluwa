@@ -143,6 +143,7 @@ do
 		obj:SetSize(Vec2(64, 24))
 		obj:SetPadding(Rect())
 		obj:SetMargin(Rect())
+		obj:ResetLayout()
 		self:SetContentAlignment(4)
 
 		self:SetFontInternal("default")
