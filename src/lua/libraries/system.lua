@@ -581,6 +581,8 @@ do
 			for level = 3, 100 do
 				local info = debug.getinfo(level)
 				if info then
+					info.source = debug.getprettysource(level)
+
 					if info.currentline >= 0 then
 						local args = {}
 
@@ -624,7 +626,7 @@ do
 				for _, info in pairs(tbl) do
 					local str = info[field]
 					if str then
-						local diff = length - #str
+						local diff = length - #str:split("\n")[1]
 
 						if diff > 0 then
 							info[field] = str .. (" "):rep(diff)
