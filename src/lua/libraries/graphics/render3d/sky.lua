@@ -72,7 +72,7 @@ function render3d.GetSkyTexture()
 end
 
 function render3d.GetShaderSunDirection()
-	local sun = entities.world and entities.world.sun
+	local sun = entities.world:IsValid() and entities.world.sun
 
 	if sun and sun:IsValid() then
 		local dir = sun:GetTRPosition():GetNormalized()
