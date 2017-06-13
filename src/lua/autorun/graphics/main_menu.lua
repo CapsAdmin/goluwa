@@ -170,7 +170,7 @@ function menu.CreateTopBar()
 		local button = bar:CreatePanel("text_button")
 		button:SetSizeToTextOnLayout(true)
 		button:SetText(text)
-		button:SetMargin(Rect(S*3-w, S*3, S*3-w-1, S*2+1))
+		button:SetMargin(Rect(S*2-w, S*2, S*2-w, S*2))
 		button:SetPadding(Rect(S*4, S*2, S*4, S*2))
 		button:SetMode("toggle")
 		button:SetupLayout("left", "top")
@@ -225,7 +225,7 @@ function menu.CreateTopBar()
 	table.insert(list, {L"freeze data: off"})
 	table.insert(list, {L"clear all data"})
 
-	create_button("↓", list, 2)
+	create_button("↓", list, 1)
 
 	create_button(L"game", {
 		{L"load", function()

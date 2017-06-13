@@ -25,12 +25,12 @@ function SKIN:Build()
 		shadow = 1,
 		padding = 4,
 		shadow_color = Color(0.2,0.2,0.2,0.9),
-		size = 5*S,
+		size = 8,
 		scale = S,
 		--shade = "vec4(sin(uv.x*130)+cos(uv.y*50))*texture(self, uv).a;",
 		filtering = "nearest",
 	})
-
+ZSNES_FONT = font
 	local texture = render.CreateTextureFromPath("textures/gui/skins/zsnes.png")
 	texture:SetMinFilter("nearest")
 	texture:SetMagFilter("nearest")

@@ -63,7 +63,7 @@ function META:Rebuild()
 end
 
 function META:LoadGlyph(code)
-	if self.chars[code] then return end
+	if self.chars[code] ~= nil then return end
 
 	local buffer, char = self:GetGlyphData(code)
 
@@ -83,6 +83,8 @@ function META:LoadGlyph(code)
 		})
 
 		self.chars[code] = char
+	else
+		self.chars[code] = false
 	end
 end
 
@@ -122,13 +124,13 @@ function META:SetPolyChar(poly, i, x, y, char, r)
 		local x_,y_, w,h, sx,sy = self.texture_atlas:GetUV(char)
 		poly:SetUV(x_,y_, w,h, sx,sy)
 
+		y = y - ch.bitmap_top + self.Size - math.round(self.Size / 4)
+
+		x = x - (self.Padding / 2)
+		y = y - (self.Padding / 2)
+
 		x = x * self.Scale.x
-		y = y * self.Scale.y
-
-		y = y - ch.bitmap_top + (self.Size / self.Scale.y)
-
-		x = x - (self.Padding / 2) * self.Scale.x
-		y = y - (self.Padding / 2) * self.Scale.y
+		y = y * self.Scale.y + 1
 
 		w = w * self.Scale.x
 		h = h * self.Scale.y
@@ -157,7 +159,7 @@ function META:CompileString(data)
 				for i = 1, utf8.length(str) do
 					local char = utf8.sub(str, i,i)
 					local ch = self.chars[char]
-					if not ch then
+					if ch == nil then
 						self:LoadGlyph(char)
 						rebuild = true
 					end
@@ -193,6 +195,7 @@ function META:CompileString(data)
 			for str_i = 1, count do
 				local char = utf8.sub(str, str_i,str_i)
 				local ch = self.chars[char]
+				local spacing = self.Spacing
 
 				if char == "\n" then
 					X = 0
@@ -202,24 +205,12 @@ function META:CompileString(data)
 
 					if ch then
 						if self.Monospace then
-							X = X + self.Spacing * 4
+							X = X + spacing * 4
 						else
-							X = X + ((ch.x_advance + self.Spacing) * self.Scale.x) * 4
+							X = X + (ch.x_advance + spacing) * 4
 						end
 					else
 						X = X + self.Size * 4
-					end
-				elseif not ch and char == " " then
-					local ch = self.chars[" "]
-
-					if ch then
-						if self.Monospace then
-							X = X + self.Spacing
-						else
-							X = X + (ch.x_advance + self.Spacing) * self.Scale.x
-						end
-					else
-						X = X + self.Size
 					end
 				elseif ch then
 					local texture = self.texture_atlas:GetPageTexture(char)
@@ -241,14 +232,16 @@ function META:CompileString(data)
 					end
 
 					if self.Monospace then
-						X = X + self.Spacing
+						X = X + spacing
 					else
-						X = X + ch.x_advance + self.Spacing + (self.Size / fonts.font_dpi)
+						X = X + ch.x_advance + spacing
 					end
 
 					width_info[i] = X
 
 					i = i + 1
+				elseif char == " " then
+					X = X + self.Size / 2
 				end
 				max_width = math.max(max_width, X)
 			end
@@ -293,7 +286,7 @@ function META:GetTextSize(str)
 	for i = 1, length do
 		local char = utf8.sub(str, i,i)
 		local ch = self.chars[char]
-		if not ch then
+		if ch == nil then
 			self:LoadGlyph(char)
 			rebuild = true
 		end
@@ -303,43 +296,37 @@ function META:GetTextSize(str)
 		self:Rebuild()
 	end
 
+	local spacing = self.Spacing
+
 	for i = 1, length do
-		local char = utf8.sub(str, i,i)
+		local char = utf8.sub(str, i, i)
 		local ch = self.chars[char]
+
 		if char == "\n" then
-			Y = Y + self.Size * self.Scale.y
+			Y = Y + self.Size
 		elseif char == "\t" then
 			local ch = self.chars[" "]
 			if ch then
 				if self.Monospace then
-					X = X + self.Spacing * 4
+					X = X + spacing * 4
 				else
-					X = X + ((ch.x_advance + self.Spacing) * self.Scale.x) * 4
+					X = X + (ch.x_advance + spacing) * 4
 				end
 			else
 				X = X + self.Size * 4
 			end
-		elseif not ch and char == " " then
-			local ch = self.chars[" "]
-
-			if ch then
-				if self.Monospace then
-					X = X + self.Spacing
-				else
-					X = X + (ch.x_advance + self.Spacing) * self.Scale.x
-				end
-			else
-				X = X + self.Size
-			end
 		elseif ch then
 			if self.Monospace then
-				X = X + self.Spacing
+				X = X + spacing
 			else
-				X = X + (ch.x_advance + self.Spacing) * self.Scale.x
+				X = X + ch.x_advance + spacing
 			end
+		elseif char == " " then
+			X = X + self.Size
 		end
 	end
-	return X, Y
+
+	return X * self.Scale.x, Y * self.Scale.y
 end
 
 function META:WrapString(str, max_width, max_word_length)

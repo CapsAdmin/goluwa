@@ -1,7 +1,7 @@
 local fonts = ... or {}
 
 fonts.registered_fonts = fonts.registered_fonts or {}
-fonts.font_dpi = 72
+fonts.font_dpi = 62
 
 fonts.default_font_path = "fonts/unifont.ttf"
 
