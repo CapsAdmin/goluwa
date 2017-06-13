@@ -169,20 +169,30 @@ function input.GetKeyName(code)
 	return gine.GetKeyCode(code, true)
 end
 
+do
+	local last_key
+	local b = false
 
-local b
-function input.StartKeyTrapping()
-	b = true
-end
+	function input.StartKeyTrapping()
+		b = true
+		last_key = nil
 
-function input.IsKeyTrapping()
-	return b
-end
+		event.AddListener("KeyInput", "gine_keytrap", function(key, press) last_key = gine.GetKeyCode(key) end)
+		event.AddListener("MouseInput", "gine_keytrap", function(key, press) last_key = gine.GetMouseCode(key) end)
+	end
 
-function input.CheckKeyTrapping()
+	function input.IsKeyTrapping()
+		return b
+	end
 
-end
+	function input.CheckKeyTrapping()
+		return last_key
+	end
 
-function input.StopKeyTrapping()
-	b = false
+	function input.StopKeyTrapping()
+		b = false
+
+		event.RemoveListener("KeyInput", "gine_keytrap")
+		event.RemoveListener("MouseInput", "gine_keytrap")
+	end
 end

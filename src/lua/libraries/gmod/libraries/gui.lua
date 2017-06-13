@@ -214,6 +214,11 @@ do
 
 				if class == "label" then
 					if obj.text_internal and obj.text_internal ~= "" then
+						if obj.expensive_shadow_dir then
+							render2d.SetColor(obj.expensive_shadow_color:Unpack())
+							gine.render2d_fonts[obj.font_internal:lower()]:DrawString(obj.text_internal, obj.text_offset.x + obj.expensive_shadow_dir, obj.text_offset.y + obj.expensive_shadow_dir)
+						end
+
 						render2d.SetColor(obj.fg_color:Unpack())
 						gine.render2d_fonts[obj.font_internal:lower()]:DrawString(obj.text_internal, obj.text_offset.x, obj.text_offset.y)
 					end
@@ -255,7 +260,7 @@ do
 					panel.text_offset.y = m:GetTop()
 				elseif panel.content_alignment == 7 then
 					panel.text_offset.x = m:GetLeft()
-					panel.text_offset.y = m:GetTop()
+					panel.text_offset.y = m:GetTop() + h / 2
 				elseif panel.content_alignment == 9 then
 					panel.text_offset.x = panel:GetWidth() - w - m:GetRight()
 					panel.text_offset.y = m:GetTop()
@@ -268,6 +273,7 @@ do
 				end
 
 				panel.text_offset = panel.text_offset + panel.text_inset
+				panel.text_offset.y = panel.text_offset.y - 1
 			end
 
 			if not obj.gine_prepared then
@@ -367,7 +373,7 @@ do
 	META.__eq = nil -- no need
 
 	function META:SetParent(panel)
-		if panel and panel.__obj and panel.__obj:IsValid() then
+		if panel and panel:IsValid() and panel.__obj and panel.__obj:IsValid() then
 			self.__obj:SetParent(panel.__obj)
 		else
 			self.__obj:SetParent(gine.gui_world)
@@ -477,7 +483,9 @@ do
 	end
 
 	function META:SetSize(w,h)
-		self.__obj:SetSize(Vec2(tonumber(w),tonumber(h)))
+		w = tonumber(w)
+		h = tonumber(h) or w
+		self.__obj:SetSize(Vec2(w, h))
 		if self.__obj.vgui_dock then
 			if self.__obj.Size ~= self.__obj.gine_last_Size then
 				self:Dock(self.__obj.vgui_dock)
@@ -557,13 +565,14 @@ do
 			return self:GetTextSize()
 		end
 
-		return (panel:GetSizeOfChildren() + panel.text_inset):Unpack()
+
+		return panel:GetSizeOfChildren():Unpack()
 	end
 
 	function META:GetTextSize()
 		local panel = self.__obj
 
-		local w, h = fonts.FindFont(panel.font_internal):GetTextSize(panel.text_internal)
+		local w, h = gine.render2d_fonts[panel.font_internal:lower()]:GetTextSize(panel.text_internal)
 		return w + panel.text_inset.x, h + panel.text_inset.y
 	end
 
@@ -643,7 +652,10 @@ do
 		self.__obj.content_alignment = num
 		self.__obj:Layout()
 	end
-	function META:SetExpensiveShadow() end
+	function META:SetExpensiveShadow(dir, color)
+		self.__obj.expensive_shadow_dir = dir
+		self.__obj.expensive_shadow_color = ColorBytes(color.r, color.g, color.b, color.a)
+	end
 	function META:Prepare()
 		self.__obj.gine_prepared = true
 		if self.__obj.gine_prepare_layout then

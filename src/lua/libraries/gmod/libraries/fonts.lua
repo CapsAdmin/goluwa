@@ -92,15 +92,18 @@ do
 	gine.render2d_fonts = gine.render2d_fonts or {}
 
 	function surface.CreateFont(id, tbl)
+		local reload_args = {id, table.copy(tbl)}
 		local tbl = table.copy(tbl)
 		tbl.path = tbl.font
 
 		tbl.path = gine.TranslateFontName(tbl.path)
 
-		if tbl.size then tbl.size = math.ceil(tbl.size * 0.55) end
+		if tbl.size then tbl.size = tbl.size * 0.525 end
 		if tbl.shadow then tbl.shadow = 2 end
-
-		gine.render2d_fonts[id:lower()] = fonts.CreateFont(tbl)
+		tbl.filtering = "nearest"
+		local font = fonts.CreateFont(tbl)
+		font.reload_args = reload_args
+		gine.render2d_fonts[id:lower()] = font
 	end
 
 	function surface.SetFont(name)
@@ -133,5 +136,13 @@ do
 		local x, y = gfx.GetTextPosition()
 		local w, h = gfx.GetTextSize(str)
 		gfx.SetTextPosition(x + w, y)
+	end
+
+	if RELOAD then
+		for k,v in pairs(gine.render2d_fonts) do
+			if v.reload_args then
+				surface.CreateFont(unpack(v.reload_args))
+			end
+		end
 	end
 end
