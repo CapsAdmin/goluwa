@@ -34,6 +34,24 @@ do
 	end
 end
 
+local default_font = {
+	font = "Arial",
+	extended = false,
+	size = 13,
+	weight = 500,
+	blursize = 0,
+	scanlines = 0,
+	antialias = true,
+	underline = false,
+	italic = false,
+	strikeout = false,
+	symbol = false,
+	rotary = false,
+	shadow = false,
+	additive = false,
+	outline = false,
+}
+
 function gine.LoadFonts()
 	local screen_res = window.GetSize()
 
@@ -62,7 +80,7 @@ function gine.LoadFonts()
 
 			gine.render2d_fonts[font_name:lower()] = fonts.CreateFont({
 				path = gine.TranslateFontName(info.name),
-				size = info.tall and math.ceil(info.tall) or 11,
+				size = info.tall or default_font.size,
 			})
 		end
 	end
@@ -93,15 +111,26 @@ do
 
 	function surface.CreateFont(id, tbl)
 		local reload_args = {id, table.copy(tbl)}
-		local tbl = table.copy(tbl)
-		tbl.path = tbl.font
 
-		tbl.path = gine.TranslateFontName(tbl.path)
+		for k,v in pairs(default_font) do
+			if tbl[k] == nil then
+				tbl[k] = v
+			end
+		end
 
-		if tbl.size then tbl.size = tbl.size * 0.525 end
-		if tbl.shadow then tbl.shadow = 2 end
-		tbl.filtering = "nearest"
-		local font = fonts.CreateFont(tbl)
+		local options = {}
+
+		options.path = gine.TranslateFontName(tbl.font)
+		--options.size = math.round(tbl.size / 1.36)
+		options.size = tbl.size
+
+		if tbl.shadow then
+			options.shadow = 2
+		end
+
+		options.filtering = "nearest"
+
+		local font = fonts.CreateFont(options)
 		font.reload_args = reload_args
 		gine.render2d_fonts[id:lower()] = font
 	end

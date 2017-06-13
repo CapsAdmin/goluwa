@@ -241,7 +241,7 @@ do
 			local panel = obj
 
 			if panel.vgui_type == "label" then
-				local w, h = gine.render2d_fonts[panel.font_internal:lower()]:GetTextSize(panel.text_internal)
+				local w, h = panel.gine_pnl:GetTextSize()
 				local m = panel:GetMargin()
 
 				if panel.content_alignment == 5 then
@@ -260,9 +260,9 @@ do
 					panel.text_offset.y = m:GetTop()
 				elseif panel.content_alignment == 7 then
 					panel.text_offset.x = m:GetLeft()
-					panel.text_offset.y = m:GetTop() + h / 2
+					panel.text_offset.y = m:GetTop()
 				elseif panel.content_alignment == 9 then
-					panel.text_offset.x = panel:GetWidth() - w - m:GetRight()
+					panel.text_offset.x = panel:GetWidth() - m:GetRight() - w
 					panel.text_offset.y = m:GetTop()
 				elseif panel.content_alignment == 1 then
 					panel.text_offset.x = m:GetLeft()
