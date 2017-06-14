@@ -834,7 +834,7 @@ do
 
 			local loc = self.shader.program:GetUniformLocation(name)
 
-			self.shader.program:UploadColor(loc, ColorByte(unpack(tbl)))
+			self.shader.program:UploadColor(loc, ColorBytes(unpack(tbl)))
 		end
 
 		function Shader:send(name, var, ...)
