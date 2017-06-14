@@ -27,7 +27,7 @@ do
 			return FALSE
 		end
 
-		error(("tried to index %q on a NULL value"):format(key), 2)
+		--error(("tried to index %q on a NULL value"):format(key), 2)
 	end
 
 	prototype.Register(NULL)
