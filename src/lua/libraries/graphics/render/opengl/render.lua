@@ -50,6 +50,7 @@ function render._Initialize()
 	gl.Enable("GL_MULTISAMPLE")
 	gl.Enable("GL_DEPTH_TEST")
 	gl.Enable("GL_BLEND")
+	gl.Enable("GL_SCISSOR_TEST")
 
 	local largest = ffi.new("GLfloat[1]")
 	gl.GetFloatv("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT", largest)
@@ -84,7 +85,6 @@ end
 
 function render._SetViewport(x,y,w,h)
 	gl.Viewport(x, y, w, h)
-	gl.Scissor(x, y, w, h)
 end
 
 do

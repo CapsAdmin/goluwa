@@ -3,13 +3,28 @@ local render2d = ... or _G.render2d
 local gl = require("opengl")
 local ffi = require("opengl")
 
-function render2d.SetScissor(x, y, w, h)
-	if not x then
-		render.SetScissor()
-	else
-		x, y = render2d.ScreenToWorld(-x, -y)
-		render.SetScissor(-x, -y, w, h)
+do
+	local X, Y, W, H = 0,0
+
+	function render2d.SetScissor(x, y, w, h)
+		X = x
+		Y = y
+		W = w or render.GetWidth()
+		H = h or render.GetHeight()
+
+		if not x then
+			render.SetScissor()
+		else
+			x, y = render2d.ScreenToWorld(-x, -y)
+			render.SetScissor(-x, -y, w, h)
+		end
 	end
+
+	function render2d.GetScissor()
+		return X, Y, W, H
+	end
+
+	utility.MakePushPopFunction(render2d, "Scissor")
 end
 
 do
