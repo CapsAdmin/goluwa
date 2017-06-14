@@ -125,6 +125,7 @@ do
 
 		if class == "textentry" then
 			obj = gui.CreatePanel("text_edit")
+			obj:SetMultiline(false)
 		else
 			obj = gui.CreatePanel("base")
 		end
@@ -202,8 +203,11 @@ do
 				self:InvalidateLayout(true)
 				self.gine_layout = nil
 			end
+			local w, h = obj:GetWidth(), obj:GetHeight()
 
-			local paint_bg = self:Paint(obj:GetWidth(), obj:GetHeight())
+			render2d.PushScissor(0, 0, w, h)
+
+			local paint_bg = self:Paint(w, h)
 
 			if not obj.draw_manual then
 				if obj.paint_bg and paint_bg ~= nil then
@@ -226,6 +230,8 @@ do
 			end
 
 			self:PaintOver(obj:GetWidth(), obj:GetHeight())
+
+			render2d.PopScissor()
 		end
 
 		obj:CallOnRemove(function() self:OnDeletion() end)
@@ -448,7 +454,7 @@ do
 	end
 
 	function META:DockMargin(left, top, right, bottom)
-		self.__obj:SetPadding(Rect(right, bottom, left, top))
+		self.__obj:SetPadding(Rect(left, bottom, right, top))
 	end
 
 	local in_drawing
@@ -625,15 +631,15 @@ do
 
 	function META:Dock(enum)
 		if enum == gine.env.FILL then
-			self.__obj:SetupLayout("center_simple", "fill")
+			self.__obj:SetupLayout("center_simple", "fill", "no_collide")
 		elseif enum == gine.env.LEFT then
-			self.__obj:SetupLayout("center_y_simple", "left", "fill_y")
+			self.__obj:SetupLayout("center_simple", "left", "fill_y")
 		elseif enum == gine.env.RIGHT then
-			self.__obj:SetupLayout("center_y_simple", "right", "fill_y")
+			self.__obj:SetupLayout("center_simple", "right", "fill_y")
 		elseif enum == gine.env.TOP then
-			self.__obj:SetupLayout("center_x_simple", "top", "fill_x")
+			self.__obj:SetupLayout("center_simple", "top", "fill_x")
 		elseif enum == gine.env.BOTTOM then
-			self.__obj:SetupLayout("center_x_simple", "bottom", "fill_x")
+			self.__obj:SetupLayout("center_simple", "bottom", "fill_x")
 		elseif enum == gine.env.NODOCK then
 			self.__obj:SetupLayout()
 		end
@@ -677,7 +683,7 @@ do
 
 	do -- z pos stuff
 		function META:SetZPos(pos)
-			self.__obj:SetChildOrder(pos)
+			--self.__obj:SetChildOrder(pos)
 		end
 
 		function META:MoveToBack()
@@ -691,7 +697,8 @@ do
 		--function META:SetFocusTopLevel() end
 
 		function META:MakePopup()
-		--	self.__obj:BringToFront()
+			self.__obj:BringToFront()
+			self.__obj:RequestFocus()
 		end
 	end
 
@@ -708,11 +715,11 @@ do
 	end
 
 	function META:DrawFilledRect()
-		render2d.DrawRect(0,0,self:GetSize())
+		gine.env.surface.DrawRect(0,0,self:GetSize())
 	end
 
 	function META:DrawOutlinedRect()
-		render2d.DrawRect(0,0,self:GetSize())
+		gine.env.surface.DrawOutlinedRect(0,0, self:GetSize())
 	end
 
 	function META:SetWrap(b)
@@ -795,11 +802,11 @@ do
 	end
 
 	function META:SetMultiline(b)
-		self.__obj.multiline = b
+		self.__obj:SetMultiline(b)
 	end
 
-	function META:IsMultiline(b)
-		return self.__obj.multiline
+	function META:IsMultiline()
+		return self.__obj:GetMultiline()
 	end
 
 	function META:SetFocusTopLevel()
@@ -812,6 +819,10 @@ do
 
 	function META:GotoTextEnd()
 
+	end
+
+	function META:DoModal()
+		self.__obj:RequestFocus()
 	end
 
 	function META:SetWorldClicker()

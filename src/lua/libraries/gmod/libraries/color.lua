@@ -1,5 +1,6 @@
 function gine.env.HSVToColor(h,s,v)
-	return gine.env.Color(ColorHSV(h*360,s,v):Unpack())
+	local r,g,b,a = ColorHSV(h/360,s,v):Unpack()
+	return gine.env.Color(r*255,g*255,b*255,a*255)
 end
 
 function gine.env.ColorToHSV(r,g,b)
@@ -9,5 +10,8 @@ function gine.env.ColorToHSV(r,g,b)
 		g = t.g
 		b = t.b
 	end
-	return ColorBytes(r,g,b):GetHSV()
+
+	local h,s,v = ColorBytes(r,g,b):GetHSV()
+
+	return h * 360, s, v
 end

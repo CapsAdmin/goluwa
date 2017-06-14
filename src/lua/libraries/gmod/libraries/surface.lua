@@ -27,7 +27,15 @@ function surface.DrawRect(x,y,w,h)
 	render2d.bound_texture = old
 end
 
-surface.DrawOutlinedRect = surface.DrawRect
+function surface.DrawOutlinedRect(x,y,w,h)
+	local old = render2d.bound_texture
+	render2d.SetTexture()
+	render2d.DrawRect(x, y, 1, h)
+	render2d.DrawRect(x, y, w, 1)
+	render2d.DrawRect(w + x - 1, y, 1, h)
+	render2d.DrawRect(x, h + y - 1, w, 1)
+	render2d.bound_texture = old
+end
 
 function surface.DrawTexturedRectUV(x,y,w,h, u1,v1, u2,v2)
 	render2d.SetRectUV(u1,v1, u2-u1,v2-v1)

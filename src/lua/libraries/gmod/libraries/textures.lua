@@ -41,6 +41,14 @@ do
 		return self.__obj.vmt and self.__obj.vmt.shader or "Loading"-- this isn't cased properly
 	end
 
+	function META:Width()
+		return self.__obj:GetAlbedoTexture():GetSize().x
+	end
+
+	function META:Height()
+		return self.__obj:GetAlbedoTexture():GetSize().y
+	end
+
 	function META:Recompute()
 
 	end

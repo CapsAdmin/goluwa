@@ -1661,6 +1661,7 @@ do -- layout
 					child.Visible and
 					not child.ThreeDee and
 					not child.IgnoreLayout and
+					not child.layout_collide2 and
 					(self.CollisionGroup == "none" or self.CollisionGroup == child.CollisionGroup)
 				then
 					local child_left, child_top, child_right, child_bottom = child:GetWorldRectFast()
@@ -1789,9 +1790,9 @@ do -- layout
 							child:Layout(true)
 						end
 					elseif cmd == "collide" then
-						child:Collide(true)
+						child:Collide()
 					elseif cmd == "no_collide" then
-						child:Collide(false)
+						child:NoCollide2()
 					elseif cmd == "size_to_children_width" then
 						child:SizeToChildrenWidth()
 					elseif cmd == "size_to_children_height" then
@@ -1950,6 +1951,10 @@ do -- layout
 
 		function META:NoCollide()
 			self.layout_collide = false
+		end
+
+		function META:NoCollide2()
+			self.layout_collide2 = true
 		end
 
 		function META:FillX(percent)

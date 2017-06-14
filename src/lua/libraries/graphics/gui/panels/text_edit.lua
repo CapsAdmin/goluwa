@@ -5,6 +5,7 @@ META:GetSet("CaretColor")
 META:GetSet("SelectionColor")
 META:GetSet("Editable", true)
 META:GetSet("CaretPosition", Vec2(0, 0))
+META:GetSet("Multiline", true)
 
 META:GetSetDelegate("Text", "", "label")
 META:GetSetDelegate("ParseTags", false, "label")
@@ -32,10 +33,19 @@ function META:Initialize()
 	self:SetEditable(true)
 
 	label.OnTextChanged = function(_, ...) self:OnTextChanged(...) end
-	label.OnEnter = function(_, ...) self:OnEnter(...) end
+	label.OnEnter = function(_, ...) self:OnEnter(...) if not self.Multiline then return false end end
 
 	self:SetCursor("ibeam")
 	self:SizeToText()
+end
+
+function META:SetMultiline(b)
+	self.Multiline = b
+	if b then
+		self.label:SetupLayout()
+	else
+		self.label:SetupLayout("center_y_simple")
+	end
 end
 
 function META:GetMarkup()
