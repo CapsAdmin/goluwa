@@ -28,7 +28,7 @@ for x,y,i,r,g,b,a in tex:IteratePixels() do
 end
 
 for x,y,i,r,g,b,a in tex:IteratePixels() do
-	r,g = tex:GetPixelColor(x,y)
+	r,g = tex:GetRawPixelColor(x,y)
 	assert(x == r)
 	assert(y == g)
 	tex:SetPixelColor(x,y, r,g,y,x)

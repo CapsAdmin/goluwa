@@ -54,7 +54,7 @@ do -- image data
 	end
 
 	function ImageData:getPixel(x,y)
-		return self.tex:GetPixelColor(x, y)
+		return self.tex:GetRawPixelColor(x, y)
 	end
 
 	function ImageData:setPixel(x,y, r,g,b,a)

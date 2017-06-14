@@ -136,6 +136,6 @@ event.AddListener("PostDrawGUI", "lol", function()
 	--render2d.DrawRect(0,0,tex:GetSize().x,tex:GetSize().y)
 
 	--render2d.SetTexture()
-	--render2d.SetColor(ColorBytes(tex:GetPixelColor(gfx.GetMousePosition())):Unpack())
+	--render2d.SetColor(tex:GetPixelColor(gfx.GetMousePosition()):Unpack())
 	--render2d.DrawRect(50,50,50,50)
 end)

@@ -402,7 +402,7 @@ function META:IteratePixels()
 	end
 end
 
-function META:GetPixelColor(x, y)
+function META:GetRawPixelColor(x, y)
 	local image = self.downloaded_image or self:Download()
 	self.downloaded_image = image
 
@@ -426,7 +426,7 @@ function META:GetPixelColor(x, y)
 	end
 end
 
-function META:SetPixelColor(x, y, r,g,b,a)
+function META:SetRawPixelColor(x, y, r,g,b,a)
 	local image = self.downloaded_image or self:Download()
 	self.downloaded_image = image
 
@@ -458,6 +458,14 @@ function META:SetPixelColor(x, y, r,g,b,a)
 	elseif image.format == "red" then
 		image.buffer[i].r = r
 	end
+end
+
+function META:SetPixelColor(x,y, color)
+	self:SetRawPixelColor(x,y, color.r*255, color.g*255, color.b*255, color.a*255)
+end
+
+function META:GetPixelColor(x, y)
+	return ColorBytes(self:GetRawPixelColor(x, y))
 end
 
 function META:Fill(callback)

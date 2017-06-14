@@ -56,7 +56,7 @@ function META:ColorToPos(color)
 end
 
 function META:PosToColor(pos)
-	return ColorBytes(self.xy_slider.line:GetTexture():GetPixelColor(pos:Unpack()))
+	return self.xy_slider.line:GetTexture():GetPixelColor(pos:Unpack())
 end
 
 function META:SetPallete(path)
@@ -69,7 +69,7 @@ function META:SetPallete(path)
 
 		for x = 0, w do
 			for y = 0, h do
-				local r,g,b,a = tex:GetPixelColor(x,y)
+				local r,g,b,a = tex:GetRawPixelColor(x,y)
 
 				tree[r] = tree[r] or {}
 				tree[r][g] = tree[r][g] or {}

@@ -36,7 +36,7 @@ ZSNES_FONT = font
 	texture:SetMagFilter("nearest")
 
 	texture.OnLoad = function()
-		skin.property_background = ColorBytes(texture:GetPixelColor(28, 500))
+		skin.property_background = texture:GetPixelColor(28, 500)
 		for _,v in pairs(gui.panels) do
 			if v:HasSkin(skin.name) then
 				v:SetSkin(skin)

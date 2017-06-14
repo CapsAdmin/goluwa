@@ -499,7 +499,7 @@ do -- helpers
 		local pixel_advance = (Vec2(1, 1)/res) * tex:GetSize()
 
 		local function get_color(x, y)
-			local r,g,b,a = tex:GetPixelColor(x, y)
+			local r,g,b,a = tex:GetRawPixelColor(x, y)
 			return (((r+g+b+a) / 4) / 255) ^ pow
 		end
 

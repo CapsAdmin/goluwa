@@ -44,13 +44,13 @@ for i, sub_skin in ipairs(skins) do
 		texture:SetMinFilter("nearest")
 
 		texture.OnLoad = function()
-			skin.text_color = ColorBytes(texture:GetPixelColor(187, 504))
+			skin.text_color = texture:GetPixelColor(187, 504)
 			skin.text_color.a = 1
 			skin.text_color_inactive = skin.text_color * 0.80
-			skin.text_edit_color = ColorBytes(texture:GetPixelColor(110, 497))*0
+			skin.text_edit_color = texture:GetPixelColor(110, 497)*0
 			skin.text_edit_color.a = 1
 			skin.text_list_color = skin.text_color
-			skin.property_background = ColorBytes(texture:GetPixelColor(28, 500))
+			skin.property_background = texture:GetPixelColor(28, 500)
 
 			for k,v in pairs(gui.panels) do
 				if v:HasSkin(skin.name) then

@@ -1478,7 +1478,7 @@ do -- mouse
 			x = math.clamp(math.floor(x), 1, self.Texture:GetSize().x-1)
 			y = math.clamp(math.floor(y), 1, self.Texture:GetSize().y-1)
 
-			alpha = select(4, self.Texture:GetPixelColor(x, y)) / 255
+			alpha = select(4, self.Texture:GetRawPixelColor(x, y)) / 255
 		end]]
 
 		if x > 0 and x < self.Size.x and y > 0 and y < self.Size.y and alpha > 0 then

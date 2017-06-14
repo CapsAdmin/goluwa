@@ -29,8 +29,8 @@ do
 	local META = gine.GetMetaTable("IMaterial")
 
 	function META:GetColor(x,y)
-		local r,g,b,a = self.__obj:GetAlbedoTexture():GetPixelColor(x,y)
-		return {r=r,g=g,b=b,a=a or 255}
+		local r,g,b,a = self.__obj:GetAlbedoTexture():GetPixelColor(x,y):Unpack()
+		return gine.env.Color(r*255, g*255, b*255, a*255)
 	end
 
 	function META:GetName()
@@ -127,8 +127,8 @@ do
 	end
 
 	function META:GetColor(x,y)
-		local r,g,b,a = self.__obj:GetPixelColor(x,y)
-		return {r=r,g=g,b=b,a=a or 255}
+		local r,g,b,a = self.__obj:GetAlbedoTexture():GetPixelColor(x,y):Unpack()
+		return gine.env.Color(r*255, g*255, b*255, a*255)
 	end
 
 	function META:GetName()
