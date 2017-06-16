@@ -195,10 +195,9 @@ end
 do -- table copy
 	local lookup_table = {}
 
-		-- this is so annoying but there's not much else i can do
-	local function has_copy(obj)
-		assert(type(obj.__copy) == "function")
-	end
+	local type = type
+	local pairs = pairs
+	local getmetatable = getmetatable
 
 	local function copy(obj, skip_meta)
 
@@ -208,7 +207,7 @@ do -- table copy
 			return obj
 		end
 
-		if pcall(has_copy, obj) then
+		if ((t == "table" or (t == "cdata" and structs.GetStructMeta(obj))) and obj.__copy) then
 			return obj:__copy()
 		elseif lookup_table[obj] then
 			return lookup_table[obj]

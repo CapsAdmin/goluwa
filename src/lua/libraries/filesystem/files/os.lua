@@ -78,12 +78,12 @@ end
 
 local ctype = ffi.typeof("uint8_t[?]")
 local ffi_string = ffi.string
-
+local math_min = math.min
 -- without this cache thing loading gm_construct takes 30 sec opposed to 15
 local cache = utility.CreateWeakTable()
 
 function CONTEXT:ReadBytes(bytes)
-	bytes = math.min(bytes, self.attributes.size)
+	bytes = math_min(bytes, self.attributes.size)
 
 	local buff = cache[bytes] or ctype(bytes)
 

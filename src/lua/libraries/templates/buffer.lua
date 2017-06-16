@@ -27,20 +27,22 @@ local type_info = {
 }
 
 local function ADD_FFI_OPTIMIZED_TYPES(META)
+	local ffi_cast = ffi.cast
+	local ffi_string = ffi.string
 	for name, type in pairs(type_info) do
 		type = ffi.typeof(type)
 		local size = ffi.sizeof(type)
 
 		local ctype = ffi.typeof("$*", type)
 		META["Read" .. name] = function(self)
-			return ffi.cast(ctype, self:ReadBytes(size))[0]
+			return ffi_cast(ctype, self:ReadBytes(size))[0]
 		end
 
 		local ctype = ffi.typeof("$[1]", type)
 		local hmm = ffi.new(ctype, 0)
 		META["Write" .. name] = function(self, num)
 			hmm[0] = num
-			self:WriteBytes(ffi.string(hmm, size))
+			self:WriteBytes(ffi_string(hmm, size))
 			return self
 		end
 	end

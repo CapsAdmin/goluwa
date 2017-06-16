@@ -2,6 +2,16 @@ local structs = _G.structs or {}
 
 local ffi = require("ffi")
 
+do
+	structs.type_lookup = structs.type_lookup or {}
+
+	local tostring = tostring
+	local typeof = ffi.typeof
+
+	function structs.GetStructMeta(cdata)
+		return structs.type_lookup[tostring(typeof(cdata))]
+	end
+end
 function structs.Register(META)
 	local number_types = META.NumberType
 
@@ -61,6 +71,8 @@ function structs.Register(META)
 		end
 
 		_G[META.ClassName] = structs[META.ClassName]
+
+		structs.type_lookup[tostring(obj)] = META
 
 		META:Register()
 	end

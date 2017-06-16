@@ -695,7 +695,7 @@ function render.CreateShader(data, vars)
 		prog:BindAttribLocation(i - 1, val.name)
 	end
 
-	self.mesh_layout = table.copy(build_output.vertex.mesh_layout)
+	self.mesh_layout = build_output.vertex.mesh_layout
 
 	do -- build lua code from variables data
 		local variables = {}

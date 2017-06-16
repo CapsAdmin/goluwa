@@ -226,13 +226,13 @@ do -- tcp socket meta
 					params = https_default
 				end
 
-				params = table.copy(params)
+				local copy = {}
 
 				for k,v in pairs(https_default) do
-					params[k] = params[k] or v
+					copy[k] = params[k] or v
 				end
 
-				self.SSLParams = params
+				self.SSLParams = copy
 			end
 		end
 
