@@ -7,6 +7,7 @@ do -- open close
 		if menu.visible then return end
 		window.SetMouseTrapped(false)
 		menu.CreateTopBar()
+
 		event.AddListener("PreDrawGUI", "StartupMenu", menu.RenderBackground)
 		event.Timer("StartupMenu", 0.050, menu.UpdateBackground)
 
@@ -607,7 +608,6 @@ function menu.CreateTopBar()
 --	bar:SetupLayout("left", "up", "fill_x", "size_to_children_width")
 end
 
-menu.Open()
 if RELOAD then
 	menu.Remake()
 end
