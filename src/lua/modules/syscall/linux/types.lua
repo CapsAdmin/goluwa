@@ -2,7 +2,7 @@
 
 local require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
-pcall, type, table, string =
+pcall, type, table, string = 
 require, error, assert, tonumber, tostring,
 setmetatable, pairs, ipairs, unpack, rawget, rawset,
 pcall, type, table, string
@@ -115,6 +115,7 @@ local addstructs = {
   ff_rumble_effect = "struct ff_rumble_effect",
   ff_effect = "struct ff_effect",
   sock_fprog = "struct sock_fprog",
+  bpf_attr = "union bpf_attr",
   user_cap_header = "struct user_cap_header",
   user_cap_data = "struct user_cap_data",
   xt_get_revision = "struct xt_get_revision",
@@ -136,9 +137,12 @@ for k, v in pairs(addstructs) do addtype(types, k, v, lenmt) end
 -- these ones not in table as not helpful with vararg or arrays TODO add more addtype variants
 t.inotify_event = ffi.typeof("struct inotify_event")
 pt.inotify_event = ptt("struct inotify_event") -- still need pointer to this
+pt.perf_event_header = ptt("struct perf_event_header")
 
 t.aio_context1 = ffi.typeof("aio_context_t[1]")
 t.sock_fprog1 = ffi.typeof("struct sock_fprog[1]")
+t.bpf_attr1 = ffi.typeof("union bpf_attr[1]")
+t.perf_event_attr1 = ffi.typeof("struct perf_event_attr[1]")
 
 t.user_cap_data2 = ffi.typeof("struct user_cap_data[2]")
 
@@ -147,6 +151,8 @@ local iocbs = ffi.typeof("struct iocb[?]")
 t.iocbs = function(n, ...) return ffi.new(iocbs, n, ...) end
 local sock_filters = ffi.typeof("struct sock_filter[?]")
 t.sock_filters = function(n, ...) return ffi.new(sock_filters, n, ...) end
+local bpf_insns = ffi.typeof("struct bpf_insn[?]")
+t.bpf_insns = function(n, ...) return ffi.new(bpf_insns, n, ...) end
 local iocb_ptrs = ffi.typeof("struct iocb *[?]")
 t.iocb_ptrs = function(n, ...) return ffi.new(iocb_ptrs, n, ...) end
 
@@ -442,17 +448,17 @@ mt.stat.index.modification = mt.stat.index.mtime
 mt.stat.index.change = mt.stat.index.ctime
 
 local namemap = {
-  {"file"             , mt.stat.index.isreg},
-  {"directory"        , mt.stat.index.isdir},
-  {"link"             , mt.stat.index.islnk},
-  {"socket"           , mt.stat.index.issock},
-  {"char device"  , mt.stat.index.ischr},
-  {"block device" , mt.stat.index.isblk},
-  {"named pipe"   , mt.stat.index.isfifo},
+  file             = mt.stat.index.isreg,
+  directory        = mt.stat.index.isdir,
+  link             = mt.stat.index.islnk,
+  socket           = mt.stat.index.issock,
+  ["char device"]  = mt.stat.index.ischr,
+  ["block device"] = mt.stat.index.isblk,
+  ["named pipe"]   = mt.stat.index.isfifo,
 }
 
 mt.stat.index.typename = function(st)
-  for _, v in ipairs(namemap) do if v[2](st) then return v[1] end end
+  for k, v in pairs(namemap) do if v(st) then return k end end
   return "other"
 end
 
@@ -737,7 +743,7 @@ mt.iocb = {
 addtype(types, "iocb", "struct iocb", mt.iocb)
 
 -- aio operations want an array of pointers to struct iocb. To make sure no gc, we provide a table with array and pointers
--- easiest to do as Lua table not ffi type.
+-- easiest to do as Lua table not ffi type. 
 -- expects Lua table of either tables or iocb as input. can provide ptr table too
 -- TODO check maybe the implementation actually copies these? only the posix aio says you need to keep.
 
@@ -759,6 +765,14 @@ mt.sock_filter = {
 }
 
 addtype(types, "sock_filter", "struct sock_filter", mt.sock_filter)
+
+mt.bpf_insn = {
+  __new = function(tp, code, dst_reg, src_reg, off, imm)
+    return ffi.new(tp, c.BPF[code], dst_reg or 0, src_reg or 0, off or 0, imm or 0)
+  end
+}
+
+addtype(types, "bpf_insn", "struct bpf_insn", mt.bpf_insn)
 
 -- capabilities data is an array so cannot put metatable on it. Also depends on version, so combine into one structure.
 
@@ -913,7 +927,7 @@ mt.epoll_event = {
     local e = ffi.new(tp)
     if a then
       if type(a) == "string" then a.events = c.EPOLL[a]
-      else
+      else 
         if a.events then a.events = c.EPOLL[a.events] end
         for k, v in pairs(a) do e[k] = v end
       end
@@ -1162,6 +1176,23 @@ mt.mmsghdrs = {
 }
 
 addtype_var(types, "mmsghdrs", "struct {int count; struct mmsghdr msg[?];}", mt.mmsghdrs)
+
+addtype(types, "bpf_attr", "union bpf_attr")
+
+-- Metatype for Linux perf events
+mt.perf_event_attr = {
+  index = {
+    type = function(self)   return self.pe_type end,
+    config = function(self) return self.pe_config end,
+    sample_type = function(self) return self.pe_sample_type end,
+  },
+  newindex = {
+    type = function(self, v) self.pe_type = c.PERF_TYPE[v] end,
+    config = function(self, v) self.pe_config = c.PERF_COUNT[v] end,
+    sample_type = function(self, v) self.pe_sample_type = c.PERF_SAMPLE[v] end,
+  },
+}
+addtype(types, "perf_event_attr", "struct perf_event_attr", mt.perf_event_attr)
 
 -- this is declared above
 samap_pt = {
