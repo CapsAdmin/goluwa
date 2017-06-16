@@ -1,7 +1,6 @@
 local META = prototype.CreateTemplate()
 
 META.Name = "network"
-META.Events = {"Update"}
 
 -- these are either part the base object or the entity itself
 META.Network = {
@@ -15,6 +14,7 @@ META:GetSet("NetworkId", -1)
 META:GetSet("NetworkChannel", 0)
 
 if NETWORK then
+	META.Events = {"Update"}
 
 	if CLIENT then
 		function META:PreCreate()
