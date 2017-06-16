@@ -112,6 +112,10 @@ do
 		return crypto.CRC32(("%p"):format(self.__obj))
 	end
 
+	function META:ShouldDrawLocalPlayer()
+		return false
+	end
+
 	function META:GetActiveWeapon()
 		if not self.__obj.gine_weapon then
 			self.__obj.gine_weapon = gine.CreateWeapon()
@@ -175,6 +179,10 @@ do
 
 	function META:KeyDown(key)
 		return gine.env.input.IsKeyDown(key)
+	end
+
+	function META:GetWeapons()
+		return {}
 	end
 end
 

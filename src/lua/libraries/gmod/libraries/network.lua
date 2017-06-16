@@ -49,3 +49,17 @@ end
 function gine.env.game.SinglePlayer()
 	return false
 end
+
+function gine.env.net.Start()
+
+end
+
+function gine.env.net.BytesWritten()
+	return 0
+end
+
+for k,v in pairs(gine.env.net) do
+	if k:startswith("Write") or k:startswith("Start") then
+		gine.env.net[k] = function() end
+	end
+end

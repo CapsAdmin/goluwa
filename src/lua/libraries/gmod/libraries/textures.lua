@@ -49,6 +49,10 @@ do
 		return self.__obj:GetAlbedoTexture():GetSize().y
 	end
 
+	function META:GetKeyValues()
+		return {}
+	end
+
 	function META:Recompute()
 
 	end

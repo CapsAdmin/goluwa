@@ -29,3 +29,19 @@ end
 function util.SteamIDTo64(str)
 	return steam.SteamIDToCommunityID(str)
 end
+
+function util.IsValidModel(path)
+	return vfs.IsFile(path)
+end
+
+function util.GetPixelVisibleHandle()
+	return {}
+end
+
+function gine.env.LocalToWorld()
+	return gine.env.Vector(), gine.env.Angle()
+end
+
+function gine.env.WorldToLocal()
+	return gine.env.Vector(), gine.env.Angle()
+end

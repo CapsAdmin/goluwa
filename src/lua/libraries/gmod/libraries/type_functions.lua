@@ -46,6 +46,7 @@ do
 		DynamicLight = gine.env.TYPE_DLIGHT, --  	32
 		CEffectData = gine.env.TYPE_EFFECTDATA, --  	16
 		Entity = gine.env.TYPE_ENTITY, --  	9
+		Player = gine.env.TYPE_ENTITY, --  	9
 		File = gine.env.TYPE_FILE, --  	34
 		["function"] = gine.env.TYPE_FUNCTION, --  	6
 		IMesh = gine.env.TYPE_IMESH, --  	28

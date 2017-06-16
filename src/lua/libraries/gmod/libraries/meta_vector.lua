@@ -106,7 +106,7 @@ function META:Distance(vec)
 end
 
 function META:Dot(vec)
-	return self.ptr:Dot(vec.ptr)
+	return self.ptr:GetDot(vec.ptr)
 end
 
 META.DotProduct = META.Dot

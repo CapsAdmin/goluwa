@@ -66,6 +66,8 @@ do
 		self.ClassName = class
 		self.BaseClass = gine.env.scripted_ents.Get(class)
 
+		gine.env.ents.created = gine.env.ents.created or {}
+
 		table.insert(gine.env.ents.created, self)
 
 		return self
@@ -111,6 +113,13 @@ do
 		return gine.env.Vector(self.__obj:GetPosition())
 	end
 
+	function META:GetAngles()
+		if self == gine.env.LocalPlayer() then
+			return gine.env.EyeAngles()
+		end
+		return gine.env.Angle(self.__obj:GetRotation():GetAngles())
+	end
+
 	function META:GetForward()
 		return gine.env.Vector(self.__obj:GetRotation():GetForward())
 	end
@@ -137,8 +146,45 @@ do
 		return gine.env.Angle()
 	end
 
+	function META:InvalidateBoneCache()
+
+	end
+
 	function META:GetBoneCount()
 		return 0
+	end
+
+	function META:LookupBone(name)
+		return 0
+	end
+
+	function META:GetBoneName()
+		return "none"
+	end
+
+	function META:SetupBones()
+
+	end
+
+	function META:GetBonePosition()
+		return self:GetPos(), self:GetAngles()
+	end
+
+	function META:GetBoneParent()
+		return -1
+	end
+
+	function META:GetParentAttachment()
+		return 0
+	end
+
+	function META:GetAttachments()
+		return {
+			{
+				id = 1,
+				name = "none",
+			},
+		}
 	end
 
 	function META:EntIndex()
@@ -151,6 +197,10 @@ do
 
 	function META:GetMaxHealth()
 		return 100
+	end
+
+	function META:GetBoneMatrix()
+
 	end
 
 	function META:GetName()
@@ -240,6 +290,18 @@ do
 
 	function META:GetMoveType()
 		return gine.env.MOVETYPE_NONE
+	end
+
+	function META:BoundingRadius()
+		return 1
+	end
+
+	function META:GetModelScale()
+		return 1
+	end
+
+	function META:GetNoDraw()
+		return false
 	end
 
 	function gine.env.ClientsideModel(path)

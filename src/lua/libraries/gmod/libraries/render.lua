@@ -1,9 +1,17 @@
 local lib = render
 local render = gine.env.render
 
-function render.GetBloomTex0() return _G.render.GetErrorTexture() end
-function render.GetBloomTex1() return _G.render.GetErrorTexture() end
-function render.GetScreenEffectTexture() return _G.render.GetErrorTexture() end
+local function get_error_texture()
+	return gine.WrapObject(_G.render.GetErrorTexture(), "ITexture")
+end
+
+render.GetBloomTex0 = get_error_texture
+render.GetBloomTex1 = get_error_texture
+render.GetScreenEffectTexture = get_error_texture
+render.GetMoBlurTex0 = get_error_texture
+render.GetMoBlurTex1 = get_error_texture
+render.GetSuperFPTex = get_error_texture
+render.GetMorphTex0 = get_error_texture
 
 function render.PushFilterMin() end
 function render.PushFilterMag() end
@@ -15,6 +23,7 @@ function render.MaxTextureHeight() return 4096 end
 
 
 function render.DrawScreenQuad() end
+function render.DrawScreenQuadEx() end
 
 function render.SuppressEngineLighting(b)
 
@@ -60,8 +69,22 @@ function render.SupportsVertexShaders_2_0() return true end
 function render.SupportsPixelShaders_2_0() return true end
 function render.SupportsHDR() return true end
 
-function render.GetMoBlurTex0() return gine.WrapObject(_G.render.GetErrorTexture(), "ITexture") end
-function render.GetMoBlurTex1() return gine.WrapObject(_G.render.GetErrorTexture(), "ITexture") end
-function render.GetSuperFPTex() return gine.WrapObject(_G.render.GetErrorTexture(), "ITexture") end
-function render.GetMorphTex0() return gine.WrapObject(_G.render.GetErrorTexture(), "ITexture") end
+for k,v in pairs(render) do
+	if k:find("Stencil") then
+		render[k] = function() end
+	end
+end
 
+function render.OverrideDepthEnable()
+
+end
+
+function render.Clear(r,g,b,a,depth,stencil)
+
+end
+
+function render.MaterialOverride(mat) end
+function render.ModelMaterialOverride(mat) end
+
+function render.PushFlashlightMode() end
+function render.PopFlashlightMode() end

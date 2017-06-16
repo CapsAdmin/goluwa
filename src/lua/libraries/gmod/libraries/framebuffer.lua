@@ -22,12 +22,16 @@ local current_fb
 function render.SetRenderTarget(tex)
 	if tex.__obj.fb then
 		tex.__obj.fb:Bind()
-		current_fb = tex.__obj.fb
+		current_fb = tex
 	end
 end
 
 function render.GetRenderTarget()
-	return current_fb
+	return current_fb or gine.WrapObject(_G.render.GetErrorTexture(), "ITexture")
+end
+
+function render.CopyRenderTargetToTexture(tex)
+
 end
 
 function render.PushRenderTarget(rt, x,y,w,h)
