@@ -2,7 +2,6 @@ local META = prototype.CreateTemplate()
 
 META.Name = "physics"
 META.Require = {"transform"}
-META.Events = {"Update"}
 
 META.Network = {
 	Position = {"vec3", 1/30, "unreliable", false, 70},
@@ -32,6 +31,7 @@ META:EndStorable()
 META:GetSet("PhysicsModel", nil)
 
 if PHYSICS then
+	META.Events = {"Update"}
 
 	function META:Initialize()
 		self.rigid_body = NULL
