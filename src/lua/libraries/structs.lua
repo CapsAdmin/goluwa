@@ -249,14 +249,12 @@ function structs.AddOperator(META, operator, ...)
 		local lua = [==[
 		local META, structs, copy = ...
 		META["Copy"] = function(a)
-			local out = CTOR()
-
-			copy(out, a, a.byte_size)
-
-			return out
+			return CTOR(
+				a.KEY
+			)
 		end
 		META["CopyTo"] = function(a, b)
-			copy(a, b, a.byte_size)
+			a:Set(b:Unpack())
 			return a
 		end
 		META.__copy = META.Copy
