@@ -70,7 +70,7 @@ do
 		prototype.registered[super_type] = prototype.registered[super_type] or {}
 		prototype.registered[super_type][sub_type] = meta
 
-		prototype.RebuildMetatables()
+		prototype.invalidate_meta = true
 
 		if RELOAD then
 			prototype.UpdateObjects(meta)
@@ -185,11 +185,14 @@ end
 function prototype.GetRegistered(super_type, sub_type)
 	sub_type = sub_type or super_type
 
-	if prototype.prepared_metatables[super_type] and prototype.prepared_metatables[super_type][sub_type] then
+	if prototype.registered[super_type] and prototype.registered[super_type][sub_type] then
+		if prototype.invalidate_meta then
+			prototype.RebuildMetatables()
+			prototype.invalidate_meta = false
+		end
+
 		return prototype.prepared_metatables[super_type][sub_type]
 	end
-
-	return prototype.registered[super_type] and prototype.registered[super_type][sub_type]
 end
 
 function prototype.GetRegisteredSubTypes(super_type)
