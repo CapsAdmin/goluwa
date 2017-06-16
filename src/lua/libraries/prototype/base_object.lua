@@ -13,6 +13,10 @@ prototype.StartStorable(META)
 	prototype.GetSet("Description", "")
 prototype.EndStorable()
 
+function META:GetGUID()
+	self.GUID = self.GUID or ("%p%p"):format(self, getmetatable(META))
+end
+
 function META:GetNiceClassName()
 	if self.ClassName ~= self.Type then
 		return self.Type .. "_" .. self.ClassName

@@ -218,11 +218,12 @@ temp_runfile("lua/libraries/extensions/math.lua")
 
 
 -- include some of prototype as required by vfs
+utility = {CreateWeakTable = function() return setmetatable({}, {__mode = "kv"}) end}
+
 prototype = temp_runfile("lua/libraries/prototype/prototype.lua")
 temp_runfile("lua/libraries/prototype/get_is_set.lua")
 temp_runfile("lua/libraries/prototype/base_object.lua")
 temp_runfile("lua/libraries/prototype/null.lua")
-utility = {CreateWeakTable = function() return setmetatable({}, {__mode = "kv"}) end}
 
 
 -- include some of vfs so we can setup and mount the filesystem

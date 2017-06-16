@@ -165,7 +165,7 @@ function prototype.RebuildMetatables()
 					end
 				end
 
-				copy.copy_variables = tbl
+				copy.copy_variables = tbl[1] and tbl
 			end
 
 			if copy.__index2 then
@@ -223,40 +223,44 @@ function prototype.OverrideCreateObjectTable(obj)
 	prototype.override_object = obj
 end
 
-function prototype.CreateObject(meta, override, skip_gc_callback)
-	override = override or prototype.override_object or {}
-
-	if type(meta) == "string" then
-		meta = prototype.GetRegistered(meta)
-	end
-
-	-- this has to be done in order to ensure we have the prepared metatable with bases
-	meta = prototype.GetRegistered(meta.Type, meta.ClassName) or meta
-
-	if not skip_gc_callback then
-		meta.__gc = remove_callback
-	end
-
-	local self = setmetatable(override, meta)
-
-	if meta.copy_variables then
-		for _, info in ipairs(meta.copy_variables) do
-			self[info.var_name] = info.copy()
-		end
-	end
-
-	self:SetCreationTime(system and system.GetElapsedTime and system.GetElapsedTime() or os.clock())
-
-	self:SetGUID(("%x"):format(math.random(999999999999999999)) .. ("%x"):format(math.random(999999999999999999)))
-
+do
+	local DEBUG = DEBUG or DEBUG_OPENGL
+	local setmetatable = setmetatable
+	local type = type
+	local ipairs = ipairs
 	prototype.created_objects = prototype.created_objects or utility.CreateWeakTable()
-	prototype.created_objects[self] = self
 
-	if DEBUG or DEBUG_OPENGL then
-		self:SetDebugTrace(debug.traceback())
+	function prototype.CreateObject(meta, override, skip_gc_callback)
+		override = override or prototype.override_object or {}
+
+		if type(meta) == "string" then
+			meta = prototype.GetRegistered(meta)
+		end
+
+		-- this has to be done in order to ensure we have the prepared metatable with bases
+		meta = prototype.GetRegistered(meta.Type, meta.ClassName) or meta
+
+		if not skip_gc_callback then
+			meta.__gc = remove_callback
+		end
+
+		local self = setmetatable(override, meta)
+
+		if meta.copy_variables then
+			for _, info in ipairs(meta.copy_variables) do
+				self[info.var_name] = info.copy()
+			end
+		end
+
+		prototype.created_objects[self] = self
+
+		if DEBUG then
+			self:SetDebugTrace(debug.traceback())
+			self:SetCreationTime(system and system.GetElapsedTime and system.GetElapsedTime() or os.clock())
+		end
+
+		return self
 	end
-
-	return self
 end
 
 do
