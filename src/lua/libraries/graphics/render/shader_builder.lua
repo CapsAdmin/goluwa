@@ -200,11 +200,7 @@ local function variables_to_string(type, variables, prepend, macro, array)
 end
 
 local function replace_field(str, key, val)
-	return str:gsub("(@@.-@@)", function(str)
-		if str:match("@@(.+)@@") == key then
-			return val
-		end
-	end)
+	return str:replace("@@"..key.."@@", val)
 end
 
 render.active_shaders = render.active_shaders or utility.CreateWeakTable()
