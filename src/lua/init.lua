@@ -70,6 +70,7 @@ do -- constants
 		DISABLE_CULLING = false,
 		DEBUG_OPENGL = false,
 		CLI = false,
+		VERBOSE_STARTUP = true,
 	}
 
 	for key, default in pairs(env_vars) do
