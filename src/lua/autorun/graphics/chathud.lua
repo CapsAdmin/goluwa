@@ -37,29 +37,45 @@ chathud.markup:SetEditable(false)
 chathud.markup:SetSelectable(false)
 chathud.life_time = 20
 
+function chathud.Initialize()
+	resource.Download("http://cdn.steam.tools/data/emote.json", function(path)
+		profiler.StartTimer("emotes")
+		local i = 0
+		for name in vfs.Read(path):gmatch('"name": ":(.-):"') do
+			chathud.emote_shortucts[name] = "<texture=http://cdn.steamcommunity.com/economy/emoticon/" .. name .. ">"
+			i = i + 1
+		end
+		llog("loaded %s emotes in %s seconds", i, profiler.StopTimer(true))
+	end)
+
+	chathud.font = fonts.CreateFont({
+		path = "Roboto",
+		fallback = gfx.GetDefaultFont(),
+		size = 16,
+		padding = 50,
+		shadow = {
+			order = 1,
+			dir = 0,
+			color = Color(0,0,0,1),
+			blur_radius = 0.5,
+			blur_passes = 4,
+			alpha_pow = 2,
+		},
+	})
+
+	for _, v in pairs(vfs.Find("textures/silkicons/")) do
+		chathud.emote_shortucts[v:gsub("(%.png)$","")] = "<texture=textures/silkicons/" .. v .. ",16>"
+	end
+
+	chathud.Show()
+end
+
 local first = true
 
 function chathud.AddText(...)
 
 	if first then
-		chathud.font = fonts.CreateFont({
-			path = "Roboto",
-			fallback = gfx.GetDefaultFont(),
-			size = 16,
-			padding = 50,
-			shadow = {
-				order = 1,
-				dir = 0,
-				color = Color(0,0,0,1),
-				blur_radius = 0.5,
-				blur_passes = 4,
-				alpha_pow = 2,
-			},
-		})
-
-		for _, v in pairs(vfs.Find("textures/silkicons/")) do
-			chathud.emote_shortucts[v:gsub("(%.png)$","")] = "<texture=textures/silkicons/" .. v .. ",16>"
-		end
+		chathud.Initialize()
 		first = nil
 	end
 
@@ -172,18 +188,6 @@ function chathud.Hide()
 	event.RemoveListener("MouseInput", "chathud")
 end
 
-chathud.Show()
-
 if RELOAD then
 	chathud.AddText(string.randomwords(40))
 end
-
-resource.Download("http://cdn.steam.tools/data/emote.json", function(path)
-	profiler.StartTimer("emotes")
-	local i = 0
-	for name in vfs.Read(path):gmatch('"name": ":(.-):"') do
-		chathud.emote_shortucts[name] = "<texture=http://cdn.steamcommunity.com/economy/emoticon/" .. name .. ">"
-		i = i + 1
-	end
-	llog("loaded %s emotes in %s seconds", i, profiler.StopTimer(true))
-end)

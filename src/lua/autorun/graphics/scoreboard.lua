@@ -5,7 +5,10 @@ scoreboard.containers = {}
 scoreboard.clients = {}
 
 input.Bind("tab", "+score", function()
-	if not scoreboard.panel:IsValid() then return end
+	if not scoreboard.panel:IsValid() then
+		scoreboard.Initialize()
+		scoreboard.AddClient(clients.GetLocalClient())
+	end
 	scoreboard.panel:SetVisible(true)
 end)
 
@@ -311,8 +314,6 @@ function scoreboard.Initialize()
 	end
 end
 
-scoreboard.Initialize()
-
 event.AddListener("ClientEntered", "scoreboard", function(client)
 	scoreboard.AddClient(client)
 end)
@@ -330,8 +331,6 @@ if RELOAD then
 	for _, client in ipairs(clients.GetAll()) do
 		scoreboard.AddClient(client)
 	end
-else
-	scoreboard.AddClient(clients.GetLocalClient())
 end
 
 _G.scoreboard = scoreboard
