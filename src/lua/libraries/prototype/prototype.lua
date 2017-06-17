@@ -102,11 +102,13 @@ do
 	end
 end
 
-function prototype.RebuildMetatables()
+function prototype.RebuildMetatables(what)
+	if what and not prototype.invalidate_meta[what] then return end
+
 	for super_type, sub_types in pairs(prototype.registered) do
-		if prototype.invalidate_meta[super_type] then
-			prototype.invalidate_meta[super_type] = nil
-			print("?!")
+		if what == nil or what == super_type then
+			prototype.invalidate_meta[what] = nil
+
 			for sub_type, meta in pairs(sub_types) do
 
 				local copy = {}
@@ -191,7 +193,7 @@ function prototype.GetRegistered(super_type, sub_type)
 	sub_type = sub_type or super_type
 
 	if prototype.registered[super_type] and prototype.registered[super_type][sub_type] then
-		prototype.RebuildMetatables()
+		prototype.RebuildMetatables(super_type)
 		return prototype.prepared_metatables[super_type][sub_type]
 	end
 end

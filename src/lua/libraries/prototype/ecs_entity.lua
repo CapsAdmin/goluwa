@@ -174,32 +174,15 @@ META:Register()
 prototype.component_configurations = prototype.component_configurations or {}
 
 function prototype.SetupComponents(name, components, icon, friendly)
-	local functions = {}
-
-	for _, name in ipairs(components) do
-		if prototype.GetRegistered("component", name) then
-			for k, v in pairs(prototype.GetRegistered("component", name)) do
-				if type(v) == "function" then
-					table.insert(functions, {
-						func = function(ent, a,b,c,d)
-							--local obj = ent:GetComponent(name)
-							--return obj[k](obj, a,b,c,d)
-							return ent.Components[name][k](ent.Components[name], a,b,c,d)
-						end,
-						name = k,
-						component = name,
-					})
-				end
-			end
-		end
-	end
-
 	prototype.component_configurations[name] = {
 		name = friendly or name,
 		components = components,
-		functions = functions,
+		functions = {},
 		icon = icon,
+		setup = false,
 	}
+
+	prototype.components_need_setup = true
 end
 
 function prototype.GetConfigurations()
@@ -210,6 +193,33 @@ function prototype.CreateEntity(config, info)
 	local self = META:CreateObject()
 
 	if prototype.component_configurations[config] then
+
+		if prototype.components_need_setup then
+			for name, data in pairs(prototype.component_configurations) do
+				if not data.setup then
+					for _, name in ipairs(data.components) do
+						if prototype.GetRegistered("component", name) then
+							for k, v in pairs(prototype.GetRegistered("component", name)) do
+								if type(v) == "function" then
+									table.insert(data.functions, {
+										func = function(ent, a,b,c,d)
+											--local obj = ent:GetComponent(name)
+											--return obj[k](obj, a,b,c,d)
+											return ent.Components[name][k](ent.Components[name], a,b,c,d)
+										end,
+										name = k,
+										component = name,
+									})
+								end
+							end
+						end
+					end
+					data.setup = true
+				end
+			end
+			prototype.components_need_setup = false
+		end
+
 		info = info or {}
 
 		self.config = config
