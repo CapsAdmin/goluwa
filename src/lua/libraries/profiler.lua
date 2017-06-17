@@ -432,6 +432,22 @@ function profiler.StopInstrumental(file_filter)
 	profiler.EnableSectionProfiling(false, true)
 end
 
+do
+	local started = false
+
+	function profiler.ToggleInstrumental(file_filter, method)
+		if file_filter == "" then file_filter = nil end
+
+		if not started then
+			profiler.StartInstrumental(file_filter, method)
+			started = true
+		else
+			profiler.StopInstrumental(file_filter)
+			started = false
+		end
+	end
+end
+
 function profiler.MeasureInstrumental(time, file_filter)
 	profiler.StartInstrumental(file_filter)
 
