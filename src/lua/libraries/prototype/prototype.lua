@@ -70,7 +70,8 @@ do
 		prototype.registered[super_type] = prototype.registered[super_type] or {}
 		prototype.registered[super_type][sub_type] = meta
 
-		prototype.invalidate_meta = true
+		prototype.invalidate_meta = prototype.invalidate_meta or {}
+		prototype.invalidate_meta[super_type] = true
 
 		if RELOAD then
 			prototype.UpdateObjects(meta)
@@ -103,81 +104,85 @@ end
 
 function prototype.RebuildMetatables()
 	for super_type, sub_types in pairs(prototype.registered) do
-		for sub_type, meta in pairs(sub_types) do
+		if prototype.invalidate_meta[super_type] then
+			prototype.invalidate_meta[super_type] = nil
+			print("?!")
+			for sub_type, meta in pairs(sub_types) do
 
-			local copy = {}
-			local prototype_variables = {}
+				local copy = {}
+				local prototype_variables = {}
 
-			-- first add all the base functions from the base object
-			for k, v in pairs(prototype.base_metatable) do
-				copy[k] = v
-				if k == "prototype_variables" then for k,v in pairs(v) do prototype_variables[k] = v end end
-			end
-
-			-- if this metatable has a type base derive from it first
-			if meta.TypeBase then
-				for k, v in pairs(sub_types[meta.TypeBase]) do
+				-- first add all the base functions from the base object
+				for k, v in pairs(prototype.base_metatable) do
 					copy[k] = v
 					if k == "prototype_variables" then for k,v in pairs(v) do prototype_variables[k] = v end end
 				end
-			end
 
-			-- then go through the list of bases and derive from them in reversed order
-			local base_list = {}
-
-			if meta.Base then
-				table.insert(base_list, meta.Base)
-
-				local base = meta
-
-				for _ = 1, 50 do
-					base = sub_types[base.Base]
-					if not base or not base.Base then break end
-					table.insert(base_list, 1, base.Base)
+				-- if this metatable has a type base derive from it first
+				if meta.TypeBase then
+					for k, v in pairs(sub_types[meta.TypeBase]) do
+						copy[k] = v
+						if k == "prototype_variables" then for k,v in pairs(v) do prototype_variables[k] = v end end
+					end
 				end
 
-				for _, v in ipairs(base_list) do
-					local base = sub_types[v]
+				-- then go through the list of bases and derive from them in reversed order
+				local base_list = {}
 
-					-- the base might not be registered yet
-					-- however this will be run again once it actually is
-					if base then
-						for k, v in pairs(base) do
-							copy[k] = v
-							if k == "prototype_variables" then for k,v in pairs(v) do prototype_variables[k] = v end end
+				if meta.Base then
+					table.insert(base_list, meta.Base)
+
+					local base = meta
+
+					for _ = 1, 50 do
+						base = sub_types[base.Base]
+						if not base or not base.Base then break end
+						table.insert(base_list, 1, base.Base)
+					end
+
+					for _, v in ipairs(base_list) do
+						local base = sub_types[v]
+
+						-- the base might not be registered yet
+						-- however this will be run again once it actually is
+						if base then
+							for k, v in pairs(base) do
+								copy[k] = v
+								if k == "prototype_variables" then for k,v in pairs(v) do prototype_variables[k] = v end end
+							end
 						end
 					end
 				end
-			end
 
-			-- finally the actual metatable
-			for k, v in pairs(meta) do
-				copy[k] = v
-				if k == "prototype_variables" then for k,v in pairs(v) do prototype_variables[k] = v end end
-			end
-
-			do
-				local tbl = {}
-
-				for _, info in pairs(prototype_variables) do
-					if info.copy then
-						table.insert(tbl, info)
-					end
+				-- finally the actual metatable
+				for k, v in pairs(meta) do
+					copy[k] = v
+					if k == "prototype_variables" then for k,v in pairs(v) do prototype_variables[k] = v end end
 				end
 
-				copy.copy_variables = tbl[1] and tbl
+				do
+					local tbl = {}
+
+					for _, info in pairs(prototype_variables) do
+						if info.copy then
+							table.insert(tbl, info)
+						end
+					end
+
+					copy.copy_variables = tbl[1] and tbl
+				end
+
+				if copy.__index2 then
+					copy.__index = function(s, k) return copy[k] or copy.__index2(s, k) end
+				else
+					copy.__index = copy
+				end
+
+				copy.BaseClass = sub_types[base_list[#base_list] or meta.TypeBase]
+
+				prototype.prepared_metatables[super_type] = prototype.prepared_metatables[super_type] or {}
+				prototype.prepared_metatables[super_type][sub_type] = copy
 			end
-
-			if copy.__index2 then
-				copy.__index = function(s, k) return copy[k] or copy.__index2(s, k) end
-			else
-				copy.__index = copy
-			end
-
-			copy.BaseClass = sub_types[base_list[#base_list] or meta.TypeBase]
-
-			prototype.prepared_metatables[super_type] = prototype.prepared_metatables[super_type] or {}
-			prototype.prepared_metatables[super_type][sub_type] = copy
 		end
 	end
 end
@@ -186,11 +191,7 @@ function prototype.GetRegistered(super_type, sub_type)
 	sub_type = sub_type or super_type
 
 	if prototype.registered[super_type] and prototype.registered[super_type][sub_type] then
-		if prototype.invalidate_meta then
-			prototype.RebuildMetatables()
-			prototype.invalidate_meta = false
-		end
-
+		prototype.RebuildMetatables()
 		return prototype.prepared_metatables[super_type][sub_type]
 	end
 end
