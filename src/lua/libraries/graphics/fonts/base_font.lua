@@ -93,22 +93,22 @@ function META:DrawString(str, x, y, w)
 
 	if str == nil then str = "nil" end
 
-	self.string_cache = self.string_cache or {}
+	fonts.string_cache = fonts.string_cache or {}
 
-	if not self.string_cache[str] then
-		self.total_strings_stored = self.total_strings_stored or 0
+	if not fonts.string_cache[str] then
+		fonts.total_strings_stored = fonts.total_strings_stored or 0
 
-		if self.total_strings_stored > 10000 then
+		if fonts.total_strings_stored > 10000 then
 			logf("fonts warning: string cache for %s is above 10000, flushing cache\n", self)
-			table.clear(self.string_cache)
-			self.total_strings_stored = 0
+			table.clear(fonts.string_cache)
+			fonts.total_strings_stored = 0
 		end
 
-		self.string_cache[str] = self:CompileString({tostring(str)})
-		self.total_strings_stored = self.total_strings_stored + 1
+		fonts.string_cache[str] = self:CompileString({tostring(str)})
+		fonts.total_strings_stored = fonts.total_strings_stored + 1
 	end
 
-	self.string_cache[str]:Draw(x, y, w)
+	fonts.string_cache[str]:Draw(x, y, w)
 
 	if fonts.debug_font_size then
 		render2d.SetColor(1,0,0,0.25)
@@ -143,6 +143,18 @@ function META:SetPolyChar(poly, i, x, y, char, r)
 	end
 end
 
+function META:GetChar(char)
+	local data = self.chars[char]
+
+	if data == nil then
+		self:LoadGlyph(char)
+		self.rebuild = true
+		return self.chars[char]
+	end
+
+	return data
+end
+
 function META:CompileString(data)
 
 	if not self.Ready then
@@ -151,24 +163,13 @@ function META:CompileString(data)
 
 	local vertex_count = 0
 
-	do
-		for _, str in ipairs(data) do
-			if type(str) == "string" then
-				local rebuild = false
-				vertex_count = vertex_count + (utf8.length(str) * 6)
-				for i = 1, utf8.length(str) do
-					local char = utf8.sub(str, i,i)
-					local ch = self.chars[char]
-					if ch == nil then
-						self:LoadGlyph(char)
-						rebuild = true
-					end
-				end
+	local strings = {}
 
-				if rebuild then
-					self:Rebuild()
-				end
-			end
+	for i, str in ipairs(data) do
+		if type(str) == "string" then
+			local chars = utf8.totable(str)
+			vertex_count = vertex_count + (#chars * 6)
+			strings[i] = chars
 		end
 	end
 
@@ -181,8 +182,9 @@ function META:CompileString(data)
 	local X, Y = 0, 0
 	local i = 1
 	local last_tex
+	local rebuild = false
 
-	for _, str in ipairs(data) do
+	for i2, str in ipairs(data) do
 		if type(str) ~= "string" then
 			if typex(str) == "vec2" then
 				X = str.x
@@ -191,28 +193,31 @@ function META:CompileString(data)
 				poly:SetColor(str:Unpack())
 			end
 		else
-			local count = utf8.length(str)
-			for str_i = 1, count do
-				local char = utf8.sub(str, str_i,str_i)
-				local ch = self.chars[char]
+			for str_i, char in ipairs(strings[i2]) do
+				local data = self:GetChar(char)
+
 				local spacing = self.Spacing
 
 				if char == "\n" then
 					X = 0
 					Y = Y + self.Size
 				elseif char == "\t" then
-					local ch = self.chars[" "]
+					data = self:GetChar(" ")
 
-					if ch then
+					if data then
 						if self.Monospace then
 							X = X + spacing * 4
 						else
-							X = X + (ch.x_advance + spacing) * 4
+							X = X + (data.x_advance + spacing) * 4
 						end
 					else
 						X = X + self.Size * 4
 					end
-				elseif ch then
+				elseif data then
+					if self.rebuild then
+						self:Rebuild()
+						self.rebuild = false
+					end
 					local texture = self.texture_atlas:GetPageTexture(char)
 
 					if texture ~= last_tex then
@@ -234,7 +239,7 @@ function META:CompileString(data)
 					if self.Monospace then
 						X = X + spacing
 					else
-						X = X + ch.x_advance + spacing
+						X = X + data.x_advance + spacing
 					end
 
 					width_info[i] = X
@@ -280,46 +285,29 @@ function META:GetTextSize(str)
 
 	local X, Y = 0, self.Size
 
-	local rebuild = false
-	local length = utf8.length(str)
-
-	for i = 1, length do
-		local char = utf8.sub(str, i,i)
-		local ch = self.chars[char]
-		if ch == nil then
-			self:LoadGlyph(char)
-			rebuild = true
-		end
-	end
-
-	if rebuild then
-		self:Rebuild()
-	end
-
 	local spacing = self.Spacing
 
-	for i = 1, length do
-		local char = utf8.sub(str, i, i)
-		local ch = self.chars[char]
+	for i, char in ipairs(utf8.totable(str)) do
+		local data = self:GetChar(char)
 
 		if char == "\n" then
 			Y = Y + self.Size
 		elseif char == "\t" then
-			local ch = self.chars[" "]
-			if ch then
+			data = self:GetChar(" ")
+			if data then
 				if self.Monospace then
 					X = X + spacing * 4
 				else
-					X = X + (ch.x_advance + spacing) * 4
+					X = X + (data.x_advance + spacing) * 4
 				end
 			else
 				X = X + self.Size * 4
 			end
-		elseif ch then
+		elseif data then
 			if self.Monospace then
 				X = X + spacing
 			else
-				X = X + ch.x_advance + spacing
+				X = X + data.x_advance + spacing
 			end
 		elseif char == " " then
 			X = X + self.Size
