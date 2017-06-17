@@ -157,9 +157,28 @@ end
 
 function utf8.totable(str)
 	local tbl = {}
+	local i = 1
 
-	for i = 1, utf8.length(str) do
-		tbl[i] = utf8.sub(str, i, i)
+	for tbl_i = 1, #str do
+		local byte = str:byte(i)
+
+		if not byte then break end
+
+		local length = 1
+
+		if byte >= 128 then
+			if byte >= 240 then
+				length = 4
+			elseif byte >= 224 then
+				length = 3
+			elseif byte >= 192 then
+				length = 2
+			end
+		end
+
+		tbl[tbl_i] = str:sub(i, i + length - 1)
+
+		i = i + length
 	end
 
 	return tbl
