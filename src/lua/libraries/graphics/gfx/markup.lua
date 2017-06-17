@@ -1240,32 +1240,22 @@ do -- invalidate
 		local found = {}
 
 		local last_type
-		local offset = 0
 
 		for _, chunk in ipairs(self.chunks) do
-			if chunk.internal or chunk.type == "string" and chunk.val == "" then goto continue_ end
+			if not chunk.internal and (chunk.type ~= "string" or chunk.val ~= "") then
+				if not (last_type == chunk.type and (last_type == "font" or last_type == "color")) then
+					local old = chunk.old_chunk
 
-			if last_type == chunk.type and (last_type == "font" or last_type == "color") then
-			--	print(last_type)
-			else
-				local old = chunk.old_chunk
-
-
-				if old then
-					if not found[old] then
-						table.insert(out, old)
+					if old and not found[old] then
+						chunk = old
 						found[old] = true
 					end
-				else
+
 					table.insert(out, chunk)
 				end
 
-				offset = 0
+				last_type = chunk.type
 			end
-
-			last_type = chunk.type
-
-			::continue_::
 		end
 
 		table.insert(out, 1, {type = "font", val = gfx.GetDefaultFont(), internal = true})
@@ -1831,19 +1821,36 @@ do -- invalidate
 		self.cached_gettext_tags = nil
 
 		if self.suppress_layout then return end
-		local chunks = prepare_chunks(self)
-		chunks = split_by_space_and_punctation(self, chunks)
-		chunks = get_size_info(self, chunks)
 
+		P"prepare chunks"
+		local chunks = prepare_chunks(self)
+		P"prepare chunks"
+
+		P"split by space and punctation"
+		chunks = split_by_space_and_punctation(self, chunks)
+		P""
+
+		P"get size info"
+		chunks = get_size_info(self, chunks)
+		P""
+
+		P"sovle max width"
 		chunks = solve_max_width(self, chunks)
+		P"sovle max width"
 
 		if self.LineWrap then
+			P"sovle max width 2"
 			chunks = solve_max_width(self, chunks)
+			P"sovle max width 2"
 		end
 
+		P"sovle tag info"
 		store_tag_info(self, chunks)
+		P"sovle tag info"
 
+		P"align y axis"
 		align_y_axis(self, chunks)
+		P"align y axis"
 
 		self.chunks = chunks
 
@@ -3047,3 +3054,7 @@ do -- drawing
 end
 
 META:Register()
+
+if RELOAD then
+	runfile("lua/examples/2d/markup.lua")
+end
