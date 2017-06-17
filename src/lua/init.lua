@@ -313,6 +313,8 @@ if SERVER or CLIENT then
 		nvars = runfile("lua/libraries/network/nvars.lua") -- variable synchronization between server and client
 		clients = runfile("lua/libraries/network/clients.lua") -- high level wrapper for a connected client
 		chat = runfile("lua/libraries/network/chat.lua") -- in game chat
+
+		NETWORK = true
 	else
 		CLIENT = nil
 		SERVER = nil
