@@ -1,5 +1,23 @@
 local profile_start_time = os.clock()
 
+if WINDOW and window then
+	if window.Open() then
+
+		if VERBOSE_STARTUP then
+			llog("opening window took %s seconds\n", os.clock() - profile_start_time)
+		end
+
+		profile_start_time = os.clock()
+
+		if GRAPHICS then
+			render2d.Initialize()
+			fonts.Initialize()
+			gfx.Initialize()
+			gui.Initialize()
+		end
+	end
+end
+
 pvars.Setup("text_editor_path", system.FindFirstTextEditor(true, true) or "")
 
 pvars.Initialize()
@@ -9,17 +27,6 @@ if sockets then
 
 	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/")
 	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/")
-end
-
-if WINDOW and window then
-	if window.Open() then
-		if GRAPHICS then
-			render2d.Initialize()
-			fonts.Initialize()
-			gfx.Initialize()
-			gui.Initialize()
-		end
-	end
 end
 
 if audio then
