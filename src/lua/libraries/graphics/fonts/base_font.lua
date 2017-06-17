@@ -93,22 +93,22 @@ function META:DrawString(str, x, y, w)
 
 	if str == nil then str = "nil" end
 
-	fonts.string_cache = fonts.string_cache or {}
+	self.string_cache = self.string_cache or {}
 
-	if not fonts.string_cache[str] then
-		fonts.total_strings_stored = fonts.total_strings_stored or 0
+	if not self.string_cache[str] then
+		self.total_strings_stored = self.total_strings_stored or 0
 
-		if fonts.total_strings_stored > 10000 then
-			logf("fonts warning: string cache for %s is above 10000, flushing cache\n", self)
-			table.clear(fonts.string_cache)
-			fonts.total_strings_stored = 0
+		if self.total_strings_stored > 10000 then
+			logf("self warning: string cache for %s is above 10000, flushing cache\n", self)
+			table.clear(self.string_cache)
+			self.total_strings_stored = 0
 		end
 
-		fonts.string_cache[str] = self:CompileString({tostring(str)})
-		fonts.total_strings_stored = fonts.total_strings_stored + 1
+		self.string_cache[str] = self:CompileString({tostring(str)})
+		self.total_strings_stored = self.total_strings_stored + 1
 	end
 
-	fonts.string_cache[str]:Draw(x, y, w)
+	self.string_cache[str]:Draw(x, y, w)
 
 	if fonts.debug_font_size then
 		render2d.SetColor(1,0,0,0.25)
