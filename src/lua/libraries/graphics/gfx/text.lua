@@ -50,23 +50,19 @@ function gfx.GetTextPosition()
 end
 
 do
-	local cache = utility.CreateWeakTable()
+	local cache = {} or utility.CreateWeakTable()
 
 	function gfx.GetTextSize(str)
 		str = str or "|"
 
 		local font = gfx.GetFont()
 
-		if not font then
-			return 0,0
+		if cache[font] and cache[font][str] then
+			return cache[font][str][1], cache[font][str][2]
 		end
 
 		if not font:IsReady() then
 			return font.Size, font.Size
-		end
-
-		if cache[font] and cache[font][str] then
-			return cache[font][str][1], cache[font][str][2]
 		end
 
 		local x, y = font:GetTextSize(str)
