@@ -219,6 +219,16 @@ do -- timer
 
 		return delta
 	end
+
+	function profiler.ToggleTimer(val)
+		if started then
+			started = false
+			return profiler.StopTimer(val == true)
+		else
+			started = true
+			return profiler.StartTimer(val)
+		end
+	end
 end
 
 function profiler.GetBenchmark(type, file, dump_line)

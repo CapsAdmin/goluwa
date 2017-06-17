@@ -287,6 +287,8 @@ if CURSES or WINDOW then
 end
 
 profiler = runfile("lua/libraries/profiler.lua") -- for profiling
+_G.P = profiler.ToggleTimer
+
 language = runfile("lua/libraries/language.lua") _G.L = language.LanguageString -- L"options", for use in gui menus and such.
 
 if PHYSICS then
