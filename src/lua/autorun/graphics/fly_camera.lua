@@ -107,30 +107,33 @@ function CalcMovement(dt, cam_ang, cam_fov)
 	return forward + side + up, cam_ang, cam_fov
 end
 
-event.AddListener("Update", "fly_camera_3d", function(dt)
-	if network.IsConnected() then return end
-	if not window.HasFocus() then return end
+event.AddListener("GBufferInitialized", function()
 
-	local cam_pos = camera.camera_3d:GetPosition()
-	local cam_ang = camera.camera_3d:GetAngles()
-	local cam_fov = camera.camera_3d:GetFOV()
+	event.AddListener("Update", "fly_camera_3d", function(dt)
+		if network.IsConnected() then return end
+		if not window.HasFocus() then return end
 
-	local dir, ang, fov = CalcMovement(dt, cam_ang, cam_fov)
+		local cam_pos = camera.camera_3d:GetPosition()
+		local cam_ang = camera.camera_3d:GetAngles()
+		local cam_fov = camera.camera_3d:GetFOV()
 
-	cam_pos = cam_pos + dir
+		local dir, ang, fov = CalcMovement(dt, cam_ang, cam_fov)
 
-	camera.camera_3d:SetPosition(cam_pos)
-	camera.camera_3d:SetAngles(ang)
-	camera.camera_3d:SetFOV(fov)
-end)
+		cam_pos = cam_pos + dir
 
-event.AddListener("MouseInput", "fly_camera_3d", function(button, press)
-	if press then
-		if gui and (gui.GetHoveringPanel() ~= gui.world or gui.focus_panel:IsValid()) then return end
-		drag_view = true
-	else
-		drag_view = false
-	end
+		camera.camera_3d:SetPosition(cam_pos)
+		camera.camera_3d:SetAngles(ang)
+		camera.camera_3d:SetFOV(fov)
+	end)
+
+	event.AddListener("MouseInput", "fly_camera_3d", function(button, press)
+		if press then
+			if gui and (gui.GetHoveringPanel() ~= gui.world or gui.focus_panel:IsValid()) then return end
+			drag_view = true
+		else
+			drag_view = false
+		end
+	end)
 end)
 
 input.Bind("o", "cam_ortho", function() camera.camera_3d:SetOrtho(not camera.camera_3d:GetOrtho()) end)

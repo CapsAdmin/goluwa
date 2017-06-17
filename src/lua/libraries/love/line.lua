@@ -88,6 +88,11 @@ function line.CreateLoveEnv(version)
 
 	table.insert(line.love_envs, love)
 
+	setmetatable(love, {__newindex = function(_, key, val)
+		event.Call("LoveNewIndex", love, key, val)
+		rawset(love, key, val)
+	end})
+
 	return love
 end
 
@@ -222,6 +227,7 @@ function line.RunGame(folder, ...)
 			__newindex = function(t, k, v)
 				if type(v) == "function" then
 					llog("love.%s = %s", k,v)
+					event.Call("LoveNewIndex", t, k, v)
 					setfenv(v, env)
 				end
 				rawset(t,k,v)

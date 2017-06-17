@@ -99,28 +99,36 @@ function love.mouse.isDown(key)
 	return input.IsMouseDown(mouse_keymap_10_reverse[key]) or input.IsMouseDown(mouse_keymap_reverse[key])
 end
 
-event.AddListener("MouseInput", "line", function(key, press)
-	local x, y = window.GetMousePosition():Unpack()
+event.AddListener("LoveNewIndex", "line_mouse", function(love, key, val)
+	if key == "mousepressed" or key == "mousereleased" then
+		if val then
+			event.AddListener("MouseInput", "line", function(key, press)
+				local x, y = window.GetMousePosition():Unpack()
 
-	if key == "mwheel_up" or key == "mwheel_down" then
-		line.CallEvent("wheelmoved", 0, key == "mwheel_up" and 1 or -1)
-	end
+				if key == "mwheel_up" or key == "mwheel_down" then
+					line.CallEvent("wheelmoved", 0, key == "mwheel_up" and 1 or -1)
+				end
 
-	if press then
-		if mouse_keymap[key] then
-			line.CallEvent("mousepressed", x, y, mouse_keymap[key])
-		end
+				if press then
+					if mouse_keymap[key] then
+						line.CallEvent("mousepressed", x, y, mouse_keymap[key])
+					end
 
-		if mouse_keymap_10[key] then
-			line.CallEvent("mousepressed", x, y, mouse_keymap_10[key])
-		end
-	else
-		if mouse_keymap[key] then
-			line.CallEvent("mousereleased", x, y, mouse_keymap[key])
-		end
+					if mouse_keymap_10[key] then
+						line.CallEvent("mousepressed", x, y, mouse_keymap_10[key])
+					end
+				else
+					if mouse_keymap[key] then
+						line.CallEvent("mousereleased", x, y, mouse_keymap[key])
+					end
 
-		if mouse_keymap_10[key] then
-			line.CallEvent("mousereleased", x, y, mouse_keymap_10[key])
+					if mouse_keymap_10[key] then
+						line.CallEvent("mousereleased", x, y, mouse_keymap_10[key])
+					end
+				end
+			end)
+		else
+			event.RemoveListener("MouseInput", "line")
 		end
 	end
 end)

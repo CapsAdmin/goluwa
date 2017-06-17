@@ -55,20 +55,29 @@ function love.keyboard.setTextInput(b)
 
 end
 
-local char_hack
+event.AddListener("LoveNewIndex", "line_keyboard", function(love, key, val)
+	if key == "keypressed" or key == "keyreleased" then
+		if val then
+			local char_hack
 
-event.AddListener("KeyInput", "line", function(key, press)
-	key = keyboard_map[key] or key
+			event.AddListener("KeyInput", "line", function(key, press)
+				key = keyboard_map[key] or key
 
-	if press then
-		line.CallEvent("keypressed", key, char_hack)
-	else
-		line.CallEvent("keyreleased", key)
+				if press then
+					line.CallEvent("keypressed", key, char_hack)
+				else
+					line.CallEvent("keyreleased", key)
+				end
+			end)
+
+			event.AddListener("CharInput", "line", function(char)
+				char_hack = char
+
+				line.CallEvent("textinput", char)
+			end)
+		else
+			event.RemoveListener("CharInput", "line")
+			event.RemoveListener("KeyInput", "line")
+		end
 	end
-end)
-
-event.AddListener("CharInput", "line", function(char)
-	char_hack = char
-
-	line.CallEvent("textinput", char)
 end)

@@ -304,10 +304,18 @@ do -- FileData object
 	line.RegisterType(FileData)
 end
 
-event.AddListener("WindowFileDrop", "love", function(wnd, path)
-	if love.filedropped then
-		local file = love.filesystem.newFile(path)
-		file.dropped = true
-		love.filedropped(file)
+event.AddListener("LoveNewIndex", "line_filesystem", function(love, key, val)
+	if key == "filedropped" then
+		if val then
+			event.AddListener("WindowFileDrop", "line_filedropped", function(wnd, path)
+				if love.filedropped then
+					local file = love.filesystem.newFile(path)
+					file.dropped = true
+					love.filedropped(file)
+				end
+			end)
+		else
+			event.AddListener("WindowFileDrop", "line_filedropped")
+		end
 	end
 end)

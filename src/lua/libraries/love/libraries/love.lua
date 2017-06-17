@@ -34,12 +34,6 @@ function love.line_update(dt)
 	line.pcall(love, love.update, dt)
 end
 
-event.AddListener("Update", "love", function()
-	for i = 1, line.speed do
-		line.CallEvent("line_update", system.GetFrameTime())
-	end
-end)
-
 function love.line_draw(dt)
 	if not love.draw then return end
 
@@ -62,18 +56,6 @@ function love.line_draw(dt)
 		love.errhand(love._line_env.error_message)
 	end
 end
-
-event.AddListener("PreDrawGUI", "love", function(dt)
-	if menu and menu.IsVisible() then
-		render2d.PushHSV(1,0,1)
-	end
-
-	line.CallEvent("line_draw", dt)
-
-	if menu and menu.IsVisible() then
-		render2d.PopHSV()
-	end
-end)
 
 function love.errhand(msg)
 	love.graphics.setFont()
@@ -103,6 +85,40 @@ function love.errhand(msg)
 	love.graphics.printf(p, 70, 70, love.graphics.getWidth() - 70)
 end
 
-event.AddListener("WindowResize", "love", function(_,w,h)
-	line.CallEvent("resize",w,h)
+event.AddListener("LoveNewIndex", "line_love", function(love, key, val)
+	if key == "update" then
+		if val then
+			event.AddListener("Update", "line", function()
+				for i = 1, line.speed do
+					line.CallEvent("line_update", system.GetFrameTime())
+				end
+			end)
+		else
+			event.RemoveListener("Update", "line")
+		end
+	elseif key == "draw" then
+		if val then
+			event.AddListener("PreDrawGUI", "line", function(dt)
+				if menu and menu.IsVisible() then
+					render2d.PushHSV(1,0,1)
+				end
+
+				line.CallEvent("line_draw", dt)
+
+				if menu and menu.IsVisible() then
+					render2d.PopHSV()
+				end
+			end)
+		else
+			event.RemoveListener("PreDrawGUI", "line")
+		end
+	elseif key == "resize" then
+		if val then
+			event.AddListener("WindowResize", "line", function(_,w,h)
+				line.CallEvent("resize",w,h)
+			end)
+		else
+			event.RemoveListener("WindowResize", "line")
+		end
+	end
 end)
