@@ -1,17 +1,15 @@
 ﻿local markup = ... or gfx.CreateMarkup()
-markup:AddString("Hello markup test!\n\n有一些中國\nそして、いくつかの日本の\nكيف حول بعض عربية")
+--markup:SetLineWrap(true)
+markup:AddFont(fonts.CreateFont({size = 14, read_speed = 100}))
 
-markup:AddString[[
-
-
-markup todo:
+markup:AddString("Hello markup test!\n有一些中國\nそして、いくつかの日本の\nكيف حول بعض عربية")
+markup:AddString[[markup todo:
 caret real_x should prioritise pixel width
 y axis caret movement when the text is being wrapped
 divide this up in cells (new object?)
 proper tag stack
 the ability to edit (remove and copy) custom tags that have a size (like textures)
-alignment tags
-]]
+alignment tags]]
 
 markup:AddFont(fonts.CreateFont({size = 8, read_speed = 100}))
 markup:AddString("\nhere's some text in chinese:\n我寫了這個在谷歌翻譯，所以我可以測試我的標記語言使用Unicode正確。它似乎做工精細！\n")	markup:AddString("some normal string again\n")
@@ -64,7 +62,7 @@ markup:AddString("did you forget your <mark>eggs</mark>?\n", true)
 markup:AddString("no but that's <wrong>wierd</wrong>\n", true)
 markup:AddString("what's so <rotate=-3>wierd</rotate> about that?\n", true)
 markup:AddString("<hsv=[t()+input.rand/10],[(t()+input.rand)/100]>", true)
-markup:AddString("<rotate=1>i'm not sure it seems to be</rotate><rotate=-1>some kind of</rotate><physics=0,0>interference</physics>\n", true)
+--markup:AddString("<rotate=1>i'm not sure it seems to be</rotate><rotate=-1>some kind of</rotate><physics=0,0>interference</physics>\n", true)
 markup:AddString("<scale=[((t()/10)%5^5)+1],1>you don't say</scale>\n", true)
 
 markup:AddString("smileys?")
@@ -87,14 +85,18 @@ markup:AddString("\n")
 markup:AddString([[
 © 2012, Author
 Self publishing
-(Possibly email address or contact data)
-]])
+(Possibly email address or contact data)]])
 
 if ... then return end
 
 event.AddListener("PostDrawGUI", "lol", function()
+	local x = (os.clock()*10)%500
+	x = gfx.GetMousePosition()
 	render2d.PushMatrix(50,50)
 		markup:Update()
 		markup:Draw()
+		--markup:SetMaxWidth(x)
+		render2d.SetColor(1,1,1,1)
+		gfx.DrawLine(x, 0, x, 1000)
 	render2d.PopMatrix()
 end)
