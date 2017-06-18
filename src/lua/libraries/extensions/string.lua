@@ -1,3 +1,22 @@
+function string.iswhitespace(char)
+	return
+		char == "\32" or
+		char == "\9" or
+		char == "\10" or
+		char == "\11" or
+		char == "\12"
+end
+
+function string.haswhitespace(str)
+	for i = 1, #str do
+		local b = str:byte(i)
+		if b == 32 or (b >= 9 and b <= 12) then
+			return true
+		end
+	end
+end
+
+
 function string.upperchar(self, pos)
 	return self:sub(0, pos-1) .. self:sub(pos, pos):upper() .. self:sub(pos + 1)
 end
