@@ -1230,6 +1230,47 @@ do -- invalidate
 		end
 	end
 
+	local function add_chunk(self, out, chunk, pos)
+		if chunk.type == "string" then
+			local w, h = get_text_size(self, chunk.val)
+
+			chunk.w = w
+			chunk.h = h + self.HeightSpacing
+
+			if chunk.internal then
+				chunk.w = 0
+				chunk.h = 0
+				chunk.real_h = h + self.HeightSpacing
+				chunk.real_w = w
+			end
+		elseif chunk.type == "newline" then
+			local w, h = get_text_size(self, "|")
+
+			chunk.w = w
+			chunk.h = h + self.HeightSpacing
+		elseif chunk.type == "custom" and not chunk.val.stop_tag  then
+			local _, w, h = self:CallTagFunction(chunk, "get_size")
+			if h then h = h + self.HeightSpacing end
+			chunk.w = w
+			chunk.h = h
+
+			chunk.pre_called = false
+		end
+
+		-- for consistency everything should have x y w h
+
+		chunk.x = chunk.x or 0
+		chunk.y = chunk.y or 0
+		chunk.w = chunk.w or 0
+		chunk.h = chunk.h or 0
+
+		if pos then
+			table.insert(out, pos, chunk)
+		else
+			table.insert(out, chunk)
+		end
+	end
+
 	local function prepare_chunks(self)
 		-- this is needed when invalidating the chunks table again
 		-- anything that need to add more chunks need to store the
@@ -1242,132 +1283,77 @@ do -- invalidate
 		local last_type
 
 		for _, chunk in ipairs(self.chunks) do
+			if chunk.type == "font" then
+				-- set the font so GetTextSize will be correct
+				set_font(self, chunk.val)
+			end
+
 			if not chunk.internal and (chunk.type ~= "string" or chunk.val ~= "") then
 				if not (last_type == chunk.type and (last_type == "font" or last_type == "color")) then
 					local old = chunk.old_chunk
 
-					if old and not found[old] then
-						chunk = old
-						found[old] = true
+					if old then
+						chunk = nil
+						if not found[old] then
+							chunk = old
+							found[old] = true
+						end
 					end
 
-					table.insert(out, chunk)
-				end
+					if chunk then
+						if not chunk.internal and chunk.type == "string" and chunk.val:find("%s") then
+							if self.LineWrap then
+								local str = {}
 
-				last_type = chunk.type
-			end
-		end
+								for _, char in ipairs(utf8.totable(chunk.val)) do
+									if char:find("%s") then
+										if #str ~= 0 then
+											add_chunk(self, out, {type = "string", val = table.concat(str)})
+											table.clear(str)
+										end
 
-		table.insert(out, 1, {type = "font", val = gfx.GetDefaultFont(), internal = true})
-		table.insert(out, 1, {type = "color", val = Color(1, 1, 1, 1), internal = true})
-		table.insert(out, {type = "string", val = "", internal = true})
+										if char == "\n" then
+											add_chunk(self, out, {type = "newline"})
+										else
+											add_chunk(self, out, {type = "string", val = char, whitespace = true})
+										end
+									else
+										table.insert(str, char)
+									end
+								end
 
-		return out
-	end
-
-	local function split_by_space_and_punctation(self, chunks)
-		-- solve white space and punctation
-
-		local out = {}
-
-		for _, chunk in ipairs(chunks) do
-			if chunk.type == "string" and chunk.val:find("%s") and not chunk.internal then
-
-				if self.LineWrap then
-					local str = {}
-
-					for _, char in ipairs(utf8.totable(chunk.val)) do
-						if char:find("%s") then
-							if #str ~= 0 then
-								table.insert(out, {type = "string", val = table.concat(str)})
-								if table.clear then
-									str = {}
-								else
-									table.clear(str)
+								if #str ~= 0 then
+									add_chunk(self, out, {type = "string", val = table.concat(str)})
+								end
+							else
+								if chunk.val:find("\n", nil, true) then
+									for line in chunk.val:gmatch("(.-)\n") do
+										add_chunk(self, out, {type = "string", val = line})
+										add_chunk(self, out, {type = "newline"})
+									end
+										local rest = chunk.val:match(".*\n(.+)")
+										if rest then
+											add_chunk(self, out, {type = "string", val = rest})
+										end
+									else
+									add_chunk(self, out, {type = "string", val = chunk.val})
 								end
 							end
-
-							if char == "\n" then
-								table.insert(out, {type = "newline"})
-							else
-								table.insert(out, {type = "string", val = char, whitespace = true})
-							end
 						else
-							table.insert(str, char)
+							add_chunk(self, out, chunk)
 						end
-					end
-
-					if #str ~= 0 then
-						table.insert(out, {type = "string", val = table.concat(str)})
-					end
-				else
-					if chunk.val:find("\n", nil, true) then
-						for line in chunk.val:gmatch("(.-)\n") do
-							table.insert(out, {type = "string", val = line})
-							table.insert(out, {type = "newline"})
-						end
-
-							local rest = chunk.val:match(".*\n(.+)")
-							if rest then
-								table.insert(out, {type = "string", val = rest})
-							end
-						else
-						table.insert(out, {type = "string", val = chunk.val})
+						last_type = chunk.type
 					end
 				end
-			else
-				table.insert(out, chunk)
 			end
 		end
+
+		add_chunk(self, out, {type = "font", val = gfx.GetDefaultFont(), internal = true}, 1)
+		add_chunk(self, out, {type = "color", val = Color(1, 1, 1, 1), internal = true}, 1)
+		add_chunk(self, out, {type = "string", val = "", internal = true})
 
 		return out
 	end
-
-	local function get_size_info(self, chunks)
-		-- get the size of each object
-		for _, chunk in ipairs(chunks) do
-
-
-			if chunk.type == "font" then
-				-- set the font so GetTextSize will be correct
-				set_font(self, chunk.val)
-			elseif chunk.type == "string" then
-				local w, h = get_text_size(self, chunk.val)
-
-				chunk.w = w
-				chunk.h = h + self.HeightSpacing
-
-				if chunk.internal then
-					chunk.w = 0
-					chunk.h = 0
-					chunk.real_h = h + self.HeightSpacing
-					chunk.real_w = w
-				end
-			elseif chunk.type == "newline" then
-				local w, h = get_text_size(self, "|")
-
-				chunk.w = w
-				chunk.h = h + self.HeightSpacing
-			elseif chunk.type == "custom" and not chunk.val.stop_tag  then
-				local _, w, h = self:CallTagFunction(chunk, "get_size")
-				if h then h = h + self.HeightSpacing end
-				chunk.w = w
-				chunk.h = h
-
-				chunk.pre_called = false
-			end
-
-			-- for consistency everything should have x y w h
-
-			chunk.x = chunk.x or 0
-			chunk.y = chunk.y or 0
-			chunk.w = chunk.w or 0
-			chunk.h = chunk.h or 0
-		end
-
-		return chunks
-	end
-
 
 	local function solve_max_width(self, chunks)
 		local out = {}
@@ -1375,92 +1361,96 @@ do -- invalidate
 		-- solve max width
 		local current_x = 0
 		local current_y = 0
+		local y2 = 0
 
 		local chunk_height = 0 -- the height to advance y in
 
+		local split_i = 0
+
+		--for i = 1, #chunks*10 do local chunk = chunks[i] if not chunk then break end
 		for i, chunk in ipairs(chunks) do
 			local split = false
 
 			if chunk.type == "font" then
-				-- set the font so GetTextSize will be correct
 				set_font(self, chunk.val)
 			end
 
-			if true or chunk.type ~= "newline" then
+			-- is the previous line a newline?
+			local newline = chunks[i - 1] and chunks[i - 1].type == "newline"
 
-				-- is the previous line a newline?
-				local newline = chunks[i - 1] and chunks[i - 1].type == "newline"
+			-- figure out the tallest chunk before going to a new line
+			if chunk.h > chunk_height then
+				chunk_height = chunk.h
+			end
 
-				-- figure out the tallest chunk before going to a new line
-				if chunk.h > chunk_height then
-					chunk_height = chunk.h
-				end
+			if self.LineWrap and chunk.type == "string" then
+				if chunk.w >= self.MaxWidth then
+					local X = chunk.x
+					local Y = chunk.y
+					local chunk_height = 0 -- the height to advance y in
 
-				-- is this a new line or are we going to exceed the maximum width?
-				if newline or (self.LineWrap and current_x + chunk.w >= self.MaxWidth) then
+					local str = {}
 
-					-- does the string's width exceed the max width?
-					-- if it does we need to split the string up
-					if self.LineWrap and chunk.type == "string" and chunk.w > self.MaxWidth then
-						-- start from the chunk's y
-						local current_x = chunk.x
-						local current_y = chunk.y
-						local chunk_height = 0 -- the height to advance y in
+					for _, char in ipairs(utf8.totable(chunk.val)) do
+						local w, h = get_text_size(self, char)
 
-						local str = {}
-
-						for _, char in ipairs(utf8.totable(chunk.val)) do
-							local w, h = get_text_size(self, char)
-
-							if h > chunk_height then
-								chunk_height = h
-							end
-
-							table.insert(str, char)
-							current_x = current_x + w
-
-							if current_x + w > self.MaxWidth then
-								table.insert(out, {type = "string", val = table.concat(str, ""), x = 0, y = current_y, w = current_x, h = chunk_height, old_chunk = chunk.old_chunk or chunk})
-								current_y = current_y + chunk_height
-
-								current_x = 0
-								chunk_height = 0
-								split = true
-								str = {}
-							end
+						if h > chunk_height then
+							chunk_height = h
 						end
 
-						if split then
-							table.insert(out, {type = "string", val = table.concat(str, ""), x = 0, y = current_y, w = current_x, h = chunk_height, old_chunk = chunk.old_chunk or chunk})
+						table.insert(str, char)
+						X = X + w
+
+						if X + w+2 >= self.MaxWidth then
+							if not split then
+								table.remove(chunks, i)
+								split = true
+							end
+
+							table.insert(chunks, i + split_i, {
+								type = "string",
+								val = table.concat(str, ""),
+								x = 0,
+								y = Y,
+								w = X,
+								h = chunk_height,
+								old_chunk = chunk.old_chunk or chunk
+							})
+							X = 0
+							Y = Y + chunk_height
+							split_i = split_i + 1
+
+							chunk_height = 0
+							table.clear(str)
 						end
 					end
 
-					-- reset the width
-					current_x = 0
-
-					-- advance y with the height of the tallest chunk
-					current_y = current_y + chunk_height
-
-					chunk_height = chunk.h
+					if str[1] then
+						table.insert(chunks, i + split_i, {type = "string", val = table.concat(str, ""), x = 0, y = Y, w = X, h = chunk_height, old_chunk = chunk.old_chunk or chunk})
+					end
+				elseif current_x + chunk.w >= self.MaxWidth then
+					newline = true
 				end
-
-				chunk.x = current_x
-				chunk.y = current_y
-
-				current_x = current_x + chunk.w
 			end
 
-			if not split then
-				-- i don't know why i need this
-				-- if i don't have this the chunk table will
-				-- continue to grow when invalidating itself
-				--chunk.old_chunk = chunk
+			if newline then
+				current_x = 0
+				current_y = current_y + chunk_height + y2
+			end
 
-				table.insert(out, chunk)
+			chunk.x = current_x
+			chunk.y = current_y
+
+			chunk_height = chunk.h
+
+			current_x = current_x + chunk.w
+
+			if split then
+				split_i = 0
 			end
 		end
 
-		return out
+		return chunks
 	end
 
 	local function build_chars(chunk)
@@ -1822,35 +1812,21 @@ do -- invalidate
 
 		if self.suppress_layout then return end
 
-		P"prepare chunks"
+		--P"prepare chunks"
 		local chunks = prepare_chunks(self)
-		P"prepare chunks"
+		--P"prepare chunks"
 
-		P"split by space and punctation"
-		chunks = split_by_space_and_punctation(self, chunks)
-		P""
-
-		P"get size info"
-		chunks = get_size_info(self, chunks)
-		P""
-
-		P"sovle max width"
+		--P"sovle max width"
 		chunks = solve_max_width(self, chunks)
-		P"sovle max width"
+		--P"sovle max width"
 
-		if self.LineWrap then
-			P"sovle max width 2"
-			chunks = solve_max_width(self, chunks)
-			P"sovle max width 2"
-		end
-
-		P"sovle tag info"
+	--	P"sovle tag info"
 		store_tag_info(self, chunks)
-		P"sovle tag info"
+		--P"sovle tag info"
 
-		P"align y axis"
+		--P"align y axis"
 		align_y_axis(self, chunks)
-		P"align y axis"
+		--P"align y axis"
 
 		self.chunks = chunks
 
