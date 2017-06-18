@@ -186,7 +186,7 @@ function META:CallTagFunction(chunk, name, ...)
 				table.insert(args, val)
 			end
 
-			args = {system.pcall(func, unpack(args))}
+			args = {pcall(func, unpack(args))}
 
 			if not args[1] then
 				llog("tag error %s", args[2])
@@ -1301,12 +1301,12 @@ do -- invalidate
 					end
 
 					if chunk then
-						if not chunk.internal and chunk.type == "string" and chunk.val:find("%s") then
+						if not chunk.internal and chunk.type == "string" and chunk.val:haswhitespace() then
 							if self.LineWrap then
 								local str = {}
 
 								for _, char in ipairs(utf8.totable(chunk.val)) do
-									if char:find("%s") then
+									if char:iswhitespace() then
 										if #str ~= 0 then
 											add_chunk(self, out, {type = "string", val = table.concat(str)})
 											table.clear(str)
@@ -1326,16 +1326,15 @@ do -- invalidate
 									add_chunk(self, out, {type = "string", val = table.concat(str)})
 								end
 							else
-								if chunk.val:find("\n", nil, true) then
-									for line in chunk.val:gmatch("(.-)\n") do
+								if chunk.val == "\n" then
+									add_chunk(self, out, {type = "newline"})
+								elseif chunk.val:find("\n", nil, true) then
+									for _, line in ipairs(chunk.val:split("\n")) do
+										print(line)
 										add_chunk(self, out, {type = "string", val = line})
 										add_chunk(self, out, {type = "newline"})
 									end
-										local rest = chunk.val:match(".*\n(.+)")
-										if rest then
-											add_chunk(self, out, {type = "string", val = rest})
-										end
-									else
+								else
 									add_chunk(self, out, {type = "string", val = chunk.val})
 								end
 							end
@@ -1356,15 +1355,10 @@ do -- invalidate
 	end
 
 	local function solve_max_width(self, chunks)
-		local out = {}
-
 		-- solve max width
 		local current_x = 0
 		local current_y = 0
-		local y2 = 0
-
-		local chunk_height = 0 -- the height to advance y in
-
+		local chunk_height = 0
 		local split_i = 0
 
 		--for i = 1, #chunks*10 do local chunk = chunks[i] if not chunk then break end
@@ -1383,8 +1377,8 @@ do -- invalidate
 				chunk_height = chunk.h
 			end
 
-			if self.LineWrap and chunk.type == "string" then
-				if chunk.w >= self.MaxWidth then
+			if self.LineWrap then
+				if chunk.w >= self.MaxWidth and chunk.type == "string" then
 					local X = chunk.x
 					local Y = chunk.y
 					local chunk_height = 0 -- the height to advance y in
@@ -1426,7 +1420,15 @@ do -- invalidate
 					end
 
 					if str[1] then
-						table.insert(chunks, i + split_i, {type = "string", val = table.concat(str, ""), x = 0, y = Y, w = X, h = chunk_height, old_chunk = chunk.old_chunk or chunk})
+						table.insert(chunks, i + split_i, {
+							type = "string",
+							val = table.concat(str, ""),
+							x = 0,
+							y = Y,
+							w = X,
+							h = chunk_height,
+							old_chunk = chunk.old_chunk or chunk
+						})
 					end
 				elseif current_x + chunk.w >= self.MaxWidth then
 					newline = true
@@ -1435,13 +1437,12 @@ do -- invalidate
 
 			if newline then
 				current_x = 0
-				current_y = current_y + chunk_height + y2
+				current_y = current_y + chunk_height
+				chunk_height = chunk.h
 			end
 
 			chunk.x = current_x
 			chunk.y = current_y
-
-			chunk_height = chunk.h
 
 			current_x = current_x + chunk.w
 
@@ -1529,7 +1530,7 @@ do -- invalidate
 				h = chunk.h,
 				x = chunk.x,
 				y = chunk.y,
-				rand = math.random()
+			--	rand = math.random()
 			}
 
 			if chunk.type == "font" then
@@ -1599,7 +1600,7 @@ do -- invalidate
 					local start_found = 1
 					local stops = {}
 
-					for i = i+1, math.huge do
+					for i = i+1, #chunks do
 						local chunk = chunks[i]
 
 						if chunk then
@@ -1716,7 +1717,15 @@ do -- invalidate
 					data.right = chunk.x + chunk.w
 					data.top = chunk.y + chunk.h
 
-					table.insert(self.chars, {chunk = chunk, i = i, str = "\n", data = data, y = char_line, x = char_line_pos})
+					table.insert(self.chars, {
+						chunk = chunk,
+						i = i,
+						str = "\n",
+						data = data,
+						y = char_line,
+						x = char_line_pos
+					})
+
 					char_line = char_line + 1
 					char_line_pos = 0
 
@@ -1766,25 +1775,6 @@ do -- invalidate
 			chunk.line_width = line_width
 		end
 
-		-- add the last line since there's probably not a newline at the very end
-		table.insert(self.lines, table.concat(char_line_str, ""))
-
-		self.text = table.concat(self.lines, "\n")
-		--timer.Measure("chars build")
-
-	--	log(line_height, "\n")
-
-		self.line_count = line
-		self.width = width
-		self.height = height
-
-
-		if self.height < self.MinimumHeight then
-			self.height = self.MinimumHeight
-		end
-	end
-
-	local function align_y_axis(self, chunks)
 		for _, chunk in ipairs(chunks) do
 			-- mouse testing
 			chunk.y = chunk.y + chunk.line_height - chunk.h
@@ -1800,6 +1790,18 @@ do -- invalidate
 			chunk.top = chunk.y
 		end
 
+		-- add the last line since there's probably not a newline at the very end
+		table.insert(self.lines, table.concat(char_line_str, ""))
+
+		self.text = table.concat(self.lines, "\n")
+
+		self.line_count = line
+		self.width = width
+		self.height = height
+
+		if self.height < self.MinimumHeight then
+			self.height = self.MinimumHeight
+		end
 	end
 
 	function META:SuppressLayout(b)
@@ -1812,20 +1814,9 @@ do -- invalidate
 
 		if self.suppress_layout then return end
 
-		--P"prepare chunks"
 		local chunks = prepare_chunks(self)
-		--P"prepare chunks"
-
-		--P"sovle max width"
-		chunks = solve_max_width(self, chunks)
-		--P"sovle max width"
-
-	--	P"sovle tag info"
+		solve_max_width(self, chunks)
 		store_tag_info(self, chunks)
-		--P"sovle tag info"
-
-		--P"align y axis"
-		align_y_axis(self, chunks)
 		--P"align y axis"
 
 		self.chunks = chunks
@@ -3032,5 +3023,5 @@ end
 META:Register()
 
 if RELOAD then
-	runfile("lua/examples/2d/markup.lua")
+	--runfile("lua/examples/2d/markup.lua")
 end

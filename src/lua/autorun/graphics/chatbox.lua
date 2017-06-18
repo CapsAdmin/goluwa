@@ -141,7 +141,7 @@ end
 function chat.GetPanel()
 	if chat.panel:IsValid() then return chat.panel end
 
-	chat.console_font = fonts.CreateFont({path = "Roboto", size = 10})
+	chat.console_font = fonts.CreateFont({path = "Roboto", size = 12})
 
 	local frame = gui.CreatePanel("frame")
 	frame:SetTitle("chatbox")
@@ -433,7 +433,7 @@ function chat.GetPanel()
 	end
 
 	for _, line in ipairs(vfs.Read("logs/console_" .. jit.os:lower() .. ".txt"):split("\n")) do
-		text:OnReplPrint(line:gsub("\r", "") .. "\n")
+		text:OnReplPrint(line:gsub("\r", ""))
 	end
 
 	if commands.history then
