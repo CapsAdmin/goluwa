@@ -65,11 +65,6 @@ function META:OnStyleChanged(skin)
 	end
 end
 
-function META:OnLayout(S)
-	--self.label:SetPosition(Vec2()+S*2)
---	self:SizeToText()
-end
-
 function META:SetCaretPosition(pos)
 	self.label.markup:SetCaretPosition(pos.x, pos.y)
 end

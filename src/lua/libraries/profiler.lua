@@ -214,7 +214,7 @@ do -- timer
 		local delta = time - data.time
 
 		if not no_print then
-			logf("%s%s: %s\n", (" "):rep(data.level-1), data.str, math.round(delta, 3))
+			logf("%s%s: %f\n", (" "):rep(data.level-1), data.str, math.round(delta, 5))
 		end
 
 		return delta

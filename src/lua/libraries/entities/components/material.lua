@@ -33,7 +33,7 @@ end
 
 META:RegisterComponent()
 
-event.AddListener("GBufferInitialized", "register_material_components", function()
+event.AddListener("GBufferInitialized", function()
 	for name, meta in pairs(prototype.GetRegisteredSubTypes("material")) do
 		local META = prototype.CreateTemplate()
 
