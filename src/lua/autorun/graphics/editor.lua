@@ -402,9 +402,11 @@ local function get_load_menu(ent)
 						else
 							local config = prototype.GetConfigurations()[v.ent_tbl.config]
 
-							table.insert(out, {v.name, function()
-								ent:SetStorableTable(v.ent_tbl)
-							end, config.icon})
+							if config then
+								table.insert(out, {v.name, function()
+									ent:SetStorableTable(v.ent_tbl)
+								end, config.icon})
+							end
 						end
 					else
 						table.insert(out, {v.name, populate(v.files), editor.frame:GetSkin().icons.load})
