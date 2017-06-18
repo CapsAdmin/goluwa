@@ -1,6 +1,4 @@
-if SERVER then return end
-local urlRewriters =
-{
+local urlRewriters = {
 	{ "^https?://imgur%.com/([a-zA-Z0-9_]+)$",      "http://i.imgur.com/%1.png" },
 	{ "^https?://www%.imgur%.com/([a-zA-Z0-9_]+)$", "http://i.imgur.com/%1.png" }
 }
@@ -12,12 +10,12 @@ local allowed = {
 	png = true,
 }
 
-local queue = {}
-
-local busy
-
 local sDCvar = pvars.Setup("chathud_image_slideduration", 0.5)
 local hDCvar = pvars.Setup("chathud_image_holdduration", 5)
+local cvar = pvars.Setup("chathud_image_url", 1)
+
+local queue = {}
+local busy
 
 local function show_image(url)
 	busy = true
@@ -71,16 +69,6 @@ local function show_image(url)
 	end)
 end
 
-event.Timer("chathud_image_url_queue", 0.25, 0, function()
-	if busy then return end
-	local url = queue[1]
-	if url then
-		show_image(url)
-	end
-end)
-
-local cvar = pvars.Setup("chathud_image_url", 1)
-
 event.AddListener("ClientChat", "chathud_image_url", function(client, str)
 
 	if str == "" then return end
@@ -97,6 +85,14 @@ event.AddListener("ClientChat", "chathud_image_url", function(client, str)
 	end
 
 	if str:find("http") then
+		event.Timer("chathud_image_url_queue", 0.25, 0, function()
+			if busy then return end
+			local url = queue[1]
+			if url then
+				show_image(url)
+			end
+		end)
+
 		str = str:gsub("https:", "http:")
 
 		str = str .. " "
