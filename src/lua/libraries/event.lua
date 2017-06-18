@@ -33,7 +33,7 @@ function event.AddListener(event_type, id, callback, config)
 
 	-- useful for initialize events
 	if config.id == nil then
-		config.id = tostring(callback)
+		config.id = {}
 		config.remove_after_one_call = true
 	end
 
@@ -48,6 +48,8 @@ function event.AddListener(event_type, id, callback, config)
 	sort_events()
 end
 
+event.fix_indices = {}
+
 function event.RemoveListener(event_type, id)
 
 	if type(event_type) == "table" then
@@ -58,25 +60,9 @@ function event.RemoveListener(event_type, id)
 	if id ~= nil and event.active[event_type] then
 		for index, val in pairs(event.active[event_type]) do
 			if id == val.id then
-				-- we can't use table.remove here because this might be called during
-				-- an event which will mess up the ipairs loop and skip all the other events
-				-- of the same type
 				event.active[event_type][index] = nil
 
-				--profiler.RemoveSection(val.print_str)
-
-				do -- repair the table
-					local temp = {}
-
-					for k, v in pairs(event.active[event_type]) do
-						table.insert(temp, v)
-						event.active[event_type][k] = nil
-					end
-
-					for _, v in pairs(temp) do
-						table.insert(event.active[event_type], v)
-					end
-				end
+				event.fix_indices[event_type] = true
 
 				break
 			end
@@ -84,15 +70,16 @@ function event.RemoveListener(event_type, id)
 	else
 		--logn(("Tried to remove non existing event '%s:%s'"):format(event, tostring(unique)))
 	end
-
-	sort_events()
 end
 
 function event.Call(event_type, a_, b_, c_, d_, e_)
 	local status, a,b,c,d,e
 
 	if event.active[event_type] then
-		for index, data in ipairs(event.active[event_type]) do
+		for index = 1, #event.active[event_type] do
+			local data = event.active[event_type][index]
+			if not data then break end
+
 			if data.self_arg then
 				if data.self_arg:IsValid() then
 					if data.self_arg_with_callback then
@@ -129,6 +116,13 @@ function event.Call(event_type, a_, b_, c_, d_, e_)
 				end
 			end
 		end
+	end
+
+	if event.fix_indices[event_type] then
+		table.fixindices(event.active[event_type])
+		event.fix_indices[event_type] =  nil
+
+		sort_events()
 	end
 end
 
