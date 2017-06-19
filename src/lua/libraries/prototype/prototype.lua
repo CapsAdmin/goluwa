@@ -181,6 +181,7 @@ function prototype.RebuildMetatables(what)
 				end
 
 				copy.BaseClass = sub_types[base_list[#base_list] or meta.TypeBase]
+				meta.BaseClass = copy.BaseClass
 
 				prototype.prepared_metatables[super_type] = prototype.prepared_metatables[super_type] or {}
 				prototype.prepared_metatables[super_type][sub_type] = copy
