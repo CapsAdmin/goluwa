@@ -126,6 +126,35 @@ function event.Call(event_type, a_, b_, c_, d_, e_)
 	end
 end
 
+do -- helpers
+	function event.CreateRealm(config)
+		if type(config) == "string" then
+			config = {id = config}
+		end
+		return setmetatable({}, {
+			__index = function(_, key, val)
+				for i, data in ipairs(event.active[key]) do
+					if data.id == config.id then
+						return config.callback
+					end
+				end
+			end,
+			__newindex = function(_, key, val)
+				if type(val) == "function" then
+					config = table.copy(config)
+					config.event_type = key
+					config.callback = val
+					event.AddListener(config)
+				elseif val == nil then
+					config = table.copy(config)
+					config.event_type = key
+					event.RemoveListener(config)
+				end
+			end,
+		})
+	end
+end
+
 do -- timers
 	event.timers = event.timers or {}
 
