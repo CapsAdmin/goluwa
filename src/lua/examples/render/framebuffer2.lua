@@ -35,10 +35,10 @@ event.Timer("lol", 1, 4, function(i)
 	end
 end)
 
-event.AddListener("PostDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	for i = 1, 3 do
 		render2d.SetTexture(fb:GetTexture(i))
 		render2d.SetColor(1, 1, 1, 1)
 		render2d.DrawRect(50, i*50, 128, 128)
 	end
-end)
+end

@@ -9,11 +9,11 @@ local function regen()
 	end
 end
 
-event.AddListener("PreDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	regen()
 
 	gfx.SetFont(font)
 	gfx.SetTextPosition(0,0)
 	render2d.SetColor(1,1,1,1)
 	gfx.DrawText(table.concat(str))
-end)
+end

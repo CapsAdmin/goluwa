@@ -26,7 +26,7 @@ event.Timer("updatefb", 0.1, function()
 	tex:EndWrite()
 end)
 
-event.AddListener("PreDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	local t = system.GetElapsedTime()
 
 	render2d.SetTexture()
@@ -55,4 +55,4 @@ event.AddListener("PreDrawGUI", "lol", function()
 	render2d.SetTexture(tex)
 	render2d.SetColor(1, 1, 1, 1)
 	render2d.DrawRect(tex:GetSize().x, tex:GetSize().y, 50, 50, t, 25, 25)
-end)
+end

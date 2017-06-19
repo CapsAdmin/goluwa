@@ -42,10 +42,10 @@ if not irc_socket then
 	event.Delay(0.5, function() client:Join("#metastruct") chatsounds.Initialize() end)
 end
 
-event.AddListener("ClientChat", "metastruct_chat", function(client, msg)
+function goluwa.ClientChat(client, msg)
 	if client == clients.GetLocalClient() then
 		irc_socket:Send("PRIVMSG #metastruct :" .. msg)
 	end
-end)
+end
 
 irc_socket = client

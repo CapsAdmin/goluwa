@@ -239,7 +239,7 @@ for i, view in pairs(views) do
 end
 
 
-event.AddListener("PreDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	render.SetPresetBlendMode("none")
 	local old = camera.camera_3d
 
@@ -263,4 +263,4 @@ event.AddListener("PreDrawGUI", "lol", function()
 		shader_view:Bind()
 		render2d.rectangle:Draw()
 	render2d.PopMatrix()
-end)
+end

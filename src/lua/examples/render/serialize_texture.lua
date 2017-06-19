@@ -6,8 +6,8 @@ local data = serializer.ReadFile("msgpack2", "lol.wtf")
 local tex = render.CreateTexture("2d")
 tex:Load(data)
 
-event.AddListener("PostDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	render2d.SetTexture(tex)
 	render2d.SetColor(1, 1, 1, 1)
 	render2d.DrawRect(50, 50, 128, 128)
-end)
+end

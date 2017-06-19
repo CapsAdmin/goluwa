@@ -86,7 +86,7 @@ local function draw_branch(node, level, i, max, px, py, ppos, pw, ph)
 	end
 end
 
-event.AddListener("PreDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	if wait(5) then
 		for _, v in pairs(profiler.GetBenchmark("statistical")) do
 			if not next(v.parents) then
@@ -108,4 +108,4 @@ event.AddListener("PreDrawGUI", "lol", function()
 	render2d.PopMatrix()
 
 	table.clear(drawn)
-end)
+end

@@ -44,7 +44,7 @@ do
 	local ssbo = render.CreateShaderVariables("shader_storage", shader, "shader_storage_test_", array_size)
 	ssbo:SetBindLocation(shader, 2)
 
-	event.AddListener("PreDrawGUI", "fb", function()
+	function goluwa.PreDrawGUI()
 		ubo:UpdateVariable("colors", Color(1, math.abs(math.sin(os.clock())), 1, 1), 1)
 		ubo:UpdateVariable("num", math.abs(math.cos(os.clock()*10)))
 		ubo:Bind(1)
@@ -56,5 +56,5 @@ do
 			shader:Bind()
 			render2d.rectangle:Draw()
 		render2d.PopMatrix()
-	end)
+	end
 end

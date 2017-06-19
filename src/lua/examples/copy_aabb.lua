@@ -3,7 +3,7 @@ camera.camera_3d:SetAngles(Ang3())
 local min
 local max
 
-event.AddListener("MouseInput", "aabb", function(button, press)
+function goluwa.MouseInput(button, press)
 	if button == "button_1" then
 		if press then
 			min = camera.camera_3d:GetPosition()

@@ -48,7 +48,7 @@ local start = system.GetElapsedTime()
 
 parent:BuildChildrenList()
 
-event.AddListener("Update", "lol", function()
+function goluwa.Update()
 	local t = (system.GetElapsedTime() - start) / 10
 
 	for _, child in ipairs(parent:GetChildrenList()) do
@@ -56,4 +56,4 @@ event.AddListener("Update", "lol", function()
 		t = t * 1.001
 	end
 
-end, {priority = -19})
+end

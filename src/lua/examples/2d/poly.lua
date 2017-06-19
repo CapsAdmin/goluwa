@@ -2,7 +2,7 @@ local tex = render.CreateTextureFromPath("textures/pac.png")
 local count = 100
 local poly = gfx.CreatePolygon2D(count * 6)
 
-event.AddListener("PreDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	local time = system.GetElapsedTime()
 
 	for i = 1, count do
@@ -14,4 +14,4 @@ event.AddListener("PreDrawGUI", "lol", function()
 	render2d.SetTexture(tex)
 
 	poly:Draw()
-end)
+end

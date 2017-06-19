@@ -36,7 +36,7 @@ if menu then
 	menu.Close()
 end
 
-event.AddListener("Update", "lol", function()
+function goluwa.PreDrawGUI()
 	render.GetScreenFrameBuffer():Begin()
 		render.SetPresetBlendMode("alpha")
 		render.SetCullMode("none")
@@ -47,4 +47,4 @@ event.AddListener("Update", "lol", function()
 			screen_rect:Draw()
 		render2d.PopMatrix()
 	render.GetScreenFrameBuffer():End()
-end)
+end

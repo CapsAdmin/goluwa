@@ -44,7 +44,7 @@ local shader_fill = render.CreateShader({
 		]],
 	},
 })
-event.AddListener("PreDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	render.SetPresetBlendMode("none")
 
 	fb:Begin()
@@ -63,7 +63,7 @@ event.AddListener("PreDrawGUI", "lol", function()
 		shader_view:Bind()
 		render2d.rectangle:Draw()
 	render2d.PopMatrix()
-end)
+end
 
 if menu then
 	menu.Close()

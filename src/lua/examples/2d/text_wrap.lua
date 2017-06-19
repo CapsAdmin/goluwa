@@ -20,7 +20,7 @@ for i = 1, 20 do
 	end
 end
 
-event.AddListener("PreDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	gfx.SetFont(font)
 
 	if not window.IsFocused() then
@@ -47,4 +47,4 @@ event.AddListener("PreDrawGUI", "lol", function()
 		render2d.SetColor(1,0,0,1)
 		gfx.DrawLine(x, 0, x, 10000)
 	end
-end)
+end

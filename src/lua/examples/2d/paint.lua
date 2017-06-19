@@ -54,8 +54,8 @@ event.Timer("fb_update", 0, 0, function()
 	fb:End()
 end)
 
-event.AddListener("PreDrawGUI", "fb", function()
+function goluwa.PreDrawGUI()
 	render2d.SetTexture(fb:GetTexture(1))
 	render2d.SetColor(1,1,1,1)
 	render2d.DrawRect(0, 0, 512, 512)
-end)
+end

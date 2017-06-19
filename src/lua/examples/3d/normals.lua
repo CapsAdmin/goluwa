@@ -15,7 +15,7 @@ light:SetColor(ColorHSV(1, 0.1, 1))
 light:SetSize(2)
 light:SetIntensity(1)
 
-event.AddListener("Update", "test", function()
+function goluwa.Update()
 	--render2d.Start3D2D()
 
 	local pos = Vec2(gfx.GetMousePosition())/window.GetSize() * 2 - 1
@@ -24,7 +24,7 @@ event.AddListener("Update", "test", function()
 	--ent:SetAngles(Ang3(time,time,0))
 
 --	render2d.End3D2D()
-end)
+end
 
 local mat = render.CreateMaterial("model")
 mat:SetAlbedoTexture(render.GetWhiteTexture())

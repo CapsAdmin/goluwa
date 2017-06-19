@@ -5,8 +5,8 @@ tex:SetSize(Vec2(256, 1))
 tex:SetupStorage()
 tex:Fill(function(x, y) x = math.linear2gamma(x/256)*256 return x,x,x,255 end)
 
-event.AddListener("PreDrawGUI", "test", function()
+function goluwa.PreDrawGUI()
 	render2d.SetColor(1,1,1,1)
 	render2d.SetTexture(tex)
 	render2d.DrawRect(0,0, render2d.GetSize())
-end)
+end

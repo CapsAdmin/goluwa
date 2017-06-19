@@ -43,14 +43,14 @@ local function fill_discard(invert)
 	render3d.gbuffer_discard:End()
 end
 
-event.AddListener("PreGBufferModelPass", "portal", function()
+function goluwa.PreGBufferModelPass()
 	fill_discard(false)
-end)
+end
 
-event.AddListener("PostGBufferModelPass", "portal", function()
+function goluwa.PostGBufferModelPass()
 	fill_discard(true)
 
 	camera.camera_3d:SetView(portal_a_cam:GetMatrices().view)
 		render3d.DrawScene("portal")
 	camera.camera_3d:SetView()
-end)
+end

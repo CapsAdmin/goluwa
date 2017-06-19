@@ -117,7 +117,7 @@ local function drawShape(shapeIdx, x,y,scale,r,g,b)
 	love.graphics.pop()
 end
 
-event.AddListener("PostDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	local scale = 200
 	local x, y = scale, scale
 	for i=1,#outline do
@@ -134,4 +134,4 @@ event.AddListener("PostDrawGUI", "lol", function()
 	love.graphics.translate(500,600)
 	love.graphics.polygon("line", {-50,0, 0,-50, 50,0})
 	love.graphics.pop()
-end)
+end

@@ -1,4 +1,4 @@
-event.AddListener("PreDrawGUI", "joystick", function()
+function goluwa.PreDrawGUI()
 	local data = window.GetJoystickState(0)
 
 	gfx.SetFont()

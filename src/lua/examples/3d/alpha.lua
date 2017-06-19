@@ -24,7 +24,7 @@ ent:SetModelPath("models/sphere.obj")
 ent:SetSize(0.25)
 ent:SetMaterialOverride(mat2)
 
-event.AddListener("Update", "test", function()
+function goluwa.Update()
 	local t = system.GetElapsedTime()
 
 	local color = mat1:GetColor()
@@ -36,4 +36,4 @@ event.AddListener("Update", "test", function()
 	mat2:SetColor(color)
 
 	light:SetPosition(Vec3(5 + math.sin(t),math.cos(t),0))
-end)
+end

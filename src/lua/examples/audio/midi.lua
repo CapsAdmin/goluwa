@@ -49,7 +49,7 @@ end
 
 local clock = -1
 
-event.AddListener("Update", "asdf", function(dt)
+function goluwa.Update(dt)
 	for _, track in ipairs(data.tracks) do
 		if not track.init then
 			track.voices = {}
@@ -119,4 +119,4 @@ event.AddListener("Update", "asdf", function(dt)
 	end
 
 	clock = clock + dt
-end)
+end

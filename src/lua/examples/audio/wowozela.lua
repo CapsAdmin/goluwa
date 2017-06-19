@@ -41,7 +41,7 @@ local lol
 local grid_size = 1000
 local smooth_pitch = 0
 
-event.AddListener("PostDrawGUI", "wowozela", function(dt)
+function goluwa.PreDrawGUI()
 	local size = window.GetSize()
 
 	render2d.SetColor(0,0,0,1)
@@ -106,4 +106,4 @@ event.AddListener("PostDrawGUI", "wowozela", function(dt)
 
 	emitter:Update(dt)
 	emitter:Draw()
-end)
+end

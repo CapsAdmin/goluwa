@@ -44,11 +44,11 @@ blur_texture(Vec2(0,5))
 blur_texture(Vec2(5,0))
 
 serializer.WriteFile("msgpack", "lol.wtf", tex:Download())
-event.AddListener("PostDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	render2d.SetTexture(tex)
 	render2d.SetColor(1, 1, 1, 1)
 	render2d.DrawRect(50, 50, 128, 128)
-end)
+end
 do return end
 
 local info = serializer.ReadFile("msgpack", "lol.wtf")
@@ -118,7 +118,7 @@ local shader = render.CreateShader({
 	}
 })
 
-event.AddListener("PostDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	--render2d.PushMatrix(0, 0, tex:GetSize():Unpack())
 		--render.SetShaderOverride(shader)
 		--render2d.rectangle:Draw()
@@ -138,4 +138,4 @@ event.AddListener("PostDrawGUI", "lol", function()
 	--render2d.SetTexture()
 	--render2d.SetColor(tex:GetPixelColor(gfx.GetMousePosition()):Unpack())
 	--render2d.DrawRect(50,50,50,50)
-end)
+end

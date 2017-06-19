@@ -54,7 +54,7 @@ for _, v in pairs(prototype.GetCreated()) do
 	end
 end
 
-event.AddListener("PostDrawGUI", "texture_tiles", function()
+function goluwa.PreDrawGUI()
 	render2d.SetColor(1,1,1,1)
 	for _,v in ipairs(list) do
 		if v.node then
@@ -66,4 +66,4 @@ event.AddListener("PostDrawGUI", "texture_tiles", function()
 			end
 		end
 	end
-end)
+end

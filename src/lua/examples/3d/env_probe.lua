@@ -3,7 +3,7 @@ local max = 16
 local active_probes = {}
 local list = {}
 
-event.AddListener("Update", "probe", function()
+function goluwa.Update()
 	local x,y,z = camera.camera_3d:GetPosition():Unpack()
 	x = math.round(x / size) * size
 	y = math.round(y / size) * size
@@ -36,5 +36,5 @@ event.AddListener("Update", "probe", function()
 
 	data.probe.tex.probe = data.probe
 	render3d.environment_probe_texture = data.probe.tex
-end)
+end
 --_G.active_probes = active_probes

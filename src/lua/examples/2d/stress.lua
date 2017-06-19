@@ -2,7 +2,7 @@ window.Open(500, 500)
 
 local cache = {}
 
-event.AddListener("PreDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	render2d.SetTexture()
 	local time = system.GetElapsedTime()
 
@@ -17,4 +17,4 @@ event.AddListener("PreDrawGUI", "lol", function()
 		render2d.DrawRect(x, y, 1, 1)
 	end
 	end
-end)
+end

@@ -266,7 +266,7 @@ end
 local dynamic = false
 local mesh
 
-event.AddListener("PreDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	local coords = {200,50, 400,50, 500,300, 100,300, 200,50}
 	local vertices, indices, mode = draw_line("none", coords, 50, 1)
 
@@ -296,4 +296,4 @@ event.AddListener("PreDrawGUI", "lol", function()
 	render2d.PushMatrix(350,350, 1,1)
 	mesh:Draw()
 	render2d.PopMatrix()
-end)
+end

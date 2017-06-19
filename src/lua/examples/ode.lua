@@ -22,7 +22,7 @@ ode.MassSetSphereTotal(m1,mass,radius);
 ode.BodySetMass(ball,m1);
 ode.BodySetPosition(ball, x0, y0, z0);
 
-event.AddListener("Update", "ode", function()
+function goluwa.Update()
 	ode.WorldStep(world,0.05); --world step
 
 	local pos = ode.BodyGetPosition(ball); --get Pos
@@ -30,4 +30,4 @@ event.AddListener("Update", "ode", function()
 
 	pos = Vec3(pos[0], pos[1], pos[2])
 	q = Quat(q[0], q[1], q[2], q[3])
-end)
+end

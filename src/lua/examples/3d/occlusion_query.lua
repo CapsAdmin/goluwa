@@ -217,7 +217,7 @@ event.Timer("occluder", 0.25, function()
 end)
 
 if VISUALIZE then
-	event.AddListener("PostDrawGUI", "lol", function()
+	function goluwa.PreDrawGUI()
 		gfx.DrawRect(0,0,window.GetSize().x/4, window.GetSize().y/4, fb:GetTexture())
-	end)
+	end
 end

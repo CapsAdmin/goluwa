@@ -48,7 +48,7 @@ Lua's treatment of functions as first-class values is shown in the following exa
 
 love.window.setMode(1280, 720)
 local time_now=love.timer.getTime()
-event.AddListener("PreDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	love.graphics.draw(img, top_left, 32, 32)
 	love.graphics.draw(img, bottom_left, 32, 32*2)
 	love.graphics.draw(img, top_right, 32*2, 32)
@@ -72,5 +72,5 @@ event.AddListener("PreDrawGUI", "lol", function()
 		(1280/2)-(720/2),50,
 		640
 	)
-end)
+end
 

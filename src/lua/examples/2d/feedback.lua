@@ -87,8 +87,8 @@ event.Timer("fb_update", 0, 0, function()
 	shader.generate_random = 0
 end)
 
-event.AddListener("PreDrawGUI", "fb", function()
+function goluwa.PreDrawGUI()
 	render2d.SetTexture(fb:GetTexture())
 	render2d.SetColor(1, 1, 1, 1)
 	render2d.DrawRect(0, 0, render2d.GetSize())
-end)
+end

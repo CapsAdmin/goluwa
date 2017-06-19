@@ -35,7 +35,7 @@ local font = fonts.CreateFont({
 	},
 })
 
-event.AddListener("PreDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	local w, h = render2d.GetSize()
 
 	render2d.SetColor(1,1,1,1)
@@ -52,4 +52,4 @@ do return end
 	render2d.SetTexture()
 	render2d.SetColor(1,0,0,0.5)
 	render2d.DrawRect(350, 350, gfx.GetTextSize("outline blur text"))
-end)
+end

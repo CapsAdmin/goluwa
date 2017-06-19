@@ -7,6 +7,6 @@ alpha_tex:SetSize(normal_tex:GetSize():Copy())
 alpha_tex:SetupStorage()
 
 
-event.AddListener("PostDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	gfx.DrawRect(50, 50, normal_tex:GetSize().x, normal_tex:GetSize().y, normal_tex)
-end)
+end

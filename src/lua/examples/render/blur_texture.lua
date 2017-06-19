@@ -43,8 +43,8 @@ end
 blur_texture(Vec2(0,5))
 blur_texture(Vec2(5,0))
 
-event.AddListener("PostDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	render2d.SetTexture(tex)
 	render2d.SetColor(1, 1, 1, 1)
 	render2d.DrawRect(50, 50, 128, 128)
-end)
+end

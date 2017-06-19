@@ -1,6 +1,6 @@
 local tex = render.CreateTextureFromPath("textures/pac.png")
 
-event.AddListener("PreDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	render2d.SetColor(1,1,1,1)
 	render2d.SetTexture(tex)
 
@@ -17,4 +17,4 @@ event.AddListener("PreDrawGUI", "lol", function()
 	render2d.DrawRect(150, 50, 100, 100)
 
 	render2d.SetRectUV()
-end)
+end

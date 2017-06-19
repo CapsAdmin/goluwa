@@ -78,10 +78,10 @@ do -- write a rotated green rectangle to attachment 1 and 2
 	fb:End()
 end
 
-event.AddListener("PostDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	for i = 1, 2 do
 		render2d.SetTexture(fb:GetTexture(i))
 		render2d.SetColor(1, 1, 1, 1)
 		render2d.DrawRect(50, i*100, 1024, 1024)
 	end
-end)
+end

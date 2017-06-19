@@ -80,7 +80,7 @@ local function calc_collision(p)
 	end
 end
 
-event.AddListener("PreDrawGUI", "particles", function(dt)
+function goluwa.PreDrawGUI()
 	dt = dt  * 25
 
 	render.SetPresetBlendMode("additive")
@@ -128,4 +128,4 @@ event.AddListener("PreDrawGUI", "particles", function(dt)
 
 	render.SetPresetBlendMode("alpha")
 
-end)
+end

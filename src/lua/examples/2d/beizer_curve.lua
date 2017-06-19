@@ -16,7 +16,7 @@ curve:Add(Vec2(0,1))
 local poly = curve:ConstructPoly(Vec2(-0.1, 0), 4, 5)
 poly.vertex_buffer:SetMode("triangle_strip")
 
-event.AddListener("PostDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	--render2d.DrawRect(0,0,tex:GetSize():Unpack())
 
 	render2d.SetTexture()
@@ -28,4 +28,4 @@ event.AddListener("PostDrawGUI", "lol", function()
 	render2d.PushMatrix(50, 50, 500, 500)
 		poly:Draw()
 	render2d.PopMatrix()
-end)
+end

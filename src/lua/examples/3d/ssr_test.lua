@@ -35,7 +35,7 @@ for x = -max/2, max/2 do
 	end
 end
 
-event.AddListener("Update", "test", function()
+function goluwa.Update()
 	local t = system.GetElapsedTime()/10
 	for i,v in ipairs(spheres) do
 		local x = math.sin(t + v.seed1)
@@ -43,4 +43,4 @@ event.AddListener("Update", "test", function()
 		local z = math.sin(t + v.seed3) * math.cos(t + v.seed4)
 		v:SetPosition(Vec3(x,y,z)*4)
 	end
-end)
+end

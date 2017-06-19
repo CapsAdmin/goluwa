@@ -29,14 +29,14 @@ local shader = render.CreateShader({
 	},
 })
 
-event.AddListener("PreDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	render.SetPresetBlendMode("none")
 
 	render2d.PushMatrix(0, 0, render2d.GetSize())
 		shader:Bind()
 		render2d.rectangle:Draw()
 	render2d.PopMatrix()
-end)
+end
 
 if menu then
 	menu.Close()

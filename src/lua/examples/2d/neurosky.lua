@@ -37,7 +37,7 @@ local function update_rt(eeg)
 	fb:End()
 end
 
-event.AddListener("PreDrawGUI", "mindwave", function()
+function goluwa.PreDrawGUI()
 	render2d.SetTexture(fb:GetTexture(1))
 	render2d.DrawRect(0,0, W,H)
 
@@ -51,7 +51,7 @@ event.AddListener("PreDrawGUI", "mindwave", function()
 		gfx.DrawText(k .. " = " .. v)
 		y = y + 20
 	end
-end)
+end
 
 client:Send(serializer.Encode("json", {
 	appName = "NodeThinkGear",

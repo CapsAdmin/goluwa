@@ -275,7 +275,10 @@ end
 
 system = runfile("lua/libraries/system.lua") -- os and luajit related functions like creating windows or changing jit options
 utility = runfile("lua/libraries/utilities/utility.lua") -- misc functions i don't know where to put
+
 event = runfile("lua/libraries/event.lua") -- event handler
+_G.goluwa = event.CreateRealm("goluwa")
+
 input = runfile("lua/libraries/input.lua") -- keyboard and mouse input
 utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
 tasks = runfile("lua/libraries/tasks.lua") -- high level abstraction around coroutines

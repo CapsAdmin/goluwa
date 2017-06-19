@@ -37,7 +37,7 @@ for i = 1, max do
 	table.insert(lights, light)
 end
 
-event.AddListener("Update", "test", function()
+function goluwa.Update()
 	local time = system.GetElapsedTime() / 10
 	for i, light in ipairs(lights) do
 		i = i / max
@@ -46,7 +46,7 @@ event.AddListener("Update", "test", function()
 		light:SetPosition(Vec3(math.sin(time + i) * math.cos(time/2) * 100, math.cos(time + i) * math.sin(time/2) * 100, 1))
 	end
 	--ent:SetAngles(Ang3(time,time,0))
-end)
+end
 
 
 pbr_test = ent

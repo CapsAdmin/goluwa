@@ -5,7 +5,7 @@ local x, y = 0, 0
 local dirX, dirY = 100, 100
 
 local W, H = luwa:GetSize().x - 10, luwa:GetSize().y - 10
-event.AddListener( "PreDrawGUI", "goluwa", function()
+function goluwa.PreDrawGUI()
 
 	x = x + dirX * system.GetFrameTime()
 	y = y + dirY * system.GetFrameTime()
@@ -32,4 +32,4 @@ event.AddListener( "PreDrawGUI", "goluwa", function()
 	local X, Y = math.sin( math.rad( system.GetElapsedTime() * 500) ) * (W/2-10) - (W/5/2),
 		math.cos( math.rad( system.GetElapsedTime() * 500 ) ) * (H/2-10) - (H/5/2)
 	render2d.DrawRect( x + X, y + Y, W/5, H/5 )
-end, {priority=-math.huge})
+end

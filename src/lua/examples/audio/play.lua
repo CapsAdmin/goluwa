@@ -20,10 +20,10 @@ local filter = audio.CreateFilter("lowpass")
 filter:SetParam("gainhf", 0.1)
 voice:SetFilter(filter)
 
-event.AddListener("Update", "hmm", function()
+function goluwa.Update(dt)
 	local time = system.GetElapsedTime()
 
 	voice:SetPosition(math.sin(time), math.cos(time),0)
 	music:SetPitch(1 + math.sin(time*10)/30)
 	reverb:SetParam("gain", math.abs(math.sin(system.GetElapsedTime()/10)))
-end)
+end

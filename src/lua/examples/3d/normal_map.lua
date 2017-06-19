@@ -5,9 +5,9 @@ entities.Panic()
 local light = entities.CreateEntity("light")
 light:SetSize(10)
 
-event.AddListener("Update", "test", function()
+function goluwa.Update()
 	light:SetPosition(camera.camera_3d:GetPosition())
-end)
+end
 
 local i = 1
 

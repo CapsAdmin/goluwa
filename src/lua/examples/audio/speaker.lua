@@ -46,11 +46,11 @@ local function calc_job(id, job, play_next_now)
 	end
 end
 
-event.AddListener("Update", "queue", function()
+function goluwa.Update(dt)
 	for id, job in pairs(queue) do
 		calc_job(id, job)
 	end
-end)
+end
 
 local pause_symbols =
 {

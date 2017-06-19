@@ -43,7 +43,7 @@ tex:Shade([[
 
 end)
 
-event.AddListener("PreDrawGUI", "fb", function()
+function goluwa.PreDrawGUI()
 	render2d.SetTexture()
 	render2d.SetColor(0,0,0,1)
 	render2d.DrawRect(0, 0, tex:GetSize().x, tex:GetSize().y)
@@ -51,4 +51,4 @@ event.AddListener("PreDrawGUI", "fb", function()
 	render2d.SetTexture(tex)
 	render2d.SetColor(1,1,1,1)
 	render2d.DrawRect(0, 0, tex:GetSize().x, tex:GetSize().y)
-end)
+end

@@ -169,7 +169,7 @@ local mesh = render.CreateVertexBuffer(shader:GetMeshLayout(), {
 	{pos = {1, 1, 0}, uv = {1, 0}},
 	{pos = {0, 0, 0}, uv = {0, 1}},
 })
-event.AddListener("PreDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	shader.pwm_matrix = camera.camera_2d:GetMatrices().projection_view_world
 
 	local w, h = render2d.GetSize()
@@ -180,4 +180,4 @@ event.AddListener("PreDrawGUI", "lol", function()
 		shader.mouse = window.GetMousePosition()
 		mesh:Draw()
 	render2d.PopMatrix()
-end)
+end

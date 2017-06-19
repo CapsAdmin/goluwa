@@ -4,7 +4,7 @@ if not steam.IsSteamClientAvailible() then
 
 local subject
 
-event.AddListener("SteamFriendsMessage", "steam_friends", function(sender_steam_id, txt, receiver_steam_id)
+function goluwa.SteamFriendsMessage(sender_steam_id, txt, receiver_steam_id)
 	if txt:sub(1, 2) == ">>" then return end
 
 	local ply = clients.GetByUniqueID(sender_steam_id)
@@ -23,13 +23,13 @@ event.AddListener("SteamFriendsMessage", "steam_friends", function(sender_steam_
 			commands.RunString(txt:sub(2),nil,nil,true)
 		end
 	end
-end)
+end
 
-event.AddListener("ReplPrint", "steam_friends", function(line)
+function goluwa.ReplPrint(line)
 	if subject then
 		steam.SendChatMessage(subject, ">> " .. line)
 	end
-end)
+end
 
 for i, steam_id in pairs(steam.GetFriends()) do
 	local ply = clients.Create(steam_id, true)

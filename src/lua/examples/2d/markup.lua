@@ -89,7 +89,7 @@ Self publishing
 
 if ... then return end
 
-event.AddListener("PostDrawGUI", "lol", function()
+function goluwa.PreDrawGUI()
 	local x = (os.clock()*10)%500
 	x = gfx.GetMousePosition()
 	render2d.PushMatrix(50,50)
@@ -99,4 +99,4 @@ event.AddListener("PostDrawGUI", "lol", function()
 		render2d.SetColor(1,1,1,1)
 		gfx.DrawLine(x, 0, x, 1000)
 	render2d.PopMatrix()
-end)
+end

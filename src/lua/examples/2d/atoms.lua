@@ -54,7 +54,7 @@ local shader = render.CreateShader({
 	}
 })
 
-event.AddListener("PreDrawGUI", "fb", function()
+function goluwa.PreDrawGUI()
 	camera.camera_2d:SetPosition(Vec3(-0.1,0.1,0))
 	camera.camera_2d:SetAngles(Ang3(0,math.rad(180 + 0.025),0))
 
@@ -79,4 +79,4 @@ event.AddListener("PreDrawGUI", "fb", function()
 	end
 
 	shader.generate_random = 0
-end)
+end

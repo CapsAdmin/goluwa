@@ -111,8 +111,7 @@ local function draw()
 	end
 end
 
-event.AddListener("PostDrawGUI", "lol", function()
-
+function goluwa.PreDrawGUI()
 	render2d.PushMatrix(50,50)
 
 	render2d.SetTexture()
@@ -131,9 +130,9 @@ event.AddListener("PostDrawGUI", "lol", function()
 	draw()
 
 	render2d.PopMatrix()
-end)
+end
 
-event.AddListener("CharInput", "lol", function(char)
+function goluwa.CharInput(char)
 	font:DrawString(char)
 
 	local line = grid[caret_pos.y]
@@ -153,9 +152,9 @@ event.AddListener("CharInput", "lol", function(char)
 
 	move(1, 0)
 	invalidate()
-end)
+end
 
-event.AddListener("KeyInputRepeat", "lol", function(key, press)
+function goluwa.KeyInputRepeat(key, press)
 	if key == "left_shift" then
 		if press then
 			select_start = caret_pos:Copy()
@@ -193,8 +192,7 @@ event.AddListener("KeyInputRepeat", "lol", function(key, press)
 			--move(-1, 0)
 		end
 	end
-end)
-
+end
 
 do
 	local lua = assert(vfs.Read("lua/examples/2d/text_edit.lua"))

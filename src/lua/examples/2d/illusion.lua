@@ -14,7 +14,7 @@ local function draw_shape(s, r)
 
 end
 
-event.AddListener("PreDrawGUI", "illusion", function()
+function goluwa.PreDrawGUI()
 	render2d.SetTexture()
 	render2d.SetColor(0.75,0.75,0,1)
 	render2d.DrawRect(0,0,5000,5000)
@@ -33,4 +33,4 @@ event.AddListener("PreDrawGUI", "illusion", function()
 		if x > w then break end
 	end
 
-end)
+end
