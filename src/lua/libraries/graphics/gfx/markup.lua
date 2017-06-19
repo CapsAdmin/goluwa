@@ -1330,7 +1330,6 @@ do -- invalidate
 									add_chunk(self, out, {type = "newline"})
 								elseif chunk.val:find("\n", nil, true) then
 									for _, line in ipairs(chunk.val:split("\n")) do
-										print(line)
 										add_chunk(self, out, {type = "string", val = line})
 										add_chunk(self, out, {type = "newline"})
 									end
