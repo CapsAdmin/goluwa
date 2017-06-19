@@ -29,7 +29,7 @@ local blacklist_dir = {
 local words = {}
 local done = {}
 
-for _, path in ipairs(vfs.Search("os:/media/caps/ssd_840_120gb/goluwa/src/lua/", ".lua", nil, blacklist_dir)) do
+for _, path in ipairs(vfs.Search(e.ROOT_FOLDER .. "src/lua/", ".lua", nil, blacklist_dir)) do
 	for i,v in ipairs(blacklist) do
 		if path:find(v) then
 			goto continue
