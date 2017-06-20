@@ -402,6 +402,12 @@ function PLUGIN:onRegister()
 			name = "LuaJIT",
 		})
 
+		table.insert(branches, {
+			wx_id = NewID(),
+			branch_id = "lua",
+			name = "Lua51 + FFILib",
+		})
+
 		for _, path in pairs(FileSysGetRecursive("../bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/", false, "luajit_*")) do
 			local id = path:match(".+/luajit_(.+)")
 

@@ -62,6 +62,11 @@ LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libpulse.so.0
 
 	executable="luajit$BRANCH"
 
+
+	if [ "$BRANCH" == "_lua"  ]; then
+		executable="lua"
+	fi
+
 	if [ ! -z "$DEBUG" ]; then
 		launch="x-terminal-emulator -e \"gdb -ex=r --args $executable"
 		append="\""

@@ -2,11 +2,13 @@ local profile_start_time = os.clock()
 
 io.stdout:setvbuf("no")
 
+local ffi = require("ffi")
+
 do
 	-- force lookup modules in current directory rather than system
-	if jit.os == "Windows" then
+	if ffi.os == "Windows" then
 		package.cpath = "./?.dll"
-	elseif jit.os == "OSX" then
+	elseif ffi.os == "OSX" then
 		package.cpath = "./?.dylib;./?.so"
 	else
 		package.cpath = "./?.so"
@@ -31,11 +33,9 @@ do
 		local dir = path:match("@(.+/)src/lua/init.lua$")
 
 		if dir then
-			local ffi = require("ffi")
+			dir = dir .. "data/bin/" .. ffi.os:lower() .. "_" .. ffi.arch:lower() .. "/"
 
-			dir = dir .. "data/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
-
-			if jit.os == "Windows" then
+			if ffi.os == "Windows" then
 				ffi.cdef("int SetCurrentDirectoryA(const char *);")
 				ffi.C.SetCurrentDirectoryA(dir)
 			else
@@ -51,8 +51,8 @@ do -- constants
 	--VULKAN = true
 
 	-- if WINDOWS and X86 then blah blah end
-	_G[jit.os:upper()] = true
-	_G[jit.arch:upper()] = true
+	_G[ffi.os:upper()] = true
+	_G[ffi.arch:upper()] = true
 
 	local env_vars = {
 		SERVER = false,
