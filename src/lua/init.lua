@@ -365,4 +365,6 @@ if VERBOSE_STARTUP then
 	llog("including libraries took %s seconds\n", os.clock() - profile_start_time)
 end
 
+profiler.startup_time = profile_start_time
+
 runfile("lua/main.lua")

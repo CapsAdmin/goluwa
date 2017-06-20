@@ -132,10 +132,6 @@ end, false, 1/10)
 -- main loop
 
 local function main()
-	event.Call("Initialize")
-
-	system.ExecuteArgs()
-
 	local last_time = 0
 	local i = 0ULL
 
@@ -193,6 +189,13 @@ end
 -- when including this file it will get stuck in the while loop so "lua/" is never popped from the stack
 -- maybe instead of push popping directories maybe the directory should persist for each file
 vfs.PopFromFileRunStack()
+
+event.Call("Initialize")
+system.ExecuteArgs()
+
+if VERBOSE_STARTUP then
+	llog("startup took %s seconds\n", os.clock() - profiler.startup_time)
+end
 
 main()
 
