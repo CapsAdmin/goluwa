@@ -121,6 +121,12 @@ local repos = {
 		url = "https://github.com/corsix/LuaJIT",
 		branch = "newgc",
 	},
+	{
+		author = "lukego",
+		url = "https://github.com/raptorjit/raptorjit",
+		branch = "master",
+		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
+	},
 }
 
 local function execute(str)
