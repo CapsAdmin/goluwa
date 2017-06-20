@@ -303,8 +303,9 @@ steam = runfile("lua/libraries/steam/steam.lua") -- utilities for dealing with s
 
 if SOCKETS then
 	sockets = runfile("lua/libraries/network/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
-	resource = runfile("lua/libraries/network/resource.lua") -- used for downloading resources with resource.Download("http://...", function(path) end)
 end
+
+resource = runfile("lua/libraries/network/resource.lua") -- used for downloading resources with resource.Download("http://...", function(path) end)
 
 if SERVER or CLIENT then
 	enet = runfile("lua/libraries/network/enet.lua") -- low level udp library

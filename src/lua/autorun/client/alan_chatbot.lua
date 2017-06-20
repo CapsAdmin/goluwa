@@ -1,3 +1,5 @@
+if not sockets then return end
+
 local bot = clients.Create("alan_chatbot", true)
 bot:SetNick("Alan")
 bot.gender = "male"

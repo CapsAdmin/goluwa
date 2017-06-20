@@ -88,7 +88,10 @@ local function download_from_providers(path, callback, on_fail)
 
 	if #resource.providers == 0 then
 		on_fail("[resource] no providers added\n")
-	return end
+		return
+	end
+
+	if not SOCKETS then return end
 
 	local failed = 0
 

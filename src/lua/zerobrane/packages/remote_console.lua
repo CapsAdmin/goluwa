@@ -51,6 +51,7 @@ function PLUGIN:Setup()
 				CURSES = "0",
 				IDE = "",
 				ARGS = [==[{[[
+					if not sockets then return end
 					pvars.Set("text_editor_path", "./../../ide/zbstudio.sh %PATH%:%LINE%")
 
 					local server = sockets.CreateServer("tcp", "localhost", LUA{console.socket.port})
