@@ -1,12 +1,11 @@
 local gfx = (...) or _G.gfx
 
-local META = prototype.CreateTemplate("particle_META")
+local META = prototype.CreateTemplate("particle_2d")
 
 META:GetSet("Speed", 1)
 META:GetSet("Rate", 0.1)
 META:GetSet("EmitCount", 1)
-META:GetSet("Mode2D", true)
-META:GetSet("Position", Vec3(0, 0, 0))
+META:GetSet("Position", Vec2(0, 0))
 META:GetSet("Additive", true)
 META:GetSet("ThinkTime", 0.1)
 META:GetSet("CenterAttractionForce", 0)
@@ -56,10 +55,7 @@ function META:Update(dt)
 
 	local cull = not self.ScreenRect:IsZero()
 
-	for i = 1, self.max do
-		local p = self.particles[i]
-
-		if not p then break end
+	for i, p in ipairs(self.particles) do
 
 		if p.life_end < time or (not p.Jitter and p.life_mult < 0.001) then
 			table_insert(remove_these, i)
@@ -68,13 +64,11 @@ function META:Update(dt)
 			if self.CenterAttractionForce ~= 0 and self.attraction_center then
 				p.Velocity.x = p.Velocity.x + (self.attraction_center.x - p.Position.x) * self.CenterAttractionForce
 				p.Velocity.y = p.Velocity.y + (self.attraction_center.y - p.Position.y) * self.CenterAttractionForce
-				p.Velocity.z = p.Velocity.z + (self.attraction_center.z - p.Position.z) * self.CenterAttractionForce
 			end
 
 			if self.PosAttractionForce ~= 0 then
 				p.Velocity.x = p.Velocity.x + (self.Position.x - p.Position.x) * self.PosAttractionForce
 				p.Velocity.y = p.Velocity.y + (self.Position.y - p.Position.y) * self.PosAttractionForce
-				p.Velocity.z = p.Velocity.z + (self.Position.z - p.Position.z) * self.PosAttractionForce
 			end
 
 
@@ -87,11 +81,6 @@ function META:Update(dt)
 			if p.Velocity.y ~= 0 then
 				p.Position.y = p.Position.y + (p.Velocity.y * dt)
 				p.Velocity.y = p.Velocity.y * p.Drag
-			end
-
-			if not self.Mode2D and p.Velocity.z ~= 0 then
-				p.Position.z = p.Position.z + (p.Velocity.z * dt)
-				p.Velocity.z = p.Velocity.z * p.Drag
 			end
 
 			p.life_mult = (p.life_end - time) / p.LifeTime
@@ -129,67 +118,59 @@ function META:Draw()
 
 	render2d.SetColor(1,1,1,1)
 
-	if self.Mode2D then
-		for i = 1, self.max do
-			local p = self.particles[i]
+	for i, p in ipairs(self.particles) do
+		local size = math_lerp(p.life_mult, p.EndSize, p.StartSize)
+		local alpha = math_lerp(p.life_mult, p.EndAlpha, p.StartAlpha)
+		local length_x = math_lerp(p.life_mult, p.EndLength.x, p.StartLength.x)
+		local length_y = math_lerp(p.life_mult, p.EndLength.y, p.StartLength.y)
+		local jitter = math_lerp(p.life_mult, p.EndJitter, p.StartJitter)
 
-			if not p then break end
-
-			local size = math_lerp(p.life_mult, p.EndSize, p.StartSize)
-			local alpha = math_lerp(p.life_mult, p.EndAlpha, p.StartAlpha)
-			local length_x = math_lerp(p.life_mult, p.EndLength.x, p.StartLength.x)
-			local length_y = math_lerp(p.life_mult, p.EndLength.y, p.StartLength.y)
-			local jitter = math_lerp(p.life_mult, p.EndJitter, p.StartJitter)
-
-			if jitter ~= 0 then
-				size = size + math_randomf(-jitter, jitter)
-				alpha = alpha + math_randomf(-jitter, jitter)
-			end
-
-			local w = size * p.Size.x
-			local h = size * p.Size.y
-			local a = 0
-
-
-			if not (length_x == 0 and length_y == 0) and self.Mode2D then
-				a = math_deg(p.Velocity:GetAngles().y)
-
-				if length_x ~= 0 then
-					w = w * length_x
-				end
-
-				if length_y ~= 0 then
-					h = h * length_y
-				end
-			end
-
-			local ox, oy = w*0.5, h*0.5
-
-			self.poly:SetColor(p.Color.r, p.Color.g, p.Color.b, p.Color.a * alpha)
-
-			local x, y = p.Position.x, p.Position.y
-
-			if self.MoveResolution ~= 0 then
-				x = math_ceil(x * self.MoveResolution) / self.MoveResolution
-				y = math_ceil(y * self.MoveResolution) / self.MoveResolution
-			end
-
-			self.poly:SetRect(
-				i,
-				x,
-				y,
-				w,
-				h,
-				p.Angle + a,
-				ox, oy
-			)
-
+		if jitter ~= 0 then
+			size = size + math_randomf(-jitter, jitter)
+			alpha = alpha + math_randomf(-jitter, jitter)
 		end
 
-		self.poly:Draw()
-	else
-		-- 3d here
+		local w = size * p.Size.x
+		local h = size * p.Size.y
+		local a = 0
+
+
+		if not (length_x == 0 and length_y == 0) and self.Mode2D then
+			a = math_deg(p.Velocity:GetAngles().y)
+
+			if length_x ~= 0 then
+				w = w * length_x
+			end
+
+			if length_y ~= 0 then
+				h = h * length_y
+			end
+		end
+
+		local ox, oy = w*0.5, h*0.5
+
+		self.poly:SetColor(p.Color.r, p.Color.g, p.Color.b, p.Color.a * alpha)
+
+		local x, y = p.Position.x, p.Position.y
+
+		if self.MoveResolution ~= 0 then
+			x = math_ceil(x * self.MoveResolution) / self.MoveResolution
+			y = math_ceil(y * self.MoveResolution) / self.MoveResolution
+		end
+
+		self.poly:SetRect(
+			i,
+			x,
+			y,
+			w,
+			h,
+			p.Angle + a,
+			ox, oy
+		)
+
 	end
+
+	self.poly:Draw()
 end
 
 function META:GetParticles()
