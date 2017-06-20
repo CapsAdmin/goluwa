@@ -29,6 +29,8 @@ do -- copy standard libraries
 
 	env.table.insert = function(t,...) table.insert(t,...) return #t end
 	env.debug.getregistry = function() return env._R end
+	env.debug.getinfo = function(...) local t = debug.getinfo(...) t.short_src = t.source return t end
+	env.xpcall = function(func, cb, ...) return xpcall(func, function(...) system.OnError(...) cb(...) end, ...) end
 	env.package = package
 
 	for k in pairs(_OLD_G) do

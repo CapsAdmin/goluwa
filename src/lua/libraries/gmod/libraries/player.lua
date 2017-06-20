@@ -68,6 +68,10 @@ do
 		return NULL
 	end
 
+	function META:VoiceVolume()
+		return math.random()
+	end
+
 	function META:Armor()
 		return 50
 	end

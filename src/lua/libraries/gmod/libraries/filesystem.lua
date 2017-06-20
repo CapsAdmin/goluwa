@@ -2,6 +2,7 @@ local search_paths = {
 	game = "",
 	workshop = "",
 	lua = "lua/",
+	lcl = "lua/",
 	data = gine.dir .. "data/",
 	download = gine.dir .. "download/",
 	mod = gine.dir,

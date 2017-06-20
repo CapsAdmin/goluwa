@@ -57,6 +57,10 @@ function render.UpdateScreenEffectTexture()
 
 end
 
+function render.SetViewPort(x,y,w,h)
+	lib.SetViewport(x,y,w,h)
+end
+
 function gine.env.ScrW() return lib.GetWidth() end
 function gine.env.ScrH() return lib.GetHeight() end
 

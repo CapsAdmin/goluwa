@@ -56,7 +56,7 @@ do
 	end
 
 	function vgui.GetKeyboardFocus()
-		return true
+		return vgui.GetHoveredPanel()
 	end
 
 	function vgui.CursorVisible()
@@ -234,7 +234,7 @@ do
 			render2d.PopScissor()
 		end
 
-		obj:CallOnRemove(function() self:OnDeletion() end)
+		obj:CallOnRemove(function() obj.marked_for_deletion = true self:OnDeletion() end)
 
 		hook(obj, "OnUpdate", function() self:Think() self:AnimationThink() end)
 		hook(obj, "OnMouseMove", function(_, x, y) self:OnCursorMoved(x, y) end)
@@ -336,19 +336,23 @@ do
 
 	local META = gine.GetMetaTable("Panel")
 
+	function META:IsMarkedForDeletion()
+		return self.__obj.marked_for_deletion
+	end
+
 	function META:__tostring()
 		return ("Panel: [name:Panel][class:%s][%s,%s,%s,%s]"):format(self.__class, self.x, self.y, self.w, self.h)
 	end
 
 	function META:__index(key)
 
-		if key == "x" then
+		if key == "x" or key == "X" then
 			return self.__obj:GetPosition().x
-		elseif key == "y" then
+		elseif key == "y" or key == "Y" then
 			return self.__obj:GetPosition().y
-		elseif key == "w" then
+		elseif key == "w" or key == "W" then
 			return self.__obj:GetSize().x
-		elseif key == "h" then
+		elseif key == "h" or key == "H" then
 			return self.__obj:GetSize().y
 		elseif key == "Hovered" then
 			return self.__obj:IsMouseOver()
@@ -367,9 +371,9 @@ do
 	end
 
 	function META:__newindex(k, v)
-		if k == "x" then
+		if k == "x" or k == "X" then
 			self.__obj:SetX(v)
-		elseif k == "y" then
+		elseif k == "y" or k == "Y" then
 			self.__obj:SetY(v)
 		else
 			rawset(self, k, v)
@@ -427,6 +431,14 @@ do
 		local w,h = self:GetSize()
 
 		return x,y,w,h
+	end
+
+	function META:SetName(name)
+		self.__obj.name = name
+	end
+
+	function META:GetName(name)
+		return self.__obj.name
 	end
 
 	function META:IsVisible()
@@ -523,6 +535,10 @@ do
 				--llog("font ", self.__obj.font_internal, " does not exist")
 				self.__obj.font_internal = "default"
 			end
+		end
+
+		function META:GetFont()
+			return self.__obj.font_internal or "default"
 		end
 
 		function META:SetText(text)
@@ -626,7 +642,9 @@ do
 	end
 
 	function META:SetVisible(b)
+		self.__obj.in_layout = true -- hack
 		self.__obj:SetVisible(b)
+		self.__obj.in_layout = false
 	end
 
 	function META:Dock(enum)
