@@ -2,9 +2,14 @@ local gfx = (...) or _G.gfx
 
 local META = prototype.CreateTemplate("polygon_2d")
 
-function gfx.CreatePolygon2D(vertex_count)
+function gfx.CreatePolygon2D(vertex_count, map)
 	local vertex_buffer = render2d.CreateMesh()
 	vertex_buffer:SetDrawHint("dynamic")
+
+	if map then
+		vertex_buffer:MapVertexArray(vertex_count)
+	end
+
 	vertex_buffer:SetBuffersFromTables(vertex_count)
 
 	-- they never change anyway
@@ -15,6 +20,7 @@ function gfx.CreatePolygon2D(vertex_count)
 	self.vertex_buffer = vertex_buffer
 	self.vertex_count = vertex_count
 	self.Vertices = vertex_buffer.Vertices
+	self.mapped = map
 
 	return self
 end
@@ -165,7 +171,7 @@ function META:DrawLine(i, x1, y1, x2, y2, w)
 end
 
 function META:Draw(count)
-	if self.dirty then
+	if self.dirty and not self.mapped then
 		self.vertex_buffer:UpdateBuffer()
 		self.dirty = false
 	end

@@ -52,12 +52,17 @@ end
 
 
 if not NVIDIA_WORKAROUND then
+	local mapping_flags = bit.bor(gl.e.GL_MAP_WRITE_BIT, gl.e.GL_MAP_READ_BIT, gl.e.GL_MAP_PERSISTENT_BIT, gl.e.GL_MAP_COHERENT_BIT)
+	local storage_flags = bit.bor(gl.e.GL_DYNAMIC_STORAGE_BIT, mapping_flags)
+
 	function render._CreateVertexBuffer(self)
 		self:SetMode(self:GetMode())
 		self:SetIndicesType(self:GetIndicesType())
 		self:SetDrawHint(self:GetDrawHint())
+
 		self.vertex_buffer = gl.CreateBuffer("GL_ARRAY_BUFFER")
 		self.element_buffer = gl.CreateBuffer("GL_ELEMENT_ARRAY_BUFFER")
+
 		self.vertex_array = gl.CreateVertexArray()
 	end
 
@@ -100,6 +105,7 @@ if not NVIDIA_WORKAROUND then
 	end
 
 	function META:_SetVertices(vertices)
+		if self.vertex_mapped then return end
 		setup_vertex_array(self)
 		self.vertex_buffer:Data(vertices:GetSize(), vertices:GetPointer(), self.gl_draw_hint)
 	end
@@ -107,6 +113,20 @@ if not NVIDIA_WORKAROUND then
 	function META:_SetIndices(indices)
 		setup_vertex_array(self)
 		self.element_buffer:Data(indices:GetSize(), indices:GetPointer(), self.gl_draw_hint)
+	end
+
+	local ffi = require("ffi")
+
+	function META:MapVertexArray(count)
+		self.vertex_mapped = true
+
+		self.Vertices = self.Vertices or Array(self.mesh_layout.ctype, count)
+		self.vertex_buffer:Storage(self.Vertices:GetSize(), nil, storage_flags)
+		local ptr = self.vertex_buffer:MapRange(0, self.Vertices:GetSize(), mapping_flags)
+		ptr = ffi.cast(ffi.typeof("$*", self.mesh_layout.ctype), ptr)
+		self.Vertices.Pointer = ptr
+
+		return self.Vertices
 	end
 else
 	local ffi = require("ffi")
@@ -122,6 +142,10 @@ else
 
 
 	function META:OnRemove()
+		if self.vertex_mapped then
+			self.vertex_buffer:Unmap()
+		end
+
 		gl.DeleteBuffers(1, ffi.new("GLuint[1]", self.vertices_id))
 		gl.DeleteBuffers(1, ffi.new("GLuint[1]", self.indices_id))
 	end

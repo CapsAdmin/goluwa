@@ -204,7 +204,7 @@ do -- attributes
 			local indices = Array(self:GetIndicesType(), size)
 			for i = 0, size - 1 do indices[i] = i end
 
-			self:UpdateBuffer(Array(self.mesh_layout.ctype, size), indices)
+			self:UpdateBuffer(self.Vertices or Array(self.mesh_layout.ctype, size), indices)
 		else
 			if #vertices > 0xFFFF then
 				self:SetIndicesType("uint32_t")
