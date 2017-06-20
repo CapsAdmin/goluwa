@@ -92,22 +92,21 @@ if not NVIDIA_WORKAROUND then
 				self.vertex_array:AttribBinding(data.location, 0)
 				self.vertex_array:EnableAttrib(data.location)
 			end
+			self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.mesh_layout.size)
+			self.vertex_array:ElementBuffer(self.element_buffer.id)
+			render.last_vertex_array_id = nil
 			self.setup_vao = true
 		end
 	end
 
 	function META:_SetVertices(vertices)
 		setup_vertex_array(self)
-		self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.mesh_layout.size)
 		self.vertex_buffer:Data(vertices:GetSize(), vertices:GetPointer(), self.gl_draw_hint)
-		render.last_vertex_array_id = nil
 	end
 
 	function META:_SetIndices(indices)
 		setup_vertex_array(self)
-		self.vertex_array:ElementBuffer(self.element_buffer.id)
 		self.element_buffer:Data(indices:GetSize(), indices:GetPointer(), self.gl_draw_hint)
-		render.last_vertex_array_id = nil
 	end
 else
 	local ffi = require("ffi")
