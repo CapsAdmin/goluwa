@@ -47,8 +47,8 @@ local property_translate = {
 
 	{"RoughnessMultiplier", {"phongexponent", function(num) return 1/(-num+1)^3 end}},
 	{"MetallicMultiplier", {"envmaptint", function(num)
-		if type(v) == "string" then
-			return Vec3(unpack_numbers(v)):GetLength()
+		if type(num) == "string" then
+			return Vec3(unpack_numbers(num)):GetLength()
 		elseif type(num) == "number" then
 			return num
 		elseif typex(num) == "vec3" then

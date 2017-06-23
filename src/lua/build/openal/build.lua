@@ -73,6 +73,10 @@ end
 		table.insert(args, {"./repo/include/AL/" .. name .. ".h", enum_name})
 	end
 
+	lua = lua .. "local AL_TRUE = 1\n"
+	lua = lua .. "local AL_FALSE = 0\n"
+	lua = lua .. "local AL_INVALID_ENUM = 40962\n"
+
 	local enums = meta_data:BuildEnums("^"..enum_name.."(.+)", args)
 
 	lua = lua .. "library.e = " .. enums

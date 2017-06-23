@@ -176,7 +176,7 @@ function META:CallTagFunction(chunk, name, ...)
 
 				-- type isn't right? revert to default!
 				if type(val) ~= t then
-					val = chunk.val.tag.arguments[k]
+					val = chunk.val.tag.arguments[i]
 
 					if type(val) == "table" then
 						val = val.default

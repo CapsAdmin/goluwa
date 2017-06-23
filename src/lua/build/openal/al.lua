@@ -268,6 +268,9 @@ library = {
 	SourcePausev = get_proc_address("alSourcePausev", "void(* )( int , const unsigned int * )"),
 	Filteri = get_proc_address("alFilteri", "void(* )( unsigned int , int , int )"),
 }
+local AL_TRUE = 1
+local AL_FALSE = 0
+local AL_INVALID_ENUM = 40962
 library.e = {
 	ALC_H = 1,
 	ALEXT_H = 1,

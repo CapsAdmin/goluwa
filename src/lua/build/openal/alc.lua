@@ -64,6 +64,9 @@ library = {
 	LoopbackOpenDeviceSOFT = CLIB.alcLoopbackOpenDeviceSOFT,
 	SuspendContext = CLIB.alcSuspendContext,
 }
+local AL_TRUE = 1
+local AL_FALSE = 0
+local AL_INVALID_ENUM = 40962
 library.e = {
 	API = 1,
 	API = extern,
