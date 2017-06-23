@@ -736,8 +736,14 @@ function steam.LoadMap(path)
 end
 
 function steam.SpawnMapEntities(path, parent)
+	local original_path = path
 	path = R(path)
 	local data = steam.loaded_bsp[path]
+
+	if not data then
+		wlog("cannot spawn map entities because %s is not loaded", path or original_path)
+		return
+	end
 
 	local thread = tasks.CreateTask()
 	thread.debug = true
