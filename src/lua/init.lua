@@ -2,13 +2,14 @@ local profile_start_time = os.clock()
 
 io.stdout:setvbuf("no")
 
-local ffi = require("ffi")
+_G[jit.os:upper()] = true
+_G[jit.arch:upper()] = true
 
 do
 	-- force lookup modules in current directory rather than system
-	if ffi.os == "Windows" then
+	if WINDOWS then
 		package.cpath = "./?.dll"
-	elseif ffi.os == "OSX" then
+	elseif OSX then
 		package.cpath = "./?.dylib;./?.so"
 	else
 		package.cpath = "./?.so"
@@ -19,6 +20,7 @@ do
 	table.insert(package.loaders, function(name)
 		return loadfile("../../../src/lua/build/" .. name .. "/" .. name .. ".lua")
 	end)
+
 	table.insert(package.loaders, function(name)
 		name = name:gsub("%.", "/")
 		return loadfile("../../../src/lua/build/" .. name .. ".lua")
@@ -27,15 +29,18 @@ do
 	-- force current directory
 	local path = debug.getinfo(1).source
 
-	if path:sub(1, 1) == "@" then
+	if path:sub(1, 1) == "@" and pcall(require, ffi) then
+		local ffi = require("ffi")
+
 		path = path:gsub("\\", "/")
 
 		local dir = path:match("@(.+/)src/lua/init.lua$")
 
 		if dir then
-			dir = dir .. "data/bin/" .. ffi.os:lower() .. "_" .. ffi.arch:lower() .. "/"
+			dir = dir .. "data/bin/" .. ffi.os .. "_" .. ffi.arch .. "/"
+			dir = dir:lower()
 
-			if ffi.os == "Windows" then
+			if WINDOWS then
 				ffi.cdef("int SetCurrentDirectoryA(const char *);")
 				ffi.C.SetCurrentDirectoryA(dir)
 			else
@@ -47,13 +52,6 @@ do
 end
 
 do -- constants
-	OPENGL = true
-	--VULKAN = true
-
-	-- if WINDOWS and X86 then blah blah end
-	_G[ffi.os:upper()] = true
-	_G[ffi.arch:upper()] = true
-
 	local env_vars = {
 		SERVER = false,
 		CLIENT = true,
@@ -69,8 +67,12 @@ do -- constants
 		PHYSICS = false,
 		DISABLE_CULLING = false,
 		DEBUG_OPENGL = false,
+		BUILD_SHADER_OUTPUT = false,
 		CLI = false,
 		VERBOSE_STARTUP = true,
+
+		OPENGL = true,
+		VULKAN = false,
 	}
 
 	for key, default in pairs(env_vars) do
@@ -116,13 +118,6 @@ do -- constants
 	RELOAD = false
 	CREATED_ENV = false
 
-	if CAPS then
-		--DEBUG_OPENGL = true
-		--NVIDIA_WORKAROUND = true
-		--GL_ARB_direct_state_access = false
-		--GL_ARB_bindless_texture = false
-	end
-
 	if CLI then
 		GRAPHICS = false
 		WINDOW = false
@@ -134,7 +129,6 @@ do -- constants
 		SOCKETS = false
 		PHYSICS = false
 	end
-
 
 	--[[
 	--uncomment to check _G lookups
@@ -148,13 +142,13 @@ do -- constants
 			end
 			rawset(s,k,v)
 		end,
-	})]]
-
+	})
+	--]]
 end
 
 -- put all c functions in a table so we can override them if needed
 -- without doing the local oldfunc = print thing over and over again
-if not _OLD_G then
+do
 	-- this will be replaced with utility.GetOldGLibrary() later on
 	_OLD_G = {}
 	local done = {[_G] = true}
@@ -172,7 +166,9 @@ if not _OLD_G then
 			end
 		end
 	end
-	_G.ffi = require("ffi")
+	if pcall(require, "ffi") then
+		_G.ffi = require("ffi")
+	end
 	scan(_G, _OLD_G)
 	_G.ffi = nil
 end
