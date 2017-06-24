@@ -26,11 +26,24 @@ local function get_paths(line)
 	return paths
 end
 
+local metatables = {
+	"SWEP",
+	"SKIN",
+	"ENT",
+	"PANEL",
+	"SKIN",
+	"GM",
+	"EFFECT",
+	"GAMEMODE",
+	"TOOL",
+}
+
 local function get_luacheck_envrionment()
-	local globals = serializer.ReadFile("luadata", "luacheck_cache")
+	local globals --= serializer.ReadFile("luadata", "luacheck_cache")
 
 	if not globals then
 		globals = {"NULL"}
+
 		local done = {}
 
 		local cl_env = runfile("lua/libraries/gmod/cl_exported.lua")
@@ -59,7 +72,11 @@ local function get_luacheck_envrionment()
 			end
 		end
 
-		serializer.WriteFile("luadata", "luacheck_cache", globals)
+		for _, name in ipairs(metatables) do
+			globals[name] = {read_only = false, other_fields = true}
+		end
+
+		--serializer.WriteFile("luadata", "luacheck_cache", globals)
 	end
 
 	return globals
@@ -136,7 +153,9 @@ commands.Add("gluacheck", function(line)
 	local data = luacheck.check_strings(lua_strings, {
 		max_line_length = false,
 		read_globals = get_luacheck_envrionment(),
+		module = true,
 		-- ignore = {"113", "143"}, -- ignore all global lookups
+		ignore = {"6..", "212", "213", "42.", "43."},
 	})
 
 	for i, path in ipairs(paths) do
@@ -147,3 +166,7 @@ commands.Add("gluacheck", function(line)
 
 	os.exitcode = (data.errors > 0 or data.fatals > 0) and 1 or 0
 end)
+
+if RELOAD then
+	commands.RunString("gluacheck /media/caps/Elements/garrysmod/garrysmod/lua/includes/modules/")
+end
