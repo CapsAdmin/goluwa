@@ -27,6 +27,8 @@ function vfs.LoadFile(path)
 	local full_path = vfs.GetAbsolutePath(path)
 
 	if full_path then
+		if event then full_path = event.Call("PreLoadFile", full_path) or full_path end
+
 		local res, err = vfs.Read(full_path)
 
 		if not res and not err then

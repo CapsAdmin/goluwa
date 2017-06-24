@@ -20,7 +20,7 @@ do
 
 		if where == "LUA" then
 			for k,v in ipairs(vfs.Find("lua/" .. path, true)) do
-				if v:startswith(gine.dir) then
+				if gine.IsGLuaPath(v) then
 					if vfs.IsDirectory(v) then
 						table.insert(folders, v:match(".+/(.+)"))
 					else

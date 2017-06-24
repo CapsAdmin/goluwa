@@ -3,16 +3,7 @@ local gine = _G.gine or {}
 runfile("preprocess.lua", gine)
 runfile("cli.lua", gine)
 
-event.AddListener("PostLoadString", "glua_function_env", function(func, path)
-	if path:lower():find("steamapps/common/garrysmod/garrysmod/", nil, true) or path:find("%.gma") then
-		gine.SetFunctionEnvironment(func)
-	end
-end)
-
 function gine.SetFunctionEnvironment(func)
-	if not gine.env then
-		gine.Initialize()
-	end
 	setfenv(func, gine.env)
 end
 
@@ -67,7 +58,63 @@ function gine.WrapObject(obj, meta)
 	return gine.objects[meta][obj]
 end
 
+gine.glua_paths = gine.glua_paths or {}
+
+function gine.IsGLuaPath(path, gmod_dir_only)
+	if path:lower():find("garrysmod/garrysmod/", nil, true) or path:find("%.gma") then
+		return true
+	end
+
+	if not gmod_dir_only then
+		for i,v in ipairs(gine.glua_paths) do
+			if path:startswith(v) then
+				return true
+			end
+		end
+	end
+
+	return false
+end
+
 function gine.Initialize(skip_addons)
+	event.AddListener("PreLoadFile", "glua", function(path)
+		if gine.IsGLuaPath(path, true) then
+			local redirect = e.ROOT_FOLDER .. "garrysmod/garrysmod/"
+			if vfs.IsDirectory(redirect) then
+				return (path:gsub("^(.-garrysmod/garrysmod/)", redirect))
+			end
+
+			return event.destroy_tag
+		end
+	end)
+
+	event.AddListener("PreLoadString", "glua_preprocess", function(code, path)
+		if gine.IsGLuaPath(path) then
+			local ok, msg = pcall(gine.PreprocessLua, code)
+
+			if not ok then
+				logn(msg)
+				return
+			end
+
+			code = msg
+
+			if not loadstring(code) then vfs.Write("glua_preprocess_error.lua", code) end
+
+			if not gine.init then
+				return "commands.RunString('gluacheck "..path.."')"
+			end
+
+			return code
+		end
+	end)
+
+	event.AddListener("PostLoadString", "glua_function_env", function(func, path)
+		if gine.IsGLuaPath(path) then
+			gine.SetFunctionEnvironment(func)
+		end
+	end)
+
 	if not gine.init then
 		render3d.Initialize()
 
@@ -88,6 +135,8 @@ function gine.Initialize(skip_addons)
 
 		-- include and init files in the right order
 
+		gine.init = true
+
 		runfile("lua/includes/init.lua") --
 		--runfile("lua/includes/init_menu.lua")
 		gine.env.require("notification")
@@ -102,6 +151,14 @@ function gine.Initialize(skip_addons)
 		if SERVER then runfile(gine.dir .. "/lua/autorun/server/*") end
 
 		if not skip_addons then
+			for _, info in ipairs(vfs.disabled_addons) do
+				if info.gmod_addon then
+					vfs.Mount(info.path)
+					vfs.AddModuleDirectory(R(info.path.."/lua/includes/modules/"))
+					table.insert(gine.glua_paths, info.path)
+				end
+			end
+
 			for dir in vfs.Iterate(gine.dir .. "addons/", true) do
 				vfs.AddModuleDirectory(R(dir.."/lua/includes/modules/"))
 			end
@@ -131,16 +188,28 @@ function gine.Initialize(skip_addons)
 		end
 
 		gine.LoadFonts()
-
-		gine.init = true
 	end
 end
 
 function gine.Run(skip_addons)
 	if not skip_addons then
+		for _, info in ipairs(vfs.disabled_addons) do
+			if info.gmod_addon then
+				runfile(info.path .. "lua/includes/extensions/*")
+			end
+		end
+
 		for dir in vfs.Iterate(gine.dir .. "addons/", true, true) do
 			local dir = gine.dir .. "addons/" ..  dir
 			runfile(dir .. "/lua/includes/extensions/*")
+		end
+
+		for _, info in ipairs(vfs.disabled_addons) do
+			if info.gmod_addon then
+				runfile(info.path .. "lua/autorun/*")
+				if CLIENT then runfile(info.path .. "lua/autorun/client/*") end
+				if SERVER then runfile(info.path .. "lua/autorun/server/*") end
+			end
 		end
 
 		for dir in vfs.Iterate(gine.dir .. "addons/", true, true) do

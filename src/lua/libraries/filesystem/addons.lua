@@ -84,6 +84,11 @@ function vfs.MountAddon(path, force)
 		info = func() or {}
 	end
 
+	if vfs.IsFile(path .. "addon.json") then
+		info.load = false
+		info.gmod_addon = true
+	end
+
 	local folder = path:match(".+/(.+)/")
 
 	info.path = path

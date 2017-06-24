@@ -14,8 +14,10 @@ local function insert(chars, i, what)
 		chars[i] =  " " .. what .. " "
 	end
 end
-
+-- /media/caps/Elements/garrysmod/garrysmod/lua/includes/modules/duplicator.lua:357:7 accessing undefined variable 'not_name_'
 function gine.PreprocessLua(code, add_newlines)
+	if not code:find("DEFINE_BASECLASS", nil, true) and loadstring(code) then return code end
+
 	if not code:find("\n", nil, true) and code:find("\r", nil, true) then
 		code = code:gsub("\r", "\n")
 	end
@@ -288,22 +290,3 @@ function gine.PreprocessLua(code, add_newlines)
 
 	return code
 end
-
-event.AddListener("PreLoadString", "glua_preprocess", function(code, path)
-	if path:lower():find("steamapps/common/garrysmod/garrysmod/", nil, true) or path:find("%.gma") then
-		if not code:find("DEFINE_BASECLASS", nil, true) and loadstring(code) then return code end
-
-		local ok, msg = pcall(gine.PreprocessLua, code)
-
-		if not ok then
-			logn(msg)
-			return
-		end
-
-		code = msg
-
-		if not loadstring(code) then vfs.Write("glua_preprocess_error.lua", code) end
-
-		return code
-	end
-end)
