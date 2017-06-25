@@ -81,7 +81,8 @@ function gine.Initialize(skip_addons)
 		if gine.IsGLuaPath(path, true) then
 			local redirect = e.ROOT_FOLDER .. "garrysmod/garrysmod/"
 			if vfs.IsDirectory(redirect) then
-				return (path:gsub("^(.-garrysmod/garrysmod/)", redirect))
+				path = path:lower():gsub("^(.-garrysmod/garrysmod/)", redirect)
+				return path
 			end
 
 			return event.destroy_tag
@@ -138,6 +139,7 @@ function gine.Initialize(skip_addons)
 		gine.init = true
 
 		runfile("lua/includes/init.lua") --
+
 		--runfile("lua/includes/init_menu.lua")
 		gine.env.require("notification")
 		runfile("lua/derma/init.lua") -- the gui

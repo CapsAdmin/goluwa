@@ -97,9 +97,9 @@ function require.load(name, hint, skip_error)
 
 	for _, loaders in ipairs({require.loaders, package.loaders}) do
 		for _, loader in ipairs(loaders) do
-			local chunk, err, path = select(2, pcall(loader, name))
+			local _, chunk, err, path = pcall(loader, name)
 			if type(chunk) == "function" then
-				if hint and ((type(hint) == "string" and not (path and path:lower():find(hint:lower(), nil, true))) or (type(hint) == "function" and hint(path))) then
+				if hint and ((type(hint) == "string" and not (path and path:lower():find(hint:lower(), nil, true))) or (type(hint) == "function" and not hint(path))) then
 					table.insert(errors, ("hint %q was given but it was not found in in the returned path %q\n"):format(hint, path))
 				else
 					return chunk, nil, path
