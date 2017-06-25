@@ -1,3 +1,25 @@
+function string.buildclass(...)
+	local classes = {...}
+	local check
+
+	if type(classes[#classes]) == "function" then
+		check = table.remove(classes, #classes)
+	end
+
+	local out = ""
+
+	for i = 0, 255 do
+		for _, class in ipairs(classes) do
+			local char = string.char(i)
+			if char:find(class) and (not check or check(char) ~= false) then
+				out = out .. char
+			end
+		end
+	end
+
+	return out
+end
+
 function string.iswhitespace(char)
 	return
 		char == "\32" or
