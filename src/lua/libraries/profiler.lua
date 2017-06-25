@@ -5,7 +5,7 @@ profiler.raw_data = profiler.raw_data or {sections = {}, statistical = {}, trace
 
 local blacklist = {
 	["leaving loop in root trace"] = true,
-	["error thrown or hook called during recording"] = true,
+	["error thrown or hook fed during recording"] = true,
 }
 
 local function trace_dump_callback(what, trace_id, func, pc, trace_error_id, trace_error_arg)
@@ -233,6 +233,11 @@ end
 
 function profiler.GetBenchmark(type, file, dump_line)
 
+	local benchmark_time
+	if profiler.start_time and profiler.stop_time then
+		benchmark_time = profiler.stop_time - profiler.start_time
+	end
+
 	if type == "statistical" then
 	 	parse_raw_statistical_data()
 	end
@@ -290,6 +295,10 @@ function profiler.GetBenchmark(type, file, dump_line)
 				if data.total_time then
 					data.average_time = data.total_time / data.samples
 					--data.total_time = data.average_time * data.samples
+				end
+
+				if benchmark_time then
+					data.fraction_time = data.total_time / benchmark_time
 				end
 
 				data.start_time = data.start_time or 0
@@ -395,23 +404,38 @@ function profiler.StartInstrumental(file_filter, method)
 	method = method or "cr"
 	profiler.EnableSectionProfiling(true, true)
 	profiler.busy = true
+
+	local last_info
 	debug.sethook(function(what)
 		local info = debug.getinfo(2)
-		if info.what == "Lua" then
-			if info.source:endswith("profiler.lua") then return end
-
-			if not file_filter or not info.source:find(file_filter, nil, true) then
-				if what == "call" then
-					profiler.PushSection()
-				elseif what == "return" then
+		local name
+		if info.what == "C" then
+			name = info.name
+		end
+		if not file_filter or not info.source:find(file_filter, nil, true) then
+			if what == "call" then
+				if last_info and last_info.what == "C" then
 					profiler.PopSection()
 				end
+
+				--calls[info.func] = (calls[info.func] or 0) + 1
+				profiler.PushSection(name)
+			elseif what == "return"  then
+				--calls[info.func] = calls[info.func] - 1
+				--if calls[info.func] == 0 then
+					profiler.PopSection()
+				--end
 			end
 		end
+		last_info = info
 	end, method)
+
+	profiler.start_time = system.GetTime()
 end
 
-function profiler.StopInstrumental(file_filter)
+function profiler.StopInstrumental(file_filter, show_everything)
+	profiler.stop_time = system.GetTime()
+
 	profiler.busy = false
 	debug.sethook()
 	profiler.PopSection()
@@ -422,10 +446,11 @@ function profiler.StopInstrumental(file_filter)
 		{
 			{key = "times_called", friendly = "calls"},
 			{key = "name"},
-			{key = "average_time", friendly = "time", tostring = function(val) return math.round(val * 100 * 100, 3) end},
-			{key = "total_time", friendly = "total time", tostring = function(val) return math.round(val * 100 * 100, 3) end},
+			{key = "average_time", friendly = "time", tostring = function(val) return ("%f"):format(val) end},
+			{key = "total_time", friendly = "total time", tostring = function(val) return ("%f"):format(val) end},
+			{key = "fraction_time", friendly = "percent", tostring = function(val) return math.round(val * 100, 2) end},
 		},
-		function(a) return a.average_time > 0.5 or (file_filter or a.times_called > 100) end,
+		function(a) return show_everything or a.average_time > 0.5 or (file_filter or a.times_called > 100) end,
 		function(a, b) return a.total_time < b.total_time end
 	))
 
@@ -439,20 +464,20 @@ do
 		if file_filter == "" then file_filter = nil end
 
 		if not started then
-			profiler.StartInstrumental(file_filter, method)
+			profiler.StartInstrumental(file_filter, method, true)
 			started = true
 		else
-			profiler.StopInstrumental(file_filter)
+			profiler.StopInstrumental(file_filter, true)
 			started = false
 		end
 	end
 end
 
-function profiler.MeasureInstrumental(time, file_filter)
+function profiler.MeasureInstrumental(time, file_filter, show_everything)
 	profiler.StartInstrumental(file_filter)
 
 	event.Delay(time, function()
-		profiler.StopInstrumental(file_filter)
+		profiler.StopInstrumental(file_filter, show_everything)
 	end)
 end
 
