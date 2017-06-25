@@ -76,7 +76,7 @@ local function get_luacheck_envrionment()
 			globals[name] = {read_only = false, other_fields = true}
 		end
 
-		--serializer.WriteFile("luadata", "luacheck_cache", globals)
+		serializer.WriteFile("luadata", "luacheck_cache", globals)
 	end
 
 	return globals
@@ -105,7 +105,7 @@ commands.Add("glua2lua", function(line)
 					end
 
 					if ok then
-						---vfs.Write(path, lua)
+						vfs.Write(path, lua)
 						vfs.Write("data/last_glua2lua_error.lua", lua)
 					else
 						local line, err = err:match(".+\"]:(%d+): (.+)")
