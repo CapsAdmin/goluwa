@@ -6,6 +6,7 @@ do
 	end
 
 	function gine.env.Material(path)
+		llog("Material: %s", path)
 		local mat = render.CreateMaterial("model")
 		mat.gine_name = path
 
@@ -104,6 +105,8 @@ do
 	local surface = gine.env.surface
 
 	function surface.GetTextureID(path)
+		llog("surface.GetTextureID: %s", path)
+
 		if vfs.IsFile("materials/" .. path) then
 			if path:lower():endswith(".vmt") then
 				local mat = render.CreateMaterial("model")
