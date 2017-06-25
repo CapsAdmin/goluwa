@@ -1,8 +1,10 @@
 local gine = ... or _G.gine
 
+local char_class = "[" .. string.buildclass("%p", "%s", function(char) if char == "_" then return false end end) .. "]"
+
 local function insert(chars, i, what)
-	local left_space = chars[i - 1] and chars[i - 1]:find("[%s%p]")
-	local right_space = chars[i + 1] and chars[i + 1]:find("[%s%p]")
+	local left_space = chars[i - 1] and chars[i - 1]:find(char_class)
+	local right_space = chars[i + 1] and chars[i + 1]:find(char_class)
 
 	if left_space and right_space then
 		chars[i] = what
@@ -14,7 +16,7 @@ local function insert(chars, i, what)
 		chars[i] =  " " .. what .. " "
 	end
 end
--- /media/caps/Elements/garrysmod/garrysmod/lua/includes/modules/duplicator.lua:357:7 accessing undefined variable 'not_name_'
+
 function gine.PreprocessLua(code, add_newlines)
 	if not code:find("DEFINE_BASECLASS", nil, true) and loadstring(code) then return code end
 
