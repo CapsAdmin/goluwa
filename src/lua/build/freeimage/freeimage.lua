@@ -736,7 +736,7 @@ do
 			bitmap = library.ConvertTo32Bits(bitmap)
 
 			format = "bgra"
-			wlog("unhandled freeimage color type: %s\nconverting to 8bit rgba", color_type)
+			--wlog("unhandled freeimage color type: %s\nconverting to 8bit rgba", color_type)
 		end
 
 		ffi.gc(bitmap, library.Unload)
