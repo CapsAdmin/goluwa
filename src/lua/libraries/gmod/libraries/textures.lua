@@ -5,8 +5,15 @@ do
 		return self
 	end
 
+	gine.created_materials = utility.CreateWeakTable()
+
 	function gine.env.Material(path)
+		if gine.created_materials[path:lower()] then
+			return gine.created_materials[path:lower()]
+		end
+
 		llog("Material: %s", path)
+
 		local mat = render.CreateMaterial("model")
 		mat.gine_name = path
 
@@ -24,6 +31,9 @@ do
 
 		local self = gine.WrapObject(mat, "IMaterial")
 		self.vars = {}
+
+		gine.created_materials[path:lower()] = self
+
 		return self
 	end
 
