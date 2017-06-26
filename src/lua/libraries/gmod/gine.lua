@@ -119,11 +119,6 @@ function gine.Initialize(skip_addons)
 	end)
 
 	if not gine.init then
-		--render3d.Initialize()
-
-		--steam.MountSourceGame("hl2")
-		--steam.MountSourceGame("css")
-		--steam.MountSourceGame("tf2")
 		steam.MountSourceGame("gmod")
 
 		pvars.Setup("sv_allowcslua", 1)
