@@ -197,7 +197,7 @@ local function getuid(peer)
 	return tonumber(ffi.cast("unsigned long *", peer.data)[0])
 end
 
-event.AddListener("Update", "enet", function()
+event.Timer("enet", 1/30, 0, function()
 	for _, socket in ipairs(enet.sockets) do
 		while lib.HostService(socket.host, evt, 0) > 0 do
 			if evt[0].type == lib.e.EVENT_TYPE_CONNECT then

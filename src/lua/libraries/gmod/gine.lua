@@ -119,7 +119,7 @@ function gine.Initialize(skip_addons)
 	end)
 
 	if not gine.init then
-		render3d.Initialize()
+		--render3d.Initialize()
 
 		--steam.MountSourceGame("hl2")
 		--steam.MountSourceGame("css")
