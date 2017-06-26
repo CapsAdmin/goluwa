@@ -406,25 +406,26 @@ function profiler.StartInstrumental(file_filter, method)
 	profiler.busy = true
 
 	local last_info
-	debug.sethook(function(what)
+	debug.sethook(function(what, line)
 		local info = debug.getinfo(2)
-		local name
-		if info.what == "C" then
-			name = info.name
-		end
+
 		if not file_filter or not info.source:find(file_filter, nil, true) then
 			if what == "call" then
 				if last_info and last_info.what == "C" then
 					profiler.PopSection()
 				end
-
-				--calls[info.func] = (calls[info.func] or 0) + 1
+				local name
+				if info.what == "C" then
+					name = info.name
+					if not name then
+						name = ""
+					end
+					local info = debug.getinfo(3)
+					name = name .. " " .. info.source .. ":" .. info.currentline
+				end
 				profiler.PushSection(name)
 			elseif what == "return"  then
-				--calls[info.func] = calls[info.func] - 1
-				--if calls[info.func] == 0 then
-					profiler.PopSection()
-				--end
+				profiler.PopSection()
 			end
 		end
 		last_info = info
@@ -645,5 +646,14 @@ commands.Add("trace_abort", function()
 	jit.flush()
 	profiler.EnableRealTimeTraceAbortLogging(true)
 end)
+
+if RELOAD then
+	I""
+	for i = 1, 100 do
+	local panel = gui.CreatePanel("frame")
+	panel:Remove()
+	end
+	I""
+end
 
 return profiler
