@@ -3,6 +3,7 @@ local steam = _G.steam or {}
 runfile("web_api.lua", steam)
 runfile("server_query.lua", steam)
 runfile("mount.lua", steam)
+runfile("vmt.lua", steam)
 --runfile("steamworks.lua", steam)
 
 --[[local steamfriends = desire("ffi.steamfriends")
