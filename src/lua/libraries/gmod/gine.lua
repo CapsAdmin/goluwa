@@ -46,13 +46,15 @@ function gine.WrapObject(obj, meta)
 
 		gine.objects[meta][obj] = setmetatable({}, tbl)
 
-		obj:CallOnRemove(function()
-			if gine.objects[meta] and gine.objects[meta][obj] then
-				local obj = gine.objects[meta][obj]
-				event.Delay(function() prototype.MakeNULL(obj) end)
-				gine.objects[meta][obj] = nil
-			end
-		end)
+		if obj.CallOnRemove then
+			obj:CallOnRemove(function()
+				if gine.objects[meta] and gine.objects[meta][obj] then
+					local obj = gine.objects[meta][obj]
+					event.Delay(function() prototype.MakeNULL(obj) end)
+					gine.objects[meta][obj] = nil
+				end
+			end)
+		end
 	end
 
 	return gine.objects[meta][obj]
