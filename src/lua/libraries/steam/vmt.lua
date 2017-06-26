@@ -3,6 +3,7 @@ local steam = ... or steam
 local textures = {
 	basetexture = true,
 	basetexture2 = true,
+	texture = true,
 	texture2 = true,
 	bumpmap = true,
 	bumpmap2 = true,
@@ -99,7 +100,7 @@ function steam.LoadVMT(path, on_property, on_error, on_shader)
 			end
 
 			for k,v in pairs(vmt) do
-				if type(v) == "string" and (textures[k] or k:find("texture")) and (not special_textures[v] and not special_textures[v:lower()]) then
+				if type(v) == "string" and textures[k] and (not special_textures[v] and not special_textures[v:lower()]) then
 					local new_path = vfs.FixPathSlashes("materials/" .. v)
 					if not new_path:endswith(".vtf") then new_path = new_path .. ".vtf" end
 					resource.Download(new_path, function(path) on_property(k, path, fullpath, vmt) end, on_error and function() on_error("texture " .. k .. " " .. new_path .. " not found") end or nil, nil, true)
