@@ -50,7 +50,7 @@ for k,v in pairs(data) do
 
 	local ent = entities.CreateEntity("visual", entities.GetWorld())
 	ent:SetModelPath(v.mdl)
-	ent:SetPosition(v.pos * 0.0254)
+	ent:SetPosition(v.pos * steam.source2meters)
 	if ent.rotation_init then
 		--v.ang.x = -v.ang.x
 		ent:SetAngles((v.ang:GetRad() + ent.rotation_init):Normalize())

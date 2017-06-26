@@ -5,16 +5,16 @@ local ffi = require("ffi")
 
 steam.loaded_bsp = steam.loaded_bsp or {}
 
-local scale = 0.0254
+local scale = 1/0.0254
 
 local skyboxes = {
-	["gm_construct"] = {AABB(-400, -400, 255,   400, 400, 320) * (1/scale), 0.003},
-	["gm_flatgrass"] = {AABB(-400, -400, -430,   400, 400, -360) * (1/scale), 0.003},
-	["gm_bluehills_test3"] = {AABB(130, 130, 340,   340, 320, 380) * (1/scale), 0},
-	["gm_atomic"] = {AABB(-210, -210, 40,   210, 210, 210) * (1/scale), 0},
-	["de_bank"] = {AABB(115, -74, -77, 261, 64, -28) * (1/scale), 0.003},
-	["rp_hometown1999"] = {AABB(78, -61, -1, 98, -45, 5) * (1/scale), 0.003},
-	["gm_freespace_13"] = {AABB(-500, -500, 200, 500, 500, 600) * (1/scale), 0},
+	["gm_construct"] = {AABB(-400, -400, 255,   400, 400, 320) * scale, 0.003},
+	["gm_flatgrass"] = {AABB(-400, -400, -430,   400, 400, -360) * scale, 0.003},
+	["gm_bluehills_test3"] = {AABB(130, 130, 340,   340, 320, 380) * scale, 0},
+	["gm_atomic"] = {AABB(-210, -210, 40,   210, 210, 210) * scale, 0},
+	["de_bank"] = {AABB(115, -74, -77, 261, 64, -28) * scale, 0.003},
+	["rp_hometown1999"] = {AABB(78, -61, -1, 98, -45, 5) * scale, 0.003},
+	["gm_freespace_13"] = {AABB(-500, -500, 200, 500, 500, 600) * scale, 0},
 }
 
 function steam.SetMap(name)
@@ -498,7 +498,7 @@ function steam.LoadMap(path)
 			uv_scale = uv_scale or 1
 
 			local vertex = {
-				pos = -Vec3(pos.y, pos.x, pos.z) * scale, -- copy
+				pos = -Vec3(pos.y, pos.x, pos.z) * steam.source2meters, -- copy
 				texture_blend = blend,
 				uv = Vec2(
 					uv_scale * (a[1] * pos.x + a[2] * pos.y + a[3] * pos.z + a[4]) / texdata.width,
@@ -764,8 +764,8 @@ function steam.SpawnMapEntities(path, parent)
 				ent:SetModelPath("models/sphere.obj")
 				ent:SetSize(0.25)
 				ent:SetRoughnessMultiplier(0)
-				ent:SetPosition(v.origin * 0.0254)
-				print(v.origin * 0.0254)
+				ent:SetPosition(v.origin * steam.source2meters)
+				print(v.origin * steam.source2meters)
 			end
 		end
 
@@ -789,7 +789,7 @@ function steam.SpawnMapEntities(path, parent)
 					parent.light_group:SetName("lights")
 
 					local ent = entities.CreateEntity("light", parent.light_group)
-					ent:SetPosition(info.origin * 0.0254)
+					ent:SetPosition(info.origin * steam.source2meters)
 --					ent:SetHideFromEditor(true)
 
 					ent:SetColor(Color(info._light.r, info._light.g, info._light.b, 1))
@@ -803,8 +803,8 @@ function steam.SpawnMapEntities(path, parent)
 					ent.spawned_from_bsp = true
 				elseif info.classname == "env_fog_controller" then
 					--parent.world_params:SetFogColor(Color(info.fogcolor.r, info.fogcolor.g, info.fogcolor.b, info.fogcolor.a * (info.fogmaxdensity or 1)/4))
-					--parent.world_params:SetFogStart(info.fogstart* scale)
-					--parent.world_params:SetFogEnd(info.fogend * scale)
+					--parent.world_params:SetFogStart(info.fogstart* steam.source2meters)
+					--parent.world_params:SetFogEnd(info.fogend * steam.source2meters)
 				end
 			end
 
@@ -815,7 +815,7 @@ function steam.SpawnMapEntities(path, parent)
 
 					local ent = entities.CreateEntity("visual", parent[info.classname .. "_group"])
 					ent:SetModelPath(info.model)
-					ent:SetPosition(info.origin * scale)
+					ent:SetPosition(info.origin * steam.source2meters)
 					if info.rendercolor and not info.rendercolor:IsZero() then ent:SetColor(info.rendercolor) end
 					if info.model_size_mult then ent:SetSize(info.model_size_mult) end
 					ent:SetAngles(info.angles:GetRad())

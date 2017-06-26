@@ -145,7 +145,7 @@ end)
 
 do -- source engine
 	commands.Add("getpos", function()
-		local pos = camera.camera_3d:GetPosition() * (1/0.0254)
+		local pos = camera.camera_3d:GetPosition() * (1/steam.source2meters)
 		local ang = camera.camera_3d:GetAngles():GetDeg()
 
 		logf("setpos %f %f %f;setang %f %f %f", pos.x, pos.y, pos.z, ang.x, ang.y, ang.z)
@@ -156,7 +156,7 @@ do -- source engine
 		x = tonumber(x)
 		y = tonumber(y)
 		z = tonumber(z)
-		camera.camera_3d:SetPosition(Vec3(x,y,z) * 0.0254)
+		camera.camera_3d:SetPosition(Vec3(x,y,z) * steam.source2meters)
 
 		local p,y,r = unpack(line:match("setang (.+)"):split(" "))
 		p = tonumber(p)

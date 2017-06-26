@@ -1,7 +1,5 @@
 local render3d = ... or _G.render3d
 
-local scale = 0.0254
-
 local _debug = false
 
 local header = [[
@@ -659,7 +657,7 @@ local function load_vvd(path)
 			local vertex = {}
 
 			local pos = buffer:ReadVec3()
-			vertex.pos = -Vec3(pos.y, pos.x, pos.z) * scale
+			vertex.pos = -Vec3(pos.y, pos.x, pos.z) * steam.source2meters
 			local normal = buffer:ReadVec3()
 			vertex.normal = -Vec3(normal.y, normal.x, normal.z)
 			vertex.uv = buffer:ReadVec2()
@@ -747,7 +745,7 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 							--local a = mdl.bone[model_i].rotation
 							--mesh.rotation_init = Ang3(a.y, a.x, a.z)
 						--end
-						--mesh.bbox = {min = mdl.hull_min*scale, max = mdl.hull_max*scale}
+						--mesh.bbox = {min = mdl.hull_min*steam.source2meters, max = mdl.hull_max*steam.source2meters}
 
 						--if path:lower():find("airboat") then table.print(mdl.texturedir) table.print(mdl.material) print(i) end
 
