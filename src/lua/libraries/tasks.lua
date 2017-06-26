@@ -159,6 +159,10 @@ function tasks.CreateTask(on_start, on_finish)
 
 	tasks.created[self] = self
 
+	if enabled:Get() and not event.TimerExists("tasks") then
+		event.Timer("tasks", 0.25, 0, tasks.Update)
+	end
+
 	return self
 end
 
@@ -193,7 +197,7 @@ function tasks.Panic()
 	end
 end
 
-event.Timer("tasks", 0.25, 0, function()
+function tasks.Update()
 	local i = 0
 
 	if next(tasks.created) then
@@ -221,6 +225,6 @@ event.Timer("tasks", 0.25, 0, function()
 			thread:Start(true)
 		end
 	end
-end)
+end
 
 return tasks
