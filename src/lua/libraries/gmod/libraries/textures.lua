@@ -225,8 +225,10 @@ local flags = {
 }
 
 local other = {
-	basetexture = {type = "texture", default = "", description = "base texture"},
-	basetexture2 = {type = "texture", default = "", description = "base texture"},
+	basetexture = {type = "texture", default = nil, description = "base texture"},
+	texture = {type = "texture", default = nil, description = "base texture"},
+	basetexture2 = {type = "texture", default = nil, description = "base texture"},
+	texture2 = {type = "texture", default = nil, description = "base texture"},
 }
 
 for name, func in pairs(shaders) do
@@ -401,6 +403,31 @@ add_new_defaults("vertexlitgeneric", {
 	emissiveblendtint = "[ 1.000000 1.000000 1.000000 ]",
 })
 
+local warned = {}
+
+local function get_info(self, key)
+	if self.invalid_shader then
+		warned[self.shader] = warned[self.shader] or {}
+		if not warned[self.shader][key] then
+			llog("%s: tried to lookup %s in invalid shader %s", self.name, key, self.shader)
+			warned[self.shader][key] = true
+		end
+		return
+	end
+
+	local info = self.params[key]
+
+	if not info then
+		warned[self.shader] = warned[self.shader] or {}
+		if not warned[self.shader][key] then
+			llog("%s: parameter %s not found in shader %s", self.name, key, self.shader)
+			warned[self.shader][key] = true
+		end
+	end
+
+	return info
+end
+
 local META = {}
 META.__index = META
 
@@ -413,12 +440,8 @@ function META:Get(key)
 end
 
 function META:SetNumber(key, val)
-	local info = self.params[key]
-
-	if not info then
-		llog("shader param %s not found", key)
-		return
-	end
+	local info = get_info(self, key)
+	if not info then return end
 
 	if info.type == "texture" then
 		val = render.GetErrorTexture()
@@ -430,20 +453,39 @@ function META:SetNumber(key, val)
 		val = Color(val, val, val, val)
 	elseif info.type == "matrix" then
 		val = Matrix44()
-	else
-		print(info.type)
 	end
 
 	self:Set(key, val)
 end
 
-function META:SetString(key, val)
-	local info = self.params[key]
+function META:GetNumber(key)
+	local info = get_info(self, key)
+	if not info then return end
 
-	if not info then
-		llog("shader param %s not found", key)
-		return
+	local val = self.vars[key]
+
+	local num
+
+	if not val then return num end
+
+	if info.type == "texture" then
+		num = nil
+	elseif info.type == "vec2" then
+		num = val.x
+	elseif info.type == "vec3" then
+		num = val.x
+	elseif info.type == "vec4" or info.type == "color" then
+		num = val.r
+	elseif info.type == "matrix" then
+		num = val:GetI(0)
 	end
+
+	return num
+end
+
+function META:SetString(key, val)
+	local info = get_info(self, key)
+	if not info then return end
 
 	if info.type == "float" or info.type == "int" or info.type == "integer" or info.type == "bool" then
 		val = tonumber(val)
@@ -504,7 +546,7 @@ function META:SetString(key, val)
 
 		if val:startswith("[") then
 			local args = val:sub(2, -2):split(" ")
-			for i = 1, len do
+			for i = 1, 16 do
 				mat:SetI(i-1, tonumber(args[i]) or 0)
 			end
 		else
@@ -540,8 +582,11 @@ function META:SetString(key, val)
 end
 
 function META:GetString(key)
+	local info = get_info(self, key)
+	if not info then return end
+
 	local val = self.vars[key]
-	local info = self.params[key]
+
 	local str
 
 	if not val then return str end
@@ -558,29 +603,31 @@ function META:GetString(key)
 		str = ("[%f %f %f %f]"):format(val:Unpack())
 	elseif info.type == "matrix" then
 		str = ("[" .. ("%f "):rep(16) .. "]"):format(val:Unpack())
-	else
-		print(info.type)
 	end
 
 	return str
 end
 
 function META:SetShader(name)
-	if not shaders[name] then
-		wlog("tried to create unknown shader ", name)
-	end
-
 	self.shader = name
-	self.params = shaders[name] or shaders.unlitgeneric
+	self.params = shaders[name]
 
-	for k,v in pairs(self.params) do
-		self:SetString(k, v.default or v.default2)
+	if self.params then
+		for k,v in pairs(self.params) do
+			if v.default2 then
+				self:SetString(k, v.default2)
+			end
+		end
+	else
+		llog("tried to create unknown shader %s", name)
+		self.invalid_shader = true
 	end
 end
 
-function gine.CreateMaterial(shader)
+function gine.CreateMaterial(shader, name)
 	local self = setmetatable({}, META)
 	self.vars = {}
+	self.name = name or "no name"
 
 	if shader then
 		self:SetShader(shader)
@@ -617,8 +664,6 @@ do
 		if gine.created_materials[path:lower()] then
 			return gine.created_materials[path:lower()]
 		end
-
-		llog("Material: %s", path)
 
 		local mat = gine.CreateMaterial()
 		mat.name = path
@@ -743,13 +788,11 @@ do
 	local surface = gine.env.surface
 
 	function surface.GetTextureID(path)
-		llog("surface.GetTextureID: %s", path)
-
 		if vfs.IsFile("materials/" .. path) then
 			if vfs.IsFile("materials/" .. path .. ".vtf") then
 				return render.CreateTextureFromPath("materials/" .. path)
 			else
-				print("texture not found ", path)
+				wlog("texture not found %s", path)
 			end
 		end
 
@@ -792,5 +835,6 @@ do
 end
 
 function gine.env.render.SetMaterial(mat)
-	render.SetMaterial(mat.__obj)
+	render2d.SetTexture(mat:GetTexture("$basetexture").__obj)
+	--render.SetMaterial(mat.__obj)
 end
