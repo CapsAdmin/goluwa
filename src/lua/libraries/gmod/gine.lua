@@ -80,11 +80,13 @@ end
 
 function gine.Initialize(skip_addons)
 	event.AddListener("PreLoadFile", "glua", function(path)
-		if gine.IsGLuaPath(path, true) then
+		if gine.IsGLuaPath(path, true) and (path:lower():find("garrysmod/garrysmod/lua/", nil, true) or path:lower():find("garrysmod/garrysmod/gamemodes/")) then
 			local redirect = e.ROOT_FOLDER .. "garrysmod/garrysmod/"
 			if vfs.IsDirectory(redirect) then
-				path = path:lower():gsub("^(.-garrysmod/garrysmod/)", redirect)
-				return path
+				local new_path = path:lower():gsub("^(.-garrysmod/garrysmod/)", redirect)
+				if new_path:lower() ~= path:lower() then
+					return new_path
+				end
 			end
 
 			return event.destroy_tag
@@ -135,20 +137,6 @@ function gine.Initialize(skip_addons)
 
 		gine.init = true
 
-		runfile("lua/includes/init.lua") --
-
-		--runfile("lua/includes/init_menu.lua")
-		gine.env.require("notification")
-		runfile("lua/derma/init.lua") -- the gui
-
-		gine.LoadGamemode("base")
-		gine.LoadGamemode("sandbox")
-
-		-- autorun lua files
-		runfile(gine.dir .. "/lua/autorun/*")
-		if CLIENT then runfile(gine.dir .. "/lua/autorun/client/*") end
-		if SERVER then runfile(gine.dir .. "/lua/autorun/server/*") end
-
 		if not skip_addons then
 			for _, info in ipairs(vfs.disabled_addons) do
 				if info.gmod_addon then
@@ -162,6 +150,21 @@ function gine.Initialize(skip_addons)
 				vfs.AddModuleDirectory(R(dir.."/lua/includes/modules/"))
 			end
 		end
+
+		runfile("lua/includes/init.lua")
+
+		--runfile("lua/includes/init_menu.lua")
+		gine.env.require("notification")
+		runfile("lua/derma/init.lua") -- the gui
+
+		gine.LoadGamemode("base")
+		gine.LoadGamemode("sandbox")
+
+		-- autorun lua files
+		runfile(gine.dir .. "/lua/autorun/*")
+		if CLIENT then runfile(gine.dir .. "/lua/autorun/client/*") end
+		if SERVER then runfile(gine.dir .. "/lua/autorun/server/*") end
+
 
 		runfile("lua/postprocess/*")
 		runfile("lua/vgui/*")
