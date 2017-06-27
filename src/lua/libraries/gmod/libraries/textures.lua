@@ -406,14 +406,16 @@ add_new_defaults("vertexlitgeneric", {
 local warned = {}
 
 local function get_info(self, key)
-	if self.invalid_shader then
+	if self.invalid_shader then return end
+
+	--[[if self.invalid_shader then
 		warned[self.shader] = warned[self.shader] or {}
 		if not warned[self.shader][key] then
 			llog("%s: tried to lookup %s in invalid shader %s", self.name, key, self.shader)
 			warned[self.shader][key] = true
 		end
 		return
-	end
+	end]]
 
 	local info = self.params[key]
 
