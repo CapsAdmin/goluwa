@@ -261,12 +261,44 @@ do
 		return false
 	end
 
+	function META:EnableMatrix()
+
+	end
+
+	function META:SetModel(path)
+		llog(path)
+	end
+
+	function META:SetLOD()
+
+	end
+
+	function META:SetModelScale(scale)
+		self.model_scale = scale
+	end
+
+	function META:GetModelScale()
+		return self.model_scale
+	end
+
+	function META:SetColor(color)
+		self.color = color
+	end
+
+	function META:GetColor()
+		return self.color or gine.env.Color(255, 255, 255, 255)
+	end
+
 	function META:GetOwner()
 		return NULL
 	end
 
+	function META:SetSkin(num)
+		self.skin = num
+	end
+
 	function META:GetSkin()
-		return 0
+		return self.skin or 0
 	end
 
 	function META:GetSequenceActivity()

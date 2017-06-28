@@ -1,5 +1,9 @@
 local META = gine.GetMetaTable("Angle")
 
+function gine.env.LerpAngle(f, a, b)
+	return a.ptr:GetLerped(f, b.ptr)
+end
+
 function gine.env.Angle(p, y, r)
 	local self = {}
 
@@ -51,6 +55,10 @@ end
 
 function META.__eq(a, b)
 	return a.q == b.q
+end
+
+function META:__unm()
+	return gine.env.Angle(-self.ptr)
 end
 
 function META.__mul(a, b)

@@ -34,6 +34,10 @@ function util.IsValidModel(path)
 	return vfs.IsFile(path)
 end
 
+function util.PointContents()
+	return 0
+end
+
 function util.GetPixelVisibleHandle()
 	return {}
 end

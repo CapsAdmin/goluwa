@@ -13,13 +13,14 @@ end
 make_is("string")
 make_is("number")
 make_is("table")
-make_is("bool")
 make_is("Entity")
 make_is("Angle")
 make_is("Vector")
 make_is("function")
 make_is("Panel")
 make_is("Matrix")
+
+function gine.env.isbool(obj) return type(obj) == "boolean" end
 
 gine.env.IsEntity = gine.env.isentity
 

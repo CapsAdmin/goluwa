@@ -58,7 +58,15 @@ do
 		return gine.local_player
 	end
 
+	function gine.env.Player()
+		return gine.env.LocalPlayer()
+	end
+
 	local META = gine.GetMetaTable("Player")
+
+	function META:IsNPC()
+		return false
+	end
 
 	function META:GetAimVector()
 		return gine.env.EyeVector()

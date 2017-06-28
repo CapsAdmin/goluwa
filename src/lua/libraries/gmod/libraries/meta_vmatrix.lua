@@ -51,6 +51,12 @@ do
 		end
 	end
 
+	function META:SetField(r, c, v)
+		if tr[r] and tr[r][c] then
+			self.ptr[tr[r][c]] = v
+		end
+	end
+
 	function META:ToTable()
 		local tbl = {}
 		for x = 1, 4 do
@@ -115,6 +121,10 @@ end
 
 function META:Set(m)
 	self.ptr:Copy(m.ptr)
+end
+
+function META.__mul(a, b)
+	return gine.env.Matrix(a.ptr * b.ptr)
 end
 
 function META:Identity()

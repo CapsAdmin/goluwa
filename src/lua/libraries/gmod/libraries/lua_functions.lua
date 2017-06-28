@@ -5,6 +5,7 @@ function gine.env.include(path)
 		path:lower(),
 		"lua/" .. path:lower()
 	})
+
 	if ok == false then
 		error(err, 2)
 	end
@@ -62,17 +63,31 @@ end
 
 function gine.env.CompileString(code, identifier, handle_error)
 	if handle_error == nil then handle_error = true end
-	local func, err = loadstring(code)
+
+	local ok, code = pcall(gine.PreprocessLua, code)
+
+	if not ok then
+		if not handle_error then
+			return code
+		end
+
+		error(err, 2)
+	end
+
+	local func, err = loadstring(code, identifier)
+
 	if func then
 		setfenv(func, gine.env)
 		return func
 	end
+
 	if handle_error then
 		error(err, 2)
 	end
+
 	return err
 end
 
 function gine.env.CompileFile(name)
-	return gine.env.CompileString(vfs.Read("lua/" .. name), "@lua/" .. name)
+	return gine.env.CompileString(vfs.Read("lua/" .. name), "@" .. R("lua/" .. name), false)
 end

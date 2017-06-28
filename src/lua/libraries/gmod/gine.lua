@@ -128,6 +128,8 @@ function gine.Initialize(skip_addons)
 		-- figure out the base gmod folder
 		gine.dir = R("garrysmod_dir.vpk"):match("(.+/)")
 
+		runfile("lua/libraries/gmod/material.lua", gine)
+
 		-- setup engine functions
 		runfile("lua/libraries/gmod/environment.lua", gine)
 

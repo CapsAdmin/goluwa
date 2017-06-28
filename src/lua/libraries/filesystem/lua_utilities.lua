@@ -94,9 +94,7 @@ do -- runfile
 			local ok, err
 			local errors = {}
 			for _, path in ipairs(source) do
-				silence_log(true)
 				ok, err = vfs.RunFile(path)
-				silence_log(false)
 				if ok == false then
 					table.insert(errors, err .. ": " .. path)
 				else

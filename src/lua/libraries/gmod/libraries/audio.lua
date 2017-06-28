@@ -31,3 +31,7 @@ end
 function gine.env.surface.PlaySound(path)
 	audio.CreateSource("sound/" .. path):Play()
 end
+
+function gine.env.sound.GetTable()
+	return {}
+end
