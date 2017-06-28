@@ -762,7 +762,7 @@ do -- vmt object
 				val = render.GetErrorTexture()
 			else
 				if not vfs.IsFile(val) then
-					if not path:find(".+%.") then
+					if not val:find(".+%.") then
 						val = val .. ".vtf"
 					end
 
