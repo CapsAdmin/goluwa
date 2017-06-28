@@ -114,6 +114,10 @@ do
 		return gine.env.Vector(self.__obj:GetPosition())
 	end
 
+	function META:SetAngles()
+
+	end
+
 	function META:GetAngles()
 		if self == gine.env.LocalPlayer() then
 			return gine.env.EyeAngles()
@@ -137,14 +141,14 @@ do
 		if self == gine.env.LocalPlayer() then
 			return gine.env.EyePos()
 		end
-		return gine.env.Vector()
+		return self:GetPos()
 	end
 
 	function META:EyeAngles()
 		if self == gine.env.LocalPlayer() then
 			return gine.env.EyeAngles()
 		end
-		return gine.env.Angle()
+		return self:GetAngles()
 	end
 
 	function META:InvalidateBoneCache()
@@ -192,14 +196,6 @@ do
 		return -1
 	end
 
-	function META:Health()
-		return 100
-	end
-
-	function META:GetMaxHealth()
-		return 100
-	end
-
 	function META:GetBoneMatrix()
 
 	end
@@ -218,8 +214,6 @@ do
 		end
 	end
 
-	function META:SetNoDraw() end
-	function META:SetAngles() end
 	function META:GetNumBodyGroups() return 1 end
 	function META:GetBodygroupCount() return 1 end
 	function META:SkinCount() return 1 end
@@ -231,31 +225,64 @@ do
 		return self.ClassName or self.MetaName
 	end
 
-	function META:GetNWFloat(key, def)
-		return def or 0
-	end
+	do
+		local types = {
+			Vector = {"Vector", gine.env.Vector()},
+			Angle = {"Angle", gine.env.Vector()},
+			Bool = {"boolean", false},
+			Float = {"number", 0},
+			Int = {"number", 0},
+			String = {"string", ""},
+			Entity = {"Entity", NULL},
+		}
 
-	function META:GetNWInt(key, def)
-		return def or 0
-	end
+		for name, info in pairs(types) do
+			META["SetNW" .. name] = function(self, key, val)
+				self.__vars.nwvars = self.__vars.nwvars or {}
 
-	function META:GetNWEntity(key, def)
-		return def or _G.NULL
+				if
+					(name == "Entity" and gine.env.IsEntity(val)) or
+					(name ~= "Entity" and gine.env.type(val) ~= info[1])
+				then
+					val = info[2]
+				end
+
+				self.__vars.nwvars[key] = val
+			end
+
+			META["GetNW" .. name] = function(self, key, def)
+				self.__vars.nwvars = self.__vars.nwvars or {}
+
+				if def and self.__vars.nwvars[key] == nil then
+					return def
+				end
+
+				return self.__vars.nwvars[key] or info[2]
+			end
+
+			META["GetNW2" .. name] = META["GetNW" .. name]
+			META["SetNW2" .. name] = META["SetNW" .. name]
+		end
 	end
 
 	function META:OnGround()
 		return false
 	end
 
-	for k, v in pairs(META) do
-		if k:startswith("GetNW") then
-			META[k:gsub("GetNW", "GetNW2")] = v
-		end
-	end
+	gine.AddGetSet(META, "Velocity", function() return gine.env.Vector(0,0,0) end)
+	gine.AddGetSet(META, "Model")
+	gine.AddGetSet(META, "ModelScale")
+	gine.AddGetSet(META, "LOD", function() return 0 end)
+	gine.AddGetSet(META, "Skin", function() return 0 end)
+	gine.AddGetSet(META, "Owner", function() return NULL end)
+	gine.AddGetSet(META, "Color", function() return gine.env.Color(255, 255, 255, 255) end)
+	gine.AddGetSet(META, "MoveType", function() return gine.env.MOVETYPE_NONE end)
+	gine.AddGetSet(META, "MoveType", function() return gine.env.MOVETYPE_NONE end)
+	gine.AddGetSet(META, "NoDraw", function() return false end)
+	gine.AddGetSet(META, "MaxHealth", function() return 100 end)
+	gine.AddGetSet(META, "Health", function() return 100 end)
 
-	function META:GetVelocity()
-		return gine.env.Vector(0, 0, 0)
-	end
+	META.Health = META.GetHealth
 
 	function META:IsFlagSet()
 		return false
@@ -265,48 +292,8 @@ do
 
 	end
 
-	function META:SetModel(path)
-		llog(path)
-	end
-
-	function META:SetLOD()
-
-	end
-
-	function META:SetModelScale(scale)
-		self.model_scale = scale
-	end
-
-	function META:GetModelScale()
-		return self.model_scale
-	end
-
-	function META:SetColor(color)
-		self.color = color
-	end
-
-	function META:GetColor()
-		return self.color or gine.env.Color(255, 255, 255, 255)
-	end
-
-	function META:GetOwner()
-		return NULL
-	end
-
-	function META:SetSkin(num)
-		self.skin = num
-	end
-
-	function META:GetSkin()
-		return self.skin or 0
-	end
-
 	function META:GetSequenceActivity()
 		return 0
-	end
-
-	function META:GetModel()
-		return ""
 	end
 
 	function META:IsDormant()
@@ -317,24 +304,8 @@ do
 		return false
 	end
 
-	function META:GetNWBool()
-		return false
-	end
-
-	function META:GetMoveType()
-		return gine.env.MOVETYPE_NONE
-	end
-
 	function META:BoundingRadius()
 		return 1
-	end
-
-	function META:GetModelScale()
-		return 1
-	end
-
-	function META:GetNoDraw()
-		return false
 	end
 
 	function gine.env.ClientsideModel(path)

@@ -1,11 +1,11 @@
 local system = gine.env.system
 
 function system.IsLinux()
-	return true
+	return false
 end
 
 function system.IsWindows()
-	return false
+	return true
 end
 
 function system.IsOSX()

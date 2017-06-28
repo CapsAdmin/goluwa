@@ -30,9 +30,15 @@ function gine.WrapObject(obj, meta)
 			__index_tbl = tbl.__index
 		end
 
+		obj.gine_vars = obj.gine_vars or {}
+
 		function tbl:__index(key)
 			if key == "__obj" then
 				return obj
+			end
+
+			if key == "__vars" then
+				return obj.gine_vars
 			end
 
 			if __index_func then
@@ -58,6 +64,18 @@ function gine.WrapObject(obj, meta)
 	end
 
 	return gine.objects[meta][obj]
+end
+
+function gine.AddGetSet(META, name, def)
+	META["Set" .. name] = function(self, val)
+		self.__obj.gine_vars[name] = val
+	end
+	META["Get" .. name] = function(self)
+		if def and self.__obj.gine_vars[name] == nil then
+			return def()
+		end
+		return self.__obj.gine_vars[name]
+	end
 end
 
 gine.glua_paths = gine.glua_paths or {}
