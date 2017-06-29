@@ -5,6 +5,8 @@ do
 
 	local META = gine.GetMetaTable("CLuaEmitter")
 
+	gine.GetSet(META, "NoDraw", false)
+
 	function META:Add()
 
 	end

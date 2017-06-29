@@ -121,11 +121,20 @@ do
 		local options = {}
 
 		options.path = gine.TranslateFontName(tbl.font)
-		--options.size = math.round(tbl.size / 1.36)
 		options.size = tbl.size
 
 		if tbl.shadow then
 			options.shadow = 2
+		end
+
+		if tbl.blursize ~= 0 then
+			options.padding = 100
+			options.shadow = {
+				dir = 0,
+				color = Color(1,1,1,1),
+				blur_radius = tbl.blursize/2,
+				blur_passes = 2
+			}
 		end
 
 		options.filtering = "nearest"

@@ -86,6 +86,10 @@ do
 	function gui.IsGameUIVisible()
 		return menu.IsVisible()
 	end
+
+	function gui.EnableScreenClicker(b)
+		window.SetMouseTrapped(b)
+	end
 end
 
 do
@@ -111,6 +115,8 @@ do
 		if not gine.gui_world:IsValid() then
 			gine.gui_world = gui.CreatePanel("base")
 			gine.gui_world:SetNoDraw(true)
+			gine.gui_world:NoCollide()
+
 			--gine.gui_world:SetIgnoreMouse(true)
 			gine.gui_world.__class = "CGModBase"
 			function gine.gui_world:OnLayout()
@@ -416,6 +422,10 @@ do
 		self.__obj.bg_color.g = g/255
 		self.__obj.bg_color.b = b/255
 		self.__obj.bg_color.a = (a or 0)/255
+	end
+
+	function META:SetVerticalScrollbarEnabled(b)
+
 	end
 
 	function META:CursorPos()

@@ -41,7 +41,7 @@ do
 	for x = 1, 4 do
 		for y = 1, 4 do
 			tr[x] = tr[x] or {}
-			tr[x][y] = "m" .. (x - 1) .. (y - 1)
+			tr[x][y] = "m" .. (y - 1) .. (x - 1)
 		end
 	end
 
@@ -91,6 +91,10 @@ function META:SetScale(v)
 	self.ptr.m22 = v.z
 end
 
+function META:Rotate(ang)
+	self.ptr:Multiply(Matrix44:SetRotation(QuatDeg3(ang.p, ang.y, ang.r)))
+end
+
 function META:GetScale()
 	return gine.env.Vector(self.ptr.m00, self.ptr.m11, self.ptr.m22)-- / self.ptr.m33
 end
@@ -120,7 +124,7 @@ function META:GetAngles()
 end
 
 function META:Set(m)
-	self.ptr:Copy(m.ptr)
+	self.ptr = m.ptr
 end
 
 function META.__mul(a, b)

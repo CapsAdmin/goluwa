@@ -51,6 +51,26 @@ function surface.DisableClipping(b)
 
 end
 
-function surface.DrawPoly()
+do
+	local mesh = render2d.CreateMesh(2048)
 
+	for i = 1, 2048 do
+		mesh:SetVertex(i, "color", 1,1,1,1)
+	end
+
+	function surface.DrawPoly(tbl)local count = #tbl
+		for i = 1, count do
+			local vertex = tbl[i]
+
+			mesh:SetVertex(i, "pos", vertex.x, vertex.y)
+
+			if vertex.u and vertex.v then
+				mesh:SetVertex(i, "uv", vertex.u, vertex.v)
+			end
+		end
+
+		render2d.BindShader()
+		mesh:UpdateBuffer()
+		mesh:Draw(#tbl)
+	end
 end

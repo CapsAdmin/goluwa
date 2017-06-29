@@ -30,7 +30,7 @@ do
 		return self
 	end
 
-	function gine.env.Material(path)
+	function gine.env.Material(path, flags)
 		if gine.created_materials[path:lower()] then
 			return gine.created_materials[path:lower()]
 		end
@@ -66,9 +66,8 @@ do
 
 	local META = gine.GetMetaTable("IMaterial")
 
-	function META:GetColor(x,y)
-		local r,g,b,a = self:GetTexture("$basetexture").__obj:GetPixelColor(x, y):Unpack()
-		return gine.env.Color(r*255, g*255, b*255, a*255)
+	function META:GetColor(x, y)
+		return self:GetTexture("$basetexture"):GetColor(x, y)
 	end
 
 	function META:GetName()
@@ -80,11 +79,11 @@ do
 	end
 
 	function META:Width()
-		return self:GetTexture("$basetexture").__obj:GetSize().x
+		return self:GetTexture("$basetexture"):Width()
 	end
 
 	function META:Height()
-		return self:GetTexture("$basetexture").__obj:GetSize().y
+		return self:GetTexture("$basetexture"):Height()
 	end
 
 	function META:GetKeyValues()
@@ -185,14 +184,19 @@ do
 	local META = gine.GetMetaTable("ITexture")
 
 	function META:Width()
-		return self.__obj.Size.x
+		return math.pow2round(self.__obj.Size.x)
 	end
 
 	function META:Height()
-		return self.__obj.Size.y
+		return math.pow2round(self.__obj.Size.y)
 	end
 
 	function META:GetColor(x, y)
+		local s = self.__obj:GetSize()
+
+		x = (x / s.x) * math.pow2round(s.x)
+		y = (y / s.y) * math.pow2round(s.y)
+
 		local r,g,b,a = self.__obj:GetPixelColor(x, y):Unpack()
 		return gine.env.Color(r*255, g*255, b*255, a*255)
 	end

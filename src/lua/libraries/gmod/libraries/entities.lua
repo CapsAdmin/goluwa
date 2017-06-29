@@ -227,8 +227,8 @@ do
 
 	do
 		local types = {
-			Vector = {"Vector", gine.env.Vector()},
-			Angle = {"Angle", gine.env.Vector()},
+			Vector = {"Vector", function() return gine.env.Vector() end},
+			Angle = {"Angle", function() return gine.env.Vector() end},
 			Bool = {"boolean", false},
 			Float = {"number", 0},
 			Int = {"number", 0},
@@ -244,7 +244,11 @@ do
 					(name == "Entity" and gine.env.IsEntity(val)) or
 					(name ~= "Entity" and gine.env.type(val) ~= info[1])
 				then
-					val = info[2]
+					if type(info[2]) == "function" then
+						val = info[2]()
+					else
+						val = info[2]
+					end
 				end
 
 				self.__vars.nwvars[key] = val
@@ -253,11 +257,19 @@ do
 			META["GetNW" .. name] = function(self, key, def)
 				self.__vars.nwvars = self.__vars.nwvars or {}
 
-				if def and self.__vars.nwvars[key] == nil then
-					return def
+				if self.__vars.nwvars[key] == nil then
+					if def ~= nil then
+						return def
+					end
+
+					if type(info[2]) == "function" then
+						return info[2]()
+					else
+						return info[2]
+					end
 				end
 
-				return self.__vars.nwvars[key] or info[2]
+				return self.__vars.nwvars[key]
 			end
 
 			META["GetNW2" .. name] = META["GetNW" .. name]
@@ -269,18 +281,19 @@ do
 		return false
 	end
 
-	gine.AddGetSet(META, "Velocity", function() return gine.env.Vector(0,0,0) end)
-	gine.AddGetSet(META, "Model")
-	gine.AddGetSet(META, "ModelScale")
-	gine.AddGetSet(META, "LOD", function() return 0 end)
-	gine.AddGetSet(META, "Skin", function() return 0 end)
-	gine.AddGetSet(META, "Owner", function() return NULL end)
-	gine.AddGetSet(META, "Color", function() return gine.env.Color(255, 255, 255, 255) end)
-	gine.AddGetSet(META, "MoveType", function() return gine.env.MOVETYPE_NONE end)
-	gine.AddGetSet(META, "MoveType", function() return gine.env.MOVETYPE_NONE end)
-	gine.AddGetSet(META, "NoDraw", function() return false end)
-	gine.AddGetSet(META, "MaxHealth", function() return 100 end)
-	gine.AddGetSet(META, "Health", function() return 100 end)
+	gine.GetSet(META, "Material", "")
+	gine.GetSet(META, "Velocity", function() return gine.env.Vector(0,0,0) end)
+	gine.GetSet(META, "Model")
+	gine.GetSet(META, "ModelScale")
+	gine.GetSet(META, "LOD", 0)
+	gine.GetSet(META, "Skin", 0)
+	gine.GetSet(META, "Owner", NULL)
+	gine.GetSet(META, "Color", function() return gine.env.Color(255, 255, 255, 255) end)
+	gine.GetSet(META, "MoveType", function() return gine.env.MOVETYPE_NONE end)
+	gine.GetSet(META, "MoveType", function() return gine.env.MOVETYPE_NONE end)
+	gine.GetSet(META, "NoDraw", false)
+	gine.GetSet(META, "MaxHealth", 100)
+	gine.GetSet(META, "Health", 100)
 
 	META.Health = META.GetHealth
 
@@ -298,6 +311,10 @@ do
 
 	function META:IsDormant()
 		return true
+	end
+
+	function META:IsWeapon()
+		return false
 	end
 
 	function META:GetSpawnEffect()

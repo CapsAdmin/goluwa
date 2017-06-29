@@ -296,11 +296,14 @@ do -- stencil
 		local translate = {
 			never = "GL_NEVER",
 			less = "GL_LESS",
-			equal = "GL_LEQUAL",
+			lessequal = "GL_LEQUAL",
+			less_or_equal = "GL_LEQUAL",
 			greater = "GL_GREATER",
 			greater_or_equal = "GL_GEQUAL",
+			greaterequal = "GL_GEQUAL",
 			equal = "GL_EQUAL",
 			not_equal = "GL_NOTEQUAL",
+			notequal = "GL_NOTEQUAL",
 			always = "GL_ALWAYS",
 		}
 
@@ -316,9 +319,13 @@ do -- stencil
 			zero = "GL_ZERO",
 			replace = "GL_REPLACE",
 			increase = "GL_INCR",
+			incr = "GL_INCR",
 			increase_wrap = "GL_INCR_WRAP",
+			incrsat = "GL_INCR_WRAP",
 			decrease = "GL_DECR",
+			decr = "GL_DECR",
 			decrease_wrap = "GL_DECR_WRAP",
+			decrsat = "GL_DECR_WRAP",
 			invert = "GL_INVERT",
 		}
 

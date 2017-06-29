@@ -17,10 +17,11 @@ function cam.IgnoreZ()
 end
 
 function cam.PushModelMatrix(mat)
-
+	camera.camera_2d:PushWorld(mat.ptr, true)
 end
 
 function cam.PopModelMatrix()
+	camera.camera_2d:PopWorld()
 end
 
 function cam.Start3D2D()

@@ -66,7 +66,12 @@ function gine.WrapObject(obj, meta)
 	return gine.objects[meta][obj]
 end
 
-function gine.AddGetSet(META, name, def)
+function gine.GetSet(META, name, def)
+	if type(def) ~= "function" then
+		local val = def
+		def = function() return val end
+	end
+
 	META["Set" .. name] = function(self, val)
 		self.__obj.gine_vars[name] = val
 	end
@@ -252,6 +257,20 @@ function gine.Run(skip_addons)
 
 	gine.env.gamemode.Call("Initialize")
 	gine.env.gamemode.Call("InitPostEntity")
+
+	if CAPS then
+		require("opengl").Disable("GL_SCISSOR_TEST")
+		gine.env.LocalPlayer():SetNWBool("rpg", true)
+
+		gine.env.LocalPlayer():SetHealth(250)
+		gine.env.LocalPlayer():SetMaxHealth(250)
+
+		gine.env.LocalPlayer():SetNWFloat("jattributes_max_stamina", 85)
+		gine.env.LocalPlayer():SetNWFloat("jattributes_stamina", 85)
+
+		gine.env.LocalPlayer():SetNWFloat("jattributes_max_mana", 185)
+		gine.env.LocalPlayer():SetNWFloat("jattributes_mana", 185)
+	end
 end
 
 commands.Add("ginit", function(line)

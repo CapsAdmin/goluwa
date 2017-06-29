@@ -22,15 +22,15 @@ function gine.env.util.NetworkIDToString(id)
 end
 
 function gine.env.GetHostName()
-	return network.GetHostname()
+	return network.GetHostname() or "no hostname!"
 end
 
 do
-	local nw_globals = {}
+	gine.nw_globals = {}
 
 	local function ADD(name)
-		gine.env["SetGlobal" .. name] = function(key, val) nw_globals[key] = val end
-		gine.env["GetGlobal" .. name] = function(key) return nw_globals[key] end
+		gine.env["SetGlobal" .. name] = function(key, val) gine.nw_globals[key] = val end
+		gine.env["GetGlobal" .. name] = function(key) return gine.nw_globals[key] end
 	end
 
 	ADD("String")
@@ -51,6 +51,10 @@ function gine.env.game.SinglePlayer()
 end
 
 function gine.env.net.Start()
+
+end
+
+function gine.env.net.SendToServer()
 
 end
 
