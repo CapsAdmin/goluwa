@@ -6,7 +6,8 @@ local ffi = require("ffi")
 function render.PreWindowSetup(flags)
 	table.insert(flags, "opengl")
 
-	sdl.GL_SetAttribute(sdl.e.GL_DEPTH_SIZE, 0)
+	sdl.GL_SetAttribute(sdl.e.GL_DEPTH_SIZE, 16)
+	sdl.GL_SetAttribute(sdl.e.GL_STENCIL_SIZE, 8)
 
 	-- workaround for srgb on intel mesa driver
 	sdl.GL_SetAttribute(sdl.e.GL_ALPHA_SIZE, 1)

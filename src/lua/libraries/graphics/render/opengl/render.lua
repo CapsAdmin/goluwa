@@ -308,7 +308,7 @@ do -- stencil
 		}
 
 		function render.StencilFunction(func, ref, mask)
-			gl.StencilFunc(translate[func], ref, mask)
+			gl.StencilFunc(translate[func], ref, mask or 0xFF)
 		end
 
 	end
