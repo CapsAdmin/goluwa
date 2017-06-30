@@ -92,7 +92,7 @@ function META:SetScale(v)
 end
 
 function META:Rotate(ang)
-	self.ptr:Multiply(Matrix44:SetRotation(QuatDeg3(ang.p, ang.y, ang.r)))
+	self.ptr:Multiply(Matrix44():SetRotation(QuatDeg3(ang.p, ang.y, ang.r)))
 end
 
 function META:GetScale()

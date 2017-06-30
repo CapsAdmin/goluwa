@@ -13,7 +13,7 @@ function surface.SetAlphaMultiplier(a)
 end
 
 function surface.DrawTexturedRectRotated(x,y,w,h,r)
-	render2d.DrawRect(x,y,w,h,math.rad(r))
+	render2d.DrawRect(x,y,w,h,math.rad(r),w/2,h/2)
 end
 
 function surface.DrawTexturedRect(x,y,w,h)

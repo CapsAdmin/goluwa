@@ -168,10 +168,7 @@ do
 	end
 
 	function surface.SetMaterial(mat)
-		local tex = mat:GetTexture("$basetexture")
-		if tex then
-			render2d.SetTexture(tex.__obj)
-		end
+		gine.env.render.SetMaterial(mat)
 	end
 
 	function surface.SetTexture(tex)
@@ -211,6 +208,22 @@ do
 end
 
 function gine.env.render.SetMaterial(mat)
-	render2d.SetTexture(mat:GetTexture("$basetexture").__obj)
-	--render.SetMaterial(mat.__obj)
+	if not mat then return end
+	mat = mat.__obj
+
+	render2d.SetTexture(mat.vars.basetexture)
+
+	render2d.shader.alpha_test_ref = 0
+
+	if mat.vars.alphatest == 1 then
+		render2d.shader.alpha_test_ref = mat.vars.alphatestreference
+	end
+end
+
+function gine.env.render.MaterialOverride(mat)
+	gine.env.render.SetMaterial(mat)
+end
+
+function gine.env.render.ModelMaterialOverride(mat)
+	gine.env.render.SetMaterial(mat)
 end

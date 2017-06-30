@@ -83,6 +83,35 @@ function gine.GetSet(META, name, def)
 	end
 end
 
+function gine.GetReverseEnums(pattern)
+	local out = {}
+
+	for k, v in pairs(gine.env.gine_enums) do
+		local what = k:match(pattern)
+
+		if what then
+			out[v] = what:lower()
+		end
+	end
+
+	return out
+end
+
+
+function gine.GetEnums(pattern)
+	local out = {}
+
+	for k, v in pairs(gine.env.gine_enums) do
+		local what = k:match(pattern)
+
+		if what then
+			out[what:lower()] = v
+		end
+	end
+
+	return out
+end
+
 gine.glua_paths = gine.glua_paths or {}
 
 function gine.IsGLuaPath(path, gmod_dir_only)
@@ -270,6 +299,8 @@ function gine.Run(skip_addons)
 
 		gine.env.LocalPlayer():SetNWFloat("jattributes_max_mana", 185)
 		gine.env.LocalPlayer():SetNWFloat("jattributes_mana", 185)
+
+		gine.env.avatar.SetPlayer(gine.env.LocalPlayer(), "https://cdn.discordapp.com/attachments/273575417401573377/290168526709194752/ZKxp1lm.png",192,200,2)
 	end
 end
 

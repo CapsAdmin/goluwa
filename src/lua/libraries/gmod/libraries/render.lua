@@ -22,8 +22,18 @@ function render.MaxTextureWidth() return 4096 end
 function render.MaxTextureHeight() return 4096 end
 
 
-function render.DrawScreenQuad() end
-function render.DrawScreenQuadEx() end
+function render.DrawScreenQuad()
+	render.DrawScreenQuadEx()
+end
+
+function render.DrawScreenQuadEx(x,y,w,h)
+	x = x or 0
+	y = y or 0
+	w = w or gine.env.ScrW()
+	h = h or gine.env.ScrH()
+	render2d.DrawRect(x,y,w,h)
+end
+
 function render.RedownloadAllLightmaps(b) end
 
 function render.SuppressEngineLighting(b)
@@ -76,7 +86,7 @@ function render.SupportsHDR() return true end
 
 do
 	function render.SetStencilWriteMask(val)
-		render.StencilMask(val)
+		--lib.StencilMask(val)
 	end
 
 	do
@@ -96,17 +106,18 @@ do
 
 		function render.SetStencilCompareFunction(func)
 			FUNC = translate[func] or default
-			lib.StencilFunction(FUNC, REF, TEST_MASK)
+
+			lib.StencilFunction(FUNC, REF, 0xFF)
 		end
 
 		function render.SetStencilReferenceValue(val)
 			REF = val
-			lib.StencilFunction(FUNC, REF, TEST_MASK)
+			lib.StencilFunction(FUNC, REF, 0xFF)
 		end
 
 		function render.SetStencilTestMask(val)
 			TEST_MASK = val
-			lib.StencilFunction(FUNC, REF, TEST_MASK)
+			lib.StencilFunction(FUNC, REF, 0xFF)
 		end
 	end
 
@@ -142,18 +153,44 @@ do
 	function render.SetStencilEnable(b)
 		lib.SetStencil(b)
 	end
+
+	function render.ClearStencil()
+		lib.GetFrameBuffer():ClearStencil(0)
+	end
 end
 
 function render.OverrideDepthEnable()
 
 end
 
-function render.Clear(r,g,b,a,depth,stencil)
+function render.Clear(r, g, b, a, depth, stencil)
+	r = r / 255
+	g = g / 255
+	b = b / 255
+	b = a / 255
 
+	if depth then
+		depth = 0
+	end
+
+	if stencil then
+		stencil = 0
+	end
+
+	lib.GetFrameBuffer():ClearAll(r, g, b, a, depth, stencil)
 end
 
-function render.MaterialOverride(mat) end
-function render.ModelMaterialOverride(mat) end
+function render.OverrideAlphaWriteEnable(enable, should_write)
+	if enable then
+		if should_write then
+			lib.SetColorMask(1,1,1,1)
+		else
+			lib.SetColorMask(1,1,1,0)
+		end
+	else
+		lib.SetColorMask(1,1,1,1)
+	end
+end
 
 function render.PushFlashlightMode() end
 function render.PopFlashlightMode() end

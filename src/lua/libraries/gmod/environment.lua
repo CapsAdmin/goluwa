@@ -40,6 +40,7 @@ do -- copy standard libraries
 end
 
 do -- enums
+	env.gine_enums = data.enums
 	for enum_name, value in pairs(data.enums) do
 		env[enum_name] = env[enum_name] or value
 	end
