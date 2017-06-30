@@ -21,6 +21,17 @@ render2d.shader_data = {
 			void main()
 			{
 				vec4 tex_color = texture(lua[tex = "sampler2D"], uv);
+
+				float alpha_test = lua[alpha_test_ref = 0];
+
+				if (alpha_test > 0.0)
+				{
+					if (tex_color.a < alpha_test)
+					{
+						discard;
+					}
+				}
+
 				vec4 override = lua[color_override = Color(0,0,0,0)];
 
 				if (override.r > 0) tex_color.r = override.r;
