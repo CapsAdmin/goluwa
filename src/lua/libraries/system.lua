@@ -558,6 +558,7 @@ do
 	local last_openfunc = 0
 	function system.OnError(msg, ...)
 		logsection("lua error", true)
+		if msg then logn(msg) end
 		msg = msg or "no error"
 		if suppress then logn("error in system.OnError: ", msg, ...) logn(debug.traceback())  return end
 		suppress = true
