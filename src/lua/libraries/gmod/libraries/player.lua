@@ -65,7 +65,11 @@ do
 	local META = gine.GetMetaTable("Player")
 
 	function META:GetAimVector()
-		return gine.env.EyeVector()
+		if CLIENT then
+			return gine.env.EyeVector()
+		end
+
+		return gine.env.Vector()
 	end
 
 	function META:GetViewEntity()

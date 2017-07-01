@@ -301,18 +301,21 @@ function gine.Run(skip_addons)
 
 	if CLIENT and CAPS then
 		require("opengl").Disable("GL_SCISSOR_TEST")
-		gine.env.LocalPlayer():SetNWBool("rpg", true)
 
-		gine.env.LocalPlayer():SetHealth(250)
-		gine.env.LocalPlayer():SetMaxHealth(250)
+		if gine.env.notagain then
+			gine.env.LocalPlayer():SetNWBool("rpg", true)
 
-		gine.env.LocalPlayer():SetNWFloat("jattributes_max_stamina", 85)
-		gine.env.LocalPlayer():SetNWFloat("jattributes_stamina", 85)
+			gine.env.LocalPlayer():SetHealth(250)
+			gine.env.LocalPlayer():SetMaxHealth(250)
 
-		gine.env.LocalPlayer():SetNWFloat("jattributes_max_mana", 185)
-		gine.env.LocalPlayer():SetNWFloat("jattributes_mana", 185)
+			gine.env.LocalPlayer():SetNWFloat("jattributes_max_stamina", 85)
+			gine.env.LocalPlayer():SetNWFloat("jattributes_stamina", 85)
 
-		gine.env.avatar.SetPlayer(gine.env.LocalPlayer(), "https://cdn.discordapp.com/attachments/273575417401573377/290168526709194752/ZKxp1lm.png",192,200,2)
+			gine.env.LocalPlayer():SetNWFloat("jattributes_max_mana", 185)
+			gine.env.LocalPlayer():SetNWFloat("jattributes_mana", 185)
+
+			gine.env.avatar.SetPlayer(gine.env.LocalPlayer(), "https://cdn.discordapp.com/attachments/273575417401573377/290168526709194752/ZKxp1lm.png",192,200,2)
+		end
 	end
 end
 

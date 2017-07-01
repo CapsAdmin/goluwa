@@ -52,6 +52,14 @@ do
 		return out
 	end
 
+	function gine.env.ents.GetByIndex(idx)
+		for obj, ent in pairs(gine.objects.Entity) do
+			if ent:EntIndex() == idx then
+				return ent
+			end
+		end
+	end
+
 	function gine.env.ents.FindInSphere(pos)
 		return {}
 	end
@@ -241,7 +249,7 @@ do
 	end
 
 	function META:EntIndex()
-		return -1
+		return tonumber(("%p"):format(self))%2048
 	end
 
 	function META:GetBoneMatrix()

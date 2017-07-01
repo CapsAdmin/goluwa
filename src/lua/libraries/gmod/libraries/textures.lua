@@ -54,7 +54,16 @@ do
 
 			if vmt_path then
 				steam.LoadVMT(vmt_path, function(key, val)
-					self:SetString("$" .. key, tostring(val))
+					if type(val) == "boolean" then
+						val = val and "1" or "0"
+					elseif type(val) == "number" then
+						val = tostring(val)
+					elseif typex(val) == "vec3" then
+						val = ("[%f %f %f]"):format(val:Unpack())
+					elseif typex(val) == "color" then
+						val = ("[%f %f %f %f]"):format(val:Unpack())
+					end
+					self:SetString("$" .. key, val)
 				end, nil, function(name) mat:SetShader(name:lower()) end)
 			end
 		end

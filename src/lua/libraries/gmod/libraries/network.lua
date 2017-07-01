@@ -43,6 +43,12 @@ do
 	end
 end
 
+if SERVER then
+	function gine.env.umsg.PoolString()
+
+	end
+end
+
 do
 	local META = gine.GetMetaTable("Player")
 	function META:GetInfoNum(key, def)

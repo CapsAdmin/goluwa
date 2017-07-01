@@ -151,6 +151,10 @@ do
 		obj:SetPadding(Rect())
 		obj:SetMargin(Rect())
 		obj:ResetLayout()
+		obj:SetAllowKeyboardInput(false)
+		obj:SetFocusOnClick(false)
+		obj:SetBringToFrontOnClick(false)
+
 		self:SetContentAlignment(4)
 
 		self:SetFontInternal("default")
@@ -493,7 +497,11 @@ do
 	end
 
 	function META:SetKeyboardInputEnabled(b)
-		--self.__obj:SetIgnoreMouse(not b)
+		self.__obj:SetAllowKeyboardInput(b)
+	end
+
+	function META:IsKeyboardInputEnabled()
+		return self.__obj:GetAllowKeyboardInput()
 	end
 
 	function META:GetWide()

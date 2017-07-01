@@ -53,12 +53,24 @@ do
 		return {self:GetActiveWeapon()}
 	end
 
+	function META:HasWeapon()
+		return false
+	end
+
 	function META:SetAmmo(count, type)
 
 	end
 
 	function META:GetAmmoCount(type)
 		return 0
+	end
+
+	function META:GiveAmmo(type, b)
+
+	end
+
+	function META:RemoveAllAmmo()
+
 	end
 
 	function META:SetWeaponColor()

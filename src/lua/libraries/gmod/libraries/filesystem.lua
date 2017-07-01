@@ -15,7 +15,7 @@ do
 	function file.Find(path, where)
 		local files, folders = {}, {}
 
-		path = path:gsub("%.", ".")
+		path = path:gsub("%.", "%%.")
 		path = path:gsub("%*", ".*")
 
 		if where == "LUA" then

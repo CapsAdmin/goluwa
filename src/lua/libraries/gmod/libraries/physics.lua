@@ -27,6 +27,53 @@ end
 gine.env.util.TraceHull = gine.env.util.TraceLine
 
 do
+	do
+		local density = 2
+
+		function gine.env.physenv.SetAirDensity(num)
+			density = num
+		end
+
+		function gine.env.physenv.GetAirDensity(num)
+			return density
+		end
+	end
+
+	do
+		local gravity
+
+		function gine.env.physenv.SetGravity(vec)
+			gravity = vec
+		end
+
+		function gine.env.physenv.GetGravity()
+			return (gravity and gravity * 1) or gine.env.Vector(0, 0, -600)
+		end
+	end
+
+	do
+		local settings = {
+			MaxCollisionChecksPerTimestep = 50000,
+			MaxCollisionsPerObjectPerTimestep = 10,
+			LookAheadTimeObjectsVsObject = 0.5,
+			MaxVelocity = 4000,
+			MinFrictionMass = 10,
+			MaxFrictionMass = 2500,
+			LookAheadTimeObjectsVsWorld = 1,
+			MaxAngularVelocity = 7272.7275390625,
+		}
+
+		function gine.env.physenv.SetPerformanceSettings(tbl)
+			table.merge(settings, tbl)
+		end
+
+		function gine.env.physenv.GetPerformanceSettings()
+			return table.copy(settings)
+		end
+	end
+end
+
+do
 	local META = gine.GetMetaTable("Entity")
 	function META:SetSolid(b)
 

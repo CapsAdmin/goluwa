@@ -75,6 +75,9 @@ end
 function gine.env.ScrW() return lib.GetWidth() end
 function gine.env.ScrH() return lib.GetHeight() end
 
+gine.env.surface.ScreenWidth = gine.env.ScrW
+gine.env.surface.ScreenHeight = gine.env.ScrH
+
 function gine.env.DisableClipping(b)
 
 end
