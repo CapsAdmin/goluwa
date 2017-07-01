@@ -1,3 +1,5 @@
+if SERVER then return end
+
 local lib = _G.render
 local render = gine.env.render
 

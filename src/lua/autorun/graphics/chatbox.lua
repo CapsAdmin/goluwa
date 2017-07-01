@@ -453,6 +453,8 @@ end
 local old_mouse_trap
 
 function chat.Open(tab)
+	if event.Call("ChatOpen", tab) == false then return end
+
 	tab = tab or "chat"
 	old_mouse_trap = window.GetMouseTrapped()
 

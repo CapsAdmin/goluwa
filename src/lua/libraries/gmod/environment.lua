@@ -121,6 +121,23 @@ function gine.GetMetaTable(name)
 end
 
 runfile("lua/libraries/gmod/libraries/*", gine)
+runfile("lua/libraries/gmod/libraries/"..(CLIENT and "client" or SERVER and "server").."/*", gine)
+
+for meta_name, functions in pairs(data.meta) do
+	local meta = gine.GetMetaTable(meta_name)
+	if functions["Is" .. meta_name] == "C" then
+		meta["Is" .. meta_name] = function()
+			return true
+		end
+	end
+		for meta_name2 in pairs(data.meta) do
+			if meta_name2 ~= meta_name then
+				meta["Is" .. meta_name2] = function()
+					return false
+				end
+			end
+		end
+end
 
 if gine.debug then
 	setmetatable(env)

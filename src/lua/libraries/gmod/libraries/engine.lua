@@ -47,3 +47,5 @@ end
 
 function engine.IsPlayingDemo() return false end
 function engine.IsRecordingDemo() return false end
+
+function engine.LightStyle() end

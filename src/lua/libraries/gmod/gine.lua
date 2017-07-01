@@ -195,21 +195,29 @@ function gine.Initialize(skip_addons)
 			for _, info in ipairs(vfs.disabled_addons) do
 				if info.gmod_addon then
 					vfs.Mount(info.path)
-					vfs.AddModuleDirectory(R(info.path.."/lua/includes/modules/"))
+					local path = R(info.path.."/lua/includes/modules/")
+					if path then
+						vfs.AddModuleDirectory(path)
+					end
 					table.insert(gine.glua_paths, info.path)
 				end
 			end
 
 			for dir in vfs.Iterate(gine.dir .. "addons/", true) do
-				vfs.AddModuleDirectory(R(dir.."/lua/includes/modules/"))
+				local path = R(dir.."/lua/includes/modules/")
+				if path then
+					vfs.AddModuleDirectory(path)
+				end
 			end
 		end
 
 		runfile("lua/includes/init.lua")
 
-		--runfile("lua/includes/init_menu.lua")
-		gine.env.require("notification")
-		runfile("lua/derma/init.lua") -- the gui
+		if CLIENT then
+			--runfile("lua/includes/init_menu.lua")
+			gine.env.require("notification")
+			runfile("lua/derma/init.lua") -- the gui
+		end
 
 		gine.LoadGamemode("base")
 		gine.LoadGamemode("sandbox")
@@ -219,11 +227,12 @@ function gine.Initialize(skip_addons)
 		if CLIENT then runfile(gine.dir .. "/lua/autorun/client/*") end
 		if SERVER then runfile(gine.dir .. "/lua/autorun/server/*") end
 
-
-		runfile("lua/postprocess/*")
-		runfile("lua/vgui/*")
-		runfile("lua/matproxy/*")
-		runfile("lua/skins/*")
+		if CLIENT then
+			runfile("lua/postprocess/*")
+			runfile("lua/vgui/*")
+			runfile("lua/matproxy/*")
+			runfile("lua/skins/*")
+		end
 
 		--gine.env.DCollapsibleCategory.LoadCookies = nil -- DUCT TAPE FIX
 
@@ -231,7 +240,7 @@ function gine.Initialize(skip_addons)
 			vfs.Mount(gine.dir .. "/gamemodes/"..name.."/entities/", "lua/")
 		end
 
-		do
+		if CLIENT then
 			for path in vfs.Iterate("resource/localization/en/", true) do
 				for _, line in ipairs(vfs.Read(path):split("\n")) do
 					local key, val = line:match("(.-)=(.+)")
@@ -241,9 +250,9 @@ function gine.Initialize(skip_addons)
 					end
 				end
 			end
-		end
 
-		gine.LoadFonts()
+			gine.LoadFonts()
+		end
 	end
 end
 
@@ -277,7 +286,10 @@ function gine.Run(skip_addons)
 
 	gine.LoadEntities("lua/entities", "ENT", gine.env.scripted_ents.Register, function() return {} end)
 	gine.LoadEntities("lua/weapons", "SWEP", gine.env.weapons.Register, function() return {Primary = {}, Secondary = {}} end)
-	gine.LoadEntities("lua/effects", "EFFECT", gine.env.effects.Register, function() return {} end)
+
+	if CLIENT then
+		gine.LoadEntities("lua/effects", "EFFECT", gine.env.effects.Register, function() return {} end)
+	end
 
 	gine.env.gamemode.Call("CreateTeams")
 	gine.env.gamemode.Call("PreGamemodeLoaded")
@@ -287,7 +299,7 @@ function gine.Run(skip_addons)
 	gine.env.gamemode.Call("Initialize")
 	gine.env.gamemode.Call("InitPostEntity")
 
-	if CAPS then
+	if CLIENT and CAPS then
 		require("opengl").Disable("GL_SCISSOR_TEST")
 		gine.env.LocalPlayer():SetNWBool("rpg", true)
 
@@ -317,5 +329,9 @@ commands.Add("glua", function(line)
 	setfenv(func, gine.env)
 	print(func())
 end)
+
+if CAPS then
+	event.Delay(0.1, function() commands.RunString("ginit") end)
+end
 
 return gine

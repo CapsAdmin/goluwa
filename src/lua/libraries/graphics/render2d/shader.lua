@@ -136,6 +136,17 @@ end
 
 utility.MakePushPopFunction(render2d, "Texture")
 
+function render2d.SetAlphaTestReference(num)
+	if not num then num = 0 end
+	render2d.shader.alpha_test_ref = num
+end
+
+function render2d.GetAlphaTestReference()
+	return render2d.shader.alpha_test_ref
+end
+
+utility.MakePushPopFunction(render2d, "AlphaTestReference")
+
 function render2d.BindShader()
 	if render2d.shader_override then
 		render2d.shader_override:Bind()

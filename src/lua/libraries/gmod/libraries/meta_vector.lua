@@ -14,9 +14,17 @@ function gine.env.Vector(x, y, z)
 		z = tonumber(z)
 	end
 
-	x = x or 0
-	y = y or 0
-	z = z or 0
+	if type(x) ~= "number" then
+		x = 0
+	end
+
+	if type(y) ~= "number" then
+		y = 0
+	end
+
+	if type(z) ~= "number" then
+		z = 0
+	end
 
 	self.ptr = Vec3(x, y, z)
 

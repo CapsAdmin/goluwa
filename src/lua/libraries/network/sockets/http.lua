@@ -131,10 +131,17 @@ function sockets.Request(info)
 	end
 
 	if info.method == "POST" then
+		local str = info.post_data
+		if type(info.post_data) == "table" then
+			str = ""
+			for k,v in pairs(info.post_data) do
+				str = str .. ("%s: %s\r\n"):format(k, v)
+			end
+		end
 		socket:Send("Content-Type: application/json\r\n")
-		socket:Send(("Content-Length: %i\r\n"):format(#info.post_data))
+		socket:Send(("Content-Length: %i\r\n"):format(#str))
 		socket:Send("\r\n")
-		socket:Send(info.post_data)
+		socket:Send(str)
 	else
 		socket:Send("\r\n")
 	end

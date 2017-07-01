@@ -9,3 +9,7 @@ end
 function game.GetIPAddress()
 	return "0.0.0.0:27015"
 end
+
+function game.IsDedicated()
+	return true
+end

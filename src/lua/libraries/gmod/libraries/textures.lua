@@ -153,31 +153,6 @@ do
 end
 
 do
-	local surface = gine.env.surface
-
-	function surface.GetTextureID(path)
-		if vfs.IsFile("materials/" .. path) then
-			if vfs.IsFile("materials/" .. path .. ".vtf") then
-				return render.CreateTextureFromPath("materials/" .. path)
-			else
-				wlog("texture not found %s", path)
-			end
-		end
-
-		return render.CreateTextureFromPath("materials/" .. path .. ".vtf")
-	end
-
-	function surface.SetMaterial(mat)
-		gine.env.render.SetMaterial(mat)
-	end
-
-	function surface.SetTexture(tex)
-		if tex == 0 then tex = render.GetWhiteTexture() end
-		render2d.SetTexture(tex)
-	end
-end
-
-do
 	local META = gine.GetMetaTable("ITexture")
 
 	function META:Width()
@@ -207,23 +182,58 @@ do
 	end
 end
 
-function gine.env.render.SetMaterial(mat)
-	if not mat then return end
-	mat = mat.__obj
+if CLIENT then
 
-	render2d.SetTexture(mat.vars.basetexture)
+	do
+		local surface = gine.env.surface
 
-	render2d.shader.alpha_test_ref = 0
+		function surface.GetTextureID(path)
+			if vfs.IsFile("materials/" .. path) then
+				if vfs.IsFile("materials/" .. path .. ".vtf") then
+					return render.CreateTextureFromPath("materials/" .. path)
+				else
+					wlog("texture not found %s", path)
+				end
+			end
 
-	if mat.vars.alphatest == 1 then
-		render2d.shader.alpha_test_ref = mat.vars.alphatestreference
+			return render.CreateTextureFromPath("materials/" .. path .. ".vtf")
+		end
+
+		function surface.SetMaterial(mat)
+			gine.env.render.SetMaterial(mat)
+		end
+
+		function surface.SetTexture(tex)
+			if tex == 0 then tex = render.GetWhiteTexture() end
+			render2d.SetTexture(tex)
+		end
 	end
-end
 
-function gine.env.render.MaterialOverride(mat)
-	gine.env.render.SetMaterial(mat)
-end
+	function gine.env.render.SetMaterial(mat)
+		if not mat then return end
+		mat = mat.__obj
 
-function gine.env.render.ModelMaterialOverride(mat)
-	gine.env.render.SetMaterial(mat)
+		render2d.SetTexture(mat.vars.basetexture)
+
+		if mat.vars.alphatest == 1 then
+			render2d.SetAlphaTestReference(mat.vars.alphatestreference)
+		else
+			render2d.SetAlphaTestReference(0)
+		end
+
+		if mat.vars.additive then
+			render.SetPresetBlendMode("additive")
+		else
+			render.SetPresetBlendMode("alpha")
+		end
+	end
+
+	function gine.env.render.MaterialOverride(mat)
+		if mat == 0 then mat = nil end
+		gine.env.render.SetMaterial(mat)
+	end
+
+	function gine.env.render.ModelMaterialOverride(mat)
+		gine.env.render.SetMaterial(mat)
+	end
 end

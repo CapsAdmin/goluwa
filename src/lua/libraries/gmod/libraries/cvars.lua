@@ -23,10 +23,18 @@ end
 
 local META = gine.GetMetaTable("ConVar")
 
+function META:SetBool(val)
+	self.__obj:Set((tonumber(val) and tonumber(val) > 0) and 1 or 0)
+end
+
 function META:GetBool()
 	local val = self.__obj:Get()
 	if tonumber(val) then return tonumber(val) > 0 end
 	return not not val
+end
+
+function META:SetFloat(val)
+	self.__obj:Set(tonumber(val) or 0)
 end
 
 function META:GetFloat()
@@ -43,6 +51,10 @@ end
 
 function META:GetName()
 	return self.__obj:GetName()
+end
+
+function META:SetString(val)
+	self.__obj:Set(tostring(val))
 end
 
 function META:GetString()

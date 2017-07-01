@@ -209,29 +209,30 @@ do
 				self:InvalidateLayout(true)
 				self.gine_layout = nil
 			end
+
+			if obj.draw_manual and not obj.in_paint_manual then return end
+
 			local w, h = obj:GetWidth(), obj:GetHeight()
 
 			render2d.PushScissor(0, 0, w, h)
 
 			local paint_bg = self:Paint(w, h)
 
-			if not obj.draw_manual then
-				if obj.paint_bg and paint_bg ~= nil then
-					render2d.SetTexture()
-					render2d.SetColor(obj.bg_color:Unpack())
-					render2d.DrawRect(0,0,obj.Size.x,obj.Size.y)
-				end
+			if obj.paint_bg and paint_bg ~= nil then
+				render2d.SetTexture()
+				render2d.SetColor(obj.bg_color:Unpack())
+				render2d.DrawRect(0,0,obj.Size.x,obj.Size.y)
+			end
 
-				if class == "label" then
-					if obj.text_internal and obj.text_internal ~= "" then
-						if obj.expensive_shadow_dir then
-							render2d.SetColor(obj.expensive_shadow_color:Unpack())
-							gine.render2d_fonts[obj.font_internal:lower()]:DrawString(obj.text_internal, obj.text_offset.x + obj.expensive_shadow_dir, obj.text_offset.y + obj.expensive_shadow_dir)
-						end
-
-						render2d.SetColor(obj.fg_color:Unpack())
-						gine.render2d_fonts[obj.font_internal:lower()]:DrawString(obj.text_internal, obj.text_offset.x, obj.text_offset.y)
+			if class == "label" then
+				if obj.text_internal and obj.text_internal ~= "" then
+					if obj.expensive_shadow_dir then
+						render2d.SetColor(obj.expensive_shadow_color:Unpack())
+						gine.render2d_fonts[obj.font_internal:lower()]:DrawString(obj.text_internal, obj.text_offset.x + obj.expensive_shadow_dir, obj.text_offset.y + obj.expensive_shadow_dir)
 					end
+
+					render2d.SetColor(obj.fg_color:Unpack())
+					gine.render2d_fonts[obj.font_internal:lower()]:DrawString(obj.text_internal, obj.text_offset.x, obj.text_offset.y)
 				end
 			end
 
@@ -396,6 +397,10 @@ do
 		end
 	end
 
+	function META:SetAutoDelete(b)
+		self.__obj:SetRemoveOnParentRemove(b)
+	end
+
 	function META:GetChildren()
 		local children = {}
 
@@ -477,17 +482,6 @@ do
 
 	function META:DockMargin(left, top, right, bottom)
 		self.__obj:SetPadding(Rect(left, bottom, right, top))
-	end
-
-	local in_drawing
-
-	function META:PaintAt(x,y,w,h)
-	if in_drawing then return end
-	in_drawing = true
-		render2d.PushMatrix(x,y,w,h)
-		self.__obj:OnDraw()
-		render2d.PopMatrix()
-	in_drawing = false
 	end
 
 	function META:SetMouseInputEnabled(b)
@@ -701,10 +695,6 @@ do
 		self.__obj.paint_bg = b
 	end
 
-	function META:PaintManual(b)
-		self.__obj.draw_manual = b
-	end
-
 	function META:SetDrawOnTop(b)
 		self.__obj.draw_ontop = b
 	end
@@ -727,6 +717,7 @@ do
 		function META:MakePopup()
 			self.__obj:BringToFront()
 			self.__obj:RequestFocus()
+			self.__obj:SetIgnoreMouse(false)
 		end
 	end
 
@@ -809,8 +800,32 @@ do
 		return false
 	end
 
-	function META:SetPaintedManually()
+	function META:SetPaintedManually(b)
+		self.__obj.draw_manual = b
+	end
 
+	do
+		local in_drawing
+
+		function META:PaintAt(x,y,w,h)
+			if in_drawing then return end
+			self.__obj.in_paint_manual = true
+			in_drawing = true
+			render2d.PushMatrix(x,y,w,h)
+			self.__obj:OnDraw()
+			render2d.PopMatrix()
+			in_drawing = false
+			self.__obj.in_paint_manual = false
+		end
+
+		function META:PaintManual()
+			if in_drawing then return end
+			self.__obj.in_paint_manual = true
+			in_drawing = true
+			self.__obj:OnDraw()
+			in_drawing = false
+			self.__obj.in_paint_manual = false
+		end
 	end
 
 	function META:AppendText(str)

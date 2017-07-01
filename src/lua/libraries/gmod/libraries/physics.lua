@@ -24,3 +24,19 @@ function gine.env.util.TraceLine(info)
 	return data
 end
 
+gine.env.util.TraceHull = gine.env.util.TraceLine
+
+do
+	local META = gine.GetMetaTable("Entity")
+	function META:SetSolid(b)
+
+	end
+
+	function META:PhysicsInit()
+
+	end
+
+	function META:GetPhysicsObject()
+		return NULL
+	end
+end

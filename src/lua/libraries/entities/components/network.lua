@@ -235,9 +235,9 @@ if NETWORK then
 							end
 						end
 						if self.debug then logf("%s - %s: received %s\n", self, info.component, var) end
-					elseif info.flags == "reliable" then
-						buffer:SetPosition(1)
-						table.insert(self.queued_packets, buffer)
+					--elseif info.flags == "reliable" then
+						--buffer:SetPosition(1)
+						--table.insert(self.queued_packets, buffer)
 					end
 				end
 			else
@@ -266,25 +266,21 @@ if NETWORK then
 				if info.skip_default and var == getmetatable(component)[info.key] then return end
 			end
 
+			if var ~= nil then
+				if force_update or var ~= self.last_var[info.key2] then
+					local buffer = packet.CreateBuffer()
 
-			if force_update or var ~= self.last_var[info.key2] then
-				local buffer = packet.CreateBuffer()
+					buffer:WriteShort(info.id)
+					buffer:WriteShort(self.NetworkId)
+					buffer:WriteType(var, info.type)
 
-				buffer:WriteShort(info.id)
-				buffer:WriteShort(self.NetworkId)
-				buffer:WriteType(var, info.type)
+					if self.debug then logf("%s - %s: sending %s = %s to %s\n", self, info.component, info.key, utility.FormatFileSize(buffer:GetSize()), client) end
 
-				if self.debug then logf("%s - %s: sending %s = %s to %s\n", self, info.component, info.key, utility.FormatFileSize(buffer:GetSize()), client) end
+					packet.Send("ecs_network", buffer, client or info.filter, force_update and "reliable" or info.flags, self.NetworkChannel)
 
-				packet.Send("ecs_network", buffer, client or info.filter, force_update and "reliable" or info.flags, self.NetworkChannel)
-
-				self.last_var[info.key2] = var
+					self.last_var[info.key2] = var
+				end
 			end
-
-			if info.set_name:find("Position") then
-				--print(info.key2)
-			end
-
 
 			self.last_update[info.key2] = system.GetElapsedTime() + info.rate
 		end

@@ -1,28 +1,19 @@
 function gine.env.HTTP(tbl)
-	if tbl.parameters then
-		wlog("NYI parameters")
-		table.print(tbl.parameters)
-	end
-
-	if tbl.headers then
-		wlog("NYI headers")
-		table.print(tbl.headers)
-	end
-
-	if tbl.body then
-		wlog("NYI body")
-		print(tbl.headers)
-	end
+	local tbl = table.copy(tbl)
 
 	if tbl.type then
 		wlog("NYI type")
 		print(tbl.type)
 	end
 
+	tbl.type = tbl.type or "text/plain; charset=utf-8"
+
 	sockets.Request({
 		url = tbl.url,
-		callback = function(data) tbl.success(data.code, data.content, data.header) end,--tbl.success,
+		callback = function(data) tbl.success(data.code, data.content, data.header) end,
 		on_fail = tbl.failed,
 		method = tbl.method:upper(),
+		header = tbl.headers,
+		post_data = tbl.body or tbl.parameters,
 	})
 end

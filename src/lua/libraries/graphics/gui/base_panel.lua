@@ -2421,13 +2421,17 @@ do -- events
 	end
 	]]
 
+	META:GetSet("RemoveOnParentRemove", true)
+
 	function META:OnRemove()
 		self:MarkCacheDirty()
 
 		gui.panels[self] = nil
 
 		for _, v in pairs(self:GetChildrenList()) do
-			v:Remove()
+			if v.RemoveOnParentRemove then
+				v:Remove()
+			end
 		end
 
 		-- this is important!!

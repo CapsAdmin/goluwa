@@ -64,10 +64,6 @@ do
 
 	local META = gine.GetMetaTable("Player")
 
-	function META:IsNPC()
-		return false
-	end
-
 	function META:GetAimVector()
 		return gine.env.EyeVector()
 	end
@@ -80,12 +76,20 @@ do
 		return math.random()
 	end
 
+	function META:SetArmor(num)
+		self.__obj.gine_armor = num
+	end
+
 	function META:Armor()
-		return 50
+		return self.__obj.gine_armor or 0
+	end
+
+	function META:SetTeam(id)
+		self.__obj.gine_team = id
 	end
 
 	function META:Team()
-		return 0
+		return self.__obj.gine_team or 0
 	end
 
 	function META:Frags()
@@ -108,6 +112,10 @@ do
 		return false
 	end
 
+	function META:IsListenServerHost()
+		return false
+	end
+
 	function META:SteamID()
 		return "STEAM_0:1:" .. self:UniqueID()
 	end
@@ -126,17 +134,6 @@ do
 
 	function META:ShouldDrawLocalPlayer()
 		return false
-	end
-
-	function META:GetActiveWeapon()
-		if not self.__obj.gine_weapon then
-			self.__obj.gine_weapon = gine.CreateWeapon()
-		end
-		return gine.WrapObject(self.__obj.gine_weapon, "Weapon")
-	end
-
-	function META:IsPlayer()
-		return true
 	end
 
 	function META:UserID()
@@ -185,17 +182,34 @@ do
 		return false
 	end
 
-	function META:GetInfoNum(key, def)
-		return def or 0
-	end
-
 	function META:KeyDown(key)
 		return gine.env.input.IsKeyDown(key)
 	end
 
-	function META:GetWeapons()
-		return {}
+	function META:SetNoCollideWithTeammates(b) end
+	function META:SetAvoidPlayers(b) end
+
+	function META:GetViewModel()
+		self.__obj.viewmodel = self.__obj.viewmodel or gine.env.ents.Create("predicted_viewmodel")
+		return self.__obj.viewmodel
 	end
+
+	function META:UnSpectate()
+
+	end
+
+	function META:SetPlayerColor()
+
+	end
+
+	gine.GetSet(META, "Hands", NULL)
+
+	gine.GetSet(META, "WalkSpeed", 200)
+	gine.GetSet(META, "RunSpeed", 400)
+	gine.GetSet(META, "CrouchedWalkSpeed", 0.3)
+	gine.GetSet(META, "UnDuckSpeed", 0.1)
+	gine.GetSet(META, "JumpPower", 200)
+	gine.GetSet(META, "DuckSpeed", 0.1)
 end
 
 do

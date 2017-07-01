@@ -663,7 +663,7 @@ do -- automatic
 		local read_functions = {}
 		local write_functions = {}
 
-		for k, v in pairs(self) do
+		for k, v in pairs(META) do
 			if type(k) == "string" then
 				local key = k:match("Read(.+)")
 				if key then
@@ -687,8 +687,8 @@ do -- automatic
 			end
 		end
 
-		self.read_functions = read_functions
-		self.write_functions = write_functions
+		META.read_functions = read_functions
+		META.write_functions = write_functions
 
 		local ids = {}
 
@@ -698,7 +698,7 @@ do -- automatic
 
 		table.sort(ids, function(a, b) return a > b end)
 
-		self.type_ids = ids
+		META.type_ids = ids
 	end
 
 	META:GenerateTypes()
@@ -706,11 +706,11 @@ do -- automatic
 	function META:WriteType(val, t, type_func)
 		t = t or type(val)
 
-		if self.write_functions[t] then
+		if META.write_functions[t] then
 			if t == "table" then
-				return self.write_functions[t](self, val, type_func)
+				return META.write_functions[t](self, val, type_func)
 			else
-				return self.write_functions[t](self, val)
+				return META.write_functions[t](self, val)
 			end
 		end
 
@@ -719,15 +719,15 @@ do -- automatic
 
 	function META:ReadType(t, signed)
 
-		if self.read_functions[t] then
-			return self.read_functions[t](self, signed)
+		if META.read_functions[t] then
+			return META.read_functions[t](self, signed)
 		end
 
 		error("tried to read unknown type " .. t, 2)
 	end
 
 	function META:GetTypeID(val)
-		for k,v in ipairs(self.type_ids) do
+		for k,v in ipairs(META.type_ids) do
 			if v == val then
 				return k
 			end
@@ -735,7 +735,7 @@ do -- automatic
 	end
 
 	function META:GetTypeFromID(id)
-		return self.type_ids[id]
+		return META.type_ids[id]
 	end
 end
 

@@ -74,21 +74,23 @@ for k,v in ipairs(hud_element_list) do
 end
 
 gine.AddEvent("Update", function()
-	local tbl = gine.env.gamemode.Call("CalcView", gine.env.LocalPlayer(), gine.env.EyePos(), gine.env.EyeAngles(), math.deg(camera.camera_3d:GetFOV()), camera.camera_3d:GetNearZ(), camera.camera_3d:GetFarZ())
-	if tbl then
-		if tbl.origin then camera.camera_3d:SetPosition(tbl.origin.v) end
-		if tbl.angles then camera.camera_3d:SetAngles(tbl.angles.v) end
-		if tbl.fov then camera.camera_3d:SetFOV(tbl.fov) end
-		if tbl.znear then camera.camera_3d:SetNearZ(tbl.znear) end
-		if tbl.zfar then camera.camera_3d:SetFarZ(tbl.zfar) end
-		--if tbl.drawviewer then  end
-	end
+	if CLIENT then
+		local tbl = gine.env.gamemode.Call("CalcView", gine.env.LocalPlayer(), gine.env.EyePos(), gine.env.EyeAngles(), math.deg(camera.camera_3d:GetFOV()), camera.camera_3d:GetNearZ(), camera.camera_3d:GetFarZ())
+		if tbl then
+			if tbl.origin then camera.camera_3d:SetPosition(tbl.origin.v) end
+			if tbl.angles then camera.camera_3d:SetAngles(tbl.angles.v) end
+			if tbl.fov then camera.camera_3d:SetFOV(tbl.fov) end
+			if tbl.znear then camera.camera_3d:SetNearZ(tbl.znear) end
+			if tbl.zfar then camera.camera_3d:SetFarZ(tbl.zfar) end
+			--if tbl.drawviewer then  end
+		end
 
-	--gine.env.gamemode.Call("CalcViewModelView", )
-	local frac = gine.env.gamemode.Call("AdjustMouseSensitivity", 0, 90, 90)
-	--gine.env.gamemode.Call("CalcMainActivity", )
-	--gine.env.gamemode.Call("TranslateActivity", )
-	--gine.env.gamemode.Call("UpdateAnimation", )
+		--gine.env.gamemode.Call("CalcViewModelView", )
+		local frac = gine.env.gamemode.Call("AdjustMouseSensitivity", 0, 90, 90)
+		--gine.env.gamemode.Call("CalcMainActivity", )
+		--gine.env.gamemode.Call("TranslateActivity", )
+		--gine.env.gamemode.Call("UpdateAnimation", )
+	end
 
 	gine.env.gamemode.Call("Tick")
 	gine.env.gamemode.Call("Think")
@@ -160,4 +162,10 @@ gine.AddEvent("PostDrawGUI", function()
 	gine.env.gamemode.Call("PostDrawHUD")
 	gine.env.gamemode.Call("DrawOverlay")
 	gine.env.gamemode.Call("PostRenderVGUI")
+end)
+
+gine.AddEvent("ChatOpen", function()
+	if gine.env.gamemode.Call("StartChat", false) ~= nil then
+		return false
+	end
 end)

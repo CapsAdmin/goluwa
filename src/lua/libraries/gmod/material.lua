@@ -759,7 +759,13 @@ do -- vmt object
 			val = tonumber(val)
 		elseif info.type == "texture" then
 			if val == "" or val == "error" then
-				val = render.GetErrorTexture()
+				if CLIENT then
+					val = render.GetErrorTexture()
+				end
+
+				if SERVER then
+					val = "error"
+				end
 			else
 				if not vfs.IsFile(val) then
 					if not val:find(".+%.") then
@@ -777,10 +783,12 @@ do -- vmt object
 					end
 				end
 
-				if key == "basetexture" or key == "basetexture2" then
-					val = render.CreateTextureFromPath("[srgb]" .. val)
-				else
-					val = render.CreateTextureFromPath("[~srgb]" .. val)
+				if CLIENT then
+					if key == "basetexture" or key == "basetexture2" then
+						val = render.CreateTextureFromPath("[srgb]" .. val)
+					else
+						val = render.CreateTextureFromPath("[~srgb]" .. val)
+					end
 				end
 			end
 		elseif info.type == "vec2" then

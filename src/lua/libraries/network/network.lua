@@ -35,7 +35,7 @@ do -- string table
 
 			if not network.IsStarted() then
 				event.Delay(0.1, function() network.AddString(str) end)
-				return
+				return 0
 			end
 
 			-- this is mainly used by the messsage which uses the packet library internally

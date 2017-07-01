@@ -7,7 +7,9 @@ scoreboard.clients = {}
 input.Bind("tab", "+score", function()
 	if not scoreboard.panel:IsValid() then
 		scoreboard.Initialize()
-		scoreboard.AddClient(clients.GetLocalClient())
+		if not network.IsConnected() then
+			scoreboard.AddClient(clients.GetLocalClient())
+		end
 	end
 	scoreboard.panel:SetVisible(true)
 end)
@@ -36,6 +38,10 @@ local scoreboard_title_2 = fonts.CreateFont({
 })
 
 function scoreboard.SetupContainer(id)
+	if not scoreboard.panel:IsValid() then
+		scoreboard.Initialize()
+	end
+
 	if scoreboard.containers[id] then return scoreboard.containers[id] end
 
 	local container = scoreboard.panel:CreatePanel("base")
@@ -328,6 +334,8 @@ event.AddListener("ClientChangedGroup", "scoreboard", function(client, old_group
 end)
 
 if RELOAD then
+	scoreboard.panel:Remove()
+	scoreboard.Initialize()
 	for _, client in ipairs(clients.GetAll()) do
 		scoreboard.AddClient(client)
 	end
