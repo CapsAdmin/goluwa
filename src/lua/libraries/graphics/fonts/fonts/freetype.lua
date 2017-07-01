@@ -275,7 +275,6 @@ function META:Initialize()
 	end
 
 	resource.Download(self.Path, load, function(reason)
-
 		if WINDOWS then
 			local path = vfs.ParsePathVariables("%windir%/fonts/" .. translate_windows_font(self.Path))
 
@@ -284,7 +283,6 @@ function META:Initialize()
 				return
 			end
 		end
-
 
 		if SOCKETS then
 			find_font(self.Path, load, function(reason)
