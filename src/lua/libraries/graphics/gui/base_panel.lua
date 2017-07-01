@@ -1346,6 +1346,7 @@ do -- mouse
 	META:GetSet("AlwaysCalcMouse", false)
 	META:GetSet("AlwaysReceiveMouseInput", false)
 	META:GetSet("SendMouseInputToPanel", NULL)
+	META:GetSet("AllowKeyboardInput", true)
 
 	META:GetSet("MouseHoverTime", 0)
 	META:GetSet("MouseHoverTimeTrigger", 1)
@@ -1608,7 +1609,7 @@ do -- mouse
 	end
 
 	function META:KeyInput(button, press)
-		if self.GreyedOut then return end
+		if self.GreyedOut or not self.AllowKeyboardInput then return end
 
 		local b
 
@@ -1623,6 +1624,7 @@ do -- mouse
 	end
 
 	function META:CharInput(char)
+		if not self.AllowKeyboardInput then return end
 		self:MarkCacheDirty()
 		return self:OnCharInput(char)
 	end
