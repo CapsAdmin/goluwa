@@ -52,10 +52,10 @@ end
 do
 	local cache = {} or utility.CreateWeakTable()
 
-	function gfx.GetTextSize(str)
+	function gfx.GetTextSize(str, font)
 		str = str or "|"
 
-		local font = gfx.GetFont()
+		font = font or gfx.GetFont()
 
 		if cache[font] and cache[font][str] then
 			return cache[font][str][1], cache[font][str][2]
@@ -239,3 +239,21 @@ do -- text wrap
 		return res
 	end
 end
+
+function gfx.DotLimitText(text, w, font)
+	local strw, strh = gfx.GetTextSize(text, font)
+	local dot_w = gfx.GetTextSize(".", font)
+	if strw > w - dot_w then
+		local x = 0
+		for i, char in ipairs(text:utotable()) do
+			if x + (dot_w*3) > w then
+				return text:usub(0, i) .. "..."
+			end
+
+			x = x + gfx.GetTextSize(char, font)
+		end
+	end
+
+	return text
+end
+
