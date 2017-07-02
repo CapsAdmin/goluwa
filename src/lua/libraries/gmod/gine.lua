@@ -339,8 +339,7 @@ end
 
 commands.Add("ginit", function(_, gamemode, skip_addons)
 	if not gamemode then gamemode = "sandbox" end
-	if skip_addons ~= "1" then skip_addons = false end
-
+	if skip_addons ~= 1 then skip_addons = false end
 	gine.Initialize(gamemode, skip_addons)
 	gine.Run(skip_addons)
 end)
@@ -355,7 +354,9 @@ commands.Add("glua", function(line)
 end)
 
 if CAPS then
-	event.Delay(0.1, function() commands.RunString("ginit base") end)
+	event.Delay(0, function()
+		--commands.RunString("ginit base,1")
+	end)
 end
 
 return gine
