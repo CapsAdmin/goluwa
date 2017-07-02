@@ -130,6 +130,8 @@ function gine.IsGLuaPath(path, gmod_dir_only)
 	return false
 end
 
+gine.addons = gine.addons or {}
+
 function gine.Initialize(skip_addons)
 	event.AddListener("PreLoadFile", "glua", function(path)
 		if gine.IsGLuaPath(path, true) and (path:lower():find("garrysmod/garrysmod/lua/", nil, true) or path:lower():find("garrysmod/garrysmod/gamemodes/")) then
@@ -192,14 +194,28 @@ function gine.Initialize(skip_addons)
 		gine.init = true
 
 		if not skip_addons then
+			local function mount(full_path)
+				table.insert(gine.addons, full_path)
+
+				vfs.Mount(full_path)
+				local path = R(full_path.."/lua/includes/modules/")
+				if path then
+					vfs.AddModuleDirectory(path)
+				end
+				table.insert(gine.glua_paths, full_path)
+
+				if vfs.IsDirectory(full_path .. "addons") then
+					for dir in vfs.Iterate(full_path .. "addons/", true) do
+						if vfs.IsDirectory(dir) then
+							mount(dir .. "/")
+						end
+					end
+				end
+			end
+
 			for _, info in ipairs(vfs.disabled_addons) do
 				if info.gmod_addon then
-					vfs.Mount(info.path)
-					local path = R(info.path.."/lua/includes/modules/")
-					if path then
-						vfs.AddModuleDirectory(path)
-					end
-					table.insert(gine.glua_paths, info.path)
+					mount(info.path)
 				end
 			end
 
@@ -257,11 +273,10 @@ function gine.Initialize(skip_addons)
 end
 
 function gine.Run(skip_addons)
+	table.print(gine.addons)
 	if not skip_addons then
-		for _, info in ipairs(vfs.disabled_addons) do
-			if info.gmod_addon then
-				runfile(info.path .. "lua/includes/extensions/*")
-			end
+		for _, path in ipairs(gine.addons) do
+			runfile(path .. "lua/includes/extensions/*")
 		end
 
 		for dir in vfs.Iterate(gine.dir .. "addons/", true, true) do
@@ -269,12 +284,10 @@ function gine.Run(skip_addons)
 			runfile(dir .. "/lua/includes/extensions/*")
 		end
 
-		for _, info in ipairs(vfs.disabled_addons) do
-			if info.gmod_addon then
-				runfile(info.path .. "lua/autorun/*")
-				if CLIENT then runfile(info.path .. "lua/autorun/client/*") end
-				if SERVER then runfile(info.path .. "lua/autorun/server/*") end
-			end
+		for _, path in ipairs(gine.addons) do
+			runfile(path .. "lua/autorun/*")
+			if CLIENT then runfile(path .. "lua/autorun/client/*") end
+			if SERVER then runfile(path .. "lua/autorun/server/*") end
 		end
 
 		for dir in vfs.Iterate(gine.dir .. "addons/", true, true) do
@@ -334,7 +347,7 @@ commands.Add("glua", function(line)
 end)
 
 if CAPS then
-	event.Delay(0.1, function() commands.RunString("ginit") end)
+	--event.Delay(0.1, function() commands.RunString("ginit") end)
 end
 
 return gine

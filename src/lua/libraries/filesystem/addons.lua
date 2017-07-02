@@ -109,6 +109,10 @@ function vfs.MountAddon(path, force)
 
 	vfs.Mount(path)
 
+	if vfs.IsDirectory(path .. "addons") then
+		vfs.MountAddons(path .. "addons/")
+	end
+
 	return true
 end
 
