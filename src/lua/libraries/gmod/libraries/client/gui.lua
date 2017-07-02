@@ -132,6 +132,7 @@ do
 		if class == "textentry" then
 			obj = gui.CreatePanel("text_edit")
 			obj:SetMultiline(false)
+			obj:SetEditable(false)
 		else
 			obj = gui.CreatePanel("base")
 		end
@@ -233,7 +234,11 @@ do
 					local text = obj.text_internal
 					local font = gine.render2d_fonts[obj.font_internal:lower()]
 
-					text = gfx.DotLimitText(text, w, font)
+					if obj.gmod_wrap then
+						text = gfx.WrapString(text, w, font)
+					else
+						text = gfx.DotLimitText(text, w, font)
+					end
 
 					if obj.expensive_shadow_dir then
 						render2d.SetColor(obj.expensive_shadow_color:Unpack())
@@ -503,6 +508,10 @@ do
 
 	function META:SetKeyboardInputEnabled(b)
 		self.__obj:SetAllowKeyboardInput(b)
+
+		if self.__obj.vgui_type == "textentry" then
+			self.__obj:SetEditable(b)
+		end
 	end
 
 	function META:IsKeyboardInputEnabled()
@@ -624,7 +633,11 @@ do
 		local font = gine.render2d_fonts[panel.font_internal:lower()]
 		local text = panel.text_internal or ""
 
-		text = gfx.DotLimitText(text, self:GetWide(), font)
+		if panel.gmod_wrap then
+			text = gfx.WrapString(text, self:GetWide(), font)
+		else
+			text = gfx.DotLimitText(text, self:GetWide(), font)
+		end
 
 		local w, h = font:GetTextSize(text)
 		return w + panel.text_inset.x, h + panel.text_inset.y
@@ -770,7 +783,7 @@ do
 	end
 
 	function META:SetWrap(b)
-		-- text wrap
+		self.__obj.gmod_wrap = b
 	end
 
 	--function META:SetWorldClicker() end

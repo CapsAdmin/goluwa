@@ -217,7 +217,7 @@ do -- text wrap
 
 	local cache = utility.CreateWeakTable()
 
-	function gfx.WrapString(str, max_width)
+	function gfx.WrapString(str, max_width, font)
 		local font = gfx.GetFont()
 
 		if cache[str] and cache[str][max_width] and cache[str][max_width][font] then
@@ -244,9 +244,9 @@ function gfx.DotLimitText(text, w, font)
 	local strw, strh = gfx.GetTextSize(text, font)
 	local dot_w = gfx.GetTextSize(".", font)
 	if strw > w - dot_w then
-		local x = 0
+		local x = dot_w*1
 		for i, char in ipairs(text:utotable()) do
-			if x + (dot_w*3) > w then
+			if x >= w then
 				return text:usub(0, i) .. "..."
 			end
 
