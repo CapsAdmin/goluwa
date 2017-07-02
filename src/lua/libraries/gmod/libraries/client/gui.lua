@@ -443,10 +443,6 @@ do
 		self.__obj.bg_color.a = (a or 0)/255
 	end
 
-	function META:SetVerticalScrollbarEnabled(b)
-
-	end
-
 	function META:CursorPos()
 		return self.__obj:GetMousePosition():Unpack()
 	end
@@ -770,10 +766,6 @@ do
 
 	end
 
-	function META:DrawTextEntryText(text_color, highlight_color, cursor_color)
-
-	end
-
 	function META:DrawFilledRect()
 		gine.env.surface.DrawRect(0,0,self:GetSize())
 	end
@@ -807,25 +799,45 @@ do
 		function META:OpenURL()
 
 		end
+
+		function META:SetHTML()
+
+		end
 	end
 
 	-- edit
 	do
 		function META:GetCaretPos()
-			return 0
+			return self.__obj:GetCaretSubPosition()
 		end
 
 		function META:SetCaretPos(pos)
+			self.__obj:SetCaretSubPosition(pos)
+		end
 
+		function META:GotoTextEnd()
+			self.__obj:SetCaretSubPosition(math.huge)
+		end
+
+		function META:SetVerticalScrollbarEnabled(b)
+
+		end
+
+		function META:AppendText(str)
+			self:SetText(self:GetText() .. str)
+		end
+
+		function META:InsertColorChange(r,g,b)
+			self:SetText(self:GetText() .. ("<color=%s,%s,%s>"):format(r/255, g/255, b/255))
+		end
+
+		function META:DrawTextEntryText(text_color, highlight_color, cursor_color)
+		--	self.__obj.label:OnPostDraw()
 		end
 	end
 
 	function META:HasFocus()
 		return self.__obj:IsFocused()
-	end
-
-	function META:SetHTML()
-
 	end
 
 	function META:IsEnabled()
@@ -869,13 +881,6 @@ do
 		end
 	end
 
-	function META:AppendText(str)
-		self:SetText(self:GetText() .. str)
-	end
-	function META:InsertColorChange(r,g,b)
-		self:SetText(self:GetText() .. ("<color=%s,%s,%s>"):format(r/255, g/255, b/255))
-	end
-
 	function META:SetPlayer(ply)
 		local steamid = ply:SteamID()
 
@@ -901,9 +906,6 @@ do
 
 	end
 
-	function META:GotoTextEnd()
-
-	end
 
 	function META:DoModal()
 		self.__obj:RequestFocus()
