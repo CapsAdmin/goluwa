@@ -1842,10 +1842,9 @@ do -- layout
 						child:MoveRight()
 					elseif cmd == "gmod_fill" then
 						child:CenterSimple()
-						child:MoveUp()
-						child:MoveLeft()
 						child:FillX()
 						child:FillY()
+						child:NoCollide()
 					elseif cmd == "gmod_left" then
 						child:CenterSimple()
 						child:MoveLeft()
@@ -1930,6 +1929,12 @@ do -- layout
 		event.Delay(0, function() self:Layout() end, nil, self) -- FIX ME
 	end
 
+	function META:OnParent()
+		if self.layout_commands then
+			self:SetupLayout(unpack(self.layout_commands))
+		end
+	end
+
 	do -- layout commands
 
 		function META:ResetLayout()
@@ -1966,7 +1971,7 @@ do -- layout
 
 			local left = self:RayCast(Vec2(0, self.Position.y))
 			local right = self:RayCast(Vec2(parent:GetWidth(), self.Position.y))
-			right.x = right.x - left.x + 1
+			right.x = right.x - left.x
 
 			local x = left.x
 			local w = right.x
@@ -1995,7 +2000,7 @@ do -- layout
 
 			local top = self:RayCast(Vec2(self.Position.x, 0))
 			local bottom = self:RayCast(Vec2(self.Position.x, parent:GetHeight()))
-			bottom.y = bottom.y - top.y + 1
+			bottom.y = bottom.y - top.y
 
 			local y = top.y
 			local h = bottom.y
