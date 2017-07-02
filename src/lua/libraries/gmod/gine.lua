@@ -195,6 +195,8 @@ function gine.Initialize(skip_addons)
 
 		if not skip_addons then
 			local function mount(full_path)
+				if full_path:match(".+/(.+)"):startswith("__") then return end
+
 				table.insert(gine.addons, full_path)
 
 				vfs.Mount(full_path)
