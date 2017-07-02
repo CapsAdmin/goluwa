@@ -2083,6 +2083,11 @@ do -- caret
 		return self.caret_pos
 	end
 
+	function META:SetCaretSubPosition(pos)
+		pos = math.clamp(pos + 1, 1, #self.chars)
+		self.caret_pos = self:CaretFromPosition(self.chars[pos].x, self.chars[pos].y)
+	end
+
 	function META:GetCaretSubPosition()
 		local caret = self.caret_pos
 		return self:GetSubPosFromPosition(caret.x, caret.y)

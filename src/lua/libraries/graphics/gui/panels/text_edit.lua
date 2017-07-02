@@ -5,6 +5,7 @@ META:GetSet("CaretColor")
 META:GetSet("SelectionColor")
 META:GetSet("Editable", true)
 META:GetSet("CaretPosition", Vec2(0, 0))
+META:GetSet("CaretSubPosition", 0)
 META:GetSet("Multiline", true)
 
 META:GetSetDelegate("Text", "", "label")
@@ -71,6 +72,14 @@ end
 
 function META:GetCaretPosition()
 	return Vec2(self.label.markup:GetCaretPosition())
+end
+
+function META:SetCaretSubPosition(pos)
+	self.label.markup:SetCaretSubPosition(pos)
+end
+
+function META:GetCaretSubPosition()
+	return self.label.markup:GetCaretSubPosition()
 end
 
 function META:SelectAll()
