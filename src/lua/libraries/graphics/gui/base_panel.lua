@@ -66,8 +66,8 @@ end
 
 function META:SizeToChildrenHeight()
 	self.last_children_size = nil
-	self:SetHeight(math.huge)
-	self:SetHeight(self:GetSizeOfChildren().y + self.Margin:GetHeight())
+	self.Size.y = math.huge
+	self.Size.y = self:GetSizeOfChildren().y + self.Margin:GetHeight()
 	if not math.isvalid(self.Size.y) then self.Size.y = 100 end -- FIX ME
 	self.LayoutSize = self.Size:Copy()
 	self.laid_out_y = true
@@ -75,17 +75,18 @@ end
 
 function META:SizeToChildrenWidth()
 	self.last_children_size = nil
-	self:SetWidth(math.huge)
-	self:SetWidth(self:GetSizeOfChildren().x + self.Margin:GetWidth())
+	self.Size.x = math.huge
+	self.Size.x = self:GetSizeOfChildren().x + self.Margin:GetWidth()
 	if not math.isvalid(self.Size.x) then self.Size.x = 100 end -- FIX ME
 	self.LayoutSize = self.Size:Copy()
 	self.laid_out_x = true
 end
 
 function META:SizeToChildren()
+	self.layout_me = false
 	self.last_children_size = nil
-	self:SetSize(Vec2() + math.huge)
-	self:SetSize(self:GetSizeOfChildren() + self.Margin:GetSize())
+	self.Size = Vec2() + math.huge
+	self.Size = self:GetSizeOfChildren() + self.Margin:GetSize()
 	if not self.Size:IsValid() then self.Size:Set(100, 100) end -- FIX ME
 	self.LayoutSize = self.Size:Copy()
 	self.laid_out_x = true
@@ -1659,7 +1660,7 @@ do -- layout
 			for _, child in ipairs(parent:GetChildren()) do
 				if
 					child ~= self and
-					(child.laid_out_x == nil or child.laid_out_x == true or child.laid_out_y == true) and
+					((child.laid_out_x == nil or child.laid_out_x == true) or (child.laid_out_y == nil or child.laid_out_y == true)) and
 					child.Visible and
 					not child.ThreeDee and
 					not child.IgnoreLayout and
@@ -1846,19 +1847,15 @@ do -- layout
 						child:FillY()
 						child:NoCollide()
 					elseif cmd == "gmod_left" then
-						child:CenterSimple()
 						child:MoveLeft()
 						child:FillY()
 					elseif cmd == "gmod_right" then
-						child:CenterSimple()
 						child:MoveRight()
 						child:FillY()
 					elseif cmd == "gmod_top" then
-						child:CenterSimple()
 						child:MoveUp()
 						child:FillX()
 					elseif cmd == "gmod_bottom" then
-						child:CenterSimple()
 						child:MoveDown()
 						child:FillX()
 					elseif typex(cmd) == "vec2" then
@@ -2103,7 +2100,7 @@ do -- layout
 			end
 
 			self:SetY(math.max(self:GetY(), 1))
-			self:SetY(self:RayCast(Vec2(self.Position.x, 0)).y)
+			self:SetY(self:RayCast(Vec2(self:GetX(), 0)).y)
 
 			self.laid_out_y = true
 		end
@@ -2129,7 +2126,7 @@ do -- layout
 			end
 
 			self:SetY(math.max(self:GetY(), 1))
-			self:SetY(self:RayCast(Vec2(self.Position.x, parent:GetHeight() - self:GetHeight())).y)
+			self:SetY(self:RayCast(Vec2(self:GetX(), parent:GetHeight() - self:GetHeight())).y)
 
 			self.laid_out_y = true
 		end
