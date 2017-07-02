@@ -9,6 +9,7 @@ toolbar.icons = {}
 bordersize = 4
 markersinactivity = false
 outlineinactivity = false
+acandtip.droprest = false
 
 --staticanalyzer.infervalue = true
 --filetree.mousemove = false
@@ -26,14 +27,16 @@ excludelist = {
 	"vlc/",
 	"shell32/",
 	"chromium/",
-	"src/languages/",
-	"src/lua/modules/",
+	"src/lua/build/*/repo/",
 }
 
 binarylist = {
 	"*.md",
+	"*.so",
 	"AUTHORS",
 	"COPYING",
+	"src/saved/",
+	"src/languages/",
 }
 
 

@@ -87,7 +87,7 @@ function PLUGIN:Setup()
 				console.socket:Send(str)
 			end,
 			run_script = function(console, path)
-				console:Print("loading: ", path)
+				console:Print("loading: ", path, "\n")
 				console:run_string("_G.RELOAD = true runfile([["..path.."]]) _G.RELOAD = nil print('script ran successfully')")
 			end,
 			print = function(console, ...)
@@ -245,14 +245,14 @@ function PLUGIN:StartProcess(id)
 	local console = self.consoles[id]
 
 	if self:IsRunning(console.id) then
-		console:print("already started")
+		console:print("already started\n")
 	end
 
 	if console.start then
 		console:start()
 	end
 
-	console:print("launching...")
+	console:print("launching...\n")
 
 	for k,v in pairs(console.env_vars) do
 		v = v:gsub("LUA(%b{})", function(code) return assert(loadstring("local console = ... return " .. code:sub(2, -2)))(console) end)
@@ -303,17 +303,17 @@ function PLUGIN:StopProcess(id)
 
 	if self:IsRunning(console.id) then
 		local pid = self.consoles[id].pid
-		console:print("stopping " .. console.name .. (" (pid: %d) ... "):format(pid))
+		console:print("stopping " .. console.name .. (" (pid: %d) ... \n"):format(pid))
 		if jit.os == "Windows" then
 			os.execute("taskkill /F /T /PID " .. pid)
 		end
 		local ret = wx.wxProcess.Kill(pid, wx.wxSIGKILL, wx.wxKILL_CHILDREN)
 		if ret == wx.wxKILL_OK then
-			console:print(("stopped process (pid: %d)."):format(pid))
+			console:print(("stopped process (pid: %d).\n"):format(pid))
 		elseif ret ~= wx.wxKILL_NO_PROCESS then
 			wx.wxMilliSleep(250)
 			if wx.wxProcess.Exists(pid) then
-				console:print(("unable to stop process (pid: %d), code %d."):format(pid, ret))
+				console:print(("unable to stop process (pid: %d), code %d.\n"):format(pid, ret))
 			end
 		end
 
@@ -647,50 +647,17 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 		out:PositionFromLine(line), out:PositionFromLine(nextMarker)))
 	end
 
-	local currentHistory
-	local function getNextHistoryLine(forward, promptText)
-		local count = out:GetLineCount()
-		if currentHistory == nil then currentHistory = count end
+	local command_history = {}
+	local history_i = 1
 
+	local function getNextHistoryLine(forward)
 		if forward then
-		currentHistory = out:MarkerNext(currentHistory+1, PROMPT_MARKER_VALUE)
-		if currentHistory == wx.wxNOT_FOUND then
-			currentHistory = count
-			return ""
-		end
+			history_i = history_i - 1
 		else
-		currentHistory = out:MarkerPrevious(currentHistory-1, PROMPT_MARKER_VALUE)
-		if currentHistory == wx.wxNOT_FOUND then
-			return ""
-		end
-		end
-		-- need to skip the current prompt line
-		-- or skip repeated commands
-		if currentHistory == getPromptLine()
-		or getInput(currentHistory) == promptText then
-		return getNextHistoryLine(forward, promptText)
-		end
-		return getInput(currentHistory)
-	end
-
-	local function getNextHistoryMatch(promptText)
-		local count = out:GetLineCount()
-		if currentHistory == nil then currentHistory = count end
-
-		local current = currentHistory
-		while true do
-		currentHistory = out:MarkerPrevious(currentHistory-1, PROMPT_MARKER_VALUE)
-		if currentHistory == wx.wxNOT_FOUND then -- restart search from the last item
-			currentHistory = count
-		elseif currentHistory ~= getPromptLine() then -- skip current prompt
-			local input = getInput(currentHistory)
-			if input:find(promptText, 1, true) == 1 then return input end
-		end
-		-- couldn't find anything and made a loop; get out
-		if currentHistory == current then return end
+			history_i = history_i + 1
 		end
 
-		assert(false, "getNextHistoryMatch coudn't find a proper match")
+		return command_history[history_i%#command_history + 1]
 	end
 
 	local function concat(sep, ...)
@@ -749,7 +716,7 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 		-- don't print anything; just mark the line with a prompt mark
 	local DisplayShellPrompt = function (...) out:MarkerAdd(out:GetLineCount()-1, PROMPT_MARKER) end
 
-	function out:Print(...) return DisplayShell(...) end
+	function out:Print(...) return shellPrint(OUTPUT_MARKER, concat("", ...), false) end
 	function out:Write(...) return shellPrint(OUTPUT_MARKER, concat("", ...), false) end
 
 	local function executeShellCode(tx)
@@ -779,8 +746,7 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 				-- if we are not on the caret line, move normally
 				if not caretOnPromptLine() then break end
 
-				local promptText = getPromptText()
-				setPromptText(getNextHistoryLine(false, promptText))
+				setPromptText(getNextHistoryLine(true))
 				return
 			elseif key == wx.WXK_DOWN or key == wx.WXK_NUMPAD_DOWN then
 				-- if we are above the last line, then allow to go down
@@ -791,28 +757,10 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 				-- if we are not on the caret line, move normally
 				if not caretOnPromptLine() then break end
 
-				local promptText = getPromptText()
-				setPromptText(getNextHistoryLine(true, promptText))
+				setPromptText(getNextHistoryLine(false))
 				return
 			elseif key == wx.WXK_TAB then
-				-- if we are above the prompt line, then don't move
-				local promptline = getPromptLine()
-				if out:GetCurrentLine() < promptline then return end
 
-				local promptText = getPromptText()
-				-- save the position in the prompt text to restore
-				local pos = out:GetCurrentPos()
-				local text = promptText:sub(1, positionInLine(promptline))
-				if #text == 0 then return end
-
-				-- find the next match and set the prompt text
-				local match = getNextHistoryMatch(text)
-				if match then
-					setPromptText(match)
-					-- restore the position to make it easier to find the next match
-					out:GotoPos(pos)
-				end
-				return
 			elseif key == wx.WXK_ESCAPE then
 				setPromptText("")
 				return
@@ -832,24 +780,33 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 				or key == wx.WXK_ALT then
 				break
 			elseif key == wx.WXK_RETURN or key == wx.WXK_NUMPAD_ENTER then
-				if not caretOnPromptLine()
-				or out:LineFromPosition(out:GetSelectionStart()) < getPromptLine() then
+				if not caretOnPromptLine() or out:LineFromPosition(out:GetSelectionStart()) < getPromptLine() then
+					out:GotoPos(out:GetLength())
 					return
 				end
 
-			-- allow multiline entry for shift+enter
-			if caretOnPromptLine(true) and event:ShiftDown() then break end
+				-- allow multiline entry for shift+enter
+				if caretOnPromptLine(true) and event:ShiftDown() then break end
 
-			local promptText = getPromptText()
-			if #promptText == 0 then return end -- nothing to execute, exit
+				local promptText = getPromptText()
+
+				if #promptText == 0 then
+					return
+				end
+
 				if promptText == 'clear' then
 					out:Erase()
 				else
+					if command_history[#command_history] ~= promptText then
+						table.insert(command_history, promptText)
+					end
+					history_i = #command_history
+
 					DisplayShellDirect('\n')
 					executeShellCode(promptText)
 				end
-				currentHistory = getPromptLine() -- reset history
-				return -- don't need to do anything else with return
+
+					return -- don't need to do anything else with return
 			elseif event:GetModifiers() == wx.wxMOD_NONE or out:GetSelectedText() == "" then
 				-- move cursor to end if not already there
 				if not caretOnPromptLine() then
