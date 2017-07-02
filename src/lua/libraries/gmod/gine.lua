@@ -132,7 +132,7 @@ end
 
 gine.addons = gine.addons or {}
 
-function gine.Initialize(skip_addons)
+function gine.Initialize(gamemode)
 	event.AddListener("PreLoadFile", "glua", function(path)
 		if gine.IsGLuaPath(path, true) and (path:lower():find("garrysmod/garrysmod/lua/", nil, true) or path:lower():find("garrysmod/garrysmod/gamemodes/")) then
 			local redirect = e.ROOT_FOLDER .. "garrysmod/garrysmod/"
@@ -238,7 +238,10 @@ function gine.Initialize(skip_addons)
 		end
 
 		gine.LoadGamemode("base")
-		gine.LoadGamemode("sandbox")
+
+		if gamemode ~= "base" then
+			gine.LoadGamemode(gamemode)
+		end
 
 		-- autorun lua files
 		runfile(gine.dir .. "/lua/autorun/*")
@@ -275,7 +278,7 @@ function gine.Initialize(skip_addons)
 end
 
 function gine.Run(skip_addons)
-	table.print(gine.addons)
+
 	if not skip_addons then
 		for _, path in ipairs(gine.addons) do
 			runfile(path .. "lua/includes/extensions/*")
@@ -334,9 +337,12 @@ function gine.Run(skip_addons)
 	end
 end
 
-commands.Add("ginit", function(line)
-	gine.Initialize(line == "1")
-	gine.Run(line == "1")
+commands.Add("ginit", function(_, gamemode, skip_addons)
+	if not gamemode then gamemode = "sandbox" end
+	if skip_addons ~= "1" then skip_addons = false end
+
+	gine.Initialize(gamemode, skip_addons)
+	gine.Run(skip_addons)
 end)
 
 commands.Add("glua", function(line)
@@ -349,7 +355,7 @@ commands.Add("glua", function(line)
 end)
 
 if CAPS then
-	--event.Delay(0.1, function() commands.RunString("ginit") end)
+	event.Delay(0.1, function() commands.RunString("ginit base") end)
 end
 
 return gine

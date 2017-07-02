@@ -76,7 +76,13 @@ do
 	local META = gine.GetMetaTable("IMaterial")
 
 	function META:GetColor(x, y)
-		return self:GetTexture("$basetexture"):GetColor(x, y)
+		local tex = self:GetTexture("$basetexture")
+
+		if tex then
+			return tex:GetColor(x, y)
+		end
+
+		return gine.env.Color(0, 0, 0, 0)
 	end
 
 	function META:GetName()
@@ -88,11 +94,23 @@ do
 	end
 
 	function META:Width()
-		return self:GetTexture("$basetexture"):Width()
+		local tex = self:GetTexture("$basetexture")
+
+		if tex then
+			return tex:Width()
+		end
+
+		return 0
 	end
 
 	function META:Height()
-		return self:GetTexture("$basetexture"):Height()
+		local tex = self:GetTexture("$basetexture")
+
+		if tex then
+			return tex:Height()
+		end
+
+		return 0
 	end
 
 	function META:GetKeyValues()

@@ -115,7 +115,7 @@ do
 		if not gine.gui_world:IsValid() then
 			gine.gui_world = gui.CreatePanel("base")
 			gine.gui_world:SetNoDraw(true)
-			gine.gui_world:NoCollide()
+			gine.gui_world:SetIgnoreLayout(true)
 
 			--gine.gui_world:SetIgnoreMouse(true)
 			gine.gui_world.__class = "CGModBase"
@@ -230,13 +230,18 @@ do
 
 			if class == "label" then
 				if obj.text_internal and obj.text_internal ~= "" then
+					local text = obj.text_internal
+					local font = gine.render2d_fonts[obj.font_internal:lower()]
+
+					text = gfx.DotLimitText(text, w, font)
+
 					if obj.expensive_shadow_dir then
 						render2d.SetColor(obj.expensive_shadow_color:Unpack())
-						gine.render2d_fonts[obj.font_internal:lower()]:DrawString(obj.text_internal, obj.text_offset.x + obj.expensive_shadow_dir, obj.text_offset.y + obj.expensive_shadow_dir)
+						font:DrawString(text, obj.text_offset.x + obj.expensive_shadow_dir, obj.text_offset.y + obj.expensive_shadow_dir)
 					end
 
 					render2d.SetColor(obj.fg_color:Unpack())
-					gine.render2d_fonts[obj.font_internal:lower()]:DrawString(obj.text_internal, obj.text_offset.x, obj.text_offset.y)
+					font:DrawString(text, obj.text_offset.x, obj.text_offset.y)
 				end
 			end
 
@@ -555,9 +560,12 @@ do
 
 		function META:SetText(text)
 			if self.__obj.vgui_type == "textentry" then
+				self.__obj.in_layout = true
 				self.__obj:SetText(text)
+				self.__obj.in_layout = false
 			else
 				self.__obj.text_internal = gine.translation2[text] or text
+				self.__obj.label_settext = system.GetFrameNumber()
 			end
 		end
 	end
@@ -606,7 +614,19 @@ do
 	function META:GetTextSize()
 		local panel = self.__obj
 
-		local w, h = gine.render2d_fonts[panel.font_internal:lower()]:GetTextSize(panel.text_internal)
+		-- in gmod the text size isn't correct until next frame
+		if panel.label_settext then
+			if panel.label_settext == system.GetFrameNumber() then
+				return 0, 0
+			end
+			panel.label_settext = nil
+		end
+		local font = gine.render2d_fonts[panel.font_internal:lower()]
+		local text = panel.text_internal or ""
+
+		text = gfx.DotLimitText(text, self:GetWide(), font)
+
+		local w, h = font:GetTextSize(text)
 		return w + panel.text_inset.x, h + panel.text_inset.y
 	end
 
@@ -661,15 +681,15 @@ do
 
 	function META:Dock(enum)
 		if enum == gine.env.FILL then
-			self.__obj:SetupLayout("center_simple", "fill", "no_collide")
+			self.__obj:SetupLayout("gmod_fill")
 		elseif enum == gine.env.LEFT then
-			self.__obj:SetupLayout("center_simple", "left", "fill_y")
+			self.__obj:SetupLayout("gmod_left")
 		elseif enum == gine.env.RIGHT then
-			self.__obj:SetupLayout("center_simple", "right", "fill_y")
+			self.__obj:SetupLayout("gmod_right")
 		elseif enum == gine.env.TOP then
-			self.__obj:SetupLayout("center_simple", "top", "fill_x")
+			self.__obj:SetupLayout("gmod_top")
 		elseif enum == gine.env.BOTTOM then
-			self.__obj:SetupLayout("center_simple", "bottom", "fill_x")
+			self.__obj:SetupLayout("gmod_bottom")
 		elseif enum == gine.env.NODOCK then
 			self.__obj:SetupLayout()
 		end
