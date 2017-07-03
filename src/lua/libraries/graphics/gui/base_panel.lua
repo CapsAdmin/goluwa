@@ -1922,9 +1922,11 @@ do -- layout
 		event.Delay(0, function() self:Layout() end, nil, self) -- FIX ME
 	end
 
-	function META:OnParent()
-		if self.layout_commands then
-			self:SetupLayout(unpack(self.layout_commands))
+	function META:OnParent(parent)
+		if parent ~= self.Parent then
+			if self.layout_commands then
+				self:SetupLayout(unpack(self.layout_commands))
+			end
 		end
 	end
 
