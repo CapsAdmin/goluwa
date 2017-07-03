@@ -218,7 +218,7 @@ do -- text wrap
 	local cache = utility.CreateWeakTable()
 
 	function gfx.WrapString(str, max_width, font)
-		local font = gfx.GetFont()
+		font = font or gfx.GetFont()
 
 		if cache[str] and cache[str][max_width] and cache[str][max_width][font] then
 			return cache[str][max_width][font]
