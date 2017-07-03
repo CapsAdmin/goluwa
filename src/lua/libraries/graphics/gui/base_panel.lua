@@ -269,6 +269,15 @@ do -- drawing
 				self:OnDraw()
 				self:OnPostDraw()
 
+				if self.debug_layout then
+					gfx.SetFont()
+					render2d.SetColor(1, 1, 1, 1)
+					gfx.DrawText("layout count " .. self.layout_count, 0, 0)
+					--render2d.SetTexture()
+					--render2d.SetColor(1,0,0,1)
+					--render2d.DrawRect(self:GetMousePosition().x, self:GetMousePosition().y, 2, 2)
+				end
+
 				if gui.keyboard_selected_panel == self then
 					render.SetPresetBlendMode("additive")
 					render2d.SetColor(1, 1, 1, 0.5)
@@ -2400,14 +2409,6 @@ do -- events
 		render2d.SetTexture(self.Texture)
 
 		self:DrawRect()
-
-		if gui.debug_layout then
-			gfx.SetFont()
-			gfx.DrawText("layout count " .. self.layout_count)
-			--render2d.SetTexture()
-			--render2d.SetColor(1,0,0,1)
-			--render2d.DrawRect(self:GetMousePosition().x, self:GetMousePosition().y, 2, 2)
-		end
 	end
 --[[
 	function META:OnUnParent()
