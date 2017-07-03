@@ -73,7 +73,11 @@ function META:SelectTab(name)
 
 	self:Layout()
 
-	self:OnSelectTab()
+	self:OnSelectTab(name)
+
+	if self.content.OnSelect then
+		self.content:OnSelect()
+	end
 
 	return self.content
 end
