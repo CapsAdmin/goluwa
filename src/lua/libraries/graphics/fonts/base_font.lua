@@ -284,6 +284,7 @@ function META:GetTextSize(str)
 	str = tostring(str)
 
 	local X, Y = 0, self.Size
+	local max_x = 0
 
 	local spacing = self.Spacing
 
@@ -292,6 +293,8 @@ function META:GetTextSize(str)
 
 		if char == "\n" then
 			Y = Y + self.Size
+			max_x = math.max(max_x, X)
+			X = 0
 		elseif char == "\t" then
 			data = self:GetChar(" ")
 			if data then
@@ -313,6 +316,8 @@ function META:GetTextSize(str)
 			X = X + self.Size
 		end
 	end
+
+	if max_x ~= 0 then X = max_x end
 
 	return X * self.Scale.x, Y * self.Scale.y
 end
