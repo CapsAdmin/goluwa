@@ -36,10 +36,18 @@ end
 function META:__tostring()
 	local additional_info = self:__tostring2()
 
-	if self.ClassName ~= self.Type then
-		return ("%s:%s[%p]%s"):format(self.Type, self.ClassName, self, additional_info)
+	if self.Name ~= "" then
+		if self.ClassName ~= self.Type then
+			return ("%s:%s[%s]%s"):format(self.Type, self.ClassName, self.Name, additional_info)
+		else
+			return ("%s[%s]%s"):format(self.Type, self.Name, additional_info)
+		end
 	else
-		return ("%s[%p]%s"):format(self.Type, self, additional_info)
+		if self.ClassName ~= self.Type then
+			return ("%s:%s[%p]%s"):format(self.Type, self.ClassName, self, additional_info)
+		else
+			return ("%s[%p]%s"):format(self.Type, self, additional_info)
+		end
 	end
 end
 
