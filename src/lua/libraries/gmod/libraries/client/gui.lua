@@ -133,6 +133,9 @@ do
 			obj = gui.CreatePanel("text_edit")
 			obj:SetMultiline(false)
 			obj:SetEditable(false)
+			local draw_func = obj.label.OnPostDraw
+			obj.label.DrawTextEntryText = draw_func
+			obj.label.OnPostDraw = function() end
 		else
 			obj = gui.CreatePanel("base")
 		end
@@ -570,7 +573,7 @@ do
 				self.__obj.in_layout = false
 			else
 				self.__obj.text_internal = gine.translation2[text] or text
-				self.__obj.label_settext = system.GetFrameNumber()
+			--	self.__obj.label_settext = system.GetFrameNumber()
 			end
 		end
 	end
@@ -620,12 +623,13 @@ do
 		local panel = self.__obj
 
 		-- in gmod the text size isn't correct until next frame
-		if panel.label_settext then
+		--[[if panel.label_settext then
 			if panel.label_settext == system.GetFrameNumber() then
 				return 0, 0
 			end
 			panel.label_settext = nil
-		end
+		end]]
+
 		local font = gine.render2d_fonts[panel.font_internal:lower()]
 		local text = panel.text_internal or ""
 
@@ -636,6 +640,7 @@ do
 		end
 
 		local w, h = font:GetTextSize(text)
+
 		return w + panel.text_inset.x, h + panel.text_inset.y
 	end
 
@@ -832,7 +837,7 @@ do
 		end
 
 		function META:DrawTextEntryText(text_color, highlight_color, cursor_color)
-		--	self.__obj.label:OnPostDraw()
+			self.__obj.label:DrawTextEntryText()
 		end
 	end
 

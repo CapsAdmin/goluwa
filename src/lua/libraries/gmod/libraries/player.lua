@@ -214,6 +214,7 @@ do
 	gine.GetSet(META, "UnDuckSpeed", 0.1)
 	gine.GetSet(META, "JumpPower", 200)
 	gine.GetSet(META, "DuckSpeed", 0.1)
+	gine.GetSet(META, "FOV", 90)
 end
 
 do

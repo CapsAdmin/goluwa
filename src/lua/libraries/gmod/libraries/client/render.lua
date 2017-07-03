@@ -197,3 +197,9 @@ end
 
 function render.PushFlashlightMode() end
 function render.PopFlashlightMode() end
+
+function render.FogMode() end
+function render.FogStart() end
+function render.FogEnd() end
+function render.FogColor() end
+function render.FogMaxDensity() end
