@@ -269,14 +269,7 @@ do -- drawing
 				self:OnDraw()
 				self:OnPostDraw()
 
-				if self.debug_layout then
-					gfx.SetFont()
-					render2d.SetColor(1, 1, 1, 1)
-					gfx.DrawText("layout count " .. self.layout_count, 0, 0)
-					--render2d.SetTexture()
-					--render2d.SetColor(1,0,0,1)
-					--render2d.DrawRect(self:GetMousePosition().x, self:GetMousePosition().y, 2, 2)
-				end
+				self:DrawDebug()
 
 				if gui.keyboard_selected_panel == self then
 					render.SetPresetBlendMode("additive")
@@ -333,33 +326,47 @@ do -- drawing
 			--render.PopViewport()
 		end
 
+		if self.ThreeDee then render2d.End3D2D() end
+
+		if self.GreyedOut then render2d.PopHSV() end
+		render2d.PopAlphaMultiplier()
+	end
+
+	function META:DrawDebug()
 		if self.debug_flash and self.debug_flash > system.GetElapsedTime() then
 			render2d.SetColor(1,0,0,(system.GetElapsedTime()*4)%1 > 0.5 and 0.5 or 0)
 			render2d.DrawRect(0, 0, self.Size.x, self.Size.y)
 		end
 
 		if gui.debug then
+
+			if self.debug_layout then
+				gfx.SetFont()
+				render2d.SetColor(1, 1, 1, 1)
+				gfx.DrawText("layout count " .. self.layout_count, 0, 0)
+				--render2d.SetTexture()
+				--render2d.SetColor(1,0,0,1)
+				--render2d.DrawRect(self:GetMousePosition().x, self:GetMousePosition().y, 2, 2)
+			end
+
 			if self.updated_layout then
+				render2d.SetAlphaMultiplier(1)
 				render.SetPresetBlendMode("additive")
 				render2d.SetColor(1, 0, 0, 0.1)
-				render2d.SetWhiteTexture(self.cache_texture)
-				render2d.DrawRect(self.RealScroll.x, self.RealScroll.y, self.Size.x, self.Size.y)
+				render2d.SetTexture()
+				render2d.DrawRect(0,0, self.Size.x, self.Size.y)
 				self.updated_layout = false
 				render.SetPresetBlendMode("alpha")
 			else
 				if self.updated_cache then
+					render2d.SetAlphaMultiplier(1)
 					render2d.SetColor(0, 1, 0, 0.1)
-					render2d.SetWhiteTexture(self.cache_texture)
+					render2d.SetTexture()
 					render2d.DrawRect(0, 0, self.Size.x, self.Size.y)
 					self.updated_cache = false
 				end
 			end
 		end
-
-		if self.ThreeDee then render2d.End3D2D() end
-
-		if self.GreyedOut then render2d.PopHSV() end
-		render2d.PopAlphaMultiplier()
 	end
 
 	function META:DrawRect(x, y, w, h)
@@ -1673,7 +1680,6 @@ do -- layout
 					b.Visible and
 					not b.ThreeDee and
 					not b.IgnoreLayout and
-					not b.layout_collide2 and
 					(self.CollisionGroup == "none" or self.CollisionGroup == b.CollisionGroup)
 				then
 					local b_lft, b_top, b_rgt, b_btm = b:GetWorldRectFast()
@@ -1684,10 +1690,10 @@ do -- layout
 						(b_rgt > a_rgt and b_lft < a_rgt) or
 						(b_rgt > a_lft and b_lft < a_lft)
 					then
-						if dir.y > 0 and b_top > a_top then
+						if dir.y > 0 and b_top > a_top and not b.nocollide_up then
 							found[i] = {child = b, point = b_top}
 							i = i + 1
-						elseif dir.y < 0 and b_btm < a_btm then
+						elseif dir.y < 0 and b_btm < a_btm and not b.nocollide_down then
 							found[i] = {child = b, point = b_btm}
 							i = i + 1
 						end
@@ -1700,10 +1706,10 @@ do -- layout
 						(b_btm > a_top and b_top < a_top)
 
 					then
-						if dir.x > 0 and b_rgt > a_rgt then
+						if dir.x > 0 and b_rgt > a_rgt and not b.nocollide_left then
 							found[i] = {child = b, point = b_lft}
 							i = i + 1
-						elseif dir.x < 0 and b_lft < a_lft then
+						elseif dir.x < 0 and b_lft < a_lft and not b.nocollide_right then
 							found[i] = {child = b, point = b_rgt}
 							i = i + 1
 						end
@@ -1778,6 +1784,7 @@ do -- layout
 				end
 				child.laid_out_x = false
 				child.laid_out_y = false
+				child:Confine()
 			end
 		end
 
@@ -1790,8 +1797,6 @@ do -- layout
 						end
 					elseif cmd == "collide" then
 						child:Collide()
-					elseif cmd == "no_collide" then
-						child:NoCollide2()
 					elseif cmd == "size_to_children_width" then
 						child:SizeToChildrenWidth()
 					elseif cmd == "size_to_children_height" then
@@ -1843,17 +1848,25 @@ do -- layout
 						child:FillY()
 						child:NoCollide()
 					elseif cmd == "gmod_left" then
+						child:CenterYSimple()
 						child:MoveLeft()
 						child:FillY()
+						child:NoCollide("left")
 					elseif cmd == "gmod_right" then
+						child:CenterYSimple()
 						child:MoveRight()
 						child:FillY()
+						child:NoCollide("right")
 					elseif cmd == "gmod_top" then
+						child:CenterXSimple()
 						child:MoveUp()
 						child:FillX()
+						child:NoCollide("up")
 					elseif cmd == "gmod_bottom" then
+						child:CenterXSimple()
 						child:MoveDown()
 						child:FillX()
+						child:NoCollide("down")
 					elseif typex(cmd) == "vec2" then
 						child:SetSize(cmd:Copy())
 					end
@@ -1871,6 +1884,7 @@ do -- layout
 			self.in_layout = false
 
 			self:ExecuteLayoutCommands()
+
 			if self.Stack then
 				local size = self:StackChildren()
 				if self.StackSizeToChildren then
@@ -1889,11 +1903,11 @@ do -- layout
 
 			self:MarkCacheDirty()
 
-			self.layout_me = false
-
 			self.in_layout = true
 			self:OnPostLayout()
 			self.in_layout = false
+
+			self.layout_me = false
 		else
 			self.layout_me = true
 		end
@@ -1919,7 +1933,7 @@ do -- layout
 			self.LayoutSize = nil
 		end
 
-		event.Delay(0, function() self:Layout() end, nil, self) -- FIX ME
+		--event.Delay(0, function() self:Layout() end, nil, self) -- FIX ME
 	end
 
 	function META:OnParent(parent)
@@ -1949,14 +1963,18 @@ do -- layout
 
 		function META:Collide()
 			self.layout_collide = true
+			self.nocollide_up = false
+			self.nocollide_down = false
+			self.nocollide_left = false
+			self.nocollide_right = false
 		end
 
-		function META:NoCollide()
-			self.layout_collide = false
-		end
-
-		function META:NoCollide2()
-			self.layout_collide2 = true
+		function META:NoCollide(dir)
+			if dir then
+				self["nocollide_" .. dir] = true
+			else
+				self.layout_collide = false
+			end
 		end
 
 		function META:FillX(percent)

@@ -352,6 +352,7 @@ end
 
 function gui.CreateWorld()
 	local world = gui.CreatePanel("base")
+	world:SetName("gui world")
 	world:UnParent()
 	world:SetPosition(Vec2(0, 0))
 	world:SetSize(Vec2(window.GetSize()))
