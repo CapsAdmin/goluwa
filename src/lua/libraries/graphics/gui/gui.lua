@@ -72,10 +72,7 @@ function gui.Panic()
 	gui.Initialize()
 end
 
-function gui.GetHoveringPanel(panel, filter)
-	panel = panel or gui.world
-	local children = panel:GetChildren()
-
+local function try(children, filter)
 	for i = #children, 1, -1 do
 		local panel = children[i]
 		if panel.Visible and not panel.IgnoreMouse and panel.mouse_over and (not filter or panel ~= filter) then
@@ -93,6 +90,25 @@ function gui.GetHoveringPanel(panel, filter)
 
 			return panel
 		end
+	end
+end
+
+function gui.GetHoveringPanel(panel, filter)
+	panel = panel or gui.world
+	local children = panel:GetChildren()
+
+	local ordered = {}
+
+	for i, pnl in ipairs(children) do
+		ordered[i] = pnl
+	end
+
+	table.sort(ordered, function(a, b) return a.MouseZPos > b.MouseZPos end)
+
+	local found = try(ordered, filter) or try(children, filter)
+
+	if found then
+		return found
 	end
 
 	--[[if panel.IgnoreMouse then

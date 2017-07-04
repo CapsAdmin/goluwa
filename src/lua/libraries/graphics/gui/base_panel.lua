@@ -20,7 +20,8 @@ META:GetSet("VisibilityPanel", NULL)
 META:GetSet("NoDraw", false)
 META:GetSet("GreyedOut", false)
 META:GetSet("UpdateRate", 1/33)
-META:GetSet("ChildOrder", 0)
+META:GetSet("MouseZPos", 0)
+
 
 function META:CreatePanel(name, store_in_self)
 	return gui.CreatePanel(name, self, store_in_self)
@@ -131,55 +132,69 @@ function META:IsInsideParent()
 end
 
 do -- focus
-	function META:BringToFront()
-		if self.RedirectFocus:IsValid() then
-			return self.RedirectFocus:BringToFront()
+	do -- child order
+		META:GetSet("ChildOrder", 0)
+
+		function META:BringToFront()
+			if self.RedirectFocus:IsValid() then
+				return self.RedirectFocus:BringToFront()
+			end
+
+			local parent = self:GetParent()
+
+			if parent:IsValid() then
+				self:UnParent()
+				parent:AddChild(self)
+			end
 		end
 
-		local parent = self:GetParent()
+		function META:SendToBack()
+			local parent = self:GetParent()
 
-		if parent:IsValid() then
-			self:UnParent()
-			parent:AddChild(self)
-		end
-	end
-
-	function META:SendToBack()
-		local parent = self:GetParent()
-
-		if parent:IsValid() then
-			self:UnParent()
-			parent:AddChild(self, 1)
-		end
-	end
-
-	function META:RequestFocus()
-		if self.RedirectFocus:IsValid() then
-			self = self.RedirectFocus
+			if parent:IsValid() then
+				self:UnParent()
+				parent:AddChild(self, 1)
+			end
 		end
 
-		if gui.focus_panel:IsValid() and gui.focus_panel ~= self then
-			gui.focus_panel:OnUnfocus()
-		end
+		function META:SetChildOrder(pos)
+			self.ChildOrder = pos
 
-		self:OnFocus()
-
-		gui.focus_panel = self
-	end
-
-	function META:Unfocus()
-		if self.RedirectFocus:IsValid() then
-			self = self.RedirectFocus
-		end
-
-		if gui.focus_panel:IsValid() and gui.focus_panel == self then
-			self:OnUnfocus()
-			gui.focus_panel = NULL
+			if self:HasParent() then
+				table.sort(self.Parent.Children, function(a, b) return a.ChildOrder > b.ChildOrder end)
+			end
 		end
 	end
 
-	function META:IsFocused()
-		return gui.focus_panel == self
+	do -- focus
+		function META:RequestFocus()
+			if self.RedirectFocus:IsValid() then
+				self = self.RedirectFocus
+			end
+
+			if gui.focus_panel:IsValid() and gui.focus_panel ~= self then
+				gui.focus_panel:OnUnfocus()
+			end
+
+			self:OnFocus()
+
+			gui.focus_panel = self
+		end
+
+		function META:Unfocus()
+			if self.RedirectFocus:IsValid() then
+				self = self.RedirectFocus
+			end
+
+			if gui.focus_panel:IsValid() and gui.focus_panel == self then
+				self:OnUnfocus()
+				gui.focus_panel = NULL
+			end
+		end
+
+		function META:IsFocused()
+			return gui.focus_panel == self
+		end
 	end
 end
 
@@ -334,6 +349,7 @@ do -- drawing
 
 	function META:DrawDebug()
 		if self.debug_flash and self.debug_flash > system.GetElapsedTime() then
+			render2d.SetTexture()
 			render2d.SetColor(1,0,0,(system.GetElapsedTime()*4)%1 > 0.5 and 0.5 or 0)
 			render2d.DrawRect(0, 0, self.Size.x, self.Size.y)
 		end
@@ -651,14 +667,6 @@ do -- orientation
 	function META:Center()
 		self:CenterY()
 		self:CenterX()
-	end
-
-	function META:SetChildOrder(pos)
-		self.ChildOrder = pos
-
-		if self:HasParent() then
-			table.sort(self.Parent.Children, function(a, b) return a.ChildOrder > b.ChildOrder end)
-		end
 	end
 end
 
@@ -1665,70 +1673,67 @@ do -- layout
 
 		local dir = stop_pos - start_pos
 
-		local found
+		local found = {}
+		local i = 1
 
-		if self.layout_collide then
-			found = {}
-			local i = 1
+		local a_lft, a_top, a_rgt, a_btm = self:GetWorldRectFast()
 
-			local a_lft, a_top, a_rgt, a_btm = self:GetWorldRectFast()
+		for _, b in ipairs(parent:GetChildren()) do
+			if
+				b ~= self and
+				not b.nocollide and
+				((b.laid_out_x == nil or b.laid_out_x == true) or (b.laid_out_y == nil or b.laid_out_y == true)) and
+				b.Visible and
+				not b.ThreeDee and
+				not b.IgnoreLayout and
+				(self.CollisionGroup == "none" or self.CollisionGroup == b.CollisionGroup)
+			then
+				local b_lft, b_top, b_rgt, b_btm = b:GetWorldRectFast()
 
-			for _, b in ipairs(parent:GetChildren()) do
 				if
-					b ~= self and
-					((b.laid_out_x == nil or b.laid_out_x == true) or (b.laid_out_y == nil or b.laid_out_y == true)) and
-					b.Visible and
-					not b.ThreeDee and
-					not b.IgnoreLayout and
-					(self.CollisionGroup == "none" or self.CollisionGroup == b.CollisionGroup)
+					(b_lft <= a_lft and b_rgt >= a_rgt) or
+					(b_lft >= a_lft and b_rgt <= a_rgt) or
+					(b_rgt > a_rgt and b_lft < a_rgt) or
+					(b_rgt > a_lft and b_lft < a_lft)
 				then
-					local b_lft, b_top, b_rgt, b_btm = b:GetWorldRectFast()
-
-					if
-						(b_lft <= a_lft and b_rgt >= a_rgt) or
-						(b_lft >= a_lft and b_rgt <= a_rgt) or
-						(b_rgt > a_rgt and b_lft < a_rgt) or
-						(b_rgt > a_lft and b_lft < a_lft)
-					then
-						if dir.y > 0 and b_top > a_top and not b.nocollide_up then
-							found[i] = {child = b, point = b_top}
-							i = i + 1
-						elseif dir.y < 0 and b_btm < a_btm and not b.nocollide_down then
-							found[i] = {child = b, point = b_btm}
-							i = i + 1
-						end
+					if dir.y > 0 and b_top > a_top and not b.nocollide_up then
+						found[i] = {child = b, point = b_top}
+						i = i + 1
+					elseif dir.y < 0 and b_btm < a_btm and not b.nocollide_down then
+						found[i] = {child = b, point = b_btm}
+						i = i + 1
 					end
+				end
 
-					if
-						(b_top <= a_top and b_btm >= a_btm) or
-						(b_top >= a_top and b_btm <= a_btm) or
-						(b_btm > a_btm and b_top < a_btm) or
-						(b_btm > a_top and b_top < a_top)
+				if
+					(b_top <= a_top and b_btm >= a_btm) or
+					(b_top >= a_top and b_btm <= a_btm) or
+					(b_btm > a_btm and b_top < a_btm) or
+					(b_btm > a_top and b_top < a_top)
 
-					then
-						if dir.x > 0 and b_rgt > a_rgt and not b.nocollide_left then
-							found[i] = {child = b, point = b_lft}
-							i = i + 1
-						elseif dir.x < 0 and b_lft < a_lft and not b.nocollide_right then
-							found[i] = {child = b, point = b_rgt}
-							i = i + 1
-						end
+				then
+					if dir.x > 0 and b_rgt > a_rgt and not b.nocollide_left then
+						found[i] = {child = b, point = b_lft}
+						i = i + 1
+					elseif dir.x < 0 and b_lft < a_lft and not b.nocollide_right then
+						found[i] = {child = b, point = b_rgt}
+						i = i + 1
 					end
 				end
 			end
-
-			if dir.y > 0 then
-				origin = a_btm
-			elseif dir.y < 0 then
-				origin = a_top
-			elseif dir.x > 0 then
-				origin = a_rgt
-			elseif dir.x < 0 then
-				origin = a_lft
-			end
-
-			table.sort(found, sort)
 		end
+
+		if dir.y > 0 then
+			origin = a_btm
+		elseif dir.y < 0 then
+			origin = a_top
+		elseif dir.x > 0 then
+			origin = a_rgt
+		elseif dir.x < 0 then
+			origin = a_lft
+		end
+
+		table.sort(found, sort)
 
 		local hit_pos = stop_pos
 
@@ -1842,11 +1847,6 @@ do -- layout
 						child:MoveDown()
 					elseif cmd == "right" then
 						child:MoveRight()
-					elseif cmd == "gmod_fill" then
-						child:CenterSimple()
-						child:FillX()
-						child:FillY()
-						child:NoCollide()
 					elseif cmd == "gmod_left" then
 						child:CenterYSimple()
 						child:MoveLeft()
@@ -1869,6 +1869,19 @@ do -- layout
 						child:NoCollide("down")
 					elseif typex(cmd) == "vec2" then
 						child:SetSize(cmd:Copy())
+					end
+				end
+			end
+		end
+
+		for _, child in ipairs(self:GetChildren()) do
+			if child.layout_commands then
+				for _, cmd in ipairs(child.layout_commands) do
+					if cmd == "gmod_fill" then
+						child:CenterSimple()
+						child:FillX()
+						child:FillY()
+						child:NoCollide()
 					end
 				end
 			end
@@ -1959,10 +1972,8 @@ do -- layout
 			end
 		end
 
-		META.layout_collide = true
-
 		function META:Collide()
-			self.layout_collide = true
+			self.nocollide = false
 			self.nocollide_up = false
 			self.nocollide_down = false
 			self.nocollide_left = false
@@ -1973,7 +1984,7 @@ do -- layout
 			if dir then
 				self["nocollide_" .. dir] = true
 			else
-				self.layout_collide = false
+				self.nocollide = true
 			end
 		end
 
