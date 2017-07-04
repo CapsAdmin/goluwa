@@ -409,6 +409,7 @@ do
 	function META:SetParent(panel)
 		if panel and panel:IsValid() and panel.__obj and panel.__obj:IsValid() then
 			self.__obj:SetParent(panel.__obj)
+			panel.__obj:BringToFront()
 		else
 			self.__obj:SetParent(gine.gui_world)
 		end
@@ -612,7 +613,10 @@ do
 		local panel = self.__obj
 
 		if panel.vgui_type == "label" then
-			return self:GetTextSize()
+			self.get_content_size = true
+			local w,h = self:GetTextSize()
+			self.get_content_size = false
+			return w,h
 		end
 
 
@@ -633,10 +637,12 @@ do
 		local font = gine.render2d_fonts[panel.font_internal:lower()]
 		local text = panel.text_internal or ""
 
-		if panel.gmod_wrap then
-			text = gfx.WrapString(text, self:GetWide(), font)
-		else
-			text = gfx.DotLimitText(text, self:GetWide(), font)
+		if not self.get_content_size then
+			if panel.gmod_wrap then
+				text = gfx.WrapString(text, self:GetWide(), font)
+			else
+				text = gfx.DotLimitText(text, self:GetWide(), font)
+			end
 		end
 
 		local w, h = font:GetTextSize(text)
@@ -647,10 +653,10 @@ do
 	function META:SizeToContents()
 		local panel = self.__obj
 
-		local w, h = self:GetContentSize()
-
 		if panel.vgui_type == "label" or self.__obj.vgui_type == "textentry" then
-			panel:Layout(true)
+			local w, h = self:GetContentSize()
+
+			--panel:Layout(true)
 			panel:SetSize(Vec2(panel.text_inset.x + panel.Margin.x + w, panel.text_inset.y + panel.Margin.y + h))
 			panel.LayoutSize = panel:GetSize():Copy()
 		end
@@ -743,7 +749,7 @@ do
 
 	do -- z pos stuff
 		function META:SetZPos(pos)
-			--self.__obj:SetChildOrder(pos)
+			self.__obj:SetMouseZPos(pos)
 		end
 
 		function META:MoveToBack()
