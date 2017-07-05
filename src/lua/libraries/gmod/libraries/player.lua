@@ -93,7 +93,7 @@ do
 	end
 
 	function META:Team()
-		return self.__obj.gine_team or 0
+		return self.__obj.gine_team or gine.env.TEAM_SPECTATOR
 	end
 
 	function META:Frags()

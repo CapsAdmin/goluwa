@@ -90,7 +90,7 @@ do
 	end
 
 	function META:GetShader()
-		return self.__obj.shader
+		return self.__obj.shader or "vertexlitgeneric"
 	end
 
 	function META:Width()

@@ -96,6 +96,7 @@ do
 	gine.gui_world = gine.gui_world or NULL
 
 	local function hook(obj, func_name, callback)
+		--print(obj, func_name, callback)
 		local old = obj[func_name]
 		if not old then
 			obj[func_name] = callback
@@ -141,6 +142,8 @@ do
 		end
 
 		local self = gine.WrapObject(obj, "Panel")
+
+		obj:SetName("gmod_" .. name)
 
 		obj.gine_pnl = self
 		self.__class = class
@@ -194,24 +197,6 @@ do
 		function self:StatusChanged() end
 		function self:Think() end
 
-		hook(obj, "OnChildAdd", function(_, child)
-			if obj.gine_prepared then
-				child = gine.WrapObject(child, "Panel")
-				if child.__obj.gine_prepared then
-					self:OnChildAdded(child)
-				end
-			end
-		end)
-
-		hook(obj, "OnChildRemove", function(_, child)
-			if obj.gine_prepared then
-				child = gine.WrapObject(child, "Panel")
-				if child.__obj.gine_prepared then
-					self:OnChildRemoved(child)
-				end
-			end
-		end)
-
 		obj.OnDraw = function()
 			if self.gine_layout then
 				self:InvalidateLayout(true)
@@ -264,8 +249,6 @@ do
 		hook(obj, "OnMouseMove", function(_, x, y) self:OnCursorMoved(x, y) end)
 		hook(obj, "OnMouseEnter", function() self:OnCursorEntered() end)
 		hook(obj, "OnMouseExit", function() self:OnCursorExited() end)
-
-		-- OnChildAdd and such doesn't seem to be called in Init
 
 		hook(obj, "OnPostLayout", function()
 			local panel = obj
@@ -348,7 +331,9 @@ do
 
 			return false
 		end
-	---debug.trace()
+
+		obj.name_prepare = name
+
 		return self
 	end
 
@@ -359,6 +344,25 @@ do
 	end
 
 	local META = gine.GetMetaTable("Panel")
+
+	function META:Prepare()
+		if self.__obj.name_prepare ~= self.ClassName then return end
+		if self.__obj.gine_prepared then return end
+
+		self.__obj.gine_prepared = true
+
+		if self.__obj.gine_prepare_layout then
+			self:InvalidateLayout()
+		end
+
+		hook(self.__obj, "OnChildAdd", function(_, child)
+			self:OnChildAdded(gine.WrapObject(child, "Panel"))
+		end)
+
+		hook(self.__obj, "OnChildRemove", function(_, child)
+			self:OnChildRemoved(gine.WrapObject(child, "Panel"))
+		end)
+	end
 
 	function META:IsMarkedForDeletion()
 		return self.__obj.marked_for_deletion
@@ -409,7 +413,6 @@ do
 	function META:SetParent(panel)
 		if panel and panel:IsValid() and panel.__obj and panel.__obj:IsValid() then
 			self.__obj:SetParent(panel.__obj)
-			panel.__obj:BringToFront()
 		else
 			self.__obj:SetParent(gine.gui_world)
 		end
@@ -732,12 +735,6 @@ do
 		self.__obj.expensive_shadow_dir = dir
 		self.__obj.expensive_shadow_color = ColorBytes(color.r, color.g, color.b, color.a)
 	end
-	function META:Prepare()
-		self.__obj.gine_prepared = true
-		if self.__obj.gine_prepare_layout then
-			self:InvalidateLayout()
-		end
-	end
 	function META:SetPaintBorderEnabled() end
 	function META:SetPaintBackgroundEnabled(b)
 		self.__obj.paint_bg = b
@@ -749,7 +746,7 @@ do
 
 	do -- z pos stuff
 		function META:SetZPos(pos)
-			self.__obj:SetMouseZPos(pos)
+			self.__obj:SetChildOrder(pos)
 		end
 
 		function META:MoveToBack()

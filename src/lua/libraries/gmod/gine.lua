@@ -138,13 +138,15 @@ function gine.Initialize(gamemode)
 			local redirect = e.ROOT_FOLDER .. "garrysmod/garrysmod/"
 			if vfs.IsDirectory(redirect) then
 				local new_path = path:lower():gsub("^(.-garrysmod/garrysmod/)", redirect)
-				if new_path:lower() ~= path:lower() then
+				if new_path:lower() ~= path:lower() and vfs.IsFile(new_path) then
 					return new_path
 				end
 			end
 
-			return event.destroy_tag
+			return
 		end
+
+		return event.destroy_tag
 	end)
 
 	event.AddListener("PreLoadString", "glua_preprocess", function(code, path)
