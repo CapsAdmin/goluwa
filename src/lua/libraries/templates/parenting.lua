@@ -49,7 +49,12 @@ function META:AddChild(obj, pos)
 	obj.parent_list = nil
 
 	obj:OnParent(self)
-	self:OnChildAdd(obj)
+
+	if not obj.suppress_child_add then
+		obj.suppress_child_add = true
+		self:OnChildAdd(obj)
+		obj.suppress_child_add = nil
+	end
 
 	return true
 end

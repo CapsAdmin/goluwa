@@ -37,14 +37,13 @@ end
 
 function META:GetSizeOfChildren()
 
+	if #self.Children == 0 then return self:GetSize() end
+
 	if self.last_children_size then
 		return self.last_children_size
 	end
 
-	for _, child in ipairs(self:GetChildren()) do
-		child:Layout(true)
-	end
-	self:Layout(true)
+	self:DoLayout()
 
 	local total_size = Vec2()
 	for _, v in ipairs(self:GetChildren()) do
@@ -66,32 +65,88 @@ function META:GetSizeOfChildren()
 end
 
 function META:SizeToChildrenHeight()
+	if #self.Children == 0 then return end
+	self.layout_me = false
 	self.last_children_size = nil
+	self.real_size = self.Size:Copy()
 	self.Size.y = math.huge
-	self.Size.y = self:GetSizeOfChildren().y + self.Margin:GetHeight()
-	if not math.isvalid(self.Size.y) then self.Size.y = 100 end -- FIX ME
+	self.Size.y = self:GetSizeOfChildren().y
+
+	local min_pos = self.Size.y
+	local max_pos = 0
+
+	for i,v in ipairs(self:GetChildren()) do
+		min_pos = math.min(min_pos, v.Position.y - v.Padding.y - self.Margin.y)
+	end
+
+	for i,v in ipairs(self:GetChildren()) do
+		v.Position.y = v.Position.y - min_pos
+
+		max_pos = math.max(max_pos, v.Position.y + v.Size.y + v.Padding.h)
+	end
+
+	self.Size.y = max_pos + self.Margin:GetSize().y
 	self.LayoutSize = self.Size:Copy()
 	self.laid_out_y = true
+	self.real_size = nil
 end
 
 function META:SizeToChildrenWidth()
+	if #self.Children == 0 then return end
+	self.layout_me = false
 	self.last_children_size = nil
+	self.real_size = self.Size:Copy()
 	self.Size.x = math.huge
-	self.Size.x = self:GetSizeOfChildren().x + self.Margin:GetWidth()
-	if not math.isvalid(self.Size.x) then self.Size.x = 100 end -- FIX ME
+	self.Size.x = self:GetSizeOfChildren().x
+
+	local min_pos = self.Size.x
+	local max_pos = 0
+
+	for i,v in ipairs(self:GetChildren()) do
+		min_pos = math.min(min_pos, v.Position.x - v.Padding.x - self.Margin.x)
+	end
+
+	for i,v in ipairs(self:GetChildren()) do
+		v.Position.x = v.Position.x - min_pos
+
+		max_pos = math.max(max_pos, v.Position.x + v.Size.x + v.Padding.w)
+	end
+
+	self.Size.x = max_pos + self.Margin:GetSize().x
 	self.LayoutSize = self.Size:Copy()
 	self.laid_out_x = true
+	self.real_size = nil
 end
 
 function META:SizeToChildren()
+	if #self.Children == 0 then return end
 	self.layout_me = false
 	self.last_children_size = nil
+	self.real_size = self.Size:Copy()
 	self.Size = Vec2() + math.huge
-	self.Size = self:GetSizeOfChildren() + self.Margin:GetSize()
-	if not self.Size:IsValid() then self.Size:Set(100, 100) end -- FIX ME
+	self.Size = self:GetSizeOfChildren()
+
+	local min_pos = self.Size:Copy()
+	local max_pos = Vec2()
+
+	for i,v in ipairs(self:GetChildren()) do
+		min_pos.x = math.min(min_pos.x, v.Position.x - v.Padding.x - self.Margin.x)
+		min_pos.y = math.min(min_pos.y, v.Position.y - v.Padding.y - self.Margin.y)
+	end
+
+	for i,v in ipairs(self:GetChildren()) do
+		v.Position.x = v.Position.x - min_pos.x
+		v.Position.y = v.Position.y - min_pos.y
+
+		max_pos.x = math.max(max_pos.x, v.Position.x + v.Size.x + v.Padding.w)
+		max_pos.y = math.max(max_pos.y, v.Position.y + v.Size.y + v.Padding.h)
+	end
+
+	self.Size = max_pos + self.Margin:GetSize()
 	self.LayoutSize = self.Size:Copy()
 	self.laid_out_x = true
 	self.laid_out_y = true
+	self.real_size = nil
 end
 
 function META:GetVisibleChildren()
@@ -953,11 +1008,11 @@ do -- drag drop
 	end
 
 	function META:OnDraggedChildEnter(child, drop_pos)
-		--print("enter", self, drop_pos, child)
+
 	end
 
 	function META:OnDraggedChildExit(child, drop_pos)
-		--print("left", self, drop_pos, child)
+
 	end
 
 	function META:OnParentLand(parent)
@@ -1865,7 +1920,7 @@ do -- layout
 					elseif cmd == "gmod_bottom" then
 						child:CenterXSimple()
 						child:MoveDown()
-						child:FillX()
+						--child:FillX()
 						child:NoCollide("down")
 					elseif typex(cmd) == "vec2" then
 						child:SetSize(cmd:Copy())
@@ -1878,12 +1933,24 @@ do -- layout
 			if child.layout_commands then
 				for _, cmd in ipairs(child.layout_commands) do
 					if cmd == "gmod_fill" then
+						child.LayoutSize = Vec2(1,1)
 						child:CenterSimple()
 						child:FillX()
 						child:FillY()
 						child:NoCollide()
 					end
 				end
+			end
+		end
+	end
+
+	function META:DoLayout()
+		self:ExecuteLayoutCommands()
+
+		if self.Stack then
+			local size = self:StackChildren()
+			if self.StackSizeToChildren then
+				self:SetSize(size)
 			end
 		end
 	end
@@ -1896,14 +1963,7 @@ do -- layout
 			self:OnLayout(self:GetLayoutScale(), self:GetSkin())
 			self.in_layout = false
 
-			self:ExecuteLayoutCommands()
-
-			if self.Stack then
-				local size = self:StackChildren()
-				if self.StackSizeToChildren then
-					self:SetSize(size)
-				end
-			end
+			self:DoLayout()
 
 			for _, v in ipairs(self:GetChildren()) do
 				v.layout_me = true
@@ -1990,11 +2050,12 @@ do -- layout
 
 		function META:FillX(percent)
 			local parent = self:GetParent()
+			local parent_width = parent.real_size and parent.real_size.x or parent:GetWidth()
 
 			self:SetWidth(1)
 
 			local left = self:RayCast(self:GetPosition(), Vec2(0, self.Position.y))
-			local right = self:RayCast(self:GetPosition(), Vec2(parent:GetWidth(), self.Position.y))
+			local right = self:RayCast(self:GetPosition(), Vec2(parent_width, self.Position.y))
 			right.x = right.x - left.x
 
 			local x = left.x
@@ -2019,11 +2080,12 @@ do -- layout
 
 		function META:FillY(percent)
 			local parent = self:GetParent()
+			local parent_height = parent.real_size and parent.real_size.y or parent:GetHeight()
 
 			self:SetHeight(1)
 
 			local top = self:RayCast(self:GetPosition(), Vec2(self.Position.x, 0))
-			local bottom = self:RayCast(self:GetPosition(), Vec2(self.Position.x, parent:GetHeight()))
+			local bottom = self:RayCast(self:GetPosition(), Vec2(self.Position.x, parent_height))
 			bottom.y = bottom.y - top.y
 
 			local y = top.y
@@ -2053,9 +2115,10 @@ do -- layout
 
 		function META:CenterX()
 			local parent = self:GetParent()
+			local width = parent.real_size and parent.real_size.x or parent:GetWidth()
 
 			local left = self:RayCast(self:GetPosition(), Vec2(0, self.Position.y))
-			local right = self:RayCast(self:GetPosition(), Vec2(parent.Size.x, left.y))
+			local right = self:RayCast(self:GetPosition(), Vec2(width, left.y))
 
 			self:SetX(math.lerp(0.5, left.x, right.x))
 
@@ -2064,9 +2127,10 @@ do -- layout
 
 		function META:CenterY()
 			local parent = self:GetParent()
+			local height = parent.real_size and parent.real_size.y or parent:GetHeight()
 
 			local top = self:RayCast(self:GetPosition(), Vec2(self.Position.x, 0))
-			local bottom = self:RayCast(self:GetPosition(), Vec2(top.x, parent:GetHeight()))
+			local bottom = self:RayCast(self:GetPosition(), Vec2(top.x, height))
 			self:SetY(top.y + (bottom.y/2 - self:GetHeight()/2) - self.Padding:GetTop() + self.Padding:GetBottom())
 
 			self.laid_out_y = true
@@ -2075,32 +2139,25 @@ do -- layout
 
 		function META:CenterXSimple()
 			local parent = self:GetParent()
+			local width = parent.real_size and parent.real_size.x or parent:GetWidth()
 
-			self:SetX(parent:GetWidth() / 2 - self:GetWidth() / 2)
+			self:SetX(width / 2 - self:GetWidth() / 2)
 
 			self.laid_out_x = true
 		end
 
 		function META:CenterYSimple()
 			local parent = self:GetParent()
+			local height = parent.real_size and parent.real_size.y or parent:GetHeight()
 
-			self:SetY(parent:GetHeight() / 2 - self:GetHeight() / 2)
+			self:SetY(height / 2 - self:GetHeight() / 2)
 
 			self.laid_out_y = true
 		end
 
 		function META:CenterSimple()
-			local parent = self:GetParent()
-
-			if parent:GetWidth() ~= math.huge then
-				self:SetX(parent:GetWidth() / 2 - self:GetWidth() / 2)
-				self.laid_out_x = true
-			end
-
-			if parent:GetHeight() ~= math.huge then
-				self:SetY(parent:GetHeight() / 2 - self:GetHeight() / 2)
-				self.laid_out_y = true
-			end
+			self:CenterXSimple()
+			self:CenterYSimple()
 		end
 
 		function META:CenterXFrame()
