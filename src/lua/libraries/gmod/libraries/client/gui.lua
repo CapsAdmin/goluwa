@@ -320,6 +320,10 @@ do
 		end)
 
 		function obj:IsInsideParent()
+			if self.popup then
+				return true
+			end
+
 			if
 				self.Position.x < self.Parent.Size.x and
 				self.Position.y < self.Parent.Size.y and
@@ -494,15 +498,15 @@ do
 	end
 
 	function META:DockPadding(left, top, right, bottom)
-		self.__obj:SetMargin(Rect(left, bottom, right, top))
+		self.__obj:SetMargin(Rect(left, top, right, bottom))
 	end
 
 	function META:DockMargin(left, top, right, bottom)
-		self.__obj:SetPadding(Rect(left, bottom, right, top))
+		self.__obj:SetPadding(Rect(left, top, right, bottom))
 	end
 
 	function META:SetMouseInputEnabled(b)
-		self.__obj:SetIgnoreMouse(not b)
+	--self.__obj:SetIgnoreMouse(not b)
 	end
 
 	function META:MouseCapture(b)
@@ -532,10 +536,15 @@ do
 	function META:SetSize(w,h)
 		w = tonumber(w)
 		h = tonumber(h) or w
+
 		self.__obj:SetSize(Vec2(w, h))
+
 		if self.__obj.vgui_dock then
 			if self.__obj.Size ~= self.__obj.gine_last_Size then
+				self.__obj.in_layout = true
 				self:Dock(self.__obj.vgui_dock)
+				self.__obj.in_layout = false
+				self.__obj:Layout()
 				self.__obj.gine_last_Size = self.__obj.Size
 			end
 		end
@@ -763,6 +772,7 @@ do
 			self.__obj:BringToFront()
 			self.__obj:RequestFocus()
 			self.__obj:SetIgnoreMouse(false)
+			self.__obj.popup = true
 		end
 	end
 
@@ -842,6 +852,10 @@ do
 		function META:DrawTextEntryText(text_color, highlight_color, cursor_color)
 			self.__obj.label:DrawTextEntryText()
 		end
+
+		function META:SelectAllText()
+			self.__obj:SelectAll()
+		end
 	end
 
 	function META:HasFocus()
@@ -895,6 +909,9 @@ do
 	end
 
 	function META:RequestFocus()
+		if self.__obj.vgui_type == "textentry" then
+			self:SetKeyboardInputEnabled(true)
+		end
 		self.__obj:RequestFocus()
 	end
 

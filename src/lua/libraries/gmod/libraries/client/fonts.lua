@@ -1,7 +1,7 @@
 do
 	local easy = {
 		["roboto bk"] = "resource/fonts/Roboto-Black.ttf",
-		["roboto"] = "resource/fonts/Roboto-Regular.ttf",
+		["roboto"] = "resource/fonts/Roboto-Thin.ttf",
 		["helvetica"] = "resource/fonts/coolvetica.ttf",
 		["times new roman"] = "resource/fonts/coolvetica.ttf",
 		["courier new"] = "resource/fonts/coolvetica.ttf",
@@ -121,7 +121,7 @@ do
 		local options = {}
 
 		options.path = gine.TranslateFontName(tbl.font)
-		options.size = tbl.size
+		options.size = math.round(tbl.size/1.25)
 
 		if tbl.shadow then
 			options.shadow = 2
