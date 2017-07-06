@@ -416,7 +416,7 @@ function META:GetRawPixelColor(x, y)
 	if image.format == "bgra" then
 		return image.buffer[i].b, image.buffer[i].g, image.buffer[i].r, image.buffer[i].a
 	elseif image.format == "rgba" then
-		return image.buffer[i].r, image.buffer[i].b, image.buffer[i].g, image.buffer[i].a
+		return image.buffer[i].r, image.buffer[i].g, image.buffer[i].b, image.buffer[i].a
 	elseif image.format == "bgr" then
 		return image.buffer[i].b, image.buffer[i].g, image.buffer[i].r
 	elseif image.format == "rgb" then
