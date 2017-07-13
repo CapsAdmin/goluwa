@@ -135,28 +135,32 @@ function steam.GetSourceGames()
 
 						for _, v in pairs(tbl.filesystem.searchpaths) do
 							for _, v in pairs(type(v) == "string" and {v} or v) do
-								if v:find("|gameinfo_path|") then
-									v = v:gsub("|gameinfo_path|", path:match("(.+/)"))
-								elseif v:find("|all_source_engine_paths|") then
-									v = v:gsub("|all_source_engine_paths|", dir)
+								if v:find("|", nil, true) then
+									v = v:replace("|gameinfo_path|", path:match("(.+/)"))
+									v = v:replace("|gameinfo_path|", dir)
+									v = v:replace("|all_source_engine_paths|", dir)
 								else
 									v = dir .. v
 								end
+
+								v = vfs.FixPathSlashes(v)
 
 								if v:endswith(".") then
 									v = v:sub(0,-2)
 								end
 
-								if not done[v] and not done[v.."/"] then
+								if not done[v] then
 
-									if tbl.filesystem.steamappid == 4000 then
-										-- is there an internal fix in gmod for this?
-										v = v:gsub("GarrysMod/hl2", "GarrysMod/sourceengine")
+									if v:endswith("*") then
+										for _, path in ipairs(vfs.Find(v:sub(0, -2), true)) do
+											if vfs.IsDirectory(path) then
+												table.insert(fixed, path)
+											end
+										end
+									else
+										table.insert(fixed, v)
 									end
 
-									v = v:gsub("/+", "/") -- TODO
-
-									table.insert(fixed, v)
 									done[v] = true
 								end
 							end
@@ -193,43 +197,20 @@ function steam.MountSourceGame(game_info)
 	if not game_info then return nil, "could not find " .. str_game_info end
 
 	steam.UnmountSourceGame(game_info)
+
 	for _, path in pairs(game_info.filesystem.searchpaths) do
 		if path:endswith(".vpk") then
 			path = "os:" .. path:gsub("(.+)%.vpk", "%1_dir.vpk")
 		else
+			path = "os:" .. path
 
-			if path:endswith("*") then
-				path = "os:" .. path
-
-				path = path:sub(0, -2)
-				for _, v in pairs(vfs.Find(path)) do
-					if vfs.IsDirectory(path .. "/" .. v) or v:endswith(".vpk") then
-						llog("mounting custom folder/vpk %s", v)
-						vfs.Mount(path .. "/" .. v, nil, game_info)
-					end
-				end
-			else
-				for _, v in pairs(vfs.Find(path .. "addons/")) do
-					if vfs.IsDirectory(path .. "addons/" .. v) then
-						local where = path .. "addons/" .. v
-						llog("mounting addon %s", v)
-						if v:endswith(".gma") then
-							where = "gmod addon archive:" .. where
-						end
-						vfs.Mount(where, nil, game_info)
-					end
-				end
-
-				path = "os:" .. path
-
-				for _, v in pairs(vfs.Find(path .. "maps/workshop/")) do
-					llog("mounting workshop map %s", v)
-					vfs.Mount(path .. "maps/workshop/" .. v, "maps/", game_info)
-				end
+			for _, v in pairs(vfs.Find(path .. "/maps/workshop/")) do
+				llog("mounting workshop map %s", v)
+				vfs.Mount(path .. "/maps/workshop/" .. v, "maps/", game_info)
 			end
 
+			local pak = path .. "/pak01_dir.vpk"
 
-			local pak = path .. "pak01_dir.vpk"
 			if vfs.IsFile(pak) then
 				llog("mounting %s", pak)
 				vfs.Mount(pak, nil, game_info)
