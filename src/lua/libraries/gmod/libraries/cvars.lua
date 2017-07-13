@@ -1,7 +1,7 @@
 local gine = ... or _G.gine
 
 function gine.env.CreateConVar(name, def, flags, help)
-	return gine.WrapObject(pvars.Setup(name, tostring(def), nil, help), "ConVar")
+	return gine.WrapObject(pvars.Setup(name, tostring(def), nil, help, true), "ConVar")
 end
 
 function gine.env.GetConVar_Internal(name)

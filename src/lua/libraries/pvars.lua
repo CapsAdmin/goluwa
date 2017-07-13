@@ -12,6 +12,12 @@ function pvars.Initialize()
 	serializer.WriteFile(mode, path, pvars.vars)
 end
 
+function pvars.Save()
+	if pvars.init then
+		event.Delay(0, function() serializer.WriteFile(mode, path, pvars.vars) end, "save_pvars")
+	end
+end
+
 do -- pvar meta
 	local META = prototype.CreateTemplate("pvar")
 
@@ -35,11 +41,10 @@ function pvars.Setup(key, def, callback, typ)
 
 	local val = def
 
-	if pvars.init then
-		local test = serializer.GetKeyFromFile(mode, path, key)
-		if test ~= nil then
-			val = test
-		end
+	local test = pvars.vars[key]
+
+	if test ~= nil then
+		val = test
 	end
 
 	pvars.vars[key] = val
@@ -50,9 +55,7 @@ function pvars.Setup(key, def, callback, typ)
 		end)
 	end
 
-	if pvars.init then
-		serializer.SetKeyValueInFile(mode, path, key, val)
-	end
+	pvars.Save()
 
 	return pvars.GetObject(key)
 end
@@ -92,9 +95,7 @@ function pvars.Set(key, val)
 
 		pvars.vars[key] = val
 
-		if pvars.init then
-			serializer.SetKeyValueInFile(mode, path, key, val)
-		end
+		pvars.Save()
 
 		if info.callback and not info.in_callback then
 			info.in_callback = true
