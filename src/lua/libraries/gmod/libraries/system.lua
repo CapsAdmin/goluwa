@@ -16,3 +16,6 @@ function system.GetCountry()
 	return "NO"
 end
 
+function system.BatteryPower()
+	return 255
+end
