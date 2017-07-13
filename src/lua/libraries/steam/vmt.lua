@@ -19,6 +19,7 @@ local special_textures = {
 }
 
 function steam.LoadVMT(path, on_property, on_error, on_shader)
+	on_error = on_error or logn
 	resource.Download(
 		path,
 		function(path)
