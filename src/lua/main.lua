@@ -18,9 +18,9 @@ if WINDOW and window then
 	end
 end
 
-pvars.Setup("text_editor_path", system.FindFirstTextEditor(true, true) or "")
-
 pvars.Initialize()
+
+pvars.Setup("text_editor_path", system.FindFirstTextEditor(true, true) or "")
 
 if sockets then
 	sockets.Initialize()
