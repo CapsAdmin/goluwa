@@ -59,11 +59,6 @@ function profiler.EnableTraceAbortLogging(b)
 	end
 end
 
-local function statistical_callback(thread, samples, vmstate)
-	local str = jit.profiler.dumpstack(thread, "pl\n", 10)
-	table.insert(profiler.raw_data.statistical, {str, samples})
-end
-
 local function parse_raw_statistical_data()
 	local data = profiler.data.statistical
 
@@ -76,10 +71,7 @@ local function parse_raw_statistical_data()
 			local path, line_number = line:match("(.+):(%d+)")
 
 			if not path and not line_number then
-		line = line:gsub("%[builtin#(%d+)%]", function(x)
-			return jit.vmdef.ffnames[tonumber(x)]
-		end)
-
+				line = line:gsub("%[builtin#(%d+)%]", function(x) return jit.vmdef.ffnames[tonumber(x)] end)
 				table.insert(children, {name = line or -1, external_function = true})
 			else
 				table.insert(children, {path = path, line = tonumber(line_number) or -1, external_function = false})
@@ -115,15 +107,20 @@ local function parse_raw_statistical_data()
 
 			--table.insert(data[path][line].parents, parent)
 			--table.insert(parent.children, data[path][line])
+		end
 	end
-	end
+end
+
+local function statistical_callback(thread, samples, vmstate)
+	local str = jit.profiler.dumpstack(thread, "pl\n", 10)
+	table.insert(profiler.raw_data.statistical, {str, samples})
 end
 
 function profiler.EnableStatisticalProfiling(b)
 	profiler.busy = b
 	if b then
-		jit.profiler.start("l", function(...)
-			local ok, err = xpcall(type(b) == "function" and b or statistical_callback, system.OnError, ...)
+		jit.profiler.start("li0", function(...)
+			local ok, err = pcall(statistical_callback, ...)
 			if not ok then
 				logn(err)
 				profiler.EnableStatisticalProfiling(false)
@@ -131,6 +128,21 @@ function profiler.EnableStatisticalProfiling(b)
 		end)
 	else
 		jit.profiler.stop()
+	end
+end
+
+do
+	local started = false
+
+	function profiler.ToggleStatistical()
+		if not started then
+			profiler.EnableStatisticalProfiling(true)
+			started = true
+		else
+			profiler.EnableStatisticalProfiling(false)
+			profiler.PrintStatistical(0)
+			started = false
+		end
 	end
 end
 
@@ -245,7 +257,10 @@ function profiler.GetBenchmark(type, file, dump_line)
 	local out = {}
 
 	for path, lines in pairs(profiler.data[type]) do
-		path = path:sub(2)
+		if path:startswith("@") then
+			path = path:sub(2)
+		end
+
 		if not file or path:find(file) then
 			for line, data in pairs(lines) do
 				line = tonumber(line) or line
@@ -387,7 +402,9 @@ function profiler.PrintSections()
 	))
 end
 
-function profiler.PrintStatistical()
+function profiler.PrintStatistical(min_samples)
+	min_samples = min_samples or 100
+
 	log(utility.TableToColumns(
 		"statistical",
 		profiler.GetBenchmark("statistical"),
@@ -395,7 +412,7 @@ function profiler.PrintStatistical()
 			{key = "name"},
 			{key = "times_called", friendly = "percent", tostring = function(val, column, columns)  return math.round((val / columns[#columns].val.times_called) * 100, 2) end},
 		},
-		function(a) return a.name and a.times_called > 100 end,
+		function(a) return a.name and a.times_called > min_samples end,
 		function(a, b) return a.times_called < b.times_called end
 	))
 end
@@ -648,6 +665,16 @@ commands.Add("trace_abort", function()
 end)
 
 if RELOAD then
+
+	profiler.ToggleStatistical()
+	for i = 1, 1 do
+		steam.UnmountSourceGame("gmod")
+		steam.MountSourceGame("gmod")
+	end
+	profiler.ToggleStatistical()
+
+	do return end
+
 	I""
 	for i = 1, 100 do
 	local panel = gui.CreatePanel("frame")
