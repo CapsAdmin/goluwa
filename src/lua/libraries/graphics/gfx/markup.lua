@@ -679,13 +679,13 @@ do -- tags
 		get_size = function(markup, self, path, size)
 			if not self.mat or not self.mat:IsValid() then self.mat = render.CreateTextureFromPath(path) end
 			if self.mat:IsLoading() then return 16, 16 end
-			return self.mat.Size.x or size, self.mat.Size.y or size
+			return self.mat:GetSize().x or size, self.mat:GetSize().y or size
 		end,
 
 		pre_draw = function(markup, self, x,y, path, size)
 			if not self.mat or not self.mat:IsValid() then return end
 			render2d.SetTexture(self.mat)
-			render2d.DrawRect(x, y, self.mat.Size.x or size, self.mat.Size.y or size)
+			render2d.DrawRect(x, y, self.mat:GetSize().x or size, self.mat:GetSize().y or size)
 		end,
 	}
 
@@ -1301,12 +1301,12 @@ do -- invalidate
 					end
 
 					if chunk then
-						if not chunk.internal and chunk.type == "string" and chunk.val:haswhitespace() then
+						if not chunk.internal and chunk.type == "string" and string.haswhitespace(chunk.val) then
 							if self.LineWrap then
 								local str = {}
 
 								for _, char in ipairs(utf8.totable(chunk.val)) do
-									if char:iswhitespace() then
+									if string.iswhitespace(char) then
 										if #str ~= 0 then
 											add_chunk(self, out, {type = "string", val = table.concat(str)})
 											table.clear(str)
@@ -1329,7 +1329,7 @@ do -- invalidate
 								if chunk.val == "\n" then
 									add_chunk(self, out, {type = "newline"})
 								elseif chunk.val:find("\n", nil, true) then
-									for _, line in ipairs(chunk.val:split("\n")) do
+									for _, line in ipairs(string.split(chunk.val, "\n")) do
 										add_chunk(self, out, {type = "string", val = line})
 										add_chunk(self, out, {type = "newline"})
 									end
@@ -1989,8 +1989,8 @@ do -- shortcuts
 			local text = utf8.sub(self.text, select_start.sub_pos, select_stop.sub_pos)
 
 			if back then
-				if text:usub(1, 1) == "\t" then
-					text = text:usub(2)
+				if utf8.sub(text, 1, 1) == "\t" then
+					text = utf8.sub(text, 2)
 				end
 				text = text:gsub("\n\t", "\n")
 			else
@@ -1998,8 +1998,8 @@ do -- shortcuts
 				text = text:gsub("\n", "\n\t")
 
 				-- ehhh, don't add \t at the next line..
-				if text:usub(-1) == "\t" then
-					text = text:usub(0, -2)
+				if utf8.sub(text, -1) == "\t" then
+					text = utf8.sub(text, 0, -2)
 				end
 			end
 
@@ -2024,8 +2024,8 @@ do -- shortcuts
 							end
 
 							if back then
-								if chunk.val:usub(1,1) == "\t" then
-									chunk.val = chunk.val:usub(2)
+								if utf8.sub(chunk.val, 1,1) == "\t" then
+									chunk.val = utf8.sub(chunk.val, 2)
 								end
 							else
 								chunk.val = "\t" .. chunk.val
@@ -2040,7 +2040,7 @@ do -- shortcuts
 		else
 			-- TODO
 			--print(self.text:usub(sub_pos-1, sub_pos-1), back)
-			if back and self.text:usub(sub_pos-1, sub_pos-1) == "\t" then
+			if back and utf8.sub(self.text, sub_pos-1, sub_pos-1) == "\t" then
 				self:Backspace()
 			else
 				self:InsertString("\t")
