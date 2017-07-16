@@ -37,11 +37,11 @@ end
 chatsounds.Modifiers = {
 	dsp = {
 		start = function(self, dsp)
-			--self.snd:SetDSP(dsp)
+			self.snd:SetDSP(dsp)
 		end,
 
 		stop = function(self, dsp)
-			--self.snd:SetDSP(0)
+			self.snd:SetDSP(0)
 		end,
 	},
 	cutoff = {
@@ -126,17 +126,17 @@ do
 	local function build_word_list(str)
 		local words = {}
 		local temp = {}
-		local last = str:sub(1,1):getchartype()
+		local last = string.getchartype(str:sub(1,1))
 
 		for i = 1, #str + 1 do
 			local char = str:sub(i,i)
 			local next = str:sub(i+1, i+1)
-			local type = char:getchartype()
+			local type = string.getchartype(char)
 
 			if type ~= "space" then
 
 				-- 0.1234
-				if last == "digit" and char == "." or (char == "-" and next and next:getchartype() == "digit") then
+				if last == "digit" and char == "." or (char == "-" and next and string.getchartype(next) == "digit") then
 					type = "digit"
 				end
 
@@ -417,6 +417,8 @@ function choose_realm(data)
 	return sounds
 end
 
+chatsounds.queue_calc = {}
+
 function chatsounds.PlayScript(script)
 
 	local sounds = {}
@@ -496,7 +498,7 @@ function chatsounds.PlayScript(script)
 					local sound = {}
 
 					sound.snd = audio.CreateSource(path)
-					sound.duration = (chunk.val.duration or sound.snd:GetDuration())
+					sound.duration = chunk.val.duration
 					sound.trigger = chunk.val.trigger
 					sound.modifiers = chunk.modifiers
 
@@ -513,8 +515,6 @@ function chatsounds.PlayScript(script)
 						end
 
 						self.snd:Play()
-
-						--print("START", path)
 					end
 
 					sound.remove = function(self)
@@ -528,8 +528,6 @@ function chatsounds.PlayScript(script)
 						end
 
 						self.snd:Stop()
-
-						--print("STOP", path)
 					end
 
 					if sound.modifiers then
@@ -555,36 +553,49 @@ function chatsounds.PlayScript(script)
 		end
 	end
 
-	local duration = 0
-	local track = {}
-	local time = system.GetElapsedTime()
 
-	for _, sound in ipairs(sounds) do
-
-		-- let it be able to think once first so we can modify duration and such when changing pitch
-		if sound.think then
-			sound:think()
-		end
-
-		-- init modifiers
-		if sound.modifiers then
-			for mod, data in pairs(sound.modifiers) do
-				mod = chatsounds.Modifiers[data.mod]
-				if mod and mod.init then
-					mod.init(sound, unpack(data.args))
-				end
+	table.insert(chatsounds.queue_calc, function()
+		for _, sound in ipairs(sounds) do
+			if not sound.snd:IsReady() then
+				return
 			end
 		end
 
-		-- this is when the sound starts
-		sound.start_time = time + duration
-		duration = duration + sound.duration
-		sound.stop_time = time + duration
+		local duration = 0
+		local track = {}
+		local time = system.GetElapsedTime()
 
-		table.insert(track, sound)
-	end
+		for _, sound in ipairs(sounds) do
 
-	table.insert(chatsounds.active_tracks, track)
+			sound.duration = sound.duration or sound.snd:GetDuration()
+
+			-- let it be able to think once first so we can modify duration and such when changing pitch
+			if sound.think then
+				sound:think()
+			end
+
+			-- init modifiers
+			if sound.modifiers then
+				for mod, data in pairs(sound.modifiers) do
+					mod = chatsounds.Modifiers[data.mod]
+					if mod and mod.init then
+						mod.init(sound, unpack(data.args))
+					end
+				end
+			end
+
+			-- this is when the sound starts
+			sound.start_time = time + duration
+			duration = duration + sound.duration
+			sound.stop_time = time + duration
+
+			table.insert(track, sound)
+		end
+
+		table.insert(chatsounds.active_tracks, track)
+
+		return true
+	end)
 
 	chatsounds.last_realm = nil
 end
@@ -606,6 +617,15 @@ end
 chatsounds.active_tracks = {}
 
 function chatsounds.Update()
+	if chatsounds.queue_calc[1] then
+		for i,v in ipairs(chatsounds.queue_calc) do
+			if v() == true then
+				table.remove(chatsounds.queue_calc, i)
+				break
+			end
+		end
+	end
+
 	local time = system.GetElapsedTime()
 
 	for i, track in pairs(chatsounds.active_tracks) do
@@ -679,15 +699,6 @@ function chatsounds.GetLists()
 end
 
 function chatsounds.Initialize()
-	if chatsounds.tree then return end
-
-	--steam.MountSourceGames()
-	--chatsounds.BuildTree("game")
-	--chatsounds.BuildTree("custom")
-
-	--chatsounds.BuildFromAutoadd()
-	chatsounds.BuildFromGithub()
-
 	event.AddListener("ResourceDownloaded", function(path)
 		if path:find("chatsounds/lists/", nil, true) then
 			chatsounds.LoadData(path:match(".+/(.+)%.dat"))

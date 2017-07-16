@@ -176,19 +176,21 @@ function chatsounds.BuildFromGmodChatsounds(addon_dir)
 	chatsounds.BuildAutocomplete()
 end
 
-function chatsounds.BuildFromGithub()
-	resource.Download("https://api.github.com/repos/Metastruct/garrysmod-chatsounds/git/trees/master?recursive=1", function(path)
+function chatsounds.BuildFromGithub(url)
+	url = url or "https://api.github.com/repos/Metastruct/garrysmod-chatsounds/git/trees/master?recursive=1"
+	resource.Download(url, function(path)
+
 		local tree = {}
 		local list = {}
 
-
 		local str = vfs.Read(path)
-		for path in str:gmatch('"path": "(sound/chatsounds/autoadd/.-)"') do
+		for path in str:gmatch('"path":"(sound/chatsounds/autoadd/.-)"') do
 			local realm, trigger, file_name = path:match("sound/chatsounds/autoadd/(.-)/(.-)/(.+)%.")
 			if not file_name then
 				realm, trigger = path:match("sound/chatsounds/autoadd/(.-)/(.+)%.")
 			end
 			path = "https://raw.githubusercontent.com/Metastruct/garrysmod-chatsounds/master/" .. path
+
 			if realm then
 				tree[realm] = tree[realm] or {}
 				list[realm] = list[realm] or {}
@@ -834,7 +836,6 @@ function chatsounds.LoadData(name)
 	local tree_path = "data/chatsounds/trees/"..name..".dat"
 
 	resource.Download(list_path, function(list_path)
-
 		if not steam.MountSourceGame(name) and name == "HALF-LIFE 2" then
 			steam.MountSourceGame("gmod")
 		end
