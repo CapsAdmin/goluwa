@@ -4,8 +4,8 @@ resource.providers = {}
 
 e.DOWNLOAD_FOLDER = e.DATA_FOLDER .. "downloads/"
 
-vfs.CreateFolder(e.DOWNLOAD_FOLDER)
-vfs.Mount("os:" .. e.DOWNLOAD_FOLDER, "downloads")
+vfs.CreateFolder("os:" .. e.DOWNLOAD_FOLDER)
+vfs.Mount("os:" .. e.DOWNLOAD_FOLDER, "os:downloads")
 
 function resource.AddProvider(provider)
 	for i,v in ipairs(resource.providers) do
