@@ -254,6 +254,19 @@ function steam.UnmountSourceGame(game_info)
 	return game_info
 end
 
+function steam.GetMountedSourceGames()
+	local out = {}
+	local done = {}
+	for k,v in pairs(vfs.GetMounts()) do
+		if v.userdata and v.userdata.filesystem and v.userdata.filesystem.steamappid then
+			if not done[v.userdata] then
+				table.insert(out, v.userdata)
+				done[v.userdata] = true
+			end
+		end
+	end
+	return out
+end
 
 do
 	local translate = {
