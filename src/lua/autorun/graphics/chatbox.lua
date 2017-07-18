@@ -249,7 +249,7 @@ function chat.CreateEditPanel(history_path, autocomplete_list)
 			if not chat.IsVisible() then return end
 			if found_autocomplete and #found_autocomplete > 0 then
 				local pos = edit:GetWorldPosition()
-				autocomplete.DrawFound(pos.x, pos.y + edit:GetHeight(), found_autocomplete, nil, 2)
+				autocomplete.DrawFound("chatsounds", pos.x, pos.y + edit:GetHeight(), found_autocomplete)
 			end
 		end
 	end

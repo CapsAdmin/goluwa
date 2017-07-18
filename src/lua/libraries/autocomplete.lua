@@ -1,5 +1,4 @@
 local autocomplete = _G.autocomplete or {}
-
 local env = {}
 
 do -- lists
@@ -81,7 +80,11 @@ function autocomplete.Search(str, id)
 	return found
 end
 
-function autocomplete.DrawFound(x, y, found, max, offset)
+function autocomplete.DrawFound(id, x, y, found, max, offset)
+	if not env[id] then
+		env[id] = {found_autocomplete = {}, scroll = 0}
+	end
+
 	offset = offset or 1
 	max = max or 100
 
@@ -89,17 +92,16 @@ function autocomplete.DrawFound(x, y, found, max, offset)
 	render2d.SetColor(1,1,1,1)
 
 	render2d.PushMatrix(x, y)
-		for i = offset-1, max do
+		for i = offset, max do
 			local v = found[i]
 
 			if not v then break end
 
 			local _, h = gfx.GetTextSize(v)
-			local alpha = (-(i / max) + 1) ^ 15
+			local alpha = (-(i / max) + 1) ^ 5
 
 			render2d.SetAlphaMultiplier(alpha)
-			gfx.SetTextPosition(5, (i-offset+1) * h)
-			gfx.DrawText(i .. ". " ..  v)
+			gfx.DrawText(((env[id].scroll + i - 1)%#found + 1) .. ". " ..  v, 5, (i - offset) * h)
 		end
 
 		render2d.SetAlphaMultiplier(1)
@@ -114,7 +116,7 @@ function autocomplete.Query(id, str, scroll, list)
 	scroll = scroll or 0
 
 	if not env[id] then
-		env[id] = {found_autocomplete = {}}
+		env[id] = {found_autocomplete = {}, scroll = 0}
 	end
 
 	if scroll == 0 then
@@ -123,6 +125,7 @@ function autocomplete.Query(id, str, scroll, list)
 			env[id].tab_autocomplete = nil
 			env[id].pause_autocomplete = false
 			env[id].last_str = nil
+			env[id].scroll = 0
 		end
 	else
 		autocomplete.ScrollFound(env[id].tab_autocomplete or env[id].found_autocomplete, scroll)
@@ -148,8 +151,16 @@ function autocomplete.Query(id, str, scroll, list)
 				env[id].tab_autocomplete = env[id].found_autocomplete
 			end
 
+			if env[id].last_str then
+				env[id].scroll = env[id].scroll + scroll
+			end
+
 			env[id].last_str = str
 		end
+	end
+
+	if str == env[id].found_autocomplete[1] then
+		autocomplete.ScrollFound(env[id].tab_autocomplete or env[id].found_autocomplete, scroll)
 	end
 
 	return env[id].found_autocomplete
