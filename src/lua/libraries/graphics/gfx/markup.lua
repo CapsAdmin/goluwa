@@ -2931,7 +2931,7 @@ do -- drawing
 						if chunk.tag_stop_draw then
 							--print("post_draw_chunks", chunk.type, chunk.i, chunk.chunks_inbetween, chunk.start_chunk.val.type)
 
-							if table.remove(self.started_tags[chunk.start_chunk.val.type]) then
+							if self.started_tags[chunk.start_chunk.val.type] and table.remove(self.started_tags[chunk.start_chunk.val.type]) then
 								--print("post_draw", chunk.start_chunk.val.type, chunk.i)
 								self:CallTagFunction(chunk.start_chunk, "post_draw", chunk.start_chunk.x, chunk.start_chunk.y)
 							end
