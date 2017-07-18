@@ -46,6 +46,10 @@ function event.AddListener(event_type, id, callback, config)
 	table.insert(event.active[config.event_type], config)
 
 	sort_events()
+
+	if event_type ~= "EventAdded" then
+		event.Call("EventAdded", config)
+	end
 end
 
 event.fix_indices = {}
@@ -58,6 +62,11 @@ function event.RemoveListener(event_type, id)
 	end
 
 	if id ~= nil and event.active[event_type] then
+
+		if event_type ~= "EventRemoved" then
+			event.Call("EventRemoved", event.active[event_type])
+		end
+
 		for index, val in pairs(event.active[event_type]) do
 			if id == val.id then
 				event.active[event_type][index] = nil
