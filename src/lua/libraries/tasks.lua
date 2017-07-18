@@ -7,6 +7,15 @@ tasks.created = tasks.created or {}
 
 local enabled = {Get = function() return false end} event.AddListener("Initialize", function() enabled = pvars.Setup("tasks_enable", false) end)
 
+function tasks.WaitForTask(name, callback)
+	event.AddListener("TaskFinished", "wait_for_task_" .. name, function(task)
+		if task:GetName() == name then
+			callback()
+			return e.EVENT_DESTROY
+		end
+	end)
+end
+
 local META = prototype.CreateTemplate("task")
 
 META:GetSet("Frequency", 0)
@@ -22,6 +31,8 @@ function META:Start(now)
 
 	if not enabled:Get() then
 		self:OnStart()
+		self:OnFinish()
+		event.Call("TaskFinished", self)
 		self:Remove()
 		return
 	end
@@ -70,6 +81,7 @@ function META:Start(now)
 				tasks.created[self] = nil
 				self:OnUpdate()
 				self:OnFinish(res)
+				event.Call("TaskFinished", self)
 				return false
 			end
 

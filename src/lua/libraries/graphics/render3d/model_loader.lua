@@ -61,6 +61,7 @@ function render3d.LoadModel(path, callback, callback2, on_fail)
 
 		local thread = tasks.CreateTask()
 		thread.debug = true
+		thread:SetName(path)
 
 		local function mesh_callback(mesh)
 			cb:callextra(path, "mesh", mesh)

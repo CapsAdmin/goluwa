@@ -25,7 +25,10 @@ function steam.SetMap(name)
 	steam.bsp_world:SetModelPath(path)
 	steam.bsp_world:SetPhysicsModelPath(path)
 	steam.bsp_world:RemoveChildren()
-	steam.SpawnMapEntities(path, steam.bsp_world)
+
+	tasks.WaitForTask(path, function()
+		steam.SpawnMapEntities(path, steam.bsp_world)
+	end)
 end
 
 do
