@@ -701,16 +701,6 @@ function chatsounds.GetLists()
 end
 
 function chatsounds.Initialize()
-	event.AddListener("ResourceDownloaded", function(path)
-		if path:find("chatsounds/lists/", nil, true) then
-			chatsounds.LoadData(path:match(".+/(.+)%.dat"))
-		end
-	end)
-
-	for _, v in pairs(chatsounds.GetLists()) do
-		chatsounds.LoadData(vfs.FixIllegalCharactersInPath(v))
-	end
-
 	event.AddListener("Update", "chatsounds", chatsounds.Update)
 end
 
