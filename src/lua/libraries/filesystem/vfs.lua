@@ -173,14 +173,6 @@ do -- file systems
 	function vfs.GetFileSystem(name)
 		return vfs.filesystems2[name]
 	end
-
-	runfile("files/*", vfs)
-
-	for _, context in ipairs(vfs.GetFileSystems()) do
-		if context.VFSOpened then
-			context:VFSOpened()
-		end
-	end
 end
 
 do -- translate path to useful data
@@ -285,5 +277,13 @@ runfile("helpers.lua", vfs)
 runfile("addons.lua", vfs)
 runfile("lua_utilities.lua", vfs)
 runfile("monitoring.lua", vfs)
+
+runfile("files/*", vfs)
+
+for _, context in ipairs(vfs.GetFileSystems()) do
+	if context.VFSOpened then
+		context:VFSOpened()
+	end
+end
 
 return vfs

@@ -1,3 +1,5 @@
+local utility = _G.utility or ...
+
 function utility.ParseVMD(file)
 	local iconv = require("iconv")
 	local out = {}

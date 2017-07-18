@@ -235,7 +235,7 @@ do
 	local setmetatable = setmetatable
 	local type = type
 	local ipairs = ipairs
-	prototype.created_objects = prototype.created_objects or utility.CreateWeakTable()
+	prototype.created_objects = prototype.created_objects or setmetatable({}, {__mode = "kv"})
 
 	function prototype.CreateObject(meta, override, skip_gc_callback)
 		override = override or prototype.override_object or {}
@@ -507,8 +507,8 @@ function prototype.RemoveObjects(super_type, sub_type)
 	end
 end
 
-runfile("base_object.lua", prototype)
 runfile("get_is_set.lua", prototype)
+runfile("base_object.lua", prototype)
 runfile("null.lua", prototype)
 runfile("ecs_entity.lua", prototype)
 runfile("base_ecs_component.lua", prototype)

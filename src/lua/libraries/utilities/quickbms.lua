@@ -1,15 +1,13 @@
 local utility = _G.utility or ...
 
-local temp_dir = R"data/" .. "bms/"
-local temp_script = R"bin/temp_script.bms"
-local quickbms_location = R("bin/")
-local exists = vfs.Find(quickbms_location .. "quickbms")[1] ~= nil
-
 local bms_opened_files = {}
 local last_written
 
 function utility.QuickBMSGetFiles(archive_path, script)
+	local quickbms_location = R("bin/")
+	local exists = vfs.Find(quickbms_location .. "quickbms")[1] ~= nil
 	if not exists then return nil, "quickbms not found in " .. quickbms_location end
+	local temp_script = R"bin/temp_script.bms"
 
 	if last_written ~= script then
 		vfs.Write(temp_script, script)
@@ -32,7 +30,12 @@ function utility.QuickBMSGetFiles(archive_path, script)
 end
 
 function utility.QuickBMSOpenFile(archive_path, file_path, script)
+	local quickbms_location = R("bin/")
+	local exists = vfs.Find(quickbms_location .. "quickbms")[1] ~= nil
 	if not exists then return nil, "quickbms not found in " .. quickbms_location end
+
+	local temp_dir = R"data/" .. "bms/"
+	local temp_script = R"bin/temp_script.bms"
 
 	if last_written ~= script then
 		vfs.Write(temp_script, script)
