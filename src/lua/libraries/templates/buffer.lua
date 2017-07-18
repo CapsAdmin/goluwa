@@ -27,6 +27,7 @@ local type_info = {
 }
 
 local function ADD_FFI_OPTIMIZED_TYPES(META)
+	if not ffi then return end
 	local ffi_cast = ffi.cast
 	local ffi_string = ffi.string
 	for name, type in pairs(type_info) do
