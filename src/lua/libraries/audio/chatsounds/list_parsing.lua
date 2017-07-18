@@ -189,6 +189,8 @@ function chatsounds.BuildFromGithub(url)
 			if not file_name then
 				realm, trigger = path:match("sound/chatsounds/autoadd/(.-)/(.+)%.")
 			end
+
+			path = path:gsub(" ", "%%20")
 			path = "https://raw.githubusercontent.com/Metastruct/garrysmod-chatsounds/master/" .. path
 
 			if realm then
