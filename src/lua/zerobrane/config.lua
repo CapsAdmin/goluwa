@@ -11,7 +11,7 @@ markersinactivity = false
 outlineinactivity = false
 acandtip.droprest = false
 
---staticanalyzer.infervalue = true
+staticanalyzer.luacheck = true
 --filetree.mousemove = false
 
 excludelist = {
