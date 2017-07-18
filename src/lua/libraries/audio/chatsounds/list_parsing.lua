@@ -184,7 +184,7 @@ function chatsounds.BuildFromGithub(url)
 		local list = {}
 
 		local str = vfs.Read(path)
-		for path in str:gmatch('"path":"(sound/chatsounds/autoadd/.-)"') do
+		for path in str:gmatch('"path":%s-"(sound/chatsounds/autoadd/.-)"') do
 			local realm, trigger, file_name = path:match("sound/chatsounds/autoadd/(.-)/(.-)/(.+)%.")
 			if not file_name then
 				realm, trigger = path:match("sound/chatsounds/autoadd/(.-)/(.+)%.")
@@ -833,15 +833,12 @@ function chatsounds.TableToTree(tbl)
 	return tree
 end
 
-function chatsounds.LoadData(name)
-	local list_path = "data/chatsounds/lists/"..name..".dat"
+function chatsounds.LoadListFromAppID(name)
+	name = tostring(name)
+	local list_path = "data/chatsounds/lists/"..name..".txt"
 	local tree_path = "data/chatsounds/trees/"..name..".dat"
 
 	resource.Download(list_path, function(list_path)
-		if not steam.MountSourceGame(name) and name == "HALF-LIFE 2" then
-			steam.MountSourceGame("gmod")
-		end
-
 		local list
 		local tree
 
@@ -864,7 +861,7 @@ function chatsounds.LoadData(name)
 
 		local v = table.random(table.random(table.random(list))).path
 
-		if name ~= "HALF-LIFE 2" and not vfs.IsFile(v) then
+		if not vfs.IsFile(v) then
 			wlog("chatsounds data for %s not found: %s doesn't exist", name, v, 2)
 			return
 		end
