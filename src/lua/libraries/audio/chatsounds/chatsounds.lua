@@ -303,6 +303,8 @@ do
 
 				for offset = 1, 100 do
 					local chunk2 = script[i + offset]
+					if not chunk2 then break end
+
 					if chunk2.val == ")" then
 						stop = i + offset - 1
 						break
