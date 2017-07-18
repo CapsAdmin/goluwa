@@ -28,6 +28,7 @@ excludelist = {
 	"shell32/",
 	"chromium/",
 	"src/lua/build/*/repo/",
+	"gmod_addons/",
 }
 
 binarylist = {
