@@ -497,6 +497,10 @@ do -- source
 	end
 	)
 
+	function META:IsReady()
+		return self.ready
+	end
+
 	function META:Play()
 		al.SourcePlay(self.id)
 		if not self.ready then
