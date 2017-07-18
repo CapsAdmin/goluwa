@@ -126,6 +126,8 @@ local repos = {
 		url = "https://github.com/raptorjit/raptorjit",
 		branch = "master",
 		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
+		bin = "raptorjit",
+		commit = "d3e36e7920c641410dfcdf1fc6c10069fd3192a6",
 	},
 }
 
@@ -187,12 +189,14 @@ local function build(info, extra_flags, extra_id)
 		end
 	end
 
+	local name = info.bin or "luajit"
+
 	execute(
 		"(" ..
-			"if [ -d ./" .. dir .. " ]; then git -C ./" .. dir .. " pull; else git clone -b " .. info.branch .. " " .. info.url .. " " .. dir .. " --depth 1; fi" .. "; " ..
+			"if [ -d ./" .. dir .. " ]; then git -C ./" .. dir .. " pull; git -C ./" .. dir .. " checkout " .. info.commit .. "; else git clone -b " .. info.branch .. " " .. info.url .. " " .. dir .. " --depth 1; fi" .. "; " ..
 			patch_cmd ..
 			"make -C " .. dir .. " " .. flags .. "; " ..
-			"cp " .. dir .. "/src/luajit \"" .. bin_dir .. "/luajit_" .. id .. "\"" ..
+			"cp " .. dir .. "/src/"..name.." \"" .. bin_dir .. "/luajit_" .. id .. "\"" ..
 		") &"
 	)
 end
