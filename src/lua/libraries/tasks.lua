@@ -159,7 +159,7 @@ function tasks.CreateTask(on_start, on_finish)
 
 	tasks.created[self] = self
 
-	if enabled:Get() and not event.TimerExists("tasks") then
+	if enabled:Get() and not event.IsTimer("tasks") then
 		event.Timer("tasks", 0.25, 0, tasks.Update)
 	end
 
