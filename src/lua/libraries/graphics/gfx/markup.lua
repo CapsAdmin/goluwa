@@ -94,8 +94,9 @@ function META:AddTable(tbl, tags)
 	end
 end
 
-function META:BeginLifeTime(time)
-	table.insert(self.chunks, {type = "start_fade", val = system.GetElapsedTime() + time})
+function META:BeginLifeTime(time, fade_time)
+	fade_time = fade_time or 2
+	table.insert(self.chunks, {type = "start_fade", val = system.GetElapsedTime() + time + fade_time, fade_time = fade_time, time = time})
 end
 
 function META:EndLifeTime()
@@ -419,7 +420,8 @@ do -- tags
 		end,
 
 		post_draw_chunks = function(markup, self, chunk)
-			gfx.DrawLine(chunk.x, chunk.top, chunk.right, chunk.top)
+			local y_offset = markup.HeightSpacing + 1
+			gfx.DrawLine(chunk.x - 2, chunk.top - y_offset, chunk.right + 2, chunk.top - y_offset)
 		end,
 	}
 	META.tags.console =
@@ -443,8 +445,8 @@ do -- tags
 		end,
 
 		post_draw_chunks = function(markup, self, chunk)
-
-			gfx.DrawLine(chunk.x, chunk.top, chunk.right, chunk.top)
+			local y_offset = markup.HeightSpacing + 1
+			gfx.DrawLine(chunk.x - 2, chunk.top - y_offset, chunk.right + 2, chunk.top - y_offset)
 		end,
 	}
 
@@ -463,9 +465,10 @@ do -- tags
 		arguments = {},
 		post_draw_chunks = function(markup, self, chunk)
 			render2d.PushColor(1, 0, 0, 1)
-			-- todo: LOL
+			local y_offset = markup.HeightSpacing + 1
+
 			for x = chunk.x, chunk.right do
-				gfx.DrawLine(x, chunk.top + math.sin(x), x+1, chunk.top +math.sin(x))
+				gfx.DrawLine(x, chunk.top + math.sin(x) - y_offset, x + 1, chunk.top + math.sin(x) - y_offset)
 			end
 
 			render2d.PopColor()
@@ -505,8 +508,22 @@ do -- tags
 		arguments = {0, 1, 1},
 
 		pre_draw = function(markup, self, x,y, h, s, v)
-			local r,g,b = ColorHSV(h,s,v):Unpack()
-			render2d.SetColor(r, g, b, 1)
+			local c = ColorHSV(h,s,v)
+			local r,g,b = c:Unpack()
+			render2d.PushColor(r, g, b, 1)
+
+			for i = self.i+1, math.huge do
+				local chunk = markup.chunks[i]
+				if not chunk or (chunk.type == "custom" and chunk.val.type == "hsv") then break end
+
+				if chunk.color then
+					chunk.color = c
+				end
+			end
+		end,
+
+		post_draw = function()
+			render2d.PopColor()
 		end,
 	}
 
@@ -515,7 +532,21 @@ do -- tags
 		arguments = {1, 1, 1, 1},
 
 		pre_draw = function(markup, self, x,y, r,g,b,a)
-			render2d.SetColor(r, g, b, a)
+			local c = Color(r,g,b,a)
+			render2d.PushColor(r, g, b, 1)
+
+			for i = self.i+1, math.huge do
+				local chunk = markup.chunks[i]
+				if not chunk or (chunk.type == "custom" and chunk.val.type == "hsv") then break end
+
+				if chunk.color then
+					chunk.color = c
+				end
+			end
+		end,
+
+		post_draw = function()
+			render2d.PopColor()
 		end,
 	}
 
@@ -587,7 +618,7 @@ do -- tags
 		end,
 
 		pre_draw = function(markup, self, x,y, gravity_y, gravity_x, vx, vy, drag, rand_mult)
-			local delta = system.GetFrameTime() * 5
+			local delta = system.GetFrameTime() * 2
 
 			local part = self.part
 
@@ -642,7 +673,6 @@ do -- tags
 
 			render2d.Translate(part.pos.x, part.pos.y)
 
-
 			render2d.Translate(center_x, center_y)
 				render2d.Rotate(math.deg(math.atan2(part.vel.y, part.vel.x)))
 			render2d.Translate(-center_x, -center_y)
@@ -686,24 +716,6 @@ do -- tags
 			if not self.mat or not self.mat:IsValid() then return end
 			render2d.SetTexture(self.mat)
 			render2d.DrawRect(x, y, self.mat:GetSize().x or size, self.mat:GetSize().y or size)
-		end,
-	}
-
-	META.tags.silkicon =
-	{
-		arguments = {"world", {default = 1}},
-
-		init = function(markup, self, path)
-			self.mat = render.CreateTextureFromPath("textures/silkicons/" .. path .. ".png")
-		end,
-
-		get_size = function(markup, self, path, size_mult)
-			return 16, 16
-		end,
-
-		pre_draw = function(markup, self, x,y, path)
-			render2d.SetTexture(self.mat)
-			render2d.DrawRect(x, y, self.w, self.h)
 		end,
 	}
 end
@@ -834,8 +846,6 @@ do -- tags matrix
 			render2d.Translate(center_x, center_y)
 				render2d.Rotate(math.rad(deg))
 			render2d.Translate(-center_x, -center_y)
-
-
 		end,
 
 		post_draw = function()
@@ -910,9 +920,9 @@ do -- tags matrix
 			-- |     c    d - ? |
 			--
 			-- (a - ?) (d - ?) - bc = 0
-			-- ?² + (-a - d) ? + ad - bc = 0
+			-- ?Â² + (-a - d) ? + ad - bc = 0
 			--
-			--     a + d ± sqrt ((a + d)² - 4 (ad - bc))
+			--     a + d Â± sqrt ((a + d)Â² - 4 (ad - bc))
 			-- ? = -------------------------------------
 			--                      2
 
@@ -1472,7 +1482,7 @@ do -- invalidate
 
 				chunk.chars[i] = {
 					x = x,
-					y = chunk.y,
+					y = y,
 					w = char_width,
 					h = char_height,
 					right = x + char_width,
@@ -1599,10 +1609,15 @@ do -- invalidate
 					local start_found = 1
 					local stops = {}
 
+					local tag_chunk = chunk
+
 					for i = i+1, #chunks do
 						local chunk = chunks[i]
 
 						if chunk then
+
+							chunk.tag_chunks = chunk.tag_chunks or {}
+							chunk.tag_chunks[tag_chunk] = tag_chunk
 
 							if not last_y then last_y = chunk.y end
 
@@ -1786,7 +1801,7 @@ do -- invalidate
 			end
 
 			chunk.right = chunk.x + chunk.w
-			chunk.top = chunk.y
+			chunk.top = chunk.y + chunk.h
 		end
 
 		-- add the last line since there's probably not a newline at the very end
@@ -2656,20 +2671,19 @@ do -- input
 
 		local chunk = self:CaretFromPixels(x, y).char.chunk
 
-		if chunk.type == "string" and chunk.chunks_inbetween then
-			chunk = chunk.chunks_inbetween[1]
-		end
-
-		if
-			chunk.type == "custom" and
-			self:CallTagFunction(chunk, "mouse", button, press, x, y) == false
-		then
-			return
+		if chunk.type == "custom" then
+			if self:CallTagFunction(chunk, "mouse", button, press, x, y) == false then
+				return
+			end
+		elseif chunk.tag_chunks then
+			for chunk in pairs(chunk.tag_chunks) do
+				if self:CallTagFunction(chunk, "mouse", button, press, x, y) == false then
+					return
+				end
+			end
 		end
 
 		if button == "button_1" then
-
-
 			if press then
 				if self.last_click and self.last_click > system.GetElapsedTime() then
 					self.times_clicked = (self.times_clicked or 1) + 1
@@ -2827,7 +2841,15 @@ do -- drawing
 						start_remove
 					then
 						if chunk.type == "start_fade" then
-							chunk.alpha = math.min(math.max(chunk.val - system.GetElapsedTime(), 0), 1) ^ 5
+
+							local time = chunk.val - system.GetElapsedTime()
+
+							if time <= chunk.fade_time then
+								chunk.alpha = math.clamp(time / chunk.fade_time, 0, 1)
+							else
+								chunk.alpha = 1
+							end
+
 							render2d.SetAlphaMultiplier(chunk.alpha)
 
 							if chunk.alpha <= 0 then
