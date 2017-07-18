@@ -535,7 +535,7 @@ do -- structures
 			if data.match then
 				local key, val = next(data.match)
 				if (type(val) == "function" and not val(out[key])) or out[key] ~= val then
-					goto continue
+					goto continue_
 				end
 			end
 
@@ -627,7 +627,7 @@ do -- structures
 				end
 			end
 
-			::continue::
+			::continue_::
 		end
 
 		return out
