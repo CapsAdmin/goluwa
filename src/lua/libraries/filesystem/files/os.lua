@@ -46,8 +46,10 @@ function CONTEXT:IsFile(path_info)
 end
 
 function CONTEXT:IsFolder(path_info)
-	local info = fs.getattributes(path_info.full_path:sub(0, -2))
-	return info and info.type == "directory"
+	if path_info.full_path:endswith("/") then
+		local info = fs.getattributes(path_info.full_path:sub(0, -2))
+		return info and info.type == "directory"
+	end
 end
 
 function CONTEXT:ReadAll()
