@@ -1,7 +1,7 @@
 local vfs = (...) or _G.vfs
 
-vfs.loaded_addons = {}
-vfs.disabled_addons = {}
+vfs.loaded_addons = vfs.loaded_addons or {}
+vfs.disabled_addons = vfs.disabled_addons or {}
 
 function vfs.MountAddons(dir)
 	for info in vfs.Iterate(dir, true, nil, nil, nil, true) do
