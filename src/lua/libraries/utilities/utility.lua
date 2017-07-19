@@ -9,6 +9,8 @@ do
 	local function replace(start, stop, def)
 		local os = def:match("%$(.+)")
 
+		if not os then return end
+
 		if os == "WIN32" or os == "WINDOWS" then
 			os = "Windows"
 		elseif os == "LINUX" then
@@ -48,10 +50,11 @@ do
 		if not str or str == "" then return nil, "data is empty" end
 		if lower_or_modify_keys == true then lower_or_modify_keys = string.lower end
 
+		str = str:gsub("[\r\n]", "\n")
 		str = str:replace("http://", "___L_O_L___")
 		str = str:replace("https://", "___L_O_L_2___")
 
-		str = str:gsub("//.-\n", "")
+		str = str:gsub("//.-\n", "\n")
 
 		str = str:replace("___L_O_L___", "http://")
 		str = str:replace("___L_O_L_2___", "https://")
@@ -74,7 +77,6 @@ do
 		for i, char in ipairs(chars) do
 			if (char == [["]] or (no_quotes and char:find("%s"))) and chars[i-1] ~= "\\" then
 				if in_string then
-
 					if key then
 						if lower_or_modify_keys then
 							key = lower_or_modify_keys(key)
@@ -165,6 +167,12 @@ do
 		end
 
 		return out
+	end
+
+	if RELOAD then
+		local str = vfs.Read("/media/caps/Elements/SteamLibrary/steamapps/common/Team Fortress 2/tf/resource/tf_english.txt")
+		str = str:replace("\0", "")
+		table.print(utility.VDFToTable(str, true))
 	end
 end
 
