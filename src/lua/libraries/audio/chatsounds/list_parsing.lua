@@ -247,7 +247,7 @@ end
 
 function chatsounds.BuildSoundInfo()
 	local thread = tasks.CreateTask()
-
+	thread:SetEnsureFPS(5)
 	thread.debug = true
 
 	function thread:OnStart()
@@ -328,140 +328,144 @@ function chatsounds.BuildSoundInfo()
 		end
 
 		for game, sound_info in pairs(sound_info) do
-			if captions[game] then
-				local max = table.count(captions[game])
+			if not vfs.IsFile("data/chatsounds/sound_info/"..game..".dat") then
+				if captions[game] then
+					local max = table.count(captions[game])
 
-				for sound_name, text in pairs(captions[game]) do
-					self:ReportProgress("parsing "..game.." captions", max)
+					for sound_name, text in pairs(captions[game]) do
+						self:ReportProgress("parsing "..game.." captions", max)
+						self:Wait()
+
+						if not sound_info[sound_name] and sound_name:sub(1,1) == "#" then
+							sound_name = sound_name:lower()
+							sound_name = sound_name:gsub("#", "")
+							sound_name = sound_name:gsub("\\", "/")
+							sound_info[sound_name] = {
+								wave = sound_name,
+							}
+						end
+
+						if sound_info[sound_name] then
+							if type(text) == "table" then
+								text = text[1]
+							end
+
+							local data = {}
+
+							text = text:gsub("(<.->)", function(tag)
+								data.tags = data.tags or {}
+								table.insert(data.tags, tag)
+
+								return ""
+							end)
+
+							if data.tags then
+								for i, tag in ipairs(data.tags) do
+									local key, args = tag:match("<(.-):(.+)>")
+									if key and args then
+										args = args:split(",")
+										for k,v in pairs(args) do args[k] = tonumber(v) or v end
+									else
+										key = tag:match("<(.-)>")
+									end
+
+									data.tags[i] = {type = key, args = args}
+								end
+							end
+
+							local name, rest = text:match("(.-):(.+)")
+
+							if not name then
+								name, rest = text:match("%[(.-)%] (.+)")
+							end
+
+							if name then
+								data.name = name
+								data.text = rest
+							else
+								data.text = text
+							end
+
+							data.text = data.text:trim()
+
+							sound_info[sound_name].caption = data
+						end
+					end
+				end
+
+				local out = {}
+				local max = table.count(sound_info)
+
+				for sound_name, info in pairs(sound_info) do
+					self:ReportProgress("parsing "..game.." sound info", max)
 					self:Wait()
 
-					if not sound_info[sound_name] and sound_name:sub(1,1) == "#" then
-						sound_name = sound_name:lower()
-						sound_name = sound_name:gsub("#", "")
-						sound_name = sound_name:gsub("\\", "/")
-						sound_info[sound_name] = {
-							wave = sound_name,
-						}
-					end
+					local paths
 
-					if sound_info[sound_name] then
-						if type(text) == "table" then
-							text = text[1]
-						end
-
-						local data = {}
-
-						text = text:gsub("(<.->)", function(tag)
-							data.tags = data.tags or {}
-							table.insert(data.tags, tag)
-
-							return ""
-						end)
-
-						if data.tags then
-							for i, tag in ipairs(data.tags) do
-								local key, args = tag:match("<(.-):(.+)>")
-								if key and args then
-									args = args:split(",")
-									for k,v in pairs(args) do args[k] = tonumber(v) or v end
-								else
-									key = tag:match("<(.-)>")
-								end
-
-								data.tags[i] = {type = key, args = args}
-							end
-						end
-
-						local name, rest = text:match("(.-):(.+)")
-
-						if not name then
-							name, rest = text:match("%[(.-)%] (.+)")
-						end
-
-						if name then
-							data.name = name
-							data.text = rest
+					if info.rndwave then
+						if type(info.rndwave.wave) == "table" then
+							paths = info.rndwave.wave
 						else
-							data.text = text
+							paths = {info.rndwave.wave} -- ugh
+						end
+					elseif type(info.wave) == "table" then
+						paths = info.wave
+					else
+						paths = {info.wave} -- ugh
+					end
+
+					for k, v in pairs(paths) do
+						v = v:lower()
+						v = v:gsub("\\", "/")
+
+						local start_symbol
+
+						if v:sub(1, 1):find("%p") then
+							start_symbol, v = v:match("(%p+)(.+)")
 						end
 
-						data.text = data.text:trim()
+						v = "sound/" .. v
 
-						sound_info[sound_name].caption = data
-					end
-				end
-			end
+						out[v] = out[v] or {}
 
-			local out = {}
-			local max = table.count(sound_info)
+						if v:find("%.wav") then
+							local file = vfs.Open(v)
 
-			for sound_name, info in pairs(sound_info) do
-				self:ReportProgress("parsing "..game.." sound info", max)
-				self:Wait()
+							if file then
+								out[v].sound_data = get_sound_data(file)
 
-				local paths
-
-				if info.rndwave then
-					if type(info.rndwave.wave) == "table" then
-						paths = info.rndwave.wave
-					else
-						paths = {info.rndwave.wave} -- ugh
-					end
-				elseif type(info.wave) == "table" then
-					paths = info.wave
-				else
-					paths = {info.wave} -- ugh
-				end
-
-				for k, v in pairs(paths) do
-					v = v:lower()
-					v = v:gsub("\\", "/")
-
-					local start_symbol
-
-					if v:sub(1, 1):find("%p") then
-						start_symbol, v = v:match("(%p+)(.+)")
-					end
-
-					v = "sound/" .. v
-
-					out[v] = out[v] or {}
-
-					if v:find("%.wav") then
-						local file = vfs.Open(v)
-
-						if file then
-							out[v].sound_data = get_sound_data(file)
-
-							out[v].byte_size = file:GetSize()
-							file:Close()
+								out[v].byte_size = file:GetSize()
+								file:Close()
+							end
+						else
+							out[v].file_not_found = true
 						end
-					else
-						out[v].file_not_found = true
+
+						out[v].name = info.real_name
+						out[v].path_symbol = start_symbol
+
+						table.merge(out[v], info)
+
+						if type(out[v].pitch) == "string" and out[v].pitch:find(",") then
+							out[v].pitch = out[v].pitch:gsub("%s+", ""):split(",")
+							for k,n in pairs(out[v].pitch) do out[v].pitch[k] = tonumber(n) or n end
+						end
+
+						out[v].operator_stacks = nil
+						out[v].real_name = nil
+						out[v].rndwave = nil
+						out[v].wave = nil
 					end
-
-					out[v].name = info.real_name
-					out[v].path_symbol = start_symbol
-
-					table.merge(out[v], info)
-
-					if type(out[v].pitch) == "string" and out[v].pitch:find(",") then
-						out[v].pitch = out[v].pitch:gsub("%s+", ""):split(",")
-						for k,n in pairs(out[v].pitch) do out[v].pitch[k] = tonumber(n) or n end
-					end
-
-					out[v].operator_stacks = nil
-					out[v].real_name = nil
-					out[v].rndwave = nil
-					out[v].wave = nil
 				end
+
+				game = vfs.FixIllegalCharactersInPath(game)
+
+				logn("saving data/chatsounds/sound_info/"..game..".dat")
+				serializer.WriteFile("msgpack", "data/chatsounds/sound_info/"..game..".dat", out)
+				--serializer.WriteFile("luadata", "chatsounds/"..game.."_sound_info.lua", out)
+			else
+				logn("sound info for " .. game .. " already exists. skipping")
 			end
-
-			game = vfs.FixIllegalCharactersInPath(game)
-
-			logn("saving data/chatsounds/sound_info/"..game..".dat")
-			serializer.WriteFile("msgpack", "data/chatsounds/sound_info/"..game..".dat", out)
-			--serializer.WriteFile("luadata", "chatsounds/"..game.."_sound_info.lua", out)
 		end
 
 		logn("finished building the sound info table")
@@ -591,6 +595,7 @@ function chatsounds.BuildSoundLists()
 	local found = {}
 
 	local thread = tasks.CreateTask()
+	thread:SetEnsureFPS(5)
 
 	thread.debug = true
 
@@ -642,12 +647,22 @@ function chatsounds.BuildSoundLists()
 
 	function thread:OnUpdate()
 		if wait(1) then
-			logn(table.count(found) .. " realms found")
-			local i = 0
-			local size = 0
-			for k,v in pairs(found) do size = size + #k for k,v in pairs(v) do i = i + 1 size = size + #v end end
+			for game_name, found in pairs(found) do
+				logn(game_name, ": ", table.count(found) .. " realms found")
 
-			logf("%i sentences found (%s)\n", i, utility.FormatFileSize(size))
+				local i = 0
+				local size = 0
+
+				for k, v in pairs(found) do
+					size = size + #k
+					for k, v in pairs(v) do
+						i = i + 1
+						size = size + #v
+					end
+				end
+
+				logf(game_name, ": %i sentences found (%s)\n", i, utility.FormatFileSize(size))
+			end
 		end
 
 		if wait(10) then
