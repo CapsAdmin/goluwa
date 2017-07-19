@@ -134,34 +134,40 @@ function steam.GetSourceGames()
 						local done = {}
 
 						for _, v in pairs(tbl.filesystem.searchpaths) do
-							for _, v in pairs(type(v) == "string" and {v} or v) do
-								if v:find("|", nil, true) then
-									v = v:replace("|gameinfo_path|", path:match("(.+/)"))
-									v = v:replace("|gameinfo_path|", dir)
-									v = v:replace("|all_source_engine_paths|", dir)
+							for _, path in pairs(type(v) == "string" and {v} or v) do
+								if path:find("|", nil, true) then
+									path = path:replace("|gameinfo_path|", tbl.gameinfo_path:match("(.+/)"))
+									path = path:replace("|all_source_engine_paths|", dir)
 								else
-									v = dir .. v
+									path = dir .. path
 								end
 
-								v = vfs.FixPathSlashes(v)
+								path = vfs.FixPathSlashes(path)
 
-								if v:endswith(".") then
-									v = v:sub(0,-2)
+								if path:endswith(".") then
+									path = path:sub(0,-2)
 								end
 
-								if not done[v] then
-
-									if v:endswith("*") then
-										for _, path in ipairs(vfs.Find(v:sub(0, -2), true)) do
-											if vfs.IsDirectory(path) then
+								if path:endswith("*") then
+									for _, path in ipairs(vfs.Find(path:sub(0, -2), true)) do
+										if vfs.IsDirectory(path) then
+											if not path:endswith("/") and not vfs.GetExtensionFromPath(path) then
+												path = path .. "/"
+											end
+											if not done[path] then
 												table.insert(fixed, path)
+												done[path] = true
 											end
 										end
-									else
-										table.insert(fixed, v)
 									end
-
-									done[v] = true
+								else
+									if not path:endswith("/") and not vfs.GetExtensionFromPath(path) and vfs.IsDirectory(path) then
+										path = path .. "/"
+									end
+									if not done[path] then
+										table.insert(fixed, path)
+										done[path] = true
+									end
 								end
 							end
 						end
