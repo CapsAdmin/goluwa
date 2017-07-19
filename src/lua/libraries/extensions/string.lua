@@ -180,6 +180,14 @@ function string.endswith(a, b)
 	return a:sub(-#b) == b
 end
 
+function string.endswiththese(a, b)
+	for _, str in ipairs(b) do
+		if a:sub(-#str) == str then
+			return true
+		end
+	end
+end
+
 function string.startswith(a, b)
 	return a:sub(0, #b) == b
 end
