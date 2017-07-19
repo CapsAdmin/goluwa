@@ -95,11 +95,11 @@ end
 
 do
 	local out
-	local function search(path, ext, callback, dir_blacklist)
+	local function search(path, ext, callback, dir_blacklist, userdata)
 		for _, v in ipairs(vfs.GetFiles({path = path, verbose = true})) do
 			if not ext or v.name:endswiththese(ext) then
 				if callback then
-					if callback(v.full_path, v.userdata, v) ~= nil then
+					if callback(v.full_path, v.userdata or userdata, v) ~= nil then
 						return
 					end
 				else
@@ -120,7 +120,7 @@ do
 					end
 				end
 				if okay then
-					search(dir .. "/", ext, callback, dir_blacklist)
+					search(dir .. "/", ext, callback, dir_blacklist, v.userdata or userdata)
 				end
 			end
 		end
