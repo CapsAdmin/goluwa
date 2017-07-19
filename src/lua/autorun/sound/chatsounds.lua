@@ -3,7 +3,7 @@ local init = false
 event.AddListener("ClientChat", "chatsounds", function(client, txt, seed)
 	if not init then
 		chatsounds.Initialize()
-		chatsounds.BuildFromGithub("https://api.github.com/repos/Metastruct/garrysmod-chatsounds/git/trees/master?recursive=1")
+		chatsounds.BuildFromGithub("PAC3-Server/chatsounds")
 		for k,v in ipairs(steam.GetMountedSourceGames()) do
 			chatsounds.LoadListFromAppID(v.filesystem.steamappid)
 		end
