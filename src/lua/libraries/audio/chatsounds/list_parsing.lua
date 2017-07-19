@@ -178,7 +178,7 @@ end
 
 function chatsounds.BuildFromGithub(repo, location)
 	local url = "https://api.github.com/repos/"..repo.."/git/trees/master?recursive=1"
-	location = location or "custom"
+	location = location or "sounds/chatsounds"
 
 	resource.Download(url, function(path)
 
