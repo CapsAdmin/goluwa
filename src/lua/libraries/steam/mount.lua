@@ -161,10 +161,26 @@ function steam.GetSourceGames()
 										end
 									end
 								else
-									if not path:endswith("/") and not vfs.GetExtensionFromPath(path) and vfs.IsDirectory(path) then
-										path = path .. "/"
+									if not path:endswith("/") then
+										if vfs.GetExtensionFromPath(path) then
+											if not vfs.IsFile("os:" .. path) then
+												path = path:gsub("(.+/.+)%.vpk", "%1_dir.vpk")
+											end
+										elseif vfs.IsDirectory(path) then
+											path = path .. "/"
+										end
 									end
-									if not done[path] then
+
+									local pak = path .. "pak01_dir.vpk"
+
+									if vfs.IsFile(pak) then
+										if not done[pak] then
+											table.insert(fixed, pak)
+											done[pak] = true
+										end
+									end
+
+									if not done[path] and vfs.IsDirectory(path) then
 										table.insert(fixed, path)
 										done[path] = true
 									end
@@ -205,30 +221,17 @@ function steam.MountSourceGame(game_info)
 	steam.UnmountSourceGame(game_info)
 
 	for _, path in pairs(game_info.filesystem.searchpaths) do
-		if path:endswith(".vpk") then
-			path = "os:" .. path:gsub("(.+)%.vpk", "%1_dir.vpk")
-		else
+		if not path:endswith(".vpk") then
 			path = "os:" .. path
 
 			for _, v in pairs(vfs.Find(path .. "/maps/workshop/")) do
 				llog("mounting workshop map %s", v)
 				vfs.Mount(path .. "/maps/workshop/" .. v, "maps/", game_info)
 			end
-
-			local pak = path .. "/pak01_dir.vpk"
-
-			if vfs.IsFile(pak) then
-				llog("mounting %s", pak)
-				vfs.Mount(pak, nil, game_info)
-			end
 		end
 
-		if vfs.Exists(path) then
-			llog("mounting %s", path)
-			vfs.Mount(path, nil, game_info)
-		else
-			llog("%s not found", path)
-		end
+		llog("mounting %s", path)
+		vfs.Mount(path, nil, game_info)
 	end
 
 	if str_game_info then
@@ -276,6 +279,7 @@ end
 
 do
 	local translate = {
+		[220] = {"half life 2", "hl2"},
 		[630] = {"alien swarm", "as"},
 		[420] = {"hl2ep2", "half-life 2: episode two", "ep2"},
 		[320] = {"hl2dm", "half-life 2: deathmatch"},
@@ -286,7 +290,7 @@ do
 		[550] = {"left 4 dead 2", "l4d2"},
 		[280] = {"half-life: source", "hls"},
 		[500] = {"left 4 dead"},
-		[220] = {"half-life 2: lost coast", "hl2lc"},
+		[340] = {"half-life 2: lost coast", "hl2lc"},
 		[400] = {"portal"},
 		[300] = {"day of defeat: source", "dods", "dod"},
 		[380] = {"half-life 2: episode one", "hl2e1", "ep1"},
