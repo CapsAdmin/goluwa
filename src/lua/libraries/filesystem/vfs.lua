@@ -94,7 +94,7 @@ do -- mounting/links
 					out_i = out_i + 1
 				end
 			else
-				out[out_i] = {path_info = path_info, context = context}
+				out[out_i] = {path_info = path_info, context = context, userdata = path_info.userdata}
 				out_i = out_i + 1
 			end
 		end
