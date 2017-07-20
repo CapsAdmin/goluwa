@@ -115,14 +115,16 @@ add_helper("Write", "WriteBytes", "write", function(path, content, on_change)
 	end
 
 	if path:startswith("data/") then
+		path = path:sub(#"data/" + 1)
+
 		local fs = vfs.GetFileSystem("os")
+
 		if fs then
+			local base = e.USERDATA_FOLDER
 			local dir = ""
-			local base
 			for folder in path:gmatch("(.-/)") do
 				dir = dir .. folder
-				base = base or vfs.GetAbsolutePath(dir)
-				fs:CreateFolder({full_path = base .. dir:sub(#"data/"+1)})
+				fs:CreateFolder({full_path = base .. dir})
 			end
 		end
 	end

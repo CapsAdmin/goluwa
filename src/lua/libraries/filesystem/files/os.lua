@@ -26,7 +26,7 @@ CONTEXT.Name = "os"
 CONTEXT.Position = 0
 
 function CONTEXT:CreateFolder(path_info)
-	if path_info.full_path:startswith(e.DATA_FOLDER) or path_info.full_path:startswith(e.ROOT_FOLDER) then
+	if path_info.full_path:startswith(e.DATA_FOLDER) or path_info.full_path:startswith(e.USERDATA_FOLDER) or path_info.full_path:startswith(e.ROOT_FOLDER) then
 		fs.createdir(path_info.full_path)
 		return true
 	end
