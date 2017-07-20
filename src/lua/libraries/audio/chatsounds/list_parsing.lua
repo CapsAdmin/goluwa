@@ -186,7 +186,7 @@ function chatsounds.BuildFromGithub(repo, location)
 		local list = {}
 
 		local str = vfs.Read(path)
-		for path in str:gmatch('"path":%s-"("'..location..'/.-)"') do
+		for path in str:gmatch('"path":%s-"('..location..'/.-)"') do
 			local realm, trigger, file_name = path:match(location .. "/(.-)/(.-)/(.+)%.")
 			if not file_name then
 				realm, trigger = path:match(location .. "/(.-)/(.+)%.")
