@@ -212,7 +212,7 @@ function chatsounds.BuildFromGithub(repo, location)
 		tree = chatsounds.TableToTree(tree)
 		chatsounds.tree = chatsounds.tree or {}
 		table.merge(chatsounds.tree, tree)
-	end)
+	end, nil, nil, nil, true)
 end
 
 function chatsounds.BuildAutocomplete()
@@ -896,7 +896,7 @@ function chatsounds.LoadListFromAppID(name)
 				chatsounds.BuildAutocomplete()
 			end, nil, "chatsounds_autocomplete")
 		end
-	end)
+	end, nil, nil, nil, true)
 end
 
 function chatsounds.AddSound(trigger, realm, ...)
