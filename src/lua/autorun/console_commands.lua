@@ -166,8 +166,6 @@ do -- source engine
 	end)
 end
 
-commands.Add("clear", commands.Clear)
-
 local tries = {
 	{path = "__MAPNAME__"},
 	{path = "maps/__MAPNAME__.obj"},
