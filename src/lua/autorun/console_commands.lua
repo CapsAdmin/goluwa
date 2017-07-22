@@ -1,3 +1,7 @@
+commands.Add("exit", function(num)
+	system.ShutDown(num)
+end)
+
 commands.Add("expand_lights", function(num)
 	num = math.max(tonumber(num), 0.01)
 	for k,v in pairs(entities.GetAll()) do
