@@ -1,6 +1,6 @@
 local repl = _G.repl or {}
 
-local curses = desire("ncurses")
+local curses = desire("curses")
 
 if not curses then return end
 
@@ -32,10 +32,20 @@ local char_translate =
 	[3] = "KEY_COPY",
 	[22] = "KEY_PASTE",
 
+	[4] = "KEY_DC",
+	[23] = "CTL_BACKSPACE",
+	[5] = "KEY_END",
+	[2] = "KEY_LEFT",
+	[6] = "KEY_RIGHT",
+
 	["kRIT5"] = "CTL_RIGHT",
 	["kLFT5"] = "CTL_LEFT",
+
 	["\27[1;5D"] = "CTL_LEFT",
 	["\27[1;5C"] = "CTL_RIGHT",
+
+	["\27[D"] = "CTL_LEFT",
+	["\27[C"] = "CTL_RIGHT",
 
 	["\27\79\72"] = "KEY_HOME",
 	["\27\79\70"] = "KEY_END",
@@ -87,7 +97,7 @@ local markup_translate = {
 }
 
 function repl.Initialize()
-	if SERVER or not render2d then
+	if SERVER or not gfx then
 		-- the renderer might fail to load :( !
 		local hack = false
 
@@ -96,8 +106,8 @@ function repl.Initialize()
 			hack = true
 		end
 
-		_G.render2d = {GetDefaultFont = function() end}
-		runfile("lua/libraries/graphics/gfx/markup/markup.lua")
+		_G.gfx = {GetDefaultFont = function() end}
+		runfile("lua/libraries/graphics/gfx/markup.lua")
 
 		if hack then
 			SERVER = nil
@@ -106,6 +116,7 @@ function repl.Initialize()
 
 	c.markup = gfx.CreateMarkup()
 	c.markup:SetFixedSize(14)
+	c.markup:SetEditable(true)
 
 	repl.SetInputHeight(repl.input_height)
 
@@ -115,54 +126,53 @@ function repl.Initialize()
 	event.Timer("curses", 1/30, 0, function()
 		if GRAPHICS and (window.IsFocused() and not dirty) then return end
 
-		local key = {}
+		local chars = {}
+		local key
 
 		for i = 1, math.huge do
 			local byte = curses.wgetch(c.input_window)
+			if byte == -1 then break end
 
-			if byte > 0 and byte < 255 then
-				key[i] = utf8.char(byte)
-			else
-				if byte > 255 then
-					key = ffi.string(curses.keyname(byte))
-				else
-					key = table.concat(key)
-				end
+			if curses.has_key(byte) then
+				key = ffi.string(curses.keyname(byte))
 				break
+			else
+				if char_translate[byte] then
+					key = char_translate[byte]
+					break
+				elseif byte == 27 then
+					local char1, char2 = curses.wgetch(c.input_window), curses.wgetch(c.input_window)
+					if char1 > 0 and char2 > 0 then
+						local str = string.char(byte, char1, char2)
+						if char_translate[str] then
+							key = char_translate[str]
+							break
+						end
+					end
+					curses.ungetch(char2)
+					curses.ungetch(char1)
+				elseif byte > 32 or string.char(byte):find("%s") then
+					table.insert(chars, utf8.char(byte))
+				end
 			end
 		end
 
-		if #key > 0 then
-			-- super hacks
-			for chars in pairs(char_translate) do
-				if type(chars) == "string" then
-					if key:sub(1, #chars) == chars then
-						key = chars
-					end
-				end
-			end
-
-			local temp = char_translate[key] or char_translate[key:byte()]
-
-			if temp then
-				key = temp
-			--elseif #key > 1 and not (key:find("KEY_") or key:find("CTL_") or key:find("PAD")) then
-				--logn("unknown key pressed: ", key)
-				--return
-			end
-
+		if key then
 			c.markup:SetControlDown(key:find("CTL_") ~= nil)
 			c.markup:SetShiftDown(key:find("KEY_S") ~= nil)
 
 			if (key:find("KEY_") or key:find("CTL_") or key:find("PAD")) and event.Call("ReplKeyInput", key) ~= false then
 				repl.HandleKey(key)
-			elseif event.Call("ReplCharInput", key) ~= false then
-				if key:byte(1) >= 32 then
-					repl.HandleChar(key)
-				end
+				repl.SetInputText(c.markup:GetText())
 			end
+		end
 
-			repl.SetInputText(c.markup:GetText())
+		if chars[1] then
+			chars = table.concat(chars)
+			if event.Call("ReplCharInput", chars) ~= false then
+				repl.HandleChar(chars)
+				repl.SetInputText(c.markup:GetText())
+			end
 		end
 
 		if last_w ~= curses.COLS or last_h ~= curses.LINES then
@@ -330,6 +340,8 @@ function repl.Clear()
 	repl.SetScroll()
 	event.Call("ReplClear")
 end
+
+commands.Add("clear", repl.Clear)
 
 function repl.SetInputHeight(h)
 	h = math.max(h or 1, 1)
@@ -522,10 +534,9 @@ function repl.SetInputText(str)
 		repl.SyntaxPrint(str, c.input_window)
 	end
 
-	local y = c.markup:GetCaretPosition().y
-	local x = c.markup:GetCaretPosition().x
+	local pos = c.markup:GetCaretPosition()
 
-	curses.wmove(c.input_window, y-1, x)
+	curses.wmove(c.input_window, pos.y-1, pos.x)
 
 	curses.wnoutrefresh(c.input_window)
 	dirty = true
@@ -541,14 +552,21 @@ do
 	function repl.SetStatusText(str)
 		curses.werase(c.status_window)
 
-		curses.wattron(c.status_window, curses.COLOR_PAIR(COLORPAIR_STATUS))
-		curses.wbkgdset(c.status_window, COLORPAIR_STATUS)
+		local attr = curses.COLOR_PAIR(COLORPAIR_STATUS)
+		curses.wattron(window, attr)
+		curses.wbkgdset(c.status_window, attr)
 		curses.waddstr(c.status_window, str)
-		curses.wattroff(c.status_window, curses.COLOR_PAIR(COLORPAIR_STATUS))
+		curses.wattroff(window, attr)
 
 		curses.mvwin(c.status_window, 0, (curses.COLS / 2) - (#str / 2))
 
 		curses.wnoutrefresh(c.status_window)
+
+		-- this prevents the cursor from going up in the title bar (??)
+		local pos = c.markup:GetCaretPosition()
+		curses.wmove(c.input_window, pos.y-1, pos.x)
+		curses.wnoutrefresh(c.input_window)
+
 		dirty = true
 		last_status = str
 	end
@@ -578,10 +596,12 @@ function repl.HandleKey(key)
 		repl.SetScroll(repl.GetScroll() + curses.LINES / 2)
 	end
 
-	if key == "KEY_PASTE" then
-		c.markup:Paste(window.GetClipboard())
-	elseif key == "KEY_COPY" then
-		window.SetClipboard(c.markup:GetText())
+	if window then
+		if key == "KEY_PASTE" then
+			c.markup:Paste(window.GetClipboard())
+		elseif key == "KEY_COPY" then
+			window.SetClipboard(c.markup:GetText())
+		end
 	end
 
 	if key == "KEY_TAB" then
@@ -638,9 +658,11 @@ function repl.HandleKey(key)
 	end
 
 
-	if key == "KEY_ENTER" and last_key ~= "CTL_ENTER" then
-		repl.SetInputText()
+	if key == "KEY_ENTER" then
 		local line = c.markup:GetText()
+		c.markup:Clear()
+
+		repl.SetInputText()
 
 		if line ~= "" then
 			for key, str in pairs(command_history) do
@@ -653,7 +675,6 @@ function repl.HandleKey(key)
 			serializer.WriteFile("luadata", "data/cmd_history.txt", command_history)
 
 			c.scroll_command_history = 0
-			repl.SetInputText()
 
 			if event.Call("ReplLineEntered", line) ~= false then
 				logn("> ", line)
@@ -662,8 +683,8 @@ function repl.HandleKey(key)
 			end
 
 			c.in_function = false
-			c.markup:SetText("")
 		end
+		return
 	end
 
 	if markup_translate[key] then

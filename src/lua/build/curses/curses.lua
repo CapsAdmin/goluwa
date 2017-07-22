@@ -327,6 +327,7 @@ int wdeleteln(WINDOW *);
 int wechochar(WINDOW *, const chtype);
 int werase(WINDOW *);
 int wgetch(WINDOW *);
+int ungetch(int);
 int wgetnstr(WINDOW *, char *, int);
 int wgetstr(WINDOW *, char *);
 int whline(WINDOW *, chtype, int);
@@ -435,7 +436,7 @@ int COLOR_PAIR(int);
 ffi.cdef("typedef uint64_t chtype;")
 ffi.cdef(header)
 
-local lib = assert(ffi.load(jit.os == "Windows" and "pdcurses" or jit.os == "Linux" and "ncurses.so.5.9" or jit.os == "OSX" and "ncurses"))
+local lib = assert(ffi.load(jit.os == "Windows" and "pdcurses" or "ncurses"))
 
 local curses = {
 	lib = lib,
