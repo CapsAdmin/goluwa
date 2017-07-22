@@ -77,9 +77,10 @@ do -- constants
 
 	for key, default in pairs(env_vars) do
 		if _G[key] == nil then
-			if os.getenv(key) == "0" then
+			local val = os.getenv("GOLUWA_" .. key)
+			if val == "0" then
 				_G[key] = false
-			elseif os.getenv(key) == "1" then
+			elseif val == "1" then
 				_G[key] = true
 			elseif default == true then
 				_G[key] = true

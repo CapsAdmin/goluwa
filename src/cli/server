@@ -1,11 +1,12 @@
 #!/bin/bash
 
-export SERVER=1
-export CLIENT=0
-export GRAPHICS=0
-export SOUND=0
-export CURSES=0
-export WINDOW=0
+export GOLUWA_GRAPHCIS=0
+export GOLUWA_SOUND=0
+export GOLUWA_WINDOW=0
+
+export GOLUWA_SERVER=1
+export GOLUWA_CLIENT=0
+
 export ARGS="${ARGS:="{'host'}"}"
 
 bash unix.bash launch $*

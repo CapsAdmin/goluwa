@@ -60,14 +60,14 @@ LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libpulse.so.0
 	#lookup shared libraries in "goluwa/data/bin/linux_${ARCH}/" first
 	export LD_LIBRARY_PATH=".:$LD_LIBRARY_PATH"
 
-	executable="luajit$BRANCH"
+	executable="luajit$GOLUWA_BRANCH"
 
 
-	if [ "$BRANCH" == "_lua"  ]; then
+	if [ "$GOLUWA_BRANCH" == "_lua"  ]; then
 		executable="lua"
 	fi
 
-	if [ ! -z "$DEBUG" ]; then
+	if [ ! -z "$GOLUWA_DEBUG" ]; then
 		launch="x-terminal-emulator -e \"gdb -ex=r --args $executable"
 		append="\""
 	elif [ -x "$executable" ]; then
@@ -82,7 +82,7 @@ LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libpulse.so.0
 		launch="./$executable"
 	fi
 
-	if [ ! -z "$APITRACE" ]; then
+	if [ ! -z "$GOLUWA_APITRACE" ]; then
 		eval "apitrace trace --api gl $launch ../../../src/lua/init.lua$append"
 	else
 		eval "$launch ../../../src/lua/init.lua$append"

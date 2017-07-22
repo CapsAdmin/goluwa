@@ -48,9 +48,9 @@ function PLUGIN:Setup()
 
 			working_directory = "../../src/cli",
 			env_vars = {
-				CURSES = "0",
-				IDE = "",
-				ARGS = [==[{[[
+				GOLUWA_CURSES = "0",
+				GOLWUA_IDE = "",
+				GOLWUA_ARGS = [==[{[[
 					if not sockets then return end
 					pvars.Set("text_editor_path", "./../../ide/zbstudio.sh %PATH%:%LINE%")
 
