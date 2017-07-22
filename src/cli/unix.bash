@@ -2,6 +2,56 @@
 
 # make sure we're in this bash's directory
 cd "$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit
+
+if [ "$1" != "launch"  ] && command -v tmux>/dev/null; then
+
+	if tmux has-session -t goluwa 2>/dev/null; then
+
+		if [ "$1" == "attach" ]; then
+			tmux attach -t goluwa
+		else
+			tmux send-keys -t goluwa "$*" C-m
+
+			# this is really bad and not reliable
+
+			str=$(cat "../../data/users/tmux/logs/console_linux.txt")
+			startpos=$(stat -c%s "../../data/users/tmux/logs/console_linux.txt")
+
+			sleep 0.05
+
+			while [ 1 ]; do
+				endpos=$(stat -c%s "../../data/users/tmux/logs/console_linux.txt")
+
+				if [ ! "$endpos" = "$startpos" ]; then
+
+					str=$(cat "../../data/users/tmux/logs/console_linux.txt")
+
+					lolpos=$((endpos - startpos))
+
+					printf "${str:startpos:lolpos}\n"
+
+					break
+				fi
+			done
+
+			# this is really bad and not reliable ^
+		fi
+
+		exit
+	fi
+
+	if [ "$1" == "tmux" ]; then
+		if ! tmux has-session -t goluwa 2>/dev/null; then
+			tmux new-session -d -s goluwa
+			tmux send-keys -t goluwa "export GOLUWA_TMUX=1;bash unix.bash launch" C-m
+		fi
+
+		#tmux attach-session -t goluwa
+
+		exit
+	fi
+fi
+
 mkdir -p ../../data/bin
 cd ../../data/
 

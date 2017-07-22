@@ -157,20 +157,26 @@ function repl.Initialize()
 			end
 		end
 
+		if chars[1] then
+			chars = table.concat(chars)
+			if event.Call("ReplCharInput", chars) ~= false then
+				repl.HandleChar(chars)
+				repl.SetInputText(c.markup:GetText())
+			end
+		end
+
 		if key then
+
+			if TMUX and key == "KEY_DC" then
+				os.execute("tmux detach")
+				return
+			end
+
 			c.markup:SetControlDown(key:find("CTL_") ~= nil)
 			c.markup:SetShiftDown(key:find("KEY_S") ~= nil)
 
 			if (key:find("KEY_") or key:find("CTL_") or key:find("PAD")) and event.Call("ReplKeyInput", key) ~= false then
 				repl.HandleKey(key)
-				repl.SetInputText(c.markup:GetText())
-			end
-		end
-
-		if chars[1] then
-			chars = table.concat(chars)
-			if event.Call("ReplCharInput", chars) ~= false then
-				repl.HandleChar(chars)
 				repl.SetInputText(c.markup:GetText())
 			end
 		end
@@ -700,6 +706,12 @@ end
 
 if RELOAD then
 	repl.Initialize()
+end
+
+if TMUX then
+	commands.Add("detach", function()
+		os.execute("tmux detach")
+	end)
 end
 
 return repl

@@ -200,4 +200,9 @@ end
 main()
 
 event.Call("ShutDown")
+
+if TMUX then
+	os.execute("tmux kill-session")
+end
+
 os.realexit(os.exitcode)

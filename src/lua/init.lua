@@ -69,6 +69,7 @@ do -- constants
 		DEBUG_OPENGL = false,
 		BUILD_SHADER_OUTPUT = false,
 		CLI = false,
+		TMUX = false,
 		VERBOSE_STARTUP = true,
 
 		OPENGL = true,
@@ -92,12 +93,6 @@ do -- constants
 		EXTERNAL_DEBUGGER = true
 	end
 
-	-- enums table
-	e = e or {}
-
-	e.USERNAME = _G.USERNAME or tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
-	_G[e.USERNAME:upper()] = true
-
 	if LINUX then
 		WINDOWS = false
 	end
@@ -119,17 +114,30 @@ do -- constants
 	RELOAD = false
 	CREATED_ENV = false
 
-	if CLI then
+	if CLI or TMUX then
 		GRAPHICS = false
 		WINDOW = false
 		CLIENT = false
 		SERVER = false
-		CURSES = false
-		LOOP = false
 		SOUND = false
 		SOCKETS = false
 		PHYSICS = false
 	end
+
+	if CLI then
+		LOOP = false
+		CURSES = false
+	end
+
+	if TMUX then
+		_G.USERNAME = "tmux"
+	end
+
+	-- enums table
+	e = e or {}
+
+	e.USERNAME = _G.USERNAME or tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
+	_G[e.USERNAME:upper()] = true
 
 	--[[
 	--uncomment to check _G lookups
