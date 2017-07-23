@@ -1,103 +1,272 @@
-local startup_parameters = {
+if not system.OSCommandExists("tmux", "tar") then return end
+
+gserv = gserv or {}
+
+gserv.startup_parameters = {
 	maxplayers = 32,
 	map = "gm_construct",
 }
 
-local cfg = {
-	sv_hibernate_think = 1,
+gserv.cfg = {
+	sv_hibernate_think = 1, -- so watchdog can run even if there are no players on the server
+
+	-- this doesn't really work well
+	log = "on", -- enable or disable server logging. on is on / off is off
+	log_verbose_enable = 1,
+	sv_logecho = 0, -- Echo log information to the console. 0 is off 1 is on
+	sv_logfile = 1, -- Log server information in the log file. 0 is off 1 is on
+	sv_log_onefile = 0, -- log everything in one file
 }
 
-local function check_cmd(cmd)
-	assert(io.popen("command -v " .. cmd):read("*all") ~= "", cmd .. " command does not exist")
+local srcds_dir = e.DATA_FOLDER .. "srcds/"
+local gmod_dir = srcds_dir .. "gmod/garrysmod/"
+local gserv_addon_dir = gmod_dir .. "addons/gserv/"
+
+local function load_configs()
+	if not gserv.loaded_configs then
+		table.merge(gserv.startup_parameters, serializer.ReadFile("luadata", "data/gserv_startup_parameters.lua") or {})
+		table.merge(gserv.cfg, serializer.ReadFile("luadata", "data/gserv_config.lua") or {})
+		gserv.loaded_configs = true
+	end
 end
 
-commands.Add("gserv", function(line, cmd, arg1, ...)
-	check_cmd("tmux")
-	check_cmd("tar")
+function gserv.IsSetup()
+	if vfs.IsFile(gserv_addon_dir .. "lua/autorun/server/server_watchdog.lua") then
+		return true
+	end
+end
 
-	local dir = e.DATA_FOLDER .. "srcds/"
+function gserv.Setup()
+	if gserv.IsRunning() then
+		logn("server is running")
+		return
+	end
+
+	logn("setting up gmod server")
 
 	-- create the srcds directory in goluwa/data/srcds
-	vfs.CreateFolder("os:" .. dir)
+	vfs.CreateFolder("os:" .. srcds_dir)
 
 	-- download steamcmd
 	resource.Download("http://media.steampowered.com/client/steamcmd_linux.tar.gz", function(path)
 
 		-- if steamcmd.sh does not exist then we need to extract it
-		if not vfs.IsFile(dir .. "steamcmd.sh") then
-			os.execute("tar -xvzf " .. vfs.GetAbsolutePath(path) .. " -C " .. dir)
+		if not vfs.IsFile(srcds_dir .. "steamcmd.sh") then
+			os.execute("tar -xvzf " .. vfs.GetAbsolutePath(path) .. " -C " .. srcds_dir)
 		end
 
 		-- if srcds_run does not exist install gmod
-		if not vfs.IsFile(dir .. "gmod/srcds_run") then
-			os.execute(dir .. "steamcmd.sh +login anonymous +force_install_dir " .. dir .. "gmod +app_update 4020 validate +quit")
+		if not vfs.IsFile(srcds_dir .. "gmod/srcds_run") then
+			os.execute(srcds_dir .. "steamcmd.sh +login anonymous +force_install_dir " .. srcds_dir .. "gmod +app_update 4020 validate +quit")
 		end
 
-		if not vfs.IsFile(dir .. "gmod/garrysmod/addons/gserv/lua/autorun/server/server_watchdog.lua") then
-			vfs.CreateFolders("os", dir .. "gmod/garrysmod/addons/gserv/lua/autorun/server/")
-			vfs.Write(dir .. "gmod/garrysmod/addons/gserv/lua/autorun/server/server_watchdog.lua", [[
+		-- create glua script that writes os.time to a file every second
+		if not vfs.IsFile(gserv_addon_dir .. "lua/autorun/server/server_watchdog.lua") then
+			vfs.CreateFolders("os", gserv_addon_dir .. "lua/autorun/server/")
+			vfs.Write(gserv_addon_dir .. "lua/autorun/server/server_watchdog.lua", [[
 				timer.Create("server_watchdog", 1, 0, function()
 					file.Write("server_watchdog.txt", os.time(), "DATA")
 				end)
 			]])
 		end
 
-		local str = ""
-		for k,v in pairs(cfg) do
-			str = str .. k .. " " .. v .. "\n"
-		end
-		vfs.Write(dir .. "gmod/garrysmod/cfg/server.cfg", str)
+		vfs.Write(gmod_dir .. "cfg/server.cfg", "exec gserv.cfg\n")
 
 		-- silence some startup errors
-		vfs.Write(dir .. "gmod/garrysmod/cfg/trusted_keys_base.txt", "trusted_key_list\n{\n}\n")
-		vfs.Write(dir .. "gmod/garrysmod/cfg/pure_server_minimal.txt", "whitelist\n{\n}\n")
-		vfs.Write(dir .. "gmod/garrysmod/cfg/network.cfg", "")
+		vfs.Write(gmod_dir .. "cfg/trusted_keys_base.txt", "trusted_key_list\n{\n}\n")
+		vfs.Write(gmod_dir .. "cfg/pure_server_minimal.txt", "whitelist\n{\n}\n")
+		vfs.Write(gmod_dir .. "cfg/network.cfg", "")
 	end)
+end
 
-	if cmd == "start" then
-		logn("starting gmod server")
-		os.execute("tmux kill-session -t goluwa_srcds 2>/dev/null")
-		os.execute("tmux new-session -d -s goluwa_srcds")
+function gserv.UpdateServerConfig()
+	-- write the cfg file
+	local str = ""
+	for k,v in pairs(gserv.cfg) do
+		str = str .. k .. " " .. v .. "\n"
+	end
+	vfs.Write(gmod_dir .. "cfg/gserv.cfg", str)
+end
 
-		local str = ""
+function gserv.SetConfigKeyValue(key, val)
+	load_configs()
+	gserv.cfg[key] = val
+	serializer.WriteFile("luadata", "data/gserv_config.lua", gserv.cfg)
+	gserv.UpdateServerConfig()
+	if gserv.IsRunning() then
+		gserv.Execute(key .. " " .. val)
+	end
+end
 
-		for k, v in pairs(startup_parameters) do
-			str = str .. "+" .. k .. " " .. v .. " "
-		end
+function gserv.GetConfigValue(key)
+	load_configs()
+	return gserv.cfg[key]
+end
 
-		os.execute("tmux send-keys -t goluwa_srcds \"" .. dir .. "gmod/srcds_run -game garrysmod " .. str .. "\" C-m")
+function gserv.SetStartupParameter(key, val)
+	load_configs()
+	gserv.startup_parameters[key] = val
+	serializer.WriteFile("luadata", "data/gserv_startup_parameters.lua", gserv.startup_parameters)
+end
 
-		event.Timer("gserv_watchdog", 1, 0, function()
-			local time = vfs.Read(dir .. "gmod/garrysmod/data/server_watchdog.txt")
+function gserv.GetStartupParameter(key)
+	load_configs()
+	return gserv.startup_parameters[key]
+end
 
-			if time then
-				time = tonumber(time)
-				local diff = os.difftime(os.time(), time)
-				if diff > 3 then
-					logn("server hasn't responded for more than ", diff ," seconds")
+function gserv.IsRunning()
+	return io.popen("tmux has-session -t goluwa_srcds 2>&1"):read("*all") == ""
+end
+
+function gserv.Start()
+	if gserv.IsRunning() then
+		logn("server is already running")
+		return
+	end
+
+	logn("starting gmod server")
+
+	vfs.Write(gmod_dir .. "data/server_watchdog.txt", tostring(os.time()))
+
+	os.execute("tmux kill-session -t goluwa_srcds 2>/dev/null")
+	os.execute("tmux new-session -d -s goluwa_srcds")
+
+	gserv.UpdateServerConfig()
+
+	local str = ""
+	for k, v in pairs(gserv.startup_parameters) do
+		str = str .. "+" .. k .. " " .. v .. " "
+	end
+
+	os.execute("tmux send-keys -t goluwa_srcds \"" .. srcds_dir .. "gmod/srcds_run -game garrysmod " .. str .. "\" C-m")
+
+	event.Timer("gserv_watchdog", 1, 0, function()
+		local time = vfs.Read(gmod_dir .. "data/server_watchdog.txt")
+
+		if time then
+			time = tonumber(time)
+			local diff = os.difftime(os.time(), time)
+			if diff > 1 then
+				logn("server hasn't responded for more than ", diff ," seconds")
+				if diff > 20 then
+					gserv.Reboot()
 				end
 			end
-		end)
-	elseif cmd == "kill" then
-		event.RemoveTimer("gserv_watchdog")
-		logn("killing gmod server")
-		os.execute("tmux kill-session -t goluwa_srcds 2>/dev/null")
-	elseif cmd == "show" then
-		logn(io.popen([[tmux capture-pane -t goluwa_srcds; printf "$(tmux show-buffer)\n"]]):read("*all"))
+		end
+	end)
+end
+
+function gserv.Kill()
+	event.RemoveTimer("gserv_watchdog")
+
+	if not gserv.IsRunning() then
+		logn("server is already dead")
+
+		return
 	end
-end)
 
-commands.Add("gserv_run", function(line)
-	logn("running |", line, "| on srcds")
+	logn("killing gmod server")
+	os.execute("tmux kill-session -t goluwa_srcds 2>/dev/null")
+end
+
+function gserv.Reboot()
+	if gserv.IsRunning() then
+		gserv.Kill()
+	end
+	gserv.Start()
+end
+
+function gserv.Restart()
+
+end
+
+function gserv.GetOutput()
+	if not gserv.IsRunning() then
+		logn("server not running")
+		return
+	end
+
+	return io.popen([[tmux capture-pane -t goluwa_srcds; printf "$(tmux show-buffer)\n"]]):read("*all")
+end
+
+function gserv.Show()
+	if not gserv.IsRunning() then
+		logn("server not running")
+		return
+	end
+
+	logn(gserv.GetOutput())
+end
+
+function gserv.Execute(line)
+	if not gserv.IsRunning() then
+		logn("server not running")
+		return
+	end
+
 	os.execute("tmux send-keys -t goluwa_srcds \"" .. line .. "\" C-m")
-	event.Delay(0.1, function()
-		logn(io.popen([[tmux capture-pane -t goluwa_srcds; printf "$(tmux show-buffer)\n"]]):read("*all"))
-	end)
-end)
+end
 
-commands.Add("gserv_lua", function(line)
-	os.execute("tmux send-keys -t goluwa_srcds \"lua_run " .. line .. "\" C-m")
-	event.Delay(0.1, function()
-		logn(io.popen([[tmux capture-pane -t goluwa_srcds; printf "$(tmux show-buffer)\n"]]):read("*all"))
+function gserv.RunLua(line)
+	gserv.Execute("lua_run " .. line)
+end
+
+-- this is really stupid but idk what else to do at the moment
+function gserv.GetLuaOutput(line)
+	local id = tostring({})
+	gserv.RunLua("file.Write('gserv_capture_output.txt', '" .. id .."' .. tostring((function()"..line.."end)()), 'DATA')")
+	while true do
+		local str = vfs.Read(gmod_dir .. "data/gserv_capture_output.txt")
+		if str and str:startswith(id) then
+			return str:sub(#id + 1)
+		end
+	end
+end
+
+function gserv.GetMap()
+	return gserv.GetLuaOutput("return game.GetMap()")
+end
+
+function gserv.Restart(time)
+	time = time or 0
+	logn("restarting server in ", time, " seconds")
+	gserv.RunLua("if aowl then RunConsoleCommand('aowl', 'restart', '"..time.."') else timer.Simple("..time..", function() RunConsoleCommand('changelevel', game.GetMap()) end) end")
+end
+
+do -- commands
+	commands.Add("gserv", function(line, cmd, arg1, ...)
+		load_configs()
+
+		if cmd == "setup" then
+			gserv.Setup()
+		end
+
+		if gserv.IsSetup() then
+			if cmd == "start" then
+				gserv.Start()
+			elseif cmd == "kill" then
+				gserv.Kill()
+			elseif cmd == "show" then
+				gserv.Show()
+			elseif cmd == "restart" then
+				gserv.Restart()
+			elseif cmd == "reboot" then
+				gserv.Reboot()
+			end
+		else
+			logn("server is not setup")
+		end
 	end)
-end)
+
+	commands.Add("gserv_run", function(line)
+		logn("running |", line, "| on srcds")
+		gserv.Execute(line)
+		event.Delay(0.1, function() gserv.Show() end)
+	end)
+
+	commands.Add("gserv_lua", function(line)
+		logn("running |lua_run ", line, "| on srcds")
+		gserv.RunLua(line)
+		event.Delay(0.1, function() gserv.Show() end)
+	end)
+end
