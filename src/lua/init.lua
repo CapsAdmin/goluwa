@@ -120,7 +120,6 @@ do -- constants
 		CLIENT = false
 		SERVER = false
 		SOUND = false
-		SOCKETS = false
 		PHYSICS = false
 	end
 
