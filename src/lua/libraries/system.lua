@@ -117,7 +117,7 @@ function system.ExecuteArgs(args)
 	local skip_lua = nil
 
 	if not args then
-		local str = os.getenv("ARGS")
+		local str = os.getenv("GOLUWA_ARGS")
 
 		if str then
 			if str:startswith("cli --") then

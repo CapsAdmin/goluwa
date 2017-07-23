@@ -49,8 +49,8 @@ function PLUGIN:Setup()
 			working_directory = "../../src/cli",
 			env_vars = {
 				GOLUWA_CURSES = "0",
-				GOLWUA_IDE = "",
-				GOLWUA_ARGS = [==[{[[
+				GOLUWA_IDE = "",
+				GOLUWA_ARGS = [==[{[[
 					if not sockets then return end
 					pvars.Set("text_editor_path", "./../../ide/zbstudio.sh %PATH%:%LINE%")
 
@@ -260,15 +260,15 @@ function PLUGIN:StartProcess(id)
 	end
 
 	if BRANCH then
-		wx.wxSetEnv("BRANCH", "_" .. BRANCH)
+		wx.wxSetEnv("GOLUWA_BRANCH", "_" .. BRANCH)
 	else
-		wx.wxUnsetEnv("BRANCH")
+		wx.wxUnsetEnv("GOLUWA_BRANCH")
 	end
 
 	if DEBUG then
-		wx.wxSetEnv("DEBUG", "1")
+		wx.wxSetEnv("GOLUWA_DEBUG", "1")
 	else
-		wx.wxUnsetEnv("DEBUG")
+		wx.wxUnsetEnv("GOLUWA_DEBUG")
 	end
 
 	local tb = ide:GetToolBar()
