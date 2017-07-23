@@ -2,6 +2,9 @@ if not system.OSCommandExists("tmux", "tar") then return end
 
 gserv = gserv or {}
 
+gserv.workshop_auth_key = pvars.Setup("gserv_authkey")
+gserv.workshop_collection = "https://steamcommunity.com/sharedfiles/filedetails/?id=427843415"
+
 gserv.startup_parameters = {
 	maxplayers = 32,
 	map = "gm_construct",
@@ -9,18 +12,18 @@ gserv.startup_parameters = {
 
 gserv.cfg = {
 	sv_hibernate_think = 1, -- so watchdog can run even if there are no players on the server
+}
 
-	-- this doesn't really work well
-	log = "on", -- enable or disable server logging. on is on / off is off
-	log_verbose_enable = 1,
-	sv_logecho = 0, -- Echo log information to the console. 0 is off 1 is on
-	sv_logfile = 1, -- Log server information in the log file. 0 is off 1 is on
-	sv_log_onefile = 0, -- log everything in one file
+gserv.addons = {
+	"https://github.com/CapsAdmin/pac3.git",
+	"https://github.com/PAC3-Server/notagain.git",
+	"https://steamcommunity.com/sharedfiles/filedetails/?id=546392647", -- mediaplayer
 }
 
 local srcds_dir = e.DATA_FOLDER .. "srcds/"
 local gmod_dir = srcds_dir .. "gmod/garrysmod/"
 local gserv_addon_dir = gmod_dir .. "addons/gserv/"
+local log_dir = e.USERDATA_FOLDER .. "logs/gserv/"
 
 local function load_configs()
 	if not gserv.loaded_configs then
@@ -118,6 +121,30 @@ function gserv.IsRunning()
 	return io.popen("tmux has-session -t goluwa_srcds 2>&1"):read("*all") == ""
 end
 
+function gserv.UpdateAddons()
+	for _, path in ipairs(gserv.addons) do
+		if path:endswith(".git") then
+			local name = path:match(".+/(.+)%.git"):lower()
+			local dir = gmod_dir .. "addons/" .. name
+			if not vfs.IsDirectory(dir) then
+				os.execute("git clone " .. path .. " " .. dir)
+			else
+				os.execute("git -C " .. dir .. " reset --hard HEAD")
+				os.execute("git -C " .. dir .. " clean -f -d")
+				os.execute("git -C " .. dir .. " pull")
+			end
+		elseif path:find("steamcommunity") and path:find("id=%d+") then
+			local id = path:match("id=(%d+)")
+			steam.DownloadWorkshop(id, function(header, compressed_path)
+				local path = gmod_dir .. "addons/".. vfs.FixIllegalCharactersInPath(header.response.publishedfiledetails[1].title):lower():gsub("%s+", "_") .. "_" .. id .. ".gma"
+				vfs.Write(path, serializer.ReadFile("lzma", compressed_path))
+			end)
+		else
+
+		end
+	end
+end
+
 function gserv.Start()
 	if gserv.IsRunning() then
 		logn("server is already running")
@@ -126,10 +153,14 @@ function gserv.Start()
 
 	logn("starting gmod server")
 
-	vfs.Write(gmod_dir .. "data/server_watchdog.txt", tostring(os.time()))
+	vfs.Write(gmod_dir .. "data/server_watchdog.txt", "booting")
 
 	os.execute("tmux kill-session -t goluwa_srcds 2>/dev/null")
 	os.execute("tmux new-session -d -s goluwa_srcds")
+
+	gserv.log_path = log_dir .. os.date("%Y/%m/%d/%H-%M-%S.txt")
+	vfs.CreateFolders("os", gserv.log_path)
+	os.execute("tmux pipe-pane -o -t goluwa_srcds 'cat >> " .. gserv.log_path .. "'")
 
 	gserv.UpdateServerConfig()
 
@@ -138,12 +169,25 @@ function gserv.Start()
 		str = str .. "+" .. k .. " " .. v .. " "
 	end
 
+	if gserv.workshop_collection then
+		local id = tonumber(gserv.workshop_collection) or gserv.workshop_collection:match("id=(%d+)") or gserv.workshop_collection
+		str = str .. "+workshop_collection " .. id
+	end
+
+	local key = gserv.workshop_auth_key:Get()
+
+	if key then
+		str = str .. "-authkey " .. key
+	end
+
 	os.execute("tmux send-keys -t goluwa_srcds \"" .. srcds_dir .. "gmod/srcds_run -game garrysmod " .. str .. "\" C-m")
 
 	event.Timer("gserv_watchdog", 1, 0, function()
 		local time = vfs.Read(gmod_dir .. "data/server_watchdog.txt")
 
 		if time then
+			if time == "booting" then return end
+
 			time = tonumber(time)
 			local diff = os.difftime(os.time(), time)
 			if diff > 1 then
@@ -186,7 +230,10 @@ function gserv.GetOutput()
 		return
 	end
 
-	return io.popen([[tmux capture-pane -t goluwa_srcds; printf "$(tmux show-buffer)\n"]]):read("*all")
+	local str = vfs.Read(gserv.log_path)
+	str = str:gsub("\r", "")
+
+	return str
 end
 
 function gserv.Show()
