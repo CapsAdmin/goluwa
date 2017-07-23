@@ -83,8 +83,8 @@ do -- constants
 				_G[key] = false
 			elseif val == "1" then
 				_G[key] = true
-			elseif default == true then
-				_G[key] = true
+			elseif default then
+				_G[key] = default
 			end
 		end
 	end
