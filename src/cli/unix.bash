@@ -71,7 +71,7 @@ fi
 if [ "$1" == "launch"  ] || [ "$1" == "cli"  ]; then
 
 	if [ "$1" == "cli"  ]; then
-		export CLI=1
+		export GOLUWA_CLI=1
 	fi
 
 	export GOLUWA_ARGS=${GOLUWA_ARGS:=$*}
