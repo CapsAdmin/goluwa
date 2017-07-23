@@ -127,6 +127,7 @@ do -- constants
 	if CLI then
 		LOOP = false
 		CURSES = false
+		VERBOSE_STARTUP = false
 	end
 
 	if TMUX then
