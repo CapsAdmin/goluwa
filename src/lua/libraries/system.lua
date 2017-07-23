@@ -2,6 +2,29 @@ local system = _G.system or {}
 
 local ffi = require("ffi")
 
+function system.OSCommandExists(...)
+	if select("#", ...) > 1 then
+		for _, cmd in ipairs({...}) do
+			local ok, err = system.OSCommandExists(cmd)
+			if not ok then
+				return false, err
+			end
+		end
+	end
+
+	local cmd = ...
+
+	if LINUX then
+		if io.popen("command -v " .. cmd):read("*all") ~= "" then
+			return true
+		end
+
+		return false, cmd .. " command does not exist"
+	end
+
+	return false, "NYI"
+end
+
 do -- console title
 	if not system.SetConsoleTitleRaw then
 		local set_title
