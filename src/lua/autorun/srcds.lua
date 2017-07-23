@@ -14,12 +14,6 @@ gserv.cfg = {
 	sv_hibernate_think = 1, -- so watchdog can run even if there are no players on the server
 }
 
-gserv.addons = {
-	"https://github.com/CapsAdmin/pac3.git",
-	"https://github.com/PAC3-Server/notagain.git",
-	"https://steamcommunity.com/sharedfiles/filedetails/?id=546392647", -- mediaplayer
-}
-
 local srcds_dir = e.DATA_FOLDER .. "srcds/"
 local gmod_dir = srcds_dir .. "gmod/garrysmod/"
 local gserv_addon_dir = gmod_dir .. "addons/gserv/"
@@ -82,145 +76,212 @@ function gserv.Setup()
 	end)
 end
 
-function gserv.UpdateServerConfig()
-	-- write the cfg file
-	local str = ""
-	for k,v in pairs(gserv.cfg) do
-		str = str .. k .. " " .. v .. "\n"
+do
+	function gserv.SetConfigKeyValue(key, val)
+		load_configs()
+		gserv.cfg[key] = val
+		serializer.WriteFile("luadata", "data/gserv_config.lua", gserv.cfg)
+		gserv.BuildConfig()
+		if gserv.IsRunning() then
+			gserv.Execute(key .. " " .. val)
+		end
 	end
-	vfs.Write(gmod_dir .. "cfg/gserv.cfg", str)
-end
 
-function gserv.SetConfigKeyValue(key, val)
-	load_configs()
-	gserv.cfg[key] = val
-	serializer.WriteFile("luadata", "data/gserv_config.lua", gserv.cfg)
-	gserv.UpdateServerConfig()
-	if gserv.IsRunning() then
-		gserv.Execute(key .. " " .. val)
+	function gserv.GetConfigValue(key)
+		load_configs()
+		return gserv.cfg[key]
+	end
+
+	function gserv.BuildConfig()
+		-- write the cfg file
+		local str = ""
+		for k,v in pairs(gserv.cfg) do
+			str = str .. k .. " " .. v .. "\n"
+		end
+		vfs.Write(gmod_dir .. "cfg/gserv.cfg", str)
 	end
 end
 
-function gserv.GetConfigValue(key)
-	load_configs()
-	return gserv.cfg[key]
+do
+	function gserv.SetStartupParameter(key, val)
+		load_configs()
+		gserv.startup_parameters[key] = val
+		serializer.WriteFile("luadata", "data/gserv_startup_parameters.lua", gserv.startup_parameters)
+	end
+
+	function gserv.GetStartupParameter(key)
+		load_configs()
+		return gserv.startup_parameters[key]
+	end
 end
 
-function gserv.SetStartupParameter(key, val)
-	load_configs()
-	gserv.startup_parameters[key] = val
-	serializer.WriteFile("luadata", "data/gserv_startup_parameters.lua", gserv.startup_parameters)
-end
+do -- addons
 
-function gserv.GetStartupParameter(key)
-	load_configs()
-	return gserv.startup_parameters[key]
-end
+	function gserv.UpdateAddons()
+		for url, info in pairs(gserv.GetAddons()) do
+			gserv.UpdateAddon(url)
+		end
+	end
 
-function gserv.IsRunning()
-	return io.popen("tmux has-session -t goluwa_srcds 2>&1"):read("*all") == ""
-end
+	function gserv.UpdateAddon(url)
+		local info = assert(gserv.GetAddon(url))
 
-function gserv.UpdateAddons()
-	for _, path in ipairs(gserv.addons) do
-		if path:endswith(".git") then
-			local name = path:match(".+/(.+)%.git"):lower()
-			local dir = gmod_dir .. "addons/" .. name
+		if info.type == "git" then
+			logn("updating git repository addon ", info.url)
+			local dir = gmod_dir .. "addons/" .. info.name
+
 			if not vfs.IsDirectory(dir) then
-				os.execute("git clone " .. path .. " " .. dir)
+				os.execute("git clone " .. info.url .. " " .. dir)
 			else
 				os.execute("git -C " .. dir .. " reset --hard HEAD")
 				os.execute("git -C " .. dir .. " clean -f -d")
 				os.execute("git -C " .. dir .. " pull")
 			end
-		elseif path:find("steamcommunity") and path:find("id=%d+") then
-			local id = path:match("id=(%d+)")
-			steam.DownloadWorkshop(id, function(header, compressed_path)
-				local path = gmod_dir .. "addons/".. vfs.FixIllegalCharactersInPath(header.response.publishedfiledetails[1].title):lower():gsub("%s+", "_") .. "_" .. id .. ".gma"
-				vfs.Write(path, serializer.ReadFile("lzma", compressed_path))
+			logn("done updating ", info.url)
+		elseif info.type == "workshop" then
+			logn("updating workshop addon ", info.url)
+			steam.DownloadWorkshop(info.id, function(header, compressed_path)
+				vfs.Write(gmod_dir .. "addons/".. info.name, serializer.ReadFile("lzma", compressed_path))
+				logn("done updating ", info.url)
 			end)
-		else
-
 		end
+	end
+
+	function gserv.AddAddon(url, name_override)
+
+		local key = url
+		local info
+
+		if url:find("github.com", nil, true) and not url:endswith(".git") then
+			url = url .. ".git"
+		end
+
+		if url:endswith(".git") then
+			info = {
+				url = url,
+				type = "git",
+				name = name_override or url:match(".+/(.+)%.git"):lower(),
+			}
+		elseif url:find("steamcommunity") and url:find("id=%d+") then
+			info = {
+				url = url,
+				id = url:match("id=(%d+)"),
+				type = "workshop",
+				name = name_override or url:match("id=(%d+)") .. ".gma",
+			}
+		else
+			info = {
+				url = url,
+				type = "unknown",
+				name = name_override or vfs.FixIllegalCharactersInPath(url):lower():gsub("%s+", "_"),
+			}
+		end
+
+		serializer.SetKeyValueInFile("luadata", "data/gserv_addons.lua", key, info)
+	end
+
+	function gserv.RemoveAddon(url)
+		local info = assert(gserv.GetAddon(url))
+
+		local path = gmod_dir .. "addons/".. info.name
+
+		if vfs.IsFile(path) then
+			vfs.Delete(path)
+		elseif vfs.IsDirectory(path) then
+			os.execute("rm -rf " .. path)
+		end
+
+		serializer.SetKeyValueInFile("luadata", "data/gserv_addons.lua", url, nil)
+	end
+
+	function gserv.GetAddon(url)
+		return serializer.GetKeyFromFile("luadata", "data/gserv_addons.lua", url)
+	end
+
+	function gserv.GetAddons()
+		return serializer.ReadFile("luadata", "data/gserv_addons.lua")
 	end
 end
 
-function gserv.Start()
-	if gserv.IsRunning() then
-		logn("server is already running")
-		return
+do
+	function gserv.IsRunning()
+		return io.popen("tmux has-session -t goluwa_srcds 2>&1"):read("*all") == ""
 	end
 
-	logn("starting gmod server")
+	function gserv.Start()
+		if gserv.IsRunning() then
+			logn("server is already running")
+			return
+		end
 
-	vfs.Write(gmod_dir .. "data/server_watchdog.txt", "booting")
+		logn("starting gmod server")
 
-	os.execute("tmux kill-session -t goluwa_srcds 2>/dev/null")
-	os.execute("tmux new-session -d -s goluwa_srcds")
+		vfs.Write(gmod_dir .. "data/server_watchdog.txt", "booting")
 
-	gserv.log_path = log_dir .. os.date("%Y/%m/%d/%H-%M-%S.txt")
-	vfs.CreateFolders("os", gserv.log_path)
-	os.execute("tmux pipe-pane -o -t goluwa_srcds 'cat >> " .. gserv.log_path .. "'")
+		os.execute("tmux kill-session -t goluwa_srcds 2>/dev/null")
+		os.execute("tmux new-session -d -s goluwa_srcds")
 
-	gserv.UpdateServerConfig()
+		gserv.log_path = log_dir .. os.date("%Y/%m/%d/%H-%M-%S.txt")
+		vfs.CreateFolders("os", gserv.log_path)
+		os.execute("tmux pipe-pane -o -t goluwa_srcds 'cat >> " .. gserv.log_path .. "'")
 
-	local str = ""
-	for k, v in pairs(gserv.startup_parameters) do
-		str = str .. "+" .. k .. " " .. v .. " "
-	end
+		gserv.BuildConfig()
 
-	if gserv.workshop_collection then
-		local id = tonumber(gserv.workshop_collection) or gserv.workshop_collection:match("id=(%d+)") or gserv.workshop_collection
-		str = str .. "+workshop_collection " .. id
-	end
+		local str = ""
+		for k, v in pairs(gserv.startup_parameters) do
+			str = str .. "+" .. k .. " " .. v .. " "
+		end
 
-	local key = gserv.workshop_auth_key:Get()
+		if gserv.workshop_collection then
+			local id = tonumber(gserv.workshop_collection) or gserv.workshop_collection:match("id=(%d+)") or gserv.workshop_collection
+			str = str .. "+workshop_collection " .. id
+		end
 
-	if key then
-		str = str .. "-authkey " .. key
-	end
+		local key = gserv.workshop_auth_key:Get()
 
-	os.execute("tmux send-keys -t goluwa_srcds \"" .. srcds_dir .. "gmod/srcds_run -game garrysmod " .. str .. "\" C-m")
+		if key then
+			str = str .. "-authkey " .. key
+		end
 
-	event.Timer("gserv_watchdog", 1, 0, function()
-		local time = vfs.Read(gmod_dir .. "data/server_watchdog.txt")
+		os.execute("tmux send-keys -t goluwa_srcds \"" .. srcds_dir .. "gmod/srcds_run -game garrysmod " .. str .. "\" C-m")
 
-		if time then
-			if time == "booting" then return end
+		event.Timer("gserv_watchdog", 1, 0, function()
+			local time = vfs.Read(gmod_dir .. "data/server_watchdog.txt")
 
-			time = tonumber(time)
-			local diff = os.difftime(os.time(), time)
-			if diff > 1 then
-				logn("server hasn't responded for more than ", diff ," seconds")
-				if diff > 20 then
-					gserv.Reboot()
+			if time then
+				if time == "booting" then return end
+
+				time = tonumber(time)
+				local diff = os.difftime(os.time(), time)
+				if diff > 1 then
+					logn("server hasn't responded for more than ", diff ," seconds")
+					if diff > 20 then
+						gserv.Reboot()
+					end
 				end
 			end
+		end)
+	end
+
+	function gserv.Kill()
+		event.RemoveTimer("gserv_watchdog")
+
+		if not gserv.IsRunning() then
+			logn("server is already dead")
+
+			return
 		end
-	end)
-end
 
-function gserv.Kill()
-	event.RemoveTimer("gserv_watchdog")
-
-	if not gserv.IsRunning() then
-		logn("server is already dead")
-
-		return
+		logn("killing gmod server")
+		os.execute("tmux kill-session -t goluwa_srcds 2>/dev/null")
 	end
 
-	logn("killing gmod server")
-	os.execute("tmux kill-session -t goluwa_srcds 2>/dev/null")
-end
-
-function gserv.Reboot()
-	if gserv.IsRunning() then
-		gserv.Kill()
+	function gserv.Reboot()
+		if gserv.IsRunning() then
+			gserv.Kill()
+		end
+		gserv.Start()
 	end
-	gserv.Start()
-end
-
-function gserv.Restart()
 
 end
 
@@ -300,8 +361,54 @@ do -- commands
 			elseif cmd == "reboot" then
 				gserv.Reboot()
 			end
+
+			if cmd == "add_addon" then
+				gserv.AddAddon(arg1)
+			elseif cmd == "remove_addon" then
+				gserv.RemoveAddon(arg1)
+			elseif cmd == "update_addon" then
+				gserv.UpdateAddon(arg1)
+			end
+
+			if cmd == "update_addons" then
+				gserv.UpdateAddons()
+			elseif cmd == "list_addons" then
+				table.print(gserv.GetAddons())
+			end
+
+			if cmd == "list_config" then
+				table.print(gserv.cfg)
+			end
+
+			if cmd == "list_startup_parameters" then
+				table.print(gserv.startup_parameters)
+			end
+
+			if cmd == "setup_info" then
+				logn("startup parameters:")
+				table.print(gserv.startup_parameters)
+
+				logn("server config:")
+				table.print(gserv.cfg)
+
+				logn("addons:")
+				table.print(gserv.GetAddons())
+			end
+
+			if cmd == "set_startup_parameter" then
+				gserv.SetStartupParameter(arg1, ...)
+			elseif cmd == "get_startup_parameter" then
+				logn("+", arg1, " ", gserv.GetStartupParameter(arg1))
+			end
+
+			if cmd == "set_config_key_val" then
+				gserv.SetConfigKeyValue(arg1, ...)
+			elseif cmd == "get_config_val" then
+				logn(arg1, " = ", gserv.GetConfigValue(arg1))
+			end
 		else
 			logn("server is not setup")
+			logn("use 'gserv setup' to set it up first")
 		end
 	end)
 
