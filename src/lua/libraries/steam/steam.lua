@@ -6,6 +6,24 @@ runfile("web_api.lua", steam)
 runfile("server_query.lua", steam)
 runfile("mount.lua", steam)
 runfile("vmt.lua", steam)
+
+function steam.DownloadWorkshop(id, callback)
+	sockets.Request({
+		method = "POST",
+		url = "http://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v0001/",
+		post_data = "itemcount=1&publishedfileids[0]="..id.."&format=json",
+		header = {
+			["Content-Type"] = "application/x-www-form-urlencoded"
+		},
+		callback = function(data)
+			local data = serializer.Decode("json", data.content)
+			resource.Download(data.response.publishedfiledetails[1].file_url, function(path)
+				callback(data, path)
+			end)
+		end,
+	})
+end
+
 --runfile("steamworks.lua", steam)
 
 --[[local steamfriends = desire("ffi.steamfriends")
