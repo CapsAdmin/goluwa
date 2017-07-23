@@ -11,28 +11,9 @@ if [ "$1" != "launch"  ] && command -v tmux>/dev/null; then
 			tmux attach -t goluwa
 		else
 			tmux send-keys -t goluwa "$*" C-m
-
-			# this is really bad and not reliable
-
-			str=$(cat "../../data/users/tmux/logs/console_linux.txt")
-			startpos=$(stat -c%s "../../data/users/tmux/logs/console_linux.txt")
-
 			sleep 0.05
-
-			while [ 1 ]; do
-				endpos=$(stat -c%s "../../data/users/tmux/logs/console_linux.txt")
-
-				if [ ! "$endpos" = "$startpos" ]; then
-
-					str=$(cat "../../data/users/tmux/logs/console_linux.txt")
-
-					lolpos=$((endpos - startpos))
-
-					printf "${str:startpos:lolpos}\n"
-
-					break
-				fi
-			done
+			tmux capture-pane -t goluwa
+			printf "$(tmux show-buffer)\n"
 
 			# this is really bad and not reliable ^
 		fi

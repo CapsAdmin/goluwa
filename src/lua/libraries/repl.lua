@@ -123,7 +123,7 @@ function repl.Initialize()
 	local last_w = curses.COLS
 	local last_h = curses.LINES
 
-	event.Timer("curses", 1/30, 0, function()
+	function repl.Update()
 		if GRAPHICS and (window.IsFocused() and not dirty) then return end
 
 		local chars = {}
@@ -135,6 +135,9 @@ function repl.Initialize()
 
 			if curses.has_key(byte) then
 				key = ffi.string(curses.keyname(byte))
+				if char_translate[key] then
+					key = char_translate[key]
+				end
 				break
 			else
 				if char_translate[byte] then
@@ -190,7 +193,13 @@ function repl.Initialize()
 		if dirty then
 			curses.doupdate()
 		end
-	end)
+	end
+
+	if TMUX then
+		event.AddListener("Update", "curses", repl.Update)
+	else
+		event.Timer("curses", 1/30, 0, repl.Update)
+	end
 
 	do -- input extensions
 		local trigger = input.SetupInputEvent("ReplKey")
@@ -237,7 +246,13 @@ function repl.Initialize()
 
 	c.input_window = curses.newwin(1, curses.COLS, curses.LINES - 1, 0)
 	curses.keypad(c.input_window, 1) -- enable arrows and other keys
-	curses.nodelay(c.input_window, 1) -- don't wait for input
+
+	if TMUX then
+		curses.wtimeout(c.input_window, (1/30) * 1000) -- don't wait for input
+	else
+		curses.nodelay(c.input_window, 1) -- don't wait for input
+	end
+	--curses.timeout((1/30) * 1000) -- don't wait for input
 
 	curses.start_color()
 	curses.use_default_colors()
