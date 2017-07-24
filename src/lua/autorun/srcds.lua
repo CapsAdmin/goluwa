@@ -11,18 +11,20 @@ gserv.startup_parameters = {
 }
 
 gserv.cfg = {
-	sv_hibernate_think = 1, -- so watchdog can run even if there are no players on the server
+	sv_hibernate_think = 1, -- so pinger can run even if there are no players on the server
 }
 
 local srcds_dir = e.DATA_FOLDER .. "srcds/"
 local gmod_dir = srcds_dir .. "gmod/garrysmod/"
 local gserv_addon_dir = gmod_dir .. "addons/gserv/"
-local log_dir = e.USERDATA_FOLDER .. "logs/gserv/"
+
+local data_dir = e.USERDATA_FOLDER .. "gserv/"
+local log_dir = data_dir .. "logs/"
 
 local function load_configs()
 	if not gserv.loaded_configs then
-		table.merge(gserv.startup_parameters, serializer.ReadFile("luadata", "data/gserv_startup_parameters.lua") or {})
-		table.merge(gserv.cfg, serializer.ReadFile("luadata", "data/gserv_config.lua") or {})
+		table.merge(gserv.startup_parameters, serializer.ReadFile("luadata", data_dir .. "startup_parameters.lua") or {})
+		table.merge(gserv.cfg, serializer.ReadFile("luadata", data_dir .. "config.lua") or {})
 		gserv.loaded_configs = true
 	end
 end
@@ -31,7 +33,7 @@ local function check_setup() if not gserv.IsSetup() then error("server is not se
 local function check_running() if not gserv.IsRunning() then error("server is not running", 3) end end
 
 function gserv.IsSetup()
-	if vfs.IsFile(gserv_addon_dir .. "lua/autorun/server/server_watchdog.lua") then
+	if vfs.IsFile(gserv_addon_dir .. "lua/autorun/server/gserv_pinger.lua") then
 		return true
 	end
 end
@@ -58,11 +60,11 @@ function gserv.Setup()
 		end
 
 		-- create glua script that writes os.time to a file every second
-		if not vfs.IsFile(gserv_addon_dir .. "lua/autorun/server/server_watchdog.lua") then
+		if not vfs.IsFile(gserv_addon_dir .. "lua/autorun/server/gserv_pinger.lua") then
 			vfs.CreateFolders("os", gserv_addon_dir .. "lua/autorun/server/")
-			vfs.Write(gserv_addon_dir .. "lua/autorun/server/server_watchdog.lua", [[
-				timer.Create("server_watchdog", 1, 0, function()
-					file.Write("server_watchdog.txt", os.time(), "DATA")
+			vfs.Write(gserv_addon_dir .. "lua/autorun/server/gserv_pinger.lua", [[
+				timer.Create("gserv_pinger", 1, 0, function()
+					file.Write("gserv_pinger.txt", os.time(), "DATA")
 				end)
 			]])
 		end
@@ -81,7 +83,7 @@ do
 		check_setup()
 		load_configs()
 		gserv.cfg[key] = val
-		serializer.WriteFile("luadata", "data/gserv_config.lua", gserv.cfg)
+		serializer.WriteFile("luadata", data_dir .. "config.lua", gserv.cfg)
 		gserv.BuildConfig()
 		if gserv.IsRunning() then
 			gserv.Execute(key .. " " .. val)
@@ -111,7 +113,7 @@ do
 		load_configs()
 
 		gserv.startup_parameters[key] = val
-		serializer.WriteFile("luadata", "data/gserv_startup_parameters.lua", gserv.startup_parameters)
+		serializer.WriteFile("luadata", data_dir .. "startup_parameters.lua", gserv.startup_parameters)
 	end
 
 	function gserv.GetStartupParameter(key)
@@ -187,7 +189,7 @@ do -- addons
 			}
 		end
 
-		serializer.SetKeyValueInFile("luadata", "data/gserv_addons.lua", key, info)
+		serializer.SetKeyValueInFile("luadata", data_dir .. "addons.lua", key, info)
 	end
 
 	function gserv.RemoveAddon(url)
@@ -203,19 +205,19 @@ do -- addons
 			os.execute("rm -rf " .. path)
 		end
 
-		serializer.SetKeyValueInFile("luadata", "data/gserv_addons.lua", url, nil)
+		serializer.SetKeyValueInFile("luadata", data_dir .. "addons.lua", url, nil)
 	end
 
 	function gserv.GetAddon(url)
 		check_setup()
 
-		return serializer.GetKeyFromFile("luadata", "data/gserv_addons.lua", url)
+		return serializer.GetKeyFromFile("luadata", data_dir .. "addons.lua", url)
 	end
 
 	function gserv.GetAddons()
 		check_setup()
 
-		return serializer.ReadFile("luadata", "data/gserv_addons.lua")
+		return serializer.ReadFile("luadata", data_dir .. "addons.lua")
 	end
 end
 
@@ -233,7 +235,7 @@ do
 
 		logn("starting gmod server")
 
-		vfs.Write(gmod_dir .. "data/server_watchdog.txt", "booting")
+		vfs.Write(gmod_dir .. "data/gserv_pinger.txt", "booting")
 
 		os.execute("tmux kill-session -t goluwa_srcds 2>/dev/null")
 		os.execute("tmux new-session -d -s goluwa_srcds")
@@ -258,12 +260,14 @@ do
 
 		if key then
 			str = str .. "-authkey " .. key
+		else
+			logn("workshop auth key not setup")
 		end
 
 		os.execute("tmux send-keys -t goluwa_srcds \"" .. srcds_dir .. "gmod/srcds_run -game garrysmod " .. str .. "\" C-m")
 
-		event.Timer("gserv_watchdog", 1, 0, function()
-			local time = vfs.Read(gmod_dir .. "data/server_watchdog.txt")
+		event.Timer("gserv_pinger", 1, 0, function()
+			local time = vfs.Read(gmod_dir .. "data/gserv_pinger.txt")
 
 			if time then
 				if time == "booting" then return end
@@ -281,7 +285,7 @@ do
 	end
 
 	function gserv.Kill()
-		event.RemoveTimer("gserv_watchdog")
+		event.RemoveTimer("gserv_pinger")
 
 		check_running()
 
@@ -339,7 +343,7 @@ function gserv.GetLuaOutput(line)
 	local id = tostring({})
 	gserv.RunLua("file.Write('gserv_capture_output.txt', '" .. id .."' .. tostring((function()"..line.."end)()), 'DATA')")
 	while true do
-		local str = vfs.Read(gmod_dir .. "data/gserv_capture_output.txt")
+		local str = vfs.Read(gmod_dir .. data_dir .. "capture_output.txt")
 		if str and str:startswith(id) then
 			return str:sub(#id + 1)
 		end
