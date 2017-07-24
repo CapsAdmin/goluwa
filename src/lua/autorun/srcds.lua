@@ -27,6 +27,9 @@ local function load_configs()
 	end
 end
 
+local function check_setup() if not gserv.IsSetup() then error("server is not setup", 3) end end
+local function check_running() if not gserv.IsRunning() then error("server is not running", 3) end end
+
 function gserv.IsSetup()
 	if vfs.IsFile(gserv_addon_dir .. "lua/autorun/server/server_watchdog.lua") then
 		return true
@@ -34,10 +37,7 @@ function gserv.IsSetup()
 end
 
 function gserv.Setup()
-	if gserv.IsRunning() then
-		logn("server is running")
-		return
-	end
+	if gserv.IsRunning() then error("server is running", 2) end
 
 	logn("setting up gmod server")
 
@@ -77,7 +77,8 @@ function gserv.Setup()
 end
 
 do
-	function gserv.SetConfigKeyValue(key, val)
+	function gserv.SetConfigParameter(key, val)
+		check_setup()
 		load_configs()
 		gserv.cfg[key] = val
 		serializer.WriteFile("luadata", "data/gserv_config.lua", gserv.cfg)
@@ -87,12 +88,15 @@ do
 		end
 	end
 
-	function gserv.GetConfigValue(key)
+	function gserv.GetConfigParameter(key)
+		check_setup()
 		load_configs()
 		return gserv.cfg[key]
 	end
 
 	function gserv.BuildConfig()
+		check_setup()
+
 		-- write the cfg file
 		local str = ""
 		for k,v in pairs(gserv.cfg) do
@@ -105,25 +109,30 @@ end
 do
 	function gserv.SetStartupParameter(key, val)
 		load_configs()
+
 		gserv.startup_parameters[key] = val
 		serializer.WriteFile("luadata", "data/gserv_startup_parameters.lua", gserv.startup_parameters)
 	end
 
 	function gserv.GetStartupParameter(key)
 		load_configs()
+
 		return gserv.startup_parameters[key]
 	end
 end
 
 do -- addons
-
 	function gserv.UpdateAddons()
+		check_setup()
+
 		for url, info in pairs(gserv.GetAddons()) do
 			gserv.UpdateAddon(url)
 		end
 	end
 
 	function gserv.UpdateAddon(url)
+		check_setup()
+
 		local info = assert(gserv.GetAddon(url))
 
 		if info.type == "git" then
@@ -148,6 +157,7 @@ do -- addons
 	end
 
 	function gserv.AddAddon(url, name_override)
+		check_setup()
 
 		local key = url
 		local info
@@ -181,6 +191,8 @@ do -- addons
 	end
 
 	function gserv.RemoveAddon(url)
+		check_setup()
+
 		local info = assert(gserv.GetAddon(url))
 
 		local path = gmod_dir .. "addons/".. info.name
@@ -195,10 +207,14 @@ do -- addons
 	end
 
 	function gserv.GetAddon(url)
+		check_setup()
+
 		return serializer.GetKeyFromFile("luadata", "data/gserv_addons.lua", url)
 	end
 
 	function gserv.GetAddons()
+		check_setup()
+
 		return serializer.ReadFile("luadata", "data/gserv_addons.lua")
 	end
 end
@@ -209,10 +225,11 @@ do
 	end
 
 	function gserv.Start()
-		if gserv.IsRunning() then
-			logn("server is already running")
-			return
-		end
+		check_setup()
+
+		if gserv.IsRunning() then error("server is running", 2) end
+
+		load_configs()
 
 		logn("starting gmod server")
 
@@ -266,11 +283,7 @@ do
 	function gserv.Kill()
 		event.RemoveTimer("gserv_watchdog")
 
-		if not gserv.IsRunning() then
-			logn("server is already dead")
-
-			return
-		end
+		check_running()
 
 		logn("killing gmod server")
 		os.execute("tmux kill-session -t goluwa_srcds 2>/dev/null")
@@ -286,10 +299,7 @@ do
 end
 
 function gserv.GetOutput()
-	if not gserv.IsRunning() then
-		logn("server not running")
-		return
-	end
+	check_running()
 
 	local str = vfs.Read(gserv.log_path)
 	str = str:gsub("\r", "")
@@ -298,29 +308,34 @@ function gserv.GetOutput()
 end
 
 function gserv.Show()
-	if not gserv.IsRunning() then
-		logn("server not running")
-		return
-	end
+	check_running()
 
 	logn(gserv.GetOutput())
 end
 
 function gserv.Execute(line)
-	if not gserv.IsRunning() then
-		logn("server not running")
-		return
-	end
+	check_running()
 
 	os.execute("tmux send-keys -t goluwa_srcds \"" .. line .. "\" C-m")
 end
 
+function gserv.Stop()
+	check_running()
+
+	gserv.Execute("exit")
+	event.Delay(1, function() gserv.Kill() end)
+end
+
 function gserv.RunLua(line)
+	check_running()
+
 	gserv.Execute("lua_run " .. line)
 end
 
 -- this is really stupid but idk what else to do at the moment
 function gserv.GetLuaOutput(line)
+	check_running()
+
 	local id = tostring({})
 	gserv.RunLua("file.Write('gserv_capture_output.txt', '" .. id .."' .. tostring((function()"..line.."end)()), 'DATA')")
 	while true do
@@ -332,95 +347,68 @@ function gserv.GetLuaOutput(line)
 end
 
 function gserv.GetMap()
+	check_running()
+
 	return gserv.GetLuaOutput("return game.GetMap()")
 end
 
 function gserv.Restart(time)
+	check_running()
+
 	time = time or 0
 	logn("restarting server in ", time, " seconds")
 	gserv.RunLua("if aowl then RunConsoleCommand('aowl', 'restart', '"..time.."') else timer.Simple("..time..", function() RunConsoleCommand('changelevel', game.GetMap()) end) end")
 end
 
 do -- commands
-	commands.Add("gserv", function(line, cmd, arg1, ...)
-		load_configs()
+	commands.Add("gserv setup", function() gserv.Setup() end)
 
-		if cmd == "setup" then
-			gserv.Setup()
-		end
+	commands.Add("gserv start", function() gserv.Start() end)
+	commands.Add("gserv stop", function() gserv.Stop() end)
+	commands.Add("gserv kill", function() gserv.Kill() end)
+	commands.Add("gserv show", function() gserv.Show() end)
+	commands.Add("gserv restart=number[30]", function(time) print("!?") gserv.Restart(time) end)
+	commands.Add("gserv reboot", function() gserv.Reboot() end)
 
-		if gserv.IsSetup() then
-			if cmd == "start" then
-				gserv.Start()
-			elseif cmd == "kill" then
-				gserv.Kill()
-			elseif cmd == "show" then
-				gserv.Show()
-			elseif cmd == "restart" then
-				gserv.Restart()
-			elseif cmd == "reboot" then
-				gserv.Reboot()
-			end
+	commands.Add("gserv add_addon=string", function(url) gserv.AddAddon(url) end)
+	commands.Add("gserv remove_addon=string", function(url) gserv.RemoveAddon(url) end)
+	commands.Add("gserv update_addon=string", function(url) gserv.UpdateAddon(url) end)
 
-			if cmd == "add_addon" then
-				gserv.AddAddon(arg1)
-			elseif cmd == "remove_addon" then
-				gserv.RemoveAddon(arg1)
-			elseif cmd == "update_addon" then
-				gserv.UpdateAddon(arg1)
-			end
+	commands.Add("gserv add_addon=string", function(url) gserv.AddAddon(url) end)
+	commands.Add("gserv remove_addon=string", function(url) gserv.RemoveAddon(url) end)
+	commands.Add("gserv update_addon=string", function(url) gserv.UpdateAddon(url) end)
+	commands.Add("gserv update_addons", function() gserv.UpdateAddons() end)
 
-			if cmd == "update_addons" then
-				gserv.UpdateAddons()
-			elseif cmd == "list_addons" then
-				table.print(gserv.GetAddons())
-			end
+	commands.Add("gserv list_addons", function() table.print(gserv.GetAddons()) end)
+	commands.Add("gserv list_config", function() table.print(gserv.cfg) end)
+	commands.Add("gserv list_startup", function() table.print(gserv.startup_parameters) end)
 
-			if cmd == "list_config" then
-				table.print(gserv.cfg)
-			end
+	commands.Add("gserv setup_info", function()
+		logn("startup parameters:")
+		table.print(gserv.startup_parameters)
 
-			if cmd == "list_startup_parameters" then
-				table.print(gserv.startup_parameters)
-			end
+		logn("server config:")
+		table.print(gserv.cfg)
 
-			if cmd == "setup_info" then
-				logn("startup parameters:")
-				table.print(gserv.startup_parameters)
-
-				logn("server config:")
-				table.print(gserv.cfg)
-
-				logn("addons:")
-				table.print(gserv.GetAddons())
-			end
-
-			if cmd == "set_startup_parameter" then
-				gserv.SetStartupParameter(arg1, ...)
-			elseif cmd == "get_startup_parameter" then
-				logn("+", arg1, " ", gserv.GetStartupParameter(arg1))
-			end
-
-			if cmd == "set_config_key_val" then
-				gserv.SetConfigKeyValue(arg1, ...)
-			elseif cmd == "get_config_val" then
-				logn(arg1, " = ", gserv.GetConfigValue(arg1))
-			end
-		else
-			logn("server is not setup")
-			logn("use 'gserv setup' to set it up first")
-		end
+		logn("addons:")
+		table.print(gserv.GetAddons())
 	end)
 
-	commands.Add("gserv_run", function(line)
-		logn("running |", line, "| on srcds")
-		gserv.Execute(line)
+	commands.Add("gserv set_startup_param=string,string", function(key, val) gserv.SetStartupParameter(key, val) end)
+	commands.Add("gserv get_startup_param=string", function(key) logn(gserv.GetStartupParameter(key)) end)
+
+	commands.Add("gserv set_config_param=string,string", function(key, val) gserv.SetConfigParameter(key, val) end)
+	commands.Add("gserv get_config_param=string", function(key) logn(gserv.GetConfigParameter(key)) end)
+
+	commands.Add("gserv run=arg_line", function(str)
+		logn("running |", str, "| on srcds")
+		gserv.Execute(str)
 		event.Delay(0.1, function() gserv.Show() end)
 	end)
 
-	commands.Add("gserv_lua", function(line)
-		logn("running |lua_run ", line, "| on srcds")
-		gserv.RunLua(line)
+	commands.Add("gserv lua=arg_line", function(code)
+		logn("running |lua_run ", code, "| on srcds")
+		gserv.RunLua(code)
 		event.Delay(0.1, function() gserv.Show() end)
 	end)
 end
