@@ -600,30 +600,30 @@ end
 
 profiler.Restart()
 
-commands.Add("profile_start", function(line)
-	if line == "" or line == "st" or line == "s" then
+commands.Add("profile_start=string|nil", function(how)
+	if not how or how == "st" or how == "s" then
 		profiler.EnableStatisticalProfiling(true)
 	end
 
-	if line == "" or line == "se" then
+	if not how or how == "se" then
 		profiler.EnableSectionProfiling(true)
 	end
 
-	if line == "" or line == "ab" or line == "a" then
+	if not how or how == "ab" or how == "a" then
 		profiler.EnableTraceAbortLogging(true)
 	end
 end)
 
-commands.Add("profile_stop", function()
-	if line == "" or line == "st" or line == "s" then
+commands.Add("profile_stop=string|nil", function(how)
+	if not how or how == "st" or how == "s" then
 		profiler.EnableStatisticalProfiling(false)
 	end
 
-	if line == "" or line == "se" then
+	if not how or how == "se" then
 		profiler.EnableSectionProfiling(false)
 	end
 
-	if line == "" or line == "ab" or line == "a" then
+	if not how or how == "ab" or how == "a" then
 		profiler.EnableTraceAbortLogging(false)
 	end
 end)
@@ -632,22 +632,22 @@ commands.Add("profile_restart", function()
 	profiler.Restart()
 end)
 
-commands.Add("profile_dump", function(line, a, b, c)
-	if a == "" or a == "st" or a == "s" then
-		profiler.PrintStatistical(b, tonumber(c))
+commands.Add("profile_dump=nil,number|nil", function(how, min_samples)
+	if how == "" or how == "st" or how == "s" then
+		profiler.PrintStatistical(min_samples)
 	end
 
-	if a == "" or a == "se" then
+	if how == "" or how == "se" then
 		profiler.PrintSections()
 	end
 
-	if a == "" or a == "ab" or a == "a" then
+	if how == "" or how == "ab" or how == "a" then
 		profiler.PrintTraceAborts()
 	end
 end)
 
-commands.Add("profile", function(line, time, file_filter, method)
-	profiler.MeasureInstrumental(tonumber(time) or 5, file_filter, method)
+commands.Add("profile=number[5],string|nil,string|nil", function(time, file_filter, method)
+	profiler.MeasureInstrumental(time, file_filter, method)
 end)
 
 commands.Add("zbprofile", function()

@@ -782,9 +782,9 @@ end
 
 input.Bind("e+left_control", "toggle_editor")
 
-commands.Add("close_editor", editor.Close)
-commands.Add("toggle_editor", editor.Toggle)
-commands.Add("open_editor", editor.Open)
+commands.Add("close_editor=nil", editor.Close)
+commands.Add("toggle_editor=nil", editor.Toggle)
+commands.Add("open_editor=nil", editor.Open)
 
 if RELOAD then
 	editor.Close()

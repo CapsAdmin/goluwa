@@ -1,134 +1,89 @@
 local commands = _G.commands or {}
 
-local ffi = require("ffi")
+do
+	local function vector(str, ctor)
+		local num = str:split(" ")
+		local ok = true
 
-local start_symbols = {
-	"%!",
-	"%.",
-	"%/",
-	"",
-}
+		if #num == 3 then
+			for i, v in ipairs(num) do
+				num[i] = tonumber(v)
 
-local arg_types = {
-	vec3 = Vec3,
-	ang3 = Ang3,
-	client = function(str)
-		return NULL-- easylua.FindEntity(str) or NULL
-	end,
-	name = function(client)
-		if client and client:IsValid() then
-			return client:GetNick()
-		end
-	end,
-}
-
-if expression then
-	arg_types.e = function(str)
-		local _, res = assert(expression.Compile(str))
-		return res()
-	end
-end
-
-arg_types.v3 = arg_types.vec3
-arg_types.a3 = arg_types.ang3
-arg_types["@"] = arg_types.client
-arg_types["#"] = arg_types.client
-
-
-local capture_symbols = {
-	["\""] = "\"",
-	["'"] = "'",
-	["("] = ")",
-	["["] = "]",
-	["`"] = "`",
-	["´"] = "´",
-}
-
-commands.added = commands.added or {}
-
-function commands.Add(cmd, callback, help, autocomplete)
-	cmd = cmd:lower()
-
-	commands.added[cmd] = {callback = callback, help = help, autocomplete = autocomplete}
-end
-
-function commands.IsAdded(cmd)
-	cmd = cmd:lower()
-
-	return commands.added[cmd] ~= nil
-end
-
-function commands.AddAutocomplete(cmd, callback)
-	cmd = cmd:lower()
-
-	if commands.added[cmd] then
-		commands.added[cmd].autocomplete = callback
-	end
-end
-
-function commands.AddHelp(cmd, str)
-	cmd = cmd:lower()
-
-	if commands.added[cmd] then
-		commands.added[cmd].help = str
-	end
-end
-
-function commands.Remove(cmd)
-	cmd = cmd:lower()
-
-	commands.added[cmd] = nil
-end
-
-function commands.GetCommands()
-	return commands.added
-end
-
-local function call(data, line, ...)
-	local a, b, c = system.pcall(data, line, ...)
-
-	if a and b ~= nil then
-		return b, c
-	end
-
-	return a, b
-end
-
-local function call_command(cmd, line, ...)
-	cmd = cmd:lower()
-
-	local data = commands.added[cmd]
-
-	if data then
-		local ok, reason = call(data.callback, line, ...)
-		 if not ok then
-			logn("failed to execute command ", cmd, "!")
-			logn(reason)
-
-			local help = commands.added[cmd].help
-
-			if help then
-				if type(help) == "function" then
-					help()
-				else
-					logn(help)
+				if not num[i] then
+					ok = false
+					break
 				end
 			end
+
+			return ctor(unpack(num))
 		end
 
-		return ok, reason
+		if not ok then
+			local test = str:match("(b())")
+			if test then
+				return vector(test:sub(2, -2), ctor)
+			end
+		end
+	end
+
+	commands.ArgumentTypes = {
+		["nil"] = function(str) return str end,
+		self = function(str, me) return me end,
+		vec3 = function(str, me) return vector(str, Vec3) end,
+		ang3 = function(str, me) return vector(str, Ang3) end,
+		vector = function(str, me) return vector(str, Vec3) end,
+		angle = function(str, me) return vector(str, Ang3) end,
+		boolean = function(arg)
+			arg = arg:lower()
+
+			if arg == "1" or arg == "true" or arg == "on" or arg == "yes" or arg == "y" then
+				return true
+			end
+
+			if arg == "0" or arg == "false" or arg == "off" or arg == "no" or arg == "n" then
+				return false
+			end
+
+			return false
+		end,
+		number = function(arg)
+			return tonumber(arg)
+		end,
+		string = function(arg)
+			if #arg > 0 then
+				return arg
+			end
+		end,
+		string_trim = function(arg)
+			arg = arg:trim()
+			if #arg > 0 then
+				return arg
+			end
+		end,
+		var_arg = function(arg) return arg end,
+		arg_line = function(arg) return arg end,
+		string_rest = function(arg) return arg end,
+	}
+
+	function commands.StringToType(type, ...)
+		return commands.ArgumentTypes[type](...)
 	end
 end
 
-function commands.RunCommand(cmd, ...)
-	return call_command(cmd, table.concat({...}, ","), ...)
-end
+do -- commands
+	commands.added = commands.added or {}
 
-do -- arg parsing
+	local capture_symbols = {
+		["\""] = "\"",
+		["'"] = "'",
+		["("] = ")",
+		["["] = "]",
+		["`"] = "`",
+		["´"] = "´",
+	}
+
 	local function parse_args(arg_line)
 		if not arg_line or arg_line:trim() == "" then return {} end
-
-		local chars = arg_line:utotable()
 
 		local args = {}
 		local capture = {}
@@ -136,7 +91,7 @@ do -- arg parsing
 
 		local in_capture = false
 
-		for _, char in ipairs(chars) do
+		for _, char in ipairs(utf8.totable(arg_line)) do
 			if escape then
 				table.insert(capture, char)
 				escape = false
@@ -149,7 +104,7 @@ do -- arg parsing
 					table.insert(capture, char)
 				else
 					if char == "," then
-						table.insert(args, table.concat(capture, ""):trim())
+						table.insert(args, table.concat(capture, ""))
 						table.clear(capture)
 					else
 						table.insert(capture, char)
@@ -166,42 +121,37 @@ do -- arg parsing
 			end
 		end
 
-		table.insert(args, table.concat(capture, ""):trim())
-
-		for i, str in ipairs(args) do
-			if tonumber(str) then
-				args[i] = tonumber(str)
-			else
-				local cmd, rest = str:match("^(.+)%((.+)%)$")
-
-				if not cmd then
-					local t = str:sub(1,1):charclass()
-					if t then
-						cmd, rest = str:match("^("..t.."+)(.+)$")
-					end
-				end
-
-				if cmd then
-					cmd = cmd:trim():lower()
-					if arg_types[cmd] then
-
-						if capture_symbols[rest:sub(1,1)] then
-							rest = rest:sub(2, -2)
-						end
-
-						args[i] = {cmd = cmd, args = parse_args(rest), line = str}
-					end
-				end
-			end
-		end
+		table.insert(args, table.concat(capture, ""))
 
 		return args
 	end
+
+	local start_symbols = {
+		"%!",
+		"%.",
+		"%/",
+		"",
+	}
+
+	commands.sub_commands = commands.sub_commands or {}
 
 	local function parse_line(line)
 		for _, v in ipairs(start_symbols) do
 			local start, rest = line:match("^(" .. v .. ")(.+)")
 			if start then
+
+				for _, str in ipairs(commands.sub_commands) do
+					local cmd, rest_ = rest:match("^("..str..")%s+(.+)$")
+					if cmd then
+						return v, cmd, rest_
+					else
+						local cmd, rest_ = rest:match("^("..str..")$")
+						if cmd then
+							return v, cmd, rest_
+						end
+					end
+				end
+
 				local cmd, rest_ = rest:match("^(%S+)%s+(.+)$")
 				if not cmd then
 					return v, rest:trim()
@@ -212,167 +162,373 @@ do -- arg parsing
 		end
 	end
 
-	local function execute_args(args, udata)
-		local errors = {}
+	function commands.Add(command, callback)
+		local aliases = command
+		local argtypes
+		local defaults
 
-		for i, arg in ipairs(args) do
-			if type(arg) == "table" then
+		if command:find("=") then
+			aliases, argtypes =  command:match("(.+)=(.+)")
+			if not aliases then
+				aliases = command
+			end
+		end
 
-				local ok, res = execute_args(arg.args, udata)
+		aliases = aliases:split("|")
 
-				if not ok then
-					table.insert(errors, res)
+		if argtypes then
+			argtypes = argtypes:split(",")
+
+			for i, v in ipairs(argtypes) do
+				if v:find("|", nil, true) then
+					argtypes[i] = v:split("|")
+				else
+					argtypes[i] = {v}
 				end
+			end
 
-				if arg_types[arg.cmd] then
-					local ok, res = pcall(arg_types[arg.cmd], unpack(arg.args))
+			for i, types in ipairs(argtypes) do
+				for i2, arg in ipairs(types) do
+					if arg:find("[", nil, true) then
+						local temp, default = arg:match("(.+)(%b[])")
 
-					if ok then
-						args[i] = res
-					else
-						table.insert(errors, ("%q: %s"):format(arg.line, res))
+						if commands.ArgumentTypes[temp] then
+							defaults = defaults or {}
+							default = default:sub(2, -2)
+
+							-- special case
+							if temp == "string" then
+								defaults[i] = default
+							else
+								defaults[i] = commands.StringToType(temp, default)
+							end
+
+							types[i2] = temp
+						else
+							log(aliases[1] .. ": no type information found for \"" .. temp .. "\"")
+						end
 					end
 				end
 			end
 		end
 
-		if #errors > 0 then
-			return nil, table.concat(errors, "\n")
+		commands.added[aliases[1]] = {
+			aliases = aliases,
+			argtypes = argtypes,
+			callback = callback,
+			defaults = defaults
+		}
+
+		-- sub commands
+		if #aliases == 1 and aliases[1]:find(" ", nil, true) then
+			if not table.hasvalue(commands.sub_commands, aliases[1]) then
+				table.insert(commands.sub_commands, aliases[1])
+			end
+		end
+	end
+
+	function commands.Remove(alias)
+		local command, msg = commands.FindCommand(alias)
+
+		if command then
+			commands.added[command.aliases[1]] = nil
+			return true
+		end
+
+		return nil, msg
+	end
+
+	function commands.FindCommand(str)
+		local found = {}
+
+		for _, command in pairs(commands.added) do
+			for _, alias in ipairs(command.aliases) do
+				if str:lower() == alias:lower() then
+					return command
+				end
+				table.insert(found, {distance = string.levenshtein(str, alias), alias = alias, command = command})
+			end
+		end
+
+		table.sort(found, function(a, b) return a.distance < b.distance end)
+
+		return nil, "could not find command " .. str .. ". did you mean " .. found[1].alias .. "?"
+	end
+
+	function commands.GetCommands()
+		return commands.added
+	end
+
+	function commands.IsAdded(alias)
+		return commands.FindCommand(alias) ~= nil
+	end
+
+ 	function commands.AddHelp(alias, help)
+  		local command, msg = commands.FindCommand(alias)
+
+  		if command then
+			command.help = help
+			return true
+		end
+
+		return nil, msg
+  	end
+
+	function commands.AddAutoComplete(alias, callback)
+  		local command, msg = commands.FindCommand(alias)
+
+  		if command then
+			command.autocomplete = callback
+			return true
+		end
+
+		return nil, msg
+  	end
+
+	function commands.GetHelpText(alias)
+		local command, msg = commands.FindCommand(alias)
+		if not command then return false, msg end
+
+		local str = command.help
+
+		if str then
+			return str
+		end
+
+		local params = {}
+
+		for i = 1, math.huge do
+			local key = debug.getlocal(command.callback, i)
+			if key then
+				table.insert(params, key)
+			else
+				break
+			end
+		end
+
+		str = alias .. " "
+
+		for i = 1, #params do
+			local arg_name = params[i]
+			if arg_name ~= "_" then
+				local types = command.argtypes and command.argtypes[i]
+				local default = command.defaults and command.defaults[i]
+
+				if types then
+					str = str .. arg_name .. ""
+
+					str = str .. "<"
+					for _, type in pairs(types) do
+						str = str .. type
+						if _ ~= #types then
+							str = str .. " or "
+						end
+					end
+					str = str .. ">"
+				else
+					str = str .. "*" .. arg_name .. "*"
+				end
+
+				if default then
+					str = str .. " = " .. tostring(default)
+				end
+
+				if i ~= #params then
+					str = str .. ", "
+				end
+			end
+		end
+
+		local help = alias .. ":\n"
+		help = help .. "\tusage example:\n\t\t" .. str .. "\n"
+		help = help .. "\tlocation:\n\t\t" .. debug.getprettysource(command.callback, true) .. "\n"
+
+		return help
+	end
+
+	function commands.IsCommandStringValid(str)
+		return parse_line(str)
+	end
+
+	function commands.ParseString(str)
+		local symbol, alias, arg_line = parse_line(str)
+
+		local args = parse_args(arg_line)
+		local command, err = commands.FindCommand(alias)
+
+		if not command then return command, err end
+
+		return command, alias, arg_line, args
+	end
+
+	function commands.GetArgLine()
+		return command.arg_line or ""
+	end
+
+	function commands.RunCommandString(str)
+		local command, alias, arg_line, args = assert(commands.ParseString(str))
+
+		command.arg_line = arg_line
+
+		local ret, reason = event.Call("PreCommandExecute", command, alias, unpack(args))
+
+		if ret == false then return ret, reason or "no reason" end
+
+		if command.argtypes then
+			for i, arg in ipairs(args) do
+				if command.argtypes[i] then
+					for _, arg_type in ipairs(command.argtypes[i]) do
+						if not commands.ArgumentTypes[arg_type] then
+							log(alias .. ": no type information found for \"" .. arg_type .. "\"")
+						end
+					end
+				end
+			end
+
+			for i, arg_types in ipairs(command.argtypes) do
+				if command.defaults and args[i] == nil and command.defaults[i] then
+					args[i] = command.defaults[i]
+				end
+
+				if args[i] ~= nil or not table.hasvalue(arg_types, "nil") then
+					local val
+
+					for _, arg_type in ipairs(arg_types) do
+						if arg_type == "arg_line" then
+							val = arg_line
+						elseif arg_type == "string_rest" then
+							val = table.concat({select(i, unpack(args))}, ","):trim()
+						else
+							local test = commands.ArgumentTypes[arg_type](args[i] or "")
+
+							if test ~= nil then
+								val = test
+								break
+							end
+						end
+					end
+
+					if val == nil and command.defaults and command.defaults[i] and args[i] then
+						val = command.defaults[i]
+						local err = "unable to convert argument " .. (debug.getlocal(command.callback, i) or i) .. " >>|" .. (args[i] or "") .. "|<< to one of these types: " .. table.concat(command.argtypes[i], ", ") .. "\n"
+						err = err .. "defaulting to " .. tostring(command.defaults[i])
+						logn(err)
+					end
+
+					if val == nil then
+						local err = "unable to convert argument " .. (debug.getlocal(command.callback, i) or i) .. " >>|" .. (args[i] or "") .. "|<< to one of these types: " .. table.concat(command.argtypes[i], ", ") .. "\n"
+						err = err .. commands.GetHelpText(alias) .. "\n"
+						error(err)
+					end
+
+					args[i] = val
+				end
+			end
+		end
+
+		return command.callback(unpack(args))
+	end
+
+	function commands.ExecuteCommandString(str)
+		local a, b, c = pcall(commands.RunCommandString, str)
+
+		if a == false then
+			return false, b
+		end
+
+		if b == false then
+			return false, c or "unknown reason"
 		end
 
 		return true
 	end
 
-	function commands.IsCommandStringValid(line)
-		local symbol, cmd = parse_line(line)
-		return commands.added[cmd] ~= nil, symbol and symbol:sub(2,2)
-	end
+	do
+		commands.run_lua_environment = {}
 
-	function commands.ParseArguments(line)
-		local symbol, cmd, rest = parse_line(line)
-
-		local data = {args = parse_args(rest), line = rest or "", cmd = cmd, symbol = symbol}
-
-		local ok, err = execute_args(data.args)
-		if not ok then return nil, err end
-		return data
-	end
-end
-
-function commands.RunString(line, skip_lua, skip_split, log_error)
-	if type(line) ~= "string" then return end
-
-	if CLI then
-		logn(">> ", line)
-	end
-
-	if not skip_split and line:find("\n") then
-		for line in (line .. "\n"):gmatch("(.-)\n") do
-			commands.RunString(line, skip_lua, skip_split, log_error)
-		end
-		return
-	end
-
-	local data, err = commands.ParseArguments(line)
-
-	if data then
-		if commands.added[data.cmd] then
-			return call_command(data.cmd, data.line, unpack(data.args))
+		function commands.SetLuaEnvironmentVariable(key, var)
+			commands.run_lua_environment[key] = var
 		end
 
-		if pvars.IsSetup(data.cmd) then
-			local val = data.line
+		function commands.RunLuaString(line, env_name)
+			commands.SetLuaEnvironmentVariable("gl", desire("opengl"))
+			commands.SetLuaEnvironmentVariable("ffi", desire("ffi"))
+			commands.SetLuaEnvironmentVariable("findo", prototype.FindObject)
+			if WINDOW then commands.SetLuaEnvironmentVariable("copy", window.SetClipboard) end
 
-			if data.line ~= "" then
-				if data.line == "nil" then
-					val = nil
-				else
-					if pvars.GetObject(data.cmd):GetType() ~= "string" then
-						val = serializer.GetLibrary("luadata").FromString(val)
-					end
-				end
+			local lua = ""
 
-				pvars.Set(data.cmd, val)
+			for k in pairs(commands.run_lua_environment) do
+				lua = lua .. ("local %s = commands.run_lua_environment.%s;"):format(k, k)
 			end
 
-			logn(data.cmd, " (",pvars.GetObject(data.cmd):GetType(),") = ", pvars.Get(data.cmd))
+			lua = lua .. line
+
+			return assert(loadstring(lua, env_name or line))()
+		end
+
+		function commands.ExecuteLuaString(line, log_error, env_name)
+			local ret = {pcall(commands.RunLuaString, line, env_name)}
+			local ok = table.remove(ret, 1)
+
+			if not ok then
+				if log_error then
+					logn(ret[1])
+				end
+				return false, ret[1]
+			end
+
+			return true, unpack(ret)
+		end
+	end
+
+	function commands.RunString(line, skip_lua, skip_split, log_error)
+		if CLI then
+			logn(">> ", line)
+		end
+
+		if not skip_split and line:find("\n") then
+			for line in (line .. "\n"):gmatch("(.-)\n") do
+				commands.RunString(line, skip_lua, skip_split, log_error)
+			end
+			return
+		end
+
+		local ok, msg = commands.ExecuteCommandString(line)
+
+		if not ok and log_error and not msg:find("could not find command") then
+			logn(msg)
 
 			return
 		end
 
-		if not skip_lua then
-			return commands.RunLua(line, log_error)
+		if not ok and not skip_lua then
+			ok, msg = commands.ExecuteLuaString(line)
+		end
+
+		if not ok and log_error then
+			logn(msg)
 		end
 	end
 
-	if log_error and err then
-		logn(err)
-	end
-end
-
-commands.run_lua_environment = {}
-
-function commands.SetLuaEnvironmentVariable(key, var)
-	commands.run_lua_environment[key] = var
-end
-
-local gl = true
-
-function commands.RunLua(line, log_error, env_name)
-	if WINDOW then commands.SetLuaEnvironmentVariable("copy", window.SetClipboard) end
-
-	if gl == false then
-		gl = desire("opengl")
-	end
-	if gl then
-		commands.SetLuaEnvironmentVariable("gl", gl)
-	end
-
-	commands.SetLuaEnvironmentVariable("findo", prototype.FindObject)
-	local lua = ""
-
-	for k in pairs(commands.run_lua_environment) do
-		lua = lua .. ("local %s = commands.run_lua_environment.%s;"):format(k, k)
-	end
-
-	lua = lua .. line
-
-	local func, err = loadstring(lua, env_name or line)
-
-	if log_error and not func then
-		logn(err)
-		return func, err
-	end
-
-	if not func then return func, err end
-
-	local ret = {system.pcall(func)}
-
-	if log_error and not ret[1] then
-		if ret[2] then logn(ret[2]) end
-		return unpack(ret)
-	end
-
-	return unpack(ret)
-end
-
-commands.Add("help", function(line)
-	local info = commands.GetCommands()[line]
-	if info then
-		if not info.help then
-			logn("\tno help was found for ", line)
-			logf("\ttype %q to go to this function\n", "source " .. line)
-			logn("\tdebug info:")
-			logn("\t\targuments\t=\t", table.concat(debug.getparams(info.callback), ", "))
-			logn("\t\tfunction\t=\t", tostring(info.callback))
+	commands.Add("help|usage=string|nil", function(cmd)
+		if not cmd then
+			for k,v in spairs(commands.GetCommands()) do
+				logn(assert(commands.GetHelpText(k)))
+			end
 		else
-			if type(info.help) == "function" then
-				info.help()
+			local help, err = commands.GetHelpText(cmd)
+			if help then
+				logn(help)
 			else
-				logn(info.help)
+				for _, sub_cmd in ipairs(commands.sub_commands) do
+					if sub_cmd:startswith(cmd) then
+						logn(assert(commands.GetHelpText(sub_cmd)))
+					end
+				end
 			end
 		end
-	end
-end)
+	end)
+end
 
 return commands

@@ -85,11 +85,11 @@ do -- console extension
 	end
 
 	if SERVER then
-		message.AddListener("scmd", function(client, cmd, line, ...)
+		message.AddListener("scmd", function(client, cmd, ...)
 			local callback = message.server_commands[cmd]
 
 			if callback then
-				callback(client, line, ...)
+				callback(client, ...)
 			end
 		end)
 	end
@@ -98,14 +98,14 @@ do -- console extension
 		message.server_commands[command] = callback
 
 		if CLIENT then
-			commands.Add(command, function(line, ...)
-				message.Send("scmd", command, line, ...)
+			commands.Add(command, function(...)
+				message.Send("scmd", command, ...)
 			end)
 		end
 
 		if SERVER then
-			commands.Add(command, function(line, ...)
-				callback(client, line, ...)
+			commands.Add(command, function(...)
+				callback(client, ...)
 			end)
 		end
 	end

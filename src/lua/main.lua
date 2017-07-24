@@ -62,7 +62,10 @@ end
 vfs.MountAddons(e.ROOT_FOLDER)
 
 -- execute /data/users/*USERNAME*/cfg/autoexec.lua
-commands.RunString(vfs.Read("cfg/autoexec.cfg"))
+local cfg = vfs.Read("cfg/autoexec.cfg")
+if cfg then
+	commands.RunString(cfg)
+end
 
 system._CheckCreatedEnv()
 

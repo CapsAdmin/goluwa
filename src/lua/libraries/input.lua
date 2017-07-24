@@ -109,7 +109,7 @@ do
 		}
 
 		if callback then
-			commands.Add(cmd, callback)
+			commands.Add(cmd .. "=nil", callback)
 		end
 	end
 
@@ -151,10 +151,8 @@ do
 
 	event.AddListener("KeyInput", "keybind", input.Call, {on_error = system.OnError, priority = math.huge})
 
-	commands.Add("bind", function(line, key, ...)
-		if key then
-			input.Bind(key, table.concat({...}, " "))
-		end
+	commands.Add("bind=string,string_rest", function(key, str)
+		input.Bind(key, str)
 	end)
 end
 

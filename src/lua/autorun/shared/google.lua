@@ -216,7 +216,7 @@ if SERVER then
 	end)
 end
 
-commands.Add("yt", function(query)
+commands.Add("yt=string", function(query)
 	google.YoutubeSearch(query, function(info)
 		local votes = info.likes + info.dislikes
 
@@ -227,14 +227,14 @@ commands.Add("yt", function(query)
 	end)
 end)
 
-commands.Add("gauto", function(line)
-	google.AutoComplete(line, function(tbl)
+commands.Add("gauto=arg_line", function(str)
+	google.AutoComplete(str, function(tbl)
 		local msg = table.random(tbl)
 		chat.Append("Google", msg)
 	end)
 end)
 
-commands.Add("t", function(line, from, to, str)
+commands.Add("translate|tr|t=string|nil,string|nil,string_rest", function(from, to, str)
 	local client = commands.GetClient()
 
 	if from and not to and not str then
@@ -252,6 +252,6 @@ commands.Add("t", function(line, from, to, str)
 	end)
 end)
 
-commands.Add("g", function(query)
+commands.Add("g=arg_line", function(query)
 	system.OpenURL(print(("http://www.google.com/search?&q=%s"):format(sockets.EscapeURL(query))))
 end)

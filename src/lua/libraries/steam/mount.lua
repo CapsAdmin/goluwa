@@ -1,16 +1,16 @@
 local steam = ... or _G.steam
 
-commands.Add("mount", function(game)
+commands.Add("mount=string", function(game)
 	local game_info = assert(steam.MountSourceGame(game))
 	llog("mounted %s %s", game_info.game, game_info.title2)
 end)
 
-commands.Add("unmount", function(game)
+commands.Add("unmount=string", function(game)
 	local game_info = assert(steam.UnmountSourceGame(game))
 	llog("unmounted %s %s", game_info.game, game_info.title2 or game_info.title)
 end)
 
-commands.Add("mount_all", function(game)
+commands.Add("mount_all=string", function(game)
 	local game_info = assert(steam.MountSourceGame(game))
 	llog("mounted %s %s", game_info.game, game_info.title2)
 end)
@@ -28,7 +28,7 @@ commands.Add("list_games", function()
 	end
 end)
 
-commands.Add("list_maps", function(search)
+commands.Add("list_maps=string", function(search)
 	for _, name in ipairs(vfs.Find("maps/%.bsp$")) do
 		if not search or name:find(search) then
 			logn(name:sub(0, -5))
@@ -36,7 +36,7 @@ commands.Add("list_maps", function(search)
 	end
 end)
 
-commands.Add("game_info", function(game)
+commands.Add("game_info=string", function(game)
 	local info = steam.FindSourceGame(game)
 	print(vfs.Read(info.gameinfo_path))
 	table.print(info)

@@ -317,8 +317,7 @@ do -- skin
 		return out
 	end
 
-	commands.Add("gui_skin", function(_, str, sub_skin)
-		str = str or "gwen"
+	commands.Add("gui_skin=string[gwen],string|nil", function(str, sub_skin)
 		gui.SetSkin(str, sub_skin)
 	end)
 

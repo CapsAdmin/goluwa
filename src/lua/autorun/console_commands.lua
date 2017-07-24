@@ -1,31 +1,5 @@
-commands.Add("exit", function(num)
-	system.ShutDown(num)
-end)
-
-commands.Add("expand_lights", function(num)
-	num = math.max(tonumber(num), 0.01)
-	for k,v in pairs(entities.GetAll()) do
-		if v.SetShadow then
-			v:SetSize(v:GetSize() * num)
-		end
-	end
-end)
-
-commands.Add("expand_light_intensity", function(num)
-	num = math.max(tonumber(num), 0.01)
-	for k,v in pairs(entities.GetAll()) do
-		if v.SetShadow then
-			v:SetIntensity(v:GetIntensity() * num)
-		end
-	end
-end)
-
-commands.Add("remove_lights", function()
-	for k,v in pairs(entities.GetAll()) do
-		if v.SetShadow then
-			v:Remove()
-		end
-	end
+commands.Add("exit=number[0]", function(exit_code)
+	system.ShutDown(exit_code)
 end)
 
 commands.Add("gc", function()
@@ -40,70 +14,10 @@ commands.Add("test_mem", function()
 	debug.loglines()
 end)
 
-commands.Add("scene_info", function()
-	logf("%s models\n", #render3d.scene)
-
-	local model_count = 0
-	for _, model in ipairs(render3d.scene) do
-		model_count = model_count + #model.sub_meshes
-	end
-
-	logf("%s sub models\n", model_count)
-
-	local light_count = 0
-	for _, ent in ipairs(entities.GetAll()) do
-		if ent.SetShadow then
-			light_count = light_count + 1
-		end
-	end
-	logf("%s lights\n", light_count)
-
-	logf("%s maximum draw calls\n", model_count + light_count)
-
-	local total_visible = 0
-	local vis = {}
-	for _, model in ipairs(render3d.scene) do
-		for key, is_visible in pairs(model.visible) do
-			local visible = is_visible and 1 or 0
-			vis[key] = (vis[key] or 0) + visible
-			total_visible = total_visible + visible
-		end
-	end
-
-	logf("%s current draw calls with shadows\n", total_visible)
-
-	local temp = {}
-	for id, count in pairs(vis) do table.insert(temp, {id = id, count = count}) end
-	table.sort(temp, function(a, b) return a.id < b.id end)
-	for _, v in ipairs(temp) do
-		logf("\t%s visible in %s\n", v.count, v.id)
-	end
-
-	local mat_count = {}
-	local tex_count = {}
-	for _, model in ipairs(render3d.scene) do
-		for _, mesh in ipairs(model.sub_meshes) do
-			if mesh.material then
-				mat_count[mesh.material] = true
-				for key, val in pairs(mesh.material) do
-					if typex(val) == "texture" then
-						tex_count[val] = true
-					end
-				end
-			end
-		end
-	end
-	mat_count = table.count(mat_count)
-	tex_count = table.count(tex_count)
-
-	logf("%s materials\n", mat_count)
-	logf("%s textures\n", tex_count)
-end)
-
 do
 	local sigh = {}
 
-	commands.Add("luacheck", function(what)
+	commands.Add("luacheck=arg_line", function(what)
 		table.clear(sigh)
 		table.insert(sigh, "--no-color")
 		for path in pairs(vfs.GetLoadedLuaFiles()) do
@@ -116,83 +30,6 @@ do
 		_G.arg = nil
 	end)
 end
-
-commands.Add("dump_gbuffer", function(_, format, depth_format)
-	ffi.cdef[[
-		void *fopen(const char *filename, const char *mode);
-		size_t fwrite(const void *ptr, size_t size, size_t nmemb, void *stream);
-		int fclose( void * stream );
-	]]
-
-	event.AddListener("GBufferPrePostProcess", function()
-		for k,v in pairs(render3d.gbuffer.textures) do
-			local ok, err = pcall(function()
-				local format = format
-				if k == "depth" then format = depth_format end
-				print(format)
-				local data = v.tex:Download(nil, format)
-				local buffer = data.buffer
-				data.buffer = nil
-				serializer.WriteFile("luadata", "" .. k .. ".tbl", data)
-				local f = ffi.C.fopen(R("data/") .. k .. ".data", "wb")
-				ffi.C.fwrite(buffer, 1, data.size, f)
-				ffi.C.fclose(f)
-			end)
-			if ok then
-				logf("dumped buffer %s to %s\n", k,  k .. ".tbl and *.data")
-			else
-				logf("error dumping buffer %s: %s\n", k, err)
-			end
-		end
-	end)
-end)
-
-do -- source engine
-	commands.Add("getpos", function()
-		local pos = camera.camera_3d:GetPosition() * (1/steam.source2meters)
-		local ang = camera.camera_3d:GetAngles():GetDeg()
-
-		logf("setpos %f %f %f;setang %f %f %f", pos.x, pos.y, pos.z, ang.x, ang.y, ang.z)
-	end)
-
-	commands.Add("setpos", function(line)
-		local x,y,z = unpack(line:match("(.-);"):split(" "))
-		x = tonumber(x)
-		y = tonumber(y)
-		z = tonumber(z)
-		camera.camera_3d:SetPosition(Vec3(x,y,z) * steam.source2meters)
-
-		local p,y,r = unpack(line:match("setang (.+)"):split(" "))
-		p = tonumber(p)
-		y = tonumber(y)
-		r = tonumber(r)
-		camera.camera_3d:SetAngles(Deg3(p,y,r))
-	end)
-end
-
-local tries = {
-	{path = "__MAPNAME__"},
-	{path = "maps/__MAPNAME__.obj"},
-	{path = "__MAPNAME__/__MAPNAME__.obj", callback =  function(ent) ent:SetSize(0.01) ent:SetRotation(Quat(-1,0,0,1)) end},
-}
-
-commands.Add("map", function(name)
-	for _, info in pairs(tries) do
-		local path = info.path:gsub("__MAPNAME__", name)
-		if vfs.IsFile(path) then
-			OBJ_WORLD = OBJ_WORLD or entities.CreateEntity("visual")
-			OBJ_WORLD:SetName(name)
-			OBJ_WORLD:SetModelPath(path)
-			OBJ_WORLD.world = OBJ_WORLD.world or entities.CreateEntity("world")
-			if info.callback then
-				info.callback(OBJ_WORLD)
-			end
-			return
-		end
-	end
-
-	steam.SetMap(name)
-end)
 
 commands.Add("dump_object_count", function()
 	local found = {}
@@ -217,7 +54,7 @@ commands.Add("dump_object_count", function()
 	end
 end)
 
-commands.Add("find_object", function(str)
+commands.Add("find_object=arg_line", function(str)
 	local obj = prototype.FindObject(str)
 	if obj then
 		table.print(obj:GetStorableTable())
@@ -225,9 +62,7 @@ commands.Add("find_object", function(str)
 end)
 
 do -- url monitoring
-	commands.Add("monitor_url", function(_, url, interval)
-		interval = tonumber(interval) or 0.5
-
+	commands.Add("monitor_url=string,number[0.5]", function(url, interval)
 		local last_modified
 		local busy
 
@@ -265,107 +100,14 @@ do -- url monitoring
 		logf("%s start monitoring\n", url)
 	end)
 
-	commands.Add("unmonitor_url", function(_, url)
+	commands.Add("unmonitor_url=arg_line", function(url)
 		event.RemoveTimer("monitor_" .. url)
 
 		logf("%s stop monitoring\n", url)
 	end)
 end
 
-input.Bind("e+left_alt", "toggle_focus", function()
-	window.SetMouseTrapped(not window.GetMouseTrapped())
-end)
-
-do
-	local source = NULL
-
-	commands.Add("play", function(path)
-		if source:IsValid() then source:Remove() end
-		source = audio.CreateSource(path)
-		source:Play()
-	end)
-end
-
-commands.Add("stopsounds", function()
-	audio.Panic()
-end)
-
-do
-	commands.Add("say", function(line)
-		chat.Say(line)
-	end)
-
-	commands.Add("lua_run", function(line)
-		commands.SetLuaEnvironmentVariable("me", clients.GetLocalClient())
-		commands.RunLua(line)
-	end)
-
-	commands.Add("lua_open", function(line)
-		runfile(line)
-	end)
-
-	if SERVER then
-		commands.AddServerCommand("lua_run_sv", function(client, line)
-			logn(client:GetNick(), " ran ", line)
-			commands.SetLuaEnvironmentVariable("me", client)
-			commands.RunLua(line)
-		end)
-
-		commands.AddServerCommand("lua_open_sv", function(client, line)
-			logn(client:GetNick(), " opened ", line)
-			runfile(line)
-		end)
-	end
-
-	local default_ip = "*"
-	local default_port = 1234
-
-	if CLIENT then
-		local ip_cvar = pvars.Setup("cl_ip", default_ip)
-		local port_cvar = pvars.Setup("cl_port", default_port)
-
-		local last_ip
-		local last_port
-
-		commands.Add("retry", function()
-			if last_ip then
-				network.Connect(last_ip, last_port)
-			end
-		end)
-
-		commands.Add("connect", function(line, ip, port)
-			ip = ip or ip_cvar:Get()
-			port = tonumber(port) or port_cvar:Get()
-
-			logf("connecting to %s:%i\n", ip, port)
-
-			last_ip = ip
-			last_port = port
-
-			network.Connect(ip, port)
-		end)
-
-		commands.Add("disconnect", function(line)
-			network.Disconnect(line)
-		end)
-	end
-
-	if SERVER then
-		local ip_cvar = pvars.Setup("sv_ip", default_ip)
-		local port_cvar = pvars.Setup("sv_port", default_port)
-
-		commands.Add("host", function(line, ip, port)
-			ip = ip or ip_cvar:Get()
-			port = tonumber(port) or port_cvar:Get()
-
-			logf("hosting at %s:%i\n", ip, port)
-
-			network.Host(ip, port)
-		end)
-	end
-end
-
-commands.Add("trace_calls", function(_, line, ...)
+commands.Add("trace_calls=string", function(line, ...)
 	line = "_G." .. line
 	local ok, old_func = assert(pcall(assert(loadstring("return " .. line))))
 
@@ -412,7 +154,7 @@ commands.Add("trace_calls", function(_, line, ...)
 	end
 end)
 
-commands.Add("debug", function(line, lib)
+commands.Add("debug=string", function(lib)
 	local tbl = _G[lib]
 
 	if type(tbl) == "table" then
@@ -430,7 +172,7 @@ commands.Add("debug", function(line, lib)
 	end
 end)
 
-commands.Add("find", function(line, ...)
+commands.Add("find=var_args", function(...)
 	local data = utility.FindValue(...)
 
 	for _, v in pairs(data) do
@@ -438,8 +180,8 @@ commands.Add("find", function(line, ...)
 	end
 end)
 
-commands.Add("lfind", function(line)
-	for path, lines in pairs(utility.FindInLoadedLuaFiles(line)) do
+commands.Add("lfind=string", function(what)
+	for path, lines in pairs(utility.FindInLoadedLuaFiles(what)) do
 		logn(path)
 		for _, info in ipairs(lines) do
 			local str = info.str
@@ -458,7 +200,7 @@ local tries = {
 	"lua/libraries/?",
 }
 
-commands.Add("source", function(line, path, line_number, ...)
+commands.Add("source=string,number|nil", function(path, line_number, ...)
 
 	if path:find(":") then
 		local a,b = path:match("(.+):(%d+)")
@@ -503,7 +245,7 @@ commands.Add("source", function(line, path, line_number, ...)
 			logn(func:src())
 		end
 	else
-		logf("function %q could not be found in _G or in added commands\n", line)
+		logf("function %q could not be found in _G or in added commands\n", path)
 	end
 
 	if #data > 0 then
@@ -525,7 +267,7 @@ local tries = {
 	"examples/?.lua",
 }
 
-commands.Add("open", function(line)
+commands.Add("open=arg_line", function(line)
 	local tried = {}
 
 	for _, try in pairs(tries) do
@@ -543,3 +285,29 @@ commands.Add("open", function(line)
 
 	return false, "no such file:\n" .. table.concat(tried, "\n")
 end, "opens a lua file with some helpers (ie trying to append .lua or prepend lua/)")
+
+if GRAPHCIS or PHYSICS then
+	local tries = {
+		{path = "__MAPNAME__"},
+		{path = "maps/__MAPNAME__.obj"},
+		{path = "__MAPNAME__/__MAPNAME__.obj", callback =  function(ent) ent:SetSize(0.01) ent:SetRotation(Quat(-1,0,0,1)) end},
+	}
+
+	commands.Add("map=string", function(name)
+		for _, info in pairs(tries) do
+			local path = info.path:gsub("__MAPNAME__", name)
+			if vfs.IsFile(path) then
+				OBJ_WORLD = OBJ_WORLD or entities.CreateEntity("visual")
+				OBJ_WORLD:SetName(name)
+				OBJ_WORLD:SetModelPath(path)
+				OBJ_WORLD.world = OBJ_WORLD.world or entities.CreateEntity("world")
+				if info.callback then
+					info.callback(OBJ_WORLD)
+				end
+				return
+			end
+		end
+
+		steam.SetMap(name)
+	end)
+end

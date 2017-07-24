@@ -3,7 +3,7 @@ local META = (...) or prototype.GetRegistered("client")
 -- send lua
 if CLIENT then
 	message.AddListener("sendlua", function(code, env)
-		commands.RunLua(code, true, "sendlua")
+		commands.ExecuteLuaString(code, true, "sendlua")
 	end)
 end
 

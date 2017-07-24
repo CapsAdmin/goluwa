@@ -82,8 +82,8 @@ local function get_luacheck_envrionment()
 	return globals
 end
 
-commands.Add("glua2lua", function(line)
-	local paths = get_paths(line)
+commands.Add("glua2lua=arg_line", function(str)
+	local paths = get_paths(str)
 
 	for i, path in ipairs(paths) do
 		if path == "stdin" or path == "-" then
@@ -131,8 +131,8 @@ commands.Add("glua2lua", function(line)
 	end
 end)
 
-commands.Add("gluacheck", function(line)
-	local paths = get_paths(line)
+commands.Add("gluacheck=arg_line", function(str)
+	local paths = get_paths(str)
 
 	local lua_strings = {}
 

@@ -290,12 +290,12 @@ function line.IsGameRunning()
 	return line.current_game ~= nil
 end
 
-commands.Add("love_run", function(_, name, ...)
+commands.Add("love_run=string,var_arg", function(name, ...)
 	local found
 	if vfs.IsDirectory("lovers/" .. name) then
-		found = line.RunGame("lovers/" .. name, select(2, ...))
+		found = line.RunGame("lovers/" .. name, ...)
 	elseif vfs.IsFile("lovers/" .. name .. ".love") then
-		found = line.RunGame("lovers/" .. name .. ".love", select(2, ...))
+		found = line.RunGame("lovers/" .. name .. ".love", ...)
 	elseif name:find("github") then
 		local url = name
 
@@ -304,6 +304,7 @@ commands.Add("love_run", function(_, name, ...)
 		else
 			url = url .. "/archive/master.zip"
 		end
+
 
 		local args = {...}
 

@@ -339,18 +339,16 @@ function gine.Run(skip_addons)
 	end
 end
 
-commands.Add("ginit", function(_, gamemode, skip_addons)
-	if not gamemode then gamemode = "sandbox" end
-	if skip_addons ~= 1 then skip_addons = false end
+commands.Add("ginit=string[sandbox],boolean", function(gamemode, skip_addons)
 	gine.Initialize(gamemode, skip_addons)
 	gine.Run(skip_addons)
 end)
 
-commands.Add("glua", function(line)
+commands.Add("glua=arg_line", function(code)
 	if not gine.env then
 		gine.Initialize()
 	end
-	local func = assert(loadstring(line))
+	local func = assert(loadstring(code))
 	setfenv(func, gine.env)
 	print(func())
 end)

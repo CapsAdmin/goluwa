@@ -1,41 +1,41 @@
-commands.Add("l", function(line)
+commands.Add("l=arg_line", function(code)
 	if NETWORK then commands.SetLuaEnvironmentVariable("me", commands.GetClient()) end
-	commands.RunLua(line)
+	commands.ExecuteLuaString(code)
 end)
 
-commands.Add("print", function(line)
+commands.Add("print=arg_line", function(code)
 	if NETWORK then commands.SetLuaEnvironmentVariable("me", commands.GetClient()) end
-	commands.RunLua(("print(%s)"):format(line), true)
+	commands.ExecuteLuaString(("print(%s)"):format(code), true)
 end)
 
-commands.Add("table", function(line)
+commands.Add("table=arg_line", function(code)
 	if NETWORK then commands.SetLuaEnvironmentVariable("me", commands.GetClient()) end
-	commands.RunLua(("table.print(%s)"):format(line))
+	commands.ExecuteLuaString(("table.print(%s)"):format(code))
 	if NETWORK then commands.SetLuaEnvironmentVariable("me", nil) end
 end)
 
-commands.Add("rcon", function(line)
-	commands.RunString(line)
+commands.Add("rcon=arg_line", function(str)
+	commands.RunString(str)
 end)
 
 if not NETWORK then return end
 
-commands.Add("printc", function(line)
-	clients.BroadcastLua(("network.PrintOnServer(%s)"):format(line))
+commands.Add("printc=arg_line", function(code)
+	clients.BroadcastLua(("network.PrintOnServer(%s)"):format(code))
 end)
 
-commands.Add("lc", function(line)
-	clients.BroadcastLua(("commands.SetLuaEnvironmentVariable('me', clients.GetByUniqueID(%q)) commands.RunLua(%q)"):format(commands.GetClient():GetUniqueID(), line))
+commands.Add("lc=arg_line", function(code)
+	clients.BroadcastLua(("commands.SetLuaEnvironmentVariable('me', clients.GetByUniqueID(%q)) commands.ExecuteLuaString(%q)"):format(commands.GetClient():GetUniqueID(), code))
 end)
 
-commands.Add("lm", function(line)
+commands.Add("lm=arg_line", function(code)
 	local client = commands.GetClient()
-	client:SendLua(line)
+	client:SendLua(code)
 end)
 
-commands.Add("cmd", function(line)
+commands.Add("cmd=arg_line", function(code)
 	local client = commands.GetClient()
-	client:SendLua(("commands.SetLuaEnvironmentVariable('me', clients.GetByUniqueID(%q)) commands.RunLua(%q)"):format(commands.GetClient():GetUniqueID(), line))
+	client:SendLua(("commands.SetLuaEnvironmentVariable('me', clients.GetByUniqueID(%q)) commands.ExecuteLuaString(%q)"):format(commands.GetClient():GetUniqueID(), code))
 end)
 
 event.AddListener("ClientChat", "chat_commands", function(client, txt)

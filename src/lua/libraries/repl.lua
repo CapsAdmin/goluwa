@@ -599,8 +599,10 @@ end
 
 local function get_commands_for_autocomplete()
 	local cmds = {}
-	for k in pairs(commands.GetCommands()) do
-		table.insert(cmds, k)
+	for k,v in pairs(commands.GetCommands()) do
+		for k,v in ipairs(v.aliases) do
+			table.insert(cmds, v)
+		end
 	end
 	return cmds
 end
@@ -643,21 +645,23 @@ function repl.HandleKey(key)
 		end
 
 		if cmd and rest then
-			local info = commands.GetCommands()[cmd]
+			local info = commands.FindCommand(cmd)
 			if info and info.autocomplete then
-				local data = commands.ParseCommandArgs(line)
-				local list = info.autocomplete(data.args[#data.args], data.args)
-				if list then
-					local found = autocomplete.Query("console_command_" .. cmd, data.args[#data.args], 1, list)
-					if found then
-						table.remove(data.args)
+				local _,_,_,args = commands.ParseString(line)
+				if args then
+					local list = info.autocomplete(args[#args], args)
+					if list then
+						local found = autocomplete.Query("console_command_" .. cmd, args[#args], 1, list)
+						if found then
+							table.remove(args)
 
-						if #data.args > 0 then
-							found = "," .. found
+							if #args > 0 then
+								found = "," .. found
+							end
+
+							c.markup:SetText(cmd .. " " .. table.concat(args, ",") .. found)
+							c.markup:SetCaretPosition(math.huge, 0)
 						end
-
-						c.markup:SetText(cmd .. " " .. table.concat(data.args, ",") .. found)
-						c.markup:SetCaretPosition(math.huge, 0)
 					end
 				end
 			end
