@@ -117,21 +117,11 @@ function utf8.sub(str, i, j)
 end
 
 local function utf8replace(str, mapping)
-	local pos = 1
-	local bytes = str:len()
-	local char_bytes
-	local new_str = ""
-
-	while pos <= bytes do
-		char_bytes = utf8.bytelength(str, pos)
-		local c = str:sub(pos, pos + char_bytes - 1)
-
-		new_str = new_str .. (mapping[c] or c)
-
-		pos = pos + char_bytes
+	local out = {}
+	for i, char in ipairs(utf8.totable(a)) do
+		table.insert(out, mapping[char] or char)
 	end
-
-	return new_str
+	return table.concat(out)
 end
 
 local upper, lower, translate = runfile("utf8data.lua")
