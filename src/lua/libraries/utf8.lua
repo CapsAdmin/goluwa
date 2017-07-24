@@ -134,7 +134,7 @@ local function utf8replace(str, mapping)
 	return new_str
 end
 
-local upper, lower = runfile("utf8data.lua")
+local upper, lower, translate = runfile("utf8data.lua")
 
 function utf8.upper(str)
 	return utf8replace(str, upper)
@@ -142,6 +142,20 @@ end
 
 function utf8.lower(str)
 	return utf8replace(str, lower)
+end
+
+function utf8.getsimilarity(a, b)
+	b = b:upper()
+	local score = 0
+	for i, char in ipairs(utf8.totable(a)) do
+		if translate[char] then
+			local test = b:usub(i, i)
+			if table.hasvalue(translate[char], test) then
+				score = score + 1
+			end
+		end
+	end
+	return score / #b
 end
 
 function utf8.length(str)
