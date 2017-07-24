@@ -60,11 +60,15 @@ function debug.getprettysource(level, append_line, full_folder)
 		pretty_source = info.source:sub(2)
 
 		if not full_folder then
-			pretty_source = pretty_source:replace(e.ROOT_FOLDER, "")
+			pretty_source = vfs.FixPathSlashes(pretty_source:replace(e.ROOT_FOLDER, ""))
 		end
 
 		if append_line then
-			pretty_source = pretty_source .. ":" .. info.currentline
+			local line = info.currentline
+			if line == -1 then
+				line = info.linedefined
+			end
+			pretty_source = pretty_source .. ":" .. line
 		end
 	else
 		pretty_source = info.source:sub(0, 25)
