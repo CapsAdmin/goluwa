@@ -519,3 +519,45 @@ do -- negative pairs
 		return iter, a, #a + 1
 	end
 end
+
+function rpairs(tbl)
+	local sorted = {}
+
+	for key, val in pairs(tbl) do
+		table.insert(sorted, {key = key, val = val, rand = math.random()})
+	end
+
+	table.sort(sorted, function(a,b) return a.rand > b.rand end)
+
+	local i = 0
+
+	return function()
+		i = i + 1
+		if sorted[i] then
+			return sorted[i].key, sorted[i].val--, sorted[i].rand
+		end
+	end
+end
+
+function spairs(tbl, desc)
+	local sorted = {}
+
+	for key, val in pairs(tbl) do
+		table.insert(sorted, {key = key, val = val})
+	end
+
+	if desc then
+		table.sort(sorted, function(a,b) return a.key > b.key end)
+	else
+		table.sort(sorted, function(a,b) return a.key < b.key end)
+	end
+
+	local i = 0
+
+	return function()
+		i = i + 1
+		if sorted[i] then
+			return sorted[i].key, sorted[i].val--, sorted[i].rand
+		end
+	end
+end
