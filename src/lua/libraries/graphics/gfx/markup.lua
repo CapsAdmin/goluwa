@@ -5,7 +5,7 @@ local META = prototype.CreateTemplate("markup")
 META.tags = {}
 
 META:GetSet("Table", {})
-META:GetSet("MaxWidth", 500)
+META:GetSet("MaxWidth", math.huge)
 META:GetSet("ControlDown", false)
 META:GetSet("LineWrap", true)
 META:GetSet("ShiftDown", false)
@@ -52,8 +52,9 @@ function gfx.CreateMarkup(str)
 end
 
 function META:SetMaxWidth(w)
+	self.MaxWidth = w
+
 	if self.lastmw ~= w then
-		self.MaxWidth = w
 		self.need_layout = true
 		self.lastmw = w
 	end
@@ -700,22 +701,35 @@ do -- tags
 
 	META.tags.texture =
 	{
-		arguments = {"error", {default = 32, min = 4, max = 128}},
+		arguments = {"error", {min = 4, max = 128}},
 
 		init = function(markup, self, path)
 			self.mat = render.CreateTextureFromPath(path)
 		end,
 
-		get_size = function(markup, self, path, size)
-			if not self.mat or not self.mat:IsValid() then self.mat = render.CreateTextureFromPath(path) end
-			if self.mat:IsLoading() then return 16, 16 end
-			return size or self.mat:GetSize().x, size or self.mat:GetSize().y
+		get_size = function(markup, self, path, size_x, size_y)
+			size_x = tonumber(size_x)
+			size_x = tonumber(size_y) or tonumber(size_x)
+
+			if self.mat:IsLoading() then
+				return size_x or 16, size_y or 16
+			end
+
+			size_x = size_x or self.mat:GetSize().x
+			size_y = size_y or self.mat:GetSize().y
+
+			return size_x, size_y
 		end,
 
-		pre_draw = function(markup, self, x,y, path, size)
-			if not self.mat or not self.mat:IsValid() then return end
+		pre_draw = function(markup, self, x,y, path, size_x, size_y)
+			size_x = tonumber(size_x)
+			size_x = tonumber(size_y) or tonumber(size_x)
+
+			size_x = size_x or self.mat:GetSize().x
+			size_y = size_y or self.mat:GetSize().y
+
 			render2d.SetTexture(self.mat)
-			render2d.DrawRect(x, y, size or self.mat:GetSize().x, size or self.mat:GetSize().y)
+			render2d.DrawRect(x, y, size_x, size_y)
 		end,
 	}
 end
@@ -1259,6 +1273,11 @@ do -- invalidate
 			chunk.w = w
 			chunk.h = h + self.HeightSpacing
 		elseif chunk.type == "custom" and not chunk.val.stop_tag  then
+			if not chunk.init_called and not chunk.val.stop_tag then
+				self:CallTagFunction(chunk, "init")
+				chunk.init_called = true
+			end
+
 			local _, w, h = self:CallTagFunction(chunk, "get_size")
 			if h then h = h + self.HeightSpacing end
 			chunk.w = w
@@ -1359,7 +1378,7 @@ do -- invalidate
 		add_chunk(self, out, {type = "font", val = gfx.GetDefaultFont(), internal = true}, 1)
 		add_chunk(self, out, {type = "color", val = Color(1, 1, 1, 1), internal = true}, 1)
 		add_chunk(self, out, {type = "string", val = "", internal = true})
-
+table.print(out)
 		return out
 	end
 
@@ -1387,6 +1406,10 @@ do -- invalidate
 			end
 
 			if self.LineWrap then
+				if chunk.type == "string"and chunk.val:find("^%s+$") or chunk.type == "newline" then
+
+				else
+
 				if chunk.w >= self.MaxWidth and chunk.type == "string" then
 					local X = chunk.x
 					local Y = chunk.y
@@ -1442,6 +1465,7 @@ do -- invalidate
 				elseif current_x + chunk.w >= self.MaxWidth then
 					newline = true
 				end
+				end
 			end
 
 			if newline then
@@ -1458,6 +1482,8 @@ do -- invalidate
 			if split then
 				split_i = 0
 			end
+
+			::CONTINUE::
 		end
 
 		return chunks
@@ -3049,5 +3075,5 @@ end
 META:Register()
 
 if RELOAD then
-	--runfile("lua/examples/2d/markup.lua")
+	runfile("lua/examples/2d/markup.lua")
 end
