@@ -63,6 +63,7 @@ chatsounds.Modifiers = {
 			end
 
 			self.duration = time or self.duration
+			self.dont_stop = true
 		end,
 	},
 	pitch = {
@@ -551,7 +552,9 @@ function chatsounds.PlayScript(script)
 							end
 						end
 
-						self.snd:Stop()
+						if not self.dont_stop then
+							self.snd:Stop()
+						end
 					end
 
 					if sound.modifiers then
