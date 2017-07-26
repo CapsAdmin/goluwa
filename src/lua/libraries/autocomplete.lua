@@ -88,7 +88,6 @@ function autocomplete.DrawFound(id, x, y, found, max, offset)
 	offset = offset or 1
 	max = max or 100
 
-	gfx.SetFont()
 	render2d.SetColor(1,1,1,1)
 
 	render2d.PushMatrix(x, y)
