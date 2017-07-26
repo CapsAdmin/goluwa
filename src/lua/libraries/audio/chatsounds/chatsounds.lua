@@ -163,7 +163,7 @@ do
 					type = "digit"
 				end
 
-				if type == "digit" and last == "letters" then type = "letters" end
+				if type == "digit" and (last == "letters" or string.getchartype(next) == "letters") then type = "letters" end
 
 				if type ~= last or char == ":" or char == ")" or char == "(" then
 					local word = table.concat(temp, "")
