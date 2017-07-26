@@ -75,7 +75,7 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 				if full_path then
 					callback(full_path)
 
-					llog("finished donwnloading ", from)
+					--llog("finished donwnloading ", from)
 				else
 					wlog("resource download error: %q not found!", "data/downloads/" .. to)
 					on_fail()
@@ -127,7 +127,7 @@ local function download_from_providers(path, callback, on_fail, check_etag)
 	if not SOCKETS then return end
 
 	if not check_etag then
-		llog("donwnloading ", path)
+		--llog("donwnloading ", path)
 	end
 
 	local failed = 0
