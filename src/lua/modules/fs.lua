@@ -163,6 +163,8 @@ if WINDOWS then
 
 			return info
 		end
+
+		return false
 	end
 else
 	local S = require("syscall")
@@ -205,16 +207,8 @@ else
 		S.mkdir(path, "rwxu")
 	end
 
-	--local cache = {}
-
 	function fs.getattributes(path)
-		--if cache[path] and cache[path].time < os.clock() then
-		--	return cache[path].info
-		--end
-
 		local info = S.stat(path)
-
-		--cache[path] = {time = os.clock() + 0.01}
 
 		if info then
 			local info = {
@@ -224,9 +218,12 @@ else
 				type = info.typename,
 				size = info.size,
 			}
-			--cache[path].info = info
+
+
 			return info
 		end
+
+		return false
 	end
 end
 
