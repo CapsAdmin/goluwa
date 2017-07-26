@@ -66,21 +66,34 @@ chatsounds.Modifiers = {
 		end,
 	},
 	pitch = {
-		init = function(self, pitch)
+		init = function(self, pitch, endpitch)
+			pitch = tonumber(pitch) or 100
+			endpitch = tonumber(endpitch) or pitch
+
 			self.duration = self.duration / (math.abs(pitch) / 100)
+			self.endpitch = endpitch
 		end,
 
 		think = function(self, pitch)
-			if self.snd then
-				self.snd:SetPitch(pitch / 100)
-			end
+			local f = (system.GetElapsedTime() - self.start_time) / self.duration
+			local pitch = math.lerp(f, pitch, self.endpitch) / 100
+
+			self.snd:SetPitch(pitch)
 		end,
 	},
 	volume = {
-		think = function(self, volume)
-			if self.snd then
-				self.snd:SetGain(volume / 100)
-			end
+		init = function(self, volume, endvolume)
+			volume = tonumber(volume) or 100
+			endvolume = tonumber(endvolume) or volume
+
+			self.endvolume = endvolume
+		end,
+
+		think = function(self, vol)
+			local f = (system.GetElapsedTime() - self.start_time) / self.duration
+			local vol = math.lerp(f, vol, self.endvolume) / 100
+
+			self.snd:SetGain(vol)
 		end,
 	},
 	realm = {
@@ -91,14 +104,23 @@ chatsounds.Modifiers = {
 }
 
 chatsounds.LegacyModifiers = {
+	["%%"] = "pitch",
 	["%"] = "pitch",
+	["^^"] = "volume",
 	["^"] = "volume",
 	["&"] = "dsp",
-	["-%-"] = "cutoff",
+	["--"] = "cutoff",
 	["#"] = "choose",
 	["="] = "duration",
 	["*"] = "repeat",
 }
+
+local modifiers = {}
+for k,v in pairs(chatsounds.LegacyModifiers) do
+	k = k:gsub("%p", "%%%1")
+	table.insert(modifiers, {mod = k, func = v})
+end
+table.sort(modifiers, function(a, b) return #a.mod > #b.mod end)
 
 do
 	local function preprocess(str)
@@ -109,8 +131,8 @@ do
 			logn(">>> ", str)
 		end
 
-		for old, new in pairs(chatsounds.LegacyModifiers) do
-			str = str:gsub("%"..old.."([%d%.]+)", function(str) str = str:gsub("%.", ",") return ":"..new.."("..str..")" end)
+		for _, val in ipairs(modifiers) do
+			str = str:gsub(val.mod.."([%d%.]+)", function(str) str = str:gsub("%.", ",") return ":"..val.func.."("..str..")" end)
 		end
 
 		str = str:lower()
