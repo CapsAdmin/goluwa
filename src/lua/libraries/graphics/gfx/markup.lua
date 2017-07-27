@@ -1378,7 +1378,7 @@ do -- invalidate
 		add_chunk(self, out, {type = "font", val = gfx.GetDefaultFont(), internal = true}, 1)
 		add_chunk(self, out, {type = "color", val = Color(1, 1, 1, 1), internal = true}, 1)
 		add_chunk(self, out, {type = "string", val = "", internal = true})
-table.print(out)
+
 		return out
 	end
 
