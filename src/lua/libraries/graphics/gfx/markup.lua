@@ -1318,7 +1318,7 @@ do -- invalidate
 			end
 
 			if not chunk.internal and (chunk.type ~= "string" or chunk.val ~= "") then
-				if not (last_type == chunk.type and (last_type == "font" or last_type == "color")) then
+				if (last_type ~= chunk.type or (last_type ~= "font" or last_type ~= "color")) then
 					local old = chunk.old_chunk
 
 					if old then
