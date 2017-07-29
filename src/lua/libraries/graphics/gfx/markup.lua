@@ -1482,8 +1482,6 @@ do -- invalidate
 			if split then
 				split_i = 0
 			end
-
-			::CONTINUE::
 		end
 
 		return chunks
