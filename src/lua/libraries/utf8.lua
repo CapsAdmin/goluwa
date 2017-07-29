@@ -118,7 +118,7 @@ end
 
 local function utf8replace(str, mapping)
 	local out = {}
-	for i, char in ipairs(utf8.totable(a)) do
+	for i, char in ipairs(utf8.totable(str)) do
 		table.insert(out, mapping[char] or char)
 	end
 	return table.concat(out)
