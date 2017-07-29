@@ -9,7 +9,7 @@ function utf8.byte(char, offset)
 
 	local byte = char:byte(offset)
 
-	if byte >= 128 then
+	if byte and byte >= 128 then
 		if byte >= 240 then
 			if #char < 4 then return -1 end
 			byte = (byte % 8) * 262144
