@@ -1,5 +1,10 @@
 local utf8 = _G.utf8 or {}
 
+function utf8.midsplit(str)
+	local half = math.round(str:ulength()/2+1)
+	return str:usub(1, half-1), str:usub(half)
+end
+
 local math_floor = math.floor
 
 function utf8.byte(char, offset)
