@@ -86,7 +86,7 @@ end
 
 local linebreak = {}
 
-local infinity = 10000
+local infinity = 0xDEADBEEFCAFEBABE
 
 local function bond(width, stretch, shrink)
 	return {
@@ -123,14 +123,14 @@ local function dump_node(node, index)
 		log(">", node.damage, "<")
 	elseif node.type == "bond" then
 		--log("[", node.type, "<", node.stretch, ">,>",node.shrink,"<]")
-		log("~~~")
+		log(" ~ ")
 	end
 end
 
 local function dump_active_nodes(active_nodes, nodes)
 	logn(#active_nodes, " active nodes:")
 	for index, data in ipairs(active_nodes) do
-		local node = nodes[data.index]
+		local node = nodes[data.node_index]
 		log("\t[", index, "] ", node.type, ": ") dump_node(node) logn()
 		logn("\t\tclass: ", data.fitness_class)
 		logn("\t\tratio: ", data.ratio)
@@ -225,8 +225,6 @@ function linebreak.linebreak(text, type, line_lengths, options)
 		end
 	end
 
-
-
 	if linebreak.debug then
 		logn("====================")
 		dump_nodes(nodes)
@@ -240,8 +238,9 @@ function linebreak.linebreak(text, type, line_lengths, options)
 		shrink = 0,
 	}
 
+	-- insert the first node
 	table.insert(active_nodes, {
-		index = 1,
+		node_index = 1,
 		total_damage = 0,
 		ratio = 0,
 		line = 1,
@@ -273,152 +272,168 @@ function linebreak.linebreak(text, type, line_lengths, options)
 		if (node.type == "damage" and node.damage ~= infinity) or (node.type == "bond" and prev_node.type == "box") then
 			local active = active_nodes[1]
 
-			-- The inner loop iterates through all the active nodes with line < currentLine and then
-			-- breaks out to insert the new active node candidates before looking at the next active
-			-- nodes for the next lines. The result of this is that the active node list is always
-			-- sorted by line number.
-			local candidates = {
-				{total_damage = math.huge},
-				{total_damage = math.huge},
-				{total_damage = math.huge},
-				{total_damage = math.huge},
-			}
 			for i = 1, 500 do if not active then break end
 
-				local current_line = active.line
-				local ratio = 0
+				local candidates = {
+					{total_damage = math.huge},
+					{total_damage = math.huge},
+					{total_damage = math.huge},
+					{total_damage = math.huge},
+				}
 
-				local width = sum.width - active.totals.width
+				-- The inner loop iterates through all the active nodes with line < currentLine and then
+				-- breaks out to insert the new active node candidates before looking at the next active
+				-- nodes for the next lines. The result of this is that the active node list is always
+				-- sorted by line number.
 
-				-- If the current line index is within the list of line_lengths, use it, otherwise use
-				-- the last line length of the list.
-				local line_length = line_lengths[current_line] or line_lengths[#line_lengths]
+				for i = 1, 500 do if not active then break end
 
-				if node.type == "damage" then
-					width = width + node.width
-				end
+					local current_line = active.line
+					local ratio = 0
 
-				if width < line_length then
-					-- Calculate the stretch ratio
-					local stretch = sum.stretch - active.totals.stretch
+					local width = sum.width - active.totals.width
 
-					if stretch > 0 then
-						ratio = (line_length - width) / stretch
-					else
-						ratio = infinity
-					end
-				elseif width > line_length then
-					-- Calculate the shrink ratio
-					local shrink = sum.shrink - active.totals.shrink
+					-- If the current line index is within the list of line_lengths, use it, otherwise use
+					-- the last line length of the list.
+					local line_length = line_lengths[current_line] or line_lengths[#line_lengths]
 
-					if shrink > 0 then
-						ratio = (line_length - width) / shrink
-					else
-						ratio = infinity
-					end
-				end
-
-				-- Deactive nodes when the distance between the current active node and the
-				-- current node becomes too large (i.e. it exceeds the stretch limit and the stretch
-				-- ratio becomes negative) or when the current node is a forced break (i.e. the end
-				-- of the paragraph when we want to remove all active nodes, but possibly have a final
-				-- candidate active node---if the paragraph can be set using the given tolerance value.)
-				if (ratio <= -1 and math.abs(ratio) >= options.tolerance) or (node.type == "damage" and node.damage == -infinity) then
-					if linebreak.debug then
-						logn("REMOVING NODE:")
-						logn("[", index, "] ", node.type)
-						logn("BEFORE:")
-						dump_active_nodes(active_nodes, nodes)
+					if node.type == "damage" then
+						width = width + node.width
 					end
 
-					for i,v in ipairs(active_nodes) do
-						if v == active then
-							v.removed_index = i
-							table.remove(active_nodes, i)
-							break
+					if width < line_length then
+						-- Calculate the stretch ratio
+						local stretch = sum.stretch - active.totals.stretch
+
+						if stretch > 0 then
+							ratio = (line_length - width) / stretch
+						else
+							ratio = infinity
+						end
+					elseif width > line_length then
+						-- Calculate the shrink ratio
+						local shrink = sum.shrink - active.totals.shrink
+
+						if shrink > 0 then
+							ratio = (line_length - width) / shrink
+						else
+							ratio = infinity
 						end
 					end
 
-					if linebreak.debug then
-						logn("AFTER:")
-						dump_active_nodes(active_nodes, nodes)
-					end
-				end
+	--				if ratio <= -1 then ratio = 0 end
 
-				-- If the ratio is within the valid range of -1 <= ratio <= tolerance calculate the
-				-- total damage and record a candidate active node.
-				if ratio >= -1 and ratio <= options.tolerance then
-					local badness = 100 * math.pow(math.abs(ratio), 3)
-					local total_damage
+					-- Deactive nodes when the distance between the current active node and the
+					-- current node becomes too large (i.e. it exceeds the stretch limit and the stretch
+					-- ratio becomes negative) or when the current node is a forced break (i.e. the end
+					-- of the paragraph when we want to remove all active nodes, but possibly have a final
+					-- candidate active node---if the paragraph can be set using the given tolerance value.)
+					if (ratio <= -1 and math.abs(ratio) >= options.tolerance) or (node.type == "damage" and node.damage == -infinity) then
+						if linebreak.debug then
+							logn("REMOVING NODE:")
+							logn("[", index, "] ", node.type)
+							logn("BEFORE:")
+							dump_active_nodes(active_nodes, nodes)
+						end
 
-					-- Positive damage
-					if node.type == "damage" and node.damage >= 0 then
-						total_damage = math.pow(options.damage.line + badness, 2) + math.pow(node.damage, 2)
-					-- Negative damage but not a forced break
-					elseif node.type == "damage" and node.damage ~= -infinity then
-						total_damage = math.pow(options.damage.line + badness, 2) - math.pow(node.damage, 2)
-					-- All other cases
-					else
-						total_damage = math.pow(options.damage.line + badness, 2)
-					end
+						for i, v in ipairs(active_nodes) do
+							if v == active then
+								v.removed_index = i
+								table.remove(active_nodes, i)
+								break
+							end
+						end
 
-					if node.type == "damage" and nodes[active.index].type == "damage" then
-						total_damage = total_damage + options.damage.flagged * node.flagged * nodes[active.index].flagged
-					end
-
-					local current_class
-
-					-- Calculate the fitness class for this candidate active node.
-					if ratio <= -0.5 then
-						current_class = 1
-					elseif ratio <= 0.5 then
-						current_class = 2
-					elseif ratio <= 1 then
-						current_class = 3
-					else
-						current_class = 4
-					end
-
-					-- Add a fitness damage to the total damage if the fitness classes of two adjacent lines
-					-- differ too much.
-					if math.abs((current_class-1) - (active.fitness_class-1)) > 1 then
-						total_damage = total_damage + options.damage.fitness
-					end
-
-					-- Add the total damage of the active node to get the total damage of this candidate node.
-					total_damage = total_damage + active.total_damage
-
-					-- Only store the best candidate for each fitness class
-					if total_damage <= candidates[current_class].total_damage then
-						candidates[current_class] = {
-							active = active,
-							total_damage = total_damage,
-							ratio = ratio
-						}
-					end
-				end
-
-				if active.removed_index then
-					active = active_nodes[active.removed_index]
-				else
-					local temp
-					for i,v in ipairs(active_nodes) do
-						if v == active then
-							temp = active_nodes[i+1]
-							break
+						if linebreak.debug then
+							logn("AFTER:")
+							dump_active_nodes(active_nodes, nodes)
 						end
 					end
-					active = temp
-				end
 
-				-- Stop iterating through active nodes to insert new candidate active nodes in the active list
-				-- before moving on to the active nodes for the next line.
-				-- TODO: The Knuth and Plass paper suggests a conditional for currentLine < j0. This means paragraphs
-				-- with identical line lengths will not be sorted by line number. Find out if that is a desirable outcome.
-				-- For now I left this out, as it only adds minimal overhead to the algorithm and keeping the active node
-				-- list sorted has a higher priority.
-				if active and active.line >= current_line then
-					break
+					-- If the ratio is within the valid range of -1 <= ratio <= tolerance calculate the
+					-- total damage and record a candidate active node.
+					if ratio >= -1 and ratio <= options.tolerance then
+						local badness = 100 * math.pow(math.abs(ratio), 3)
+						local total_damage
+
+						-- Positive damage
+						if node.type == "damage" and node.damage >= 0 then
+							total_damage = math.pow(options.damage.line + badness, 2) + math.pow(node.damage, 2)
+						-- Negative damage but not a forced break
+						elseif node.type == "damage" and node.damage ~= -infinity then
+							total_damage = math.pow(options.damage.line + badness, 2) - math.pow(node.damage, 2)
+						-- All other cases
+						else
+							total_damage = math.pow(options.damage.line + badness, 2)
+						end
+
+						if node.type == "damage" and nodes[active.node_index].type == "damage" then
+							total_damage = total_damage + options.damage.flagged * node.flagged * nodes[active.node_index].flagged
+						end
+
+						local current_class
+
+						-- Calculate the fitness class for this candidate active node.
+						if ratio <= -0.5 then
+							current_class = 1
+						elseif ratio <= 0.5 then
+							current_class = 2
+						elseif ratio <= 1 then
+							current_class = 3
+						else
+							current_class = 4
+						end
+
+						-- Add a fitness damage to the total damage if the fitness classes of two adjacent lines
+						-- differ too much.
+						if math.abs((current_class-1) - (active.fitness_class-1)) > 1 then
+							total_damage = total_damage + options.damage.fitness
+						end
+
+						-- Add the total damage of the active node to get the total damage of this candidate node.
+						total_damage = total_damage + active.total_damage
+
+						-- Only store the best candidate for each fitness class
+						if total_damage <= candidates[current_class].total_damage then
+							candidates[current_class] = {
+								active = active,
+								total_damage = total_damage,
+								ratio = ratio
+							}
+						end
+					end
+
+					if active.removed_index then
+						active = active_nodes[active.removed_index]
+					else
+						local temp
+						for i,v in ipairs(active_nodes) do
+							if v == active then
+								temp = active_nodes[i+1]
+								break
+							end
+						end
+						active = temp
+					end
+
+					if linebreak.debug then
+						logn("ACTIVE NODE:")
+						if active then
+							logn(i, " [", active.node_index, "] ", active)
+						else
+							logn(i, " nil")
+						end
+					end
+
+					-- Stop iterating through active nodes to insert new candidate active nodes in the active list
+					-- before moving on to the active nodes for the next line.
+					-- TODO: The Knuth and Plass paper suggests a conditional for currentLine < j0. This means paragraphs
+					-- with identical line lengths will not be sorted by line number. Find out if that is a desirable outcome.
+					-- For now I left this out, as it only adds minimal overhead to the algorithm and keeping the active node
+					-- list sorted has a higher priority.
+					if active and active.line >= current_line then
+						break
+					end
 				end
 
 				-- Add width, stretch and shrink values from the current
@@ -445,7 +460,7 @@ function linebreak.linebreak(text, type, line_lengths, options)
 				for fitness_class, candidate in ipairs(candidates) do
 					if candidate.total_damage < math.huge then
 						local new_node = {
-							index = index,
+							node_index = index,
 							total_damage = candidate.total_damage,
 							ratio = candidate.ratio,
 							line = candidate.active.line + 1,
@@ -454,7 +469,7 @@ function linebreak.linebreak(text, type, line_lengths, options)
 							previous_candidate = candidate.active
 						}
 						if active then
-							for i,v in ipairs(active_nodes) do
+							for i, v in ipairs(active_nodes) do
 								if v == active then
 									table.insert(active_nodes, i, new_node)
 									break
@@ -483,7 +498,7 @@ function linebreak.linebreak(text, type, line_lengths, options)
 
 		while temp do
 			table.insert(breaks, {
-				index = temp.index,
+				node_index = temp.node_index,
 				ratio = temp.ratio,
 			})
 			temp = temp.previous_candidate
@@ -492,16 +507,16 @@ function linebreak.linebreak(text, type, line_lengths, options)
 		breaks = table.reverse(breaks)
 	end
 
-	local maxLength = math.max(0, unpack(line_lengths))
+	local max_length = math.max(0, unpack(line_lengths))
 
-	if linebreak.debug then
+	if linebreak.debug or true then
 		local h = select(2, gfx.GetTextSize("|"))
 		local y = 0
 		for i = 2, #breaks do
 			local line_length = line_lengths[i-1] or line_lengths[#line_lengths]
 			local x = 0
 			if options.center then
-				x = (maxLength - line_length) / 2
+				x = (max_length - line_length) / 2
 			end
 			gfx.DrawRect(x, y, line_length, h, gfx, 1,0,0,0.25)
 			y = y + h
@@ -517,7 +532,7 @@ function linebreak.linebreak(text, type, line_lengths, options)
 	for i = 2, #breaks do
 		local break_ = breaks[i]
 
-		local point = break_.index
+		local node_index = break_.node_index
 		for j = line_start, #nodes do
 			local node = nodes[j]
 			if not node then break end
@@ -528,15 +543,16 @@ function linebreak.linebreak(text, type, line_lengths, options)
 			end
 		end
 
-		table.insert(lines, {ratio = break_.ratio, nodes = table.slice(nodes, line_start, point), index = point})
-		line_start = point
+		table.insert(lines, {ratio = break_.ratio, nodes = table.slice(nodes, line_start, node_index)})
+		line_start = node_index
 	end
 
 	for lineIndex, line in ipairs(lines) do
 		local x = 0
 		local line_length = line_lengths[lineIndex] or line_lengths[#line_lengths]
+
 		if options.center then
-			x = x + (maxLength - line_length) / 2
+			x = (max_length - line_length) / 2
 		end
 
 		for index, node in ipairs(line.nodes) do
@@ -544,7 +560,7 @@ function linebreak.linebreak(text, type, line_lengths, options)
 				gfx.DrawText(node.value, x, y)
 				x = x + node.width
 			elseif node.type == "bond" then
-				x = x + node.width + line.ratio * (line.ratio < 0 and node.shrink or node.stretch)
+				x = x + node.width + (line.ratio * (line.ratio < 0 and node.shrink or node.stretch))
 			elseif node.type == "damage" and node.damage == options.damage.hyphen and index == #line.nodes then
 				gfx.DrawText("-", x, y)
 			end
@@ -565,21 +581,22 @@ for j = 0, (radius * 2) - 1, 5 do
 end
 
 local text = "In olden times when wishing still helped one, there lived a king whose daughters were all beautiful; and the youngest was so beautiful that the sun itself, which has seen so much, was astonished whenever it shone in her face. Close by the king's castle lay a great dark forest, and under an old limetree in the forest was a well, and when the day was very warm, the king's child went out to the forest and sat down by the fountain; and when she was bored she took a golden ball, and threw it up on high and caught it; and this ball was her favorite plaything."
-text = text:rep(4) .. "!!!!"
-text = string.randomwords(4) .. " somehow"
+--text = text:rep(4) .. "!!!!"
+--text = string.randomwords(4) .. " somehow"
 
-local font = fonts.CreateFont({path = "fonts/vera.ttf", size = 15})
+local font = fonts.CreateFont({path = "fonts/vera.ttf", size = 20})
 gfx.SetFont(font)
 
 function goluwa.PreDrawGUI()
 	gfx.SetFont(font)
 	local x = gfx.GetMousePosition()
+	gfx.DrawLine(x, 0, x, select(2, render2d.GetSize()))
 	--print(x)
 	--x = 53
 	--linebreak.linebreak(text, "justify", {x}, {tolerance = 3})
-	linebreak.linebreak(text, "justify", {x}, {tolerance = 4})
+	--linebreak.linebreak(text, "justify", {x}, {tolerance = 4})
 	--linebreak.linebreak(text, "center", {350}, {tolerance = 2})
-	--linebreak.linebreak(text, "justify", {350, 350, 350, 200, 200, 200, 200, 200, 200, 200, 350, 350}, {tolerance = 2})
+	linebreak.linebreak(text, "justify", {350, 350, 350, 200, 200, 200, 200, 200, 200, 200, 350, 350}, {tolerance = 15})
 	--linebreak.linebreak(text, "justify", {50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550}, {tolerance = 3, center = true})
 	--linebreak.linebreak(text, "justify", r, {tolerance = 20, center = true})
 end
