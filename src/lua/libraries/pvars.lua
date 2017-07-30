@@ -26,16 +26,17 @@ do -- pvar meta
 	function META:GetCallback() return pvars.infos[self.key].callback end
 	function META:GetDefault() return pvars.infos[self.key].def end
 	function META:GetType() return pvars.infos[self.key].typ end
+	function META:GetHelp() return pvars.infos[self.key].help end
 
 	META:Register()
 end
-function pvars.Setup(key, def, callback, typ)
-	typ = typ or type(def)
+function pvars.Setup(key, def, callback, help)
 	def = def or table.copy(def)
 
 	pvars.infos[key] = {
 		def = table.copy(def),
-		typ = typ,
+		typ = type(def),
+		help = help,
 		callback = callback,
 	}
 
