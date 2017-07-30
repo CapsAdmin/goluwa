@@ -1240,7 +1240,7 @@ do -- parse tags
 end
 
 do -- invalidate
-		local function set_font(self, font)
+	local function set_font(self, font)
 		if self.FixedSize == 0 then
 			gfx.SetFont(font)
 		end
@@ -1382,106 +1382,123 @@ do -- invalidate
 		return out
 	end
 
+	local function additional_split(self, word, max_width, out)
+		out = out or {}
+
+		local left_word, right_word = word:umidsplit()
+
+		local left_width, left_height = get_text_size(self, left_word)
+
+		if left_width >= max_width and left_word:ulength() > 1 then
+			additional_split(self, left_word, max_width, out)
+		else
+			table.insert(out, 1, {
+				type = "string",
+				w = left_width,
+				h = left_height,
+				val = left_word,
+			})
+		end
+
+		local right_width, right_height = get_text_size(self, right_word)
+
+		if right_width >= max_width and right_word:ulength() > 1 then
+			additional_split(self, right_word, max_width, out)
+		else
+			table.insert(out, 1, {
+				type = "string",
+				w = right_width,
+				h = right_height,
+				val = right_word,
+			})
+		end
+
+		return out
+	end
+
 	local function solve_max_width(self, chunks)
-		-- solve max width
-		local current_x = 0
-		local current_y = 0
-		local chunk_height = 0
-		local split_i = 0
-
-		--for i = 1, #chunks*10 do local chunk = chunks[i] if not chunk then break end
 		for i, chunk in ipairs(chunks) do
-			local split = false
-
 			if chunk.type == "font" then
 				set_font(self, chunk.val)
+			end
+			if chunk.type == "string" and not chunk.val:find("^%s+$") then
+				if chunk.val:ulength() > 1 then
+					if chunk.w >= self.MaxWidth then
+						table.remove(chunks, i)
+						for _, new_chunk in ipairs(additional_split(self, chunk.val, self.MaxWidth)) do
+							new_chunk.old_chunk = chunk
+							new_chunk.h = chunk.h
+							table.insert(chunks, i, new_chunk)
+						end
+					end
+				end
+			end
+		end
+
+		local x = 0
+		local y = 0
+		local prev_line_i = 1
+		local chunk_height = 0
+
+		for i, chunk in ipairs(chunks) do
+			if chunk.type == "font" then
+				set_font(self, chunk.val)
+			end
+
+			if chunk.h > chunk_height then
+				chunk_height = chunk.h
 			end
 
 			-- is the previous line a newline?
 			local newline = chunks[i - 1] and chunks[i - 1].type == "newline"
 
-			-- figure out the tallest chunk before going to a new line
-			if chunk.h > chunk_height then
-				chunk_height = chunk.h
-			end
+			if not (chunk.type == "string" and chunk.val:find("^%s*$")) and chunk.type ~= "newline" then
+				if newline or x + chunk.w > self.MaxWidth then
+					local left_over_space = x - self.MaxWidth
 
-			if self.LineWrap then
-				if chunk.type == "string"and chunk.val:find("^%s+$") or chunk.type == "newline" then
+					y = y + chunk_height
+					x = 0
 
-				else
+					chunk_height = 0
 
-				if chunk.w >= self.MaxWidth and chunk.type == "string" then
-					local X = chunk.x
-					local Y = chunk.y
-					local chunk_height = 0 -- the height to advance y in
+					if not newline then
+						if false then
+							-- go backwards and stretch all the words so
+							-- it fits the line using the leftover space
+							local x = self.MaxWidth
+							local space = left_over_space/(i-prev_line_i)
 
-					local str = {}
-
-					for _, char in ipairs(utf8.totable(chunk.val)) do
-						local w, h = get_text_size(self, char)
-
-						if h > chunk_height then
-							chunk_height = h
-						end
-
-						table.insert(str, char)
-						X = X + w
-
-						if X + w+2 >= self.MaxWidth then
-							if not split then
-								table.remove(chunks, i)
-								split = true
+							for i2 = i-1, prev_line_i+1, -1 do
+								local chunk = chunks[i2]
+								x = x - chunk.w + space
+								chunk.x = math.max(x + space*2, 0)
 							end
+						end
 
-							table.insert(chunks, i + split_i, {
-								type = "string",
-								val = table.concat(str, ""),
-								x = 0,
-								y = Y,
-								w = X,
-								h = chunk_height,
-								old_chunk = chunk.old_chunk or chunk
-							})
-							X = 0
-							Y = Y + chunk_height
-							split_i = split_i + 1
+						-- go backwards and stretch all the words so
+						-- it fits the line using the leftover space
+						local x = 0
+						local space_size = get_text_size(self, " ")
+						local space = left_over_space/(prev_line_i-i)
 
-							chunk_height = 0
-							table.clear(str)
+						local div = (1/(i-prev_line_i))^0.25
+
+						for i2 = prev_line_i, i do
+							local chunk = chunks[i2]
+							local space = math.min(space, space_size*div)
+							chunk.x = math.max(x - space*2, 0)
+							x = x + chunk.w + space
 						end
 					end
 
-					if str[1] then
-						table.insert(chunks, i + split_i, {
-							type = "string",
-							val = table.concat(str, ""),
-							x = 0,
-							y = Y,
-							w = X,
-							h = chunk_height,
-							old_chunk = chunk.old_chunk or chunk
-						})
-					end
-				elseif current_x + chunk.w >= self.MaxWidth then
-					newline = true
+					prev_line_i = i
 				end
-				end
+
 			end
+			chunk.x = x
+			chunk.y = y
 
-			if newline then
-				current_x = 0
-				current_y = current_y + chunk_height
-				chunk_height = chunk.h
-			end
-
-			chunk.x = current_x
-			chunk.y = current_y
-
-			current_x = current_x + chunk.w
-
-			if split then
-				split_i = 0
-			end
+			x = x + chunk.w
 		end
 
 		return chunks
