@@ -494,6 +494,27 @@ do -- commands
 			return
 		end
 
+
+		local key, val = line:match("^([%w_]+)%s+(.+)")
+		if key and val and pvars and pvars.Get(key) then
+			if pvars.GetObject(key):GetType() ~= "string" then
+				val = serializer.GetLibrary("luadata").FromString(val)
+			end
+
+			if val ~= nil then
+				pvars.Set(key, val)
+				logn(key, " (",pvars.GetObject(key):GetType(),") = ", pvars.Get(key))
+				return
+			end
+		end
+
+		local key = line:match("^([%w_]+)$")
+		if key and pvars.Get(key) then
+			logn(key, " (",pvars.GetObject(key):GetType(),") = ", pvars.Get(key))
+			logn(pvars.GetObject(key):GetHelp())
+			return
+		end
+
 		local ok, msg = commands.ExecuteCommandString(line)
 
 		if not ok and log_error and not msg:find("could not find command") then
