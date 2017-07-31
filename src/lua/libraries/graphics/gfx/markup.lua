@@ -1650,7 +1650,7 @@ do -- invalidate
 				h = chunk.h,
 				x = chunk.x,
 				y = chunk.y,
-			--	rand = math.random()
+				rand = math.random(),
 			}
 
 			if chunk.type == "custom" and not chunk.val.stop_tag then
