@@ -1403,6 +1403,13 @@ do -- invalidate
 		add_chunk(self, out, {type = "color", val = Color(1, 1, 1, 1), internal = true}, 1)
 		add_chunk(self, out, {type = "string", val = "", internal = true})
 
+		for _, chunk in ipairs(self.chunks) do
+			if chunk.type == "custom" and not chunk.post_init_called then
+				self:CallTagFunction(chunk, "post_init")
+				chunk.post_init_called = true
+			end
+		end
+
 		return out
 	end
 
@@ -2919,9 +2926,9 @@ do -- drawing
 					elseif chunk.type == "custom" then
 
 						-- init
-						if not chunk.init_called and not chunk.val.stop_tag then
-							self:CallTagFunction(chunk, "init")
-							chunk.init_called = true
+						if not chunk.draw_init_called and not chunk.val.stop_tag then
+							self:CallTagFunction(chunk, "draw_init")
+							chunk.draw_init_called = true
 						end
 
 						-- we need to make sure post_draw is called on tags to prevent
