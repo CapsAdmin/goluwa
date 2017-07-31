@@ -173,6 +173,8 @@ function META:CallTagFunction(chunk, name, ...)
 					local ok, v = pcall(val, chunk.exp_env)
 					if ok then
 						val = v
+					else
+						wlog(v)
 					end
 				end
 
