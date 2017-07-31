@@ -2915,14 +2915,6 @@ do -- drawing
 						render2d.SetColor(c.r, c.g, c.b, c.a)
 
 						gfx.DrawText(chunk.val, chunk.x, chunk.y, max_w)
-					elseif chunk.type == "tag_stopper" then
-						for _, chunks in pairs(self.started_tags) do
-							for i = #chunks, 1, -1 do
-								local chunk = chunks[i]
-								self:CallTagFunction(chunk, "post_draw", chunk.x, chunk.y)
-								chunks[i] = nil
-							end
-						end
 					elseif chunk.type == "custom" then
 
 						-- init
@@ -2982,6 +2974,18 @@ do -- drawing
 					if chunk.type == "end_fade" then
 						render2d.SetAlphaMultiplier(1)
 						start_remove = false
+					end
+
+					if started_tags then
+						if chunk.type == "tag_stopper" then
+							for _, chunks in pairs(self.started_tags) do
+								for _, chunk in ipairs(chunks) do
+									self:CallTagFunction(chunk, "post_draw", chunk.x, chunk.y)
+								end
+							end
+							table.clear(self.started_tags)
+							started_tags = false
+						end
 					end
 
 					chunk.culled = false
