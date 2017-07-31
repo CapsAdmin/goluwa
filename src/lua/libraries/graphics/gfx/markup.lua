@@ -725,7 +725,7 @@ do -- tags
 
 	META.tags.texture =
 	{
-		arguments = {"error", {min = 4, max = 128}},
+		arguments = {"error", {min = 4, max = 128}, {min = 4, max = 128}},
 
 		init = function(markup, self, path)
 			self.mat = render.CreateTextureFromPath(path)
@@ -733,7 +733,7 @@ do -- tags
 
 		get_size = function(markup, self, path, size_x, size_y)
 			size_x = tonumber(size_x)
-			size_x = tonumber(size_y) or tonumber(size_x)
+			size_y = tonumber(size_y) or size_x
 
 			if self.mat:IsLoading() then
 				return size_x or 16, size_y or 16
@@ -747,7 +747,7 @@ do -- tags
 
 		pre_draw = function(markup, self, x,y, path, size_x, size_y)
 			size_x = tonumber(size_x)
-			size_x = tonumber(size_y) or tonumber(size_x)
+			size_y = tonumber(size_y) or size_x
 
 			size_x = size_x or self.mat:GetSize().x
 			size_y = size_y or self.mat:GetSize().y
