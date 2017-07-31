@@ -517,7 +517,7 @@ do -- tags
 
 			for i = self.i+1, math.huge do
 				local chunk = markup.chunks[i]
-				if not chunk or (chunk.type == "custom" and chunk.val.type == "hsv") then break end
+				if not chunk or (chunk.type == "custom" and chunk.val.type == "hsv") or chunk.type == "tag_stopper" then break end
 
 				if chunk.color then
 					chunk.color = c
@@ -540,7 +540,7 @@ do -- tags
 
 			for i = self.i+1, math.huge do
 				local chunk = markup.chunks[i]
-				if not chunk or (chunk.type == "custom" and chunk.val.type == "hsv") then break end
+				if not chunk or (chunk.type == "custom" and chunk.val.type == "hsv") or chunk.type == "tag_stopper" then break end
 
 				if chunk.color then
 					chunk.color = c
