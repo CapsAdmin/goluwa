@@ -453,6 +453,28 @@ do -- tags
 		end,
 	}
 
+	META.tags.nolinebreak = {
+		arguments = {},
+		post_init = function(markup, self)
+			local ok = false
+			for i = 1, #markup.chunks do
+				local chunk = markup.chunks[i]
+
+				if ok then
+					chunk.nolinebreak = true
+				end
+
+				if chunk.type == "custom" and chunk.val.type == "nolinebreak" then
+					if not chunk.val.stop_tag then
+						ok = true
+					else
+						ok = false
+					end
+				end
+			end
+		end,
+	}
+
 	if string.anime then
 		META.tags.anime =
 		{
@@ -1425,7 +1447,7 @@ do -- invalidate
 			end
 			if chunk.type == "string" and not chunk.val:find("^%s+$") then
 				if chunk.val:ulength() > 1 then
-					if chunk.w >= self.MaxWidth then
+					if not chunk.nolinebreak and chunk.w >= self.MaxWidth then
 						table.remove(chunks, i)
 						for _, new_chunk in ipairs(additional_split(self, chunk.val, self.MaxWidth)) do
 							new_chunk.old_chunk = chunk
@@ -1458,45 +1480,34 @@ do -- invalidate
 				if newline or x + chunk.w > self.MaxWidth then
 					local left_over_space = x - self.MaxWidth
 
-					y = y + chunk_height
-					x = 0
+					if not chunk.nolinebreak then
+						y = y + chunk_height
+						x = 0
 
-					chunk_height = 0
+						chunk_height = 0
 
-					if not newline then
-						if false then
+						if not newline then
 							-- go backwards and stretch all the words so
 							-- it fits the line using the leftover space
-							local x = self.MaxWidth
-							local space = left_over_space/(i-prev_line_i)
+							local x = 0
+							local space_size = get_text_size(self, " ")
+							local space = left_over_space/(prev_line_i-i)
 
-							for i2 = i-1, prev_line_i+1, -1 do
+							local div = (1/(i-prev_line_i))^0.25
+
+							for i2 = prev_line_i, i do
 								local chunk = chunks[i2]
-								x = x - chunk.w + space
-								chunk.x = math.max(x + space*2, 0)
+								local space = math.min(space, space_size*div)
+								chunk.x = math.max(x - space*2, 0)
+								x = x + chunk.w + space
 							end
 						end
 
-						-- go backwards and stretch all the words so
-						-- it fits the line using the leftover space
-						local x = 0
-						local space_size = get_text_size(self, " ")
-						local space = left_over_space/(prev_line_i-i)
-
-						local div = (1/(i-prev_line_i))^0.25
-
-						for i2 = prev_line_i, i do
-							local chunk = chunks[i2]
-							local space = math.min(space, space_size*div)
-							chunk.x = math.max(x - space*2, 0)
-							x = x + chunk.w + space
-						end
+						prev_line_i = i
 					end
-
-					prev_line_i = i
 				end
-
 			end
+
 			chunk.x = x
 			chunk.y = y
 
