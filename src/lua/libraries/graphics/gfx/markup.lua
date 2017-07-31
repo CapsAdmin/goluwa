@@ -1593,16 +1593,6 @@ do -- invalidate
 
 		for i, chunk in ipairs(chunks) do
 
-			-- this is for expressions to be use d like line.i+time()
-			chunk.exp_env = {
-				i = chunk.real_i,
-				w = chunk.w,
-				h = chunk.h,
-				x = chunk.x,
-				y = chunk.y,
-			--	rand = math.random()
-			}
-
 			if chunk.type == "font" then
 				font = chunk.val
 			elseif chunk.type == "color" then
@@ -1652,6 +1642,16 @@ do -- invalidate
 			chunk.build_chars = build_chars
 			chunk.i = i
 			chunk.real_i = chunk.real_i or i -- expressions need this
+
+			-- this is for expressions to be use d like line.i+time()
+			chunk.exp_env = {
+				i = chunk.real_i,
+				w = chunk.w,
+				h = chunk.h,
+				x = chunk.x,
+				y = chunk.y,
+			--	rand = math.random()
+			}
 
 			if chunk.type == "custom" and not chunk.val.stop_tag then
 
