@@ -2911,19 +2911,11 @@ do -- drawing
 
 							gfx.DrawText(chunk.val, chunk.x, chunk.y, max_w)
 						elseif chunk.type == "tag_stopper" then
-							for _, chunks in ipairs(self.started_tags) do
-								local fix = false
-
-								for key, chunk in ipairs(chunks) do
-									--print("force stop", chunk.val.type, chunk.i)
-									if next(chunks) then
-										self:CallTagFunction(chunk, "post_draw", chunk.x, chunk.y)
-										chunks[key] = nil
-									end
-								end
-
-								if fix then
-									table.fixindices(chunks)
+							for _, chunks in pairs(self.started_tags) do
+								for i = #chunks, 1, -1 do
+									local chunk = chunks[i]
+									self:CallTagFunction(chunk, "post_draw", chunk.x, chunk.y)
+									chunks[i] = nil
 								end
 							end
 						elseif chunk.type == "custom" then
