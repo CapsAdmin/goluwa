@@ -2840,176 +2840,160 @@ do -- drawing
 			end
 		end
 
-		if self.chunks[1] then
-			-- reset font and color for every line
-			set_font(self, gfx.GetDefaultFont())
-			render2d.SetColor(1, 1, 1, 1)
+		if not self.chunks[1] then return end
+		-- reset font and color for every line
+		set_font(self, gfx.GetDefaultFont())
+		render2d.SetColor(1, 1, 1, 1)
 
-			start_remove = false
-			remove_these = false
-			started_tags = false
+		start_remove = false
+		remove_these = false
+		started_tags = false
 
-			--[[if
-				self.cull_x ~= self.last_cull_x or
-				self.cull_y ~= self.last_cull_y or
-				self.cull_w ~= self.last_cull_w or
-				self.cull_h ~= self.last_cull_h
-			then
+		for i, chunk in ipairs(self.chunks) do
 
+			if not chunk.internal then
+				if not chunk.x then return end -- UMM
 
+				if
+					(
+						chunk.x + chunk.w >= self.cull_x and
+						chunk.y + chunk.h >= self.cull_y and
 
-				self.last_cull_x = self.cull_x
-				self.last_cull_y = self.cull_y
-				self.last_cull_w = self.cull_w
-				self.last_cull_h = self.cull_h
-			end]]
+						chunk.x - self.cull_x <= self.cull_w and
+						chunk.y - self.cull_y <= self.cull_h
+					) or
+					-- these are important since they will remove anything in between
+					(chunk.type == "start_fade" or chunk.type == "end_fade") or
+					start_remove
+				then
+					if chunk.type == "start_fade" then
 
-			for i, chunk in ipairs(self.chunks) do
+						local time = chunk.val - system.GetElapsedTime()
 
-				if not chunk.internal then
-					if not chunk.x then return end -- UMM
-
-					if
-						(
-							chunk.x + chunk.w >= self.cull_x and
-							chunk.y + chunk.h >= self.cull_y and
-
-							chunk.x - self.cull_x <= self.cull_w and
-							chunk.y - self.cull_y <= self.cull_h
-						) or
-						-- these are important since they will remove anything in between
-						(chunk.type == "start_fade" or chunk.type == "end_fade") or
-						start_remove
-					then
-						if chunk.type == "start_fade" then
-
-							local time = chunk.val - system.GetElapsedTime()
-
-							if time <= chunk.fade_time then
-								chunk.alpha = math.clamp(time / chunk.fade_time, 0, 1)
-							else
-								chunk.alpha = 1
-							end
-
-							render2d.SetAlphaMultiplier(chunk.alpha)
-
-							if chunk.alpha <= 0 then
-								start_remove = true
-							end
+						if time <= chunk.fade_time then
+							chunk.alpha = math.clamp(time / chunk.fade_time, 0, 1)
+						else
+							chunk.alpha = 1
 						end
 
-						if start_remove then
-							self.remove_these[i] = true
-							remove_these = true
+						render2d.SetAlphaMultiplier(chunk.alpha)
+
+						if chunk.alpha <= 0 then
+							start_remove = true
+						end
+					end
+
+					if start_remove then
+						self.remove_these[i] = true
+						remove_these = true
+					end
+
+					if chunk.type == "string" and not self.LightMode then
+						set_font(self, chunk.font)
+
+						local c = chunk.color
+						render2d.SetColor(c.r, c.g, c.b, c.a)
+
+						gfx.DrawText(chunk.val, chunk.x, chunk.y, max_w)
+					elseif chunk.type == "tag_stopper" then
+						for _, chunks in pairs(self.started_tags) do
+							for i = #chunks, 1, -1 do
+								local chunk = chunks[i]
+								self:CallTagFunction(chunk, "post_draw", chunk.x, chunk.y)
+								chunks[i] = nil
+							end
+						end
+					elseif chunk.type == "custom" then
+
+						-- init
+						if not chunk.init_called and not chunk.val.stop_tag then
+							self:CallTagFunction(chunk, "init")
+							chunk.init_called = true
 						end
 
-						if chunk.type == "string" and not self.LightMode then
-							set_font(self, chunk.font)
+						-- we need to make sure post_draw is called on tags to prevent
+						-- engine matrix stack inbalance with the matrix tags
+						self.started_tags[chunk.val.type] = self.started_tags[chunk.val.type] or {}
 
-							local c = chunk.color
-							render2d.SetColor(c.r, c.g, c.b, c.a)
+						started_tags = true
 
-							gfx.DrawText(chunk.val, chunk.x, chunk.y, max_w)
-						elseif chunk.type == "tag_stopper" then
-							for _, chunks in pairs(self.started_tags) do
-								for i = #chunks, 1, -1 do
-									local chunk = chunks[i]
-									self:CallTagFunction(chunk, "post_draw", chunk.x, chunk.y)
-									chunks[i] = nil
-								end
-							end
-						elseif chunk.type == "custom" then
+						-- draw_under
+						if chunk.tag_start_draw then
+							if self:CallTagFunction(chunk, "pre_draw", chunk.x, chunk.y) then
+								--print("pre_draw", chunk.val.type, chunk.i)
 
-							-- init
-							if not chunk.init_called and not chunk.val.stop_tag then
-								self:CallTagFunction(chunk, "init")
-								chunk.init_called = true
-							end
-
-							-- we need to make sure post_draw is called on tags to prevent
-							-- engine matrix stack inbalance with the matrix tags
-							self.started_tags[chunk.val.type] = self.started_tags[chunk.val.type] or {}
-
-							started_tags = true
-
-							-- draw_under
-							if chunk.tag_start_draw then
-								if self:CallTagFunction(chunk, "pre_draw", chunk.x, chunk.y) then
-									--print("pre_draw", chunk.val.type, chunk.i)
-
-									-- only if there's a post_draw
-									if self.tags[chunk.val.type].post_draw then
-										table.insert(self.started_tags[chunk.val.type], chunk)
-									end
-								end
-
-								if chunk.chunks_inbetween then
-									--print("pre_draw_chunks", chunk.val.type, chunk.i, #chunk.chunks_inbetween)
-									for _, other_chunk in ipairs(chunk.chunks_inbetween) do
-										self:CallTagFunction(chunk, "pre_draw_chunks", other_chunk)
-									end
+								-- only if there's a post_draw
+								if self.tags[chunk.val.type].post_draw then
+									table.insert(self.started_tags[chunk.val.type], chunk)
 								end
 							end
 
-							-- draw_over
-							if chunk.tag_stop_draw then
-								if table.remove(self.started_tags[chunk.val.type]) then
-									--print("post_draw", chunk.val.type, chunk.i)
-									self:CallTagFunction(chunk.start_chunk, "post_draw", chunk.start_chunk.x, chunk.start_chunk.y)
+							if chunk.chunks_inbetween then
+								--print("pre_draw_chunks", chunk.val.type, chunk.i, #chunk.chunks_inbetween)
+								for _, other_chunk in ipairs(chunk.chunks_inbetween) do
+									self:CallTagFunction(chunk, "pre_draw_chunks", other_chunk)
 								end
 							end
 						end
 
-						-- this is not only for tags. a tag might've been started without being ended
+						-- draw_over
 						if chunk.tag_stop_draw then
-							--print("post_draw_chunks", chunk.type, chunk.i, chunk.chunks_inbetween, chunk.start_chunk.val.type)
-
-							if self.started_tags[chunk.start_chunk.val.type] and table.remove(self.started_tags[chunk.start_chunk.val.type]) then
-								--print("post_draw", chunk.start_chunk.val.type, chunk.i)
+							if table.remove(self.started_tags[chunk.val.type]) then
+								--print("post_draw", chunk.val.type, chunk.i)
 								self:CallTagFunction(chunk.start_chunk, "post_draw", chunk.start_chunk.x, chunk.start_chunk.y)
 							end
+						end
+					end
 
-							for _, other_chunk in ipairs(chunk.chunks_inbetween) do
-								self:CallTagFunction(chunk.start_chunk, "post_draw_chunks", other_chunk)
-							end
+					-- this is not only for tags. a tag might've been started without being ended
+					if chunk.tag_stop_draw then
+						--print("post_draw_chunks", chunk.type, chunk.i, chunk.chunks_inbetween, chunk.start_chunk.val.type)
+
+						if self.started_tags[chunk.start_chunk.val.type] and table.remove(self.started_tags[chunk.start_chunk.val.type]) then
+							--print("post_draw", chunk.start_chunk.val.type, chunk.i)
+							self:CallTagFunction(chunk.start_chunk, "post_draw", chunk.start_chunk.x, chunk.start_chunk.y)
 						end
 
-						if chunk.type == "end_fade" then
-							render2d.SetAlphaMultiplier(1)
-							start_remove = false
+						for _, other_chunk in ipairs(chunk.chunks_inbetween) do
+							self:CallTagFunction(chunk.start_chunk, "post_draw_chunks", other_chunk)
 						end
-
-						chunk.culled = false
-					else
-						chunk.culled = true
 					end
-				end
-			end
 
-			if started_tags then
-				for _, chunks in pairs(self.started_tags) do
-					for _, chunk in ipairs(chunks) do
-						--print("force stop", chunk.val.type, chunk.i)
-
-						self:CallTagFunction(chunk, "post_draw", chunk.x, chunk.y)
+					if chunk.type == "end_fade" then
+						render2d.SetAlphaMultiplier(1)
+						start_remove = false
 					end
+
+					chunk.culled = false
+				else
+					chunk.culled = true
 				end
-
-				table.clear(self.started_tags)
 			end
+		end
 
-			if remove_these then
-				for i in pairs(self.remove_these) do
-					self.chunks[i] = nil
+		if started_tags then
+			for _, chunks in pairs(self.started_tags) do
+				for _, chunk in ipairs(chunks) do
+					--print("force stop", chunk.val.type, chunk.i)
+
+					self:CallTagFunction(chunk, "post_draw", chunk.x, chunk.y)
 				end
-				table.clear(self.remove_these)
-				table.fixindices(self.chunks)
-				self:Invalidate()
 			end
 
-			if self.Selectable then
-				self:DrawSelection()
+			table.clear(self.started_tags)
+		end
+
+		if remove_these then
+			for i in pairs(self.remove_these) do
+				self.chunks[i] = nil
 			end
+			table.clear(self.remove_these)
+			table.fixindices(self.chunks)
+			self:Invalidate()
+		end
+
+		if self.Selectable then
+			self:DrawSelection()
 		end
 	end
 
