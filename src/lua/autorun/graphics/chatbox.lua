@@ -394,8 +394,8 @@ function chat.GetPanel()
 				self.markup:AddString("\n")
 			end
 
-			runfile("lua/examples/2d/markup.lua", text.markup)
-			text.markup:AddString("\n")
+			--runfile("lua/examples/2d/markup.lua", text.markup)
+			--text.markup:AddString("\n")
 		end
 	end
 
