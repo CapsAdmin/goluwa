@@ -272,28 +272,31 @@ do
 end
 
 
-local ffi = require("ffi")
-do
-	local temp = ffi.new("float[4]")
+local _, ffi = pcall(require, "ffi")
 
-	function META:GetFloatPointer()
-		temp[0] = self.x
-		temp[1] = self.y
-		temp[2] = self.z
-		temp[3] = self.w
-		return temp
+if ffi then
+	do
+		local temp = ffi.new("float[4]")
+
+		function META:GetFloatPointer()
+			temp[0] = self.x
+			temp[1] = self.y
+			temp[2] = self.z
+			temp[3] = self.w
+			return temp
+		end
 	end
-end
 
-do
-	local temp = ffi.new("double[4]")
+	do
+		local temp = ffi.new("double[4]")
 
-	function META:GetDoublePointer()
-		temp[0] = self.x
-		temp[1] = self.y
-		temp[2] = self.z
-		temp[3] = self.w
-		return temp
+		function META:GetDoublePointer()
+			temp[0] = self.x
+			temp[1] = self.y
+			temp[2] = self.z
+			temp[3] = self.w
+			return temp
+		end
 	end
 end
 

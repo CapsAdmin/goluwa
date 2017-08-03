@@ -7,7 +7,7 @@ local gettype
 
 if ffi then
 	istype = ffi.istype
-	gettype = function(a) return tostring(ffi.typeof(a)) end
+	gettype = function(a) return  end
 else
 	istype = function(a, b) return getmetatable(a) == getmetatable(b) end
 	gettype = function(a) return getmetatable(a) end
@@ -15,17 +15,27 @@ end
 
 structs.IsType = istype
 
-do
-	structs.type_lookup = structs.type_lookup or {}
-
+structs.type_lookup = structs.type_lookup or {}
+if ffi then
 	local tostring = tostring
+	local typeof = ffi.typeof
 
 	function structs.GetStructMeta(cdata)
-		return structs.type_lookup[gettype(cdata)]
+		return structs.type_lookup[tostring(typeof(a))]
+	end
+else
+	function structs.GetStructMeta(obj)
+		local meta = getmetatable(obj)
+		if meta and meta.ClassName then
+			return structs.type_lookup[meta.ClassName]
+		end
 	end
 end
 
 function structs.Register(META)
+
+	META.__index = META
+	META.Type = META.ClassName:lower()
 
 	local ctor
 
@@ -71,9 +81,6 @@ function structs.Register(META)
 
 			table.insert(arg_lines, "\t" .. number_type .. " ptr[" .. #META.Args .. "];")
 
-			META.__index = META
-			META.Type = META.ClassName:lower()
-
 			if META.StructOverride then
 				ctor = META.StructOverride()
 			else
@@ -86,7 +93,7 @@ function structs.Register(META)
 		for arg_i, arg in pairs(META.Args) do
 			if type(arg) ~= "table" then arg = {arg} end
 
-			tbl_line = tbl_line .. arg[1] .. " = " .. arg[1] .. ","
+			tbl_line = tbl_line .. arg[1] .. " = " .. arg[1] .. " or 0,"
 			arg_line = arg_line .. arg[1]
 
 			if arg_i ~= #META.Args then
@@ -110,7 +117,11 @@ function structs.Register(META)
 
 	_G[META.ClassName] = structs[META.ClassName]
 
-	structs.type_lookup[gettype(ctor)] = META
+	if ffi then
+		structs.type_lookup[tostring(ffi.typeof(ctor))] = META
+	else
+		structs.type_lookup[META.ClassName] = META
+	end
 
 	META:Register()
 end
