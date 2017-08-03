@@ -24,20 +24,19 @@ do
 	end
 
 	META.__len = META.GetLength
-	local ffi_is_type = require("ffi").istype
 
 	function META.__lt(a, b)
-		if type(a) == "cdata" and ffi_is_type(a, b) and type(b) == "number" then
+		if type(a) == "cdata" and structs.IsType(a, b) and type(b) == "number" then
 			return a:GetLength() < b
-		elseif type(b) == "cdata" and ffi_is_type(b, a) and type(a) == "number" then
+		elseif type(b) == "cdata" and structs.IsType(b, a) and type(a) == "number" then
 			return b:GetLength() < a
 		end
 	end
 
 	function META.__le(a, b)
-		if type(a) == "cdata" and ffi_is_type(a, b) and type(b) == "number" then
+		if type(a) == "cdata" and structs.IsType(a, b) and type(b) == "number" then
 			return a:GetLength() <= b
-		elseif type(b) == "cdata" and ffi_is_type(b, a) and type(a) == "number" then
+		elseif type(b) == "cdata" and structs.IsType(b, a) and type(a) == "number" then
 			return b:GetLength() <= a
 		end
 	end

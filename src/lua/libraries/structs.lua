@@ -1,81 +1,118 @@
 local structs = _G.structs or {}
 
-local ffi = require("ffi")
+local _, ffi = pcall(require, "ffi")
+
+local istype
+local gettype
+
+if ffi then
+	istype = ffi.istype
+	gettype = function(a) return tostring(ffi.typeof(a)) end
+else
+	istype = function(a, b) return getmetatable(a) == getmetatable(b) end
+	gettype = function(a) return getmetatable(a) end
+end
+
+structs.IsType = istype
 
 do
 	structs.type_lookup = structs.type_lookup or {}
 
 	local tostring = tostring
-	local typeof = ffi.typeof
 
 	function structs.GetStructMeta(cdata)
-		return structs.type_lookup[tostring(typeof(cdata))]
+		return structs.type_lookup[gettype(cdata)]
 	end
 end
+
 function structs.Register(META)
-	local number_types = META.NumberType
 
-	if type(number_types) == "string" then number_types = {number_types} end
-	local i = 1
-	for prepend, number_type in pairs(number_types) do
-		local arg_lines = {}
+	local ctor
 
-		if i >= 2 then
-			local copy = {}
-			for k,v in pairs(META) do copy[k] = v end
-			META = copy
-			META.ClassName = META.ClassName .. prepend
+	if ffi then
+		local number_types = META.NumberType
+		if type(number_types) == "string" then number_types = {number_types} end
 
-			META.byte_size = ffi.sizeof(number_type) * #META.Args
-		else
-			META.byte_size = ffi.sizeof(number_type) * #META.Args
+		local i = 1
+
+		for prepend, number_type in pairs(number_types) do
+			local arg_lines = {}
+
+			if i >= 2 then
+				local copy = {}
+				for k,v in pairs(META) do copy[k] = v end
+				META = copy
+				META.ClassName = META.ClassName .. prepend
+
+				META.byte_size = ffi.sizeof(number_type) * #META.Args
+			else
+				META.byte_size = ffi.sizeof(number_type) * #META.Args
+			end
+
+			i = i + 1
+
+			for arg_i, arg in pairs(META.Args) do
+				if type(arg) ~= "table" then arg = {arg} end
+
+				for i, v in pairs(arg) do
+					if arg_i == 1 then
+						arg_lines[i] = number_type .. " "
+					end
+
+					arg_lines[i] = arg_lines[i] .. v
+
+					if arg_i ~= #META.Args then
+						arg_lines[i] = arg_lines[i] .. ", "
+					else
+						arg_lines[i] = arg_lines[i] .. ";"
+					end
+				end
+			end
+
+			table.insert(arg_lines, "\t" .. number_type .. " ptr[" .. #META.Args .. "];")
+
+			META.__index = META
+			META.Type = META.ClassName:lower()
+
+			if META.StructOverride then
+				ctor = META.StructOverride()
+			else
+				ctor = assert(ffi.metatype("struct {\n" .. arg_lines[1] .. "\n}", META))
+			end
 		end
-
-		i = i + 1
-
+	else
+		local arg_line = "("
+		local tbl_line = "{"
 		for arg_i, arg in pairs(META.Args) do
 			if type(arg) ~= "table" then arg = {arg} end
 
-			for i, v in pairs(arg) do
-				if arg_i == 1 then
-					arg_lines[i] = number_type .. " "
-				end
+			tbl_line = tbl_line .. arg[1] .. " = " .. arg[1] .. ","
+			arg_line = arg_line .. arg[1]
 
-				arg_lines[i] = arg_lines[i] .. v
-
-				if arg_i ~= #META.Args then
-					arg_lines[i] = arg_lines[i] .. ", "
-				else
-					arg_lines[i] = arg_lines[i] .. ";"
-				end
+			if arg_i ~= #META.Args then
+				arg_line = arg_line .. ","
 			end
 		end
+		arg_line = arg_line .. ")"
+		tbl_line = tbl_line .. "}"
 
-		table.insert(arg_lines, "\t" .. number_type .. " ptr[" .. #META.Args .. "];")
-
-		META.__index = META
-		META.Type = META.ClassName:lower()
-
-		local obj
-
-		if META.StructOverride then
-			obj = META.StructOverride()
-		else
-			obj = assert(ffi.metatype("struct {\n" .. arg_lines[1] .. "\n}", META))
-		end
-
-		if META.Constructor then
-			structs[META.ClassName] = function() local self = obj() self:Constructor() return self end
-		else
-			structs[META.ClassName] = obj
-		end
-
-		_G[META.ClassName] = structs[META.ClassName]
-
-		structs.type_lookup[tostring(obj)] = META
-
-		META:Register()
+		ctor = loadstring(
+			"local META, setmetatable = ... return function" .. arg_line ..
+			" return setmetatable(" .. tbl_line .. ", META) end"
+		)(META, setmetatable)
 	end
+
+	if META.Constructor then
+		structs[META.ClassName] = function() local self = ctor() self:Constructor() return self end
+	else
+		structs[META.ClassName] = ctor
+	end
+
+	_G[META.ClassName] = structs[META.ClassName]
+
+	structs.type_lookup[gettype(ctor)] = META
+
+	META:Register()
 end
 
 -- helpers
@@ -186,20 +223,19 @@ function structs.AddOperator(META, operator, ...)
 		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
 	elseif operator == "==" then
 		local lua = [==[
-		local META, structs, ffi = ...
+		local META, structs, istype = ...
 		local type = type
-		local ffi_is_type = ffi.istype
 		META["__eq"] = function(a, b)
 				return
 				type(a) == "cdata" and
-				ffi_is_type(a, b) and
+				istype(a, b) and
 				a.KEY == b.KEY
 			end
 		]==]
 
 		lua = parse_args(META, lua, " and ")
 
-		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs, ffi)
+		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs, istype)
 
 		local lua = [==[
 		local META, structs = ...
@@ -259,7 +295,7 @@ function structs.AddOperator(META, operator, ...)
 		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
 	elseif operator == "copy" then
 		local lua = [==[
-		local META, structs, copy = ...
+		local META, structs = ...
 		META["Copy"] = function(a)
 			return CTOR(
 				a.KEY
@@ -277,7 +313,7 @@ function structs.AddOperator(META, operator, ...)
 
 		lua = lua:gsub("CTOR", "structs."..META.ClassName)
 
-		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs, ffi.copy)
+		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
 	elseif operator == "math" then
 		local args = {...}
 		local func_name = args[1]
@@ -325,8 +361,7 @@ function structs.AddOperator(META, operator, ...)
 		--end
 	elseif structs.OperatorTranslate[operator] then
 		local lua = [==[
-		local META, structs, ffi = ...
-		local ffi_is_type = ffi.istype
+		local META, structs, istype = ...
 		local type = type
 		META[structs.OperatorTranslate["OPERATOR"]] = function(a, b)
 			if type(b) == "number" then
@@ -337,7 +372,7 @@ function structs.AddOperator(META, operator, ...)
 				return CTOR(
 					a OPERATOR b.KEY
 				)
-			elseif a and ffi_is_type(a, b) then
+			elseif a and istype(a, b) then
 				return CTOR(
 					a.KEY OPERATOR b.KEY
 				)
@@ -354,7 +389,7 @@ function structs.AddOperator(META, operator, ...)
 		lua = lua:gsub("OPERATOR", operator == "%" and "%%" or operator)
 		lua = lua:gsub("PROTECT", "a.")
 
-		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs, ffi)
+		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs, istype)
 	elseif operator == "iszero" then
 		local lua = [==[
 		local META, structs = ...

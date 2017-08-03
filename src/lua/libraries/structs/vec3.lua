@@ -9,8 +9,6 @@ structs.AddAllOperators(META)
 
 -- length stuff
 do
-	local ffi = require("ffi")
-
 	function META:GetLengthSquared()
 		return self.x * self.x + self.y * self.y + self.z * self.z
 	end
@@ -39,17 +37,17 @@ do
 	META.__len = META.GetLength
 
 	function META.__lt(a, b)
-		if ffi.istype(a, b) and type(b) == "number" then
+		if structs.IsType(a, b) and type(b) == "number" then
 			return a:GetLength() < b
-		elseif ffi.istype(b, a) and type(a) == "number" then
+		elseif structs.IsType(b, a) and type(a) == "number" then
 			return b:GetLength() < a
 		end
 	end
 
 	function META.__le(a, b)
-		if ffi.istype(a, b) and type(b) == "number" then
+		if structs.IsType(a, b) and type(b) == "number" then
 			return a:GetLength() <= b
-		elseif ffi.istype(b, a) and type(a) == "number" then
+		elseif structs.IsType(b, a) and type(a) == "number" then
 			return b:GetLength() <= a
 		end
 	end
