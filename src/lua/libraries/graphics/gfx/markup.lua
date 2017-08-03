@@ -627,7 +627,7 @@ do -- tags
 	{
 		arguments = {1, 0, 0, 0, 0.997, 0.1},
 
-		init = function(markup, self, gx, gy, vx, vy, drag, rand_mult)
+		draw_init = function(markup, self, gx, gy, vx, vy, drag, rand_mult)
 			local part = {}
 
 			part =
