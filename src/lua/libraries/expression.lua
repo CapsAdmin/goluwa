@@ -60,25 +60,25 @@ function expression.Compile(str, extra_lib)
 		end
 	end
 
-	local functions = {}
+	local env = {}
 
-	for k,v in pairs(lib) do functions[k] = v end
+	for k,v in pairs(lib) do env[k] = v end
 
 	if extra_lib then
-		for k,v in pairs(extra_lib) do functions[k] = v end
+		for k,v in pairs(extra_lib) do env[k] = v end
 	end
 
 	local t0 = system.GetElapsedTime()
-	functions.t    = function () return system.GetElapsedTime() - t0 end
-	functions.time = function () return system.GetElapsedTime() - t0 end
-	functions.select = select
+	env.t    = function () return system.GetElapsedTime() - t0 end
+	env.time = function () return system.GetElapsedTime() - t0 end
+	env.select = select
 
 	str = "local input = select(1, ...) return " .. str
 
 	local func, err = loadstring(str)
 
 	if func then
-		setfenv(func, functions)
+		setfenv(func, env)
 		expressions[func] = source
 		return true, func
 	else
