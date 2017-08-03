@@ -12,18 +12,22 @@ function bot:Ask(question, cb, noprint)
 		callback = function(data)
 			local answer =  data.content:match("<option>answer = (.-)\n")
 
-			answer = answer:gsub("notreallyanemailaddress", clients.GetLocalClient():GetNick())
-			answer = answer:gsub("notreallyalastname ", "")
-
 			if answer then
-				if not self.cookie then
-					self.cookie = data.header["set-cookie"]
-					--vfs.Write("data/alan_cookie", self.cookie)
+				answer = answer:gsub("notreallyanemailaddress", clients.GetLocalClient():GetNick())
+				answer = answer:gsub("notreallyalastname ", "")
+
+				if answer then
+					if not self.cookie then
+						self.cookie = data.header["set-cookie"]
+						--vfs.Write("data/alan_cookie", self.cookie)
+					end
+					if not noprint then
+						chat.ClientSay(bot, answer)
+					end
+					if cb then cb(answer) end
+				else
+					wlog(data.content)
 				end
-				if not noprint then
-					chat.ClientSay(bot, answer)
-				end
-				if cb then cb(answer) end
 			end
 		end,
 		method = "GET",
