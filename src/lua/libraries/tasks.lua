@@ -8,6 +8,10 @@ tasks.created = tasks.created or {}
 local enabled = {Get = function() return false end} event.AddListener("Initialize", function() enabled = pvars.Setup("tasks_enable", false) end)
 
 function tasks.WaitForTask(name, callback)
+	if not enabled:Get() then
+		callback()
+		return
+	end
 	event.AddListener("TaskFinished", "wait_for_task_" .. name, function(task)
 		if task:GetName() == name then
 			callback()
