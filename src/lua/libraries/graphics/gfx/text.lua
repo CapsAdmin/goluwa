@@ -1,16 +1,13 @@
 local gfx = (...) or _G.gfx
-local font = _G.font
 
-function gfx.GetDefaultFont()
-	return fonts.default_font
-end
+gfx.GetDefaultFont = fonts.GetDefaultFont
 
 function gfx.SetFont(font)
-	fonts.current_font = font or gfx.GetDefaultFont()
+	gfx.current_font = font or gfx.GetDefaultFont()
 end
 
 function gfx.GetFont()
-	return fonts.current_font or gfx.GetDefaultFont()
+	return gfx.current_font or gfx.GetDefaultFont()
 end
 
 local X, Y = 0, 0

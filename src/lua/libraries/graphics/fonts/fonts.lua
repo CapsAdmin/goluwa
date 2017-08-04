@@ -19,6 +19,10 @@ function fonts.Initialize()
 	end
 end
 
+function fonts.GetDefaultFont()
+	return fonts.default_font
+end
+
 function fonts.CreateFont(options, callback)
 
 	if not ready then
