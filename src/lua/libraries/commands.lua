@@ -496,7 +496,7 @@ do -- commands
 
 
 		local key, val = line:match("^([%w_]+)%s+(.+)")
-		if key and val and pvars and pvars.Get(key) then
+		if key and val and pvars and pvars.Get(key) ~= nil then
 			if pvars.GetObject(key):GetType() ~= "string" then
 				val = serializer.GetLibrary("luadata").FromString(val)
 			end
@@ -509,7 +509,7 @@ do -- commands
 		end
 
 		local key = line:match("^([%w_]+)$")
-		if key and pvars.Get(key) then
+		if key and pvars.Get(key) ~= nil then
 			logn(key, " (",pvars.GetObject(key):GetType(),") = ", pvars.Get(key))
 			logn(pvars.GetObject(key):GetHelp())
 			return
