@@ -286,7 +286,7 @@ commands.Add("open=arg_line", function(line)
 	return false, "no such file:\n" .. table.concat(tried, "\n")
 end, "opens a lua file with some helpers (ie trying to append .lua or prepend lua/)")
 
-if GRAPHCIS or PHYSICS then
+if GRAPHICS or PHYSICS then
 	local tries = {
 		{path = "__MAPNAME__"},
 		{path = "maps/__MAPNAME__.obj"},
