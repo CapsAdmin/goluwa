@@ -59,7 +59,7 @@ end
 
 render2d.shader = render2d.shader or NULL
 
-render.rectangle_mesh_data = {
+render2d.rectangle_mesh_data = {
 	{pos = {0, 1, 0}, uv = {0, 0}, color = {1,1,1,1}},
 	{pos = {0, 0, 0}, uv = {0, 1}, color = {1,1,1,1}},
 	{pos = {1, 1, 0}, uv = {1, 0}, color = {1,1,1,1}},
