@@ -21,7 +21,7 @@ if ffi then
 	local typeof = ffi.typeof
 
 	function structs.GetStructMeta(cdata)
-		return structs.type_lookup[tostring(typeof(a))]
+		return structs.type_lookup[tostring(typeof(cdata))]
 	end
 else
 	function structs.GetStructMeta(obj)
