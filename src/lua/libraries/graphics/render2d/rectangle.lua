@@ -150,7 +150,7 @@ do
 
 	function render2d.SetRectColors(cbl, ctl, ctr, cbr)
 		if not cbl then
-			for i = 1, 6 do
+			for i = 0, 5 do
 				render2d.rectangle.Vertices[i].color = {1,1,1,1}
 			end
 		else
