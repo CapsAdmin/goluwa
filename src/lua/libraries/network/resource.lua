@@ -27,7 +27,7 @@ function resource.AddProvider(provider)
 	end)
 end
 
-local function download(from, to, callback, on_fail, on_header, check_etag, etag_path_override)
+local function download(from, to, callback, on_fail, on_header, check_etag, etag_path_override, need_extension)
 	if check_etag then
 		local etag = serializer.GetKeyFromFile("luadata", etags_file, etag_path_override or from)
 
@@ -43,7 +43,7 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 
 				if res ~= etag then
 					llog(from, ": etag has changed ", res)
-					download(from, to, callback, on_fail, on_header, nil, etag_path_override)
+					download(from, to, callback, on_fail, on_header, nil, etag_path_override, need_extension)
 				else
 					--llog(from, ": etag is the same")
 					check_etag()
@@ -92,6 +92,11 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 			file:Write(chunk)
 		end,
 		function(header)
+			if need_extension then
+				local ext = header["content-type"] and (header["content-type"]:match(".-/(.-);") or header["content-type"]:match(".-/(.+)")) or "dat"
+				to = to .. "." .. ext
+			end
+
 			vfs.CreateFolders("os", e.DOWNLOAD_FOLDER .. to)
 			local file_, err = vfs.Open("os:" .. e.DOWNLOAD_FOLDER .. to .. ".temp", "write")
 			file = file_
@@ -127,7 +132,7 @@ local function download_from_providers(path, callback, on_fail, check_etag)
 	if not SOCKETS then return end
 
 	if not check_etag then
-		--llog("donwnloading ", path)
+		llog("donwnloading ", path)
 	end
 
 	local failed = 0
@@ -172,8 +177,21 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag)
 
 	if path:find("^.-://") then
 		url = path
-		local ext = url:match(".+(%.%a+)") or ".dat"
-		path = "cache/" .. (crc or crypto.CRC32(path)) .. ext
+		local crc = (crc or crypto.CRC32(path))
+
+		local found = false
+
+		for _, file_name in ipairs(vfs.Find("cache/")) do
+			if file_name:startswith(crc) then
+				path = "cache/" .. file_name
+				found = true
+				break
+			end
+		end
+
+		if not found then
+			path = "cache/" .. crc
+		end
 
 		existing_path = R(path)
 	else
@@ -245,7 +263,9 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag)
 				-- check file crc stuff here/
 				return true
 			end,
-			check_etag
+			check_etag,
+			nil,
+			true
 		)
 	else
 		download_from_providers(
