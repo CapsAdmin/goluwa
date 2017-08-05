@@ -245,7 +245,7 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag)
 
 	if url then
 		if not check_etag then
-			llog("donwnloading ", url)
+			-- llog("downloading ", url)
 		end
 
 		download(
