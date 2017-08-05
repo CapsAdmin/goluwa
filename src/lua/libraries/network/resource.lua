@@ -132,7 +132,7 @@ local function download_from_providers(path, callback, on_fail, check_etag)
 	if not SOCKETS then return end
 
 	if not check_etag then
-		llog("donwnloading ", path)
+		--llog("downloading ", path)
 	end
 
 	local failed = 0
