@@ -43,8 +43,9 @@ local lib =
 	tanh = math.tanh,
 	tan = math.tan,
 
-	clamp = math.Clamp,
-	pow = math.pow
+	clamp = math.clamp,
+	pow = math.pow,
+	clock = os.clock,
 }
 
 local blacklist = {"repeat", "until", "function", "end"}
