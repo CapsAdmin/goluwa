@@ -181,7 +181,7 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag)
 
 		local found = false
 
-		for _, file_name in ipairs(vfs.Find("cache/")) do
+		for _, file_name in ipairs(vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "cache/")) do
 			if file_name:startswith(crc) then
 				path = "cache/" .. file_name
 				found = true
