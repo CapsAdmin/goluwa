@@ -38,8 +38,8 @@ function META:OnPostDraw()
 	end
 
 	for a, b in pairs(self.current_wires) do
-		if not a:IsValid() then self.current_wires[a] = nil goto continue end
-		if not b:IsValid() then self.current_wires[a] = nil goto continue end
+		if not a:IsValid() then self.current_wires[a] = nil goto __continue end
+		if not b:IsValid() then self.current_wires[a] = nil goto __continue end
 
 		local b_pos = a:GetPosition() + a:GetParent():GetPosition() + a:GetSize() / 2
 		local a_pos = b:GetPosition() + b:GetParent():GetPosition() + b:GetSize() / 2
@@ -62,7 +62,7 @@ function META:OnPostDraw()
 			gfx.DrawLine(a_pos.x, a_pos.y, b_pos.x, b_pos.y, 2, true)
 		end
 
-		::continue::
+		::__continue::
 	end
 end
 

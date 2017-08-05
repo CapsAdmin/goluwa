@@ -31,9 +31,9 @@ function gfx.Initialize()
 end
 
 function gfx.DrawNinePatch(x, y, w, h, patch_size_w, patch_size_h, corner_size, u_offset, v_offset, uv_scale)
-	local skin = render2d.GetTexture()
+	local size = render2d.GetTexture():GetSize()
 
-	gfx.ninepatch_poly:SetNinePatch(1, x, y, w, h, patch_size_w, patch_size_h, corner_size, u_offset, v_offset, uv_scale, skin.Size.x, skin.Size.y)
+	gfx.ninepatch_poly:SetNinePatch(1, x, y, w, h, patch_size_w, patch_size_h, corner_size, u_offset, v_offset, uv_scale, size.x, size.y)
 	gfx.ninepatch_poly:Draw()
 end
 
