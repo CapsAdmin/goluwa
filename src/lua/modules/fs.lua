@@ -169,27 +169,16 @@ if WINDOWS then
 else
 	local S = require("syscall")
 
-	local size = 4096*10
+	local size = 4096
 	local buf = S.t.buffer(size)
 
 	function fs.find(dir, exclude_dot)
 		local out = {}
 
-		local fd, err = S.open(dir, "directory, rdonly")
-
-		if fd then
-			local iterator, err = fd:getdents(buf, size)
-
-			local i = 1
-
-			for info in iterator do
-				if not exclude_dot or (info.name ~= "." and info.name ~= "..") then
-					out[i] = info.name
-					i = i + 1
-				end
+		for name in S.util.ls(dir) do
+			if not exclude_dot or (name ~= "." and name ~= "..") then
+				table.insert(out, name)
 			end
-
-			fd:close()
 		end
 
 		return out
