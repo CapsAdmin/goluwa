@@ -144,7 +144,7 @@ chatsounds.Modifiers = {
 		think = function(self, num)
 			num = tonumber(num) or 1
 
-			self.snd:SetPitch(num)
+			self.snd:SetGain(num)
 		end,
 	},
 	legacyvolume = {
