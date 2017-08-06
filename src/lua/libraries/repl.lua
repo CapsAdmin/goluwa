@@ -574,10 +574,10 @@ do
 		curses.werase(c.status_window)
 
 		local attr = curses.COLOR_PAIR(COLORPAIR_STATUS)
-		curses.wattron(window, attr)
+		curses.wattron(c.status_window, attr)
 		curses.wbkgdset(c.status_window, attr)
 		curses.waddstr(c.status_window, str)
-		curses.wattroff(window, attr)
+		curses.wattroff(c.status_window, attr)
 
 		curses.mvwin(c.status_window, 0, (curses.COLS / 2) - (#str / 2))
 
