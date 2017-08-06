@@ -274,8 +274,7 @@ commands = runfile("lua/libraries/commands.lua") -- console command type interfa
 if CURSES then
 	repl = runfile("lua/libraries/repl.lua") -- read eval print loop using curses
 else
-	CURSES = nil
-	repl = false
+	CURSES = false
 end
 
 system = runfile("lua/libraries/system.lua") -- os and luajit related functions like creating windows or changing jit options
@@ -309,6 +308,10 @@ steam = runfile("lua/libraries/steam/steam.lua") -- utilities for dealing with s
 
 if SOCKETS then
 	sockets = runfile("lua/libraries/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
+
+	if not sockets then
+		SOCKETS = false
+	end
 end
 
 resource = runfile("lua/libraries/sockets/resource.lua") -- used for downloading resources with resource.Download("http://...", function(path) end)
@@ -327,8 +330,9 @@ if SERVER or CLIENT then
 
 		NETWORK = true
 	else
-		CLIENT = nil
-		SERVER = nil
+		NETWORK = false
+		CLIENT = false
+		SERVER = false
 	end
 end
 
@@ -348,8 +352,8 @@ if GRAPHICS then
 end
 
 if not render or not window then
-	GRAPHICS = nil
-	WINDOW = nil
+	GRAPHICS = false
+	WINDOW = false
 end
 
 if SOUND then
@@ -358,7 +362,7 @@ if SOUND then
 	if audio then
 		chatsounds = runfile("lua/libraries/audio/chatsounds/chatsounds.lua")
 	else
-		SOUND = nil
+		SOUND = false
 	end
 end
 

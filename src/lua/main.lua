@@ -1,15 +1,18 @@
 local profile_start_time = os.clock()
 
+pvars.Initialize()
 pvars.Setup("text_editor_path", system.FindFirstTextEditor(true, true) or "")
 
-if sockets then
+if SOCKETS then
 	sockets.Initialize()
 
-	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/")
-	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/")
+	if not CLI then
+		resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/")
+		resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/")
+	end
 end
 
-if WINDOW and window then
+if WINDOW then
 	if window.Open() then
 
 		if VERBOSE_STARTUP then
@@ -27,13 +30,11 @@ if WINDOW and window then
 	end
 end
 
-pvars.Initialize()
-
-if audio then
+if SOUND then
 	audio.Initialize()
 end
 
-if CURSES and repl then
+if CURSES then
 	repl.Initialize()
 end
 
@@ -47,7 +48,7 @@ end
 
 --steam.InitializeWebAPI()
 
-if network then
+if NETWORK then
 	enet.Initialize()
 
 	if CLIENT then
