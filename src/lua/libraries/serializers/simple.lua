@@ -25,4 +25,9 @@ function simple.Decode(str)
 	return out
 end
 
-serializer.AddLibrary("simple", function(...) return simple.Encode(...) end, function(...) return simple.Decode(...) end, simple)
+serializer.AddLibrary(
+	"simple",
+	function(...) return simple.Encode(...) end,
+	function(...) return simple.Decode(...) end,
+	simple
+)

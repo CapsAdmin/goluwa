@@ -200,4 +200,9 @@ do -- vfs extension
 
 end
 
-serializer.AddLibrary("luadata", function(...) return luadata.Encode(...) end, function(...) return luadata.Decode(...) end, luadata)
+serializer.AddLibrary(
+	"luadata",
+	function(luadata, ...) return luadata.Encode(...) end,
+	function(luadata, ...) return luadata.Decode(...) end,
+	luadata
+)

@@ -11,7 +11,14 @@ function serializer.GetAvailible()
 end
 
 function serializer.GetLibrary(lib)
-	return serializer.libraries[lib] and serializer.libraries[lib].lib
+	local lib = serializer.libraries[lib] and serializer.libraries[lib].lib
+
+	if type(lib) == "string" then
+		lib = require(lib)
+		serializer.libraries[lib].lib = lib
+	end
+
+	return lib
 end
 
 function serializer.Encode(lib, ...)
@@ -24,7 +31,7 @@ function serializer.Encode(lib, ...)
 	end
 
 	if data.encode then
-		return data.encode(...)
+		return data.encode(serializer.GetLibrary(lib), ...)
 	end
 
 	error("encoding not supported", 2)
@@ -40,7 +47,7 @@ function serializer.Decode(lib, ...)
 	end
 
 	if data.decode then
-		return data.decode(...)
+		return data.decode(serializer.GetLibrary(lib), ...)
 	end
 
 	error("decoding not supported", 2)

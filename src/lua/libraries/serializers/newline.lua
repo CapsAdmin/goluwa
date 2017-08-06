@@ -23,4 +23,9 @@ function newline.Decode(str)
 	return out
 end
 
-serializer.AddLibrary("newline", function(...) return newline.Encode(...) end, function(...) return newline.Decode(...) end, newline)
+serializer.AddLibrary(
+	"newline",
+	function(...) return newline.Encode(...) end,
+	function(...) return newline.Decode(...) end,
+	newline
+)

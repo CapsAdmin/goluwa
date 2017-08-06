@@ -1,6 +1,5 @@
 local serializer = ...
-local gz = require("deflatelua")
-serializer.AddLibrary("gunzip", nil, function(str)
+serializer.AddLibrary("gunzip", nil, function(gz, str)
 	local out = {}
 	local i = 1
 
@@ -10,4 +9,4 @@ serializer.AddLibrary("gunzip", nil, function(str)
 	end, disable_crc = true})
 
 	return table.concat(out)
-end, gz)
+end, "deflatelua")

@@ -1,8 +1,7 @@
 local serializer = ... or _G.serializer
-local archive = require("archive")
 local ffi = require("ffi")
 
-serializer.AddLibrary("lzma", nil, function(str)
+serializer.AddLibrary("lzma", nil, function(archive, str)
 	local a = archive.ReadNew()
 
 	archive.ReadSupportCompressionLzma(a)
@@ -70,4 +69,4 @@ serializer.AddLibrary("lzma", nil, function(str)
 
 		return ffi.string(data, size)
 	end
-end, archive)
+end, "archive")

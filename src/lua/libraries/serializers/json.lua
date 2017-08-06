@@ -1,3 +1,8 @@
 local serializer = ...
-local json = require("lunajson")
-serializer.AddLibrary("json", function(...) return json.encode(...) end, function(...) return json.decode(...) end, json)
+
+serializer.AddLibrary(
+	"json",
+	function(json, ...) return json.encode(...) end,
+	function(json, ...) return json.decode(...) end,
+	"lunajson"
+)
