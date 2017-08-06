@@ -73,6 +73,8 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 				local full_path = R("os:" .. e.DOWNLOAD_FOLDER .. to)
 
 				if full_path then
+					resource.BuildCacheFolderList(full_path:match(".+/(.+)"))
+
 					callback(full_path)
 
 					--llog("finished donwnloading ", from)
@@ -177,21 +179,15 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag)
 	local existing_path
 
 	if path:find("^.-://") then
+		if not resource.url_cache_lookup then
+			resource.BuildCacheFolderList()
+		end
+
 		url = path
 		local crc = (crc or crypto.CRC32(path))
 
-		local found = false
-
-		for _, file_name in ipairs(vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "cache/")) do
-			if file_name:startswith(crc) then
-				path = "cache/" .. file_name
-				found = true
-				break
-			end
-		end
-
-		if not found then
-			path = "cache/" .. crc
+		if resource.url_cache_lookup[crc] then
+			path = "cache/" .. resource.url_cache_lookup[crc]
 		end
 
 		existing_path = R(path)
@@ -286,6 +282,18 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag)
 	return true
 end
 
+function resource.BuildCacheFolderList(file_name)
+	if file_name then
+		resource.url_cache_lookup[file_name:match("(.-)%.")] = file_name
+	else
+		local tbl = {}
+		for _, file_name in ipairs(vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "cache/")) do
+			tbl[file_name:match("(.-)%.")] = file_name
+		end
+		resource.url_cache_lookup = tbl
+	end
+end
+
 function resource.ClearDownloads()
 	local dirs = {}
 
@@ -302,6 +310,8 @@ function resource.ClearDownloads()
 	for _, dir in ipairs(dirs) do
 		vfs.Delete(dir.."/")
 	end
+
+	resource.BuildCacheFolderList()
 end
 
 function resource.CheckDownloadedFiles()
