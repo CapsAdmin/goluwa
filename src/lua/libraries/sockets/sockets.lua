@@ -207,6 +207,8 @@ do -- tcp socket meta
 			sockets.DebugPrint(self, "%s - " .. fmt, self, ...)
 		end
 
+		local ssl
+
 		do
 			CLIENT:GetSet("SSLParams")
 
@@ -217,9 +219,14 @@ do -- tcp socket meta
 				options = {"all", "no_sslv2", "no_sslv3"},
 			}
 
-			local ssl = desire("ssl") _G.ssl = nil -- grr
-
 			function CLIENT:SetSSLParams(params)
+				if ssl == nil then
+					ssl = desire("ssl") _G.ssl = nil -- grr
+					if not ssl then
+						ssl = false
+					end
+				end
+
 				if not ssl then wlog("cannot use ssl parameters: luasec not found!") return end
 
 				if params == "https" then
@@ -296,8 +303,6 @@ do -- tcp socket meta
 		end
 
 		local receive_types = {all = "*a", line = "*l"}
-
-		local ssl = desire("ssl") _G.ssl = nil -- grr
 
 		function CLIENT:Think()
 			local sock = self.socket
