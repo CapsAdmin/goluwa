@@ -118,7 +118,9 @@ ffi.load = function(path, ...)
 			end
 		end
 
-		args[2] = args[2] .. "\n" .. system.GetLibraryDependencies(path)
+		if system then
+			args[2] = args[2] .. "\n" .. system.GetLibraryDependencies(path)
+		end
 
 		error(indent_error(args[2]), 2)
 	end
