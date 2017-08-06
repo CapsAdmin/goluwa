@@ -70,6 +70,21 @@ local function handle_stupid(path, clib, err, ...)
 	return clib, err, ...
 end
 
+local function indent_error(str)
+	local last_line
+	str = "\n" .. str .. "\n"
+	str = str:gsub("(.-\n)", function(line)
+		line = "\t" .. line:trim() .. "\n"
+		if line == last_line then
+			return ""
+		end
+		last_line = line
+		return line
+	end)
+	str= str:gsub("\n\n", "\n")
+	return str
+end
+
 -- make ffi.load search using our file system
 ffi.load = function(path, ...)
 	local args = {pcall(_OLD_G.ffi_load, path, ...)}
@@ -103,7 +118,9 @@ ffi.load = function(path, ...)
 			end
 		end
 
-		error(args[2], 2)
+		args[2] = args[2] .. "\n" .. system.GetLibraryDependencies(path)
+
+		error(indent_error(args[2]), 2)
 	end
 
 	return handle_stupid(path, args[2])

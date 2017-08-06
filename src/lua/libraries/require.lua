@@ -12,43 +12,34 @@ do -- loaders
 		for path in paths:gmatch("[^;]+") do
 			path = path:gsub("%?", name)
 
-			local errmsg
+			local func, err, path = loader_func(path)
 
-			local val = loader_func(path)
-
-			if type(val) == "function" then
-				return val, path
-			else
-				errmsg = val
+			if func then
+				return func, err, path
 			end
 
-			if errmsg then
-				table.insert(errors, (errmsg:gsub("\\", "/")))
-			else
-				table.insert(errors, string.format("no file %q", path:gsub("\\", "/")))
-			end
+			err = err or "nil"
+
+			table.insert(errors, err)
 		end
 
 		table.sort(errors, function(a, b) return #a > #b end)
 
-		return table.concat(errors, "\n") .. "\n", paths
+		return table.concat(errors, "\n"), paths
 	end
 
 	local function preload_loader(name)
 		if package.preload[name] then
-			return package.preload[name], name
+			return package.preload[name], nil, name
 		else
-			return ("no field package.preload[%q]\n"):format(name), name
+			return nil, ("no field package.preload[%q]\n"):format(name), nil, name
 		end
 	end
 
 	local function lua_loader(name)
 		return path_loader(name, package.path, function(path)
 			local func, err = loadfile(path)
-			if not func then
-				return err, path
-			end
-			return func, path
+			return func, err, path
 		end)
 	end
 
@@ -58,9 +49,11 @@ do -- loaders
 		return path_loader(name, package.cpath, function(path)
 			local func, err = package.loadlib(path, init_func_name)
 			if not func then
-				return err, path
+				if not err:find("No such file or directory", nil, true) and not err:find("undefined symbol", nil, true)then
+					err = err .. "\n" .. system.GetLibraryDependencies(path)
+				end
 			end
-			return func, path
+			return func, err, path
 		end)
 	end
 
@@ -77,16 +70,26 @@ function require.load(name, hint, skip_error)
 
 	for _, loaders in ipairs({require.loaders, package.loaders}) do
 		for _, loader in ipairs(loaders) do
-			local _, val, path = pcall(loader, name)
+			local ok, func, msg, path = pcall(loader, name)
 
-			if type(val) == "function" then
+			if ok and type(func) == "string" then
+				msg = func
+				func = nil
+			end
+
+			if not ok then
+				msg = func
+				func = nil
+			end
+
+			if func then
 				if hint and ((type(hint) == "string" and not (path and path:lower():find(hint:lower(), nil, true))) or (type(hint) == "function" and not hint(path))) then
 					table.insert(errors, ("hint %q was given but it was not found in the returned path %q\n"):format(hint, path))
 				else
-					return val, nil, path
+					return func, nil, path
 				end
 			else
-				table.insert(errors, val)
+				table.insert(errors, msg)
 			end
 		end
 	end
@@ -99,7 +102,25 @@ function require.load(name, hint, skip_error)
 		errors[1] = string.format("module %q not found\n", name)
 	end
 
-	return nil, table.concat(errors, ""), name
+	local err = table.concat(errors, "\n")
+
+	err = err:gsub("\n\n", "\n")
+
+	return nil, err, name
+end
+
+local function indent_error(str)
+	local last_line
+	str = "\n" .. str .. "\n"
+	str = str:gsub("(.-\n)", function(line)
+		line = "\t" .. line:trim() .. "\n"
+		if line == last_line then
+			return ""
+		end
+		last_line = line
+		return line
+	end)
+	return str
 end
 
 function require.require(name)
@@ -107,7 +128,7 @@ function require.require(name)
 		local func, err, path = require.load(name)
 
 		if not func then
-			error(err, 2)
+			error(indent_error(err), 2)
 		end
 
 		if path then
@@ -125,7 +146,7 @@ function require.require(name)
 		end
 
 		if res == nil then
-			error(err, 2)
+			error(indent_error(err), 2)
 		end
 
 		return res

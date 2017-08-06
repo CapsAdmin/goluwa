@@ -53,7 +53,7 @@ function vfs.LoadFile(path)
 		return res, err, full_path
 	end
 
-	return false, "No such file or directory"
+	return false, path .. ": No such file or directory"
 end
 
 function vfs.DoFile(path, ...)

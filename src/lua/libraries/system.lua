@@ -25,6 +25,21 @@ function system.OSCommandExists(...)
 	return false, "NYI"
 end
 
+function system.GetLibraryDependencies(path)
+	if system.OSCommandExists("ldd") then
+		local f = io.popen("ldd " .. path)
+		if f then
+			local str = f:read("*all")
+			f:close()
+
+			str = str:gsub("(.-\n)", function(line) if not line:find("not found") then return "" end end)
+
+			return str
+		end
+	end
+	return "unable to find library dependencies for " .. path .. " because ldd is not an os command"
+end
+
 do -- console title
 	if not system.SetConsoleTitleRaw then
 		local set_title
