@@ -110,7 +110,7 @@ function repl.Initialize()
 		runfile("lua/libraries/graphics/gfx/markup.lua")
 
 		if hack then
-			SERVER = nil
+			SERVER = false
 		end
 	end
 
