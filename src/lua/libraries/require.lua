@@ -4,7 +4,6 @@ do -- loaders
 	local function path_loader(name, paths, loader_func)
 		local errors = {}
 		local loader
-		local found_path
 
 		name = name or ""
 
@@ -15,45 +14,53 @@ do -- loaders
 
 			local errmsg
 
-			loader, errmsg = loader_func(path)
+			local val = loader_func(path)
 
-			if loader then
-				found_path = path
-				break
+			if type(val) == "function" then
+				return val, path
 			else
-				if errmsg then
-					table.insert(errors, (errmsg:gsub("\\", "/")))
-				else
-					table.insert(errors, string.format("no file %q", path:gsub("\\", "/")))
-				end
+				errmsg = val
+			end
+
+			if errmsg then
+				table.insert(errors, (errmsg:gsub("\\", "/")))
+			else
+				table.insert(errors, string.format("no file %q", path:gsub("\\", "/")))
 			end
 		end
 
-		if loader then
-			return loader, nil, found_path
-		else
-			table.sort(errors, function(a, b) return #a > #b end)
-			return table.concat(errors, "\n") .. "\n"
-		end
+		table.sort(errors, function(a, b) return #a > #b end)
+
+		return table.concat(errors, "\n") .. "\n", paths
 	end
 
 	local function preload_loader(name)
 		if package.preload[name] then
-			return package.preload[name]
+			return package.preload[name], name
 		else
-			return ("no field package.preload[%q]\n"):format(name)
+			return ("no field package.preload[%q]\n"):format(name), name
 		end
 	end
 
 	local function lua_loader(name)
-		return path_loader(name, package.path, loadfile), nil, package.path
+		return path_loader(name, package.path, function(path)
+			local func, err = loadfile(path)
+			if not func then
+				return err, path
+			end
+			return func, path
+		end)
 	end
 
 	local function c_loader(name)
 		local init_func_name = "luaopen_" .. name:gsub("^.*%-", "", 1):gsub("%.", "_")
 
 		return path_loader(name, package.cpath, function(path)
-			return package.loadlib(path, init_func_name), nil, path
+			local func, err = package.loadlib(path, init_func_name)
+			if not func then
+				return err, path
+			end
+			return func, path
 		end)
 	end
 
@@ -70,30 +77,29 @@ function require.load(name, hint, skip_error)
 
 	for _, loaders in ipairs({require.loaders, package.loaders}) do
 		for _, loader in ipairs(loaders) do
-			local _, chunk, err, path = pcall(loader, name)
-			if type(chunk) == "function" then
+			local _, val, path = pcall(loader, name)
+
+			if type(val) == "function" then
 				if hint and ((type(hint) == "string" and not (path and path:lower():find(hint:lower(), nil, true))) or (type(hint) == "function" and not hint(path))) then
-					table.insert(errors, ("hint %q was given but it was not found in in the returned path %q\n"):format(hint, path))
+					table.insert(errors, ("hint %q was given but it was not found in the returned path %q\n"):format(hint, path))
 				else
-					return chunk, nil, path
+					return val, nil, path
 				end
-			elseif type(chunk) == "string" then
-				table.insert(errors, chunk)
-			elseif chunk == nil and type(err) == "string" then
-				table.insert(errors, err)
+			else
+				table.insert(errors, val)
 			end
 		end
 	end
 
 	if _G[name] then
-		return _G[name]
+		return _G[name], nil, name
 	end
 
 	if not errors[1] then
 		errors[1] = string.format("module %q not found\n", name)
 	end
 
-	return nil, table.concat(errors, "")
+	return nil, table.concat(errors, ""), name
 end
 
 function require.require(name)
