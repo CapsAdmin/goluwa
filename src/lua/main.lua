@@ -13,13 +13,12 @@ if SOCKETS then
 end
 
 if WINDOW then
+	local profile_start_time = os.clock()
 	if window.Open() then
 
 		if VERBOSE_STARTUP then
-			llog("opening window took %s seconds\n", os.clock() - profile_start_time)
+			llog("opening window took %s seconds", os.clock() - profile_start_time)
 		end
-
-		profile_start_time = os.clock()
 
 		if GRAPHICS then
 			render2d.Initialize()
@@ -71,7 +70,7 @@ end
 system._CheckCreatedEnv()
 
 if VERBOSE_STARTUP then
-	llog("initializing libraries took %s seconds\n", os.clock() - profile_start_time)
+	llog("initializing libraries took %s seconds", os.clock() - profile_start_time)
 end
 
 do -- autorun
@@ -107,7 +106,7 @@ do -- autorun
 	end
 
 	if VERBOSE_STARTUP then
-		llog("autorunning scripts took %s seconds\n", os.clock() - profile_start_time)
+		llog("autorunning scripts took %s seconds", os.clock() - profile_start_time)
 	end
 end
 
@@ -198,7 +197,7 @@ event.Call("Initialize")
 system.ExecuteArgs()
 
 if VERBOSE_STARTUP then
-	llog("startup took %s seconds\n", os.clock() - profiler.startup_time)
+	llog("startup took %s seconds", os.clock() - profiler.startup_time)
 end
 
 main()

@@ -1242,7 +1242,7 @@ if WINDOW then
 
 			render.PostWindowSetup(sdl_wnd)
 
-			llog("sdl version: %s", ffi.string(sdl.GetRevision()))
+			--llog("sdl version: %s", ffi.string(sdl.GetRevision()))
 
 			local self = META:CreateObject()
 

@@ -372,7 +372,7 @@ gine = runfile("lua/libraries/gmod/gine.lua") -- a gmod wrapper that lets you ru
 entities = runfile("lua/libraries/entities/entities.lua") -- entity component system
 
 if VERBOSE_STARTUP then
-	llog("including libraries took %s seconds\n", os.clock() - profile_start_time)
+	llog("including libraries took %s seconds", os.clock() - profile_start_time)
 end
 
 profiler.startup_time = profile_start_time
