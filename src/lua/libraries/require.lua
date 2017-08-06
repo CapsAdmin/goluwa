@@ -47,13 +47,10 @@ do -- loaders
 		local init_func_name = "luaopen_" .. name:gsub("^.*%-", "", 1):gsub("%.", "_")
 
 		return path_loader(name, package.cpath, function(path)
-			local func, err = package.loadlib(path, init_func_name)
+			local func, err, how = package.loadlib(path, init_func_name)
 			if not func then
-				if not vfs or vfs.IsFile(path) then
-					err = err:lower()
-					if not err:find("undefined symbol", nil, true)then
-						err = err .. "\n" .. system.GetLibraryDependencies(path)
-					end
+				if how == "init" then
+					err = err .. "\n" .. system.GetLibraryDependencies(path)
 				end
 			end
 			return func, err, path
