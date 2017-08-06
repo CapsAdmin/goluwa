@@ -1,14 +1,6 @@
 local require = {}
 
 do -- loaders
-	local function preload_loader(name)
-		if package.preload[name] then
-			return package.preload[name]
-		else
-			return ("no field package.preload[%q]\n"):format(name)
-		end
-	end
-
 	local function path_loader(name, paths, loader_func)
 		local errors = {}
 		local loader
@@ -45,50 +37,31 @@ do -- loaders
 		end
 	end
 
+	local function preload_loader(name)
+		if package.preload[name] then
+			return package.preload[name]
+		else
+			return ("no field package.preload[%q]\n"):format(name)
+		end
+	end
+
 	local function lua_loader(name)
 		return path_loader(name, package.path, loadfile), nil, package.path
 	end
 
-	local function get_init_function_name(name)
-		name = name:gsub("^.*%-", "", 1)
-		name = name:gsub("%.", "_")
-
-		return "luaopen_" .. name
-	end
-
 	local function c_loader(name)
-		local init_func_name = get_init_function_name(name)
+		local init_func_name = "luaopen_" .. name:gsub("^.*%-", "", 1):gsub("%.", "_")
 
 		return path_loader(name, package.cpath, function(path)
 			return package.loadlib(path, init_func_name), nil, path
 		end)
 	end
 
-	local function all_in_one_loader(name)
-		local init_func_name = get_init_function_name(name)
-		local base_name = name:match("^[^.]+")
-
-		return path_loader(base_name, package.cpath, function(path)
-			return package.loadlib(path, init_func_name), nil, path
-		end)
-	end
-
-	local loadermeta = {}
-
-	function loadermeta:__call(...)
-		return self.impl(...)
-	end
-
-	local function makeloader(loader_func, name)
-		return setmetatable({ impl = loader_func, name = name }, loadermeta)
-	end
-
 	-- XXX make sure that any added loaders are preserved (esp. luarocks)
 	require.loaders = {
-		makeloader(preload_loader, "preload"),
-		makeloader(lua_loader, "lua"),
-		makeloader(all_in_one_loader, "all_in_one"),
-		makeloader(c_loader, "c"),
+		preload_loader,
+		lua_loader,
+		c_loader,
 	}
 end
 
