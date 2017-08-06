@@ -132,6 +132,7 @@ chatsounds.Modifiers = {
 	pitch = {
 		init = function(self, num)
 			num = tonumber(num) or 1
+			print(num)
 			self.duration = self.duration / math.abs(num)
 		end,
 		think = function(self, num)
@@ -258,7 +259,11 @@ do
 			if type ~= "space" then
 
 				-- 0.1234
-				if last == "digit" and char == "." or ((char == "-" or char == ".") and next and string.getchartype(next) == "digit") then
+				if
+					(last == "digit" and char == ".") or
+					((char == "-" or char == ".") and next and string.getchartype(next) == "digit") or
+					(char == "-" and next == "." and str:sub(i+2, i+2) and string.getchartype(str:sub(i+2, i+2)) == "digit")
+				then
 					type = "digit"
 				end
 
