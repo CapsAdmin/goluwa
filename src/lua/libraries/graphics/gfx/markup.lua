@@ -46,7 +46,9 @@ function gfx.CreateMarkup(str)
 		self:SetText(str)
 	end
 
-	self:Invalidate()
+	if CLIENT then
+		self:Invalidate()
+	end
 
 	return self
 end
