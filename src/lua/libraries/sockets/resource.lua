@@ -94,6 +94,7 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 		function(header)
 			if need_extension then
 				local ext = header["content-type"] and (header["content-type"]:match(".-/(.-);") or header["content-type"]:match(".-/(.+)")) or "dat"
+				if ext == "jpeg" then ext = "jpg" end
 				to = to .. "." .. ext
 			end
 
