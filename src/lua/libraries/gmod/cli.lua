@@ -5,7 +5,7 @@ local function get_paths(line)
 	line = line:trim()
 
 	if line:endswith("/") then
-		vfs.Search(line, "lua", function(path)
+		vfs.Search(line, {"lua"}, function(path)
 			if vfs.IsFile(path) then
 				table.insert(paths, R(path))
 			end
