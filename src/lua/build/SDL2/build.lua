@@ -4,7 +4,7 @@ local ffibuild = require("ffibuild")
 ffibuild.BuildSharedLibrary(
 	"SDL2",
 	"https://github.com/msc-/SDL-jake/tree/vulkan-support-mark.git",
-	"./autogen.sh && mkdir build && cd build && ../configure && make && cd ../"
+	"./autogen.sh && mkdir build && cd build && ../configure --disable-audio --disable-render --disable-video-mir --disable-haptic --disable-filesystem --disable-threads --disable-file && make && cd ../"
 )
 
 local header = ffibuild.BuildCHeader([[
