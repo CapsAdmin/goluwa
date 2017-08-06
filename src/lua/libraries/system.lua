@@ -27,7 +27,7 @@ end
 
 function system.GetLibraryDependencies(path)
 	if system.OSCommandExists("ldd") then
-		local f = io.popen("ldd " .. path)
+		local f = io.popen("ldd " .. path .. " 2>&1")
 		if f then
 			local str = f:read("*all")
 			f:close()
