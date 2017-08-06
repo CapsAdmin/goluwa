@@ -188,9 +188,11 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag)
 
 		if resource.url_cache_lookup[crc] then
 			path = "cache/" .. resource.url_cache_lookup[crc]
+			existing_path = R(path)
+		else
+			path = "cache/" .. crc
+			existing_path = false
 		end
-
-		existing_path = R(path)
 	else
 		existing_path = R(path) or R(path:lower())
 
