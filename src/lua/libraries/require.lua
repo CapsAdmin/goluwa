@@ -49,8 +49,11 @@ do -- loaders
 		return path_loader(name, package.cpath, function(path)
 			local func, err = package.loadlib(path, init_func_name)
 			if not func then
-				if not err:find("No such file or directory", nil, true) and not err:find("undefined symbol", nil, true)then
-					err = err .. "\n" .. system.GetLibraryDependencies(path)
+				if not vfs or vfs.IsFile(path) then
+					err = err:lower()
+					if not err:find("undefined symbol", nil, true)then
+						err = err .. "\n" .. system.GetLibraryDependencies(path)
+					end
 				end
 			end
 			return func, err, path
