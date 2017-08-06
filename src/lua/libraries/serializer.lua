@@ -10,12 +10,12 @@ function serializer.GetAvailible()
 	return serializer.libraries
 end
 
-function serializer.GetLibrary(lib)
-	local lib = serializer.libraries[lib] and serializer.libraries[lib].lib
+function serializer.GetLibrary(name)
+	local lib = serializer.libraries[name] and serializer.libraries[name].lib
 
 	if type(lib) == "string" then
 		lib = require(lib)
-		serializer.libraries[lib].lib = lib
+		serializer.libraries[name].lib = lib
 	end
 
 	return lib
