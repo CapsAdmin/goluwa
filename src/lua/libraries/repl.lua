@@ -114,7 +114,7 @@ function repl.Initialize()
 		end
 	end
 
-	c.markup = gfx.CreateMarkup()
+	c.markup = gfx.CreateMarkup(nil, true)
 	c.markup:SetFixedSize(14)
 	c.markup:SetEditable(true)
 

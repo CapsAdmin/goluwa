@@ -27,7 +27,7 @@ else
 	META:GetSet("FixedSize", 0)
 end
 
-function gfx.CreateMarkup(str)
+function gfx.CreateMarkup(str, skip_invalidate)
 	local self = prototype.CreateObject(META, {
 		w = 0,
 		h = 0,
@@ -46,7 +46,7 @@ function gfx.CreateMarkup(str)
 		self:SetText(str)
 	end
 
-	if CLIENT then
+	if not skip_invalidate then
 		self:Invalidate()
 	end
 
