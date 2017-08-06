@@ -482,14 +482,14 @@ do -- commands
 		end
 	end
 
-	function commands.RunString(line, skip_lua, skip_split, log_error)
+	function commands.RunString(line, skip_lua, skip_split)
 		if CLI then
 			logn(">> ", line)
 		end
 
 		if not skip_split and line:find("\n") then
 			for line in (line .. "\n"):gmatch("(.-)\n") do
-				commands.RunString(line, skip_lua, skip_split, log_error)
+				commands.RunString(line, skip_lua, skip_split)
 			end
 			return
 		end
@@ -517,7 +517,7 @@ do -- commands
 
 		local ok, msg = commands.ExecuteCommandString(line)
 
-		if not ok and log_error and not msg:find("could not find command") then
+		if not ok and not msg:find("could not find command") then
 			logn(msg)
 
 			return
@@ -527,7 +527,7 @@ do -- commands
 			ok, msg = commands.ExecuteLuaString(line)
 		end
 
-		if not ok and log_error then
+		if not ok then
 			logn(msg)
 		end
 	end
