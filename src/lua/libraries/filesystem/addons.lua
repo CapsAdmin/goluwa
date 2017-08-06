@@ -5,8 +5,8 @@ vfs.disabled_addons = vfs.disabled_addons or {}
 
 function vfs.MountAddons(dir)
 	for info in vfs.Iterate(dir, true, nil, nil, nil, true) do
-		if vfs.IsDirectory(info.full_path2) and info.name ~= "src" and not info.name:startswith(".") and not info.name:startswith("__") then
-			vfs.MountAddon(info.full_path2 .. "/")
+		if vfs.IsDirectory(info.full_path:sub(#info.filesystem + 2)) and info.name ~= "src" and not info.name:startswith(".") and not info.name:startswith("__") then
+			vfs.MountAddon(info.full_path:sub(#info.filesystem + 2) .. "/")
 		end
 	end
 end

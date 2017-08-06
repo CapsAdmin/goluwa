@@ -4,43 +4,51 @@ function vfs.GetFiles(info)
 	local out = {}
 
 	if info.verbose then
+		local i = 1
 		for _, data in ipairs(vfs.TranslatePath(info.path, true)) do
 			local found = data.context:CacheCall("GetFiles", data.path_info)
 			if found then
+				local prefix = data.context.Name .. ":" .. data.path_info.full_path
 				for _, name in ipairs(found) do
 					if not info.filter or name:find(info.filter, info.filter_pos, info.filter_plain) then
-						table.insert(out, {
+						out[i] = {
 							name = name,
 							filesystem = data.context.Name,
-							full_path = data.context.Name .. ":" .. data.path_info.full_path .. name,
-							full_path2 = data.path_info.full_path .. name,
+							full_path = prefix .. name,
 							userdata = data.userdata,
-						})
+						}
+						i = i + 1
 					end
 				end
 			end
 		end
 
-		if info.reverse_sort then
-			table.sort(out, function(a, b) return a.full_path:lower() > b.full_path:lower() end)
-		else
-			table.sort(out, function(a, b) return a.full_path:lower() < b.full_path:lower() end)
+		if not info.no_sort then
+			if info.reverse_sort then
+				table.sort(out, function(a, b) return a.full_path:lower() > b.full_path:lower() end)
+			else
+				table.sort(out, function(a, b) return a.full_path:lower() < b.full_path:lower() end)
+			end
 		end
 	else
 		local done = {}
+		local i = 1
 
 		for _, data in ipairs(vfs.TranslatePath(info.path, true)) do
 			local found = data.context:CacheCall("GetFiles", data.path_info)
+
 			if found then
 				for _, name in ipairs(found) do
 					if not done[name] then
 						done[name] = true
+
 						if info.full_path then
 							name = data.path_info.full_path .. name
 						end
 
 						if not info.filter or name:find(info.filter, info.filter_pos, info.filter_plain) then
-							table.insert(out, name)
+							out[i] = name
+							i = i + 1
 						end
 					end
 				end
@@ -49,10 +57,12 @@ function vfs.GetFiles(info)
 
 		done = nil
 
-		if info.reverse_sort then
-			table.sort(out, function(a, b) return a:lower() > b:lower() end)
-		else
-			table.sort(out, function(a, b) return a:lower() < b:lower() end)
+		if not info.no_sort then
+			if info.reverse_sort then
+				table.sort(out, function(a, b) return a:lower() > b:lower() end)
+			else
+				table.sort(out, function(a, b) return a:lower() < b:lower() end)
+			end
 		end
 	end
 
@@ -75,6 +85,7 @@ function vfs.Find(path, full_path, reverse_sort, start, plain, verbose)
 		verbose = verbose,
 		full_path = full_path,
 		reverse_sort = reverse_sort,
+		no_filter = reverse_sort == nil,
 	})
 end
 
