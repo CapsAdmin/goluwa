@@ -515,7 +515,7 @@ do
 			if chunk and chunk.type == "modifier" and chunk.mod == "repeat" then
 				table.remove(script, i)
 
-				local repetitions = tonumber(chunk.args[1]) - 1
+				local repetitions = math.clamp(tonumber(chunk.args[1]) - 1, 1, 100)
 
 				if script[i - 1] then
 					if script[i - 1].type == "matched" then
