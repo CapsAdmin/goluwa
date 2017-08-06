@@ -1,6 +1,6 @@
 local window = _G.window or {}
 
-window.wnd = window.wnd or NULL
+runfile("window_sdl.lua", window)
 
 local meta = prototype.GetRegistered("render_window")
 
@@ -9,20 +9,20 @@ if not meta then wlog("no window manager found") return end
 for key, val in pairs(meta) do
 	if type(val) == "function" then
 		window[key] = function(...)
-			return val(window.wnd, ...)
+			return val(render.GetWindow(), ...)
 		end
 	end
 end
 
 function window.Open(...)
-	if window.wnd:IsValid() then return end
+	if window.IsOpen() then return end
 
-	if not system.CreateWindow then
+	if not window.CreateWindow then
 		wlog("no window manager found")
 		return nil, "no window manager found"
 	end
 
-	local ok, wnd = pcall(system.CreateWindow, ...)
+	local ok, wnd = pcall(window.CreateWindow, ...)
 
 	if not ok then wlog(wnd) return nil, wnd end
 
@@ -30,8 +30,6 @@ function window.Open(...)
 		render.initialized = true
 		render.Initialize(wnd)
 	end
-
-	render.SetWindow(wnd)
 
 	function wnd:OnUpdate()
 		render.PushWindow(self)
@@ -101,7 +99,7 @@ function window.Open(...)
 		local nice = name:sub(7)
 
 		event.AddListener(name, "window_events", function(_wnd, ...)
-			--if _wnd == window.wnd then
+			--if _wnd == render.GetWindow() then
 				if not callback or callback(...) ~= false then
 					return event.Call(nice, ...)
 				end
@@ -153,18 +151,16 @@ function window.Open(...)
 		end
 	end)
 
-	window.wnd = wnd
-
 	return wnd
 end
 
 function window.IsOpen()
-	return window.wnd:IsValid()
+	return render.GetWindow():IsValid()
 end
 
 function window.Close()
-	if window.wnd:IsValid() then
-		window.wnd:Remove()
+	if window.IsOpen() then
+		render.GetWindow():Remove()
 	end
 end
 

@@ -32,6 +32,7 @@ end
 
 function render.Initialize(wnd)
 	runfile(render.GetDir() .. "render.lua", render)
+	render.SetWindow(wnd)
 
 	render._Initialize(wnd)
 	render.GenerateTextures()

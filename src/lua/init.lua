@@ -338,7 +338,6 @@ end
 
 if GRAPHICS then
 	camera = runfile("lua/libraries/graphics/camera.lua") -- 2d and 3d camera used for rendering
-
 	render = runfile("lua/libraries/graphics/render/render.lua") -- OpenGL abstraction
 
 	if render then
@@ -346,7 +345,7 @@ if GRAPHICS then
 		fonts = runfile("lua/libraries/graphics/fonts/fonts.lua") -- font rendering
 		gfx = runfile("lua/libraries/graphics/gfx/gfx.lua") -- high level 2d and 3d functions based on render2d, fonts and render
 		render3d = runfile("lua/libraries/graphics/render3d/render3d.lua")
-		window = runfile("lua/libraries/graphics/window.lua") -- high level window implementation
+		window = runfile("lua/libraries/graphics/window.lua") -- window implementation
 		gui = runfile("lua/libraries/graphics/gui/gui.lua")
 	end
 end

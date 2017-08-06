@@ -1,4 +1,4 @@
-local wnd = utility.RemoveOldObject(system.CreateWindow(512, 512),"lol")
+local wnd = utility.RemoveOldObject(window.CreateWindow(512, 512),"lol")
 
 function wnd:OnUpdate(dt)
 	render.PushWindow(self)
