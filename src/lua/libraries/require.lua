@@ -49,7 +49,7 @@ do -- loaders
 		return path_loader(name, package.cpath, function(path)
 			local func, err, how = package.loadlib(path, init_func_name)
 			if not func then
-				if how == "init" then
+				if how == "open" then
 					err = err .. "\n" .. system.GetLibraryDependencies(path)
 				end
 			end
