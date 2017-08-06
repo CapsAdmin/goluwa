@@ -132,7 +132,6 @@ chatsounds.Modifiers = {
 	pitch = {
 		init = function(self, num)
 			num = tonumber(num) or 1
-			print(num)
 			self.duration = self.duration / math.abs(num)
 		end,
 		think = function(self, num)
