@@ -258,7 +258,7 @@ do
 			if type ~= "space" then
 
 				-- 0.1234
-				if last == "digit" and char == "." or (char == "-" and next and string.getchartype(next) == "digit") then
+				if last == "digit" and char == "." or ((char == "-" or char == ".") and next and string.getchartype(next) == "digit") then
 					type = "digit"
 				end
 
