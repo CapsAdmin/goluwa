@@ -10,6 +10,10 @@ if not luasocket then
 	local META = {}
 	META.__index = META
 
+	function META:accept()
+
+	end
+
 	function META:close()
 
 	end
@@ -25,6 +29,8 @@ if not luasocket then
 	function META:connect(ip, port)
 
 	end
+
+	function META:getpeername() end
 
 	function META:send(str)
 
