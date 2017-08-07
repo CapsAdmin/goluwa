@@ -150,6 +150,13 @@ function ffi.cdef(str, ...)
 	return warn_pcall(_OLD_G.ffi.cdef, str, ...)
 end
 
-function ffi.metatype(str, ...)
-	return warn_pcall(_OLD_G.ffi.metatype, str, ...)
+local metatable_lookup = {}
+
+function ffi.metatype(ct, meta)
+	metatable_lookup[tostring((ct))] = meta
+	return _OLD_G.ffi.metatype(ct, meta)
+end
+
+function ffi.getmetatable(ct)
+	return metatable_lookup[tostring((ct))]
 end
