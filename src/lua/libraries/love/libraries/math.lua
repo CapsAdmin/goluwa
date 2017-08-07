@@ -166,9 +166,9 @@ do
 	end
 
 	function BezierCurve:getDerivative()
-		local self = love.math.newBezierCurve()
-		self.obj = self.obj:GetDerivative()
-		return self
+		local self2 = love.math.newBezierCurve()
+		self2.obj = self.obj:GetDerivative()
+		return self2
 	end
 
 	function BezierCurve:evaluate(t)
