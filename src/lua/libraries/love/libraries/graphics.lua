@@ -1118,17 +1118,19 @@ do
 		local vertex_format
 		local mode
 		local usage
+		local texture
 
-		if type(...) == "number" then
+		if type(select(1, ...)) == "table" and (line.Type(select(2, ...)) == "Image" or line.Type(select(2, ...)) == "Canvas") then--(mesh_vertices, texture, 'triangles')
+			vertices, texture, mode = ...
+			vertex_count = #vertices
+		elseif type(select(1, ...)) == "table" and type(select(2, ...)) == "table" then
+			vertex_format, vertices, mode, usage = ...
+			vertex_count = #vertices
+		elseif type(...) == "number" then
 			vertex_count, mode, usage = ...
 		elseif type(...) == "table" then
 			vertices, mode, usage = ...
 			vertex_count = #vertices
-		elseif type(select(1, ...)) == "table" and type(select(2, ...)) then
-			vertex_format, vertices, mode, usage = ...
-			vertex_count = #vertices
-		else
-			vertex_count, mode, usage = ...
 		end
 
 		local self = line.CreateObject("Mesh")
@@ -1146,6 +1148,10 @@ do
 
 		if vertices then
 			self:setVertices(vertices)
+		end
+
+		if texture then
+			self:setTexture(texture)
 		end
 
 		return self
@@ -1177,7 +1183,11 @@ do
 		return out
 	end
 
-	function Mesh:setVertex(index, vertex)
+	function Mesh:setVertex(index, vertex, ...)
+		if type(vertex) == "number" then
+			vertex = {vertex, ...}
+		end
+
 		if vertex[1] then
 			self.vertex_buffer:SetVertex(index, "pos", vertex[1], vertex[2])
 		end
@@ -1346,6 +1356,9 @@ do -- sprite batch
 	SpriteBatch.addq = SpriteBatch.add
 
 	function SpriteBatch:setColor(r,g,b,a)
+		if type(r) == "table" then
+			r,g,b,a = unpack(r)
+		end
 
 		r = r or 255
 		g = g or 255
