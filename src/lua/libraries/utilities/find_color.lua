@@ -476,5 +476,5 @@ function utility.FindColor(color)
 		table.insert(found, {name = k, dist = Vec3(color.r, color.g, color.b):Distance(Vec3(v.r, v.g, v.b))})
 	end
 	table.sort(found, function(a, b) return a.dist < b.dist end)
-	return found[1].name, colors[name]
+	return found[1].name, colors[found[1].name]
 end
