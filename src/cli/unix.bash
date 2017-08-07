@@ -1,5 +1,17 @@
 #!/bin/bash
 
+function download
+{
+    if command -v wget >/dev/null 2>&1; then
+        wget -O "$2" "$1"
+    elif command -v curl >/dev/null 2>&1; then
+        curl -L --url "$1" --output "$2"
+    else
+        echo "unable to find wget or curl"
+        exit 1
+    fi
+}
+
 # make sure we're in this bash's directory
 cd "$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit
 
@@ -80,10 +92,21 @@ if [ "$1" == "launch"  ] || [ "$1" == "cli"  ]; then
 	#if we don't have binaries get them from github
 	if [ ! -f "bin/${OS}_${ARCH}/luajit" ]; then
 		mkdir -p "bin/${OS}_${ARCH}"
-		echo "https://github.com/CapsAdmin/goluwa/releases/download/${OS}-binaries/${ARCH}.zip"
-		curl -L --url "https://github.com/CapsAdmin/goluwa/releases/download/${OS}-binaries/${ARCH}.zip" --output "temp.zip"
-		unzip temp.zip -d "bin/${OS}_${ARCH}"
-		rm temp.zip
+		while true; do
+            download "https://github.com/CapsAdmin/goluwa/releases/download/${OS}-binaries/${ARCH}.zip" "temp.zip"
+            if [[ $? == 0 ]]; then
+                unzip temp.zip -d "bin/${OS}_${ARCH}"
+                if [[ ! $? == 0 ]]; then
+                    rm temp.zip
+                    echo "zip file is maybe corrupt. trying again"
+                else
+                    rm temp.zip
+                    break
+                fi
+            else
+                echo "unable to download binaries. trying again"
+            fi
+        done
 	fi
 
 	cd "bin/${OS}_${ARCH}/" || exit
