@@ -15,7 +15,6 @@ end
 if WINDOW then
 	local profile_start_time = os.clock()
 	if window.Open() then
-
 		if VERBOSE_STARTUP then
 			llog("opening window took %s seconds", os.clock() - profile_start_time)
 		end
@@ -26,6 +25,9 @@ if WINDOW then
 			gfx.Initialize()
 			gui.Initialize()
 		end
+	else
+		GRAPHICS = false
+		WINDOW = false
 	end
 end
 
@@ -37,11 +39,11 @@ if CURSES then
 	repl.Initialize()
 end
 
-if line then
+if GRAPHICS then
 	love = line.CreateLoveEnv() -- https://www.love2d.org/wiki/love
 end
 
-if physics then
+if PHYSICS then
 	physics.Initialize()
 end
 

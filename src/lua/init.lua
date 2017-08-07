@@ -325,6 +325,9 @@ language = runfile("lua/libraries/language.lua") _G.L = language.LanguageString 
 
 if PHYSICS then
 	physics = runfile("lua/libraries/physics/physics.lua") -- bullet physics
+	if not physics then
+		PHYSICS = false
+	end
 end
 
 steam = runfile("lua/libraries/steam/steam.lua") -- utilities for dealing with steam, the source engine and steamworks
