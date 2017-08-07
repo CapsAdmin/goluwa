@@ -22,17 +22,6 @@ local assert, error, getmetatable, ipairs, loadstring, pairs, print
 
 --[[DBG]] local unpack = unpack
 
--- used only for development. strung works fine in the absence of util.lua
-local expose, writelock do
-  local noglobals
-  pcall(function()
-    local u = require"util"
-    expose, noglobals, writelock = u.expose, u.noglobals, u.writelock
-  end)
-  -- throw an error when accessing a global.
-  ;(noglobals or type)""
-end
-
 -------------------------------------------------------------------------------
 --- localize library functions ---
 

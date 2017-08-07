@@ -39,9 +39,9 @@ function vfs.AutorunAddon(addon, folder, force)
 				end
 
 				-- autorun folders
-				for path in vfs.Iterate(info.path .. "lua/autorun/" .. folder) do
+				for path in vfs.Iterate(info.path .. "lua/autorun/" .. folder, true) do
 					if path:find("%.lua") then
-						local ok, err = system.pcall(vfs.RunFile, info.path .. "lua/autorun/" .. folder .. "/" ..  path)
+						local ok, err = system.pcall(vfs.RunFile, path)
 						if not ok then
 							wlog(err)
 						end

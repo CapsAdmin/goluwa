@@ -246,8 +246,31 @@ vfs.Mount("os:" .. e.USERDATA_FOLDER, "data") -- mount "ROOT/data/users/*usernam
 vfs.Mount("os:" .. e.BIN_FOLDER, "bin") -- mount "ROOT/data/bin" to "/bin/"
 vfs.MountAddon("os:" .. e.SRC_FOLDER) -- mount "ROOT/src" to "/"
 
+-- this will just make require("bit32") will have an early exit
+package.preload.bit32 = function() error("we're luajit") end
+
 vfs.AddModuleDirectory("lua/modules/")
 vfs.AddModuleDirectory("lua/libraries/")
+
+do -- full path
+	vfs.AddPackageLoader(function(path)
+		return vfs.LoadFile(path)
+	end)
+
+	vfs.AddPackageLoader(function(path)
+		return vfs.LoadFile(path .. ".lua")
+	end)
+
+	vfs.AddPackageLoader(function(path)
+		path = path:gsub("(.)%.(.)", "%1/%2")
+		return vfs.LoadFile(path .. ".lua")
+	end)
+
+	vfs.AddPackageLoader(function(path)
+		path = path:gsub("(.+/)(.+)", function(a, str) return a .. str:gsub("(.)%.(.)", "%1/%2") end)
+		return vfs.LoadFile(path .. ".lua")
+	end)
+end
 
 _G.runfile = vfs.RunFile
 _G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir

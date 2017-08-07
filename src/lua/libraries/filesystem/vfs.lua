@@ -207,6 +207,14 @@ do -- translate path to useful data
 		end
 	end
 
+	function vfs.IsPathAbsolute(path)
+		if WINDOWS then
+			return path:sub(2, 2) == ":" or path:sub(1, 2) == [[//]]
+		end
+
+		return path:sub(1, 1) == "/"
+	end
+
 	function vfs.GetPathInfo(path, is_folder)
 		local out = {}
 		local pos = path:find(":", 0, true)
@@ -224,11 +232,7 @@ do -- translate path to useful data
 			out.filesystem = "unknown"
 		end
 
-		local relative = path:sub(1, 1) ~= "/"
-
-		if WINDOWS then
-			relative = path:sub(2, 2) ~= ":" and path:sub(1, 2) ~= [[//]]
-		end
+		local relative = not vfs.IsPathAbsolute(path)
 
 		if is_folder and not path:endswith("/") then
 			path = path .. "/"

@@ -29,8 +29,10 @@ do -- loaders
 	end
 
 	local function preload_loader(name)
-		if package.preload[name] then
+		if type(package.preload[name]) == "function" then
 			return package.preload[name], nil, name
+		elseif package.preload[name] ~= nil then
+			return nil, ("package.preload[%q] is %q\n"):format(name, type(package.preload[name])), nil, name
 		else
 			return nil, ("no field package.preload[%q]\n"):format(name), nil, name
 		end
@@ -48,6 +50,7 @@ do -- loaders
 
 		return path_loader(name, package.cpath, function(path)
 			local func, err, how = package.loadlib(path, init_func_name)
+
 			if not func then
 				if how == "open" and not err:startswith(path) or vfs.IsFile(path) then
 					err = err .. "\n" .. system.GetLibraryDependencies(path)
@@ -57,40 +60,65 @@ do -- loaders
 		end)
 	end
 
-	-- XXX make sure that any added loaders are preserved (esp. luarocks)
-	require.loaders = {
-		preload_loader,
-		lua_loader,
-		c_loader,
-	}
+	local function c_loader2(name)
+		local symbol
+
+		if name:find(".", nil, true) then
+			symbol = "luaopen_" .. name:gsub("^.*%-", "", 1):gsub("%.", "_")
+			name = name:match("(.+)%.")
+		else
+			symbol = "luaopen_" .. name:gsub("^.*%-", "", 1):gsub("%.", "_")
+		end
+
+		return path_loader(name, package.cpath, function(path)
+			local func, err, how = package.loadlib(path, symbol)
+
+			if not func then
+				if how == "open" and not err:startswith(path) or vfs.IsFile(path) then
+					err = err .. "\n" .. system.GetLibraryDependencies(path)
+				end
+			end
+			return func, err, path
+		end)
+	end
+
+	-- we don't need the default loaders since we reimplement them here
+	for i = #package.loaders, 1, -1 do
+		if debug.getinfo(package.loaders[i]).what == "C" then
+			table.remove(package.loaders, i)
+		end
+	end
+
+	table.insert(package.loaders, 1, c_loader2)
+	table.insert(package.loaders, 1, c_loader)
+	table.insert(package.loaders, 1, lua_loader)
+	table.insert(package.loaders, 1, preload_loader)
 end
 
 function require.load(name, hint, skip_error)
 	local errors = {}
 
-	for _, loaders in ipairs({require.loaders, package.loaders}) do
-		for _, loader in ipairs(loaders) do
-			local ok, func, msg, path = pcall(loader, name)
+	for _, loader in ipairs(package.loaders) do
+		local ok, func, msg, path = pcall(loader, name)
 
-			if ok and type(func) == "string" then
-				msg = func
-				func = nil
-			end
+		if ok and type(func) == "string" then
+			msg = func
+			func = nil
+		end
 
-			if not ok then
-				msg = func
-				func = nil
-			end
+		if not ok then
+			msg = func
+			func = nil
+		end
 
-			if func then
-				if hint and ((type(hint) == "string" and not (path and path:lower():find(hint:lower(), nil, true))) or (type(hint) == "function" and not hint(path))) then
-					table.insert(errors, ("hint %q was given but it was not found in the returned path %q\n"):format(hint, path))
-				else
-					return func, nil, path
-				end
+		if func then
+			if hint and ((type(hint) == "string" and not (path and path:lower():find(hint:lower(), nil, true))) or (type(hint) == "function" and not hint(path))) then
+				table.insert(errors, ("hint %q was given but it was not found in the returned path %q\n"):format(hint, path))
 			else
-				table.insert(errors, msg)
+				return func, nil, path
 			end
+		else
+			table.insert(errors, msg)
 		end
 	end
 
