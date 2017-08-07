@@ -399,7 +399,6 @@ function hasindex(var)
 end
 
 function typex(var)
-
 	local t = type(var)
 
 	if
@@ -412,14 +411,16 @@ function typex(var)
 		t == "thread"
 	then
 		return t
-	elseif t == "table" then
-		return var.Type or t
-	else
-		local ok, res = pcall(idx, var)
+	end
 
-		if ok then
-			t = res
-		end
+	if t == "table" then
+		return var.Type or t
+	end
+
+	local ok, res = pcall(idx, var)
+
+	if ok then
+		return res
 	end
 
 	return t

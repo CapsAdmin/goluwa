@@ -8,7 +8,7 @@ e.DOWNLOAD_FOLDER = e.DATA_FOLDER .. "downloads/"
 vfs.CreateFolder("os:" .. e.DOWNLOAD_FOLDER)
 vfs.Mount("os:" .. e.DOWNLOAD_FOLDER, "os:downloads")
 
-function resource.AddProvider(provider)
+function resource.AddProvider(provider, no_autodownload)
 	for i,v in ipairs(resource.providers) do
 		if v == provider then
 			table.remove(resource.providers, i)
@@ -17,6 +17,8 @@ function resource.AddProvider(provider)
 	end
 
 	table.insert(resource.providers, provider)
+
+	if no_autodownload then return end
 
 	if not SOCKETS then return end
 

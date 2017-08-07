@@ -7,8 +7,8 @@ if SOCKETS then
 	sockets.Initialize()
 
 	if not CLI then
-		resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/")
-		resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/")
+		resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/", true)
+		resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/", true)
 	end
 end
 

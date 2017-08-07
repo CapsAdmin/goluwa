@@ -278,7 +278,7 @@ _G.require = runfile("lua/libraries/require.lua") -- replace require with the pu
 
 -- now we can use runfile properly
 
-require("strung").install()-- this shaves off 5 seconds off of loading gm_construct
+--require("strung").install() -- this shaves off 5 seconds off of loading gm_construct
 
 -- libraries
 pvars = runfile("lua/libraries/pvars.lua") -- like cvars

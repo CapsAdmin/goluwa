@@ -474,7 +474,8 @@ function render.CreateShader(data, vars)
 			for k,v in pairs(render.global_shader_variables) do
 				if not v.is_texture then
 					local p = [==[[!"#$%&'%(%)*+,-./:;<=>?@%[\%]^`{|}~%s]]==]
-					if info.source:find(p..k..p) or info.template:find(p..k..p) then
+					p = p .. k .. p
+					if info.source:find(p) or info.template:find(p) then
 						info.variables = info.variables or {}
 						info.variables[k] = v
 					end
@@ -583,8 +584,8 @@ function render.CreateShader(data, vars)
 			end
 
 			-- get line numbers for errors
-			build_output[shader].line_start = select(2, template:match(".+__SOURCE_START"):gsub("\n", "")) + 2
-			build_output[shader].line_end = select(2, template:match(".+__SOURCE_END"):gsub("\n", ""))
+			build_output[shader].line_start = template:match(".+__SOURCE_START"):count("\n") + 2
+			build_output[shader].line_end = template:match(".+__SOURCE_END"):count("\n")
 		end
 
 		build_output[shader].source = template
