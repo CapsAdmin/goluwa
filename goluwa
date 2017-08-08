@@ -1,6 +1,7 @@
 #!/bin/bash
 
-cd "$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit
+goluwa_dir="$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd $goluwa_dir
 
 function download
 {
@@ -22,4 +23,6 @@ if [ ! -d "./src/" ]; then
 	rm -rf goluwa-master
 fi
 
-bash $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/src/cli/unix.bash $*
+echo "dirname"
+
+bash $goluwa_dir/src/cli/unix.bash $*
