@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export GOLUWA_GRAPHCIS=0
+export GOLUWA_GRAPHICS=0
 export GOLUWA_SOUND=0
 export GOLUWA_WINDOW=0
 
