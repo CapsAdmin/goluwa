@@ -419,6 +419,9 @@ library.e = {
 	DEFAULT_RESAMPLER_SOFT = 4625,
 	SOURCE_RESAMPLER_SOFT = 4626,
 	RESAMPLER_NAME_SOFT = 4627,
+	SOFT_source_spatialize = 1,
+	SOURCE_SPATIALIZE_SOFT = 4628,
+	AUTO_SOFT = 2,
 	AL_H = 1,
 	API = 1,
 	API = extern,
@@ -981,144 +984,9 @@ library.EffectParams = {
 			},
 		},
 	},
-	eaxreverb = {
-		enum = 32768,
+	dedicated_dialogue = {
+		enum = 36865,
 		params = {
-			modulation_depth = {
-				max = 1,
-				enum = 18,
-				min = 0,
-				default = 0,
-			},
-			late_reverb_pan = {
-				enum = 14,
-			},
-			reflections_gain = {
-				max = 3.16,
-				enum = 9,
-				min = 0,
-				default = 0.05,
-			},
-			gainlf = {
-				max = 1,
-				enum = 5,
-				min = 0,
-				default = 1,
-			},
-			gainhf = {
-				max = 1,
-				enum = 4,
-				min = 0,
-				default = 0.89,
-			},
-			density = {
-				max = 1,
-				enum = 1,
-				min = 0,
-				default = 1,
-			},
-			reflections_pan_xyz = {
-				default = 0,
-			},
-			room_rolloff_factor = {
-				max = 10,
-				enum = 22,
-				min = 0,
-				default = 0,
-			},
-			late_reverb_pan_xyz = {
-				default = 0,
-			},
-			late_reverb_delay = {
-				max = 0.1,
-				enum = 13,
-				min = 0,
-				default = 0.011,
-			},
-			air_absorption_gainhf = {
-				max = 1,
-				enum = 19,
-				min = 0.892,
-				default = 0.994,
-			},
-			decay_time = {
-				max = 20,
-				enum = 6,
-				min = 0.1,
-				default = 1.49,
-			},
-			reflections_delay = {
-				max = 0.3,
-				enum = 10,
-				min = 0,
-				default = 0.007,
-			},
-			lfreference = {
-				max = 1000,
-				enum = 21,
-				min = 20,
-				default = 250,
-			},
-			decay_hflimit = {
-				enum = 23,
-			},
-			echo_time = {
-				max = 0.25,
-				enum = 15,
-				min = 0.075,
-				default = 0.25,
-			},
-			hfreference = {
-				max = 20000,
-				enum = 20,
-				min = 1000,
-				default = 5000,
-			},
-			decay_lfratio = {
-				max = 2,
-				enum = 8,
-				min = 0.1,
-				default = 1,
-			},
-			modulation_time = {
-				max = 4,
-				enum = 17,
-				min = 0.04,
-				default = 0.25,
-			},
-			decay_hfratio = {
-				max = 2,
-				enum = 7,
-				min = 0.1,
-				default = 0.83,
-			},
-			gain = {
-				max = 1,
-				enum = 3,
-				min = 0,
-				default = 0.32,
-			},
-			echo_depth = {
-				max = 1,
-				enum = 16,
-				min = 0,
-				default = 0,
-			},
-			late_reverb_gain = {
-				max = 10,
-				enum = 12,
-				min = 0,
-				default = 1.26,
-			},
-			diffusion = {
-				max = 1,
-				enum = 2,
-				min = 0,
-				default = 1,
-			},
-			reflections_pan = {
-				enum = 11,
-			},
 		},
 	},
 	reverb = {
@@ -1243,7 +1111,7 @@ library.EffectParams = {
 			},
 			late_reverb_gain = {
 				max = 10,
-				enum = 9,
+				enum = 12,
 				min = 0,
 				default = 1.26,
 			},
@@ -1261,9 +1129,144 @@ library.EffectParams = {
 			},
 		},
 	},
-	dedicated_dialogue = {
-		enum = 36865,
+	eaxreverb = {
+		enum = 32768,
 		params = {
+			modulation_depth = {
+				max = 1,
+				enum = 18,
+				min = 0,
+				default = 0,
+			},
+			late_reverb_pan = {
+				enum = 14,
+			},
+			reflections_gain = {
+				max = 3.16,
+				enum = 9,
+				min = 0,
+				default = 0.05,
+			},
+			gainlf = {
+				max = 1,
+				enum = 5,
+				min = 0,
+				default = 1,
+			},
+			gainhf = {
+				max = 1,
+				enum = 4,
+				min = 0,
+				default = 0.89,
+			},
+			density = {
+				max = 1,
+				enum = 1,
+				min = 0,
+				default = 1,
+			},
+			reflections_pan_xyz = {
+				default = 0,
+			},
+			room_rolloff_factor = {
+				max = 10,
+				enum = 22,
+				min = 0,
+				default = 0,
+			},
+			late_reverb_pan_xyz = {
+				default = 0,
+			},
+			late_reverb_delay = {
+				max = 0.1,
+				enum = 13,
+				min = 0,
+				default = 0.011,
+			},
+			air_absorption_gainhf = {
+				max = 1,
+				enum = 19,
+				min = 0.892,
+				default = 0.994,
+			},
+			decay_time = {
+				max = 20,
+				enum = 6,
+				min = 0.1,
+				default = 1.49,
+			},
+			reflections_delay = {
+				max = 0.3,
+				enum = 10,
+				min = 0,
+				default = 0.007,
+			},
+			lfreference = {
+				max = 1000,
+				enum = 21,
+				min = 20,
+				default = 250,
+			},
+			reflections_pan = {
+				enum = 11,
+			},
+			echo_time = {
+				max = 0.25,
+				enum = 15,
+				min = 0.075,
+				default = 0.25,
+			},
+			hfreference = {
+				max = 20000,
+				enum = 20,
+				min = 1000,
+				default = 5000,
+			},
+			decay_lfratio = {
+				max = 2,
+				enum = 8,
+				min = 0.1,
+				default = 1,
+			},
+			modulation_time = {
+				max = 4,
+				enum = 17,
+				min = 0.04,
+				default = 0.25,
+			},
+			decay_hflimit = {
+				enum = 23,
+			},
+			gain = {
+				max = 1,
+				enum = 3,
+				min = 0,
+				default = 0.32,
+			},
+			echo_depth = {
+				max = 1,
+				enum = 16,
+				min = 0,
+				default = 0,
+			},
+			late_reverb_gain = {
+				max = 10,
+				enum = 12,
+				min = 0,
+				default = 1.26,
+			},
+			diffusion = {
+				max = 1,
+				enum = 2,
+				min = 0,
+				default = 1,
+			},
+			decay_hfratio = {
+				max = 2,
+				enum = 7,
+				min = 0.1,
+				default = 0.83,
+			},
 		},
 	},
 	dedicated_low_frequency_effect = {
@@ -1304,9 +1307,9 @@ library.EffectParams = {
 				min = 0.01,
 				default = 1,
 			},
-			mid1_gain = {
+			low_gain = {
 				max = 7.943,
-				enum = 3,
+				enum = 1,
 				min = 0.126,
 				default = 1,
 			},
@@ -1316,9 +1319,9 @@ library.EffectParams = {
 				min = 4000,
 				default = 6000,
 			},
-			low_gain = {
+			mid1_gain = {
 				max = 7.943,
-				enum = 1,
+				enum = 3,
 				min = 0.126,
 				default = 1,
 			},
