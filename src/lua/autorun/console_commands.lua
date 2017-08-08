@@ -8,10 +8,10 @@ commands.Add("gc", function()
 end)
 
 commands.Add("test_mem", function()
-	LOL1 = {} for i = 1, 10000000 do LOL1[i] = {1,2,3} end
-	LOL2 = {} for i = 1, 10000000 do LOL2[i] = {1,2,3} end
-	LOL3 = {} for i = 1, 10000000 do LOL3[i] = {1,2,3} end
-	debug.loglines()
+	for i = 1, 5 do
+		local tbl = {} for i = 1, 10000000 do tbl[i] = {1,2,3} end
+		_G["TEST_MEM" .. i] = tbl
+	end
 end)
 
 do
