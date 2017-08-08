@@ -132,11 +132,17 @@ do -- logging
 	local log_files = {}
 	local log_file
 
+	function getlogpath(name)
+		name = name or "console"
+
+		return base_log_dir .. name .. "_" .. jit.os:lower() .. ".txt"
+	end
+
 	function setlogfile(name)
 		name = name or "console"
 
 		if not log_files[name] then
-			local file = assert(io.open(base_log_dir .. name .. "_" .. jit.os:lower() .. ".txt", "w"))
+			local file = assert(io.open(getlogpath(name), "w"))
 
 			log_files[name] = file
 		end
