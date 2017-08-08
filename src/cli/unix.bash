@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# make sure we're in this bash's directory
+cd "$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit
+
 function download
 {
     if command -v wget >/dev/null 2>&1; then
@@ -12,8 +15,15 @@ function download
     fi
 }
 
-# make sure we're in this bash's directory
-cd "$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit
+if [ "$1" == "client" ]; then
+	bash client
+	exit 0
+fi
+
+if [ "$1" == "server" ]; then
+	bash server
+	exit 0
+fi
 
 if [ "$1" != "launch"  ] && command -v tmux>/dev/null; then
 
