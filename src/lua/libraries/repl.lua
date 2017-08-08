@@ -174,11 +174,18 @@ function repl.Initialize()
 		if key then
 
 			if key == "KEY_COPY" then
-				if want_shutdown then
-					system.ShutDown()
+				if repl.GetTextInput() == "" then
+					if want_shutdown then
+						system.ShutDown()
+					else
+						logn("ctrl c again to shutdown")
+						want_shutdown = true
+					end
 				else
-					logn("ctrl c again to shutdown")
-					want_shutdown = true
+					logn(repl.GetTextInput(), "^C")
+					c.markup:Clear()
+					repl.SetInputText()
+					return
 				end
 			else
 				want_shutdown = false
