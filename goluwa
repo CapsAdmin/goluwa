@@ -1,2 +1,25 @@
 #!/bin/bash
+
+cd "$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit
+
+function download
+{
+    if command -v wget >/dev/null 2>&1; then
+        wget -O "$2" "$1"
+    elif command -v curl >/dev/null 2>&1; then
+        curl -L --url "$1" --output "$2"
+    else
+        echo "unable to find wget or curl"
+        exit 1
+    fi
+}
+
+if [ ! -d "./src/" ]; then
+	download "https://github.com/CapsAdmin/goluwa/archive/master.tar.gz" "temp.tar.gz"
+	tar -xvzf temp.tar.gz
+	mv goluwa-master/* .
+	rm temp.tar.gz
+	rm -rf goluwa-master
+fi
+
 bash $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/src/cli/unix.bash $*
