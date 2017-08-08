@@ -2,10 +2,12 @@ package.path = package.path .. ";../?.lua"
 local ffibuild = require("ffibuild")
 
 
+
+
 ffibuild.BuildSharedLibrary(
 	"archive",
 	"https://github.com/libarchive/libarchive.git",
-	"cmake . && make"
+	"cmake . && libtoolize --force && aclocal && autoheader && automake --force-missing --add-missing && autoconf && ./configure --without-nettle --without-xml2 && make"
 )
 
 local header = ffibuild.BuildCHeader([[
