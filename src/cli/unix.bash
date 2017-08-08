@@ -152,3 +152,6 @@ if [ "$1" == "launch"  ] || [ "$1" == "cli"  ]; then
 		eval "$launch ../../../src/lua/init.lua$append"
 	fi
 fi
+
+stty sane # in case of a crash
+echo ""
