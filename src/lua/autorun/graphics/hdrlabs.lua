@@ -1,7 +1,7 @@
 local base_url = "http://www.hdrlabs.com/sibl/archive/downloads/"
 
 resource.Download(base_url, function(html_path)
-	local content = vfs.Read(html_path)
+	local content = assert(vfs.Read(html_path))
 	for file_name in content:gmatch("_f%('(.-)'") do
 		resource.CreateVirtualFile("textures/skybox/hdr/" .. file_name:lower():gsub("%.zip", ".hdr"), function(on_success, on_fail)
 			resource.Download(base_url .. file_name, function(path)
