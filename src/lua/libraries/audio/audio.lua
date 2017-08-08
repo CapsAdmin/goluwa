@@ -1,6 +1,12 @@
 local ffi = require("ffi")
+
+local old = os.getenv("LD_PRELOAD")
+os.setenv("LD_PRELOAD", "/usr/lib/x86_64-linux-gnu/libpulse.so.0")
+
 local al = desire("openal.al")
 local alc = desire("openal.alc")
+
+os.setenv("LD_PRELOAD", old)
 
 if not al or not alc then return end
 

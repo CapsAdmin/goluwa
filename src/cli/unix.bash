@@ -104,7 +104,6 @@ if [ "$1" == "launch"  ] || [ "$1" == "cli"  ]; then
 
 	export GOLUWA_ARGS=${GOLUWA_ARGS:=$*}
 
-	LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libpulse.so.0
 	#if we don't have binaries get them from github
 	if [ ! -f "bin/${OS}_${ARCH}/luajit" ]; then
 		mkdir -p "bin/${OS}_${ARCH}"
