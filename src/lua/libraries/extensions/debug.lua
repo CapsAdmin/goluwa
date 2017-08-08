@@ -177,7 +177,17 @@ end
 function debug.openscript(lua_script, line)
 	local path = pvars.Get("text_editor_path")
 
-	if not path then return false end
+	if path == "default" then
+		path = system.FindFirstTextEditor(true, true)
+	end
+
+
+	if not path then
+		logn("cannot open ", lua_script)
+		commands.RunString("text_editor_path")
+		return false
+	end
+
 	lua_script = R(lua_script) or  R(e.ROOT_FOLDER .. lua_script) or lua_script
 
 	if not vfs.IsFile(lua_script) then

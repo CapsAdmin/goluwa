@@ -1,7 +1,7 @@
 local profile_start_time = os.clock()
 
 pvars.Initialize()
-pvars.Setup("text_editor_path", system.FindFirstTextEditor(true, true) or "")
+pvars.Setup("text_editor_path", false)
 
 if SOCKETS then
 	sockets.Initialize()
