@@ -190,10 +190,11 @@ local function build(info, extra_flags, extra_id)
 	end
 
 	local name = info.bin or "luajit"
+	local commit = info.commit or "HEAD"
 
 	execute(
 		"(" ..
-			"if [ -d ./" .. dir .. " ]; then git -C ./" .. dir .. " pull; git -C ./" .. dir .. " checkout " .. info.commit .. "; else git clone -b " .. info.branch .. " " .. info.url .. " " .. dir .. " --depth 1; fi" .. "; " ..
+			"if [ -d ./" .. dir .. " ]; then git -C ./" .. dir .. " pull; git -C ./" .. dir .. " checkout " .. commit .. "; else git clone -b " .. info.branch .. " " .. info.url .. " " .. dir .. " --depth 1; fi" .. "; " ..
 			patch_cmd ..
 			"make -C " .. dir .. " " .. flags .. "; " ..
 			"cp " .. dir .. "/src/"..name.." \"" .. bin_dir .. "/luajit_" .. id .. "\"" ..
