@@ -302,6 +302,10 @@ function repl.Initialize()
 
 	event.AddListener("ShutDown", repl.Shutdown)
 
+	if WINDOW then
+		window.Minimize()
+	end
+
 	repl.curses_init = true
 end
 
