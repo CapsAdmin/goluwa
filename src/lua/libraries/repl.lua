@@ -307,6 +307,17 @@ function repl.Initialize()
 	end
 
 	repl.curses_init = true
+
+	function os.execute(str)
+		repl.Shutdown()
+		_OLD_G.os.execute("clear")
+		local code = _OLD_G.os.execute(str)
+		if code ~= 0 then
+			logn("exited with error code: ", code)
+		end
+		repl.Initialize()
+		return code
+	end
 end
 
 do
