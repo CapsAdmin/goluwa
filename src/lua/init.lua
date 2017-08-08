@@ -89,12 +89,6 @@ do -- constants
 		end
 	end
 
-	if LINUX and not os.getenv("DISPLAY") then
-		GRAPHICS = false
-		WINDOW = false
-		io.write("os.getenv('DISPLAY') is nil.\nsetting GRAPHICS and WINDOW to false.\n")
-	end
-
 	if os.getenv("CODEXL") == "1" or os.getenv("MESA_DEBUG") == "1" then
 		EXTERNAL_DEBUGGER = true
 	end
@@ -137,6 +131,12 @@ do -- constants
 
 	if TMUX then
 		_G.USERNAME = "tmux"
+	end
+
+	if LINUX and (GRAPHICS or WINDOW) and not os.getenv("DISPLAY") then
+		GRAPHICS = false
+		WINDOW = false
+		io.write("os.getenv('DISPLAY') is nil.\nsetting GRAPHICS and WINDOW to false.\n")
 	end
 
 	-- enums table
