@@ -86,10 +86,19 @@ case $(uname) in
 esac
 
 if [ "$1" == "ide" ] || [ "$1" == "" ]; then
-	if [ -d ./ide ]; then
-		git -C ./ide pull;
+	if command -v git >/dev/null 2>&1; then
+		if [ -d ./ide ]; then
+			git -C ./ide pull;
+		else
+			git clone https://github.com/pkulchenko/ZeroBraneStudio.git ide --depth 1;
+		fi
 	else
-		git clone https://github.com/pkulchenko/ZeroBraneStudio.git ide --depth 1;
+		download "https://github.com/pkulchenko/ZeroBraneStudio/archive/master.tar.gz" "temp.tar.gz"
+		mkdir ide
+		tar -xvzf temp.tar.gz -C "ide/"
+		mv ide/ZeroBraneStudio-master/* ide/
+		rm -rf ZeroBraneStudio-master
+		rm temp.tar.gz
 	fi
 
 	cd ide
