@@ -124,6 +124,8 @@ function repl.Initialize()
 	local last_w = curses.COLS
 	local last_h = curses.LINES
 
+	local want_shutdown = false
+
 	function repl.Update()
 		if GRAPHICS and (window.IsFocused() and not dirty) then return end
 
@@ -171,9 +173,15 @@ function repl.Initialize()
 
 		if key then
 
-			if TMUX and key == "KEY_DC" then
-				os.execute("tmux detach")
-				return
+			if key == "KEY_COPY" then
+				if want_shutdown then
+					system.ShutDown()
+				else
+					logn("ctrl c again to shutdown")
+					want_shutdown = true
+				end
+			else
+				want_shutdown = false
 			end
 
 			c.markup:SetControlDown(key:find("CTL_") ~= nil)
