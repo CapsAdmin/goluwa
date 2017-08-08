@@ -117,6 +117,7 @@ function repl.Initialize()
 	c.markup = gfx.CreateMarkup(nil, true)
 	c.markup:SetFixedSize(14)
 	c.markup:SetEditable(true)
+	c.markup:Invalidate()
 
 	repl.SetInputHeight(repl.input_height)
 
@@ -585,8 +586,9 @@ do
 
 		-- this prevents the cursor from going up in the title bar (??)
 		local pos = c.markup:GetCaretPosition()
-		curses.wmove(c.input_window, pos.y-1, pos.x)
-		curses.wnoutrefresh(c.input_window)
+
+    	curses.wmove(c.input_window, pos.y-1, pos.x)
+    	curses.wnoutrefresh(c.input_window)
 
 		dirty = true
 		last_status = str
