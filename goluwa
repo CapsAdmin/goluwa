@@ -23,6 +23,4 @@ if [ ! -d "./src/" ]; then
 	rm -rf goluwa-master
 fi
 
-echo "dirname"
-
 bash $goluwa_dir/src/cli/unix.bash $*
