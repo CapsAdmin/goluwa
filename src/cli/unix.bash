@@ -103,14 +103,14 @@ if [ "$1" == "launch"  ] || [ "$1" == "cli"  ]; then
 	if [ ! -f "bin/${OS}_${ARCH}/luajit" ]; then
 		mkdir -p "bin/${OS}_${ARCH}"
 		while true; do
-            download "https://github.com/CapsAdmin/goluwa/releases/download/${OS}-binaries/${ARCH}.zip" "temp.zip"
+            download "https://github.com/CapsAdmin/goluwa/releases/download/${OS}-binaries/${ARCH}.tar.gz" "temp.tar.gz"
             if [[ $? == 0 ]]; then
-                unzip temp.zip -d "bin/${OS}_${ARCH}"
+                tar -xvzf temp.tar.gz -C "bin/${OS}_${ARCH}/"
                 if [[ ! $? == 0 ]]; then
-                    rm temp.zip
+                    rm temp.tar.gz
                     echo "zip file is maybe corrupt. trying again"
                 else
-                    rm temp.zip
+                    rm temp.tar.gz
                     break
                 fi
             else
