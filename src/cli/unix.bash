@@ -15,6 +15,12 @@ function download
     fi
 }
 
+#if there is no display server just launch client
+if [ -z ${DISPLAY+x} ] && [ "$1" == "" ]; then
+	bash client
+	exit 0
+fi
+
 if [ "$1" == "client" ]; then
 	bash client
 	exit 0
