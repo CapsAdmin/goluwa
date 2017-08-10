@@ -32,8 +32,8 @@ local shader = render.CreateShader({
 				if (generate_random == 1)
 				{
 
-					gl_FragColor.rgb = vec3(1, 1, 1);
-					gl_FragColor.a = fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453) > 0.5 ? 1 : 0;
+					frag_color.rgb = vec3(1, 1, 1);
+					frag_color.a = fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453) > 0.5 ? 1 : 0;
 
 					return;
 				}
@@ -65,7 +65,7 @@ local shader = render.CreateShader({
 					color.a = 1;
 				}
 
-				gl_FragColor = color;
+				frag_color = color;
 			}
 		]]
 	}
