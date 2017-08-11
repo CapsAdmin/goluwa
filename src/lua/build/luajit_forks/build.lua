@@ -1,3 +1,5 @@
+local args = ...
+
 package.path = package.path .. ";../?.lua"
 local ffibuild = require("ffibuild")
 
@@ -202,8 +204,12 @@ local function build(info, extra_flags, extra_id)
 	)
 end
 
+local url_filter = args
+
 for _, info in pairs(repos) do
-	build(info)
-	build(info, {"LUAJIT_USE_GDBJIT", "CCDEBUG=-g", "CCOPT=-fomit-frame-pointer"}, "debug")
-	build(info, {"LUAJIT_USE_GDBJIT", "LUA_USE_ASSERT", "CCDEBUG=-g", "CCOPT=-fomit-frame-pointer"}, "debug-assert")
+	if not url_filter or info.url:lower():find(url_filter) then
+		build(info)
+		build(info, {"LUAJIT_USE_GDBJIT", "CCDEBUG=-g", "CCOPT=-fomit-frame-pointer"}, "debug")
+		build(info, {"LUAJIT_USE_GDBJIT", "LUA_USE_ASSERT", "CCDEBUG=-g", "CCOPT=-fomit-frame-pointer"}, "debug-assert")
+	end
 end

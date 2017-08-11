@@ -5,7 +5,7 @@ local ffibuild = require("ffibuild")
 ffibuild.BuildSharedLibrary(
 	"sndfile",
 	"https://github.com/erikd/libsndfile.git",
-	"./autogen.sh && ./configure --enable-experimental && make"
+	"cmake -DENABLE_STATIC_RUNTIME=ON -DENABLE_EXPERIMENTAL=ON . && make"
 )
 
 local header = ffibuild.BuildCHeader([[

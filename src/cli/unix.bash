@@ -3,6 +3,22 @@
 # make sure we're in this bash's directory
 cd "$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit
 
+#if there is no display server just launch client
+if [ -z ${DISPLAY+x} ] && [ "$1" == "" ]; then
+	bash client
+	exit 0
+fi
+
+if [ "$1" == "client" ]; then
+	bash client ${*:2}
+	exit 0
+fi
+
+if [ "$1" == "server" ]; then
+	bash server ${*:2}
+	exit 0
+fi
+
 function download
 {
     if command -v wget >/dev/null 2>&1; then
@@ -15,20 +31,20 @@ function download
     fi
 }
 
-#if there is no display server just launch client
-if [ -z ${DISPLAY+x} ] && [ "$1" == "" ]; then
-	bash client
-	exit 0
-fi
-
-if [ "$1" == "client" ]; then
-	bash client
-	exit 0
-fi
-
-if [ "$1" == "server" ]; then
-	bash server
-	exit 0
+if [ "$1" == "build"  ]; then
+	if [ "$2" == "all"  ]; then
+		cd ../lua/build/
+		bash make_all.sh
+		exit 0
+	else
+		cd ../lua/build/$2/
+		if [ "$3" == "clean"  ]; then
+			make clean
+		else
+			make ARGS=$3
+		fi
+		exit 0
+	fi
 fi
 
 if [ "$1" != "launch"  ] && command -v tmux>/dev/null; then
@@ -140,12 +156,15 @@ if [ "$1" == "launch"  ] || [ "$1" == "cli"  ]; then
 
 	executable="luajit$GOLUWA_BRANCH"
 
+	if [ "$2" == "branch"  ]; then
+		executable="luajit_$3"
+	fi
 
 	if [ "$GOLUWA_BRANCH" == "_lua"  ]; then
 		executable="lua"
 	fi
 
-	if [ ! -z "$GOLUWA_DEBUG" ]; then
+	if [ ! -z "$GOLUWA_DEBUG" ] || [ "$4" == "debug" ]; then
 		launch="x-terminal-emulator -e \"gdb -ex=r --args $executable"
 		append="\""
 	elif [ -x "$executable" ]; then
