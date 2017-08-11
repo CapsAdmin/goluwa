@@ -2,7 +2,7 @@ do
 	local easy = {
 		["roboto bk"] = "resource/fonts/Roboto-Black.ttf",
 		["roboto"] = "resource/fonts/Roboto-Thin.ttf",
-		["helvetica"] = "resource/fonts/coolvetica.ttf",
+		["helvetica"] = "resource/fonts/dejavusans.ttf",
 		["times new roman"] = "resource/fonts/coolvetica.ttf",
 		["courier new"] = "resource/fonts/coolvetica.ttf",
 		["courier"] = "resource/fonts/coolvetica.ttf",
