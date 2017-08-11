@@ -114,7 +114,7 @@ end
 
 local rate_cvar = pvars.Setup(
 	"system_fps_max",
-	0,
+	-1,
 	function(rate)
 		if window and window.IsOpen() then
 			if rate == 0 then
