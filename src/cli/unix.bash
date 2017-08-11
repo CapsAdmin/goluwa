@@ -130,7 +130,7 @@ if [ "$1" == "launch"  ] || [ "$1" == "cli"  ]; then
 	export GOLUWA_ARGS=${GOLUWA_ARGS:=$*}
 
 	#if we don't have binaries get them from github
-	if [ ! -f "bin/${OS}_${ARCH}/luajit" ]; then
+	if [ ! -f "bin/${OS}_${ARCH}/binaries_downloaded" ]; then
 		mkdir -p "bin/${OS}_${ARCH}"
 		while true; do
             download "https://github.com/CapsAdmin/goluwa/releases/download/${OS}-binaries/${ARCH}.tar.gz" "temp.tar.gz"
@@ -147,6 +147,7 @@ if [ "$1" == "launch"  ] || [ "$1" == "cli"  ]; then
                 echo "unable to download binaries. trying again"
             fi
         done
+        touch bin/${OS}_${ARCH}/binaries_downloaded
 	fi
 
 	cd "bin/${OS}_${ARCH}/" || exit
