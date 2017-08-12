@@ -121,7 +121,7 @@ do -- runfile
 			file = source
 		end
 
-		if vfs and file == "*" then
+		if file == "*" then
 			local previous_dir = filerun_stack[#filerun_stack]
 			local original_dir = dir
 
