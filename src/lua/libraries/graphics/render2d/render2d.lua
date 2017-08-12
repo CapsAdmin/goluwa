@@ -7,7 +7,11 @@ runfile("stencil.lua", render2d)
 runfile("effects.lua", render2d)
 
 function render2d.Initialize()
-	render2d.shader = render.CreateShader(render2d.shader_data)
+	if render.IsExtensionSupported("GL_ARB_shader_object") then
+		render2d.shader = render.CreateShader(render2d.shader_data)
+	else
+		render2d.shader = {}
+	end
 
 	render2d.rectangle = render2d.CreateMesh()
 	render2d.rectangle:SetDrawHint("dynamic")

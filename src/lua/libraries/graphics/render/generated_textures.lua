@@ -40,7 +40,7 @@ function render.GenerateTextures()
 		end)
 	end
 
-	do
+	if render.IsExtensionSupported("GL_ARB_framebuffer_object") then
 		local center_size = 70
 		local outter_size = 0.9
 		local width = 15

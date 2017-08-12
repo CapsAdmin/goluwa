@@ -22070,7 +22070,7 @@ function gl.Initialize(get_proc_address)
 	do
 		local ptr = gl.GetProcAddress("glTexImage2D")
 		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
+			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
 			if ok then
 				gl.TexImage2D = func
 			end
@@ -22079,7 +22079,7 @@ function gl.Initialize(get_proc_address)
 	do
 		local ptr = gl.GetProcAddress("glTexGenxvOES")
 		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)', ptr)
+			local ok, func = pcall(ffi.cast, 'voi|	d (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)', ptr)
 			if ok then
 				gl.TexGenxvOES = func
 			end
@@ -34330,6 +34330,7 @@ function gl.Initialize(get_proc_address)
 				bind(self) return gl.TexBufferRangeEXT("GL_TEXTURE_BUFFER",  internalformat,  buffer,  offset,  size)
 			end
 			function META:Image2D(target, level, internalformat, width, height, border, format, type, pixels)
+				print(internalformat)
 				bind(self) return gl.TexImage2D(target, level, internalformat, width, height, border, format, type, pixels)
 			end
 			function META:CopySubImage3DEXT(level, xoffset, yoffset, zoffset, x, y, width, height)
@@ -34436,12 +34437,16 @@ function gl.Initialize(get_proc_address)
 				bind(self) return gl.CompressedTextureSubImage3DEXT(texture, self.target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, bits)
 			end
 			function META:GenerateMipmapEXT()
+				if not gl.GenerateMipmapEXT then return end
 				bind(self) return gl.GenerateMipmapEXT(self.target)
 			end
 			function META:GetParameterfvEXT(texture, pname, params)
 				bind(self) return gl.GetTextureParameterfvEXT(texture, self.target, pname, params)
 			end
 			function META:GenerateMipmap()
+				if not gl.GenerateMipmap then
+					return self:GenerateMipmapEXT()
+				end
 				bind(self) return gl.GenerateMipmap(self.target)
 			end
 			function META:CopyImage1D(level, internalformat, x, y, width, border)

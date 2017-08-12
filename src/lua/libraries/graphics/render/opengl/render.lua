@@ -112,8 +112,17 @@ do
 		max = gl.e.GL_MAX,
 	}
 
-	local BlendFuncSeparate = utility.GenerateCheckLastFunction(gl.BlendFuncSeparate, 4)
-	local BlendEquationSeparate = utility.GenerateCheckLastFunction(gl.BlendEquationSeparate, 2)
+	local separate = gl.BlendFuncSeparate ~= nil
+	local BlendFunc
+	local BlendEquation
+
+	if separate then
+		BlendFunc = utility.GenerateCheckLastFunction(gl.BlendFuncSeparate, 4)
+		BlendEquation = utility.GenerateCheckLastFunction(gl.BlendEquationSeparate, 2)
+	else
+		BlendFunc = utility.GenerateCheckLastFunction(gl.BlendFunc, 2)
+		BlendEquation = gl.BlendEquation and utility.GenerateCheckLastFunction(gl.BlendEquation, 1)
+	end
 
 	local A,B,C,D,E,F
 
@@ -131,8 +140,13 @@ do
 		dst_alpha = enums[dst_alpha] or dst_color
 		func_alpha = enums[func_alpha] or func_color
 
-		BlendFuncSeparate(src_color, dst_color, src_alpha, dst_alpha)
-		BlendEquationSeparate(func_color, func_alpha)
+		if separate then
+			BlendFunc(src_color, dst_color, src_alpha, dst_alpha)
+			BlendEquation(func_color, func_alpha)
+		else
+			BlendFunc(src_color, dst_color)
+			if BlendEquation then BlendEquation(func_color) end
+		end
 
 		A,B,C,D,E,F = src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha
 	end

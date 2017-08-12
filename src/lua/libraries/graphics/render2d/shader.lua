@@ -54,6 +54,9 @@ render2d.shader_data = {
 }
 
 function render2d.CreateMesh(vertices, indices)
+	if not render.IsExtensionSupported("GL_ARB_shader_object") then
+		return {}
+	end
 	return render.CreateVertexBuffer(render2d.shader:GetMeshLayout(), vertices, indices)
 end
 
