@@ -5,7 +5,7 @@ $ROOT_DIR = $([System.IO.Path]::GetFullPath("$ROOT_DIR\..\..\data"))
 New-Item -ItemType Directory -Force -Path $ROOT_DIR | Out-Null
 Set-Location $ROOT_DIR
 
-if ($ENV:PROCESSOR_ARCHITEW6432 -Match "64") { 
+if ($ENV:PROCESSOR_ARCHITECTURE -Match "64") { 
 	$ARCH = "x64" 
 } else { 
 	$ARCH = "x86" 
@@ -85,10 +85,11 @@ if($arg -eq "ide") {
 if ($arg -eq "launch" -Or $arg -eq "") {	
 	$bin_dir = "bin\windows_$ARCH"
 
-	if (!(Test-Path "$bin_dir\luajit.exe")) {	
+	if (!(Test-Path "$bin_dir\downloaded_binaries")) {	
 		Download $bin_url temp.zip
 		Extract temp.zip $bin_dir
 		Remove temp.zip
+		New-Item "$bin_dir\downloaded_binaries" -type file
 	}
 
 	Set-Location $pwd\$bin_dir\
@@ -98,8 +99,14 @@ if ($arg -eq "launch" -Or $arg -eq "") {
     [DllImport("User32.dll")] public static extern bool ShowWindow(IntPtr hWnd, Int32 nCmdShow);
 '@
 
-	$window = [Foo.ConsoleUtils]::GetConsoleWindow()
-	[Foo.ConsoleUtils]::ShowWindow($window, 0)
+	if ($GOLUWA_CURSES -eq "1")
+	{
+		$window = [Foo.ConsoleUtils]::GetConsoleWindow()
+		[Foo.ConsoleUtils]::ShowWindow($window, 0)
+	}
 	.\luajit.exe ../../../src/lua/init.lua
-	[Foo.ConsoleUtils]::ShowWindow($window, 1)
+	if ($GOLUWA_CURSES -eq "1")
+	{
+		[Foo.ConsoleUtils]::ShowWindow($window, 1)
+	}
 }

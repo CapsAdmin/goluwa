@@ -1,6 +1,9 @@
 local ffi = require("ffi")
 
-ffi.load("pulse") -- openal needs libpulse but expects that it's already loaded for some reason
+if LINUX then
+	ffi.load("pulse") -- openal needs libpulse but expects that it's already loaded for some reason
+end
+
 local al = desire("openal.al")
 local alc = desire("openal.alc")
 

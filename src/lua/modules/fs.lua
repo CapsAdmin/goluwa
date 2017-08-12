@@ -63,13 +63,13 @@ if WINDOWS then
 		if ffi.cast("unsigned long", handle) ~= 0xffffffff then
 			local i = 1
 
-			while ffi.C.FindNextFileA(handle, data) do
+			repeat
 				local name = ffi.string(data[0].cFileName)
 				if not exclude_dot or (name ~= "." and name ~= "..") then
 					out[i] = name
 					i = i + 1
 				end
-			end
+			until not ffi.C.FindNextFileA(handle, data)
 
 			ffi.C.FindClose(handle)
 		end
