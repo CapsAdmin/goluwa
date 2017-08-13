@@ -571,6 +571,10 @@ function render.CreateShader(data, vars)
 				table.insert(extensions, "#extension GL_ARB_bindless_texture : enable")
 			end
 
+			if render.IsExtensionSupported("GL_ARB_explicit_attrib_location") then
+				table.insert(extensions, "#extension GL_ARB_explicit_attrib_location : enable")
+			end
+
 			template = template:gsub("(#extension%s-[%w_]+%s-:%s-%w+)", function(extension)
 				table.insert(extensions, extension)
 				return ""

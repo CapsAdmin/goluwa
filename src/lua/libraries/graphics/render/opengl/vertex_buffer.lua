@@ -59,10 +59,11 @@ function render._CreateVertexBuffer(self)
 	self:SetDrawHint(self:GetDrawHint())
 
 
-	if not render.IsExtensionSupported("GL_ARB_shader_object") then
+	self.vertex_buffer = gl.CreateBuffer("GL_ARRAY_BUFFER")
+
+	if not render.IsExtensionSupported("GL_ARB_shader_objects") then
 		return
 	end
-	self.vertex_buffer = gl.CreateBuffer("GL_ARRAY_BUFFER")
 
 	self.element_buffer = gl.CreateBuffer("GL_ELEMENT_ARRAY_BUFFER")
 
@@ -71,10 +72,13 @@ end
 
 function META:OnRemove()
 	self.vertex_buffer:Delete()
-	self.element_buffer:Delete()
+
+	if self.element_buffer then
+		self.element_buffer:Delete()
+	end
 end
 
-if render.IsExtensionSupported("GL_ARB_shader_object") then
+if render.IsExtensionSupported("GL_ARB_shader_objects") then
 
 	if render.IsExtensionSupported("GL_ARB_direct_state_access") then
 		function META:Draw(count)
@@ -135,17 +139,7 @@ if render.IsExtensionSupported("GL_ARB_shader_object") then
 	end
 else
 	function META:_SetVertices(vertices)
-		print(gl.GenBuffers, "!??!?")
-		do return end
-		for _, data in ipairs(self.mesh_layout.attributes) do
-			if data.name == "pos" then
-				gl.VertexPointer(data.row_length, data.number_type, self.mesh_layout.size, vertices:GetPointer())
-			elseif data.name == "color" then
-				gl.ColorPointer(data.row_length, data.number_type, self.mesh_layout.size, vertices:GetPointer())
-			elseif data.name == "uv" then
-				gl.TexCoordPointer(data.row_length, data.number_type, self.mesh_layout.size, vertices:GetPointer())
-			end
-		end
+
 	end
 
 	function META:_SetIndices(indices)
@@ -153,7 +147,33 @@ else
 	end
 
 	function META:Draw(count)
+		local vertices = self:GetVertices()
 
+		for _, data in ipairs(self.mesh_layout.attributes) do
+			if data.name == "pos" then
+				gl.EnableClientState("GL_VERTEX_ARRAY")
+				gl.VertexPointer(data.row_length, data.number_type, 0, vertices:GetPointer())
+			elseif data.name == "color" then
+				--gl.EnableClientState("GL_COLOR_ARRAY")
+				--gl.ColorPointer(data.row_length, data.number_type, data.row_offset, vertices:GetPointer())
+			elseif data.name == "uv" then
+				gl.EnableClientState("GL_TEXTURE_COORD_ARRAY")
+				gl.TexCoordPointer(data.row_length, data.number_type, data.row_offset, vertices:GetPointer())
+			end
+		end
+
+		gl.MatrixMode("GL_PROJECTION")
+		gl.LoadMatrixf(camera.camera_2d:GetMatrices().projection:GetFloatPointer())
+		gl.MatrixMode("GL_MODELVIEW")
+		gl.LoadMatrixf((camera.camera_2d:GetMatrices().view * camera.camera_2d:GetMatrices().world):GetFloatPointer())
+
+		local indices = self:GetIndices()
+		if indices then
+			--gl.EnableClientState("GL_INDEX_ARRAY")
+			--gl.IndexPointer(self.gl_indices_type, 0, indices:GetPointer())
+		end
+
+		gl.DrawElements(self.gl_mode, count or self.indices_length, self.gl_indices_type, indices:GetPointer())
 	end
 end
 prototype.Register(META)
