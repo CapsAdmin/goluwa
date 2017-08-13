@@ -81,10 +81,6 @@ end
 
 do
 	local fill_info = {
-		GL_VERTEX_SUBROUTINE_UNIFORM = {
-			GL_NAME_LENGTH = true,
-			GL_ARRAY_SIZE = true,
-		},
 		--[[GL_ATOMIC_COUNTER_SHADER = {
 			GL_NAME_LENGTH = true,
 			GL_REFERENCED_BY_FRAGMENT_SHADER = true,
@@ -164,13 +160,6 @@ do
 			GL_REFERENCED_BY_TESS_EVALUATION_SHADER = true,
 			GL_REFERENCED_BY_COMPUTE_SHADER = true,
 		},
-		GL_FRAGMENT_SUBROUTINE_UNIFORM = {
-			GL_NAME_LENGTH = true,
-			GL_COMPATIBLE_SUBROUTINES = true,
-			GL_LOCATION = true,
-			GL_ARRAY_SIZE = true,
-			GL_NUM_COMPATIBLE_SUBROUTINES = true,
-		},
 		GL_TRANSFORM_FEEDBACK_BUFFER = {
 			GL_TRANSFORM_FEEDBACK_BUFFER_STRIDE = true,
 		},
@@ -193,12 +182,6 @@ do
 			GL_NUM_ACTIVE_VARIABLES = true,
 			GL_BUFFER_DATA_SIZE = true,
 		},
-		GL_VERTEX_SUBROUTINE_UNIFORM = {
-			GL_NAME_LENGTH = true,
-			GL_LOCATION = true,
-			GL_COMPATIBLE_SUBROUTINES = true,
-			GL_NUM_COMPATIBLE_SUBROUTINES = true,
-		},
 		GL_PROGRAM_OUTPUT = {
 			GL_NAME_LENGTH = true,
 			GL_REFERENCED_BY_FRAGMENT_SHADER = true,
@@ -214,35 +197,68 @@ do
 			GL_REFERENCED_BY_TESS_EVALUATION_SHADER = true,
 			GL_REFERENCED_BY_COMPUTE_SHADER = true,
 		},
-		GL_TESS_EVALUATION_SUBROUTINE_UNIFORM = {
-			GL_NAME_LENGTH = true,
-			GL_COMPATIBLE_SUBROUTINES = true,
-			GL_LOCATION = true,
-			GL_ARRAY_SIZE = true,
-			GL_NUM_COMPATIBLE_SUBROUTINES = true,
-		},
-		GL_COMPUTE_SUBROUTINE_UNIFORM = {
-			GL_NAME_LENGTH = true,
-			GL_COMPATIBLE_SUBROUTINES = true,
-			GL_LOCATION = true,
-			GL_ARRAY_SIZE = true,
-			GL_NUM_COMPATIBLE_SUBROUTINES = true,
-		},
-		GL_GEOMETRY_SUBROUTINE_UNIFORM = {
-			GL_NAME_LENGTH = true,
-			GL_COMPATIBLE_SUBROUTINES = true,
-			GL_LOCATION = true,
-			GL_ARRAY_SIZE = true,
-			GL_NUM_COMPATIBLE_SUBROUTINES = true,
-		},
-		GL_TESS_CONTROL_SUBROUTINE_UNIFORM = {
-			GL_NAME_LENGTH = true,
-			GL_COMPATIBLE_SUBROUTINES = true,
-			GL_LOCATION = true,
-			GL_ARRAY_SIZE = true,
-			GL_NUM_COMPATIBLE_SUBROUTINES = true,
-		},
 	}
+
+	if render.IsExtensionSupported("GL_ARB_tessellation_shader") then
+		fill_info.GL_TESS_CONTROL_SUBROUTINE_UNIFORM = {
+			GL_NAME_LENGTH = true,
+			GL_COMPATIBLE_SUBROUTINES = true,
+			GL_LOCATION = true,
+			GL_ARRAY_SIZE = true,
+			GL_NUM_COMPATIBLE_SUBROUTINES = true,
+		}
+		fill_info.GL_TESS_EVALUATION_SUBROUTINE_UNIFORM = {
+			GL_NAME_LENGTH = true,
+			GL_COMPATIBLE_SUBROUTINES = true,
+			GL_LOCATION = true,
+			GL_ARRAY_SIZE = true,
+			GL_NUM_COMPATIBLE_SUBROUTINES = true,
+		}
+	end
+
+	if render.IsExtensionSupported("GL_ARB_shader_subroutine") then
+		fill_info.GL_VERTEX_SUBROUTINE_UNIFORM = {
+			GL_NAME_LENGTH = true,
+			GL_ARRAY_SIZE = true,
+		}
+		fill_info.GL_FRAGMENT_SUBROUTINE_UNIFORM = {
+			GL_NAME_LENGTH = true,
+			GL_COMPATIBLE_SUBROUTINES = true,
+			GL_LOCATION = true,
+			GL_ARRAY_SIZE = true,
+			GL_NUM_COMPATIBLE_SUBROUTINES = true,
+		}
+		fill_info.GL_VERTEX_SUBROUTINE_UNIFORM = {
+			GL_NAME_LENGTH = true,
+			GL_LOCATION = true,
+			GL_COMPATIBLE_SUBROUTINES = true,
+			GL_NUM_COMPATIBLE_SUBROUTINES = true,
+		}
+		fill_info.GL_COMPUTE_SUBROUTINE_UNIFORM = {
+			GL_NAME_LENGTH = true,
+			GL_COMPATIBLE_SUBROUTINES = true,
+			GL_LOCATION = true,
+			GL_ARRAY_SIZE = true,
+			GL_NUM_COMPATIBLE_SUBROUTINES = true,
+		}
+		fill_info.GL_GEOMETRY_SUBROUTINE_UNIFORM = {
+			GL_NAME_LENGTH = true,
+			GL_COMPATIBLE_SUBROUTINES = true,
+			GL_LOCATION = true,
+			GL_ARRAY_SIZE = true,
+			GL_NUM_COMPATIBLE_SUBROUTINES = true,
+		}
+	end
+
+	if not render.IsExtensionSupported("GL_ARB_compute_shader") then
+		for k,v in pairs(fill_info) do
+			for k in pairs(v) do
+				if k:find("COMPUTE_SHADER") then
+					v[k] = nil
+				end
+			end
+		end
+	end
 
 	local type_translate = {
 		float = {name = "float", size = 4},

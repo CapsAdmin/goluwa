@@ -109,30 +109,32 @@ end
 function META:SetAnisotropy(num)
 	self.Anisotropy = num
 
-	if self.MinFilter == "nearest" or self.MagFilter == "nearest" then
-		return
-	end
+	if render.IsExtensionSupported("GL_EXT_texture_filter_anisotropic") then
+		if self.MinFilter == "nearest" or self.MagFilter == "nearest" then
+			return
+		end
 
-	if num == -1 or num > render.max_anisotropy then
-		num = render.max_anisotropy
-	end
+		if num == -1 or num > render.max_anisotropy then
+			num = render.max_anisotropy
+		end
 
-	if num == 0 then
-		num = 1
-	end
+		if num == 0 then
+			num = 1
+		end
 
-	self.gl_tex:SetParameteri("GL_TEXTURE_MAX_ANISOTROPY_EXT", num)
+		self.gl_tex:SetParameteri("GL_TEXTURE_MAX_ANISOTROPY_EXT", num)
+	end
 end
 function META:SetMagFilter(val)
 	self.MagFilter = val
-	if val == "nearest" then
+	if val == "nearest" and render.IsExtensionSupported("GL_EXT_texture_filter_anisotropic") then
 		self.gl_tex:SetParameteri("GL_TEXTURE_MAX_ANISOTROPY_EXT", 1)
 	end
 	self.gl_tex:SetParameteri("GL_TEXTURE_MAG_FILTER", gl.e[TOENUM(val)])
 end
 function META:SetMinFilter(val)
 	self.MinFilter = val
-	if val == "nearest" then
+	if val == "nearest" and render.IsExtensionSupported("GL_EXT_texture_filter_anisotropic") then
 		self.gl_tex:SetParameteri("GL_TEXTURE_MAX_ANISOTROPY_EXT", 1)
 	end
 	self.gl_tex:SetParameteri("GL_TEXTURE_MIN_FILTER", gl.e[TOENUM(val)])

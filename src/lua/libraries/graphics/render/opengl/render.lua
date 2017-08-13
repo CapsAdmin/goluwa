@@ -52,9 +52,11 @@ function render._Initialize()
 	gl.Enable("GL_BLEND")
 	gl.Enable("GL_SCISSOR_TEST")
 
-	local largest = ffi.new("GLfloat[1]")
-	gl.GetFloatv("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT", largest)
-	render.max_anisotropy = largest[0]
+	if render.IsExtensionSupported("GL_EXT_texture_filter_anisotropic") then
+		local largest = ffi.new("GLfloat[1]")
+		gl.GetFloatv("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT", largest)
+		render.max_anisotropy = largest[0]
+	end
 end
 
 function render.Shutdown()
