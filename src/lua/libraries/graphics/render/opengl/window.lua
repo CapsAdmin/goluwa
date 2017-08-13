@@ -15,8 +15,6 @@ end
 
 function render.PostWindowSetup(sdl_wnd)
 	if not system.gl_context then
-		sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_MAJOR_VERSION, 3)
-		sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_MINOR_VERSION, 3)
 		sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_PROFILE_MASK, sdl.e.GL_CONTEXT_PROFILE_CORE)
 
 		if DEBUG_OPENGL then
