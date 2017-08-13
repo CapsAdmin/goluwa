@@ -32,6 +32,10 @@ function render.PostWindowSetup(sdl_wnd)
 
 		sdl.GL_MakeCurrent(sdl_wnd, context)
 
+		if not render.IsExtensionSupported("GL_ARB_direct_state_access") and not render.IsExtensionSupported("GL_EXT_direct_state_access") then
+			_G.GL_ARB_direct_state_access = false
+		end
+
 		local gl = require("opengl")
 
 		-- this needs to be initialized once after a context has been created
