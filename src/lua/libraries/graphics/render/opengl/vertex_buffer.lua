@@ -3,6 +3,8 @@ local META = prototype.GetRegistered("vertex_buffer")
 
 local gl = require("opengl")
 
+local buffers_supported = gl.GenBuffers
+
 do
 	local translate = {
 		patches = "GL_PATCHES", -- tessellation
@@ -58,16 +60,11 @@ function render._CreateVertexBuffer(self)
 	self:SetIndicesType(self:GetIndicesType())
 	self:SetDrawHint(self:GetDrawHint())
 
-
-	self.vertex_buffer = gl.CreateBuffer("GL_ARRAY_BUFFER")
-
-	if not render.IsExtensionSupported("GL_ARB_shader_objects") then
-		return
+	if buffers_supported then
+		self.vertex_buffer = gl.CreateBuffer("GL_ARRAY_BUFFER")
+		self.element_buffer = gl.CreateBuffer("GL_ELEMENT_ARRAY_BUFFER")
+		self.vertex_array = gl.CreateVertexArray()
 	end
-
-	self.element_buffer = gl.CreateBuffer("GL_ELEMENT_ARRAY_BUFFER")
-
-	self.vertex_array = gl.CreateVertexArray()
 end
 
 function META:OnRemove()
@@ -78,8 +75,7 @@ function META:OnRemove()
 	end
 end
 
-if render.IsExtensionSupported("GL_ARB_shader_objects") then
-
+if buffers_supported then
 	if render.IsExtensionSupported("GL_ARB_direct_state_access") then
 		function META:Draw(count)
 			if render.last_vertex_array_id ~= self.vertex_array.id then
@@ -154,8 +150,8 @@ else
 				gl.EnableClientState("GL_VERTEX_ARRAY")
 				gl.VertexPointer(data.row_length, data.number_type, 0, vertices:GetPointer())
 			elseif data.name == "color" then
-				--gl.EnableClientState("GL_COLOR_ARRAY")
-				--gl.ColorPointer(data.row_length, data.number_type, data.row_offset, vertices:GetPointer())
+				gl.EnableClientState("GL_COLOR_ARRAY")
+				gl.ColorPointer(data.row_length, data.number_type, data.row_offset, vertices:GetPointer())
 			elseif data.name == "uv" then
 				gl.EnableClientState("GL_TEXTURE_COORD_ARRAY")
 				gl.TexCoordPointer(data.row_length, data.number_type, data.row_offset, vertices:GetPointer())
@@ -167,13 +163,7 @@ else
 		gl.MatrixMode("GL_MODELVIEW")
 		gl.LoadMatrixf((camera.camera_2d:GetMatrices().view * camera.camera_2d:GetMatrices().world):GetFloatPointer())
 
-		local indices = self:GetIndices()
-		if indices then
-			--gl.EnableClientState("GL_INDEX_ARRAY")
-			--gl.IndexPointer(self.gl_indices_type, 0, indices:GetPointer())
-		end
-
-		gl.DrawElements(self.gl_mode, count or self.indices_length, self.gl_indices_type, indices:GetPointer())
+		gl.DrawElements(self.gl_mode, count or self.indices_length, self.gl_indices_type, self:GetIndices():GetPointer())
 	end
 end
 prototype.Register(META)
