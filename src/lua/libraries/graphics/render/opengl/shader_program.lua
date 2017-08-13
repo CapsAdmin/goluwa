@@ -1,4 +1,10 @@
 local render = ... or _G.render
+
+if not render.IsExtensionSupported("GL_ARB_shader_object") then
+	runfile("../null/shader_program.lua", render)
+	return
+end
+
 local gl = require("opengl")
 local ffi = require("ffi")
 

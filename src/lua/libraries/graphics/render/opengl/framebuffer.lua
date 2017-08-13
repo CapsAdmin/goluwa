@@ -1,4 +1,11 @@
 local render = ... or _G.render
+
+if not render.IsExtensionSupported("GL_ARB_framebuffer_object") then
+	runfile("../null/framebuffer.lua", render)
+	return
+end
+
+
 local META = prototype.GetRegistered("framebuffer")
 
 local ffi = require("ffi")
@@ -60,6 +67,7 @@ local function update_drawbuffers(self)
 end
 
 function render._CreateFrameBuffer(self, id_override)
+	debug.trace()
 	self.gl_fb = gl.CreateFramebuffer(id_override)
 	self.textures = {}
 	self.textures_sorted = {}

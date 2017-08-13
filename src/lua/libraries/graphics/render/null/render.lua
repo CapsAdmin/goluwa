@@ -1,5 +1,8 @@
 local render = ... or _G.render
 
+runfile("framebuffer.lua", render)
+runfile("shader_program.lua", render)
+
 function render._Initialize()
 end
 
@@ -161,83 +164,6 @@ do
 end
 
 do
-	local META = prototype.CreateTemplate("shader_program")
-
-	function render.CreateShaderProgram()
-		local self = META:CreateObject()
-		return self
-	end
-
-	function META:CompileShader(type, source)
-
-	end
-
-	function META:Link()
-
-	end
-
-	function META:GetProperties()
-		return {}
-	end
-
-	function META:BindShaderBlock(block_index, where)
-
-	end
-
-	function META:BindUniformBuffer(block_index, where)
-
-	end
-
-	function META:UploadBoolean(key, val)
-
-	end
-
-	function META:UploadNumber(key, val)
-
-	end
-
-	function META:UploadInteger(key, val)
-
-	end
-
-	function META:UploadVec2(key, val)
-
-	end
-
-	function META:UploadVec3(key, val)
-
-	end
-
-	function META:UploadColor(key, val)
-
-	end
-
-	function META:UploadTexture(key, val)
-	end
-
-	function META:UploadMatrix44(key, val)
-	end
-
-	function META:Bind()
-
-	end
-
-	function META:GetUniformLocation(key)
-		return 0
-	end
-
-	function META:BindAttribLocation(i, name)
-
-	end
-
-	function META:OnRemove()
-
-	end
-
-	META:Register()
-end
-
-do
 	local META = prototype.GetRegistered("texture")
 
 	function META:GetMipSize(mip_map_level)
@@ -284,70 +210,6 @@ do
 	end
 
 	function render._CreateTexture(self, type)
-	end
-
-	prototype.Register(META)
-end
-
-do
-	local META = prototype.GetRegistered("framebuffer")
-
-	function render._CreateFrameBuffer(self, id_override)
-		self.textures = {}
-	end
-
-	function META:OnRemove()
-	end
-
-	function META:_Bind()
-	end
-
-	function META:SetTextureLayer(pos, tex, layer)
-		self.textures[pos] = tex
-	end
-
-	function META:SetTexture(pos, tex, mode, uid, face)
-		self.textures[pos] = tex
-	end
-
-	function META:GetTexture(pos)
-		pos = pos or 1
-
-		if self.textures[pos] then
-			return self.textures[pos]
-		end
-
-		return render.GetErrorTexture()
-	end
-
-	function META:SetWrite(pos, b)
-	end
-
-	function META:WriteThese(str)
-	end
-
-	function META:SaveDrawBuffers()
-	end
-
-	function META:RestoreDrawBuffers()
-	end
-
-	function META:ClearAll(r,g,b,a, d,s)
-	end
-
-	function META:ClearColor(r,g,b,a)
-	end
-
-	function META:ClearDepth(d)
-	end
-
-	function META:ClearStencil(s)
-	end
-
-	function META:ClearDepthStencil(d, s)
-	end
-
-	function META:ClearTexture(i, r,g,b,a)
 	end
 
 	prototype.Register(META)

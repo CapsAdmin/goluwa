@@ -34330,7 +34330,6 @@ function gl.Initialize(get_proc_address)
 				bind(self) return gl.TexBufferRangeEXT("GL_TEXTURE_BUFFER",  internalformat,  buffer,  offset,  size)
 			end
 			function META:Image2D(target, level, internalformat, width, height, border, format, type, pixels)
-				print(internalformat)
 				bind(self) return gl.TexImage2D(target, level, internalformat, width, height, border, format, type, pixels)
 			end
 			function META:CopySubImage3DEXT(level, xoffset, yoffset, zoffset, x, y, width, height)

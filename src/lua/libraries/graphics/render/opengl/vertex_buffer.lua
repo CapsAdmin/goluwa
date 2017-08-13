@@ -50,26 +50,31 @@ do
 	end
 end
 
+local mapping_flags = bit.bor(gl.e.GL_MAP_WRITE_BIT, gl.e.GL_MAP_READ_BIT, gl.e.GL_MAP_PERSISTENT_BIT, gl.e.GL_MAP_COHERENT_BIT)
+local storage_flags = bit.bor(gl.e.GL_DYNAMIC_STORAGE_BIT, mapping_flags)
 
-if not NVIDIA_WORKAROUND then
-	local mapping_flags = bit.bor(gl.e.GL_MAP_WRITE_BIT, gl.e.GL_MAP_READ_BIT, gl.e.GL_MAP_PERSISTENT_BIT, gl.e.GL_MAP_COHERENT_BIT)
-	local storage_flags = bit.bor(gl.e.GL_DYNAMIC_STORAGE_BIT, mapping_flags)
+function render._CreateVertexBuffer(self)
+	self:SetMode(self:GetMode())
+	self:SetIndicesType(self:GetIndicesType())
+	self:SetDrawHint(self:GetDrawHint())
 
-	function render._CreateVertexBuffer(self)
-		self:SetMode(self:GetMode())
-		self:SetIndicesType(self:GetIndicesType())
-		self:SetDrawHint(self:GetDrawHint())
 
-		self.vertex_buffer = gl.CreateBuffer("GL_ARRAY_BUFFER")
-		self.element_buffer = gl.CreateBuffer("GL_ELEMENT_ARRAY_BUFFER")
-
-		self.vertex_array = gl.CreateVertexArray()
+	if not render.IsExtensionSupported("GL_ARB_shader_object") then
+		return
 	end
+	self.vertex_buffer = gl.CreateBuffer("GL_ARRAY_BUFFER")
 
-	function META:OnRemove()
-		self.vertex_buffer:Delete()
-		self.element_buffer:Delete()
-	end
+	self.element_buffer = gl.CreateBuffer("GL_ELEMENT_ARRAY_BUFFER")
+
+	self.vertex_array = gl.CreateVertexArray()
+end
+
+function META:OnRemove()
+	self.vertex_buffer:Delete()
+	self.element_buffer:Delete()
+end
+
+if render.IsExtensionSupported("GL_ARB_shader_object") then
 
 	if render.IsExtensionSupported("GL_ARB_direct_state_access") then
 		function META:Draw(count)
@@ -129,63 +134,26 @@ if not NVIDIA_WORKAROUND then
 		return self.Vertices
 	end
 else
-	local ffi = require("ffi")
-
-	function render._CreateVertexBuffer(self)
-		self:SetMode(self:GetMode())
-		self:SetIndicesType(self:GetIndicesType())
-		self:SetDrawHint(self:GetDrawHint())
-		self.vertices_id = gl.GenBuffer()
-		self.indices_id = gl.GenBuffer()
-		self.vao_id = gl.GenVertexArray()
-	end
-
-
-	function META:OnRemove()
-		if self.vertex_mapped then
-			self.vertex_buffer:Unmap()
-		end
-
-		gl.DeleteBuffers(1, ffi.new("GLuint[1]", self.vertices_id))
-		gl.DeleteBuffers(1, ffi.new("GLuint[1]", self.indices_id))
-	end
-
-	function META:Draw(count)
-		if render.last_vertex_array_id ~= self.vao_id then
-			gl.BindVertexArray(self.vao_id)
-			gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
-			render.last_vertex_array_id = self.vao_id
-		end
-		gl.DrawElements(self.gl_mode, count or self.indices_length, self.gl_indices_type, nil)
-	end
-
-	local function setup_vertex_array(self)
-		if not self.setup_vao and self.Indices and self.Vertices then
-			gl.BindBuffer("GL_ARRAY_BUFFER", self.vertices_id)
-			gl.BindVertexArray(self.vao_id)
-				for _, data in ipairs(self.mesh_layout.attributes) do
-					gl.EnableVertexAttribArray(data.location)
-					gl.VertexAttribPointer(data.location, data.row_length, data.number_type, false, self.mesh_layout.size, ffi.cast("void*", data.row_offset))
-				end
-			self.setup_vao = true
-		end
-	end
-
 	function META:_SetVertices(vertices)
-		gl.BindBuffer("GL_ARRAY_BUFFER", self.vertices_id)
-		gl.BufferData("GL_ARRAY_BUFFER", vertices:GetSize(), vertices:GetPointer(), self.gl_draw_hint)
-
-		setup_vertex_array(self)
-		render.last_vertex_array_id = nil
+		print(gl.GenBuffers, "!??!?")
+		do return end
+		for _, data in ipairs(self.mesh_layout.attributes) do
+			if data.name == "pos" then
+				gl.VertexPointer(data.row_length, data.number_type, self.mesh_layout.size, vertices:GetPointer())
+			elseif data.name == "color" then
+				gl.ColorPointer(data.row_length, data.number_type, self.mesh_layout.size, vertices:GetPointer())
+			elseif data.name == "uv" then
+				gl.TexCoordPointer(data.row_length, data.number_type, self.mesh_layout.size, vertices:GetPointer())
+			end
+		end
 	end
 
 	function META:_SetIndices(indices)
-		gl.BindBuffer("GL_ELEMENT_ARRAY_BUFFER", self.indices_id)
-		gl.BufferData("GL_ELEMENT_ARRAY_BUFFER", indices:GetSize(), indices:GetPointer(), self.gl_draw_hint)
 
-		setup_vertex_array(self)
-		render.last_vertex_array_id = nil
+	end
+
+	function META:Draw(count)
+
 	end
 end
-
 prototype.Register(META)

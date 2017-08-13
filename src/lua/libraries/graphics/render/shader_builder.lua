@@ -212,7 +212,6 @@ end
 local META = prototype.CreateTemplate("shader")
 
 function render.CreateShader(data, vars)
-
 	if type(data) == "string" then
 		local fragment_source = data
 		local name = "shader_lazy_" .. crypto.CRC32(fragment_source)
