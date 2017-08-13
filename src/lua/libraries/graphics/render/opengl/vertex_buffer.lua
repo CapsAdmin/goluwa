@@ -134,6 +134,9 @@ if buffers_supported then
 		return self.Vertices
 	end
 else
+	-- this will probably only happen when running goluwa in virtual box with windows as a host
+	-- it's using the windows opengl api (seems to be 1.1)
+
 	function META:_SetVertices(vertices)
 
 	end
@@ -145,16 +148,19 @@ else
 	function META:Draw(count)
 		local vertices = self:GetVertices()
 
+		gl.Enable("GL_TEXTURE_2D")
+		render2d.GetTexture():Bind(0)
+
 		for _, data in ipairs(self.mesh_layout.attributes) do
 			if data.name == "pos" then
 				gl.EnableClientState("GL_VERTEX_ARRAY")
-				gl.VertexPointer(data.row_length, data.number_type, 0, vertices:GetPointer())
+				gl.VertexPointer(data.row_length, data.number_type, self.mesh_layout.size, vertices:GetPointer() + data.row_offset)
 			elseif data.name == "color" then
 				gl.EnableClientState("GL_COLOR_ARRAY")
-				gl.ColorPointer(data.row_length, data.number_type, data.row_offset, vertices:GetPointer())
+				gl.ColorPointer(data.row_length, data.number_type, self.mesh_layout.size, vertices:GetPointer() + data.row_offset)
 			elseif data.name == "uv" then
 				gl.EnableClientState("GL_TEXTURE_COORD_ARRAY")
-				gl.TexCoordPointer(data.row_length, data.number_type, data.row_offset, vertices:GetPointer())
+				gl.TexCoordPointer(data.row_length, data.number_type, self.mesh_layout.size, vertices:GetPointer() + data.row_offset)
 			end
 		end
 

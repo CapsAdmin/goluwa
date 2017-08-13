@@ -1,4 +1,5 @@
 local render = ... or _G.render
+local gl = require("opengl") -- OpenGL
 
 if not render.IsExtensionSupported("GL_ARB_framebuffer_object") then
 	runfile("../null/framebuffer.lua", render)
@@ -6,35 +7,35 @@ if not render.IsExtensionSupported("GL_ARB_framebuffer_object") then
 	local META = prototype.GetRegistered("framebuffer")
 
 	function META:ClearAll(r,g,b,a, d,s)
-		gl.ClearColor(r,g,b,a)
-		gl.ClearDepth(d)
-		gl.ClearStencil(s)
+		gl.ClearColor(r or 0, g or 0, b or 0, a or 0)
+		gl.ClearDepth(d or 0)
+		gl.ClearStencil(s or 0)
 		gl.Clear(bit.bor(gl.e.GL_COLOR_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT, gl.e.GL_STENCIL_BUFFER_BIT))
 	end
 
 	function META:ClearColor(r,g,b,a)
-		gl.ClearColor(r,g,b,a)
+		gl.ClearColor(r or 0, g or 0, b or 0, a or 0)
 		gl.Clear(gl.e.GL_COLOR_BUFFER_BIT)
 	end
 
 	function META:ClearDepth(d)
-		gl.ClearDepth(d)
+		gl.ClearDepth(d or 0)
 		gl.Clear(gl.e.GL_DEPTH_BUFFER_BIT)
 	end
 
 	function META:ClearStencil(s)
-		gl.ClearStencil(s)
+		gl.ClearStencil(s or 0)
 		gl.Clear(gl.e.GL_STENCIL_BUFFER_BIT)
 	end
 
 	function META:ClearDepthStencil(d, s)
-		gl.ClearDepth(d)
-		gl.ClearStencil(s)
+		gl.ClearDepth(d or 0)
+		gl.ClearStencil(s or 0)
 		gl.Clear(bit.bor(gl.e.GL_STENCIL_BUFFER_BIT, gl.e.GL_DEPTH_BUFFER_BIT))
 	end
 
 	function META:ClearTexture(i, r,g,b,a)
-		self:ClearColor(r,g,b,a)
+		self:ClearColor(r or 0, g or 0, b or 0, a or 0)
 	end
 
 	prototype.Register(META)
@@ -46,7 +47,6 @@ end
 local META = prototype.GetRegistered("framebuffer")
 
 local ffi = require("ffi")
-local gl = require("opengl") -- OpenGL
 
 local base_color = gl.e.GL_COLOR_ATTACHMENT0
 

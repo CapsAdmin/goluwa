@@ -34267,12 +34267,19 @@ function gl.Initialize(get_proc_address)
 					last = nil
 				end
 
-				local base = gl.e.GL_TEXTURE0
+				if gl.ActiveTexture then
+					local base = gl.e.GL_TEXTURE0
 
-				function META:Bind(location)
-					last = nil
-					gl.ActiveTexture(base + location)
-					bind(self)
+					function META:Bind(location)
+						last = nil
+						gl.ActiveTexture(base + location)
+						bind(self)
+					end
+				else
+					function META:Bind()
+						last = nil
+						bind(self)
+					end
 				end
 			end
 
