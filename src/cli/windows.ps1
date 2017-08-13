@@ -5,7 +5,7 @@ $ROOT_DIR = $([System.IO.Path]::GetFullPath("$ROOT_DIR\..\..\data"))
 New-Item -ItemType Directory -Force -Path $ROOT_DIR | Out-Null
 Set-Location $ROOT_DIR
 
-if ($ENV:PROCESSOR_ARCHITECTURE -Match "64") { 
+if (((gwmi -Query "select osarchitecture from win32_operatingsystem").OSArchitecture) -Match "64") { 
 	$ARCH = "x64" 
 } else { 
 	$ARCH = "x86" 
