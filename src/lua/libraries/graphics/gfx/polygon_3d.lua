@@ -128,6 +128,26 @@ do -- helpers
 		tasks.Wait()
 	end
 
+	function META:IterateFaces(cb)
+		if self.Indices then
+			for i = 1, #self.Indices, 3 do
+				local ai = self.Indices[i + 0] + 1
+				local bi = self.Indices[i + 1] + 1
+				local ci = self.Indices[i + 2] + 1
+
+				cb(self.Vertices[ai], self.Vertices[bi], self.Vertices[ci])
+			end
+		else
+			for i = 1, #self.Vertices, 3 do
+				local ai = i + 0
+				local bi = i + 1
+				local ci = i + 2
+
+				cb(self.Vertices[ai], self.Vertices[bi], self.Vertices[ci])
+			end
+		end
+	end
+
 	function META:BuildTangents()
 		local tan1 = {}
 		local tan2 = {}
