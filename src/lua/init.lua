@@ -1,5 +1,6 @@
 local profile_start_time = os.clock()
 
+os.setlocale("")
 io.stdout:setvbuf("no")
 
 _G[jit.os:upper()] = true
@@ -304,8 +305,9 @@ commands = runfile("lua/libraries/commands.lua") -- console command type interfa
 
 if CURSES then
 	repl = runfile("lua/libraries/repl.lua") -- read eval print loop using curses
-else
-	CURSES = false
+	if not repl then
+		CURSES = false
+	end
 end
 
 system = runfile("lua/libraries/system.lua") -- os and luajit related functions like creating windows or changing jit options
