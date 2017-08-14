@@ -93,7 +93,9 @@ end
 
 -- convenience method for use with curses
 -- Prints the frame in curses Standard Screen.
-function Canvas.cframe(self, curses)
+function Canvas.cframe(self, curses, wnd)
+	wnd = wnd or curses.stdscr()
+
     if curses  then
         for row=self.minrow, self.maxrow do
             for col=self.mincol, self.maxcol do
@@ -102,14 +104,14 @@ function Canvas.cframe(self, curses)
                     local pixel = self.pixel_matrix[row][col]
                     local term256color = nearest_term256_color_index(pixel.r, pixel.g, pixel.b)
                     local cp = curses.color_pair(term256color)
-                    curses.stdscr():attron(cp)
-                    curses.stdscr():addstr(pixel.str)
-                    curses.stdscr():attroff(cp)
+                    wnd:attron(cp)
+                    wnd:addstr(pixel.str)
+                    wnd:attroff(cp)
                 else
-                    curses.stdscr():addstr(" ")
+                    wnd:addstr(" ")
                 end
             end
-            curses.stdscr():addstr("\n")
+            wnd:addstr("\n")
         end
     else
         error("no stdscr or curses given")
