@@ -487,6 +487,31 @@ else
 	curses.A_STANDOUT = 2 ^ 8
 end
 
+-- lua curses compat
+
 setmetatable(curses, {__index = lib})
+
+curses.color_pair = curses.COLOR_PAIR
+
+local window_meta = {}
+window_meta.__index = window_meta
+window_meta.__call = function(s) return s end
+
+for line in header:gmatch("(.-);") do
+	if line:find("WINDOW", nil, true) then
+		local func = line:match(" (.+)%(")
+		if func then
+			local name = func
+			if name:sub(1,1) == "w" then
+				name = name:sub(2)
+			elseif func:sub(1,3) == "mvw" then
+				name = "mv" .. name:sub(4)
+			end
+			pcall(function() window_meta[name] = lib[func] end)
+		end
+	end
+end
+
+ffi.metatype(ffi.typeof("WINDOW"), window_meta)
 
 return curses

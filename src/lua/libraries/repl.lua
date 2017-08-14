@@ -11,6 +11,8 @@ repl.curses = repl.curses or {}
 repl.input_height = 1
 repl.max_lines = 10000
 
+repl.curses.log_window = curses.stdscr -- temporary
+
 local c = repl.curses
 local command_history = serializer.ReadFile("luadata", "data/cmd_history.txt") or {}
 local dirty = false
@@ -133,7 +135,7 @@ function repl.Initialize()
 		local key
 
 		for i = 1, math.huge do
-			local byte = curses.wgetch(c.input_window)
+			local byte = c.input_window:getch()
 			if byte == -1 then break end
 
 			if curses.has_key(byte) then
@@ -147,7 +149,7 @@ function repl.Initialize()
 					key = char_translate[byte]
 					break
 				elseif byte == 27 then
-					local char1, char2 = curses.wgetch(c.input_window), curses.wgetch(c.input_window)
+					local char1, char2 = c.input_window:getch(), c.input_window:getch()
 					if char1 > 0 and char2 > 0 then
 						local str = string.char(byte, char1, char2)
 						if char_translate[str] then
@@ -261,12 +263,12 @@ function repl.Initialize()
 	c.log_window = curses.newpad(repl.max_lines, curses.COLS)
 
 	c.input_window = curses.newwin(1, curses.COLS, curses.LINES - 1, 0)
-	curses.keypad(c.input_window, 1) -- enable arrows and other keys
+	c.input_window:keypad(1) -- enable arrows and other keys
 
 	if TMUX then
-		curses.wtimeout(c.input_window, (1/30) * 1000) -- don't wait for input
+		c.input_window:timeout((1/30) * 1000) -- don't wait for input
 	else
-		curses.nodelay(c.input_window, 1) -- don't wait for input
+		c.input_window:nodelay(1) -- don't wait for input
 	end
 	--curses.timeout((1/30) * 1000) -- don't wait for input
 
@@ -328,9 +330,9 @@ do
 		c.y = y or c.y
 		c.x = x or c.x
 
-		c.y = math.clamp(c.y, 0, math.max(curses.getcury(c.log_window) - curses.LINES + repl.input_height + 1, 0))
+		c.y = math.clamp(c.y, 0, math.max(c.log_window:getcury() - curses.LINES + repl.input_height + 1, 0))
 
-		curses.pnoutrefresh(c.log_window, c.y, c.x,    1,0,curses.LINES-repl.input_height-1,curses.COLS)
+		c.log_window:pnoutrefresh(c.y, c.x,    1,0,curses.LINES-repl.input_height-1,curses.COLS)
 		dirty = true
 	end
 
@@ -376,11 +378,11 @@ function repl.ColorPrint(str, color, window)
 	--local r,g,b = 255,255,255
 	--local attr = curses.COLOR_PAIR(16+r/48*36+g/48*6+b/48)
 	local attr = curses.COLOR_PAIR(color + 1)
-	curses.wattron(window, attr)
-	curses.waddstr(window, str)
-	curses.wattroff(window, attr)
+	window:attron(attr)
+	window:addstr(str)
+	window:attroff(attr)
 
-	curses.wnoutrefresh(window)
+	window:noutrefresh()
 	dirty = true
 
 	repl.SetScroll()
@@ -388,7 +390,7 @@ end
 
 function repl.Clear()
 	table.clear(log_history)
-	curses.wclear(c.log_window)
+	c.log_window:clear()
 	repl.SetScroll()
 	event.Call("ReplClear")
 end
@@ -415,22 +417,22 @@ function repl.SetSize(w, h)
 	w = w or curses.COLS
 	h = h or curses.LINES
 
-	curses.wresize(c.log_window, repl.max_lines, w)
-	curses.werase(c.log_window)
+	c.log_window:resize(repl.max_lines, w)
+	c.log_window:erase()
 
 	for _, v in pairs(log_history) do
 		repl.SyntaxPrint(v, c.log_window)
 	end
 
 	if c.status_window then
-		curses.mvwin(c.status_window, 0, 0)
-		curses.wresize(c.status_window, 1, w)
-		curses.wnoutrefresh(c.status_window)
+		c.status_window:mvin(0, 0)
+		c.status_window:resize(1, w)
+		c.status_window:noutrefresh()
 	end
 
-	curses.wresize(c.input_window, repl.input_height, w)
-	curses.mvwin(c.input_window, h - repl.input_height, 0)
-	curses.wnoutrefresh(c.input_window)
+	c.input_window:resize(repl.input_height, w)
+	c.input_window:mvin(h - repl.input_height, 0)
+	c.input_window:noutrefresh()
 
 	dirty = true
 end
@@ -562,7 +564,7 @@ do
 end
 
 function repl.GetActiveKey()
-	local byte = curses.wgetch(c.input_window)
+	local byte = c.input_window:getch()
 
 	if byte < 0 then return end
 
@@ -579,7 +581,7 @@ function repl.SetInputText(str)
 		repl.SetInputHeight(lines)
 	end
 
-	curses.werase(c.input_window)
+	c.input_window:erase()
 
 	if str then
 		str = str:gsub("\t", " ")
@@ -588,9 +590,9 @@ function repl.SetInputText(str)
 
 	local pos = c.markup:GetCaretPosition()
 
-	curses.wmove(c.input_window, pos.y-1, pos.x)
+	c.input_window:move(pos.y-1, pos.x)
 
-	curses.wnoutrefresh(c.input_window)
+	c.input_window:noutrefresh()
 	dirty = true
 end
 
@@ -602,23 +604,23 @@ do
 	local last_status = ""
 
 	function repl.SetStatusText(str)
-		curses.werase(c.status_window)
+		c.status_window:erase()
 
 		local attr = curses.COLOR_PAIR(COLORPAIR_STATUS)
-		curses.wattron(c.status_window, attr)
-		curses.wbkgdset(c.status_window, attr)
-		curses.waddstr(c.status_window, str)
-		curses.wattroff(c.status_window, attr)
+		c.status_window:attron(attr)
+		c.status_window:bkgdset(attr)
+		c.status_window:addstr(str)
+		c.status_window:attroff(attr)
 
-		curses.mvwin(c.status_window, 0, (curses.COLS / 2) - (#str / 2))
+		c.status_window:mvin(0, (curses.COLS / 2) - (#str / 2))
 
-		curses.wnoutrefresh(c.status_window)
+		c.status_window:noutrefresh()
 
 		-- this prevents the cursor from going up in the title bar (??)
 		local pos = c.markup:GetCaretPosition()
 
-    	curses.wmove(c.input_window, pos.y-1, pos.x)
-    	curses.wnoutrefresh(c.input_window)
+    	c.input_window:move(pos.y-1, pos.x)
+    	c.input_window:noutrefresh()
 
 		dirty = true
 		last_status = str
