@@ -269,7 +269,8 @@ function repl.Initialize()
 	c.input_window:keypad(1) -- enable arrows and other keys
 
 	if TMUX then
-		c.input_window:timeout((1/30) * 1000) -- don't wait for input
+		-- in tmux mode let curses do the blocking for better input
+		c.input_window:timeout((1/30) * 1000)
 	else
 		c.input_window:nodelay(1) -- don't wait for input
 	end
