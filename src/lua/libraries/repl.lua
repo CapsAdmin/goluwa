@@ -160,7 +160,7 @@ function repl.Initialize()
 					curses.ungetch(char2)
 					curses.ungetch(char1)
 				elseif byte > 32 or string.char(byte):find("%s") then
-					table.insert(chars, utf8.char(byte))
+					table.insert(chars, string.char(byte))
 				end
 			end
 		end
