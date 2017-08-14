@@ -242,6 +242,17 @@ function META:GetTranspose(out)
 	return out
 end
 
+function META:MultiplyVector(x,y,z,w, out)
+	out = out or ctor(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+
+	out.m00 = self.m00 * x + self.m10 * y + self.m20 * z + self.m30 * w
+	out.m01 = self.m01 * x + self.m11 * y + self.m21 * z + self.m31 * w
+	out.m02 = self.m02 * x + self.m12 * y + self.m22 * z + self.m32 * w
+	out.m03 = self.m03 * x + self.m13 * y + self.m23 * z + self.m33 * w
+
+	return out
+end
+
 function META.GetMultiplied(a, b, out)
 	out = out or ctor(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
 
