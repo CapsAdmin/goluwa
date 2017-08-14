@@ -10,6 +10,7 @@ local log_history = {}
 repl.curses = repl.curses or {}
 repl.input_height = 1
 repl.max_lines = 10000
+local pixel_window_size = Vec2(32,32)
 
 repl.curses.log_window = curses.stdscr -- temporary
 
@@ -159,8 +160,10 @@ function repl.Initialize()
 					end
 					curses.ungetch(char2)
 					curses.ungetch(char1)
-				elseif byte > 32 or string.char(byte):find("%s") then
+				elseif (byte > 32 or string.char(byte):find("%s")) and byte < 256 then
 					table.insert(chars, string.char(byte))
+				else
+					llog("unhandled byte " .. byte .. " returned by c.input_window:getch()")
 				end
 			end
 		end
@@ -322,6 +325,20 @@ function repl.Initialize()
 	end
 end
 
+function repl.GetPixelCanvas()
+	c.pixel_window = c.pixel_window or curses.subpad(c.log_window, pixel_window_size.y, pixel_window_size.x, 0,0)
+	repl.pixel_canvas = repl.pixel_canvas or require("drawille").new()
+	return repl.pixel_canvas
+end
+
+function repl.ShowPixelCanvas()
+	c.pixel_window:erase()
+	repl.pixel_canvas:cframe(curses, c.pixel_window)
+	c.pixel_window:refresh()
+	curses.doupdate()
+	curses.refresh()
+end
+
 do
 	c.y = c.y or 0
 	c.x = c.x or 0
@@ -428,6 +445,13 @@ function repl.SetSize(w, h)
 		c.status_window:mvin(0, 0)
 		c.status_window:resize(1, w)
 		c.status_window:noutrefresh()
+	end
+
+	if c.pixel_window then
+		pixel_window_size = Vec2(w/4, h/4)
+		c.pixel_window:mvin(h-pixel_window_size.y, w-pixel_window_size.x)
+		c.pixel_window:resize(pixel_window_size.y, pixel_window_size.x)
+		c.pixel_window:noutrefresh()
 	end
 
 	c.input_window:resize(repl.input_height, w)
@@ -612,7 +636,7 @@ do
 		c.status_window:addstr(str)
 		c.status_window:attroff(attr)
 
-		c.status_window:mvin(0, (curses.COLS / 2) - (#str / 2))
+		--c.status_window:mvin(0, (curses.COLS / 2) - (#str / 2))
 
 		c.status_window:noutrefresh()
 
