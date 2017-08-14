@@ -141,14 +141,13 @@ function line.RunGame(folder, ...)
 	vfs.Mount(R(folder .. "/"))
 	vfs.AddModuleDirectory(folder .. "/")
 
+	local package_loaded = {}
 	local env
 	local require = require
 	env = setmetatable({
 		love = love,
 		require = function(name, ...)
 			if name == "strict" then
-				-- nonono
-				-- nonono
 				return true
 			end
 
@@ -157,28 +156,29 @@ function line.RunGame(folder, ...)
 				return sockets.luasocket
 			end
 
-			llog("require: ", name)
-
-			name = name:gsub("[%.]+", ".")
+			if package_loaded[name] then
+				return package_loaded[name]
+			end
 
 			if name:startswith("love.") and love[name:match(".+%.(.+)")] then
 				return love[name:match(".+%.(.+)")]
 			end
 
 			local func, err, path = require.load(name, folder)
+
+			--llog("require: ", name, " (", path , ")")
+
 			if type(func) == "function" then
 				if debug.getinfo(func).what ~= "C" then
 					setfenv(func, env)
 				end
 
-				return require.require_function(name, func, path, name)
+				return require.require_function(name, func, path, name, package_loaded)
 			end
 
 			if pcall(require, name) then
 				return require(name)
 			end
-
-			if not func and err then print(name, err) end
 
 			return func
 		end,
@@ -226,7 +226,7 @@ function line.RunGame(folder, ...)
 		{
 			__newindex = function(t, k, v)
 				if type(v) == "function" then
-					llog("love.%s = %s", k,v)
+					--llog("love.%s = %s", k,v)
 					event.Call("LoveNewIndex", t, k, v)
 					setfenv(v, env)
 				end
