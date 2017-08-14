@@ -29,15 +29,7 @@ function render.GenerateTextures()
 
 	do
 		render.error_texture = render.CreateBlankTexture(Vec2() + 256)
-
-		local size = 16
-		render.error_texture:Fill(function(x, y)
-			if (math.floor(x/size) + math.floor(y/size % 2)) % 2 < 1 then
-				return 255, 255, 255, 255
-			else
-				return 255, 0, 0, 255
-			end
-		end)
+		render.error_texture:Shade("return mod(floor(uv.x * 16) + floor(uv.y * 16), 2.0) == 0 ? vec4(1,1,1,1) : vec4(1,0,0,1);")
 	end
 
 	if render.IsExtensionSupported("GL_ARB_framebuffer_object") then
