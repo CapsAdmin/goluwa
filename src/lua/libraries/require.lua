@@ -182,49 +182,59 @@ function require.require(name)
 	return package.loaded[name]
 end
 
-local MODULE_CALLED
-local IN_MODULE
+function require.module(modname, ...)
+	local ns = package.loaded[modname] or {}
 
-function module(name, ...)
-	require.module_name = name
-
-	if IN_MODULE then
-		MODULE_CALLED = true
+	if type(ns) ~= "table" then
+		ns = _G[modname]
+		if not ns then
+			error (string.format("name conflict for module '%s'", modname))
+		end
+		package.loaded[modname] = ns
 	end
 
-	return _OLD_G.module(name, ...)
+	if not ns._NAME then
+		ns._NAME = modname
+		ns._M = ns
+		ns._PACKAGE = modname:gsub("[^.]*$", "")
+	end
+
+	for i = 1, select("#", ...) do
+		select(i, ...)(ns)
+	end
+
+	setfenv(2, ns)
 end
 
-function require.require_function(name, func, path, arg_override)
-	if package.loaded[name] == nil and package.loaded[path] == nil then
+function require.require_function(name, func, path, arg_override, loaded)
+	loaded = loaded or package.loaded
+
+	if loaded[name] == nil and loaded[path] == nil then
 		local dir = path
 
 		if dir then
 			dir = dir:match("(.+)[\\/]")
 		end
 
-		IN_MODULE = name
 		local ok, res = pcall(func, arg_override or dir)
 
 		if ok == false then
 			return nil, res
 		end
 
-		if MODULE_CALLED then
-			res = res or package.loaded[path] or package.loaded[name]
-			_G[require.module_name] = res
-			MODULE_CALLED = false
-		end
-
-		if res and not package.loaded[path] and not package.loaded[name] then
-			package.loaded[name] = res
-		elseif not res and package.loaded[name] == nil and package.loaded[path] == nil then
+		if res and not loaded[path] and not loaded[name] then
+			loaded[name] = res
+		elseif not res and loaded[name] == nil and loaded[path] == nil then
 			--wlog("module %s (%s) was required but nothing was returned", name, path)
-			package.loaded[name] = true
+			loaded[name] = true
 		end
 	end
 
-	return package.loaded[path] or package.loaded[name]
+	if loaded[path] ~= nil then
+		return loaded[path]
+	end
+
+	return loaded[name]
 end
 
 setmetatable(require, {__call = function(_, name) return require.require(name) end})
