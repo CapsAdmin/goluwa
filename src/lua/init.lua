@@ -192,7 +192,8 @@ do
 	-- this is required because fs needs winapi and syscall
 	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../../src/lua/modules/" .. name .. ".lua") end)
 	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../../src/lua/modules/" .. name .. "/init.lua") end)
-	local fs = require("fs")
+	local fs = dofile("../../../src/lua/libraries/fs.lua")
+	package.loaded.fs = fs
 	-- remove the temporary added loaders from top because we do it properly later on
 	table.remove(package.loaders)
 	table.remove(package.loaders)
@@ -281,6 +282,7 @@ end
 _G.runfile = vfs.RunFile
 _G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir
 _G.require = runfile("lua/libraries/require.lua") -- replace require with the pure lua version
+_G.module = _G.require.module
 
 -- now we can use runfile properly
 
