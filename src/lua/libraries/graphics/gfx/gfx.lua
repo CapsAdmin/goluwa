@@ -52,7 +52,7 @@ function gfx.DrawRect(x,y,w,h, tex, r,g,b,a)
 	if r then
 		render2d.PushColor(r,g,b,a)
 	end
-	tex = tex or render2d.GetWhiteTexture()
+	tex = tex or render.GetWhiteTexture()
 	render2d.PushTexture(tex)
 	render2d.DrawRect(x,y,w,h)
 	render2d.PopTexture()
