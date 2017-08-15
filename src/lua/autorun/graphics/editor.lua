@@ -668,7 +668,7 @@ function editor.Open()
 
 			local found_anything = false
 
-			for _, v in pairs(node.ent:GetComponents()) do
+			for _, v in ipairs(node.ent:GetComponents()) do
 				if next(prototype.GetStorableVariables(v)) then
 					properties:AddGroup(L(v.ClassName))
 					properties:AddPropertiesFromObject(v)

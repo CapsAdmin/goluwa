@@ -10,7 +10,7 @@ function META:GetEditorName()
 	if self.Name ~= "" then
 		return self.Name
 	end
-	for k,v in pairs(self.Components) do
+	for _, v in ipairs(self.Components) do
 		if v.EditorName then
 			return v.EditorName
 		end
@@ -32,7 +32,7 @@ function META:AddComponent(name, ...)
 
 	if not DEFER_COMPONENT_CHECKS_AND_EVENTS then
 		for _, other in ipairs(component.Require) do
-			if not self.Components[other] then
+			if not self.components_hash[other] then
 				error("component " .. name .. " requires component " .. other, 2)
 			end
 		end
@@ -44,13 +44,15 @@ function META:AddComponent(name, ...)
 		component:AddEvent(event_type)
 	end
 
-	self.Components[name] = component
+	self.components_hash[name] = component
+	table.insert(self.Components, component)
+
 	self[name] = component
 
 	if not DEFER_COMPONENT_CHECKS_AND_EVENTS then
 		component:OnAdd(self, ...)
 
-		for _, component_ in pairs(self:GetComponents()) do
+		for _, component_ in ipairs(self:GetComponents()) do
 			component_:OnEntityAddComponent(component)
 		end
 	end
@@ -59,9 +61,9 @@ function META:AddComponent(name, ...)
 end
 
 function META:RemoveComponent(name)
-	if not self.Components[name] then return end
+	if not self.components_hash[name] then return end
 
-	local component = self.Components[name] or NULL
+	local component = self.components_hash[name] or NULL
 
 	if component:IsValid() then
 
@@ -74,17 +76,23 @@ function META:RemoveComponent(name)
 	end
 
 	if not self.removed then
-		self.Components[name] = nil
+		self.components_hash[name] = nil
 		self[name] = nil
+		for i,v in ipairs(self.Components) do
+			if v.Name == name then
+				table.remove(self.Components, i)
+				break
+			end
+		end
 	end
 end
 
 function META:GetComponent(name)
-	return self.Components[name]
+	return self.components_hash[name]
 end
 
 function META:HasComponent(name)
-	return self.Components[name] ~= nil
+	return self.components_hash[name] ~= nil
 end
 
 function META:OnRemove()
@@ -93,11 +101,11 @@ function META:OnRemove()
 
 	event.Call("EntityRemove", self)
 
-	for name in pairs(self:GetComponents()) do
-		self:RemoveComponent(name)
+	for _, component in ipairs(self:GetComponents()) do
+		self:RemoveComponent(component.Name)
 	end
 
-	for _, v in pairs(self:GetChildrenList()) do
+	for _, v in ipairs(self:GetChildrenList()) do
 		v:Remove()
 	end
 
@@ -146,8 +154,8 @@ do -- serializing
 
 		data.config = self.config
 
-		for name, component in pairs(self:GetComponents()) do
-			data.components[name] = component:GetStorableTable(force)
+		for _, component in ipairs(self:GetComponents()) do
+			data.components[component.Name] = component:GetStorableTable(force)
 		end
 
 		for _, v in ipairs(self:GetChildren()) do
@@ -162,7 +170,7 @@ end
 
 function META:OnParent(ent)
 	event.Call("EntityParent", self, ent)
-	for _, component in pairs(self:GetComponents()) do
+	for _, component in ipairs(self:GetComponents()) do
 		if component.OnEntityParent then
 			component:OnEntityParent(ent)
 		end
@@ -205,7 +213,7 @@ function prototype.CreateEntity(config, info)
 										func = function(ent, a,b,c,d)
 											--local obj = ent:GetComponent(name)
 											--return obj[k](obj, a,b,c,d)
-											return ent.Components[name][k](ent.Components[name], a,b,c,d)
+											return ent.components_hash[name][k](ent.components_hash[name], a,b,c,d)
 										end,
 										name = k,
 										component = name,
@@ -214,6 +222,13 @@ function prototype.CreateEntity(config, info)
 							end
 						end
 					end
+					local temp = {}
+					if data.exclude_components then
+						for i,v in ipairs(data.exclude_components) do
+							temp[v] = true
+						end
+					end
+					data.exclude_components2 = temp
 					data.setup = true
 				end
 			end
@@ -223,27 +238,28 @@ function prototype.CreateEntity(config, info)
 		info = info or {}
 
 		self.config = config
+		self.components_hash = {}
 
 		DEFER_COMPONENT_CHECKS_AND_EVENTS = true
 
 		for _, name in ipairs(prototype.component_configurations[config].components) do
-			if not info.exclude_components or not table.hasvalue(info.exclude_components, name) then
+			if not info.exclude_components or not info.exclude_components2[data.component] then
 				self:AddComponent(name)
 			end
 		end
 
-		for name, component in pairs(self:GetComponents()) do
+		for _, component in ipairs(self:GetComponents()) do
 			for _, other in ipairs(component.Require) do
-				if not self.Components[other] then
+				if not self.components_hash[other] then
 					self:Remove()
-					error("component " .. name .. " requires component " .. other, 1)
+					error("component " .. component.Name .. " requires component " .. other, 1)
 				end
 			end
 			component:OnAdd(self)
 		end
 
-		for _, component in pairs(self:GetComponents()) do
-			for _, component_ in pairs(self:GetComponents()) do
+		for _, component in ipairs(self:GetComponents()) do
+			for _, component_ in ipairs(self:GetComponents()) do
 				component_:OnEntityAddComponent(component)
 			end
 		end
@@ -251,7 +267,7 @@ function prototype.CreateEntity(config, info)
 		DEFER_COMPONENT_CHECKS_AND_EVENTS = false
 
 		for _, data in ipairs(prototype.component_configurations[config].functions) do
-			if not info.exclude_components or not table.hasvalue(info.exclude_components, data.component) then
+			if not info.exclude_components or not info.exclude_components2[data.component] then
 				self[data.name] = self[data.name] or data.func
 			end
 		end

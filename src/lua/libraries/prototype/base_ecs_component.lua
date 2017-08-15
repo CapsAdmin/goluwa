@@ -34,13 +34,7 @@ function META:OnEvent(component, name, ...)
 end
 
 function META:GetEntityComponents()
-	local out = {}
-
-	for _, component in pairs(self:GetEntity():GetComponents()) do
-		table.insert(out, component)
-	end
-
-	return out
+	return self:GetEntity():GetComponents()
 end
 
 function META:FireEvent(...)
