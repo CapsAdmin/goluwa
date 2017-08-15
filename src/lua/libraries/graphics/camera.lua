@@ -405,7 +405,7 @@ do
 			end
 
 			if vars.normal_matrix and vars.view_world_inverse then
-				vars.normal_matrix = vars.view_world_inverse:GetTranspose()
+				vars.normal_matrix = vars.view_world_inverse:GetTransposed()
 			end
 		end
 

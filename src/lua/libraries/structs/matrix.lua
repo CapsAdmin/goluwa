@@ -36,6 +36,82 @@ end
 
 function META:SetI(i, val)
 	self[META.Args[i+1]] = val
+
+	return self
+end
+
+do
+	local tr = {}
+
+	for x = 0, ]==]..X..[==[-1 do
+		tr[x] = tr[x] or {}
+		for y = 0, ]==]..Y..[==[-1 do
+			tr[x][y] = "m" .. y .. x
+		end
+	end
+
+	function META:GetField(r, c)
+		return self[tr[r][c]]
+	end
+
+	function META:SetField(r, c, v)
+		self[tr[r][c]] = v
+		return self
+	end
+end
+
+function META:SetColumn(i, ]==] .. (function() local str = {} for i = 1, Y do str[i] = "_" .. i end return table.concat(str, ", ") end)() .. [==[)
+	]==]..(function()
+		local str = ""
+
+		for i = 0, Y - 1 do
+			str = str .. "self:SetField(" .. i .. ", i, _" .. i+1 ..")\n"
+		end
+
+		return str
+	end)()..[==[
+
+	return self
+end
+
+function META:GetColumn(i)
+	return
+	]==]..(function()
+		local str = {}
+
+		for i = 0, Y - 1 do
+			str[i] = "self:GetField(" .. i .. ", i)"
+		end
+
+		return table.concat(str, ",\n")
+	end)()..[==[
+end
+
+function META:GetRow(i)
+	return
+	]==]..(function()
+		local str = {}
+
+		for i = 0, X - 1 do
+			str[i] = "self:GetField(i, " .. i .. ")"
+		end
+
+		return table.concat(str, ",\n")
+	end)()..[==[
+end
+
+function META:SetRow(i, ]==] .. (function() local str = {} for i = 1, X do str[i] = "_" .. i end return table.concat(str, ", ") end)() .. [==[)
+	]==]..(function()
+		local str = ""
+
+		for i = 0, X - 1 do
+			str = str .. "self:SetField(i, " .. i .. ", _" .. i+1 ..")\n"
+		end
+
+		return str
+	end)()..[==[
+
+	return self
 end
 
 function META.Identity(m)
@@ -116,7 +192,7 @@ function META.__tostring(m)
 end
 
 function META:Lerp(alpha, other)
-	for i = 0, #META.Args - 1 do
+	for i = 0, ]==] .. (X*Y)-1 .. [==[ do
 		self:SetI(i, math.lerp(alpha, self:GetI(i), other:GetI(i)))
 	end
 end
@@ -147,9 +223,11 @@ function META:__mul(b)
 	return self:GetMultiplied(b)
 end
 
-META.Multiply = META.GetMultiplied
+function META:Multiply(b, out)
+	return self:GetMultiplied(b, out or self)
+end
 
-function META:GetTranspose(m, o)
+function META.GetTransposed(m, o)
 	o = o or META.Constructor(]==] .. table.concat(identity, ", ") .. [==[)
 
 	]==] .. (function()
@@ -193,7 +271,7 @@ end
 
 for X = 2, 4 do
 	for Y = 2, 4 do
-		if true or not (X == 4 and Y == 4) then
+		if not (X == 4 and Y == 4) then
 			local identity = {}
 			local i = 1
 			for x = 1, X do
