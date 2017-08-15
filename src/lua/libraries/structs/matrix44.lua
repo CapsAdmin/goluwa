@@ -3,14 +3,9 @@ local structs = (...) or _G.structs
 local _, ffi = pcall(require, "ffi")
 
 local META = prototype.CreateTemplate("matrix44")
-
 META.__index = META
 
-if GRAPHENE then
-	META.NumberType = "float"
-else
-	META.NumberType = "double"
-end
+META.NumberType = "double"
 
 META.Args = {
 	"m00", "m01", "m02", "m03",
@@ -21,118 +16,76 @@ META.Args = {
 
 structs.AddOperator(META, "==")
 
-local ctor
-
 if ffi then
-	ctor = ffi.typeof("struct { $ m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33; }", ffi.typeof(META.NumberType))
+	META.Constructor = ffi.typeof("struct { $ m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33; }", ffi.typeof(META.NumberType))
 else
 	local setmetatable = setmetatable
-	ctor = function(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33)
+	function META.Constructor(
+			m00, m01, m02, m03,
+			m10, m11, m12, m13,
+			m20, m21, m22, m23,
+			m30, m31, m32, m33
+		)
+
 		return setmetatable({
-			m00 = m00,
-			m01 = m01,
-			m02 = m02,
-			m03 = m03,
-			m10 = m10,
-			m11 = m11,
-			m12 = m12,
-			m13 = m13,
-			m20 = m20,
-			m21 = m21,
-			m22 = m22,
-			m23 = m23,
-			m30 = m30,
-			m31 = m31,
-			m32 = m32,
-			m33 = m33,
+			m00 = m00, m01 = m01, m02 = m02, m03 = m03,
+			m10 = m10, m11 = m11, m12 = m12, m13 = m13,
+			m20 = m20, m21 = m21, m22 = m22, m23 = m23,
+			m30 = m30, m31 = m31, m32 = m32, m33 = m33,
 		}, META)
 	end
 end
 
-function META:GetI(i)
-	return self[META.Args[i+1]]
-end
-
-function META:SetI(i, val)
-	self[META.Args[i+1]] = val
-end
-
 function META:Unpack()
 	return
-		self.m00,
-		self.m01,
-		self.m02,
-		self.m03,
-		self.m10,
-		self.m11,
-		self.m12,
-		self.m13,
-		self.m20,
-		self.m21,
-		self.m22,
-		self.m23,
-		self.m30,
-		self.m31,
-		self.m32,
-		self.m33
+		self.m00, self.m01, self.m02, self.m03,
+		self.m10, self.m11, self.m12, self.m13,
+		self.m20, self.m21, self.m22, self.m23,
+		self.m30, self.m31, self.m32, self.m33
 end
 
 if ffi then
-	local new = ffi.new
-	local temp = new("float[16]")
+	local temp = ffi.new("float[16]")
 
 	function META:GetFloatPointer()
-		temp[0] = self.m00
-		temp[1] = self.m01
-		temp[2] = self.m02
-		temp[3] = self.m03
-		temp[4] = self.m10
-		temp[5] = self.m11
-		temp[6] = self.m12
-		temp[7] = self.m13
-		temp[8] = self.m20
-		temp[9] = self.m21
-		temp[10] = self.m22
-		temp[11] = self.m23
-		temp[12] = self.m30
-		temp[13] = self.m31
-		temp[14] = self.m32
-		temp[15] = self.m33
+		temp[00] = self.m00 temp[01] = self.m01 temp[02] = self.m02 temp[03] = self.m03
+		temp[04] = self.m10 temp[05] = self.m11 temp[06] = self.m12 temp[07] = self.m13
+		temp[08] = self.m20 temp[09] = self.m21 temp[10] = self.m22 temp[11] = self.m23
+		temp[12] = self.m30 temp[13] = self.m31 temp[14] = self.m32 temp[15] = self.m33
+
 		return temp
 	end
 
+	local ctype = ffi.typeof("float[16]")
+
 	function META:GetFloatCopy()
-		return new("float[16]", self.m00, self.m01, self.m02, self.m03, self.m10, self.m11, self.m12, self.m13, self.m20, self.m21, self.m22, self.m23, self.m30, self.m31, self.m32, self.m33)
+		return ctype(
+			self.m00, self.m01, self.m02, self.m03,
+			self.m10, self.m11, self.m12, self.m13,
+			self.m20, self.m21, self.m22, self.m23,
+			self.m30, self.m31, self.m32, self.m33
+		)
 	end
 end
 
 function META.CopyTo(a, b)
 
-	b.m00 = a.m00
-	b.m01 = a.m01
-	b.m02 = a.m02
-	b.m03 = a.m03
-	b.m10 = a.m10
-	b.m11 = a.m11
-	b.m12 = a.m12
-	b.m13 = a.m13
-	b.m20 = a.m20
-	b.m21 = a.m21
-	b.m22 = a.m22
-	b.m23 = a.m23
-	b.m30 = a.m30
-	b.m31 = a.m31
-	b.m32 = a.m32
-	b.m33 = a.m33
+	b.m00 = a.m00 b.m01 = a.m01 b.m02 = a.m02 b.m03 = a.m03
+	b.m10 = a.m10 b.m11 = a.m11 b.m12 = a.m12 b.m13 = a.m13
+	b.m20 = a.m20 b.m21 = a.m21 b.m22 = a.m22 b.m23 = a.m23
+	b.m30 = a.m30 b.m31 = a.m31 b.m32 = a.m32 b.m33 = a.m33
 
 	return a
 end
 
 function META:Copy()
-	return ctor(self.m00, self.m01, self.m02, self.m03, self.m10, self.m11, self.m12, self.m13, self.m20, self.m21, self.m22, self.m23, self.m30, self.m31, self.m32, self.m33)
+	return META.Constructor(
+		self.m00, self.m01, self.m02, self.m03,
+		self.m10, self.m11, self.m12, self.m13,
+		self.m20, self.m21, self.m22, self.m23,
+		self.m30, self.m31, self.m32, self.m33
+	)
 end
-
-META.__copy = META.Copy
 
 function META:__tostring()
 	return string.format("matrix44[%p]:\n" .. ("%f %f %f %f\n"):rep(4), self,
@@ -143,107 +96,61 @@ function META:__tostring()
 	)
 end
 
-function META:__mul(b)
-	return self:GetMultiplied(b)
-end
-
 function META:Identity()
-	self.m00 = 1
-	self.m11 = 1
-	self.m22 = 1
-	self.m33 = 1
-
-	self.m01 = 0
-	self.m02 = 0
-	self.m03 = 0
-	self.m10 = 0
-	self.m12 = 0
-	self.m13 = 0
-	self.m20 = 0
-	self.m21 = 0
-	self.m23 = 0
-	self.m30 = 0
-	self.m31 = 0
-	self.m32 = 0
+	self.m00 = 1 self.m01 = 0 self.m02 = 0 self.m03 = 0
+	self.m10 = 0 self.m11 = 1 self.m12 = 0 self.m13 = 0
+	self.m20 = 0 self.m21 = 0 self.m22 = 1 self.m23 = 0
+	self.m30 = 0 self.m31 = 0 self.m32 = 0 self.m33 = 1
 
 	return self
 end
 
-META.LoadIdentity = META.Identity
-
 function META:GetInverse(out)
-	out = out or ctor(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+	out = out or META.Constructor(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
 
-	out.m00 = self.m11*self.m22*self.m33 - self.m11*self.m32*self.m23 - self.m12*self.m21*self.m33 + self.m12*self.m31*self.m23 + self.m13*self.m21*self.m32 - self.m13*self.m31*self.m22
-	out.m01 = -self.m01*self.m22*self.m33 + self.m01*self.m32*self.m23 + self.m02*self.m21*self.m33 - self.m02*self.m31*self.m23 - self.m03*self.m21*self.m32 + self.m03*self.m31*self.m22
-	out.m02 = self.m01*self.m12*self.m33 - self.m01*self.m32*self.m13 - self.m02*self.m11*self.m33 + self.m02*self.m31*self.m13 + self.m03*self.m11*self.m32 - self.m03*self.m31*self.m12
-	out.m03 = -self.m01*self.m12*self.m23 + self.m01*self.m22*self.m13 + self.m02*self.m11*self.m23 - self.m02*self.m21*self.m13 - self.m03*self.m11*self.m22 + self.m03*self.m21*self.m12
+	out.m00 =  self.m11 * self.m22 * self.m33 - self.m11 * self.m32 * self.m23 - self.m12 * self.m21 * self.m33 + self.m12 * self.m31 * self.m23 + self.m13 * self.m21 * self.m32 - self.m13 * self.m31 * self.m22
+	out.m01 = -self.m01 * self.m22 * self.m33 + self.m01 * self.m32 * self.m23 + self.m02 * self.m21 * self.m33 - self.m02 * self.m31 * self.m23 - self.m03 * self.m21 * self.m32 + self.m03 * self.m31 * self.m22
+	out.m02 =  self.m01 * self.m12 * self.m33 - self.m01 * self.m32 * self.m13 - self.m02 * self.m11 * self.m33 + self.m02 * self.m31 * self.m13 + self.m03 * self.m11 * self.m32 - self.m03 * self.m31 * self.m12
+	out.m03 = -self.m01 * self.m12 * self.m23 + self.m01 * self.m22 * self.m13 + self.m02 * self.m11 * self.m23 - self.m02 * self.m21 * self.m13 - self.m03 * self.m11 * self.m22 + self.m03 * self.m21 * self.m12
 
-	out.m10 = -self.m10*self.m22*self.m33 + self.m10*self.m32*self.m23 + self.m12*self.m20 *self.m33 - self.m12*self.m30*self.m23 - self.m13*self.m20 *self.m32 + self.m13*self.m30*self.m22
-	out.m11 = self.m00*self.m22*self.m33 - self.m00*self.m32*self.m23 - self.m02*self.m20 *self.m33 + self.m02*self.m30*self.m23 + self.m03*self.m20 *self.m32 - self.m03*self.m30*self.m22
-	out.m12 = -self.m00*self.m12*self.m33 + self.m00*self.m32*self.m13 + self.m02*self.m10*self.m33 - self.m02*self.m30*self.m13 - self.m03*self.m10*self.m32 + self.m03*self.m30*self.m12
-	out.m13 = self.m00*self.m12*self.m23 - self.m00*self.m22*self.m13 - self.m02*self.m10*self.m23 + self.m02*self.m20 *self.m13 + self.m03*self.m10*self.m22 - self.m03*self.m20 *self.m12
+	out.m10 = -self.m10 * self.m22 * self.m33 + self.m10 * self.m32 * self.m23 + self.m12 * self.m20 * self.m33 - self.m12 * self.m30 * self.m23 - self.m13 * self.m20 * self.m32 + self.m13 * self.m30 * self.m22
+	out.m11 =  self.m00 * self.m22 * self.m33 - self.m00 * self.m32 * self.m23 - self.m02 * self.m20 * self.m33 + self.m02 * self.m30 * self.m23 + self.m03 * self.m20 * self.m32 - self.m03 * self.m30 * self.m22
+	out.m12 = -self.m00 * self.m12 * self.m33 + self.m00 * self.m32 * self.m13 + self.m02 * self.m10 * self.m33 - self.m02 * self.m30 * self.m13 - self.m03 * self.m10 * self.m32 + self.m03 * self.m30 * self.m12
+	out.m13 =  self.m00 * self.m12 * self.m23 - self.m00 * self.m22 * self.m13 - self.m02 * self.m10 * self.m23 + self.m02 * self.m20 * self.m13 + self.m03 * self.m10 * self.m22 - self.m03 * self.m20 * self.m12
 
-	out.m20 = self.m10*self.m21*self.m33 - self.m10*self.m31*self.m23 - self.m11*self.m20 *self.m33 + self.m11*self.m30*self.m23 + self.m13*self.m20 *self.m31 - self.m13*self.m30*self.m21
-	out.m21 = -self.m00*self.m21*self.m33 + self.m00*self.m31*self.m23 + self.m01*self.m20 *self.m33 - self.m01*self.m30*self.m23 - self.m03*self.m20 *self.m31 + self.m03*self.m30*self.m21
-	out.m22 = self.m00*self.m11*self.m33 - self.m00*self.m31*self.m13 - self.m01*self.m10*self.m33 + self.m01*self.m30*self.m13 + self.m03*self.m10*self.m31 - self.m03*self.m30*self.m11
-	out.m23 = -self.m00*self.m11*self.m23 + self.m00*self.m21*self.m13 + self.m01*self.m10*self.m23 - self.m01*self.m20 *self.m13 - self.m03*self.m10*self.m21 + self.m03*self.m20 *self.m11
+	out.m20 =  self.m10 * self.m21 * self.m33 - self.m10 * self.m31 * self.m23 - self.m11 * self.m20 * self.m33 + self.m11 * self.m30 * self.m23 + self.m13 * self.m20 * self.m31 - self.m13 * self.m30 * self.m21
+	out.m21 = -self.m00 * self.m21 * self.m33 + self.m00 * self.m31 * self.m23 + self.m01 * self.m20 * self.m33 - self.m01 * self.m30 * self.m23 - self.m03 * self.m20 * self.m31 + self.m03 * self.m30 * self.m21
+	out.m22 =  self.m00 * self.m11 * self.m33 - self.m00 * self.m31 * self.m13 - self.m01 * self.m10 * self.m33 + self.m01 * self.m30 * self.m13 + self.m03 * self.m10 * self.m31 - self.m03 * self.m30 * self.m11
+	out.m23 = -self.m00 * self.m11 * self.m23 + self.m00 * self.m21 * self.m13 + self.m01 * self.m10 * self.m23 - self.m01 * self.m20 * self.m13 - self.m03 * self.m10 * self.m21 + self.m03 * self.m20 * self.m11
 
-	out.m30 = -self.m10*self.m21*self.m32 + self.m10*self.m31*self.m22 + self.m11*self.m20 *self.m32 - self.m11*self.m30*self.m22 - self.m12*self.m20 *self.m31 + self.m12*self.m30*self.m21
-	out.m31 = self.m00*self.m21*self.m32 - self.m00*self.m31*self.m22 - self.m01*self.m20 *self.m32 + self.m01*self.m30*self.m22 + self.m02*self.m20 *self.m31 - self.m02*self.m30*self.m21
-	out.m32 = -self.m00*self.m11*self.m32 + self.m00*self.m31*self.m12 + self.m01*self.m10*self.m32 - self.m01*self.m30*self.m12 - self.m02*self.m10*self.m31 + self.m02*self.m30*self.m11
-	out.m33 = self.m00*self.m11*self.m22 - self.m00*self.m21*self.m12 - self.m01*self.m10*self.m22 + self.m01*self.m20 *self.m12 + self.m02*self.m10*self.m21 - self.m02*self.m20 *self.m11
+	out.m30 = -self.m10 * self.m21 * self.m32 + self.m10 * self.m31 * self.m22 + self.m11 * self.m20 * self.m32 - self.m11 * self.m30 * self.m22 - self.m12 * self.m20 * self.m31 + self.m12 * self.m30 * self.m21
+	out.m31 =  self.m00 * self.m21 * self.m32 - self.m00 * self.m31 * self.m22 - self.m01 * self.m20 * self.m32 + self.m01 * self.m30 * self.m22 + self.m02 * self.m20 * self.m31 - self.m02 * self.m30 * self.m21
+	out.m32 = -self.m00 * self.m11 * self.m32 + self.m00 * self.m31 * self.m12 + self.m01 * self.m10 * self.m32 - self.m01 * self.m30 * self.m12 - self.m02 * self.m10 * self.m31 + self.m02 * self.m30 * self.m11
+	out.m33 =  self.m00 * self.m11 * self.m22 - self.m00 * self.m21 * self.m12 - self.m01 * self.m10 * self.m22 + self.m01 * self.m20 * self.m12 + self.m02 * self.m10 * self.m21 - self.m02 * self.m20 * self.m11
 
 	local det = 1 / (self.m00*out.m00 + self.m01*out.m10 + self.m02*out.m20 + self.m03*out.m30)
 
-	out.m00 = out.m00 * det
-	out.m01 = out.m01 * det
-	out.m02 = out.m02 * det
-	out.m03 = out.m03 * det
-	out.m10 = out.m10 * det
-	out.m11 = out.m11 * det
-	out.m12 = out.m12 * det
-	out.m13 = out.m13 * det
-	out.m20 = out.m20 * det
-	out.m21 = out.m21 * det
-	out.m22 = out.m22 * det
-	out.m23 = out.m23 * det
-	out.m30 = out.m30 * det
-	out.m31 = out.m31 * det
-	out.m32 = out.m32 * det
-	out.m33 = out.m33 * det
+	out.m00 = out.m00 * det out.m01 = out.m01 * det out.m02 = out.m02 * det out.m03 = out.m03 * det
+	out.m10 = out.m10 * det out.m11 = out.m11 * det out.m12 = out.m12 * det out.m13 = out.m13 * det
+	out.m20 = out.m20 * det out.m21 = out.m21 * det out.m22 = out.m22 * det out.m23 = out.m23 * det
+	out.m30 = out.m30 * det out.m31 = out.m31 * det out.m32 = out.m32 * det out.m33 = out.m33 * det
 
 	return out
 end
 
 function META:GetTranspose(out)
-	out = out or ctor(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+	out = out or META.Constructor(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
 
-	out.m00 = self.m00
-	out.m01 = self.m10
-	out.m02 = self.m20
-	out.m03 = self.m30
-
-	out.m10 = self.m01
-	out.m11 = self.m11
-	out.m12 = self.m21
-	out.m13 = self.m31
-
-	out.m20 = self.m02
-	out.m21 = self.m12
-	out.m22 = self.m22
-	out.m23 = self.m32
-
-	out.m30 = self.m03
-	out.m31 = self.m13
-	out.m32 = self.m23
-	out.m33 = self.m33
+	out.m00 = self.m00 out.m01 = self.m10 out.m02 = self.m20 out.m03 = self.m30
+	out.m10 = self.m01 out.m11 = self.m11 out.m12 = self.m21 out.m13 = self.m31
+	out.m20 = self.m02 out.m21 = self.m12 out.m22 = self.m22 out.m23 = self.m32
+	out.m30 = self.m03 out.m31 = self.m13 out.m32 = self.m23 out.m33 = self.m33
 
 	return out
 end
 
 function META:MultiplyVector(x,y,z,w, out)
-	out = out or ctor(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+	out = out or META.Constructor(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
 
 	out.m00 = self.m00 * x + self.m10 * y + self.m20 * z + self.m30 * w
 	out.m01 = self.m01 * x + self.m11 * y + self.m21 * z + self.m31 * w
@@ -254,7 +161,7 @@ function META:MultiplyVector(x,y,z,w, out)
 end
 
 function META.GetMultiplied(a, b, out)
-	out = out or ctor(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+	out = out or META.Constructor(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
 
 	out.m00 = b.m00 * a.m00 + b.m01 * a.m10 + b.m02 * a.m20 + b.m03 * a.m30
 	out.m01 = b.m00 * a.m01 + b.m01 * a.m11 + b.m02 * a.m21 + b.m03 * a.m31
@@ -279,6 +186,21 @@ function META.GetMultiplied(a, b, out)
 	return out
 end
 
+function META:GetI(i)
+	return self[META.Args[i+1]]
+end
+
+function META:SetI(i, val)
+	self[META.Args[i+1]] = val
+end
+
+META.__copy = META.Copy
+
+function META:__mul(b)
+	return self:GetMultiplied(b)
+end
+
+META.LoadIdentity = META.Identity
 META.Multiply = META.GetMultiplied
 
 function META:Skew(x, y)
@@ -286,7 +208,7 @@ function META:Skew(x, y)
 	x = math.rad(x)
 	y = math.rad(y)
 
-	local skew = ctor(1,math.tan(x),0,0, math.tan(y),1,0,0, 0,0,1,0, 0,0,0,1)
+	local skew = META.Constructor(1,math.tan(x),0,0, math.tan(y),1,0,0, 0,0,1,0, 0,0,0,1)
 
 	self:CopyTo(skew)
 
@@ -329,7 +251,7 @@ end
 function META:Rotate(a, x, y, z, out)
 	if a == 0 then return self end
 
-	out = out or ctor(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+	out = out or META.Constructor(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
 
 	local xx, yy, zz, xy, yz, zx, xs, ys, zs, one_c
 	local optimized = false
@@ -547,8 +469,8 @@ function META:TransformPoint(x, y, z)
 end
 
 function META:Lerp(alpha, other)
-	for i = 1, 16 do
-		math.lerp(alpha, self[i-1], other[i-1])
+	for i = 0, #META.Args - 1 do
+		self:SetI(i, math.lerp(alpha, self:GetI(i), other:GetI(i)))
 	end
 end
 
@@ -608,11 +530,11 @@ function META:GetAngles()
 end
 
 if ffi then
-	ffi.metatype(ctor, META)
+	ffi.metatype(META.Constructor, META)
 end
 
 function Matrix44(x, y, z)
-	return ctor(1,0,0,0, 0,1,0,0, 0,0,1,0, x or 0, y or 0, z or 0,1)
+	return META.Constructor(1,0,0,0, 0,1,0,0, 0,0,1,0, x or 0, y or 0, z or 0,1)
 end
 
 META:Register()
