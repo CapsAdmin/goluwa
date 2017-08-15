@@ -204,6 +204,9 @@ function require.module(modname, ...)
 	end
 
 	setfenv(2, ns)
+
+
+	_G[modname] = ns
 end
 
 function require.require_function(name, func, path, arg_override, loaded)
