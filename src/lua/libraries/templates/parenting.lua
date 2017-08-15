@@ -149,28 +149,16 @@ function META:BuildChildrenList()
 end
 
 function META:BuildParentList()
-
 	self.parent_list = {}
 
 	if not self:HasParent() then return end
 
-	local temp = self:GetParent()
-	table.insert(self.parent_list, temp)
+	local parent = self:GetParent()
 
-	while true do
-		local parent = temp:GetParent()
-
-		if parent:IsValid() then
-			table.insert(self.parent_list, parent)
-			temp = parent
-		else
-			break
-		end
+	while parent:IsValid() do
+		table.insert(self.parent_list, parent)
+		parent = parent:GetParent()
 	end
 
-	self.RootPart = temp
-
-	for _, obj in ipairs(self.Children) do
-		obj:BuildParentList()
-	end
+	self.RootPart = self.parent_list[#self.parent_list]
 end
