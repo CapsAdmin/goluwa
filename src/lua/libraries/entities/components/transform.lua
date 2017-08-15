@@ -214,7 +214,7 @@ function META:IsPointsVisible(points, view)
 	local matrix = self:GetMatrix()
 
 	for _, pos in ipairs(points) do
-		local x, y, z = view:GetMultiplied(matrix, Matrix44(pos.x, pos.y, pos.z)):GetClipCoordinates()
+		local x, y, z = view:GetMultiplied(matrix, Matrix44():SetTranslation(pos.x, pos.y, pos.z)):GetClipCoordinates()
 
 		if
 			(x > -1 and x < 1) and
