@@ -223,9 +223,10 @@ function structs.AddOperator(META, operator, ...)
 	elseif operator == "unpack" then
 		local lua = [==[
 		local META, structs = ...
-		META["Unpack"] = function(a)
+		META["Unpack"] = function(a,...)
 				return
 				a.KEY
+				,...
 			end
 		]==]
 
