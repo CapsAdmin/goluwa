@@ -213,8 +213,6 @@ do -- tcp socket meta
 			sockets.DebugPrint(self, "%s - " .. fmt, self, ...)
 		end
 
-		local ssl
-
 		do
 			CLIENT:GetSet("SSLParams")
 
@@ -226,14 +224,16 @@ do -- tcp socket meta
 			}
 
 			function CLIENT:SetSSLParams(params)
-				if ssl == nil then
-					ssl = desire("ssl") _G.ssl = nil -- grr
-					if not ssl then
-						ssl = false
-					end
+				if sockets.ssl == nil then
+					desire("ssl")
+					sockets.ssl = _G.ssl
+					_G.ssl = nil -- grr
 				end
 
-				if not ssl then wlog("cannot use ssl parameters: luasec not found!") return end
+				if not sockets.ssl then
+					wlog("cannot use ssl parameters: luasec not found!")
+					return
+				end
 
 				if params == "https" then
 					params = https_default
@@ -326,7 +326,7 @@ do -- tcp socket meta
 
 					if self.SSLParams then
 						self.old_socket = sock
-						sock = assert(ssl.wrap(sock, self.SSLParams))
+						sock = assert(sockets.ssl.wrap(sock, self.SSLParams))
 						assert(sock:settimeout(0, "t"))
 						self.socket = sock
 
