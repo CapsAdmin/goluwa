@@ -56,9 +56,9 @@ function render._Initialize(wnd)
 				--"VK_LAYER_LUNARG_image",
 				--"VK_LAYER_LUNARG_api_dump",
 			},
-			ppEnabledExtensionNames = render.GetRequiredInstanceExtensions({
+			ppEnabledExtensionNames = assert(render.GetRequiredInstanceExtensions(wnd, {
 				"VK_EXT_debug_report",
-			}),
+			})),
 		}))
 
 		if instance:LoadProcAddr("vkCreateDebugReportCallbackEXT") then
