@@ -176,16 +176,35 @@ function chatsounds.BuildFromGmodChatsounds(addon_dir)
 	chatsounds.BuildAutocomplete()
 end
 
+function chatsounds.BuildFromURL(url, callback)
+	resource.Download(url, function(path)
+		local tree = {}
+		local list = {}
+
+		callback(vfs.Read(path), function(realm, trigger, path)
+			tree[realm] = tree[realm] or {}
+			list[realm] = list[realm] or {}
+
+			tree[realm][trigger] = tree[realm][trigger] or {}
+			table.insert(tree[realm][trigger], {path = path})
+			list[realm][trigger] = path
+		end)
+
+		chatsounds.list = chatsounds.list or {}
+		table.merge(chatsounds.list, list)
+		chatsounds.BuildAutocomplete()
+
+		tree = chatsounds.TableToTree(tree)
+		chatsounds.tree = chatsounds.tree or {}
+		table.merge(chatsounds.tree, tree)
+	end, nil, nil, nil, true)
+end
+
 function chatsounds.BuildFromGithub(repo, location)
 	local url = "https://api.github.com/repos/"..repo.."/git/trees/master?recursive=1"
 	location = location or "sounds/chatsounds"
 
-	resource.Download(url, function(path)
-
-		local tree = {}
-		local list = {}
-
-		local str = vfs.Read(path)
+	chatsounds.BuildFromURL(url, function(str, add_sound)
 		for path in str:gmatch('"path":%s-"('..location..'/.-)"') do
 			local realm, trigger, file_name = path:match(location .. "/(.-)/(.-)/(.+)%.")
 			if not file_name then
@@ -196,23 +215,10 @@ function chatsounds.BuildFromGithub(repo, location)
 			path = "https://raw.githubusercontent.com/"..repo.."/master/" .. path
 
 			if realm then
-				tree[realm] = tree[realm] or {}
-				list[realm] = list[realm] or {}
-
-				tree[realm][trigger] = tree[realm][trigger] or {}
-				table.insert(tree[realm][trigger], {path = path})
-				list[realm][trigger] = path
+				add_sound(realm, trigger, path)
 			end
 		end
-
-		chatsounds.list = chatsounds.list or {}
-		table.merge(chatsounds.list, list)
-		chatsounds.BuildAutocomplete()
-
-		tree = chatsounds.TableToTree(tree)
-		chatsounds.tree = chatsounds.tree or {}
-		table.merge(chatsounds.tree, tree)
-	end, nil, nil, nil, true)
+	end)
 end
 
 function chatsounds.BuildAutocomplete()
