@@ -209,6 +209,38 @@ do
 	end
 
 	utility.MakePushPopFunction(render, "PresetBlendMode")
+
+	do
+		local A,B,C,D,E,F
+
+		function render.SetBlendMode(src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha)
+			if not dst_color then
+				return render.SetPresetBlendMode(src_color)
+			end
+
+			src_color = src_color or "src_alpha"
+			dst_color = dst_color or "one_minus_src_alpha"
+			func_color = func_color or "add"
+
+			src_alpha = src_alpha or src_color
+			dst_alpha = dst_alpha or dst_color
+			func_alpha = func_alpha or func_color
+
+			render._SetBlendMode(src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha)
+
+			A, B, C, D, E, F = src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha
+		end
+
+		function render.GetBlendMode()
+			return A, B, C, D, E, F
+		end
+
+		utility.MakePushPopFunction(render, "BlendMode")
+	end
+end
+
+function render.TextureBarrier()
+
 end
 
 render.AddGlobalShaderCode([[

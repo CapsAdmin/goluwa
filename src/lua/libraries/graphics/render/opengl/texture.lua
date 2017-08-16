@@ -432,20 +432,17 @@ function render._CreateTexture(self, type)
 		self:SetWrapS("clamp_to_edge")
 		self:SetWrapT("clamp_to_edge")
 		self:SetWrapR("clamp_to_edge")
-		self:SetMinFilter("linear_mipmap_linear")
-		self:SetMagFilter("linear")
 		self:SetSeamlessCubemap(true)
-		--self:SetBaseLevel(0)
-		--self:SetMaxLevel(0)
 	else
 		self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
 		self:SetWrapS("repeat")
 		self:SetWrapT("repeat")
 		self:SetWrapR("repeat")
-		self:SetMinFilter("linear_mipmap_linear")
-		self:SetMagFilter("linear")
 		self:SetAnisotropy(100)
 	end
+
+	self:SetMinFilter("linear_mipmap_linear")
+	self:SetMagFilter("linear")
 end
 
 prototype.Register(META)

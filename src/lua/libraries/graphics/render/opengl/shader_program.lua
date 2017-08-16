@@ -2,14 +2,6 @@ local render = ... or _G.render
 
 if not render.IsExtensionSupported("GL_ARB_shader_objects") then
 	runfile("../null/shader_program.lua", render)
-
-	local META = prototype.GetRegistered("shader_program")
-
-	function META:UploadMatrix44(key, val)
-
-	end
-
-
 	return
 end
 
@@ -19,12 +11,6 @@ local ffi = require("ffi")
 local META = prototype.CreateTemplate("shader_program")
 
 function render.CreateShaderProgram()
-	if not render.IsExtensionSupported("GL_ARB_shader_objects") then
-		local msg = "shaders not supported!"
-		llog(msg)
-		return nil, msg
-	end
-
 	local self = META:CreateObject()
 	self.shaders = {}
 	return self

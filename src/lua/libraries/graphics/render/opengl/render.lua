@@ -114,50 +114,23 @@ do
 		max = gl.e.GL_MAX,
 	}
 
-	local separate = gl.BlendFuncSeparate ~= nil
-	local BlendFunc
-	local BlendEquation
+	if gl.BlendFuncSeparate ~= nil then
+		local BlendFunc = utility.GenerateCheckLastFunction(gl.BlendFuncSeparate, 4)
+		local BlendEquation = utility.GenerateCheckLastFunction(gl.BlendEquationSeparate, 2)
 
-	if separate then
-		BlendFunc = utility.GenerateCheckLastFunction(gl.BlendFuncSeparate, 4)
-		BlendEquation = utility.GenerateCheckLastFunction(gl.BlendEquationSeparate, 2)
+		function render._SetBlendMode(src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha)
+			BlendFunc(enums[src_color], enums[dst_color], enums[src_alpha], enums[dst_alpha])
+			BlendEquation(enums[func_color], enums[func_alpha])
+		end
 	else
-		BlendFunc = utility.GenerateCheckLastFunction(gl.BlendFunc, 2)
-		BlendEquation = gl.BlendEquation and utility.GenerateCheckLastFunction(gl.BlendEquation, 1)
-	end
+		local BlendFunc = utility.GenerateCheckLastFunction(gl.BlendFunc, 2)
+		local BlendEquation = gl.BlendEquation and utility.GenerateCheckLastFunction(gl.BlendEquation, 1)
 
-	local A,B,C,D,E,F
-
-	function render.SetBlendMode(src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha)
-
-		if not dst_color then
-			return render.SetPresetBlendMode(src_color)
+		function render._SetBlendMode(src_color, dst_color, func_color)
+			BlendFunc(src_color, enums[dst_color])
+			if BlendEquation then BlendEquation(enums[func_color]) end
 		end
-
-		src_color = enums[src_color or "src_alpha"]
-		dst_color = enums[dst_color or "one_minus_src_alpha"]
-		func_color = enums[func_color or "add"]
-
-		src_alpha = enums[src_alpha] or src_color
-		dst_alpha = enums[dst_alpha] or dst_color
-		func_alpha = enums[func_alpha] or func_color
-
-		if separate then
-			BlendFunc(src_color, dst_color, src_alpha, dst_alpha)
-			BlendEquation(func_color, func_alpha)
-		else
-			BlendFunc(src_color, dst_color)
-			if BlendEquation then BlendEquation(func_color) end
-		end
-
-		A,B,C,D,E,F = src_color, dst_color, func_color, src_alpha, dst_alpha, func_alpha
 	end
-
-	function render.GetBlendMode()
-		return A,B,C,D,E,F
-	end
-
-	utility.MakePushPopFunction(render, "BlendMode")
 end
 
 do
