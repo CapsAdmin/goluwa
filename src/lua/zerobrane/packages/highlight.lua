@@ -1,15 +1,18 @@
 -- Copyright 2015-16 Paul Kulchenko, ZeroBrane LLC; All rights reserved
 
-local updateneeded
+local updateneeded, cfg
 local indicname = "highlightselected.selected"
 return {
   name = "Highlight selected",
   description = "Highlights all instances of a selected word.",
   author = "Paul Kulchenko",
-  version = 0.14,
-  dependencies = 1.11,
+  version = 0.18,
+  dependencies = "1.20",
 
-  onRegister = function() ide:AddIndicator(indicname) end,
+  onRegister = function(package)
+    ide:AddIndicator(indicname)
+    cfg = package:GetConfig()
+  end,
   onUnRegister = function() ide:RemoveIndicator(indicname) end,
 
   onEditorUpdateUI = function(self, editor, event)
@@ -22,7 +25,8 @@ return {
     updateneeded = false
 
     local length, curpos = editor:GetLength(), editor:GetCurrentPos()
-    local value = editor:GetTextRange(editor:GetSelectionStart(), editor:GetSelectionEnd())
+    local ssel, esel = editor:GetSelection()
+    local value = editor:GetTextRange(ssel, esel)
     local indicator = ide:GetIndicator(indicname)
 
     local function clearIndicator()
@@ -41,14 +45,18 @@ return {
     if value ~= word then return clearIndicator() end
 
     local style = bit.band(editor:GetStyleAt(editor:GetSelectionStart()),31)
-    local color = editor:StyleGetForeground(style)
-    editor:IndicatorSetStyle(indicator, wxstc.wxSTC_INDIC_BOX)
+    local color = cfg and type(cfg.color) == "table" and #(cfg.color) == 3 and
+      wx.wxColour((table.unpack or unpack)(cfg.color)) or editor:StyleGetForeground(style)
+    editor:IndicatorSetStyle(indicator, cfg and cfg.indicator or wxstc.wxSTC_INDIC_ROUNDBOX)
     editor:IndicatorSetForeground(indicator, color)
     editor:SetIndicatorCurrent(indicator)
     editor:IndicatorClearRange(0, length)
+
+    -- save the flags to restore after the search is done to not affect other searches
+    local flags = editor:GetSearchFlags()
     editor:SetSearchFlags(wxstc.wxSTC_FIND_WHOLEWORD + wxstc.wxSTC_FIND_MATCHCASE)
 
-    local pos = 0
+    local pos, num = 0, 0
     while true do
       editor:SetTargetStart(pos)
       editor:SetTargetEnd(length)
@@ -57,6 +65,13 @@ return {
 
       editor:IndicatorFillRange(pos, #value)
       pos = pos + #value
+      num = num + 1
     end
+    ide:SetStatusFor(("Found %d instance(s)."):format(num), 5)
+    editor:SetSearchFlags(flags)
   end,
 }
+
+--[[ configuration example:
+highlightselected = {indicator = wxstc.wxSTC_INDIC_ROUNDBOX, color = {255, 0, 0}}
+--]]
