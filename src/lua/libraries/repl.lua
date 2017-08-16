@@ -327,7 +327,7 @@ function repl.Initialize()
 end
 
 function repl.GetPixelCanvas()
-	c.pixel_window = c.pixel_window or curses.subpad(c.log_window, pixel_window_size.y, pixel_window_size.x, 0,0)
+	c.pixel_window = c.pixel_window or curses.subpad(c.log_window, curses.COLS, curses.LINES, 0,0)
 	repl.pixel_canvas = repl.pixel_canvas or require("drawille").new()
 	return repl.pixel_canvas
 end
@@ -335,7 +335,7 @@ end
 function repl.ShowPixelCanvas()
 	c.pixel_window:erase()
 	repl.pixel_canvas:cframe(curses, c.pixel_window)
-	c.pixel_window:refresh()
+	c.pixel_window:prefresh(0,0,0,0, 32,64)
 	curses.doupdate()
 	curses.refresh()
 end
@@ -450,9 +450,7 @@ function repl.SetSize(w, h)
 
 	if c.pixel_window then
 		pixel_window_size = Vec2(w/4, h/4)
-		c.pixel_window:mvin(h-pixel_window_size.y, w-pixel_window_size.x)
-		c.pixel_window:resize(pixel_window_size.y, pixel_window_size.x)
-		c.pixel_window:noutrefresh()
+		c.pixel_window:resize(64,64)
 	end
 
 	c.input_window:resize(repl.input_height, w)
