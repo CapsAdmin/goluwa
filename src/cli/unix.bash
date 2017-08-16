@@ -31,14 +31,14 @@ function download
     fi
 }
 
-if [ "$1" == "build"  ]; then
-	if [ "$2" == "all"  ]; then
+if [ "$1" == "build" ]; then
+	if [ "$2" == "all" ]; then
 		cd ../lua/build/
 		bash make_all.sh
 		exit 0
 	else
 		cd ../lua/build/$2/
-		if [ "$3" == "clean"  ]; then
+		if [ "$3" == "clean" ]; then
 			make clean
 		else
 			make ARGS=$3
@@ -47,11 +47,11 @@ if [ "$1" == "build"  ]; then
 	fi
 fi
 
-if [ "$1" != "launch"  ] && command -v tmux>/dev/null; then
+if [ "$1" != "launch" ] && command -v tmux>/dev/null; then
 
 	if tmux has-session -t goluwa 2>/dev/null; then
 
-		if [ "$1" == "attach" ]; then
+		if [ "$1" == "attach" ] || [ "$1" == "tmux" ]; then
 			tmux attach -t goluwa
 		else
 			tmux send-keys -t goluwa "$*" C-m
@@ -71,7 +71,7 @@ if [ "$1" != "launch"  ] && command -v tmux>/dev/null; then
 			tmux send-keys -t goluwa "export GOLUWA_TMUX=1;bash unix.bash launch" C-m
 		fi
 
-		#tmux attach-session -t goluwa
+		tmux attach-session -t goluwa
 
 		exit
 	fi
@@ -121,9 +121,9 @@ if [ "$1" == "ide" ] || [ "$1" == "" ]; then
 	./zbstudio.sh -cfg ../../src/lua/zerobrane/config.lua
 fi
 
-if [ "$1" == "launch"  ] || [ "$1" == "cli"  ]; then
+if [ "$1" == "launch" ] || [ "$1" == "cli" ]; then
 
-	if [ "$1" == "cli"  ]; then
+	if [ "$1" == "cli" ]; then
 		export GOLUWA_CLI=1
 	fi
 
@@ -157,11 +157,11 @@ if [ "$1" == "launch"  ] || [ "$1" == "cli"  ]; then
 
 	executable="luajit$GOLUWA_BRANCH"
 
-	if [ "$2" == "branch"  ]; then
+	if [ "$2" == "branch" ]; then
 		executable="luajit_$3"
 	fi
 
-	if [ "$GOLUWA_BRANCH" == "_lua"  ]; then
+	if [ "$GOLUWA_BRANCH" == "_lua" ]; then
 		executable="lua"
 	fi
 
@@ -187,5 +187,5 @@ if [ "$1" == "launch"  ] || [ "$1" == "cli"  ]; then
 	fi
 fi
 
-stty sane # in case of a crash
-echo ""
+#in case of a crash
+stty sane > /dev/null 2>&1 &

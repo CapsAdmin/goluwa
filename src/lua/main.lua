@@ -202,6 +202,14 @@ if VERBOSE_STARTUP then
 	llog("startup took %s seconds", os.clock() - profiler.startup_time)
 end
 
+if TMUX then
+	logn("== tmux session started ==")
+	logn("run 'detach' here to detach the session")
+	logn("run 'exit' here or ctrl c twice to exit goluwa")
+	logn("run './goluwa attach' in your terminal reattach to this goluwa tmux session")
+end
+
+
 main()
 
 event.Call("ShutDown")
