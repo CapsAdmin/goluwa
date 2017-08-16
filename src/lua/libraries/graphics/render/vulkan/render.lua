@@ -140,7 +140,7 @@ function render._Initialize(wnd)
 		end
 	end
 
-	do -- setup the glfw window buffer
+	do -- setup the window buffer
 		local surface = assert(render.CreateVulkanSurface(wnd, render.instance))
 		local formats = render.physical_device:GetSurfaceFormats(surface)
 		local capabilities = render.physical_device:GetSurfaceCapabilities(surface)
@@ -154,31 +154,37 @@ function render._Initialize(wnd)
 		if capabilities.currentExtent.width ~= 0xFFFFFFFF then
 			width = capabilities.currentExtent.width
 			height = capabilities.currentExtent.height
+		else
+			width = math.clamp(width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width)
+			height = math.clamp(height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
 		end
 
-		local present_mode = "immediate"
+		local present_mode
 
-		for _, mode in ipairs(render.physical_device:GetSurfacePresentModes(surface)) do
-			if mode == vk.e.present_mode.fifo or mode == vk.e.present_mode.mailbox then
-				present_mode = mode
-				break
-			end
+		local present_modes = render.physical_device:GetSurfacePresentModes(surface)
+
+		if table.hasvalue(present_modes, vk.e.present_mode.mailbox) then
+			present_mode = "mailbox"
+		elseif table.hasvalue(present_modes, vk.e.present_mode.fifo) then
+			present_mode = "fifo"
+		else
+			present_mode = "immediate"
 		end
 
 		render.surface = surface
 
 		render.swap_chain = render.device:CreateSwapchain({
 			surface = surface,
-			minImageCount = math.min(capabilities.minImageCount + 1, capabilities.maxImageCount == 0 and math.huge or capabilities.maxImageCount),
+			minImageCount = math.min(capabilities.minImageCount + 1, capabilities.maxImageCount),
 			imageFormat = prefered_format,
 			imagecolorSpace = formats[1].colorSpace,
 			imageExtent = {width, height},
 			imageUsage = "color_attachment",
-			preTransform = bit.band(capabilities.supportedTransforms, vk.e.surface_transform.identity) ~= 0 and "identity" or capabilities.currentTransform,
+			preTransform = capabilities.currentTransform,
 			compositeAlpha = "opaque",
 			imageArrayLayers = 1,
-			imageSharingMode = "exclusive",
 
+			imageSharingMode = "exclusive",
 			queueFamilyIndexCount = 0,
 			pQueueFamilyIndices = nil,
 
