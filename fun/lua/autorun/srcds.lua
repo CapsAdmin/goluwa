@@ -14,12 +14,17 @@ gserv.cfg = {
 	sv_hibernate_think = 1, -- so pinger can run even if there are no players on the server
 }
 
-local srcds_dir = e.DATA_FOLDER .. "srcds/"
-local gmod_dir = srcds_dir .. "gmod/garrysmod/"
-local gserv_addon_dir = gmod_dir .. "addons/gserv/"
+local function get_gmod_dir()
+	return gserv.GetInstallDir() .. "/garrysmod/"
+end
 
-local data_dir = e.USERDATA_FOLDER .. "gserv/"
-local log_dir = data_dir .. "logs/"
+local function get_gserv_addon_dir()
+	return get_gmod_dir() .. "addons/gserv/"
+end
+
+local srcds_dir = e.DATA_FOLDER .. "srcds/"
+
+local data_dir = "data/gserv/"
 
 local function load_configs()
 	if not gserv.loaded_configs then
@@ -33,7 +38,7 @@ local function check_setup() if not gserv.IsSetup() then error("server is not se
 local function check_running() if not gserv.IsRunning() then error("server is not running", 3) end end
 
 function gserv.IsSetup()
-	if vfs.IsFile(gserv_addon_dir .. "lua/autorun/server/gserv_pinger.lua") then
+	if vfs.IsFile(get_gserv_addon_dir() .. "lua/autorun/server/gserv_pinger.lua") then
 		return true
 	end
 end
@@ -55,27 +60,95 @@ function gserv.Setup()
 		end
 
 		-- if srcds_run does not exist install gmod
-		if not vfs.IsFile(srcds_dir .. "gmod/srcds_run") then
-			os.execute(srcds_dir .. "steamcmd.sh +login anonymous +force_install_dir " .. srcds_dir .. "gmod +app_update 4020 validate +quit")
+		if not vfs.IsFile(srcds_dir .. gserv.GetInstallDir() .. "/srcds_run") then
+			gserv.InstallGame("gmod")
 		end
 
 		-- create glua script that writes os.time to a file every second
-		if not vfs.IsFile(gserv_addon_dir .. "lua/autorun/server/gserv_pinger.lua") then
-			vfs.CreateFolders("os", gserv_addon_dir .. "lua/autorun/server/")
-			vfs.Write(gserv_addon_dir .. "lua/autorun/server/gserv_pinger.lua", [[
+		if not vfs.IsFile(get_gserv_addon_dir() .. "lua/autorun/server/gserv_pinger.lua") then
+			vfs.CreateFolders("os", get_gserv_addon_dir() .. "lua/autorun/server/")
+			vfs.Write(get_gserv_addon_dir() .. "lua/autorun/server/gserv_pinger.lua", [[
 				timer.Create("gserv_pinger", 1, 0, function()
 					file.Write("gserv_pinger.txt", os.time(), "DATA")
 				end)
 			]])
 		end
 
-		vfs.Write(gmod_dir .. "cfg/server.cfg", "exec gserv.cfg\n")
+		vfs.Write(get_gmod_dir() .. "cfg/server.cfg", "exec gserv.cfg\n")
 
 		-- silence some startup errors
-		vfs.Write(gmod_dir .. "cfg/trusted_keys_base.txt", "trusted_key_list\n{\n}\n")
-		vfs.Write(gmod_dir .. "cfg/pure_server_minimal.txt", "whitelist\n{\n}\n")
-		vfs.Write(gmod_dir .. "cfg/network.cfg", "")
+		vfs.Write(get_gmod_dir() .. "cfg/trusted_keys_base.txt", "trusted_key_list\n{\n}\n")
+		vfs.Write(get_gmod_dir() .. "cfg/pure_server_minimal.txt", "whitelist\n{\n}\n")
+		vfs.Write(get_gmod_dir() .. "cfg/network.cfg", "")
+
+		gserv.BuildMountConfig()
 	end)
+end
+
+function gserv.InstallGame(name)
+	if gserv.IsRunning() then error("server is running", 2) end
+
+	local appid, full_name = steam.GetAppIdFromName(name .. " Dedicated Server")
+	if not appid and type(name) == "number" then
+		appid = name
+		full_name = tostring(appid)
+	end
+
+	local dir_name = full_name:lower():gsub("%p", ""):gsub("%s+", " ")
+
+	logn("setting up " .. name)
+
+	-- create the srcds directory in goluwa/data/srcds
+	vfs.CreateFolder("os:" .. srcds_dir)
+
+	-- download steamcmd
+	resource.Download("http://media.steampowered.com/client/steamcmd_linux.tar.gz", function(path)
+
+		-- if steamcmd.sh does not exist then we need to extract it
+		if not vfs.IsFile(srcds_dir .. "steamcmd.sh") then
+			os.execute("tar -xvzf " .. vfs.GetAbsolutePath(path) .. " -C " .. srcds_dir)
+		end
+
+		logn("installing ", name, " (", appid, ")", " to ", srcds_dir .. dir_name)
+
+		serializer.SetKeyValueInFile("luadata", data_dir .. "games.lua", appid, srcds_dir .. dir_name)
+
+		os.execute(srcds_dir .. "steamcmd.sh +login anonymous +force_install_dir \"" .. srcds_dir .. dir_name .. "\" +app_update " .. appid .. " validate +quit")
+
+		logn("done")
+
+		gserv.BuildMountConfig()
+	end)
+end
+
+function gserv.GetInstallDir()
+	return gserv.GetInstalledGames()[4020]
+end
+
+function gserv.GetInstalledGames()
+	return serializer.ReadFile("luadata", data_dir .. "games.lua")
+end
+
+function gserv.BuildMountConfig()
+	local str = '"mountcfg"\n'
+	str = str .. "{\n"
+
+	for appid, dir in pairs(gserv.GetInstalledGames()) do
+		if appid ~= 4020 then
+			for _, dir in ipairs(vfs.Find(dir .. "/", true)) do
+				local gameinfo = vfs.IsFile(dir .. "/gameinfo.txt")
+				if gameinfo then
+					local name = dir:match(".+/(.+)")
+
+					str = str .. "\t\"" .. name .. "\"\t\t" .. "\""..dir.."\"\n"
+				end
+			end
+		end
+	end
+
+	str = str .. "}"
+
+	vfs.Write(get_gmod_dir() .. "cfg/mount.cfg", str)
 end
 
 do
@@ -104,7 +177,7 @@ do
 		for k,v in pairs(gserv.cfg) do
 			str = str .. k .. " " .. v .. "\n"
 		end
-		vfs.Write(gmod_dir .. "cfg/gserv.cfg", str)
+		vfs.Write(get_gmod_dir() .. "cfg/gserv.cfg", str)
 	end
 end
 
@@ -139,20 +212,20 @@ do -- addons
 
 		if info.type == "git" then
 			logn("updating git repository addon ", info.url)
-			local dir = gmod_dir .. "addons/" .. info.name
+			local dir = get_gmod_dir() .. "addons/" .. info.name
 
 			if not vfs.IsDirectory(dir) then
-				os.execute("git clone " .. info.url .. " " .. dir)
+				os.execute("git clone " .. info.url .. " '" .. dir .. "' --depth 1")
 			else
-				os.execute("git -C " .. dir .. " reset --hard HEAD")
-				os.execute("git -C " .. dir .. " clean -f -d")
-				os.execute("git -C " .. dir .. " pull")
+				os.execute("git -C '" .. dir .. "' reset --hard HEAD")
+				os.execute("git -C '" .. dir .. "' clean -f -d")
+				os.execute("git -C '" .. dir .. "' pull")
 			end
 			logn("done updating ", info.url)
 		elseif info.type == "workshop" then
 			logn("updating workshop addon ", info.url)
 			steam.DownloadWorkshop(info.id, function(header, compressed_path)
-				vfs.Write(gmod_dir .. "addons/".. info.name, serializer.ReadFile("lzma", compressed_path))
+				vfs.Write(get_gmod_dir() .. "addons/".. info.name, serializer.ReadFile("lzma", compressed_path))
 				logn("done updating ", info.url)
 			end)
 		end
@@ -197,12 +270,12 @@ do -- addons
 
 		local info = assert(gserv.GetAddon(url))
 
-		local path = gmod_dir .. "addons/".. info.name
+		local path = get_gmod_dir() .. "addons/".. info.name
 
 		if vfs.IsFile(path) then
 			vfs.Delete(path)
 		elseif vfs.IsDirectory(path) then
-			os.execute("rm -rf " .. path)
+			os.execute("rm -rf '" .. path .. "'")
 		end
 
 		serializer.SetKeyValueInFile("luadata", data_dir .. "addons.lua", url, nil)
@@ -235,14 +308,14 @@ do
 
 		logn("starting gmod server")
 
-		vfs.Write(gmod_dir .. "data/gserv_pinger.txt", "booting")
+		vfs.Write(get_gmod_dir() .. "data/gserv_pinger.txt", "booting")
 
 		os.execute("tmux kill-session -t goluwa_srcds 2>/dev/null")
 		os.execute("tmux new-session -d -s goluwa_srcds")
 
-		gserv.log_path = log_dir .. os.date("%Y/%m/%d/%H-%M-%S.txt")
-		vfs.CreateFolders("os", gserv.log_path)
-		os.execute("tmux pipe-pane -o -t goluwa_srcds 'cat >> " .. gserv.log_path .. "'")
+		gserv.log_path = "gserv/logs/" .. os.date("%Y/%m/%d/%H-%M-%S.txt")
+		vfs.Write("data/" .. gserv.log_path, "")
+		os.execute("tmux pipe-pane -o -t goluwa_srcds 'cat >> " .. R("data/" .. gserv.log_path) .. "'")
 
 		gserv.BuildConfig()
 
@@ -264,10 +337,10 @@ do
 			logn("workshop auth key not setup")
 		end
 
-		os.execute("tmux send-keys -t goluwa_srcds \"" .. srcds_dir .. "gmod/srcds_run -game garrysmod " .. str .. "\" C-m")
+		os.execute("tmux send-keys -t goluwa_srcds \"sh '" .. gserv.GetInstallDir() .. "/srcds_run' -game garrysmod " .. str .. "\" C-m")
 
 		event.Timer("gserv_pinger", 1, 0, function()
-			local time = vfs.Read(gmod_dir .. "data/gserv_pinger.txt")
+			local time = vfs.Read(get_gmod_dir() .. "data/gserv_pinger.txt")
 
 			if time then
 				if time == "booting" then return end
@@ -305,7 +378,7 @@ end
 function gserv.GetOutput()
 	check_running()
 
-	local str = vfs.Read(gserv.log_path)
+	local str = assert(vfs.Read(gserv.log_path))
 	str = str:gsub("\r", "")
 
 	return str
@@ -343,7 +416,7 @@ function gserv.GetLuaOutput(line)
 	local id = tostring({})
 	gserv.RunLua("file.Write('gserv_capture_output.txt', '" .. id .."' .. tostring((function()"..line.."end)()), 'DATA')")
 	while true do
-		local str = vfs.Read(gmod_dir .. data_dir .. "capture_output.txt")
+		local str = vfs.Read(get_gmod_dir() .. data_dir .. "capture_output.txt")
 		if str and str:startswith(id) then
 			return str:sub(#id + 1)
 		end
@@ -366,6 +439,7 @@ end
 
 do -- commands
 	commands.Add("gserv setup", function() gserv.Setup() end)
+	commands.Add("gserv install_game=string", function(name) gserv.InstallGame(name) end)
 
 	commands.Add("gserv start", function() gserv.Start() end)
 	commands.Add("gserv stop", function() gserv.Stop() end)
@@ -386,6 +460,7 @@ do -- commands
 	commands.Add("gserv list_addons", function() table.print(gserv.GetAddons()) end)
 	commands.Add("gserv list_config", function() table.print(gserv.cfg) end)
 	commands.Add("gserv list_startup", function() table.print(gserv.startup_parameters) end)
+	commands.Add("gserv list_games", function() table.print(gserv.GetInstalledGames()) end)
 
 	commands.Add("gserv setup_info", function()
 		logn("startup parameters:")
@@ -416,3 +491,5 @@ do -- commands
 		event.Delay(0.1, function() gserv.Show() end)
 	end)
 end
+
+print(str)
