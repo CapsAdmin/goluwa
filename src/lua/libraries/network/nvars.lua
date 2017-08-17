@@ -52,7 +52,7 @@ if CLIENT then
 
 	function nvars.Synchronize()
 		for cvar in pairs(nvars.added_cvars) do
-			commands.RunCommand(cvar, pvars.Get(cvar))
+			pvars.Set(cvar, pvars.Get(cvar))
 		end
 
 		if network.debug or nvars.debug then
