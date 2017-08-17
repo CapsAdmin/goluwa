@@ -278,38 +278,12 @@ function steam.GetMountedSourceGames()
 end
 
 do
-	local translate = {
-		[220] = {"half life 2", "hl2"},
-		[630] = {"alien swarm", "as"},
-		[420] = {"hl2ep2", "half-life 2: episode two", "ep2"},
-		[320] = {"hl2dm", "half-life 2: deathmatch"},
-		[240] = {"css", "counter-strike: source"},
-		[730] = {"counter-strike: global offensive", "csgo"},
-		[360] = {"hldm", "hl1dm", "half-life deathmatch: source"},
-		[4000] = {"gmod", "gm", "garrysmod", "garrys mod"},
-		[550] = {"left 4 dead 2", "l4d2"},
-		[280] = {"half-life: source", "hls"},
-		[500] = {"left 4 dead"},
-		[340] = {"half-life 2: lost coast", "hl2lc"},
-		[400] = {"portal"},
-		[300] = {"day of defeat: source", "dods", "dod"},
-		[380] = {"half-life 2: episode one", "hl2e1", "ep1"},
-		[570] = {"dota 2", "dota"},
-		[440] = {"tf2", "team fortress 2"},
-		[620] = {"portal 2"},
-	}
-
-	local temp = {}
-
-	for k, v in pairs(translate) do
-		for _, name in ipairs(v) do
-			temp[name] = k
-		end
-	end
-
-	translate = temp
-
 	function steam.FindSourceGame(name)
+		local appid = steam.GetAppIdFromName(name)
+		if appid then
+			name = appid
+		end
+
 		local games = steam.GetSourceGames()
 
 		if type(name) == "number" then
