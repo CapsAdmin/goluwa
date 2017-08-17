@@ -482,7 +482,7 @@ do
 		if file_filter == "" then file_filter = nil end
 
 		if not started then
-			profiler.StartInstrumental(file_filter, method, true)
+			profiler.StartInstrumental(file_filter, method)
 			started = true
 		else
 			profiler.StopInstrumental(file_filter, true)
