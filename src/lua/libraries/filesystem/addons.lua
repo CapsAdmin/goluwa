@@ -5,8 +5,10 @@ vfs.disabled_addons = vfs.disabled_addons or {}
 
 function vfs.MountAddons(dir)
 	for info in vfs.Iterate(dir, true, nil, nil, nil, true) do
-		if vfs.IsDirectory(info.full_path:sub(#info.filesystem + 2)) and info.name ~= "src" and not info.name:startswith(".") and not info.name:startswith("__") then
-			vfs.MountAddon(info.full_path:sub(#info.filesystem + 2) .. "/")
+		if info.name ~= "src" then
+			if vfs.IsDirectory(info.full_path:sub(#info.filesystem + 2)) and not info.name:startswith(".") and not info.name:startswith("__") then
+				vfs.MountAddon(info.full_path:sub(#info.filesystem + 2) .. "/")
+			end
 		end
 	end
 end
@@ -25,19 +27,20 @@ function vfs.GetAddonInfo(addon)
 	return {}
 end
 
+function vfs.InitAddons()
+	for _, info in pairs(vfs.GetMountedAddons()) do
+		if info.startup then
+			runfile(info.startup)
+		end
+	end
+end
+
 function vfs.AutorunAddon(addon, folder, force)
 	local info =  type(addon) == "table" and addon or vfs.GetAddonInfo(addon)
 	if force or info.load ~= false and not info.core then
 		_G.INFO = info
 
 			local function run()
-				if info.startup then
-					if not info.startup_launched then
-						runfile(info.path .. "lua/" .. info.startup)
-						info.startup_launched = true
-					end
-				end
-
 				-- autorun folders
 				for path in vfs.Iterate(info.path .. "lua/autorun/" .. folder, true) do
 					if path:find("%.lua") then
@@ -92,10 +95,15 @@ function vfs.MountAddon(path, force)
 	local folder = path:match(".+/(.+)/")
 
 	info.path = path
-		info.file_info = folder
-		info.name = info.name or folder
-		info.folder = folder
-		info.priority = info.priority or -1
+	info.file_info = folder
+	info.name = info.name or folder
+	info.folder = folder
+	info.priority = info.priority or -1
+
+	if not info.startup and vfs.IsFile(path .. "lua/init.lua") then
+		info.startup = path .. "lua/init.lua"
+	end
+
 	table.insert(vfs.loaded_addons, info)
 
 	e["ADDON_" .. info.name:upper()] = info

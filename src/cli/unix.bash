@@ -5,7 +5,7 @@ cd "$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit
 
 #if there is no display server just launch client
 if [ -z ${DISPLAY+x} ] && [ "$1" == "" ]; then
-	bash client
+	bash client ${*:2}
 	exit 0
 fi
 
@@ -16,6 +16,15 @@ fi
 
 if [ "$1" == "server" ]; then
 	bash server ${*:2}
+	exit 0
+fi
+
+if [ "$1" == "" ]; then
+	if [ -f "../../fun/lua/zerobrane/config.lua" ]; then
+		bash unix.bash ide ${*:2}
+	else
+		bash client ${*:2}
+	fi
 	exit 0
 fi
 
@@ -101,7 +110,7 @@ case $(uname) in
 	;;
 esac
 
-if [ "$1" == "ide" ] || [ "$1" == "" ]; then
+if [ "$1" == "ide" ]; then
 	if command -v git >/dev/null 2>&1; then
 		if [ -d ./ide ]; then
 			git -C ./ide pull;
@@ -118,7 +127,7 @@ if [ "$1" == "ide" ] || [ "$1" == "" ]; then
 	fi
 
 	cd ide
-	./zbstudio.sh -cfg ../../src/lua/zerobrane/config.lua
+	./zbstudio.sh -cfg ../../fun/lua/zerobrane/config.lua
 fi
 
 if [ "$1" == "launch" ] || [ "$1" == "cli" ]; then

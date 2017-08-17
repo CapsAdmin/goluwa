@@ -100,7 +100,7 @@ local markup_translate = {
 }
 
 function repl.Initialize()
-	if SERVER or not gfx then
+	if SERVER or not gfx or not gfx.CreateMarkup then
 		-- the renderer might fail to load :( !
 		local hack = false
 
@@ -109,12 +109,18 @@ function repl.Initialize()
 			hack = true
 		end
 
-		_G.gfx = {GetDefaultFont = function() end}
-		runfile("lua/libraries/graphics/gfx/markup.lua")
+		_G.gfx = _G.gfx or {}
+		_G.gfx.GetDefaultFont = _G.gfx.GetDefaultFont or function() end
+		runfile(e.ROOT_FOLDER .. "/src/lua/libraries/graphics/gfx/markup.lua")
 
 		if hack then
 			SERVER = false
 		end
+	end
+
+	if not gfx.CreateMarkup then
+		wlog("unable to initialize curses because gfx.CreateMarkup doesn't exist")
+		return
 	end
 
 	c.markup = gfx.CreateMarkup(nil, true)
@@ -246,7 +252,7 @@ function repl.Initialize()
 		end)
 	end
 
-	if repl.curses_init then	return end
+	if repl.curses_init then return end
 
 	local pdcurses_for_real_windows = pcall(function() return curses.PDC_set_resize_limits end)
 
@@ -396,6 +402,7 @@ function repl.ColorPrint(str, color, window)
 	--local r,g,b = 255,255,255
 	--local attr = curses.COLOR_PAIR(16+r/48*36+g/48*6+b/48)
 	local attr = curses.COLOR_PAIR(color + 1)
+
 	window:attron(attr)
 	window:addstr(str)
 	window:attroff(attr)

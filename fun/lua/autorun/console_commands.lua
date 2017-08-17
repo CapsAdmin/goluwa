@@ -31,36 +31,6 @@ do
 	end)
 end
 
-commands.Add("dump_object_count", function()
-	local found = {}
-
-	for obj in pairs(prototype.GetCreated()) do
-		local name = obj.ClassName
-		if obj.ClassName ~= obj.Type then
-			name = obj.Type .. "_" .. name
-		end
-		found[name] = (found[name] or 0) + 1
-	end
-
-	local sorted = {}
-	for k, v in pairs(found) do
-		table.insert(sorted, {k = k, v = v})
-	end
-
-	table.sort(sorted, function(a, b) return a.v > b.v end)
-
-	for _, v in ipairs(sorted) do
-		logn(v.k, " = ", v.v)
-	end
-end)
-
-commands.Add("find_object=arg_line", function(str)
-	local obj = prototype.FindObject(str)
-	if obj then
-		table.print(obj:GetStorableTable())
-	end
-end)
-
 do -- url monitoring
 	commands.Add("monitor_url=string,number[0.5]", function(url, interval)
 		local last_modified

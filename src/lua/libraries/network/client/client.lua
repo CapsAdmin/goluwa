@@ -89,7 +89,6 @@ end
 runfile("input.lua", META)
 runfile("extended.lua", META)
 runfile("user_command.lua", META)
-runfile("chat_above_head.lua", META)
 
 META:Register()
 

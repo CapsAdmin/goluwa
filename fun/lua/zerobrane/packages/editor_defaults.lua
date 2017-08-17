@@ -4,7 +4,7 @@ local PLUGIN = {
 	author = "CapsAdmin",
 }
 local default_project_dir = "../../"
-local default_file = "/src/lua/examples/hello_world.lua"
+local default_file = "/fun/lua/examples/hello_world.lua"
 local default_interpreter = "goluwa"
 
 function PLUGIN:onAppLoad()

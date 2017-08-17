@@ -1,9 +1,6 @@
 local utility = _G.utility or {}
 
 runfile("packed_rectangle.lua", utility)
-runfile("quickbms.lua", utility)
-runfile("find_color.lua", utility)
-runfile("vmd_parser.lua", utility)
 
 do
 	local function replace(start, stop, def)

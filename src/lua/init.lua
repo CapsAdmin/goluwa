@@ -218,6 +218,9 @@ _G.runfile = function() end
 _G.system = false
 _G.event = false
 
+local commands_add_buffer = {}
+_G.commands = {Add = function(...) table.insert(commands_add_buffer, {...}) end}
+
 local temp_runfile = function(path) return dofile(e.SRC_FOLDER .. path) end
 
 -- standard library extensions
@@ -253,6 +256,7 @@ temp_runfile("lua/libraries/filesystem/files/os.lua")
 vfs.Mount("os:" .. e.USERDATA_FOLDER, "data") -- mount "ROOT/data/users/*username*/" to "/data/"
 vfs.Mount("os:" .. e.BIN_FOLDER, "bin") -- mount "ROOT/data/bin" to "/bin/"
 vfs.MountAddon("os:" .. e.SRC_FOLDER) -- mount "ROOT/src" to "/"
+vfs.GetAddonInfo("src").startup = nil -- prevent init.lua from running later on again
 
 -- this will just make require("bit32") will have an early exit
 package.preload.bit32 = function() error("we're luajit") end
@@ -280,7 +284,7 @@ do -- full path
 	end)
 end
 
-_G.runfile = vfs.RunFile
+_G.runfile = function(...) local ret = {vfs.RunFile(...)} if not ret[1] and ret[2] then wlog(ret[2], 2) end return unpack(ret) end
 _G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir
 _G.require = runfile("lua/libraries/require.lua") -- replace require with the pure lua version
 _G.module = _G.require.module
@@ -301,7 +305,10 @@ end
 crypto = runfile("lua/libraries/crypto.lua") -- base64 and other hash functions
 serializer = runfile("lua/libraries/serializer.lua") -- for serializing lua data in different formats
 structs = runfile("lua/libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
+
 commands = runfile("lua/libraries/commands.lua") -- console command type interface for running in repl, chat, etc
+-- add all commands that were added before the commands library was available
+for i, args in ipairs(commands_add_buffer) do commands.Add(unpack(args)) end
 
 if CURSES then
 	repl = runfile("lua/libraries/repl.lua") -- read eval print loop using curses
@@ -362,7 +369,6 @@ if SERVER or CLIENT then
 
 		nvars = runfile("lua/libraries/network/nvars.lua") -- variable synchronization between server and client
 		clients = runfile("lua/libraries/network/clients.lua") -- high level wrapper for a connected client
-		chat = runfile("lua/libraries/network/chat.lua") -- in game chat
 
 		NETWORK = true
 	else
@@ -382,7 +388,6 @@ if GRAPHICS then
 		gfx = runfile("lua/libraries/graphics/gfx/gfx.lua") -- high level 2d and 3d functions based on render2d, fonts and render
 		render3d = runfile("lua/libraries/graphics/render3d/render3d.lua")
 		window = runfile("lua/libraries/graphics/window.lua") -- window implementation
-		gui = runfile("lua/libraries/graphics/gui/gui.lua")
 	end
 end
 
@@ -394,15 +399,11 @@ end
 if SOUND then
 	audio = runfile("lua/libraries/audio/audio.lua") -- high level implementation of OpenAl
 
-	if audio then
-		chatsounds = runfile("lua/libraries/audio/chatsounds/chatsounds.lua")
-	else
+	if not audio then
 		SOUND = false
 	end
 end
 
-line = runfile("lua/libraries/love/line.lua") -- a löve wrapper that lets you run löve games
-gine = runfile("lua/libraries/gmod/gine.lua") -- a gmod wrapper that lets you run gmod scripts
 
 entities = runfile("lua/libraries/entities/entities.lua") -- entity component system
 

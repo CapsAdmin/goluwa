@@ -154,3 +154,64 @@ end
 function render3d.GetDistanceSortedScene()
 	return render3d.scene_dist
 end
+
+
+commands.Add("scene_info", function()
+	logf("%s models\n", #render3d.scene)
+
+	local model_count = 0
+	for _, model in ipairs(render3d.scene) do
+		model_count = model_count + #model.sub_meshes
+	end
+
+	logf("%s sub models\n", model_count)
+
+	local light_count = 0
+	for _, ent in ipairs(entities.GetAll()) do
+		if ent.SetShadow then
+			light_count = light_count + 1
+		end
+	end
+	logf("%s lights\n", light_count)
+
+	logf("%s maximum draw calls\n", model_count + light_count)
+
+	local total_visible = 0
+	local vis = {}
+	for _, model in ipairs(render3d.scene) do
+		for key, is_visible in pairs(model.visible) do
+			local visible = is_visible and 1 or 0
+			vis[key] = (vis[key] or 0) + visible
+			total_visible = total_visible + visible
+		end
+	end
+
+	logf("%s current draw calls with shadows\n", total_visible)
+
+	local temp = {}
+	for id, count in pairs(vis) do table.insert(temp, {id = id, count = count}) end
+	table.sort(temp, function(a, b) return a.id < b.id end)
+	for _, v in ipairs(temp) do
+		logf("\t%s visible in %s\n", v.count, v.id)
+	end
+
+	local mat_count = {}
+	local tex_count = {}
+	for _, model in ipairs(render3d.scene) do
+		for _, mesh in ipairs(model.sub_meshes) do
+			if mesh.material then
+				mat_count[mesh.material] = true
+				for key, val in pairs(mesh.material) do
+					if typex(val) == "texture" then
+						tex_count[val] = true
+					end
+				end
+			end
+		end
+	end
+	mat_count = table.count(mat_count)
+	tex_count = table.count(tex_count)
+
+	logf("%s materials\n", mat_count)
+	logf("%s textures\n", tex_count)
+end)

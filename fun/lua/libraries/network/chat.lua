@@ -98,4 +98,8 @@ if SERVER then
 	end
 end
 
+commands.Add("say=arg_line", function(text)
+	chat.Say(text)
+end)
+
 return chat

@@ -976,6 +976,5 @@ function audio.Decode(data, path_hint)
 end
 
 runfile("decoders/*", audio)
-runfile("midi.lua", audio)
 
 return audio

@@ -2,8 +2,6 @@ local steam = _G.steam or {}
 
 steam.source2meters = 0.01905
 
-runfile("web_api.lua", steam)
-runfile("server_query.lua", steam)
 runfile("mount.lua", steam)
 runfile("vmt.lua", steam)
 

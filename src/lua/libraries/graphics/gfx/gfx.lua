@@ -4,8 +4,6 @@ runfile("polygon_2d.lua", gfx)
 runfile("polygon_3d.lua", gfx)
 runfile("quadric_bezier_curve.lua", gfx)
 runfile("text.lua", gfx)
-runfile("video.lua", gfx)
-runfile("particles.lua", gfx)
 runfile("markup.lua", gfx)
 
 function gfx.Initialize()

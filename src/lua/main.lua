@@ -5,11 +5,6 @@ pvars.Setup("text_editor_path", false)
 
 if SOCKETS then
 	sockets.Initialize()
-
-	if not CLI then
-		resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/", true)
-		resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/", true)
-	end
 end
 
 if WINDOW then
@@ -23,7 +18,6 @@ if WINDOW then
 			render2d.Initialize()
 			fonts.Initialize()
 			gfx.Initialize()
-			gui.Initialize()
 		end
 	else
 		GRAPHICS = false
@@ -33,14 +27,6 @@ end
 
 if SOUND then
 	audio.Initialize()
-end
-
-if CURSES then
-	repl.Initialize()
-end
-
-if GRAPHICS then
-	love = line.CreateLoveEnv() -- https://www.love2d.org/wiki/love
 end
 
 if PHYSICS then
@@ -61,13 +47,8 @@ end
 -- some might not load depending on its info.lua file.
 -- for instance: "load = CAPSADMIN ~= nil," will make it load
 -- only if the CAPSADMIN constant is not nil.
+-- this will skip the src folder though
 vfs.MountAddons(e.ROOT_FOLDER)
-
--- execute /data/users/*USERNAME*/cfg/autoexec.lua
-local cfg = vfs.Read("cfg/autoexec.cfg")
-if cfg then
-	commands.RunString(cfg)
-end
 
 system._CheckCreatedEnv()
 
@@ -78,23 +59,26 @@ end
 do -- autorun
 	local profile_start_time = os.clock()
 
-	-- load everything in lua/autorun/*
+	-- call goluwa/*/lua/init.lua if it exists
+	vfs.InitAddons()
+
+	-- load everything in goluwa/*/lua/autorun/*
 	vfs.AutorunAddons()
 
-	-- load everything in lua/autorun/*USERNAME*/*
+	-- load everything in goluwa/*/lua/autorun/*USERNAME*/*
 	vfs.AutorunAddons(e.USERNAME)
 
-	-- load everything in lua/autorun/client/*
+	-- load everything in goluwa/*/lua/autorun/client/*
 	if CLIENT then
 		vfs.AutorunAddons("client/")
 	end
 
-	-- load everything in lua/autorun/server/*
+	-- load everything in goluwa/*/lua/autorun/server/*
 	if SERVER then
 		vfs.AutorunAddons("server/")
 	end
 
-	-- load everything in lua/autorun/shared/*
+	-- load everything in goluwa/*/lua/autorun/shared/*
 	if CLIENT or SERVER then
 		vfs.AutorunAddons("shared/")
 	end
@@ -110,6 +94,10 @@ do -- autorun
 	if VERBOSE_STARTUP then
 		llog("autorunning scripts took %s seconds", os.clock() - profile_start_time)
 	end
+end
+
+if CURSES then
+	repl.Initialize()
 end
 
 local rate_cvar = pvars.Setup(
