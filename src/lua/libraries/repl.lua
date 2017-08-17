@@ -22,6 +22,7 @@ local COLORPAIR_STATUS = 9
 
 local char_translate =
 {
+	[1] = "CTL_A",
 	[10] = "KEY_ENTER",
 	[13] = "KEY_ENTER",
 	[459] = "KEY_ENTER",
@@ -97,6 +98,15 @@ local markup_translate = {
 	KEY_RSHIFT = "right_shift",
 	KEY_RCONTROL = "right_control",
 	KEY_LCONTROL = "left_control",
+
+	CTL_A = "home",
+	CTL_E = "end",
+	CTL_P = "up",
+	CTL_N = "down",
+	CTL_F = "right",
+	CTL_B = "left",
+	CTL_D = "delete",
+	CTL_H = "backspace",
 }
 
 function repl.Initialize()

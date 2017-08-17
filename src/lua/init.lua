@@ -338,8 +338,6 @@ _G.P = profiler.ToggleTimer
 _G.I = profiler.ToggleInstrumental
 _G.S = profiler.ToggleStatistical
 
-language = runfile("lua/libraries/language.lua") _G.L = language.LanguageString -- L"options", for use in gui menus and such.
-
 if PHYSICS then
 	physics = runfile("lua/libraries/physics/physics.lua") -- bullet physics
 	if not physics then

@@ -1,4 +1,12 @@
-runfile("lua/libraries/filesystem/files/*", vfs)
+language = runfile("lua/libraries/language.lua") _G.L = language.LanguageString -- L"options", for use in gui menus and such.
+
+if SOCKETS then
+	runfile("lua/libraries/sockets/websocket.lua", sockets)
+	runfile("lua/libraries/sockets/irc.lua", sockets)
+	runfile("lua/libraries/sockets/intermsg.lua", sockets)
+end
+
+runfile("lua/decoders/files/*", vfs)
 
 runfile("lua/libraries/steam/server_query.lua", steam)
 --runfile("lua/libraries/steam/steamworks.lua", steam)
@@ -15,14 +23,16 @@ end
 
 if GRAPHICS then
 	gui = runfile("lua/libraries/graphics/gui/gui.lua")
+	runfile("lua/gui_panels/*", gui)
 
-	runfile("lua/libraries/graphics/fonts/fonts/*", fonts)
+	runfile("lua/decoders/fonts/*", fonts)
 
 	runfile("lua/libraries/graphics/gfx/particles.lua", gfx)
 	runfile("lua/libraries/graphics/gfx/video.lua", gfx)
 end
 
 if SOUND then
+	runfile("lua/decoders/sound/*", audio)
 	runfile("lua/libraries/audio/midi.lua", audio)
 	chatsounds = runfile("lua/libraries/audio/chatsounds/chatsounds.lua")
 end

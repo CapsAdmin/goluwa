@@ -47,7 +47,7 @@ do
 
 	end
 
-	runfile(render.GetDir() .. "window.lua", render)
+	runfile(render.GetDir() .. "window_sdl.lua", render)
 end
 
 function render.Shutdown()
