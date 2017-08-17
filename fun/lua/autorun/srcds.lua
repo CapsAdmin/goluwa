@@ -296,49 +296,10 @@ end
 
 do
 	function gserv.IsRunning()
-		return io.popen("tmux has-session -t goluwa_srcds 2>&1"):read("*all") == ""
+		return io.popen("tmux has-session -t srcds_goluwa 2>&1"):read("*all") == ""
 	end
 
-	function gserv.Start()
-		check_setup()
-
-		if gserv.IsRunning() then error("server is running", 2) end
-
-		load_configs()
-
-		logn("starting gmod server")
-
-		vfs.Write(get_gmod_dir() .. "data/gserv_pinger.txt", "booting")
-
-		os.execute("tmux kill-session -t goluwa_srcds 2>/dev/null")
-		os.execute("tmux new-session -d -s goluwa_srcds")
-
-		gserv.log_path = "gserv/logs/" .. os.date("%Y/%m/%d/%H-%M-%S.txt")
-		vfs.Write("data/" .. gserv.log_path, "")
-		os.execute("tmux pipe-pane -o -t goluwa_srcds 'cat >> " .. R("data/" .. gserv.log_path) .. "'")
-
-		gserv.BuildConfig()
-
-		local str = ""
-		for k, v in pairs(gserv.startup_parameters) do
-			str = str .. "+" .. k .. " " .. v .. " "
-		end
-
-		if gserv.workshop_collection then
-			local id = tonumber(gserv.workshop_collection) or gserv.workshop_collection:match("id=(%d+)") or gserv.workshop_collection
-			str = str .. "+workshop_collection " .. id
-		end
-
-		local key = gserv.workshop_auth_key:Get()
-
-		if key then
-			str = str .. "-authkey " .. key
-		else
-			logn("workshop auth key not setup")
-		end
-
-		os.execute("tmux send-keys -t goluwa_srcds \"sh '" .. gserv.GetInstallDir() .. "/srcds_run' -game garrysmod " .. str .. "\" C-m")
-
+	local function start_pinging()
 		event.Timer("gserv_pinger", 1, 0, function()
 			local time = vfs.Read(get_gmod_dir() .. "data/gserv_pinger.txt")
 
@@ -357,13 +318,67 @@ do
 		end)
 	end
 
+	function gserv.Resume()
+		if gserv.IsRunning() then
+			llog("resuming server")
+
+			start_pinging()
+			gserv.log_path = vfs.Read(data_dir .. "last_log_path")
+		end
+	end
+
+	function gserv.Start()
+		check_setup()
+
+		if gserv.IsRunning() then error("server is running", 2) end
+
+		load_configs()
+
+		llog("starting gmod server")
+
+		vfs.Write(get_gmod_dir() .. "data/gserv_pinger.txt", "booting")
+
+		os.execute("tmux kill-session -t srcds_goluwa 2>/dev/null")
+		os.execute("tmux new-session -d -s srcds_goluwa")
+
+		gserv.log_path = "gserv/logs/" .. os.date("%Y/%m/%d/%H-%M-%S.txt")
+		vfs.Write("data/" .. gserv.log_path, "")
+		vfs.Write(data_dir .. "last_log_path", gserv.log_path)
+		os.execute("tmux pipe-pane -o -t srcds_goluwa 'cat >> " .. R("data/" .. gserv.log_path) .. "'")
+
+		gserv.BuildConfig()
+
+		local str = ""
+		for k, v in pairs(gserv.startup_parameters) do
+			str = str .. "+" .. k .. " " .. v .. " "
+		end
+
+		if gserv.workshop_collection then
+			local id = tonumber(gserv.workshop_collection) or gserv.workshop_collection:match("id=(%d+)") or gserv.workshop_collection
+			str = str .. "+workshop_collection " .. id
+		end
+
+		local key = gserv.workshop_auth_key:Get()
+
+		if key then
+			str = str .. "-authkey " .. key
+		else
+			llog("workshop auth key not setup")
+		end
+
+		os.execute("tmux send-keys -t srcds_goluwa \"sh '" .. gserv.GetInstallDir() .. "/srcds_run' -game garrysmod " .. str .. "\" C-m")
+
+		start_pinging()
+	end
+
 	function gserv.Kill()
 		event.RemoveTimer("gserv_pinger")
+		vfs.Delete(data_dir .. "last_log_path")
 
 		check_running()
 
-		logn("killing gmod server")
-		os.execute("tmux kill-session -t goluwa_srcds 2>/dev/null")
+		llog("killing gmod server")
+		os.execute("tmux kill-session -t srcds_goluwa 2>/dev/null")
 	end
 
 	function gserv.Reboot()
@@ -393,7 +408,7 @@ end
 function gserv.Execute(line)
 	check_running()
 
-	os.execute("tmux send-keys -t goluwa_srcds \"" .. line .. "\" C-m")
+	os.execute("tmux send-keys -t srcds_goluwa \"" .. line .. "\" C-m")
 end
 
 function gserv.Stop()
@@ -433,7 +448,7 @@ function gserv.Restart(time)
 	check_running()
 
 	time = time or 0
-	logn("restarting server in ", time, " seconds")
+	llog("restarting server in ", time, " seconds")
 	gserv.RunLua("if aowl then RunConsoleCommand('aowl', 'restart', '"..time.."') else timer.Simple("..time..", function() RunConsoleCommand('changelevel', game.GetMap()) end) end")
 end
 
@@ -480,16 +495,18 @@ do -- commands
 	commands.Add("gserv get_config_param=string", function(key) logn(gserv.GetConfigParameter(key)) end)
 
 	commands.Add("gserv run=arg_line", function(str)
-		logn("running |", str, "| on srcds")
+		llog("running |", str, "| on srcds")
 		gserv.Execute(str)
 		event.Delay(0.1, function() gserv.Show() end)
 	end)
 
 	commands.Add("gserv lua=arg_line", function(code)
-		logn("running |lua_run ", code, "| on srcds")
+		llog("running |lua_run ", code, "| on srcds")
 		gserv.RunLua(code)
 		event.Delay(0.1, function() gserv.Show() end)
 	end)
 end
 
-print(str)
+if vfs.IsFile(data_dir .. "last_log_path") then
+	gserv.Resume()
+end
