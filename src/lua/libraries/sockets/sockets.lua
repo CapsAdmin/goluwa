@@ -70,8 +70,6 @@ sockets.active_sockets = sockets.active_sockets or {}
 
 runfile("helpers.lua", sockets)
 runfile("http.lua", sockets)
-runfile("irc.lua", sockets)
-runfile("websocket.lua", sockets)
 
 function sockets.Initialize()
 	event.Timer("sockets", 1/30, 0, sockets.Update, nil, function(...) logn(...) return true end)
