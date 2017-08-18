@@ -298,7 +298,6 @@ steam.appids = {
 	[17730] = "Smashball",
 	[222880] = "Insurgency 2",
 	[238430] = "Contagion",
-
 	[294420] = "7 Days to Die Dedicated Server",
 	[302550] = "Assetto Corsa Dedicated Server",
 	[17515] = "Age of Chivalry Dedicated Server",

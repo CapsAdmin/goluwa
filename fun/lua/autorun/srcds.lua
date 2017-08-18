@@ -485,7 +485,7 @@ do -- commands
 	commands.Add("gserv stop", function() gserv.Stop() end)
 	commands.Add("gserv kill", function() gserv.Kill() end)
 	commands.Add("gserv show", function() gserv.Show() end)
-	commands.Add("gserv restart=number[30]", function(time) print("!?") gserv.Restart(time) end)
+	commands.Add("gserv restart=number[30]", function(time) gserv.Restart(time) end)
 	commands.Add("gserv reboot", function() gserv.Reboot() end)
 
 	commands.Add("gserv add_addon=string", function(url) gserv.AddAddon(url) end)
