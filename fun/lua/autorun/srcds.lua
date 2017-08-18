@@ -85,19 +85,19 @@ function gserv.Setup()
 	end)
 end
 
-function gserv.InstallGame(name)
+function gserv.InstallGame(name, dir)
 	if gserv.IsRunning() then error("server is running", 2) end
 
 	local appid, full_name = steam.GetAppIdFromName(name .. " Dedicated Server")
+	if not appid and tonumber(name) then
+		appid = tonumber(name)
+	end
 
-	if not appid and type(name) == "number" then
-		appid = name
-		full_name = tostring(appid)
-	else
+	if not appid then
 		error("could not find " .. name, 2)
 	end
 
-	local dir_name = full_name:lower():gsub("%p", ""):gsub("%s+", " ")
+	local dir_name = dir or full_name:lower():gsub("%p", ""):gsub("%s+", " ")
 
 	logn("setting up " .. name)
 
@@ -457,7 +457,7 @@ end
 
 do -- commands
 	commands.Add("gserv setup", function() gserv.Setup() end)
-	commands.Add("gserv install_game=string", function(name) gserv.InstallGame(name) end)
+	commands.Add("gserv install_game=string|number,string|nil", function(name, dir) gserv.InstallGame(name, dir) end)
 
 	commands.Add("gserv start", function() gserv.Start() end)
 	commands.Add("gserv stop", function() gserv.Stop() end)
