@@ -103,7 +103,7 @@ function gserv.InstallGame(name, dir)
 		error("could not find " .. name, 2)
 	end
 
-	local dir_name = dir or full_name:lower():gsub("%p", ""):gsub("%s+", " ")
+	local dir_name = dir or full_name:lower():gsub("%p", ""):gsub("%s+", "_")
 
 	logn("setting up " .. name)
 
