@@ -169,12 +169,10 @@ function steam.InitializeWebAPI(force)
 					end
 				end
 			end
-			table.print(patch)
-			table.add(steam.supported.apilist.interfaces, patch)
 		end
 	end
 
-	if key == "" then
+	if steam.GetWebAPIKey() == "" then
 		logn("steam key is not set (run steam_webapi_key *key*)")
 	end
 
