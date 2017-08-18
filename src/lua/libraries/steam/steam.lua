@@ -523,7 +523,7 @@ function steam.GetAppIdFromName(search)
 	end
 
 	for _, data in ipairs(sorted) do
-		if data.name:lower():gsub("%p+", " "):gsub("%s+", " "):compare(search) then
+		if data.name:lower():gsub("%p+", " "):gsub("%s+", " "):compare(search:gsub("%p+", " "):gsub("%s+", " ")) then
 			return data.appid, data.name
 		end
 	end
