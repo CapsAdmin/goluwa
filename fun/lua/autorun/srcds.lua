@@ -520,6 +520,7 @@ end
 
 do -- commands
 	commands.Add("gserv setup", function() gserv.Setup() end)
+	commands.Add("gserv update", function() gserv.InstallGame("gmod") end)
 	commands.Add("gserv install_game=string|number,string|nil", function(name, dir) gserv.InstallGame(name, dir) end)
 
 	commands.Add("gserv start", function() gserv.Start() end)
