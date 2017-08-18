@@ -13,7 +13,9 @@ gserv.startup_parameters = {
 	map = "gm_construct",
 }
 
-gserv.launch_parameters = {}
+gserv.launch_parameters = {
+	"disableluarefresh",
+}
 
 gserv.cfg = {
 	sv_hibernate_think = 1, -- so pinger can run even if there are no players on the server
