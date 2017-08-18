@@ -412,13 +412,13 @@ do
 		local key = gserv.workshop_auth_key:Get()
 
 		if key then
-			str = str .. "-authkey " .. key
+			str = str .. "-authkey " .. key .. " "
 		else
 			llog("workshop auth key not setup")
 		end
 
 
-		str = str .. "-port " .. gserv.port:Get()
+		str = str .. "-port " .. gserv.port:Get() .. " "
 
 		for k, v in pairs(gserv.launch_parameters) do
 			str = str .. "-" .. k .. " " .. v .. " "
