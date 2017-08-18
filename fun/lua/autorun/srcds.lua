@@ -410,7 +410,7 @@ do
 
 		if gserv.workshop_collection then
 			local id = tonumber(gserv.workshop_collection) or gserv.workshop_collection:match("id=(%d+)") or gserv.workshop_collection
-			str = str .. "+workshop_collection " .. id  .. " "
+			str = str .. "+host_workshop_collection " .. id  .. " "
 		end
 
 		local key = gserv.workshop_auth_key:Get()
