@@ -56,6 +56,10 @@ if [ "$1" == "build" ]; then
 	fi
 fi
 
+if [ "$1" = "tmux" ] && ! command -v tmux>/dev/null; then
+	echo "tmux is not installed"
+fi
+
 if [ "$1" != "launch" ] && command -v tmux>/dev/null; then
 
 	if tmux has-session -t goluwa 2>/dev/null; then
