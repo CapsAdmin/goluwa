@@ -38,7 +38,7 @@ local function check_setup() if not gserv.IsSetup() then error("server is not se
 local function check_running() if not gserv.IsRunning() then error("server is not running", 3) end end
 
 function gserv.IsSetup()
-	if vfs.IsFile(get_gserv_addon_dir() .. "lua/autorun/server/gserv_pinger.lua") then
+	if gserv.GetInstallDir() and vfs.IsFile(get_gserv_addon_dir() .. "lua/autorun/server/gserv_pinger.lua") then
 		return true
 	end
 end
@@ -60,7 +60,7 @@ function gserv.Setup()
 		end
 
 		-- if srcds_run does not exist install gmod
-		if not vfs.IsFile(srcds_dir .. gserv.GetInstallDir() .. "/srcds_run") then
+		if not gserv.GetInstallDir() then
 			gserv.InstallGame("gmod")
 		end
 
@@ -126,7 +126,7 @@ function gserv.GetInstallDir()
 end
 
 function gserv.GetInstalledGames()
-	return serializer.ReadFile("luadata", data_dir .. "games.lua")
+	return serializer.ReadFile("luadata", data_dir .. "games.lua") or {}
 end
 
 function gserv.BuildMountConfig()
