@@ -40,6 +40,21 @@ function download
     fi
 }
 
+if [ "$1" == "update" ]; then
+	if [ command -v git >/dev/null 2>&1 ] && [ -d ../../.git ]; then
+		git pull
+	else
+		cd ../../
+		download "https://github.com/CapsAdmin/goluwa/archive/master.tar.gz" "temp.tar.gz"
+		tar -xvzf temp.tar.gz
+		mv goluwa-master/* .
+		rm temp.tar.gz
+		rm -rf goluwa-master
+	fi
+
+	exit 1
+fi
+
 if [ "$1" == "build" ]; then
 	if [ "$2" == "all" ]; then
 		cd ../lua/build/
