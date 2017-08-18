@@ -330,12 +330,14 @@ do -- addons
 		local info = serializer.GetKeyFromFile("luadata", data_dir .. "addons.lua", url)
 
 		if not info then
-			for url, info in pairs(gserv.GetAddons()) do
+			for _, info in pairs(gserv.GetAddons()) do
 				if info.name:lower() == url:lower() then
 					return info
 				end
 			end
 		end
+
+		return info
 	end
 
 	function gserv.GetAddons()
