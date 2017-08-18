@@ -2,13 +2,18 @@ if not system.OSCommandExists("tmux", "tar") then return end
 
 gserv = gserv or {}
 
+gserv.loaded_configs = false
+
 gserv.workshop_auth_key = pvars.Setup("gserv_authkey")
+gserv.port = pvars.Setup("gserv_port", 27015)
 gserv.workshop_collection = "https://steamcommunity.com/sharedfiles/filedetails/?id=427843415"
 
 gserv.startup_parameters = {
 	maxplayers = 32,
 	map = "gm_construct",
 }
+
+gserv.launch_parameters = {}
 
 gserv.cfg = {
 	sv_hibernate_think = 1, -- so pinger can run even if there are no players on the server
@@ -29,6 +34,7 @@ local data_dir = "data/gserv/"
 local function load_configs()
 	if not gserv.loaded_configs then
 		table.merge(gserv.startup_parameters, serializer.ReadFile("luadata", data_dir .. "startup_parameters.lua") or {})
+		table.merge(gserv.launch_parameters, serializer.ReadFile("luadata", data_dir .. "launch_parameters.lua") or {})
 		table.merge(gserv.cfg, serializer.ReadFile("luadata", data_dir .. "config.lua") or {})
 		gserv.loaded_configs = true
 	end
@@ -196,6 +202,26 @@ do
 		load_configs()
 
 		return gserv.startup_parameters[key]
+	end
+
+	function gserv.SetLaunchParameter(key, val)
+		load_configs()
+
+		gserv.launch_parameters[key] = val or ""
+		serializer.WriteFile("luadata", data_dir .. "launch_parameters.lua", gserv.launch_parameters)
+	end
+
+	function gserv.RemoveLaunchParameter(key)
+		load_configs()
+
+		gserv.launch_parameters[key] = nil
+		serializer.WriteFile("luadata", data_dir .. "launch_parameters.lua", gserv.launch_parameters)
+	end
+
+	function gserv.GetLaunchParameter(key)
+		load_configs()
+
+		return gserv.launch_parameters[key]
 	end
 end
 
@@ -391,6 +417,13 @@ do
 			llog("workshop auth key not setup")
 		end
 
+
+		str = str .. "-port " .. gserv.port:Get()
+
+		for k, v in pairs(gserv.launch_parameters) do
+			str = str .. "-" .. k .. " " .. v .. " "
+		end
+
 		os.execute("tmux send-keys -t srcds_goluwa \"sh '" .. gserv.GetInstallDir() .. "/srcds_run' -game garrysmod " .. str .. "\" C-m")
 
 		start_pinging()
@@ -440,7 +473,13 @@ function gserv.Stop()
 	check_running()
 
 	gserv.Execute("exit")
-	event.Delay(1, function() gserv.Kill() end)
+	event.Delay(1, function()
+		if gserv.IsRunning() then
+			llog("took more than 1 second to exit")
+			llog("killing server...")
+			gserv.Kill()
+		end
+	end)
 end
 
 function gserv.RunLua(line)
@@ -494,10 +533,11 @@ do -- commands
 	commands.Add("gserv update_addons", function() gserv.UpdateAddons() end)
 	commands.Add("gserv addon_info", function(url) table.print(gserv.GetAddon(url)) end)
 
-	commands.Add("gserv list_addons", function() table.print(gserv.GetAddons()) end)
-	commands.Add("gserv list_config", function() table.print(gserv.cfg) end)
-	commands.Add("gserv list_startup", function() table.print(gserv.startup_parameters) end)
-	commands.Add("gserv list_games", function() table.print(gserv.GetInstalledGames()) end)
+	commands.Add("gserv list_addons", function() load_configs() table.print(gserv.GetAddons()) end)
+	commands.Add("gserv list_config", function() load_configs() table.print(gserv.cfg) end)
+	commands.Add("gserv list_startup", function() load_configs() table.print(gserv.startup_parameters) end)
+	commands.Add("gserv list_launch", function() load_configs() table.print(gserv.launch_parameters) end)
+	commands.Add("gserv list_games", function() load_configs() table.print(gserv.GetInstalledGames()) end)
 
 	commands.Add("gserv setup_info", function()
 		logn("startup parameters:")
@@ -512,6 +552,10 @@ do -- commands
 
 	commands.Add("gserv set_startup_param=string,string", function(key, val) gserv.SetStartupParameter(key, val) end)
 	commands.Add("gserv get_startup_param=string", function(key) logn(gserv.GetStartupParameter(key)) end)
+
+	commands.Add("gserv set_launch_param=string,string|nil", function(key, val) gserv.SetLaunchParameter(key, val) end)
+	commands.Add("gserv remove_launch_param=string,string|nil", function(key, val) gserv.RemoveLaunchParameter(key) end)
+	commands.Add("gserv get_launch_param=string", function(key) logn(gserv.GetLaunchParameter(key)) end)
 
 	commands.Add("gserv set_config_param=string,string", function(key, val) gserv.SetConfigParameter(key, val) end)
 	commands.Add("gserv get_config_param=string", function(key) logn(gserv.GetConfigParameter(key)) end)
