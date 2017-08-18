@@ -89,9 +89,12 @@ function gserv.InstallGame(name)
 	if gserv.IsRunning() then error("server is running", 2) end
 
 	local appid, full_name = steam.GetAppIdFromName(name .. " Dedicated Server")
+
 	if not appid and type(name) == "number" then
 		appid = name
 		full_name = tostring(appid)
+	else
+		error("could not find " .. name, 2)
 	end
 
 	local dir_name = full_name:lower():gsub("%p", ""):gsub("%s+", " ")
