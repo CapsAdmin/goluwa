@@ -41,7 +41,8 @@ function download
 }
 
 if [ "$1" == "update" ]; then
-	if [ command -v git >/dev/null 2>&1 ] && [ -d ../../.git ]; then
+
+	if [ -d ../../.git ]; then
 		git pull
 	else
 		cd ../../
