@@ -211,7 +211,11 @@ do -- addons
 	function gserv.UpdateAddon(url)
 		check_setup()
 
-		local info = assert(gserv.GetAddon(url))
+		local info = gserv.GetAddon(url)
+
+		if not info then
+			error("no such addon: " .. url)
+		end
 
 		if info.type == "git" then
 			logn("updating git repository addon ", info.url)
@@ -266,12 +270,19 @@ do -- addons
 		end
 
 		serializer.SetKeyValueInFile("luadata", data_dir .. "addons.lua", key, info)
+
+		llog("added addon")
+		table.print(info)
 	end
 
 	function gserv.RemoveAddon(url)
 		check_setup()
 
-		local info = assert(gserv.GetAddon(url))
+		local info = gserv.GetAddon(url)
+
+		if not info then
+			error("no such addon: " .. url)
+		end
 
 		local path = get_gmod_dir() .. "addons/".. info.name
 
@@ -282,12 +293,23 @@ do -- addons
 		end
 
 		serializer.SetKeyValueInFile("luadata", data_dir .. "addons.lua", url, nil)
+
+		llog("removed addon")
+		table.print(info)
 	end
 
 	function gserv.GetAddon(url)
 		check_setup()
 
-		return serializer.GetKeyFromFile("luadata", data_dir .. "addons.lua", url)
+		local info = serializer.GetKeyFromFile("luadata", data_dir .. "addons.lua", url)
+
+		if not info then
+			for url, info in pairs(gserv.GetAddons()) do
+				if info.name:lower() == url:lower() then
+					return info
+				end
+			end
+		end
 	end
 
 	function gserv.GetAddons()
@@ -469,11 +491,8 @@ do -- commands
 	commands.Add("gserv add_addon=string", function(url) gserv.AddAddon(url) end)
 	commands.Add("gserv remove_addon=string", function(url) gserv.RemoveAddon(url) end)
 	commands.Add("gserv update_addon=string", function(url) gserv.UpdateAddon(url) end)
-
-	commands.Add("gserv add_addon=string", function(url) gserv.AddAddon(url) end)
-	commands.Add("gserv remove_addon=string", function(url) gserv.RemoveAddon(url) end)
-	commands.Add("gserv update_addon=string", function(url) gserv.UpdateAddon(url) end)
 	commands.Add("gserv update_addons", function() gserv.UpdateAddons() end)
+	commands.Add("gserv addon_info", function(url) table.print(gserv.GetAddon(url)) end)
 
 	commands.Add("gserv list_addons", function() table.print(gserv.GetAddons()) end)
 	commands.Add("gserv list_config", function() table.print(gserv.cfg) end)
