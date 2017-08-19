@@ -176,6 +176,8 @@ function string.dumphex(str)
 	return table.concat(out)
 end
 
+string.hexdump = string.dumphex
+
 function string.endswith(a, b)
 	return a:sub(-#b) == b
 end
