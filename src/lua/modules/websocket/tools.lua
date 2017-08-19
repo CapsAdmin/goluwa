@@ -58,7 +58,14 @@ end
 -- used for generate key random ops
 math.randomseed(os.time())
 
+-- SHA1 hashing from luacrypto, if available
 local sha1_crypto
+local done,crypto = pcall(require,'crypto')
+if done then
+  sha1_crypto = function(msg)
+    return crypto.digest('sha1',msg,true)
+  end
+end
 
 -- from wiki article, not particularly clever impl
 local sha1_wiki = function(msg)
