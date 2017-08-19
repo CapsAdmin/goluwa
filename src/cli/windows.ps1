@@ -5,10 +5,10 @@ $ROOT_DIR = $([System.IO.Path]::GetFullPath("$ROOT_DIR\..\..\data"))
 New-Item -ItemType Directory -Force -Path $ROOT_DIR | Out-Null
 Set-Location $ROOT_DIR
 
-if (((gwmi -Query "select osarchitecture from win32_operatingsystem").OSArchitecture) -Match "64") { 
-	$ARCH = "x64" 
-} else { 
-	$ARCH = "x86" 
+if (((gwmi -Query "select osarchitecture from win32_operatingsystem").OSArchitecture) -Match "64") {
+	$ARCH = "x64"
+} else {
+	$ARCH = "x86"
 }
 
 $ide_url = "https://github.com/pkulchenko/ZeroBraneStudio/archive/master.zip"
@@ -48,13 +48,13 @@ function Extract($file, $location, $move_files) {
 	Write-Host -NoNewline "$file >> '$location' ... "
 
 	$shell = New-Object -Com Shell.Application
-	
+
 	$zip = $shell.NameSpace($([System.IO.Path]::GetFullPath("$pwd\$file")))
-	
+
 	if (!$zip) {
 		Write-Error "could not extract $ROOT_DIR\$file!"
 	}
-	
+
 	if (!(Test-Path $location)) {
 		New-Item -ItemType directory -Path $location | Out-Null
 	}
@@ -62,7 +62,7 @@ function Extract($file, $location, $move_files) {
 	foreach($item in $zip.items()) {
 		$shell.Namespace("$pwd\$location").CopyHere($item, 0x14)
 	}
-	
+
 	if ($move_files)
 	{
 		Move-Item -Confirm:$false -Force -Path "$location\*\*" -Destination "$location"
@@ -71,21 +71,21 @@ function Extract($file, $location, $move_files) {
 	Write-Host "OK"
 }
 
-if($arg -eq "ide") {	
+if($arg -eq "ide") {
 	if (!(Test-Path ("ide\zbstudio.exe"))) {
 		Download $ide_url temp.zip
 		Extract temp.zip ide $true
 		Remove temp.zip
 	}
-	
+
 	Set-Location "ide"
-	.\zbstudio.exe -cfg ../../src/lua/zerobrane/config.lua
+	.\zbstudio.exe -cfg ../../fun/lua/zerobrane/config.lua
 }
 
-if ($arg -eq "launch" -Or $arg -eq "") {	
+if ($arg -eq "launch" -Or $arg -eq "") {
 	$bin_dir = "bin\windows_$ARCH"
 
-	if (!(Test-Path "$bin_dir\downloaded_binaries")) {	
+	if (!(Test-Path "$bin_dir\downloaded_binaries")) {
 		Download $bin_url temp.zip
 		Extract temp.zip $bin_dir
 		Remove temp.zip
@@ -93,7 +93,7 @@ if ($arg -eq "launch" -Or $arg -eq "") {
 	}
 
 	Set-Location $pwd\$bin_dir\
-	
+
 	Add-Type -Name ConsoleUtils -Namespace Foo -MemberDefinition @'
     [DllImport("Kernel32.dll")] public static extern IntPtr GetConsoleWindow();
     [DllImport("User32.dll")] public static extern bool ShowWindow(IntPtr hWnd, Int32 nCmdShow);
