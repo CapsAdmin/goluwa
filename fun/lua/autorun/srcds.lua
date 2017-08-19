@@ -433,6 +433,8 @@ do
 		os.execute("tmux send-keys -t srcds_goluwa \"sh '" .. gserv.GetInstallDir() .. "/srcds_run' -game garrysmod " .. str .. "\" C-m")
 
 		start_pinging()
+
+		sockets.StartWebhookServer(gserv.webhook_port:Get() gserv.webhook_secret:Get())
 	end
 
 	function gserv.Kill()
@@ -443,6 +445,8 @@ do
 
 		llog("killing gmod server")
 		os.execute("tmux kill-session -t srcds_goluwa 2>/dev/null")
+
+		sockets.StopWebhookServer(gserv.webhook_port:Get())
 	end
 
 	function gserv.Reboot()
@@ -479,12 +483,9 @@ function gserv.Stop()
 	check_running()
 
 	gserv.Execute("exit")
+
 	event.Delay(1, function()
-		if gserv.IsRunning() then
-			llog("took more than 1 second to exit")
-			llog("killing server...")
-			gserv.Kill()
-		end
+		gserv.Kill()
 	end)
 end
 
@@ -520,69 +521,6 @@ function gserv.Restart(time)
 	time = time or 0
 	llog("restarting server in ", time, " seconds")
 	gserv.RunLua("if aowl then RunConsoleCommand('aowl', 'restart', '"..time.."') else timer.Simple("..time..", function() RunConsoleCommand('changelevel', game.GetMap()) end) end")
-end
-
-function gserv.StartWebhookServer(port, secret)
-	port = port or gserv.webhook_port:Get()
-	secret = secret or gserv.webhook_secret:Get()
-
-	local hmac
-
-	if secret then
-		hmac = require("openssl.hmac").new(gserv.webhook_secret:Get(), "sha1")
-	end
-
-	local function verify_signature(hub_sign, body)
-		local a = hub_sign:sub(#"sha1=" + 1):gsub("..", function(c) return string.char(tonumber("0x"..c)) end)
-		local b = hmac:final(body)
-
-		local equal = #a == #b
-		if equal then
-			for i = 1, #a do
-				if a:sub(i, i) ~= b:sub(i, i) then
-					return
-				end
-			end
-			return true
-		end
-	end
-
-	local server = gserv.webook_server
-
-	if not server then
-		server = sockets.CreateServer("tcp")
-		server:Host("*", port)
-
-		gserv.webook_server = server
-	end
-
-	function server:OnClientConnected(client)
-		sockets.SetupReceiveHTTP(client)
-
-		function client:OnReceiveHTTP(data)
-			if secret then
-				if not verify_signature(data.header["x-hub-signature"], data.content) then
-					client:Remove()
-					return
-				end
-			end
-
-			local content = data.content
-
-			if data.header["content-type"]:find("form-urlencoded", nil, true) then
-				content = content:match("^payload=(.+)")
-				content = content:gsub("%%(..)", function(hex)
-					return string.char(tonumber("0x"..hex))
-				end)
-			end
-
-			event.Call("GServWebhook", serializer.Decode("json", content), self)
-
-			client:Send("HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n")
-		end
-
-		return true
-	end
 end
 
 do -- commands
