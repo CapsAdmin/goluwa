@@ -37,6 +37,10 @@ function META:Close(reason, code)
 	self.socket:Send(frame.encode(encoded, frame.CLOSE, true))
 end
 
+function META:OnRemove()
+	self.socket:Remove()
+end
+
 function META:OnReceive()
 end
 
@@ -53,8 +57,8 @@ function sockets.CreateWebsocketClient()
 	self.socket = sockets.CreateClient("tcp")
 	self.socket:SetTimeout()
 	self.socket:SetReceiveMode("all")
-	--self.socket:SetKeepAlive(true)
-	--self.socket:SetNoDelay(true)
+	self.socket:SetKeepAlive(true)
+	self.socket:SetNoDelay(true)
 
 	function self.socket.OnConnect()
 		self.key = tools.generate_key()
@@ -96,7 +100,15 @@ function sockets.CreateWebsocketClient()
 		if str then
 			local first_opcode
 			local frames = {}
+
 			local encoded = str
+
+			if self.last_encoded then
+				encoded = self.last_encoded .. str
+				self.last_encoded = nil
+			end
+
+			local last_rest
 
 			repeat
 				local decoded, fin, opcode, rest = frame.decode(encoded)
@@ -109,21 +121,25 @@ function sockets.CreateWebsocketClient()
 					encoded = rest
 					if fin == true then
 						local message = table.concat(frames)
-						local opcode = first_opcode
 
-						if opcode == frame.CLOSE then
+						if first_opcode == frame.CLOSE or opcode == frame.CLOSE then
 							local code, reason = frame.decode_close(message)
 							local encoded = frame.encode_close(code)
 							encoded = frame.encode(encoded, frame.CLOSE, true)
 							self.socket:Send(encoded, true)
 							self:OnClose(reason, code)
 							self.socket:Remove()
+							return
 						else
 							self:OnReceive(message, opcode)
 						end
 					end
 				end
-			until not decoded or fin
+			until not decoded
+
+			if #encoded > 0 then
+				self.last_encoded = encoded
+			end
 		end
 	end
 
@@ -134,11 +150,16 @@ META:Register()
 
 if RELOAD then
 	local socket = sockets.CreateWebsocketClient()
-	socket.socket.debug = true
 	socket:Connect("wss://echo.websocket.org")
-	socket:Send("asdf")
+	local str = ""
+	for i = 1, 20000 do
+		str = str .. i .. " "
+	end
+	str = str .. "THE END"
+	print("sending " .. utility.FormatFileSize(#str), #str, str:sub(-100))
+	socket:Send(str)
 
 	function socket:OnReceive(message, opcode)
-		print(message, opcode)
+		print("received " .. utility.FormatFileSize(#message), #message, message:sub(-100))
 	end
 end
