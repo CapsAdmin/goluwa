@@ -48,7 +48,7 @@ if [ "$1" == "update" ]; then
 		cd ../../
 		download "https://github.com/CapsAdmin/goluwa/archive/master.tar.gz" "temp.tar.gz"
 		tar -xvzf temp.tar.gz
-		mv goluwa-master/* .
+		cp -r goluwa-master/* .
 		rm temp.tar.gz
 		rm -rf goluwa-master
 	fi
