@@ -352,7 +352,7 @@ local function newdecoder()
 		else
 			f, pos = find(json, '^[ \n\r\t]*', pos)
 			if pos ~= #json then
-				error('json ended')
+			--	error('json ended')
 			end
 			return v
 		end
