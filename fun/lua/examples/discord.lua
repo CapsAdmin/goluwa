@@ -28,8 +28,9 @@ http("GET", "/channels/260911858133762048/messages", function(messages)
 	end
 end, {limit = 1,})
 http("GET", "/channels/260911858133762048", table.print)
+
+do return end
 ]]
---do return end
 http("GET", "/gateway/bot", function(data)
 	if not data.url then return end
 	if DISCORD_SOCKET then DISCORD_SOCKET:Remove() end
@@ -85,7 +86,9 @@ http("GET", "/gateway/bot", function(data)
 		data.opcode = opcodes[data.op]
 		data.op = nil
 
-		table.print(data)
+		if data.opcode ~= "Heartback ACK" then
+			table.print(data)
+		end
 
 		if data.opcode == "Dispatch" then
 			self.last_sequence = data.s
