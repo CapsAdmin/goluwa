@@ -62,7 +62,7 @@ http("GET", "/gateway/bot", function(data)
 			},
 			compress = false,
 			large_threshold = 100,
-			shard = {1,10},
+			shard = {0,1},
 		},
 	})
 
@@ -81,13 +81,20 @@ http("GET", "/gateway/bot", function(data)
 		[11] = "Heartback ACK", -- sent immediately following a client heartbeat that was received
 	}
 
-	function socket:OnReceive(message)
-		local data = serializer.Decode("json", message)
+	function socket:OnReceive(message, err, partial)
+		local ok, data = pcall(serializer.Decode, "json", message)
+		if not ok then
+			print(data)
+			print(message:sub(-100))
+			print(#message)
+			print(err, partial)
+			return
+		end
 		data.opcode = opcodes[data.op]
 		data.op = nil
 
 		if data.opcode ~= "Heartback ACK" then
-			table.print(data)
+			--table.print(data)
 		end
 
 		if data.opcode == "Dispatch" then
@@ -102,6 +109,8 @@ http("GET", "/gateway/bot", function(data)
 				end
 			end)
 		end
+
+		table.print(data)
 	end
 
 	function socket:OnClose(reason, code)
