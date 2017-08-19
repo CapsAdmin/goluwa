@@ -5,7 +5,9 @@ gserv = gserv or {}
 gserv.loaded_configs = false
 
 gserv.workshop_auth_key = pvars.Setup("gserv_authkey")
-gserv.port = pvars.Setup("gserv_port", 27015)
+gserv.server_port = pvars.Setup("gserv_port", 27015)
+gserv.webhook_port = pvars.Setup("gserv_webhook_port", 27020)
+gserv.webhook_secret = pvars.Setup("gserv_webhook_secret", false)
 gserv.workshop_collection = "https://steamcommunity.com/sharedfiles/filedetails/?id=427843415"
 
 gserv.startup_parameters = {
@@ -422,7 +424,7 @@ do
 		end
 
 
-		str = str .. "-port " .. gserv.port:Get() .. " "
+		str = str .. "-port " .. gserv.server_port:Get() .. " "
 
 		for k, v in pairs(gserv.launch_parameters) do
 			str = str .. "-" .. k .. " " .. v .. " "
@@ -518,6 +520,69 @@ function gserv.Restart(time)
 	time = time or 0
 	llog("restarting server in ", time, " seconds")
 	gserv.RunLua("if aowl then RunConsoleCommand('aowl', 'restart', '"..time.."') else timer.Simple("..time..", function() RunConsoleCommand('changelevel', game.GetMap()) end) end")
+end
+
+function gserv.StartWebhookServer(port, secret)
+	port = port or gserv.webhook_port:Get()
+	secret = secret or gserv.webhook_secret:Get()
+
+	local hmac
+
+	if secret then
+		hmac = require("openssl.hmac").new(gserv.webhook_secret:Get(), "sha1")
+	end
+
+	local function verify_signature(hub_sign, body)
+		local a = hub_sign:sub(#"sha1=" + 1):gsub("..", function(c) return string.char(tonumber("0x"..c)) end)
+		local b = hmac:final(body)
+
+		local equal = #a == #b
+		if equal then
+			for i = 1, #a do
+				if a:sub(i, i) ~= b:sub(i, i) then
+					return
+				end
+			end
+			return true
+		end
+	end
+
+	local server = gserv.webook_server
+
+	if not server then
+		server = sockets.CreateServer("tcp")
+		server:Host("*", port)
+
+		gserv.webook_server = server
+	end
+
+	function server:OnClientConnected(client)
+		sockets.SetupReceiveHTTP(client)
+
+		function client:OnReceiveHTTP(data)
+			if secret then
+				if not verify_signature(data.header["x-hub-signature"], data.content) then
+					client:Remove()
+					return
+				end
+			end
+
+			local content = data.content
+
+			if data.header["content-type"]:find("form-urlencoded", nil, true) then
+				content = content:match("^payload=(.+)")
+				content = content:gsub("%%(..)", function(hex)
+					return string.char(tonumber("0x"..hex))
+				end)
+			end
+
+			event.Call("GServWebhook", serializer.Decode("json", content), self)
+
+			client:Send("HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n")
+		end
+
+		return true
+	end
 end
 
 do -- commands
