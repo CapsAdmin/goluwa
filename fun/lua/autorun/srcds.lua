@@ -434,7 +434,7 @@ do
 
 		start_pinging()
 
-		sockets.StartWebhookServer(gserv.webhook_port:Get() gserv.webhook_secret:Get())
+		sockets.StartWebhookServer(gserv.webhook_port:Get(), gserv.webhook_secret:Get())
 	end
 
 	function gserv.Kill()
