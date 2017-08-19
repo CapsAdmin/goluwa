@@ -32,6 +32,123 @@ function sockets.TableToHeader(tbl)
 	return str
 end
 
+
+function sockets.SetupReceiveHTTP(socket, info)
+	if not info then
+		info = {}
+		info.callback = function(...)
+			if socket:IsValid() then
+				socket:OnReceiveHTTP(...)
+			end
+		end
+	end
+
+	local header = {}
+	local content = {}
+	local length = 0
+	local in_header = true
+
+	local protocol
+	local code
+	local code_desc
+
+	local function done()
+		if info.on_chunks then system.pcall(info.callback) return end
+
+		content = table.concat(content, "")
+		local length = header["content-length"]
+
+		if sockets.debug then
+			print(protocol, code, code_desc)
+			table.print(header)
+		end
+
+		if (not length and #content ~= 0) or (length and #content == length) or info.method == "HEAD" then
+			system.pcall(info.callback, {content = content, header = header, protocol = protocol, code = code, code_desc = code_desc})
+		elseif info.on_fail then
+			system.pcall(info.on_fail, content)
+		end
+	end
+
+	function socket:OnReceive(str)
+		if in_header then
+			protocol, code, code_desc = str:match("^(%S-) (%S-) (.+)\n")
+			code = tonumber(code)
+
+			if info.code_callback and info.code_callback(code) == false then
+				if info.on_fail then
+					system.pcall(info.on_fail, "bad code")
+				end
+				self:Remove()
+				return
+			end
+
+			local header_data, content_data = str:match("(.-\r\n\r\n)(.+)")
+
+			-- just the header?
+			if not header_data then
+				header_data = str
+			end
+
+			if header_data then
+				header = sockets.HeaderToTable(header_data)
+
+				-- redirection
+				if header.location and info.url then
+					info.protocol = nil
+					info.location = nil
+					info.host = nil
+
+					info.url = header.location
+
+					sockets.Request(info)
+					self:Remove()
+
+					return
+				end
+
+				str = content_data
+
+				in_header = false
+
+				if info.header_callback and info.header_callback(header) == false then
+					self:Remove()
+					return
+				end
+
+				if info.method == "HEAD" or header["content-length"] == 0 then
+					done(self)
+					return
+				end
+			end
+		end
+
+		if str then
+			length = length + #str
+
+			if info.on_chunks then
+				info.on_chunks(str)
+			else
+				table.insert(content, str)
+			end
+
+			if info.progress_callback then
+				info.progress_callback(content, str, length, header)
+			end
+
+			if header["content-length"] then
+				if length >= header["content-length"] then
+					done(self)
+				end
+			elseif header["transfer-encoding"] == "chunked" then
+				if str:sub(-5) == "0\r\n\r\n" then
+					done(self)
+				end
+			end
+		end
+	end
+end
+
 function sockets.Request(info)
 
 	if info.url then
@@ -146,110 +263,7 @@ function sockets.Request(info)
 		socket:Send("\r\n")
 	end
 
-	local header = {}
-	local content = {}
-	local length = 0
-	local in_header = true
-
-	local protocol
-	local code
-	local code_desc
-
-	local function done()
-		if info.on_chunks then system.pcall(info.callback) return end
-
-		content = table.concat(content, "")
-		local length = header["content-length"]
-
-		if sockets.debug then
-			print(protocol, code, code_desc)
-			table.print(header)
-		end
-
-		if (not length and #content ~= 0) or (length and #content == length) or info.method == "HEAD" then
-			system.pcall(info.callback, {content = content, header = header, protocol = protocol, code = code, code_desc = code_desc})
-		elseif info.on_fail then
-			system.pcall(info.on_fail, content)
-		end
-	end
-
-	function socket:OnReceive(str)
-		if in_header then
-			protocol, code, code_desc = str:match("^(%S-) (%S-) (.+)\n")
-			code = tonumber(code)
-
-			if info.code_callback and info.code_callback(code) == false then
-				if info.on_fail then
-					system.pcall(info.on_fail, "bad code")
-				end
-				self:Remove()
-				return
-			end
-
-			local header_data, content_data = str:match("(.-\r\n\r\n)(.+)")
-
-			-- just the header?
-			if not header_data then
-				header_data = str
-			end
-
-			if header_data then
-				header = sockets.HeaderToTable(header_data)
-
-				-- redirection
-				if header.location then
-					info.protocol = nil
-					info.location = nil
-					info.host = nil
-
-					info.url = header.location
-
-					sockets.Request(info)
-					self:Remove()
-
-					return
-				end
-
-				str = content_data
-
-				in_header = false
-
-				if info.header_callback and info.header_callback(header) == false then
-					self:Remove()
-					return
-				end
-
-				if info.method == "HEAD" or header["content-length"] == 0 then
-					done(self)
-					return
-				end
-			end
-		end
-
-		if str then
-			length = length + #str
-
-			if info.on_chunks then
-				info.on_chunks(str)
-			else
-				table.insert(content, str)
-			end
-
-			if info.progress_callback then
-				info.progress_callback(content, str, length, header)
-			end
-
-			if header["content-length"] then
-				if length >= header["content-length"] then
-					done(self)
-				end
-			elseif header["transfer-encoding"] == "chunked" then
-				if str:sub(-5) == "0\r\n\r\n" then
-					done(self)
-				end
-			end
-		end
-	end
+	sockets.SetupReceiveHTTP(socket, info)
 
 	return socket
 end
