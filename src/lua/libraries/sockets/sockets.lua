@@ -133,6 +133,9 @@ local function new_socket(override, META, typ, id)
 	typ = typ or "tcp"
 	typ = typ:lower()
 
+	-- this removes any sockets
+	sockets.Update()
+
 	if id then
 		for _, socket in ipairs(sockets.active_sockets) do
 			if socket.uid == id then
