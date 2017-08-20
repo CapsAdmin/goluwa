@@ -202,7 +202,7 @@ function sockets.Request(info)
 	info.timeout = info.timeout or 2
 	info.callback = info.callback or table.print
 
-	if info.method == "POST" and not info.post_data then
+	if (info.method == "POST" or info.method == "PATCH" or info.method == "PUT") and not info.post_data then
 		error("no post data!", 2)
 	end
 
@@ -247,7 +247,7 @@ function sockets.Request(info)
 		end
 	end
 
-	if info.method == "POST" then
+	if info.method == "POST" or info.method == "PATCH" or info.method == "PUT" then
 		local str = info.post_data
 		if type(info.post_data) == "table" then
 			str = ""
