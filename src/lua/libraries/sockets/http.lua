@@ -255,8 +255,13 @@ function sockets.Request(info)
 				str = str .. ("%s: %s\r\n"):format(k, v)
 			end
 		end
-		socket:Send("Content-Type: application/json\r\n")
-		socket:Send(("Content-Length: %i\r\n"):format(#str))
+
+		if not info.header["Content-Type"] then
+			socket:Send("Content-Type: application/json\r\n")
+		end
+		if not info.header["Content-Length"] then
+			socket:Send(("Content-Length: %i\r\n"):format(#str))
+		end
 		socket:Send("\r\n")
 		socket:Send(str)
 	else
