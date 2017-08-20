@@ -7,7 +7,10 @@ function DiscordBot(token)
 	return self
 end
 
-function META:Query(method, data, callback)
+local boundary = "Goluwa" .. os.time()
+local multipart = string.format('multipart/form-data; boundary=%s', boundary)
+
+function META:Query(method, data, callback, files)
 	local method, index = unpack(method:split(" "))
 
 	if method == "WEBSOCKET" then
@@ -17,12 +20,32 @@ function META:Query(method, data, callback)
 			callback, data = data, callback
 		end
 
-		if data.formdata then
-			local formdata = data.formdata
-			data.formdata = nil
+		if files then
+			data =  serializer.Encode("json", data)
+
+			local ret = {
+				'\r\n--', boundary,
+				'\r\nContent-Disposition: form-data; name="payload_json"',
+				'\r\nContent-Type: application/json',
+				'\r\n\r\n', data,
+				'\r\n--', boundary,
+			}
+
+			for i, v in ipairs(files) do
+				table.insert(ret, table.concat({
+					string.format('\r\nContent-Disposition: form-data; name="file%i"; filename=%q', i, v.name),
+					'\r\nContent-Type:application/octet-stream',
+					'\r\n\r\n', v.data,
+					'\r\n--', boundary,
+				}))
+			end
+			table.insert(ret, '--')
+
+			data = table.concat(ret)
+
 			sockets.Request({
 				method = method,
-				post_data = formdata,
+				post_data = data,
 				url = "https://discordapp.com/api" .. index,
 				callback = function(data)
 					local json = data.content:match("^.-\r\n(.+)0") or data.content
@@ -43,9 +66,9 @@ function META:Query(method, data, callback)
 				end,
 				user_agent = "DiscordBot (https://github.com/CapsAdmin/goluwa, 0)",
 				header = {
-					["Content-Type"] = "multipart/form-data",
-					payload_json = serializer.Encode("json", data),
 					Authorization = self.token,
+					["Content-Type"] = multipart,
+					["Content-Length"] = #data,
 				},
 			})
 		else
@@ -213,22 +236,28 @@ if RELOAD then
 					}, table.print)
 					]]
 
-
+					local png_data = crypto.Base64Decode("iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAVUlEQVR42mNgGAXYwSOB/ySJo4PMDRb/STYcGeg58/zHZzheC9BtACl2KVL5j2w4PgvgBqyB2kJYAw7biNaE7ncMjUheArkqH8k7JLmIZO+QpWFoAgAY9DgM7ldwswAAAABJRU5ErkJggg==")
 					--local image = freeimage.LoadImage(vfs.Read("/home/caps/sfYru.jpg"))
+					--vfs.Write("lol.png", png_data)
+					--local png_data2 = ffi.string(freeimage.BufferToPNG(image))
+
+					--local png_data2 = vfs.Read("test3.png")
 
 					self:Query("POST /channels/"..data.d.channel_id.."/messages", {
-						--formdata = ffi.string(freeimage.BufferToPNG(image)),
-
 						content = "hello",
-						--[[embed = {
-							title = "test image",
+					})
+
+					self:Query("POST /channels/"..data.d.channel_id.."/messages", {
+						file = {
 							image = {
-								url = "attachment://something.png",
-								width = image.width,
-								height = image.height,
+								url = "attachment://test.png",
+								width = 64,
+								height = 64,
 							},
-						}]]
-					}, table.print)
+						}
+					}, table.print, {
+						{name = "test.png", data = png_data},
+					})
 				end
 			end
 			--table.print(data)
