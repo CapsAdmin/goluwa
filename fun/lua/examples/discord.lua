@@ -17,28 +17,66 @@ function META:Query(method, data, callback)
 			callback, data = data, callback
 		end
 
-		sockets.Request({
-			method = method,
-			post_data = data and serializer.Encode("json", data) or nil,
-			url = "https://discordapp.com/api" .. index,
-			callback = function(data)
-				local json = data.content:match("^.-\r\n(.+)0") or data.content
-				local ok, tbl = pcall(serializer.Decode, "json", json)
-				if not ok then
-					print(tbl)
-					print(json)
-				end
-				if tbl.code == 0 then
-					print(tbl.message)
-				end
-				callback(tbl)
-			end,
-			user_agent = "DiscordBot (https://github.com/CapsAdmin/goluwa, 0)",
-			header = {
-				["Content-Type"] = data and "application/json" or nil,
-				Authorization = self.token,
-			},
-		})
+		if data.formdata then
+			local formdata = data.formdata
+			data.formdata = nil
+			sockets.Request({
+				method = method,
+				post_data = formdata,
+				url = "https://discordapp.com/api" .. index,
+				callback = function(data)
+					local json = data.content:match("^.-\r\n(.+)0") or data.content
+					local ok, tbl = pcall(serializer.Decode, "json", json)
+
+					if not ok then
+						print(tbl)
+						print(json)
+					end
+
+					if tbl.code == 0 then
+						print(tbl.message)
+					end
+
+					if callback then
+						callback(tbl)
+					end
+				end,
+				user_agent = "DiscordBot (https://github.com/CapsAdmin/goluwa, 0)",
+				header = {
+					["Content-Type"] = "multipart/form-data",
+					payload_json = serializer.Encode("json", data),
+					Authorization = self.token,
+				},
+			})
+		else
+			sockets.Request({
+				method = method,
+				post_data = data and serializer.Encode("json", data) or nil,
+				url = "https://discordapp.com/api" .. index,
+				callback = function(data)
+					local json = data.content:match("^.-\r\n(.+)0") or data.content
+					local ok, tbl = pcall(serializer.Decode, "json", json)
+
+					if not ok then
+						print(tbl)
+						print(json)
+					end
+
+					if tbl.code == 0 then
+						print(tbl.message)
+					end
+
+					if callback then
+						callback(tbl)
+					end
+				end,
+				user_agent = "DiscordBot (https://github.com/CapsAdmin/goluwa, 0)",
+				header = {
+					["Content-Type"] = data and "application/json" or nil,
+					Authorization = self.token,
+				},
+			})
+		end
 	end
 end
 
@@ -139,11 +177,12 @@ do return end
 META:Register()
 
 if RELOAD then
-	if LOL then LOL:Remove() end
-	LOL = DiscordBot(assert(vfs.Read("discord_bot_token")))
+	if not LOL then
+		LOL = DiscordBot(assert(vfs.Read("discord_bot_token")))
+	end
 
 	function LOL:OnEvent(data)
-		if data.t == "READY" then
+		if data.t == "READY" and false then
 			self:Query("POST /channels/348586142423187466/messages", {
 				content = "hello",
 			}, table.print)
@@ -158,7 +197,43 @@ if RELOAD then
 				table.print(data)
 			end, {limit = 10})
 		else
+
+			if data.t == "MESSAGE_CREATE" then
+				local ffi = require("ffi")
+				local freeimage = require("freeimage")
+				if data.d.content:find("goluwa") then
+
+					--[[
+					-- setting avatar
+
+					self:Query("PATCH /users/@me", {
+						--username = "goluwa " .. os.clock(),
+						--avatar = "data:image/png;base64," .. crypto.Base64Encode(ffi.string(freeimage.BufferToPNG(freeimage.LoadImage(vfs.Read("/home/caps/sfYru.jpg"))))),
+						avatar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAVUlEQVR42mNgGAXYwSOB/ySJo4PMDRb/STYcGeg58/zHZzheC9BtACl2KVL5j2w4PgvgBqyB2kJYAw7biNaE7ncMjUheArkqH8k7JLmIZO+QpWFoAgAY9DgM7ldwswAAAABJRU5ErkJggg==",
+					}, table.print)
+					]]
+
+
+					--local image = freeimage.LoadImage(vfs.Read("/home/caps/sfYru.jpg"))
+
+					self:Query("POST /channels/"..data.d.channel_id.."/messages", {
+						--formdata = ffi.string(freeimage.BufferToPNG(image)),
+
+						content = "hello",
+						--[[embed = {
+							title = "test image",
+							image = {
+								url = "attachment://something.png",
+								width = image.width,
+								height = image.height,
+							},
+						}]]
+					}, table.print)
+				end
+			end
 			--table.print(data)
 		end
 	end
+
+	--LOL:Query("GET /users/260465579125768192", table.print)
 end
