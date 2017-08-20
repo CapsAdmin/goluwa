@@ -214,10 +214,10 @@ if RELOAD then
 			end, {limit = 10})
 		else
 
-			if data.t == "MESSAGE_CREATE" then
+			if data.t == "MESSAGE_CREATE" and data.d.author.id == "208633661787078657" then
 				local ffi = require("ffi")
 				local freeimage = require("freeimage")
-				if data.d.content:find("goluwa") then
+				if data.d.content:startswith("goluwa") then
 
 					--[[
 					-- setting avatar
@@ -229,43 +229,50 @@ if RELOAD then
 					}, table.print)
 					]]
 
-					gfx.DrawRect(0,0,500,500,nil,255,0,255)
+					local str = data.d.content:match("^goluwa (.+)")
+					if str then
+						local func, err = loadstring(str)
+						if func then
+							local ok, err = pcall(func)
+							if not ok then
+								print(err)
+							end
+						end
+					end
 
 					--render.GetScreenFrameBuffer().gl_fb:ReadBuffer("GL_BLACK")
-					local pixels = ffi.new("uint8_t[?]", (render.GetWidth()*render.GetHeight()*3))
-					require("opengl").ReadPixels(0,0,render.GetWidth(),render.GetHeight(),"GL_BGR", "GL_UNSIGNED_BYTE", pixels)
+					local w,h = render.GetWidth(), render.GetHeight()
+					local pixels = ffi.new("uint8_t[?]", (w*h*4))
+					require("opengl").ReadPixels(0,0,w,h,"GL_BGRA", "GL_UNSIGNED_BYTE", pixels)
 
 					local image = {
 						buffer = pixels,
-						width = render.GetWidth(),
-						height = render.GetHeight(),
-						format = "rgb",
+						width = w,
+						height = h,
+						format = "rgba",
 					}
-					local png_data = crypto.Base64Decode("iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAVUlEQVR42mNgGAXYwSOB/ySJo4PMDRb/STYcGeg58/zHZzheC9BtACl2KVL5j2w4PgvgBqyB2kJYAw7biNaE7ncMjUheArkqH8k7JLmIZO+QpWFoAgAY9DgM7ldwswAAAABJRU5ErkJggg==")
-					--local image = freeimage.LoadImage(vfs.Read("/home/caps/sfYru.jpg"))
 
 					table.print(image)
-					--vfs.Write("lol.png", png_data)
-					local png_data2 = ffi.string(freeimage.ImageToBuffer(image, "png"))
-					print(#png_data2)
-					vfs.Write("lol.jpg", png_data2)
 
-					--local png_data2 = vfs.Read("test3.png")
+					local png_data = ffi.string(freeimage.ImageToBuffer(image, "png"))
+
+					vfs.Write("lol.png", png_data)
+					--vfs.Write("lol.raw", ffi.string(pixels, w*h*4))
 
 					self:Query("POST /channels/"..data.d.channel_id.."/messages", {
-						content = "hello",
+						content = "sending " .. utility.FormatFileSize(#png_data) .. "image\n" .. serializer.Encode("luadata", image),
 					})
 
 					self:Query("POST /channels/"..data.d.channel_id.."/messages", {
 						file = {
 							image = {
-								url = "attachment://test.jpg",
+								url = "attachment://test.png",
 								width = image.width,
 								height = image.height,
 							},
 						}
 					}, table.print, {
-						{name = "test.jpg", data = png_data2},
+						{name = "test.png", data = png_data},
 					})
 				end
 			end
