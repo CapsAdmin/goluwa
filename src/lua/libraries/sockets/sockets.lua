@@ -509,9 +509,10 @@ do -- tcp socket meta
 			if self.remove_me then return end
 
 			self:DebugPrintf("removed")
-			self:OnClose()
 
 			self.remove_me = true
+
+			self:OnClose()
 
 			if self.__server then
 				for k, v in pairs(self.__server.Clients) do
@@ -578,7 +579,7 @@ do -- tcp socket meta
 		end
 
 		function CLIENT:IsValid()
-			return true
+			return self.remove_me == nil
 		end
 
 		function CLIENT:OnTimeout(count) end
@@ -784,13 +785,14 @@ do -- tcp socket meta
 		end
 
 		function SERVER:Remove()
+			if self.remove_me then return end
 			self:DebugPrintf("removed")
 			self:KickAllClients()
 			self.remove_me = true
 		end
 
 		function SERVER:IsValid()
-			return true
+			return self.remove_me == nil
 		end
 
 		function SERVER:GetIP()

@@ -7,29 +7,43 @@ local frame = require("websocket.frame")
 local handshake = require("websocket.handshake")
 
 function META:Connect(url, ws_protocol, ssl_params)
-	local protocol, host, port, uri = tools.parse_url(url)
+	if type(ws_protocol) == "number" then
+		self.host = url
+		self.port = ws_protocol
 
-	if protocol == "wss" then
-		self.socket:SetSSLParams(ssl_params or "https")
+		if ssl_params then
+			if ssl_params == "wss" then ssl_params = "https" end
+			self.socket:SetSSLParams(ssl_params or "https")
+		end
+	else
+		local protocol, host, port, uri = tools.parse_url(url)
+
+		if protocol == "wss" then
+			self.socket:SetSSLParams(ssl_params or "https")
+		end
+
+		self.host = host
+		self.port = port
+		self.uri = uri
+
+		if type(ws_protocol) == "string" then
+			self.protocols_tbl = {ws_protocol}
+		elseif type(ws_protocol) == "table" then
+			self.protocols_tbl = ws_protocol
+		end
 	end
-
-	self.host = host
-	self.port = port
-	self.uri = uri
-
-	if type(ws_protocol) == "string" then
-		self.protocols_tbl = {ws_protocol}
-	elseif type(ws_protocol) == "table" then
-		self.protocols_tbl = ws_protocol
-	end
-
-	--self.socket:SetNoDelay(true)
 
 	self.socket:Connect(self.host, self.port)
 end
 
 function META:Send(message, opcode)
-	self.socket:Send(frame.encode(message, opcode or frame.TEXT, true))
+	local data = frame.encode(message, opcode or frame.TEXT, true)
+	if not self.ready then
+		self.send_buffer = self.send_buffer or {}
+		table.insert(self.send_buffer, data)
+	else
+		self.socket:Send(data)
+	end
 end
 
 function META:Close(reason, code)
@@ -38,7 +52,9 @@ function META:Close(reason, code)
 end
 
 function META:OnRemove()
-	self.socket:Remove()
+	if self.socket:IsValid() then
+		self.socket:Remove()
+	end
 end
 
 function META:OnReceive()
@@ -60,7 +76,7 @@ function sockets.CreateWebsocketClient()
 	self.socket:SetKeepAlive(true)
 	self.socket:SetNoDelay(true)
 
-	function self.socket.OnConnect()
+	self.socket.OnConnect = function()
 		self.key = tools.generate_key()
 		local req = handshake.upgrade_request({
 			key = self.key,
@@ -73,9 +89,13 @@ function sockets.CreateWebsocketClient()
 		self.socket:Send(req, true)
 	end
 
+	self.socket.OnClose = function()
+		self:Remove()
+	end
+
 	local in_header = true
 
-	function self.socket.OnReceive(_, str)
+	self.socket.OnReceive = function(socket, str)
 		if in_header then
 			local header_data, rest = str:match("(.-\r\n\r\n)(.+)")
 
@@ -92,6 +112,14 @@ function sockets.CreateWebsocketClient()
 			if header["sec-websocket-accept"] ~= expected_accept then
 				self:OnError(("Accept failed. Expected %s got %s"):format(expected_accept, header["sec-websocket-accept"]))
 				return
+			end
+
+			self.ready = true
+
+			if self.send_buffer then
+				for k, v in ipairs(self.send_buffer) do
+					self.socket:Send(v)
+				end
 			end
 
 			in_header = false
@@ -150,16 +178,20 @@ META:Register()
 
 if RELOAD then
 	local socket = sockets.CreateWebsocketClient()
-	socket:Connect("wss://echo.websocket.org")
-	local str = ""
-	for i = 1, 20000 do
-		str = str .. i .. " "
+	--socket:Connect("wss://echo.websocket.org")
+	socket:Connect("10.0.0.54", 27020)
+	local str = {}
+	for i = 1, 500000 do
+		str[i] = tostring(i)
 	end
-	str = str .. "THE END"
+
+	str = table.concat(str, " ") .. "THE END"
 	print("sending " .. utility.FormatFileSize(#str), #str, str:sub(-100))
 	socket:Send(str)
 
 	function socket:OnReceive(message, opcode)
 		print("received " .. utility.FormatFileSize(#message), #message, message:sub(-100))
 	end
+
+	LOL = socket
 end
