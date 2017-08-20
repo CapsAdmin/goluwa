@@ -149,6 +149,9 @@ function sockets.SetupReceiveHTTP(socket, info)
 	end
 end
 
+local multipart_boundary = "Goluwa" .. os.time()
+local multipart = string.format('multipart/form-data;boundary=%q', multipart_boundary)
+
 function sockets.Request(info)
 
 	if info.url then
@@ -202,7 +205,7 @@ function sockets.Request(info)
 	info.timeout = info.timeout or 2
 	info.callback = info.callback or table.print
 
-	if (info.method == "POST" or info.method == "PATCH" or info.method == "PUT") and not info.post_data then
+	if not info.files and (info.method == "POST" or info.method == "PATCH" or info.method == "PUT") and not info.post_data then
 		error("no post data!", 2)
 	end
 
@@ -238,8 +241,28 @@ function sockets.Request(info)
 	socket:Send(("%s /%s HTTP/1.1\r\n"):format(info.method, info.location))
 	socket:Send(("Host: %s\r\n"):format(info.host))
 
-	if not info.header or not info.header.user_agent then socket:Send(("User-Agent: %s\r\n"):format(info.user_agent)) end
-	if not info.header or not info.header.user_agent then socket:Send(("Connection: %s\r\n"):format(info.connection)) end
+	if not info.header or not info.header["User-Agent"] then socket:Send(("User-Agent: %s\r\n"):format(info.user_agent)) end
+	if not info.header or not info.header["Connection"] then socket:Send(("Connection: %s\r\n"):format(info.connection)) end
+
+	if info.files then
+		local body = ""
+
+		for i, v in ipairs(info.files) do
+			body = body .. '\r\n--' .. multipart_boundary
+			body = body .. '\r\nContent-Disposition: form-data; name="' .. v.name .. '"'
+			if v.filename then
+				body = body .. ';filename="' .. v.filename .. '"'
+			end
+			body = body .. '\r\nContent-Type:' .. (v.type or "application/octet-stream")
+			body = body .. '\r\n\r\n' .. v.data
+		end
+
+		body = body .. "\r\n--" .. multipart_boundary .. "--"
+
+		info.post_data = body
+		info.header = info.header or {}
+		info.header["Content-Type"] = multipart
+	end
 
 	if info.header then
 		for k,v in pairs(info.header) do
@@ -256,10 +279,10 @@ function sockets.Request(info)
 			end
 		end
 
-		if not info.header["Content-Type"] then
+		if not info.header or not info.header["Content-Type"] then
 			socket:Send("Content-Type: application/json\r\n")
 		end
-		if not info.header["Content-Length"] then
+		if not info.header or not info.header["Content-Length"] then
 			socket:Send(("Content-Length: %i\r\n"):format(#str))
 		end
 		socket:Send("\r\n")
