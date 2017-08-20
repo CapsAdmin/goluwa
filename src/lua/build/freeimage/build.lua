@@ -226,11 +226,18 @@ do
 		return out
 	end
 
-	function library.BufferToPNG(data)
+	function library.ImageToBuffer(data, format, force_32bit)
+		format = format or "png"
+
 		local bitmap = library.ConvertFromRawBits(data.buffer, data.width, data.height, data.width * #data.format, #data.format * 8, 0,0,0,0)
+		local temp
+		if force_32bit then
+			temp = bitmap
+			bitmap = library.ConvertTo32Bits(temp)
+		end
 
 		local mem = library.OpenMemory(nil, 0)
-		library.SaveToMemory(library.e.FORMAT_PNG, bitmap, mem, 0)
+		library.SaveToMemory(library.e["FORMAT_" .. format:upper()], bitmap, mem, 0)
 		local size = library.TellMemory(mem)
 		local buffer_box = ffi.new("uint8_t *[1]")
 		local size_box = ffi.new("unsigned int[1]")
@@ -238,6 +245,10 @@ do
 		buffer_box[0] = out_buffer
 		size_box[0] = size
 		library.AcquireMemory(mem, buffer_box, size_box)
+
+		library.Unload(bitmap)
+		if temp then library.Unload(temp) end
+		library.CloseMemory(mem)
 
 		return buffer_box[0], size_box[0]
 	end
