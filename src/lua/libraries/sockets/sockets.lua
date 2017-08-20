@@ -381,7 +381,9 @@ do -- tcp socket meta
 							local bytes, b, c, d = sock:send(data)
 
 							if bytes then
-								self:DebugPrintf("sucessfully sent %s",  utility.FormatFileSize(bytes))
+								if self.debug then
+									self:DebugPrintf("SEND: |%s|",  data:gsub("%s", function(c) if c:byte() < 32 or c:byte() > 126 then return "\\" .. c:byte() end end))
+								end
 								self:OnSend(data, bytes, b,c,d)
 								table.remove(self.Buffer, 1)
 
@@ -420,11 +422,7 @@ do -- tcp socket meta
 					end
 
 					if data then
-						if #data > 256 then
-							self:DebugPrintf("received (mode %s) %i bytes of data", mode, #data)
-						else
-							self:DebugPrintf("received (mode %s) %i bytes of data (%q)", mode, #data, data)
-						end
+						self:DebugPrintf("RECV: |%s|",  data)
 
 						self:OnReceive(data)
 						self:Timeout(false)
