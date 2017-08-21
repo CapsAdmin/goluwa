@@ -8,7 +8,7 @@ local function ipport_to_uid(peer)
 	return tostring(tonumber(ffi.cast("unsigned long *", peer.peer.data)[0]))
 end
 
-event.AddListener("PeerReceivePacket", "network", function(peer, str, type)
+event.AddListener("PeerReceivePacket", "network", function(str, peer, type)
 	local client = NULL
 
 	if peer then
@@ -27,50 +27,53 @@ event.AddListener("PeerReceivePacket", "network", function(peer, str, type)
 	event.Call("NetworkPacketReceived", str, client, type)
 end)
 
-event.AddListener("PeerDisconnect", "network", function(peer)
-	local uid = ipport_to_uid(peer)
-	local client = clients.GetByUniqueID(uid)
+if SERVER then
 
-	if client:IsValid() then
-		client:Disconnect("unknown reason") -- todo: reason
-		client:Remove()
-	end
-end)
+	event.AddListener("PeerDisconnect", "network", function(peer)
+		local uid = ipport_to_uid(peer)
+		local client = clients.GetByUniqueID(uid)
 
-event.AddListener("PeerConnect", "network", function(peer)
-	local uid = ipport_to_uid(peer)
-	local client = clients.Create(uid, false, false) -- create the client serverside for now
+		if client:IsValid() then
+			client:Disconnect("unknown reason") -- todo: reason
+			client:Remove()
+		end
+	end)
 
-	client.socket = peer
+	event.AddListener("PeerConnect", "network", function(peer)
+		local uid = ipport_to_uid(peer)
+		local client = clients.Create(uid, false, false) -- create the client serverside for now
 
-	if network.debug then
-		llog("client %s connected", client)
-	end
+		client.socket = peer
 
-	if event.Call("ClientConnect", client) ~= false then
-		nvars.Synchronize(client, function(client)
+		if network.debug then
+			llog("client %s connected", client)
+		end
 
-			if network.debug then
-				llog("client %s done synchronizing nvars", client)
-			end
+		if event.Call("ClientConnect", client) ~= false then
+			nvars.Synchronize(client, function(client)
 
-			event.Call("ClientEntered", client)
-
-			for _, other in ipairs(clients.GetAll()) do
-				if other ~= client then
-					-- tell all the other clients that our client spawned
-					clients.Create(other:GetUniqueID(), other:IsBot(), true, client)
-
-					-- tell our client about all the other clients
-					clients.Create(uid, false, true, other)
+				if network.debug then
+					llog("client %s done synchronizing nvars", client)
 				end
-			end
 
-			-- tell our client that it spawned
-			clients.Create(uid, false, true, client, true)
-		end)
-	end
-end)
+				event.Call("ClientEntered", client)
+
+				for _, other in ipairs(clients.GetAll()) do
+					if other ~= client then
+						-- tell all the other clients that our client spawned
+						clients.Create(other:GetUniqueID(), other:IsBot(), true, client)
+
+						-- tell our client about all the other clients
+						clients.Create(uid, false, true, other)
+					end
+				end
+
+				-- tell our client that it spawned
+				clients.Create(uid, false, true, client, true)
+			end)
+		end
+	end)
+end
 
 do -- string table
 	if SERVER then

@@ -37,7 +37,7 @@ if CLIENT then
 		local peer = enet.CreatePeer(ip, port)
 
 		function peer:OnReceive(str, type)
-			event.Call("PeerReceivePacket", self, str, type)
+			event.Call("PeerReceivePacket", str, nil, type)
 		end
 
 		network.socket = peer
@@ -99,7 +99,7 @@ if SERVER then
 		local server = enet.CreateServer(ip, port)
 
 		function server:OnReceive(peer, str, type)
-			event.Call("PeerReceivePacket", self, peer, str, type)
+			event.Call("PeerReceivePacket", str, peer, type)
 		end
 
 		function server:OnPeerConnect(peer)

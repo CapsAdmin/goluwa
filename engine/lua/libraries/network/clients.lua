@@ -165,6 +165,8 @@ packet.ExtendBuffer(
 	end
 )
 
-clients.local_client = clients.local_client or clients.Create("unconnected")
+if CLIENT then
+	clients.local_client = clients.local_client or clients.Create("unconnected")
+end
 
 return clients

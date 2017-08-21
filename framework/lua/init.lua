@@ -12,6 +12,8 @@ table.insert(package.loaders, function(name)
 end)
 
 runfile("../" .. internal_addon_name .. "/lua/libraries/extensions/*")
+runfile("../" .. internal_addon_name .. "/lua/libraries/filesystem/files/*")
+runfile("../" .. internal_addon_name .. "/lua/libraries/serializers/*")
 
 if GRAPHICS then
 	math2d = runfile("lua/libraries/graphics/math2d.lua") -- 2d math functions

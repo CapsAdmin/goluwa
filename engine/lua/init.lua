@@ -95,3 +95,5 @@ if TMUX then
 end
 
 system.ExecuteArgs()
+
+table.print(ARGS)

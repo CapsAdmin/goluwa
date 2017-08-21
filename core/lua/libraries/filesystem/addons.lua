@@ -14,7 +14,46 @@ function vfs.MountAddons(dir)
 end
 
 function vfs.SortAddonsAfterPriority()
-	table.sort(vfs.loaded_addons, function(a,b) return a.priority > b.priority end)
+	local vfs_loaded_addons = copy
+
+	local found = {}
+	local not_found = {}
+	local done = {}
+
+	local function sort_dependencies(info)
+		if done[info] then return end
+		done[info] = true
+
+		local found_addon = false
+
+		if info.dependencies then
+			for _, name in ipairs(info.dependencies) do
+				for _, info in ipairs(vfs.loaded_addons) do
+					if info.name == name and info.dependencies then
+						sort_dependencies(info)
+						found_addon = true
+						break
+					end
+				end
+			end
+		end
+
+		if found_addon then
+			table.insert(found, info)
+		else
+			table.insert(not_found, info)
+		end
+	end
+
+	for _, info in ipairs(vfs.loaded_addons) do
+		sort_dependencies(info)
+	end
+
+	table.sort(not_found, function(a,b) return a.priority > b.priority end)
+
+	table.add(found, not_found)
+
+	vfs.loaded_addons = found
 end
 
 function vfs.GetAddonInfo(addon)
@@ -27,9 +66,29 @@ function vfs.GetAddonInfo(addon)
 	return {}
 end
 
+local function check_dependencies(info, what)
+	if info.dependencies then
+		for i, name in ipairs(info.dependencies) do
+			local found = false
+			for i,v in ipairs(vfs.loaded_addons) do
+				if v.name == name then
+					found = true
+					break
+				end
+			end
+			if not found then
+				if what then llog(info.name, ": could not ", what ," because it depends on ", name) end
+				return false
+			end
+		end
+	end
+
+	return true
+end
+
 function vfs.InitAddons()
 	for _, info in pairs(vfs.GetMountedAddons()) do
-		if info.startup then
+		if info.startup and check_dependencies(info, "init") then
 			runfile(info.startup)
 		end
 	end
@@ -41,6 +100,10 @@ function vfs.AutorunAddon(addon, folder, force)
 		_G.INFO = info
 
 			local function run()
+				if not check_dependencies(info, "run autorun " .. folder .. "*") then
+					return
+				end
+
 				-- autorun folders
 				for path in vfs.Iterate(info.path .. "lua/autorun/" .. folder, true) do
 					if path:find("%.lua") then
@@ -83,7 +146,6 @@ function vfs.MountAddon(path, force)
 
 	if vfs.IsFile(path .. "config.lua") then
 		local func, err = vfs.LoadFile(path .. "config.lua")
-print(func, err)
 		if func then
 			info = func() or info
 		else
@@ -106,6 +168,10 @@ print(func, err)
 
 	if not info.startup and vfs.IsFile(path .. "lua/init.lua") then
 		info.startup = path .. "lua/init.lua"
+	end
+
+	if info.dependencies and type(info.dependencies) == "string" then
+		info.dependencies = {info.dependencies}
 	end
 
 	table.insert(vfs.loaded_addons, info)

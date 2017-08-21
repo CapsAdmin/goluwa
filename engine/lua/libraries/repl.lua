@@ -110,7 +110,7 @@ local markup_translate = {
 }
 
 function repl.Initialize()
-	if SERVER or not gfx or not gfx.CreateMarkup then
+	if not gfx or not gfx.CreateMarkup then
 		-- the renderer might fail to load :( !
 		local hack = false
 
@@ -121,7 +121,7 @@ function repl.Initialize()
 
 		_G.gfx = _G.gfx or {}
 		_G.gfx.GetDefaultFont = _G.gfx.GetDefaultFont or function() end
-		runfile(e.ROOT_FOLDER .. "/src/lua/libraries/graphics/gfx/markup.lua")
+		runfile(e.ROOT_FOLDER .. "/engine/lua/libraries/graphics/gfx/markup.lua")
 
 		if hack then
 			SERVER = false
@@ -322,7 +322,7 @@ function repl.Initialize()
 
 	repl.SetSize(curses.COLS, curses.LINES)
 
-	event.AddListener("ShutDown", repl.Shutdown)
+	event.AddListener("ShutDown", function() repl.Shutdown() end)
 
 	if WINDOW then
 		window.Minimize()
@@ -330,12 +330,14 @@ function repl.Initialize()
 
 	repl.curses_init = true
 
+do return end
 	function os.execute(str)
+		debug.trace()
 		repl.Shutdown()
 		_OLD_G.os.execute("clear")
 		local code = _OLD_G.os.execute(str)
 		if code ~= 0 then
-			logn("exited with error code: ", code)
+			logn(str, " exited with error code: ", code)
 		end
 		repl.Initialize()
 		return code
@@ -803,7 +805,7 @@ end
 
 if TMUX then
 	commands.Add("detach", function()
-		os.execute("tmux detach")
+		_OLD_G.os.execute("tmux detach")
 	end)
 end
 

@@ -3,6 +3,8 @@
 goluwa_dir="$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd $goluwa_dir
 
+mkdir -p data/bin
+
 function download
 {
     if command -v wget >/dev/null 2>&1; then
@@ -14,6 +16,27 @@ function download
         exit 1
     fi
 }
+
+case $(uname -m) in
+	x86_64)
+		ARCH=x64
+	;;
+	i[36]86)
+		ARCH=x86
+	;;
+	arm*)
+		ARCH=arm
+	;;
+esac
+
+case $(uname) in
+	Darwin)
+		OS=osx
+	;;
+	*)
+		OS=linux
+	;;
+esac
 
 if [ "$1" == "update" ] || [ ! -d "./core/" ]; then
 
@@ -39,7 +62,8 @@ if [ "$1" == "tmux" ]; then
 
 	if ! tmux has-session -t goluwa 2>/dev/null; then
 		tmux new-session -d -s goluwa
-		tmux send-keys -t goluwa "export GOLUWA_TMUX=1;./goluwa launch" C-m
+		tmux send-keys -t goluwa "export GOLUWA_TMUX=1" C-m
+		tmux send-keys -t goluwa "./goluwa launch" C-m
 	fi
 
 	tmux attach-session -t goluwa
@@ -100,8 +124,6 @@ if [ -n "$CLIENT" ] || [ "$1" == "client" ]; then
 	export LD_PRELOAD="libpthread.so.0"
 	export __GL_THREADED_OPTIMIZATIONS=1
 	export multithread_glsl_compiler=1
-
-	LAUNCH_PARAMS="${*:2}"
 fi
 
 if [ "$1" == "server" ]; then
@@ -111,35 +133,15 @@ if [ "$1" == "server" ]; then
 
 	export GOLUWA_SERVER=1
 	export GOLUWA_CLIENT=0
-
-	export GOLUWA_ARGS="${GOLUWA_ARGS:="{'host'}"}"
-	LAUNCH_PARAMS="${*:2}"
 fi
 
-mkdir -p data/bin
+if [ "$1" == "client" ] || [ "$1" == "server" ] || [ "$1" == "launch" ]; then
+	ARGS="${*:2}"
+else
+	ARGS="${*:1}"
+fi
 
-case $(uname -m) in
-	x86_64)
-		ARCH=x64
-	;;
-	i[36]86)
-		ARCH=x86
-	;;
-	arm*)
-		ARCH=arm
-	;;
-esac
-
-case $(uname) in
-	Darwin)
-		OS=osx
-	;;
-	*)
-		OS=linux
-	;;
-esac
-
-export GOLUWA_ARGS=${GOLUWA_ARGS:=$*}
+export GOLUWA_ARGS=${GOLUWA_ARGS:-$ARGS}
 
 #if we don't have binaries get them from github
 if [ ! -f "data/bin/${OS}_${ARCH}/binaries_downloaded" ]; then
@@ -178,7 +180,7 @@ if [ ! -x "$GOLUWA_EXECUTABLE" ] && [ -f "/lib64/ld-linux-x86-64.so.2" ]; then
 	launch="/lib64/ld-linux-x86-64.so.2 ./$GOLUWA_EXECUTABLE"
 fi
 
-eval "$launch ../../../core/lua/init.lua $LAUNCH_PARAMS"
+eval "$launch ../../../core/lua/init.lua"
 
 #in case of a crash
 stty sane > /dev/null 2>&1 &

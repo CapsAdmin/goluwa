@@ -5,13 +5,14 @@ local env_vars = {
 	SOUND = true,
 	DEBUG = false,
 	SOCKETS = true,
-	SRGB = true,
-	LOOP = true,
 	WINDOW = true,
+
+	SRGB = true,
 	NULL_OPENGL = false,
-	PHYSICS = false,
-	DEBUG_OPENGL = false,
 	BUILD_SHADER_OUTPUT = false,
+	DEBUG_OPENGL = false,
+
+	PHYSICS = false,
 	VERBOSE_STARTUP = true,
 
 	OPENGL = true,
@@ -61,3 +62,7 @@ if LINUX and (GRAPHICS or WINDOW) and not os.getenv("DISPLAY") then
 	WINDOW = false
 	io.write("os.getenv('DISPLAY') is nil.\nsetting GRAPHICS and WINDOW to false.\n")
 end
+
+return {
+	dependencies = "core",
+}

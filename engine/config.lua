@@ -38,7 +38,6 @@ if CLI or TMUX then
 end
 
 if CLI then
-	LOOP = false
 	CURSES = false
 	VERBOSE_STARTUP = false
 end
@@ -46,3 +45,7 @@ end
 if TMUX then
 	_G.USERNAME = "tmux"
 end
+
+return {
+	dependencies = "framework",
+}

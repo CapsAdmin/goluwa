@@ -1,6 +1,30 @@
 local render3d = _G.render3d or {}
 
-camera.camera_3d = camera.CreateCamera()
+render3d.camera = camera.CreateCamera()
+
+event.AddListener("PreDrawGUI", "render3d", function()
+	if render3d.IsGBufferReady() then
+		if menu and menu.IsVisible() then
+			render2d.PushHSV(1,0,1)
+		end
+
+		render2d.SetTexture(render3d.GetFinalGBufferTexture())
+		render2d.DrawRect(0, 0, render2d.GetSize())
+
+		if menu and menu.IsVisible() then
+			render2d.PopHSV()
+		end
+
+		if render3d.debug then
+			render3d.DrawGBufferDebugOverlay()
+		end
+	end
+
+
+	if not render3d.IsGBufferReady() and (line and not line.IsGameRunning()) then
+		render.GetScreenFrameBuffer():ClearAll()
+	end
+end)
 
 runfile("model_loader.lua", render3d)
 runfile("gbuffer.lua", render3d)
