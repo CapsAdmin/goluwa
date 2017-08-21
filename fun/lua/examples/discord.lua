@@ -240,7 +240,8 @@ if RELOAD then
 						end
 					end
 
-					--render.GetScreenFrameBuffer().gl_fb:ReadBuffer("GL_BLACK")
+
+					-- anything over 31 kb will not send for some reason
 					local w,h = render.GetWidth(), render.GetHeight()
 					local pixels = ffi.new("uint8_t[?]", (w*h*4))
 					require("opengl").ReadPixels(0,0,w,h,"GL_BGRA", "GL_UNSIGNED_BYTE", pixels)
@@ -252,15 +253,13 @@ if RELOAD then
 						format = "rgba",
 					}
 
-					table.print(image)
-
 					local png_data = ffi.string(freeimage.ImageToBuffer(image, "png"))
 
 					vfs.Write("lol.png", png_data)
 					--vfs.Write("lol.raw", ffi.string(pixels, w*h*4))
 
 					self:Query("POST /channels/"..data.d.channel_id.."/messages", {
-						content = "sending " .. utility.FormatFileSize(#png_data) .. "image\n" .. serializer.Encode("luadata", image),
+						content = "sending " .. utility.FormatFileSize(#png_data) .. " image\n" .. serializer.Encode("luadata", image),
 					})
 
 					self:Query("POST /channels/"..data.d.channel_id.."/messages", {
