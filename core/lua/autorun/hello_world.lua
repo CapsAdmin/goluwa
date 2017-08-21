@@ -1,1 +1,1 @@
-logn("core: took ", os.clock(), " seconds to init")
+logn("[core] init took ", os.clock(), " seconds")

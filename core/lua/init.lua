@@ -1,9 +1,37 @@
+-- put all c functions in a table so we can override them if needed
+-- without doing the local oldfunc = print thing over and over again
+do
+	local _OLD_G = {}
+	if pcall(require, "ffi") then
+		_G.ffi = require("ffi")
+	end
+
+	for k,v in pairs(_G) do
+		if k ~= "_G" then
+			local t = type(v)
+			if t == "function" then
+				_OLD_G[k] = v
+			elseif t == "table" then
+				_OLD_G[k] = {}
+				for k2,v2 in pairs(v) do
+					if type(v2) == "function" then
+						_OLD_G[k][k2] = v2
+					end
+				end
+			end
+		end
+	end
+
+	_G.ffi = nil
+	_G._OLD_G = _OLD_G
+end
+
 os.setlocale("")
 io.stdout:setvbuf("no")
 
 local info = assert(debug.getinfo(1), "debug.getinfo(1) returns nothing")
 local init_lua_path = info.source
-local internal_addon_name = assert(init_lua_path:match(".+/(.+)/lua/init.lua"), "could not find internal addon name from " .. init_lua_path)
+local internal_addon_name = assert(init_lua_path:match("^@.+/(.+)/lua/init.lua$"), "could not find internal addon name from " .. init_lua_path)
 
 do -- constants
 	-- enums table for
@@ -29,15 +57,10 @@ do
 
 	package.path = "./?.lua"
 
-	-- force current directory
-	local path = debug.getinfo(1).source
-
-	if path:sub(1, 1) == "@" and pcall(require, ffi) then
+	if pcall(require, ffi) then
 		local ffi = require("ffi")
 
-		path = path:gsub("\\", "/")
-
-		local dir = path:match("@(.+/)"..e.INTERNAL_ADDON_NAME.."/lua/init.lua$")
+		local dir = init_lua_path:match("@(.+/)" .. e.INTERNAL_ADDON_NAME .. "/lua/init.lua$")
 
 		if dir then
 			dir = dir .. "data/bin/" .. ffi.os .. "_" .. ffi.arch .. "/"
@@ -52,32 +75,6 @@ do
 			end
 		end
 	end
-end
-
--- put all c functions in a table so we can override them if needed
--- without doing the local oldfunc = print thing over and over again
-do
-	_OLD_G = {}
-	local done = {[_G] = true}
-
-	local function scan(tbl, store)
-		for key, val in pairs(tbl) do
-			local t = type(val)
-
-			if t == "table" and not done[val] and val ~= store then
-				store[key] = store[key] or {}
-				done[val] = true
-				scan(val, store[key])
-			else
-				store[key] = val
-			end
-		end
-	end
-	if pcall(require, "ffi") then
-		_G.ffi = require("ffi")
-	end
-	scan(_G, _OLD_G)
-	_G.ffi = nil
 end
 
 do
@@ -109,7 +106,7 @@ _G.runfile = function() end
 _G.system = false
 _G.event = false
 
-local temp_runfile = function(path) return dofile(e.SRC_FOLDER .. path) end
+local temp_runfile = function(path, ...) return loadfile(e.SRC_FOLDER .. path)(...) end
 
 -- standard library extensions
 temp_runfile("lua/libraries/extensions/jit.lua")
@@ -121,24 +118,25 @@ temp_runfile("lua/libraries/extensions/os.lua")
 temp_runfile("lua/libraries/extensions/ffi.lua")
 temp_runfile("lua/libraries/extensions/math.lua")
 
--- include some of prototype as required by vfs
-utility = {CreateWeakTable = function() return setmetatable({}, {__mode = "kv"}) end}
+-- misc functions i don't know where to put
+utility = temp_runfile("lua/libraries/utility.lua")
 
+-- handles classes, objects, etc
 prototype = temp_runfile("lua/libraries/prototype/prototype.lua")
-temp_runfile("lua/libraries/prototype/get_is_set.lua")
-temp_runfile("lua/libraries/prototype/base_object.lua")
-temp_runfile("lua/libraries/prototype/null.lua")
-
+temp_runfile("lua/libraries/prototype/get_is_set.lua", prototype)
+temp_runfile("lua/libraries/prototype/base_object.lua", prototype)
+temp_runfile("lua/libraries/prototype/null.lua", prototype)
 
 -- include some of vfs so we can setup and mount the filesystem
 vfs = temp_runfile("lua/libraries/filesystem/vfs.lua")
-temp_runfile("lua/libraries/filesystem/path_utilities.lua")
-temp_runfile("lua/libraries/filesystem/base_file.lua")
-temp_runfile("lua/libraries/filesystem/find.lua")
-temp_runfile("lua/libraries/filesystem/helpers.lua")
-temp_runfile("lua/libraries/filesystem/lua_utilities.lua")
-temp_runfile("lua/libraries/filesystem/addons.lua")
-temp_runfile("lua/libraries/filesystem/files/os.lua")
+temp_runfile("lua/libraries/filesystem/path_utilities.lua", vfs)
+temp_runfile("lua/libraries/filesystem/base_file.lua", vfs)
+temp_runfile("lua/libraries/filesystem/find.lua", vfs)
+temp_runfile("lua/libraries/filesystem/helpers.lua", vfs)
+temp_runfile("lua/libraries/filesystem/lua_utilities.lua", vfs)
+temp_runfile("lua/libraries/filesystem/addons.lua", vfs)
+temp_runfile("lua/libraries/filesystem/files/os.lua", vfs)
+temp_runfile("lua/libraries/filesystem/files/generic_archive.lua", vfs)
 
 vfs.Mount("os:" .. e.USERDATA_FOLDER, "data") -- mount "ROOT/data/users/*username*/" to "/data/"
 vfs.Mount("os:" .. e.BIN_FOLDER, "bin") -- mount "ROOT/data/bin" to "/bin/"
@@ -174,24 +172,18 @@ end
 
 _G.runfile = function(...) local ret = {vfs.RunFile(...)} if not ret[1] and ret[2] then wlog(ret[2], 2) end return unpack(ret) end
 _G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir
+
 _G.require = runfile("lua/libraries/require.lua") -- replace require with the pure lua version
 _G.module = _G.require.module
 
 -- now we can use runfile properly
 
 -- libraries
-prototype = runfile("lua/libraries/prototype/prototype.lua") -- handles classes, objects, etc
-
 crypto = runfile("lua/libraries/crypto.lua") -- base64 and other hash functions
 serializer = runfile("lua/libraries/serializer.lua") -- for serializing lua data in different formats
-
 system = runfile("lua/libraries/system.lua") -- os and luajit related functions like creating windows or changing jit options
-utility = runfile("lua/libraries/utilities/utility.lua") -- misc functions i don't know where to put
-
 event = runfile("lua/libraries/event.lua") -- event handler
-
 utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
-vfs = runfile("lua/libraries/filesystem/vfs.lua") -- include the filesystem again so it will include all the details such as zip file reading
 
 -- tries to load all addons
 -- some might not load depending on its info.lua file.
