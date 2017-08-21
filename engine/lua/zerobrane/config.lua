@@ -185,8 +185,8 @@ do
 	styles.indicator = nil
 end
 
-package.path = package.path .. ";../../src/lua/modules/?.lua"
-package.path = package.path .. ";../../src/lua/modules/?/init.lua"
-package.path = package.path .. ";../../src/lua/modules/?/?.lua"
+package.path = package.path .. ";../../core/lua/modules/?.lua"
+package.path = package.path .. ";../../core/lua/modules/?/init.lua"
+package.path = package.path .. ";../../core/lua/modules/?/?.lua"
 
 package("packages/") -- relative to config.lua

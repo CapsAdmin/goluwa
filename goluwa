@@ -32,6 +32,90 @@ if [ "$1" == "update" ] || [ ! -d "./core/" ]; then
 	fi
 fi
 
+if [ "$1" == "tmux" ]; then
+	if ! command -v tmux>/dev/null; then
+		echo "tmux is not installed"
+	fi
+
+	if ! tmux has-session -t goluwa 2>/dev/null; then
+		tmux new-session -d -s goluwa
+		tmux send-keys -t goluwa "export GOLUWA_TMUX=1;./goluwa launch" C-m
+	fi
+
+	tmux attach-session -t goluwa
+
+	exit
+fi
+
+#if there is no display server just launch client
+if [ "$1" != "launch" ]; then
+	if [ "$1" == "" ]; then
+		if [ -z ${DISPLAY+x} ]; then
+			CLIENT=1
+		elif [ "$1" == "ide" ] || [ -f "engine/lua/zerobrane/config.lua" ]; then
+			IDE=1
+		fi
+	elif tmux has-session -t goluwa 2>/dev/null; then
+		if [ "$1" == "attach" ] || [ "$1" == "tmux" ]; then
+			tmux attach -t goluwa
+		elif [ "$1" != "launch" ]; then
+			tmux send-keys -t goluwa "$*" C-m
+			sleep 0.05
+			tmux capture-pane -t goluwa
+			printf "$(tmux show-buffer)\n"
+
+			# this is really bad and not reliable ^
+		fi
+
+		exit
+	fi
+fi
+
+if [ -n "$IDE" ]; then
+	if command -v git >/dev/null 2>&1; then
+		if [ -d ./data/ide ]; then
+			git -C ./data/ide pull;
+		else
+			git clone https://github.com/pkulchenko/ZeroBraneStudio.git data/ide --depth 1;
+		fi
+	else
+		download "https://github.com/pkulchenko/ZeroBraneStudio/archive/master.tar.gz" "temp.tar.gz"
+		mkdir -p data/ide
+		tar -xvzf temp.tar.gz -C "data/ide/"
+		mv ide/ZeroBraneStudio-master/* data/ide/
+		rm -rf ZeroBraneStudio-master
+		rm temp.tar.gz
+	fi
+
+	cd data/ide
+	./zbstudio.sh -cfg ../../engine/lua/zerobrane/config.lua
+
+	exit 0
+fi
+
+if [ -n "$CLIENT" ] || [ "$1" == "client" ]; then
+	export GOLUWA_CLIENT=1
+	export GOLUWA_SERVER=0
+
+	export LD_PRELOAD="libpthread.so.0"
+	export __GL_THREADED_OPTIMIZATIONS=1
+	export multithread_glsl_compiler=1
+
+	LAUNCH_PARAMS="${*:2}"
+fi
+
+if [ "$1" == "server" ]; then
+	export GOLUWA_GRAPHICS=0
+	export GOLUWA_SOUND=0
+	export GOLUWA_WINDOW=0
+
+	export GOLUWA_SERVER=1
+	export GOLUWA_CLIENT=0
+
+	export GOLUWA_ARGS="${GOLUWA_ARGS:="{'host'}"}"
+	LAUNCH_PARAMS="${*:2}"
+fi
+
 mkdir -p data/bin
 
 case $(uname -m) in
@@ -85,10 +169,6 @@ export LD_LIBRARY_PATH=".:$LD_LIBRARY_PATH"
 
 GOLUWA_EXECUTABLE="${GOLUWA_EXECUTABLE:-luajit}"
 
-./$GOLUWA_EXECUTABLE ../../../core/lua/init.lua
-
-exit 1
-
 launch="./$GOLUWA_EXECUTABLE"
 
 if [ ! -x "$GOLUWA_EXECUTABLE" ] && [ -f "/lib64/ld-linux-x86-64.so.2" ]; then
@@ -98,7 +178,7 @@ if [ ! -x "$GOLUWA_EXECUTABLE" ] && [ -f "/lib64/ld-linux-x86-64.so.2" ]; then
 	launch="/lib64/ld-linux-x86-64.so.2 ./$GOLUWA_EXECUTABLE"
 fi
 
-eval "$launch ../../../core/lua/init.lua"
+eval "$launch ../../../core/lua/init.lua $LAUNCH_PARAMS"
 
 #in case of a crash
 stty sane > /dev/null 2>&1 &

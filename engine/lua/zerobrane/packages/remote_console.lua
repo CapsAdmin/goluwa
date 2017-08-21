@@ -46,7 +46,7 @@ function PLUGIN:Setup()
 			cmd_line = cmd_line,
 			icon = icon,
 
-			working_directory = "../../src/cli",
+			working_directory = "../../",
 			env_vars = {
 				GOLUWA_CURSES = "0",
 				GOLUWA_IDE = "",
@@ -222,8 +222,8 @@ function PLUGIN:Setup()
 	"                    h.i.        "};
 
 	return {
-		setup_console("server", "Server", jit.os ~= "Windows" and "bash server" or "server.cmd", server_icon),
-		setup_console("client", "Client", jit.os ~= "Windows" and "bash client" or "client.cmd", client_icon, function(console, key, mod)
+		setup_console("server", "Server", jit.os ~= "Windows" and "./goluwa server" or "goluwa.cmd server", server_icon),
+		setup_console("client", "Client", jit.os ~= "Windows" and "./goluwa client" or "goluwa.cmd client", client_icon, function(console, key, mod)
 			if (key == wx.WXK_F5 or key == wx.WXK_F6) then
 				if mod == wx.wxMOD_SHIFT then
 					console:Stop()

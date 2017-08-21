@@ -93,3 +93,5 @@ if TMUX then
 		os.execute("tmux kill-session")
 	end)
 end
+
+system.ExecuteArgs()

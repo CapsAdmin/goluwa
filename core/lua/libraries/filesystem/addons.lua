@@ -30,7 +30,6 @@ end
 function vfs.InitAddons()
 	for _, info in pairs(vfs.GetMountedAddons()) do
 		if info.startup then
-			print(info.startup)
 			runfile(info.startup)
 		end
 	end
@@ -84,7 +83,7 @@ function vfs.MountAddon(path, force)
 
 	if vfs.IsFile(path .. "config.lua") then
 		local func, err = vfs.LoadFile(path .. "config.lua")
-
+print(func, err)
 		if func then
 			info = func() or info
 		else
