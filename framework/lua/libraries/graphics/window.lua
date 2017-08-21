@@ -44,6 +44,8 @@ function window.Open(...)
 				render2d.SetColor(1,1,1,1)
 				render.SetCullMode("none")
 
+				event.Call("Draw3D", dt)
+
 				render.SetDepth(false)
 				render.SetPresetBlendMode("alpha")
 

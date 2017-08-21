@@ -1,6 +1,6 @@
 local resource = _G.resource or {}
 
-resource.providers = {}
+resource.providers = resource.providers or {}
 
 local etags_file = "resource_etags.txt"
 e.DOWNLOAD_FOLDER = e.DATA_FOLDER .. "downloads/"
@@ -126,6 +126,7 @@ end
 local function download_from_providers(path, callback, on_fail, check_etag)
 
 	if event.Call("ResourceDownload", path, callback, on_fail) ~= nil then
+		on_fail("[resource] ResourceDownload hook returned not nil\n")
 		return
 	end
 
@@ -141,6 +142,8 @@ local function download_from_providers(path, callback, on_fail, check_etag)
 	end
 
 	local failed = 0
+	local max = #resource.providers
+	-- this does not work very well if a resource provider is added during download
 
 	for _, provider in ipairs(resource.providers) do
 		download(
@@ -149,7 +152,7 @@ local function download_from_providers(path, callback, on_fail, check_etag)
 			callback,
 			function(...)
 				failed = failed + 1
-				if failed == #resource.providers then
+				if failed == max then
 					on_fail(...)
 				end
 			end,

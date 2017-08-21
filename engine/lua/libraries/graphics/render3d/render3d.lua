@@ -2,6 +2,12 @@ local render3d = _G.render3d or {}
 
 render3d.camera = camera.CreateCamera()
 
+event.AddListener("Draw3D", "render3d", function()
+	if render3d.IsGBufferReady() then
+		render3d.DrawGBuffer()
+	end
+end)
+
 event.AddListener("PreDrawGUI", "render3d", function()
 	if render3d.IsGBufferReady() then
 		if menu and menu.IsVisible() then
@@ -19,7 +25,6 @@ event.AddListener("PreDrawGUI", "render3d", function()
 			render3d.DrawGBufferDebugOverlay()
 		end
 	end
-
 
 	if not render3d.IsGBufferReady() and (line and not line.IsGameRunning()) then
 		render.GetScreenFrameBuffer():ClearAll()
