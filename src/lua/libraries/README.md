@@ -1,1 +1,0 @@
-These are all the libraries goluwa uses. It's been sorted slightly in folders. All graphics related libraries are in graphics, all audio related libraries are in audio, etc. Libraries that don't fit into any category are in the root of this folder.

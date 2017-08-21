@@ -15,12 +15,90 @@ function download
     fi
 }
 
-if [ ! -d "./src/" ]; then
-	download "https://github.com/CapsAdmin/goluwa/archive/master.tar.gz" "temp.tar.gz"
-	tar -xvzf temp.tar.gz
-	mv goluwa-master/* .
-	rm temp.tar.gz
-	rm -rf goluwa-master
+if [ "$1" == "update" ] || [ ! -d "./core/" ]; then
+
+	if [ -d .git ]; then
+		git pull
+	else
+		download "https://github.com/CapsAdmin/goluwa/archive/master.tar.gz" "temp.tar.gz"
+		tar -xvzf temp.tar.gz
+		cp -r goluwa-master/* .
+		rm temp.tar.gz
+		rm -rf goluwa-master
+	fi
+
+	if [ "$1" == "update" ]; then
+		exit 1
+	fi
 fi
 
-bash $goluwa_dir/src/cli/unix.bash $*
+mkdir -p data/bin
+
+case $(uname -m) in
+	x86_64)
+		ARCH=x64
+	;;
+	i[36]86)
+		ARCH=x86
+	;;
+	arm*)
+		ARCH=arm
+	;;
+esac
+
+case $(uname) in
+	Darwin)
+		OS=osx
+	;;
+	*)
+		OS=linux
+	;;
+esac
+
+export GOLUWA_ARGS=${GOLUWA_ARGS:=$*}
+
+#if we don't have binaries get them from github
+if [ ! -f "data/bin/${OS}_${ARCH}/binaries_downloaded" ]; then
+	mkdir -p "data/bin/${OS}_${ARCH}"
+	while true; do
+		download "https://github.com/CapsAdmin/goluwa/releases/download/${OS}-binaries/${ARCH}.tar.gz" "temp.tar.gz"
+		if [[ $? == 0 ]]; then
+			tar -xvzf temp.tar.gz -C "data/bin/${OS}_${ARCH}/"
+			if [[ ! $? == 0 ]]; then
+				rm temp.tar.gz
+				echo "zip file is maybe corrupt. trying again"
+			else
+				rm temp.tar.gz
+				break
+			fi
+		else
+			echo "unable to download binaries. trying again"
+		fi
+	done
+	touch data/bin/${OS}_${ARCH}/binaries_downloaded
+fi
+
+cd "data/bin/${OS}_${ARCH}/" || exit
+
+#lookup shared libraries in "goluwa/data/bin/linux_${ARCH}/" first
+export LD_LIBRARY_PATH=".:$LD_LIBRARY_PATH"
+
+GOLUWA_EXECUTABLE="${GOLUWA_EXECUTABLE:-luajit}"
+
+./$GOLUWA_EXECUTABLE ../../../core/lua/init.lua
+
+exit 1
+
+launch="./$GOLUWA_EXECUTABLE"
+
+if [ ! -x "$GOLUWA_EXECUTABLE" ] && [ -f "/lib64/ld-linux-x86-64.so.2" ]; then
+	# i don't know if this is stupid or not
+	# but it's so i can execute luajt without the need for execute permissions
+	# on a non ext filesystem (like on a usb stick with fat32)
+	launch="/lib64/ld-linux-x86-64.so.2 ./$GOLUWA_EXECUTABLE"
+fi
+
+eval "$launch ../../../core/lua/init.lua"
+
+#in case of a crash
+stty sane > /dev/null 2>&1 &
