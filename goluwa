@@ -71,6 +71,10 @@ if [ "$1" == "tmux" ]; then
 	exit
 fi
 
+if [ "$2" == "attach" ] && tmux has-session -t goluwa 2>/dev/null; then
+	tmux attach-session -t goluwa
+fi
+
 #if there is no display server just launch client
 if [ "$1" != "launch" ]; then
 	if [ "$1" == "" ]; then
