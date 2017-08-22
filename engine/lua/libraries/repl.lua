@@ -334,9 +334,6 @@ function repl.Initialize()
 		repl.Shutdown()
 		_OLD_G.os.execute("clear")
 		local code = _OLD_G.os.execute(str)
-		if code ~= 0 then
-			logn(str, " exited with error code: ", code)
-		end
 		repl.Initialize()
 		return code
 	end
