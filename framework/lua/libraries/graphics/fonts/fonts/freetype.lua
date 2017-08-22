@@ -285,12 +285,18 @@ function META:Initialize()
 		end
 
 		if SOCKETS then
-			find_font(self.Path, load, function(reason)
+			if self.Path:find("/", nil, true) then
 				logn("unable to download ", self.Path)
-				logn(reason)
 				llog("loading default font instead")
 				resource.Download(fonts.default_font_path, load)
-			end)
+			else
+				find_font(self.Path, load, function(reason)
+					logn("unable to download ", self.Path)
+					logn(reason)
+					llog("loading default font instead")
+					resource.Download(fonts.default_font_path, load)
+				end)
+			end
 		end
 	end)
 end

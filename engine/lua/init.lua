@@ -1,11 +1,7 @@
-local info = assert(debug.getinfo(1), "debug.getinfo(1) returns nothing")
-local init_lua_path = info.source
-local internal_addon_name = assert(init_lua_path:match("@(.+)/lua/init.lua"), "could not find internal addon name from " .. init_lua_path)
-
 pvars = runfile("lua/libraries/pvars.lua") -- like cvars
 commands = runfile("lua/libraries/commands.lua") -- console command type interface for running in repl, chat, etc
 
-runfile("../" .. internal_addon_name .. "/lua/libraries/extensions/*")
+runfile("!lua/libraries/extensions/*")
 
 if CURSES then
 	repl = runfile("lua/libraries/repl.lua") -- read eval print loop using curses
@@ -29,7 +25,7 @@ _G.S = profiler.ToggleStatistical
 steam = runfile("lua/libraries/steam/steam.lua") -- utilities for dealing with steam, the source engine and steamworks
 
 if NETWORK then
-	runfile("../" .. internal_addon_name .. "/lua/libraries/network/network.lua") -- medium (?) level communication between server and client
+	runfile("!lua/libraries/network/network.lua") -- medium (?) level communication between server and client
 	packet = runfile("lua/libraries/network/packet.lua") -- high level communication between server and client
 	message = runfile("lua/libraries/network/message.lua") -- high level communication between server and client
 
@@ -73,12 +69,14 @@ local rate_cvar = pvars.Setup(
 	"-1\t=\trun as fast as possible\n 0\t=\tvsync\n+1\t=\t/try/ to run at this framerate (using sleep)"
 )
 
-event.AddListener("Update", "rate_limit", function()
+event.AddListener("Update", "rate_limit", function(dt)
 	local rate = rate_cvar:Get()
 
 	if rate > 0 then
 		system.Sleep(math.floor(1/rate * 1000))
 	end
+
+	system.UpdateTitlebarFPS(dt)
 end)
 
 if TMUX then
@@ -95,5 +93,3 @@ if TMUX then
 end
 
 system.ExecuteArgs()
-
-table.print(ARGS)

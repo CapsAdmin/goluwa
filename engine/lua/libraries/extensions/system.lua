@@ -35,3 +35,28 @@ function system.ExecuteArgs(args)
 		end
 	end
 end
+
+do
+	local show = pvars.Setup("system_fps_show", true, "show fps in titlebar")
+	local total = 0
+	local count = 0
+
+	function system.UpdateTitlebarFPS(dt)
+		if not show:Get() then return end
+
+		total = total + dt
+		count = count + 1
+
+		if wait(1) then
+			system.SetConsoleTitle(("FPS: %i"):format(1/(total / count)), "fps")
+			system.SetConsoleTitle(("GARBAGE: %s"):format(utility.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
+
+			if GRAPHICS then
+				window.SetTitle(system.GetConsoleTitle())
+			end
+
+			total = 0
+			count = 0
+		end
+	end
+end

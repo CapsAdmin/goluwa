@@ -89,6 +89,13 @@ do -- runfile
 
 	function vfs.RunFile(source, ...)
 
+		if source:startswith("!") then
+			source = source:sub(2)
+			if filerun_stack[#filerun_stack] then
+				source = filerun_stack[#filerun_stack]:match("(.+/).-/") .. source
+			end
+		end
+
 		if type(source) == "table" then
 			system_pcall = false
 			local ok, err
@@ -225,10 +232,8 @@ do -- runfile
 			_G.FILE_NAME = full_path:match(".*/(.+)%.") or full_path
 			_G.FILE_EXTENSION = full_path:match(".*/.+%.(.+)")
 
-			if utility and utility.PushTimeWarning then
-				if full_path:find(e.ROOT_FOLDER, nil, true) then
-					utility.PushTimeWarning()
-				end
+			if full_path:find(e.ROOT_FOLDER, nil, true) then
+				utility.PushTimeWarning()
 			end
 
 			local res
@@ -238,10 +243,8 @@ do -- runfile
 				res = {pcall(func, ...)}
 			end
 
-			if utility and utility.PushTimeWarning then
-				if full_path:find(e.ROOT_FOLDER, nil, true) then
-					utility.PopTimeWarning("[runfile] " .. full_path:gsub(e.ROOT_FOLDER, ""), 0.1)
-				end
+			if full_path:find(e.ROOT_FOLDER, nil, true) then
+				utility.PopTimeWarning("[runfile] " .. full_path:gsub(e.ROOT_FOLDER, ""), 0.025)
 			end
 
 			_G.FILE_PATH = nil

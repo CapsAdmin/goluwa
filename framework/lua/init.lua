@@ -1,19 +1,17 @@
-local info = assert(debug.getinfo(1), "debug.getinfo(1) returns nothing")
-local init_lua_path = info.source
-local internal_addon_name = assert(init_lua_path:match("@(.+)/lua/init.lua"), "could not find internal addon name from " .. init_lua_path)
-
 table.insert(package.loaders, function(name)
-	return loadfile("../../../"..internal_addon_name.."/lua/build/" .. name .. "/" .. name .. ".lua")
+	for _, info in ipairs(vfs.GetMountedAddons()) do
+		local func =
+			loadfile(info.path .. "lua/build/" .. name .. "/" .. name .. ".lua") or
+			loadfile(info.path .. "lua/build/" .. name:gsub("%.", "/") .. ".lua")
+		if func then
+			return func
+		end
+	end
 end)
 
-table.insert(package.loaders, function(name)
-	name = name:gsub("%.", "/")
-	return loadfile("../../../"..internal_addon_name.."/lua/build/" .. name .. ".lua")
-end)
-
-runfile("../" .. internal_addon_name .. "/lua/libraries/extensions/*")
-runfile("../" .. internal_addon_name .. "/lua/libraries/filesystem/files/*")
-runfile("../" .. internal_addon_name .. "/lua/libraries/serializers/*")
+runfile("!lua/libraries/extensions/*")
+runfile("!lua/libraries/filesystem/files/*")
+runfile("!lua/libraries/serializers/*")
 
 if GRAPHICS then
 	math2d = runfile("lua/libraries/graphics/math2d.lua") -- 2d math functions
@@ -42,7 +40,7 @@ end
 resource = runfile("lua/libraries/sockets/resource.lua") -- used for downloading resources with resource.Download("http://...", function(path) end)
 
 if SERVER or CLIENT then
-	network = runfile("../" .. internal_addon_name .. "/lua/libraries/network/network.lua") -- high level implementation of enet
+	network = runfile("!lua/libraries/network/network.lua") -- high level implementation of enet
 
 	if network then
 		NETWORK = true
@@ -81,6 +79,8 @@ end
 if SOCKETS then
 	sockets.Initialize()
 end
+
+resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/", true)
 
 if WINDOW then
 	if window.Open() then
@@ -142,8 +142,6 @@ event.Thinker(function()
 		llog("emergency gc!")
 	end
 end, false, 1/10)
-
-resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/", true)
 
 -- main loop
 local last_time = 0

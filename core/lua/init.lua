@@ -130,7 +130,9 @@ temp_runfile("lua/libraries/prototype/null.lua", prototype)
 -- include some of vfs so we can setup and mount the filesystem
 vfs = temp_runfile("lua/libraries/filesystem/vfs.lua")
 temp_runfile("lua/libraries/filesystem/path_utilities.lua", vfs)
+_G.runfile = temp_runfile
 temp_runfile("lua/libraries/filesystem/base_file.lua", vfs)
+_G.runfile = function() end
 temp_runfile("lua/libraries/filesystem/find.lua", vfs)
 temp_runfile("lua/libraries/filesystem/helpers.lua", vfs)
 temp_runfile("lua/libraries/filesystem/lua_utilities.lua", vfs)
@@ -193,6 +195,8 @@ utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to
 vfs.MountAddons(e.ROOT_FOLDER)
 
 system._CheckCreatedEnv()
+
+logn("[core] init took ", os.clock(), " seconds")
 
 do -- autorun
 	-- call goluwa/*/lua/init.lua if it exists
