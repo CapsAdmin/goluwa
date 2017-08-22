@@ -545,6 +545,12 @@ function gserv.GetMap()
 	return gserv.GetLuaOutput("return game.GetMap()")
 end
 
+function gserv.Attach(id)
+	check_running()
+	gserv.Execute("echo to detach hold CTRL and press the following keys: *hold CTRL* b b *release CTRL* d")
+	os.execute("unset TMUX; tmux attach -t srcds_goluwa")
+end
+
 function gserv.Restart(time)
 	check_running()
 
@@ -604,6 +610,10 @@ do -- commands
 
 	commands.Add("gserv lua=arg_line", function(code)
 		logn(gserv.RunLua(code))
+	end)
+
+	commands.Add("gserv attach=string[]", function(id)
+		gserv.Attach(id)
 	end)
 end
 
