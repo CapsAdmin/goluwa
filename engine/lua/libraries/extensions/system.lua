@@ -7,8 +7,8 @@ function system.ExecuteArgs(args)
 		local str = os.getenv("GOLUWA_ARGS")
 
 		if str then
-			if str:startswith("cli --") then
-				args = str:sub(5):split("--", true)
+			if str:startswith("--") then
+				args = str:split("--", true)
 				table.remove(args, 1) -- uh
 				skip_lua = true
 			else

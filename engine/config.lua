@@ -39,11 +39,6 @@ end
 
 if CLI then
 	CURSES = false
-	VERBOSE_STARTUP = false
-end
-
-if TMUX then
-	_G.USERNAME = "tmux"
 end
 
 return {

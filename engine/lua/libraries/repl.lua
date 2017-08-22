@@ -330,9 +330,7 @@ function repl.Initialize()
 
 	repl.curses_init = true
 
-do return end
 	function os.execute(str)
-		debug.trace()
 		repl.Shutdown()
 		_OLD_G.os.execute("clear")
 		local code = _OLD_G.os.execute(str)

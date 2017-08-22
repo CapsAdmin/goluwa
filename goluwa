@@ -135,10 +135,14 @@ if [ "$1" == "server" ]; then
 	export GOLUWA_CLIENT=0
 fi
 
-if [ "$1" == "client" ] || [ "$1" == "server" ] || [ "$1" == "launch" ]; then
+if [ "$1" == "client" ] || [ "$1" == "server" ] || [ "$1" == "launch" ] || [ "$1" == "cli" ]; then
 	ARGS="${*:2}"
 else
 	ARGS="${*:1}"
+fi
+
+if [ "$1" == "cli" ]; then
+	export GOLUWA_CLI=1
 fi
 
 export GOLUWA_ARGS=${GOLUWA_ARGS:-$ARGS}

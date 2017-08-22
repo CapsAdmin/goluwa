@@ -92,4 +92,6 @@ if TMUX then
 	end)
 end
 
-system.ExecuteArgs()
+event.AddListener("Initialize", function()
+	system.ExecuteArgs()
+end)

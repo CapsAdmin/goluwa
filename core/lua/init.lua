@@ -210,7 +210,7 @@ do -- autorun
 end
 
 event.Call("Initialize")
-if system.MainLoop then
+if not CLI and system.MainLoop then
 	system.MainLoop()
 end
 event.Call("ShutDown")

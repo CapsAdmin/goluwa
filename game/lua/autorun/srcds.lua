@@ -48,15 +48,22 @@ local function check_setup() if not gserv.IsSetup() then error("server is not se
 local function check_running() if not gserv.IsRunning() then error("server is not running", 3) end end
 
 function gserv.IsSetup()
-	if gserv.GetInstallDir() and vfs.IsFile(get_gserv_addon_dir() .. "lua/autorun/server/gserv_pinger.lua") then
+	if
+		gserv.GetInstallDir() and
+		vfs.IsFile(gserv.GetInstallDir() .. "/srcds_run") and
+		vfs.IsFile(get_gserv_addon_dir() .. "lua/autorun/server/gserv_pinger.lua")
+	then
 		return true
 	end
 end
 
-function gserv.Setup()
+function gserv.Setup(force)
 	if gserv.IsRunning() then error("server is running", 2) end
-
-	logn("setting up gmod server")
+	if gserv.IsSetup() then
+		logn("server is already setup")
+	else
+		logn("setting up gmod server for first time")
+	end
 
 	-- create the srcds directory in goluwa/data/srcds
 	vfs.CreateFolder("os:" .. srcds_dir)
@@ -70,7 +77,7 @@ function gserv.Setup()
 		end
 
 		-- if srcds_run does not exist install gmod
-		if not gserv.GetInstallDir() then
+		if not gserv.IsSetup() then
 			gserv.InstallGame("gmod")
 		end
 
@@ -125,7 +132,6 @@ function gserv.InstallGame(name, dir)
 		logn("installing ", name, " (", appid, ")", " to ", srcds_dir .. dir_name)
 
 		serializer.SetKeyValueInFile("luadata", data_dir .. "games.lua", appid, srcds_dir .. dir_name)
-
 		os.execute(srcds_dir .. "steamcmd.sh +login anonymous +force_install_dir \"" .. srcds_dir .. dir_name .. "\" +app_update " .. appid .. " validate +quit")
 
 		logn("done")
