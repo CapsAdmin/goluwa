@@ -492,7 +492,6 @@ function gserv.ExecuteSync(str)
 	gserv.Execute(str)
 	gserv.Execute("echo " .. delimiter)
 
-	local start_line = "echo "..delimiter.."\n"
 	local end_line = "echo "..delimiter.."\n"..delimiter.." \n"
 	local current
 
@@ -506,7 +505,7 @@ function gserv.ExecuteSync(str)
 		current = gserv.GetOutput()
 	until current:endswith(end_line)
 
-	return current:sub(#prev + #start_line + #str + 1):sub(2, -#end_line - 2)
+	return current:sub(#prev + #str + 1):sub(2, -#end_line - 2)
 end
 
 function gserv.Stop()
