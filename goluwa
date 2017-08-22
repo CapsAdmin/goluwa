@@ -87,12 +87,31 @@ if [ "$1" != "launch" ]; then
 		if [ "$1" == "attach" ] || [ "$1" == "tmux" ]; then
 			tmux attach -t goluwa
 		elif [ "$1" != "launch" ]; then
-			tmux send-keys -t goluwa "$*" C-m
-			sleep 0.05
-			tmux capture-pane -t goluwa
-			printf "$(tmux show-buffer)\n"
 
-			# this is really bad and not reliable ^
+
+			prev=$(cat ./data/users/caps/logs/console_linux.txt)
+
+			magic="logn'$(date +%s%N)'"
+
+			tmux send-keys -t goluwa "$*" C-m $magic C-m
+
+			while :; do
+				tmux capture-pane;
+
+				if cat ./data/users/caps/logs/console_linux.txt | grep -F "$magic"; then
+					break
+				fi
+			done
+
+			cur=$(cat ./data/users/caps/logs/console_linux.txt)
+
+			echo "$cur"
+
+			#len="$prev $* $magic"
+
+			#echo $cur | cut -c${#len}-100000000000000000
+
+			#diff <(echo $cur) <(echo $prev)
 		fi
 
 		exit
