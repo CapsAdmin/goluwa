@@ -296,6 +296,13 @@ function PLUGIN:StartProcess(id)
 	ide:GetUIManager():Update()
 
 	console.shellbox:SetFocus()
+
+	wx.wxUnsetEnv("GOLUWA_BANCH")
+	wx.wxUnsetEnv("GOLUWA_DEBUG")
+
+	for k,v in pairs(console.env_vars) do
+		wx.wxUnsetEnv(k)
+	end
 end
 
 function PLUGIN:StopProcess(id)
