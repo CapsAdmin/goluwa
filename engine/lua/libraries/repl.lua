@@ -761,6 +761,13 @@ function repl.HandleKey(key)
 		repl.SetInputText()
 
 		if line ~= "" then
+
+			-- this is used by tmux to mark a delimiter
+			if line:startswith("echo ") then
+				logn(line:sub(6))
+				return
+			end
+
 			for key, str in pairs(command_history) do
 				if str == line then
 					table.remove(command_history, key)
@@ -802,6 +809,8 @@ if TMUX then
 	commands.Add("detach", function()
 		_OLD_G.os.execute("tmux detach")
 	end)
+
+	os.execute("ln -s " .. getlogpath() .. " " .. e.ROOT_FOLDER .. "data/tmux_log.txt")
 end
 
 return repl

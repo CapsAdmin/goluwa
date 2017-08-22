@@ -87,31 +87,26 @@ if [ "$1" != "launch" ]; then
 		if [ "$1" == "attach" ] || [ "$1" == "tmux" ]; then
 			tmux attach -t goluwa
 		elif [ "$1" != "launch" ]; then
+			prev="$(cat ./data/tmux_log.txt)"
 
+			magic="tmux_execute_$(date +%s%N)"
 
-			prev=$(cat ./data/users/caps/logs/console_linux.txt)
-
-			magic="logn'$(date +%s%N)'"
-
-			tmux send-keys -t goluwa "$*" C-m $magic C-m
+			tmux send-keys -t goluwa "$*" C-m
+			tmux send-keys -t goluwa "echo $magic" C-m
 
 			while :; do
-				tmux capture-pane;
-
-				if cat ./data/users/caps/logs/console_linux.txt | grep -F "$magic"; then
+				if cat ./data/tmux_log.txt | grep -F -q "$magic"; then
 					break
 				fi
 			done
 
-			cur=$(cat ./data/users/caps/logs/console_linux.txt)
+			cur="$(cat ./data/tmux_log.txt)"
 
-			echo "$cur"
+			argline="$*"
+			len1=$(( ${#prev}+4+${#argline} ))
+			len2=$(( ${#cur}-${#magic}-len1 ))
 
-			#len="$prev $* $magic"
-
-			#echo $cur | cut -c${#len}-100000000000000000
-
-			#diff <(echo $cur) <(echo $prev)
+			printf "${cur:len1:len2}"
 		fi
 
 		exit
