@@ -8,7 +8,7 @@ gserv.workshop_auth_key = pvars.Setup("gserv_authkey")
 gserv.server_port = pvars.Setup("gserv_port", 27015)
 gserv.webhook_port = pvars.Setup("gserv_webhook_port", 27020)
 gserv.webhook_secret = pvars.Setup("gserv_webhook_secret", false)
-gserv.workshop_collection = "https://steamcommunity.com/sharedfiles/filedetails/?id=427843415"
+gserv.workshop_collection = pvars.Setup("gserv_workshop_collection", nil)
 
 gserv.startup_parameters = {
 	maxplayers = 32,
@@ -416,8 +416,8 @@ do
 			str = str .. "+" .. k .. " " .. v .. " "
 		end
 
-		if gserv.workshop_collection then
-			local id = tonumber(gserv.workshop_collection) or gserv.workshop_collection:match("id=(%d+)") or gserv.workshop_collection
+		if gserv.workshop_collection:Get() then
+			local id = tonumber(gserv.workshop_collection:Get()) or gserv.workshop_collection:Get():match("id=(%d+)") or gserv.workshop_collection:Get()
 			str = str .. "+host_workshop_collection " .. id  .. " "
 		end
 
