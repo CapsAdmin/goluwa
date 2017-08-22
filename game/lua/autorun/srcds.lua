@@ -485,6 +485,30 @@ function gserv.Execute(line)
 	os.execute("tmux send-keys -t srcds_goluwa \"" .. line .. "\" C-m")
 end
 
+function gserv.ExecuteSync(str)
+	local delimiter = "goluwa_gserv_ExecuteSync_" .. os.clock()
+	local prev = gserv.GetOutput()
+
+	gserv.Execute(str)
+	gserv.Execute("echo " .. delimiter)
+
+	local start_line = "echo "..delimiter.."\n"
+	local end_line = "echo "..delimiter.."\n"..delimiter.." \n"
+	local current
+
+	local timeout = os.clock() + 1
+
+	repeat
+		if timeout < os.clock() then
+			error("Waiting for output took more than 1 second.\nUse gserv show to dump all output.")
+		end
+
+		current = gserv.GetOutput()
+	until current:endswith(end_line)
+
+	return current:sub(#prev + #start_line + #str + 1):sub(2, -#end_line - 2)
+end
+
 function gserv.Stop()
 	check_running()
 
@@ -498,7 +522,7 @@ end
 function gserv.RunLua(line)
 	check_running()
 
-	gserv.Execute("lua_run " .. line)
+	return gserv.ExecuteSync("lua_run " .. line)
 end
 
 -- this is really stupid but idk what else to do at the moment
@@ -575,15 +599,11 @@ do -- commands
 	commands.Add("gserv get_config_param=string", function(key) logn(gserv.GetConfigParameter(key)) end)
 
 	commands.Add("gserv run=arg_line", function(str)
-		llog("running |", str, "| on srcds")
-		gserv.Execute(str)
-		event.Delay(0.1, function() gserv.Show() end)
+		logn(gserv.ExecuteSync(str))
 	end)
 
 	commands.Add("gserv lua=arg_line", function(code)
-		llog("running |lua_run ", code, "| on srcds")
-		gserv.RunLua(code)
-		event.Delay(0.1, function() gserv.Show() end)
+		logn(gserv.RunLua(code))
 	end)
 end
 
