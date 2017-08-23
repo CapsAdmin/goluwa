@@ -1,12 +1,16 @@
-#!/bin/bash
+#!/bin/sh
 
-goluwa_dir="$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd $goluwa_dir
+script_path=$(which "$0")
+
+if [ -L "$script_path" ]; then
+    cd "$(dirname "$(readlink -f "$script_path")")" || exit
+else
+    cd "$(dirname "$script_path")" || exit
+fi
 
 mkdir -p data/bin
 
-function download
-{
+download () {
     if command -v wget >/dev/null 2>&1; then
         wget -O "$2" "$1"
     elif command -v curl >/dev/null 2>&1; then
@@ -38,7 +42,7 @@ case $(uname) in
 	;;
 esac
 
-if [ "$1" == "update" ] || [ ! -d "./core/" ]; then
+if [ "$1" = "update" ] || [ ! -d "./core/" ]; then
 
 	if [ -d .git ]; then
 		git pull
@@ -50,50 +54,50 @@ if [ "$1" == "update" ] || [ ! -d "./core/" ]; then
 		rm -rf goluwa-master
 	fi
 
-	if [ "$1" == "update" ]; then
+	if [ "$1" = "update" ]; then
 		exit 1
 	fi
 fi
 
-if [ "$1" == "build" ]; then
-	cd framework/lua/build/
+if [ "$1" = "build" ]; then
+	cd framework/lua/build/ || exit
 
-	if [ "$2" == "all" ]; then
+	if [ "$2" = "all" ]; then
 
-		pushd luajit
+		cd luajit || exit
 			make
-		popd
+		cd ..
 
 		for dir in ./*; do
-			if [ -d ${dir} ]; then
-				pushd ${dir}
+			if [ -d "${dir}" ]; then
+				cd "${dir}" || exit
 					make &
-				popd
+				cd ..
 			fi
 		done
 
 		exit 0
-	elif [ "$2" == "clean" ]; then
+	elif [ "$2" = "clean" ]; then
 		for dir in ./*; do
-			if [ -d ${dir} ]; then
-				pushd ${dir}
+			if [ -d "${dir}" ]; then
+				cd "${dir}" || exit
 					make clean
-				popd
+				cd ..
 			fi
 		done
 	else
-		cd $2
+		cd "$2" || exit
 
-		if [ "$3" == "clean" ]; then
+		if [ "$3" = "clean" ]; then
 			make clean
 		else
-			make ARGS=$3
+			make ARGS="$3"
 		fi
 		exit 0
 	fi
 fi
 
-if [ "$1" == "tmux" ]; then
+if [ "$1" = "tmux" ]; then
 	if ! command -v tmux>/dev/null; then
 		echo "tmux is not installed"
 	fi
@@ -109,31 +113,31 @@ if [ "$1" == "tmux" ]; then
 	exit
 fi
 
-if [ "$2" == "attach" ] && tmux has-session -t goluwa 2>/dev/null; then
+if [ "$2" = "attach" ] && tmux has-session -t goluwa 2>/dev/null; then
 	tmux attach-session -t goluwa
 fi
 
 #if there is no display server just launch client
 if [ "$1" != "launch" ]; then
-	if [ "$1" == "" ]; then
+	if [ "$1" = "" ]; then
 		if [ -z ${DISPLAY+x} ]; then
 			CLIENT=1
-		elif [ "$1" == "ide" ] || [ -f "engine/lua/zerobrane/config.lua" ]; then
+		elif [ "$1" = "ide" ] || [ -f "engine/lua/zerobrane/config.lua" ]; then
 			IDE=1
 		fi
 	elif tmux has-session -t goluwa 2>/dev/null; then
-		if [ "$1" == "attach" ] || [ "$1" == "tmux" ]; then
+		if [ "$1" = "attach" ] || [ "$1" = "tmux" ]; then
 			tmux attach -t goluwa
 		elif [ "$1" != "launch" ]; then
 			prev="$(cat ./data/tmux_log.txt)"
 
 			magic="tmux_execute_$(date +%s%N)"
 
-			tmux send-keys -t goluwa "$*" C-m
+			tmux send-keys -t goluwa "$@" C-m
 			tmux send-keys -t goluwa "echo $magic" C-m
 
 			while :; do
-				if cat ./data/tmux_log.txt | grep -F -q "$magic"; then
+				if grep -F -q "$magic" < ./data/tmux_log.txt; then
 					break
 				fi
 			done
@@ -141,10 +145,10 @@ if [ "$1" != "launch" ]; then
 			cur="$(cat ./data/tmux_log.txt)"
 
 			argline="$*"
-			len1=$(( ${#prev}+4+${#argline} ))
+			len1=$(( ${#prev}+5+${#argline} ))
 			len2=$(( ${#cur}-${#magic}-len1 ))
-
-			printf "${cur:len1:len2}"
+            
+            printf "%s\\n" "$(awk ' END { printf substr(str,'$len1','$len2') }' "str=$cur" /dev/null)"
 		fi
 
 		exit
@@ -167,13 +171,13 @@ if [ -n "$IDE" ]; then
 		rm temp.tar.gz
 	fi
 
-	cd data/ide
+	cd data/ide || exit
 	./zbstudio.sh -cfg ../../engine/lua/zerobrane/config.lua
 
 	exit 0
 fi
 
-if [ -n "$CLIENT" ] || [ "$1" == "client" ]; then
+if [ -n "$CLIENT" ] || [ "$1" = "client" ]; then
 	export GOLUWA_CLIENT=1
 	export GOLUWA_SERVER=0
 
@@ -182,7 +186,7 @@ if [ -n "$CLIENT" ] || [ "$1" == "client" ]; then
 	export multithread_glsl_compiler=1
 fi
 
-if [ "$1" == "server" ]; then
+if [ "$1" = "server" ]; then
 	export GOLUWA_GRAPHICS=0
 	export GOLUWA_SOUND=0
 	export GOLUWA_WINDOW=0
@@ -191,13 +195,13 @@ if [ "$1" == "server" ]; then
 	export GOLUWA_CLIENT=0
 fi
 
-if [ "$1" == "client" ] || [ "$1" == "server" ] || [ "$1" == "launch" ] || [ "$1" == "cli" ]; then
-	ARGS="${*:2}"
+if [ "$1" = "client" ] || [ "$1" = "server" ] || [ "$1" = "launch" ] || [ "$1" = "cli" ]; then
+	ARGS="$2 $3 $4 $5 $6 $7 $8 $9"
 else
-	ARGS="${*:1}"
+	ARGS="$*"
 fi
 
-if [ "$1" == "cli" ]; then
+if [ "$1" = "cli" ]; then
 	export GOLUWA_CLI=1
 fi
 
@@ -208,9 +212,9 @@ if [ ! -f "data/bin/${OS}_${ARCH}/binaries_downloaded" ]; then
 	mkdir -p "data/bin/${OS}_${ARCH}"
 	while true; do
 		download "https://github.com/CapsAdmin/goluwa/releases/download/${OS}-binaries/${ARCH}.tar.gz" "temp.tar.gz"
-		if [[ $? == 0 ]]; then
+		if [ $? = 0 ]; then
 			tar -xvzf temp.tar.gz -C "data/bin/${OS}_${ARCH}/"
-			if [[ ! $? == 0 ]]; then
+			if [ ! $? = 0 ]; then
 				rm temp.tar.gz
 				echo "zip file is maybe corrupt. trying again"
 			else
@@ -233,11 +237,11 @@ initlua="../../../core/lua/init.lua"
 
 GOLUWA_EXECUTABLE="${GOLUWA_EXECUTABLE:-luajit}"
 
-if [ "$2" == "branch" ]; then
+if [ "$2" = "branch" ]; then
 	GOLUWA_EXECUTABLE="luajit_$3"
 fi
 
-if [ ! -z "$GOLUWA_DEBUG" ] || [ "$4" == "debug" ]; then
+if [ ! -z "$GOLUWA_DEBUG" ] || [ "$4" = "debug" ]; then
 	if [ -z ${DISPLAY+x} ]; then
 		eval "gdb -ex=r --args $GOLUWA_EXECUTABLE $initlua"
 	else
