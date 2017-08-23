@@ -359,7 +359,10 @@ end
 
 do
 	function gserv.IsRunning()
-		return io.popen("tmux has-session -t srcds_goluwa 2>&1"):read("*all") == ""
+		local f = assert(io.popen("tmux has-session -t srcds_goluwa 2>&1"))
+		local ok = f:read("*all") == ""
+		f:close()
+		return ok
 	end
 
 	local function start_pinging()
