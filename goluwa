@@ -55,6 +55,44 @@ if [ "$1" == "update" ] || [ ! -d "./core/" ]; then
 	fi
 fi
 
+if [ "$1" == "build" ]; then
+	cd framework/lua/build/
+
+	if [ "$2" == "all" ]; then
+
+		pushd luajit
+			make
+		popd
+
+		for dir in ./*; do
+			if [ -d ${dir} ]; then
+				pushd ${dir}
+					make &
+				popd
+			fi
+		done
+
+		exit 0
+	elif [ "$2" == "clean" ]; then
+		for dir in ./*; do
+			if [ -d ${dir} ]; then
+				pushd ${dir}
+					make clean
+				popd
+			fi
+		done
+	else
+		cd $2
+
+		if [ "$3" == "clean" ]; then
+			make clean
+		else
+			make ARGS=$3
+		fi
+		exit 0
+	fi
+fi
+
 if [ "$1" == "tmux" ]; then
 	if ! command -v tmux>/dev/null; then
 		echo "tmux is not installed"
@@ -191,18 +229,30 @@ cd "data/bin/${OS}_${ARCH}/" || exit
 #lookup shared libraries in "goluwa/data/bin/linux_${ARCH}/" first
 export LD_LIBRARY_PATH=".:$LD_LIBRARY_PATH"
 
+initlua="../../../core/lua/init.lua"
+
 GOLUWA_EXECUTABLE="${GOLUWA_EXECUTABLE:-luajit}"
 
-launch="./$GOLUWA_EXECUTABLE"
+if [ "$2" == "branch" ]; then
+	GOLUWA_EXECUTABLE="luajit_$3"
+fi
+
+if [ ! -z "$GOLUWA_DEBUG" ] || [ "$4" == "debug" ]; then
+	if [ -z ${DISPLAY+x} ]; then
+		eval "gdb -ex=r --args $GOLUWA_EXECUTABLE $initlua"
+	else
+		eval "x-terminal-emulator -e \"gdb -ex=r --args $GOLUWA_EXECUTABLE $initlua\""
+	fi
+else
+	eval "./$GOLUWA_EXECUTABLE $initlua"
+fi
 
 if [ ! -x "$GOLUWA_EXECUTABLE" ] && [ -f "/lib64/ld-linux-x86-64.so.2" ]; then
 	# i don't know if this is stupid or not
 	# but it's so i can execute luajt without the need for execute permissions
 	# on a non ext filesystem (like on a usb stick with fat32)
-	launch="/lib64/ld-linux-x86-64.so.2 ./$GOLUWA_EXECUTABLE"
+	eval "/lib64/ld-linux-x86-64.so.2 ./$GOLUWA_EXECUTABLE $initlua"
 fi
-
-eval "$launch ../../../core/lua/init.lua"
 
 #in case of a crash
 stty sane > /dev/null 2>&1 &
