@@ -57,7 +57,7 @@ function gserv.IsSetup()
 	end
 end
 
-function gserv.Setup(force)
+function gserv.Setup()
 	if gserv.IsRunning() then error("server is running", 2) end
 	if gserv.IsSetup() then
 		logn("server is already setup")
