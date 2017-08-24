@@ -205,7 +205,7 @@ if [ "$1" = "cli" ]; then
 	export GOLUWA_CLI=1
 fi
 
-export GOLUWA_ARGS=${GOLUWA_ARGS:-$ARGS}
+export GOLUWA_ARGS="${GOLUWA_ARGS:-$ARGS}"
 
 #if we don't have binaries get them from github
 if [ ! -f "data/bin/${OS}_${ARCH}/binaries_downloaded" ]; then
