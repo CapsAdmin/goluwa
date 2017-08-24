@@ -264,6 +264,11 @@ function sockets.Request(info)
 		info.header["Content-Type"] = multipart
 	end
 
+	if info.username and info.token then
+		info.header = info.header or {}
+		info.header.Authorization = "Basic " .. crypto.Base64Encode(info.username..":"..info.token)
+	end
+
 	if info.header then
 		for k,v in pairs(info.header) do
 			socket:Send(("%s: %s\r\n"):format(k, v))
