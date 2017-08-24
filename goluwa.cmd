@@ -1,2 +1,1 @@
-@echo off
-PowerShell.exe -ExecutionPolicy Bypass -File "%~dp0src\cli\windows.ps1" ide
+@echo off & PowerShell.exe -ExecutionPolicy Bypass -Command "%~dp0goluwa.ps1 %*"
