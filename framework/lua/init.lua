@@ -136,12 +136,15 @@ event.AddListener("Initialize", function()
 	end
 end)
 
-event.Thinker(function()
-	if collectgarbage("count") > 900000 then
-		collectgarbage()
-		llog("emergency gc!")
-	end
-end, false, 1/10)
+-- only if we're in 32 bit lua
+if #tostring({}) == 10 then
+	event.Thinker(function()
+		if collectgarbage("count") > 900000 then
+			collectgarbage()
+			llog("emergency gc!")
+		end
+	end, false, 1/10)
+end
 
 -- main loop
 local last_time = 0
