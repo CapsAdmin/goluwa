@@ -196,7 +196,15 @@ if [ "$1" = "server" ]; then
 fi
 
 if [ "$1" = "client" ] || [ "$1" = "server" ] || [ "$1" = "launch" ] || [ "$1" = "cli" ]; then
-	ARGS="$2 $3 $4 $5 $6 $7 $8 $9"
+    if [ "$2" = "branch" ]; then
+        if [ "$4" = "debug" ]; then
+            ARGS="$5 $6 $7 $8 $9"
+        else
+            ARGS="$4 $5 $6 $7 $8 $9"
+        fi
+    else
+        ARGS="$2 $3 $4 $5 $6 $7 $8 $9"
+    fi
 else
 	ARGS="$*"
 fi
