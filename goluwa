@@ -133,7 +133,7 @@ if [ "$1" != "launch" ]; then
 
 			magic="tmux_execute_$(date +%s%N)"
 
-			tmux send-keys -t goluwa "$@" C-m
+			tmux send-keys -t goluwa "$*" C-m
 			tmux send-keys -t goluwa "echo $magic" C-m
 
 			while :; do
