@@ -7,11 +7,17 @@ commands.Add("gc", function()
 	logn(utility.FormatFileSize(collectgarbage("count")*1024))
 end)
 
-commands.Add("test_mem", function()
-	for i = 1, 5 do
-		local tbl = {} for i = 1, 10000000 do tbl[i] = {1,2,3} end
-		_G["TEST_MEM" .. i] = tbl
+commands.Add("test_mem=number", function(limit)
+	limit = limit * 1024 * 1024 * 1024
+	local tbl = {}
+	for i = 1, math.huge do
+		if (collectgarbage("count") * 1024) > limit then
+			logn(i)
+			break
+		end
+		tbl[i] = {1,2,3}
 	end
+	_G.TEST_MEM = tbl
 end)
 
 do
