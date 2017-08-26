@@ -48,6 +48,10 @@ local srcds_dir = e.DATA_FOLDER .. "srcds/"
 local data_dir = "data/gserv/"
 local data_dir = "data/gserv/"
 
+local function save_config(id)
+	serializer.WriteFile("luadata", data_dir .. "configs/" .. underscore(id) .. ".lua", gserv.configs[id])
+end
+
 local function load_config(id)
 	if not gserv.configs[id] then
 		local config = serializer.ReadFile("luadata", data_dir .. "configs/" .. underscore(id) .. ".lua") or {}
@@ -55,10 +59,6 @@ local function load_config(id)
 		gserv.configs[id] = table.merge(table.copy(gserv.default_config), config)
 		save_config(id)
 	end
-end
-
-local function save_config(id)
-	serializer.WriteFile("luadata", data_dir .. "configs/" .. underscore(id) .. ".lua", gserv.configs[id])
 end
 
 local function check_setup(id) if not gserv.IsSetup(id) then error("server is not setup", 3) end end
