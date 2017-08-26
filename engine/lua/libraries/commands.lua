@@ -430,13 +430,17 @@ do -- commands
 	end
 
 	function commands.ExecuteCommandString(str)
-		local a, b, c = pcall(commands.RunCommandString, str)
+		local tr
+		local a, b, c = xpcall(commands.RunCommandString, function(msg) tr = debug.traceback() .. "\n\n" .. msg end, str)
 
 		if a == false then
-			return false, b
+			return false, b or tr
 		end
 
 		if b == false then
+			if tr and c then
+				c = c .. tr
+			end
 			return false, c or "unknown reason"
 		end
 
