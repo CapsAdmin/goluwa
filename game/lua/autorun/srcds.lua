@@ -268,7 +268,19 @@ do -- addons
 		elseif info.type == "workshop" then
 			logn("updating workshop addon ", info.url)
 			steam.DownloadWorkshop(info.id, function(header, compressed_path)
-				vfs.Write(get_gmod_dir() .. "addons/".. info.name, serializer.ReadFile("lzma", compressed_path))
+				local name = info.name
+
+				-- if the name is just an id make it more readable
+				if tonumber(name:match("(.+)%.gma")) then
+					name = header.response.publishedfiledetails[1].title:lower():gsub("%p", ""):gsub("%s+", "_") .. "_" .. name
+				end
+
+				vfs.Write(get_gmod_dir() .. "addons/".. name, serializer.ReadFile("lzma", compressed_path))
+
+				os.execute(gserv.GetInstallDir() .. "/bin/gmad_linux extract -file " .. get_gmod_dir() .. "addons/".. name.." -out " .. get_gmod_dir() .. "addons/".. name:match("(.+)%.gma"))
+
+				vfs.Delete(get_gmod_dir() .. "addons/".. name)
+
 				logn("done updating ", info.url)
 			end)
 		end
