@@ -2,25 +2,32 @@ if not system.OSCommandExists("tmux", "tar") then return end
 
 gserv = gserv or {}
 
-gserv.loaded_configs = false
+gserv.loaded_config = false
 
-gserv.workshop_auth_key = pvars.Setup("gserv_authkey")
-gserv.server_port = pvars.Setup("gserv_port", 27015)
-gserv.webhook_port = pvars.Setup("gserv_webhook_port", 27020)
-gserv.webhook_secret = pvars.Setup("gserv_webhook_secret", false)
-gserv.workshop_collection = pvars.Setup("gserv_workshop_collection", nil)
+gserv.config = {
+	ip = nil,
+	port = 27015,
 
-gserv.startup_parameters = {
-	maxplayers = 32,
-	map = "gm_construct",
-}
+	workshop_authkey = nil,
+	workshop_collection = nil,
 
-gserv.launch_parameters = {
-	disableluarefresh = "",
-}
+	webhook_port = 27020,
+	webhook_secret = false,
 
-gserv.cfg = {
-	sv_hibernate_think = 1, -- so pinger can run even if there are no players on the server
+	startup = {
+		maxplayers = 32,
+		map = "gm_construct",
+	},
+
+	launch = {
+		"disableluarefresh",
+	},
+
+	cfg = {
+		sv_hibernate_think = 1, -- so pinger can run even if there are no players on the server
+	},
+
+	addons = {},
 }
 
 local function get_gmod_dir()
@@ -35,13 +42,15 @@ local srcds_dir = e.DATA_FOLDER .. "srcds/"
 
 local data_dir = "data/gserv/"
 
-local function load_configs()
-	if not gserv.loaded_configs then
-		table.merge(gserv.startup_parameters, serializer.ReadFile("luadata", data_dir .. "startup_parameters.lua") or {})
-		table.merge(gserv.launch_parameters, serializer.ReadFile("luadata", data_dir .. "launch_parameters.lua") or {})
-		table.merge(gserv.cfg, serializer.ReadFile("luadata", data_dir .. "config.lua") or {})
-		gserv.loaded_configs = true
+local function load_config()
+	if not gserv.loaded_config then
+		table.merge(gserv.config, serializer.ReadFile("luadata", data_dir .. "config.lua") or {})
+		gserv.loaded_config = true
 	end
+end
+
+local function save_config()
+	serializer.WriteFile("luadata", data_dir .. "config.lua", gserv.config)
 end
 
 local function check_setup() if not gserv.IsSetup() then error("server is not setup", 3) end end
@@ -59,28 +68,14 @@ end
 
 function gserv.Setup()
 	if gserv.IsRunning() then error("server is running", 2) end
+
 	if gserv.IsSetup() then
 		logn("server is already setup")
 	else
 		logn("setting up gmod server for first time")
 	end
 
-	-- create the srcds directory in goluwa/data/srcds
-	vfs.CreateFolder("os:" .. srcds_dir)
-
-	-- download steamcmd
-	resource.Download("http://media.steampowered.com/client/steamcmd_linux.tar.gz", function(path)
-
-		-- if steamcmd.sh does not exist then we need to extract it
-		if not vfs.IsFile(srcds_dir .. "steamcmd.sh") then
-			os.execute("tar -xvzf " .. vfs.GetAbsolutePath(path) .. " -C " .. srcds_dir)
-		end
-
-		-- if srcds_run does not exist install gmod
-		if not gserv.IsSetup() then
-			gserv.InstallGame("gmod")
-		end
-
+	gserv.InstallGame("gmod", nil, function()
 		-- create glua script that writes os.time to a file every second
 		if not vfs.IsFile(get_gserv_addon_dir() .. "lua/autorun/server/gserv_pinger.lua") then
 			vfs.CreateFolders("os", get_gserv_addon_dir() .. "lua/autorun/server/")
@@ -102,7 +97,7 @@ function gserv.Setup()
 	end)
 end
 
-function gserv.InstallGame(name, dir)
+function gserv.InstallGame(name, dir, callback)
 	if gserv.IsRunning() then error("server is running", 2) end
 
 	local appid, full_name = steam.GetAppIdFromName(name .. " Dedicated Server")
@@ -135,8 +130,7 @@ function gserv.InstallGame(name, dir)
 		os.execute(srcds_dir .. "steamcmd.sh +login anonymous +force_install_dir \"" .. srcds_dir .. dir_name .. "\" +app_update " .. appid .. " validate +quit")
 
 		logn("done")
-
-		gserv.BuildMountConfig()
+		if callback then callback() end
 	end)
 end
 
@@ -173,9 +167,9 @@ end
 do
 	function gserv.SetConfigParameter(key, val)
 		check_setup()
-		load_configs()
-		gserv.cfg[key] = val
-		serializer.WriteFile("luadata", data_dir .. "config.lua", gserv.cfg)
+		load_config()
+		gserv.config.cfg[key] = val
+		save_config()
 		gserv.BuildConfig()
 		if gserv.IsRunning() then
 			gserv.Execute(key .. " " .. val)
@@ -184,8 +178,8 @@ do
 
 	function gserv.GetConfigParameter(key)
 		check_setup()
-		load_configs()
-		return gserv.cfg[key]
+		load_config()
+		return gserv.config.cfg[key]
 	end
 
 	function gserv.BuildConfig()
@@ -193,7 +187,7 @@ do
 
 		-- write the cfg file
 		local str = ""
-		for k,v in pairs(gserv.cfg) do
+		for k,v in pairs(gserv.config.cfg) do
 			str = str .. k .. " " .. v .. "\n"
 		end
 		vfs.Write(get_gmod_dir() .. "cfg/gserv.cfg", str)
@@ -202,36 +196,39 @@ end
 
 do
 	function gserv.SetStartupParameter(key, val)
-		load_configs()
+		load_config()
 
-		gserv.startup_parameters[key] = val
-		serializer.WriteFile("luadata", data_dir .. "startup_parameters.lua", gserv.startup_parameters)
+		gserv.config.startup[key] = val
+
+		save_config()
 	end
 
 	function gserv.GetStartupParameter(key)
-		load_configs()
+		load_config()
 
-		return gserv.startup_parameters[key]
+		return gserv.config.startup[key]
 	end
 
 	function gserv.SetLaunchParameter(key, val)
-		load_configs()
+		load_config()
 
-		gserv.launch_parameters[key] = val or ""
-		serializer.WriteFile("luadata", data_dir .. "launch_parameters.lua", gserv.launch_parameters)
+		gserv.config.launch[key] = val or ""
+
+		save_config()
 	end
 
 	function gserv.RemoveLaunchParameter(key)
-		load_configs()
+		load_config()
 
-		gserv.launch_parameters[key] = nil
-		serializer.WriteFile("luadata", data_dir .. "launch_parameters.lua", gserv.launch_parameters)
+		gserv.config.launch[key] = nil
+
+		save_config()
 	end
 
 	function gserv.GetLaunchParameter(key)
-		load_configs()
+		load_config()
 
-		return gserv.launch_parameters[key]
+		return gserv.config.launch[key]
 	end
 end
 
@@ -268,18 +265,19 @@ do -- addons
 		elseif info.type == "workshop" then
 			logn("updating workshop addon ", info.url)
 			steam.DownloadWorkshop(info.id, function(header, compressed_path)
-				local name = info.name
-
-				-- if the name is just an id make it more readable
-				if tonumber(name:match("(.+)%.gma")) then
-					name = header.response.publishedfiledetails[1].title:lower():gsub("%p", ""):gsub("%s+", "_") .. "_" .. name
+				-- if the name is just the id make it more readable
+				if info.id == info.name then
+					info.name = header.response.publishedfiledetails[1].title:lower():gsub("%p", ""):gsub("%s+", "_") .. "_" .. info.name
+					save_config()
 				end
 
-				vfs.Write(get_gmod_dir() .. "addons/".. name, serializer.ReadFile("lzma", compressed_path))
+				local name = info.name
 
-				os.execute(gserv.GetInstallDir() .. "/bin/gmad_linux extract -file " .. get_gmod_dir() .. "addons/".. name.." -out " .. get_gmod_dir() .. "addons/".. name:match("(.+)%.gma"))
+				vfs.Write(get_gmod_dir() .. "addons/" .. name .. ".gma", serializer.ReadFile("lzma", compressed_path))
 
-				vfs.Delete(get_gmod_dir() .. "addons/".. name)
+				os.execute(gserv.GetInstallDir() .. "/bin/gmad_linux extract -file " .. get_gmod_dir() .. "addons/" .. name ..".gma -out " .. get_gmod_dir() .. "addons/" .. name)
+
+				vfs.Delete(get_gmod_dir() .. "addons/" .. name .. ".gma")
 
 				logn("done updating ", info.url)
 			end)
@@ -287,7 +285,7 @@ do -- addons
 	end
 
 	function gserv.AddAddon(url, name_override)
-		check_setup()
+		load_config()
 
 		local key = url
 		local info
@@ -307,7 +305,7 @@ do -- addons
 				url = url,
 				id = url:match("id=(%d+)"),
 				type = "workshop",
-				name = name_override or url:match("id=(%d+)") .. ".gma",
+				name = name_override or url:match("id=(%d+)"),
 			}
 		else
 			info = {
@@ -317,7 +315,9 @@ do -- addons
 			}
 		end
 
-		serializer.SetKeyValueInFile("luadata", data_dir .. "addons.lua", key, info)
+		gserv.config.addons[key] = info
+
+		save_config()
 
 		llog("added addon")
 		table.print(info)
@@ -325,6 +325,7 @@ do -- addons
 
 	function gserv.RemoveAddon(url)
 		check_setup()
+		load_config()
 
 		local info = gserv.GetAddon(url)
 
@@ -334,22 +335,37 @@ do -- addons
 
 		local path = get_gmod_dir() .. "addons/".. info.name
 
-		if vfs.IsFile(path) then
-			vfs.Delete(path)
-		elseif vfs.IsDirectory(path) then
-			os.execute("rm -rf '" .. path .. "'")
+		local dir
+
+		if vfs.IsDirectory(path) then
+			dir = path
+		elseif info.id then
+			local found = vfs.Find(get_gmod_dir() .. "addons/".. info.id, true)
+			if #found == 1 and vfs.IsDirectory(found[1]) then
+				dir = found[1]
+			end
 		end
 
-		serializer.SetKeyValueInFile("luadata", data_dir .. "addons.lua", url, nil)
+		if not dir then
+			logn("could not find the addon directory")
+		end
+
+		if dir then
+			os.execute("rm -rf '" .. dir .. "'")
+		end
+
+		gserv.config.addons[url] = nil
+
+		save_config()
 
 		llog("removed addon")
 		table.print(info)
 	end
 
 	function gserv.GetAddon(url)
-		check_setup()
+		load_config()
 
-		local info = serializer.GetKeyFromFile("luadata", data_dir .. "addons.lua", url)
+		local info = gserv.config.addons[url]
 
 		if not info then
 			for _, info in pairs(gserv.GetAddons()) do
@@ -363,9 +379,9 @@ do -- addons
 	end
 
 	function gserv.GetAddons()
-		check_setup()
+		load_config()
 
-		return serializer.ReadFile("luadata", data_dir .. "addons.lua")
+		return gserv.config.addons
 	end
 end
 
@@ -410,7 +426,7 @@ do
 
 		if gserv.IsRunning() then error("server is running", 2) end
 
-		load_configs()
+		load_config()
 
 		llog("starting gmod server")
 
@@ -427,16 +443,16 @@ do
 		gserv.BuildConfig()
 
 		local str = ""
-		for k, v in pairs(gserv.startup_parameters) do
+		for k, v in pairs(gserv.config.startup) do
 			str = str .. "+" .. k .. " " .. v .. " "
 		end
 
-		if gserv.workshop_collection:Get() then
-			local id = tonumber(gserv.workshop_collection:Get()) or gserv.workshop_collection:Get():match("id=(%d+)") or gserv.workshop_collection:Get()
+		if gserv.config.workshop_collection then
+			local id = tonumber(gserv.config.workshop_collection) or gserv.config.workshop_collection:match("id=(%d+)") or gserv.config.workshop_collection
 			str = str .. "+host_workshop_collection " .. id  .. " "
 		end
 
-		local key = gserv.workshop_auth_key:Get()
+		local key = gserv.config.workshop_authkey
 
 		if key then
 			str = str .. "-authkey " .. key .. " "
@@ -445,9 +461,9 @@ do
 		end
 
 
-		str = str .. "-port " .. gserv.server_port:Get() .. " "
+		str = str .. "-port " .. gserv.config.port .. " "
 
-		for k, v in pairs(gserv.launch_parameters) do
+		for k, v in pairs(gserv.config.launch) do
 			str = str .. "-" .. k .. " " .. v .. " "
 		end
 
@@ -455,7 +471,7 @@ do
 
 		start_pinging()
 
-		sockets.StartWebhookServer(gserv.webhook_port:Get(), gserv.webhook_secret:Get())
+		sockets.StartWebhookServer(gserv.config.webhook_port, gserv.config.webhook_secret)
 	end
 
 	function gserv.Kill()
@@ -585,38 +601,17 @@ do -- commands
 	commands.Add("gserv restart=number[30]", function(time) gserv.Restart(time) end)
 	commands.Add("gserv reboot", function() gserv.Reboot() end)
 
-	commands.Add("gserv add_addon=string", function(url) gserv.AddAddon(url) end)
+	commands.Add("gserv add_addon=string", function(url) gserv.AddAddon(url) gserv.UpdateAddon(url) end)
 	commands.Add("gserv remove_addon=string", function(url) gserv.RemoveAddon(url) end)
 	commands.Add("gserv update_addon=string", function(url) gserv.UpdateAddon(url) end)
 	commands.Add("gserv update_addons", function() gserv.UpdateAddons() end)
-	commands.Add("gserv addon_info", function(url) table.print(gserv.GetAddon(url)) end)
 
-	commands.Add("gserv list_addons", function() load_configs() table.print(gserv.GetAddons()) end)
-	commands.Add("gserv list_config", function() load_configs() table.print(gserv.cfg) end)
-	commands.Add("gserv list_startup", function() load_configs() table.print(gserv.startup_parameters) end)
-	commands.Add("gserv list_launch", function() load_configs() table.print(gserv.launch_parameters) end)
-	commands.Add("gserv list_games", function() load_configs() table.print(gserv.GetInstalledGames()) end)
-
-	commands.Add("gserv setup_info", function()
-		logn("startup parameters:")
-		table.print(gserv.startup_parameters)
-
-		logn("server config:")
-		table.print(gserv.cfg)
-
-		logn("addons:")
-		table.print(gserv.GetAddons())
-	end)
+	commands.Add("gserv setup_info", function() load_config() table.print(gserv.config) end)
 
 	commands.Add("gserv set_startup_param=string,string", function(key, val) gserv.SetStartupParameter(key, val) end)
-	commands.Add("gserv get_startup_param=string", function(key) logn(gserv.GetStartupParameter(key)) end)
-
 	commands.Add("gserv set_launch_param=string,string|nil", function(key, val) gserv.SetLaunchParameter(key, val) end)
 	commands.Add("gserv remove_launch_param=string,string|nil", function(key, val) gserv.RemoveLaunchParameter(key) end)
-	commands.Add("gserv get_launch_param=string", function(key) logn(gserv.GetLaunchParameter(key)) end)
-
 	commands.Add("gserv set_config_param=string,string", function(key, val) gserv.SetConfigParameter(key, val) end)
-	commands.Add("gserv get_config_param=string", function(key) logn(gserv.GetConfigParameter(key)) end)
 
 	commands.Add("gserv run=arg_line", function(str)
 		logn(gserv.ExecuteSync(str))
