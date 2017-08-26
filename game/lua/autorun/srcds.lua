@@ -16,7 +16,7 @@ gserv.startup_parameters = {
 }
 
 gserv.launch_parameters = {
-	"disableluarefresh",
+	disableluarefresh = "",
 }
 
 gserv.cfg = {
