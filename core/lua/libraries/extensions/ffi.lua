@@ -86,7 +86,7 @@ local function indent_error(str)
 end
 
 -- make ffi.load search using our file system
-ffi.load = function(path, ...)
+function ffi.load(path, ...)
 	local args = {pcall(_OLD_G.ffi_load, path, ...)}
 
 	if WINDOWS and not args[1] then
@@ -94,35 +94,33 @@ ffi.load = function(path, ...)
 	end
 
 	if not args[1] then
-		if system and system.SetSharedLibraryPath then
-			if vfs then
-				for _, where in ipairs(where) do
-					for full_path in vfs.Iterate(where .. path, true) do
-						-- look first in the vfs' bin directories
-						local old = system.GetSharedLibraryPath()
-						system.SetSharedLibraryPath(full_path:match("(.+/)"))
-						local args = {pcall(_OLD_G.ffi_load, full_path, ...)}
-						system.SetSharedLibraryPath(old)
+		if vfs and system and system.SetSharedLibraryPath then
+			for _, where in ipairs(where) do
+				for _, full_path in ipairs(vfs.GetFiles({path = where, filter = path, filter_plain = true, full_path = true})) do
+					-- look first in the vfs' bin directories
+					local old = system.GetSharedLibraryPath()
+					system.SetSharedLibraryPath(full_path:match("(.+/)"))
+					args = {pcall(_OLD_G.ffi_load, full_path, ...)}
+					system.SetSharedLibraryPath(old)
 
-						if args[1] then
-							return handle_stupid(path, select(2, unpack(args)))
-						end
-
-						-- if not try the default OS specific dll directories
-						args = {pcall(_OLD_G.ffi_load, full_path, ...)}
-						if args[1] then
-							return handle_stupid(path, select(2, unpack(args)))
-						end
+					if args[1] then
+						return handle_stupid(path, select(2, unpack(args)))
 					end
+
+					args[2] = args[2] .. "\n" .. system.GetLibraryDependencies(full_path)
+
+					-- if not try the default OS specific dll directories
+					args = {pcall(_OLD_G.ffi_load, full_path, ...)}
+					if args[1] then
+						return handle_stupid(path, select(2, unpack(args)))
+					end
+
+					args[2] = args[2] .. "\n" .. system.GetLibraryDependencies(full_path)
 				end
 			end
-		end
 
-		if system then
-			args[2] = args[2] .. "\n" .. system.GetLibraryDependencies(path)
+			error(indent_error(args[2]), 2)
 		end
-
-		error(indent_error(args[2]), 2)
 	end
 
 	return handle_stupid(path, args[2])
