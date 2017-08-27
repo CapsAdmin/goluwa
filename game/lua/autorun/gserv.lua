@@ -21,7 +21,7 @@ gserv.default_config = {
 	},
 
 	launch = {
-		"disableluarefresh",
+		disableluarefresh = "",
 	},
 
 	cfg = {
