@@ -9,7 +9,7 @@ all: repo
 repo:
 	git clone $(LUA_URL)
 	cd repo; git checkout $(LUA_BRANCH)
-	cd repo; export CFLAGS=-fPIC; make
+	cd repo; make XCFLAGS+=-fPIC XCFLAGS+=-DLUAJIT_ENABLE_GC64 XCFLAGS+=-DLUAJIT_ENABLE_LUA52COMPAT;
 
 clean:
 	rm -rf repo
