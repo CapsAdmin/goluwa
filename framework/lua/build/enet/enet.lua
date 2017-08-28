@@ -40,6 +40,7 @@ void(enet_host_compress)(struct _ENetHost*,const struct _ENetCompressor*);
 int(enet_socket_connect)(int,const struct _ENetAddress*);
 void(enet_peer_disconnect_now)(struct _ENetPeer*,unsigned int);
 struct _ENetListNode*(enet_list_move)(struct _ENetListNode*,void*,void*);
+int(enet_address_set_host_ip)(struct _ENetAddress*,const char*);
 int(enet_address_set_host)(struct _ENetAddress*,const char*);
 void(enet_peer_reset)(struct _ENetPeer*);
 int(enet_socket_bind)(int,const struct _ENetAddress*);
@@ -116,6 +117,7 @@ library = {
 	SocketConnect = CLIB.enet_socket_connect,
 	PeerDisconnectNow = CLIB.enet_peer_disconnect_now,
 	ListMove = CLIB.enet_list_move,
+	AddressSetHostIp = CLIB.enet_address_set_host_ip,
 	AddressSetHost = CLIB.enet_address_set_host,
 	PeerReset = CLIB.enet_peer_reset,
 	SocketBind = CLIB.enet_socket_bind,
