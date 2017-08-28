@@ -3,13 +3,11 @@ local ffibuild = require("ffibuild")
 
 ffibuild.BuildSharedLibrary(
 	"SDL2",
-	"https://github.com/msc-/SDL-jake/tree/vulkan-support-rebase.git",
-	"./autogen.sh && mkdir build && cd build && ../configure --disable-audio --disable-render --disable-video-mir --disable-haptic --disable-filesystem --disable-threads --disable-file && make && cd ../"
+	"https://hg.libsdl.org/SDL",
+	"./autogen.sh && mkdir build && cd build && ../configure --disable-audio --disable-render --disable-haptic --disable-filesystem --disable-threads --disable-file && make && cd ../"
 )
 
 local header = ffibuild.BuildCHeader([[
-
-
 typedef enum  {
 	SDL_INIT_TIMER = 0x00000001,
 	SDL_INIT_AUDIO = 0x00000010,
@@ -28,6 +26,8 @@ typedef enum  {
 	SDL_WINDOWPOS_CENTERED        = SDL_WINDOWPOS_CENTERED_MASK
 } SDL_grrrrrr;
 
+    #include "SDL_video.h"
+    #include "SDL_shape.h"
 	#include "SDL.h"
     #include "SDL_syswm.h"
 
@@ -37,6 +37,10 @@ header = "struct SDL_BlitMap {};\n" .. header
 
 local meta_data = ffibuild.GetMetaData(header)
 meta_data.functions.SDL_main = nil
+
+meta_data.structs["struct SDL_WindowShapeMode"] = nil
+meta_data.functions.SDL_SetWindowShape.arguments[3] = ffibuild.CreateType("type", "void *")
+meta_data.functions.SDL_GetShapedWindowMode.arguments[2] = ffibuild.CreateType("type", "void *")
 
 local header = meta_data:BuildMinimalHeader(function(name) return name:find("^SDL_") end, function(name) return name:find("^SDL_") or name:find("^KMOD_") end, true, true)
 
