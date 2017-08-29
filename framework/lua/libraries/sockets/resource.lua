@@ -297,7 +297,7 @@ function resource.BuildCacheFolderList(file_name)
 	if not resource.url_cache_lookup then
 		local tbl = {}
 		for _, file_name in ipairs(vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "cache/")) do
-			tbl[file_name:match("(.-)%.")] = file_name
+			tbl[file_name:match("(.+)%.")] = file_name
 		end
 		resource.url_cache_lookup = tbl
 	end
