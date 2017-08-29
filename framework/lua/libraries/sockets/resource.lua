@@ -297,7 +297,13 @@ function resource.BuildCacheFolderList(file_name)
 	if not resource.url_cache_lookup then
 		local tbl = {}
 		for _, file_name in ipairs(vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "cache/")) do
-			tbl[file_name:match("(.+)%.")] = file_name
+			local name = file_name:match("(%d)%.")
+			if name then
+				tbl[name] = file_name
+			else
+				logn("bad file in downloads/cache folder: ", file_name)
+				vfs.Delete("os:" .. e.DOWNLOAD_FOLDER .. "cache/" .. file_name)
+			end
 		end
 		resource.url_cache_lookup = tbl
 	end
