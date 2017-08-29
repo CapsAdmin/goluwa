@@ -44,7 +44,11 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 				if not res then return end
 
 				if res ~= etag then
-					llog(from, ": etag has changed ", res)
+					if etag then
+						llog(from, ": etag has changed ", res)
+					else
+						llog(from, ": no previous etag stored", res)
+					end
 					download(from, to, callback, on_fail, on_header, nil, etag_path_override, need_extension)
 				else
 					--llog(from, ": etag is the same")
