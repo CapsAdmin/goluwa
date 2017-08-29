@@ -368,7 +368,7 @@ do -- addons
 			}
 		elseif url:find("steamcommunity") and url:find("id=%d+") or tonumber(url) then
 			info = {
-				id = url:match("id=(%d+)") or tonumber(url),
+				id = url:match("id=(%d+)") or url,
 				type = "workshop",
 				name = name_override or url:match("id=(%d+)") or url,
 			}
