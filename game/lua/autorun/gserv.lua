@@ -366,9 +366,9 @@ do -- addons
 				type = "git",
 				name = name_override or url:match(".+/(.+)%.git"):lower(),
 			}
-		elseif url:find("steamcommunity") and url:find("id=%d+") then
+		elseif url:find("steamcommunity") and url:find("id=%d+") or tonumber(url) then
 			info = {
-				id = url:match("id=(%d+)"),
+				id = url:match("id=(%d+)") or tonumber(url),
 				type = "workshop",
 				name = name_override or url:match("id=(%d+)"),
 			}
