@@ -370,7 +370,7 @@ do -- addons
 			info = {
 				id = url:match("id=(%d+)") or tonumber(url),
 				type = "workshop",
-				name = name_override or url:match("id=(%d+)"),
+				name = name_override or url:match("id=(%d+)") or url,
 			}
 		else
 			error("could not determine addon type from: " .. url, 2)
