@@ -135,6 +135,7 @@ function gserv.SetupCommands(id)
 	commands.Add(id .. " remove_addon=string", function(url) gserv.RemoveAddon(id, url) end)
 	commands.Add(id .. " update_addon=string", function(url) gserv.UpdateAddon(id, url) end)
 	commands.Add(id .. " update_addons", function() gserv.UpdateAddons(id) end)
+	commands.Add(id .. " scan_addons", function() gserv.ScanAddons(id) end)
 
 	commands.Add(id .. " setup_info", function() check_setup(id) table.print(gserv.configs[id]) end)
 	commands.Add(id .. " setup_info", function() check_setup(id) table.print(gserv.configs[id]) end)
@@ -362,24 +363,24 @@ do -- addons
 
 		if url:endswith(".git") then
 			info = {
-				url = url,
 				type = "git",
 				name = name_override or url:match(".+/(.+)%.git"):lower(),
 			}
 		elseif url:find("steamcommunity") and url:find("id=%d+") then
 			info = {
-				url = url,
 				id = url:match("id=(%d+)"),
 				type = "workshop",
 				name = name_override or url:match("id=(%d+)"),
 			}
 		else
 			info = {
-				url = url,
 				type = "unknown",
 				name = name_override or vfs.FixIllegalCharactersInPath(url):lower():gsub("%s+", "_"),
 			}
 		end
+
+		info.key = key
+		info.url = url
 
 		gserv.configs[id].addons[key] = info
 
@@ -387,6 +388,8 @@ do -- addons
 
 		gserv.Log(id, "added addon")
 		table.print(info)
+
+		return info
 	end
 
 	function gserv.RemoveAddon(id, url)
@@ -399,14 +402,14 @@ do -- addons
 			error("no such addon: " .. url)
 		end
 
-		local path = get_gmod_dir(id) .. "addons/".. info.name
+		local path = get_gmod_dir(id) .. "addons/" .. info.name
 
 		local dir
 
 		if vfs.IsDirectory(path) then
 			dir = path
 		elseif info.id then
-			local found = vfs.Find(get_gmod_dir(id) .. "addons/".. info.id, true)
+			local found = vfs.Find(get_gmod_dir(id) .. "addons/" .. info.id, true)
 			if #found == 1 and vfs.IsDirectory(found[1]) then
 				dir = found[1]
 			end
@@ -417,10 +420,35 @@ do -- addons
 		end
 
 		if dir then
-			os.execute("rm -rf '" .. dir .. "'")
+			local ok = false
+
+			if info.type == "git" then
+				local cfg = vfs.Read(dir .. "/.git/config")
+				local url = cfg:match("%[remote \"origin\"%]%s+url = (.-)\n")
+
+				if url == info.key then
+					ok = true
+				else
+					gserv.Log(id, "not deleting directory because remote origin is different (not owned by gserv?)")
+				end
+			end
+
+			if ok then
+				os.execute("rm -rf '" .. dir .. "'")
+			end
 		end
 
-		gserv.configs[id].addons[url] = nil
+		-- LEGACY
+		if not info.key then
+			for k,v in pairs(gserv.configs[id].addons) do
+				if v == info then
+					gserv.configs[id].addons[k] = nil
+					break
+				end
+			end
+		end
+
+		gserv.configs[id].addons[info.key] = nil
 
 		save_config(id)
 
@@ -448,6 +476,33 @@ do -- addons
 		load_config(id)
 
 		return gserv.configs[id].addons
+	end
+
+	function gserv.ScanAddons(id)
+		gserv.Log(id, "looking for new git addons .. ")
+		local found = 0
+		for _, dir in ipairs(vfs.Find(get_gmod_dir(id) .. "addons/", true)) do
+			if vfs.IsFile(dir .. "/.git/config") then
+				local cfg = vfs.Read(dir .. "/.git/config")
+				local url = cfg:match("%[remote \"origin\"%]%s+url = (.-)\n")
+				if not gserv.GetAddon(id, url) then
+					local name = url:match(".+/(.+)"):lower()
+
+					for k, v in pairs(gserv.GetAddons(id)) do
+						if v.name == name then
+							error("there is already an addon with the name " .. name .. " remove it with '" .. id .. " remove_addon " .. v.key .. "' and run this command again")
+						end
+					end
+
+					gserv.AddAddon(id, url)
+
+					found = found + 1
+				end
+			end
+		end
+		if found == 0 then
+			gserv.Log(id, "found no new git addons to add")
+		end
 	end
 end
 
