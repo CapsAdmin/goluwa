@@ -373,10 +373,7 @@ do -- addons
 				name = name_override or url:match("id=(%d+)"),
 			}
 		else
-			info = {
-				type = "unknown",
-				name = name_override or vfs.FixIllegalCharactersInPath(url):lower():gsub("%s+", "_"),
-			}
+			error("could not determine addon type from: " .. url, 2)
 		end
 
 		info.key = key
