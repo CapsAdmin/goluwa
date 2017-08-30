@@ -89,13 +89,6 @@ do -- runfile
 
 	function vfs.RunFile(source, ...)
 
-		if source:startswith("!") then
-			source = source:sub(2)
-			if filerun_stack[#filerun_stack] then
-				source = filerun_stack[#filerun_stack]:match("(.+/).-/") .. source
-			end
-		end
-
 		if type(source) == "table" then
 			system_pcall = false
 			local ok, err
@@ -120,6 +113,12 @@ do -- runfile
 			return ok, err
 		end
 
+		if source:startswith("!") then
+			source = source:sub(2)
+			if filerun_stack[#filerun_stack] then
+				source = filerun_stack[#filerun_stack]:match("(.+/).-/") .. source
+			end
+		end
 
 		local dir, file = source:match("(.+/)(.+)")
 
