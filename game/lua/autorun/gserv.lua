@@ -72,7 +72,7 @@ function gserv.IsSetup(id)
 	if
 		gserv.GetInstallDir(id) and
 		vfs.IsFile(gserv.GetInstallDir(id) .. "/srcds_run") and
-		vfs.IsFile(get_gserv_addon_dir(id) .. "lua/autorun/server/gserv_pinger.lua")
+		vfs.IsFile(get_gserv_addon_dir(id) .. "lua/autorun/server/gserv.lua")
 	then
 		return true
 	end
@@ -96,15 +96,63 @@ function gserv.Setup(id)
 			serializer.SetKeyValueInFile("luadata", data_dir .. "games.lua", id, srcds_dir .. dir)
 		end
 
-		-- create glua script that writes os.time to a file every second
-		if not vfs.IsFile(get_gserv_addon_dir(id) .. "lua/autorun/server/gserv_pinger.lua") then
-			vfs.CreateFolders("os", get_gserv_addon_dir(id) .. "lua/autorun/server/")
-			vfs.Write(get_gserv_addon_dir(id) .. "lua/autorun/server/gserv_pinger.lua", [[
-				timer.Create("gserv_pinger", 1, 0, function()
-					file.Write("gserv_pinger.txt", os.time(), "DATA")
-				end)
-			]])
-		end
+		vfs.CreateFolders("os", get_gserv_addon_dir(id) .. "lua/autorun/server/")
+
+		vfs.Write(get_gserv_addon_dir(id) .. "lua/autorun/server/gserv.lua", [[
+			timer.Create("gserv_pinger", 1, 0, function()
+				file.Write("gserv_pinger.txt", os.time())
+			end)
+
+			local extensions = {
+				vmt = {"vtf"},
+				mdl = {"vvd", "ani", "dx80.vtx", "dx90.vtx", "sw.vtx", "phy", "jpg"}
+			}
+
+			timer.Simple(0.01, function()
+				local found = {}
+
+				for path, type in pairs(GSERV_RESOURCE_FILES) do
+					if type == "AddFile" then
+						local path, ext = path:match("(.+/.-)%.(.+)")
+						if extensions[ext] then
+							for k, v in pairs(file.Find(path:match("(.+/)") .. "*", "GAME")) do
+								for _, ext2 in ipairs(extensions[ext]) do
+									if v:EndsWith("." .. ext2) then
+										found[path .. "." .. ext2] = true
+									end
+									break
+								end
+							end
+						end
+					end
+					if file.Exists(path, "GAME") then
+						found[path] = true
+					end
+				end
+
+				do
+					local path = "maps/" .. game.GetMap() .. ".bsp"
+
+					if file.Exists(path, "GAME") then
+						found[path] = true
+					end
+				end
+
+				do
+					local path = "maps/" .. game.GetMap() .. ".nav"
+
+					if file.Exists(path, "GAME") then
+						found[path] = true
+					end
+				end
+
+				local txt = ""
+				for path in pairs(found) do
+					txt = txt .. path .. "\n"
+				end
+				file.Write("gserv_resource_files.txt", txt)
+			end)
+		]])
 
 		vfs.Write(get_gmod_dir(id) .. "cfg/server.cfg", "exec gserv.cfg\n")
 
@@ -116,6 +164,31 @@ function gserv.Setup(id)
 		gserv.BuildMountConfig(id)
 
 		gserv.SetupCommands(id)
+
+		local lua = vfs.Read(get_gmod_dir(id) .. "lua/includes/util.lua")
+		if not lua:find("GSERV_RESOURCE_FILES") then
+			lua = lua .. [[
+if SERVER then
+	GSERV_RESOURCE_FILES = {}
+	do
+		local old = resource.AddFile
+		function resource.AddFile(path, ...)
+			GSERV_RESOURCE_FILES[path] = "AddFile"
+			return old(path, ...)
+		end
+	end
+	do
+		local old = resource.AddSingleFile
+		function resource.AddSingleFile(path, ...)
+			GSERV_RESOURCE_FILES[path] = "AddSingleFile"
+			return old(path, ...)
+		end
+	end
+end
+]]
+		vfs.Write(get_gmod_dir(id) .. "lua/includes/util.lua", lua)
+	end
+
 	end)
 end
 
@@ -127,7 +200,7 @@ function gserv.SetupCommands(id)
 	commands.Add(id .. " start", function() gserv.Start(id) end)
 	commands.Add(id .. " stop", function() gserv.Stop(id) end)
 	commands.Add(id .. " kill", function() gserv.Kill(id) end)
-	commands.Add(id .. " show", function() gserv.Show(id) end)
+	commands.Add(id .. " dump", function() gserv.Dump(id) end)
 	commands.Add(id .. " restart=number[30]", function(id, time) gserv.Restart(id, time) end)
 	commands.Add(id .. " reboot", function() gserv.Reboot(id) end)
 
@@ -138,24 +211,16 @@ function gserv.SetupCommands(id)
 	commands.Add(id .. " scan_addons", function() gserv.ScanAddons(id) end)
 
 	commands.Add(id .. " setup_info", function() check_setup(id) table.print(gserv.configs[id]) end)
-	commands.Add(id .. " setup_info", function() check_setup(id) table.print(gserv.configs[id]) end)
 
 	commands.Add(id .. " set_startup_param=string,string", function(key, val) gserv.SetStartupParameter(id, key, val) end)
 	commands.Add(id .. " set_launch_param=string,string|nil", function(key, val) gserv.SetLaunchParameter(id, key, val) end)
 	commands.Add(id .. " remove_launch_param=string,string|nil", function(key, val) gserv.RemoveLaunchParameter(id, key) end)
 	commands.Add(id .. " set_config_param=string,string", function(key, val) gserv.SetConfigParameter(id, key, val) end)
 
-	commands.Add(id .. " run=string_rest", function(str)
-		logn(gserv.ExecuteSync(id, str))
-	end)
-
-	commands.Add(id .. " lua=string_rest", function(code)
-		logn(gserv.RunLua(id, code))
-	end)
-
-	commands.Add(id .. " attach", function()
-		gserv.Attach(id)
-	end)
+	commands.Add(id .. " run=string_rest", function(str) logn(gserv.ExecuteSync(id, str)) end)
+	commands.Add(id .. " lua=string_rest", function(code) logn(gserv.RunLua(id, code)) end)
+	commands.Add(id .. " attach", function() gserv.Attach(id) end)
+	commands.Add(id .. " show", function() gserv.Attach(id) end)
 end
 
 function gserv.UpdateGame(id)
@@ -194,7 +259,7 @@ function gserv.InstallGame(name, dir, callback)
 		llog("installing ", name, " (", appid, ")", " to ", srcds_dir .. dir_name)
 
 		serializer.SetKeyValueInFile("luadata", data_dir .. "games.lua", appid, srcds_dir .. dir_name)
-		os.execute(srcds_dir .. "steamcmd.sh +login anonymous +force_install_dir \"" .. srcds_dir .. dir_name .. "\" +app_update " .. appid .. " validate +quit")
+		repl.OSExecute(srcds_dir .. "steamcmd.sh +login anonymous +force_install_dir \"" .. srcds_dir .. dir_name .. "\" +app_update " .. appid .. " validate +quit")
 
 		llog("done")
 		if callback then callback(appid) end
@@ -322,11 +387,11 @@ do -- addons
 			local dir = get_gmod_dir(id) .. "addons/" .. info.name
 
 			if not vfs.IsDirectory(dir) then
-				os.execute("git clone " .. info.url .. " '" .. dir .. "' --depth 1")
+				repl.OSExecute("git clone " .. info.url .. " '" .. dir .. "' --depth 1")
 			else
-				os.execute("git -C '" .. dir .. "' reset --hard HEAD")
-				os.execute("git -C '" .. dir .. "' clean -f -d")
-				os.execute("git -C '" .. dir .. "' pull")
+				repl.OSExecute("git -C '" .. dir .. "' reset --hard HEAD")
+				repl.OSExecute("git -C '" .. dir .. "' clean -f -d")
+				repl.OSExecute("git -C '" .. dir .. "' pull")
 			end
 			gserv.Log(id, "done updating ", info.url)
 		elseif info.type == "workshop" then
@@ -342,7 +407,7 @@ do -- addons
 
 				vfs.Write(get_gmod_dir(id) .. "addons/" .. name .. ".gma", serializer.ReadFile("lzma", compressed_path))
 
-				os.execute(gserv.GetInstallDir(id) .. "/bin/gmad_linux extract -file " .. get_gmod_dir(id) .. "addons/" .. name ..".gma -out " .. get_gmod_dir(id) .. "addons/" .. name)
+				repl.OSExecute(gserv.GetInstallDir(id) .. "/bin/gmad_linux extract -file " .. get_gmod_dir(id) .. "addons/" .. name ..".gma -out " .. get_gmod_dir(id) .. "addons/" .. name)
 
 				vfs.Delete(get_gmod_dir(id) .. "addons/" .. name .. ".gma")
 
@@ -511,13 +576,17 @@ do
 		return ok
 	end
 
-	local function start_pinging(id)
-		event.Timer("gserv_pinger_" .. underscore(id), 1, 0, function()
+	local function fastdl(from, to)
+		vfs.CreateFolders("os", to:match("(.+/)"))
+		os.executeasync("ln " .. from .. " " .. to .. " 2>/dev/null")
+		os.executeasync("bzip2 -c " .. from .. " > " .. to .. ".bz2" .. " 2>/dev/null")
+	end
+
+	local function start_listening(id)
+		event.Timer("gserv_listener_" .. underscore(id), 1, 0, function()
 			local time = vfs.Read(get_gmod_dir(id) .. "data/gserv_pinger.txt")
 
 			if time then
-				if time == "booting" then return end
-
 				time = tonumber(time)
 				local diff = os.difftime(os.time(), time)
 				if diff > 1 then
@@ -527,18 +596,41 @@ do
 					end
 				end
 			end
+
+			local paths = serializer.ReadFile("newline", get_gmod_dir(id) .. "data/gserv_resource_files.txt")
+			if paths then
+				gserv.Log(id, "updating fastdl folder")
+				vfs.CreateFolders("os", get_gmod_dir(id) .. "fastdl/")
+				for _, path in ipairs(paths) do
+					if path:startswith("maps/") then
+						if vfs.IsFile(get_gmod_dir(id) .. "/" .. path) then
+							fastdl(get_gmod_dir(id) .. "/" .. path, get_gmod_dir(id) .. "fastdl/" .. path)
+						end
+					end
+					for _, dir in ipairs(vfs.Find(get_gmod_dir(id) .. "addons/", true)) do
+						if vfs.IsFile(dir .. "/" .. path) then
+							fastdl(dir .. "/" .. path, get_gmod_dir(id) .. "fastdl/" .. path)
+							break
+						end
+					end
+				end
+				vfs.Delete(get_gmod_dir(id) .. "data/gserv_resource_files.txt")
+			end
 		end)
 	end
 
-	local function stop_pinging(id)
-		event.RemoveTimer("gserv_pinger_" .. underscore(id))
+	local function stop_listening(id)
+		vfs.Delete(get_gmod_dir(id) .. "data/gserv_pinger.txt")
+		vfs.Delete(get_gmod_dir(id) .. "data/gserv_resource_files.txt")
+
+		event.RemoveTimer("gserv_listener_" .. underscore(id))
 	end
 
 	function gserv.Resume(id)
 		if gserv.IsRunning(id) then
 			gserv.Log(id, "resuming server")
 
-			start_pinging(id)
+			start_listening(id)
 		end
 	end
 
@@ -551,7 +643,7 @@ do
 
 		gserv.Log(id, "starting gmod server")
 
-		vfs.Write(get_gmod_dir(id) .. "data/gserv_pinger.txt", "booting")
+		stop_listening(id)
 
 		os.execute("tmux kill-session -t srcds_"..underscore(id).."_goluwa 2>/dev/null")
 		os.execute("tmux new-session -d -s srcds_"..underscore(id).."_goluwa")
@@ -590,7 +682,7 @@ do
 
 		os.execute("tmux send-keys -t srcds_"..underscore(id).."_goluwa \"sh '" .. gserv.GetInstallDir(id) .. "/srcds_run' -game garrysmod " .. str .. "\" C-m")
 
-		start_pinging(id)
+		start_listening(id)
 
 		if gserv.configs[id].webhook_port then
 			sockets.StartWebhookServer(gserv.configs[id].webhook_port, gserv.configs[id].webhook_secret)
@@ -599,8 +691,7 @@ do
 
 	function gserv.Kill(id)
 		vfs.Delete(data_dir .. underscore(id) .. "_server_state")
-		stop_pinging(id)
-		check_running(id)
+		stop_listening(id)
 
 		gserv.Log(id, "killing gmod server")
 		os.execute("tmux kill-session -t srcds_"..underscore(id).."_goluwa 2>/dev/null")
@@ -628,10 +719,11 @@ function gserv.GetOutput(id)
 	return str
 end
 
-function gserv.Show(id)
+function gserv.Dump(id)
 	check_running(id)
-
+	repl.NoColors(true)
 	logn(gserv.GetOutput(id))
+	repl.NoColors(false)
 end
 
 function gserv.Execute(id, line)
@@ -702,7 +794,7 @@ end
 function gserv.Attach(id)
 	check_running(id)
 	gserv.Execute(id, "echo to detach hold CTRL and press the following keys: *hold CTRL* b b *release CTRL* d")
-	os.execute("unset TMUX; tmux attach -t srcds_"..underscore(id).."_goluwa")
+	repl.OSExecute("unset TMUX; tmux attach -t srcds_"..underscore(id).."_goluwa")
 end
 
 function gserv.Restart(id, time)
