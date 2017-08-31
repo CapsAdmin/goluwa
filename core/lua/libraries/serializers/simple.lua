@@ -27,7 +27,7 @@ end
 
 serializer.AddLibrary(
 	"simple",
-	function(...) return simple.Encode(...) end,
-	function(...) return simple.Decode(...) end,
+	function(simple, ...) return simple.Encode(...) end,
+	function(simple, ...) return simple.Decode(...) end,
 	simple
 )

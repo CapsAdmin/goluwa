@@ -25,7 +25,7 @@ end
 
 serializer.AddLibrary(
 	"newline",
-	function(...) return newline.Encode(...) end,
-	function(...) return newline.Decode(...) end,
+	function(simple, ...) return newline.Encode(...) end,
+	function(simple, ...) return newline.Decode(...) end,
 	newline
 )
