@@ -329,14 +329,14 @@ function repl.Initialize()
 	end
 
 	repl.curses_init = true
+end
 
-	function os.execute(str)
-		repl.Shutdown()
-		_OLD_G.os.execute("clear")
-		local code = _OLD_G.os.execute(str)
-		repl.Initialize()
-		return code
-	end
+function repl.OSExecute(str)
+	repl.Shutdown()
+	_OLD_G.os.execute("clear")
+	local code = _OLD_G.os.execute(str)
+	repl.Initialize()
+	return code
 end
 
 function repl.GetPixelCanvas()
