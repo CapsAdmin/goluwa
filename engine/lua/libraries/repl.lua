@@ -393,6 +393,10 @@ do
 	end
 end
 
+function repl.NoColors(b)
+	repl.nocolors = b
+end
+
 function repl.Print(str)
 	if not repl.CanPrint(str) then return end
 
@@ -555,6 +559,15 @@ do
 		window = window or c.log_window
 
 		str = str:gsub("\t", "    ")
+
+		if repl.nocolors then
+			window:addstr(str)
+			window:noutrefresh()
+			dirty = true
+			repl.SetScroll()
+
+			return
+		end
 
 		--	profiler.StartTimer("console syntax parse")
 		local output, finds, types, a, b, c = {}, {}, {}, 0, 0, 0
