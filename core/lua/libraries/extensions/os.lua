@@ -91,3 +91,11 @@ do -- by Python1320
 		return table.concat ( tbl , "" )
 	end
 end
+
+function os.executeasync(str)
+	if LINUX then
+		return os.execute([[eval ']]..str..[[' &]])
+	else
+		return os.execute(str)
+	end
+end
