@@ -46,16 +46,10 @@ function vfs.Delete(path, ...)
 	if abs_path then
 		local ok, err = os.remove(abs_path)
 
-		if not ok then
-			wlog(err)
-		end
-
 		return ok, err
 	end
 
-	local err = ("No such file or directory %q"):format(path)
-	wlog(err)
-	return false, err
+	return false, ("No such file or directory %q"):format(path)
 end
 
 function vfs.Rename(path, name, ...)
