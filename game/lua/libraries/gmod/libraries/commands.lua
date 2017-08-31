@@ -11,7 +11,7 @@ function gine.env.AddConsoleCommand(name)
 		end
 
 		if not found then
-			wlog("gmod tried to add existing command %s", name)
+			wlog("gmod tried to add existing command %s", name, 2)
 		end
 	else
 		commands.Add(name, function(line, ...)
@@ -22,9 +22,9 @@ end
 
 function gine.env.RunConsoleCommand(...)
 	local str = table.concat({...}, " ")
-	if str:find("utime") then return end -- sigh
+	if str:find("utime", nil, true) then return end -- sigh
 	logn("gine cmd: ", str)
-	commands.RunString(str)
+	commands.ExecuteCommandString(str, true)
 end
 
 local META = gine.GetMetaTable("Player")

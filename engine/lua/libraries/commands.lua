@@ -72,6 +72,7 @@ end
 
 do -- commands
 	commands.added = commands.added or {}
+	commands.added2 = commands.added2 or {}
 
 	local capture_symbols = {
 		["\""] = "\"",
@@ -219,6 +220,10 @@ do -- commands
 			defaults = defaults
 		}
 
+		for _, alias in ipairs(aliases) do
+			commands.added2[alias] = commands.added[aliases[1]]
+		end
+
 		-- sub commands
 		if #aliases == 1 and aliases[1]:find(" ", nil, true) then
 			if not table.hasvalue(commands.sub_commands, aliases[1]) then
@@ -232,6 +237,11 @@ do -- commands
 
 		if command then
 			commands.added[command.aliases[1]] = nil
+
+			for _, alias in ipairs(command.aliases) do
+				commands.added2[alias] = nil
+			end
+
 			return true
 		end
 
@@ -241,7 +251,7 @@ do -- commands
 	function commands.FindCommand(str)
 		local found = {}
 
-		for _, command in pairs(commands.added) do
+		for _, command in pairs(commands.added2) do
 			for _, alias in ipairs(command.aliases) do
 				if str:lower() == alias:lower() then
 					return command
@@ -350,11 +360,21 @@ do -- commands
 		return parse_line(str)
 	end
 
-	function commands.ParseString(str)
+	function commands.ParseString(str, simple)
 		local symbol, alias, arg_line = parse_line(str)
 
 		local args = parse_args(arg_line)
-		local command, err = commands.FindCommand(alias)
+
+		local command, err
+		if simple then
+			if commands.added2[alias] then
+				command = commands.added2[alias]
+			else
+				err = "couldn't find command " .. alias
+			end
+		else
+			command, err = commands.FindCommand(alias)
+		end
 
 		if not command then return command, err end
 
@@ -365,8 +385,8 @@ do -- commands
 		return command.arg_line or ""
 	end
 
-	function commands.RunCommandString(str)
-		local command, alias, arg_line, args = assert(commands.ParseString(str))
+	function commands.RunCommandString(str, simple)
+		local command, alias, arg_line, args = assert(commands.ParseString(str, simple))
 
 		command.arg_line = arg_line
 
@@ -431,7 +451,7 @@ do -- commands
 
 	function commands.ExecuteCommandString(str)
 		local tr
-		local a, b, c = xpcall(commands.RunCommandString, function(msg) tr = debug.traceback() .. "\n\n" .. msg end, str)
+		local a, b, c = xpcall(commands.RunCommandString, function(msg) tr = debug.traceback() .. "\n\n" .. msg end, str, simple)
 
 		if a == false then
 			return false, b or tr
