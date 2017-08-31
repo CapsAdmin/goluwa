@@ -148,7 +148,7 @@ commands.Add("debug=string", function(lib)
 	end
 end)
 
-commands.Add("find=var_args", function(...)
+commands.Add("find", function(...)
 	local data = utility.FindValue(...)
 
 	for _, v in pairs(data) do
