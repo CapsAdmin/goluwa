@@ -65,5 +65,6 @@ end
 function sockets.StopWebhookServer(port)
 	if sockets.webook_servers[port] then
 		sockets.webook_servers[port]:Remove()
+		sockets.webook_servers[port] = nil
 	end
 end
