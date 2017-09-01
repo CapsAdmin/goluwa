@@ -95,7 +95,6 @@ function sockets.Update()
 		local sock = sockets.active_sockets[i]
 
 		if sock.remove_me then
-			sock.socket:shutdown()
 			sock.socket:close()
 			sock.socket = nil
 			collectgarbage("step")
