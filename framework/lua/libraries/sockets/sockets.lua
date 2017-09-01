@@ -91,21 +91,25 @@ function sockets.DebugPrint(self, ...)
 end
 
 function sockets.Update()
-	for i, sock in ipairs(sockets.active_sockets) do
+	for i = #sockets.active_sockets, 1, -1 do
+		local sock = sockets.active_sockets[i]
+
+		if sock.remove_me then
+			sock.socket:close()
+			sock.socket = nil
+			collectgarbage("step")
+			sock:DebugPrintf("closed real socket object")
+			prototype.MakeNULL(sock)
+		end
+
 		if sock:IsValid() then
 			local ok, err = system.pcall(sock.Think, sock)
 			if not ok then
 				logn(err)
 				sock:Remove()
 			end
-
-			if sock.remove_me then
-				sock.socket:close()
-				prototype.MakeNULL(sock)
-			end
 		else
 			table.remove(sockets.active_sockets, i)
-			break
 		end
 	end
 end
@@ -552,7 +556,7 @@ do -- tcp socket meta
 			else
 				ip, port = socket:getsockname()
 			end
-			return ip and port or nil
+			return ip and tonumber(port) or nil
 		end
 
 		function CLIENT:GetIPPort()
@@ -634,8 +638,14 @@ do -- tcp socket meta
 
 			local ok, msg
 
+			for i, v in ipairs(sockets.active_sockets) do
+				if v.socket_type == self.socket_type and v:GetPort() == port then
+					v:Remove(true)
+				end
+			end
+
+
 			if self.socket_type == "tcp" then
-				self.socket:setoption("reuseaddr", true)
 				ok, msg = self.socket:bind(ip, port)
 			elseif self.socket_type == "udp" then
 				ok, msg = self.socket:setsockname(ip, port)
@@ -778,11 +788,15 @@ do -- tcp socket meta
 			end
 		end
 
-		function SERVER:Remove()
+		function SERVER:Remove(now)
 			if self.remove_me then return end
 			self:DebugPrintf("removed")
 			self:KickAllClients()
 			self.remove_me = true
+
+			if now then
+				sockets.Update()
+			end
 		end
 
 		function SERVER:IsValid()
@@ -795,7 +809,7 @@ do -- tcp socket meta
 
 		function SERVER:GetPort()
 			local _, port = self.socket:getsockname()
-			return port or nil
+			return tonumber(port) or nil
 		end
 
 		function SERVER:GetIPPort()

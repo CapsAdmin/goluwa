@@ -59,8 +59,9 @@ do -- vfs extension
 	end
 
 	function serializer.ReadFile(lib, path, ...)
-		if vfs.IsFile(path) then
-			return serializer.Decode(lib, vfs.Read(path))
+		local str = vfs.Read(path)
+		if str then
+			return serializer.Decode(lib, str)
 		end
 		return false, "no such file"
 	end

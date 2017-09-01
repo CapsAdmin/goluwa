@@ -329,14 +329,14 @@ function repl.Initialize()
 	end
 
 	repl.curses_init = true
+end
 
-	function os.execute(str)
-		repl.Shutdown()
-		_OLD_G.os.execute("clear")
-		local code = _OLD_G.os.execute(str)
-		repl.Initialize()
-		return code
-	end
+function repl.OSExecute(str)
+	repl.Shutdown()
+	_OLD_G.os.execute("clear")
+	local code = _OLD_G.os.execute(str)
+	repl.Initialize()
+	return code
 end
 
 function repl.GetPixelCanvas()
@@ -391,6 +391,10 @@ do
 
 		return true
 	end
+end
+
+function repl.NoColors(b)
+	repl.nocolors = b
 end
 
 function repl.Print(str)
@@ -555,6 +559,15 @@ do
 		window = window or c.log_window
 
 		str = str:gsub("\t", "    ")
+
+		if repl.nocolors then
+			window:addstr(str)
+			window:noutrefresh()
+			dirty = true
+			repl.SetScroll()
+
+			return
+		end
 
 		--	profiler.StartTimer("console syntax parse")
 		local output, finds, types, a, b, c = {}, {}, {}, 0, 0, 0
