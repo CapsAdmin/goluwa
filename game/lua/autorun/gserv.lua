@@ -304,7 +304,7 @@ do
 
 		gserv.BuildConfig(id)
 
-		if gserv.IsRunning(id) then
+		if gserv.IsRunning(id) and val then
 			gserv.Execute(id, key .. " " .. val)
 		end
 	end
