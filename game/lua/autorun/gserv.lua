@@ -828,6 +828,8 @@ if GMOD then
 			else
 				gserv.Log(id, "received webhook for ", url, " but addon does not exist")
 			end
+		else
+			gserv.Log(id, "bad payload?")
 		end
 	end)
 end
