@@ -96,6 +96,7 @@ function sockets.Update()
 
 		if sock.remove_me then
 			sock.socket:close()
+			sock:DebugPrintf("closed real socket object")
 			prototype.MakeNULL(sock)
 		end
 
