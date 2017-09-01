@@ -821,7 +821,7 @@ end
 
 if GMOD then
 	event.AddListener("GservWebhook", "update_addons", function(id, tbl)
-		if tbl.repository and tbl.repository.html_url abd gserv.GetAddon(id, tbl.repository.html_url) then
+		if tbl.repository and tbl.repository.html_url and gserv.GetAddon(id, tbl.repository.html_url) then
 			gserv.UpdateAddon(id, tbl.repository.html_url)
 		end
 	end)
