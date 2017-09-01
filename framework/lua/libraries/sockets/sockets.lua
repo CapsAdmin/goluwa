@@ -91,7 +91,9 @@ function sockets.DebugPrint(self, ...)
 end
 
 function sockets.Update()
-	for i, sock in ipairs(sockets.active_sockets) do
+	for i = #sockets.active_sockets, 1, -1 do
+		local sock = sockets.active_sockets[i]
+
 		if sock.remove_me then
 			sock.socket:close()
 			prototype.MakeNULL(sock)
@@ -105,7 +107,6 @@ function sockets.Update()
 			end
 		else
 			table.remove(sockets.active_sockets, i)
-			break
 		end
 	end
 end
