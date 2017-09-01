@@ -9,11 +9,11 @@ gserv.default_config = {
 	ip = nil,
 	port = 27015,
 
-	workshop_authkey = nil,
+	workshop_authkey = "WORKSHOP_AUTHKEY",
 	workshop_collection = nil,
 
 	webhook_port = nil, --27020
-	webhook_secret = false,
+	webhook_secret = "WEBHOOK_SECRET",
 
 	startup = {
 		maxplayers = 32,
@@ -665,10 +665,10 @@ do
 			str = str .. "+host_workshop_collection " .. collection_id  .. " "
 		end
 
-		local key = gserv.configs[id].workshop_authkey
+		local key = gserv.configs[id].workshop_authkey and os.getenv(gserv.configs[id].workshop_authkey)
 
 		if key then
-			str = str .. "-authkey " .. os.getenv(key) .. " "
+			str = str .. "-authkey " .. key .. " "
 		else
 			gserv.Log(id, "workshop auth key not setup")
 		end
