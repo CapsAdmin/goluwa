@@ -4,7 +4,7 @@ local ffibuild = require("ffibuild")
 ffibuild.BuildSharedLibrary(
 	"SDL2",
 	"https://hg.libsdl.org/SDL",
-	"./autogen.sh && mkdir build && cd build && ../configure --disable-audio --disable-render --disable-haptic --disable-filesystem --disable-threads --disable-file && make && cd ../"
+	"./autogen.sh && mkdir build && cd build && ../configure --disable-audio --disable-render --disable-haptic --disable-filesystem --disable-file && make && cd ../"
 )
 
 local header = ffibuild.BuildCHeader([[
