@@ -1,6 +1,6 @@
 sockets.webook_servers = sockets.webook_servers or {}
 
-function sockets.StartWebhookServer(port, secret)
+function sockets.StartWebhookServer(port, secret, callback)
 	local hmac
 
 	if secret then
@@ -51,9 +51,11 @@ function sockets.StartWebhookServer(port, secret)
 				end)
 			end
 
-			event.Call("Webhook", serializer.Decode("json", content), self)
-
 			client:Send("HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n")
+
+			local tbl = serializer.Decode("json", content)
+			if callback then callback(tbl, self) end
+			event.Call("Webhook", tbl, self)
 		end
 
 		return true
