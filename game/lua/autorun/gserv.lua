@@ -617,6 +617,10 @@ do
 				vfs.Delete(get_gmod_dir(id) .. "data/gserv_resource_files.txt")
 			end
 		end)
+
+		if gserv.configs[id].webhook_port then
+			sockets.StartWebhookServer(gserv.configs[id].webhook_port, os.getenv(gserv.configs[id].webhook_secret), function(...) event.Call("GservWebhook", id, ...) end)
+		end
 	end
 
 	local function stop_listening(id)
@@ -624,6 +628,10 @@ do
 		vfs.Delete(get_gmod_dir(id) .. "data/gserv_resource_files.txt")
 
 		event.RemoveTimer("gserv_listener_" .. underscore(id))
+
+		if gserv.configs[id].webhook_port then
+			sockets.StopWebhookServer(gserv.configs[id].webhook_port)
+		end
 	end
 
 	function gserv.Resume(id)
@@ -683,10 +691,6 @@ do
 		os.execute("tmux send-keys -t srcds_"..underscore(id).."_goluwa \"sh '" .. gserv.GetInstallDir(id) .. "/srcds_run' -game garrysmod " .. str .. "\" C-m")
 
 		start_listening(id)
-
-		if gserv.configs[id].webhook_port then
-			sockets.StartWebhookServer(gserv.configs[id].webhook_port, os.getenv(gserv.configs[id].webhook_secret), function(...) event.Call("GservWebhook", id, ...) end)
-		end
 	end
 
 	function gserv.Kill(id)
@@ -695,10 +699,6 @@ do
 
 		gserv.Log(id, "killing gmod server")
 		os.execute("tmux kill-session -t srcds_"..underscore(id).."_goluwa 2>/dev/null")
-
-		if gserv.configs[id].webhook_port then
-			sockets.StopWebhookServer(gserv.configs[id].webhook_port)
-		end
 	end
 
 	function gserv.Reboot(id)
