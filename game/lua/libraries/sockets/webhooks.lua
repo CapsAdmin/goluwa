@@ -37,6 +37,7 @@ function sockets.StartWebhookServer(port, secret, callback)
 		function client:OnReceiveHTTP(data)
 			if secret then
 				if not verify_signature(data.header["x-hub-signature"], data.content) then
+					logn("webhook client ", client, " removed because signature does not match: ", data.header["x-hub-signature"])
 					client:Remove()
 					return
 				end
