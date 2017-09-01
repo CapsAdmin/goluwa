@@ -552,7 +552,7 @@ do -- tcp socket meta
 			else
 				ip, port = socket:getsockname()
 			end
-			return ip and port or nil
+			return ip and tonumber(port) or nil
 		end
 
 		function CLIENT:GetIPPort()
