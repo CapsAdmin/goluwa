@@ -4,7 +4,7 @@ function sockets.StartWebhookServer(port, secret, callback)
 	local hmac
 
 	if secret then
-		hmac = require("openssl.hmac").new(gserv.webhook_secret:Get(), "sha1")
+		hmac = require("openssl.hmac").new(secret, "sha1")
 	end
 
 	local function verify_signature(hub_sign, body)
