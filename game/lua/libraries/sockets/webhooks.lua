@@ -4,12 +4,12 @@ function sockets.StartWebhookServer(port, secret, callback)
 	local hmac
 
 	if secret then
-		hmac = require("openssl.hmac").new(secret, "sha1")
+		hmac = require("openssl.hmac")
 	end
 
 	local function verify_signature(hub_sign, body)
 		local a = hub_sign:sub(#"sha1=" + 1):gsub("..", function(c) return string.char(tonumber("0x"..c)) end)
-		local b = hmac:final(body)
+		local b = hmac.new(secret, "sha1"):final(body)
 
 		local equal = #a == #b
 		if equal then
