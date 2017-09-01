@@ -668,7 +668,7 @@ do
 		local key = gserv.configs[id].workshop_authkey
 
 		if key then
-			str = str .. "-authkey " .. key .. " "
+			str = str .. "-authkey " .. os.getenv(key) .. " "
 		else
 			gserv.Log(id, "workshop auth key not setup")
 		end
@@ -685,7 +685,7 @@ do
 		start_listening(id)
 
 		if gserv.configs[id].webhook_port then
-			sockets.StartWebhookServer(gserv.configs[id].webhook_port, gserv.configs[id].webhook_secret)
+			sockets.StartWebhookServer(gserv.configs[id].webhook_port, os.getenv(gserv.configs[id].webhook_secret), function(...) event.Call("GservWebhook", id, ...) end)
 		end
 	end
 
