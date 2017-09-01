@@ -215,7 +215,7 @@ function gserv.SetupCommands(id)
 	commands.Add(id .. " set_startup_param=string,string", function(key, val) gserv.SetStartupParameter(id, key, val) end)
 	commands.Add(id .. " set_launch_param=string,string|nil", function(key, val) gserv.SetLaunchParameter(id, key, val) end)
 	commands.Add(id .. " remove_launch_param=string,string|nil", function(key, val) gserv.RemoveLaunchParameter(id, key) end)
-	commands.Add(id .. " set_config_param=string,string", function(key, val) gserv.SetConfigParameter(id, key, val) end)
+	commands.Add(id .. " set_config_param=string,string|nil", function(key, val) gserv.SetConfigParameter(id, key, val) end)
 
 	commands.Add(id .. " run=string_rest", function(str) logn(gserv.ExecuteSync(id, str)) end)
 	commands.Add(id .. " lua=string_rest", function(code) logn(gserv.RunLua(id, code)) end)
