@@ -818,3 +818,11 @@ for _, path in ipairs(vfs.Find(data_dir, true)) do
 		gserv.logs[data.id] = data.log_path
 	end
 end
+
+if GMOD then
+	event.AddListener("GservWebhook", "update_addons", function(id, tbl)
+		if tbl.repository and tbl.repository.html_url abd gserv.GetAddon(id, tbl.repository.html_url) then
+			gserv.UpdateAddon(id, tbl.repository.html_url)
+		end
+	end)
+end
