@@ -251,7 +251,7 @@ do -- openurl
 end
 
 do -- arg is made from luajit.exe
-	local arg = _G.arg
+	local arg = _G.arg or {}
 	_G.arg = nil
 
 	arg[0] = nil
