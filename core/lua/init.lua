@@ -187,6 +187,8 @@ system = runfile("lua/libraries/system.lua") -- os and luajit related functions 
 event = runfile("lua/libraries/event.lua") -- event handler
 utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
 
+if THREAD then return end
+
 -- tries to load all addons
 -- some might not load depending on its info.lua file.
 -- for instance: "load = CAPSADMIN ~= nil," will make it load

@@ -21,6 +21,7 @@ end
 structs = runfile("lua/libraries/structs.lua") -- Vec3(x,y,z), Vec2(x,y), Ang3(p,y,r),  etc
 input = runfile("lua/libraries/input.lua") -- keyboard and mouse input
 tasks = runfile("lua/libraries/tasks.lua") -- high level coroutine library
+threads = runfile("lua/libraries/threads.lua")
 
 if PHYSICS then
 	physics = runfile("lua/libraries/physics/physics.lua") -- bullet physics
