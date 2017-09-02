@@ -137,6 +137,8 @@ event.AddListener("Initialize", function()
 	end
 end)
 
+if THREAD then return end
+
 -- only if we're in 32 bit lua
 if #tostring({}) == 10 then
 	event.Thinker(function()

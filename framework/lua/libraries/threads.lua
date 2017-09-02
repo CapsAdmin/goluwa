@@ -1,10 +1,11 @@
+local msg = require("msgpack")
 local ffi = require("ffi")
 local lua = require("luajit")
 local sdl = require("SDL2")
 
 local threads = _G.threads or {}
-threads.active = threads.active or {}
 
+local META = THREAD and {} or prototype.CreateTemplate("thread")
 
 do -- thread safe queue
 	local ffi = require("ffi")
@@ -40,17 +41,19 @@ do -- thread safe queue
 		local buffer = ffi.C.malloc(size)
 		ffi.C.memcpy(buffer, ffi.cast("uint8_t *", str), size)
 
-		self.queue[self.count].ptr = buffer
-		self.queue[self.count].len = size
-		self.queue[self.count].ready = 1
-
 		self.count = self.count + 1
+
+		self.queue[self.count - 1].ptr = buffer
+		self.queue[self.count - 1].len = size
+		self.queue[self.count - 1].ready = 1
+	end
+
+	function META:CanPop()
+		return self.count ~= 0 and self.queue[self.i].ready == 1
 	end
 
 	function META:Pop()
-		if self.count == 0 or self.count == 1024 then return end
-
-		if self.queue[self.i].ready ~= 1 then return end
+		self.queue[self.i].ready = 0
 
 		local ptr = self.queue[self.i].ptr
 		local len = self.queue[self.i].len
@@ -91,7 +94,38 @@ do -- thread safe queue
 	end
 end
 
-local META = prototype.CreateTemplate("thread")
+function META:Send(...)
+	self.send_queue:Push(msg.encode({type = "msg", args = {...}}))
+end
+
+local function receive(self)
+	if self.receive_queue:CanPop() then
+		return msg.decode(self.receive_queue:Pop())
+	end
+end
+
+function META:Receive()
+	local tbl = receive(self)
+	if tbl and tbl.type == "msg" then
+		return unpack(tbl.args)
+	end
+end
+
+function META:OnRemove()
+	if self.thread then
+		lua.close(self.state)
+		ffi.C.free(self.queues)
+	elseif not self.killed then
+		self.send_queue:Push(msg.encode({type = "kill"}))
+		self.killed = true
+	end
+end
+
+if THREAD then
+	return threads, META
+end
+
+threads.active = threads.active or {}
 
 function threads.CreateThread(on_start, ...)
 	if type(on_start) == "string" then
@@ -115,11 +149,19 @@ local thread_init = [[
 	local ffi = require("ffi")
 
 	main = function(userdata)
-		local ok, msg = pcall(function()
+		local ok, err = pcall(function()
+
+			THREAD = true
+
+			-- light init
+			local msg = dofile("]]..R("lua/modules/msgpack.lua")..[[")
+			package.preload.msgpack = function() return msg end
+			package.preload.SDL2 = function() return false end
+			package.preload.luajit = function() return false end
+			local threads, META = dofile("]]..R("lua/libraries/threads.lua")..[[")
 
 			-- replace this with something more lightweight
-			do -- we do this only to get threads
-				THREAD = true
+			if false then -- we do this only to get threads
 				GRAPHICS = false
 				PHYSICS = false
 				SOUND = false
@@ -128,7 +170,11 @@ local thread_init = [[
 				vfs.InitAddons()
 			end
 
-			local self = prototype.GetRegistered("thread"):CreateObject()
+			META.__index = META
+			function META:Remove()
+				self:OnRemove()
+			end
+			local self = setmetatable({}, META)
 
 			local queues = threads.create_thread_queue(userdata)
 
@@ -136,8 +182,10 @@ local thread_init = [[
 			self.send_queue = self.queues.main
 			self.receive_queue = self.queues.thread
 
+			assert(self.receive_queue:CanPop())
+
 			-- first message is always the init
-			local tbl = serializer.Decode("msgpack", self.receive_queue:Pop())
+			local tbl = msg.decode(self.receive_queue:Pop())
 
 			load(tbl.func_str)(self, unpack(tbl.args))
 
@@ -145,7 +193,7 @@ local thread_init = [[
 		end)
 
 		if not ok then
-			io.write(msg)
+			io.write(err)
 			return 1
 		end
 
@@ -179,43 +227,13 @@ function META:Run(...)
 	self.send_queue = self.queues.thread
 	self.receive_queue = self.queues.main
 
-	self.send_queue:Push(serializer.Encode("msgpack", {type = "init", func_str = string.dump(self.RunFunction), args = {...}}))
+	self.send_queue:Push(msg.encode({type = "init", func_str = string.dump(self.RunFunction), args = {...}}))
 
 	local thread = sdl.CreateThread(thread_func, "luajit_thread", ffi.cast("void *", self.queues))
 	sdl.DetachThread(thread)
 	self.thread = thread
 
 	table.insert(threads.active, self)
-end
-
-function META:Send(...)
-	self.send_queue:Push(serializer.Encode("msgpack", {type = "msg", args = {...}}))
-end
-
-local function receive(self)
-	if self.receive_queue:GetCount() ~= 0 then
-		local str = self.receive_queue:Pop()
-		if str then
-			return serializer.Decode("msgpack", str)
-		end
-	end
-end
-
-function META:Receive()
-	local tbl = receive(self)
-	if tbl and tbl.type == "msg" then
-		return unpack(tbl.args)
-	end
-end
-
-function META:OnRemove()
-	if self.thread then
-		lua.close(self.state)
-		ffi.C.free(self.queues)
-	elseif not self.killed then
-		self.send_queue:Push(serializer.Encode("msgpack", {type = "kill"}))
-		self.killed = true
-	end
 end
 
 event.AddListener("Update", "threads", function()
@@ -231,6 +249,7 @@ event.AddListener("Update", "threads", function()
 			local ret = receive(thread)
 
 			if not ret then break end
+
 			if ret.type == "msg" then
 				thread:OnMessage(unpack(ret.args))
 			elseif ret.type == "kill" then
