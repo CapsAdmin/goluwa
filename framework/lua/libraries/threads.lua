@@ -212,35 +212,31 @@ function META:OnRemove()
 	if self.thread then
 		lua.close(self.state)
 		ffi.C.free(self.queues)
-		print("freed thread")
-	else
+	elseif not self.killed then
 		self.send_queue:Push(serializer.Encode("msgpack", {type = "kill"}))
+		self.killed = true
 	end
 end
 
 event.AddListener("Update", "threads", function()
-	for i, thread in ipairs(threads.active) do
-		local remove = false
-
-		if thread:IsValid() then
-			for i = 1, 1024 do
-				local ret = receive(thread)
-
-				if not ret then break end
-
-				if ret.type == "msg" then
-					thread:OnMessage(unpack(ret.args))
-				elseif ret.type == "kill" then
-					thread:Remove()
-					break
-				end
-			end
-		else
-			remove = true
-		end
-
-		if remove or thread.remove_me then
+	for i = #threads.active, 1, -1 do
+		local thread = threads.active[i]
+		if not thread:IsValid() then
 			table.remove(threads.active, i)
+		end
+	end
+
+	for i, thread in ipairs(threads.active) do
+		for i = 1, 1024 do
+			local ret = receive(thread)
+
+			if not ret then break end
+			if ret.type == "msg" then
+				thread:OnMessage(unpack(ret.args))
+			elseif ret.type == "kill" then
+				thread:Remove()
+				break
+			end
 		end
 	end
 end)
