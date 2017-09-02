@@ -369,9 +369,9 @@ do -- wait
 	local temp = {}
 
 	function wait(seconds)
-		local time = system.GetElapsedTime()
-		if not temp[seconds] or (temp[seconds] + seconds) < time then
-			temp[seconds] = system.GetElapsedTime()
+		local time = system.GetTime()
+		if not temp[seconds] or (temp[seconds] + seconds) <= time then
+			temp[seconds] = system.GetTime()
 			return true
 		end
 		return false
