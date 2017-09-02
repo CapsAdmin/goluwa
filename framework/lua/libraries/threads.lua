@@ -111,13 +111,17 @@ function META:Receive()
 	end
 end
 
-function META:OnRemove()
-	if self.thread then
-		lua.close(self.state)
-		ffi.C.free(self.queues)
-	elseif not self.killed then
+if THREAD then
+	function META:OnRemove()
+		if self.killed then return end
 		self.send_queue:Push(msg.encode({type = "kill"}))
 		self.killed = true
+	end
+else
+	function META:OnRemove()
+		if not self.state then return end -- not started?
+		lua.close(self.state)
+		ffi.C.free(self.queues)
 	end
 end
 
@@ -229,9 +233,7 @@ function META:Run(...)
 
 	self.send_queue:Push(msg.encode({type = "init", func_str = string.dump(self.RunFunction), args = {...}}))
 
-	local thread = sdl.CreateThread(thread_func, "luajit_thread", ffi.cast("void *", self.queues))
-	sdl.DetachThread(thread)
-	self.thread = thread
+	sdl.DetachThread(sdl.CreateThread(thread_func, "luajit_thread", ffi.cast("void *", self.queues)))
 
 	table.insert(threads.active, self)
 end
