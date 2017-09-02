@@ -1,4 +1,4 @@
-local serializer = ...
+local serializer = ... or _G.serializer
 local luadata = _G.luadata or {}
 local encode_table
 
