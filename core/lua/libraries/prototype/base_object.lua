@@ -64,6 +64,8 @@ do
 	local event_added = false
 
 	function META:Remove(...)
+		if self.__removed then return end
+
 		if self.call_on_remove then
 			for _, v in pairs(self.call_on_remove) do
 				if v() == false then
@@ -96,6 +98,8 @@ do
 		end
 
 		table.insert(prototype.remove_these, self)
+
+		self.__removed = true
 	end
 end
 
