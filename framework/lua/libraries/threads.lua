@@ -120,6 +120,8 @@ if THREAD then
 else
 	function META:OnRemove()
 		if not self.state then return end -- not started?
+		local ret = ffi.new("int[1]")
+		sdl.WaitThread(self.thread, ret)
 		lua.close(self.state)
 		ffi.C.free(self.queues)
 	end
@@ -233,7 +235,7 @@ function META:Run(...)
 
 	self.send_queue:Push(msg.encode({type = "init", func_str = string.dump(self.RunFunction), args = {...}}))
 
-	sdl.DetachThread(sdl.CreateThread(thread_func, "luajit_thread", ffi.cast("void *", self.queues)))
+	self.thread = sdl.CreateThread(thread_func, "luajit_thread", ffi.cast("void *", self.queues))
 
 	table.insert(threads.active, self)
 end
