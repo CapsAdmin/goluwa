@@ -259,22 +259,21 @@ function PLUGIN:StartProcess(id)
 		wx.wxSetEnv(k, v)
 	end
 
-	if BRANCH then
-		wx.wxSetEnv("GOLUWA_BRANCH", "_" .. BRANCH)
-	else
-		wx.wxUnsetEnv("GOLUWA_BRANCH")
-	end
-
-	if DEBUG then
-		wx.wxSetEnv("GOLUWA_DEBUG", "1")
-	else
-		wx.wxUnsetEnv("GOLUWA_DEBUG")
-	end
-
 	local tb = ide:GetToolBar()
 
+	local cmd_line = console.cmd_line
+
+	if BRANCH then
+		cmd_line = cmd_line .. " branch " .. BRANCH
+
+		if DEBUG then
+			cmd_line = cmd_line .. " debug"
+		end
+
+	end
+
 	console.pid = CommandLineRun(
-		console.cmd_line,
+		cmd_line,
 		console.working_directory,
 		true,--tooutput,
 		true,--nohide,
@@ -296,9 +295,6 @@ function PLUGIN:StartProcess(id)
 	ide:GetUIManager():Update()
 
 	console.shellbox:SetFocus()
-
-	wx.wxUnsetEnv("GOLUWA_BANCH")
-	wx.wxUnsetEnv("GOLUWA_DEBUG")
 
 	for k,v in pairs(console.env_vars) do
 		wx.wxUnsetEnv(k)
