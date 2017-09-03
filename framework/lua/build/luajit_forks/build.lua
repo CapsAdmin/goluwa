@@ -5,81 +5,6 @@ local ffibuild = require("ffibuild")
 
 local bin_dir = "../../../../data/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower()
 
-local vector_patch = {[==[diff --git a/src/lib_ffi.c b/src/lib_ffi.c
-index 2fb3a32..b6ec45a 100644
---- a/src/lib_ffi.c
-+++ b/src/lib_ffi.c
-@@ -825,8 +825,6 @@ LJLIB_CF(ffi_load)
-   return 1;
- }
-
--#include <intrin.h>
--
- static MSize getcdvecsz(CTState *cts, CType *ct)
- {
-   if(ctype_ispointer(ct->info) && !ctype_isvector(ct->info)){
-@@ -844,7 +842,7 @@ static MSize getcdvecsz(CTState *cts, CType *ct)
-
- LJLIB_CF(ffi_vtest)	LJLIB_REC(.)
- {
--  CTState *cts = ctype_cts(L);
-+  /*CTState *cts = ctype_cts(L);
-   GCcdata *cd1 = ffi_checkcdata(L, 1);
-   GCcdata *cd2 = ffi_checkcdata(L, 2);
-   CType *ct1 = ctype_raw(cts, cd1->ctypeid);
-@@ -868,13 +866,14 @@ LJLIB_CF(ffi_vtest)	LJLIB_REC(.)
-   if (vecsz == 16) {
-     result = _mm_testz_si128(_mm_loadu_si128((__m128i*)v1), _mm_loadu_si128((__m128i*)v2));
-   } else {
--    result = _mm256_testz_si256(_mm256_castps_si256(_mm256_loadu_ps((float*)v1)),
-+    result = _mm256_testz_si256(_mm256_castps_si256(_mm256_loadu_ps((float*)v1)),
-                                 _mm256_castps_si256(_mm256_loadu_ps((float*)v2)));
-   }
-
-   setboolV(&G(L)->tmptv2, !result);
-   setboolV(L->top++, !result);
--  return 1;
-+  return 1;*/
-+  return 0;
- }
-
- LJLIB_PUSH(top-4) LJLIB_SET(C)
-diff --git a/src/lj_cdata.c b/src/lj_cdata.c
-index a5b9d1d..4da8b1b 100644
---- a/src/lj_cdata.c
-+++ b/src/lj_cdata.c
-@@ -13,7 +13,6 @@
- #include "lj_ctype.h"
- #include "lj_cconv.h"
- #include "lj_cdata.h"
--#include <intrin.h>
-
- /* -- C data allocation --------------------------------------------------- */
-
-@@ -60,7 +59,7 @@ GCcdata *LJ_VECTORCALL lj_cdata_newv128(lua_State *L, CTypeID id, __m128 v)
- GCcdata *LJ_VECTORCALL lj_cdata_newv256(lua_State *L, CTypeID id, __m256 v)
- {
-   GCcdata *cd = lj_cdata_newv(L, id, 32, 5);
--  _mm256_storeu_ps((float*)cdataptr(cd), v);
-+  //_mm256_storeu_ps((float*)cdataptr(cd), v);
-   return cd;
- }
-
-diff --git a/src/lj_def.h b/src/lj_def.h
-index 4c9ab4c..eefc4ff 100644
---- a/src/lj_def.h
-+++ b/src/lj_def.h
-@@ -320,7 +320,7 @@ static LJ_AINLINE uint32_t lj_getu32(const void *v)
- #define LJ_FASTCALL
- #endif
- #ifndef LJ_VECTORCALL
--#define LJ_VECTORCALL __vectorcall
-+#define LJ_VECTORCALL
- #endif
- #ifndef LJ_NORET
- #define LJ_NORET
-]==]}
-
 local repos = {
 	{
 		author = "mike",
@@ -88,21 +13,9 @@ local repos = {
 		flags = {"LUAJIT_ENABLE_GC64", "LUAJIT_ENABLE_LUA52COMPAT"},
 	},
 	{
-		author = "mike",
-		url = "https://github.com/LuaJIT/LuaJIT",
-		branch = "v2.1",
-		flags = {"LUAJIT_ENABLE_LUA52COMPAT"}
-	},
-	{
 		url = "https://github.com/fsfod/LuaJIT",
 		branch = "intrinsicpr",
 		flags = {"LUAJIT_ENABLE_LUA52COMPAT"}
-	},
-	{
-		url = "https://github.com/fsfod/LuaJIT",
-		branch = "vectors",
-		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
-		patches = vector_patch,
 	},
 	{
 		url = "https://github.com/fsfod/LuaJIT",
@@ -110,18 +23,9 @@ local repos = {
 		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
 	},
 	{
-		url = "https://github.com/corsix/LuaJIT",
-		branch = "newgc",
-		flags = {"LUAJIT_ENABLE_LUA52COMPAT", "LUAJIT_ENABLE_GC64"}
-	},
-	{
-		url = "https://github.com/corsix/LuaJIT",
-		branch = "newgc",
-		flags = {"LUAJIT_ENABLE_LUA52COMPAT"}
-	},
-	{
-		url = "https://github.com/corsix/LuaJIT",
-		branch = "newgc",
+		url = "https://github.com/fsfod/LuaJIT",
+		branch = "stringbuffer",
+		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
 	},
 	{
 		author = "lukego",
