@@ -825,6 +825,7 @@ if GMOD then
 			local url = tbl.repository.html_url .. ".git"
 			if gserv.GetAddon(id, url) then
 				gserv.UpdateAddon(id, url)
+				vfs.Write(get_gmod_dir(id) .. "data/server_want_restart.txt", "nothing!")
 			else
 				gserv.Log(id, "received webhook for ", url, " but addon does not exist")
 			end
