@@ -591,7 +591,7 @@ do
 				local diff = os.difftime(os.time(), time)
 				if diff > 1 then
 					gserv.Log(id, "server hasn't responded for more than ", diff ," seconds")
-					if diff > 40 then
+					if diff > 60 then
 						gserv.Reboot(id)
 					end
 				end
