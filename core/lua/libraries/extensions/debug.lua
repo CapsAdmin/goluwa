@@ -56,25 +56,27 @@ function debug.getprettysource(level, append_line, full_folder)
 	local info = debug.getinfo(type(level) == "number" and (level + 1) or level)
 	local pretty_source = "debug.getinfo = nil"
 
-	if info and info.source:sub(1, 1) == "@" then
-		pretty_source = info.source:sub(2)
+	if info then
+		if info.source:sub(1, 1) == "@" then
+			pretty_source = info.source:sub(2)
 
-		if not full_folder then
-			pretty_source = vfs.FixPathSlashes(pretty_source:replace(e.ROOT_FOLDER, ""))
-		end
-
-		if append_line then
-			local line = info.currentline
-			if line == -1 then
-				line = info.linedefined
+			if not full_folder then
+				pretty_source = vfs.FixPathSlashes(pretty_source:replace(e.ROOT_FOLDER, ""))
 			end
-			pretty_source = pretty_source .. ":" .. line
-		end
-	else
-		pretty_source = info.source:sub(0, 25)
 
-		if pretty_source ~= info.source then
-			pretty_source = pretty_source .. "...(+"..#info.source - #pretty_source.." chars)"
+			if append_line then
+				local line = info.currentline
+				if line == -1 then
+					line = info.linedefined
+				end
+				pretty_source = pretty_source .. ":" .. line
+			end
+		else
+			pretty_source = info.source:sub(0, 25)
+
+			if pretty_source ~= info.source then
+				pretty_source = pretty_source .. "...(+"..#info.source - #pretty_source.." chars)"
+			end
 		end
 	end
 
