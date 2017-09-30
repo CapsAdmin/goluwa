@@ -279,7 +279,7 @@ function gserv.BuildMountConfig(id)
 	str = str .. "{\n"
 
 	for appid, dir in pairs(gserv.GetInstalledGames()) do
-		if appid ~= 4020 then
+		if type(appid) == "number" and appid ~= 4020 then
 			for _, dir in ipairs(vfs.Find(dir .. "/", true)) do
 				local gameinfo = vfs.IsFile(dir .. "/gameinfo.txt")
 				if gameinfo then
