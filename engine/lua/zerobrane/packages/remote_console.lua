@@ -572,9 +572,9 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 		local name
 		local fixedname = fname:match(":%s+(.+)")
 		if fixedname then
-			name = GetFullPathIfExists(FileTreeGetDir(), fixedname) or FileTreeFindByPartialName(fixedname)
+			name = GetFullPathIfExists(ide:GetProject(), fixedname) or FileTreeFindByPartialName(fixedname)
 		end
-		name = name or GetFullPathIfExists(FileTreeGetDir(), fname) or FileTreeFindByPartialName(fname)
+		name = name or GetFullPathIfExists(ide:GetProject(), fname) or FileTreeFindByPartialName(fname)
 
 		ide:Print(name, fname, jumpline, jumplinepos)
 
