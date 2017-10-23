@@ -56,7 +56,15 @@ function vfs.Rename(path, name, ...)
 	local abs_path = vfs.GetAbsolutePath(path, ...)
 
 	if abs_path then
-		local ok, err = os.rename(abs_path, abs_path:match("(.+/)") .. name)
+		local dst = abs_path:match("(.+/)") .. name
+
+		if WINDOWS then
+			if vfs.IsFile(dst) then
+				vfs.Delete(dst)
+			end
+		end
+
+		local ok, err = os.rename(abs_path, dst)
 
 		if not ok then
 			wlog(err)
