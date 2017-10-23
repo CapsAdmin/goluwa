@@ -225,7 +225,7 @@ function gserv.SetupCommands(id)
 end
 
 function gserv.UpdateGame(id)
-	gserv.InstallGame("gmod", nil, function(appid)
+	gserv.InstallGame("gmod dedicated server", nil, function(appid)
 		if appid == 4020 then
 			os.execute("cp -a -rf " .. gserv.GetInstalledGames()[4020] .. "/. " .. srcds_dir .. underscore(id))
 		end
@@ -233,7 +233,7 @@ function gserv.UpdateGame(id)
 end
 
 function gserv.InstallGame(name, dir, callback)
-	local appid, full_name = steam.GetAppIdFromName(name .. " Dedicated Server")
+	local appid, full_name = steam.GetAppIdFromName(name)
 	if not appid and tonumber(name) then
 		appid = tonumber(name)
 	end
