@@ -17,7 +17,7 @@ function steam.DownloadWorkshop(id, callback)
 			local data = serializer.Decode("json", data.content)
 			resource.Download(data.response.publishedfiledetails[1].file_url, function(path)
 				callback(data, path)
-			end)
+			end, nil,nil,nil,nil,"gma")
 		end,
 	})
 end
