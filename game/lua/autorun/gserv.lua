@@ -414,7 +414,7 @@ do -- addons
 			gserv.Log(id, "done updating ", info.url)
 		elseif info.type == "workshop" then
 			gserv.Log(id, "updating workshop addon ", info.url)
-			steam.DownloadWorkshop(info.id, function(header, compressed_path)
+			steam.DownloadWorkshop(info.id, function(header, path)
 				-- if the name is just the id make it more readable
 				if info.id == info.name then
 					info.name = header.response.publishedfiledetails[1].title:lower():gsub("%p", ""):gsub("%s+", "_") .. "_" .. info.name
@@ -423,7 +423,7 @@ do -- addons
 
 				local name = info.name
 
-				vfs.Write(get_gmod_dir(id) .. "addons/" .. name .. ".gma", serializer.ReadFile("lzma", compressed_path))
+				vfs.Write(get_gmod_dir(id) .. "addons/" .. name .. ".gma", path)
 
 				repl.OSExecute(gserv.GetInstallDir(id) .. "/bin/gmad_linux extract -file " .. get_gmod_dir(id) .. "addons/" .. name ..".gma -out " .. get_gmod_dir(id) .. "addons/" .. name)
 
