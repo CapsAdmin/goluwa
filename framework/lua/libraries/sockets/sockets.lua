@@ -94,22 +94,25 @@ function sockets.Update()
 	for i = #sockets.active_sockets, 1, -1 do
 		local sock = sockets.active_sockets[i]
 
-		if sock.remove_me then
-			sock.socket:close()
-			sock.socket = nil
-			collectgarbage("step")
-			sock:DebugPrintf("closed real socket object")
-			prototype.MakeNULL(sock)
-		end
+		if sock then
 
-		if sock:IsValid() then
-			local ok, err = system.pcall(sock.Think, sock)
-			if not ok then
-				logn(err)
-				sock:Remove()
+			if sock.remove_me then
+				sock.socket:close()
+				sock.socket = nil
+				collectgarbage("step")
+				sock:DebugPrintf("closed real socket object")
+				prototype.MakeNULL(sock)
 			end
-		else
-			table.remove(sockets.active_sockets, i)
+
+			if sock:IsValid() then
+				local ok, err = system.pcall(sock.Think, sock)
+				if not ok then
+					logn(err)
+					sock:Remove()
+				end
+			else
+				table.remove(sockets.active_sockets, i)
+			end
 		end
 	end
 end
