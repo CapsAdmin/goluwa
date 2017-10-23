@@ -194,7 +194,7 @@ end
 
 commands.Add("gserv setup=string[gserv]", function(id) gserv.Setup(id) end)
 commands.Add("gserv update_game=string|number,string|nil", function(name) gserv.Update(name, dir) end)
-commands.Add("gserv install_game=string|number,string|nil", function(name, dir) gserv.InstallGame(name, dir) end)
+commands.Add("gserv install_game=string|number,string|nil,string|nil", function(name, dir, username) gserv.InstallGame(name, dir, nil, username) end)
 
 function gserv.SetupCommands(id)
 	commands.Add(id .. " start", function() gserv.Start(id) end)
@@ -232,7 +232,7 @@ function gserv.UpdateGame(id)
 	end)
 end
 
-function gserv.InstallGame(name, dir, callback)
+function gserv.InstallGame(name, dir, callback, username)
 	local appid, full_name = steam.GetAppIdFromName(name)
 	if not appid and tonumber(name) then
 		appid = tonumber(name)
@@ -241,6 +241,8 @@ function gserv.InstallGame(name, dir, callback)
 	if not appid then
 		error("could not find " .. name, 2)
 	end
+
+	username = username or "anonymous"
 
 	gserv.Log(id, "setting up")
 
@@ -260,7 +262,7 @@ function gserv.InstallGame(name, dir, callback)
 		llog("installing ", name, " (", appid, ")", " to ", srcds_dir .. dir_name)
 
 		serializer.SetKeyValueInFile("luadata", data_dir .. "games.lua", appid, srcds_dir .. dir_name)
-		repl.OSExecute(srcds_dir .. "steamcmd.sh +login anonymous +force_install_dir \"" .. srcds_dir .. dir_name .. "\" +app_update " .. appid .. " validate +quit")
+		repl.OSExecute(srcds_dir .. "steamcmd.sh +login " .. username .. " +force_install_dir \"" .. srcds_dir .. dir_name .. "\" +app_update " .. appid .. " validate +quit")
 
 		llog("done")
 		if callback then callback(appid) end
