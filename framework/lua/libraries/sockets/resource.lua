@@ -298,7 +298,7 @@ function resource.BuildCacheFolderList(file_name)
 		local tbl = {}
 		for _, file_name in ipairs(vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "cache/")) do
 			local name = file_name:match("(%d)%.")
-			if name then
+			if name and not file_name:endswith(".temp") then
 				tbl[name] = file_name
 			else
 				logn("bad file in downloads/cache folder: ", file_name)
