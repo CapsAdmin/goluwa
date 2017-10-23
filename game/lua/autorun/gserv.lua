@@ -275,8 +275,12 @@ function gserv.GetInstalledGames()
 end
 
 function gserv.BuildMountConfig(id)
-	local str = '"mountcfg"\n'
-	str = str .. "{\n"
+
+	local mountdepots_txt = '"gamedepotsystem"\n'
+	mountdepots_txt = mountdepots_txt .. "{\n"
+
+	local mounts_cfg = '"mountcfg"\n'
+	mounts_cfg = mounts_cfg .. "{\n"
 
 	for appid, dir in pairs(gserv.GetInstalledGames()) do
 		if type(appid) == "number" and appid ~= 4020 then
@@ -285,15 +289,18 @@ function gserv.BuildMountConfig(id)
 				if gameinfo then
 					local name = dir:match(".+/(.+)")
 
-					str = str .. "\t\"" .. name .. "\"\t\t" .. "\""..dir.."\"\n"
+					mounts_cfg = mounts_cfg .. "\t\"" .. name .. "\"\t\t" .. "\""..dir.."\"\n"
+					mountdepots_txt = mountdepots_txt .. "\t\"" .. name .. "\"\t\"1\"\n"
 				end
 			end
 		end
 	end
 
-	str = str .. "}"
+	mounts_cfg = mounts_cfg .. "}"
+	mountdepots_txt = mountdepots_txt .. "}"
 
-	vfs.Write(get_gmod_dir(id) .. "cfg/mount.cfg", str)
+	vfs.Write(get_gmod_dir(id) .. "cfg/mount.cfg", mounts_cfg)
+	vfs.Write(get_gmod_dir(id) .. "cfg/mountdepots.txt", mountdepots_txt)
 end
 
 do
