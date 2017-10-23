@@ -211,6 +211,7 @@ function gserv.SetupCommands(id)
 	commands.Add(id .. " scan_addons", function() gserv.ScanAddons(id) end)
 
 	commands.Add(id .. " setup_info", function() check_setup(id) table.print(gserv.configs[id]) end)
+	commands.Add(id .. " reload_config", function() check_setup(id) gserv.ReloadConfig(id) end)
 
 	commands.Add(id .. " set_startup_param=string,string", function(key, val) gserv.SetStartupParameter(id, key, val) end)
 	commands.Add(id .. " set_launch_param=string,string|nil", function(key, val) gserv.SetLaunchParameter(id, key, val) end)
@@ -301,6 +302,14 @@ function gserv.BuildMountConfig(id)
 
 	vfs.Write(get_gmod_dir(id) .. "cfg/mount.cfg", mounts_cfg)
 	vfs.Write(get_gmod_dir(id) .. "cfg/mountdepots.txt", mountdepots_txt)
+end
+
+function gserv.ReloadConfig(id)
+	local old = gserv.configs[id]
+
+	gserv.configs[id] = nil
+	load_config(id)
+	gserv.BuildConfig(id)
 end
 
 do
