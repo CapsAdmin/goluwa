@@ -29,7 +29,7 @@ function resource.AddProvider(provider, no_autodownload)
 	end)
 end
 
-local function download(from, to, callback, on_fail, on_header, check_etag, etag_path_override, need_extension)
+local function download(from, to, callback, on_fail, on_header, check_etag, etag_path_override, need_extension, ext_override)
 	if check_etag then
 		local etag = serializer.GetKeyFromFile("luadata", etags_file, etag_path_override or from)
 
@@ -49,7 +49,7 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 					else
 						llog(from, ": no previous etag stored", res)
 					end
-					download(from, to, callback, on_fail, on_header, nil, etag_path_override, need_extension)
+					download(from, to, callback, on_fail, on_header, nil, etag_path_override, need_extension, ext_override)
 				else
 					--llog(from, ": etag is the same")
 					check_etag()
@@ -100,7 +100,9 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 			file:Write(chunk)
 		end,
 		function(header)
-			if need_extension then
+			if ext_override then
+				to = to .. "." .. ext_override
+			elseif need_extension then
 				local ext = header["content-type"] and (header["content-type"]:match(".-/(.-);") or header["content-type"]:match(".-/(.+)")) or "dat"
 				if ext == "jpeg" then ext = "jpg" end
 				to = to .. "." .. ext
@@ -176,7 +178,7 @@ end
 local cb = utility.CreateCallbackThing()
 local ohno = false
 
-function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag)
+function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag, ext)
 	on_fail = on_fail or function(reason) llog(path, ": ", reason) end
 
 	if resource.virtual_files[path] then
@@ -273,7 +275,8 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag)
 			end,
 			check_etag,
 			nil,
-			true
+			true,
+			ext
 		)
 	else
 		download_from_providers(
