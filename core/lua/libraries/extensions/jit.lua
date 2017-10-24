@@ -41,7 +41,7 @@ function jit.dumpbytecode(func)
 		flush = function(t) end,
 	}
 
-	jit.bc.dump(func, out)
+	jit.bc.dump(func, out, true)
 end
 
 function jit.debug(b)
