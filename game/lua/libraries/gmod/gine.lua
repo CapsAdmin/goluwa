@@ -1,6 +1,7 @@
 local gine = _G.gine or {}
 
 runfile("preprocess.lua", gine)
+runfile("code_scan.lua", gine)
 runfile("cli.lua", gine)
 
 function gine.SetFunctionEnvironment(func)
