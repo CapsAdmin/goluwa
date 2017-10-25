@@ -41,3 +41,5 @@ end
 if WINDOW then
 	love = line.CreateLoveEnv() -- https://www.love2d.org/wiki/love
 end
+
+goluwa = event.CreateRealm("goluwa")
