@@ -1945,6 +1945,10 @@ do -- layout
 	end
 
 	function META:DoLayout()
+		self.in_layout = true
+		self:OnLayout(self:GetLayoutScale(), self:GetSkin())
+		self.in_layout = false
+
 		self:ExecuteLayoutCommands()
 
 		if self.Stack then
@@ -1958,10 +1962,6 @@ do -- layout
 	function META:Layout(now)
 		if self.in_layout then return end
 		if now and (self.LayoutWhenInvisible or not self.draw_no_draw) then
-
-			self.in_layout = true
-			self:OnLayout(self:GetLayoutScale(), self:GetSkin())
-			self.in_layout = false
 
 			self:DoLayout()
 
