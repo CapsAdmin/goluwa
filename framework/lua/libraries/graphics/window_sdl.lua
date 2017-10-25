@@ -271,6 +271,7 @@ function window.CreateWindow(width, height, title, flags)
 
 	if not sdl.video_init then
 		sdl.Init(sdl.e.INIT_VIDEO)
+		sdl.SetHint(sdl.e.HINT_MOUSE_FOCUS_CLICKTHROUGH, "1")
 		sdl.video_init = true
 	end
 
