@@ -419,6 +419,12 @@ function window.CreateWindow(width, height, title, flags)
 
 				elseif case == sdl.e.WINDOWEVENT_FOCUS_GAINED then
 					call(wnd, "OnKeyboardFocus", true)
+				else
+					for k,v in pairs(sdl.e) do
+						if k:startswith("WINDOWEVENT") and v == case then
+							llog("unhandled window event: ", k)
+						end
+					end
 				end
 			elseif event.type == sdl.e.KEYDOWN or event.type == sdl.e.KEYUP then
 				local window = window.windowobjects[event.key.windowID]
