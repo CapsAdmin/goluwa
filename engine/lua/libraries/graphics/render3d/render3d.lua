@@ -9,6 +9,10 @@ event.AddListener("Draw3D", "render3d", function()
 end)
 
 event.AddListener("PreDrawGUI", "render3d", function()
+	if not render3d.IsGBufferReady() and (line and not line.IsGameRunning()) then
+		render.GetScreenFrameBuffer():ClearAll()
+	end
+
 	if render3d.IsGBufferReady() then
 		if menu and menu.IsVisible() then
 			render2d.PushHSV(1,0,1)
@@ -24,10 +28,6 @@ event.AddListener("PreDrawGUI", "render3d", function()
 		if render3d.debug then
 			render3d.DrawGBufferDebugOverlay()
 		end
-	end
-
-	if not render3d.IsGBufferReady() and (line and not line.IsGameRunning()) then
-		render.GetScreenFrameBuffer():ClearAll()
 	end
 end)
 
