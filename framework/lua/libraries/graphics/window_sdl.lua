@@ -406,7 +406,7 @@ function window.CreateWindow(width, height, title, flags)
 				elseif case == sdl.e.WINDOWEVENT_LEAVE then
 					call(wnd, "OnCursorEnter", true)
 
-				elseif case == sdl.e.WINDOWEVENT_FOCUS_GAINED then
+				elseif case == sdl.e.WINDOWEVENT_TAKE_FOCUS then
 					call(wnd, "OnFocus", true)
 					wnd.focused = true
 
@@ -417,6 +417,8 @@ function window.CreateWindow(width, height, title, flags)
 				elseif case == sdl.e.WINDOWEVENT_CLOSE then
 					call(wnd, "OnClose")
 
+				elseif case == sdl.e.WINDOWEVENT_FOCUS_GAINED then
+					call(wnd, "OnKeyboardFocus", true)
 				end
 			elseif event.type == sdl.e.KEYDOWN or event.type == sdl.e.KEYUP then
 				local window = window.windowobjects[event.key.windowID]
