@@ -266,7 +266,7 @@ end
 return META
 	]==]
 
-	return assert(loadstring(code))(structs)
+	return assert(loadstring(code, "matrix_" .. X .. Y))(structs)
 end
 
 for X = 2, 4 do
