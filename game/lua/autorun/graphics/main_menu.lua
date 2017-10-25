@@ -177,7 +177,23 @@ function menu.CreateTopBar()
 		button:SetupLayout("left", "top")
 		button.menu = NULL
 
+		local old = button.OnMouseEnter
+
+		button.OnMouseEnter = function(...)
+			if gui.current_menu:IsValid() and button.menu ~= gui.current_menu then
+				button:OnPress()
+				button:SetState(true)
+			end
+			old(...)
+		end
+
 		button.OnPress = function()
+			if button.menu:IsValid() and button.menu == gui.current_menu then
+				button.menu:Remove()
+				gui.current_menu:Remove()
+				button:SetState(false)
+				return
+			end
 			if button.menu:IsValid() then return end
 			local menu = gui.CreateMenu(options, bar)
 			function menu:OnPreDraw()
@@ -196,7 +212,7 @@ function menu.CreateTopBar()
 					menu:Remove()
 				end)
 				if not menu.okay then
-					return false
+					--return false
 				end
 			end)
 			button.menu = menu
