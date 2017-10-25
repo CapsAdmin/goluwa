@@ -7,8 +7,10 @@ base:SetColor(Color(0.1,0.1,0.1,1))
 base:SetMargin(Rect()+16)
 base:SetName("base")
 
+
 local btn = base:CreatePanel("button")
 btn:SetSize(Vec2() + 32)
+btn:SetMouseZPos(0)
 
 local btn = base:CreatePanel("button")
 btn:SetSize(Vec2() + 32)

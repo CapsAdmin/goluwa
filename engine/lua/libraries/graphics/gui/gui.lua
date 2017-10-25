@@ -55,6 +55,10 @@ function gui.CreatePanel(name, parent, store_in_parent)
 
 	self:Layout()
 
+	if store_in_parent and name == "base" then
+		self:SetName(store_in_parent .. "(base)")
+	end
+
 	return self
 end
 
@@ -100,12 +104,21 @@ function gui.GetHoveringPanel(panel, filter)
 	local ordered = {}
 
 	for i, pnl in ipairs(children) do
-		ordered[i] = pnl
+		if pnl.MouseZPos then
+			table.insert(ordered, pnl)
+		end
 	end
 
-	table.sort(ordered, function(a, b) return a.MouseZPos > b.MouseZPos end)
+	local found
 
-	local found = try(ordered, filter) or try(children, filter)
+	if ordered[1] then
+		table.sort(ordered, function(a, b) return a.MouseZPos > b.MouseZPos end)
+		found = try(ordered, filter)
+	end
+
+	if not found then
+		found = try(children, filter)
+	end
 
 	if found then
 		return found

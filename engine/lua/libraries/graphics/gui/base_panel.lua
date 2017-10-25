@@ -20,8 +20,7 @@ META:GetSet("VisibilityPanel", NULL)
 META:GetSet("NoDraw", false)
 META:GetSet("GreyedOut", false)
 META:GetSet("UpdateRate", 1/33)
-META:GetSet("MouseZPos", 0)
-
+META:GetSet("MouseZPos", nil)
 
 function META:CreatePanel(name, store_in_self)
 	return gui.CreatePanel(name, self, store_in_self)
@@ -40,7 +39,7 @@ function META:GetSizeOfChildren()
 	if #self.Children == 0 then return self:GetSize() end
 
 	if self.last_children_size then
-		return self.last_children_size
+		return self.last_children_size:Copy()
 	end
 
 	self:DoLayout()
@@ -936,7 +935,7 @@ end
 do -- drag drop
 	META:GetSet("Draggable", false)
 	META:GetSet("DragDrop", false)
-	META:GetSet("DragMinDistance", 20)
+	META:GetSet("DragMinDistance", 0)
 
 	function META:StartDragging(button)
 		self.drag_original_pos = self:GetPosition()
@@ -1364,6 +1363,7 @@ do -- resizing
 	function META:CalcResizing()
 		if self.Resizable then
 			local loc = self:GetResizeLocation(self:GetMousePosition())
+
 			if location2cursor[loc] then
 				self:SetCursor(location2cursor[loc])
 			else
