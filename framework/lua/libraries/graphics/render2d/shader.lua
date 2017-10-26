@@ -154,3 +154,7 @@ function render2d.BindShader()
 		render2d.shader:Bind()
 	end
 end
+
+if RELOAD then
+	render2d.Initialize()
+end
