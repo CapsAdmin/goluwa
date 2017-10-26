@@ -47,8 +47,9 @@ function META:Initialize()
 	self:SetUpdateRate(0)
 	self.Velocity = Vec2()
 	self.sheep_texture = render.CreateTextureFromPath("textures/esheep.png")
-	--self.sheep_texture:SetMinFilter("nearest")
-	--self.sheep_texture:SetMagFilter("nearest")
+	self.sheep_texture:SetMinFilter("nearest")
+	self.sheep_texture:SetMagFilter("nearest")
+
 	self.frame = 0
 	self.drag = math.randomf(0.999, 0.9999)
 end
@@ -66,7 +67,7 @@ function META:CheckCollision()
 
 	self.on_ground = false
 
-	local pos, found = self:RayCast(Vec2(self.Position.x, h - self.Size.y))
+	local pos, found = self:RayCast(self.Position, Vec2(self.Position.x, h - self.Size.y))
 
 	if self.Position.y > pos.y - 2 then
 		self.on_ground = true
@@ -80,7 +81,7 @@ function META:CheckCollision()
 		return
 	end
 
-	local pos, found = self:RayCast(Vec2(self.Position.x, 1))
+	local pos, found = self:RayCast(self.Position, Vec2(self.Position.x, 1))
 
 	if self.Position.y < pos.y then
 		if length > faint_vel then self.faint_time = length/5  self.faint = system.GetElapsedTime() + self.faint_time end
@@ -90,7 +91,7 @@ function META:CheckCollision()
 		return
 	end
 
-	local pos, found = self:RayCast(Vec2(w - self.Size.x, self.Position.y))
+	local pos, found = self:RayCast(self.Position, Vec2(w - self.Size.x, self.Position.y))
 
 	if self.Position.x > pos.x - 4 then
 		if length > faint_vel then self.faint_time = length/faint_vel self.faint = system.GetElapsedTime() + self.faint_time end
@@ -100,7 +101,7 @@ function META:CheckCollision()
 		return
 	end
 
-	local pos, found = self:RayCast(Vec2(1, self.Position.y))
+	local pos, found = self:RayCast(self.Position, Vec2(1, self.Position.y))
 
 	if self.Position.x < pos.x + 4 then
 		if length > faint_vel then self.faint_time = length/5 self.faint = system.GetElapsedTime() + self.faint_time end

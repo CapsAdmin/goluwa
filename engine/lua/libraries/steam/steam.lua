@@ -16,8 +16,27 @@ function steam.DownloadWorkshop(id, callback)
 		callback = function(data)
 			local data = serializer.Decode("json", data.content)
 			resource.Download(data.response.publishedfiledetails[1].file_url, function(path)
+				vfs.Write(path, assert(serializer.ReadFile("lzma", path)))
 				callback(data, path)
-			end)
+			end, nil,nil,nil,nil,"gma")
+		end,
+	})
+end
+
+function steam.DownloadWorkshopCollection(id, callback)
+	sockets.Request({
+		method = "POST",
+		url = "http://api.steampowered.com/ISteamRemoteStorage/GetCollectionDetails/v0001/",
+		post_data = "itemcount=1&publishedfileids[0]="..id.."&collectioncount=1&format=json",
+		header = {
+			["Content-Type"] = "application/x-www-form-urlencoded",
+		},
+		callback = function(data)
+			local data = serializer.Decode("json", data.content)
+			for i,v in ipairs(data.response.collectiondetails[1].children) do
+				data.response.collectiondetails[1].children[i] = v.publishedfileid
+			end
+			callback(data.response.collectiondetails[1].children)
 		end,
 	})
 end

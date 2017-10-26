@@ -194,7 +194,7 @@ end
 
 commands.Add("gserv setup=string[gserv]", function(id) gserv.Setup(id) end)
 commands.Add("gserv update_game=string|number,string|nil", function(name) gserv.Update(name, dir) end)
-commands.Add("gserv install_game=string|number,string|nil", function(name, dir) gserv.InstallGame(name, dir) end)
+commands.Add("gserv install_game=string|number,string|nil,string|nil", function(name, dir, username) gserv.InstallGame(name, dir, nil, username) end)
 
 function gserv.SetupCommands(id)
 	commands.Add(id .. " start", function() gserv.Start(id) end)
@@ -211,6 +211,7 @@ function gserv.SetupCommands(id)
 	commands.Add(id .. " scan_addons", function() gserv.ScanAddons(id) end)
 
 	commands.Add(id .. " setup_info", function() check_setup(id) table.print(gserv.configs[id]) end)
+	commands.Add(id .. " reload_config", function() check_setup(id) gserv.ReloadConfig(id) end)
 
 	commands.Add(id .. " set_startup_param=string,string", function(key, val) gserv.SetStartupParameter(id, key, val) end)
 	commands.Add(id .. " set_launch_param=string,string|nil", function(key, val) gserv.SetLaunchParameter(id, key, val) end)
@@ -224,15 +225,15 @@ function gserv.SetupCommands(id)
 end
 
 function gserv.UpdateGame(id)
-	gserv.InstallGame("gmod", nil, function(appid)
+	gserv.InstallGame("gmod dedicated server", nil, function(appid)
 		if appid == 4020 then
 			os.execute("cp -a -rf " .. gserv.GetInstalledGames()[4020] .. "/. " .. srcds_dir .. underscore(id))
 		end
 	end)
 end
 
-function gserv.InstallGame(name, dir, callback)
-	local appid, full_name = steam.GetAppIdFromName(name .. " Dedicated Server")
+function gserv.InstallGame(name, dir, callback, username)
+	local appid, full_name = steam.GetAppIdFromName(name)
 	if not appid and tonumber(name) then
 		appid = tonumber(name)
 	end
@@ -240,6 +241,8 @@ function gserv.InstallGame(name, dir, callback)
 	if not appid then
 		error("could not find " .. name, 2)
 	end
+
+	username = username or "anonymous"
 
 	gserv.Log(id, "setting up")
 
@@ -259,7 +262,7 @@ function gserv.InstallGame(name, dir, callback)
 		llog("installing ", name, " (", appid, ")", " to ", srcds_dir .. dir_name)
 
 		serializer.SetKeyValueInFile("luadata", data_dir .. "games.lua", appid, srcds_dir .. dir_name)
-		repl.OSExecute(srcds_dir .. "steamcmd.sh +login anonymous +force_install_dir \"" .. srcds_dir .. dir_name .. "\" +app_update " .. appid .. " validate +quit")
+		repl.OSExecute(srcds_dir .. "steamcmd.sh +login " .. username .. " +force_install_dir \"" .. srcds_dir .. dir_name .. "\" +app_update " .. appid .. " validate +quit")
 
 		llog("done")
 		if callback then callback(appid) end
@@ -275,8 +278,12 @@ function gserv.GetInstalledGames()
 end
 
 function gserv.BuildMountConfig(id)
-	local str = '"mountcfg"\n'
-	str = str .. "{\n"
+
+	local mountdepots_txt = '"gamedepotsystem"\n'
+	mountdepots_txt = mountdepots_txt .. "{\n"
+
+	local mounts_cfg = '"mountcfg"\n'
+	mounts_cfg = mounts_cfg .. "{\n"
 
 	for appid, dir in pairs(gserv.GetInstalledGames()) do
 		if type(appid) == "number" and appid ~= 4020 then
@@ -285,15 +292,26 @@ function gserv.BuildMountConfig(id)
 				if gameinfo then
 					local name = dir:match(".+/(.+)")
 
-					str = str .. "\t\"" .. name .. "\"\t\t" .. "\""..dir.."\"\n"
+					mounts_cfg = mounts_cfg .. "\t\"" .. name .. "\"\t\t" .. "\""..dir.."\"\n"
+					mountdepots_txt = mountdepots_txt .. "\t\"" .. name .. "\"\t\"1\"\n"
 				end
 			end
 		end
 	end
 
-	str = str .. "}"
+	mounts_cfg = mounts_cfg .. "}"
+	mountdepots_txt = mountdepots_txt .. "}"
 
-	vfs.Write(get_gmod_dir(id) .. "cfg/mount.cfg", str)
+	vfs.Write(get_gmod_dir(id) .. "cfg/mount.cfg", mounts_cfg)
+	vfs.Write(get_gmod_dir(id) .. "cfg/mountdepots.txt", mountdepots_txt)
+end
+
+function gserv.ReloadConfig(id)
+	local old = gserv.configs[id]
+
+	gserv.configs[id] = nil
+	load_config(id)
+	gserv.BuildConfig(id)
 end
 
 do
@@ -396,7 +414,7 @@ do -- addons
 			gserv.Log(id, "done updating ", info.url)
 		elseif info.type == "workshop" then
 			gserv.Log(id, "updating workshop addon ", info.url)
-			steam.DownloadWorkshop(info.id, function(header, compressed_path)
+			steam.DownloadWorkshop(info.id, function(header, path)
 				-- if the name is just the id make it more readable
 				if info.id == info.name then
 					info.name = header.response.publishedfiledetails[1].title:lower():gsub("%p", ""):gsub("%s+", "_") .. "_" .. info.name
@@ -405,7 +423,7 @@ do -- addons
 
 				local name = info.name
 
-				vfs.Write(get_gmod_dir(id) .. "addons/" .. name .. ".gma", serializer.ReadFile("lzma", compressed_path))
+				vfs.Write(get_gmod_dir(id) .. "addons/" .. name .. ".gma", path)
 
 				repl.OSExecute(gserv.GetInstallDir(id) .. "/bin/gmad_linux extract -file " .. get_gmod_dir(id) .. "addons/" .. name ..".gma -out " .. get_gmod_dir(id) .. "addons/" .. name)
 

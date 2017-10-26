@@ -9,7 +9,7 @@ do -- tree node
 
 	function META:Initialize()
 		self:SetDraggable(true)
-		self:SetDragMinDistance(Vec2()-1)
+		self:SetDragMinDistance(20)
 		self.nodes = {}
 
 		prototype.GetRegistered(self.Type, "button").Initialize(self)

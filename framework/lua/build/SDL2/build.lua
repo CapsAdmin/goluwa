@@ -53,7 +53,7 @@ header = header:gsub("struct VkSurfaceKHR_T", "void")
 local lua = ffibuild.StartLibrary(header)
 
 lua = lua .. "library = " .. meta_data:BuildFunctions("^SDL_(.+)")
-lua = lua .. "library.e = " .. meta_data:BuildEnums("^SDL_(.+)")
+lua = lua .. "library.e = " .. meta_data:BuildEnums("^SDL_(.+)", {"./repo/include/SDL_hints.h"}, "SDL_")
 
 lua = lua .. [[
 function library.CreateVulkanSurface(window, instance)

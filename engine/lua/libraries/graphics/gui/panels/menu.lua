@@ -94,7 +94,7 @@ do
 
 		-- close all parent menus
 		for k,v in ipairs(self.Parent:GetChildren()) do
-			if v ~= self and v.ClassName == "menu_entry" and v.menu and v.menu:IsValid() and v.menu.ClassName == "menu" then
+			if v ~= self and v.ClassName == META.ClassName and v.menu and v.menu:IsValid() and v.menu.ClassName == "menu" then
 				v.menu:SetVisible(false)
 			end
 		end

@@ -271,6 +271,7 @@ function window.CreateWindow(width, height, title, flags)
 
 	if not sdl.video_init then
 		sdl.Init(sdl.e.INIT_VIDEO)
+		sdl.SetHint(sdl.e.HINT_MOUSE_FOCUS_CLICKTHROUGH, "1")
 		sdl.video_init = true
 	end
 
@@ -406,7 +407,7 @@ function window.CreateWindow(width, height, title, flags)
 				elseif case == sdl.e.WINDOWEVENT_LEAVE then
 					call(wnd, "OnCursorEnter", true)
 
-				elseif case == sdl.e.WINDOWEVENT_FOCUS_GAINED then
+				elseif case == sdl.e.WINDOWEVENT_TAKE_FOCUS then
 					call(wnd, "OnFocus", true)
 					wnd.focused = true
 
@@ -417,6 +418,14 @@ function window.CreateWindow(width, height, title, flags)
 				elseif case == sdl.e.WINDOWEVENT_CLOSE then
 					call(wnd, "OnClose")
 
+				elseif case == sdl.e.WINDOWEVENT_FOCUS_GAINED then
+					call(wnd, "OnKeyboardFocus", true)
+				else
+					for k,v in pairs(sdl.e) do
+						if k:startswith("WINDOWEVENT") and v == case then
+							llog("unhandled window event: ", k)
+						end
+					end
 				end
 			elseif event.type == sdl.e.KEYDOWN or event.type == sdl.e.KEYUP then
 				local window = window.windowobjects[event.key.windowID]

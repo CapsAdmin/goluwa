@@ -208,8 +208,17 @@ function META:SetTitle(str)
 	end
 end
 
-function META:OnMouseInput()
+function META:OnMouseInput(button, press)
 	self:MarkCacheDirty()
+
+	if button == "button_1" and press then
+		if self.last_click and self.last_click > system.GetTime() then
+			self:Maximize(not self:IsMaximized())
+			self.last_click = nil
+		end
+	end
+
+	self.last_click = system.GetTime() + 0.2
 end
 
 gui.RegisterPanel(META)

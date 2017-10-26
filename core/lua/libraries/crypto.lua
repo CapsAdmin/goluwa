@@ -75,8 +75,13 @@ do
 	local rshift = bit.rshift
 	local band = bit.band
 
-	function crypto.CRC32(str)
-		str = tostring(str)
+	local cache = utility.CreateWeakTable()
+
+	function crypto.CRC32(val)
+		if cache[val] then
+			return cache[val]
+		end
+		local str = tostring(val)
 		local count = string.len(str)
 		local crc = 2 ^ 32 - 1
 		local i = 1
@@ -91,7 +96,9 @@ do
 		-- dirty hack for bitop return number < 0
 		if crc < 0 then crc = crc + 2 ^ 32 end
 
-		return tostring(crc)
+		cache[val] = tostring(crc)
+
+		return cache[val]
 	end
 end
 

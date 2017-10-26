@@ -20,8 +20,7 @@ META:GetSet("VisibilityPanel", NULL)
 META:GetSet("NoDraw", false)
 META:GetSet("GreyedOut", false)
 META:GetSet("UpdateRate", 1/33)
-META:GetSet("MouseZPos", 0)
-
+META:GetSet("MouseZPos", nil)
 
 function META:CreatePanel(name, store_in_self)
 	return gui.CreatePanel(name, self, store_in_self)
@@ -40,7 +39,7 @@ function META:GetSizeOfChildren()
 	if #self.Children == 0 then return self:GetSize() end
 
 	if self.last_children_size then
-		return self.last_children_size
+		return self.last_children_size:Copy()
 	end
 
 	self:DoLayout()
@@ -382,8 +381,11 @@ do -- drawing
 
 	function META:Draw(from_cache)
 		if not self.Visible then return end
+		if self.SetupShadows then self:SetupShadows() end
 		self:PreDraw(from_cache)
+		if self.DrawShadows then self:DrawShadows() end
 			for _, v in ipairs(self:GetChildren()) do
+				if self.DrawChild then self:DrawChild(v) end
 				v:Draw(from_cache)
 			end
 		self:PostDraw(from_cache)
@@ -468,6 +470,7 @@ end
 
 do -- orientation
 	META:GetSet("Position", Vec2(0, 0))
+	META:GetSet("Z", 0)
 	META:GetSet("Size", Vec2(4, 4))
 	META:GetSet("MinimumSize", Vec2(4, 4))
 	META:GetSet("Padding", Rect(0, 0, 0, 0))
@@ -492,7 +495,7 @@ do -- orientation
 			self.rebuild_matrix = true
 		end
 
-		function META:RebuildMatrix()
+		function META:RebuildMatrix(lol)
 			if self:IsWorld() then return end
 			if self.rebuild_matrix then
 				self.rebuild_matrix = false
@@ -520,10 +523,11 @@ do -- orientation
 					end
 				end
 
+if not lol then
 				self.temp_matrix = self.temp_matrix or Matrix44()
 				self.Parent.Matrix:Multiply(self.Matrix, self.temp_matrix)
 				self.Matrix, self.temp_matrix = self.temp_matrix, self.Matrix
-
+end
 				self.Matrix:Translate(math.ceil(self.Position.x), math.ceil(self.Position.y), 0)
 
 				if self.Angle ~= 0 then
@@ -936,7 +940,7 @@ end
 do -- drag drop
 	META:GetSet("Draggable", false)
 	META:GetSet("DragDrop", false)
-	META:GetSet("DragMinDistance", 20)
+	META:GetSet("DragMinDistance", 0)
 
 	function META:StartDragging(button)
 		self.drag_original_pos = self:GetPosition()
@@ -1364,6 +1368,7 @@ do -- resizing
 	function META:CalcResizing()
 		if self.Resizable then
 			local loc = self:GetResizeLocation(self:GetMousePosition())
+
 			if location2cursor[loc] then
 				self:SetCursor(location2cursor[loc])
 			else
@@ -1430,7 +1435,6 @@ do -- mouse
 
 	META:GetSet("MouseHoverTime", 0)
 	META:GetSet("MouseHoverTimeTrigger", 1)
-	META:GetSet("AlphaMouseCheck", false)
 
 	do
 		gui.active_tooltip = NULL
@@ -1549,7 +1553,7 @@ do -- mouse
 
 		local alpha = 1
 
-		--[[if self.AlphaMouseCheck and not self.NinePatch and self.NinePatchRect:IsZero() and self.Texture:IsValid() and self.Texture ~= render.GetWhiteTexture() and not self.Texture:IsLoading() then
+		if not self.NinePatch and self.NinePatchRect:IsZero() and self.Texture:IsValid() and self.Texture ~= render.GetWhiteTexture() and not self.Texture:IsLoading() then
 			local x = (x / self.Size.x)
 			local y = (y / self.Size.y)
 
@@ -1560,7 +1564,7 @@ do -- mouse
 			y = math.clamp(math.floor(y), 1, self.Texture:GetSize().y-1)
 
 			alpha = select(4, self.Texture:GetRawPixelColor(x, y)) / 255
-		end]]
+		end
 
 		if x > 0 and x < self.Size.x and y > 0 and y < self.Size.y and alpha > 0 then
 			if self:HasParent() and (self:GetParent():IsWorld() or self:GetParent().mouse_over) then
@@ -1945,6 +1949,10 @@ do -- layout
 	end
 
 	function META:DoLayout()
+		self.in_layout = true
+		self:OnLayout(self:GetLayoutScale(), self:GetSkin())
+		self.in_layout = false
+
 		self:ExecuteLayoutCommands()
 
 		if self.Stack then
@@ -1958,10 +1966,6 @@ do -- layout
 	function META:Layout(now)
 		if self.in_layout then return end
 		if now and (self.LayoutWhenInvisible or not self.draw_no_draw) then
-
-			self.in_layout = true
-			self:OnLayout(self:GetLayoutScale(), self:GetSkin())
-			self.in_layout = false
 
 			self:DoLayout()
 
@@ -2494,6 +2498,7 @@ do -- events
 			self.Color.b + self.DrawColor.b,
 			self.Color.a + self.DrawColor.a
 		)
+
 		render2d.SetTexture(self.Texture)
 
 		self:DrawRect()

@@ -509,7 +509,8 @@ function META:Fill(callback)
 end
 function META:BeginWrite()
 	local fb = self.fb or render.CreateFrameBuffer()
-	fb:SetSize(self:GetSize():Copy())
+	fb.Size.x = self.Size.x
+	fb.Size.y = self.Size.y
 	fb:SetTexture(1, self)
 	self.fb = fb
 
