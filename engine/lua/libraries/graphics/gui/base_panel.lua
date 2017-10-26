@@ -1430,7 +1430,6 @@ do -- mouse
 
 	META:GetSet("MouseHoverTime", 0)
 	META:GetSet("MouseHoverTimeTrigger", 1)
-	META:GetSet("AlphaMouseCheck", false)
 
 	do
 		gui.active_tooltip = NULL
