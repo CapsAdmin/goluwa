@@ -381,8 +381,11 @@ do -- drawing
 
 	function META:Draw(from_cache)
 		if not self.Visible then return end
+		if self.SetupShadows then self:SetupShadows() end
 		self:PreDraw(from_cache)
+		if self.DrawShadows then self:DrawShadows() end
 			for _, v in ipairs(self:GetChildren()) do
+				if self.DrawChild then self:DrawChild(v) end
 				v:Draw(from_cache)
 			end
 		self:PostDraw(from_cache)
@@ -467,6 +470,7 @@ end
 
 do -- orientation
 	META:GetSet("Position", Vec2(0, 0))
+	META:GetSet("Z", 0)
 	META:GetSet("Size", Vec2(4, 4))
 	META:GetSet("MinimumSize", Vec2(4, 4))
 	META:GetSet("Padding", Rect(0, 0, 0, 0))
@@ -491,7 +495,7 @@ do -- orientation
 			self.rebuild_matrix = true
 		end
 
-		function META:RebuildMatrix()
+		function META:RebuildMatrix(lol)
 			if self:IsWorld() then return end
 			if self.rebuild_matrix then
 				self.rebuild_matrix = false
@@ -519,10 +523,11 @@ do -- orientation
 					end
 				end
 
+if not lol then
 				self.temp_matrix = self.temp_matrix or Matrix44()
 				self.Parent.Matrix:Multiply(self.Matrix, self.temp_matrix)
 				self.Matrix, self.temp_matrix = self.temp_matrix, self.Matrix
-
+end
 				self.Matrix:Translate(math.ceil(self.Position.x), math.ceil(self.Position.y), 0)
 
 				if self.Angle ~= 0 then
@@ -2493,6 +2498,7 @@ do -- events
 			self.Color.b + self.DrawColor.b,
 			self.Color.a + self.DrawColor.a
 		)
+
 		render2d.SetTexture(self.Texture)
 
 		self:DrawRect()
