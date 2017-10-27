@@ -194,7 +194,11 @@ function META:SetTexture(pos, tex, mode, uid, face)
 				tex.size = nil
 			end
 
-			rb:Storage("GL_" .. tex.internal_format:upper(), tex.width, tex.height)
+			if tex.samples then
+				rb:StorageMultisample(tex.samples, "GL_" .. tex.internal_format:upper(), tex.width, tex.height)
+			else
+				rb:Storage("GL_" .. tex.internal_format:upper(), tex.width, tex.height)
+			end
 			self.gl_fb:Renderbuffer(enum, rb.id)
 
 			self.render_buffers[uid] = {rb = rb}
