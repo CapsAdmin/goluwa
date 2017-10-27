@@ -85,3 +85,16 @@ function render.GetDebug()
 end
 
 utility.MakePushPopFunction(render, "Debug")
+
+function render.StartRecordCalls()
+	gl.StartRecordingCalls()
+end
+
+function render.StopRecordCalls()
+	local tbl = gl.StopRecordingCalls()
+
+	for i,v in ipairs(tbl) do
+		local func_name, ret = v[1], v[2]
+		logn(ret, " = gl.", func_name, "(", table.concat({unpack(tostring_args(unpack(v, 3)))}, ", "), ")")
+	end
+end
