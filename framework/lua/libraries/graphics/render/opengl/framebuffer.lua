@@ -148,7 +148,7 @@ function META:SetTexture(pos, tex, mode, uid, face)
 			if face then
 				self.gl_fb:TextureLayer(enum, tex and tex.gl_tex.id or 0, 0, face - 1)
 			else
-				self.gl_fb:Texture(enum, id, 0)
+				self.gl_fb:Texture(enum, id, 0, tex.gl_tex.target)
 			end
 
 			for i,v in ipairs(self.textures_sorted) do

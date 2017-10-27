@@ -190,11 +190,10 @@ function META:SetupStorage()
 			if self.Multisample > 0 then
 				self.gl_tex:Storage2DMultisample(
 					self.Multisample,
-					mip_map_levels,
 					internal_format,
 					self.Size.x,
 					self.Size.y,
-					1
+					0
 				)
 			else
 				self.gl_tex:Storage2D(
@@ -435,14 +434,18 @@ function render._CreateTexture(self, type)
 		self:SetSeamlessCubemap(true)
 	else
 		self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
-		self:SetWrapS("repeat")
-		self:SetWrapT("repeat")
-		self:SetWrapR("repeat")
-		self:SetAnisotropy(100)
+		if self.StorageType:upper() ~= "2D_MULTISAMPLE" then
+			self:SetWrapS("repeat")
+			self:SetWrapT("repeat")
+			self:SetWrapR("repeat")
+			self:SetAnisotropy(100)
+		end
 	end
 
-	self:SetMinFilter("linear_mipmap_linear")
-	self:SetMagFilter("linear")
+	if self.StorageType:upper() ~= "2D_MULTISAMPLE" then
+		self:SetMinFilter("linear_mipmap_linear")
+		self:SetMagFilter("linear")
+	end
 end
 
 prototype.Register(META)
