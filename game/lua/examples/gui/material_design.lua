@@ -40,15 +40,12 @@ for i = 0, 0 do
 end
 
 local shadow_size = window.GetSize()/2
-local shadow_texture = render.CreateTexture("2d")
+local shadow_texture = render.CreateTexture("2d_multisample")
 shadow_texture:SetSize(shadow_size)
-shadow_texture:SetWrapS("clamp_to_edge")
-shadow_texture:SetupStorage()
-shadow_texture:SetWrapT("clamp_to_edge")
-shadow_texture:Clear()
+shadow_texture:SetMultisample(4)
+shadow_texture:SetInternalFormat("rgba8")
 shadow_texture:SetMipMapLevels(1)
-shadow_texture:SetAnisotropy(0)
-shadow_texture:SetMinFilter("linear")
+shadow_texture:SetupStorage()
 
 local shadow_framebuffer = render.CreateFrameBuffer()
 shadow_framebuffer:SetTexture(1, shadow_texture)
@@ -56,7 +53,7 @@ shadow_texture.fb = shadow_framebuffer
 
 function base:DrawChild(child)
 	child.lol = child.lol or math.random()*100
-	child.Z = 45*(math.sin(5*system.GetElapsedTime()+child.lol)*0.5+0.5)
+	child.Z = 0--45*(math.sin(5*system.GetElapsedTime()+child.lol)*0.5+0.5)
 --	for _, child in ipairs(self:GetChildren()) do
 	--	if child:IsVisible() then
 			child:InvalidateMatrix()
@@ -67,13 +64,21 @@ function base:DrawChild(child)
 			render2d.SetWorldMatrix(child.Matrix)
 
 			shadow_framebuffer:Begin()
-			shadow_framebuffer:ClearColor(1,0,0,0)
+			shadow_framebuffer:ClearColor(0,0,0,0)
+
+
+			render2d.PushMatrix()
+				render2d.Translatef(math.sin(os.clock()) * 40,math.cos(os.clock()) * 40)
+				render2d.Scale(50,50)
+				render2d.BindShader()
+				render2d.rectangle:Draw()
+			render2d.PopMatrix()
 
 			-- trail and error math
 			render2d.PushMatrix()
-			render2d.Translatef(0,child.Z*m/3)
+			render2d.Translatef(0,child.Z*m/3 + 10 + math.sin(os.clock()*10)*5)
 			render2d.Scale(1/self.Size.x * shadow_size.x,1/self.Size.y * shadow_size.y)
-			render2d.Translate(-child.Position.x * (self.Size.x / shadow_size.x) + child.Position.x, -child.Position.y * (self.Size.y / shadow_size.y) + child.Position.y)
+			render2d.Translatef(-child.Position.x * (self.Size.x / shadow_size.x) + child.Position.x, -child.Position.y * (self.Size.y / shadow_size.y) + child.Position.y)
 				child:OnPreDraw()
 				child:OnDraw()
 				child:OnPostDraw()
