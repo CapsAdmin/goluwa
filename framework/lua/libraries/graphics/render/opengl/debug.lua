@@ -94,7 +94,18 @@ function render.StopRecordCalls()
 	local tbl = gl.StopRecordingCalls()
 
 	for i,v in ipairs(tbl) do
-		local func_name, ret = v[1], v[2]
-		logn(ret, " = gl.", func_name, "(", table.concat({unpack(tostring_args(unpack(v, 3)))}, ", "), ")")
+		log(i, ": ")
+
+		if v.ret ~= nil then
+			log(v.ret, " ")
+		end
+
+		local args = {}
+
+		for k,v in pairs(v.args) do
+			table.insert(args, tostringx(v))
+		end
+
+		logn("gl", v.func_name, "(", table.concat(args, ", "), ")")
 	end
 end

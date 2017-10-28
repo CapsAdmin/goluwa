@@ -33221,15 +33221,18 @@ function gl.Initialize(get_proc_address)
 			end
 		end
 	end
+
+	local function __tostring(self)
+		return ("gl_%s[%i]"):format(self.Type, self.id)
+	end
+
 	do -- VertexArray
 		do
 			local META = {}
 			META.__index = META
 
 			META.Type = "vertex_array_dsa"
-			function META:__tostring()
-				return ("gl_%s[%i][%p]"):format(self.Type, self.id, self)
-			end
+			META.__tostring = __tostring
 
 			function META:ElementBuffer(buffer)
 				return gl.VertexArrayElementBuffer(self.id, buffer)
@@ -33288,9 +33291,7 @@ function gl.Initialize(get_proc_address)
 			META.__index = META
 
 			META.Type = "vertex_array_no_dsa"
-			function META:__tostring()
-				return ("gl_%s[%i][%p]"):format(self.Type, self.id, self)
-			end
+			META.__tostring = __tostring
 
 			local bind
 			do
@@ -33363,9 +33364,7 @@ function gl.Initialize(get_proc_address)
 			META.__index = META
 
 			META.Type = "framebuffer_dsa"
-			function META:__tostring()
-				return ("gl_%s[%i][%p]"):format(self.Type, self.id, self)
-			end
+			META.__tostring = __tostring
 
 			function META:Bind(target)
 				return gl.BindFramebuffer(target, self.id)
@@ -33491,9 +33490,7 @@ function gl.Initialize(get_proc_address)
 			META.__index = META
 
 			META.Type = "framebuffer_no_dsa"
-			function META:__tostring()
-				return ("gl_%s[%i][%p]"):format(self.Type, self.id, self)
-			end
+			META.__tostring = __tostring
 
 			local bind
 			do
@@ -33625,9 +33622,7 @@ function gl.Initialize(get_proc_address)
 			META.__index = META
 
 			META.Type = "buffer_dsa"
-			function META:__tostring()
-				return ("gl_%s[%i][%p]"):format(self.Type, self.id, self)
-			end
+			META.__tostring = __tostring
 
 			function META:CreateBuffers(buffers)
 				return gl.CreateBuffers(self.id, buffers)
@@ -33692,9 +33687,7 @@ function gl.Initialize(get_proc_address)
 			META.__index = META
 
 			META.Type = "buffer_no_dsa"
-			function META:__tostring()
-				return ("gl_%s[%i][%p]"):format(self.Type, self.id, self)
-			end
+			META.__tostring = __tostring
 
 			local bind
 			do
@@ -33773,9 +33766,7 @@ function gl.Initialize(get_proc_address)
 			META.__index = META
 
 			META.Type = "program_pipeline_dsa"
-			function META:__tostring()
-				return ("gl_%s[%i][%p]"):format(self.Type, self.id, self)
-			end
+			META.__tostring = __tostring
 
 			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
@@ -33795,9 +33786,7 @@ function gl.Initialize(get_proc_address)
 			META.__index = META
 
 			META.Type = "program_pipeline_no_dsa"
-			function META:__tostring()
-				return ("gl_%s[%i][%p]"):format(self.Type, self.id, self)
-			end
+			META.__tostring = __tostring
 
 			local bind
 			do
@@ -33830,9 +33819,7 @@ function gl.Initialize(get_proc_address)
 		META.__index = META
 
 		META.Type = "program"
-		function META:__tostring()
-			return ("gl_%s[%i][%p]"):format(self.Type, self.id, self)
-		end
+		META.__tostring = __tostring
 
 		function META:AttachShader(shader) return gl.AttachShader(self.id, shader) end
 		function META:DetachShader(shader) return gl.DetachShader(self.id, shader) end
@@ -33929,9 +33916,7 @@ function gl.Initialize(get_proc_address)
 		META.__index = META
 
 		META.Type = "shader"
-		function META:__tostring()
-			return ("gl_%s[%i][%p]"):format(self.Type, self.id, self)
-		end
+		META.__tostring = __tostring
 
 		function META:Source(count, string, length) return gl.ShaderSource(self.id, count, string, length) end
 		function META:Compile() return gl.CompileShader(self.id) end
@@ -33955,9 +33940,7 @@ function gl.Initialize(get_proc_address)
 			META.__index = META
 
 			META.Type = "sampler_dsa"
-			function META:__tostring()
-				return ("gl_%s[%i][%p]"):format(self.Type, self.id, self)
-			end
+			META.__tostring = __tostring
 
 			local ctype = ffi.typeof('struct { int id; }')
 			ffi.metatype(ctype, META)
@@ -33977,9 +33960,7 @@ function gl.Initialize(get_proc_address)
 			META.__index = META
 
 			META.Type = "sampler_no_dsa"
-			function META:__tostring()
-				return ("gl_%s[%i][%p]"):format(self.Type, self.id, self)
-			end
+			META.__tostring = __tostring
 
 			local bind
 			do
@@ -34013,9 +33994,7 @@ function gl.Initialize(get_proc_address)
 			META.__index = META
 
 			META.Type = "renderbuffer_dsa"
-			function META:__tostring()
-				return ("gl_%s[%i][%p]"):format(self.Type, self.id, self)
-			end
+			META.__tostring = __tostring
 
 			function META:GetParameterivEXT(pname, params)
 				return gl.GetNamedRenderbufferParameterivEXT(self.id, pname, params)
@@ -34056,9 +34035,7 @@ function gl.Initialize(get_proc_address)
 			META.__index = META
 
 			META.Type = "renderbuffer_no_dsa"
-			function META:__tostring()
-				return ("gl_%s[%i][%p]"):format(self.Type, self.id, self)
-			end
+			META.__tostring = __tostring
 
 			local bind
 			do
@@ -34112,9 +34089,7 @@ function gl.Initialize(get_proc_address)
 			META.__index = META
 
 			META.Type = "texture_dsa"
-			function META:__tostring()
-				return ("gl_%s[%i][%p]"):format(self.Type, self.id, self)
-			end
+			META.__tostring = __tostring
 
 			function META:Bind(location)
 				return gl.BindTextureUnit(location, self.id)
@@ -34341,9 +34316,7 @@ function gl.Initialize(get_proc_address)
 			local META = {}
 			META.__index = META
 			META.Type = "texture_no_dsa"
-			function META:__tostring()
-				return ("gl_%s[%i][%p]"):format(self.Type, self.id, self)
-			end
+			META.__tostring = __tostring
 
 			local bind
 			do
@@ -34614,12 +34587,12 @@ function gl.StartRecordingCalls()
 	gl.call_log = gl.call_log or {}
 	local i = 1
 	for k,v in pairs(gl) do
-		if (type(v) == "cdata" or type(v) == "function") and k ~= "StartRecordingCalls" and k ~= "StopRecordingCalls" then
+		if (type(v) == "cdata" or type(v) == "function") and k ~= "StartRecordingCalls" and k ~= "StopRecordingCalls" and k:sub(1, 3) ~= "Gen" then
 			gl.old_funcs[k] = v
 
 			gl[k] = function(...)
 				local ret = v(...)
-				gl.call_log[i] = {k, ret, ...}
+				gl.call_log[i] = {func_name = k, ret = ret, args = {...}}
 				i = i  + 1
 				return ret
 			end
