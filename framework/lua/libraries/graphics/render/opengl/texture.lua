@@ -185,7 +185,13 @@ function META:SetupStorage()
 				nil
 			)
 		end
-	elseif self.StorageType == "2d" or self.StorageType == "rectangle" or self.StorageType == "cube_map" or self.StorageType == "2d_array" then
+	elseif
+		self.StorageType == "2d" or
+		self.StorageType == "rectangle" or
+		self.StorageType == "cube_map" or
+		self.StorageType == "2d_array" or
+		self.StorageType == "2d_multisample"
+	then
 		if render.IsExtensionSupported("GL_ARB_texture_storage") then
 			if self.Multisample > 0 then
 				self.gl_tex:Storage2DMultisample(
@@ -370,6 +376,7 @@ function META:_Upload(data, y)
 end
 
 function META:GenerateMipMap()
+	if self.StorageType == "2d_multisample" then return end
 	self.gl_tex:GenerateMipmap()
 	return self
 end
