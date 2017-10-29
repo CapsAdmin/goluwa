@@ -153,4 +153,8 @@ do
 	end
 end
 
+if RELOAD then
+	gfx.Initialize()
+end
+
 return gfx
