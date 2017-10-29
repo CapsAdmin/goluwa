@@ -379,7 +379,7 @@ end
 do
 	local sin = math.sin
 	local cos = math.cos
-	local sqr = math.sqrt
+	local sqrt = math.sqrt
 
 	function META:Rotate(a, x, y, z, out)
 		if a == 0 then return self end
@@ -441,15 +441,15 @@ do
 			z = z / mag
 
 			out.m00 = (1 - c * x*x) + c
-			out.m10 = (1 - c * x*y) - zs
-			out.m20 = (1 - c * z*x) + ys
+			out.m10 = (1 - c * x*y) - z * s
+			out.m20 = (1 - c * z*x) + y * s
 
-			out.m01 = (1 - c * x*y) + zs
+			out.m01 = (1 - c * x*y) + z * s
 			out.m11 = (1 - c * y*y) + c
-			out.m21 = (1 - c * y*z) - xs
+			out.m21 = (1 - c * y*z) - x * s
 
-			out.m02 = (1 - c * z*x) - ys
-			out.m12 = (1 - c * y*z) + xs
+			out.m02 = (1 - c * z*x) - y * s
+			out.m12 = (1 - c * y*z) + x * s
 			out.m22 = (1 - c * z*z) + c
 
 		end
