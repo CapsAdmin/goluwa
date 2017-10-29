@@ -536,9 +536,10 @@ end
 					local h = (self.Size.y)/2
 
 					self.Matrix:Translate(w, h, 0)
-						self.Matrix:SetRotation(Quat():SetAngles(Ang3(0,self.Angle,0)))
+						self.Matrix:Rotate(self.Angle, 0, 0, 1)
 					self.Matrix:Translate(-w, -h, 0)
 				end
+
 
 				if not self.DrawPositionOffset:IsZero() then
 					self.Matrix:Translate(self.DrawPositionOffset.x, self.DrawPositionOffset.y, 0)
