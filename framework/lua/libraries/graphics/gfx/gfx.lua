@@ -8,13 +8,17 @@ function gfx.Initialize()
 	gfx.ninepatch_poly = gfx.CreatePolygon2D(9 * 6)
 	gfx.ninepatch_poly.vertex_buffer:SetDrawHint("dynamic")
 
-	local tex = render.CreateBlankTexture(render.GetScreenSize())
+	local tex = render.CreateBlankTexture(Vec2() + 1024)
 	tex:SetWrapS("mirrored_repeat")
 	tex:SetWrapT("mirrored_repeat")
+	tex:SetAnisotropy(32)
+	tex:SetMipMapLevels(32)
+	tex:SetMinFilter("nearest")
+	--tex:SetMagFilter("linear")
 	tex:Shade([[
 		// http://www.geeks3d.com/20130705/shader-library-circle-disc-fake-sphere-in-glsl-opengl-glslhacker/3/
 		float disc_radius = 1;
-		float border_size = 0.0021;
+		float border_size = 0.0001;
 		vec2 uv2 = vec2(uv.x, -uv.y + 1);
 		float dist = sqrt(dot(uv2, uv2));
 		float t = smoothstep(disc_radius + border_size, disc_radius - border_size, dist);
