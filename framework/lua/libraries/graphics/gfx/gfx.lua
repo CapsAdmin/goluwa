@@ -41,6 +41,31 @@ function gfx.DrawFilledCircle(x, y, sx, sy)
 	render2d.DrawRect(x, y, sx, sy, math.pi)
 	render2d.DrawRect(x, y, sx, sy, math.pi/2)
 	render2d.DrawRect(x, y, sx, sy, -math.pi/2)
+function gfx.DrawRoundedRect(x, y, w, h, amt)
+
+	amt = amt or 16
+
+	if amt > w/2 then amt = w/2 end
+	if amt > h/2 then amt = h/2 end
+
+	amt = math.ceil(amt)
+
+	render2d.PushTexture(render.GetWhiteTexture())
+
+	render2d.DrawRect(x + amt, y + amt, w - amt * 2, h - amt * 2)
+
+	render2d.DrawRect(x + amt, y, w - amt * 2, amt)
+
+	render2d.DrawRect(x + amt, y + h - amt, w - amt * 2, amt)
+	render2d.DrawRect(w - amt,amt,amt,h - amt *2)
+	render2d.DrawRect(x,amt,amt,h - amt *2)
+	render2d.PopTexture()
+
+	render2d.PushTexture(gfx.quadrant_circle_texture)
+	render2d.DrawRect(x+w - amt, y+h - amt, amt, amt)
+	render2d.DrawRect(x + amt, y+h - amt, amt, amt, math.pi/2)
+	render2d.DrawRect(x + amt, y + amt, amt, amt, math.pi)
+	render2d.DrawRect(x + w - amt, y + amt, amt, amt, -math.pi/2)
 	render2d.PopTexture()
 end
 
