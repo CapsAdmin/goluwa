@@ -95,8 +95,12 @@ local function type_of_attribute(var)
 
 	t = type_translate[t] or t
 
-	if typex(var) == "texture" and var.StorageType == "cube_map" then
-		t = "samplerCube"
+	if typex(var) == "texture" then
+		if var.StorageType == "cube_map" then
+			t = "samplerCube"
+		elseif var.StorageType == "2d_multisample" then
+			t = "sampler2DMS"
+		end
 	end
 
 	return t, def, get
