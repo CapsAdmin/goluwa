@@ -39,8 +39,12 @@ function gfx.DrawFilledCircle(x, y, sx, sy)
 	render2d.PushTexture(gfx.quadrant_circle_texture)
 	render2d.DrawRect(x, y, sx, sy)
 	render2d.DrawRect(x, y, sx, sy, math.pi)
-	render2d.DrawRect(x, y, sx, sy, math.pi/2)
-	render2d.DrawRect(x, y, sx, sy, -math.pi/2)
+	render2d.DrawRect(x, y, sy, sx, math.pi/2)
+	render2d.DrawRect(x, y, sy, sx, -math.pi/2)
+	render2d.PopTexture()
+end
+
+
 function gfx.DrawRoundedRect(x, y, w, h, amt)
 
 	amt = amt or 16
