@@ -287,6 +287,15 @@ function META:WriteThese(str)
 	update_drawbuffers(self)
 end
 
+function META:CheckStatus()
+	local ret = self.gl_fb:CheckStatus(self.enum_bind_mode)
+	if ret == gl.e.GL_FRAMEBUFFER_COMPLETE then
+		return true
+	end
+
+	return false, ret
+end
+
 function META:SaveDrawBuffers()
 	self.old_draw_buffers = self.draw_buffers
 	self.old_draw_buffers_size = self.draw_buffers_size
