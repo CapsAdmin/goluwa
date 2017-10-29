@@ -368,7 +368,7 @@ function META:ClearTexture(i, r,g,b,a)
 	self:RestoreDrawBuffers()
 end
 
-function META.Blit(a, b, a_rect, b_rect)
+function META.Blit(a, b, a_rect, b_rect, method)
 	a_rect = a_rect or Rect(0, 0, a.Size.x, a.Size.y)
 	b_rect = b_rect or Rect(0, 0, b.Size.x, b.Size.y)
 	a.gl_fb:Blit(
@@ -376,7 +376,7 @@ function META.Blit(a, b, a_rect, b_rect)
 		a_rect.x, a_rect.y, a_rect.w, a_rect.h,
 		b_rect.x, b_rect.y, b_rect.w, b_rect.h,
 		gl.e.GL_COLOR_BUFFER_BIT,
-		"GL_NEAREST"
+		method or "GL_NEAREST"
 	)
 end
 
