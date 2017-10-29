@@ -529,6 +529,7 @@ if not lol then
 				self.Parent.Matrix:Multiply(self.Matrix, self.temp_matrix)
 				self.Matrix, self.temp_matrix = self.temp_matrix, self.Matrix
 end
+
 				self.Matrix:Translate(math.ceil(self.Position.x), math.ceil(self.Position.y), 0)
 
 				if self.Angle ~= 0 then
@@ -546,7 +547,19 @@ end
 				end
 
 				if self.DrawScaleOffset.x ~= 1 or self.DrawScaleOffset.y ~= 1 then
+					local w,h
+					if self.DrawScaleCenter then
+						w = (self.Size.x)/2
+						h = (self.Size.y)/2
+
+						self.Matrix:Translate(w, h, 0)
+					end
+
 					self.Matrix:Scale(self.DrawScaleOffset.x, self.DrawScaleOffset.y, 1)
+
+					if w then
+						self.Matrix:Translate(-w, -h, 0)
+					end
 				end
 
 				if not self.DrawSizeOffset:IsZero() or not self.DrawAngleOffset:IsZero() then
