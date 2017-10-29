@@ -1295,6 +1295,8 @@ do -- animations
 						v = from * v
 					elseif operator == "/" then
 						v = from / v
+					elseif operator == "=" then
+
 					end
 				end
 
