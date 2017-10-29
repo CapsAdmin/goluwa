@@ -300,6 +300,8 @@ do -- drawing
 
 		local no_draw = self:HasParent() and self.Parent.draw_no_draw
 
+		self:CalcResizing()
+
 		self:InvalidateMatrix()
 		self:RebuildMatrix()
 
@@ -312,7 +314,6 @@ do -- drawing
 		end
 
 		self:CalcAnimations()
-		self:CalcResizing()
 		self:CalcLayout()
 
 		if self.CachedRendering and not gui.debug then
