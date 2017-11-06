@@ -870,12 +870,13 @@ do -- scrolling
 	end
 
 	function META:SetScroll(vec)
+		self:Layout(true)
+
 		start_scroll(self, vec)
 
 		local size = self:GetSizeOfChildren()
 
 		self.Scroll = vec:GetClamped(Vec2(0), size - self.Size)
-
 		if size.x < self.Size.x then self.Scroll.x = 0 end
 		if size.y < self.Size.y then self.Scroll.y = 0 end
 
@@ -888,6 +889,8 @@ do -- scrolling
 	end
 
 	function META:SetScrollFraction(frac)
+		self:Layout(true)
+
 		local size = self:GetSizeOfChildren()
 
 		start_scroll(self, size)
@@ -1984,10 +1987,22 @@ do -- layout
 		if self.in_layout then return end
 		if now and (self.LayoutWhenInvisible or not self.draw_no_draw) then
 
+			if self.Scrollable then
+				self.in_layout = true
+				self:SetScrollFraction(self:GetScrollFraction())
+				self.in_layout = false
+			end
+
 			self:DoLayout()
 
-			for _, v in ipairs(self:GetChildren()) do
-				v.layout_me = true
+			if now then
+				for _, v in ipairs(self:GetChildren()) do
+					v:Layout(true)
+				end
+			else
+				for _, v in ipairs(self:GetChildren()) do
+					v.layout_me = true
+				end
 			end
 
 			self.updated_layout = true
