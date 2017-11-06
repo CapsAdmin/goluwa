@@ -32,9 +32,23 @@ function META:Initialize()
 	label:SetIgnoreMouse(true)
 
 	self:SetEditable(true)
+	self:SetSmoothScroll(0)
 
-	label.OnTextChanged = function(_, ...) self:OnTextChanged(...) end
-	label.OnEnter = function(_, ...) self:OnEnter(...) if not self.Multiline then return false end end
+	label.OnTextChanged = function(_, ...)
+		self:OnTextChanged(...)
+
+
+		local cpos = self:GetPixelCaretPosition()
+		local scroll = cpos - self.Size + Vec2(self.label.Padding:GetRight(), self.label.Padding:GetBottom()) + Vec2(self.label.Padding:GetLeft(), self.label.Padding:GetTop())
+
+		self:SetScroll(scroll)
+	end
+	label.OnEnter = function(_, ...)
+		self:OnEnter(...)
+		if not self.Multiline then
+			return false
+		end
+	end
 
 	self:SetCursor("ibeam")
 	self:SizeToText()
@@ -60,11 +74,16 @@ function META:OnStyleChanged(skin)
 	self:SetTextColor(skin.text_edit_color:Copy())
 	self.label:SetTextColor(skin.text_edit_color:Copy())
 	self:SetFont(skin.default_font)
+	--self:SetScrollable(true)
 
 	if self.label and self.label.markup then
 		self.label.markup:SetCaretColor(self.CaretColor)
 		self.label.markup:SetSelectionColor(self.SelectionColor)
 	end
+end
+
+function META:OnLayout(S)
+	self.label:SetPadding(Rect() + S)
 end
 
 function META:SetCaretPosition(pos)
@@ -73,6 +92,16 @@ end
 
 function META:GetCaretPosition()
 	return Vec2(self.label.markup:GetCaretPosition())
+end
+
+function META:GetPixelCaretPosition()
+	local data = self.label.markup:CaretFromPosition(self:GetCaretPosition():Unpack())
+	if data then
+		if data.i == #self.label.markup.chars then
+			return Vec2(data.char.data.chunk.x, data.char.data.chunk.y - data.char.data.chunk.real_h)
+		end
+		return Vec2(data.char.data.x, data.char.data.top)
+	end
 end
 
 function META:SetCaretSubPosition(pos)
@@ -131,3 +160,11 @@ function META:OnEnter() end
 function META:OnTextChanged() end
 
 gui.RegisterPanel(META)
+
+if RELOAD then
+	local pnl = gui.CreatePanel(META.ClassName, nil, "lol")
+	pnl:SetPosition(Vec2() + 50)
+	pnl:SetMultiline(true)
+	pnl:SetSize(Vec2(50, 50))
+	pnl:RequestFocus()
+end
