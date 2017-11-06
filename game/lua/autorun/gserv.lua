@@ -597,7 +597,7 @@ do
 	local function fastdl(from, to)
 		vfs.CreateFolders("os", to:match("(.+/)"))
 		os.executeasync("ln " .. from .. " " .. to .. " 2>/dev/null")
-		os.executeasync("bzip2 -c " .. from .. " > " .. to .. ".bz2" .. " 2>/dev/null")
+		os.executeasync("bzip2 --best -c " .. from .. " > " .. to .. ".bz2" .. " 2>/dev/null")
 	end
 
 	local function start_listening(id)
