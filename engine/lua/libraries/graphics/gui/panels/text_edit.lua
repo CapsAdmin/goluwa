@@ -6,7 +6,7 @@ META:GetSet("SelectionColor")
 META:GetSet("Editable", true)
 META:GetSet("CaretPosition", Vec2(0, 0))
 META:GetSet("CaretSubPosition", 0)
-META:GetSet("Multiline", true)
+META:GetSet("Multiline", false)
 
 META:GetSetDelegate("Text", "", "label")
 META:GetSetDelegate("ParseTags", false, "label")
@@ -38,6 +38,7 @@ function META:Initialize()
 
 	self:SetCursor("ibeam")
 	self:SizeToText()
+	self:SetMultiline(self.Multiline)
 end
 
 function META:SetMultiline(b)
