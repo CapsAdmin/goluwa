@@ -144,7 +144,7 @@ function META:OnCursorPosition(x, y)
 end
 
 function META:OnFileDrop(paths)
-	print(paths, "dropped!")
+
 end
 
 function META:OnCharInput(str)
@@ -332,8 +332,6 @@ function window.CreateWindow(width, height, title, flags)
 	end
 
 	local function call(self, name, ...)
-		if not self then print(name, ...) return end
-
 		if not event_name_translate[name] then
 			event_name_translate[name] = name:gsub("^On", "Window")
 		end
@@ -475,8 +473,9 @@ function window.CreateWindow(width, height, title, flags)
 					call(window, "OnCursorPosition", event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, event.motion.state, event.motion.which)
 				end
 			elseif event.type == sdl.e.MOUSEBUTTONDOWN or event.type == sdl.e.MOUSEBUTTONUP then
-				local window = window.windowobjects[event.button.windowID]
+				local window = window.windowobjects[event.button.windowID] or sdl.last_window
 				call(window, "OnMouseInput", mbutton_translate[event.button.button], event.type == sdl.e.MOUSEBUTTONDOWN, event.button.x, event.button.y)
+				sdl.last_window = window
 			elseif event.type == sdl.e.MOUSEWHEEL then
 				local window = window.windowobjects[event.button.windowID]
 				call(window, "OnMouseScroll", event.wheel.x, event.wheel.y, event.wheel.which)
