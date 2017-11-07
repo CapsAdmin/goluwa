@@ -1856,6 +1856,38 @@ do -- layout
 		return hit_pos, found and found[1] and found[1].child
 	end
 
+	local tr_self = {
+		layout_children = "LayoutChildren",
+	}
+	local tr_child = {
+		collide = "Collide",
+		size_to_children_width = "SizeToChildrenWidth",
+		size_to_children_height = "SizeToChildrenHeight",
+		size_to_children = "SizeToChildren",
+		fill = "Fill",
+		fill_x = "CenterFillX",
+		fill_y = "CenterFillY",
+		center = "Center",
+		center_left = "CenterLeft",
+		center_right = "CenterRight",
+		center_simple = "CenterSimple",
+		center_x = "CenterX",
+		center_x_simple = "CenterXSimple",
+		center_y_simple = "CenterYSimple",
+		center_x_frame = ":",
+		center_y = "CenterY",
+		down = "MoveUp",
+		up = "MoveUp",
+		top = "MoveUp",
+		left = "MoveLeft",
+		bottom = "MoveDown",
+		right = "MoveRight",
+		gmod_left = "GmodLeft",
+		gmod_right = "GmodLeft",
+		gmod_top = "GmodTop",
+		gmod_bottom = "GmodBottom",
+	}
+
 	function META:ExecuteLayoutCommands()
 	--	if self:HasParent() then self = self.Parent end
 
@@ -1875,77 +1907,12 @@ do -- layout
 		for _, child in ipairs(self:GetChildren()) do
 			if child.layout_commands then
 				for _, cmd in ipairs(child.layout_commands) do
-					if cmd == "layout_children" then
-						for _, child in ipairs(self:GetChildren()) do
-							child:Layout(true)
-						end
-					elseif cmd == "collide" then
-						child:Collide()
-					elseif cmd == "size_to_children_width" then
-						child:SizeToChildrenWidth()
-					elseif cmd == "size_to_children_height" then
-						child:SizeToChildrenHeight()
-					elseif cmd == "size_to_children" then
-						child:SizeToChildren()
-					elseif cmd == "fill" then
-						child:MoveUp()
-						child:MoveLeft()
-						child:FillX()
-						child:FillY()
-					elseif cmd == "fill_x" then
-						child:CenterXSimple()
-						child:FillX()
-					elseif cmd == "fill_y" then
-						child:CenterYSimple()
-						child:FillY()
-					elseif cmd == "center" then
-						child:Center()
-					elseif cmd == "center_left" then
-						child:MoveLeft()
-						child:CenterYSimple()
-					elseif cmd == "center_right" then
-						child:MoveRight()
-						child:CenterYSimple()
-					elseif cmd == "center_simple" then
-						child:CenterSimple()
-					elseif cmd == "center_x" then
-						child:CenterX()
-					elseif cmd == "center_x_simple" then
-						child:CenterXSimple()
-					elseif cmd == "center_y_simple" then
-						child:CenterYSimple()
-					elseif cmd == "center_x_frame" then
-						if child:CenterXFrame() then break end
-					elseif cmd == "center_y" then
-						child:CenterY()
-					elseif cmd == "top" or cmd == "up" then
-						child:MoveUp()
-					elseif cmd == "left" then
-						child:MoveLeft()
-					elseif cmd == "bottom" or cmd == "down" then
-						child:MoveDown()
-					elseif cmd == "right" then
-						child:MoveRight()
-					elseif cmd == "gmod_left" then
-						child:CenterYSimple()
-						child:MoveLeft()
-						child:FillY()
-						child:NoCollide("left")
-					elseif cmd == "gmod_right" then
-						child:CenterYSimple()
-						child:MoveRight()
-						child:FillY()
-						child:NoCollide("right")
-					elseif cmd == "gmod_top" then
-						child:CenterXSimple()
-						child:MoveUp()
-						child:FillX()
-						child:NoCollide("up")
-					elseif cmd == "gmod_bottom" then
-						child:CenterXSimple()
-						child:MoveDown()
-						--child:FillX()
-						child:NoCollide("down")
+					if tr_child[cmd] then
+						child[tr_child[cmd]](child)
+					elseif tr_self[cmd] then
+						self[tr_self[cmd]](self)
+					elseif type(cmd) == "function" then
+						cmd(child, self)
 					elseif typex(cmd) == "vec2" then
 						child:SetSize(cmd:Copy())
 					end
@@ -2082,6 +2049,67 @@ do -- layout
 			else
 				self.nocollide = true
 			end
+		end
+
+		function META:LayoutChildren()
+			for _, child in ipairs(self:GetChildren()) do
+				child:Layout(true)
+			end
+		end
+
+		function META:Fill()
+			self:MoveUp()
+			self:MoveLeft()
+			self:FillX()
+			self:FillY()
+		end
+
+		function META:CenterFillX()
+			self:CenterXSimple()
+			self:FillX()
+		end
+
+		function META:CenterFillY()
+			self:CenterYSimple()
+			self:FillY()
+		end
+
+		function META:CenterLeft()
+			self:MoveLeft()
+			self:CenterYSimple()
+		end
+
+		function META:CenterRight()
+			self:MoveRight()
+			self:CenterYSimple()
+		end
+
+		function META:GmodLeft()
+			self:CenterYSimple()
+			self:MoveLeft()
+			self:FillY()
+			self:NoCollide("left")
+		end
+
+		function META:GmodLeft()
+			self:CenterYSimple()
+			self:MoveRight()
+			self:FillY()
+			self:NoCollide("right")
+		end
+
+		function META:GmodTop()
+			self:CenterXSimple()
+			self:MoveUp()
+			self:FillX()
+			self:NoCollide("up")
+		end
+
+		function META:GmodBottom()
+			self:CenterXSimple()
+			self:MoveDown()
+			--self:FillX()
+			self:NoCollide("down")
 		end
 
 		function META:FillX(percent)
