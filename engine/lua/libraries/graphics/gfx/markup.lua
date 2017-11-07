@@ -2670,6 +2670,10 @@ do -- input
 			end
 
 			self:AdvanceCaret(x, y)
+
+			if (x ~= 0 or y ~= 0) and self.OnAdvanceCaret then
+				self:OnAdvanceCaret(x, y)
+			end
 		end
 
 		if is_caret_move[key] then

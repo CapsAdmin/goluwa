@@ -37,12 +37,9 @@ function META:Initialize()
 	label.OnTextChanged = function(_, ...)
 		self:OnTextChanged(...)
 
-
-		local cpos = self:GetPixelCaretPosition()
-		local scroll = cpos - self.Size + Vec2(self.label.Padding:GetRight(), self.label.Padding:GetBottom()) + Vec2(self.label.Padding:GetLeft(), self.label.Padding:GetTop())
-
-		self:SetScroll(scroll)
+		self:ScrollToCaret()
 	end
+	label.markup.OnAdvanceCaret = function() self:ScrollToCaret() end
 	label.OnEnter = function(_, ...)
 		self:OnEnter(...)
 		if not self.Multiline then
@@ -53,6 +50,13 @@ function META:Initialize()
 	self:SetCursor("ibeam")
 	self:SizeToText()
 	self:SetMultiline(self.Multiline)
+end
+
+function META:ScrollToCaret()
+	local cpos = self:GetPixelCaretPosition()
+	local scroll = cpos - self.Size + Vec2(self.label.Padding:GetRight(), self.label.Padding:GetBottom()) + Vec2(self.label.Padding:GetLeft(), self.label.Padding:GetTop())
+
+	self:SetScroll(scroll)
 end
 
 function META:SetMultiline(b)
