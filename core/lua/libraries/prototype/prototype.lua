@@ -475,21 +475,30 @@ function prototype.UpdateObjects(meta)
 	if not meta then return end
 
 	for _, obj in pairs(prototype.GetCreated()) do
+		local tbl
+
 		if obj.Type == meta.Type and obj.ClassName == meta.ClassName then
-			for k, v in pairs(meta) do
-				-- update entity functions only
-				-- updating variables might mess things up
-				if type(v) == "function" then
-					obj[k] = v
-				end
-			end
+			tbl = meta
 		elseif obj.Type == meta.Type and obj.TypeBase == meta.ClassName then
-			local meta = prototype.GetRegistered(obj.Type, obj.ClassName)
-			for k, v in pairs(meta) do
-				-- update entity functions only
-				-- updating variables might mess things up
-				if type(v) == "function" then
-					obj[k] = v
+			tbl = prototype.GetRegistered(obj.Type, obj.ClassName)
+		end
+
+		if tbl then
+			if RELOAD then
+				for k, v in pairs(tbl) do
+					if type(v) == "function" then
+						--if not k:startswith("On") then
+							obj[k] = v
+						--end
+					elseif obj[k] == nil then
+						obj[k] = v
+					end
+				end
+			else
+				for k, v in pairs(tbl) do
+					if type(v) == "function" then
+						obj[k] = v
+					end
 				end
 			end
 		end
