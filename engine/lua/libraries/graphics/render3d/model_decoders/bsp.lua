@@ -652,7 +652,7 @@ function steam.LoadMap(path)
 
 		for _, mesh in ipairs(models) do
 			mesh:BuildBoundingBox()
-			mesh:Upload(true)
+			mesh:Upload()
 			tasks.ReportProgress("creating meshes", #models)
 			tasks.Wait()
 		end
@@ -709,12 +709,6 @@ function steam.LoadMap(path)
 
 			tasks.Wait()
 			tasks.ReportProgress("building physics meshes", count)
-		end
-	end
-
-	if GRAPHICS then
-		for _, mesh in ipairs(models) do
-			mesh:UnreferenceVertices()
 		end
 	end
 
