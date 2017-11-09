@@ -70,10 +70,14 @@ steam.unused_vmt_properties = steam.unused_vmt_properties or {}
 
 function META:LoadVMT(path)
 	self:SetName(path)
+	self.vmt = {}
 
 	steam.LoadVMT(
 		path,
 		function(key, val, full_path)
+			self.vmt.fullpath = full_path
+			self.vmt[key] = val
+
 			if property_translate[key] then
 				local func_name, convert = unpack(property_translate[key])
 				if convert then
