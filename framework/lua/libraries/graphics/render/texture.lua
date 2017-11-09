@@ -294,7 +294,7 @@ function META:CreateBuffer(mip_map_level, format_override, use_ffi_new)
 
 	local size = self:GetMipSize(mip_map_level)
 
-	local format = render.GetTextureFormatInfo(self.InternalFormat or format_override)
+	local format = render.GetTextureFormatInfo(format_override or self.InternalFormat)
 	local byte_size = size.x * size.y * size.z * ffi.sizeof(format.ctype)
 
 	if use_ffi_new then
