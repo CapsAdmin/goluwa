@@ -731,7 +731,7 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 						local promptText = getPromptText()
 						setPromptText(getNextHistoryLine(false, promptText))
 						-- move to the beginning of the updated prompt
-						console:GotoPos(console:PositionFromLine(getPromptLine()))
+						--console:GotoPos(console:PositionFromLine(getPromptLine()))
 					end
 					return
 				elseif key == wx.WXK_DOWN or key == wx.WXK_NUMPAD_DOWN then
@@ -775,7 +775,7 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 					return
 				elseif key == wx.WXK_BACK or key == wx.WXK_LEFT or key == wx.WXK_NUMPAD_LEFT then
 					if (key == wx.WXK_BACK or console:LineFromPosition(console:GetCurrentPos()) >= getPromptLine())
-					and not caretOnPromptLine(true) then return end
+					and not caretOnPromptLine(true) then if key == wx.WXK_BACK then setPromptText("") end return end
 				elseif key == wx.WXK_DELETE or key == wx.WXK_NUMPAD_DELETE then
 					if not caretOnPromptLine()
 					or console:LineFromPosition(console:GetSelectionStart()) < getPromptLine() then
