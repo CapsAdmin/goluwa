@@ -654,7 +654,7 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 			history_i = history_i + 1
 		end
 
-		return command_history[history_i%#command_history + 1]
+		return command_history[history_i%#command_history + 1] or ""
 	end
 
 	local function concat(sep, ...)
