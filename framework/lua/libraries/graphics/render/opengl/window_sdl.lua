@@ -13,33 +13,76 @@ function render.PreWindowSetup(flags)
 	sdl.GL_SetAttribute(sdl.e.GL_ALPHA_SIZE, 1)
 end
 
+local attempts = {
+	{
+		version = 4.6,
+		profile_mask = "core",
+	},
+	{
+		version = 4.5,
+		profile_mask = "core",
+	},
+	{
+		version = 4.0,
+		profile_mask = "core",
+	},
+	{
+		version = 3.3,
+		profile_mask = "core",
+	},
+	{
+		version = 3.2,
+		profile_mask = "core",
+	},
+	{
+		profile_mask = "core",
+	},
+}
+
 function render.PostWindowSetup(sdl_wnd)
 	if not system.gl_context then
-		sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_PROFILE_MASK, sdl.e.GL_CONTEXT_PROFILE_CORE)
 
-		if DEBUG_OPENGL then
-			sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_FLAGS, sdl.e.GL_CONTEXT_DEBUG_FLAG)
+		local context
+		local errors = ""
+
+		for _, attempt in ipairs(attempts) do
+			sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_PROFILE_MASK, sdl.e["GL_CONTEXT_PROFILE_" .. attempt.profile_mask:upper()])
+
+			if DEBUG_OPENGL then
+				sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_FLAGS, sdl.e.GL_CONTEXT_DEBUG_FLAG)
+			end
+
+			if attempt.version then
+				local major, minor = math.modf(attempt.version)
+				sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_MAJOR_VERSION, major)
+				sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_MINOR_VERSION, minor * 10)
+			end
+
+			context = sdl.GL_CreateContext(sdl_wnd)
+
+			if context ~= nil then
+				llog("successfully requested OpenGL ", attempt.version or "??", " ", attempt.profile_mask)
+				break
+			else
+				local err = ffi.string(sdl.GetError())
+				llog("could not requested OpenGL ", attempt.version or "??", " ", attempt.profile_mask, ": ", err)
+				errors = errors .. err .. "\n"
+			end
 		end
-		--sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_PROFILE_MASK, sdl.e.GL_CONTEXT_PROFILE_COMPATIBILITY)
-
-		local context = sdl.GL_CreateContext(sdl_wnd)
 
 		if context == nil then
-			error("sdl.GL_CreateContext failed: " .. ffi.string(sdl.GetError()), 2)
+			error("sdl.GL_CreateContext failed: " .. errors, 2)
 		end
+
+		local gl = require("opengl")
+		gl.GetProcAddress = sdl.GL_GetProcAddress
+		gl.Initialize()
 
 		sdl.GL_MakeCurrent(sdl_wnd, context)
 
 		if not render.IsExtensionSupported("GL_ARB_direct_state_access") and not render.IsExtensionSupported("GL_EXT_direct_state_access") then
 			_G.GL_ARB_direct_state_access = false
 		end
-
-		local gl = require("opengl")
-
-		-- this needs to be initialized once after a context has been created
-		gl.GetProcAddress = sdl.GL_GetProcAddress
-
-		gl.Initialize()
 
 		if NULL_OPENGL then
 			for k,v in pairs(gl) do
