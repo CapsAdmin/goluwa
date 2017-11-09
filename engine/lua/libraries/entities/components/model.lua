@@ -248,6 +248,78 @@ if GRAPHICS then
 			end
 		end
 	end
+
+	function META:ToOBJ()
+		local out = {}
+		local UsedMaterials = {}
+		local SubmeshCount = 0
+		local Count = 0
+
+		local function export(SubModel)
+			local Mesh = SubModel.vertex_buffer
+			for I = 0, Mesh.indices_length - 1, 3 do
+				Count = Count + 1
+				local Index = Mesh.Indices[I]
+				local Vertex = string.format("v %.6f %.6f %.6f\n", Mesh.Vertices[Index].pos[0], Mesh.Vertices[Index].pos[1], Mesh.Vertices[Index].pos[2])
+				Vertex = Vertex .. string.format("vn %.6f %.6f %.6f\n", Mesh.Vertices[Index].normal[0], Mesh.Vertices[Index].normal[1], Mesh.Vertices[Index].normal[2])
+				--Make vertex coordinate Y up.
+				Vertex = Vertex .. string.format("vt %.6f %.6f\n", Mesh.Vertices[Index].uv[0], 1.0 - Mesh.Vertices[Index].uv[1])
+				Vertex = Vertex .. string.format("vs %i %i\n", SubmeshCount, SubmeshCount)
+
+				Count = Count + 1
+				Index = Mesh.Indices[I + 1]
+				Vertex = Vertex .. string.format("v %.6f %.6f %.6f\n", Mesh.Vertices[Index].pos[0], Mesh.Vertices[Index].pos[1], Mesh.Vertices[Index].pos[2])
+				Vertex = Vertex .. string.format("vn %.6f %.6f %.6f\n", Mesh.Vertices[Index].normal[0], Mesh.Vertices[Index].normal[1], Mesh.Vertices[Index].normal[2])
+				--Make vertex coordinate Y up.
+				Vertex = Vertex .. string.format("vt %.6f %.6f\n", Mesh.Vertices[Index].uv[0], 1.0 - Mesh.Vertices[Index].uv[1])
+				Vertex = Vertex .. string.format("vs %i %i\n", SubmeshCount, SubmeshCount)
+
+				Count = Count + 1
+				Index = Mesh.Indices[I + 2]
+				Vertex = Vertex .. string.format("v %.6f %.6f %.6f\n", Mesh.Vertices[Index].pos[0], Mesh.Vertices[Index].pos[1], Mesh.Vertices[Index].pos[2])
+				Vertex = Vertex .. string.format("vn %.6f %.6f %.6f\n", Mesh.Vertices[Index].normal[0], Mesh.Vertices[Index].normal[1], Mesh.Vertices[Index].normal[2])
+				--Make vertex coordinate Y up.
+				Vertex = Vertex .. string.format("vt %.6f %.6f\n", Mesh.Vertices[Index].uv[0], 1.0 - Mesh.Vertices[Index].uv[1])
+				Vertex = Vertex .. string.format("vs %i %i\n", SubmeshCount, SubmeshCount)
+
+				Vertex = Vertex .. string.format("f %i/%i/%i %i/%i/%i %i/%i/%i\n", Count - 2, Count - 2, Count - 2, Count - 1, Count - 1, Count - 1, Count, Count, Count)
+
+				table.insert(out, Vertex)
+			end
+		end
+
+		for _, SubModel in ipairs(self.sub_meshes) do
+
+			if SubModel.material.vmt then
+				local MaterialNameRaw = SubModel.material.vmt.fullpath
+				local MaterialName = SubModel.material.vmt.fullpath
+
+				if MaterialName:find("materials/") then
+					MaterialName = vfs.RemoveExtensionFromPath(MaterialName:sub(select(1, MaterialName:find("materials/"), #MaterialName)))
+				end
+
+				if not UsedMaterials[MaterialName] then
+					SubmeshCount = SubmeshCount + 1
+					UsedMaterials[MaterialName] = true
+
+					table.insert(out, "o " .. MaterialName .. "\n")
+
+					for _, SubModel in ipairs(self.sub_meshes) do
+						if SubModel.material.vmt and SubModel.material.vmt.fullpath == MaterialNameRaw then
+							export(SubModel)
+						end
+					end
+				end
+			else
+				SubmeshCount = SubmeshCount + 1
+				table.insert(out, "o error\n")
+				export(SubModel)
+			end
+
+		end
+
+		return table.concat(out)
+	end
 end
 
 META:RegisterComponent()
