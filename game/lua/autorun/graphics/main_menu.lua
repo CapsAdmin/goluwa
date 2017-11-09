@@ -248,7 +248,7 @@ function menu.CreateTopBar()
 		{L"load", function()
 			local frame = gui.CreatePanel("frame")
 			frame:SetSkin(bar:GetSkin())
-			frame:SetSize(Vec2(500, 400))
+			frame:SetSize(Vec2(500, 430))
 			frame:CenterSimple()
 			frame:SetTitle("load lua")
 
@@ -300,7 +300,7 @@ function menu.CreateTopBar()
 			local text_entry = area:CreatePanel("text_edit")
 			text_entry:SetPadding(Rect()+2)
 			text_entry:SetSize(Vec2() + 20)
-			text_entry:SetupLayout("top", "left", "fill_x")
+			text_entry:SetupLayout("top", "fill_x")
 
 			local filename_label = area:CreatePanel("text")
 			filename_label:SetPadding(Rect()+2)
@@ -319,17 +319,17 @@ function menu.CreateTopBar()
 				area:SetPadding(Rect()+2)
 				area:SetMargin(Rect(0,0,0,0))
 				area:SetWidth(100)
-				area:SetupLayout("left", "bottom", "fill_y", "size_to_children_width")
+				area:SetupLayout("center_y_simple", "left", "fill_y", "size_to_children_width")
 				area:SetNoDraw(true)
-
-				local choices = gui.CreateChoices({"long filename", "snes header name"}, 1, area, Rect() + 4)
-				choices:SetupLayout("top", "left")
 
 				local check = area:CreatePanel("checkbox_label")
 				check:SetPadding(Rect()+4)
 				check:SetText("show all extensions")
 				check:SizeToText()
-				check:SetupLayout("top", "bottom", "left")
+				check:SetupLayout("bottom", "left")
+
+				local choices = gui.CreateChoices({"long filename", "snes header name"}, 1, area, Rect() + 4)
+				choices:SetupLayout("bottom", "left")
 			end
 
 			local current_script
@@ -338,7 +338,7 @@ function menu.CreateTopBar()
 				local area = bottom:CreatePanel("base")
 				area:SetPadding(Rect()+2)
 				area:SetMargin(Rect(10,0,10,0))
-				area:SetupLayout("left", "top", "fill")
+				area:SetupLayout("center_y_simple", "left", "fill_y", "size_to_children_width")
 				area:SetNoDraw(true)
 
 				do
@@ -350,12 +350,19 @@ function menu.CreateTopBar()
 					left:SetNoDraw(true)
 
 					local choices = gui.CreateChoices({"PAL", "NTSC"}, 1, left, Rect() + 4)
-					choices:SetupLayout("bottom", "left")
+					choices:SetupLayout("center_x_simple", "bottom")
+
+					for _, choice in ipairs(choices:GetChildren()) do
+						if choice.checkbox then
+							choice.checkbox:SetActiveStyle("check")
+							choice.checkbox:SetInactiveStyle("uncheck")
+						end
+					end
 
 					local label = left:CreatePanel("text")
 					label:SetPadding(Rect()+2)
 					label:SetText("force")
-					label:SetupLayout("bottom", "left")
+					label:SetupLayout("center_x_simple", "bottom")
 				end
 
 				do
@@ -367,13 +374,20 @@ function menu.CreateTopBar()
 					right:SetNoDraw(true)
 
 					local choices = gui.CreateChoices({"hirom", "lorom"}, 1, right, Rect() + 4)
-					choices:SetupLayout("bottom", "left")
+					choices:SetupLayout("center_x_simple", "bottom")
+
+					for _, choice in ipairs(choices:GetChildren()) do
+						if choice.checkbox then
+							choice.checkbox:SetActiveStyle("check")
+							choice.checkbox:SetInactiveStyle("uncheck")
+						end
+					end
 
 					local label = right:CreatePanel("text_button")
 					label:SetText("load")
 					label:SetMargin(Rect()+5)
 					label:SizeToText()
-					label:SetupLayout("bottom", "left", "fill_x")
+					label:SetupLayout("center_x_simple", "bottom", "left", "fill_x")
 					label.OnPress = function()
 						if current_script then runfile(current_script) end
 					end

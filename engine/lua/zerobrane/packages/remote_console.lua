@@ -499,7 +499,7 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 	local MESSAGE_MARKER = StylesGetMarker("message")
 	local ANY_MARKER_VALUE = 2^25-1 -- marker numbers 0 to 24 have no pre-defined function
 
-	local config = ide.config.output
+	local config = ide.config.output or {}
 
 	out:SetFont(wx.wxFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL,
 	  wx.wxFONTWEIGHT_NORMAL, false, config.fontname or "",
