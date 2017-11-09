@@ -624,7 +624,7 @@ function render.CreateTexture(type)
 	return self
 end
 
-render.texture_path_cache = {}
+render.texture_path_cache = render.texture_path_cache or {}
 
 function render.CreateTextureFromPath(str)
 	if render.texture_path_cache[str] then
