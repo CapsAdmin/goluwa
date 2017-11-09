@@ -102,7 +102,8 @@ do -- buffer object
 	-- some of this was taken from (mainly reading and writing decimal numbers)
 	-- http://wowkits.googlecode.com/svn-history/r406/trunk/AddOns/AVR/ByteStream.lua
 
-	local META = prototype.CreateTemplate("packet_buffer")
+	local META = table.copy(prototype.GetRegistered("generic_buffer"))
+	META.ClassName = "packet_buffer"
 
 	function packet.CreateBuffer(val)
 		local self = META:CreateObject()
@@ -129,100 +130,15 @@ do -- buffer object
 		META:GenerateTypes()
 	end
 
-	-- byte
-	function META:WriteByte(byte)
-		table.insert(self.buffer, byte)
-		return self
+	function META:WriteNetString(str)
+		self:WriteShort(network.AddString(str))
 	end
 
-	function META:ReadByte()
-		local val = self.buffer[self.position]
-		self.position = math.min(self.position + 1, #self.buffer)
-		return val
+	function META:ReadNetString()
+		return network.IDToString(self:ReadShort())
 	end
 
-	-- this adds ReadLong, WriteShort, WriteFloat, WriteStructure, etc
-	runfile("lua/libraries/prototype/buffer_template.lua", META)
-
-	do -- generic
-		function META:GetBuffer()
-			return self.buffer
-		end
-
-		function META:GetSize()
-			return #self.buffer
-		end
-
-		function META:TheEnd()
-			return self:GetPosition() >= self:GetSize()
-		end
-
-		function META:Clear()
-			table.clear(self.buffer)
-			self.position = 0
-		end
-
-		function META:GetString()
-			local temp = {}
-
-			for _, v in ipairs(self.buffer) do
-				temp[#temp + 1] = string.char(v)
-			end
-
-			return table.concat(temp)
-		end
-
-		function META:SetPosition(pos)
-			self.position = math.clamp(pos, 1, self:GetSize())
-			return self:GetPosition()
-		end
-
-		function META:GetPosition()
-			return self.position
-		end
-
-		do -- push pop position
-			function META:PushPosition(pos)
-				self.stack = self.stack or {}
-
-				table.insert(self.stack, self:GetPosition())
-
-				self:SetPosition(pos)
-			end
-
-			function META:PopPosition()
-				self:SetPosition(table.remove(self.stack))
-			end
-		end
-
-		function META:Advance(i)
-			i = i or 1
-			self:SetPosition(self:GetPosition() + i)
-		end
-
-		META.__len = META.GetSize
-
-		function META:GetDebugString()
-			return self:GetString():readablehex()
-		end
-
-		function META:AddHeader(buffer)
-			for i, b in ipairs(buffer.buffer) do
-				table.insert(self.buffer, i, b)
-			end
-			return self
-		end
-
-		function META:WriteNetString(str)
-			self:WriteShort(network.AddString(str))
-		end
-
-		function META:ReadNetString()
-			return network.IDToString(self:ReadShort())
-		end
-	end
-
-	META:Register()
+	prototype.Register(META)
 end
 
 _G.Buffer = packet.CreateBuffer
