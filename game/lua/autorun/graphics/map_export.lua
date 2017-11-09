@@ -8,24 +8,6 @@ local BumpBasis = {
 
 local ffi = require("ffi")
 
-local Vertex = ffi.typeof([[
-	struct {
-		float position[3];
-		float color[3];
-		float texcoord[2];
-		float normal[3];
-		float tangent[3];
-	}
-]])
-local Vertices = ffi.typeof("$[?]", Vertex)
-
-local Pixel = ffi.typeof([[
-	struct {
-		uint8_t color[4];
-	}
-]])
-local Pixels = ffi.typeof("$[?]", Pixel)
-
 local function ConvertTextureToString(Material, Texture, VMT, StorableTable, Type)
 	local MergeMaterial = nil
 	--[[
@@ -50,7 +32,7 @@ local function ConvertTextureToString(Material, Texture, VMT, StorableTable, Typ
 	local Header = { 0, 0, IsGreyscale and 3 or 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, bit.band(Texture.width, 0xff), bit.band((bit.rshift(Texture.width, 8)), 0xff), bit.band(Texture.height, 0xff), bit.band((bit.rshift(Texture.height, 8)), 0xff), 8 * Channels, HasAlpha and 8 or 0 }
 	local StringHeader = ""
 
-	for Key, Char in ipairs(Header) do
+	for _, Char in ipairs(Header) do
 		StringHeader = StringHeader .. string.char(Char)
 	end
 
@@ -99,9 +81,9 @@ local function ConvertTextureToString(Material, Texture, VMT, StorableTable, Typ
 			if StorableTable.SSBump then
 				Normal_X, Normal_Y, Normal_Z = (Normal_X / 255), (Normal_Y / 255), (Normal_Z / 255)
 
-				Normal_X = math.max(math.min(BumpBasis[1][1] * Normal_X + BumpBasis[2][1] * Normal_Y + BumpBasis[3][1] * Normal_Z, 1.0), -1.0)
-				Normal_Y = math.max(math.min(BumpBasis[1][2] * Normal_X + BumpBasis[2][2] * Normal_Y + BumpBasis[3][2] * Normal_Z, 1.0), -1.0)
-				Normal_Z = math.max(math.min(BumpBasis[1][3] * Normal_X + BumpBasis[2][3] * Normal_Y + BumpBasis[3][3] * Normal_Z, 1.0), -1.0)
+				Normal_X = math.clamp(BumpBasis[1][1] * Normal_X + BumpBasis[2][1] * Normal_Y + BumpBasis[3][1] * Normal_Z, -1.0, 1.0)
+				Normal_Y = math.clamp(BumpBasis[1][2] * Normal_X + BumpBasis[2][2] * Normal_Y + BumpBasis[3][2] * Normal_Z, -1.0, 1.0)
+				Normal_Z = math.clamp(BumpBasis[1][3] * Normal_X + BumpBasis[2][3] * Normal_Y + BumpBasis[3][3] * Normal_Z, -1.0, 1.0)
 
 				local Length = ((Normal_X * Normal_X + Normal_Y * Normal_Y + Normal_Z * Normal_Z) ^ 0.5)
 
@@ -122,7 +104,7 @@ local function ConvertTextureToString(Material, Texture, VMT, StorableTable, Typ
 
 				Normal_X, Normal_Y, Normal_Z = Normal_X * 0.5 + 0.5, Normal_Y * 0.5 + 0.5, Normal_Z * 0.5 + 0.5
 
-				Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b = math.floor(Normal_X * 255 + 0.5), math.floor(Normal_Y * 255 + 0.5), math.floor(Normal_Z * 255 + 0.5)
+				Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b = math.round(Normal_X * 255), math.round(Normal_Y * 255), math.round(Normal_Z * 255)
 			else
 				if StorableTable.FlipYNormal then
 					Normal_Y = 255 - Normal_Y
@@ -175,7 +157,7 @@ local function ConvertTextureToString(Material, Texture, VMT, StorableTable, Typ
 
 							Color_R, Color_G, Color_B = math.lerp(Merge, Color_R2, Color_R), math.lerp(Merge, Color_G2, Color_G), math.lerp(Merge, Color_B2, Color_B)
 
-							Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b, Texture.buffer[I].a = math.floor(Color_R * 255 + 0.5), math.floor(Color_G * 255 + 0.5), math.floor(Color_B * 255 + 0.5), 255
+							Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b, Texture.buffer[I].a = math.round(Color_R * 255), math.round(Color_G * 255), math.round(Color_B * 255), 255
 						end
 					end
 				else
@@ -196,7 +178,7 @@ local function ConvertTextureToString(Material, Texture, VMT, StorableTable, Typ
 
 							Color_R, Color_G, Color_B = math.lerp(Merge, Color_R2, Color_R), math.lerp(Merge, Color_G2, Color_G), math.lerp(Merge, Color_B2, Color_B)
 
-							Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b = math.floor(Color_R * 255 + 0.5), math.floor(Color_G * 255 + 0.5), math.floor(Color_B * 255 + 0.5)
+							Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b = math.round(Color_R * 255), math.round(Color_G * 255), math.round(Color_B * 255)
 						end
 					end
 				else
@@ -208,7 +190,7 @@ local function ConvertTextureToString(Material, Texture, VMT, StorableTable, Typ
 		end
 	end
 
-	local SwapValue = 0
+	local SwapValue
 
 	if Channels >= 3 then
 		if not Texture.swapped then
@@ -253,7 +235,7 @@ local function ConvertReflectionMap(Texture, VMT, StorableTable, Type)
 	else
 		if #Texture.format == 4 then
 			for I = 0, ArraySize - 1 do
-				Buffer[I] = math.max(math.min((1 - (Texture.buffer[I].a / 255)) ^ 2, 1), 0) * 255
+				Buffer[I] = math.clamp((1 - (Texture.buffer[I].a / 255)) ^ 2, 0, 1) * 255
 				Texture.buffer[I].a = 255
 			end
 		else
