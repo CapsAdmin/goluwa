@@ -49,19 +49,25 @@ function CONTEXT:GetFileTree(path_info)
 		return false, "not a valid archive path"
 	end
 
-	if cache[archive_path] then
-		return cache[archive_path], relative, archive_path
+	never = true
+	local last_modified = vfs.GetLastModified(archive_path) or ""
+	never = false
+
+	local cache_key = archive_path .. last_modified
+
+	if cache[cache_key] then
+		return cache[cache_key], relative, archive_path
 	end
 
-	local cache_path = "os:data/archive_cache/" .. crypto.CRC32(archive_path)
+	local cache_path = "os:data/archive_cache/" .. crypto.CRC32(cache_key)
 	never = true
 	local tree_data, err, what = serializer.ReadFile("msgpack", cache_path)
 	never = false
 
 	if tree_data then
 		local tree = utility.CreateTree("/", tree_data)
-		cache[archive_path] = tree
-		return cache[archive_path], relative, archive_path
+		cache[cache_key] = tree
+		return cache[cache_key], relative, archive_path
 	end
 
 	never = true
@@ -82,7 +88,7 @@ function CONTEXT:GetFileTree(path_info)
 		return false, err
 	end
 
-	cache[archive_path] = tree
+	cache[cache_key] = tree
 
 	event.Delay(math.random(), function()
 		serializer.WriteFile("msgpack", cache_path, tree.tree)
