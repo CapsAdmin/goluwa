@@ -207,9 +207,26 @@ local function get_upload_format(size, reverse, integer, depth, stencil)
 end
 
 function render.GetTextureFormatInfo(format)
+	local reverse = false
+
+	if format:startswith("bgra") then
+		format = format:gsub("bgra", "rgba")
+		reverse = true
+	end
+
+	if format:startswith("bgr") then
+		format = format:gsub("bgr", "rgb")
+		reverse = true
+	end
+
+	if format:startswith("gr") then
+		format = format:gsub("gr", "rg")
+		reverse = true
+	end
+
 	local info = table.copy(texture_formats[format:lower()])
 
-	info.preferred_upload_format = get_upload_format(#info.bits, false, false, format:lower():find("depth", nil, true), format:lower():find("stencil", nil, true))
+	info.preferred_upload_format = get_upload_format(#info.bits, reverse, false, format:lower():find("depth", nil, true), format:lower():find("stencil", nil, true))
 	info.preferred_upload_type = info.number_type.friendly
 
 	return info
