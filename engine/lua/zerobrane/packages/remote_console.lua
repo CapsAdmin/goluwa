@@ -18,14 +18,23 @@ function PLUGIN:Setup()
 
 	function META:Update()
 		local res, msg = self.socket:connect("localhost", self.port)
+
 		if not self.connected and res or msg == "already connected" then
+			if not self.connected then
+				ide:Print("remote console: connected to localhost:", self.port)
+			end
 			self.connected = true
+		elseif msg ~= "timeout" and msg ~= "connection refused" then
+			ide:Print(msg)
 		end
 	end
 
 	function META:Send(str)
 		if self.connected then
 			self.socket:send(str)
+		else
+			ide:Print("remote console: cannot send '", str, "' because socket is not connected")
+			ide:Print(self.socket)
 		end
 	end
 
