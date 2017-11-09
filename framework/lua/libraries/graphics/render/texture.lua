@@ -529,7 +529,7 @@ function META:GetID()
 	error("nyi", 2)
 end
 
-function META:ToTGA()
+function META:ToTGA(pixel_callback)
 	local data = self:Download(1, "bgra8")
 
 	local buffer = utility.CreateBuffer()
@@ -545,6 +545,40 @@ function META:ToTGA()
 	buffer:WriteShort(data.height) -- height
 	buffer:WriteByte(data.channels * 8) -- bits per pixel
 	buffer:WriteByte(8) -- image descriptor
+
+	if pixel_callback then
+		local x = 0
+		local y = 0
+		local buffer = data.buffer
+
+		for i = 0, data.length do
+			if x >= data.width then
+				y = y + 1
+				x = 0
+			end
+
+			local r,g,b,a
+
+			if data.format == "bgra" then
+				b,g,r,a = pixel_callback(x, y, i, buffer[i].b, buffer[i].g, buffer[i].r, buffer[i].a)
+			elseif data.format == "rgba" then
+				r,g,b,a = pixel_callback(x, y, i, buffer[i].r, buffer[i].b, buffer[i].g, buffer[i].a)
+			elseif data.format == "bgr" then
+				b,g,r = pixel_callback(x, y, i, buffer[i].b, buffer[i].g, buffer[i].r)
+			elseif data.format == "rgb" then
+				r,g,b = pixel_callback(x, y, i, buffer[i].r, buffer[i].g, buffer[i].b)
+			elseif data.format == "red" then
+				r = pixel_callback(x, y, i, buffer[i].r)
+			end
+
+			if r then buffer[i].r = r end
+			if g then buffer[i].g = g end
+			if b then buffer[i].b = b end
+			if a then buffer[i].a = a end
+
+			x = x + 1
+		end
+	end
 
 	buffer:WriteString(ffi.string(data.buffer, data.size))
 

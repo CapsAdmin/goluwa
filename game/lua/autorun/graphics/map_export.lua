@@ -9,75 +9,8 @@ local BumpBasis = {
 local ffi = require("ffi")
 
 local function ConvertTextureToString(Material, Texture, VMT, StorableTable, Type)
-	local MergeMaterial = nil
-	--[[
-	if VMT.basetexture2 then
-		if vfs.Exists("materials/" .. VMT.basetexture2:lower() .. ".vmt") then
-			print("materials/" .. VMT.basetexture2:lower() .. ".vmt")
-			local Material = render.CreateMaterial("model")
-
-			steam.LoadMaterial("materials/" .. VMT.basetexture2:lower() .. ".vmt", Material)
-			MergeMaterial = Material
-		elseif vfs.Exists("materials/" .. VMT.basetexture2:lower() .. ".vtf") then
-			print("materials/" .. VMT.basetexture2:lower() .. ".vtf")
-		else
-			print("materials/" .. VMT.basetexture2:lower() .. " not found.")
-		end
-	end
-	]]
-
-	local Channels = #Texture.format
-	local IsGreyscale = Channels == 1
-	local HasAlpha = Channels == 4
-	local Header = { 0, 0, IsGreyscale and 3 or 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, bit.band(Texture.width, 0xff), bit.band((bit.rshift(Texture.width, 8)), 0xff), bit.band(Texture.height, 0xff), bit.band((bit.rshift(Texture.height, 8)), 0xff), 8 * Channels, HasAlpha and 8 or 0 }
-	local StringHeader = ""
-
-	for _, Char in ipairs(Header) do
-		StringHeader = StringHeader .. string.char(Char)
-	end
-
-	--if VMT then
-	--	for k, v in pairs(VMT) do
-	--		print(tostring(k), tostring(v))
-	--	end
-	--end
-
 	if Type == "Normal" then
-
-		--[[
-		local Average = 0
-
-		for I = 0, Texture.size / Channels do
-			if Texture.buffer[I].r > 127 - 16 and Texture.buffer[I].r < 127 + 16 and Texture.buffer[I].g > 127 - 16 and Texture.buffer[I].g < 127 + 16 and Texture.buffer[I].b > 255 - 16 then
-				Average = 0
-				print("ASSUMING")
-				break
-			end
-
-			local Normal_X, Normal_Y, Normal_Z = (Texture.buffer[I].r / 255), (Texture.buffer[I].g / 255), (Texture.buffer[I].b / 255)
-
-			local Length = ((Normal_X * Normal_X + Normal_Y * Normal_Y + Normal_Z * Normal_Z) ^ 0.5)
-
-			if Length > 0 then
-				Normal_X, Normal_Y, Normal_Z = Normal_X / Length, Normal_Y / Length, Normal_Z / Length
-			end
-
-			Normal_X, Normal_Y, Normal_Z = Normal_X * 0.5 + 0.5, Normal_Y * 0.5 + 0.5, Normal_Z * 0.5 + 0.5
-
-			Average = (Average + ((Absolute(Texture.buffer[I].r - Normal_X * 255) + Absolute(Texture.buffer[I].g - Normal_Y * 255) + Absolute(Texture.buffer[I].b - Normal_Z * 255)) / 3)) / 2
-		end
-
-		if Average > 86 then
-			IsSSBUMP = true
-			print("IS SSBUMP! Average: " .. Average)
-		end
-		]]
-
-		--print("SSBump: " .. tostring(StorableTable.SSBump) .. " FlipXNormal: " .. tostring(StorableTable.FlipXNormal) .. " FlipYNormal: " .. tostring(StorableTable.FlipYNormal))
-
-		for I = 0, Texture.size / Channels do
-			local Normal_X, Normal_Y, Normal_Z = Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b
-
+		return Texture:ToTGA(function(x,y,i, Normal_X, Normal_Y, Normal_Z,a)
 			if StorableTable.SSBump then
 				Normal_X, Normal_Y, Normal_Z = (Normal_X / 255), (Normal_Y / 255), (Normal_Z / 255)
 
@@ -103,8 +36,7 @@ local function ConvertTextureToString(Material, Texture, VMT, StorableTable, Typ
 				Normal_Y = -Normal_Y
 
 				Normal_X, Normal_Y, Normal_Z = Normal_X * 0.5 + 0.5, Normal_Y * 0.5 + 0.5, Normal_Z * 0.5 + 0.5
-
-				Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b = math.round(Normal_X * 255), math.round(Normal_Y * 255), math.round(Normal_Z * 255)
+				Normal_X, Normal_Y, Normal_Z = math.round(Normal_X * 255), math.round(Normal_Y * 255), math.round(Normal_Z * 255)
 			else
 				if StorableTable.FlipYNormal then
 					Normal_Y = 255 - Normal_Y
@@ -116,136 +48,26 @@ local function ConvertTextureToString(Material, Texture, VMT, StorableTable, Typ
 
 				--Make it Y up.
 				Normal_Y = 255 - Normal_Y
-
-				Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b = Normal_X, Normal_Y, Normal_Z
-			end
-		end
-	--[[
-	elseif Type == "Albedo" and VMT.blendtintbybasealpha then
-		print("Tinting found.")
-		for I = 0, Texture.size / Channels do
-			local Color_R, Color_G, Color_B, Tint = Texture.buffer[I].r / 255, Texture.buffer[I].g / 255, Texture.buffer[I].b / 255, Texture.buffer[I].a / 255
-
-			Color_R, Color_G, Color_B = math.lerp(Tint, Color_R, 144 / 255), math.lerp(Tint, Color_G, 126 / 255), math.lerp(Tint, Color_B, 94 / 255)
-
-			Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b, Texture.buffer[I].a = Floor(Color_R * 255 + 0.5), Floor(Color_G * 255 + 0.5), Floor(Color_B * 255 + 0.5), 255
-		end
-	]]
-	end
-
-	if VMT.basetexture2 or Material.Albedo2Texture then
-		local Texture2
-		local Pass = false
-
-		if MergeMaterial and MergeMaterial[Type .. "Texture"].Path:find("materials/") then
-			Texture2 = MergeMaterial[Type .. "Texture"]:Download()
-			Pass = true
-		elseif Type == "Albedo" and Material.Albedo2Texture then
-			Texture2 = Material.Albedo2Texture:Download()
-			Pass = true
-		end
-
-		if Pass then
-			if MergeMaterial then
-				if #Texture2.format == Channels then
-					for Y = 0, Texture.height - 1 do
-						for X = 0, Texture.width - 1 do
-							local I = Y * Texture.height + X
-							local I2 = math.floor((Y / Texture.height) * Texture2.height) * Texture2.height + math.floor((X / Texture.width) * Texture2.width)
-							local Color_R, Color_G, Color_B, Merge = Texture.buffer[I].r / 255, Texture.buffer[I].g / 255, Texture.buffer[I].b / 255, Texture.buffer[I].a / 255
-							local Color_R2, Color_G2, Color_B2 = Texture2.buffer[I2].r / 255, Texture2.buffer[I2].g / 255, Texture2.buffer[I2].b / 255
-
-							Color_R, Color_G, Color_B = math.lerp(Merge, Color_R2, Color_R), math.lerp(Merge, Color_G2, Color_G), math.lerp(Merge, Color_B2, Color_B)
-
-							Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b, Texture.buffer[I].a = math.round(Color_R * 255), math.round(Color_G * 255), math.round(Color_B * 255), 255
-						end
-					end
-				else
-					print("Warning: Could not merge texture. Different format.")
-				end
-			elseif Material.Albedo2Texture then
-				print("Merge case: albedo only")
-				local MergeMap = Material.NormalTexture:Download()
-
-				if #Texture2.format == Channels then
-					for Y = 0, Texture.height - 1 do
-						for X = 0, Texture.width - 1 do
-							local I = Y * Texture.height + X
-							local I2 = math.floor((Y / Texture.height) * Texture2.height) * Texture2.height + math.floor((X / Texture.width) * Texture2.width)
-							local I3 = math.floor((Y / Texture.height) * MergeMap.height) * MergeMap.height + math.floor((X / Texture.width) * MergeMap.width)
-							local Color_R, Color_G, Color_B, Merge = Texture.buffer[I].r / 255, Texture.buffer[I].g / 255, Texture.buffer[I].b / 255, MergeMap.buffer[I3].a / 255
-							local Color_R2, Color_G2, Color_B2 = Texture2.buffer[I2].r / 255, Texture2.buffer[I2].g / 255, Texture2.buffer[I2].b / 255
-
-							Color_R, Color_G, Color_B = math.lerp(Merge, Color_R2, Color_R), math.lerp(Merge, Color_G2, Color_G), math.lerp(Merge, Color_B2, Color_B)
-
-							Texture.buffer[I].r, Texture.buffer[I].g, Texture.buffer[I].b = math.round(Color_R * 255), math.round(Color_G * 255), math.round(Color_B * 255)
-						end
-					end
-				else
-					print("Warning: Could not merge texture. Different format.")
-				end
-			end
-		else
-			print("Warning: Merging failed, merge target has no mapping for '" .. Type .. "'")
-		end
-	end
-
-	local SwapValue
-
-	if Channels >= 3 then
-		if not Texture.swapped then
-			for I = 0, Texture.size / Channels do
-				SwapValue = Texture.buffer[I].r
-				Texture.buffer[I].r = Texture.buffer[I].b
-				Texture.buffer[I].b = SwapValue
 			end
 
-			Texture.swapped = true
-		end
+			return Normal_X, Normal_Y, Normal_Z
+		end)
 	end
 
-	return StringHeader .. ffi.string(Texture.buffer, Texture.size)
+	return Texture:ToTGA()
 end
 
 local function ConvertReflectionMap(Texture, VMT, StorableTable, Type)
-	local Channels = 1
-	local IsGreyscale = Channels == 1
-	local HasAlpha = Channels == 4
-	local Header = { 0, 0, IsGreyscale and 3 or 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, bit.band(Texture.width, 0xff), bit.band((bit.rshift(Texture.width, 8)), 0xff), bit.band(Texture.height, 0xff), bit.band((bit.rshift(Texture.height, 8)), 0xff), 8 * Channels, HasAlpha and 8 or 0 }
-	local StringHeader = ""
-
-	for Key, Char in ipairs(Header) do
-		StringHeader = StringHeader .. string.char(Char)
-	end
-
-	local ArraySize = Texture.size / #Texture.format
-	local Buffer = ffi.new("uint8_t[?]", ArraySize)
-
-	if not VMT.basemapalphaphongmask then
-		if #Texture.format == 4 then
-			for I = 0, ArraySize - 1 do
-				Buffer[I] = Texture.buffer[I].a
-				Texture.buffer[I].a = 255
-			end
-		else
-			for I = 0, ArraySize - 1 do
-				Buffer[I] = 255
-			end
-		end
+	if VMT.basemapalphaphongmask then
+		return Texture:ToTGA(function(x,y,i, r,g,b,a)
+			a = math.clamp((1 - (a / 255)) ^ 2, 0, 1) * 255
+			return a,a,a,a
+		end)
 	else
-		if #Texture.format == 4 then
-			for I = 0, ArraySize - 1 do
-				Buffer[I] = math.clamp((1 - (Texture.buffer[I].a / 255)) ^ 2, 0, 1) * 255
-				Texture.buffer[I].a = 255
-			end
-		else
-			for I = 0, ArraySize - 1 do
-				Buffer[I] = 0
-			end
-		end
+		return Texture:ToTGA(function(x,y,i, r,g,b,a)
+			return a,a,a,a
+		end)
 	end
-
-	return StringHeader .. ffi.string(Buffer, ArraySize)
 end
 
 local function ConvertTexture(Material, Texture, VMT, StorableTable, Type, Path2)
@@ -258,7 +80,6 @@ local function ConvertTexture(Material, Texture, VMT, StorableTable, Type, Path2
 			Path = vfs.RemoveExtensionFromPath(Path:sub(select(1, Path:find("materials/"), #Path)))
 			PathNoExt = Path
 
-			local Texture = Texture:Download()
 			Path = "data/" .. export_dir .. "/" .. Path
 
 			if VMT.basealphaenvmapmask and Type == "Albedo" and not vfs.Exists(Path .. "_REFLECT.tga") then
@@ -283,7 +104,6 @@ local function ConvertTexture(Material, Texture, VMT, StorableTable, Type, Path2
 		else
 			PathNoExt = Path2
 
-			local Texture = Texture:Download()
 			Path = "data/" .. export_dir .. "/" .. Path2
 
 			local OriginalPath = Path:sub(1, #Path - 4)
@@ -318,20 +138,9 @@ local function GenerateReflection(SpecularTexture, VMT, StorableTable, Type, Pat
 	local Path = "data/" .. export_dir .. "/" .. Path2
 
 	if not vfs.Exists(Path) then
-		local Channels = 1
-		local IsGreyscale = Channels == 1
-		local HasAlpha = Channels == 4
-		local Header = { 0, 0, IsGreyscale and 3 or 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, bit.band(1, 0xff), bit.band((bit.rshift(1, 8)), 0xff), bit.band(1, 0xff), bit.band((bit.rshift(1, 8)), 0xff), 8 * Channels, HasAlpha and 8 or 0 }
-		local StringHeader = ""
-
-		for Key, Char in ipairs(Header) do
-			StringHeader = StringHeader .. string.char(Char)
-		end
-
-		if not vfs.Exists(Path .. ".tga") then
-			print("Storing texture data in " .. Path .. ".tga")
-			vfs.Write(Path .. ".tga", StringHeader .. string.char(0))
-		end
+		return SpecularTexture:ToTGA(function(x,y,i, r,g,b,a)
+			return 0,0,0,0
+		end)
 	end
 end
 
@@ -339,39 +148,14 @@ local function GenerateRoughness(SpecularTexture, VMT, StorableTable, Type, Path
 	local Path = "data/" .. export_dir .. "/" .. Path2
 
 	if SpecularTexture and SpecularTexture.Path:find("materials/") then
-		SpecularTexture = SpecularTexture:Download()
-		local Channels = 1
-		local IsGreyscale = Channels == 1
-		local HasAlpha = Channels == 4
-		local Header = { 0, 0, IsGreyscale and 3 or 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, bit.band(SpecularTexture.width, 0xff), bit.band((bit.rshift(SpecularTexture.width, 8)), 0xff), bit.band(SpecularTexture.height, 0xff), bit.band((bit.rshift(SpecularTexture.height, 8)), 0xff), 8 * Channels, HasAlpha and 8 or 0 }
-		local StringHeader = ""
-
-		for Key, Char in ipairs(Header) do
-			StringHeader = StringHeader .. string.char(Char)
-		end
-
-		local ArraySize = SpecularTexture.width * SpecularTexture.height
-
-		if not vfs.Exists(Path .. ".tga") then
-			print("Storing texture data in " .. Path .. ".tga")
-			vfs.Write(Path .. ".tga", StringHeader .. string.char(255):rep(ArraySize))
-		end
+		return SpecularTexture:ToTGA(function(x,y,i, r,g,b,a)
+			return 255, 255, 255, 255
+		end)
 	else
 		if Type == "Roughness" and not vfs.Exists(Path .. ".tga") then
-			local Channels = 1
-			local IsGreyscale = Channels == 1
-			local HasAlpha = Channels == 4
-			local Header = { 0, 0, IsGreyscale and 3 or 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, bit.band(1, 0xff), bit.band((bit.rshift(1, 8)), 0xff), bit.band(1, 0xff), bit.band((bit.rshift(1, 8)), 0xff), 8 * Channels, HasAlpha and 8 or 0 }
-			local StringHeader = ""
-
-			for Key, Char in ipairs(Header) do
-				StringHeader = StringHeader .. string.char(Char)
-			end
-
-			if not vfs.Exists(Path .. ".tga") then
-				print("Storing texture data in " .. Path .. ".tga")
-				vfs.Write(Path .. ".tga", StringHeader .. string.char(255))
-			end
+			return SpecularTexture:ToTGA(function(x,y,i, r,g,b,a)
+				return 255, 255, 255, 255
+			end)
 		end
 	end
 end
