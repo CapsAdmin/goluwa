@@ -529,6 +529,28 @@ function META:GetID()
 	error("nyi", 2)
 end
 
+function META:ToTGA()
+	local data = self:Download(1, "bgra8")
+
+	local buffer = utility.CreateBuffer()
+	buffer:WriteByte(0) -- id length
+	buffer:WriteByte(0) -- color map type
+	buffer:WriteByte(2) -- data type code
+	buffer:WriteShort(0) -- color map origin
+	buffer:WriteShort(0) -- color map length
+	buffer:WriteByte(0) -- color map depth
+	buffer:WriteShort(0) -- x origin
+	buffer:WriteShort(0) -- y origin
+	buffer:WriteShort(data.width) -- width
+	buffer:WriteShort(data.height) -- height
+	buffer:WriteByte(data.channels * 8) -- bits per pixel
+	buffer:WriteByte(8) -- image descriptor
+
+	buffer:WriteString(ffi.string(data.buffer, data.size))
+
+	return buffer:GetString()
+end
+
 do
 	local template = [[
 		out vec4 out_color;
