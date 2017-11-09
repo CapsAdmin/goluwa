@@ -499,26 +499,20 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 	local MESSAGE_MARKER = StylesGetMarker("message")
 	local ANY_MARKER_VALUE = 2^25-1 -- marker numbers 0 to 24 have no pre-defined function
 
-	out:SetFont(ide.font.oNormal)
-	out:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, ide.font.oNormal)
+	local config = ide.config.output
+
+	out:SetFont(wx.wxFont(config.fontsize or 10, wx.wxFONTFAMILY_MODERN, wx.wxFONTSTYLE_NORMAL,
+	  wx.wxFONTWEIGHT_NORMAL, false, config.fontname or "",
+	  config.fontencoding or wx.wxFONTENCODING_DEFAULT)
+	)
+	out:StyleSetFont(wxstc.wxSTC_STYLE_DEFAULT, out:GetFont())
 	out:SetBufferedDraw(not ide.config.hidpi and true or false)
 	out:StyleClearAll()
-
-	out:SetTabWidth(ide.config.editor.tabwidth or 2)
-	out:SetIndent(ide.config.editor.tabwidth or 2)
-	out:SetUseTabs(ide.config.editor.usetabs and true or false)
-	out:SetViewWhiteSpace(ide.config.editor.whitespace and true or false)
-	out:SetIndentationGuides(true)
-
-	out:SetWrapMode(wxstc.wxSTC_WRAP_WORD)
-	out:SetWrapStartIndent(0)
-	out:SetWrapVisualFlagsLocation(wxstc.wxSTC_WRAPVISUALFLAGLOC_END_BY_TEXT)
-	out:SetWrapVisualFlags(wxstc.wxSTC_WRAPVISUALFLAG_END)
-
-	out:MarkerDefine(StylesGetMarker("prompt"))
-	out:MarkerDefine(StylesGetMarker("error"))
-	out:MarkerDefine(StylesGetMarker("output"))
+	out:SetMarginWidth(1, 16) -- marker margin
+	out:SetMarginType(1, wxstc.wxSTC_MARGIN_SYMBOL)
 	out:MarkerDefine(StylesGetMarker("message"))
+	out:MarkerDefine(StylesGetMarker("error"))
+	out:MarkerDefine(StylesGetMarker("prompt"))
 	out:SetReadOnly(false)
 
 	local jumptopatterns = {
