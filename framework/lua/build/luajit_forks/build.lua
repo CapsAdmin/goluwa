@@ -13,27 +13,12 @@ local repos = {
 		flags = {"LUAJIT_ENABLE_GC64", "LUAJIT_ENABLE_LUA52COMPAT"},
 	},
 	{
-		url = "https://github.com/fsfod/LuaJIT",
-		branch = "intrinsicpr",
-		flags = {"LUAJIT_ENABLE_LUA52COMPAT"}
-	},
-	{
-		url = "https://github.com/fsfod/LuaJIT",
-		branch = "gcarena",
-		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
-	},
-	{
-		url = "https://github.com/fsfod/LuaJIT",
-		branch = "stringbuffer",
-		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
-	},
-	{
 		author = "lukego",
 		url = "https://github.com/raptorjit/raptorjit",
 		branch = "master",
-		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
+		flags = {"LUAJIT_ENABLE_GC64", "LUAJIT_ENABLE_LUA52COMPAT"},
 		bin = "raptorjit",
-		commit = "d3e36e7920c641410dfcdf1fc6c10069fd3192a6",
+		--commit = "d3e36e7920c641410dfcdf1fc6c10069fd3192a6",
 	},
 }
 
