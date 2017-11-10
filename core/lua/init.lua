@@ -213,6 +213,7 @@ end
 
 event.Call("Initialize")
 if not CLI and system.MainLoop then
+	logn("[core] total init time is ", os.clock(), " seconds")
 	system.MainLoop()
 end
 event.Call("ShutDown")
