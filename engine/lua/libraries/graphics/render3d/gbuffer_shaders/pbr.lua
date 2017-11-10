@@ -20,13 +20,13 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 render.AddGlobalShaderCode([[
 float handle_roughness(float x)
 {
-	return clamp(pow(x, 2.5), 0.0025, 1);
+	return clamp(pow(x, 2.5), 0.0025, 1.0);
 }]])
 
 render.AddGlobalShaderCode([[
 float handle_metallic(float x)
 {
-	return clamp(x, 0.00025, 1);
+	return clamp(x, 0.00025, 1.0);
 }]])
 
 render.AddGlobalShaderCode([[
