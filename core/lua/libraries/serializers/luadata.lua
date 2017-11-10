@@ -25,7 +25,7 @@ luadata.SetModifier("table", function(tbl, context)
 	local str
 
 	if context.tab_limit and context.tab >= context.tab_limit then
-		return "{--[[tab limit reached]]}"
+		return "{--[[ " .. tostringx(tbl) .. " (tab limit reached)]]}"
 	end
 
 	if context.done then
