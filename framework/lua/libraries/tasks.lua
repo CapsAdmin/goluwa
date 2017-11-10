@@ -184,6 +184,10 @@ function tasks.CreateTask(on_start, on_finish)
 	return self
 end
 
+function tasks.GetActiveTask()
+	return tasks.coroutine_lookup[coroutine.running()]
+end
+
 function tasks.Wait(time)
 	local thread = tasks.coroutine_lookup[coroutine.running()]
 	if thread then
