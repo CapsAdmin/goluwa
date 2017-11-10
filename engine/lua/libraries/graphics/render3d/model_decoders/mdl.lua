@@ -279,12 +279,15 @@ local function load_mdl(path)
 
 	do
 		buffer:PushPosition(header.material_offset)
-			header.material = {}
+			header.materials = {}
 			local offset = buffer:ReadInt()
 			if offset > -1 then
 				buffer:PushPosition(header.material_offset + offset)
 					for i = 1, header.material_count do
-						header.material[i] = vfs.FixPathSlashes(buffer:ReadString())
+						local mat = vfs.FixPathSlashes(buffer:ReadString())
+						if mat ~= "" and not mat:endswith("/") then
+							header.materials[i] = mat
+						end
 					end
 				buffer:PopPosition()
 			end
@@ -293,22 +296,9 @@ local function load_mdl(path)
 		parse("texturedir", function(data, i)
 			local offset = buffer:ReadLong()
 			buffer:PushPosition(offset)
-				data.path = vfs.FixPathSlashes(buffer:ReadString())
+				data.path = "materials/" .. vfs.FixPathSlashes(buffer:ReadString())
 			buffer:PopPosition()
 		end)
-
-		if not header.material[1] and header.texturedir[1] then
-			for _, data in ipairs(header.texturedir) do
-				for i, path in ipairs(vfs.Find("materials/" .. data.path .. "/", true)) do
-					header.material[i] = path
-				end
-				if not header.material[1] then
-					for i, path in ipairs(vfs.Find(vfs.vfs.FindMixedCasePath("materials/" .. data.path) .. "/"), true) do
-						header.material[i] = path
-					end
-				end
-			end
-		end
 	end
 
 --[[
@@ -530,6 +520,8 @@ local function load_vtx(path)
 					mesh.strip_groups = {}
 
 					for i = 1, mesh.strip_group_count do
+						tasks.ReportProgress("reading body parts", vtx.body_part_count * body_part.model_count * model.lod_count * lod_model.mesh_count * mesh.strip_group_count)
+
 						local stream_pos = buffer:GetPosition()
 
 						local strip_group = {}
@@ -548,11 +540,13 @@ local function load_vtx(path)
 							local vertex = {bone_weight_indices = {}, boneId = {}}
 							for i = 1, MAX_NUM_BONES_PER_VERT do
 								vertex.bone_weight_indices[i] = buffer:ReadByte()
+								tasks.Wait()
 							end
 							vertex.bone_count = buffer:ReadByte()
 							vertex.mesh_vertex_index = buffer:ReadShort()
 							for i = 1, MAX_NUM_BONES_PER_VERT do
 								vertex.boneId[i] = buffer:ReadByte()
+								tasks.Wait()
 							end
 							vertices[i] = vertex
 							tasks.Wait()
@@ -563,6 +557,7 @@ local function load_vtx(path)
 						buffer:PushPosition(stream_pos + strip_group.indices_offset)
 						for i = 1, strip_group.indices_count do
 							indices[i] = buffer:ReadShort() + 1
+							tasks.Wait()
 						end
 						buffer:PopPosition()
 
@@ -589,6 +584,7 @@ local function load_vtx(path)
 								bone_state_changes[i] = {}
 								bone_state_changes[i].hardware_id = buffer:ReadLong()
 								bone_state_changes[i].new_bone_id = buffer:ReadLong()
+								tasks.Wait()
 							end
 							buffer:PopPosition()
 
@@ -606,14 +602,19 @@ local function load_vtx(path)
 						tasks.Wait()
 					end
 					buffer:PopPosition()
+					tasks.Wait()
 				end
 				buffer:PopPosition()
+				tasks.Wait()
 			end
 			buffer:PopPosition()
+			tasks.Wait()
 		end
 		buffer:PopPosition()
+		tasks.Wait()
 	end
 	buffer:PopPosition()
+	tasks.Wait()
 
 	return vtx
 end
@@ -644,6 +645,8 @@ local function load_vvd(path)
 		local vertices_count = vvd.lod_vertices_count[1]
 		vvd.vertices = {}
 		for i = 1, vertices_count do
+			tasks.ReportProgress("reading vertices", vertices_count)
+
 			local boneWeight = {weight = {}, bone = {}}
 
 			for x = 1, MAX_NUM_BONES_PER_VERT do
@@ -675,6 +678,7 @@ local function load_vvd(path)
 
 		vvd.theFixups = {}
 		for i = 1, vvd.fixup_count do
+			tasks.ReportProgress("reading fixup", vvd.fixup_count)
 			local fixup = {}
 
 			fixup.lod_index = buffer:ReadLong() + 1
@@ -688,16 +692,19 @@ local function load_vvd(path)
 			buffer:SetPosition(vvd.vertices_offset)
 
 			for lod_index = 1, vvd.lod_count do
+				tasks.ReportProgress("reading lod", vvd.lod_count)
 				vvd.fixed_vertices_by_lod[lod_index] = {}
 
 				for _, fixup in ipairs(vvd.theFixups) do
 					if fixup.lod_index >= lod_index then
 						for i = 1, fixup.vertices_count do
-							table.insert(vvd.fixed_vertices_by_lod[lod_index], vvd.vertices[fixup.vertex_index + i - 1])
+							table.insert(vvd.fixed_vertices_by_lod[lod_index], vvd.vertices[fixup.vertex_index + (i - 1)])
 							tasks.Wait()
 						end
 					end
 				end
+
+				break
 			end
 		end
 	end
@@ -716,14 +723,14 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 		full_path = full_path:sub(1,-#".mdl"-1)
 	end
 
+	tasks.Report("reading mdl")
 	local mdl = load_mdl(full_path)
+	tasks.Report("reading vvd")
 	local vvd = load_vvd(full_path)
+	tasks.Report("reading vtx")
 	local vtx = load_vtx(full_path)
 
-	--if path == "models/sprops/trans/wheel_b/t_wheel35.mdl" then
-	--	table.print(mdl)
-	--end
-
+	tasks.Report("generating mesh")
 	for _, body_part in ipairs(vtx.body_parts) do
 		for _, model_ in ipairs(body_part.models) do
 			for lod_index, lod_model in ipairs(model_.model_lods) do
@@ -731,86 +738,18 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 					local WHAT2 = 0
 
 					for model_i, mesh_data in ipairs(lod_model.meshes) do
+						tasks.ReportProgress("generating mesh", #vtx.body_parts * #model_.model_lods * #lod_model.meshes)
+						tasks.Wait()
 
-						local vertices = table.copy(vvd.fixed_vertices_by_lod[lod_index] or vvd.vertices)
-						local indices = {}
+						local vertices = vvd.fixed_vertices_by_lod[lod_index] or vvd.vertices
+						local reduced_vertices = {}
+						local vertex_i = 1
 
-						local mesh = gfx.CreatePolygon3D()
+						local reduced_indices = {}
+						local index_i = 1
 
-						mesh.material = render.CreateMaterial("model")
-						mesh:SetName(full_path)
-						--if mdl.bone[model_i] and mdl.bone[model_i].quat then -- TODO
-							--local q = mdl.bone[model_i].quat
-							--mesh.rotation_init = Quat(q.z, q.y, q.x, q.w)
-							--local a = mdl.bone[model_i].rotation
-							--mesh.rotation_init = Ang3(a.y, a.x, a.z)
-						--end
-						--mesh.bbox = {min = mdl.hull_min*steam.source2meters, max = mdl.hull_max*steam.source2meters}
-
-						--if path:lower():find("airboat") then table.print(mdl.texturedir) table.print(mdl.material) print(i) end
-
-						local path = mdl.material[model_i]
-
-						if not path then
-							wlog("no materials found")
-							logn(path)
-							logn(model_i)
-							table.print(mdl.texturedir)
-							table.print(mdl.material)
-						end
-
-						if path then
-							if not path:find("/", nil, true) then
-								if path:endswith(".vmt") or path:endswith(".vtf") then
-									for _, dir in ipairs(mdl.texturedir) do
-										if vfs.IsFile("materials/" .. dir.path .. path) then
-											path = "materials/" .. dir.path .. path
-											break
-										else
-											local new_path = vfs.FindMixedCasePath("materials/" .. dir.path .. path)
-											if new_path then
-												path = new_path
-												break
-											end
-										end
-									end
-								else
-									for _, dir in ipairs(mdl.texturedir) do
-										if vfs.IsFile("materials/" .. dir.path .. path .. ".vmt") then
-											path = "materials/" .. dir.path .. path .. ".vmt"
-											break
-										else
-											local new_path = vfs.FindMixedCasePath("materials/" .. dir.path .. path .. ".vmt")
-											if new_path then
-												path = new_path
-												break
-											end
-										end
-									end
-								end
-							else
-								if not path:startswith("materials/") then
-									if vfs.IsFile("materials/" .. path .. ".vmt") then
-										path = "materials/" .. path .. ".vmt"
-									elseif vfs.IsFile("materials/" .. path .. ".vtf") then
-										path = "materials/" .. path .. ".vtf"
-									else
-										local new_path = vfs.FindMixedCasePath("materials/" .. path .. ".vmt")
-										if not new_path then
-											new_path = vfs.FindMixedCasePath("materials/" .. path .. ".vtf")
-										end
-
-										if new_path then
-											path = new_path
-										else
-											wlog("unable to find material %s: %s", model_i, path)
-										end
-									end
-								end
-							end
-						end
-
-						mesh.material:LoadVMT(path)
+						local done = {}
+						local matched = 0
 
 						local WHAT = 0
 
@@ -818,22 +757,71 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 							for _, strip in ipairs(strip_group.strips) do
 								for _, index in ipairs(strip.indices) do
 									WHAT = math.max(WHAT, strip.vertices[index].mesh_vertex_index + 1)
-									table.insert(indices, strip.vertices[index].mesh_vertex_index + WHAT2)
+									local v = strip.vertices[index].mesh_vertex_index + WHAT2
+									local vtx = vertices[v + 1]
+									if vtx then
+
+										if done[v] then
+											reduced_indices[index_i] = done[v]
+											index_i = index_i + 1
+										else
+											reduced_vertices[vertex_i] = {
+												pos = vtx.pos:Copy(),
+												normal = vtx.normal:Copy(),
+												uv = vtx.uv:Copy(),
+											}
+											vertex_i = vertex_i + 1
+
+											local index = #reduced_vertices - 1
+
+											reduced_indices[index_i] = index
+											index_i = index_i + 1
+
+											done[v] = index
+										end
+
+										matched = matched + 1
+									end
 								end
 							end
 						end
 
 						WHAT2 = WHAT
 
-						mesh:SetVertices(vertices)
-						mesh:SetIndices(indices)
-						mesh:BuildTangents()
-						mesh:BuildBoundingBox()
-						mesh:Upload()
+						if #reduced_vertices > 0 then
 
-						mesh_callback(mesh)
+							local mesh = gfx.CreatePolygon3D()
 
-						table.insert(models, mesh)
+							mesh.material = render.CreateMaterial("model")
+							mesh:SetName(full_path)
+							local path = mdl.materials[model_i]
+
+							if path then
+								if path:find("/", nil, true) or path:find("\\", nil, true) then
+									path = vfs.FindMixedCasePath("materials/" .. path .. ".vmt") or path
+								else
+									for _, dir in ipairs(mdl.texturedir) do
+										local new_path = vfs.FindMixedCasePath(dir.path .. path .. ".vmt")
+										if new_path then
+											path = new_path
+											break
+										end
+									end
+								end
+
+								mesh.material:LoadVMT(path)
+							end
+
+							mesh:SetVertices(reduced_vertices)
+							mesh:SetIndices(reduced_indices)
+							mesh:BuildTangents()
+							mesh:BuildBoundingBox()
+							mesh:Upload()
+
+							mesh_callback(mesh)
+
+							table.insert(models, mesh)
+						end
 					end
 				end
 
@@ -853,9 +841,17 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 end)
 
 if RELOAD then
-	steam.MountSourceGame("hl2")
-	runfile("lua/libraries/graphics/gfx/model_loader.lua")
-	local ent = utility.RemoveOldObject(entities.CreateEntity("visual"), "test")
-	ent:SetPosition(render3d.camera:GetPosition() + render3d.camera:GetAngles():GetForward() * 5)
-	ent:SetModelPath("models/props_wasteland/exterior_fence001b.mdl")
+	render3d.model_cache = {}
+	render3d.model_loader_cb = utility.CreateCallbackThing(render3d.model_cache)
+
+	if true then
+		steam.MountSourceGame("hl2")
+		local ent = utility.RemoveOldObject(entities.CreateEntity("visual"), "test")
+		ent:SetPosition(render3d.camera:GetPosition() + render3d.camera:GetAngles():GetForward() * 5)
+		ent:SetModelPath("models/props_wasteland/exterior_fence001b.mdl")
+	else
+		steam.MountSourceGame("csgo")
+		local ent = utility.RemoveOldObject(entities.CreateEntity("visual"), "test")
+		ent:SetModelPath("models/inventory_items/trophy_majors.mdl")
+	end
 end
