@@ -690,6 +690,7 @@ function render.CreateTextureFromPath(str)
 	local self = render.CreateTexture("2d")
 
 	self:SetPath(str)
+	self:SetAnisotropy(-1)
 
 	render.texture_path_cache[str] = self
 
