@@ -14,13 +14,14 @@ function render3d.AddModelDecoder(id, callback, ext)
 end
 
 function render3d.RemoveModelDecoder(id)
-	for _, v in pairs(render3d.model_decoders) do
+	for i, v in ipairs(render3d.model_decoders) do
 		if v.id == id then
-			table.remove(render3d.model_decoders)
+			table.remove(render3d.model_decoders, i)
+			table.sort(render3d.model_decoders, function(a, b) return #a.ext > #b.ext end)
 			return true
 		end
 	end
-	table.sort(render3d.model_decoders, function(a, b) return #a.ext > #b.ext end)
+	return false
 end
 
 function render3d.FindModelDecoder(path)
