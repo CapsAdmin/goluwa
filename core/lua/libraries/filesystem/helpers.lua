@@ -24,7 +24,7 @@ function vfs.FindMixedCasePath(path)
 		return dir
 	end
 
-	wlog("tried to find mixed case path for %s but nothing was found", path)
+	wlog("tried to find mixed case path for %s but nothing was found", path, 2)
 end
 
 local fs = require("fs")
