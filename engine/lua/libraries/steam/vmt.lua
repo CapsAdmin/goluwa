@@ -102,9 +102,14 @@ function steam.LoadVMT(path, on_property, on_error, on_shader)
 
 			for k,v in pairs(vmt) do
 				if type(v) == "string" and textures[k] and (not special_textures[v] and not special_textures[v:lower()]) then
-					local new_path = vfs.FixPathSlashes("materials/" .. v)
-					if not new_path:endswith(".vtf") then new_path = new_path .. ".vtf" end
-					resource.Download(new_path, function(path) on_property(k, path, fullpath, vmt) end, on_error and function() on_error("texture " .. k .. " " .. new_path .. " not found") end or nil, nil, true)
+
+					if v == "black" or v == "white" then
+						on_property(k, v, v, vmt)
+					else
+						local new_path = vfs.FixPathSlashes("materials/" .. v)
+						if not new_path:endswith(".vtf") then new_path = new_path .. ".vtf" end
+						resource.Download(new_path, function(path) on_property(k, path, fullpath, vmt) end, on_error and function() on_error("texture " .. k .. " " .. new_path .. " not found") end or nil, nil, true)
+					end
 				else
 					on_property(k, v, fullpath, vmt)
 				end

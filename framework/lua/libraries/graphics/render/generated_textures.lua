@@ -25,11 +25,16 @@ function render.GenerateTextures()
 	render.black_texture = create_simple_texture(0, 0, 0, 255)
 	render.grey_texture = create_simple_texture(127, 127, 127, 255)
 
+	render.texture_path_cache.white = render.white_texture
+	render.texture_path_cache.black = render.black_texture
+	render.texture_path_cache.grey = render.grey_texture
+
 	render.InitializeNoiseTexture(render.GetScreenSize())
 
 	do
 		render.error_texture = render.CreateBlankTexture(Vec2() + 256)
 		render.error_texture:Shade("return mod(floor(uv.x * 16) + floor(uv.y * 16), 2.0) == 0 ? vec4(1,1,1,1) : vec4(1,0,0,1);")
+		render.texture_path_cache.error = render.error
 	end
 
 	if render.IsExtensionSupported("GL_ARB_framebuffer_object") then
