@@ -1,356 +1,132 @@
-local export_dir
-
-local BumpBasis = {
-	{(2 ^ 0.5) / (3 ^ 0.5), 0, 1 / (3 ^ 0.5)},
-	{-1 / (6 ^ 0.5), 1 / (2 ^ 0.5), 1 / (3 ^ 0.5)},
-	{-1 / (6 ^ 0.5), -1 / (2 ^ 0.5), 1 / (3 ^ 0.5)},
-}
-
-local ffi = require("ffi")
-
-local function ConvertTextureToString(Material, Texture, VMT, StorableTable, Type)
-	if Type == "Normal" then
-		return Texture:ToTGA(function(x,y,i, Normal_X, Normal_Y, Normal_Z,a)
-			if StorableTable.SSBump then
-				Normal_X, Normal_Y, Normal_Z = (Normal_X / 255), (Normal_Y / 255), (Normal_Z / 255)
-
-				Normal_X = math.clamp(BumpBasis[1][1] * Normal_X + BumpBasis[2][1] * Normal_Y + BumpBasis[3][1] * Normal_Z, -1.0, 1.0)
-				Normal_Y = math.clamp(BumpBasis[1][2] * Normal_X + BumpBasis[2][2] * Normal_Y + BumpBasis[3][2] * Normal_Z, -1.0, 1.0)
-				Normal_Z = math.clamp(BumpBasis[1][3] * Normal_X + BumpBasis[2][3] * Normal_Y + BumpBasis[3][3] * Normal_Z, -1.0, 1.0)
-
-				local Length = ((Normal_X * Normal_X + Normal_Y * Normal_Y + Normal_Z * Normal_Z) ^ 0.5)
-
-				if Length > 0 then
-					Normal_X, Normal_Y, Normal_Z = Normal_X / Length, Normal_Y / Length, Normal_Z / Length
-				end
-
-				if not StorableTable.FlipYNormal then
-					Normal_Y = -Normal_Y
-				end
-
-				if StorableTable.FlipXNormal then
-					Normal_X = -Normal_X
-				end
-
-				--Make it Y up.
-				Normal_Y = -Normal_Y
-
-				Normal_X, Normal_Y, Normal_Z = Normal_X * 0.5 + 0.5, Normal_Y * 0.5 + 0.5, Normal_Z * 0.5 + 0.5
-				Normal_X, Normal_Y, Normal_Z = math.round(Normal_X * 255), math.round(Normal_Y * 255), math.round(Normal_Z * 255)
-			else
-				if StorableTable.FlipYNormal then
-					Normal_Y = 255 - Normal_Y
-				end
-
-				if StorableTable.FlipXNormal then
-					Normal_X = 255 - Normal_X
-				end
-
-				--Make it Y up.
-				Normal_Y = 255 - Normal_Y
-			end
-
-			return Normal_X, Normal_Y, Normal_Z
-		end)
-	end
-
-	return Texture:ToTGA()
-end
-
-local function ConvertReflectionMap(Texture, VMT, StorableTable, Type)
-	if VMT.basemapalphaphongmask then
-		return Texture:ToTGA(function(x,y,i, r,g,b,a)
-			a = math.clamp((1 - (a / 255)) ^ 2, 0, 1) * 255
-			return a,a,a,a
-		end)
-	else
-		return Texture:ToTGA(function(x,y,i, r,g,b,a)
-			return a,a,a,a
-		end)
-	end
-end
-
-local function ConvertTexture(Material, Texture, VMT, StorableTable, Type, Path2)
-	local Path = VMT.fullpath
-	local PathNoExt = ""
-	local SRGB = Texture.SRGB and "srgb" or "rgba8"
-
-	if Path:find("materials/") and Texture.Path:find("materials/") then
-		if not Path2 then
-			Path = vfs.RemoveExtensionFromPath(Path:sub(select(1, Path:find("materials/"), #Path)))
-			PathNoExt = Path
-
-			Path = "data/" .. export_dir .. "/" .. Path
-
-			if VMT.basealphaenvmapmask and Type == "Albedo" and not vfs.Exists(Path .. "_REFLECT.tga") then
-				print("Storing texture data in " .. Path .. "_REFLECT.tga")
-				vfs.Write(Path .. "_REFLECT.tga", ConvertReflectionMap(Texture, VMT, StorableTable, Type))
-			end
-
-			if VMT.basemapalphaphongmask and Type == "Albedo" then
-				print("Storing texture data in " .. Path .. "_ROUGH.tga")
-				vfs.Write(Path .. "_ROUGH.tga", ConvertReflectionMap(Texture, VMT, StorableTable, Type))
-			end
-
-			if VMT.blendtintbybasealpha and Type == "Albedo" and not vfs.Exists(Path .. "_TINT.tga") then
-				print("Storing texture data in " .. Path .. "_TINT.tga")
-				vfs.Write(Path .. "_TINT.tga", ConvertReflectionMap(Texture, VMT, StorableTable, Type))
-			end
-
-			if not vfs.Exists(Path .. ".tga") then
-				print("Storing texture data in " .. Path .. ".tga")
-				vfs.Write(Path .. ".tga", ConvertTextureToString(Material, Texture, VMT, StorableTable, Type))
-			end
-		else
-			PathNoExt = Path2
-
-			Path = "data/" .. export_dir .. "/" .. Path2
-
-			local OriginalPath = Path:sub(1, #Path - 4)
-			if VMT.normalmapalphaenvmapmask and Type == "Normal" and not vfs.Exists(OriginalPath .. "_REFLECT.tga") then
-				print("Storing texture data in " .. OriginalPath .. "_REFLECT.tga")
-				vfs.Write(OriginalPath .. "_REFLECT.tga", ConvertReflectionMap(Texture, VMT, StorableTable, Type))
-			end
-
-			if not vfs.Exists(Path .. ".tga") then
-				print("Storing texture data in " .. Path .. ".tga")
-
-				if Type ~= "Metallic" then
-					vfs.Write(Path .. ".tga", ConvertTextureToString(Material, Texture, VMT, StorableTable, Type))
-				else
-					local StringData = ConvertTextureToString(Material, Texture, VMT, StorableTable, Type)
-					vfs.Write(Path .. ".tga", StringData)
-
-					local OriginalPath = Path:sub(1, #Path - 5)
-					if not vfs.Exists(OriginalPath .. "_REFLECT.tga") then
-						print("Storing texture data in " .. OriginalPath .. "_REFLECT.tga")
-						vfs.Write(OriginalPath .. "_REFLECT.tga", StringData)
-					end
-				end
-			end
-		end
-	end
-
-	return PathNoExt
-end
-
-local function GenerateReflection(SpecularTexture, VMT, StorableTable, Type, Path2)
-	local Path = "data/" .. export_dir .. "/" .. Path2
-
-	if not vfs.Exists(Path) then
-		return SpecularTexture:ToTGA(function(x,y,i, r,g,b,a)
-			return 0,0,0,0
-		end)
-	end
-end
-
-local function GenerateRoughness(SpecularTexture, VMT, StorableTable, Type, Path2)
-	local Path = "data/" .. export_dir .. "/" .. Path2
-
-	if SpecularTexture and SpecularTexture.Path:find("materials/") then
-		return SpecularTexture:ToTGA(function(x,y,i, r,g,b,a)
-			return 255, 255, 255, 255
-		end)
-	else
-		if Type == "Roughness" and not vfs.Exists(Path .. ".tga") then
-			return SpecularTexture:ToTGA(function(x,y,i, r,g,b,a)
-				return 255, 255, 255, 255
-			end)
-		end
-	end
-end
-
-local function ConvertModel(Model)
-	local Path = Model.ModelPath
-
-	local IsMap = false
-	local IsModel = false
-
-	if Path:find("models/") then
-		IsModel = true
-	end
-
-	if Path:find("maps/") then
-		IsMap = true
-	end
-
-	if IsModel or IsMap then
-		if IsModel then
-			Path = vfs.RemoveExtensionFromPath(Path:sub(select(1, Path:find("models/"), #Path)))
-		end
-
-		if IsMap then
-			Path = "models/" .. vfs.GetFileNameFromPath(vfs.RemoveExtensionFromPath(Path:sub(select(1, Path:find("maps/"), #Path))))
-		end
-
-		Path = "data/" .. export_dir .. "/" .. Path .. ".obj"
-
-		if not vfs.Exists(Path) then
-			print("Storing vertex data in " .. Path)
-
-			vfs.Write(Path, Model:ToOBJ())
-		end
-	end
-end
-
-local function WriteMapData()
-	local MapData = {}
-
-	local SunDirection = entities.GetWorld():GetSunAngles()
-
-	MapData[1] = {
-		AngleX = SunDirection.x,
-		AngleY = SunDirection.y,
-		AngleZ = SunDirection.z
-	}
-
-	local MapPath = ""
-	for Key, Entity in pairs(entities.active_entities) do
-		if Entity.model then
-			local Path = Entity.model.ModelPath
-
-			local IsMap = false
-			local IsModel = false
-
-			if Path:find("models/") then
-				IsModel = true
-			end
-
-			if Path:find("maps/") then
-				MapPath = vfs.RemoveExtensionFromPath(Path)
-				IsMap = true
-			end
-
-			if IsMap or IsModel then
-				local EntityData = {}
-
-				local Color = Entity:GetColor()
-
-				EntityData.ColorR = Color.r
-				EntityData.ColorG = Color.g
-				EntityData.ColorB = Color.b
-
-				local Position = Entity:GetPosition()
-
-				EntityData.PositionX = Position.x
-				EntityData.PositionY = Position.y
-				EntityData.PositionZ = Position.z
-
-				local Angle = Entity:GetAngles()
-
-				if Angle.x == Angle.x then
-					EntityData.AngleX = Angle.x
-				else
-					EntityData.AngleX = 0
-				end
-
-				if Angle.y == Angle.y then
-					EntityData.AngleY = Angle.y
-				else
-					EntityData.AngleY = 0
-				end
-
-				if Angle.z == Angle.z then
-					EntityData.AngleZ = Angle.z
-				else
-					EntityData.AngleZ = 0
-				end
-
-				local Size = Entity:GetSize()
-
-				EntityData.ScaleX = Size
-				EntityData.ScaleY = Size
-				EntityData.ScaleZ = Size
-
-				local Quaternion = Entity:GetRotation()
-
-				EntityData.QuaternionX = Quaternion.x
-				EntityData.QuaternionY = Quaternion.y
-				EntityData.QuaternionZ = Quaternion.z
-				EntityData.QuaternionW = Quaternion.w
-
-				if IsModel then
-					Path = vfs.RemoveExtensionFromPath(Path:sub(select(1, Path:find("models/"), #Path)))
-				end
-
-				if IsMap then
-					Path = "models/" .. vfs.GetFileNameFromPath(vfs.RemoveExtensionFromPath(Path:sub(select(1, Path:find("maps/"), #Path))))
-				end
-
-				EntityData.Model = Path
-
-				local FoundAttributes = Entity and Entity.model and Entity.model.sub_meshes[1] and Entity.model.sub_meshes[1].vertex_buffer and Entity.model.sub_meshes[1].vertex_buffer.DrawHint
-
-				if FoundAttributes then
-					if Entity.model.sub_meshes[1].vertex_buffer.DrawHint then
-						EntityData.Type = Entity.model.sub_meshes[1].vertex_buffer.DrawHint
-					else
-						EntityData.Type = "static"
-					end
-
-					MapData[#MapData + 1] = EntityData
-				end
-			end
-		end
-	end
-
-	if not vfs.Exists("data/" .. export_dir .. "/" .. MapPath .. ".txt") then
-		print("Storing map data in data/" .. export_dir .. "/" .. MapPath .. ".txt")
-		serializer.WriteFile("json", "data/" .. export_dir .. "/" .. MapPath .. ".txt", MapData)
-	end
-end
-
-commands.Add("export_level", function()
+commands.Add("export_map", function()
 	if not steam.bsp_world then error("no bsp map loaded") end
 
-	export_dir = "exported_levels/" .. steam.bsp_world:GetName()
+	local export_dir = "data/exported_maps/" .. steam.bsp_world:GetName()
 
-	for Key, Entity in pairs(entities.active_entities) do
-		if Entity.model then
-			ConvertModel(Entity.model)
-			for Key, SubModel in pairs(Entity.model.sub_meshes) do
-				if SubModel.material.AlbedoTexture then
-					local VMT = SubModel.material.vmt
+	local function store_file(relative_path, ext, get_data)
+		local path = vfs.RemoveExtensionFromPath(export_dir .. "/" .. relative_path) .. (extra_name and extra_name or "") .. "." .. ext
 
-					if VMT then
-						if VMT.basetexture2 and not SubModel.material.Albedo2Texture then
-							if vfs.Exists("materials/" .. VMT.basetexture2:lower() .. ".vtf") then
-								print("Adding Albedo2Texture materials/" .. VMT.basetexture2:lower() .. ".vtf")
-								SubModel.material.Albedo2Texture = Texture("materials/" .. VMT.basetexture2:lower() .. ".vtf")
-							end
-						end
+		if not vfs.IsFile(path) then
+			llog("writing ", ext, ": ", path)
+			vfs.Write(path, get_data())
+		end
+	end
 
-						local StorableTable = SubModel.material:GetStorableTable()
-						local PathNoExt = ConvertTexture(SubModel.material, SubModel.material.AlbedoTexture, VMT, StorableTable, "Albedo")
+	for _, ent in ipairs(entities.GetAll()) do
+		if ent.model then
+			store_file(ent.model:GetModelPath(), "obj", function() return ent.model:ToOBJ() end)
 
-						if not VMT.basemapalphaphongmask then
-							if SubModel.material.RoughnessTexture and  SubModel.material.RoughnessTexture.Path:find("materials/") then
-								ConvertTexture(SubModel.material, SubModel.material.RoughnessTexture, VMT, StorableTable, "Roughness", PathNoExt .. "_ROUGH")
+			for _, mesh in pairs(ent.model.sub_meshes) do
+				local mat = mesh.material
+				if mat then
+					local tbl = mat:GetStorableTable()
+					for k, v in pairs(tbl) do
+						if typex(v) == "texture" then
+							local full_path = v:GetPath()
+							local path = vfs.RemoveExtensionFromPath(full_path)
+
+							if full_path:endswith(".vtf") then
+								tbl[k] = path:match("^.+(materials/.+)$") .. ".tga"
 							else
-								GenerateRoughness(SubModel.material.MetallicTexture, VMT, StorableTable, "Roughness", PathNoExt .. "_ROUGH")
+								tbl[k] = path .. ".tga"
 							end
-						end
 
-						if SubModel.material.NormalTexture then
-							ConvertTexture(SubModel.material, SubModel.material.NormalTexture, VMT, StorableTable, "Normal", PathNoExt .. "_NRM")
-						end
+							local pixel_callback
 
-						if SubModel.material.SkyTexture then
-							ConvertTexture(SubModel.material, SubModel.material.SkyTexture, VMT, StorableTable, "Sky", PathNoExt .. "_SKY")
-						end
+							if k == "NormalTexture" then
+								local BumpBasis = {
+									{(2 ^ 0.5) / (3 ^ 0.5), 0, 1 / (3 ^ 0.5)},
+									{-1 / (6 ^ 0.5), 1 / (2 ^ 0.5), 1 / (3 ^ 0.5)},
+									{-1 / (6 ^ 0.5), -1 / (2 ^ 0.5), 1 / (3 ^ 0.5)},
+								}
 
-						if SubModel.material.MetallicTexture and not VMT.basemapalphaphongmask then
-							if SubModel.material.RoughnessTexture.Path:find("materials/") then
-								ConvertTexture(SubModel.material, SubModel.material.MetallicTexture, VMT, StorableTable, "Metallic", PathNoExt .. "_REFLECT")
-							else
-								GenerateReflection(SubModel.material.MetallicTexture, VMT, StorableTable, "Metallic", PathNoExt .. "_REFLECT")
+								pixel_callback = function(_,_,_, x, y, z, _)
+									if tbl.SSBump then
+										x = x / 255
+										y = y / 255
+										z = z / 255
+
+										x = math.clamp(BumpBasis[1][1] * x + BumpBasis[2][1] * y + BumpBasis[3][1] * z, -1.0, 1.0)
+										y = math.clamp(BumpBasis[1][2] * x + BumpBasis[2][2] * y + BumpBasis[3][2] * z, -1.0, 1.0)
+										z = math.clamp(BumpBasis[1][3] * x + BumpBasis[2][3] * y + BumpBasis[3][3] * z, -1.0, 1.0)
+
+										local length = (x * x + y * y + z * z) ^ 0.5
+
+										if length > 0 then
+											x = x / length
+											y = y / length
+											z = z / length
+										end
+
+										x = x * 0.5 + 0.5
+										y = y * 0.5 + 0.5
+										z = z * 0.5 + 0.5
+
+										x = math.round(x * 255)
+										y = math.round(y * 255)
+										z = math.round(z * 255)
+									end
+
+									if tbl.FlipYNormal then
+										y = 255 - y
+									end
+
+									if tbl.FlipXNormal then
+										x = 255 - x
+									end
+
+									--Make it Y up.
+									y = 255 - y
+
+									return x, y, z, 255
+								end
+
+								if tbl.NormalAlphaMetallic then
+									local callback = function(_,_,_, r,g,b,a)
+										return a,a,a,255
+									end
+
+									tbl.MetallicTexture = tbl[k]:gsub("(.+)(%..-)$", "%1_metallic%2")
+									store_file(tbl.MetallicTexture, "tga", function() return v:ToTGA(callback) end)
+								end
+							elseif k == "AlbedoTexture" then
+								if tbl.AlbedoPhongMask then
+									pixel_callback = function(_,_,_, r,g,b,a)
+										return r,g,b,255
+									end
+
+									local callback = function(_,_,_, r,g,b,a)
+										a = a / 255
+										a = (1 - a) ^ 2
+										a = math.clamp(0, 1)
+										a = a * 255
+										return a,a,a,a
+									end
+
+									tbl.RoughnessTexture = tbl[k]:gsub("(.+)(%..-)$", "%1_roughness%2")
+									store_file(tbl.RoughnessTexture, "tga", function() return v:ToTGA(callback) end)
+								end
 							end
+
+							-- these keys are not needed as they are baked into the texture or made as new textures
+							tbl.GUID = nil
+							tbl.FlipXNormal = nil
+							tbl.FlipYNormal = nil
+							tbl.SSBump = nil
+							tbl.NormalAlphaMetallic = nil
+							tbl.AlbedoPhongMask = nil
+
+							store_file(tbl[k], "tga", function() return v:ToTGA(pixel_callback) end)
 						end
 					end
+
+					tbl.vmt = mat.vmt
+
+					store_file(vfs.RemoveExtensionFromPath(mat:GetName()), "mat", function() return serializer.Encode("luadata", tbl) end)
 				end
 			end
 		end
-
-		WriteMapData()
 	end
+
+	llog("finished exporting")
 end)
