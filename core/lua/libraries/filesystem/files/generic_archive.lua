@@ -54,10 +54,10 @@ function CONTEXT:GetFileTree(path_info)
 	never = false
 
 	local cache_key = archive_path .. last_modified
-
 	if cache[cache_key] then
 		return cache[cache_key], relative, archive_path
 	end
+
 
 	local cache_path = "os:data/archive_cache/" .. crypto.CRC32(cache_key)
 	never = true
@@ -76,6 +76,8 @@ function CONTEXT:GetFileTree(path_info)
 	if not file then
 		return false, err
 	end
+
+	llog("generating tree data cache for ", archive_path)
 
 	local tree = utility.CreateTree("/")
 	self.tree = tree
