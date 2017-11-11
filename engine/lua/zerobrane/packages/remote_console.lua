@@ -897,16 +897,17 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 
 	local jumptopatterns = {
 		-- <filename>(line,linepos):
-		"^%s*(.-)%((%d+),(%d+)%)%s*:",
+		"^%s*(.-%.lua)%((%d+),(%d+)%)%s*:",
 		-- <filename>(line):
-		"^%s*(.-)%((%d+).*%)%s*:",
+		"^%s*(.-%.lua)%((%d+).*%)%s*:",
 		--[string "<filename>"]:line:
 		'^.-%[string "([^"]+)"%]:(%d+)%s*:',
 		-- <filename>:line:linepos
-		"^%s*(.-):(%d+):(%d+):",
+		"^%s*(.-%.lua):(%d+):(%d+):",
 		-- <filename>:line:
-		"^%s*(.-):(%d+)%s*:",
+		"^%s*(.-%.lua):(%d+)%s*:",
 		-- <filename>:line
+		"(%S-%.lua):(%d+)",
 		"Line (%d+).-@(%S+%.lua)",
 		"(%d+)%s-@(%S+%.lua)",
 		"(%d+)%s-(%S+%.lua)",
@@ -924,6 +925,10 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 		local fname, jumpline, jumplinepos
 		for _,pattern in ipairs(jumptopatterns) do
 			fname,jumpline,jumplinepos = linetx:match(pattern)
+
+			if fname then
+				ide:Print(pattern, " = ", fname,jumpline,jumplinepos)
+			end
 
 			if tonumber(fname) then
 				local line = tonumber(fname)
