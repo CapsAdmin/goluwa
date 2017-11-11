@@ -238,8 +238,6 @@ local function load_mdl(path)
 		local count = header[name .. "_count"]
 		local offset = header[name .. "_offset"]
 
-		--tasks.Report("reading " .. name)
-
 		if _debug then llog("reading %i %ss (at %i)", count, name, offset) end
 
 		if _debug then profiler.StartTimer(name) end
@@ -254,6 +252,7 @@ local function load_mdl(path)
 					out[i] = data
 				end
 
+				tasks.ReportProgress("reading " .. name, count)
 				tasks.Wait()
 			end
 
@@ -520,8 +519,6 @@ local function load_vtx(path)
 					mesh.strip_groups = {}
 
 					for i = 1, mesh.strip_group_count do
-						tasks.ReportProgress("reading body parts", vtx.body_part_count * body_part.model_count * model.lod_count * lod_model.mesh_count * mesh.strip_group_count)
-
 						local stream_pos = buffer:GetPosition()
 
 						local strip_group = {}
@@ -540,16 +537,13 @@ local function load_vtx(path)
 							local vertex = {bone_weight_indices = {}, boneId = {}}
 							for i = 1, MAX_NUM_BONES_PER_VERT do
 								vertex.bone_weight_indices[i] = buffer:ReadByte()
-								tasks.Wait()
 							end
 							vertex.bone_count = buffer:ReadByte()
 							vertex.mesh_vertex_index = buffer:ReadShort()
 							for i = 1, MAX_NUM_BONES_PER_VERT do
 								vertex.boneId[i] = buffer:ReadByte()
-								tasks.Wait()
 							end
 							vertices[i] = vertex
-							tasks.Wait()
 						end
 						buffer:PopPosition()
 
@@ -557,7 +551,6 @@ local function load_vtx(path)
 						buffer:PushPosition(stream_pos + strip_group.indices_offset)
 						for i = 1, strip_group.indices_count do
 							indices[i] = buffer:ReadShort() + 1
-							tasks.Wait()
 						end
 						buffer:PopPosition()
 
@@ -584,7 +577,6 @@ local function load_vtx(path)
 								bone_state_changes[i] = {}
 								bone_state_changes[i].hardware_id = buffer:ReadLong()
 								bone_state_changes[i].new_bone_id = buffer:ReadLong()
-								tasks.Wait()
 							end
 							buffer:PopPosition()
 
@@ -594,27 +586,23 @@ local function load_vtx(path)
 							strip.vertices = vertices
 
 							strips[i] = strip
-							tasks.Wait()
 						end
 						buffer:PopPosition()
 
 						strip_group.strips = strips
+
+						tasks.ReportProgress("reading body parts", vtx.body_part_count * body_part.model_count * model.lod_count * lod_model.mesh_count * mesh.strip_group_count)
 						tasks.Wait()
 					end
 					buffer:PopPosition()
-					tasks.Wait()
 				end
 				buffer:PopPosition()
-				tasks.Wait()
 			end
 			buffer:PopPosition()
-			tasks.Wait()
 		end
 		buffer:PopPosition()
-		tasks.Wait()
 	end
 	buffer:PopPosition()
-	tasks.Wait()
 
 	return vtx
 end
@@ -645,8 +633,6 @@ local function load_vvd(path)
 		local vertices_count = vvd.lod_vertices_count[1]
 		vvd.vertices = {}
 		for i = 1, vertices_count do
-			tasks.ReportProgress("reading vertices", vertices_count)
-
 			local boneWeight = {weight = {}, bone = {}}
 
 			for x = 1, MAX_NUM_BONES_PER_VERT do
@@ -659,13 +645,17 @@ local function load_vvd(path)
 
 			local vertex = {}
 
-			local pos = buffer:ReadVec3()
-			vertex.pos = -Vec3(pos.y, pos.x, pos.z) * steam.source2meters
-			local normal = buffer:ReadVec3()
-			vertex.normal = -Vec3(normal.y, normal.x, normal.z)
+			local x,y,z = buffer:ReadFloat(), buffer:ReadFloat(), buffer:ReadFloat()
+			vertex.pos = Vec3(y * -steam.source2meters, x * -steam.source2meters, z * -steam.source2meters)
+
+			local x,y,z = buffer:ReadFloat(), buffer:ReadFloat(), buffer:ReadFloat()
+			vertex.normal = Vec3(-y, -x, -z)
+
 			vertex.uv = buffer:ReadVec2()
 
 			vvd.vertices[i] = vertex
+
+			tasks.ReportProgress("reading vertices", vertices_count)
 			tasks.Wait()
 		end
 	end
@@ -678,7 +668,6 @@ local function load_vvd(path)
 
 		vvd.theFixups = {}
 		for i = 1, vvd.fixup_count do
-			tasks.ReportProgress("reading fixup", vvd.fixup_count)
 			local fixup = {}
 
 			fixup.lod_index = buffer:ReadLong() + 1
@@ -686,24 +675,29 @@ local function load_vvd(path)
 			fixup.vertices_count = buffer:ReadLong()
 
 			vvd.theFixups[i] = fixup
+
+			tasks.ReportProgress("reading fixup", vvd.fixup_count)
+			tasks.Wait()
 		end
 
 		if vvd.lod_count > 0 then
 			buffer:SetPosition(vvd.vertices_offset)
 
 			for lod_index = 1, vvd.lod_count do
-				tasks.ReportProgress("reading lod", vvd.lod_count)
 				vvd.fixed_vertices_by_lod[lod_index] = {}
 
 				for _, fixup in ipairs(vvd.theFixups) do
 					if fixup.lod_index >= lod_index then
 						for i = 1, fixup.vertices_count do
 							table.insert(vvd.fixed_vertices_by_lod[lod_index], vvd.vertices[fixup.vertex_index + (i - 1)])
+
+							tasks.ReportProgress("fixing lod", fixup.vertices_count)
 							tasks.Wait()
 						end
 					end
 				end
 
+				-- only first lod needed
 				break
 			end
 		end
@@ -717,18 +711,19 @@ end
 render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 	local models = {}
 
-	local ok, err = pcall(function()
-
 	if full_path:endswith(".mdl") then
 		full_path = full_path:sub(1,-#".mdl"-1)
 	end
 
-	tasks.Report("reading mdl")
+	utility.PushTimeWarning()
+
 	local mdl = load_mdl(full_path)
-	tasks.Report("reading vvd")
 	local vvd = load_vvd(full_path)
-	tasks.Report("reading vtx")
 	local vtx = load_vtx(full_path)
+
+	utility.PopTimeWarning("model read", 0)
+
+	utility.PushTimeWarning()
 
 	tasks.Report("generating mesh")
 	for _, body_part in ipairs(vtx.body_parts) do
@@ -792,8 +787,8 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 
 							local mesh = gfx.CreatePolygon3D()
 
-							mesh.material = render.CreateMaterial("model")
 							mesh:SetName(full_path)
+
 							local path = mdl.materials[model_i]
 
 							if path then
@@ -809,6 +804,7 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 									end
 								end
 
+								mesh.material = render.CreateMaterial("model")
 								mesh.material:LoadVMT(path)
 							end
 
@@ -828,14 +824,9 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 				break -- only first lod_model for now
 			end
 		end
-	--	break -- only first body part
 	end
 
-	end)
-
-	if not ok then
-		llog("failed to decompile %s: %s", full_path, err)
-	end
+	utility.PopTimeWarning("model generation", 0)
 
 	return models
 end)
@@ -844,6 +835,8 @@ if RELOAD then
 	render3d.model_cache = {}
 	render3d.model_loader_cb = utility.CreateCallbackThing(render3d.model_cache)
 
+	utility.PushTimeWarning()
+	profiler.ToggleStatistical()
 	if true then
 		steam.MountSourceGame("hl2")
 		local ent = utility.RemoveOldObject(entities.CreateEntity("visual"), "test")
@@ -854,4 +847,6 @@ if RELOAD then
 		local ent = utility.RemoveOldObject(entities.CreateEntity("visual"), "test")
 		ent:SetModelPath("models/inventory_items/trophy_majors.mdl")
 	end
+	profiler.ToggleStatistical()
+	utility.PopTimeWarning("mdl", 0)
 end

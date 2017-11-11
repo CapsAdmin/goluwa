@@ -121,7 +121,6 @@ function META:Start(now)
 end
 
 function META:Wait(sec)
-	if not tasks.IsEnabled() then return end
 	if sec then self.wait = system.GetElapsedTime() + sec end
 	coroutine.yield()
 end
@@ -189,6 +188,7 @@ function tasks.GetActiveTask()
 end
 
 function tasks.Wait(time)
+	if not tasks.IsEnabled() then return end
 	local thread = tasks.coroutine_lookup[coroutine.running()]
 	if thread then
 		thread:Wait(time)
@@ -196,6 +196,7 @@ function tasks.Wait(time)
 end
 
 function tasks.ReportProgress(what, max)
+	if not tasks.IsEnabled() then return end
 	local thread = tasks.coroutine_lookup[coroutine.running()]
 	if thread then
 		thread:ReportProgress(what, max)
@@ -203,6 +204,7 @@ function tasks.ReportProgress(what, max)
 end
 
 function tasks.Report(what)
+	if not tasks.IsEnabled() then return end
 	local thread = tasks.coroutine_lookup[coroutine.running()]
 	if thread then
 		thread:Report(what)
