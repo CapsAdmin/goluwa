@@ -56,10 +56,7 @@ function math.randomf(min, max)
 end
 
 function math.clamp(self, min, max)
-	return
-		self <= min and min or
-		self >= max and max or
-		self
+	return math.min(math.max(self, min), max)
 end
 
 function math.lerp(m, a, b)
