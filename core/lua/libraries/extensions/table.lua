@@ -143,6 +143,25 @@ function table.getkey(tbl, val)
 	return nil
 end
 
+function table.getindex(tbl, val)
+	for i, v in ipairs(tbl) do
+		if i == v then
+			return i
+		end
+	end
+
+	return nil
+end
+
+function table.removevalues(tbl, val)
+	local index = table.getindex(tbl, val)
+
+	while index ~= nil do
+		table.removevalues(tbl, index)
+		index = table.getindex(tbl, val)
+	end
+end
+
 function table.count(tbl)
 	local i = 0
 
