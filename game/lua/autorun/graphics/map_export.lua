@@ -12,6 +12,16 @@ commands.Add("export_map", function()
 		end
 	end
 
+	store_file("map", "txt", function()
+		local data = {}
+
+		for i, ent in pairs(entities.GetAll()) do
+			data[i] = ent:GetStorableTable()
+		end
+
+		return serializer.Encode("luadata", data)
+	end)
+
 	for _, ent in ipairs(entities.GetAll()) do
 		if ent.model then
 			store_file(ent.model:GetModelPath(), "obj", function() return ent.model:ToOBJ() end)

@@ -98,8 +98,10 @@ if GRAPHICS then
 				self.translucent = self.MaterialOverride:GetTranslucent()
 			else
 				for _, model in ipairs(self.sub_models) do
-					if model.material:GetTranslucent() then
-						self.translucent = true
+					for _, data in ipairs(model:GetIndices()) do
+						if data.data:GetTranslucent() then
+							self.translucent = true
+						end
 					end
 				end
 			end
@@ -268,67 +270,77 @@ if GRAPHICS then
 		local SubmeshCount = 0
 		local Count = 0
 
-		local function export(SubModel)
-			local Mesh = SubModel.vertex_buffer
-			for I = 0, Mesh.indices_length - 1, 3 do
-				Count = Count + 1
-				local Index = Mesh.Indices[I]
-				local Vertex = string.format("v %.6f %.6f %.6f\n", Mesh.Vertices[Index].pos[0], Mesh.Vertices[Index].pos[1], Mesh.Vertices[Index].pos[2])
-				Vertex = Vertex .. string.format("vn %.6f %.6f %.6f\n", Mesh.Vertices[Index].normal[0], Mesh.Vertices[Index].normal[1], Mesh.Vertices[Index].normal[2])
-				--Make vertex coordinate Y up.
-				Vertex = Vertex .. string.format("vt %.6f %.6f\n", Mesh.Vertices[Index].uv[0], 1.0 - Mesh.Vertices[Index].uv[1])
-				Vertex = Vertex .. string.format("vs %i %i\n", SubmeshCount, SubmeshCount)
+		local function export(model)
+			local vertices = model.vertex_buffer:GetVertices()
 
-				Count = Count + 1
-				Index = Mesh.Indices[I + 1]
-				Vertex = Vertex .. string.format("v %.6f %.6f %.6f\n", Mesh.Vertices[Index].pos[0], Mesh.Vertices[Index].pos[1], Mesh.Vertices[Index].pos[2])
-				Vertex = Vertex .. string.format("vn %.6f %.6f %.6f\n", Mesh.Vertices[Index].normal[0], Mesh.Vertices[Index].normal[1], Mesh.Vertices[Index].normal[2])
-				--Make vertex coordinate Y up.
-				Vertex = Vertex .. string.format("vt %.6f %.6f\n", Mesh.Vertices[Index].uv[0], 1.0 - Mesh.Vertices[Index].uv[1])
-				Vertex = Vertex .. string.format("vs %i %i\n", SubmeshCount, SubmeshCount)
+			for _, data in ipairs(model:GetIndices()) do
+				local indices = data.index_buffer.Indices
 
-				Count = Count + 1
-				Index = Mesh.Indices[I + 2]
-				Vertex = Vertex .. string.format("v %.6f %.6f %.6f\n", Mesh.Vertices[Index].pos[0], Mesh.Vertices[Index].pos[1], Mesh.Vertices[Index].pos[2])
-				Vertex = Vertex .. string.format("vn %.6f %.6f %.6f\n", Mesh.Vertices[Index].normal[0], Mesh.Vertices[Index].normal[1], Mesh.Vertices[Index].normal[2])
-				--Make vertex coordinate Y up.
-				Vertex = Vertex .. string.format("vt %.6f %.6f\n", Mesh.Vertices[Index].uv[0], 1.0 - Mesh.Vertices[Index].uv[1])
-				Vertex = Vertex .. string.format("vs %i %i\n", SubmeshCount, SubmeshCount)
+				for I = 0, indices:GetLength() - 1, 3 do
+					Count = Count + 1
+					local Index = indices[I]
+					local Vertex = string.format("v %.6f %.6f %.6f\n", vertices[Index].pos[0], vertices[Index].pos[1], vertices[Index].pos[2])
+					Vertex = Vertex .. string.format("vn %.6f %.6f %.6f\n", vertices[Index].normal[0], vertices[Index].normal[1], vertices[Index].normal[2])
+					--Make vertex coordinate Y up.
+					Vertex = Vertex .. string.format("vt %.6f %.6f\n", vertices[Index].uv[0], 1.0 - vertices[Index].uv[1])
+					Vertex = Vertex .. string.format("vs %i %i\n", SubmeshCount, SubmeshCount)
 
-				Vertex = Vertex .. string.format("f %i/%i/%i %i/%i/%i %i/%i/%i\n", Count - 2, Count - 2, Count - 2, Count - 1, Count - 1, Count - 1, Count, Count, Count)
+					Count = Count + 1
+					Index = indices[I + 1]
+					Vertex = Vertex .. string.format("v %.6f %.6f %.6f\n", vertices[Index].pos[0], vertices[Index].pos[1], vertices[Index].pos[2])
+					Vertex = Vertex .. string.format("vn %.6f %.6f %.6f\n", vertices[Index].normal[0], vertices[Index].normal[1], vertices[Index].normal[2])
+					--Make vertex coordinate Y up.
+					Vertex = Vertex .. string.format("vt %.6f %.6f\n", vertices[Index].uv[0], 1.0 - vertices[Index].uv[1])
+					Vertex = Vertex .. string.format("vs %i %i\n", SubmeshCount, SubmeshCount)
 
-				table.insert(out, Vertex)
+					Count = Count + 1
+					Index = indices[I + 2]
+					Vertex = Vertex .. string.format("v %.6f %.6f %.6f\n", vertices[Index].pos[0], vertices[Index].pos[1], vertices[Index].pos[2])
+					Vertex = Vertex .. string.format("vn %.6f %.6f %.6f\n", vertices[Index].normal[0], vertices[Index].normal[1], vertices[Index].normal[2])
+					--Make vertex coordinate Y up.
+					Vertex = Vertex .. string.format("vt %.6f %.6f\n", vertices[Index].uv[0], 1.0 - vertices[Index].uv[1])
+					Vertex = Vertex .. string.format("vs %i %i\n", SubmeshCount, SubmeshCount)
+
+					Vertex = Vertex .. string.format("f %i/%i/%i %i/%i/%i %i/%i/%i\n", Count - 2, Count - 2, Count - 2, Count - 1, Count - 1, Count - 1, Count, Count, Count)
+
+					table.insert(out, Vertex)
+				end
 			end
 		end
 
-		for _, SubModel in ipairs(self.sub_models) do
+		for _, model in ipairs(self:GetSubModels()) do
+			for _, data in ipairs(model:GetIndices()) do
+				local mat = data.data
 
-			if SubModel.material.vmt then
-				local MaterialNameRaw = SubModel.material.vmt.fullpath
-				local MaterialName = SubModel.material.vmt.fullpath
+				if mat.vmt then
+					local MaterialNameRaw = mat.vmt.fullpath
+					local MaterialName = mat.vmt.fullpath
 
-				if MaterialName:find("materials/") then
-					MaterialName = vfs.RemoveExtensionFromPath(MaterialName:sub(select(1, MaterialName:find("materials/"), #MaterialName)))
-				end
+					if MaterialName:find("materials/") then
+						MaterialName = vfs.RemoveExtensionFromPath(MaterialName:sub(select(1, MaterialName:find("materials/"), #MaterialName)))
+					end
 
-				if not UsedMaterials[MaterialName] then
-					SubmeshCount = SubmeshCount + 1
-					UsedMaterials[MaterialName] = true
+					if not UsedMaterials[MaterialName] then
+						SubmeshCount = SubmeshCount + 1
+						UsedMaterials[MaterialName] = true
 
-					table.insert(out, "o " .. MaterialName .. "\n")
+						table.insert(out, "o " .. MaterialName .. "\n")
 
-					for _, SubModel in ipairs(self.sub_models) do
-						if SubModel.material.vmt and SubModel.material.vmt.fullpath == MaterialNameRaw then
-							export(SubModel)
+						for _, model in ipairs(self:GetSubModels()) do
+							for _, data in ipairs(model:GetIndices()) do
+								local mat = data.data
+								if mat.vmt and mat.vmt.fullpath == MaterialNameRaw then
+									export(model)
+								end
+							end
 						end
 					end
+				else
+					SubmeshCount = SubmeshCount + 1
+					table.insert(out, "o error\n")
+					export(model)
 				end
-			else
-				SubmeshCount = SubmeshCount + 1
-				table.insert(out, "o error\n")
-				export(SubModel)
 			end
-
 		end
 
 		return table.concat(out)
