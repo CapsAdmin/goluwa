@@ -61,7 +61,7 @@ do
 		local delta = os.clock() - start_time
 
 		if delta > threshold then
-			logf("%s took %f seconds to load\n", what, delta)
+			logf("%s: %f seconds to execute\n", what, delta)
 		end
 	end
 end
