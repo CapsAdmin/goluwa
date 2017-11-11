@@ -24,7 +24,7 @@ META.Network = {
 
 if GRAPHICS then
 	function META:Initialize()
-		self.sub_meshes = {}
+		self.sub_models = {}
 		self.next_visible = {}
 		self.visible = {}
 		self.occluders = {}
@@ -60,7 +60,7 @@ if GRAPHICS then
 	end
 
 	function META:SetModelPath(path)
-		self:RemoveMeshes()
+		self:RemoveSubModels()
 
 		self.ModelPath = path
 
@@ -72,11 +72,11 @@ if GRAPHICS then
 				self:SetLoading(false)
 				self:BuildBoundingBox()
 			end,
-			function(mesh)
-				self:AddMesh(mesh)
+			function(model)
+				self:AddSubModel(model)
 			end,
 			function(err)
-				logf("%s failed to load mesh %q: %s\n", self, path, err)
+				logf("%s failed to load model %q: %s\n", self, path, err)
 				self:MakeError()
 			end
 		)
@@ -85,7 +85,7 @@ if GRAPHICS then
 	end
 
 	function META:MakeError()
-		self:RemoveMeshes()
+		self:RemoveSubModels()
 		self:SetLoading(false)
 		self:SetModelPath("models/error.mdl")
 	end
@@ -97,20 +97,20 @@ if GRAPHICS then
 			if self.MaterialOverride then
 				self.translucent = self.MaterialOverride:GetTranslucent()
 			else
-				for _, mesh in ipairs(self.sub_meshes) do
-					if mesh.material:GetTranslucent() then
+				for _, model in ipairs(self.sub_models) do
+					if model.material:GetTranslucent() then
 						self.translucent = true
 					end
 				end
 			end
 		end
 
-		function META:AddMesh(mesh)
-			table.insert(self.sub_meshes, mesh)
-			mesh.material = mesh.material or render3d.default_material
-			mesh:CallOnRemove(function()
+		function META:AddSubModel(model)
+			table.insert(self.sub_models, model)
+			model.material = model.material or render3d.default_material
+			model:CallOnRemove(function()
 				if self:IsValid() then
-					self:RemoveMesh(mesh)
+					self:RemoveSubModel(model)
 				end
 			end, self)
 
@@ -123,35 +123,35 @@ if GRAPHICS then
 			check_translucent(self)
 		end
 
-		function META:RemoveMesh(mesh)
-			for i, v in ipairs(self.sub_meshes) do
-				if v == mesh then
-					table.remove(self.sub_meshes, i)
+		function META:RemoveSubModel(model)
+			for i, v in ipairs(self.sub_models) do
+				if v == model then
+					table.remove(self.sub_models, i)
 					break
 				end
 			end
 
-			if not self.sub_meshes[1] then
+			if not self.sub_models[1] then
 				render3d.RemoveModel(self)
 			end
 
 			check_translucent(self)
 		end
 
-		function META:RemoveMeshes()
-			for _, mesh in pairs(self.sub_meshes) do
-				self:RemoveMesh(mesh)
+		function META:RemoveSubModels()
+			for _, model in pairs(self.sub_models) do
+				self:RemoveSubModel(model)
 			end
 		end
 
-		function META:GetMeshes()
-			return self.sub_meshes
+		function META:GetSubModels()
+			return self.sub_models
 		end
 	end
 
 	function META:BuildBoundingBox()
-		for _, mesh in ipairs(self.sub_meshes) do
-			self.AABB:Expand(mesh.AABB)
+		for _, model in ipairs(self.sub_models) do
+			self.AABB:Expand(model.AABB)
 		end
 
 		self:SetAABB(self.AABB)
@@ -186,13 +186,18 @@ if GRAPHICS then
 		function META:Draw()
 			render3d.camera:SetWorld(self.tr:GetMatrix())
 
-			for _, mesh in ipairs(self.sub_meshes) do
-				mesh.material.Color = self.Color
-				mesh.material.RoughnessMultiplier = self.RoughnessMultiplier
-				mesh.material.MetallicMultiplier = self.MetallicMultiplier
-				render_SetMaterial(mesh.material)
-				render3d.shader:Bind()
-				mesh.vertex_buffer:Draw()
+			for _, model in ipairs(self.sub_models) do
+				for _, data in ipairs(model:GetIndices()) do
+					local mat = data.data
+					mat.Color = self.Color
+					mat.RoughnessMultiplier = self.RoughnessMultiplier
+					mat.MetallicMultiplier = self.MetallicMultiplier
+					render_SetMaterial(mat)
+
+					render3d.shader:Bind()
+
+					model.vertex_buffer:Draw(data.index_buffer)
+				end
 			end
 		end
 	else
@@ -220,19 +225,27 @@ if GRAPHICS then
 					mat.MetallicMultiplier = self.MetallicMultiplier
 					mat.UVMultiplier = self.UVMultiplier
 					render_SetMaterial(mat)
-					for _, mesh in ipairs(self.sub_meshes) do
-						render3d.shader:Bind()
-						mesh.vertex_buffer:Draw()
+
+					for _, model in ipairs(self.sub_models) do
+						for _, data in ipairs(model:GetIndices()) do
+							render3d.shader:Bind()
+							model.vertex_buffer:Draw(data.index_buffer)
+						end
 					end
 				else
-					for _, mesh in ipairs(self.sub_meshes) do
-						mesh.material.Color = self.Color
-						mesh.material.RoughnessMultiplier = self.RoughnessMultiplier
-						mesh.material.MetallicMultiplier = self.MetallicMultiplier
-						mesh.material.UVMultiplier = self.UVMultiplier
-						render_SetMaterial(mesh.material)
-						render3d.shader:Bind()
-						mesh.vertex_buffer:Draw()
+					for _, model in ipairs(self.sub_models) do
+						for _, data in ipairs(model:GetIndices()) do
+							local mat = data.data
+							mat.Color = self.Color
+							mat.RoughnessMultiplier = self.RoughnessMultiplier
+							mat.MetallicMultiplier = self.MetallicMultiplier
+							mat.UVMultiplier = self.UVMultiplier
+							render_SetMaterial(mat)
+
+							render3d.shader:Bind()
+
+							model.vertex_buffer:Draw(data.index_buffer)
+						end
 					end
 				end
 
@@ -288,7 +301,7 @@ if GRAPHICS then
 			end
 		end
 
-		for _, SubModel in ipairs(self.sub_meshes) do
+		for _, SubModel in ipairs(self.sub_models) do
 
 			if SubModel.material.vmt then
 				local MaterialNameRaw = SubModel.material.vmt.fullpath
@@ -304,7 +317,7 @@ if GRAPHICS then
 
 					table.insert(out, "o " .. MaterialName .. "\n")
 
-					for _, SubModel in ipairs(self.sub_meshes) do
+					for _, SubModel in ipairs(self.sub_models) do
 						if SubModel.material.vmt and SubModel.material.vmt.fullpath == MaterialNameRaw then
 							export(SubModel)
 						end

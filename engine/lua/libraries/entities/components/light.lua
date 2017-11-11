@@ -124,7 +124,7 @@ if GRAPHICS then
 
 		render.SetBlendMode("one", "one")
 		shader:Bind()
-		self.light_mesh:Draw()
+		self.light_mesh.vertex_buffer:Draw(self.light_mesh.indices[1].index_buffer)
 	end
 
 	function META:DrawScene(pos, rot, i)

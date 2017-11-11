@@ -11,7 +11,6 @@ function META:__tostring2()
 end
 
 META:GetSet("Vertices", {})
-META:GetSet("Indices")
 META:GetSet("AABB", AABB())
 
 META.i = 1
@@ -24,15 +23,15 @@ end
 function META:Clear()
 	self.i = 1
 	table.clear(self.Vertices)
-	if self.Indices then table.clear(self.Indices) end
 end
 
+function META:GenerateIndicesFromVertices(data)
+	local index_buffer = render.CreateIndexBuffer()
+	index_buffer:SetDrawHint("static")
+	local indices = index_buffer:LoadVertices(self.Vertices, nil)
 
-function META:Upload()
-	if #self.Vertices == 0 then return end
-
-	self.vertex_buffer = assert(render3d.CreateMesh(self.Vertices, self.Indices))
-	self.vertex_buffer:SetDrawHint("static")
+	self.indices = self.indices or {}
+	table.insert(self.indices, {index_buffer = index_buffer, data = data, indices = indices})
 end
 
 function META:UnreferenceVertices()
@@ -46,10 +45,22 @@ function META:GetMesh()
 	return self.vertex_buffer
 end
 
-function META:Draw()
-	if self.vertex_buffer then
-		self.vertex_buffer:Draw()
-	end
+function META:Upload()
+	self.vertex_buffer = assert(render3d.CreateMesh(self.Vertices))
+	self.vertex_buffer:SetDrawHint("static")
+end
+
+function META:AddIndices(indices, data)
+	local index_buffer = render.CreateIndexBuffer()
+	index_buffer:SetDrawHint("static")
+	index_buffer:LoadIndices(indices)
+
+	self.indices = self.indices or {}
+	table.insert(self.indices, {index_buffer = index_buffer, data = data, indices = indices})
+end
+
+function META:GetIndices()
+	return self.indices or {}
 end
 
 do -- helpers
@@ -71,19 +82,11 @@ do -- helpers
 	end
 
 	function META:BuildNormals()
-		if self.Indices then
-			for i = 1, #self.Indices, 3 do
-				local a = self.Vertices[self.Indices[i + 0] + 1]
-				local b = self.Vertices[self.Indices[i + 1] + 1]
-				local c = self.Vertices[self.Indices[i + 2] + 1]
-
-				build_normal(a, b, c)
-			end
-		else
-			for i = 1, #self.Vertices, 3 do
-				local a = self.Vertices[i + 0]
-				local b = self.Vertices[i + 1]
-				local c = self.Vertices[i + 2]
+		for _, indices in ipairs(self:GetIndices()) do
+			for i = 1, #indices.indices, 3 do
+				local a = self.Vertices[indices.indices[i + 0] + 1]
+				local b = self.Vertices[indices.indices[i + 1] + 1]
+				local c = self.Vertices[indices.indices[i + 2] + 1]
 
 				build_normal(a, b, c)
 			end
@@ -124,19 +127,11 @@ do -- helpers
 	end
 
 	function META:IterateFaces(cb)
-		if self.Indices then
-			for i = 1, #self.Indices, 3 do
-				local ai = self.Indices[i + 0] + 1
-				local bi = self.Indices[i + 1] + 1
-				local ci = self.Indices[i + 2] + 1
-
-				cb(self.Vertices[ai], self.Vertices[bi], self.Vertices[ci])
-			end
-		else
-			for i = 1, #self.Vertices, 3 do
-				local ai = i + 0
-				local bi = i + 1
-				local ci = i + 2
+		for _, indices in ipairs(self:GetIndices()) do
+			for i = 1, #indices.indices, 3 do
+				local ai = indices.indices[i + 0] + 1
+				local bi = indices.indices[i + 1] + 1
+				local ci = indices.indices[i + 2] + 1
 
 				cb(self.Vertices[ai], self.Vertices[bi], self.Vertices[ci])
 			end
@@ -147,19 +142,11 @@ do -- helpers
 		local tan1 = {}
 		local tan2 = {}
 
-		if self.Indices then
-			for i = 1, #self.Indices, 3 do
-				local ai = self.Indices[i + 0] + 1
-				local bi = self.Indices[i + 1] + 1
-				local ci = self.Indices[i + 2] + 1
-
-				build_tangents(self, ai, bi, ci, tan1, tan2)
-			end
-		else
-			for i = 1, #self.Vertices, 3 do
-				local ai = i + 0
-				local bi = i + 1
-				local ci = i + 2
+		for _, indices in ipairs(self:GetIndices()) do
+			for i = 1, #indices.indices, 3 do
+				local ai = indices.indices[i + 0] + 1
+				local bi = indices.indices[i + 1] + 1
+				local ci = indices.indices[i + 2] + 1
 
 				build_tangents(self, ai, bi, ci, tan1, tan2)
 			end

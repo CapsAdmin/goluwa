@@ -66,7 +66,7 @@ function goluwa.PreDrawGUI()
 
 			render2d.PushMatrix(0, 0, fb:GetTexture():GetSize():Unpack())
 				shader:Bind()
-				render2d.rectangle:Draw()
+				render2d.rectangle:Draw(render2d.rectangle_indices)
 			render2d.PopMatrix()
 		fb:End()
 

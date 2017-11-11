@@ -19,7 +19,7 @@ function render2d.DrawRect(x,y, w,h, a, ox,oy)
 		end
 
 		render2d.BindShader()
-		render2d.rectangle:Draw()
+		render2d.rectangle:Draw(render2d.rectangle_indices)
 	render2d.PopMatrix()
 end
 

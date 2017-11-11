@@ -270,7 +270,7 @@ function goluwa.PreDrawGUI()
 	local coords = {200,50, 400,50, 500,300, 100,300, 200,50}
 	local vertices, indices, mode = draw_line("none", coords, 50, 1)
 
-	mesh = mesh or dynamic and render2d.CreateMesh(100) or render2d.CreateMesh(to_render2d_mesh(vertices), indices)
+	mesh = mesh or dynamic and render2d.CreateMesh(100) or render2d.CreateMesh(to_render2d_mesh(vertices))
 	mesh:SetMode(mode)
 
 	if dynamic then

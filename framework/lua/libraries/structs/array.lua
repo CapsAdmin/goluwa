@@ -1,3 +1,4 @@
+
 local ffi = require("ffi")
 local TMPL = prototype.CreateTemplate("array")
 
@@ -19,7 +20,7 @@ end
 
 
 function TMPL:__tostring()
-	return ("array[%p][%s][%i]"):format(self.Pointer, self.ArrayType, self.Size)
+	return ("array[%p][%s][%i]"):format(self.Pointer, self.ArrayType, self:GetLength())
 end
 
 function TMPL:__index2(key)

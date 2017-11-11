@@ -91,7 +91,7 @@ event.Timer("fb_update", fps, 0, function()
 
 		render2d.PushMatrix(0, 0, W, H)
 			shader:Bind()
-			render2d.rectangle:Draw()
+			render2d.rectangle:Draw(render2d.rectangle_indices)
 		render2d.PopMatrix()
 
 		if input.IsMouseDown("button_1") or input.IsMouseDown("button_2") then

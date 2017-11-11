@@ -551,6 +551,7 @@ function steam.LoadMap(path)
 					meshes[texname] = mesh
 
 					if GRAPHICS then
+						mesh:SetName(path .. ": " .. texname)
 						mesh.material = render.CreateMaterial("model")
 						mesh.material:LoadVMT("materials/" .. texname .. ".vmt")
 					end
@@ -636,6 +637,7 @@ function steam.LoadMap(path)
 
 	if GRAPHICS then
 		for _, mesh in ipairs(models) do
+			mesh:GenerateIndicesFromVertices(mesh.material)
 			mesh:BuildNormals()
 			mesh:BuildTangents()
 			tasks.ReportProgress("generating normals", #models)

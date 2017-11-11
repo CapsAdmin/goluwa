@@ -730,95 +730,66 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 		for _, model_ in ipairs(body_part.models) do
 			for lod_index, lod_model in ipairs(model_.model_lods) do
 				if lod_model.meshes then
+
+					local mesh = gfx.CreatePolygon3D()
+					local vertices = vvd.fixed_vertices_by_lod[lod_index] or vvd.vertices
+					mesh:SetVertices(table.copy(vertices))
+
 					local WHAT2 = 0
 
 					for model_i, mesh_data in ipairs(lod_model.meshes) do
 						tasks.ReportProgress("generating mesh", #vtx.body_parts * #model_.model_lods * #lod_model.meshes)
 						tasks.Wait()
 
-						local vertices = vvd.fixed_vertices_by_lod[lod_index] or vvd.vertices
-						local reduced_vertices = {}
-						local vertex_i = 1
-
-						local reduced_indices = {}
-						local index_i = 1
-
-						local done = {}
-						local matched = 0
-
 						local WHAT = 0
+						local indices = {}
+						local index_i = 1
 
 						for _, strip_group in ipairs(mesh_data.strip_groups) do
 							for _, strip in ipairs(strip_group.strips) do
 								for _, index in ipairs(strip.indices) do
 									WHAT = math.max(WHAT, strip.vertices[index].mesh_vertex_index + 1)
 									local v = strip.vertices[index].mesh_vertex_index + WHAT2
-									local vtx = vertices[v + 1]
-									if vtx then
-
-										if done[v] then
-											reduced_indices[index_i] = done[v]
-											index_i = index_i + 1
-										else
-											reduced_vertices[vertex_i] = {
-												pos = vtx.pos:Copy(),
-												normal = vtx.normal:Copy(),
-												uv = vtx.uv:Copy(),
-											}
-											vertex_i = vertex_i + 1
-
-											local index = #reduced_vertices - 1
-
-											reduced_indices[index_i] = index
-											index_i = index_i + 1
-
-											done[v] = index
-										end
-
-										matched = matched + 1
-									end
+									indices[index_i] = v
+									index_i = index_i + 1
 								end
 							end
 						end
 
 						WHAT2 = WHAT
 
-						if #reduced_vertices > 0 then
+						mesh:SetName(full_path)
 
-							local mesh = gfx.CreatePolygon3D()
+						local material
+						local path = mdl.materials[model_i]
 
-							mesh:SetName(full_path)
-
-							local path = mdl.materials[model_i]
-
-							if path then
-								if path:find("/", nil, true) or path:find("\\", nil, true) then
-									path = vfs.FindMixedCasePath("materials/" .. path .. ".vmt") or path
-								else
-									for _, dir in ipairs(mdl.texturedir) do
-										local new_path = vfs.FindMixedCasePath(dir.path .. path .. ".vmt")
-										if new_path then
-											path = new_path
-											break
-										end
+						if path then
+							if path:find("/", nil, true) or path:find("\\", nil, true) then
+								path = vfs.FindMixedCasePath("materials/" .. path .. ".vmt") or path
+							else
+								for _, dir in ipairs(mdl.texturedir) do
+									local new_path = vfs.FindMixedCasePath(dir.path .. path .. ".vmt")
+									if new_path then
+										path = new_path
+										break
 									end
 								end
-
-								mesh.material = render.CreateMaterial("model")
-								mesh.material:LoadVMT(path)
 							end
 
-							mesh:SetVertices(reduced_vertices)
-							mesh:SetIndices(reduced_indices)
-							mesh:BuildTangents()
-							mesh:BuildBoundingBox()
-							mesh:Upload()
-
-							mesh_callback(mesh)
-
-							table.insert(models, mesh)
+							material = render.CreateMaterial("model")
+							material:LoadVMT(path)
 						end
+
+						mesh:AddIndices(indices, material)
 					end
+
+					mesh:BuildBoundingBox()
+					mesh:BuildTangents()
+
+					mesh:Upload()
+					mesh_callback(mesh)
+
+					table.insert(models, mesh)
 				end
 
 				break -- only first lod_model for now

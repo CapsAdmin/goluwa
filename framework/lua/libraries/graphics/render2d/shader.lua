@@ -53,8 +53,8 @@ render2d.shader_data = {
 	}
 }
 
-function render2d.CreateMesh(vertices, indices)
-	return render.CreateVertexBuffer(render2d.shader:GetMeshLayout(), vertices, indices)
+function render2d.CreateMesh(vertices)
+	return render.CreateVertexBuffer(render2d.shader:GetMeshLayout(), vertices)
 end
 
 render2d.shader = render2d.shader or NULL

@@ -54,7 +54,7 @@ do
 
 		render2d.PushMatrix(0, 0, render2d.GetSize())
 			shader:Bind()
-			render2d.rectangle:Draw()
+			render2d.rectangle:Draw(render2d.rectangle_indices)
 		render2d.PopMatrix()
 	end
 end

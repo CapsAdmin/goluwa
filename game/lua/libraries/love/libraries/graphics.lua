@@ -988,6 +988,9 @@ do -- shapes
 	for i = 1, 2048 do
 		mesh:SetVertex(i, "color", 1,1,1,1)
 	end
+	local mesh_idx = render.CreateIndexBuffer()
+	mesh_idx:LoadVertices(2048)
+
 	local function polygon(mode, points, join)
 		render2d.PushTexture(render.GetWhiteTexture())
 		local idx = 1
@@ -998,12 +1001,12 @@ do -- shapes
 
 			if indices then
 				for i, v in ipairs(indices) do
-					mesh:SetIndex(i, v)
+					mesh_idx:SetIndex(i, v)
 				end
 				idx = #indices
 			else
 				for i = 1, #vertices do
-					mesh:SetIndex(i, i-1)
+					mesh_idx:SetIndex(i, i-1)
 				end
 				idx = #vertices
 			end
@@ -1021,14 +1024,15 @@ do -- shapes
 			end
 
 			-- connect the end
-			mesh:SetIndex(idx, 0)
+			mesh_idx:SetIndex(idx, 0)
 
 			mesh:SetMode("triangle_fan")
 		end
 
 		mesh:UpdateBuffer()
+		mesh_idx:UpdateBuffer()
 		render2d.BindShader()
-		mesh:Draw(idx)
+		mesh:Draw(mesh_idx)
 
 		render2d.PopTexture()
 	end
@@ -1221,7 +1225,7 @@ do
 	end
 
 	function Mesh:Draw()
-		self.vertex_buffer:Draw(self.draw_range)
+		self.vertex_buffer:Draw(self.index_buffer, self.draw_range)
 	end
 
 	function Mesh:setVertexColors()
@@ -1235,14 +1239,14 @@ do
 	function Mesh:setVertexMap(...)
 		local indices = type(...) == "table" and ... or {...}
 		for i, i2 in ipairs(indices) do
-			self.vertex_buffer:SetIndex(i, i2-1)
+			self.index_buffer:SetIndex(i, i2-1)
 		end
 	end
 
 	function Mesh:getVertexMap()
 		local out = {}
-		for i = 1, self.vertex_buffer.Indices:GetLength() do
-			out[i] = self.vertex_buffer.Indices.Pointer[i - 1] + 1
+		for i = 1, self.index_buffer.Indices:GetLength() do
+			out[i] = self.index_buffer.Indices.Pointer[i - 1] + 1
 		end
 		return out
 	end

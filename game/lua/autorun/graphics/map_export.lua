@@ -16,7 +16,7 @@ commands.Add("export_map", function()
 		if ent.model then
 			store_file(ent.model:GetModelPath(), "obj", function() return ent.model:ToOBJ() end)
 
-			for _, mesh in pairs(ent.model.sub_meshes) do
+			for _, mesh in pairs(ent.model.sub_models) do
 				local mat = mesh.material
 				if mat then
 					local tbl = mat:GetStorableTable()

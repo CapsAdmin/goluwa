@@ -114,7 +114,7 @@ function goluwa.PostDrawGUI()
 		shader:Bind()
 
 		render2d.PushMatrix(0,0,w,h)
-			render2d.rectangle:Draw()
+			render2d.rectangle:Draw(render2d.rectangle_indices)
 		render2d.PopMatrix()
 
 		writeBuffer:End()
@@ -131,7 +131,7 @@ function goluwa.PostDrawGUI()
 
 		render2d.PushMatrix()
 		render2d.Scale(w, h)
-			render2d.rectangle:Draw()
+			render2d.rectangle:Draw(render2d.rectangle_indices)
 		render2d.PopMatrix()
 	writeBuffer:End()
 

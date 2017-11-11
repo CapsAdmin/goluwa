@@ -14,7 +14,7 @@ local function update(self, shader, i, view)
 
 	render2d.PushMatrix(0, 0, self.Texture:GetSize():Unpack())
 		shader:Bind()
-		render2d.rectangle:Draw()
+		render2d.rectangle:Draw(render2d.rectangle_indices)
 	render2d.PopMatrix()
 end
 

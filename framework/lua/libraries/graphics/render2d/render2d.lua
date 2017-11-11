@@ -9,11 +9,14 @@ runfile("effects.lua", render2d)
 function render2d.Initialize()
 	render2d.shader = render.CreateShader(render2d.shader_data)
 
+	render2d.rectangle_indices = render.CreateIndexBuffer()
+	render2d.rectangle_indices:SetDrawHint("dynamic")
+	render2d.rectangle_indices:SetIndicesType("uint16_t")
+	render2d.rectangle_indices:LoadVertices(render2d.rectangle_mesh_data)
+
 	render2d.rectangle = render2d.CreateMesh()
 	render2d.rectangle:SetDrawHint("dynamic")
-	render2d.rectangle:SetIndicesType("uint16_t")
-	render2d.rectangle:SetBuffersFromTables(render2d.rectangle_mesh_data)
-	render2d.rectangle:SetUpdateIndices(false)
+	render2d.rectangle:LoadVertices(render2d.rectangle_mesh_data)
 
 	render2d.SetTexture()
 

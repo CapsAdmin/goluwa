@@ -245,7 +245,7 @@ function render3d.DrawGBuffer(what)
 			if shader.fb then shader.fb:Begin() end
 			render2d.PushMatrix(0, 0, shader.size.x, shader.size.y)
 				shader:Bind()
-				render2d.rectangle:Draw()
+				render2d.rectangle:Draw(render2d.rectangle_indices)
 			render2d.PopMatrix()
 			if shader.fb then shader.fb:End() end
 		end
@@ -520,7 +520,7 @@ event.AddListener("EntityRemove", "gbuffer", function()
 	render3d.ShutdownGBuffer()
 end)
 
-function render3d.CreateMesh(vertices, indices, is_valid_table)
+function render3d.CreateMesh(vertices, is_valid_table)
 	return nil, "gbuffer not ready"
 end
 

@@ -3,15 +3,12 @@ local render = (...) or _G.render
 local META = prototype.CreateTemplate("vertex_buffer")
 
 META:StartStorable()
-	META:GetSet("UpdateIndices", true)
 	META:GetSet("Mode", "triangles")
-	META:GetSet("IndicesType", "uint16_t")
 	META:GetSet("DrawHint", "dynamic")
 	META:GetSet("Vertices")
-	META:GetSet("Indices")
 META:EndStorable()
 
-function render.CreateVertexBuffer(mesh_layout, vertices, indices, is_valid_table)
+function render.CreateVertexBuffer(mesh_layout, vertices, is_valid_table)
 	local self = META:CreateObject()
 	self.mesh_layout = {
 		attributes = {}
@@ -25,7 +22,7 @@ function render.CreateVertexBuffer(mesh_layout, vertices, indices, is_valid_tabl
 	self:SetupAttributes()
 
 	if vertices then
-		self:SetBuffersFromTables(vertices, indices, is_valid_table)
+		self:LoadVertices(vertices, is_valid_table)
 	end
 
 	return self
@@ -154,14 +151,6 @@ do -- attributes
 		return unpack(out)
 	end
 
-	function META:SetIndex(idx, idx2)
-		self.Indices.Pointer[idx-1] = idx2
-	end
-
-	function META:GetIndex(idx)
-		return self.Indices.Pointer[idx-1]
-	end
-
 	local function unpack_structs(self, output)
 		local keys = {}
 		local found = false
@@ -193,49 +182,17 @@ do -- attributes
 		end
 	end
 
-	function META:SetBuffersFromTables(vertices, indices, is_valid_table)
+	function META:LoadVertices(vertices, is_valid_table)
 		if type(vertices) == "number" then
-			if vertices > 0xFFFF then
-				self:SetIndicesType("uint32_t")
-			end
-
 			local size = vertices
 
-			local indices = Array(self:GetIndicesType(), size)
-			for i = 0, size - 1 do indices[i] = i end
-
-			self:UpdateBuffer(self.Vertices or Array(self.mesh_layout.ctype, size), indices)
+			self:SetVertices(self.Vertices or Array(self.mesh_layout.ctype, size))
 		else
-			if #vertices > 0xFFFF then
-				self:SetIndicesType("uint32_t")
-			end
-
 			if not is_valid_table then
 				unpack_structs(self, vertices)
-
-				if not indices then
-					indices = {}
-					for i in ipairs(vertices) do
-						indices[i] = i-1
-					end
-				end
 			end
 
-			self:UpdateBuffer(Array(self.mesh_layout.ctype, #vertices, vertices), Array(self:GetIndicesType(), #indices, indices))
-		end
-	end
-end
-
-function META:UpdateBuffer(vertices, indices)
-	vertices = vertices or self.Vertices
-	if vertices then
-		self:SetVertices(vertices)
-	end
-
-	if self.UpdateIndices then
-		indices = indices or self.Indices
-		if indices then
-			self:SetIndices(indices)
+			self:SetVertices(Array(self.mesh_layout.ctype, #vertices, vertices))
 		end
 	end
 end
@@ -246,15 +203,12 @@ function META:SetVertices(vertices)
 	self:_SetVertices(vertices)
 end
 
-function META:SetIndices(indices)
-	self.Indices = indices
-	self.indices_length = indices:GetLength() -- needed for drawing
-	self:_SetIndices(indices)
+function META:UpdateBuffer()
+	self:SetVertices(self.Vertices)
 end
 
 function META:UnreferenceMesh()
 	self.Vertices = nil
-	self.Indices = nil
 	collectgarbage("step")
 end
 

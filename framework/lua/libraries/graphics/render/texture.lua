@@ -659,7 +659,7 @@ do
 			end
 
 			shader:Bind()
-			render2d.rectangle:Draw()
+			render2d.rectangle:Draw(render2d.rectangle_indices)
 		self:EndWrite()
 
 		return self

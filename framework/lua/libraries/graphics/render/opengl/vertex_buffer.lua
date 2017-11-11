@@ -28,19 +28,6 @@ end
 
 do
 	local translate = {
-		["uint8_t"] = "GL_UNSIGNED_BYTE",
-		["uint16_t"] = "GL_UNSIGNED_SHORT",
-		["uint32_t"] = "GL_UNSIGNED_INT",
-	}
-
-	function META:SetIndicesType(typ)
-		self.IndicesType = typ
-		self.gl_indices_type = translate[typ] or translate["uint16_t"]
-	end
-end
-
-do
-	local translate = {
 		dynamic = "GL_DYNAMIC_DRAW",
 		stream = "GL_STREAM_DRAW",
 		static = "GL_STATIC_DRAW",
@@ -57,53 +44,55 @@ local storage_flags = bit.bor(gl.e.GL_DYNAMIC_STORAGE_BIT, mapping_flags)
 
 function render._CreateVertexBuffer(self)
 	self:SetMode(self:GetMode())
-	self:SetIndicesType(self:GetIndicesType())
 	self:SetDrawHint(self:GetDrawHint())
 
 	if buffers_supported then
 		self.vertex_buffer = gl.CreateBuffer("GL_ARRAY_BUFFER")
-		self.element_buffer = gl.CreateBuffer("GL_ELEMENT_ARRAY_BUFFER")
 		self.vertex_array = gl.CreateVertexArray()
 	end
 end
 
 function META:OnRemove()
 	self.vertex_buffer:Delete()
-
-	if self.element_buffer then
-		self.element_buffer:Delete()
-	end
+	self.vertex_array:Delete()
 end
 
 if buffers_supported then
 	if render.IsExtensionSupported("GL_ARB_direct_state_access") then
-		function META:Draw(count)
+		function META:Draw(index_buffer, count)
 			if render.last_vertex_array_id ~= self.vertex_array.id then
 				gl.BindVertexArray(self.vertex_array.id)
 				render.last_vertex_array_id = self.vertex_array.id
 			end
-			gl.DrawElements(self.gl_mode, count or self.indices_length, self.gl_indices_type, nil)
+
+			if self.last_element_buffer ~= index_buffer.element_buffer.id then
+				self.vertex_array:ElementBuffer(index_buffer.element_buffer.id)
+				self.last_element_buffer = index_buffer.element_buffer.id
+			end
+
+			gl.DrawElements(self.gl_mode, count or index_buffer.Indices:GetLength(), index_buffer.gl_indices_type, nil)
 		end
 	else
-		function META:Draw(count)
+		function META:Draw(index_buffer, count)
 			if render.last_vertex_array_id ~= self.vertex_array.id then
 				gl.BindVertexArray(self.vertex_array.id)
-				self.element_buffer:Bind()
 				render.last_vertex_array_id = self.vertex_array.id
 			end
-			gl.DrawElements(self.gl_mode, count or self.indices_length, self.gl_indices_type, nil)
+
+			index_buffer.element_buffer:Bind()
+
+			gl.DrawElements(self.gl_mode, count or index_buffer.Indices:GetLength(), index_buffer.gl_indices_type, index_buffer.Indices:GetPointer())
 		end
 	end
 
 	local function setup_vertex_array(self)
-		if not self.setup_vao and self.Indices and self.Vertices then
+		if not self.setup_vao and self.Vertices then
 			for _, data in ipairs(self.mesh_layout.attributes) do
 				self.vertex_array:AttribFormat(data.location, data.row_length, data.number_type, false, data.row_offset)
 				self.vertex_array:AttribBinding(data.location, 0)
 				self.vertex_array:EnableAttrib(data.location)
 			end
 			self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.mesh_layout.size)
-			self.vertex_array:ElementBuffer(self.element_buffer.id)
 			render.last_vertex_array_id = nil
 			self.setup_vao = true
 		end
@@ -113,11 +102,6 @@ if buffers_supported then
 		if self.vertex_mapped then return end
 		setup_vertex_array(self)
 		self.vertex_buffer:Data(vertices:GetSize(), vertices:GetPointer(), self.gl_draw_hint)
-	end
-
-	function META:_SetIndices(indices)
-		setup_vertex_array(self)
-		self.element_buffer:Data(indices:GetSize(), indices:GetPointer(), self.gl_draw_hint)
 	end
 
 	local ffi = require("ffi")
@@ -145,7 +129,7 @@ else
 
 	end
 
-	function META:Draw(count)
+	function META:Draw(index_buffer, count)
 		local vertices = self:GetVertices()
 
 		gl.Enable("GL_TEXTURE_2D")
@@ -169,7 +153,7 @@ else
 		gl.MatrixMode("GL_MODELVIEW")
 		gl.LoadMatrixf((render2d.camera:GetMatrices().view * render2d.camera:GetMatrices().world):GetFloatPointer())
 
-		gl.DrawElements(self.gl_mode, count or self.indices_length, self.gl_indices_type, self:GetIndices():GetPointer())
+		gl.DrawElements(self.gl_mode, count or index_buffer.Indices:GetLength(), index_buffer.gl_indices_type, index_buffer.Indices:GetPointer())
 	end
 end
 prototype.Register(META)

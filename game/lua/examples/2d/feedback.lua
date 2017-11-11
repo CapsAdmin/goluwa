@@ -77,7 +77,7 @@ event.Timer("fb_update", 0, 0, function()
 		render.SetBlendMode("src_color", "one_minus_dst_alpha", "add")
 		render2d.PushMatrix(0, 0, fb:GetTexture(1):GetSize():Unpack())
 			shader:Bind()
-			render2d.rectangle:Draw()
+			render2d.rectangle:Draw(render2d.rectangle_indices)
 		render2d.PopMatrix()
 		if input.IsMouseDown("button_left") then
 

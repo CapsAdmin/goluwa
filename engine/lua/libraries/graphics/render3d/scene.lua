@@ -34,7 +34,7 @@ end
 
 function render3d.SortScene()
 	table.sort(render3d.scene, function(a, b)
-		return tostring(a.sub_meshes[1].material) > tostring(b.sub_meshes[1].material)
+		return tostring(a.sub_models[1].material) > tostring(b.sub_models[1].material)
 	end)
 end
 
@@ -121,8 +121,10 @@ function render3d.DrawScene(what)
 
 					model.occluders[what]:Begin()
 					-- TODO: simple geometry
-					for _, mesh in ipairs(model.sub_meshes) do
-						mesh.vertex_buffer:Draw()
+					for _, model in ipairs(model.sub_models) do
+						for _, data in ipairs(model:GetIndices()) do
+							model.vertex_buffer:Draw(data.index_buffer)
+						end
 					end
 					model.occluders[what]:End()
 				end
@@ -161,7 +163,7 @@ commands.Add("scene_info", function()
 
 	local model_count = 0
 	for _, model in ipairs(render3d.scene) do
-		model_count = model_count + #model.sub_meshes
+		model_count = model_count + #model.sub_models
 	end
 
 	logf("%s sub models\n", model_count)
@@ -198,7 +200,7 @@ commands.Add("scene_info", function()
 	local mat_count = {}
 	local tex_count = {}
 	for _, model in ipairs(render3d.scene) do
-		for _, mesh in ipairs(model.sub_meshes) do
+		for _, mesh in ipairs(model.sub_models) do
 			if mesh.material then
 				mat_count[mesh.material] = true
 				for key, val in pairs(mesh.material) do

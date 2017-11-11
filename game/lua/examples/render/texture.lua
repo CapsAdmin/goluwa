@@ -121,7 +121,7 @@ local shader = render.CreateShader({
 function goluwa.PreDrawGUI()
 	--render2d.PushMatrix(0, 0, tex:GetSize():Unpack())
 		--render.SetShaderOverride(shader)
-		--render2d.rectangle:Draw()
+		--render2d.rectangle:Draw(render2d.rectangle_indices)
 		--render.SetShaderOverride()
 	--render2d.PopMatrix()
 

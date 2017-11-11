@@ -10,15 +10,16 @@ function gfx.CreatePolygon2D(vertex_count, map)
 		vertex_buffer:MapVertexArray(vertex_count)
 	end
 
-	vertex_buffer:SetBuffersFromTables(vertex_count)
+	vertex_buffer:LoadVertices(vertex_count)
 
-	-- they never change anyway
-	vertex_buffer:SetUpdateIndices(false)
+	local index_buffer = render.CreateIndexBuffer()
+	index_buffer:LoadVertices(vertex_count)
 
 	local self = META:CreateObject()
 
 	self.vertex_buffer = vertex_buffer
 	self.vertex_count = vertex_count
+	self.index_buffer = index_buffer
 	self.Vertices = vertex_buffer.Vertices
 	self.mapped = map
 
@@ -178,7 +179,7 @@ function META:Draw(count)
 --	render2d.shader.tex = render2d.shader.tex--render2d.GetTexture()
 	--render2d.shader.global_color = render2d.GetColor(true)
 	render2d.BindShader()
-	self.vertex_buffer:Draw(count)
+	self.vertex_buffer:Draw(self.index_buffer, count)
 end
 
 function META:SetNinePatch(i, x, y, w, h, patch_size_w, patch_size_h, corner_size, u_offset, v_offset, uv_scale, skin_w, skin_h)

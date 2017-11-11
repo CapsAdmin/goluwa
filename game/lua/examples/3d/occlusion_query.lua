@@ -130,6 +130,7 @@ bounding_box:AddVertex({pos = Vec3(1, 1, -1)})
 bounding_box:AddVertex({pos = Vec3(1, 1, 1)})
 bounding_box:AddVertex({pos = Vec3(-1, 1, 1)})
 
+bounding_box:GenerateIndicesFromVertices()
 bounding_box:Upload()
 
 
@@ -137,8 +138,8 @@ local shader = render.CreateShader(SHADER)
 
 for i, model in ipairs(render3d.GetDistanceSortedScene()) do
 	if SCENE then
-		model:RemoveMeshes()
-		model:AddMesh(bounding_box)
+		model:RemoveSubModels()
+		model:AddSubModel(bounding_box)
 	end
 
 	local id = ffi.new("GLuint[1]")
@@ -201,8 +202,8 @@ event.Timer("occluder", 0.25, function()
 
 				gl.BeginQuery("GL_ANY_SAMPLES_PASSED", model.occluder_id)
 				--bounding_box:Draw()
-				for _, mesh in ipairs(model.sub_meshes) do
-					mesh.vertex_buffer:Draw()
+				for _, mesh in ipairs(model.sub_models) do
+					mesh.vertex_buffer:Draw(mesh.index_buffer)
 				end
 				gl.EndQuery("GL_ANY_SAMPLES_PASSED")
 			end
