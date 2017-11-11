@@ -237,20 +237,22 @@ function META:SetWrite(pos, b)
 	pos = attachment_to_enum(self, pos)
 	if pos then
 		local val = self.textures[pos]
-		local mode = val.mode
+		if val then
+			local mode = val.mode
 
-		if b then
-			if mode == "GL_READ_FRAMEBUFFER" then
-				val.mode = "GL_FRAMEBUFFER"
+			if b then
+				if mode == "GL_READ_FRAMEBUFFER" then
+					val.mode = "GL_FRAMEBUFFER"
+				end
+			else
+				if mode == "GL_FRAMEBUFFER" or mode == "GL_DRAW_FRAMEBUFFER" then
+					val.mode = "GL_READ_FRAMEBUFFER"
+				end
 			end
-		else
-			if mode == "GL_FRAMEBUFFER" or mode == "GL_DRAW_FRAMEBUFFER" then
-				val.mode = "GL_READ_FRAMEBUFFER"
-			end
-		end
 
-		if mode ~= val.mode then
-			generate_draw_buffers(self)
+			if mode ~= val.mode then
+				generate_draw_buffers(self)
+			end
 		end
 	end
 
