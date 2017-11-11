@@ -715,15 +715,15 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 		full_path = full_path:sub(1,-#".mdl"-1)
 	end
 
-	utility.PushTimeWarning()
+	--utility.PushTimeWarning()
 
 	local mdl = load_mdl(full_path)
 	local vvd = load_vvd(full_path)
 	local vtx = load_vtx(full_path)
 
-	utility.PopTimeWarning("model read", 0)
+--	utility.PopTimeWarning("model read", 0)
 
-	utility.PushTimeWarning()
+	--utility.PushTimeWarning()
 
 	tasks.Report("generating mesh")
 	for _, body_part in ipairs(vtx.body_parts) do
@@ -826,7 +826,7 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 		end
 	end
 
-	utility.PopTimeWarning("model generation", 0)
+	--utility.PopTimeWarning("model generation", 0)
 
 	return models
 end)
