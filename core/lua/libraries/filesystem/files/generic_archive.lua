@@ -45,7 +45,7 @@ function CONTEXT:GetFileTree(path_info)
 
 	local archive_path, relative = path_info.full_path:slice((self.NameEndsWith or "") .. "." .. self.Extension .. "/", 0, 1)
 
-	if not archive_path then
+	if not archive_path or not vfs.IsFile(archive_path) then
 		return false, "not a valid archive path"
 	end
 
