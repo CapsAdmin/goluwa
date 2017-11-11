@@ -142,6 +142,7 @@ do
 			profiler.EnableStatisticalProfiling(false)
 			profiler.PrintStatistical(0)
 			started = false
+			profiler.Restart()
 		end
 	end
 end
