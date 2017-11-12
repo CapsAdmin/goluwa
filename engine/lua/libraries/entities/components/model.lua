@@ -99,7 +99,7 @@ if GRAPHICS then
 			else
 				for _, model in ipairs(self.sub_models) do
 					for _, data in ipairs(model:GetIndices()) do
-						if data.data:GetTranslucent() then
+						if data.data and data.data:GetTranslucent() then
 							self.translucent = true
 						end
 					end
@@ -205,7 +205,7 @@ if GRAPHICS then
 		else
 			for _, model in ipairs(self.sub_models) do
 				for _, data in ipairs(model:GetIndices()) do
-					apply_material(self, data.data)
+					if data.data then apply_material(self, data.data) end
 					render3d.shader:Bind()
 					model.vertex_buffer:Draw(data.index_buffer)
 				end
