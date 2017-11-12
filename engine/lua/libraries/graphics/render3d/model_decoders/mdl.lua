@@ -500,7 +500,7 @@ local function load_vtx(path)
 				local lod_model = {}
 				lod_model.mesh_count = buffer:ReadLong()
 				lod_model.mesh_offset = buffer:ReadLong()
-				lod_model.switchPoint = buffer:ReadFloat()
+				lod_model.switchPoint = buffer:Advance(4)--buffer:ReadFloat()
 				model.model_lods[i] = lod_model
 
 				buffer:PushPosition(stream_pos + lod_model.mesh_offset)
@@ -534,15 +534,22 @@ local function load_vtx(path)
 						local vertices = {}
 						buffer:PushPosition(stream_pos + strip_group.vertices_offset)
 						for i = 1, strip_group.vertices_count do
-							local vertex = {bone_weight_indices = {}, boneId = {}}
+							local vertex = {}--{bone_weight_indices = {}, boneId = {}}
+
+							buffer:Advance(MAX_NUM_BONES_PER_VERT + 1)
+							--[[
 							for i = 1, MAX_NUM_BONES_PER_VERT do
 								vertex.bone_weight_indices[i] = buffer:ReadByte()
 							end
 							vertex.bone_count = buffer:ReadByte()
+							]]
 							vertex.mesh_vertex_index = buffer:ReadShort()
+
+							buffer:Advance(MAX_NUM_BONES_PER_VERT)
+							--[[
 							for i = 1, MAX_NUM_BONES_PER_VERT do
 								vertex.boneId[i] = buffer:ReadByte()
-							end
+							end]]
 							vertices[i] = vertex
 						end
 						buffer:PopPosition()
@@ -562,12 +569,15 @@ local function load_vtx(path)
 							local strip = {}
 
 							strip.indices_count = buffer:ReadLong()
-							strip.index_model_index = buffer:ReadLong()
+							strip.index_model_index = buffer:Advance(4) -- buffer:ReadLong()
 							strip.vertices_count = buffer:ReadLong()
-							strip.vertex_model_index = buffer:ReadLong()
-							strip.bone_count = buffer:ReadShort()
-							strip.flags = buffer:ReadByte()
 
+							buffer:Advance(4+2+1+8)
+
+							--strip.vertex_model_index = buffer:ReadLong()
+							--strip.bone_count = buffer:ReadShort()
+							--strip.flags = buffer:ReadByte()
+--[[
 							strip.bone_state_change_count = buffer:ReadLong()
 							strip.bone_state_change_offset = buffer:ReadLong()
 
@@ -579,8 +589,8 @@ local function load_vtx(path)
 								bone_state_changes[i].new_bone_id = buffer:ReadLong()
 							end
 							buffer:PopPosition()
-
 							strip.bone_state_changes = bone_state_changes
+]]
 
 							strip.indices = indices
 							strip.vertices = vertices
@@ -627,42 +637,48 @@ local function load_vvd(path)
 	vvd.vertices_offset = buffer:ReadLong()
 	vvd.tangentDataOffset = buffer:ReadLong()
 
-	if vvd.lod_count > 0 then
-		buffer:SetPosition(vvd.vertices_offset)
+	vvd.vertices = {}
+	local function read_vertex(i)
+		--[[
+		local boneWeight = {weight = {}, bone = {}}
 
+		for x = 1, MAX_NUM_BONES_PER_VERT do
+			boneWeight.weight[x] = buffer:ReadFloat()
+		end
+		for x = 1, MAX_NUM_BONES_PER_VERT do
+			boneWeight.bone[x] = buffer:ReadByte()
+		end
+		boneWeight.bone_count = buffer:ReadByte()
+		]]
+
+		buffer:Advance((4*MAX_NUM_BONES_PER_VERT) + MAX_NUM_BONES_PER_VERT + 1)
+
+		local vertex = {}
+
+		local x,y,z = buffer:ReadFloat(), buffer:ReadFloat(), buffer:ReadFloat()
+		vertex.pos = Vec3(y * -steam.source2meters, x * -steam.source2meters, z * -steam.source2meters)
+
+		local x,y,z = buffer:ReadFloat(), buffer:ReadFloat(), buffer:ReadFloat()
+		vertex.normal = Vec3(-y, -x, -z)
+
+		vertex.uv = buffer:ReadVec2()
+
+		vvd.vertices[i] = vertex
+
+		tasks.ReportProgress("reading vertices", vertices_count)
+		tasks.Wait()
+	end
+
+	if vvd.lod_count > 0 and vvd.fixup_count == 0 then
 		local vertices_count = vvd.lod_vertices_count[1]
-		vvd.vertices = {}
+		buffer:SetPosition(vvd.vertices_offset)
 		for i = 1, vertices_count do
-			local boneWeight = {weight = {}, bone = {}}
-
-			for x = 1, MAX_NUM_BONES_PER_VERT do
-				boneWeight.weight[x] = buffer:ReadFloat()
-			end
-			for x = 1, MAX_NUM_BONES_PER_VERT do
-				boneWeight.bone[x] = buffer:ReadByte()
-			end
-			boneWeight.bone_count = buffer:ReadByte()
-
-			local vertex = {}
-
-			local x,y,z = buffer:ReadFloat(), buffer:ReadFloat(), buffer:ReadFloat()
-			vertex.pos = Vec3(y * -steam.source2meters, x * -steam.source2meters, z * -steam.source2meters)
-
-			local x,y,z = buffer:ReadFloat(), buffer:ReadFloat(), buffer:ReadFloat()
-			vertex.normal = Vec3(-y, -x, -z)
-
-			vertex.uv = buffer:ReadVec2()
-
-			vvd.vertices[i] = vertex
-
-			tasks.ReportProgress("reading vertices", vertices_count)
-			tasks.Wait()
+			read_vertex(i)
 		end
 	end
 
 	vvd.fixed_vertices_by_lod = {}
 
-	if _debug then profiler.StartTimer("processed %i fixups", vvd.fixup_count) end
 	if vvd.fixup_count > 0 and vvd.fixup_offset ~= 0 then
 		buffer:SetPosition(vvd.fixup_offset)
 
@@ -675,9 +691,6 @@ local function load_vvd(path)
 			fixup.vertices_count = buffer:ReadLong()
 
 			vvd.theFixups[i] = fixup
-
-			tasks.ReportProgress("reading fixup", vvd.fixup_count)
-			tasks.Wait()
 		end
 
 		if vvd.lod_count > 0 then
@@ -685,14 +698,16 @@ local function load_vvd(path)
 
 			for lod_index = 1, vvd.lod_count do
 				vvd.fixed_vertices_by_lod[lod_index] = {}
-
+				local i2 = 1
 				for _, fixup in ipairs(vvd.theFixups) do
 					if fixup.lod_index >= lod_index then
 						for i = 1, fixup.vertices_count do
-							table.insert(vvd.fixed_vertices_by_lod[lod_index], vvd.vertices[fixup.vertex_index + (i - 1)])
+							local vertex_i = fixup.vertex_index + (i - 1)
+							buffer:SetPosition(vvd.vertices_offset + (((4*MAX_NUM_BONES_PER_VERT) + MAX_NUM_BONES_PER_VERT + 1) + 12 + 12 + 8) * (vertex_i - 1))
+							read_vertex(vertex_i)
 
-							tasks.ReportProgress("fixing lod", fixup.vertices_count)
-							tasks.Wait()
+							vvd.fixed_vertices_by_lod[lod_index][i2] = vvd.vertices[fixup.vertex_index + (i - 1)]
+							i2 = i2 + 1
 						end
 					end
 				end
@@ -733,7 +748,12 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 
 					local mesh = gfx.CreatePolygon3D()
 					local vertices = vvd.fixed_vertices_by_lod[lod_index] or vvd.vertices
-					mesh:SetVertices(table.copy(vertices))
+
+					local copy = {}
+					for i,v in ipairs(vertices) do
+						copy[i] = {pos = v.pos:Copy(), normal = v.normal:Copy(), uv = v.uv:Copy()}
+					end
+					mesh:SetVertices(copy)
 
 					local WHAT2 = 0
 
@@ -806,18 +826,18 @@ if RELOAD then
 	render3d.model_cache = {}
 	render3d.model_loader_cb = utility.CreateCallbackThing(render3d.model_cache)
 
+	steam.MountSourceGame("hl2")
+	steam.MountSourceGame("csgo")
+
 	utility.PushTimeWarning()
-	profiler.ToggleStatistical()
-	if true then
-		steam.MountSourceGame("hl2")
-		local ent = utility.RemoveOldObject(entities.CreateEntity("visual"), "test")
-		ent:SetPosition(render3d.camera:GetPosition() + render3d.camera:GetAngles():GetForward() * 5)
-		ent:SetModelPath("models/props_wasteland/exterior_fence001b.mdl")
-	else
-		steam.MountSourceGame("csgo")
-		local ent = utility.RemoveOldObject(entities.CreateEntity("visual"), "test")
-		ent:SetModelPath("models/inventory_items/trophy_majors.mdl")
-	end
-	profiler.ToggleStatistical()
+
+	local ent = utility.RemoveOldObject(entities.CreateEntity("visual"), "test")
+
+	local mdl = "models/props_wasteland/exterior_fence001b.mdl"
+	local mdl = "models/props_interiors/sinkkitchen01a.mdl"
+	local mdl = "models/inventory_items/trophy_majors.mdl"
+
+	ent:SetModelPath(mdl)
+	ent:SetPosition(render3d.camera:GetPosition() + render3d.camera:GetAngles():GetForward() * 3)
 	utility.PopTimeWarning("mdl", 0)
 end
