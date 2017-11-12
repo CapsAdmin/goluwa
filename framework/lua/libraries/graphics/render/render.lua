@@ -63,10 +63,11 @@ do
 			render._SetViewport(x,y,w,h)
 
 			render2d.camera.Viewport.x = x
-			render2d.camera.Viewport.x = y
+			render2d.camera.Viewport.y = y
 			render2d.camera.Viewport.w = w
 			render2d.camera.Viewport.h = h
 			render2d.camera:Rebuild()
+
 			X,Y,W,H = x,y,w,h
 		end
 	end
