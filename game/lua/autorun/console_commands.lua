@@ -270,6 +270,7 @@ if GRAPHICS or PHYSICS then
 	}
 
 	commands.Add("map=string", function(name)
+		utility.PushTimeWarning()
 		for _, info in pairs(tries) do
 			local path = info.path:gsub("__MAPNAME__", name)
 			if vfs.IsFile(path) then
@@ -285,5 +286,7 @@ if GRAPHICS or PHYSICS then
 		end
 
 		steam.SetMap(name)
+
+		utility.PopTimeWarning("map " .. name)
 	end)
 end
