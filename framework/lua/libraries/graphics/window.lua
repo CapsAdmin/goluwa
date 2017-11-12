@@ -34,7 +34,6 @@ function window.Open(...)
 	function wnd:OnUpdate()
 		render.PushWindow(self)
 		render.PushViewport(0, 0, self:GetSize():Unpack())
-		render.PushScissor(0, 0, self:GetSize():Unpack())
 
 			local dt = system.GetFrameTime()
 			render.GetScreenFrameBuffer():Begin()
@@ -61,7 +60,6 @@ function window.Open(...)
 			render.GetScreenFrameBuffer():End()
 			render.SwapBuffers(self)
 		render.PopWindow()
-		render.PopScissor()
 		render.PopViewport()
 	end
 

@@ -207,8 +207,6 @@ do
 
 			local w, h = obj:GetWidth(), obj:GetHeight()
 
-			render2d.PushScissor(0, 0, w, h)
-
 			local paint_bg = self:Paint(w, h)
 
 			if obj.paint_bg and paint_bg ~= nil then
@@ -239,8 +237,6 @@ do
 			end
 
 			self:PaintOver(obj:GetWidth(), obj:GetHeight())
-
-			render2d.PopScissor()
 		end
 
 		obj:CallOnRemove(function() obj.marked_for_deletion = true self:OnDeletion() end)

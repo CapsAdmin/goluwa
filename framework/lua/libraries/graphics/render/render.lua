@@ -97,17 +97,16 @@ do
 	local X, Y, W, H = 0, 0, 0, 0
 
 	function render.SetScissor(x,y,w,h)
-		--render.ScissorRect(x,y,w,h)
-		--render2d.SetScissor(x, y, w, h)
+		local _, _, sw, sh = render.GetViewport()
 
-		local sw, sh = render.GetScreenSize():Unpack()
-
-		x = x or 0
+		x = x
 		y = y or 0
 		w = w or sw
 		h = h or sh
 
-		render._SetScissor(x,y,w,h, sw,sh)
+		if X ~= x or Y ~= y or W ~= w or H ~= h then
+			render._SetScissor(x,y,w,h, sw,sh)
+		end
 
 		X = x
 		Y = y

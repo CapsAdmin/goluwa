@@ -51,7 +51,6 @@ function render._Initialize()
 	gl.Enable("GL_MULTISAMPLE")
 	gl.Enable("GL_DEPTH_TEST")
 	gl.Enable("GL_BLEND")
-	gl.Enable("GL_SCISSOR_TEST")
 
 	if render.IsExtensionSupported("GL_EXT_texture_filter_anisotropic") then
 		local largest = ffi.new("GLfloat[1]")
@@ -82,8 +81,22 @@ function render.GetVendor()
 	return ffi.string(str)
 end
 
-function render._SetScissor(x,y,w,h, sw,sh)
-	gl.Scissor(x, sh - (y + h), w, h)
+do
+	local enabled = false
+	function render._SetScissor(x,y,w,h, sw,sh)
+		if x == 0 and y == 0 and w == sw and h == sh then
+			if enabled == true then
+				gl.Enable("GL_SCISSOR_TEST")
+				enabled = false
+			end
+		else
+			if enabled == false then
+				gl.Disable("GL_SCISSOR_TEST")
+				enabled = true
+			end
+			gl.Scissor(x, sh - (y + h), w, h)
+		end
+	end
 end
 
 function render._SetViewport(x,y,w,h)
