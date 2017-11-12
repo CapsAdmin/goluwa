@@ -49,7 +49,6 @@ function render._Initialize()
 
 	gl.Enable("GL_TEXTURE_CUBE_MAP_SEAMLESS")
 	gl.Enable("GL_MULTISAMPLE")
-	gl.Enable("GL_DEPTH_TEST")
 	gl.Enable("GL_BLEND")
 
 	if render.IsExtensionSupported("GL_EXT_texture_filter_anisotropic") then
