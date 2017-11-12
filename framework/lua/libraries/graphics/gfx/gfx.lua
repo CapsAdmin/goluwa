@@ -78,6 +78,12 @@ function gfx.DrawRoundedRect(x, y, w, h, amt)
 end
 
 function gfx.DrawRect(x,y,w,h, tex, r,g,b,a)
+	if not y and not w and not h then
+		tex = x
+		x,y = 0,0
+		w,h = tex:GetSize():Unpack()
+	end
+
 	if r then
 		render2d.PushColor(r,g,b,a)
 	end
