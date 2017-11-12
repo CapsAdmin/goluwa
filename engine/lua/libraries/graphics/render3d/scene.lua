@@ -34,7 +34,7 @@ end
 
 function render3d.SortScene()
 	table.sort(render3d.scene, function(a, b)
-		return tostring(a.sub_models[1].material) > tostring(b.sub_models[1].material)
+		return tostring(a.sub_models[1].indices[1].data) > tostring(b.sub_models[1].indices[1].data)
 	end)
 end
 
@@ -163,10 +163,12 @@ commands.Add("scene_info", function()
 
 	local model_count = 0
 	for _, model in ipairs(render3d.scene) do
-		model_count = model_count + #model.sub_models
+		for _, sub_model in ipairs(model:GetSubModels()) do
+			model_count = model_count + #sub_model:GetIndices()
+		end
 	end
 
-	logf("%s sub models\n", model_count)
+	logf("%s sub models (index buffers)\n", model_count)
 
 	local light_count = 0
 	for _, ent in ipairs(entities.GetAll()) do
