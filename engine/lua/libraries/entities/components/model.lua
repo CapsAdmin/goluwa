@@ -184,23 +184,39 @@ if GRAPHICS then
 	local ipairs = ipairs
 	local render_SetMaterial = render.SetMaterial
 
-	if DISABLE_CULLING then
-		function META:Draw()
-			render3d.camera:SetWorld(self.tr:GetMatrix())
+	local function apply_material(self, mat)
+		mat.Color = self.Color
+		mat.RoughnessMultiplier = self.RoughnessMultiplier
+		mat.MetallicMultiplier = self.MetallicMultiplier
+		mat.UVMultiplier = self.UVMultiplier
+		render_SetMaterial(mat)
+	end
+
+	function META:DrawModel()
+		if self.MaterialOverride then
+			apply_material(self, self.MaterialOverride)
 
 			for _, model in ipairs(self.sub_models) do
 				for _, data in ipairs(model:GetIndices()) do
-					local mat = data.data
-					mat.Color = self.Color
-					mat.RoughnessMultiplier = self.RoughnessMultiplier
-					mat.MetallicMultiplier = self.MetallicMultiplier
-					render_SetMaterial(mat)
-
 					render3d.shader:Bind()
-
 					model.vertex_buffer:Draw(data.index_buffer)
 				end
 			end
+		else
+			for _, model in ipairs(self.sub_models) do
+				for _, data in ipairs(model:GetIndices()) do
+					apply_material(self, data.data)
+					render3d.shader:Bind()
+					model.vertex_buffer:Draw(data.index_buffer)
+				end
+			end
+		end
+	end
+
+	if DISABLE_CULLING then
+		function META:Draw()
+			render3d.camera:SetWorld(self.tr:GetMatrix())
+			self:DrawModel()
 		end
 	else
 		function META:Draw(what)
@@ -220,36 +236,8 @@ if GRAPHICS then
 				if self.occluders[what] then
 					self.occluders[what]:BeginConditional()
 				end
-				if self.MaterialOverride then
-					local mat = self.MaterialOverride
-					mat.Color = self.Color
-					mat.RoughnessMultiplier = self.RoughnessMultiplier
-					mat.MetallicMultiplier = self.MetallicMultiplier
-					mat.UVMultiplier = self.UVMultiplier
-					render_SetMaterial(mat)
 
-					for _, model in ipairs(self.sub_models) do
-						for _, data in ipairs(model:GetIndices()) do
-							render3d.shader:Bind()
-							model.vertex_buffer:Draw(data.index_buffer)
-						end
-					end
-				else
-					for _, model in ipairs(self.sub_models) do
-						for _, data in ipairs(model:GetIndices()) do
-							local mat = data.data
-							mat.Color = self.Color
-							mat.RoughnessMultiplier = self.RoughnessMultiplier
-							mat.MetallicMultiplier = self.MetallicMultiplier
-							mat.UVMultiplier = self.UVMultiplier
-							render_SetMaterial(mat)
-
-							render3d.shader:Bind()
-
-							model.vertex_buffer:Draw(data.index_buffer)
-						end
-					end
-				end
+				self:DrawModel()
 
 				if self.occluders[what] then
 					self.occluders[what]:EndConditional()
