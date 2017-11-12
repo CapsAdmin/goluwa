@@ -36,8 +36,24 @@ function META:Start(now)
 	self.progress = {}
 
 	if not tasks.IsEnabled() then
-		self:OnStart()
-		self:OnFinish()
+		local ok, err = pcall(self.OnStart, self)
+		if not ok then
+			if self.OnError then
+				self:OnError(err)
+			else
+				logf("%s error: %s\n", self, err)
+			end
+		end
+
+		local ok, err = pcall(self.OnFinish, self)
+		if not ok then
+			if self.OnError then
+				self:OnError(err)
+			else
+				logf("%s error: %s\n", self, err)
+			end
+		end
+
 		event.Call("TaskFinished", self)
 		self:Remove()
 		return
