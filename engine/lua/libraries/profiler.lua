@@ -579,7 +579,7 @@ function profiler.EnableRealTimeTraceAbortLogging(b)
 	end
 end
 
-function profiler.MeasureFunction(func, count, name)
+function profiler.MeasureFunction(func, count, name, no_print)
 	count = count or 1
 	name = name or "measure result"
 
@@ -591,7 +591,22 @@ function profiler.MeasureFunction(func, count, name)
 		time = time + profiler.StopTimer(true)
 	end
 
-	logf("%s: average: %f total: %f\n", name, time / count, time)
+	if not no_print then
+		logf("%s: average: %f total: %f\n", name, time / count, time)
+	end
+
+	return time, func
+end
+
+function profiler.MeasureFunctions(tbl, count)
+	local res = {}
+	for name, func in pairs(tbl) do
+		table.insert(res, {time = profiler.MeasureFunction(func, count, name, true), name = name})
+	end
+	table.sort(res, function(a, b) return a.time < b.time end)
+	for i,v in ipairs(res) do
+		logf("%s: average: %f total: %f\n", v.name, v.time / count, v.time)
+	end
 end
 
 function profiler.Compare(old, new, count)
