@@ -31,7 +31,7 @@ META:Register()
 function render.CreateMaterial(name)
 	local self = prototype.CreateDerivedObject("material", name)
 
-	if self.required_shader then
+	if self and self.required_shader then
 		self.ubo = render.active_shaders[self.required_shader]:CreateUniformBuffer()
 	end
 
