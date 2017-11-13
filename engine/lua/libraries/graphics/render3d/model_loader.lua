@@ -78,7 +78,9 @@ function render3d.LoadModel(path, callback, callback2, on_fail)
 				cb:stop(path, out)
 			end
 
+			utility.PushTimeWarning()
 			thread:Start()
+			utility.PopTimeWarning("decoding " .. path, 0.5)
 		else
 			cb:callextra(path, "on_fail", "unknown format " .. path)
 		end

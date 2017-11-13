@@ -27,7 +27,9 @@ function steam.SetMap(name)
 	steam.bsp_world:RemoveChildren()
 
 	tasks.WaitForTask(path, function()
+		utility.PushTimeWarning()
 		steam.SpawnMapEntities(path, steam.bsp_world)
+		utility.PopTimeWarning("spawning map entities")
 	end)
 end
 
