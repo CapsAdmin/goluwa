@@ -40,24 +40,31 @@ end
 local cache = table.weak()
 local never
 
+local modified_cache = {}
+
 function CONTEXT:GetFileTree(path_info)
 	if never then return false, "recursive call to GetFileTree" end
 
 	local archive_path, relative = path_info.full_path:slice((self.NameEndsWith or "") .. "." .. self.Extension .. "/", 0, 1)
 
-	if not archive_path or not vfs.IsFile(archive_path) then
+	if not archive_path then
 		return false, "not a valid archive path"
 	end
 
-	never = true
-	local last_modified = vfs.GetLastModified(archive_path) or ""
-	never = false
+	if not modified_cache[archive_path] then
+		never = true
+		modified_cache[archive_path] = vfs.GetLastModified(archive_path) or ""
+		never = false
+	end
 
-	local cache_key = archive_path .. last_modified
+	local cache_key = archive_path .. modified_cache[archive_path]
 	if cache[cache_key] then
 		return cache[cache_key], relative, archive_path
 	end
 
+	if not vfs.IsFile(archive_path) then
+		return false, "not a valid archive path"
+	end
 
 	local cache_path = "os:data/archive_cache/" .. crypto.CRC32(cache_key)
 	never = true

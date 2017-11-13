@@ -107,7 +107,7 @@ end
 do
 	local out
 	local function search(path, ext, callback, dir_blacklist, userdata)
-		for _, v in ipairs(vfs.GetFiles({path = path, verbose = true})) do
+		for _, v in ipairs(vfs.GetFiles({path = path, verbose = true, no_sort = true})) do
 			if not ext or v.name:endswiththese(ext) then
 				if callback then
 					if callback(v.full_path, v.userdata or userdata, v) ~= nil then
