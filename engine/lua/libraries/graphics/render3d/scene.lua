@@ -1,5 +1,7 @@
 local render3d = (...) or _G.render3d
 
+render3d.cull_rate = 1/20
+
 render3d.scene = render3d.scene or {}
 local scene_keyval = {}
 
@@ -138,7 +140,7 @@ function render3d.DrawScene(what)
 			framebuffers[what]:End()
 		end
 
-		next_visible[what] = system.GetElapsedTime() + 1/5
+		next_visible[what] = system.GetElapsedTime() + render3d.cull_rate
 	end
 
 	if needs_sorting then

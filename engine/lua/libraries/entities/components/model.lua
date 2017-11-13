@@ -201,7 +201,7 @@ if GRAPHICS then
 	function META:IsVisible(what)
 		if not self.next_visible[what] or self.next_visible[what] < system_GetElapsedTime() then
 			self.visible[what] = render3d.camera:IsAABBVisible(self.tr:GetTranslatedAABB(), self.tr:GetCameraDistance(), self.tr:GetBoundingSphere())
-			self.next_visible[what] = system_GetElapsedTime() + 0.25
+			self.next_visible[what] = system_GetElapsedTime() + render3d.cull_rate
 		end
 
 		return self.visible[what]
