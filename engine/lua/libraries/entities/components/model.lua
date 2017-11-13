@@ -1,3 +1,5 @@
+local UNROLL_DRAWMODEL = false
+
 local META = prototype.CreateTemplate()
 
 META.Name = "model"
@@ -25,9 +27,11 @@ META.Network = {
 if GRAPHICS then
 	function META:Initialize()
 		self.sub_models = {}
+		self.sub_meshes = {}
 		self.next_visible = {}
 		self.visible = {}
 		self.occluders = {}
+		self.sub_meshes_length = 0
 	end
 
 	function META:SetVisible(b)
@@ -41,6 +45,7 @@ if GRAPHICS then
 
 	function META:SetMaterialOverride(mat)
 		self.MaterialOverride = mat
+		self:UnrollDrawModel()
 	end
 
 	function META:OnAdd()
@@ -98,7 +103,7 @@ if GRAPHICS then
 				self.translucent = self.MaterialOverride:GetTranslucent()
 			else
 				for _, model in ipairs(self.sub_models) do
-					for _, data in ipairs(model:GetIndices()) do
+					for _, data in ipairs(model:GetSubMeshes()) do
 						if data.data and data.data:GetTranslucent() then
 							self.translucent = true
 						end
@@ -109,7 +114,7 @@ if GRAPHICS then
 
 		function META:AddSubModel(model)
 			table.insert(self.sub_models, model)
-			model.material = model.material or render3d.default_material
+
 			model:CallOnRemove(function()
 				if self:IsValid() then
 					self:RemoveSubModel(model)
@@ -121,6 +126,18 @@ if GRAPHICS then
 			end
 
 			render3d.AddModel(self)
+
+			for i, sub_mesh in ipairs(model:GetSubMeshes()) do
+
+				sub_mesh.i = i
+				sub_mesh.model = model
+				sub_mesh.data = sub_mesh.data or render3d.default_material
+
+				table.insert(self.sub_meshes, sub_mesh)
+			end
+
+			self.sub_meshes_length = #self.sub_meshes
+			self:UnrollDrawModel()
 
 			check_translucent(self)
 		end
@@ -136,6 +153,15 @@ if GRAPHICS then
 			if not self.sub_models[1] then
 				render3d.RemoveModel(self)
 			end
+
+			for i,v in ipairs(model:GetSubMeshes()) do
+				if table.hasvalue(self.sub_meshes, v) then
+					table.remove(self.sub_meshes, i)
+				end
+			end
+
+			self.sub_meshes_length = #self.sub_meshes
+			self:UnrollDrawModel()
 
 			check_translucent(self)
 		end
@@ -196,21 +222,41 @@ if GRAPHICS then
 		if self.MaterialOverride then
 			apply_material(self, self.MaterialOverride)
 
-			for _, model in ipairs(self.sub_models) do
-				for _, data in ipairs(model:GetIndices()) do
-					render3d.shader:Bind()
-					model.vertex_buffer:Draw(data.index_buffer)
-				end
+			--for _, data in ipairs(self.sub_meshes) do
+			for i = 1, self.sub_meshes_length do
+				render3d.shader:Bind()
+				self.sub_meshes[i].model:Draw(self.sub_meshes[i].i)
 			end
 		else
-			for _, model in ipairs(self.sub_models) do
-				for _, data in ipairs(model:GetIndices()) do
-					if data.data then apply_material(self, data.data) end
-					render3d.shader:Bind()
-					model.vertex_buffer:Draw(data.index_buffer)
-				end
+			--for _, data in ipairs(self.sub_meshes) do
+			for i = 1, self.sub_meshes_length do
+				apply_material(self, self.sub_meshes[i].data)
+				render3d.shader:Bind()
+				self.sub_meshes[i].model:Draw(self.sub_meshes[i].i)
 			end
 		end
+	end
+
+	function META:UnrollDrawModel()
+		if not UNROLL_DRAWMODEL
+ then return end
+		local lua = "local self, meshes, render3d, apply_material = ...\n"
+		lua = lua .. "return function()\n"
+		if self.MaterialOverride then
+			lua = lua .. "apply_material(self, self.MaterialOverride)\n"
+			for i = 1, self.sub_meshes_length do
+				lua = lua .. "render3d.shader:Bind()\n"
+				lua = lua .. "meshes["..i.."].model:Draw(meshes["..i.."].i)\n"
+			end
+		else
+			for i = 1, self.sub_meshes_length do
+				lua = lua .. "apply_material(self, meshes["..i.."].data)\n"
+				lua = lua .. "render3d.shader:Bind()\n"
+				lua = lua .. "meshes["..i.."].model:Draw(meshes["..i.."].i)\n"
+			end
+		end
+		lua = lua .. "end\n"
+		self.DrawModel = assert(loadstring(lua))(self, self.sub_meshes, render3d, apply_material)
 	end
 
 	if DISABLE_CULLING then
@@ -261,7 +307,7 @@ if GRAPHICS then
 		local function export(model)
 			local vertices = model.vertex_buffer:GetVertices()
 
-			for _, data in ipairs(model:GetIndices()) do
+			for _, data in ipairs(model:GetSubMeshes()) do
 				local indices = data.index_buffer.Indices
 
 				for I = 0, indices:GetLength() - 1, 3 do
@@ -297,7 +343,7 @@ if GRAPHICS then
 		end
 
 		for _, model in ipairs(self:GetSubModels()) do
-			for _, data in ipairs(model:GetIndices()) do
+			for _, data in ipairs(model:GetSubMeshes()) do
 				local mat = data.data
 
 				if mat.vmt then
@@ -315,7 +361,7 @@ if GRAPHICS then
 						table.insert(out, "o " .. MaterialName .. "\n")
 
 						for _, model in ipairs(self:GetSubModels()) do
-							for _, data in ipairs(model:GetIndices()) do
+							for _, data in ipairs(model:GetSubMeshes()) do
 								local mat = data.data
 								if mat.vmt and mat.vmt.fullpath == MaterialNameRaw then
 									export(model)

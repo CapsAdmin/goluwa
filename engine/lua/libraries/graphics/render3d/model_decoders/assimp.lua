@@ -71,7 +71,7 @@ render3d.AddModelDecoder("assimp", function(path, full_path, mesh_callback)
 
 		if model_data.name then mesh:SetName(model_data.name) end
 		mesh:SetVertices(model_data.vertices)
-		mesh:AddIndices(model_data.indices, mesh.material)
+		mesh:AddSubMesh(model_data.indices, mesh.material)
 		mesh:BuildBoundingBox()
 
 		mesh:BuildNormals()

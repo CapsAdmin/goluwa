@@ -800,7 +800,7 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 							material:LoadVMT(path)
 						end
 
-						mesh:AddIndices(indices, material)
+						mesh:AddSubMesh(indices, material)
 					end
 
 					mesh:BuildBoundingBox()

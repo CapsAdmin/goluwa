@@ -13,7 +13,7 @@ function gfx.CreatePolygon2D(vertex_count, map)
 	vertex_buffer:LoadVertices(vertex_count)
 
 	local index_buffer = render.CreateIndexBuffer()
-	index_buffer:LoadVertices(vertex_count)
+	index_buffer:LoadIndices(vertex_count)
 
 	local self = META:CreateObject()
 

@@ -25,15 +25,6 @@ function META:Clear()
 	table.clear(self.Vertices)
 end
 
-function META:GenerateIndicesFromVertices(data)
-	local index_buffer = render.CreateIndexBuffer()
-	index_buffer:SetDrawHint("static")
-	local indices = index_buffer:LoadVertices(self.Vertices, nil)
-
-	self.indices = self.indices or {}
-	table.insert(self.indices, {index_buffer = index_buffer, data = data, indices = indices})
-end
-
 function META:UnreferenceVertices()
 	if self.vertex_buffer then
 		self.vertex_buffer:UnreferenceMesh()
@@ -50,17 +41,21 @@ function META:Upload()
 	self.vertex_buffer:SetDrawHint("static")
 end
 
-function META:AddIndices(indices, data)
+function META:AddSubMesh(val, data)
 	local index_buffer = render.CreateIndexBuffer()
 	index_buffer:SetDrawHint("static")
-	index_buffer:LoadIndices(indices)
+	local indices = index_buffer:LoadIndices(val)
 
-	self.indices = self.indices or {}
-	table.insert(self.indices, {index_buffer = index_buffer, data = data, indices = indices})
+	self.sub_meshes = self.sub_meshes or {}
+	table.insert(self.sub_meshes, {index_buffer = index_buffer, data = data, indices = indices})
 end
 
-function META:GetIndices()
-	return self.indices or {}
+function META:GetSubMeshes()
+	return self.sub_meshes or {}
+end
+
+function META:Draw(i)
+	self.vertex_buffer:Draw(self.sub_meshes[i].index_buffer)
 end
 
 do -- helpers
@@ -82,11 +77,11 @@ do -- helpers
 	end
 
 	function META:BuildNormals()
-		for _, indices in ipairs(self:GetIndices()) do
-			for i = 1, #indices.indices, 3 do
-				local a = self.Vertices[indices.indices[i + 0] + 1]
-				local b = self.Vertices[indices.indices[i + 1] + 1]
-				local c = self.Vertices[indices.indices[i + 2] + 1]
+		for _, sub_mesh in ipairs(self:GetSubMeshes()) do
+			for i = 1, #sub_mesh.indices, 3 do
+				local a = self.Vertices[sub_mesh.indices[i + 0] + 1]
+				local b = self.Vertices[sub_mesh.indices[i + 1] + 1]
+				local c = self.Vertices[sub_mesh.indices[i + 2] + 1]
 
 				build_normal(a, b, c)
 			end
@@ -127,11 +122,11 @@ do -- helpers
 	end
 
 	function META:IterateFaces(cb)
-		for _, indices in ipairs(self:GetIndices()) do
-			for i = 1, #indices.indices, 3 do
-				local ai = indices.indices[i + 0] + 1
-				local bi = indices.indices[i + 1] + 1
-				local ci = indices.indices[i + 2] + 1
+		for _, sub_mesh in ipairs(self:GetSubMeshes()) do
+			for i = 1, #sub_mesh.indices, 3 do
+				local ai = sub_mesh.indices[i + 0] + 1
+				local bi = sub_mesh.indices[i + 1] + 1
+				local ci = sub_mesh.indices[i + 2] + 1
 
 				cb(self.Vertices[ai], self.Vertices[bi], self.Vertices[ci])
 			end
@@ -142,11 +137,11 @@ do -- helpers
 		local tan1 = {}
 		local tan2 = {}
 
-		for _, indices in ipairs(self:GetIndices()) do
-			for i = 1, #indices.indices, 3 do
-				local ai = indices.indices[i + 0] + 1
-				local bi = indices.indices[i + 1] + 1
-				local ci = indices.indices[i + 2] + 1
+		for _, sub_mesh in ipairs(self:GetSubMeshes()) do
+			for i = 1, #sub_mesh.indices, 3 do
+				local ai = sub_mesh.indices[i + 0] + 1
+				local bi = sub_mesh.indices[i + 1] + 1
+				local ci = sub_mesh.indices[i + 2] + 1
 
 				build_tangents(self, ai, bi, ci, tan1, tan2)
 			end

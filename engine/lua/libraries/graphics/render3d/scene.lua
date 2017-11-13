@@ -34,7 +34,7 @@ end
 
 function render3d.SortScene()
 	table.sort(render3d.scene, function(a, b)
-		return tostring(a.sub_models[1].indices[1].data) > tostring(b.sub_models[1].indices[1].data)
+		return tostring(a.sub_models[1].sub_meshes[1].data) > tostring(b.sub_models[1].sub_meshes[1].data)
 	end)
 end
 
@@ -121,10 +121,9 @@ function render3d.DrawScene(what)
 
 					model.occluders[what]:Begin()
 					-- TODO: simple geometry
-					for _, model in ipairs(model.sub_models) do
-						for _, data in ipairs(model:GetIndices()) do
-							model.vertex_buffer:Draw(data.index_buffer)
-						end
+					--for _, data in ipairs(model.sub_meshes) do
+					for i = 1, model.sub_meshes_length do
+						model.sub_meshes[i].model:Draw(model.sub_meshes[i].i)
 					end
 					model.occluders[what]:End()
 				end
@@ -164,7 +163,7 @@ commands.Add("scene_info", function()
 	local model_count = 0
 	for _, model in ipairs(render3d.scene) do
 		for _, sub_model in ipairs(model:GetSubModels()) do
-			model_count = model_count + #sub_model:GetIndices()
+			model_count = model_count + #sub_model:GetSubMeshes()
 		end
 	end
 

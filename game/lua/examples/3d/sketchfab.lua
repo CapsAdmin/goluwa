@@ -81,8 +81,8 @@ local function parse_scene(id)
 
 			if render3d.IsGBufferReady() then
 				local mesh = gfx.CreatePolygon3D()
-				mesh:GenerateIndicesFromVertices()
 				mesh:SetVertices(vertices)
+				mesh:AddSubModel(vertices)
 				mesh:Upload()
 
 				prototype.SafeRemove(TEST)

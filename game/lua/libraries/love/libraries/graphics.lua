@@ -989,7 +989,7 @@ do -- shapes
 		mesh:SetVertex(i, "color", 1,1,1,1)
 	end
 	local mesh_idx = render.CreateIndexBuffer()
-	mesh_idx:LoadVertices(2048)
+	mesh_idx:LoadIndices(2048)
 
 	local function polygon(mode, points, join)
 		render2d.PushTexture(render.GetWhiteTexture())

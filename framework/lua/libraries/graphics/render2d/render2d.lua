@@ -12,7 +12,7 @@ function render2d.Initialize()
 	render2d.rectangle_indices = render.CreateIndexBuffer()
 	render2d.rectangle_indices:SetDrawHint("dynamic")
 	render2d.rectangle_indices:SetIndicesType("uint16_t")
-	render2d.rectangle_indices:LoadVertices(render2d.rectangle_mesh_data)
+	render2d.rectangle_indices:LoadIndices(render2d.rectangle_mesh_data)
 
 	render2d.rectangle = render2d.CreateMesh()
 	render2d.rectangle:SetDrawHint("dynamic")

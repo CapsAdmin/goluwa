@@ -21,7 +21,7 @@ commands.Add("cubemodels", function()
 			if v.model then
 				for _,sub_model in ipairs(v.model:GetSubModels()) do
 					sub_model.vertex_buffer = vtx
-					for _, data in ipairs(sub_model:GetIndices()) do
+					for _, data in ipairs(sub_model:GetSubMeshes()) do
 						data.index_buffer = idx
 					end
 				end

@@ -3,7 +3,7 @@ local render = ... or _G.render
 local gl = require("opengl")
 local ffi = require("ffi")
 
-local SCENE = false
+local SCENE = true
 
 
 if SCENE then
@@ -130,7 +130,7 @@ bounding_box:AddVertex({pos = Vec3(1, 1, -1)})
 bounding_box:AddVertex({pos = Vec3(1, 1, 1)})
 bounding_box:AddVertex({pos = Vec3(-1, 1, 1)})
 
-bounding_box:GenerateIndicesFromVertices()
+bounding_box:AddSubMesh(bounding_box:GetVertices())
 bounding_box:Upload()
 
 
@@ -202,8 +202,10 @@ event.Timer("occluder", 0.25, function()
 
 				gl.BeginQuery("GL_ANY_SAMPLES_PASSED", model.occluder_id)
 				--bounding_box:Draw()
-				for _, mesh in ipairs(model.sub_models) do
-					mesh.vertex_buffer:Draw(mesh.index_buffer)
+				for _, sub_model in ipairs(model:GetSubModels()) do
+					for i, sub_mesh in ipairs(sub_model:GetSubMeshes()) do
+						sub_model:Draw(i)
+					end
 				end
 				gl.EndQuery("GL_ANY_SAMPLES_PASSED")
 			end

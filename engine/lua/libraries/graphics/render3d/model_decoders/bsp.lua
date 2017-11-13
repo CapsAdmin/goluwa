@@ -639,7 +639,7 @@ function steam.LoadMap(path)
 
 	if GRAPHICS then
 		for _, mesh in ipairs(models) do
-			mesh:GenerateIndicesFromVertices(mesh.material)
+			mesh:AddSubMesh(mesh:GetVertices(), mesh.material)
 			mesh:BuildNormals()
 			mesh:BuildTangents()
 			tasks.ReportProgress("generating normals", #models)

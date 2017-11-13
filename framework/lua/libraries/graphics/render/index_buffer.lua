@@ -35,48 +35,43 @@ function META:GetIndex(idx)
 	return self.Indices.Pointer[idx-1]
 end
 
-function META:LoadVertices(vertices)
-	if type(vertices) == "number" then
-		if vertices > 0xFFFF then
+function META:LoadIndices(val)
+	local tbl
+
+	if type(val) == "number" then
+		if val > 0xFFFF then
 			self:SetIndicesType("uint32_t")
 		end
 
-		local size = vertices
+		tbl = {}
+		for i = 1, val do
+			tbl[i] = i-1
+		end
+	elseif type(val[1]) == "table" then
+		if #val > 0xFFFF then
+			self:SetIndicesType("uint32_t")
+		end
 
-		local indices = Array(self:GetIndicesType(), size)
-		for i = 0, size - 1 do indices[i] = i end
-
-		self:SetIndices(indices)
-
-		return indices
+		tbl = {}
+		for i in ipairs(val) do
+			tbl[i] = i-1
+		end
 	else
-		if #vertices > 0xFFFF then
+		tbl = val
+
+		local max = 0
+		for _, i in ipairs(val) do
+			max = math.max(max, i)
+		end
+
+		if max > 0xFFFF then
 			self:SetIndicesType("uint32_t")
 		end
-
-		local indices = {}
-		for i in ipairs(vertices) do
-			indices[i] = i-1
-		end
-
-		self:SetIndices(Array(self:GetIndicesType(), #indices, indices))
-
-		return indices
-	end
-end
-
-function META:LoadIndices(indices)
-
-	local max = 0
-	for _, i in ipairs(indices) do
-		max = math.max(max, i)
 	end
 
-	if max > 0xFFFF then
-		self:SetIndicesType("uint32_t")
-	end
+	self:SetIndices(Array(self:GetIndicesType(), #tbl, tbl))
 
-	self:SetIndices(Array(self:GetIndicesType(), #indices, indices))
+	return tbl
 end
 
 function META:UpdateBuffer()
