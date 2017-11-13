@@ -100,8 +100,9 @@ function render3d.DrawScene(what)
 		end
 
 		local scene = render3d.GetDistanceSortedScene()
+		local scene_length = #scene
 
-		if scene[1] then
+		if scene_length > 0 then
 			render3d.SortDistanceScene()
 
 			framebuffers[what]:Begin()
@@ -110,7 +111,9 @@ function render3d.DrawScene(what)
 			render.SetColorMask(0,0,0,0)
 			render.PushCullMode("none")
 
-			for _, model in ipairs(scene) do
+			--for _, model in ipairs(scene) do
+			for i = 1, scene_length do
+				local model = scene[i]
 				model.occluders[what] = model.occluders[what] or render.CreateQuery("any_samples_passed_conservative")
 				if model:IsVisible(what) and not model:IsTranslucent() then
 					--model.is_visible = model.occluders[what]:GetResult()
@@ -143,8 +146,8 @@ function render3d.DrawScene(what)
 		needs_sorting = false
 	end
 
-	for _, model in ipairs(render3d.scene) do
-		model:Draw(what)
+	for i = 1, #render3d.scene do
+		render3d.scene[i]:Draw(what)
 	end
 end
 

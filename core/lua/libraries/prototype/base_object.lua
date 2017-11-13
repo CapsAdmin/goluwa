@@ -219,7 +219,10 @@ do -- events
 		table.insert(events[event_type], self)
 
 		event.AddListener(event_type, "prototype_events", function(a_, b_, c_)
-			for _, self in ipairs(events[event_type]) do
+			--for _, self in ipairs(events[event_type]) do
+			for i = 1, #events[event_type] do
+				local self = events[event_type][i]
+
 				if self[func_name] then
 					self[func_name](self, a_, b_, c_)
 				else
