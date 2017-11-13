@@ -238,8 +238,7 @@ if GRAPHICS then
 	end
 
 	function META:UnrollDrawModel()
-		if not UNROLL_DRAWMODEL
- then return end
+		if not UNROLL_DRAWMODEL then return end
 		local lua = "local self, meshes, render3d, apply_material = ...\n"
 		lua = lua .. "return function()\n"
 		if self.MaterialOverride then
@@ -266,16 +265,6 @@ if GRAPHICS then
 		end
 	else
 		function META:Draw(what)
-			--[[
-			if render3d.draw_once and self.Cull then
-				if self.drawn_once then
-					return
-				end
-			else
-				self.drawn_once = false
-			end
-			]]
-
 			if self:IsVisible(what) then
 				render3d.camera:SetWorld(self.tr:GetMatrix())
 
@@ -288,12 +277,6 @@ if GRAPHICS then
 				if self.occluders[what] then
 					self.occluders[what]:EndConditional()
 				end
-
-				--[[
-				if render3d.draw_once then
-					self.drawn_once = true
-				end
-				]]
 			end
 		end
 	end
