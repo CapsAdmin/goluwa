@@ -166,11 +166,11 @@ else
 		}, META)
 	end
 
+end
 	function META.Unpack(m)
 		return
 			]==] .. generate_generic(function(x, y) return "m.m" .. x .. y .. ", " end):sub(0, -4)  .. [==[
 	end
-end
 
 function META.CopyTo(a, b)
 	]==] .. generate_generic(function(x, y) return "b.m" .. x .. y .. " = a.m" .. x .. y .. " " end)  .. [==[
