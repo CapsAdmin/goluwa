@@ -105,6 +105,8 @@ function render3d.DrawScene(what)
 		local scene_length = #scene
 
 		if scene_length > 0 then
+			render3d.cull_rate = math.clamp(system.GetFrameTime()*4, 1/20, 1/5)
+
 			render3d.SortDistanceScene()
 
 			framebuffers[what]:Begin()
