@@ -15,8 +15,11 @@ commands.Add("export_map", function()
 	store_file("map", "txt", function()
 		local data = {}
 
-		for i, ent in pairs(entities.GetAll()) do
+		for i, ent in ipairs(entities.GetAll()) do
 			data[i] = ent:GetStorableTable()
+			if ent.transform then
+				data[i].self.world_matrix = {ent:GetMatrix():Unpack()}
+			end
 		end
 
 		return serializer.Encode("luadata", data)
