@@ -33853,19 +33853,19 @@ function gl.Initialize(get_proc_address)
 		for i = 1, 4 do
 		for _, t in ipairs({"i", "f", "d"}) do
 		for _, v in ipairs({"", "v"}) do
-			local func = gl["ProgramUniform" .. i .. t .. v]
+			local func_name = "ProgramUniform" .. i .. t .. v
 			local friendly = "Uniform" .. i .. t .. v
 			if v == "v" then
-				META[friendly] = function(self, location, count, value) return func(self.id, location, count, value) end
+				META[friendly] = function(self, location, count, value) return gl[func_name](self.id, location, count, value) end
 			else
 				if i == 1 then
-					META[friendly] = function(self, location, a) return func(self.id, location, a) end
+					META[friendly] = function(self, location, a) return gl[func_name](self.id, location, a) end
 				elseif i == 2 then
-					META[friendly] = function(self, location, a,b) return func(self.id, location, a,b) end
+					META[friendly] = function(self, location, a,b) return gl[func_name](self.id, location, a,b) end
 				elseif i == 3 then
-					META[friendly] = function(self, location, a,b,c) return func(self.id, location, a,b,c) end
+					META[friendly] = function(self, location, a,b,c) return gl[func_name](self.id, location, a,b,c) end
 				elseif i == 4 then
-					META[friendly] = function(self, location, a,b,c,d) return func(self.id, location, a,b,c,d) end
+					META[friendly] = function(self, location, a,b,c,d) return gl[func_name](self.id, location, a,b,c,d) end
 				end
 			end
 		end
@@ -33873,8 +33873,8 @@ function gl.Initialize(get_proc_address)
 		end
 
 		for i = 1, 4 do
-			local func = gl["ProgramUniform" .. i .. "uiv"]
-			META["Uniform" .. i .. "uiv"] = function(self, location, count, value) return func(self.id, location, count, value) end
+			local func_name = "ProgramUniform" .. i .. "uiv"
+			META["Uniform" .. i .. "uiv"] = function(self, location, count, value) return gl[func_name](self.id, location, count, value) end
 		end
 
 		function META:Uniform1ui(location, a) return gl.ProgramUniform1ui(self.id, location, a) end
@@ -33885,8 +33885,8 @@ function gl.Initialize(get_proc_address)
 		for i = 2, 4 do
 		for _, t in ipairs({"f", "d"}) do
 		for _, v in ipairs({"", "v"}) do
-			local func = gl["ProgramUniformMatrix" .. i .. t .. v]
-			META["UniformMatrix" .. i .. t .. v] = function(self, location, count, transpose, value) return func(self.id, location, count, transpose, value) end
+			local func_name = "ProgramUniformMatrix" .. i .. t .. v
+			META["UniformMatrix" .. i .. t .. v] = function(self, location, count, transpose, value) return gl[func_name](self.id, location, count, transpose, value) end
 		end
 		end
 		end
@@ -33894,8 +33894,8 @@ function gl.Initialize(get_proc_address)
 		for _, i in ipairs({"2x3", "3x2", "2x4", "4x2", "3x4", "4x3"}) do
 		for _, t in ipairs({"f", "d"}) do
 		for _, v in ipairs({"", "v"}) do
-			local func = gl["ProgramUniformMatrix" .. i .. t .. v]
-			META["UniformMatrix" .. i .. t .. v] = function(self, location, count, transpose, value) return func(self.id, location, count, transpose, value) end
+			local func_name = "ProgramUniformMatrix" .. i .. t .. v
+			META["UniformMatrix" .. i .. t .. v] = function(self, location, count, transpose, value) return gl[func_name](self.id, location, count, transpose, value) end
 		end
 		end
 		end

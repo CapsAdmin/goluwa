@@ -2,26 +2,6 @@ local render = (...) or _G.render
 
 render.use_uniform_buffers = false
 
--- used to figure out how to upload types
-local unrolled_lines = {
-	bool = "render.current_program:UploadBoolean(%i, val)",
-	number = "render.current_program:UploadNumber(%i, val)",
-	int = "render.current_program:UploadInteger(%i, val)",
-	vec2 = "render.current_program:UploadVec2(%i, val)",
-	vec3 = "render.current_program:UploadVec3(%i, val)",
-	color = "render.current_program:UploadColor(%i, val)",
-	mat4 = "render.current_program:UploadMatrix44(%i, val)",
-}
-
-unrolled_lines.vec4 = unrolled_lines.color
-unrolled_lines.float = unrolled_lines.number
-unrolled_lines.boolean = unrolled_lines.bool
-
-unrolled_lines.texture = "render.current_program:UploadTexture(%i, val, %i, %i)"
-unrolled_lines.sampler2D = unrolled_lines.texture
-unrolled_lines.sampler2DMS = unrolled_lines.texture
-unrolled_lines.samplerCube = unrolled_lines.texture
-
 -- used because of some reserved keywords
 local reserve_prepend = "out_"
 
