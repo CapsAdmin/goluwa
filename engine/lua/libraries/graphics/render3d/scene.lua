@@ -119,7 +119,7 @@ function render3d.DrawScene(what)
 			for i = 1, scene_length do
 				local model = scene[i]
 				model.occluders[what] = model.occluders[what] or render.CreateQuery("any_samples_passed_conservative")
-				if model:IsVisible(what) and not model:IsTranslucent() then
+				if not model:IsTranslucent() and model:IsVisible(what) then
 					--model.is_visible = model.occluders[what]:GetResult()
 
 					-- TODO: upload aabb only
