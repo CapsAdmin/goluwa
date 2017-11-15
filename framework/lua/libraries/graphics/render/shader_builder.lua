@@ -869,21 +869,21 @@ function META:Bind()
 
 		if val ~= nil then
 			if info.val.is_texture or info.val.is_bindless_texture then
-				render.current_program:UploadTexture(info.id, val, info.texture_channel, info.texture_channel)
+				self.program:UploadTexture(info.id, val, info.texture_channel, info.texture_channel)
 			elseif info.val.type == "mat4" then
-				render.current_program:UploadMatrix44(info.id, val)
+				self.program:UploadMatrix44(info.id, val)
 			elseif info.val.type == "bool" then
-				render.current_program:UploadBoolean(info.id, val)
+				self.program:UploadBoolean(info.id, val)
 			elseif info.val.type == "float" then
-				render.current_program:UploadNumber(info.id, val)
+				self.program:UploadNumber(info.id, val)
 			elseif info.val.type == "int" then
-				render.current_program:UploadInteger(info.id, val)
+				self.program:UploadInteger(info.id, val)
 			elseif info.val.type == "vec2" then
-				render.current_program:UploadVec2(info.id, val)
+				self.program:UploadVec2(info.id, val)
 			elseif info.val.type == "vec3" then
-				render.current_program:UploadVec3(info.id, val)
+				self.program:UploadVec3(info.id, val)
 			elseif info.val.type == "vec4" then
-				render.current_program:UploadColor(info.id, val)
+				self.program:UploadColor(info.id, val)
 			end
 		end
 	end
