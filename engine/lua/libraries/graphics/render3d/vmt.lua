@@ -37,7 +37,6 @@ local property_translate = {
 	alphatest = {"AlphaTest", function(num) return num == 1 end},
 	ssbump = {"SSBump", function(num) return num == 1 end},
 	nocull = {"NoCull"},
-	alphatest = {"Translucent", function(num) return num == 1 end},
 	translucent = {"Translucent", function(num) return num == 1 end},
 
 	normalmapalphaenvmapmask = {"NormalAlphaMetallic", function(num) return num == 1 end},

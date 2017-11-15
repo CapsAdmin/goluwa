@@ -58,17 +58,25 @@ PASS.Buffers = {
 
 render.AddGlobalShaderCode([[
 // https://www.shadertoy.com/view/MslGR8
-bool dither(vec2 uv, float alpha)
+bool alpha_discard(vec2 uv, float alpha)
 {
-	if (lua[AlphaTest = false] && (alpha*alpha > gl_FragCoord.z/10))
+	if (lua[AlphaTest = false])
 	{
-		return false;
+		if (alpha*alpha > gl_FragCoord.z/10)
+			return false;
+
+		return true;
 	}
 
-	const vec3 magic = vec3( 0.06711056, 0.00583715, 52.9829189 );
-	float lol = fract( magic.z * fract( dot( gl_FragCoord.xy, magic.xy ) ) )*0.99;
+	if (lua[Translucent = false])
+	{
+		const vec3 magic = vec3( 0.06711056, 0.00583715, 52.9829189 );
+		float lol = fract( magic.z * fract( dot( gl_FragCoord.xy, magic.xy ) ) )*0.99;
 
-	return (alpha*alpha*alpha + lol) < 1;
+		return (alpha*alpha*alpha + lol) < 1;
+	}
+
+	return false;
 }
 ]])
 
@@ -305,7 +313,14 @@ PASS.Stages = {
 				in vec3 vertex_view_normal;
 				void main()
 				{
-					set_albedo(texture(lua[AlbedoTexture = render.GetErrorTexture()], uv).rgb);
+					vec4 albedo = texture(lua[AlbedoTexture = render.GetErrorTexture()], uv);
+
+					if (alpha_discard(uv, albedo.a))
+					{
+						discard;
+					}
+
+					set_albedo(albedo.rgb);
 					set_view_normal(vertex_view_normal);
 					set_specular(vec3(0,0,0));
 				}
@@ -348,7 +363,7 @@ PASS.Stages = {
 					set_albedo(albedo.rgb);
 					//set_albedo(pow(albedo.rgb, vec3(0.75)) * normalize(albedo.rgb));
 
-					if (lua[Translucent = false] && dither(uv, albedo.a))
+					if (alpha_discard(uv, albedo.a))
 					{
 						discard;
 					}

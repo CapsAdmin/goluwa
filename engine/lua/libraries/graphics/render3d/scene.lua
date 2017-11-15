@@ -42,7 +42,7 @@ do
 
 		for i = 1, count do
 			local model = render3d.scene[i]
-			if not model.translucent and model:IsVisible(what) then
+			if model:IsVisible(what) then
 				i2 = i2 + 1
 				model.dist = render3d.scene[i].tr:GetCameraDistance()
 				render3d.scene_dist[i2] = model
@@ -62,6 +62,7 @@ local occlusion_shader = render.CreateShader({
 	vertex = {
 		mesh_layout = {
 			{pos = "vec3"},
+			{uv = "vec2"},
 		},
 		variables = {
 			size = 1,
@@ -75,10 +76,21 @@ local occlusion_shader = render.CreateShader({
 		]],
 	},
 	fragment = {
+		mesh_layout = {
+			{uv = "vec2"},
+		},
 		source = [[
 			void main()
 			{
+				if (!lua[AlbedoAlphaMetallic = false])
+				{
+					float alpha = texture(lua[AlbedoTexture = "sampler2D"], uv).a;
 
+					if (alpha_discard(uv, alpha))
+					{
+						discard;
+					}
+				}
 			}
 		]],
 	},
@@ -123,12 +135,17 @@ function render3d.DrawScene(what)
 
 			-- TODO: upload aabb only
 			occlusion_shader.model = model.tr.FinalMatrix -- don't call model:GetMatrix() as it migth rebuild, it's not that important
-			occlusion_shader:Bind()
+
 
 			model.occluders[what]:Begin()
 			-- TODO: simple geometry
 			--for _, data in ipairs(model.sub_meshes) do
 			for i = 1, model.sub_meshes_length do
+				occlusion_shader.AlbedoAlphaMetallic = model.sub_meshes[i].data.AlbedoAlphaMetallic
+				occlusion_shader.AlbedoTexture = model.sub_meshes[i].data.AlbedoTexture
+				occlusion_shader.Translucent = model.sub_meshes[i].data.Translucent
+				occlusion_shader.AlphaTest = model.sub_meshes[i].data.AlphaTest
+				occlusion_shader:Bind()
 				model.sub_meshes[i].model:Draw(model.sub_meshes[i].i)
 			end
 			model.occluders[what]:End()

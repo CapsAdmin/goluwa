@@ -96,22 +96,6 @@ if GRAPHICS then
 	end
 
 	do
-		local function check_translucent(self)
-			self.translucent = false
-
-			if self.MaterialOverride then
-				self.translucent = self.MaterialOverride:GetTranslucent()
-			else
-				for _, model in ipairs(self.sub_models) do
-					for _, data in ipairs(model:GetSubMeshes()) do
-						if data.data and data.data:GetTranslucent() then
-							self.translucent = true
-						end
-					end
-				end
-			end
-		end
-
 		function META:AddSubModel(model)
 			table.insert(self.sub_models, model)
 
@@ -137,9 +121,6 @@ if GRAPHICS then
 			end
 
 			self.sub_meshes_length = #self.sub_meshes
-			self:UnrollDrawModel()
-
-			check_translucent(self)
 		end
 
 		function META:RemoveSubModel(model)
@@ -161,9 +142,6 @@ if GRAPHICS then
 			end
 
 			self.sub_meshes_length = #self.sub_meshes
-			self:UnrollDrawModel()
-
-			check_translucent(self)
 		end
 
 		function META:RemoveSubModels()
@@ -190,10 +168,6 @@ if GRAPHICS then
 		if old ~= render3d.largest_aabb then
 			event.Call("LargestAABB", render3d.largest_aabb)
 		end
-	end
-
-	function META:IsTranslucent()
-		return self.translucent
 	end
 
 	local system_GetElapsedTime = system.GetElapsedTime
@@ -235,27 +209,6 @@ if GRAPHICS then
 				self.sub_meshes[i].model:Draw(self.sub_meshes[i].i)
 			end
 		end
-	end
-
-	function META:UnrollDrawModel()
-		if not UNROLL_DRAWMODEL then return end
-		local lua = "local self, meshes, render3d, apply_material = ...\n"
-		lua = lua .. "return function()\n"
-		if self.MaterialOverride then
-			lua = lua .. "apply_material(self, self.MaterialOverride)\n"
-			for i = 1, self.sub_meshes_length do
-				lua = lua .. "render3d.shader:Bind()\n"
-				lua = lua .. "meshes["..i.."].model:Draw(meshes["..i.."].i)\n"
-			end
-		else
-			for i = 1, self.sub_meshes_length do
-				lua = lua .. "apply_material(self, meshes["..i.."].data)\n"
-				lua = lua .. "render3d.shader:Bind()\n"
-				lua = lua .. "meshes["..i.."].model:Draw(meshes["..i.."].i)\n"
-			end
-		end
-		lua = lua .. "end\n"
-		self.DrawModel = assert(loadstring(lua))(self, self.sub_meshes, render3d, apply_material)
 	end
 
 	if DISABLE_CULLING then
