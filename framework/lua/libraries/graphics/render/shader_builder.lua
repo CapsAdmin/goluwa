@@ -790,74 +790,19 @@ function render.CreateShader(data, vars)
 		table.sort(uniform_variables, function(a, b) return a.id < b.id end) -- sort the data by variables id
 
 		local texture_channel = 0
-		local lua = ""
-
-		lua = lua .. "local ffi = require(\"ffi\")\n"
-		lua = lua .. "local render = _G.render\n"
-		lua = lua .. "local type = _G.type\n"
-		lua = lua .. "local val = nil\n"
-		lua = lua .. "local function update(self, mat)\n"
 
 		for _, data in ipairs(uniform_variables) do
-			local line = tostring(unrolled_lines[data.val.type] or data.val.type)
-
 			if data.val.is_texture then
-				line = line:format(data.id, texture_channel, texture_channel)
+				data.texture_channel = texture_channel
 				texture_channel = texture_channel + 1
-			else
-				line = line:format(data.id, 0, 0)
 			end
-
-			lua = lua ..
-[[
-	val = mat and mat.]] .. data.key .. [[ or self.]]..data.key..[[
-
-	if type(val) == 'function' then
-		val = val()
-	end
-
-	if val ~= nil then
-		]]..line..[[
-	end
-]]
 		end
 
-		for _, data in ipairs(uniform_block_variables) do
-			local line = ""
-			lua = lua ..
-[[
-	val = mat and mat.]] .. data.key .. [[ or self.]]..data.key..[[
+		self.uniform_variables = uniform_variables
+		self.uniform_variables_length = #uniform_variables
 
-	if type(val) == 'function' then
-		val = val()
-	end
-
-	if val ~= nil then
-		(mat and mat.ubo or self.ubo):UpdateVariable("]]..data.key..[[", val)
-	end
-]]
-		end
-
-		lua = lua .. "end\n"
-		if BUILD_SHADER_OUTPUT then
-			lua = lua .. "if RELOAD then\n\trender.active_shaders[\""..shader_id.."\"].unrolled_bind_func = update\nend\n"
-		end
-		lua = lua .. "return update"
-
-		if BUILD_SHADER_OUTPUT then
-			vfs.Write("data/shader_builder_output/" .. shader_id .. "/unrolled_lines.lua", lua)
-			serializer.WriteFile("luadata", "shader_builder_output/" .. shader_id .. "/variables.lua", variables)
-
-			local path = "data/shader_builder/" .. shader_id .. "_unrolled.lua"
-			vfs.Write(path, lua)
-
-			local RELOAD = _G.RELOAD
-			if RELOAD then _G.RELOAD = nil end
-			self.unrolled_bind_func = assert(vfs.DoFile(path))
-			if RELOAD then _G.RELOAD = RELOAD end
-		else
-			self.unrolled_bind_func = assert(loadstring(lua, shader_id))()
-		end
+		self.uniform_block_variables = uniform_block_variables
+		self.uniform_block_variables_length = #uniform_block_variables
 	end
 
 	self.original_data = original_data
@@ -905,7 +850,53 @@ function META:Bind()
 		end
 	end
 
-	self.unrolled_bind_func(self, render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self.shader_id or self.force_bind) and render.current_material)
+	local mat = render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self.shader_id or self.force_bind) and render.current_material
+
+	--for _, info in ipairs(self.uniform_variables) do
+	for i = 1, self.uniform_variables_length do
+		local info = self.uniform_variables[i]
+
+		local val = mat and mat[info.key] or self[info.key]
+
+		if type(val) == "function" then
+			val = val()
+		end
+
+		if val ~= nil then
+			if info.val.is_texture or info.val.is_bindless_texture then
+				render.current_program:UploadTexture(info.id, val, info.texture_channel, info.texture_channel)
+			elseif info.val.type == "mat4" then
+				render.current_program:UploadMatrix44(info.id, val)
+			elseif info.val.type == "bool" then
+				render.current_program:UploadBoolean(info.id, val)
+			elseif info.val.type == "float" then
+				render.current_program:UploadNumber(info.id, val)
+			elseif info.val.type == "int" then
+				render.current_program:UploadInteger(info.id, val)
+			elseif info.val.type == "vec2" then
+				render.current_program:UploadVec2(info.id, val)
+			elseif info.val.type == "vec3" then
+				render.current_program:UploadVec3(info.id, val)
+			elseif info.val.type == "vec4" then
+				render.current_program:UploadColor(info.id, val)
+			end
+		end
+	end
+
+	--for _, info in ipairs(self.uniform_variables) do
+	for i = 1, self.uniform_block_variables_length do
+		local info = self.uniform_block_variables[i]
+
+		local val = mat and mat[data.key] or self[data.key]
+
+		if type(val) == 'function' then
+			val = val()
+		end
+
+		if val ~= nil then
+			(mat and mat.ubo or self.ubo):UpdateVariable(data.key, val)
+		end
+	end
 end
 
 function META:CreateMaterialTemplate(name)
