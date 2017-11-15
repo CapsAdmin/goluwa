@@ -60,8 +60,16 @@ end
 
 do -- helpers
 	function META:BuildBoundingBox()
-		for _, vertex in ipairs(self.Vertices) do
-			self.AABB:ExpandVec3(vertex.pos)
+		for _, sub_mesh in ipairs(self:GetSubMeshes()) do
+			for i = 1, #sub_mesh.indices do
+				local idx = sub_mesh.indices[i]
+				if idx then
+					local vtx = self.Vertices[idx]
+					if vtx then
+						self.AABB:ExpandVec3(self.Vertices[sub_mesh.indices[i]].pos)
+					end
+				end
+			end
 		end
 	end
 
