@@ -5,8 +5,7 @@ render3d.cull_rate = 1/20
 render3d.scene = render3d.scene or {}
 local scene_keyval = {}
 
-render3d.scene_dist = render3d.scene_dist or {}
-local scene_keyval_dist = {}
+render3d.scene_dist = {}
 
 local needs_sorting = true
 
@@ -16,10 +15,6 @@ function render3d.AddModel(model)
 		needs_sorting = true
 		scene_keyval[model] = model
 	end
-	if not scene_keyval_dist[model] then
-		table.insert(render3d.scene_dist, model)
-		scene_keyval_dist[model] = model
-	end
 end
 
 function render3d.RemoveModel(model)
@@ -27,10 +22,6 @@ function render3d.RemoveModel(model)
 		table.removevalue(render3d.scene, model)
 		scene_keyval[model] = nil
 		needs_sorting = true
-	end
-	if scene_keyval_dist[model] then
-		table.removevalue(render3d.scene_dist, model)
-		scene_keyval_dist[model] = nil
 	end
 end
 
@@ -40,15 +31,29 @@ function render3d.SortScene()
 	end)
 end
 
-function render3d.SortDistanceScene(reverse)
-	if reverse then
-		table.sort(render3d.scene_dist, function(a, b)
-			return a.tr:GetCameraDistance() > b.tr:GetCameraDistance()
-		end)
-	else
-		table.sort(render3d.scene_dist, function(a, b)
-			return a.tr:GetCameraDistance() < b.tr:GetCameraDistance()
-		end)
+do
+	local function sort(a, b) return a.dist < b.dist end
+
+	function render3d.SortDistanceScene(what)
+		local i2 = 0
+
+		--table.clear(render3d.scene_dist)
+		local count = #render3d.scene
+
+		for i = 1, count do
+			local model = render3d.scene[i]
+			if not model.translucent and model:IsVisible(what) then
+				i2 = i2 + 1
+				model.dist = render3d.scene[i].tr:GetCameraDistance()
+				render3d.scene_dist[i2] = model
+			end
+		end
+
+		for i = i2 + 1, count do render3d.scene_dist[i] = nil end
+
+		table.sort(render3d.scene_dist, sort)
+
+		return i2
 	end
 end
 
@@ -86,6 +91,8 @@ local framebuffers = {}
 function render3d.DrawScene(what)
 	event.Call("DrawScene")
 
+	if not render3d.scene[1] then return end
+
 	if not DISABLE_CULLING and (not next_visible[what] or next_visible[what] < system.GetElapsedTime()) then
 
 		if not framebuffers[what] then
@@ -101,46 +108,36 @@ function render3d.DrawScene(what)
 			framebuffers[what] = fb
 		end
 
-		local scene = render3d.GetDistanceSortedScene()
-		local scene_length = #scene
+		render3d.cull_rate = math.clamp(system.GetFrameTime()*10, 1/20, 1/5)
 
-		if scene_length > 0 then
-			render3d.cull_rate = math.clamp(system.GetFrameTime()*4, 1/20, 1/5)
+		framebuffers[what]:Begin()
+		framebuffers[what]:ClearDepth(1)
+		render.PushDepth(true)
+		render.SetColorMask(0,0,0,0)
+		render.PushCullMode("none")
 
-			render3d.SortDistanceScene()
+		--for _, model in ipairs(scene) do
+		for i = 1, render3d.SortDistanceScene(what) do
+			local model = render3d.scene_dist[i]
+			model.occluders[what] = model.occluders[what] or render.CreateQuery("any_samples_passed_conservative")
 
-			framebuffers[what]:Begin()
-			framebuffers[what]:ClearDepth(1)
-			render.PushDepth(true)
-			render.SetColorMask(0,0,0,0)
-			render.PushCullMode("none")
+			-- TODO: upload aabb only
+			occlusion_shader.model = model.tr.FinalMatrix -- don't call model:GetMatrix() as it migth rebuild, it's not that important
+			occlusion_shader:Bind()
 
-			--for _, model in ipairs(scene) do
-			for i = 1, scene_length do
-				local model = scene[i]
-				model.occluders[what] = model.occluders[what] or render.CreateQuery("any_samples_passed_conservative")
-				if not model:IsTranslucent() and model:IsVisible(what) then
-					--model.is_visible = model.occluders[what]:GetResult()
-
-					-- TODO: upload aabb only
-					occlusion_shader.model = model.tr.FinalMatrix -- don't call model:GetMatrix() as it migth rebuild, it's not that important
-					occlusion_shader:Bind()
-
-					model.occluders[what]:Begin()
-					-- TODO: simple geometry
-					--for _, data in ipairs(model.sub_meshes) do
-					for i = 1, model.sub_meshes_length do
-						model.sub_meshes[i].model:Draw(model.sub_meshes[i].i)
-					end
-					model.occluders[what]:End()
-				end
+			model.occluders[what]:Begin()
+			-- TODO: simple geometry
+			--for _, data in ipairs(model.sub_meshes) do
+			for i = 1, model.sub_meshes_length do
+				model.sub_meshes[i].model:Draw(model.sub_meshes[i].i)
 			end
-
-			render.PopCullMode()
-			render.SetColorMask(1,1,1,1)
-			render.PopDepth()
-			framebuffers[what]:End()
+			model.occluders[what]:End()
 		end
+
+		render.PopCullMode()
+		render.SetColorMask(1,1,1,1)
+		render.PopDepth()
+		framebuffers[what]:End()
 
 		next_visible[what] = system.GetElapsedTime() + render3d.cull_rate
 	end
@@ -157,10 +154,6 @@ end
 
 function render3d.GetScene()
 	return render3d.scene
-end
-
-function render3d.GetDistanceSortedScene()
-	return render3d.scene_dist
 end
 
 

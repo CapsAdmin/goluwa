@@ -840,23 +840,28 @@ function META:Bind()
 		render.current_program = self.program
 	end
 
-	if render.use_uniform_buffers then
-		if render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self.shader_id or self.force_bind) then
-			--render.current_material.ubo:SetBindLocation(self, 0)
-			render.current_material.ubo:Bind(0)
-		else
-			--self.ubo:SetBindLocation(self, 0)
-			self.ubo:Bind(0)
-		end
+	local mat = self
+
+	if
+		render.current_material and
+		(
+			not render.current_material.required_shader or
+			render.current_material.required_shader == self.shader_id or
+			self.force_bind
+		)
+	then
+		mat = render.current_material
 	end
 
-	local mat = render.current_material and (not render.current_material.required_shader or render.current_material.required_shader == self.shader_id or self.force_bind) and render.current_material
+	if render.use_uniform_buffers then
+		mat.ubo:Bind(0)
+	end
 
 	--for _, info in ipairs(self.uniform_variables) do
 	for i = 1, self.uniform_variables_length do
 		local info = self.uniform_variables[i]
 
-		local val = mat and mat[info.key] or self[info.key]
+		local val = mat[info.key] or self[info.key]
 
 		if type(val) == "function" then
 			val = val()
@@ -887,14 +892,14 @@ function META:Bind()
 	for i = 1, self.uniform_block_variables_length do
 		local info = self.uniform_block_variables[i]
 
-		local val = mat and mat[data.key] or self[data.key]
+		local val = mat[data.key] or self[data.key]
 
 		if type(val) == 'function' then
 			val = val()
 		end
 
 		if val ~= nil then
-			(mat and mat.ubo or self.ubo):UpdateVariable(data.key, val)
+			mat.ubo:UpdateVariable(data.key, val)
 		end
 	end
 end
