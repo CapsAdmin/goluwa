@@ -4,14 +4,18 @@ local META = prototype.CreateTemplate()
 
 META.Name = "world"
 
+META.sun = NULL
+
 function META:OnAdd(ent)
-	prototype.SafeRemove(self.sun)
+	if (not GRAPHICS or render3d.shader_name ~= "flat") then
+		prototype.SafeRemove(self.sun)
 
-	self.sun = entities.CreateEntity("light", ent)
-	self.sun:SetHideFromEditor(true)
-	self.sun:SetProjectFromCamera(true)
+		self.sun = entities.CreateEntity("light", ent)
+		self.sun:SetHideFromEditor(true)
+		self.sun:SetProjectFromCamera(true)
 
-	ent.sun = self.sun
+		ent.sun = self.sun
+	end
 
 	for _, info in ipairs(prototype.GetStorableVariables(self)) do
 		self[info.set_name](self, self[info.get_name](self))

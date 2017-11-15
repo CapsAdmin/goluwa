@@ -785,7 +785,7 @@ function steam.SpawnMapEntities(path, parent)
 					--parent.world_params:SetSunColor(Color(info._light.r, info._light.g, info._light.b))
 					--parent.world_params:SetSunIntensity(1)
 
-				elseif info.classname:lower():find("light") and info._light then
+				elseif info.classname:lower():find("light") and info._light and (not GRAPHICS or render3d.shader_name ~= "flat") then
 					parent.light_group = parent.light_group or entities.CreateEntity("group", parent)
 					parent.light_group:SetName("lights")
 
