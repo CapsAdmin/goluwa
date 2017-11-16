@@ -1,3 +1,5 @@
+
+local ffi = require("ffi")
 local prepend = "SteamWorks_"
 local blacklist = {
 	["CSteamAPIContext"] = true,
@@ -285,6 +287,4 @@ table.insert(lua, "steamworks.steamid_meta = META")
 
 table.insert(lua, "return steamworks")
 
-vfs.Write("lua/libraries/ffi/steamworks/init.lua", table.concat(lua, "\n"))
-
-runfile("lua/libraries/ffi/steamworks/init.lua")
+vfs.Write("steamworks.lua", table.concat(lua, "\n"))
