@@ -41,10 +41,21 @@ function steam.DownloadWorkshopCollection(id, callback)
 	})
 end
 
---runfile("steamworks.lua", steam)
+local ok, err = pcall(function()
+	local steamworks_api = require("steamworks")
 
---[[local steamfriends = desire("ffi.steamfriends")
+	for k,v in pairs(steamworks_api) do
+		if not steam[k] then
+			steam[k] = v
+		end
+	end
+end)
 
+if not ok then
+	llog(err)
+end
+
+--[[
 if steamfriends then
 	for k,v in pairs(steamfriends) do
 		if k ~= "Update" and k ~= "OnChatMessage" then
@@ -59,7 +70,8 @@ if steamfriends then
 	function steamfriends.OnChatMessage(sender_steam_id, text, receiver_steam_id)
 		event.Call("SteamFriendsMessage", sender_steam_id, text, receiver_steam_id)
 	end
-end]]
+end
+]]
 
 function steam.IsSteamClientAvailible()
 	return steamfriends

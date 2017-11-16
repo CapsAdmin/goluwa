@@ -141,7 +141,7 @@ local function warn_pcall(func, ...)
 		logn(res[2]:trim())
 	end
 
-	return unpack(res, 2)
+	return unpack(res)
 end
 
 function ffi.cdef(str, ...)

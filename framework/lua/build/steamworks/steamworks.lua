@@ -1113,22 +1113,22 @@ typedef SteamWorks_uint64 SteamWorks_SteamLeaderboardEntries_t;
 typedef SteamWorks_uint32 SteamWorks_SNetSocket_t;
 typedef SteamWorks_uint32 SteamWorks_SNetListenSocket_t;
 typedef SteamWorks_uint32 SteamWorks_ScreenshotHandle;
-typedef struct PlaybackStatusHasChanged_t SteamWorks_PlaybackStatusHasChanged_t::SteamCallback_t;
-typedef struct VolumeHasChanged_t SteamWorks_VolumeHasChanged_t::SteamCallback_t;
-typedef struct MusicPlayerRemoteWillActivate_t SteamWorks_MusicPlayerRemoteWillActivate_t::SteamCallback_t;
-typedef struct MusicPlayerRemoteWillDeactivate_t SteamWorks_MusicPlayerRemoteWillDeactivate_t::SteamCallback_t;
-typedef struct MusicPlayerRemoteToFront_t SteamWorks_MusicPlayerRemoteToFront_t::SteamCallback_t;
-typedef struct MusicPlayerWillQuit_t SteamWorks_MusicPlayerWillQuit_t::SteamCallback_t;
-typedef struct MusicPlayerWantsPlay_t SteamWorks_MusicPlayerWantsPlay_t::SteamCallback_t;
-typedef struct MusicPlayerWantsPause_t SteamWorks_MusicPlayerWantsPause_t::SteamCallback_t;
-typedef struct MusicPlayerWantsPlayPrevious_t SteamWorks_MusicPlayerWantsPlayPrevious_t::SteamCallback_t;
-typedef struct MusicPlayerWantsPlayNext_t SteamWorks_MusicPlayerWantsPlayNext_t::SteamCallback_t;
-typedef struct MusicPlayerWantsShuffled_t SteamWorks_MusicPlayerWantsShuffled_t::SteamCallback_t;
-typedef struct MusicPlayerWantsLooped_t SteamWorks_MusicPlayerWantsLooped_t::SteamCallback_t;
-typedef struct MusicPlayerWantsVolume_t SteamWorks_MusicPlayerWantsVolume_t::SteamCallback_t;
-typedef struct MusicPlayerSelectsQueueEntry_t SteamWorks_MusicPlayerSelectsQueueEntry_t::SteamCallback_t;
-typedef struct MusicPlayerSelectsPlaylistEntry_t SteamWorks_MusicPlayerSelectsPlaylistEntry_t::SteamCallback_t;
-typedef struct MusicPlayerWantsPlayingRepeatStatus_t SteamWorks_MusicPlayerWantsPlayingRepeatStatus_t::SteamCallback_t;
+typedef struct PlaybackStatusHasChanged_t SteamWorks_PlaybackStatusHasChanged_t;
+typedef struct VolumeHasChanged_t SteamWorks_VolumeHasChanged_t;
+typedef struct MusicPlayerRemoteWillActivate_t SteamWorks_MusicPlayerRemoteWillActivate_t;
+typedef struct MusicPlayerRemoteWillDeactivate_t SteamWorks_MusicPlayerRemoteWillDeactivate_t;
+typedef struct MusicPlayerRemoteToFront_t SteamWorks_MusicPlayerRemoteToFront_t;
+typedef struct MusicPlayerWillQuit_t SteamWorks_MusicPlayerWillQuit_t;
+typedef struct MusicPlayerWantsPlay_t SteamWorks_MusicPlayerWantsPlay_t;
+typedef struct MusicPlayerWantsPause_t SteamWorks_MusicPlayerWantsPause_t;
+typedef struct MusicPlayerWantsPlayPrevious_t SteamWorks_MusicPlayerWantsPlayPrevious_t;
+typedef struct MusicPlayerWantsPlayNext_t SteamWorks_MusicPlayerWantsPlayNext_t;
+typedef struct MusicPlayerWantsShuffled_t SteamWorks_MusicPlayerWantsShuffled_t;
+typedef struct MusicPlayerWantsLooped_t SteamWorks_MusicPlayerWantsLooped_t;
+typedef struct MusicPlayerWantsVolume_t SteamWorks_MusicPlayerWantsVolume_t;
+typedef struct MusicPlayerSelectsQueueEntry_t SteamWorks_MusicPlayerSelectsQueueEntry_t;
+typedef struct MusicPlayerSelectsPlaylistEntry_t SteamWorks_MusicPlayerSelectsPlaylistEntry_t;
+typedef struct MusicPlayerWantsPlayingRepeatStatus_t SteamWorks_MusicPlayerWantsPlayingRepeatStatus_t;
 typedef SteamWorks_uint32 SteamWorks_HTTPRequestHandle;
 typedef SteamWorks_uint32 SteamWorks_HTTPCookieContainerHandle;
 typedef SteamWorks_uint64 SteamWorks_ClientUnifiedMessageHandle;
@@ -1138,38 +1138,38 @@ typedef SteamWorks_uint64 SteamWorks_ControllerDigitalActionHandle_t;
 typedef SteamWorks_uint64 SteamWorks_ControllerAnalogActionHandle_t;
 typedef SteamWorks_uint64 SteamWorks_UGCQueryHandle_t;
 typedef SteamWorks_uint64 SteamWorks_UGCUpdateHandle_t;
-typedef struct SteamAppInstalled_t SteamWorks_SteamAppInstalled_t::SteamCallback_t;
-typedef struct SteamAppUninstalled_t SteamWorks_SteamAppUninstalled_t::SteamCallback_t;
+typedef struct SteamAppInstalled_t SteamWorks_SteamAppInstalled_t;
+typedef struct SteamAppUninstalled_t SteamWorks_SteamAppUninstalled_t;
 typedef SteamWorks_uint32 SteamWorks_HHTMLBrowser;
-typedef struct HTML_BrowserReady_t SteamWorks_HTML_BrowserReady_t::SteamCallback_t;
-typedef struct HTML_NeedsPaint_t SteamWorks_HTML_NeedsPaint_t::SteamCallback_t;
-typedef struct HTML_StartRequest_t SteamWorks_HTML_StartRequest_t::SteamCallback_t;
-typedef struct HTML_CloseBrowser_t SteamWorks_HTML_CloseBrowser_t::SteamCallback_t;
-typedef struct HTML_URLChanged_t SteamWorks_HTML_URLChanged_t::SteamCallback_t;
-typedef struct HTML_FinishedRequest_t SteamWorks_HTML_FinishedRequest_t::SteamCallback_t;
-typedef struct HTML_OpenLinkInNewTab_t SteamWorks_HTML_OpenLinkInNewTab_t::SteamCallback_t;
-typedef struct HTML_ChangedTitle_t SteamWorks_HTML_ChangedTitle_t::SteamCallback_t;
-typedef struct HTML_SearchResults_t SteamWorks_HTML_SearchResults_t::SteamCallback_t;
-typedef struct HTML_CanGoBackAndForward_t SteamWorks_HTML_CanGoBackAndForward_t::SteamCallback_t;
-typedef struct HTML_HorizontalScroll_t SteamWorks_HTML_HorizontalScroll_t::SteamCallback_t;
-typedef struct HTML_VerticalScroll_t SteamWorks_HTML_VerticalScroll_t::SteamCallback_t;
-typedef struct HTML_LinkAtPosition_t SteamWorks_HTML_LinkAtPosition_t::SteamCallback_t;
-typedef struct HTML_JSAlert_t SteamWorks_HTML_JSAlert_t::SteamCallback_t;
-typedef struct HTML_JSConfirm_t SteamWorks_HTML_JSConfirm_t::SteamCallback_t;
-typedef struct HTML_FileOpenDialog_t SteamWorks_HTML_FileOpenDialog_t::SteamCallback_t;
-typedef struct HTML_NewWindow_t SteamWorks_HTML_NewWindow_t::SteamCallback_t;
-typedef struct HTML_SetCursor_t SteamWorks_HTML_SetCursor_t::SteamCallback_t;
-typedef struct HTML_StatusText_t SteamWorks_HTML_StatusText_t::SteamCallback_t;
-typedef struct HTML_ShowToolTip_t SteamWorks_HTML_ShowToolTip_t::SteamCallback_t;
-typedef struct HTML_UpdateToolTip_t SteamWorks_HTML_UpdateToolTip_t::SteamCallback_t;
-typedef struct HTML_HideToolTip_t SteamWorks_HTML_HideToolTip_t::SteamCallback_t;
+typedef struct HTML_BrowserReady_t SteamWorks_HTML_BrowserReady_t;
+typedef struct HTML_NeedsPaint_t SteamWorks_HTML_NeedsPaint_t;
+typedef struct HTML_StartRequest_t SteamWorks_HTML_StartRequest_t;
+typedef struct HTML_CloseBrowser_t SteamWorks_HTML_CloseBrowser_t;
+typedef struct HTML_URLChanged_t SteamWorks_HTML_URLChanged_t;
+typedef struct HTML_FinishedRequest_t SteamWorks_HTML_FinishedRequest_t;
+typedef struct HTML_OpenLinkInNewTab_t SteamWorks_HTML_OpenLinkInNewTab_t;
+typedef struct HTML_ChangedTitle_t SteamWorks_HTML_ChangedTitle_t;
+typedef struct HTML_SearchResults_t SteamWorks_HTML_SearchResults_t;
+typedef struct HTML_CanGoBackAndForward_t SteamWorks_HTML_CanGoBackAndForward_t;
+typedef struct HTML_HorizontalScroll_t SteamWorks_HTML_HorizontalScroll_t;
+typedef struct HTML_VerticalScroll_t SteamWorks_HTML_VerticalScroll_t;
+typedef struct HTML_LinkAtPosition_t SteamWorks_HTML_LinkAtPosition_t;
+typedef struct HTML_JSAlert_t SteamWorks_HTML_JSAlert_t;
+typedef struct HTML_JSConfirm_t SteamWorks_HTML_JSConfirm_t;
+typedef struct HTML_FileOpenDialog_t SteamWorks_HTML_FileOpenDialog_t;
+typedef struct HTML_NewWindow_t SteamWorks_HTML_NewWindow_t;
+typedef struct HTML_SetCursor_t SteamWorks_HTML_SetCursor_t;
+typedef struct HTML_StatusText_t SteamWorks_HTML_StatusText_t;
+typedef struct HTML_ShowToolTip_t SteamWorks_HTML_ShowToolTip_t;
+typedef struct HTML_UpdateToolTip_t SteamWorks_HTML_UpdateToolTip_t;
+typedef struct HTML_HideToolTip_t SteamWorks_HTML_HideToolTip_t;
 typedef SteamWorks_uint64 SteamWorks_SteamItemInstanceID_t;
 typedef SteamWorks_int32 SteamWorks_SteamItemDef_t;
 typedef SteamWorks_int32 SteamWorks_SteamInventoryResult_t;
-typedef struct BroadcastUploadStart_t SteamWorks_BroadcastUploadStart_t::SteamCallback_t;
-typedef struct BroadcastUploadStop_t SteamWorks_BroadcastUploadStop_t::SteamCallback_t;
-typedef struct GetVideoURLResult_t SteamWorks_GetVideoURLResult_t::SteamCallback_t;
-typedef struct GetOPFSettingsResult_t SteamWorks_GetOPFSettingsResult_t::SteamCallback_t;
+typedef struct BroadcastUploadStart_t SteamWorks_BroadcastUploadStart_t;
+typedef struct BroadcastUploadStop_t SteamWorks_BroadcastUploadStop_t;
+typedef struct GetVideoURLResult_t SteamWorks_GetVideoURLResult_t;
+typedef struct GetOPFSettingsResult_t SteamWorks_GetOPFSettingsResult_t;
 typedef struct SteamWorks_ISteamClient {} SteamWorks_ISteamClient;
 typedef struct SteamWorks_ISteamUser {} SteamWorks_ISteamUser;
 typedef struct SteamWorks_ISteamFriends {} SteamWorks_ISteamFriends;
@@ -1191,7 +1191,6 @@ typedef struct SteamWorks_ISteamMusicRemote {} SteamWorks_ISteamMusicRemote;
 typedef struct SteamWorks_ISteamHTMLSurface {} SteamWorks_ISteamHTMLSurface;
 typedef struct SteamWorks_ISteamInventory {} SteamWorks_ISteamInventory;
 typedef struct SteamWorks_ISteamVideo {} SteamWorks_ISteamVideo;
-typedef struct SteamWorks_ISteamClient {} SteamWorks_ISteamClient;
 typedef struct SteamWorks_ISteamGameServer {} SteamWorks_ISteamGameServer;
 typedef struct SteamWorks_ISteamGameServerStats {} SteamWorks_ISteamGameServerStats;
 typedef struct SteamWorks_ISteamMatchmakingServerListResponse {} SteamWorks_ISteamMatchmakingServerListResponse;
@@ -2620,10 +2619,10 @@ SteamWorks_ControllerActionSetHandle_t SteamAPI_ISteamController_GetActionSetHan
 void SteamAPI_ISteamController_ActivateActionSet(SteamWorks_ISteamController* self, SteamWorks_ControllerHandle_t controllerHandle, SteamWorks_ControllerActionSetHandle_t actionSetHandle);
 SteamWorks_ControllerActionSetHandle_t SteamAPI_ISteamController_GetCurrentActionSet(SteamWorks_ISteamController* self, SteamWorks_ControllerHandle_t controllerHandle);
 SteamWorks_ControllerDigitalActionHandle_t SteamAPI_ISteamController_GetDigitalActionHandle(SteamWorks_ISteamController* self, const char * pszActionName);
-SteamWorks_struct ControllerDigitalActionData_t SteamAPI_ISteamController_GetDigitalActionData(SteamWorks_ISteamController* self, SteamWorks_ControllerHandle_t controllerHandle, SteamWorks_ControllerDigitalActionHandle_t digitalActionHandle);
+struct SteamWorks_ControllerDigitalActionData_t SteamAPI_ISteamController_GetDigitalActionData(SteamWorks_ISteamController* self, SteamWorks_ControllerHandle_t controllerHandle, SteamWorks_ControllerDigitalActionHandle_t digitalActionHandle);
 int SteamAPI_ISteamController_GetDigitalActionOrigins(SteamWorks_ISteamController* self, SteamWorks_ControllerHandle_t controllerHandle, SteamWorks_ControllerActionSetHandle_t actionSetHandle, SteamWorks_ControllerDigitalActionHandle_t digitalActionHandle, SteamWorks_EControllerActionOrigin * originsOut);
 SteamWorks_ControllerAnalogActionHandle_t SteamAPI_ISteamController_GetAnalogActionHandle(SteamWorks_ISteamController* self, const char * pszActionName);
-SteamWorks_struct ControllerAnalogActionData_t SteamAPI_ISteamController_GetAnalogActionData(SteamWorks_ISteamController* self, SteamWorks_ControllerHandle_t controllerHandle, SteamWorks_ControllerAnalogActionHandle_t analogActionHandle);
+struct SteamWorks_ControllerAnalogActionData_t SteamAPI_ISteamController_GetAnalogActionData(SteamWorks_ISteamController* self, SteamWorks_ControllerHandle_t controllerHandle, SteamWorks_ControllerAnalogActionHandle_t analogActionHandle);
 int SteamAPI_ISteamController_GetAnalogActionOrigins(SteamWorks_ISteamController* self, SteamWorks_ControllerHandle_t controllerHandle, SteamWorks_ControllerActionSetHandle_t actionSetHandle, SteamWorks_ControllerAnalogActionHandle_t analogActionHandle, SteamWorks_EControllerActionOrigin * originsOut);
 void SteamAPI_ISteamController_StopAnalogActionMomentum(SteamWorks_ISteamController* self, SteamWorks_ControllerHandle_t controllerHandle, SteamWorks_ControllerAnalogActionHandle_t eAction);
 void SteamAPI_ISteamController_TriggerHapticPulse(SteamWorks_ISteamController* self, SteamWorks_ControllerHandle_t controllerHandle, SteamWorks_ESteamControllerPad eTargetPad, unsigned short usDurationMicroSec);
@@ -2632,7 +2631,7 @@ void SteamAPI_ISteamController_TriggerVibration(SteamWorks_ISteamController* sel
 void SteamAPI_ISteamController_SetLEDColor(SteamWorks_ISteamController* self, SteamWorks_ControllerHandle_t controllerHandle, SteamWorks_uint8 nColorR, SteamWorks_uint8 nColorG, SteamWorks_uint8 nColorB, unsigned int nFlags);
 int SteamAPI_ISteamController_GetGamepadIndexForController(SteamWorks_ISteamController* self, SteamWorks_ControllerHandle_t ulControllerHandle);
 SteamWorks_ControllerHandle_t SteamAPI_ISteamController_GetControllerForGamepadIndex(SteamWorks_ISteamController* self, int nIndex);
-SteamWorks_struct ControllerMotionData_t SteamAPI_ISteamController_GetMotionData(SteamWorks_ISteamController* self, SteamWorks_ControllerHandle_t controllerHandle);
+struct SteamWorks_ControllerMotionData_t SteamAPI_ISteamController_GetMotionData(SteamWorks_ISteamController* self, SteamWorks_ControllerHandle_t controllerHandle);
 bool SteamAPI_ISteamController_ShowDigitalActionOrigins(SteamWorks_ISteamController* self, SteamWorks_ControllerHandle_t controllerHandle, SteamWorks_ControllerDigitalActionHandle_t digitalActionHandle, float flScale, float flXPosition, float flYPosition);
 bool SteamAPI_ISteamController_ShowAnalogActionOrigins(SteamWorks_ISteamController* self, SteamWorks_ControllerHandle_t controllerHandle, SteamWorks_ControllerAnalogActionHandle_t analogActionHandle, float flScale, float flXPosition, float flYPosition);
 const char * SteamAPI_ISteamController_GetStringForActionOrigin(SteamWorks_ISteamController* self, SteamWorks_EControllerActionOrigin eOrigin);
@@ -2851,689 +2850,789 @@ SteamWorks_ISteamAppList *SteamAppList();
 SteamWorks_ISteamMatchmaking *SteamMatchmaking();
 SteamWorks_ISteamClient *SteamClient();
 SteamWorks_ISteamUser *SteamUser();
+bool SteamAPI_RestartAppIfNecessary(uint32_t);
 bool SteamAPI_Init();]]
 local lib
 
 if jit.os == "Windows" then
-if jit.arch == "x64" then
-	lib = ffi.load("steam_api64")
-elseif jit.arch == "x86" then
-	lib = ffi.load("steam_api")
-end
+	if jit.arch == "x64" then
+		lib = ffi.load("steam_api64")
+	elseif jit.arch == "x86" then
+		lib = ffi.load("steam_api")
+	end
 else
-lib = ffi.load("libsteam_api")
+	lib = ffi.load("libsteam_api")
 end
 
+local appid
+
 do
-local file = io.open("steam_appid.txt")
-if file then
-	io.close(file)
-else
-	local file, err = io.open("steam_appid.txt", "w")
+	local file = io.open("steam_appid.txt")
+
 	if file then
-		file:write("999999")
+		appid = tonumber(file:read("*all"))
 		io.close(file)
 	else
-		error("failed to write steam_appid.txt (because it's needed) in cd : " .. err)
+		local file, err = io.open("steam_appid.txt", "w")
+		if file then
+			file:write("480")
+			io.close(file)
+			appid = 480
+		else
+			error("failed to write steam_appid.txt! (it's needed) in cd : " .. err)
+		end
 	end
 end
 
-end
-
-if not lib.SteamAPI_Init() then
-error("failed to initialize steamworks")
+if appid == 480 then
+	print("steamworks.lua: using dummy appid ('Spacewar' the steamworks example)")
+	print("steamworks.lua: you have to modify ./steam_appid.txt to change it")
 end
 
 local steamworks = {}
 
-steamworks.unifiedmessages = {}
-steamworks.unifiedmessages_ptr = lib.SteamUnifiedMessages()
-function steamworks.unifiedmessages.SendMethod(pchServiceMethod, pRequestBuffer, unRequestBufferSize, unContext) return lib.SteamAPI_ISteamUnifiedMessages_SendMethod(steamworks.unifiedmessages_ptr, pchServiceMethod, pRequestBuffer, unRequestBufferSize, unContext) end
-function steamworks.unifiedmessages.GetMethodResponseInfo(hHandle, punResponseSize, peResult) return lib.SteamAPI_ISteamUnifiedMessages_GetMethodResponseInfo(steamworks.unifiedmessages_ptr, hHandle, punResponseSize, peResult) end
-function steamworks.unifiedmessages.GetMethodResponseData(hHandle, pResponseBuffer, unResponseBufferSize, bAutoRelease) return lib.SteamAPI_ISteamUnifiedMessages_GetMethodResponseData(steamworks.unifiedmessages_ptr, hHandle, pResponseBuffer, unResponseBufferSize, bAutoRelease) end
-function steamworks.unifiedmessages.ReleaseMethod(hHandle) return lib.SteamAPI_ISteamUnifiedMessages_ReleaseMethod(steamworks.unifiedmessages_ptr, hHandle) end
-function steamworks.unifiedmessages.SendNotification(pchServiceNotification, pNotificationBuffer, unNotificationBufferSize) return lib.SteamAPI_ISteamUnifiedMessages_SendNotification(steamworks.unifiedmessages_ptr, pchServiceNotification, pNotificationBuffer, unNotificationBufferSize) end
-steamworks.friends = {}
-steamworks.friends_ptr = lib.SteamFriends()
-function steamworks.friends.GetPersonaName()local str = lib.SteamAPI_ISteamFriends_GetPersonaName(steamworks.friends_ptr) if str ~= nil then return ffi.string(str) end end
-function steamworks.friends.SetPersonaName(pchPersonaName) return lib.SteamAPI_ISteamFriends_SetPersonaName(steamworks.friends_ptr, pchPersonaName) end
-function steamworks.friends.GetPersonaState() return lib.SteamAPI_ISteamFriends_GetPersonaState(steamworks.friends_ptr) end
-function steamworks.friends.GetFriendCount(iFriendFlags) return lib.SteamAPI_ISteamFriends_GetFriendCount(steamworks.friends_ptr, iFriendFlags) end
-function steamworks.friends.GetFriendByIndex(iFriend, iFriendFlags) return lib.SteamAPI_ISteamFriends_GetFriendByIndex(steamworks.friends_ptr, iFriend, iFriendFlags) end
-function steamworks.friends.GetFriendRelationship(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetFriendRelationship(steamworks.friends_ptr, steamIDFriend) end
-function steamworks.friends.GetFriendPersonaState(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetFriendPersonaState(steamworks.friends_ptr, steamIDFriend) end
-function steamworks.friends.GetFriendPersonaName(steamIDFriend)local str = lib.SteamAPI_ISteamFriends_GetFriendPersonaName(steamworks.friends_ptr, steamIDFriend) if str ~= nil then return ffi.string(str) end end
-function steamworks.friends.GetFriendGamePlayed(steamIDFriend, pFriendGameInfo) return lib.SteamAPI_ISteamFriends_GetFriendGamePlayed(steamworks.friends_ptr, steamIDFriend, pFriendGameInfo) end
-function steamworks.friends.GetFriendPersonaNameHistory(steamIDFriend, iPersonaName)local str = lib.SteamAPI_ISteamFriends_GetFriendPersonaNameHistory(steamworks.friends_ptr, steamIDFriend, iPersonaName) if str ~= nil then return ffi.string(str) end end
-function steamworks.friends.GetFriendSteamLevel(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetFriendSteamLevel(steamworks.friends_ptr, steamIDFriend) end
-function steamworks.friends.GetPlayerNickname(steamIDPlayer)local str = lib.SteamAPI_ISteamFriends_GetPlayerNickname(steamworks.friends_ptr, steamIDPlayer) if str ~= nil then return ffi.string(str) end end
-function steamworks.friends.GetFriendsGroupCount() return lib.SteamAPI_ISteamFriends_GetFriendsGroupCount(steamworks.friends_ptr) end
-function steamworks.friends.GetFriendsGroupIDByIndex(iFG) return lib.SteamAPI_ISteamFriends_GetFriendsGroupIDByIndex(steamworks.friends_ptr, iFG) end
-function steamworks.friends.GetFriendsGroupName(friendsGroupID)local str = lib.SteamAPI_ISteamFriends_GetFriendsGroupName(steamworks.friends_ptr, friendsGroupID) if str ~= nil then return ffi.string(str) end end
-function steamworks.friends.GetFriendsGroupMembersCount(friendsGroupID) return lib.SteamAPI_ISteamFriends_GetFriendsGroupMembersCount(steamworks.friends_ptr, friendsGroupID) end
-function steamworks.friends.GetFriendsGroupMembersList(friendsGroupID, pOutSteamIDMembers, nMembersCount) return lib.SteamAPI_ISteamFriends_GetFriendsGroupMembersList(steamworks.friends_ptr, friendsGroupID, pOutSteamIDMembers, nMembersCount) end
-function steamworks.friends.HasFriend(steamIDFriend, iFriendFlags) return lib.SteamAPI_ISteamFriends_HasFriend(steamworks.friends_ptr, steamIDFriend, iFriendFlags) end
-function steamworks.friends.GetClanCount() return lib.SteamAPI_ISteamFriends_GetClanCount(steamworks.friends_ptr) end
-function steamworks.friends.GetClanByIndex(iClan) return lib.SteamAPI_ISteamFriends_GetClanByIndex(steamworks.friends_ptr, iClan) end
-function steamworks.friends.GetClanName(steamIDClan)local str = lib.SteamAPI_ISteamFriends_GetClanName(steamworks.friends_ptr, steamIDClan) if str ~= nil then return ffi.string(str) end end
-function steamworks.friends.GetClanTag(steamIDClan)local str = lib.SteamAPI_ISteamFriends_GetClanTag(steamworks.friends_ptr, steamIDClan) if str ~= nil then return ffi.string(str) end end
-function steamworks.friends.GetClanActivityCounts(steamIDClan, pnOnline, pnInGame, pnChatting) return lib.SteamAPI_ISteamFriends_GetClanActivityCounts(steamworks.friends_ptr, steamIDClan, pnOnline, pnInGame, pnChatting) end
-function steamworks.friends.DownloadClanActivityCounts(psteamIDClans, cClansToRequest) return lib.SteamAPI_ISteamFriends_DownloadClanActivityCounts(steamworks.friends_ptr, psteamIDClans, cClansToRequest) end
-function steamworks.friends.GetFriendCountFromSource(steamIDSource) return lib.SteamAPI_ISteamFriends_GetFriendCountFromSource(steamworks.friends_ptr, steamIDSource) end
-function steamworks.friends.GetFriendFromSourceByIndex(steamIDSource, iFriend) return lib.SteamAPI_ISteamFriends_GetFriendFromSourceByIndex(steamworks.friends_ptr, steamIDSource, iFriend) end
-function steamworks.friends.IsUserInSource(steamIDUser, steamIDSource) return lib.SteamAPI_ISteamFriends_IsUserInSource(steamworks.friends_ptr, steamIDUser, steamIDSource) end
-function steamworks.friends.SetInGameVoiceSpeaking(steamIDUser, bSpeaking) return lib.SteamAPI_ISteamFriends_SetInGameVoiceSpeaking(steamworks.friends_ptr, steamIDUser, bSpeaking) end
-function steamworks.friends.ActivateGameOverlay(pchDialog) return lib.SteamAPI_ISteamFriends_ActivateGameOverlay(steamworks.friends_ptr, pchDialog) end
-function steamworks.friends.ActivateGameOverlayToUser(pchDialog, steamID) return lib.SteamAPI_ISteamFriends_ActivateGameOverlayToUser(steamworks.friends_ptr, pchDialog, steamID) end
-function steamworks.friends.ActivateGameOverlayToWebPage(pchURL) return lib.SteamAPI_ISteamFriends_ActivateGameOverlayToWebPage(steamworks.friends_ptr, pchURL) end
-function steamworks.friends.ActivateGameOverlayToStore(nAppID, eFlag) return lib.SteamAPI_ISteamFriends_ActivateGameOverlayToStore(steamworks.friends_ptr, nAppID, eFlag) end
-function steamworks.friends.SetPlayedWith(steamIDUserPlayedWith) return lib.SteamAPI_ISteamFriends_SetPlayedWith(steamworks.friends_ptr, steamIDUserPlayedWith) end
-function steamworks.friends.ActivateGameOverlayInviteDialog(steamIDLobby) return lib.SteamAPI_ISteamFriends_ActivateGameOverlayInviteDialog(steamworks.friends_ptr, steamIDLobby) end
-function steamworks.friends.GetSmallFriendAvatar(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetSmallFriendAvatar(steamworks.friends_ptr, steamIDFriend) end
-function steamworks.friends.GetMediumFriendAvatar(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetMediumFriendAvatar(steamworks.friends_ptr, steamIDFriend) end
-function steamworks.friends.GetLargeFriendAvatar(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetLargeFriendAvatar(steamworks.friends_ptr, steamIDFriend) end
-function steamworks.friends.RequestUserInformation(steamIDUser, bRequireNameOnly) return lib.SteamAPI_ISteamFriends_RequestUserInformation(steamworks.friends_ptr, steamIDUser, bRequireNameOnly) end
-function steamworks.friends.RequestClanOfficerList(steamIDClan) return lib.SteamAPI_ISteamFriends_RequestClanOfficerList(steamworks.friends_ptr, steamIDClan) end
-function steamworks.friends.GetClanOwner(steamIDClan) return lib.SteamAPI_ISteamFriends_GetClanOwner(steamworks.friends_ptr, steamIDClan) end
-function steamworks.friends.GetClanOfficerCount(steamIDClan) return lib.SteamAPI_ISteamFriends_GetClanOfficerCount(steamworks.friends_ptr, steamIDClan) end
-function steamworks.friends.GetClanOfficerByIndex(steamIDClan, iOfficer) return lib.SteamAPI_ISteamFriends_GetClanOfficerByIndex(steamworks.friends_ptr, steamIDClan, iOfficer) end
-function steamworks.friends.GetUserRestrictions() return lib.SteamAPI_ISteamFriends_GetUserRestrictions(steamworks.friends_ptr) end
-function steamworks.friends.SetRichPresence(pchKey, pchValue) return lib.SteamAPI_ISteamFriends_SetRichPresence(steamworks.friends_ptr, pchKey, pchValue) end
-function steamworks.friends.ClearRichPresence() return lib.SteamAPI_ISteamFriends_ClearRichPresence(steamworks.friends_ptr) end
-function steamworks.friends.GetFriendRichPresence(steamIDFriend, pchKey)local str = lib.SteamAPI_ISteamFriends_GetFriendRichPresence(steamworks.friends_ptr, steamIDFriend, pchKey) if str ~= nil then return ffi.string(str) end end
-function steamworks.friends.GetFriendRichPresenceKeyCount(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetFriendRichPresenceKeyCount(steamworks.friends_ptr, steamIDFriend) end
-function steamworks.friends.GetFriendRichPresenceKeyByIndex(steamIDFriend, iKey)local str = lib.SteamAPI_ISteamFriends_GetFriendRichPresenceKeyByIndex(steamworks.friends_ptr, steamIDFriend, iKey) if str ~= nil then return ffi.string(str) end end
-function steamworks.friends.RequestFriendRichPresence(steamIDFriend) return lib.SteamAPI_ISteamFriends_RequestFriendRichPresence(steamworks.friends_ptr, steamIDFriend) end
-function steamworks.friends.InviteUserToGame(steamIDFriend, pchConnectString) return lib.SteamAPI_ISteamFriends_InviteUserToGame(steamworks.friends_ptr, steamIDFriend, pchConnectString) end
-function steamworks.friends.GetCoplayFriendCount() return lib.SteamAPI_ISteamFriends_GetCoplayFriendCount(steamworks.friends_ptr) end
-function steamworks.friends.GetCoplayFriend(iCoplayFriend) return lib.SteamAPI_ISteamFriends_GetCoplayFriend(steamworks.friends_ptr, iCoplayFriend) end
-function steamworks.friends.GetFriendCoplayTime(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetFriendCoplayTime(steamworks.friends_ptr, steamIDFriend) end
-function steamworks.friends.GetFriendCoplayGame(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetFriendCoplayGame(steamworks.friends_ptr, steamIDFriend) end
-function steamworks.friends.JoinClanChatRoom(steamIDClan) return lib.SteamAPI_ISteamFriends_JoinClanChatRoom(steamworks.friends_ptr, steamIDClan) end
-function steamworks.friends.LeaveClanChatRoom(steamIDClan) return lib.SteamAPI_ISteamFriends_LeaveClanChatRoom(steamworks.friends_ptr, steamIDClan) end
-function steamworks.friends.GetClanChatMemberCount(steamIDClan) return lib.SteamAPI_ISteamFriends_GetClanChatMemberCount(steamworks.friends_ptr, steamIDClan) end
-function steamworks.friends.GetChatMemberByIndex(steamIDClan, iUser) return lib.SteamAPI_ISteamFriends_GetChatMemberByIndex(steamworks.friends_ptr, steamIDClan, iUser) end
-function steamworks.friends.SendClanChatMessage(steamIDClanChat, pchText) return lib.SteamAPI_ISteamFriends_SendClanChatMessage(steamworks.friends_ptr, steamIDClanChat, pchText) end
-function steamworks.friends.GetClanChatMessage(steamIDClanChat, iMessage, prgchText, cchTextMax, peChatEntryType, psteamidChatter) return lib.SteamAPI_ISteamFriends_GetClanChatMessage(steamworks.friends_ptr, steamIDClanChat, iMessage, prgchText, cchTextMax, peChatEntryType, psteamidChatter) end
-function steamworks.friends.IsClanChatAdmin(steamIDClanChat, steamIDUser) return lib.SteamAPI_ISteamFriends_IsClanChatAdmin(steamworks.friends_ptr, steamIDClanChat, steamIDUser) end
-function steamworks.friends.IsClanChatWindowOpenInSteam(steamIDClanChat) return lib.SteamAPI_ISteamFriends_IsClanChatWindowOpenInSteam(steamworks.friends_ptr, steamIDClanChat) end
-function steamworks.friends.OpenClanChatWindowInSteam(steamIDClanChat) return lib.SteamAPI_ISteamFriends_OpenClanChatWindowInSteam(steamworks.friends_ptr, steamIDClanChat) end
-function steamworks.friends.CloseClanChatWindowInSteam(steamIDClanChat) return lib.SteamAPI_ISteamFriends_CloseClanChatWindowInSteam(steamworks.friends_ptr, steamIDClanChat) end
-function steamworks.friends.SetListenForFriendsMessages(bInterceptEnabled) return lib.SteamAPI_ISteamFriends_SetListenForFriendsMessages(steamworks.friends_ptr, bInterceptEnabled) end
-function steamworks.friends.ReplyToFriendMessage(steamIDFriend, pchMsgToSend) return lib.SteamAPI_ISteamFriends_ReplyToFriendMessage(steamworks.friends_ptr, steamIDFriend, pchMsgToSend) end
-function steamworks.friends.GetFriendMessage(steamIDFriend, iMessageID, pvData, cubData, peChatEntryType) return lib.SteamAPI_ISteamFriends_GetFriendMessage(steamworks.friends_ptr, steamIDFriend, iMessageID, pvData, cubData, peChatEntryType) end
-function steamworks.friends.GetFollowerCount(steamID) return lib.SteamAPI_ISteamFriends_GetFollowerCount(steamworks.friends_ptr, steamID) end
-function steamworks.friends.IsFollowing(steamID) return lib.SteamAPI_ISteamFriends_IsFollowing(steamworks.friends_ptr, steamID) end
-function steamworks.friends.EnumerateFollowingList(unStartIndex) return lib.SteamAPI_ISteamFriends_EnumerateFollowingList(steamworks.friends_ptr, unStartIndex) end
-steamworks.networking = {}
-steamworks.networking_ptr = lib.SteamNetworking()
-function steamworks.networking.SendP2PPacket(steamIDRemote, pubData, cubData, eP2PSendType, nChannel) return lib.SteamAPI_ISteamNetworking_SendP2PPacket(steamworks.networking_ptr, steamIDRemote, pubData, cubData, eP2PSendType, nChannel) end
-function steamworks.networking.IsP2PPacketAvailable(pcubMsgSize, nChannel) return lib.SteamAPI_ISteamNetworking_IsP2PPacketAvailable(steamworks.networking_ptr, pcubMsgSize, nChannel) end
-function steamworks.networking.ReadP2PPacket(pubDest, cubDest, pcubMsgSize, psteamIDRemote, nChannel) return lib.SteamAPI_ISteamNetworking_ReadP2PPacket(steamworks.networking_ptr, pubDest, cubDest, pcubMsgSize, psteamIDRemote, nChannel) end
-function steamworks.networking.AcceptP2PSessionWithUser(steamIDRemote) return lib.SteamAPI_ISteamNetworking_AcceptP2PSessionWithUser(steamworks.networking_ptr, steamIDRemote) end
-function steamworks.networking.CloseP2PSessionWithUser(steamIDRemote) return lib.SteamAPI_ISteamNetworking_CloseP2PSessionWithUser(steamworks.networking_ptr, steamIDRemote) end
-function steamworks.networking.CloseP2PChannelWithUser(steamIDRemote, nChannel) return lib.SteamAPI_ISteamNetworking_CloseP2PChannelWithUser(steamworks.networking_ptr, steamIDRemote, nChannel) end
-function steamworks.networking.GetP2PSessionState(steamIDRemote, pConnectionState) return lib.SteamAPI_ISteamNetworking_GetP2PSessionState(steamworks.networking_ptr, steamIDRemote, pConnectionState) end
-function steamworks.networking.AllowP2PPacketRelay(bAllow) return lib.SteamAPI_ISteamNetworking_AllowP2PPacketRelay(steamworks.networking_ptr, bAllow) end
-function steamworks.networking.CreateListenSocket(nVirtualP2PPort, nIP, nPort, bAllowUseOfPacketRelay) return lib.SteamAPI_ISteamNetworking_CreateListenSocket(steamworks.networking_ptr, nVirtualP2PPort, nIP, nPort, bAllowUseOfPacketRelay) end
-function steamworks.networking.CreateP2PConnectionSocket(steamIDTarget, nVirtualPort, nTimeoutSec, bAllowUseOfPacketRelay) return lib.SteamAPI_ISteamNetworking_CreateP2PConnectionSocket(steamworks.networking_ptr, steamIDTarget, nVirtualPort, nTimeoutSec, bAllowUseOfPacketRelay) end
-function steamworks.networking.CreateConnectionSocket(nIP, nPort, nTimeoutSec) return lib.SteamAPI_ISteamNetworking_CreateConnectionSocket(steamworks.networking_ptr, nIP, nPort, nTimeoutSec) end
-function steamworks.networking.DestroySocket(hSocket, bNotifyRemoteEnd) return lib.SteamAPI_ISteamNetworking_DestroySocket(steamworks.networking_ptr, hSocket, bNotifyRemoteEnd) end
-function steamworks.networking.DestroyListenSocket(hSocket, bNotifyRemoteEnd) return lib.SteamAPI_ISteamNetworking_DestroyListenSocket(steamworks.networking_ptr, hSocket, bNotifyRemoteEnd) end
-function steamworks.networking.SendDataOnSocket(hSocket, pubData, cubData, bReliable) return lib.SteamAPI_ISteamNetworking_SendDataOnSocket(steamworks.networking_ptr, hSocket, pubData, cubData, bReliable) end
-function steamworks.networking.IsDataAvailableOnSocket(hSocket, pcubMsgSize) return lib.SteamAPI_ISteamNetworking_IsDataAvailableOnSocket(steamworks.networking_ptr, hSocket, pcubMsgSize) end
-function steamworks.networking.RetrieveDataFromSocket(hSocket, pubDest, cubDest, pcubMsgSize) return lib.SteamAPI_ISteamNetworking_RetrieveDataFromSocket(steamworks.networking_ptr, hSocket, pubDest, cubDest, pcubMsgSize) end
-function steamworks.networking.IsDataAvailable(hListenSocket, pcubMsgSize, phSocket) return lib.SteamAPI_ISteamNetworking_IsDataAvailable(steamworks.networking_ptr, hListenSocket, pcubMsgSize, phSocket) end
-function steamworks.networking.RetrieveData(hListenSocket, pubDest, cubDest, pcubMsgSize, phSocket) return lib.SteamAPI_ISteamNetworking_RetrieveData(steamworks.networking_ptr, hListenSocket, pubDest, cubDest, pcubMsgSize, phSocket) end
-function steamworks.networking.GetSocketInfo(hSocket, pSteamIDRemote, peSocketStatus, punIPRemote, punPortRemote) return lib.SteamAPI_ISteamNetworking_GetSocketInfo(steamworks.networking_ptr, hSocket, pSteamIDRemote, peSocketStatus, punIPRemote, punPortRemote) end
-function steamworks.networking.GetListenSocketInfo(hListenSocket, pnIP, pnPort) return lib.SteamAPI_ISteamNetworking_GetListenSocketInfo(steamworks.networking_ptr, hListenSocket, pnIP, pnPort) end
-function steamworks.networking.GetSocketConnectionType(hSocket) return lib.SteamAPI_ISteamNetworking_GetSocketConnectionType(steamworks.networking_ptr, hSocket) end
-function steamworks.networking.GetMaxPacketSize(hSocket) return lib.SteamAPI_ISteamNetworking_GetMaxPacketSize(steamworks.networking_ptr, hSocket) end
-steamworks.controller = {}
-steamworks.controller_ptr = lib.SteamController()
-function steamworks.controller.Init() return lib.SteamAPI_ISteamController_Init(steamworks.controller_ptr) end
-function steamworks.controller.Shutdown() return lib.SteamAPI_ISteamController_Shutdown(steamworks.controller_ptr) end
-function steamworks.controller.RunFrame() return lib.SteamAPI_ISteamController_RunFrame(steamworks.controller_ptr) end
-function steamworks.controller.GetConnectedControllers(handlesOut) return lib.SteamAPI_ISteamController_GetConnectedControllers(steamworks.controller_ptr, handlesOut) end
-function steamworks.controller.ShowBindingPanel(controllerHandle) return lib.SteamAPI_ISteamController_ShowBindingPanel(steamworks.controller_ptr, controllerHandle) end
-function steamworks.controller.GetActionSetHandle(pszActionSetName) return lib.SteamAPI_ISteamController_GetActionSetHandle(steamworks.controller_ptr, pszActionSetName) end
-function steamworks.controller.ActivateActionSet(controllerHandle, actionSetHandle) return lib.SteamAPI_ISteamController_ActivateActionSet(steamworks.controller_ptr, controllerHandle, actionSetHandle) end
-function steamworks.controller.GetCurrentActionSet(controllerHandle) return lib.SteamAPI_ISteamController_GetCurrentActionSet(steamworks.controller_ptr, controllerHandle) end
-function steamworks.controller.GetDigitalActionHandle(pszActionName) return lib.SteamAPI_ISteamController_GetDigitalActionHandle(steamworks.controller_ptr, pszActionName) end
-function steamworks.controller.GetDigitalActionData(controllerHandle, digitalActionHandle) return lib.SteamAPI_ISteamController_GetDigitalActionData(steamworks.controller_ptr, controllerHandle, digitalActionHandle) end
-function steamworks.controller.GetDigitalActionOrigins(controllerHandle, actionSetHandle, digitalActionHandle, originsOut) return lib.SteamAPI_ISteamController_GetDigitalActionOrigins(steamworks.controller_ptr, controllerHandle, actionSetHandle, digitalActionHandle, originsOut) end
-function steamworks.controller.GetAnalogActionHandle(pszActionName) return lib.SteamAPI_ISteamController_GetAnalogActionHandle(steamworks.controller_ptr, pszActionName) end
-function steamworks.controller.GetAnalogActionData(controllerHandle, analogActionHandle) return lib.SteamAPI_ISteamController_GetAnalogActionData(steamworks.controller_ptr, controllerHandle, analogActionHandle) end
-function steamworks.controller.GetAnalogActionOrigins(controllerHandle, actionSetHandle, analogActionHandle, originsOut) return lib.SteamAPI_ISteamController_GetAnalogActionOrigins(steamworks.controller_ptr, controllerHandle, actionSetHandle, analogActionHandle, originsOut) end
-function steamworks.controller.StopAnalogActionMomentum(controllerHandle, eAction) return lib.SteamAPI_ISteamController_StopAnalogActionMomentum(steamworks.controller_ptr, controllerHandle, eAction) end
-function steamworks.controller.TriggerHapticPulse(controllerHandle, eTargetPad, usDurationMicroSec) return lib.SteamAPI_ISteamController_TriggerHapticPulse(steamworks.controller_ptr, controllerHandle, eTargetPad, usDurationMicroSec) end
-function steamworks.controller.TriggerRepeatedHapticPulse(controllerHandle, eTargetPad, usDurationMicroSec, usOffMicroSec, unRepeat, nFlags) return lib.SteamAPI_ISteamController_TriggerRepeatedHapticPulse(steamworks.controller_ptr, controllerHandle, eTargetPad, usDurationMicroSec, usOffMicroSec, unRepeat, nFlags) end
-function steamworks.controller.TriggerVibration(controllerHandle, usLeftSpeed, usRightSpeed) return lib.SteamAPI_ISteamController_TriggerVibration(steamworks.controller_ptr, controllerHandle, usLeftSpeed, usRightSpeed) end
-function steamworks.controller.SetLEDColor(controllerHandle, nColorR, nColorG, nColorB, nFlags) return lib.SteamAPI_ISteamController_SetLEDColor(steamworks.controller_ptr, controllerHandle, nColorR, nColorG, nColorB, nFlags) end
-function steamworks.controller.GetGamepadIndexForController(ulControllerHandle) return lib.SteamAPI_ISteamController_GetGamepadIndexForController(steamworks.controller_ptr, ulControllerHandle) end
-function steamworks.controller.GetControllerForGamepadIndex(nIndex) return lib.SteamAPI_ISteamController_GetControllerForGamepadIndex(steamworks.controller_ptr, nIndex) end
-function steamworks.controller.GetMotionData(controllerHandle) return lib.SteamAPI_ISteamController_GetMotionData(steamworks.controller_ptr, controllerHandle) end
-function steamworks.controller.ShowDigitalActionOrigins(controllerHandle, digitalActionHandle, flScale, flXPosition, flYPosition) return lib.SteamAPI_ISteamController_ShowDigitalActionOrigins(steamworks.controller_ptr, controllerHandle, digitalActionHandle, flScale, flXPosition, flYPosition) end
-function steamworks.controller.ShowAnalogActionOrigins(controllerHandle, analogActionHandle, flScale, flXPosition, flYPosition) return lib.SteamAPI_ISteamController_ShowAnalogActionOrigins(steamworks.controller_ptr, controllerHandle, analogActionHandle, flScale, flXPosition, flYPosition) end
-function steamworks.controller.GetStringForActionOrigin(eOrigin)local str = lib.SteamAPI_ISteamController_GetStringForActionOrigin(steamworks.controller_ptr, eOrigin) if str ~= nil then return ffi.string(str) end end
-function steamworks.controller.GetGlyphForActionOrigin(eOrigin)local str = lib.SteamAPI_ISteamController_GetGlyphForActionOrigin(steamworks.controller_ptr, eOrigin) if str ~= nil then return ffi.string(str) end end
-steamworks.matchmakingservers = {}
-steamworks.matchmakingservers_ptr = lib.SteamMatchmakingServers()
-function steamworks.matchmakingservers.RequestInternetServerList(iApp, ppchFilters, nFilters, pRequestServersResponse) return lib.SteamAPI_ISteamMatchmakingServers_RequestInternetServerList(steamworks.matchmakingservers_ptr, iApp, ppchFilters, nFilters, pRequestServersResponse) end
-function steamworks.matchmakingservers.RequestLANServerList(iApp, pRequestServersResponse) return lib.SteamAPI_ISteamMatchmakingServers_RequestLANServerList(steamworks.matchmakingservers_ptr, iApp, pRequestServersResponse) end
-function steamworks.matchmakingservers.RequestFriendsServerList(iApp, ppchFilters, nFilters, pRequestServersResponse) return lib.SteamAPI_ISteamMatchmakingServers_RequestFriendsServerList(steamworks.matchmakingservers_ptr, iApp, ppchFilters, nFilters, pRequestServersResponse) end
-function steamworks.matchmakingservers.RequestFavoritesServerList(iApp, ppchFilters, nFilters, pRequestServersResponse) return lib.SteamAPI_ISteamMatchmakingServers_RequestFavoritesServerList(steamworks.matchmakingservers_ptr, iApp, ppchFilters, nFilters, pRequestServersResponse) end
-function steamworks.matchmakingservers.RequestHistoryServerList(iApp, ppchFilters, nFilters, pRequestServersResponse) return lib.SteamAPI_ISteamMatchmakingServers_RequestHistoryServerList(steamworks.matchmakingservers_ptr, iApp, ppchFilters, nFilters, pRequestServersResponse) end
-function steamworks.matchmakingservers.RequestSpectatorServerList(iApp, ppchFilters, nFilters, pRequestServersResponse) return lib.SteamAPI_ISteamMatchmakingServers_RequestSpectatorServerList(steamworks.matchmakingservers_ptr, iApp, ppchFilters, nFilters, pRequestServersResponse) end
-function steamworks.matchmakingservers.ReleaseRequest(hServerListRequest) return lib.SteamAPI_ISteamMatchmakingServers_ReleaseRequest(steamworks.matchmakingservers_ptr, hServerListRequest) end
-function steamworks.matchmakingservers.GetServerDetails(hRequest, iServer) return lib.SteamAPI_ISteamMatchmakingServers_GetServerDetails(steamworks.matchmakingservers_ptr, hRequest, iServer) end
-function steamworks.matchmakingservers.CancelQuery(hRequest) return lib.SteamAPI_ISteamMatchmakingServers_CancelQuery(steamworks.matchmakingservers_ptr, hRequest) end
-function steamworks.matchmakingservers.RefreshQuery(hRequest) return lib.SteamAPI_ISteamMatchmakingServers_RefreshQuery(steamworks.matchmakingservers_ptr, hRequest) end
-function steamworks.matchmakingservers.IsRefreshing(hRequest) return lib.SteamAPI_ISteamMatchmakingServers_IsRefreshing(steamworks.matchmakingservers_ptr, hRequest) end
-function steamworks.matchmakingservers.GetServerCount(hRequest) return lib.SteamAPI_ISteamMatchmakingServers_GetServerCount(steamworks.matchmakingservers_ptr, hRequest) end
-function steamworks.matchmakingservers.RefreshServer(hRequest, iServer) return lib.SteamAPI_ISteamMatchmakingServers_RefreshServer(steamworks.matchmakingservers_ptr, hRequest, iServer) end
-function steamworks.matchmakingservers.PingServer(unIP, usPort, pRequestServersResponse) return lib.SteamAPI_ISteamMatchmakingServers_PingServer(steamworks.matchmakingservers_ptr, unIP, usPort, pRequestServersResponse) end
-function steamworks.matchmakingservers.PlayerDetails(unIP, usPort, pRequestServersResponse) return lib.SteamAPI_ISteamMatchmakingServers_PlayerDetails(steamworks.matchmakingservers_ptr, unIP, usPort, pRequestServersResponse) end
-function steamworks.matchmakingservers.ServerRules(unIP, usPort, pRequestServersResponse) return lib.SteamAPI_ISteamMatchmakingServers_ServerRules(steamworks.matchmakingservers_ptr, unIP, usPort, pRequestServersResponse) end
-function steamworks.matchmakingservers.CancelServerQuery(hServerQuery) return lib.SteamAPI_ISteamMatchmakingServers_CancelServerQuery(steamworks.matchmakingservers_ptr, hServerQuery) end
-steamworks.userstats = {}
-steamworks.userstats_ptr = lib.SteamUserStats()
-function steamworks.userstats.RequestCurrentStats() return lib.SteamAPI_ISteamUserStats_RequestCurrentStats(steamworks.userstats_ptr) end
-function steamworks.userstats.GetStat(pchName, pData) return lib.SteamAPI_ISteamUserStats_GetStat(steamworks.userstats_ptr, pchName, pData) end
-function steamworks.userstats.GetStat(pchName, pData) return lib.SteamAPI_ISteamUserStats_GetStat(steamworks.userstats_ptr, pchName, pData) end
-function steamworks.userstats.SetStat(pchName, nData) return lib.SteamAPI_ISteamUserStats_SetStat(steamworks.userstats_ptr, pchName, nData) end
-function steamworks.userstats.SetStat(pchName, fData) return lib.SteamAPI_ISteamUserStats_SetStat(steamworks.userstats_ptr, pchName, fData) end
-function steamworks.userstats.UpdateAvgRateStat(pchName, flCountThisSession, dSessionLength) return lib.SteamAPI_ISteamUserStats_UpdateAvgRateStat(steamworks.userstats_ptr, pchName, flCountThisSession, dSessionLength) end
-function steamworks.userstats.GetAchievement(pchName, pbAchieved) return lib.SteamAPI_ISteamUserStats_GetAchievement(steamworks.userstats_ptr, pchName, pbAchieved) end
-function steamworks.userstats.SetAchievement(pchName) return lib.SteamAPI_ISteamUserStats_SetAchievement(steamworks.userstats_ptr, pchName) end
-function steamworks.userstats.ClearAchievement(pchName) return lib.SteamAPI_ISteamUserStats_ClearAchievement(steamworks.userstats_ptr, pchName) end
-function steamworks.userstats.GetAchievementAndUnlockTime(pchName, pbAchieved, punUnlockTime) return lib.SteamAPI_ISteamUserStats_GetAchievementAndUnlockTime(steamworks.userstats_ptr, pchName, pbAchieved, punUnlockTime) end
-function steamworks.userstats.StoreStats() return lib.SteamAPI_ISteamUserStats_StoreStats(steamworks.userstats_ptr) end
-function steamworks.userstats.GetAchievementIcon(pchName) return lib.SteamAPI_ISteamUserStats_GetAchievementIcon(steamworks.userstats_ptr, pchName) end
-function steamworks.userstats.GetAchievementDisplayAttribute(pchName, pchKey)local str = lib.SteamAPI_ISteamUserStats_GetAchievementDisplayAttribute(steamworks.userstats_ptr, pchName, pchKey) if str ~= nil then return ffi.string(str) end end
-function steamworks.userstats.IndicateAchievementProgress(pchName, nCurProgress, nMaxProgress) return lib.SteamAPI_ISteamUserStats_IndicateAchievementProgress(steamworks.userstats_ptr, pchName, nCurProgress, nMaxProgress) end
-function steamworks.userstats.GetNumAchievements() return lib.SteamAPI_ISteamUserStats_GetNumAchievements(steamworks.userstats_ptr) end
-function steamworks.userstats.GetAchievementName(iAchievement)local str = lib.SteamAPI_ISteamUserStats_GetAchievementName(steamworks.userstats_ptr, iAchievement) if str ~= nil then return ffi.string(str) end end
-function steamworks.userstats.RequestUserStats(steamIDUser) return lib.SteamAPI_ISteamUserStats_RequestUserStats(steamworks.userstats_ptr, steamIDUser) end
-function steamworks.userstats.GetUserStat(steamIDUser, pchName, pData) return lib.SteamAPI_ISteamUserStats_GetUserStat(steamworks.userstats_ptr, steamIDUser, pchName, pData) end
-function steamworks.userstats.GetUserStat(steamIDUser, pchName, pData) return lib.SteamAPI_ISteamUserStats_GetUserStat(steamworks.userstats_ptr, steamIDUser, pchName, pData) end
-function steamworks.userstats.GetUserAchievement(steamIDUser, pchName, pbAchieved) return lib.SteamAPI_ISteamUserStats_GetUserAchievement(steamworks.userstats_ptr, steamIDUser, pchName, pbAchieved) end
-function steamworks.userstats.GetUserAchievementAndUnlockTime(steamIDUser, pchName, pbAchieved, punUnlockTime) return lib.SteamAPI_ISteamUserStats_GetUserAchievementAndUnlockTime(steamworks.userstats_ptr, steamIDUser, pchName, pbAchieved, punUnlockTime) end
-function steamworks.userstats.ResetAllStats(bAchievementsToo) return lib.SteamAPI_ISteamUserStats_ResetAllStats(steamworks.userstats_ptr, bAchievementsToo) end
-function steamworks.userstats.FindOrCreateLeaderboard(pchLeaderboardName, eLeaderboardSortMethod, eLeaderboardDisplayType) return lib.SteamAPI_ISteamUserStats_FindOrCreateLeaderboard(steamworks.userstats_ptr, pchLeaderboardName, eLeaderboardSortMethod, eLeaderboardDisplayType) end
-function steamworks.userstats.FindLeaderboard(pchLeaderboardName) return lib.SteamAPI_ISteamUserStats_FindLeaderboard(steamworks.userstats_ptr, pchLeaderboardName) end
-function steamworks.userstats.GetLeaderboardName(hSteamLeaderboard)local str = lib.SteamAPI_ISteamUserStats_GetLeaderboardName(steamworks.userstats_ptr, hSteamLeaderboard) if str ~= nil then return ffi.string(str) end end
-function steamworks.userstats.GetLeaderboardEntryCount(hSteamLeaderboard) return lib.SteamAPI_ISteamUserStats_GetLeaderboardEntryCount(steamworks.userstats_ptr, hSteamLeaderboard) end
-function steamworks.userstats.GetLeaderboardSortMethod(hSteamLeaderboard) return lib.SteamAPI_ISteamUserStats_GetLeaderboardSortMethod(steamworks.userstats_ptr, hSteamLeaderboard) end
-function steamworks.userstats.GetLeaderboardDisplayType(hSteamLeaderboard) return lib.SteamAPI_ISteamUserStats_GetLeaderboardDisplayType(steamworks.userstats_ptr, hSteamLeaderboard) end
-function steamworks.userstats.DownloadLeaderboardEntries(hSteamLeaderboard, eLeaderboardDataRequest, nRangeStart, nRangeEnd) return lib.SteamAPI_ISteamUserStats_DownloadLeaderboardEntries(steamworks.userstats_ptr, hSteamLeaderboard, eLeaderboardDataRequest, nRangeStart, nRangeEnd) end
-function steamworks.userstats.DownloadLeaderboardEntriesForUsers(hSteamLeaderboard, prgUsers, cUsers) return lib.SteamAPI_ISteamUserStats_DownloadLeaderboardEntriesForUsers(steamworks.userstats_ptr, hSteamLeaderboard, prgUsers, cUsers) end
-function steamworks.userstats.GetDownloadedLeaderboardEntry(hSteamLeaderboardEntries, index, pLeaderboardEntry, pDetails, cDetailsMax) return lib.SteamAPI_ISteamUserStats_GetDownloadedLeaderboardEntry(steamworks.userstats_ptr, hSteamLeaderboardEntries, index, pLeaderboardEntry, pDetails, cDetailsMax) end
-function steamworks.userstats.UploadLeaderboardScore(hSteamLeaderboard, eLeaderboardUploadScoreMethod, nScore, pScoreDetails, cScoreDetailsCount) return lib.SteamAPI_ISteamUserStats_UploadLeaderboardScore(steamworks.userstats_ptr, hSteamLeaderboard, eLeaderboardUploadScoreMethod, nScore, pScoreDetails, cScoreDetailsCount) end
-function steamworks.userstats.AttachLeaderboardUGC(hSteamLeaderboard, hUGC) return lib.SteamAPI_ISteamUserStats_AttachLeaderboardUGC(steamworks.userstats_ptr, hSteamLeaderboard, hUGC) end
-function steamworks.userstats.GetNumberOfCurrentPlayers() return lib.SteamAPI_ISteamUserStats_GetNumberOfCurrentPlayers(steamworks.userstats_ptr) end
-function steamworks.userstats.RequestGlobalAchievementPercentages() return lib.SteamAPI_ISteamUserStats_RequestGlobalAchievementPercentages(steamworks.userstats_ptr) end
-function steamworks.userstats.GetMostAchievedAchievementInfo(pchName, unNameBufLen, pflPercent, pbAchieved) return lib.SteamAPI_ISteamUserStats_GetMostAchievedAchievementInfo(steamworks.userstats_ptr, pchName, unNameBufLen, pflPercent, pbAchieved) end
-function steamworks.userstats.GetNextMostAchievedAchievementInfo(iIteratorPrevious, pchName, unNameBufLen, pflPercent, pbAchieved) return lib.SteamAPI_ISteamUserStats_GetNextMostAchievedAchievementInfo(steamworks.userstats_ptr, iIteratorPrevious, pchName, unNameBufLen, pflPercent, pbAchieved) end
-function steamworks.userstats.GetAchievementAchievedPercent(pchName, pflPercent) return lib.SteamAPI_ISteamUserStats_GetAchievementAchievedPercent(steamworks.userstats_ptr, pchName, pflPercent) end
-function steamworks.userstats.RequestGlobalStats(nHistoryDays) return lib.SteamAPI_ISteamUserStats_RequestGlobalStats(steamworks.userstats_ptr, nHistoryDays) end
-function steamworks.userstats.GetGlobalStat(pchStatName, pData) return lib.SteamAPI_ISteamUserStats_GetGlobalStat(steamworks.userstats_ptr, pchStatName, pData) end
-function steamworks.userstats.GetGlobalStat(pchStatName, pData) return lib.SteamAPI_ISteamUserStats_GetGlobalStat(steamworks.userstats_ptr, pchStatName, pData) end
-function steamworks.userstats.GetGlobalStatHistory(pchStatName, pData, cubData) return lib.SteamAPI_ISteamUserStats_GetGlobalStatHistory(steamworks.userstats_ptr, pchStatName, pData, cubData) end
-function steamworks.userstats.GetGlobalStatHistory(pchStatName, pData, cubData) return lib.SteamAPI_ISteamUserStats_GetGlobalStatHistory(steamworks.userstats_ptr, pchStatName, pData, cubData) end
-steamworks.htmlsurface = {}
-steamworks.htmlsurface_ptr = lib.SteamHTMLSurface()
-function steamworks.htmlsurface.DestructISteamHTMLSurface() return lib.SteamAPI_ISteamHTMLSurface_DestructISteamHTMLSurface(steamworks.htmlsurface_ptr) end
-function steamworks.htmlsurface.Init() return lib.SteamAPI_ISteamHTMLSurface_Init(steamworks.htmlsurface_ptr) end
-function steamworks.htmlsurface.Shutdown() return lib.SteamAPI_ISteamHTMLSurface_Shutdown(steamworks.htmlsurface_ptr) end
-function steamworks.htmlsurface.CreateBrowser(pchUserAgent, pchUserCSS) return lib.SteamAPI_ISteamHTMLSurface_CreateBrowser(steamworks.htmlsurface_ptr, pchUserAgent, pchUserCSS) end
-function steamworks.htmlsurface.RemoveBrowser(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_RemoveBrowser(steamworks.htmlsurface_ptr, unBrowserHandle) end
-function steamworks.htmlsurface.LoadURL(unBrowserHandle, pchURL, pchPostData) return lib.SteamAPI_ISteamHTMLSurface_LoadURL(steamworks.htmlsurface_ptr, unBrowserHandle, pchURL, pchPostData) end
-function steamworks.htmlsurface.SetSize(unBrowserHandle, unWidth, unHeight) return lib.SteamAPI_ISteamHTMLSurface_SetSize(steamworks.htmlsurface_ptr, unBrowserHandle, unWidth, unHeight) end
-function steamworks.htmlsurface.StopLoad(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_StopLoad(steamworks.htmlsurface_ptr, unBrowserHandle) end
-function steamworks.htmlsurface.Reload(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_Reload(steamworks.htmlsurface_ptr, unBrowserHandle) end
-function steamworks.htmlsurface.GoBack(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_GoBack(steamworks.htmlsurface_ptr, unBrowserHandle) end
-function steamworks.htmlsurface.GoForward(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_GoForward(steamworks.htmlsurface_ptr, unBrowserHandle) end
-function steamworks.htmlsurface.AddHeader(unBrowserHandle, pchKey, pchValue) return lib.SteamAPI_ISteamHTMLSurface_AddHeader(steamworks.htmlsurface_ptr, unBrowserHandle, pchKey, pchValue) end
-function steamworks.htmlsurface.ExecuteJavascript(unBrowserHandle, pchScript) return lib.SteamAPI_ISteamHTMLSurface_ExecuteJavascript(steamworks.htmlsurface_ptr, unBrowserHandle, pchScript) end
-function steamworks.htmlsurface.MouseUp(unBrowserHandle, eMouseButton) return lib.SteamAPI_ISteamHTMLSurface_MouseUp(steamworks.htmlsurface_ptr, unBrowserHandle, eMouseButton) end
-function steamworks.htmlsurface.MouseDown(unBrowserHandle, eMouseButton) return lib.SteamAPI_ISteamHTMLSurface_MouseDown(steamworks.htmlsurface_ptr, unBrowserHandle, eMouseButton) end
-function steamworks.htmlsurface.MouseDoubleClick(unBrowserHandle, eMouseButton) return lib.SteamAPI_ISteamHTMLSurface_MouseDoubleClick(steamworks.htmlsurface_ptr, unBrowserHandle, eMouseButton) end
-function steamworks.htmlsurface.MouseMove(unBrowserHandle, x, y) return lib.SteamAPI_ISteamHTMLSurface_MouseMove(steamworks.htmlsurface_ptr, unBrowserHandle, x, y) end
-function steamworks.htmlsurface.MouseWheel(unBrowserHandle, nDelta) return lib.SteamAPI_ISteamHTMLSurface_MouseWheel(steamworks.htmlsurface_ptr, unBrowserHandle, nDelta) end
-function steamworks.htmlsurface.KeyDown(unBrowserHandle, nNativeKeyCode, eHTMLKeyModifiers) return lib.SteamAPI_ISteamHTMLSurface_KeyDown(steamworks.htmlsurface_ptr, unBrowserHandle, nNativeKeyCode, eHTMLKeyModifiers) end
-function steamworks.htmlsurface.KeyUp(unBrowserHandle, nNativeKeyCode, eHTMLKeyModifiers) return lib.SteamAPI_ISteamHTMLSurface_KeyUp(steamworks.htmlsurface_ptr, unBrowserHandle, nNativeKeyCode, eHTMLKeyModifiers) end
-function steamworks.htmlsurface.KeyChar(unBrowserHandle, cUnicodeChar, eHTMLKeyModifiers) return lib.SteamAPI_ISteamHTMLSurface_KeyChar(steamworks.htmlsurface_ptr, unBrowserHandle, cUnicodeChar, eHTMLKeyModifiers) end
-function steamworks.htmlsurface.SetHorizontalScroll(unBrowserHandle, nAbsolutePixelScroll) return lib.SteamAPI_ISteamHTMLSurface_SetHorizontalScroll(steamworks.htmlsurface_ptr, unBrowserHandle, nAbsolutePixelScroll) end
-function steamworks.htmlsurface.SetVerticalScroll(unBrowserHandle, nAbsolutePixelScroll) return lib.SteamAPI_ISteamHTMLSurface_SetVerticalScroll(steamworks.htmlsurface_ptr, unBrowserHandle, nAbsolutePixelScroll) end
-function steamworks.htmlsurface.SetKeyFocus(unBrowserHandle, bHasKeyFocus) return lib.SteamAPI_ISteamHTMLSurface_SetKeyFocus(steamworks.htmlsurface_ptr, unBrowserHandle, bHasKeyFocus) end
-function steamworks.htmlsurface.ViewSource(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_ViewSource(steamworks.htmlsurface_ptr, unBrowserHandle) end
-function steamworks.htmlsurface.CopyToClipboard(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_CopyToClipboard(steamworks.htmlsurface_ptr, unBrowserHandle) end
-function steamworks.htmlsurface.PasteFromClipboard(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_PasteFromClipboard(steamworks.htmlsurface_ptr, unBrowserHandle) end
-function steamworks.htmlsurface.Find(unBrowserHandle, pchSearchStr, bCurrentlyInFind, bReverse) return lib.SteamAPI_ISteamHTMLSurface_Find(steamworks.htmlsurface_ptr, unBrowserHandle, pchSearchStr, bCurrentlyInFind, bReverse) end
-function steamworks.htmlsurface.StopFind(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_StopFind(steamworks.htmlsurface_ptr, unBrowserHandle) end
-function steamworks.htmlsurface.GetLinkAtPosition(unBrowserHandle, x, y) return lib.SteamAPI_ISteamHTMLSurface_GetLinkAtPosition(steamworks.htmlsurface_ptr, unBrowserHandle, x, y) end
-function steamworks.htmlsurface.SetCookie(pchHostname, pchKey, pchValue, pchPath, nExpires, bSecure, bHTTPOnly) return lib.SteamAPI_ISteamHTMLSurface_SetCookie(steamworks.htmlsurface_ptr, pchHostname, pchKey, pchValue, pchPath, nExpires, bSecure, bHTTPOnly) end
-function steamworks.htmlsurface.SetPageScaleFactor(unBrowserHandle, flZoom, nPointX, nPointY) return lib.SteamAPI_ISteamHTMLSurface_SetPageScaleFactor(steamworks.htmlsurface_ptr, unBrowserHandle, flZoom, nPointX, nPointY) end
-function steamworks.htmlsurface.SetBackgroundMode(unBrowserHandle, bBackgroundMode) return lib.SteamAPI_ISteamHTMLSurface_SetBackgroundMode(steamworks.htmlsurface_ptr, unBrowserHandle, bBackgroundMode) end
-function steamworks.htmlsurface.AllowStartRequest(unBrowserHandle, bAllowed) return lib.SteamAPI_ISteamHTMLSurface_AllowStartRequest(steamworks.htmlsurface_ptr, unBrowserHandle, bAllowed) end
-function steamworks.htmlsurface.JSDialogResponse(unBrowserHandle, bResult) return lib.SteamAPI_ISteamHTMLSurface_JSDialogResponse(steamworks.htmlsurface_ptr, unBrowserHandle, bResult) end
-steamworks.screenshots = {}
-steamworks.screenshots_ptr = lib.SteamScreenshots()
-function steamworks.screenshots.WriteScreenshot(pubRGB, cubRGB, nWidth, nHeight) return lib.SteamAPI_ISteamScreenshots_WriteScreenshot(steamworks.screenshots_ptr, pubRGB, cubRGB, nWidth, nHeight) end
-function steamworks.screenshots.AddScreenshotToLibrary(pchFilename, pchThumbnailFilename, nWidth, nHeight) return lib.SteamAPI_ISteamScreenshots_AddScreenshotToLibrary(steamworks.screenshots_ptr, pchFilename, pchThumbnailFilename, nWidth, nHeight) end
-function steamworks.screenshots.TriggerScreenshot() return lib.SteamAPI_ISteamScreenshots_TriggerScreenshot(steamworks.screenshots_ptr) end
-function steamworks.screenshots.HookScreenshots(bHook) return lib.SteamAPI_ISteamScreenshots_HookScreenshots(steamworks.screenshots_ptr, bHook) end
-function steamworks.screenshots.SetLocation(hScreenshot, pchLocation) return lib.SteamAPI_ISteamScreenshots_SetLocation(steamworks.screenshots_ptr, hScreenshot, pchLocation) end
-function steamworks.screenshots.TagUser(hScreenshot, steamID) return lib.SteamAPI_ISteamScreenshots_TagUser(steamworks.screenshots_ptr, hScreenshot, steamID) end
-function steamworks.screenshots.TagPublishedFile(hScreenshot, unPublishedFileID) return lib.SteamAPI_ISteamScreenshots_TagPublishedFile(steamworks.screenshots_ptr, hScreenshot, unPublishedFileID) end
-function steamworks.screenshots.IsScreenshotsHooked() return lib.SteamAPI_ISteamScreenshots_IsScreenshotsHooked(steamworks.screenshots_ptr) end
-function steamworks.screenshots.AddVRScreenshotToLibrary(eType, pchFilename, pchVRFilename) return lib.SteamAPI_ISteamScreenshots_AddVRScreenshotToLibrary(steamworks.screenshots_ptr, eType, pchFilename, pchVRFilename) end
-steamworks.ugc = {}
-steamworks.ugc_ptr = lib.SteamUGC()
-function steamworks.ugc.CreateQueryUserUGCRequest(unAccountID, eListType, eMatchingUGCType, eSortOrder, nCreatorAppID, nConsumerAppID, unPage) return lib.SteamAPI_ISteamUGC_CreateQueryUserUGCRequest(steamworks.ugc_ptr, unAccountID, eListType, eMatchingUGCType, eSortOrder, nCreatorAppID, nConsumerAppID, unPage) end
-function steamworks.ugc.CreateQueryAllUGCRequest(eQueryType, eMatchingeMatchingUGCTypeFileType, nCreatorAppID, nConsumerAppID, unPage) return lib.SteamAPI_ISteamUGC_CreateQueryAllUGCRequest(steamworks.ugc_ptr, eQueryType, eMatchingeMatchingUGCTypeFileType, nCreatorAppID, nConsumerAppID, unPage) end
-function steamworks.ugc.CreateQueryUGCDetailsRequest(pvecPublishedFileID, unNumPublishedFileIDs) return lib.SteamAPI_ISteamUGC_CreateQueryUGCDetailsRequest(steamworks.ugc_ptr, pvecPublishedFileID, unNumPublishedFileIDs) end
-function steamworks.ugc.SendQueryUGCRequest(handle) return lib.SteamAPI_ISteamUGC_SendQueryUGCRequest(steamworks.ugc_ptr, handle) end
-function steamworks.ugc.GetQueryUGCResult(handle, index, pDetails) return lib.SteamAPI_ISteamUGC_GetQueryUGCResult(steamworks.ugc_ptr, handle, index, pDetails) end
-function steamworks.ugc.GetQueryUGCPreviewURL(handle, index, pchURL, cchURLSize) return lib.SteamAPI_ISteamUGC_GetQueryUGCPreviewURL(steamworks.ugc_ptr, handle, index, pchURL, cchURLSize) end
-function steamworks.ugc.GetQueryUGCMetadata(handle, index, pchMetadata, cchMetadatasize) return lib.SteamAPI_ISteamUGC_GetQueryUGCMetadata(steamworks.ugc_ptr, handle, index, pchMetadata, cchMetadatasize) end
-function steamworks.ugc.GetQueryUGCChildren(handle, index, pvecPublishedFileID, cMaxEntries) return lib.SteamAPI_ISteamUGC_GetQueryUGCChildren(steamworks.ugc_ptr, handle, index, pvecPublishedFileID, cMaxEntries) end
-function steamworks.ugc.GetQueryUGCStatistic(handle, index, eStatType, pStatValue) return lib.SteamAPI_ISteamUGC_GetQueryUGCStatistic(steamworks.ugc_ptr, handle, index, eStatType, pStatValue) end
-function steamworks.ugc.GetQueryUGCNumAdditionalPreviews(handle, index) return lib.SteamAPI_ISteamUGC_GetQueryUGCNumAdditionalPreviews(steamworks.ugc_ptr, handle, index) end
-function steamworks.ugc.GetQueryUGCAdditionalPreview(handle, index, previewIndex, pchURLOrVideoID, cchURLSize, pchOriginalFileName, cchOriginalFileNameSize, pPreviewType) return lib.SteamAPI_ISteamUGC_GetQueryUGCAdditionalPreview(steamworks.ugc_ptr, handle, index, previewIndex, pchURLOrVideoID, cchURLSize, pchOriginalFileName, cchOriginalFileNameSize, pPreviewType) end
-function steamworks.ugc.GetQueryUGCNumKeyValueTags(handle, index) return lib.SteamAPI_ISteamUGC_GetQueryUGCNumKeyValueTags(steamworks.ugc_ptr, handle, index) end
-function steamworks.ugc.GetQueryUGCKeyValueTag(handle, index, keyValueTagIndex, pchKey, cchKeySize, pchValue, cchValueSize) return lib.SteamAPI_ISteamUGC_GetQueryUGCKeyValueTag(steamworks.ugc_ptr, handle, index, keyValueTagIndex, pchKey, cchKeySize, pchValue, cchValueSize) end
-function steamworks.ugc.ReleaseQueryUGCRequest(handle) return lib.SteamAPI_ISteamUGC_ReleaseQueryUGCRequest(steamworks.ugc_ptr, handle) end
-function steamworks.ugc.AddRequiredTag(handle, pTagName) return lib.SteamAPI_ISteamUGC_AddRequiredTag(steamworks.ugc_ptr, handle, pTagName) end
-function steamworks.ugc.AddExcludedTag(handle, pTagName) return lib.SteamAPI_ISteamUGC_AddExcludedTag(steamworks.ugc_ptr, handle, pTagName) end
-function steamworks.ugc.SetReturnOnlyIDs(handle, bReturnOnlyIDs) return lib.SteamAPI_ISteamUGC_SetReturnOnlyIDs(steamworks.ugc_ptr, handle, bReturnOnlyIDs) end
-function steamworks.ugc.SetReturnKeyValueTags(handle, bReturnKeyValueTags) return lib.SteamAPI_ISteamUGC_SetReturnKeyValueTags(steamworks.ugc_ptr, handle, bReturnKeyValueTags) end
-function steamworks.ugc.SetReturnLongDescription(handle, bReturnLongDescription) return lib.SteamAPI_ISteamUGC_SetReturnLongDescription(steamworks.ugc_ptr, handle, bReturnLongDescription) end
-function steamworks.ugc.SetReturnMetadata(handle, bReturnMetadata) return lib.SteamAPI_ISteamUGC_SetReturnMetadata(steamworks.ugc_ptr, handle, bReturnMetadata) end
-function steamworks.ugc.SetReturnChildren(handle, bReturnChildren) return lib.SteamAPI_ISteamUGC_SetReturnChildren(steamworks.ugc_ptr, handle, bReturnChildren) end
-function steamworks.ugc.SetReturnAdditionalPreviews(handle, bReturnAdditionalPreviews) return lib.SteamAPI_ISteamUGC_SetReturnAdditionalPreviews(steamworks.ugc_ptr, handle, bReturnAdditionalPreviews) end
-function steamworks.ugc.SetReturnTotalOnly(handle, bReturnTotalOnly) return lib.SteamAPI_ISteamUGC_SetReturnTotalOnly(steamworks.ugc_ptr, handle, bReturnTotalOnly) end
-function steamworks.ugc.SetReturnPlaytimeStats(handle, unDays) return lib.SteamAPI_ISteamUGC_SetReturnPlaytimeStats(steamworks.ugc_ptr, handle, unDays) end
-function steamworks.ugc.SetLanguage(handle, pchLanguage) return lib.SteamAPI_ISteamUGC_SetLanguage(steamworks.ugc_ptr, handle, pchLanguage) end
-function steamworks.ugc.SetAllowCachedResponse(handle, unMaxAgeSeconds) return lib.SteamAPI_ISteamUGC_SetAllowCachedResponse(steamworks.ugc_ptr, handle, unMaxAgeSeconds) end
-function steamworks.ugc.SetCloudFileNameFilter(handle, pMatchCloudFileName) return lib.SteamAPI_ISteamUGC_SetCloudFileNameFilter(steamworks.ugc_ptr, handle, pMatchCloudFileName) end
-function steamworks.ugc.SetMatchAnyTag(handle, bMatchAnyTag) return lib.SteamAPI_ISteamUGC_SetMatchAnyTag(steamworks.ugc_ptr, handle, bMatchAnyTag) end
-function steamworks.ugc.SetSearchText(handle, pSearchText) return lib.SteamAPI_ISteamUGC_SetSearchText(steamworks.ugc_ptr, handle, pSearchText) end
-function steamworks.ugc.SetRankedByTrendDays(handle, unDays) return lib.SteamAPI_ISteamUGC_SetRankedByTrendDays(steamworks.ugc_ptr, handle, unDays) end
-function steamworks.ugc.AddRequiredKeyValueTag(handle, pKey, pValue) return lib.SteamAPI_ISteamUGC_AddRequiredKeyValueTag(steamworks.ugc_ptr, handle, pKey, pValue) end
-function steamworks.ugc.RequestUGCDetails(nPublishedFileID, unMaxAgeSeconds) return lib.SteamAPI_ISteamUGC_RequestUGCDetails(steamworks.ugc_ptr, nPublishedFileID, unMaxAgeSeconds) end
-function steamworks.ugc.CreateItem(nConsumerAppId, eFileType) return lib.SteamAPI_ISteamUGC_CreateItem(steamworks.ugc_ptr, nConsumerAppId, eFileType) end
-function steamworks.ugc.StartItemUpdate(nConsumerAppId, nPublishedFileID) return lib.SteamAPI_ISteamUGC_StartItemUpdate(steamworks.ugc_ptr, nConsumerAppId, nPublishedFileID) end
-function steamworks.ugc.SetItemTitle(handle, pchTitle) return lib.SteamAPI_ISteamUGC_SetItemTitle(steamworks.ugc_ptr, handle, pchTitle) end
-function steamworks.ugc.SetItemDescription(handle, pchDescription) return lib.SteamAPI_ISteamUGC_SetItemDescription(steamworks.ugc_ptr, handle, pchDescription) end
-function steamworks.ugc.SetItemUpdateLanguage(handle, pchLanguage) return lib.SteamAPI_ISteamUGC_SetItemUpdateLanguage(steamworks.ugc_ptr, handle, pchLanguage) end
-function steamworks.ugc.SetItemMetadata(handle, pchMetaData) return lib.SteamAPI_ISteamUGC_SetItemMetadata(steamworks.ugc_ptr, handle, pchMetaData) end
-function steamworks.ugc.SetItemVisibility(handle, eVisibility) return lib.SteamAPI_ISteamUGC_SetItemVisibility(steamworks.ugc_ptr, handle, eVisibility) end
-function steamworks.ugc.SetItemTags(updateHandle, pTags) return lib.SteamAPI_ISteamUGC_SetItemTags(steamworks.ugc_ptr, updateHandle, pTags) end
-function steamworks.ugc.SetItemContent(handle, pszContentFolder) return lib.SteamAPI_ISteamUGC_SetItemContent(steamworks.ugc_ptr, handle, pszContentFolder) end
-function steamworks.ugc.SetItemPreview(handle, pszPreviewFile) return lib.SteamAPI_ISteamUGC_SetItemPreview(steamworks.ugc_ptr, handle, pszPreviewFile) end
-function steamworks.ugc.RemoveItemKeyValueTags(handle, pchKey) return lib.SteamAPI_ISteamUGC_RemoveItemKeyValueTags(steamworks.ugc_ptr, handle, pchKey) end
-function steamworks.ugc.AddItemKeyValueTag(handle, pchKey, pchValue) return lib.SteamAPI_ISteamUGC_AddItemKeyValueTag(steamworks.ugc_ptr, handle, pchKey, pchValue) end
-function steamworks.ugc.AddItemPreviewFile(handle, pszPreviewFile, type) return lib.SteamAPI_ISteamUGC_AddItemPreviewFile(steamworks.ugc_ptr, handle, pszPreviewFile, type) end
-function steamworks.ugc.AddItemPreviewVideo(handle, pszVideoID) return lib.SteamAPI_ISteamUGC_AddItemPreviewVideo(steamworks.ugc_ptr, handle, pszVideoID) end
-function steamworks.ugc.UpdateItemPreviewFile(handle, index, pszPreviewFile) return lib.SteamAPI_ISteamUGC_UpdateItemPreviewFile(steamworks.ugc_ptr, handle, index, pszPreviewFile) end
-function steamworks.ugc.UpdateItemPreviewVideo(handle, index, pszVideoID) return lib.SteamAPI_ISteamUGC_UpdateItemPreviewVideo(steamworks.ugc_ptr, handle, index, pszVideoID) end
-function steamworks.ugc.RemoveItemPreview(handle, index) return lib.SteamAPI_ISteamUGC_RemoveItemPreview(steamworks.ugc_ptr, handle, index) end
-function steamworks.ugc.SubmitItemUpdate(handle, pchChangeNote) return lib.SteamAPI_ISteamUGC_SubmitItemUpdate(steamworks.ugc_ptr, handle, pchChangeNote) end
-function steamworks.ugc.GetItemUpdateProgress(handle, punBytesProcessed, punBytesTotal) return lib.SteamAPI_ISteamUGC_GetItemUpdateProgress(steamworks.ugc_ptr, handle, punBytesProcessed, punBytesTotal) end
-function steamworks.ugc.SetUserItemVote(nPublishedFileID, bVoteUp) return lib.SteamAPI_ISteamUGC_SetUserItemVote(steamworks.ugc_ptr, nPublishedFileID, bVoteUp) end
-function steamworks.ugc.GetUserItemVote(nPublishedFileID) return lib.SteamAPI_ISteamUGC_GetUserItemVote(steamworks.ugc_ptr, nPublishedFileID) end
-function steamworks.ugc.AddItemToFavorites(nAppId, nPublishedFileID) return lib.SteamAPI_ISteamUGC_AddItemToFavorites(steamworks.ugc_ptr, nAppId, nPublishedFileID) end
-function steamworks.ugc.RemoveItemFromFavorites(nAppId, nPublishedFileID) return lib.SteamAPI_ISteamUGC_RemoveItemFromFavorites(steamworks.ugc_ptr, nAppId, nPublishedFileID) end
-function steamworks.ugc.SubscribeItem(nPublishedFileID) return lib.SteamAPI_ISteamUGC_SubscribeItem(steamworks.ugc_ptr, nPublishedFileID) end
-function steamworks.ugc.UnsubscribeItem(nPublishedFileID) return lib.SteamAPI_ISteamUGC_UnsubscribeItem(steamworks.ugc_ptr, nPublishedFileID) end
-function steamworks.ugc.GetNumSubscribedItems() return lib.SteamAPI_ISteamUGC_GetNumSubscribedItems(steamworks.ugc_ptr) end
-function steamworks.ugc.GetSubscribedItems(pvecPublishedFileID, cMaxEntries) return lib.SteamAPI_ISteamUGC_GetSubscribedItems(steamworks.ugc_ptr, pvecPublishedFileID, cMaxEntries) end
-function steamworks.ugc.GetItemState(nPublishedFileID) return lib.SteamAPI_ISteamUGC_GetItemState(steamworks.ugc_ptr, nPublishedFileID) end
-function steamworks.ugc.GetItemInstallInfo(nPublishedFileID, punSizeOnDisk, pchFolder, cchFolderSize, punTimeStamp) return lib.SteamAPI_ISteamUGC_GetItemInstallInfo(steamworks.ugc_ptr, nPublishedFileID, punSizeOnDisk, pchFolder, cchFolderSize, punTimeStamp) end
-function steamworks.ugc.GetItemDownloadInfo(nPublishedFileID, punBytesDownloaded, punBytesTotal) return lib.SteamAPI_ISteamUGC_GetItemDownloadInfo(steamworks.ugc_ptr, nPublishedFileID, punBytesDownloaded, punBytesTotal) end
-function steamworks.ugc.DownloadItem(nPublishedFileID, bHighPriority) return lib.SteamAPI_ISteamUGC_DownloadItem(steamworks.ugc_ptr, nPublishedFileID, bHighPriority) end
-function steamworks.ugc.BInitWorkshopForGameServer(unWorkshopDepotID, pszFolder) return lib.SteamAPI_ISteamUGC_BInitWorkshopForGameServer(steamworks.ugc_ptr, unWorkshopDepotID, pszFolder) end
-function steamworks.ugc.SuspendDownloads(bSuspend) return lib.SteamAPI_ISteamUGC_SuspendDownloads(steamworks.ugc_ptr, bSuspend) end
-function steamworks.ugc.StartPlaytimeTracking(pvecPublishedFileID, unNumPublishedFileIDs) return lib.SteamAPI_ISteamUGC_StartPlaytimeTracking(steamworks.ugc_ptr, pvecPublishedFileID, unNumPublishedFileIDs) end
-function steamworks.ugc.StopPlaytimeTracking(pvecPublishedFileID, unNumPublishedFileIDs) return lib.SteamAPI_ISteamUGC_StopPlaytimeTracking(steamworks.ugc_ptr, pvecPublishedFileID, unNumPublishedFileIDs) end
-function steamworks.ugc.StopPlaytimeTrackingForAllItems() return lib.SteamAPI_ISteamUGC_StopPlaytimeTrackingForAllItems(steamworks.ugc_ptr) end
-function steamworks.ugc.AddDependency(nParentPublishedFileID, nChildPublishedFileID) return lib.SteamAPI_ISteamUGC_AddDependency(steamworks.ugc_ptr, nParentPublishedFileID, nChildPublishedFileID) end
-function steamworks.ugc.RemoveDependency(nParentPublishedFileID, nChildPublishedFileID) return lib.SteamAPI_ISteamUGC_RemoveDependency(steamworks.ugc_ptr, nParentPublishedFileID, nChildPublishedFileID) end
-steamworks.apps = {}
-steamworks.apps_ptr = lib.SteamApps()
-function steamworks.apps.BIsSubscribed() return lib.SteamAPI_ISteamApps_BIsSubscribed(steamworks.apps_ptr) end
-function steamworks.apps.BIsLowViolence() return lib.SteamAPI_ISteamApps_BIsLowViolence(steamworks.apps_ptr) end
-function steamworks.apps.BIsCybercafe() return lib.SteamAPI_ISteamApps_BIsCybercafe(steamworks.apps_ptr) end
-function steamworks.apps.BIsVACBanned() return lib.SteamAPI_ISteamApps_BIsVACBanned(steamworks.apps_ptr) end
-function steamworks.apps.GetCurrentGameLanguage()local str = lib.SteamAPI_ISteamApps_GetCurrentGameLanguage(steamworks.apps_ptr) if str ~= nil then return ffi.string(str) end end
-function steamworks.apps.GetAvailableGameLanguages()local str = lib.SteamAPI_ISteamApps_GetAvailableGameLanguages(steamworks.apps_ptr) if str ~= nil then return ffi.string(str) end end
-function steamworks.apps.BIsSubscribedApp(appID) return lib.SteamAPI_ISteamApps_BIsSubscribedApp(steamworks.apps_ptr, appID) end
-function steamworks.apps.BIsDlcInstalled(appID) return lib.SteamAPI_ISteamApps_BIsDlcInstalled(steamworks.apps_ptr, appID) end
-function steamworks.apps.GetEarliestPurchaseUnixTime(nAppID) return lib.SteamAPI_ISteamApps_GetEarliestPurchaseUnixTime(steamworks.apps_ptr, nAppID) end
-function steamworks.apps.BIsSubscribedFromFreeWeekend() return lib.SteamAPI_ISteamApps_BIsSubscribedFromFreeWeekend(steamworks.apps_ptr) end
-function steamworks.apps.GetDLCCount() return lib.SteamAPI_ISteamApps_GetDLCCount(steamworks.apps_ptr) end
-function steamworks.apps.BGetDLCDataByIndex(iDLC, pAppID, pbAvailable, pchName, cchNameBufferSize) return lib.SteamAPI_ISteamApps_BGetDLCDataByIndex(steamworks.apps_ptr, iDLC, pAppID, pbAvailable, pchName, cchNameBufferSize) end
-function steamworks.apps.InstallDLC(nAppID) return lib.SteamAPI_ISteamApps_InstallDLC(steamworks.apps_ptr, nAppID) end
-function steamworks.apps.UninstallDLC(nAppID) return lib.SteamAPI_ISteamApps_UninstallDLC(steamworks.apps_ptr, nAppID) end
-function steamworks.apps.RequestAppProofOfPurchaseKey(nAppID) return lib.SteamAPI_ISteamApps_RequestAppProofOfPurchaseKey(steamworks.apps_ptr, nAppID) end
-function steamworks.apps.GetCurrentBetaName(pchName, cchNameBufferSize) return lib.SteamAPI_ISteamApps_GetCurrentBetaName(steamworks.apps_ptr, pchName, cchNameBufferSize) end
-function steamworks.apps.MarkContentCorrupt(bMissingFilesOnly) return lib.SteamAPI_ISteamApps_MarkContentCorrupt(steamworks.apps_ptr, bMissingFilesOnly) end
-function steamworks.apps.GetInstalledDepots(appID, pvecDepots, cMaxDepots) return lib.SteamAPI_ISteamApps_GetInstalledDepots(steamworks.apps_ptr, appID, pvecDepots, cMaxDepots) end
-function steamworks.apps.GetAppInstallDir(appID, pchFolder, cchFolderBufferSize) return lib.SteamAPI_ISteamApps_GetAppInstallDir(steamworks.apps_ptr, appID, pchFolder, cchFolderBufferSize) end
-function steamworks.apps.BIsAppInstalled(appID) return lib.SteamAPI_ISteamApps_BIsAppInstalled(steamworks.apps_ptr, appID) end
-function steamworks.apps.GetAppOwner() return lib.SteamAPI_ISteamApps_GetAppOwner(steamworks.apps_ptr) end
-function steamworks.apps.GetLaunchQueryParam(pchKey)local str = lib.SteamAPI_ISteamApps_GetLaunchQueryParam(steamworks.apps_ptr, pchKey) if str ~= nil then return ffi.string(str) end end
-function steamworks.apps.GetDlcDownloadProgress(nAppID, punBytesDownloaded, punBytesTotal) return lib.SteamAPI_ISteamApps_GetDlcDownloadProgress(steamworks.apps_ptr, nAppID, punBytesDownloaded, punBytesTotal) end
-function steamworks.apps.GetAppBuildId() return lib.SteamAPI_ISteamApps_GetAppBuildId(steamworks.apps_ptr) end
-function steamworks.apps.RequestAllProofOfPurchaseKeys() return lib.SteamAPI_ISteamApps_RequestAllProofOfPurchaseKeys(steamworks.apps_ptr) end
-function steamworks.apps.GetFileDetails(pszFileName) return lib.SteamAPI_ISteamApps_GetFileDetails(steamworks.apps_ptr, pszFileName) end
-steamworks.inventory = {}
-steamworks.inventory_ptr = lib.SteamInventory()
-function steamworks.inventory.GetResultStatus(resultHandle) return lib.SteamAPI_ISteamInventory_GetResultStatus(steamworks.inventory_ptr, resultHandle) end
-function steamworks.inventory.GetResultItems(resultHandle, pOutItemsArray, punOutItemsArraySize) return lib.SteamAPI_ISteamInventory_GetResultItems(steamworks.inventory_ptr, resultHandle, pOutItemsArray, punOutItemsArraySize) end
-function steamworks.inventory.GetResultItemProperty(resultHandle, unItemIndex, pchPropertyName, pchValueBuffer, punValueBufferSizeOut) return lib.SteamAPI_ISteamInventory_GetResultItemProperty(steamworks.inventory_ptr, resultHandle, unItemIndex, pchPropertyName, pchValueBuffer, punValueBufferSizeOut) end
-function steamworks.inventory.GetResultTimestamp(resultHandle) return lib.SteamAPI_ISteamInventory_GetResultTimestamp(steamworks.inventory_ptr, resultHandle) end
-function steamworks.inventory.CheckResultSteamID(resultHandle, steamIDExpected) return lib.SteamAPI_ISteamInventory_CheckResultSteamID(steamworks.inventory_ptr, resultHandle, steamIDExpected) end
-function steamworks.inventory.DestroyResult(resultHandle) return lib.SteamAPI_ISteamInventory_DestroyResult(steamworks.inventory_ptr, resultHandle) end
-function steamworks.inventory.GetAllItems(pResultHandle) return lib.SteamAPI_ISteamInventory_GetAllItems(steamworks.inventory_ptr, pResultHandle) end
-function steamworks.inventory.GetItemsByID(pResultHandle, pInstanceIDs, unCountInstanceIDs) return lib.SteamAPI_ISteamInventory_GetItemsByID(steamworks.inventory_ptr, pResultHandle, pInstanceIDs, unCountInstanceIDs) end
-function steamworks.inventory.SerializeResult(resultHandle, pOutBuffer, punOutBufferSize) return lib.SteamAPI_ISteamInventory_SerializeResult(steamworks.inventory_ptr, resultHandle, pOutBuffer, punOutBufferSize) end
-function steamworks.inventory.DeserializeResult(pOutResultHandle, pBuffer, unBufferSize, bRESERVED_MUST_BE_FALSE) return lib.SteamAPI_ISteamInventory_DeserializeResult(steamworks.inventory_ptr, pOutResultHandle, pBuffer, unBufferSize, bRESERVED_MUST_BE_FALSE) end
-function steamworks.inventory.GenerateItems(pResultHandle, pArrayItemDefs, punArrayQuantity, unArrayLength) return lib.SteamAPI_ISteamInventory_GenerateItems(steamworks.inventory_ptr, pResultHandle, pArrayItemDefs, punArrayQuantity, unArrayLength) end
-function steamworks.inventory.GrantPromoItems(pResultHandle) return lib.SteamAPI_ISteamInventory_GrantPromoItems(steamworks.inventory_ptr, pResultHandle) end
-function steamworks.inventory.AddPromoItem(pResultHandle, itemDef) return lib.SteamAPI_ISteamInventory_AddPromoItem(steamworks.inventory_ptr, pResultHandle, itemDef) end
-function steamworks.inventory.AddPromoItems(pResultHandle, pArrayItemDefs, unArrayLength) return lib.SteamAPI_ISteamInventory_AddPromoItems(steamworks.inventory_ptr, pResultHandle, pArrayItemDefs, unArrayLength) end
-function steamworks.inventory.ConsumeItem(pResultHandle, itemConsume, unQuantity) return lib.SteamAPI_ISteamInventory_ConsumeItem(steamworks.inventory_ptr, pResultHandle, itemConsume, unQuantity) end
-function steamworks.inventory.ExchangeItems(pResultHandle, pArrayGenerate, punArrayGenerateQuantity, unArrayGenerateLength, pArrayDestroy, punArrayDestroyQuantity, unArrayDestroyLength) return lib.SteamAPI_ISteamInventory_ExchangeItems(steamworks.inventory_ptr, pResultHandle, pArrayGenerate, punArrayGenerateQuantity, unArrayGenerateLength, pArrayDestroy, punArrayDestroyQuantity, unArrayDestroyLength) end
-function steamworks.inventory.TransferItemQuantity(pResultHandle, itemIdSource, unQuantity, itemIdDest) return lib.SteamAPI_ISteamInventory_TransferItemQuantity(steamworks.inventory_ptr, pResultHandle, itemIdSource, unQuantity, itemIdDest) end
-function steamworks.inventory.SendItemDropHeartbeat() return lib.SteamAPI_ISteamInventory_SendItemDropHeartbeat(steamworks.inventory_ptr) end
-function steamworks.inventory.TriggerItemDrop(pResultHandle, dropListDefinition) return lib.SteamAPI_ISteamInventory_TriggerItemDrop(steamworks.inventory_ptr, pResultHandle, dropListDefinition) end
-function steamworks.inventory.TradeItems(pResultHandle, steamIDTradePartner, pArrayGive, pArrayGiveQuantity, nArrayGiveLength, pArrayGet, pArrayGetQuantity, nArrayGetLength) return lib.SteamAPI_ISteamInventory_TradeItems(steamworks.inventory_ptr, pResultHandle, steamIDTradePartner, pArrayGive, pArrayGiveQuantity, nArrayGiveLength, pArrayGet, pArrayGetQuantity, nArrayGetLength) end
-function steamworks.inventory.LoadItemDefinitions() return lib.SteamAPI_ISteamInventory_LoadItemDefinitions(steamworks.inventory_ptr) end
-function steamworks.inventory.GetItemDefinitionIDs(pItemDefIDs, punItemDefIDsArraySize) return lib.SteamAPI_ISteamInventory_GetItemDefinitionIDs(steamworks.inventory_ptr, pItemDefIDs, punItemDefIDsArraySize) end
-function steamworks.inventory.GetItemDefinitionProperty(iDefinition, pchPropertyName, pchValueBuffer, punValueBufferSizeOut) return lib.SteamAPI_ISteamInventory_GetItemDefinitionProperty(steamworks.inventory_ptr, iDefinition, pchPropertyName, pchValueBuffer, punValueBufferSizeOut) end
-function steamworks.inventory.RequestEligiblePromoItemDefinitionsIDs(steamID) return lib.SteamAPI_ISteamInventory_RequestEligiblePromoItemDefinitionsIDs(steamworks.inventory_ptr, steamID) end
-function steamworks.inventory.GetEligiblePromoItemDefinitionIDs(steamID, pItemDefIDs, punItemDefIDsArraySize) return lib.SteamAPI_ISteamInventory_GetEligiblePromoItemDefinitionIDs(steamworks.inventory_ptr, steamID, pItemDefIDs, punItemDefIDsArraySize) end
-steamworks.video = {}
-steamworks.video_ptr = lib.SteamVideo()
-function steamworks.video.GetVideoURL(unVideoAppID) return lib.SteamAPI_ISteamVideo_GetVideoURL(steamworks.video_ptr, unVideoAppID) end
-function steamworks.video.IsBroadcasting(pnNumViewers) return lib.SteamAPI_ISteamVideo_IsBroadcasting(steamworks.video_ptr, pnNumViewers) end
-function steamworks.video.GetOPFSettings(unVideoAppID) return lib.SteamAPI_ISteamVideo_GetOPFSettings(steamworks.video_ptr, unVideoAppID) end
-function steamworks.video.GetOPFStringForApp(unVideoAppID, pchBuffer, pnBufferSize) return lib.SteamAPI_ISteamVideo_GetOPFStringForApp(steamworks.video_ptr, unVideoAppID, pchBuffer, pnBufferSize) end
-steamworks.musicremote = {}
-steamworks.musicremote_ptr = lib.SteamMusicRemote()
-function steamworks.musicremote.RegisterSteamMusicRemote(pchName) return lib.SteamAPI_ISteamMusicRemote_RegisterSteamMusicRemote(steamworks.musicremote_ptr, pchName) end
-function steamworks.musicremote.DeregisterSteamMusicRemote() return lib.SteamAPI_ISteamMusicRemote_DeregisterSteamMusicRemote(steamworks.musicremote_ptr) end
-function steamworks.musicremote.BIsCurrentMusicRemote() return lib.SteamAPI_ISteamMusicRemote_BIsCurrentMusicRemote(steamworks.musicremote_ptr) end
-function steamworks.musicremote.BActivationSuccess(bValue) return lib.SteamAPI_ISteamMusicRemote_BActivationSuccess(steamworks.musicremote_ptr, bValue) end
-function steamworks.musicremote.SetDisplayName(pchDisplayName) return lib.SteamAPI_ISteamMusicRemote_SetDisplayName(steamworks.musicremote_ptr, pchDisplayName) end
-function steamworks.musicremote.SetPNGIcon_64x64(pvBuffer, cbBufferLength) return lib.SteamAPI_ISteamMusicRemote_SetPNGIcon_64x64(steamworks.musicremote_ptr, pvBuffer, cbBufferLength) end
-function steamworks.musicremote.EnablePlayPrevious(bValue) return lib.SteamAPI_ISteamMusicRemote_EnablePlayPrevious(steamworks.musicremote_ptr, bValue) end
-function steamworks.musicremote.EnablePlayNext(bValue) return lib.SteamAPI_ISteamMusicRemote_EnablePlayNext(steamworks.musicremote_ptr, bValue) end
-function steamworks.musicremote.EnableShuffled(bValue) return lib.SteamAPI_ISteamMusicRemote_EnableShuffled(steamworks.musicremote_ptr, bValue) end
-function steamworks.musicremote.EnableLooped(bValue) return lib.SteamAPI_ISteamMusicRemote_EnableLooped(steamworks.musicremote_ptr, bValue) end
-function steamworks.musicremote.EnableQueue(bValue) return lib.SteamAPI_ISteamMusicRemote_EnableQueue(steamworks.musicremote_ptr, bValue) end
-function steamworks.musicremote.EnablePlaylists(bValue) return lib.SteamAPI_ISteamMusicRemote_EnablePlaylists(steamworks.musicremote_ptr, bValue) end
-function steamworks.musicremote.UpdatePlaybackStatus(nStatus) return lib.SteamAPI_ISteamMusicRemote_UpdatePlaybackStatus(steamworks.musicremote_ptr, nStatus) end
-function steamworks.musicremote.UpdateShuffled(bValue) return lib.SteamAPI_ISteamMusicRemote_UpdateShuffled(steamworks.musicremote_ptr, bValue) end
-function steamworks.musicremote.UpdateLooped(bValue) return lib.SteamAPI_ISteamMusicRemote_UpdateLooped(steamworks.musicremote_ptr, bValue) end
-function steamworks.musicremote.UpdateVolume(flValue) return lib.SteamAPI_ISteamMusicRemote_UpdateVolume(steamworks.musicremote_ptr, flValue) end
-function steamworks.musicremote.CurrentEntryWillChange() return lib.SteamAPI_ISteamMusicRemote_CurrentEntryWillChange(steamworks.musicremote_ptr) end
-function steamworks.musicremote.CurrentEntryIsAvailable(bAvailable) return lib.SteamAPI_ISteamMusicRemote_CurrentEntryIsAvailable(steamworks.musicremote_ptr, bAvailable) end
-function steamworks.musicremote.UpdateCurrentEntryText(pchText) return lib.SteamAPI_ISteamMusicRemote_UpdateCurrentEntryText(steamworks.musicremote_ptr, pchText) end
-function steamworks.musicremote.UpdateCurrentEntryElapsedSeconds(nValue) return lib.SteamAPI_ISteamMusicRemote_UpdateCurrentEntryElapsedSeconds(steamworks.musicremote_ptr, nValue) end
-function steamworks.musicremote.UpdateCurrentEntryCoverArt(pvBuffer, cbBufferLength) return lib.SteamAPI_ISteamMusicRemote_UpdateCurrentEntryCoverArt(steamworks.musicremote_ptr, pvBuffer, cbBufferLength) end
-function steamworks.musicremote.CurrentEntryDidChange() return lib.SteamAPI_ISteamMusicRemote_CurrentEntryDidChange(steamworks.musicremote_ptr) end
-function steamworks.musicremote.QueueWillChange() return lib.SteamAPI_ISteamMusicRemote_QueueWillChange(steamworks.musicremote_ptr) end
-function steamworks.musicremote.ResetQueueEntries() return lib.SteamAPI_ISteamMusicRemote_ResetQueueEntries(steamworks.musicremote_ptr) end
-function steamworks.musicremote.SetQueueEntry(nID, nPosition, pchEntryText) return lib.SteamAPI_ISteamMusicRemote_SetQueueEntry(steamworks.musicremote_ptr, nID, nPosition, pchEntryText) end
-function steamworks.musicremote.SetCurrentQueueEntry(nID) return lib.SteamAPI_ISteamMusicRemote_SetCurrentQueueEntry(steamworks.musicremote_ptr, nID) end
-function steamworks.musicremote.QueueDidChange() return lib.SteamAPI_ISteamMusicRemote_QueueDidChange(steamworks.musicremote_ptr) end
-function steamworks.musicremote.PlaylistWillChange() return lib.SteamAPI_ISteamMusicRemote_PlaylistWillChange(steamworks.musicremote_ptr) end
-function steamworks.musicremote.ResetPlaylistEntries() return lib.SteamAPI_ISteamMusicRemote_ResetPlaylistEntries(steamworks.musicremote_ptr) end
-function steamworks.musicremote.SetPlaylistEntry(nID, nPosition, pchEntryText) return lib.SteamAPI_ISteamMusicRemote_SetPlaylistEntry(steamworks.musicremote_ptr, nID, nPosition, pchEntryText) end
-function steamworks.musicremote.SetCurrentPlaylistEntry(nID) return lib.SteamAPI_ISteamMusicRemote_SetCurrentPlaylistEntry(steamworks.musicremote_ptr, nID) end
-function steamworks.musicremote.PlaylistDidChange() return lib.SteamAPI_ISteamMusicRemote_PlaylistDidChange(steamworks.musicremote_ptr) end
-steamworks.music = {}
-steamworks.music_ptr = lib.SteamMusic()
-function steamworks.music.BIsEnabled() return lib.SteamAPI_ISteamMusic_BIsEnabled(steamworks.music_ptr) end
-function steamworks.music.BIsPlaying() return lib.SteamAPI_ISteamMusic_BIsPlaying(steamworks.music_ptr) end
-function steamworks.music.GetPlaybackStatus() return lib.SteamAPI_ISteamMusic_GetPlaybackStatus(steamworks.music_ptr) end
-function steamworks.music.Play() return lib.SteamAPI_ISteamMusic_Play(steamworks.music_ptr) end
-function steamworks.music.Pause() return lib.SteamAPI_ISteamMusic_Pause(steamworks.music_ptr) end
-function steamworks.music.PlayPrevious() return lib.SteamAPI_ISteamMusic_PlayPrevious(steamworks.music_ptr) end
-function steamworks.music.PlayNext() return lib.SteamAPI_ISteamMusic_PlayNext(steamworks.music_ptr) end
-function steamworks.music.SetVolume(flVolume) return lib.SteamAPI_ISteamMusic_SetVolume(steamworks.music_ptr, flVolume) end
-function steamworks.music.GetVolume() return lib.SteamAPI_ISteamMusic_GetVolume(steamworks.music_ptr) end
-steamworks.http = {}
-steamworks.http_ptr = lib.SteamHTTP()
-function steamworks.http.CreateHTTPRequest(eHTTPRequestMethod, pchAbsoluteURL) return lib.SteamAPI_ISteamHTTP_CreateHTTPRequest(steamworks.http_ptr, eHTTPRequestMethod, pchAbsoluteURL) end
-function steamworks.http.SetHTTPRequestContextValue(hRequest, ulContextValue) return lib.SteamAPI_ISteamHTTP_SetHTTPRequestContextValue(steamworks.http_ptr, hRequest, ulContextValue) end
-function steamworks.http.SetHTTPRequestNetworkActivityTimeout(hRequest, unTimeoutSeconds) return lib.SteamAPI_ISteamHTTP_SetHTTPRequestNetworkActivityTimeout(steamworks.http_ptr, hRequest, unTimeoutSeconds) end
-function steamworks.http.SetHTTPRequestHeaderValue(hRequest, pchHeaderName, pchHeaderValue) return lib.SteamAPI_ISteamHTTP_SetHTTPRequestHeaderValue(steamworks.http_ptr, hRequest, pchHeaderName, pchHeaderValue) end
-function steamworks.http.SetHTTPRequestGetOrPostParameter(hRequest, pchParamName, pchParamValue) return lib.SteamAPI_ISteamHTTP_SetHTTPRequestGetOrPostParameter(steamworks.http_ptr, hRequest, pchParamName, pchParamValue) end
-function steamworks.http.SendHTTPRequest(hRequest, pCallHandle) return lib.SteamAPI_ISteamHTTP_SendHTTPRequest(steamworks.http_ptr, hRequest, pCallHandle) end
-function steamworks.http.SendHTTPRequestAndStreamResponse(hRequest, pCallHandle) return lib.SteamAPI_ISteamHTTP_SendHTTPRequestAndStreamResponse(steamworks.http_ptr, hRequest, pCallHandle) end
-function steamworks.http.DeferHTTPRequest(hRequest) return lib.SteamAPI_ISteamHTTP_DeferHTTPRequest(steamworks.http_ptr, hRequest) end
-function steamworks.http.PrioritizeHTTPRequest(hRequest) return lib.SteamAPI_ISteamHTTP_PrioritizeHTTPRequest(steamworks.http_ptr, hRequest) end
-function steamworks.http.GetHTTPResponseHeaderSize(hRequest, pchHeaderName, unResponseHeaderSize) return lib.SteamAPI_ISteamHTTP_GetHTTPResponseHeaderSize(steamworks.http_ptr, hRequest, pchHeaderName, unResponseHeaderSize) end
-function steamworks.http.GetHTTPResponseHeaderValue(hRequest, pchHeaderName, pHeaderValueBuffer, unBufferSize) return lib.SteamAPI_ISteamHTTP_GetHTTPResponseHeaderValue(steamworks.http_ptr, hRequest, pchHeaderName, pHeaderValueBuffer, unBufferSize) end
-function steamworks.http.GetHTTPResponseBodySize(hRequest, unBodySize) return lib.SteamAPI_ISteamHTTP_GetHTTPResponseBodySize(steamworks.http_ptr, hRequest, unBodySize) end
-function steamworks.http.GetHTTPResponseBodyData(hRequest, pBodyDataBuffer, unBufferSize) return lib.SteamAPI_ISteamHTTP_GetHTTPResponseBodyData(steamworks.http_ptr, hRequest, pBodyDataBuffer, unBufferSize) end
-function steamworks.http.GetHTTPStreamingResponseBodyData(hRequest, cOffset, pBodyDataBuffer, unBufferSize) return lib.SteamAPI_ISteamHTTP_GetHTTPStreamingResponseBodyData(steamworks.http_ptr, hRequest, cOffset, pBodyDataBuffer, unBufferSize) end
-function steamworks.http.ReleaseHTTPRequest(hRequest) return lib.SteamAPI_ISteamHTTP_ReleaseHTTPRequest(steamworks.http_ptr, hRequest) end
-function steamworks.http.GetHTTPDownloadProgressPct(hRequest, pflPercentOut) return lib.SteamAPI_ISteamHTTP_GetHTTPDownloadProgressPct(steamworks.http_ptr, hRequest, pflPercentOut) end
-function steamworks.http.SetHTTPRequestRawPostBody(hRequest, pchContentType, pubBody, unBodyLen) return lib.SteamAPI_ISteamHTTP_SetHTTPRequestRawPostBody(steamworks.http_ptr, hRequest, pchContentType, pubBody, unBodyLen) end
-function steamworks.http.CreateCookieContainer(bAllowResponsesToModify) return lib.SteamAPI_ISteamHTTP_CreateCookieContainer(steamworks.http_ptr, bAllowResponsesToModify) end
-function steamworks.http.ReleaseCookieContainer(hCookieContainer) return lib.SteamAPI_ISteamHTTP_ReleaseCookieContainer(steamworks.http_ptr, hCookieContainer) end
-function steamworks.http.SetCookie(hCookieContainer, pchHost, pchUrl, pchCookie) return lib.SteamAPI_ISteamHTTP_SetCookie(steamworks.http_ptr, hCookieContainer, pchHost, pchUrl, pchCookie) end
-function steamworks.http.SetHTTPRequestCookieContainer(hRequest, hCookieContainer) return lib.SteamAPI_ISteamHTTP_SetHTTPRequestCookieContainer(steamworks.http_ptr, hRequest, hCookieContainer) end
-function steamworks.http.SetHTTPRequestUserAgentInfo(hRequest, pchUserAgentInfo) return lib.SteamAPI_ISteamHTTP_SetHTTPRequestUserAgentInfo(steamworks.http_ptr, hRequest, pchUserAgentInfo) end
-function steamworks.http.SetHTTPRequestRequiresVerifiedCertificate(hRequest, bRequireVerifiedCertificate) return lib.SteamAPI_ISteamHTTP_SetHTTPRequestRequiresVerifiedCertificate(steamworks.http_ptr, hRequest, bRequireVerifiedCertificate) end
-function steamworks.http.SetHTTPRequestAbsoluteTimeoutMS(hRequest, unMilliseconds) return lib.SteamAPI_ISteamHTTP_SetHTTPRequestAbsoluteTimeoutMS(steamworks.http_ptr, hRequest, unMilliseconds) end
-function steamworks.http.GetHTTPRequestWasTimedOut(hRequest, pbWasTimedOut) return lib.SteamAPI_ISteamHTTP_GetHTTPRequestWasTimedOut(steamworks.http_ptr, hRequest, pbWasTimedOut) end
-steamworks.utils = {}
-steamworks.utils_ptr = lib.SteamUtils()
-function steamworks.utils.GetSecondsSinceAppActive() return lib.SteamAPI_ISteamUtils_GetSecondsSinceAppActive(steamworks.utils_ptr) end
-function steamworks.utils.GetSecondsSinceComputerActive() return lib.SteamAPI_ISteamUtils_GetSecondsSinceComputerActive(steamworks.utils_ptr) end
-function steamworks.utils.GetConnectedUniverse() return lib.SteamAPI_ISteamUtils_GetConnectedUniverse(steamworks.utils_ptr) end
-function steamworks.utils.GetServerRealTime() return lib.SteamAPI_ISteamUtils_GetServerRealTime(steamworks.utils_ptr) end
-function steamworks.utils.GetIPCountry()local str = lib.SteamAPI_ISteamUtils_GetIPCountry(steamworks.utils_ptr) if str ~= nil then return ffi.string(str) end end
-function steamworks.utils.GetImageSize(iImage, pnWidth, pnHeight) return lib.SteamAPI_ISteamUtils_GetImageSize(steamworks.utils_ptr, iImage, pnWidth, pnHeight) end
-function steamworks.utils.GetImageRGBA(iImage, pubDest, nDestBufferSize) return lib.SteamAPI_ISteamUtils_GetImageRGBA(steamworks.utils_ptr, iImage, pubDest, nDestBufferSize) end
-function steamworks.utils.GetCSERIPPort(unIP, usPort) return lib.SteamAPI_ISteamUtils_GetCSERIPPort(steamworks.utils_ptr, unIP, usPort) end
-function steamworks.utils.GetCurrentBatteryPower() return lib.SteamAPI_ISteamUtils_GetCurrentBatteryPower(steamworks.utils_ptr) end
-function steamworks.utils.GetAppID() return lib.SteamAPI_ISteamUtils_GetAppID(steamworks.utils_ptr) end
-function steamworks.utils.SetOverlayNotificationPosition(eNotificationPosition) return lib.SteamAPI_ISteamUtils_SetOverlayNotificationPosition(steamworks.utils_ptr, eNotificationPosition) end
-function steamworks.utils.IsAPICallCompleted(hSteamAPICall, pbFailed) return lib.SteamAPI_ISteamUtils_IsAPICallCompleted(steamworks.utils_ptr, hSteamAPICall, pbFailed) end
-function steamworks.utils.GetAPICallFailureReason(hSteamAPICall) return lib.SteamAPI_ISteamUtils_GetAPICallFailureReason(steamworks.utils_ptr, hSteamAPICall) end
-function steamworks.utils.GetAPICallResult(hSteamAPICall, pCallback, cubCallback, iCallbackExpected, pbFailed) return lib.SteamAPI_ISteamUtils_GetAPICallResult(steamworks.utils_ptr, hSteamAPICall, pCallback, cubCallback, iCallbackExpected, pbFailed) end
-function steamworks.utils.GetIPCCallCount() return lib.SteamAPI_ISteamUtils_GetIPCCallCount(steamworks.utils_ptr) end
-function steamworks.utils.SetWarningMessageHook(pFunction) return lib.SteamAPI_ISteamUtils_SetWarningMessageHook(steamworks.utils_ptr, pFunction) end
-function steamworks.utils.IsOverlayEnabled() return lib.SteamAPI_ISteamUtils_IsOverlayEnabled(steamworks.utils_ptr) end
-function steamworks.utils.BOverlayNeedsPresent() return lib.SteamAPI_ISteamUtils_BOverlayNeedsPresent(steamworks.utils_ptr) end
-function steamworks.utils.CheckFileSignature(szFileName) return lib.SteamAPI_ISteamUtils_CheckFileSignature(steamworks.utils_ptr, szFileName) end
-function steamworks.utils.ShowGamepadTextInput(eInputMode, eLineInputMode, pchDescription, unCharMax, pchExistingText) return lib.SteamAPI_ISteamUtils_ShowGamepadTextInput(steamworks.utils_ptr, eInputMode, eLineInputMode, pchDescription, unCharMax, pchExistingText) end
-function steamworks.utils.GetEnteredGamepadTextLength() return lib.SteamAPI_ISteamUtils_GetEnteredGamepadTextLength(steamworks.utils_ptr) end
-function steamworks.utils.GetEnteredGamepadTextInput(pchText, cchText) return lib.SteamAPI_ISteamUtils_GetEnteredGamepadTextInput(steamworks.utils_ptr, pchText, cchText) end
-function steamworks.utils.GetSteamUILanguage()local str = lib.SteamAPI_ISteamUtils_GetSteamUILanguage(steamworks.utils_ptr) if str ~= nil then return ffi.string(str) end end
-function steamworks.utils.IsSteamRunningInVR() return lib.SteamAPI_ISteamUtils_IsSteamRunningInVR(steamworks.utils_ptr) end
-function steamworks.utils.SetOverlayNotificationInset(nHorizontalInset, nVerticalInset) return lib.SteamAPI_ISteamUtils_SetOverlayNotificationInset(steamworks.utils_ptr, nHorizontalInset, nVerticalInset) end
-function steamworks.utils.IsSteamInBigPictureMode() return lib.SteamAPI_ISteamUtils_IsSteamInBigPictureMode(steamworks.utils_ptr) end
-function steamworks.utils.StartVRDashboard() return lib.SteamAPI_ISteamUtils_StartVRDashboard(steamworks.utils_ptr) end
-function steamworks.utils.IsVRHeadsetStreamingEnabled() return lib.SteamAPI_ISteamUtils_IsVRHeadsetStreamingEnabled(steamworks.utils_ptr) end
-function steamworks.utils.SetVRHeadsetStreamingEnabled(bEnabled) return lib.SteamAPI_ISteamUtils_SetVRHeadsetStreamingEnabled(steamworks.utils_ptr, bEnabled) end
-steamworks.remotestorage = {}
-steamworks.remotestorage_ptr = lib.SteamRemoteStorage()
-function steamworks.remotestorage.FileWrite(pchFile, pvData, cubData) return lib.SteamAPI_ISteamRemoteStorage_FileWrite(steamworks.remotestorage_ptr, pchFile, pvData, cubData) end
-function steamworks.remotestorage.FileRead(pchFile, pvData, cubDataToRead) return lib.SteamAPI_ISteamRemoteStorage_FileRead(steamworks.remotestorage_ptr, pchFile, pvData, cubDataToRead) end
-function steamworks.remotestorage.FileWriteAsync(pchFile, pvData, cubData) return lib.SteamAPI_ISteamRemoteStorage_FileWriteAsync(steamworks.remotestorage_ptr, pchFile, pvData, cubData) end
-function steamworks.remotestorage.FileReadAsync(pchFile, nOffset, cubToRead) return lib.SteamAPI_ISteamRemoteStorage_FileReadAsync(steamworks.remotestorage_ptr, pchFile, nOffset, cubToRead) end
-function steamworks.remotestorage.FileReadAsyncComplete(hReadCall, pvBuffer, cubToRead) return lib.SteamAPI_ISteamRemoteStorage_FileReadAsyncComplete(steamworks.remotestorage_ptr, hReadCall, pvBuffer, cubToRead) end
-function steamworks.remotestorage.FileForget(pchFile) return lib.SteamAPI_ISteamRemoteStorage_FileForget(steamworks.remotestorage_ptr, pchFile) end
-function steamworks.remotestorage.FileDelete(pchFile) return lib.SteamAPI_ISteamRemoteStorage_FileDelete(steamworks.remotestorage_ptr, pchFile) end
-function steamworks.remotestorage.FileShare(pchFile) return lib.SteamAPI_ISteamRemoteStorage_FileShare(steamworks.remotestorage_ptr, pchFile) end
-function steamworks.remotestorage.SetSyncPlatforms(pchFile, eRemoteStoragePlatform) return lib.SteamAPI_ISteamRemoteStorage_SetSyncPlatforms(steamworks.remotestorage_ptr, pchFile, eRemoteStoragePlatform) end
-function steamworks.remotestorage.FileWriteStreamOpen(pchFile) return lib.SteamAPI_ISteamRemoteStorage_FileWriteStreamOpen(steamworks.remotestorage_ptr, pchFile) end
-function steamworks.remotestorage.FileWriteStreamWriteChunk(writeHandle, pvData, cubData) return lib.SteamAPI_ISteamRemoteStorage_FileWriteStreamWriteChunk(steamworks.remotestorage_ptr, writeHandle, pvData, cubData) end
-function steamworks.remotestorage.FileWriteStreamClose(writeHandle) return lib.SteamAPI_ISteamRemoteStorage_FileWriteStreamClose(steamworks.remotestorage_ptr, writeHandle) end
-function steamworks.remotestorage.FileWriteStreamCancel(writeHandle) return lib.SteamAPI_ISteamRemoteStorage_FileWriteStreamCancel(steamworks.remotestorage_ptr, writeHandle) end
-function steamworks.remotestorage.FileExists(pchFile) return lib.SteamAPI_ISteamRemoteStorage_FileExists(steamworks.remotestorage_ptr, pchFile) end
-function steamworks.remotestorage.FilePersisted(pchFile) return lib.SteamAPI_ISteamRemoteStorage_FilePersisted(steamworks.remotestorage_ptr, pchFile) end
-function steamworks.remotestorage.GetFileSize(pchFile) return lib.SteamAPI_ISteamRemoteStorage_GetFileSize(steamworks.remotestorage_ptr, pchFile) end
-function steamworks.remotestorage.GetFileTimestamp(pchFile) return lib.SteamAPI_ISteamRemoteStorage_GetFileTimestamp(steamworks.remotestorage_ptr, pchFile) end
-function steamworks.remotestorage.GetSyncPlatforms(pchFile) return lib.SteamAPI_ISteamRemoteStorage_GetSyncPlatforms(steamworks.remotestorage_ptr, pchFile) end
-function steamworks.remotestorage.GetFileCount() return lib.SteamAPI_ISteamRemoteStorage_GetFileCount(steamworks.remotestorage_ptr) end
-function steamworks.remotestorage.GetFileNameAndSize(iFile, pnFileSizeInBytes)local str = lib.SteamAPI_ISteamRemoteStorage_GetFileNameAndSize(steamworks.remotestorage_ptr, iFile, pnFileSizeInBytes) if str ~= nil then return ffi.string(str) end end
-function steamworks.remotestorage.GetQuota(pnTotalBytes, puAvailableBytes) return lib.SteamAPI_ISteamRemoteStorage_GetQuota(steamworks.remotestorage_ptr, pnTotalBytes, puAvailableBytes) end
-function steamworks.remotestorage.IsCloudEnabledForAccount() return lib.SteamAPI_ISteamRemoteStorage_IsCloudEnabledForAccount(steamworks.remotestorage_ptr) end
-function steamworks.remotestorage.IsCloudEnabledForApp() return lib.SteamAPI_ISteamRemoteStorage_IsCloudEnabledForApp(steamworks.remotestorage_ptr) end
-function steamworks.remotestorage.SetCloudEnabledForApp(bEnabled) return lib.SteamAPI_ISteamRemoteStorage_SetCloudEnabledForApp(steamworks.remotestorage_ptr, bEnabled) end
-function steamworks.remotestorage.UGCDownload(hContent, unPriority) return lib.SteamAPI_ISteamRemoteStorage_UGCDownload(steamworks.remotestorage_ptr, hContent, unPriority) end
-function steamworks.remotestorage.GetUGCDownloadProgress(hContent, pnBytesDownloaded, pnBytesExpected) return lib.SteamAPI_ISteamRemoteStorage_GetUGCDownloadProgress(steamworks.remotestorage_ptr, hContent, pnBytesDownloaded, pnBytesExpected) end
-function steamworks.remotestorage.GetUGCDetails(hContent, pnAppID, ppchName, pnFileSizeInBytes, pSteamIDOwner) return lib.SteamAPI_ISteamRemoteStorage_GetUGCDetails(steamworks.remotestorage_ptr, hContent, pnAppID, ppchName, pnFileSizeInBytes, pSteamIDOwner) end
-function steamworks.remotestorage.UGCRead(hContent, pvData, cubDataToRead, cOffset, eAction) return lib.SteamAPI_ISteamRemoteStorage_UGCRead(steamworks.remotestorage_ptr, hContent, pvData, cubDataToRead, cOffset, eAction) end
-function steamworks.remotestorage.GetCachedUGCCount() return lib.SteamAPI_ISteamRemoteStorage_GetCachedUGCCount(steamworks.remotestorage_ptr) end
-function steamworks.remotestorage.GetCachedUGCHandle(iCachedContent) return lib.SteamAPI_ISteamRemoteStorage_GetCachedUGCHandle(steamworks.remotestorage_ptr, iCachedContent) end
-function steamworks.remotestorage.PublishWorkshopFile(pchFile, pchPreviewFile, nConsumerAppId, pchTitle, pchDescription, eVisibility, pTags, eWorkshopFileType) return lib.SteamAPI_ISteamRemoteStorage_PublishWorkshopFile(steamworks.remotestorage_ptr, pchFile, pchPreviewFile, nConsumerAppId, pchTitle, pchDescription, eVisibility, pTags, eWorkshopFileType) end
-function steamworks.remotestorage.CreatePublishedFileUpdateRequest(unPublishedFileId) return lib.SteamAPI_ISteamRemoteStorage_CreatePublishedFileUpdateRequest(steamworks.remotestorage_ptr, unPublishedFileId) end
-function steamworks.remotestorage.UpdatePublishedFileFile(updateHandle, pchFile) return lib.SteamAPI_ISteamRemoteStorage_UpdatePublishedFileFile(steamworks.remotestorage_ptr, updateHandle, pchFile) end
-function steamworks.remotestorage.UpdatePublishedFilePreviewFile(updateHandle, pchPreviewFile) return lib.SteamAPI_ISteamRemoteStorage_UpdatePublishedFilePreviewFile(steamworks.remotestorage_ptr, updateHandle, pchPreviewFile) end
-function steamworks.remotestorage.UpdatePublishedFileTitle(updateHandle, pchTitle) return lib.SteamAPI_ISteamRemoteStorage_UpdatePublishedFileTitle(steamworks.remotestorage_ptr, updateHandle, pchTitle) end
-function steamworks.remotestorage.UpdatePublishedFileDescription(updateHandle, pchDescription) return lib.SteamAPI_ISteamRemoteStorage_UpdatePublishedFileDescription(steamworks.remotestorage_ptr, updateHandle, pchDescription) end
-function steamworks.remotestorage.UpdatePublishedFileVisibility(updateHandle, eVisibility) return lib.SteamAPI_ISteamRemoteStorage_UpdatePublishedFileVisibility(steamworks.remotestorage_ptr, updateHandle, eVisibility) end
-function steamworks.remotestorage.UpdatePublishedFileTags(updateHandle, pTags) return lib.SteamAPI_ISteamRemoteStorage_UpdatePublishedFileTags(steamworks.remotestorage_ptr, updateHandle, pTags) end
-function steamworks.remotestorage.CommitPublishedFileUpdate(updateHandle) return lib.SteamAPI_ISteamRemoteStorage_CommitPublishedFileUpdate(steamworks.remotestorage_ptr, updateHandle) end
-function steamworks.remotestorage.GetPublishedFileDetails(unPublishedFileId, unMaxSecondsOld) return lib.SteamAPI_ISteamRemoteStorage_GetPublishedFileDetails(steamworks.remotestorage_ptr, unPublishedFileId, unMaxSecondsOld) end
-function steamworks.remotestorage.DeletePublishedFile(unPublishedFileId) return lib.SteamAPI_ISteamRemoteStorage_DeletePublishedFile(steamworks.remotestorage_ptr, unPublishedFileId) end
-function steamworks.remotestorage.EnumerateUserPublishedFiles(unStartIndex) return lib.SteamAPI_ISteamRemoteStorage_EnumerateUserPublishedFiles(steamworks.remotestorage_ptr, unStartIndex) end
-function steamworks.remotestorage.SubscribePublishedFile(unPublishedFileId) return lib.SteamAPI_ISteamRemoteStorage_SubscribePublishedFile(steamworks.remotestorage_ptr, unPublishedFileId) end
-function steamworks.remotestorage.EnumerateUserSubscribedFiles(unStartIndex) return lib.SteamAPI_ISteamRemoteStorage_EnumerateUserSubscribedFiles(steamworks.remotestorage_ptr, unStartIndex) end
-function steamworks.remotestorage.UnsubscribePublishedFile(unPublishedFileId) return lib.SteamAPI_ISteamRemoteStorage_UnsubscribePublishedFile(steamworks.remotestorage_ptr, unPublishedFileId) end
-function steamworks.remotestorage.UpdatePublishedFileSetChangeDescription(updateHandle, pchChangeDescription) return lib.SteamAPI_ISteamRemoteStorage_UpdatePublishedFileSetChangeDescription(steamworks.remotestorage_ptr, updateHandle, pchChangeDescription) end
-function steamworks.remotestorage.GetPublishedItemVoteDetails(unPublishedFileId) return lib.SteamAPI_ISteamRemoteStorage_GetPublishedItemVoteDetails(steamworks.remotestorage_ptr, unPublishedFileId) end
-function steamworks.remotestorage.UpdateUserPublishedItemVote(unPublishedFileId, bVoteUp) return lib.SteamAPI_ISteamRemoteStorage_UpdateUserPublishedItemVote(steamworks.remotestorage_ptr, unPublishedFileId, bVoteUp) end
-function steamworks.remotestorage.GetUserPublishedItemVoteDetails(unPublishedFileId) return lib.SteamAPI_ISteamRemoteStorage_GetUserPublishedItemVoteDetails(steamworks.remotestorage_ptr, unPublishedFileId) end
-function steamworks.remotestorage.EnumerateUserSharedWorkshopFiles(steamId, unStartIndex, pRequiredTags, pExcludedTags) return lib.SteamAPI_ISteamRemoteStorage_EnumerateUserSharedWorkshopFiles(steamworks.remotestorage_ptr, steamId, unStartIndex, pRequiredTags, pExcludedTags) end
-function steamworks.remotestorage.PublishVideo(eVideoProvider, pchVideoAccount, pchVideoIdentifier, pchPreviewFile, nConsumerAppId, pchTitle, pchDescription, eVisibility, pTags) return lib.SteamAPI_ISteamRemoteStorage_PublishVideo(steamworks.remotestorage_ptr, eVideoProvider, pchVideoAccount, pchVideoIdentifier, pchPreviewFile, nConsumerAppId, pchTitle, pchDescription, eVisibility, pTags) end
-function steamworks.remotestorage.SetUserPublishedFileAction(unPublishedFileId, eAction) return lib.SteamAPI_ISteamRemoteStorage_SetUserPublishedFileAction(steamworks.remotestorage_ptr, unPublishedFileId, eAction) end
-function steamworks.remotestorage.EnumeratePublishedFilesByUserAction(eAction, unStartIndex) return lib.SteamAPI_ISteamRemoteStorage_EnumeratePublishedFilesByUserAction(steamworks.remotestorage_ptr, eAction, unStartIndex) end
-function steamworks.remotestorage.EnumeratePublishedWorkshopFiles(eEnumerationType, unStartIndex, unCount, unDays, pTags, pUserTags) return lib.SteamAPI_ISteamRemoteStorage_EnumeratePublishedWorkshopFiles(steamworks.remotestorage_ptr, eEnumerationType, unStartIndex, unCount, unDays, pTags, pUserTags) end
-function steamworks.remotestorage.UGCDownloadToLocation(hContent, pchLocation, unPriority) return lib.SteamAPI_ISteamRemoteStorage_UGCDownloadToLocation(steamworks.remotestorage_ptr, hContent, pchLocation, unPriority) end
-steamworks.applist = {}
-steamworks.applist_ptr = lib.SteamAppList()
-function steamworks.applist.GetNumInstalledApps() return lib.SteamAPI_ISteamAppList_GetNumInstalledApps(steamworks.applist_ptr) end
-function steamworks.applist.GetInstalledApps(pvecAppID, unMaxAppIDs) return lib.SteamAPI_ISteamAppList_GetInstalledApps(steamworks.applist_ptr, pvecAppID, unMaxAppIDs) end
-function steamworks.applist.GetAppName(nAppID, pchName, cchNameMax) return lib.SteamAPI_ISteamAppList_GetAppName(steamworks.applist_ptr, nAppID, pchName, cchNameMax) end
-function steamworks.applist.GetAppInstallDir(nAppID, pchDirectory, cchNameMax) return lib.SteamAPI_ISteamAppList_GetAppInstallDir(steamworks.applist_ptr, nAppID, pchDirectory, cchNameMax) end
-function steamworks.applist.GetAppBuildId(nAppID) return lib.SteamAPI_ISteamAppList_GetAppBuildId(steamworks.applist_ptr, nAppID) end
-steamworks.matchmaking = {}
-steamworks.matchmaking_ptr = lib.SteamMatchmaking()
-function steamworks.matchmaking.GetFavoriteGameCount() return lib.SteamAPI_ISteamMatchmaking_GetFavoriteGameCount(steamworks.matchmaking_ptr) end
-function steamworks.matchmaking.GetFavoriteGame(iGame, pnAppID, pnIP, pnConnPort, pnQueryPort, punFlags, pRTime32LastPlayedOnServer) return lib.SteamAPI_ISteamMatchmaking_GetFavoriteGame(steamworks.matchmaking_ptr, iGame, pnAppID, pnIP, pnConnPort, pnQueryPort, punFlags, pRTime32LastPlayedOnServer) end
-function steamworks.matchmaking.AddFavoriteGame(nAppID, nIP, nConnPort, nQueryPort, unFlags, rTime32LastPlayedOnServer) return lib.SteamAPI_ISteamMatchmaking_AddFavoriteGame(steamworks.matchmaking_ptr, nAppID, nIP, nConnPort, nQueryPort, unFlags, rTime32LastPlayedOnServer) end
-function steamworks.matchmaking.RemoveFavoriteGame(nAppID, nIP, nConnPort, nQueryPort, unFlags) return lib.SteamAPI_ISteamMatchmaking_RemoveFavoriteGame(steamworks.matchmaking_ptr, nAppID, nIP, nConnPort, nQueryPort, unFlags) end
-function steamworks.matchmaking.RequestLobbyList() return lib.SteamAPI_ISteamMatchmaking_RequestLobbyList(steamworks.matchmaking_ptr) end
-function steamworks.matchmaking.AddRequestLobbyListStringFilter(pchKeyToMatch, pchValueToMatch, eComparisonType) return lib.SteamAPI_ISteamMatchmaking_AddRequestLobbyListStringFilter(steamworks.matchmaking_ptr, pchKeyToMatch, pchValueToMatch, eComparisonType) end
-function steamworks.matchmaking.AddRequestLobbyListNumericalFilter(pchKeyToMatch, nValueToMatch, eComparisonType) return lib.SteamAPI_ISteamMatchmaking_AddRequestLobbyListNumericalFilter(steamworks.matchmaking_ptr, pchKeyToMatch, nValueToMatch, eComparisonType) end
-function steamworks.matchmaking.AddRequestLobbyListNearValueFilter(pchKeyToMatch, nValueToBeCloseTo) return lib.SteamAPI_ISteamMatchmaking_AddRequestLobbyListNearValueFilter(steamworks.matchmaking_ptr, pchKeyToMatch, nValueToBeCloseTo) end
-function steamworks.matchmaking.AddRequestLobbyListFilterSlotsAvailable(nSlotsAvailable) return lib.SteamAPI_ISteamMatchmaking_AddRequestLobbyListFilterSlotsAvailable(steamworks.matchmaking_ptr, nSlotsAvailable) end
-function steamworks.matchmaking.AddRequestLobbyListDistanceFilter(eLobbyDistanceFilter) return lib.SteamAPI_ISteamMatchmaking_AddRequestLobbyListDistanceFilter(steamworks.matchmaking_ptr, eLobbyDistanceFilter) end
-function steamworks.matchmaking.AddRequestLobbyListResultCountFilter(cMaxResults) return lib.SteamAPI_ISteamMatchmaking_AddRequestLobbyListResultCountFilter(steamworks.matchmaking_ptr, cMaxResults) end
-function steamworks.matchmaking.AddRequestLobbyListCompatibleMembersFilter(steamIDLobby) return lib.SteamAPI_ISteamMatchmaking_AddRequestLobbyListCompatibleMembersFilter(steamworks.matchmaking_ptr, steamIDLobby) end
-function steamworks.matchmaking.GetLobbyByIndex(iLobby) return lib.SteamAPI_ISteamMatchmaking_GetLobbyByIndex(steamworks.matchmaking_ptr, iLobby) end
-function steamworks.matchmaking.CreateLobby(eLobbyType, cMaxMembers) return lib.SteamAPI_ISteamMatchmaking_CreateLobby(steamworks.matchmaking_ptr, eLobbyType, cMaxMembers) end
-function steamworks.matchmaking.JoinLobby(steamIDLobby) return lib.SteamAPI_ISteamMatchmaking_JoinLobby(steamworks.matchmaking_ptr, steamIDLobby) end
-function steamworks.matchmaking.LeaveLobby(steamIDLobby) return lib.SteamAPI_ISteamMatchmaking_LeaveLobby(steamworks.matchmaking_ptr, steamIDLobby) end
-function steamworks.matchmaking.InviteUserToLobby(steamIDLobby, steamIDInvitee) return lib.SteamAPI_ISteamMatchmaking_InviteUserToLobby(steamworks.matchmaking_ptr, steamIDLobby, steamIDInvitee) end
-function steamworks.matchmaking.GetNumLobbyMembers(steamIDLobby) return lib.SteamAPI_ISteamMatchmaking_GetNumLobbyMembers(steamworks.matchmaking_ptr, steamIDLobby) end
-function steamworks.matchmaking.GetLobbyMemberByIndex(steamIDLobby, iMember) return lib.SteamAPI_ISteamMatchmaking_GetLobbyMemberByIndex(steamworks.matchmaking_ptr, steamIDLobby, iMember) end
-function steamworks.matchmaking.GetLobbyData(steamIDLobby, pchKey)local str = lib.SteamAPI_ISteamMatchmaking_GetLobbyData(steamworks.matchmaking_ptr, steamIDLobby, pchKey) if str ~= nil then return ffi.string(str) end end
-function steamworks.matchmaking.SetLobbyData(steamIDLobby, pchKey, pchValue) return lib.SteamAPI_ISteamMatchmaking_SetLobbyData(steamworks.matchmaking_ptr, steamIDLobby, pchKey, pchValue) end
-function steamworks.matchmaking.GetLobbyDataCount(steamIDLobby) return lib.SteamAPI_ISteamMatchmaking_GetLobbyDataCount(steamworks.matchmaking_ptr, steamIDLobby) end
-function steamworks.matchmaking.GetLobbyDataByIndex(steamIDLobby, iLobbyData, pchKey, cchKeyBufferSize, pchValue, cchValueBufferSize) return lib.SteamAPI_ISteamMatchmaking_GetLobbyDataByIndex(steamworks.matchmaking_ptr, steamIDLobby, iLobbyData, pchKey, cchKeyBufferSize, pchValue, cchValueBufferSize) end
-function steamworks.matchmaking.DeleteLobbyData(steamIDLobby, pchKey) return lib.SteamAPI_ISteamMatchmaking_DeleteLobbyData(steamworks.matchmaking_ptr, steamIDLobby, pchKey) end
-function steamworks.matchmaking.GetLobbyMemberData(steamIDLobby, steamIDUser, pchKey)local str = lib.SteamAPI_ISteamMatchmaking_GetLobbyMemberData(steamworks.matchmaking_ptr, steamIDLobby, steamIDUser, pchKey) if str ~= nil then return ffi.string(str) end end
-function steamworks.matchmaking.SetLobbyMemberData(steamIDLobby, pchKey, pchValue) return lib.SteamAPI_ISteamMatchmaking_SetLobbyMemberData(steamworks.matchmaking_ptr, steamIDLobby, pchKey, pchValue) end
-function steamworks.matchmaking.SendLobbyChatMsg(steamIDLobby, pvMsgBody, cubMsgBody) return lib.SteamAPI_ISteamMatchmaking_SendLobbyChatMsg(steamworks.matchmaking_ptr, steamIDLobby, pvMsgBody, cubMsgBody) end
-function steamworks.matchmaking.GetLobbyChatEntry(steamIDLobby, iChatID, pSteamIDUser, pvData, cubData, peChatEntryType) return lib.SteamAPI_ISteamMatchmaking_GetLobbyChatEntry(steamworks.matchmaking_ptr, steamIDLobby, iChatID, pSteamIDUser, pvData, cubData, peChatEntryType) end
-function steamworks.matchmaking.RequestLobbyData(steamIDLobby) return lib.SteamAPI_ISteamMatchmaking_RequestLobbyData(steamworks.matchmaking_ptr, steamIDLobby) end
-function steamworks.matchmaking.SetLobbyGameServer(steamIDLobby, unGameServerIP, unGameServerPort, steamIDGameServer) return lib.SteamAPI_ISteamMatchmaking_SetLobbyGameServer(steamworks.matchmaking_ptr, steamIDLobby, unGameServerIP, unGameServerPort, steamIDGameServer) end
-function steamworks.matchmaking.GetLobbyGameServer(steamIDLobby, punGameServerIP, punGameServerPort, psteamIDGameServer) return lib.SteamAPI_ISteamMatchmaking_GetLobbyGameServer(steamworks.matchmaking_ptr, steamIDLobby, punGameServerIP, punGameServerPort, psteamIDGameServer) end
-function steamworks.matchmaking.SetLobbyMemberLimit(steamIDLobby, cMaxMembers) return lib.SteamAPI_ISteamMatchmaking_SetLobbyMemberLimit(steamworks.matchmaking_ptr, steamIDLobby, cMaxMembers) end
-function steamworks.matchmaking.GetLobbyMemberLimit(steamIDLobby) return lib.SteamAPI_ISteamMatchmaking_GetLobbyMemberLimit(steamworks.matchmaking_ptr, steamIDLobby) end
-function steamworks.matchmaking.SetLobbyType(steamIDLobby, eLobbyType) return lib.SteamAPI_ISteamMatchmaking_SetLobbyType(steamworks.matchmaking_ptr, steamIDLobby, eLobbyType) end
-function steamworks.matchmaking.SetLobbyJoinable(steamIDLobby, bLobbyJoinable) return lib.SteamAPI_ISteamMatchmaking_SetLobbyJoinable(steamworks.matchmaking_ptr, steamIDLobby, bLobbyJoinable) end
-function steamworks.matchmaking.GetLobbyOwner(steamIDLobby) return lib.SteamAPI_ISteamMatchmaking_GetLobbyOwner(steamworks.matchmaking_ptr, steamIDLobby) end
-function steamworks.matchmaking.SetLobbyOwner(steamIDLobby, steamIDNewOwner) return lib.SteamAPI_ISteamMatchmaking_SetLobbyOwner(steamworks.matchmaking_ptr, steamIDLobby, steamIDNewOwner) end
-function steamworks.matchmaking.SetLinkedLobby(steamIDLobby, steamIDLobbyDependent) return lib.SteamAPI_ISteamMatchmaking_SetLinkedLobby(steamworks.matchmaking_ptr, steamIDLobby, steamIDLobbyDependent) end
-steamworks.client = {}
+if not lib.SteamAPI_Init() then
+	error("failed to initialize steamworks")
+end
+
+
 steamworks.client_ptr = lib.SteamClient()
-function steamworks.client.CreateSteamPipe() return lib.SteamAPI_ISteamClient_CreateSteamPipe(steamworks.client_ptr) end
-function steamworks.client.BReleaseSteamPipe(hSteamPipe) return lib.SteamAPI_ISteamClient_BReleaseSteamPipe(steamworks.client_ptr, hSteamPipe) end
-function steamworks.client.ConnectToGlobalUser(hSteamPipe) return lib.SteamAPI_ISteamClient_ConnectToGlobalUser(steamworks.client_ptr, hSteamPipe) end
-function steamworks.client.CreateLocalUser(phSteamPipe, eAccountType) return lib.SteamAPI_ISteamClient_CreateLocalUser(steamworks.client_ptr, phSteamPipe, eAccountType) end
-function steamworks.client.ReleaseUser(hSteamPipe, hUser) return lib.SteamAPI_ISteamClient_ReleaseUser(steamworks.client_ptr, hSteamPipe, hUser) end
-function steamworks.client.GetISteamUser(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamUser(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamGameServer(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamGameServer(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
-function steamworks.client.SetLocalIPBinding(unIP, usPort) return lib.SteamAPI_ISteamClient_SetLocalIPBinding(steamworks.client_ptr, unIP, usPort) end
-function steamworks.client.GetISteamFriends(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamFriends(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamUtils(hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamUtils(steamworks.client_ptr, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamMatchmaking(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamMatchmaking(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamMatchmakingServers(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamMatchmakingServers(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamGenericInterface(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamGenericInterface(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamUserStats(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamUserStats(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamGameServerStats(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamGameServerStats(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamApps(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamApps(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamNetworking(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamNetworking(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamRemoteStorage(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamRemoteStorage(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamScreenshots(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamScreenshots(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
-function steamworks.client.GetIPCCallCount() return lib.SteamAPI_ISteamClient_GetIPCCallCount(steamworks.client_ptr) end
-function steamworks.client.SetWarningMessageHook(pFunction) return lib.SteamAPI_ISteamClient_SetWarningMessageHook(steamworks.client_ptr, pFunction) end
-function steamworks.client.BShutdownIfAllPipesClosed() return lib.SteamAPI_ISteamClient_BShutdownIfAllPipesClosed(steamworks.client_ptr) end
-function steamworks.client.GetISteamHTTP(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamHTTP(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamUnifiedMessages(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamUnifiedMessages(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamController(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamController(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamUGC(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamUGC(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamAppList(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamAppList(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamMusic(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamMusic(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamMusicRemote(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamMusicRemote(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamHTMLSurface(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamHTMLSurface(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamInventory(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamInventory(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
-function steamworks.client.GetISteamVideo(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamVideo(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
+if steamworks.client_ptr == nil then error("SteamClient() returns NULL") end
+steamworks.pipe_ptr = lib.SteamAPI_ISteamClient_CreateSteamPipe(steamworks.client_ptr)
+if steamworks.pipe_ptr == nil then error("SteamAPI_ISteamClient_CreateSteamPipe() returns NULL") end
+steamworks.steam_user_ptr = lib.SteamAPI_ISteamClient_ConnectToGlobalUser(steamworks.client_ptr, steamworks.pipe_ptr)
+if steamworks.steam_user_ptr == nil then error("SteamAPI_ISteamClient_ConnectToGlobalUser() returns NULL") end
+
+
+steamworks.unifiedmessages = {}
+steamworks.unifiedmessages_ptr = lib.SteamAPI_ISteamClient_GetISteamUnifiedMessages(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, 'STEAMUNIFIEDMESSAGES_INTERFACE_VERSION001')
+if steamworks.unifiedmessages_ptr == nil then
+	 print('steamworks.lua: failed to load unifiedmessages STEAMUNIFIEDMESSAGES_INTERFACE_VERSION001')
+else
+	function steamworks.unifiedmessages.SendMethod(pchServiceMethod, pRequestBuffer, unRequestBufferSize, unContext) return lib.SteamAPI_ISteamUnifiedMessages_SendMethod(steamworks.unifiedmessages_ptr, pchServiceMethod, pRequestBuffer, unRequestBufferSize, unContext) end
+	function steamworks.unifiedmessages.GetMethodResponseInfo(hHandle, punResponseSize, peResult) return lib.SteamAPI_ISteamUnifiedMessages_GetMethodResponseInfo(steamworks.unifiedmessages_ptr, hHandle, punResponseSize, peResult) end
+	function steamworks.unifiedmessages.GetMethodResponseData(hHandle, pResponseBuffer, unResponseBufferSize, bAutoRelease) return lib.SteamAPI_ISteamUnifiedMessages_GetMethodResponseData(steamworks.unifiedmessages_ptr, hHandle, pResponseBuffer, unResponseBufferSize, bAutoRelease) end
+	function steamworks.unifiedmessages.ReleaseMethod(hHandle) return lib.SteamAPI_ISteamUnifiedMessages_ReleaseMethod(steamworks.unifiedmessages_ptr, hHandle) end
+	function steamworks.unifiedmessages.SendNotification(pchServiceNotification, pNotificationBuffer, unNotificationBufferSize) return lib.SteamAPI_ISteamUnifiedMessages_SendNotification(steamworks.unifiedmessages_ptr, pchServiceNotification, pNotificationBuffer, unNotificationBufferSize) end
+end
+steamworks.friends = {}
+steamworks.friends_ptr = lib.SteamAPI_ISteamClient_GetISteamFriends(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, 'SteamFriends015')
+if steamworks.friends_ptr == nil then
+	 print('steamworks.lua: failed to load friends SteamFriends015')
+else
+	function steamworks.friends.GetPersonaName()local str = lib.SteamAPI_ISteamFriends_GetPersonaName(steamworks.friends_ptr) if str ~= nil then return ffi.string(str) end end
+	function steamworks.friends.SetPersonaName(pchPersonaName) return lib.SteamAPI_ISteamFriends_SetPersonaName(steamworks.friends_ptr, pchPersonaName) end
+	function steamworks.friends.GetPersonaState() return lib.SteamAPI_ISteamFriends_GetPersonaState(steamworks.friends_ptr) end
+	function steamworks.friends.GetFriendCount(iFriendFlags) return lib.SteamAPI_ISteamFriends_GetFriendCount(steamworks.friends_ptr, iFriendFlags) end
+	function steamworks.friends.GetFriendByIndex(iFriend, iFriendFlags) return lib.SteamAPI_ISteamFriends_GetFriendByIndex(steamworks.friends_ptr, iFriend, iFriendFlags) end
+	function steamworks.friends.GetFriendRelationship(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetFriendRelationship(steamworks.friends_ptr, steamIDFriend) end
+	function steamworks.friends.GetFriendPersonaState(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetFriendPersonaState(steamworks.friends_ptr, steamIDFriend) end
+	function steamworks.friends.GetFriendPersonaName(steamIDFriend)local str = lib.SteamAPI_ISteamFriends_GetFriendPersonaName(steamworks.friends_ptr, steamIDFriend) if str ~= nil then return ffi.string(str) end end
+	function steamworks.friends.GetFriendGamePlayed(steamIDFriend, pFriendGameInfo) return lib.SteamAPI_ISteamFriends_GetFriendGamePlayed(steamworks.friends_ptr, steamIDFriend, pFriendGameInfo) end
+	function steamworks.friends.GetFriendPersonaNameHistory(steamIDFriend, iPersonaName)local str = lib.SteamAPI_ISteamFriends_GetFriendPersonaNameHistory(steamworks.friends_ptr, steamIDFriend, iPersonaName) if str ~= nil then return ffi.string(str) end end
+	function steamworks.friends.GetFriendSteamLevel(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetFriendSteamLevel(steamworks.friends_ptr, steamIDFriend) end
+	function steamworks.friends.GetPlayerNickname(steamIDPlayer)local str = lib.SteamAPI_ISteamFriends_GetPlayerNickname(steamworks.friends_ptr, steamIDPlayer) if str ~= nil then return ffi.string(str) end end
+	function steamworks.friends.GetFriendsGroupCount() return lib.SteamAPI_ISteamFriends_GetFriendsGroupCount(steamworks.friends_ptr) end
+	function steamworks.friends.GetFriendsGroupIDByIndex(iFG) return lib.SteamAPI_ISteamFriends_GetFriendsGroupIDByIndex(steamworks.friends_ptr, iFG) end
+	function steamworks.friends.GetFriendsGroupName(friendsGroupID)local str = lib.SteamAPI_ISteamFriends_GetFriendsGroupName(steamworks.friends_ptr, friendsGroupID) if str ~= nil then return ffi.string(str) end end
+	function steamworks.friends.GetFriendsGroupMembersCount(friendsGroupID) return lib.SteamAPI_ISteamFriends_GetFriendsGroupMembersCount(steamworks.friends_ptr, friendsGroupID) end
+	function steamworks.friends.GetFriendsGroupMembersList(friendsGroupID, pOutSteamIDMembers, nMembersCount) return lib.SteamAPI_ISteamFriends_GetFriendsGroupMembersList(steamworks.friends_ptr, friendsGroupID, pOutSteamIDMembers, nMembersCount) end
+	function steamworks.friends.HasFriend(steamIDFriend, iFriendFlags) return lib.SteamAPI_ISteamFriends_HasFriend(steamworks.friends_ptr, steamIDFriend, iFriendFlags) end
+	function steamworks.friends.GetClanCount() return lib.SteamAPI_ISteamFriends_GetClanCount(steamworks.friends_ptr) end
+	function steamworks.friends.GetClanByIndex(iClan) return lib.SteamAPI_ISteamFriends_GetClanByIndex(steamworks.friends_ptr, iClan) end
+	function steamworks.friends.GetClanName(steamIDClan)local str = lib.SteamAPI_ISteamFriends_GetClanName(steamworks.friends_ptr, steamIDClan) if str ~= nil then return ffi.string(str) end end
+	function steamworks.friends.GetClanTag(steamIDClan)local str = lib.SteamAPI_ISteamFriends_GetClanTag(steamworks.friends_ptr, steamIDClan) if str ~= nil then return ffi.string(str) end end
+	function steamworks.friends.GetClanActivityCounts(steamIDClan, pnOnline, pnInGame, pnChatting) return lib.SteamAPI_ISteamFriends_GetClanActivityCounts(steamworks.friends_ptr, steamIDClan, pnOnline, pnInGame, pnChatting) end
+	function steamworks.friends.DownloadClanActivityCounts(psteamIDClans, cClansToRequest) return lib.SteamAPI_ISteamFriends_DownloadClanActivityCounts(steamworks.friends_ptr, psteamIDClans, cClansToRequest) end
+	function steamworks.friends.GetFriendCountFromSource(steamIDSource) return lib.SteamAPI_ISteamFriends_GetFriendCountFromSource(steamworks.friends_ptr, steamIDSource) end
+	function steamworks.friends.GetFriendFromSourceByIndex(steamIDSource, iFriend) return lib.SteamAPI_ISteamFriends_GetFriendFromSourceByIndex(steamworks.friends_ptr, steamIDSource, iFriend) end
+	function steamworks.friends.IsUserInSource(steamIDUser, steamIDSource) return lib.SteamAPI_ISteamFriends_IsUserInSource(steamworks.friends_ptr, steamIDUser, steamIDSource) end
+	function steamworks.friends.SetInGameVoiceSpeaking(steamIDUser, bSpeaking) return lib.SteamAPI_ISteamFriends_SetInGameVoiceSpeaking(steamworks.friends_ptr, steamIDUser, bSpeaking) end
+	function steamworks.friends.ActivateGameOverlay(pchDialog) return lib.SteamAPI_ISteamFriends_ActivateGameOverlay(steamworks.friends_ptr, pchDialog) end
+	function steamworks.friends.ActivateGameOverlayToUser(pchDialog, steamID) return lib.SteamAPI_ISteamFriends_ActivateGameOverlayToUser(steamworks.friends_ptr, pchDialog, steamID) end
+	function steamworks.friends.ActivateGameOverlayToWebPage(pchURL) return lib.SteamAPI_ISteamFriends_ActivateGameOverlayToWebPage(steamworks.friends_ptr, pchURL) end
+	function steamworks.friends.ActivateGameOverlayToStore(nAppID, eFlag) return lib.SteamAPI_ISteamFriends_ActivateGameOverlayToStore(steamworks.friends_ptr, nAppID, eFlag) end
+	function steamworks.friends.SetPlayedWith(steamIDUserPlayedWith) return lib.SteamAPI_ISteamFriends_SetPlayedWith(steamworks.friends_ptr, steamIDUserPlayedWith) end
+	function steamworks.friends.ActivateGameOverlayInviteDialog(steamIDLobby) return lib.SteamAPI_ISteamFriends_ActivateGameOverlayInviteDialog(steamworks.friends_ptr, steamIDLobby) end
+	function steamworks.friends.GetSmallFriendAvatar(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetSmallFriendAvatar(steamworks.friends_ptr, steamIDFriend) end
+	function steamworks.friends.GetMediumFriendAvatar(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetMediumFriendAvatar(steamworks.friends_ptr, steamIDFriend) end
+	function steamworks.friends.GetLargeFriendAvatar(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetLargeFriendAvatar(steamworks.friends_ptr, steamIDFriend) end
+	function steamworks.friends.RequestUserInformation(steamIDUser, bRequireNameOnly) return lib.SteamAPI_ISteamFriends_RequestUserInformation(steamworks.friends_ptr, steamIDUser, bRequireNameOnly) end
+	function steamworks.friends.RequestClanOfficerList(steamIDClan) return lib.SteamAPI_ISteamFriends_RequestClanOfficerList(steamworks.friends_ptr, steamIDClan) end
+	function steamworks.friends.GetClanOwner(steamIDClan) return lib.SteamAPI_ISteamFriends_GetClanOwner(steamworks.friends_ptr, steamIDClan) end
+	function steamworks.friends.GetClanOfficerCount(steamIDClan) return lib.SteamAPI_ISteamFriends_GetClanOfficerCount(steamworks.friends_ptr, steamIDClan) end
+	function steamworks.friends.GetClanOfficerByIndex(steamIDClan, iOfficer) return lib.SteamAPI_ISteamFriends_GetClanOfficerByIndex(steamworks.friends_ptr, steamIDClan, iOfficer) end
+	function steamworks.friends.GetUserRestrictions() return lib.SteamAPI_ISteamFriends_GetUserRestrictions(steamworks.friends_ptr) end
+	function steamworks.friends.SetRichPresence(pchKey, pchValue) return lib.SteamAPI_ISteamFriends_SetRichPresence(steamworks.friends_ptr, pchKey, pchValue) end
+	function steamworks.friends.ClearRichPresence() return lib.SteamAPI_ISteamFriends_ClearRichPresence(steamworks.friends_ptr) end
+	function steamworks.friends.GetFriendRichPresence(steamIDFriend, pchKey)local str = lib.SteamAPI_ISteamFriends_GetFriendRichPresence(steamworks.friends_ptr, steamIDFriend, pchKey) if str ~= nil then return ffi.string(str) end end
+	function steamworks.friends.GetFriendRichPresenceKeyCount(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetFriendRichPresenceKeyCount(steamworks.friends_ptr, steamIDFriend) end
+	function steamworks.friends.GetFriendRichPresenceKeyByIndex(steamIDFriend, iKey)local str = lib.SteamAPI_ISteamFriends_GetFriendRichPresenceKeyByIndex(steamworks.friends_ptr, steamIDFriend, iKey) if str ~= nil then return ffi.string(str) end end
+	function steamworks.friends.RequestFriendRichPresence(steamIDFriend) return lib.SteamAPI_ISteamFriends_RequestFriendRichPresence(steamworks.friends_ptr, steamIDFriend) end
+	function steamworks.friends.InviteUserToGame(steamIDFriend, pchConnectString) return lib.SteamAPI_ISteamFriends_InviteUserToGame(steamworks.friends_ptr, steamIDFriend, pchConnectString) end
+	function steamworks.friends.GetCoplayFriendCount() return lib.SteamAPI_ISteamFriends_GetCoplayFriendCount(steamworks.friends_ptr) end
+	function steamworks.friends.GetCoplayFriend(iCoplayFriend) return lib.SteamAPI_ISteamFriends_GetCoplayFriend(steamworks.friends_ptr, iCoplayFriend) end
+	function steamworks.friends.GetFriendCoplayTime(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetFriendCoplayTime(steamworks.friends_ptr, steamIDFriend) end
+	function steamworks.friends.GetFriendCoplayGame(steamIDFriend) return lib.SteamAPI_ISteamFriends_GetFriendCoplayGame(steamworks.friends_ptr, steamIDFriend) end
+	function steamworks.friends.JoinClanChatRoom(steamIDClan) return lib.SteamAPI_ISteamFriends_JoinClanChatRoom(steamworks.friends_ptr, steamIDClan) end
+	function steamworks.friends.LeaveClanChatRoom(steamIDClan) return lib.SteamAPI_ISteamFriends_LeaveClanChatRoom(steamworks.friends_ptr, steamIDClan) end
+	function steamworks.friends.GetClanChatMemberCount(steamIDClan) return lib.SteamAPI_ISteamFriends_GetClanChatMemberCount(steamworks.friends_ptr, steamIDClan) end
+	function steamworks.friends.GetChatMemberByIndex(steamIDClan, iUser) return lib.SteamAPI_ISteamFriends_GetChatMemberByIndex(steamworks.friends_ptr, steamIDClan, iUser) end
+	function steamworks.friends.SendClanChatMessage(steamIDClanChat, pchText) return lib.SteamAPI_ISteamFriends_SendClanChatMessage(steamworks.friends_ptr, steamIDClanChat, pchText) end
+	function steamworks.friends.GetClanChatMessage(steamIDClanChat, iMessage, prgchText, cchTextMax, peChatEntryType, psteamidChatter) return lib.SteamAPI_ISteamFriends_GetClanChatMessage(steamworks.friends_ptr, steamIDClanChat, iMessage, prgchText, cchTextMax, peChatEntryType, psteamidChatter) end
+	function steamworks.friends.IsClanChatAdmin(steamIDClanChat, steamIDUser) return lib.SteamAPI_ISteamFriends_IsClanChatAdmin(steamworks.friends_ptr, steamIDClanChat, steamIDUser) end
+	function steamworks.friends.IsClanChatWindowOpenInSteam(steamIDClanChat) return lib.SteamAPI_ISteamFriends_IsClanChatWindowOpenInSteam(steamworks.friends_ptr, steamIDClanChat) end
+	function steamworks.friends.OpenClanChatWindowInSteam(steamIDClanChat) return lib.SteamAPI_ISteamFriends_OpenClanChatWindowInSteam(steamworks.friends_ptr, steamIDClanChat) end
+	function steamworks.friends.CloseClanChatWindowInSteam(steamIDClanChat) return lib.SteamAPI_ISteamFriends_CloseClanChatWindowInSteam(steamworks.friends_ptr, steamIDClanChat) end
+	function steamworks.friends.SetListenForFriendsMessages(bInterceptEnabled) return lib.SteamAPI_ISteamFriends_SetListenForFriendsMessages(steamworks.friends_ptr, bInterceptEnabled) end
+	function steamworks.friends.ReplyToFriendMessage(steamIDFriend, pchMsgToSend) return lib.SteamAPI_ISteamFriends_ReplyToFriendMessage(steamworks.friends_ptr, steamIDFriend, pchMsgToSend) end
+	function steamworks.friends.GetFriendMessage(steamIDFriend, iMessageID, pvData, cubData, peChatEntryType) return lib.SteamAPI_ISteamFriends_GetFriendMessage(steamworks.friends_ptr, steamIDFriend, iMessageID, pvData, cubData, peChatEntryType) end
+	function steamworks.friends.GetFollowerCount(steamID) return lib.SteamAPI_ISteamFriends_GetFollowerCount(steamworks.friends_ptr, steamID) end
+	function steamworks.friends.IsFollowing(steamID) return lib.SteamAPI_ISteamFriends_IsFollowing(steamworks.friends_ptr, steamID) end
+	function steamworks.friends.EnumerateFollowingList(unStartIndex) return lib.SteamAPI_ISteamFriends_EnumerateFollowingList(steamworks.friends_ptr, unStartIndex) end
+end
+steamworks.networking = {}
+steamworks.networking_ptr = lib.SteamAPI_ISteamClient_GetISteamNetworking(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, 'SteamNetworking005')
+if steamworks.networking_ptr == nil then
+	 print('steamworks.lua: failed to load networking SteamNetworking005')
+else
+	function steamworks.networking.SendP2PPacket(steamIDRemote, pubData, cubData, eP2PSendType, nChannel) return lib.SteamAPI_ISteamNetworking_SendP2PPacket(steamworks.networking_ptr, steamIDRemote, pubData, cubData, eP2PSendType, nChannel) end
+	function steamworks.networking.IsP2PPacketAvailable(pcubMsgSize, nChannel) return lib.SteamAPI_ISteamNetworking_IsP2PPacketAvailable(steamworks.networking_ptr, pcubMsgSize, nChannel) end
+	function steamworks.networking.ReadP2PPacket(pubDest, cubDest, pcubMsgSize, psteamIDRemote, nChannel) return lib.SteamAPI_ISteamNetworking_ReadP2PPacket(steamworks.networking_ptr, pubDest, cubDest, pcubMsgSize, psteamIDRemote, nChannel) end
+	function steamworks.networking.AcceptP2PSessionWithUser(steamIDRemote) return lib.SteamAPI_ISteamNetworking_AcceptP2PSessionWithUser(steamworks.networking_ptr, steamIDRemote) end
+	function steamworks.networking.CloseP2PSessionWithUser(steamIDRemote) return lib.SteamAPI_ISteamNetworking_CloseP2PSessionWithUser(steamworks.networking_ptr, steamIDRemote) end
+	function steamworks.networking.CloseP2PChannelWithUser(steamIDRemote, nChannel) return lib.SteamAPI_ISteamNetworking_CloseP2PChannelWithUser(steamworks.networking_ptr, steamIDRemote, nChannel) end
+	function steamworks.networking.GetP2PSessionState(steamIDRemote, pConnectionState) return lib.SteamAPI_ISteamNetworking_GetP2PSessionState(steamworks.networking_ptr, steamIDRemote, pConnectionState) end
+	function steamworks.networking.AllowP2PPacketRelay(bAllow) return lib.SteamAPI_ISteamNetworking_AllowP2PPacketRelay(steamworks.networking_ptr, bAllow) end
+	function steamworks.networking.CreateListenSocket(nVirtualP2PPort, nIP, nPort, bAllowUseOfPacketRelay) return lib.SteamAPI_ISteamNetworking_CreateListenSocket(steamworks.networking_ptr, nVirtualP2PPort, nIP, nPort, bAllowUseOfPacketRelay) end
+	function steamworks.networking.CreateP2PConnectionSocket(steamIDTarget, nVirtualPort, nTimeoutSec, bAllowUseOfPacketRelay) return lib.SteamAPI_ISteamNetworking_CreateP2PConnectionSocket(steamworks.networking_ptr, steamIDTarget, nVirtualPort, nTimeoutSec, bAllowUseOfPacketRelay) end
+	function steamworks.networking.CreateConnectionSocket(nIP, nPort, nTimeoutSec) return lib.SteamAPI_ISteamNetworking_CreateConnectionSocket(steamworks.networking_ptr, nIP, nPort, nTimeoutSec) end
+	function steamworks.networking.DestroySocket(hSocket, bNotifyRemoteEnd) return lib.SteamAPI_ISteamNetworking_DestroySocket(steamworks.networking_ptr, hSocket, bNotifyRemoteEnd) end
+	function steamworks.networking.DestroyListenSocket(hSocket, bNotifyRemoteEnd) return lib.SteamAPI_ISteamNetworking_DestroyListenSocket(steamworks.networking_ptr, hSocket, bNotifyRemoteEnd) end
+	function steamworks.networking.SendDataOnSocket(hSocket, pubData, cubData, bReliable) return lib.SteamAPI_ISteamNetworking_SendDataOnSocket(steamworks.networking_ptr, hSocket, pubData, cubData, bReliable) end
+	function steamworks.networking.IsDataAvailableOnSocket(hSocket, pcubMsgSize) return lib.SteamAPI_ISteamNetworking_IsDataAvailableOnSocket(steamworks.networking_ptr, hSocket, pcubMsgSize) end
+	function steamworks.networking.RetrieveDataFromSocket(hSocket, pubDest, cubDest, pcubMsgSize) return lib.SteamAPI_ISteamNetworking_RetrieveDataFromSocket(steamworks.networking_ptr, hSocket, pubDest, cubDest, pcubMsgSize) end
+	function steamworks.networking.IsDataAvailable(hListenSocket, pcubMsgSize, phSocket) return lib.SteamAPI_ISteamNetworking_IsDataAvailable(steamworks.networking_ptr, hListenSocket, pcubMsgSize, phSocket) end
+	function steamworks.networking.RetrieveData(hListenSocket, pubDest, cubDest, pcubMsgSize, phSocket) return lib.SteamAPI_ISteamNetworking_RetrieveData(steamworks.networking_ptr, hListenSocket, pubDest, cubDest, pcubMsgSize, phSocket) end
+	function steamworks.networking.GetSocketInfo(hSocket, pSteamIDRemote, peSocketStatus, punIPRemote, punPortRemote) return lib.SteamAPI_ISteamNetworking_GetSocketInfo(steamworks.networking_ptr, hSocket, pSteamIDRemote, peSocketStatus, punIPRemote, punPortRemote) end
+	function steamworks.networking.GetListenSocketInfo(hListenSocket, pnIP, pnPort) return lib.SteamAPI_ISteamNetworking_GetListenSocketInfo(steamworks.networking_ptr, hListenSocket, pnIP, pnPort) end
+	function steamworks.networking.GetSocketConnectionType(hSocket) return lib.SteamAPI_ISteamNetworking_GetSocketConnectionType(steamworks.networking_ptr, hSocket) end
+	function steamworks.networking.GetMaxPacketSize(hSocket) return lib.SteamAPI_ISteamNetworking_GetMaxPacketSize(steamworks.networking_ptr, hSocket) end
+end
+steamworks.controller = {}
+steamworks.controller_ptr = lib.SteamAPI_ISteamClient_GetISteamController(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, 'SteamController005')
+if steamworks.controller_ptr == nil then
+	 print('steamworks.lua: failed to load controller SteamController005')
+else
+	function steamworks.controller.Init() return lib.SteamAPI_ISteamController_Init(steamworks.controller_ptr) end
+	function steamworks.controller.Shutdown() return lib.SteamAPI_ISteamController_Shutdown(steamworks.controller_ptr) end
+	function steamworks.controller.RunFrame() return lib.SteamAPI_ISteamController_RunFrame(steamworks.controller_ptr) end
+	function steamworks.controller.GetConnectedControllers(handlesOut) return lib.SteamAPI_ISteamController_GetConnectedControllers(steamworks.controller_ptr, handlesOut) end
+	function steamworks.controller.ShowBindingPanel(controllerHandle) return lib.SteamAPI_ISteamController_ShowBindingPanel(steamworks.controller_ptr, controllerHandle) end
+	function steamworks.controller.GetActionSetHandle(pszActionSetName) return lib.SteamAPI_ISteamController_GetActionSetHandle(steamworks.controller_ptr, pszActionSetName) end
+	function steamworks.controller.ActivateActionSet(controllerHandle, actionSetHandle) return lib.SteamAPI_ISteamController_ActivateActionSet(steamworks.controller_ptr, controllerHandle, actionSetHandle) end
+	function steamworks.controller.GetCurrentActionSet(controllerHandle) return lib.SteamAPI_ISteamController_GetCurrentActionSet(steamworks.controller_ptr, controllerHandle) end
+	function steamworks.controller.GetDigitalActionHandle(pszActionName) return lib.SteamAPI_ISteamController_GetDigitalActionHandle(steamworks.controller_ptr, pszActionName) end
+	function steamworks.controller.GetDigitalActionData(controllerHandle, digitalActionHandle) return lib.SteamAPI_ISteamController_GetDigitalActionData(steamworks.controller_ptr, controllerHandle, digitalActionHandle) end
+	function steamworks.controller.GetDigitalActionOrigins(controllerHandle, actionSetHandle, digitalActionHandle, originsOut) return lib.SteamAPI_ISteamController_GetDigitalActionOrigins(steamworks.controller_ptr, controllerHandle, actionSetHandle, digitalActionHandle, originsOut) end
+	function steamworks.controller.GetAnalogActionHandle(pszActionName) return lib.SteamAPI_ISteamController_GetAnalogActionHandle(steamworks.controller_ptr, pszActionName) end
+	function steamworks.controller.GetAnalogActionData(controllerHandle, analogActionHandle) return lib.SteamAPI_ISteamController_GetAnalogActionData(steamworks.controller_ptr, controllerHandle, analogActionHandle) end
+	function steamworks.controller.GetAnalogActionOrigins(controllerHandle, actionSetHandle, analogActionHandle, originsOut) return lib.SteamAPI_ISteamController_GetAnalogActionOrigins(steamworks.controller_ptr, controllerHandle, actionSetHandle, analogActionHandle, originsOut) end
+	function steamworks.controller.StopAnalogActionMomentum(controllerHandle, eAction) return lib.SteamAPI_ISteamController_StopAnalogActionMomentum(steamworks.controller_ptr, controllerHandle, eAction) end
+	function steamworks.controller.TriggerHapticPulse(controllerHandle, eTargetPad, usDurationMicroSec) return lib.SteamAPI_ISteamController_TriggerHapticPulse(steamworks.controller_ptr, controllerHandle, eTargetPad, usDurationMicroSec) end
+	function steamworks.controller.TriggerRepeatedHapticPulse(controllerHandle, eTargetPad, usDurationMicroSec, usOffMicroSec, unRepeat, nFlags) return lib.SteamAPI_ISteamController_TriggerRepeatedHapticPulse(steamworks.controller_ptr, controllerHandle, eTargetPad, usDurationMicroSec, usOffMicroSec, unRepeat, nFlags) end
+	function steamworks.controller.TriggerVibration(controllerHandle, usLeftSpeed, usRightSpeed) return lib.SteamAPI_ISteamController_TriggerVibration(steamworks.controller_ptr, controllerHandle, usLeftSpeed, usRightSpeed) end
+	function steamworks.controller.SetLEDColor(controllerHandle, nColorR, nColorG, nColorB, nFlags) return lib.SteamAPI_ISteamController_SetLEDColor(steamworks.controller_ptr, controllerHandle, nColorR, nColorG, nColorB, nFlags) end
+	function steamworks.controller.GetGamepadIndexForController(ulControllerHandle) return lib.SteamAPI_ISteamController_GetGamepadIndexForController(steamworks.controller_ptr, ulControllerHandle) end
+	function steamworks.controller.GetControllerForGamepadIndex(nIndex) return lib.SteamAPI_ISteamController_GetControllerForGamepadIndex(steamworks.controller_ptr, nIndex) end
+	function steamworks.controller.GetMotionData(controllerHandle) return lib.SteamAPI_ISteamController_GetMotionData(steamworks.controller_ptr, controllerHandle) end
+	function steamworks.controller.ShowDigitalActionOrigins(controllerHandle, digitalActionHandle, flScale, flXPosition, flYPosition) return lib.SteamAPI_ISteamController_ShowDigitalActionOrigins(steamworks.controller_ptr, controllerHandle, digitalActionHandle, flScale, flXPosition, flYPosition) end
+	function steamworks.controller.ShowAnalogActionOrigins(controllerHandle, analogActionHandle, flScale, flXPosition, flYPosition) return lib.SteamAPI_ISteamController_ShowAnalogActionOrigins(steamworks.controller_ptr, controllerHandle, analogActionHandle, flScale, flXPosition, flYPosition) end
+	function steamworks.controller.GetStringForActionOrigin(eOrigin)local str = lib.SteamAPI_ISteamController_GetStringForActionOrigin(steamworks.controller_ptr, eOrigin) if str ~= nil then return ffi.string(str) end end
+	function steamworks.controller.GetGlyphForActionOrigin(eOrigin)local str = lib.SteamAPI_ISteamController_GetGlyphForActionOrigin(steamworks.controller_ptr, eOrigin) if str ~= nil then return ffi.string(str) end end
+end
+steamworks.matchmakingservers = {}
+steamworks.matchmakingservers_ptr = lib.SteamAPI_ISteamClient_GetISteamMatchmakingServers(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, 'SteamMatchMakingServers002')
+if steamworks.matchmakingservers_ptr == nil then
+	 print('steamworks.lua: failed to load matchmakingservers SteamMatchMakingServers002')
+else
+	function steamworks.matchmakingservers.RequestInternetServerList(iApp, ppchFilters, nFilters, pRequestServersResponse) return lib.SteamAPI_ISteamMatchmakingServers_RequestInternetServerList(steamworks.matchmakingservers_ptr, iApp, ppchFilters, nFilters, pRequestServersResponse) end
+	function steamworks.matchmakingservers.RequestLANServerList(iApp, pRequestServersResponse) return lib.SteamAPI_ISteamMatchmakingServers_RequestLANServerList(steamworks.matchmakingservers_ptr, iApp, pRequestServersResponse) end
+	function steamworks.matchmakingservers.RequestFriendsServerList(iApp, ppchFilters, nFilters, pRequestServersResponse) return lib.SteamAPI_ISteamMatchmakingServers_RequestFriendsServerList(steamworks.matchmakingservers_ptr, iApp, ppchFilters, nFilters, pRequestServersResponse) end
+	function steamworks.matchmakingservers.RequestFavoritesServerList(iApp, ppchFilters, nFilters, pRequestServersResponse) return lib.SteamAPI_ISteamMatchmakingServers_RequestFavoritesServerList(steamworks.matchmakingservers_ptr, iApp, ppchFilters, nFilters, pRequestServersResponse) end
+	function steamworks.matchmakingservers.RequestHistoryServerList(iApp, ppchFilters, nFilters, pRequestServersResponse) return lib.SteamAPI_ISteamMatchmakingServers_RequestHistoryServerList(steamworks.matchmakingservers_ptr, iApp, ppchFilters, nFilters, pRequestServersResponse) end
+	function steamworks.matchmakingservers.RequestSpectatorServerList(iApp, ppchFilters, nFilters, pRequestServersResponse) return lib.SteamAPI_ISteamMatchmakingServers_RequestSpectatorServerList(steamworks.matchmakingservers_ptr, iApp, ppchFilters, nFilters, pRequestServersResponse) end
+	function steamworks.matchmakingservers.ReleaseRequest(hServerListRequest) return lib.SteamAPI_ISteamMatchmakingServers_ReleaseRequest(steamworks.matchmakingservers_ptr, hServerListRequest) end
+	function steamworks.matchmakingservers.GetServerDetails(hRequest, iServer) return lib.SteamAPI_ISteamMatchmakingServers_GetServerDetails(steamworks.matchmakingservers_ptr, hRequest, iServer) end
+	function steamworks.matchmakingservers.CancelQuery(hRequest) return lib.SteamAPI_ISteamMatchmakingServers_CancelQuery(steamworks.matchmakingservers_ptr, hRequest) end
+	function steamworks.matchmakingservers.RefreshQuery(hRequest) return lib.SteamAPI_ISteamMatchmakingServers_RefreshQuery(steamworks.matchmakingservers_ptr, hRequest) end
+	function steamworks.matchmakingservers.IsRefreshing(hRequest) return lib.SteamAPI_ISteamMatchmakingServers_IsRefreshing(steamworks.matchmakingservers_ptr, hRequest) end
+	function steamworks.matchmakingservers.GetServerCount(hRequest) return lib.SteamAPI_ISteamMatchmakingServers_GetServerCount(steamworks.matchmakingservers_ptr, hRequest) end
+	function steamworks.matchmakingservers.RefreshServer(hRequest, iServer) return lib.SteamAPI_ISteamMatchmakingServers_RefreshServer(steamworks.matchmakingservers_ptr, hRequest, iServer) end
+	function steamworks.matchmakingservers.PingServer(unIP, usPort, pRequestServersResponse) return lib.SteamAPI_ISteamMatchmakingServers_PingServer(steamworks.matchmakingservers_ptr, unIP, usPort, pRequestServersResponse) end
+	function steamworks.matchmakingservers.PlayerDetails(unIP, usPort, pRequestServersResponse) return lib.SteamAPI_ISteamMatchmakingServers_PlayerDetails(steamworks.matchmakingservers_ptr, unIP, usPort, pRequestServersResponse) end
+	function steamworks.matchmakingservers.ServerRules(unIP, usPort, pRequestServersResponse) return lib.SteamAPI_ISteamMatchmakingServers_ServerRules(steamworks.matchmakingservers_ptr, unIP, usPort, pRequestServersResponse) end
+	function steamworks.matchmakingservers.CancelServerQuery(hServerQuery) return lib.SteamAPI_ISteamMatchmakingServers_CancelServerQuery(steamworks.matchmakingservers_ptr, hServerQuery) end
+end
+steamworks.userstats = {}
+steamworks.userstats_ptr = lib.SteamAPI_ISteamClient_GetISteamUserStats(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, 'STEAMUSERSTATS_INTERFACE_VERSION011')
+if steamworks.userstats_ptr == nil then
+	 print('steamworks.lua: failed to load userstats STEAMUSERSTATS_INTERFACE_VERSION011')
+else
+	function steamworks.userstats.RequestCurrentStats() return lib.SteamAPI_ISteamUserStats_RequestCurrentStats(steamworks.userstats_ptr) end
+	function steamworks.userstats.GetStat(pchName, pData) return lib.SteamAPI_ISteamUserStats_GetStat(steamworks.userstats_ptr, pchName, pData) end
+	function steamworks.userstats.GetStat(pchName, pData) return lib.SteamAPI_ISteamUserStats_GetStat(steamworks.userstats_ptr, pchName, pData) end
+	function steamworks.userstats.SetStat(pchName, nData) return lib.SteamAPI_ISteamUserStats_SetStat(steamworks.userstats_ptr, pchName, nData) end
+	function steamworks.userstats.SetStat(pchName, fData) return lib.SteamAPI_ISteamUserStats_SetStat(steamworks.userstats_ptr, pchName, fData) end
+	function steamworks.userstats.UpdateAvgRateStat(pchName, flCountThisSession, dSessionLength) return lib.SteamAPI_ISteamUserStats_UpdateAvgRateStat(steamworks.userstats_ptr, pchName, flCountThisSession, dSessionLength) end
+	function steamworks.userstats.GetAchievement(pchName, pbAchieved) return lib.SteamAPI_ISteamUserStats_GetAchievement(steamworks.userstats_ptr, pchName, pbAchieved) end
+	function steamworks.userstats.SetAchievement(pchName) return lib.SteamAPI_ISteamUserStats_SetAchievement(steamworks.userstats_ptr, pchName) end
+	function steamworks.userstats.ClearAchievement(pchName) return lib.SteamAPI_ISteamUserStats_ClearAchievement(steamworks.userstats_ptr, pchName) end
+	function steamworks.userstats.GetAchievementAndUnlockTime(pchName, pbAchieved, punUnlockTime) return lib.SteamAPI_ISteamUserStats_GetAchievementAndUnlockTime(steamworks.userstats_ptr, pchName, pbAchieved, punUnlockTime) end
+	function steamworks.userstats.StoreStats() return lib.SteamAPI_ISteamUserStats_StoreStats(steamworks.userstats_ptr) end
+	function steamworks.userstats.GetAchievementIcon(pchName) return lib.SteamAPI_ISteamUserStats_GetAchievementIcon(steamworks.userstats_ptr, pchName) end
+	function steamworks.userstats.GetAchievementDisplayAttribute(pchName, pchKey)local str = lib.SteamAPI_ISteamUserStats_GetAchievementDisplayAttribute(steamworks.userstats_ptr, pchName, pchKey) if str ~= nil then return ffi.string(str) end end
+	function steamworks.userstats.IndicateAchievementProgress(pchName, nCurProgress, nMaxProgress) return lib.SteamAPI_ISteamUserStats_IndicateAchievementProgress(steamworks.userstats_ptr, pchName, nCurProgress, nMaxProgress) end
+	function steamworks.userstats.GetNumAchievements() return lib.SteamAPI_ISteamUserStats_GetNumAchievements(steamworks.userstats_ptr) end
+	function steamworks.userstats.GetAchievementName(iAchievement)local str = lib.SteamAPI_ISteamUserStats_GetAchievementName(steamworks.userstats_ptr, iAchievement) if str ~= nil then return ffi.string(str) end end
+	function steamworks.userstats.RequestUserStats(steamIDUser) return lib.SteamAPI_ISteamUserStats_RequestUserStats(steamworks.userstats_ptr, steamIDUser) end
+	function steamworks.userstats.GetUserStat(steamIDUser, pchName, pData) return lib.SteamAPI_ISteamUserStats_GetUserStat(steamworks.userstats_ptr, steamIDUser, pchName, pData) end
+	function steamworks.userstats.GetUserStat(steamIDUser, pchName, pData) return lib.SteamAPI_ISteamUserStats_GetUserStat(steamworks.userstats_ptr, steamIDUser, pchName, pData) end
+	function steamworks.userstats.GetUserAchievement(steamIDUser, pchName, pbAchieved) return lib.SteamAPI_ISteamUserStats_GetUserAchievement(steamworks.userstats_ptr, steamIDUser, pchName, pbAchieved) end
+	function steamworks.userstats.GetUserAchievementAndUnlockTime(steamIDUser, pchName, pbAchieved, punUnlockTime) return lib.SteamAPI_ISteamUserStats_GetUserAchievementAndUnlockTime(steamworks.userstats_ptr, steamIDUser, pchName, pbAchieved, punUnlockTime) end
+	function steamworks.userstats.ResetAllStats(bAchievementsToo) return lib.SteamAPI_ISteamUserStats_ResetAllStats(steamworks.userstats_ptr, bAchievementsToo) end
+	function steamworks.userstats.FindOrCreateLeaderboard(pchLeaderboardName, eLeaderboardSortMethod, eLeaderboardDisplayType) return lib.SteamAPI_ISteamUserStats_FindOrCreateLeaderboard(steamworks.userstats_ptr, pchLeaderboardName, eLeaderboardSortMethod, eLeaderboardDisplayType) end
+	function steamworks.userstats.FindLeaderboard(pchLeaderboardName) return lib.SteamAPI_ISteamUserStats_FindLeaderboard(steamworks.userstats_ptr, pchLeaderboardName) end
+	function steamworks.userstats.GetLeaderboardName(hSteamLeaderboard)local str = lib.SteamAPI_ISteamUserStats_GetLeaderboardName(steamworks.userstats_ptr, hSteamLeaderboard) if str ~= nil then return ffi.string(str) end end
+	function steamworks.userstats.GetLeaderboardEntryCount(hSteamLeaderboard) return lib.SteamAPI_ISteamUserStats_GetLeaderboardEntryCount(steamworks.userstats_ptr, hSteamLeaderboard) end
+	function steamworks.userstats.GetLeaderboardSortMethod(hSteamLeaderboard) return lib.SteamAPI_ISteamUserStats_GetLeaderboardSortMethod(steamworks.userstats_ptr, hSteamLeaderboard) end
+	function steamworks.userstats.GetLeaderboardDisplayType(hSteamLeaderboard) return lib.SteamAPI_ISteamUserStats_GetLeaderboardDisplayType(steamworks.userstats_ptr, hSteamLeaderboard) end
+	function steamworks.userstats.DownloadLeaderboardEntries(hSteamLeaderboard, eLeaderboardDataRequest, nRangeStart, nRangeEnd) return lib.SteamAPI_ISteamUserStats_DownloadLeaderboardEntries(steamworks.userstats_ptr, hSteamLeaderboard, eLeaderboardDataRequest, nRangeStart, nRangeEnd) end
+	function steamworks.userstats.DownloadLeaderboardEntriesForUsers(hSteamLeaderboard, prgUsers, cUsers) return lib.SteamAPI_ISteamUserStats_DownloadLeaderboardEntriesForUsers(steamworks.userstats_ptr, hSteamLeaderboard, prgUsers, cUsers) end
+	function steamworks.userstats.GetDownloadedLeaderboardEntry(hSteamLeaderboardEntries, index, pLeaderboardEntry, pDetails, cDetailsMax) return lib.SteamAPI_ISteamUserStats_GetDownloadedLeaderboardEntry(steamworks.userstats_ptr, hSteamLeaderboardEntries, index, pLeaderboardEntry, pDetails, cDetailsMax) end
+	function steamworks.userstats.UploadLeaderboardScore(hSteamLeaderboard, eLeaderboardUploadScoreMethod, nScore, pScoreDetails, cScoreDetailsCount) return lib.SteamAPI_ISteamUserStats_UploadLeaderboardScore(steamworks.userstats_ptr, hSteamLeaderboard, eLeaderboardUploadScoreMethod, nScore, pScoreDetails, cScoreDetailsCount) end
+	function steamworks.userstats.AttachLeaderboardUGC(hSteamLeaderboard, hUGC) return lib.SteamAPI_ISteamUserStats_AttachLeaderboardUGC(steamworks.userstats_ptr, hSteamLeaderboard, hUGC) end
+	function steamworks.userstats.GetNumberOfCurrentPlayers() return lib.SteamAPI_ISteamUserStats_GetNumberOfCurrentPlayers(steamworks.userstats_ptr) end
+	function steamworks.userstats.RequestGlobalAchievementPercentages() return lib.SteamAPI_ISteamUserStats_RequestGlobalAchievementPercentages(steamworks.userstats_ptr) end
+	function steamworks.userstats.GetMostAchievedAchievementInfo(pchName, unNameBufLen, pflPercent, pbAchieved) return lib.SteamAPI_ISteamUserStats_GetMostAchievedAchievementInfo(steamworks.userstats_ptr, pchName, unNameBufLen, pflPercent, pbAchieved) end
+	function steamworks.userstats.GetNextMostAchievedAchievementInfo(iIteratorPrevious, pchName, unNameBufLen, pflPercent, pbAchieved) return lib.SteamAPI_ISteamUserStats_GetNextMostAchievedAchievementInfo(steamworks.userstats_ptr, iIteratorPrevious, pchName, unNameBufLen, pflPercent, pbAchieved) end
+	function steamworks.userstats.GetAchievementAchievedPercent(pchName, pflPercent) return lib.SteamAPI_ISteamUserStats_GetAchievementAchievedPercent(steamworks.userstats_ptr, pchName, pflPercent) end
+	function steamworks.userstats.RequestGlobalStats(nHistoryDays) return lib.SteamAPI_ISteamUserStats_RequestGlobalStats(steamworks.userstats_ptr, nHistoryDays) end
+	function steamworks.userstats.GetGlobalStat(pchStatName, pData) return lib.SteamAPI_ISteamUserStats_GetGlobalStat(steamworks.userstats_ptr, pchStatName, pData) end
+	function steamworks.userstats.GetGlobalStat(pchStatName, pData) return lib.SteamAPI_ISteamUserStats_GetGlobalStat(steamworks.userstats_ptr, pchStatName, pData) end
+	function steamworks.userstats.GetGlobalStatHistory(pchStatName, pData, cubData) return lib.SteamAPI_ISteamUserStats_GetGlobalStatHistory(steamworks.userstats_ptr, pchStatName, pData, cubData) end
+	function steamworks.userstats.GetGlobalStatHistory(pchStatName, pData, cubData) return lib.SteamAPI_ISteamUserStats_GetGlobalStatHistory(steamworks.userstats_ptr, pchStatName, pData, cubData) end
+end
+steamworks.htmlsurface = {}
+steamworks.htmlsurface_ptr = lib.SteamAPI_ISteamClient_GetISteamHTMLSurface(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, 'STEAMHTMLSURFACE_INTERFACE_VERSION_004')
+if steamworks.htmlsurface_ptr == nil then
+	 print('steamworks.lua: failed to load htmlsurface STEAMHTMLSURFACE_INTERFACE_VERSION_004')
+else
+	function steamworks.htmlsurface.DestructISteamHTMLSurface() return lib.SteamAPI_ISteamHTMLSurface_DestructISteamHTMLSurface(steamworks.htmlsurface_ptr) end
+	function steamworks.htmlsurface.Init() return lib.SteamAPI_ISteamHTMLSurface_Init(steamworks.htmlsurface_ptr) end
+	function steamworks.htmlsurface.Shutdown() return lib.SteamAPI_ISteamHTMLSurface_Shutdown(steamworks.htmlsurface_ptr) end
+	function steamworks.htmlsurface.CreateBrowser(pchUserAgent, pchUserCSS) return lib.SteamAPI_ISteamHTMLSurface_CreateBrowser(steamworks.htmlsurface_ptr, pchUserAgent, pchUserCSS) end
+	function steamworks.htmlsurface.RemoveBrowser(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_RemoveBrowser(steamworks.htmlsurface_ptr, unBrowserHandle) end
+	function steamworks.htmlsurface.LoadURL(unBrowserHandle, pchURL, pchPostData) return lib.SteamAPI_ISteamHTMLSurface_LoadURL(steamworks.htmlsurface_ptr, unBrowserHandle, pchURL, pchPostData) end
+	function steamworks.htmlsurface.SetSize(unBrowserHandle, unWidth, unHeight) return lib.SteamAPI_ISteamHTMLSurface_SetSize(steamworks.htmlsurface_ptr, unBrowserHandle, unWidth, unHeight) end
+	function steamworks.htmlsurface.StopLoad(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_StopLoad(steamworks.htmlsurface_ptr, unBrowserHandle) end
+	function steamworks.htmlsurface.Reload(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_Reload(steamworks.htmlsurface_ptr, unBrowserHandle) end
+	function steamworks.htmlsurface.GoBack(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_GoBack(steamworks.htmlsurface_ptr, unBrowserHandle) end
+	function steamworks.htmlsurface.GoForward(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_GoForward(steamworks.htmlsurface_ptr, unBrowserHandle) end
+	function steamworks.htmlsurface.AddHeader(unBrowserHandle, pchKey, pchValue) return lib.SteamAPI_ISteamHTMLSurface_AddHeader(steamworks.htmlsurface_ptr, unBrowserHandle, pchKey, pchValue) end
+	function steamworks.htmlsurface.ExecuteJavascript(unBrowserHandle, pchScript) return lib.SteamAPI_ISteamHTMLSurface_ExecuteJavascript(steamworks.htmlsurface_ptr, unBrowserHandle, pchScript) end
+	function steamworks.htmlsurface.MouseUp(unBrowserHandle, eMouseButton) return lib.SteamAPI_ISteamHTMLSurface_MouseUp(steamworks.htmlsurface_ptr, unBrowserHandle, eMouseButton) end
+	function steamworks.htmlsurface.MouseDown(unBrowserHandle, eMouseButton) return lib.SteamAPI_ISteamHTMLSurface_MouseDown(steamworks.htmlsurface_ptr, unBrowserHandle, eMouseButton) end
+	function steamworks.htmlsurface.MouseDoubleClick(unBrowserHandle, eMouseButton) return lib.SteamAPI_ISteamHTMLSurface_MouseDoubleClick(steamworks.htmlsurface_ptr, unBrowserHandle, eMouseButton) end
+	function steamworks.htmlsurface.MouseMove(unBrowserHandle, x, y) return lib.SteamAPI_ISteamHTMLSurface_MouseMove(steamworks.htmlsurface_ptr, unBrowserHandle, x, y) end
+	function steamworks.htmlsurface.MouseWheel(unBrowserHandle, nDelta) return lib.SteamAPI_ISteamHTMLSurface_MouseWheel(steamworks.htmlsurface_ptr, unBrowserHandle, nDelta) end
+	function steamworks.htmlsurface.KeyDown(unBrowserHandle, nNativeKeyCode, eHTMLKeyModifiers) return lib.SteamAPI_ISteamHTMLSurface_KeyDown(steamworks.htmlsurface_ptr, unBrowserHandle, nNativeKeyCode, eHTMLKeyModifiers) end
+	function steamworks.htmlsurface.KeyUp(unBrowserHandle, nNativeKeyCode, eHTMLKeyModifiers) return lib.SteamAPI_ISteamHTMLSurface_KeyUp(steamworks.htmlsurface_ptr, unBrowserHandle, nNativeKeyCode, eHTMLKeyModifiers) end
+	function steamworks.htmlsurface.KeyChar(unBrowserHandle, cUnicodeChar, eHTMLKeyModifiers) return lib.SteamAPI_ISteamHTMLSurface_KeyChar(steamworks.htmlsurface_ptr, unBrowserHandle, cUnicodeChar, eHTMLKeyModifiers) end
+	function steamworks.htmlsurface.SetHorizontalScroll(unBrowserHandle, nAbsolutePixelScroll) return lib.SteamAPI_ISteamHTMLSurface_SetHorizontalScroll(steamworks.htmlsurface_ptr, unBrowserHandle, nAbsolutePixelScroll) end
+	function steamworks.htmlsurface.SetVerticalScroll(unBrowserHandle, nAbsolutePixelScroll) return lib.SteamAPI_ISteamHTMLSurface_SetVerticalScroll(steamworks.htmlsurface_ptr, unBrowserHandle, nAbsolutePixelScroll) end
+	function steamworks.htmlsurface.SetKeyFocus(unBrowserHandle, bHasKeyFocus) return lib.SteamAPI_ISteamHTMLSurface_SetKeyFocus(steamworks.htmlsurface_ptr, unBrowserHandle, bHasKeyFocus) end
+	function steamworks.htmlsurface.ViewSource(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_ViewSource(steamworks.htmlsurface_ptr, unBrowserHandle) end
+	function steamworks.htmlsurface.CopyToClipboard(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_CopyToClipboard(steamworks.htmlsurface_ptr, unBrowserHandle) end
+	function steamworks.htmlsurface.PasteFromClipboard(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_PasteFromClipboard(steamworks.htmlsurface_ptr, unBrowserHandle) end
+	function steamworks.htmlsurface.Find(unBrowserHandle, pchSearchStr, bCurrentlyInFind, bReverse) return lib.SteamAPI_ISteamHTMLSurface_Find(steamworks.htmlsurface_ptr, unBrowserHandle, pchSearchStr, bCurrentlyInFind, bReverse) end
+	function steamworks.htmlsurface.StopFind(unBrowserHandle) return lib.SteamAPI_ISteamHTMLSurface_StopFind(steamworks.htmlsurface_ptr, unBrowserHandle) end
+	function steamworks.htmlsurface.GetLinkAtPosition(unBrowserHandle, x, y) return lib.SteamAPI_ISteamHTMLSurface_GetLinkAtPosition(steamworks.htmlsurface_ptr, unBrowserHandle, x, y) end
+	function steamworks.htmlsurface.SetCookie(pchHostname, pchKey, pchValue, pchPath, nExpires, bSecure, bHTTPOnly) return lib.SteamAPI_ISteamHTMLSurface_SetCookie(steamworks.htmlsurface_ptr, pchHostname, pchKey, pchValue, pchPath, nExpires, bSecure, bHTTPOnly) end
+	function steamworks.htmlsurface.SetPageScaleFactor(unBrowserHandle, flZoom, nPointX, nPointY) return lib.SteamAPI_ISteamHTMLSurface_SetPageScaleFactor(steamworks.htmlsurface_ptr, unBrowserHandle, flZoom, nPointX, nPointY) end
+	function steamworks.htmlsurface.SetBackgroundMode(unBrowserHandle, bBackgroundMode) return lib.SteamAPI_ISteamHTMLSurface_SetBackgroundMode(steamworks.htmlsurface_ptr, unBrowserHandle, bBackgroundMode) end
+	function steamworks.htmlsurface.AllowStartRequest(unBrowserHandle, bAllowed) return lib.SteamAPI_ISteamHTMLSurface_AllowStartRequest(steamworks.htmlsurface_ptr, unBrowserHandle, bAllowed) end
+	function steamworks.htmlsurface.JSDialogResponse(unBrowserHandle, bResult) return lib.SteamAPI_ISteamHTMLSurface_JSDialogResponse(steamworks.htmlsurface_ptr, unBrowserHandle, bResult) end
+end
+steamworks.screenshots = {}
+steamworks.screenshots_ptr = lib.SteamAPI_ISteamClient_GetISteamScreenshots(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, 'STEAMSCREENSHOTS_INTERFACE_VERSION003')
+if steamworks.screenshots_ptr == nil then
+	 print('steamworks.lua: failed to load screenshots STEAMSCREENSHOTS_INTERFACE_VERSION003')
+else
+	function steamworks.screenshots.WriteScreenshot(pubRGB, cubRGB, nWidth, nHeight) return lib.SteamAPI_ISteamScreenshots_WriteScreenshot(steamworks.screenshots_ptr, pubRGB, cubRGB, nWidth, nHeight) end
+	function steamworks.screenshots.AddScreenshotToLibrary(pchFilename, pchThumbnailFilename, nWidth, nHeight) return lib.SteamAPI_ISteamScreenshots_AddScreenshotToLibrary(steamworks.screenshots_ptr, pchFilename, pchThumbnailFilename, nWidth, nHeight) end
+	function steamworks.screenshots.TriggerScreenshot() return lib.SteamAPI_ISteamScreenshots_TriggerScreenshot(steamworks.screenshots_ptr) end
+	function steamworks.screenshots.HookScreenshots(bHook) return lib.SteamAPI_ISteamScreenshots_HookScreenshots(steamworks.screenshots_ptr, bHook) end
+	function steamworks.screenshots.SetLocation(hScreenshot, pchLocation) return lib.SteamAPI_ISteamScreenshots_SetLocation(steamworks.screenshots_ptr, hScreenshot, pchLocation) end
+	function steamworks.screenshots.TagUser(hScreenshot, steamID) return lib.SteamAPI_ISteamScreenshots_TagUser(steamworks.screenshots_ptr, hScreenshot, steamID) end
+	function steamworks.screenshots.TagPublishedFile(hScreenshot, unPublishedFileID) return lib.SteamAPI_ISteamScreenshots_TagPublishedFile(steamworks.screenshots_ptr, hScreenshot, unPublishedFileID) end
+	function steamworks.screenshots.IsScreenshotsHooked() return lib.SteamAPI_ISteamScreenshots_IsScreenshotsHooked(steamworks.screenshots_ptr) end
+	function steamworks.screenshots.AddVRScreenshotToLibrary(eType, pchFilename, pchVRFilename) return lib.SteamAPI_ISteamScreenshots_AddVRScreenshotToLibrary(steamworks.screenshots_ptr, eType, pchFilename, pchVRFilename) end
+end
+steamworks.ugc = {}
+steamworks.ugc_ptr = lib.SteamAPI_ISteamClient_GetISteamUGC(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, 'STEAMUGC_INTERFACE_VERSION010')
+if steamworks.ugc_ptr == nil then
+	 print('steamworks.lua: failed to load ugc STEAMUGC_INTERFACE_VERSION010')
+else
+	function steamworks.ugc.CreateQueryUserUGCRequest(unAccountID, eListType, eMatchingUGCType, eSortOrder, nCreatorAppID, nConsumerAppID, unPage) return lib.SteamAPI_ISteamUGC_CreateQueryUserUGCRequest(steamworks.ugc_ptr, unAccountID, eListType, eMatchingUGCType, eSortOrder, nCreatorAppID, nConsumerAppID, unPage) end
+	function steamworks.ugc.CreateQueryAllUGCRequest(eQueryType, eMatchingeMatchingUGCTypeFileType, nCreatorAppID, nConsumerAppID, unPage) return lib.SteamAPI_ISteamUGC_CreateQueryAllUGCRequest(steamworks.ugc_ptr, eQueryType, eMatchingeMatchingUGCTypeFileType, nCreatorAppID, nConsumerAppID, unPage) end
+	function steamworks.ugc.CreateQueryUGCDetailsRequest(pvecPublishedFileID, unNumPublishedFileIDs) return lib.SteamAPI_ISteamUGC_CreateQueryUGCDetailsRequest(steamworks.ugc_ptr, pvecPublishedFileID, unNumPublishedFileIDs) end
+	function steamworks.ugc.SendQueryUGCRequest(handle) return lib.SteamAPI_ISteamUGC_SendQueryUGCRequest(steamworks.ugc_ptr, handle) end
+	function steamworks.ugc.GetQueryUGCResult(handle, index, pDetails) return lib.SteamAPI_ISteamUGC_GetQueryUGCResult(steamworks.ugc_ptr, handle, index, pDetails) end
+	function steamworks.ugc.GetQueryUGCPreviewURL(handle, index, pchURL, cchURLSize) return lib.SteamAPI_ISteamUGC_GetQueryUGCPreviewURL(steamworks.ugc_ptr, handle, index, pchURL, cchURLSize) end
+	function steamworks.ugc.GetQueryUGCMetadata(handle, index, pchMetadata, cchMetadatasize) return lib.SteamAPI_ISteamUGC_GetQueryUGCMetadata(steamworks.ugc_ptr, handle, index, pchMetadata, cchMetadatasize) end
+	function steamworks.ugc.GetQueryUGCChildren(handle, index, pvecPublishedFileID, cMaxEntries) return lib.SteamAPI_ISteamUGC_GetQueryUGCChildren(steamworks.ugc_ptr, handle, index, pvecPublishedFileID, cMaxEntries) end
+	function steamworks.ugc.GetQueryUGCStatistic(handle, index, eStatType, pStatValue) return lib.SteamAPI_ISteamUGC_GetQueryUGCStatistic(steamworks.ugc_ptr, handle, index, eStatType, pStatValue) end
+	function steamworks.ugc.GetQueryUGCNumAdditionalPreviews(handle, index) return lib.SteamAPI_ISteamUGC_GetQueryUGCNumAdditionalPreviews(steamworks.ugc_ptr, handle, index) end
+	function steamworks.ugc.GetQueryUGCAdditionalPreview(handle, index, previewIndex, pchURLOrVideoID, cchURLSize, pchOriginalFileName, cchOriginalFileNameSize, pPreviewType) return lib.SteamAPI_ISteamUGC_GetQueryUGCAdditionalPreview(steamworks.ugc_ptr, handle, index, previewIndex, pchURLOrVideoID, cchURLSize, pchOriginalFileName, cchOriginalFileNameSize, pPreviewType) end
+	function steamworks.ugc.GetQueryUGCNumKeyValueTags(handle, index) return lib.SteamAPI_ISteamUGC_GetQueryUGCNumKeyValueTags(steamworks.ugc_ptr, handle, index) end
+	function steamworks.ugc.GetQueryUGCKeyValueTag(handle, index, keyValueTagIndex, pchKey, cchKeySize, pchValue, cchValueSize) return lib.SteamAPI_ISteamUGC_GetQueryUGCKeyValueTag(steamworks.ugc_ptr, handle, index, keyValueTagIndex, pchKey, cchKeySize, pchValue, cchValueSize) end
+	function steamworks.ugc.ReleaseQueryUGCRequest(handle) return lib.SteamAPI_ISteamUGC_ReleaseQueryUGCRequest(steamworks.ugc_ptr, handle) end
+	function steamworks.ugc.AddRequiredTag(handle, pTagName) return lib.SteamAPI_ISteamUGC_AddRequiredTag(steamworks.ugc_ptr, handle, pTagName) end
+	function steamworks.ugc.AddExcludedTag(handle, pTagName) return lib.SteamAPI_ISteamUGC_AddExcludedTag(steamworks.ugc_ptr, handle, pTagName) end
+	function steamworks.ugc.SetReturnOnlyIDs(handle, bReturnOnlyIDs) return lib.SteamAPI_ISteamUGC_SetReturnOnlyIDs(steamworks.ugc_ptr, handle, bReturnOnlyIDs) end
+	function steamworks.ugc.SetReturnKeyValueTags(handle, bReturnKeyValueTags) return lib.SteamAPI_ISteamUGC_SetReturnKeyValueTags(steamworks.ugc_ptr, handle, bReturnKeyValueTags) end
+	function steamworks.ugc.SetReturnLongDescription(handle, bReturnLongDescription) return lib.SteamAPI_ISteamUGC_SetReturnLongDescription(steamworks.ugc_ptr, handle, bReturnLongDescription) end
+	function steamworks.ugc.SetReturnMetadata(handle, bReturnMetadata) return lib.SteamAPI_ISteamUGC_SetReturnMetadata(steamworks.ugc_ptr, handle, bReturnMetadata) end
+	function steamworks.ugc.SetReturnChildren(handle, bReturnChildren) return lib.SteamAPI_ISteamUGC_SetReturnChildren(steamworks.ugc_ptr, handle, bReturnChildren) end
+	function steamworks.ugc.SetReturnAdditionalPreviews(handle, bReturnAdditionalPreviews) return lib.SteamAPI_ISteamUGC_SetReturnAdditionalPreviews(steamworks.ugc_ptr, handle, bReturnAdditionalPreviews) end
+	function steamworks.ugc.SetReturnTotalOnly(handle, bReturnTotalOnly) return lib.SteamAPI_ISteamUGC_SetReturnTotalOnly(steamworks.ugc_ptr, handle, bReturnTotalOnly) end
+	function steamworks.ugc.SetReturnPlaytimeStats(handle, unDays) return lib.SteamAPI_ISteamUGC_SetReturnPlaytimeStats(steamworks.ugc_ptr, handle, unDays) end
+	function steamworks.ugc.SetLanguage(handle, pchLanguage) return lib.SteamAPI_ISteamUGC_SetLanguage(steamworks.ugc_ptr, handle, pchLanguage) end
+	function steamworks.ugc.SetAllowCachedResponse(handle, unMaxAgeSeconds) return lib.SteamAPI_ISteamUGC_SetAllowCachedResponse(steamworks.ugc_ptr, handle, unMaxAgeSeconds) end
+	function steamworks.ugc.SetCloudFileNameFilter(handle, pMatchCloudFileName) return lib.SteamAPI_ISteamUGC_SetCloudFileNameFilter(steamworks.ugc_ptr, handle, pMatchCloudFileName) end
+	function steamworks.ugc.SetMatchAnyTag(handle, bMatchAnyTag) return lib.SteamAPI_ISteamUGC_SetMatchAnyTag(steamworks.ugc_ptr, handle, bMatchAnyTag) end
+	function steamworks.ugc.SetSearchText(handle, pSearchText) return lib.SteamAPI_ISteamUGC_SetSearchText(steamworks.ugc_ptr, handle, pSearchText) end
+	function steamworks.ugc.SetRankedByTrendDays(handle, unDays) return lib.SteamAPI_ISteamUGC_SetRankedByTrendDays(steamworks.ugc_ptr, handle, unDays) end
+	function steamworks.ugc.AddRequiredKeyValueTag(handle, pKey, pValue) return lib.SteamAPI_ISteamUGC_AddRequiredKeyValueTag(steamworks.ugc_ptr, handle, pKey, pValue) end
+	function steamworks.ugc.RequestUGCDetails(nPublishedFileID, unMaxAgeSeconds) return lib.SteamAPI_ISteamUGC_RequestUGCDetails(steamworks.ugc_ptr, nPublishedFileID, unMaxAgeSeconds) end
+	function steamworks.ugc.CreateItem(nConsumerAppId, eFileType) return lib.SteamAPI_ISteamUGC_CreateItem(steamworks.ugc_ptr, nConsumerAppId, eFileType) end
+	function steamworks.ugc.StartItemUpdate(nConsumerAppId, nPublishedFileID) return lib.SteamAPI_ISteamUGC_StartItemUpdate(steamworks.ugc_ptr, nConsumerAppId, nPublishedFileID) end
+	function steamworks.ugc.SetItemTitle(handle, pchTitle) return lib.SteamAPI_ISteamUGC_SetItemTitle(steamworks.ugc_ptr, handle, pchTitle) end
+	function steamworks.ugc.SetItemDescription(handle, pchDescription) return lib.SteamAPI_ISteamUGC_SetItemDescription(steamworks.ugc_ptr, handle, pchDescription) end
+	function steamworks.ugc.SetItemUpdateLanguage(handle, pchLanguage) return lib.SteamAPI_ISteamUGC_SetItemUpdateLanguage(steamworks.ugc_ptr, handle, pchLanguage) end
+	function steamworks.ugc.SetItemMetadata(handle, pchMetaData) return lib.SteamAPI_ISteamUGC_SetItemMetadata(steamworks.ugc_ptr, handle, pchMetaData) end
+	function steamworks.ugc.SetItemVisibility(handle, eVisibility) return lib.SteamAPI_ISteamUGC_SetItemVisibility(steamworks.ugc_ptr, handle, eVisibility) end
+	function steamworks.ugc.SetItemTags(updateHandle, pTags) return lib.SteamAPI_ISteamUGC_SetItemTags(steamworks.ugc_ptr, updateHandle, pTags) end
+	function steamworks.ugc.SetItemContent(handle, pszContentFolder) return lib.SteamAPI_ISteamUGC_SetItemContent(steamworks.ugc_ptr, handle, pszContentFolder) end
+	function steamworks.ugc.SetItemPreview(handle, pszPreviewFile) return lib.SteamAPI_ISteamUGC_SetItemPreview(steamworks.ugc_ptr, handle, pszPreviewFile) end
+	function steamworks.ugc.RemoveItemKeyValueTags(handle, pchKey) return lib.SteamAPI_ISteamUGC_RemoveItemKeyValueTags(steamworks.ugc_ptr, handle, pchKey) end
+	function steamworks.ugc.AddItemKeyValueTag(handle, pchKey, pchValue) return lib.SteamAPI_ISteamUGC_AddItemKeyValueTag(steamworks.ugc_ptr, handle, pchKey, pchValue) end
+	function steamworks.ugc.AddItemPreviewFile(handle, pszPreviewFile, type) return lib.SteamAPI_ISteamUGC_AddItemPreviewFile(steamworks.ugc_ptr, handle, pszPreviewFile, type) end
+	function steamworks.ugc.AddItemPreviewVideo(handle, pszVideoID) return lib.SteamAPI_ISteamUGC_AddItemPreviewVideo(steamworks.ugc_ptr, handle, pszVideoID) end
+	function steamworks.ugc.UpdateItemPreviewFile(handle, index, pszPreviewFile) return lib.SteamAPI_ISteamUGC_UpdateItemPreviewFile(steamworks.ugc_ptr, handle, index, pszPreviewFile) end
+	function steamworks.ugc.UpdateItemPreviewVideo(handle, index, pszVideoID) return lib.SteamAPI_ISteamUGC_UpdateItemPreviewVideo(steamworks.ugc_ptr, handle, index, pszVideoID) end
+	function steamworks.ugc.RemoveItemPreview(handle, index) return lib.SteamAPI_ISteamUGC_RemoveItemPreview(steamworks.ugc_ptr, handle, index) end
+	function steamworks.ugc.SubmitItemUpdate(handle, pchChangeNote) return lib.SteamAPI_ISteamUGC_SubmitItemUpdate(steamworks.ugc_ptr, handle, pchChangeNote) end
+	function steamworks.ugc.GetItemUpdateProgress(handle, punBytesProcessed, punBytesTotal) return lib.SteamAPI_ISteamUGC_GetItemUpdateProgress(steamworks.ugc_ptr, handle, punBytesProcessed, punBytesTotal) end
+	function steamworks.ugc.SetUserItemVote(nPublishedFileID, bVoteUp) return lib.SteamAPI_ISteamUGC_SetUserItemVote(steamworks.ugc_ptr, nPublishedFileID, bVoteUp) end
+	function steamworks.ugc.GetUserItemVote(nPublishedFileID) return lib.SteamAPI_ISteamUGC_GetUserItemVote(steamworks.ugc_ptr, nPublishedFileID) end
+	function steamworks.ugc.AddItemToFavorites(nAppId, nPublishedFileID) return lib.SteamAPI_ISteamUGC_AddItemToFavorites(steamworks.ugc_ptr, nAppId, nPublishedFileID) end
+	function steamworks.ugc.RemoveItemFromFavorites(nAppId, nPublishedFileID) return lib.SteamAPI_ISteamUGC_RemoveItemFromFavorites(steamworks.ugc_ptr, nAppId, nPublishedFileID) end
+	function steamworks.ugc.SubscribeItem(nPublishedFileID) return lib.SteamAPI_ISteamUGC_SubscribeItem(steamworks.ugc_ptr, nPublishedFileID) end
+	function steamworks.ugc.UnsubscribeItem(nPublishedFileID) return lib.SteamAPI_ISteamUGC_UnsubscribeItem(steamworks.ugc_ptr, nPublishedFileID) end
+	function steamworks.ugc.GetNumSubscribedItems() return lib.SteamAPI_ISteamUGC_GetNumSubscribedItems(steamworks.ugc_ptr) end
+	function steamworks.ugc.GetSubscribedItems(pvecPublishedFileID, cMaxEntries) return lib.SteamAPI_ISteamUGC_GetSubscribedItems(steamworks.ugc_ptr, pvecPublishedFileID, cMaxEntries) end
+	function steamworks.ugc.GetItemState(nPublishedFileID) return lib.SteamAPI_ISteamUGC_GetItemState(steamworks.ugc_ptr, nPublishedFileID) end
+	function steamworks.ugc.GetItemInstallInfo(nPublishedFileID, punSizeOnDisk, pchFolder, cchFolderSize, punTimeStamp) return lib.SteamAPI_ISteamUGC_GetItemInstallInfo(steamworks.ugc_ptr, nPublishedFileID, punSizeOnDisk, pchFolder, cchFolderSize, punTimeStamp) end
+	function steamworks.ugc.GetItemDownloadInfo(nPublishedFileID, punBytesDownloaded, punBytesTotal) return lib.SteamAPI_ISteamUGC_GetItemDownloadInfo(steamworks.ugc_ptr, nPublishedFileID, punBytesDownloaded, punBytesTotal) end
+	function steamworks.ugc.DownloadItem(nPublishedFileID, bHighPriority) return lib.SteamAPI_ISteamUGC_DownloadItem(steamworks.ugc_ptr, nPublishedFileID, bHighPriority) end
+	function steamworks.ugc.BInitWorkshopForGameServer(unWorkshopDepotID, pszFolder) return lib.SteamAPI_ISteamUGC_BInitWorkshopForGameServer(steamworks.ugc_ptr, unWorkshopDepotID, pszFolder) end
+	function steamworks.ugc.SuspendDownloads(bSuspend) return lib.SteamAPI_ISteamUGC_SuspendDownloads(steamworks.ugc_ptr, bSuspend) end
+	function steamworks.ugc.StartPlaytimeTracking(pvecPublishedFileID, unNumPublishedFileIDs) return lib.SteamAPI_ISteamUGC_StartPlaytimeTracking(steamworks.ugc_ptr, pvecPublishedFileID, unNumPublishedFileIDs) end
+	function steamworks.ugc.StopPlaytimeTracking(pvecPublishedFileID, unNumPublishedFileIDs) return lib.SteamAPI_ISteamUGC_StopPlaytimeTracking(steamworks.ugc_ptr, pvecPublishedFileID, unNumPublishedFileIDs) end
+	function steamworks.ugc.StopPlaytimeTrackingForAllItems() return lib.SteamAPI_ISteamUGC_StopPlaytimeTrackingForAllItems(steamworks.ugc_ptr) end
+	function steamworks.ugc.AddDependency(nParentPublishedFileID, nChildPublishedFileID) return lib.SteamAPI_ISteamUGC_AddDependency(steamworks.ugc_ptr, nParentPublishedFileID, nChildPublishedFileID) end
+	function steamworks.ugc.RemoveDependency(nParentPublishedFileID, nChildPublishedFileID) return lib.SteamAPI_ISteamUGC_RemoveDependency(steamworks.ugc_ptr, nParentPublishedFileID, nChildPublishedFileID) end
+end
+steamworks.apps = {}
+steamworks.apps_ptr = lib.SteamAPI_ISteamClient_GetISteamApps(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, 'STEAMAPPS_INTERFACE_VERSION008')
+if steamworks.apps_ptr == nil then
+	 print('steamworks.lua: failed to load apps STEAMAPPS_INTERFACE_VERSION008')
+else
+	function steamworks.apps.BIsSubscribed() return lib.SteamAPI_ISteamApps_BIsSubscribed(steamworks.apps_ptr) end
+	function steamworks.apps.BIsLowViolence() return lib.SteamAPI_ISteamApps_BIsLowViolence(steamworks.apps_ptr) end
+	function steamworks.apps.BIsCybercafe() return lib.SteamAPI_ISteamApps_BIsCybercafe(steamworks.apps_ptr) end
+	function steamworks.apps.BIsVACBanned() return lib.SteamAPI_ISteamApps_BIsVACBanned(steamworks.apps_ptr) end
+	function steamworks.apps.GetCurrentGameLanguage()local str = lib.SteamAPI_ISteamApps_GetCurrentGameLanguage(steamworks.apps_ptr) if str ~= nil then return ffi.string(str) end end
+	function steamworks.apps.GetAvailableGameLanguages()local str = lib.SteamAPI_ISteamApps_GetAvailableGameLanguages(steamworks.apps_ptr) if str ~= nil then return ffi.string(str) end end
+	function steamworks.apps.BIsSubscribedApp(appID) return lib.SteamAPI_ISteamApps_BIsSubscribedApp(steamworks.apps_ptr, appID) end
+	function steamworks.apps.BIsDlcInstalled(appID) return lib.SteamAPI_ISteamApps_BIsDlcInstalled(steamworks.apps_ptr, appID) end
+	function steamworks.apps.GetEarliestPurchaseUnixTime(nAppID) return lib.SteamAPI_ISteamApps_GetEarliestPurchaseUnixTime(steamworks.apps_ptr, nAppID) end
+	function steamworks.apps.BIsSubscribedFromFreeWeekend() return lib.SteamAPI_ISteamApps_BIsSubscribedFromFreeWeekend(steamworks.apps_ptr) end
+	function steamworks.apps.GetDLCCount() return lib.SteamAPI_ISteamApps_GetDLCCount(steamworks.apps_ptr) end
+	function steamworks.apps.BGetDLCDataByIndex(iDLC, pAppID, pbAvailable, pchName, cchNameBufferSize) return lib.SteamAPI_ISteamApps_BGetDLCDataByIndex(steamworks.apps_ptr, iDLC, pAppID, pbAvailable, pchName, cchNameBufferSize) end
+	function steamworks.apps.InstallDLC(nAppID) return lib.SteamAPI_ISteamApps_InstallDLC(steamworks.apps_ptr, nAppID) end
+	function steamworks.apps.UninstallDLC(nAppID) return lib.SteamAPI_ISteamApps_UninstallDLC(steamworks.apps_ptr, nAppID) end
+	function steamworks.apps.RequestAppProofOfPurchaseKey(nAppID) return lib.SteamAPI_ISteamApps_RequestAppProofOfPurchaseKey(steamworks.apps_ptr, nAppID) end
+	function steamworks.apps.GetCurrentBetaName(pchName, cchNameBufferSize) return lib.SteamAPI_ISteamApps_GetCurrentBetaName(steamworks.apps_ptr, pchName, cchNameBufferSize) end
+	function steamworks.apps.MarkContentCorrupt(bMissingFilesOnly) return lib.SteamAPI_ISteamApps_MarkContentCorrupt(steamworks.apps_ptr, bMissingFilesOnly) end
+	function steamworks.apps.GetInstalledDepots(appID, pvecDepots, cMaxDepots) return lib.SteamAPI_ISteamApps_GetInstalledDepots(steamworks.apps_ptr, appID, pvecDepots, cMaxDepots) end
+	function steamworks.apps.GetAppInstallDir(appID, pchFolder, cchFolderBufferSize) return lib.SteamAPI_ISteamApps_GetAppInstallDir(steamworks.apps_ptr, appID, pchFolder, cchFolderBufferSize) end
+	function steamworks.apps.BIsAppInstalled(appID) return lib.SteamAPI_ISteamApps_BIsAppInstalled(steamworks.apps_ptr, appID) end
+	function steamworks.apps.GetAppOwner() return lib.SteamAPI_ISteamApps_GetAppOwner(steamworks.apps_ptr) end
+	function steamworks.apps.GetLaunchQueryParam(pchKey)local str = lib.SteamAPI_ISteamApps_GetLaunchQueryParam(steamworks.apps_ptr, pchKey) if str ~= nil then return ffi.string(str) end end
+	function steamworks.apps.GetDlcDownloadProgress(nAppID, punBytesDownloaded, punBytesTotal) return lib.SteamAPI_ISteamApps_GetDlcDownloadProgress(steamworks.apps_ptr, nAppID, punBytesDownloaded, punBytesTotal) end
+	function steamworks.apps.GetAppBuildId() return lib.SteamAPI_ISteamApps_GetAppBuildId(steamworks.apps_ptr) end
+	function steamworks.apps.RequestAllProofOfPurchaseKeys() return lib.SteamAPI_ISteamApps_RequestAllProofOfPurchaseKeys(steamworks.apps_ptr) end
+	function steamworks.apps.GetFileDetails(pszFileName) return lib.SteamAPI_ISteamApps_GetFileDetails(steamworks.apps_ptr, pszFileName) end
+end
+steamworks.inventory = {}
+steamworks.inventory_ptr = lib.SteamAPI_ISteamClient_GetISteamInventory(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, 'STEAMINVENTORY_INTERFACE_V002')
+if steamworks.inventory_ptr == nil then
+	 print('steamworks.lua: failed to load inventory STEAMINVENTORY_INTERFACE_V002')
+else
+	function steamworks.inventory.GetResultStatus(resultHandle) return lib.SteamAPI_ISteamInventory_GetResultStatus(steamworks.inventory_ptr, resultHandle) end
+	function steamworks.inventory.GetResultItems(resultHandle, pOutItemsArray, punOutItemsArraySize) return lib.SteamAPI_ISteamInventory_GetResultItems(steamworks.inventory_ptr, resultHandle, pOutItemsArray, punOutItemsArraySize) end
+	function steamworks.inventory.GetResultItemProperty(resultHandle, unItemIndex, pchPropertyName, pchValueBuffer, punValueBufferSizeOut) return lib.SteamAPI_ISteamInventory_GetResultItemProperty(steamworks.inventory_ptr, resultHandle, unItemIndex, pchPropertyName, pchValueBuffer, punValueBufferSizeOut) end
+	function steamworks.inventory.GetResultTimestamp(resultHandle) return lib.SteamAPI_ISteamInventory_GetResultTimestamp(steamworks.inventory_ptr, resultHandle) end
+	function steamworks.inventory.CheckResultSteamID(resultHandle, steamIDExpected) return lib.SteamAPI_ISteamInventory_CheckResultSteamID(steamworks.inventory_ptr, resultHandle, steamIDExpected) end
+	function steamworks.inventory.DestroyResult(resultHandle) return lib.SteamAPI_ISteamInventory_DestroyResult(steamworks.inventory_ptr, resultHandle) end
+	function steamworks.inventory.GetAllItems(pResultHandle) return lib.SteamAPI_ISteamInventory_GetAllItems(steamworks.inventory_ptr, pResultHandle) end
+	function steamworks.inventory.GetItemsByID(pResultHandle, pInstanceIDs, unCountInstanceIDs) return lib.SteamAPI_ISteamInventory_GetItemsByID(steamworks.inventory_ptr, pResultHandle, pInstanceIDs, unCountInstanceIDs) end
+	function steamworks.inventory.SerializeResult(resultHandle, pOutBuffer, punOutBufferSize) return lib.SteamAPI_ISteamInventory_SerializeResult(steamworks.inventory_ptr, resultHandle, pOutBuffer, punOutBufferSize) end
+	function steamworks.inventory.DeserializeResult(pOutResultHandle, pBuffer, unBufferSize, bRESERVED_MUST_BE_FALSE) return lib.SteamAPI_ISteamInventory_DeserializeResult(steamworks.inventory_ptr, pOutResultHandle, pBuffer, unBufferSize, bRESERVED_MUST_BE_FALSE) end
+	function steamworks.inventory.GenerateItems(pResultHandle, pArrayItemDefs, punArrayQuantity, unArrayLength) return lib.SteamAPI_ISteamInventory_GenerateItems(steamworks.inventory_ptr, pResultHandle, pArrayItemDefs, punArrayQuantity, unArrayLength) end
+	function steamworks.inventory.GrantPromoItems(pResultHandle) return lib.SteamAPI_ISteamInventory_GrantPromoItems(steamworks.inventory_ptr, pResultHandle) end
+	function steamworks.inventory.AddPromoItem(pResultHandle, itemDef) return lib.SteamAPI_ISteamInventory_AddPromoItem(steamworks.inventory_ptr, pResultHandle, itemDef) end
+	function steamworks.inventory.AddPromoItems(pResultHandle, pArrayItemDefs, unArrayLength) return lib.SteamAPI_ISteamInventory_AddPromoItems(steamworks.inventory_ptr, pResultHandle, pArrayItemDefs, unArrayLength) end
+	function steamworks.inventory.ConsumeItem(pResultHandle, itemConsume, unQuantity) return lib.SteamAPI_ISteamInventory_ConsumeItem(steamworks.inventory_ptr, pResultHandle, itemConsume, unQuantity) end
+	function steamworks.inventory.ExchangeItems(pResultHandle, pArrayGenerate, punArrayGenerateQuantity, unArrayGenerateLength, pArrayDestroy, punArrayDestroyQuantity, unArrayDestroyLength) return lib.SteamAPI_ISteamInventory_ExchangeItems(steamworks.inventory_ptr, pResultHandle, pArrayGenerate, punArrayGenerateQuantity, unArrayGenerateLength, pArrayDestroy, punArrayDestroyQuantity, unArrayDestroyLength) end
+	function steamworks.inventory.TransferItemQuantity(pResultHandle, itemIdSource, unQuantity, itemIdDest) return lib.SteamAPI_ISteamInventory_TransferItemQuantity(steamworks.inventory_ptr, pResultHandle, itemIdSource, unQuantity, itemIdDest) end
+	function steamworks.inventory.SendItemDropHeartbeat() return lib.SteamAPI_ISteamInventory_SendItemDropHeartbeat(steamworks.inventory_ptr) end
+	function steamworks.inventory.TriggerItemDrop(pResultHandle, dropListDefinition) return lib.SteamAPI_ISteamInventory_TriggerItemDrop(steamworks.inventory_ptr, pResultHandle, dropListDefinition) end
+	function steamworks.inventory.TradeItems(pResultHandle, steamIDTradePartner, pArrayGive, pArrayGiveQuantity, nArrayGiveLength, pArrayGet, pArrayGetQuantity, nArrayGetLength) return lib.SteamAPI_ISteamInventory_TradeItems(steamworks.inventory_ptr, pResultHandle, steamIDTradePartner, pArrayGive, pArrayGiveQuantity, nArrayGiveLength, pArrayGet, pArrayGetQuantity, nArrayGetLength) end
+	function steamworks.inventory.LoadItemDefinitions() return lib.SteamAPI_ISteamInventory_LoadItemDefinitions(steamworks.inventory_ptr) end
+	function steamworks.inventory.GetItemDefinitionIDs(pItemDefIDs, punItemDefIDsArraySize) return lib.SteamAPI_ISteamInventory_GetItemDefinitionIDs(steamworks.inventory_ptr, pItemDefIDs, punItemDefIDsArraySize) end
+	function steamworks.inventory.GetItemDefinitionProperty(iDefinition, pchPropertyName, pchValueBuffer, punValueBufferSizeOut) return lib.SteamAPI_ISteamInventory_GetItemDefinitionProperty(steamworks.inventory_ptr, iDefinition, pchPropertyName, pchValueBuffer, punValueBufferSizeOut) end
+	function steamworks.inventory.RequestEligiblePromoItemDefinitionsIDs(steamID) return lib.SteamAPI_ISteamInventory_RequestEligiblePromoItemDefinitionsIDs(steamworks.inventory_ptr, steamID) end
+	function steamworks.inventory.GetEligiblePromoItemDefinitionIDs(steamID, pItemDefIDs, punItemDefIDsArraySize) return lib.SteamAPI_ISteamInventory_GetEligiblePromoItemDefinitionIDs(steamworks.inventory_ptr, steamID, pItemDefIDs, punItemDefIDsArraySize) end
+end
+steamworks.video = {}
+steamworks.video_ptr = lib.SteamAPI_ISteamClient_GetISteamVideo(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, 'STEAMVIDEO_INTERFACE_V002')
+if steamworks.video_ptr == nil then
+	 print('steamworks.lua: failed to load video STEAMVIDEO_INTERFACE_V002')
+else
+	function steamworks.video.GetVideoURL(unVideoAppID) return lib.SteamAPI_ISteamVideo_GetVideoURL(steamworks.video_ptr, unVideoAppID) end
+	function steamworks.video.IsBroadcasting(pnNumViewers) return lib.SteamAPI_ISteamVideo_IsBroadcasting(steamworks.video_ptr, pnNumViewers) end
+	function steamworks.video.GetOPFSettings(unVideoAppID) return lib.SteamAPI_ISteamVideo_GetOPFSettings(steamworks.video_ptr, unVideoAppID) end
+	function steamworks.video.GetOPFStringForApp(unVideoAppID, pchBuffer, pnBufferSize) return lib.SteamAPI_ISteamVideo_GetOPFStringForApp(steamworks.video_ptr, unVideoAppID, pchBuffer, pnBufferSize) end
+end
+steamworks.musicremote = {}
+steamworks.musicremote_ptr = lib.SteamAPI_ISteamClient_GetISteamMusicRemote(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, 'STEAMMUSICREMOTE_INTERFACE_VERSION001')
+if steamworks.musicremote_ptr == nil then
+	 print('steamworks.lua: failed to load musicremote STEAMMUSICREMOTE_INTERFACE_VERSION001')
+else
+	function steamworks.musicremote.RegisterSteamMusicRemote(pchName) return lib.SteamAPI_ISteamMusicRemote_RegisterSteamMusicRemote(steamworks.musicremote_ptr, pchName) end
+	function steamworks.musicremote.DeregisterSteamMusicRemote() return lib.SteamAPI_ISteamMusicRemote_DeregisterSteamMusicRemote(steamworks.musicremote_ptr) end
+	function steamworks.musicremote.BIsCurrentMusicRemote() return lib.SteamAPI_ISteamMusicRemote_BIsCurrentMusicRemote(steamworks.musicremote_ptr) end
+	function steamworks.musicremote.BActivationSuccess(bValue) return lib.SteamAPI_ISteamMusicRemote_BActivationSuccess(steamworks.musicremote_ptr, bValue) end
+	function steamworks.musicremote.SetDisplayName(pchDisplayName) return lib.SteamAPI_ISteamMusicRemote_SetDisplayName(steamworks.musicremote_ptr, pchDisplayName) end
+	function steamworks.musicremote.SetPNGIcon_64x64(pvBuffer, cbBufferLength) return lib.SteamAPI_ISteamMusicRemote_SetPNGIcon_64x64(steamworks.musicremote_ptr, pvBuffer, cbBufferLength) end
+	function steamworks.musicremote.EnablePlayPrevious(bValue) return lib.SteamAPI_ISteamMusicRemote_EnablePlayPrevious(steamworks.musicremote_ptr, bValue) end
+	function steamworks.musicremote.EnablePlayNext(bValue) return lib.SteamAPI_ISteamMusicRemote_EnablePlayNext(steamworks.musicremote_ptr, bValue) end
+	function steamworks.musicremote.EnableShuffled(bValue) return lib.SteamAPI_ISteamMusicRemote_EnableShuffled(steamworks.musicremote_ptr, bValue) end
+	function steamworks.musicremote.EnableLooped(bValue) return lib.SteamAPI_ISteamMusicRemote_EnableLooped(steamworks.musicremote_ptr, bValue) end
+	function steamworks.musicremote.EnableQueue(bValue) return lib.SteamAPI_ISteamMusicRemote_EnableQueue(steamworks.musicremote_ptr, bValue) end
+	function steamworks.musicremote.EnablePlaylists(bValue) return lib.SteamAPI_ISteamMusicRemote_EnablePlaylists(steamworks.musicremote_ptr, bValue) end
+	function steamworks.musicremote.UpdatePlaybackStatus(nStatus) return lib.SteamAPI_ISteamMusicRemote_UpdatePlaybackStatus(steamworks.musicremote_ptr, nStatus) end
+	function steamworks.musicremote.UpdateShuffled(bValue) return lib.SteamAPI_ISteamMusicRemote_UpdateShuffled(steamworks.musicremote_ptr, bValue) end
+	function steamworks.musicremote.UpdateLooped(bValue) return lib.SteamAPI_ISteamMusicRemote_UpdateLooped(steamworks.musicremote_ptr, bValue) end
+	function steamworks.musicremote.UpdateVolume(flValue) return lib.SteamAPI_ISteamMusicRemote_UpdateVolume(steamworks.musicremote_ptr, flValue) end
+	function steamworks.musicremote.CurrentEntryWillChange() return lib.SteamAPI_ISteamMusicRemote_CurrentEntryWillChange(steamworks.musicremote_ptr) end
+	function steamworks.musicremote.CurrentEntryIsAvailable(bAvailable) return lib.SteamAPI_ISteamMusicRemote_CurrentEntryIsAvailable(steamworks.musicremote_ptr, bAvailable) end
+	function steamworks.musicremote.UpdateCurrentEntryText(pchText) return lib.SteamAPI_ISteamMusicRemote_UpdateCurrentEntryText(steamworks.musicremote_ptr, pchText) end
+	function steamworks.musicremote.UpdateCurrentEntryElapsedSeconds(nValue) return lib.SteamAPI_ISteamMusicRemote_UpdateCurrentEntryElapsedSeconds(steamworks.musicremote_ptr, nValue) end
+	function steamworks.musicremote.UpdateCurrentEntryCoverArt(pvBuffer, cbBufferLength) return lib.SteamAPI_ISteamMusicRemote_UpdateCurrentEntryCoverArt(steamworks.musicremote_ptr, pvBuffer, cbBufferLength) end
+	function steamworks.musicremote.CurrentEntryDidChange() return lib.SteamAPI_ISteamMusicRemote_CurrentEntryDidChange(steamworks.musicremote_ptr) end
+	function steamworks.musicremote.QueueWillChange() return lib.SteamAPI_ISteamMusicRemote_QueueWillChange(steamworks.musicremote_ptr) end
+	function steamworks.musicremote.ResetQueueEntries() return lib.SteamAPI_ISteamMusicRemote_ResetQueueEntries(steamworks.musicremote_ptr) end
+	function steamworks.musicremote.SetQueueEntry(nID, nPosition, pchEntryText) return lib.SteamAPI_ISteamMusicRemote_SetQueueEntry(steamworks.musicremote_ptr, nID, nPosition, pchEntryText) end
+	function steamworks.musicremote.SetCurrentQueueEntry(nID) return lib.SteamAPI_ISteamMusicRemote_SetCurrentQueueEntry(steamworks.musicremote_ptr, nID) end
+	function steamworks.musicremote.QueueDidChange() return lib.SteamAPI_ISteamMusicRemote_QueueDidChange(steamworks.musicremote_ptr) end
+	function steamworks.musicremote.PlaylistWillChange() return lib.SteamAPI_ISteamMusicRemote_PlaylistWillChange(steamworks.musicremote_ptr) end
+	function steamworks.musicremote.ResetPlaylistEntries() return lib.SteamAPI_ISteamMusicRemote_ResetPlaylistEntries(steamworks.musicremote_ptr) end
+	function steamworks.musicremote.SetPlaylistEntry(nID, nPosition, pchEntryText) return lib.SteamAPI_ISteamMusicRemote_SetPlaylistEntry(steamworks.musicremote_ptr, nID, nPosition, pchEntryText) end
+	function steamworks.musicremote.SetCurrentPlaylistEntry(nID) return lib.SteamAPI_ISteamMusicRemote_SetCurrentPlaylistEntry(steamworks.musicremote_ptr, nID) end
+	function steamworks.musicremote.PlaylistDidChange() return lib.SteamAPI_ISteamMusicRemote_PlaylistDidChange(steamworks.musicremote_ptr) end
+end
+steamworks.music = {}
+steamworks.music_ptr = lib.SteamAPI_ISteamClient_GetISteamMusic(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, 'STEAMMUSIC_INTERFACE_VERSION001')
+if steamworks.music_ptr == nil then
+	 print('steamworks.lua: failed to load music STEAMMUSIC_INTERFACE_VERSION001')
+else
+	function steamworks.music.BIsEnabled() return lib.SteamAPI_ISteamMusic_BIsEnabled(steamworks.music_ptr) end
+	function steamworks.music.BIsPlaying() return lib.SteamAPI_ISteamMusic_BIsPlaying(steamworks.music_ptr) end
+	function steamworks.music.GetPlaybackStatus() return lib.SteamAPI_ISteamMusic_GetPlaybackStatus(steamworks.music_ptr) end
+	function steamworks.music.Play() return lib.SteamAPI_ISteamMusic_Play(steamworks.music_ptr) end
+	function steamworks.music.Pause() return lib.SteamAPI_ISteamMusic_Pause(steamworks.music_ptr) end
+	function steamworks.music.PlayPrevious() return lib.SteamAPI_ISteamMusic_PlayPrevious(steamworks.music_ptr) end
+	function steamworks.music.PlayNext() return lib.SteamAPI_ISteamMusic_PlayNext(steamworks.music_ptr) end
+	function steamworks.music.SetVolume(flVolume) return lib.SteamAPI_ISteamMusic_SetVolume(steamworks.music_ptr, flVolume) end
+	function steamworks.music.GetVolume() return lib.SteamAPI_ISteamMusic_GetVolume(steamworks.music_ptr) end
+end
+steamworks.http = {}
+steamworks.http_ptr = lib.SteamAPI_ISteamClient_GetISteamHTTP(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, 'STEAMHTTP_INTERFACE_VERSION002')
+if steamworks.http_ptr == nil then
+	 print('steamworks.lua: failed to load http STEAMHTTP_INTERFACE_VERSION002')
+else
+	function steamworks.http.CreateHTTPRequest(eHTTPRequestMethod, pchAbsoluteURL) return lib.SteamAPI_ISteamHTTP_CreateHTTPRequest(steamworks.http_ptr, eHTTPRequestMethod, pchAbsoluteURL) end
+	function steamworks.http.SetHTTPRequestContextValue(hRequest, ulContextValue) return lib.SteamAPI_ISteamHTTP_SetHTTPRequestContextValue(steamworks.http_ptr, hRequest, ulContextValue) end
+	function steamworks.http.SetHTTPRequestNetworkActivityTimeout(hRequest, unTimeoutSeconds) return lib.SteamAPI_ISteamHTTP_SetHTTPRequestNetworkActivityTimeout(steamworks.http_ptr, hRequest, unTimeoutSeconds) end
+	function steamworks.http.SetHTTPRequestHeaderValue(hRequest, pchHeaderName, pchHeaderValue) return lib.SteamAPI_ISteamHTTP_SetHTTPRequestHeaderValue(steamworks.http_ptr, hRequest, pchHeaderName, pchHeaderValue) end
+	function steamworks.http.SetHTTPRequestGetOrPostParameter(hRequest, pchParamName, pchParamValue) return lib.SteamAPI_ISteamHTTP_SetHTTPRequestGetOrPostParameter(steamworks.http_ptr, hRequest, pchParamName, pchParamValue) end
+	function steamworks.http.SendHTTPRequest(hRequest, pCallHandle) return lib.SteamAPI_ISteamHTTP_SendHTTPRequest(steamworks.http_ptr, hRequest, pCallHandle) end
+	function steamworks.http.SendHTTPRequestAndStreamResponse(hRequest, pCallHandle) return lib.SteamAPI_ISteamHTTP_SendHTTPRequestAndStreamResponse(steamworks.http_ptr, hRequest, pCallHandle) end
+	function steamworks.http.DeferHTTPRequest(hRequest) return lib.SteamAPI_ISteamHTTP_DeferHTTPRequest(steamworks.http_ptr, hRequest) end
+	function steamworks.http.PrioritizeHTTPRequest(hRequest) return lib.SteamAPI_ISteamHTTP_PrioritizeHTTPRequest(steamworks.http_ptr, hRequest) end
+	function steamworks.http.GetHTTPResponseHeaderSize(hRequest, pchHeaderName, unResponseHeaderSize) return lib.SteamAPI_ISteamHTTP_GetHTTPResponseHeaderSize(steamworks.http_ptr, hRequest, pchHeaderName, unResponseHeaderSize) end
+	function steamworks.http.GetHTTPResponseHeaderValue(hRequest, pchHeaderName, pHeaderValueBuffer, unBufferSize) return lib.SteamAPI_ISteamHTTP_GetHTTPResponseHeaderValue(steamworks.http_ptr, hRequest, pchHeaderName, pHeaderValueBuffer, unBufferSize) end
+	function steamworks.http.GetHTTPResponseBodySize(hRequest, unBodySize) return lib.SteamAPI_ISteamHTTP_GetHTTPResponseBodySize(steamworks.http_ptr, hRequest, unBodySize) end
+	function steamworks.http.GetHTTPResponseBodyData(hRequest, pBodyDataBuffer, unBufferSize) return lib.SteamAPI_ISteamHTTP_GetHTTPResponseBodyData(steamworks.http_ptr, hRequest, pBodyDataBuffer, unBufferSize) end
+	function steamworks.http.GetHTTPStreamingResponseBodyData(hRequest, cOffset, pBodyDataBuffer, unBufferSize) return lib.SteamAPI_ISteamHTTP_GetHTTPStreamingResponseBodyData(steamworks.http_ptr, hRequest, cOffset, pBodyDataBuffer, unBufferSize) end
+	function steamworks.http.ReleaseHTTPRequest(hRequest) return lib.SteamAPI_ISteamHTTP_ReleaseHTTPRequest(steamworks.http_ptr, hRequest) end
+	function steamworks.http.GetHTTPDownloadProgressPct(hRequest, pflPercentOut) return lib.SteamAPI_ISteamHTTP_GetHTTPDownloadProgressPct(steamworks.http_ptr, hRequest, pflPercentOut) end
+	function steamworks.http.SetHTTPRequestRawPostBody(hRequest, pchContentType, pubBody, unBodyLen) return lib.SteamAPI_ISteamHTTP_SetHTTPRequestRawPostBody(steamworks.http_ptr, hRequest, pchContentType, pubBody, unBodyLen) end
+	function steamworks.http.CreateCookieContainer(bAllowResponsesToModify) return lib.SteamAPI_ISteamHTTP_CreateCookieContainer(steamworks.http_ptr, bAllowResponsesToModify) end
+	function steamworks.http.ReleaseCookieContainer(hCookieContainer) return lib.SteamAPI_ISteamHTTP_ReleaseCookieContainer(steamworks.http_ptr, hCookieContainer) end
+	function steamworks.http.SetCookie(hCookieContainer, pchHost, pchUrl, pchCookie) return lib.SteamAPI_ISteamHTTP_SetCookie(steamworks.http_ptr, hCookieContainer, pchHost, pchUrl, pchCookie) end
+	function steamworks.http.SetHTTPRequestCookieContainer(hRequest, hCookieContainer) return lib.SteamAPI_ISteamHTTP_SetHTTPRequestCookieContainer(steamworks.http_ptr, hRequest, hCookieContainer) end
+	function steamworks.http.SetHTTPRequestUserAgentInfo(hRequest, pchUserAgentInfo) return lib.SteamAPI_ISteamHTTP_SetHTTPRequestUserAgentInfo(steamworks.http_ptr, hRequest, pchUserAgentInfo) end
+	function steamworks.http.SetHTTPRequestRequiresVerifiedCertificate(hRequest, bRequireVerifiedCertificate) return lib.SteamAPI_ISteamHTTP_SetHTTPRequestRequiresVerifiedCertificate(steamworks.http_ptr, hRequest, bRequireVerifiedCertificate) end
+	function steamworks.http.SetHTTPRequestAbsoluteTimeoutMS(hRequest, unMilliseconds) return lib.SteamAPI_ISteamHTTP_SetHTTPRequestAbsoluteTimeoutMS(steamworks.http_ptr, hRequest, unMilliseconds) end
+	function steamworks.http.GetHTTPRequestWasTimedOut(hRequest, pbWasTimedOut) return lib.SteamAPI_ISteamHTTP_GetHTTPRequestWasTimedOut(steamworks.http_ptr, hRequest, pbWasTimedOut) end
+end
+steamworks.utils = {}
+steamworks.utils_ptr = lib.SteamAPI_ISteamClient_GetISteamUtils(steamworks.client_ptr, steamworks.pipe_ptr, 'SteamUtils009')
+if steamworks.utils_ptr == nil then
+	 print('steamworks.lua: failed to load utils SteamUtils009')
+else
+	function steamworks.utils.GetSecondsSinceAppActive() return lib.SteamAPI_ISteamUtils_GetSecondsSinceAppActive(steamworks.utils_ptr) end
+	function steamworks.utils.GetSecondsSinceComputerActive() return lib.SteamAPI_ISteamUtils_GetSecondsSinceComputerActive(steamworks.utils_ptr) end
+	function steamworks.utils.GetConnectedUniverse() return lib.SteamAPI_ISteamUtils_GetConnectedUniverse(steamworks.utils_ptr) end
+	function steamworks.utils.GetServerRealTime() return lib.SteamAPI_ISteamUtils_GetServerRealTime(steamworks.utils_ptr) end
+	function steamworks.utils.GetIPCountry()local str = lib.SteamAPI_ISteamUtils_GetIPCountry(steamworks.utils_ptr) if str ~= nil then return ffi.string(str) end end
+	function steamworks.utils.GetImageSize(iImage, pnWidth, pnHeight) return lib.SteamAPI_ISteamUtils_GetImageSize(steamworks.utils_ptr, iImage, pnWidth, pnHeight) end
+	function steamworks.utils.GetImageRGBA(iImage, pubDest, nDestBufferSize) return lib.SteamAPI_ISteamUtils_GetImageRGBA(steamworks.utils_ptr, iImage, pubDest, nDestBufferSize) end
+	function steamworks.utils.GetCSERIPPort(unIP, usPort) return lib.SteamAPI_ISteamUtils_GetCSERIPPort(steamworks.utils_ptr, unIP, usPort) end
+	function steamworks.utils.GetCurrentBatteryPower() return lib.SteamAPI_ISteamUtils_GetCurrentBatteryPower(steamworks.utils_ptr) end
+	function steamworks.utils.GetAppID() return lib.SteamAPI_ISteamUtils_GetAppID(steamworks.utils_ptr) end
+	function steamworks.utils.SetOverlayNotificationPosition(eNotificationPosition) return lib.SteamAPI_ISteamUtils_SetOverlayNotificationPosition(steamworks.utils_ptr, eNotificationPosition) end
+	function steamworks.utils.IsAPICallCompleted(hSteamAPICall, pbFailed) return lib.SteamAPI_ISteamUtils_IsAPICallCompleted(steamworks.utils_ptr, hSteamAPICall, pbFailed) end
+	function steamworks.utils.GetAPICallFailureReason(hSteamAPICall) return lib.SteamAPI_ISteamUtils_GetAPICallFailureReason(steamworks.utils_ptr, hSteamAPICall) end
+	function steamworks.utils.GetAPICallResult(hSteamAPICall, pCallback, cubCallback, iCallbackExpected, pbFailed) return lib.SteamAPI_ISteamUtils_GetAPICallResult(steamworks.utils_ptr, hSteamAPICall, pCallback, cubCallback, iCallbackExpected, pbFailed) end
+	function steamworks.utils.GetIPCCallCount() return lib.SteamAPI_ISteamUtils_GetIPCCallCount(steamworks.utils_ptr) end
+	function steamworks.utils.SetWarningMessageHook(pFunction) return lib.SteamAPI_ISteamUtils_SetWarningMessageHook(steamworks.utils_ptr, pFunction) end
+	function steamworks.utils.IsOverlayEnabled() return lib.SteamAPI_ISteamUtils_IsOverlayEnabled(steamworks.utils_ptr) end
+	function steamworks.utils.BOverlayNeedsPresent() return lib.SteamAPI_ISteamUtils_BOverlayNeedsPresent(steamworks.utils_ptr) end
+	function steamworks.utils.CheckFileSignature(szFileName) return lib.SteamAPI_ISteamUtils_CheckFileSignature(steamworks.utils_ptr, szFileName) end
+	function steamworks.utils.ShowGamepadTextInput(eInputMode, eLineInputMode, pchDescription, unCharMax, pchExistingText) return lib.SteamAPI_ISteamUtils_ShowGamepadTextInput(steamworks.utils_ptr, eInputMode, eLineInputMode, pchDescription, unCharMax, pchExistingText) end
+	function steamworks.utils.GetEnteredGamepadTextLength() return lib.SteamAPI_ISteamUtils_GetEnteredGamepadTextLength(steamworks.utils_ptr) end
+	function steamworks.utils.GetEnteredGamepadTextInput(pchText, cchText) return lib.SteamAPI_ISteamUtils_GetEnteredGamepadTextInput(steamworks.utils_ptr, pchText, cchText) end
+	function steamworks.utils.GetSteamUILanguage()local str = lib.SteamAPI_ISteamUtils_GetSteamUILanguage(steamworks.utils_ptr) if str ~= nil then return ffi.string(str) end end
+	function steamworks.utils.IsSteamRunningInVR() return lib.SteamAPI_ISteamUtils_IsSteamRunningInVR(steamworks.utils_ptr) end
+	function steamworks.utils.SetOverlayNotificationInset(nHorizontalInset, nVerticalInset) return lib.SteamAPI_ISteamUtils_SetOverlayNotificationInset(steamworks.utils_ptr, nHorizontalInset, nVerticalInset) end
+	function steamworks.utils.IsSteamInBigPictureMode() return lib.SteamAPI_ISteamUtils_IsSteamInBigPictureMode(steamworks.utils_ptr) end
+	function steamworks.utils.StartVRDashboard() return lib.SteamAPI_ISteamUtils_StartVRDashboard(steamworks.utils_ptr) end
+	function steamworks.utils.IsVRHeadsetStreamingEnabled() return lib.SteamAPI_ISteamUtils_IsVRHeadsetStreamingEnabled(steamworks.utils_ptr) end
+	function steamworks.utils.SetVRHeadsetStreamingEnabled(bEnabled) return lib.SteamAPI_ISteamUtils_SetVRHeadsetStreamingEnabled(steamworks.utils_ptr, bEnabled) end
+end
+steamworks.remotestorage = {}
+steamworks.remotestorage_ptr = lib.SteamAPI_ISteamClient_GetISteamRemoteStorage(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, 'STEAMREMOTESTORAGE_INTERFACE_VERSION014')
+if steamworks.remotestorage_ptr == nil then
+	 print('steamworks.lua: failed to load remotestorage STEAMREMOTESTORAGE_INTERFACE_VERSION014')
+else
+	function steamworks.remotestorage.FileWrite(pchFile, pvData, cubData) return lib.SteamAPI_ISteamRemoteStorage_FileWrite(steamworks.remotestorage_ptr, pchFile, pvData, cubData) end
+	function steamworks.remotestorage.FileRead(pchFile, pvData, cubDataToRead) return lib.SteamAPI_ISteamRemoteStorage_FileRead(steamworks.remotestorage_ptr, pchFile, pvData, cubDataToRead) end
+	function steamworks.remotestorage.FileWriteAsync(pchFile, pvData, cubData) return lib.SteamAPI_ISteamRemoteStorage_FileWriteAsync(steamworks.remotestorage_ptr, pchFile, pvData, cubData) end
+	function steamworks.remotestorage.FileReadAsync(pchFile, nOffset, cubToRead) return lib.SteamAPI_ISteamRemoteStorage_FileReadAsync(steamworks.remotestorage_ptr, pchFile, nOffset, cubToRead) end
+	function steamworks.remotestorage.FileReadAsyncComplete(hReadCall, pvBuffer, cubToRead) return lib.SteamAPI_ISteamRemoteStorage_FileReadAsyncComplete(steamworks.remotestorage_ptr, hReadCall, pvBuffer, cubToRead) end
+	function steamworks.remotestorage.FileForget(pchFile) return lib.SteamAPI_ISteamRemoteStorage_FileForget(steamworks.remotestorage_ptr, pchFile) end
+	function steamworks.remotestorage.FileDelete(pchFile) return lib.SteamAPI_ISteamRemoteStorage_FileDelete(steamworks.remotestorage_ptr, pchFile) end
+	function steamworks.remotestorage.FileShare(pchFile) return lib.SteamAPI_ISteamRemoteStorage_FileShare(steamworks.remotestorage_ptr, pchFile) end
+	function steamworks.remotestorage.SetSyncPlatforms(pchFile, eRemoteStoragePlatform) return lib.SteamAPI_ISteamRemoteStorage_SetSyncPlatforms(steamworks.remotestorage_ptr, pchFile, eRemoteStoragePlatform) end
+	function steamworks.remotestorage.FileWriteStreamOpen(pchFile) return lib.SteamAPI_ISteamRemoteStorage_FileWriteStreamOpen(steamworks.remotestorage_ptr, pchFile) end
+	function steamworks.remotestorage.FileWriteStreamWriteChunk(writeHandle, pvData, cubData) return lib.SteamAPI_ISteamRemoteStorage_FileWriteStreamWriteChunk(steamworks.remotestorage_ptr, writeHandle, pvData, cubData) end
+	function steamworks.remotestorage.FileWriteStreamClose(writeHandle) return lib.SteamAPI_ISteamRemoteStorage_FileWriteStreamClose(steamworks.remotestorage_ptr, writeHandle) end
+	function steamworks.remotestorage.FileWriteStreamCancel(writeHandle) return lib.SteamAPI_ISteamRemoteStorage_FileWriteStreamCancel(steamworks.remotestorage_ptr, writeHandle) end
+	function steamworks.remotestorage.FileExists(pchFile) return lib.SteamAPI_ISteamRemoteStorage_FileExists(steamworks.remotestorage_ptr, pchFile) end
+	function steamworks.remotestorage.FilePersisted(pchFile) return lib.SteamAPI_ISteamRemoteStorage_FilePersisted(steamworks.remotestorage_ptr, pchFile) end
+	function steamworks.remotestorage.GetFileSize(pchFile) return lib.SteamAPI_ISteamRemoteStorage_GetFileSize(steamworks.remotestorage_ptr, pchFile) end
+	function steamworks.remotestorage.GetFileTimestamp(pchFile) return lib.SteamAPI_ISteamRemoteStorage_GetFileTimestamp(steamworks.remotestorage_ptr, pchFile) end
+	function steamworks.remotestorage.GetSyncPlatforms(pchFile) return lib.SteamAPI_ISteamRemoteStorage_GetSyncPlatforms(steamworks.remotestorage_ptr, pchFile) end
+	function steamworks.remotestorage.GetFileCount() return lib.SteamAPI_ISteamRemoteStorage_GetFileCount(steamworks.remotestorage_ptr) end
+	function steamworks.remotestorage.GetFileNameAndSize(iFile, pnFileSizeInBytes)local str = lib.SteamAPI_ISteamRemoteStorage_GetFileNameAndSize(steamworks.remotestorage_ptr, iFile, pnFileSizeInBytes) if str ~= nil then return ffi.string(str) end end
+	function steamworks.remotestorage.GetQuota(pnTotalBytes, puAvailableBytes) return lib.SteamAPI_ISteamRemoteStorage_GetQuota(steamworks.remotestorage_ptr, pnTotalBytes, puAvailableBytes) end
+	function steamworks.remotestorage.IsCloudEnabledForAccount() return lib.SteamAPI_ISteamRemoteStorage_IsCloudEnabledForAccount(steamworks.remotestorage_ptr) end
+	function steamworks.remotestorage.IsCloudEnabledForApp() return lib.SteamAPI_ISteamRemoteStorage_IsCloudEnabledForApp(steamworks.remotestorage_ptr) end
+	function steamworks.remotestorage.SetCloudEnabledForApp(bEnabled) return lib.SteamAPI_ISteamRemoteStorage_SetCloudEnabledForApp(steamworks.remotestorage_ptr, bEnabled) end
+	function steamworks.remotestorage.UGCDownload(hContent, unPriority) return lib.SteamAPI_ISteamRemoteStorage_UGCDownload(steamworks.remotestorage_ptr, hContent, unPriority) end
+	function steamworks.remotestorage.GetUGCDownloadProgress(hContent, pnBytesDownloaded, pnBytesExpected) return lib.SteamAPI_ISteamRemoteStorage_GetUGCDownloadProgress(steamworks.remotestorage_ptr, hContent, pnBytesDownloaded, pnBytesExpected) end
+	function steamworks.remotestorage.GetUGCDetails(hContent, pnAppID, ppchName, pnFileSizeInBytes, pSteamIDOwner) return lib.SteamAPI_ISteamRemoteStorage_GetUGCDetails(steamworks.remotestorage_ptr, hContent, pnAppID, ppchName, pnFileSizeInBytes, pSteamIDOwner) end
+	function steamworks.remotestorage.UGCRead(hContent, pvData, cubDataToRead, cOffset, eAction) return lib.SteamAPI_ISteamRemoteStorage_UGCRead(steamworks.remotestorage_ptr, hContent, pvData, cubDataToRead, cOffset, eAction) end
+	function steamworks.remotestorage.GetCachedUGCCount() return lib.SteamAPI_ISteamRemoteStorage_GetCachedUGCCount(steamworks.remotestorage_ptr) end
+	function steamworks.remotestorage.GetCachedUGCHandle(iCachedContent) return lib.SteamAPI_ISteamRemoteStorage_GetCachedUGCHandle(steamworks.remotestorage_ptr, iCachedContent) end
+	function steamworks.remotestorage.PublishWorkshopFile(pchFile, pchPreviewFile, nConsumerAppId, pchTitle, pchDescription, eVisibility, pTags, eWorkshopFileType) return lib.SteamAPI_ISteamRemoteStorage_PublishWorkshopFile(steamworks.remotestorage_ptr, pchFile, pchPreviewFile, nConsumerAppId, pchTitle, pchDescription, eVisibility, pTags, eWorkshopFileType) end
+	function steamworks.remotestorage.CreatePublishedFileUpdateRequest(unPublishedFileId) return lib.SteamAPI_ISteamRemoteStorage_CreatePublishedFileUpdateRequest(steamworks.remotestorage_ptr, unPublishedFileId) end
+	function steamworks.remotestorage.UpdatePublishedFileFile(updateHandle, pchFile) return lib.SteamAPI_ISteamRemoteStorage_UpdatePublishedFileFile(steamworks.remotestorage_ptr, updateHandle, pchFile) end
+	function steamworks.remotestorage.UpdatePublishedFilePreviewFile(updateHandle, pchPreviewFile) return lib.SteamAPI_ISteamRemoteStorage_UpdatePublishedFilePreviewFile(steamworks.remotestorage_ptr, updateHandle, pchPreviewFile) end
+	function steamworks.remotestorage.UpdatePublishedFileTitle(updateHandle, pchTitle) return lib.SteamAPI_ISteamRemoteStorage_UpdatePublishedFileTitle(steamworks.remotestorage_ptr, updateHandle, pchTitle) end
+	function steamworks.remotestorage.UpdatePublishedFileDescription(updateHandle, pchDescription) return lib.SteamAPI_ISteamRemoteStorage_UpdatePublishedFileDescription(steamworks.remotestorage_ptr, updateHandle, pchDescription) end
+	function steamworks.remotestorage.UpdatePublishedFileVisibility(updateHandle, eVisibility) return lib.SteamAPI_ISteamRemoteStorage_UpdatePublishedFileVisibility(steamworks.remotestorage_ptr, updateHandle, eVisibility) end
+	function steamworks.remotestorage.UpdatePublishedFileTags(updateHandle, pTags) return lib.SteamAPI_ISteamRemoteStorage_UpdatePublishedFileTags(steamworks.remotestorage_ptr, updateHandle, pTags) end
+	function steamworks.remotestorage.CommitPublishedFileUpdate(updateHandle) return lib.SteamAPI_ISteamRemoteStorage_CommitPublishedFileUpdate(steamworks.remotestorage_ptr, updateHandle) end
+	function steamworks.remotestorage.GetPublishedFileDetails(unPublishedFileId, unMaxSecondsOld) return lib.SteamAPI_ISteamRemoteStorage_GetPublishedFileDetails(steamworks.remotestorage_ptr, unPublishedFileId, unMaxSecondsOld) end
+	function steamworks.remotestorage.DeletePublishedFile(unPublishedFileId) return lib.SteamAPI_ISteamRemoteStorage_DeletePublishedFile(steamworks.remotestorage_ptr, unPublishedFileId) end
+	function steamworks.remotestorage.EnumerateUserPublishedFiles(unStartIndex) return lib.SteamAPI_ISteamRemoteStorage_EnumerateUserPublishedFiles(steamworks.remotestorage_ptr, unStartIndex) end
+	function steamworks.remotestorage.SubscribePublishedFile(unPublishedFileId) return lib.SteamAPI_ISteamRemoteStorage_SubscribePublishedFile(steamworks.remotestorage_ptr, unPublishedFileId) end
+	function steamworks.remotestorage.EnumerateUserSubscribedFiles(unStartIndex) return lib.SteamAPI_ISteamRemoteStorage_EnumerateUserSubscribedFiles(steamworks.remotestorage_ptr, unStartIndex) end
+	function steamworks.remotestorage.UnsubscribePublishedFile(unPublishedFileId) return lib.SteamAPI_ISteamRemoteStorage_UnsubscribePublishedFile(steamworks.remotestorage_ptr, unPublishedFileId) end
+	function steamworks.remotestorage.UpdatePublishedFileSetChangeDescription(updateHandle, pchChangeDescription) return lib.SteamAPI_ISteamRemoteStorage_UpdatePublishedFileSetChangeDescription(steamworks.remotestorage_ptr, updateHandle, pchChangeDescription) end
+	function steamworks.remotestorage.GetPublishedItemVoteDetails(unPublishedFileId) return lib.SteamAPI_ISteamRemoteStorage_GetPublishedItemVoteDetails(steamworks.remotestorage_ptr, unPublishedFileId) end
+	function steamworks.remotestorage.UpdateUserPublishedItemVote(unPublishedFileId, bVoteUp) return lib.SteamAPI_ISteamRemoteStorage_UpdateUserPublishedItemVote(steamworks.remotestorage_ptr, unPublishedFileId, bVoteUp) end
+	function steamworks.remotestorage.GetUserPublishedItemVoteDetails(unPublishedFileId) return lib.SteamAPI_ISteamRemoteStorage_GetUserPublishedItemVoteDetails(steamworks.remotestorage_ptr, unPublishedFileId) end
+	function steamworks.remotestorage.EnumerateUserSharedWorkshopFiles(steamId, unStartIndex, pRequiredTags, pExcludedTags) return lib.SteamAPI_ISteamRemoteStorage_EnumerateUserSharedWorkshopFiles(steamworks.remotestorage_ptr, steamId, unStartIndex, pRequiredTags, pExcludedTags) end
+	function steamworks.remotestorage.PublishVideo(eVideoProvider, pchVideoAccount, pchVideoIdentifier, pchPreviewFile, nConsumerAppId, pchTitle, pchDescription, eVisibility, pTags) return lib.SteamAPI_ISteamRemoteStorage_PublishVideo(steamworks.remotestorage_ptr, eVideoProvider, pchVideoAccount, pchVideoIdentifier, pchPreviewFile, nConsumerAppId, pchTitle, pchDescription, eVisibility, pTags) end
+	function steamworks.remotestorage.SetUserPublishedFileAction(unPublishedFileId, eAction) return lib.SteamAPI_ISteamRemoteStorage_SetUserPublishedFileAction(steamworks.remotestorage_ptr, unPublishedFileId, eAction) end
+	function steamworks.remotestorage.EnumeratePublishedFilesByUserAction(eAction, unStartIndex) return lib.SteamAPI_ISteamRemoteStorage_EnumeratePublishedFilesByUserAction(steamworks.remotestorage_ptr, eAction, unStartIndex) end
+	function steamworks.remotestorage.EnumeratePublishedWorkshopFiles(eEnumerationType, unStartIndex, unCount, unDays, pTags, pUserTags) return lib.SteamAPI_ISteamRemoteStorage_EnumeratePublishedWorkshopFiles(steamworks.remotestorage_ptr, eEnumerationType, unStartIndex, unCount, unDays, pTags, pUserTags) end
+	function steamworks.remotestorage.UGCDownloadToLocation(hContent, pchLocation, unPriority) return lib.SteamAPI_ISteamRemoteStorage_UGCDownloadToLocation(steamworks.remotestorage_ptr, hContent, pchLocation, unPriority) end
+end
+steamworks.applist = {}
+steamworks.applist_ptr = lib.SteamAPI_ISteamClient_GetISteamAppList(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, 'STEAMAPPLIST_INTERFACE_VERSION001')
+if steamworks.applist_ptr == nil then
+	 print('steamworks.lua: failed to load applist STEAMAPPLIST_INTERFACE_VERSION001')
+else
+	function steamworks.applist.GetNumInstalledApps() return lib.SteamAPI_ISteamAppList_GetNumInstalledApps(steamworks.applist_ptr) end
+	function steamworks.applist.GetInstalledApps(pvecAppID, unMaxAppIDs) return lib.SteamAPI_ISteamAppList_GetInstalledApps(steamworks.applist_ptr, pvecAppID, unMaxAppIDs) end
+	function steamworks.applist.GetAppName(nAppID, pchName, cchNameMax) return lib.SteamAPI_ISteamAppList_GetAppName(steamworks.applist_ptr, nAppID, pchName, cchNameMax) end
+	function steamworks.applist.GetAppInstallDir(nAppID, pchDirectory, cchNameMax) return lib.SteamAPI_ISteamAppList_GetAppInstallDir(steamworks.applist_ptr, nAppID, pchDirectory, cchNameMax) end
+	function steamworks.applist.GetAppBuildId(nAppID) return lib.SteamAPI_ISteamAppList_GetAppBuildId(steamworks.applist_ptr, nAppID) end
+end
+steamworks.matchmaking = {}
+steamworks.matchmaking_ptr = lib.SteamAPI_ISteamClient_GetISteamMatchmaking(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, 'SteamMatchMaking009')
+if steamworks.matchmaking_ptr == nil then
+	 print('steamworks.lua: failed to load matchmaking SteamMatchMaking009')
+else
+	function steamworks.matchmaking.GetFavoriteGameCount() return lib.SteamAPI_ISteamMatchmaking_GetFavoriteGameCount(steamworks.matchmaking_ptr) end
+	function steamworks.matchmaking.GetFavoriteGame(iGame, pnAppID, pnIP, pnConnPort, pnQueryPort, punFlags, pRTime32LastPlayedOnServer) return lib.SteamAPI_ISteamMatchmaking_GetFavoriteGame(steamworks.matchmaking_ptr, iGame, pnAppID, pnIP, pnConnPort, pnQueryPort, punFlags, pRTime32LastPlayedOnServer) end
+	function steamworks.matchmaking.AddFavoriteGame(nAppID, nIP, nConnPort, nQueryPort, unFlags, rTime32LastPlayedOnServer) return lib.SteamAPI_ISteamMatchmaking_AddFavoriteGame(steamworks.matchmaking_ptr, nAppID, nIP, nConnPort, nQueryPort, unFlags, rTime32LastPlayedOnServer) end
+	function steamworks.matchmaking.RemoveFavoriteGame(nAppID, nIP, nConnPort, nQueryPort, unFlags) return lib.SteamAPI_ISteamMatchmaking_RemoveFavoriteGame(steamworks.matchmaking_ptr, nAppID, nIP, nConnPort, nQueryPort, unFlags) end
+	function steamworks.matchmaking.RequestLobbyList() return lib.SteamAPI_ISteamMatchmaking_RequestLobbyList(steamworks.matchmaking_ptr) end
+	function steamworks.matchmaking.AddRequestLobbyListStringFilter(pchKeyToMatch, pchValueToMatch, eComparisonType) return lib.SteamAPI_ISteamMatchmaking_AddRequestLobbyListStringFilter(steamworks.matchmaking_ptr, pchKeyToMatch, pchValueToMatch, eComparisonType) end
+	function steamworks.matchmaking.AddRequestLobbyListNumericalFilter(pchKeyToMatch, nValueToMatch, eComparisonType) return lib.SteamAPI_ISteamMatchmaking_AddRequestLobbyListNumericalFilter(steamworks.matchmaking_ptr, pchKeyToMatch, nValueToMatch, eComparisonType) end
+	function steamworks.matchmaking.AddRequestLobbyListNearValueFilter(pchKeyToMatch, nValueToBeCloseTo) return lib.SteamAPI_ISteamMatchmaking_AddRequestLobbyListNearValueFilter(steamworks.matchmaking_ptr, pchKeyToMatch, nValueToBeCloseTo) end
+	function steamworks.matchmaking.AddRequestLobbyListFilterSlotsAvailable(nSlotsAvailable) return lib.SteamAPI_ISteamMatchmaking_AddRequestLobbyListFilterSlotsAvailable(steamworks.matchmaking_ptr, nSlotsAvailable) end
+	function steamworks.matchmaking.AddRequestLobbyListDistanceFilter(eLobbyDistanceFilter) return lib.SteamAPI_ISteamMatchmaking_AddRequestLobbyListDistanceFilter(steamworks.matchmaking_ptr, eLobbyDistanceFilter) end
+	function steamworks.matchmaking.AddRequestLobbyListResultCountFilter(cMaxResults) return lib.SteamAPI_ISteamMatchmaking_AddRequestLobbyListResultCountFilter(steamworks.matchmaking_ptr, cMaxResults) end
+	function steamworks.matchmaking.AddRequestLobbyListCompatibleMembersFilter(steamIDLobby) return lib.SteamAPI_ISteamMatchmaking_AddRequestLobbyListCompatibleMembersFilter(steamworks.matchmaking_ptr, steamIDLobby) end
+	function steamworks.matchmaking.GetLobbyByIndex(iLobby) return lib.SteamAPI_ISteamMatchmaking_GetLobbyByIndex(steamworks.matchmaking_ptr, iLobby) end
+	function steamworks.matchmaking.CreateLobby(eLobbyType, cMaxMembers) return lib.SteamAPI_ISteamMatchmaking_CreateLobby(steamworks.matchmaking_ptr, eLobbyType, cMaxMembers) end
+	function steamworks.matchmaking.JoinLobby(steamIDLobby) return lib.SteamAPI_ISteamMatchmaking_JoinLobby(steamworks.matchmaking_ptr, steamIDLobby) end
+	function steamworks.matchmaking.LeaveLobby(steamIDLobby) return lib.SteamAPI_ISteamMatchmaking_LeaveLobby(steamworks.matchmaking_ptr, steamIDLobby) end
+	function steamworks.matchmaking.InviteUserToLobby(steamIDLobby, steamIDInvitee) return lib.SteamAPI_ISteamMatchmaking_InviteUserToLobby(steamworks.matchmaking_ptr, steamIDLobby, steamIDInvitee) end
+	function steamworks.matchmaking.GetNumLobbyMembers(steamIDLobby) return lib.SteamAPI_ISteamMatchmaking_GetNumLobbyMembers(steamworks.matchmaking_ptr, steamIDLobby) end
+	function steamworks.matchmaking.GetLobbyMemberByIndex(steamIDLobby, iMember) return lib.SteamAPI_ISteamMatchmaking_GetLobbyMemberByIndex(steamworks.matchmaking_ptr, steamIDLobby, iMember) end
+	function steamworks.matchmaking.GetLobbyData(steamIDLobby, pchKey)local str = lib.SteamAPI_ISteamMatchmaking_GetLobbyData(steamworks.matchmaking_ptr, steamIDLobby, pchKey) if str ~= nil then return ffi.string(str) end end
+	function steamworks.matchmaking.SetLobbyData(steamIDLobby, pchKey, pchValue) return lib.SteamAPI_ISteamMatchmaking_SetLobbyData(steamworks.matchmaking_ptr, steamIDLobby, pchKey, pchValue) end
+	function steamworks.matchmaking.GetLobbyDataCount(steamIDLobby) return lib.SteamAPI_ISteamMatchmaking_GetLobbyDataCount(steamworks.matchmaking_ptr, steamIDLobby) end
+	function steamworks.matchmaking.GetLobbyDataByIndex(steamIDLobby, iLobbyData, pchKey, cchKeyBufferSize, pchValue, cchValueBufferSize) return lib.SteamAPI_ISteamMatchmaking_GetLobbyDataByIndex(steamworks.matchmaking_ptr, steamIDLobby, iLobbyData, pchKey, cchKeyBufferSize, pchValue, cchValueBufferSize) end
+	function steamworks.matchmaking.DeleteLobbyData(steamIDLobby, pchKey) return lib.SteamAPI_ISteamMatchmaking_DeleteLobbyData(steamworks.matchmaking_ptr, steamIDLobby, pchKey) end
+	function steamworks.matchmaking.GetLobbyMemberData(steamIDLobby, steamIDUser, pchKey)local str = lib.SteamAPI_ISteamMatchmaking_GetLobbyMemberData(steamworks.matchmaking_ptr, steamIDLobby, steamIDUser, pchKey) if str ~= nil then return ffi.string(str) end end
+	function steamworks.matchmaking.SetLobbyMemberData(steamIDLobby, pchKey, pchValue) return lib.SteamAPI_ISteamMatchmaking_SetLobbyMemberData(steamworks.matchmaking_ptr, steamIDLobby, pchKey, pchValue) end
+	function steamworks.matchmaking.SendLobbyChatMsg(steamIDLobby, pvMsgBody, cubMsgBody) return lib.SteamAPI_ISteamMatchmaking_SendLobbyChatMsg(steamworks.matchmaking_ptr, steamIDLobby, pvMsgBody, cubMsgBody) end
+	function steamworks.matchmaking.GetLobbyChatEntry(steamIDLobby, iChatID, pSteamIDUser, pvData, cubData, peChatEntryType) return lib.SteamAPI_ISteamMatchmaking_GetLobbyChatEntry(steamworks.matchmaking_ptr, steamIDLobby, iChatID, pSteamIDUser, pvData, cubData, peChatEntryType) end
+	function steamworks.matchmaking.RequestLobbyData(steamIDLobby) return lib.SteamAPI_ISteamMatchmaking_RequestLobbyData(steamworks.matchmaking_ptr, steamIDLobby) end
+	function steamworks.matchmaking.SetLobbyGameServer(steamIDLobby, unGameServerIP, unGameServerPort, steamIDGameServer) return lib.SteamAPI_ISteamMatchmaking_SetLobbyGameServer(steamworks.matchmaking_ptr, steamIDLobby, unGameServerIP, unGameServerPort, steamIDGameServer) end
+	function steamworks.matchmaking.GetLobbyGameServer(steamIDLobby, punGameServerIP, punGameServerPort, psteamIDGameServer) return lib.SteamAPI_ISteamMatchmaking_GetLobbyGameServer(steamworks.matchmaking_ptr, steamIDLobby, punGameServerIP, punGameServerPort, psteamIDGameServer) end
+	function steamworks.matchmaking.SetLobbyMemberLimit(steamIDLobby, cMaxMembers) return lib.SteamAPI_ISteamMatchmaking_SetLobbyMemberLimit(steamworks.matchmaking_ptr, steamIDLobby, cMaxMembers) end
+	function steamworks.matchmaking.GetLobbyMemberLimit(steamIDLobby) return lib.SteamAPI_ISteamMatchmaking_GetLobbyMemberLimit(steamworks.matchmaking_ptr, steamIDLobby) end
+	function steamworks.matchmaking.SetLobbyType(steamIDLobby, eLobbyType) return lib.SteamAPI_ISteamMatchmaking_SetLobbyType(steamworks.matchmaking_ptr, steamIDLobby, eLobbyType) end
+	function steamworks.matchmaking.SetLobbyJoinable(steamIDLobby, bLobbyJoinable) return lib.SteamAPI_ISteamMatchmaking_SetLobbyJoinable(steamworks.matchmaking_ptr, steamIDLobby, bLobbyJoinable) end
+	function steamworks.matchmaking.GetLobbyOwner(steamIDLobby) return lib.SteamAPI_ISteamMatchmaking_GetLobbyOwner(steamworks.matchmaking_ptr, steamIDLobby) end
+	function steamworks.matchmaking.SetLobbyOwner(steamIDLobby, steamIDNewOwner) return lib.SteamAPI_ISteamMatchmaking_SetLobbyOwner(steamworks.matchmaking_ptr, steamIDLobby, steamIDNewOwner) end
+	function steamworks.matchmaking.SetLinkedLobby(steamIDLobby, steamIDLobbyDependent) return lib.SteamAPI_ISteamMatchmaking_SetLinkedLobby(steamworks.matchmaking_ptr, steamIDLobby, steamIDLobbyDependent) end
+end
+steamworks.client = {}
+do
+	function steamworks.client.CreateSteamPipe() return lib.SteamAPI_ISteamClient_CreateSteamPipe(steamworks.client_ptr) end
+	function steamworks.client.BReleaseSteamPipe(hSteamPipe) return lib.SteamAPI_ISteamClient_BReleaseSteamPipe(steamworks.client_ptr, hSteamPipe) end
+	function steamworks.client.ConnectToGlobalUser(hSteamPipe) return lib.SteamAPI_ISteamClient_ConnectToGlobalUser(steamworks.client_ptr, hSteamPipe) end
+	function steamworks.client.CreateLocalUser(phSteamPipe, eAccountType) return lib.SteamAPI_ISteamClient_CreateLocalUser(steamworks.client_ptr, phSteamPipe, eAccountType) end
+	function steamworks.client.ReleaseUser(hSteamPipe, hUser) return lib.SteamAPI_ISteamClient_ReleaseUser(steamworks.client_ptr, hSteamPipe, hUser) end
+	function steamworks.client.GetISteamUser(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamUser(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamGameServer(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamGameServer(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
+	function steamworks.client.SetLocalIPBinding(unIP, usPort) return lib.SteamAPI_ISteamClient_SetLocalIPBinding(steamworks.client_ptr, unIP, usPort) end
+	function steamworks.client.GetISteamFriends(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamFriends(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamUtils(hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamUtils(steamworks.client_ptr, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamMatchmaking(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamMatchmaking(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamMatchmakingServers(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamMatchmakingServers(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamGenericInterface(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamGenericInterface(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamUserStats(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamUserStats(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamGameServerStats(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamGameServerStats(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamApps(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamApps(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamNetworking(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamNetworking(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamRemoteStorage(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamRemoteStorage(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamScreenshots(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamScreenshots(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetIPCCallCount() return lib.SteamAPI_ISteamClient_GetIPCCallCount(steamworks.client_ptr) end
+	function steamworks.client.SetWarningMessageHook(pFunction) return lib.SteamAPI_ISteamClient_SetWarningMessageHook(steamworks.client_ptr, pFunction) end
+	function steamworks.client.BShutdownIfAllPipesClosed() return lib.SteamAPI_ISteamClient_BShutdownIfAllPipesClosed(steamworks.client_ptr) end
+	function steamworks.client.GetISteamHTTP(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamHTTP(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamUnifiedMessages(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamUnifiedMessages(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamController(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamController(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamUGC(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamUGC(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamAppList(hSteamUser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamAppList(steamworks.client_ptr, hSteamUser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamMusic(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamMusic(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamMusicRemote(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamMusicRemote(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamHTMLSurface(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamHTMLSurface(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamInventory(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamInventory(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
+	function steamworks.client.GetISteamVideo(hSteamuser, hSteamPipe, pchVersion) return lib.SteamAPI_ISteamClient_GetISteamVideo(steamworks.client_ptr, hSteamuser, hSteamPipe, pchVersion) end
+end
 steamworks.user = {}
-steamworks.user_ptr = lib.SteamUser()
-function steamworks.user.GetHSteamUser() return lib.SteamAPI_ISteamUser_GetHSteamUser(steamworks.user_ptr) end
-function steamworks.user.BLoggedOn() return lib.SteamAPI_ISteamUser_BLoggedOn(steamworks.user_ptr) end
-function steamworks.user.GetSteamID() return lib.SteamAPI_ISteamUser_GetSteamID(steamworks.user_ptr) end
-function steamworks.user.InitiateGameConnection(pAuthBlob, cbMaxAuthBlob, steamIDGameServer, unIPServer, usPortServer, bSecure) return lib.SteamAPI_ISteamUser_InitiateGameConnection(steamworks.user_ptr, pAuthBlob, cbMaxAuthBlob, steamIDGameServer, unIPServer, usPortServer, bSecure) end
-function steamworks.user.TerminateGameConnection(unIPServer, usPortServer) return lib.SteamAPI_ISteamUser_TerminateGameConnection(steamworks.user_ptr, unIPServer, usPortServer) end
-function steamworks.user.TrackAppUsageEvent(gameID, eAppUsageEvent, pchExtraInfo) return lib.SteamAPI_ISteamUser_TrackAppUsageEvent(steamworks.user_ptr, gameID, eAppUsageEvent, pchExtraInfo) end
-function steamworks.user.GetUserDataFolder(pchBuffer, cubBuffer) return lib.SteamAPI_ISteamUser_GetUserDataFolder(steamworks.user_ptr, pchBuffer, cubBuffer) end
-function steamworks.user.StartVoiceRecording() return lib.SteamAPI_ISteamUser_StartVoiceRecording(steamworks.user_ptr) end
-function steamworks.user.StopVoiceRecording() return lib.SteamAPI_ISteamUser_StopVoiceRecording(steamworks.user_ptr) end
-function steamworks.user.GetAvailableVoice(pcbCompressed, pcbUncompressed_Deprecated, nUncompressedVoiceDesiredSampleRate_Deprecated) return lib.SteamAPI_ISteamUser_GetAvailableVoice(steamworks.user_ptr, pcbCompressed, pcbUncompressed_Deprecated, nUncompressedVoiceDesiredSampleRate_Deprecated) end
-function steamworks.user.GetVoice(bWantCompressed, pDestBuffer, cbDestBufferSize, nBytesWritten, bWantUncompressed_Deprecated, pUncompressedDestBuffer_Deprecated, cbUncompressedDestBufferSize_Deprecated, nUncompressBytesWritten_Deprecated, nUncompressedVoiceDesiredSampleRate_Deprecated) return lib.SteamAPI_ISteamUser_GetVoice(steamworks.user_ptr, bWantCompressed, pDestBuffer, cbDestBufferSize, nBytesWritten, bWantUncompressed_Deprecated, pUncompressedDestBuffer_Deprecated, cbUncompressedDestBufferSize_Deprecated, nUncompressBytesWritten_Deprecated, nUncompressedVoiceDesiredSampleRate_Deprecated) end
-function steamworks.user.DecompressVoice(pCompressed, cbCompressed, pDestBuffer, cbDestBufferSize, nBytesWritten, nDesiredSampleRate) return lib.SteamAPI_ISteamUser_DecompressVoice(steamworks.user_ptr, pCompressed, cbCompressed, pDestBuffer, cbDestBufferSize, nBytesWritten, nDesiredSampleRate) end
-function steamworks.user.GetVoiceOptimalSampleRate() return lib.SteamAPI_ISteamUser_GetVoiceOptimalSampleRate(steamworks.user_ptr) end
-function steamworks.user.GetAuthSessionTicket(pTicket, cbMaxTicket, pcbTicket) return lib.SteamAPI_ISteamUser_GetAuthSessionTicket(steamworks.user_ptr, pTicket, cbMaxTicket, pcbTicket) end
-function steamworks.user.BeginAuthSession(pAuthTicket, cbAuthTicket, steamID) return lib.SteamAPI_ISteamUser_BeginAuthSession(steamworks.user_ptr, pAuthTicket, cbAuthTicket, steamID) end
-function steamworks.user.EndAuthSession(steamID) return lib.SteamAPI_ISteamUser_EndAuthSession(steamworks.user_ptr, steamID) end
-function steamworks.user.CancelAuthTicket(hAuthTicket) return lib.SteamAPI_ISteamUser_CancelAuthTicket(steamworks.user_ptr, hAuthTicket) end
-function steamworks.user.UserHasLicenseForApp(steamID, appID) return lib.SteamAPI_ISteamUser_UserHasLicenseForApp(steamworks.user_ptr, steamID, appID) end
-function steamworks.user.BIsBehindNAT() return lib.SteamAPI_ISteamUser_BIsBehindNAT(steamworks.user_ptr) end
-function steamworks.user.AdvertiseGame(steamIDGameServer, unIPServer, usPortServer) return lib.SteamAPI_ISteamUser_AdvertiseGame(steamworks.user_ptr, steamIDGameServer, unIPServer, usPortServer) end
-function steamworks.user.RequestEncryptedAppTicket(pDataToInclude, cbDataToInclude) return lib.SteamAPI_ISteamUser_RequestEncryptedAppTicket(steamworks.user_ptr, pDataToInclude, cbDataToInclude) end
-function steamworks.user.GetEncryptedAppTicket(pTicket, cbMaxTicket, pcbTicket) return lib.SteamAPI_ISteamUser_GetEncryptedAppTicket(steamworks.user_ptr, pTicket, cbMaxTicket, pcbTicket) end
-function steamworks.user.GetGameBadgeLevel(nSeries, bFoil) return lib.SteamAPI_ISteamUser_GetGameBadgeLevel(steamworks.user_ptr, nSeries, bFoil) end
-function steamworks.user.GetPlayerSteamLevel() return lib.SteamAPI_ISteamUser_GetPlayerSteamLevel(steamworks.user_ptr) end
-function steamworks.user.RequestStoreAuthURL(pchRedirectURL) return lib.SteamAPI_ISteamUser_RequestStoreAuthURL(steamworks.user_ptr, pchRedirectURL) end
-function steamworks.user.BIsPhoneVerified() return lib.SteamAPI_ISteamUser_BIsPhoneVerified(steamworks.user_ptr) end
-function steamworks.user.BIsTwoFactorEnabled() return lib.SteamAPI_ISteamUser_BIsTwoFactorEnabled(steamworks.user_ptr) end
-function steamworks.user.BIsPhoneIdentifying() return lib.SteamAPI_ISteamUser_BIsPhoneIdentifying(steamworks.user_ptr) end
-function steamworks.user.BIsPhoneRequiringVerification() return lib.SteamAPI_ISteamUser_BIsPhoneRequiringVerification(steamworks.user_ptr) end
+steamworks.user_ptr = lib.SteamAPI_ISteamClient_GetISteamUser(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, 'SteamUser019')
+if steamworks.user_ptr == nil then
+	 print('steamworks.lua: failed to load user SteamUser019')
+else
+	function steamworks.user.GetHSteamUser() return lib.SteamAPI_ISteamUser_GetHSteamUser(steamworks.user_ptr) end
+	function steamworks.user.BLoggedOn() return lib.SteamAPI_ISteamUser_BLoggedOn(steamworks.user_ptr) end
+	function steamworks.user.GetSteamID() return lib.SteamAPI_ISteamUser_GetSteamID(steamworks.user_ptr) end
+	function steamworks.user.InitiateGameConnection(pAuthBlob, cbMaxAuthBlob, steamIDGameServer, unIPServer, usPortServer, bSecure) return lib.SteamAPI_ISteamUser_InitiateGameConnection(steamworks.user_ptr, pAuthBlob, cbMaxAuthBlob, steamIDGameServer, unIPServer, usPortServer, bSecure) end
+	function steamworks.user.TerminateGameConnection(unIPServer, usPortServer) return lib.SteamAPI_ISteamUser_TerminateGameConnection(steamworks.user_ptr, unIPServer, usPortServer) end
+	function steamworks.user.TrackAppUsageEvent(gameID, eAppUsageEvent, pchExtraInfo) return lib.SteamAPI_ISteamUser_TrackAppUsageEvent(steamworks.user_ptr, gameID, eAppUsageEvent, pchExtraInfo) end
+	function steamworks.user.GetUserDataFolder(pchBuffer, cubBuffer) return lib.SteamAPI_ISteamUser_GetUserDataFolder(steamworks.user_ptr, pchBuffer, cubBuffer) end
+	function steamworks.user.StartVoiceRecording() return lib.SteamAPI_ISteamUser_StartVoiceRecording(steamworks.user_ptr) end
+	function steamworks.user.StopVoiceRecording() return lib.SteamAPI_ISteamUser_StopVoiceRecording(steamworks.user_ptr) end
+	function steamworks.user.GetAvailableVoice(pcbCompressed, pcbUncompressed_Deprecated, nUncompressedVoiceDesiredSampleRate_Deprecated) return lib.SteamAPI_ISteamUser_GetAvailableVoice(steamworks.user_ptr, pcbCompressed, pcbUncompressed_Deprecated, nUncompressedVoiceDesiredSampleRate_Deprecated) end
+	function steamworks.user.GetVoice(bWantCompressed, pDestBuffer, cbDestBufferSize, nBytesWritten, bWantUncompressed_Deprecated, pUncompressedDestBuffer_Deprecated, cbUncompressedDestBufferSize_Deprecated, nUncompressBytesWritten_Deprecated, nUncompressedVoiceDesiredSampleRate_Deprecated) return lib.SteamAPI_ISteamUser_GetVoice(steamworks.user_ptr, bWantCompressed, pDestBuffer, cbDestBufferSize, nBytesWritten, bWantUncompressed_Deprecated, pUncompressedDestBuffer_Deprecated, cbUncompressedDestBufferSize_Deprecated, nUncompressBytesWritten_Deprecated, nUncompressedVoiceDesiredSampleRate_Deprecated) end
+	function steamworks.user.DecompressVoice(pCompressed, cbCompressed, pDestBuffer, cbDestBufferSize, nBytesWritten, nDesiredSampleRate) return lib.SteamAPI_ISteamUser_DecompressVoice(steamworks.user_ptr, pCompressed, cbCompressed, pDestBuffer, cbDestBufferSize, nBytesWritten, nDesiredSampleRate) end
+	function steamworks.user.GetVoiceOptimalSampleRate() return lib.SteamAPI_ISteamUser_GetVoiceOptimalSampleRate(steamworks.user_ptr) end
+	function steamworks.user.GetAuthSessionTicket(pTicket, cbMaxTicket, pcbTicket) return lib.SteamAPI_ISteamUser_GetAuthSessionTicket(steamworks.user_ptr, pTicket, cbMaxTicket, pcbTicket) end
+	function steamworks.user.BeginAuthSession(pAuthTicket, cbAuthTicket, steamID) return lib.SteamAPI_ISteamUser_BeginAuthSession(steamworks.user_ptr, pAuthTicket, cbAuthTicket, steamID) end
+	function steamworks.user.EndAuthSession(steamID) return lib.SteamAPI_ISteamUser_EndAuthSession(steamworks.user_ptr, steamID) end
+	function steamworks.user.CancelAuthTicket(hAuthTicket) return lib.SteamAPI_ISteamUser_CancelAuthTicket(steamworks.user_ptr, hAuthTicket) end
+	function steamworks.user.UserHasLicenseForApp(steamID, appID) return lib.SteamAPI_ISteamUser_UserHasLicenseForApp(steamworks.user_ptr, steamID, appID) end
+	function steamworks.user.BIsBehindNAT() return lib.SteamAPI_ISteamUser_BIsBehindNAT(steamworks.user_ptr) end
+	function steamworks.user.AdvertiseGame(steamIDGameServer, unIPServer, usPortServer) return lib.SteamAPI_ISteamUser_AdvertiseGame(steamworks.user_ptr, steamIDGameServer, unIPServer, usPortServer) end
+	function steamworks.user.RequestEncryptedAppTicket(pDataToInclude, cbDataToInclude) return lib.SteamAPI_ISteamUser_RequestEncryptedAppTicket(steamworks.user_ptr, pDataToInclude, cbDataToInclude) end
+	function steamworks.user.GetEncryptedAppTicket(pTicket, cbMaxTicket, pcbTicket) return lib.SteamAPI_ISteamUser_GetEncryptedAppTicket(steamworks.user_ptr, pTicket, cbMaxTicket, pcbTicket) end
+	function steamworks.user.GetGameBadgeLevel(nSeries, bFoil) return lib.SteamAPI_ISteamUser_GetGameBadgeLevel(steamworks.user_ptr, nSeries, bFoil) end
+	function steamworks.user.GetPlayerSteamLevel() return lib.SteamAPI_ISteamUser_GetPlayerSteamLevel(steamworks.user_ptr) end
+	function steamworks.user.RequestStoreAuthURL(pchRedirectURL) return lib.SteamAPI_ISteamUser_RequestStoreAuthURL(steamworks.user_ptr, pchRedirectURL) end
+	function steamworks.user.BIsPhoneVerified() return lib.SteamAPI_ISteamUser_BIsPhoneVerified(steamworks.user_ptr) end
+	function steamworks.user.BIsTwoFactorEnabled() return lib.SteamAPI_ISteamUser_BIsTwoFactorEnabled(steamworks.user_ptr) end
+	function steamworks.user.BIsPhoneIdentifying() return lib.SteamAPI_ISteamUser_BIsPhoneIdentifying(steamworks.user_ptr) end
+	function steamworks.user.BIsPhoneRequiringVerification() return lib.SteamAPI_ISteamUser_BIsPhoneRequiringVerification(steamworks.user_ptr) end
+end
 local META = {}
 META.__index = META
 function META:GetRelationship() return steamworks.friends.GetFriendRelationship(self.id) end

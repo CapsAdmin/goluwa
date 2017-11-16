@@ -1,3 +1,6 @@
+if not vfs.IsFile("steam_api.json") then
+	error("please put steam_api.json in your data folder (" .. R("data/") .. "steam_api.json")
+end
 
 local ffi = require("ffi")
 local prepend = "SteamWorks_"
@@ -43,6 +46,7 @@ do -- typedefs
 			info.type = info.type:gsub("%[.-%]", "*")
 			if info.type:find("(*)", nil, true) then
 				local line = info.type:gsub("%(%*%)", function() return "(*" .. prepend .. info.typedef .. ")" end)
+
 				line = line:gsub("__attribute__%(%(cdecl%)%)", "")
 				line = line:gsub("SteamAPICall_t", prepend .. "SteamAPICall_t")
 				line = line:gsub("uint32", prepend .. "uint32")
@@ -51,7 +55,10 @@ do -- typedefs
 			else
 				if not info.type:startswith("struct") and not info.type:startswith("union") and not pcall(ffi.typeof, info.type) then info.type = prepend .. info.type end
 
-				a("typedef %s %s;", info.type, prepend .. info.typedef)
+				local typedef = info.typedef
+				typedef = typedef:gsub("::SteamCallback_t", "")
+
+				a("typedef %s %s;", info.type, prepend .. typedef)
 			end
 		end
 	end
@@ -68,7 +75,7 @@ do -- typedefs
 		end
 	end
 
-	a("typedef struct %s {} %s;", prepend .. "ISteamClient", prepend .. "ISteamClient")
+	--a("typedef struct %s {} %s;", prepend .. "ISteamClient", prepend .. "ISteamClient")
 	a("typedef struct %s {} %s;", prepend .. "ISteamGameServer", prepend .. "ISteamGameServer")
 	a("typedef struct %s {} %s;", prepend .. "ISteamGameServerStats", prepend .. "ISteamGameServerStats")
 	a("typedef struct %s {} %s;", prepend .. "ISteamMatchmakingServerListResponse", prepend .. "ISteamMatchmakingServerListResponse")
@@ -160,7 +167,14 @@ do -- methods
 			args = args .. ")"
 
 			info.returntype = info.returntype:gsub("class ", "")
-			if not pcall(ffi.typeof, info.returntype) then info.returntype = prepend .. info.returntype end
+
+			if not pcall(ffi.typeof, info.returntype) then
+				if info.returntype:startswith("struct") then
+					info.returntype = "struct " .. prepend .. info.returntype:gsub("^struct ", "")
+				else
+					info.returntype = prepend .. info.returntype
+				end
+			end
 
 			a("%s SteamAPI_%s_%s%s;", info.returntype, info.classname, info.methodname, args)
 		end
@@ -171,6 +185,7 @@ for k,v in pairs(interfaces) do
 	a("%s *%s();", prepend .. k, v)
 end
 
+a("bool SteamAPI_RestartAppIfNecessary(uint32_t);")
 a("bool SteamAPI_Init();")
 
 header = table.concat(header, "\n")
@@ -192,6 +207,18 @@ for i = 1, 500 do
 	end
 end
 
+local ok, err = ffi.cdef(header)
+
+if not ok then
+	local line = tonumber(err:match("line (%d+)"))
+	if line then
+		local lines = header:split("\n")
+		for i = line - 5, line + 5 do
+			logn(i, ": " .. lines[i], i == line and "<<<<" or "")
+		end
+	end
+end
+
 local lua = {}
 table.insert(lua, "--this file has been auto generated")
 table.insert(lua, "local ffi = require('ffi')")
@@ -200,44 +227,105 @@ table.insert(lua, [[
 local lib
 
 if jit.os == "Windows" then
-if jit.arch == "x64" then
-	lib = ffi.load("steam_api64")
-elseif jit.arch == "x86" then
-	lib = ffi.load("steam_api")
-end
+	if jit.arch == "x64" then
+		lib = ffi.load("steam_api64")
+	elseif jit.arch == "x86" then
+		lib = ffi.load("steam_api")
+	end
 else
-lib = ffi.load("libsteam_api")
+	lib = ffi.load("libsteam_api")
 end
 
+local appid
+
 do
-local file = io.open("steam_appid.txt")
-if file then
-	io.close(file)
-else
-	local file, err = io.open("steam_appid.txt", "w")
+	local file = io.open("steam_appid.txt")
+
 	if file then
-		file:write("999999")
+		appid = tonumber(file:read("*all"))
 		io.close(file)
 	else
-		error("failed to write steam_appid.txt (because it's needed) in cd : " .. err)
+		local file, err = io.open("steam_appid.txt", "w")
+		if file then
+			file:write("480")
+			io.close(file)
+			appid = 480
+		else
+			error("failed to write steam_appid.txt! (it's needed) in cd : " .. err)
+		end
 	end
 end
 
-end
-
-if not lib.SteamAPI_Init() then
-error("failed to initialize steamworks")
+if appid == 480 then
+	print("steamworks.lua: using dummy appid ('Spacewar' the steamworks example)")
+	print("steamworks.lua: you have to modify ./steam_appid.txt to change it")
 end
 
 local steamworks = {}
+
+if not lib.SteamAPI_Init() then
+	error("failed to initialize steamworks")
+end
+
+
+steamworks.client_ptr = lib.SteamClient()
+if steamworks.client_ptr == nil then error("SteamClient() returns NULL") end
+steamworks.pipe_ptr = lib.SteamAPI_ISteamClient_CreateSteamPipe(steamworks.client_ptr)
+if steamworks.pipe_ptr == nil then error("SteamAPI_ISteamClient_CreateSteamPipe() returns NULL") end
+steamworks.steam_user_ptr = lib.SteamAPI_ISteamClient_ConnectToGlobalUser(steamworks.client_ptr, steamworks.pipe_ptr)
+if steamworks.steam_user_ptr == nil then error("SteamAPI_ISteamClient_ConnectToGlobalUser() returns NULL") end
+
 ]])
 
 local steam_id_meta = {}
 
+-- caps@caps-MS-7798:~/Downloads/sdk$ grep -rn ./ -e "INTERFACE_VERSION \""
+local versions = {
+	STEAMUSER_INTERFACE_VERSION = "SteamUser019",
+	STEAMUGC_INTERFACE_VERSION = "STEAMUGC_INTERFACE_VERSION010",
+	STEAMVIDEO_INTERFACE_VERSION = "STEAMVIDEO_INTERFACE_V002",
+	STEAMUNIFIEDMESSAGES_INTERFACE_VERSION = "STEAMUNIFIEDMESSAGES_INTERFACE_VERSION001",
+	STEAMHTMLSURFACE_INTERFACE_VERSION = "STEAMHTMLSURFACE_INTERFACE_VERSION_004",
+	STEAMGAMESERVER_INTERFACE_VERSION = "SteamGameServer012",
+	STEAMUTILS_INTERFACE_VERSION = "SteamUtils009",
+	STEAMGAMECOORDINATOR_INTERFACE_VERSION = "SteamGameCoordinator001",
+	STEAMCONTROLLER_INTERFACE_VERSION = "SteamController005",
+	STEAMREMOTESTORAGE_INTERFACE_VERSION = "STEAMREMOTESTORAGE_INTERFACE_VERSION014",
+	STEAMGAMESERVERSTATS_INTERFACE_VERSION = "SteamGameServerStats001",
+	STEAMFRIENDS_INTERFACE_VERSION = "SteamFriends015",
+	STEAMPARENTALSETTINGS_INTERFACE_VERSION = "STEAMPARENTALSETTINGS_INTERFACE_VERSION001",
+	STEAMMATCHMAKING_INTERFACE_VERSION = "SteamMatchMaking009",
+	STEAMMATCHMAKINGSERVERS_INTERFACE_VERSION = "SteamMatchMakingServers002",
+	STEAMAPPLIST_INTERFACE_VERSION = "STEAMAPPLIST_INTERFACE_VERSION001",
+	STEAMINVENTORY_INTERFACE_VERSION = "STEAMINVENTORY_INTERFACE_V002",
+	STEAMHTTP_INTERFACE_VERSION = "STEAMHTTP_INTERFACE_VERSION002",
+	STEAMAPPS_INTERFACE_VERSION = "STEAMAPPS_INTERFACE_VERSION008",
+	STEAMMUSICREMOTE_INTERFACE_VERSION = "STEAMMUSICREMOTE_INTERFACE_VERSION001",
+	STEAMMUSIC_INTERFACE_VERSION = "STEAMMUSIC_INTERFACE_VERSION001",
+	STEAMUSERSTATS_INTERFACE_VERSION = "STEAMUSERSTATS_INTERFACE_VERSION011",
+	STEAMSCREENSHOTS_INTERFACE_VERSION = "STEAMSCREENSHOTS_INTERFACE_VERSION003",
+	STEAMNETWORKING_INTERFACE_VERSION = "SteamNetworking005",
+	STEAMAPPTICKET_INTERFACE_VERSION = "STEAMAPPTICKET_INTERFACE_VERSION001",
+}
+
 for interface in pairs(interfaces) do
 	local friendly = interface:sub(2):sub(6):lower()
 	table.insert(lua, "steamworks." .. friendly .. " = {}")
-	table.insert(lua, "steamworks." .. friendly .. "_ptr = lib." .. interface:sub(2) .. "()")
+
+	if interface == "ISteamClient" then
+		table.insert(lua, "do")
+	else
+
+		local version = versions[interface:sub(2):upper() .. "_INTERFACE_VERSION"] or ""
+
+		if interface == "ISteamUtils" then
+			table.insert(lua, "steamworks." .. friendly .. "_ptr = lib.SteamAPI_ISteamClient_Get" .. interface .. "(steamworks.client_ptr, steamworks.pipe_ptr, '"..version.."')")
+		else
+			table.insert(lua, "steamworks." .. friendly .. "_ptr = lib.SteamAPI_ISteamClient_Get" .. interface .. "(steamworks.client_ptr, steamworks.steam_user_ptr, steamworks.pipe_ptr, '"..version.."')")
+		end
+
+		table.insert(lua, "if steamworks." .. friendly .. "_ptr == nil then\n\t print('steamworks.lua: failed to load "..friendly.." " .. version .."')\nelse")
+	end
 	for i, info in ipairs(json.methods) do
 		if info.classname == interface then
 			local args = ""
@@ -247,7 +335,7 @@ for interface in pairs(interfaces) do
 				end
 			end
 			local arg_line = args
-			local func = "function steamworks." .. friendly .. "." .. info.methodname .. "(" .. args .. ")"
+			local func = "\tfunction steamworks." .. friendly .. "." .. info.methodname .. "(" .. args .. ")"
 			if #args > 0 then args = ", " .. args end
 			if info.returntype == "const char *" then
 				func = func .. "local str = lib.SteamAPI_"..interface.."_" .. info.methodname .. "(steamworks." .. friendly .. "_ptr" .. args .. ") if str ~= nil then return ffi.string(str) end"
@@ -265,6 +353,7 @@ for interface in pairs(interfaces) do
 			table.insert(lua, func)
 		end
 	end
+	table.insert(lua, "end")
 end
 
 table.insert(lua, "local META = {}")
@@ -286,5 +375,7 @@ table.insert(lua, "function steamworks.GetFriendObjectFromSteamID(id) return set
 table.insert(lua, "steamworks.steamid_meta = META")
 
 table.insert(lua, "return steamworks")
+lua = table.concat(lua, "\n")
 
-vfs.Write("steamworks.lua", table.concat(lua, "\n"))
+vfs.Write("os:" .. e.ROOT_FOLDER .. "framework/lua/build/steamworks/steamworks.lua", lua)
+runfile("lua/build/steamworks/steamworks.lua")
