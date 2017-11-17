@@ -959,7 +959,7 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 
 		local editor = LoadFile(name or fname,nil,true)
 		if not editor then
-			local ed = GetEditor()
+			local ed = ide:GetEditor()
 			if ed and ide:GetDocument(ed):GetFileName() == (name or fname) then
 				editor = ed
 			end
