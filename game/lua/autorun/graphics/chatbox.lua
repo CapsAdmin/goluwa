@@ -491,11 +491,11 @@ function chat.Open(tab)
 	local panel = chat.GetPanel()
 
 	if tab == "console" then
-		frame:SetPosition(Vec2(0, 0))
-		frame:SetHeight(300)
-		frame:CenterSimple()
-		frame:MoveUp()
-		frame:FillX()
+		panel:SetPosition(Vec2(0, 0))
+		panel:SetHeight(300)
+		panel:CenterSimple()
+		panel:MoveUp()
+		panel:FillX()
 	end
 
 	panel.tab:SelectTab(tab)
