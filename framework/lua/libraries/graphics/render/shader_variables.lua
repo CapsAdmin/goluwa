@@ -9,6 +9,7 @@ function render.CreateShaderVariables(typ, shader, name, extra_size, persistent)
 	local block = typ == "uniform" and properties.uniform_block[name] or properties.shader_storage_block[name]
 	local total_size = block.buffer_data_size + extra_size
 	local variables = {}
+	local variables2 = {}
 
 	for _, v in pairs(block.variables) do
 		-- when using interface blocks the name will be prefixed with "foo."
@@ -16,6 +17,7 @@ function render.CreateShaderVariables(typ, shader, name, extra_size, persistent)
 		name = name:match(".+%.(.+)") or name
 		name = name:match("(.+)%[") or name
 		variables[name] = {}
+		table.insert(variables2, name)
 
 		local temp
 		local set
@@ -30,7 +32,7 @@ function render.CreateShaderVariables(typ, shader, name, extra_size, persistent)
 			local length =  v.type.size / ffi.sizeof("float")
 			temp = ffi.new("float[?]", length)
 
-			if length == 16 then
+			if length == 16 or length == 9 then
 				set = function(buffer, var, index)
 					temp = var:GetFloatPointer()
 					buffer:UpdateData(temp, size, offset + (index * v.array_stride))
@@ -103,6 +105,7 @@ function render.CreateShaderVariables(typ, shader, name, extra_size, persistent)
 
 	self.last_variables = {}
 	self.variables = variables
+	self.variables2 = variables2
 	self.buffer = render.CreateShaderVariableBuffer(typ, total_size, persistent)
 	self.block = block
 	self.type = typ

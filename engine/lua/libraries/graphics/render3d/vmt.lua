@@ -77,13 +77,23 @@ function META:LoadVMT(path)
 			self.vmt.fullpath = full_path
 			self.vmt[key] = val
 
+			local unused = false
+
 			if property_translate[key] then
 				local func_name, convert = unpack(property_translate[key])
 				if convert then
 					val = convert(val)
 				end
-				self["Set" .. func_name](self, val)
+				if self["Set" .. func_name] then
+					self["Set" .. func_name](self, val)
+				else
+					unused = true
+				end
 			else
+				unused = true
+			end
+
+			if unused then
 				steam.unused_vmt_properties[full_path] = steam.unused_vmt_properties[full_path] or {}
 				steam.unused_vmt_properties[full_path][key] = val
 			end

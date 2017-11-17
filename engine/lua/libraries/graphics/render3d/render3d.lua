@@ -9,7 +9,7 @@ event.AddListener("Draw3D", "render3d", function()
 end)
 
 event.AddListener("PreDrawGUI", "render3d", function()
-	if not render3d.IsGBufferReady() and (line and not line.IsGameRunning()) then
+	if not render3d.IsGBufferReady() and ((line and line.IsGameRunning()) or (menu and menu.IsVisible())) then
 		render.GetScreenFrameBuffer():ClearAll()
 	end
 
@@ -31,6 +31,7 @@ event.AddListener("PreDrawGUI", "render3d", function()
 	end
 end)
 
+runfile("camera.lua", render3d)
 runfile("model_loader.lua", render3d)
 runfile("gbuffer.lua", render3d)
 runfile("environment_probe.lua", render3d)

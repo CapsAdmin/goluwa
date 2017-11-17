@@ -1,5 +1,6 @@
-local render = (...) or _G.render
+local BUILD_SHADER_OUTPUT = true
 
+local render = (...) or _G.render
 render.use_uniform_buffers = false
 
 -- used because of some reserved keywords
@@ -8,6 +9,8 @@ local reserve_prepend = "out_"
 local source_template =
 [[
 
+
+@@GLOBAL VARIABLES2@@
 @@VARIABLES@@
 
 @@IN@@
@@ -48,6 +51,7 @@ local type_translate = {
 	number = "float",
 	texture = "sampler2D",
 	matrix44 = "mat4",
+	matrix33 = "mat3",
 }
 
 local function type_of_attribute(var)
@@ -401,6 +405,8 @@ function render.CreateShader(data, vars)
 		for shader, info in pairs(data) do
 			local template = build_output[shader].source
 
+			template = replace_field(template, "GLOBAL VARIABLES2", render.GetGlobalShaderVariableBlock())
+
 			if shader == "vertex" then
 				template = replace_field(template, "GLOBAL CODE", render.GetGlobalShaderCode(info.source))
 				template = replace_field(template, "GLOBAL VARIABLES", render.GetGlobalShaderVariables(info.source))
@@ -660,7 +666,7 @@ function render.CreateShader(data, vars)
 			end
 
 			vfs.Write("data/logs/last_shader_error.c", data.source)
-			debug.openscript("data/logs/last_shader_error.c", tonumber(message:match("0%((%d+)%) ")))
+--			debug.openscript("data/logs/last_shader_error.c", tonumber(message:match("0%((%d+)%) ")))
 
 			logn(message)
 			error("\n" .. shader_id .. "\n" .. message, error_depth)
@@ -795,6 +801,10 @@ function render.CreateShader(data, vars)
 	self.build_output = build_output
 	self.force_bind = force_bind
 
+	render.global_shader_storage = render.CreateShaderVariables("uniform", self, "global_variables")
+	render.global_shader_storage:SetBindLocation(self, 0)
+	render.global_shader_storage:Bind(0)
+
 	if render.use_uniform_buffers then
 		self.ubo = self:CreateUniformBuffer()
 	end
@@ -834,52 +844,58 @@ function META:Bind()
 	end
 
 	if render.use_uniform_buffers then
-		mat.ubo:Bind(0)
+		self.ubo:Bind(1)
+		self:UpdateUniformBuffer(mat)
+	else
+		--for _, info in ipairs(self.uniform_variables) do
+		for i = 1, self.uniform_variables_length do
+			local info = self.uniform_variables[i]
+
+			local val = mat[info.key] or self[info.key]
+
+			if type(val) == "function" then
+				val = val()
+			end
+
+			if val ~= nil then
+				if info.val.is_texture or info.val.is_bindless_texture then
+					self.program:UploadTexture(info.id, val, info.texture_channel, info.texture_channel)
+				elseif info.val.type == "mat4" then
+					self.program:UploadMatrix44(info.id, val)
+				elseif info.val.type == "mat3" then
+					self.program:UploadMatrix33(info.id, val)
+				elseif info.val.type == "bool" then
+					self.program:UploadBoolean(info.id, val)
+				elseif info.val.type == "float" then
+					self.program:UploadNumber(info.id, val)
+				elseif info.val.type == "int" then
+					self.program:UploadInteger(info.id, val)
+				elseif info.val.type == "vec2" then
+					self.program:UploadVec2(info.id, val)
+				elseif info.val.type == "vec3" then
+					self.program:UploadVec3(info.id, val)
+				elseif info.val.type == "vec4" then
+					self.program:UploadColor(info.id, val)
+				end
+			end
+		end
 	end
+end
+
+function META:UpdateUniformBuffer(mat)
 
 	--for _, info in ipairs(self.uniform_variables) do
-	for i = 1, self.uniform_variables_length do
-		local info = self.uniform_variables[i]
+	for i = 1, self.uniform_block_variables_length do
+		local data = self.uniform_block_variables[i]
 
-		local val = mat[info.key] or self[info.key]
+		local val = mat[data.key] or self[data.key]
 
 		if type(val) == "function" then
 			val = val()
 		end
 
 		if val ~= nil then
-			if info.val.is_texture or info.val.is_bindless_texture then
-				self.program:UploadTexture(info.id, val, info.texture_channel, info.texture_channel)
-			elseif info.val.type == "mat4" then
-				self.program:UploadMatrix44(info.id, val)
-			elseif info.val.type == "bool" then
-				self.program:UploadBoolean(info.id, val)
-			elseif info.val.type == "float" then
-				self.program:UploadNumber(info.id, val)
-			elseif info.val.type == "int" then
-				self.program:UploadInteger(info.id, val)
-			elseif info.val.type == "vec2" then
-				self.program:UploadVec2(info.id, val)
-			elseif info.val.type == "vec3" then
-				self.program:UploadVec3(info.id, val)
-			elseif info.val.type == "vec4" then
-				self.program:UploadColor(info.id, val)
-			end
-		end
-	end
-
-	--for _, info in ipairs(self.uniform_variables) do
-	for i = 1, self.uniform_block_variables_length do
-		local info = self.uniform_block_variables[i]
-
-		local val = mat[data.key] or self[data.key]
-
-		if type(val) == 'function' then
-			val = val()
-		end
-
-		if val ~= nil then
-			mat.ubo:UpdateVariable(data.key, val)
+			self.ubo:UpdateVariable(data.key, val)
 		end
 	end
 end
@@ -901,11 +917,9 @@ function META:CreateMaterialTemplate(name)
 end
 
 function META:CreateUniformBuffer()
-	if render.use_uniform_buffers then
-		local ubo = render.CreateShaderVariables("uniform", self, "variables")
-		ubo:SetBindLocation(self, 0)
-		return ubo
-	end
+	local ubo = render.CreateShaderVariables("uniform", self, "variables")
+	ubo:SetBindLocation(self, 1)
+	return ubo
 end
 
 function META:GetMeshLayout()

@@ -88,7 +88,7 @@ float gbuffer_compute_light_attenuation(vec3 pos, vec3 light_pos, float radius, 
 render.AddGlobalShaderCode([[
 vec2 _raycast_project(vec3 coord)
 {
-	vec4 res = g_projection * vec4(coord, 1.0);
+	vec4 res = _G.projection * vec4(coord, 1.0);
 	return (res.xy / res.w) * 0.5 + 0.5;
 }
 
@@ -134,7 +134,7 @@ float g_ssao(vec2 uv) {
 	{
 		vec2 rand = get_noise2(offset).xy;
 
-		offset = uv + (reflect(KERNEL[int(mod(j, 16))], rand) / (get_linearized_depth(uv)*g_cam_farz)) * SAMPLE_RAD;
+		offset = uv + (reflect(KERNEL[int(mod(j, 16))], rand) / (get_linearized_depth(uv)*_G.cam_farz)) * SAMPLE_RAD;
 
 		vec3 diff = get_view_pos(offset) - p;
 		float d = length(diff);
@@ -173,7 +173,7 @@ float g_ssao2(vec2 uv)
 		vec2 E = hammersley_2d(i, NumSamples) * vec2(PI, PI*2);
 		E.y += random_angle(); // Apply random angle rotation
 		vec2 sE= vec2(cos(E.y), sin(E.y)) * PerspectiveRadius * cos(E.x);
-		vec2 Sample = gl_FragCoord.xy / g_gbuffer_size + sE;
+		vec2 Sample = gl_FragCoord.xy / _G.gbuffer_size + sE;
 
 		// Create Alchemy helper variables
 		vec3 Pi         = get_view_pos(Sample);

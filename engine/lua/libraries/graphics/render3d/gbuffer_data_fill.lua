@@ -83,14 +83,14 @@ bool alpha_discard(vec2 uv, float alpha)
 render.AddGlobalShaderCode([[
 vec3 get_view_pos(vec2 uv)
 {
-	vec4 pos = g_projection_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
+	vec4 pos = _G.projection_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
 	return pos.xyz / pos.w;
 }]])
 
 render.AddGlobalShaderCode([[
 vec3 get_world_pos(vec2 uv)
 {
-	vec4 pos = g_projection_view_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
+	vec4 pos = _G.projection_view_inverse * vec4(uv * 2.0 - 1.0, texture(tex_depth, uv).r * 2 - 1, 1.0);
 	return pos.xyz / pos.w;
 }]])
 
@@ -116,7 +116,7 @@ vec3 get_view_normal_from_depth(vec2 uv)
 render.AddGlobalShaderCode([[
 vec3 get_world_normal(vec2 uv)
 {
-	return (-get_view_normal(uv) * mat3(g_view));
+	return (-get_view_normal(uv) * mat3(_G.view));
 }]])
 
 render.AddGlobalShaderCode([[
@@ -130,7 +130,7 @@ vec3 get_view_tangent(vec2 uv)
 render.AddGlobalShaderCode([[
 vec3 get_world_tangent(vec2 uv)
 {
-	return normalize(-get_view_tangent(uv) * mat3(g_view));
+	return normalize(-get_view_tangent(uv) * mat3(_G.view));
 }]])
 
 render.AddGlobalShaderCode([[
@@ -142,7 +142,7 @@ vec3 get_view_bitangent(vec2 uv)
 render.AddGlobalShaderCode([[
 vec3 get_world_bitangent(vec2 uv)
 {
-	return normalize(-get_view_bitangent(uv) * mat3(g_view));
+	return normalize(-get_view_bitangent(uv) * mat3(_G.view));
 }]])
 
 render.AddGlobalShaderCode([[
@@ -173,9 +173,9 @@ render.AddGlobalShaderCode([[
 mat3 get_world_tbn(vec2 uv)
 {
 	mat3 tbn = get_view_tbn(uv);
-	tbn[0] *= -mat3(g_view);
-	tbn[1] *= -mat3(g_view);
-	tbn[2] *= -mat3(g_view);
+	tbn[0] *= -mat3(_G.view);
+	tbn[1] *= -mat3(_G.view);
+	tbn[2] *= -mat3(_G.view);
 	return tbn;
 }]])
 
@@ -289,10 +289,10 @@ PASS.Stages = {
 				{
 					#ifdef FLAT_SHADING
 						gl_Position = g_projection_view_world * vec4(pos, 1);
-						vertex_view_normal = mat3(g_normal_matrix) * normal;
+						vertex_view_normal = g_normal_matrix * normal;
 					#else
 						gl_Position = g_projection_view_world * vec4(pos, 1);
-						tangent_space = mat3(g_normal_matrix) * mat3(tangent, cross(tangent, normal), normal);
+						tangent_space = g_normal_matrix * mat3(tangent, cross(tangent, normal), normal);
 					#endif
 				}
 			]]
@@ -409,7 +409,6 @@ PASS.Stages = {
 					set_view_normal(normal);
 
 
-
 					float metallic = 1;
 
 					// metallic
@@ -461,7 +460,6 @@ PASS.Stages = {
 					set_metallic(handle_metallic(metallic));
 					set_roughness(handle_roughness(roughness));
 
-
 					if (lua[SelfIllumination = false])
 					{
 						vec4 illum = texture(lua[SelfIlluminationTexture = render.GetWhiteTexture()], uv);
@@ -506,7 +504,7 @@ PASS.Stages = {
 					if (lua[light_point_shadow = false])
 					{
 						vec3 light_dir = (get_view_pos(uv)*0.5+0.5) - (light_view_pos*0.5+0.5);
-						vec3 dir = normalize(light_dir) * mat3(g_view);
+						vec3 dir = normalize(light_dir) * mat3(_G.view);
 						dir.z = -dir.z;
 
 						float shadow_view = texture(lua[tex_shadow_map_cube = render3d.GetSkyTexture()], dir.xzy).r;
@@ -703,7 +701,7 @@ if TESSELLATION then
 				vec3 n1 = gl_TessCoord.y * tcNormal[1];
 				vec3 n2 = gl_TessCoord.z * tcNormal[2];
 				vec3 normal = normalize(n0 + n1 + n2);
-				teNormal = mat3(g_normal_matrix) * normal;
+				teNormal = g_normal_matrix * normal;
 
 				teTextureBlend = (tcTextureBlend[0] + tcTextureBlend[1] + tcTextureBlend[2]) / 3;
 
@@ -712,7 +710,7 @@ if TESSELLATION then
 
 				vec4 temp = g_view_world * vec4(pos, 1.0);
 				tePosition = temp.xyz;
-				gl_Position = g_projection * temp;
+				gl_Position = _G.projection * temp;
 
 			}
 		]],

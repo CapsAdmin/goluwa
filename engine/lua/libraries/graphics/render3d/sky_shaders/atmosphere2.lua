@@ -117,7 +117,7 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 
 	return depth*max(atmosphere(
 		ray.xzy*vec3(1,-1,1),         		// normalized ray direction
-        g_cam_pos.xzy + vec3(0,6372e3,0),               // ray origin
+        _G.cam_pos.xzy + vec3(0,6372e3,0),               // ray origin
         vec3(sun_direction.x, sun_direction.y, sun_direction.z),					// position of the sun
 		15.0*intensity,                           // intensity of the sun
         6371e3,                         // radius of the planet in meters

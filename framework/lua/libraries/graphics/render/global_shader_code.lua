@@ -3,6 +3,8 @@ local render = (...) or _G.render
 render.global_shader_variables = render.global_shader_variables or {}
 render.global_glsl_variables = render.global_glsl_variables or {}
 
+render.global_shader_variables2 = render.global_shader_variables2 or {}
+
 function render.SetGlobalShaderVariable(key, val, type)
 	if _G.type(val) == "string" then
 		table.insert(render.global_glsl_variables, {key = key, val = val, type = type})
@@ -15,15 +17,39 @@ function render.SetGlobalShaderVariable(key, val, type)
 	end
 end
 
+function render.SetGlobalShaderVariable2(key, val, type)
+	render.global_shader_variables2[key] = {
+		type = type,
+		key = key,
+		val = val
+	}
+end
+
+function render.UpdateGlobalShaderStorage()
+	if not render.global_shader_storage then return end
+
+	for i, name in ipairs(render.global_shader_storage.variables2) do
+		local val = render.global_shader_variables2[name].val
+
+		if type(val) == "function" then
+			val = val()
+		end
+
+		render.global_shader_storage:UpdateVariable(name, val)
+	end
+end
+
+event.AddListener("Update", "", render.UpdateGlobalShaderStorage)
+
 function render.GetGlobalShaderVariableBlock()
-	local str = "layout(std140) buffer global_variables\n"
+	local str = "layout(std140) uniform global_variables\n"
 	str = str .. "{\n"
-	for name, info in pairs(render.global_shader_variables) do
+	for name, info in pairs(render.global_shader_variables2) do
 		if not info.type:find("sampler") then
 			str = str .. "\t" .. info.type .. " " .. name .. ";\n"
 		end
 	end
-	str = str .. "};\n"
+	str = str .. "} _G;\n"
 	return str
 end
 

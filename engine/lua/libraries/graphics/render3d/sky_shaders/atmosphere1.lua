@@ -81,7 +81,7 @@ vec3 gbuffer_compute_sky(vec3 ray, float depth)
 	stars *= depth > 0.5 ? 1 : 0;
 	stars *= 0.01;
 
-	vec3 eye_position = min(vec3(0,render2d_height,0) + (vec3(-g_cam_pos.x, g_cam_pos.z, g_cam_pos.y) / 100010000), vec3(0.999999));
+	vec3 eye_position = min(vec3(0,render2d_height,0) + (vec3(-_G.cam_pos.x, _G.cam_pos.z, _G.cam_pos.y) / 100010000), vec3(0.999999));
 	float eye_depth = sky_atmospheric_depth(eye_position, ray, depth);
 	float step_length = eye_depth/float(step_count);
 	vec3 rayleigh_collected = vec3(0.0, 0.0, 0.0);

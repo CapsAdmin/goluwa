@@ -482,6 +482,10 @@ function META:UploadMatrix44(key, val)
 	self.gl_program:UniformMatrix4fv(key, 1, 0, val:GetFloatPointer())
 end
 
+function META:UploadMatrix33(key, val)
+	self.gl_program:UniformMatrix3fv(key, 1, 0, val:GetFloatPointer())
+end
+
 function META:Bind()
 	self.gl_program:Use()
 end

@@ -492,8 +492,8 @@ function menu.CreateTopBar()
 							vec3 c = color.xyz;
 
 
-							float x = 0.5 * (1.0 / g_screen_size.x);
-							float y = 0.5 * (1.0 / g_screen_size.y);
+							float x = 0.5 * (1.0 / _G.screen_size.x);
+							float y = 0.5 * (1.0 / _G.screen_size.y);
 
 							const vec3 dt = 1.0*vec3(1.0, 1.0, 1.0);
 

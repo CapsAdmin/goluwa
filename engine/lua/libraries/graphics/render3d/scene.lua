@@ -71,7 +71,7 @@ local occlusion_shader = render.CreateShader({
 		source = [[
 			void main()
 			{
-				gl_Position = g_projection_view * model * vec4(pos, 1);
+				gl_Position = _G.projection_view * model * vec4(pos, 1);
 			}
 		]],
 	},
@@ -172,7 +172,6 @@ end
 function render3d.GetScene()
 	return render3d.scene
 end
-
 
 commands.Add("scene_info", function()
 	logf("%s models\n", #render3d.scene)

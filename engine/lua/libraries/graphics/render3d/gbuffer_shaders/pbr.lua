@@ -190,7 +190,7 @@ do
 
 		vec2 _raycast_project(vec3 coord)
 		{
-			vec4 res = g_projection * vec4(coord, 1.0);
+			vec4 res = _G.projection * vec4(coord, 1.0);
 			return (res.xy / res.w) * 0.5 + 0.5;
 		}
 

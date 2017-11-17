@@ -1,18 +1,18 @@
 runfile("lua/libraries/graphics/render3d/sky_shaders/atmosphere1.lua")
 
 do
-	render.SetGlobalShaderVariable("g_time", function() return system.GetElapsedTime() end, "float")
+	render.SetGlobalShaderVariable2("time", function() return system.GetElapsedTime() end, "float")
 
 	render.AddGlobalShaderCode([[
 	float random(vec2 co)
 	{
-		return fract(sin(dot(co.xy * g_time, vec2(12.9898, 78.233))) * 43758.5453);
+		return fract(sin(dot(co.xy * _G.time, vec2(12.9898, 78.233))) * 43758.5453);
 	}]])
 
 	render.AddGlobalShaderCode([[
 	vec2 get_noise2(vec2 uv)
 	{
-		float x = random(uv * g_time);
+		float x = random(uv * _G.time);
 		float y = random(uv * x);
 
 		return vec2(x, y) * 2 - 1;
@@ -21,7 +21,7 @@ do
 	render.AddGlobalShaderCode([[
 	vec3 get_noise3(vec2 uv)
 	{
-		float x = random(uv * g_time);
+		float x = random(uv * _G.time);
 		float y = random(uv * x);
 		float z = random(uv * y);
 

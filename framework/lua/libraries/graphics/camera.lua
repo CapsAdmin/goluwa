@@ -21,7 +21,7 @@ do
 	}
 
 	for i,v in ipairs(variables) do
-		if not v.name:find("world") and v.name ~= "normal_matrix" then
+		if true or not v.name:find("world") and v.name ~= "normal_matrix" then
 			v.glsl = nil -- disable gpu matrix calculation for world matrices
 		end
 	end
@@ -405,7 +405,21 @@ do
 			end
 
 			if vars.normal_matrix and vars.view_world_inverse then
-				vars.normal_matrix = vars.view_world_inverse:GetTransposed()
+				vars.normal_matrix = Matrix33()
+
+				vars.normal_matrix.m00 = vars.view_world_inverse.m00
+				vars.normal_matrix.m01 = vars.view_world_inverse.m01
+				vars.normal_matrix.m02 = vars.view_world_inverse.m02
+
+				vars.normal_matrix.m10 = vars.view_world_inverse.m10
+				vars.normal_matrix.m11 = vars.view_world_inverse.m11
+				vars.normal_matrix.m12 = vars.view_world_inverse.m12
+
+				vars.normal_matrix.m20 = vars.view_world_inverse.m20
+				vars.normal_matrix.m21 = vars.view_world_inverse.m21
+				vars.normal_matrix.m22 = vars.view_world_inverse.m22
+
+				vars.normal_matrix = vars.normal_matrix:GetTransposed()
 			end
 		end
 

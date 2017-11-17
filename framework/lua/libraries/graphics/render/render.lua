@@ -278,9 +278,8 @@ vec4 get_noise(vec2 uv)
 render.AddGlobalShaderCode([[
 vec2 get_screen_uv()
 {
-	return gl_FragCoord.xy / g_gbuffer_size;
+	return gl_FragCoord.xy / _G.gbuffer_size;
 }]])
-
 
 -- shadertoy
 
