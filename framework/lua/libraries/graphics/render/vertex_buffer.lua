@@ -4,7 +4,7 @@ local META = prototype.CreateTemplate("vertex_buffer")
 
 META:StartStorable()
 	META:GetSet("Mode", "triangles")
-	META:GetSet("DrawHint", "dynamic")
+	META:GetSet("DrawHint", "static")
 	META:GetSet("Vertices")
 META:EndStorable()
 

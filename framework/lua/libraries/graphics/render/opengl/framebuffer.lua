@@ -125,8 +125,13 @@ function META:SetBindMode(str)
 	self.enum_bind_mode = bind_mode_to_enum[str]
 end
 
+local last_fb = 0
+
 function META:_Bind()
-	self.gl_fb:Bind(self.enum_bind_mode)
+	if last_fb ~= self.gl_fb.id then
+		self.gl_fb:Bind(self.enum_bind_mode)
+		last_fb = self.gl_fb.id
+	end
 end
 
 function META:SetTextureLayer(pos, tex, layer)

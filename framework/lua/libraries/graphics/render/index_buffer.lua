@@ -5,7 +5,7 @@ local META = prototype.CreateTemplate("index_buffer")
 META:StartStorable()
 	META:GetSet("UpdateIndices", true)
 	META:GetSet("IndicesType", "uint16_t")
-	META:GetSet("DrawHint", "dynamic")
+	META:GetSet("DrawHint", "static")
 	META:GetSet("Indices")
 META:EndStorable()
 
