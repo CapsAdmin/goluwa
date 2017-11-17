@@ -45,4 +45,5 @@ for i = 1, 7500 do
 	end
 
 	ent:SetPosition(Vec3(x,y,z))
+	ent:SetAngles(Ang3():GetRandom())
 end
