@@ -94,7 +94,7 @@ function render.StopRecordCalls()
 	local tbl = gl.StopRecordingCalls()
 
 	for i,v in ipairs(tbl) do
-		log(i, ": ")
+		log(("%3i"):format(i), ": ")
 
 		if v.ret ~= nil then
 			log(v.ret, " ")
@@ -106,6 +106,6 @@ function render.StopRecordCalls()
 			table.insert(args, tostringx(v))
 		end
 
-		logn("gl", v.func_name, "(", table.concat(args, ", "), ")")
+		logn((v.func_name == "UseProgram" or v.func_name:find("Bind", nil, true)) and "" or " ", "gl", v.func_name, "(", table.concat(args, ", "), ")")
 	end
 end
