@@ -1,3 +1,26 @@
+commands.Add("dump_shaders", function()
+	for name, shader in pairs(render.active_shaders) do
+		if not name:match("(_%d%d%d%d%d)") then
+			logn(name, ":")
+			for k, v in pairs(shader.variables) do
+				local val = shader[v.name]
+
+				if v.type == "mat4" then
+					val = "mat4"
+				end
+
+				logn("\t", v.type, " ", v.name, " = ", val)
+			end
+		end
+	end
+end)
+
+commands.Add("scene_calls", function()
+	render.StartRecordCalls()
+	render.GetWindow():OnUpdate()
+	render.StopRecordCalls()
+end)
+
 input.Bind("e+left_alt", "toggle_focus", function()
 	window.SetMouseTrapped(not window.GetMouseTrapped())
 end)
