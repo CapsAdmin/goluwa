@@ -3,7 +3,9 @@ local gfx = (...) or _G.gfx
 local META = prototype.CreateTemplate("polygon_3d")
 
 function gfx.CreatePolygon3D()
-	return META:CreateObject()
+	local self = META:CreateObject()
+	self.sub_meshes = {}
+	return self
 end
 
 function META:__tostring2()
@@ -46,7 +48,6 @@ function META:AddSubMesh(val, data)
 	index_buffer:SetDrawHint("static")
 	local indices = index_buffer:LoadIndices(val)
 
-	self.sub_meshes = self.sub_meshes or {}
 	table.insert(self.sub_meshes, {index_buffer = index_buffer, data = data, indices = indices})
 end
 
