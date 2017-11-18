@@ -809,7 +809,7 @@ function steam.SpawnMapEntities(path, parent)
 				end
 			end
 
-			if info.origin and info.angles and info.model and not info.classname:lower():find("npc") then
+			if info.origin and info.angles and info.model and not info.classname:lower():find("npc") and info.classname ~= "env_sprite" then
 				if vfs.IsFile(info.model) then
 					parent[info.classname .. "_group"] = parent[info.classname .. "_group"] or entities.CreateEntity("group", parent)
 					parent[info.classname .. "_group"]:SetName(info.classname)
