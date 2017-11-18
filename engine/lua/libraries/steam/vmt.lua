@@ -68,7 +68,7 @@ function steam.LoadVMT(path, on_property, on_error, on_shader)
 					return
 				end
 
-				table.merge(vmt2, v.replace)
+				table.merge(v2, v.replace or v.insert)
 
 				vmt = vmt2
 				v = v2
