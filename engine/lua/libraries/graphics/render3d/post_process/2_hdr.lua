@@ -67,7 +67,7 @@ for i = -7, 7 do
 		local offset = "uv + vec2("..(x*weight)..", "..(y*weight)..") * 1"
 		local fade = AUTOMATE_ME[i]
 
-		str = str .. "\t\tout_color += texture(tex_stage_"..#PASS.Source..", "..offset.." * vec2(g_gbuffer_size.y / g_gbuffer_size.x, 1)).rgb *"..fade..";\n"
+		str = str .. "\t\tout_color += texture(tex_stage_"..#PASS.Source..", "..offset.." * vec2(_G.gbuffer_size.y / _G.gbuffer_size.x, 1)).rgb *"..fade..";\n"
 	end
 end
 
