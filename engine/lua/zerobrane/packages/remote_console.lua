@@ -10,6 +10,15 @@ ide.config.keymap[ID.RUN] = nil
 local BRANCH = nil
 local DEBUG = false
 
+if jit.os == "Windows" then
+	local ok, winapi = pcall(require, 'winapi')
+	if ok then
+		if not winapi.find_all_windows then
+			winapi.find_all_windows = function() return {} end
+		end
+	end
+end
+
 function PLUGIN:Setup()
 	local META = {}
 	META.__index = META
