@@ -1,7 +1,6 @@
---profiler.StartInstrumental()
-profiler.StartTimer()
-local dir = "/home/caps/.steam/steam/steamapps/common/GarrysMod/sourceengine/hl2_misc_dir.vpk/"
+local dir = steam.GetGamePath("GarrysMod") .. "/sourceengine/hl2_misc_dir.vpk/"
 local bytes = 0
+S""
 for _, path in ipairs(vfs.Search(dir)) do
 	if vfs.IsFile(path) then
 		local str, err = vfs.Read(path)
@@ -12,6 +11,5 @@ for _, path in ipairs(vfs.Search(dir)) do
 		end
 	end
 end
-print(bytes)
-profiler.StopTimer()
---profiler.StopInstrumental()
+S""
+print(utility.FormatFileSize(bytes))
