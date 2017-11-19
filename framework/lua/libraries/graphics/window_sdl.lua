@@ -405,19 +405,17 @@ function window.CreateWindow(width, height, title, flags)
 				elseif case == sdl.e.WINDOWEVENT_LEAVE then
 					call(wnd, "OnCursorEnter", true)
 
-				elseif case == sdl.e.WINDOWEVENT_TAKE_FOCUS then
+				elseif case == sdl.e.WINDOWEVENT_FOCUS_GAINED then
 					call(wnd, "OnFocus", true)
 					wnd.focused = true
 
-				elseif case == sdl.e.WINDOWEVENT_FOCUS_LOST then
+				elseif case == sdl.e.WINDOWEVENT_FOCUS_LOST  then
 					call(wnd, "OnFocus", false)
 					wnd.focused = false
 
 				elseif case == sdl.e.WINDOWEVENT_CLOSE then
 					call(wnd, "OnClose")
 
-				elseif case == sdl.e.WINDOWEVENT_FOCUS_GAINED then
-					call(wnd, "OnKeyboardFocus", true)
 				else
 					for k,v in pairs(sdl.e) do
 						if k:startswith("WINDOWEVENT") and v == case then
