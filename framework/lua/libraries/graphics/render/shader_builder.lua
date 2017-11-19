@@ -801,9 +801,13 @@ function render.CreateShader(data, vars)
 	self.build_output = build_output
 	self.force_bind = force_bind
 
-	render.global_shader_storage = render.CreateShaderVariables("uniform", self, "global_variables")
-	render.global_shader_storage:SetBindLocation(self, 0)
-	render.global_shader_storage:Bind(0)
+	local ubo = render.CreateShaderVariables("uniform", self, "global_variables")
+
+	if ubo then
+		ubo:SetBindLocation(self, 0)
+		ubo:Bind(0)
+		render.global_shader_storage = ubo
+	end
 
 	if render.use_uniform_buffers then
 		self.ubo = self:CreateUniformBuffer()

@@ -13,7 +13,7 @@ function render.CreateShaderVariables(typ, shader, name, extra_size, persistent)
 	elseif properties.shader_storage_block then
 		block = properties.shader_storage_block[name]
 	else
-		block = {buffer_data_size = 0, variables = {}}
+		return
 	end
 
 	local total_size = block.buffer_data_size + extra_size
