@@ -5,12 +5,26 @@ if not archive then return end
 local vfs = (...) or _G.vfs
 local ffi = require("ffi")
 
-local function iterate_archive(a)
-	local entry = archive.EntryNew()
-	local tbl = {}
+local CONTEXT = {}
 
-	while archive.ReadNextHeader2(a, entry) == archive.e.OK do
-		table.insert(tbl, ffi.string(archive.EntryPathname(entry)))
+CONTEXT.Name = "libarchive"
+CONTEXT.Position = math.huge
+
+CONTEXT.archive_cache = CONTEXT.archive_cache or utility.CreateWeakTable()
+
+local function iterate_archive(data)
+	if CONTEXT.archive_cache[data.archive_path] and CONTEXT.archive_cache[data.archive_path].files[1] then
+		return CONTEXT.archive_cache[data.archive_path].files
+	end
+
+	local entry = archive.EntryNew()
+	local tbl = CONTEXT.archive_cache[data.archive_path].files
+	local tbl2 = CONTEXT.archive_cache[data.archive_path].files2
+
+	while archive.ReadNextHeader2(data.archive, entry) == archive.e.OK do
+		local path = ffi.string(archive.EntryPathname(entry))
+		table.insert(tbl, path)
+		tbl2[path] = true
 	end
 
 	archive.EntryFree(entry)
@@ -18,13 +32,7 @@ local function iterate_archive(a)
 	return tbl
 end
 
-local CONTEXT = {}
-
-CONTEXT.Name = "libarchive"
-CONTEXT.Position = math.huge
-
-local function open_archive(path_info)
-
+local function split_path(path_info)
 	local archive_path, relative
 
 	if path_info.full_path:find("tar.gz", nil, true) then
@@ -41,11 +49,14 @@ local function open_archive(path_info)
 		archive_path = archive_path:sub(0, -2)
 	end
 
-	if archive_path:endswith(".gma") then
-		return false, "gma TODO"
-	end
+	return archive_path, relative
+end
 
-	local str = vfs.Read("os:" .. archive_path)
+local function open_archive(path_info, skip_cache)
+	local archive_path, relative = split_path(path_info)
+	if not archive_path then return archive_path, relative end
+
+	local str = CONTEXT.archive_cache[archive_path] and CONTEXT.archive_cache[archive_path].str or vfs.Read("os:" .. archive_path)
 	if not str then return false, "archive is empty" end
 
 	local a = archive.ReadNew()
@@ -67,58 +78,66 @@ local function open_archive(path_info)
 		return false, "archive.ReadOpenMemory failed"
 	end
 
-	return a, relative, str
+	local data = setmetatable({archive = a, relative = relative, str = str, archive_path = archive_path}, {__gc = function()
+		archive.ReadFree(a)
+	end})
+
+	CONTEXT.archive_cache[archive_path] = CONTEXT.archive_cache[archive_path] or {str = str, files = {}, files2 = {}}
+
+	return data
+end
+
+local function contains_file(path_info)
+	local archive_path, relative = split_path(path_info)
+	if not archive_path then return archive_path, relative end
+
+	if CONTEXT.archive_cache[archive_path] and CONTEXT.archive_cache[archive_path].files[1] then
+		return CONTEXT.archive_cache[archive_path].files2[relative]
+	end
+
+	local data, err = open_archive(path_info)
+	if not data then return data, err end
+
+	for _, path in ipairs(iterate_archive(data)) do
+		if path == data.relative then
+			return true
+		end
+	end
 end
 
 function CONTEXT:IsFile(path_info)
-	local a, relative, ref = open_archive(path_info)
-	if not a then return a, relative end
-
-	local found = false
-	for _, path in ipairs(iterate_archive(a)) do
-		if path == relative then
-			found = true
-			break
-		end
-	end
-
-	archive.ReadFree(a)
-	ref = nil
-
-	return found
+	return contains_file(path_info)
 end
 
 function CONTEXT:IsFolder(path_info)
-	local a, relative, ref = open_archive(path_info)
-	if not a then return a, relative end
+	local data, err = open_archive(path_info)
+	if not data then return data, err end
 
 	local found = false
 
-	for _, path in ipairs(iterate_archive(a)) do
-		if path:startswith(relative) then
+	for _, path in ipairs(iterate_archive(data)) do
+		if path:startswith(data.relative) then
 			found = true
 			break
 		end
 	end
-
-	archive.ReadFree(a)
-	ref = nil
 
 	return found
 end
 
 function CONTEXT:GetFiles(path_info)
-	local a, relative, ref = open_archive(path_info)
-	if not a then return a, relative end
+	local data, err = open_archive(path_info)
+
+	if not data then return data, err end
 
 	local out = {}
 
-	local dir = relative:match("(.*/).*")
+	local dir = data.relative:match("(.*/).*")
 
 	local files = {}
 	local done = {}
 
-	for _, path in ipairs(iterate_archive(a)) do
+	for _, path in ipairs(iterate_archive(data)) do
 		for i = #path, 1, -1 do
 			local char = path:sub(i, i)
 			if char == "/" then
@@ -134,9 +153,6 @@ function CONTEXT:GetFiles(path_info)
 		end
 		table.insert(files, path)
 	end
-
-	archive.ReadFree(a)
-	ref = nil
 
 	-- really ugly logic: TODO
 	-- this kind of logic messes up my head
@@ -164,17 +180,16 @@ end
 
 function CONTEXT:Open(path_info, mode, ...)
 	if self:GetMode() == "read" then
-		local a, relative, ref = open_archive(path_info)
-		if not a then return false, relative end
+		local data, err = open_archive(path_info)
+		if not data then return data, err end
 
 		while true do
 			local entry = archive.EntryNew()
-			if archive.ReadNextHeader2(a, entry) == archive.e.OK then
-				local path = ffi.string(archive.EntryPathname(entry))
-				if path == relative then
-					self.archive = a
+			if archive.ReadNextHeader2(data.archive, entry) == archive.e.OK then
+				if ffi.string(archive.EntryPathname(entry)) == data.relative then
+					self.archive = data.archive
 					self.entry = entry
-					self.ref = ref
+					self.ref = data
 
 					if archive.SeekData(self.archive, 0, 1) < 0 then
 						self.content = self:ReadBytes(math.huge)
@@ -193,8 +208,6 @@ function CONTEXT:Open(path_info, mode, ...)
 			end
 			archive.EntryFree(entry)
 		end
-
-		archive.ReadFree(a)
 
 		return false, "file not found in archive"
 	elseif self:GetMode() == "write" then
@@ -279,10 +292,6 @@ function CONTEXT:GetPosition()
 end
 
 function CONTEXT:OnRemove()
-	if self.archive ~= nil then
-		archive.ReadFree(self.archive)
-	end
-
 	if self.entry ~= nil then
 		archive.EntryFree(self.entry)
 	end
