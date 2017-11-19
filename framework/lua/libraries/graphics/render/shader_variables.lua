@@ -6,7 +6,7 @@ function render.CreateShaderVariables(typ, shader, name, extra_size, persistent)
 	extra_size = extra_size or 0
 
 	local properties = shader.program:GetProperties()
-	local block = typ == "uniform" and properties.uniform_block[name] or properties.shader_storage_block[name]
+	local block = typ == "uniform" and properties.uniform_block[name] or properties.shader_storage_block[name] or {buffer_data_size = 0, variables = {}}
 	local total_size = block.buffer_data_size + extra_size
 	local variables = {}
 	local variables2 = {}
