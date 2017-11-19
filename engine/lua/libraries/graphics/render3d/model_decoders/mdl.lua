@@ -252,7 +252,7 @@ local function load_mdl(path)
 					out[i] = data
 				end
 
-				tasks.ReportProgress("reading " .. name, count)
+				if _debug then tasks.ReportProgress("reading " .. name, count) end
 				tasks.Wait()
 			end
 
@@ -601,7 +601,7 @@ local function load_vtx(path)
 
 						strip_group.strips = strips
 
-						tasks.ReportProgress("reading body parts", vtx.body_part_count * body_part.model_count * model.lod_count * lod_model.mesh_count * mesh.strip_group_count)
+						if _debug then tasks.ReportProgress("reading body parts", vtx.body_part_count * body_part.model_count * model.lod_count * lod_model.mesh_count * mesh.strip_group_count) end
 						tasks.Wait()
 					end
 					buffer:PopPosition()
@@ -665,7 +665,7 @@ local function load_vvd(path)
 
 		vvd.vertices[i] = vertex
 
-		tasks.ReportProgress("reading vertices", vertices_count)
+		if _debug then tasks.ReportProgress("reading vertices", vertices_count) end
 		tasks.Wait()
 	end
 
@@ -740,7 +740,7 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 
 	--utility.PushTimeWarning()
 
-	tasks.Report("generating mesh")
+	if _debug then tasks.Report("generating mesh") end
 	for _, body_part in ipairs(vtx.body_parts) do
 		for _, model_ in ipairs(body_part.models) do
 			for lod_index, lod_model in ipairs(model_.model_lods) do
@@ -758,7 +758,7 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 					local WHAT2 = 0
 
 					for model_i, mesh_data in ipairs(lod_model.meshes) do
-						tasks.ReportProgress("generating mesh", #vtx.body_parts * #model_.model_lods * #lod_model.meshes)
+						if _debug then tasks.ReportProgress("generating mesh", #vtx.body_parts * #model_.model_lods * #lod_model.meshes) end
 						tasks.Wait()
 
 						local WHAT = 0
