@@ -301,7 +301,7 @@ function sockets.Request(info)
 	return socket
 end
 
-local active_downloads = utility.CreateWeakTable()
+local active_downloads = table.weak()
 
 local count = 0
 local queue = {}

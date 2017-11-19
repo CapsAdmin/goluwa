@@ -75,7 +75,7 @@ do
 	local rshift = bit.rshift
 	local band = bit.band
 
-	local cache = utility.CreateWeakTable()
+	local cache = table.weak()
 
 	function crypto.CRC32(val)
 		if cache[val] then

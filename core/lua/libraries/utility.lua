@@ -317,10 +317,6 @@ function utility.FindReferences(reference)
 	return table.concat(found, "\n")
 end
 
-function utility.CreateWeakTable()
-	return setmetatable({}, {__mode = "kv"})
-end
-
 function utility.TableToColumns(title, tbl, columns, check, sort_key)
 
 	if false and gui then
@@ -659,7 +655,7 @@ function utility.SafeRemove(obj, gc)
 	end
 end
 
-utility.remakes = utility.CreateWeakTable()
+utility.remakes = table.weak()
 
 function utility.RemoveOldObject(obj, id)
 

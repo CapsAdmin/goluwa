@@ -9,7 +9,7 @@ function enet.Initialize()
 	return lib.Initialize()
 end
 
-enet.sockets = enet.sockets or utility.CreateWeakTable()
+enet.sockets = enet.sockets or table.weak()
 
 local valid_flags = {
 	default_valid_flag = 0,

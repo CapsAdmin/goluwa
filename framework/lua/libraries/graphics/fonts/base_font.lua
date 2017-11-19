@@ -255,7 +255,7 @@ function META:CompileString(data)
 
 	local string = {}
 
-	local width_cache = utility.CreateWeakTable()
+	local width_cache = table.weak()
 
 	function string:Draw(x, y, w)
 		if w and not width_cache[w] then

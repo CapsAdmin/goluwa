@@ -64,7 +64,7 @@ function physics.Initialize()
 		--ode.WorldSetStepThreadingImplementation(world, ode.ThreadingImplementationGetFunctions(threading), threading)
 
 		physics.bodies = {}
-		physics.body_lookup = utility.CreateWeakTable()
+		physics.body_lookup = table.weak()
 	end
 
 	do

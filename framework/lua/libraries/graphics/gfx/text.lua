@@ -47,7 +47,7 @@ function gfx.GetTextPosition()
 end
 
 do
-	local cache = {} or utility.CreateWeakTable()
+	local cache = {} or table.weak()
 
 	function gfx.GetTextSize(str, font)
 		str = str or "|"
@@ -64,8 +64,8 @@ do
 
 		local x, y = font:GetTextSize(str)
 
-		cache[font] = cache[font] or utility.CreateWeakTable()
-		cache[font][str] = cache[font][str] or utility.CreateWeakTable()
+		cache[font] = cache[font] or table.weak()
+		cache[font][str] = cache[font][str] or table.weak()
 		cache[font][str][1] = x
 		cache[font][str][2] = y
 
@@ -212,7 +212,7 @@ do -- text wrap
 		return table.concat(lines, "\n")
 	end
 
-	local cache = utility.CreateWeakTable()
+	local cache = table.weak()
 
 	function gfx.WrapString(str, max_width, font)
 		font = font or gfx.GetFont()

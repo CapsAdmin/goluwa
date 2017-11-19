@@ -361,7 +361,7 @@ do
 			end
 		end)
 
-		table.insert(prototype.linked_objects, {store = utility.CreateWeakTable(), args = {...}})
+		table.insert(prototype.linked_objects, {store = table.weak(), args = {...}})
 	end
 
 	function prototype.RemovePropertyLink(obj_a, obj_b, field_a, field_b, key_a, key_b)

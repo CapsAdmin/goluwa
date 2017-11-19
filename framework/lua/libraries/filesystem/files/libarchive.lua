@@ -10,7 +10,7 @@ local CONTEXT = {}
 CONTEXT.Name = "libarchive"
 CONTEXT.Position = math.huge
 
-CONTEXT.archive_cache = CONTEXT.archive_cache or utility.CreateWeakTable()
+CONTEXT.archive_cache = CONTEXT.archive_cache or table.weak()
 
 local function iterate_archive(data)
 	if CONTEXT.archive_cache[data.archive_path] and CONTEXT.archive_cache[data.archive_path].files[1] then
@@ -32,7 +32,7 @@ local function iterate_archive(data)
 	return tbl
 end
 
-local cache = utility.CreateWeakTable()
+local cache = table.weak()
 
 local function split_path(path_info)
 	if cache[path_info.full_path] then

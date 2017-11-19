@@ -1,5 +1,5 @@
 do
-	gine.created_materials = utility.CreateWeakTable()
+	gine.created_materials = table.weak()
 
 	function gine.env.CreateMaterial(name, shader, tbl)
 		shader = shader:lower()

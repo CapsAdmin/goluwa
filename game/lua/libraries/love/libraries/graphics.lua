@@ -3,7 +3,7 @@ if not GRAPHICS then return end
 local love = ... or _G.love
 local ENV = love._line_env
 
-ENV.textures = ENV.textures or utility.CreateWeakTable()
+ENV.textures = ENV.textures or table.weak()
 ENV.graphics_filter_min = ENV.graphics_filter_min or "linear"
 ENV.graphics_filter_mag = ENV.graphics_filter_mag or "linear"
 ENV.graphics_filter_anisotropy = ENV.graphics_filter_anisotropy or 1

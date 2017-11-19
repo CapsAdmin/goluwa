@@ -88,7 +88,7 @@ if fs.open then
 	local ffi_string = ffi.string
 	local math_min = math.min
 	-- without this cache thing loading gm_construct takes 30 sec opposed to 15
-	local cache = utility.CreateWeakTable()
+	local cache = table.weak()
 
 	function CONTEXT:ReadBytes(bytes)
 		bytes = math_min(bytes, self.attributes.size)

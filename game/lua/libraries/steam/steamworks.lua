@@ -104,7 +104,7 @@ do
 	META:Register()
 end
 
-local active = utility.CreateWeakTable()
+local active = table.weak()
 
 function steam.GetFriendObjectFromSteamID(id)
 	active[tostring(id)] = active[tostring(id)] or prototype.CreateObject("steam_friend", {id = id})

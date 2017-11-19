@@ -191,7 +191,7 @@ local function replace_field(str, key, val)
 	return str:replace("@@"..key.."@@", val)
 end
 
-render.active_shaders = render.active_shaders or utility.CreateWeakTable()
+render.active_shaders = render.active_shaders or table.weak()
 
 function render.GetShaders()
 	return render.active_shaders

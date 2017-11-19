@@ -159,7 +159,7 @@ do -- serializing
 	end
 
 	function META:SetGUID(guid)
-		prototype.created_objects_guid = prototype.created_objects_guid or utility.CreateWeakTable()
+		prototype.created_objects_guid = prototype.created_objects_guid or table.weak()
 
 		if prototype.created_objects_guid[self.GUID] then
 			prototype.created_objects_guid[self.GUID] = nil
@@ -189,7 +189,7 @@ do -- serializing
 	end
 
 	function prototype.GetObjectByGUID(guid)
-		prototype.created_objects_guid = prototype.created_objects_guid or utility.CreateWeakTable()
+		prototype.created_objects_guid = prototype.created_objects_guid or table.weak()
 
 		return prototype.created_objects_guid[guid] or NULL
 	end
@@ -215,7 +215,7 @@ do -- events
 
 		local func_name = "On" .. event_type
 
-		events[event_type] = events[event_type] or utility.CreateWeakTable()
+		events[event_type] = events[event_type] or table.weak()
 		table.insert(events[event_type], self)
 
 		event.AddListener(event_type, "prototype_events", function(a_, b_, c_)
@@ -242,7 +242,7 @@ do -- events
 		self.added_events = self.added_events or {}
 		if not self.added_events[event_type] then return end
 
-		events[event_type] = events[event_type] or utility.CreateWeakTable()
+		events[event_type] = events[event_type] or table.weak()
 
 		for i, other in pairs(events[event_type]) do
 			if other == self then

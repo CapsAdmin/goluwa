@@ -16,7 +16,7 @@ local audio = _G.audio or {}
 al.debug = true
 alc.debug = true
 
-audio.effect_channels = audio.effect_channels or utility.CreateWeakTable()
+audio.effect_channels = audio.effect_channels or table.weak()
 
 function audio.Initialize(name)
 	local f = io.open("./al_config.ini", "wb")

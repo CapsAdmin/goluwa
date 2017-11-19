@@ -1,7 +1,7 @@
 local line = _G.line or {}
 
 line.speed = 1
-line.love_envs = line.love_envs or utility.CreateWeakTable()
+line.love_envs = line.love_envs or table.weak()
 
 pvars.Setup("line_enable_audio", true)
 pvars.Setup("love_version", "0.9.0")
@@ -15,7 +15,7 @@ do
 		return self.name
 	end
 
-	local created = utility.CreateWeakTable()
+	local created = table.weak()
 	local registered = {}
 
 	function line.TypeTemplate(name)

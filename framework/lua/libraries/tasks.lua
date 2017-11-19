@@ -2,7 +2,7 @@ local tasks = _G.tasks or {}
 
 tasks.max = 4
 
-tasks.coroutine_lookup = tasks.coroutine_lookup or utility.CreateWeakTable()
+tasks.coroutine_lookup = tasks.coroutine_lookup or table.weak()
 tasks.created = tasks.created or {}
 
 function tasks.IsEnabled()
