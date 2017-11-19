@@ -148,6 +148,8 @@ function CONTEXT:TranslateArchivePath(file_info)
 	return file_info.archive_path
 end
 
+local cache = table.weak()
+
 function CONTEXT:Open(path_info, mode, ...)
 	if self:GetMode() == "read" then
 		local tree, relative, archive_path = self:GetFileTree(path_info)
@@ -163,7 +165,11 @@ function CONTEXT:Open(path_info, mode, ...)
 			return false, "file is a directory"
 		end
 
-		local file, err = vfs.Open(self:TranslateArchivePath(file_info, archive_path))
+		local archive_path = self:TranslateArchivePath(file_info, archive_path)
+		local file, err = cache[archive_path] or vfs.Open(archive_path)
+
+		cache[archive_path] = file
+
 		if not file then
 			return false, err
 		end
@@ -174,7 +180,7 @@ function CONTEXT:Open(path_info, mode, ...)
 
 		if file_info.preload_data then
 			self.data = file_info.preload_data .. file:ReadBytes(file_info.size-#file_info.preload_data)
-			file:Close()
+			self.file = nil
 		else
 			self.file = file
 		end
@@ -234,7 +240,7 @@ end
 
 function CONTEXT:OnRemove()
 	if self.file and self.file:IsValid() then
-		self.file:Close()
+		self.file = nil -- just unref
 	end
 end
 
