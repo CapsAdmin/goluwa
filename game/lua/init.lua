@@ -1,4 +1,6 @@
 if SOCKETS then
+	package.preload["mime.core"] = function() return {b64 = crypto.Base64Encode} end
+
 	runfile("lua/libraries/sockets/websocket.lua", sockets)
 	runfile("lua/libraries/sockets/irc.lua", sockets)
 	runfile("lua/libraries/sockets/intermsg.lua", sockets)
