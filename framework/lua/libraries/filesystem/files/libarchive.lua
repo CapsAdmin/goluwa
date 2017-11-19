@@ -32,7 +32,13 @@ local function iterate_archive(data)
 	return tbl
 end
 
+local cache = utility.CreateWeakTable()
+
 local function split_path(path_info)
+	if cache[path_info.full_path] then
+		return cache[path_info.full_path][1], cache[path_info.full_path][2]
+	end
+
 	local archive_path, relative
 
 	if path_info.full_path:find("tar.gz", nil, true) then
@@ -42,12 +48,18 @@ local function split_path(path_info)
 	end
 
 	if not archive_path and not relative then
-		return false, "not a valid archive path"
+		archive_path, relative = false, "not a valid archive path"
+	else
+		if archive_path:endswith("/") then
+			archive_path = archive_path:sub(0, -2)
+		end
+
+		if archive_path:endswith(".gma") or archive_path:endswith(".vpk") then
+			archive_path, relative = false, "TODO"
+		end
 	end
 
-	if archive_path:endswith("/") then
-		archive_path = archive_path:sub(0, -2)
-	end
+	cache[path_info.full_path] = {archive_path, relative}
 
 	return archive_path, relative
 end
@@ -56,7 +68,14 @@ local function open_archive(path_info, skip_cache)
 	local archive_path, relative = split_path(path_info)
 	if not archive_path then return archive_path, relative end
 
-	local str = CONTEXT.archive_cache[archive_path] and CONTEXT.archive_cache[archive_path].str or vfs.Read("os:" .. archive_path)
+	local str
+
+	if CONTEXT.archive_cache[archive_path] then
+		str = CONTEXT.archive_cache[archive_path].str
+	else
+		str = vfs.Read("os:" .. archive_path)
+	end
+
 	if not str then return false, "archive is empty" end
 
 	local a = archive.ReadNew()
