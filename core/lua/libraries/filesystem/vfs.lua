@@ -250,7 +250,7 @@ end
 function vfs.Open(path, mode, sub_mode)
 	mode = mode or "read"
 
-	local errors = "\n"
+	local errors = {}
 
 	for i, data in ipairs(vfs.TranslatePath(path)) do
 		local file = prototype.CreateDerivedObject("file_system", data.context.Name)
@@ -267,11 +267,14 @@ function vfs.Open(path, mode, sub_mode)
 			return file
 		else
 			file:Remove()
-			errors = errors .. "\t" ..  data.context.Name .. ": " ..  err .. "\n"
+			local err = "\t" ..  data.context.Name .. ": " ..  err
+			if errors[#errors] ~= err then
+				table.insert(errors, err)
+			end
 		end
 	end
 
-	return false, "unable to open file: " .. errors
+	return false, "unable to open file: \n" .. table.concat(errors, "\n")
 end
 
 runfile("path_utilities.lua", vfs)
