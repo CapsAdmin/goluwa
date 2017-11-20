@@ -92,6 +92,10 @@ function PLUGIN:Setup()
 					end
 
 					ZEROBRANE = true
+
+					if "DEFERRED_CMD" ~= "" then
+						commands.RunString("DEFERRED_CMD")
+					end
 				]]}]==]
 			},
 
@@ -263,7 +267,7 @@ function PLUGIN:IsRunning(id)
 	return console.pid and wx.wxProcess.Exists(console.pid)
 end
 
-function PLUGIN:StartProcess(id)
+function PLUGIN:StartProcess(id, cmd)
 	local console = self.consoles[id]
 
 	if self:IsRunning(console.id) then
@@ -281,6 +285,8 @@ function PLUGIN:StartProcess(id)
 
 	for k,v in pairs(console.env_vars) do
 		v = v:gsub("LUA(%b{})", function(code) return assert(loadstring("local console = ... return " .. code:sub(2, -2)))(console) end)
+		v = v:gsub("DEFERRED_CMD", cmd or "")
+		ide:Print(k,v)
 		wx.wxSetEnv(k, v)
 	end
 
@@ -382,7 +388,7 @@ function PLUGIN:onRegister()
 			if self:IsRunning(console.id) then
 				console:run_string(str)
 			else
-				self:StartProcess(console.id)
+				self:StartProcess(console.id, str)
 				console:run_string(str)
 			end
 		end, console.icon)
