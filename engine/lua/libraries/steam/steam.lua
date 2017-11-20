@@ -41,18 +41,22 @@ function steam.DownloadWorkshopCollection(id, callback)
 	})
 end
 
-local ok, err = pcall(function()
-	local steamworks_api = require("steamworks")
+function steam.InitializeSteamWorks()
+	local ok, err = pcall(function()
+		local steamworks_api = require("steamworks")
 
-	for k,v in pairs(steamworks_api) do
-		if not steam[k] then
-			steam[k] = v
+		for k,v in pairs(steamworks_api) do
+			if not steam[k] then
+				steam[k] = v
+			end
 		end
-	end
-end)
+	end)
 
-if not ok then
-	llog(err)
+	if not ok then
+		llog(err)
+	end
+
+	return ok
 end
 
 --[[
