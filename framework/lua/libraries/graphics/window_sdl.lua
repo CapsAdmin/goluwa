@@ -269,6 +269,11 @@ end
 function window.CreateWindow(width, height, title, flags)
 	title = title or ""
 
+	if WINDOWS then
+		ffi.cdef("int SetProcessDPIAware();")
+		ffi.C.SetProcessDPIAware()
+	end
+
 	if not sdl.video_init then
 		sdl.Init(sdl.e.INIT_VIDEO)
 		sdl.SetHint(sdl.e.HINT_MOUSE_FOCUS_CLICKTHROUGH, "1")
