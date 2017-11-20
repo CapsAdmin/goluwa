@@ -57,6 +57,9 @@ function PLUGIN:Setup()
 	end
 
 	local function setup_console(id, name, cmd_line, icon, on_key)
+		if on_key then
+			ide.editorApp:Connect(wx.wxEVT_KEY_DOWN, function (event) self:onEditorKeyDown2(event) end)
+		end
 		return
 		{
 			id = id,
@@ -264,6 +267,9 @@ function PLUGIN:StartProcess(id)
 
 	if self:IsRunning(console.id) then
 		console:print("already started\n")
+		self:StopProcess(id)
+		console.restart = true
+		return
 	end
 
 	if console.start then
@@ -461,7 +467,7 @@ function PLUGIN:onUnregister()
 	end
 end
 
-function PLUGIN:onEditorKeyDown(editor, event)
+function PLUGIN:onEditorKeyDown2(event)
 	local keycode = event:GetKeyCode()
 	local mod = event:GetModifiers()
 
@@ -479,6 +485,10 @@ function PLUGIN:onIdle()
 	for _, console in pairs(self.consoles) do
 		if console.on_update then
 			console:on_update()
+		end
+		if console.restart and not self:IsRunning(console.id) then
+			self:StartProcess(console.id)
+			console.restart = nil
 		end
 	end
 end
