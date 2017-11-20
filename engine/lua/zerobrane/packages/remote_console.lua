@@ -57,9 +57,6 @@ function PLUGIN:Setup()
 	end
 
 	local function setup_console(id, name, cmd_line, icon, on_key)
-		if on_key then
-			ide.editorApp:Connect(wx.wxEVT_KEY_DOWN, function (event) self:onEditorKeyDown2(event) end)
-		end
 		return
 		{
 			id = id,
@@ -244,14 +241,15 @@ function PLUGIN:Setup()
 
 	return {
 		setup_console("server", "Server", jit.os ~= "Windows" and "./goluwa server" or "goluwa.cmd server", server_icon),
-		setup_console("client", "Client", jit.os ~= "Windows" and "./goluwa client" or "goluwa.cmd client", client_icon, function(console, key, mod)
-			if (key == wx.WXK_F5 or key == wx.WXK_F6) then
-				if mod == wx.wxMOD_SHIFT then
+		setup_console("client", "Client", jit.os ~= "Windows" and "./goluwa client" or "goluwa.cmd client", client_icon, function(console, suppress_only)
+			if (wx.wxGetKeyState(wx.WXK_F5) or wx.wxGetKeyState(wx.WXK_F6)) then
+				if suppress_only then return false end
+
+				if self:IsRunning(console.id) then
 					console:Stop()
 				else
 					console:Start()
 				end
-				return false
 			end
 		end),
 	}
@@ -381,7 +379,8 @@ function PLUGIN:onRegister()
 			if self:IsRunning(console.id) then
 				console:run_string(str)
 			else
-				console:print("Program is not launched")
+				self:StartProcess(console.id)
+				console:run_string(str)
 			end
 		end, console.icon)
 
@@ -467,13 +466,14 @@ function PLUGIN:onUnregister()
 	end
 end
 
-function PLUGIN:onEditorKeyDown2(event)
+function PLUGIN:onEditorKeyDown(event)
+	if not event.GetKeyCode then return end -- huh
 	local keycode = event:GetKeyCode()
 	local mod = event:GetModifiers()
 
 	for _, console in pairs(self.consoles) do
 		if console.on_key then
-			local res = console:on_key(keycode, mod)
+			local res = console:on_key(true)
 			if res ~= nil then
 				return res
 			end
@@ -489,6 +489,9 @@ function PLUGIN:onIdle()
 		if console.restart and not self:IsRunning(console.id) then
 			self:StartProcess(console.id)
 			console.restart = nil
+		end
+		if console.on_key then
+			console:on_key(false)
 		end
 	end
 end
@@ -593,8 +596,8 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 	local function chomp(line) return (line:gsub("%s+$", "")) end
 
 	local function getInput(line)
-		local nextMarker = line
 		local count = console:GetLineCount()
+		local nextMarker = line or count
 
 		repeat -- check until we find at least some marker
 			nextMarker = nextMarker+1
@@ -603,51 +606,25 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 			console:PositionFromLine(line), console:PositionFromLine(nextMarker)))
 	end
 
-	local currentHistory
-	local lastCommand = ""
-	local function getNextHistoryLine(forward, promptText)
-		local count = console:GetLineCount()
-		if currentHistory == nil then currentHistory = count end
+	local command_history = {}
+	local history_i = 0
 
-		if forward then
-			currentHistory = console:MarkerNext(currentHistory+1, PROMPT_MARKER_VALUE)
-			if currentHistory == wx.wxNOT_FOUND then
-				currentHistory = count
-				return ""
-			end
+	local function getNextHistoryLine(backward)
+		if backward then
+			history_i = history_i + 1
 		else
-			currentHistory = console:MarkerPrevious(currentHistory-1, PROMPT_MARKER_VALUE)
-			if currentHistory == wx.wxNOT_FOUND then
-				return lastCommand
-			end
+			history_i = history_i - 1
 		end
-		-- need to skip the current prompt line
-		-- or skip repeated commands
-		if currentHistory == getPromptLine()
-		or getInput(currentHistory) == promptText then
-			return getNextHistoryLine(forward, promptText)
-		end
-		return getInput(currentHistory)
+
+		return command_history[history_i%#command_history + 1] or ""
 	end
 
 	local function getNextHistoryMatch(promptText)
-		local count = console:GetLineCount()
-		if currentHistory == nil then currentHistory = count end
-
-		local current = currentHistory
-		while true do
-			currentHistory = console:MarkerPrevious(currentHistory-1, PROMPT_MARKER_VALUE)
-			if currentHistory == wx.wxNOT_FOUND then -- restart search from the last item
-				currentHistory = count
-			elseif currentHistory ~= getPromptLine() then -- skip current prompt
-				local input = getInput(currentHistory)
-				if input:find(promptText, 1, true) == 1 then return input end
+		for i,v in ipairs(command_history) do
+			if promptText:find(v, nil, true) then
+				return v
 			end
-			-- couldn't find anything and made a loop; get out
-			if currentHistory == current then return end
 		end
-
-		assert(false, "getNextHistoryMatch coudn't find a proper match")
 	end
 
 	local function concat(sep, ...)
@@ -829,7 +806,12 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 						displayShellDirect('\n')
 						executeShellCode(promptText)
 					end
-					currentHistory = getPromptLine() -- reset history
+
+					if command_history[#command_history] ~= promptText then
+						table.insert(command_history, promptText)
+					end
+					history_i = #command_history
+
 					return -- don't need to do anything else with return
 				elseif modifiers == wx.wxMOD_NONE or console:GetSelectedText() == "" then
 					-- move cursor to end if not already there
@@ -902,8 +884,8 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 
 	function console:Erase()
 		-- save the last command to keep when the history is cleared
-		currentHistory = getPromptLine()
-		lastCommand = getNextHistoryLine(false, "")
+		--currentHistory = getPromptLine()
+		--lastCommand = getNextHistoryLine(false, "")
 		-- allow writing as the editor may be read-only depending on current cursor position
 		self:SetReadOnly(false)
 		self:ClearAll()
