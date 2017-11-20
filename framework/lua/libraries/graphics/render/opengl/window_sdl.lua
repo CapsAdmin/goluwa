@@ -112,8 +112,15 @@ function render.SwapBuffers(wnd)
 	sdl.GL_SwapWindow(wnd.sdl_wnd)
 end
 
-function render.SwapInterval(b)
-	sdl.GL_SetSwapInterval(b and 1 or 0)
+do
+	local last
+
+	function render.SwapInterval(b)
+		if last ~= b then
+			sdl.GL_SetSwapInterval(b and 1 or 0)
+			last = b
+		end
+	end
 end
 
 do

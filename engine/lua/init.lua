@@ -69,8 +69,20 @@ local rate_cvar = pvars.Setup(
 	"-1\t=\trun as fast as possible\n 0\t=\tvsync\n+1\t=\t/try/ to run at this framerate (using sleep)"
 )
 
+local battery_limit = pvars.Setup("system_battery_limit", true)
+
 event.AddListener("Update", "rate_limit", function(dt)
 	local rate = rate_cvar:Get()
+
+	if battery_limit:Get() and window.IsUsingBattery() then
+		render.SwapInterval(true)
+		if window.GetBatteryLevel() < 0.20 then
+			rate = 10
+		end
+		if not window.IsFocused() then
+			rate = 5
+		end
+	end
 
 	if rate > 0 then
 		system.Sleep(math.floor(1/rate * 1000))

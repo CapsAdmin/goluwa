@@ -203,6 +203,16 @@ function META:GetClipboard()
 	return ffi.string(sdl.GetClipboardText())
 end
 
+function META:GetBatteryLevel()
+	local percent = ffi.new("uint32_t[1]")
+	sdl.GetPowerInfo(nil, percent)
+	return tonumber(percent[0]) / 100
+end
+
+function META:IsUsingBattery()
+	return sdl.GetPowerInfo(nil, nil) == sdl.e.POWERSTATE_ON_BATTERY
+end
+
 if system then
 	local freq = tonumber(sdl.GetPerformanceFrequency())
 	local start_time = sdl.GetPerformanceCounter()
