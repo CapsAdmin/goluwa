@@ -485,6 +485,12 @@ function PLUGIN:onEditorKeyDown(event)
 end
 
 function PLUGIN:onIdle()
+
+	if not self.focused_once then
+		self.consoles.client.shellbox:SetFocus()
+		self.focused_once = true
+	end
+
 	for _, console in pairs(self.consoles) do
 		if console.on_update then
 			console:on_update()
