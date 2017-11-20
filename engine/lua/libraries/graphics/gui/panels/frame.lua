@@ -197,8 +197,8 @@ function META:SetTitle(str)
 	title:SetSendMouseInputToPanel(self)
 	self.title = title
 
-	if gui.task_bar:IsValid() then
-		gui.task_bar:AddButton(self:GetTitle(), self, function(button)
+	if gui.GetTaskBar then
+		gui.GetTaskBar():AddButton(self:GetTitle(), self, function(button)
 			self:Minimize(not self:IsMinimized())
 		end, function(button)
 			gui.CreateMenu({

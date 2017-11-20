@@ -233,6 +233,8 @@ do -- events
 	end
 
 	function gui.DrawMenu(dt)
+		if not gui.world.Children[1] then return end
+
 		if gui.threedee then
 			--render2d.camera:Start3D2DEx(Vec3(1, -5, 10), Deg3(-90, 180, 0), Vec3(8, 8, 10))
 			render2d.camera:Start3D2DEx(Vec3(0, 0, 0), Ang3(0, 0, 0), Vec3(20, 20, 20))
@@ -424,57 +426,63 @@ function gui.Initialize()
 
 	-- should this be here?
 	do -- task bar (well frame bar is more appropriate since the frame control adds itself to this)
-		local S = gui.skin:GetScale()
+		function gui.GetTaskBar()
+			if gui.task_bar then return gui.task_bar end
 
-		local bar = gui.CreatePanel("base")
-		bar:SetStyle("gradient")
-		bar:SetVisible(false)
+			local S = gui.skin:GetScale()
 
-		bar.buttons = {}
+			local bar = gui.CreatePanel("base")
+			bar:SetStyle("gradient")
+			bar:SetVisible(false)
 
-		function bar:AddButton(text, key, callback, callback2)
-			self:SetVisible(true)
+			bar.buttons = {}
 
-			local button = self.buttons[key] or gui.CreatePanel("text_button", self)
-			button:SetText(text)
-			button.OnPress = callback
-			button.OnRightClick = callback2
+			function bar:AddButton(text, key, callback, callback2)
+				self:SetVisible(true)
 
-			button:SetupLayout("center_left")
+				local button = self.buttons[key] or gui.CreatePanel("text_button", self)
+				button:SetText(text)
+				button.OnPress = callback
+				button.OnRightClick = callback2
 
-			self.buttons[key] = button
+				button:SetupLayout("center_left")
 
-			self:Layout()
-		end
+				self.buttons[key] = button
 
-		function bar:RemoveButton(key)
-			gui.RemovePanel(self.buttons[key])
-			self.buttons[key] = nil
-
-			if not next(self.buttons) then
-				self:SetVisible(false)
+				self:Layout()
 			end
 
-			self:Layout()
-		end
+			function bar:RemoveButton(key)
+				gui.RemovePanel(self.buttons[key])
+				self.buttons[key] = nil
 
-		function bar:OnLayout(S)
-			self:SetHeight(S*14)
-			self:SetMargin(Rect()+S*2)
+				if not next(self.buttons) then
+					self:SetVisible(false)
+				end
 
-			for i,v in ipairs(self:GetChildren()) do
-				v:SetMargin(Rect()+2.5*S)
-				v:SizeToText()
+				self:Layout()
 			end
 
+			function bar:OnLayout(S)
+				self:SetHeight(S*14)
+				self:SetMargin(Rect()+S*2)
 
-			self:MoveDown()
-			self:FillX()
+				for i,v in ipairs(self:GetChildren()) do
+					v:SetMargin(Rect()+2.5*S)
+					v:SizeToText()
+				end
+
+
+				self:MoveDown()
+				self:FillX()
+			end
+
+			bar:Layout(true)
+
+			gui.task_bar = bar
+
+			return bar
 		end
-
-		bar:Layout(true)
-
-		gui.task_bar = bar
 	end
 end
 

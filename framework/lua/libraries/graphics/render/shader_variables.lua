@@ -16,6 +16,19 @@ function render.CreateShaderVariables(typ, shader, name, extra_size, persistent)
 		return
 	end
 
+	local referenced = false
+
+	for k,v in pairs(block) do
+		if k:startswith("referenced_by_") and v == 1 then
+			referenced = true
+			break
+		end
+	end
+
+	if not referenced then
+		return
+	end
+
 	local total_size = block.buffer_data_size + extra_size
 	local variables = {}
 	local variables2 = {}

@@ -138,6 +138,8 @@ end)
 
 input.Bind("o", "cam_ortho", function() render3d.camera:SetOrtho(not render3d.camera:GetOrtho()) end)
 
+do return end
+
 local roll = 0
 local pos = Vec2(0, 0)
 local zoom = 1

@@ -39,7 +39,7 @@ function render.UpdateGlobalShaderStorage()
 	end
 end
 
-event.AddListener("Update", "", render.UpdateGlobalShaderStorage)
+event.AddListener("Update", "update_global_shader_variables", render.UpdateGlobalShaderStorage)
 
 function render.GetGlobalShaderVariableBlock()
 	local str = "layout(std140) uniform global_variables\n"
