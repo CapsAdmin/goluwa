@@ -245,10 +245,13 @@ function PLUGIN:Setup()
 			if (wx.wxGetKeyState(wx.WXK_F5) or wx.wxGetKeyState(wx.WXK_F6)) then
 				if suppress_only then return false end
 
-				if self:IsRunning(console.id) then
-					console:Stop()
-				else
-					console:Start()
+				if (console.last_start or 0) < os.clock() then
+					if self:IsRunning(console.id) then
+						console:Stop()
+					else
+						console:Start()
+					end
+					console.last_start = os.clock() + 0.1
 				end
 			end
 		end),
