@@ -99,6 +99,10 @@ function steam.LoadMap(path)
 
 	local bsp_file = assert(vfs.Open(path))
 
+	if bsp_file:GetSize() == 0 then
+		error("map is empty? (size is 0)")
+	end
+
 	local header = bsp_file:ReadStructure([[
 	long ident; // BSP file identifier
 	long version; // BSP file version
