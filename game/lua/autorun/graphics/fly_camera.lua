@@ -128,7 +128,7 @@ event.AddListener("GBufferInitialized", function()
 
 	event.AddListener("MouseInput", "fly_camera_3d", function(button, press)
 		if press then
-			if gui and (gui.GetHoveringPanel() ~= gui.world or gui.focus_panel:IsValid()) then return end
+			if gui.IsMouseHoveringPanel() then return end
 			drag_view = true
 		else
 			drag_view = false

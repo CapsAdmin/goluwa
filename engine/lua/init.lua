@@ -40,7 +40,7 @@ if GRAPHICS then
 	runfile("lua/libraries/graphics/gfx/polygon_3d.lua", gfx)
 	gui = runfile("lua/libraries/graphics/gui/gui.lua")
 	render3d = runfile("lua/libraries/graphics/render3d/render3d.lua")
-	gui.Initialize()
+	--gui.Initialize()
 end
 
 entities = runfile("lua/libraries/entities/entities.lua") -- entity component system

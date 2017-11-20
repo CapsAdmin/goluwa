@@ -5,6 +5,10 @@ gui.unroll_draw = false
 gui.panels = gui.panels or {}
 
 function gui.CreatePanel(name, parent, store_in_parent)
+	if not gui.init then
+		gui.Initialize()
+	end
+
 	parent = parent or gui.world
 
 	local child_i
@@ -135,6 +139,10 @@ function gui.GetHoveringPanel(panel, filter)
 	return panel.mouse_over and panel or gui.world
 end
 
+function gui.IsMouseHoveringPanel()
+	return gui.init and gui.GetHoveringPanel() ~= gui.world or gui.focus_panel:IsValid()
+end
+
 do -- context menu helpers
 	gui.current_menu = gui.current_menu or NULL
 
@@ -233,8 +241,6 @@ do -- events
 	end
 
 	function gui.DrawMenu(dt)
-		if not gui.world.Children[1] then return end
-
 		if gui.threedee then
 			--render2d.camera:Start3D2DEx(Vec3(1, -5, 10), Deg3(-90, 180, 0), Vec3(8, 8, 10))
 			render2d.camera:Start3D2DEx(Vec3(0, 0, 0), Ang3(0, 0, 0), Vec3(20, 20, 20))
@@ -398,6 +404,8 @@ function gui.CreateWorld()
 end
 
 function gui.Initialize()
+	gui.init = true
+
 	runfile("lua/libraries/graphics/gui/skins/*", gui)
 	gui.SetSkin("gwen_dark")
 

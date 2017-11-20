@@ -92,6 +92,7 @@ function menu.RenderBackground()
 end
 
 function menu.CreateTopBar()
+	if not gui.init then gui.Initialize() end
 	local skin = gui.GetRegisteredSkin("zsnes").skin
 	local S = skin:GetScale()
 
