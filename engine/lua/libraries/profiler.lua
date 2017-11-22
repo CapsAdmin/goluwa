@@ -227,7 +227,7 @@ do -- timer
 		local delta = time - data.time
 
 		if not no_print then
-			logf("%s%s: %f\n", (" "):rep(data.level-1), data.str, math.round(delta, 5))
+			logf("%s%s: %1.22f\n", (" "):rep(data.level-1), data.str, math.round(delta, 5))
 		end
 
 		return delta
@@ -579,23 +579,27 @@ function profiler.EnableRealTimeTraceAbortLogging(b)
 	end
 end
 
+local system_GetTime = system.GetTime
+
 function profiler.MeasureFunction(func, count, name, no_print)
 	count = count or 1
 	name = name or "measure result"
 
-	local time = 0
+	local total_time = 0
 
 	for _ = 1, count do
-		profiler.StartTimer()
-			func()
-		time = time + profiler.StopTimer(true)
+		local time = system_GetTime()
+		jit.barrier()
+		func()
+		jit.barrier()
+		total_time = total_time + system_GetTime() - time
 	end
 
 	if not no_print then
-		logf("%s: average: %f total: %f\n", name, time / count, time)
+		logf("%s: average: %1.22f total: %f\n", name, total_time / count, total_time)
 	end
 
-	return time, func
+	return total_time, func
 end
 
 function profiler.MeasureFunctions(tbl, count)
@@ -605,7 +609,7 @@ function profiler.MeasureFunctions(tbl, count)
 	end
 	table.sort(res, function(a, b) return a.time < b.time end)
 	for i,v in ipairs(res) do
-		logf("%s: average: %f total: %f\n", v.name, v.time / count, v.time)
+		logf("%s: average: %1.22f total: %f\n", v.name, v.time / count, v.time)
 	end
 end
 
@@ -679,6 +683,31 @@ commands.Add("trace_abort", function()
 	jit.flush()
 	profiler.EnableRealTimeTraceAbortLogging(true)
 end)
+
+commands.Add("loom", function()
+	if profiler.ToggleLoom() then
+		logn("started loom")
+	else
+		logn("stopped loom")
+	end
+end)
+
+do
+	local started = false
+
+	function profiler.ToggleLoom()
+		if not started then
+			jit.loom.start2("html")
+			started = true
+			return true
+		else
+			vfs.Write("loom.html", jit.loom.stop())
+			system.OpenURL(R("data/loom.html"))
+			started = false
+			return false
+		end
+	end
+end
 
 if RELOAD then
 
