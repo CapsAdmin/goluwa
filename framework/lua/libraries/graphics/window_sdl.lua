@@ -444,6 +444,12 @@ function window.CreateWindow(width, height, title, flags)
 				elseif case == sdl.e.WINDOWEVENT_CLOSE then
 					call(wnd, "OnClose")
 
+				elseif case == sdl.e.WINDOWEVENT_TAKE_FOCUS then
+					call(wnd, "OnTakeFocus")
+
+				elseif case == sdl.e.WINDOWEVENT_EXPOSED then
+					call(wnd, "OnExposed")
+
 				else
 					for k,v in pairs(sdl.e) do
 						if k:startswith("WINDOWEVENT") and v == case then
