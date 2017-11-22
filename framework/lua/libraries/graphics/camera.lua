@@ -283,6 +283,8 @@ do
 				normallize_plane(frustum.far)
 			end
 
+			frustum.tbli = {frustum.near, frustum.left, frustum.right, frustum.bottom, frustum.top, frustum.far}
+
 			return frustum
 		end
 
@@ -291,7 +293,10 @@ do
 				return false
 			end
 
-			for i, plane in ipairs(self:GetMatrices().frustum_planes) do
+			local frustum = self:GetMatrices().frustum
+
+			for i = 1, 6 do
+				local plane = frustum.tbli[i]
 				if
 					(plane.x * (plane.x > 0 and aabb.max_x or aabb.min_x)) +
 					(plane.y * (plane.y > 0 and aabb.max_y or aabb.min_y)) +
@@ -388,9 +393,8 @@ do
 				vars.projection_view_inverse = vars.projection_view:GetInverse()
 			end
 
-			local f = self:GetFrustum(true, vars.projection_view)
-			vars.frustum = f
-			vars.frustum_planes = {f.near, f.left, f.right, f.bottom, f.top, f.far}
+			vars.frustum = self:GetFrustum(true, vars.projection_view)
+
 		end
 
 		if what == nil or what == "view" or what == "world" then
