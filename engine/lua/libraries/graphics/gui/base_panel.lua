@@ -2091,7 +2091,7 @@ do -- layout
 			self:NoCollide("left")
 		end
 
-		function META:GmodLeft()
+		function META:GmodRight()
 			self:CenterYSimple()
 			self:MoveRight()
 			self:FillY()
@@ -2108,7 +2108,7 @@ do -- layout
 		function META:GmodBottom()
 			self:CenterXSimple()
 			self:MoveDown()
-			--self:FillX()
+			self:FillX()
 			self:NoCollide("down")
 		end
 
