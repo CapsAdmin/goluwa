@@ -23,7 +23,7 @@ Goluwa is a game engine, a framework and a collection of experiments written in 
 * integration with zerobrane
 
 # Structure
-Goluwa is split into 4 parts. core > framework > engine > game. Going backwards, each part depends on the previous part, so if you delete the engine folder the game folder wont load.
+Goluwa is split into 4 parts. ```core > framework > engine > game```. Going backwards, each part depends on the previous part, so if you delete the engine folder the game folder wont load.
 
 ##### 1. Core
 Contains the barebone framework that has no explicit dependencies on any shared libraries.
