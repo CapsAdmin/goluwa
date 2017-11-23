@@ -1,6 +1,6 @@
 # About
 
-Goluwa is a framework written in [LuaJIT](http://luajit.org/) that I use to further develop Goluwa with and satisfy my programming hobby. I don't have any long term plans so I just make whatever I feel like making in the moment. I'm mostly interested in game engines and middleware for games so Goluwa vaguely resembles a game engine.
+Goluwa is a game engine, a framework and a collection of experiments written in [LuaJIT](http://luajit.org/) leveraging FFI.
 
 ![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/goluwa.png)
 
@@ -15,14 +15,26 @@ Goluwa is a framework written in [LuaJIT](http://luajit.org/) that I use to furt
 * [filesystem](src/lua/libraries/filesystem) with the ability to mount and treat many archive formats as directories 
 * [source engine](src/lua/libraries/steam) formats are supported
 
-**Prototyping**
+##### Prototyping
 * all resources can be loaded from the internet with urls
 * fonts can be loaded directly from google webfont, dafont and other places
 * many model, image and sound formats are supported
 * most code can be reloaded without the need to restart
 * integration with zerobrane
 
-# Issues
+# Structure
+Goluwa is split into 4 parts. core > framework > engine > game. Going backwards, each part depends on the previous part, so if you delete the engine folder the game folder wont load.
+
+##### 1. Core
+Contains the barebone framework that has no explicit dependencies on any shared libraries.
+##### 2. Framework
+The basic framework utilizing sdl, opengl, openal, etc but does not implement anything. It has a renderer which is neither 2d or 3d, very feature complete 2d rendering library utilizing that renderer, game math library, high level socket library, etc.
+##### 3. Engine
+The engine contains a 3d renderer, source engine asset compatibility, steam integration, zerobrane integration, networking, entities, gui, markup language, etc.
+##### 4. Game
+The game folder contains very high level scripts such as Löve2D implemented in goluwa, GarrysMod Lua implemented in goluwa, chatsounds, chatbox, scoreboard, player movement, etc.
+
+# Caveats
 
 I mainly use and develop this on Linux so windows support isn't high priority even though it should work there. It may also work on OSX but I can't test rendering as I'm limited to using mac in a vm.
 
