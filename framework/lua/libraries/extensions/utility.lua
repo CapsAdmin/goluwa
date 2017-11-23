@@ -125,8 +125,8 @@ do -- tree
 			end
 		end
 
-		next.key = str
-		next.value = value
+		next.k = str
+		next.v = value
 	end
 
 	function META:GetEntry(str)
@@ -142,7 +142,7 @@ do -- tree
 			end
 		end
 
-		return next.value
+		return next.v
 	end
 
 	function META:GetChildren(str)

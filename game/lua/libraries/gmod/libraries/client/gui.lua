@@ -608,10 +608,8 @@ do
 	function META:InvalidateLayout(now)
 		if self.in_layout then return end
 		if now then
-			self.in_layout = true
 			self:ApplySchemeSettings()
 			self:PerformLayout(self.__obj:GetWidth(), self.__obj:GetHeight())
-			self.in_layout = nil
 		else
 			self.gine_layout = true
 		end

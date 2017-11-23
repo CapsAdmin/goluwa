@@ -19,9 +19,23 @@ function CONTEXT:OnParseArchive(file, archive_path)
 		padding long unknown_4;
 	]])
 
-	for extension in file:IterateStrings() do
-		for directory in file:IterateStrings() do
-			for name in file:IterateStrings() do
+	while true do
+		local extension = file:ReadString()
+		if extension == nil or extension == "" then
+			break
+		end
+
+		while true do
+			local directory = file:ReadString()
+			if directory == nil or directory == "" then
+				break
+			end
+
+			while true do
+				local name = file:ReadString()
+				if name == nil or name == "" then
+					break
+				end
 
 				local entry = file:ReadStructure([[
 					unsigned long crc;

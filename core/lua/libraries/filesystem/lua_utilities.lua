@@ -278,14 +278,16 @@ end
 -- although vfs will add a loader for each mount, the module folder has to be an exception for modules only
 -- this loader should support more ways of loading than just adding ".lua"
 
-function vfs.AddPackageLoader(func)
-	for i, v in ipairs(package.loaders) do
+function vfs.AddPackageLoader(func, loaders)
+	loaders = loaders or package.loaders
+
+	for i, v in ipairs(loaders) do
 		if v == func then
-			table.remove(package.loaders, i)
+			table.remove(loaders, i)
 			break
 		end
 	end
-	table.insert(package.loaders, func)
+	table.insert(loaders, func)
 end
 
 local function handle_dir(dir, path)
@@ -300,7 +302,9 @@ local function handle_dir(dir, path)
 	return dir .. path
 end
 
-function vfs.AddModuleDirectory(dir)
+function vfs.AddModuleDirectory(dir, loaders)
+	loaders = loaders or package.loaders
+
 	do -- relative path
 		vfs.AddPackageLoader(function(path)
 			return vfs.LoadFile(handle_dir(dir, path) .. ".lua")

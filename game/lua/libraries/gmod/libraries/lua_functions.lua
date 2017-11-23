@@ -1,12 +1,11 @@
 function gine.env.include(path)
 	local ok, err = runfile({
-		path,
 		"lua/" .. path,
 		path:lower(),
-		"lua/" .. path:lower()
 	})
 
 	if ok == false then
+		debug.trace()
 		error(err, 2)
 	end
 
@@ -40,7 +39,7 @@ end
 function gine.env.require(name, ...)
 	--logn("gine: require(",name,")")
 
-	local func, err, path = require.load(name, gine.IsGLuaPath)
+	local func, err, path = require.load(name, gine.package_loaders)
 
 	if type(func) == "function" then
 		if debug.getinfo(func).what ~= "C" then

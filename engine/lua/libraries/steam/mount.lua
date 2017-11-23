@@ -106,7 +106,13 @@ function steam.GetGameFolders(skip_mods)
 end
 
 function steam.GetSourceGames()
-	local found = {}
+	local found = serializer.ReadFile("msgpack", "source_games_cache")
+
+	if found then
+		return found
+	end
+
+	found = {}
 
 	for _, game_dir in ipairs(steam.GetGameFolders()) do
 		for _, folder in ipairs(vfs.Find("os:" .. game_dir, true)) do
@@ -197,6 +203,8 @@ function steam.GetSourceGames()
 		end
 	end
 
+	serializer.WriteFile("msgpack", "source_games_cache", found)
+
 	return found
 end
 
@@ -220,11 +228,11 @@ function steam.MountSourceGame(game_info)
 
 	steam.UnmountSourceGame(game_info)
 
-	for _, path in pairs(game_info.filesystem.searchpaths) do
+	for _, path in ipairs(game_info.filesystem.searchpaths) do
 		if not path:endswith(".vpk") then
 			path = "os:" .. path
 
-			for _, v in pairs(vfs.Find(path .. "/maps/workshop/")) do
+			for _, v in ipairs(vfs.Find(path .. "/maps/workshop/")) do
 				llog("mounting workshop map %s", v)
 				vfs.Mount(path .. "/maps/workshop/" .. v, "maps/", game_info)
 			end

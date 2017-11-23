@@ -7,21 +7,24 @@ CONTEXT.Name = "generic_archive"
 function CONTEXT:AddEntry(entry)
 	self.tree.done_directories = self.tree.done_directories or {}
 
-	entry.directory = entry.full_path:match("(.+)/")
+	local directory = entry.full_path:match("(.+)/")
 	entry.file_name = entry.full_path:match(".+/(.+)")
 
 	entry.size = tonumber(entry.size) or 0
-	entry.crc = entry.crc or 0
+	--entry.crc = entry.crc or 0
 	entry.offset = tonumber(entry.offset) or 0
 	entry.is_file = true
 
-	self.tree:SetEntry(entry.full_path, entry)
-	self.tree:SetEntry(entry.directory, {path = entry.directory, is_dir = true, file_name = entry.directory:match(".+/(.+)") or entry.directory})
+	local full_path = entry.full_path
+	entry.full_path = nil
 
-	for i = #entry.directory, 1, -1 do
-		local char = entry.directory:sub(i, i)
+	self.tree:SetEntry(full_path, entry)
+	self.tree:SetEntry(directory, {path = directory, is_dir = true, file_name = directory:match(".+/(.+)") or directory})
+
+	for i = #directory, 1, -1 do
+		local char = directory:sub(i, i)
 		if char == "/" then
-			local dir = entry.directory:sub(0, i)
+			local dir = directory:sub(0, i)
 			if dir == "" or self.tree.done_directories[dir] then break end
 			local file_name = dir:match(".+/(.+)") or dir
 
@@ -91,6 +94,8 @@ function CONTEXT:GetFileTree(path_info)
 
 	local ok, err = self:OnParseArchive(file, archive_path)
 
+	self.tree.done_directories = nil
+
 	file:Close()
 
 	if not ok then
@@ -136,8 +141,8 @@ function CONTEXT:GetFiles(path_info)
 
 	local out = {}
 	for _, v in pairs(children) do
-		if type(v) == "table" and v.value then -- fix me!!
-			table.insert(out, v.value.file_name)
+		if type(v) == "table" and v.v then -- fix me!!
+			table.insert(out, v.v.file_name)
 		end
 	end
 

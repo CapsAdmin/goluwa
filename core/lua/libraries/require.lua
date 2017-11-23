@@ -12,6 +12,10 @@ do -- loaders
 		for path in paths:gmatch("[^;]+") do
 			path = path:gsub("%?", name)
 
+			if current_hint and current_hint(path) then
+
+			end
+
 			local func, err, path = loader_func(path)
 
 			if func then
@@ -95,10 +99,12 @@ do -- loaders
 	table.insert(package.loaders, 1, preload_loader)
 end
 
-function require.load(name, hint, skip_error)
+function require.load(name, loaders)
+	loaders = loaders or package.loaders
+
 	local errors = {}
 
-	for _, loader in ipairs(package.loaders) do
+	for _, loader in ipairs(loaders) do
 		local ok, func, msg, path = pcall(loader, name)
 
 		if ok and type(func) == "string" then
@@ -112,11 +118,7 @@ function require.load(name, hint, skip_error)
 		end
 
 		if func then
-			if hint and ((type(hint) == "string" and not (path and path:lower():find(hint:lower(), nil, true))) or (type(hint) == "function" and not hint(path))) then
-				table.insert(errors, ("hint %q was given but it was not found in the returned path %q\n"):format(hint, path))
-			else
-				return func, nil, path
-			end
+			return func, nil, path
 		else
 			table.insert(errors, msg)
 		end

@@ -1,5 +1,6 @@
 local line = _G.line or {}
 
+line.package_loaders = {}
 line.speed = 1
 line.love_envs = line.love_envs or table.weak()
 
@@ -137,9 +138,9 @@ function line.RunGame(folder, ...)
 
 	wlog("mounting love game folder: ", R(folder .. "/"))
 	vfs.CreateFolder("data/love/")
-	vfs.AddModuleDirectory("data/love/")
+	vfs.AddModuleDirectory("data/love/", line.package_loaders)
 	vfs.Mount(R(folder .. "/"))
-	vfs.AddModuleDirectory(folder .. "/")
+	vfs.AddModuleDirectory(folder .. "/", line.package_loaders)
 
 	local package_loaded = {}
 	local env
@@ -164,7 +165,7 @@ function line.RunGame(folder, ...)
 				return love[name:match(".+%.(.+)")]
 			end
 
-			local func, err, path = require.load(name, folder)
+			local func, err, path = require.load(name, line.package_loaders)
 
 			--llog("require: ", name, " (", path , ")")
 

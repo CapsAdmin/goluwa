@@ -132,8 +132,11 @@ function gine.IsGLuaPath(path, gmod_dir_only)
 end
 
 gine.addons = gine.addons or {}
+gine.package_loaders = {}
 
 function gine.Initialize(gamemode)
+	gamemode = gamemode or "sandbox"
+
 	event.AddListener("PreLoadFile", "glua", function(path)
 		if gine.IsGLuaPath(path, true) and (path:lower():find("garrysmod/garrysmod/lua/", nil, true) or path:lower():find("garrysmod/garrysmod/gamemodes/")) then
 			local redirect = e.ROOT_FOLDER .. "garrysmod/garrysmod/"
@@ -190,7 +193,12 @@ function gine.Initialize(gamemode)
 		-- setup engine functions
 		runfile("lua/libraries/gmod/environment.lua", gine)
 
-		vfs.AddModuleDirectory(R(gine.dir.."/lua/includes/modules/"))
+		do
+			local dir = "os:" .. R(gine.dir.."/lua/includes/modules/")
+			vfs.AddPackageLoader(function(path)
+				return vfs.LoadFile(dir .. "/" .. path .. ".lua")
+			end, gine.package_loaders)
+		end
 
 		-- include and init files in the right order
 
@@ -203,9 +211,12 @@ function gine.Initialize(gamemode)
 				table.insert(gine.addons, full_path)
 
 				vfs.Mount(full_path)
-				local path = R(full_path.."/lua/includes/modules/")
-				if path then
-					vfs.AddModuleDirectory(path)
+				local dir = R(full_path.."/lua/includes/modules/")
+				if dir then
+					dir = "os:" .. dir
+					vfs.AddPackageLoader(function(path)
+						return vfs.LoadFile(dir .. "/" .. path .. ".lua")
+					end, gine.package_loaders)
 				end
 				table.insert(gine.glua_paths, full_path)
 
@@ -225,9 +236,12 @@ function gine.Initialize(gamemode)
 			end
 
 			for dir in vfs.Iterate(gine.dir .. "addons/", true) do
-				local path = R(dir.."/lua/includes/modules/")
-				if path then
-					vfs.AddModuleDirectory(path)
+				dir = R(dir.."/lua/includes/modules/")
+				if dir then
+					dir = "os:" .. dir
+					vfs.AddPackageLoader(function(path)
+						return vfs.LoadFile(dir .. "/" .. path .. ".lua")
+					end, gine.package_loaders)
 				end
 			end
 		end
@@ -341,8 +355,13 @@ function gine.Run(skip_addons)
 end
 
 commands.Add("ginit=string[sandbox],boolean", function(gamemode, skip_addons)
+	utility.PushTimeWarning()
 	gine.Initialize(gamemode, skip_addons)
+	utility.PopTimeWarning("gine.Initialize", 0)
+
+	utility.PushTimeWarning()
 	gine.Run(skip_addons)
+	utility.PopTimeWarning("gine.Run", 0)
 end)
 
 commands.Add("glua=arg_line", function(code)
