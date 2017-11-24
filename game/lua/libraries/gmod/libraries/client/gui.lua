@@ -134,6 +134,7 @@ do
 			obj = gui.CreatePanel("text_edit")
 			obj:SetMultiline(false)
 			obj:SetEditable(false)
+			obj.label.markup:SetPreserveTabsOnEnter(false)
 			local draw_func = obj.label.OnPostDraw
 			obj.label.DrawTextEntryText = draw_func
 			obj.label.OnPostDraw = function() end
@@ -196,6 +197,8 @@ do
 		function self:ResourceLoaded() end
 		function self:StatusChanged() end
 		function self:Think() end
+		function self:OnGetFocus() end
+		function self:OnLoseFocus() end
 
 		obj.OnDraw = function()
 			if self.gine_layout then
@@ -240,6 +243,13 @@ do
 		end
 
 		obj:CallOnRemove(function() obj.marked_for_deletion = true self:OnDeletion() end)
+
+		if class == "textentry" then
+			hook(obj, "OnTextChanged", function() self:OnTextChanged() end)
+		end
+
+		hook(obj, "OnFocus", function() self:OnGetFocus() end)
+		hook(obj, "OnUnfocus", function() self:OnLoseFocus() end)
 
 		hook(obj, "OnUpdate", function() self:Think() self:AnimationThink() end)
 		hook(obj, "OnMouseMove", function(_, x, y) self:OnCursorMoved(x, y) end)
@@ -494,11 +504,11 @@ do
 	end
 
 	function META:DockPadding(left, top, right, bottom)
-		self.__obj:SetMargin(Rect(left, top, right, bottom))
+		self.__obj:SetMargin(Rect(left, bottom, right, top))
 	end
 
 	function META:DockMargin(left, top, right, bottom)
-		self.__obj:SetPadding(Rect(left, top, right, bottom))
+		self.__obj:SetPadding(Rect(left, bottom, right, top))
 	end
 
 	function META:SetMouseInputEnabled(b)

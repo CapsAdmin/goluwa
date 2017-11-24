@@ -2,20 +2,22 @@ do
 	local easy = {
 		["roboto bk"] = "resource/fonts/Roboto-Black.ttf",
 		["roboto"] = "resource/fonts/Roboto-Thin.ttf",
-		["helvetica"] = "resource/fonts/coolvetica.ttf",
-		["dejavu sans"] = "resource/fonts/coolvetica.ttf",
-		["times new roman"] = "resource/fonts/coolvetica.ttf",
-		["courier new"] = "resource/fonts/coolvetica.ttf",
-		["courier"] = "resource/fonts/coolvetica.ttf",
-		["arial"] = "resource/fonts/coolvetica.ttf",
-		["arial black"] = "resource/fonts/coolvetica.ttf",
-		["verdana"] = "resource/fonts/coolvetica.ttf",
-		["trebuchet ms"] = "resource/fonts/coolvetica.ttf",
+
+		["helvetica"] = "fonts/DejaVuSans.ttf",
+		["dejavu sans"] = "fonts/DejaVuSans.ttf",
+		["dejavu sans mono"] = "fonts/DejaVuSansMono.ttf",
+		["times new roman"] = "fonts/DejaVuSans.ttf",
+		["courier new"] = "fonts/DejaVuSansMono.ttf",
+		["courier"] = "fonts/DejaVuSansMono.ttf",
+		["arial"] = "fonts/DejaVuSans.ttf",
+		["arial black"] = "fonts/DejaVuSans.ttf",
+		["verdana"] = "fonts/DejaVuSans.ttf",
+		["trebuchet ms"] = "fonts/DejaVuSans.ttf",
 	}
 
 	function gine.TranslateFontName(name)
 		if not name then
-			return easy.helvetica
+			return easy["dejavu sans"]
 		end
 		local name = name:lower()
 
@@ -31,7 +33,7 @@ do
 			return "resource/fonts/" .. name .. ".ttf"
 		end
 
-		return easy.helvetica
+		return easy["dejavu sans"]
 	end
 end
 
@@ -111,7 +113,8 @@ do
 	gine.render2d_fonts = gine.render2d_fonts or {}
 
 	function surface.CreateFont(id, tbl)
-		local reload_args = {id, table.copy(tbl)}
+		tbl = table.copy(tbl)
+		local reload_args = {id, tbl}
 
 		for k,v in pairs(default_font) do
 			if tbl[k] == nil then
@@ -122,7 +125,17 @@ do
 		local options = {}
 
 		options.path = gine.TranslateFontName(tbl.font)
-		options.size = math.round(tbl.size/1.25)
+
+		logn("[", id, "] ", tbl.font, " >> ", options.path)
+
+		options.size = math.round(tbl.size - 2)
+
+		-- hmm
+		if options.path:lower():find("mono") then
+			options.monospace = true
+			options.spacing = options.size / 2
+			logn("forcing mono: ", options.size / 2)
+		end
 
 		if tbl.shadow then
 			options.shadow = 2

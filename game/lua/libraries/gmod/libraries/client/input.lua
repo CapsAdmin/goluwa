@@ -14,10 +14,31 @@ do
 	find_enums("BUTTON")
 	find_enums("JOYSTICK")
 
+	translate_key.left = gine.env.KEY_LEFT
+	translate_key.right = gine.env.KEY_RIGHT
+
+	translate_key.left_shift = gine.env.KEY_LSHIFT
+	translate_key.lshift = nil
+	translate_key.right_shift = gine.env.KEY_RSHIFT
+	translate_key.rshift = nil
+
+	translate_key.lcontrol = nil
+	translate_key.left_control = gine.env.KEY_LCONTROL
+	translate_key.right_control = gine.env.KEY_RCONTROL
+	translate_key.rcontrol = nil
+
+	translate_key.left_alt = gine.env.KEY_LALT
+	translate_key.lalt = nil
+	translate_key.right_alt = gine.env.KEY_RALT
+	translate_key.ralt = nil
+
 	local translate_key_rev = {}
 	for k,v in pairs(translate_key) do
 		translate_key_rev[v] = k
 	end
+
+	gine.translate_key = translate_key
+	gine.translate_key_rev = translate_key_rev
 
 	function gine.GetKeyCode(key, rev)
 		if rev then
@@ -25,7 +46,7 @@ do
 				--if gine.print_keys then llog("key reverse: ", key, " >> ", translate_key_rev[key]) end
 				return translate_key_rev[key]
 			else
-				--logf("key %q could not be translated!\n", key)
+				logf("key %q could not be translated!\n", key)
 				return translate_key_rev.KEY_P -- dunno
 			end
 		else
@@ -33,7 +54,7 @@ do
 				if gine.print_keys then llog("key: ", key, " >> ", translate_key[key]) end
 				return translate_key[key]
 			else
-				--logf("key %q could not be translated!\n", key)
+				logf("key %q could not be translated!\n", key)
 				return translate_key.p -- dunno
 			end
 		end

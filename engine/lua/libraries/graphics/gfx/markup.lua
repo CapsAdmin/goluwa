@@ -20,6 +20,7 @@ META:GetSet("HeightSpacing", 2)
 META:GetSet("LightMode", false)
 META:GetSet("SuperLightMode", false)
 META:GetSet("CopyTags", true)
+META:GetSet("PreserveTabsOnEnter", true)
 
 if SERVER then
 	META:GetSet("FixedSize", 14) -- sigh
@@ -2131,24 +2132,28 @@ do -- shortcuts
 	function META:Enter()
 		self:DeleteSelection(true)
 
-		local x = 0
-		local y = self.caret_pos.y
+		if self.PreserveTabsOnEnter then
+			local x = 0
+			local y = self.caret_pos.y
 
-		local cur_space = utf8.sub(self.lines[y], 1, self.caret_pos.x):match("^(%s*)") or ""
-		x = x + #cur_space
+			local cur_space = utf8.sub(self.lines[y], 1, self.caret_pos.x):match("^(%s*)") or ""
+			x = x + #cur_space
 
-		if x == 0 and #self.lines == 1 then
-			cur_space = " " .. cur_space
+			if x == 0 and #self.lines == 1 then
+				cur_space = " " .. cur_space
+			end
+
+			self:InsertString("\n" .. cur_space, true)
+
+
+			self:InvalidateEditedText()
+
+			self.real_x = x
+
+			self:SetCaretPosition(x, y + 1, true)
+		else
+			self:InsertString("\n")
 		end
-
-		self:InsertString("\n" .. cur_space, true)
-
-
-		self:InvalidateEditedText()
-
-		self.real_x = x
-
-		self:SetCaretPosition(x, y + 1, true)
 	end
 end
 

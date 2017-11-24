@@ -1891,7 +1891,7 @@ do -- layout
 	function META:ExecuteLayoutCommands()
 	--	if self:HasParent() then self = self.Parent end
 
-		if not self.layout_us then return end
+		--if not self.layout_us then return end
 
 		for _, child in ipairs(self:GetChildren()) do
 			if child.layout_commands then
