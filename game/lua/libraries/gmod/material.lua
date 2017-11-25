@@ -910,6 +910,7 @@ do -- vmt object
 					self:SetString(k, v.gmod_default)
 				end
 			end
+			self.invalid_shader = nil
 		else
 			llog("tried to create unknown shader %s", name)
 			self.invalid_shader = true
@@ -920,6 +921,7 @@ do -- vmt object
 		local self = setmetatable({}, META)
 		self.vars = {}
 		self.name = name or "no name"
+		self.invalid_shader = true
 
 		if shader then
 			self:SetShader(shader)

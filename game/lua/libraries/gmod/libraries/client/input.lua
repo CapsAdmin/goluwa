@@ -109,6 +109,8 @@ do
 
 
 	gine.AddEvent("KeyInput", function(key, press)
+		if input.DisableFocus then return end
+
 		local ply = gine.env.LocalPlayer()
 
 		if press then

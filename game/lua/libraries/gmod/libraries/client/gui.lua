@@ -245,7 +245,16 @@ do
 		obj:CallOnRemove(function() obj.marked_for_deletion = true self:OnDeletion() end)
 
 		if class == "textentry" then
-			hook(obj, "OnTextChanged", function() self:OnTextChanged() end)
+			hook(obj, "OnTextChanged", function()
+				local text = self:GetText():gsub("\t", "")
+				if text ~= "" then
+					for _, char in ipairs(text:utotable()) do
+						self.override_text = char
+						self:OnTextChanged()
+						self.override_text = nil
+					end
+				end
+			end)
 		end
 
 		hook(obj, "OnFocus", function() self:OnGetFocus() end)
@@ -512,7 +521,7 @@ do
 	end
 
 	function META:SetMouseInputEnabled(b)
-	--self.__obj:SetIgnoreMouse(not b)
+		self.__obj:SetIgnoreMouse(not b)
 	end
 
 	function META:MouseCapture(b)
@@ -588,6 +597,7 @@ do
 		function META:SetText(text)
 			if self.__obj.vgui_type == "textentry" then
 				self.__obj.in_layout = true
+				text = tostring(text):gsub("\t", "")
 				self.__obj:SetText(text)
 				self.__obj.in_layout = false
 			else
@@ -679,6 +689,9 @@ do
 	end
 
 	function META:GetValue()
+		if self.override_text then
+			return self.override_text
+		end
 		return self:GetText()
 	end
 

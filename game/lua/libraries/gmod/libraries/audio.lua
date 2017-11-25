@@ -23,6 +23,20 @@ do
 		self.__obj:Play()
 	end
 
+	function META:PlayEx(volume, pitch)
+		self.__obj:Play()
+		self.__obj:SetGain(volume)
+		self.__obj:SetPitch(pitch/100)
+	end
+
+	function META:ChangeVolume(volume)
+		self.__obj:SetGain(volume)
+	end
+
+	function META:ChangePitch(pitch)
+		self.__obj:SetPitch(pitch/100)
+	end
+
 	function META:IsPlaying()
 		return self.__obj:IsPlaying()
 	end
