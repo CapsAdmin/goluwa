@@ -336,10 +336,11 @@ function META:GetGlyphData(code)
 			char = code,
 			w = tonumber(bitmap.width),
 			h = tonumber(bitmap.rows),
- 			x_advance = math.floor(tonumber(glyph.advance.x) / fonts.font_dpi - 0.75),
+
+ 			x_advance = tonumber(glyph.advance.x) / fonts.font_dpi,
 			y_advance = tonumber(glyph.advance.y) / fonts.font_dpi,
 			bitmap_left = tonumber(glyph.bitmap_left),
-			bitmap_top = tonumber(glyph.bitmap_top)
+			bitmap_top = tonumber(glyph.bitmap_top)+1,
 		}
 
 		local copy = ffi.typeof("unsigned char[$][$][$]", char.w, char.h, 4)()

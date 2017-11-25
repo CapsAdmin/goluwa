@@ -13,6 +13,7 @@ do
 		["arial black"] = "fonts/DejaVuSans.ttf",
 		["verdana"] = "fonts/DejaVuSans.ttf",
 		["trebuchet ms"] = "fonts/DejaVuSans.ttf",
+		["marlett"] = "resource/marlett.ttf",
 	}
 
 	function gine.TranslateFontName(name)
@@ -128,12 +129,13 @@ do
 
 		logn("[", id, "] ", tbl.font, " >> ", options.path)
 
-		options.size = math.round(tbl.size - 2)
+		options.size = math.round(tbl.size / 1.25)
 
 		-- hmm
 		if options.path:lower():find("mono") then
 			options.monospace = true
 			options.spacing = options.size / 2
+			options.tab_width_multiplier = 1
 			logn("forcing mono: ", options.size / 2)
 		end
 

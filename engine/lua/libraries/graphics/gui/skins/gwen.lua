@@ -36,7 +36,7 @@ for i, sub_skin in ipairs(skins) do
 		local font = fonts.CreateFont({
 			path = "Roboto",
 			fallback = gfx.GetDefaultFont(),
-			size = 7*scale,
+			size = 6*scale,
 			filtering = "nearest",
 		})
 

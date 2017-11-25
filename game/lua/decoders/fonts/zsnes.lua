@@ -3,7 +3,7 @@ local fonts = ... or _G.fonts
 
 local META = prototype.CreateTemplate("zsnes")
 
-local pixel_padding = 3
+local pixel_padding = 2
 
 function META:Initialize()
 	if not self.Path:endswith(".txt") then
@@ -161,8 +161,8 @@ function META:GetGlyphData(code)
 			h = info.h,
 			x_advance = info.w - pixel_padding,
 			y_advance = info.h,
-			bitmap_left = info.w,
-			bitmap_top = info.h,
+			bitmap_left = 0,
+			bitmap_top = info.h + pixel_padding - 1,
 		}
 		return info.buffer, char
 	end

@@ -1,7 +1,7 @@
 local fonts = ... or {}
 
 fonts.registered_fonts = fonts.registered_fonts or {}
-fonts.font_dpi = 62
+fonts.font_dpi = 64
 
 fonts.default_font_path = "fonts/unifont.ttf"
 
@@ -54,7 +54,7 @@ function fonts.CreateFont(options, callback)
 		spacing = size
 	end
 
-	spacing = spacing or 1
+	spacing = spacing or 0
 
 	if type(options.shadow) == "number" then
 		options.shadow = {
@@ -132,6 +132,7 @@ function fonts.CreateFont(options, callback)
 		self:SetSpacing(spacing)
 		self:SetFiltering(filtering)
 		self:SetReverseDraw(options.reverse_draw)
+		self:SetTabWidthMultiplier(options.tab_width_multiplier or 4)
 		if options.curve then self:SetCurve(options.curve) end
 
 		self.OnLoad = function()

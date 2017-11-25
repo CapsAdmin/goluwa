@@ -3,7 +3,7 @@
 META:GetSet("Path", "")
 META:GetSet("Padding", 0)
 META:GetSet("Curve", 0)
-META:IsSet("Spacing", 1)
+META:IsSet("Spacing", 0)
 META:IsSet("Size", 12)
 META:IsSet("Scale", Vec2(1,1))
 META:GetSet("Filtering", "linear")
@@ -13,6 +13,7 @@ META:IsSet("Monospace", false)
 META:IsSet("Ready", false)
 META:IsSet("ReverseDraw", false)
 META:GetSet("LoadSpeed", 10)
+META:GetSet("TabWidthMultiplier", 4)
 
 function META:GetGlyphData(code)
 	error("not implemented")
@@ -124,13 +125,13 @@ function META:SetPolyChar(poly, i, x, y, char, r)
 		local x_,y_, w,h, sx,sy = self.texture_atlas:GetUV(char)
 		poly:SetUV(x_,y_, w,h, sx,sy)
 
-		y = y - ch.bitmap_top + self.Size - math.round(self.Size / 4)
+		y = y - ch.bitmap_top + self.Size
 
 		x = x - (self.Padding / 2)
 		y = y - (self.Padding / 2)
 
 		x = x * self.Scale.x
-		y = y * self.Scale.y + 1
+		y = y * self.Scale.y
 
 		w = w * self.Scale.x
 		h = h * self.Scale.y
@@ -206,12 +207,12 @@ function META:CompileString(data)
 
 					if data then
 						if self.Monospace then
-							X = X + spacing * 4
+							X = X + spacing * self.TabWidthMultiplier
 						else
-							X = X + (data.x_advance + spacing) * 4
+							X = X + (data.x_advance + spacing) * self.TabWidthMultiplier
 						end
 					else
-						X = X + self.Size * 4
+						X = X + self.Size * self.TabWidthMultiplier
 					end
 				elseif data then
 					if self.rebuild then
@@ -233,7 +234,7 @@ function META:CompileString(data)
 
 						self:SetPolyChar(poly, draw_i, X, Y, char, -offset*self.Curve/50)
 					else
-						self:SetPolyChar(poly, draw_i, X, Y, char)
+						self:SetPolyChar(poly, draw_i, X + data.bitmap_left, Y, char)
 					end
 
 					if self.Monospace then

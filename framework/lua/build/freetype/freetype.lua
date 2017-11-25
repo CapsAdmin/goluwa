@@ -1,6 +1,6 @@
 local ffi = require("ffi")
 ffi.cdef([[enum{FT_Mod_Err_Base=0,FT_Mod_Err_Autofit=0,FT_Mod_Err_BDF=0,FT_Mod_Err_Bzip2=0,FT_Mod_Err_Cache=0,FT_Mod_Err_CFF=0,FT_Mod_Err_CID=0,FT_Mod_Err_Gzip=0,FT_Mod_Err_LZW=0,FT_Mod_Err_OTvalid=0,FT_Mod_Err_PCF=0,FT_Mod_Err_PFR=0,FT_Mod_Err_PSaux=0,FT_Mod_Err_PShinter=0,FT_Mod_Err_PSnames=0,FT_Mod_Err_Raster=0,FT_Mod_Err_SFNT=0,FT_Mod_Err_Smooth=0,FT_Mod_Err_TrueType=0,FT_Mod_Err_Type1=0,FT_Mod_Err_Type42=0,FT_Mod_Err_Winfonts=0,FT_Mod_Err_GXvalid=0,FT_Mod_Err_Max=1,
-FT_Err_Ok=0,FT_Err_Cannot_Open_Resource=1,FT_Err_Unknown_File_Format=2,FT_Err_Invalid_File_Format=3,FT_Err_Invalid_Version=4,FT_Err_Lower_Module_Version=5,FT_Err_Invalid_Argument=6,FT_Err_Unimplemented_Feature=7,FT_Err_Invalid_Table=8,FT_Err_Invalid_Offset=9,FT_Err_Array_Too_Large=10,FT_Err_Missing_Module=11,FT_Err_Missing_Property=12,FT_Err_Invalid_Glyph_Index=16,FT_Err_Invalid_Character_Code=17,FT_Err_Invalid_Glyph_Format=18,FT_Err_Cannot_Render_Glyph=19,FT_Err_Invalid_Outline=20,FT_Err_Invalid_Composite=21,FT_Err_Too_Many_Hints=22,FT_Err_Invalid_Pixel_Size=23,FT_Err_Invalid_Handle=32,FT_Err_Invalid_Library_Handle=33,FT_Err_Invalid_Driver_Handle=34,FT_Err_Invalid_Face_Handle=35,FT_Err_Invalid_Size_Handle=36,FT_Err_Invalid_Slot_Handle=37,FT_Err_Invalid_CharMap_Handle=38,FT_Err_Invalid_Cache_Handle=39,FT_Err_Invalid_Stream_Handle=40,FT_Err_Too_Many_Drivers=48,FT_Err_Too_Many_Extensions=49,FT_Err_Out_Of_Memory=64,FT_Err_Unlisted_Object=65,FT_Err_Cannot_Open_Stream=81,FT_Err_Invalid_Stream_Seek=82,FT_Err_Invalid_Stream_Skip=83,FT_Err_Invalid_Stream_Read=84,FT_Err_Invalid_Stream_Operation=85,FT_Err_Invalid_Frame_Operation=86,FT_Err_Nested_Frame_Access=87,FT_Err_Invalid_Frame_Read=88,FT_Err_Raster_Uninitialized=96,FT_Err_Raster_Corrupted=97,FT_Err_Raster_Overflow=98,FT_Err_Raster_Negative_Height=99,FT_Err_Too_Many_Caches=112,FT_Err_Invalid_Opcode=128,FT_Err_Too_Few_Arguments=129,FT_Err_Stack_Overflow=130,FT_Err_Code_Overflow=131,FT_Err_Bad_Argument=132,FT_Err_Divide_By_Zero=133,FT_Err_Invalid_Reference=134,FT_Err_Debug_OpCode=135,FT_Err_ENDF_In_Exec_Stream=136,FT_Err_Nested_DEFS=137,FT_Err_Invalid_CodeRange=138,FT_Err_Execution_Too_Long=139,FT_Err_Too_Many_Function_Defs=140,FT_Err_Too_Many_Instruction_Defs=141,FT_Err_Table_Missing=142,FT_Err_Horiz_Header_Missing=143,FT_Err_Locations_Missing=144,FT_Err_Name_Table_Missing=145,FT_Err_CMap_Table_Missing=146,FT_Err_Hmtx_Table_Missing=147,FT_Err_Post_Table_Missing=148,FT_Err_Invalid_Horiz_Metrics=149,FT_Err_Invalid_CharMap_Format=150,FT_Err_Invalid_PPem=151,FT_Err_Invalid_Vert_Metrics=152,FT_Err_Could_Not_Find_Context=153,FT_Err_Invalid_Post_Table_Format=154,FT_Err_Invalid_Post_Table=155,FT_Err_DEF_In_Glyf_Bytecode=156,FT_Err_Syntax_Error=160,FT_Err_Stack_Underflow=161,FT_Err_Ignore=162,FT_Err_No_Unicode_Glyph_Name=163,FT_Err_Glyph_Too_Big=164,FT_Err_Missing_Startfont_Field=176,FT_Err_Missing_Font_Field=177,FT_Err_Missing_Size_Field=178,FT_Err_Missing_Fontboundingbox_Field=179,FT_Err_Missing_Chars_Field=180,FT_Err_Missing_Startchar_Field=181,FT_Err_Missing_Encoding_Field=182,FT_Err_Missing_Bbx_Field=183,FT_Err_Bbx_Too_Big=184,FT_Err_Corrupted_Font_Header=185,FT_Err_Corrupted_Font_Glyphs=186,FT_Err_Max=187,};typedef enum FT_LcdFilter_{FT_LCD_FILTER_NONE=0,FT_LCD_FILTER_DEFAULT=1,FT_LCD_FILTER_LIGHT=2,FT_LCD_FILTER_LEGACY1=3,FT_LCD_FILTER_LEGACY=16,FT_LCD_FILTER_MAX=17};
+FT_Err_Ok=0,FT_Err_Cannot_Open_Resource=1,FT_Err_Unknown_File_Format=2,FT_Err_Invalid_File_Format=3,FT_Err_Invalid_Version=4,FT_Err_Lower_Module_Version=5,FT_Err_Invalid_Argument=6,FT_Err_Unimplemented_Feature=7,FT_Err_Invalid_Table=8,FT_Err_Invalid_Offset=9,FT_Err_Array_Too_Large=10,FT_Err_Missing_Module=11,FT_Err_Missing_Property=12,FT_Err_Invalid_Glyph_Index=16,FT_Err_Invalid_Character_Code=17,FT_Err_Invalid_Glyph_Format=18,FT_Err_Cannot_Render_Glyph=19,FT_Err_Invalid_Outline=20,FT_Err_Invalid_Composite=21,FT_Err_Too_Many_Hints=22,FT_Err_Invalid_Pixel_Size=23,FT_Err_Invalid_Handle=32,FT_Err_Invalid_Library_Handle=33,FT_Err_Invalid_Driver_Handle=34,FT_Err_Invalid_Face_Handle=35,FT_Err_Invalid_Size_Handle=36,FT_Err_Invalid_Slot_Handle=37,FT_Err_Invalid_CharMap_Handle=38,FT_Err_Invalid_Cache_Handle=39,FT_Err_Invalid_Stream_Handle=40,FT_Err_Too_Many_Drivers=48,FT_Err_Too_Many_Extensions=49,FT_Err_Out_Of_Memory=64,FT_Err_Unlisted_Object=65,FT_Err_Cannot_Open_Stream=81,FT_Err_Invalid_Stream_Seek=82,FT_Err_Invalid_Stream_Skip=83,FT_Err_Invalid_Stream_Read=84,FT_Err_Invalid_Stream_Operation=85,FT_Err_Invalid_Frame_Operation=86,FT_Err_Nested_Frame_Access=87,FT_Err_Invalid_Frame_Read=88,FT_Err_Raster_Uninitialized=96,FT_Err_Raster_Corrupted=97,FT_Err_Raster_Overflow=98,FT_Err_Raster_Negative_Height=99,FT_Err_Too_Many_Caches=112,FT_Err_Invalid_Opcode=128,FT_Err_Too_Few_Arguments=129,FT_Err_Stack_Overflow=130,FT_Err_Code_Overflow=131,FT_Err_Bad_Argument=132,FT_Err_Divide_By_Zero=133,FT_Err_Invalid_Reference=134,FT_Err_Debug_OpCode=135,FT_Err_ENDF_In_Exec_Stream=136,FT_Err_Nested_DEFS=137,FT_Err_Invalid_CodeRange=138,FT_Err_Execution_Too_Long=139,FT_Err_Too_Many_Function_Defs=140,FT_Err_Too_Many_Instruction_Defs=141,FT_Err_Table_Missing=142,FT_Err_Horiz_Header_Missing=143,FT_Err_Locations_Missing=144,FT_Err_Name_Table_Missing=145,FT_Err_CMap_Table_Missing=146,FT_Err_Hmtx_Table_Missing=147,FT_Err_Post_Table_Missing=148,FT_Err_Invalid_Horiz_Metrics=149,FT_Err_Invalid_CharMap_Format=150,FT_Err_Invalid_PPem=151,FT_Err_Invalid_Vert_Metrics=152,FT_Err_Could_Not_Find_Context=153,FT_Err_Invalid_Post_Table_Format=154,FT_Err_Invalid_Post_Table=155,FT_Err_DEF_In_Glyf_Bytecode=156,FT_Err_Missing_Bitmap=157,FT_Err_Syntax_Error=160,FT_Err_Stack_Underflow=161,FT_Err_Ignore=162,FT_Err_No_Unicode_Glyph_Name=163,FT_Err_Glyph_Too_Big=164,FT_Err_Missing_Startfont_Field=176,FT_Err_Missing_Font_Field=177,FT_Err_Missing_Size_Field=178,FT_Err_Missing_Fontboundingbox_Field=179,FT_Err_Missing_Chars_Field=180,FT_Err_Missing_Startchar_Field=181,FT_Err_Missing_Encoding_Field=182,FT_Err_Missing_Bbx_Field=183,FT_Err_Bbx_Too_Big=184,FT_Err_Corrupted_Font_Header=185,FT_Err_Corrupted_Font_Glyphs=186,FT_Err_Max=187,};typedef enum FT_LcdFilter_{FT_LCD_FILTER_NONE=0,FT_LCD_FILTER_DEFAULT=1,FT_LCD_FILTER_LIGHT=2,FT_LCD_FILTER_LEGACY1=3,FT_LCD_FILTER_LEGACY=16,FT_LCD_FILTER_MAX=17};
 typedef enum FT_Glyph_Format_{FT_GLYPH_FORMAT_NONE=0,FT_GLYPH_FORMAT_COMPOSITE=1668246896,FT_GLYPH_FORMAT_BITMAP=1651078259,FT_GLYPH_FORMAT_OUTLINE=1869968492,FT_GLYPH_FORMAT_PLOTTER=1886154612};
 typedef enum FT_TrueTypeEngineType_{FT_TRUETYPE_ENGINE_TYPE_NONE=0,FT_TRUETYPE_ENGINE_TYPE_UNPATENTED=1,FT_TRUETYPE_ENGINE_TYPE_PATENTED=2};
 typedef enum FT_Stroker_LineJoin_{FT_STROKER_LINEJOIN_ROUND=0,FT_STROKER_LINEJOIN_BEVEL=1,FT_STROKER_LINEJOIN_MITER_VARIABLE=2,FT_STROKER_LINEJOIN_MITER=2,FT_STROKER_LINEJOIN_MITER_FIXED=3};
@@ -91,6 +91,7 @@ int(FT_Get_Kerning)(struct FT_FaceRec_*,unsigned int,unsigned int,unsigned int,s
 int(FT_Outline_Done)(struct FT_LibraryRec_*,struct FT_Outline_*);
 int(FT_New_Library)(struct FT_MemoryRec_*,struct FT_LibraryRec_**);
 struct FT_RendererRec_*(FT_Get_Renderer)(struct FT_LibraryRec_*,enum FT_Glyph_Format_);
+int(FT_Set_Named_Instance)(struct FT_FaceRec_*,unsigned int);
 int(FT_Load_Sfnt_Table)(struct FT_FaceRec_*,unsigned long,signed long,unsigned char*,unsigned long*);
 void(FT_Set_Transform)(struct FT_FaceRec_*,struct FT_Matrix_*,struct FT_Vector_*);
 int(FT_Get_Advances)(struct FT_FaceRec_*,unsigned int,unsigned int,signed int,signed long*);
@@ -99,62 +100,63 @@ int(FT_Stream_OpenGzip)(struct FT_StreamRec_*,struct FT_StreamRec_*);
 void(FT_Stroker_Done)(struct FT_StrokerRec_*);
 void(FT_Bitmap_Init)(struct FT_Bitmap_*);
 int(FT_Get_CID_Is_Internally_CID_Keyed)(struct FT_FaceRec_*,unsigned char*);
+int(FT_Get_CID_Registry_Ordering_Supplement)(struct FT_FaceRec_*,const char**,const char**,signed int*);
 int(FT_Glyph_StrokeBorder)(struct FT_GlyphRec_**,struct FT_StrokerRec_*,unsigned char,unsigned char);
 int(FT_Open_Face)(struct FT_LibraryRec_*,const struct FT_Open_Args_*,signed long,struct FT_FaceRec_**);
-int(FT_Get_CID_Registry_Ordering_Supplement)(struct FT_FaceRec_*,const char**,const char**,signed int*);
 int(FT_Library_SetLcdFilterWeights)(struct FT_LibraryRec_*,unsigned char*);
-int(FT_Stream_OpenBzip2)(struct FT_StreamRec_*,struct FT_StreamRec_*);
-int(FT_ClassicKern_Validate)(struct FT_FaceRec_*,unsigned int,const unsigned char**);
+void(FT_List_Remove)(struct FT_ListRec_*,struct FT_ListNodeRec_*);
 unsigned long(FT_Get_CMap_Language_ID)(struct FT_CharMapRec_*);
+int(FT_ClassicKern_Validate)(struct FT_FaceRec_*,unsigned int,const unsigned char**);
 int(FT_Sfnt_Table_Info)(struct FT_FaceRec_*,unsigned int,unsigned long*,unsigned long*);
+void*(FT_Get_Sfnt_Table)(struct FT_FaceRec_*,enum FT_Sfnt_Tag_);
 signed long(FT_Atan2)(signed long,signed long);
 void(FT_Library_Version)(struct FT_LibraryRec_*,signed int*,signed int*,signed int*);
 int(FT_Glyph_Copy)(struct FT_GlyphRec_*,struct FT_GlyphRec_**);
-void*(FT_Get_Sfnt_Table)(struct FT_FaceRec_*,enum FT_Sfnt_Tag_);
 void(FT_Vector_From_Polar)(struct FT_Vector_*,signed long,signed long);
-int(FT_Stroker_EndSubPath)(struct FT_StrokerRec_*);
 signed long(FT_Vector_Length)(struct FT_Vector_*);
+int(FT_Stroker_EndSubPath)(struct FT_StrokerRec_*);
 void(FT_Vector_Rotate)(struct FT_Vector_*,signed long);
-int(FT_Load_Glyph)(struct FT_FaceRec_*,unsigned int,signed int);
 void(FT_Matrix_Multiply)(const struct FT_Matrix_*,struct FT_Matrix_*);
+int(FT_Load_Glyph)(struct FT_FaceRec_*,unsigned int,signed int);
+void(FT_Stroker_ExportBorder)(struct FT_StrokerRec_*,enum FT_StrokerBorder_,struct FT_Outline_*);
 int(FT_Load_Char)(struct FT_FaceRec_*,unsigned long,signed int);
 int(FT_Get_Sfnt_LangTag)(struct FT_FaceRec_*,unsigned int,struct FT_SfntLangTag_*);
-int(FT_Stroker_GetCounts)(struct FT_StrokerRec_*,unsigned int*,unsigned int*);
 const char*(FT_Get_Font_Format)(struct FT_FaceRec_*);
 void(FT_GlyphSlot_Oblique)(struct FT_GlyphSlotRec_*);
-enum FT_StrokerBorder_(FT_Outline_GetInsideBorder)(struct FT_Outline_*);
 int(FT_Glyph_Stroke)(struct FT_GlyphRec_**,struct FT_StrokerRec_*,unsigned char);
 void(FT_Stroker_Export)(struct FT_StrokerRec_*,struct FT_Outline_*);
+int(FT_Stroker_GetCounts)(struct FT_StrokerRec_*,unsigned int*,unsigned int*);
 const char*(FT_Get_X11_Font_Format)(struct FT_FaceRec_*);
 void(FT_Glyph_Get_CBox)(struct FT_GlyphRec_*,unsigned int,struct FT_BBox_*);
-void(FT_Stroker_ExportBorder)(struct FT_StrokerRec_*,enum FT_StrokerBorder_,struct FT_Outline_*);
 int(FT_Stroker_CubicTo)(struct FT_StrokerRec_*,struct FT_Vector_*,struct FT_Vector_*,struct FT_Vector_*);
 int(FT_Stroker_ConicTo)(struct FT_StrokerRec_*,struct FT_Vector_*,struct FT_Vector_*);
 int(FT_Stroker_BeginSubPath)(struct FT_StrokerRec_*,struct FT_Vector_*,unsigned char);
+int(FT_Stream_OpenBzip2)(struct FT_StreamRec_*,struct FT_StreamRec_*);
 int(FT_Library_SetLcdFilter)(struct FT_LibraryRec_*,enum FT_LcdFilter_);
-void(FT_List_Remove)(struct FT_ListRec_*,struct FT_ListNodeRec_*);
-int(FT_Set_MM_Design_Coordinates)(struct FT_FaceRec_*,unsigned int,signed long*);
 int(FT_Stroker_New)(struct FT_LibraryRec_*,struct FT_StrokerRec_**);
+int(FT_Set_MM_Design_Coordinates)(struct FT_FaceRec_*,unsigned int,signed long*);
 void(FT_Bitmap_New)(struct FT_Bitmap_*);
+enum FT_StrokerBorder_(FT_Outline_GetInsideBorder)(struct FT_Outline_*);
 int(FT_Glyph_To_Bitmap)(struct FT_GlyphRec_**,enum FT_Render_Mode_,struct FT_Vector_*,unsigned char);
 void(FT_GlyphSlot_Embolden)(struct FT_GlyphSlotRec_*);
 int(FT_Get_MM_Var)(struct FT_FaceRec_*,struct FT_MM_Var_**);
 int(FT_Get_PFR_Kerning)(struct FT_FaceRec_*,unsigned int,unsigned int,struct FT_Vector_*);
-int(FT_Get_Sfnt_Name)(struct FT_FaceRec_*,unsigned int,struct FT_SfntName_*);
 void(FT_ClassicKern_Free)(struct FT_FaceRec_*,const unsigned char*);
+int(FT_Get_Sfnt_Name)(struct FT_FaceRec_*,unsigned int,struct FT_SfntName_*);
 int(FT_TrueTypeGX_Validate)(struct FT_FaceRec_*,unsigned int,const unsigned char*,unsigned int);
-int(FT_Set_Var_Design_Coordinates)(struct FT_FaceRec_*,unsigned int,signed long*);
 void(FT_OpenType_Free)(struct FT_FaceRec_*,const unsigned char*);
+int(FT_Set_Var_Design_Coordinates)(struct FT_FaceRec_*,unsigned int,signed long*);
 enum FT_TrueTypeEngineType_(FT_Get_TrueType_Engine_Type)(struct FT_LibraryRec_*);
 int(FT_Done_Library)(struct FT_LibraryRec_*);
 int(FT_Reference_Library)(struct FT_LibraryRec_*);
 void(FT_Set_Default_Properties)(struct FT_LibraryRec_*);
-int(FT_Outline_Get_BBox)(struct FT_Outline_*,struct FT_BBox_*);
 int(FT_Property_Get)(struct FT_LibraryRec_*,const char*,const char*,void*);
+int(FT_Outline_Get_BBox)(struct FT_Outline_*,struct FT_BBox_*);
 int(FT_Property_Set)(struct FT_LibraryRec_*,const char*,const char*,const void*);
-int(FT_Get_PS_Font_Info)(struct FT_FaceRec_*,struct PS_FontInfoRec_*);
 int(FT_Remove_Module)(struct FT_LibraryRec_*,struct FT_ModuleRec_*);
+int(FT_Get_PS_Font_Info)(struct FT_FaceRec_*,struct PS_FontInfoRec_*);
 int(FT_Stream_OpenLZW)(struct FT_StreamRec_*,struct FT_StreamRec_*);
+int(FT_Get_Var_Axis_Flags)(struct FT_MM_Var_*,unsigned int,unsigned int*);
 int(FT_Set_Var_Blend_Coordinates)(struct FT_FaceRec_*,unsigned int,signed long*);
 void(FT_List_Finalize)(struct FT_ListRec_*,void(*destroy)(struct FT_MemoryRec_*,void*,void*),struct FT_MemoryRec_*,void*);
 int(FT_Set_MM_Blend_Coordinates)(struct FT_FaceRec_*,unsigned int,signed long*);
@@ -274,6 +276,7 @@ library = {
 	OutlineDone = CLIB.FT_Outline_Done,
 	NewLibrary = CLIB.FT_New_Library,
 	GetRenderer = CLIB.FT_Get_Renderer,
+	SetNamedInstance = CLIB.FT_Set_Named_Instance,
 	LoadSfntTable = CLIB.FT_Load_Sfnt_Table,
 	SetTransform = CLIB.FT_Set_Transform,
 	GetAdvances = CLIB.FT_Get_Advances,
@@ -282,62 +285,63 @@ library = {
 	StrokerDone = CLIB.FT_Stroker_Done,
 	BitmapInit = CLIB.FT_Bitmap_Init,
 	GetCIDIsInternallyCIDKeyed = CLIB.FT_Get_CID_Is_Internally_CID_Keyed,
+	GetCIDRegistryOrderingSupplement = CLIB.FT_Get_CID_Registry_Ordering_Supplement,
 	GlyphStrokeBorder = CLIB.FT_Glyph_StrokeBorder,
 	OpenFace = CLIB.FT_Open_Face,
-	GetCIDRegistryOrderingSupplement = CLIB.FT_Get_CID_Registry_Ordering_Supplement,
 	LibrarySetLcdFilterWeights = CLIB.FT_Library_SetLcdFilterWeights,
-	StreamOpenBzip2 = CLIB.FT_Stream_OpenBzip2,
-	ClassicKernValidate = CLIB.FT_ClassicKern_Validate,
+	ListRemove = CLIB.FT_List_Remove,
 	GetCMapLanguageID = CLIB.FT_Get_CMap_Language_ID,
+	ClassicKernValidate = CLIB.FT_ClassicKern_Validate,
 	SfntTableInfo = CLIB.FT_Sfnt_Table_Info,
+	GetSfntTable = CLIB.FT_Get_Sfnt_Table,
 	Atan2 = CLIB.FT_Atan2,
 	LibraryVersion = CLIB.FT_Library_Version,
 	GlyphCopy = CLIB.FT_Glyph_Copy,
-	GetSfntTable = CLIB.FT_Get_Sfnt_Table,
 	VectorFromPolar = CLIB.FT_Vector_From_Polar,
-	StrokerEndSubPath = CLIB.FT_Stroker_EndSubPath,
 	VectorLength = CLIB.FT_Vector_Length,
+	StrokerEndSubPath = CLIB.FT_Stroker_EndSubPath,
 	VectorRotate = CLIB.FT_Vector_Rotate,
-	LoadGlyph = CLIB.FT_Load_Glyph,
 	MatrixMultiply = CLIB.FT_Matrix_Multiply,
+	LoadGlyph = CLIB.FT_Load_Glyph,
+	StrokerExportBorder = CLIB.FT_Stroker_ExportBorder,
 	LoadChar = CLIB.FT_Load_Char,
 	GetSfntLangTag = CLIB.FT_Get_Sfnt_LangTag,
-	StrokerGetCounts = CLIB.FT_Stroker_GetCounts,
 	GetFontFormat = CLIB.FT_Get_Font_Format,
 	GlyphSlotOblique = CLIB.FT_GlyphSlot_Oblique,
-	OutlineGetInsideBorder = CLIB.FT_Outline_GetInsideBorder,
 	GlyphStroke = CLIB.FT_Glyph_Stroke,
 	StrokerExport = CLIB.FT_Stroker_Export,
+	StrokerGetCounts = CLIB.FT_Stroker_GetCounts,
 	GetX11FontFormat = CLIB.FT_Get_X11_Font_Format,
 	GlyphGetCBox = CLIB.FT_Glyph_Get_CBox,
-	StrokerExportBorder = CLIB.FT_Stroker_ExportBorder,
 	StrokerCubicTo = CLIB.FT_Stroker_CubicTo,
 	StrokerConicTo = CLIB.FT_Stroker_ConicTo,
 	StrokerBeginSubPath = CLIB.FT_Stroker_BeginSubPath,
+	StreamOpenBzip2 = CLIB.FT_Stream_OpenBzip2,
 	LibrarySetLcdFilter = CLIB.FT_Library_SetLcdFilter,
-	ListRemove = CLIB.FT_List_Remove,
-	SetMMDesignCoordinates = CLIB.FT_Set_MM_Design_Coordinates,
 	StrokerNew = CLIB.FT_Stroker_New,
+	SetMMDesignCoordinates = CLIB.FT_Set_MM_Design_Coordinates,
 	BitmapNew = CLIB.FT_Bitmap_New,
+	OutlineGetInsideBorder = CLIB.FT_Outline_GetInsideBorder,
 	GlyphToBitmap = CLIB.FT_Glyph_To_Bitmap,
 	GlyphSlotEmbolden = CLIB.FT_GlyphSlot_Embolden,
 	GetMMVar = CLIB.FT_Get_MM_Var,
 	GetPFRKerning = CLIB.FT_Get_PFR_Kerning,
-	GetSfntName = CLIB.FT_Get_Sfnt_Name,
 	ClassicKernFree = CLIB.FT_ClassicKern_Free,
+	GetSfntName = CLIB.FT_Get_Sfnt_Name,
 	TrueTypeGXValidate = CLIB.FT_TrueTypeGX_Validate,
-	SetVarDesignCoordinates = CLIB.FT_Set_Var_Design_Coordinates,
 	OpenTypeFree = CLIB.FT_OpenType_Free,
+	SetVarDesignCoordinates = CLIB.FT_Set_Var_Design_Coordinates,
 	GetTrueTypeEngineType = CLIB.FT_Get_TrueType_Engine_Type,
 	DoneLibrary = CLIB.FT_Done_Library,
 	ReferenceLibrary = CLIB.FT_Reference_Library,
 	SetDefaultProperties = CLIB.FT_Set_Default_Properties,
-	OutlineGetBBox = CLIB.FT_Outline_Get_BBox,
 	PropertyGet = CLIB.FT_Property_Get,
+	OutlineGetBBox = CLIB.FT_Outline_Get_BBox,
 	PropertySet = CLIB.FT_Property_Set,
-	GetPSFontInfo = CLIB.FT_Get_PS_Font_Info,
 	RemoveModule = CLIB.FT_Remove_Module,
+	GetPSFontInfo = CLIB.FT_Get_PS_Font_Info,
 	StreamOpenLZW = CLIB.FT_Stream_OpenLZW,
+	GetVarAxisFlags = CLIB.FT_Get_Var_Axis_Flags,
 	SetVarBlendCoordinates = CLIB.FT_Set_Var_Blend_Coordinates,
 	ListFinalize = CLIB.FT_List_Finalize,
 	SetMMBlendCoordinates = CLIB.FT_Set_MM_Blend_Coordinates,
@@ -612,6 +616,7 @@ library.e = {
 	Err_Invalid_Post_Table_Format = 154,
 	Err_Invalid_Post_Table = 155,
 	Err_DEF_In_Glyf_Bytecode = 156,
+	Err_Missing_Bitmap = 157,
 	Err_Syntax_Error = 160,
 	Err_Stack_Underflow = 161,
 	Err_Ignore = 162,
@@ -707,6 +712,7 @@ local error_code_to_str = {
 	[154] = "invalid post table format",
 	[155] = "invalid post table",
 	[156] = "def in glyf bytecode",
+	[157] = "missing bitmap",
 	[160] = "syntax error",
 	[161] = "stack underflow",
 	[162] = "ignore",
