@@ -99,11 +99,9 @@ if SERVER then
 end
 
 do -- buffer object
-	-- some of this was taken from (mainly reading and writing decimal numbers)
-	-- http://wowkits.googlecode.com/svn-history/r406/trunk/AddOns/AVR/ByteStream.lua
-
 	local META = table.copy(prototype.GetRegistered("generic_buffer"))
 	META.ClassName = "packet_buffer"
+	runfile("lua/libraries/prototype/buffer_template.lua", META)
 
 	function packet.CreateBuffer(val)
 		local self = META:CreateObject()
