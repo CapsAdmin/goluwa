@@ -215,7 +215,7 @@ do -- events
 
 		local func_name = "On" .. event_type
 
-		events[event_type] = events[event_type] or table.weak()
+		events[event_type] = events[event_type] or {}
 		table.insert(events[event_type], self)
 
 		event.AddListener(event_type, "prototype_events", function(a_, b_, c_)
