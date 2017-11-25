@@ -629,7 +629,9 @@ do
 		if self.in_layout then return end
 		if now then
 			self:ApplySchemeSettings()
+			self.in_layout = true
 			self:PerformLayout(self.__obj:GetWidth(), self.__obj:GetHeight())
+			self.in_layout = false
 		else
 			self.gine_layout = true
 		end
