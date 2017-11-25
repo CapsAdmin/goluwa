@@ -43,7 +43,7 @@ event.AddListener("ClientChat", "chat_commands", function(client, txt)
 
 	local cmd, symbol = commands.IsCommandStringValid(txt)
 
-	if cmd and symbol ~= "" then
+	if cmd and symbol ~= "" and cmd ~= "" then
 		commands.SetClient(client)
 			commands.RunString(txt, true, true)
 		commands.SetClient(NULL)
