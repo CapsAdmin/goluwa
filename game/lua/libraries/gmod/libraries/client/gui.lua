@@ -608,11 +608,12 @@ do
 	end
 
 	function META:SetAlpha(a)
-		self.__obj.DrawAlpha = a/255
+		self.__obj.DrawAlpha = (a/255) ^ 2
+		self.__obj.gmod_draw_alpha = a
 	end
 
 	function META:GetAlpha()
-		return self.__obj.DrawAlpha * 255
+		return self.__obj.gmod_draw_alpha or 255
 	end
 
 	function META:GetParent()
