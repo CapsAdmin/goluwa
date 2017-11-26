@@ -513,11 +513,11 @@ do
 	end
 
 	function META:DockPadding(left, top, right, bottom)
-		self.__obj:SetMargin(Rect(left, bottom, right, top))
+		self.__obj:SetMargin(Rect(right, bottom, left, top))
 	end
 
 	function META:DockMargin(left, top, right, bottom)
-		self.__obj:SetPadding(Rect(left, bottom, right, top))
+		self.__obj:SetPadding(Rect(right, top, left, bottom))
 	end
 
 	function META:SetMouseInputEnabled(b)

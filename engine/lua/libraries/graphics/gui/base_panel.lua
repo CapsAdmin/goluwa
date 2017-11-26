@@ -1830,29 +1830,29 @@ do -- layout
 
 			if dir.x < 0 then
 				hit_pos.y = self:GetY()
-				hit_pos.x = hit_pos.x + child:GetWidth() + self.Padding:GetRight()
+				hit_pos.x = hit_pos.x + child:GetWidth() + self.Padding:GetRight() + child.Padding:GetLeft()
 			elseif dir.x > 0 then
 				hit_pos.y = self:GetY()
-				hit_pos.x = hit_pos.x - self:GetWidth() - self.Padding:GetLeft()
+				hit_pos.x = hit_pos.x - self:GetWidth() - self.Padding:GetLeft() - child.Padding:GetRight()
 			elseif dir.y < 0 then
 				hit_pos.x = self:GetX()
-				hit_pos.y = hit_pos.y + child:GetHeight() + self.Padding:GetBottom()
+				hit_pos.y = hit_pos.y + child:GetHeight() + self.Padding:GetTop() + child.Padding:GetBottom()
 			elseif dir.y > 0 then
 				hit_pos.x = self:GetX()
-				hit_pos.y = hit_pos.y - self:GetHeight() - self.Padding:GetTop()
+				hit_pos.y = hit_pos.y - self:GetHeight() - self.Padding:GetBottom() - child.Padding:GetTop()
 			end
 		else
 			if dir.x < 0 then
 				hit_pos.x = hit_pos.x + self.Padding:GetRight()
-				hit_pos.x = hit_pos.x + parent.Margin:GetRight()
+				hit_pos.x = hit_pos.x + parent.Margin:GetLeft()
 			elseif dir.x > 0 then
 				hit_pos.x = hit_pos.x - self.Padding:GetLeft()
-				hit_pos.x = hit_pos.x - parent.Margin:GetLeft()
+				hit_pos.x = hit_pos.x - parent.Margin:GetRight()
 			elseif dir.y < 0 then
-				hit_pos.y = hit_pos.y + self.Padding:GetBottom()
+				hit_pos.y = hit_pos.y + self.Padding:GetTop()
 				hit_pos.y = hit_pos.y + parent.Margin:GetBottom()
 			elseif dir.y > 0 then
-				hit_pos.y = hit_pos.y - self.Padding:GetTop()
+				hit_pos.y = hit_pos.y - self.Padding:GetBottom()
 				hit_pos.y = hit_pos.y - parent.Margin:GetTop()
 			end
 
