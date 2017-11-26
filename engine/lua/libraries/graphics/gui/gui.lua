@@ -424,6 +424,7 @@ function gui.Initialize()
 	gui.RemovePanel(gui.world)
 
 	gui.world = gui.CreateWorld()
+	gui.popup_panel = NULL
 
 	gui.mouse_pos = Vec2()
 
