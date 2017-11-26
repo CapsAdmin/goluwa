@@ -437,10 +437,11 @@ do -- drawing
 			if self.updated_layout then
 				render2d.SetAlphaMultiplier(1)
 				render.SetPresetBlendMode("additive")
-				render2d.SetColor(1, 0, 0, 0.1)
+				local c = ColorHSV(math.clamp(-(self.updated_layout/10)+1,0,1), self.updated_layout/10, self.updated_layout/10)
+				render2d.SetColor(c.r, c.g, c.b, self.updated_layout/10)
 				render2d.SetTexture()
 				render2d.DrawRect(0,0, self.Size.x, self.Size.y)
-				self.updated_layout = false
+				self.updated_layout = nil
 				render.SetPresetBlendMode("alpha")
 			else
 				if self.updated_cache then
@@ -1978,7 +1979,7 @@ do -- layout
 				end
 			end
 
-			self.updated_layout = true
+			self.updated_layout = (self.updated_layout or 0) + 1
 			self.layout_count = (self.layout_count or 0) + 1
 
 			self.last_children_size = nil
