@@ -12,7 +12,7 @@ function gine.env.HTTP(tbl)
 		url = tbl.url,
 		callback = function(data) tbl.success(data.code, data.content, data.header) end,
 		on_fail = tbl.failed,
-		method = tbl.method:upper(),
+		method = (tbl.method or "get"):upper(),
 		header = tbl.headers,
 		post_data = tbl.body or tbl.parameters,
 	})

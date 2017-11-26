@@ -150,6 +150,10 @@ do
 		return (self.__obj.gine_pos and (self.__obj.gine_pos * 1)) or gine.env.Vector(0,0,0)
 	end
 
+	function META:GetMaterials()
+		return {}
+	end
+
 	function META:SetAngles(ang)
 
 		self.__obj.gine_ang = ang
