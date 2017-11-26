@@ -774,7 +774,7 @@ do
 
 	do -- z pos stuff
 		function META:SetZPos(pos)
-			self.__obj:SetChildOrder(pos)
+			self.__obj:SetChildOrder(-pos)
 		end
 
 		function META:MoveToBack()
