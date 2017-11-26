@@ -204,8 +204,8 @@ function META:GetClipboard()
 end
 
 function META:GetBatteryLevel()
-	if (self.last_check or 0) < system.GetElapsedTime() then
-		self.last_check = system.GetElapsedTime() + 1
+	if (self.last_check_battery_level or 0) < system.GetElapsedTime() then
+		self.last_check_battery_level = system.GetElapsedTime() + 1
 		local percent = ffi.new("uint32_t[1]")
 		sdl.GetPowerInfo(nil, percent)
 		self.battery_level = tonumber(percent[0]) / 100
@@ -217,8 +217,8 @@ end
 do
 	local on_battery = sdl.e.POWERSTATE_ON_BATTERY
 	function META:IsUsingBattery()
-		if (self.last_check or 0) < system.GetElapsedTime() then
-			self.last_check = system.GetElapsedTime() + 1
+		if (self.last_check_using_battery or 0) < system.GetElapsedTime() then
+			self.last_check_using_battery = system.GetElapsedTime() + 1
 			self.power_info = sdl.GetPowerInfo(nil, nil)
 		end
 
