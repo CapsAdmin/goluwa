@@ -155,6 +155,7 @@ function menu.CreateTopBar()
 	bar:SetStyle("gradient")
 	bar:SetDraggable(true)
 	bar:SetSize(window.GetSize()*1)
+	bar:SetMargin(Rect()+S)
 	bar:SetCachedRendering(true)
 	bar:SetupLayout("size_to_children")
 
@@ -173,7 +174,7 @@ function menu.CreateTopBar()
 		button:SetSizeToTextOnLayout(true)
 		button:SetText(text)
 		button:SetMargin(Rect(S*2-w, S*1, S*2-w, S*1))
-		button:SetPadding(Rect(S*4, S*2, S*4, S*2))
+		button:SetPadding(Rect(S*2, S, S*2, S))
 		button:SetMode("toggle")
 		button:SetupLayout("left", "top")
 		button.menu = NULL
@@ -253,85 +254,84 @@ function menu.CreateTopBar()
 			frame:CenterSimple()
 			frame:SetTitle("load lua")
 
-			local area = frame:CreatePanel("base")
-			area:SetupLayout("fill")
-			area:SetNoDraw(true)
-			area:SetMargin(Rect()+8)
+			local hor_divider = frame:CreatePanel("divider")
+			hor_divider:SetHeight(330)
+			hor_divider:SetDividerWidth(8)
+			hor_divider:SetupLayout("fill")
+			hor_divider:SetHideDivider(true)
+
+				local top = hor_divider:SetTop(gui.CreatePanel("base", hor_divider))
+				top:SetMargin(Rect()+8)
+				top:SetNoDraw(true)
+
+					local divider = top:CreatePanel("divider")
+					divider:SetHeight(250)
+					divider:SetupLayout("fill")
+					divider:SetDividerWidth(8)
+					divider:SetHideDivider(true)
+
+					local left = divider:SetLeft(gui.CreatePanel("base", divider))
+					left:SetNoDraw(true)
+
+					local right = divider:SetRight(gui.CreatePanel("base", divider))
+					right:SetNoDraw(true)
+
+					divider:SetDividerPosition(300)
+
+					local label = left:CreatePanel("text")
+					label:SetText("filename")
+					label:SetupLayout("top", "left")
+
+					local left_list = left:CreatePanel("list")
+					left_list:SetupLayout("fill")
+					left_list:SetupSorted("name"--[[, "modified", "type", "size"]])
 
 
-			local divider = area:CreatePanel("divider")
-			divider.lol = true
-			divider:SetHeight(250)
-			divider:SetupLayout("top", "fill_x")
-			divider:SetDividerWidth(8)
-			divider:SetHideDivider(true)
+					local label = right:CreatePanel("text")
+					label:SetText("directory")
+					label:SetupLayout("top", "left")
 
-			local left = divider:SetLeft(gui.CreatePanel("base", divider))
-			left:SetNoDraw(true)
-			local right = divider:SetRight(gui.CreatePanel("base", divider))
-			right:SetNoDraw(true)
+					local right_list = right:CreatePanel("list")
+					right_list:SetupLayout("fill")
+					right_list:SetupSorted("name"--[[, "modified", "type", "size"]])
 
-			divider:SetDividerPosition(300)
+				local bottom = hor_divider:SetBottom(gui.CreatePanel("base", hor_divider))
+				bottom:SetNoDraw(true)
+				bottom:SetMargin(Rect()+8)
 
+					local path_label = bottom:CreatePanel("text")
+					path_label:SetPadding(Rect()+2)
+					path_label:SetSize(Vec2()+12)
+					path_label:SetText("test")
+					path_label:SetupLayout("top", "left", "fill_x")
 
-			local label = left:CreatePanel("text")
-			label:SetText("filename")
-			label:SetupLayout("top", "left")
+					local text_entry = bottom:CreatePanel("text_edit")
+					text_entry:SetPadding(Rect()+2)
+					text_entry:SetSize(Vec2() + 20)
+					text_entry:SetupLayout("top", "fill_x")
 
-			local left_list = left:CreatePanel("list")
-			left_list:SetPadding(Rect(0,0,0,10))
-			left_list:SetupLayout("fill")
-			left_list:SetupSorted("name"--[[, "modified", "type", "size"]])
+					local filename_label = bottom:CreatePanel("text")
+					filename_label:SetPadding(Rect()+2)
+					filename_label:SetSize(Vec2()+12)
+					filename_label:SetText("test")
+					filename_label:SetupLayout("top", "left", "fill_x")
 
+					do
+						local area = bottom:CreatePanel("base")
+						area:SetPadding(Rect()+2)
+						area:SetMargin(Rect(0,0,0,0))
+						area:SetupLayout("top", "left", "fill_y", "size_to_children_width")
 
-			local label = right:CreatePanel("text")
-			label:SetText("directory")
-			label:SetupLayout("top", "left")
+						local check = area:CreatePanel("checkbox_label")
+						check:SetPadding(Rect()+4)
+						check:SetText("show all extensions")
+						check:SizeToText()
+						check:SetupLayout("bottom", "left")
 
-			local right_list = right:CreatePanel("list")
-			right_list:SetPadding(Rect(0,0,0,10))
-			right_list:SetupLayout("fill")
-			right_list:SetupSorted("name"--[[, "modified", "type", "size"]])
-
-			local path_label = area:CreatePanel("text")
-			path_label:SetPadding(Rect()+2)
-			path_label:SetSize(Vec2()+12)
-			path_label:SetupLayout("top", "left", "fill_x")
-
-			local text_entry = area:CreatePanel("text_edit")
-			text_entry:SetPadding(Rect()+2)
-			text_entry:SetSize(Vec2() + 20)
-			text_entry:SetupLayout("top", "fill_x")
-
-			local filename_label = area:CreatePanel("text")
-			filename_label:SetPadding(Rect()+2)
-			filename_label:SetSize(Vec2()+12)
-			filename_label:SetupLayout("top", "left")
-
-			local bottom = area:CreatePanel("base")
-			bottom:SetSize(Vec2()+20)
-			bottom:SetPadding(Rect()+2)
-			bottom:SetMargin(Rect(10,0,10,0))
-			bottom:SetupLayout("top", "fill")
-			bottom:SetNoDraw(true)
-
-			do
-				local area = bottom:CreatePanel("base")
-				area:SetPadding(Rect()+2)
-				area:SetMargin(Rect(0,0,0,0))
-				area:SetWidth(100)
-				area:SetupLayout("center_y_simple", "left", "fill_y", "size_to_children_width")
-				area:SetNoDraw(true)
-
-				local check = area:CreatePanel("checkbox_label")
-				check:SetPadding(Rect()+4)
-				check:SetText("show all extensions")
-				check:SizeToText()
-				check:SetupLayout("bottom", "left")
-
-				local choices = gui.CreateChoices({"long filename", "snes header name"}, 1, area, Rect() + 4)
-				choices:SetupLayout("bottom", "left")
-			end
+						local choices = gui.CreateChoices({"long filename", "snes header name"}, 1, area, Rect() + 4)
+						choices:SetupLayout("bottom", "left")
+					end
+				do return end
 
 			local current_script
 
@@ -339,7 +339,8 @@ function menu.CreateTopBar()
 				local area = bottom:CreatePanel("base")
 				area:SetPadding(Rect()+2)
 				area:SetMargin(Rect(10,0,10,0))
-				area:SetupLayout("center_y_simple", "left", "fill_y", "size_to_children_width")
+				area:SetHeight(4)
+				area:SetupLayout("bottom", "center_y_simple", "left", "fill_y", "size_to_children_width")
 				area:SetNoDraw(true)
 
 				do

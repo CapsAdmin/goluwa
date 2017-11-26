@@ -2012,6 +2012,11 @@ do -- layout
 		--event.Delay(0, function() self:Layout() end, nil, self) -- FIX ME
 	end
 
+	function META:ResetLayoutSize()
+		self.LayoutSize.x = self.Size.x
+		self.LayoutSize.y = self.Size.y
+	end
+
 	function META:OnParent(parent)
 		if parent ~= self.Parent then
 			if self.layout_commands then
@@ -2058,8 +2063,7 @@ do -- layout
 		end
 
 		function META:Fill()
-			self:MoveUp()
-			self:MoveLeft()
+			self:CenterSimple()
 			self:FillX()
 			self:FillY()
 		end
