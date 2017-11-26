@@ -1,7 +1,8 @@
 function gine.env.include(path)
 	local ok, err = runfile({
-		"lua/" .. path,
+		path,
 		path:lower(),
+		"lua/" .. path,
 	})
 
 	if ok == false then
