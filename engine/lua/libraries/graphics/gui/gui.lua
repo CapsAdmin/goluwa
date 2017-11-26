@@ -101,8 +101,20 @@ local function try(children, filter)
 	end
 end
 
+local suppress
+
 function gui.GetHoveringPanel(panel, filter)
+	if not suppress and gui.popup_panel.mouse_over then
+		suppress = true
+		local found = gui.GetHoveringPanel(gui.popup_panel, filter)
+		suppress = false
+		if found ~= gui.world then
+			panel = found
+		end
+	end
+
 	panel = panel or gui.world
+
 	local children = panel:GetChildren()
 
 	local ordered = {}

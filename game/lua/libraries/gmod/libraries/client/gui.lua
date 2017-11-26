@@ -791,7 +791,7 @@ do
 			self.__obj:BringToFront()
 			self.__obj:RequestFocus()
 			self.__obj:SetIgnoreMouse(false)
-			self.__obj.popup = true
+			self.__obj:MakePopup()
 		end
 	end
 

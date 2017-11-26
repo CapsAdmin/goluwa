@@ -244,10 +244,21 @@ do -- focus
 				self:OnUnfocus()
 				gui.focus_panel = NULL
 			end
+
+			self.popup = nil
+
+			if gui.popup_panel == self then
+				gui.popup_panel = NULL
+			end
 		end
 
 		function META:IsFocused()
 			return gui.focus_panel == self
+		end
+
+		function META:MakePopup()
+			self.popup = true
+			gui.popup_panel = self
 		end
 	end
 end
@@ -524,11 +535,11 @@ do -- orientation
 					end
 				end
 
-if not lol then
-				self.temp_matrix = self.temp_matrix or Matrix44()
-				self.Parent.Matrix:Multiply(self.Matrix, self.temp_matrix)
-				self.Matrix, self.temp_matrix = self.temp_matrix, self.Matrix
-end
+				if not self.popup then
+					self.temp_matrix = self.temp_matrix or Matrix44()
+					self.Parent.Matrix:Multiply(self.Matrix, self.temp_matrix)
+					self.Matrix, self.temp_matrix = self.temp_matrix, self.Matrix
+				end
 
 				self.Matrix:Translate(math.ceil(self.Position.x), math.ceil(self.Position.y), 0)
 
@@ -540,7 +551,6 @@ end
 						self.Matrix:Rotate(self.Angle, 0, 0, 1)
 					self.Matrix:Translate(-w, -h, 0)
 				end
-
 
 				if not self.DrawPositionOffset:IsZero() then
 					self.Matrix:Translate(self.DrawPositionOffset.x, self.DrawPositionOffset.y, 0)
@@ -1487,7 +1497,7 @@ do -- mouse
 	end
 
 	function META:IsMouseOver()
-		return self:IsDragging() or self:IsResizing() or self.mouse_over and gui.hovering_panel == self
+		return self:IsDragging() or self:IsResizing() or self.mouse_over and (gui.hovering_panel == self or self.popup_panel == self)
 	end
 
 	function META:GlobalMouseCapture(b)
@@ -1554,7 +1564,7 @@ do -- mouse
 		if
 			self:HasParent() and
 			not self.Parent:IsWorld() and
-			not self.Parent.mouse_over and
+			not (self.popup or self.Parent.mouse_over) and
 			not self:IsDragging() and
 			not self:IsScrolling() and
 			not self.AlwaysCalcMouse and
@@ -1587,11 +1597,7 @@ do -- mouse
 		end
 
 		if x > 0 and x < self.Size.x and y > 0 and y < self.Size.y and alpha > 0 then
-			if self:HasParent() and (self:GetParent():IsWorld() or self:GetParent().mouse_over) then
-				self.mouse_over = true
-			else
-				self.mouse_over = false
-			end
+			self.mouse_over = true
 		else
 			self.mouse_over = false
 		end
