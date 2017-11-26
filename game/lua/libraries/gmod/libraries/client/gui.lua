@@ -93,6 +93,12 @@ do
 end
 
 do
+	gine.AddEvent("GUIPanelMouseInput", function(panel, button, press)
+		if press then
+			gine.env.hook.Run("VGUIMousePressed", gine.WrapObject(panel, "Panel"), gine.GetMouseCode(button))
+		end
+	end)
+
 	gine.gui_world = gine.gui_world or NULL
 
 	local function hook(obj, func_name, callback)
