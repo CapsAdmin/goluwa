@@ -511,6 +511,7 @@ end
 
 
 runfile("base_panel.lua", gui)
+RELOAD = nil
 runfile("panels/*", gui)
 runfile("helpers.lua", gui)
 return gui
