@@ -631,14 +631,7 @@ do -- orientation
 	end
 
 	function META:WorldToLocal(wpos)
-		local lpos = wpos
-		for _, v in ipairs(self:GetParentList()) do
-			lpos = lpos - v:GetPosition()
-			if v:HasParent() then
-				wpos = wpos + v.Parent.RealScroll
-			end
-		end
-		return lpos
+		return wpos - self:GetWorldPosition()
 	end
 
 	function META:GetWorldPosition()
