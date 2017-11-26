@@ -237,6 +237,9 @@ local function base_shader()
 		{ "$flashlighttextureframe",	"Animation Frame for $flashlight",	SHADER_PARAM_TYPE_INTEGER, "0", SHADER_PARAM_NOT_EDITABLE },
 		{ "$color2",		 		"color2",			SHADER_PARAM_TYPE_COLOR,	"[1 1 1]", 0 },
 		{ "$srgbtint", "tint value to be applied when running on new-style srgb parts", SHADER_PARAM_TYPE_COLOR, "[1 1 1]", 0 },
+
+		{ "$realwidth", "gmod specific", SHADER_PARAM_TYPE_INTEGER, "0", 0 },
+		{ "$realheight", "gmod specific", SHADER_PARAM_TYPE_INTEGER, "0", 0 },
 	}
 end
 
@@ -732,9 +735,7 @@ do -- vmt object
 
 		local val = self.vars[key]
 
-		local num
-
-		if not val then return num end
+		local num = val
 
 		if info.type == "texture" then
 			num = nil
@@ -790,6 +791,11 @@ do -- vmt object
 						val = render.CreateTextureFromPath("[~srgb]" .. val)
 					end
 				end
+			end
+
+			if CLIENT and key == "basetexture" then
+				self:Set("realwidth", val:GetSize().x)
+				self:Set("realheight", val:GetSize().y)
 			end
 		elseif info.type == "vec2" then
 			val = val:gsub("%s+", " "):trim()

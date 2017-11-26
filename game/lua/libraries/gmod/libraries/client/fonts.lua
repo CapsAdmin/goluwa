@@ -127,7 +127,7 @@ do
 
 		options.path = gine.TranslateFontName(tbl.font)
 
-		logn("[", id, "] ", tbl.font, " >> ", options.path)
+		--logn("[", id, "] ", tbl.font, " >> ", options.path)
 
 		options.size = math.round(tbl.size / 1.25)
 
@@ -136,7 +136,7 @@ do
 			options.monospace = true
 			options.spacing = options.size / 2
 			options.tab_width_multiplier = 1
-			logn("forcing mono: ", options.size / 2)
+			--logn("forcing mono: ", options.size / 2)
 		end
 
 		if tbl.shadow then

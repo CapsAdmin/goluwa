@@ -141,9 +141,9 @@ do
 			obj:SetMultiline(false)
 			obj:SetEditable(false)
 			obj.label.markup:SetPreserveTabsOnEnter(false)
-			local draw_func = obj.label.OnPostDraw
-			obj.label.DrawTextEntryText = draw_func
-			obj.label.OnPostDraw = function() end
+			--local draw_func = obj.label.OnPostDraw
+			obj.label.DrawTextEntryText = function() end
+			--obj.label.OnPostDraw = function() end
 		else
 			obj = gui.CreatePanel("base")
 		end
@@ -381,6 +381,9 @@ do
 		end
 
 		hook(self.__obj, "OnChildAdd", function(_, child)
+			if child.ClassName == "text_edit" and _.popup then
+				child:SetEditable(true)
+			end
 			self:OnChildAdded(gine.WrapObject(child, "Panel"))
 		end)
 
@@ -799,6 +802,10 @@ do
 			self.__obj:RequestFocus()
 			self.__obj:SetIgnoreMouse(false)
 			self.__obj:MakePopup()
+
+			if self.__obj.vgui_type == "textentry" then
+				self.__obj:SetEditable(true)
+			end
 		end
 	end
 

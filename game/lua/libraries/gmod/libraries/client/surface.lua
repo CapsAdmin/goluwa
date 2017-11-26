@@ -58,7 +58,11 @@ do
 		mesh:SetVertex(i, "color", 1,1,1,1)
 	end
 
-	function surface.DrawPoly(tbl)local count = #tbl
+	local mesh_idx = render.CreateIndexBuffer()
+	mesh_idx:LoadIndices(2048)
+
+	function surface.DrawPoly(tbl)
+		local count = #tbl
 		for i = 1, count do
 			local vertex = tbl[i]
 
@@ -71,6 +75,7 @@ do
 
 		render2d.BindShader()
 		mesh:UpdateBuffer()
-		mesh:Draw(#tbl)
+		mesh_idx:UpdateBuffer()
+		mesh:Draw(mesh_idx, count)
 	end
 end

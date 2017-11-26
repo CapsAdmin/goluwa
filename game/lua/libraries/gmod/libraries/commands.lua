@@ -23,12 +23,12 @@ end
 function gine.env.RunConsoleCommand(...)
 	local str = table.concat({...}, " ")
 	if str:find("utime", nil, true) then return end -- sigh
-	logn("gine cmd: ", str)
+	logn("gine RunConsoleCommand: ", str)
 	commands.ExecuteCommandString(str, true)
 end
 
 local META = gine.GetMetaTable("Player")
 
 function META:ConCommand(str)
-	logn("gine cmd: ", str)
+	logn("gine ConCommand: ", str)
 end

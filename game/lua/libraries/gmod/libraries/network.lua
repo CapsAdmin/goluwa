@@ -173,7 +173,12 @@ do
 
 	local function ADD(name)
 		gine.env["SetGlobal" .. name] = function(key, val) gine.nw_globals[key] = val end
-		gine.env["GetGlobal" .. name] = function(key) return gine.nw_globals[key] end
+		gine.env["GetGlobal" .. name] = function(key)
+			if name == "String" and key == "ServerName" then
+				return network.GetHostname() or "no hostname!"
+			end
+			return gine.nw_globals[key]
+		end
 	end
 
 	ADD("String")

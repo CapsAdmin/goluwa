@@ -14,6 +14,10 @@ do
 		return out
 	end
 
+	function player.GetCount()
+		return #player.GetAll()
+	end
+
 	function player.GetHumans()
 		local out = {}
 		local i = 1
@@ -63,6 +67,10 @@ do
 	end
 
 	local META = gine.GetMetaTable("Player")
+
+	function META:Crouching()
+
+	end
 
 	function META:GetAimVector()
 		if CLIENT then

@@ -46,7 +46,7 @@ do
 				--if gine.print_keys then llog("key reverse: ", key, " >> ", translate_key_rev[key]) end
 				return translate_key_rev[key]
 			else
-				logf("key %q could not be translated!\n", key)
+				--logf("key %q could not be translated!\n", key)
 				return translate_key_rev.KEY_P -- dunno
 			end
 		else
@@ -54,7 +54,7 @@ do
 				if gine.print_keys then llog("key: ", key, " >> ", translate_key[key]) end
 				return translate_key[key]
 			else
-				logf("key %q could not be translated!\n", key)
+				--logf("key %q could not be translated!\n", key)
 				return translate_key.p -- dunno
 			end
 		end
@@ -106,7 +106,6 @@ do
 		end
 		gine.bindings[key] = {cmd = cmd, p = p, on_press = on_press, on_release = on_release or p and on_press}
 	end
-
 
 	gine.AddEvent("KeyInput", function(key, press)
 		if input.DisableFocus then return end
@@ -167,6 +166,14 @@ end
 
 local input = gine.env.input
 local lib = _G.input
+
+function input.LookupBinding(cmd)
+	for k,v in pairs(gine.bindings) do
+		if v.cmd == cmd then
+			return k
+		end
+	end
+end
 
 function input.SetCursorPos(x, y)
 	window.SetMousePosition(Vec2(x, y))
