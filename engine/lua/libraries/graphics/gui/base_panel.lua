@@ -425,7 +425,7 @@ do -- drawing
 
 		if gui.debug then
 
-			if self.debug_layout then
+			if self.layout_count then
 				gfx.SetFont()
 				render2d.SetColor(1, 1, 1, 1)
 				gfx.DrawText("layout count " .. self.layout_count, 0, 0)
@@ -436,7 +436,7 @@ do -- drawing
 
 			if self.updated_layout then
 				render2d.SetAlphaMultiplier(1)
-				render.SetPresetBlendMode("additive")
+				render.SetPresetBlendMode("alpha")
 				local c = ColorHSV(math.clamp(-(self.updated_layout/10)+1,0,1), self.updated_layout/10, self.updated_layout/10)
 				render2d.SetColor(c.r, c.g, c.b, self.updated_layout/10)
 				render2d.SetTexture()
@@ -851,6 +851,9 @@ do -- scrolling
 
 				if math.abs(dir.y) > math.abs(self.scroll_vel.y) then
 					self.scroll_vel.y = -self.scroll_vel.y
+				end
+				if math.abs(dir.x) > math.abs(self.scroll_vel.x) then
+					self.scroll_vel.x = -self.scroll_vel.x
 				end
 			end
 			self.scroll_start = self:GetScroll():Copy()
@@ -1963,6 +1966,8 @@ do -- layout
 			self:DoLayout()
 
 			if now then
+				self.updated_layout = (self.updated_layout or 0) + 1
+
 				for _, v in ipairs(self:GetChildren()) do
 					v:Layout(true)
 				end
@@ -1972,7 +1977,6 @@ do -- layout
 				end
 			end
 
-			self.updated_layout = (self.updated_layout or 0) + 1
 			self.layout_count = (self.layout_count or 0) + 1
 
 			self.last_children_size = nil
