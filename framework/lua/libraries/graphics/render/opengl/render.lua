@@ -83,14 +83,14 @@ end
 do
 	local enabled = false
 	function render._SetScissor(x,y,w,h, sw,sh)
-		if x == 0 and y == 0 and w == sw and h == sh then
+		if not x then
 			if enabled == true then
-				gl.Enable("GL_SCISSOR_TEST")
+				gl.Disable("GL_SCISSOR_TEST")
 				enabled = false
 			end
 		else
 			if enabled == false then
-				gl.Disable("GL_SCISSOR_TEST")
+				gl.Enable("GL_SCISSOR_TEST")
 				enabled = true
 			end
 			gl.Scissor(x, sh - (y + h), w, h)

@@ -1,8 +1,5 @@
 local render2d = ... or _G.render2d
 
-local gl = require("opengl")
-local ffi = require("opengl")
-
 do
 	local X, Y, W, H = 0,0
 
@@ -13,6 +10,8 @@ do
 		H = h or render.GetHeight()
 
 		if not x then
+			X = 0
+			Y = 0
 			render.SetScissor()
 		else
 			x, y = render2d.ScreenToWorld(-x, -y)
@@ -28,187 +27,122 @@ do
 end
 
 do
-    local stack = {}
-	local depth = 1
+	function render2d.SetStencilState(tbl)
+		if tbl.function then
 
-	local stencil_debug_tex
-
-	function render2d.DrawStencilTexture()
-
-	    stencil_debug_tex = stencil_debug_tex or render.CreateBlankTexture(Vec2(render.GetWidth(), render.GetHeight()))
-
-		local stencilStateArray = ffi.new("GLboolean[1]", 0)
-		gl.GetBooleanv("GL_STENCIL_TEST", stencilStateArray)
-
-		--if wait(0.25) then
-
-			gl.Enable("GL_STENCIL_TEST")
-
-			local stencilWidth = render.GetWidth()
-			local stencilHeight = render.GetHeight()
-			local stencilSize = stencilWidth*stencilHeight
-			local stencilData = ffi.new("unsigned char[?]", stencilSize)
-			gl.ReadPixels(0, 0, stencilWidth, stencilHeight, "GL_STENCIL_INDEX", "GL_UNSIGNED_BYTE", stencilData)
-
-			--[[for y = 0, stencilHeight-1 do
-				for x = 0, stencilWidth-1 do
-					local i = y*stencilWidth + x
-					io.stdout:write(string.format("%02X ", stencilData[i]))
-				end
-				io.stdout:write("\n")
-			end]]
-
-			local y = math.floor(stencilHeight/2)
-			for x = math.floor(stencilWidth/2-10), math.floor(stencilWidth/2+10) do
-				local i = y*stencilWidth + x
-				stencilData[i] = 1
-			end
-
-			local maxValue = 0
-			for i = 0, stencilSize-1 do
-				maxValue = math.max(maxValue, stencilData[i])
-			end
-
-			local scale = 255/maxValue
-			for i = 0, stencilSize-1 do
-				stencilData[i] = math.floor(stencilData[i]*scale)
-			end
-
-			stencil_debug_tex:Upload(stencilData, {upload_format = "red", internal_format = "r8"})
-		--end
-
-		render2d.PushMatrix()
-		render2d.LoadIdentity()
-    		render2d.SetColor(1,1,1,1)
-    		render2d.SetTexture(stencil_debug_tex)
-    		gl.Disable("GL_STENCIL_TEST")
-    		render2d.DrawRect(64,64,128,128)
-    		gl.Enable("GL_STENCIL_TEST")
-		render2d.PopMatrix()
-
-		if stencilStateArray[0] == 0 then
-		    gl.Disable("GL_STENCIL_TEST")
-	    end
-    end
-
-	function render2d.EnableStencilClipping()
-		--assert(#stack == 0, "I think this is good assertion, wait, you may want to draw something regardless of clipping, so nvm")
-		--table.clear(stack)
-		-- that means the stack should not be emptied, in case you want to disobey clipping?
-
-		-- Don't consider depth buffer while stenciling or drawing
-		gl.DepthMask(0)
-		gl.DepthFunc("GL_ALWAYS")
-
-		-- Enable stencil test
-		gl.Enable("GL_STENCIL_TEST")
-
-		-- Write to all stencil bits
-		gl.StencilMask(0xFF)
-
-		-- Don't consider stencil buffer while clearing it
-		gl.StencilFunc("GL_ALWAYS", 0, 0xFF)
-
-		-- Clear the stencil buffer to zero
-		gl.ClearStencil(0)
-		gl.Clear("GL_STENCIL_BUFFER_BIT")
-
-		-- Stop writing to stencil
-		gl.StencilMask("GL_FALSE")
+		end
 	end
 
-	function render2d.DisableStencilClipping()
-		-- disable stencil completely, how2
-		gl.Disable("GL_STENCIL_TEST")
-	end
+	--[[
+		local function stencil_pass(func, ref)
+			if func == "never" then
+				return false
+			end
 
-    --[[
-		it works like this:
+			if func == "equal" then
+				return pixel == ref
+			end
+		end
 
-		00000000000000000000000000
-	    push frame; depth = 1
-    		00011111111111111000000000
-		    push panel; depth = 2
-        		00011222222222211000000000
-        		push button1; depth = 3
-        		    00011233322222211000000000
-    		    pop button1; depth = 2
-    		    00011222222222211000000000
-    		    push button2; depth = 3
-    		        00011222222333211000000000
-		        pop button2; depth = 2
-		        00011222222222211000000000
-	        pop panel; depth = 1
-	        00011111111111111000000000
-        pop frame; depth = 0
-        00000000000000000000000000
+		local stencil_pass = stencil_pass(func, ref)
+		local depth_pass = depth_pass()
 
-        gl.StencilFunc("GL_EQUAL", depth, 0xFF)
-        means
-        only draw if stencil == current depth
+		if depth_pass and stencil_pass then
+
+		elseif not depth_pass and stencil_pass then
+
+		elseif not stencil_pass then
+			if op == "incr" then
+				pixel = pixel + ref
+			end
+		end
+
+		1: 000000000 -- clear
+		2: 000111110 -- draw stencil rect
+		2: 000112210 -- draw stencil rect
+		2: 000111110 -- draw stencil rect
 	]]
 
-	local function update_stencil_buffer(mode)
 
-		-- Write to all stencil bits
-		gl.StencilMask(0xFF)
+	local i = 0
+	local X,Y,W,H
 
-		-- For each object on the stack, increment/decrement any pixel it touches by 1
-		gl.DepthMask(0) -- Don't write to depth buffer
-		gl.StencilFunc("GL_NEVER", 0, 0xFF) -- Update stencil regardless of current value
-		gl.StencilOp(
-			mode, -- For each pixel white pixel, increment/decrement
-			"GL_REPLACE", -- Ignore depth buffer
-			"GL_REPLACE" -- Ignore depth buffer
-		)
+	function render2d.PushStencilRect(x,y,w,h, i_override)
+		render.StencilFunction("never", 1)
+		render.StencilOperation("increase", "keep", "zero")
 
-		local data = stack[depth]
-		data.func(unpack(data.args))
+		render2d.PushTexture()
+			render2d.DrawRect(x,y,w,h)
+		render2d.PopTexture()
 
-		-- Stop writing to stencil
-		gl.StencilMask("GL_FALSE")
+		render.StencilFunction("equal", i)
 
-		-- Now make future drawing obey stencil buffer
-		gl.DepthMask(1) -- Write to depth buffer
-		gl.StencilFunc("GL_EQUAL", depth-1, 0xFF) -- Pass test if stencil value is equal to depth
+		i = i + 1
+		X,Y,W,H = x,y,w,h
 	end
 
-	function render2d.PushClipFunction(draw_func, ...)
-	    depth = depth+1
+	function render2d.PopStencilRect()
+		render.StencilFunction("never", 1)
+		render.StencilOperation("decrease", "keep", "zero")
 
-		stack[depth] = {func = draw_func, args = {...}}
+		render2d.PushTexture()
+			render2d.DrawRect(X,Y,W,H)
+		render2d.PopTexture()
 
-		update_stencil_buffer("GL_INCR")
+		if i >= 4 then i = 0 end
 	end
 
-	function render2d.PopClipFunction()
-		update_stencil_buffer("GL_DECR")
+	local i = 0
+	local X,Y,W,H
 
-		stack[depth] = nil
-		depth = depth-1
+	function render2d.PushStencilRect2(x,y,w,h, i_override)
+		render.StencilFunction("never", 1)
+		render.StencilOperation("increase", "keep", "zero")
 
-		if depth < 1 then
-			error("stack underflow", 2)
-		end
+		render2d.PushTexture()
+			render2d.DrawRect(x,y,w,h)
+		render2d.PopTexture()
+
+		render.StencilFunction("equal", i)
+
+		i = i + 1
+		X,Y,W,H = x,y,w,h
+	end
+
+	function render2d.PopStencilRect2()
+		render.StencilFunction("never", 1)
+		render.StencilOperation("decrease", "keep", "zero")
+
+		render2d.PushTexture()
+			render2d.DrawRect(X,Y,W,H)
+		render2d.PopTexture()
+
+		if i >= 4 then i = 0 end
 	end
 end
 
 do
 	local X, Y, W, H
-	function render2d.EnableClipRect(x, y, w, h)
+	function render2d.EnableClipRect(x, y, w, h, i)
+		i = i or 1
 		render.SetStencil(true)
+		render.GetFrameBuffer():ClearStencil(0) -- out = 0
 
-		render.StencilFunction("always", 1, 0xFF) -- Set any stencil to 1
-		render.StencilOperation("keep", "keep", "replace")
-		render.StencilMask(0xFF) -- Write to stencil buffer
-		render.GetFrameBuffer():ClearStencil(0xFF) -- Clear stencil buffer (0 by default)
+		render.StencilOperation("keep", "replace", "replace")
 
-		render2d.PushColor(0,0,0,0)
-		render2d.DrawRect(x, y, w, h)
-		render2d.PopColor()
+		-- if true then stencil = 33 return true end
+		render.StencilFunction("always", i)
+			-- on fail, keep zero value
+			-- on success replace it with 33
 
-		render.StencilFunction("equal", 1, 0xFF) -- Pass test if stencil value is 1
-		render.StencilMask(0x00) -- Don't write anything to stencil buffer
+			-- write to the stencil buffer
+			-- on fail is probably never reached
+			render2d.PushTexture()
+				render2d.DrawRect(x, y, w, h)
+			render2d.PopTexture()
+
+		-- if stencil == 33 then stencil = 33 return true else return false end
+		render.StencilFunction("equal", i)
 
 		X = x
 		Y = y

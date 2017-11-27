@@ -98,21 +98,25 @@ do
 	local X, Y, W, H = 0, 0, 0, 0
 
 	function render.SetScissor(x,y,w,h)
-		local _, _, sw, sh = render.GetViewport()
+		if not x then
+			render._SetScissor()
+		else
+			local _, _, sw, sh = render.GetViewport()
 
-		x = x
-		y = y or 0
-		w = w or sw
-		h = h or sh
+			x = x
+			y = y or 0
+			w = w or sw
+			h = h or sh
 
-		if X ~= x or Y ~= y or W ~= w or H ~= h then
-			render._SetScissor(x,y,w,h, sw,sh)
+			if X ~= x or Y ~= y or W ~= w or H ~= h then
+				render._SetScissor(x,y,w,h, sw,sh)
+			end
+
+			X = x
+			Y = y
+			W = w
+			H = h
 		end
-
-		X = x
-		Y = y
-		W = w
-		H = h
 	end
 
 	function render.GetScissor()
