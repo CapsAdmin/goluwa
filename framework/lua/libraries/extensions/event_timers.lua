@@ -184,7 +184,11 @@ function event.UpdateTimers(a_, b_, c_, d_, e_)
 			end
 		elseif data.type == "delay" then
 			if data.realtime < cur then
-				system.pcall(data.callback, unpack(data.args))
+				if not data.args then
+					system.pcall(data.callback)
+				else
+					system.pcall(data.callback, unpack(data.args))
+				end
 				table.insert(remove_these, i)
 			end
 		elseif data.type == "timer" then
