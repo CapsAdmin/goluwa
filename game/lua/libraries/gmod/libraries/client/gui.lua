@@ -168,6 +168,7 @@ do
 		obj:SetAllowKeyboardInput(false)
 		obj:SetFocusOnClick(false)
 		obj:SetBringToFrontOnClick(false)
+		obj:SetClipping(true)
 
 		self:SetContentAlignment(4)
 
@@ -207,11 +208,6 @@ do
 		function self:OnLoseFocus() end
 
 		obj.OnDraw = function()
-			if self.gine_layout then
-				self:InvalidateLayout(true)
-				self.gine_layout = nil
-			end
-
 			if obj.draw_manual and not obj.in_paint_manual then return end
 
 			local w, h = obj:GetWidth(), obj:GetHeight()
@@ -246,6 +242,11 @@ do
 			end
 
 			self:PaintOver(obj:GetWidth(), obj:GetHeight())
+
+			if self.gine_layout then
+				self:InvalidateLayout(true)
+				self.gine_layout = nil
+			end
 		end
 
 		obj:CallOnRemove(function() obj.marked_for_deletion = true self:OnDeletion() end)
@@ -638,8 +639,8 @@ do
 	function META:InvalidateLayout(now)
 		if self.in_layout then return end
 		if now then
-			self:ApplySchemeSettings()
 			self.in_layout = true
+			self:ApplySchemeSettings()
 			self:PerformLayout(self.__obj:GetWidth(), self.__obj:GetHeight())
 			self.in_layout = false
 		else
