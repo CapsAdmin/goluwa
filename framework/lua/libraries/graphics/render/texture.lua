@@ -289,7 +289,7 @@ function META:MakeError(reason)
 	error("nyi", 2)
 end
 
-function META:CreateBuffer(mip_map_level, format_override, use_ffi_new)
+function META:CreateBuffer(mip_map_level, format_override)
 	mip_map_level = mip_map_level or 1
 
 	local size = self:GetMipSize(mip_map_level)
@@ -297,19 +297,14 @@ function META:CreateBuffer(mip_map_level, format_override, use_ffi_new)
 	local format = render.GetTextureFormatInfo(format_override or self.InternalFormat)
 	local byte_size = size.x * size.y * size.z * ffi.sizeof(format.ctype)
 
-	if use_ffi_new then
-		return format.ctype_array(byte_size), nil, byte_size, format
-	end
-
-	local buffer, ref = ffi.malloc(format.ctype, byte_size)
-	return buffer, ref, byte_size, format
+	return format.ctype_array(byte_size), nil, byte_size, format
 end
 
-function META:Download(mip_map_level, format_override, use_ffi_new)
+function META:Download(mip_map_level, format_override)
 	mip_map_level = mip_map_level or 1
 	local size = self:GetMipSize(mip_map_level)
 
-	local buffer, ref, byte_size, format = self:CreateBuffer(mip_map_level, format_override, use_ffi_new)
+	local buffer, ref, byte_size, format = self:CreateBuffer(mip_map_level, format_override)
 
 	self:_Download(mip_map_level, buffer, byte_size, format)
 

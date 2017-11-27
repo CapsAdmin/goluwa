@@ -240,12 +240,10 @@ function META:Initialize()
 	local function load(path)
 		local data = vfs.Read(path)
 
-		local char_buffer = ffi.C.malloc(#data)
-		self.char_buffer = char_buffer
-		ffi.copy(char_buffer, data, #data)
+		self.char_buffer = data
 
 		local face = ffi.new("struct FT_FaceRec_ * [1]")
-		local code = freetype.NewMemoryFace(fonts.freetype_lib[0], char_buffer, #data, 0, face)
+		local code = freetype.NewMemoryFace(fonts.freetype_lib[0], data, #data, 0, face)
 
 		if code == 0 then
 			self.face_ref = face
