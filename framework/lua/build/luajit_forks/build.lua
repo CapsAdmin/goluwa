@@ -34,6 +34,21 @@ local repos = {
 	},
 }
 
+repos = {
+	{
+		author = "mike",
+		url = "https://github.com/LuaJIT/LuaJIT",
+		branch = "v2.1",
+		flags = {"LUAJIT_ENABLE_GC64", "LUAJIT_ENABLE_LUA52COMPAT"},
+	},
+	{
+		author = "mike",
+		url = "https://github.com/LuaJIT/LuaJIT",
+		branch = "v2.1",
+		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
+	},
+}
+
 local function execute(str)
 	os.execute(str)
 	print("=================")
@@ -100,7 +115,8 @@ local function build(info, extra_flags, extra_id)
 			"if [ -d ./" .. dir .. " ]; then git -C ./" .. dir .. " pull; git -C ./" .. dir .. " checkout " .. commit .. "; else git clone -b " .. info.branch .. " " .. info.url .. " " .. dir .. " --depth 1; fi" .. "; " ..
 			patch_cmd ..
 			"make -C " .. dir .. " " .. flags .. "; " ..
-			"cp " .. dir .. "/src/"..name.." \"" .. bin_dir .. "/luajit_" .. id .. "\"" ..
+			"cp " .. dir .. "/src/"..name.." \"" .. bin_dir .. "/luajit_" .. id .. "\"; " ..
+			"cp " .. dir .. "/src/lj.supp \"" .. bin_dir .. "/lj.supp\"; " ..
 		") &"
 	)
 end
@@ -110,7 +126,27 @@ local url_filter = args
 for _, info in pairs(repos) do
 	if not url_filter or info.url:lower():find(url_filter) then
 		build(info)
-		build(info, {"LUA_USE_APICHECK", "LUAJIT_USE_GDBJIT", "CCDEBUG=-g", "CCOPT=-fomit-frame-pointer"}, "debug")
-		build(info, {"LUA_USE_APICHECK", "LUAJIT_USE_GDBJIT", "LUA_USE_ASSERT", "LUAJIT_USE_GDBJIT", "LUAJIT_USE_SYSMALLOC", "CCDEBUG=-g", "CCOPT=-fomit-frame-pointer"}, "debug-assert")
+		build(info, {
+			"LUA_USE_APICHECK",
+			"LUAJIT_USE_GDBJIT",
+			"CCDEBUG=-g",
+		}, "debug")
+
+		build(info, {
+			"LUA_USE_APICHECK",
+			"LUAJIT_USE_GDBJIT",
+			"LUAJIT_USE_SYSMALLOC",
+			"LUAJIT_USE_VALGRIND",
+			"CCDEBUG=-g",
+		}, "debug-memory")
+
+		build(info, {
+			"LUA_USE_APICHECK",
+			"LUAJIT_USE_GDBJIT",
+			"LUAJIT_USE_SYSMALLOC",
+			"LUAJIT_USE_VALGRIND",
+			"LUA_USE_ASSERT",
+			"CCDEBUG=-g",
+		}, "debug-memory-assert")
 	end
 end
