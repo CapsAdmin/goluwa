@@ -28,7 +28,7 @@ end
 
 do
 	function render2d.SetStencilState(tbl)
-		if tbl.function then
+		if tbl.function_ then
 
 		end
 	end
