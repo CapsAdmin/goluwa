@@ -9,7 +9,6 @@ function ffi.strerror()
 	return err == "" and tostring(num) or err
 end
 
-_OLD_G.ffi_load = _OLD_G.ffi_load or ffi.load
 
 local ffi_new = ffi.new
 
@@ -87,10 +86,10 @@ end
 
 -- make ffi.load search using our file system
 function ffi.load(path, ...)
-	local args = {pcall(_OLD_G.ffi_load, path, ...)}
+	local args = {pcall(_OLD_G.ffi.load, path, ...)}
 
 	if WINDOWS and not args[1] then
-		args = {pcall(_OLD_G.ffi_load, "lib" .. path, ...)}
+		args = {pcall(_OLD_G.ffi.load, "lib" .. path, ...)}
 	end
 
 	if not args[1] then
@@ -100,7 +99,7 @@ function ffi.load(path, ...)
 					-- look first in the vfs' bin directories
 					local old = system.GetSharedLibraryPath()
 					system.SetSharedLibraryPath(full_path:match("(.+/)"))
-					args = {pcall(_OLD_G.ffi_load, full_path, ...)}
+					args = {pcall(_OLD_G.ffi.load, full_path, ...)}
 					system.SetSharedLibraryPath(old)
 
 					if args[1] then
@@ -110,7 +109,7 @@ function ffi.load(path, ...)
 					args[2] = args[2] .. "\n" .. system.GetLibraryDependencies(full_path)
 
 					-- if not try the default OS specific dll directories
-					args = {pcall(_OLD_G.ffi_load, full_path, ...)}
+					args = {pcall(_OLD_G.ffi.load, full_path, ...)}
 					if args[1] then
 						return handle_stupid(path, select(2, unpack(args)))
 					end
