@@ -191,7 +191,7 @@ do
 	sshh = nil
 end
 
-do
+pcall(function()
 	local loom = loadfile("../../../"..e.INTERNAL_ADDON_NAME.."/lua/modules/loom.lua")()
 	package.preload["jit.loom"] = function() return loom end
 	jit.loom = require("jit.loom")
@@ -492,5 +492,6 @@ digraph G {
 		--_G.arg = nil
 		return res
 	end
-end
+end)
+
 jit.barrier = function() debug.gethook() end
