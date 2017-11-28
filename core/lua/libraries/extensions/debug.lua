@@ -60,7 +60,7 @@ function debug.getprettysource(level, append_line, full_folder)
 		if info.source:sub(1, 1) == "@" then
 			pretty_source = info.source:sub(2)
 
-			if not full_folder then
+			if not full_folder and vfs then
 				pretty_source = vfs.FixPathSlashes(pretty_source:replace(e.ROOT_FOLDER, ""))
 			end
 
