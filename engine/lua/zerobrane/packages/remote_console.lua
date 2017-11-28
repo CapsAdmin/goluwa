@@ -298,6 +298,8 @@ function PLUGIN:StartProcess(id, cmd)
 		cmd_line = cmd_line .. " branch " .. BRANCH
 
 		if DEBUG then
+			cmd_line = cmd_line .. " valgrind"
+		elseif DEBUG then
 			cmd_line = cmd_line .. " debug"
 		end
 
@@ -451,6 +453,15 @@ function PLUGIN:onRegister()
 				branch_id = id,
 				name = id:gsub("_", " "),
 			})
+
+			if path:find("debug") then
+				table.insert(branches, {
+					wx_id = ID(id),
+					branch_id = id,
+					valgrind = true,
+					name = id:gsub("_", " ") .. " valgrind",
+				})
+			end
 		end
 
 		local branch_menu = ide:MakeMenu()
@@ -459,6 +470,7 @@ function PLUGIN:onRegister()
 			branch_menu:AppendRadioItem(info.wx_id, info.name)
 			ide:GetMainFrame():Connect(info.wx_id, wx.wxEVT_COMMAND_MENU_SELECTED, function()
 				BRANCH = info.branch_id
+				VALGRIND = info.valgrind
 				DEBUG = info.name:find("debug") ~= nil
 				ide:Print("selected branch ", info.name)
 			end)

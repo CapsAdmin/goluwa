@@ -249,8 +249,14 @@ if [ "$2" = "branch" ]; then
 	GOLUWA_EXECUTABLE="luajit_$3"
 fi
 
-if [ ! -z "$GOLUWA_DEBUG" ] || [ "$4" = "debug" ]; then
+if [ ! -z "$GOLUWA_VALGRIND" ] || [ "$4" = "valgrind" ]; then
 	if [ -z ${DISPLAY+x} ]; then
+		eval "valgrind --leak-check=yes $GOLUWA_EXECUTABLE $initlua"
+	else
+		eval "x-terminal-emulator --hold -e \"valgrind ./$GOLUWA_EXECUTABLE $initlua\""
+	fi
+elif [ ! -z "$GOLUWA_DEBUG" ] || [ "$4" = "debug" ]; then
+    if [ -z ${DISPLAY+x} ]; then
 		eval "gdb -ex=r --args $GOLUWA_EXECUTABLE $initlua"
 	else
 		eval "x-terminal-emulator -e \"gdb -ex=r --args $GOLUWA_EXECUTABLE $initlua\""
