@@ -297,7 +297,7 @@ function PLUGIN:StartProcess(id, cmd)
 	if BRANCH then
 		cmd_line = cmd_line .. " branch " .. BRANCH
 
-		if DEBUG then
+		if VALGRIND then
 			cmd_line = cmd_line .. " valgrind"
 		elseif DEBUG then
 			cmd_line = cmd_line .. " debug"
@@ -456,7 +456,7 @@ function PLUGIN:onRegister()
 
 			if path:find("debug") then
 				table.insert(branches, {
-					wx_id = ID(id),
+					wx_id = ID(id .. " valgrind"),
 					branch_id = id,
 					valgrind = true,
 					name = id:gsub("_", " ") .. " valgrind",
