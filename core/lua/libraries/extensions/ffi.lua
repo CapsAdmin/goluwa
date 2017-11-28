@@ -9,27 +9,53 @@ function ffi.strerror()
 	return err == "" and tostring(num) or err
 end
 
+if DEBUG_GC then
+	local hooked = table.weak()
 
-local ffi_new = ffi.new
+	local real_gc = ffi.gc
+	local real_new = ffi.new
 
-function ffi.debug_gc(b)
-	if b then
-		ffi.new = ffi.new_dbg_gc
-		ffi.gc = ffi.gc_dbg_gc
-	else
-		ffi.new = ffi_new
-		ffi.gc = ffi.gc
+	function ffi.gc(cdata, finalizer)
+		hooked[cdata] = finalizer
+		return cdata
 	end
-end
 
-function ffi.gc_dbg_gc(cdata, finalizer)
-	return ffi.gc(cdata, function(...) logn("ffi.gc: ", ...) return finalizer(...) end)
-end
+	function ffi.new(...)
+		local obj = real_new(...)
 
-function ffi.new_dbg_gc(...)
-	local obj = ffi_new(...)
-	pcall(function() ffi.gc(obj, function(...) logn("ffi.new: ", ...) end) end)
-	return obj
+		logn("ffi.new: ", ...)
+
+		real_gc(obj, function(...)
+			logn("ffi.gc: ", ...)
+
+			if hooked[obj] then
+				return hooked[obj](...)
+			end
+		end)
+
+		return obj
+	end
+
+	local old = setmetatable
+	function setmetatable(tbl, meta)
+		if meta then
+			local __gc = meta.__gc
+
+			if __gc then
+				function meta.__gc(...)
+					logn("META:__gc: ", ...)
+
+					local a,b,c = pcall(__gc, ...)
+
+					logn("OK")
+
+					return a,b,c
+				end
+			end
+		end
+
+		return old(tbl, meta)
+	end
 end
 
 local where = {
