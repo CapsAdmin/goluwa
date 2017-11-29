@@ -72,7 +72,9 @@ do
 		render.StencilOperation("increase", "keep", "zero")
 
 		render2d.PushTexture()
+			render.SetColorMask(0,0,0,0)
 			render2d.DrawRect(x,y,w,h)
+			render.SetColorMask(1,1,1,1)
 		render2d.PopTexture()
 
 		render.StencilFunction("equal", i)
@@ -86,7 +88,9 @@ do
 		render.StencilOperation("decrease", "keep", "zero")
 
 		render2d.PushTexture()
+			render.SetColorMask(0,0,0,0)
 			render2d.DrawRect(X,Y,W,H)
+			render.SetColorMask(1,1,1,1)
 		render2d.PopTexture()
 
 		if i >= 4 then i = 0 end
@@ -138,7 +142,9 @@ do
 			-- write to the stencil buffer
 			-- on fail is probably never reached
 			render2d.PushTexture()
+			render.SetColorMask(0,0,0,0)
 				render2d.DrawRect(x, y, w, h)
+			render.SetColorMask(1,1,1,1)
 			render2d.PopTexture()
 
 		-- if stencil == 33 then stencil = 33 return true else return false end
