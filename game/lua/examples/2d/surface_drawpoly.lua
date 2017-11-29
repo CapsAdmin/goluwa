@@ -1,7 +1,10 @@
 
 local mesh = render2d.CreateMesh(2048)
 mesh:SetDrawHint("dynamic")
-mesh:SetUpdateIndices(false)
+
+local mesh_idx = render.CreateIndexBuffer()
+mesh_idx:LoadIndices(2048)
+mesh_idx:SetDrawHint("dynamic")
 
 for i = 1, 2048 do
 	mesh:SetVertex(i, "color", 1,1,1,1)
@@ -23,7 +26,7 @@ local function surface_DrawPoly(tbl)
 
 	render2d.BindShader()
 	mesh:UpdateBuffer()
-	mesh:Draw(#tbl)
+	mesh:Draw(mesh_idx, #tbl)
 end
 
 
@@ -99,7 +102,7 @@ local function draw_rectangle(x,y, w,h, u1,v1,u2,v2, sx,sy)
 end
 
 
-function goluwa.PostDrawGUI()
+function goluwa.PreDrawGUI()
 	local x = 50
 	local y = 50
 	local w = 100

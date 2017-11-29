@@ -2,14 +2,14 @@ local screen_size = render.GetScreenSize()
 
 local background = render.CreateTextureFromPath("https://image.freepik.com/free-vector/abstract-background-with-a-watercolor-texture_1048-2144.jpg")
 
-function goluwa.PostDrawGUI()
+function goluwa.PreDrawGUI()
 	render.SetStencil(true)
 		render.GetFrameBuffer():ClearStencil(0) -- out = 0
 
-		render.StencilOperation("keep", "replace", "replace")
+		render.StencilOperation("replace", "keep", "keep")
 
 		-- if true then stencil = 33 return true end
-		render.StencilFunction("always", 33)
+		render.StencilFunction("never", 33)
 			-- on fail, keep zero value
 			-- on success replace it with 33
 
@@ -17,7 +17,7 @@ function goluwa.PostDrawGUI()
 			-- on fail is probably never reached
 		render2d.SetColor(0, 0, 0, 0)
 		render2d.SetTexture()
-		render2d.DrawRect(x, y, 400, 400, os.clock(), 400/2, 400/2)
+		render2d.DrawRect(500, 500, 400, 400, os.clock(), 400/2, 400/2)
 
 		-- if stencil == 33 then stencil = 33 return true else return false end
 		render.StencilFunction("equal", 33)

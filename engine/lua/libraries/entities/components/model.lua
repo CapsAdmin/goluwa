@@ -43,11 +43,6 @@ if GRAPHICS then
 		self.is_visible = b
 	end
 
-	function META:SetMaterialOverride(mat)
-		self.MaterialOverride = mat
-		self:UnrollDrawModel()
-	end
-
 	function META:OnAdd()
 		self.tr = self:GetComponent("transform")
 	end
@@ -104,10 +99,6 @@ if GRAPHICS then
 					self:RemoveSubModel(model)
 				end
 			end, self)
-
-			if self.MaterialOverride then
-				self:SetMaterialOverride(self:GetMaterialOverride())
-			end
 
 			render3d.AddModel(self)
 

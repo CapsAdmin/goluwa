@@ -22,15 +22,18 @@ local shader = render.CreateShader({
 	},
 })
 
-local screen_rect = render.CreateVertexBuffer(shader:GetMeshLayout(), {
+local vertices = {
 	{pos = {0, 1, 0}, uv = {0, 0}},
 	{pos = {0, 0, 0}, uv = {0, 1}},
 	{pos = {1, 1, 0}, uv = {1, 0}},
 	{pos = {1, 0, 0}, uv = {1, 1}},
 	{pos = {1, 1, 0}, uv = {1, 0}},
 	{pos = {0, 0, 0}, uv = {0, 1}},
-})
+}
+local screen_rect = render.CreateVertexBuffer(shader:GetMeshLayout(), vertices)
 screen_rect:SetDrawHint("static")
+local screen_rect_idx = render.CreateIndexBuffer()
+screen_rect_idx:LoadIndices(vertices)
 
 if menu then
 	menu.Close()
@@ -44,7 +47,7 @@ function goluwa.PreDrawGUI()
 
 		render2d.PushMatrix(0,0,render2d.GetSize())
 			shader:Bind()
-			screen_rect:Draw()
+			screen_rect:Draw(screen_rect_idx)
 		render2d.PopMatrix()
 	render.GetScreenFrameBuffer():End()
 end

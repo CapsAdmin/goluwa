@@ -98,7 +98,7 @@ end)
 local swrend = SWRenderer.new()
 --swrend:createzbuffer()
 
-function goluwa.PostDrawGUI()
+function goluwa.PreDrawGUI()
 	if not LOL then return end
 	swrend:drawframe(LOL)
 

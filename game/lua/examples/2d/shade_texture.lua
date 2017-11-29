@@ -44,6 +44,7 @@ end
 blur_texture(Vec2(0,5))
 blur_texture(Vec2(5,0))
 
+
 function goluwa.PreDrawGUI()
 
 	render2d.SetColor(1,1,1,1)

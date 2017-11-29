@@ -80,7 +80,7 @@ local function calc_collision(p)
 	end
 end
 
-function goluwa.PreDrawGUI()
+function goluwa.PreDrawGUI(dt)
 	dt = dt  * 25
 
 	render.SetPresetBlendMode("additive")

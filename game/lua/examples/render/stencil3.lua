@@ -35,7 +35,7 @@ do
 	end
 end
 
-function goluwa.PostDrawGUI()
+function goluwa.PreDrawGUI()
 	local max = 6
 
 	render2d.SetTexture()

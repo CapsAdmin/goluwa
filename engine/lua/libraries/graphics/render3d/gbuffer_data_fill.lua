@@ -314,6 +314,7 @@ PASS.Stages = {
 				void main()
 				{
 					vec4 albedo = texture(lua[AlbedoTexture = render.GetErrorTexture()], uv);
+					albedo *= lua[Color = Color(1,1,1,1)];
 
 					if (alpha_discard(uv, albedo.a))
 					{

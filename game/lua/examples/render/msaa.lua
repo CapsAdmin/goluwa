@@ -13,7 +13,7 @@ fb:SetTexture(1, msaa_tex)
 
 local resolve_tex = render.CreateBlankTexture(size:Copy())
 
-function goluwa.PostDrawGUI()
+function goluwa.PreDrawGUI()
 	fb:Begin()
 		fb:ClearColor(0,0,0,0)
 

@@ -121,16 +121,14 @@ end
 
 local panel = gui.CreatePanel("frame", nil, "lol")
 panel:SetSize(Vec2() + 300)
-panel:SetStyle("frame")
-panel:CenterSimple()
-panel:SetResizable(true)
+--panel:CenterSimple()
+--panel:SetResizable(true)
 
 local scroll = gui.CreatePanel("scroll", panel)
 scroll:SetXScrollBar(true)
 scroll:SetYScrollBar(true)
 scroll:SetupLayout("fill")
-scroll:SetPadding(Rect()+4)
-
+--scroll:SetPadding(Rect()+4)
 
 local lol = gui.CreatePanel("text_edit")
 --lol:SetWidth(300)
