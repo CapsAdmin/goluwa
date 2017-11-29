@@ -712,16 +712,37 @@ do -- stencil
 
 	end
 
-	function love.graphics.setStencilTest(b)
-		ENV.graphics_stencil_test = b
+	function love.graphics.setStencilTest(mode, val)
+		if mode then
+			render.SetStencil(true)
+			ENV.graphics_stencil_mode = mode
+			ENV.graphics_stencil_val = val
+			render.StencilFunction(mode, val)
+		else
+			render.SetStencil(false)
+			ENV.graphics_stencil_mode = "always"
+			ENV.graphics_stencil_val = 0
+		end
 	end
 
 	function love.graphics.getStencilTest()
-		return ENV.graphics_stencil_test
+		return ENV.graphics_stencil_mode or "always", ENV.graphics_stencil_val or 0
 	end
 
-	function love.graphics.stencil(stencilfunction, keepbuffer)
+	function love.graphics.stencil(func, action, num, keep)
+		render.SetStencil(true)
 
+		if not keep then
+			render.GetFrameBuffer():ClearStencil(0)
+		end
+
+		local old_mode, old_val = love.graphics.getStencilTest()
+		render.StencilFunction("always", num, 0xFFFFFFFF)
+		render.StencilOperation("keep", "keep", action)
+			render.SetColorMask(0,0,0,0)
+				func()
+			render.SetColorMask(1,1,1,1)
+		render.StencilFunction(old_mode, old_val)
 	end
 end
 
@@ -777,8 +798,6 @@ function love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, kx,ky, quad_arg)
 			ky = ky or 0
 
 			local tex = ENV.textures[drawable]
-
-			--if drawable.fb then  sx = 5 sy = 6 end
 
 			render2d.PushTexture(tex)
 			render2d.DrawRect(x,y, tex:GetSize().x*sx, tex:GetSize().y*sy, r, ox*sx,oy*sy)
@@ -1020,7 +1039,7 @@ do -- shapes
 				idx = idx + 1
 			end
 			for i = 1, #points do
-				mesh:SetIndex(i, i-1)
+				mesh_idx:SetIndex(i, i-1)
 			end
 
 			-- connect the end
@@ -1032,7 +1051,7 @@ do -- shapes
 		mesh:UpdateBuffer()
 		mesh_idx:UpdateBuffer()
 		render2d.BindShader()
-		mesh:Draw(mesh_idx)
+		mesh:Draw(mesh_idx, idx)
 
 		render2d.PopTexture()
 	end
@@ -1139,6 +1158,10 @@ do
 
 		local self = line.CreateObject("Mesh")
 		self.vertex_buffer = render2d.CreateMesh(vertex_count)
+
+		local mesh_idx = render.CreateIndexBuffer()
+		mesh_idx:LoadIndices(vertex_count)
+		self.index_buffer = mesh_idx
 
 		if vertex_format then
 			self.vertex_buffer:ClearAttributes()

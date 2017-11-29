@@ -2,18 +2,7 @@ local love = ... or _G.love
 local line = line -- line_update and line_draw
 
 function love.load()
-end
 
-function love.mousepressed()
-end
-
-function love.mousereleased()
-end
-
-function love.keypressed()
-end
-
-function love.keyreleased()
 end
 
 function love.conf(t)

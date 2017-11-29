@@ -1,6 +1,5 @@
 local line = _G.line or {}
 
-line.package_loaders = {}
 line.speed = 1
 line.love_envs = line.love_envs or table.weak()
 
@@ -85,15 +84,24 @@ function line.CreateLoveEnv(version)
 	love._version_minor = tonumber(version[2])
 	love._version_revision = tonumber(version[3])
 	love._line_env = {}
+	love.package_loaders = {}
+
 	runfile("lua/libraries/love/libraries/*", love)
 
 	table.insert(line.love_envs, love)
 
-	setmetatable(love, {__newindex = function(_, key, val)
-		event.Call("LoveNewIndex", love, key, val)
-		rawset(love, key, val)
-	end})
-
+	setmetatable(
+		love,
+		{
+			__newindex = function(t, k, v)
+				if type(v) == "function" then
+					llog("love.%s = %s", k, v)
+					event.Call("LoveNewIndex", t, k, v)
+				end
+				rawset(t,k,v)
+			end,
+		}
+	)
 	return love
 end
 
@@ -138,9 +146,9 @@ function line.RunGame(folder, ...)
 
 	wlog("mounting love game folder: ", R(folder .. "/"))
 	vfs.CreateFolder("data/love/")
-	vfs.AddModuleDirectory("data/love/", line.package_loaders)
+	vfs.AddModuleDirectory("data/love/", love.package_loaders)
 	vfs.Mount(R(folder .. "/"))
-	vfs.AddModuleDirectory(folder .. "/", line.package_loaders)
+	vfs.AddModuleDirectory(folder .. "/", love.package_loaders)
 
 	local package_loaded = {}
 	local env
@@ -165,7 +173,7 @@ function line.RunGame(folder, ...)
 				return love[name:match(".+%.(.+)")]
 			end
 
-			local func, err, path = require.load(name, line.package_loaders)
+			local func, err, path = require.load(name, love.package_loaders)
 
 			--llog("require: ", name, " (", path , ")")
 
@@ -174,7 +182,7 @@ function line.RunGame(folder, ...)
 					setfenv(func, env)
 				end
 
-				return require.require_function(name, func, path, name, package_loaded)
+				return require.require_function(name, func, path)
 			end
 
 			if pcall(require, name) then
@@ -227,7 +235,7 @@ function line.RunGame(folder, ...)
 		{
 			__newindex = function(t, k, v)
 				if type(v) == "function" then
-					--llog("love.%s = %s", k,v)
+					llog("love.%s = %s", k, v)
 					event.Call("LoveNewIndex", t, k, v)
 					setfenv(v, env)
 				end

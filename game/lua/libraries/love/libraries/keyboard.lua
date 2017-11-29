@@ -56,7 +56,6 @@ function love.keyboard.setTextInput(b)
 end
 
 event.AddListener("LoveNewIndex", "line_keyboard", function(love, key, val)
-		print(love, key, val)
 	if key == "keypressed" or key == "keyreleased" or key == "textinput" then
 		if val then
 			local char_hack
