@@ -84,7 +84,7 @@ local occlusion_shader = render.CreateShader({
 			{
 				if (!lua[AlbedoAlphaMetallic = false])
 				{
-					float alpha = texture(lua[AlbedoTexture = "sampler2D"], uv).a;
+					float alpha = texture(lua[AlbedoTexture = "sampler2D"], uv).a * lua[Alpha = 1];
 
 					if (alpha_discard(uv, alpha))
 					{
@@ -138,15 +138,30 @@ function render3d.DrawScene(what)
 
 
 			model.occluders[what]:Begin()
-			-- TODO: simple geometry
-			--for _, data in ipairs(model.sub_meshes) do
-			for i = 1, model.sub_meshes_length do
-				occlusion_shader.AlbedoAlphaMetallic = model.sub_meshes[i].data.AlbedoAlphaMetallic
-				occlusion_shader.AlbedoTexture = model.sub_meshes[i].data.AlbedoTexture
-				occlusion_shader.Translucent = model.sub_meshes[i].data.Translucent
-				occlusion_shader.AlphaTest = model.sub_meshes[i].data.AlphaTest
-				occlusion_shader:Bind()
-				model.sub_meshes[i].model:Draw(model.sub_meshes[i].i)
+
+			if model.MaterialOverride then
+				for i = 1, model.sub_meshes_length do
+					occlusion_shader.AlbedoAlphaMetallic = model.MaterialOverride.AlbedoAlphaMetallic
+					occlusion_shader.AlbedoTexture = model.MaterialOverride.AlbedoTexture
+					occlusion_shader.Translucent = model.MaterialOverride.Translucent
+					occlusion_shader.AlphaTest = model.MaterialOverride.AlphaTest
+					occlusion_shader.Alpha = model.MaterialOverride.Color.a
+					occlusion_shader:Bind()
+					model.sub_meshes[i].model:Draw(model.sub_meshes[i].i)
+				end
+			else
+
+				-- TODO: simple geometry
+				--for _, data in ipairs(model.sub_meshes) do
+				for i = 1, model.sub_meshes_length do
+					occlusion_shader.AlbedoAlphaMetallic = model.sub_meshes[i].data.AlbedoAlphaMetallic
+					occlusion_shader.AlbedoTexture = model.sub_meshes[i].data.AlbedoTexture
+					occlusion_shader.Translucent = model.sub_meshes[i].data.Translucent
+					occlusion_shader.AlphaTest = model.sub_meshes[i].data.AlphaTest
+					occlusion_shader.Alpha = model.sub_meshes[i].data.Color.a
+					occlusion_shader:Bind()
+					model.sub_meshes[i].model:Draw(model.sub_meshes[i].i)
+				end
 			end
 			model.occluders[what]:End()
 		end

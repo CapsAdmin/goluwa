@@ -70,10 +70,7 @@ bool alpha_discard(vec2 uv, float alpha)
 
 	if (lua[Translucent = false])
 	{
-		const vec3 magic = vec3( 0.06711056, 0.00583715, 52.9829189 );
-		float lol = fract( magic.z * fract( dot( gl_FragCoord.xy, magic.xy ) ) )*0.99;
-
-		return (alpha*alpha*alpha + lol) < 1;
+		return fract(dot(vec2(171.0, 231.0)+alpha*0.00001, gl_FragCoord.xy) / 103.0) > alpha * alpha;
 	}
 
 	return false;

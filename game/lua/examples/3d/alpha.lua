@@ -30,12 +30,33 @@ function goluwa.Update()
 	local t = system.GetElapsedTime()
 
 	local color = ent1:GetColor()
-	color.a = math.abs(math.sin(t+0.5))
+	color.a = math.abs(math.sin(t+0.5)) + 0.1
 	ent1:SetColor(color)
 
 	local color = ent2:GetColor()
-	color.a = math.abs(math.cos(t))
+	color.a = math.abs(math.cos(t)) + 0.1
 	ent2:SetColor(color)
 
 	light:SetPosition(Vec3(5 + math.sin(t),math.cos(t),0))
+end
+
+local max = 30
+for i = 1, max+1 do
+
+	local mat2 = render.CreateMaterial("model")
+	mat2:SetAlbedoTexture(render.GetWhiteTexture())
+	mat2:SetTranslucent(true)
+
+	local ent2 = entities.CreateEntity("visual")
+	ent2:SetModelPath("models/sphere.obj")
+	ent2:SetSize(0.35)
+	ent2:SetMaterialOverride(mat2)
+	ent2:SetPosition(Vec3(i*2.5,20,0))
+
+	if i == max or i == 1 then
+		ent2:SetColor(Color(1,1,1,1))
+	else
+		ent2:SetColor(ColorHSV((i/max)*8,1,1):SetAlpha(i/max))
+	end
+
 end
