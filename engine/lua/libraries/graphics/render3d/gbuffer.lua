@@ -28,6 +28,7 @@ end
 render.SetGlobalShaderVariable2("gbuffer_size", render3d.GetGBufferSize, "vec2")
 render.SetGlobalShaderVariable2("screen_size", render.GetScreenSize, "vec2")
 render.SetGlobalShaderVariable("g_noise_texture", render.GetNoiseTexture, "sampler2D")
+render.SetGlobalShaderVariable2("time", function() return system.GetElapsedTime() end, "float")
 
 do -- mixer
 	function render3d.SetGBufferValue(key, var)

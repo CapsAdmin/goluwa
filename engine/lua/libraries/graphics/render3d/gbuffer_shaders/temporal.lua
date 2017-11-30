@@ -1,8 +1,6 @@
 runfile("lua/libraries/graphics/render3d/sky_shaders/atmosphere1.lua")
 
 do
-	render.SetGlobalShaderVariable2("time", function() return system.GetElapsedTime() end, "float")
-
 	render.AddGlobalShaderCode([[
 	float random(vec2 co)
 	{
