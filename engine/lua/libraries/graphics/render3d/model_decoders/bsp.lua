@@ -18,6 +18,30 @@ local skyboxes = {
 }
 
 function steam.SetMap(name)
+	if tonumber(name) then
+		local workshop_id = tonumber(name)
+		local info = serializer.GetKeyFromFile("luadata", "workshop_maps.cfg", workshop_id)
+		if info and vfs.IsFile(info.path) then
+			steam.MountSourceGame(info.appid)
+			vfs.Mount(info.path, "maps/")
+			steam.SetMap(info.name)
+		else
+			steam.DownloadWorkshop(workshop_id, function(info, path)
+				local name = info.response.publishedfiledetails[1].filename:match(".+/(.+)%.bsp")
+				local appid = info.response.publishedfiledetails[1].creator_app_id
+				serializer.SetKeyValueInFile("luadata", "workshop_maps.cfg", workshop_id, {
+					path = path,
+					name = name,
+					appid = appid,
+				})
+				steam.MountSourceGame(appid)
+				vfs.Mount(path, "maps/")
+				steam.SetMap(name)
+			end)
+		end
+		return
+	end
+
 	local path = "maps/" .. name .. ".bsp"
 
 	steam.bsp_world = steam.bsp_world or entities.CreateEntity("physical", entities.GetWorld())

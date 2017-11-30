@@ -15,10 +15,15 @@ function steam.DownloadWorkshop(id, callback)
 		},
 		callback = function(data)
 			local data = serializer.Decode("json", data.content)
-			resource.Download(data.response.publishedfiledetails[1].file_url, function(path)
-				vfs.Write(path, assert(serializer.ReadFile("lzma", path)))
-				callback(data, path)
-			end, nil,nil,nil,nil,"gma")
+			if data.response.publishedfiledetails[1].file_url then
+				resource.Download(data.response.publishedfiledetails[1].file_url, function(path)
+					vfs.Write(path, assert(serializer.ReadFile("lzma", path)))
+					callback(data, path)
+				end, nil,nil,nil,nil,data.response.publishedfiledetails[1].creator_app_id == 4000 and "gma" or "zip")
+			else
+				logn("error downloading ", id, " no file url?")
+				table.print(data)
+			end
 		end,
 	})
 end

@@ -212,6 +212,10 @@ local cache_mounted = {}
 
 function steam.MountSourceGame(game_info)
 
+	if type(game_info) == "number" then
+		game_info = tostring(game_info)
+	end
+
 	if cache_mounted[game_info] then
 		return cache_mounted[game_info]
 	end
@@ -294,9 +298,9 @@ do
 
 		local games = steam.GetSourceGames()
 
-		if type(name) == "number" then
+		if tonumber(name) then
 			for _, game_info in ipairs(games) do
-				if game_info.filesystem.steamappid == name then
+				if game_info.filesystem.steamappid == tonumber(name) then
 					return game_info
 				end
 			end
