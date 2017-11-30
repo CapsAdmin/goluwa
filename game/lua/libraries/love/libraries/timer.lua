@@ -12,7 +12,7 @@ function love.timer.getDelta()
 end
 
 function love.timer.getFPS()
-	return math.ceil(1/system.GetFrameTime() or 0)
+	return system.current_fps or 0
 end
 
 function love.timer.getMicroTime()

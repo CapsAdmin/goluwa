@@ -144,23 +144,43 @@ end
 function line.RunGame(folder, ...)
 	local love = line.CreateLoveEnv()
 
-	wlog("mounting love game folder: ", R(folder .. "/"))
+	llog("mounting love game folder: ", R(folder .. "/"))
 	vfs.CreateFolder("data/love/")
+	vfs.AddModuleDirectory("lua/modules/", love.package_loaders)
 	vfs.AddModuleDirectory("data/love/", love.package_loaders)
 	vfs.Mount(R(folder .. "/"))
 	vfs.AddModuleDirectory(folder .. "/", love.package_loaders)
+
+	local os = {}
+	for k,v in pairs(_G.os) do
+		os[k] = v
+	end
+
+	function os.execute(str)
+		print("os.execute: ", str)
+		if str:find("__LOVE_BINARY__") then
+			local path = vfs.FixPathSlashes(str:match(".+\"(.+%.love)\""))
+			print(path, "!!!")
+			if vfs.IsFile(path) then
+				line.RunGame(path)
+			end
+			return
+		end
+		os.execute(str)
+	end
 
 	local package_loaded = {}
 	local env
 	local require = require
 	env = setmetatable({
+		os = os,
 		love = love,
 		require = function(name, ...)
 			if name == "strict" then
 				return true
 			end
 
-			if name == "socket" then
+			if name == "socket.core" then
 				env.socket = sockets.luasocket
 				return sockets.luasocket
 			end
@@ -174,7 +194,6 @@ function line.RunGame(folder, ...)
 			end
 
 			local func, err, path = require.load(name, love.package_loaders)
-
 			--llog("require: ", name, " (", path , ")")
 
 			if type(func) == "function" then
@@ -182,12 +201,14 @@ function line.RunGame(folder, ...)
 					setfenv(func, env)
 				end
 
-				return require.require_function(name, func, path)
+				return assert(require.require_function(name, func, path, name, love.package_loaders))
 			end
 
 			if pcall(require, name) then
 				return require(name)
 			end
+
+			if not func then error(err, 2) end
 
 			return func
 		end,
@@ -283,7 +304,7 @@ function line.RunGame(folder, ...)
 	setfenv(love.line_draw, env)
 
 	line.pcall(love, main)
-	line.pcall(love, love.load, {})
+	line.pcall(love, love.load, {[-2] = "__LOVE_BINARY__", [-1] = "embedded boot.lua", [1] = folder .. "/"})
 
 	love.filesystem.setIdentity(love.filesystem.getIdentity())
 

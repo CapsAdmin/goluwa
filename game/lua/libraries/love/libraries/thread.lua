@@ -10,11 +10,18 @@ local Thread = line.TypeTemplate("Thread")
 
 function Thread:start(...)
 	self.args = {...}
-	self.thread:Start()
+
 	if self.thread.co then
 		ENV.threads2[self.thread.co] = self
+		self.thread:Start()
 	else
 		ENV.running = self
+
+		event.Delay(0, function()
+			self.thread:Start()
+
+			ENV.running = nil
+		end)
 	end
 end
 function Thread:wait() end
@@ -39,9 +46,9 @@ function love.thread.newThread(name, script_path)
 	local thread = tasks.CreateTask()
 	function thread.OnStart()
 		setfenv(func, env)
-		thread:Wait()
+		if thread.co then thread:Wait() end
 		func(unpack(self.args))
-		thread:Wait()
+		if thread.co then thread:Wait() end
 	end
 
 	function thread:OnFinish()

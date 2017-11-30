@@ -48,7 +48,8 @@ do
 		count = count + 1
 
 		if wait(1) then
-			system.SetConsoleTitle(("FPS: %i"):format(1/(total / count)), "fps")
+			system.current_fps = math.round(1/(total / count))
+			system.SetConsoleTitle(("FPS: %i"):format(system.current_fps), "fps")
 			system.SetConsoleTitle(("GARBAGE: %s"):format(utility.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
 
 			if GRAPHICS then
