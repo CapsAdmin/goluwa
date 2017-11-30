@@ -124,7 +124,7 @@ event.AddListener("GBufferInitialized", function()
 		render3d.camera:SetPosition(cam_pos)
 		render3d.camera:SetAngles(ang)
 		render3d.camera:SetFOV(fov)
-	end)
+	end, {priority = -math.huge})
 
 	event.AddListener("MouseInput", "fly_camera_3d", function(button, press)
 		if press then

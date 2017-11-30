@@ -39,7 +39,8 @@ function render.UpdateGlobalShaderStorage()
 	end
 end
 
-event.AddListener("Update", "update_global_shader_variables", render.UpdateGlobalShaderStorage)
+-- make sure it's added last and not before camera changes
+event.AddListener("Update", "update_global_shader_variables", render.UpdateGlobalShaderStorage, {priority = math.huge})
 
 function render.GetGlobalShaderVariableBlock()
 	local str = "layout(std140) uniform global_variables\n"

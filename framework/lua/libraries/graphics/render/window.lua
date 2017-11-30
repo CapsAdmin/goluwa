@@ -7,7 +7,6 @@ function render.SetWindow(window)
 	render.current_window = window
 
 	render.SetViewport(0, 0, window:GetSize():Unpack())
-	render.SetScissor(0, 0, window:GetSize():Unpack())
 end
 
 function render.GetWindow()

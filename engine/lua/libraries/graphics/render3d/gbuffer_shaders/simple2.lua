@@ -54,7 +54,7 @@ vec3 gbuffer_compute_specular(vec3 l, vec3 v, vec3 n, float attenuation, vec3 li
 
 local PASS = {}
 
-PASS.Name = "simple"
+PASS.Name = "simple2"
 PASS.Source = {}
 
 table.insert(PASS.Source, {
@@ -66,10 +66,10 @@ table.insert(PASS.Source, {
 			vec3 env = get_env_color();
 
 			vec3 albedo = get_albedo(uv);
-			vec3 specular = vec3(0.25) + max(get_specular(uv), vec3(0))+(env*0.25);
+			vec3 specular = max(get_specular(uv), vec3(0))+(env*0.25);
 			float metallic = get_metallic(uv);
 
-			out_color = mix(albedo, env*albedo, metallic) * specular;
+			out_color = mix(albedo, env*albedo, metallic) * specular * vec3(g_ssao(uv));
 			out_color += gbuffer_compute_sky(-get_camera_dir(uv).yzx, get_linearized_depth(uv));
 		}
 	]]
