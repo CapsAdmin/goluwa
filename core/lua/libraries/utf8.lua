@@ -164,6 +164,8 @@ function utf8.length(str)
 	return len
 end
 
+utf8.len = utf8.length
+
 function utf8.totable(str)
 	local tbl = {}
 	local i = 1

@@ -366,6 +366,10 @@ do -- font
 		self.line_height = num
 	end
 
+	function Font:getBaseline()
+		return 0
+	end
+
 	function Font:getWrap(str, width)
 		str = tostring(str)
 		local old = gfx.GetFont()
