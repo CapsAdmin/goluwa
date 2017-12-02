@@ -165,7 +165,7 @@ do
 		obj:SetPadding(Rect())
 		obj:SetMargin(Rect())
 		obj:ResetLayout()
-		obj:SetAllowKeyboardInput(false)
+--		obj:SetAllowKeyboardInput(false)
 		obj:SetFocusOnClick(false)
 		obj:SetBringToFrontOnClick(false)
 		obj:SetClipping(true)
@@ -252,6 +252,9 @@ do
 		obj:CallOnRemove(function() obj.marked_for_deletion = true self:OnDeletion() end)
 
 		if class == "textentry" then
+			hook(obj, "OnCharInput", function(_, char)
+				return self:AllowInput(char)
+			end)
 			hook(obj, "OnTextChanged", function()
 				local text = self:GetText():gsub("\t", "")
 				if text ~= "" then
@@ -269,8 +272,8 @@ do
 
 		hook(obj, "OnUpdate", function() self:Think() self:AnimationThink() end)
 		hook(obj, "OnMouseMove", function(_, x, y) self:OnCursorMoved(x, y) end)
-		hook(obj, "OnMouseEnter", function() self:OnCursorEntered() end)
-		hook(obj, "OnMouseExit", function() self:OnCursorExited() end)
+		hook(obj, "OnMouseEnter", function() gine.env.ChangeTooltip(self) print("!") self:OnCursorEntered() end)
+		hook(obj, "OnMouseExit", function() gine.env.EndTooltip(self) print("?") self:OnCursorExited() end)
 
 		hook(obj, "OnPostLayout", function()
 			local panel = obj
@@ -382,9 +385,6 @@ do
 		end
 
 		hook(self.__obj, "OnChildAdd", function(_, child)
-			if child.ClassName == "text_edit" and _.popup then
-				child:SetEditable(true)
-			end
 			self:OnChildAdded(gine.WrapObject(child, "Panel"))
 		end)
 
@@ -539,11 +539,7 @@ do
 	end
 
 	function META:SetKeyboardInputEnabled(b)
-		self.__obj:SetAllowKeyboardInput(b)
-
-		if self.__obj.vgui_type == "textentry" then
-			self.__obj:SetEditable(b)
-		end
+		--self.__obj:SetAllowKeyboardInput(b)
 	end
 
 	function META:IsKeyboardInputEnabled()
@@ -781,6 +777,7 @@ do
 
 	function META:SetDrawOnTop(b)
 		self.__obj.draw_ontop = b
+		self.__obj:SetChildOrder(math.huge)
 	end
 
 	do -- z pos stuff
@@ -806,6 +803,16 @@ do
 
 			if self.__obj.vgui_type == "textentry" then
 				self.__obj:SetEditable(true)
+				self.__obj:SetAllowKeyboardInput(true)
+				self.__obj:SetFocusOnClick(true)
+			else
+				for _, child in ipairs(self.__obj:GetChildrenList()) do
+					if child.vgui_type == "textentry" then
+						child:SetEditable(true)
+						child:SetAllowKeyboardInput(true)
+						child:SetFocusOnClick(true)
+					end
+				end
 			end
 		end
 	end
