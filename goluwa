@@ -147,7 +147,7 @@ if [ "$1" != "launch" ]; then
 			argline="$*"
 			len1=$(( ${#prev}+5+${#argline} ))
 			len2=$(( ${#cur}-${#magic}-len1 ))
-            
+
             printf "%s\\n" "$(awk ' END { printf substr(str,'$len1','$len2') }' "str=$cur" /dev/null)"
 		fi
 
@@ -249,26 +249,19 @@ if [ "$2" = "branch" ]; then
 	GOLUWA_EXECUTABLE="luajit_$3"
 fi
 
-if [ ! -z "$GOLUWA_VALGRIND" ] || [ "$4" = "valgrind" ]; then
-	if [ -z ${DISPLAY+x} ]; then
-		eval "valgrind --leak-check=yes $GOLUWA_EXECUTABLE $initlua"
-	else
-		eval "x-terminal-emulator --hold -e \"valgrind --tool=memcheck --leak-check=full --leak-resolution=high --show-reachable=yes --read-var-info=yes --suppressions=lj.supp ./$GOLUWA_EXECUTABLE $initlua\""
-	fi
-elif [ ! -z "$GOLUWA_DEBUG" ] || [ "$4" = "debug" ]; then
+if [ ! -z "$GOLUWA_DEBUG" ] || [ "$4" = "debug" ]; then
     utils_path="$(dirname $( cd "$(dirname "$0")" ; pwd -P ))/${OS}_${ARCH}/openresty-gdb-utils"
-
-    exec_line="gdb --ex 'py import sys' --ex 'py sys.path.append(\"$utils_path\")' --ex 'source openresty-gdb-utils/luajit21.py' --ex 'run' --args $GOLUWA_EXECUTABLE $initlua"
-
     if [ ! -d $utils_path ]; then
         git clone https://github.com/openresty/openresty-gdb-utils.git $utils_path --depth 1;
     fi
 
-    if [ -z ${DISPLAY+x} ]; then
-		eval $exec_line
-	else
-		x-terminal-emulator -e "$exec_line"
-	fi
+
+	gdb_exec_line="gdb --ex 'py import sys' --ex 'py sys.path.append(\"$utils_path\")' --ex 'source openresty-gdb-utils/luajit21.py' --ex 'set non-stop off' --ex 'target remote | vgdb' --ex 'monitor leak_check' --ex 'run' --args $GOLUWA_EXECUTABLE $initlua"
+	valgrind_exec_line="valgrind --vgdb=yes --vgdb-error=0 --tool=memcheck --leak-check=full --leak-resolution=high --show-reachable=yes --read-var-info=yes --suppressions=lj.supp ./$GOLUWA_EXECUTABLE $initlua"
+
+	x-terminal-emulator --hold -e "$valgrind_exec_line" &
+	x-terminal-emulator --hold -e "$gdb_exec_line"
+
 else
 	eval "./$GOLUWA_EXECUTABLE $initlua"
 fi
