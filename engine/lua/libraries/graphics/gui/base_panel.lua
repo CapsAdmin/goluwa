@@ -963,6 +963,8 @@ do -- scrolling
 			if f >= 0 then
 				f = f ^ 5
 				self.RealScroll = self.scroll_stop:GetLerped(f, self.scroll_start)
+				self.RealScroll.x = math.max(self.RealScroll.x, 0)
+				self.RealScroll.y = math.max(self.RealScroll.y, 0)
 			else
 				self.scroll_time = nil
 				self.scroll_stop = nil
