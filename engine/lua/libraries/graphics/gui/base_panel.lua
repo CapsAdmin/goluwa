@@ -65,7 +65,6 @@ end
 
 function META:SizeToChildrenHeight()
 	if #self.Children == 0 then return end
-	self.layout_me = false
 	self.last_children_size = nil
 	self.real_size = self.Size:Copy()
 	self.Size.y = math.huge
@@ -92,7 +91,6 @@ end
 
 function META:SizeToChildrenWidth()
 	if #self.Children == 0 then return end
-	self.layout_me = false
 	self.last_children_size = nil
 	self.real_size = self.Size:Copy()
 	self.Size.x = math.huge
@@ -119,7 +117,6 @@ end
 
 function META:SizeToChildren()
 	if #self.Children == 0 then return end
-	self.layout_me = false
 	self.last_children_size = nil
 	self.real_size = self.Size:Copy()
 	self.Size = Vec2() + math.huge
@@ -289,7 +286,7 @@ do -- call on hide
 			end
 		end
 
-		self:Layout(true)
+		self:Layout()
 	end
 
 	function META:CallOnHide(callback, id)
@@ -618,7 +615,10 @@ do -- orientation
 
 			self.Size = size
 
-			self:Layout()
+			if self.Size ~= self.last_size then
+				self:Layout()
+				self.last_size = self.Size
+			end
 		end
 	end
 
@@ -1951,9 +1951,7 @@ do -- layout
 	end
 
 	function META:DoLayout()
-		self.in_layout = true
 		self:OnLayout(self:GetLayoutScale(), self:GetSkin())
-		self.in_layout = false
 
 		self:ExecuteLayoutCommands()
 
@@ -1965,14 +1963,45 @@ do -- layout
 		end
 	end
 
+	gui.layout_traces = {}
+
+	function gui.DumpLayouts()
+		local tbl = {}
+
+		for trace, count in pairs(gui.layout_traces) do
+			table.insert(tbl, {count = count, trace = trace})
+		end
+
+		table.sort(tbl, function(a, b) return a.count > b.count end)
+
+		for i = 1, 20 do
+			if not tbl[i] then break end
+			logn("===============")
+			logn(tbl[i].count)
+			logn(tbl[i].trace)
+			logn("===============")
+		end
+	end
+
+	gui.in_layout = 0
+	META.in_layout = 0
+
 	function META:Layout(now)
-		if self.in_layout then return end
+		if self.in_layout ~= 0 then return end
+
 		if now and (self.LayoutWhenInvisible or not self.draw_no_draw) then
+			self.in_layout = self.in_layout + 1
+			gui.in_layout = gui.in_layout + 1
+
+			if gui.debug then
+				local tr = self.layout_me_tr or debug.traceback()
+				gui.layout_traces[tr] = (gui.layout_traces[tr] or 0) + 1
+				self.layout_me_tr = nil
+			end
+
 
 			if self.Scrollable then
-				self.in_layout = true
 				self:SetScrollFraction(self:GetScrollFraction())
-				self.in_layout = false
 			end
 
 			self:DoLayout()
@@ -1995,13 +2024,18 @@ do -- layout
 
 			self:MarkCacheDirty()
 
-			self.in_layout = true
 			self:OnPostLayout()
-			self.in_layout = false
 
 			self.layout_me = false
-		else
+
+			self.in_layout = self.in_layout - 1
+			gui.in_layout = gui.in_layout - 1
+		elseif gui.in_layout == 0 then
 			self.layout_me = true
+
+			if gui.debug then
+				self.layout_me_tr = debug.traceback()
+			end
 		end
 	end
 
@@ -2144,6 +2178,14 @@ do -- layout
 
 			local left = self:RayCast(self:GetPosition(), Vec2(0, self.Position.y))
 			local right = self:RayCast(self:GetPosition(), Vec2(parent_width, self.Position.y))
+
+			if left.x > right.x then
+				left, right = right, left
+			end
+
+			right.x = math.clamp(right.x, 0, parent_width)
+			left.x = math.clamp(left.x, 0, parent_width)
+
 			right.x = right.x - left.x
 
 			local x = left.x
@@ -2174,6 +2216,15 @@ do -- layout
 
 			local top = self:RayCast(self:GetPosition(), Vec2(self.Position.x, 0))
 			local bottom = self:RayCast(self:GetPosition(), Vec2(self.Position.x, parent_height))
+
+
+			if top.x > bottom.x then
+				top, bottom = bottom, top
+			end
+
+			bottom.x = math.clamp(bottom.x, 0, parent_height)
+			top.x = math.clamp(top.x, 0, parent_height)
+
 			bottom.y = bottom.y - top.y
 
 			local y = top.y
@@ -2270,7 +2321,7 @@ do -- layout
 			local parent = self:GetParent()
 
 			if not self.laid_out_y then
-				self:SetY(parent:GetHeight() == math.huge and 999999999999 or parent:GetHeight()) -- :(
+				self:SetY(999999999999) -- :(
 			end
 
 			self:SetY(math.max(self:GetY(), 1))
@@ -2283,7 +2334,7 @@ do -- layout
 			local parent = self:GetParent()
 
 			if not self.laid_out_x then
-				self:SetX(parent:GetWidth() == math.huge and 999999999999 or parent:GetWidth()) -- :(
+				self:SetX(999999999999)
 			end
 
 			self:SetX(math.max(self:GetX(), 1))
@@ -2305,7 +2356,7 @@ do -- layout
 			local parent = self:GetParent()
 
 			if not self.laid_out_y then
-				self:SetY(0 - self:GetHeight())
+				self:SetY(-999999999999)
 			end
 
 			self:SetY(math.max(self:GetY(), 1))
@@ -2318,7 +2369,7 @@ do -- layout
 			local parent = self:GetParent()
 
 			if not self.laid_out_x then
-				self:SetX(0 - self:GetWidth())
+				self:SetX(-999999999999)
 			end
 
 			self:SetX(math.max(self:GetX(), 1))

@@ -16,6 +16,7 @@ do -- chatbox
 
 	function chat.Close()
 		lib.Close()
+		lib.GetPanel():Remove()
 	end
 
 	function chat.Open()
@@ -565,16 +566,7 @@ do
 		h = tonumber(h) or w
 
 		self.__obj:SetSize(Vec2(w, h))
-
-		if self.__obj.vgui_dock then
-			if self.__obj.Size ~= self.__obj.gine_last_Size then
-				self.__obj.in_layout = true
-				self:Dock(self.__obj.vgui_dock)
-				self.__obj.in_layout = false
-				self.__obj:Layout()
-				self.__obj.gine_last_Size = self.__obj.Size
-			end
-		end
+		self.__obj.LayoutSize = Vec2(w, h)
 	end
 
 	function META:GetSize()
@@ -608,10 +600,8 @@ do
 
 		function META:SetText(text)
 			if self.__obj.vgui_type == "textentry" then
-				self.__obj.in_layout = true
 				text = tostring(text):gsub("\t", "")
 				self.__obj:SetText(text)
-				self.__obj.in_layout = false
 			else
 				self.__obj.text_internal = gine.translation2[text] or text
 			--	self.__obj.label_settext = system.GetFrameNumber()
@@ -732,6 +722,21 @@ do
 		if size_w == nil then size_w = true end
 		if size_h == nil then size_h = true end
 
+		--[[
+
+		for _, v in ipairs(self.__obj.Children) do
+			v.old_size = v:GetSize()
+
+			if not v.Children[1] and v.vgui_type == "label" then
+				local w, h = v.gine_pnl:GetTextSize()
+
+				if not size_h then h = v:GetHeight() end
+				if not size_w then w = v:GetWidth() end
+
+				v.Size = Vec2(w, h)
+			end
+		end
+]]
 		if size_w and size_h then
 			self.__obj:SizeToChildren()
 		elseif size_w then
@@ -739,12 +744,16 @@ do
 		elseif size_h then
 			self.__obj:SizeToChildrenHeight()
 		end
+--[[
+		for _, v in ipairs(self.__obj.Children) do
+			v.Size = v.old_size
+		end
+
+		self.__obj.LayoutSize = self.__obj.Size:Copy()]]
 	end
 
 	function META:SetVisible(b)
-		self.__obj.in_layout = true -- hack
 		self.__obj:SetVisible(b)
-		self.__obj.in_layout = false
 	end
 
 	function META:Dock(enum)
