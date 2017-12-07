@@ -272,8 +272,8 @@ do
 
 		hook(obj, "OnUpdate", function() self:Think() self:AnimationThink() end)
 		hook(obj, "OnMouseMove", function(_, x, y) self:OnCursorMoved(x, y) end)
-		hook(obj, "OnMouseEnter", function() gine.env.ChangeTooltip(self) print("!") self:OnCursorEntered() end)
-		hook(obj, "OnMouseExit", function() gine.env.EndTooltip(self) print("?") self:OnCursorExited() end)
+		hook(obj, "OnMouseEnter", function() gine.env.ChangeTooltip(self) self:OnCursorEntered() end)
+		hook(obj, "OnMouseExit", function() gine.env.EndTooltip(self) self:OnCursorExited() end)
 
 		hook(obj, "OnPostLayout", function()
 			local panel = obj
