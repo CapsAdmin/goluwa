@@ -66,7 +66,7 @@ do -- tree node
 		self.button:SizeToText()
 		self.button:SetupLayout("center_left")
 
-		self:SetMargin(Rect(0,0,self.offset*S,0))
+		self:SetMargin(Rect(self.offset*S,0,0,0))
 	end
 
 	function META:OnPress()

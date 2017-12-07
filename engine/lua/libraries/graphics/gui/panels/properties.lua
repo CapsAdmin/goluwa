@@ -430,7 +430,7 @@ do -- color
 		prototype.GetRegistered(self.Type, META.Base).OnLayout(self, S)
 
 		self.panel:SetLayoutSize(Vec2(S*8, S*8) - S*2)
-		self.panel:SetPadding(Rect()+S)
+		self.panel:SetPadding(Rect()+S*2)
 	end
 
 	gui.RegisterPanel(META)
@@ -759,7 +759,6 @@ function META:OnLayout(S)
 
 		if left.left_offset then
 			left:SetDrawPositionOffset(Vec2(left.left_offset*S, 0))
-			left:SetDrawSizeOffset(Vec2(0, 1)) -- TODO
 		end
 
 		if left.expand then

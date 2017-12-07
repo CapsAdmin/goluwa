@@ -101,7 +101,7 @@ end
 function META:OnLayout(S, skin)
 	self.tab_bar:SetWidth(self:GetWidth())
 	self.tab_bar:SetHeight(10*S)
-	self.tab_bar:SetY(1)
+	--self.tab_bar:SetY(1)
 
 	for i, v in pairs(self.tabs) do
 		if v.button:GetState() then

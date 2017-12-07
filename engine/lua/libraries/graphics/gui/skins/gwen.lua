@@ -143,7 +143,7 @@ for i, sub_skin in ipairs(skins) do
 		add("frame", 480,32, 31,31, 16)
 		add("frame2", 320,384+19, 63,63-19, 20)
 		add("frame_bar", 320,384, 63,19, 11)
-		add("property", 256,256, 63,127, 4)
+		add("property", 256,256, 63,126, 4)
 
 		add("gradient", 480,96, 31,31, 16)
 		add("gradient1", 480,96, 31,31, 16)
