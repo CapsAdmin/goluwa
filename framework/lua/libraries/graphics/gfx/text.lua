@@ -132,7 +132,7 @@ do -- text wrap
 		return str
 	end
 
-	local function wrap_2(str, max_width)
+	local function wrap_2(str, max_width, font)
 		local tbl = str:utotable()
 		local lines = {}
 		local chars = {}
@@ -147,7 +147,7 @@ do -- text wrap
 		while i < #tbl do
 			local c = tbl[i]
 
-			local char_width = gfx.GetTextSize(c)
+			local char_width = gfx.GetTextSize(c, font)
 			local new_width = width + char_width
 
 			if c == "\n" then
@@ -161,7 +161,7 @@ do -- text wrap
 				prev_char = nil
 				last_space_index = -1
 				i = i + 1
-			elseif char ~= " " and width > max_width then
+			elseif char ~= " " and width >= max_width then
 				if #chars == 0 then
 					i = i + 1
 				elseif last_space_index ~= -1 then
@@ -221,14 +221,14 @@ do -- text wrap
 			return cache[str][max_width][font]
 		end
 
-		if max_width < gfx.GetTextSize() then
+		if max_width < gfx.GetTextSize(nil, font) then
 			return table.concat(str:split(""), "\n")
 		end
-		if max_width > gfx.GetTextSize(str) then
+		if max_width > gfx.GetTextSize(str, font) then
 			return str
 		end
 
-		local res = wrap_2(str, max_width)
+		local res = wrap_2(str, max_width, font)
 		cache[str] = cache[str] or {}
 		cache[str][max_width] = cache[str][max_width] or {}
 		cache[str][max_width][font] = res
@@ -240,11 +240,11 @@ end
 function gfx.DotLimitText(text, w, font)
 	local strw, strh = gfx.GetTextSize(text, font)
 	local dot_w = gfx.GetTextSize(".", font)
-	if strw > w - dot_w then
-		local x = dot_w*1
+	if strw > w+2 then
+		local x = 0
 		for i, char in ipairs(text:utotable()) do
-			if x >= w then
-				return text:usub(0, i) .. "..."
+			if x >= w - dot_w*3 then
+				return text:usub(0, i-2) .. "..."
 			end
 
 			x = x + gfx.GetTextSize(char, font)
