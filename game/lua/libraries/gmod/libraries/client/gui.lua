@@ -253,7 +253,9 @@ do
 
 		if class == "textentry" then
 			hook(obj, "OnCharInput", function(_, char)
-				return self:AllowInput(char)
+				if self.AllowInput then
+					return self:AllowInput(char)
+				end
 			end)
 			hook(obj, "OnTextChanged", function()
 				local text = self:GetText():gsub("\t", "")
