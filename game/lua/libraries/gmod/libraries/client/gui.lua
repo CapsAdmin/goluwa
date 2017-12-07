@@ -280,38 +280,42 @@ do
 
 			if panel.vgui_type == "label" then
 				local w, h = panel.gine_pnl:GetTextSize()
-				local m = panel:GetMargin()
 
 				if panel.content_alignment == 5 then
 					panel.text_offset = (panel:GetSize() / 2) - (Vec2(w, h) / 2)
 				elseif panel.content_alignment == 4 then
-					panel.text_offset.x = m:GetLeft()
+					panel.text_offset.x = 0
 					panel.text_offset.y = (panel:GetHeight() / 2) - (h / 2)
 				elseif panel.content_alignment == 6 then
-					panel.text_offset.x = panel:GetWidth() - w - m:GetRight()
+					panel.text_offset.x = panel:GetWidth() - w
 					panel.text_offset.y = (panel:GetHeight() / 2) - (h / 2)
 				elseif panel.content_alignment == 2 then
 					panel.text_offset.x = (panel:GetWidth() / 2) - (w / 2)
-					panel.text_offset.y = panel:GetHeight() - h - m:GetBottom()
+					panel.text_offset.y = panel:GetHeight() - h
 				elseif panel.content_alignment == 8 then
 					panel.text_offset.x = (panel:GetWidth() / 2) - (w / 2)
-					panel.text_offset.y = m:GetTop()
+					panel.text_offset.y = 0
 				elseif panel.content_alignment == 7 then
-					panel.text_offset.x = m:GetLeft()
-					panel.text_offset.y = m:GetTop()
+					panel.text_offset.x = 0
+					panel.text_offset.y = 0
 				elseif panel.content_alignment == 9 then
-					panel.text_offset.x = panel:GetWidth() - m:GetRight() - w
-					panel.text_offset.y = m:GetTop()
+					panel.text_offset.x = panel:GetWidth() - w
+					panel.text_offset.y = 0
 				elseif panel.content_alignment == 1 then
-					panel.text_offset.x = m:GetLeft()
-					panel.text_offset.y = panel:GetHeight() - h - m:GetBottom()
+					panel.text_offset.x = 0
+					panel.text_offset.y = panel:GetHeight() - h
 				elseif panel.content_alignment == 3 then
-					panel.text_offset.x = panel:GetWidth() - w - m:GetRight()
-					panel.text_offset.y = panel:GetHeight() - h - m:GetBottom()
+					panel.text_offset.x = panel:GetWidth() - w
+					panel.text_offset.y = panel:GetHeight() - h
+				end
+
+				if w > panel:GetWidth() then
+					panel.text_offset.x = 0
 				end
 
 				panel.text_offset = panel.text_offset + panel.text_inset
-				panel.text_offset.y = panel.text_offset.y - 1
+				--panel.text_offset.x = panel.text_offset.x + panel:GetPadding():GetLeft()
+				--panel.text_offset.y = panel.text_offset.y + panel:GetPadding():GetTop()
 			end
 
 			if not obj.gine_prepared then
@@ -527,7 +531,7 @@ do
 	end
 
 	function META:DockMargin(left, top, right, bottom)
-		self.__obj:SetPadding(Rect(right, top, left, bottom))
+		self.__obj:SetPadding(Rect(left, top, right, bottom))
 	end
 
 	function META:SetMouseInputEnabled(b)
@@ -670,17 +674,21 @@ do
 		end]]
 
 		local font = gine.render2d_fonts[panel.font_internal:lower()]
-		local text = panel.text_internal or ""
+		local text = tostring(panel.text_internal or "")
 
 		if not self.get_content_size then
 			if panel.gmod_wrap then
-				text = gfx.WrapString(text, self:GetWide(), font)
-			else
+				text = gfx.WrapString(text, panel.Parent:IsValid() and panel.Parent:GetWidth() or self:GetWide(), font)
+			elseif not text:find("\n", nil, true) then
 				text = gfx.DotLimitText(text, self:GetWide(), font)
 			end
 		end
 
 		local w, h = font:GetTextSize(text)
+
+		if panel.gmod_wrap and panel.Parent:IsValid() then
+			w = panel.Parent:GetWidth()
+		end
 
 		return w + panel.text_inset.x, h + panel.text_inset.y
 	end
@@ -692,7 +700,7 @@ do
 			local w, h = self:GetContentSize()
 
 			--panel:Layout(true)
-			panel:SetSize(Vec2(panel.text_inset.x + panel.Margin.x + w, panel.text_inset.y + panel.Margin.y + h))
+			panel:SetSize(Vec2(panel.text_inset.x + w, panel.text_inset.y + h))
 			panel.LayoutSize = panel:GetSize():Copy()
 		end
 	end

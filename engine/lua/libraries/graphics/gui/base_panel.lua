@@ -2103,6 +2103,7 @@ do -- layout
 		end
 
 		function META:GmodLeft()
+			self:SetCollisionGroup("gmod")
 			self:CenterYSimple()
 			self:MoveLeft()
 			self:FillY()
@@ -2110,6 +2111,7 @@ do -- layout
 		end
 
 		function META:GmodRight()
+			self:SetCollisionGroup("gmod")
 			self:CenterYSimple()
 			self:MoveRight()
 			self:FillY()
@@ -2117,6 +2119,7 @@ do -- layout
 		end
 
 		function META:GmodTop()
+			self:SetCollisionGroup("gmod")
 			self:CenterXSimple()
 			self:MoveUp()
 			self:FillX()
@@ -2124,6 +2127,7 @@ do -- layout
 		end
 
 		function META:GmodBottom()
+			self:SetCollisionGroup("gmod")
 			self:CenterXSimple()
 			self:MoveDown()
 			self:FillX()
@@ -2196,6 +2200,8 @@ do -- layout
 		end
 
 		function META:CenterX()
+			self:CenterXSimple()
+
 			local parent = self:GetParent()
 			local width = parent.real_size and parent.real_size.x or parent:GetWidth()
 
@@ -2592,6 +2598,10 @@ do -- events
 		--child:Layout()
 	end
 	]]
+
+	function META:OnChildAdd(child)
+		self:Layout()
+	end
 
 	META:GetSet("RemoveOnParentRemove", true)
 
