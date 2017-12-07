@@ -201,7 +201,7 @@ function META:CompileString(data)
 
 				if char == "\n" then
 					X = 0
-					Y = Y + self.Size
+					Y = Y + self:GetChar("\n").h + spacing
 				elseif char == "\t" then
 					data = self:GetChar(" ")
 
@@ -293,7 +293,7 @@ function META:GetTextSize(str)
 		local data = self:GetChar(char)
 
 		if char == "\n" then
-			Y = Y + self.Size
+			Y = Y + self:GetChar("\n").h + spacing
 			max_x = math.max(max_x, X)
 			X = 0
 		elseif char == "\t" then
