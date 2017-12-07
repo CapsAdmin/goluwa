@@ -364,6 +364,12 @@ commands.Add("ginit=string[sandbox],boolean", function(gamemode, skip_addons)
 	utility.PopTimeWarning("gine.Run", 0)
 end)
 
+event.AddListener("KeyInput", function(key, press)
+	if key == "q" and press then
+		commands.RunString("ginit")
+	end
+end)
+
 commands.Add("glua=arg_line", function(code)
 	if not gine.env then
 		gine.Initialize()
