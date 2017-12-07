@@ -75,7 +75,7 @@ function META:SizeToChildrenHeight()
 	local max_pos = 0
 
 	for i,v in ipairs(self:GetChildren()) do
-		min_pos = math.min(min_pos, v.Position.y - v.Padding.y - self.Margin.y)
+		min_pos = math.min(min_pos, v.Position.y - v.Padding.y - v:GetParentMargin().y)
 	end
 
 	for i,v in ipairs(self:GetChildren()) do
@@ -102,7 +102,7 @@ function META:SizeToChildrenWidth()
 	local max_pos = 0
 
 	for i,v in ipairs(self:GetChildren()) do
-		min_pos = math.min(min_pos, v.Position.x - v.Padding.x - self.Margin.x)
+		min_pos = math.min(min_pos, v.Position.x - v.Padding.x - v:GetParentMargin().x)
 	end
 
 	for i,v in ipairs(self:GetChildren()) do
@@ -632,6 +632,14 @@ do -- orientation
 		self:Layout()
 	end
 
+	function META:GetParentMargin()
+		if not self.ObeyMargin then
+			return Rect(0,0,0,0)
+		end
+
+		return self.Parent:GetMargin()
+	end
+
 	function META:WorldToLocal(wpos)
 		return wpos - self:GetWorldPosition()
 	end
@@ -1064,7 +1072,7 @@ do -- magnet snap
 
 	local snapped = false
 
-	local function check1(pos, size, parent, pos2, axis1, axis2)
+	local function check1(pos, size, parent, margin, pos2, axis1, axis2)
 		if
 			pos[axis1] < pos2[axis1] + (parent.Padding[axis1] * 1.5) and
 			pos[axis1] > pos2[axis1] + (parent.Padding[axis1] / 4)
@@ -1079,22 +1087,22 @@ do -- magnet snap
 			snapped = true
 		elseif pos[axis1] + size[axis2] < pos2[axis1] then
 			if
-				pos[axis1] + size[axis2] < pos2[axis1] + parent.Margin[axis1] and
-				pos[axis1] + size[axis2] > pos2[axis1] + -parent.Margin[axis1]
+				pos[axis1] + size[axis2] < pos2[axis1] + margin[axis1] and
+				pos[axis1] + size[axis2] > pos2[axis1] + -margin[axis1]
 			then
 				pos[axis1] = pos2[axis1] + -size[axis2]
 				snapped = true
 			elseif
-				pos[axis1] + size[axis2] > pos2[axis1] + (-parent.Margin[axis1] * 1.5) and
-				pos[axis1] + size[axis2] < pos2[axis1] + (parent.Margin[axis1] / 4)
+				pos[axis1] + size[axis2] > pos2[axis1] + (-margin[axis1] * 1.5) and
+				pos[axis1] + size[axis2] < pos2[axis1] + (margin[axis1] / 4)
 			then
-				pos[axis1] = pos2[axis1] + -size[axis2] - parent.Margin[axis1]
+				pos[axis1] = pos2[axis1] + -size[axis2] - margin[axis1]
 				snapped = true
 			end
 		end
 	end
 
-	local function check2(pos, size, parent, pos2, axis1, axis2)
+	local function check2(pos, size, parent, margin, pos2, axis1, axis2)
 		if
 			pos[axis1] + size[axis2] > pos2[axis1] + parent.Size[axis2] - (parent.Padding[axis1] * 1.5) and
 			pos[axis1] + size[axis2] < pos2[axis1] + parent.Size[axis2] - (parent.Padding[axis1] / 4)
@@ -1109,16 +1117,16 @@ do -- magnet snap
 			snapped = true
 		elseif pos[axis1] > pos2[axis1] + parent.Size[axis2] then
 			if
-				pos[axis1] < pos2[axis1] + parent.Size[axis2] + parent.Margin[axis1] and
-				pos[axis1] > pos2[axis1] + parent.Size[axis2] - parent.Margin[axis1]
+				pos[axis1] < pos2[axis1] + parent.Size[axis2] + margin[axis1] and
+				pos[axis1] > pos2[axis1] + parent.Size[axis2] - margin[axis1]
 			then
 				pos[axis1] = pos2[axis1] + parent.Size[axis2]
 				snapped = true
 			elseif
-				pos[axis1] < pos2[axis1] + parent.Size[axis2] + (parent.Margin[axis1] * 1.5) and
-				pos[axis1] > pos2[axis1] + parent.Size[axis2] + (parent.Margin[axis1] / 4)
+				pos[axis1] < pos2[axis1] + parent.Size[axis2] + (margin[axis1] * 1.5) and
+				pos[axis1] > pos2[axis1] + parent.Size[axis2] + (margin[axis1] / 4)
 			then
-				pos[axis1] = pos2[axis1] + parent.Size[axis2] + parent.Margin[axis1]
+				pos[axis1] = pos2[axis1] + parent.Size[axis2] + margin[axis1]
 				snapped = true
 			end
 		end
@@ -1133,11 +1141,11 @@ do -- magnet snap
 
 		snapped = false
 
-		check1(pos, size, panel, pos2, "x", "w")
-		check1(pos, size, panel, pos2, "y", "h")
+		check1(pos, size, panel, self:GetParentMargin(), pos2, "x", "w")
+		check1(pos, size, panel, self:GetParentMargin(), pos2, "y", "h")
 
-		check2(pos, size, panel, pos2, "x", "w")
-		check2(pos, size, panel, pos2, "y", "h")
+		check2(pos, size, panel, self:GetParentMargin(), pos2, "x", "w")
+		check2(pos, size, panel, self:GetParentMargin(), pos2, "y", "h")
 
 		if snapped then
 			pos = self:WorldToLocal(pos)
@@ -1842,16 +1850,16 @@ do -- layout
 		else
 			if dir.x < 0 then
 				hit_pos.x = hit_pos.x + self.Padding:GetRight()
-				hit_pos.x = hit_pos.x + parent.Margin:GetLeft()
+				hit_pos.x = hit_pos.x + self:GetParentMargin():GetLeft()
 			elseif dir.x > 0 then
 				hit_pos.x = hit_pos.x - self.Padding:GetLeft()
-				hit_pos.x = hit_pos.x - parent.Margin:GetRight()
+				hit_pos.x = hit_pos.x - self:GetParentMargin():GetRight()
 			elseif dir.y < 0 then
 				hit_pos.y = hit_pos.y + self.Padding:GetTop()
-				hit_pos.y = hit_pos.y + parent.Margin:GetBottom()
+				hit_pos.y = hit_pos.y + self:GetParentMargin():GetBottom()
 			elseif dir.y > 0 then
 				hit_pos.y = hit_pos.y - self.Padding:GetBottom()
-				hit_pos.y = hit_pos.y - parent.Margin:GetTop()
+				hit_pos.y = hit_pos.y - self:GetParentMargin():GetTop()
 			end
 
 			hit_pos.x = math.max(hit_pos.x, 0)

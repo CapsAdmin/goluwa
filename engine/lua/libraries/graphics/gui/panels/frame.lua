@@ -18,6 +18,7 @@ function META:Initialize()
 	bar:SetClipping(true)
 	bar:SetSendMouseInputToPanel(self)
 	bar:SetupLayout("top", "fill_x")
+	bar:SetObeyMargin(false)
 	--bar:SetDrawScaleOffset(Vec2()+2)
 
 	local close = bar:CreatePanel("button")
@@ -121,11 +122,10 @@ function META:ToWindow()
 end
 
 function META:OnLayout(S)
-	self:SetMargin(Rect(S,S,S,S))
+	self:SetMargin(Rect(S,S,S,S)*2)
 
 	self.bar:SetLayoutSize(Vec2()+10*S)
-	self.bar:SetMargin(Rect()+S)
-	self.bar:SetPadding(Rect()-S)
+	self.bar:SetMargin(Rect(S,S,S,S))
 
 	self.min:SetPadding(Rect()+S)
 	self.max:SetPadding(Rect()+S)
@@ -222,9 +222,13 @@ function META:OnMouseInput(button, press)
 end
 
 gui.RegisterPanel(META)
-do return end
+
 if RELOAD then
 	local panel = gui.CreatePanel(META.ClassName, nil, "test")
+	panel:SetPosition(Vec2()+50)
 	panel:SetSize(Vec2(300, 300))
-	panel:ToWindow()
+	local pnl = gui.CreateMenuBar({name = "lol", options = {}}, panel)
+	pnl:SetHeight(20)
+	pnl:SetupLayout("center_simple", "top")
+
 end

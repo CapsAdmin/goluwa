@@ -505,6 +505,7 @@ function editor.Open()
 	menu_bar:SetHeight(25)
 	menu_bar:SetStyle("frame")
 	menu_bar:SetupLayout("top", "fill_x")
+	menu_bar:SetObeyMargin(false)
 
 
 	local div = gui.CreatePanel("divider", frame)
