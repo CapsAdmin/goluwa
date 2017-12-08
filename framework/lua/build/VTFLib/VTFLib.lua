@@ -609,6 +609,8 @@ function library.LoadImage(data, path_hint)
 		format = "rgb"
 		type = "float"
 		buffer = half_buffer_to_float_buffer((width * height) * 4, buffer)
+	elseif conversion_format == library.e.IMAGE_FORMAT_A8 then
+		format = "red"
 	else
 		return nil, "unhandled image format: " .. tostring(conversion_format)
 	end
