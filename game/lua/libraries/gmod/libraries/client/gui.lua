@@ -180,7 +180,6 @@ do
 		self:SetParent(parent)
 
 		function self:ActionSignal() end
-		function self:AnimationThink() end
 		function self:ApplySchemeSettings() end
 		function self:FinishedURL() end
 		function self:Init() end
@@ -209,6 +208,10 @@ do
 		function self:OnLoseFocus() end
 
 		obj.OnDraw = function()
+			if self.AnimationThink then
+				self:AnimationThink()
+			end
+
 			if obj.draw_manual and not obj.in_paint_manual then return end
 
 			local w, h = obj:GetWidth(), obj:GetHeight()
@@ -273,7 +276,7 @@ do
 		hook(obj, "OnFocus", function() self:OnGetFocus() end)
 		hook(obj, "OnUnfocus", function() self:OnLoseFocus() end)
 
-		hook(obj, "OnUpdate", function() self:Think() self:AnimationThink() end)
+		hook(obj, "OnUpdate", function() self:Think() end)
 		hook(obj, "OnMouseMove", function(_, x, y) self:OnCursorMoved(x, y) end)
 		hook(obj, "OnMouseEnter", function() gine.env.ChangeTooltip(self) self:OnCursorEntered() end)
 		hook(obj, "OnMouseExit", function() gine.env.EndTooltip(self) self:OnCursorExited() end)
