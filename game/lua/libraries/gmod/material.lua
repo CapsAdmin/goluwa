@@ -768,21 +768,21 @@ do -- vmt object
 					val = "error"
 				end
 			else
-				if not vfs.IsFile(val) then
+				--if not vfs.IsFile(val) then
 					if not val:find(".+%.") then
 						val = val .. ".vtf"
 					end
 
-					if not vfs.IsFile(val) then
-						if not val:startswith("materials/") then
+					--if not vfs.IsFile(val) then
+						if not val:startswith("/") and val:sub(2, 2) ~= ":" and not val:startswith("materials/") then
 							val = "materials/" .. val
 						end
-					end
+					--end
 
-					if not vfs.IsFile(val) then
-						val = vfs.FindMixedCasePath(val) or val
-					end
-				end
+					--if not vfs.IsFile(val) then
+						--val = vfs.FindMixedCasePath(val) or val
+					--end
+				--end
 
 				if CLIENT then
 					if key == "basetexture" or key == "basetexture2" then
