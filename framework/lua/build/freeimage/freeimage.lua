@@ -758,6 +758,9 @@ do
 			type = "float"
 			format = "rgba"
 		else
+			bitmap = library.ConvertTo32Bits(bitmap)
+			format = "bgra"
+
 			wlog("unhandled freeimage format type: %s", image_type)
 		end
 
