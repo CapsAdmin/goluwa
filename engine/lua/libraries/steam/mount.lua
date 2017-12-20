@@ -232,6 +232,8 @@ function steam.MountSourceGame(game_info)
 
 	steam.UnmountSourceGame(game_info)
 
+	llog("mounting %s", game_info.game)
+
 	for _, path in ipairs(game_info.filesystem.searchpaths) do
 		if not path:endswith(".vpk") then
 			path = "os:" .. path
@@ -242,7 +244,6 @@ function steam.MountSourceGame(game_info)
 			end
 		end
 
-		llog("mounting %s", path)
 		vfs.Mount(path, nil, game_info)
 	end
 
