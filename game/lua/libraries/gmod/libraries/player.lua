@@ -1,3 +1,4 @@
+
 do
 	local player = gine.env.player
 

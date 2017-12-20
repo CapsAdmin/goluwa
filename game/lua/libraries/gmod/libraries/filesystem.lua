@@ -41,6 +41,10 @@ do
 		return files, folders
 	end
 
+	function file.Delete(path)
+		vfs.Delete(search_paths.data .. path)
+	end
+
 	function file.Exists(path, where)
 		where = where or "data"
 		return vfs.Exists(search_paths[where:lower()] .. path)
@@ -75,7 +79,7 @@ do
 		where = where or "data"
 		path = search_paths[where:lower()] .. path
 
-		--llog("file.Open(%s, %s, %s)", R(path), how, where)
+		llog("file.Open(%s, %s, %s)", R(path), how, where)
 
 		how = how:gsub("b", "")
 		if how == "w" then how = "write" end

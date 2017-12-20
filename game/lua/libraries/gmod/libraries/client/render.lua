@@ -18,6 +18,8 @@ function render.PushFilterMag() end
 function render.PopFilterMin() end
 function render.PopFilterMag() end
 
+function render.SetLocalModelLights() end
+
 function render.MaxTextureWidth() return 4096 end
 function render.MaxTextureHeight() return 4096 end
 

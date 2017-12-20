@@ -214,6 +214,11 @@ do
 
 			if obj.draw_manual and not obj.in_paint_manual then return end
 
+			if not obj.thought_1_frame then
+				self:Think()
+				obj.thought_1_frame = true
+			end
+
 			local w, h = obj:GetWidth(), obj:GetHeight()
 
 			local paint_bg = self:Paint(w, h)
@@ -276,7 +281,7 @@ do
 		hook(obj, "OnFocus", function() self:OnGetFocus() end)
 		hook(obj, "OnUnfocus", function() self:OnLoseFocus() end)
 
-		hook(obj, "OnUpdate", function() self:Think() end)
+		hook(obj, "OnUpdate", function() self:Think() self.thought_1_frame = true end)
 		hook(obj, "OnMouseMove", function(_, x, y) self:OnCursorMoved(x, y) end)
 		hook(obj, "OnMouseEnter", function() gine.env.ChangeTooltip(self) self:OnCursorEntered() end)
 		hook(obj, "OnMouseExit", function() gine.env.EndTooltip(self) self:OnCursorExited() end)
@@ -966,9 +971,15 @@ do
 		end
 	end
 
-	function META:SetPlayer(ply)
-		local steamid = ply:SteamID()
+	function META:SetPlayer(ply, size)
+		return self:SetSteamID(ply:SteamID64(), size)
+	end
 
+	function META:SetSteamID(id, size)
+		sockets.Get("http://steamcommunity.com/id/"..id.."/?xml=1", function(data)
+			local url = data.content:match("<avatarFull>(.-)</avatarFull>"):match("%[(http.-)%]")
+			self:SetTexture(Texture(url))
+		end)
 	end
 
 	function META:RequestFocus()

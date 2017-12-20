@@ -187,6 +187,10 @@ function input.IsShiftDown()
 	return lib.IsKeyDown("left_shift") or lib.IsKeyDown("right_shift")
 end
 
+function input.IsControlDown()
+	return lib.IsKeyDown("left_control") or lib.IsKeyDown("right_control")
+end
+
 function input.IsMouseDown(code)
 	return lib.IsMouseDown(gine.GetMouseCode(code, true))
 end
