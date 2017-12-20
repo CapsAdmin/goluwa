@@ -193,7 +193,7 @@ end
 end
 
 commands.Add("gserv setup=string[gserv]", function(id) gserv.Setup(id) end)
-commands.Add("gserv update_game=string|number,string|nil", function(name) gserv.Update(name, dir) end)
+commands.Add("gserv update_game=string|number,string|nil", function(name) gserv.UpdateGame(name, dir) end)
 commands.Add("gserv install_game=string|number,string|nil,string|nil", function(name, dir, username) gserv.InstallGame(name, dir, nil, username) end)
 
 function gserv.SetupCommands(id)
