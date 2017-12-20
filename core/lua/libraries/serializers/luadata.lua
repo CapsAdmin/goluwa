@@ -92,12 +92,16 @@ luadata.SetModifier("table", function(tbl, context)
 	return table.concat(str, "")
 end)
 
+local idx = function(var) return var.LuaDataType end
+
 function luadata.Type(var)
 	local t = typex(var)
 
 	if t == "table" then
-		if var.LuaDataType then
-			t = var.LuaDataType
+		local ok, res = pcall(idx, var)
+
+		if ok and res then
+			return res
 		end
 	end
 

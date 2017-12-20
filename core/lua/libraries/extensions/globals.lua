@@ -419,13 +419,9 @@ function typex(var)
 		return t
 	end
 
-	if t == "table" then
-		return var.Type or t
-	end
-
 	local ok, res = pcall(idx, var)
 
-	if ok then
+	if ok and res then
 		return res
 	end
 
