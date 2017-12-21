@@ -1,9 +1,14 @@
 function gine.env.include(path)
+	vfs.modify_chunkname = function(full_path)
+		if full_path:find("/addons/") then return "@" .. full_path:match(".+(addons.+)") end
+		if full_path:find("/lua/") then return "@" .. full_path:match(".+(lua.+)") end
+	end
+
 	local ok, err = runfile({
-		path,
-		path:lower(),
 		"lua/" .. path,
 		"lua/" .. path:lower(),
+		path,
+		path:lower(),
 	})
 
 	if ok == false then
