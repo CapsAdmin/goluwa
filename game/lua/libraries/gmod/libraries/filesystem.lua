@@ -28,6 +28,14 @@ do
 					end
 				end
 			end
+		elseif where == "DATA" then
+			for k,v in ipairs(vfs.Find("data/" .. path, true)) do
+				if vfs.IsDirectory(v) then
+					table.insert(folders, v:match(".+/(.+)"))
+				else
+					table.insert(files, v:match(".+/(.+)"))
+				end
+			end
 		else
 			for k,v in ipairs(vfs.Find(path, true)) do
 				if vfs.IsDirectory(v) then
@@ -79,7 +87,7 @@ do
 		where = where or "data"
 		path = search_paths[where:lower()] .. path
 
-		llog("file.Open(%s, %s, %s)", R(path), how, where)
+		--llog("file.Open(%s, %s, %s)", R(path), how, where)
 
 		how = how:gsub("b", "")
 		if how == "w" then how = "write" end
