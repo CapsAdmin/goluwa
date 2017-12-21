@@ -83,7 +83,7 @@ function gine.env.CompileString(code, identifier, handle_error)
 		error(err, 2)
 	end
 
-	local func, err = loadstring(code, identifier)
+	local func, err = loadstring(code, "@" .. identifier)
 
 	if func then
 		setfenv(func, gine.env)
