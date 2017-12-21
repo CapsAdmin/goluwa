@@ -232,24 +232,24 @@ function gserv.UpdateGame(id)
 			local lua = vfs.Read(get_gmod_dir(id) .. "lua/includes/util.lua")
 			if not lua:find("GSERV_RESOURCE_FILES") then
 				lua = lua .. [[
-					if SERVER then
-						GSERV_RESOURCE_FILES = {}
-						do
-							local old = resource.AddFile
-							function resource.AddFile(path, ...)
-								GSERV_RESOURCE_FILES[path] = "AddFile"
-								return old(path, ...)
-							end
-						end
-						do
-							local old = resource.AddSingleFile
-							function resource.AddSingleFile(path, ...)
-								GSERV_RESOURCE_FILES[path] = "AddSingleFile"
-								return old(path, ...)
-							end
-						end
-					end
-					]]
+if SERVER then
+	GSERV_RESOURCE_FILES = {}
+	do
+		local old = resource.AddFile
+		function resource.AddFile(path, ...)
+			GSERV_RESOURCE_FILES[path] = "AddFile"
+			return old(path, ...)
+		end
+	end
+	do
+		local old = resource.AddSingleFile
+		function resource.AddSingleFile(path, ...)
+			GSERV_RESOURCE_FILES[path] = "AddSingleFile"
+			return old(path, ...)
+		end
+	end
+end
+]]
 				vfs.Write(get_gmod_dir(id) .. "lua/includes/util.lua", lua)
 			end
 		end
