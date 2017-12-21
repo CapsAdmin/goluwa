@@ -148,7 +148,7 @@ do
 
 	function META:GetInt(key)
 		key = key:lower():sub(2)
-		return math.round(self.__obj:GetNumber(key))
+		return math.round(self.__obj:GetNumber(key) or 0)
 	end
 
 	function META:SetTexture(key, val)
