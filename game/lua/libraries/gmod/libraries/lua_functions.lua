@@ -1,7 +1,8 @@
 function gine.env.include(path)
 	vfs.modify_chunkname = function(full_path)
-		if full_path:find("/addons/") then return "@" .. full_path:match(".+(addons.+)") end
-		if full_path:find("/lua/") then return "@" .. full_path:match(".+(lua.+)") end
+		if full_path:find("/addons/") then return "@" .. full_path:match("^.+/(addons/.+)$") end
+		if full_path:find("/gamemodes/") then return "@" .. full_path:match("^.+/(gamemodes/.+)$") end
+		if full_path:find("/lua/") then return "@" .. full_path:match("^.+/(lua/.+)$") end
 	end
 
 	local ok, err = runfile({
@@ -10,6 +11,8 @@ function gine.env.include(path)
 		path,
 		path:lower(),
 	})
+
+	vfs.modify_chunkname = nil
 
 	if ok == false then
 		debug.trace()
@@ -95,5 +98,15 @@ function gine.env.CompileString(code, identifier, handle_error)
 end
 
 function gine.env.CompileFile(name)
-	return gine.env.CompileString(vfs.Read("lua/" .. name), "@" .. R("lua/" .. name), false)
+	local full_path = R("lua/" .. name)
+
+	if full_path:find("/addons/") then
+		full_path = full_path:match("^.+/(addons/.+)$")
+	elseif full_path:find("/gamemodes/") then
+		full_path = full_path:match("^.+/(gamemodes/.+)$")
+	elseif full_path:find("/lua/") then
+		full_path = full_path:match("^.+/(lua/.+)$")
+	end
+
+	return gine.env.CompileString(vfs.Read("lua/" .. name), "@" .. full_path, false)
 end
