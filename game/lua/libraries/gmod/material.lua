@@ -918,7 +918,7 @@ do -- vmt object
 			end
 			self.invalid_shader = nil
 		else
-			llog("tried to create unknown shader %s", name)
+			--llog("tried to create unknown shader %s", name)
 			self.invalid_shader = true
 		end
 	end

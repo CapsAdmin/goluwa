@@ -193,7 +193,7 @@ end
 end
 
 commands.Add("gserv setup=string[gserv]", function(id) gserv.Setup(id) end)
-commands.Add("gserv update_game=string|number,string|nil", function(name) gserv.Update(name, dir) end)
+commands.Add("gserv update_game=string|number,string|nil", function(name) gserv.UpdateGame(name, dir) end)
 commands.Add("gserv install_game=string|number,string|nil,string|nil", function(name, dir, username) gserv.InstallGame(name, dir, nil, username) end)
 
 function gserv.SetupCommands(id)
@@ -228,6 +228,30 @@ function gserv.UpdateGame(id)
 	gserv.InstallGame("gmod dedicated server", nil, function(appid)
 		if appid == 4020 then
 			os.execute("cp -a -rf " .. gserv.GetInstalledGames()[4020] .. "/. " .. srcds_dir .. underscore(id))
+
+			local lua = vfs.Read(get_gmod_dir(id) .. "lua/includes/util.lua")
+			if not lua:find("GSERV_RESOURCE_FILES") then
+				lua = lua .. [[
+if SERVER then
+	GSERV_RESOURCE_FILES = {}
+	do
+		local old = resource.AddFile
+		function resource.AddFile(path, ...)
+			GSERV_RESOURCE_FILES[path] = "AddFile"
+			return old(path, ...)
+		end
+	end
+	do
+		local old = resource.AddSingleFile
+		function resource.AddSingleFile(path, ...)
+			GSERV_RESOURCE_FILES[path] = "AddSingleFile"
+			return old(path, ...)
+		end
+	end
+end
+]]
+				vfs.Write(get_gmod_dir(id) .. "lua/includes/util.lua", lua)
+			end
 		end
 	end)
 end

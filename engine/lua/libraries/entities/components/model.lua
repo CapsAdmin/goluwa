@@ -7,6 +7,7 @@ META.Require = {"transform"}
 
 META:StartStorable()
 	META:GetSet("Cull", true)
+	META:GetSet("NoDraw", false)
 	META:GetSet("ModelPath", "models/cube.obj")
 	META:GetSet("Color", Color(1,1,1,1))
 	META:GetSet("RoughnessMultiplier", 1)
@@ -164,6 +165,8 @@ if GRAPHICS then
 	local system_GetElapsedTime = system.GetElapsedTime
 
 	function META:IsVisible(what)
+		if self.NoDraw then return end
+
 		if not self.next_visible[what] or self.next_visible[what] < system_GetElapsedTime() then
 			self.visible[what] = render3d.camera:IsAABBVisible(self.tr:GetTranslatedAABB(), self.tr:GetCameraDistance(), self.tr:GetBoundingSphere())
 			self.next_visible[what] = system_GetElapsedTime() + render3d.cull_rate
@@ -184,6 +187,8 @@ if GRAPHICS then
 	end
 
 	function META:DrawModel()
+		render3d.camera:SetWorld(self.tr:GetMatrix())
+
 		if self.MaterialOverride then
 			apply_material(self, self.MaterialOverride)
 
@@ -204,14 +209,11 @@ if GRAPHICS then
 
 	if DISABLE_CULLING then
 		function META:Draw()
-			render3d.camera:SetWorld(self.tr:GetMatrix())
 			self:DrawModel()
 		end
 	else
 		function META:Draw(what)
 			if self:IsVisible(what) then
-				render3d.camera:SetWorld(self.tr:GetMatrix())
-
 				if self.occluders[what] then
 					self.occluders[what]:BeginConditional()
 				end
