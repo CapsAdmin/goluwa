@@ -41,6 +41,101 @@ do
 	function gine.env.net.Broadcast()
 
 	end
+
+	for k,v in pairs(gine.env.net) do
+		if k:startswith("Write") or k:startswith("Start") then
+			gine.env.net[k] = function() end
+		end
+	end
+
+	if false then
+	----------------------------------------------------------
+
+	function gine.env.util.AddNetworkString(str)
+		return network.AddString(str)
+	end
+
+	function gine.env.util.NetworkStringToID(str)
+		return network.StringToID(str)
+	end
+
+	function gine.env.util.NetworkIDToString(id)
+		return network.IDToString(id) or ""
+	end
+
+	local BUFFER
+
+	if SERVER then
+		packet.AddListener("gmod_net", function(buffer, client)
+			BUFFER = buffer
+			net.Incoming(buffer:GetSize(), gine.WrapObject(client, "Player"))
+		end)
+	end
+
+	if CLIENT then
+		packet.AddListener("gmod_net", function(buffer)
+			BUFFER = buffer
+			net.Incoming(buffer:GetSize())
+		end)
+	end
+
+	function gine.env.net.Start(id, unreliable)
+		BUFFER = packet.CreateBuffer()
+	end
+
+	if CLIENT then
+		function gine.env.net.SendToServer()
+			packet.Send("gmod_net", BUFFER)
+		end
+	end
+
+	function gine.env.net.BytesWritten()
+		return BUFFER:GetSize()
+	end
+
+	if SERVER then
+		function gine.env.net.Send(ply)
+			packet.Send("gmod_net", BUFFER, ply.__obj)
+		end
+
+		function gine.env.net.Broadcast()
+			packet.Send("gmod_net", BUFFER)
+		end
+	end
+
+	local function add_write
+
+	function net.WriteAngle(v) BUFFER:WriteAng3(v.ptr) end
+	function net.WriteBit(v) BUFFER:WriteByte(v and 1 or 0) end
+	function net.WriteData(v, l) BUFFER:WriteBytes(v, l) end
+	function net.WriteDouble(v) BUFFER:WriteDouble(v) end
+	function net.WriteFloat(v) BUFFER:WriteFloat(v) end
+	function net.WriteInt(v) end
+	function net.WriteMatrix() end
+	function net.WriteNormal() end
+	function net.WriteString() end
+	function net.WriteUInt() end
+	function net.WriteVector() end
+
+
+	function net.ReadAngle(ang) return gine.env.Angle(BUFFER:ReadAng3(ang.ptr)) end
+	function net.ReadBit() end
+	function net.ReadBool() end
+	function net.ReadColor() end
+	function net.ReadData() end
+	function net.ReadDouble() end
+	function net.ReadEntity() end
+	function net.ReadFloat() end
+	function net.ReadInt() end
+	function net.ReadMatrix() end
+	function net.ReadNormal() end
+	function net.ReadString() end
+	function net.ReadTable() end
+	function net.ReadType() end
+	function net.ReadUInt() end
+	function net.ReadVector() end
+
+	end
 end
 
 if SERVER then
@@ -157,12 +252,6 @@ do
 	end
 end
 -- setupdt
-
-for k,v in pairs(gine.env.net) do
-	if k:startswith("Write") or k:startswith("Start") then
-		gine.env.net[k] = function() end
-	end
-end
 
 function gine.env.GetHostName()
 	return network.GetHostname() or "no hostname!"
