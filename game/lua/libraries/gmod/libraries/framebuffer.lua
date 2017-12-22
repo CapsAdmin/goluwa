@@ -37,7 +37,7 @@ function gine.env.GetRenderTargetEx(name, w, h, size_mode, depth_mode, texture_f
 	for k,v in pairs(rt_flags) do if v then table.insert(rt_flags_str, k) end end
 	rt_flags_str = "[" .. table.concat(rt_flags_str, ", ") .. "]"
 
-	llog("GetRenderTarget(Ex):")
+	--[[llog("GetRenderTarget(Ex):")
 	table.print({
 		name = name,
 		size = size,
@@ -46,7 +46,7 @@ function gine.env.GetRenderTargetEx(name, w, h, size_mode, depth_mode, texture_f
 		texture_flags = texture_flags_str,
 		rt_flags = rt_flags_str,
 		image_format = image_format,
-	})
+	})]]
 
 	local fb = lib.CreateFrameBuffer(size)
 
