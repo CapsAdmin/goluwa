@@ -24,7 +24,8 @@ function gine.env.RunConsoleCommand(...)
 	local str = table.concat({...}, " ")
 	if str:find("utime", nil, true) then return end -- sigh
 	logn("gine RunConsoleCommand: ", str)
-	pcall(commands.RunString, str, true, true)
+	local ok, err = pcall(commands.RunCommandString, str, true)
+	if not ok then logn(err) end
 end
 
 local META = gine.GetMetaTable("Player")
