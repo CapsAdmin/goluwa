@@ -126,8 +126,8 @@ do -- basic data types
 	-- see the top of the script
 	ADD_FFI_OPTIMIZED_TYPES(META)
 
-	function META:WriteBytes(str)
-		for i = 1, #str do
+	function META:WriteBytes(str, len)
+		for i = 1, len or #str do
 			self:WriteByte(str:byte(i))
 		end
 		return self
@@ -429,6 +429,75 @@ do -- extended
 	META.WriteUnsignedInt = META.WriteUnsignedLong
 	META.ReadInt = META.ReadLong
 	META.ReadUnsignedInt = META.ReadUnsignedLong
+
+	function META:WriteVariableSizedInteger(value)
+		local output_size = 1
+
+		while value > 127 do
+			self:WriteByte(tonumber(bit.bor(bit.band(value, 127), 128)))
+			value = bit.rshift(value, 7)
+			output_size = output_size + 1
+		end
+
+		self:WriteByte(tonumber(bit.band(value, 127)))
+
+		return output_size
+	end
+
+	function META:ReadVariableSizedInteger(byte_size)
+		local ret = 0
+
+		for i = 0, byte_size - 1 do
+			local byte = self:ReadByte()
+			ret = bit.bor(ret, bit.lshift(bit.band(byte, 127), 7 * i))
+			if bit.band(byte, 128) == 0 then
+				break
+			end
+		end
+
+		if byte_size == 1 then
+			ret = tonumber(ffi.cast("uint8_t", ret))
+		elseif byte_size == 2 then
+			ret = tonumber(ffi.cast("uint16_t", ret))
+		elseif byte_size >= 2 and byte_size <= 4 then
+			ret = tonumber(ffi.cast("uint32_t", ret))
+		elseif byte_size > 4 and byte_size <= 8 then
+			ret = tonumber(ffi.cast("uint64_t", ret))
+		end
+
+		return ret
+	end
+
+	function META:WriteSizedInteger(value, byte_size)
+		for i = 0, byte_size do
+			if value > 127 then
+				self:WriteByte(tonumber(bit.band(value, 7)))
+				value = bit.rshift(value, 7)
+			else
+				self:WriteByte(0)
+			end
+		end
+	end
+
+	function META:ReadSizedInteger(byte_size)
+		local ret = 0
+
+		for i = 0, byte_size do
+			ret = bit.bor(ret, bit.lshift(self:ReadByte(), 7 * i))
+		end
+
+		if byte_size == 1 then
+			ret = tonumber(ffi.cast("uint8_t", ret))
+		elseif byte_size == 2 then
+			ret = tonumber(ffi.cast("uint16_t", ret))
+		elseif byte_size >= 2 and byte_size <= 4 then
+			ret = tonumber(ffi.cast("uint32_t", ret))
+		elseif byte_size > 4 and byte_size <= 8 then
+			ret = tonumber(ffi.cast("uint64_t", ret))
+		end
+
+		return ret
+	end
 
 	-- consistency
 	META.ReadUnsignedByte = META.ReadByte
