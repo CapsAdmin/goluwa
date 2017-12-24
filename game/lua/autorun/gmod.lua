@@ -41,3 +41,45 @@ commands.Add("setup_gmod_addons", function()
 		end
 	end
 end)
+
+commands.Add("setup_gmod_bridge", function()
+	local gmod_dir = steam.GetGamePath("GarrysMod")
+
+	assert(gmod_dir)
+
+	gmod_dir = gmod_dir .. "garrysmod/"
+
+	os.execute("rm -rf " .. gmod_dir .. "backgrounds/")
+
+	os.execute("mkdir -p " .. gmod_dir .. "addons/zerobrane_bridge/lua/autorun/")
+	vfs.Write("os:" .. gmod_dir .. "addons/zerobrane_bridge/lua/autorun/zerobrane_bridge.lua", [[
+local next_run = 0
+local last_time = 0
+hook.Add("RenderScene", "zerobrane_bridge", function()
+	if system.HasFocus() then return end
+	local time = SysTime()
+	if next_run > next_run then return end
+	next_run = next_run + 0.1
+
+	local content = file.Read("zerobrane_bridge.txt", "DATA")
+	if content then
+		local chunks = content:Split("¥$£@DELIMITER@£$¥")
+		for i = #chunks, 1, -1 do
+			if chunks[i] ~= "" then
+				local func = CompileString(chunks[i], "zerobrane_bridge", false)
+				if type(func) == "function" then
+					local ok, err = pcall(func)
+					if not ok then
+						ErrorNoHalt(err)
+					end
+				else
+					ErrorNoHalt(func)
+				end
+			end
+		end
+		file.Delete("zerobrane_bridge.txt")
+	end
+end)
+]])
+	vfs.Write("os:" .. e.ROOT_FOLDER .. "data/ide/gmod_path", gmod_dir)
+end)
