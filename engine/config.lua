@@ -1,7 +1,5 @@
 local env_vars = {
 	CURSES = true,
-	SRGB = true,
-	NULL_OPENGL = false,
 	DISABLE_CULLING = false,
 	CLI = false,
 	TMUX = false,
