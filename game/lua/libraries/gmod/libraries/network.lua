@@ -103,8 +103,6 @@ do
 		end
 	end
 
-	local function add_write
-
 	function net.WriteAngle(v) BUFFER:WriteAng3(v.ptr) end
 	function net.WriteBit(v) BUFFER:WriteByte(v and 1 or 0) end
 	function net.WriteData(v, l) BUFFER:WriteBytes(v, l) end
