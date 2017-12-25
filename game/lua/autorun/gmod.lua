@@ -56,10 +56,19 @@ commands.Add("setup_gmod_bridge", function()
 local next_run = 0
 local last_time = 0
 hook.Add("RenderScene", "zerobrane_bridge", function()
-	if system.HasFocus() then return end
 	local time = SysTime()
 	if next_run > next_run then return end
 	next_run = next_run + 0.1
+
+	if
+		system.HasFocus() or
+		(
+			not GetConVar("sv_allowcslua"):GetBool() or
+			not LocalPlayer():IsAdmin()
+		)
+	then
+		return
+	end
 
 	local content = file.Read("zerobrane_bridge.txt", "DATA")
 	if content then
