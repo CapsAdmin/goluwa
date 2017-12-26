@@ -1,6 +1,6 @@
 do
 	local ffi = require("ffi")
-	local gl = require("opengl")
+	local gl = system.GetFFIBuildLibrary("opengl", true)
 
 	local shader = render.CreateShader({
 		name = "test",

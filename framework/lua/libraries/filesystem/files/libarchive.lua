@@ -1,4 +1,4 @@
-local archive = desire("archive")
+local archive = system.GetFFIBuildLibrary("archive")
 
 if not archive then return end
 

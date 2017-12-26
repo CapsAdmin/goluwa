@@ -1,6 +1,6 @@
 local window = ... or _G.window
 
-local sdl = desire("SDL2") -- window manager
+local sdl = system.GetFFIBuildLibrary("SDL2") -- window manager
 local ffi = require("ffi")
 
 if not sdl then return end

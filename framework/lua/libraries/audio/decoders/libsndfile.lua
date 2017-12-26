@@ -1,6 +1,6 @@
 local ffi =  require("ffi")
 local audio = ... or _G.audio
-local soundfile = desire("sndfile") -- sound decoder
+local soundfile = system.GetFFIBuildLibrary("sndfile") -- sound decoder
 
 if not soundfile then return end
 

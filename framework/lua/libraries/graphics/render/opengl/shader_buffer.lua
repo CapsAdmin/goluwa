@@ -1,7 +1,7 @@
 local render = ... or _G.render
 local META = prototype.CreateTemplate("shader_storage_buffer")
 
-local gl = require("opengl")
+local gl = system.GetFFIBuildLibrary("opengl", true)
 local ffi = require("ffi")
 
 local type_translate = {

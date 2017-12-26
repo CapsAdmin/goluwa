@@ -5,7 +5,7 @@ if not render.IsExtensionSupported("GL_ARB_shader_objects") then
 	return
 end
 
-local gl = require("opengl")
+local gl = system.GetFFIBuildLibrary("opengl", true)
 local ffi = require("ffi")
 
 local META = prototype.CreateTemplate("shader_program")

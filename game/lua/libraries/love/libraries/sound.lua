@@ -54,7 +54,7 @@ function SoundData:setSample(i, sample)
 	self.buffer:SetData(self.buffer:GetData()) -- slow!!!
 end
 
-local al = desire("openal.al")
+local al = system.GetFFIBuildLibrary("openal.al")
 
 local function get_format(channels, bits)
 	if al then

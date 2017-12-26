@@ -244,7 +244,7 @@ if RELOAD then
 					-- anything over 31 kb will not send for some reason
 					local w,h = render.GetWidth(), render.GetHeight()
 					local pixels = ffi.new("uint8_t[?]", (w*h*4))
-					require("opengl").ReadPixels(0,0,w,h,"GL_BGRA", "GL_UNSIGNED_BYTE", pixels)
+					system.GetFFIBuildLibrary("opengl", true).ReadPixels(0,0,w,h,"GL_BGRA", "GL_UNSIGNED_BYTE", pixels)
 
 					local image = {
 						buffer = pixels,

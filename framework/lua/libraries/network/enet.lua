@@ -1,5 +1,5 @@
 local ffi = require("ffi")
-local lib = desire("enet")
+local lib = system.GetFFIBuildLibrary("enet")
 
 if not lib then return end
 

@@ -1,4 +1,4 @@
-local gl = require("opengl") -- OpenGL
+local gl = system.GetFFIBuildLibrary("opengl", true) -- OpenGL
 
 window.Open()
 

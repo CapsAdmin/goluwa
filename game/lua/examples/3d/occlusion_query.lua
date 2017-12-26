@@ -1,6 +1,6 @@
 local VISUALIZE = false
 local render = ... or _G.render
-local gl = require("opengl")
+local gl = system.GetFFIBuildLibrary("opengl", true)
 local ffi = require("ffi")
 
 local SCENE = true

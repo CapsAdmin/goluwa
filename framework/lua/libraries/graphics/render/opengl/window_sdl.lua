@@ -1,6 +1,6 @@
 local render = ... or _G.render
 
-local sdl = require("SDL2")
+local sdl = system.GetFFIBuildLibrary("SDL2")
 local ffi = require("ffi")
 
 function render.PreWindowSetup(flags)
@@ -74,7 +74,7 @@ function render.PostWindowSetup(sdl_wnd)
 			error("sdl.GL_CreateContext failed: " .. errors, 2)
 		end
 
-		local gl = require("opengl")
+		local gl = system.GetFFIBuildLibrary("opengl", true)
 		gl.GetProcAddress = sdl.GL_GetProcAddress
 		gl.Initialize()
 

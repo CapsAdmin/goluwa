@@ -1,7 +1,7 @@
 local render = ... or _G.render
 local META = prototype.GetRegistered("index_buffer")
 
-local gl = require("opengl")
+local gl = system.GetFFIBuildLibrary("opengl", true)
 
 local buffers_supported = gl.GenBuffers
 

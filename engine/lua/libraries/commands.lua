@@ -475,7 +475,7 @@ do -- commands
 		end
 
 		function commands.RunLuaString(line, env_name)
-			commands.SetLuaEnvironmentVariable("gl", desire("opengl"))
+			commands.SetLuaEnvironmentVariable("gl", system.GetFFIBuildLibrary("opengl"))
 			commands.SetLuaEnvironmentVariable("ffi", desire("ffi"))
 			commands.SetLuaEnvironmentVariable("findo", prototype.FindObject)
 			if WINDOW then commands.SetLuaEnvironmentVariable("copy", window.SetClipboard) end

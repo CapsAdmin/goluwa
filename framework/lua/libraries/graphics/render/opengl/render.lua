@@ -1,5 +1,5 @@
 local ffi = require("ffi")
-local gl = desire("opengl")
+local gl = system.GetFFIBuildLibrary("opengl")
 
 if not gl then return end
 

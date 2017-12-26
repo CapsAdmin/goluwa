@@ -1,6 +1,6 @@
 local render3d = ... or _G.render3d
 
-local assimp = desire("assimp") -- model decoder
+local assimp = system.GetFFIBuildLibrary("assimp") -- model decoder
 
 if not assimp then return end
 

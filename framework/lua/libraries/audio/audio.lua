@@ -6,8 +6,8 @@ if LINUX then
 	pcall(ffi.load, "pulse")
 end
 
-local al = desire("openal.al")
-local alc = desire("openal.alc")
+local al = system.GetFFIBuildLibrary("openal.al")
+local alc = system.GetFFIBuildLibrary("openal.alc")
 
 if not al or not alc then return end
 

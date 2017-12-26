@@ -1,5 +1,5 @@
 local ffi = require("ffi")
-local gl = require("opengl") -- OpenGL
+local gl = system.GetFFIBuildLibrary("opengl", true) -- OpenGL
 local render = (...) or _G.render
 
 local severity_translate = {

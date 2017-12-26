@@ -1,13 +1,24 @@
-table.insert(package.loaders, function(name)
-	for _, info in ipairs(vfs.GetMountedAddons()) do
-		local func =
-			loadfile(info.path .. "lua/build/" .. name .. "/" .. name .. ".lua") or
-			loadfile(info.path .. "lua/build/" .. name:gsub("%.", "/") .. ".lua")
-		if func then
-			return func
+for _, info in ipairs(vfs.GetMountedAddons()) do
+	if info.name == "framework" then
+		local cache = {}
+		function system.GetFFIBuildLibrary(name, require)
+			if cache[name] then return cache[name] end
+
+			local func =
+				loadfile(info.path .. "lua/build/" .. name .. "/" .. name .. ".lua") or
+				loadfile(info.path .. "lua/build/" .. name:gsub("%.", "/") .. ".lua")
+
+			if func then
+				local res = func()
+				cache[name] = res
+				return res
+			end
+			if require then error("unable to find library ", name, 2) end
+			llog("unable to find library ", name)
 		end
+		break
 	end
-end)
+end
 
 runfile("!lua/libraries/extensions/*")
 runfile("!lua/libraries/filesystem/files/*")

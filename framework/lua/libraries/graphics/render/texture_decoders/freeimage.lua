@@ -1,6 +1,6 @@
 local render = ... or _G.render
 
-local freeimage = desire("freeimage")
+local freeimage = system.GetFFIBuildLibrary("freeimage")
 
 if not freeimage then return end
 
