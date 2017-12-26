@@ -361,7 +361,7 @@ do
 			for resource_index = 0, resource_count - 1 do
 
 				local res = ffi.new("GLint["..property_info.count.."]")
-				self.gl_program:GetResource(what, resource_index, property_info.count, property_info.enums, property_info.count, nil, res)
+				self.gl_program:GetResource(what, resource_index, property_info.count, property_info.enums, 0, nil, res)
 
 				local values = {}
 
@@ -388,6 +388,7 @@ do
 				out[what:sub(4):lower()] = properties
 			end
 		end
+
 
 		if out.buffer_variable then
 			for _, info in ipairs(out.buffer_variable) do
