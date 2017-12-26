@@ -59,7 +59,7 @@ local hud_element_list = {
 gine.hud_elements = {}
 
 function gine.ToggleHUDElement(what, b)
-	llog("hud element: %s = %s", what, b)
+	--llog("hud element: %s = %s", what, b)
 	if what == "CHudChat" and chathud then
 		if b then
 			chathud.Show()

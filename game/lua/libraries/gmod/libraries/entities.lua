@@ -101,7 +101,7 @@ do
 	end
 
 	function gine.env.ents.CreateClientProp(mdl)
-		llog("ents.CreateClientProp: %s", mdl)
+		--llog("ents.CreateClientProp: %s", mdl)
 		local ent = gine.env.ents.Create("class C_PhysPropClientside")
 		ent:SetModel(mdl)
 		return ent
@@ -334,7 +334,7 @@ do
 	end
 
 	function gine.env.ClientsideModel(path)
-		llog("ClientsideModel: %s", path)
+		--llog("ClientsideModel: %s", path)
 		local ent = gine.env.ents.Create("prop_physics")
 		ent:SetModel(path)
 		return ent

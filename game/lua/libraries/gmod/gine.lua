@@ -3,6 +3,7 @@ local gine = _G.gine or {}
 runfile("preprocess.lua", gine)
 runfile("code_scan.lua", gine)
 runfile("cli.lua", gine)
+runfile("commands.lua", gine)
 
 function gine.SetFunctionEnvironment(func)
 	setfenv(func, gine.env)
@@ -134,7 +135,9 @@ end
 gine.addons = gine.addons or {}
 gine.package_loaders = {}
 
-function gine.Initialize(gamemode)
+pvars.Setup("gine_local_addons_only", false)
+
+function gine.Initialize(gamemode, skip_addons)
 	gamemode = gamemode or "sandbox"
 
 	event.AddListener("PreLoadFile", "glua", function(path)
@@ -235,13 +238,15 @@ function gine.Initialize(gamemode)
 				end
 			end
 
-			for dir in vfs.Iterate(gine.dir .. "addons/", true) do
-				dir = R(dir.."/lua/includes/modules/")
-				if dir then
-					dir = "os:" .. dir
-					vfs.AddPackageLoader(function(path)
-						return vfs.LoadFile(dir .. "/" .. path .. ".lua")
-					end, gine.package_loaders)
+			if not pvars.Get("gine_local_addons_only") then
+				for dir in vfs.Iterate(gine.dir .. "addons/", true) do
+					dir = R(dir.."/lua/includes/modules/")
+					if dir then
+						dir = "os:" .. dir
+						vfs.AddPackageLoader(function(path)
+							return vfs.LoadFile(dir .. "/" .. path .. ".lua")
+						end, gine.package_loaders)
+					end
 				end
 			end
 		end
@@ -301,9 +306,11 @@ function gine.Run(skip_addons)
 			runfile(path .. "lua/includes/extensions/*")
 		end
 
-		for dir in vfs.Iterate(gine.dir .. "addons/", true, true) do
-			local dir = gine.dir .. "addons/" ..  dir
-			runfile(dir .. "/lua/includes/extensions/*")
+		if not pvars.Get("gine_local_addons_only") then
+			for dir in vfs.Iterate(gine.dir .. "addons/", true, true) do
+				local dir = gine.dir .. "addons/" ..  dir
+				runfile(dir .. "/lua/includes/extensions/*")
+			end
 		end
 
 		for _, path in ipairs(gine.addons) do
@@ -312,10 +319,12 @@ function gine.Run(skip_addons)
 			if SERVER then runfile(path .. "lua/autorun/server/*") end
 		end
 
-		for dir in vfs.Iterate(gine.dir .. "addons/", true, true) do
-			runfile(dir .. "/lua/autorun/*")
-			if CLIENT then runfile(dir .. "/lua/autorun/client/*") end
-			if SERVER then runfile(dir .. "/lua/autorun/server/*") end
+		if not pvars.Get("gine_local_addons_only") then
+			for dir in vfs.Iterate(gine.dir .. "addons/", true, true) do
+				runfile(dir .. "/lua/autorun/*")
+				if CLIENT then runfile(dir .. "/lua/autorun/client/*") end
+				if SERVER then runfile(dir .. "/lua/autorun/server/*") end
+			end
 		end
 	end
 

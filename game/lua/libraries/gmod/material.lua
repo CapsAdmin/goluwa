@@ -785,11 +785,13 @@ do -- vmt object
 				--end
 
 				if CLIENT then
+					resource.skip_providers = true
 					if key == "basetexture" or key == "basetexture2" then
 						val = render.CreateTextureFromPath("[srgb]" .. val)
 					else
 						val = render.CreateTextureFromPath("[~srgb]" .. val)
 					end
+					resource.skip_providers = nil
 				end
 			end
 

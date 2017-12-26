@@ -215,15 +215,23 @@ if CLIENT then
 		local surface = gine.env.surface
 
 		function surface.GetTextureID(path)
+			local tex
+
+			resource.skip_providers = true
+
 			if vfs.IsFile("materials/" .. path) then
 				if vfs.IsFile("materials/" .. path .. ".vtf") then
-					return render.CreateTextureFromPath("materials/" .. path)
+					tex = render.CreateTextureFromPath("materials/" .. path)
 				else
 					wlog("texture not found %s", path)
 				end
 			end
 
-			return render.CreateTextureFromPath("materials/" .. path .. ".vtf")
+			tex = render.CreateTextureFromPath("materials/" .. path .. ".vtf")
+
+			resource.skip_providers = nil
+
+			return tex
 		end
 
 		function surface.SetMaterial(mat)

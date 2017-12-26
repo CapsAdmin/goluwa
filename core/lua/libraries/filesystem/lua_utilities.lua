@@ -201,23 +201,29 @@ do -- runfile
 		if vfs.IsPathAbsolute(path) then
 			func, err, full_path = vfs.LoadFile(path)
 		else
-			-- try first with the last directory
-			-- once with lua prepended
-			path = dir .. file
-			func, err, full_path = vfs.LoadFile(path)
+			if path:startswith("lua/") then
+				func, err, full_path = vfs.LoadFile(path)
+			end
 
-			if not_found(err) then
-
-				if path ~= dir .. file then
-					path = dir .. file
-					func, err, full_path = vfs.LoadFile(path)
-				end
-
-				-- and without the last directory
+			if not func then
+				-- try first with the last directory
 				-- once with lua prepended
+				path = dir .. file
+				func, err, full_path = vfs.LoadFile(path)
+
 				if not_found(err) then
-					path = source
-					func, err, full_path = vfs.LoadFile(path)
+
+					if path ~= dir .. file then
+						path = dir .. file
+						func, err, full_path = vfs.LoadFile(path)
+					end
+
+					-- and without the last directory
+					-- once with lua prepended
+					if not_found(err) then
+						path = source
+						func, err, full_path = vfs.LoadFile(path)
+					end
 				end
 			end
 		end

@@ -150,23 +150,17 @@ function steam.GetSourceGames()
 
 								path = vfs.FixPathSlashes(path)
 
-								if path:endswith(".") then
-									path = path:sub(0,-2)
-								end
-
 								if path:endswith("*") then
-									for _, path in ipairs(vfs.Find(path:sub(0, -2), true)) do
-										if vfs.IsDirectory(path) then
-											if not path:endswith("/") and not vfs.GetExtensionFromPath(path) then
-												path = path .. "/"
-											end
-											if not done[path] then
-												table.insert(fixed, path)
-												done[path] = true
-											end
-										end
+									if not done[path] then
+										table.insert(fixed, path)
+										done[path] = true
 									end
 								else
+
+									if path:endswith(".") then
+										path = path:sub(0,-2)
+									end
+
 									if not path:endswith("/") then
 										if vfs.GetExtensionFromPath(path) then
 											if not vfs.IsFile("os:" .. path) then
@@ -235,16 +229,29 @@ function steam.MountSourceGame(game_info)
 	llog("mounting %s", game_info.game)
 
 	for _, path in ipairs(game_info.filesystem.searchpaths) do
-		if not path:endswith(".vpk") then
-			path = "os:" .. path
-
-			for _, v in ipairs(vfs.Find(path .. "/maps/workshop/")) do
-				llog("mounting workshop map %s", v)
-				vfs.Mount(path .. "/maps/workshop/" .. v, "maps/", game_info)
+		if path:endswith("*") then
+			for _, path in ipairs(vfs.Find(path:sub(0, -2), true)) do
+				if vfs.IsDirectory(path) then
+					if not path:endswith("/") and not vfs.GetExtensionFromPath(path) then
+						path = path .. "/"
+					end
+					if game_info.game == "Garry's Mod" and not pvars.Get("gine_local_addons_only") then
+						vfs.Mount(path, game_info)
+					end
+				end
 			end
-		end
+		else
+			if not path:endswith(".vpk") then
+				path = "os:" .. path
 
-		vfs.Mount(path, nil, game_info)
+				for _, v in ipairs(vfs.Find(path .. "/maps/workshop/")) do
+					llog("mounting workshop map %s", v)
+					vfs.Mount(path .. "/maps/workshop/" .. v, "maps/", game_info)
+				end
+			end
+
+			vfs.Mount(path, nil, game_info)
+		end
 	end
 
 	if str_game_info then

@@ -5,12 +5,30 @@ function gine.env.include(path)
 		if full_path:find("/lua/") then return "@" .. full_path:match("^.+/(lua/.+)$") end
 	end
 
-	local ok, err = runfile({
-		"lua/" .. path,
-		"lua/" .. path:lower(),
-		path,
-		path:lower(),
-	})
+	local lookup = {}
+	local slashes = path:count("/") > 1
+
+	if slashes then
+		lookup[#lookup + 1] = "lua/" .. path
+		lookup[#lookup + 1] = path
+	else
+		lookup[#lookup + 1] = path
+		lookup[#lookup + 1] = "lua/" .. path
+	end
+
+	local lower_path = path:lower()
+
+	if lower_path ~= path then
+		if slashes then
+			lookup[#lookup + 1] = lower_path
+			lookup[#lookup + 1] = "lua/" .. lower_path
+		else
+			lookup[#lookup + 1] = "lua/" .. lower_path
+			lookup[#lookup + 1] = lower_path
+		end
+	end
+
+	local ok, err = runfile(lookup)
 
 	vfs.modify_chunkname = nil
 
@@ -109,4 +127,14 @@ function gine.env.CompileFile(name)
 	end
 
 	return gine.env.CompileString(vfs.Read("lua/" .. name), "@" .. full_path, false)
+end
+
+function gine.env.RunString(code, chunkname, handle_error)
+	if handle_error == nil then handle_error = true end
+
+	local res, err = loadstring(code, "@" .. chunkname)
+
+	if handle_error and not res then ErrorNoHalt(chunkname) end
+debug.trace()
+	return res or err
 end

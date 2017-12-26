@@ -278,7 +278,7 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag,
 			true,
 			ext
 		)
-	else
+	elseif not resource.skip_providers then
 		download_from_providers(
 			path,
 			function(...)
