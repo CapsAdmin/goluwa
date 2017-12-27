@@ -103,7 +103,9 @@ do
 	function gine.env.ents.CreateClientProp(mdl)
 		--llog("ents.CreateClientProp: %s", mdl)
 		local ent = gine.env.ents.Create("class C_PhysPropClientside")
-		ent:SetModel(mdl)
+		if mdl then
+			ent:SetModel(mdl)
+		end
 		return ent
 	end
 
@@ -131,6 +133,14 @@ do
 	end
 
 	function META:SetPos(vec)
+		if self.__obj.SetPosition then
+			self.__obj:SetPosition(vec.v)
+		end
+
+		self.__obj.gine_pos = vec
+	end
+
+	function META:SetLocalPos(vec)
 		if self.__obj.SetPosition then
 			self.__obj:SetPosition(vec.v)
 		end

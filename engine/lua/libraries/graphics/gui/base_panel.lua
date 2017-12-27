@@ -1951,6 +1951,9 @@ do -- layout
 	end
 
 	function META:DoLayout()
+		self.in_layout = self.in_layout + 1
+		gui.in_layout = gui.in_layout + 1
+
 		self:OnLayout(self:GetLayoutScale(), self:GetSkin())
 
 		self:ExecuteLayoutCommands()
@@ -1961,6 +1964,13 @@ do -- layout
 				self:SetSize(size)
 			end
 		end
+
+		self:OnPostLayout()
+
+		self:MarkCacheDirty()
+
+		self.in_layout = self.in_layout - 1
+		gui.in_layout = gui.in_layout - 1
 	end
 
 	gui.layout_traces = {}
@@ -2022,15 +2032,11 @@ do -- layout
 
 			self.last_children_size = nil
 
-			self:MarkCacheDirty()
-
-			self:OnPostLayout()
-
 			self.layout_me = false
 
 			self.in_layout = self.in_layout - 1
 			gui.in_layout = gui.in_layout - 1
-		elseif gui.in_layout == 0 then
+		else--if gui.in_layout == 0 then
 			self.layout_me = true
 
 			if gui.debug then

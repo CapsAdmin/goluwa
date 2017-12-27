@@ -33,6 +33,10 @@ do
 	function META:GetSecondaryAmmoType()
 		return 0
 	end
+
+	function META:GetPrintName()
+		return self.PrintName or "???"
+	end
 end
 
 do

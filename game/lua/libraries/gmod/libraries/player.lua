@@ -129,6 +129,14 @@ do
 		return false
 	end
 
+	function META:GetObserverTarget()
+
+	end
+
+	function META:GetRagdollEntity()
+		return NULL
+	end
+
 	function META:SteamID()
 		return "STEAM_0:1:" .. self:UniqueID()
 	end

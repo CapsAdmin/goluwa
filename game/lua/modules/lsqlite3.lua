@@ -1102,7 +1102,12 @@ function sqlite_db:exec(sql, func)
 		local cb = ffi.cast("int (*)(void*,int,char**,char**)", function(ptr, num, values, keys)
 			local tbl = {}
 			for i = 1, num do
-				tbl[i] = {key = ffi.string(keys[i-1]), value = ffi.string(values[i-1])}
+				local key = keys[i-1]
+				local val = values[i-1]
+
+				if key ~= nil and val ~= nil then
+					tbl[i] = {key = ffi.string(key), value = ffi.string(val)}
+				end
 			end
 			return func(tbl) or 0
 		end)

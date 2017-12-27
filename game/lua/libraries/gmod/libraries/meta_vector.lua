@@ -109,12 +109,20 @@ function META:Cross(vec)
 	return gine.env.Vector(self.ptr:Cross(vec))
 end
 
+function META:Rotate()
+
+end
+
 function META:Distance(vec)
 	return self.ptr:Distance(vec.ptr)
 end
 
 function META:Dot(vec)
 	return self.ptr:GetDot(vec.ptr)
+end
+
+function META:Rotate(ang)
+
 end
 
 META.DotProduct = META.Dot
@@ -142,9 +150,21 @@ function META:Sub(vec)
 end
 
 function META:Mul(vec)
-	self.x = self.x * vec.x
-	self.y = self.y * vec.y
-	self.z = self.z * vec.z
+	if type(vec) == "number" then
+		self.x = self.x * vec
+		self.y = self.y * vec
+		self.z = self.z * vec
+	else
+		self.x = self.x * vec.x
+		self.y = self.y * vec.y
+		self.z = self.z * vec.z
+	end
+end
+
+function META:Set(vec)
+	self.x = vec.x
+	self.x = vec.y
+	self.z = vec.z
 end
 
 function META:Angle()

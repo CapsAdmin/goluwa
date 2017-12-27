@@ -1,7 +1,8 @@
 do
 	function gine.env.CreateSound(ent, path, filter)
+		resource.skip_providers = true
 		local self = audio.CreateSource("sound/" .. path)
-
+		resource.skip_providers = false
 		return gine.WrapObject(self, "CSoundPatch")
 	end
 

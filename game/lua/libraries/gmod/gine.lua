@@ -10,7 +10,11 @@ function gine.SetFunctionEnvironment(func)
 end
 
 function gine.AddEvent(what, callback)
-	event.AddListener(what, "gine", function(...) if gine.env then return callback(...) end end)
+	event.AddListener(what, "gine", function(...)
+		if gine.env then
+			return callback(...)
+		end
+	end, {on_error = print})
 end
 
 gine.objects = gine.objects or {}

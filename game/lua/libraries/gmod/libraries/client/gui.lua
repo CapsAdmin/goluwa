@@ -91,6 +91,10 @@ do
 	function gui.EnableScreenClicker(b)
 		window.SetMouseTrapped(b)
 	end
+
+	function gui.IsConsoleVisible()
+		return false
+	end
 end
 
 do
@@ -137,7 +141,7 @@ do
 
 		local obj
 
-		if class == "textentry" then
+		if class == "textentry" or class == "richtext" then
 			obj = gui.CreatePanel("text_edit")
 			obj:SetMultiline(false)
 			obj:SetEditable(false)
@@ -607,8 +611,10 @@ do
 		end
 
 		function META:SetText(text)
-			if self.__obj.vgui_type == "textentry" then
-				text = tostring(text):gsub("\t", "")
+			if self.__obj.vgui_type == "textentry" or self.__obj.vgui_type == "richtext" then
+				if self.__obj.vgui_type == "textentry" then
+					text = tostring(text):gsub("\t", "")
+				end
 				self.__obj:SetText(text)
 			else
 				self.__obj.text_internal = gine.translation2[text] or text
@@ -696,7 +702,7 @@ do
 	function META:SizeToContents()
 		local panel = self.__obj
 
-		if panel.vgui_type == "label" or self.__obj.vgui_type == "textentry" then
+		if panel.vgui_type == "label" or self.__obj.vgui_type == "textentry" or self.__obj.vgui_type == "richtext" then
 			local w, h = self:GetContentSize()
 
 			--panel:Layout(true)
@@ -713,7 +719,7 @@ do
 	end
 
 	function META:GetText()
-		if self.__obj.vgui_type == "textentry" then
+		if self.__obj.vgui_type == "textentry" or self.__obj.vgui_type == "richtext" then
 			return self.__obj:GetText()
 		elseif self.__obj.vgui_type == "label" then
 			return self.__obj.text_internal
@@ -976,9 +982,15 @@ do
 	end
 
 	function META:SetSteamID(id, size)
+		do return end
 		sockets.Get("http://steamcommunity.com/id/"..id.."/?xml=1", function(data)
-			local url = data.content:match("<avatarFull>(.-)</avatarFull>"):match("%[(http.-)%]")
-			self:SetTexture(Texture(url))
+			local url = data.content:match("<avatarFull>(.-)</avatarFull>")
+			url = url and url:match("%[(http.-)%]")
+			if url then
+				self:SetTexture(Texture(url))
+			else
+				self:SetTexture(render.GetErrorTexture())
+			end
 		end)
 	end
 
@@ -990,11 +1002,15 @@ do
 	end
 
 	function META:SetMultiline(b)
-		self.__obj:SetMultiline(b)
+		if self.__obj.vgui_type == "textentry" or self.__obj.vgui_type == "richtext" then
+			self.__obj:SetMultiline(b)
+		end
 	end
 
 	function META:IsMultiline()
-		return self.__obj:GetMultiline()
+		if self.__obj.vgui_type == "textentry" or self.__obj.vgui_type == "richtext" then
+			return self.__obj:GetMultiline()
+		end
 	end
 
 	function META:SetFocusTopLevel()

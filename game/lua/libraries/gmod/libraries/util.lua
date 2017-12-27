@@ -15,7 +15,8 @@ function util.CRC(str)
 end
 
 function util.RelativePathToFull(path)
-	return R(path)
+	if path == "." then path = "" end
+	return R(path) or ""
 end
 
 function util.JSONToTable(str)

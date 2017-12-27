@@ -116,7 +116,7 @@ function META:ScaleTranslation(scale)
 end
 
 function META:SetAngles(ang)
-	self.ptr:SetAngles(ang:GetRad())
+	self.ptr:SetAngles(ang.ptr:GetRad())
 end
 
 function META:GetAngles()

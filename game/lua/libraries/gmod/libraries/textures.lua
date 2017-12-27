@@ -53,6 +53,7 @@ do
 			end
 
 			if vmt_path then
+				resource.skip_providers = true
 				steam.LoadVMT(vmt_path, function(key, val)
 					if type(val) == "boolean" then
 						val = val and "1" or "0"
@@ -65,6 +66,7 @@ do
 					end
 					self:SetString("$" .. key, val)
 				end, nil, function(name) mat:SetShader(name:lower()) end)
+				resource.skip_providers = false
 			end
 		end
 
@@ -162,6 +164,8 @@ do
 		if typex(val) == "texture" then
 			return gine.WrapObject(val, "ITexture")
 		end
+
+		return gine.WrapObject(render.GetErrorTexture(), "ITexture")
 	end
 
 	function META:SetVector(key, val)
@@ -171,7 +175,10 @@ do
 
 	function META:GetVector(key)
 		key = key:lower():sub(2)
-		return gine.env.Vector(self.__obj:Get(key:sub(2)):Unpack())
+		local vec = self.__obj:Get(key:sub(2))
+		if vec then
+			return gine.env.Vector(vec:Unpack())
+		end
 	end
 
 	function META:IsError()
@@ -239,7 +246,7 @@ if CLIENT then
 		end
 
 		function surface.SetTexture(tex)
-			if tex == 0 then tex = render.GetWhiteTexture() end
+			if type(tex) == "number" then tex = render.GetWhiteTexture() end
 			render2d.SetTexture(tex)
 		end
 	end

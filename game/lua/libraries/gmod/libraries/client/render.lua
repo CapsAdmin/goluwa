@@ -185,6 +185,8 @@ function render.Clear(r, g, b, a, depth, stencil)
 	lib.GetFrameBuffer():ClearAll(r, g, b, a, depth, stencil)
 end
 
+function render.ClearDepth() end
+
 function render.OverrideAlphaWriteEnable(enable, should_write)
 	if enable then
 		if should_write then
@@ -205,3 +207,7 @@ function render.FogStart() end
 function render.FogEnd() end
 function render.FogColor() end
 function render.FogMaxDensity() end
+
+function render.GetDXLevel()
+	return 95
+end

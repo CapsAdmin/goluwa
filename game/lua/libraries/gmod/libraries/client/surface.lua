@@ -53,6 +53,7 @@ end
 
 do
 	local mesh = render2d.CreateMesh(2048)
+	mesh:SetMode("triangle_fan")
 
 	for i = 1, 2048 do
 		mesh:SetVertex(i, "color", 1,1,1,1)

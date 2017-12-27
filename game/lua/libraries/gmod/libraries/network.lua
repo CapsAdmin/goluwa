@@ -20,6 +20,8 @@ do
 				return k
 			end
 		end
+
+		return ""
 	end
 
 	function gine.env.net.Start()

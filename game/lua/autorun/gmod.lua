@@ -6,7 +6,7 @@ local addons = {
 	"https://github.com/PAC3-Server/ServerAssets",
 }
 
-commands.Add("setup_gmod_addons", function()
+commands.Add("setup_pac3server_addons", function()
 	assert(steam.GetGamePath("GarrysMod"), "could not find gmod install")
 	assert(system.OSCommandExists("git", "readlink", "ln"), "windows?")
 
@@ -91,4 +91,44 @@ hook.Add("RenderScene", "zerobrane_bridge", function()
 end)
 ]])
 	vfs.Write("os:" .. e.ROOT_FOLDER .. "data/ide/gmod_path", gmod_dir)
+end)
+
+commands.Add("setup_metastruct_addons", function()
+	if not vfs.IsDirectory(e.ROOT_FOLDER .. "metastruct_addons") then
+		vfs.CreateFolder(e.ROOT_FOLDER .. "metastruct_addons")
+	end
+
+	vfs.Write(e.ROOT_FOLDER .. "metastruct_addons/build.sh", [[
+#!/bin/sh
+
+#remove linked folder
+rm -f addons/
+mkdir -p addons/merged
+
+svn checkout svn://svn.metastruct.net/srvaddons __srvaddons
+cp -rl __srvaddons/*/* addons/merged/
+
+svn checkout svn://svn.metastruct.net/Metastruct2 __metastruct
+cp -rl __metastruct/Metastruct2/* addons/merged/
+
+git clone git@gitlab.threekelv.in:PotcFdk/MetaWorks.git
+cp -rl MetaWorks/* addons/merged/
+
+git clone https://github.com/Metastruct/luadev
+cp -rl luadev/* addons/merged/
+
+git clone https://github.com/Metastruct/gm-mediaplayer
+cp -rl gm-mediaplayer/* addons/merged/
+
+git clone https://github.com/Metastruct/translation
+cp -rl translation/* addons/merged/
+
+git clone https://github.com/Metastruct/outfitter
+cd outfitter
+git checkout dev
+npm install
+cd ..
+cp -rl outfitter/dist/* addons/merged/
+
+	]])
 end)
