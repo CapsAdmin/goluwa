@@ -78,7 +78,6 @@ do -- mounting/links
 			if path_info.relative then
 				for _, mount_info in ipairs(context.mounted_paths) do
 					local where = mount_info.where
-
 					-- does the path match the start of the to path?
 					if
 						(mount_info.where.filesystem == "unknown" or mount_info.where.filesystem == context.Name) and
@@ -93,7 +92,7 @@ do -- mounting/links
 					out[out_i] = {path_info = where, context = context, userdata = mount_info.userdata}
 					out_i = out_i + 1
 				end
-			else
+			elseif (is_folder and context:IsFolder(path_info)) or (not is_folder and context:IsFile(path_info)) then
 				out[out_i] = {path_info = path_info, context = context, userdata = path_info.userdata}
 				out_i = out_i + 1
 			end
