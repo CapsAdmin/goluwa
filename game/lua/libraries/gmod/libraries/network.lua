@@ -81,13 +81,22 @@ do
 		end)
 	end
 
-	function gine.env.net.Start(id, unreliable)
+	function gine.env.net.Start(name, unreliable)
+		local id = network.StringToID(name)
+
 		BUFFER = packet.CreateBuffer()
-		BUFFER:WriteInt(network.StringToID(id))
+
+		if id then
+			BUFFER:WriteInt(id)
+		else
+			llog("net message %q has no id", name)
+			BUFFER.invalid = true
+		end
 	end
 
 	if CLIENT then
 		function gine.env.net.SendToServer()
+			if BUFFER.invalid then return end
 			packet.Send("gmod_net", BUFFER)
 		end
 	end
@@ -98,10 +107,12 @@ do
 
 	if SERVER then
 		function gine.env.net.Send(ply)
+			if BUFFER.invalid then return end
 			packet.Send("gmod_net", BUFFER, ply.__obj)
 		end
 
 		function gine.env.net.Broadcast()
+			if BUFFER.invalid then return end
 			packet.Send("gmod_net", BUFFER)
 		end
 	end
