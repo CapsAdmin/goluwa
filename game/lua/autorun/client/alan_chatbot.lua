@@ -10,6 +10,8 @@ function bot:Ask(question, cb, noprint)
 	sockets.Request({
 		url = "http://www.a-i.com/alan1/webface1_ctrl.asp?gender="..self.gender.."&name="..self:GetNick().."&question="..question.."",
 		callback = function(data)
+			if not bot:IsValid() then return end
+
 			local answer =  data.content:match("<option>answer = (.-)\n")
 
 			if answer then
