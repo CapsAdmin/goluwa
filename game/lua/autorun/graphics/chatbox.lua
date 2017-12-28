@@ -502,7 +502,6 @@ function chat.Open(tab)
 
 	panel:Minimize(true)
 
-	input.DisableFocus = true
 	window.SetMouseTrapped(false)
 end
 
@@ -511,7 +510,6 @@ function chat.Close()
 
 	panel:Minimize(false)
 
-	input.DisableFocus = false
 	window.SetMouseTrapped(old_mouse_trap)
 end
 

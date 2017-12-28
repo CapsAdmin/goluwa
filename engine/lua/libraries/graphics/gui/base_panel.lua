@@ -279,6 +279,7 @@ do -- call on hide
 			self:OnShow()
 		else
 			self:OnHide()
+			self:Unfocus()
 			for _, v in pairs(self.call_on_hide) do
 				if v() == false then
 					break
