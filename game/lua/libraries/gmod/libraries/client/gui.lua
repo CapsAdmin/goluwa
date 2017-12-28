@@ -89,7 +89,7 @@ do
 	end
 
 	function gui.EnableScreenClicker(b)
-		window.SetMouseTrapped(b)
+		window.SetMouseTrapped(not b)
 	end
 
 	function gui.IsConsoleVisible()
@@ -141,7 +141,7 @@ do
 
 		local obj
 
-		if class == "textentry" or class == "richtext" then
+		if class == "textentry" then
 			obj = gui.CreatePanel("text_edit")
 			obj:SetMultiline(false)
 			obj:SetEditable(false)
@@ -149,6 +149,11 @@ do
 			--local draw_func = obj.label.OnPostDraw
 			obj.label.DrawTextEntryText = function() end
 			--obj.label.OnPostDraw = function() end
+		elseif class == "richtext" then
+			obj = gui.CreatePanel("scroll")
+			local markup = obj:CreatePanel("text", "text")
+			markup:SetParseTags(false)
+			obj:SetPanel(markup)
 		else
 			obj = gui.CreatePanel("base")
 		end
@@ -600,9 +605,14 @@ do
 	do
 		function META:SetFontInternal(font)
 			self.__obj.font_internal = font or "default"
-			if not gine.render2d_fonts[self.__obj.font_internal:lower()] then
+			local font = gine.render2d_fonts[self.__obj.font_internal:lower()]
+			if not font then
 				--llog("font ", self.__obj.font_internal, " does not exist")
 				self.__obj.font_internal = "default"
+			else
+				if self.__obj.vgui_type == "richtext" then
+					self.__obj.text.markup:AddFont(font)
+				end
 			end
 		end
 
@@ -611,10 +621,10 @@ do
 		end
 
 		function META:SetText(text)
-			if self.__obj.vgui_type == "textentry" or self.__obj.vgui_type == "richtext" then
-				if self.__obj.vgui_type == "textentry" then
-					text = tostring(text):gsub("\t", "")
-				end
+			if self.__obj.vgui_type == "textentry" then
+				text = tostring(text):gsub("\t", "")
+				self.__obj:SetText(text)
+			elseif self.__obj.vgui_type == "richtext" then
 				self.__obj:SetText(text)
 			else
 				self.__obj.text_internal = gine.translation2[text] or text
@@ -904,11 +914,25 @@ do
 		end
 
 		function META:SetCaretPos(pos)
-			self.__obj:SetCaretSubPosition(pos)
+			if self.__obj.vgui_type == "textentry" then
+				self.__obj:SetCaretSubPosition(pos)
+			end
 		end
 
 		function META:GotoTextEnd()
-			self.__obj:SetCaretSubPosition(math.huge)
+			if self.__obj.vgui_type == "textentry" then
+				self.__obj:SetCaretSubPosition(math.huge)
+			elseif self.__obj.vgui_type == "richtext" then
+				self.__obj:SetScrollFraction(Vec2(0,1))
+			end
+		end
+
+		function META:GotoTextStart()
+			if self.__obj.vgui_type == "textentry" then
+				self.__obj:SetCaretSubPosition(0)
+			elseif self.__obj.vgui_type == "richtext" then
+				self.__obj:SetScrollFraction(Vec2(0,0))
+			end
 		end
 
 		function META:SetVerticalScrollbarEnabled(b)
@@ -916,11 +940,12 @@ do
 		end
 
 		function META:AppendText(str)
-			self:SetText(self:GetText() .. str)
+			str = gine.translation2[str] or str
+			self.__obj.text.markup:AddString(str)
 		end
 
-		function META:InsertColorChange(r,g,b)
-			self:SetText(self:GetText() .. ("<color=%s,%s,%s>"):format(r/255, g/255, b/255))
+		function META:InsertColorChange(r,g,b,a)
+			self.__obj.text.markup:AddColor(ColorBytes(r,g,b,a))
 		end
 
 		function META:DrawTextEntryText(text_color, highlight_color, cursor_color)
@@ -1002,14 +1027,18 @@ do
 	end
 
 	function META:SetMultiline(b)
-		if self.__obj.vgui_type == "textentry" or self.__obj.vgui_type == "richtext" then
+		if self.__obj.vgui_type == "textentry" then
 			self.__obj:SetMultiline(b)
+		elseif self.__obj.vgui_type == "richtext" then
+			self.__obj.text:SetMultiline(b)
 		end
 	end
 
 	function META:IsMultiline()
-		if self.__obj.vgui_type == "textentry" or self.__obj.vgui_type == "richtext" then
+		if self.__obj.vgui_type == "textentry" then
 			return self.__obj:GetMultiline()
+		elseif self.__obj.vgui_type == "richtext" then
+			return self.__obj.text:GetMultiline()
 		end
 	end
 
