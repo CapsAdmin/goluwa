@@ -14,7 +14,7 @@ function gine.AddEvent(what, callback)
 		if gine.env then
 			return callback(...)
 		end
-	end, {on_error = print})
+	end, {on_error = system.OnError})
 end
 
 gine.objects = gine.objects or {}
