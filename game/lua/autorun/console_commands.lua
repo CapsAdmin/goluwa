@@ -1,3 +1,10 @@
+commands.Add("status", function()
+	logn("hostname: ", network.GetHostname())
+	for k,v in pairs(clients.GetAll()) do
+		logn(v)
+	end
+end)
+
 commands.Add("exit=number[0]", function(exit_code)
 	system.ShutDown(exit_code)
 end)
