@@ -50,7 +50,7 @@ do
 		end
 	end
 
-	if false then
+	if true then
 	----------------------------------------------------------
 
 	function gine.env.util.AddNetworkString(str)
@@ -70,19 +70,20 @@ do
 	if SERVER then
 		packet.AddListener("gmod_net", function(buffer, client)
 			BUFFER = buffer
-			net.Incoming(buffer:GetSize(), gine.WrapObject(client, "Player"))
+			gine.env.net.Incoming(buffer:GetSize(), gine.WrapObject(client, "Player"))
 		end)
 	end
 
 	if CLIENT then
 		packet.AddListener("gmod_net", function(buffer)
 			BUFFER = buffer
-			net.Incoming(buffer:GetSize())
+			gine.env.net.Incoming(buffer:GetSize())
 		end)
 	end
 
 	function gine.env.net.Start(id, unreliable)
 		BUFFER = packet.CreateBuffer()
+		BUFFER:WriteInt(network.StringToID(id))
 	end
 
 	if CLIENT then
@@ -105,35 +106,34 @@ do
 		end
 	end
 
-	function net.WriteAngle(v) BUFFER:WriteAng3(v.ptr) end
-	function net.WriteBit(v) BUFFER:WriteByte(v and 1 or 0) end
-	function net.WriteData(v, l) BUFFER:WriteBytes(v, l) end
-	function net.WriteDouble(v) BUFFER:WriteDouble(v) end
-	function net.WriteFloat(v) BUFFER:WriteFloat(v) end
-	function net.WriteInt(v) end
-	function net.WriteMatrix() end
-	function net.WriteNormal() end
-	function net.WriteString() end
-	function net.WriteUInt() end
-	function net.WriteVector() end
+	function gine.env.net.WriteAngle(v) BUFFER:WriteAng3(v.ptr) end
+	function gine.env.net.WriteBit(v) BUFFER:WriteByte(v and 1 or 0) end
+	function gine.env.net.WriteData(v, l) BUFFER:WriteBytes(v, l) end
+	function gine.env.net.WriteDouble(v) BUFFER:WriteDouble(v) end
+	function gine.env.net.WriteFloat(v) BUFFER:WriteFloat(v) end
+	function gine.env.net.WriteMatrix(v) BUFFER:WriteMatrix44(v.ptr) end
+	function gine.env.net.WriteNormal(v) BUFFER:WriteVec3(v.ptr) end
+	function gine.env.net.WriteString(v) BUFFER:WriteString(v) end
+	function gine.env.net.WriteVector(v) BUFFER:WriteVec3(v.ptr) end
+
+	function gine.env.net.WriteInt(v) BUFFER:WriteLongLong(v) end
+	function gine.env.net.WriteUInt(v) BUFFER:WriteUnsignedLongLong(v) end
 
 
-	function net.ReadAngle(ang) return gine.env.Angle(BUFFER:ReadAng3(ang.ptr)) end
-	function net.ReadBit() end
-	function net.ReadBool() end
-	function net.ReadColor() end
-	function net.ReadData() end
-	function net.ReadDouble() end
-	function net.ReadEntity() end
-	function net.ReadFloat() end
-	function net.ReadInt() end
-	function net.ReadMatrix() end
-	function net.ReadNormal() end
-	function net.ReadString() end
-	function net.ReadTable() end
-	function net.ReadType() end
-	function net.ReadUInt() end
-	function net.ReadVector() end
+	function gine.env.net.ReadAngle() return gine.env.Angle(BUFFER:ReadAng3(ang)) end
+	function gine.env.net.ReadBit() return BUFFER:ReadByte() == 1 end
+	function gine.env.net.ReadBool() return BUFFER:ReadByte() == 1 end
+	function gine.env.net.ReadData(l) return BUFFER:ReadBytes(l) end
+	function gine.env.net.ReadDouble() return BUFFER:ReadDouble() end
+	function gine.env.net.ReadFloat() return BUFFER:ReadFloat() end
+	function gine.env.net.ReadInt() return tonumber(BUFFER:ReadLongLong()) end
+	function gine.env.net.ReadMatrix() return BUFFER:ReadMatrix44() end
+	function gine.env.net.ReadNormal() return BUFFER:ReadVec3() end
+	function gine.env.net.ReadString() return BUFFER:ReadString() end
+	function gine.env.net.ReadUInt() return tonumber(BUFFER:ReadUnsignedLongLong()) end
+	function gine.env.net.ReadVector() return BUFFER:ReadVec3() end
+
+	function gine.env.net.ReadHeader() return BUFFER:ReadInt() end
 
 	end
 end
