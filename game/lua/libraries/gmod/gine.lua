@@ -201,7 +201,7 @@ function gine.Initialize(gamemode, skip_addons)
 		runfile("lua/libraries/gmod/environment.lua", gine)
 
 		do
-			local dir = "os:" .. R(gine.dir.."/lua/includes/modules/")
+			local dir = "os:" .. R(gine.dir .. "lua/includes/modules/")
 			vfs.AddPackageLoader(function(path)
 				return vfs.LoadFile(dir .. "/" .. path .. ".lua")
 			end, gine.package_loaders)

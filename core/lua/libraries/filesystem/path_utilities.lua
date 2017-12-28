@@ -101,6 +101,10 @@ function vfs.CreateDirectoriesFromPath(path, force)
 end
 
 function vfs.GetAbsolutePath(path, is_folder)
+	if vfs.IsPathAbsolute(path) and ((is_folder and vfs.IsDirectory(path)) or vfs.Exists(path)) then
+		return path
+	end
+
 	for _, data in ipairs(vfs.TranslatePath(path, is_folder)) do
 		if data.context:CacheCall("IsFile", data.path_info) or data.context:CacheCall("IsFolder", data.path_info) then
 			return data.path_info.full_path
