@@ -86,11 +86,6 @@ function PLUGIN:Setup()
 						server:Broadcast(str, true)
 					end
 
-					-- grr
-					if SERVER then
-						event.Delay(0.1, function() commands.RunString("host") end)
-					end
-
 					ZEROBRANE = true
 
 					if "DEFERRED_CMD" ~= "" then
