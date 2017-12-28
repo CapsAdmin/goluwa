@@ -197,8 +197,8 @@ do -- events
 		end
 
 		if panel:IsValid() and panel:IsMouseOver() then
-			panel:MouseInput(button, press)
 			event.Call("GUIPanelMouseInput", panel, button, press)
+			panel:MouseInput(button, press)
 			gui.last_clicked = panel
 		end
 
@@ -207,8 +207,8 @@ do -- events
 
 			if (panel.AlwaysReceiveMouseInput and panel.mouse_over) or panel.mouse_capture then
 				if gui.last_clicked ~= panel then
-					panel:MouseInput(button, press)
 					event.Call("GUIPanelMouseInput", panel, button, press)
+					panel:MouseInput(button, press)
 				end
 			end
 		end
