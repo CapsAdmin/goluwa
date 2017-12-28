@@ -11,8 +11,8 @@ commands.Add("setup_pac3server_addons", function()
 	assert(system.OSCommandExists("git", "readlink", "ln"), "windows?")
 
 	if not vfs.IsDirectory(e.ROOT_FOLDER .. "pac3_server/addons") then
-		vfs.CreateFolder(e.ROOT_FOLDER .. "pac3_server")
-		vfs.CreateFolder(e.ROOT_FOLDER .. "pac3_server/addons/")
+		vfs.CreateDirectory(e.ROOT_FOLDER .. "pac3_server")
+		vfs.CreateDirectory(e.ROOT_FOLDER .. "pac3_server/addons/")
 	end
 
 	vfs.Write(e.ROOT_FOLDER .. "pac3_server/addon.json", "this is just to prevent goluwa from loading the addon")
@@ -22,7 +22,7 @@ commands.Add("setup_pac3server_addons", function()
 	local gmod_addons = steam.GetGamePath("GarrysMod") .. "garrysmod/addons/"
 
 	if not vfs.IsDirectory(gmod_addons) then
-		vfs.CreateFolder(gmod_addons)
+		require("fs").createdir(gmod_addons)
 	end
 
 	for _, url in ipairs(addons) do
@@ -95,7 +95,7 @@ end)
 
 commands.Add("setup_metastruct_addons", function()
 	if not vfs.IsDirectory(e.ROOT_FOLDER .. "metastruct_addons") then
-		vfs.CreateFolder(e.ROOT_FOLDER .. "metastruct_addons")
+		vfs.CreateDirectory(e.ROOT_FOLDER .. "metastruct_addons")
 	end
 
 	vfs.Write(e.ROOT_FOLDER .. "metastruct_addons/build.sh", [[

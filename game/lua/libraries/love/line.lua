@@ -145,7 +145,7 @@ function line.RunGame(folder, ...)
 	local love = line.CreateLoveEnv()
 
 	llog("mounting love game folder: ", R(folder .. "/"))
-	vfs.CreateFolder("data/love/")
+	vfs.CreateDirectory("data/love/")
 	vfs.AddModuleDirectory("lua/modules/", love.package_loaders)
 	vfs.AddModuleDirectory("data/love/", love.package_loaders)
 	vfs.Mount(R(folder .. "/"))

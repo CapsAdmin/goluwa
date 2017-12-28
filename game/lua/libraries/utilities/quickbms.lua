@@ -42,7 +42,7 @@ function utility.QuickBMSOpenFile(archive_path, file_path, script)
 		last_written = script
 	end
 
-	vfs.OSCreateDirectory(temp_dir)
+	vfs.CreateDirectory("os:" .. temp_dir)
 
 	vfs.PushWorkingDirectory(quickbms_location)
 		os.execute(("quickbms -R -f %q temp_script.bms %q %q"):format(file_path, archive_path, temp_dir))

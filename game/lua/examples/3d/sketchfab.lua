@@ -121,7 +121,7 @@ sockets.Download("https://sketchfab.com/models/" .. id .. "/embed", function(str
 		str = serializer.Decode("gunzip", str)
 		local tbl = serializer.Decode("json", str)
 
-		vfs.CreateFolders("os", output_folder)
+		vfs.CreateDirectory("os:" .. output_folder)
 		vfs.Write(output_folder .. "file.osgjs", str)
 
 		local downloaded = {}
@@ -131,7 +131,7 @@ sockets.Download("https://sketchfab.com/models/" .. id .. "/embed", function(str
 				downloaded[path] = true
 				temp_ssl_download(url:match("(.+/)") .. path, function(str)
 					str = serializer.Decode("gunzip", str)
-					vfs.CreateFoldersFromPath("os", output_folder .. path:match("(.+)%.gz"))
+					vfs.CreateDirectoriesFromPath("os:" .. output_folder .. path:match("(.+)%.gz"))
 					vfs.Write(output_folder .. path:match("(.+)%.gz"), str)
 					downloaded[path] = nil
 					if table.count(downloaded) == 1 then

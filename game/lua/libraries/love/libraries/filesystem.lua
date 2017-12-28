@@ -89,9 +89,7 @@ function love.filesystem.load(path)
 end
 
 function love.filesystem.mkdir(path)
-	vfs.OSCreateDirectory(R("data/") .. "love/")
-	vfs.OSCreateDirectory(R("data/love/") .. ENV.filesystem_identity .. "/")
-	vfs.OSCreateDirectory(R("data/love/" .. ENV.filesystem_identity .. "/") .. path)
+	vfs.CreateDirectoriesFromPath("os:data/love/" .. ENV.filesystem_identity .. "/" .. path)
 
 	return true
 end
@@ -120,8 +118,7 @@ function love.filesystem.remove(path)
 end
 
 function love.filesystem.setIdentity(name)
-	vfs.OSCreateDirectory(R("data/") .. "love/")
-	vfs.OSCreateDirectory(R("data/love/") .. name .. "/")
+	vfs.CreateDirectoriesFromPath("os:data/love/" .. name .. "/")
 
 	ENV.filesystem_identity = name
 

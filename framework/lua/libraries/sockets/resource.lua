@@ -5,7 +5,7 @@ resource.providers = resource.providers or {}
 local etags_file = "resource_etags.txt"
 e.DOWNLOAD_FOLDER = e.DATA_FOLDER .. "downloads/"
 
-vfs.CreateFolder("os:" .. e.DOWNLOAD_FOLDER)
+vfs.CreateDirectory("os:" .. e.DOWNLOAD_FOLDER)
 vfs.Mount("os:" .. e.DOWNLOAD_FOLDER, "os:downloads")
 
 function resource.AddProvider(provider, no_autodownload)
@@ -108,7 +108,7 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 				to = to .. "." .. ext
 			end
 
-			vfs.CreateFolders("os", e.DOWNLOAD_FOLDER .. to)
+			vfs.CreateDirectory("os:" .. e.DOWNLOAD_FOLDER .. to)
 			local file_, err = vfs.Open("os:" .. e.DOWNLOAD_FOLDER .. to .. ".temp", "write")
 			file = file_
 
@@ -354,7 +354,7 @@ resource.virtual_files = {}
 function resource.CreateVirtualFile(where, callback)
 	resource.virtual_files[where] = function(on_success, on_error)
 		callback(function(path)
-			vfs.CreateFolders("os", e.DOWNLOAD_FOLDER .. where)
+			vfs.CreateDirectory("os:" .. e.DOWNLOAD_FOLDER .. where)
 			local ok, err = vfs.Write("os:" .. e.DOWNLOAD_FOLDER ..  where, vfs.Read(path))
 			if not ok then
 				on_error(err)

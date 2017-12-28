@@ -35,6 +35,7 @@ vfs.OSGetAttributes = fs.getattributes
 do
 	vfs.SetWorkingDirectory = fs.setcd
 	vfs.GetWorkingDirectory = fs.getcd
+
 	if utility.MakePushPopFunction then
 		utility.MakePushPopFunction(vfs, "WorkingDirectory")
 	end
@@ -135,21 +136,26 @@ add_helper("GetLastModified", "GetLastModified", "read")
 add_helper("GetLastAccessed", "GetLastAccessed", "read")
 add_helper("GetSize", "GetSize", "read")
 
-function vfs.CreateFolder(path)
-	for _, data in ipairs(vfs.TranslatePath(path, true)) do
-		if data.context:CreateFolder(data.path_info) then break end
-	end
-end
+function vfs.CreateDirectory(path, force)
+	if vfs.IsDirectory(path) then return end
 
-function vfs.CreateFolders(fs, path)
-	local fs = vfs.GetFileSystem(fs)
-	if fs then
-		local folder_path = ""
-		for folder in path:gmatch("(.-/)") do
-			folder_path = folder_path .. folder
-			fs:CreateFolder({full_path = folder_path})
-		end
+	local path_info = vfs.GetPathInfo(path, true)
+	local dir_name = vfs.GetFolderNameFromPath(path_info.full_path) or path_info.full_path
+
+	local parent_dir = vfs.GetParentFolderFromPath(path_info.full_path)
+	local full_path = vfs.GetAbsolutePath(parent_dir, true)
+
+	if not full_path then return false, "directory " .. parent_dir .. " does not exist" end
+
+	local path_info = vfs.GetPathInfo(path_info.filesystem .. ":" .. full_path)
+
+	if path_info.filesystem == "unknown" then
+		return false, "filesystem must be explicit when creating directories"
 	end
+
+	path_info.full_path = path_info.full_path .. dir_name .. "/"
+
+	return vfs.GetFileSystem(path_info.filesystem):CreateFolder(path_info, force)
 end
 
 function vfs.IsDirectory(path)

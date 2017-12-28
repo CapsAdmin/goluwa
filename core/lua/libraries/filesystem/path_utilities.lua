@@ -84,18 +84,19 @@ function vfs.FixPathSlashes(path)
 	return (path:gsub("\\", "/"):gsub("(/+)", "/"))
 end
 
-function vfs.CreateFoldersFromPath(filesystem, path)
-	if not vfs.GetFileSystem(filesystem) then
-		error("unknown filesystem " .. filesystem, 2)
-	end
-
-	local path_info = vfs.GetPathInfo(path)
+function vfs.CreateDirectoriesFromPath(path, force)
+	local path_info = vfs.GetPathInfo(path, true)
 	local folders = path_info:GetFolders("full")
 
-	for i = 1, #folders - 1 do
-		local folder = folders[i]
+	local max = #folders
 
-		vfs.CreateFolder(filesystem ..":"..  folder)
+	if not path:endswith("/") then
+		max = max - 1
+	end
+
+	for i = 1, max do
+		local folder = folders[i]
+		vfs.CreateDirectory(path_info.filesystem ..":"..  folder, force)
 	end
 end
 

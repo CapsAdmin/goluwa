@@ -25,11 +25,16 @@ local CONTEXT = {}
 CONTEXT.Name = "os"
 CONTEXT.Position = 0
 
-function CONTEXT:CreateFolder(path_info)
-	if path_info.full_path:startswith(e.DATA_FOLDER) or path_info.full_path:startswith(e.USERDATA_FOLDER) or path_info.full_path:startswith(e.ROOT_FOLDER) then
-		fs.createdir(path_info.full_path)
-		return true
+function CONTEXT:CreateFolder(path_info, force)
+	if force or path_info.full_path:startswith(e.DATA_FOLDER) or path_info.full_path:startswith(e.USERDATA_FOLDER) or path_info.full_path:startswith(e.ROOT_FOLDER) then
+		if force then llog("creating directory: ", path_info.full_path) end
+		local path = path_info.full_path
+		--if path:endswith("/") then path = path:sub(0, -2) end
+		local ok, err = fs.createdir(path)
+		vfs.ClearCallCache()
+		return ok, err
 	end
+	return false, "directory does not start from goluwa"
 end
 
 function CONTEXT:GetFiles(path_info)

@@ -88,7 +88,7 @@ if WINDOWS then
 	end
 
 	function fs.createdir(path)
-		ffi.C.CreateDirectoryA(path, nil)
+		return ffi.C.CreateDirectoryA(path, nil)
 	end
 
 	local flags = {
@@ -193,7 +193,7 @@ else
 	end
 
 	function fs.createdir(path)
-		S.mkdir(path, "rwxu")
+		return S.mkdir(path, "rwxu")
 	end
 
 	function fs.getattributes(path)

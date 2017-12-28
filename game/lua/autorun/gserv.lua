@@ -96,7 +96,7 @@ function gserv.Setup(id)
 			serializer.SetKeyValueInFile("luadata", data_dir .. "games.lua", id, srcds_dir .. dir)
 		end
 
-		vfs.CreateFolders("os", get_gserv_addon_dir(id) .. "lua/autorun/server/")
+		vfs.CreateDirectory("os:" .. get_gserv_addon_dir(id) .. "lua/autorun/server/")
 
 		vfs.Write(get_gserv_addon_dir(id) .. "lua/autorun/server/gserv.lua", [[
 			timer.Create("gserv_pinger", 1, 0, function()
@@ -271,7 +271,7 @@ function gserv.InstallGame(name, dir, callback, username)
 	gserv.Log(id, "setting up")
 
 	-- create the srcds directory in goluwa/data/srcds
-	vfs.CreateFolder("os:" .. srcds_dir)
+	vfs.CreateDirectory("os:" .. srcds_dir)
 
 	-- download steamcmd
 	resource.Download("http://media.steampowered.com/client/steamcmd_linux.tar.gz", function(path)
@@ -619,7 +619,7 @@ do
 	end
 
 	local function fastdl(from, to)
-		vfs.CreateFolders("os", to:match("(.+/)"))
+		vfs.CreateDirectory("os:" .. to:match("(.+/)"))
 		os.executeasync("ln " .. from .. " " .. to .. " 2>/dev/null")
 		os.executeasync("bzip2 --best -c " .. from .. " > " .. to .. ".bz2" .. " 2>/dev/null")
 	end
@@ -642,7 +642,7 @@ do
 			local paths = serializer.ReadFile("newline", get_gmod_dir(id) .. "data/gserv_resource_files.txt")
 			if paths then
 				gserv.Log(id, "updating fastdl folder")
-				vfs.CreateFolders("os", get_gmod_dir(id) .. "fastdl/")
+				vfs.CreateDirectory("os:" .. get_gmod_dir(id) .. "fastdl/")
 				for _, path in ipairs(paths) do
 					if path:startswith("maps/") then
 						if vfs.IsFile(get_gmod_dir(id) .. "/" .. path) then

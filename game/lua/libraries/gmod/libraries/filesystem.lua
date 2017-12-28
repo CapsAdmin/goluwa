@@ -3,10 +3,10 @@ local search_paths = {
 	workshop = "",
 	lua = "lua/",
 	lcl = "lua/",
-	data = gine.dir .. "data/",
-	download = gine.dir .. "download/",
-	mod = gine.dir,
-	base_path = gine.dir .. "../bin/",
+	data = "os:" .. gine.dir .. "data/",
+	download = "os:" .. gine.dir .. "download/",
+	mod = "os:" .. gine.dir,
+	base_path = "os:" .. gine.dir .. "../bin/",
 }
 
 do
@@ -78,7 +78,7 @@ do
 	end
 
 	function file.CreateDir(path, where)
-		vfs.OSCreateDirectory(search_paths.data .. path)
+		vfs.CreateDirectory(search_paths.data .. path)
 	end
 end
 
