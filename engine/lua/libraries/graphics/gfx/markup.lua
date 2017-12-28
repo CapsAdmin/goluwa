@@ -1050,8 +1050,9 @@ do -- parse tags
 				if ok then
 					table.insert(out, func)
 				else
-					logf(exp)
+					logf("%s\n", exp)
 					logf("markup expression error: %s", func)
+					system.OnError(func)
 				end
 				str = {}
 			elseif char == "," and not in_lua then
@@ -2518,7 +2519,7 @@ do -- selection
 					-- this will ensure a clean output
 					-- but maybe this should be cleaned in the invalidate function instead?
 					if chunk.font and last_font ~= chunk.font then
-						table.insert(out, ("<font=%s>"):format(chunk.font))
+						table.insert(out, ("<font=%s>"):format(chunk.font:GetName()))
 						last_font = chunk.font
 					end
 
