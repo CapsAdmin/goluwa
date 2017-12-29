@@ -108,7 +108,7 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 				to = to .. "." .. ext
 			end
 
-			vfs.CreateDirectory("os:" .. e.DOWNLOAD_FOLDER .. to)
+			vfs.CreateDirectoriesFromPath("os:" .. e.DOWNLOAD_FOLDER .. to)
 			local file_, err = vfs.Open("os:" .. e.DOWNLOAD_FOLDER .. to .. ".temp", "write")
 			file = file_
 

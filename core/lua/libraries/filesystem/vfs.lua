@@ -92,9 +92,14 @@ do -- mounting/links
 					out[out_i] = {path_info = where, context = context, userdata = mount_info.userdata}
 					out_i = out_i + 1
 				end
-			elseif (is_folder and context:IsFolder(path_info)) or (not is_folder and context:IsFile(path_info)) then
-				out[out_i] = {path_info = path_info, context = context, userdata = path_info.userdata}
-				out_i = out_i + 1
+			else
+				if (is_folder and context:IsFolder(path_info)) or (not is_folder and context:IsFile(path_info)) then
+					out[out_i] = {path_info = path_info, context = context, userdata = path_info.userdata}
+					out_i = out_i + 1
+				elseif not is_folder and context:IsFolder({full_path = vfs.GetParentFolderFromPath(path_info.full_path)}) then
+					out[out_i] = {path_info = path_info, context = context, userdata = path_info.userdata}
+					out_i = out_i + 1
+				end
 			end
 		end
 
