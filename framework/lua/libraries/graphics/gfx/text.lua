@@ -25,9 +25,6 @@ function gfx.DrawText(str, x, y, w)
 	if not font then
 		render2d.SetTexture(render.GetErrorTexture())
 		render2d.DrawRect(x,y,32,32)
-	elseif not font:IsReady() then
-		render2d.SetTexture(render.GetLoadingTexture())
-		render2d.DrawRect(x,y,32,32)
 	else
 		font:DrawString(str, x, y, w)
 	end

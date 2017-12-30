@@ -318,9 +318,18 @@ local flags = {
 	color = bit.lshift(1, 20),
 }
 
+local default_flags = {"color", "force_autohint"}
+
+local function table_to_flags(tbl)
+	local b = 0
+	for i,v in ipairs(tbl) do
+		b = bit.bor(b, flags[v])
+	end
+	return b
+end
+
 function META:GetGlyphData(code)
-	if not self.Ready then return end -- ????????
-	if freetype.LoadChar(self.face, utf8.byte(code), bit.bor(flags.color, flags.force_autohint)) == 0 then
+	if freetype.LoadChar(self.face, utf8.byte(code), table_to_flags(self.Flags or default_flags)) == 0 then
 		freetype.RenderGlyph(self.face.glyph, 1)
 
 		local glyph = self.face.glyph
@@ -329,6 +338,12 @@ function META:GetGlyphData(code)
 		if bitmap.width == 0 and bitmap.rows == 0 and utf8.byte(code) > 128 then
 			return
 		end
+
+		local one_bit = bitmap.pixel_mode == 1
+
+		local temp = ffi.new("struct FT_Bitmap_[1]")
+		freetype.BitmapConvert(fonts.freetype_lib[0], bitmap, temp, 1)
+		bitmap = temp[0]
 
 		local char = {
 			char = code,
@@ -350,6 +365,9 @@ function META:GetGlyphData(code)
 				copy[x][y][1] = 255
 				copy[x][y][2] = 255
 				copy[x][y][3] = bitmap.buffer[i+0]
+				if one_bit then
+					copy[x][y][3] = copy[x][y][3] == 0 and 0 or 255
+				end
 				i = i + 1
 			end
 		end

@@ -14,6 +14,7 @@ META:IsSet("Ready", false)
 META:IsSet("ReverseDraw", false)
 META:GetSet("LoadSpeed", 10)
 META:GetSet("TabWidthMultiplier", 4)
+META:GetSet("Flags")
 
 function META:GetGlyphData(code)
 	error("not implemented")
@@ -90,7 +91,9 @@ function META:LoadGlyph(code)
 end
 
 function META:DrawString(str, x, y, w)
-	if not self.Ready then return end
+	if not self.Ready then
+		return fonts.loading_font:DrawString(str, x, y, w)
+	end
 
 	if str == nil then str = "nil" end
 
@@ -153,13 +156,17 @@ function META:GetChar(char)
 		return self.chars[char]
 	end
 
+	if char == "\n" and data.h <= 1 then
+		data.h = self.Size
+	end
+
 	return data
 end
 
 function META:CompileString(data)
 
 	if not self.Ready then
-		return false, "font not loaded"
+		return fonts.loading_font:CompileString(data)
 	end
 
 	local vertex_count = 0
@@ -280,7 +287,9 @@ function META:CompileString(data)
 end
 
 function META:GetTextSize(str)
-	if not self.Ready then return 0,0 end
+	if not self.Ready then
+		return fonts.loading_font:GetTextSize(str)
+	end
 
 	str = tostring(str)
 
