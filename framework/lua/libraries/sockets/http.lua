@@ -53,8 +53,6 @@ function sockets.SetupReceiveHTTP(socket, info)
 	local code_desc
 
 	local function done()
-		if info.on_chunks then system.pcall(info.callback) return end
-
 		content = table.concat(content, "")
 		local length = header["content-length"]
 
@@ -128,9 +126,9 @@ function sockets.SetupReceiveHTTP(socket, info)
 
 			if info.on_chunks then
 				info.on_chunks(str)
-			else
-				table.insert(content, str)
 			end
+
+			table.insert(content, str)
 
 			if info.progress_callback then
 				info.progress_callback(content, str, length, header)
@@ -339,23 +337,20 @@ function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 
 	sockets.Request({
 		url = url,
-		on_chunks = on_chunks and function(...)
+		on_chunks = function(...)
 			cb:callextra(url, "on_chunks", ...)
-		end or nil,
+		end,
 		callback = function(data)
-			if on_chunks then
-				cb:stop(url)
+
+			if not data then
+				cb:callextra(url, "on_fail", "data is nil")
+			elseif data.header["content-length"] == 0 then
+				cb:callextra(url, "on_fail", "content length is zero")
 			else
-				if not data then
-					cb:callextra(url, "on_fail", "data is nil")
-				elseif data.header["content-length"] == 0 then
-					cb:callextra(url, "on_fail", "content length is zero")
-				else
-					if sockets.debug_download then
-						llog("finished downloading ", url)
-					end
-					cb:stop(url, data.content)
+				if sockets.debug_download then
+					llog("finished downloading ", url)
 				end
+				cb:stop(url, data.content)
 			end
 			cb:uncache(url)
 			pop_download()
