@@ -335,12 +335,17 @@ function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 
 	cb:start(url, callback, {on_fail = on_fail, on_chunks = on_chunks, on_header = on_header})
 
+	event.Call("DownloadStart", url)
+
 	sockets.Request({
 		url = url,
 		on_chunks = function(...)
+			event.Call("DownloadChunkReceived", url, ...)
+
 			cb:callextra(url, "on_chunks", ...)
 		end,
 		callback = function(data)
+			event.Call("DownloadStop", url, data)
 
 			if not data then
 				cb:callextra(url, "on_fail", "data is nil")
@@ -352,10 +357,14 @@ function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 				end
 				cb:stop(url, data.content)
 			end
+
 			cb:uncache(url)
+
 			pop_download()
 		end,
 		header_callback = function(header)
+			event.Call("DownloadHeaderReceived", url, header)
+
 			if cb:callextra(url, "on_header", header) == false then
 				cb:uncache(url)
 				pop_download()
@@ -384,7 +393,10 @@ function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 			end
 		end,
 		code_callback = function(code)
+
 			if code == 404 or code == 400 then
+				event.Call("DownloadStop", url, nil, "recevied code " .. code)
+
 				cb:callextra(url, "on_fail", "error code " .. tostring(code))
 				cb:uncache(url)
 				pop_download()
@@ -409,6 +421,7 @@ function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 end
 
 function sockets.AbortDownload(url)
+	event.Call("DownloadStop", url, nil, "aborted")
 	cb:uncache(url)
 	pop_download()
 	if sockets.debug_download then llog("download aborted ", url) end
