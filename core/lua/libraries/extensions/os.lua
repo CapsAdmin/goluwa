@@ -32,7 +32,7 @@ do -- by Python1320
 		if a<0 then negative=true a=a*-1 end
 		local f,s,m,h,d
 		f=a - math.floor(a)
-		f=math.Round(f*10)*0.1
+		f=math.round(f*10)*0.1
 		a=math.floor(a)
 		d=math.floor(a/dd)
 		a=a-d*dd
@@ -43,10 +43,10 @@ do -- by Python1320
 		s=a
 		return {
 			f=f,
-			s=s,
-			m=m,
-			h=h,
-			d=d,
+			sec=s,
+			min=m,
+			hour=h,
+			day=d,
 			n=negative
 		}
 	end
@@ -56,26 +56,28 @@ do -- by Python1320
 	local conjunction=  " and"
 	local conjunction2= ","
 
-	function os.prettydate(t)
+	function os.prettydate(t, just_time)
 		if type(t)=="number" then
 			t = os.datetable(t)
 		end
 
+		if just_time then t.n = nil end
+
 		local tbl={}
-		if t.d~=0 then
+		if t.day~=0 then
 			table.insert(tbl,t.day .." day"..(t.day==1 and "" or "s"))
 		end
 
 		local lastand
-		if t.h~=0 then
+		if t.hour~=0 then
 			if #tbl>0 then lastand=table.insert(tbl,conjunction)table.insert(tbl," ")end
 			table.insert(tbl,t.hour .." hour"..(t.hour==1 and "" or "s"))
 		end
-		if t.m~=0 then
+		if t.min~=0 then
 			if #tbl>0 then lastand=table.insert(tbl,conjunction)table.insert(tbl," ")end
 			table.insert(tbl,t.min .." minute"..(t.min==1 and "" or "s"))
 		end
-		if t.s~=0 or #tbl==0 then
+		if t.sec~=0 or #tbl==0 then
 			if #tbl>0 then lastand=table.insert(tbl,conjunction)table.insert(tbl," ")end
 			table.insert(tbl,t.sec .."."..math.round((t.f or 0)*10).." seconds")
 		end
