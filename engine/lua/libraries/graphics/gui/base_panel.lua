@@ -2679,6 +2679,12 @@ do -- events
 		-- this is important!!
 		self:UnParent()
 		self:OnUnfocus()
+
+		if self:HasParent() then
+			self:GetParent():Layout()
+		else
+			gui.world:Layout()
+		end
 	end
 
 	function META:OnSystemFileDrop(path) end
