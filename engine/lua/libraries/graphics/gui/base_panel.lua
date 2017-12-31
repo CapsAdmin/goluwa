@@ -1924,14 +1924,19 @@ do -- layout
 		for _, child in ipairs(self:GetChildren()) do
 			if child.layout_commands then
 				for _, cmd in ipairs(child.layout_commands) do
-					if tr_child[cmd] then
-						child[tr_child[cmd]](child)
-					elseif tr_self[cmd] then
-						self[tr_self[cmd]](self)
-					elseif type(cmd) == "function" then
-						cmd(child, self)
-					elseif typex(cmd) == "vec2" then
-						child:SetSize(cmd:Copy())
+					if typex(cmd) == "panel" then
+						child.last_layout_panel = cmd
+					else
+						if tr_child[cmd] then
+							child[tr_child[cmd]](child)
+						elseif tr_self[cmd] then
+							self[tr_self[cmd]](self)
+						elseif type(cmd) == "function" then
+							cmd(child, self)
+						elseif typex(cmd) == "vec2" then
+							child:SetSize(cmd:Copy())
+						end
+						child.last_layout_panel = nil
 					end
 				end
 			end
@@ -2328,6 +2333,10 @@ do -- layout
 		function META:MoveUp()
 			local parent = self:GetParent()
 
+			if self.last_layout_panel then
+				self:MoveUpOf(self.last_layout_panel)
+			end
+
 			if not self.laid_out_y then
 				self:SetY(999999999999) -- :(
 			end
@@ -2340,6 +2349,10 @@ do -- layout
 
 		function META:MoveLeft()
 			local parent = self:GetParent()
+
+			if self.last_layout_panel then
+				self:MoveLeftOf(self.last_layout_panel)
+			end
 
 			if not self.laid_out_x then
 				self:SetX(999999999999)
@@ -2363,6 +2376,10 @@ do -- layout
 		function META:MoveDown()
 			local parent = self:GetParent()
 
+			if self.last_layout_panel then
+				self:MoveDownOf(self.last_layout_panel)
+			end
+
 			if not self.laid_out_y then
 				self:SetY(-999999999999)
 			end
@@ -2375,6 +2392,10 @@ do -- layout
 
 		function META:MoveRight()
 			local parent = self:GetParent()
+
+			if self.last_layout_panel then
+				self:MoveRightOf(self.last_layout_panel)
+			end
 
 			if not self.laid_out_x then
 				self:SetX(-999999999999)
