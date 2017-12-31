@@ -193,11 +193,13 @@ local function find_font(name, callback, on_error)
 			local full_path
 
 			if info.archive then
-				vfs.Write("data/temp.zip", content)
-				full_path = info.archive(R("data/temp.zip") .. "/", name)
+				local path = "data/temp_"..crypto.CRC32(url)..".zip"
+				vfs.Write(path, content)
+				full_path = info.archive(R(path) .. "/", name)
 				if full_path then
 					content = vfs.Read(full_path)
 					ext = full_path:match(".+(%.%a+)")
+					vfs.Delete(path)
 				else
 					resource.Download(fonts.default_font_path, callback)
 					return
