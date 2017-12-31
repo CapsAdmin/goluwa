@@ -430,6 +430,8 @@ do -- tcp socket meta
 
 						self:OnReceive(data)
 
+						if not self:IsValid() then return end
+
 						self:Timeout(false)
 
 						if self.__server then
