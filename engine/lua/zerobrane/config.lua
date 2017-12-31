@@ -20,15 +20,13 @@ excludelist = {
 	"goluwa_ffmpeg/",
 	"private/",
 	"megahal/",
-	"love_games/",
 	"TinyC/",
 	"vlc/",
 	"wiki/",
 	"vlc/",
 	"shell32/",
 	"chromium/",
-	"src/lua/build/*/repo/",
-	"gmod_addons/",
+	"framework/lua/build/*/repo/",
 }
 
 binarylist = {
@@ -36,8 +34,12 @@ binarylist = {
 	"*.so",
 	"AUTHORS",
 	"COPYING",
-	"src/saved/",
-	"src/languages/",
+	"framework/lua/build/*/repo/",
+	"love_games/",
+	"*/lua/modules/",
+	"__*/",
+	"game/lua/examples/",
+	"pac3_server/addons/serverassets/"
 }
 
 
