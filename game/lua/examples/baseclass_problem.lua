@@ -35,4 +35,4 @@ do
 end
 
 local obj = TEST()
-obj:Something() -- stack overflow
+obj:Something() -- stack overflow would occur if self was used instead of META in :Something
