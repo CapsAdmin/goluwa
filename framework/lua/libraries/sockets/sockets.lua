@@ -151,7 +151,8 @@ local function new_socket(override, META, typ, id)
 
 	if typ == "udp" or typ == "tcp" then
 		self.socket = override or assert(sockets.luasocket[typ]())
-		self.socket:settimeout(0)
+		self.socket:settimeout(0, "block")
+		self.socket:settimeout(0, "total")
 	end
 
 	self.socket_type = typ
@@ -316,7 +317,6 @@ do -- tcp socket meta
 
 		function CLIENT:Think()
 			local sock = self.socket
-			sock:settimeout(0)
 
 			if self.TimeoutLength and system.GetFrameTime() > self.TimeoutLength / 2 then
 				self:Timeout(false)
@@ -331,7 +331,8 @@ do -- tcp socket meta
 					if self.SSLParams then
 						self.old_socket = sock
 						sock = assert(sockets.ssl.wrap(sock, self.SSLParams))
-						assert(sock:settimeout(0, "t"))
+						assert(sock:settimeout(0, "total"))
+						assert(sock:settimeout(0, "block"))
 						self.socket = sock
 
 						self.ssl_socket = sock
@@ -417,7 +418,7 @@ do -- tcp socket meta
 					mode = receive_types[self.ReceiveMode] or self.ReceiveMode
 				end
 
-				while true do
+				for _ = 1, 128 do
 					local data, err, partial = sock:receive(mode)
 
 					if not data and partial and partial ~= "" then
@@ -428,6 +429,7 @@ do -- tcp socket meta
 						self:DebugPrintf("RECV: |%s|",  data)
 
 						self:OnReceive(data)
+
 						self:Timeout(false)
 
 						if self.__server then
@@ -539,6 +541,8 @@ do -- tcp socket meta
 			if not self.connected then return "nil" end
 			local ip, port
 			local socket = self.old_socket or self.socket
+
+			if not socket then return "nil" end
 
 			if self.__server then
 				ip, port = socket:getpeername()
@@ -746,7 +750,6 @@ do -- tcp socket meta
 				end
 			elseif self.socket_type == "tcp" then
 				local sock = self.socket
-				sock:settimeout(0)
 
 				local client = sock:accept()
 

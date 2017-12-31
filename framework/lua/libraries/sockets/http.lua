@@ -305,7 +305,7 @@ local count = 0
 local queue = {}
 
 local function push_download(...)
-	if count >= 10 then
+	if count >= 1 then
 		table.insert(queue, table.pack(...))
 		llog("too many downloads (queue size: %s)", #queue)
 	else
