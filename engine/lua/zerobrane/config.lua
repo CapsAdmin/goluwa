@@ -12,7 +12,7 @@ outlineinactivity = false
 acandtip.droprest = false
 
 staticanalyzer.luacheck = true
---filetree.mousemove = false
+filetree.mousemove = false
 
 excludelist = {
 	"capsadmin/",
