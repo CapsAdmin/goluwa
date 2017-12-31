@@ -42,6 +42,7 @@ META:StartStorable()
 	META:GetSet("WrapR", "repeat")
 	META:GetSet("Anisotropy", -1)
 	META:GetSet("SeamlessCubemap", false)
+	META:GetSet("LoadingTexture")
 META:EndStorable()
 
 META:IsSet("Loading", false)

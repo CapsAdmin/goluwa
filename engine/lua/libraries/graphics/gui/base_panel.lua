@@ -2548,7 +2548,7 @@ do -- skin
 	end
 
 	function META:GetSkin()
-		return self.Skin or gui.skin
+		return self.Skin or gui.GetSkin()
 	end
 
 	function META:SetStyle(name)

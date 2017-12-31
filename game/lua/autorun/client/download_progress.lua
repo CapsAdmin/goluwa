@@ -127,7 +127,8 @@ function downprog.Stop(url)
 end
 
 event.AddListener("DownloadStart", "downprog", function(url)
-	downprog.Start(url)
+	-- this can be problematic to call the same frame because of gui
+	event.Delay(0, function() downprog.Start(url) end)
 end)
 
 event.AddListener("DownloadHeaderReceived", "downprog", function(url, header)

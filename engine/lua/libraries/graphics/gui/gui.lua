@@ -47,7 +47,7 @@ function gui.CreatePanel(name, parent, store_in_parent)
 	if parent and parent.Skin then
 		self:SetSkin(parent:GetSkin())
 	else
-		self:OnStyleChanged(gui.skin)
+		self:SetSkin(gui.GetSkin())
 	end
 
 	gui.panels[self] = self

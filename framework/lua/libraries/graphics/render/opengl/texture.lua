@@ -426,7 +426,7 @@ end
 
 function META:Bind(location)
 	if self.Loading then
-		self = render.GetLoadingTexture()
+		self = self:GetLoadingTexture() or render.GetLoadingTexture()
 	end
 
 	self.gl_tex:Bind(location or 0)

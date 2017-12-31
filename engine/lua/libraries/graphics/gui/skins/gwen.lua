@@ -41,6 +41,7 @@ for i, sub_skin in ipairs(skins) do
 		})
 
 		local texture = render.CreateTextureFromPath("textures/gui/skins/" .. sub_skin)
+		texture:SetLoadingTexture(render.GetNoiseTexture())
 		texture:SetMinFilter("nearest")
 
 		texture.OnLoad = function()
@@ -53,7 +54,7 @@ for i, sub_skin in ipairs(skins) do
 			skin.property_background = texture:GetPixelColor(28, 500)
 
 			for k,v in pairs(gui.panels) do
-				if v:HasSkin(skin.name) then
+				if v:HasSkin(skin.Name) then
 					v:SetSkin(skin)
 				end
 			end
