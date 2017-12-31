@@ -14,6 +14,8 @@ acandtip.droprest = false
 staticanalyzer.luacheck = true
 filetree.mousemove = false
 
+ini = FileNormalizePath(".zbconf")
+
 excludelist = {
 	"capsadmin/",
 	"data/",
