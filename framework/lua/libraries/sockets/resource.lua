@@ -4,6 +4,8 @@ resource.providers = resource.providers or {}
 e.DOWNLOAD_FOLDER = e.DATA_FOLDER .. "downloads/"
 local etags_file = e.DOWNLOAD_FOLDER .. "resource_etags.txt"
 
+--os.execute("rm -rf " .. R(e.DOWNLOAD_FOLDER))
+
 vfs.CreateDirectory("os:" .. e.DOWNLOAD_FOLDER)
 vfs.Mount("os:" .. e.DOWNLOAD_FOLDER, "os:downloads")
 
