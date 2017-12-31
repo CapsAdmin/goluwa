@@ -401,6 +401,8 @@ function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 				cb:uncache(url)
 				pop_download()
 				return false
+			else
+				event.Call("DownloadCodeReceived", url, code)
 			end
 
 			if sockets.debug_download then llog("downloading ", url) end
