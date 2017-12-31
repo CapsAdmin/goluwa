@@ -11,6 +11,7 @@ function downprog.Start(url)
 	pnl:SetMargin(Rect() + margin)
 	pnl:SetStyle("frame")
 	pnl:SetupLayout("right", "bottom")
+	pnl:SetCollisionGroup("download_progress")
 
 	local title = pnl:CreatePanel("text")
 	title:SetText(url:match(".+/(.+)"))
