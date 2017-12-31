@@ -244,8 +244,10 @@ function META:Initialize()
 
 		if not data then
 			wlog(err)
-			if path ~= fonts.default_font_path then
+			if path ~= R(fonts.default_font_path) then
 				resource.Download(fonts.default_font_path, load)
+			else
+				vfs.Delete(path)
 			end
 			return
 		end
@@ -273,6 +275,8 @@ function META:Initialize()
 			--load(fonts.default_font_path)
 			if path ~= R(fonts.default_font_path) then
 				resource.Download(fonts.default_font_path, load)
+			else
+				vfs.Delete(path)
 			end
 		end
 	end
