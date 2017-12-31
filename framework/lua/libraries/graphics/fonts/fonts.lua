@@ -75,12 +75,9 @@ function fonts.GetMiniFont()
 
 	fonts.minifont = fonts.minifont or fonts.CreateFont({
 		path = "data/fonts/minifont.bdf",
-
 		size = 6,
-		--padding = 2,
-		--spacing = 1,
 		filtering = "nearest",
-		scale = Vec2() + 2,
+		--scale = Vec2(),
 	})
 	return fonts.minifont
 end
