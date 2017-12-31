@@ -55,10 +55,6 @@ do
 			return cache[font][str][1], cache[font][str][2]
 		end
 
-		if not font:IsReady() then
-			return font.Size, font.Size
-		end
-
 		local x, y = font:GetTextSize(str)
 
 		cache[font] = cache[font] or table.weak()
