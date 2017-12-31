@@ -1,9 +1,8 @@
 local resource = _G.resource or {}
 
 resource.providers = resource.providers or {}
-
-local etags_file = "resource_etags.txt"
 e.DOWNLOAD_FOLDER = e.DATA_FOLDER .. "downloads/"
+local etags_file = e.DOWNLOAD_FOLDER .. "resource_etags.txt"
 
 vfs.CreateDirectory("os:" .. e.DOWNLOAD_FOLDER)
 vfs.Mount("os:" .. e.DOWNLOAD_FOLDER, "os:downloads")
