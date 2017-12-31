@@ -11,7 +11,7 @@ function sockets.HeaderToTable(header)
 
 	if not header then return tbl end
 
-	for line in header:gmatch("(.-)\n") do
+	for _, line in ipairs(header:split("\n")) do
 		local key, value = line:match("(.+):%s+(.+)\r")
 
 		if key and value then
@@ -81,7 +81,10 @@ function sockets.SetupReceiveHTTP(socket, info)
 				return
 			end
 
-			local header_data, content_data = str:match("(.-\r\n\r\n)(.+)")
+			local _, split_pos = str:find("\r\n\r\n", 0, true)
+
+			local header_data = split_pos and str:sub(0, split_pos)
+			local content_data = split_pos and str:sub(split_pos + 1)
 
 			-- just the header?
 			if not header_data then
@@ -305,9 +308,12 @@ local count = 0
 local queue = {}
 
 local function push_download(...)
-	if count >= 1 then
+	if count >= 3 then
 		table.insert(queue, table.pack(...))
 		llog("too many downloads (queue size: %s)", #queue)
+		for i,v in ipairs(queue) do
+			logf("[%i]%s\n", i, v[1])
+		end
 	else
 		count = count + 1
 		return true
@@ -359,7 +365,6 @@ function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 			end
 
 			cb:uncache(url)
-
 			pop_download()
 		end,
 		header_callback = function(header)
