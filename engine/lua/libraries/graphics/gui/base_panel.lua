@@ -1756,6 +1756,7 @@ do -- layout
 	META:GetSet("LayoutSize", nil)
 	META:GetSet("IgnoreLayout", false)
 	META:GetSet("CollisionGroup", "none")
+	META:GetSet("OthersAlwaysCollide", false)
 
 	local origin
 
@@ -1781,7 +1782,7 @@ do -- layout
 				b.Visible and
 				not b.ThreeDee and
 				not b.IgnoreLayout and
-				(self.CollisionGroup == "none" or self.CollisionGroup == b.CollisionGroup)
+				(self.CollisionGroup == b.CollisionGroup or b.OthersAlwaysCollide)
 			then
 				local b_lft, b_top, b_rgt, b_btm = b:GetWorldRectFast()
 

@@ -457,6 +457,8 @@ function gui.Initialize()
 			local bar = gui.CreatePanel("base")
 			bar:SetStyle("gradient")
 			bar:SetVisible(false)
+			bar:SetOthersAlwaysCollide(true)
+			bar:SetCollisionGroup("taskbar")
 
 			bar.buttons = {}
 
