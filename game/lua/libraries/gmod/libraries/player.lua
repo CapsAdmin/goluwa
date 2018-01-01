@@ -4,30 +4,24 @@ do
 
 	function player.GetAll()
 		local out = {}
-		local i = 1
 
-		for _, ent in pairs(gine.objects.Player) do
-			if ent:IsValid() then
-				table.insert(out, ent)
-			end
+		for _, cl in ipairs(clients.GetAll()) do
+			table.insert(out, gine.WrapObject(cl, "Player"))
 		end
 
 		return out
 	end
 
 	function player.GetCount()
-		return #player.GetAll()
+		return #clients.GetAll()
 	end
 
 	function player.GetHumans()
 		local out = {}
-		local i = 1
 
-		for _, ent in pairs(gine.objects.Player) do
-			if not ent.__obj:IsBot() then
-				if ent:IsValid() then
-					table.insert(out, ent)
-				end
+		for _, cl in ipairs(clients.GetAll()) do
+			if not cl:IsBot() then
+				table.insert(out, gine.WrapObject(cl, "Player"))
 			end
 		end
 
@@ -36,19 +30,15 @@ do
 
 	function player.GetBots()
 		local out = {}
-		local i = 1
 
-		for _, ent in pairs(gine.objects.Player) do
-			if ent.__obj:IsBot() then
-				table.insert(out, ent)
+		for _, cl in ipairs(clients.GetAll()) do
+			if cl:IsBot() then
+				table.insert(out, gine.WrapObject(cl, "Player"))
 			end
 		end
 
 		return out
 	end
-
-	player.GetHumans = player.GetAll
-	function player.GetBots() return {} end
 end
 
 do
@@ -63,7 +53,7 @@ do
 		return gine.local_player
 	end
 
-	function gine.env.Player()
+	function gine.env.Player(idx)
 		return gine.env.LocalPlayer()
 	end
 
