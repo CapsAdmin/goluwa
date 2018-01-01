@@ -152,8 +152,8 @@ do
 		gine.env.gamemode.Call("PlayerEndVoice", gine.env.LocalPlayer())
 	end)
 
-	gine.SetupKeyBind("t", "messagemode")
-	gine.SetupKeyBind("u", "messagemode2")
+	gine.SetupKeyBind("t", "messagemode", function() chat.Open() end)
+	gine.SetupKeyBind("u", "messagemode2", function() chat.Open() end)
 
 	gine.SetupKeyBind("tab", "+score", function()
 		gine.env.gamemode.Call("ScoreboardShow")

@@ -165,7 +165,7 @@ gine.AddEvent("PostDrawGUI", function()
 end)
 
 gine.AddEvent("ChatOpen", function()
-	if gine.env.gamemode.Call("StartChat", false) ~= nil then
+	if gine.env.gamemode.Call("StartChat", false) == true then
 		return false
 	end
 end)

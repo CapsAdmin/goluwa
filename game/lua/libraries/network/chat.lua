@@ -83,6 +83,7 @@ function chat.ClientSay(client, str, skip_log, seed)
 			chat.seed = chat.seed + 1
 		end
 	end
+	return false
 end
 
 if SERVER then

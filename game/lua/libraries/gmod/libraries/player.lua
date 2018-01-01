@@ -285,7 +285,18 @@ do
 
 	gine.AddEvent("ClientChat", function(client, msg)
 		local ply = gine.WrapObject(client, "Player")
-		gine.env.gamemode.Call("OnPlayerChat", ply, msg, false, not ply:Alive())
+		if gine.env.gamemode.Call("OnPlayerChat", ply, msg, false, not ply:Alive()) == true then
+
+			if SERVER then
+				message.Broadcast("say", client, str, chat.seed)
+			end
+
+			if SERVER or not network.IsConnected() then
+				chat.seed = chat.seed + 1
+			end
+
+			return false
+		end
 	end)
 
 	if RELOAD then
