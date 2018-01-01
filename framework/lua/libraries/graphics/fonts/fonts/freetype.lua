@@ -243,13 +243,15 @@ function META:Initialize()
 		local data, err = vfs.Read(path)
 
 		if not data then
-			wlog(err)
-			if path ~= R(fonts.default_font_path) then
-				resource.Download(fonts.default_font_path, load)
-			else
+			wlog("unable to read font (%s): %s", path, err)
+
+			if err == "unknown file format" then
 				vfs.Delete(path)
+
+				if path == R(fonts.default_font_path) then return end
 			end
-			return
+
+			resource.Download(fonts.default_font_path, load)
 		end
 
 		self.char_buffer = data
@@ -271,13 +273,17 @@ function META:Initialize()
 
 			self:OnLoad()
 		else
-			wlog("unable to initialize font ("..path.."): " .. (freetype.ErrorCodeToString(code) or code))
-			--load(fonts.default_font_path)
-			if path ~= R(fonts.default_font_path) then
-				resource.Download(fonts.default_font_path, load)
-			else
+			local err = tostring((freetype.ErrorCodeToString(code) or code))
+
+			wlog("unable to initialize font (%s): %s", path, err)
+
+			if err == "unknown file format" then
 				vfs.Delete(path)
+
+				if path == R(fonts.default_font_path) then return end
 			end
+
+			resource.Download(fonts.default_font_path, load)
 		end
 	end
 
