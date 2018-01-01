@@ -58,7 +58,11 @@ do
 				return ent
 			end
 		end
+
+		return NULL
 	end
+
+	gine.env.Entity = gine.env.ents.GetByIndex
 
 	function gine.env.ents.FindInSphere(pos)
 		return {}
