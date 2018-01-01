@@ -85,6 +85,10 @@ event.AddListener("Update", "rate_limit", function(dt)
 		end
 	end
 
+	if SERVER then
+		rate = 66
+	end
+
 	if rate > 0 then
 		system.Sleep(math.floor(1/rate * 1000))
 	end
