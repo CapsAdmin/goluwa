@@ -52,9 +52,10 @@ do -- peer
 		self.peer = lib.HostConnect(self.host, ipport2address(ip, port), channels, 0)
 	end
 
-	function CLIENT:Disconnect(why)
-		why = why or 0
-		lib.PeerDisconnect(self.peer, 0)--why)
+	function CLIENT:Disconnect(code)
+		code = code or 0
+
+		lib.PeerDisconnect(self.peer, code)
 
 		if self.host then
 			local evt = ffi.new("struct _ENetEvent[1]")
@@ -229,7 +230,7 @@ event.Timer("enet", 1/30, 0, function()
 					if enet.debug then llog("%s: disconnected from server", socket) end
 				else
 					local peer = socket.peers[getuid(evt[0].peer)]
-					socket:OnPeerDisconnect(peer)
+					socket:OnPeerDisconnect(peer, evt[0].data)
 					peer:OnDisconnect()
 					peer.connected = false
 					socket.peers[getuid(peer.peer)] = nil

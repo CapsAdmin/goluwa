@@ -29,12 +29,12 @@ end)
 
 if SERVER then
 
-	event.AddListener("PeerDisconnect", "network", function(peer)
+	event.AddListener("PeerDisconnect", "network", function(peer, code)
 		local uid = ipport_to_uid(peer)
 		local client = clients.GetByUniqueID(uid)
 
 		if client:IsValid() then
-			client:Disconnect("unknown reason") -- todo: reason
+			client:Disconnect(code)
 			client:Remove()
 		end
 	end)
@@ -249,8 +249,8 @@ do
 			network.Connect(ip, port)
 		end)
 
-		commands.Add("disconnect=arg_line", function(line)
-			network.Disconnect(line)
+		commands.Add("disconnect", function()
+			network.Disconnect()
 		end)
 	end
 

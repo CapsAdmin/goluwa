@@ -67,15 +67,22 @@ function META:GetUniqueColor()
 end
 
 if SERVER then
-	function META:Disconnect(reason)
+	local reasons = {
+		[0] = "timeout / unknown reason",
+		[1] = "disconnected",
+	}
+
+	function META:Disconnect(code)
 		if not self.disconnected then
 			self.disconnected = true
+
+			local reason = reasons[code] or "unknown disconnect code " .. code
 
 			event.Call("ClientLeft", self, reason)
 			message.Send("remove_client", nil, self:GetUniqueID(), reason)
 
 			if self.socket:IsValid() then
-				self.socket:Disconnect(reason)
+				self.socket:Disconnect(code)
 			end
 		end
 	end

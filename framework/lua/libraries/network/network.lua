@@ -49,20 +49,22 @@ if CLIENT then
 		return peer
 	end
 
-	function network.Disconnect(reason)
-		reason = reason or "left"
-
+	function network.Disconnect()
 		if network.IsConnected() then
+
 			network.socket:Disconnect(1)
 			network.socket:Remove()
 
-			llog("disconnected from server (%s)", reason or "unknown reason")
+			llog("disconnected from server")
+
 			network.just_disconnected = true
 			network.started = false
 
-			event.Call("Disconnected", reason)
+			event.Call("Disconnected")
 		end
 	end
+
+	event.AddListener("ShutDown", network.Disconnect)
 
 	function network.IsConnected()
 		if network.just_disconnected then
@@ -106,8 +108,8 @@ if SERVER then
 			event.Call("PeerConnect", peer)
 		end
 
-		function server:OnPeerDisconnect(peer)
-			event.Call("PeerDisconnect", peer)
+		function server:OnPeerDisconnect(peer, code)
+			event.Call("PeerDisconnect", peer, code)
 		end
 
 		network.socket = server
