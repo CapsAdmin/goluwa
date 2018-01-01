@@ -48,6 +48,11 @@ function bot:OnClientChat(client, str)
 end
 
 bot:AddEvent("ClientChat")
+bot:AddEvent("NetworkStarted")
+ALAN = bot
+function bot:OnNetworkStarted()
+	self:Remove()
+end
 
 do -- not so elegant login
 	local username = "notreallyanemailaddress@goluwa.com"
