@@ -297,3 +297,11 @@ end
 function gine.env.game.SinglePlayer()
 	return false
 end
+
+if SERVER then
+	event.AddListener("ClientEntered", "ginit_client", function(client)
+		if gine.env then
+			client:Cexec("ginit")
+		end
+	end)
+end
