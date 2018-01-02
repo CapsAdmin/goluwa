@@ -30,10 +30,8 @@ if CLIENT then
 		for _, v in pairs(args) do
 			if type(v) == "table" and type(v.IsValid) == "function" then
 				if not v:IsValid() then
-					llog("message.OnMessageReceived: event message from server contains NULL value")
-					for k,v in pairs(args) do
-						print(k, v)
-					end
+					llog("%q message from server contains NULL value", id)
+					table.print(args)
 					return
 				end
 			end
