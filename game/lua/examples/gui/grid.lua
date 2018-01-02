@@ -1,7 +1,7 @@
 steam.MountSourceGame("gmod")
 
 local base = gui.CreatePanel("base", nil, "lol")
-base:SetSize(Vec2()+1024)
+base:SetSize(Vec2()+512)
 base:CenterSimple()
 base:SetStack(true)
 base:SetResizable(true)
@@ -15,8 +15,6 @@ for _, path in pairs(chathud.emote_shortucts) do
 	icon:SetSize(Vec2()+16)
 	i = i + 1
 end
-
-do return end
 
 for _, path in ipairs(vfs.Find("materials/icon16/", true)) do
 	local icon = base:CreatePanel("image")

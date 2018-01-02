@@ -23,8 +23,8 @@ function base:Add(w,h)
 	return pnl
 end
 
-base:Add(32):SetupLayout("gmod_top")
-base:Add(32):SetupLayout("gmod_fill")
+base:Add(32):SetupLayout("top", "fill_x")
+base:Add(32):SetupLayout("fill")
 
 base:SizeToChildren()
 base:CenterSimple()
