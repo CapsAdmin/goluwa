@@ -56,20 +56,20 @@ if SERVER then
 					llog("client %s done synchronizing nvars", client)
 				end
 
-				event.Call("ClientEntered", client)
-
 				for _, other in ipairs(clients.GetAll()) do
 					if other ~= client then
-						-- tell all the other clients that our client spawned
-						clients.Create(other:GetUniqueID(), other:IsBot(), true, client)
+						-- tell this client about all the clients on the server
+						clients.Create(other:GetUniqueID(), other:IsBot(), true, client, false, true)
 
-						-- tell our client about all the other clients
-						clients.Create(uid, false, true, other)
+						-- tell all the other clients that this client entered
+						clients.Create(client:GetUniqueID(), client:IsBot(), true, other, false, false)
 					end
 				end
 
-				-- tell our client that it spawned
-				clients.Create(uid, false, true, client, true)
+				-- tell this client that we entered
+				clients.Create(client:GetUniqueID(), client:IsBot(), true, client, true, false)
+
+				event.Call("ClientEntered", client)
 			end)
 		end
 	end)

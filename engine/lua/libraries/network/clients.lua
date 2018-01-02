@@ -23,14 +23,14 @@ function clients.BroadcastLua(str)
 	end
 end
 
-function clients.Create(uniqueid, is_bot, clientside, filter, local_client)
+function clients.Create(uniqueid, is_bot, clientside, filter, local_client, existing)
 	local self = clients.active_clients_uid[uniqueid] or NULL
 
 	if self:IsValid() then
 
 		if SERVER then
 			if clientside == nil or clientside then
-				message.Send("create_client", filter, uniqueid, is_bot, local_client)
+				message.Send("create_client", filter, uniqueid, is_bot, local_client, existing)
 			end
 		end
 
@@ -53,7 +53,7 @@ function clients.Create(uniqueid, is_bot, clientside, filter, local_client)
 
 	if SERVER then
 		if is_bot then
-			message.Send("create_client", filter, uniqueid, is_bot, local_client)
+			message.Send("create_client", filter, uniqueid, is_bot, local_client, false)
 			if event.Call("ClientConnect", self) ~= false then
 				event.Delay(function()
 					event.Call("ClientEntered", self)
@@ -74,7 +74,7 @@ function clients.CreateBot()
 end
 
 if CLIENT then
-	message.AddListener("create_client", function(uniqueid, is_bot, local_client)
+	message.AddListener("create_client", function(uniqueid, is_bot, local_client, existing)
 		local client
 
 		if local_client then
@@ -93,7 +93,11 @@ if CLIENT then
 			client = clients.Create(uniqueid, is_bot)
 		end
 
-		event.Call("ClientEntered", client)
+		event.Call("ClientCreated", client)
+
+		if not existing then
+			event.Call("ClientEntered", client)
+		end
 	end)
 
 	message.AddListener("remove_client", function(uniqueid, reason)
