@@ -45,17 +45,15 @@ function META:GetSizeOfChildren()
 	self:DoLayout()
 
 	local total_size = Vec2()
-	for _, v in ipairs(self:GetChildren()) do
-		if v.Visible == true then
-			local pos = v:GetPosition() + v:GetSize() + v.Padding:GetPosition()
+	for _, v in ipairs(self:GetVisibleChildren()) do
+		local pos = v:GetPosition() + v:GetSize() + v.Padding:GetPosition()
 
-			if pos.x > total_size.x then
-				total_size.x = pos.x
-			end
+		if pos.x > total_size.x then
+			total_size.x = pos.x
+		end
 
-			if pos.y > total_size.y then
-				total_size.y = pos.y
-			end
+		if pos.y > total_size.y then
+			total_size.y = pos.y
 		end
 	end
 	self.last_children_size = total_size
@@ -73,18 +71,20 @@ function META:SizeToChildrenHeight()
 	local min_pos = self.Size.y
 	local max_pos = 0
 
-	for i,v in ipairs(self:GetChildren()) do
+	for i,v in ipairs(self:GetVisibleChildren()) do
 		min_pos = math.min(min_pos, v.Position.y - v.Padding.y - v:GetParentMargin().y)
 	end
 
-	for i,v in ipairs(self:GetChildren()) do
-		v.Position.y = v.Position.y - min_pos
+	for i,v in ipairs(self:GetVisibleChildren()) do
+		local pos_y = v.Position.y - min_pos
 
-		max_pos = math.max(max_pos, v.Position.y + v.Size.y + v.Padding.h)
+		max_pos = math.max(max_pos, pos_y + v.Size.y + v.Padding.h)
 	end
 
 	self.Size.y = max_pos + self.Margin:GetSize().y
 	self.LayoutSize = self.Size:Copy()
+	--self:SetY(0)
+
 	self.laid_out_y = true
 	self.real_size = nil
 end
@@ -99,24 +99,27 @@ function META:SizeToChildrenWidth()
 	local min_pos = self.Size.x
 	local max_pos = 0
 
-	for i,v in ipairs(self:GetChildren()) do
+	for i,v in ipairs(self:GetVisibleChildren()) do
 		min_pos = math.min(min_pos, v.Position.x - v.Padding.x - v:GetParentMargin().x)
 	end
 
-	for i,v in ipairs(self:GetChildren()) do
-		v.Position.x = v.Position.x - min_pos
+	for i,v in ipairs(self:GetVisibleChildren()) do
+		local pos_x = v.Position.x - min_pos
 
-		max_pos = math.max(max_pos, v.Position.x + v.Size.x + v.Padding.w)
+		max_pos = math.max(max_pos, pos_x + v.Size.x + v.Padding.w)
 	end
 
 	self.Size.x = max_pos + self.Margin:GetSize().x
 	self.LayoutSize = self.Size:Copy()
+	--self:SetX(0)
+
 	self.laid_out_x = true
 	self.real_size = nil
 end
 
 function META:SizeToChildren()
 	if #self.Children == 0 then return end
+
 	self.last_children_size = nil
 	self.real_size = self.Size:Copy()
 	self.Size = Vec2() + math.huge
@@ -125,21 +128,24 @@ function META:SizeToChildren()
 	local min_pos = self.Size:Copy()
 	local max_pos = Vec2()
 
-	for i,v in ipairs(self:GetChildren()) do
+	for i,v in ipairs(self:GetVisibleChildren()) do
 		min_pos.x = math.min(min_pos.x, v.Position.x - v.Padding.x - self.Margin.x)
 		min_pos.y = math.min(min_pos.y, v.Position.y - v.Padding.y - self.Margin.y)
 	end
 
-	for i,v in ipairs(self:GetChildren()) do
-		v.Position.x = v.Position.x - min_pos.x
-		v.Position.y = v.Position.y - min_pos.y
+	for i,v in ipairs(self:GetVisibleChildren()) do
+		local pos_x = v.Position.x - min_pos.x
+		local pos_y = v.Position.y - min_pos.y
 
-		max_pos.x = math.max(max_pos.x, v.Position.x + v.Size.x + v.Padding.w)
-		max_pos.y = math.max(max_pos.y, v.Position.y + v.Size.y + v.Padding.h)
+		max_pos.x = math.max(max_pos.x, pos_x + v.Size.x + v.Padding.w)
+		max_pos.y = math.max(max_pos.y, pos_y + v.Size.y + v.Padding.h)
 	end
 
 	self.Size = max_pos + self.Margin:GetSize()
 	self.LayoutSize = self.Size:Copy()
+
+	--self:SetPosition(Vec2())
+
 	self.laid_out_x = true
 	self.laid_out_y = true
 	self.real_size = nil
@@ -880,8 +886,8 @@ do -- scrolling
 			else
 				self.scroll_stop = self.Scroll:Copy()
 			end
-			self.scroll_start:Clamp(Vec2(0), size - self.Size)
-			self.scroll_stop:Clamp(Vec2(0), size - self.Size)
+			self.scroll_start:Clamp(Vec2(0),  self.Size)
+			self.scroll_stop:Clamp(Vec2(0), self.Size)
 		else
 			self.RealScroll = self.Scroll:Copy()
 		end
@@ -898,7 +904,7 @@ do -- scrolling
 		if size.x < self.Size.x then self.Scroll.x = 0 end
 		if size.y < self.Size.y then self.Scroll.y = 0 end
 
-		self.ScrollFraction = self.Scroll / (size - self.Size)
+		self.ScrollFraction = self.Scroll / self.Size
 		self:OnScroll(self.ScrollFraction)
 
 		self:MarkCacheDirty()
