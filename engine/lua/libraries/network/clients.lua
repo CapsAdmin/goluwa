@@ -84,7 +84,9 @@ if CLIENT then
 			local old_nv = client.nv
 			client.nv = nvars.CreateObject(uniqueid)
 			for k, v in pairs(old_nv) do
-				client.nv[k] = v
+				if k ~= "Env" then
+					client.nv[k] = v
+				end
 			end
 
 			clients.active_clients_uid[client.UniqueID] = nil
