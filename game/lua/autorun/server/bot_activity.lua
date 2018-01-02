@@ -34,3 +34,22 @@ commands.Add("bot_activity", function()
 		end
 	end)
 end)
+
+
+BEEF = clients.CreateBot("DEADBEEF", "robots", "0xDEADBEEF")
+BEEF:AddEvent("ClientEntered")
+
+function BEEF:OnClientEntered(client)
+	chat.ClientSay(self, "hi " .. client:GetNick())
+end
+
+BABE = clients.CreateBot("CAFEBABE", "robots", "0xCAFEBABE")
+BABE:AddEvent("ClientChat")
+
+function BABE:OnClientChat(client, str)
+	if client ~= self and math.random() > 0.75 or str:lower():find("cafebabe") then
+		event.Delay(math.random()*3, function()
+			chat.ClientSay(self, client:GetNick() .. ", " .. string.randomwords(math.random(20), math.random()))
+		end)
+	end
+end

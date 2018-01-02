@@ -65,11 +65,12 @@ function clients.Create(uniqueid, is_bot, clientside, filter, local_client, exis
 	return self
 end
 
-function clients.CreateBot()
-	local nick = string.randomwords(1, math.random()):trim()
-	local bot = clients.Create(crypto.CRC32(nick), true)
-	bot:SetNick(nick)
-	bot:SetGroup(math.random() < 0.5 and "bot team a" or "bot team b")
+function clients.CreateBot(nick, group, uid)
+	local bot = clients.Create(uid or crypto.CRC32(tostring(math.random())), true)
+
+	bot:SetNick(nick or string.randomwords(1, math.random()):trim())
+	bot:SetGroup(group or math.random() < 0.5 and "bot team a" or "bot team b")
+
 	return bot
 end
 
