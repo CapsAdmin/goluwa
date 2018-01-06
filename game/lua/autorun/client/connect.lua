@@ -1,0 +1,1 @@
+commands.RunString("connect localhost")
