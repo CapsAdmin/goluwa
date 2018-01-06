@@ -102,7 +102,7 @@ if SOCKETS then
 	sockets.Initialize()
 end
 
-resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/", true)
+resource.AddProvider("https://gitlab.com/CapsAdmin/goluwa-assets/raw/master/base/", true)
 
 if WINDOW then
 	if window.Open() then

@@ -47,7 +47,7 @@ if [ "$1" = "update" ] || [ ! -d "./core/" ]; then
 	if [ -d .git ]; then
 		git pull
 	else
-		download "https://github.com/CapsAdmin/goluwa/archive/master.tar.gz" "temp.tar.gz"
+		download "https://gitlab.com/CapsAdmin/goluwa/repository/master/archive.tar.gz" "temp.tar.gz"
 		tar -xvzf temp.tar.gz
 		cp -r goluwa-master/* .
 		rm temp.tar.gz
@@ -216,7 +216,7 @@ fi
 
 export GOLUWA_ARGS="${GOLUWA_ARGS:-$ARGS}"
 
-#if we don't have binaries get them from github
+#if we don't have binaries get them from gitlab
 if [ ! -f "data/bin/${OS}_${ARCH}/binaries_downloaded" ]; then
 	mkdir -p "data/bin/${OS}_${ARCH}"
 	while true; do

@@ -9,7 +9,7 @@ META:GetSet("UniqueID", "???")
 nvars.IsSet(META, "Bot", false)
 nvars.GetSet(META, "Group", "player")
 nvars.GetSet(META, "Nick", e.USERNAME, "cl_nick")
-nvars.GetSet(META, "AvatarPath", "https://avatars2.githubusercontent.com/u/204157?v=3&s=460", "cl_avatar_path")
+nvars.GetSet(META, "AvatarPath", "https://secure.gravatar.com/avatar/4e6cf67564bd2084b7a4f21453cc99c8?s=180&d=identicon", "cl_avatar_path")
 nvars.GetSet(META, "Ping", -1)
 
 function META:IsConnected()
