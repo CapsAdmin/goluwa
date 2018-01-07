@@ -25,8 +25,15 @@ function PLUGIN:Setup()
 
 	local socket = require("socket")
 
+	local last_msg = ""
+
 	function META:Update()
-		local res, msg = self.socket:connect("localhost", self.port)
+		local res, msg = self.socket:connect("*", self.port)
+
+		if msg ~= last_msg then
+			ide:Print("*", self.port, ":", res, msg)
+			last_msg = msg
+		end
 
 		if not self.connected and res or msg == "already connected" then
 			if not self.connected then
@@ -47,12 +54,12 @@ function PLUGIN:Setup()
 		end
 	end
 
-	function create_socket()
+	function create_socket(id)
 		local self = setmetatable({}, META)
 		self.connected = false
 		self.socket = socket.tcp()
 		self.socket:settimeout(0)
-		self.port = math.random(5000, 64000)
+		self.port = (self.port or math.random(1500, 10000)) + 1
 		return self
 	end
 
@@ -72,9 +79,11 @@ function PLUGIN:Setup()
 					if not sockets then return end
 					pvars.Set("text_editor_path", "./../../ide/zbstudio.sh %PATH%:%LINE%")
 
-					local server = sockets.CreateServer("tcp", "localhost", LUA{console.socket.port})
+					local server = sockets.CreateServer("tcp")
+					server:Host("*", LUA{console.socket.port})
 
-					function server:OnClientConnected()
+					function server:OnClientConnected(client)
+						logn("zerobrane connected")
 						return true
 					end
 
@@ -95,16 +104,26 @@ function PLUGIN:Setup()
 			},
 
 			start = function(console)
-				console.socket = create_socket()
+				console.socket = create_socket(id)
 			end,
 			stop = function(console)
+				if console.socket then
+					console.socket.socket:close()
+				end
 				console.socket = nil
 			end,
 			run_string = function(console, str)
+				if not console.socket or not console.socket.socket then
+					console:Print("zerobrane is not connected")
+				end
 				console.socket:Send(str)
 			end,
 			run_script = function(console, path)
-				console:Print("loading: ", path, "\n")
+				if not console.socket or not console.socket.socket then
+					console:Print("zerobrane is not connected")
+				else
+					console:Print("loading: ", path, "\n")
+				end
 				console:run_string("_G.RELOAD = true runfile([["..path.."]]) _G.RELOAD = nil print('script ran successfully')")
 			end,
 			print = function(console, ...)
@@ -281,7 +300,6 @@ function PLUGIN:StartProcess(id, cmd)
 	for k,v in pairs(console.env_vars) do
 		v = v:gsub("LUA(%b{})", function(code) return assert(loadstring("local console = ... return " .. code:sub(2, -2)))(console) end)
 		v = v:gsub("DEFERRED_CMD", cmd or "")
-		ide:Print(k,v)
 		wx.wxSetEnv(k, v)
 	end
 

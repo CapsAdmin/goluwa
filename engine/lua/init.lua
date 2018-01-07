@@ -12,7 +12,6 @@ end
 
 expression = runfile("lua/libraries/expression.lua") -- used by chat and editor to run small and safe lua expressions
 autocomplete = runfile("lua/libraries/autocomplete.lua") -- mainly used in console and chatsounds
-profiler = runfile("lua/libraries/profiler.lua") -- for profiling
 language = runfile("lua/libraries/language.lua") _G.L = language.LanguageString -- L"options", for use in gui menus and such.
 
 runfile("lua/libraries/prototype/ecs_entity.lua")

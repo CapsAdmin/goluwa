@@ -1,3 +1,10 @@
+commands.Add("status", function()
+	logn("hostname: ", network.GetHostname())
+	for k,v in pairs(clients.GetAll()) do
+		logn(v)
+	end
+end)
+
 commands.Add("lua_run=arg_line", function(code)
 	commands.SetLuaEnvironmentVariable("me", clients.GetLocalClient())
 	commands.ExecuteLuaString(code)

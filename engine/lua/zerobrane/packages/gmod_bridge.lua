@@ -5,14 +5,26 @@ local PLUGIN = {
 	version = 0.1,
 }
 
-local errored = false
+do
+	local dir
+	function GetGMODDir()
+		if dir then return dir end
+
+		local f = io.open("gmod_path", "r")
+		if f then
+			local gmod_path = f:read("*all")
+			f:close()
+
+			dir = gmod_path
+
+			return gmod_path
+		end
+	end
+end
 
 function PLUGIN:onEditorSave(editor)
-	local f = io.open("gmod_path", "r")
-	if f then
-		local gmod_path = f:read("*all")
-		f:close()
-
+	local gmod_path = GetGMODDir()
+	if gmod_path then
 		local f = io.open(gmod_path .. "addons/zerobrane_bridge/lua/autorun/zerobrane_bridge.lua", "r")
 		if f then
 			f:close()

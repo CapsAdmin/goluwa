@@ -1,30 +1,42 @@
 local vfs = (...) or _G.vfs
 
-vfs.files_ran = vfs.files_ran or {}
+vfs.files_ran_ = vfs.files_ran_ or {}
 
-local function store(path)
-	local full_path = vfs.GetAbsolutePath(path)
-	if full_path then
-		vfs.files_ran[full_path] = vfs.OSGetAttributes(full_path)
-	end
+local function store_run_file_path(path)
+	vfs.files_ran = nil
+	table.insert(vfs.files_ran_, path)
 end
 
+
 function loadfile(path, ...)
-	store(path)
+	store_run_file_path(path)
 	return _OLD_G.loadfile(path, ...)
 end
 
 function dofile(path, ...)
-	store(path)
+	store_run_file_path(path)
 	return _OLD_G.dofile(path, ...)
 end
 
-function vfs.GetLoadedLuaFiles()
-	return vfs.files_ran
+do
+	local first = true
+	local resolved = {}
+
+	function vfs.GetLoadedLuaFiles()
+		if not vfs.files_ran then
+			vfs.files_ran = {}
+			for _, path in ipairs(vfs.files_ran_) do
+				local full_path = vfs.GetAbsolutePath(path, false)
+				vfs.files_ran[full_path] = vfs.OSGetAttributes(full_path)
+			end
+		end
+
+		return vfs.files_ran
+	end
 end
 
 function vfs.LoadFile(path, chunkname)
-	local full_path = vfs.GetAbsolutePath(path)
+	local full_path = vfs.GetAbsolutePath(path, false)
 
 	if full_path then
 		if event then full_path = event.Call("PreLoadFile", full_path) or full_path end
@@ -52,7 +64,7 @@ function vfs.LoadFile(path, chunkname)
 
 		if event and res then res = event.Call("PostLoadString", res, full_path) or res end
 
-		store(full_path)
+		store_run_file_path(full_path)
 
 		return res, err, full_path
 	end
@@ -147,7 +159,7 @@ do -- runfile
 				local func, err, full_path = vfs.LoadFile(script)
 
 				if func then
-					vfs.PushToFileRunStack(dir)
+					vfs.PushToFileRunStack(full_path:match("(.+/)") or dir)
 
 					_G.FILE_PATH = full_path
 					_G.FILE_NAME = full_path:match(".*/(.+)%.") or full_path
@@ -167,7 +179,7 @@ do -- runfile
 					end
 
 					if utility and utility.PushTimeWarning then
-						utility.PopTimeWarning(full_path, 0.1)
+						utility.PopTimeWarning(full_path, 0.01)
 					end
 
 					_G.FILE_NAME = nil

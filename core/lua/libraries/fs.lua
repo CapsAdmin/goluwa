@@ -172,12 +172,31 @@ else
 	local size = 4096
 	local buf = S.t.buffer(size)
 
-	function fs.find(dir, exclude_dot)
+	function fs.find(name)
 		local out = {}
 
-		for name in S.util.ls(dir) do
-			if not exclude_dot or (name ~= "." and name ~= "..") then
-				table.insert(out, name)
+		local fd, err = S.open(name, "directory, rdonly")
+
+		if not fd then
+			print(fd, err)
+			return {}
+		end
+
+		local get_dir_info, err = fd:getdents(buf, size)
+		if not get_dir_info then
+			fd:close()
+			error(err)
+		end
+
+		local i = 1
+		while true do
+			local dir_info = get_dir_info()
+
+			if not dir_info then break end
+
+			if dir_info.name ~= "." and dir_info.name ~= ".." then
+				out[i] = dir_info.name
+				i = i + 1
 			end
 		end
 
@@ -196,20 +215,19 @@ else
 		return S.mkdir(path, "rwxu")
 	end
 
+	local buff = S.stat()
+
 	function fs.getattributes(path)
-		local info = S.stat(path)
+		buff = S.stat(path, buff)
 
-		if info then
-			local info = {
-				last_accessed = info.access,
-				last_changed = info.change,
-				last_modified = info.modification,
-				type = info.typename,
-				size = info.size,
+		if buff then
+			return {
+				last_accessed = buff.access,
+				last_changed = buff.change,
+				last_modified = buff.modification,
+				type = buff.typename,
+				size = buff.size,
 			}
-
-
-			return info
 		end
 
 		return false

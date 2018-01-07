@@ -37,7 +37,7 @@ line = runfile("lua/libraries/love/line.lua") -- a löve wrapper that lets you r
 gine = runfile("lua/libraries/gmod/gine.lua") -- a gmod wrapper that lets you run gmod scripts
 
 if not CLI then
-	resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/extras/", true)
+	resource.AddProvider("https://gitlab.com/CapsAdmin/goluwa-assets/raw/master/extras/", true)
 end
 
 if WINDOW then

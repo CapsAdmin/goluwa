@@ -42,7 +42,7 @@ function CONTEXT:GetFiles(path_info)
 		return false, "not a directory"
 	end
 
-	return fs.find(path_info.full_path, true)
+	return fs.find(path_info.full_path)
 end
 
 function CONTEXT:IsFile(path_info)

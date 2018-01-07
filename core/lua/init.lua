@@ -172,7 +172,14 @@ do -- full path
 	end)
 end
 
-_G.runfile = function(...) local ret = {vfs.RunFile(...)} if not ret[1] and ret[2] then wlog(ret[2], 2) end return unpack(ret) end
+function _G.runfile(...)
+	local ret = {vfs.RunFile(...)}
+	if not ret[1] and ret[2] then
+		wlog(ret[2], 2)
+	end
+	return unpack(ret)
+end
+
 _G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir
 
 _G.require = runfile("lua/libraries/require.lua") -- replace require with the pure lua version
@@ -186,8 +193,15 @@ serializer = runfile("lua/libraries/serializer.lua") -- for serializing lua data
 system = runfile("lua/libraries/system.lua") -- os and luajit related functions like creating windows or changing jit options
 event = runfile("lua/libraries/event.lua") -- event handler
 utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
+profiler = runfile("lua/libraries/profiler.lua") -- for profiling
 
 if THREAD then return end
+
+local PROFILE_STARTUP = false
+
+if PROFILE_STARTUP then
+	profiler.ToggleStatistical()
+end
 
 -- tries to load all addons
 -- some might not load depending on its info.lua file.
@@ -212,6 +226,11 @@ do -- autorun
 end
 
 event.Call("Initialize")
+
+if PROFILE_STARTUP then
+	profiler.ToggleStatistical()
+end
+
 if not CLI and system.MainLoop then
 	logn("[core] total init time is ", os.clock(), " seconds")
 	system.MainLoop()

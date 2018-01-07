@@ -1,7 +1,7 @@
 local ffi = require("ffi")
 local gl = {}
 
-ffi.cdef[[
+ffi.cdef([[
 typedef unsigned int GLenum;
 typedef unsigned char GLboolean;
 typedef unsigned int GLbitfield;
@@ -5662,27564 +5662,3097 @@ typedef enum GL_LUA_ENUMS {
 	GL_LUMINANCE6_ALPHA2_EXT = 32836,
 	GL_FRAGMENT_LIGHT4_SGIX = 33808
 } GL_LUA_ENUMS;
-]]
+]])
+
+
+local functions = {
+	glTexImage3DMultisample = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLboolean)"},
+	glTexEnvf = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
+	glGetVariantBooleanvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLboolean *)"},
+	glSamplerParameterIuivOES = {"void (*)(GLuint, GL_LUA_ENUMS, const GLuint *)"},
+	glBeginConditionalRender = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glGetMapfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glDepthRangeIndexedfNV = {"void (*)(GLuint, GLfloat, GLfloat)"},
+	glDisableVertexAttribArray = {"void (*)(GLuint)"},
+	glProgramUniform2f = {"void (*)(GLuint, GLint, GLfloat, GLfloat)"},
+	glGenQueriesARB = {"void (*)(GLsizei, GLuint *)"},
+	glVertexArrayVertexAttribBindingEXT = {"void (*)(GLuint, GLuint, GLuint)"},
+	glWindowPos2d = {"void (*)(GLdouble, GLdouble)"},
+	glPushName = {"void (*)(GLuint)"},
+	glPointParameterfvSGIS = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glTexSubImage2D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glCopyTexSubImage3DOES = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
+	glGetFixedvOES = {"void (*)(GL_LUA_ENUMS, GLfixed *)"},
+	glVideoCaptureStreamParameterdvNV = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, const GLdouble *)"},
+	glStencilClearTagEXT = {"void (*)(GLsizei, GLuint)"},
+	glLightxv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)"},
+	glMatrixFrustumEXT = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glTranslated = {"void (*)(GLdouble, GLdouble, GLdouble)"},
+	glGetVertexArrayIntegervEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glDisableVertexAttribArrayARB = {"void (*)(GLuint)"},
+	glVertexStream1iATI = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glNamedBufferStorage = {"void (*)(GLuint, GLsizeiptr, const void *, GLbitfield)"},
+	glTransformFeedbackVaryingsEXT = {"void (*)(GLuint, GLsizei, const GLchar *const*, GL_LUA_ENUMS)"},
+	glMapNamedBufferRangeEXT = {"void *(*)(GLuint, GLintptr, GLsizeiptr, GLbitfield)"},
+	glPopMatrix = {"void (*)()"},
+	glGetFixedv = {"void (*)(GL_LUA_ENUMS, GLfixed *)"},
+	glGetProgramPipelineiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glGetPerfCounterInfoINTEL = {"void (*)(GLuint, GLuint, GLuint, GLchar *, GLuint, GLchar *, GLuint *, GLuint *, GLuint *, GLuint *, GLuint64 *)"},
+	glColor4hvNV = {"void (*)(const GLhalfNV *)"},
+	glDrawArraysInstanced = {"void (*)(GL_LUA_ENUMS, GLint, GLsizei, GLsizei)"},
+	glClipPlanexOES = {"void (*)(GL_LUA_ENUMS, const GLfixed *)"},
+	glVertexBlendARB = {"void (*)(GLint)"},
+	glFeedbackBufferxOES = {"void (*)(GLsizei, GL_LUA_ENUMS, const GLfixed *)"},
+	glQueryMatrixxOES = {"GLbitfield (*)(GLfixed *, GLint *)"},
+	glPathStencilFuncNV = {"void (*)(GL_LUA_ENUMS, GLint, GLuint)"},
+	glGetClipPlanexOES = {"void (*)(GL_LUA_ENUMS, GLfixed *)"},
+	glGetProgramResourceName = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, GLsizei *, GLchar *)"},
+	glBindMultiTextureEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
+	glGenSymbolsEXT = {"GLuint (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
+	glCopyTextureLevelsAPPLE = {"void (*)(GLuint, GLuint, GLint, GLsizei)"},
+	glDeleteProgramsARB = {"void (*)(GLsizei, const GLuint *)"},
+	glClientActiveTexture = {"void (*)(GL_LUA_ENUMS)"},
+	glColorTableSGI = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glVertex3sv = {"void (*)(const GLshort *)"},
+	glTexCoordP1uiv = {"void (*)(GL_LUA_ENUMS, const GLuint *)"},
+	glBufferStorage = {"void (*)(GL_LUA_ENUMS, GLsizeiptr, const void *, GLbitfield)"},
+	glReplacementCodeuiTexCoord2fNormal3fVertex3fvSUN = {"void (*)(const GLuint *, const GLfloat *, const GLfloat *, const GLfloat *)"},
+	glProgramUniform3dv = {"void (*)(GLuint, GLint, GLsizei, const GLdouble *)"},
+	glPopName = {"void (*)()"},
+	glCheckFramebufferStatus = {"GLenum (*)(GL_LUA_ENUMS)"},
+	glVertexAttrib1hNV = {"void (*)(GLuint, GLhalfNV)"},
+	glProgramUniformMatrix2x3fv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glMultiTexCoord4hNV = {"void (*)(GL_LUA_ENUMS, GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV)"},
+	glSecondaryColorP3uiv = {"void (*)(GL_LUA_ENUMS, const GLuint *)"},
+	glFogfv = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glGetActiveAttribARB = {"void (*)(GLhandleARB, GLuint, GLsizei, GLsizei *, GLint *, GLenum *, GLcharARB *)"},
+	glVertexAttribDivisorANGLE = {"void (*)(GLuint, GLuint)"},
+	glEnd = {"void (*)()"},
+	glPointParameteri = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glVertexBindingDivisor = {"void (*)(GLuint, GLuint)"},
+	glFramebufferTextureFaceARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GL_LUA_ENUMS)"},
+	glFeedbackBuffer = {"void (*)(GLsizei, GL_LUA_ENUMS, GLfloat *)"},
+	glVertex2bvOES = {"void (*)(const GLbyte *)"},
+	glMakeImageHandleResidentNV = {"void (*)(GLuint64, GL_LUA_ENUMS)"},
+	glVertexAttrib1dNV = {"void (*)(GLuint, GLdouble)"},
+	glProgramUniform1uiv = {"void (*)(GLuint, GLint, GLsizei, const GLuint *)"},
+	glTextureParameterIivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glEnableClientStateIndexedEXT = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glGetUniformfv = {"void (*)(GLuint, GLint, GLfloat *)"},
+	glVertex2sv = {"void (*)(const GLshort *)"},
+	glGetUniformSubroutineuiv = {"void (*)(GL_LUA_ENUMS, GLint, GLuint *)"},
+	glBlendBarrierNV = {"void (*)()"},
+	glLogicOp = {"void (*)(GL_LUA_ENUMS)"},
+	glShaderOp2EXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint)"},
+	glGetNamedFramebufferParameteriv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glObjectPtrLabelKHR = {"void (*)(const void *, GLsizei, const GLchar *)"},
+	glPathParameteriNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLint)"},
+	glProgramUniformMatrix4x2fv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glTextureImage3DMultisampleNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, GLsizei, GLsizei, GLboolean)"},
+	glMatrixLoadfEXT = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glRasterPos3fv = {"void (*)(const GLfloat *)"},
+	glConvolutionParameterxOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)"},
+	glProgramUniformMatrix3x4fv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glEnableiEXT = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glUniformMatrix3fv = {"void (*)(GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glBindProgramPipelineEXT = {"void (*)(GLuint)"},
+	glDrawElementsInstanced = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei)"},
+	glUniform2d = {"void (*)(GLint, GLdouble, GLdouble)"},
+	glGetObjectLabelKHR = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, GLsizei *, GLchar *)"},
+	glGetVertexAttribiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glGetProgramParameterfvNV = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLfloat *)"},
+	glValidateProgramARB = {"void (*)(GLhandleARB)"},
+	glStartTilingQCOM = {"void (*)(GLuint, GLuint, GLuint, GLuint, GLbitfield)"},
+	glVertexArrayBindVertexBufferEXT = {"void (*)(GLuint, GLuint, GLuint, GLintptr, GLsizei)"},
+	glUniformHandleui64NV = {"void (*)(GLint, GLuint64)"},
+	glClearNamedBufferData = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glConvolutionParameterfEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
+	glGetQueryObjecti64vEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint64 *)"},
+	glMapBufferRange = {"void *(*)(GL_LUA_ENUMS, GLintptr, GLsizeiptr, GLbitfield)"},
+	glArrayElementEXT = {"void (*)(GLint)"},
+	glSecondaryColor3d = {"void (*)(GLdouble, GLdouble, GLdouble)"},
+	glTextureStorage2D = {"void (*)(GLuint, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)"},
+	glIndexsv = {"void (*)(const GLshort *)"},
+	glNormal3s = {"void (*)(GLshort, GLshort, GLshort)"},
+	glGetCompressedTextureImage = {"void (*)(GLuint, GLint, GLsizei, void *)"},
+	glTexParameterx = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)"},
+	glPathGlyphRangeNV = {"void (*)(GLuint, GL_LUA_ENUMS, const void *, GLbitfield, GLuint, GLsizei, GL_LUA_ENUMS, GLuint, GLfloat)"},
+	glGetMapParameterfvNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glGenProgramsARB = {"void (*)(GLsizei, GLuint *)"},
+	glShaderBinary = {"void (*)(GLsizei, const GLuint *, GL_LUA_ENUMS, const void *, GLsizei)"},
+	glNormalFormatNV = {"void (*)(GL_LUA_ENUMS, GLsizei)"},
+	glGetPerfMonitorCounterInfoAMD = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, void *)"},
+	glProgramUniformMatrix2fv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glCopyImageSubDataNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)"},
+	glNamedFramebufferTextureFaceEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint, GL_LUA_ENUMS)"},
+	glFrustumxOES = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed, GLfixed, GLfixed)"},
+	glEnableIndexedEXT = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glGetnPixelMapfvARB = {"void (*)(GL_LUA_ENUMS, GLsizei, GLfloat *)"},
+	glColor3iv = {"void (*)(const GLint *)"},
+	glProgramUniform2i = {"void (*)(GLuint, GLint, GLint, GLint)"},
+	glRasterPos2d = {"void (*)(GLdouble, GLdouble)"},
+	glGenFramebuffersEXT = {"void (*)(GLsizei, GLuint *)"},
+	glIsVertexAttribEnabledAPPLE = {"GLboolean (*)(GLuint, GL_LUA_ENUMS)"},
+	glProgramEnvParameter4fARB = {"void (*)(GL_LUA_ENUMS, GLuint, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glGetIntegerui64i_vNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint64EXT *)"},
+	glRecti = {"void (*)(GLint, GLint, GLint, GLint)"},
+	glCombinerParameterfNV = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
+	glClearNamedBufferSubData = {"void (*)(GLuint, GL_LUA_ENUMS, GLintptr, GLsizeiptr, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glBufferData = {"void (*)(GL_LUA_ENUMS, GLsizeiptr, const void *, GL_LUA_ENUMS)"},
+	glVertexStream1dATI = {"void (*)(GL_LUA_ENUMS, GLdouble)"},
+	glBindVertexShaderEXT = {"void (*)(GLuint)"},
+	glVertex3f = {"void (*)(GLfloat, GLfloat, GLfloat)"},
+	glNamedProgramLocalParameterI4uivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, const GLuint *)"},
+	glCombinerParameterivNV = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glTexCoord2fColor4ubVertex3fvSUN = {"void (*)(const GLfloat *, const GLubyte *, const GLfloat *)"},
+	glDepthRangedNV = {"void (*)(GLdouble, GLdouble)"},
+	glTexParameterIivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glIndexPointerListIBM = {"void (*)(GL_LUA_ENUMS, GLint, const void **, GLint)"},
+	glTexImage1D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glGetPathMetricRangeNV = {"void (*)(GLbitfield, GLuint, GLsizei, GLsizei, GLfloat *)"},
+	glInstrumentsBufferSGIX = {"void (*)(GLsizei, GLint *)"},
+	glGetNamedProgramLocalParameterIuivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLuint *)"},
+	glUniform1ui = {"void (*)(GLint, GLuint)"},
+	glDeleteRenderbuffersOES = {"void (*)(GLsizei, const GLuint *)"},
+	glRasterPos4dv = {"void (*)(const GLdouble *)"},
+	glMemoryBarrierEXT = {"void (*)(GLbitfield)"},
+	glTextureParameterf = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat)"},
+	glVertexAttrib4dv = {"void (*)(GLuint, const GLdouble *)"},
+	glRasterPos2s = {"void (*)(GLshort, GLshort)"},
+	glClipPlanex = {"void (*)(GL_LUA_ENUMS, const GLfixed *)"},
+	glProgramUniform2d = {"void (*)(GLuint, GLint, GLdouble, GLdouble)"},
+	glUniform1ui64vNV = {"void (*)(GLint, GLsizei, const GLuint64EXT *)"},
+	glGenVertexArrays = {"void (*)(GLsizei, GLuint *)", true},
+	glMapBufferOES = {"void *(*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glLightModelfv = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glGetActiveUniformARB = {"void (*)(GLhandleARB, GLuint, GLsizei, GLsizei *, GLint *, GLenum *, GLcharARB *)"},
+	glSampleMaski = {"void (*)(GLuint, GLbitfield)"},
+	glTexCoord2hNV = {"void (*)(GLhalfNV, GLhalfNV)"},
+	glProgramEnvParameterI4iNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLint, GLint, GLint, GLint)"},
+	glVertexAttrib2dv = {"void (*)(GLuint, const GLdouble *)"},
+	glDeleteTransformFeedbacks = {"void (*)(GLsizei, const GLuint *)"},
+	glDrawElementsInstancedBaseInstanceEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei, GLuint)"},
+	glFragmentCoverageColorNV = {"void (*)(GLuint)"},
+	glGetConvolutionFilterEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
+	glStencilOpSeparate = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glDisableiOES = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glGetPolygonStipple = {"void (*)(GLubyte *)"},
+	glVertexAttrib2s = {"void (*)(GLuint, GLshort, GLshort)"},
+	glVertexAttribs4ubvNV = {"void (*)(GLuint, GLsizei, const GLubyte *)"},
+	glMap1f = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLint, GLint, const GLfloat *)"},
+	glAreTexturesResidentEXT = {"GLboolean (*)(GLsizei, const GLuint *, GLboolean *)"},
+	glPatchParameteri = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glGetTexEnvxvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)"},
+	glPrimitiveRestartNV = {"void (*)()"},
+	glGenRenderbuffersEXT = {"void (*)(GLsizei, GLuint *)"},
+	glMatrixIndexPointerOES = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glGetInteger64v = {"void (*)(GL_LUA_ENUMS, GLint64 *)"},
+	glGetUniformi64vNV = {"void (*)(GLuint, GLint, GLint64EXT *)"},
+	glTbufferMask3DFX = {"void (*)(GLuint)"},
+	glBlendFuncSeparateEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glPathStencilDepthOffsetNV = {"void (*)(GLfloat, GLfloat)"},
+	glFogCoordPointer = {"void (*)(GL_LUA_ENUMS, GLsizei, const void *)"},
+	glFramebufferTexture3D = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLint)"},
+	glBlendEquationSeparateEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glDrawElementsInstancedBaseVertexBaseInstanceEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei, GLint, GLuint)"},
+	glCreateShaderProgramv = {"GLuint (*)(GL_LUA_ENUMS, GLsizei, const GLchar *const*)"},
+	glIsVariantEnabledEXT = {"GLboolean (*)(GLuint, GL_LUA_ENUMS)"},
+	glMultiDrawArraysIndirectEXT = {"void (*)(GL_LUA_ENUMS, const void *, GLsizei, GLsizei)"},
+	glFramebufferTextureLayerEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLint)"},
+	glBindProgramNV = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glGetImageHandleARB = {"GLuint64 (*)(GLuint, GLint, GLboolean, GLint, GL_LUA_ENUMS)"},
+	glColor4iv = {"void (*)(const GLint *)"},
+	glTextureStorage3DMultisampleEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLboolean)"},
+	glDiscardFramebufferEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, const GLenum *)"},
+	glProgramUniformHandleui64vARB = {"void (*)(GLuint, GLint, GLsizei, const GLuint64 *)"},
+	glGetNamedRenderbufferParameterivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glColor4f = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glSecondaryColor3usEXT = {"void (*)(GLushort, GLushort, GLushort)"},
+	glGetSamplerParameterIivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glIsProgramARB = {"GLboolean (*)(GLuint)"},
+	glBlendColorxOES = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed)"},
+	glCopyTextureSubImage3DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
+	glGetVertexAttribArrayObjectfvATI = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)"},
+	glMultiTexCoord3fv = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glBlendFuncSeparateOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glMultiTexCoord1hvNV = {"void (*)(GL_LUA_ENUMS, const GLhalfNV *)"},
+	glGetCombinerOutputParameterfvNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glGetTextureParameterfv = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)"},
+	glGetUniformuiv = {"void (*)(GLuint, GLint, GLuint *)"},
+	glProgramNamedParameter4dNV = {"void (*)(GLuint, GLsizei, const GLubyte *, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glEndConditionalRenderNV = {"void (*)()"},
+	glDeleteTexturesEXT = {"void (*)(GLsizei, const GLuint *)"},
+	glMap1d = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLint, GLint, const GLdouble *)"},
+	glGetPointervKHR = {"void (*)(GL_LUA_ENUMS, void **)"},
+	glClientActiveTextureARB = {"void (*)(GL_LUA_ENUMS)"},
+	glNamedRenderbufferStorageMultisample = {"void (*)(GLuint, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)"},
+	glSeparableFilter2DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, const void *)"},
+	glDepthBoundsdNV = {"void (*)(GLdouble, GLdouble)"},
+	glVertexAttribIFormatNV = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLsizei)"},
+	glDrawTransformFeedbackInstanced = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei)"},
+	glGetHistogram = {"void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
+	glEnableiOES = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glTexGeni = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
+	glDrawTransformFeedback = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glEvalCoord2xvOES = {"void (*)(const GLfixed *)"},
+	glVertexAttribI1ui = {"void (*)(GLuint, GLuint)"},
+	glGetCompressedTexImage = {"void (*)(GL_LUA_ENUMS, GLint, void *)"},
+	glProgramNamedParameter4fNV = {"void (*)(GLuint, GLsizei, const GLubyte *, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glIsRenderbufferEXT = {"GLboolean (*)(GLuint)"},
+	glProvokingVertexEXT = {"void (*)(GL_LUA_ENUMS)"},
+	glDrawTextureNV = {"void (*)(GLuint, GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glElementPointerAPPLE = {"void (*)(GL_LUA_ENUMS, const void *)"},
+	glGetHistogramParameterxvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)"},
+	glResolveDepthValuesNV = {"void (*)()"},
+	glBindBufferRangeNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLintptr, GLsizeiptr)"},
+	glGenFramebuffers = {"void (*)(GLsizei, GLuint *)", true},
+	glDeformSGIX = {"void (*)(GLbitfield)"},
+	glFramebufferTextureLayerARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLint)"},
+	glWindowPos2dARB = {"void (*)(GLdouble, GLdouble)"},
+	glCreateBuffers = {"void (*)(GLsizei, GLuint *)"},
+	glGetVertexAttribPointervARB = {"void (*)(GLuint, GL_LUA_ENUMS, void **)"},
+	glVertex2i = {"void (*)(GLint, GLint)"},
+	glRasterPos2sv = {"void (*)(const GLshort *)"},
+	glGetConvolutionParameterivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glDrawTexiOES = {"void (*)(GLint, GLint, GLint, GLint, GLint)"},
+	glColorPointerListIBM = {"void (*)(GLint, GL_LUA_ENUMS, GLint, const void **, GLint)"},
+	glGetNamedBufferParameteri64v = {"void (*)(GLuint, GL_LUA_ENUMS, GLint64 *)"},
+	glGetnSeparableFilter = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *, GLsizei, void *, void *)"},
+	glGetRenderbufferParameterivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glGetTexBumpParameterivATI = {"void (*)(GL_LUA_ENUMS, GLint *)"},
+	glIsTexture = {"GLboolean (*)(GLuint)"},
+	glWindowPos2dvARB = {"void (*)(const GLdouble *)"},
+	glClearColorxOES = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed)"},
+	glTexCoord4fColor4fNormal3fVertex4fvSUN = {"void (*)(const GLfloat *, const GLfloat *, const GLfloat *, const GLfloat *)"},
+	glProgramUniform3f = {"void (*)(GLuint, GLint, GLfloat, GLfloat, GLfloat)"},
+	glVertexAttribs1svNV = {"void (*)(GLuint, GLsizei, const GLshort *)"},
+	glDeleteRenderbuffers = {"void (*)(GLsizei, const GLuint *)"},
+	glProgramEnvParameterI4ivNV = {"void (*)(GL_LUA_ENUMS, GLuint, const GLint *)"},
+	glCompressedTexSubImage2D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glPolygonOffset = {"void (*)(GLfloat, GLfloat)"},
+	glNamedProgramLocalParameters4fvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, const GLfloat *)"},
+	glMultiTexCoord2f = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat)"},
+	glColor3ubv = {"void (*)(const GLubyte *)"},
+	glMultiTexCoordP3uiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)"},
+	glPrioritizeTexturesxOES = {"void (*)(GLsizei, const GLuint *, const GLfixed *)"},
+	glEvalPoint1 = {"void (*)(GLint)"},
+	glFramebufferRenderbufferEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
+	glGetDoublei_v = {"void (*)(GL_LUA_ENUMS, GLuint, GLdouble *)"},
+	glGetVertexAttribLdv = {"void (*)(GLuint, GL_LUA_ENUMS, GLdouble *)"},
+	glUnmapNamedBuffer = {"GLboolean (*)(GLuint)"},
+	glGenTextures = {"void (*)(GLsizei, GLuint *)", true},
+	glGetFloati_vEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLfloat *)"},
+	glGetBooleanIndexedvEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLboolean *)"},
+	glMultiDrawElementsIndirectCountARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLintptr, GLintptr, GLsizei, GLsizei)"},
+	glTextureNormalEXT = {"void (*)(GL_LUA_ENUMS)"},
+	glGetMultisamplefvNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLfloat *)"},
+	glBufferDataARB = {"void (*)(GL_LUA_ENUMS, GLsizeiptrARB, const void *, GL_LUA_ENUMS)"},
+	glWindowPos2sv = {"void (*)(const GLshort *)"},
+	glMatrixMult3x2fNV = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glCoverFillPathInstancedNV = {"void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glCreateShader = {"GLuint (*)(GL_LUA_ENUMS)"},
+	glWindowPos3iv = {"void (*)(const GLint *)"},
+	glGetPixelMapxv = {"void (*)(GL_LUA_ENUMS, GLint, GLfixed *)"},
+	glEGLImageTargetRenderbufferStorageOES = {"void (*)(GL_LUA_ENUMS, GLeglImageOES)"},
+	glGenQueries = {"void (*)(GLsizei, GLuint *)", true},
+	glArrayObjectATI = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLuint, GLuint)"},
+	glLightxOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)"},
+	glPauseTransformFeedbackNV = {"void (*)()"},
+	glGetPixelTransformParameterivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glBindImageTextures = {"void (*)(GLuint, GLsizei, const GLuint *)"},
+	glMapBufferRangeEXT = {"void *(*)(GL_LUA_ENUMS, GLintptr, GLsizeiptr, GLbitfield)"},
+	glMultMatrixd = {"void (*)(const GLdouble *)"},
+	glProgramLocalParametersI4uivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLuint *)"},
+	glFogi = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glTexGenfOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
+	glReplacementCodeuiColor4fNormal3fVertex3fSUN = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glMultiDrawElementArrayAPPLE = {"void (*)(GL_LUA_ENUMS, const GLint *, const GLsizei *, GLsizei)"},
+	glGetnUniformiv = {"void (*)(GLuint, GLint, GLsizei, GLint *)"},
+	glLightModelxvOES = {"void (*)(GL_LUA_ENUMS, const GLfixed *)"},
+	glVertexArrayFogCoordOffsetEXT = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLsizei, GLintptr)"},
+	glMaterialfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glColorMaskIndexedEXT = {"void (*)(GLuint, GLboolean, GLboolean, GLboolean, GLboolean)"},
+	glBeginFragmentShaderATI = {"void (*)()"},
+	glIsProgram = {"GLboolean (*)(GLuint)"},
+	glMaterialxvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)"},
+	glPixelMapusv = {"void (*)(GL_LUA_ENUMS, GLsizei, const GLushort *)"},
+	glGetImageHandleNV = {"GLuint64 (*)(GLuint, GLint, GLboolean, GLint, GL_LUA_ENUMS)"},
+	glTexPageCommitmentARB = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLboolean)"},
+	glIndexxOES = {"void (*)(GLfixed)"},
+	glGetTexEnvfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glClearStencil = {"void (*)(GLint)"},
+	glSecondaryColor3us = {"void (*)(GLushort, GLushort, GLushort)"},
+	glInsertComponentEXT = {"void (*)(GLuint, GLuint, GLuint)"},
+	glGenTransformFeedbacksNV = {"void (*)(GLsizei, GLuint *)"},
+	glUniform2dv = {"void (*)(GLint, GLsizei, const GLdouble *)"},
+	glObjectLabel = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLchar *)"},
+	glNormalStream3svATI = {"void (*)(GL_LUA_ENUMS, const GLshort *)"},
+	glDeleteQueriesARB = {"void (*)(GLsizei, const GLuint *)"},
+	glClearTexSubImage = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glDeleteNamedStringARB = {"void (*)(GLint, const GLchar *)"},
+	glGetProgramResourceLocation = {"GLint (*)(GLuint, GL_LUA_ENUMS, const GLchar *)"},
+	glNormal3bv = {"void (*)(const GLbyte *)"},
+	glGenProgramPipelines = {"void (*)(GLsizei, GLuint *)", true},
+	glVertex4hNV = {"void (*)(GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV)"},
+	glTransformFeedbackVaryings = {"void (*)(GLuint, GLsizei, const GLchar *const*, GL_LUA_ENUMS)"},
+	glGetCombinerInputParameterivNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glEGLImageTargetTexture2DOES = {"void (*)(GL_LUA_ENUMS, GLeglImageOES)"},
+	glGetnPolygonStipple = {"void (*)(GLsizei, GLubyte *)"},
+	glProgramUniform4ui64vNV = {"void (*)(GLuint, GLint, GLsizei, const GLuint64EXT *)"},
+	glPolygonStipple = {"void (*)(const GLubyte *)"},
+	glScissorIndexedvNV = {"void (*)(GLuint, const GLint *)"},
+	glDebugMessageControlKHR = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const GLuint *, GLboolean)"},
+	glMultiTexCoord1dvARB = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
+	glProgramBinaryOES = {"void (*)(GLuint, GL_LUA_ENUMS, const void *, GLint)"},
+	glReplacementCodeuiColor4ubVertex3fvSUN = {"void (*)(const GLuint *, const GLubyte *, const GLfloat *)"},
+	glDeleteQueries = {"void (*)(GLsizei, const GLuint *)"},
+	glVertexAttrib3d = {"void (*)(GLuint, GLdouble, GLdouble, GLdouble)"},
+	glRasterPos2dv = {"void (*)(const GLdouble *)"},
+	glGetBooleani_v = {"void (*)(GL_LUA_ENUMS, GLuint, GLboolean *)"},
+	glGetMinmaxParameterivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glColor4ub = {"void (*)(GLubyte, GLubyte, GLubyte, GLubyte)"},
+	glProgramUniform2uiv = {"void (*)(GLuint, GLint, GLsizei, const GLuint *)"},
+	glMultiTexParameterfvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glGetOcclusionQueryivNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glGetQueryivARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glGetNamedStringivARB = {"void (*)(GLint, const GLchar *, GL_LUA_ENUMS, GLint *)"},
+	glUniformMatrix2fv = {"void (*)(GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glGetImageTransformParameterivHP = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glVariantPointerEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, const void *)"},
+	glClipControl = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glDrawBuffersEXT = {"void (*)(GLsizei, const GLenum *)"},
+	glBlendEquationSeparateiEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glTextureStorage1D = {"void (*)(GLuint, GLsizei, GL_LUA_ENUMS, GLsizei)"},
+	glAccumxOES = {"void (*)(GL_LUA_ENUMS, GLfixed)"},
+	glProgramUniform1i64NV = {"void (*)(GLuint, GLint, GLint64EXT)"},
+	glVertexAttribP4ui = {"void (*)(GLuint, GL_LUA_ENUMS, GLboolean, GLuint)"},
+	glVertexAttribP1ui = {"void (*)(GLuint, GL_LUA_ENUMS, GLboolean, GLuint)"},
+	glPointSizex = {"void (*)(GLfixed)"},
+	glExtTexObjectStateOverrideiQCOM = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
+	glVertexAttribI3i = {"void (*)(GLuint, GLint, GLint, GLint)"},
+	glColor3fv = {"void (*)(const GLfloat *)"},
+	glTexParameterfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glGetColorTableParameterivSGI = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glPathSubCoordsNV = {"void (*)(GLuint, GLsizei, GLsizei, GL_LUA_ENUMS, const void *)"},
+	glGetnUniformivEXT = {"void (*)(GLuint, GLint, GLsizei, GLint *)"},
+	glDrawElementsInstancedARB = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei)"},
+	glSecondaryColor3f = {"void (*)(GLfloat, GLfloat, GLfloat)"},
+	glGetOcclusionQueryuivNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint *)"},
+	glBeginTransformFeedbackEXT = {"void (*)(GL_LUA_ENUMS)"},
+	glBindVideoCaptureStreamBufferNV = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLintptrARB)"},
+	glVertexAttribL4d = {"void (*)(GLuint, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glUniform4f = {"void (*)(GLint, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glGetPerfMonitorGroupStringAMD = {"void (*)(GLuint, GLsizei, GLsizei *, GLchar *)"},
+	glCopyImageSubData = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)"},
+	glFrustumfOES = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glVertexPointervINTEL = {"void (*)(GLint, GL_LUA_ENUMS, const void **)"},
+	glSharpenTexFuncSGIS = {"void (*)(GL_LUA_ENUMS, GLsizei, const GLfloat *)"},
+	glVertexAttribBinding = {"void (*)(GLuint, GLuint)"},
+	glBindFragDataLocationIndexed = {"void (*)(GLuint, GLuint, GLuint, const GLchar *)"},
+	glMapNamedBuffer = {"void *(*)(GLuint, GL_LUA_ENUMS)"},
+	glGetNamedProgramivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glProgramUniform2ui = {"void (*)(GLuint, GLint, GLuint, GLuint)"},
+	glCoverageOperationNV = {"void (*)(GL_LUA_ENUMS)"},
+	glDeleteLists = {"void (*)(GLuint, GLsizei)"},
+	glCompressedTextureSubImage2D = {"void (*)(GLuint, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glProgramLocalParameter4fvARB = {"void (*)(GL_LUA_ENUMS, GLuint, const GLfloat *)"},
+	glIndexi = {"void (*)(GLint)"},
+	glVertexArrayVertexAttribIFormatEXT = {"void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLuint)"},
+	glBeginConditionalRenderNV = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glGetPathTexGenivNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glTexCoord4fVertex4fSUN = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glEvalCoord2dv = {"void (*)(const GLdouble *)"},
+	glSeparableFilter2D = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, const void *)"},
+	glLoadPaletteFromModelViewMatrixOES = {"void (*)()"},
+	glActiveProgramEXT = {"void (*)(GLuint)"},
+	glIsShader = {"GLboolean (*)(GLuint)"},
+	glGetProgramStringNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLubyte *)"},
+	glProgramUniform3i = {"void (*)(GLuint, GLint, GLint, GLint, GLint)"},
+	glVertexAttrib4hNV = {"void (*)(GLuint, GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV)"},
+	glDisableClientStateIndexedEXT = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glUseShaderProgramEXT = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glGetFragDataLocationEXT = {"GLint (*)(GLuint, const GLchar *)"},
+	glDebugMessageCallbackARB = {"void (*)(GLDEBUGPROCARB, const void *)"},
+	glReplacementCodeuiVertex3fSUN = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat)"},
+	glDisableVertexAttribAPPLE = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glScaled = {"void (*)(GLdouble, GLdouble, GLdouble)"},
+	glResizeBuffersMESA = {"void (*)()"},
+	glMultiDrawArraysIndirectCountARB = {"void (*)(GL_LUA_ENUMS, GLintptr, GLintptr, GLsizei, GLsizei)"},
+	glClearAccumxOES = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed)"},
+	glPointParameterfvEXT = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glPassThroughxOES = {"void (*)(GLfixed)"},
+	glPixelMapx = {"void (*)(GL_LUA_ENUMS, GLint, const GLfixed *)"},
+	glReferencePlaneSGIX = {"void (*)(const GLdouble *)"},
+	glProgramUniformMatrix3dv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glVertexAttribL1ui64ARB = {"void (*)(GLuint, GLuint64EXT)"},
+	glVertexAttrib4Nbv = {"void (*)(GLuint, const GLbyte *)"},
+	glTexCoord2fv = {"void (*)(const GLfloat *)"},
+	glFogFuncSGIS = {"void (*)(GLsizei, const GLfloat *)"},
+	glProgramUniform3d = {"void (*)(GLuint, GLint, GLdouble, GLdouble, GLdouble)"},
+	glClipPlane = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
+	glGetNamedFramebufferParameterivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glVertex4dv = {"void (*)(const GLdouble *)"},
+	glUniform3i = {"void (*)(GLint, GLint, GLint, GLint)"},
+	glIsTextureHandleResidentNV = {"GLboolean (*)(GLuint64)"},
+	glRasterPos4f = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glCompressedTexImage3D = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)"},
+	glNormalPointerEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, const void *)"},
+	glColor4fv = {"void (*)(const GLfloat *)"},
+	glMultiTexCoord2i = {"void (*)(GL_LUA_ENUMS, GLint, GLint)"},
+	glGetBufferPointervOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, void **)"},
+	glMultiTexCoordP2ui = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
+	glFlushVertexArrayRangeAPPLE = {"void (*)(GLsizei, void *)"},
+	glSelectBuffer = {"void (*)(GLsizei, GLuint *)"},
+	glSecondaryColor3bvEXT = {"void (*)(const GLbyte *)"},
+	glPointParameterivNV = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glGetHistogramParameterivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glMultiTexCoordP3ui = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
+	glIsEnablediEXT = {"GLboolean (*)(GL_LUA_ENUMS, GLuint)"},
+	glWindowPos3fv = {"void (*)(const GLfloat *)"},
+	glDrawElementArrayATI = {"void (*)(GL_LUA_ENUMS, GLsizei)"},
+	glProgramUniform4fv = {"void (*)(GLuint, GLint, GLsizei, const GLfloat *)"},
+	glGenFencesAPPLE = {"void (*)(GLsizei, GLuint *)"},
+	glGetProgramiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glVertexAttribI1uiEXT = {"void (*)(GLuint, GLuint)"},
+	glGetTexLevelParameterxvOES = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLfixed *)"},
+	glFragmentMaterialiSGIX = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
+	glBufferAddressRangeNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint64EXT, GLsizeiptr)"},
+	glPopGroupMarkerEXT = {"void (*)()"},
+	glIndexd = {"void (*)(GLdouble)"},
+	glPathParameterivNV = {"void (*)(GLuint, GL_LUA_ENUMS, const GLint *)"},
+	glMultiTexGenivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glRects = {"void (*)(GLshort, GLshort, GLshort, GLshort)"},
+	glUniformMatrix2x3fvNV = {"void (*)(GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glGetTransformFeedbacki64_v = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint64 *)"},
+	glGetVertexArrayiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glGetIntegeri_v = {"void (*)(GL_LUA_ENUMS, GLuint, GLint *)"},
+	glActiveTexture = {"void (*)(GL_LUA_ENUMS)"},
+	glRasterPos4s = {"void (*)(GLshort, GLshort, GLshort, GLshort)"},
+	glVertex2s = {"void (*)(GLshort, GLshort)"},
+	glFogCoordfvEXT = {"void (*)(const GLfloat *)"},
+	glVideoCaptureStreamParameterfvNV = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, const GLfloat *)"},
+	glExtGetProgramBinarySourceQCOM = {"void (*)(GLuint, GL_LUA_ENUMS, GLchar *, GLint *)"},
+	glGetNamedBufferPointervEXT = {"void (*)(GLuint, GL_LUA_ENUMS, void **)"},
+	glBlendFunci = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glProgramParameteri = {"void (*)(GLuint, GL_LUA_ENUMS, GLint)"},
+	glGenNamesAMD = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint *)"},
+	glPixelZoomxOES = {"void (*)(GLfixed, GLfixed)"},
+	glVertex3iv = {"void (*)(const GLint *)"},
+	glFinishTextureSUNX = {"void (*)()"},
+	glBlendBarrierKHR = {"void (*)()"},
+	glVertex2iv = {"void (*)(const GLint *)"},
+	glGetTexGendv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLdouble *)"},
+	glMultiDrawElementsBaseVertexEXT = {"void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei, const GLint *)"},
+	glNamedBufferStorageEXT = {"void (*)(GLuint, GLsizeiptr, const void *, GLbitfield)"},
+	glLineWidthxOES = {"void (*)(GLfixed)"},
+	glGetFragDataIndex = {"GLint (*)(GLuint, const GLchar *)"},
+	glBlendFunciOES = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glEndPerfQueryINTEL = {"void (*)(GLuint)"},
+	glProgramEnvParameterI4uiNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint)"},
+	glFogCoordfv = {"void (*)(const GLfloat *)"},
+	glDepthRangef = {"void (*)(GLfloat, GLfloat)"},
+	glGlobalAlphaFactorusSUN = {"void (*)(GLushort)"},
+	glBinormal3sEXT = {"void (*)(GLshort, GLshort, GLshort)"},
+	glPresentFrameKeyedNV = {"void (*)(GLuint, GLuint64EXT, GLuint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLuint, GL_LUA_ENUMS, GLuint, GLuint)"},
+	glMatrixLoad3x2fNV = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glFlushStaticDataIBM = {"void (*)(GL_LUA_ENUMS)"},
+	glGenSamplers = {"void (*)(GLsizei, GLuint *)", true},
+	glTexParameterxOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)"},
+	glMultiTexCoord4bOES = {"void (*)(GL_LUA_ENUMS, GLbyte, GLbyte, GLbyte, GLbyte)"},
+	glFramebufferTextureARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)"},
+	glUniform1fARB = {"void (*)(GLint, GLfloat)"},
+	glMinmax = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLboolean)"},
+	glMultiTexCoord4s = {"void (*)(GL_LUA_ENUMS, GLshort, GLshort, GLshort, GLshort)"},
+	glEdgeFlagFormatNV = {"void (*)(GLsizei)"},
+	glNamedFramebufferParameteri = {"void (*)(GLuint, GL_LUA_ENUMS, GLint)"},
+	glWindowPos3f = {"void (*)(GLfloat, GLfloat, GLfloat)"},
+	glGetPixelMapfv = {"void (*)(GL_LUA_ENUMS, GLfloat *)"},
+	glColor3ui = {"void (*)(GLuint, GLuint, GLuint)"},
+	glGetTexLevelParameteriv = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint *)"},
+	glNamedFramebufferDrawBuffers = {"void (*)(GLuint, GLsizei, const GLenum *)"},
+	glUniformHandleui64vARB = {"void (*)(GLint, GLsizei, const GLuint64 *)"},
+	glGetTextureParameterIuivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint *)"},
+	glDebugMessageInsertKHR = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, const GLchar *)"},
+	glDrawRangeElementsEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, GL_LUA_ENUMS, const void *)"},
+	glDeleteNamesAMD = {"void (*)(GL_LUA_ENUMS, GLuint, const GLuint *)"},
+	glColorP4uiv = {"void (*)(GL_LUA_ENUMS, const GLuint *)"},
+	glClipPlanef = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glNormalPointervINTEL = {"void (*)(GL_LUA_ENUMS, const void **)"},
+	glIsNamedStringARB = {"GLboolean (*)(GLint, const GLchar *)"},
+	glConvolutionFilter2DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glAreProgramsResidentNV = {"GLboolean (*)(GLsizei, const GLuint *, GLboolean *)"},
+	glProgramUniformMatrix4x2dv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glGenBuffersARB = {"void (*)(GLsizei, GLuint *)"},
+	glBindBufferBase = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint)"},
+	glGetClipPlane = {"void (*)(GL_LUA_ENUMS, GLdouble *)"},
+	glTextureImage2DMultisampleNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, GLsizei, GLboolean)"},
+	glProgramUniform2fv = {"void (*)(GLuint, GLint, GLsizei, const GLfloat *)"},
+	glProgramUniformMatrix3x4dv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glGetPathParameterfvNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)"},
+	glGetBufferParameteriv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glDeleteFramebuffersEXT = {"void (*)(GLsizei, const GLuint *)"},
+	glNamedFramebufferTexture = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint)"},
+	glTexCoord2fColor3fVertex3fSUN = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glClampColorARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glGlobalAlphaFactoruiSUN = {"void (*)(GLuint)"},
+	glBlendEquationiOES = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glGetPathTexGenfvNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glMapNamedBufferEXT = {"void *(*)(GLuint, GL_LUA_ENUMS)"},
+	glVertex4sv = {"void (*)(const GLshort *)"},
+	glDrawTexsvOES = {"void (*)(const GLshort *)"},
+	glGetVideoCaptureStreamivNV = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLint *)"},
+	glFinishFenceNV = {"void (*)(GLuint)"},
+	glMultiTexCoord1f = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
+	glProgramUniform2iv = {"void (*)(GLuint, GLint, GLsizei, const GLint *)"},
+	glBindFramebufferEXT = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glMapGrid2f = {"void (*)(GLint, GLfloat, GLfloat, GLint, GLfloat, GLfloat)"},
+	glCompileShaderIncludeARB = {"void (*)(GLuint, GLsizei, const GLchar *const*, const GLint *)"},
+	glGetTexParameterfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glGetMaterialxvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)"},
+	glTexCoordP1ui = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glProgramUniform4f = {"void (*)(GLuint, GLint, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glGetProgramBinary = {"void (*)(GLuint, GLsizei, GLsizei *, GLenum *, void *)"},
+	glDrawArraysInstancedARB = {"void (*)(GL_LUA_ENUMS, GLint, GLsizei, GLsizei)"},
+	glClearBufferuiv = {"void (*)(GL_LUA_ENUMS, GLint, const GLuint *)"},
+	glDeleteSync = {"void (*)(GLsync)"},
+	glVertexAttrib4Nsv = {"void (*)(GLuint, const GLshort *)"},
+	glPointParameterfSGIS = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
+	glColorPointervINTEL = {"void (*)(GLint, GL_LUA_ENUMS, const void **)"},
+	glTangent3fEXT = {"void (*)(GLfloat, GLfloat, GLfloat)"},
+	glGetNamedProgramLocalParameterfvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLfloat *)"},
+	glCreateVertexArrays = {"void (*)(GLsizei, GLuint *)"},
+	glPathDashArrayNV = {"void (*)(GLuint, GLsizei, const GLfloat *)"},
+	glGetActiveUniformsiv = {"void (*)(GLuint, GLsizei, const GLuint *, GL_LUA_ENUMS, GLint *)"},
+	glBlitNamedFramebuffer = {"void (*)(GLuint, GLuint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)"},
+	glNamedProgramLocalParameterI4uiEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint)"},
+	glPushDebugGroupKHR = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLchar *)"},
+	glElementPointerATI = {"void (*)(GL_LUA_ENUMS, const void *)"},
+	glRasterPos3dv = {"void (*)(const GLdouble *)"},
+	glInterpolatePathsNV = {"void (*)(GLuint, GLuint, GLuint, GLfloat)"},
+	glStopInstrumentsSGIX = {"void (*)(GLint)"},
+	glColor3uiv = {"void (*)(const GLuint *)"},
+	glEndList = {"void (*)()"},
+	glColor3xvOES = {"void (*)(const GLfixed *)"},
+	glGetProgramStringARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
+	glMatrixLoaddEXT = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
+	glGlobalAlphaFactordSUN = {"void (*)(GLdouble)"},
+	glNormal3fVertex3fSUN = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glDebugMessageInsert = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, const GLchar *)"},
+	glDisableiEXT = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glGetVideouivNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint *)"},
+	glColor4i = {"void (*)(GLint, GLint, GLint, GLint)"},
+	glClearBufferSubData = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLintptr, GLsizeiptr, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glGetUniformBlockIndex = {"GLuint (*)(GLuint, const GLchar *)"},
+	glUniform1f = {"void (*)(GLint, GLfloat)"},
+	glPassThrough = {"void (*)(GLfloat)"},
+	glVertexAttrib3dNV = {"void (*)(GLuint, GLdouble, GLdouble, GLdouble)"},
+	glVertexAttrib4Nub = {"void (*)(GLuint, GLubyte, GLubyte, GLubyte, GLubyte)"},
+	glVertexAttribL1i64vNV = {"void (*)(GLuint, const GLint64EXT *)"},
+	glLightModelx = {"void (*)(GL_LUA_ENUMS, GLfixed)"},
+	glQueryObjectParameteruiAMD = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint)"},
+	glMultiDrawElementsIndirectBindlessCountNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, GLsizei, GLsizei, GLsizei, GLint)"},
+	glUniform1dv = {"void (*)(GLint, GLsizei, const GLdouble *)"},
+	glUniform3ui64vNV = {"void (*)(GLint, GLsizei, const GLuint64EXT *)"},
+	glVertexFormatNV = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei)"},
+	glBlendEquationSeparate = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glMultTransposeMatrixxOES = {"void (*)(const GLfixed *)"},
+	glDeleteBuffers = {"void (*)(GLsizei, const GLuint *)"},
+	glSecondaryColor3usv = {"void (*)(const GLushort *)"},
+	glGetVertexAttribIivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glGetDoubleIndexedvEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLdouble *)"},
+	glSecondaryColor3sv = {"void (*)(const GLshort *)"},
+	glVertex3hNV = {"void (*)(GLhalfNV, GLhalfNV, GLhalfNV)"},
+	glUniform2uivEXT = {"void (*)(GLint, GLsizei, const GLuint *)"},
+	glCompressedTexImage3DOES = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)"},
+	glQueryCounter = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glSecondaryColor3iv = {"void (*)(const GLint *)"},
+	glPathParameterfNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat)"},
+	glProgramUniformMatrix2dv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glTestFenceNV = {"GLboolean (*)(GLuint)"},
+	glEndQueryEXT = {"void (*)(GL_LUA_ENUMS)"},
+	glDrawRangeElementArrayATI = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei)"},
+	glNamedFramebufferRenderbuffer = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
+	glFramebufferTexture3DOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLint)"},
+	glMultiTexCoordP4uiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)"},
+	glGetHistogramParameteriv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glGetFragDataLocation = {"GLint (*)(GLuint, const GLchar *)"},
+	glProgramNamedParameter4fvNV = {"void (*)(GLuint, GLsizei, const GLubyte *, const GLfloat *)"},
+	glEdgeFlag = {"void (*)(GLboolean)"},
+	glPointParameteriNV = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glUnmapBufferARB = {"GLboolean (*)(GL_LUA_ENUMS)"},
+	glSecondaryColor3uiEXT = {"void (*)(GLuint, GLuint, GLuint)"},
+	glReadnPixelsKHR = {"void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glGetnTexImageARB = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glUniform1uiv = {"void (*)(GLint, GLsizei, const GLuint *)"},
+	glColor4ubVertex2fvSUN = {"void (*)(const GLubyte *, const GLfloat *)"},
+	glGetProgramParameterdvNV = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLdouble *)"},
+	glMapControlPointsNV = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLint, GLboolean, const void *)"},
+	glColorMaski = {"void (*)(GLuint, GLboolean, GLboolean, GLboolean, GLboolean)"},
+	glTexCoord1f = {"void (*)(GLfloat)"},
+	glGetProgramEnvParameterIivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLint *)"},
+	glActiveShaderProgramEXT = {"void (*)(GLuint, GLuint)"},
+	glVertexAttrib1sARB = {"void (*)(GLuint, GLshort)"},
+	glVertexAttribL2d = {"void (*)(GLuint, GLdouble, GLdouble)"},
+	glVDPAUMapSurfacesNV = {"void (*)(GLsizei, const GLvdpauSurfaceNV *)"},
+	glNamedCopyBufferSubDataEXT = {"void (*)(GLuint, GLuint, GLintptr, GLintptr, GLsizeiptr)"},
+	glBlendFuncSeparateiEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glGetSynciv = {"void (*)(GLsync, GL_LUA_ENUMS, GLsizei, GLsizei *, GLint *)"},
+	glBlendEquationIndexedAMD = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glVertexAttribI1uiv = {"void (*)(GLuint, const GLuint *)"},
+	glBlendEquationSeparatei = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glCompressedTextureSubImage1D = {"void (*)(GLuint, GLint, GLint, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glGetQueryivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glGetProgramNamedParameterdvNV = {"void (*)(GLuint, GLsizei, const GLubyte *, GLdouble *)"},
+	glCreateTextures = {"void (*)(GL_LUA_ENUMS, GLsizei, GLuint *)"},
+	glGetTexEnvxv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)"},
+	glMultiTexImage1DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glUniform4iv = {"void (*)(GLint, GLsizei, const GLint *)"},
+	glStencilOpSeparateATI = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glIsEnabledIndexedEXT = {"GLboolean (*)(GL_LUA_ENUMS, GLuint)"},
+	glDeleteTextures = {"void (*)(GLsizei, const GLuint *)"},
+	glGetVariantIntegervEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glTextureRenderbufferEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint)"},
+	glProgramParameters4fvNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLfloat *)"},
+	glCompileShaderARB = {"void (*)(GLhandleARB)"},
+	glVertexAttrib4NbvARB = {"void (*)(GLuint, const GLbyte *)"},
+	glGetProgramInfoLog = {"void (*)(GLuint, GLsizei, GLsizei *, GLchar *)"},
+	glWindowPos2fARB = {"void (*)(GLfloat, GLfloat)"},
+	glSecondaryColor3sEXT = {"void (*)(GLshort, GLshort, GLshort)"},
+	glColorFragmentOp2ATI = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)"},
+	glRotatex = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed)"},
+	glProgramEnvParameter4dARB = {"void (*)(GL_LUA_ENUMS, GLuint, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glTextureSubImage1DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glLoadTransposeMatrixd = {"void (*)(const GLdouble *)"},
+	glGetConvolutionParameterfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glBindProgramPipeline = {"void (*)(GLuint)"},
+	glGetPerfQueryIdByNameINTEL = {"void (*)(GLchar *, GLuint *)"},
+	glMultiTexParameterfEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
+	glGetFinalCombinerInputParameterfvNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glGetSubroutineUniformLocation = {"GLint (*)(GLuint, GL_LUA_ENUMS, const GLchar *)"},
+	glMapGrid1d = {"void (*)(GLint, GLdouble, GLdouble)"},
+	glGetProgramStageiv = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glFlushMappedBufferRangeAPPLE = {"void (*)(GL_LUA_ENUMS, GLintptr, GLsizeiptr)"},
+	glVertexAttrib1dv = {"void (*)(GLuint, const GLdouble *)"},
+	glPixelTransformParameterfEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
+	glTexCoord1fv = {"void (*)(const GLfloat *)"},
+	glReplacementCodeuiTexCoord2fNormal3fVertex3fSUN = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glPointParameterfvARB = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glPathTexGenNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, const GLfloat *)"},
+	glVertexAttrib4bv = {"void (*)(GLuint, const GLbyte *)"},
+	glPushClientAttrib = {"void (*)(GLbitfield)"},
+	glColorTableParameterfvSGI = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glFramebufferDrawBufferEXT = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glTexBufferEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
+	glCopyBufferSubDataNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLintptr, GLintptr, GLsizeiptr)"},
+	glIndexMask = {"void (*)(GLuint)"},
+	glProgramUniform4i = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLint)"},
+	glProgramStringARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glRasterPos4d = {"void (*)(GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glColor4b = {"void (*)(GLbyte, GLbyte, GLbyte, GLbyte)"},
+	glGenRenderbuffersOES = {"void (*)(GLsizei, GLuint *)"},
+	glReplacementCodeuiColor3fVertex3fSUN = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glGetAttribLocation = {"GLint (*)(GLuint, const GLchar *)"},
+	glGetMultiTexImageEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
+	glGetImageTransformParameterfvHP = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glProgramUniform3ui = {"void (*)(GLuint, GLint, GLuint, GLuint, GLuint)"},
+	glGetActiveSubroutineName = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, GLsizei *, GLchar *)"},
+	glMultiTexCoord4sv = {"void (*)(GL_LUA_ENUMS, const GLshort *)"},
+	glTexGeniOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
+	glIsProgramPipeline = {"GLboolean (*)(GLuint)"},
+	glBlendFuncSeparateINGR = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glPointSizexOES = {"void (*)(GLfixed)"},
+	glGetLocalConstantFloatvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)"},
+	glImageTransformParameterfHP = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
+	glMultiTexCoord1i = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glGetLocalConstantIntegervEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glIndexf = {"void (*)(GLfloat)"},
+	glFenceSyncAPPLE = {"GLsync (*)(GL_LUA_ENUMS, GLbitfield)"},
+	glProgramUniform4d = {"void (*)(GLuint, GLint, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glVertexAttribPointerNV = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glClearNamedFramebufferuiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, const GLuint *)"},
+	glBeginOcclusionQueryNV = {"void (*)(GLuint)"},
+	glNamedBufferPageCommitmentARB = {"void (*)(GLuint, GLintptr, GLsizeiptr, GLboolean)"},
+	glFramebufferTexture1D = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)"},
+	glEnableVertexArrayAttribEXT = {"void (*)(GLuint, GLuint)"},
+	glGetVertexArrayPointeri_vEXT = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, void **)"},
+	glTexStorage2DMultisample = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLboolean)"},
+	glCompressedTextureImage2DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, const void *)"},
+	glMaterialiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glClearDepthdNV = {"void (*)(GLdouble)"},
+	glUniform1uiEXT = {"void (*)(GLint, GLuint)"},
+	glGetActiveUniformName = {"void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLchar *)"},
+	glGetnUniformivARB = {"void (*)(GLuint, GLint, GLsizei, GLint *)"},
+	glColor3usv = {"void (*)(const GLushort *)"},
+	glDisableVertexArrayAttrib = {"void (*)(GLuint, GLuint)"},
+	glGetPathSpacingNV = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLuint, GLfloat, GLfloat, GL_LUA_ENUMS, GLfloat *)"},
+	glSampleMaskEXT = {"void (*)(GLclampf, GLboolean)"},
+	glMap2xOES = {"void (*)(GL_LUA_ENUMS, GLfixed, GLfixed, GLint, GLint, GLfixed, GLfixed, GLint, GLint, GLfixed)"},
+	glDrawElementArrayAPPLE = {"void (*)(GL_LUA_ENUMS, GLint, GLsizei)"},
+	glUnmapTexture2DINTEL = {"void (*)(GLuint, GLint)"},
+	glEndFragmentShaderATI = {"void (*)()"},
+	glConvolutionFilter1D = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glGetShaderInfoLog = {"void (*)(GLuint, GLsizei, GLsizei *, GLchar *)"},
+	glAsyncMarkerSGIX = {"void (*)(GLuint)"},
+	glGetVertexAttribivNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glClientActiveVertexStreamATI = {"void (*)(GL_LUA_ENUMS)"},
+	glBindBufferOffsetEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLintptr)"},
+	glClearNamedBufferDataEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glGetTexParameterIivOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glClear = {"void (*)(GLbitfield)"},
+	glPathCoordsNV = {"void (*)(GLuint, GLsizei, GL_LUA_ENUMS, const void *)"},
+	glMultiTexSubImage3DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glBlendFuncSeparateIndexedAMD = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glGetTextureParameterIivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glSecondaryColor3iEXT = {"void (*)(GLint, GLint, GLint)"},
+	glSetFenceNV = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glOrthox = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed, GLfixed, GLfixed)"},
+	glSamplerParameterIivOES = {"void (*)(GLuint, GL_LUA_ENUMS, const GLint *)"},
+	glMultiTexGeniEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
+	glArrayElement = {"void (*)(GLint)"},
+	glDrawRangeElementArrayAPPLE = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLint, GLsizei)"},
+	glMatrixScalefEXT = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat)"},
+	glBindBufferRangeEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLintptr, GLsizeiptr)"},
+	glTexParameterIuivOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)"},
+	glVertex3bvOES = {"void (*)(const GLbyte *)"},
+	glGetMinmaxParameteriv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glIsPathNV = {"GLboolean (*)(GLuint)"},
+	glActiveTextureARB = {"void (*)(GL_LUA_ENUMS)"},
+	glVertexAttribL1ui64vARB = {"void (*)(GLuint, const GLuint64EXT *)"},
+	glListBase = {"void (*)(GLuint)"},
+	glDispatchComputeGroupSizeARB = {"void (*)(GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)"},
+	glNormal3d = {"void (*)(GLdouble, GLdouble, GLdouble)"},
+	glGetNamedProgramStringEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
+	glProgramVertexLimitNV = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glNamedProgramLocalParameter4fEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glIsTextureEXT = {"GLboolean (*)(GLuint)"},
+	glGetTextureSamplerHandleARB = {"GLuint64 (*)(GLuint, GLuint)"},
+	glWindowPos3d = {"void (*)(GLdouble, GLdouble, GLdouble)"},
+	glTexCoord2fNormal3fVertex3fvSUN = {"void (*)(const GLfloat *, const GLfloat *, const GLfloat *)"},
+	glIsQueryEXT = {"GLboolean (*)(GLuint)"},
+	glPathCommandsNV = {"void (*)(GLuint, GLsizei, const GLubyte *, GLsizei, GL_LUA_ENUMS, const void *)"},
+	glUniformHandleui64ARB = {"void (*)(GLint, GLuint64)"},
+	glGetDebugMessageLog = {"GLuint (*)(GLuint, GLsizei, GLenum *, GLenum *, GLuint *, GLenum *, GLsizei *, GLchar *)"},
+	glTexCoordP2uiv = {"void (*)(GL_LUA_ENUMS, const GLuint *)"},
+	glMapObjectBufferATI = {"void *(*)(GLuint)"},
+	glGetSharpenTexFuncSGIS = {"void (*)(GL_LUA_ENUMS, GLfloat *)"},
+	glMatrixTranslatefEXT = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat)"},
+	glBindTransformFeedbackNV = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glTexCoord2s = {"void (*)(GLshort, GLshort)"},
+	glMatrixPopEXT = {"void (*)(GL_LUA_ENUMS)"},
+	glBinormal3fEXT = {"void (*)(GLfloat, GLfloat, GLfloat)"},
+	glSecondaryColor3ub = {"void (*)(GLubyte, GLubyte, GLubyte)"},
+	glGetCompressedMultiTexImageEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, void *)"},
+	glBinormal3bEXT = {"void (*)(GLbyte, GLbyte, GLbyte)"},
+	glClearDepth = {"void (*)(GLdouble)"},
+	glScissor = {"void (*)(GLint, GLint, GLsizei, GLsizei)"},
+	glWindowPos2iv = {"void (*)(const GLint *)"},
+	glProgramBufferParametersIivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, const GLint *)"},
+	glTextureParameteri = {"void (*)(GLuint, GL_LUA_ENUMS, GLint)"},
+	glMapParameterfvNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glMultiTexCoordP1uiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)"},
+	glWindowPos3sv = {"void (*)(const GLshort *)"},
+	glGetRenderbufferParameteriv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glEvalMesh1 = {"void (*)(GL_LUA_ENUMS, GLint, GLint)"},
+	glGetProgramInterfaceiv = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glUnmapNamedBufferEXT = {"GLboolean (*)(GLuint)"},
+	glProgramUniform2dv = {"void (*)(GLuint, GLint, GLsizei, const GLdouble *)"},
+	glGetQueryBufferObjecti64v = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLintptr)"},
+	glGetMapiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glProgramUniform3iv = {"void (*)(GLuint, GLint, GLsizei, const GLint *)"},
+	glGetShaderSource = {"void (*)(GLuint, GLsizei, GLsizei *, GLchar *)"},
+	glPrioritizeTexturesEXT = {"void (*)(GLsizei, const GLuint *, const GLclampf *)"},
+	glIsSampler = {"GLboolean (*)(GLuint)"},
+	glGetNamedRenderbufferParameteriv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glColor4x = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed)"},
+	glFrameTerminatorGREMEDY = {"void (*)()"},
+	glAttachShader = {"void (*)(GLuint, GLuint)"},
+	glTestObjectAPPLE = {"GLboolean (*)(GL_LUA_ENUMS, GLuint)"},
+	glRasterPos2iv = {"void (*)(const GLint *)"},
+	glScissorArrayv = {"void (*)(GLuint, GLsizei, const GLint *)"},
+	glStencilThenCoverStrokePathNV = {"void (*)(GLuint, GLint, GLuint, GL_LUA_ENUMS)"},
+	glGetTextureLevelParameteriv = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLint *)"},
+	glColorP3ui = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glStencilStrokePathInstancedNV = {"void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GLint, GLuint, GL_LUA_ENUMS, const GLfloat *)"},
+	glColorP4ui = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glConvolutionParameterf = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
+	glMultiDrawArrays = {"void (*)(GL_LUA_ENUMS, const GLint *, const GLsizei *, GLsizei)"},
+	glDetachObjectARB = {"void (*)(GLhandleARB, GLhandleARB)"},
+	glGetProgramResourceLocationIndex = {"GLint (*)(GLuint, GL_LUA_ENUMS, const GLchar *)"},
+	glProgramLocalParameterI4ivNV = {"void (*)(GL_LUA_ENUMS, GLuint, const GLint *)"},
+	glIndexFormatNV = {"void (*)(GL_LUA_ENUMS, GLsizei)"},
+	glDrawArraysInstancedNV = {"void (*)(GL_LUA_ENUMS, GLint, GLsizei, GLsizei)"},
+	glShaderOp3EXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint)"},
+	glBlendFuncSeparatei = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glCompressedTexSubImage3DOES = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glCullFace = {"void (*)(GL_LUA_ENUMS)"},
+	glMultiTexCoord3hNV = {"void (*)(GL_LUA_ENUMS, GLhalfNV, GLhalfNV, GLhalfNV)"},
+	glGetActiveUniformBlockiv = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLint *)"},
+	glMatrixIndexPointerARB = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glCopyTexSubImage2D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
+	glDrawElementsBaseVertex = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLint)"},
+	glDeleteProgramPipelines = {"void (*)(GLsizei, const GLuint *)"},
+	glMultiTexCoord1xvOES = {"void (*)(GL_LUA_ENUMS, const GLfixed *)"},
+	glVertexAttrib4ubvNV = {"void (*)(GLuint, const GLubyte *)"},
+	glVertexAttribFormat = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLboolean, GLuint)"},
+	glVertexAttrib1d = {"void (*)(GLuint, GLdouble)"},
+	glBlendFuncSeparate = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glProgramUniform4uivEXT = {"void (*)(GLuint, GLint, GLsizei, const GLuint *)"},
+	glVertexAttribI4i = {"void (*)(GLuint, GLint, GLint, GLint, GLint)"},
+	glGetTransformFeedbackVaryingEXT = {"void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLsizei *, GLenum *, GLchar *)"},
+	glGetQueryObjectuiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint *)"},
+	glSpriteParameterfSGIX = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
+	glWeightPathsNV = {"void (*)(GLuint, GLsizei, const GLuint *, const GLfloat *)"},
+	glLightxvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)"},
+	glLightModelxv = {"void (*)(GL_LUA_ENUMS, const GLfixed *)"},
+	glColor3dv = {"void (*)(const GLdouble *)"},
+	glPixelTransformParameteriEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
+	glProgramUniform1fv = {"void (*)(GLuint, GLint, GLsizei, const GLfloat *)"},
+	glIsQuery = {"GLboolean (*)(GLuint)"},
+	glNamedBufferPageCommitmentEXT = {"void (*)(GLuint, GLintptr, GLsizeiptr, GLboolean)"},
+	glObjectPtrLabel = {"void (*)(const void *, GLsizei, const GLchar *)"},
+	glGenProgramPipelinesEXT = {"void (*)(GLsizei, GLuint *)"},
+	glGetDetailTexFuncSGIS = {"void (*)(GL_LUA_ENUMS, GLfloat *)"},
+	glColor3hNV = {"void (*)(GLhalfNV, GLhalfNV, GLhalfNV)"},
+	glStencilFunc = {"void (*)(GL_LUA_ENUMS, GLint, GLuint)"},
+	glMultTransposeMatrixfARB = {"void (*)(const GLfloat *)"},
+	glPointParameteriv = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glDeleteFragmentShaderATI = {"void (*)(GLuint)"},
+	glGetMultiTexLevelParameterfvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLfloat *)"},
+	glEvalCoord1d = {"void (*)(GLdouble)"},
+	glGetFogFuncSGIS = {"void (*)(GLfloat *)"},
+	glFogCoordfEXT = {"void (*)(GLfloat)"},
+	glPresentFrameDualFillNV = {"void (*)(GLuint, GLuint64EXT, GLuint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint)"},
+	glGetMapAttribParameterfvNV = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLfloat *)"},
+	glTranslatex = {"void (*)(GLfixed, GLfixed, GLfixed)"},
+	glShaderSource = {"void (*)(GLuint, GLsizei, const GLchar *const*, const GLint *)"},
+	glVertexArrayVertexAttribDivisorEXT = {"void (*)(GLuint, GLuint, GLuint)"},
+	glGetFirstPerfQueryIdINTEL = {"void (*)(GLuint *)"},
+	glValidateProgram = {"void (*)(GLuint)"},
+	glCreateRenderbuffers = {"void (*)(GLsizei, GLuint *)"},
+	glNamedFramebufferTextureEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint)"},
+	glBlendEquation = {"void (*)(GL_LUA_ENUMS)"},
+	glFogCoordhvNV = {"void (*)(const GLhalfNV *)"},
+	glGetMultisamplefv = {"void (*)(GL_LUA_ENUMS, GLuint, GLfloat *)"},
+	glVertexAttrib4usv = {"void (*)(GLuint, const GLushort *)"},
+	glDrawMeshArraysSUN = {"void (*)(GL_LUA_ENUMS, GLint, GLsizei, GLsizei)"},
+	glGetString = {"const GLubyte *(*)(GL_LUA_ENUMS)"},
+	glMinSampleShadingOES = {"void (*)(GLfloat)"},
+	glReplacementCodeuiSUN = {"void (*)(GLuint)"},
+	glNormal3dv = {"void (*)(const GLdouble *)"},
+	glVertexAttribParameteriAMD = {"void (*)(GLuint, GL_LUA_ENUMS, GLint)"},
+	glBlendEquationSeparateOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glGetInternalformati64v = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLint64 *)"},
+	glUniform2ui64NV = {"void (*)(GLint, GLuint64EXT, GLuint64EXT)"},
+	glAttachObjectARB = {"void (*)(GLhandleARB, GLhandleARB)"},
+	glGetTextureParameterIiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glRenderbufferStorageMultisampleAPPLE = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)"},
+	glGetMapParameterivNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glVertexAttribL1i64NV = {"void (*)(GLuint, GLint64EXT)"},
+	glFogCoordd = {"void (*)(GLdouble)"},
+	glTexCoordP4ui = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glGetTextureParameteriv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glGetQueryObjectui64v = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint64 *)"},
+	glSamplerParameterIiv = {"void (*)(GLuint, GL_LUA_ENUMS, const GLint *)"},
+	glTexCoordP3ui = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glVertex4iv = {"void (*)(const GLint *)"},
+	glGetVideoCaptureStreamdvNV = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLdouble *)"},
+	glTexCoord2dv = {"void (*)(const GLdouble *)"},
+	glMultiDrawElementsBaseVertexOES = {"void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei, const GLint *)"},
+	glUnmapBuffer = {"GLboolean (*)(GL_LUA_ENUMS)"},
+	glColor4dv = {"void (*)(const GLdouble *)"},
+	glDeleteFramebuffers = {"void (*)(GLsizei, const GLuint *)"},
+	glProgramUniformHandleui64ARB = {"void (*)(GLuint, GLint, GLuint64)"},
+	glUniform4uiv = {"void (*)(GLint, GLsizei, const GLuint *)"},
+	glMultiTexBufferEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
+	glGetPerfMonitorGroupsAMD = {"void (*)(GLint *, GLsizei, GLuint *)"},
+	glTexImage3DMultisampleCoverageNV = {"void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, GLsizei, GLsizei, GLboolean)"},
+	glBeginPerfMonitorAMD = {"void (*)(GLuint)"},
+	glLoadTransposeMatrixfARB = {"void (*)(const GLfloat *)"},
+	glGenerateMipmapEXT = {"void (*)(GL_LUA_ENUMS)"},
+	glPushGroupMarkerEXT = {"void (*)(GLsizei, const GLchar *)"},
+	glDrawElementsInstancedBaseVertexEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei, GLint)"},
+	glUniformMatrix4fv = {"void (*)(GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glVertexArrayAttribIFormat = {"void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLuint)"},
+	glBindFragDataLocationEXT = {"void (*)(GLuint, GLuint, const GLchar *)"},
+	glApplyTextureEXT = {"void (*)(GL_LUA_ENUMS)"},
+	glMultiTexCoordP1ui = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
+	glBindTextureUnitParameterEXT = {"GLuint (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glUnmapObjectBufferATI = {"void (*)(GLuint)"},
+	glColor3f = {"void (*)(GLfloat, GLfloat, GLfloat)"},
+	glGetPathColorGenivNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glMatrixMultTransposedEXT = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
+	glMultiModeDrawArraysIBM = {"void (*)(const GLenum *, const GLint *, const GLsizei *, GLsizei, GLint)"},
+	glBindParameterEXT = {"GLuint (*)(GL_LUA_ENUMS)"},
+	glFinalCombinerInputNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glGetVertexAttribLi64vNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLint64EXT *)"},
+	glValidateProgramPipeline = {"void (*)(GLuint)"},
+	glTexCoord1iv = {"void (*)(const GLint *)"},
+	glLightModelf = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
+	glVertexArrayElementBuffer = {"void (*)(GLuint, GLuint)"},
+	glVertexStream1sATI = {"void (*)(GL_LUA_ENUMS, GLshort)"},
+	glGetPathMetricsNV = {"void (*)(GLbitfield, GLsizei, GL_LUA_ENUMS, const void *, GLuint, GLsizei, GLfloat *)"},
+	glProgramUniformMatrix2x3dv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glSecondaryColor3fEXT = {"void (*)(GLfloat, GLfloat, GLfloat)"},
+	glUniformMatrix3x2fv = {"void (*)(GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glTexCoord1xOES = {"void (*)(GLfixed)"},
+	glUniform1i64vNV = {"void (*)(GLint, GLsizei, const GLint64EXT *)"},
+	glSampleCoveragexOES = {"void (*)(GLclampx, GLboolean)"},
+	glGenOcclusionQueriesNV = {"void (*)(GLsizei, GLuint *)"},
+	glGetCoverageModulationTableNV = {"void (*)(GLsizei, GLfloat *)"},
+	glMultiTexCoord2hvNV = {"void (*)(GL_LUA_ENUMS, const GLhalfNV *)"},
+	glVertexAttribL3i64vNV = {"void (*)(GLuint, const GLint64EXT *)"},
+	glDeleteBuffersARB = {"void (*)(GLsizei, const GLuint *)"},
+	glBitmap = {"void (*)(GLsizei, GLsizei, GLfloat, GLfloat, GLfloat, GLfloat, const GLubyte *)"},
+	glCopyPathNV = {"void (*)(GLuint, GLuint)"},
+	glCoverageModulationNV = {"void (*)(GL_LUA_ENUMS)"},
+	glMultiTexCoord3s = {"void (*)(GL_LUA_ENUMS, GLshort, GLshort, GLshort)"},
+	glGetPathLengthNV = {"GLfloat (*)(GLuint, GLsizei, GLsizei)"},
+	glColorTableParameteriv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glWriteMaskEXT = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glWindowPos4svMESA = {"void (*)(const GLshort *)"},
+	glWindowPos4sMESA = {"void (*)(GLshort, GLshort, GLshort, GLshort)"},
+	glWindowPos4ivMESA = {"void (*)(const GLint *)"},
+	glWindowPos4iMESA = {"void (*)(GLint, GLint, GLint, GLint)"},
+	glWindowPos4fvMESA = {"void (*)(const GLfloat *)"},
+	glWindowPos4fMESA = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glDisable = {"void (*)(GL_LUA_ENUMS)"},
+	glWindowPos4dvMESA = {"void (*)(const GLdouble *)"},
+	glWindowPos4dMESA = {"void (*)(GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glGetCompressedTextureImageEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, void *)"},
+	glWindowPos3svMESA = {"void (*)(const GLshort *)"},
+	glBlendFunciARB = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glWindowPos3svARB = {"void (*)(const GLshort *)"},
+	glProgramBufferParametersfvNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, const GLfloat *)"},
+	glPointParameterfEXT = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
+	glWindowPos3sMESA = {"void (*)(GLshort, GLshort, GLshort)"},
+	glWindowPos3sARB = {"void (*)(GLshort, GLshort, GLshort)"},
+	glProvokingVertex = {"void (*)(GL_LUA_ENUMS)"},
+	glWindowPos3s = {"void (*)(GLshort, GLshort, GLshort)"},
+	glWindowPos3ivMESA = {"void (*)(const GLint *)"},
+	glCompressedMultiTexSubImage2DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glDeleteVertexShaderEXT = {"void (*)(GLuint)"},
+	glTexGenfvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glPollInstrumentsSGIX = {"GLint (*)(GLint *)"},
+	glGetGraphicsResetStatusEXT = {"GLenum (*)()"},
+	glWindowPos3ivARB = {"void (*)(const GLint *)"},
+	glNormal3x = {"void (*)(GLfixed, GLfixed, GLfixed)"},
+	glWindowPos3iMESA = {"void (*)(GLint, GLint, GLint)"},
+	glMultiDrawArraysIndirectAMD = {"void (*)(GL_LUA_ENUMS, const void *, GLsizei, GLsizei)"},
+	glWindowPos3iARB = {"void (*)(GLint, GLint, GLint)"},
+	glWindowPos3i = {"void (*)(GLint, GLint, GLint)"},
+	glWindowPos3fvMESA = {"void (*)(const GLfloat *)"},
+	glPointParameterf = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
+	glWindowPos3fvARB = {"void (*)(const GLfloat *)"},
+	glMakeNamedBufferResidentNV = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glWindowPos3fMESA = {"void (*)(GLfloat, GLfloat, GLfloat)"},
+	glWindowPos3fARB = {"void (*)(GLfloat, GLfloat, GLfloat)"},
+	glWindowPos3dvMESA = {"void (*)(const GLdouble *)"},
+	glWindowPos3dvARB = {"void (*)(const GLdouble *)"},
+	glEnableVertexAttribArrayARB = {"void (*)(GLuint)"},
+	glFogCoorddv = {"void (*)(const GLdouble *)"},
+	glWindowPos3dv = {"void (*)(const GLdouble *)"},
+	glWindowPos3dMESA = {"void (*)(GLdouble, GLdouble, GLdouble)"},
+	glWindowPos3dARB = {"void (*)(GLdouble, GLdouble, GLdouble)"},
+	glWindowPos2svMESA = {"void (*)(const GLshort *)"},
+	glWindowPos2svARB = {"void (*)(const GLshort *)"},
+	glNamedStringARB = {"void (*)(GL_LUA_ENUMS, GLint, const GLchar *, GLint, const GLchar *)"},
+	glWindowPos2sMESA = {"void (*)(GLshort, GLshort)"},
+	glVertex2hvNV = {"void (*)(const GLhalfNV *)"},
+	glUniform2iARB = {"void (*)(GLint, GLint, GLint)"},
+	glVertexAttribFormatNV = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLboolean, GLsizei)"},
+	glWindowPos2s = {"void (*)(GLshort, GLshort)"},
+	glRasterPos3i = {"void (*)(GLint, GLint, GLint)"},
+	glWindowPos2ivMESA = {"void (*)(const GLint *)"},
+	glWindowPos2ivARB = {"void (*)(const GLint *)"},
+	glTexCoord2i = {"void (*)(GLint, GLint)"},
+	glTexParameterIiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glWindowPos2iMESA = {"void (*)(GLint, GLint)"},
+	glWindowPos2iARB = {"void (*)(GLint, GLint)"},
+	glGetnPixelMapusvARB = {"void (*)(GL_LUA_ENUMS, GLsizei, GLushort *)"},
+	glWindowPos2i = {"void (*)(GLint, GLint)"},
+	glPointSize = {"void (*)(GLfloat)"},
+	glWindowPos2fvMESA = {"void (*)(const GLfloat *)"},
+	glVertex3i = {"void (*)(GLint, GLint, GLint)"},
+	glWindowPos2fvARB = {"void (*)(const GLfloat *)"},
+	glGetQueryObjectiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glWindowPos2fv = {"void (*)(const GLfloat *)"},
+	glGetInteger64vAPPLE = {"void (*)(GL_LUA_ENUMS, GLint64 *)"},
+	glWindowPos2fMESA = {"void (*)(GLfloat, GLfloat)"},
+	glIndexxvOES = {"void (*)(const GLfixed *)"},
+	glGetTexEnviv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glNamedProgramLocalParameter4dvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, const GLdouble *)"},
+	glCreateSamplers = {"void (*)(GLsizei, GLuint *)"},
+	glMultiModeDrawElementsIBM = {"void (*)(const GLenum *, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei, GLint)"},
+	glNamedFramebufferParameteriEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint)"},
+	glWindowPos2dv = {"void (*)(const GLdouble *)"},
+	glGetBufferParameterivARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glClientWaitSyncAPPLE = {"GLenum (*)(GLsync, GLbitfield, GLuint64)"},
+	glDeleteVertexArraysOES = {"void (*)(GLsizei, const GLuint *)"},
+	glColor4fNormal3fVertex3fvSUN = {"void (*)(const GLfloat *, const GLfloat *, const GLfloat *)"},
+	glCopyTexImage2D = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint)"},
+	glMultiTexCoord4fv = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glConvolutionParameterfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glActiveVaryingNV = {"void (*)(GLuint, const GLchar *)"},
+	glNormal3b = {"void (*)(GLbyte, GLbyte, GLbyte)"},
+	glWeightusvARB = {"void (*)(GLint, const GLushort *)"},
+	glWeightuivARB = {"void (*)(GLint, const GLuint *)"},
+	glGetTranslatedShaderSourceANGLE = {"void (*)(GLuint, GLsizei, GLsizei *, GLchar *)"},
+	glReplacementCodeusvSUN = {"void (*)(const GLushort *)"},
+	glWeightsvARB = {"void (*)(GLint, const GLshort *)"},
+	glEndTransformFeedbackEXT = {"void (*)()"},
+	glGetVertexAttribLui64vARB = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint64EXT *)"},
+	glEnableVertexAttribArray = {"void (*)(GLuint)"},
+	glWeightivARB = {"void (*)(GLint, const GLint *)"},
+	glWeightfvARB = {"void (*)(GLint, const GLfloat *)"},
+	glTexCoord4fVertex4fvSUN = {"void (*)(const GLfloat *, const GLfloat *)"},
+	glWeightdvARB = {"void (*)(GLint, const GLdouble *)"},
+	glGetAttachedShaders = {"void (*)(GLuint, GLsizei, GLsizei *, GLuint *)"},
+	glColor4ubv = {"void (*)(const GLubyte *)"},
+	glCopyConvolutionFilter2D = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei)"},
+	glMultiTexCoord3fARB = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat)"},
+	glRasterPos3sv = {"void (*)(const GLshort *)"},
+	glBinormal3iEXT = {"void (*)(GLint, GLint, GLint)"},
+	glSecondaryColor3hNV = {"void (*)(GLhalfNV, GLhalfNV, GLhalfNV)"},
+	glWeightPointerOES = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glNormalStream3sATI = {"void (*)(GL_LUA_ENUMS, GLshort, GLshort, GLshort)"},
+	glGetLightxOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)"},
+	glMultiTexCoordP2uiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)"},
+	glWeightPointerARB = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glWaitSyncAPPLE = {"void (*)(GLsync, GLbitfield, GLuint64)"},
+	glIsVertexArray = {"GLboolean (*)(GLuint)"},
+	glViewportIndexedfvNV = {"void (*)(GLuint, const GLfloat *)"},
+	glViewportIndexedfv = {"void (*)(GLuint, const GLfloat *)"},
+	glViewportIndexedfNV = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glTexCoord4iv = {"void (*)(const GLint *)"},
+	glViewportArrayvNV = {"void (*)(GLuint, GLsizei, const GLfloat *)"},
+	glVertexAttrib4uivARB = {"void (*)(GLuint, const GLuint *)"},
+	glEdgeFlagPointerEXT = {"void (*)(GLsizei, GLsizei, const GLboolean *)"},
+	glColorTable = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glDeleteVertexArraysAPPLE = {"void (*)(GLsizei, const GLuint *)"},
+	glMapParameterivNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glEnableClientStateiEXT = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glGetSamplerParameterfv = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)"},
+	glSamplePatternEXT = {"void (*)(GL_LUA_ENUMS)"},
+	glVideoCaptureNV = {"GLenum (*)(GLuint, GLuint *, GLuint64EXT *)"},
+	glDepthRangeIndexed = {"void (*)(GLuint, GLdouble, GLdouble)"},
+	glVertexWeighthvNV = {"void (*)(const GLhalfNV *)"},
+	glVertexWeighthNV = {"void (*)(GLhalfNV)"},
+	glColor3s = {"void (*)(GLshort, GLshort, GLshort)"},
+	glVertexWeightfEXT = {"void (*)(GLfloat)"},
+	glVertexWeightPointerEXT = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glVertexStream4svATI = {"void (*)(GL_LUA_ENUMS, const GLshort *)"},
+	glVertexStream4sATI = {"void (*)(GL_LUA_ENUMS, GLshort, GLshort, GLshort, GLshort)"},
+	glVertexStream4ivATI = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glVertexStream4iATI = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint)"},
+	glMatrixMult3x3fNV = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glVertexStream4fvATI = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glVertexStream4fATI = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glGetnUniformdv = {"void (*)(GLuint, GLint, GLsizei, GLdouble *)"},
+	glVertexStream4dvATI = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
+	glBlendEquationi = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glVertexStream4dATI = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glMultiTexCoord1fARB = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
+	glVertexStream3svATI = {"void (*)(GL_LUA_ENUMS, const GLshort *)"},
+	glVertexStream3sATI = {"void (*)(GL_LUA_ENUMS, GLshort, GLshort, GLshort)"},
+	glVertexStream3ivATI = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glVertexStream3iATI = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint)"},
+	glCreateShaderProgramEXT = {"GLuint (*)(GL_LUA_ENUMS, const GLchar *)"},
+	glFogCoordPointerListIBM = {"void (*)(GL_LUA_ENUMS, GLint, const void **, GLint)"},
+	glMapBufferARB = {"void *(*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glTextureBufferEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
+	glGetNamedFramebufferAttachmentParameteriv = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glVertexBlendEnvfATI = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
+	glVertexStream3fvATI = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glVertexStream3fATI = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat)"},
+	glVertexStream3dvATI = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
+	glBlendEquationSeparateiOES = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glVertexStream3dATI = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble)"},
+	glFogCoordPointerEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, const void *)"},
+	glVertexStream2svATI = {"void (*)(GL_LUA_ENUMS, const GLshort *)"},
+	glPixelStorex = {"void (*)(GL_LUA_ENUMS, GLfixed)"},
+	glMaterialf = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
+	glVertexStream2sATI = {"void (*)(GL_LUA_ENUMS, GLshort, GLshort)"},
+	glVertexStream2ivATI = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glVertexStream2iATI = {"void (*)(GL_LUA_ENUMS, GLint, GLint)"},
+	glBindAttribLocationARB = {"void (*)(GLhandleARB, GLuint, const GLcharARB *)"},
+	glVertexStream2fvATI = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glVertexStream2fATI = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat)"},
+	glGetClipPlanef = {"void (*)(GL_LUA_ENUMS, GLfloat *)"},
+	glEnablei = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glDeletePerfMonitorsAMD = {"void (*)(GLsizei, GLuint *)"},
+	glExtIsProgramBinaryQCOM = {"GLboolean (*)(GLuint)"},
+	glVertexStream2dvATI = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
+	glVertexStream2dATI = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble)"},
+	glVertexStream1svATI = {"void (*)(GL_LUA_ENUMS, const GLshort *)"},
+	glVertexStream1ivATI = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glIsOcclusionQueryNV = {"GLboolean (*)(GLuint)"},
+	glUniform4ui64vNV = {"void (*)(GLint, GLsizei, const GLuint64EXT *)"},
+	glSecondaryColorPointerEXT = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glVertexStream1fvATI = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glColor4xOES = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed)"},
+	glFrontFace = {"void (*)(GL_LUA_ENUMS)"},
+	glVertexStream1fATI = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
+	glTexEnvx = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)"},
+	glMapVertexAttrib1fAPPLE = {"void (*)(GLuint, GLuint, GLfloat, GLfloat, GLint, GLint, const GLfloat *)"},
+	glVertexPointerEXT = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei, GLsizei, const void *)"},
+	glProgramEnvParameters4fvEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLfloat *)"},
+	glClearColor = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glPointParameterxvOES = {"void (*)(GL_LUA_ENUMS, const GLfixed *)"},
+	glBinormal3fvEXT = {"void (*)(const GLfloat *)"},
+	glVertexAttribs3svNV = {"void (*)(GLuint, GLsizei, const GLshort *)"},
+	glGetHistogramParameterfvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glProgramLocalParameterI4uivNV = {"void (*)(GL_LUA_ENUMS, GLuint, const GLuint *)"},
+	glGetVideoi64vNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLint64EXT *)"},
+	glVertexP3ui = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glVertexP2uiv = {"void (*)(GL_LUA_ENUMS, const GLuint *)"},
+	glVertexAttrib3sv = {"void (*)(GLuint, const GLshort *)"},
+	glTexGend = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLdouble)"},
+	glBindBuffer = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glVertexP2ui = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glGetQueryiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glVertexBlendEnviATI = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glBindImageTexture = {"void (*)(GLuint, GLuint, GLint, GLboolean, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glRenderMode = {"GLint (*)(GL_LUA_ENUMS)"},
+	glVertexAttribs4svNV = {"void (*)(GLuint, GLsizei, const GLshort *)"},
+	glVertexAttribs4hvNV = {"void (*)(GLuint, GLsizei, const GLhalfNV *)"},
+	glVertexAttribs4fvNV = {"void (*)(GLuint, GLsizei, const GLfloat *)"},
+	glClearAccum = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glColorSubTableEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glVertexAttribs4dvNV = {"void (*)(GLuint, GLsizei, const GLdouble *)"},
+	glVertexP4uiv = {"void (*)(GL_LUA_ENUMS, const GLuint *)"},
+	glVertexAttribs3hvNV = {"void (*)(GLuint, GLsizei, const GLhalfNV *)"},
+	glVertexAttribs3fvNV = {"void (*)(GLuint, GLsizei, const GLfloat *)"},
+	glCopyColorTable = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei)"},
+	glVertexAttribs3dvNV = {"void (*)(GLuint, GLsizei, const GLdouble *)"},
+	glVertexAttribs2svNV = {"void (*)(GLuint, GLsizei, const GLshort *)"},
+	glVertexAttribs2hvNV = {"void (*)(GLuint, GLsizei, const GLhalfNV *)"},
+	glDrawTexxOES = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed, GLfixed)"},
+	glGetDriverControlsQCOM = {"void (*)(GLint *, GLsizei, GLuint *)"},
+	glVertexAttribs2fvNV = {"void (*)(GLuint, GLsizei, const GLfloat *)"},
+	glDrawArraysEXT = {"void (*)(GL_LUA_ENUMS, GLint, GLsizei)"},
+	glVertexAttribs2dvNV = {"void (*)(GLuint, GLsizei, const GLdouble *)"},
+	glUniform2fvARB = {"void (*)(GLint, GLsizei, const GLfloat *)"},
+	glVertexAttribs1fvNV = {"void (*)(GLuint, GLsizei, const GLfloat *)"},
+	glVertexAttribs1dvNV = {"void (*)(GLuint, GLsizei, const GLdouble *)"},
+	glVertexAttribPointerARB = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLboolean, GLsizei, const void *)"},
+	glMultiTexParameterIivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glVertexAttribPointer = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLboolean, GLsizei, const void *)"},
+	glBeginQueryIndexed = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint)"},
+	glTangent3dEXT = {"void (*)(GLdouble, GLdouble, GLdouble)"},
+	glMatrixMultfEXT = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glVertexAttrib3f = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat)"},
+	glGetnConvolutionFilter = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glVertexAttribP4uiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLboolean, const GLuint *)"},
+	glVertexAttribP3uiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLboolean, const GLuint *)"},
+	glTessellationFactorAMD = {"void (*)(GLfloat)"},
+	glVertexAttribP3ui = {"void (*)(GLuint, GL_LUA_ENUMS, GLboolean, GLuint)"},
+	glGetBufferSubDataARB = {"void (*)(GL_LUA_ENUMS, GLintptrARB, GLsizeiptrARB, void *)"},
+	glVertexAttribP2uiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLboolean, const GLuint *)"},
+	glVertexAttribP2ui = {"void (*)(GLuint, GL_LUA_ENUMS, GLboolean, GLuint)"},
+	glVertexAttribP1uiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLboolean, const GLuint *)"},
+	glVertexAttribLPointerEXT = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glVertexAttribLPointer = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glVertexAttribLFormatNV = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLsizei)"},
+	glVertexAttribLFormat = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLuint)"},
+	glPathMemoryGlyphIndexArrayNV = {"GLenum (*)(GLuint, GL_LUA_ENUMS, GLsizeiptr, const void *, GLsizei, GLuint, GLsizei, GLuint, GLfloat)"},
+	glVertexAttribL4ui64vNV = {"void (*)(GLuint, const GLuint64EXT *)"},
+	glVertexAttribL4ui64NV = {"void (*)(GLuint, GLuint64EXT, GLuint64EXT, GLuint64EXT, GLuint64EXT)"},
+	glVertexAttribL4i64vNV = {"void (*)(GLuint, const GLint64EXT *)"},
+	glDepthRangex = {"void (*)(GLfixed, GLfixed)"},
+	glBindVertexBuffer = {"void (*)(GLuint, GLuint, GLintptr, GLsizei)"},
+	glReplacementCodeuiColor3fVertex3fvSUN = {"void (*)(const GLuint *, const GLfloat *, const GLfloat *)"},
+	glVertexAttribL4i64NV = {"void (*)(GLuint, GLint64EXT, GLint64EXT, GLint64EXT, GLint64EXT)"},
+	glVertexAttribL4dvEXT = {"void (*)(GLuint, const GLdouble *)"},
+	glGetPerfQueryInfoINTEL = {"void (*)(GLuint, GLuint, GLchar *, GLuint *, GLuint *, GLuint *, GLuint *)"},
+	glCopyImageSubDataEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)"},
+	glVertexAttribL4dEXT = {"void (*)(GLuint, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glVertexAttribI1uivEXT = {"void (*)(GLuint, const GLuint *)"},
+	glVertexAttribL3ui64vNV = {"void (*)(GLuint, const GLuint64EXT *)"},
+	glVertexAttribL3ui64NV = {"void (*)(GLuint, GLuint64EXT, GLuint64EXT, GLuint64EXT)"},
+	glCoverageModulationTableNV = {"void (*)(GLsizei, const GLfloat *)"},
+	glVertex2d = {"void (*)(GLdouble, GLdouble)"},
+	glVertexAttribL3i64NV = {"void (*)(GLuint, GLint64EXT, GLint64EXT, GLint64EXT)"},
+	glVertexAttribL3dvEXT = {"void (*)(GLuint, const GLdouble *)"},
+	glMultiDrawElementsIndirectEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, GLsizei, GLsizei)"},
+	glPixelTexGenSGIX = {"void (*)(GL_LUA_ENUMS)"},
+	glVertexAttribL3dEXT = {"void (*)(GLuint, GLdouble, GLdouble, GLdouble)"},
+	glGetVertexAttribPointerv = {"void (*)(GLuint, GL_LUA_ENUMS, void **)"},
+	glVertexAttribL3d = {"void (*)(GLuint, GLdouble, GLdouble, GLdouble)"},
+	glGetLightfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glVertexAttribL2ui64vNV = {"void (*)(GLuint, const GLuint64EXT *)"},
+	glVertexAttribL2ui64NV = {"void (*)(GLuint, GLuint64EXT, GLuint64EXT)"},
+	glVertexAttribL2i64vNV = {"void (*)(GLuint, const GLint64EXT *)"},
+	glVertexAttribL2i64NV = {"void (*)(GLuint, GLint64EXT, GLint64EXT)"},
+	glVertexAttribL2dvEXT = {"void (*)(GLuint, const GLdouble *)"},
+	glVertexAttribL2dv = {"void (*)(GLuint, const GLdouble *)"},
+	glVertexAttribL2dEXT = {"void (*)(GLuint, GLdouble, GLdouble)"},
+	glDrawBuffersARB = {"void (*)(GLsizei, const GLenum *)"},
+	glVertexAttribL1ui64vNV = {"void (*)(GLuint, const GLuint64EXT *)"},
+	glBufferSubDataARB = {"void (*)(GL_LUA_ENUMS, GLintptrARB, GLsizeiptrARB, const void *)"},
+	glVertexAttribL1dvEXT = {"void (*)(GLuint, const GLdouble *)"},
+	glGetnPixelMapuiv = {"void (*)(GL_LUA_ENUMS, GLsizei, GLuint *)"},
+	glUniform3f = {"void (*)(GLint, GLfloat, GLfloat, GLfloat)"},
+	glLoadMatrixd = {"void (*)(const GLdouble *)"},
+	glCompressedTexSubImage2DARB = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glVertexAttribDivisorEXT = {"void (*)(GLuint, GLuint)"},
+	glGenAsyncMarkersSGIX = {"GLuint (*)(GLsizei)"},
+	glVertexAttribL1d = {"void (*)(GLuint, GLdouble)"},
+	glVertexAttribIPointerEXT = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glVertexAttribIPointer = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glPathCoverDepthFuncNV = {"void (*)(GL_LUA_ENUMS)"},
+	glVertexAttribIFormat = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLuint)"},
+	glGetNamedBufferSubDataEXT = {"void (*)(GLuint, GLintptr, GLsizeiptr, void *)"},
+	glReadnPixelsARB = {"void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glVertexAttribI4usvEXT = {"void (*)(GLuint, const GLushort *)"},
+	glVertexAttribI4usv = {"void (*)(GLuint, const GLushort *)"},
+	glUpdateObjectBufferATI = {"void (*)(GLuint, GLuint, GLsizei, const void *, GL_LUA_ENUMS)"},
+	glVertexAttribI4uivEXT = {"void (*)(GLuint, const GLuint *)"},
+	glDebugMessageControlARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const GLuint *, GLboolean)"},
+	glRectxOES = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed)"},
+	glGetCombinerOutputParameterivNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glVertexAttribI4uiv = {"void (*)(GLuint, const GLuint *)"},
+	glVertexAttribI4uiEXT = {"void (*)(GLuint, GLuint, GLuint, GLuint, GLuint)"},
+	glProgramNamedParameter4dvNV = {"void (*)(GLuint, GLsizei, const GLubyte *, const GLdouble *)"},
+	glVertexAttribI2i = {"void (*)(GLuint, GLint, GLint)"},
+	glVertexAttribI4ui = {"void (*)(GLuint, GLuint, GLuint, GLuint, GLuint)"},
+	glTexParameteriv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glVertexAttribI4ubvEXT = {"void (*)(GLuint, const GLubyte *)"},
+	glVertexAttribI4ubv = {"void (*)(GLuint, const GLubyte *)"},
+	glVertexAttribI4svEXT = {"void (*)(GLuint, const GLshort *)"},
+	glSampleCoverage = {"void (*)(GLfloat, GLboolean)"},
+	glVertexAttribI4sv = {"void (*)(GLuint, const GLshort *)"},
+	glVertexAttribI4ivEXT = {"void (*)(GLuint, const GLint *)"},
+	glVertexAttribI4iv = {"void (*)(GLuint, const GLint *)"},
+	glLockArraysEXT = {"void (*)(GLint, GLsizei)"},
+	glVertexAttribI4iEXT = {"void (*)(GLuint, GLint, GLint, GLint, GLint)"},
+	glMultiTexCoord1xOES = {"void (*)(GL_LUA_ENUMS, GLfixed)"},
+	glVertexAttribI4bvEXT = {"void (*)(GLuint, const GLbyte *)"},
+	glVertexAttribI4bv = {"void (*)(GLuint, const GLbyte *)"},
+	glVertexAttribI3uivEXT = {"void (*)(GLuint, const GLuint *)"},
+	glMatrixMultTranspose3x3fNV = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glVertexAttribI3uiv = {"void (*)(GLuint, const GLuint *)"},
+	glGetObjectParameterivARB = {"void (*)(GLhandleARB, GL_LUA_ENUMS, GLint *)"},
+	glMultiTexCoord2iv = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glProgramUniform1dv = {"void (*)(GLuint, GLint, GLsizei, const GLdouble *)"},
+	glVertexAttribI3uiEXT = {"void (*)(GLuint, GLuint, GLuint, GLuint)"},
+	glSamplerParameterfv = {"void (*)(GLuint, GL_LUA_ENUMS, const GLfloat *)"},
+	glColorMask = {"void (*)(GLboolean, GLboolean, GLboolean, GLboolean)"},
+	glVertexAttribI3ui = {"void (*)(GLuint, GLuint, GLuint, GLuint)"},
+	glGetProgramNamedParameterfvNV = {"void (*)(GLuint, GLsizei, const GLubyte *, GLfloat *)"},
+	glVertexAttribI3ivEXT = {"void (*)(GLuint, const GLint *)"},
+	glVertexAttribI3iv = {"void (*)(GLuint, const GLint *)"},
+	glGetTexFilterFuncSGIS = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glVertexAttribI3iEXT = {"void (*)(GLuint, GLint, GLint, GLint)"},
+	glVertexAttribI2uivEXT = {"void (*)(GLuint, const GLuint *)"},
+	glVertexAttribI2uiv = {"void (*)(GLuint, const GLuint *)"},
+	glVertexAttribI2uiEXT = {"void (*)(GLuint, GLuint, GLuint)"},
+	glRasterPos4iv = {"void (*)(const GLint *)"},
+	glVertexAttribI2ui = {"void (*)(GLuint, GLuint, GLuint)"},
+	glGlobalAlphaFactorfSUN = {"void (*)(GLfloat)"},
+	glVertexAttribI2ivEXT = {"void (*)(GLuint, const GLint *)"},
+	glCallLists = {"void (*)(GLsizei, GL_LUA_ENUMS, const void *)"},
+	glVertexAttribI2iv = {"void (*)(GLuint, const GLint *)"},
+	glVertexAttribI2iEXT = {"void (*)(GLuint, GLint, GLint)"},
+	glTexBuffer = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
+	glMultiTexCoord3iARB = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint)"},
+	glVertexAttribI1iv = {"void (*)(GLuint, const GLint *)"},
+	glVertexAttribI1iEXT = {"void (*)(GLuint, GLint)"},
+	glVertexAttribI1i = {"void (*)(GLuint, GLint)"},
+	glGetIntegerui64vNV = {"void (*)(GL_LUA_ENUMS, GLuint64EXT *)"},
+	glOrthoxOES = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed, GLfixed, GLfixed)"},
+	glEnableDriverControlQCOM = {"void (*)(GLuint)"},
+	glMatrixOrthoEXT = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glVertexAttribDivisorNV = {"void (*)(GLuint, GLuint)"},
+	glVertexAttribL1dEXT = {"void (*)(GLuint, GLdouble)"},
+	glVertexAttribDivisorARB = {"void (*)(GLuint, GLuint)"},
+	glDeleteProgram = {"void (*)(GLuint)"},
+	glVertexAttribDivisor = {"void (*)(GLuint, GLuint)"},
+	glUniform3ui64NV = {"void (*)(GLint, GLuint64EXT, GLuint64EXT, GLuint64EXT)"},
+	glFramebufferSampleLocationsfvNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLfloat *)"},
+	glProgramUniformMatrix4dv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glVertexAttrib4usvARB = {"void (*)(GLuint, const GLushort *)"},
+	glGetnMinmax = {"void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glUseProgramStagesEXT = {"void (*)(GLuint, GLbitfield, GLuint)"},
+	glViewportArrayv = {"void (*)(GLuint, GLsizei, const GLfloat *)"},
+	glColorFormatNV = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei)"},
+	glMultMatrixxOES = {"void (*)(const GLfixed *)"},
+	glDrawBuffersNV = {"void (*)(GLsizei, const GLenum *)"},
+	glVertexAttrib4uiv = {"void (*)(GLuint, const GLuint *)"},
+	glVertexAttrib4ubvARB = {"void (*)(GLuint, const GLubyte *)"},
+	glCreateProgramObjectARB = {"GLhandleARB (*)()"},
+	glVertexAttrib4ubNV = {"void (*)(GLuint, GLubyte, GLubyte, GLubyte, GLubyte)"},
+	glVertexAttrib4svNV = {"void (*)(GLuint, const GLshort *)"},
+	glEvalCoord1f = {"void (*)(GLfloat)"},
+	glDisableiNV = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glVertexAttrib4svARB = {"void (*)(GLuint, const GLshort *)"},
+	glNamedFramebufferTexture1DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)"},
+	glVertexAttrib4sv = {"void (*)(GLuint, const GLshort *)"},
+	glActiveStencilFaceEXT = {"void (*)(GL_LUA_ENUMS)"},
+	glMultiTexCoord1iARB = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glVertexAttrib4sARB = {"void (*)(GLuint, GLshort, GLshort, GLshort, GLshort)"},
+	glFramebufferTexture = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)"},
+	glGetTexGeniv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glMultTransposeMatrixdARB = {"void (*)(const GLdouble *)"},
+	glVertexAttrib4ivARB = {"void (*)(GLuint, const GLint *)"},
+	glVertexAttrib3fv = {"void (*)(GLuint, const GLfloat *)"},
+	glGetBufferPointervARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, void **)"},
+	glMultiDrawElementsEXT = {"void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei)"},
+	glMultiTexCoord2ivARB = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glVertexAttrib4hvNV = {"void (*)(GLuint, const GLhalfNV *)"},
+	glCompressedTexSubImage3DARB = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glVertexAttrib4fvNV = {"void (*)(GLuint, const GLfloat *)"},
+	glBindTexture = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glVertexAttrib4fvARB = {"void (*)(GLuint, const GLfloat *)"},
+	glVertexAttrib4fv = {"void (*)(GLuint, const GLfloat *)"},
+	glGetPixelMapuiv = {"void (*)(GL_LUA_ENUMS, GLuint *)"},
+	glTexCoord2d = {"void (*)(GLdouble, GLdouble)"},
+	glTangent3dvEXT = {"void (*)(const GLdouble *)"},
+	glVertexAttrib4fARB = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glVertexAttrib4f = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glGetUniformfvARB = {"void (*)(GLhandleARB, GLint, GLfloat *)"},
+	glVertexAttrib4dvNV = {"void (*)(GLuint, const GLdouble *)"},
+	glVertexAttrib4dvARB = {"void (*)(GLuint, const GLdouble *)"},
+	glCopyConvolutionFilter2DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei)"},
+	glGetVertexAttribPointervNV = {"void (*)(GLuint, GL_LUA_ENUMS, void **)"},
+	glVertexAttrib4dNV = {"void (*)(GLuint, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glProgramEnvParametersI4uivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLuint *)"},
+	glInvalidateTexSubImage = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)"},
+	glMultiTexCoord4iv = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glVertexAttrib4dARB = {"void (*)(GLuint, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glVertexAttrib4d = {"void (*)(GLuint, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glVertexAttrib4bvARB = {"void (*)(GLuint, const GLbyte *)"},
+	glVertexAttrib4NusvARB = {"void (*)(GLuint, const GLushort *)"},
+	glSetFragmentShaderConstantATI = {"void (*)(GLuint, const GLfloat *)"},
+	glVertexAttrib4Nusv = {"void (*)(GLuint, const GLushort *)"},
+	glVertexAttrib4NuivARB = {"void (*)(GLuint, const GLuint *)"},
+	glGetNamedBufferParameteriv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glInvalidateBufferData = {"void (*)(GLuint)"},
+	glVertexAttrib4Nuiv = {"void (*)(GLuint, const GLuint *)"},
+	glLineWidthx = {"void (*)(GLfixed)"},
+	glTexCoord1dv = {"void (*)(const GLdouble *)"},
+	glVertexAttrib4Nubv = {"void (*)(GLuint, const GLubyte *)"},
+	glGetHistogramEXT = {"void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
+	glEvalPoint2 = {"void (*)(GLint, GLint)"},
+	glGetColorTableParameterivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glGetActiveUniformBlockName = {"void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLchar *)"},
+	glVertexAttrib4NsvARB = {"void (*)(GLuint, const GLshort *)"},
+	glVDPAUSurfaceAccessNV = {"void (*)(GLvdpauSurfaceNV, GL_LUA_ENUMS)"},
+	glGetnCompressedTexImageARB = {"void (*)(GL_LUA_ENUMS, GLint, GLsizei, void *)"},
+	glTextureMaterialEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glVertexAttrib4NivARB = {"void (*)(GLuint, const GLint *)"},
+	glCoverageMaskNV = {"void (*)(GLboolean)"},
+	glVertexAttrib4Niv = {"void (*)(GLuint, const GLint *)"},
+	glDrawRangeElementsBaseVertex = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, GL_LUA_ENUMS, const void *, GLint)"},
+	glBlitFramebufferEXT = {"void (*)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)"},
+	glVertexAttrib3svNV = {"void (*)(GLuint, const GLshort *)"},
+	glVertexAttrib3svARB = {"void (*)(GLuint, const GLshort *)"},
+	glVertexAttrib3sNV = {"void (*)(GLuint, GLshort, GLshort, GLshort)"},
+	glMinSampleShading = {"void (*)(GLfloat)"},
+	glDispatchCompute = {"void (*)(GLuint, GLuint, GLuint)"},
+	glTangent3iEXT = {"void (*)(GLint, GLint, GLint)"},
+	glVertexAttrib3sARB = {"void (*)(GLuint, GLshort, GLshort, GLshort)"},
+	glVertexAttrib2sARB = {"void (*)(GLuint, GLshort, GLshort)"},
+	glVertexAttrib3hvNV = {"void (*)(GLuint, const GLhalfNV *)"},
+	glGetColorTable = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
+	glPushAttrib = {"void (*)(GLbitfield)"},
+	glTexEnvxvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)"},
+	glLoadProgramNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLubyte *)"},
+	glVertexAttrib3hNV = {"void (*)(GLuint, GLhalfNV, GLhalfNV, GLhalfNV)"},
+	glMakeTextureHandleResidentNV = {"void (*)(GLuint64)"},
+	glVertexAttrib3fvNV = {"void (*)(GLuint, const GLfloat *)"},
+	glTexBufferARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
+	glMapVertexAttrib2dAPPLE = {"void (*)(GLuint, GLuint, GLdouble, GLdouble, GLint, GLint, GLdouble, GLdouble, GLint, GLint, const GLdouble *)"},
+	glIsFramebufferEXT = {"GLboolean (*)(GLuint)"},
+	glVertexAttrib3fvARB = {"void (*)(GLuint, const GLfloat *)"},
+	glMemoryBarrier = {"void (*)(GLbitfield)"},
+	glProgramUniform1dvEXT = {"void (*)(GLuint, GLint, GLsizei, const GLdouble *)"},
+	glVertexAttrib3fARB = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat)"},
+	glVertexAttrib3dvNV = {"void (*)(GLuint, const GLdouble *)"},
+	glUniform2i = {"void (*)(GLint, GLint, GLint)"},
+	glBindTexGenParameterEXT = {"GLuint (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glVertexAttrib3dvARB = {"void (*)(GLuint, const GLdouble *)"},
+	glCopyColorSubTable = {"void (*)(GL_LUA_ENUMS, GLsizei, GLint, GLint, GLsizei)"},
+	glVertexAttrib3dARB = {"void (*)(GLuint, GLdouble, GLdouble, GLdouble)"},
+	glNewList = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glVertexAttrib2svNV = {"void (*)(GLuint, const GLshort *)"},
+	glGetColorTableParameterfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glTextureView = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint)"},
+	glGetTexParameterIivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glDebugMessageControl = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const GLuint *, GLboolean)"},
+	glVertexAttrib2svARB = {"void (*)(GLuint, const GLshort *)"},
+	glVertexAttrib2sv = {"void (*)(GLuint, const GLshort *)"},
+	glTexImage4DSGIS = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glGetCombinerStageParameterfvNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glVertexAttrib2sNV = {"void (*)(GLuint, GLshort, GLshort)"},
+	glReplacementCodeuiTexCoord2fVertex3fSUN = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glVertexAttrib3s = {"void (*)(GLuint, GLshort, GLshort, GLshort)"},
+	glTexCoord2iv = {"void (*)(const GLint *)"},
+	glFramebufferTexture2DMultisampleEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLsizei)"},
+	glVertexAttrib2hvNV = {"void (*)(GLuint, const GLhalfNV *)"},
+	glGetQueryObjectuivARB = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint *)"},
+	glVertexAttrib2hNV = {"void (*)(GLuint, GLhalfNV, GLhalfNV)"},
+	glVertexAttrib2fvNV = {"void (*)(GLuint, const GLfloat *)"},
+	glVertexAttrib2fvARB = {"void (*)(GLuint, const GLfloat *)"},
+	glTextureSubImage1D = {"void (*)(GLuint, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glEnableVertexArrayEXT = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glVertexAttrib2fv = {"void (*)(GLuint, const GLfloat *)"},
+	glVertexAttrib2fNV = {"void (*)(GLuint, GLfloat, GLfloat)"},
+	glVertexAttrib2fARB = {"void (*)(GLuint, GLfloat, GLfloat)"},
+	glVertexAttrib2f = {"void (*)(GLuint, GLfloat, GLfloat)"},
+	glCopyTexSubImage3DEXT = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
+	glVertexAttrib2dvNV = {"void (*)(GLuint, const GLdouble *)"},
+	glReadInstrumentsSGIX = {"void (*)(GLint)"},
+	glVertexAttrib2dvARB = {"void (*)(GLuint, const GLdouble *)"},
+	glVertexAttrib2dNV = {"void (*)(GLuint, GLdouble, GLdouble)"},
+	glProgramParameters4dvNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLdouble *)"},
+	glVertexAttrib2dARB = {"void (*)(GLuint, GLdouble, GLdouble)"},
+	glGetTextureSamplerHandleNV = {"GLuint64 (*)(GLuint, GLuint)"},
+	glVertex3s = {"void (*)(GLshort, GLshort, GLshort)"},
+	glVertexAttrib2d = {"void (*)(GLuint, GLdouble, GLdouble)"},
+	glVertexAttrib1svNV = {"void (*)(GLuint, const GLshort *)"},
+	glStencilThenCoverStrokePathInstancedNV = {"void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GLint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glProgramUniform1ui = {"void (*)(GLuint, GLint, GLuint)"},
+	glAlphaFunc = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
+	glBindAttribLocation = {"void (*)(GLuint, GLuint, const GLchar *)"},
+	glBeginQueryEXT = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glVertexAttrib1svARB = {"void (*)(GLuint, const GLshort *)"},
+	glGetNamedBufferParameterui64vNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint64EXT *)"},
+	glCurrentPaletteMatrixARB = {"void (*)(GLint)"},
+	glVertexAttrib1sv = {"void (*)(GLuint, const GLshort *)"},
+	glTexImage3D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glGetMinmaxParameterfvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glBlendEquationEXT = {"void (*)(GL_LUA_ENUMS)"},
+	glVertexAttrib1hvNV = {"void (*)(GLuint, const GLhalfNV *)"},
+	glVertexAttrib1fvNV = {"void (*)(GLuint, const GLfloat *)"},
+	glVertexAttrib1fvARB = {"void (*)(GLuint, const GLfloat *)"},
+	glVertexAttrib1fv = {"void (*)(GLuint, const GLfloat *)"},
+	glVertexAttrib1fNV = {"void (*)(GLuint, GLfloat)"},
+	glVertexAttrib1fARB = {"void (*)(GLuint, GLfloat)"},
+	glGetTransformFeedbacki_v = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint *)"},
+	glGetTexParameterIuivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint *)"},
+	glTexCoord4hNV = {"void (*)(GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV)"},
+	glProgramUniform3fvEXT = {"void (*)(GLuint, GLint, GLsizei, const GLfloat *)"},
+	glVertexArrayVertexOffsetEXT = {"void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLsizei, GLintptr)"},
+	glGetTexLevelParameterfv = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLfloat *)"},
+	glRotatef = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glVertexArrayVertexBuffers = {"void (*)(GLuint, GLuint, GLsizei, const GLuint *, const GLintptr *, const GLsizei *)"},
+	glGetActiveAttrib = {"void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLint *, GLenum *, GLchar *)"},
+	glVertexArrayVertexBuffer = {"void (*)(GLuint, GLuint, GLuint, GLintptr, GLsizei)"},
+	glGetUniformBufferSizeEXT = {"GLint (*)(GLuint, GLint)"},
+	glVertexArrayVertexAttribOffsetEXT = {"void (*)(GLuint, GLuint, GLuint, GLint, GL_LUA_ENUMS, GLboolean, GLsizei, GLintptr)"},
+	glDeleteAsyncMarkersSGIX = {"void (*)(GLuint, GLsizei)"},
+	glVertexArrayVertexAttribLOffsetEXT = {"void (*)(GLuint, GLuint, GLuint, GLint, GL_LUA_ENUMS, GLsizei, GLintptr)"},
+	glVertexArrayVertexAttribLFormatEXT = {"void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLuint)"},
+	glVertexArrayVertexAttribIOffsetEXT = {"void (*)(GLuint, GLuint, GLuint, GLint, GL_LUA_ENUMS, GLsizei, GLintptr)"},
+	glVertexArrayVertexAttribFormatEXT = {"void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLboolean, GLuint)"},
+	glGetSubroutineIndex = {"GLuint (*)(GLuint, GL_LUA_ENUMS, const GLchar *)"},
+	glTexCoord3hvNV = {"void (*)(const GLhalfNV *)"},
+	glAlphaFuncQCOM = {"void (*)(GL_LUA_ENUMS, GLclampf)"},
+	glVertexArrayRangeNV = {"void (*)(GLsizei, const void *)"},
+	glRasterPos4xvOES = {"void (*)(const GLfixed *)"},
+	glVertexArrayRangeAPPLE = {"void (*)(GLsizei, void *)"},
+	glVertexArrayParameteriAPPLE = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glVertexArrayNormalOffsetEXT = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLsizei, GLintptr)"},
+	glColor3xOES = {"void (*)(GLfixed, GLfixed, GLfixed)"},
+	glGenRenderbuffers = {"void (*)(GLsizei, GLuint *)", true},
+	glVertexArrayEdgeFlagOffsetEXT = {"void (*)(GLuint, GLuint, GLsizei, GLintptr)"},
+	glVertexArrayColorOffsetEXT = {"void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLsizei, GLintptr)"},
+	glProgramParameter4dvNV = {"void (*)(GL_LUA_ENUMS, GLuint, const GLdouble *)"},
+	glGetMultiTexGenfvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glGetPathCommandsNV = {"void (*)(GLuint, GLubyte *)"},
+	glRasterPos2i = {"void (*)(GLint, GLint)"},
+	glRectsv = {"void (*)(const GLshort *, const GLshort *)"},
+	glVertexArrayAttribLFormat = {"void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLuint)"},
+	glVertexArrayAttribFormat = {"void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLboolean, GLuint)"},
+	glDrawElementsInstancedBaseInstance = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei, GLuint)"},
+	glVertexArrayAttribBinding = {"void (*)(GLuint, GLuint, GLuint)"},
+	glVertex4xvOES = {"void (*)(const GLfixed *)"},
+	glVertex4xOES = {"void (*)(GLfixed, GLfixed, GLfixed)"},
+	glVertex4s = {"void (*)(GLshort, GLshort, GLshort, GLshort)"},
+	glVertex4i = {"void (*)(GLint, GLint, GLint, GLint)"},
+	glMatrixLoad3x3fNV = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glVertex4hvNV = {"void (*)(const GLhalfNV *)"},
+	glGetVertexAttribIuiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint *)"},
+	glGetUniformLocationARB = {"GLint (*)(GLhandleARB, const GLcharARB *)"},
+	glGetTexParameterxv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)"},
+	glDeleteFramebuffersOES = {"void (*)(GLsizei, const GLuint *)"},
+	glMultiTexCoord1fv = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glDebugMessageInsertAMD = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLsizei, const GLchar *)"},
+	glMultiTexCoord4hvNV = {"void (*)(GL_LUA_ENUMS, const GLhalfNV *)"},
+	glProgramLocalParameterI4iNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLint, GLint, GLint, GLint)"},
+	glIsFramebuffer = {"GLboolean (*)(GLuint)"},
+	glProgramUniform1fEXT = {"void (*)(GLuint, GLint, GLfloat)"},
+	glVertex4bOES = {"void (*)(GLbyte, GLbyte, GLbyte, GLbyte)"},
+	glMatrixRotatedEXT = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glSecondaryColor3ubvEXT = {"void (*)(const GLubyte *)"},
+	glGetFramebufferParameterivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glIsImageHandleResidentNV = {"GLboolean (*)(GLuint64)"},
+	glVertex3xvOES = {"void (*)(const GLfixed *)"},
+	glVertex3xOES = {"void (*)(GLfixed, GLfixed)"},
+	glVertex3hvNV = {"void (*)(const GLhalfNV *)"},
+	glGlobalAlphaFactoriSUN = {"void (*)(GLint)"},
+	glPolygonOffsetClampEXT = {"void (*)(GLfloat, GLfloat, GLfloat)"},
+	glPolygonMode = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glVertex3dv = {"void (*)(const GLdouble *)"},
+	glInvalidateNamedFramebufferSubData = {"void (*)(GLuint, GLsizei, const GLenum *, GLint, GLint, GLsizei, GLsizei)"},
+	glVertex3bOES = {"void (*)(GLbyte, GLbyte, GLbyte)"},
+	glColor3fVertex3fvSUN = {"void (*)(const GLfloat *, const GLfloat *)"},
+	glVertex2xvOES = {"void (*)(const GLfixed *)"},
+	glVertex2xOES = {"void (*)(GLfixed)"},
+	glIsRenderbufferOES = {"GLboolean (*)(GLuint)"},
+	glCombinerStageParameterfvNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glTexCoord4sv = {"void (*)(const GLshort *)"},
+	glOrtho = {"void (*)(GLdouble, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glGetLightxvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)"},
+	glVertex2dv = {"void (*)(const GLdouble *)"},
+	glMultMatrixf = {"void (*)(const GLfloat *)"},
+	glVariantusvEXT = {"void (*)(GLuint, const GLushort *)"},
+	glVariantuivEXT = {"void (*)(GLuint, const GLuint *)"},
+	glVariantubvEXT = {"void (*)(GLuint, const GLubyte *)"},
+	glVariantsvEXT = {"void (*)(GLuint, const GLshort *)"},
+	glProgramLocalParameter4fARB = {"void (*)(GL_LUA_ENUMS, GLuint, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glVariantivEXT = {"void (*)(GLuint, const GLint *)"},
+	glUniform1uivEXT = {"void (*)(GLint, GLsizei, const GLuint *)"},
+	glBindRenderbufferEXT = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glPopDebugGroupKHR = {"void (*)()"},
+	glMatrixTranslatedEXT = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble)"},
+	glBlendFunc = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glVariantfvEXT = {"void (*)(GLuint, const GLfloat *)"},
+	glCompressedTexSubImage3D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glNamedBufferDataEXT = {"void (*)(GLuint, GLsizeiptr, const void *, GL_LUA_ENUMS)"},
+	glVariantdvEXT = {"void (*)(GLuint, const GLdouble *)"},
+	glVariantbvEXT = {"void (*)(GLuint, const GLbyte *)"},
+	glVariantArrayObjectATI = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLuint, GLuint)"},
+	glExtractComponentEXT = {"void (*)(GLuint, GLuint, GLuint)"},
+	glBufferPageCommitmentARB = {"void (*)(GL_LUA_ENUMS, GLintptr, GLsizeiptr, GLboolean)"},
+	glUniformMatrix2fvARB = {"void (*)(GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glGetMultiTexParameterivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glBindBuffersBase = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLuint *)"},
+	glValidateProgramPipelineEXT = {"void (*)(GLuint)"},
+	glSamplerParameterIuivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, const GLuint *)"},
+	glColor3sv = {"void (*)(const GLshort *)"},
+	glVDPAUUnregisterSurfaceNV = {"void (*)(GLvdpauSurfaceNV)"},
+	glSecondaryColor3usvEXT = {"void (*)(const GLushort *)"},
+	glVDPAURegisterVideoSurfaceNV = {"GLvdpauSurfaceNV (*)(const void *, GL_LUA_ENUMS, GLsizei, const GLuint *)"},
+	glVDPAURegisterOutputSurfaceNV = {"GLvdpauSurfaceNV (*)(const void *, GL_LUA_ENUMS, GLsizei, const GLuint *)"},
+	glTexGendv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLdouble *)"},
+	glGetMinmaxParameterfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glTextureParameterIuivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)"},
+	glIndexMaterialEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glTexCoordPointerListIBM = {"void (*)(GLint, GL_LUA_ENUMS, GLint, const void **, GLint)"},
+	glDeletePathsNV = {"void (*)(GLuint, GLsizei)"},
+	glGetLocalConstantBooleanvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLboolean *)"},
+	glVDPAUGetSurfaceivNV = {"void (*)(GLvdpauSurfaceNV, GL_LUA_ENUMS, GLsizei, GLsizei *, GLint *)"},
+	glVDPAUFiniNV = {"void (*)()"},
+	glUseProgramStages = {"void (*)(GLuint, GLbitfield, GLuint)"},
+	glFramebufferTexture2DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)"},
+	glUseProgram = {"void (*)(GLuint)"},
+	glCopyColorSubTableEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GLint, GLint, GLsizei)"},
+	glUnmapBufferOES = {"GLboolean (*)(GL_LUA_ENUMS)"},
+	glUnlockArraysEXT = {"void (*)()"},
+	glMultiTexCoord3d = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble)"},
+	glUniformui64vNV = {"void (*)(GLint, GLsizei, const GLuint64EXT *)"},
+	glUniformui64NV = {"void (*)(GLint, GLuint64EXT)"},
+	glUniformSubroutinesuiv = {"void (*)(GL_LUA_ENUMS, GLsizei, const GLuint *)"},
+	glUniformMatrix4x3fvNV = {"void (*)(GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glUniformMatrix4x3fv = {"void (*)(GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glUniformMatrix4x3dv = {"void (*)(GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glUniformMatrix4x2fvNV = {"void (*)(GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glUniformMatrix4x2fv = {"void (*)(GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glUniformMatrix4x2dv = {"void (*)(GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glPixelTransformParameterivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glEnableClientState = {"void (*)(GL_LUA_ENUMS)"},
+	glCopyNamedBufferSubData = {"void (*)(GLuint, GLuint, GLintptr, GLintptr, GLsizeiptr)"},
+	glEnableVariantClientStateEXT = {"void (*)(GLuint)"},
+	glUniformMatrix4fvARB = {"void (*)(GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glCopyConvolutionFilter1D = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei)"},
+	glGetNextPerfQueryIdINTEL = {"void (*)(GLuint, GLuint *)"},
+	glTexCoord1bOES = {"void (*)(GLbyte)"},
+	glTranslatexOES = {"void (*)(GLfixed, GLfixed, GLfixed)"},
+	glUniformMatrix3x4fvNV = {"void (*)(GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glGetNamedFramebufferAttachmentParameterivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glUniformMatrix3x4fv = {"void (*)(GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glUniformMatrix3x4dv = {"void (*)(GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glFlushVertexArrayRangeNV = {"void (*)()"},
+	glUniformMatrix3x2fvNV = {"void (*)(GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glUniformMatrix3x2dv = {"void (*)(GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glMatrixScaledEXT = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble)"},
+	glSecondaryColor3ubv = {"void (*)(const GLubyte *)"},
+	glIsTransformFeedback = {"GLboolean (*)(GLuint)"},
+	glUniformMatrix3fvARB = {"void (*)(GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glNamedFramebufferRenderbufferEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
+	glUniformMatrix2x4fvNV = {"void (*)(GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glUniform3iv = {"void (*)(GLint, GLsizei, const GLint *)"},
+	glUniformMatrix2x4dv = {"void (*)(GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glUniformMatrix2x3fv = {"void (*)(GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glUniformMatrix2x3dv = {"void (*)(GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glCreateTransformFeedbacks = {"void (*)(GLsizei, GLuint *)"},
+	glExtGetTexturesQCOM = {"void (*)(GLuint *, GLint, GLint *)"},
+	glMatrixLoadTransposefEXT = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glMatrixMultTransposefEXT = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glUniformHandleui64vNV = {"void (*)(GLint, GLsizei, const GLuint64 *)"},
+	glTextureBufferRange = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLintptr, GLsizeiptr)"},
+	glProgramUniform2fvEXT = {"void (*)(GLuint, GLint, GLsizei, const GLfloat *)"},
+	glUniform4uivEXT = {"void (*)(GLint, GLsizei, const GLuint *)"},
+	glUniform4uiEXT = {"void (*)(GLint, GLuint, GLuint, GLuint, GLuint)"},
+	glUniform4ui64NV = {"void (*)(GLint, GLuint64EXT, GLuint64EXT, GLuint64EXT, GLuint64EXT)"},
+	glIsNameAMD = {"GLboolean (*)(GL_LUA_ENUMS, GLuint)"},
+	glGetnConvolutionFilterARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glUniform4ui = {"void (*)(GLint, GLuint, GLuint, GLuint, GLuint)"},
+	glCopyTextureImage1DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint)"},
+	glTexImage2DMultisampleCoverageNV = {"void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, GLsizei, GLboolean)"},
+	glUniform4ivARB = {"void (*)(GLint, GLsizei, const GLint *)"},
+	glGetMaterialfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glUniform4iARB = {"void (*)(GLint, GLint, GLint, GLint, GLint)"},
+	glSecondaryColor3uiv = {"void (*)(const GLuint *)"},
+	glDisableClientState = {"void (*)(GL_LUA_ENUMS)"},
+	glUniform4i64vNV = {"void (*)(GLint, GLsizei, const GLint64EXT *)"},
+	glUniform4i64NV = {"void (*)(GLint, GLint64EXT, GLint64EXT, GLint64EXT, GLint64EXT)"},
+	glCopyMultiTexImage1DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint)"},
+	glUniform4fvARB = {"void (*)(GLint, GLsizei, const GLfloat *)"},
+	glClampColor = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glUniform4fv = {"void (*)(GLint, GLsizei, const GLfloat *)"},
+	glUniform4fARB = {"void (*)(GLint, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glUniform4dv = {"void (*)(GLint, GLsizei, const GLdouble *)"},
+	glUniform4d = {"void (*)(GLint, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glProgramUniform1iv = {"void (*)(GLuint, GLint, GLsizei, const GLint *)"},
+	glUniform3uivEXT = {"void (*)(GLint, GLsizei, const GLuint *)"},
+	glUniform3uiv = {"void (*)(GLint, GLsizei, const GLuint *)"},
+	glBlendEquationiEXT = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glUniform3uiEXT = {"void (*)(GLint, GLuint, GLuint, GLuint)"},
+	glColor4uiv = {"void (*)(const GLuint *)"},
+	glGetPointerIndexedvEXT = {"void (*)(GL_LUA_ENUMS, GLuint, void **)"},
+	glProgramUniform4ui = {"void (*)(GLuint, GLint, GLuint, GLuint, GLuint, GLuint)"},
+	glUniform3ivARB = {"void (*)(GLint, GLsizei, const GLint *)"},
+	glCheckFramebufferStatusEXT = {"GLenum (*)(GL_LUA_ENUMS)"},
+	glUniformMatrix2x4fv = {"void (*)(GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glSecondaryColorP3ui = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glUniform3iARB = {"void (*)(GLint, GLint, GLint, GLint)"},
+	glIsFramebufferOES = {"GLboolean (*)(GLuint)"},
+	glGetQueryObjectivARB = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glUniform3i64vNV = {"void (*)(GLint, GLsizei, const GLint64EXT *)"},
+	glGetColorTableEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
+	glUniform3i64NV = {"void (*)(GLint, GLint64EXT, GLint64EXT, GLint64EXT)"},
+	glColor3i = {"void (*)(GLint, GLint, GLint)"},
+	glGetBufferSubData = {"void (*)(GL_LUA_ENUMS, GLintptr, GLsizeiptr, void *)"},
+	glEndQuery = {"void (*)(GL_LUA_ENUMS)"},
+	glUniform3fvARB = {"void (*)(GLint, GLsizei, const GLfloat *)"},
+	glPathSubCommandsNV = {"void (*)(GLuint, GLsizei, GLsizei, GLsizei, const GLubyte *, GLsizei, GL_LUA_ENUMS, const void *)"},
+	glTextureImage2DMultisampleCoverageNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, GLsizei, GLboolean)"},
+	glReadBufferIndexedEXT = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glGetFramebufferAttachmentParameterivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glUniform3fv = {"void (*)(GLint, GLsizei, const GLfloat *)"},
+	glUniform3fARB = {"void (*)(GLint, GLfloat, GLfloat, GLfloat)"},
+	glGetInvariantFloatvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)"},
+	glScissorIndexedv = {"void (*)(GLuint, const GLint *)"},
+	glGetArrayObjectfvATI = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glUniform1d = {"void (*)(GLint, GLdouble)"},
+	glTexSubImage1D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glGetnUniformfvKHR = {"void (*)(GLuint, GLint, GLsizei, GLfloat *)"},
+	glUniform2uiEXT = {"void (*)(GLint, GLuint, GLuint)"},
+	glUniform2ui64vNV = {"void (*)(GLint, GLsizei, const GLuint64EXT *)"},
+	glUniform2ui = {"void (*)(GLint, GLuint, GLuint)"},
+	glGetSeparableFilter = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, void *, void *, void *)"},
+	glUniform2ivARB = {"void (*)(GLint, GLsizei, const GLint *)"},
+	glUniform2iv = {"void (*)(GLint, GLsizei, const GLint *)"},
+	glGenVertexShadersEXT = {"GLuint (*)(GLuint)"},
+	glWindowPos2sARB = {"void (*)(GLshort, GLshort)"},
+	glUniform2i64vNV = {"void (*)(GLint, GLsizei, const GLint64EXT *)"},
+	glUniform2i64NV = {"void (*)(GLint, GLint64EXT, GLint64EXT)"},
+	glVertexAttribs1hvNV = {"void (*)(GLuint, GLsizei, const GLhalfNV *)"},
+	glGetInfoLogARB = {"void (*)(GLhandleARB, GLsizei, GLsizei *, GLcharARB *)"},
+	glMultiDrawArraysIndirect = {"void (*)(GL_LUA_ENUMS, const void *, GLsizei, GLsizei)"},
+	glColor4sv = {"void (*)(const GLshort *)"},
+	glUniform2fARB = {"void (*)(GLint, GLfloat, GLfloat)"},
+	glViewport = {"void (*)(GLint, GLint, GLsizei, GLsizei)"},
+	glGetInteger64i_v = {"void (*)(GL_LUA_ENUMS, GLuint, GLint64 *)"},
+	glUniform1ui64NV = {"void (*)(GLint, GLuint64EXT)"},
+	glUniform1ivARB = {"void (*)(GLint, GLsizei, const GLint *)"},
+	glTexCoord4f = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glExtGetTexLevelParameterivQCOM = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint *)"},
+	glUniform1iv = {"void (*)(GLint, GLsizei, const GLint *)"},
+	glUniform1iARB = {"void (*)(GLint, GLint)"},
+	glBeginTransformFeedback = {"void (*)(GL_LUA_ENUMS)"},
+	glCreateProgramPipelines = {"void (*)(GLsizei, GLuint *)"},
+	glUniform1i = {"void (*)(GLint, GLint)"},
+	glIsPointInFillPathNV = {"GLboolean (*)(GLuint, GLuint, GLfloat, GLfloat)"},
+	glPushClientAttribDefaultEXT = {"void (*)(GLbitfield)"},
+	glGetProgramivARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glAccum = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
+	glSecondaryColorPointerListIBM = {"void (*)(GLint, GL_LUA_ENUMS, GLint, const void **, GLint)"},
+	glGenVertexArraysAPPLE = {"void (*)(GLsizei, GLuint *)"},
+	glProgramUniformHandleui64vNV = {"void (*)(GLuint, GLint, GLsizei, const GLuint64 *)"},
+	glUniform1fv = {"void (*)(GLint, GLsizei, const GLfloat *)"},
+	glUniform3d = {"void (*)(GLint, GLdouble, GLdouble, GLdouble)"},
+	glInvalidateBufferSubData = {"void (*)(GLuint, GLintptr, GLsizeiptr)"},
+	glTranslatef = {"void (*)(GLfloat, GLfloat, GLfloat)"},
+	glGetVertexArrayPointervEXT = {"void (*)(GLuint, GL_LUA_ENUMS, void **)"},
+	glTransformFeedbackVaryingsNV = {"void (*)(GLuint, GLsizei, const GLint *, GL_LUA_ENUMS)"},
+	glGetUniformLocation = {"GLint (*)(GLuint, const GLchar *)"},
+	glTransformFeedbackStreamAttribsNV = {"void (*)(GLsizei, const GLint *, GLsizei, const GLint *, GL_LUA_ENUMS)"},
+	glTransformFeedbackBufferRange = {"void (*)(GLuint, GLuint, GLuint, GLintptr, GLsizeiptr)"},
+	glNormalStream3dATI = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble)"},
+	glTransformFeedbackAttribsNV = {"void (*)(GLsizei, const GLint *, GL_LUA_ENUMS)"},
+	glTrackMatrixNV = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glVertexAttribArrayObjectATI = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLboolean, GLsizei, GLuint, GLuint)"},
+	glPatchParameterfv = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glProgramUniformMatrix2x4fvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glTextureSubImage3DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTextureSubImage3D = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTextureSubImage2DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glFrustumf = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glPathGlyphIndexArrayNV = {"GLenum (*)(GLuint, GL_LUA_ENUMS, const void *, GLbitfield, GLuint, GLsizei, GLuint, GLfloat)"},
+	glTextureSubImage2D = {"void (*)(GLuint, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glIglooInterfaceSGIX = {"void (*)(GL_LUA_ENUMS, const void *)"},
+	glTextureStorageSparseAMD = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLsizei, GLbitfield)"},
+	glTextureStorage3DMultisample = {"void (*)(GLuint, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLboolean)"},
+	glTextureStorage3DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei)"},
+	glTextureStorage3D = {"void (*)(GLuint, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei)"},
+	glCombinerParameteriNV = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glGetInternalformatSampleivNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLint *)"},
+	glSecondaryColor3ubEXT = {"void (*)(GLubyte, GLubyte, GLubyte)"},
+	glTextureStorage2DMultisampleEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLboolean)"},
+	glTextureStorage2DMultisample = {"void (*)(GLuint, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLboolean)"},
+	glTextureStorage2DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)"},
+	glTexEnvi = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
+	glBeginConditionalRenderNVX = {"void (*)(GLuint)"},
+	glNormal3fVertex3fvSUN = {"void (*)(const GLfloat *, const GLfloat *)"},
+	glTextureStorage1DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei)"},
+	glDrawTransformFeedbackStream = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint)"},
+	glTextureParameterivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glTextureParameteriv = {"void (*)(GLuint, GL_LUA_ENUMS, const GLint *)"},
+	glMultiDrawArraysIndirectBindlessNV = {"void (*)(GL_LUA_ENUMS, const void *, GLsizei, GLsizei, GLint)"},
+	glTransformPathNV = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, const GLfloat *)"},
+	glTextureParameterfvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glMultiTexCoord2fvARB = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glTextureParameterfEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
+	glTextureParameterIuiv = {"void (*)(GLuint, GL_LUA_ENUMS, const GLuint *)"},
+	glMakeImageHandleNonResidentARB = {"void (*)(GLuint64)"},
+	glFramebufferTextureEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)"},
+	glProgramUniform3iEXT = {"void (*)(GLuint, GLint, GLint, GLint, GLint)"},
+	glTexturePageCommitmentEXT = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLboolean)"},
+	glTexCoord2fColor4fNormal3fVertex3fvSUN = {"void (*)(const GLfloat *, const GLfloat *, const GLfloat *, const GLfloat *)"},
+	glTextureImage3DMultisampleCoverageNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, GLsizei, GLsizei, GLboolean)"},
+	glCreateShaderObjectARB = {"GLhandleARB (*)(GL_LUA_ENUMS)"},
+	glSamplerParameteriv = {"void (*)(GLuint, GL_LUA_ENUMS, const GLint *)"},
+	glTextureImage3DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTextureImage2DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTextureImage1DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glDrawBuffersIndexedEXT = {"void (*)(GLint, const GLenum *, const GLint *)"},
+	glTextureBufferRangeEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLintptr, GLsizeiptr)"},
+	glIsBufferARB = {"GLboolean (*)(GLuint)"},
+	glUniformBufferEXT = {"void (*)(GLuint, GLint, GLuint)"},
+	glTextureBuffer = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint)"},
+	glResolveMultisampleFramebufferAPPLE = {"void (*)()"},
+	glNormal3fv = {"void (*)(const GLfloat *)"},
+	glEvalCoord1fv = {"void (*)(const GLfloat *)"},
+	glLoadIdentity = {"void (*)()"},
+	glTextureBarrierNV = {"void (*)()"},
+	glTexSubImage4DSGIS = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glCopyPixels = {"void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS)"},
+	glColor4ubVertex3fSUN = {"void (*)(GLubyte, GLubyte, GLubyte, GLubyte, GLfloat, GLfloat, GLfloat)"},
+	glTexSubImage3DEXT = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTexSubImage3D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTexSubImage2DEXT = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTexSubImage1DEXT = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glUniform2uiv = {"void (*)(GLint, GLsizei, const GLuint *)"},
+	glTexStorageSparseAMD = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLsizei, GLbitfield)"},
+	glCombinerOutputNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLboolean, GLboolean, GLboolean)"},
+	glTexStorage3DMultisampleOES = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLboolean)"},
+	glTexStorage3DMultisample = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLboolean)"},
+	glTexStorage3DEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei)"},
+	glTexStorage3D = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei)"},
+	glTexStorage2DEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)"},
+	glTexStorage2D = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)"},
+	glLabelObjectEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLchar *)"},
+	glTexStorage1D = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei)"},
+	glResetMinmaxEXT = {"void (*)(GL_LUA_ENUMS)"},
+	glIsBufferResidentNV = {"GLboolean (*)(GL_LUA_ENUMS)"},
+	glDisableVariantClientStateEXT = {"void (*)(GLuint)"},
+	glUniform1fvARB = {"void (*)(GLint, GLsizei, const GLfloat *)"},
+	glGetProgramLocalParameterIivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLint *)"},
+	glGenTexturesEXT = {"void (*)(GLsizei, GLuint *)"},
+	glTexParameterxv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)"},
+	glTexParameteri = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
+	glGetHistogramParameterfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glColorPointerEXT = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei, GLsizei, const void *)"},
+	glLoadIdentityDeformationMapSGIX = {"void (*)(GLbitfield)"},
+	glTexParameterf = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
+	glGetMapdv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLdouble *)"},
+	glVertexAttrib4fNV = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glFlushMappedBufferRange = {"void (*)(GL_LUA_ENUMS, GLintptr, GLsizeiptr)"},
+	glTexImage3DOES = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glMatrixPushEXT = {"void (*)(GL_LUA_ENUMS)"},
+	glTexImage3DEXT = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTexImage2DMultisample = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLboolean)"},
+	glMultiDrawElementsIndirectBindlessNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, GLsizei, GLsizei, GLint)"},
+	glTexImage2D = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glTexGenxvOES = {"voi|	d (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)"},
+	glIndexfv = {"void (*)(const GLfloat *)"},
+	glExtGetBuffersQCOM = {"void (*)(GLuint *, GLint, GLint *)"},
+	glTexGenivOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glIsProgramPipelineEXT = {"GLboolean (*)(GLuint)"},
+	glTexGenfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glProgramUniform4uiEXT = {"void (*)(GLuint, GLint, GLuint, GLuint, GLuint, GLuint)"},
+	glGetTextureParameterivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glGetVariantFloatvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)"},
+	glVDPAUIsSurfaceNV = {"GLboolean (*)(GLvdpauSurfaceNV)"},
+	glPixelTexGenParameterivSGIS = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glFramebufferRenderbuffer = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
+	glOrthofOES = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glLinkProgram = {"void (*)(GLuint)"},
+	glClearNamedFramebufferiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, const GLint *)"},
+	glUniformBlockBinding = {"void (*)(GLuint, GLuint, GLuint)"},
+	glTexEnvxOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)"},
+	glVertexStream1dvATI = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
+	glNormal3i = {"void (*)(GLint, GLint, GLint)"},
+	glTexParameterIuivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)"},
+	glTexEnvfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glTexCoordPointervINTEL = {"void (*)(GLint, GL_LUA_ENUMS, const void **)"},
+	glCompressedTexImage2DARB = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, const void *)"},
+	glMapNamedBufferRange = {"void *(*)(GLuint, GLintptr, GLsizeiptr, GLbitfield)"},
+	glExecuteProgramNV = {"void (*)(GL_LUA_ENUMS, GLuint, const GLfloat *)"},
+	glTexCoordPointer = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glProgramUniform4fEXT = {"void (*)(GLuint, GLint, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glTexCoordP4uiv = {"void (*)(GL_LUA_ENUMS, const GLuint *)"},
+	glRectiv = {"void (*)(const GLint *, const GLint *)"},
+	glColorFragmentOp1ATI = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)"},
+	glTexCoordP2ui = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glNormalPointer = {"void (*)(GL_LUA_ENUMS, GLsizei, const void *)"},
+	glProgramUniformMatrix4fvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glCreateProgram = {"GLuint (*)()"},
+	glColorMaskiEXT = {"void (*)(GLuint, GLboolean, GLboolean, GLboolean, GLboolean)"},
+	glTexCoordFormatNV = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei)"},
+	glTexCoord4xvOES = {"void (*)(const GLfixed *)"},
+	glTexCoord4xOES = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed)"},
+	glNamedFramebufferTextureLayerEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint, GLint)"},
+	glSecondaryColor3dEXT = {"void (*)(GLdouble, GLdouble, GLdouble)"},
+	glTexBufferOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
+	glFogCoordf = {"void (*)(GLfloat)"},
+	glVertex2f = {"void (*)(GLfloat, GLfloat)"},
+	glTexCoord4s = {"void (*)(GLshort, GLshort, GLshort, GLshort)"},
+	glViewportIndexedf = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glMakeBufferResidentNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glGetFinalCombinerInputParameterivNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glTexCoord4i = {"void (*)(GLint, GLint, GLint, GLint)"},
+	glGetPathParameterivNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glTexCoord4hvNV = {"void (*)(const GLhalfNV *)"},
+	glVertexAttrib1dvARB = {"void (*)(GLuint, const GLdouble *)"},
+	glTexCoord4fv = {"void (*)(const GLfloat *)"},
+	glAlphaFragmentOp1ATI = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint)"},
+	glGetFloati_v = {"void (*)(GL_LUA_ENUMS, GLuint, GLfloat *)"},
+	glTexCoord4dv = {"void (*)(const GLdouble *)"},
+	glTexCoord4d = {"void (*)(GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glTexCoord4bvOES = {"void (*)(const GLbyte *)"},
+	glTexCoord4bOES = {"void (*)(GLbyte, GLbyte, GLbyte, GLbyte)"},
+	glTexCoord3xvOES = {"void (*)(const GLfixed *)"},
+	glTexCoord3xOES = {"void (*)(GLfixed, GLfixed, GLfixed)"},
+	glTexCoord3sv = {"void (*)(const GLshort *)"},
+	glPointParameterfARB = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
+	glProgramUniformMatrix4x2dvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glColor3b = {"void (*)(GLbyte, GLbyte, GLbyte)"},
+	glCreateQueries = {"void (*)(GL_LUA_ENUMS, GLsizei, GLuint *)"},
+	glPollAsyncSGIX = {"GLint (*)(GLuint *)"},
+	glTexCoord3iv = {"void (*)(const GLint *)"},
+	glTexCoord3i = {"void (*)(GLint, GLint, GLint)"},
+	glVertexArrayTexCoordOffsetEXT = {"void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLsizei, GLintptr)"},
+	glTessellationModeAMD = {"void (*)(GL_LUA_ENUMS)"},
+	glPixelDataRangeNV = {"void (*)(GL_LUA_ENUMS, GLsizei, const void *)"},
+	glTexCoord3fv = {"void (*)(const GLfloat *)"},
+	glTexCoord3f = {"void (*)(GLfloat, GLfloat, GLfloat)"},
+	glTexCoord3dv = {"void (*)(const GLdouble *)"},
+	glMultiTexGenfvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glEndConditionalRenderNVX = {"void (*)()"},
+	glPauseTransformFeedback = {"void (*)()"},
+	glDrawElementsBaseVertexOES = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLint)"},
+	glTexCoord3bvOES = {"void (*)(const GLbyte *)"},
+	glDeformationMap3dSGIX = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLint, GLint, GLdouble, GLdouble, GLint, GLint, GLdouble, GLdouble, GLint, GLint, const GLdouble *)"},
+	glTexCoord3bOES = {"void (*)(GLbyte, GLbyte, GLbyte)"},
+	glSecondaryColor3i = {"void (*)(GLint, GLint, GLint)"},
+	glTexCoord2xvOES = {"void (*)(const GLfixed *)"},
+	glGetSamplerParameteriv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glProgramBinary = {"void (*)(GLuint, GL_LUA_ENUMS, const void *, GLsizei)"},
+	glTexCoord2xOES = {"void (*)(GLfixed, GLfixed)"},
+	glTexCoord2sv = {"void (*)(const GLshort *)"},
+	glGetUniformiv = {"void (*)(GLuint, GLint, GLint *)"},
+	glTexCoord2hvNV = {"void (*)(const GLhalfNV *)"},
+	glTexCoord2fVertex3fvSUN = {"void (*)(const GLfloat *, const GLfloat *)"},
+	glTexCoord2fVertex3fSUN = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glInvalidateTexImage = {"void (*)(GLuint, GLint)"},
+	glTexCoord2fNormal3fVertex3fSUN = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glGetVariantArrayObjectfvATI = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)"},
+	glGetColorTableParameteriv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glTextureLightEXT = {"void (*)(GL_LUA_ENUMS)"},
+	glCreateFramebuffers = {"void (*)(GLsizei, GLuint *)"},
+	glFramebufferTexture2D = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)"},
+	glMaterialxOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)"},
+	glTexCoord2fColor3fVertex3fvSUN = {"void (*)(const GLfloat *, const GLfloat *, const GLfloat *)"},
+	glBlitFramebufferANGLE = {"void (*)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)"},
+	glTexCoord2f = {"void (*)(GLfloat, GLfloat)"},
+	glTexCoord2bvOES = {"void (*)(const GLbyte *)"},
+	glTexCoord2bOES = {"void (*)(GLbyte, GLbyte)"},
+	glGenerateTextureMipmapEXT = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glIsBuffer = {"GLboolean (*)(GLuint)"},
+	glTexCoord1xvOES = {"void (*)(const GLfixed *)"},
+	glRasterSamplesEXT = {"void (*)(GLuint, GLboolean)"},
+	glTexCoord1sv = {"void (*)(const GLshort *)"},
+	glTexCoord1s = {"void (*)(GLshort)"},
+	glGetFloati_vNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLfloat *)"},
+	glTexCoord1i = {"void (*)(GLint)"},
+	glTexCoord1hvNV = {"void (*)(const GLhalfNV *)"},
+	glStencilFuncSeparate = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLuint)"},
+	glPixelZoom = {"void (*)(GLfloat, GLfloat)"},
+	glProgramUniform1ui64vNV = {"void (*)(GLuint, GLint, GLsizei, const GLuint64EXT *)"},
+	glTexCoord1d = {"void (*)(GLdouble)"},
+	glSecondaryColor3uivEXT = {"void (*)(const GLuint *)"},
+	glUniformMatrix4dv = {"void (*)(GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glHistogram = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLboolean)"},
+	glMultiTexCoord1sv = {"void (*)(GL_LUA_ENUMS, const GLshort *)"},
+	glTexBumpParameterivATI = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glTexBumpParameterfvATI = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glMultiTexCoord1dARB = {"void (*)(GL_LUA_ENUMS, GLdouble)"},
+	glTexBufferRangeOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLintptr, GLsizeiptr)"},
+	glTexBufferRangeEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLintptr, GLsizeiptr)"},
+	glTexBufferRange = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLintptr, GLsizeiptr)"},
+	glTestFenceAPPLE = {"GLboolean (*)(GLuint)"},
+	glTexCoord3hNV = {"void (*)(GLhalfNV, GLhalfNV, GLhalfNV)"},
+	glLightiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glFogxOES = {"void (*)(GL_LUA_ENUMS, GLfixed)"},
+	glExtGetProgramsQCOM = {"void (*)(GLuint *, GLint, GLint *)"},
+	glTangent3svEXT = {"void (*)(const GLshort *)"},
+	glDeleteOcclusionQueriesNV = {"void (*)(GLsizei, const GLuint *)"},
+	glTangent3ivEXT = {"void (*)(const GLint *)"},
+	glTangent3fvEXT = {"void (*)(const GLfloat *)"},
+	glTexParameterIuiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)"},
+	glTangent3bvEXT = {"void (*)(const GLbyte *)"},
+	glTangent3bEXT = {"void (*)(GLbyte, GLbyte, GLbyte)"},
+	glNamedProgramLocalParameter4dEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glIsProgramNV = {"GLboolean (*)(GLuint)"},
+	glSyncTextureINTEL = {"void (*)(GLuint)"},
+	glSamplerParameterf = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat)"},
+	glCopyTextureImage2DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint)"},
+	glStringMarkerGREMEDY = {"void (*)(GLsizei, const void *)"},
+	glGetTextureImage = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glColor4usv = {"void (*)(const GLushort *)"},
+	glPointParameterxv = {"void (*)(GL_LUA_ENUMS, const GLfixed *)"},
+	glImageTransformParameteriHP = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
+	glProgramParameter4fNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glStencilStrokePathNV = {"void (*)(GLuint, GLint, GLuint)"},
+	glStencilOpValueAMD = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glStencilOp = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glStencilMaskSeparate = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glGetUniformIndices = {"void (*)(GLuint, GLsizei, const GLchar *const*, GLuint *)"},
+	glMakeTextureHandleResidentARB = {"void (*)(GLuint64)"},
+	glStencilMask = {"void (*)(GLuint)"},
+	glLightEnviSGIX = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glGetClipPlanex = {"void (*)(GL_LUA_ENUMS, GLfixed *)"},
+	glProgramUniform3i64NV = {"void (*)(GLuint, GLint, GLint64EXT, GLint64EXT, GLint64EXT)"},
+	glGetVariantArrayObjectivATI = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glStencilFillPathInstancedNV = {"void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, const GLfloat *)"},
+	glStartInstrumentsSGIX = {"void (*)()"},
+	glCoverFillPathNV = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glDisableIndexedEXT = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glSpriteParameterivSGIX = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glSpriteParameteriSGIX = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glSpriteParameterfvSGIX = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glClipPlanefIMG = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glShaderStorageBlockBinding = {"void (*)(GLuint, GLuint, GLuint)"},
+	glOrthof = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glCompressedTextureSubImage3D = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glShaderOp1EXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint)"},
+	glShadeModel = {"void (*)(GL_LUA_ENUMS)"},
+	glSetMultisamplefvAMD = {"void (*)(GL_LUA_ENUMS, GLuint, const GLfloat *)"},
+	glMultiTexCoord1s = {"void (*)(GL_LUA_ENUMS, GLshort)"},
+	glScissorIndexed = {"void (*)(GLuint, GLint, GLint, GLsizei, GLsizei)"},
+	glDrawTexfvOES = {"void (*)(const GLfloat *)"},
+	glSetInvariantEXT = {"void (*)(GLuint, GL_LUA_ENUMS, const void *)"},
+	glColorTableEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glSetFenceAPPLE = {"void (*)(GLuint)"},
+	glGenerateMipmap = {"void (*)(GL_LUA_ENUMS)"},
+	glGetMapAttribParameterivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLint *)"},
+	glPNTrianglesfATI = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
+	glSecondaryColorPointer = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glFogCoordhNV = {"void (*)(GLhalfNV)"},
+	glGetClipPlanefOES = {"void (*)(GL_LUA_ENUMS, GLfloat *)"},
+	glGetQueryObjectui64vEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint64 *)"},
+	glGetTransformFeedbackVarying = {"void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLsizei *, GLenum *, GLchar *)"},
+	glTangent3sEXT = {"void (*)(GLshort, GLshort, GLshort)"},
+	glVDPAUUnmapSurfacesNV = {"void (*)(GLsizei, const GLvdpauSurfaceNV *)"},
+	glTexCoord1bvOES = {"void (*)(const GLbyte *)"},
+	glStencilFuncSeparateATI = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLuint)"},
+	glGetTextureParameterfvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glSecondaryColor3svEXT = {"void (*)(const GLshort *)"},
+	glTexParameterIivOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glSecondaryColor3ivEXT = {"void (*)(const GLint *)"},
+	glPatchParameteriOES = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glSecondaryColor3hvNV = {"void (*)(const GLhalfNV *)"},
+	glSecondaryColor3fvEXT = {"void (*)(const GLfloat *)"},
+	glDrawRangeElementsBaseVertexEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, GL_LUA_ENUMS, const void *, GLint)"},
+	glSecondaryColor3dvEXT = {"void (*)(const GLdouble *)"},
+	glSecondaryColor3dv = {"void (*)(const GLdouble *)"},
+	glClientWaitSync = {"GLenum (*)(GLsync, GLbitfield, GLuint64)"},
+	glSecondaryColor3bv = {"void (*)(const GLbyte *)"},
+	glGetnCompressedTexImage = {"void (*)(GL_LUA_ENUMS, GLint, GLsizei, void *)"},
+	glSecondaryColor3bEXT = {"void (*)(GLbyte, GLbyte, GLbyte)"},
+	glSecondaryColor3b = {"void (*)(GLbyte, GLbyte, GLbyte)"},
+	glScissorIndexedNV = {"void (*)(GLuint, GLint, GLint, GLsizei, GLsizei)"},
+	glGetCombinerInputParameterfvNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glScissorArrayvNV = {"void (*)(GLuint, GLsizei, const GLint *)"},
+	glScalexOES = {"void (*)(GLfixed, GLfixed, GLfixed)"},
+	glScalex = {"void (*)(GLfixed, GLfixed, GLfixed)"},
+	glScalef = {"void (*)(GLfloat, GLfloat, GLfloat)"},
+	glSamplerParameteri = {"void (*)(GLuint, GL_LUA_ENUMS, GLint)"},
+	glGetSamplerParameterIuivOES = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint *)"},
+	glSamplerParameterIivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, const GLint *)"},
+	glDeformationMap3fSGIX = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLint, GLint, GLfloat, GLfloat, GLint, GLint, GLfloat, GLfloat, GLint, GLint, const GLfloat *)"},
+	glGetTexParameterxvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)"},
+	glNamedBufferSubDataEXT = {"void (*)(GLuint, GLintptr, GLsizeiptr, const void *)"},
+	glDeleteShader = {"void (*)(GLuint)"},
+	glGenFragmentShadersATI = {"GLuint (*)(GLuint)"},
+	glSampleMaskIndexedNV = {"void (*)(GLuint, GLbitfield)"},
+	glSampleMapATI = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS)"},
+	glSampleCoveragex = {"void (*)(GLclampx, GLboolean)"},
+	glProgramUniform2ui64vNV = {"void (*)(GLuint, GLint, GLsizei, const GLuint64EXT *)"},
+	glFlush = {"void (*)()"},
+	glSampleCoverageARB = {"void (*)(GLfloat, GLboolean)"},
+	glPushDebugGroup = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLchar *)"},
+	glGetFramebufferParameteriv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glDrawBuffer = {"void (*)(GL_LUA_ENUMS)"},
+	glRotatexOES = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed)"},
+	glGetInvariantIntegervEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glRotated = {"void (*)(GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glResumeTransformFeedbackNV = {"void (*)()"},
+	glGetTexImage = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
+	glResumeTransformFeedback = {"void (*)()"},
+	glGetTexParameterIuivOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint *)"},
+	glProgramUniformHandleui64NV = {"void (*)(GLuint, GLint, GLuint64)"},
+	glResetHistogramEXT = {"void (*)(GL_LUA_ENUMS)"},
+	glResetHistogram = {"void (*)(GL_LUA_ENUMS)"},
+	glEndConditionalRender = {"void (*)()"},
+	glPNTrianglesiATI = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glGenVertexArraysOES = {"void (*)(GLsizei, GLuint *)"},
+	glProgramUniform2ui64NV = {"void (*)(GLuint, GLint, GLuint64EXT, GLuint64EXT)"},
+	glWeightubvARB = {"void (*)(GLint, const GLubyte *)"},
+	glReplacementCodeusSUN = {"void (*)(GLushort)"},
+	glIndexdv = {"void (*)(const GLdouble *)"},
+	glReplacementCodeuivSUN = {"void (*)(const GLuint *)"},
+	glReplacementCodeuiVertex3fvSUN = {"void (*)(const GLuint *, const GLfloat *)"},
+	glReplacementCodeuiTexCoord2fVertex3fvSUN = {"void (*)(const GLuint *, const GLfloat *, const GLfloat *)"},
+	glFragmentLightivSGIX = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glNormal3f = {"void (*)(GLfloat, GLfloat, GLfloat)"},
+	glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fSUN = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glReplacementCodeuiNormal3fVertex3fvSUN = {"void (*)(const GLuint *, const GLfloat *, const GLfloat *)"},
+	glReplacementCodeuiNormal3fVertex3fSUN = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glReplacementCodeuiColor4ubVertex3fSUN = {"void (*)(GLuint, GLubyte, GLubyte, GLubyte, GLubyte, GLfloat, GLfloat, GLfloat)"},
+	glReplacementCodeuiColor4fNormal3fVertex3fvSUN = {"void (*)(const GLuint *, const GLfloat *, const GLfloat *, const GLfloat *)"},
+	glReplacementCodeubvSUN = {"void (*)(const GLubyte *)"},
+	glRectf = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glReplacementCodeubSUN = {"void (*)(GLubyte)"},
+	glMultiTexCoord2d = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble)"},
+	glEvalCoord1xvOES = {"void (*)(const GLfixed *)"},
+	glFinishAsyncSGIX = {"GLint (*)(GLuint *)"},
+	glCompressedTexSubImage1D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glRenderbufferStorageOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei)"},
+	glColor4fNormal3fVertex3fSUN = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glRenderbufferStorageMultisampleNV = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)"},
+	glMultiTexCoord4dv = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
+	glGetQueryBufferObjectui64v = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLintptr)"},
+	glRenderbufferStorageMultisampleIMG = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)"},
+	glRenderbufferStorageMultisampleEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)"},
+	glRenderbufferStorageMultisampleCoverageNV = {"void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)"},
+	glBindTransformFeedback = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glGetLightxv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)"},
+	glDeleteQueriesEXT = {"void (*)(GLsizei, const GLuint *)"},
+	glMultiTexEnvfEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
+	glReleaseShaderCompiler = {"void (*)()"},
+	glLinkProgramARB = {"void (*)(GLhandleARB)"},
+	glTexCoordP3uiv = {"void (*)(GL_LUA_ENUMS, const GLuint *)"},
+	glRectfv = {"void (*)(const GLfloat *, const GLfloat *)"},
+	glRectdv = {"void (*)(const GLdouble *, const GLdouble *)"},
+	glRectd = {"void (*)(GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glProgramBufferParametersIuivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, const GLuint *)"},
+	glBlendColorEXT = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glProgramUniformui64vNV = {"void (*)(GLuint, GLint, GLsizei, const GLuint64EXT *)"},
+	glReadnPixels = {"void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glGetObjectParameterivAPPLE = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLint *)"},
+	glRasterPos3iv = {"void (*)(const GLint *)"},
+	glGenPathsNV = {"GLuint (*)(GLsizei)"},
+	glReadPixels = {"void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
+	glRasterPos3xOES = {"void (*)(GLfixed, GLfixed, GLfixed)"},
+	glCheckFramebufferStatusOES = {"GLenum (*)(GL_LUA_ENUMS)"},
+	glPixelTransferxOES = {"void (*)(GL_LUA_ENUMS, GLfixed)"},
+	glMatrixIndexubvARB = {"void (*)(GLint, const GLubyte *)"},
+	glGetObjectBufferfvATI = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)"},
+	glFlushPixelDataRangeNV = {"void (*)(GL_LUA_ENUMS)"},
+	glTexCoord3s = {"void (*)(GLshort, GLshort, GLshort)"},
+	glIsList = {"GLboolean (*)(GLuint)"},
+	glProgramUniformMatrix4dvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glGetMultiTexGendvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLdouble *)"},
+	glProgramUniformMatrix3x4dvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glGetMultiTexEnvfvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glGetMultiTexGenivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glVertexAttrib1sNV = {"void (*)(GLuint, GLshort)"},
+	glColorMaterial = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glProgramUniformMatrix3x2dv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glProgramUniformMatrix3dvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glVDPAUInitNV = {"void (*)(const void *, const void *)"},
+	glGetListParameterfvSGIX = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)"},
+	glProgramUniformMatrix2x4dvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glRenderbufferStorageMultisample = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)"},
+	glGetnUniformuivARB = {"void (*)(GLuint, GLint, GLsizei, GLuint *)"},
+	glSubpixelPrecisionBiasNV = {"void (*)(GLuint, GLuint)"},
+	glGetObjectParameterfvARB = {"void (*)(GLhandleARB, GL_LUA_ENUMS, GLfloat *)"},
+	glVertexAttribL1ui64NV = {"void (*)(GLuint, GLuint64EXT)"},
+	glSecondaryColorFormatNV = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei)"},
+	glGetnUniformfv = {"void (*)(GLuint, GLint, GLsizei, GLfloat *)"},
+	glGlobalAlphaFactorsSUN = {"void (*)(GLshort)"},
+	glShaderSourceARB = {"void (*)(GLhandleARB, GLsizei, const GLcharARB **, const GLint *)"},
+	glProgramUniform4i64vNV = {"void (*)(GLuint, GLint, GLsizei, const GLint64EXT *)"},
+	glProgramUniform4dvEXT = {"void (*)(GLuint, GLint, GLsizei, const GLdouble *)"},
+	glConvolutionParameterfvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glBlendEquationiARB = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glBlendFuncIndexedAMD = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glProgramUniform3ivEXT = {"void (*)(GLuint, GLint, GLsizei, const GLint *)"},
+	glGetFragmentMaterialfvSGIX = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glProgramUniformMatrix4x3dv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glGetFloatIndexedvEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLfloat *)"},
+	glDeleteObjectARB = {"void (*)(GLhandleARB)"},
+	glDebugMessageCallbackAMD = {"void (*)(GLDEBUGPROCAMD, void *)"},
+	glGetObjectLabelEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, GLsizei *, GLchar *)"},
+	glGetFenceivNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glBeginQuery = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glIsEnabled = {"GLboolean (*)(GL_LUA_ENUMS)"},
+	glVertexArraySecondaryColorOffsetEXT = {"void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLsizei, GLintptr)"},
+	glProgramUniform2uiEXT = {"void (*)(GLuint, GLint, GLuint, GLuint)"},
+	glProgramLocalParameterI4uiNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint)"},
+	glGetConvolutionParameteriv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glTexStorage1DEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei)"},
+	glProgramUniform2ivEXT = {"void (*)(GLuint, GLint, GLsizei, const GLint *)"},
+	glMatrixLoadTranspose3x3fNV = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glCompressedMultiTexSubImage1DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glExtGetTexSubImageQCOM = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
+	glGetCompressedTexImageARB = {"void (*)(GL_LUA_ENUMS, GLint, void *)"},
+	glPushMatrix = {"void (*)()"},
+	glEdgeFlagPointer = {"void (*)(GLsizei, const void *)"},
+	glPathStringNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glObjectLabelKHR = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLchar *)"},
+	glColor4ui = {"void (*)(GLuint, GLuint, GLuint, GLuint)"},
+	glClearTexImage = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glProgramUniform2dEXT = {"void (*)(GLuint, GLint, GLdouble, GLdouble)"},
+	glMultiTexCoord2hNV = {"void (*)(GL_LUA_ENUMS, GLhalfNV, GLhalfNV)"},
+	glCheckNamedFramebufferStatus = {"GLenum (*)(GLuint, GL_LUA_ENUMS)"},
+	glDepthMask = {"void (*)(GLboolean)"},
+	glFinish = {"void (*)()"},
+	glCopyTextureSubImage2D = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
+	glMapGrid1xOES = {"void (*)(GLint, GLfixed, GLfixed)"},
+	glClearNamedBufferSubDataEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizeiptr, GLsizeiptr, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glVertexAttrib3fNV = {"void (*)(GLuint, GLfloat, GLfloat, GLfloat)"},
+	glImageTransformParameterivHP = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glMinSampleShadingARB = {"void (*)(GLfloat)"},
+	glGetFloatv = {"void (*)(GL_LUA_ENUMS, GLfloat *)"},
+	glBindProgramARB = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glUniform3dv = {"void (*)(GLint, GLsizei, const GLdouble *)"},
+	glFrameZoomSGIX = {"void (*)(GLint)"},
+	glProgramParameteriEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint)"},
+	glMultiTexCoord4f = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glDetachShader = {"void (*)(GLuint, GLuint)"},
+	glMultiTexCoord2s = {"void (*)(GL_LUA_ENUMS, GLshort, GLshort)"},
+	glGenerateTextureMipmap = {"void (*)(GLuint)"},
+	glCompileShader = {"void (*)(GLuint)"},
+	glMultiTexCoord4xvOES = {"void (*)(GL_LUA_ENUMS, const GLfixed *)"},
+	glEvalMapsNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glGetPixelMapusv = {"void (*)(GL_LUA_ENUMS, GLushort *)"},
+	glVertexArrayIndexOffsetEXT = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLsizei, GLintptr)"},
+	glRasterPos4sv = {"void (*)(const GLshort *)"},
+	glHistogramEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLboolean)"},
+	glBinormal3bvEXT = {"void (*)(const GLbyte *)"},
+	glFramebufferDrawBuffersEXT = {"void (*)(GLuint, GLsizei, const GLenum *)"},
+	glGetMapControlPointsNV = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, GLsizei, GLboolean, void *)"},
+	glFragmentLightModeliSGIX = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glVertexAttrib1f = {"void (*)(GLuint, GLfloat)"},
+	glGetMultiTexParameterfvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glCopyTexSubImage1D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei)"},
+	glNamedFramebufferSampleLocationsfvNV = {"void (*)(GLuint, GLuint, GLsizei, const GLfloat *)"},
+	glGetBufferPointerv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, void **)"},
+	glGetError = {"GLenum (*)()"},
+	glGenLists = {"GLuint (*)(GLsizei)", true},
+	glGenFramebuffersOES = {"void (*)(GLsizei, GLuint *)"},
+	glDrawArraysInstancedBaseInstanceEXT = {"void (*)(GL_LUA_ENUMS, GLint, GLsizei, GLsizei, GLuint)"},
+	glBlendParameteriNV = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glDeleteRenderbuffersEXT = {"void (*)(GLsizei, const GLuint *)"},
+	glFramebufferTextureLayer = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLint)"},
+	glGetUniformdv = {"void (*)(GLuint, GLint, GLdouble *)"},
+	glCompressedTexSubImage1DARB = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glConvolutionParameteri = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
+	glDrawTexxvOES = {"void (*)(const GLfixed *)"},
+	glPixelTransferf = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
+	glLoadTransposeMatrixxOES = {"void (*)(const GLfixed *)"},
+	glProgramUniform1dEXT = {"void (*)(GLuint, GLint, GLdouble)"},
+	glGetMapxvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)"},
+	glCompressedTexImage1D = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, const void *)"},
+	glMakeNamedBufferNonResidentNV = {"void (*)(GLuint)"},
+	glFramebufferTextureFaceEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GL_LUA_ENUMS)"},
+	glGetProgramEnvParameterIuivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint *)"},
+	glBindBufferOffsetNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLintptr)"},
+	glGetPixelTransformParameterfvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glMultTransposeMatrixf = {"void (*)(const GLfloat *)"},
+	glBindBufferRange = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLintptr, GLsizeiptr)"},
+	glFragmentLightModelfvSGIX = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glFragmentLightModelfSGIX = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
+	glFogxv = {"void (*)(GL_LUA_ENUMS, const GLfixed *)"},
+	glListParameterfvSGIX = {"void (*)(GLuint, GL_LUA_ENUMS, const GLfloat *)"},
+	glGetNamedBufferParameterivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glGetConvolutionParameterfvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glVertexArrayMultiTexCoordOffsetEXT = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLintptr)"},
+	glCoverStrokePathInstancedNV = {"void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glFogCoorddEXT = {"void (*)(GLdouble)"},
+	glClearDepthx = {"void (*)(GLfixed)"},
+	glIsImageHandleResidentARB = {"GLboolean (*)(GLuint64)"},
+	glGenQueriesEXT = {"void (*)(GLsizei, GLuint *)"},
+	glGetSamplerParameterIivOES = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glTextureRangeAPPLE = {"void (*)(GL_LUA_ENUMS, GLsizei, const void *)"},
+	glExtGetRenderbuffersQCOM = {"void (*)(GLuint *, GLint, GLint *)"},
+	glCompressedTextureSubImage2DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glRenderbufferStorageEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei)"},
+	glDrawElementsInstancedBaseVertexOES = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei, GLint)"},
+	glDrawRangeElementsBaseVertexOES = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, GL_LUA_ENUMS, const void *, GLint)"},
+	glEndQueryIndexed = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glPixelTransferi = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glNormal3iv = {"void (*)(const GLint *)"},
+	glGetTextureHandleARB = {"GLuint64 (*)(GLuint)"},
+	glFogiv = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glFrustum = {"void (*)(GLdouble, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glFramebufferTexture3DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLint)"},
+	glDrawElements = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *)"},
+	glObjectUnpurgeableAPPLE = {"GLenum (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS)"},
+	glPopDebugGroup = {"void (*)()"},
+	glNamedRenderbufferStorageMultisampleEXT = {"void (*)(GLuint, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)"},
+	glGetHandleARB = {"GLhandleARB (*)(GL_LUA_ENUMS)"},
+	glNamedProgramStringEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glNamedProgramLocalParametersI4ivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, const GLint *)"},
+	glGetBooleanv = {"void (*)(GL_LUA_ENUMS, GLboolean *)"},
+	glGetIntegerIndexedvEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLint *)"},
+	glEndTilingQCOM = {"void (*)(GLbitfield)"},
+	glIsTransformFeedbackNV = {"GLboolean (*)(GLuint)"},
+	glBinormal3dEXT = {"void (*)(GLdouble, GLdouble, GLdouble)"},
+	glExtGetFramebuffersQCOM = {"void (*)(GLuint *, GLint, GLint *)"},
+	glCopyTextureSubImage1DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei)"},
+	glDebugMessageInsertARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, const GLchar *)"},
+	glGetTextureImageEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
+	glUniformMatrix3dv = {"void (*)(GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glGetLightiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glGetActiveSubroutineUniformiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLint *)"},
+	glDeleteTransformFeedbacksNV = {"void (*)(GLsizei, const GLuint *)"},
+	glDeleteFencesAPPLE = {"void (*)(GLsizei, const GLuint *)"},
+	glColor4d = {"void (*)(GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glNamedProgramLocalParametersI4uivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, const GLuint *)"},
+	glPixelTexGenParameteriSGIS = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glGetMaterialiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glColorMaskiOES = {"void (*)(GLuint, GLboolean, GLboolean, GLboolean, GLboolean)"},
+	glDrawTexsOES = {"void (*)(GLshort, GLshort, GLshort, GLshort, GLshort)"},
+	glMultiTexSubImage1DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glPrimitiveBoundingBoxOES = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glGetPointervEXT = {"void (*)(GL_LUA_ENUMS, void **)"},
+	glProgramUniform3dvEXT = {"void (*)(GLuint, GLint, GLsizei, const GLdouble *)"},
+	glMatrixMultdEXT = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
+	glGetVideoCaptureivNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glFragmentLightiSGIX = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
+	glDrawTexivOES = {"void (*)(const GLint *)"},
+	glDrawElementsBaseVertexEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLint)"},
+	glHint = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glFinishObjectAPPLE = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glReadBufferNV = {"void (*)(GL_LUA_ENUMS)"},
+	glPrioritizeTextures = {"void (*)(GLsizei, const GLuint *, const GLfloat *)"},
+	glCreateSyncFromCLeventARB = {"GLsync (*)(struct _cl_context *, struct _cl_event *, GLbitfield)"},
+	glGetPixelTexGenParameterfvSGIS = {"void (*)(GL_LUA_ENUMS, GLfloat *)"},
+	glTexCoordPointerEXT = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei, GLsizei, const void *)"},
+	glProgramEnvParameter4fvARB = {"void (*)(GL_LUA_ENUMS, GLuint, const GLfloat *)"},
+	glCopyTexSubImage2DEXT = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
+	glEvalCoord2d = {"void (*)(GLdouble, GLdouble)"},
+	glMultiTexEnvfvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glClearBufferiv = {"void (*)(GL_LUA_ENUMS, GLint, const GLint *)"},
+	glTextureColorMaskSGIS = {"void (*)(GLboolean, GLboolean, GLboolean, GLboolean)"},
+	glDrawBuffers = {"void (*)(GLsizei, const GLenum *)"},
+	glBindVertexArray = {"void (*)(GLuint)"},
+	glDisableDriverControlQCOM = {"void (*)(GLuint)"},
+	glGetMultiTexParameterIivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glEvalCoord1xOES = {"void (*)(GLfixed)"},
+	glPrimitiveRestartIndex = {"void (*)(GLuint)"},
+	glFramebufferTexture2DMultisampleIMG = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLsizei)"},
+	glPrimitiveRestartIndexNV = {"void (*)(GLuint)"},
+	glGetTrackMatrixivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLint *)"},
+	glGetDebugMessageLogKHR = {"GLuint (*)(GLuint, GLsizei, GLenum *, GLenum *, GLuint *, GLenum *, GLsizei *, GLchar *)"},
+	glGetVertexAttribIiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glVertex4d = {"void (*)(GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glBindFragmentShaderATI = {"void (*)(GLuint)"},
+	glMultiTexCoord4fARB = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glDisableVertexArrayAttribEXT = {"void (*)(GLuint, GLuint)"},
+	glColor4us = {"void (*)(GLushort, GLushort, GLushort, GLushort)"},
+	glBufferSubData = {"void (*)(GL_LUA_ENUMS, GLintptr, GLsizeiptr, const void *)"},
+	glGetDoublei_vEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLdouble *)"},
+	glUniform3ui = {"void (*)(GLint, GLuint, GLuint, GLuint)"},
+	glMultiTexCoord4d = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glDrawTransformFeedbackStreamInstanced = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei)"},
+	glMultiTexCoord4bvOES = {"void (*)(GL_LUA_ENUMS, const GLbyte *)"},
+	glRasterPos3f = {"void (*)(GLfloat, GLfloat, GLfloat)"},
+	glDrawElementsInstancedBaseVertex = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei, GLint)"},
+	glBlendEquationOES = {"void (*)(GL_LUA_ENUMS)"},
+	glMultiTexCoord3xvOES = {"void (*)(GL_LUA_ENUMS, const GLfixed *)"},
+	glMultiTexCoord3xOES = {"void (*)(GL_LUA_ENUMS, GLfixed, GLfixed, GLfixed)"},
+	glGenPerfMonitorsAMD = {"void (*)(GLsizei, GLuint *)"},
+	glFramebufferParameteri = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
+	glPixelMapfv = {"void (*)(GL_LUA_ENUMS, GLsizei, const GLfloat *)"},
+	glBitmapxOES = {"void (*)(GLsizei, GLsizei, GLfixed, GLfixed, GLfixed, GLfixed, const GLubyte *)"},
+	glMultiTexCoord3ivARB = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glMultiTexCoord3iv = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glBindFramebuffer = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glDrawElementsIndirect = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glMultiTexCoord3i = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint)"},
+	glClearDepthfOES = {"void (*)(GLclampf)"},
+	glMultiTexCoord3fvARB = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glFogCoorddvEXT = {"void (*)(const GLdouble *)"},
+	glImageTransformParameterfvHP = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glDepthRangexOES = {"void (*)(GLfixed, GLfixed)"},
+	glProgramUniform4ui64NV = {"void (*)(GLuint, GLint, GLuint64EXT, GLuint64EXT, GLuint64EXT, GLuint64EXT)"},
+	glBlendEquationSeparateIndexedAMD = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glConvolutionParameterxvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)"},
+	glGetQueryObjecti64v = {"void (*)(GLuint, GL_LUA_ENUMS, GLint64 *)"},
+	glCopyTexImage1DEXT = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint)"},
+	glColor3d = {"void (*)(GLdouble, GLdouble, GLdouble)"},
+	glMultiTexCoord3dvARB = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
+	glMultiTexCoord3dARB = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble)"},
+	glNormalStream3bATI = {"void (*)(GL_LUA_ENUMS, GLbyte, GLbyte, GLbyte)"},
+	glProgramUniformMatrix4fv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glLoadName = {"void (*)(GLuint)"},
+	glBindTextures = {"void (*)(GLuint, GLsizei, const GLuint *)"},
+	glGetIntegeri_vEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLint *)"},
+	glColor3ub = {"void (*)(GLubyte, GLubyte, GLubyte)"},
+	glPolygonOffsetx = {"void (*)(GLfixed, GLfixed)"},
+	glMultiTexParameteriEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
+	glGetAttribLocationARB = {"GLint (*)(GLhandleARB, const GLcharARB *)"},
+	glFragmentLightfSGIX = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
+	glEnableVertexAttribAPPLE = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glEvalCoord2fv = {"void (*)(const GLfloat *)"},
+	glMultiTexSubImage2DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glCopyTextureSubImage3D = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
+	glBegin = {"void (*)(GL_LUA_ENUMS)"},
+	glSecondaryColor3s = {"void (*)(GLshort, GLshort, GLshort)"},
+	glGetPixelTexGenParameterivSGIS = {"void (*)(GL_LUA_ENUMS, GLint *)"},
+	glMultiTexCoord2bvOES = {"void (*)(GL_LUA_ENUMS, const GLbyte *)"},
+	glDisableClientStateiEXT = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glMultiTexCoord2bOES = {"void (*)(GL_LUA_ENUMS, GLbyte, GLbyte)"},
+	glDisableVertexArrayEXT = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glReadBuffer = {"void (*)(GL_LUA_ENUMS)"},
+	glBindTextureEXT = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glMaterialx = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)"},
+	glGetnPolygonStippleARB = {"void (*)(GLsizei, GLubyte *)"},
+	glColor4ubVertex3fvSUN = {"void (*)(const GLubyte *, const GLfloat *)"},
+	glCompressedTextureImage1DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, const void *)"},
+	glMultiTexCoord1fvARB = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glClipPlanefOES = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glMultiTexCoord1bvOES = {"void (*)(GL_LUA_ENUMS, const GLbyte *)"},
+	glGetDriverControlStringQCOM = {"void (*)(GLuint, GLsizei, GLsizei *, GLchar *)"},
+	glCombinerInputNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glReplacementCodePointerSUN = {"void (*)(GL_LUA_ENUMS, GLsizei, const void **)"},
+	glGetColorTableSGI = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
+	glVertexAttrib3dv = {"void (*)(GLuint, const GLdouble *)"},
+	glMultiDrawElements = {"void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei)"},
+	glSamplePatternSGIS = {"void (*)(GL_LUA_ENUMS)"},
+	glBeginTransformFeedbackNV = {"void (*)(GL_LUA_ENUMS)"},
+	glGetPerfQueryDataINTEL = {"void (*)(GLuint, GLuint, GLsizei, GLvoid *, GLuint *)"},
+	glCheckNamedFramebufferStatusEXT = {"GLenum (*)(GLuint, GL_LUA_ENUMS)"},
+	glFramebufferReadBufferEXT = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glFragmentLightfvSGIX = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glVertexAttrib4s = {"void (*)(GLuint, GLshort, GLshort, GLshort, GLshort)"},
+	glBindFramebufferOES = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glGetMaterialxOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)"},
+	glGetBufferParameteri64v = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint64 *)"},
+	glCompressedTextureSubImage3DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glEndVertexShaderEXT = {"void (*)()"},
+	glBinormal3dvEXT = {"void (*)(const GLdouble *)"},
+	glGenerateMipmapOES = {"void (*)(GL_LUA_ENUMS)"},
+	glCompressedTextureImage3DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)"},
+	glCallList = {"void (*)(GLuint)"},
+	glGetnTexImage = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glMatrixMode = {"void (*)(GL_LUA_ENUMS)"},
+	glGetnMapdv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLdouble *)"},
+	glGetMultiTexLevelParameterivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint *)"},
+	glMatrixLoadIdentityEXT = {"void (*)(GL_LUA_ENUMS)"},
+	glInterleavedArrays = {"void (*)(GL_LUA_ENUMS, GLsizei, const void *)"},
+	glCullParameterdvEXT = {"void (*)(GL_LUA_ENUMS, GLdouble *)"},
+	glCompressedTexImage1DARB = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, const void *)"},
+	glGetProgramivNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glGetVariantPointervEXT = {"void (*)(GLuint, GL_LUA_ENUMS, void **)"},
+	glNormal3hNV = {"void (*)(GLhalfNV, GLhalfNV, GLhalfNV)"},
+	glClearColorIiEXT = {"void (*)(GLint, GLint, GLint, GLint)"},
+	glFragmentColorMaterialSGIX = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glEndPerfMonitorAMD = {"void (*)(GLuint)"},
+	glPointParameterfv = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glInvalidateSubFramebuffer = {"void (*)(GL_LUA_ENUMS, GLsizei, const GLenum *, GLint, GLint, GLsizei, GLsizei)"},
+	glGetVertexAttribLui64vNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint64EXT *)"},
+	glBinormal3svEXT = {"void (*)(const GLshort *)"},
+	glBlendEquationSeparateiARB = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glGetObjectPtrLabel = {"void (*)(const void *, GLsizei, GLsizei *, GLchar *)"},
+	glVertexWeightfvEXT = {"void (*)(const GLfloat *)"},
+	glProgramUniform1fvEXT = {"void (*)(GLuint, GLint, GLsizei, const GLfloat *)"},
+	glMap1xOES = {"void (*)(GL_LUA_ENUMS, GLfixed, GLfixed, GLint, GLint, GLfixed)"},
+	glMultiTexCoord4x = {"void (*)(GL_LUA_ENUMS, GLfixed, GLfixed, GLfixed, GLfixed)"},
+	glMultiTexCoord2sv = {"void (*)(GL_LUA_ENUMS, const GLshort *)"},
+	glGetnSeparableFilterARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *, GLsizei, void *, void *)"},
+	glNamedRenderbufferStorageEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLsizei)"},
+	glCompressedTexImage2D = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, const void *)"},
+	glSelectPerfMonitorCountersAMD = {"void (*)(GLuint, GLboolean, GLuint, GLint, GLuint *)"},
+	glVertexAttribL3dv = {"void (*)(GLuint, const GLdouble *)"},
+	glUseProgramObjectARB = {"void (*)(GLhandleARB)"},
+	glMakeBufferNonResidentNV = {"void (*)(GL_LUA_ENUMS)"},
+	glLoadMatrixxOES = {"void (*)(const GLfixed *)"},
+	glListParameteriSGIX = {"void (*)(GLuint, GL_LUA_ENUMS, GLint)"},
+	glGetNamedBufferSubData = {"void (*)(GLuint, GLintptr, GLsizeiptr, void *)"},
+	glGetProgramLocalParameterIuivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint *)"},
+	glDeleteSamplers = {"void (*)(GLsizei, const GLuint *)"},
+	glVertexAttrib4NubvARB = {"void (*)(GLuint, const GLubyte *)"},
+	glColor3us = {"void (*)(GLushort, GLushort, GLushort)"},
+	glDrawRangeElements = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, GL_LUA_ENUMS, const void *)"},
+	glNamedFramebufferDrawBuffer = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glVertexAttrib1s = {"void (*)(GLuint, GLshort)"},
+	glCompressedMultiTexImage3DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)"},
+	glBindBufferBaseNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint)"},
+	glGetPathColorGenfvNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glColor4hNV = {"void (*)(GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV)"},
+	glLightModelxOES = {"void (*)(GL_LUA_ENUMS, GLfixed)"},
+	glVertexAttrib1dARB = {"void (*)(GLuint, GLdouble)"},
+	glFragmentMaterialfSGIX = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
+	glPopClientAttrib = {"void (*)()"},
+	glMultTransposeMatrixd = {"void (*)(const GLdouble *)"},
+	glEnableiNV = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glCompressedMultiTexSubImage3DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glGetPathCoordsNV = {"void (*)(GLuint, GLfloat *)"},
+	glIsTextureHandleResidentARB = {"GLboolean (*)(GLuint64)"},
+	glGenBuffers = {"void (*)(GLsizei, GLuint *)", true},
+	glGetShaderPrecisionFormat = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *, GLint *)"},
+	glCullParameterfvEXT = {"void (*)(GL_LUA_ENUMS, GLfloat *)"},
+	glSampleMaskSGIS = {"void (*)(GLclampf, GLboolean)"},
+	glNamedRenderbufferStorage = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLsizei)"},
+	glUniform4i = {"void (*)(GLint, GLint, GLint, GLint, GLint)"},
+	glGetActiveAtomicCounterBufferiv = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLint *)"},
+	glVertexAttribL4dv = {"void (*)(GLuint, const GLdouble *)"},
+	glBindBuffersRange = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLuint *, const GLintptr *, const GLsizeiptr *)"},
+	glProgramUniformMatrix4x3fvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glVertexAttribL1dv = {"void (*)(GLuint, const GLdouble *)"},
+	glBufferParameteriAPPLE = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
+	glVertexAttrib1dvNV = {"void (*)(GLuint, const GLdouble *)"},
+	glObjectPurgeableAPPLE = {"GLenum (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS)"},
+	glAlphaFragmentOp2ATI = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)"},
+	glIsFenceNV = {"GLboolean (*)(GLuint)"},
+	glFramebufferTexture2DOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)"},
+	glGetQueryBufferObjectiv = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLintptr)"},
+	glClearDepthf = {"void (*)(GLfloat)"},
+	glFinishFenceAPPLE = {"void (*)(GLuint)"},
+	glProgramParameter4fvNV = {"void (*)(GL_LUA_ENUMS, GLuint, const GLfloat *)"},
+	glBindBufferARB = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glBeginPerfQueryINTEL = {"void (*)(GLuint)"},
+	glProgramUniform4dv = {"void (*)(GLuint, GLint, GLsizei, const GLdouble *)"},
+	glBlendFuncSeparateiOES = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glBinormalPointerEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, const void *)"},
+	glTexRenderbufferNV = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glGetPointerv = {"void (*)(GL_LUA_ENUMS, void **)"},
+	glGetBufferParameterui64vNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint64EXT *)"},
+	glDepthRangefOES = {"void (*)(GLclampf, GLclampf)"},
+	glIsSyncAPPLE = {"GLboolean (*)(GLsync)"},
+	glSecondaryColor3fv = {"void (*)(const GLfloat *)"},
+	glClientAttribDefaultEXT = {"void (*)(GLbitfield)"},
+	glGetActiveUniform = {"void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLint *, GLenum *, GLchar *)"},
+	glProgramUniform4fvEXT = {"void (*)(GLuint, GLint, GLsizei, const GLfloat *)"},
+	glConvolutionParameterivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glBindRenderbuffer = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glBindVideoCaptureStreamTextureNV = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
+	glGetProgramLocalParameterdvARB = {"void (*)(GL_LUA_ENUMS, GLuint, GLdouble *)"},
+	glColorSubTable = {"void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glDetailTexFuncSGIS = {"void (*)(GL_LUA_ENUMS, GLsizei, const GLfloat *)"},
+	glTexFilterFuncSGIS = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const GLfloat *)"},
+	glBlendColor = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glCopyMultiTexSubImage1DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei)"},
+	glNormal3sv = {"void (*)(const GLshort *)"},
+	glCopyTexImage2DEXT = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint)"},
+	glFlushMappedBufferRangeEXT = {"void (*)(GL_LUA_ENUMS, GLintptr, GLsizeiptr)"},
+	glPassTexCoordATI = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS)"},
+	glIndexFuncEXT = {"void (*)(GL_LUA_ENUMS, GLclampf)"},
+	glBeginVertexShaderEXT = {"void (*)()"},
+	glGetFragmentMaterialivSGIX = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glGetDebugMessageLogAMD = {"GLuint (*)(GLuint, GLsizei, GLenum *, GLuint *, GLuint *, GLsizei *, GLchar *)"},
+	glListParameterfSGIX = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat)"},
+	glEndTransformFeedback = {"void (*)()"},
+	glCopyColorTableSGI = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei)"},
+	glDrawArraysInstancedBaseInstance = {"void (*)(GL_LUA_ENUMS, GLint, GLsizei, GLsizei, GLuint)"},
+	glCopyTextureSubImage2DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
+	glGetPathDashArrayNV = {"void (*)(GLuint, GLfloat *)"},
+	glGetnUniformuivKHR = {"void (*)(GLuint, GLint, GLsizei, GLuint *)"},
+	glCopyMultiTexSubImage3DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
+	glGetnColorTableARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glGetProgramEnvParameterdvARB = {"void (*)(GL_LUA_ENUMS, GLuint, GLdouble *)"},
+	glGetIntegerv = {"void (*)(GL_LUA_ENUMS, GLint *)"},
+	glGetnUniformfvARB = {"void (*)(GLuint, GLint, GLsizei, GLfloat *)"},
+	glGetConvolutionParameterxvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)"},
+	glMultiTexCoord4i = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint)"},
+	glDrawArrays = {"void (*)(GL_LUA_ENUMS, GLint, GLsizei)"},
+	glColorTableParameterivSGI = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glFogxvOES = {"void (*)(GL_LUA_ENUMS, const GLfixed *)"},
+	glGetFragmentLightfvSGIX = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glDepthRange = {"void (*)(GLdouble, GLdouble)"},
+	glFramebufferRenderbufferOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
+	glClipPlanexIMG = {"void (*)(GL_LUA_ENUMS, const GLfixed *)"},
+	glProgramLocalParameter4dARB = {"void (*)(GL_LUA_ENUMS, GLuint, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glGetnPixelMapusv = {"void (*)(GL_LUA_ENUMS, GLsizei, GLushort *)"},
+	glGetFramebufferAttachmentParameterivOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glVertexAttrib4ubv = {"void (*)(GLuint, const GLubyte *)"},
+	glDrawElementsInstancedANGLE = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei)"},
+	glGetActiveVaryingNV = {"void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLsizei *, GLenum *, GLchar *)"},
+	glSwizzleEXT = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glNamedFramebufferTextureLayer = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint, GLint)"},
+	glRasterPos2xOES = {"void (*)(GLfixed, GLfixed)"},
+	glRenderbufferStorageMultisampleANGLE = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)"},
+	glGetInstrumentsSGIX = {"GLint (*)()"},
+	glVertexP4ui = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glMultiTexCoord1dv = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
+	glGetRenderbufferParameterivOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glMultiTexGendEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLdouble)"},
+	glClearBufferfv = {"void (*)(GL_LUA_ENUMS, GLint, const GLfloat *)"},
+	glWindowPos2f = {"void (*)(GLfloat, GLfloat)"},
+	glGetInvariantBooleanvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLboolean *)"},
+	glMultiTexRenderbufferEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
+	glProgramParameteriARB = {"void (*)(GLuint, GL_LUA_ENUMS, GLint)"},
+	glVertexArrayBindingDivisor = {"void (*)(GLuint, GLuint, GLuint)"},
+	glDeleteProgramsNV = {"void (*)(GLsizei, const GLuint *)"},
+	glStencilThenCoverFillPathNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS)"},
+	glDrawElementsInstancedNV = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei)"},
+	glTexSubImage3DOES = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glFramebufferTexture1DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)"},
+	glGetVertexAttribdvNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLdouble *)"},
+	glGetVertexAttribLdvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLdouble *)"},
+	glGetShaderiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glGetPointeri_vEXT = {"void (*)(GL_LUA_ENUMS, GLuint, void **)"},
+	glGetNamedProgramLocalParameterdvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLdouble *)"},
+	glMultiTexCoord3dv = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
+	glGetTextureLevelParameterivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint *)"},
+	glBinormal3ivEXT = {"void (*)(const GLint *)"},
+	glVertexPointer = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glGetVaryingLocationNV = {"GLint (*)(GLuint, const GLchar *)"},
+	glStencilFillPathNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint)"},
+	glBindLightParameterEXT = {"GLuint (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glMatrixRotatefEXT = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glTexParameterxvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)"},
+	glConvolutionParameteriv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glIsObjectBufferATI = {"GLboolean (*)(GLuint)"},
+	glGetUniformOffsetEXT = {"GLintptr (*)(GLuint, GLint)"},
+	glGetTexParameterPointervAPPLE = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, void **)"},
+	glPatchParameteriEXT = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glMapBuffer = {"void *(*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glGetGraphicsResetStatusKHR = {"GLenum (*)()"},
+	glDeletePerfQueryINTEL = {"void (*)(GLuint)"},
+	glGetProgramPipelineInfoLog = {"void (*)(GLuint, GLsizei, GLsizei *, GLchar *)"},
+	glGetProgramPipelineInfoLogEXT = {"void (*)(GLuint, GLsizei, GLsizei *, GLchar *)"},
+	glWindowPos2dMESA = {"void (*)(GLdouble, GLdouble)"},
+	glGetProgramResourcefvNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, const GLenum *, GLsizei, GLsizei *, GLfloat *)"},
+	glPopAttrib = {"void (*)()"},
+	glMultiTexEnviEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
+	glGetVertexAttribdvARB = {"void (*)(GLuint, GL_LUA_ENUMS, GLdouble *)"},
+	glNamedRenderbufferStorageMultisampleCoverageEXT = {"void (*)(GLuint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)"},
+	glGetTextureLevelParameterfvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLfloat *)"},
+	glGetTexParameterIiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glBindFragDataLocation = {"void (*)(GLuint, GLuint, const GLchar *)"},
+	glGetColorTableParameterfvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glGetCompressedTextureSubImage = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLsizei, void *)"},
+	glDepthFunc = {"void (*)(GL_LUA_ENUMS)"},
+	glGetProgramEnvParameterfvARB = {"void (*)(GL_LUA_ENUMS, GLuint, GLfloat *)"},
+	glAlphaFuncx = {"void (*)(GL_LUA_ENUMS, GLfixed)"},
+	glGetTextureHandleNV = {"GLuint64 (*)(GLuint)"},
+	glLineStipple = {"void (*)(GLint, GLushort)"},
+	glGetNamedBufferPointerv = {"void (*)(GLuint, GL_LUA_ENUMS, void **)"},
+	glGetTexGenfvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glGetGraphicsResetStatus = {"GLenum (*)()"},
+	glColorPointer = {"void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glGetQueryObjectivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glColor4bv = {"void (*)(const GLbyte *)"},
+	glCompressedMultiTexImage2DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, const void *)"},
+	glGetQueryObjectuivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint *)"},
+	glGetProgramResourceIndex = {"GLuint (*)(GLuint, GL_LUA_ENUMS, const GLchar *)"},
+	glGetMinmax = {"void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
+	glGetSamplerParameterIuiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint *)"},
+	glPointParameterxOES = {"void (*)(GL_LUA_ENUMS, GLfixed)"},
+	glGetSamplerParameterIiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glVertexAttrib4sNV = {"void (*)(GLuint, GLshort, GLshort, GLshort, GLshort)"},
+	glRasterPos4i = {"void (*)(GLint, GLint, GLint, GLint)"},
+	glSamplerParameterIuiv = {"void (*)(GLuint, GL_LUA_ENUMS, const GLuint *)"},
+	glProgramUniform1f = {"void (*)(GLuint, GLint, GLfloat)"},
+	glClearBufferfi = {"void (*)(GL_LUA_ENUMS, GLint, GLfloat, GLint)"},
+	glGetSeparableFilterEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, void *, void *, void *)"},
+	glProgramUniform3fv = {"void (*)(GLuint, GLint, GLsizei, const GLfloat *)"},
+	glGetStringi = {"const GLubyte *(*)(GL_LUA_ENUMS, GLuint)"},
+	glVertexAttrib4NubARB = {"void (*)(GLuint, GLubyte, GLubyte, GLubyte, GLubyte)"},
+	glGetTexBumpParameterfvATI = {"void (*)(GL_LUA_ENUMS, GLfloat *)"},
+	glGetTextureParameterIuiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint *)"},
+	glCopyTexSubImage1DEXT = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei)"},
+	glPixelMapuiv = {"void (*)(GL_LUA_ENUMS, GLsizei, const GLuint *)"},
+	glClearIndex = {"void (*)(GLfloat)"},
+	glCopyTextureSubImage1D = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei)"},
+	glGetTexGenivOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glEnableVertexArrayAttrib = {"void (*)(GLuint, GLuint)"},
+	glGetTexParameteriv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glLoadMatrixx = {"void (*)(const GLfixed *)"},
+	glBindImageTextureEXT = {"void (*)(GLuint, GLuint, GLint, GLboolean, GLint, GL_LUA_ENUMS, GLint)"},
+	glTexGenxOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)"},
+	glClearColorx = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed)"},
+	glGetVertexAttribfvARB = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)"},
+	glIsQueryARB = {"GLboolean (*)(GLuint)"},
+	glClearNamedFramebufferfi = {"void (*)(GLuint, GL_LUA_ENUMS, const GLfloat, GLint)"},
+	glTexGenf = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
+	glGetFramebufferAttachmentParameteriv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glMultiTexCoord1d = {"void (*)(GL_LUA_ENUMS, GLdouble)"},
+	glGetFragmentLightivSGIX = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glGetTransformFeedbackVaryingNV = {"void (*)(GLuint, GLuint, GLint *)"},
+	glIsNamedBufferResidentNV = {"GLboolean (*)(GLuint)"},
+	glGetTransformFeedbackiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glVertexArrayVertexBindingDivisorEXT = {"void (*)(GLuint, GLuint, GLuint)"},
+	glGetSamplerParameterIuivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint *)"},
+	glInsertEventMarkerEXT = {"void (*)(GLsizei, const GLchar *)"},
+	glFlushMappedNamedBufferRange = {"void (*)(GLuint, GLintptr, GLsizeiptr)"},
+	glGetnUniformdvARB = {"void (*)(GLuint, GLint, GLsizei, GLdouble *)"},
+	glGetUniformuivEXT = {"void (*)(GLuint, GLint, GLuint *)"},
+	glTexCoord2fColor4ubVertex3fSUN = {"void (*)(GLfloat, GLfloat, GLubyte, GLubyte, GLubyte, GLubyte, GLfloat, GLfloat, GLfloat)"},
+	glIndexPointer = {"void (*)(GL_LUA_ENUMS, GLsizei, const void *)"},
+	glEndTransformFeedbackNV = {"void (*)()"},
+	glIsAsyncMarkerSGIX = {"GLboolean (*)(GLuint)"},
+	glGetVertexArrayIndexed64iv = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLint64 *)"},
+	glGetVertexArrayIndexediv = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLint *)"},
+	glGetVertexArrayIntegeri_vEXT = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLint *)"},
+	glTextureParameteriEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
+	glDispatchComputeIndirect = {"void (*)(GLintptr)"},
+	glColorTableParameterfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glGetVertexAttribArrayObjectivATI = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glGetVertexAttribIuivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint *)"},
+	glGenProgramsNV = {"void (*)(GLsizei, GLuint *)"},
+	glEndQueryARB = {"void (*)(GL_LUA_ENUMS)"},
+	glBindRenderbufferOES = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glProgramUniformMatrix2x3dvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glFogCoordFormatNV = {"void (*)(GL_LUA_ENUMS, GLsizei)"},
+	glIndexs = {"void (*)(GLshort)"},
+	glAlphaFuncxOES = {"void (*)(GL_LUA_ENUMS, GLfixed)"},
+	glGetVideoCaptureStreamfvNV = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLfloat *)"},
+	glVertexP3uiv = {"void (*)(GL_LUA_ENUMS, const GLuint *)"},
+	glInvalidateNamedFramebufferData = {"void (*)(GLuint, GLsizei, const GLenum *)"},
+	glNamedProgramLocalParameterI4iEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint, GLint, GLint, GLint)"},
+	glBeginVideoCaptureNV = {"void (*)(GLuint)"},
+	glUniform1i64NV = {"void (*)(GLint, GLint64EXT)"},
+	glGetSyncivAPPLE = {"void (*)(GLsync, GL_LUA_ENUMS, GLsizei, GLsizei *, GLint *)"},
+	glGetnMapdvARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLdouble *)"},
+	glGetnMapfvARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLfloat *)"},
+	glNormalStream3fATI = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat)"},
+	glGetProgramResourceiv = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, const GLenum *, GLsizei, GLsizei *, GLint *)"},
+	glRasterPos4xOES = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed)"},
+	glFogf = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
+	glGetnPixelMapuivARB = {"void (*)(GL_LUA_ENUMS, GLsizei, GLuint *)"},
+	glBindVertexBuffers = {"void (*)(GLuint, GLsizei, const GLuint *, const GLintptr *, const GLsizei *)"},
+	glGetQueryIndexediv = {"void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLint *)"},
+	glGetnMinmaxARB = {"void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glGetConvolutionFilter = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
+	glGetUniformivARB = {"void (*)(GLhandleARB, GLint, GLint *)"},
+	glColor4s = {"void (*)(GLshort, GLshort, GLshort, GLshort)"},
+	glDepthRangeArrayv = {"void (*)(GLuint, GLsizei, const GLdouble *)"},
+	glGetGraphicsResetStatusARB = {"GLenum (*)()"},
+	glGetnUniformfvEXT = {"void (*)(GLuint, GLint, GLsizei, GLfloat *)"},
+	glGetnUniformivKHR = {"void (*)(GLuint, GLint, GLsizei, GLint *)"},
+	glGetnUniformuiv = {"void (*)(GLuint, GLint, GLsizei, GLuint *)"},
+	glMatrixLoadTransposedEXT = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
+	glGlobalAlphaFactorbSUN = {"void (*)(GLbyte)"},
+	glGlobalAlphaFactorubSUN = {"void (*)(GLubyte)"},
+	glHintPGI = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glGetVertexAttribfv = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)"},
+	glDepthBoundsEXT = {"void (*)(GLclampd, GLclampd)"},
+	glClearNamedFramebufferfv = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, const GLfloat *)"},
+	glLightfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glBindVertexArrayAPPLE = {"void (*)(GLuint)"},
+	glFragmentLightModelivSGIX = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glIndexPointerEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, const void *)"},
+	glCopyMultiTexSubImage2DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
+	glGetPerfMonitorCountersAMD = {"void (*)(GLuint, GLint *, GLint *, GLsizei, GLuint *)"},
+	glGetMinmaxEXT = {"void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)"},
+	glDebugMessageEnableAMD = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const GLuint *, GLboolean)"},
+	glIndexub = {"void (*)(GLubyte)"},
+	glIndexubv = {"void (*)(const GLubyte *)"},
+	glProgramUniform4uiv = {"void (*)(GLuint, GLint, GLsizei, const GLuint *)"},
+	glGetnColorTable = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glProgramUniform1ui64NV = {"void (*)(GLuint, GLint, GLuint64EXT)"},
+	glGetTexGenxvOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)"},
+	glGetPerfMonitorCounterStringAMD = {"void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLchar *)"},
+	glInvalidateFramebuffer = {"void (*)(GL_LUA_ENUMS, GLsizei, const GLenum *)"},
+	glGetObjectLabel = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, GLsizei *, GLchar *)"},
+	glVertex3d = {"void (*)(GLdouble, GLdouble, GLdouble)"},
+	glGetVertexAttribfvNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)"},
+	glIsEnabledi = {"GLboolean (*)(GL_LUA_ENUMS, GLuint)"},
+	glIsEnablediOES = {"GLboolean (*)(GL_LUA_ENUMS, GLuint)"},
+	glIsEnablediNV = {"GLboolean (*)(GL_LUA_ENUMS, GLuint)"},
+	glBlendFunciEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glInitNames = {"void (*)()"},
+	glBindBufferBaseEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint)"},
+	glTransformFeedbackBufferBase = {"void (*)(GLuint, GLuint, GLuint)"},
+	glMultiDrawElementsBaseVertex = {"void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei, const GLint *)"},
+	glGetNamedProgramLocalParameterIivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint *)"},
+	glProgramUniform4iv = {"void (*)(GLuint, GLint, GLsizei, const GLint *)"},
+	glIsPointInStrokePathNV = {"GLboolean (*)(GLuint, GLfloat, GLfloat)"},
+	glMapTexture2DINTEL = {"void *(*)(GLuint, GLint, GLbitfield, GLint *, GLenum *)"},
+	glProgramEnvParameter4dvARB = {"void (*)(GL_LUA_ENUMS, GLuint, const GLdouble *)"},
+	glTexGeniv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glBindTextureUnit = {"void (*)(GLuint, GLuint)"},
+	glMultiDrawRangeElementArrayAPPLE = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, const GLint *, const GLsizei *, GLsizei)"},
+	glNormalP3uiv = {"void (*)(GL_LUA_ENUMS, const GLuint *)"},
+	glCopyTexSubImage3D = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)"},
+	glIsRenderbuffer = {"GLboolean (*)(GLuint)"},
+	glCopyBufferSubData = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLintptr, GLintptr, GLsizeiptr)"},
+	glReadnPixelsEXT = {"void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glNormalP3ui = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glRasterPos2xvOES = {"void (*)(const GLfixed *)"},
+	glLightModeli = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glPixelTexGenParameterfSGIS = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
+	glCopyImageSubDataOES = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)"},
+	glEndOcclusionQueryNV = {"void (*)()"},
+	glColor3fVertex3fSUN = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glIsVertexArrayOES = {"GLboolean (*)(GLuint)"},
+	glBindVertexArrayOES = {"void (*)(GLuint)"},
+	glBlitFramebuffer = {"void (*)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)"},
+	glCreatePerfQueryINTEL = {"void (*)(GLuint, GLuint *)"},
+	glMultiTexCoord4sARB = {"void (*)(GL_LUA_ENUMS, GLshort, GLshort, GLshort, GLshort)"},
+	glTangentPointerEXT = {"void (*)(GL_LUA_ENUMS, GLsizei, const void *)"},
+	glCombinerParameterfvNV = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glLineWidth = {"void (*)(GLfloat)"},
+	glNamedFramebufferReadBuffer = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glEndVideoCaptureNV = {"void (*)(GLuint)"},
+	glGetObjectPtrLabelKHR = {"void (*)(const void *, GLsizei, GLsizei *, GLchar *)"},
+	glRectxvOES = {"void (*)(const GLfixed *, const GLfixed *)"},
+	glResetMinmax = {"void (*)(GL_LUA_ENUMS)"},
+	glMultiTexCoordPointerEXT = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glGetDebugMessageLogARB = {"GLuint (*)(GLuint, GLsizei, GLenum *, GLenum *, GLuint *, GLenum *, GLsizei *, GLchar *)"},
+	glDeleteProgramPipelinesEXT = {"void (*)(GLsizei, const GLuint *)"},
+	glGetDoublev = {"void (*)(GL_LUA_ENUMS, GLdouble *)"},
+	glMultiTexCoord2fARB = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat)"},
+	glLoadMatrixf = {"void (*)(const GLfloat *)"},
+	glBlitFramebufferNV = {"void (*)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)"},
+	glNormal3xvOES = {"void (*)(const GLfixed *)"},
+	glMakeImageHandleNonResidentNV = {"void (*)(GLuint64)"},
+	glMakeImageHandleResidentARB = {"void (*)(GLuint64, GL_LUA_ENUMS)"},
+	glMakeTextureHandleNonResidentARB = {"void (*)(GLuint64)"},
+	glGetnPixelMapfv = {"void (*)(GL_LUA_ENUMS, GLsizei, GLfloat *)"},
+	glUniform2f = {"void (*)(GLint, GLfloat, GLfloat)"},
+	glDepthRangeArrayfvNV = {"void (*)(GLuint, GLsizei, const GLfloat *)"},
+	glPathGlyphIndexRangeNV = {"GLenum (*)(GL_LUA_ENUMS, const void *, GLbitfield, GLuint, GLfloat, GLuint)"},
+	glDisablei = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glGetnHistogramARB = {"void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glGetShaderSourceARB = {"void (*)(GLhandleARB, GLsizei, GLsizei *, GLcharARB *)"},
+	glBindMaterialParameterEXT = {"GLuint (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glGetUniformui64vNV = {"void (*)(GLuint, GLint, GLuint64EXT *)"},
+	glMultiTexEnvivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glEnable = {"void (*)(GL_LUA_ENUMS)"},
+	glVertexPointerListIBM = {"void (*)(GLint, GL_LUA_ENUMS, GLint, const void **, GLint)"},
+	glMaterialxv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)"},
+	glMapVertexAttrib2fAPPLE = {"void (*)(GLuint, GLuint, GLfloat, GLfloat, GLint, GLint, GLfloat, GLfloat, GLint, GLint, const GLfloat *)"},
+	glRasterPos2fv = {"void (*)(const GLfloat *)"},
+	glClearBufferData = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glColorP3uiv = {"void (*)(GL_LUA_ENUMS, const GLuint *)"},
+	glDrawArraysInstancedANGLE = {"void (*)(GL_LUA_ENUMS, GLint, GLsizei, GLsizei)"},
+	glProgramUniform3uiv = {"void (*)(GLuint, GLint, GLsizei, const GLuint *)"},
+	glMatrixIndexuivARB = {"void (*)(GLint, const GLuint *)"},
+	glMatrixIndexusvARB = {"void (*)(GLint, const GLushort *)"},
+	glGenTransformFeedbacks = {"void (*)(GLsizei, GLuint *)", true},
+	glSetLocalConstantEXT = {"void (*)(GLuint, GL_LUA_ENUMS, const void *)"},
+	glGetMaterialxv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)"},
+	glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fvSUN = {"void (*)(const GLuint *, const GLfloat *, const GLfloat *, const GLfloat *, const GLfloat *)"},
+	glUniformMatrix2dv = {"void (*)(GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glVertex2hNV = {"void (*)(GLhalfNV, GLhalfNV)"},
+	glGetMultiTexEnvivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glGetProgramLocalParameterfvARB = {"void (*)(GL_LUA_ENUMS, GLuint, GLfloat *)"},
+	glMemoryBarrierByRegion = {"void (*)(GLbitfield)"},
+	glProgramUniform1i64vNV = {"void (*)(GLuint, GLint, GLsizei, const GLint64EXT *)"},
+	glProgramUniformMatrix2x4dv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glMinmaxEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLboolean)"},
+	glVertex2bOES = {"void (*)(GLbyte, GLbyte)"},
+	glIsFenceAPPLE = {"GLboolean (*)(GLuint)"},
+	glGetVertexAttribivARB = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glExtGetShadersQCOM = {"void (*)(GLuint *, GLint, GLint *)"},
+	glMakeTextureHandleNonResidentNV = {"void (*)(GLuint64)"},
+	glConvolutionFilter1DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glMultiDrawArraysEXT = {"void (*)(GL_LUA_ENUMS, const GLint *, const GLsizei *, GLsizei)"},
+	glUniform2fv = {"void (*)(GLint, GLsizei, const GLfloat *)"},
+	glPathFogGenNV = {"void (*)(GL_LUA_ENUMS)"},
+	glFlushMappedNamedBufferRangeEXT = {"void (*)(GLuint, GLintptr, GLsizeiptr)"},
+	glMultiDrawElementsIndirect = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, GLsizei, GLsizei)"},
+	glTexEnviv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glGetListParameterivSGIX = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glGenFencesNV = {"void (*)(GLsizei, GLuint *)"},
+	glPrimitiveBoundingBoxEXT = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glFragmentMaterialfvSGIX = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glMultiTexCoord1iv = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glGetColorTableParameterfvSGI = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glDrawPixels = {"void (*)(GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glMultiTexCoord1bOES = {"void (*)(GL_LUA_ENUMS, GLbyte)"},
+	glRasterPos2f = {"void (*)(GLfloat, GLfloat)"},
+	glMultiTexCoord4xOES = {"void (*)(GL_LUA_ENUMS, GLfixed, GLfixed, GLfixed, GLfixed)"},
+	glMultiTexCoord1ivARB = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glMultiTexCoord1sARB = {"void (*)(GL_LUA_ENUMS, GLshort)"},
+	glMultiTexCoord1svARB = {"void (*)(GL_LUA_ENUMS, const GLshort *)"},
+	glColor4ubVertex2fSUN = {"void (*)(GLubyte, GLubyte, GLubyte, GLubyte, GLfloat, GLfloat)"},
+	glPixelStoref = {"void (*)(GL_LUA_ENUMS, GLfloat)"},
+	glFenceSync = {"GLsync (*)(GL_LUA_ENUMS, GLbitfield)"},
+	glMultiTexCoord2dARB = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble)"},
+	glProgramUniformMatrix3x2dvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glMultiTexCoord2dvARB = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
+	glMultiTexCoord2fv = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glTextureParameterfv = {"void (*)(GLuint, GL_LUA_ENUMS, const GLfloat *)"},
+	glTextureViewOES = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint)"},
+	glMultiTexCoord2iARB = {"void (*)(GL_LUA_ENUMS, GLint, GLint)"},
+	glVertexAttrib4iv = {"void (*)(GLuint, const GLint *)"},
+	glMultiTexCoord2sARB = {"void (*)(GL_LUA_ENUMS, GLshort, GLshort)"},
+	glDrawTexfOES = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glGetnMapivARB = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLint *)"},
+	glMultiTexCoord2xOES = {"void (*)(GL_LUA_ENUMS, GLfixed, GLfixed)"},
+	glMultiTexCoord3bOES = {"void (*)(GL_LUA_ENUMS, GLbyte, GLbyte, GLbyte)"},
+	glFrustumx = {"void (*)(GLfixed, GLfixed, GLfixed, GLfixed, GLfixed, GLfixed)"},
+	glMateriali = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
+	glDrawArraysIndirect = {"void (*)(GL_LUA_ENUMS, const void *)"},
+	glMultiTexCoord3f = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat)"},
+	glEdgeFlagv = {"void (*)(const GLboolean *)"},
+	glWeightbvARB = {"void (*)(GLint, const GLbyte *)"},
+	glDrawTransformFeedbackNV = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glMultiTexCoord3hvNV = {"void (*)(GL_LUA_ENUMS, const GLhalfNV *)"},
+	glEvalCoord1dv = {"void (*)(const GLdouble *)"},
+	glCreateShaderProgramvEXT = {"GLuint (*)(GL_LUA_ENUMS, GLsizei, const GLchar **)"},
+	glVertexAttribI1ivEXT = {"void (*)(GLuint, const GLint *)"},
+	glQueryCounterEXT = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glRasterPos3d = {"void (*)(GLdouble, GLdouble, GLdouble)"},
+	glProgramSubroutineParametersuivNV = {"void (*)(GL_LUA_ENUMS, GLsizei, const GLuint *)"},
+	glLighti = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
+	glDeleteVertexArrays = {"void (*)(GLsizei, const GLuint *)"},
+	glMultiTexCoord3svARB = {"void (*)(GL_LUA_ENUMS, const GLshort *)"},
+	glProgramPathFragmentInputGenNV = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLint, const GLfloat *)"},
+	glEvalCoord2f = {"void (*)(GLfloat, GLfloat)"},
+	glBeginQueryARB = {"void (*)(GL_LUA_ENUMS, GLuint)"},
+	glGetProgramPipelineivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glGetArrayObjectivATI = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)"},
+	glDebugMessageCallbackKHR = {"void (*)(GLDEBUGPROCKHR, const void *)"},
+	glMultiTexCoord4dvARB = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
+	glRasterPos4fv = {"void (*)(const GLfloat *)"},
+	glMultiTexCoord4fvARB = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glGetObjectBufferivATI = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glMultiTexCoord4iARB = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint)"},
+	glMultiTexCoord4ivARB = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glLightf = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
+	glGetVideoivNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLint *)"},
+	glTexCoord4fColor4fNormal3fVertex4fSUN = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glMultiTexCoord4svARB = {"void (*)(GL_LUA_ENUMS, const GLshort *)"},
+	glTexCoord2fColor4fNormal3fVertex3fSUN = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glColor4xvOES = {"void (*)(const GLfixed *)"},
+	glLoadTransposeMatrixf = {"void (*)(const GLfloat *)"},
+	glRenderbufferStorage = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei)"},
+	glCoverStrokePathNV = {"void (*)(GLuint, GL_LUA_ENUMS)"},
+	glCopyMultiTexImage2DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint)"},
+	glMultiTexGendvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLdouble *)"},
+	glMultiTexGenfEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)"},
+	glTexCoord3d = {"void (*)(GLdouble, GLdouble, GLdouble)"},
+	glMultiTexImage3DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glMultiTexParameterIuivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)"},
+	glNormal3xOES = {"void (*)(GLfixed, GLfixed, GLfixed)"},
+	glAreTexturesResident = {"GLboolean (*)(GLsizei, const GLuint *, GLboolean *)"},
+	glMultiTexParameterivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glProgramUniform1i = {"void (*)(GLuint, GLint, GLint)"},
+	glProgramEnvParameterI4uivNV = {"void (*)(GL_LUA_ENUMS, GLuint, const GLuint *)"},
+	glLightx = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)"},
+	glBlendFuncSeparateiARB = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glVideoCaptureStreamParameterivNV = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, const GLint *)"},
+	glNamedBufferData = {"void (*)(GLuint, GLsizeiptr, const void *, GL_LUA_ENUMS)"},
+	glClearDepthxOES = {"void (*)(GLfixed)"},
+	glFragmentMaterialivSGIX = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)"},
+	glNormalStream3iATI = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint)"},
+	glVertex4bvOES = {"void (*)(const GLbyte *)"},
+	glCompressedMultiTexImage1DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, const void *)"},
+	glColorFragmentOp3ATI = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)"},
+	glEvalCoord2xOES = {"void (*)(GLfixed, GLfixed)"},
+	glAlphaFragmentOp3ATI = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)"},
+	glRasterPos3s = {"void (*)(GLshort, GLshort, GLshort)"},
+	glNamedFramebufferTexture2DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)"},
+	glProgramLocalParameter4dvARB = {"void (*)(GL_LUA_ENUMS, GLuint, const GLdouble *)"},
+	glCurrentPaletteMatrixOES = {"void (*)(GLuint)"},
+	glGetTextureSubImage = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glTagSampleBufferSGIX = {"void (*)()"},
+	glNamedProgramLocalParameter4fvEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, const GLfloat *)"},
+	glNamedProgramLocalParameterI4ivEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, const GLint *)"},
+	glCompressedTexImage3DARB = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)"},
+	glGenerateMultiTexMipmapEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)"},
+	glImportSyncEXT = {"GLsync (*)(GL_LUA_ENUMS, GLintptr, GLbitfield)"},
+	glMap2f = {"void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLint, GLint, GLfloat, GLfloat, GLint, GLint, const GLfloat *)"},
+	glMultiTexCoord3sv = {"void (*)(GL_LUA_ENUMS, const GLshort *)"},
+	glGetMultiTexParameterIuivEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint *)"},
+	glBindSampler = {"void (*)(GLuint, GLuint)"},
+	glMapGrid2d = {"void (*)(GLint, GLdouble, GLdouble, GLint, GLdouble, GLdouble)"},
+	glWindowPos2dvMESA = {"void (*)(const GLdouble *)"},
+	glGetProgramBinaryOES = {"void (*)(GLuint, GLsizei, GLsizei *, GLenum *, void *)"},
+	glWaitSync = {"void (*)(GLsync, GLbitfield, GLuint64)"},
+	glGetPerfMonitorCounterDataAMD = {"void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLuint *, GLint *)"},
+	glFlushRasterSGIX = {"void (*)()"},
+	glCompressedTextureSubImage1DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)"},
+	glGetVertexAttribdv = {"void (*)(GLuint, GL_LUA_ENUMS, GLdouble *)"},
+	glNormalPointerListIBM = {"void (*)(GL_LUA_ENUMS, GLint, const void **, GLint)"},
+	glMultiDrawArraysIndirectBindlessCountNV = {"void (*)(GL_LUA_ENUMS, const void *, GLsizei, GLsizei, GLsizei, GLint)"},
+	glNormalStream3bvATI = {"void (*)(GL_LUA_ENUMS, const GLbyte *)"},
+	glProgramUniformMatrix3fv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glNormalStream3dvATI = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
+	glNormalStream3fvATI = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glNormalStream3ivATI = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glMultiTexCoord2svARB = {"void (*)(GL_LUA_ENUMS, const GLshort *)"},
+	glColor3bv = {"void (*)(const GLbyte *)"},
+	glGetInternalformativ = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLint *)"},
+	glMultiTexCoord1hNV = {"void (*)(GL_LUA_ENUMS, GLhalfNV)"},
+	glListParameterivSGIX = {"void (*)(GLuint, GL_LUA_ENUMS, const GLint *)"},
+	glLoadTransposeMatrixdARB = {"void (*)(const GLdouble *)"},
+	glMultiTexImage2DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glEdgeFlagPointerListIBM = {"void (*)(GLint, const GLboolean **, GLint)"},
+	glPathColorGenNV = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glGetnMapiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLint *)"},
+	glProgramUniform1d = {"void (*)(GLuint, GLint, GLdouble)"},
+	glPathGlyphsNV = {"void (*)(GLuint, GL_LUA_ENUMS, const void *, GLbitfield, GLsizei, GL_LUA_ENUMS, const void *, GL_LUA_ENUMS, GLuint, GLfloat)"},
+	glClearColorIuiEXT = {"void (*)(GLuint, GLuint, GLuint, GLuint)"},
+	glIsVertexArrayAPPLE = {"GLboolean (*)(GLuint)"},
+	glPathParameterfvNV = {"void (*)(GLuint, GL_LUA_ENUMS, const GLfloat *)"},
+	glMultiTexCoord3sARB = {"void (*)(GL_LUA_ENUMS, GLshort, GLshort, GLshort)"},
+	glMultiTexCoordP4ui = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)"},
+	glDrawBuffersATI = {"void (*)(GLsizei, const GLenum *)"},
+	glPixelStorei = {"void (*)(GL_LUA_ENUMS, GLint)"},
+	glPointAlongPathNV = {"GLboolean (*)(GLuint, GLsizei, GLsizei, GLfloat, GLfloat *, GLfloat *, GLfloat *, GLfloat *)"},
+	glPixelTexGenParameterfvSGIS = {"void (*)(GL_LUA_ENUMS, const GLfloat *)"},
+	glMapGrid1f = {"void (*)(GLint, GLfloat, GLfloat)"},
+	glIndexiv = {"void (*)(const GLint *)"},
+	glDeleteSyncAPPLE = {"void (*)(GLsync)"},
+	glProgramUniform4dEXT = {"void (*)(GLuint, GLint, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glGetTexParameterIuiv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint *)"},
+	glPixelTransformParameterfvEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glFogx = {"void (*)(GL_LUA_ENUMS, GLfixed)"},
+	glMultiTexCoord4dARB = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glMultiTexCoord2xvOES = {"void (*)(GL_LUA_ENUMS, const GLfixed *)"},
+	glStencilThenCoverFillPathInstancedNV = {"void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)"},
+	glVertex4fv = {"void (*)(const GLfloat *)"},
+	glPointSizePointerOES = {"void (*)(GL_LUA_ENUMS, GLsizei, const void *)"},
+	glVertex3fv = {"void (*)(const GLfloat *)"},
+	glPolygonOffsetEXT = {"void (*)(GLfloat, GLfloat)"},
+	glMultiTexCoord3bvOES = {"void (*)(GL_LUA_ENUMS, const GLbyte *)"},
+	glGetNamedStringARB = {"void (*)(GLint, const GLchar *, GLsizei, GLint *, GLchar *)"},
+	glCopyTexImage1D = {"void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint)"},
+	glVertex4f = {"void (*)(GLfloat, GLfloat, GLfloat, GLfloat)"},
+	glEvalMesh2 = {"void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint)"},
+	glGetProgramSubroutineParameteruivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLuint *)"},
+	glNormal3hvNV = {"void (*)(const GLhalfNV *)"},
+	glDeleteFencesNV = {"void (*)(GLsizei, const GLuint *)"},
+	glVertex2fv = {"void (*)(const GLfloat *)"},
+	glConvolutionFilter2D = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)"},
+	glProgramEnvParametersI4ivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLint *)"},
+	glNamedFramebufferTexture3DEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLint)"},
+	glDrawElementsInstancedBaseVertexBaseInstance = {"void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei, GLint, GLuint)"},
+	glProgramLocalParameters4fvEXT = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLfloat *)"},
+	glProgramLocalParametersI4ivNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLint *)"},
+	glGetnMapfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLfloat *)"},
+	glMapVertexAttrib1dAPPLE = {"void (*)(GLuint, GLuint, GLdouble, GLdouble, GLint, GLint, const GLdouble *)"},
+	glCopyConvolutionFilter1DEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei)"},
+	glBindSamplers = {"void (*)(GLuint, GLsizei, const GLuint *)"},
+	glColor3hvNV = {"void (*)(const GLhalfNV *)"},
+	glFreeObjectBufferATI = {"void (*)(GLuint)"},
+	glMap2d = {"void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLint, GLint, GLdouble, GLdouble, GLint, GLint, const GLdouble *)"},
+	glPointParameterx = {"void (*)(GL_LUA_ENUMS, GLfixed)"},
+	glGetTexGenfv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)"},
+	glMapGrid2xOES = {"void (*)(GLint, GLfixed, GLfixed, GLfixed, GLfixed)"},
+	glProgramUniform1iEXT = {"void (*)(GLuint, GLint, GLint)"},
+	glProgramUniform1ivEXT = {"void (*)(GLuint, GLint, GLsizei, const GLint *)"},
+	glTexCoord1hNV = {"void (*)(GLhalfNV)"},
+	glProgramUniform1uiEXT = {"void (*)(GLuint, GLint, GLuint)"},
+	glProgramUniform1uivEXT = {"void (*)(GLuint, GLint, GLsizei, const GLuint *)"},
+	glFramebufferTextureOES = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)"},
+	glProgramUniform2dvEXT = {"void (*)(GLuint, GLint, GLsizei, const GLdouble *)"},
+	glProgramUniform2fEXT = {"void (*)(GLuint, GLint, GLfloat, GLfloat)"},
+	glTexEnvxv = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)"},
+	glDebugMessageCallback = {"void (*)(GLDEBUGPROC, const void *)"},
+	glProgramUniform2i64NV = {"void (*)(GLuint, GLint, GLint64EXT, GLint64EXT)"},
+	glProgramUniform2i64vNV = {"void (*)(GLuint, GLint, GLsizei, const GLint64EXT *)"},
+	glProgramUniform2iEXT = {"void (*)(GLuint, GLint, GLint, GLint)"},
+	glConvolutionParameteriEXT = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)"},
+	glRequestResidentProgramsNV = {"void (*)(GLsizei, const GLuint *)"},
+	glSampleCoverageOES = {"void (*)(GLfixed, GLboolean)"},
+	glExtGetBufferPointervQCOM = {"void (*)(GL_LUA_ENUMS, void **)"},
+	glProgramUniform2uivEXT = {"void (*)(GLuint, GLint, GLsizei, const GLuint *)"},
+	glProgramUniform3dEXT = {"void (*)(GLuint, GLint, GLdouble, GLdouble, GLdouble)"},
+	glProgramUniform3fEXT = {"void (*)(GLuint, GLint, GLfloat, GLfloat, GLfloat)"},
+	glLightModeliv = {"void (*)(GL_LUA_ENUMS, const GLint *)"},
+	glSecondaryColor3ui = {"void (*)(GLuint, GLuint, GLuint)"},
+	glProgramUniform3i64vNV = {"void (*)(GLuint, GLint, GLsizei, const GLint64EXT *)"},
+	glTextureParameterIiv = {"void (*)(GLuint, GL_LUA_ENUMS, const GLint *)"},
+	glGetnHistogram = {"void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)"},
+	glProgramUniform3ui64NV = {"void (*)(GLuint, GLint, GLuint64EXT, GLuint64EXT, GLuint64EXT)"},
+	glProgramUniform3ui64vNV = {"void (*)(GLuint, GLint, GLsizei, const GLuint64EXT *)"},
+	glProgramUniform3uiEXT = {"void (*)(GLuint, GLint, GLuint, GLuint, GLuint)"},
+	glProgramUniform3uivEXT = {"void (*)(GLuint, GLint, GLsizei, const GLuint *)"},
+	glPolygonOffsetxOES = {"void (*)(GLfixed, GLfixed)"},
+	glMultMatrixx = {"void (*)(const GLfixed *)"},
+	glProgramUniform4i64NV = {"void (*)(GLuint, GLint, GLint64EXT, GLint64EXT, GLint64EXT, GLint64EXT)"},
+	glNewObjectBufferATI = {"GLuint (*)(GLsizei, const void *, GL_LUA_ENUMS)"},
+	glProgramUniform4iEXT = {"void (*)(GLuint, GLint, GLint, GLint, GLint, GLint)"},
+	glProgramUniform4ivEXT = {"void (*)(GLuint, GLint, GLsizei, const GLint *)"},
+	glProgramUniformMatrix2dvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glProgramUniformMatrix2fvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glActiveShaderProgram = {"void (*)(GLuint, GLuint)"},
+	glProgramUniformMatrix2x3fvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glProgramParameter4dNV = {"void (*)(GL_LUA_ENUMS, GLuint, GLdouble, GLdouble, GLdouble, GLdouble)"},
+	glProgramUniformMatrix2x4fv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glTextureViewEXT = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint)"},
+	glMultiDrawElementsIndirectAMD = {"void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, GLsizei, GLsizei)"},
+	glProgramUniformMatrix3fvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glGetQueryBufferObjectuiv = {"void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLintptr)"},
+	glMultiTexCoord2dv = {"void (*)(GL_LUA_ENUMS, const GLdouble *)"},
+	glProgramUniformMatrix3x2fv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glProgramUniformMatrix3x2fvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glGetTextureLevelParameterfv = {"void (*)(GLuint, GLint, GL_LUA_ENUMS, GLfloat *)"},
+	glProgramUniformMatrix3x4fvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glGetVideoui64vNV = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint64EXT *)"},
+	glNamedBufferSubData = {"void (*)(GLuint, GLintptr, GLsizeiptr, const void *)"},
+	glProgramUniformMatrix4x2fvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glProgramUniformMatrix4x3dvEXT = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)"},
+	glProgramUniformMatrix4x3fv = {"void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)"},
+	glProgramUniformui64NV = {"void (*)(GLuint, GLint, GLuint64EXT)"},
+	glIsSync = {"GLboolean (*)(GLsync)"},
+	glGetActiveSubroutineUniformName = {"void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, GLsizei *, GLchar *)"},
+	glRasterPos3xvOES = {"void (*)(const GLfixed *)"},
+	wglSwapIntervalEXT = {"void (*)(GLint)"},
+	glTextureBarrier = {"void (*)()"},
+}
+
+
 function gl.Initialize(get_proc_address)
 	if type(get_proc_address) == "function" then
 		gl.GetProcAddress = get_proc_address
 	end
-	do
-		local ptr = gl.GetProcAddress("glTexImage3DMultisample")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLboolean)', ptr)
-			if ok then
-				gl.TexImage3DMultisample = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexEnvf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.TexEnvf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVariantBooleanvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLboolean *)', ptr)
-			if ok then
-				gl.GetVariantBooleanvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSamplerParameterIuivOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.SamplerParameterIuivOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBeginConditionalRender")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BeginConditionalRender = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMapfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetMapfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDepthRangeIndexedfNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.DepthRangeIndexedfNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDisableVertexAttribArray")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.DisableVertexAttribArray = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ProgramUniform2f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenQueriesARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenQueriesARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayVertexAttribBindingEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexArrayVertexAttribBindingEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.WindowPos2d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPushName")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.PushName = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointParameterfvSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.PointParameterfvSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexSubImage2D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TexSubImage2D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTexSubImage3DOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.CopyTexSubImage3DOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFixedvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed *)', ptr)
-			if ok then
-				gl.GetFixedvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVideoCaptureStreamParameterdvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.VideoCaptureStreamParameterdvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStencilClearTagEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint)', ptr)
-			if ok then
-				gl.StencilClearTagEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLightxv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.Lightxv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixFrustumEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.MatrixFrustumEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTranslated")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.Translated = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexArrayIntegervEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetVertexArrayIntegervEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDisableVertexAttribArrayARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.DisableVertexAttribArrayARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream1iATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.VertexStream1iATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedBufferStorage")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizeiptr, const void *, GLbitfield)', ptr)
-			if ok then
-				gl.NamedBufferStorage = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTransformFeedbackVaryingsEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLchar *const*, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.TransformFeedbackVaryingsEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapNamedBufferRangeEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void *(*)(GLuint, GLintptr, GLsizeiptr, GLbitfield)', ptr)
-			if ok then
-				gl.MapNamedBufferRangeEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPopMatrix")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.PopMatrix = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFixedv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed *)', ptr)
-			if ok then
-				gl.GetFixedv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramPipelineiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetProgramPipelineiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPerfCounterInfoINTEL")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint, GLchar *, GLuint, GLchar *, GLuint *, GLuint *, GLuint *, GLuint *, GLuint64 *)', ptr)
-			if ok then
-				gl.GetPerfCounterInfoINTEL = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLhalfNV *)', ptr)
-			if ok then
-				gl.Color4hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawArraysInstanced")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.DrawArraysInstanced = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClipPlanexOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.ClipPlanexOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexBlendARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint)', ptr)
-			if ok then
-				gl.VertexBlendARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFeedbackBufferxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.FeedbackBufferxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glQueryMatrixxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLbitfield (*)(GLfixed *, GLint *)', ptr)
-			if ok then
-				gl.QueryMatrixxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathStencilFuncNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLuint)', ptr)
-			if ok then
-				gl.PathStencilFuncNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetClipPlanexOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed *)', ptr)
-			if ok then
-				gl.GetClipPlanexOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramResourceName")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetProgramResourceName = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindMultiTextureEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.BindMultiTextureEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenSymbolsEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.GenSymbolsEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTextureLevelsAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLint, GLsizei)', ptr)
-			if ok then
-				gl.CopyTextureLevelsAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteProgramsARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteProgramsARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClientActiveTexture")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ClientActiveTexture = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorTableSGI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.ColorTableSGI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex3sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.Vertex3sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoordP1uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.TexCoordP1uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBufferStorage")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizeiptr, const void *, GLbitfield)', ptr)
-			if ok then
-				gl.BufferStorage = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeuiTexCoord2fNormal3fVertex3fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLuint *, const GLfloat *, const GLfloat *, const GLfloat *)', ptr)
-			if ok then
-				gl.ReplacementCodeuiTexCoord2fNormal3fVertex3fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniform3dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPopName")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.PopName = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCheckFramebufferStatus")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLenum (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.CheckFramebufferStatus = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1hNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLhalfNV)', ptr)
-			if ok then
-				gl.VertexAttrib1hNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix2x3fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix2x3fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4hNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV)', ptr)
-			if ok then
-				gl.MultiTexCoord4hNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColorP3uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.SecondaryColorP3uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.Fogfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetActiveAttribARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhandleARB, GLuint, GLsizei, GLsizei *, GLint *, GLenum *, GLcharARB *)', ptr)
-			if ok then
-				gl.GetActiveAttribARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribDivisorANGLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribDivisorANGLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEnd")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.End = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointParameteri")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.PointParameteri = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexBindingDivisor")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexBindingDivisor = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferTextureFaceARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.FramebufferTextureFaceARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFeedbackBuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.FeedbackBuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex2bvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLbyte *)', ptr)
-			if ok then
-				gl.Vertex2bvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMakeImageHandleResidentNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint64, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.MakeImageHandleResidentNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1dNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttrib1dNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.ProgramUniform1uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureParameterIivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.TextureParameterIivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEnableClientStateIndexedEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.EnableClientStateIndexedEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetUniformfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLfloat *)', ptr)
-			if ok then
-				gl.GetUniformfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex2sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.Vertex2sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetUniformSubroutineuiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLuint *)', ptr)
-			if ok then
-				gl.GetUniformSubroutineuiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendBarrierNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.BlendBarrierNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLogicOp")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.LogicOp = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glShaderOp2EXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.ShaderOp2EXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedFramebufferParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetNamedFramebufferParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glObjectPtrLabelKHR")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const void *, GLsizei, const GLchar *)', ptr)
-			if ok then
-				gl.ObjectPtrLabelKHR = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathParameteriNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.PathParameteriNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix4x2fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix4x2fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureImage3DMultisampleNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, GLsizei, GLsizei, GLboolean)', ptr)
-			if ok then
-				gl.TextureImage3DMultisampleNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixLoadfEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MatrixLoadfEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos3fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.RasterPos3fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glConvolutionParameterxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.ConvolutionParameterxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix3x4fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix3x4fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEnableiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.EnableiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix3fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.UniformMatrix3fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindProgramPipelineEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.BindProgramPipelineEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawElementsInstanced")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei)', ptr)
-			if ok then
-				gl.DrawElementsInstanced = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform2d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.Uniform2d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetObjectLabelKHR")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetObjectLabelKHR = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetVertexAttribiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramParameterfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetProgramParameterfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glValidateProgramARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhandleARB)', ptr)
-			if ok then
-				gl.ValidateProgramARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStartTilingQCOM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint, GLuint, GLbitfield)', ptr)
-			if ok then
-				gl.StartTilingQCOM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayBindVertexBufferEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint, GLintptr, GLsizei)', ptr)
-			if ok then
-				gl.VertexArrayBindVertexBufferEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformHandleui64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLuint64)', ptr)
-			if ok then
-				gl.UniformHandleui64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearNamedBufferData")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.ClearNamedBufferData = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glConvolutionParameterfEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.ConvolutionParameterfEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetQueryObjecti64vEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint64 *)', ptr)
-			if ok then
-				gl.GetQueryObjecti64vEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapBufferRange")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void *(*)(GL_LUA_ENUMS, GLintptr, GLsizeiptr, GLbitfield)', ptr)
-			if ok then
-				gl.MapBufferRange = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glArrayElementEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint)', ptr)
-			if ok then
-				gl.ArrayElementEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.SecondaryColor3d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureStorage2D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.TextureStorage2D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIndexsv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.Indexsv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormal3s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.Normal3s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetCompressedTextureImage")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, void *)', ptr)
-			if ok then
-				gl.GetCompressedTextureImage = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexParameterx")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.TexParameterx = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathGlyphRangeNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const void *, GLbitfield, GLuint, GLsizei, GL_LUA_ENUMS, GLuint, GLfloat)', ptr)
-			if ok then
-				gl.PathGlyphRangeNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMapParameterfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetMapParameterfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenProgramsARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenProgramsARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glShaderBinary")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *, GL_LUA_ENUMS, const void *, GLsizei)', ptr)
-			if ok then
-				gl.ShaderBinary = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormalFormatNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei)', ptr)
-			if ok then
-				gl.NormalFormatNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPerfMonitorCounterInfoAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, void *)', ptr)
-			if ok then
-				gl.GetPerfMonitorCounterInfoAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix2fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix2fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyImageSubDataNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.CopyImageSubDataNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedFramebufferTextureFaceEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.NamedFramebufferTextureFaceEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFrustumxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.FrustumxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEnableIndexedEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.EnableIndexedEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnPixelMapfvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GLfloat *)', ptr)
-			if ok then
-				gl.GetnPixelMapfvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.Color3iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.ProgramUniform2i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos2d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.RasterPos2d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenFramebuffersEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenFramebuffersEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsVertexAttribEnabledAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.IsVertexAttribEnabledAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramEnvParameter4fARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ProgramEnvParameter4fARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetIntegerui64i_vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint64EXT *)', ptr)
-			if ok then
-				gl.GetIntegerui64i_vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRecti")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.Recti = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCombinerParameterfNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.CombinerParameterfNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearNamedBufferSubData")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLintptr, GLsizeiptr, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.ClearNamedBufferSubData = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBufferData")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizeiptr, const void *, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BufferData = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream1dATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble)', ptr)
-			if ok then
-				gl.VertexStream1dATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindVertexShaderEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.BindVertexShaderEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex3f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Vertex3f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedProgramLocalParameterI4uivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, const GLuint *)', ptr)
-			if ok then
-				gl.NamedProgramLocalParameterI4uivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCombinerParameterivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.CombinerParameterivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2fColor4ubVertex3fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *, const GLubyte *, const GLfloat *)', ptr)
-			if ok then
-				gl.TexCoord2fColor4ubVertex3fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDepthRangedNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.DepthRangedNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexParameterIivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.TexParameterIivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIndexPointerListIBM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, const void **, GLint)', ptr)
-			if ok then
-				gl.IndexPointerListIBM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexImage1D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TexImage1D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPathMetricRangeNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbitfield, GLuint, GLsizei, GLsizei, GLfloat *)', ptr)
-			if ok then
-				gl.GetPathMetricRangeNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glInstrumentsBufferSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLint *)', ptr)
-			if ok then
-				gl.InstrumentsBufferSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedProgramLocalParameterIuivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLuint *)', ptr)
-			if ok then
-				gl.GetNamedProgramLocalParameterIuivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform1ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLuint)', ptr)
-			if ok then
-				gl.Uniform1ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteRenderbuffersOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteRenderbuffersOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos4dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.RasterPos4dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMemoryBarrierEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbitfield)', ptr)
-			if ok then
-				gl.MemoryBarrierEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureParameterf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.TextureParameterf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttrib4dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos2s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort)', ptr)
-			if ok then
-				gl.RasterPos2s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClipPlanex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.ClipPlanex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.ProgramUniform2d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform1ui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLuint64EXT *)', ptr)
-			if ok then
-				gl.Uniform1ui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenVertexArrays")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenVertexArrays = func
-			gl.GenVertexArray = function() local id = ffi.new('GLint[1]') func(1, id) return id[0] end
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapBufferOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void *(*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.MapBufferOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLightModelfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.LightModelfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetActiveUniformARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhandleARB, GLuint, GLsizei, GLsizei *, GLint *, GLenum *, GLcharARB *)', ptr)
-			if ok then
-				gl.GetActiveUniformARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSampleMaski")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLbitfield)', ptr)
-			if ok then
-				gl.SampleMaski = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2hNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhalfNV, GLhalfNV)', ptr)
-			if ok then
-				gl.TexCoord2hNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramEnvParameterI4iNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.ProgramEnvParameterI4iNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttrib2dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteTransformFeedbacks")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteTransformFeedbacks = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawElementsInstancedBaseInstanceEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei, GLuint)', ptr)
-			if ok then
-				gl.DrawElementsInstancedBaseInstanceEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFragmentCoverageColorNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.FragmentCoverageColorNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetConvolutionFilterEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)', ptr)
-			if ok then
-				gl.GetConvolutionFilterEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStencilOpSeparate")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.StencilOpSeparate = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDisableiOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.DisableiOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPolygonStipple")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLubyte *)', ptr)
-			if ok then
-				gl.GetPolygonStipple = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLshort, GLshort)', ptr)
-			if ok then
-				gl.VertexAttrib2s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribs4ubvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLubyte *)', ptr)
-			if ok then
-				gl.VertexAttribs4ubvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMap1f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLint, GLint, const GLfloat *)', ptr)
-			if ok then
-				gl.Map1f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glAreTexturesResidentEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLsizei, const GLuint *, GLboolean *)', ptr)
-			if ok then
-				gl.AreTexturesResidentEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPatchParameteri")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.PatchParameteri = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexEnvxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)', ptr)
-			if ok then
-				gl.GetTexEnvxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPrimitiveRestartNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.PrimitiveRestartNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenRenderbuffersEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenRenderbuffersEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixIndexPointerOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.MatrixIndexPointerOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetInteger64v")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint64 *)', ptr)
-			if ok then
-				gl.GetInteger64v = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetUniformi64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint64EXT *)', ptr)
-			if ok then
-				gl.GetUniformi64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTbufferMask3DFX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.TbufferMask3DFX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendFuncSeparateEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendFuncSeparateEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathStencilDepthOffsetNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.PathStencilDepthOffsetNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogCoordPointer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.FogCoordPointer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferTexture3D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLint)', ptr)
-			if ok then
-				gl.FramebufferTexture3D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendEquationSeparateEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendEquationSeparateEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawElementsInstancedBaseVertexBaseInstanceEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei, GLint, GLuint)', ptr)
-			if ok then
-				gl.DrawElementsInstancedBaseVertexBaseInstanceEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCreateShaderProgramv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GL_LUA_ENUMS, GLsizei, const GLchar *const*)', ptr)
-			if ok then
-				gl.CreateShaderProgramv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsVariantEnabledEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.IsVariantEnabledEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawArraysIndirectEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const void *, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.MultiDrawArraysIndirectEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferTextureLayerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLint)', ptr)
-			if ok then
-				gl.FramebufferTextureLayerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindProgramNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.BindProgramNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetImageHandleARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint64 (*)(GLuint, GLint, GLboolean, GLint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.GetImageHandleARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.Color4iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureStorage3DMultisampleEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLboolean)', ptr)
-			if ok then
-				gl.TextureStorage3DMultisampleEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDiscardFramebufferEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const GLenum *)', ptr)
-			if ok then
-				gl.DiscardFramebufferEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformHandleui64vARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLuint64 *)', ptr)
-			if ok then
-				gl.ProgramUniformHandleui64vARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedRenderbufferParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetNamedRenderbufferParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Color4f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3usEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLushort, GLushort, GLushort)', ptr)
-			if ok then
-				gl.SecondaryColor3usEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetSamplerParameterIivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetSamplerParameterIivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsProgramARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsProgramARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendColorxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.BlendColorxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTextureSubImage3DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.CopyTextureSubImage3DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribArrayObjectfvATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetVertexAttribArrayObjectfvATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MultiTexCoord3fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendFuncSeparateOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendFuncSeparateOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLhalfNV *)', ptr)
-			if ok then
-				gl.MultiTexCoord1hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetCombinerOutputParameterfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetCombinerOutputParameterfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTextureParameterfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetTextureParameterfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetUniformuiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint *)', ptr)
-			if ok then
-				gl.GetUniformuiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramNamedParameter4dNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLubyte *, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.ProgramNamedParameter4dNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEndConditionalRenderNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.EndConditionalRenderNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteTexturesEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteTexturesEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMap1d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLint, GLint, const GLdouble *)', ptr)
-			if ok then
-				gl.Map1d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPointervKHR")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, void **)', ptr)
-			if ok then
-				gl.GetPointervKHR = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClientActiveTextureARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ClientActiveTextureARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedRenderbufferStorageMultisample")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.NamedRenderbufferStorageMultisample = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSeparableFilter2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, const void *)', ptr)
-			if ok then
-				gl.SeparableFilter2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDepthBoundsdNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.DepthBoundsdNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribIFormatNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GL_LUA_ENUMS, GLsizei)', ptr)
-			if ok then
-				gl.VertexAttribIFormatNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawTransformFeedbackInstanced")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei)', ptr)
-			if ok then
-				gl.DrawTransformFeedbackInstanced = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetHistogram")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)', ptr)
-			if ok then
-				gl.GetHistogram = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEnableiOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.EnableiOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexGeni")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.TexGeni = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawTransformFeedback")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.DrawTransformFeedback = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEvalCoord2xvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.EvalCoord2xvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI1ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribI1ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetCompressedTexImage")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, void *)', ptr)
-			if ok then
-				gl.GetCompressedTexImage = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramNamedParameter4fNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLubyte *, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ProgramNamedParameter4fNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsRenderbufferEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsRenderbufferEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProvokingVertexEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ProvokingVertexEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawTextureNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.DrawTextureNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glElementPointerAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.ElementPointerAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetHistogramParameterxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)', ptr)
-			if ok then
-				gl.GetHistogramParameterxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glResolveDepthValuesNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.ResolveDepthValuesNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindBufferRangeNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLintptr, GLsizeiptr)', ptr)
-			if ok then
-				gl.BindBufferRangeNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenFramebuffers")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenFramebuffers = func
-			gl.GenFramebuffer = function() local id = ffi.new('GLint[1]') func(1, id) return id[0] end
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeformSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbitfield)', ptr)
-			if ok then
-				gl.DeformSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferTextureLayerARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLint)', ptr)
-			if ok then
-				gl.FramebufferTextureLayerARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2dARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.WindowPos2dARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCreateBuffers")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.CreateBuffers = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribPointervARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, void **)', ptr)
-			if ok then
-				gl.GetVertexAttribPointervARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex2i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint)', ptr)
-			if ok then
-				gl.Vertex2i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos2sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.RasterPos2sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetConvolutionParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetConvolutionParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawTexiOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.DrawTexiOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorPointerListIBM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLint, const void **, GLint)', ptr)
-			if ok then
-				gl.ColorPointerListIBM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedBufferParameteri64v")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint64 *)', ptr)
-			if ok then
-				gl.GetNamedBufferParameteri64v = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnSeparableFilter")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *, GLsizei, void *, void *)', ptr)
-			if ok then
-				gl.GetnSeparableFilter = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetRenderbufferParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetRenderbufferParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexBumpParameterivATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetTexBumpParameterivATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsTexture")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsTexture = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2dvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.WindowPos2dvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearColorxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.ClearColorxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord4fColor4fNormal3fVertex4fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *, const GLfloat *, const GLfloat *, const GLfloat *)', ptr)
-			if ok then
-				gl.TexCoord4fColor4fNormal3fVertex4fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ProgramUniform3f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribs1svNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttribs1svNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteRenderbuffers")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteRenderbuffers = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramEnvParameterI4ivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, const GLint *)', ptr)
-			if ok then
-				gl.ProgramEnvParameterI4ivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTexSubImage2D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTexSubImage2D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPolygonOffset")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.PolygonOffset = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedProgramLocalParameters4fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.NamedProgramLocalParameters4fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.MultiTexCoord2f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3ubv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLubyte *)', ptr)
-			if ok then
-				gl.Color3ubv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoordP3uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.MultiTexCoordP3uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPrioritizeTexturesxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *, const GLfixed *)', ptr)
-			if ok then
-				gl.PrioritizeTexturesxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEvalPoint1")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint)', ptr)
-			if ok then
-				gl.EvalPoint1 = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferRenderbufferEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.FramebufferRenderbufferEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetDoublei_v")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLdouble *)', ptr)
-			if ok then
-				gl.GetDoublei_v = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribLdv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLdouble *)', ptr)
-			if ok then
-				gl.GetVertexAttribLdv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUnmapNamedBuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.UnmapNamedBuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenTextures")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenTextures = func
-			gl.GenTexture = function() local id = ffi.new('GLint[1]') func(1, id) return id[0] end
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFloati_vEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLfloat *)', ptr)
-			if ok then
-				gl.GetFloati_vEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetBooleanIndexedvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLboolean *)', ptr)
-			if ok then
-				gl.GetBooleanIndexedvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawElementsIndirectCountARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLintptr, GLintptr, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.MultiDrawElementsIndirectCountARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureNormalEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.TextureNormalEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMultisamplefvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLfloat *)', ptr)
-			if ok then
-				gl.GetMultisamplefvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBufferDataARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizeiptrARB, const void *, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BufferDataARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.WindowPos2sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixMult3x2fNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MatrixMult3x2fNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCoverFillPathInstancedNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.CoverFillPathInstancedNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCreateShader")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.CreateShader = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.WindowPos3iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPixelMapxv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLfixed *)', ptr)
-			if ok then
-				gl.GetPixelMapxv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEGLImageTargetRenderbufferStorageOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLeglImageOES)', ptr)
-			if ok then
-				gl.EGLImageTargetRenderbufferStorageOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenQueries")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenQueries = func
-			gl.GenQuerie = function() local id = ffi.new('GLint[1]') func(1, id) return id[0] end
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glArrayObjectATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLuint, GLuint)', ptr)
-			if ok then
-				gl.ArrayObjectATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLightxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.LightxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPauseTransformFeedbackNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.PauseTransformFeedbackNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPixelTransformParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetPixelTransformParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindImageTextures")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.BindImageTextures = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapBufferRangeEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void *(*)(GL_LUA_ENUMS, GLintptr, GLsizeiptr, GLbitfield)', ptr)
-			if ok then
-				gl.MapBufferRangeEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultMatrixd")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.MultMatrixd = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramLocalParametersI4uivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.ProgramLocalParametersI4uivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogi")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.Fogi = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexGenfOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.TexGenfOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeuiColor4fNormal3fVertex3fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ReplacementCodeuiColor4fNormal3fVertex3fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawElementArrayAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *, const GLsizei *, GLsizei)', ptr)
-			if ok then
-				gl.MultiDrawElementArrayAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnUniformiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLint *)', ptr)
-			if ok then
-				gl.GetnUniformiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLightModelxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.LightModelxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayFogCoordOffsetEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLsizei, GLintptr)', ptr)
-			if ok then
-				gl.VertexArrayFogCoordOffsetEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMaterialfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.Materialfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorMaskIndexedEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLboolean, GLboolean, GLboolean, GLboolean)', ptr)
-			if ok then
-				gl.ColorMaskIndexedEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBeginFragmentShaderATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.BeginFragmentShaderATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsProgram")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsProgram = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMaterialxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.MaterialxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelMapusv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const GLushort *)', ptr)
-			if ok then
-				gl.PixelMapusv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetImageHandleNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint64 (*)(GLuint, GLint, GLboolean, GLint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.GetImageHandleNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexPageCommitmentARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLboolean)', ptr)
-			if ok then
-				gl.TexPageCommitmentARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIndexxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed)', ptr)
-			if ok then
-				gl.IndexxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexEnvfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetTexEnvfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearStencil")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint)', ptr)
-			if ok then
-				gl.ClearStencil = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3us")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLushort, GLushort, GLushort)', ptr)
-			if ok then
-				gl.SecondaryColor3us = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glInsertComponentEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.InsertComponentEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenTransformFeedbacksNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenTransformFeedbacksNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform2dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLdouble *)', ptr)
-			if ok then
-				gl.Uniform2dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glObjectLabel")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLchar *)', ptr)
-			if ok then
-				gl.ObjectLabel = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormalStream3svATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLshort *)', ptr)
-			if ok then
-				gl.NormalStream3svATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteQueriesARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteQueriesARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearTexSubImage")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.ClearTexSubImage = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteNamedStringARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, const GLchar *)', ptr)
-			if ok then
-				gl.DeleteNamedStringARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramResourceLocation")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLint (*)(GLuint, GL_LUA_ENUMS, const GLchar *)', ptr)
-			if ok then
-				gl.GetProgramResourceLocation = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormal3bv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLbyte *)', ptr)
-			if ok then
-				gl.Normal3bv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenProgramPipelines")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenProgramPipelines = func
-			gl.GenProgramPipeline = function() local id = ffi.new('GLint[1]') func(1, id) return id[0] end
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex4hNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV)', ptr)
-			if ok then
-				gl.Vertex4hNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTransformFeedbackVaryings")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLchar *const*, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.TransformFeedbackVaryings = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetCombinerInputParameterivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetCombinerInputParameterivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEGLImageTargetTexture2DOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLeglImageOES)', ptr)
-			if ok then
-				gl.EGLImageTargetTexture2DOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnPolygonStipple")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLubyte *)', ptr)
-			if ok then
-				gl.GetnPolygonStipple = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4ui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLuint64EXT *)', ptr)
-			if ok then
-				gl.ProgramUniform4ui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPolygonStipple")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLubyte *)', ptr)
-			if ok then
-				gl.PolygonStipple = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glScissorIndexedvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLint *)', ptr)
-			if ok then
-				gl.ScissorIndexedvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDebugMessageControlKHR")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const GLuint *, GLboolean)', ptr)
-			if ok then
-				gl.DebugMessageControlKHR = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1dvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.MultiTexCoord1dvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramBinaryOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const void *, GLint)', ptr)
-			if ok then
-				gl.ProgramBinaryOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeuiColor4ubVertex3fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLuint *, const GLubyte *, const GLfloat *)', ptr)
-			if ok then
-				gl.ReplacementCodeuiColor4ubVertex3fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteQueries")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteQueries = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttrib3d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos2dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.RasterPos2dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetBooleani_v")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLboolean *)', ptr)
-			if ok then
-				gl.GetBooleani_v = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMinmaxParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetMinmaxParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4ub")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLubyte, GLubyte, GLubyte, GLubyte)', ptr)
-			if ok then
-				gl.Color4ub = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.ProgramUniform2uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexParameterfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MultiTexParameterfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetOcclusionQueryivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetOcclusionQueryivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetQueryivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetQueryivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedStringivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, const GLchar *, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetNamedStringivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix2fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.UniformMatrix2fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetImageTransformParameterivHP")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetImageTransformParameterivHP = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVariantPointerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, const void *)', ptr)
-			if ok then
-				gl.VariantPointerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClipControl")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ClipControl = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawBuffersEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLenum *)', ptr)
-			if ok then
-				gl.DrawBuffersEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendEquationSeparateiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendEquationSeparateiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureStorage1D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GL_LUA_ENUMS, GLsizei)', ptr)
-			if ok then
-				gl.TextureStorage1D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glAccumxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.AccumxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1i64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint64EXT)', ptr)
-			if ok then
-				gl.ProgramUniform1i64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribP4ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLboolean, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribP4ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribP1ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLboolean, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribP1ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointSizex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed)', ptr)
-			if ok then
-				gl.PointSizex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glExtTexObjectStateOverrideiQCOM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.ExtTexObjectStateOverrideiQCOM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI3i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.VertexAttribI3i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.Color3fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexParameterfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.TexParameterfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetColorTableParameterivSGI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetColorTableParameterivSGI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathSubCoordsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GLsizei, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.PathSubCoordsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnUniformivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLint *)', ptr)
-			if ok then
-				gl.GetnUniformivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawElementsInstancedARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei)', ptr)
-			if ok then
-				gl.DrawElementsInstancedARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.SecondaryColor3f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetOcclusionQueryuivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint *)', ptr)
-			if ok then
-				gl.GetOcclusionQueryuivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBeginTransformFeedbackEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BeginTransformFeedbackEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindVideoCaptureStreamBufferNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLintptrARB)', ptr)
-			if ok then
-				gl.BindVideoCaptureStreamBufferNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL4d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttribL4d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform4f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Uniform4f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPerfMonitorGroupStringAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetPerfMonitorGroupStringAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyImageSubData")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.CopyImageSubData = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFrustumfOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.FrustumfOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexPointervINTEL")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, const void **)', ptr)
-			if ok then
-				gl.VertexPointervINTEL = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSharpenTexFuncSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.SharpenTexFuncSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribBinding")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribBinding = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindFragDataLocationIndexed")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint, const GLchar *)', ptr)
-			if ok then
-				gl.BindFragDataLocationIndexed = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapNamedBuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void *(*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.MapNamedBuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedProgramivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetNamedProgramivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.ProgramUniform2ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCoverageOperationNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.CoverageOperationNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteLists")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei)', ptr)
-			if ok then
-				gl.DeleteLists = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTextureSubImage2D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTextureSubImage2D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramLocalParameter4fvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramLocalParameter4fvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIndexi")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint)', ptr)
-			if ok then
-				gl.Indexi = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayVertexAttribIFormatEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.VertexArrayVertexAttribIFormatEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBeginConditionalRenderNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BeginConditionalRenderNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPathTexGenivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetPathTexGenivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord4fVertex4fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.TexCoord4fVertex4fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEvalCoord2dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.EvalCoord2dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSeparableFilter2D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, const void *)', ptr)
-			if ok then
-				gl.SeparableFilter2D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLoadPaletteFromModelViewMatrixOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.LoadPaletteFromModelViewMatrixOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glActiveProgramEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.ActiveProgramEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsShader")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsShader = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramStringNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLubyte *)', ptr)
-			if ok then
-				gl.GetProgramStringNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.ProgramUniform3i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4hNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV)', ptr)
-			if ok then
-				gl.VertexAttrib4hNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDisableClientStateIndexedEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.DisableClientStateIndexedEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUseShaderProgramEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.UseShaderProgramEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFragDataLocationEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLint (*)(GLuint, const GLchar *)', ptr)
-			if ok then
-				gl.GetFragDataLocationEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDebugMessageCallbackARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLDEBUGPROCARB, const void *)', ptr)
-			if ok then
-				gl.DebugMessageCallbackARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeuiVertex3fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ReplacementCodeuiVertex3fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDisableVertexAttribAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.DisableVertexAttribAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glScaled")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.Scaled = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glResizeBuffersMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.ResizeBuffersMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawArraysIndirectCountARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLintptr, GLintptr, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.MultiDrawArraysIndirectCountARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearAccumxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.ClearAccumxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointParameterfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.PointParameterfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPassThroughxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed)', ptr)
-			if ok then
-				gl.PassThroughxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelMapx")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, const GLfixed *)', ptr)
-			if ok then
-				gl.PixelMapx = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReferencePlaneSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.ReferencePlaneSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix3dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix3dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL1ui64ARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint64EXT)', ptr)
-			if ok then
-				gl.VertexAttribL1ui64ARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4Nbv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLbyte *)', ptr)
-			if ok then
-				gl.VertexAttrib4Nbv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.TexCoord2fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogFuncSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.FogFuncSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.ProgramUniform3d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClipPlane")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.ClipPlane = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedFramebufferParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetNamedFramebufferParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex4dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.Vertex4dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform3i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.Uniform3i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsTextureHandleResidentNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint64)', ptr)
-			if ok then
-				gl.IsTextureHandleResidentNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos4f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.RasterPos4f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTexImage3D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTexImage3D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormalPointerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, const void *)', ptr)
-			if ok then
-				gl.NormalPointerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.Color4fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint)', ptr)
-			if ok then
-				gl.MultiTexCoord2i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetBufferPointervOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, void **)', ptr)
-			if ok then
-				gl.GetBufferPointervOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoordP2ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.MultiTexCoordP2ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFlushVertexArrayRangeAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, void *)', ptr)
-			if ok then
-				gl.FlushVertexArrayRangeAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSelectBuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.SelectBuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3bvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLbyte *)', ptr)
-			if ok then
-				gl.SecondaryColor3bvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointParameterivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.PointParameterivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetHistogramParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetHistogramParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoordP3ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.MultiTexCoordP3ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsEnablediEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.IsEnablediEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.WindowPos3fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawElementArrayATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei)', ptr)
-			if ok then
-				gl.DrawElementArrayATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniform4fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenFencesAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenFencesAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetProgramiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI1uiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribI1uiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexLevelParameterxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLfixed *)', ptr)
-			if ok then
-				gl.GetTexLevelParameterxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFragmentMaterialiSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.FragmentMaterialiSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBufferAddressRangeNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint64EXT, GLsizeiptr)', ptr)
-			if ok then
-				gl.BufferAddressRangeNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPopGroupMarkerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.PopGroupMarkerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIndexd")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble)', ptr)
-			if ok then
-				gl.Indexd = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathParameterivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.PathParameterivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexGenivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.MultiTexGenivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRects")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.Rects = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix2x3fvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.UniformMatrix2x3fvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTransformFeedbacki64_v")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint64 *)', ptr)
-			if ok then
-				gl.GetTransformFeedbacki64_v = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexArrayiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetVertexArrayiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetIntegeri_v")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLint *)', ptr)
-			if ok then
-				gl.GetIntegeri_v = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glActiveTexture")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ActiveTexture = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos4s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.RasterPos4s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex2s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort)', ptr)
-			if ok then
-				gl.Vertex2s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogCoordfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.FogCoordfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVideoCaptureStreamParameterfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.VideoCaptureStreamParameterfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glExtGetProgramBinarySourceQCOM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLchar *, GLint *)', ptr)
-			if ok then
-				gl.ExtGetProgramBinarySourceQCOM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedBufferPointervEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, void **)', ptr)
-			if ok then
-				gl.GetNamedBufferPointervEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendFunci")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendFunci = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramParameteri")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.ProgramParameteri = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenNamesAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint *)', ptr)
-			if ok then
-				gl.GenNamesAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelZoomxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.PixelZoomxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex3iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.Vertex3iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFinishTextureSUNX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.FinishTextureSUNX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendBarrierKHR")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.BlendBarrierKHR = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex2iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.Vertex2iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexGendv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLdouble *)', ptr)
-			if ok then
-				gl.GetTexGendv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawElementsBaseVertexEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.MultiDrawElementsBaseVertexEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedBufferStorageEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizeiptr, const void *, GLbitfield)', ptr)
-			if ok then
-				gl.NamedBufferStorageEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLineWidthxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed)', ptr)
-			if ok then
-				gl.LineWidthxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFragDataIndex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLint (*)(GLuint, const GLchar *)', ptr)
-			if ok then
-				gl.GetFragDataIndex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendFunciOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendFunciOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEndPerfQueryINTEL")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.EndPerfQueryINTEL = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramEnvParameterI4uiNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.ProgramEnvParameterI4uiNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogCoordfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.FogCoordfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDepthRangef")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.DepthRangef = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGlobalAlphaFactorusSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLushort)', ptr)
-			if ok then
-				gl.GlobalAlphaFactorusSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBinormal3sEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.Binormal3sEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPresentFrameKeyedNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint64EXT, GLuint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLuint, GL_LUA_ENUMS, GLuint, GLuint)', ptr)
-			if ok then
-				gl.PresentFrameKeyedNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixLoad3x2fNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MatrixLoad3x2fNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFlushStaticDataIBM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.FlushStaticDataIBM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenSamplers")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenSamplers = func
-			gl.GenSampler = function() local id = ffi.new('GLint[1]') func(1, id) return id[0] end
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexParameterxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.TexParameterxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4bOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLbyte, GLbyte, GLbyte, GLbyte)', ptr)
-			if ok then
-				gl.MultiTexCoord4bOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferTextureARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)', ptr)
-			if ok then
-				gl.FramebufferTextureARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform1fARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLfloat)', ptr)
-			if ok then
-				gl.Uniform1fARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMinmax")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLboolean)', ptr)
-			if ok then
-				gl.Minmax = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLshort, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.MultiTexCoord4s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEdgeFlagFormatNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei)', ptr)
-			if ok then
-				gl.EdgeFlagFormatNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedFramebufferParameteri")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.NamedFramebufferParameteri = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.WindowPos3f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPixelMapfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetPixelMapfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.Color3ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexLevelParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetTexLevelParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedFramebufferDrawBuffers")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLenum *)', ptr)
-			if ok then
-				gl.NamedFramebufferDrawBuffers = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformHandleui64vARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLuint64 *)', ptr)
-			if ok then
-				gl.UniformHandleui64vARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTextureParameterIuivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint *)', ptr)
-			if ok then
-				gl.GetTextureParameterIuivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDebugMessageInsertKHR")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, const GLchar *)', ptr)
-			if ok then
-				gl.DebugMessageInsertKHR = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawRangeElementsEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.DrawRangeElementsEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteNamesAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteNamesAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorP4uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.ColorP4uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClipPlanef")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.ClipPlanef = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormalPointervINTEL")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const void **)', ptr)
-			if ok then
-				gl.NormalPointervINTEL = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsNamedStringARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLint, const GLchar *)', ptr)
-			if ok then
-				gl.IsNamedStringARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glConvolutionFilter2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.ConvolutionFilter2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glAreProgramsResidentNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLsizei, const GLuint *, GLboolean *)', ptr)
-			if ok then
-				gl.AreProgramsResidentNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix4x2dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix4x2dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenBuffersARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenBuffersARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindBufferBase")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint)', ptr)
-			if ok then
-				gl.BindBufferBase = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetClipPlane")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble *)', ptr)
-			if ok then
-				gl.GetClipPlane = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureImage2DMultisampleNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, GLsizei, GLboolean)', ptr)
-			if ok then
-				gl.TextureImage2DMultisampleNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniform2fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix3x4dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix3x4dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPathParameterfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetPathParameterfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetBufferParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetBufferParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteFramebuffersEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteFramebuffersEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedFramebufferTexture")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint)', ptr)
-			if ok then
-				gl.NamedFramebufferTexture = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2fColor3fVertex3fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.TexCoord2fColor3fVertex3fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClampColorARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ClampColorARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGlobalAlphaFactoruiSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.GlobalAlphaFactoruiSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendEquationiOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendEquationiOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPathTexGenfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetPathTexGenfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapNamedBufferEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void *(*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.MapNamedBufferEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex4sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.Vertex4sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawTexsvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.DrawTexsvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVideoCaptureStreamivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetVideoCaptureStreamivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFinishFenceNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.FinishFenceNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.MultiTexCoord1f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.ProgramUniform2iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindFramebufferEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.BindFramebufferEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapGrid2f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLfloat, GLfloat, GLint, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.MapGrid2f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompileShaderIncludeARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLchar *const*, const GLint *)', ptr)
-			if ok then
-				gl.CompileShaderIncludeARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexParameterfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetTexParameterfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMaterialxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)', ptr)
-			if ok then
-				gl.GetMaterialxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoordP1ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.TexCoordP1ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ProgramUniform4f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramBinary")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GLsizei *, GLenum *, void *)', ptr)
-			if ok then
-				gl.GetProgramBinary = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawArraysInstancedARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.DrawArraysInstancedARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearBufferuiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, const GLuint *)', ptr)
-			if ok then
-				gl.ClearBufferuiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteSync")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsync)', ptr)
-			if ok then
-				gl.DeleteSync = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4Nsv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttrib4Nsv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointParameterfSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.PointParameterfSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorPointervINTEL")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, const void **)', ptr)
-			if ok then
-				gl.ColorPointervINTEL = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTangent3fEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Tangent3fEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedProgramLocalParameterfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLfloat *)', ptr)
-			if ok then
-				gl.GetNamedProgramLocalParameterfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCreateVertexArrays")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.CreateVertexArrays = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathDashArrayNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.PathDashArrayNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetActiveUniformsiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLuint *, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetActiveUniformsiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlitNamedFramebuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlitNamedFramebuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedProgramLocalParameterI4uiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.NamedProgramLocalParameterI4uiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPushDebugGroupKHR")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLchar *)', ptr)
-			if ok then
-				gl.PushDebugGroupKHR = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glElementPointerATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.ElementPointerATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos3dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.RasterPos3dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glInterpolatePathsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint, GLfloat)', ptr)
-			if ok then
-				gl.InterpolatePathsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStopInstrumentsSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint)', ptr)
-			if ok then
-				gl.StopInstrumentsSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLuint *)', ptr)
-			if ok then
-				gl.Color3uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEndList")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.EndList = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3xvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.Color3xvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramStringARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, void *)', ptr)
-			if ok then
-				gl.GetProgramStringARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixLoaddEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.MatrixLoaddEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGlobalAlphaFactordSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble)', ptr)
-			if ok then
-				gl.GlobalAlphaFactordSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormal3fVertex3fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Normal3fVertex3fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDebugMessageInsert")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, const GLchar *)', ptr)
-			if ok then
-				gl.DebugMessageInsert = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDisableiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.DisableiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVideouivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint *)', ptr)
-			if ok then
-				gl.GetVideouivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.Color4i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearBufferSubData")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLintptr, GLsizeiptr, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.ClearBufferSubData = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetUniformBlockIndex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GLuint, const GLchar *)', ptr)
-			if ok then
-				gl.GetUniformBlockIndex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform1f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLfloat)', ptr)
-			if ok then
-				gl.Uniform1f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPassThrough")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat)', ptr)
-			if ok then
-				gl.PassThrough = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3dNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttrib3dNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4Nub")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLubyte, GLubyte, GLubyte, GLubyte)', ptr)
-			if ok then
-				gl.VertexAttrib4Nub = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL1i64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLint64EXT *)', ptr)
-			if ok then
-				gl.VertexAttribL1i64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLightModelx")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.LightModelx = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glQueryObjectParameteruiAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.QueryObjectParameteruiAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawElementsIndirectBindlessCountNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, GLsizei, GLsizei, GLsizei, GLint)', ptr)
-			if ok then
-				gl.MultiDrawElementsIndirectBindlessCountNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform1dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLdouble *)', ptr)
-			if ok then
-				gl.Uniform1dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform3ui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLuint64EXT *)', ptr)
-			if ok then
-				gl.Uniform3ui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexFormatNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLsizei)', ptr)
-			if ok then
-				gl.VertexFormatNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendEquationSeparate")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendEquationSeparate = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultTransposeMatrixxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.MultTransposeMatrixxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteBuffers")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteBuffers = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3usv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLushort *)', ptr)
-			if ok then
-				gl.SecondaryColor3usv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribIivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetVertexAttribIivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetDoubleIndexedvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLdouble *)', ptr)
-			if ok then
-				gl.GetDoubleIndexedvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.SecondaryColor3sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex3hNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhalfNV, GLhalfNV, GLhalfNV)', ptr)
-			if ok then
-				gl.Vertex3hNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform2uivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.Uniform2uivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTexImage3DOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTexImage3DOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glQueryCounter")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.QueryCounter = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.SecondaryColor3iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathParameterfNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.PathParameterfNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix2dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix2dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTestFenceNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.TestFenceNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEndQueryEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.EndQueryEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawRangeElementArrayATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei)', ptr)
-			if ok then
-				gl.DrawRangeElementArrayATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedFramebufferRenderbuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.NamedFramebufferRenderbuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferTexture3DOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLint)', ptr)
-			if ok then
-				gl.FramebufferTexture3DOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoordP4uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.MultiTexCoordP4uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetHistogramParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetHistogramParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFragDataLocation")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLint (*)(GLuint, const GLchar *)', ptr)
-			if ok then
-				gl.GetFragDataLocation = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramNamedParameter4fvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLubyte *, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramNamedParameter4fvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEdgeFlag")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLboolean)', ptr)
-			if ok then
-				gl.EdgeFlag = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointParameteriNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.PointParameteriNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUnmapBufferARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.UnmapBufferARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3uiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.SecondaryColor3uiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReadnPixelsKHR")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)', ptr)
-			if ok then
-				gl.ReadnPixelsKHR = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnTexImageARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)', ptr)
-			if ok then
-				gl.GetnTexImageARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform1uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.Uniform1uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4ubVertex2fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLubyte *, const GLfloat *)', ptr)
-			if ok then
-				gl.Color4ubVertex2fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramParameterdvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLdouble *)', ptr)
-			if ok then
-				gl.GetProgramParameterdvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapControlPointsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLint, GLboolean, const void *)', ptr)
-			if ok then
-				gl.MapControlPointsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorMaski")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLboolean, GLboolean, GLboolean, GLboolean)', ptr)
-			if ok then
-				gl.ColorMaski = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord1f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat)', ptr)
-			if ok then
-				gl.TexCoord1f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramEnvParameterIivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLint *)', ptr)
-			if ok then
-				gl.GetProgramEnvParameterIivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glActiveShaderProgramEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.ActiveShaderProgramEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1sARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLshort)', ptr)
-			if ok then
-				gl.VertexAttrib1sARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL2d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttribL2d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVDPAUMapSurfacesNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLvdpauSurfaceNV *)', ptr)
-			if ok then
-				gl.VDPAUMapSurfacesNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedCopyBufferSubDataEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLintptr, GLintptr, GLsizeiptr)', ptr)
-			if ok then
-				gl.NamedCopyBufferSubDataEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendFuncSeparateiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendFuncSeparateiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetSynciv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsync, GL_LUA_ENUMS, GLsizei, GLsizei *, GLint *)', ptr)
-			if ok then
-				gl.GetSynciv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendEquationIndexedAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendEquationIndexedAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI1uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLuint *)', ptr)
-			if ok then
-				gl.VertexAttribI1uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendEquationSeparatei")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendEquationSeparatei = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTextureSubImage1D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTextureSubImage1D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetQueryivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetQueryivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramNamedParameterdvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLubyte *, GLdouble *)', ptr)
-			if ok then
-				gl.GetProgramNamedParameterdvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCreateTextures")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.CreateTextures = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexEnvxv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)', ptr)
-			if ok then
-				gl.GetTexEnvxv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexImage1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.MultiTexImage1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform4iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.Uniform4iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStencilOpSeparateATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.StencilOpSeparateATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsEnabledIndexedEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.IsEnabledIndexedEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteTextures")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteTextures = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVariantIntegervEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetVariantIntegervEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureRenderbufferEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.TextureRenderbufferEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramParameters4fvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramParameters4fvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompileShaderARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhandleARB)', ptr)
-			if ok then
-				gl.CompileShaderARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4NbvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLbyte *)', ptr)
-			if ok then
-				gl.VertexAttrib4NbvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramInfoLog")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetProgramInfoLog = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2fARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.WindowPos2fARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3sEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.SecondaryColor3sEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorFragmentOp2ATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.ColorFragmentOp2ATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRotatex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.Rotatex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramEnvParameter4dARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.ProgramEnvParameter4dARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureSubImage1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TextureSubImage1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLoadTransposeMatrixd")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.LoadTransposeMatrixd = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetConvolutionParameterfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetConvolutionParameterfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindProgramPipeline")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.BindProgramPipeline = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPerfQueryIdByNameINTEL")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLchar *, GLuint *)', ptr)
-			if ok then
-				gl.GetPerfQueryIdByNameINTEL = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexParameterfEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.MultiTexParameterfEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFinalCombinerInputParameterfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetFinalCombinerInputParameterfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetSubroutineUniformLocation")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLint (*)(GLuint, GL_LUA_ENUMS, const GLchar *)', ptr)
-			if ok then
-				gl.GetSubroutineUniformLocation = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapGrid1d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.MapGrid1d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramStageiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetProgramStageiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFlushMappedBufferRangeAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLintptr, GLsizeiptr)', ptr)
-			if ok then
-				gl.FlushMappedBufferRangeAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttrib1dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelTransformParameterfEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.PixelTransformParameterfEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord1fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.TexCoord1fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeuiTexCoord2fNormal3fVertex3fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ReplacementCodeuiTexCoord2fNormal3fVertex3fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointParameterfvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.PointParameterfvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathTexGenNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, const GLfloat *)', ptr)
-			if ok then
-				gl.PathTexGenNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4bv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLbyte *)', ptr)
-			if ok then
-				gl.VertexAttrib4bv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPushClientAttrib")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbitfield)', ptr)
-			if ok then
-				gl.PushClientAttrib = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorTableParameterfvSGI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.ColorTableParameterfvSGI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferDrawBufferEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.FramebufferDrawBufferEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexBufferEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.TexBufferEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyBufferSubDataNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLintptr, GLintptr, GLsizeiptr)', ptr)
-			if ok then
-				gl.CopyBufferSubDataNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIndexMask")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.IndexMask = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.ProgramUniform4i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramStringARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.ProgramStringARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos4d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.RasterPos4d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4b")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbyte, GLbyte, GLbyte, GLbyte)', ptr)
-			if ok then
-				gl.Color4b = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenRenderbuffersOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenRenderbuffersOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeuiColor3fVertex3fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ReplacementCodeuiColor3fVertex3fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetAttribLocation")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLint (*)(GLuint, const GLchar *)', ptr)
-			if ok then
-				gl.GetAttribLocation = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMultiTexImageEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)', ptr)
-			if ok then
-				gl.GetMultiTexImageEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetImageTransformParameterfvHP")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetImageTransformParameterfvHP = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.ProgramUniform3ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetActiveSubroutineName")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetActiveSubroutineName = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLshort *)', ptr)
-			if ok then
-				gl.MultiTexCoord4sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexGeniOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.TexGeniOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsProgramPipeline")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsProgramPipeline = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendFuncSeparateINGR")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendFuncSeparateINGR = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointSizexOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed)', ptr)
-			if ok then
-				gl.PointSizexOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetLocalConstantFloatvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetLocalConstantFloatvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glImageTransformParameterfHP")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.ImageTransformParameterfHP = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.MultiTexCoord1i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetLocalConstantIntegervEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetLocalConstantIntegervEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIndexf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat)', ptr)
-			if ok then
-				gl.Indexf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFenceSyncAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLsync (*)(GL_LUA_ENUMS, GLbitfield)', ptr)
-			if ok then
-				gl.FenceSyncAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.ProgramUniform4d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribPointerNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.VertexAttribPointerNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearNamedFramebufferuiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, const GLuint *)', ptr)
-			if ok then
-				gl.ClearNamedFramebufferuiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBeginOcclusionQueryNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.BeginOcclusionQueryNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedBufferPageCommitmentARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLintptr, GLsizeiptr, GLboolean)', ptr)
-			if ok then
-				gl.NamedBufferPageCommitmentARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferTexture1D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)', ptr)
-			if ok then
-				gl.FramebufferTexture1D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEnableVertexArrayAttribEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.EnableVertexArrayAttribEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexArrayPointeri_vEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, void **)', ptr)
-			if ok then
-				gl.GetVertexArrayPointeri_vEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexStorage2DMultisample")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLboolean)', ptr)
-			if ok then
-				gl.TexStorage2DMultisample = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTextureImage2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTextureImage2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMaterialiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.Materialiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearDepthdNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble)', ptr)
-			if ok then
-				gl.ClearDepthdNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform1uiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLuint)', ptr)
-			if ok then
-				gl.Uniform1uiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetActiveUniformName")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetActiveUniformName = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnUniformivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLint *)', ptr)
-			if ok then
-				gl.GetnUniformivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3usv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLushort *)', ptr)
-			if ok then
-				gl.Color3usv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDisableVertexArrayAttrib")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.DisableVertexArrayAttrib = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPathSpacingNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLuint, GLfloat, GLfloat, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetPathSpacingNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSampleMaskEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLclampf, GLboolean)', ptr)
-			if ok then
-				gl.SampleMaskEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMap2xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed, GLfixed, GLint, GLint, GLfixed, GLfixed, GLint, GLint, GLfixed)', ptr)
-			if ok then
-				gl.Map2xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawElementArrayAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLsizei)', ptr)
-			if ok then
-				gl.DrawElementArrayAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUnmapTexture2DINTEL")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint)', ptr)
-			if ok then
-				gl.UnmapTexture2DINTEL = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEndFragmentShaderATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.EndFragmentShaderATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glConvolutionFilter1D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.ConvolutionFilter1D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetShaderInfoLog")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetShaderInfoLog = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glAsyncMarkerSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.AsyncMarkerSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetVertexAttribivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClientActiveVertexStreamATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ClientActiveVertexStreamATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindBufferOffsetEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLintptr)', ptr)
-			if ok then
-				gl.BindBufferOffsetEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearNamedBufferDataEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.ClearNamedBufferDataEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexParameterIivOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetTexParameterIivOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClear")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbitfield)', ptr)
-			if ok then
-				gl.Clear = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathCoordsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.PathCoordsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexSubImage3DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.MultiTexSubImage3DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendFuncSeparateIndexedAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendFuncSeparateIndexedAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTextureParameterIivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetTextureParameterIivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3iEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.SecondaryColor3iEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSetFenceNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.SetFenceNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glOrthox")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.Orthox = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSamplerParameterIivOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.SamplerParameterIivOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexGeniEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.MultiTexGeniEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glArrayElement")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint)', ptr)
-			if ok then
-				gl.ArrayElement = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawRangeElementArrayAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLint, GLsizei)', ptr)
-			if ok then
-				gl.DrawRangeElementArrayAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixScalefEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.MatrixScalefEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindBufferRangeEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLintptr, GLsizeiptr)', ptr)
-			if ok then
-				gl.BindBufferRangeEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexParameterIuivOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.TexParameterIuivOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex3bvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLbyte *)', ptr)
-			if ok then
-				gl.Vertex3bvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMinmaxParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetMinmaxParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsPathNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsPathNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glActiveTextureARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ActiveTextureARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL1ui64vARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLuint64EXT *)', ptr)
-			if ok then
-				gl.VertexAttribL1ui64vARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glListBase")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.ListBase = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDispatchComputeGroupSizeARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.DispatchComputeGroupSizeARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormal3d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.Normal3d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedProgramStringEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)', ptr)
-			if ok then
-				gl.GetNamedProgramStringEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramVertexLimitNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.ProgramVertexLimitNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedProgramLocalParameter4fEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.NamedProgramLocalParameter4fEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsTextureEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsTextureEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTextureSamplerHandleARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint64 (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.GetTextureSamplerHandleARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.WindowPos3d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2fNormal3fVertex3fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *, const GLfloat *, const GLfloat *)', ptr)
-			if ok then
-				gl.TexCoord2fNormal3fVertex3fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsQueryEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsQueryEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathCommandsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLubyte *, GLsizei, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.PathCommandsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformHandleui64ARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLuint64)', ptr)
-			if ok then
-				gl.UniformHandleui64ARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetDebugMessageLog")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GLuint, GLsizei, GLenum *, GLenum *, GLuint *, GLenum *, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetDebugMessageLog = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoordP2uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.TexCoordP2uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapObjectBufferATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void *(*)(GLuint)', ptr)
-			if ok then
-				gl.MapObjectBufferATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetSharpenTexFuncSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetSharpenTexFuncSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixTranslatefEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.MatrixTranslatefEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindTransformFeedbackNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.BindTransformFeedbackNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort)', ptr)
-			if ok then
-				gl.TexCoord2s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixPopEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.MatrixPopEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBinormal3fEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Binormal3fEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3ub")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLubyte, GLubyte, GLubyte)', ptr)
-			if ok then
-				gl.SecondaryColor3ub = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetCompressedMultiTexImageEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, void *)', ptr)
-			if ok then
-				gl.GetCompressedMultiTexImageEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBinormal3bEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbyte, GLbyte, GLbyte)', ptr)
-			if ok then
-				gl.Binormal3bEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearDepth")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble)', ptr)
-			if ok then
-				gl.ClearDepth = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glScissor")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.Scissor = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.WindowPos2iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramBufferParametersIivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.ProgramBufferParametersIivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureParameteri")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.TextureParameteri = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapParameterfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MapParameterfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoordP1uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.MultiTexCoordP1uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.WindowPos3sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetRenderbufferParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetRenderbufferParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEvalMesh1")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint)', ptr)
-			if ok then
-				gl.EvalMesh1 = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramInterfaceiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetProgramInterfaceiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUnmapNamedBufferEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.UnmapNamedBufferEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniform2dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetQueryBufferObjecti64v")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLintptr)', ptr)
-			if ok then
-				gl.GetQueryBufferObjecti64v = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMapiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetMapiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.ProgramUniform3iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetShaderSource")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetShaderSource = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPrioritizeTexturesEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *, const GLclampf *)', ptr)
-			if ok then
-				gl.PrioritizeTexturesEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsSampler")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsSampler = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedRenderbufferParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetNamedRenderbufferParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4x")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.Color4x = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFrameTerminatorGREMEDY")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.FrameTerminatorGREMEDY = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glAttachShader")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.AttachShader = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTestObjectAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.TestObjectAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos2iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.RasterPos2iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glScissorArrayv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.ScissorArrayv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStencilThenCoverStrokePathNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.StencilThenCoverStrokePathNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTextureLevelParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetTextureLevelParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorP3ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.ColorP3ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStencilStrokePathInstancedNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GLint, GLuint, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.StencilStrokePathInstancedNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorP4ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.ColorP4ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glConvolutionParameterf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.ConvolutionParameterf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawArrays")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *, const GLsizei *, GLsizei)', ptr)
-			if ok then
-				gl.MultiDrawArrays = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDetachObjectARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhandleARB, GLhandleARB)', ptr)
-			if ok then
-				gl.DetachObjectARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramResourceLocationIndex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLint (*)(GLuint, GL_LUA_ENUMS, const GLchar *)', ptr)
-			if ok then
-				gl.GetProgramResourceLocationIndex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramLocalParameterI4ivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, const GLint *)', ptr)
-			if ok then
-				gl.ProgramLocalParameterI4ivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIndexFormatNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei)', ptr)
-			if ok then
-				gl.IndexFormatNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawArraysInstancedNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.DrawArraysInstancedNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glShaderOp3EXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.ShaderOp3EXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendFuncSeparatei")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendFuncSeparatei = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTexSubImage3DOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTexSubImage3DOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCullFace")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.CullFace = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3hNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLhalfNV, GLhalfNV, GLhalfNV)', ptr)
-			if ok then
-				gl.MultiTexCoord3hNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetActiveUniformBlockiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetActiveUniformBlockiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixIndexPointerARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.MatrixIndexPointerARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTexSubImage2D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.CopyTexSubImage2D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawElementsBaseVertex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLint)', ptr)
-			if ok then
-				gl.DrawElementsBaseVertex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteProgramPipelines")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteProgramPipelines = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1xvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.MultiTexCoord1xvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4ubvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLubyte *)', ptr)
-			if ok then
-				gl.VertexAttrib4ubvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribFormat")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GL_LUA_ENUMS, GLboolean, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribFormat = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttrib1d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendFuncSeparate")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendFuncSeparate = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4uivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.ProgramUniform4uivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI4i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.VertexAttribI4i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTransformFeedbackVaryingEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLsizei *, GLenum *, GLchar *)', ptr)
-			if ok then
-				gl.GetTransformFeedbackVaryingEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetQueryObjectuiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint *)', ptr)
-			if ok then
-				gl.GetQueryObjectuiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSpriteParameterfSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.SpriteParameterfSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWeightPathsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLuint *, const GLfloat *)', ptr)
-			if ok then
-				gl.WeightPathsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLightxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.LightxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLightModelxv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.LightModelxv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.Color3dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelTransformParameteriEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.PixelTransformParameteriEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniform1fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsQuery")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsQuery = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedBufferPageCommitmentEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLintptr, GLsizeiptr, GLboolean)', ptr)
-			if ok then
-				gl.NamedBufferPageCommitmentEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glObjectPtrLabel")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const void *, GLsizei, const GLchar *)', ptr)
-			if ok then
-				gl.ObjectPtrLabel = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenProgramPipelinesEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenProgramPipelinesEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetDetailTexFuncSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetDetailTexFuncSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3hNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhalfNV, GLhalfNV, GLhalfNV)', ptr)
-			if ok then
-				gl.Color3hNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStencilFunc")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLuint)', ptr)
-			if ok then
-				gl.StencilFunc = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultTransposeMatrixfARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.MultTransposeMatrixfARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.PointParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteFragmentShaderATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.DeleteFragmentShaderATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMultiTexLevelParameterfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetMultiTexLevelParameterfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEvalCoord1d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble)', ptr)
-			if ok then
-				gl.EvalCoord1d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFogFuncSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat *)', ptr)
-			if ok then
-				gl.GetFogFuncSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogCoordfEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat)', ptr)
-			if ok then
-				gl.FogCoordfEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPresentFrameDualFillNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint64EXT, GLuint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.PresentFrameDualFillNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMapAttribParameterfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetMapAttribParameterfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTranslatex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.Translatex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glShaderSource")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLchar *const*, const GLint *)', ptr)
-			if ok then
-				gl.ShaderSource = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayVertexAttribDivisorEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexArrayVertexAttribDivisorEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFirstPerfQueryIdINTEL")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint *)', ptr)
-			if ok then
-				gl.GetFirstPerfQueryIdINTEL = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glValidateProgram")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.ValidateProgram = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCreateRenderbuffers")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.CreateRenderbuffers = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedFramebufferTextureEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint)', ptr)
-			if ok then
-				gl.NamedFramebufferTextureEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendEquation")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendEquation = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogCoordhvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLhalfNV *)', ptr)
-			if ok then
-				gl.FogCoordhvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMultisamplefv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLfloat *)', ptr)
-			if ok then
-				gl.GetMultisamplefv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4usv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLushort *)', ptr)
-			if ok then
-				gl.VertexAttrib4usv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawMeshArraysSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.DrawMeshArraysSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetString")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'const GLubyte *(*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.GetString = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMinSampleShadingOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat)', ptr)
-			if ok then
-				gl.MinSampleShadingOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeuiSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.ReplacementCodeuiSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormal3dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.Normal3dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribParameteriAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.VertexAttribParameteriAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendEquationSeparateOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendEquationSeparateOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetInternalformati64v")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLint64 *)', ptr)
-			if ok then
-				gl.GetInternalformati64v = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform2ui64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLuint64EXT, GLuint64EXT)', ptr)
-			if ok then
-				gl.Uniform2ui64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glAttachObjectARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhandleARB, GLhandleARB)', ptr)
-			if ok then
-				gl.AttachObjectARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTextureParameterIiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetTextureParameterIiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRenderbufferStorageMultisampleAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.RenderbufferStorageMultisampleAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMapParameterivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetMapParameterivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL1i64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint64EXT)', ptr)
-			if ok then
-				gl.VertexAttribL1i64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogCoordd")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble)', ptr)
-			if ok then
-				gl.FogCoordd = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoordP4ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.TexCoordP4ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTextureParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetTextureParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetQueryObjectui64v")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint64 *)', ptr)
-			if ok then
-				gl.GetQueryObjectui64v = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSamplerParameterIiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.SamplerParameterIiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoordP3ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.TexCoordP3ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex4iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.Vertex4iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVideoCaptureStreamdvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLdouble *)', ptr)
-			if ok then
-				gl.GetVideoCaptureStreamdvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.TexCoord2dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawElementsBaseVertexOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.MultiDrawElementsBaseVertexOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUnmapBuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.UnmapBuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.Color4dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteFramebuffers")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteFramebuffers = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformHandleui64ARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint64)', ptr)
-			if ok then
-				gl.ProgramUniformHandleui64ARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform4uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.Uniform4uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexBufferEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.MultiTexBufferEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPerfMonitorGroupsAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint *, GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GetPerfMonitorGroupsAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexImage3DMultisampleCoverageNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, GLsizei, GLsizei, GLboolean)', ptr)
-			if ok then
-				gl.TexImage3DMultisampleCoverageNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBeginPerfMonitorAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.BeginPerfMonitorAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLoadTransposeMatrixfARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.LoadTransposeMatrixfARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenerateMipmapEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.GenerateMipmapEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPushGroupMarkerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLchar *)', ptr)
-			if ok then
-				gl.PushGroupMarkerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawElementsInstancedBaseVertexEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei, GLint)', ptr)
-			if ok then
-				gl.DrawElementsInstancedBaseVertexEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix4fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.UniformMatrix4fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayAttribIFormat")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.VertexArrayAttribIFormat = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindFragDataLocationEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, const GLchar *)', ptr)
-			if ok then
-				gl.BindFragDataLocationEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glApplyTextureEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ApplyTextureEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoordP1ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.MultiTexCoordP1ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindTextureUnitParameterEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BindTextureUnitParameterEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUnmapObjectBufferATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.UnmapObjectBufferATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Color3f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPathColorGenivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetPathColorGenivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixMultTransposedEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.MatrixMultTransposedEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiModeDrawArraysIBM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLenum *, const GLint *, const GLsizei *, GLsizei, GLint)', ptr)
-			if ok then
-				gl.MultiModeDrawArraysIBM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindParameterEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BindParameterEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFinalCombinerInputNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.FinalCombinerInputNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribLi64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint64EXT *)', ptr)
-			if ok then
-				gl.GetVertexAttribLi64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glValidateProgramPipeline")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.ValidateProgramPipeline = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord1iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.TexCoord1iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLightModelf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.LightModelf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayElementBuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexArrayElementBuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream1sATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLshort)', ptr)
-			if ok then
-				gl.VertexStream1sATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPathMetricsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbitfield, GLsizei, GL_LUA_ENUMS, const void *, GLuint, GLsizei, GLfloat *)', ptr)
-			if ok then
-				gl.GetPathMetricsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix2x3dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix2x3dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3fEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.SecondaryColor3fEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix3x2fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.UniformMatrix3x2fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord1xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed)', ptr)
-			if ok then
-				gl.TexCoord1xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform1i64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLint64EXT *)', ptr)
-			if ok then
-				gl.Uniform1i64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSampleCoveragexOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLclampx, GLboolean)', ptr)
-			if ok then
-				gl.SampleCoveragexOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenOcclusionQueriesNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenOcclusionQueriesNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetCoverageModulationTableNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLfloat *)', ptr)
-			if ok then
-				gl.GetCoverageModulationTableNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLhalfNV *)', ptr)
-			if ok then
-				gl.MultiTexCoord2hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL3i64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLint64EXT *)', ptr)
-			if ok then
-				gl.VertexAttribL3i64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteBuffersARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteBuffersARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBitmap")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLsizei, GLfloat, GLfloat, GLfloat, GLfloat, const GLubyte *)', ptr)
-			if ok then
-				gl.Bitmap = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyPathNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.CopyPathNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCoverageModulationNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.CoverageModulationNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.MultiTexCoord3s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPathLengthNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLfloat (*)(GLuint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.GetPathLengthNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorTableParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.ColorTableParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWriteMaskEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.WriteMaskEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos4svMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.WindowPos4svMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos4sMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.WindowPos4sMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos4ivMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.WindowPos4ivMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos4iMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.WindowPos4iMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos4fvMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.WindowPos4fvMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos4fMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.WindowPos4fMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDisable")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.Disable = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos4dvMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.WindowPos4dvMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos4dMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.WindowPos4dMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetCompressedTextureImageEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, void *)', ptr)
-			if ok then
-				gl.GetCompressedTextureImageEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3svMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.WindowPos3svMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendFunciARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendFunciARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3svARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.WindowPos3svARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramBufferParametersfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramBufferParametersfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointParameterfEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.PointParameterfEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3sMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.WindowPos3sMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3sARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.WindowPos3sARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProvokingVertex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ProvokingVertex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.WindowPos3s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3ivMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.WindowPos3ivMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedMultiTexSubImage2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedMultiTexSubImage2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteVertexShaderEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.DeleteVertexShaderEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexGenfvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.TexGenfvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPollInstrumentsSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLint (*)(GLint *)', ptr)
-			if ok then
-				gl.PollInstrumentsSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetGraphicsResetStatusEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLenum (*)()', ptr)
-			if ok then
-				gl.GetGraphicsResetStatusEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3ivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.WindowPos3ivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormal3x")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.Normal3x = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3iMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.WindowPos3iMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawArraysIndirectAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const void *, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.MultiDrawArraysIndirectAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3iARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.WindowPos3iARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.WindowPos3i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3fvMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.WindowPos3fvMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointParameterf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.PointParameterf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3fvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.WindowPos3fvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMakeNamedBufferResidentNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.MakeNamedBufferResidentNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3fMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.WindowPos3fMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3fARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.WindowPos3fARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3dvMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.WindowPos3dvMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3dvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.WindowPos3dvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEnableVertexAttribArrayARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.EnableVertexAttribArrayARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogCoorddv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.FogCoorddv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.WindowPos3dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3dMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.WindowPos3dMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos3dARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.WindowPos3dARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2svMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.WindowPos2svMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2svARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.WindowPos2svARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedStringARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, const GLchar *, GLint, const GLchar *)', ptr)
-			if ok then
-				gl.NamedStringARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2sMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort)', ptr)
-			if ok then
-				gl.WindowPos2sMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex2hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLhalfNV *)', ptr)
-			if ok then
-				gl.Vertex2hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform2iARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.Uniform2iARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribFormatNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GL_LUA_ENUMS, GLboolean, GLsizei)', ptr)
-			if ok then
-				gl.VertexAttribFormatNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort)', ptr)
-			if ok then
-				gl.WindowPos2s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos3i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.RasterPos3i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2ivMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.WindowPos2ivMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2ivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.WindowPos2ivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint)', ptr)
-			if ok then
-				gl.TexCoord2i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexParameterIiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.TexParameterIiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2iMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint)', ptr)
-			if ok then
-				gl.WindowPos2iMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2iARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint)', ptr)
-			if ok then
-				gl.WindowPos2iARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnPixelMapusvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GLushort *)', ptr)
-			if ok then
-				gl.GetnPixelMapusvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint)', ptr)
-			if ok then
-				gl.WindowPos2i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointSize")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat)', ptr)
-			if ok then
-				gl.PointSize = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2fvMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.WindowPos2fvMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex3i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.Vertex3i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2fvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.WindowPos2fvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetQueryObjectiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetQueryObjectiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.WindowPos2fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetInteger64vAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint64 *)', ptr)
-			if ok then
-				gl.GetInteger64vAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2fMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.WindowPos2fMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIndexxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.IndexxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexEnviv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetTexEnviv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedProgramLocalParameter4dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.NamedProgramLocalParameter4dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCreateSamplers")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.CreateSamplers = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiModeDrawElementsIBM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLenum *, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei, GLint)', ptr)
-			if ok then
-				gl.MultiModeDrawElementsIBM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedFramebufferParameteriEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.NamedFramebufferParameteriEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.WindowPos2dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetBufferParameterivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetBufferParameterivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClientWaitSyncAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLenum (*)(GLsync, GLbitfield, GLuint64)', ptr)
-			if ok then
-				gl.ClientWaitSyncAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteVertexArraysOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteVertexArraysOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4fNormal3fVertex3fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *, const GLfloat *, const GLfloat *)', ptr)
-			if ok then
-				gl.Color4fNormal3fVertex3fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTexImage2D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint)', ptr)
-			if ok then
-				gl.CopyTexImage2D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MultiTexCoord4fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glConvolutionParameterfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.ConvolutionParameterfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glActiveVaryingNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLchar *)', ptr)
-			if ok then
-				gl.ActiveVaryingNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormal3b")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbyte, GLbyte, GLbyte)', ptr)
-			if ok then
-				gl.Normal3b = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWeightusvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, const GLushort *)', ptr)
-			if ok then
-				gl.WeightusvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWeightuivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, const GLuint *)', ptr)
-			if ok then
-				gl.WeightuivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTranslatedShaderSourceANGLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetTranslatedShaderSourceANGLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeusvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLushort *)', ptr)
-			if ok then
-				gl.ReplacementCodeusvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWeightsvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, const GLshort *)', ptr)
-			if ok then
-				gl.WeightsvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEndTransformFeedbackEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.EndTransformFeedbackEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribLui64vARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint64EXT *)', ptr)
-			if ok then
-				gl.GetVertexAttribLui64vARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEnableVertexAttribArray")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.EnableVertexAttribArray = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWeightivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, const GLint *)', ptr)
-			if ok then
-				gl.WeightivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWeightfvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, const GLfloat *)', ptr)
-			if ok then
-				gl.WeightfvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord4fVertex4fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *, const GLfloat *)', ptr)
-			if ok then
-				gl.TexCoord4fVertex4fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWeightdvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, const GLdouble *)', ptr)
-			if ok then
-				gl.WeightdvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetAttachedShaders")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GLsizei *, GLuint *)', ptr)
-			if ok then
-				gl.GetAttachedShaders = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4ubv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLubyte *)', ptr)
-			if ok then
-				gl.Color4ubv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyConvolutionFilter2D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.CopyConvolutionFilter2D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3fARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.MultiTexCoord3fARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos3sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.RasterPos3sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBinormal3iEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.Binormal3iEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3hNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhalfNV, GLhalfNV, GLhalfNV)', ptr)
-			if ok then
-				gl.SecondaryColor3hNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWeightPointerOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.WeightPointerOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormalStream3sATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.NormalStream3sATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetLightxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)', ptr)
-			if ok then
-				gl.GetLightxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoordP2uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.MultiTexCoordP2uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWeightPointerARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.WeightPointerARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWaitSyncAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsync, GLbitfield, GLuint64)', ptr)
-			if ok then
-				gl.WaitSyncAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsVertexArray")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsVertexArray = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glViewportIndexedfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.ViewportIndexedfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glViewportIndexedfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.ViewportIndexedfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glViewportIndexedfNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ViewportIndexedfNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord4iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.TexCoord4iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glViewportArrayvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.ViewportArrayvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4uivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLuint *)', ptr)
-			if ok then
-				gl.VertexAttrib4uivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEdgeFlagPointerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLsizei, const GLboolean *)', ptr)
-			if ok then
-				gl.EdgeFlagPointerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorTable")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.ColorTable = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteVertexArraysAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteVertexArraysAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapParameterivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.MapParameterivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEnableClientStateiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.EnableClientStateiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetSamplerParameterfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetSamplerParameterfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSamplePatternEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.SamplePatternEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVideoCaptureNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLenum (*)(GLuint, GLuint *, GLuint64EXT *)', ptr)
-			if ok then
-				gl.VideoCaptureNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDepthRangeIndexed")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.DepthRangeIndexed = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexWeighthvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLhalfNV *)', ptr)
-			if ok then
-				gl.VertexWeighthvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexWeighthNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhalfNV)', ptr)
-			if ok then
-				gl.VertexWeighthNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.Color3s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexWeightfEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat)', ptr)
-			if ok then
-				gl.VertexWeightfEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexWeightPointerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.VertexWeightPointerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream4svATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLshort *)', ptr)
-			if ok then
-				gl.VertexStream4svATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream4sATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLshort, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.VertexStream4sATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream4ivATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.VertexStream4ivATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream4iATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.VertexStream4iATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixMult3x3fNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MatrixMult3x3fNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream4fvATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexStream4fvATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream4fATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.VertexStream4fATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnUniformdv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLdouble *)', ptr)
-			if ok then
-				gl.GetnUniformdv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream4dvATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexStream4dvATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendEquationi")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendEquationi = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream4dATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.VertexStream4dATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1fARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.MultiTexCoord1fARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream3svATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLshort *)', ptr)
-			if ok then
-				gl.VertexStream3svATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream3sATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.VertexStream3sATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream3ivATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.VertexStream3ivATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream3iATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.VertexStream3iATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCreateShaderProgramEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GL_LUA_ENUMS, const GLchar *)', ptr)
-			if ok then
-				gl.CreateShaderProgramEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogCoordPointerListIBM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, const void **, GLint)', ptr)
-			if ok then
-				gl.FogCoordPointerListIBM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapBufferARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void *(*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.MapBufferARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureBufferEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.TextureBufferEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedFramebufferAttachmentParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetNamedFramebufferAttachmentParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexBlendEnvfATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.VertexBlendEnvfATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream3fvATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexStream3fvATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream3fATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.VertexStream3fATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream3dvATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexStream3dvATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendEquationSeparateiOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendEquationSeparateiOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream3dATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.VertexStream3dATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogCoordPointerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.FogCoordPointerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream2svATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLshort *)', ptr)
-			if ok then
-				gl.VertexStream2svATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelStorex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.PixelStorex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMaterialf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.Materialf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream2sATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLshort, GLshort)', ptr)
-			if ok then
-				gl.VertexStream2sATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream2ivATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.VertexStream2ivATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream2iATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint)', ptr)
-			if ok then
-				gl.VertexStream2iATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindAttribLocationARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhandleARB, GLuint, const GLcharARB *)', ptr)
-			if ok then
-				gl.BindAttribLocationARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream2fvATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexStream2fvATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream2fATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.VertexStream2fATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetClipPlanef")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetClipPlanef = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEnablei")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.Enablei = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeletePerfMonitorsAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.DeletePerfMonitorsAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glExtIsProgramBinaryQCOM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.ExtIsProgramBinaryQCOM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream2dvATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexStream2dvATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream2dATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.VertexStream2dATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream1svATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLshort *)', ptr)
-			if ok then
-				gl.VertexStream1svATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream1ivATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.VertexStream1ivATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsOcclusionQueryNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsOcclusionQueryNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform4ui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLuint64EXT *)', ptr)
-			if ok then
-				gl.Uniform4ui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColorPointerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.SecondaryColorPointerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream1fvATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexStream1fvATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.Color4xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFrontFace")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.FrontFace = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream1fATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.VertexStream1fATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexEnvx")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.TexEnvx = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapVertexAttrib1fAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLfloat, GLfloat, GLint, GLint, const GLfloat *)', ptr)
-			if ok then
-				gl.MapVertexAttrib1fAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexPointerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLsizei, GLsizei, const void *)', ptr)
-			if ok then
-				gl.VertexPointerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramEnvParameters4fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramEnvParameters4fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearColor")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ClearColor = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointParameterxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.PointParameterxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBinormal3fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.Binormal3fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribs3svNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttribs3svNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetHistogramParameterfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetHistogramParameterfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramLocalParameterI4uivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, const GLuint *)', ptr)
-			if ok then
-				gl.ProgramLocalParameterI4uivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVideoi64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint64EXT *)', ptr)
-			if ok then
-				gl.GetVideoi64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexP3ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.VertexP3ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexP2uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.VertexP2uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttrib3sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexGend")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLdouble)', ptr)
-			if ok then
-				gl.TexGend = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindBuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.BindBuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexP2ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.VertexP2ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetQueryiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetQueryiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexBlendEnviATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.VertexBlendEnviATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindImageTexture")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLint, GLboolean, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BindImageTexture = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRenderMode")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLint (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.RenderMode = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribs4svNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttribs4svNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribs4hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLhalfNV *)', ptr)
-			if ok then
-				gl.VertexAttribs4hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribs4fvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexAttribs4fvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearAccum")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ClearAccum = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorSubTableEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.ColorSubTableEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribs4dvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttribs4dvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexP4uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.VertexP4uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribs3hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLhalfNV *)', ptr)
-			if ok then
-				gl.VertexAttribs3hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribs3fvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexAttribs3fvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyColorTable")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei)', ptr)
-			if ok then
-				gl.CopyColorTable = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribs3dvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttribs3dvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribs2svNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttribs2svNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribs2hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLhalfNV *)', ptr)
-			if ok then
-				gl.VertexAttribs2hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawTexxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.DrawTexxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetDriverControlsQCOM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint *, GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GetDriverControlsQCOM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribs2fvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexAttribs2fvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawArraysEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLsizei)', ptr)
-			if ok then
-				gl.DrawArraysEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribs2dvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttribs2dvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform2fvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.Uniform2fvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribs1fvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexAttribs1fvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribs1dvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttribs1dvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribPointerARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GL_LUA_ENUMS, GLboolean, GLsizei, const void *)', ptr)
-			if ok then
-				gl.VertexAttribPointerARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexParameterIivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.MultiTexParameterIivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribPointer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GL_LUA_ENUMS, GLboolean, GLsizei, const void *)', ptr)
-			if ok then
-				gl.VertexAttribPointer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBeginQueryIndexed")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint)', ptr)
-			if ok then
-				gl.BeginQueryIndexed = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTangent3dEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.Tangent3dEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixMultfEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MatrixMultfEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.VertexAttrib3f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnConvolutionFilter")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)', ptr)
-			if ok then
-				gl.GetnConvolutionFilter = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribP4uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLboolean, const GLuint *)', ptr)
-			if ok then
-				gl.VertexAttribP4uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribP3uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLboolean, const GLuint *)', ptr)
-			if ok then
-				gl.VertexAttribP3uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTessellationFactorAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat)', ptr)
-			if ok then
-				gl.TessellationFactorAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribP3ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLboolean, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribP3ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetBufferSubDataARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLintptrARB, GLsizeiptrARB, void *)', ptr)
-			if ok then
-				gl.GetBufferSubDataARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribP2uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLboolean, const GLuint *)', ptr)
-			if ok then
-				gl.VertexAttribP2uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribP2ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLboolean, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribP2ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribP1uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLboolean, const GLuint *)', ptr)
-			if ok then
-				gl.VertexAttribP1uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribLPointerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.VertexAttribLPointerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribLPointer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.VertexAttribLPointer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribLFormatNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GL_LUA_ENUMS, GLsizei)', ptr)
-			if ok then
-				gl.VertexAttribLFormatNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribLFormat")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribLFormat = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathMemoryGlyphIndexArrayNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLenum (*)(GLuint, GL_LUA_ENUMS, GLsizeiptr, const void *, GLsizei, GLuint, GLsizei, GLuint, GLfloat)', ptr)
-			if ok then
-				gl.PathMemoryGlyphIndexArrayNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL4ui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLuint64EXT *)', ptr)
-			if ok then
-				gl.VertexAttribL4ui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL4ui64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint64EXT, GLuint64EXT, GLuint64EXT, GLuint64EXT)', ptr)
-			if ok then
-				gl.VertexAttribL4ui64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL4i64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLint64EXT *)', ptr)
-			if ok then
-				gl.VertexAttribL4i64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDepthRangex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.DepthRangex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindVertexBuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLintptr, GLsizei)', ptr)
-			if ok then
-				gl.BindVertexBuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeuiColor3fVertex3fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLuint *, const GLfloat *, const GLfloat *)', ptr)
-			if ok then
-				gl.ReplacementCodeuiColor3fVertex3fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL4i64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint64EXT, GLint64EXT, GLint64EXT, GLint64EXT)', ptr)
-			if ok then
-				gl.VertexAttribL4i64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL4dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttribL4dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPerfQueryInfoINTEL")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLchar *, GLuint *, GLuint *, GLuint *, GLuint *)', ptr)
-			if ok then
-				gl.GetPerfQueryInfoINTEL = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyImageSubDataEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.CopyImageSubDataEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL4dEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttribL4dEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI1uivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLuint *)', ptr)
-			if ok then
-				gl.VertexAttribI1uivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL3ui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLuint64EXT *)', ptr)
-			if ok then
-				gl.VertexAttribL3ui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL3ui64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint64EXT, GLuint64EXT, GLuint64EXT)', ptr)
-			if ok then
-				gl.VertexAttribL3ui64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCoverageModulationTableNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.CoverageModulationTableNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex2d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.Vertex2d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL3i64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint64EXT, GLint64EXT, GLint64EXT)', ptr)
-			if ok then
-				gl.VertexAttribL3i64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL3dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttribL3dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawElementsIndirectEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.MultiDrawElementsIndirectEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelTexGenSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.PixelTexGenSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL3dEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttribL3dEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribPointerv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, void **)', ptr)
-			if ok then
-				gl.GetVertexAttribPointerv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL3d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttribL3d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetLightfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetLightfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL2ui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLuint64EXT *)', ptr)
-			if ok then
-				gl.VertexAttribL2ui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL2ui64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint64EXT, GLuint64EXT)', ptr)
-			if ok then
-				gl.VertexAttribL2ui64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL2i64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLint64EXT *)', ptr)
-			if ok then
-				gl.VertexAttribL2i64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL2i64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint64EXT, GLint64EXT)', ptr)
-			if ok then
-				gl.VertexAttribL2i64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL2dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttribL2dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL2dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttribL2dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL2dEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttribL2dEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawBuffersARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLenum *)', ptr)
-			if ok then
-				gl.DrawBuffersARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL1ui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLuint64EXT *)', ptr)
-			if ok then
-				gl.VertexAttribL1ui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBufferSubDataARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLintptrARB, GLsizeiptrARB, const void *)', ptr)
-			if ok then
-				gl.BufferSubDataARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL1dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttribL1dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnPixelMapuiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GetnPixelMapuiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform3f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Uniform3f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLoadMatrixd")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.LoadMatrixd = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTexSubImage2DARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTexSubImage2DARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribDivisorEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribDivisorEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenAsyncMarkersSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GLsizei)', ptr)
-			if ok then
-				gl.GenAsyncMarkersSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL1d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttribL1d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribIPointerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.VertexAttribIPointerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribIPointer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.VertexAttribIPointer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathCoverDepthFuncNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.PathCoverDepthFuncNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribIFormat")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribIFormat = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedBufferSubDataEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLintptr, GLsizeiptr, void *)', ptr)
-			if ok then
-				gl.GetNamedBufferSubDataEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReadnPixelsARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)', ptr)
-			if ok then
-				gl.ReadnPixelsARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI4usvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLushort *)', ptr)
-			if ok then
-				gl.VertexAttribI4usvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI4usv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLushort *)', ptr)
-			if ok then
-				gl.VertexAttribI4usv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUpdateObjectBufferATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLsizei, const void *, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.UpdateObjectBufferATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI4uivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLuint *)', ptr)
-			if ok then
-				gl.VertexAttribI4uivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDebugMessageControlARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const GLuint *, GLboolean)', ptr)
-			if ok then
-				gl.DebugMessageControlARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRectxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.RectxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetCombinerOutputParameterivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetCombinerOutputParameterivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI4uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLuint *)', ptr)
-			if ok then
-				gl.VertexAttribI4uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI4uiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribI4uiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramNamedParameter4dvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLubyte *, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramNamedParameter4dvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI2i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint)', ptr)
-			if ok then
-				gl.VertexAttribI2i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI4ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribI4ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.TexParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI4ubvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLubyte *)', ptr)
-			if ok then
-				gl.VertexAttribI4ubvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI4ubv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLubyte *)', ptr)
-			if ok then
-				gl.VertexAttribI4ubv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI4svEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttribI4svEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSampleCoverage")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLboolean)', ptr)
-			if ok then
-				gl.SampleCoverage = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI4sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttribI4sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI4ivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLint *)', ptr)
-			if ok then
-				gl.VertexAttribI4ivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI4iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLint *)', ptr)
-			if ok then
-				gl.VertexAttribI4iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLockArraysEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei)', ptr)
-			if ok then
-				gl.LockArraysEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI4iEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.VertexAttribI4iEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.MultiTexCoord1xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI4bvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLbyte *)', ptr)
-			if ok then
-				gl.VertexAttribI4bvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI4bv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLbyte *)', ptr)
-			if ok then
-				gl.VertexAttribI4bv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI3uivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLuint *)', ptr)
-			if ok then
-				gl.VertexAttribI3uivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixMultTranspose3x3fNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MatrixMultTranspose3x3fNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI3uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLuint *)', ptr)
-			if ok then
-				gl.VertexAttribI3uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetObjectParameterivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhandleARB, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetObjectParameterivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.MultiTexCoord2iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniform1dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI3uiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribI3uiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSamplerParameterfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.SamplerParameterfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorMask")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLboolean, GLboolean, GLboolean, GLboolean)', ptr)
-			if ok then
-				gl.ColorMask = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI3ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribI3ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramNamedParameterfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLubyte *, GLfloat *)', ptr)
-			if ok then
-				gl.GetProgramNamedParameterfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI3ivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLint *)', ptr)
-			if ok then
-				gl.VertexAttribI3ivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI3iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLint *)', ptr)
-			if ok then
-				gl.VertexAttribI3iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexFilterFuncSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetTexFilterFuncSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI3iEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.VertexAttribI3iEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI2uivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLuint *)', ptr)
-			if ok then
-				gl.VertexAttribI2uivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI2uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLuint *)', ptr)
-			if ok then
-				gl.VertexAttribI2uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI2uiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribI2uiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos4iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.RasterPos4iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI2ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribI2ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGlobalAlphaFactorfSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat)', ptr)
-			if ok then
-				gl.GlobalAlphaFactorfSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI2ivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLint *)', ptr)
-			if ok then
-				gl.VertexAttribI2ivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCallLists")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.CallLists = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI2iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLint *)', ptr)
-			if ok then
-				gl.VertexAttribI2iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI2iEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint)', ptr)
-			if ok then
-				gl.VertexAttribI2iEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexBuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.TexBuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3iARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.MultiTexCoord3iARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI1iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLint *)', ptr)
-			if ok then
-				gl.VertexAttribI1iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI1iEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint)', ptr)
-			if ok then
-				gl.VertexAttribI1iEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI1i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint)', ptr)
-			if ok then
-				gl.VertexAttribI1i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetIntegerui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint64EXT *)', ptr)
-			if ok then
-				gl.GetIntegerui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glOrthoxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.OrthoxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEnableDriverControlQCOM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.EnableDriverControlQCOM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixOrthoEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.MatrixOrthoEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribDivisorNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribDivisorNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL1dEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttribL1dEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribDivisorARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribDivisorARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteProgram")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.DeleteProgram = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribDivisor")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribDivisor = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform3ui64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLuint64EXT, GLuint64EXT, GLuint64EXT)', ptr)
-			if ok then
-				gl.Uniform3ui64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferSampleLocationsfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.FramebufferSampleLocationsfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix4dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix4dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4usvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLushort *)', ptr)
-			if ok then
-				gl.VertexAttrib4usvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnMinmax")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)', ptr)
-			if ok then
-				gl.GetnMinmax = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUseProgramStagesEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLbitfield, GLuint)', ptr)
-			if ok then
-				gl.UseProgramStagesEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glViewportArrayv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.ViewportArrayv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorFormatNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLsizei)', ptr)
-			if ok then
-				gl.ColorFormatNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultMatrixxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.MultMatrixxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawBuffersNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLenum *)', ptr)
-			if ok then
-				gl.DrawBuffersNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLuint *)', ptr)
-			if ok then
-				gl.VertexAttrib4uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4ubvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLubyte *)', ptr)
-			if ok then
-				gl.VertexAttrib4ubvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCreateProgramObjectARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLhandleARB (*)()', ptr)
-			if ok then
-				gl.CreateProgramObjectARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4ubNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLubyte, GLubyte, GLubyte, GLubyte)', ptr)
-			if ok then
-				gl.VertexAttrib4ubNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4svNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttrib4svNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEvalCoord1f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat)', ptr)
-			if ok then
-				gl.EvalCoord1f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDisableiNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.DisableiNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4svARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttrib4svARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedFramebufferTexture1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)', ptr)
-			if ok then
-				gl.NamedFramebufferTexture1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttrib4sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glActiveStencilFaceEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ActiveStencilFaceEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1iARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.MultiTexCoord1iARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4sARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLshort, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.VertexAttrib4sARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferTexture")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)', ptr)
-			if ok then
-				gl.FramebufferTexture = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexGeniv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetTexGeniv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultTransposeMatrixdARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.MultTransposeMatrixdARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4ivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLint *)', ptr)
-			if ok then
-				gl.VertexAttrib4ivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexAttrib3fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetBufferPointervARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, void **)', ptr)
-			if ok then
-				gl.GetBufferPointervARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawElementsEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei)', ptr)
-			if ok then
-				gl.MultiDrawElementsEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2ivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.MultiTexCoord2ivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLhalfNV *)', ptr)
-			if ok then
-				gl.VertexAttrib4hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTexSubImage3DARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTexSubImage3DARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4fvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexAttrib4fvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindTexture")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.BindTexture = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4fvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexAttrib4fvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexAttrib4fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPixelMapuiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint *)', ptr)
-			if ok then
-				gl.GetPixelMapuiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.TexCoord2d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTangent3dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.Tangent3dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4fARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.VertexAttrib4fARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.VertexAttrib4f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetUniformfvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhandleARB, GLint, GLfloat *)', ptr)
-			if ok then
-				gl.GetUniformfvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4dvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttrib4dvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4dvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttrib4dvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyConvolutionFilter2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.CopyConvolutionFilter2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribPointervNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, void **)', ptr)
-			if ok then
-				gl.GetVertexAttribPointervNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4dNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttrib4dNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramEnvParametersI4uivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.ProgramEnvParametersI4uivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glInvalidateTexSubImage")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.InvalidateTexSubImage = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.MultiTexCoord4iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4dARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttrib4dARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttrib4d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4bvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLbyte *)', ptr)
-			if ok then
-				gl.VertexAttrib4bvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4NusvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLushort *)', ptr)
-			if ok then
-				gl.VertexAttrib4NusvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSetFragmentShaderConstantATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.SetFragmentShaderConstantATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4Nusv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLushort *)', ptr)
-			if ok then
-				gl.VertexAttrib4Nusv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4NuivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLuint *)', ptr)
-			if ok then
-				gl.VertexAttrib4NuivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedBufferParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetNamedBufferParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glInvalidateBufferData")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.InvalidateBufferData = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4Nuiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLuint *)', ptr)
-			if ok then
-				gl.VertexAttrib4Nuiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLineWidthx")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed)', ptr)
-			if ok then
-				gl.LineWidthx = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord1dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.TexCoord1dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4Nubv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLubyte *)', ptr)
-			if ok then
-				gl.VertexAttrib4Nubv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetHistogramEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)', ptr)
-			if ok then
-				gl.GetHistogramEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEvalPoint2")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint)', ptr)
-			if ok then
-				gl.EvalPoint2 = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetColorTableParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetColorTableParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetActiveUniformBlockName")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetActiveUniformBlockName = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4NsvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttrib4NsvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVDPAUSurfaceAccessNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLvdpauSurfaceNV, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.VDPAUSurfaceAccessNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnCompressedTexImageARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLsizei, void *)', ptr)
-			if ok then
-				gl.GetnCompressedTexImageARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureMaterialEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.TextureMaterialEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4NivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLint *)', ptr)
-			if ok then
-				gl.VertexAttrib4NivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCoverageMaskNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLboolean)', ptr)
-			if ok then
-				gl.CoverageMaskNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4Niv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLint *)', ptr)
-			if ok then
-				gl.VertexAttrib4Niv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawRangeElementsBaseVertex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, GL_LUA_ENUMS, const void *, GLint)', ptr)
-			if ok then
-				gl.DrawRangeElementsBaseVertex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlitFramebufferEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlitFramebufferEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3svNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttrib3svNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3svARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttrib3svARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3sNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.VertexAttrib3sNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMinSampleShading")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat)', ptr)
-			if ok then
-				gl.MinSampleShading = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDispatchCompute")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.DispatchCompute = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTangent3iEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.Tangent3iEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3sARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.VertexAttrib3sARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2sARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLshort, GLshort)', ptr)
-			if ok then
-				gl.VertexAttrib2sARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLhalfNV *)', ptr)
-			if ok then
-				gl.VertexAttrib3hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetColorTable")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)', ptr)
-			if ok then
-				gl.GetColorTable = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPushAttrib")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbitfield)', ptr)
-			if ok then
-				gl.PushAttrib = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexEnvxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.TexEnvxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLoadProgramNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLubyte *)', ptr)
-			if ok then
-				gl.LoadProgramNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3hNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLhalfNV, GLhalfNV, GLhalfNV)', ptr)
-			if ok then
-				gl.VertexAttrib3hNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMakeTextureHandleResidentNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint64)', ptr)
-			if ok then
-				gl.MakeTextureHandleResidentNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3fvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexAttrib3fvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexBufferARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.TexBufferARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapVertexAttrib2dAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLdouble, GLdouble, GLint, GLint, GLdouble, GLdouble, GLint, GLint, const GLdouble *)', ptr)
-			if ok then
-				gl.MapVertexAttrib2dAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsFramebufferEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsFramebufferEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3fvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexAttrib3fvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMemoryBarrier")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbitfield)', ptr)
-			if ok then
-				gl.MemoryBarrier = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniform1dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3fARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.VertexAttrib3fARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3dvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttrib3dvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform2i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.Uniform2i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindTexGenParameterEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BindTexGenParameterEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3dvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttrib3dvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyColorSubTable")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GLint, GLint, GLsizei)', ptr)
-			if ok then
-				gl.CopyColorSubTable = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3dARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttrib3dARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNewList")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.NewList = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2svNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttrib2svNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetColorTableParameterfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetColorTableParameterfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureView")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.TextureView = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexParameterIivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetTexParameterIivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDebugMessageControl")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const GLuint *, GLboolean)', ptr)
-			if ok then
-				gl.DebugMessageControl = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2svARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttrib2svARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttrib2sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexImage4DSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TexImage4DSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetCombinerStageParameterfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetCombinerStageParameterfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2sNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLshort, GLshort)', ptr)
-			if ok then
-				gl.VertexAttrib2sNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeuiTexCoord2fVertex3fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ReplacementCodeuiTexCoord2fVertex3fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.VertexAttrib3s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.TexCoord2iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferTexture2DMultisampleEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLsizei)', ptr)
-			if ok then
-				gl.FramebufferTexture2DMultisampleEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLhalfNV *)', ptr)
-			if ok then
-				gl.VertexAttrib2hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetQueryObjectuivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint *)', ptr)
-			if ok then
-				gl.GetQueryObjectuivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2hNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLhalfNV, GLhalfNV)', ptr)
-			if ok then
-				gl.VertexAttrib2hNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2fvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexAttrib2fvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2fvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexAttrib2fvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureSubImage1D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TextureSubImage1D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEnableVertexArrayEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.EnableVertexArrayEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexAttrib2fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2fNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.VertexAttrib2fNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2fARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.VertexAttrib2fARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.VertexAttrib2f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTexSubImage3DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.CopyTexSubImage3DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2dvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttrib2dvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReadInstrumentsSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint)', ptr)
-			if ok then
-				gl.ReadInstrumentsSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2dvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttrib2dvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2dNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttrib2dNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramParameters4dvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramParameters4dvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2dARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttrib2dARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTextureSamplerHandleNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint64 (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.GetTextureSamplerHandleNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex3s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.Vertex3s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib2d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttrib2d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1svNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttrib1svNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStencilThenCoverStrokePathInstancedNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GLint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.StencilThenCoverStrokePathInstancedNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint)', ptr)
-			if ok then
-				gl.ProgramUniform1ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glAlphaFunc")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.AlphaFunc = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindAttribLocation")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, const GLchar *)', ptr)
-			if ok then
-				gl.BindAttribLocation = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBeginQueryEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.BeginQueryEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1svARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttrib1svARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedBufferParameterui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint64EXT *)', ptr)
-			if ok then
-				gl.GetNamedBufferParameterui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCurrentPaletteMatrixARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint)', ptr)
-			if ok then
-				gl.CurrentPaletteMatrixARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLshort *)', ptr)
-			if ok then
-				gl.VertexAttrib1sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexImage3D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TexImage3D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMinmaxParameterfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetMinmaxParameterfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendEquationEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendEquationEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLhalfNV *)', ptr)
-			if ok then
-				gl.VertexAttrib1hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1fvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexAttrib1fvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1fvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexAttrib1fvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.VertexAttrib1fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1fNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat)', ptr)
-			if ok then
-				gl.VertexAttrib1fNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1fARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat)', ptr)
-			if ok then
-				gl.VertexAttrib1fARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTransformFeedbacki_v")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint *)', ptr)
-			if ok then
-				gl.GetTransformFeedbacki_v = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexParameterIuivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint *)', ptr)
-			if ok then
-				gl.GetTexParameterIuivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord4hNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV)', ptr)
-			if ok then
-				gl.TexCoord4hNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniform3fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayVertexOffsetEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLsizei, GLintptr)', ptr)
-			if ok then
-				gl.VertexArrayVertexOffsetEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexLevelParameterfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetTexLevelParameterfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRotatef")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Rotatef = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayVertexBuffers")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLsizei, const GLuint *, const GLintptr *, const GLsizei *)', ptr)
-			if ok then
-				gl.VertexArrayVertexBuffers = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetActiveAttrib")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLint *, GLenum *, GLchar *)', ptr)
-			if ok then
-				gl.GetActiveAttrib = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayVertexBuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint, GLintptr, GLsizei)', ptr)
-			if ok then
-				gl.VertexArrayVertexBuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetUniformBufferSizeEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLint (*)(GLuint, GLint)', ptr)
-			if ok then
-				gl.GetUniformBufferSizeEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayVertexAttribOffsetEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint, GLint, GL_LUA_ENUMS, GLboolean, GLsizei, GLintptr)', ptr)
-			if ok then
-				gl.VertexArrayVertexAttribOffsetEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteAsyncMarkersSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei)', ptr)
-			if ok then
-				gl.DeleteAsyncMarkersSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayVertexAttribLOffsetEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint, GLint, GL_LUA_ENUMS, GLsizei, GLintptr)', ptr)
-			if ok then
-				gl.VertexArrayVertexAttribLOffsetEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayVertexAttribLFormatEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.VertexArrayVertexAttribLFormatEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayVertexAttribIOffsetEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint, GLint, GL_LUA_ENUMS, GLsizei, GLintptr)', ptr)
-			if ok then
-				gl.VertexArrayVertexAttribIOffsetEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayVertexAttribFormatEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLboolean, GLuint)', ptr)
-			if ok then
-				gl.VertexArrayVertexAttribFormatEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetSubroutineIndex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GLuint, GL_LUA_ENUMS, const GLchar *)', ptr)
-			if ok then
-				gl.GetSubroutineIndex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord3hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLhalfNV *)', ptr)
-			if ok then
-				gl.TexCoord3hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glAlphaFuncQCOM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLclampf)', ptr)
-			if ok then
-				gl.AlphaFuncQCOM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayRangeNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const void *)', ptr)
-			if ok then
-				gl.VertexArrayRangeNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos4xvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.RasterPos4xvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayRangeAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, void *)', ptr)
-			if ok then
-				gl.VertexArrayRangeAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayParameteriAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.VertexArrayParameteriAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayNormalOffsetEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLsizei, GLintptr)', ptr)
-			if ok then
-				gl.VertexArrayNormalOffsetEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.Color3xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenRenderbuffers")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenRenderbuffers = func
-			gl.GenRenderbuffer = function() local id = ffi.new('GLint[1]') func(1, id) return id[0] end
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayEdgeFlagOffsetEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLsizei, GLintptr)', ptr)
-			if ok then
-				gl.VertexArrayEdgeFlagOffsetEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayColorOffsetEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLsizei, GLintptr)', ptr)
-			if ok then
-				gl.VertexArrayColorOffsetEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramParameter4dvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramParameter4dvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMultiTexGenfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetMultiTexGenfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPathCommandsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLubyte *)', ptr)
-			if ok then
-				gl.GetPathCommandsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos2i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint)', ptr)
-			if ok then
-				gl.RasterPos2i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRectsv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *, const GLshort *)', ptr)
-			if ok then
-				gl.Rectsv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayAttribLFormat")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.VertexArrayAttribLFormat = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayAttribFormat")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLboolean, GLuint)', ptr)
-			if ok then
-				gl.VertexArrayAttribFormat = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawElementsInstancedBaseInstance")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei, GLuint)', ptr)
-			if ok then
-				gl.DrawElementsInstancedBaseInstance = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayAttribBinding")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexArrayAttribBinding = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex4xvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.Vertex4xvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex4xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.Vertex4xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex4s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.Vertex4s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex4i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.Vertex4i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixLoad3x3fNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MatrixLoad3x3fNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex4hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLhalfNV *)', ptr)
-			if ok then
-				gl.Vertex4hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribIuiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint *)', ptr)
-			if ok then
-				gl.GetVertexAttribIuiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetUniformLocationARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLint (*)(GLhandleARB, const GLcharARB *)', ptr)
-			if ok then
-				gl.GetUniformLocationARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexParameterxv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)', ptr)
-			if ok then
-				gl.GetTexParameterxv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteFramebuffersOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteFramebuffersOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MultiTexCoord1fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDebugMessageInsertAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLsizei, const GLchar *)', ptr)
-			if ok then
-				gl.DebugMessageInsertAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLhalfNV *)', ptr)
-			if ok then
-				gl.MultiTexCoord4hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramLocalParameterI4iNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.ProgramLocalParameterI4iNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsFramebuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsFramebuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1fEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLfloat)', ptr)
-			if ok then
-				gl.ProgramUniform1fEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex4bOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbyte, GLbyte, GLbyte, GLbyte)', ptr)
-			if ok then
-				gl.Vertex4bOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixRotatedEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.MatrixRotatedEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3ubvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLubyte *)', ptr)
-			if ok then
-				gl.SecondaryColor3ubvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFramebufferParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetFramebufferParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsImageHandleResidentNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint64)', ptr)
-			if ok then
-				gl.IsImageHandleResidentNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex3xvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.Vertex3xvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex3xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.Vertex3xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex3hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLhalfNV *)', ptr)
-			if ok then
-				gl.Vertex3hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGlobalAlphaFactoriSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint)', ptr)
-			if ok then
-				gl.GlobalAlphaFactoriSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPolygonOffsetClampEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.PolygonOffsetClampEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPolygonMode")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.PolygonMode = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex3dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.Vertex3dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glInvalidateNamedFramebufferSubData")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLenum *, GLint, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.InvalidateNamedFramebufferSubData = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex3bOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbyte, GLbyte, GLbyte)', ptr)
-			if ok then
-				gl.Vertex3bOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3fVertex3fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *, const GLfloat *)', ptr)
-			if ok then
-				gl.Color3fVertex3fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex2xvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.Vertex2xvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex2xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed)', ptr)
-			if ok then
-				gl.Vertex2xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsRenderbufferOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsRenderbufferOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCombinerStageParameterfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.CombinerStageParameterfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord4sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.TexCoord4sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glOrtho")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.Ortho = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetLightxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)', ptr)
-			if ok then
-				gl.GetLightxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex2dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.Vertex2dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultMatrixf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.MultMatrixf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVariantusvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLushort *)', ptr)
-			if ok then
-				gl.VariantusvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVariantuivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLuint *)', ptr)
-			if ok then
-				gl.VariantuivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVariantubvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLubyte *)', ptr)
-			if ok then
-				gl.VariantubvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVariantsvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLshort *)', ptr)
-			if ok then
-				gl.VariantsvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramLocalParameter4fARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ProgramLocalParameter4fARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVariantivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLint *)', ptr)
-			if ok then
-				gl.VariantivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform1uivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.Uniform1uivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindRenderbufferEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.BindRenderbufferEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPopDebugGroupKHR")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.PopDebugGroupKHR = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixTranslatedEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.MatrixTranslatedEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendFunc")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendFunc = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVariantfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.VariantfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTexSubImage3D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTexSubImage3D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedBufferDataEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizeiptr, const void *, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.NamedBufferDataEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVariantdvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VariantdvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVariantbvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLbyte *)', ptr)
-			if ok then
-				gl.VariantbvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVariantArrayObjectATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLuint, GLuint)', ptr)
-			if ok then
-				gl.VariantArrayObjectATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glExtractComponentEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.ExtractComponentEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBufferPageCommitmentARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLintptr, GLsizeiptr, GLboolean)', ptr)
-			if ok then
-				gl.BufferPageCommitmentARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix2fvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.UniformMatrix2fvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMultiTexParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetMultiTexParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindBuffersBase")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.BindBuffersBase = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glValidateProgramPipelineEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.ValidateProgramPipelineEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSamplerParameterIuivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.SamplerParameterIuivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.Color3sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVDPAUUnregisterSurfaceNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLvdpauSurfaceNV)', ptr)
-			if ok then
-				gl.VDPAUUnregisterSurfaceNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3usvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLushort *)', ptr)
-			if ok then
-				gl.SecondaryColor3usvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVDPAURegisterVideoSurfaceNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLvdpauSurfaceNV (*)(const void *, GL_LUA_ENUMS, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.VDPAURegisterVideoSurfaceNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVDPAURegisterOutputSurfaceNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLvdpauSurfaceNV (*)(const void *, GL_LUA_ENUMS, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.VDPAURegisterOutputSurfaceNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexGendv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.TexGendv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMinmaxParameterfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetMinmaxParameterfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureParameterIuivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.TextureParameterIuivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIndexMaterialEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.IndexMaterialEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoordPointerListIBM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLint, const void **, GLint)', ptr)
-			if ok then
-				gl.TexCoordPointerListIBM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeletePathsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei)', ptr)
-			if ok then
-				gl.DeletePathsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetLocalConstantBooleanvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLboolean *)', ptr)
-			if ok then
-				gl.GetLocalConstantBooleanvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVDPAUGetSurfaceivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLvdpauSurfaceNV, GL_LUA_ENUMS, GLsizei, GLsizei *, GLint *)', ptr)
-			if ok then
-				gl.VDPAUGetSurfaceivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVDPAUFiniNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.VDPAUFiniNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUseProgramStages")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLbitfield, GLuint)', ptr)
-			if ok then
-				gl.UseProgramStages = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferTexture2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)', ptr)
-			if ok then
-				gl.FramebufferTexture2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUseProgram")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.UseProgram = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyColorSubTableEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GLint, GLint, GLsizei)', ptr)
-			if ok then
-				gl.CopyColorSubTableEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUnmapBufferOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.UnmapBufferOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUnlockArraysEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.UnlockArraysEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.MultiTexCoord3d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLuint64EXT *)', ptr)
-			if ok then
-				gl.Uniformui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformui64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLuint64EXT)', ptr)
-			if ok then
-				gl.Uniformui64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformSubroutinesuiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.UniformSubroutinesuiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix4x3fvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.UniformMatrix4x3fvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix4x3fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.UniformMatrix4x3fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix4x3dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.UniformMatrix4x3dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix4x2fvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.UniformMatrix4x2fvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix4x2fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.UniformMatrix4x2fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix4x2dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.UniformMatrix4x2dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelTransformParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.PixelTransformParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEnableClientState")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.EnableClientState = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyNamedBufferSubData")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLintptr, GLintptr, GLsizeiptr)', ptr)
-			if ok then
-				gl.CopyNamedBufferSubData = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEnableVariantClientStateEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.EnableVariantClientStateEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix4fvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.UniformMatrix4fvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyConvolutionFilter1D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei)', ptr)
-			if ok then
-				gl.CopyConvolutionFilter1D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNextPerfQueryIdINTEL")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint *)', ptr)
-			if ok then
-				gl.GetNextPerfQueryIdINTEL = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord1bOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbyte)', ptr)
-			if ok then
-				gl.TexCoord1bOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTranslatexOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.TranslatexOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix3x4fvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.UniformMatrix3x4fvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedFramebufferAttachmentParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetNamedFramebufferAttachmentParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix3x4fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.UniformMatrix3x4fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix3x4dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.UniformMatrix3x4dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFlushVertexArrayRangeNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.FlushVertexArrayRangeNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix3x2fvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.UniformMatrix3x2fvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix3x2dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.UniformMatrix3x2dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixScaledEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.MatrixScaledEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3ubv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLubyte *)', ptr)
-			if ok then
-				gl.SecondaryColor3ubv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsTransformFeedback")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsTransformFeedback = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix3fvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.UniformMatrix3fvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedFramebufferRenderbufferEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.NamedFramebufferRenderbufferEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix2x4fvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.UniformMatrix2x4fvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform3iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.Uniform3iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix2x4dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.UniformMatrix2x4dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix2x3fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.UniformMatrix2x3fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix2x3dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.UniformMatrix2x3dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCreateTransformFeedbacks")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.CreateTransformFeedbacks = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glExtGetTexturesQCOM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint *, GLint, GLint *)', ptr)
-			if ok then
-				gl.ExtGetTexturesQCOM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixLoadTransposefEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MatrixLoadTransposefEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixMultTransposefEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MatrixMultTransposefEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformHandleui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLuint64 *)', ptr)
-			if ok then
-				gl.UniformHandleui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureBufferRange")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLintptr, GLsizeiptr)', ptr)
-			if ok then
-				gl.TextureBufferRange = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniform2fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform4uivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.Uniform4uivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform4uiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.Uniform4uiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform4ui64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLuint64EXT, GLuint64EXT, GLuint64EXT, GLuint64EXT)', ptr)
-			if ok then
-				gl.Uniform4ui64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsNameAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.IsNameAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnConvolutionFilterARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)', ptr)
-			if ok then
-				gl.GetnConvolutionFilterARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform4ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.Uniform4ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTextureImage1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint)', ptr)
-			if ok then
-				gl.CopyTextureImage1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexImage2DMultisampleCoverageNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, GLsizei, GLboolean)', ptr)
-			if ok then
-				gl.TexImage2DMultisampleCoverageNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform4ivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.Uniform4ivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMaterialfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetMaterialfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform4iARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.Uniform4iARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLuint *)', ptr)
-			if ok then
-				gl.SecondaryColor3uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDisableClientState")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.DisableClientState = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform4i64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLint64EXT *)', ptr)
-			if ok then
-				gl.Uniform4i64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform4i64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint64EXT, GLint64EXT, GLint64EXT, GLint64EXT)', ptr)
-			if ok then
-				gl.Uniform4i64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyMultiTexImage1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint)', ptr)
-			if ok then
-				gl.CopyMultiTexImage1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform4fvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.Uniform4fvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClampColor")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ClampColor = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform4fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.Uniform4fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform4fARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Uniform4fARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform4dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLdouble *)', ptr)
-			if ok then
-				gl.Uniform4dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform4d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.Uniform4d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.ProgramUniform1iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform3uivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.Uniform3uivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform3uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.Uniform3uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendEquationiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendEquationiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform3uiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.Uniform3uiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLuint *)', ptr)
-			if ok then
-				gl.Color4uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPointerIndexedvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, void **)', ptr)
-			if ok then
-				gl.GetPointerIndexedvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.ProgramUniform4ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform3ivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.Uniform3ivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCheckFramebufferStatusEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLenum (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.CheckFramebufferStatusEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix2x4fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.UniformMatrix2x4fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColorP3ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.SecondaryColorP3ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform3iARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.Uniform3iARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsFramebufferOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsFramebufferOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetQueryObjectivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetQueryObjectivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform3i64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLint64EXT *)', ptr)
-			if ok then
-				gl.Uniform3i64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetColorTableEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)', ptr)
-			if ok then
-				gl.GetColorTableEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform3i64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint64EXT, GLint64EXT, GLint64EXT)', ptr)
-			if ok then
-				gl.Uniform3i64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.Color3i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetBufferSubData")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLintptr, GLsizeiptr, void *)', ptr)
-			if ok then
-				gl.GetBufferSubData = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEndQuery")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.EndQuery = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform3fvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.Uniform3fvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathSubCommandsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GLsizei, GLsizei, const GLubyte *, GLsizei, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.PathSubCommandsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureImage2DMultisampleCoverageNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, GLsizei, GLboolean)', ptr)
-			if ok then
-				gl.TextureImage2DMultisampleCoverageNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReadBufferIndexedEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.ReadBufferIndexedEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFramebufferAttachmentParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetFramebufferAttachmentParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform3fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.Uniform3fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform3fARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Uniform3fARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetInvariantFloatvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetInvariantFloatvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glScissorIndexedv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLint *)', ptr)
-			if ok then
-				gl.ScissorIndexedv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetArrayObjectfvATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetArrayObjectfvATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform1d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLdouble)', ptr)
-			if ok then
-				gl.Uniform1d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexSubImage1D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TexSubImage1D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnUniformfvKHR")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLfloat *)', ptr)
-			if ok then
-				gl.GetnUniformfvKHR = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform2uiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.Uniform2uiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform2ui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLuint64EXT *)', ptr)
-			if ok then
-				gl.Uniform2ui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform2ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.Uniform2ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetSeparableFilter")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, void *, void *, void *)', ptr)
-			if ok then
-				gl.GetSeparableFilter = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform2ivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.Uniform2ivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform2iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.Uniform2iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenVertexShadersEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GLuint)', ptr)
-			if ok then
-				gl.GenVertexShadersEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2sARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort)', ptr)
-			if ok then
-				gl.WindowPos2sARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform2i64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLint64EXT *)', ptr)
-			if ok then
-				gl.Uniform2i64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform2i64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint64EXT, GLint64EXT)', ptr)
-			if ok then
-				gl.Uniform2i64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribs1hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLhalfNV *)', ptr)
-			if ok then
-				gl.VertexAttribs1hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetInfoLogARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhandleARB, GLsizei, GLsizei *, GLcharARB *)', ptr)
-			if ok then
-				gl.GetInfoLogARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawArraysIndirect")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const void *, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.MultiDrawArraysIndirect = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.Color4sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform2fARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Uniform2fARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glViewport")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.Viewport = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetInteger64i_v")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLint64 *)', ptr)
-			if ok then
-				gl.GetInteger64i_v = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform1ui64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLuint64EXT)', ptr)
-			if ok then
-				gl.Uniform1ui64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform1ivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.Uniform1ivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord4f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.TexCoord4f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glExtGetTexLevelParameterivQCOM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.ExtGetTexLevelParameterivQCOM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform1iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.Uniform1iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform1iARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint)', ptr)
-			if ok then
-				gl.Uniform1iARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBeginTransformFeedback")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BeginTransformFeedback = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCreateProgramPipelines")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.CreateProgramPipelines = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform1i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint)', ptr)
-			if ok then
-				gl.Uniform1i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsPointInFillPathNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint, GLuint, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.IsPointInFillPathNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPushClientAttribDefaultEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbitfield)', ptr)
-			if ok then
-				gl.PushClientAttribDefaultEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetProgramivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glAccum")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.Accum = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColorPointerListIBM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLint, const void **, GLint)', ptr)
-			if ok then
-				gl.SecondaryColorPointerListIBM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenVertexArraysAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenVertexArraysAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformHandleui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLuint64 *)', ptr)
-			if ok then
-				gl.ProgramUniformHandleui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform1fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.Uniform1fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform3d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.Uniform3d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glInvalidateBufferSubData")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLintptr, GLsizeiptr)', ptr)
-			if ok then
-				gl.InvalidateBufferSubData = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTranslatef")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Translatef = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexArrayPointervEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, void **)', ptr)
-			if ok then
-				gl.GetVertexArrayPointervEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTransformFeedbackVaryingsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLint *, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.TransformFeedbackVaryingsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetUniformLocation")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLint (*)(GLuint, const GLchar *)', ptr)
-			if ok then
-				gl.GetUniformLocation = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTransformFeedbackStreamAttribsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLint *, GLsizei, const GLint *, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.TransformFeedbackStreamAttribsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTransformFeedbackBufferRange")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint, GLintptr, GLsizeiptr)', ptr)
-			if ok then
-				gl.TransformFeedbackBufferRange = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormalStream3dATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.NormalStream3dATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTransformFeedbackAttribsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLint *, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.TransformFeedbackAttribsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTrackMatrixNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.TrackMatrixNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribArrayObjectATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GL_LUA_ENUMS, GLboolean, GLsizei, GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexAttribArrayObjectATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPatchParameterfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.PatchParameterfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix2x4fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix2x4fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureSubImage3DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TextureSubImage3DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureSubImage3D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TextureSubImage3D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureSubImage2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TextureSubImage2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFrustumf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Frustumf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathGlyphIndexArrayNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLenum (*)(GLuint, GL_LUA_ENUMS, const void *, GLbitfield, GLuint, GLsizei, GLuint, GLfloat)', ptr)
-			if ok then
-				gl.PathGlyphIndexArrayNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureSubImage2D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TextureSubImage2D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIglooInterfaceSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.IglooInterfaceSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureStorageSparseAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLsizei, GLbitfield)', ptr)
-			if ok then
-				gl.TextureStorageSparseAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureStorage3DMultisample")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLboolean)', ptr)
-			if ok then
-				gl.TextureStorage3DMultisample = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureStorage3DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.TextureStorage3DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureStorage3D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.TextureStorage3D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCombinerParameteriNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.CombinerParameteriNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetInternalformatSampleivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLint *)', ptr)
-			if ok then
-				gl.GetInternalformatSampleivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3ubEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLubyte, GLubyte, GLubyte)', ptr)
-			if ok then
-				gl.SecondaryColor3ubEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureStorage2DMultisampleEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLboolean)', ptr)
-			if ok then
-				gl.TextureStorage2DMultisampleEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureStorage2DMultisample")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLboolean)', ptr)
-			if ok then
-				gl.TextureStorage2DMultisample = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureStorage2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.TextureStorage2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexEnvi")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.TexEnvi = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBeginConditionalRenderNVX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.BeginConditionalRenderNVX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormal3fVertex3fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *, const GLfloat *)', ptr)
-			if ok then
-				gl.Normal3fVertex3fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureStorage1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei)', ptr)
-			if ok then
-				gl.TextureStorage1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawTransformFeedbackStream")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint)', ptr)
-			if ok then
-				gl.DrawTransformFeedbackStream = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.TextureParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.TextureParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawArraysIndirectBindlessNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const void *, GLsizei, GLsizei, GLint)', ptr)
-			if ok then
-				gl.MultiDrawArraysIndirectBindlessNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTransformPathNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.TransformPathNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureParameterfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.TextureParameterfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2fvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MultiTexCoord2fvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureParameterfEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.TextureParameterfEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureParameterIuiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.TextureParameterIuiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMakeImageHandleNonResidentARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint64)', ptr)
-			if ok then
-				gl.MakeImageHandleNonResidentARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferTextureEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)', ptr)
-			if ok then
-				gl.FramebufferTextureEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3iEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.ProgramUniform3iEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexturePageCommitmentEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLboolean)', ptr)
-			if ok then
-				gl.TexturePageCommitmentEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2fColor4fNormal3fVertex3fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *, const GLfloat *, const GLfloat *, const GLfloat *)', ptr)
-			if ok then
-				gl.TexCoord2fColor4fNormal3fVertex3fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureImage3DMultisampleCoverageNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, GLsizei, GLsizei, GLboolean)', ptr)
-			if ok then
-				gl.TextureImage3DMultisampleCoverageNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCreateShaderObjectARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLhandleARB (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.CreateShaderObjectARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSamplerParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.SamplerParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureImage3DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TextureImage3DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureImage2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TextureImage2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureImage1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TextureImage1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawBuffersIndexedEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, const GLenum *, const GLint *)', ptr)
-			if ok then
-				gl.DrawBuffersIndexedEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureBufferRangeEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLintptr, GLsizeiptr)', ptr)
-			if ok then
-				gl.TextureBufferRangeEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsBufferARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsBufferARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformBufferEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint)', ptr)
-			if ok then
-				gl.UniformBufferEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureBuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.TextureBuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glResolveMultisampleFramebufferAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.ResolveMultisampleFramebufferAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormal3fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.Normal3fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEvalCoord1fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.EvalCoord1fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLoadIdentity")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.LoadIdentity = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureBarrierNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.TextureBarrierNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureBarrier")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.TextureBarrier = func
-			end
 
-			if not gl.TextureBarrier then
-				gl.TextureBarrier = gl.TextureBarrierNV
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexSubImage4DSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TexSubImage4DSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyPixels")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.CopyPixels = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4ubVertex3fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLubyte, GLubyte, GLubyte, GLubyte, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Color4ubVertex3fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexSubImage3DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TexSubImage3DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexSubImage3D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TexSubImage3D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexSubImage2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TexSubImage2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexSubImage1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TexSubImage1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform2uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.Uniform2uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexStorageSparseAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLsizei, GLbitfield)', ptr)
-			if ok then
-				gl.TexStorageSparseAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCombinerOutputNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLboolean, GLboolean, GLboolean)', ptr)
-			if ok then
-				gl.CombinerOutputNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexStorage3DMultisampleOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLboolean)', ptr)
-			if ok then
-				gl.TexStorage3DMultisampleOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexStorage3DMultisample")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLboolean)', ptr)
-			if ok then
-				gl.TexStorage3DMultisample = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexStorage3DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.TexStorage3DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexStorage3D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.TexStorage3D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexStorage2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.TexStorage2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexStorage2D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.TexStorage2D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLabelObjectEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLchar *)', ptr)
-			if ok then
-				gl.LabelObjectEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexStorage1D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei)', ptr)
-			if ok then
-				gl.TexStorage1D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glResetMinmaxEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ResetMinmaxEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsBufferResidentNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.IsBufferResidentNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDisableVariantClientStateEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.DisableVariantClientStateEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform1fvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.Uniform1fvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramLocalParameterIivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLint *)', ptr)
-			if ok then
-				gl.GetProgramLocalParameterIivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenTexturesEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenTexturesEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexParameterxv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.TexParameterxv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexParameteri")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.TexParameteri = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetHistogramParameterfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetHistogramParameterfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorPointerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLsizei, GLsizei, const void *)', ptr)
-			if ok then
-				gl.ColorPointerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLoadIdentityDeformationMapSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbitfield)', ptr)
-			if ok then
-				gl.LoadIdentityDeformationMapSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexParameterf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.TexParameterf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMapdv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLdouble *)', ptr)
-			if ok then
-				gl.GetMapdv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4fNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.VertexAttrib4fNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFlushMappedBufferRange")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLintptr, GLsizeiptr)', ptr)
-			if ok then
-				gl.FlushMappedBufferRange = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexImage3DOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TexImage3DOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixPushEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.MatrixPushEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexImage3DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TexImage3DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexImage2DMultisample")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei, GLboolean)', ptr)
-			if ok then
-				gl.TexImage2DMultisample = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawElementsIndirectBindlessNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, GLsizei, GLsizei, GLint)', ptr)
-			if ok then
-				gl.MultiDrawElementsIndirectBindlessNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexImage2D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TexImage2D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexGenxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'voi|	d (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.TexGenxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIndexfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.Indexfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glExtGetBuffersQCOM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint *, GLint, GLint *)', ptr)
-			if ok then
-				gl.ExtGetBuffersQCOM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexGenivOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.TexGenivOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsProgramPipelineEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsProgramPipelineEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexGenfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.TexGenfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4uiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.ProgramUniform4uiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTextureParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetTextureParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVariantFloatvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetVariantFloatvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVDPAUIsSurfaceNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLvdpauSurfaceNV)', ptr)
-			if ok then
-				gl.VDPAUIsSurfaceNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelTexGenParameterivSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.PixelTexGenParameterivSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferRenderbuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.FramebufferRenderbuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glOrthofOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.OrthofOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLinkProgram")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.LinkProgram = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearNamedFramebufferiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, const GLint *)', ptr)
-			if ok then
-				gl.ClearNamedFramebufferiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformBlockBinding")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.UniformBlockBinding = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexEnvxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.TexEnvxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexStream1dvATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexStream1dvATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormal3i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.Normal3i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexParameterIuivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.TexParameterIuivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexEnvfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.TexEnvfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoordPointervINTEL")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, const void **)', ptr)
-			if ok then
-				gl.TexCoordPointervINTEL = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTexImage2DARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTexImage2DARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapNamedBufferRange")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void *(*)(GLuint, GLintptr, GLsizeiptr, GLbitfield)', ptr)
-			if ok then
-				gl.MapNamedBufferRange = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glExecuteProgramNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.ExecuteProgramNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoordPointer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.TexCoordPointer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4fEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ProgramUniform4fEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoordP4uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.TexCoordP4uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRectiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *, const GLint *)', ptr)
-			if ok then
-				gl.Rectiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorFragmentOp1ATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.ColorFragmentOp1ATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoordP2ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.TexCoordP2ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormalPointer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.NormalPointer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix4fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix4fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCreateProgram")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)()', ptr)
-			if ok then
-				gl.CreateProgram = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorMaskiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLboolean, GLboolean, GLboolean, GLboolean)', ptr)
-			if ok then
-				gl.ColorMaskiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoordFormatNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLsizei)', ptr)
-			if ok then
-				gl.TexCoordFormatNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord4xvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.TexCoord4xvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord4xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.TexCoord4xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedFramebufferTextureLayerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint, GLint)', ptr)
-			if ok then
-				gl.NamedFramebufferTextureLayerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3dEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.SecondaryColor3dEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexBufferOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.TexBufferOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogCoordf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat)', ptr)
-			if ok then
-				gl.FogCoordf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex2f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Vertex2f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord4s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.TexCoord4s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glViewportIndexedf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ViewportIndexedf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMakeBufferResidentNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.MakeBufferResidentNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFinalCombinerInputParameterivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetFinalCombinerInputParameterivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord4i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.TexCoord4i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPathParameterivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetPathParameterivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord4hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLhalfNV *)', ptr)
-			if ok then
-				gl.TexCoord4hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1dvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttrib1dvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord4fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.TexCoord4fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glAlphaFragmentOp1ATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.AlphaFragmentOp1ATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFloati_v")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLfloat *)', ptr)
-			if ok then
-				gl.GetFloati_v = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord4dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.TexCoord4dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord4d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.TexCoord4d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord4bvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLbyte *)', ptr)
-			if ok then
-				gl.TexCoord4bvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord4bOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbyte, GLbyte, GLbyte, GLbyte)', ptr)
-			if ok then
-				gl.TexCoord4bOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord3xvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.TexCoord3xvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord3xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.TexCoord3xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord3sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.TexCoord3sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointParameterfARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.PointParameterfARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix4x2dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix4x2dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3b")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbyte, GLbyte, GLbyte)', ptr)
-			if ok then
-				gl.Color3b = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCreateQueries")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.CreateQueries = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPollAsyncSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLint (*)(GLuint *)', ptr)
-			if ok then
-				gl.PollAsyncSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord3iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.TexCoord3iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord3i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.TexCoord3i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayTexCoordOffsetEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLsizei, GLintptr)', ptr)
-			if ok then
-				gl.VertexArrayTexCoordOffsetEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTessellationModeAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.TessellationModeAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelDataRangeNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.PixelDataRangeNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord3fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.TexCoord3fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord3f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.TexCoord3f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord3dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.TexCoord3dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexGenfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MultiTexGenfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEndConditionalRenderNVX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.EndConditionalRenderNVX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPauseTransformFeedback")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.PauseTransformFeedback = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawElementsBaseVertexOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLint)', ptr)
-			if ok then
-				gl.DrawElementsBaseVertexOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord3bvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLbyte *)', ptr)
-			if ok then
-				gl.TexCoord3bvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeformationMap3dSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLint, GLint, GLdouble, GLdouble, GLint, GLint, GLdouble, GLdouble, GLint, GLint, const GLdouble *)', ptr)
-			if ok then
-				gl.DeformationMap3dSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord3bOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbyte, GLbyte, GLbyte)', ptr)
-			if ok then
-				gl.TexCoord3bOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.SecondaryColor3i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2xvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.TexCoord2xvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetSamplerParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetSamplerParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramBinary")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const void *, GLsizei)', ptr)
-			if ok then
-				gl.ProgramBinary = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.TexCoord2xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.TexCoord2sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetUniformiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint *)', ptr)
-			if ok then
-				gl.GetUniformiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLhalfNV *)', ptr)
-			if ok then
-				gl.TexCoord2hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2fVertex3fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *, const GLfloat *)', ptr)
-			if ok then
-				gl.TexCoord2fVertex3fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2fVertex3fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.TexCoord2fVertex3fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glInvalidateTexImage")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint)', ptr)
-			if ok then
-				gl.InvalidateTexImage = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2fNormal3fVertex3fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.TexCoord2fNormal3fVertex3fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVariantArrayObjectfvATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetVariantArrayObjectfvATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetColorTableParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetColorTableParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureLightEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.TextureLightEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCreateFramebuffers")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.CreateFramebuffers = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferTexture2D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)', ptr)
-			if ok then
-				gl.FramebufferTexture2D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMaterialxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.MaterialxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2fColor3fVertex3fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *, const GLfloat *, const GLfloat *)', ptr)
-			if ok then
-				gl.TexCoord2fColor3fVertex3fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlitFramebufferANGLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlitFramebufferANGLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.TexCoord2f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2bvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLbyte *)', ptr)
-			if ok then
-				gl.TexCoord2bvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2bOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbyte, GLbyte)', ptr)
-			if ok then
-				gl.TexCoord2bOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenerateTextureMipmapEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.GenerateTextureMipmapEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsBuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsBuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord1xvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.TexCoord1xvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterSamplesEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLboolean)', ptr)
-			if ok then
-				gl.RasterSamplesEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord1sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.TexCoord1sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord1s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort)', ptr)
-			if ok then
-				gl.TexCoord1s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFloati_vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLfloat *)', ptr)
-			if ok then
-				gl.GetFloati_vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord1i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint)', ptr)
-			if ok then
-				gl.TexCoord1i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord1hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLhalfNV *)', ptr)
-			if ok then
-				gl.TexCoord1hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStencilFuncSeparate")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLuint)', ptr)
-			if ok then
-				gl.StencilFuncSeparate = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelZoom")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.PixelZoom = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1ui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLuint64EXT *)', ptr)
-			if ok then
-				gl.ProgramUniform1ui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord1d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble)', ptr)
-			if ok then
-				gl.TexCoord1d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3uivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLuint *)', ptr)
-			if ok then
-				gl.SecondaryColor3uivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix4dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.UniformMatrix4dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glHistogram")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLboolean)', ptr)
-			if ok then
-				gl.Histogram = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLshort *)', ptr)
-			if ok then
-				gl.MultiTexCoord1sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexBumpParameterivATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.TexBumpParameterivATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexBumpParameterfvATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.TexBumpParameterfvATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1dARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble)', ptr)
-			if ok then
-				gl.MultiTexCoord1dARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexBufferRangeOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLintptr, GLsizeiptr)', ptr)
-			if ok then
-				gl.TexBufferRangeOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexBufferRangeEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLintptr, GLsizeiptr)', ptr)
-			if ok then
-				gl.TexBufferRangeEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexBufferRange")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLintptr, GLsizeiptr)', ptr)
-			if ok then
-				gl.TexBufferRange = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTestFenceAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.TestFenceAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord3hNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhalfNV, GLhalfNV, GLhalfNV)', ptr)
-			if ok then
-				gl.TexCoord3hNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLightiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.Lightiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.FogxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glExtGetProgramsQCOM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint *, GLint, GLint *)', ptr)
-			if ok then
-				gl.ExtGetProgramsQCOM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTangent3svEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.Tangent3svEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteOcclusionQueriesNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteOcclusionQueriesNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTangent3ivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.Tangent3ivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTangent3fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.Tangent3fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexParameterIuiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.TexParameterIuiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTangent3bvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLbyte *)', ptr)
-			if ok then
-				gl.Tangent3bvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTangent3bEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbyte, GLbyte, GLbyte)', ptr)
-			if ok then
-				gl.Tangent3bEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedProgramLocalParameter4dEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.NamedProgramLocalParameter4dEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsProgramNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsProgramNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSyncTextureINTEL")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.SyncTextureINTEL = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSamplerParameterf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.SamplerParameterf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTextureImage2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint)', ptr)
-			if ok then
-				gl.CopyTextureImage2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStringMarkerGREMEDY")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const void *)', ptr)
-			if ok then
-				gl.StringMarkerGREMEDY = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTextureImage")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)', ptr)
-			if ok then
-				gl.GetTextureImage = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4usv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLushort *)', ptr)
-			if ok then
-				gl.Color4usv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointParameterxv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.PointParameterxv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glImageTransformParameteriHP")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.ImageTransformParameteriHP = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramParameter4fNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ProgramParameter4fNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStencilStrokePathNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint)', ptr)
-			if ok then
-				gl.StencilStrokePathNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStencilOpValueAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.StencilOpValueAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStencilOp")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.StencilOp = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStencilMaskSeparate")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.StencilMaskSeparate = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetUniformIndices")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLchar *const*, GLuint *)', ptr)
-			if ok then
-				gl.GetUniformIndices = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMakeTextureHandleResidentARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint64)', ptr)
-			if ok then
-				gl.MakeTextureHandleResidentARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStencilMask")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.StencilMask = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLightEnviSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.LightEnviSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetClipPlanex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed *)', ptr)
-			if ok then
-				gl.GetClipPlanex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3i64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint64EXT, GLint64EXT, GLint64EXT)', ptr)
-			if ok then
-				gl.ProgramUniform3i64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVariantArrayObjectivATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetVariantArrayObjectivATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStencilFillPathInstancedNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.StencilFillPathInstancedNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStartInstrumentsSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.StartInstrumentsSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCoverFillPathNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.CoverFillPathNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDisableIndexedEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.DisableIndexedEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSpriteParameterivSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.SpriteParameterivSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSpriteParameteriSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.SpriteParameteriSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSpriteParameterfvSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.SpriteParameterfvSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClipPlanefIMG")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.ClipPlanefIMG = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glShaderStorageBlockBinding")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.ShaderStorageBlockBinding = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glOrthof")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Orthof = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTextureSubImage3D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTextureSubImage3D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glShaderOp1EXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint)', ptr)
-			if ok then
-				gl.ShaderOp1EXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glShadeModel")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ShadeModel = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSetMultisamplefvAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.SetMultisamplefvAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLshort)', ptr)
-			if ok then
-				gl.MultiTexCoord1s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glScissorIndexed")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.ScissorIndexed = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawTexfvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.DrawTexfvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSetInvariantEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.SetInvariantEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorTableEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.ColorTableEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSetFenceAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.SetFenceAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenerateMipmap")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.GenerateMipmap = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMapAttribParameterivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetMapAttribParameterivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPNTrianglesfATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.PNTrianglesfATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColorPointer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.SecondaryColorPointer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogCoordhNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhalfNV)', ptr)
-			if ok then
-				gl.FogCoordhNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetClipPlanefOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetClipPlanefOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetQueryObjectui64vEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint64 *)', ptr)
-			if ok then
-				gl.GetQueryObjectui64vEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTransformFeedbackVarying")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLsizei *, GLenum *, GLchar *)', ptr)
-			if ok then
-				gl.GetTransformFeedbackVarying = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTangent3sEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.Tangent3sEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVDPAUUnmapSurfacesNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLvdpauSurfaceNV *)', ptr)
-			if ok then
-				gl.VDPAUUnmapSurfacesNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord1bvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLbyte *)', ptr)
-			if ok then
-				gl.TexCoord1bvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStencilFuncSeparateATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLuint)', ptr)
-			if ok then
-				gl.StencilFuncSeparateATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTextureParameterfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetTextureParameterfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3svEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.SecondaryColor3svEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexParameterIivOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.TexParameterIivOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3ivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.SecondaryColor3ivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPatchParameteriOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.PatchParameteriOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLhalfNV *)', ptr)
-			if ok then
-				gl.SecondaryColor3hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.SecondaryColor3fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawRangeElementsBaseVertexEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, GL_LUA_ENUMS, const void *, GLint)', ptr)
-			if ok then
-				gl.DrawRangeElementsBaseVertexEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.SecondaryColor3dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.SecondaryColor3dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClientWaitSync")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLenum (*)(GLsync, GLbitfield, GLuint64)', ptr)
-			if ok then
-				gl.ClientWaitSync = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3bv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLbyte *)', ptr)
-			if ok then
-				gl.SecondaryColor3bv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnCompressedTexImage")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLsizei, void *)', ptr)
-			if ok then
-				gl.GetnCompressedTexImage = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3bEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbyte, GLbyte, GLbyte)', ptr)
-			if ok then
-				gl.SecondaryColor3bEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3b")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbyte, GLbyte, GLbyte)', ptr)
-			if ok then
-				gl.SecondaryColor3b = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glScissorIndexedNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.ScissorIndexedNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetCombinerInputParameterfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetCombinerInputParameterfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glScissorArrayvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.ScissorArrayvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glScalexOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.ScalexOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glScalex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.Scalex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glScalef")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Scalef = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSamplerParameteri")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.SamplerParameteri = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetSamplerParameterIuivOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint *)', ptr)
-			if ok then
-				gl.GetSamplerParameterIuivOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSamplerParameterIivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.SamplerParameterIivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeformationMap3fSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLint, GLint, GLfloat, GLfloat, GLint, GLint, GLfloat, GLfloat, GLint, GLint, const GLfloat *)', ptr)
-			if ok then
-				gl.DeformationMap3fSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexParameterxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)', ptr)
-			if ok then
-				gl.GetTexParameterxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedBufferSubDataEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLintptr, GLsizeiptr, const void *)', ptr)
-			if ok then
-				gl.NamedBufferSubDataEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteShader")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.DeleteShader = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenFragmentShadersATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GLuint)', ptr)
-			if ok then
-				gl.GenFragmentShadersATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSampleMaskIndexedNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLbitfield)', ptr)
-			if ok then
-				gl.SampleMaskIndexedNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSampleMapATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.SampleMapATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSampleCoveragex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLclampx, GLboolean)', ptr)
-			if ok then
-				gl.SampleCoveragex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2ui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLuint64EXT *)', ptr)
-			if ok then
-				gl.ProgramUniform2ui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFlush")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.Flush = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSampleCoverageARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLboolean)', ptr)
-			if ok then
-				gl.SampleCoverageARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPushDebugGroup")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLchar *)', ptr)
-			if ok then
-				gl.PushDebugGroup = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFramebufferParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetFramebufferParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawBuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.DrawBuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRotatexOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.RotatexOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetInvariantIntegervEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetInvariantIntegervEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRotated")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.Rotated = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glResumeTransformFeedbackNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.ResumeTransformFeedbackNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexImage")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)', ptr)
-			if ok then
-				gl.GetTexImage = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glResumeTransformFeedback")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.ResumeTransformFeedback = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexParameterIuivOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint *)', ptr)
-			if ok then
-				gl.GetTexParameterIuivOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformHandleui64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint64)', ptr)
-			if ok then
-				gl.ProgramUniformHandleui64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glResetHistogramEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ResetHistogramEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glResetHistogram")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ResetHistogram = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEndConditionalRender")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.EndConditionalRender = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPNTrianglesiATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.PNTrianglesiATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenVertexArraysOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenVertexArraysOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2ui64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint64EXT, GLuint64EXT)', ptr)
-			if ok then
-				gl.ProgramUniform2ui64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWeightubvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, const GLubyte *)', ptr)
-			if ok then
-				gl.WeightubvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeusSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLushort)', ptr)
-			if ok then
-				gl.ReplacementCodeusSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIndexdv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.Indexdv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeuivSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLuint *)', ptr)
-			if ok then
-				gl.ReplacementCodeuivSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeuiVertex3fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLuint *, const GLfloat *)', ptr)
-			if ok then
-				gl.ReplacementCodeuiVertex3fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeuiTexCoord2fVertex3fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLuint *, const GLfloat *, const GLfloat *)', ptr)
-			if ok then
-				gl.ReplacementCodeuiTexCoord2fVertex3fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFragmentLightivSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.FragmentLightivSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormal3f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Normal3f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeuiNormal3fVertex3fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLuint *, const GLfloat *, const GLfloat *)', ptr)
-			if ok then
-				gl.ReplacementCodeuiNormal3fVertex3fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeuiNormal3fVertex3fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ReplacementCodeuiNormal3fVertex3fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeuiColor4ubVertex3fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLubyte, GLubyte, GLubyte, GLubyte, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ReplacementCodeuiColor4ubVertex3fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeuiColor4fNormal3fVertex3fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLuint *, const GLfloat *, const GLfloat *, const GLfloat *)', ptr)
-			if ok then
-				gl.ReplacementCodeuiColor4fNormal3fVertex3fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeubvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLubyte *)', ptr)
-			if ok then
-				gl.ReplacementCodeubvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRectf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Rectf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeubSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLubyte)', ptr)
-			if ok then
-				gl.ReplacementCodeubSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.MultiTexCoord2d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEvalCoord1xvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.EvalCoord1xvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFinishAsyncSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLint (*)(GLuint *)', ptr)
-			if ok then
-				gl.FinishAsyncSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTexSubImage1D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTexSubImage1D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRenderbufferStorageOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.RenderbufferStorageOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4fNormal3fVertex3fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Color4fNormal3fVertex3fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRenderbufferStorageMultisampleNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.RenderbufferStorageMultisampleNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.MultiTexCoord4dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetQueryBufferObjectui64v")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLintptr)', ptr)
-			if ok then
-				gl.GetQueryBufferObjectui64v = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRenderbufferStorageMultisampleIMG")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.RenderbufferStorageMultisampleIMG = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRenderbufferStorageMultisampleEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.RenderbufferStorageMultisampleEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRenderbufferStorageMultisampleCoverageNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.RenderbufferStorageMultisampleCoverageNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindTransformFeedback")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.BindTransformFeedback = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetLightxv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)', ptr)
-			if ok then
-				gl.GetLightxv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteQueriesEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteQueriesEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexEnvfEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.MultiTexEnvfEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReleaseShaderCompiler")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.ReleaseShaderCompiler = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLinkProgramARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhandleARB)', ptr)
-			if ok then
-				gl.LinkProgramARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoordP3uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.TexCoordP3uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRectfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *, const GLfloat *)', ptr)
-			if ok then
-				gl.Rectfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRectdv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *, const GLdouble *)', ptr)
-			if ok then
-				gl.Rectdv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRectd")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.Rectd = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramBufferParametersIuivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.ProgramBufferParametersIuivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendColorEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.BlendColorEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLuint64EXT *)', ptr)
-			if ok then
-				gl.ProgramUniformui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReadnPixels")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)', ptr)
-			if ok then
-				gl.ReadnPixels = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetObjectParameterivAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetObjectParameterivAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos3iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.RasterPos3iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenPathsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GLsizei)', ptr)
-			if ok then
-				gl.GenPathsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReadPixels")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)', ptr)
-			if ok then
-				gl.ReadPixels = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos3xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.RasterPos3xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCheckFramebufferStatusOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLenum (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.CheckFramebufferStatusOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelTransferxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.PixelTransferxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixIndexubvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, const GLubyte *)', ptr)
-			if ok then
-				gl.MatrixIndexubvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetObjectBufferfvATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetObjectBufferfvATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFlushPixelDataRangeNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.FlushPixelDataRangeNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord3s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.TexCoord3s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsList")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsList = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix4dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix4dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMultiTexGendvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLdouble *)', ptr)
-			if ok then
-				gl.GetMultiTexGendvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix3x4dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix3x4dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMultiTexEnvfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetMultiTexEnvfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMultiTexGenivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetMultiTexGenivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1sNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLshort)', ptr)
-			if ok then
-				gl.VertexAttrib1sNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorMaterial")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ColorMaterial = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix3x2dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix3x2dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix3dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix3dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVDPAUInitNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const void *, const void *)', ptr)
-			if ok then
-				gl.VDPAUInitNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetListParameterfvSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetListParameterfvSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix2x4dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix2x4dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRenderbufferStorageMultisample")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.RenderbufferStorageMultisample = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnUniformuivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GetnUniformuivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSubpixelPrecisionBiasNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.SubpixelPrecisionBiasNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetObjectParameterfvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhandleARB, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetObjectParameterfvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL1ui64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint64EXT)', ptr)
-			if ok then
-				gl.VertexAttribL1ui64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColorFormatNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLsizei)', ptr)
-			if ok then
-				gl.SecondaryColorFormatNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnUniformfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLfloat *)', ptr)
-			if ok then
-				gl.GetnUniformfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGlobalAlphaFactorsSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort)', ptr)
-			if ok then
-				gl.GlobalAlphaFactorsSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glShaderSourceARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhandleARB, GLsizei, const GLcharARB **, const GLint *)', ptr)
-			if ok then
-				gl.ShaderSourceARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4i64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLint64EXT *)', ptr)
-			if ok then
-				gl.ProgramUniform4i64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniform4dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glConvolutionParameterfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.ConvolutionParameterfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendEquationiARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendEquationiARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendFuncIndexedAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendFuncIndexedAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3ivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.ProgramUniform3ivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFragmentMaterialfvSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetFragmentMaterialfvSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix4x3dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix4x3dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFloatIndexedvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLfloat *)', ptr)
-			if ok then
-				gl.GetFloatIndexedvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteObjectARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhandleARB)', ptr)
-			if ok then
-				gl.DeleteObjectARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDebugMessageCallbackAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLDEBUGPROCAMD, void *)', ptr)
-			if ok then
-				gl.DebugMessageCallbackAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetObjectLabelEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetObjectLabelEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFenceivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetFenceivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBeginQuery")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.BeginQuery = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsEnabled")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.IsEnabled = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArraySecondaryColorOffsetEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLint, GL_LUA_ENUMS, GLsizei, GLintptr)', ptr)
-			if ok then
-				gl.VertexArraySecondaryColorOffsetEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2uiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.ProgramUniform2uiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramLocalParameterI4uiNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.ProgramLocalParameterI4uiNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetConvolutionParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetConvolutionParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexStorage1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei)', ptr)
-			if ok then
-				gl.TexStorage1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2ivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.ProgramUniform2ivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixLoadTranspose3x3fNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MatrixLoadTranspose3x3fNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedMultiTexSubImage1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedMultiTexSubImage1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glExtGetTexSubImageQCOM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)', ptr)
-			if ok then
-				gl.ExtGetTexSubImageQCOM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetCompressedTexImageARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, void *)', ptr)
-			if ok then
-				gl.GetCompressedTexImageARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPushMatrix")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.PushMatrix = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEdgeFlagPointer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const void *)', ptr)
-			if ok then
-				gl.EdgeFlagPointer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathStringNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.PathStringNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glObjectLabelKHR")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLchar *)', ptr)
-			if ok then
-				gl.ObjectLabelKHR = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.Color4ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearTexImage")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.ClearTexImage = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2dEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.ProgramUniform2dEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2hNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLhalfNV, GLhalfNV)', ptr)
-			if ok then
-				gl.MultiTexCoord2hNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCheckNamedFramebufferStatus")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLenum (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.CheckNamedFramebufferStatus = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDepthMask")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLboolean)', ptr)
-			if ok then
-				gl.DepthMask = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFinish")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.Finish = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTextureSubImage2D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.CopyTextureSubImage2D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapGrid1xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.MapGrid1xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearNamedBufferSubDataEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLsizeiptr, GLsizeiptr, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.ClearNamedBufferSubDataEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3fNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.VertexAttrib3fNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glImageTransformParameterivHP")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.ImageTransformParameterivHP = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMinSampleShadingARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat)', ptr)
-			if ok then
-				gl.MinSampleShadingARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFloatv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetFloatv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindProgramARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.BindProgramARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform3dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLdouble *)', ptr)
-			if ok then
-				gl.Uniform3dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFrameZoomSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint)', ptr)
-			if ok then
-				gl.FrameZoomSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramParameteriEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.ProgramParameteriEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.MultiTexCoord4f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDetachShader")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.DetachShader = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLshort, GLshort)', ptr)
-			if ok then
-				gl.MultiTexCoord2s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenerateTextureMipmap")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.GenerateTextureMipmap = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompileShader")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.CompileShader = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4xvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.MultiTexCoord4xvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEvalMapsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.EvalMapsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPixelMapusv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLushort *)', ptr)
-			if ok then
-				gl.GetPixelMapusv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayIndexOffsetEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLsizei, GLintptr)', ptr)
-			if ok then
-				gl.VertexArrayIndexOffsetEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos4sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.RasterPos4sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glHistogramEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLboolean)', ptr)
-			if ok then
-				gl.HistogramEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBinormal3bvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLbyte *)', ptr)
-			if ok then
-				gl.Binormal3bvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferDrawBuffersEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLenum *)', ptr)
-			if ok then
-				gl.FramebufferDrawBuffersEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMapControlPointsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, GLsizei, GLboolean, void *)', ptr)
-			if ok then
-				gl.GetMapControlPointsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFragmentLightModeliSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.FragmentLightModeliSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat)', ptr)
-			if ok then
-				gl.VertexAttrib1f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMultiTexParameterfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetMultiTexParameterfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTexSubImage1D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei)', ptr)
-			if ok then
-				gl.CopyTexSubImage1D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedFramebufferSampleLocationsfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.NamedFramebufferSampleLocationsfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetBufferPointerv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, void **)', ptr)
-			if ok then
-				gl.GetBufferPointerv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetError")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLenum (*)()', ptr)
-			if ok then
-				gl.GetError = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenLists")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GLsizei)', ptr)
-			if ok then
-				gl.GenLists = func
-			gl.GenList = function() local id = ffi.new('GLint[1]') func(1, id) return id[0] end
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenFramebuffersOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenFramebuffersOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawArraysInstancedBaseInstanceEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLsizei, GLsizei, GLuint)', ptr)
-			if ok then
-				gl.DrawArraysInstancedBaseInstanceEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendParameteriNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.BlendParameteriNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteRenderbuffersEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteRenderbuffersEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferTextureLayer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLint)', ptr)
-			if ok then
-				gl.FramebufferTextureLayer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetUniformdv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLdouble *)', ptr)
-			if ok then
-				gl.GetUniformdv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTexSubImage1DARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTexSubImage1DARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glConvolutionParameteri")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.ConvolutionParameteri = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawTexxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.DrawTexxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelTransferf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.PixelTransferf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLoadTransposeMatrixxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.LoadTransposeMatrixxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1dEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLdouble)', ptr)
-			if ok then
-				gl.ProgramUniform1dEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMapxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)', ptr)
-			if ok then
-				gl.GetMapxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTexImage1D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTexImage1D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMakeNamedBufferNonResidentNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.MakeNamedBufferNonResidentNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferTextureFaceEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.FramebufferTextureFaceEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramEnvParameterIuivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint *)', ptr)
-			if ok then
-				gl.GetProgramEnvParameterIuivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindBufferOffsetNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLintptr)', ptr)
-			if ok then
-				gl.BindBufferOffsetNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPixelTransformParameterfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetPixelTransformParameterfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultTransposeMatrixf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.MultTransposeMatrixf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindBufferRange")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLintptr, GLsizeiptr)', ptr)
-			if ok then
-				gl.BindBufferRange = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFragmentLightModelfvSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.FragmentLightModelfvSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFragmentLightModelfSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.FragmentLightModelfSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogxv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.Fogxv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glListParameterfvSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.ListParameterfvSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedBufferParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetNamedBufferParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetConvolutionParameterfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetConvolutionParameterfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayMultiTexCoordOffsetEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLintptr)', ptr)
-			if ok then
-				gl.VertexArrayMultiTexCoordOffsetEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCoverStrokePathInstancedNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.CoverStrokePathInstancedNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogCoorddEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble)', ptr)
-			if ok then
-				gl.FogCoorddEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearDepthx")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed)', ptr)
-			if ok then
-				gl.ClearDepthx = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsImageHandleResidentARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint64)', ptr)
-			if ok then
-				gl.IsImageHandleResidentARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenQueriesEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenQueriesEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetSamplerParameterIivOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetSamplerParameterIivOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureRangeAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.TextureRangeAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glExtGetRenderbuffersQCOM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint *, GLint, GLint *)', ptr)
-			if ok then
-				gl.ExtGetRenderbuffersQCOM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTextureSubImage2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTextureSubImage2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRenderbufferStorageEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.RenderbufferStorageEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawElementsInstancedBaseVertexOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei, GLint)', ptr)
-			if ok then
-				gl.DrawElementsInstancedBaseVertexOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawRangeElementsBaseVertexOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, GL_LUA_ENUMS, const void *, GLint)', ptr)
-			if ok then
-				gl.DrawRangeElementsBaseVertexOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEndQueryIndexed")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.EndQueryIndexed = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelTransferi")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.PixelTransferi = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormal3iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.Normal3iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTextureHandleARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint64 (*)(GLuint)', ptr)
-			if ok then
-				gl.GetTextureHandleARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.Fogiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFrustum")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.Frustum = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferTexture3DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLint)', ptr)
-			if ok then
-				gl.FramebufferTexture3DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawElements")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.DrawElements = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glObjectUnpurgeableAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLenum (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ObjectUnpurgeableAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPopDebugGroup")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.PopDebugGroup = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedRenderbufferStorageMultisampleEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.NamedRenderbufferStorageMultisampleEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetHandleARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLhandleARB (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.GetHandleARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedProgramStringEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.NamedProgramStringEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedProgramLocalParametersI4ivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.NamedProgramLocalParametersI4ivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetBooleanv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLboolean *)', ptr)
-			if ok then
-				gl.GetBooleanv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetIntegerIndexedvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLint *)', ptr)
-			if ok then
-				gl.GetIntegerIndexedvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEndTilingQCOM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbitfield)', ptr)
-			if ok then
-				gl.EndTilingQCOM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsTransformFeedbackNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsTransformFeedbackNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBinormal3dEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.Binormal3dEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glExtGetFramebuffersQCOM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint *, GLint, GLint *)', ptr)
-			if ok then
-				gl.ExtGetFramebuffersQCOM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTextureSubImage1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei)', ptr)
-			if ok then
-				gl.CopyTextureSubImage1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDebugMessageInsertARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLsizei, const GLchar *)', ptr)
-			if ok then
-				gl.DebugMessageInsertARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTextureImageEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)', ptr)
-			if ok then
-				gl.GetTextureImageEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix3dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.UniformMatrix3dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetLightiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetLightiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetActiveSubroutineUniformiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetActiveSubroutineUniformiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteTransformFeedbacksNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteTransformFeedbacksNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteFencesAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteFencesAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.Color4d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedProgramLocalParametersI4uivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.NamedProgramLocalParametersI4uivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelTexGenParameteriSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.PixelTexGenParameteriSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMaterialiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetMaterialiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorMaskiOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLboolean, GLboolean, GLboolean, GLboolean)', ptr)
-			if ok then
-				gl.ColorMaskiOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawTexsOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.DrawTexsOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexSubImage1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.MultiTexSubImage1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPrimitiveBoundingBoxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.PrimitiveBoundingBoxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPointervEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, void **)', ptr)
-			if ok then
-				gl.GetPointervEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniform3dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixMultdEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.MatrixMultdEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVideoCaptureivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetVideoCaptureivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFragmentLightiSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.FragmentLightiSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawTexivOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.DrawTexivOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawElementsBaseVertexEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLint)', ptr)
-			if ok then
-				gl.DrawElementsBaseVertexEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glHint")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.Hint = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFinishObjectAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.FinishObjectAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReadBufferNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ReadBufferNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPrioritizeTextures")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *, const GLfloat *)', ptr)
-			if ok then
-				gl.PrioritizeTextures = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCreateSyncFromCLeventARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLsync (*)(struct _cl_context *, struct _cl_event *, GLbitfield)', ptr)
-			if ok then
-				gl.CreateSyncFromCLeventARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPixelTexGenParameterfvSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetPixelTexGenParameterfvSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoordPointerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLsizei, GLsizei, const void *)', ptr)
-			if ok then
-				gl.TexCoordPointerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramEnvParameter4fvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramEnvParameter4fvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTexSubImage2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.CopyTexSubImage2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEvalCoord2d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.EvalCoord2d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexEnvfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MultiTexEnvfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearBufferiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, const GLint *)', ptr)
-			if ok then
-				gl.ClearBufferiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureColorMaskSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLboolean, GLboolean, GLboolean, GLboolean)', ptr)
-			if ok then
-				gl.TextureColorMaskSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawBuffers")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLenum *)', ptr)
-			if ok then
-				gl.DrawBuffers = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindVertexArray")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.BindVertexArray = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDisableDriverControlQCOM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.DisableDriverControlQCOM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMultiTexParameterIivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetMultiTexParameterIivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEvalCoord1xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed)', ptr)
-			if ok then
-				gl.EvalCoord1xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPrimitiveRestartIndex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.PrimitiveRestartIndex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferTexture2DMultisampleIMG")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLsizei)', ptr)
-			if ok then
-				gl.FramebufferTexture2DMultisampleIMG = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPrimitiveRestartIndexNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.PrimitiveRestartIndexNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTrackMatrixivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetTrackMatrixivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetDebugMessageLogKHR")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GLuint, GLsizei, GLenum *, GLenum *, GLuint *, GLenum *, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetDebugMessageLogKHR = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribIiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetVertexAttribIiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex4d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.Vertex4d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindFragmentShaderATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.BindFragmentShaderATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4fARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.MultiTexCoord4fARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDisableVertexArrayAttribEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.DisableVertexArrayAttribEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4us")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLushort, GLushort, GLushort, GLushort)', ptr)
-			if ok then
-				gl.Color4us = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBufferSubData")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLintptr, GLsizeiptr, const void *)', ptr)
-			if ok then
-				gl.BufferSubData = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetDoublei_vEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLdouble *)', ptr)
-			if ok then
-				gl.GetDoublei_vEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform3ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.Uniform3ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.MultiTexCoord4d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawTransformFeedbackStreamInstanced")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei)', ptr)
-			if ok then
-				gl.DrawTransformFeedbackStreamInstanced = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4bvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLbyte *)', ptr)
-			if ok then
-				gl.MultiTexCoord4bvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos3f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.RasterPos3f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawElementsInstancedBaseVertex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei, GLint)', ptr)
-			if ok then
-				gl.DrawElementsInstancedBaseVertex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendEquationOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendEquationOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3xvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.MultiTexCoord3xvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.MultiTexCoord3xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenPerfMonitorsAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenPerfMonitorsAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferParameteri")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.FramebufferParameteri = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelMapfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.PixelMapfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBitmapxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLsizei, GLfixed, GLfixed, GLfixed, GLfixed, const GLubyte *)', ptr)
-			if ok then
-				gl.BitmapxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3ivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.MultiTexCoord3ivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.MultiTexCoord3iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindFramebuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.BindFramebuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawElementsIndirect")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.DrawElementsIndirect = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.MultiTexCoord3i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearDepthfOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLclampf)', ptr)
-			if ok then
-				gl.ClearDepthfOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3fvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MultiTexCoord3fvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogCoorddvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.FogCoorddvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glImageTransformParameterfvHP")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.ImageTransformParameterfvHP = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDepthRangexOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.DepthRangexOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4ui64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint64EXT, GLuint64EXT, GLuint64EXT, GLuint64EXT)', ptr)
-			if ok then
-				gl.ProgramUniform4ui64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendEquationSeparateIndexedAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendEquationSeparateIndexedAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glConvolutionParameterxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.ConvolutionParameterxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetQueryObjecti64v")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint64 *)', ptr)
-			if ok then
-				gl.GetQueryObjecti64v = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTexImage1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint)', ptr)
-			if ok then
-				gl.CopyTexImage1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.Color3d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3dvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.MultiTexCoord3dvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3dARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.MultiTexCoord3dARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormalStream3bATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLbyte, GLbyte, GLbyte)', ptr)
-			if ok then
-				gl.NormalStream3bATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix4fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix4fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLoadName")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.LoadName = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindTextures")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.BindTextures = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetIntegeri_vEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLint *)', ptr)
-			if ok then
-				gl.GetIntegeri_vEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3ub")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLubyte, GLubyte, GLubyte)', ptr)
-			if ok then
-				gl.Color3ub = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPolygonOffsetx")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.PolygonOffsetx = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexParameteriEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.MultiTexParameteriEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetAttribLocationARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLint (*)(GLhandleARB, const GLcharARB *)', ptr)
-			if ok then
-				gl.GetAttribLocationARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFragmentLightfSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.FragmentLightfSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEnableVertexAttribAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.EnableVertexAttribAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEvalCoord2fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.EvalCoord2fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexSubImage2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.MultiTexSubImage2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTextureSubImage3D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.CopyTextureSubImage3D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBegin")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.Begin = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.SecondaryColor3s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPixelTexGenParameterivSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetPixelTexGenParameterivSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2bvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLbyte *)', ptr)
-			if ok then
-				gl.MultiTexCoord2bvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDisableClientStateiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.DisableClientStateiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2bOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLbyte, GLbyte)', ptr)
-			if ok then
-				gl.MultiTexCoord2bOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDisableVertexArrayEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.DisableVertexArrayEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReadBuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ReadBuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindTextureEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.BindTextureEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMaterialx")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.Materialx = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnPolygonStippleARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLubyte *)', ptr)
-			if ok then
-				gl.GetnPolygonStippleARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4ubVertex3fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLubyte *, const GLfloat *)', ptr)
-			if ok then
-				gl.Color4ubVertex3fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTextureImage1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTextureImage1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1fvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MultiTexCoord1fvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClipPlanefOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.ClipPlanefOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1bvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLbyte *)', ptr)
-			if ok then
-				gl.MultiTexCoord1bvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetDriverControlStringQCOM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetDriverControlStringQCOM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCombinerInputNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.CombinerInputNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodePointerSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const void **)', ptr)
-			if ok then
-				gl.ReplacementCodePointerSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetColorTableSGI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)', ptr)
-			if ok then
-				gl.GetColorTableSGI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib3dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttrib3dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawElements")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei)', ptr)
-			if ok then
-				gl.MultiDrawElements = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSamplePatternSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.SamplePatternSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBeginTransformFeedbackNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BeginTransformFeedbackNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPerfQueryDataINTEL")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLsizei, GLvoid *, GLuint *)', ptr)
-			if ok then
-				gl.GetPerfQueryDataINTEL = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCheckNamedFramebufferStatusEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLenum (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.CheckNamedFramebufferStatusEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferReadBufferEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.FramebufferReadBufferEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFragmentLightfvSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.FragmentLightfvSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLshort, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.VertexAttrib4s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindFramebufferOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.BindFramebufferOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMaterialxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.GetMaterialxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetBufferParameteri64v")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint64 *)', ptr)
-			if ok then
-				gl.GetBufferParameteri64v = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTextureSubImage3DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTextureSubImage3DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEndVertexShaderEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.EndVertexShaderEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBinormal3dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.Binormal3dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenerateMipmapOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.GenerateMipmapOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTextureImage3DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTextureImage3DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCallList")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.CallList = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnTexImage")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)', ptr)
-			if ok then
-				gl.GetnTexImage = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixMode")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.MatrixMode = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnMapdv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLdouble *)', ptr)
-			if ok then
-				gl.GetnMapdv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMultiTexLevelParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetMultiTexLevelParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixLoadIdentityEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.MatrixLoadIdentityEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glInterleavedArrays")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.InterleavedArrays = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCullParameterdvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble *)', ptr)
-			if ok then
-				gl.CullParameterdvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTexImage1DARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTexImage1DARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetProgramivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVariantPointervEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, void **)', ptr)
-			if ok then
-				gl.GetVariantPointervEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormal3hNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhalfNV, GLhalfNV, GLhalfNV)', ptr)
-			if ok then
-				gl.Normal3hNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearColorIiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.ClearColorIiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFragmentColorMaterialSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.FragmentColorMaterialSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEndPerfMonitorAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.EndPerfMonitorAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointParameterfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.PointParameterfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glInvalidateSubFramebuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const GLenum *, GLint, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.InvalidateSubFramebuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribLui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint64EXT *)', ptr)
-			if ok then
-				gl.GetVertexAttribLui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBinormal3svEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.Binormal3svEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendEquationSeparateiARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendEquationSeparateiARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetObjectPtrLabel")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const void *, GLsizei, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetObjectPtrLabel = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexWeightfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.VertexWeightfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniform1fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMap1xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed, GLfixed, GLint, GLint, GLfixed)', ptr)
-			if ok then
-				gl.Map1xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4x")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.MultiTexCoord4x = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLshort *)', ptr)
-			if ok then
-				gl.MultiTexCoord2sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnSeparableFilterARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *, GLsizei, void *, void *)', ptr)
-			if ok then
-				gl.GetnSeparableFilterARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedRenderbufferStorageEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.NamedRenderbufferStorageEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTexImage2D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTexImage2D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSelectPerfMonitorCountersAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLboolean, GLuint, GLint, GLuint *)', ptr)
-			if ok then
-				gl.SelectPerfMonitorCountersAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL3dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttribL3dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUseProgramObjectARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhandleARB)', ptr)
-			if ok then
-				gl.UseProgramObjectARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMakeBufferNonResidentNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.MakeBufferNonResidentNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLoadMatrixxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.LoadMatrixxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glListParameteriSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.ListParameteriSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedBufferSubData")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLintptr, GLsizeiptr, void *)', ptr)
-			if ok then
-				gl.GetNamedBufferSubData = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramLocalParameterIuivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint *)', ptr)
-			if ok then
-				gl.GetProgramLocalParameterIuivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteSamplers")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteSamplers = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4NubvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLubyte *)', ptr)
-			if ok then
-				gl.VertexAttrib4NubvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3us")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLushort, GLushort, GLushort)', ptr)
-			if ok then
-				gl.Color3us = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawRangeElements")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLsizei, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.DrawRangeElements = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedFramebufferDrawBuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.NamedFramebufferDrawBuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLshort)', ptr)
-			if ok then
-				gl.VertexAttrib1s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedMultiTexImage3DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedMultiTexImage3DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindBufferBaseNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint)', ptr)
-			if ok then
-				gl.BindBufferBaseNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPathColorGenfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetPathColorGenfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4hNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhalfNV, GLhalfNV, GLhalfNV, GLhalfNV)', ptr)
-			if ok then
-				gl.Color4hNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLightModelxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.LightModelxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1dARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLdouble)', ptr)
-			if ok then
-				gl.VertexAttrib1dARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFragmentMaterialfSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.FragmentMaterialfSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPopClientAttrib")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.PopClientAttrib = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultTransposeMatrixd")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.MultTransposeMatrixd = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEnableiNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.EnableiNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedMultiTexSubImage3DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedMultiTexSubImage3DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPathCoordsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat *)', ptr)
-			if ok then
-				gl.GetPathCoordsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsTextureHandleResidentARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint64)', ptr)
-			if ok then
-				gl.IsTextureHandleResidentARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenBuffers")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenBuffers = func
-			gl.GenBuffer = function() local id = ffi.new('GLint[1]') func(1, id) return id[0] end
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetShaderPrecisionFormat")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *, GLint *)', ptr)
-			if ok then
-				gl.GetShaderPrecisionFormat = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCullParameterfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.CullParameterfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSampleMaskSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLclampf, GLboolean)', ptr)
-			if ok then
-				gl.SampleMaskSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedRenderbufferStorage")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.NamedRenderbufferStorage = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform4i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.Uniform4i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetActiveAtomicCounterBufferiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetActiveAtomicCounterBufferiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL4dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttribL4dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindBuffersRange")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLuint *, const GLintptr *, const GLsizeiptr *)', ptr)
-			if ok then
-				gl.BindBuffersRange = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix4x3fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix4x3fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribL1dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttribL1dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBufferParameteriAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.BufferParameteriAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib1dvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.VertexAttrib1dvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glObjectPurgeableAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLenum (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ObjectPurgeableAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glAlphaFragmentOp2ATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.AlphaFragmentOp2ATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsFenceNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsFenceNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferTexture2DOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)', ptr)
-			if ok then
-				gl.FramebufferTexture2DOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetQueryBufferObjectiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLintptr)', ptr)
-			if ok then
-				gl.GetQueryBufferObjectiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearDepthf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat)', ptr)
-			if ok then
-				gl.ClearDepthf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFinishFenceAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.FinishFenceAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramParameter4fvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramParameter4fvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindBufferARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.BindBufferARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBeginPerfQueryINTEL")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.BeginPerfQueryINTEL = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniform4dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendFuncSeparateiOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendFuncSeparateiOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBinormalPointerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.BinormalPointerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexRenderbufferNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.TexRenderbufferNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPointerv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, void **)', ptr)
-			if ok then
-				gl.GetPointerv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetBufferParameterui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint64EXT *)', ptr)
-			if ok then
-				gl.GetBufferParameterui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDepthRangefOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLclampf, GLclampf)', ptr)
-			if ok then
-				gl.DepthRangefOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsSyncAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLsync)', ptr)
-			if ok then
-				gl.IsSyncAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.SecondaryColor3fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClientAttribDefaultEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbitfield)', ptr)
-			if ok then
-				gl.ClientAttribDefaultEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetActiveUniform")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLint *, GLenum *, GLchar *)', ptr)
-			if ok then
-				gl.GetActiveUniform = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniform4fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glConvolutionParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.ConvolutionParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindRenderbuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.BindRenderbuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindVideoCaptureStreamTextureNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.BindVideoCaptureStreamTextureNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramLocalParameterdvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLdouble *)', ptr)
-			if ok then
-				gl.GetProgramLocalParameterdvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorSubTable")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.ColorSubTable = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDetailTexFuncSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.DetailTexFuncSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexFilterFuncSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.TexFilterFuncSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendColor")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.BlendColor = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyMultiTexSubImage1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei)', ptr)
-			if ok then
-				gl.CopyMultiTexSubImage1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormal3sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLshort *)', ptr)
-			if ok then
-				gl.Normal3sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTexImage2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint)', ptr)
-			if ok then
-				gl.CopyTexImage2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFlushMappedBufferRangeEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLintptr, GLsizeiptr)', ptr)
-			if ok then
-				gl.FlushMappedBufferRangeEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPassTexCoordATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.PassTexCoordATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIndexFuncEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLclampf)', ptr)
-			if ok then
-				gl.IndexFuncEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBeginVertexShaderEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.BeginVertexShaderEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFragmentMaterialivSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetFragmentMaterialivSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetDebugMessageLogAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GLuint, GLsizei, GLenum *, GLuint *, GLuint *, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetDebugMessageLogAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glListParameterfSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.ListParameterfSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEndTransformFeedback")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.EndTransformFeedback = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyColorTableSGI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei)', ptr)
-			if ok then
-				gl.CopyColorTableSGI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawArraysInstancedBaseInstance")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLsizei, GLsizei, GLuint)', ptr)
-			if ok then
-				gl.DrawArraysInstancedBaseInstance = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTextureSubImage2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.CopyTextureSubImage2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPathDashArrayNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLfloat *)', ptr)
-			if ok then
-				gl.GetPathDashArrayNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnUniformuivKHR")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GetnUniformuivKHR = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyMultiTexSubImage3DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.CopyMultiTexSubImage3DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnColorTableARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)', ptr)
-			if ok then
-				gl.GetnColorTableARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramEnvParameterdvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLdouble *)', ptr)
-			if ok then
-				gl.GetProgramEnvParameterdvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetIntegerv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetIntegerv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnUniformfvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLfloat *)', ptr)
-			if ok then
-				gl.GetnUniformfvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetConvolutionParameterxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)', ptr)
-			if ok then
-				gl.GetConvolutionParameterxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.MultiTexCoord4i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawArrays")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLsizei)', ptr)
-			if ok then
-				gl.DrawArrays = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorTableParameterivSGI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.ColorTableParameterivSGI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.FogxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFragmentLightfvSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetFragmentLightfvSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDepthRange")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.DepthRange = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferRenderbufferOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.FramebufferRenderbufferOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClipPlanexIMG")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.ClipPlanexIMG = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramLocalParameter4dARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.ProgramLocalParameter4dARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnPixelMapusv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GLushort *)', ptr)
-			if ok then
-				gl.GetnPixelMapusv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFramebufferAttachmentParameterivOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetFramebufferAttachmentParameterivOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4ubv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLubyte *)', ptr)
-			if ok then
-				gl.VertexAttrib4ubv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawElementsInstancedANGLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei)', ptr)
-			if ok then
-				gl.DrawElementsInstancedANGLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetActiveVaryingNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLsizei *, GLenum *, GLchar *)', ptr)
-			if ok then
-				gl.GetActiveVaryingNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSwizzleEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.SwizzleEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedFramebufferTextureLayer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint, GLint)', ptr)
-			if ok then
-				gl.NamedFramebufferTextureLayer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos2xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.RasterPos2xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRenderbufferStorageMultisampleANGLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.RenderbufferStorageMultisampleANGLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetInstrumentsSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLint (*)()', ptr)
-			if ok then
-				gl.GetInstrumentsSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexP4ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.VertexP4ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.MultiTexCoord1dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetRenderbufferParameterivOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetRenderbufferParameterivOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexGendEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLdouble)', ptr)
-			if ok then
-				gl.MultiTexGendEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearBufferfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, const GLfloat *)', ptr)
-			if ok then
-				gl.ClearBufferfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.WindowPos2f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetInvariantBooleanvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLboolean *)', ptr)
-			if ok then
-				gl.GetInvariantBooleanvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexRenderbufferEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.MultiTexRenderbufferEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramParameteriARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.ProgramParameteriARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayBindingDivisor")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexArrayBindingDivisor = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteProgramsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteProgramsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStencilThenCoverFillPathNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.StencilThenCoverFillPathNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawElementsInstancedNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei)', ptr)
-			if ok then
-				gl.DrawElementsInstancedNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexSubImage3DOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.TexSubImage3DOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferTexture1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)', ptr)
-			if ok then
-				gl.FramebufferTexture1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribdvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLdouble *)', ptr)
-			if ok then
-				gl.GetVertexAttribdvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribLdvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLdouble *)', ptr)
-			if ok then
-				gl.GetVertexAttribLdvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetShaderiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetShaderiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPointeri_vEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, void **)', ptr)
-			if ok then
-				gl.GetPointeri_vEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedProgramLocalParameterdvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLdouble *)', ptr)
-			if ok then
-				gl.GetNamedProgramLocalParameterdvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.MultiTexCoord3dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTextureLevelParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetTextureLevelParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBinormal3ivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.Binormal3ivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexPointer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.VertexPointer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVaryingLocationNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLint (*)(GLuint, const GLchar *)', ptr)
-			if ok then
-				gl.GetVaryingLocationNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStencilFillPathNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.StencilFillPathNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindLightParameterEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BindLightParameterEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixRotatefEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.MatrixRotatefEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexParameterxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.TexParameterxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glConvolutionParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.ConvolutionParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsObjectBufferATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsObjectBufferATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetUniformOffsetEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLintptr (*)(GLuint, GLint)', ptr)
-			if ok then
-				gl.GetUniformOffsetEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexParameterPointervAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, void **)', ptr)
-			if ok then
-				gl.GetTexParameterPointervAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPatchParameteriEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.PatchParameteriEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapBuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void *(*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.MapBuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetGraphicsResetStatusKHR")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLenum (*)()', ptr)
-			if ok then
-				gl.GetGraphicsResetStatusKHR = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeletePerfQueryINTEL")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.DeletePerfQueryINTEL = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramPipelineInfoLog")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetProgramPipelineInfoLog = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramPipelineInfoLogEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetProgramPipelineInfoLogEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2dMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.WindowPos2dMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramResourcefvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, const GLenum *, GLsizei, GLsizei *, GLfloat *)', ptr)
-			if ok then
-				gl.GetProgramResourcefvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPopAttrib")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.PopAttrib = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexEnviEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.MultiTexEnviEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribdvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLdouble *)', ptr)
-			if ok then
-				gl.GetVertexAttribdvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedRenderbufferStorageMultisampleCoverageEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GLsizei, GL_LUA_ENUMS, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.NamedRenderbufferStorageMultisampleCoverageEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTextureLevelParameterfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetTextureLevelParameterfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexParameterIiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetTexParameterIiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindFragDataLocation")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, const GLchar *)', ptr)
-			if ok then
-				gl.BindFragDataLocation = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetColorTableParameterfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetColorTableParameterfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetCompressedTextureSubImage")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLsizei, void *)', ptr)
-			if ok then
-				gl.GetCompressedTextureSubImage = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDepthFunc")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.DepthFunc = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramEnvParameterfvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLfloat *)', ptr)
-			if ok then
-				gl.GetProgramEnvParameterfvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glAlphaFuncx")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.AlphaFuncx = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTextureHandleNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint64 (*)(GLuint)', ptr)
-			if ok then
-				gl.GetTextureHandleNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLineStipple")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLushort)', ptr)
-			if ok then
-				gl.LineStipple = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedBufferPointerv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, void **)', ptr)
-			if ok then
-				gl.GetNamedBufferPointerv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexGenfvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetTexGenfvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetGraphicsResetStatus")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLenum (*)()', ptr)
-			if ok then
-				gl.GetGraphicsResetStatus = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorPointer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.ColorPointer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetQueryObjectivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetQueryObjectivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4bv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLbyte *)', ptr)
-			if ok then
-				gl.Color4bv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedMultiTexImage2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLint, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedMultiTexImage2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetQueryObjectuivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint *)', ptr)
-			if ok then
-				gl.GetQueryObjectuivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramResourceIndex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GLuint, GL_LUA_ENUMS, const GLchar *)', ptr)
-			if ok then
-				gl.GetProgramResourceIndex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMinmax")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)', ptr)
-			if ok then
-				gl.GetMinmax = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetSamplerParameterIuiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint *)', ptr)
-			if ok then
-				gl.GetSamplerParameterIuiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointParameterxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.PointParameterxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetSamplerParameterIiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetSamplerParameterIiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4sNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLshort, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.VertexAttrib4sNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos4i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.RasterPos4i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSamplerParameterIuiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.SamplerParameterIuiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLfloat)', ptr)
-			if ok then
-				gl.ProgramUniform1f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearBufferfi")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLfloat, GLint)', ptr)
-			if ok then
-				gl.ClearBufferfi = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetSeparableFilterEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, void *, void *, void *)', ptr)
-			if ok then
-				gl.GetSeparableFilterEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniform3fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetStringi")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'const GLubyte *(*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.GetStringi = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4NubARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLubyte, GLubyte, GLubyte, GLubyte)', ptr)
-			if ok then
-				gl.VertexAttrib4NubARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexBumpParameterfvATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetTexBumpParameterfvATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTextureParameterIuiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint *)', ptr)
-			if ok then
-				gl.GetTextureParameterIuiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTexSubImage1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei)', ptr)
-			if ok then
-				gl.CopyTexSubImage1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelMapuiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.PixelMapuiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearIndex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat)', ptr)
-			if ok then
-				gl.ClearIndex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTextureSubImage1D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei)', ptr)
-			if ok then
-				gl.CopyTextureSubImage1D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexGenivOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetTexGenivOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEnableVertexArrayAttrib")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.EnableVertexArrayAttrib = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetTexParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLoadMatrixx")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.LoadMatrixx = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindImageTextureEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLint, GLboolean, GLint, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.BindImageTextureEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexGenxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.TexGenxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearColorx")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.ClearColorx = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribfvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetVertexAttribfvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsQueryARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsQueryARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearNamedFramebufferfi")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const GLfloat, GLint)', ptr)
-			if ok then
-				gl.ClearNamedFramebufferfi = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexGenf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.TexGenf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFramebufferAttachmentParameteriv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetFramebufferAttachmentParameteriv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble)', ptr)
-			if ok then
-				gl.MultiTexCoord1d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetFragmentLightivSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetFragmentLightivSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTransformFeedbackVaryingNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLint *)', ptr)
-			if ok then
-				gl.GetTransformFeedbackVaryingNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsNamedBufferResidentNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsNamedBufferResidentNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTransformFeedbackiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetTransformFeedbackiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexArrayVertexBindingDivisorEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.VertexArrayVertexBindingDivisorEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetSamplerParameterIuivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint *)', ptr)
-			if ok then
-				gl.GetSamplerParameterIuivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glInsertEventMarkerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLchar *)', ptr)
-			if ok then
-				gl.InsertEventMarkerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFlushMappedNamedBufferRange")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLintptr, GLsizeiptr)', ptr)
-			if ok then
-				gl.FlushMappedNamedBufferRange = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnUniformdvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLdouble *)', ptr)
-			if ok then
-				gl.GetnUniformdvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetUniformuivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint *)', ptr)
-			if ok then
-				gl.GetUniformuivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2fColor4ubVertex3fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLubyte, GLubyte, GLubyte, GLubyte, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.TexCoord2fColor4ubVertex3fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIndexPointer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.IndexPointer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEndTransformFeedbackNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.EndTransformFeedbackNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsAsyncMarkerSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsAsyncMarkerSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexArrayIndexed64iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLint64 *)', ptr)
-			if ok then
-				gl.GetVertexArrayIndexed64iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexArrayIndexediv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetVertexArrayIndexediv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexArrayIntegeri_vEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetVertexArrayIntegeri_vEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureParameteriEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.TextureParameteriEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDispatchComputeIndirect")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLintptr)', ptr)
-			if ok then
-				gl.DispatchComputeIndirect = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorTableParameterfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.ColorTableParameterfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribArrayObjectivATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetVertexAttribArrayObjectivATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribIuivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint *)', ptr)
-			if ok then
-				gl.GetVertexAttribIuivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenProgramsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenProgramsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEndQueryARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.EndQueryARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindRenderbufferOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.BindRenderbufferOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix2x3dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix2x3dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogCoordFormatNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei)', ptr)
-			if ok then
-				gl.FogCoordFormatNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIndexs")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort)', ptr)
-			if ok then
-				gl.Indexs = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glAlphaFuncxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.AlphaFuncxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVideoCaptureStreamfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetVideoCaptureStreamfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexP3uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.VertexP3uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glInvalidateNamedFramebufferData")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLenum *)', ptr)
-			if ok then
-				gl.InvalidateNamedFramebufferData = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedProgramLocalParameterI4iEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.NamedProgramLocalParameterI4iEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBeginVideoCaptureNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.BeginVideoCaptureNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform1i64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint64EXT)', ptr)
-			if ok then
-				gl.Uniform1i64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetSyncivAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsync, GL_LUA_ENUMS, GLsizei, GLsizei *, GLint *)', ptr)
-			if ok then
-				gl.GetSyncivAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnMapdvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLdouble *)', ptr)
-			if ok then
-				gl.GetnMapdvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnMapfvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLfloat *)', ptr)
-			if ok then
-				gl.GetnMapfvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormalStream3fATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.NormalStream3fATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramResourceiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, const GLenum *, GLsizei, GLsizei *, GLint *)', ptr)
-			if ok then
-				gl.GetProgramResourceiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos4xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.RasterPos4xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.Fogf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnPixelMapuivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GetnPixelMapuivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindVertexBuffers")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLuint *, const GLintptr *, const GLsizei *)', ptr)
-			if ok then
-				gl.BindVertexBuffers = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetQueryIndexediv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetQueryIndexediv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnMinmaxARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)', ptr)
-			if ok then
-				gl.GetnMinmaxARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetConvolutionFilter")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)', ptr)
-			if ok then
-				gl.GetConvolutionFilter = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetUniformivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhandleARB, GLint, GLint *)', ptr)
-			if ok then
-				gl.GetUniformivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.Color4s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDepthRangeArrayv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLdouble *)', ptr)
-			if ok then
-				gl.DepthRangeArrayv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetGraphicsResetStatusARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLenum (*)()', ptr)
-			if ok then
-				gl.GetGraphicsResetStatusARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnUniformfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLfloat *)', ptr)
-			if ok then
-				gl.GetnUniformfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnUniformivKHR")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLint *)', ptr)
-			if ok then
-				gl.GetnUniformivKHR = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnUniformuiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GetnUniformuiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixLoadTransposedEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.MatrixLoadTransposedEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGlobalAlphaFactorbSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbyte)', ptr)
-			if ok then
-				gl.GlobalAlphaFactorbSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGlobalAlphaFactorubSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLubyte)', ptr)
-			if ok then
-				gl.GlobalAlphaFactorubSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glHintPGI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.HintPGI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetVertexAttribfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDepthBoundsEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLclampd, GLclampd)', ptr)
-			if ok then
-				gl.DepthBoundsEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearNamedFramebufferfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, const GLfloat *)', ptr)
-			if ok then
-				gl.ClearNamedFramebufferfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLightfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.Lightfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindVertexArrayAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.BindVertexArrayAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFragmentLightModelivSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.FragmentLightModelivSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIndexPointerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GLsizei, const void *)', ptr)
-			if ok then
-				gl.IndexPointerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyMultiTexSubImage2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.CopyMultiTexSubImage2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPerfMonitorCountersAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint *, GLint *, GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GetPerfMonitorCountersAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMinmaxEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, void *)', ptr)
-			if ok then
-				gl.GetMinmaxEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDebugMessageEnableAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, const GLuint *, GLboolean)', ptr)
-			if ok then
-				gl.DebugMessageEnableAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIndexub")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLubyte)', ptr)
-			if ok then
-				gl.Indexub = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIndexubv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLubyte *)', ptr)
-			if ok then
-				gl.Indexubv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.ProgramUniform4uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnColorTable")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)', ptr)
-			if ok then
-				gl.GetnColorTable = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1ui64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint64EXT)', ptr)
-			if ok then
-				gl.ProgramUniform1ui64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexGenxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)', ptr)
-			if ok then
-				gl.GetTexGenxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPerfMonitorCounterStringAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLsizei, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetPerfMonitorCounterStringAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glInvalidateFramebuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const GLenum *)', ptr)
-			if ok then
-				gl.InvalidateFramebuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetObjectLabel")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetObjectLabel = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex3d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.Vertex3d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetVertexAttribfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsEnabledi")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.IsEnabledi = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsEnablediOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.IsEnablediOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsEnablediNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.IsEnablediNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendFunciEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendFunciEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glInitNames")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.InitNames = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindBufferBaseEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint)', ptr)
-			if ok then
-				gl.BindBufferBaseEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTransformFeedbackBufferBase")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.TransformFeedbackBufferBase = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawElementsBaseVertex")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLsizei *, GL_LUA_ENUMS, const void *const*, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.MultiDrawElementsBaseVertex = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedProgramLocalParameterIivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLint *)', ptr)
-			if ok then
-				gl.GetNamedProgramLocalParameterIivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.ProgramUniform4iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsPointInStrokePathNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.IsPointInStrokePathNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapTexture2DINTEL")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void *(*)(GLuint, GLint, GLbitfield, GLint *, GLenum *)', ptr)
-			if ok then
-				gl.MapTexture2DINTEL = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramEnvParameter4dvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramEnvParameter4dvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexGeniv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.TexGeniv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindTextureUnit")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.BindTextureUnit = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawRangeElementArrayAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, const GLint *, const GLsizei *, GLsizei)', ptr)
-			if ok then
-				gl.MultiDrawRangeElementArrayAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormalP3uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.NormalP3uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTexSubImage3D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.CopyTexSubImage3D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsRenderbuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsRenderbuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyBufferSubData")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLintptr, GLintptr, GLsizeiptr)', ptr)
-			if ok then
-				gl.CopyBufferSubData = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReadnPixelsEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)', ptr)
-			if ok then
-				gl.ReadnPixelsEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormalP3ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.NormalP3ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos2xvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.RasterPos2xvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLightModeli")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.LightModeli = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelTexGenParameterfSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.PixelTexGenParameterfSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyImageSubDataOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLuint, GL_LUA_ENUMS, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.CopyImageSubDataOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEndOcclusionQueryNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.EndOcclusionQueryNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3fVertex3fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Color3fVertex3fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsVertexArrayOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsVertexArrayOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindVertexArrayOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.BindVertexArrayOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlitFramebuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlitFramebuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCreatePerfQueryINTEL")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint *)', ptr)
-			if ok then
-				gl.CreatePerfQueryINTEL = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4sARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLshort, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.MultiTexCoord4sARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTangentPointerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.TangentPointerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCombinerParameterfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.CombinerParameterfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLineWidth")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat)', ptr)
-			if ok then
-				gl.LineWidth = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedFramebufferReadBuffer")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.NamedFramebufferReadBuffer = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEndVideoCaptureNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.EndVideoCaptureNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetObjectPtrLabelKHR")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const void *, GLsizei, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetObjectPtrLabelKHR = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRectxvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *, const GLfixed *)', ptr)
-			if ok then
-				gl.RectxvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glResetMinmax")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.ResetMinmax = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoordPointerEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.MultiTexCoordPointerEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetDebugMessageLogARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GLuint, GLsizei, GLenum *, GLenum *, GLuint *, GLenum *, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetDebugMessageLogARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteProgramPipelinesEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteProgramPipelinesEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetDoublev")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble *)', ptr)
-			if ok then
-				gl.GetDoublev = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2fARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.MultiTexCoord2fARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLoadMatrixf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.LoadMatrixf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlitFramebufferNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlitFramebufferNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormal3xvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.Normal3xvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMakeImageHandleNonResidentNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint64)', ptr)
-			if ok then
-				gl.MakeImageHandleNonResidentNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMakeImageHandleResidentARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint64, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.MakeImageHandleResidentARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMakeTextureHandleNonResidentARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint64)', ptr)
-			if ok then
-				gl.MakeTextureHandleNonResidentARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnPixelMapfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GLfloat *)', ptr)
-			if ok then
-				gl.GetnPixelMapfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform2f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Uniform2f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDepthRangeArrayfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.DepthRangeArrayfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathGlyphIndexRangeNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLenum (*)(GL_LUA_ENUMS, const void *, GLbitfield, GLuint, GLfloat, GLuint)', ptr)
-			if ok then
-				gl.PathGlyphIndexRangeNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDisablei")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.Disablei = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnHistogramARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)', ptr)
-			if ok then
-				gl.GetnHistogramARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetShaderSourceARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhandleARB, GLsizei, GLsizei *, GLcharARB *)', ptr)
-			if ok then
-				gl.GetShaderSourceARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindMaterialParameterEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BindMaterialParameterEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetUniformui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint64EXT *)', ptr)
-			if ok then
-				gl.GetUniformui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexEnvivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.MultiTexEnvivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEnable")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.Enable = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexPointerListIBM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GL_LUA_ENUMS, GLint, const void **, GLint)', ptr)
-			if ok then
-				gl.VertexPointerListIBM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMaterialxv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.Materialxv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapVertexAttrib2fAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLfloat, GLfloat, GLint, GLint, GLfloat, GLfloat, GLint, GLint, const GLfloat *)', ptr)
-			if ok then
-				gl.MapVertexAttrib2fAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos2fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.RasterPos2fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearBufferData")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.ClearBufferData = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorP3uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.ColorP3uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawArraysInstancedANGLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.DrawArraysInstancedANGLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3uiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.ProgramUniform3uiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixIndexuivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, const GLuint *)', ptr)
-			if ok then
-				gl.MatrixIndexuivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMatrixIndexusvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, const GLushort *)', ptr)
-			if ok then
-				gl.MatrixIndexusvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenTransformFeedbacks")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenTransformFeedbacks = func
-			gl.GenTransformFeedback = function() local id = ffi.new('GLint[1]') func(1, id) return id[0] end
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSetLocalConstantEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.SetLocalConstantEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMaterialxv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed *)', ptr)
-			if ok then
-				gl.GetMaterialxv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fvSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLuint *, const GLfloat *, const GLfloat *, const GLfloat *, const GLfloat *)', ptr)
-			if ok then
-				gl.ReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fvSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniformMatrix2dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.UniformMatrix2dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex2hNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhalfNV, GLhalfNV)', ptr)
-			if ok then
-				gl.Vertex2hNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMultiTexEnvivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetMultiTexEnvivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramLocalParameterfvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLfloat *)', ptr)
-			if ok then
-				gl.GetProgramLocalParameterfvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMemoryBarrierByRegion")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbitfield)', ptr)
-			if ok then
-				gl.MemoryBarrierByRegion = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1i64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLint64EXT *)', ptr)
-			if ok then
-				gl.ProgramUniform1i64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix2x4dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix2x4dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMinmaxEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLboolean)', ptr)
-			if ok then
-				gl.MinmaxEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex2bOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLbyte, GLbyte)', ptr)
-			if ok then
-				gl.Vertex2bOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsFenceAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsFenceAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetVertexAttribivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glExtGetShadersQCOM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint *, GLint, GLint *)', ptr)
-			if ok then
-				gl.ExtGetShadersQCOM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMakeTextureHandleNonResidentNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint64)', ptr)
-			if ok then
-				gl.MakeTextureHandleNonResidentNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glConvolutionFilter1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.ConvolutionFilter1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawArraysEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *, const GLsizei *, GLsizei)', ptr)
-			if ok then
-				gl.MultiDrawArraysEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glUniform2fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.Uniform2fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathFogGenNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.PathFogGenNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFlushMappedNamedBufferRangeEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLintptr, GLsizeiptr)', ptr)
-			if ok then
-				gl.FlushMappedNamedBufferRangeEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawElementsIndirect")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.MultiDrawElementsIndirect = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexEnviv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.TexEnviv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetListParameterivSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetListParameterivSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenFencesNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLuint *)', ptr)
-			if ok then
-				gl.GenFencesNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPrimitiveBoundingBoxEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.PrimitiveBoundingBoxEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFragmentMaterialfvSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.FragmentMaterialfvSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.MultiTexCoord1iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetColorTableParameterfvSGI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetColorTableParameterfvSGI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawPixels")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.DrawPixels = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1bOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLbyte)', ptr)
-			if ok then
-				gl.MultiTexCoord1bOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos2f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.RasterPos2f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.MultiTexCoord4xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1ivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.MultiTexCoord1ivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1sARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLshort)', ptr)
-			if ok then
-				gl.MultiTexCoord1sARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1svARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLshort *)', ptr)
-			if ok then
-				gl.MultiTexCoord1svARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4ubVertex2fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLubyte, GLubyte, GLubyte, GLubyte, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Color4ubVertex2fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelStoref")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.PixelStoref = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFenceSync")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLsync (*)(GL_LUA_ENUMS, GLbitfield)', ptr)
-			if ok then
-				gl.FenceSync = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2dARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.MultiTexCoord2dARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix3x2dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix3x2dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2dvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.MultiTexCoord2dvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MultiTexCoord2fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureParameterfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.TextureParameterfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureViewOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.TextureViewOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2iARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint)', ptr)
-			if ok then
-				gl.MultiTexCoord2iARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttrib4iv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLint *)', ptr)
-			if ok then
-				gl.VertexAttrib4iv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2sARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLshort, GLshort)', ptr)
-			if ok then
-				gl.MultiTexCoord2sARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawTexfOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.DrawTexfOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnMapivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLint *)', ptr)
-			if ok then
-				gl.GetnMapivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.MultiTexCoord2xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3bOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLbyte, GLbyte, GLbyte)', ptr)
-			if ok then
-				gl.MultiTexCoord3bOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFrustumx")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.Frustumx = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMateriali")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.Materiali = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawArraysIndirect")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.DrawArraysIndirect = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.MultiTexCoord3f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEdgeFlagv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLboolean *)', ptr)
-			if ok then
-				gl.EdgeFlagv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWeightbvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, const GLbyte *)', ptr)
-			if ok then
-				gl.WeightbvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawTransformFeedbackNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.DrawTransformFeedbackNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLhalfNV *)', ptr)
-			if ok then
-				gl.MultiTexCoord3hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEvalCoord1dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.EvalCoord1dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCreateShaderProgramvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GL_LUA_ENUMS, GLsizei, const GLchar **)', ptr)
-			if ok then
-				gl.CreateShaderProgramvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertexAttribI1ivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, const GLint *)', ptr)
-			if ok then
-				gl.VertexAttribI1ivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glQueryCounterEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.QueryCounterEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos3d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.RasterPos3d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramSubroutineParametersuivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.ProgramSubroutineParametersuivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLighti")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.Lighti = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteVertexArrays")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteVertexArrays = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3svARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLshort *)', ptr)
-			if ok then
-				gl.MultiTexCoord3svARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramPathFragmentInputGenNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GL_LUA_ENUMS, GLint, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramPathFragmentInputGenNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEvalCoord2f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.EvalCoord2f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBeginQueryARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.BeginQueryARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramPipelineivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetProgramPipelineivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetArrayObjectivATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetArrayObjectivATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDebugMessageCallbackKHR")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLDEBUGPROCKHR, const void *)', ptr)
-			if ok then
-				gl.DebugMessageCallbackKHR = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4dvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.MultiTexCoord4dvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos4fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.RasterPos4fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4fvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.MultiTexCoord4fvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetObjectBufferivATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetObjectBufferivATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4iARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.MultiTexCoord4iARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4ivARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.MultiTexCoord4ivARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLightf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.Lightf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVideoivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint *)', ptr)
-			if ok then
-				gl.GetVideoivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord4fColor4fNormal3fVertex4fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.TexCoord4fColor4fNormal3fVertex4fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4svARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLshort *)', ptr)
-			if ok then
-				gl.MultiTexCoord4svARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord2fColor4fNormal3fVertex3fSUN")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.TexCoord2fColor4fNormal3fVertex3fSUN = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor4xvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.Color4xvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLoadTransposeMatrixf")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.LoadTransposeMatrixf = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRenderbufferStorage")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.RenderbufferStorage = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCoverStrokePathNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.CoverStrokePathNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyMultiTexImage2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint)', ptr)
-			if ok then
-				gl.CopyMultiTexImage2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexGendvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.MultiTexGendvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexGenfEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat)', ptr)
-			if ok then
-				gl.MultiTexGenfEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord3d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.TexCoord3d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexImage3DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.MultiTexImage3DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexParameterIuivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLuint *)', ptr)
-			if ok then
-				gl.MultiTexParameterIuivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormal3xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.Normal3xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glAreTexturesResident")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLsizei, const GLuint *, GLboolean *)', ptr)
-			if ok then
-				gl.AreTexturesResident = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexParameterivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.MultiTexParameterivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1i")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint)', ptr)
-			if ok then
-				gl.ProgramUniform1i = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramEnvParameterI4uivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, const GLuint *)', ptr)
-			if ok then
-				gl.ProgramEnvParameterI4uivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLightx")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.Lightx = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBlendFuncSeparateiARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.BlendFuncSeparateiARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVideoCaptureStreamParameterivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.VideoCaptureStreamParameterivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedBufferData")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizeiptr, const void *, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.NamedBufferData = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearDepthxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed)', ptr)
-			if ok then
-				gl.ClearDepthxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFragmentMaterialivSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.FragmentMaterialivSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormalStream3iATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.NormalStream3iATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex4bvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLbyte *)', ptr)
-			if ok then
-				gl.Vertex4bvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedMultiTexImage1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLint, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedMultiTexImage1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColorFragmentOp3ATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.ColorFragmentOp3ATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEvalCoord2xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.EvalCoord2xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glAlphaFragmentOp3ATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.AlphaFragmentOp3ATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos3s")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.RasterPos3s = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedFramebufferTexture2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)', ptr)
-			if ok then
-				gl.NamedFramebufferTexture2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramLocalParameter4dvARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramLocalParameter4dvARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCurrentPaletteMatrixOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.CurrentPaletteMatrixOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTextureSubImage")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)', ptr)
-			if ok then
-				gl.GetTextureSubImage = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTagSampleBufferSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.TagSampleBufferSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedProgramLocalParameter4fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, const GLfloat *)', ptr)
-			if ok then
-				gl.NamedProgramLocalParameter4fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedProgramLocalParameterI4ivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, const GLint *)', ptr)
-			if ok then
-				gl.NamedProgramLocalParameterI4ivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTexImage3DARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTexImage3DARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGenerateMultiTexMipmapEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.GenerateMultiTexMipmapEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glImportSyncEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLsync (*)(GL_LUA_ENUMS, GLintptr, GLbitfield)', ptr)
-			if ok then
-				gl.ImportSyncEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMap2f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfloat, GLfloat, GLint, GLint, GLfloat, GLfloat, GLint, GLint, const GLfloat *)', ptr)
-			if ok then
-				gl.Map2f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3sv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLshort *)', ptr)
-			if ok then
-				gl.MultiTexCoord3sv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetMultiTexParameterIuivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint *)', ptr)
-			if ok then
-				gl.GetMultiTexParameterIuivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindSampler")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.BindSampler = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapGrid2d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLdouble, GLdouble, GLint, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.MapGrid2d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWindowPos2dvMESA")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.WindowPos2dvMESA = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramBinaryOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, GLsizei *, GLenum *, void *)', ptr)
-			if ok then
-				gl.GetProgramBinaryOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glWaitSync")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsync, GLbitfield, GLuint64)', ptr)
-			if ok then
-				gl.WaitSync = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetPerfMonitorCounterDataAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLsizei, GLuint *, GLint *)', ptr)
-			if ok then
-				gl.GetPerfMonitorCounterDataAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFlushRasterSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)()', ptr)
-			if ok then
-				gl.FlushRasterSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCompressedTextureSubImage1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.CompressedTextureSubImage1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVertexAttribdv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLdouble *)', ptr)
-			if ok then
-				gl.GetVertexAttribdv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormalPointerListIBM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, const void **, GLint)', ptr)
-			if ok then
-				gl.NormalPointerListIBM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawArraysIndirectBindlessCountNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const void *, GLsizei, GLsizei, GLsizei, GLint)', ptr)
-			if ok then
-				gl.MultiDrawArraysIndirectBindlessCountNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormalStream3bvATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLbyte *)', ptr)
-			if ok then
-				gl.NormalStream3bvATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix3fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix3fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormalStream3dvATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.NormalStream3dvATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormalStream3fvATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.NormalStream3fvATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormalStream3ivATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.NormalStream3ivATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2svARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLshort *)', ptr)
-			if ok then
-				gl.MultiTexCoord2svARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3bv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLbyte *)', ptr)
-			if ok then
-				gl.Color3bv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetInternalformativ")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLint *)', ptr)
-			if ok then
-				gl.GetInternalformativ = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord1hNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLhalfNV)', ptr)
-			if ok then
-				gl.MultiTexCoord1hNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glListParameterivSGIX")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.ListParameterivSGIX = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLoadTransposeMatrixdARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLdouble *)', ptr)
-			if ok then
-				gl.LoadTransposeMatrixdARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexImage2DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLsizei, GLint, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.MultiTexImage2DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEdgeFlagPointerListIBM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, const GLboolean **, GLint)', ptr)
-			if ok then
-				gl.EdgeFlagPointerListIBM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathColorGenNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.PathColorGenNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnMapiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLint *)', ptr)
-			if ok then
-				gl.GetnMapiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLdouble)', ptr)
-			if ok then
-				gl.ProgramUniform1d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathGlyphsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const void *, GLbitfield, GLsizei, GL_LUA_ENUMS, const void *, GL_LUA_ENUMS, GLuint, GLfloat)', ptr)
-			if ok then
-				gl.PathGlyphsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glClearColorIuiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.ClearColorIuiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsVertexArrayAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint)', ptr)
-			if ok then
-				gl.IsVertexArrayAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPathParameterfvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.PathParameterfvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3sARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLshort, GLshort, GLshort)', ptr)
-			if ok then
-				gl.MultiTexCoord3sARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoordP4ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint)', ptr)
-			if ok then
-				gl.MultiTexCoordP4ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawBuffersATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLenum *)', ptr)
-			if ok then
-				gl.DrawBuffersATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelStorei")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.PixelStorei = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointAlongPathNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLuint, GLsizei, GLsizei, GLfloat, GLfloat *, GLfloat *, GLfloat *, GLfloat *)', ptr)
-			if ok then
-				gl.PointAlongPathNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelTexGenParameterfvSGIS")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.PixelTexGenParameterfvSGIS = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapGrid1f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.MapGrid1f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIndexiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLint *)', ptr)
-			if ok then
-				gl.Indexiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteSyncAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsync)', ptr)
-			if ok then
-				gl.DeleteSyncAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4dEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.ProgramUniform4dEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexParameterIuiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint *)', ptr)
-			if ok then
-				gl.GetTexParameterIuiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPixelTransformParameterfvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.PixelTransformParameterfvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFogx")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.Fogx = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord4dARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.MultiTexCoord4dARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2xvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.MultiTexCoord2xvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glStencilThenCoverFillPathInstancedNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, GL_LUA_ENUMS, const void *, GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfloat *)', ptr)
-			if ok then
-				gl.StencilThenCoverFillPathInstancedNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex4fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.Vertex4fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointSizePointerOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, const void *)', ptr)
-			if ok then
-				gl.PointSizePointerOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex3fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.Vertex3fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPolygonOffsetEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.PolygonOffsetEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord3bvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLbyte *)', ptr)
-			if ok then
-				gl.MultiTexCoord3bvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetNamedStringARB")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, const GLchar *, GLsizei, GLint *, GLchar *)', ptr)
-			if ok then
-				gl.GetNamedStringARB = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyTexImage1D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GL_LUA_ENUMS, GLint, GLint, GLsizei, GLint)', ptr)
-			if ok then
-				gl.CopyTexImage1D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex4f")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfloat, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.Vertex4f = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glEvalMesh2")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.EvalMesh2 = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetProgramSubroutineParameteruivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLuint *)', ptr)
-			if ok then
-				gl.GetProgramSubroutineParameteruivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNormal3hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLhalfNV *)', ptr)
-			if ok then
-				gl.Normal3hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDeleteFencesNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.DeleteFencesNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glVertex2fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfloat *)', ptr)
-			if ok then
-				gl.Vertex2fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glConvolutionFilter2D")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLsizei, GL_LUA_ENUMS, GL_LUA_ENUMS, const void *)', ptr)
-			if ok then
-				gl.ConvolutionFilter2D = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramEnvParametersI4ivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.ProgramEnvParametersI4ivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedFramebufferTexture3DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint, GLint)', ptr)
-			if ok then
-				gl.NamedFramebufferTexture3DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDrawElementsInstancedBaseVertexBaseInstance")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLsizei, GL_LUA_ENUMS, const void *, GLsizei, GLint, GLuint)', ptr)
-			if ok then
-				gl.DrawElementsInstancedBaseVertexBaseInstance = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramLocalParameters4fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramLocalParameters4fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramLocalParametersI4ivNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.ProgramLocalParametersI4ivNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnMapfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, GLfloat *)', ptr)
-			if ok then
-				gl.GetnMapfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapVertexAttrib1dAPPLE")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLdouble, GLdouble, GLint, GLint, const GLdouble *)', ptr)
-			if ok then
-				gl.MapVertexAttrib1dAPPLE = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glCopyConvolutionFilter1DEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint, GLint, GLsizei)', ptr)
-			if ok then
-				gl.CopyConvolutionFilter1DEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glBindSamplers")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.BindSamplers = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glColor3hvNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLhalfNV *)', ptr)
-			if ok then
-				gl.Color3hvNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFreeObjectBufferATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint)', ptr)
-			if ok then
-				gl.FreeObjectBufferATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMap2d")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLdouble, GLdouble, GLint, GLint, GLdouble, GLdouble, GLint, GLint, const GLdouble *)', ptr)
-			if ok then
-				gl.Map2d = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPointParameterx")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLfixed)', ptr)
-			if ok then
-				gl.PointParameterx = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTexGenfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetTexGenfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMapGrid2xOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint, GLfixed, GLfixed, GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.MapGrid2xOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1iEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint)', ptr)
-			if ok then
-				gl.ProgramUniform1iEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1ivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.ProgramUniform1ivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexCoord1hNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLhalfNV)', ptr)
-			if ok then
-				gl.TexCoord1hNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1uiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint)', ptr)
-			if ok then
-				gl.ProgramUniform1uiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform1uivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.ProgramUniform1uivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glFramebufferTextureOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLuint, GLint)', ptr)
-			if ok then
-				gl.FramebufferTextureOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniform2dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2fEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ProgramUniform2fEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTexEnvxv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const GLfixed *)', ptr)
-			if ok then
-				gl.TexEnvxv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glDebugMessageCallback")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLDEBUGPROC, const void *)', ptr)
-			if ok then
-				gl.DebugMessageCallback = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2i64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint64EXT, GLint64EXT)', ptr)
-			if ok then
-				gl.ProgramUniform2i64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2i64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLint64EXT *)', ptr)
-			if ok then
-				gl.ProgramUniform2i64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2iEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint)', ptr)
-			if ok then
-				gl.ProgramUniform2iEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glConvolutionParameteriEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, GLint)', ptr)
-			if ok then
-				gl.ConvolutionParameteriEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRequestResidentProgramsNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.RequestResidentProgramsNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSampleCoverageOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLboolean)', ptr)
-			if ok then
-				gl.SampleCoverageOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glExtGetBufferPointervQCOM")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, void **)', ptr)
-			if ok then
-				gl.ExtGetBufferPointervQCOM = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform2uivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.ProgramUniform2uivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3dEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.ProgramUniform3dEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3fEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLfloat, GLfloat, GLfloat)', ptr)
-			if ok then
-				gl.ProgramUniform3fEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glLightModeliv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.LightModeliv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glSecondaryColor3ui")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.SecondaryColor3ui = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3i64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLint64EXT *)', ptr)
-			if ok then
-				gl.ProgramUniform3i64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureParameterIiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, const GLint *)', ptr)
-			if ok then
-				gl.TextureParameterIiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetnHistogram")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLboolean, GL_LUA_ENUMS, GL_LUA_ENUMS, GLsizei, void *)', ptr)
-			if ok then
-				gl.GetnHistogram = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3ui64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint64EXT, GLuint64EXT, GLuint64EXT)', ptr)
-			if ok then
-				gl.ProgramUniform3ui64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3ui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLuint64EXT *)', ptr)
-			if ok then
-				gl.ProgramUniform3ui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3uiEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.ProgramUniform3uiEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform3uivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLuint *)', ptr)
-			if ok then
-				gl.ProgramUniform3uivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glPolygonOffsetxOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLfixed, GLfixed)', ptr)
-			if ok then
-				gl.PolygonOffsetxOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultMatrixx")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.MultMatrixx = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4i64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint64EXT, GLint64EXT, GLint64EXT, GLint64EXT)', ptr)
-			if ok then
-				gl.ProgramUniform4i64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNewObjectBufferATI")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLuint (*)(GLsizei, const void *, GL_LUA_ENUMS)', ptr)
-			if ok then
-				gl.NewObjectBufferATI = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4iEXT")
+	for name, info in pairs(functions) do
+		local ptr = gl.GetProcAddress(name)
 		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLint, GLint, GLint, GLint)', ptr)
+			local ok, func = pcall(ffi.cast, info[1], ptr)
 			if ok then
-				gl.ProgramUniform4iEXT = func
+				gl[name:sub(3)] = func
+				if info[2] then
+					gl[name:sub(3, -2)] = function()
+						local id = ffi.new('GLint[1]')
+						func(1, id)
+						return id[0]
+					end
+				end
 			end
 		end
 	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniform4ivEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, const GLint *)', ptr)
-			if ok then
-				gl.ProgramUniform4ivEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix2dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix2dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix2fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix2fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glActiveShaderProgram")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint)', ptr)
-			if ok then
-				gl.ActiveShaderProgram = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix2x3fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix2x3fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramParameter4dNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GLuint, GLdouble, GLdouble, GLdouble, GLdouble)', ptr)
-			if ok then
-				gl.ProgramParameter4dNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix2x4fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix2x4fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glTextureViewEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GL_LUA_ENUMS, GLuint, GLuint, GLuint, GLuint)', ptr)
-			if ok then
-				gl.TextureViewEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiDrawElementsIndirectAMD")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, GL_LUA_ENUMS, const void *, GLsizei, GLsizei)', ptr)
-			if ok then
-				gl.MultiDrawElementsIndirectAMD = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix3fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix3fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetQueryBufferObjectuiv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLuint, GL_LUA_ENUMS, GLintptr)', ptr)
-			if ok then
-				gl.GetQueryBufferObjectuiv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glMultiTexCoord2dv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GL_LUA_ENUMS, const GLdouble *)', ptr)
-			if ok then
-				gl.MultiTexCoord2dv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix3x2fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix3x2fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix3x2fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix3x2fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetTextureLevelParameterfv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GL_LUA_ENUMS, GLfloat *)', ptr)
-			if ok then
-				gl.GetTextureLevelParameterfv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix3x4fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix3x4fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetVideoui64vNV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint64EXT *)', ptr)
-			if ok then
-				gl.GetVideoui64vNV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glNamedBufferSubData")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLintptr, GLsizeiptr, const void *)', ptr)
-			if ok then
-				gl.NamedBufferSubData = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix4x2fvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix4x2fvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix4x3dvEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLdouble *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix4x3dvEXT = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformMatrix4x3fv")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLsizei, GLboolean, const GLfloat *)', ptr)
-			if ok then
-				gl.ProgramUniformMatrix4x3fv = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glProgramUniformui64NV")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GLint, GLuint64EXT)', ptr)
-			if ok then
-				gl.ProgramUniformui64NV = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glIsSync")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'GLboolean (*)(GLsync)', ptr)
-			if ok then
-				gl.IsSync = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glGetActiveSubroutineUniformName")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLuint, GL_LUA_ENUMS, GLuint, GLsizei, GLsizei *, GLchar *)', ptr)
-			if ok then
-				gl.GetActiveSubroutineUniformName = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("glRasterPos3xvOES")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(const GLfixed *)', ptr)
-			if ok then
-				gl.RasterPos3xvOES = func
-			end
-		end
-	end
-	do
-		local ptr = gl.GetProcAddress("wglSwapIntervalEXT")
-		if ptr ~= nil then
-			local ok, func = pcall(ffi.cast, 'void (*)(GLint)', ptr)
-			if ok then
-				gl.SwapIntervalEXT = func
-			end
-		end
+
+	if not gl.TextureBarrier then
+		gl.TextureBarrier = gl.TextureBarrierNV
 	end
 
 	local function __tostring(self)

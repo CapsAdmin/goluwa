@@ -9,11 +9,21 @@ for _, info in ipairs(vfs.GetMountedAddons()) do
 				loadfile(info.path .. "lua/build/" .. name:gsub("%.", "/") .. ".lua")
 
 			if func then
-				local res = func()
-				cache[name] = res
-				return res
+				local ok, res = pcall(func)
+				if ok then
+					cache[name] = res
+					return res
+				else
+					if require then
+						error(res)
+					else
+						wlog(res, 2)
+					end
+				end
 			end
-			if require then error("unable to find library ", name, 2) end
+			if require then
+				error("unable to find library ", name, 2)
+			end
 			llog("unable to find library ", name)
 		end
 		break
@@ -92,7 +102,7 @@ if SOCKETS then
 	sockets.Initialize()
 end
 
-resource.AddProvider("https://github.com/CapsAdmin/goluwa-assets/raw/master/base/", true)
+resource.AddProvider("https://gitlab.com/CapsAdmin/goluwa-assets/raw/master/base/", true)
 
 if WINDOW then
 	if window.Open() then

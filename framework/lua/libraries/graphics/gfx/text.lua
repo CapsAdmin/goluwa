@@ -20,14 +20,7 @@ function gfx.DrawText(str, x, y, w)
 	x = x or X
 	y = y or Y
 
-	local font = gfx.GetFont()
-
-	if not font then
-		render2d.SetTexture(render.GetErrorTexture())
-		render2d.DrawRect(x,y,32,32)
-	else
-		font:DrawString(str, x, y, w)
-	end
+	gfx.GetFont():DrawString(str, x, y, w)
 
 	render2d.SetRectUV(ux,uy,uw,uh,usx,usy)
 	render2d.SetTexture(old_tex)

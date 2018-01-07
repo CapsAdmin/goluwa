@@ -156,8 +156,14 @@ function META:GetChar(char)
 		return self.chars[char]
 	end
 
-	if char == "\n" and data.h <= 1 then
-		data.h = self.Size
+	if char == "\n" then
+		if data then
+			if data.h <= 1 then
+				data.h = self.Size
+			end
+		else
+			data = {h = self.Size}
+		end
 	end
 
 	return data
