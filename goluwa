@@ -23,7 +23,7 @@ download () {
 }
 
 mkdir -p "data/bin/${OS}_${ARCH}"
-cd "data/bin/${OS}_${ARCH}"
+cd "data/bin/${OS}_${ARCH}" || exit
 
 if [ ! -f "luajit" ]; then
     download "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/data/bin/${OS}_${ARCH}/luajit" "luajit"
@@ -45,11 +45,9 @@ if [ ! -f "../../../core/lua/boot.lua" ]; then
     download "https://gitlab.com/CapsAdmin/goluwa/blob/master/core/lua/boot.lua" "../../../core/lua/boot.lua"
 fi
 
-if [ ! -x luajit ] && [ -f "/lib64/ld-linux-x86-64.so.2" ]; then
-	# i don't know if this is stupid or not
-	# but it's so i can execute luajt without the need for execute permissions
-	# on a non ext filesystem (like on a usb stick with fat32)
-	eval "/lib64/ld-linux-x86-64.so.2 ./luajit ../../../core/lua/boot.lua $*"
+if [ ! -x luajit ] && [ -f "/lib/ld-2.26.so" ]; then
+    # a way to execute on fat32 filesystems or something
+	/lib/ld-2.26.so "./luajit" "../../../core/lua/boot.lua" "$*"
 else
     ./luajit "../../../core/lua/boot.lua" "$*"
 fi
