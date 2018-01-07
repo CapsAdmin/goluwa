@@ -11,24 +11,32 @@ do
 		int setenv(const char *name, const char *value, int overwrite);
 	]])
 
-	function os.execute2(cmd, args)
-		if args then
-			cmd = cmd:gsub("LUA{(%S-)}", function(s) return tostring(args[s]) end)
-			print(cmd)
+	function os.execute2(cmd, async)
+		if async then
+			os.execute(cmd .. " &")
+		else
+			return io.popen(cmd):read("*all")
 		end
-		return io.popen(cmd):read("*all")
 	end
 
 	function os.checkexecute(cmd)
-		os.execute2(cmd)
-		return os.execute2("$?") == 0
+		local code = os.execute2(cmd .. " && printf %s $?")
+
+		return code:sub(#code ) == "0"
 	end
 
-	function os.iscmd(cmd)
-		if WINDOWS then
-			return os.execute2("WHERE " .. cmd) ~= ""
-		else
-			return os.execute2("command -v " .. cmd) ~= ""
+	do
+		local cache = {}
+		function os.iscmd(cmd)
+			if cache[cmd] ~= nil then return cache[cmd] end
+			local res
+			if WINDOWS then
+				res = os.execute2("WHERE " .. cmd) ~= ""
+			else
+				res = os.execute2("command -v " .. cmd) ~= ""
+			end
+			cache[cmd] = res
+			return res
 		end
 	end
 
@@ -60,35 +68,23 @@ do
 		end
 	end
 
-	function download(url, to)
+	function download(url, to, async)
 		if WINDOWS then
 
 		else
 			if to then
-				os.execute2([[
-				if command -v wget >/dev/null 2>&1; then
-					wget -O "LUA{to}" "LUA{url}"
-				elif command -v curl >/dev/null 2>&1; then
-					curl -L --url "LUA{url}" --output "LUA{to}"
-				else
-					echo "unable to find wget or curl"
-					exit 1
-				fi
-				]], {url = url, to = to})
-
-				return os.execute2("$?") == 0
+				if os.iscmd("wget") then
+					return os.execute2("wget -O \""..to.."\" \""..url.."\" && printf $?", async) == "0"
+				elseif os.iscmd("curl") then
+					return os.execute2("curl -L --url \""..url.."\" --output \""..to.."\" && printf $?", async) == "0"
+				end
 			end
 
-			return os.execute2([[
-			if command -v wget >/dev/null 2>&1; then
-				wget "LUA{url}"
-			elif command -v curl >/dev/null 2>&1; then
-				curl -L --url "LUA{url}"
-			else
-				echo "unable to find wget or curl"
-				exit 1
-			fi
-			]], {url = url, to = to})
+			if os.iscmd("wget") then
+				return os.execute2("wget -qO- \""..url.."\"", async)
+			elseif os.iscmd("curl") then
+				return os.execute2("curl -vv -L --url \""..url.."\"", async)
+			end
 		end
 	end
 
@@ -310,24 +306,43 @@ end
 os.appendenv("GOLUWA_ARGS", table.concat(ARGS, " "))
 
 if not os.isfile(bin_dir .. "binaries_downloaded") then
+	os.execute2("mkdir -p " .. bin_dir)
 	for i = 1, 3 do
-		if download("https://github.com/CapsAdmin/goluwa/releases/download/"..OS.."-binaries/"..ARCH..".tar.gz", "temp.tar.gz") then
-			if okexec("tar -xvzf temp.tar.gz -C \"" .. bin_dir .. "\"") then
-				os.remove("temp.tar.gz")
-				print("zip file is maybe corrupt. trying again")
+		if os.isfile("binaries_temp.tar.gz") or download("https://gitlab.com/CapsAdmin/goluwa-binaries/repository/"..OS.."_"..ARCH.."/archive.tar.gz", "binaries_temp.tar.gz") then
+			if os.checkexecute("tar -xvzf binaries_temp.tar.gz -C \"" .. bin_dir .. "\"") then
+				local found
+
+				for k,v in pairs(os.ls(bin_dir)) do
+					if v:find("goluwa-binaries", nil, true) then
+						os.execute2("cp -rf " .. v .. "/" .. bin_dir .. "* " .. bin_dir)
+						os.execute2("rm -rf " .. v .. "/")
+						os.remove("binaries_temp.tar.gz")
+						found = true
+						break
+					end
+				end
+
+				if found then
+					os.execute2("touch " .. bin_dir .. "binaries_downloaded")
+					break
+				else
+					print("unable to find 'goluwa-binaries' folder")
+					os.exit()
+				end
 			else
-				os.remove("temp.tar.gz")
+				print("failed to extract archive")
+				os.remove("binaries_temp.tar.gz")
+				os.exit()
 			end
 		else
-			print("unable to download binaries. trying again")
+			print("failed to download archive. trying again")
 		end
 	end
-	os.execute2("touch " .. bin_dir .. "binaries_downloaded")
 end
 
 os.cd(bin_dir)
 
-os.prependenv("LD_LIBRARY_PATH", ".:")
+os.setenv("LD_LIBRARY_PATH", ".")
 
 local initlua = "../../../core/lua/init.lua"
 

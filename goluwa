@@ -29,12 +29,21 @@ if [ ! -f "luajit" ]; then
     download "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/data/bin/${OS}_${ARCH}/luajit" "luajit"
 fi
 
+chmod +x luajit
+
+./luajit -e "os.exit(1)"
+status=$?
+
+if [ $status -ne 1 ]; then
+    echo "exit code 'os.exit(1)' does not match $status"
+    echo "removing luajit"
+    mv luajit luajit_old
+fi
+
 if [ ! -f "../../../core/lua/boot.lua" ]; then
     mkdir -p "../../../core/lua/"
     download "https://gitlab.com/CapsAdmin/goluwa/blob/master/core/lua/boot.lua" "../../../core/lua/boot.lua"
 fi
-
-chmod +x luajit
 
 if [ ! -x luajit ] && [ -f "/lib64/ld-linux-x86-64.so.2" ]; then
 	# i don't know if this is stupid or not
