@@ -324,11 +324,10 @@ if os.getenv("GOLUWA_DEBUG") or args[4] == "debug" then
 		os.execute("git clone https://github.com/openresty/openresty-gdb-utils.git "..utils_path.." --depth 1;")
 	end
 
-	gdb_exec_line="gdb --ex 'py import sys' --ex 'py sys.path.append(\"$utils_path\")' --ex 'source openresty-gdb-utils/luajit21.py' --ex 'set non-stop off' --ex 'target remote | vgdb' --ex 'monitor leak_check' --ex 'run' --args" .. GOLUWA_EXECUTABLE .. " " .. initlua
-	valgrind_exec_line="valgrind --vgdb=yes --vgdb-error=1 --tool=memcheck --leak-check=full --leak-resolution=high --show-reachable=yes --read-var-info=yes --suppressions=lj.supp ./" .. GOLUWA_EXECUTABLE .. " " .. initlua
+	gdb_exec_line="gdb --ex 'py import sys' --ex 'py sys.path.append(\""..utils_path.."\")' --ex 'source openresty-gdb-utils/luajit21.py' --ex 'set non-stop off' --ex 'target remote | vgdb' --ex 'monitor leak_check' --ex 'run' --args " .. GOLUWA_EXECUTABLE .. " " .. initlua	valgrind_exec_line="valgrind --vgdb=yes --vgdb-error=1 --tool=memcheck --leak-check=full --leak-resolution=high --show-reachable=yes --read-var-info=yes --suppressions=lj.supp ./" .. GOLUWA_EXECUTABLE .. " " .. initlua
 
-	os.execute("xterm -hold -e \""..valgrind_exec_line.."\" &")
-	os.execute("xterm -hold -e \""..gdb_exec_line.."\"")
+	os.execute("xterm -hold -e "..valgrind_exec_line.." &")
+	os.execute("xterm -hold -e "..gdb_exec_line)
 else
 	os.execute("./" .. GOLUWA_EXECUTABLE .. " " .. initlua)
 end
