@@ -823,6 +823,7 @@ if TMUX then
 		_OLD_G.os.execute("tmux detach")
 	end)
 
+	os.remove(e.ROOT_FOLDER .. "data/tmux_log.txt")
 	os.execute("ln -s " .. getlogpath() .. " " .. e.ROOT_FOLDER .. "data/tmux_log.txt")
 end
 
