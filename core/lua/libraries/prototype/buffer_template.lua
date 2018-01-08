@@ -126,6 +126,22 @@ do -- basic data types
 	-- see the top of the script
 	ADD_FFI_OPTIMIZED_TYPES(META)
 
+	META.WriteUInt16_T = META.WriteUnsignedShort
+	META.WriteUInt32_T = META.WriteUnsignedLong
+	META.WriteUInt64_T = META.WriteUnsignedLongLong
+
+	META.ReadUInt16_T = META.ReadUnsignedShort
+	META.ReadUInt32_T = META.ReadUnsignedLong
+	META.ReadUInt64_T = META.ReadUnsignedLongLong
+
+	META.WriteInt16_T = META.WriteShort
+	META.WriteInt32_T = META.WriteLong
+	META.WriteInt64_T = META.WriteLongLong
+
+	META.ReadInt16_T = META.ReadShort
+	META.ReadInt32_T = META.ReadLong
+	META.ReadInt64_T = META.ReadLongLong
+
 	function META:WriteBytes(str, len)
 		for i = 1, len or #str do
 			self:WriteByte(str:byte(i))
