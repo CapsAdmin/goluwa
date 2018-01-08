@@ -176,8 +176,8 @@ do
 					littable = decode(bs, nlit_codes, codelentable)
 					disttable = decode(bs, ndist_codes, codelentable)
 				else
-					littable = HuffmanTable {0,8, 144,9, 256,7, 280,8, 288,nil}
-					disttable = HuffmanTable {0,5, 32,nil}
+					littable = HuffmanTable({0,8, 144,9, 256,7, 280,8, 288,nil})
+					disttable = HuffmanTable({0,5, 32,nil})
 				end
 
 				for i = 1, math.huge do
