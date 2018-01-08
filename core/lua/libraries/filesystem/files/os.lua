@@ -93,16 +93,20 @@ if fs.open then
 	local ffi_string = ffi.string
 	local math_min = math.min
 	-- without this cache thing loading gm_construct takes 30 sec opposed to 15
-	local cache = table.weak()
+	local cache = {}
+
+	for i = 1, 32 do
+		cache[i] = ctype(i)
+	end
 
 	function CONTEXT:ReadBytes(bytes)
 		bytes = math_min(bytes, self.attributes.size)
 
+		local buff = bytes > 32 and ctype(bytes) or cache[bytes]
+
 		if self.memory then
 			local mem_pos_start = math_min(tonumber(self.mem_pos), self.attributes.size)
 			local mem_pos_stop = math_min(tonumber(mem_pos_start + bytes), self.attributes.size)
-
-			local buff =  ctype(bytes)
 
 			local i = 0
 			for mem_i = mem_pos_start, mem_pos_stop-1 do
@@ -114,10 +118,6 @@ if fs.open then
 
 			return ffi.string(buff, bytes)
 		else
-			local buff = cache[bytes] or ctype(bytes)
-
-			cache[bytes] = buff
-
 			local len = fs.read(buff, bytes, 1, self.file)
 
 			if len > 0 or fs.eof(self.file) == 1 then
