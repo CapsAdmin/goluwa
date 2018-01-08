@@ -863,3 +863,36 @@ function META:GetDebugString()
 	self:PopPosition()
 	return str
 end
+
+do -- read bits
+	function META:RestartReadBits()
+		self.buf_byte = 0
+		self.buf_nbit = 0
+	end
+
+	function META:BitsLeftInByte()
+		return self.buf_nbit
+	end
+
+	function META:ReadBits(nbits)
+		nbits = nbits or 1
+		while self.buf_nbit < nbits do
+			local byte = self:ReadByte()
+			if not byte then return end	-- note: more calls also return nil
+			self.buf_byte = self.buf_byte + bit.lshift(byte, self.buf_nbit)
+			self.buf_nbit = self.buf_nbit + 8
+		end
+		local bits
+		if nbits == 0 then
+			bits = 0
+		elseif nbits == 32 then
+			bits = self.buf_byte
+			self.buf_byte = 0
+		else
+			bits = bit.band(self.buf_byte, bit.rshift(0xffffffff, 32 - nbits))
+			self.buf_byte = bit.rshift(self.buf_byte, nbits)
+		end
+		self.buf_nbit = self.buf_nbit - nbits
+		return bits
+	end
+end
