@@ -5,23 +5,19 @@ do
 		return a.nbits == b.nbits and a.val < b.val or a.nbits < b.nbits
 	end
 
-	local function msb(bits, nbits)
-		local res = 0
-		for i=1,nbits do
-			res = bit.lshift(res, 1) + bit.band(bits, 1)
-			bits = bit.rshift(bits, 1)
-		end
-		return res
-	end
-
 	local function read_bit_stream(self, bs)
-		local minbits = self.minbits
 		local code = 1 -- leading 1 marker
 		local nbits = 0
 		while 1 do
 			if nbits == 0 then	-- small optimization (optional)
-				code = (2^minbits + msb(bs:ReadBits(minbits), minbits))
-				nbits = nbits + minbits
+				local bits = bs:ReadBits(self.minbits)
+				local res = 0
+				for i=1,self.minbits do
+					res = bit.lshift(res, 1) + bit.band(bits, 1)
+					bits = bit.rshift(bits, 1)
+				end
+				code = (2^self.minbits + res)
+				nbits = nbits + self.minbits
 			else
 				local b = bs:ReadBits(1)
 				nbits = nbits + 1
@@ -39,11 +35,10 @@ do
 		if is_full then
 			t = init
 		else
-			for i=1,#init-2,2 do
+			for i=1, #init-2, 2 do
 				local firstval, nbits, nextval = init[i], init[i+1], init[i+2]
-				--debug(val, nextval, nbits)
 				if nbits ~= 0 then
-					for val=firstval,nextval-1 do
+					for val = firstval, nextval-1 do
 						t[#t+1] = {val=val, nbits=nbits}
 					end
 				end
@@ -265,13 +260,16 @@ do
 
 end
 
+
+utility.PushTimeWarning()
 local zip = vfs.Open("/home/caps/Downloads/goluwa-master-49d7bf9ea891a216eeb82821058a85b5b5673858.zip")
+zip:LoadToMemory()
+utility.PopTimeWarning("read file and load to memory", 0)
 
 local archive = {files = {}, files2 = {}}
 local ffi = require("ffi") -- not needed
 
-utility.PushTimeWarning("read zip")
-
+utility.PushTimeWarning()
 while true do
 	local sig = zip:ReadString(4)
 
@@ -302,9 +300,11 @@ while true do
 				if false then
 					zip:Advance(data.compressed_size)
 				else
-					local out = ffi.new("char[?]", data.uncompressed_size)
+					local out = ffi.new("uint8_t[?]", data.uncompressed_size)
 					local i = 0
+					local t = system.GetTime()
 					inflate(zip, out)
+					data.deflate_time = system.GetTime() - t
 					data.file_content = ffi.string(out, data.uncompressed_size)
 				end
 			end
@@ -357,4 +357,20 @@ while true do
 		end
 	end
 end
-utility.PopTimeWarning("zip", 0)
+utility.PopTimeWarning("parsing zip archive", 0)
+
+print("validating archive")
+local total_time = 0
+for _, data in ipairs(archive.files) do
+	if data.deflate_time then
+		total_time = total_time + data.deflate_time
+	end
+	if data.file_content then
+		if crypto.CRC32(data.file_content) ~= tostring(data.crc) then
+			table.print(data)
+			error("crc ("..crypto.CRC32(data.file_content)..") does not match "..data.crc.."!")
+		end
+	end
+end
+print("archive is okay")
+print("spent " .. total_time .. " seconds on deflate")
