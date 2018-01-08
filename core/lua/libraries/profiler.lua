@@ -575,7 +575,7 @@ function profiler.EnableRealTimeTraceAbortLogging(b)
 			end
 		end, "trace")
 	else
-		jit.attach(nil)
+		jit.attach(function() end)
 	end
 end
 
