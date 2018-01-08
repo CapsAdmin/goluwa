@@ -98,23 +98,57 @@ if fs.open then
 	function CONTEXT:ReadBytes(bytes)
 		bytes = math_min(bytes, self.attributes.size)
 
-		local buff = cache[bytes] or ctype(bytes)
+		if self.memory then
+			local mem_pos_start = math_min(tonumber(self.mem_pos), self.attributes.size)
+			local mem_pos_stop = math_min(tonumber(mem_pos_start + bytes), self.attributes.size)
 
-		cache[bytes] = buff
+			local buff =  ctype(bytes)
 
-		local len = fs.read(buff, bytes, 1, self.file)
+			local i = 0
+			for mem_i = mem_pos_start, mem_pos_stop-1 do
+				buff[i] = self.memory[mem_i]
+				i = i + 1
+			end
 
-		if len > 0 or fs.eof(self.file) == 1 then
-			return ffi_string(buff, bytes)
+			self.mem_pos = self.mem_pos + bytes
+
+			return ffi.string(buff, bytes)
+		else
+			local buff = cache[bytes] or ctype(bytes)
+
+			cache[bytes] = buff
+
+			local len = fs.read(buff, bytes, 1, self.file)
+
+			if len > 0 or fs.eof(self.file) == 1 then
+				return ffi_string(buff, bytes)
+			end
 		end
 	end
 
+	function CONTEXT:LoadToMemory()
+		local bytes = self:GetSize()
+		local buffer = ctype(bytes)
+		local len = fs.read(buffer, bytes, 1, self.file)
+		self.memory = buffer
+		self:SetPosition(0ULL)
+		self:OnRemove()
+	end
+
 	function CONTEXT:SetPosition(pos)
-		fs.seek(self.file, pos, 0)
+		if self.memory then
+			self.mem_pos = pos
+		else
+			fs.seek(self.file, pos, 0)
+		end
 	end
 
 	function CONTEXT:GetPosition()
-		return fs.tell(self.file)
+		if self.memory then
+			return self.mem_pos
+		else
+			return fs.tell(self.file)
+		end
 	end
 
 	function CONTEXT:OnRemove()
