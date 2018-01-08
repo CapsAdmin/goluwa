@@ -1,5 +1,3 @@
-local ffi = require("ffi") -- not needed
-
 local inflate
 
 do
@@ -39,12 +37,7 @@ do
 	local function HuffmanTable(init, is_full)
 		local t = {}
 		if is_full then
-			for val,nbits in pairs(init) do
-				if nbits ~= 0 then
-					t[#t+1] = {val=val, nbits=nbits}
-					--debug('*',val,nbits)
-				end
-			end
+			t = init
 		else
 			for i=1,#init-2,2 do
 				local firstval, nbits, nextval = init[i], init[i+1], init[i+2]
@@ -86,6 +79,7 @@ do
 
 	local function decode(bs, ncodes, codelentable)
 		local init = {}
+		local done = {}
 		local nbits
 		local val = 0
 		while val < ncodes do
@@ -109,7 +103,12 @@ do
 				error 'ASSERT'
 			end
 			for i=1,nrepeat do
-				init[val] = nbits
+				if nbits ~= 0 then
+					if not done[val] then
+						table.insert(init, {nbits = nbits, val = val})
+						done[val] = true
+					end
+				end
 				val = val + 1
 			end
 		end
@@ -128,16 +127,18 @@ do
 
 	local function output(outstate, byte)
 		local window_pos = outstate.window_pos
-		outstate.outbs(byte)
+		outstate.string_buffer[outstate.byte_pos] = byte
+		outstate.byte_pos = outstate.byte_pos + 1
 		outstate.window[window_pos] = byte
 		outstate.window_pos = window_pos % 32768 + 1	-- 32K
 	end
 
-	function inflate(bs, on_read_byte)
+	function inflate(bs, string_buffer)
 		bs:RestartReadBits()
 
 		local outstate = {}
-		outstate.outbs = on_read_byte
+		outstate.byte_pos = 0
+		outstate.string_buffer = string_buffer
 		outstate.window = {}
 		outstate.window_pos = 1
 
@@ -162,11 +163,17 @@ do
 
 					local ncodelen_codes = hclen + 4
 					local codelen_init = {}
+					local done = {}
 					local codelen_vals = {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15}
 					for i = 1, ncodelen_codes do
 						local nbits = bs:ReadBits(3)
 						local val = codelen_vals[i]
-						codelen_init[val] = nbits
+						if nbits ~= 0 then
+							if not done[val] then
+								table.insert(codelen_init, {val = val, nbits = nbits})
+								done[val] = true
+							end
+						end
 					end
 
 					local nlit_codes = hlit + 257
@@ -261,6 +268,9 @@ end
 local zip = vfs.Open("/home/caps/Downloads/goluwa-master-49d7bf9ea891a216eeb82821058a85b5b5673858.zip")
 
 local archive = {files = {}, files2 = {}}
+local ffi = require("ffi") -- not needed
+
+utility.PushTimeWarning("read zip")
 
 while true do
 	local sig = zip:ReadString(4)
@@ -289,19 +299,13 @@ while true do
 			if data.compressed_size == data.uncompressed_size then
 				data.file_content = zip:ReadBytes(data.compressed_size)
 			else
-				local out = ffi.new("char[?]", data.uncompressed_size)
-				local i = 0
-				inflate(zip, function(byte)
-					out[i] = byte
-					i = i + 1
-				end)
-				data.file_content = ffi.string(out, data.uncompressed_size)
-
-				print(data.file_name, utility.FormatFileSize(#data.file_content))
-
-				if crypto.CRC32(data.file_content) ~= tostring(data.crc) then
-					table.print(data)
-					error("crc ("..crypto.CRC32(data.file_content)..") does not match "..data.crc.."!")
+				if false then
+					zip:Advance(data.compressed_size)
+				else
+					local out = ffi.new("char[?]", data.uncompressed_size)
+					local i = 0
+					inflate(zip, out)
+					data.file_content = ffi.string(out, data.uncompressed_size)
 				end
 			end
 		end
@@ -353,5 +357,4 @@ while true do
 		end
 	end
 end
-
---table.print(archive)
+utility.PopTimeWarning("zip", 0)
