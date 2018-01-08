@@ -1,84 +1,115 @@
-local inflate
+local deflate
 
 do
-	local function sort(a,b)
+	local BTYPE_NO_COMPRESSION = 0
+	local BTYPE_FIXED_HUFFMAN = 1
+	local BTYPE_DYNAMIC_HUFFMAN = 2
+
+	local tdecode_len_base
+	do
+		local t = {[257]=3}
+		local skip = 1
+		for i=258,285,4 do
+			for j=i,i+3 do t[j] = t[j-1] + skip end
+			if i ~= 258 then skip = skip * 2 end
+		end
+		t[285] = 258
+		tdecode_len_base = t
+	end
+
+	local tdecode_len_nextrabits
+	do
+		local t = {}
+		for i=257,285 do
+			local j = math.max(i - 261, 0)
+			t[i] = bit.rshift(j, 2)
+		end
+		t[285] = 0
+		tdecode_len_nextrabits = t
+	end
+
+	local tdecode_dist_base
+	do
+		local t = {[0]=1}
+		local skip = 1
+		for i=1,29,2 do
+			for j=i,i+1 do t[j] = t[j-1] + skip end
+			if i ~= 1 then skip = skip * 2 end
+		end
+		tdecode_dist_base = t
+	end
+
+	local tdecode_dist_nextrabits
+	do
+		local t = {}
+		for i=0,29 do
+			local j = math.max(i - 2, 0)
+			t[i] = bit.rshift(j, 1)
+		end
+		tdecode_dist_nextrabits = t
+	end
+
+	local function sort_huffman(a,b)
 		return a.nbits == b.nbits and a.val < b.val or a.nbits < b.nbits
 	end
 
-	local function read_bit_stream(self, bs)
-		local code = 1 -- leading 1 marker
-		local nbits = 0
-		while 1 do
-			if nbits == 0 then	-- small optimization (optional)
-				local bits = bs:ReadBits(self.minbits)
-				local res = 0
-				for i=1,self.minbits do
-					res = bit.lshift(res, 1) + bit.band(bits, 1)
-					bits = bit.rshift(bits, 1)
-				end
-				code = (2^self.minbits + res)
-				nbits = nbits + self.minbits
-			else
-				local b = bs:ReadBits(1)
-				nbits = nbits + 1
-				code = code * 2 + b	 -- MSB first
+	local function gen_huffman_table(init)
+		local t = {}
+		for i=1, #init-2, 2 do
+			local firstval, nbits, nextval = init[i], init[i+1], init[i+2]
+			for val = firstval, nextval-1 do
+				table.insert(t, {val = val, nbits = nbits})
 			end
-			local val = self.look[code]
+		end
+		table.sort(t, sort_huffman)
+		return t
+	end
+
+	local huffman_dist_table = gen_huffman_table({0,5, 32,nil})
+	local huffman_list_table = gen_huffman_table({0,8, 144,9, 256,7, 280,8, 288,nil})
+	local codelen_vals = {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15}
+
+	local function read_bit_stream(look, bs)
+		local code = 1 -- leading 1 marker
+		for _ = 1, 16 do
+			code = code * 2 + bs:ReadBits(1)
+			local val = look[code]
 			if val then
 				return val
 			end
 		end
 	end
 
-	local function HuffmanTable(init, is_full)
-		local t = {}
-		if is_full then
-			t = init
-		else
-			for i=1, #init-2, 2 do
-				local firstval, nbits, nextval = init[i], init[i+1], init[i+2]
-				if nbits ~= 0 then
-					for val = firstval, nextval-1 do
-						t[#t+1] = {val=val, nbits=nbits}
-					end
-				end
-			end
-		end
-		table.sort(t, sort)
+	local function HuffmanTable(t)
+		local look = {}
 
 		-- assign codes
 		local code = 1	-- leading 1 marker
 		local nbits = 0
+
 		for _,s in ipairs(t) do
 			if s.nbits ~= nbits then
 				code = code * 2^(s.nbits - nbits)
 				nbits = s.nbits
 			end
-			s.code = code
+
+			look[code] = s.val
+
 			code = code + 1
 		end
 
-		local minbits = math.huge
-		local look = {}
-		for _,s in ipairs(t) do
-			minbits = math.min(minbits, s.nbits)
-			look[s.code] = s.val
-		end
-
-		t.minbits = minbits
-		t.look = look
-		t.ReadBitStream = read_bit_stream
-
-		return t
+		return look
 	end
 
 	local function decode(bs, ncodes, codelentable)
 		local init = {}
-		local done = {}
 		local nbits
 		local val = 0
-		while val < ncodes do
-			local codelen = codelentable:ReadBitStream(bs)
+		local i2 = 1
+
+		for _ = 1, 256 do
+			if val >= ncodes then break end
+			local codelen = read_bit_stream(codelentable, bs)
 			--FIX:check nil?
 			local nrepeat
 			if codelen <= 15 then
@@ -94,31 +125,23 @@ do
 			elseif codelen == 18 then
 				nrepeat = 11 + bs:ReadBits(7)
 				nbits = 0
-			else
-				error 'ASSERT'
 			end
-			for i=1,nrepeat do
+
+			for _ = 1, nrepeat do
 				if nbits ~= 0 then
-					if not done[val] then
-						table.insert(init, {nbits = nbits, val = val})
-						done[val] = true
-					end
+					init[i2] = {nbits = nbits, val = val}
+					i2 = i2 + 1
 				end
 				val = val + 1
 			end
+
+			if val >= ncodes then break end
 		end
-		return HuffmanTable(init, true)
+
+		table.sort(init, sort_huffman)
+
+		return HuffmanTable(init)
 	end
-
-	local BTYPE_NO_COMPRESSION = 0
-	local BTYPE_FIXED_HUFFMAN = 1
-	local BTYPE_DYNAMIC_HUFFMAN = 2
-	local BTYPE_RESERVED_ = 3
-
-	local tdecode_len_base
-	local tdecode_len_nextrabits
-	local tdecode_dist_base
-	local tdecode_dist_nextrabits
 
 	local function output(outstate, byte)
 		local window_pos = outstate.window_pos
@@ -128,7 +151,7 @@ do
 		outstate.window_pos = window_pos % 32768 + 1	-- 32K
 	end
 
-	function inflate(bs, string_buffer)
+	function deflate(bs, string_buffer)
 		bs:RestartReadBits()
 
 		local outstate = {}
@@ -137,7 +160,7 @@ do
 		outstate.window = {}
 		outstate.window_pos = 1
 
-		for i = 1, math.huge do
+		for _ = 1, math.huge do
 			local bfinal = bs:ReadBits(1)
 			local btype = bs:ReadBits(2)
 
@@ -146,105 +169,53 @@ do
 				local len = bs:ReadBits(16)
 				local nlen_ = bs:ReadBits(16)
 
-				for i = 1, len do
+				for _ = 1, len do
 					output(outstate, bs:ReadBits(8))
 				end
 			elseif btype == BTYPE_FIXED_HUFFMAN or btype == BTYPE_DYNAMIC_HUFFMAN then
-				local littable, disttable
+				local littable
+				local disttable
 				if btype == BTYPE_DYNAMIC_HUFFMAN then
 					local hlit = bs:ReadBits(5)	-- # of literal/length codes - 257
 					local hdist = bs:ReadBits(5) -- # of distance codes - 1
 					local hclen = bs:ReadBits(4) -- # of code length codes - 4
 
-					local ncodelen_codes = hclen + 4
+
 					local codelen_init = {}
-					local done = {}
-					local codelen_vals = {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15}
-					for i = 1, ncodelen_codes do
+					local i2 = 1
+					for i = 1, hclen + 4 do
 						local nbits = bs:ReadBits(3)
-						local val = codelen_vals[i]
 						if nbits ~= 0 then
-							if not done[val] then
-								table.insert(codelen_init, {val = val, nbits = nbits})
-								done[val] = true
-							end
+							local val = codelen_vals[i]
+							codelen_init[i2] = {val = val, nbits = nbits}
+							i2 = i2 + 1
 						end
 					end
+					table.sort(codelen_init, sort_huffman)
 
-					local nlit_codes = hlit + 257
-					local ndist_codes = hdist + 1
-
-					local codelentable = HuffmanTable(codelen_init, true)
-					littable = decode(bs, nlit_codes, codelentable)
-					disttable = decode(bs, ndist_codes, codelentable)
+					local codelentable = HuffmanTable(codelen_init)
+					littable = decode(bs, hlit + 257, codelentable)
+					disttable = decode(bs, hdist + 1, codelentable)
 				else
-					littable = HuffmanTable({0,8, 144,9, 256,7, 280,8, 288,nil})
-					disttable = HuffmanTable({0,5, 32,nil})
+					littable = HuffmanTable(huffman_list_table)
+					disttable = HuffmanTable(huffman_dist_table)
 				end
 
-				for i = 1, math.huge do
-					local val = littable:ReadBitStream(bs)
-					--debug(val, val < 256 and string.char(val))
+				for _ = 1, math.huge do
+					local val = read_bit_stream(littable, bs)
 					if val < 256 then -- literal
 						output(outstate, val)
 					elseif val == 256 then -- end of block
 						break
 					else
-						if not tdecode_len_base then
-							local t = {[257]=3}
-							local skip = 1
-							for i=258,285,4 do
-								for j=i,i+3 do t[j] = t[j-1] + skip end
-								if i ~= 258 then skip = skip * 2 end
-							end
-							t[285] = 258
-							tdecode_len_base = t
-							--for i=257,285 do debug('T1',i,t[i]) end
-						end
-						if not tdecode_len_nextrabits then
-							local t = {}
-							for i=257,285 do
-								local j = math.max(i - 261, 0)
-								t[i] = bit.rshift(j, 2)
-							end
-							t[285] = 0
-							tdecode_len_nextrabits = t
-							--for i=257,285 do debug('T2',i,t[i]) end
-						end
-						local len_base = tdecode_len_base[val]
-						local nextrabits = tdecode_len_nextrabits[val]
-						local extrabits = bs:ReadBits(nextrabits)
-						local len = len_base + extrabits
+						local extrabits = bs:ReadBits(tdecode_len_nextrabits[val])
+						local dist_val = read_bit_stream(disttable, bs)
+						local dist_extrabits = bs:ReadBits(tdecode_dist_nextrabits[dist_val])
+						local dist = tdecode_dist_base[dist_val] + dist_extrabits
 
-						if not tdecode_dist_base then
-							local t = {[0]=1}
-							local skip = 1
-							for i=1,29,2 do
-								for j=i,i+1 do t[j] = t[j-1] + skip end
-								if i ~= 1 then skip = skip * 2 end
-							end
-							tdecode_dist_base = t
-							--for i=0,29 do debug('T3',i,t[i]) end
-						end
-						if not tdecode_dist_nextrabits then
-							local t = {}
-							for i=0,29 do
-								local j = math.max(i - 2, 0)
-								t[i] = bit.rshift(j, 1)
-							end
-							tdecode_dist_nextrabits = t
-							--for i=0,29 do debug('T4',i,t[i]) end
-						end
-						local dist_val = disttable:ReadBitStream(bs)
-						local dist_base = tdecode_dist_base[dist_val]
-						local dist_nextrabits = tdecode_dist_nextrabits[dist_val]
-						local dist_extrabits = bs:ReadBits(dist_nextrabits)
-						local dist = dist_base + dist_extrabits
-
-						--debug('BACK', len, dist)
-						for i=1,len do
+						for _ = 1, tdecode_len_base[val] + extrabits do
 							local pos = (outstate.window_pos - 1 - dist) % 32768 + 1	-- 32K
-							output(outstate, assert(outstate.window[pos], 'invalid distance'))
+							output(outstate, outstate.window[pos])
 						end
 					end
 				end
@@ -267,9 +238,10 @@ zip:LoadToMemory()
 utility.PopTimeWarning("read file and load to memory", 0)
 
 local archive = {files = {}, files2 = {}}
-local ffi = require("ffi") -- not needed
+local ffi = require("ffi")
 
 utility.PushTimeWarning()
+S"DEFLATE"
 while true do
 	local sig = zip:ReadString(4)
 
@@ -301,9 +273,8 @@ while true do
 					zip:Advance(data.compressed_size)
 				else
 					local out = ffi.new("uint8_t[?]", data.uncompressed_size)
-					local i = 0
 					local t = system.GetTime()
-					inflate(zip, out)
+					deflate(zip, out)
 					data.deflate_time = system.GetTime() - t
 					data.file_content = ffi.string(out, data.uncompressed_size)
 				end
@@ -357,8 +328,8 @@ while true do
 		end
 	end
 end
+S"DEFLATE"
 utility.PopTimeWarning("parsing zip archive", 0)
-
 print("validating archive")
 local total_time = 0
 for _, data in ipairs(archive.files) do
