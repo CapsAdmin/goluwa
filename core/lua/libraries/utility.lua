@@ -708,4 +708,37 @@ do
 	end
 end
 
+function utility.NumberToBinary(num, bits)
+	bits = bits or 32
+	local bin = {}
+
+	for i = 1, bits do
+		if num > 0 then
+			rest = math.fmod(num,2)
+			table.insert(bin, rest)
+			num = (num - rest) / 2
+		else
+			table.insert(bin, 0)
+		end
+	end
+
+	return table.concat(bin)
+end
+
+function utility.BinaryToNumber(bin)
+	bin = string.reverse(bin)
+	local sum = 0
+
+	for i = 1, string.len(bin) do
+		num = string.sub(bin, i,i) == "1" and 1 or 0
+		sum = sum + num * math.pow(2, i-1)
+	end
+
+	return sum
+end
+
+function utility.NumberToHex(num)
+	return "0x" .. bit.tohex(num):upper()
+end
+
 return utility
