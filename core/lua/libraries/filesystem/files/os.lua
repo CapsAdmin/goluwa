@@ -131,7 +131,7 @@ if fs.open then
 		local buffer = ctype(bytes)
 		local len = fs.read(buffer, bytes, 1, self.file)
 		self.memory = buffer
-		self:SetPosition(0ULL)
+		self:SetPosition(ffi.new("uint64_t", 0))
 		self:OnRemove()
 	end
 
