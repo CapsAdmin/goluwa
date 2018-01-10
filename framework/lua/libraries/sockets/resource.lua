@@ -313,7 +313,7 @@ function resource.BuildCacheFolderList(file_name)
 	end
 
 	if file_name then
-		resource.url_cache_lookup[file_name:match("(.-)%.")] = file_name
+		resource.url_cache_lookup[file_name:match("(.-)%.") or file_name] = file_name
 	end
 end
 
