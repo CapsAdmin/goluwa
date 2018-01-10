@@ -6,10 +6,28 @@ do
 	_G.ARCH = jit.arch:lower()
 
 	local ffi = require("ffi")
-	ffi.cdef([[
-		int chdir(const char *path);
-		int setenv(const char *name, const char *value, int overwrite);
-	]])
+	if WINDOWS then
+		ffi.cdef([[
+			unsigned long GetCurrentDirectoryA(unsigned long length, char *buffer);
+			bool SetCurrentDirectoryA(const char *path);
+			int _putenv_s(const char *var_name, const char *new_value);
+		]])
+
+		function ps(s)
+			os.setenv("pstemp", s)
+			local p = io.popen("powershell -noprofile -noninteractive Invoke-Expression 'Invoke-Expression $Env:pstemp'")
+			local out = p:read("*all")
+			p:close()
+			print(out)
+			return out
+		end
+	else
+		ffi.cdef([[
+			char *getcwd(char *buf, size_t size);
+			int chdir(const char *path);
+			int setenv(const char *name, const char *value, int overwrite);
+		]])
+	end
 
 	function os.execute2(cmd, async)
 		if async then
@@ -48,13 +66,19 @@ do
 		return out
 	end
 
-	function os.setenv(key, val) ffi.C.setenv(key, val, 0) end
+	if WINDOWS then
+		function os.setenv(key, val) ffi.C._putenv_s(key, val) end
+	else
+		function os.setenv(key, val) ffi.C.setenv(key, val, 0) end
+	end
 	function os.appendenv(key, val) os.setenv(key, (os.getenv(key) or "") .. val) end
 	function os.prependenv(key, val) os.setenv(key, val .. (os.getenv(key) or "")) end
 
 	function os.isdir(dir)
 		if WINDOWS then
-
+			dir = os.getcd() .. "\\" .. dir
+			dir = dir:gsub("/", "\\")
+			return ps("Test-Path \"" .. dir .. "\" -PathType Container"):sub(1, 5) == "True"
 		else
 			return os.execute2('[ -d "'..dir..'" ] && printf "1"') == "1"
 		end
@@ -62,15 +86,33 @@ do
 
 	function os.isfile(dir)
 		if WINDOWS then
-
+			dir = os.getcd() .. "\\" .. dir
+			dir = dir:gsub("/", "\\")
+			return ps("Test-Path \"" .. dir .. "\" -PathType Leaf"):sub(1, 4) == "True"
 		else
 			return os.execute2('[ -f "'..dir..'" ] && printf "1"') == "1"
 		end
 	end
 
+	function os.makedir(dir)
+		if WINDOWS then
+			return ps("New-Item -ItemType Directory -Force -Path \""..dir.."\" | Out-Null")
+		end
+
+		return os.execute2("mkdir -p " .. dir)
+	end
+
 	function download(url, to, async)
 		if WINDOWS then
-
+			if to then
+				to = os.getcd() .. "\\" .. to
+				return ps("(New-Object System.Net.WebClient).DownloadFile('"..url.."', '"..to.."')") == ""
+			end
+			to = os.getcd() .. "\\" .. "temp_download"
+			ps("(New-Object System.Net.WebClient).DownloadFile('"..url.."', '"..to.."')")
+			local content = io.readfile(to)
+			os.remove(to)
+			return content
 		else
 			if to then
 				if os.iscmd("wget") then
@@ -89,15 +131,27 @@ do
 	end
 
 	function os.cd(path)
-		if ffi.C.chdir(path) ~= 0 then
+		if (WINDOWS and ffi.C.SetCurrentDirectoryA or ffi.C.chdir)(path) ~= 0 then
 			return nil, "unable change directory to " .. path
 		end
 
 		return true
 	end
 
+	function os.getcd()
+		if WINDOWS then
+			local buf = ffi.new("uint8_t[256]")
+			ffi.C.GetCurrentDirectoryA(256, buf)
+			return ffi.string(buf)
+		end
+
+		local buf = ffi.new("uint8_t[256]")
+		ffi.C.getcwd(buf, 256)
+		return ffi.string(buf)
+	end
+
 	function io.readfile(path)
-		local f = assert(io.open("data/tmux_log.txt"))
+		local f = assert(io.open(path))
 		local str = f:read("*all")
 		f:close()
 		return str
@@ -114,13 +168,15 @@ local args = {} (arg_line .. " "):gsub("(%S+)", function(chunk) table.insert(arg
 local root_dir = os.execute2("printf %s $PWD")
 local bin_dir = "data/bin/" .. OS .. "_" .. ARCH .. "/"
 
+local ARCHIVE_EXT = WINDOWS and ".zip" or ".tar.gz"
+
 os.cd("../../../")
 
 if args[1] == "update" or not os.isfile("core/lua/init.lua") and false then
 	if os.iscmd("git") then
 		os.execute2("git pull")
 	else
-		download("https://gitlab.com/CapsAdmin/goluwa/repository/master/archive.tar.gz", "temp.tar.gz")
+		download("https://gitlab.com/CapsAdmin/goluwa/repository/master/archive" .. ARCHIVE_EXT, "temp" .. ARCHIVE_EXT)
 		if WINDOWS then
 
 		else
@@ -247,7 +303,7 @@ if IDE then
 			os.execute2("git clone https://github.com/pkulchenko/ZeroBraneStudio.git data/ide --depth 1;")
 		end
 	else
-		download("https://github.com/pkulchenko/ZeroBraneStudio/archive/master.tar.gz", "temp.tar.gz")
+		download("https://github.com/pkulchenko/ZeroBraneStudio/archive/master" .. ARCHIVE_EXT, "temp" .. ARCHIVE_EXT)
 		if WINDOWS then
 
 		else
@@ -304,35 +360,74 @@ if args[1] == "cli" then
 end
 
 os.appendenv("GOLUWA_ARGS", table.concat(ARGS, " "))
-
 if not os.isfile(bin_dir .. "binaries_downloaded") then
-	os.execute2("mkdir -p " .. bin_dir)
+	os.makedir(bin_dir)
 	for i = 1, 3 do
-		if os.isfile("binaries_temp.tar.gz") or download("https://gitlab.com/CapsAdmin/goluwa-binaries/repository/"..OS.."_"..ARCH.."/archive.tar.gz", "binaries_temp.tar.gz") then
-			if os.checkexecute("tar -xvzf binaries_temp.tar.gz -C \"" .. bin_dir .. "\"") then
-				local found
+		if
+			os.isfile("binaries_temp" .. ARCHIVE_EXT) or
+			download("https://gitlab.com/CapsAdmin/goluwa-binaries/repository/"..OS.."_"..ARCH.."/archive" .. ARCHIVE_EXT, "binaries_temp" .. ARCHIVE_EXT)
+		then
+			local extract_ok = false
 
-				for k,v in pairs(os.ls(bin_dir)) do
-					if v:find("goluwa-binaries", nil, true) then
-						os.execute2("cp -rf " .. v .. "/" .. bin_dir .. "* " .. bin_dir)
-						os.execute2("rm -rf " .. v .. "/")
-						os.remove("binaries_temp.tar.gz")
-						found = true
-						break
+			if WINDOWS then
+				ps(([[
+					function Extract($file, $location) {
+						Write-Host -NoNewline "$file >> '$location' ... "
+
+						$shell = New-Object -Com Shell.Application
+
+						$zip = $shell.NameSpace($([System.IO.Path]::GetFullPath("$file")))
+
+						if (!$zip) {
+							Write-Error "could not extract $file!"
+						}
+
+						if (!(Test-Path $location)) {
+							New-Item -ItemType directory -Path $location | Out-Null
+						}
+
+						foreach($item in $zip.items()) {
+							$shell.Namespace("$location").CopyHere($item, 0x14)
+						}
+
+
+						Move-Item -Confirm:$false -Force -Path "$location\*\data\bin\windows_]]..ARCH..[[\*" -Destination "$location"
+
+						Write-Host "OK"
+					}
+
+					Extract "%s" "%s"
+				]]):format(
+					((os.getcd() .. "\\binaries_temp" .. ARCHIVE_EXT):gsub("/", "\\")),
+					((os.getcd() .. "\\" .. bin_dir):gsub("/", "\\"))
+				))
+				io.open(bin_dir .. "binaries_downloaded", "w"):close()
+			else
+				if os.checkexecute("tar -xvzf binaries_temp.tar.gz -C \"" .. bin_dir .. "\"") then
+					local found
+
+					for k,v in pairs(os.ls(bin_dir)) do
+						if v:find("goluwa-binaries", nil, true) then
+							os.execute2("cp -rf " .. v .. "/" .. bin_dir .. "* " .. bin_dir)
+							os.execute2("rm -rf " .. v .. "/")
+							os.remove("binaries_temp" .. ARCHIVE_EXT)
+							found = true
+							break
+						end
 					end
-				end
 
-				if found then
-					os.execute2("touch " .. bin_dir .. "binaries_downloaded")
-					break
+					if found then
+						io.open(bin_dir .. "binaries_downloaded", "w"):close()
+						break
+					else
+						print("unable to find 'goluwa-binaries' folder")
+						os.exit()
+					end
 				else
-					print("unable to find 'goluwa-binaries' folder")
+					print("failed to extract archive")
+					os.remove("binaries_temp.tar.gz")
 					os.exit()
 				end
-			else
-				print("failed to extract archive")
-				os.remove("binaries_temp.tar.gz")
-				os.exit()
 			end
 		else
 			print("failed to download archive. trying again")
@@ -342,7 +437,9 @@ end
 
 os.cd(bin_dir)
 
-os.setenv("LD_LIBRARY_PATH", ".")
+if not WINDOWS then
+	os.setenv("LD_LIBRARY_PATH", ".")
+end
 
 local initlua = "../../../core/lua/init.lua"
 
@@ -352,7 +449,7 @@ if args[2] == "branch" then
 	GOLUWA_EXECUTABLE = "luajit_" .. args[3]
 end
 
-if os.getenv("GOLUWA_DEBUG") or args[4] == "debug" then
+if not WINDOWS and os.getenv("GOLUWA_DEBUG") or args[4] == "debug" then
 	assert(os.iscmd("gdb"), "gdb is not installed")
 	assert(os.iscmd("valgrind"), "valgrind is not installed")
 	assert(os.iscmd("git"), "git is not installed")
@@ -386,5 +483,9 @@ if os.getenv("GOLUWA_DEBUG") or args[4] == "debug" then
 	os.execute("xterm -hold -e " .. valgrind .. " &")
 	os.execute("xterm -hold -e " .. gdb)
 else
-	os.execute("./" .. GOLUWA_EXECUTABLE .. " " .. initlua)
+	if WINDOWS then
+		os.execute(GOLUWA_EXECUTABLE .. ".exe " .. initlua)
+	else
+		os.execute("./" .. GOLUWA_EXECUTABLE .. " " .. initlua)
+	end
 end
