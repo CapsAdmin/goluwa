@@ -23,19 +23,9 @@ input.Bind("tab", "-score", function()
 	scoreboard.panel:SetVisible(false)
 end)
 
-local scoreboard_title = fonts.CreateFont({
-	path = "Oswald",
-	fallback = gfx.GetDefaultFont(),
-	size = 17,
-	shadow = 1,
-})
+local scoreboard_title
+local scoreboard_title_2
 
-local scoreboard_title_2 = fonts.CreateFont({
-	path = "Oswald",
-	fallback = gfx.GetDefaultFont(),
-	size = 11,
-	shadow = 5,
-})
 
 function scoreboard.SetupContainer(id)
 	if not scoreboard.panel:IsValid() then
@@ -237,6 +227,20 @@ function scoreboard.RemoveClient(client, now)
 end
 
 function scoreboard.Initialize()
+	scoreboard_title = fonts.CreateFont({
+		path = "Oswald",
+		fallback = gfx.GetDefaultFont(),
+		size = 17,
+		shadow = 1,
+	})
+
+	scoreboard_title_2 = fonts.CreateFont({
+		path = "Oswald",
+		fallback = gfx.GetDefaultFont(),
+		size = 11,
+		shadow = 5,
+	})
+
 	gui.RemovePanel(scoreboard.panel)
 	local panel = gui.CreatePanel("base")
 	scoreboard.panel = panel
