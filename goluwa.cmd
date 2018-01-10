@@ -1,4 +1,7 @@
-@echo OFF & PowerShell Invoke-Expression ('$args=(''%*'').split('' '');'+'$PSScriptRoot=(''%~dp0'');'+((Get-Content -Raw %~dp0%~n0%~x0 ) -Replace '^.*goto :EOF')); & goto :EOF
+@echo OFF & CLS & PowerShell -nologo -noprofile -noninteractive Invoke-Expression ('$args=(''%*'').split('' '');'+'$PSScriptRoot=(''%~dp0'');'+((Get-Content -Raw %~dp0%~n0%~x0 ) -Replace '^.*goto :EOF')); & goto :EOF
+
+$stopwatch = New-Object System.Diagnostics.Stopwatch
+$stopwatch.Start()
 
 $ROOT_DIR = $PSScriptRoot
 $ROOT_DIR = $([System.IO.Path]::GetFullPath("$ROOT_DIR"))
@@ -15,8 +18,6 @@ function Download($url, $location) {
 		Write-Host -NoNewline "'$url' >> '$location' ... "
 		(New-Object System.Net.WebClient).DownloadFile($url, "$location")
 		Write-Host "OK"
-	} else {
-		Write-Host "'$location' already exists"
 	}
 }
 
@@ -32,4 +33,8 @@ if(!(Test-Path "$ROOT_DIR\core\lua\boot.lua" -PathType Leaf)) {
 	Download "https://gitlab.com/CapsAdmin/goluwa/blob/master/core/lua/boot.lua" "$ROOT_DIR\core\lua\boot.lua"
 }
 
-.\luajit.exe "..\..\..\core\lua\boot.lua" "%*"
+$stopwatch.Stop()
+
+Write-Host "[powershell] goluwa.cmd took"$stopwatch.Elapsed.TotalSeconds"seconds"
+Start-Process .\luajit.exe -ArgumentList "..\..\..\core\lua\boot.lua $args" -NoNewWindow
+Write-Host `n

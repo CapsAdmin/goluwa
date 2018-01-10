@@ -57,7 +57,7 @@ do
 
 	package.path = "./?.lua"
 
-	if pcall(require, ffi) then
+	if pcall(require, "ffi") then
 		local ffi = require("ffi")
 
 		local dir = init_lua_path:match("@(.+/)" .. e.INTERNAL_ADDON_NAME .. "/lua/init.lua$")
@@ -212,7 +212,7 @@ vfs.MountAddons(e.ROOT_FOLDER)
 
 system._CheckCreatedEnv()
 
-logn("[core] init took ", os.clock(), " seconds")
+logn("[core] core/lua/init.lua took ", os.clock(), " seconds")
 
 do -- autorun
 	-- call goluwa/*/lua/init.lua if it exists

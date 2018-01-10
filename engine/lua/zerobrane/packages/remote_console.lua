@@ -41,7 +41,10 @@ function PLUGIN:Setup()
 			end
 			self.connected = true
 		elseif msg ~= "timeout" and msg ~= "connection refused" then
-			ide:Print(msg)
+			if msg ~= last_msg then
+				ide:Print(msg)
+				last_msg = msg
+			end
 		end
 	end
 
@@ -314,6 +317,10 @@ function PLUGIN:StartProcess(id, cmd)
 			cmd_line = cmd_line .. " debug"
 		end
 
+	end
+
+	if jit.os == "Windows" then
+		cmd_line = ide:GetProject() .. cmd_line
 	end
 
 	console.pid = CommandLineRun(

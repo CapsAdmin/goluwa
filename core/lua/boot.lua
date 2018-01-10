@@ -11,15 +11,48 @@ do
 			unsigned long GetCurrentDirectoryA(unsigned long length, char *buffer);
 			bool SetCurrentDirectoryA(const char *path);
 			int _putenv_s(const char *var_name, const char *new_value);
+			int SHCreateDirectoryExA(void *,const char *path, void *);
 		]])
 
 		function ps(s)
 			os.setenv("pstemp", s)
-			local p = io.popen("powershell -noprofile -noninteractive Invoke-Expression 'Invoke-Expression $Env:pstemp'")
+			local p = io.popen("powershell -nologo -noprofile -noninteractive Invoke-Expression 'Invoke-Expression $Env:pstemp'")
 			local out = p:read("*all")
 			p:close()
-			print(out)
 			return out
+		end
+
+		function windows_extract_archive(from, to, move_path)
+			ps(([[
+				function Extract($file, $location) {
+					Write-Host -NoNewline "$file >> '$location' ... "
+
+					$shell = New-Object -Com Shell.Application
+
+					$zip = $shell.NameSpace($([System.IO.Path]::GetFullPath("$file")))
+
+					if (!$zip) {
+						Write-Error "could not extract $file!"
+					}
+
+					if (!(Test-Path $location)) {
+						New-Item -ItemType directory -Path $location | Out-Null
+					}
+
+					foreach($item in $zip.items()) {
+						$shell.Namespace("$location").CopyHere($item, 0x14)
+					}
+
+					]] .. move_path and ([[Move-Item -Confirm:$false -Force -Path "$location\]]..move_path..[[" -Destination "$location"]]) or "".. [[
+
+					Write-Host "OK"
+				}
+
+				Extract "%s" "%s"
+			]]):format(
+				((os.getcd() .. "\\" .. from):gsub("/", "\\")),
+				((os.getcd() .. "\\" .. to):gsub("/", "\\"))
+			))
 		end
 	else
 		ffi.cdef([[
@@ -49,7 +82,7 @@ do
 			if cache[cmd] ~= nil then return cache[cmd] end
 			local res
 			if WINDOWS then
-				res = os.execute2("WHERE " .. cmd) ~= ""
+				res = os.execute2("@echo OFF & CLS & WHERE " .. cmd) ~= ""
 			else
 				res = os.execute2("command -v " .. cmd) ~= ""
 			end
@@ -96,7 +129,7 @@ do
 
 	function os.makedir(dir)
 		if WINDOWS then
-			return ps("New-Item -ItemType Directory -Force -Path \""..dir.."\" | Out-Null")
+			return ffi.load("Shell32.dll").SHCreateDirectoryExA(nil, dir, nil)
 		end
 
 		return os.execute2("mkdir -p " .. dir)
@@ -131,8 +164,14 @@ do
 	end
 
 	function os.cd(path)
-		if (WINDOWS and ffi.C.SetCurrentDirectoryA or ffi.C.chdir)(path) ~= 0 then
-			return nil, "unable change directory to " .. path
+		if WINDOWS then
+			if ffi.C.SetCurrentDirectoryA(path) == 0 then
+				return nil, "unable change directory to " .. path
+			end
+		else
+			if ffi.C.chdir(path) ~= 0 then
+				return nil, "unable change directory to " .. path
+			end
 		end
 
 		return true
@@ -158,14 +197,21 @@ do
 	end
 
 	function has_tmux_session()
-		return os.execute2("tmux has-session -t goluwa; printf $?") == "0"
+		return os.execute2("tmux has-session -t goluwa 2> /dev/null; printf $?") == "0"
 	end
 end
 
-local arg_line = ...
-local args = {} (arg_line .. " "):gsub("(%S+)", function(chunk) table.insert(args, chunk) end)
+local arg_line
+local args
 
-local root_dir = os.execute2("printf %s $PWD")
+if WINDOWS then
+	args = {...}
+	arg_line = table.concat(args, " ")
+else
+	arg_line = ...
+	args = {} (arg_line .. " "):gsub("(%S+)", function(chunk) table.insert(args, chunk) end)
+end
+
 local bin_dir = "data/bin/" .. OS .. "_" .. ARCH .. "/"
 
 local ARCHIVE_EXT = WINDOWS and ".zip" or ".tar.gz"
@@ -254,12 +300,12 @@ end
 
 if args[1] ~= "launch" then
 	if not args[1] then
-		if os.execute2("printf %s ${DISPLAY+x}") == "" then
+		if not WINDOWS and os.execute2("printf %s ${DISPLAY+x}") == "" then
 			CLIENT = true
 		elseif args[1] == "ide" or os.isfile("engine/lua/zerobrane/config.lua") then
 			IDE = true
 		end
-	elseif os.iscmd("tmux") and has_tmux_session() then
+	elseif not WINDOWS and os.iscmd("tmux") and has_tmux_session() then
 		if args[1] == "attach" or args[1] == "tmux" then
 			os.execute2("tmux attach-session -t goluwa")
 		elseif args[1] ~= "launch" then
@@ -305,7 +351,8 @@ if IDE then
 	else
 		download("https://github.com/pkulchenko/ZeroBraneStudio/archive/master" .. ARCHIVE_EXT, "temp" .. ARCHIVE_EXT)
 		if WINDOWS then
-
+			os.makedir("data\\ide")
+			windows_extract_archive("temp" .. ARCHIVE_EXT, "data\\ide", "*\\*")
 		else
 			os.execute2([[
 			mkdir -p data/ide
@@ -319,7 +366,11 @@ if IDE then
 
 	assert(os.cd("data/ide"), "unable to download ide?")
 
-	os.execute2("./zbstudio.sh -cfg ../../engine/lua/zerobrane/config.lua")
+	if WINDOWS then
+		os.execute(os.getcd() .. "\\zbstudio.exe -cfg ../../engine/lua/zerobrane/config.lua")
+	else
+		os.execute("./zbstudio.sh -cfg ../../engine/lua/zerobrane/config.lua")
+	end
 
 	os.exit()
 end
@@ -370,37 +421,7 @@ if not os.isfile(bin_dir .. "binaries_downloaded") then
 			local extract_ok = false
 
 			if WINDOWS then
-				ps(([[
-					function Extract($file, $location) {
-						Write-Host -NoNewline "$file >> '$location' ... "
-
-						$shell = New-Object -Com Shell.Application
-
-						$zip = $shell.NameSpace($([System.IO.Path]::GetFullPath("$file")))
-
-						if (!$zip) {
-							Write-Error "could not extract $file!"
-						}
-
-						if (!(Test-Path $location)) {
-							New-Item -ItemType directory -Path $location | Out-Null
-						}
-
-						foreach($item in $zip.items()) {
-							$shell.Namespace("$location").CopyHere($item, 0x14)
-						}
-
-
-						Move-Item -Confirm:$false -Force -Path "$location\*\data\bin\windows_]]..ARCH..[[\*" -Destination "$location"
-
-						Write-Host "OK"
-					}
-
-					Extract "%s" "%s"
-				]]):format(
-					((os.getcd() .. "\\binaries_temp" .. ARCHIVE_EXT):gsub("/", "\\")),
-					((os.getcd() .. "\\" .. bin_dir):gsub("/", "\\"))
-				))
+				windows_extract_archive("binaries_temp" .. ARCHIVE_EXT, bin_dir, "*\\data\\bin\\windows_"..ARCH.."\\*")
 				io.open(bin_dir .. "binaries_downloaded", "w"):close()
 			else
 				if os.checkexecute("tar -xvzf binaries_temp.tar.gz -C \"" .. bin_dir .. "\"") then
@@ -483,8 +504,10 @@ if not WINDOWS and os.getenv("GOLUWA_DEBUG") or args[4] == "debug" then
 	os.execute("xterm -hold -e " .. valgrind .. " &")
 	os.execute("xterm -hold -e " .. gdb)
 else
+	io.write("[boot] core/lua/boot.lua took ", os.clock(), " seconds\n")
+
 	if WINDOWS then
-		os.execute(GOLUWA_EXECUTABLE .. ".exe " .. initlua)
+		os.execute(os.getcd() .. "\\" .. GOLUWA_EXECUTABLE .. ".exe " .. os.getcd():gsub("\\", "/") .. "/" .. initlua)
 	else
 		os.execute("./" .. GOLUWA_EXECUTABLE .. " " .. initlua)
 	end
