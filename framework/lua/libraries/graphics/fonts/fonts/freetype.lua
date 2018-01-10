@@ -252,6 +252,7 @@ function META:Initialize()
 			end
 
 			resource.Download(fonts.default_font_path, load)
+			return
 		end
 
 		self.char_buffer = data
