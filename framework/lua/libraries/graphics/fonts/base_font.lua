@@ -92,7 +92,7 @@ end
 
 function META:DrawString(str, x, y, w)
 	if not self.Ready then
-		return fonts.loading_font:DrawString(str, x, y, w)
+		return fonts.GetFallbackFont():DrawString(str, x, y, w)
 	end
 
 	if str == nil then str = "nil" end
@@ -172,7 +172,7 @@ end
 function META:CompileString(data)
 
 	if not self.Ready then
-		return fonts.loading_font:CompileString(data)
+		return fonts.GetFallbackFont():CompileString(data)
 	end
 
 	local vertex_count = 0
@@ -294,7 +294,7 @@ end
 
 function META:GetTextSize(str)
 	if not self.Ready then
-		return fonts.loading_font:GetTextSize(str)
+		return fonts.GetFallbackFont():GetTextSize(str)
 	end
 
 	str = tostring(str)

@@ -32,12 +32,12 @@ end
 local height_mult = pvars.Setup("cl_chathud_height_mult", 0.76)
 local width_mult = pvars.Setup("cl_chathud_width_mult", 0.6)
 
-chathud.markup =  gfx.CreateMarkup()
-chathud.markup:SetEditable(false)
-chathud.markup:SetSelectable(false)
-chathud.life_time = 20
-
 function chathud.Initialize()
+	chathud.markup =  gfx.CreateMarkup()
+	chathud.markup:SetEditable(false)
+	chathud.markup:SetSelectable(false)
+	chathud.life_time = 20
+
 	resource.Download("http://cdn.steam.tools/data/emote.json", function(path)
 		profiler.StartTimer("emotes")
 		local i = 0
