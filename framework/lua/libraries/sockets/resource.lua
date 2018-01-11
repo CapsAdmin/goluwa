@@ -166,7 +166,8 @@ local function download_from_providers(path, callback, on_fail, check_etag)
 			function(header)
 				for _, other_provider in ipairs(resource.providers) do
 					if provider ~= other_provider then
-						sockets.AbortDownload(other_provider .. path)
+						sockets.StopDownload(other_provider .. path)
+						event.Call("DownloadStop", url, nil, "download found in " .. provider)
 					end
 				end
 			end,
