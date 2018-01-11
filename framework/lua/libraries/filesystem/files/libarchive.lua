@@ -196,10 +196,10 @@ function CONTEXT:GetFiles(path_info)
 	local files = {}
 	local done = {}
 
-	local files, err = iterate_archive(data)
-	if not files then return files, err end
+	local files_, err = iterate_archive(data)
+	if not files_ then return files_, err end
 
-	for _, path in ipairs(files) do
+	for _, path in ipairs(files_) do
 		for i = #path, 1, -1 do
 			local char = path:sub(i, i)
 			if char == "/" then
