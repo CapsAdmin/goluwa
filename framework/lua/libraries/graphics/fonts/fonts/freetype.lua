@@ -193,8 +193,27 @@ local function find_font(name, callback, on_error)
 			local full_path
 
 			if info.archive then
+				if not content:startswith("PK\003\004") then
+					llog("%s is not a zip file (does not start with zip header)", url)
+					local path = "data/error_" .. crypto.CRC32(url) .. ".dat"
+					llog("writing content to %s", path)
+					vfs.Write(path, content)
+					resource.Download(fonts.default_font_path, callback)
+					return
+				end
+
 				local path = "data/temp_"..crypto.CRC32(url)..".zip"
 				vfs.Write(path, content)
+
+				local ok, err = vfs.IsFolderValid(path)
+				if not ok then
+					llog("%s appears to be damaged", path)
+					logn(err:trim())
+					--vfs.Delete(path)
+					resource.Download(fonts.default_font_path, callback)
+					return
+				end
+
 				full_path = info.archive(R(path) .. "/", name)
 				if full_path then
 					content = vfs.Read(full_path)
