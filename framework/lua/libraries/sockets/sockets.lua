@@ -68,7 +68,7 @@ runfile("helpers.lua", sockets)
 runfile("http.lua", sockets)
 
 function sockets.Initialize()
-	event.Timer("sockets", 1/30, 0, sockets.Update, nil, function(...) logn(...) return true end)
+	event.Timer("sockets", 1/30, 0, function() sockets.Update() end, nil, function(...) logn(...) return true end)
 	event.AddListener("LuaClose", "sockets", sockets.Panic)
 end
 
@@ -90,7 +90,7 @@ function sockets.DebugPrint(self, ...)
 	end
 end
 
-function sockets.Update()
+function sockets.Update(remove_only)
 	for i = #sockets.active_sockets, 1, -1 do
 		local sock = sockets.active_sockets[i]
 
@@ -104,14 +104,16 @@ function sockets.Update()
 				prototype.MakeNULL(sock)
 			end
 
-			if sock:IsValid() then
-				local ok, err = system.pcall(sock.Think, sock)
-				if not ok then
-					logn(err)
-					sock:Remove()
+			if not remove_only then
+				if sock:IsValid() then
+					local ok, err = system.pcall(sock.Think, sock)
+					if not ok then
+						logn(err)
+						sock:Remove()
+					end
+				else
+					table.remove(sockets.active_sockets, i)
 				end
-			else
-				table.remove(sockets.active_sockets, i)
 			end
 		end
 	end
@@ -137,7 +139,7 @@ local function new_socket(override, META, typ, id)
 	typ = typ:lower()
 
 	-- this removes any sockets
-	sockets.Update()
+	sockets.Update(true)
 
 	if id then
 		for _, socket in ipairs(sockets.active_sockets) do
@@ -803,7 +805,7 @@ do -- tcp socket meta
 			self.remove_me = true
 
 			if now then
-				sockets.Update()
+				sockets.Update(true)
 			end
 		end
 
