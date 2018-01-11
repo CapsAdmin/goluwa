@@ -434,14 +434,14 @@ function sockets.AbortDownload(url)
 	if sockets.debug_download then llog("download aborted ", url) end
 end
 
+local cb = utility.CreateCallbackThing()
+
 function sockets.DownloadFirstFound(urls, callback, on_fail)
-	local found = function(found_url)
-		for _, other_url in ipairs(urls) do
-			if found_url ~= other_url then
-				sockets.AbortDownload(other_url)
-			end
-		end
-	end
+	local id = table.concat(urls)
+
+	if cb:check(id, callback, {on_fail = on_fail}) then return true end
+
+	cb:start(id, callback, {on_fail = on_fail})
 
 	local fails = {}
 
@@ -449,7 +449,7 @@ function sockets.DownloadFirstFound(urls, callback, on_fail)
 		sockets.Download(
 			url,
 			function(...)
-				callback(url, ...)
+				cb:stop(id, url, ...)
 			end,
 			function(reason)
 				table.insert(fails, "failed to download " .. url .. ": " .. reason .. "\n")
@@ -458,17 +458,25 @@ function sockets.DownloadFirstFound(urls, callback, on_fail)
 					for _, str in ipairs(fails) do
 						reason = reason .. str
 					end
-					on_fail(reason)
+					cb:callextra(id, "on_fail", reason)
+					cb:uncache(id)
 				end
 			end,
 			nil,
 			function(header)
 				if header["content-length"] > 0 then
-					found(url)
+					local found_url = url
+					for _, other_url in ipairs(urls) do
+						if found_url ~= other_url then
+							sockets.AbortDownload(other_url)
+						end
+					end
 				end
 			end
 		)
 	end
+
+	return true
 end
 
 function sockets.Get(url, callback, timeout, user_agent, binary, debug)
