@@ -128,6 +128,14 @@ function CONTEXT:Close()
 	self:Remove()
 end
 
+function CONTEXT:IsFolderValid(path_info)
+	return self:IsFolder(path_info)
+end
+
+function CONTEXT:IsArchive(path_info)
+	return false
+end
+
 runfile("lua/libraries/prototype/buffer_template.lua", CONTEXT)
 
 prototype.Register(CONTEXT, "file_system", CONTEXT.Name)

@@ -182,6 +182,35 @@ function vfs.IsFile(path)
 	return false
 end
 
+function vfs.IsFolderValid(path)
+	if path == "" then return false, "path is nothing" end
+
+	local path, err = vfs.GetAbsolutePath(path)
+	if not path then
+		return false, err
+	end
+
+	local path_info = vfs.GetPathInfo(path, true)
+
+	local errors = ""
+
+	for _, context in ipairs(vfs.GetFileSystems()) do
+		if context:IsArchive(path_info) then
+			local ok, err = context:IsFolderValid(path_info)
+
+			if ok then
+				return true
+			end
+
+			if err then
+				errors = errors .. err .. "\n"
+			end
+		end
+	end
+
+	return false, errors
+end
+
 function vfs.Exists(path)
 	return vfs.IsDirectory(path) or vfs.IsFile(path)
 end
