@@ -31,7 +31,7 @@ function system.ExecuteArgs(args)
 
 	if args then
 		for _, arg in ipairs(args) do
-			commands.RunString(tostring(arg), skip_lua, true, true)
+			commands.RunString(tostring(arg), skip_lua, true)
 		end
 	end
 end
