@@ -53,7 +53,7 @@ if WINDOWS then
 
 	local data = ffi.new("goluwa_find_data[1]")
 
-	function fs.find(dir, exclude_dot)
+	function fs.find(dir)
 		local out = {}
 
 		if dir:sub(-1) ~= "/" then dir = dir .. "/" end
@@ -65,7 +65,7 @@ if WINDOWS then
 
 			repeat
 				local name = ffi.string(data[0].cFileName)
-				if not exclude_dot or (name ~= "." and name ~= "..") then
+				if name ~= "." and name ~= ".." then
 					out[i] = name
 					i = i + 1
 				end
