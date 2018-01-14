@@ -47,7 +47,10 @@ if [ ! -f "../../../core/lua/boot.lua" ]; then
     download "https://gitlab.com/CapsAdmin/goluwa/raw/master/core/lua/boot.lua" "../../../core/lua/boot.lua"
 fi
 
-echo "[bash] goluwa.sh took : $(echo "scale=3;($(date +%s%N) - ${basetime})/(1*10^09)" | bc) seconds"
+if [ "$2" = "cli" ]; then 
+eli
+    echo "[bash] goluwa.sh took : $(echo "scale=3;($(date +%s%N) - ${basetime})/(1*10^09)" | bc) seconds"
+fi
 
 if [ ! -x luajit ] && [ -f "/lib/ld-2.26.so" ]; then
     # a way to execute on fat32 filesystems or something

@@ -600,7 +600,9 @@ if not WINDOWS and os.getenv("GOLUWA_DEBUG") or args[4] == "debug" then
 	os.execute("xterm -hold -e " .. valgrind .. " &")
 	os.execute("xterm -hold -e " .. gdb)
 else
-	io.write("[boot] core/lua/boot.lua took ", os.clock(), " seconds\n")
+	if not os.getenv("GOLUWA_CLI") then
+		io.write("[boot] core/lua/boot.lua took ", os.clock(), " seconds\n")
+	end
 
 	if WINDOWS then
 		os.execute(os.getcd() .. "\\" .. GOLUWA_EXECUTABLE .. ".exe " .. os.getcd():gsub("\\", "/") .. "/" .. initlua)

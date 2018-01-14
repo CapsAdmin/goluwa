@@ -136,11 +136,15 @@ end
 
 function vfs.AutorunAddons(folder, force)
 	folder = folder or ""
-	utility.PushTimeWarning()
+	if not CLI then
+		utility.PushTimeWarning()
+	end
 	for _, info in pairs(vfs.GetMountedAddons()) do
 		vfs.AutorunAddon(info, folder, force)
 	end
-	utility.PopTimeWarning("autorun " .. folder .. "*", 0.1)
+	if not CLI then
+		utility.PopTimeWarning("autorun " .. folder .. "*", 0.1)
+	end
 end
 
 function vfs.MountAddon(path, force)

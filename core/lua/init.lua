@@ -43,6 +43,8 @@ do -- constants
 	_G[e.USERNAME:upper()] = true
 	_G[jit.os:upper()] = true
 	_G[jit.arch:upper()] = true
+
+	_G.CLI = os.getenv("GOLUWA_CLI")
 end
 
 do
@@ -212,7 +214,9 @@ vfs.MountAddons(e.ROOT_FOLDER)
 
 system._CheckCreatedEnv()
 
-logn("[core] core/lua/init.lua took ", os.clock(), " seconds")
+if not CLI then
+	logn("[core] core/lua/init.lua took ", os.clock(), " seconds")
+end
 
 do -- autorun
 	-- call goluwa/*/lua/init.lua if it exists

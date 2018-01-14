@@ -165,8 +165,7 @@ do -- runfile
 					_G.FILE_NAME = full_path:match(".*/(.+)%.") or full_path
 					_G.FILE_EXTENSION = full_path:match(".*/.+%.(.+)")
 
-
-					if utility and utility.PushTimeWarning then
+					if not CLI and utility and utility.PushTimeWarning then
 						utility.PushTimeWarning()
 					end
 
@@ -178,7 +177,7 @@ do -- runfile
 						ok, err = pcall(func, ...)
 					end
 
-					if utility and utility.PushTimeWarning then
+					if not CLI and utility and utility.PushTimeWarning then
 						utility.PopTimeWarning(full_path, 0.01)
 					end
 

@@ -13,7 +13,6 @@ local env_vars = {
 	DEBUG_OPENGL = false,
 
 	PHYSICS = false,
-	VERBOSE_STARTUP = true,
 
 	OPENGL = true,
 	VULKAN = false,
@@ -52,6 +51,14 @@ end
 
 if EXTERNAL_DEBUGGER == nil then
 	EXTERNAL_DEBUGGER = false
+end
+
+if CLI then
+	GRAPHICS = false
+	WINDOW = false
+	SOUND = false
+	CLIENT = false
+	NETWORK = false
 end
 
 RELOAD = false
