@@ -359,7 +359,9 @@ local ARCHIVE_EXT = WINDOWS and ".zip" or ".tar.gz"
 os.cd("../../../")
 
 if args[1] == "update" or not os.isfile("core/lua/init.lua") then
-	if not os.iscmd("git") or not os.checkexecute("git pull") then
+	if os.isdir(".git") then
+		os.execute("git pull")
+	else
 		if os.download("https://gitlab.com/CapsAdmin/goluwa/repository/master/archive" .. ARCHIVE_EXT, "temp" .. ARCHIVE_EXT) then
 			if os.extract("temp" .. ARCHIVE_EXT, "./", "goluwa-master*/") then
 				os.remove("temp" .. ARCHIVE_EXT)
