@@ -362,7 +362,7 @@ if args[1] == "update" or not os.isfile("core/lua/init.lua") then
 	if not os.isfile("core/lua/init.lua") then
 		io.write("missing core/lua/init.lua\n")
 	end
-	if os.isdir(".git") and os.iscmd("git") then
+	if os.isfile(".git/config") and io.readfile(".git/config"):find("goluwa") and os.iscmd("git") then
 		io.write("updating from git repository\n")
 		os.execute("git pull")
 	else
