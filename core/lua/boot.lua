@@ -359,9 +359,14 @@ local ARCHIVE_EXT = WINDOWS and ".zip" or ".tar.gz"
 os.cd("../../../")
 
 if args[1] == "update" or not os.isfile("core/lua/init.lua") then
-	if os.isdir(".git") then
+	if not os.isfile("core/lua/init.lua") then
+		io.write("missing core/lua/init.lua\n")
+	end
+	if os.isdir(".git") and os.iscmd("git") then
+		io.write("updating from git repository\n")
 		os.execute("git pull")
 	else
+		io.write("downloading repository archive\n")
 		if os.download("https://gitlab.com/CapsAdmin/goluwa/repository/master/archive" .. ARCHIVE_EXT, "temp" .. ARCHIVE_EXT) then
 			if os.extract("temp" .. ARCHIVE_EXT, "./", "goluwa-master*/") then
 				os.remove("temp" .. ARCHIVE_EXT)
@@ -460,12 +465,12 @@ if args[1] ~= "launch" then
 				local stop = cur:find(magic_stop, nil, true)
 
 				if start and stop then
-					print(cur:sub(start + #magic_start + 1, stop - 2))
+					io.write(cur:sub(start + #magic_start + 1, stop - 2), "\n")
 					break
 				end
 
 				if timeout < os.clock() then
-					print("no resposne from goluwa")
+					io.write("no resposne from goluwa\n")
 					break
 				end
 			end
@@ -544,12 +549,12 @@ if not os.isfile(bin_dir .. "binaries_downloaded") then
 			if os.extract("binaries_temp.tar.gz", bin_dir, "*/" .. bin_dir) then
 				io.open(bin_dir .. "binaries_downloaded", "w"):close()
 			else
-				print("failed to extract archive")
+				io.write("failed to extract archive", "\n")
 				os.remove("binaries_temp.tar.gz")
 				os.exit()
 			end
 		else
-			print("failed to download archive. trying again")
+			io.write("failed to download archive. trying again", "\n")
 		end
 	end
 end
