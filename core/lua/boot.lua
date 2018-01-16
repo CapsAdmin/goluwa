@@ -10,11 +10,19 @@ do
 	local ffi = require("ffi")
 
 	if WINDOWS then
-		function powershell(s)
-			os.setenv("pstemp", s)
-			local p = io.popen("powershell -nologo -noprofile -noninteractive Invoke-Expression 'Invoke-Expression $Env:pstemp'")
+		function powershell(str, no_return)
+			os.setenv("pstemp", str)
+			local ps = "powershell -nologo -noprofile -noninteractive -command Invoke-Expression $Env:pstemp"
+
+			if no_return then
+				os.execute(ps)
+				return
+			end
+
+			local p = io.popen(ps)
 			local out = p:read("*all")
 			p:close()
+
 			return out
 		end
 	end
@@ -41,7 +49,7 @@ do
 			if cache[cmd] ~= nil then return cache[cmd] end
 			local res
 			if WINDOWS then
-				res = os.readexecute("@echo OFF & CLS & WHERE " .. cmd) ~= ""
+				res = os.readexecute("WHERE " .. cmd) ~= ""
 			else
 				res = os.readexecute("command -v " .. cmd) ~= ""
 			end
@@ -211,7 +219,7 @@ do
 				return powershell("(New-Object System.Net.WebClient).DownloadFile('"..url.."', '"..to.."')") == ""
 			end
 			to = os.getcd() .. "\\" .. "temp_download"
-			powershell("(New-Object System.Net.WebClient).DownloadFile('"..url.."', '"..to.."')")
+			powershell("(New-Object System.Net.WebClient).DownloadFile('"..url.."', '"..to.."')", true)
 			local content = io.readfile(to)
 			os.remove(to)
 			return content
@@ -272,9 +280,11 @@ function os.extract(from, to, move_out)
 	if UNIX then
 		os.readexecute('tar -xvzf '..from..' -C "'..to..'"')
 	else
+		local to = to == "./" and "" or to
+		if false then
 		powershell([[
-			$file = "]]..os.getcd() .. from..[["
-			$location = "]]..os.getcd() .. to..[["
+			$file = "]]..os.getcd() .. "\\" .. from..[["
+			$location = "]]..os.getcd() .. "\\" .. to..[["
 
 			$shell = New-Object -Com Shell.Application
 
@@ -291,7 +301,7 @@ function os.extract(from, to, move_out)
 			foreach($item in $zip.items()) {
 				$shell.Namespace("$location").CopyHere($item, 0x14)
 			}
-		]])
+		]], true) end
 	end
 
 	if move_out then
@@ -309,7 +319,6 @@ function os.extract(from, to, move_out)
 					end
 				end
 			end)
-
 			move_out = str
 		until count == 0
 
@@ -321,7 +330,6 @@ function os.extract(from, to, move_out)
 					end
 				end
 			end)
-
 			move_out = str
 		until count == 0
 
@@ -334,7 +342,7 @@ function os.extract(from, to, move_out)
 				os.execute("rm -rf " .. to .. dir)
 			end
 		else
-			powershell("Move-Item -Confirm:$false -Force -Path " .. move_out .. " -Destination " .. to)
+			powershell("Move-Item -Confirm:$false -Force -Path " .. move_out .. "* -Destination " .. to, true)
 		end
 	end
 

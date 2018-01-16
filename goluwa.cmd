@@ -1,4 +1,4 @@
-@echo OFF & CLS & PowerShell -nologo -noprofile -noninteractive Invoke-Expression ('$args=(''%*'').split('' '');'+'$PSScriptRoot=(''%~dp0'');'+((Get-Content -Raw %~dp0%~n0%~x0 ) -Replace '^.*goto :EOF')); & goto :EOF
+@echo off & cls & PowerShell -nologo -noprofile -noninteractive Invoke-Expression ('$args=(''%*'').split('' '');'+'$PSScriptRoot=(''%~dp0'');'+((Get-Content -Raw %~dp0%~n0%~x0 ) -Replace '^.*goto :EOF')); & goto :EOF
 
 $stopwatch = New-Object System.Diagnostics.Stopwatch
 $stopwatch.Start()
@@ -26,15 +26,14 @@ Set-Location "$ROOT_DIR\data\bin\windows_$ARCH\"
 
 Download "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/data/bin/windows_$ARCH/luajit.exe" "$ROOT_DIR\data\bin\windows_$ARCH\luajit.exe"
 Download "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/data/bin/windows_$ARCH/lua51.dll" "$ROOT_DIR\data\bin\windows_$ARCH\lua51.dll"
-Download "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/data/bin/windows_$ARCH/VCRUNTIME140.dll" "$ROOT_DIR\data\bin\windows_$ARCH\VCRUNTIME140.dll"
+Download "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/data/bin/windows_$ARCH/vcruntime140.dll" "$ROOT_DIR\data\bin\windows_$ARCH\vcruntime140.dll"
 
 if(!(Test-Path "$ROOT_DIR\core\lua\boot.lua" -PathType Leaf)) {
 	New-Item -ItemType Directory -Force -Path "$ROOT_DIR\core\lua" | Out-Null
-	Download "https://gitlab.com/CapsAdmin/goluwa/blob/master/core/lua/boot.lua" "$ROOT_DIR\core\lua\boot.lua"
+	Download "https://gitlab.com/CapsAdmin/goluwa/raw/master/core/lua/boot.lua" "$ROOT_DIR\core\lua\boot.lua"
 }
 
 $stopwatch.Stop()
 
 Write-Host "[powershell] goluwa.cmd took"$stopwatch.Elapsed.TotalSeconds"seconds"
-Start-Process .\luajit.exe -ArgumentList "..\..\..\core\lua\boot.lua $args" -NoNewWindow
-Write-Host `n
+.\luajit.exe "..\..\..\core\lua\boot.lua $args"
