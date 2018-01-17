@@ -224,6 +224,29 @@ function table.print(...)
 	luadata.SetModifier("function", nil)
 end
 
+do
+	local indent = 0
+	function table.print2(tbl)
+		for k,v in pairs(tbl) do
+			log(("\t"):rep(indent))
+
+			if type(v) == "table" then
+				logn(k, ":")
+				indent = indent + 1
+				table.print2(v)
+				indent = indent - 1
+			else
+				local v = v
+				if type(v) == "string" then
+					v = "\"" .. v .. "\""
+				end
+
+				logn(k, " = ", v)
+			end
+		end
+	end
+end
+
 do -- table copy
 	local lookup_table = {}
 
