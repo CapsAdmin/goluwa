@@ -24,9 +24,9 @@ function Download($url, $location) {
 New-Item -ItemType Directory -Force -Path "$ROOT_DIR\data\bin\windows_$ARCH" | Out-Null
 Set-Location "$ROOT_DIR\data\bin\windows_$ARCH\"
 
-Download "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/data/bin/windows_$ARCH/luajit.exe" "$ROOT_DIR\data\bin\windows_$ARCH\luajit.exe"
-Download "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/data/bin/windows_$ARCH/lua51.dll" "$ROOT_DIR\data\bin\windows_$ARCH\lua51.dll"
-Download "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/data/bin/windows_$ARCH/vcruntime140.dll" "$ROOT_DIR\data\bin\windows_$ARCH\vcruntime140.dll"
+Download "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/windows__$ARCH/data/bin/windows_$ARCH/luajit.exe" "$ROOT_DIR\data\bin\windows_$ARCH\luajit.exe"
+Download "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/windows__$ARCH/data/bin/windows_$ARCH/lua51.dll" "$ROOT_DIR\data\bin\windows_$ARCH\lua51.dll"
+Download "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/windows__$ARCH/data/bin/windows_$ARCH/vcruntime140.dll" "$ROOT_DIR\data\bin\windows_$ARCH\vcruntime140.dll"
 
 if(!(Test-Path "$ROOT_DIR\core\lua\boot.lua" -PathType Leaf)) {
 	New-Item -ItemType Directory -Force -Path "$ROOT_DIR\core\lua" | Out-Null

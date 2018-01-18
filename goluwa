@@ -28,7 +28,7 @@ mkdir -p "data/bin/${OS}_${ARCH}"
 cd "data/bin/${OS}_${ARCH}" || exit
 
 if [ ! -f "luajit" ]; then
-    download "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/data/bin/${OS}_${ARCH}/luajit" "luajit"
+    download "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/${OS}_${ARCH}/data/bin/${OS}_${ARCH}/luajit" "luajit"
 fi
 
 chmod +x luajit
@@ -47,7 +47,7 @@ if [ ! -f "../../../core/lua/boot.lua" ]; then
     download "https://gitlab.com/CapsAdmin/goluwa/raw/master/core/lua/boot.lua" "../../../core/lua/boot.lua"
 fi
 
-if [ "$2" = "cli" ]; then 
+if [ "$2" = "cli" ]; then
 eli
     echo "[bash] goluwa.sh took : $(echo "scale=3;($(date +%s%N) - ${basetime})/(1*10^09)" | bc) seconds"
 fi
