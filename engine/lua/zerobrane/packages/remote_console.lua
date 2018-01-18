@@ -23,46 +23,44 @@ function PLUGIN:Setup()
 	local META = {}
 	META.__index = META
 
-	local socket = require("socket")
-
 	local last_msg = ""
+	local delimiter = "_aeoaa__DELIMITER_aeoaa_"
 
 	function META:Update()
-		local res, msg = self.socket:connect("*", self.port)
+		if not self.next_update or self.next_update < os.clock() then
 
-		if msg ~= last_msg then
-			ide:Print("*", self.port, ":", res, msg)
-			last_msg = msg
-		end
+			ide:Print("check")
 
-		if not self.connected and res or msg == "already connected" then
-			if not self.connected then
-				ide:Print("remote console: connected to localhost:", self.port)
+			local f = io.open(ide:GetProject() .. "data/ide/goluwa_output_" .. self.id, "r")
+			if f then
+				local str = f:read("*all")
+				f:close()
+
+				for chunk in str:gmatch("(.-)" .. delimiter) do
+					assert(loadstring(chunk))()
+				end
+
+				io.open(ide:GetProject() .. "data/ide/goluwa_output_" .. self.id, "w"):close()
 			end
-			self.connected = true
-		elseif msg ~= "timeout" and msg ~= "connection refused" then
-			if msg ~= last_msg then
-				ide:Print(msg)
-				last_msg = msg
-			end
+
+			self.next_update = os.clock() + 1/5
 		end
 	end
 
 	function META:Send(str)
-		if self.connected then
-			self.socket:send(str)
-		else
-			ide:Print("remote console: cannot send '", str, "' because socket is not connected")
-			ide:Print(self.socket)
-		end
+		local f = io.open(ide:GetProject() .. "data/ide/goluwa_input_" .. self.id, "ab")
+		f:write(str)
+		f:write(delimiter)
+		f:close()
 	end
 
-	function create_socket(id)
+	function META:Remove()
+
+	end
+
+	function create_connection(id)
 		local self = setmetatable({}, META)
-		self.connected = false
-		self.socket = socket.tcp()
-		self.socket:settimeout(0)
-		self.port = (self.port or math.random(1500, 10000)) + 1
+		self.id = id
 		return self
 	end
 
@@ -79,23 +77,24 @@ function PLUGIN:Setup()
 				GOLUWA_CURSES = "0",
 				GOLUWA_IDE = "",
 				GOLUWA_ARGS = [==[{[[
-					if not sockets then return end
+					local delimiter = "]==] .. delimiter .. [==["
+
 					pvars.Set("text_editor_path", "./../../ide/zbstudio.sh %PATH%:%LINE%")
 
-					local server = sockets.CreateServer("tcp")
-					server:Host("*", LUA{console.socket.port})
-
-					function server:OnClientConnected(client)
-						logn("zerobrane connected")
-						return true
-					end
-
-					function server:OnReceive(str)
-						commands.RunString(str, nil, nil, true)
-					end
+					event.Timer("remote_console", 1/5, 0, function()
+						local input = vfs.Read(e.ROOT_FOLDER .. "data/ide/goluwa_input_LUA{console.id}")
+						if input and input ~= "" then
+							for _, chunk in ipairs(input:split(delimiter)) do
+								if chunk ~= "" then
+									commands.RunString(chunk, nil, nil, true)
+								end
+							end
+							vfs.Write(e.ROOT_FOLDER .. "data/ide/goluwa_input_LUA{console.id}", "")
+						end
+					end)
 
 					_G.zb = function(str)
-						server:Broadcast(str, true)
+						vfs.Write(e.ROOT_FOLDER .. "data/ide/goluwa_output_LUA{console.id}", vfs.Read(e.ROOT_FOLDER .. "data/ide/goluwa_output_LUA{console.id}") .. str .. delimiter)
 					end
 
 					ZEROBRANE = true
@@ -107,35 +106,27 @@ function PLUGIN:Setup()
 			},
 
 			start = function(console)
-				console.socket = create_socket(id)
+				console.connection = create_connection(id)
 			end,
 			stop = function(console)
-				if console.socket then
-					console.socket.socket:close()
-				end
-				console.socket = nil
+				if not console.connection then return end
+				console.connection:Remove()
 			end,
 			run_string = function(console, str)
-				if not console.socket or not console.socket.socket then
-					console:Print("zerobrane is not connected")
-				end
-				console.socket:Send(str)
+				if not console.connection then return end
+				console.connection:Send(str)
 			end,
 			run_script = function(console, path)
-				if not console.socket or not console.socket.socket then
-					console:Print("zerobrane is not connected")
-				else
-					console:Print("loading: ", path, "\n")
-				end
+				if not console.connection then return end
+				console:Print("loading: ", path, "\n")
 				console:run_string("_G.RELOAD = true runfile([["..path.."]]) _G.RELOAD = nil print('script ran successfully')")
 			end,
 			print = function(console, ...)
 				console:Print(...)
 			end,
 			on_update = function(console)
-				if console.socket then
-					console.socket:Update()
-				end
+				if not console.connection then return end
+				console.connection:Update()
 			end,
 			on_save = function(console, path)
 				local dir = path:lower():match("^.+/([^/]-)/[^/]+$")
