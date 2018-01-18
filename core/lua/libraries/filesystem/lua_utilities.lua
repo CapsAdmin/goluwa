@@ -26,7 +26,7 @@ do
 		if not vfs.files_ran then
 			vfs.files_ran = {}
 			for _, path in ipairs(vfs.files_ran_) do
-				local full_path = vfs.GetAbsolutePath(path, false)
+				local full_path = vfs.GetAbsolutePath(path, false) or path
 				vfs.files_ran[full_path] = vfs.OSGetAttributes(full_path)
 			end
 		end
