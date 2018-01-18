@@ -494,4 +494,6 @@ digraph G {
 	end
 end)
 
-jit.barrier = function() debug.gethook() end
+if not jit.tracebarrier then
+	jit.tracebarrier = function() debug.gethook() end
+end

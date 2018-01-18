@@ -589,9 +589,9 @@ function profiler.MeasureFunction(func, count, name, no_print)
 
 	for _ = 1, count do
 		local time = system_GetTime()
-		jit.barrier()
+		jit.tracebarrier()
 		func()
-		jit.barrier()
+		jit.tracebarrier()
 		total_time = total_time + system_GetTime() - time
 	end
 
