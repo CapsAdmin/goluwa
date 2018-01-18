@@ -300,49 +300,15 @@ end
 do
 	function steam.FindSourceGame(name)
 		local appid = steam.GetAppIdFromName(name)
-		if appid then
-			name = appid
-		end
 
-		local games = steam.GetSourceGames()
-
-		if tonumber(name) then
-			for _, game_info in ipairs(games) do
-				if game_info.filesystem.steamappid == tonumber(name) then
-					return game_info
-				end
-			end
-		else
-			local id = translate[name:lower()]
-
-			if id then
-				for _, game_info in ipairs(games) do
-					if game_info.filesystem.steamappid == id then
-						return game_info
-					end
-				end
-			end
-
-			for _, game_info in ipairs(games) do
-				if game_info.game:lower() == name then
-					return game_info
-				end
-			end
-
-			for _, game_info in ipairs(games) do
-				if game_info.game:compare(name) then
-					return game_info
-				end
-			end
-
-			for _, game_info in ipairs(games) do
-				if game_info.filesystem.searchpaths.mod and game_info.filesystem.searchpaths.mod:compare(name) then
+		if appid and tonumber(appid) then
+			for _, game_info in ipairs(steam.GetSourceGames()) do
+				if game_info.filesystem.steamappid == tonumber(appid) then
 					return game_info
 				end
 			end
 		end
 	end
-
 end
 
 function steam.MountSourceGames()
