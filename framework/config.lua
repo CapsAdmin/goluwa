@@ -18,6 +18,10 @@ local env_vars = {
 	VULKAN = false,
 }
 
+if jit.tracebarrier then
+	SOCKETS = false
+end
+
 for key, default in pairs(env_vars) do
 	if _G[key] == nil then
 		local val = os.getenv("GOLUWA_" .. key)

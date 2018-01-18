@@ -6,46 +6,19 @@ local ffibuild = require("ffibuild")
 local bin_dir = "../../../../data/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower()
 
 local repos = {
-	{
-		author = "mike",
-		url = "https://github.com/LuaJIT/LuaJIT",
-		branch = "v2.1",
-		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
-	},
-	{
-		author = "mike",
-		url = "https://github.com/LuaJIT/LuaJIT",
-		branch = "master",
-		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
-	},
-	{
+	--[[{
 		author = "mike",
 		url = "https://github.com/LuaJIT/LuaJIT",
 		branch = "v2.1",
 		flags = {"LUAJIT_ENABLE_GC64", "LUAJIT_ENABLE_LUA52COMPAT"},
-	},
+	},]]
 	{
 		author = "lukego",
 		url = "https://github.com/raptorjit/raptorjit",
 		branch = "master",
 		flags = {"LUAJIT_ENABLE_GC64", "LUAJIT_ENABLE_LUA52COMPAT"},
 		bin = "raptorjit",
-		--commit = "d3e36e7920c641410dfcdf1fc6c10069fd3192a6",
-	},
-}
-
-repos = {
-	{
-		author = "mike",
-		url = "https://github.com/LuaJIT/LuaJIT",
-		branch = "v2.1",
-		flags = {"LUAJIT_ENABLE_GC64", "LUAJIT_ENABLE_LUA52COMPAT"},
-	},
-	{
-		author = "mike",
-		url = "https://github.com/LuaJIT/LuaJIT",
-		branch = "v2.1",
-		flags = {"LUAJIT_ENABLE_LUA52COMPAT"},
+		pre_make = "reusevm"
 	},
 }
 
@@ -110,10 +83,16 @@ local function build(info, extra_flags, extra_id)
 	local name = info.bin or "luajit"
 	local commit = info.commit or "HEAD"
 
+	local pre_make = ""
+	if info.pre_make then
+		pre_make = "make -C " .. dir .. " " .. info.pre_make .. ";"
+	end
+
 	execute(
 		"(" ..
 			"if [ -d ./" .. dir .. " ]; then git -C ./" .. dir .. " pull; git -C ./" .. dir .. " checkout " .. commit .. "; else git clone -b " .. info.branch .. " " .. info.url .. " " .. dir .. " --depth 1; fi" .. "; " ..
 			patch_cmd ..
+			pre_make ..
 			"make -C " .. dir .. " " .. flags .. "; " ..
 			"cp " .. dir .. "/src/"..name.." \"" .. bin_dir .. "/luajit_" .. id .. "\"; " ..
 			"cp " .. dir .. "/src/lj.supp \"" .. bin_dir .. "/lj.supp\"; " ..
