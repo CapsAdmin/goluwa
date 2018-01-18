@@ -512,6 +512,7 @@ local name_translate = {
 	css = "Counter-Strike: Source",
 	cs = "Counter-Strike",
 	gmod = "Garry's Mod",
+	garrysmod = "Garry's Mod",
 	l4d = "Left 4 Dead",
 	l4d2 = "Left 4 Dead 2",
 	hl2ep2 = "Half-Life 2: Episode Two",
