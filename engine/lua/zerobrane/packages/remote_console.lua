@@ -304,6 +304,19 @@ function PLUGIN:StartProcess(id, cmd)
 		v = v:gsub("LUA(%b{})", function(code) return assert(loadstring("local console = ... return " .. code:sub(2, -2)))(console) end)
 		v = v:gsub("DEFERRED_CMD", cmd or "")
 		wx.wxSetEnv(k, v)
+		if os.getenv(k) ~= v then
+			ide:Print("failed to set environment variable " .. k)
+			for i = 1, #v do
+				local str = v:sub(0, i)
+				wx.wxSetEnv(k, str)
+				if os.getenv(k) ~= str and i > 1 then
+					local bad_char = v:sub(i-1, i-1)
+					ide:Print("the character " .. bad_char .. "(" .. (bad_char:byte() or -1) .. ")" .. " seems to be problematic")
+					ide:Print(str)
+					break
+				end
+			end
+		end
 	end
 
 	local tb = ide:GetToolBar()
