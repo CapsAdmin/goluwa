@@ -108,8 +108,14 @@ function render._SetWindow(wnd)
 	sdl.GL_MakeCurrent(wnd.sdl_wnd, system.gl_context)
 end
 
-function render.SwapBuffers(wnd)
-	sdl.GL_SwapWindow(wnd.sdl_wnd)
+if NULL_OPENGL then
+	function render.SwapBuffers(wnd)
+
+	end
+else
+	function render.SwapBuffers(wnd)
+		sdl.GL_SwapWindow(wnd.sdl_wnd)
+	end
 end
 
 do
