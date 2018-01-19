@@ -321,6 +321,8 @@ PASS.Stages = {
 					set_albedo(albedo.rgb);
 					set_view_normal(vertex_view_normal);
 					set_specular(vec3(0,0,0));
+					set_metallic(0);
+					set_roughness(0);
 				}
 #else
 				in mat3 tangent_space;
