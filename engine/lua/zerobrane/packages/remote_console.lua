@@ -37,7 +37,15 @@ function PLUGIN:Setup()
 				f:close()
 
 				for chunk in str:gmatch("(.-)" .. delimiter) do
-					assert(loadstring(chunk))()
+					local func, err = loadstring(chunk)
+					if func then
+						local ok, err = pcall(func)
+						if not func then
+							ide:Print(err)
+						end
+					else
+						ide:Print(err)
+					end
 				end
 
 				io.open(ide:GetProject() .. "data/ide/goluwa_output_" .. self.id, "w"):close()
@@ -84,12 +92,13 @@ function PLUGIN:Setup()
 					event.Timer("remote_console", 1/5, 0, function()
 						local input = vfs.Read(e.ROOT_FOLDER .. "data/ide/goluwa_input_LUA{console.id}")
 						if input and input ~= "" then
+							vfs.Write(e.ROOT_FOLDER .. "data/ide/goluwa_input_LUA{console.id}", "")
+
 							for _, chunk in ipairs(input:split(delimiter)) do
 								if chunk ~= "" then
 									commands.RunString(chunk, nil, nil, true)
 								end
 							end
-							vfs.Write(e.ROOT_FOLDER .. "data/ide/goluwa_input_LUA{console.id}", "")
 						end
 					end)
 
