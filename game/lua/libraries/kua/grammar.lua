@@ -114,12 +114,16 @@ do -- syntax rules
 	end
 
 	syntax.symbol_priority = {"..."}
+	syntax.symbol_priority_lookup = {}
 
 	for k,v in pairs(syntax.operator_precedence) do
 		table.insert(syntax.symbol_priority, k)
 		for i = 1, #k do
 			local c = k:sub(i, i)
 			if c:find("%p") then
+				if i == 1 then
+					syntax.symbol_priority_lookup[c] = true
+				end
 				syntax.char_types[c] = "symbol"
 			end
 		end
