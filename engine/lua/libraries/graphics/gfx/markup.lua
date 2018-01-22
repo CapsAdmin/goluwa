@@ -1487,7 +1487,7 @@ do -- invalidate
 			-- is the previous line a newline?
 			local newline = chunks[i - 1] and chunks[i - 1].type == "newline"
 
-			if not (chunk.type == "string" and chunk.val:find("^%s*$")) and chunk.type ~= "newline" then
+			if not (chunk.type == "string" and chunk.val:find("^%s*$")) and chunk.type~= "newline" then
 				if newline or x + chunk.w > self.MaxWidth then
 					local left_over_space = x - self.MaxWidth
 

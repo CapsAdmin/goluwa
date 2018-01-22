@@ -1,4 +1,4 @@
-﻿local META = prototype.CreateTemplate("font", "base")
+local META = prototype.CreateTemplate("font", "base")
 
 META:GetSet("Path", "")
 META:GetSet("Padding", 0)

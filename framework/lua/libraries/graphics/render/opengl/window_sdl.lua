@@ -122,7 +122,7 @@ do
 	local last
 
 	function render.SwapInterval(b)
-		if last ~= b then
+		if last~= b then
 			sdl.GL_SetSwapInterval(b and 1 or 0)
 			last = b
 		end

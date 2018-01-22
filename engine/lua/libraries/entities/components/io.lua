@@ -1,4 +1,4 @@
-﻿do
+do
 	local META = prototype.CreateTemplate()
 
 	META.Name = "io"

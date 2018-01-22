@@ -14,7 +14,7 @@ local depth_mode_tr = gine.GetReverseEnums("MATERIAL_RT_DEPTH_(.+)")
 local image_format_tr = gine.GetReverseEnums("IMAGE_FORMAT_(.+)")
 
 local texture_flags_tbl = gine.GetEnums("TEXTUREFLAGS_(.+)")
-local rt_flags_tbl = gine.GetEnums("CREÀTERENDERTARGETFLAGS_(.+)")
+local rt_flags_tbl = gine.GetEnums("CREATERENDERTARGETFLAGS_(.+)")
 
 function gine.env.GetRenderTargetEx(name, w, h, size_mode, depth_mode, texture_flags, rt_flags, image_format)
 	if gine.render_targets[name] then
