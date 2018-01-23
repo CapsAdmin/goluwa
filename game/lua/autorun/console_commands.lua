@@ -287,6 +287,6 @@ if GRAPHICS or PHYSICS then
 
 		steam.SetMap(name)
 
-		utility.PopTimeWarning("map " .. name)
+		utility.PopTimeWarning("map " .. name, nil, "cmd")
 	end)
 end

@@ -24,9 +24,9 @@ function render._Initialize()
 		error("a window must exist before the renderer can be initialized", 2)
 	end
 
-	llog("opengl version: %s", render.GetVersion())
-	llog("glsl version: %s", render.GetShadingLanguageVersion())
-	llog("vendor: %s", render.GetVendor())
+	--llog("opengl version: %s", render.GetVersion())
+	--llog("glsl version: %s", render.GetShadingLanguageVersion())
+	--llog("vendor: %s", render.GetVendor())
 
 	if render.GetVersion():find("OpenGL ES") then
 		OPENGL_ES = true

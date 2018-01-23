@@ -61,7 +61,7 @@ function render.PostWindowSetup(sdl_wnd)
 			context = sdl.GL_CreateContext(sdl_wnd)
 
 			if context ~= nil then
-				llog("successfully created OpenGL context ", attempt.version or "??", " ", attempt.profile_mask)
+				--llog("successfully created OpenGL context ", attempt.version or "??", " ", attempt.profile_mask)
 				break
 			else
 				local err = ffi.string(sdl.GetError())

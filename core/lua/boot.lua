@@ -1,3 +1,4 @@
+
 do
 	_G[jit.os:upper()] = true
 	_G.OS = jit.os:lower()
@@ -615,9 +616,7 @@ if not WINDOWS and os.getenv("GOLUWA_DEBUG") or args[4] == "debug" then
 	os.execute("xterm -hold -e " .. valgrind .. " &")
 	os.execute("xterm -hold -e " .. gdb)
 else
-	if not os.getenv("GOLUWA_CLI") then
-		io.write("[boot] core/lua/boot.lua took ", os.clock(), " seconds\n")
-	end
+	os.setenv("GOLUWA_BOOT_TIME", tostring(os.clock()))
 
 	if WINDOWS then
 		os.execute(os.getcd() .. "\\" .. GOLUWA_EXECUTABLE .. ".exe " .. os.getcd():gsub("\\", "/") .. "/" .. initlua)

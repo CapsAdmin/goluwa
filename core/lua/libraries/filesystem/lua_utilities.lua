@@ -264,7 +264,7 @@ do -- runfile
 			end
 
 			if full_path:find(e.ROOT_FOLDER, nil, true) then
-				utility.PopTimeWarning("[runfile] " .. full_path:gsub(e.ROOT_FOLDER, ""), 0.025)
+				utility.PopTimeWarning(full_path:gsub(e.ROOT_FOLDER, ""), 0.025, "[runfile]")
 			end
 
 			_G.FILE_PATH = nil

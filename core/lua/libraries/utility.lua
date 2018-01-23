@@ -54,14 +54,18 @@ do
 		table.insert(stack, os.clock())
 	end
 
-	function utility.PopTimeWarning(what, threshold)
+	function utility.PopTimeWarning(what, threshold, category)
 		threshold = threshold or 0.1
 		local start_time = table.remove(stack)
 		if not start_time then return end
 		local delta = os.clock() - start_time
 
 		if delta > threshold then
-			logf("%s: %f seconds to execute\n", what, delta)
+			if category then
+				logf("%s %f seconds spent in %s\n", category, delta, what)
+			else
+				logf("%f seconds spent in %s\n", delta, what)
+			end
 		end
 	end
 end

@@ -1,5 +1,9 @@
 -- put all c functions in a table so we can override them if needed
 -- without doing the local oldfunc = print thing over and over again
+if os.getenv("GOLUWA_BOOT_TIME") then
+	io.write("[runfile] ", os.getenv("GOLUWA_BOOT_TIME"), " seconds spent in core/lua/boot.lua\n")
+end
+
 do
 	local _OLD_G = {}
 	if pcall(require, "ffi") then
@@ -215,7 +219,7 @@ vfs.MountAddons(e.ROOT_FOLDER)
 system._CheckCreatedEnv()
 
 if not CLI then
-	logn("[core] core/lua/init.lua took ", os.clock(), " seconds")
+	logn("[runfile] ", os.clock() ," seconds spent in core/lua/init.lua")
 end
 
 do -- autorun
@@ -236,7 +240,7 @@ if PROFILE_STARTUP then
 end
 
 if not CLI and system.MainLoop then
-	logn("[core] total init time is ", os.clock(), " seconds")
+	logn("[runfile] total init time took ", os.clock(), " seconds to execute")
 	system.MainLoop()
 end
 event.Call("ShutDown")
