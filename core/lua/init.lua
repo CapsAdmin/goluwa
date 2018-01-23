@@ -1,3 +1,5 @@
+local start_time = os.clock()
+
 -- put all c functions in a table so we can override them if needed
 -- without doing the local oldfunc = print thing over and over again
 if os.getenv("GOLUWA_BOOT_TIME") then
@@ -219,8 +221,9 @@ vfs.MountAddons(e.ROOT_FOLDER)
 system._CheckCreatedEnv()
 
 if not CLI then
-	logn("[runfile] ", os.clock() ," seconds spent in core/lua/init.lua")
+	logn("[runfile] ", os.clock() - start_time," seconds spent in core/lua/init.lua")
 end
+
 
 do -- autorun
 	-- call goluwa/*/lua/init.lua if it exists
@@ -240,7 +243,7 @@ if PROFILE_STARTUP then
 end
 
 if not CLI and system.MainLoop then
-	logn("[runfile] total init time took ", os.clock(), " seconds to execute")
+	logn("[runfile] total init time took ", os.clock() - start_time, " seconds to execute")
 	system.MainLoop()
 end
 event.Call("ShutDown")

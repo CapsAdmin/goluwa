@@ -1,3 +1,4 @@
+local start_time = os.clock()
 
 do
 	_G[jit.os:upper()] = true
@@ -616,7 +617,7 @@ if not WINDOWS and os.getenv("GOLUWA_DEBUG") or args[4] == "debug" then
 	os.execute("xterm -hold -e " .. valgrind .. " &")
 	os.execute("xterm -hold -e " .. gdb)
 else
-	os.setenv("GOLUWA_BOOT_TIME", tostring(os.clock()))
+	os.setenv("GOLUWA_BOOT_TIME", tostring(os.clock() - start_time))
 
 	if WINDOWS then
 		os.execute(os.getcd() .. "\\" .. GOLUWA_EXECUTABLE .. ".exe " .. os.getcd():gsub("\\", "/") .. "/" .. initlua)
