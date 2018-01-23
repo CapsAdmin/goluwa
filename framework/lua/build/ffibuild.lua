@@ -1626,11 +1626,29 @@ do -- lua helper functions
 		file:write(lua)
 		file:close()
 
-		-- check if this wokrs if possible
+		-- check if this works if possible
+    local ffi = require("ffi")
+    local old = ffi.load
+    local errored = false
+    ffi.load = function(...)
+      local clib = old(...)
+      return setmetatable({}, {__index = function(_, key) 
+        local ok, ret = pcall(function() return clib[key] end)
+        if ok then 
+          return ret
+        end
+        errored = true
+        print(ret)
+      end})
+    end
+    
 		local ok, err = pcall(function()
 			assert(loadstring(lua))()
 		end)
-		if not ok then
+    
+    ffi.load = old
+  
+		if not ok and not errored then
 			print(err)
 			local line = tonumber(err:match("line (%d+)"))
 			if line then

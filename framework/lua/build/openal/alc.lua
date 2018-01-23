@@ -7,6 +7,7 @@ void(alcGetIntegerv)(struct ALCdevice_struct*,int,int,int*);
 const char*(alcGetString)(struct ALCdevice_struct*,int);
 struct ALCcontext_struct*(alcGetCurrentContext)();
 struct ALCcontext_struct*(alcGetThreadContext)();
+void(alcGetInteger64vSOFT)(struct ALCdevice_struct*,int,int,long*);
 int(alcGetError)(struct ALCdevice_struct*);
 char(alcResetDeviceSOFT)(struct ALCdevice_struct*,const int*);
 void(alcRenderSamplesSOFT)(struct ALCdevice_struct*,void*,int);
@@ -40,6 +41,7 @@ library = {
 	GetString = CLIB.alcGetString,
 	GetCurrentContext = CLIB.alcGetCurrentContext,
 	GetThreadContext = CLIB.alcGetThreadContext,
+	GetInteger64vSOFT = CLIB.alcGetInteger64vSOFT,
 	GetError = CLIB.alcGetError,
 	ResetDeviceSOFT = CLIB.alcResetDeviceSOFT,
 	RenderSamplesSOFT = CLIB.alcRenderSamplesSOFT,
@@ -144,6 +146,10 @@ library.e = {
 	HRTF_ID_SOFT = 6550,
 	SOFT_output_limiter = 1,
 	OUTPUT_LIMITER_SOFT = 6554,
+	SOFT_device_clock = 1,
+	DEVICE_CLOCK_SOFT = 5632,
+	DEVICE_LATENCY_SOFT = 5633,
+	DEVICE_CLOCK_LATENCY_SOFT = 5634,
 	EXT_EFX_NAME = "ALC_EXT_EFX",
 	EFX_MAJOR_VERSION = 131073,
 	EFX_MINOR_VERSION = 131074,
