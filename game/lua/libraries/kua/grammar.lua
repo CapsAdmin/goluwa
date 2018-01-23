@@ -15,6 +15,7 @@ do -- syntax rules
 			char_types[""] = "space"
 			char_types[" "] = "space"
 			char_types["\n"] = "space"
+			char_types["\r"] = "space"
 			char_types["\t"] = "space"
 		end
 
