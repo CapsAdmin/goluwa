@@ -4,8 +4,8 @@ local ffibuild = require("ffibuild")
 
 ffibuild.BuildSharedLibrary(
 	"freeimage",
-	"if [ ! -d ./repo ]; then curl --url \"http://freeimage.cvs.sourceforge.net/viewvc/freeimage/?view=tar\" --output \"temp.tar.gz\" && mkdir repo && tar xf temp.tar.gz --directory=repo && rm temp.tar.gz; fi",
-	"cd freeimage/FreeImage && make && cd ../../"
+	"if [ ! -d ./repo ]; then curl --url https://netcologne.dl.sourceforge.net/project/freeimage/Source%20Distribution/3.17.0/FreeImage3170.zip --output \"temp.zip\" && mkdir repo && unzip temp.zip -d repo && rm temp.zip; fi",
+	"cd FreeImage && make && cd ../"
 )
 
 local header = ffibuild.BuildCHeader([[
