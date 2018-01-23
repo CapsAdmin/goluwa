@@ -111,6 +111,10 @@ function PLUGIN:Setup()
 					if "DEFERRED_CMD" ~= "" then
 						commands.RunString("DEFERRED_CMD")
 					end
+
+					if CLIENT and LUA{plugin:IsRunning("server")} then
+						commands.RunString("connect localhost")
+					end
 				]]}]==]
 			},
 
@@ -301,7 +305,7 @@ function PLUGIN:StartProcess(id, cmd)
 	console:print("launching...\n")
 
 	for k,v in pairs(console.env_vars) do
-		v = v:gsub("LUA(%b{})", function(code) return assert(loadstring("local console = ... return " .. code:sub(2, -2)))(console) end)
+		v = v:gsub("LUA(%b{})", function(code) return tostring(assert(loadstring("local console, plugin = ... return " .. code:sub(2, -2)))(console, self)) end)
 		v = v:gsub("DEFERRED_CMD", cmd or "")
 		wx.wxSetEnv(k, v)
 		if os.getenv(k) ~= v then
