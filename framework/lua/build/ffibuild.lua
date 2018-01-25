@@ -415,37 +415,40 @@ function ffibuild.NixBuild(data)
 	-- the output directory
 	local output_dir = os.getcd()
 
-	-- temporary main.c file
-	io.writefile("main.c", data.src)
+	-- temporary filenames
+	local tmp_main = os.tmpname()
+	local tmp_out = os.tmpname()
+	local tmp_nix = "temp.nix"
+
+	io.writefile(tmp_main, data.src)
 
 	-- temporary default.nix file
 	local lib_name = "lib" .. data.name .. "." .. (OSX and "dylib" or UNIX and "so" or WINDOWS and "dll")
-	io.writefile("default.nix",
+	io.writefile(tmp_nix,
 [==[
 	with import <nixpkgs> {};
 	stdenv.mkDerivation {
 		name = "ffibuild_luajit";
 		src = ./.;
-		buildInputs = [ ]==] .. data.name .. [==[ ];
+		buildInputs = [ gcc ]==] .. data.name .. [==[ ];
 		buildPhase = ''
-			gcc -xc -E -P -I${]==] .. data.name .. [==[.dev} main.c>main.p
+			gcc -xc -E -P -I${]==] .. data.name .. [==[.dev} ]==] .. tmp_main .. [==[>]==] .. tmp_out .. [==[
 		'';
 		installPhase = ''
 			cp -f ${]==] .. data.name .. [==[.out}/lib/]==] .. lib_name .. [==[ ]==] .. output_dir .. [==[/]==] .. lib_name .. [==[;
-			cp -f main.p ]==] .. output_dir .. [==[/;
 			mkdir $out; #dummy output?
 		'';
 	}
 ]==])
 
 	-- now execute nix-build
-	os.execute("nix-build")
+	os.execute("nix-build " .. tmp_nix .. " --no-out-link")
 
 	-- return the preprocessed main.c file
-	local str = io.readfile("main.p")
-	os.remove("main.p")
-	os.remove("main.c")
-	os.remove("default.nix")
+	local str = io.readfile(tmp_out)
+	os.remove(tmp_out)
+	os.remove(tmp_main)
+	os.remove(tmp_nix)
 
 	-- internal
 	ffibuild.lib_name = data.name
