@@ -1,3 +1,360 @@
+do
+	_G[jit.os:upper()] = true
+	_G.OS = jit.os:lower()
+
+	_G[jit.arch:upper()] = true
+	_G.ARCH = jit.arch:lower()
+
+	UNIX = not WINDOWS
+
+	local ffi = require("ffi")
+
+	if WINDOWS then
+		function powershell(str, no_return)
+			os.setenv("pstemp", str)
+			local ps = "powershell -nologo -noprofile -noninteractive -command Invoke-Expression $Env:pstemp"
+
+			if no_return then
+				os.execute(ps)
+				return
+			end
+
+			local p = io.popen(ps)
+			local out = p:read("*all")
+			p:close()
+
+			return out
+		end
+	end
+
+	function os.readexecute(cmd)
+		return io.popen(cmd):read("*all")
+	end
+
+	function os.checkexecute(cmd)
+		local code
+		if UNIX then
+			code = os.readexecute(cmd .. " && printf %s $?")
+		else
+			code = os.readexecute(cmd .. " & echo %errorlevel%")
+		end
+
+		return code:sub(#code ) == "0"
+	end
+
+	do
+		local cache = {}
+
+		function os.iscmd(cmd)
+			if cache[cmd] ~= nil then return cache[cmd] end
+			local res
+			if WINDOWS then
+				res = os.readexecute("WHERE " .. cmd) ~= ""
+			else
+				res = os.readexecute("command -v " .. cmd) ~= ""
+			end
+			cache[cmd] = res
+			return res
+		end
+	end
+
+	if UNIX then
+		ffi.cdef("char *getcwd(char *buf, size_t size);")
+
+		function os.getcd()
+			local buf = ffi.new("uint8_t[256]")
+			ffi.C.getcwd(buf, 256)
+			return ffi.string(buf)
+		end
+	else
+		ffi.cdef("unsigned long GetCurrentDirectoryA(unsigned long length, char *buffer);")
+
+		function os.getcd()
+			local buf = ffi.new("uint8_t[256]")
+			ffi.C.GetCurrentDirectoryA(256, buf)
+			return ffi.string(buf)
+		end
+	end
+
+	if UNIX then
+		function os.ls(path)
+			if path:sub(#path, #path) ~= "/" then
+				path = path .. "/"
+			end
+
+			local out = {}
+			for dir in os.readexecute("for dir in "..path.."*; do printf \"%s\n\" \"${dir}\"; done"):gmatch("(.-)\n") do
+				table.insert(out, dir:sub(#path + 1))
+			end
+
+			return out
+		end
+	else
+		function os.ls(path)
+			if path:sub(#path, #path) ~= "/" then
+				path = path .. "/"
+			end
+
+			path = os.getcd() .. "\\" .. path
+			path = path:gsub("/", "\\")
+
+			local out = {}
+
+			for name in os.readexecute("dir " .. path .. " /B"):gmatch("(.-)\n") do
+				table.insert(out, name)
+			end
+
+			return out
+		end
+	end
+
+	if UNIX then
+		ffi.cdef("int setenv(const char *name, const char *value, int overwrite);")
+
+		function os.setenv(key, val)
+			ffi.C.setenv(key, val, 0)
+		end
+	else
+		ffi.cdef("int _putenv_s(const char *var_name, const char *new_value);")
+
+		function os.setenv(key, val)
+			ffi.C._putenv_s(key, val)
+		end
+	end
+
+	function os.appendenv(key, val)
+		os.setenv(key, (os.getenv(key) or "") .. val)
+	end
+
+	function os.prependenv(key, val)
+		os.setenv(key, val .. (os.getenv(key) or ""))
+	end
+
+	if UNIX then
+		function os.pathtype(path)
+			if os.readexecute('[ -d "'..path..'" ] && printf "1"') == "1" then
+				return "directory"
+			elseif os.readexecute('[ -f "'..path..'" ] && printf "1"') == "1" then
+				return "file"
+			end
+
+			return nil
+		end
+	else
+		ffi.cdef([[
+			typedef struct goluwa_file_time {
+				unsigned long high;
+				unsigned long low;
+			} goluwa_file_time;
+
+			typedef struct goluwa_file_attributes {
+				unsigned long dwFileAttributes;
+				goluwa_file_time ftCreationTime;
+				goluwa_file_time ftLastAccessTime;
+				goluwa_file_time ftLastWriteTime;
+				unsigned long nFileSizeHigh;
+				unsigned long nFileSizeLow;
+			} goluwa_file_attributes;
+			bool GetFileAttributesExA(const char*, int, goluwa_file_attributes*);
+		]])
+
+		local flags = {
+			archive = 0x20, -- A file or directory that is an archive file or directory. Applications typically use this attribute to mark files for backup or removal .
+			compressed = 0x800, -- A file or directory that is compressed. For a file, all of the data in the file is compressed. For a directory, compression is the default for newly created files and subdirectories.
+			device = 0x40, -- This value is reserved for system use.
+			directory = 0x10, -- The handle that identifies a directory.
+			encrypted = 0x4000, -- A file or directory that is encrypted. For a file, all data streams in the file are encrypted. For a directory, encryption is the default for newly created files and subdirectories.
+			hidden = 0x2, -- The file or directory is hidden. It is not included in an ordinary directory listing.
+			integrity_stream = 0x8000, -- The directory or user data stream is configured with integrity (only supported on ReFS volumes). It is not included in an ordinary directory listing. The integrity setting persists with the file if it's renamed. If a file is copied the destination file will have integrity set if either the source file or destination directory have integrity set.
+			normal = 0x80, -- A file that does not have other attributes set. This attribute is valid only when used alone.
+			not_content_indexed = 0x2000, -- The file or directory is not to be indexed by the content indexing service.
+			no_scrub_data = 0x20000, -- The user data stream not to be read by the background data integrity scanner (AKA scrubber). When set on a directory it only provides inheritance. This flag is only supported on Storage Spaces and ReFS volumes. It is not included in an ordinary directory listing.
+			offline = 0x1000, -- The data of a file is not available immediately. This attribute indicates that the file data is physically moved to offline storage. This attribute is used by Remote Storage, which is the hierarchical storage management software. Applications should not arbitrarily change this attribute.
+			readonly = 0x1, -- A file that is read-only. Applications can read the file, but cannot write to it or delete it. This attribute is not honored on directories. For more information, see You cannot view or change the Read-only or the System attributes of folders in Windows Server 2003, in Windows XP, in Windows Vista or in Windows 7.
+			reparse_point = 0x400, -- A file or directory that has an associated reparse point, or a file that is a symbolic link.
+			sparse_file = 0x200, -- A file that is a sparse file.
+			system = 0x4, -- A file or directory that the operating system uses a part of, or uses exclusively.
+			temporary = 0x100, -- A file that is being used for temporary storage. File systems avoid writing data back to mass storage if sufficient cache memory is available, because typically, an application deletes a temporary file after the handle is closed. In that scenario, the system can entirely avoid writing the data. Otherwise, the data is written after the handle is closed.
+			virtual = 0x10000, -- This value is reserved for system use.
+		}
+
+		function os.pathtype(path)
+			path = os.getcd() .. "\\" .. path
+			path = path:gsub("/", "\\")
+
+			local info = ffi.new("goluwa_file_attributes[1]")
+
+			if ffi.C.GetFileAttributesExA(path, 0, info) then
+				if
+					bit.bor(info[0].dwFileAttributes, flags.archive) == flags.archive or
+					bit.bor(info[0].dwFileAttributes, flags.normal) == flags.normal
+				then
+					return "file"
+				end
+
+				return "directory"
+			end
+		end
+	end
+
+	function os.isdir(dir) return os.pathtype(dir) == "directory" end
+	function os.isfile(dir) return os.pathtype(dir) == "file" end
+
+	if UNIX then
+		function os.makedir(dir)
+			return os.readexecute("mkdir -p " .. dir)
+		end
+	else
+		ffi.cdef("int SHCreateDirectoryExA(void *,const char *path, void *);")
+		local lib = ffi.load("Shell32.dll")
+		function os.makedir(dir)
+			return lib.SHCreateDirectoryExA(nil, dir, nil)
+		end
+	end
+
+	function os.download(url, to)
+		if WINDOWS then
+			if to then
+				to = os.getcd() .. "\\" .. to
+				return powershell("(New-Object System.Net.WebClient).DownloadFile('"..url.."', '"..to.."')") == ""
+			end
+			to = os.getcd() .. "\\" .. "temp_download"
+			powershell("(New-Object System.Net.WebClient).DownloadFile('"..url.."', '"..to.."')", true)
+			local content = io.readfile(to)
+			os.remove(to)
+			return content
+		else
+			if to then
+				if os.iscmd("wget") then
+					return os.readexecute("wget -O \""..to.."\" \""..url.."\" && printf $?") == "0"
+				elseif os.iscmd("curl") then
+					return os.readexecute("curl -L --url \""..url.."\" --output \""..to.."\" && printf $?") == "0"
+				end
+			end
+
+			if os.iscmd("wget") then
+				return os.readexecute("wget -qO- \""..url.."\"")
+			elseif os.iscmd("curl") then
+				return os.readexecute("curl -vv -L --url \""..url.."\"")
+			end
+		end
+	end
+
+	if UNIX then
+		ffi.cdef("int chdir(const char *path);")
+		function os.cd(path)
+			if ffi.C.chdir(path) ~= 0 then
+				return nil, "unable change directory to " .. path
+			end
+
+			return true
+		end
+	else
+		ffi.cdef("bool SetCurrentDirectoryA(const char *path);")
+		function os.cd(path)
+			if ffi.C.SetCurrentDirectoryA(path) == 0 then
+				return nil, "unable change directory to " .. path
+			end
+
+			return true
+		end
+	end
+
+	function io.readfile(path)
+		local f = assert(io.open(path))
+		local str = f:read("*all")
+		f:close()
+		return str
+	end
+
+	function io.writefile(path, str)
+		local f = assert(io.open(path, "w"))
+		f:write(str)
+		f:close()
+	end
+
+	function has_tmux_session()
+		return os.readexecute("tmux has-session -t goluwa 2> /dev/null; printf $?") == "0"
+	end
+
+	function os.extract(from, to, move_out)
+		if to:sub(#to, #to) ~= "/" then to = to .. "/" end
+
+		os.makedir(to)
+
+		if UNIX then
+			os.readexecute('tar -xvzf '..from..' -C "'..to..'"')
+		else
+			local to = to == "./" and "" or to
+			if false then
+			powershell([[
+				$file = "]]..os.getcd() .. "\\" .. from..[["
+				$location = "]]..os.getcd() .. "\\" .. to..[["
+
+				$shell = New-Object -Com Shell.Application
+
+				$zip = $shell.NameSpace($([System.IO.Path]::GetFullPath("$file")))
+
+				if (!$zip) {
+					Write-Error "could not extract $file!"
+				}
+
+				if (!(Test-Path $location)) {
+					New-Item -ItemType directory -Path $location | Out-Null
+				}
+
+				foreach($item in $zip.items()) {
+					$shell.Namespace("$location").CopyHere($item, 0x14)
+				}
+			]], true) end
+		end
+
+		if move_out then
+			move_out = to .. move_out
+
+			if move_out:sub(#move_out, #move_out) ~= "/" then
+				move_out = move_out .. "/"
+			end
+
+			repeat
+				local str, count = move_out:gsub("(.-/)(%*)(/.*)", function(left, star, right)
+					for k,v in ipairs(os.ls(left)) do
+						if os.isdir(left .. v) then
+							return left .. v .. right
+						end
+					end
+				end)
+				move_out = str
+			until count == 0
+
+			repeat
+				local str, count = move_out:gsub("(.-/)(.-%*)(/.*)", function(left, chunk, right)
+					for k,v in ipairs(os.ls(left)) do
+						if v:find(chunk:sub(0, -2), 0, true) and os.isdir(left .. v) then
+							return left .. v .. right
+						end
+					end
+				end)
+				move_out = str
+			until count == 0
+
+			if UNIX then
+				os.execute("cp -r " .. move_out .. "* " .. to)
+
+				local dir = move_out:sub(#to + 1):match("(.-)/")
+
+				if dir and os.isdir(to .. dir) then
+					os.execute("rm -rf " .. to .. dir)
+				end
+			else
+				powershell("Move-Item -Confirm:$false -Force -Path " .. move_out .. "* -Destination " .. to, true)
+			end
+		end
+
+		return true -- TODO
+	end
+end
+
 local ffibuild = {}
 
 function ffibuild.Clone(str, dir)
@@ -52,6 +409,84 @@ function ffibuild.BuildSharedLibrary(name, clone, build, copy)
 	end
 
 	ffibuild.lib_name = name
+end
+
+function ffibuild.NixBuild(data)
+	-- the output directory
+	local output_dir = os.getcd()
+
+	do -- create the direnv build environment outside of this directory
+		os.makedir("../build_environment/")
+
+		local url = "https://github.com/direnv/direnv/releases/download/v2.14.0/direnv."
+
+		local os_name = jit.os:lower()
+		local arch = jit.arch
+		local ext = WINDOWS and ".exe" or ""
+
+		if jit.arch == "x64" then
+			arch = "amd64"
+		elseif jit.arch == "x86" then
+			arch = "386"
+		end
+
+		local direnv_path = "../build_environment/direnv" .. ext
+
+		if not os.isfile(direnv_path) then
+			os.download(url .. os_name .. "-" .. arch .. ext, direnv_path)
+		end
+
+		if UNIX then
+			os.execute("chmod +x " .. direnv_path)
+		end
+	end
+
+	os.cd("../build_environment/")
+
+	io.writefile(".envrc", "use nix")
+
+	-- temporary main.c file
+	io.writefile("main.c", data.src)
+
+	-- temporary default.nix file
+	local lib_name = "lib" .. data.name .. "." .. (OSX and "dylib" or UNIX and "so" or WINDOWS and "dll")
+	io.writefile("default.nix",
+[==[
+	with import <nixpkgs> {};
+	stdenv.mkDerivation {
+		name = "ffibuild_luajit";
+		src = ./.;
+		buildInputs = [ ]==] .. data.name .. [==[ ];
+		buildPhase = ''
+			gcc -xc -E -P -I${]==] .. data.name .. [==[.dev} main.c>main.p
+		'';
+		installPhase = ''
+			cp -f ${]==] .. data.name .. [==[.out}/lib/]==] .. lib_name .. [==[ ]==] .. output_dir .. [==[/]==] .. lib_name .. [==[;
+			cp -f main.p ]==] .. output_dir .. [==[/;
+			mkdir $out; #dummy output?
+		'';
+	}
+]==])
+
+-- now execute nix-build
+	os.execute([==[
+export PATH=./:$PATH
+
+eval "$(direnv export bash)"
+direnv allow .envrc
+nix-build
+]==])
+
+	os.cd(output_dir)
+
+	ffibuild.lib_name = data.name
+
+	local str = io.readfile("main.p")
+
+	os.remove("main.p")
+
+	-- return the preprocessed main.c file
+	return str
 end
 
 function ffibuild.BuildCHeader(c_source, flags)
@@ -1632,22 +2067,22 @@ do -- lua helper functions
     local errored = false
     ffi.load = function(...)
       local clib = old(...)
-      return setmetatable({}, {__index = function(_, key) 
+      return setmetatable({}, {__index = function(_, key)
         local ok, ret = pcall(function() return clib[key] end)
-        if ok then 
+        if ok then
           return ret
         end
         errored = true
         print(ret)
       end})
     end
-    
+
 		local ok, err = pcall(function()
 			assert(loadstring(lua))()
 		end)
-    
+
     ffi.load = old
-  
+
 		if not ok and not errored then
 			print(err)
 			local line = tonumber(err:match("line (%d+)"))
