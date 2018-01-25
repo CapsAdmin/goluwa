@@ -416,8 +416,8 @@ function ffibuild.NixBuild(data)
 	local output_dir = os.getcd()
 
 	-- temporary filenames
-	local tmp_main = os.tmpname()
-	local tmp_out = os.tmpname()
+	local tmp_main = output_dir .. "/temp.c"
+	local tmp_out = "temp.p"
 	local tmp_nix = "temp.nix"
 
 	io.writefile(tmp_main, data.src)
@@ -432,21 +432,25 @@ function ffibuild.NixBuild(data)
 		src = ./.;
 		buildInputs = [ gcc ]==] .. data.name .. [==[ ];
 		buildPhase = ''
-			gcc -xc -E -P -I${]==] .. data.name .. [==[.dev} ]==] .. tmp_main .. [==[>]==] .. tmp_out .. [==[
+      gcc -xc -E -P -I${]==] .. data.name .. [==[.dev} -c ]==] .. tmp_main .. [==[ -o temp.p
 		'';
 		installPhase = ''
-			cp -f ${]==] .. data.name .. [==[.out}/lib/]==] .. lib_name .. [==[ ]==] .. output_dir .. [==[/]==] .. lib_name .. [==[;
-			mkdir $out; #dummy output?
+      mkdir $out
+			cp -f ${]==] .. data.name .. [==[.out}/lib/]==] .. lib_name .. [==[ $out/]==] .. lib_name .. [==[;
+			mv temp.p $out/temp.p
 		'';
 	}
 ]==])
 
 	-- now execute nix-build
-	os.execute("nix-build " .. tmp_nix .. " --no-out-link")
+	os.execute("nix-build " .. tmp_nix)
 
 	-- return the preprocessed main.c file
-	local str = io.readfile(tmp_out)
-	os.remove(tmp_out)
+	local str = io.readfile("result/" .. tmp_out)
+  os.execute("cp -f result/" .. lib_name .. " .")
+  
+  os.remove("result")
+  
 	os.remove(tmp_main)
 	os.remove(tmp_nix)
 
@@ -2066,7 +2070,7 @@ do -- lua helper functions
 			local path = "../../../../data/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
 			print("copying lib* files to: ", path)
 			os.execute("mkdir -p " .. path)
-			os.execute("cp lib* " .. path)
+			os.execute("cp -f lib* " .. path)
 		end
 	end
 
