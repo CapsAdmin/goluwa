@@ -415,36 +415,6 @@ function ffibuild.NixBuild(data)
 	-- the output directory
 	local output_dir = os.getcd()
 
-	do -- create the direnv build environment outside of this directory
-		os.makedir("../build_environment/")
-
-		local url = "https://github.com/direnv/direnv/releases/download/v2.14.0/direnv."
-
-		local os_name = jit.os:lower()
-		local arch = jit.arch
-		local ext = WINDOWS and ".exe" or ""
-
-		if jit.arch == "x64" then
-			arch = "amd64"
-		elseif jit.arch == "x86" then
-			arch = "386"
-		end
-
-		local direnv_path = "../build_environment/direnv" .. ext
-
-		if not os.isfile(direnv_path) then
-			os.download(url .. os_name .. "-" .. arch .. ext, direnv_path)
-		end
-
-		if UNIX then
-			os.execute("chmod +x " .. direnv_path)
-		end
-	end
-
-	os.cd("../build_environment/")
-
-	io.writefile(".envrc", "use nix")
-
 	-- temporary main.c file
 	io.writefile("main.c", data.src)
 
@@ -468,24 +438,18 @@ function ffibuild.NixBuild(data)
 	}
 ]==])
 
--- now execute nix-build
-	os.execute([==[
-export PATH=./:$PATH
-
-eval "$(direnv export bash)"
-direnv allow .envrc
-nix-build
-]==])
-
-	os.cd(output_dir)
-
-	ffibuild.lib_name = data.name
-
-	local str = io.readfile("main.p")
-
-	os.remove("main.p")
+	-- now execute nix-build
+	os.execute("nix-build")
 
 	-- return the preprocessed main.c file
+	local str = io.readfile("main.p")
+	os.remove("main.p")
+	os.remove("main.c")
+	os.remove("default.nix")
+
+	-- internal
+	ffibuild.lib_name = data.name
+
 	return str
 end
 
