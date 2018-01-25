@@ -268,87 +268,87 @@ do
 		f:close()
 		return str
 	end
-
+	
 	function has_tmux_session()
 		return os.readexecute("tmux has-session -t goluwa 2> /dev/null; printf $?") == "0"
 	end
-end
 
-function os.extract(from, to, move_out)
-	if to:sub(#to, #to) ~= "/" then to = to .. "/" end
+	function os.extract(from, to, move_out)
+		if to:sub(#to, #to) ~= "/" then to = to .. "/" end
 
-	os.makedir(to)
-
-	if UNIX then
-		os.readexecute('tar -xvzf '..from..' -C "'..to..'"')
-	else
-		local to = to == "./" and "" or to
-		if false then
-		powershell([[
-			$file = "]]..os.getcd() .. "\\" .. from..[["
-			$location = "]]..os.getcd() .. "\\" .. to..[["
-
-			$shell = New-Object -Com Shell.Application
-
-			$zip = $shell.NameSpace($([System.IO.Path]::GetFullPath("$file")))
-
-			if (!$zip) {
-				Write-Error "could not extract $file!"
-			}
-
-			if (!(Test-Path $location)) {
-				New-Item -ItemType directory -Path $location | Out-Null
-			}
-
-			foreach($item in $zip.items()) {
-				$shell.Namespace("$location").CopyHere($item, 0x14)
-			}
-		]], true) end
-	end
-
-	if move_out then
-		move_out = to .. move_out
-
-		if move_out:sub(#move_out, #move_out) ~= "/" then
-			move_out = move_out .. "/"
-		end
-
-		repeat
-			local str, count = move_out:gsub("(.-/)(%*)(/.*)", function(left, star, right)
-				for k,v in ipairs(os.ls(left)) do
-					if os.isdir(left .. v) then
-						return left .. v .. right
-					end
-				end
-			end)
-			move_out = str
-		until count == 0
-
-		repeat
-			local str, count = move_out:gsub("(.-/)(.-%*)(/.*)", function(left, chunk, right)
-				for k,v in ipairs(os.ls(left)) do
-					if v:find(chunk:sub(0, -2), 0, true) and os.isdir(left .. v) then
-						return left .. v .. right
-					end
-				end
-			end)
-			move_out = str
-		until count == 0
+		os.makedir(to)
 
 		if UNIX then
-			os.execute("cp -r " .. move_out .. "* " .. to)
-
-			local dir = move_out:sub(#to + 1):match("(.-)/")
-
-			if dir and os.isdir(to .. dir) then
-				os.execute("rm -rf " .. to .. dir)
-			end
+			os.readexecute('tar -xvzf '..from..' -C "'..to..'"')
 		else
-			powershell("Move-Item -Confirm:$false -Force -Path " .. move_out .. "* -Destination " .. to, true)
-		end
-	end
+			local to = to == "./" and "" or to
+			if false then
+			powershell([[
+				$file = "]]..os.getcd() .. "\\" .. from..[["
+				$location = "]]..os.getcd() .. "\\" .. to..[["
 
-	return true -- TODO
+				$shell = New-Object -Com Shell.Application
+
+				$zip = $shell.NameSpace($([System.IO.Path]::GetFullPath("$file")))
+
+				if (!$zip) {
+					Write-Error "could not extract $file!"
+				}
+
+				if (!(Test-Path $location)) {
+					New-Item -ItemType directory -Path $location | Out-Null
+				}
+
+				foreach($item in $zip.items()) {
+					$shell.Namespace("$location").CopyHere($item, 0x14)
+				}
+			]], true) end
+		end
+
+		if move_out then
+			move_out = to .. move_out
+
+			if move_out:sub(#move_out, #move_out) ~= "/" then
+				move_out = move_out .. "/"
+			end
+
+			repeat
+				local str, count = move_out:gsub("(.-/)(%*)(/.*)", function(left, star, right)
+					for k,v in ipairs(os.ls(left)) do
+						if os.isdir(left .. v) then
+							return left .. v .. right
+						end
+					end
+				end)
+				move_out = str
+			until count == 0
+
+			repeat
+				local str, count = move_out:gsub("(.-/)(.-%*)(/.*)", function(left, chunk, right)
+					for k,v in ipairs(os.ls(left)) do
+						if v:find(chunk:sub(0, -2), 0, true) and os.isdir(left .. v) then
+							return left .. v .. right
+						end
+					end
+				end)
+				move_out = str
+			until count == 0
+
+			if UNIX then
+				os.execute("cp -r " .. move_out .. "* " .. to)
+
+				local dir = move_out:sub(#to + 1):match("(.-)/")
+
+				if dir and os.isdir(to .. dir) then
+					os.execute("rm -rf " .. to .. dir)
+				end
+			else
+				powershell("Move-Item -Confirm:$false -Force -Path " .. move_out .. "* -Destination " .. to, true)
+			end
+		end
+
+		return true -- TODO
+	end
 end
 
 local arg_line
