@@ -7,13 +7,15 @@ if CLIENT then
 		gine.env.include("lua/" .. line)
 	end)
 
-	pvars.Setup("volume", 1, function(val)
-		audio.SetListenerGain(val)
-	end)
+	if SOUND then
+		pvars.Setup("volume", 1, function(val)
+			audio.SetListenerGain(val)
+		end)
 
-	pvars.Setup("snd_mute_losefocus", 0, function(val)
+		pvars.Setup("snd_mute_losefocus", 0, function(val)
 
-	end)
+		end)
+	end
 
 	pvars.Setup("cl_timeout", 30, function(val)
 
