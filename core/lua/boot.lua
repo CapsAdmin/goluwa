@@ -571,8 +571,9 @@ end
 
 os.cd(bin_dir)
 
-if not WINDOWS then
-	os.setenv("LD_LIBRARY_PATH", ".")
+if UNIX then
+	-- we need to fallback to usr/lib or /lib for driver specific libraries such as opengl libraries and audio
+	os.setenv("LD_LIBRARY_PATH", ".:/usr/lib:/lib")
 end
 
 local initlua = "../../../core/lua/init.lua"

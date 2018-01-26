@@ -1,14 +1,9 @@
 package.path = package.path .. ";../?.lua"
 local ffibuild = require("ffibuild")
 
-
-ffibuild.BuildSharedLibrary(
-	"assimp",
-	"https://github.com/assimp/assimp.git",
-	"cmake . && make"
-)
-
-local header = ffibuild.BuildCHeader([[
+local header = ffibuild.NixBuild({
+	name = "assimp",
+	src = [[
 	#include "assimp/types.h"
 	#include "assimp/metadata.h"
 	#include "assimp/ai_assert.h"
@@ -81,7 +76,7 @@ local header = ffibuild.BuildCHeader([[
 
 	typedef struct aiFile aiFile;
 
-]], "-I./repo/include")
+]]})
 
 header = header:gsub("(%s)AI_", "%1ai")
 

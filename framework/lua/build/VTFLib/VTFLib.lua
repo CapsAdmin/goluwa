@@ -3,7 +3,6 @@ ffi.cdef([[enum{FP_NAN=0,FP_INFINITE=1,FP_ZERO=2,FP_SUBNORMAL=3,FP_NORMAL=4,};ty
 typedef enum tagVTFImageFormat{IMAGE_FORMAT_RGBA8888=0,IMAGE_FORMAT_ABGR8888=1,IMAGE_FORMAT_RGB888=2,IMAGE_FORMAT_BGR888=3,IMAGE_FORMAT_RGB565=4,IMAGE_FORMAT_I8=5,IMAGE_FORMAT_IA88=6,IMAGE_FORMAT_P8=7,IMAGE_FORMAT_A8=8,IMAGE_FORMAT_RGB888_BLUESCREEN=9,IMAGE_FORMAT_BGR888_BLUESCREEN=10,IMAGE_FORMAT_ARGB8888=11,IMAGE_FORMAT_BGRA8888=12,IMAGE_FORMAT_DXT1=13,IMAGE_FORMAT_DXT3=14,IMAGE_FORMAT_DXT5=15,IMAGE_FORMAT_BGRX8888=16,IMAGE_FORMAT_BGR565=17,IMAGE_FORMAT_BGRX5551=18,IMAGE_FORMAT_BGRA4444=19,IMAGE_FORMAT_DXT1_ONEBITALPHA=20,IMAGE_FORMAT_BGRA5551=21,IMAGE_FORMAT_UV88=22,IMAGE_FORMAT_UVWQ8888=23,IMAGE_FORMAT_RGBA16161616F=24,IMAGE_FORMAT_RGBA16161616=25,IMAGE_FORMAT_UVLX8888=26,IMAGE_FORMAT_R32F=27,IMAGE_FORMAT_RGB323232F=28,IMAGE_FORMAT_RGBA32323232F=29,IMAGE_FORMAT_NV_DST16=30,IMAGE_FORMAT_NV_DST24=31,IMAGE_FORMAT_NV_INTZ=32,IMAGE_FORMAT_NV_RAWZ=33,IMAGE_FORMAT_ATI_DST16=34,IMAGE_FORMAT_ATI_DST24=35,IMAGE_FORMAT_NV_NULL=36,IMAGE_FORMAT_ATI2N=37,IMAGE_FORMAT_ATI1N=38,IMAGE_FORMAT_COUNT=39,IMAGE_FORMAT_NONE=-1};
 typedef enum tagDXTQuality{DXT_QUALITY_LOW=0,DXT_QUALITY_MEDIUM=1,DXT_QUALITY_HIGH=2,DXT_QUALITY_HIGHEST=3,DXT_QUALITY_COUNT=4};
 typedef enum tagVTFImageFlag{TEXTUREFLAGS_POINTSAMPLE=1,TEXTUREFLAGS_TRILINEAR=2,TEXTUREFLAGS_CLAMPS=4,TEXTUREFLAGS_CLAMPT=8,TEXTUREFLAGS_ANISOTROPIC=16,TEXTUREFLAGS_HINT_DXT5=32,TEXTUREFLAGS_SRGB=64,TEXTUREFLAGS_DEPRECATED_NOCOMPRESS=64,TEXTUREFLAGS_NORMAL=128,TEXTUREFLAGS_NOMIP=256,TEXTUREFLAGS_NOLOD=512,TEXTUREFLAGS_MINMIP=1024,TEXTUREFLAGS_PROCEDURAL=2048,TEXTUREFLAGS_ONEBITALPHA=4096,TEXTUREFLAGS_EIGHTBITALPHA=8192,TEXTUREFLAGS_ENVMAP=16384,TEXTUREFLAGS_RENDERTARGET=32768,TEXTUREFLAGS_DEPTHRENDERTARGET=65536,TEXTUREFLAGS_NODEBUGOVERRIDE=131072,TEXTUREFLAGS_SINGLECOPY=262144,TEXTUREFLAGS_UNUSED0=524288,TEXTUREFLAGS_DEPRECATED_ONEOVERMIPLEVELINALPHA=524288,TEXTUREFLAGS_UNUSED1=1048576,TEXTUREFLAGS_DEPRECATED_PREMULTCOLORBYONEOVERMIPLEVEL=1048576,TEXTUREFLAGS_UNUSED2=2097152,TEXTUREFLAGS_DEPRECATED_NORMALTODUDV=2097152,TEXTUREFLAGS_UNUSED3=4194304,TEXTUREFLAGS_DEPRECATED_ALPHATESTMIPGENERATION=4194304,TEXTUREFLAGS_NODEPTHBUFFER=8388608,TEXTUREFLAGS_UNUSED4=16777216,TEXTUREFLAGS_DEPRECATED_NICEFILTERED=16777216,TEXTUREFLAGS_CLAMPU=33554432,TEXTUREFLAGS_VERTEXTEXTURE=67108864,TEXTUREFLAGS_SSBUMP=134217728,TEXTUREFLAGS_UNUSED5=268435456,TEXTUREFLAGS_DEPRECATED_UNFILTERABLE_OK=268435456,TEXTUREFLAGS_BORDER=536870912,TEXTUREFLAGS_DEPRECATED_SPECVAR_RED=1073741824,TEXTUREFLAGS_DEPRECATED_SPECVAR_ALPHA=2147483648,TEXTUREFLAGS_LAST=536870912,TEXTUREFLAGS_COUNT=30};
-typedef enum idtype_t{P_ALL=0,P_PID=1,P_PGID=2};
 typedef enum _LIB_VERSION_TYPE{_IEEE_=-1,_SVID_=0,_XOPEN_=1,_POSIX_=2,_ISOC_=3};
 typedef enum tagVTFLookDir{LOOK_DOWN_X=0,LOOK_DOWN_NEGX=1,LOOK_DOWN_Y=2,LOOK_DOWN_NEGY=3,LOOK_DOWN_Z=4,LOOK_DOWN_NEGZ=5};
 typedef enum tagVTFCubeMapFace{CUBEMAP_FACE_RIGHT=0,CUBEMAP_FACE_LEFT=1,CUBEMAP_FACE_BACK=2,CUBEMAP_FACE_FRONT=3,CUBEMAP_FACE_UP=4,CUBEMAP_FACE_DOWN=5,CUBEMAP_FACE_SphereMap=6,CUBEMAP_FACE_COUNT=7};
@@ -21,7 +20,6 @@ typedef enum tagVTFNormalAlphaResult{NORMAL_ALPHA_RESULT_NOCHANGE=0,NORMAL_ALPHA
 typedef enum tagVTFMipmapFilter{MIPMAP_FILTER_POINT=0,MIPMAP_FILTER_BOX=1,MIPMAP_FILTER_TRIANGLE=2,MIPMAP_FILTER_QUADRATIC=3,MIPMAP_FILTER_CUBIC=4,MIPMAP_FILTER_CATROM=5,MIPMAP_FILTER_MITCHELL=6,MIPMAP_FILTER_GAUSSIAN=7,MIPMAP_FILTER_SINC=8,MIPMAP_FILTER_BESSEL=9,MIPMAP_FILTER_HANNING=10,MIPMAP_FILTER_HAMMING=11,MIPMAP_FILTER_BLACKMAN=12,MIPMAP_FILTER_KAISER=13,MIPMAP_FILTER_COUNT=14};
 struct tagSVTFImageFormatInfo {const char*lpName;unsigned int uiBitsPerPixel;unsigned int uiBytesPerPixel;unsigned int uiRedBitsPerPixel;unsigned int uiGreenBitsPerPixel;unsigned int uiBlueBitsPerPixel;unsigned int uiAlphaBitsPerPixel;unsigned char bIsCompressed;unsigned char bIsSupported;};
 struct tagSVTFCreateOptions {unsigned int uiVersion[2];enum tagVTFImageFormat ImageFormat;unsigned int uiFlags;unsigned int uiStartFrame;float sBumpScale;float sReflectivity[3];unsigned char bMipmaps;enum tagVTFMipmapFilter MipmapFilter;enum tagVTFSharpenFilter MipmapSharpenFilter;unsigned char bThumbnail;unsigned char bReflectivity;unsigned char bResize;enum tagVTFResizeMethod ResizeMethod;enum tagVTFMipmapFilter ResizeFilter;enum tagVTFSharpenFilter ResizeSharpenFilter;unsigned int uiResizeWidth;unsigned int uiResizeHeight;unsigned char bResizeClamp;unsigned int uiResizeClampWidth;unsigned int uiResizeClampHeight;unsigned char bGammaCorrection;float sGammaCorrection;unsigned char bNormalMap;enum tagVTFKernelFilter KernelFilter;enum tagVTFHeightConversionMethod HeightConversionMethod;enum tagVTFNormalAlphaResult NormalAlphaResult;unsigned char bNormalMinimumZ;float sNormalScale;unsigned char bNormalWrap;unsigned char bNormalInvertX;unsigned char bNormalInvertY;unsigned char bNormalInvertZ;unsigned char bSphereMap;};
-unsigned int(vlImageGetThumbnailHeight)();
 unsigned char(vlImageLoadLump)(const void*,unsigned long,unsigned char);
 void(vlMaterialAddNodeString)(const char*,const char*);
 void*(vlImageGetResourceData)(unsigned int,unsigned int*);
@@ -48,16 +46,14 @@ unsigned char(vlImageConvert)(unsigned char*,unsigned char*,unsigned int,unsigne
 void(vlMaterialSetNodeString)(const char*);
 void(vlMaterialSetNodeName)(const char*);
 unsigned char(vlImageIsBound)();
-unsigned char(vlImageGenerateAllNormalMaps)(enum tagVTFKernelFilter,enum tagVTFHeightConversionMethod,enum tagVTFNormalAlphaResult);
 void(vlMaterialAddNodeSingle)(const char*,float);
 void(vlMaterialAddNodeGroup)(const char*);
 float(vlMaterialGetNodeSingle)();
 void(vlMaterialSetNodeInteger)(unsigned int);
-unsigned char*(vlImageGetData)(unsigned int,unsigned int,unsigned int,unsigned int);
 const char*(vlMaterialGetNodeString)();
+unsigned char(vlImageGenerateAllNormalMaps)(enum tagVTFKernelFilter,enum tagVTFHeightConversionMethod,enum tagVTFNormalAlphaResult);
 enum tagVMTNodeType(vlMaterialGetNodeType)();
 const char*(vlMaterialGetNodeName)();
-void(vlImageSetFlag)(enum tagVTFImageFlag,unsigned char);
 unsigned char(vlMaterialGetChildNode)(const char*);
 unsigned char(vlMaterialGetParentNode)();
 unsigned char(vlMaterialGetPreviousNode)();
@@ -65,12 +61,12 @@ unsigned char(vlMaterialGetNextNode)();
 unsigned char(vlMaterialGetLastNode)();
 unsigned char(vlMaterialSaveProc)(void*);
 unsigned char(vlMaterialSaveLump)(void*,unsigned long,unsigned long*);
-const char*(vlGetLastError)();
+unsigned char*(vlImageGetData)(unsigned int,unsigned int,unsigned int,unsigned int);
 unsigned char(vlMaterialIsLoaded)();
+void(vlImageSetFlag)(enum tagVTFImageFlag,unsigned char);
 void(vlMaterialDestroy)();
 unsigned char(vlBindMaterial)(unsigned int);
 void(vlImageMirrorImage)(unsigned char*,unsigned int,unsigned int);
-unsigned char(vlGetBoolean)(enum tagVTFLibOption);
 void(vlImageCorrectImageGamma)(unsigned char*,unsigned int,unsigned int,float);
 unsigned char(vlImageResize)(unsigned char*,unsigned char*,unsigned int,unsigned int,unsigned int,unsigned int,enum tagVTFMipmapFilter,enum tagVTFSharpenFilter);
 unsigned char(vlImageConvertToRGBA8888)(unsigned char*,unsigned char*,unsigned int,unsigned int,enum tagVTFImageFormat);
@@ -81,38 +77,40 @@ unsigned int(vlImageComputeImageSize)(unsigned int,unsigned int,unsigned int,uns
 unsigned char(vlImageGetImageFormatInfoEx)(enum tagVTFImageFormat,struct tagSVTFImageFormatInfo*);
 unsigned char(vlImageGenerateSphereMap)();
 unsigned char(vlImageGenerateNormalMap)(unsigned int,enum tagVTFKernelFilter,enum tagVTFHeightConversionMethod,enum tagVTFNormalAlphaResult);
+unsigned char(vlGetBoolean)(enum tagVTFLibOption);
 unsigned char(vlImageGenerateAllMipmaps)(enum tagVTFMipmapFilter,enum tagVTFSharpenFilter);
 unsigned char(vlImageGenerateMipmaps)(unsigned int,unsigned int,enum tagVTFMipmapFilter,enum tagVTFSharpenFilter);
 void*(vlImageSetResourceData)(unsigned int,unsigned int,void*);
 unsigned char(vlImageGetHasResource)(unsigned int);
 unsigned int(vlImageGetResourceCount)();
-float(vlGetFloat)(enum tagVTFLibOption);
 void(vlImageSetThumbnailData)(unsigned char*);
 unsigned char*(vlImageGetThumbnailData)();
 enum tagVTFImageFormat(vlImageGetThumbnailFormat)();
+unsigned int(vlImageGetThumbnailHeight)();
 void(vlImageSetData)(unsigned int,unsigned int,unsigned int,unsigned int,unsigned char*);
 enum tagVTFImageFormat(vlImageGetFormat)();
 void(vlImageSetReflectivity)(float,float,float);
 void(vlImageGetReflectivity)(float*,float*,float*);
 void(vlImageSetBumpmapScale)(float);
+float(vlGetFloat)(enum tagVTFLibOption);
 float(vlImageGetBumpmapScale)();
 unsigned char(vlImageGetFlag)(enum tagVTFImageFlag);
 unsigned int(vlImageGetFlags)();
 void(vlImageSetStartFrame)(unsigned int);
-unsigned char(vlImageIsLoaded)();
 unsigned int(vlImageGetMipmapCount)();
 unsigned int(vlImageGetFaceCount)();
 unsigned int(vlImageGetFrameCount)();
 unsigned int(vlImageGetHeight)();
 unsigned int(vlImageGetWidth)();
-void(vlDeleteImage)(unsigned int);
 unsigned int(vlImageGetSize)();
 unsigned int(vlImageGetHasImage)();
 unsigned char(vlImageSaveProc)(void*);
+unsigned char(vlImageIsLoaded)();
 unsigned char(vlImageSaveLump)(void*,unsigned long,unsigned long*);
 unsigned char(vlImageSave)(const char*);
 unsigned char(vlImageLoadProc)(void*,unsigned char);
 unsigned char(vlImageLoad)(const char*,unsigned char);
+void(vlDeleteImage)(unsigned int);
 unsigned char(vlImageCreateSingle)(unsigned int,unsigned int,unsigned char*,struct tagSVTFCreateOptions*);
 void(vlImageCreateDefaultCreateStructure)(struct tagSVTFCreateOptions*);
 unsigned char(vlBindImage)(unsigned int);
@@ -120,8 +118,9 @@ void(vlSetFloat)(enum tagVTFLibOption,float);
 void(vlSetInteger)(enum tagVTFLibOption,signed int);
 signed int(vlGetInteger)(enum tagVTFLibOption);
 void(vlShutdown)();
-unsigned char(vlMaterialLoadLump)(const void*,unsigned long);
+const char*(vlGetLastError)();
 unsigned int(vlGetVersion)();
+unsigned char(vlMaterialLoadLump)(const void*,unsigned long);
 const char*(vlGetVersionString)();
 unsigned int(vlImageGetStartFrame)();
 unsigned char(vlMaterialIsBound)();
@@ -141,7 +140,6 @@ unsigned char(vlImageGetSupportsResources)();
 local CLIB = ffi.load(_G.FFI_LIB or "VTFLib")
 local library = {}
 library = {
-	ImageGetThumbnailHeight = CLIB.vlImageGetThumbnailHeight,
 	ImageLoadLump = CLIB.vlImageLoadLump,
 	MaterialAddNodeString = CLIB.vlMaterialAddNodeString,
 	ImageGetResourceData = CLIB.vlImageGetResourceData,
@@ -168,16 +166,14 @@ library = {
 	MaterialSetNodeString = CLIB.vlMaterialSetNodeString,
 	MaterialSetNodeName = CLIB.vlMaterialSetNodeName,
 	ImageIsBound = CLIB.vlImageIsBound,
-	ImageGenerateAllNormalMaps = CLIB.vlImageGenerateAllNormalMaps,
 	MaterialAddNodeSingle = CLIB.vlMaterialAddNodeSingle,
 	MaterialAddNodeGroup = CLIB.vlMaterialAddNodeGroup,
 	MaterialGetNodeSingle = CLIB.vlMaterialGetNodeSingle,
 	MaterialSetNodeInteger = CLIB.vlMaterialSetNodeInteger,
-	ImageGetData = CLIB.vlImageGetData,
 	MaterialGetNodeString = CLIB.vlMaterialGetNodeString,
+	ImageGenerateAllNormalMaps = CLIB.vlImageGenerateAllNormalMaps,
 	MaterialGetNodeType = CLIB.vlMaterialGetNodeType,
 	MaterialGetNodeName = CLIB.vlMaterialGetNodeName,
-	ImageSetFlag = CLIB.vlImageSetFlag,
 	MaterialGetChildNode = CLIB.vlMaterialGetChildNode,
 	MaterialGetParentNode = CLIB.vlMaterialGetParentNode,
 	MaterialGetPreviousNode = CLIB.vlMaterialGetPreviousNode,
@@ -185,12 +181,12 @@ library = {
 	MaterialGetLastNode = CLIB.vlMaterialGetLastNode,
 	MaterialSaveProc = CLIB.vlMaterialSaveProc,
 	MaterialSaveLump = CLIB.vlMaterialSaveLump,
-	GetLastError = CLIB.vlGetLastError,
+	ImageGetData = CLIB.vlImageGetData,
 	MaterialIsLoaded = CLIB.vlMaterialIsLoaded,
+	ImageSetFlag = CLIB.vlImageSetFlag,
 	MaterialDestroy = CLIB.vlMaterialDestroy,
 	BindMaterial = CLIB.vlBindMaterial,
 	ImageMirrorImage = CLIB.vlImageMirrorImage,
-	GetBoolean = CLIB.vlGetBoolean,
 	ImageCorrectImageGamma = CLIB.vlImageCorrectImageGamma,
 	ImageResize = CLIB.vlImageResize,
 	ImageConvertToRGBA8888 = CLIB.vlImageConvertToRGBA8888,
@@ -201,38 +197,40 @@ library = {
 	ImageGetImageFormatInfoEx = CLIB.vlImageGetImageFormatInfoEx,
 	ImageGenerateSphereMap = CLIB.vlImageGenerateSphereMap,
 	ImageGenerateNormalMap = CLIB.vlImageGenerateNormalMap,
+	GetBoolean = CLIB.vlGetBoolean,
 	ImageGenerateAllMipmaps = CLIB.vlImageGenerateAllMipmaps,
 	ImageGenerateMipmaps = CLIB.vlImageGenerateMipmaps,
 	ImageSetResourceData = CLIB.vlImageSetResourceData,
 	ImageGetHasResource = CLIB.vlImageGetHasResource,
 	ImageGetResourceCount = CLIB.vlImageGetResourceCount,
-	GetFloat = CLIB.vlGetFloat,
 	ImageSetThumbnailData = CLIB.vlImageSetThumbnailData,
 	ImageGetThumbnailData = CLIB.vlImageGetThumbnailData,
 	ImageGetThumbnailFormat = CLIB.vlImageGetThumbnailFormat,
+	ImageGetThumbnailHeight = CLIB.vlImageGetThumbnailHeight,
 	ImageSetData = CLIB.vlImageSetData,
 	ImageGetFormat = CLIB.vlImageGetFormat,
 	ImageSetReflectivity = CLIB.vlImageSetReflectivity,
 	ImageGetReflectivity = CLIB.vlImageGetReflectivity,
 	ImageSetBumpmapScale = CLIB.vlImageSetBumpmapScale,
+	GetFloat = CLIB.vlGetFloat,
 	ImageGetBumpmapScale = CLIB.vlImageGetBumpmapScale,
 	ImageGetFlag = CLIB.vlImageGetFlag,
 	ImageGetFlags = CLIB.vlImageGetFlags,
 	ImageSetStartFrame = CLIB.vlImageSetStartFrame,
-	ImageIsLoaded = CLIB.vlImageIsLoaded,
 	ImageGetMipmapCount = CLIB.vlImageGetMipmapCount,
 	ImageGetFaceCount = CLIB.vlImageGetFaceCount,
 	ImageGetFrameCount = CLIB.vlImageGetFrameCount,
 	ImageGetHeight = CLIB.vlImageGetHeight,
 	ImageGetWidth = CLIB.vlImageGetWidth,
-	DeleteImage = CLIB.vlDeleteImage,
 	ImageGetSize = CLIB.vlImageGetSize,
 	ImageGetHasImage = CLIB.vlImageGetHasImage,
 	ImageSaveProc = CLIB.vlImageSaveProc,
+	ImageIsLoaded = CLIB.vlImageIsLoaded,
 	ImageSaveLump = CLIB.vlImageSaveLump,
 	ImageSave = CLIB.vlImageSave,
 	ImageLoadProc = CLIB.vlImageLoadProc,
 	ImageLoad = CLIB.vlImageLoad,
+	DeleteImage = CLIB.vlDeleteImage,
 	ImageCreateSingle = CLIB.vlImageCreateSingle,
 	ImageCreateDefaultCreateStructure = CLIB.vlImageCreateDefaultCreateStructure,
 	BindImage = CLIB.vlBindImage,
@@ -240,8 +238,9 @@ library = {
 	SetInteger = CLIB.vlSetInteger,
 	GetInteger = CLIB.vlGetInteger,
 	Shutdown = CLIB.vlShutdown,
-	MaterialLoadLump = CLIB.vlMaterialLoadLump,
+	GetLastError = CLIB.vlGetLastError,
 	GetVersion = CLIB.vlGetVersion,
+	MaterialLoadLump = CLIB.vlMaterialLoadLump,
 	GetVersionString = CLIB.vlGetVersionString,
 	ImageGetStartFrame = CLIB.vlImageGetStartFrame,
 	MaterialIsBound = CLIB.vlMaterialIsBound,
@@ -349,9 +348,6 @@ library.e = {
 	TEXTUREFLAGS_DEPRECATED_SPECVAR_ALPHA = ffi.cast("enum tagVTFImageFlag", "TEXTUREFLAGS_DEPRECATED_SPECVAR_ALPHA"),
 	TEXTUREFLAGS_LAST = ffi.cast("enum tagVTFImageFlag", "TEXTUREFLAGS_LAST"),
 	TEXTUREFLAGS_COUNT = ffi.cast("enum tagVTFImageFlag", "TEXTUREFLAGS_COUNT"),
-	P_ALL = ffi.cast("enum idtype_t", "P_ALL"),
-	P_PID = ffi.cast("enum idtype_t", "P_PID"),
-	P_PGID = ffi.cast("enum idtype_t", "P_PGID"),
 	_IEEE_ = ffi.cast("enum _LIB_VERSION_TYPE", "_IEEE_"),
 	_SVID_ = ffi.cast("enum _LIB_VERSION_TYPE", "_SVID_"),
 	_XOPEN_ = ffi.cast("enum _LIB_VERSION_TYPE", "_XOPEN_"),
@@ -609,10 +605,8 @@ function library.LoadImage(data, path_hint)
 		format = "rgb"
 		type = "float"
 		buffer = half_buffer_to_float_buffer((width * height) * 4, buffer)
-	elseif conversion_format == library.e.IMAGE_FORMAT_A8 then
-		format = "red"
 	else
-		return nil, "unhandled image format: " .. tostring(conversion_format)
+		wlog("unhandled image format: %s", conversion_format)
 	end
 
 	cleanup(vtf_material, vtf_image)

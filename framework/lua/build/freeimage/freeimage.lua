@@ -13,7 +13,7 @@ typedef enum FREE_IMAGE_QUANTIZE{FIQ_WUQUANT=0,FIQ_NNQUANT=1,FIQ_LFPQUANT=2};
 struct FIBITMAP {void*data;};
 struct FIMULTIBITMAP {void*data;};
 struct tagRGBQUAD {unsigned char rgbBlue;unsigned char rgbGreen;unsigned char rgbRed;unsigned char rgbReserved;};
-struct tagBITMAPINFOHEADER {unsigned int biSize;int biWidth;int biHeight;unsigned short biPlanes;unsigned short biBitCount;unsigned int biCompression;unsigned int biSizeImage;int biXPelsPerMeter;int biYPelsPerMeter;unsigned int biClrUsed;unsigned int biClrImportant;};
+struct tagBITMAPINFOHEADER {unsigned int biSize;signed int biWidth;signed int biHeight;unsigned short biPlanes;unsigned short biBitCount;unsigned int biCompression;unsigned int biSizeImage;signed int biXPelsPerMeter;signed int biYPelsPerMeter;unsigned int biClrUsed;unsigned int biClrImportant;};
 struct tagBITMAPINFO {struct tagBITMAPINFOHEADER bmiHeader;struct tagRGBQUAD bmiColors[1];};
 struct FIICCPROFILE {unsigned short flags;unsigned int size;void*data;};
 struct FIMETADATA {void*data;};
@@ -25,253 +25,246 @@ void(FreeImage_ConvertLine8To4)(unsigned char*,unsigned char*,int,struct tagRGBQ
 long(FreeImage_TellMemory)(struct FIMEMORY*);
 int(FreeImage_GetFIFCount)();
 struct FIBITMAP*(FreeImage_ConvertToUINT16)(struct FIBITMAP*);
-struct FIBITMAP*(FreeImage_ConvertToRGB16)(struct FIBITMAP*);
-struct FIBITMAP*(FreeImage_RotateEx)(struct FIBITMAP*,double,double,double,double,double,int);
-int(FreeImage_IsLittleEndian)();
-int(FreeImage_Invert)(struct FIBITMAP*);
-int(FreeImage_SeekMemory)(struct FIMEMORY*,long,int);
+unsigned int(FreeImage_WriteMemory)(const void*,unsigned int,unsigned int,struct FIMEMORY*);
+struct FIBITMAP*(FreeImage_RotateEx)(struct FIBITMAP*,double,double,double,double,double,signed int);
+signed int(FreeImage_IsLittleEndian)();
+signed int(FreeImage_Invert)(struct FIBITMAP*);
+signed int(FreeImage_SeekMemory)(struct FIMEMORY*,long,int);
 struct FIBITMAP*(FreeImage_ToneMapping)(struct FIBITMAP*,enum FREE_IMAGE_TMO,double,double);
-struct FIBITMAP*(FreeImage_ConvertTo8Bits)(struct FIBITMAP*);
-struct FIMULTIBITMAP*(FreeImage_OpenMultiBitmap)(enum FREE_IMAGE_FORMAT,const char*,int,int,int,int);
-void(FreeImage_ConvertLine8To24)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
-int(FreeImage_SaveU)(enum FREE_IMAGE_FORMAT,struct FIBITMAP*,const int*,int);
+struct FIBITMAP*(FreeImage_ConvertTo4Bits)(struct FIBITMAP*);
+struct FIMULTIBITMAP*(FreeImage_OpenMultiBitmap)(enum FREE_IMAGE_FORMAT,const char*,signed int,signed int,signed int,int);
+void(FreeImage_ConvertLine1To24)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
+signed int(FreeImage_SaveU)(enum FREE_IMAGE_FORMAT,struct FIBITMAP*,const int*,int);
 struct FIBITMAP*(FreeImage_CreateView)(struct FIBITMAP*,unsigned int,unsigned int,unsigned int,unsigned int);
-int(FreeImage_GetLockedPageNumbers)(struct FIMULTIBITMAP*,int*,int*);
+signed int(FreeImage_GetLockedPageNumbers)(struct FIMULTIBITMAP*,int*,int*);
 const char*(FreeImage_GetFIFDescription)(enum FREE_IMAGE_FORMAT);
 unsigned short(FreeImage_GetTagID)(struct FITAG*);
-int(FreeImage_FlipVertical)(struct FIBITMAP*);
+signed int(FreeImage_FlipVertical)(struct FIBITMAP*);
 unsigned int(FreeImage_GetBPP)(struct FIBITMAP*);
-unsigned int(FreeImage_GetHeight)(struct FIBITMAP*);
 const char*(FreeImage_TagToString)(enum FREE_IMAGE_MDMODEL,struct FITAG*,char*);
-int(FreeImage_SetTagCount)(struct FITAG*,unsigned int);
-int(FreeImage_PreMultiplyWithAlpha)(struct FIBITMAP*);
-struct FIBITMAP*(FreeImage_LoadFromMemory)(enum FREE_IMAGE_FORMAT,struct FIMEMORY*,int);
+signed int(FreeImage_SetTagCount)(struct FITAG*,unsigned int);
+signed int(FreeImage_PreMultiplyWithAlpha)(struct FIBITMAP*);
+enum FREE_IMAGE_COLOR_TYPE(FreeImage_GetColorType)(struct FIBITMAP*);
 struct FIBITMAP*(FreeImage_Copy)(struct FIBITMAP*,int,int,int,int);
-const char*(FreeImage_GetFIFRegExpr)(enum FREE_IMAGE_FORMAT);
 struct FIBITMAP*(FreeImage_TmoReinhard05)(struct FIBITMAP*,double,double);
 struct FIBITMAP*(FreeImage_GetThumbnail)(struct FIBITMAP*);
 const char*(FreeImage_GetCopyrightMessage)();
 void(FreeImage_SetDotsPerMeterX)(struct FIBITMAP*,unsigned int);
-int(FreeImage_SetTagKey)(struct FITAG*,const char*);
-struct FIBITMAP*(FreeImage_ConvertFromRawBits)(unsigned char*,int,int,int,unsigned int,unsigned int,unsigned int,unsigned int,int);
+signed int(FreeImage_SetTagKey)(struct FITAG*,const char*);
+struct FIBITMAP*(FreeImage_ConvertFromRawBits)(unsigned char*,int,int,int,unsigned int,unsigned int,unsigned int,unsigned int,signed int);
 unsigned int(FreeImage_ZLibCompress)(unsigned char*,unsigned int,unsigned char*,unsigned int);
-int(FreeImage_GetMetadata)(enum FREE_IMAGE_MDMODEL,struct FIBITMAP*,const char*,struct FITAG**);
-int(FreeImage_IsTransparent)(struct FIBITMAP*);
+signed int(FreeImage_GetMetadata)(enum FREE_IMAGE_MDMODEL,struct FIBITMAP*,const char*,struct FITAG**);
+signed int(FreeImage_IsTransparent)(struct FIBITMAP*);
 void(FreeImage_ConvertLine16_565_To16_555)(unsigned char*,unsigned char*,int);
-void(FreeImage_Initialise)(int);
-int(FreeImage_SetTagLength)(struct FITAG*,unsigned int);
-void(FreeImage_ConvertLine4To32MapTransparency)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*,unsigned char*,int);
-int(FreeImage_FIFSupportsNoPixels)(enum FREE_IMAGE_FORMAT);
+void(FreeImage_Initialise)(signed int);
+signed int(FreeImage_SetTagLength)(struct FITAG*,unsigned int);
+void(FreeImage_ConvertLine32To8)(unsigned char*,unsigned char*,int);
+signed int(FreeImage_FIFSupportsNoPixels)(enum FREE_IMAGE_FORMAT);
 int(FreeImage_GetTransparentIndex)(struct FIBITMAP*);
 const void*(FreeImage_GetTagValue)(struct FITAG*);
+enum FREE_IMAGE_FORMAT(FreeImage_GetFileTypeU)(const int*,int);
+unsigned char*(FreeImage_GetScanLine)(struct FIBITMAP*,int);
 struct FIBITMAP*(FreeImage_TmoDrago03)(struct FIBITMAP*,double,double);
 unsigned int(FreeImage_ZLibUncompress)(unsigned char*,unsigned int,unsigned char*,unsigned int);
-int(FreeImage_SaveToMemory)(enum FREE_IMAGE_FORMAT,struct FIBITMAP*,struct FIMEMORY*,int);
-int(FreeImage_JPEGTransformFromHandle)(struct FreeImageIO*,void*,struct FreeImageIO*,void*,enum FREE_IMAGE_JPEG_OPERATION,int*,int*,int*,int*,int);
-void(FreeImage_ConvertLine1To32MapTransparency)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*,unsigned char*,int);
-int(FreeImage_AdjustCurve)(struct FIBITMAP*,unsigned char*,enum FREE_IMAGE_COLOR_CHANNEL);
+signed int(FreeImage_JPEGTransformFromHandle)(struct FreeImageIO*,void*,struct FreeImageIO*,void*,enum FREE_IMAGE_JPEG_OPERATION,int*,int*,int*,int*,signed int);
+signed int(FreeImage_AdjustCurve)(struct FIBITMAP*,unsigned char*,enum FREE_IMAGE_COLOR_CHANNEL);
 struct FIICCPROFILE*(FreeImage_GetICCProfile)(struct FIBITMAP*);
 void(FreeImage_OutputMessageProc)(int,const char*,...);
+struct FIMULTIBITMAP*(FreeImage_LoadMultiBitmapFromMemory)(enum FREE_IMAGE_FORMAT,struct FIMEMORY*,int);
 const char*(FreeImage_GetTagKey)(struct FITAG*);
-int(FreeImage_SetThumbnail)(struct FIBITMAP*,struct FIBITMAP*);
-void(FreeImage_SetTransparent)(struct FIBITMAP*,int);
+signed int(FreeImage_SetThumbnail)(struct FIBITMAP*,struct FIBITMAP*);
+void(FreeImage_SetTransparent)(struct FIBITMAP*,signed int);
 unsigned int(FreeImage_GetWidth)(struct FIBITMAP*);
-int(FreeImage_SetTagType)(struct FITAG*,enum FREE_IMAGE_MDTYPE);
-struct FIBITMAP*(FreeImage_ConvertFromRawBitsEx)(int,unsigned char*,enum FREE_IMAGE_TYPE,int,int,int,unsigned int,unsigned int,unsigned int,unsigned int,int);
-int(FreeImage_AdjustGamma)(struct FIBITMAP*,double);
+signed int(FreeImage_SetTagType)(struct FITAG*,enum FREE_IMAGE_MDTYPE);
+struct FIBITMAP*(FreeImage_ConvertFromRawBitsEx)(signed int,unsigned char*,enum FREE_IMAGE_TYPE,int,int,int,unsigned int,unsigned int,unsigned int,unsigned int,signed int);
+signed int(FreeImage_AdjustGamma)(struct FIBITMAP*,double);
 void(FreeImage_AppendPage)(struct FIMULTIBITMAP*,struct FIBITMAP*);
 void(FreeImage_DeleteTag)(struct FITAG*);
-int(FreeImage_FlipHorizontal)(struct FIBITMAP*);
+signed int(FreeImage_FlipHorizontal)(struct FIBITMAP*);
 unsigned int(FreeImage_GetColorsUsed)(struct FIBITMAP*);
 struct FIBITMAP*(FreeImage_LockPage)(struct FIMULTIBITMAP*,int);
-struct FIBITMAP*(FreeImage_ConvertToType)(struct FIBITMAP*,enum FREE_IMAGE_TYPE,int);
+struct FIBITMAP*(FreeImage_ConvertToType)(struct FIBITMAP*,enum FREE_IMAGE_TYPE,signed int);
 void(FreeImage_DeletePage)(struct FIMULTIBITMAP*,int);
 const char*(FreeImage_GetVersion)();
-int(FreeImage_SetChannel)(struct FIBITMAP*,struct FIBITMAP*,enum FREE_IMAGE_COLOR_CHANNEL);
-int(FreeImage_HasPixels)(struct FIBITMAP*);
-int(FreeImage_SetPixelColor)(struct FIBITMAP*,unsigned int,unsigned int,struct tagRGBQUAD*);
-unsigned char*(FreeImage_GetTransparencyTable)(struct FIBITMAP*);
-int(FreeImage_FIFSupportsWriting)(enum FREE_IMAGE_FORMAT);
-struct FIBITMAP*(FreeImage_Dither)(struct FIBITMAP*,enum FREE_IMAGE_DITHER);
-void(FreeImage_SetDotsPerMeterY)(struct FIBITMAP*,unsigned int);
-struct FIBITMAP*(FreeImage_TmoReinhard05Ex)(struct FIBITMAP*,double,double,double,double);
-struct FIBITMAP*(FreeImage_Load)(enum FREE_IMAGE_FORMAT,const char*,int);
-struct tagRGBQUAD*(FreeImage_GetPalette)(struct FIBITMAP*);
-struct FIBITMAP*(FreeImage_ConvertToStandardType)(struct FIBITMAP*,int);
-void(FreeImage_ConvertLine1To4)(unsigned char*,unsigned char*,int);
-unsigned int(FreeImage_SwapColors)(struct FIBITMAP*,struct tagRGBQUAD*,struct tagRGBQUAD*,int);
+signed int(FreeImage_SetChannel)(struct FIBITMAP*,struct FIBITMAP*,enum FREE_IMAGE_COLOR_CHANNEL);
+signed int(FreeImage_HasPixels)(struct FIBITMAP*);
+signed int(FreeImage_SetPixelColor)(struct FIBITMAP*,unsigned int,unsigned int,struct tagRGBQUAD*);
+unsigned int(FreeImage_GetMetadataCount)(enum FREE_IMAGE_MDMODEL,struct FIBITMAP*);
 struct FIBITMAP*(FreeImage_AllocateExT)(enum FREE_IMAGE_TYPE,int,int,int,const void*,int,const struct tagRGBQUAD*,unsigned int,unsigned int,unsigned int);
 struct FIBITMAP*(FreeImage_AllocateEx)(int,int,int,const struct tagRGBQUAD*,int,const struct tagRGBQUAD*,unsigned int,unsigned int,unsigned int);
 struct FIBITMAP*(FreeImage_EnlargeCanvas)(struct FIBITMAP*,int,int,int,int,const void*,int);
-int(FreeImage_FillBackground)(struct FIBITMAP*,const void*,int);
+signed int(FreeImage_FillBackground)(struct FIBITMAP*,const void*,int);
+void(FreeImage_ConvertLine16To4_555)(unsigned char*,unsigned char*,int);
+struct FIBITMAP*(FreeImage_ConvertToGreyscale)(struct FIBITMAP*);
+signed int(FreeImage_SetComplexChannel)(struct FIBITMAP*,struct FIBITMAP*,enum FREE_IMAGE_COLOR_CHANNEL);
+unsigned char*(FreeImage_GetTransparencyTable)(struct FIBITMAP*);
+struct FIBITMAP*(FreeImage_GetComplexChannel)(struct FIBITMAP*,enum FREE_IMAGE_COLOR_CHANNEL);
+void(FreeImage_ConvertLine32To24)(unsigned char*,unsigned char*,int);
+signed int(FreeImage_FIFSupportsWriting)(enum FREE_IMAGE_FORMAT);
+signed int(FreeImage_GetBackgroundColor)(struct FIBITMAP*,struct tagRGBQUAD*);
+void(FreeImage_ConvertLine24To32)(unsigned char*,unsigned char*,int);
+struct FIBITMAP*(FreeImage_Dither)(struct FIBITMAP*,enum FREE_IMAGE_DITHER);
+void(FreeImage_SetDotsPerMeterY)(struct FIBITMAP*,unsigned int);
+unsigned int(FreeImage_SwapColors)(struct FIBITMAP*,struct tagRGBQUAD*,struct tagRGBQUAD*,signed int);
+struct FIBITMAP*(FreeImage_TmoReinhard05Ex)(struct FIBITMAP*,double,double,double,double);
+struct FIBITMAP*(FreeImage_Load)(enum FREE_IMAGE_FORMAT,const char*,int);
+struct tagRGBQUAD*(FreeImage_GetPalette)(struct FIBITMAP*);
+unsigned int(FreeImage_ApplyColorMapping)(struct FIBITMAP*,struct tagRGBQUAD*,struct tagRGBQUAD*,unsigned int,signed int,signed int);
+signed int(FreeImage_AdjustColors)(struct FIBITMAP*,double,double,double,signed int);
+int(FreeImage_GetAdjustColorsLookupTable)(unsigned char*,double,double,double,signed int);
+signed int(FreeImage_GetHistogram)(struct FIBITMAP*,unsigned int*,enum FREE_IMAGE_COLOR_CHANNEL);
+signed int(FreeImage_AdjustContrast)(struct FIBITMAP*,double);
+void(FreeImage_ConvertLine1To4)(unsigned char*,unsigned char*,int);
+signed int(FreeImage_AdjustBrightness)(struct FIBITMAP*,double);
+struct FIBITMAP*(FreeImage_RescaleRect)(struct FIBITMAP*,int,int,int,int,int,int,enum FREE_IMAGE_FILTER,unsigned int);
+signed int(FreeImage_SetTagDescription)(struct FITAG*,const char*);
+struct FIBITMAP*(FreeImage_Rescale)(struct FIBITMAP*,int,int,enum FREE_IMAGE_FILTER);
+signed int(FreeImage_JPEGTransformCombinedFromMemory)(struct FIMEMORY*,struct FIMEMORY*,enum FREE_IMAGE_JPEG_OPERATION,int*,int*,int*,int*,signed int);
+struct FIBITMAP*(FreeImage_LoadFromHandle)(enum FREE_IMAGE_FORMAT,struct FreeImageIO*,void*,int);
 unsigned int(FreeImage_GetTagLength)(struct FITAG*);
 struct FIBITMAP*(FreeImage_Rotate)(struct FIBITMAP*,double,const void*);
 struct FIBITMAP*(FreeImage_ConvertToRGBA16)(struct FIBITMAP*);
-int(FreeImage_SetPixelIndex)(struct FIBITMAP*,unsigned int,unsigned int,unsigned char*);
-int(FreeImage_SaveToHandle)(enum FREE_IMAGE_FORMAT,struct FIBITMAP*,struct FreeImageIO*,void*,int);
-unsigned int(FreeImage_GetTagCount)(struct FITAG*);
-int(FreeImage_SetComplexChannel)(struct FIBITMAP*,struct FIBITMAP*,enum FREE_IMAGE_COLOR_CHANNEL);
-struct FIBITMAP*(FreeImage_GetComplexChannel)(struct FIBITMAP*,enum FREE_IMAGE_COLOR_CHANNEL);
-unsigned int(FreeImage_ZLibGZip)(unsigned char*,unsigned int,unsigned char*,unsigned int);
+signed int(FreeImage_SetPixelIndex)(struct FIBITMAP*,unsigned int,unsigned int,unsigned char*);
+signed int(FreeImage_JPEGTransformCombined)(const char*,const char*,enum FREE_IMAGE_JPEG_OPERATION,int*,int*,int*,int*,signed int);
+void(FreeImage_ConvertLine24To16_565)(unsigned char*,unsigned char*,int);
+signed int(FreeImage_JPEGCrop)(const char*,const char*,int,int,int,int);
+signed int(FreeImage_JPEGTransformU)(const int*,const int*,enum FREE_IMAGE_JPEG_OPERATION,signed int);
 struct FIBITMAP*(FreeImage_ConvertToFloat)(struct FIBITMAP*);
+signed int(FreeImage_JPEGTransform)(const char*,const char*,enum FREE_IMAGE_JPEG_OPERATION,signed int);
 unsigned int(FreeImage_GetDIBSize)(struct FIBITMAP*);
-const char*(FreeImage_GetTagDescription)(struct FITAG*);
+struct FIBITMAP*(FreeImage_ConvertToRGBAF)(struct FIBITMAP*);
 struct FIBITMAP*(FreeImage_MultigridPoissonSolver)(struct FIBITMAP*,int);
 void(FreeImage_ConvertLine4To8)(unsigned char*,unsigned char*,int);
-struct FIBITMAP*(FreeImage_ConvertToRGBF)(struct FIBITMAP*);
-unsigned int(FreeImage_ApplyColorMapping)(struct FIBITMAP*,struct tagRGBQUAD*,struct tagRGBQUAD*,unsigned int,int,int);
-int(FreeImage_AdjustColors)(struct FIBITMAP*,double,double,double,int);
-int(FreeImage_GetAdjustColorsLookupTable)(unsigned char*,double,double,double,int);
-int(FreeImage_GetHistogram)(struct FIBITMAP*,unsigned int*,enum FREE_IMAGE_COLOR_CHANNEL);
-int(FreeImage_FIFSupportsICCProfiles)(enum FREE_IMAGE_FORMAT);
+void(FreeImage_DestroyICCProfile)(struct FIBITMAP*);
+void(FreeImage_ConvertLine24To8)(unsigned char*,unsigned char*,int);
+void(FreeImage_ConvertLine16To32_565)(unsigned char*,unsigned char*,int);
+signed int(FreeImage_SetMetadata)(enum FREE_IMAGE_MDMODEL,struct FIBITMAP*,const char*,struct FITAG*);
+void(FreeImage_ConvertLine4To24)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
+signed int(FreeImage_FindNextMetadata)(struct FIMETADATA*,struct FITAG**);
+signed int(FreeImage_FIFSupportsICCProfiles)(enum FREE_IMAGE_FORMAT);
 unsigned int(FreeImage_ReadMemory)(void*,unsigned int,unsigned int,struct FIMEMORY*);
-int(FreeImage_AdjustContrast)(struct FIBITMAP*,double);
-void(FreeImage_UnlockPage)(struct FIMULTIBITMAP*,struct FIBITMAP*,int);
-int(FreeImage_AdjustBrightness)(struct FIBITMAP*,double);
-struct FIBITMAP*(FreeImage_ConvertToRGBAF)(struct FIBITMAP*);
-int(FreeImage_LookupSVGColor)(const char*,unsigned char*,unsigned char*,unsigned char*);
-struct FIBITMAP*(FreeImage_RescaleRect)(struct FIBITMAP*,int,int,int,int,int,int,enum FREE_IMAGE_FILTER,unsigned int);
-struct FIBITMAP*(FreeImage_MakeThumbnail)(struct FIBITMAP*,int,int);
-unsigned int(FreeImage_GetBlueMask)(struct FIBITMAP*);
+void(FreeImage_UnlockPage)(struct FIMULTIBITMAP*,struct FIBITMAP*,signed int);
+signed int(FreeImage_SetTagValue)(struct FITAG*,const void*);
+enum FREE_IMAGE_FORMAT(FreeImage_GetFIFFromFormat)(const char*);
+signed int(FreeImage_SetTagID)(struct FITAG*,unsigned short);
+struct FIBITMAP*(FreeImage_MakeThumbnail)(struct FIBITMAP*,int,signed int);
 struct FIBITMAP*(FreeImage_TmoFattal02)(struct FIBITMAP*,double,double);
-struct FIBITMAP*(FreeImage_Rescale)(struct FIBITMAP*,int,int,enum FREE_IMAGE_FILTER);
+unsigned int(FreeImage_GetTagCount)(struct FITAG*);
 struct FIMEMORY*(FreeImage_OpenMemory)(unsigned char*,unsigned int);
-int(FreeImage_SetBackgroundColor)(struct FIBITMAP*,struct tagRGBQUAD*);
-int(FreeImage_JPEGTransformCombinedFromMemory)(struct FIMEMORY*,struct FIMEMORY*,enum FREE_IMAGE_JPEG_OPERATION,int*,int*,int*,int*,int);
-int(FreeImage_JPEGTransformCombined)(const char*,const char*,enum FREE_IMAGE_JPEG_OPERATION,int*,int*,int*,int*,int);
-void(FreeImage_ConvertLine4To32)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
-int(FreeImage_JPEGCrop)(const char*,const char*,int,int,int,int);
-int(FreeImage_JPEGTransformU)(const int*,const int*,enum FREE_IMAGE_JPEG_OPERATION,int);
-int(FreeImage_JPEGTransform)(const char*,const char*,enum FREE_IMAGE_JPEG_OPERATION,int);
-unsigned int(FreeImage_GetMetadataCount)(enum FREE_IMAGE_MDMODEL,struct FIBITMAP*);
-int(FreeImage_CloneMetadata)(struct FIBITMAP*,struct FIBITMAP*);
-unsigned int(FreeImage_GetPitch)(struct FIBITMAP*);
-int(FreeImage_GetBackgroundColor)(struct FIBITMAP*,struct tagRGBQUAD*);
-int(FreeImage_SetMetadata)(enum FREE_IMAGE_MDMODEL,struct FIBITMAP*,const char*,struct FITAG*);
-struct FIBITMAP*(FreeImage_ColorQuantize)(struct FIBITMAP*,enum FREE_IMAGE_QUANTIZE);
-struct FIBITMAP*(FreeImage_ConvertTo32Bits)(struct FIBITMAP*);
-int(FreeImage_FindNextMetadata)(struct FIMETADATA*,struct FITAG**);
-unsigned int(FreeImage_GetLine)(struct FIBITMAP*);
-unsigned int(FreeImage_GetTransparencyCount)(struct FIBITMAP*);
-enum FREE_IMAGE_FORMAT(FreeImage_GetFileTypeFromHandle)(struct FreeImageIO*,void*,int);
-int(FreeImage_SetTagValue)(struct FITAG*,const void*);
-int(FreeImage_SetTagID)(struct FITAG*,unsigned short);
-int(FreeImage_SetTagDescription)(struct FITAG*,const char*);
-struct FIBITMAP*(FreeImage_LoadFromHandle)(enum FREE_IMAGE_FORMAT,struct FreeImageIO*,void*,int);
-int(FreeImage_Paste)(struct FIBITMAP*,struct FIBITMAP*,int,int,int);
-int(FreeImage_IsPluginEnabled)(enum FREE_IMAGE_FORMAT);
 enum FREE_IMAGE_MDTYPE(FreeImage_GetTagType)(struct FITAG*);
-unsigned int(FreeImage_ApplyPaletteIndexMapping)(struct FIBITMAP*,unsigned char*,unsigned char*,unsigned int,int);
-int(FreeImage_SetMetadataKeyValue)(enum FREE_IMAGE_MDMODEL,struct FIBITMAP*,const char*,const char*);
+const char*(FreeImage_GetTagDescription)(struct FITAG*);
+signed int(FreeImage_SaveToMemory)(enum FREE_IMAGE_FORMAT,struct FIBITMAP*,struct FIMEMORY*,int);
 struct FIBITMAP*(FreeImage_Clone)(struct FIBITMAP*);
 unsigned int(FreeImage_ZLibCRC32)(unsigned int,unsigned char*,unsigned int);
+unsigned int(FreeImage_ZLibGZip)(unsigned char*,unsigned int,unsigned char*,unsigned int);
+struct FIBITMAP*(FreeImage_ConvertToStandardType)(struct FIBITMAP*,signed int);
+struct FIBITMAP*(FreeImage_ConvertToRGB16)(struct FIBITMAP*);
+signed int(FreeImage_CloneMetadata)(struct FIBITMAP*,struct FIBITMAP*);
+struct FIBITMAP*(FreeImage_ConvertToRGBF)(struct FIBITMAP*);
+signed int(FreeImage_SetBackgroundColor)(struct FIBITMAP*,struct tagRGBQUAD*);
+void(FreeImage_ConvertToRawBits)(unsigned char*,struct FIBITMAP*,int,unsigned int,unsigned int,unsigned int,unsigned int,signed int);
+void(FreeImage_CloseMemory)(struct FIMEMORY*);
+signed int(FreeImage_HasBackgroundColor)(struct FIBITMAP*);
+struct FIBITMAP*(FreeImage_Threshold)(struct FIBITMAP*,unsigned char);
+struct FIBITMAP*(FreeImage_ConvertTo24Bits)(struct FIBITMAP*);
+enum FREE_IMAGE_TYPE(FreeImage_GetImageType)(struct FIBITMAP*);
+unsigned int(FreeImage_GetLine)(struct FIBITMAP*);
+struct FIBITMAP*(FreeImage_ColorQuantize)(struct FIBITMAP*,enum FREE_IMAGE_QUANTIZE);
+enum FREE_IMAGE_FORMAT(FreeImage_GetFileTypeFromHandle)(struct FreeImageIO*,void*,int);
+struct FIBITMAP*(FreeImage_ConvertTo32Bits)(struct FIBITMAP*);
+struct FIICCPROFILE*(FreeImage_CreateICCProfile)(struct FIBITMAP*,void*,long);
+signed int(FreeImage_Paste)(struct FIBITMAP*,struct FIBITMAP*,int,int,int);
+int(FreeImage_IsPluginEnabled)(enum FREE_IMAGE_FORMAT);
+struct FIBITMAP*(FreeImage_ConvertTo8Bits)(struct FIBITMAP*);
+unsigned int(FreeImage_ApplyPaletteIndexMapping)(struct FIBITMAP*,unsigned char*,unsigned char*,unsigned int,signed int);
+signed int(FreeImage_SetMetadataKeyValue)(enum FREE_IMAGE_MDMODEL,struct FIBITMAP*,const char*,const char*);
+void(FreeImage_ConvertLine16To32_555)(unsigned char*,unsigned char*,int);
+void(FreeImage_ConvertLine8To32)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
 unsigned int(FreeImage_GetGreenMask)(struct FIBITMAP*);
-int(FreeImage_HasBackgroundColor)(struct FIBITMAP*);
-int(FreeImage_ValidateFromMemory)(enum FREE_IMAGE_FORMAT,struct FIMEMORY*);
-int(FreeImage_FIFSupportsExportType)(enum FREE_IMAGE_FORMAT,enum FREE_IMAGE_TYPE);
+void(FreeImage_ConvertLine4To32)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
+signed int(FreeImage_FIFSupportsExportType)(enum FREE_IMAGE_FORMAT,enum FREE_IMAGE_TYPE);
 struct FIBITMAP*(FreeImage_GetChannel)(struct FIBITMAP*,enum FREE_IMAGE_COLOR_CHANNEL);
 void(FreeImage_InsertPage)(struct FIMULTIBITMAP*,int,struct FIBITMAP*);
-unsigned int(FreeImage_WriteMemory)(const void*,unsigned int,unsigned int,struct FIMEMORY*);
-struct FIMULTIBITMAP*(FreeImage_LoadMultiBitmapFromMemory)(enum FREE_IMAGE_FORMAT,struct FIMEMORY*,int);
+void(FreeImage_ConvertLine16To24_565)(unsigned char*,unsigned char*,int);
+void(FreeImage_ConvertLine16To24_555)(unsigned char*,unsigned char*,int);
+unsigned int(FreeImage_GetTransparencyCount)(struct FIBITMAP*);
 unsigned int(FreeImage_GetRedMask)(struct FIBITMAP*);
+void(FreeImage_ConvertLine8To24)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
 void(FreeImage_FindCloseMetadata)(struct FIMETADATA*);
-void(FreeImage_ConvertLine24To8)(unsigned char*,unsigned char*,int);
-int(FreeImage_JPEGCropU)(const int*,const int*,int,int,int,int);
-void(FreeImage_ConvertLine16To4_565)(unsigned char*,unsigned char*,int);
+void(FreeImage_ConvertLine32To16_565)(unsigned char*,unsigned char*,int);
+signed int(FreeImage_JPEGCropU)(const int*,const int*,int,int,int,int);
+void(FreeImage_ConvertLine16_555_To16_565)(unsigned char*,unsigned char*,int);
 const char*(FreeImage_GetFIFExtensionList)(enum FREE_IMAGE_FORMAT);
 void(FreeImage_ConvertLine32To4)(unsigned char*,unsigned char*,int);
-int(FreeImage_Save)(enum FREE_IMAGE_FORMAT,struct FIBITMAP*,const char*,int);
-enum FREE_IMAGE_FORMAT(FreeImage_GetFIFFromFormat)(const char*);
-int(FreeImage_FIFSupportsExportBPP)(enum FREE_IMAGE_FORMAT,int);
+signed int(FreeImage_Save)(enum FREE_IMAGE_FORMAT,struct FIBITMAP*,const char*,int);
+void(FreeImage_ConvertLine4To16_555)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
+signed int(FreeImage_FIFSupportsExportBPP)(enum FREE_IMAGE_FORMAT,int);
 void(FreeImage_SetOutputMessageStdCall)(void(*omf)(enum FREE_IMAGE_FORMAT,const char*));
-struct FIBITMAP*(FreeImage_AllocateT)(enum FREE_IMAGE_TYPE,int,int,int,unsigned int,unsigned int,unsigned int);
-int(FreeImage_JPEGTransformCombinedU)(const int*,const int*,enum FREE_IMAGE_JPEG_OPERATION,int*,int*,int*,int*,int);
-void(FreeImage_DeInitialise)();
-void(FreeImage_ConvertLine4To16_565)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
-void(FreeImage_ConvertLine1To16_565)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
-void(FreeImage_ConvertLine32To16_555)(unsigned char*,unsigned char*,int);
-void(FreeImage_CloseMemory)(struct FIMEMORY*);
-enum FREE_IMAGE_FORMAT(FreeImage_GetFIFFromFilename)(const char*);
+signed int(FreeImage_JPEGTransformCombinedU)(const int*,const int*,enum FREE_IMAGE_JPEG_OPERATION,int*,int*,int*,int*,signed int);
+void(FreeImage_ConvertLine16To4_565)(unsigned char*,unsigned char*,int);
+struct tagBITMAPINFOHEADER*(FreeImage_GetInfoHeader)(struct FIBITMAP*);
 unsigned int(FreeImage_SwapPaletteIndices)(struct FIBITMAP*,unsigned char*,unsigned char*);
 enum FREE_IMAGE_FORMAT(FreeImage_GetFIFFromFilenameU)(const int*);
-struct FIBITMAP*(FreeImage_LoadU)(enum FREE_IMAGE_FORMAT,const int*,int);
-void(FreeImage_ConvertLine4To16_555)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
-void(FreeImage_ConvertLine24To32)(unsigned char*,unsigned char*,int);
+void(FreeImage_DeInitialise)();
+unsigned int(FreeImage_GetPitch)(struct FIBITMAP*);
 enum FREE_IMAGE_FORMAT(FreeImage_RegisterExternalPlugin)(const char*,const char*,const char*,const char*,const char*);
-void(FreeImage_ConvertLine16To4_555)(unsigned char*,unsigned char*,int);
+unsigned int(FreeImage_GetHeight)(struct FIBITMAP*);
 unsigned int(FreeImage_ZLibGUnzip)(unsigned char*,unsigned int,unsigned char*,unsigned int);
 enum FREE_IMAGE_FORMAT(FreeImage_GetFileType)(const char*,int);
 struct FIBITMAP*(FreeImage_ColorQuantizeEx)(struct FIBITMAP*,enum FREE_IMAGE_QUANTIZE,int,int,struct tagRGBQUAD*);
 struct FIMETADATA*(FreeImage_FindFirstMetadata)(enum FREE_IMAGE_MDMODEL,struct FIBITMAP*,struct FITAG**);
 void(FreeImage_ConvertLine1To8)(unsigned char*,unsigned char*,int);
-struct FIBITMAP*(FreeImage_Composite)(struct FIBITMAP*,int,struct tagRGBQUAD*,struct FIBITMAP*);
-int(FreeImage_GetPixelIndex)(struct FIBITMAP*,unsigned int,unsigned int,unsigned char*);
+struct FIBITMAP*(FreeImage_Composite)(struct FIBITMAP*,signed int,struct tagRGBQUAD*,struct FIBITMAP*);
+unsigned char*(FreeImage_GetBits)(struct FIBITMAP*);
+signed int(FreeImage_GetPixelIndex)(struct FIBITMAP*,unsigned int,unsigned int,unsigned char*);
 unsigned int(FreeImage_GetMemorySize)(struct FIBITMAP*);
-void(FreeImage_ConvertLine16To32_555)(unsigned char*,unsigned char*,int);
+void(FreeImage_ConvertLine32To16_555)(unsigned char*,unsigned char*,int);
+unsigned int(FreeImage_GetDotsPerMeterY)(struct FIBITMAP*);
 void(FreeImage_ConvertLine24To4)(unsigned char*,unsigned char*,int);
-int(FreeImage_SetPluginEnabled)(enum FREE_IMAGE_FORMAT,int);
-void(FreeImage_ConvertToRawBits)(unsigned char*,struct FIBITMAP*,int,unsigned int,unsigned int,unsigned int,unsigned int,int);
-int(FreeImage_LookupX11Color)(const char*,unsigned char*,unsigned char*,unsigned char*);
+void(FreeImage_ConvertLine1To32)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
 enum FREE_IMAGE_FORMAT(FreeImage_GetFIFFromMime)(const char*);
 struct FITAG*(FreeImage_CreateTag)();
-unsigned char*(FreeImage_GetScanLine)(struct FIBITMAP*,int);
-int(FreeImage_Validate)(enum FREE_IMAGE_FORMAT,const char*);
+struct FIBITMAP*(FreeImage_LoadFromMemory)(enum FREE_IMAGE_FORMAT,struct FIMEMORY*,int);
 enum FREE_IMAGE_FORMAT(FreeImage_GetFileTypeFromMemory)(struct FIMEMORY*,int);
-int(FreeImage_AcquireMemory)(struct FIMEMORY*,unsigned char**,unsigned int*);
-int(FreeImage_MovePage)(struct FIMULTIBITMAP*,int,int);
-void(FreeImage_ConvertLine8To32MapTransparency)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*,unsigned char*,int);
-void(FreeImage_ConvertLine16To32_565)(unsigned char*,unsigned char*,int);
-enum FREE_IMAGE_FORMAT(FreeImage_GetFileTypeU)(const int*,int);
+void(FreeImage_Unload)(struct FIBITMAP*);
 struct FIBITMAP*(FreeImage_ConvertTo16Bits565)(struct FIBITMAP*);
-int(FreeImage_ValidateU)(enum FREE_IMAGE_FORMAT,const int*);
-struct FIBITMAP*(FreeImage_ConvertTo24Bits)(struct FIBITMAP*);
+void(FreeImage_SetTransparentIndex)(struct FIBITMAP*,int);
 enum FREE_IMAGE_FORMAT(FreeImage_RegisterLocalPlugin)(void(*proc_address)(struct Plugin*,int),const char*,const char*,const char*,const char*);
-enum FREE_IMAGE_TYPE(FreeImage_GetImageType)(struct FIBITMAP*);
-int(FreeImage_SaveMultiBitmapToHandle)(enum FREE_IMAGE_FORMAT,struct FIMULTIBITMAP*,struct FreeImageIO*,void*,int);
+signed int(FreeImage_SaveMultiBitmapToHandle)(enum FREE_IMAGE_FORMAT,struct FIMULTIBITMAP*,struct FreeImageIO*,void*,int);
+struct FIBITMAP*(FreeImage_LoadU)(enum FREE_IMAGE_FORMAT,const int*,int);
+signed int(FreeImage_SaveToHandle)(enum FREE_IMAGE_FORMAT,struct FIBITMAP*,struct FreeImageIO*,void*,int);
+signed int(FreeImage_CloseMultiBitmap)(struct FIMULTIBITMAP*,int);
+struct FIBITMAP*(FreeImage_Allocate)(int,int,int,unsigned int,unsigned int,unsigned int);
+struct FITAG*(FreeImage_CloneTag)(struct FITAG*);
+signed int(FreeImage_AcquireMemory)(struct FIMEMORY*,unsigned char**,unsigned int*);
 struct FIMULTIBITMAP*(FreeImage_OpenMultiBitmapFromHandle)(enum FREE_IMAGE_FORMAT,struct FreeImageIO*,void*,int);
 void(FreeImage_ConvertLine24To16_555)(unsigned char*,unsigned char*,int);
 void(FreeImage_SetOutputMessage)(void(*omf)(enum FREE_IMAGE_FORMAT,const char*));
-int(FreeImage_CloseMultiBitmap)(struct FIMULTIBITMAP*,int);
-struct FIBITMAP*(FreeImage_Allocate)(int,int,int,unsigned int,unsigned int,unsigned int);
-struct FITAG*(FreeImage_CloneTag)(struct FITAG*);
-unsigned char*(FreeImage_GetBits)(struct FIBITMAP*);
+const char*(FreeImage_GetFIFRegExpr)(enum FREE_IMAGE_FORMAT);
 unsigned int(FreeImage_GetDotsPerMeterX)(struct FIBITMAP*);
-unsigned int(FreeImage_GetDotsPerMeterY)(struct FIBITMAP*);
-struct tagBITMAPINFOHEADER*(FreeImage_GetInfoHeader)(struct FIBITMAP*);
-enum FREE_IMAGE_COLOR_TYPE(FreeImage_GetColorType)(struct FIBITMAP*);
-void(FreeImage_ConvertLine32To8)(unsigned char*,unsigned char*,int);
-void(FreeImage_SetTransparencyTable)(struct FIBITMAP*,unsigned char*,int);
-void(FreeImage_SetTransparentIndex)(struct FIBITMAP*,int);
-struct FIICCPROFILE*(FreeImage_CreateICCProfile)(struct FIBITMAP*,void*,long);
-void(FreeImage_DestroyICCProfile)(struct FIBITMAP*);
 void(FreeImage_ConvertLine8To16_555)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
-void(FreeImage_Unload)(struct FIBITMAP*);
-void(FreeImage_ConvertLine16To24_555)(unsigned char*,unsigned char*,int);
+signed int(FreeImage_MovePage)(struct FIMULTIBITMAP*,int,int);
+const char*(FreeImage_GetFormatFromFIF)(enum FREE_IMAGE_FORMAT);
 struct FIBITMAP*(FreeImage_RotateClassic)(struct FIBITMAP*,double);
+signed int(FreeImage_LookupX11Color)(const char*,unsigned char*,unsigned char*,unsigned char*);
+enum FREE_IMAGE_FORMAT(FreeImage_GetFIFFromFilename)(const char*);
+int(FreeImage_SetPluginEnabled)(enum FREE_IMAGE_FORMAT,signed int);
+int(FreeImage_GetPageCount)(struct FIMULTIBITMAP*);
+signed int(FreeImage_GetPixelColor)(struct FIBITMAP*,unsigned int,unsigned int,struct tagRGBQUAD*);
+signed int(FreeImage_FIFSupportsReading)(enum FREE_IMAGE_FORMAT);
+const char*(FreeImage_GetFIFMimeType)(enum FREE_IMAGE_FORMAT);
+signed int(FreeImage_LookupSVGColor)(const char*,unsigned char*,unsigned char*,unsigned char*);
+unsigned int(FreeImage_GetBlueMask)(struct FIBITMAP*);
+void(FreeImage_SetTransparencyTable)(struct FIBITMAP*,unsigned char*,int);
+struct FIBITMAP*(FreeImage_AllocateT)(enum FREE_IMAGE_TYPE,int,int,int,unsigned int,unsigned int,unsigned int);
+signed int(FreeImage_SaveMultiBitmapToMemory)(enum FREE_IMAGE_FORMAT,struct FIMULTIBITMAP*,struct FIMEMORY*,int);
+void(FreeImage_ConvertLine8To16_565)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
+struct FIBITMAP*(FreeImage_ConvertTo16Bits555)(struct FIBITMAP*);
 void(FreeImage_ConvertLine16To8_555)(unsigned char*,unsigned char*,int);
 void(FreeImage_ConvertLine16To8_565)(unsigned char*,unsigned char*,int);
 void(FreeImage_ConvertLine1To16_555)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
-int(FreeImage_ValidateFromHandle)(enum FREE_IMAGE_FORMAT,struct FreeImageIO*,void*);
-int(FreeImage_GetPageCount)(struct FIMULTIBITMAP*);
-int(FreeImage_GetPixelColor)(struct FIBITMAP*,unsigned int,unsigned int,struct tagRGBQUAD*);
-int(FreeImage_FIFSupportsReading)(enum FREE_IMAGE_FORMAT);
-const char*(FreeImage_GetFIFMimeType)(enum FREE_IMAGE_FORMAT);
-void(FreeImage_ConvertLine1To32)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
-void(FreeImage_ConvertLine16_555_To16_565)(unsigned char*,unsigned char*,int);
-void(FreeImage_ConvertLine24To16_565)(unsigned char*,unsigned char*,int);
-void(FreeImage_ConvertLine32To16_565)(unsigned char*,unsigned char*,int);
-void(FreeImage_ConvertLine1To24)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
-void(FreeImage_ConvertLine4To24)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
-void(FreeImage_ConvertLine16To24_565)(unsigned char*,unsigned char*,int);
-int(FreeImage_SaveMultiBitmapToMemory)(enum FREE_IMAGE_FORMAT,struct FIMULTIBITMAP*,struct FIMEMORY*,int);
-void(FreeImage_ConvertLine32To24)(unsigned char*,unsigned char*,int);
-void(FreeImage_ConvertLine8To16_565)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
-struct FIBITMAP*(FreeImage_ConvertTo16Bits555)(struct FIBITMAP*);
-void(FreeImage_ConvertLine8To32)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
-struct FIBITMAP*(FreeImage_ConvertTo4Bits)(struct FIBITMAP*);
-struct FIBITMAP*(FreeImage_ConvertToGreyscale)(struct FIBITMAP*);
-struct FIBITMAP*(FreeImage_Threshold)(struct FIBITMAP*,unsigned char);
-const char*(FreeImage_GetFormatFromFIF)(enum FREE_IMAGE_FORMAT);
+void(FreeImage_ConvertLine1To16_565)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
+void(FreeImage_ConvertLine4To16_565)(unsigned char*,unsigned char*,int,struct tagRGBQUAD*);
 ]])
 local CLIB = ffi.load(_G.FFI_LIB or "freeimage")
 local library = {}
@@ -281,15 +274,15 @@ library = {
 	TellMemory = CLIB.FreeImage_TellMemory,
 	GetFIFCount = CLIB.FreeImage_GetFIFCount,
 	ConvertToUINT16 = CLIB.FreeImage_ConvertToUINT16,
-	ConvertToRGB16 = CLIB.FreeImage_ConvertToRGB16,
+	WriteMemory = CLIB.FreeImage_WriteMemory,
 	RotateEx = CLIB.FreeImage_RotateEx,
 	IsLittleEndian = CLIB.FreeImage_IsLittleEndian,
 	Invert = CLIB.FreeImage_Invert,
 	SeekMemory = CLIB.FreeImage_SeekMemory,
 	ToneMapping = CLIB.FreeImage_ToneMapping,
-	ConvertTo8Bits = CLIB.FreeImage_ConvertTo8Bits,
+	ConvertTo4Bits = CLIB.FreeImage_ConvertTo4Bits,
 	OpenMultiBitmap = CLIB.FreeImage_OpenMultiBitmap,
-	ConvertLine8To24 = CLIB.FreeImage_ConvertLine8To24,
+	ConvertLine1To24 = CLIB.FreeImage_ConvertLine1To24,
 	SaveU = CLIB.FreeImage_SaveU,
 	CreateView = CLIB.FreeImage_CreateView,
 	GetLockedPageNumbers = CLIB.FreeImage_GetLockedPageNumbers,
@@ -297,13 +290,11 @@ library = {
 	GetTagID = CLIB.FreeImage_GetTagID,
 	FlipVertical = CLIB.FreeImage_FlipVertical,
 	GetBPP = CLIB.FreeImage_GetBPP,
-	GetHeight = CLIB.FreeImage_GetHeight,
 	TagToString = CLIB.FreeImage_TagToString,
 	SetTagCount = CLIB.FreeImage_SetTagCount,
 	PreMultiplyWithAlpha = CLIB.FreeImage_PreMultiplyWithAlpha,
-	LoadFromMemory = CLIB.FreeImage_LoadFromMemory,
+	GetColorType = CLIB.FreeImage_GetColorType,
 	Copy = CLIB.FreeImage_Copy,
-	GetFIFRegExpr = CLIB.FreeImage_GetFIFRegExpr,
 	TmoReinhard05 = CLIB.FreeImage_TmoReinhard05,
 	GetThumbnail = CLIB.FreeImage_GetThumbnail,
 	GetCopyrightMessage = CLIB.FreeImage_GetCopyrightMessage,
@@ -316,18 +307,19 @@ library = {
 	ConvertLine16_565_To16_555 = CLIB.FreeImage_ConvertLine16_565_To16_555,
 	Initialise = CLIB.FreeImage_Initialise,
 	SetTagLength = CLIB.FreeImage_SetTagLength,
-	ConvertLine4To32MapTransparency = CLIB.FreeImage_ConvertLine4To32MapTransparency,
+	ConvertLine32To8 = CLIB.FreeImage_ConvertLine32To8,
 	FIFSupportsNoPixels = CLIB.FreeImage_FIFSupportsNoPixels,
 	GetTransparentIndex = CLIB.FreeImage_GetTransparentIndex,
 	GetTagValue = CLIB.FreeImage_GetTagValue,
+	GetFileTypeU = CLIB.FreeImage_GetFileTypeU,
+	GetScanLine = CLIB.FreeImage_GetScanLine,
 	TmoDrago03 = CLIB.FreeImage_TmoDrago03,
 	ZLibUncompress = CLIB.FreeImage_ZLibUncompress,
-	SaveToMemory = CLIB.FreeImage_SaveToMemory,
 	JPEGTransformFromHandle = CLIB.FreeImage_JPEGTransformFromHandle,
-	ConvertLine1To32MapTransparency = CLIB.FreeImage_ConvertLine1To32MapTransparency,
 	AdjustCurve = CLIB.FreeImage_AdjustCurve,
 	GetICCProfile = CLIB.FreeImage_GetICCProfile,
 	OutputMessageProc = CLIB.FreeImage_OutputMessageProc,
+	LoadMultiBitmapFromMemory = CLIB.FreeImage_LoadMultiBitmapFromMemory,
 	GetTagKey = CLIB.FreeImage_GetTagKey,
 	SetThumbnail = CLIB.FreeImage_SetThumbnail,
 	SetTransparent = CLIB.FreeImage_SetTransparent,
@@ -346,187 +338,181 @@ library = {
 	SetChannel = CLIB.FreeImage_SetChannel,
 	HasPixels = CLIB.FreeImage_HasPixels,
 	SetPixelColor = CLIB.FreeImage_SetPixelColor,
-	GetTransparencyTable = CLIB.FreeImage_GetTransparencyTable,
-	FIFSupportsWriting = CLIB.FreeImage_FIFSupportsWriting,
-	Dither = CLIB.FreeImage_Dither,
-	SetDotsPerMeterY = CLIB.FreeImage_SetDotsPerMeterY,
-	TmoReinhard05Ex = CLIB.FreeImage_TmoReinhard05Ex,
-	Load = CLIB.FreeImage_Load,
-	GetPalette = CLIB.FreeImage_GetPalette,
-	ConvertToStandardType = CLIB.FreeImage_ConvertToStandardType,
-	ConvertLine1To4 = CLIB.FreeImage_ConvertLine1To4,
-	SwapColors = CLIB.FreeImage_SwapColors,
+	GetMetadataCount = CLIB.FreeImage_GetMetadataCount,
 	AllocateExT = CLIB.FreeImage_AllocateExT,
 	AllocateEx = CLIB.FreeImage_AllocateEx,
 	EnlargeCanvas = CLIB.FreeImage_EnlargeCanvas,
 	FillBackground = CLIB.FreeImage_FillBackground,
-	GetTagLength = CLIB.FreeImage_GetTagLength,
-	Rotate = CLIB.FreeImage_Rotate,
-	ConvertToRGBA16 = CLIB.FreeImage_ConvertToRGBA16,
-	SetPixelIndex = CLIB.FreeImage_SetPixelIndex,
-	SaveToHandle = CLIB.FreeImage_SaveToHandle,
-	GetTagCount = CLIB.FreeImage_GetTagCount,
+	ConvertLine16To4_555 = CLIB.FreeImage_ConvertLine16To4_555,
+	ConvertToGreyscale = CLIB.FreeImage_ConvertToGreyscale,
 	SetComplexChannel = CLIB.FreeImage_SetComplexChannel,
+	GetTransparencyTable = CLIB.FreeImage_GetTransparencyTable,
 	GetComplexChannel = CLIB.FreeImage_GetComplexChannel,
-	ZLibGZip = CLIB.FreeImage_ZLibGZip,
-	ConvertToFloat = CLIB.FreeImage_ConvertToFloat,
-	GetDIBSize = CLIB.FreeImage_GetDIBSize,
-	GetTagDescription = CLIB.FreeImage_GetTagDescription,
-	MultigridPoissonSolver = CLIB.FreeImage_MultigridPoissonSolver,
-	ConvertLine4To8 = CLIB.FreeImage_ConvertLine4To8,
-	ConvertToRGBF = CLIB.FreeImage_ConvertToRGBF,
+	ConvertLine32To24 = CLIB.FreeImage_ConvertLine32To24,
+	FIFSupportsWriting = CLIB.FreeImage_FIFSupportsWriting,
+	GetBackgroundColor = CLIB.FreeImage_GetBackgroundColor,
+	ConvertLine24To32 = CLIB.FreeImage_ConvertLine24To32,
+	Dither = CLIB.FreeImage_Dither,
+	SetDotsPerMeterY = CLIB.FreeImage_SetDotsPerMeterY,
+	SwapColors = CLIB.FreeImage_SwapColors,
+	TmoReinhard05Ex = CLIB.FreeImage_TmoReinhard05Ex,
+	Load = CLIB.FreeImage_Load,
+	GetPalette = CLIB.FreeImage_GetPalette,
 	ApplyColorMapping = CLIB.FreeImage_ApplyColorMapping,
 	AdjustColors = CLIB.FreeImage_AdjustColors,
 	GetAdjustColorsLookupTable = CLIB.FreeImage_GetAdjustColorsLookupTable,
 	GetHistogram = CLIB.FreeImage_GetHistogram,
-	FIFSupportsICCProfiles = CLIB.FreeImage_FIFSupportsICCProfiles,
-	ReadMemory = CLIB.FreeImage_ReadMemory,
 	AdjustContrast = CLIB.FreeImage_AdjustContrast,
-	UnlockPage = CLIB.FreeImage_UnlockPage,
+	ConvertLine1To4 = CLIB.FreeImage_ConvertLine1To4,
 	AdjustBrightness = CLIB.FreeImage_AdjustBrightness,
-	ConvertToRGBAF = CLIB.FreeImage_ConvertToRGBAF,
-	LookupSVGColor = CLIB.FreeImage_LookupSVGColor,
 	RescaleRect = CLIB.FreeImage_RescaleRect,
-	MakeThumbnail = CLIB.FreeImage_MakeThumbnail,
-	GetBlueMask = CLIB.FreeImage_GetBlueMask,
-	TmoFattal02 = CLIB.FreeImage_TmoFattal02,
+	SetTagDescription = CLIB.FreeImage_SetTagDescription,
 	Rescale = CLIB.FreeImage_Rescale,
-	OpenMemory = CLIB.FreeImage_OpenMemory,
-	SetBackgroundColor = CLIB.FreeImage_SetBackgroundColor,
 	JPEGTransformCombinedFromMemory = CLIB.FreeImage_JPEGTransformCombinedFromMemory,
+	LoadFromHandle = CLIB.FreeImage_LoadFromHandle,
+	GetTagLength = CLIB.FreeImage_GetTagLength,
+	Rotate = CLIB.FreeImage_Rotate,
+	ConvertToRGBA16 = CLIB.FreeImage_ConvertToRGBA16,
+	SetPixelIndex = CLIB.FreeImage_SetPixelIndex,
 	JPEGTransformCombined = CLIB.FreeImage_JPEGTransformCombined,
-	ConvertLine4To32 = CLIB.FreeImage_ConvertLine4To32,
+	ConvertLine24To16_565 = CLIB.FreeImage_ConvertLine24To16_565,
 	JPEGCrop = CLIB.FreeImage_JPEGCrop,
 	JPEGTransformU = CLIB.FreeImage_JPEGTransformU,
+	ConvertToFloat = CLIB.FreeImage_ConvertToFloat,
 	JPEGTransform = CLIB.FreeImage_JPEGTransform,
-	GetMetadataCount = CLIB.FreeImage_GetMetadataCount,
-	CloneMetadata = CLIB.FreeImage_CloneMetadata,
-	GetPitch = CLIB.FreeImage_GetPitch,
-	GetBackgroundColor = CLIB.FreeImage_GetBackgroundColor,
+	GetDIBSize = CLIB.FreeImage_GetDIBSize,
+	ConvertToRGBAF = CLIB.FreeImage_ConvertToRGBAF,
+	MultigridPoissonSolver = CLIB.FreeImage_MultigridPoissonSolver,
+	ConvertLine4To8 = CLIB.FreeImage_ConvertLine4To8,
+	DestroyICCProfile = CLIB.FreeImage_DestroyICCProfile,
+	ConvertLine24To8 = CLIB.FreeImage_ConvertLine24To8,
+	ConvertLine16To32_565 = CLIB.FreeImage_ConvertLine16To32_565,
 	SetMetadata = CLIB.FreeImage_SetMetadata,
-	ColorQuantize = CLIB.FreeImage_ColorQuantize,
-	ConvertTo32Bits = CLIB.FreeImage_ConvertTo32Bits,
+	ConvertLine4To24 = CLIB.FreeImage_ConvertLine4To24,
 	FindNextMetadata = CLIB.FreeImage_FindNextMetadata,
-	GetLine = CLIB.FreeImage_GetLine,
-	GetTransparencyCount = CLIB.FreeImage_GetTransparencyCount,
-	GetFileTypeFromHandle = CLIB.FreeImage_GetFileTypeFromHandle,
+	FIFSupportsICCProfiles = CLIB.FreeImage_FIFSupportsICCProfiles,
+	ReadMemory = CLIB.FreeImage_ReadMemory,
+	UnlockPage = CLIB.FreeImage_UnlockPage,
 	SetTagValue = CLIB.FreeImage_SetTagValue,
+	GetFIFFromFormat = CLIB.FreeImage_GetFIFFromFormat,
 	SetTagID = CLIB.FreeImage_SetTagID,
-	SetTagDescription = CLIB.FreeImage_SetTagDescription,
-	LoadFromHandle = CLIB.FreeImage_LoadFromHandle,
-	Paste = CLIB.FreeImage_Paste,
-	IsPluginEnabled = CLIB.FreeImage_IsPluginEnabled,
+	MakeThumbnail = CLIB.FreeImage_MakeThumbnail,
+	TmoFattal02 = CLIB.FreeImage_TmoFattal02,
+	GetTagCount = CLIB.FreeImage_GetTagCount,
+	OpenMemory = CLIB.FreeImage_OpenMemory,
 	GetTagType = CLIB.FreeImage_GetTagType,
-	ApplyPaletteIndexMapping = CLIB.FreeImage_ApplyPaletteIndexMapping,
-	SetMetadataKeyValue = CLIB.FreeImage_SetMetadataKeyValue,
+	GetTagDescription = CLIB.FreeImage_GetTagDescription,
+	SaveToMemory = CLIB.FreeImage_SaveToMemory,
 	Clone = CLIB.FreeImage_Clone,
 	ZLibCRC32 = CLIB.FreeImage_ZLibCRC32,
-	GetGreenMask = CLIB.FreeImage_GetGreenMask,
+	ZLibGZip = CLIB.FreeImage_ZLibGZip,
+	ConvertToStandardType = CLIB.FreeImage_ConvertToStandardType,
+	ConvertToRGB16 = CLIB.FreeImage_ConvertToRGB16,
+	CloneMetadata = CLIB.FreeImage_CloneMetadata,
+	ConvertToRGBF = CLIB.FreeImage_ConvertToRGBF,
+	SetBackgroundColor = CLIB.FreeImage_SetBackgroundColor,
+	ConvertToRawBits = CLIB.FreeImage_ConvertToRawBits,
+	CloseMemory = CLIB.FreeImage_CloseMemory,
 	HasBackgroundColor = CLIB.FreeImage_HasBackgroundColor,
-	ValidateFromMemory = CLIB.FreeImage_ValidateFromMemory,
+	Threshold = CLIB.FreeImage_Threshold,
+	ConvertTo24Bits = CLIB.FreeImage_ConvertTo24Bits,
+	GetImageType = CLIB.FreeImage_GetImageType,
+	GetLine = CLIB.FreeImage_GetLine,
+	ColorQuantize = CLIB.FreeImage_ColorQuantize,
+	GetFileTypeFromHandle = CLIB.FreeImage_GetFileTypeFromHandle,
+	ConvertTo32Bits = CLIB.FreeImage_ConvertTo32Bits,
+	CreateICCProfile = CLIB.FreeImage_CreateICCProfile,
+	Paste = CLIB.FreeImage_Paste,
+	IsPluginEnabled = CLIB.FreeImage_IsPluginEnabled,
+	ConvertTo8Bits = CLIB.FreeImage_ConvertTo8Bits,
+	ApplyPaletteIndexMapping = CLIB.FreeImage_ApplyPaletteIndexMapping,
+	SetMetadataKeyValue = CLIB.FreeImage_SetMetadataKeyValue,
+	ConvertLine16To32_555 = CLIB.FreeImage_ConvertLine16To32_555,
+	ConvertLine8To32 = CLIB.FreeImage_ConvertLine8To32,
+	GetGreenMask = CLIB.FreeImage_GetGreenMask,
+	ConvertLine4To32 = CLIB.FreeImage_ConvertLine4To32,
 	FIFSupportsExportType = CLIB.FreeImage_FIFSupportsExportType,
 	GetChannel = CLIB.FreeImage_GetChannel,
 	InsertPage = CLIB.FreeImage_InsertPage,
-	WriteMemory = CLIB.FreeImage_WriteMemory,
-	LoadMultiBitmapFromMemory = CLIB.FreeImage_LoadMultiBitmapFromMemory,
+	ConvertLine16To24_565 = CLIB.FreeImage_ConvertLine16To24_565,
+	ConvertLine16To24_555 = CLIB.FreeImage_ConvertLine16To24_555,
+	GetTransparencyCount = CLIB.FreeImage_GetTransparencyCount,
 	GetRedMask = CLIB.FreeImage_GetRedMask,
+	ConvertLine8To24 = CLIB.FreeImage_ConvertLine8To24,
 	FindCloseMetadata = CLIB.FreeImage_FindCloseMetadata,
-	ConvertLine24To8 = CLIB.FreeImage_ConvertLine24To8,
+	ConvertLine32To16_565 = CLIB.FreeImage_ConvertLine32To16_565,
 	JPEGCropU = CLIB.FreeImage_JPEGCropU,
-	ConvertLine16To4_565 = CLIB.FreeImage_ConvertLine16To4_565,
+	ConvertLine16_555_To16_565 = CLIB.FreeImage_ConvertLine16_555_To16_565,
 	GetFIFExtensionList = CLIB.FreeImage_GetFIFExtensionList,
 	ConvertLine32To4 = CLIB.FreeImage_ConvertLine32To4,
 	Save = CLIB.FreeImage_Save,
-	GetFIFFromFormat = CLIB.FreeImage_GetFIFFromFormat,
+	ConvertLine4To16_555 = CLIB.FreeImage_ConvertLine4To16_555,
 	FIFSupportsExportBPP = CLIB.FreeImage_FIFSupportsExportBPP,
 	SetOutputMessageStdCall = CLIB.FreeImage_SetOutputMessageStdCall,
-	AllocateT = CLIB.FreeImage_AllocateT,
 	JPEGTransformCombinedU = CLIB.FreeImage_JPEGTransformCombinedU,
-	DeInitialise = CLIB.FreeImage_DeInitialise,
-	ConvertLine4To16_565 = CLIB.FreeImage_ConvertLine4To16_565,
-	ConvertLine1To16_565 = CLIB.FreeImage_ConvertLine1To16_565,
-	ConvertLine32To16_555 = CLIB.FreeImage_ConvertLine32To16_555,
-	CloseMemory = CLIB.FreeImage_CloseMemory,
-	GetFIFFromFilename = CLIB.FreeImage_GetFIFFromFilename,
+	ConvertLine16To4_565 = CLIB.FreeImage_ConvertLine16To4_565,
+	GetInfoHeader = CLIB.FreeImage_GetInfoHeader,
 	SwapPaletteIndices = CLIB.FreeImage_SwapPaletteIndices,
 	GetFIFFromFilenameU = CLIB.FreeImage_GetFIFFromFilenameU,
-	LoadU = CLIB.FreeImage_LoadU,
-	ConvertLine4To16_555 = CLIB.FreeImage_ConvertLine4To16_555,
-	ConvertLine24To32 = CLIB.FreeImage_ConvertLine24To32,
-	ConvertLine16To4_555 = CLIB.FreeImage_ConvertLine16To4_555,
+	DeInitialise = CLIB.FreeImage_DeInitialise,
+	GetPitch = CLIB.FreeImage_GetPitch,
+	GetHeight = CLIB.FreeImage_GetHeight,
 	ZLibGUnzip = CLIB.FreeImage_ZLibGUnzip,
 	GetFileType = CLIB.FreeImage_GetFileType,
 	ColorQuantizeEx = CLIB.FreeImage_ColorQuantizeEx,
 	FindFirstMetadata = CLIB.FreeImage_FindFirstMetadata,
 	ConvertLine1To8 = CLIB.FreeImage_ConvertLine1To8,
 	Composite = CLIB.FreeImage_Composite,
+	GetBits = CLIB.FreeImage_GetBits,
 	GetPixelIndex = CLIB.FreeImage_GetPixelIndex,
 	GetMemorySize = CLIB.FreeImage_GetMemorySize,
-	ConvertLine16To32_555 = CLIB.FreeImage_ConvertLine16To32_555,
+	ConvertLine32To16_555 = CLIB.FreeImage_ConvertLine32To16_555,
+	GetDotsPerMeterY = CLIB.FreeImage_GetDotsPerMeterY,
 	ConvertLine24To4 = CLIB.FreeImage_ConvertLine24To4,
-	SetPluginEnabled = CLIB.FreeImage_SetPluginEnabled,
-	ConvertToRawBits = CLIB.FreeImage_ConvertToRawBits,
-	LookupX11Color = CLIB.FreeImage_LookupX11Color,
+	ConvertLine1To32 = CLIB.FreeImage_ConvertLine1To32,
 	GetFIFFromMime = CLIB.FreeImage_GetFIFFromMime,
 	CreateTag = CLIB.FreeImage_CreateTag,
-	GetScanLine = CLIB.FreeImage_GetScanLine,
-	Validate = CLIB.FreeImage_Validate,
+	LoadFromMemory = CLIB.FreeImage_LoadFromMemory,
 	GetFileTypeFromMemory = CLIB.FreeImage_GetFileTypeFromMemory,
-	AcquireMemory = CLIB.FreeImage_AcquireMemory,
-	MovePage = CLIB.FreeImage_MovePage,
-	ConvertLine8To32MapTransparency = CLIB.FreeImage_ConvertLine8To32MapTransparency,
-	ConvertLine16To32_565 = CLIB.FreeImage_ConvertLine16To32_565,
-	GetFileTypeU = CLIB.FreeImage_GetFileTypeU,
+	Unload = CLIB.FreeImage_Unload,
 	ConvertTo16Bits565 = CLIB.FreeImage_ConvertTo16Bits565,
-	ValidateU = CLIB.FreeImage_ValidateU,
-	ConvertTo24Bits = CLIB.FreeImage_ConvertTo24Bits,
+	SetTransparentIndex = CLIB.FreeImage_SetTransparentIndex,
 	RegisterLocalPlugin = CLIB.FreeImage_RegisterLocalPlugin,
-	GetImageType = CLIB.FreeImage_GetImageType,
 	SaveMultiBitmapToHandle = CLIB.FreeImage_SaveMultiBitmapToHandle,
-	OpenMultiBitmapFromHandle = CLIB.FreeImage_OpenMultiBitmapFromHandle,
-	ConvertLine24To16_555 = CLIB.FreeImage_ConvertLine24To16_555,
-	SetOutputMessage = CLIB.FreeImage_SetOutputMessage,
+	LoadU = CLIB.FreeImage_LoadU,
+	SaveToHandle = CLIB.FreeImage_SaveToHandle,
 	CloseMultiBitmap = CLIB.FreeImage_CloseMultiBitmap,
 	Allocate = CLIB.FreeImage_Allocate,
 	CloneTag = CLIB.FreeImage_CloneTag,
-	GetBits = CLIB.FreeImage_GetBits,
+	AcquireMemory = CLIB.FreeImage_AcquireMemory,
+	OpenMultiBitmapFromHandle = CLIB.FreeImage_OpenMultiBitmapFromHandle,
+	ConvertLine24To16_555 = CLIB.FreeImage_ConvertLine24To16_555,
+	SetOutputMessage = CLIB.FreeImage_SetOutputMessage,
+	GetFIFRegExpr = CLIB.FreeImage_GetFIFRegExpr,
 	GetDotsPerMeterX = CLIB.FreeImage_GetDotsPerMeterX,
-	GetDotsPerMeterY = CLIB.FreeImage_GetDotsPerMeterY,
-	GetInfoHeader = CLIB.FreeImage_GetInfoHeader,
-	GetColorType = CLIB.FreeImage_GetColorType,
-	ConvertLine32To8 = CLIB.FreeImage_ConvertLine32To8,
-	SetTransparencyTable = CLIB.FreeImage_SetTransparencyTable,
-	SetTransparentIndex = CLIB.FreeImage_SetTransparentIndex,
-	CreateICCProfile = CLIB.FreeImage_CreateICCProfile,
-	DestroyICCProfile = CLIB.FreeImage_DestroyICCProfile,
 	ConvertLine8To16_555 = CLIB.FreeImage_ConvertLine8To16_555,
-	Unload = CLIB.FreeImage_Unload,
-	ConvertLine16To24_555 = CLIB.FreeImage_ConvertLine16To24_555,
+	MovePage = CLIB.FreeImage_MovePage,
+	GetFormatFromFIF = CLIB.FreeImage_GetFormatFromFIF,
 	RotateClassic = CLIB.FreeImage_RotateClassic,
-	ConvertLine16To8_555 = CLIB.FreeImage_ConvertLine16To8_555,
-	ConvertLine16To8_565 = CLIB.FreeImage_ConvertLine16To8_565,
-	ConvertLine1To16_555 = CLIB.FreeImage_ConvertLine1To16_555,
-	ValidateFromHandle = CLIB.FreeImage_ValidateFromHandle,
+	LookupX11Color = CLIB.FreeImage_LookupX11Color,
+	GetFIFFromFilename = CLIB.FreeImage_GetFIFFromFilename,
+	SetPluginEnabled = CLIB.FreeImage_SetPluginEnabled,
 	GetPageCount = CLIB.FreeImage_GetPageCount,
 	GetPixelColor = CLIB.FreeImage_GetPixelColor,
 	FIFSupportsReading = CLIB.FreeImage_FIFSupportsReading,
 	GetFIFMimeType = CLIB.FreeImage_GetFIFMimeType,
-	ConvertLine1To32 = CLIB.FreeImage_ConvertLine1To32,
-	ConvertLine16_555_To16_565 = CLIB.FreeImage_ConvertLine16_555_To16_565,
-	ConvertLine24To16_565 = CLIB.FreeImage_ConvertLine24To16_565,
-	ConvertLine32To16_565 = CLIB.FreeImage_ConvertLine32To16_565,
-	ConvertLine1To24 = CLIB.FreeImage_ConvertLine1To24,
-	ConvertLine4To24 = CLIB.FreeImage_ConvertLine4To24,
-	ConvertLine16To24_565 = CLIB.FreeImage_ConvertLine16To24_565,
+	LookupSVGColor = CLIB.FreeImage_LookupSVGColor,
+	GetBlueMask = CLIB.FreeImage_GetBlueMask,
+	SetTransparencyTable = CLIB.FreeImage_SetTransparencyTable,
+	AllocateT = CLIB.FreeImage_AllocateT,
 	SaveMultiBitmapToMemory = CLIB.FreeImage_SaveMultiBitmapToMemory,
-	ConvertLine32To24 = CLIB.FreeImage_ConvertLine32To24,
 	ConvertLine8To16_565 = CLIB.FreeImage_ConvertLine8To16_565,
 	ConvertTo16Bits555 = CLIB.FreeImage_ConvertTo16Bits555,
-	ConvertLine8To32 = CLIB.FreeImage_ConvertLine8To32,
-	ConvertTo4Bits = CLIB.FreeImage_ConvertTo4Bits,
-	ConvertToGreyscale = CLIB.FreeImage_ConvertToGreyscale,
-	Threshold = CLIB.FreeImage_Threshold,
-	GetFormatFromFIF = CLIB.FreeImage_GetFormatFromFIF,
+	ConvertLine16To8_555 = CLIB.FreeImage_ConvertLine16To8_555,
+	ConvertLine16To8_565 = CLIB.FreeImage_ConvertLine16To8_565,
+	ConvertLine1To16_555 = CLIB.FreeImage_ConvertLine1To16_555,
+	ConvertLine1To16_565 = CLIB.FreeImage_ConvertLine1To16_565,
+	ConvertLine4To16_565 = CLIB.FreeImage_ConvertLine4To16_565,
 }
 library.e = {
 	FORMAT_UNKNOWN = ffi.cast("enum FREE_IMAGE_FORMAT", "FIF_UNKNOWN"),
@@ -758,9 +744,6 @@ do
 			type = "float"
 			format = "rgba"
 		else
-			bitmap = library.ConvertTo32Bits(bitmap)
-			format = "bgra"
-
 			wlog("unhandled freeimage format type: %s", image_type)
 		end
 

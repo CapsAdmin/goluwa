@@ -1,15 +1,11 @@
 package.path = package.path .. ";../?.lua"
 local ffibuild = require("ffibuild")
 
-ffibuild.BuildSharedLibrary(
-	"enet",
-	"https://github.com/lsalzman/enet.git",
-	"autoreconf -vfi && ./configure && make"
-)
-
-local header = ffibuild.BuildCHeader([[
+local header = ffibuild.NixBuild({
+	name = "enet",
+	src = [[
 #include "enet/enet.h"
-]], "-I./repo/include")
+]]})
 
 local meta_data = ffibuild.GetMetaData(header)
 

@@ -1,13 +1,6 @@
 package.path = package.path .. ";../?.lua"
 local ffibuild = require("ffibuild")
 
-
-ffibuild.BuildSharedLibrary(
-	"openal",
-	"https://github.com/kcat/openal-soft.git",
-	"cmake . && make"
-)
-
 for lib_name, enum_name in pairs({al = "AL_", alc = "ALC_"}) do
 
 	ffibuild.lib_name = lib_name
@@ -24,16 +17,16 @@ for lib_name, enum_name in pairs({al = "AL_", alc = "ALC_"}) do
 	]]
 
 	for _, name in ipairs(headers) do
-		c_source = c_source .. "#include \"" .. name .. ".h\"\n"
+		c_source = c_source .. "#include \"AL/" .. name .. ".h\"\n"
 	end
 
-	local header = ffibuild.BuildCHeader(c_source, "-I./repo/include/AL")
+	local header = ffibuild.NixBuild({name = "openal", src = c_source})
 
 	do
 		local args = {}
 
 		for _, name in ipairs(headers) do
-			table.insert(args, {"./repo/include/AL/" .. name .. ".h", enum_name})
+			table.insert(args, {"./include/AL/" .. name .. ".h", enum_name})
 		end
 	end
 
@@ -70,7 +63,7 @@ end
 	local args = {}
 
 	for _, name in ipairs(headers) do
-		table.insert(args, {"./repo/include/AL/" .. name .. ".h", enum_name})
+		table.insert(args, {"./include/AL/" .. name .. ".h", enum_name})
 	end
 
 	lua = lua .. "local AL_TRUE = 1\n"

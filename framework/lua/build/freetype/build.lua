@@ -1,13 +1,9 @@
 package.path = package.path .. ";../?.lua"
 local ffibuild = require("ffibuild")
 
-ffibuild.BuildSharedLibrary(
-	"freetype",
-	"git://git.sv.nongnu.org/freetype/freetype2.git",
-	"mkdir build && cd build && cmake .. -DBUILD_SHARED_LIBS=1 && make && cd ../"
-)
-
-local header = ffibuild.BuildCHeader([[
+local header = ffibuild.NixBuild({
+	name = "freetype",
+	src = [[
 	#include <ft2build.h>
 
 	typedef struct _FT_Glyph_Class {} FT_Glyph_Class;
@@ -62,7 +58,7 @@ local header = ffibuild.BuildCHeader([[
 	#include FT_GASP_H
 	#include FT_GZIP_H
 	#include FT_ADVANCES_H
-]], "-I./repo/include/")
+]]})
 
 local meta_data = ffibuild.GetMetaData(header)
 local header = meta_data:BuildMinimalHeader(function(name) return name:find("^FT_") end, function(name) return name:find("^FT_") or name:find("^BDF_") end, true, true)

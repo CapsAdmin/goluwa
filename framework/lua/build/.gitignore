@@ -1,4 +1,9 @@
 *repo/
+*include/
+*result
+
+# temp files
+*.nix
 
 # Object files
 *.o

@@ -1,16 +1,12 @@
 package.path = package.path .. ";../?.lua"
 local ffibuild = require("ffibuild")
 
-
-ffibuild.BuildSharedLibrary(
-	"sndfile",
-	"https://github.com/erikd/libsndfile.git",
-	"cmake -DENABLE_STATIC_RUNTIME=ON -DENABLE_EXPERIMENTAL=ON . && make"
-)
-
-local header = ffibuild.BuildCHeader([[
+local header = ffibuild.NixBuild({
+	name = "libsndfile",
+	libname = "libsndfile",
+	src = [[
 	#include "sndfile.h"
-]], "-I./repo/src")
+]]})
 
 local meta_data = ffibuild.GetMetaData(header)
 local header = meta_data:BuildMinimalHeader(function(name) return name:find("^sf_") end, function(name) return name:find("^SF") end, true, true)

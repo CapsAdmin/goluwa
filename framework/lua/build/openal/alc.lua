@@ -4,10 +4,10 @@ struct ALCcontext_struct {};
 void(alcDestroyContext)(struct ALCcontext_struct*);
 void(alcCaptureStop)(struct ALCdevice_struct*);
 void(alcGetIntegerv)(struct ALCdevice_struct*,int,int,int*);
+void(alcCaptureSamples)(struct ALCdevice_struct*,void*,int);
 const char*(alcGetString)(struct ALCdevice_struct*,int);
 struct ALCcontext_struct*(alcGetCurrentContext)();
 struct ALCcontext_struct*(alcGetThreadContext)();
-void(alcGetInteger64vSOFT)(struct ALCdevice_struct*,int,int,long*);
 int(alcGetError)(struct ALCdevice_struct*);
 char(alcResetDeviceSOFT)(struct ALCdevice_struct*,const int*);
 void(alcRenderSamplesSOFT)(struct ALCdevice_struct*,void*,int);
@@ -16,21 +16,20 @@ void*(alcGetProcAddress)(struct ALCdevice_struct*,const char*);
 struct ALCcontext_struct*(alcCreateContext)(struct ALCdevice_struct*,const int*);
 const char*(alcGetStringiSOFT)(struct ALCdevice_struct*,int,int);
 void(alcDevicePauseSOFT)(struct ALCdevice_struct*);
+void(alcSuspendContext)(struct ALCcontext_struct*);
+struct ALCdevice_struct*(alcOpenDevice)(const char*);
 char(alcMakeContextCurrent)(struct ALCcontext_struct*);
 struct ALCdevice_struct*(alcGetContextsDevice)(struct ALCcontext_struct*);
 int(alcGetEnumValue)(struct ALCdevice_struct*,const char*);
 char(alcIsRenderFormatSupportedSOFT)(struct ALCdevice_struct*,int,int,int);
-void(alcCaptureStart)(struct ALCdevice_struct*);
 char(alcSetThreadContext)(struct ALCcontext_struct*);
 char(alcCaptureCloseDevice)(struct ALCdevice_struct*);
 struct ALCdevice_struct*(alcCaptureOpenDevice)(const char*,unsigned int,int,int);
-struct ALCdevice_struct*(alcOpenDevice)(const char*);
 char(alcIsExtensionPresent)(struct ALCdevice_struct*,const char*);
-void(alcCaptureSamples)(struct ALCdevice_struct*,void*,int);
+void(alcCaptureStart)(struct ALCdevice_struct*);
 void(alcProcessContext)(struct ALCcontext_struct*);
 char(alcCloseDevice)(struct ALCdevice_struct*);
 struct ALCdevice_struct*(alcLoopbackOpenDeviceSOFT)(const char*);
-void(alcSuspendContext)(struct ALCcontext_struct*);
 ]])
 local CLIB = ffi.load(_G.FFI_LIB or "openal")
 local library = {}
@@ -38,10 +37,10 @@ library = {
 	DestroyContext = CLIB.alcDestroyContext,
 	CaptureStop = CLIB.alcCaptureStop,
 	GetIntegerv = CLIB.alcGetIntegerv,
+	CaptureSamples = CLIB.alcCaptureSamples,
 	GetString = CLIB.alcGetString,
 	GetCurrentContext = CLIB.alcGetCurrentContext,
 	GetThreadContext = CLIB.alcGetThreadContext,
-	GetInteger64vSOFT = CLIB.alcGetInteger64vSOFT,
 	GetError = CLIB.alcGetError,
 	ResetDeviceSOFT = CLIB.alcResetDeviceSOFT,
 	RenderSamplesSOFT = CLIB.alcRenderSamplesSOFT,
@@ -50,21 +49,20 @@ library = {
 	CreateContext = CLIB.alcCreateContext,
 	GetStringiSOFT = CLIB.alcGetStringiSOFT,
 	DevicePauseSOFT = CLIB.alcDevicePauseSOFT,
+	SuspendContext = CLIB.alcSuspendContext,
+	OpenDevice = CLIB.alcOpenDevice,
 	MakeContextCurrent = CLIB.alcMakeContextCurrent,
 	GetContextsDevice = CLIB.alcGetContextsDevice,
 	GetEnumValue = CLIB.alcGetEnumValue,
 	IsRenderFormatSupportedSOFT = CLIB.alcIsRenderFormatSupportedSOFT,
-	CaptureStart = CLIB.alcCaptureStart,
 	SetThreadContext = CLIB.alcSetThreadContext,
 	CaptureCloseDevice = CLIB.alcCaptureCloseDevice,
 	CaptureOpenDevice = CLIB.alcCaptureOpenDevice,
-	OpenDevice = CLIB.alcOpenDevice,
 	IsExtensionPresent = CLIB.alcIsExtensionPresent,
-	CaptureSamples = CLIB.alcCaptureSamples,
+	CaptureStart = CLIB.alcCaptureStart,
 	ProcessContext = CLIB.alcProcessContext,
 	CloseDevice = CLIB.alcCloseDevice,
 	LoopbackOpenDeviceSOFT = CLIB.alcLoopbackOpenDeviceSOFT,
-	SuspendContext = CLIB.alcSuspendContext,
 }
 local AL_TRUE = 1
 local AL_FALSE = 0
@@ -146,10 +144,6 @@ library.e = {
 	HRTF_ID_SOFT = 6550,
 	SOFT_output_limiter = 1,
 	OUTPUT_LIMITER_SOFT = 6554,
-	SOFT_device_clock = 1,
-	DEVICE_CLOCK_SOFT = 5632,
-	DEVICE_LATENCY_SOFT = 5633,
-	DEVICE_CLOCK_LATENCY_SOFT = 5634,
 	EXT_EFX_NAME = "ALC_EXT_EFX",
 	EFX_MAJOR_VERSION = 131073,
 	EFX_MINOR_VERSION = 131074,

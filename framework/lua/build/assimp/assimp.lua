@@ -5,7 +5,7 @@ typedef enum aiMetadataType{aiBOOL=0,aiINT32=1,aiUINT64=2,aiFLOAT=3,aiDOUBLE=4,a
 typedef enum aiTextureMapping{aiTextureMapping_UV=0,aiTextureMapping_SPHERE=1,aiTextureMapping_CYLINDER=2,aiTextureMapping_BOX=3,aiTextureMapping_PLANE=4,aiTextureMapping_OTHER=5};
 typedef enum aiReturn{aiReturn_SUCCESS=0,aiReturn_FAILURE=-1,aiReturn_OUTOFMEMORY=-3};
 typedef enum aiTextureOp{aiTextureOp_Multiply=0,aiTextureOp_Add=1,aiTextureOp_Subtract=2,aiTextureOp_Divide=3,aiTextureOp_SmoothAdd=4,aiTextureOp_SignedAdd=5};
-typedef enum aiPostProcessSteps{aiProcess_CalcTangentSpace=1,aiProcess_JoinIdenticalVertices=2,aiProcess_MakeLeftHanded=4,aiProcess_Triangulate=8,aiProcess_RemoveComponent=16,aiProcess_GenNormals=32,aiProcess_GenSmoothNormals=64,aiProcess_SplitLargeMeshes=128,aiProcess_PreTransformVertices=256,aiProcess_LimitBoneWeights=512,aiProcess_ValidateDataStructure=1024,aiProcess_ImproveCacheLocality=2048,aiProcess_RemoveRedundantMaterials=4096,aiProcess_FixInfacingNormals=8192,aiProcess_SortByPType=32768,aiProcess_FindDegenerates=65536,aiProcess_FindInvalidData=131072,aiProcess_GenUVCoords=262144,aiProcess_TransformUVCoords=524288,aiProcess_FindInstances=1048576,aiProcess_OptimizeMeshes=2097152,aiProcess_OptimizeGraph=4194304,aiProcess_FlipUVs=8388608,aiProcess_FlipWindingOrder=16777216,aiProcess_SplitByBoneCount=33554432,aiProcess_Debone=67108864};
+typedef enum aiPostProcessSteps{aiProcess_CalcTangentSpace=1,aiProcess_JoinIdenticalVertices=2,aiProcess_MakeLeftHanded=4,aiProcess_Triangulate=8,aiProcess_RemoveComponent=16,aiProcess_GenNormals=32,aiProcess_GenSmoothNormals=64,aiProcess_SplitLargeMeshes=128,aiProcess_PreTransformVertices=256,aiProcess_LimitBoneWeights=512,aiProcess_ValidateDataStructure=1024,aiProcess_ImproveCacheLocality=2048,aiProcess_RemoveRedundantMaterials=4096,aiProcess_FixInfacingNormals=8192,aiProcess_SortByPType=32768,aiProcess_FindDegenerates=65536,aiProcess_FindInvalidData=131072,aiProcess_GenUVCoords=262144,aiProcess_TransformUVCoords=524288,aiProcess_FindInstances=1048576,aiProcess_OptimizeMeshes=2097152,aiProcess_OptimizeGraph=4194304,aiProcess_FlipUVs=8388608,aiProcess_FlipWindingOrder=16777216,aiProcess_SplitByBoneCount=33554432,aiProcess_Debone=67108864,aiProcess_GlobalScale=134217728};
 typedef enum aiPrimitiveType{aiPrimitiveType_POINT=1,aiPrimitiveType_LINE=2,aiPrimitiveType_TRIANGLE=4,aiPrimitiveType_POLYGON=8};
 typedef enum aiGrrr{aiProcess_ConvertToLeftHanded=25165828,aiProcessPreset_TargetRealtime_Fast=294955,aiProcessPreset_TargetRealtime_Quality=498379,aiProcessPreset_TargetRealtime_MaxQuality=3645131};
 typedef enum aiMorphingMethod{aiMorphingMethod_VERTEX_BLEND=1,aiMorphingMethod_MORPH_NORMALIZED=2,aiMorphingMethod_MORPH_RELATIVE=3};
@@ -60,11 +60,9 @@ struct aiScene {unsigned int mFlags;struct aiNode*mRootNode;unsigned int mNumMes
 struct aiLogStream {void(*callback)(const char*,char*);char*user;};
 struct aiPropertyStore {char sentinel;};
 unsigned long(aiGetExportFormatCount)();
-void(aiIdentityMatrix3)(struct aiMatrix3x3*);
 unsigned long(aiGetImportFormatCount)();
 void(aiReleaseImport)(const struct aiScene*);
 void(aiCopyScene)(const struct aiScene*,struct aiScene**);
-enum aiReturn(aiGetMaterialProperty)(const struct aiMaterial*,const char*,unsigned int,unsigned int,const struct aiMaterialProperty**);
 void(aiSetImportPropertyFloat)(struct aiPropertyStore*,const char*,float);
 enum aiReturn(aiExportSceneEx)(const struct aiScene*,const char*,const char*,struct aiFileIO*,unsigned int);
 enum aiReturn(aiGetMaterialUVTransform)(const struct aiMaterial*,const char*,unsigned int,unsigned int,struct aiUVTransform*);
@@ -77,28 +75,23 @@ void(aiSetImportPropertyString)(struct aiPropertyStore*,const char*,const struct
 enum aiReturn(aiGetMaterialTexture)(const struct aiMaterial*,enum aiTextureType,unsigned int,struct aiString*,enum aiTextureMapping*,unsigned int*,float*,enum aiTextureOp*,enum aiTextureMapMode*,unsigned int*);
 void(aiDecomposeMatrix)(const struct aiMatrix4x4*,struct aiVector3D*,struct aiQuaternion*,struct aiVector3D*);
 void(aiTransformVecByMatrix4)(struct aiVector3D*,const struct aiMatrix4x4*);
-const struct aiScene*(aiImportFileExWithProperties)(const char*,unsigned int,struct aiFileIO*,const struct aiPropertyStore*);
 enum aiReturn(aiExportScene)(const struct aiScene*,const char*,const char*,unsigned int);
 const struct aiScene*(aiApplyPostProcessing)(const struct aiScene*,unsigned int);
 const struct aiExportDataBlob*(aiExportSceneToBlob)(const struct aiScene*,const char*,unsigned int);
 const struct aiScene*(aiImportFileFromMemory)(const char*,unsigned int,unsigned int,const char*);
 void(aiEnableVerboseLogging)(int);
-void(aiReleaseExportBlob)(const struct aiExportDataBlob*);
 void(aiTransposeMatrix4)(struct aiMatrix4x4*);
 unsigned int(aiGetVersionMinor)();
 struct aiLogStream(aiGetPredefinedLogStream)(enum aiDefaultLogStream,const char*);
-enum aiReturn(aiGetMaterialString)(const struct aiMaterial*,const char*,unsigned int,unsigned int,struct aiString*);
-enum aiReturn(aiGetMaterialFloatArray)(const struct aiMaterial*,const char*,unsigned int,unsigned int,float*,unsigned int*);
 const struct aiImporterDesc*(aiGetImportFormatDescription)(unsigned long);
 const struct aiExportFormatDesc*(aiGetExportFormatDescription)(unsigned long);
 void(aiGetMemoryRequirements)(const struct aiScene*,struct aiMemoryInfo*);
 void(aiFreeScene)(const struct aiScene*);
-const struct aiScene*(aiImportFile)(const char*,unsigned int);
 void(aiIdentityMatrix4)(struct aiMatrix4x4*);
-enum aiReturn(aiGetMaterialColor)(const struct aiMaterial*,const char*,unsigned int,unsigned int,struct aiColor4D*);
 unsigned int(aiGetCompileFlags)();
 unsigned int(aiGetVersionRevision)();
 unsigned int(aiGetVersionMajor)();
+void(aiIdentityMatrix3)(struct aiMatrix3x3*);
 void(aiMultiplyMatrix3)(struct aiMatrix3x3*,const struct aiMatrix3x3*);
 void(aiMultiplyMatrix4)(struct aiMatrix4x4*,const struct aiMatrix4x4*);
 void(aiTransformVecByMatrix3)(struct aiVector3D*,const struct aiMatrix3x3*);
@@ -106,25 +99,30 @@ void(aiCreateQuaternionFromMatrix)(struct aiQuaternion*,const struct aiMatrix3x3
 void(aiSetImportPropertyMatrix)(struct aiPropertyStore*,const char*,const struct aiMatrix4x4*);
 void(aiGetExtensionList)(struct aiString*);
 void(aiDetachAllLogStreams)();
+enum aiReturn(aiGetMaterialProperty)(const struct aiMaterial*,const char*,unsigned int,unsigned int,const struct aiMaterialProperty**);
+const struct aiScene*(aiImportFileExWithProperties)(const char*,unsigned int,struct aiFileIO*,const struct aiPropertyStore*);
+const struct aiScene*(aiImportFileEx)(const char*,unsigned int,struct aiFileIO*);
+const struct aiScene*(aiImportFile)(const char*,unsigned int);
+enum aiReturn(aiGetMaterialString)(const struct aiMaterial*,const char*,unsigned int,unsigned int,struct aiString*);
+enum aiReturn(aiGetMaterialColor)(const struct aiMaterial*,const char*,unsigned int,unsigned int,struct aiColor4D*);
+enum aiReturn(aiGetMaterialIntegerArray)(const struct aiMaterial*,const char*,unsigned int,unsigned int,int*,unsigned int*);
+enum aiReturn(aiGetMaterialFloatArray)(const struct aiMaterial*,const char*,unsigned int,unsigned int,float*,unsigned int*);
 enum aiReturn(aiDetachLogStream)(const struct aiLogStream*);
+void(aiReleaseExportBlob)(const struct aiExportDataBlob*);
 void(aiReleaseExportFormatDescription)(const struct aiExportFormatDesc*);
 struct aiPropertyStore*(aiCreatePropertyStore)();
 unsigned int(aiGetMaterialTextureCount)(const struct aiMaterial*,enum aiTextureType);
 void(aiSetImportPropertyInteger)(struct aiPropertyStore*,const char*,int);
 const char*(aiGetErrorString)();
 const struct aiScene*(aiImportFileFromMemoryWithProperties)(const char*,unsigned int,unsigned int,const char*,const struct aiPropertyStore*);
-enum aiReturn(aiGetMaterialIntegerArray)(const struct aiMaterial*,const char*,unsigned int,unsigned int,int*,unsigned int*);
-const struct aiScene*(aiImportFileEx)(const char*,unsigned int,struct aiFileIO*);
 ]])
 local CLIB = ffi.load(_G.FFI_LIB or "assimp")
 local library = {}
 library = {
 	GetExportFormatCount = CLIB.aiGetExportFormatCount,
-	IdentityMatrix3 = CLIB.aiIdentityMatrix3,
 	GetImportFormatCount = CLIB.aiGetImportFormatCount,
 	ReleaseImport = CLIB.aiReleaseImport,
 	CopyScene = CLIB.aiCopyScene,
-	GetMaterialProperty = CLIB.aiGetMaterialProperty,
 	SetImportPropertyFloat = CLIB.aiSetImportPropertyFloat,
 	ExportSceneEx = CLIB.aiExportSceneEx,
 	GetMaterialUVTransform = CLIB.aiGetMaterialUVTransform,
@@ -137,28 +135,23 @@ library = {
 	GetMaterialTexture = CLIB.aiGetMaterialTexture,
 	DecomposeMatrix = CLIB.aiDecomposeMatrix,
 	TransformVecByMatrix4 = CLIB.aiTransformVecByMatrix4,
-	ImportFileExWithProperties = CLIB.aiImportFileExWithProperties,
 	ExportScene = CLIB.aiExportScene,
 	ApplyPostProcessing = CLIB.aiApplyPostProcessing,
 	ExportSceneToBlob = CLIB.aiExportSceneToBlob,
 	ImportFileFromMemory = CLIB.aiImportFileFromMemory,
 	EnableVerboseLogging = CLIB.aiEnableVerboseLogging,
-	ReleaseExportBlob = CLIB.aiReleaseExportBlob,
 	TransposeMatrix4 = CLIB.aiTransposeMatrix4,
 	GetVersionMinor = CLIB.aiGetVersionMinor,
 	GetPredefinedLogStream = CLIB.aiGetPredefinedLogStream,
-	GetMaterialString = CLIB.aiGetMaterialString,
-	GetMaterialFloatArray = CLIB.aiGetMaterialFloatArray,
 	GetImportFormatDescription = CLIB.aiGetImportFormatDescription,
 	GetExportFormatDescription = CLIB.aiGetExportFormatDescription,
 	GetMemoryRequirements = CLIB.aiGetMemoryRequirements,
 	FreeScene = CLIB.aiFreeScene,
-	ImportFile = CLIB.aiImportFile,
 	IdentityMatrix4 = CLIB.aiIdentityMatrix4,
-	GetMaterialColor = CLIB.aiGetMaterialColor,
 	GetCompileFlags = CLIB.aiGetCompileFlags,
 	GetVersionRevision = CLIB.aiGetVersionRevision,
 	GetVersionMajor = CLIB.aiGetVersionMajor,
+	IdentityMatrix3 = CLIB.aiIdentityMatrix3,
 	MultiplyMatrix3 = CLIB.aiMultiplyMatrix3,
 	MultiplyMatrix4 = CLIB.aiMultiplyMatrix4,
 	TransformVecByMatrix3 = CLIB.aiTransformVecByMatrix3,
@@ -166,15 +159,22 @@ library = {
 	SetImportPropertyMatrix = CLIB.aiSetImportPropertyMatrix,
 	GetExtensionList = CLIB.aiGetExtensionList,
 	DetachAllLogStreams = CLIB.aiDetachAllLogStreams,
+	GetMaterialProperty = CLIB.aiGetMaterialProperty,
+	ImportFileExWithProperties = CLIB.aiImportFileExWithProperties,
+	ImportFileEx = CLIB.aiImportFileEx,
+	ImportFile = CLIB.aiImportFile,
+	GetMaterialString = CLIB.aiGetMaterialString,
+	GetMaterialColor = CLIB.aiGetMaterialColor,
+	GetMaterialIntegerArray = CLIB.aiGetMaterialIntegerArray,
+	GetMaterialFloatArray = CLIB.aiGetMaterialFloatArray,
 	DetachLogStream = CLIB.aiDetachLogStream,
+	ReleaseExportBlob = CLIB.aiReleaseExportBlob,
 	ReleaseExportFormatDescription = CLIB.aiReleaseExportFormatDescription,
 	CreatePropertyStore = CLIB.aiCreatePropertyStore,
 	GetMaterialTextureCount = CLIB.aiGetMaterialTextureCount,
 	SetImportPropertyInteger = CLIB.aiSetImportPropertyInteger,
 	GetErrorString = CLIB.aiGetErrorString,
 	ImportFileFromMemoryWithProperties = CLIB.aiImportFileFromMemoryWithProperties,
-	GetMaterialIntegerArray = CLIB.aiGetMaterialIntegerArray,
-	ImportFileEx = CLIB.aiImportFileEx,
 }
 library.e = {
 	NONE = ffi.cast("enum aiTextureType", "aiTextureType_NONE"),
@@ -234,6 +234,7 @@ library.e = {
 	FlipWindingOrder = ffi.cast("enum aiPostProcessSteps", "aiProcess_FlipWindingOrder"),
 	SplitByBoneCount = ffi.cast("enum aiPostProcessSteps", "aiProcess_SplitByBoneCount"),
 	Debone = ffi.cast("enum aiPostProcessSteps", "aiProcess_Debone"),
+	GlobalScale = ffi.cast("enum aiPostProcessSteps", "aiProcess_GlobalScale"),
 	POINT = ffi.cast("enum aiPrimitiveType", "aiPrimitiveType_POINT"),
 	LINE = ffi.cast("enum aiPrimitiveType", "aiPrimitiveType_LINE"),
 	TRIANGLE = ffi.cast("enum aiPrimitiveType", "aiPrimitiveType_TRIANGLE"),

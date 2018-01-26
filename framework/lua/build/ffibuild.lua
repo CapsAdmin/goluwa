@@ -420,24 +420,53 @@ function ffibuild.NixBuild(data)
 	local tmp_out = "temp.p"
 	local tmp_nix = "temp.nix"
 
-	io.writefile(tmp_main, data.src)
+	local build_phase
+	local build_phase_move
+
+	if data.src then
+		io.writefile(tmp_main, data.src)
+		build_phase = [[buildPhase = ''
+			gcc -xc -E -P -c ]] .. tmp_main .. [[ -o temp.p
+		'';]]
+		build_phase_move = "mv temp.p $out/temp.p;"
+	else
+		build_phase = "buildPhase = ''echo no build phase'';"
+		build_phase_move = ""
+	end
+
+	local lib_name
+	if data.libname and data.libname:sub(-1) == "*" then
+		lib_name = data.libname
+	else
+		if not data.libname then
+			lib_name = "lib" .. data.name
+		else
+			lib_name = data.libname
+		end
+		lib_name = lib_name .. "." .. (OSX and "dylib" or UNIX and "so" or WINDOWS and "dll")
+	end
+
+
+	local custom = data.custom or ""
 
 	-- temporary default.nix file
-	local lib_name = "lib" .. data.name .. "." .. (OSX and "dylib" or UNIX and "so" or WINDOWS and "dll")
 	io.writefile(tmp_nix,
 [==[
 	with import <nixpkgs> {};
+
 	stdenv.mkDerivation {
-		name = "ffibuild_luajit";
+		]==] .. custom .. [==[
+
+		name = "ffibuild_luajit2";
 		src = ./.;
-		buildInputs = [ gcc ]==] .. data.name .. [==[ ];
-		buildPhase = ''
-      gcc -xc -E -P -I${]==] .. data.name .. [==[.dev} -c ]==] .. tmp_main .. [==[ -o temp.p
-		'';
+		buildInputs = [ gcc (]==] .. data.name .. [==[) ];
+		]==] .. build_phase .. [==[
 		installPhase = ''
-      mkdir $out
-			cp -f ${]==] .. data.name .. [==[.out}/lib/]==] .. lib_name .. [==[ $out/]==] .. lib_name .. [==[;
-			mv temp.p $out/temp.p
+			mkdir $out;
+			mkdir $out/include;
+			cp -L -r ${lib.getLib ]==] .. data.name .. [==[}/lib/]==] .. lib_name .. [==[ $out/.;
+			]==] .. build_phase_move .. [==[
+			cp -r ${lib.getDev ]==] .. data.name .. [==[}/include/* $out/include/;
 		'';
 	}
 ]==])
@@ -446,13 +475,23 @@ function ffibuild.NixBuild(data)
 	os.execute("nix-build " .. tmp_nix)
 
 	-- return the preprocessed main.c file
-	local str = io.readfile("result/" .. tmp_out)
-  os.execute("cp -f result/" .. lib_name .. " .")
-  
-  os.remove("result")
-  
-	os.remove(tmp_main)
-	os.remove(tmp_nix)
+	local str
+	if data.src then
+		str = io.readfile("result/" .. tmp_out)
+		os.remove(tmp_main)
+	end
+
+	os.execute("cp -r -f result/* .")
+
+	for path in os.readexecute("ldd " .. lib_name):gmatch("(/nix/.-) %(") do
+		os.execute("cp " .. path .. " .")
+	end
+
+	--os.remove(tmp_nix)
+
+	if data.src then
+		os.remove(tmp_out)
+	end
 
 	-- internal
 	ffibuild.lib_name = data.name
@@ -844,6 +883,7 @@ function ffibuild.GetMetaData(header)
 			local basic_type = type:GetBasicType(self)
 
 			if type:GetSubType() == "struct" then
+				if not self.structs[basic_type] then print(basic_type) end
 				table.insert(temp, {type = type, i = self.structs[basic_type].i})
 			elseif type:GetSubType() == "union" then
 				table.insert(temp, {type = type, i = self.unions[basic_type].i})
@@ -2033,26 +2073,26 @@ do -- lua helper functions
 		file:close()
 
 		-- check if this works if possible
-    local ffi = require("ffi")
-    local old = ffi.load
-    local errored = false
-    ffi.load = function(...)
-      local clib = old(...)
-      return setmetatable({}, {__index = function(_, key)
-        local ok, ret = pcall(function() return clib[key] end)
-        if ok then
-          return ret
-        end
-        errored = true
-        print(ret)
-      end})
-    end
+		local ffi = require("ffi")
+		local old = ffi.load
+		local errored = false
+		ffi.load = function(...)
+			local clib = old(...)
+			return setmetatable({}, {__index = function(_, key)
+				local ok, ret = pcall(function() return clib[key] end)
+				if ok then
+					return ret
+				end
+				errored = true
+				print(ret)
+			end})
+		end
 
 		local ok, err = pcall(function()
 			assert(loadstring(lua))()
 		end)
 
-    ffi.load = old
+		ffi.load = old
 
 		if not ok and not errored then
 			print(err)
@@ -2068,9 +2108,10 @@ do -- lua helper functions
 			end
 		else
 			local path = "../../../../data/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
-			print("copying lib* files to: ", path)
+			print("copying *.so files to: ", path)
 			os.execute("mkdir -p " .. path)
-			os.execute("cp -f lib* " .. path)
+			os.execute("cp -f *.so " .. path)
+			os.execute("cp -f *.so.* " .. path)
 		end
 	end
 

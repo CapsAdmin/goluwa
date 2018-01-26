@@ -8,7 +8,10 @@ $(LUA_BIN):
 	cd ../luajit && make
 
 clean:
-	rm -f lib*.lua
-	rm -rf repo
-	rm -f lib*.so
-	rm -f lib*.dylib
+	rm -rf repo/
+	mkdir ../tmp
+	mv build.lua ../tmp/
+	mv Makefile ../tmp/
+	rm -f *
+	mv ../tmp/* .
+	rmdir ../tmp

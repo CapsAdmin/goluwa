@@ -1,4 +1,4 @@
-local archive = system.GetFFIBuildLibrary("archive")
+local archive = system.GetFFIBuildLibrary("libarchive")
 
 if not archive then return end
 

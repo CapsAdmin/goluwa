@@ -1,6 +1,43 @@
 package.path = package.path .. ";../?.lua"
 local ffibuild = require("ffibuild")
 
+
+local header = ffibuild.NixBuild({
+	name = "SDL2",
+	custom = [[
+		SDL2 = SDL2.overrideAttrs (old: { configureFlags = old.configureFlags ++ [ "--disable-audio" ]; });
+	]],
+	src = [[
+typedef enum  {
+	SDL_INIT_TIMER = 0x00000001,
+	SDL_INIT_AUDIO = 0x00000010,
+	SDL_INIT_VIDEO = 0x00000020,
+	SDL_INIT_JOYSTICK = 0x00000200,
+	SDL_INIT_HAPTIC = 0x00001000,
+	SDL_INIT_GAMECONTROLLER = 0x00002000,
+	SDL_INIT_EVENTS = 0x00004000,
+	SDL_INIT_NOPARACHUTE = 0x00100000,
+	SDL_INIT_EVERYTHING = SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER,
+
+	SDL_WINDOWPOS_UNDEFINED_MASK  =  0x1FFF0000,
+	SDL_WINDOWPOS_UNDEFINED_DISPLAY  = SDL_WINDOWPOS_UNDEFINED_MASK,
+	SDL_WINDOWPOS_UNDEFINED       =  SDL_WINDOWPOS_UNDEFINED_DISPLAY,
+	SDL_WINDOWPOS_CENTERED_MASK   = 0x2FFF0000,
+	SDL_WINDOWPOS_CENTERED        = SDL_WINDOWPOS_CENTERED_MASK
+} SDL_grrrrrr;
+
+	typedef struct wl_display {} wl_display;
+	typedef struct wl_surface {} wl_surface;
+	typedef struct wl_shell_surface {} wl_shell_surface;
+
+    #include "SDL2/SDL_video.h"
+    #include "SDL2/SDL_shape.h"
+	#include "SDL2/SDL.h"
+    #include "SDL2/SDL_syswm.h"
+
+]]})
+
+--[==[
 ffibuild.BuildSharedLibrary(
 	"SDL2",
 	"https://hg.libsdl.org/SDL",
@@ -32,7 +69,7 @@ typedef enum  {
     #include "SDL_syswm.h"
 
 ]], "-I./repo/include")
-
+]==]
 header = "struct SDL_BlitMap {};\n" .. header
 
 local meta_data = ffibuild.GetMetaData(header)
@@ -53,7 +90,7 @@ header = header:gsub("struct VkSurfaceKHR_T", "void")
 local lua = ffibuild.StartLibrary(header)
 
 lua = lua .. "library = " .. meta_data:BuildFunctions("^SDL_(.+)")
-lua = lua .. "library.e = " .. meta_data:BuildEnums("^SDL_(.+)", {"./repo/include/SDL_hints.h"}, "SDL_")
+lua = lua .. "library.e = " .. meta_data:BuildEnums("^SDL_(.+)", {"./include/SDL2/SDL_hints.h"}, "SDL_")
 
 lua = lua .. [[
 function library.CreateVulkanSurface(window, instance)

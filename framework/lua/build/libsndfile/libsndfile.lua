@@ -8,74 +8,70 @@ SF_CHANNEL_MAP_INVALID=0,SF_CHANNEL_MAP_MONO=1,SF_CHANNEL_MAP_LEFT=2,SF_CHANNEL_
 SFD_DEFAULT_LEVEL=0,SFD_CUSTOM_LEVEL=1073741824,SFD_NO_DITHER=500,SFD_WHITE=501,SFD_TRIANGULAR_PDF=502,
 SF_LOOP_NONE=800,SF_LOOP_FORWARD=801,SF_LOOP_BACKWARD=802,SF_LOOP_ALTERNATING=803,
 SF_SEEK_SET=0,SF_SEEK_CUR=1,SF_SEEK_END=2,};struct SNDFILE_tag {};
-struct SF_INFO {long frames;int samplerate;int channels;int format;int sections;int seekable;};
-struct SF_VIRTUAL_IO {long(*get_filelen)(void*);long(*seek)(long,int,void*);long(*read)(void*,long,void*);long(*write)(const void*,long,void*);long(*tell)(void*);};
+struct SF_INFO {signed long frames;int samplerate;int channels;int format;int sections;int seekable;};
+struct SF_VIRTUAL_IO {signed long(*get_filelen)(void*);signed long(*seek)(signed long,int,void*);signed long(*read)(void*,signed long,void*);signed long(*write)(const void*,signed long,void*);signed long(*tell)(void*);};
 struct SF_CHUNK_INFO {char id[64];unsigned int id_size;unsigned int datalen;void*data;};
 struct SF_CHUNK_ITERATOR {};
-long(sf_readf_int)(struct SNDFILE_tag*,int*,long);
 struct SNDFILE_tag*(sf_open_virtual)(struct SF_VIRTUAL_IO*,int,struct SF_INFO*,void*);
 int(sf_get_chunk_data)(const struct SF_CHUNK_ITERATOR*,struct SF_CHUNK_INFO*);
 int(sf_format_check)(const struct SF_INFO*);
-long(sf_readf_float)(struct SNDFILE_tag*,float*,long);
+signed long(sf_readf_float)(struct SNDFILE_tag*,float*,signed long);
 struct SF_CHUNK_ITERATOR*(sf_next_chunk_iterator)(struct SF_CHUNK_ITERATOR*);
 struct SNDFILE_tag*(sf_open)(const char*,int,struct SF_INFO*);
-long(sf_writef_double)(struct SNDFILE_tag*,const double*,long);
-long(sf_seek)(struct SNDFILE_tag*,long,int);
-long(sf_writef_short)(struct SNDFILE_tag*,const short*,long);
 int(sf_set_chunk)(struct SNDFILE_tag*,const struct SF_CHUNK_INFO*);
-long(sf_readf_double)(struct SNDFILE_tag*,double*,long);
-long(sf_write_float)(struct SNDFILE_tag*,const float*,long);
-long(sf_read_short)(struct SNDFILE_tag*,short*,long);
+signed long(sf_readf_double)(struct SNDFILE_tag*,double*,signed long);
+signed long(sf_write_float)(struct SNDFILE_tag*,const float*,signed long);
+signed long(sf_read_short)(struct SNDFILE_tag*,short*,signed long);
 const char*(sf_version_string)();
 int(sf_set_string)(struct SNDFILE_tag*,int,const char*);
 int(sf_error_str)(struct SNDFILE_tag*,char*,unsigned long);
-const char*(sf_strerror)(struct SNDFILE_tag*);
-long(sf_writef_float)(struct SNDFILE_tag*,const float*,long);
 const char*(sf_error_number)(int);
 const char*(sf_get_string)(struct SNDFILE_tag*,int);
-long(sf_writef_int)(struct SNDFILE_tag*,const int*,long);
-long(sf_write_raw)(struct SNDFILE_tag*,const void*,long);
-long(sf_readf_short)(struct SNDFILE_tag*,short*,long);
-struct SF_CHUNK_ITERATOR*(sf_get_chunk_iterator)(struct SNDFILE_tag*,const struct SF_CHUNK_INFO*);
-long(sf_read_raw)(struct SNDFILE_tag*,void*,long);
+signed long(sf_writef_int)(struct SNDFILE_tag*,const int*,signed long);
+signed long(sf_write_raw)(struct SNDFILE_tag*,const void*,signed long);
 int(sf_get_chunk_size)(const struct SF_CHUNK_ITERATOR*,struct SF_CHUNK_INFO*);
+signed long(sf_write_short)(struct SNDFILE_tag*,const short*,signed long);
 void(sf_write_sync)(struct SNDFILE_tag*);
 int(sf_close)(struct SNDFILE_tag*);
-long(sf_write_double)(struct SNDFILE_tag*,const double*,long);
-long(sf_read_double)(struct SNDFILE_tag*,double*,long);
-long(sf_read_float)(struct SNDFILE_tag*,float*,long);
-long(sf_write_int)(struct SNDFILE_tag*,const int*,long);
-long(sf_read_int)(struct SNDFILE_tag*,int*,long);
-long(sf_write_short)(struct SNDFILE_tag*,const short*,long);
+signed long(sf_write_double)(struct SNDFILE_tag*,const double*,signed long);
+signed long(sf_read_double)(struct SNDFILE_tag*,double*,signed long);
+signed long(sf_read_float)(struct SNDFILE_tag*,float*,signed long);
+signed long(sf_write_int)(struct SNDFILE_tag*,const int*,signed long);
+signed long(sf_read_int)(struct SNDFILE_tag*,int*,signed long);
+struct SF_CHUNK_ITERATOR*(sf_get_chunk_iterator)(struct SNDFILE_tag*,const struct SF_CHUNK_INFO*);
+signed long(sf_read_raw)(struct SNDFILE_tag*,void*,signed long);
+signed long(sf_writef_double)(struct SNDFILE_tag*,const double*,signed long);
+signed long(sf_writef_float)(struct SNDFILE_tag*,const float*,signed long);
+signed long(sf_readf_int)(struct SNDFILE_tag*,int*,signed long);
+signed long(sf_writef_short)(struct SNDFILE_tag*,const short*,signed long);
+signed long(sf_readf_short)(struct SNDFILE_tag*,short*,signed long);
+int(sf_current_byterate)(struct SNDFILE_tag*);
+signed long(sf_seek)(struct SNDFILE_tag*,signed long,int);
 int(sf_command)(struct SNDFILE_tag*,int,void*,int);
+struct SNDFILE_tag*(sf_open_fd)(int,int,struct SF_INFO*,int);
+const char*(sf_strerror)(struct SNDFILE_tag*);
 int(sf_perror)(struct SNDFILE_tag*);
 int(sf_error)(struct SNDFILE_tag*);
-struct SNDFILE_tag*(sf_open_fd)(int,int,struct SF_INFO*,int);
-int(sf_current_byterate)(struct SNDFILE_tag*);
 struct SF_FORMAT_INFO { int format ; const char * name ; const char * extension ;  };
 struct SF_DITHER_INFO { int type ; double level ; const char * name ;  };
-struct SF_EMBED_FILE_INFO { long offset ; long length ;  };
-struct SF_CUE_POINT { int indx ; unsigned int position ; int fcc_chunk ; int chunk_start ; int block_start ; unsigned int sample_offset ; char name[ 256 ] ;  };
+struct SF_EMBED_FILE_INFO { signed long offset ; signed long length ;  };
+struct SF_CUE_POINT { signed int indx ; unsigned int position ; signed int fcc_chunk ; signed int chunk_start ; signed int block_start ; unsigned int sample_offset ; char name[ 256 ] ;  };
 struct SF_CUES { unsigned int cue_count ; struct SF_CUE_POINT cue_points[ 100 ] ;  };
 struct SF_INSTRUMENT { int gain ; char basenote ; char detune ; char velocity_lo ; char velocity_hi ; char key_lo ; char key_hi ; int loop_count ; struct  { int mode ; unsigned int start ; unsigned int end ; unsigned int count ;  } loops [ 16 ] ;  };
 struct SF_LOOP_INFO { short time_sig_num ; short time_sig_den ; int loop_mode ; int num_beats ; float bpm ; int root_key ; int future[ 6 ] ;  };
 struct SF_BROADCAST_INFO { char description[ 256 ] ; char originator[ 32 ] ; char originator_reference[ 32 ] ; char origination_date[ 10 ] ; char origination_time[ 8 ] ; unsigned int time_reference_low ; unsigned int time_reference_high ; short version ; char umid[ 64 ] ; char reserved[ 190 ] ; unsigned int coding_history_size ; char coding_history[ 256 ] ;  };
-struct SF_CART_TIMER { char usage[ 4 ] ; int value ;  };
-struct SF_CART_INFO { char version[ 4 ] ; char title[ 64 ] ; char artist[ 64 ] ; char cut_id[ 64 ] ; char client_id[ 64 ] ; char category[ 64 ] ; char classification[ 64 ] ; char out_cue[ 64 ] ; char start_date[ 10 ] ; char start_time[ 8 ] ; char end_date[ 10 ] ; char end_time[ 8 ] ; char producer_app_id[ 64 ] ; char producer_app_version[ 64 ] ; char user_def[ 64 ] ; int level_reference ; struct SF_CART_TIMER post_timers[ 8 ] ; char reserved[ 276 ] ; char url[ 1024 ] ; unsigned int tag_text_size ; char tag_text[ 256 ] ;  };
+struct SF_CART_TIMER { char usage[ 4 ] ; signed int value ;  };
+struct SF_CART_INFO { char version[ 4 ] ; char title[ 64 ] ; char artist[ 64 ] ; char cut_id[ 64 ] ; char client_id[ 64 ] ; char category[ 64 ] ; char classification[ 64 ] ; char out_cue[ 64 ] ; char start_date[ 10 ] ; char start_time[ 8 ] ; char end_date[ 10 ] ; char end_time[ 8 ] ; char producer_app_id[ 64 ] ; char producer_app_version[ 64 ] ; char user_def[ 64 ] ; signed int level_reference ; struct SF_CART_TIMER post_timers[ 8 ] ; char reserved[ 276 ] ; char url[ 1024 ] ; unsigned int tag_text_size ; char tag_text[ 256 ] ;  };
 ]])
-local CLIB = ffi.load(_G.FFI_LIB or "sndfile")
+local CLIB = ffi.load(_G.FFI_LIB or "libsndfile")
 local library = {}
 library = {
-	ReadfInt = CLIB.sf_readf_int,
 	OpenVirtual = CLIB.sf_open_virtual,
 	GetChunkData = CLIB.sf_get_chunk_data,
 	FormatCheck = CLIB.sf_format_check,
 	ReadfFloat = CLIB.sf_readf_float,
 	NextChunkIterator = CLIB.sf_next_chunk_iterator,
 	Open = CLIB.sf_open,
-	WritefDouble = CLIB.sf_writef_double,
-	Seek = CLIB.sf_seek,
-	WritefShort = CLIB.sf_writef_short,
 	SetChunk = CLIB.sf_set_chunk,
 	ReadfDouble = CLIB.sf_readf_double,
 	WriteFloat = CLIB.sf_write_float,
@@ -83,16 +79,12 @@ library = {
 	VersionString = CLIB.sf_version_string,
 	SetString = CLIB.sf_set_string,
 	ErrorStr = CLIB.sf_error_str,
-	Strerror = CLIB.sf_strerror,
-	WritefFloat = CLIB.sf_writef_float,
 	ErrorNumber = CLIB.sf_error_number,
 	GetString = CLIB.sf_get_string,
 	WritefInt = CLIB.sf_writef_int,
 	WriteRaw = CLIB.sf_write_raw,
-	ReadfShort = CLIB.sf_readf_short,
-	GetChunkIterator = CLIB.sf_get_chunk_iterator,
-	ReadRaw = CLIB.sf_read_raw,
 	GetChunkSize = CLIB.sf_get_chunk_size,
+	WriteShort = CLIB.sf_write_short,
 	WriteSync = CLIB.sf_write_sync,
 	Close = CLIB.sf_close,
 	WriteDouble = CLIB.sf_write_double,
@@ -100,12 +92,20 @@ library = {
 	ReadFloat = CLIB.sf_read_float,
 	WriteInt = CLIB.sf_write_int,
 	ReadInt = CLIB.sf_read_int,
-	WriteShort = CLIB.sf_write_short,
+	GetChunkIterator = CLIB.sf_get_chunk_iterator,
+	ReadRaw = CLIB.sf_read_raw,
+	WritefDouble = CLIB.sf_writef_double,
+	WritefFloat = CLIB.sf_writef_float,
+	ReadfInt = CLIB.sf_readf_int,
+	WritefShort = CLIB.sf_writef_short,
+	ReadfShort = CLIB.sf_readf_short,
+	CurrentByterate = CLIB.sf_current_byterate,
+	Seek = CLIB.sf_seek,
 	Command = CLIB.sf_command,
+	OpenFd = CLIB.sf_open_fd,
+	Strerror = CLIB.sf_strerror,
 	Perror = CLIB.sf_perror,
 	Error = CLIB.sf_error,
-	OpenFd = CLIB.sf_open_fd,
-	CurrentByterate = CLIB.sf_current_byterate,
 }
 library.e = {
 	FORMAT_WAV = 65536,
