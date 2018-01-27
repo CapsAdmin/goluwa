@@ -98,7 +98,7 @@ if buffers_supported then
 				gl.BindBuffer("GL_ARRAY_BUFFER", self.vertex_buffer.id)
 				for _, data in ipairs(self.mesh_layout.attributes) do
 					self.vertex_array:EnableAttrib(data.location)
-					self.vertex_array:AttribPointer(data.location, data.row_length, data.number_type, false, data.row_offset, self.mesh_layout.size)
+					self.vertex_array:AttribPointer2(data.location, data.row_length, data.number_type, false, data.row_offset, self.mesh_layout.size)
 				end
 			end
 			render.last_vertex_array_id = nil
