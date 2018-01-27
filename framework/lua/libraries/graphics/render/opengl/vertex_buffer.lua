@@ -87,12 +87,20 @@ if buffers_supported then
 
 	local function setup_vertex_array(self)
 		if not self.setup_vao and self.Vertices then
-			for _, data in ipairs(self.mesh_layout.attributes) do
-				self.vertex_array:AttribFormat(data.location, data.row_length, data.number_type, false, data.row_offset)
-				self.vertex_array:AttribBinding(data.location, 0)
-				self.vertex_array:EnableAttrib(data.location)
+			if render.IsExtensionSupported("GL_ARB_vertex_attrib_binding") then
+				for _, data in ipairs(self.mesh_layout.attributes) do
+					self.vertex_array:AttribFormat(data.location, data.row_length, data.number_type, false, data.row_offset)
+					self.vertex_array:AttribBinding(data.location, 0)
+					self.vertex_array:EnableAttrib(data.location)
+				end
+				self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.mesh_layout.size)
+			else
+				gl.BindBuffer("GL_ARRAY_BUFFER", self.vertex_buffer.id)
+				for _, data in ipairs(self.mesh_layout.attributes) do
+					self.vertex_array:EnableAttrib(data.location)
+					self.vertex_array:AttribPointer(data.location, data.row_length, data.number_type, false, data.row_offset, self.mesh_layout.size)
+				end
 			end
-			self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.mesh_layout.size)
 			render.last_vertex_array_id = nil
 			self.setup_vao = true
 		end

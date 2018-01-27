@@ -8779,6 +8779,9 @@ function gl.Initialize(get_proc_address)
 			function META:AttribLFormat(attribindex, size, type, relativeoffset)
 				return gl.VertexArrayAttribLFormat(self.id, attribindex, size, type, relativeoffset)
 			end
+			function META:AttribPointer(attribindex, size, type, normalized, stride, relativeoffset)
+				gl.BindVertexArray(self.id) return gl.VertexAttribPointer(attribindex, size, type, normalized, relativeoffset, ffi.cast("void*", stride))
+			end
 			function META:GetIndexediv(index, pname, param)
 				return gl.GetVertexArrayIndexediv(self.id, index, pname, param)
 			end
@@ -8847,6 +8850,9 @@ function gl.Initialize(get_proc_address)
 			end
 			function META:AttribLFormat(attribindex, size, type, relativeoffset)
 				bind(self) return gl.VertexAttribLFormat(attribindex, size, type, relativeoffset)
+			end
+			function META:AttribPointer(attribindex, size, type, normalized, relativeoffset, pointer)
+				bind(self) return gl.VertexAttribPointer(attribindex, size, type, relativeoffset, pointer)
 			end
 			function META:GetIndexediv(index, pname, param)
 				bind(self) return gl.GetVertexIndexediv(index, pname, param)
