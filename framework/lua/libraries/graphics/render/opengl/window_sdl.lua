@@ -142,6 +142,11 @@ do
 		end
 	end
 
+	if OSX then
+		cache.GL_ARB_framebuffer_object = true
+		cache.GL_ARB_shader_objects = true
+	end
+
 	function render.IsExtensionSupported(str)
 		if cache[str] == nil then
 			cache[str] = sdl.GL_ExtensionSupported(str) == 1

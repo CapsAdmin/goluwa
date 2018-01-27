@@ -26,8 +26,9 @@ function system.OSCommandExists(...)
 end
 
 function system.GetLibraryDependencies(path)
-	if system.OSCommandExists("ldd") then
-		local f = io.popen("ldd " .. path .. " 2>&1")
+	if system.OSCommandExists("ldd", "otool") then
+		local cmd = system.OSCommandExists("ldd") and "ldd" or "otool -L"
+		local f = io.popen(cmd .. " " .. path .. " 2>&1")
 		if f then
 			local str = f:read("*all")
 			f:close()
