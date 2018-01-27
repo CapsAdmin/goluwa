@@ -428,7 +428,7 @@ function ffibuild.NixBuild(data)
 		build_phase = [[buildPhase = ''
 			gcc -xc -E -P -c ]] .. tmp_main .. [[ -o temp.p
 		'';]]
-		build_phase_move = "mv temp.p $out/temp.p;"
+		build_phase_move = "mv temp.p $out/temp.p; cp -r ${lib.getDev " .. data.name .. "}/include/* $out/include/;"
 	else
 		build_phase = "buildPhase = ''echo no build phase'';"
 		build_phase_move = ""
@@ -453,7 +453,7 @@ function ffibuild.NixBuild(data)
 	io.writefile(tmp_nix,
 [==[
 	with import <nixpkgs> {};
-
+  
 	stdenv.mkDerivation {
 		]==] .. custom .. [==[
 
@@ -465,13 +465,13 @@ function ffibuild.NixBuild(data)
 			mkdir $out;
 			mkdir $out/include;
 			cp -L -r ${lib.getLib ]==] .. data.name .. [==[}/lib/]==] .. lib_name .. [==[ $out/.;
-			]==] .. build_phase_move .. [==[
-			cp -r ${lib.getDev ]==] .. data.name .. [==[}/include/* $out/include/;
+			
+      ]==] .. build_phase_move .. [==[
 		'';
 	}
 ]==])
-
-	-- now execute nix-build
+  
+  -- now execute nix-build
 	os.execute("nix-build " .. tmp_nix)
 
 	-- return the preprocessed main.c file
@@ -482,8 +482,10 @@ function ffibuild.NixBuild(data)
 	end
 
 	os.execute("cp -r -f result/* .")
+  
+  local tool = jit.os == "OSX" and "otool -L" or "ldd"
 
-	for path in os.readexecute("ldd " .. lib_name):gmatch("(/nix/.-) %(") do
+	for path in os.readexecute(tool .. " " .. lib_name):gmatch("(/nix/.-) %(") do
 		os.execute("cp " .. path .. " .")
 	end
 
@@ -2108,10 +2110,11 @@ do -- lua helper functions
 			end
 		else
 			local path = "../../../../data/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
-			print("copying *.so files to: ", path)
+      local ext = jit.os == "OSX" and "dylib" or jit.os == "Windows" and "dll"
+			print("copying *." .. ext .. " files to: ", path)
 			os.execute("mkdir -p " .. path)
-			os.execute("cp -f *.so " .. path)
-			os.execute("cp -f *.so.* " .. path)
+			os.execute("cp -f *." .. ext .. " " .. path)
+			os.execute("cp -f *." .. ext .. ".* " .. path)
 		end
 	end
 

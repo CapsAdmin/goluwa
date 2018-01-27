@@ -1,6 +1,8 @@
 package.path = package.path .. ";../?.lua"
 local ffibuild = require("ffibuild")
 
+os.setenv("NIXPKGS_ALLOW_BROKEN", "1")
+
 local header = ffibuild.NixBuild({
 	name = "assimp",
 	src = [[

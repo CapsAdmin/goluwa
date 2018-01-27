@@ -3,6 +3,7 @@ local ffibuild = require("ffibuild")
 
 local header = ffibuild.NixBuild({
 	name = "freeimage",
+  libname = "libfreeimage*",
 	src = [[
 	#include "FreeImage.h"
 ]]})

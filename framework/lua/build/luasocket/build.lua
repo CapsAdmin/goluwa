@@ -15,4 +15,4 @@ local bin_dir = "../../../../data/bin/" .. jit.os:lower() .. "_" .. jit.arch:low
 
 os.execute("cp -r socket " .. bin_dir)
 os.execute("cp -r mime " .. bin_dir)
-os.execute("cp ssl.so " .. bin_dir)
+os.execute("cp ssl.* " .. bin_dir)

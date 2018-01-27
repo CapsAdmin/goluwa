@@ -449,7 +449,7 @@ end
 
 if args[1] ~= "launch" then
 	if not args[1] then
-		if not WINDOWS and os.readexecute("printf %s ${DISPLAY+x}") == "" then
+		if not WINDOWS and not OSX and os.readexecute("printf %s ${DISPLAY+x}") == "" then
 			CLIENT = true
 		elseif args[1] == "ide" or os.isfile("engine/lua/zerobrane/config.lua") then
 			IDE = true
