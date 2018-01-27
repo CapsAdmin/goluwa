@@ -72,13 +72,20 @@ if buffers_supported then
 
 			gl.DrawElements(self.gl_mode, count or index_buffer.Indices:GetLength(), index_buffer.gl_indices_type, nil)
 		end
-	else
+	elseif render.IsExtensionSupported("GL_ARB_vertex_attrib_binding") then
 		function META:Draw(index_buffer, count)
 			if render.last_vertex_array_id ~= self.vertex_array.id then
 				gl.BindVertexArray(self.vertex_array.id)
 				render.last_vertex_array_id = self.vertex_array.id
 			end
 
+			index_buffer.element_buffer:Bind()
+
+			gl.DrawElements(self.gl_mode, count or index_buffer.Indices:GetLength(), index_buffer.gl_indices_type, index_buffer.Indices:GetPointer())
+		end
+	else
+		function META:Draw(index_buffer, count)
+			gl.BindVertexArray(self.vertex_array.id)
 			index_buffer.element_buffer:Bind()
 
 			gl.DrawElements(self.gl_mode, count or index_buffer.Indices:GetLength(), index_buffer.gl_indices_type, index_buffer.Indices:GetPointer())
