@@ -80,6 +80,16 @@ function render.GetVendor()
 	return ffi.string(str)
 end
 
+function render.GetAllExtensions()
+	local out = {}
+	local num = ffi.new("GLint[1]")
+	gl.GetIntegerv("GL_NUM_EXTENSIONS", num)
+	for i = 0, num[0] - 1 do
+		out[i + 1] = ffi.string(gl.GetStringi("GL_EXTENSIONS", i))
+	end
+	return out
+end
+
 do
 	local enabled = false
 	function render._SetScissor(x,y,w,h, sw,sh)
