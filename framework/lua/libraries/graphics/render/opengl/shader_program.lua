@@ -348,80 +348,88 @@ do
 	end
 	type_translate = temp
 
-	function META:GetProperties()
-		local out = {}
+	if render.IsExtensionSupported("GL_ARB_program_interface_query") then
+		function META:GetProperties()
+			local out = {}
 
-		for what, property_info in pairs(fill_info) do
-			local resource_count = ffi.new("GLint[1]")
-			self.gl_program:GetInterface(what, "GL_ACTIVE_RESOURCES", resource_count)
-			resource_count = resource_count[0]
+			for what, property_info in pairs(fill_info) do
+				local resource_count = ffi.new("GLint[1]")
+				self.gl_program:GetInterface(what, "GL_ACTIVE_RESOURCES", resource_count)
+				resource_count = resource_count[0]
 
-			local properties = {}
+				local properties = {}
 
-			for resource_index = 0, resource_count - 1 do
+				for resource_index = 0, resource_count - 1 do
 
-				local res = ffi.new("GLint["..property_info.count.."]")
-				self.gl_program:GetResource(what, resource_index, property_info.count, property_info.enums, 0, nil, res)
+					local res = ffi.new("GLint["..property_info.count.."]")
+					self.gl_program:GetResource(what, resource_index, property_info.count, property_info.enums, 0, nil, res)
 
-				local values = {}
+					local values = {}
 
-				for i, key in ipairs(property_info.names) do
-					local val = res[i - 1]
+					for i, key in ipairs(property_info.names) do
+						local val = res[i - 1]
 
-					if key == "name_length" then
-						local bytes = val + 256
-						local str = ffi.new("GLchar[?]", bytes)
-						self.gl_program:GetResourceName(what, resource_index, bytes, nil, str)
-						val = ffi.string(str)
-						key = "name"
-					elseif key == "type" then
-						val = type_translate[val] or val
+						if key == "name_length" then
+							local bytes = val + 256
+							local str = ffi.new("GLchar[?]", bytes)
+							self.gl_program:GetResourceName(what, resource_index, bytes, nil, str)
+							val = ffi.string(str)
+							key = "name"
+						elseif key == "type" then
+							val = type_translate[val] or val
+						end
+
+						values[key] = val
 					end
 
-					values[key] = val
+					table.insert(properties, values)
 				end
 
-				table.insert(properties, values)
+				if next(properties) then
+					out[what:sub(4):lower()] = properties
+				end
 			end
 
-			if next(properties) then
-				out[what:sub(4):lower()] = properties
-			end
-		end
 
-
-		if out.buffer_variable then
-			for _, info in ipairs(out.buffer_variable) do
-				local i = info.block_index + 1
-				out.shader_storage_block[i].variables = out.shader_storage_block[i].variables or {}
-				table.insert(out.shader_storage_block[i].variables, info)
-			end
-			out.buffer_variable = nil
-
-			for _, info in pairs(out.shader_storage_block) do
-				info.block_index = self.gl_program:GetResourceIndex("GL_SHADER_STORAGE_BLOCK", info.name)
-				out.shader_storage_block[info.name] = info
-			end
-		end
-
-		if out.uniform_block then
-			for i2, info in ipairs(out.uniform) do
-				if info.block_index >= 0 then
+			if out.buffer_variable then
+				for _, info in ipairs(out.buffer_variable) do
 					local i = info.block_index + 1
-					out.uniform_block[i].variables = out.uniform_block[i].variables or {}
-					table.insert(out.uniform_block[i].variables, info)
-					out.uniform[i2] = nil
+					out.shader_storage_block[i].variables = out.shader_storage_block[i].variables or {}
+					table.insert(out.shader_storage_block[i].variables, info)
+				end
+				out.buffer_variable = nil
+
+				for _, info in pairs(out.shader_storage_block) do
+					info.block_index = self.gl_program:GetResourceIndex("GL_SHADER_STORAGE_BLOCK", info.name)
+					out.shader_storage_block[info.name] = info
 				end
 			end
-			out.buffer_variable = nil
 
-			for _, info in pairs(out.uniform_block) do
-				info.block_index = self.gl_program:GetResourceIndex("GL_UNIFORM_BLOCK", info.name)
-				out.uniform_block[info.name] = info
+			if out.uniform_block then
+				for i2, info in ipairs(out.uniform) do
+					if info.block_index >= 0 then
+						local i = info.block_index + 1
+						out.uniform_block[i].variables = out.uniform_block[i].variables or {}
+						table.insert(out.uniform_block[i].variables, info)
+						out.uniform[i2] = nil
+					end
+				end
+				out.buffer_variable = nil
+
+				for _, info in pairs(out.uniform_block) do
+					info.block_index = self.gl_program:GetResourceIndex("GL_UNIFORM_BLOCK", info.name)
+					out.uniform_block[info.name] = info
+				end
 			end
-		end
 
-		return out
+			return out
+		end
+	else
+		function META:GetProperties()
+			local out = {}
+
+			return out
+		end
 	end
 end
 
