@@ -1,43 +1,31 @@
-for _, info in ipairs(vfs.GetMountedAddons()) do
-	if info.name == "framework" then
-		local cache = {}
-		function system.GetFFIBuildLibrary(name, require)
-			if cache[name] then return cache[name] end
+do
+	local cache = {}
+	function system.GetFFIBuildLibrary(name, require)
+		if cache[name] then return cache[name] end
 
-			local err2
-			local func, err = loadfile(info.path .. "lua/build/" .. name .. "/" .. name .. ".lua")
+		local func, err = loadfile("./" .. name .. ".lua")
 
-			if not func then
-				func, err2 = loadfile(info.path .. "lua/build/" .. name:gsub("%.", "/") .. ".lua")
-			end
-
-			if func then
-				local ok, res = pcall(func)
-				if ok then
-					cache[name] = res
-					return res
+		if func then
+			local ok, res = pcall(func)
+			if ok then
+				cache[name] = res
+				return res
+			else
+				if require then
+					error(res)
 				else
-					if require then
-						error(res)
-					else
-						wlog(res, 2)
-					end
+					wlog(res, 2)
 				end
 			end
-
-			if err2 and not err2:find("No such file or directory") then
-				err = err .. err2
-			end
-
-			if require then
-				error("unable to load library " .. name .. ": " .. err, 2)
-			end
-			llog("unable to load library " .. name .. ": " .. err)
 		end
-		break
+
+		if require then
+			error("unable to load library " .. name .. ": " .. err, 2)
+		end
+
+		llog("unable to load library " .. name .. ": " .. err)
 	end
 end
-
 runfile("!lua/libraries/extensions/*")
 runfile("!lua/libraries/filesystem/files/*")
 runfile("!lua/libraries/serializers/*")

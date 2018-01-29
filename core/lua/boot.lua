@@ -1,5 +1,71 @@
 local start_time = os.clock()
 
+local generic = [[ffibuild.CopyLibraries("{BIN_DIR}")]]
+local ffibuild_libraries = {
+	assimp = generic,
+	enet = generic,
+	curses = generic,
+	freeimage = generic,
+	freetype = generic,
+	libarchive = generic,
+	libsndfile = generic,
+	luajit = [[
+		local function execute(str)
+			print("os.execute: " .. str)
+			os.execute(str)
+		end
+
+		os.execute("mkdir -p {BIN_DIR}")
+		os.execute("mkdir -p {BIN_DIR}jit")
+
+		execute("cp repo/src/luajit {BIN_DIR}.")
+		execute("cp repo/src/jit/* {BIN_DIR}jit/.")
+		execute("cp luajit.lua {BIN_DIR}.")
+	]],
+	luajit_forks = [[
+		local function execute(str)
+			print("os.execute: " .. str)
+			os.execute(str)
+		end
+
+		os.execute("mkdir -p {BIN_DIR}")
+		os.execute("mkdir -p {BIN_DIR}jit")
+
+		execute("cp luajit_* {BIN_DIR}.")
+		execute("cp lj.supp {BIN_DIR}.")
+	]],
+	luasocket = [[
+		os.execute("mkdir -p " .. "{BIN_DIR}" .. "socket")
+
+		local files = {
+			"socket/core.so",
+			"socket/unix.so",
+			"socket/serial.so",
+			"mime/core.so",
+			"ssl.so",
+		}
+
+		for _, path in ipairs(files) do
+			local dir = path:match("(.+)/")
+			if dir then
+				os.execute("mkdir -p " .. "{BIN_DIR}" .. dir)
+			end
+			os.execute("cp " .. path .. " " .. "{BIN_DIR}" .. path)
+		end
+	]],
+	openal = [[
+		ffibuild.SetBuildName("al")
+		ffibuild.CopyLibraries("{BIN_DIR}")
+		ffibuild.SetBuildName("alc")
+		ffibuild.CopyLibraries("{BIN_DIR}")
+	]],
+	opengl = generic,
+	SDL2 = generic,
+	steamworks = generic,
+	VTFLib = generic,
+	vulkan = generic,
+}
+
 do
 	_G[jit.os:upper()] = true
 	_G.OS = jit.os:lower()
@@ -268,7 +334,7 @@ do
 		f:close()
 		return str
 	end
-	
+
 	function has_tmux_session()
 		return os.readexecute("tmux has-session -t goluwa 2> /dev/null; printf $?") == "0"
 	end
@@ -349,6 +415,18 @@ do
 
 		return true -- TODO
 	end
+
+	function get_github_project(name, to)
+		if os.iscmd("git") then
+			if os.isdir(to) then
+				os.readexecute("git -C "..to.." pull")
+			else
+				os.readexecute("git clone https://github.com/"..name..".git "..to.." --depth 1;")
+			end
+		elseif os.download("https://github.com/"..name.."/archive/master" .. ARCHIVE_EXT, "temp" .. ARCHIVE_EXT) then
+			os.extract("temp" .. ARCHIVE_EXT, to, "*/*")
+		end
+	end
 end
 
 local arg_line
@@ -389,62 +467,71 @@ if args[1] == "update" or not os.isfile("core/lua/init.lua") then
 	end
 end
 
-if jit.os ~= "Windows" then
-	if args[1] == "build" then
-		assert(os.cd("framework/lua/build/"))
+if args[1] == "build" then
+	get_github_project("capsadmin/ffibuild", "data/ffibuild")
+	assert(os.cd("data/ffibuild"), "unable to download ffibuild?")
 
-		if args[2] == "all" then
-			os.cd("luajit")
-			os.execute("make")
-			os.cd("..")
-
-			for _, dir in ipairs(os.ls("")) do
-				if os.isdir(dir) then
-					os.cd(dir)
-					os.execute("make &")
-					os.cd("..")
-				end
-			end
-		elseif args[2] == "clean" then
-			for _, dir in ipairs(os.ls("")) do
-				if os.isdir(dir) then
-					os.cd(dir)
-					os.execute("make clean")
-					os.cd("..")
-				end
-			end
-		else
-			os.cd(args[2])
-
-			if args[3] == "clean" then
-				os.execute("make clean")
-			else
-				os.execute("make " .. (args[3] or ""))
-			end
-
-			os.exit()
-		end
+	local function run_postbuild(code)
+		code = code:gsub("{BIN_DIR}", "../../bin/" .. OS .. "_" .. ARCH .. "/")
+		os.setenv("templua", "local ffibuild = loadfile('../ffibuild.lua')()\n" .. code)
+		os.execute("../luajit/repo/src/luajit -e \"loadstring(os.getenv('templua'))()\"")
 	end
 
-	if args[1] == "tmux" then
-		assert(os.iscmd("tmux"), "tmux is not installed")
+	if args[2] == "all" then
+		os.cd("luajit")
+		os.execute("make")
+		os.cd("..")
 
-		if not has_tmux_session() then
-			os.readexecute([[
-			tmux new-session -d -s goluwa
-			tmux send-keys -t goluwa "export GOLUWA_TMUX=1" C-m
-			tmux send-keys -t goluwa "./goluwa launch" C-m
-			]])
+		for dir, post_build in pairs(ffibuild_libraries) do
+			if os.isdir(dir) then
+				os.cd(dir)
+				os.execute("make")
+				run_postbuild(post_build)
+				os.cd("..")
+			end
 		end
+	elseif args[2] == "clean" then
+		for _, dir in ipairs(os.ls("")) do
+			if os.isdir(dir) then
+				os.cd(dir)
+				os.execute("make clean")
+				os.cd("..")
+			end
+		end
+	else
+		os.cd(args[2])
 
-		os.readexecute("tmux attach-session -t goluwa")
+		if args[3] == "clean" then
+			os.execute("make clean")
+		else
+			os.execute("make " .. (args[3] or ""))
+			if ffibuild_libraries[args[2]] then
+				run_postbuild(ffibuild_libraries[args[2]])
+			end
+		end
 
 		os.exit()
 	end
+end
 
-	if args[2] == "attach" and has_tmux_session() then
-		os.readexecute("tmux attach-session -t goluwa")
+if args[1] == "tmux" then
+	assert(os.iscmd("tmux"), "tmux is not installed")
+
+	if not has_tmux_session() then
+		os.readexecute([[
+		tmux new-session -d -s goluwa
+		tmux send-keys -t goluwa "export GOLUWA_TMUX=1" C-m
+		tmux send-keys -t goluwa "./goluwa launch" C-m
+		]])
 	end
+
+	os.readexecute("tmux attach-session -t goluwa")
+
+	os.exit()
+end
+
+if args[2] == "attach" and has_tmux_session() then
+	os.readexecute("tmux attach-session -t goluwa")
 end
 
 if args[1] ~= "launch" then
@@ -491,16 +578,7 @@ if args[1] ~= "launch" then
 end
 
 if IDE then
-	if os.iscmd("git") then
-		if os.isdir("data/ide") then
-			os.readexecute("git -C data/ide pull")
-		else
-			os.readexecute("git clone https://github.com/pkulchenko/ZeroBraneStudio.git data/ide --depth 1;")
-		end
-	elseif os.download("https://github.com/pkulchenko/ZeroBraneStudio/archive/master" .. ARCHIVE_EXT, "temp" .. ARCHIVE_EXT) then
-		os.extract("temp" .. ARCHIVE_EXT, "data/ide", "*/*")
-	end
-
+	get_github_project("pkulchenko/ZeroBraneStudio", "data/ide")
 	assert(os.cd("data/ide"), "unable to download ide?")
 
 	if WINDOWS then

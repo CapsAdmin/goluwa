@@ -39,6 +39,7 @@ function PLUGIN:onProjectLoad()
 	ide:GetProjectTree():MapDirectory(ide:GetProject() .. "game/lua/examples")
 	ide:GetProjectTree():MapDirectory(ide:GetProject() .. "game/lua/libraries/love")
 	ide:GetProjectTree():MapDirectory(ide:GetProject() .. "data/ide")
+    ide:GetProjectTree():MapDirectory(ide:GetProject() .. "data/ffibuild")
 
 	local gmod_path = GetGMODDir and GetGMODDir()
 
