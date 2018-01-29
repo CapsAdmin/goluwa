@@ -111,16 +111,30 @@ do
 	end
 
 	if UNIX then
-		ffi.cdef("int setenv(const char *name, const char *value, int overwrite);")
+		ffi.cdef([[
+			int setenv(const char *var_name, const char *new_value, int change_flag);
+			int unsetenv(const char *name);
+		]])
 
 		function os.setenv(key, val)
-			ffi.C.setenv(key, val, 0)
+			if not val then
+				ffi.C.unsetenv(key)
+			else
+				ffi.C.setenv(key, val, 0)
+			end
 		end
 	else
-		ffi.cdef("int _putenv_s(const char *var_name, const char *new_value);")
+		ffi.cdef([[
+			int _putenv_s(const char *var_name, const char *new_value);
+			int _putenv(const char *var_name);
+		]])
 
 		function os.setenv(key, val)
-			ffi.C._putenv_s(key, val)
+			if not val then
+				ffi.C._putenv(key)
+			else
+				ffi.C._putenv_s(key, val)
+			end
 		end
 	end
 
@@ -472,9 +486,9 @@ end
 if args[1] == "build" then
 	get_github_project("capsadmin/ffibuild", "data/ffibuild")
 	assert(os.cd("data/ffibuild"), "unable to download ffibuild?")
-
 	local function run_postbuild(code)
 		code = code:gsub("{BIN_DIR}", "../../bin/" .. OS .. "_" .. ARCH .. "/")
+		os.setenv("templua")
 		os.setenv("templua", "local ffibuild = loadfile('../ffibuild.lua')()\n" .. code)
 		os.execute("../luajit/repo/src/luajit -e \"loadstring(os.getenv('templua'))()\"")
 	end
