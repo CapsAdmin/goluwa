@@ -534,6 +534,30 @@ if args[1] == "build" then
 	os.exit()
 end
 
+if args[1] == "check_binaries" then
+
+	os.cd(bin_dir)
+
+	os.setenv("LD_LIBRARY_PATH", ".:/usr/lib:/lib")
+
+	local ok = true
+
+	for _, bin in ipairs(os.ls(".")) do
+		if bin:find("%.so") then
+			if not os.execute([[./luajit -e "require('ffi').load(']]..bin..[[')"]]) then
+				ok = false
+			end
+		end
+	end
+
+	if not ok then
+		print("errors when calling ffi.load() on one or more libraries")
+		os.exit(1)
+	end
+	print("everything seems ok")
+	os.exit()
+end
+
 if args[1] == "tmux" then
 	assert(os.iscmd("tmux"), "tmux is not installed")
 
