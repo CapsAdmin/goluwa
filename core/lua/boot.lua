@@ -1,71 +1,5 @@
 local start_time = os.clock()
 
-local generic = [[ffibuild.CopyLibraries("{BIN_DIR}")]]
-local ffibuild_libraries = {
-	assimp = generic,
-	enet = generic,
-	curses = generic,
-	freeimage = generic,
-	freetype = generic,
-	libarchive = generic,
-	libsndfile = generic,
-	luajit = [[
-		local function execute(str)
-			print("os.execute: " .. str)
-			os.execute(str)
-		end
-
-		os.execute("mkdir -p {BIN_DIR}")
-		os.execute("mkdir -p {BIN_DIR}jit")
-
-		execute("cp repo/src/luajit {BIN_DIR}.")
-		execute("cp repo/src/jit/* {BIN_DIR}jit/.")
-		execute("cp luajit.lua {BIN_DIR}.")
-	]],
-	luajit_forks = [[
-		local function execute(str)
-			print("os.execute: " .. str)
-			os.execute(str)
-		end
-
-		os.execute("mkdir -p {BIN_DIR}")
-		os.execute("mkdir -p {BIN_DIR}jit")
-
-		execute("cp luajit_* {BIN_DIR}.")
-		execute("cp lj.supp {BIN_DIR}.")
-	]],
-	luasocket = [[
-		os.execute("mkdir -p " .. "{BIN_DIR}" .. "socket")
-
-		local files = {
-			"socket/core.so",
-			"socket/unix.so",
-			"socket/serial.so",
-			"mime/core.so",
-			"ssl.so",
-		}
-
-		for _, path in ipairs(files) do
-			local dir = path:match("(.+)/")
-			if dir then
-				os.execute("mkdir -p " .. "{BIN_DIR}" .. dir)
-			end
-			os.execute("cp " .. path .. " " .. "{BIN_DIR}" .. path)
-		end
-	]],
-	openal = [[
-		ffibuild.SetBuildName("al")
-		ffibuild.CopyLibraries("{BIN_DIR}")
-		ffibuild.SetBuildName("alc")
-		ffibuild.CopyLibraries("{BIN_DIR}")
-	]],
-	opengl = generic,
-	SDL2 = generic,
-	steamworks = generic,
-	VTFLib = generic,
-	vulkan = generic,
-}
-
 do
 	_G[jit.os:upper()] = true
 	_G.OS = jit.os:lower()
@@ -443,6 +377,75 @@ end
 local bin_dir = "data/bin/" .. OS .. "_" .. ARCH .. "/"
 
 local ARCHIVE_EXT = WINDOWS and ".zip" or ".tar.gz"
+
+
+local generic = [[ffibuild.CopyLibraries("{BIN_DIR}")]]
+local ffibuild_libraries = {
+	assimp = generic,
+	enet = generic,
+	curses = generic,
+	freeimage = generic,
+	freetype = generic,
+	libarchive = generic,
+	libsndfile = generic,
+	luajit = [[
+		local function execute(str)
+			print("os.execute: " .. str)
+			os.execute(str)
+		end
+
+		os.execute("mkdir -p {BIN_DIR}")
+		os.execute("mkdir -p {BIN_DIR}jit")
+
+		execute("cp repo/src/luajit {BIN_DIR}.")
+		execute("cp repo/src/jit/* {BIN_DIR}jit/.")
+		execute("cp luajit.lua {BIN_DIR}.")
+	]],
+	luajit_forks = [[
+		local function execute(str)
+			print("os.execute: " .. str)
+			os.execute(str)
+		end
+
+		os.execute("mkdir -p {BIN_DIR}")
+		os.execute("mkdir -p {BIN_DIR}jit")
+
+		execute("cp luajit_* {BIN_DIR}.")
+		execute("cp lj.supp {BIN_DIR}.")
+	]],
+	luasocket = [[
+		os.execute("mkdir -p " .. "{BIN_DIR}" .. "socket")
+
+		local files = {
+			"socket/core.so",
+			"socket/unix.so",
+			"socket/serial.so",
+			"mime/core.so",
+			"ssl.so",
+		}
+
+		for _, path in ipairs(files) do
+			local dir = path:match("(.+)/")
+			if dir then
+				os.execute("mkdir -p " .. "{BIN_DIR}" .. dir)
+			end
+			os.execute("cp " .. path .. " " .. "{BIN_DIR}" .. path)
+		end
+	]],
+	openal = [[
+		ffibuild.SetBuildName("al")
+		ffibuild.CopyLibraries("{BIN_DIR}")
+		ffibuild.SetBuildName("alc")
+		ffibuild.CopyLibraries("{BIN_DIR}")
+	]],
+	opengl = generic,
+	SDL2 = generic,
+	steamworks = generic,
+	VTFLib = generic,
+	vulkan = generic,
+}
+
+if OSX then ffibuild_libraries.vulkan = nil end
 
 os.cd("../../../")
 
