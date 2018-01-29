@@ -378,7 +378,6 @@ local bin_dir = "data/bin/" .. OS .. "_" .. ARCH .. "/"
 
 local ARCHIVE_EXT = WINDOWS and ".zip" or ".tar.gz"
 
-
 local generic = [[ffibuild.CopyLibraries("{BIN_DIR}")]]
 local ffibuild_libraries = {
 	assimp = generic,
@@ -493,6 +492,10 @@ if args[1] == "build" then
 				os.cd("..")
 			end
 		end
+
+		os.cd("../../")
+
+		io.open(bin_dir .. "binaries_downloaded", "w"):close()
 	elseif args[2] == "clean" then
 		for _, dir in ipairs(os.ls("")) do
 			if os.isdir(dir) then
@@ -512,9 +515,9 @@ if args[1] == "build" then
 				run_postbuild(ffibuild_libraries[args[2]])
 			end
 		end
-
-		os.exit()
 	end
+
+	os.exit()
 end
 
 if args[1] == "tmux" then
