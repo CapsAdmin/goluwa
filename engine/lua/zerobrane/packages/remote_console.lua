@@ -28,9 +28,6 @@ function PLUGIN:Setup()
 
 	function META:Update()
 		if not self.next_update or self.next_update < os.clock() then
-
-			ide:Print("check")
-
 			local f = io.open(ide:GetProject() .. "data/ide/goluwa_output_" .. self.id, "r")
 			if f then
 				local str = f:read("*all")
