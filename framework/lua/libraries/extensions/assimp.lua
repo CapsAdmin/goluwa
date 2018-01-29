@@ -8,7 +8,7 @@ end
 
 local function parse_scene(scene, path, callback)
 	if not scene then
-		return nil, ffi.string(library.GetErrorString())
+		return nil, ffi.string(assimp.GetErrorString())
 	end
 
 	local dir = path:match("(.+)/")
@@ -110,17 +110,17 @@ local function parse_scene(scene, path, callback)
 		end
 	end
 
-	library.ReleaseImport(scene)
+	assimp.ReleaseImport(scene)
 
 	return out
 end
 
-function library.ImportFileMemory(data, flags, hint, callback)
-	local scene = library.ImportFileFromMemory(data, #data, flags, hint)
+function assimp.ImportFileMemory(data, flags, hint, callback)
+	local scene = assimp.ImportFileFromMemory(data, #data, flags, hint)
 	return parse_scene(scene, hint, callback)
 end
 
-function library.ImportFileEx(path, flags, callback, custom_io)
+function assimp.ImportFileEx(path, flags, callback, custom_io)
 	local scene
 
 	if custom_io then
@@ -201,12 +201,12 @@ function library.ImportFileEx(path, flags, callback, custom_io)
 		--ffi.gc(file_io_data, print)
 		local file_io = ffi.new("struct aiFileIO[1]", file_io_data)
 
-		library.file_ios = library.file_ios or {}
-		library.file_ios[path] = file_io
+		assimp.file_ios = assimp.file_ios or {}
+		assimp.file_ios[path] = file_io
 
 		scene = lib.aiImportFileEx(path, flags, file_io)
 	else
-		scene = library.ImportFile(path, flags)
+		scene = assimp.ImportFile(path, flags)
 	end
 
 	return parse_scene(scene, path, callback)
