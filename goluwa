@@ -2,7 +2,7 @@
 
 basetime=$(date +%s%N)
 
-script_path=$(which "./$0")
+script_path=$(realpath "$0")
 
 if [ -L "$script_path" ]; then
     cd "$(dirname "$(readlink -f "$script_path")")" || exit
