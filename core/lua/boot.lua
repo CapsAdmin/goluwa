@@ -434,7 +434,6 @@ local ffibuild_libraries = {
 			"socket/unix.so",
 			"socket/serial.so",
 			"mime/core.so",
-			"ssl.so",
 		}
 
 		for _, path in ipairs(files) do
@@ -445,6 +444,7 @@ local ffibuild_libraries = {
 			os.execute("cp " .. path .. " " .. "{BIN_DIR}" .. path)
 		end
 	]],
+	luasec = generic,
 	openal = [[
 		ffibuild.SetBuildName("al")
 		ffibuild.CopyLibraries("{BIN_DIR}")
