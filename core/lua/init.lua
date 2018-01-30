@@ -98,7 +98,7 @@ do
 	-- create constants
 
 	e.BIN_FOLDER = fs.getcd():gsub("\\", "/") .. "/"
-	e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(3)) -- the root folder is always 3 directories up (data/bin/os_arch)
+	e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(2)) -- the root folder is always 2 directories up (data/os_arch)
 	e.SRC_FOLDER = e.ROOT_FOLDER .. e.INTERNAL_ADDON_NAME .. "/"
 	e.DATA_FOLDER = e.ROOT_FOLDER .. "data/"
 	e.USERDATA_FOLDER = e.DATA_FOLDER .. "users/" .. e.USERNAME:lower() .. "/"

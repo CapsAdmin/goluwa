@@ -364,13 +364,23 @@ do
 		return true -- TODO
 	end
 
-	function get_github_project(name, to, domain)
+	function get_github_project(name, to, domain, delete)
         domain = domain or "github"
 		if os.iscmd("git") then
-			if os.isdir(to) then
+			if os.isdir(to) and os.isdir(to .. "/.git") then
 				os.readexecute("git -C "..to.." pull")
 			else
-				os.readexecute("git clone https://"..domain..".com/"..name..".git "..to.." --depth 1;")
+				local move = false
+				if os.isdir(to) then
+					to = to .. "_"
+					move = true
+				end
+				os.execute("git clone https://"..domain..".com/"..name..".git "..to.." --depth 1;")
+				if move then
+					os.execute("mv -f " .. to .. "/* " .. to:sub(0, -2) .. "/")
+					os.execute("mv -f " .. to .. "/.* " .. to:sub(0, -2) .. "/")
+					os.remove(to)
+				end
 			end
 		elseif os.download("https://"..domain..".com/"..name.."/archive/master" .. ARCHIVE_EXT, "temp" .. ARCHIVE_EXT) then
 			os.extract("temp" .. ARCHIVE_EXT, to, "*/*")
@@ -673,7 +683,8 @@ end
 os.appendenv("GOLUWA_ARGS", table.concat(ARGS, " "))
 
 if not os.isfile("data/binaries_downloaded") then
-	get_github_project("CapsAdmin/goluwa-binaries-" .. OS .. "_" .. ARCH, "data/" .. OS .. "_" .. ARCH, "gitlab")
+	get_github_project("CapsAdmin/goluwa-binaries-" .. OS .. "_" .. ARCH, "data/" .. OS .. "_" .. ARCH, "gitlab", true)
+	io.open("data/binaries_downloaded", "w"):close()
 end
 
 os.cd(bin_dir)
