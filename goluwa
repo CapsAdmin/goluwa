@@ -24,11 +24,11 @@ download () {
     fi
 }
 
-mkdir -p "data/bin/${OS}_${ARCH}"
-cd "data/bin/${OS}_${ARCH}" || exit
+mkdir -p "data/${OS}_${ARCH}"
+cd "data/${OS}_${ARCH}" || exit
 
 if [ ! -f "luajit" ]; then
-    download "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/${OS}_${ARCH}/data/bin/${OS}_${ARCH}/luajit" "luajit"
+    download "https://gitlab.com/CapsAdmin/goluwa-binaries-${OS}_${ARCH}/raw/master/luajit" "luajit"
 fi
 
 chmod +x luajit
@@ -42,9 +42,9 @@ if [ $status -ne 1 ]; then
     mv luajit luajit_old
 fi
 
-if [ ! -f "../../../core/lua/boot.lua" ]; then
-    mkdir -p "../../../core/lua/"
-    download "https://gitlab.com/CapsAdmin/goluwa/raw/master/core/lua/boot.lua" "../../../core/lua/boot.lua"
+if [ ! -f "../../core/lua/boot.lua" ]; then
+    mkdir -p "../../core/lua/"
+    download "https://gitlab.com/CapsAdmin/goluwa/raw/master/core/lua/boot.lua" "../../core/lua/boot.lua"
 fi
 
 if [ "$2" = "cli" ]; then

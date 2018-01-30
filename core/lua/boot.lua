@@ -364,14 +364,15 @@ do
 		return true -- TODO
 	end
 
-	function get_github_project(name, to)
+	function get_github_project(name, to, domain)
+        domain = domain or "github"
 		if os.iscmd("git") then
 			if os.isdir(to) then
 				os.readexecute("git -C "..to.." pull")
 			else
-				os.readexecute("git clone https://github.com/"..name..".git "..to.." --depth 1;")
+				os.readexecute("git clone https://"..domain..".com/"..name..".git "..to.." --depth 1;")
 			end
-		elseif os.download("https://github.com/"..name.."/archive/master" .. ARCHIVE_EXT, "temp" .. ARCHIVE_EXT) then
+		elseif os.download("https://"..domain..".com/"..name.."/archive/master" .. ARCHIVE_EXT, "temp" .. ARCHIVE_EXT) then
 			os.extract("temp" .. ARCHIVE_EXT, to, "*/*")
 		end
 	end
@@ -388,7 +389,7 @@ else
 	args = {} (arg_line .. " "):gsub("(%S+)", function(chunk) table.insert(args, chunk) end)
 end
 
-local bin_dir = "data/bin/" .. OS .. "_" .. ARCH .. "/"
+local bin_dir = "data/" .. OS .. "_" .. ARCH .. "/"
 
 local ARCHIVE_EXT = WINDOWS and ".zip" or ".tar.gz"
 
@@ -460,7 +461,7 @@ local ffibuild_libraries = {
 
 if OSX then ffibuild_libraries.vulkan = nil end
 
-os.cd("../../../")
+os.cd("../../")
 
 if args[1] == "update" or not os.isfile("core/lua/init.lua") then
 	if not os.isfile("core/lua/init.lua") then
@@ -487,7 +488,7 @@ if args[1] == "build" then
 	get_github_project("capsadmin/ffibuild", "data/ffibuild")
 	assert(os.cd("data/ffibuild"), "unable to download ffibuild?")
 	local function run_postbuild(code)
-		code = code:gsub("{BIN_DIR}", "../../bin/" .. OS .. "_" .. ARCH .. "/")
+		code = code:gsub("{BIN_DIR}", "../../" .. OS .. "_" .. ARCH .. "/")
 		os.setenv("templua")
 		os.setenv("templua", "local ffibuild = loadfile('../ffibuild.lua')()\n" .. code)
 		os.execute("../luajit/repo/src/luajit -e \"loadstring(os.getenv('templua'))()\"")
@@ -671,24 +672,8 @@ end
 
 os.appendenv("GOLUWA_ARGS", table.concat(ARGS, " "))
 
-if not os.isfile(bin_dir .. "binaries_downloaded") then
-	os.makedir(bin_dir)
-	for i = 1, 3 do
-		if
-			os.isfile("binaries_temp" .. ARCHIVE_EXT) or
-			os.download("https://gitlab.com/CapsAdmin/goluwa-binaries/repository/"..OS.."_"..ARCH.."/archive" .. ARCHIVE_EXT, "binaries_temp" .. ARCHIVE_EXT)
-		then
-			if os.extract("binaries_temp.tar.gz", bin_dir, "*/" .. bin_dir) then
-				io.open(bin_dir .. "binaries_downloaded", "w"):close()
-			else
-				io.write("failed to extract archive", "\n")
-				os.remove("binaries_temp.tar.gz")
-				os.exit()
-			end
-		else
-			io.write("failed to download archive. trying again", "\n")
-		end
-	end
+if not os.isfile("data/binaries_downloaded") then
+	get_github_project("CapsAdmin/goluwa-binaries-" .. OS .. "_" .. ARCH, "data/" .. OS .. "_" .. ARCH, "gitlab")
 end
 
 os.cd(bin_dir)
@@ -698,7 +683,7 @@ if UNIX then
 	os.setenv("LD_LIBRARY_PATH", ".:/usr/lib:/lib")
 end
 
-local initlua = "../../../core/lua/init.lua"
+local initlua = "../../core/lua/init.lua"
 
 GOLUWA_EXECUTABLE = (os.getenv("GOLUWA_EXECUTABLE") or "") .. "luajit"
 
