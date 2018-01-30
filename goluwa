@@ -54,7 +54,7 @@ fi
 
 if [ ! -x luajit ] && [ -f "/lib/ld-2.26.so" ]; then
     # a way to execute on fat32 filesystems or something
-	/lib/ld-2.26.so "./luajit" "../../../core/lua/boot.lua" "$*"
+	/lib/ld-2.26.so "./luajit" "../../core/lua/boot.lua" "$*"
 else
-    ./luajit "../../../core/lua/boot.lua" "$*"
+    ./luajit "../../core/lua/boot.lua" "$*"
 fi
