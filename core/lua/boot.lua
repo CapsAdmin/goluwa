@@ -517,12 +517,10 @@ if args[1] == "build" then
 		os.cd("..")
 
 		for dir, post_build in pairs(ffibuild_libraries) do
-			if os.isdir(dir) then
-				os.cd(dir)
-				os.execute("make")
-				run_postbuild(post_build)
-				os.cd("..")
-			end
+			os.cd(dir)
+			os.execute("./build.sh")
+			run_postbuild(post_build)
+			os.cd("..")
 		end
 
 		os.cd("../../")
