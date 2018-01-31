@@ -232,9 +232,7 @@ do -- tcp socket meta
 
 			function CLIENT:SetSSLParams(params)
 				if sockets.ssl == nil then
-					desire("ssl")
-					sockets.ssl = _G.ssl
-					_G.ssl = nil -- grr
+					sockets.ssl = desire("ssl.ssl")
 				end
 
 				if not sockets.ssl then
