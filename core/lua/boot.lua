@@ -676,7 +676,7 @@ if args[1] == "check_binaries" then
 
 	os.cd(bin_dir)
 
-	os.setenv("LD_LIBRARY_PATH", ".:/usr/lib:/lib")
+	os.setenv("LD_LIBRARY_PATH", ".")
 
 	local ok = true
 
