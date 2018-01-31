@@ -455,7 +455,14 @@ local ffibuild_libraries = {
 			os.execute("cp " .. path .. " " .. "{BIN_DIR}" .. path)
 		end
 	]],
-	luasec = generic,
+	luasec = [[
+		os.execute("cp ssl.so {BIN_DIR}.")
+		os.execute("cp -r ssl {BIN_DIR}.")
+	]],
+	luaossl = [[
+		os.execute("cp _openssl.so {BIN_DIR}.")
+		os.execute("cp -r openssl {BIN_DIR}.")
+	]],
 	openal = [[
 		ffibuild.SetBuildName("al")
 		ffibuild.CopyLibraries("{BIN_DIR}")
