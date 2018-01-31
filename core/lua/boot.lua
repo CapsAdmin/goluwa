@@ -527,10 +527,10 @@ if args[1] == "build" then
 
 		io.open(bin_dir .. "binaries_downloaded", "w"):close()
 	elseif args[2] == "clean" then
-		for _, dir in ipairs(os.ls("")) do
+		for dir, post_build in pairs(ffibuild_libraries) do
 			if os.isdir(dir) then
 				os.cd(dir)
-				os.execute("make clean")
+				os.execute("./build.sh clean")
 				os.cd("..")
 			end
 		end
