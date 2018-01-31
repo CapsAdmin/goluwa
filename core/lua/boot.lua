@@ -684,7 +684,7 @@ if args[1] == "check_binaries" then
 
 	for _, bin in ipairs(os.ls(".")) do
 		if bin:find("%.so") then
-			if not os.execute([[./luajit -e "require('ffi').load(']]..bin..[[')"]]) then
+			if not os.execute([[./luajit -e "require('ffi').load('./]]..bin..[[')"]]) then
 				ok = false
 			end
 		end
