@@ -545,6 +545,128 @@ if args[1] == "build" then
 	os.exit()
 end
 
+if args[1] == "bundle_library_dependencies" then
+
+	local blacklist = {
+		"statically linked",
+		"linux-vdso.so",
+		--"libsystemd.so",
+		"libwayland",
+		"libX",
+		-- https://raw.githubusercontent.com/probonopd/AppImages/master/excludelist
+		"ld-linux.so",
+		"ld-linux-x86-64.so",
+		"libanl.so",
+		"libBrokenLocale.so",
+		"libcidn.so",
+		"libcrypt.so",
+		"libc.so",
+		"libdl.so",
+		"libm.so",
+		"libmvec.so",
+		"libnsl.so",
+		"libnss_compat.so",
+		"libnss_db.so",
+		"libnss_dns.so",
+		"libnss_files.so",
+		"libnss_hesiod.so",
+		"libnss_nisplus.so",
+		"libnss_nis.so",
+		"libpthread.so",
+		"libreso",
+		"librt.so",
+		"libthread_db.so",
+		"libutil.so",
+		"libstdc++.so",
+		"libGL.so",
+		"libdrm.so",
+		"libxcb.so",
+		"libX11.so",
+		"libgio-2.0.so",
+		"libaso",
+		"libgdk_pixbuf-2.0.so",
+		"libfontconfig.so",
+		"libcom_err.so",
+		"libcrypt.so",
+		"libexpat.so",
+		"libgcc_s.so",
+		"libglib-2.0.so",
+		"libgpg-error.so",
+		"libICE.so",
+		"libkeyutils.so",
+		"libp11-kit.so",
+		"libSM.so",
+		"libusb-1.0.so",
+		"libuuid.so",
+		"libz.so",
+		"libgobject-2.0.so",
+		"libpangoft2-1.0.so",
+		"libpangocairo-1.0.so",
+		"libpango-1.0.so",
+		"libgpg-error.so",
+		"libjack.so"
+	}
+
+	os.cd(bin_dir)
+
+	--os.setenv("LD_LIBRARY_PATH", ".")
+
+	local done = {}
+	local found = {}
+	local ok = true
+
+	for _, bin in ipairs(os.ls(".")) do
+		if bin:find("%.so") then
+			local tool = jit.os == "OSX" and "otool -L" or "ldd"
+			for line in os.readexecute(tool .. " " .. bin):gmatch("(.-)\n") do
+				if not blacklisted then
+					local name, location = line:match("(%S-) => (%S-) %b()")
+					if not name then
+						location = line:match("(%S-) %b()")
+						if location then
+							name = location:match(".+/(.+)") or location:match("^(%S+)")
+						else
+							name, location = line:match(".+/(.+)"), line
+						end
+					end
+
+					if name == location then
+						location = "./" .. location
+					end
+
+					local blacklisted = false
+
+					for _, str in ipairs(blacklist) do
+						if name:find(str, nil, true) then
+							blacklisted = true
+							if not done[name] then
+								print("skipping " .. name .. " (blacklisted)")
+								done[name] = true
+							end
+							break
+						end
+					end
+
+					if not blacklisted then
+						if location:sub(1, 1) == "." or location:sub(1, 1) == "/" then
+							found[name] = found[name] or {location = location, bin = bin}
+						end
+					end
+				end
+			end
+		end
+	end
+
+	for k,v in pairs(found) do
+		print(v.location .. ":")
+		print("\t" .. v.bin)
+
+		os.execute("cp " .. v.location .. " .")
+	end
+
+	os.exit()
+end
+
 if args[1] == "check_binaries" then
 
 	os.cd(bin_dir)
