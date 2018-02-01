@@ -551,6 +551,17 @@ if args[1] == "build" then
 	os.exit()
 end
 
+if args[1] == "patchelf_binaries" then
+	os.cd(bin_dir)
+
+	for _, bin in ipairs(os.ls(".")) do
+		if bin:find("%.so") then
+			os.execute("patchelf --set-rpath . " .. bin)
+		end
+	end
+	os.exit()
+end
+
 if args[1] == "bundle_library_dependencies" then
 
 	local blacklist = {
