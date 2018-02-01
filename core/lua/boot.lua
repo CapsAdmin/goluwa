@@ -504,6 +504,7 @@ end
 if args[1] == "build" then
 	get_github_project("capsadmin/ffibuild", "data/ffibuild")
 	assert(os.cd("data/ffibuild"), "unable to download ffibuild?")
+
 	local function run_postbuild(code)
 		code = code:gsub("{BIN_DIR}", "../../" .. OS .. "_" .. ARCH .. "/")
 		os.setenv("templua")
@@ -614,8 +615,6 @@ if args[1] == "bundle_library_dependencies" then
 
 	os.cd(bin_dir)
 
-	--os.setenv("LD_LIBRARY_PATH", ".")
-
 	local done = {}
 	local found = {}
 	local ok = true
@@ -676,8 +675,6 @@ if args[1] == "check_binaries" then
 
 	os.cd(bin_dir)
 
-	os.setenv("LD_LIBRARY_PATH", ".")
-
 	local ok = true
 
 	for _, bin in ipairs(os.ls(".")) do
@@ -692,6 +689,7 @@ if args[1] == "check_binaries" then
 		print("errors when calling ffi.load() on one or more libraries")
 		os.exit(1)
 	end
+
 	print("everything seems ok")
 	os.exit()
 end
@@ -815,11 +813,6 @@ if not os.isfile("data/binaries_downloaded") then
 end
 
 os.cd(bin_dir)
-
-if UNIX then
-	-- we need to fallback to usr/lib or /lib for driver specific libraries such as opengl libraries and audio
-	os.setenv("LD_LIBRARY_PATH", ".:/usr/lib:/lib")
-end
 
 local initlua = "../../core/lua/init.lua"
 
