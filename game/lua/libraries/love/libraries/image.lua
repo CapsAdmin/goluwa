@@ -58,11 +58,7 @@ do -- image data
 	end
 
 	function ImageData:setPixel(x,y, r,g,b,a)
-		self.tex:Fill(function(_x,_y, i)
-			if _x == x and _y == y then
-				return r,g,b,a
-			end
-		end, true)
+		self.tex:SetRawPixelColor(x,y,r,g,b,a)
 	end
 
 	function ImageData:mapPixel(cb)
