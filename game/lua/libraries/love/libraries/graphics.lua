@@ -585,6 +585,10 @@ do -- canvas
 		return self.h
 	end
 
+	function Canvas:getDimensions()
+		return self.w, self.h
+	end
+
 	function Canvas:getImageData()
 
 	end
@@ -897,6 +901,11 @@ do
 		end
 
 		function love.graphics.newShader(frag, vert)
+			if frag:endswith(".glsl") then
+				frag = love.filesystem.read(frag)
+				vert = love.filesystem.read(frag)
+			end
+
 			local obj = line.CreateObject("Shader")
 
 			local shader = render.CreateShader({
@@ -905,8 +914,9 @@ do
 						{uv = "vec2"},
 					},
 					variables = {
+						love_ScreenSize = {vec2 = function() return ENV.graphics_current_canvas and ENV.graphics_current_canvas.fb:GetTexture():GetSize() or window.GetSize() end},
 						current_texture = {texture = function() return render2d.shader.tex end},
-						current_color = {color = function() return render2d.shader.color_override end},
+						current_color = {color = function() return render2d.shader.global_color end},
 					},
 					include_directories = {
 						"shaders/include/",
@@ -918,6 +928,7 @@ do
 						#define Image sampler2D
 						#define Texel texture2D
 						#define extern uniform
+						#define PIXEL 1
 
 						]] .. frag .. [[
 
@@ -925,7 +936,7 @@ do
 
 						void main()
 						{
-							out_color = effect(current_color, current_texture, uv, get_screen_uv());
+							out_color = effect(current_color, current_texture, uv, gl_FragCoord.xy);
 						}
 					]],
 				},
@@ -942,7 +953,12 @@ do
 	love.graphics.newPixelEffect = love.graphics.newShader
 
 	function love.graphics.setShader(obj)
+		ENV.current_shader = obj
 		render2d.shader_override = obj and obj.shader or nil
+	end
+
+	function love.graphics.getShader()
+		return ENV.current_shader
 	end
 
 	love.graphics.setPixelEffect = love.graphics.setShader
