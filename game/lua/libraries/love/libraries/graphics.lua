@@ -996,6 +996,13 @@ function love.graphics.getStats()
 	}
 end
 
+function love.graphics.getRendererInfo()
+	local tbl = render.GetInfo()
+	return
+		"OpenGL",
+		tbl.version, tbl.vendor, tbl.renderer
+end
+
 do
 	function love.graphics.setScissor(x,y,w,h)
 		render.SetScissor(x, y, w, h)
