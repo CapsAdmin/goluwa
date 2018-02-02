@@ -26,13 +26,13 @@ function render._Initialize()
 
 	--llog("opengl version: %s", render.GetVersion())
 	--llog("glsl version: %s", render.GetShadingLanguageVersion())
-	--llog("vendor: %s", render.GetVendor())
+	--llog("vendor: %s", render.GetVendor().vendor)
 
 	if render.GetVersion():find("OpenGL ES") then
 		OPENGL_ES = true
 	end
 
-	local vendor = render.GetVendor():lower()
+	local vendor = render.GetInfo().vendor:lower()
 	if vendor:find("nvidia") then NVIDIA = true end
 	if vendor:find("ati") then ATI = true end
 	if vendor:find("amd") then AMD = true end
@@ -74,10 +74,19 @@ function render.GetShadingLanguageVersion()
 	return ffi.string(str)
 end
 
-function render.GetVendor()
+function render.GetInfo()
+	local tbl = {}
+
 	local str = gl.GetString("GL_VENDOR")
-	if str == nil then  return "?" end
-	return ffi.string(str)
+	tbl.vendor = str ~= nil and ffi.string(str) or "?"
+
+	local str = gl.GetString("GL_VERSION")
+	tbl.version = str ~= nil and ffi.string(str) or "?"
+
+	local str = gl.GetString("GL_RENDERER")
+	tbl.renderer = str ~= nil and ffi.string(str) or "?"
+
+	return tbl
 end
 
 function render.GetAllExtensions()
