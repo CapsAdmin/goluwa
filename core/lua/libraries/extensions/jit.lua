@@ -82,7 +82,7 @@ do
 
 		-- number of iterations to detect a hot loop or hot call
 		-- default = 56
-		hotloop = 10000,
+		hotloop = 56,
 
 		-- number of taken exits to start a side trace
 		-- default = 10
@@ -90,19 +90,19 @@ do
 
 		-- number of attempts to compile a side trace
 		-- default = 4
-		tryside = 1,
+		tryside = 4,
 
 		-- maximum unroll factor for instable loops
 		-- default = 4
-		instunroll = 4,
+		instunroll = 500,
 
 		-- maximum unroll factor for loop ops in side traces
 		-- default = 15
-		loopunroll = 15,
+		loopunroll = 500,
 
 		-- maximum unroll factor for pseudo-recursive calls
 		-- default = 3
-		callunroll = 3,
+		callunroll = 500,
 
 		-- minimum unroll factor for true recursion
 		-- default = 2
