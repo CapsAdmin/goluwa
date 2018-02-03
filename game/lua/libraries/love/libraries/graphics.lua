@@ -378,6 +378,10 @@ do -- font
 		local w = self.font:GetTextSize(str) + 2
 		gfx.SetFont(old)
 
+		if love._version_minor < 10 and love._version_revision == 0 then
+			return w, res:split("\n")
+		end
+
 		if love._version_minor >= 10 then
 			return w, res
 		end
