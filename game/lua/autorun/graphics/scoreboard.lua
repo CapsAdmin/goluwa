@@ -5,6 +5,8 @@ scoreboard.containers = {}
 scoreboard.clients = {}
 
 input.Bind("tab", "+score", function()
+	if input.IsKeyDown("left_alt") then return end
+
 	if not scoreboard.panel:IsValid() then
 		scoreboard.Initialize()
 		if not network.IsConnected() then
@@ -15,6 +17,8 @@ input.Bind("tab", "+score", function()
 end)
 
 input.Bind("tab", "-score", function()
+	if input.IsKeyDown("left_alt") then return end
+
 	if not scoreboard.panel:IsValid() then return end
 	if scoreboard.showed_cursor then
 		window.SetMouseTrapped(true)
