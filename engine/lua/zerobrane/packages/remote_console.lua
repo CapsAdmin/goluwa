@@ -87,9 +87,9 @@ function PLUGIN:Setup()
 					pvars.Set("text_editor_path", "./../../ide/zbstudio.sh %PATH%:%LINE%")
 
 					event.Timer("remote_console", 1/5, 0, function()
-						local input = vfs.Read(e.ROOT_FOLDER .. "data/ide/goluwa_input_LUA{console.id}")
+						local input = vfs.Read("os:" .. e.ROOT_FOLDER .. "data/ide/goluwa_input_LUA{console.id}")
 						if input and input ~= "" then
-							vfs.Write(e.ROOT_FOLDER .. "data/ide/goluwa_input_LUA{console.id}", "")
+							vfs.Write("os:" .. e.ROOT_FOLDER .. "data/ide/goluwa_input_LUA{console.id}", "")
 
 							for _, chunk in ipairs(input:split(delimiter)) do
 								if chunk ~= "" then
@@ -100,7 +100,7 @@ function PLUGIN:Setup()
 					end)
 
 					_G.zb = function(str)
-						vfs.Write(e.ROOT_FOLDER .. "data/ide/goluwa_output_LUA{console.id}", vfs.Read(e.ROOT_FOLDER .. "data/ide/goluwa_output_LUA{console.id}") .. str .. delimiter)
+						vfs.Write("os:" .. e.ROOT_FOLDER .. "data/ide/goluwa_output_LUA{console.id}", vfs.Read(e.ROOT_FOLDER .. "data/ide/goluwa_output_LUA{console.id}") .. str .. delimiter)
 					end
 
 					ZEROBRANE = true

@@ -68,6 +68,7 @@ do -- console title
 	end
 
 	local titles = {}
+	local titlesi = {}
 	local str = ""
 	local last_title
 
@@ -78,10 +79,25 @@ do -- console title
 
 		if not lasttbl[id] or lasttbl[id] < time then
 			if id then
-				titles[id] = title
+				if title then
+					if not titles[id] then
+						titles[id] = {title = title}
+						table.insert(titlesi, titles[id])
+					end
+
+					titles[id].title = title
+				else
+					for _, v in ipairs(titlesi) do
+						if v == titles[id] then
+							table.remove(titlesi, i)
+							break
+						end
+					end
+				end
+
 				str = "| "
-				for _, v in pairs(titles) do
-					str = str ..  v .. " | "
+				for _, v in ipairs(titlesi) do
+					str = str ..  v.title .. " | "
 				end
 				if str ~= last_title then
 					system.SetConsoleTitleRaw(str)

@@ -200,8 +200,10 @@ function line.RunGame(folder, ...)
 				if debug.getinfo(func).what ~= "C" then
 					setfenv(func, env)
 				end
-
-				return assert(require.require_function(name, func, path, name, love.package_loaders))
+				local res = assert(require.require_function(name, func, path, name, love.package_loaders))
+print(name, res)
+				package_loaded[name] = res
+				return res
 			end
 
 			if pcall(require, name) then

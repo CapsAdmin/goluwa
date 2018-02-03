@@ -103,8 +103,6 @@ do
 end
 
 function prototype.RebuildMetatables(what)
-	if what and not prototype.invalidate_meta[what] then return end
-
 	for super_type, sub_types in pairs(prototype.registered) do
 		if what == nil or what == super_type then
 			prototype.invalidate_meta[what] = nil
@@ -194,7 +192,9 @@ function prototype.GetRegistered(super_type, sub_type)
 	sub_type = sub_type or super_type
 
 	if prototype.registered[super_type] and prototype.registered[super_type][sub_type] then
-		prototype.RebuildMetatables(super_type)
+		if prototype.invalidate_meta[super_type] then
+			prototype.RebuildMetatables(super_type)
+		end
 		return prototype.prepared_metatables[super_type][sub_type]
 	end
 end
