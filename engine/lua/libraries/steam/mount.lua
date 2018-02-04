@@ -49,8 +49,13 @@ function steam.GetInstallPath()
 		path = system.GetRegistryValue("CurrentUser/Software/Valve/Steam/SteamPath") or (X64 and "C:\\Program Files (x86)\\Steam" or "C:\\Program Files\\Steam")
 	elseif LINUX then
 		path = os.getenv("HOME") .. "/.steam/steam"
+
 		if not vfs.IsDirectory(path) then
 			path = os.getenv("HOME") .. "/.local/share/Steam"
+		end
+
+		if not vfs.IsDirectory(path) then
+			path = os.getenv("HOME") .. "/.wine/drive_c/Program Files (x86)/Steam"
 		end
 	end
 
@@ -109,7 +114,15 @@ function steam.GetSourceGames()
 	local found = serializer.ReadFile("msgpack", "source_games_cache")
 
 	if found then
-		return found
+		for i,v in ipairs(found) do
+			if not vfs.IsFile(v.gameinfo_path) then
+				found = nil
+				break
+			end
+		end
+		if found then
+			return found
+		end
 	end
 
 	found = {}
