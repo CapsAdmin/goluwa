@@ -19,7 +19,6 @@ local keyboard_map = {
 	rctrl = "right_control",
 	lalt = "left_alt",
 	ralt = "right_alt",
-	space = " ",
 	escape = "esc",
 	kp_0 = "kp0",
 	kp_1 = "kp1",

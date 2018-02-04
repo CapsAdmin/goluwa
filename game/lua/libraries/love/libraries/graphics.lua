@@ -26,9 +26,9 @@ end
 
 do -- filter
 	function love.graphics.setDefaultImageFilter(min, mag, anisotropy)
-		ENV.graphics_filter_min = min
-		ENV.graphics_filter_mag = mag
-		ENV.graphics_filter_anisotropy = anisotropy
+		ENV.graphics_filter_min = min or "linear"
+		ENV.graphics_filter_mag = mag or min or "linear"
+		ENV.graphics_filter_anisotropy = anisotropy or -1
 	end
 
 	love.graphics.setDefaultFilter = love.graphics.setDefaultImageFilter
@@ -196,16 +196,23 @@ do -- background
 		return ENV.graphics_bg_color_r, ENV.graphics_bg_color_g, ENV.graphics_bg_color_b, ENV.graphics_bg_color_a
 	end
 
-	function love.graphics.clear()
+	function love.graphics.clear(r,g,b)
 		local canvas = love.graphics.getCanvas()
 		if canvas then
 			canvas:clear()
 		else
-			local br, bg, bb, ba = love.graphics.getBackgroundColor()
-			render2d.SetTexture()
-			render2d.SetColor(br/255,bg/255,bb/255,ba/255)
-			render2d.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
-			love.graphics.setColor(love.graphics.getColor())
+			if r and g and b then
+				render2d.SetTexture()
+				render2d.SetColor(r/255,g/255,b/255,1)
+				render2d.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
+				love.graphics.setColor(love.graphics.getColor())
+			else
+				local br, bg, bb, ba = love.graphics.getBackgroundColor()
+				render2d.SetTexture()
+				render2d.SetColor(br/255,bg/255,bb/255,ba/255)
+				render2d.DrawRect(0, 0, render.GetWidth(), render.GetHeight())
+				love.graphics.setColor(love.graphics.getColor())
+			end
 		end
 	end
 end
@@ -484,6 +491,7 @@ do -- font
 		ky = ky or 0
 
 		local cr, cg, cb, ca = love.graphics.getColor()
+		ca = ca or 255
 		render2d.PushColor(cr/255, cg/255, cb/255, ca/255)
 		render2d.PushMatrix(x, y, sx, sy, r)
 		render2d.Translate(ox, oy)
@@ -786,6 +794,7 @@ function love.graphics.drawq(drawable, quad, x,y, r, sx,sy, ox,oy, kx,ky)
 	ky = ky or 0
 
 	local cr, cg, cb, ca = love.graphics.getColor()
+	ca = ca or 255
 	render2d.SetColor(cr/255, cg/255, cb/255, ca/255)
 	render2d.PushTexture(ENV.textures[drawable])
 	render2d.SetRectUV(quad.x,quad.y, quad.w,quad.h, quad.sw,quad.sh)
@@ -1472,4 +1481,17 @@ do -- sprite batch
 	end
 
 	line.RegisterType(SpriteBatch)
+end
+
+function love.graphics.reset()
+	love.graphics.setColor(255, 255, 255, 255)
+	love.graphics.setBackgroundColor(0, 0, 0, 255)
+
+	love.graphics.setCanvas()
+	love.graphics.setShader()
+
+	love.graphics.origin()
+	love.graphics.setBlendMode("alpha")
+	love.graphics.setLine(1, "smooth")
+	love.graphics.setPoint(1, "smooth")
 end
