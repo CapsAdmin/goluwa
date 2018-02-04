@@ -331,9 +331,9 @@ do -- Source
 
 			end
 		elseif line.Type(var) == "File" then
-			line.ErrorNotSupported("Decoder is not supported yet")
+			self.source = audio.CreateSource(var.decoded_data)
 		elseif line.Type(var) == "Decoder" then
-			line.ErrorNotSupported("Decoder is not supported yet")
+			self.source = audio.CreateSource(var.decoded_data)
 		elseif line.Type(var) == "SoundData" then
 			self.source = audio.CreateSource(var)
 			self.source:SetBuffer(var.buffer)

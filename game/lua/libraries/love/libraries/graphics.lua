@@ -132,6 +132,10 @@ function love.graphics.setMode(width, height, fullscreen, vsync, fsaa)
 	return true
 end
 
+function love.graphics.getMode()
+	return window.GetSize().x, window.GetSize().y, false, false, false
+end
+
 function love.graphics.getDimensions()
 	return render.GetWidth(), render.GetHeight()
 end
