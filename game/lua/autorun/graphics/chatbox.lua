@@ -1,3 +1,5 @@
+if not chat then return end
+
 local syntax_process
 do
 	local lex_setup = require("lang.lexer")
