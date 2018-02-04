@@ -201,7 +201,7 @@ function line.RunGame(folder, ...)
 					setfenv(func, env)
 				end
 				local res = assert(require.require_function(name, func, path, name, love.package_loaders))
-print(name, res)
+
 				package_loaded[name] = res
 				return res
 			end
