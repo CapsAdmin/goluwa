@@ -18,9 +18,11 @@ function gine.AddEvent(what, callback)
 end
 
 gine.objects = gine.objects or {}
+gine.objectsi = gine.objectsi or {}
 
 function gine.WrapObject(obj, meta)
 	gine.objects[meta] = gine.objects[meta] or {}
+	gine.objectsi[meta] = gine.objectsi[meta] or {}
 
 	if not gine.objects[meta][obj] then
 		local tbl = table.copy(gine.GetMetaTable(meta))
@@ -62,11 +64,19 @@ function gine.WrapObject(obj, meta)
 			obj:CallOnRemove(function()
 				if gine.objects[meta] and gine.objects[meta][obj] then
 					local obj = gine.objects[meta][obj]
+					for i,v in ipairs(gine.objectsi[meta]) do
+						if v == obj then
+							table.remove(gine.objectsi[meta], i)
+							break
+						end
+					end
 					event.Delay(function() prototype.MakeNULL(obj) end)
 					gine.objects[meta][obj] = nil
 				end
 			end)
 		end
+
+		table.insert(gine.objectsi[meta], {external = gine.objects[meta][obj], internal = obj})
 	end
 
 	return gine.objects[meta][obj]
