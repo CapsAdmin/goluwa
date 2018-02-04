@@ -65,6 +65,8 @@ function love.filesystem.lines(path)
 	if file then
 		return file:Lines()
 	end
+
+	return function() end
 end
 
 function love.filesystem.load(path)
@@ -262,9 +264,12 @@ end
 
 do -- FileData object
 	local FileData = line.TypeTemplate("FileData")
+	local ffi = require("ffi")
 
 	function FileData:getPointer()
-		return ffi.cast("uint8_t *", self.contents)
+		local ptr = ffi.new("uint8_t[?]", #self.contents)
+		ffi.copy(ptr, self.contents, #self.contents)
+		return ptr
 	end
 
 	function FileData:getSize()
