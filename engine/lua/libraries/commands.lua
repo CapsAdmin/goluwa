@@ -249,6 +249,8 @@ do -- commands
 	end
 
 	function commands.FindCommand(str)
+		if #str > 50 or str:find("\n", nil, true) then return nil, "could not find command: command is too complex" end
+
 		local found = {}
 
 		for _, command in pairs(commands.added2) do
