@@ -264,7 +264,7 @@ function PLUGIN:Setup()
 	return {
 		setup_console("server", "Server", jit.os ~= "Windows" and "./goluwa server" or "goluwa.cmd server", server_icon),
 		setup_console("client", "Client", jit.os ~= "Windows" and "./goluwa client" or "goluwa.cmd client", client_icon, function(console, suppress_only)
-			if (wx.wxGetKeyState(wx.WXK_F5) or wx.wxGetKeyState(wx.WXK_F6)) then
+			if ide:GetMainFrame():IsActive() and (wx.wxGetKeyState(wx.WXK_F5) or wx.wxGetKeyState(wx.WXK_F6)) then
 				if suppress_only then return false end
 
 				if (console.last_start or 0) < os.clock() then
