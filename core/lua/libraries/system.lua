@@ -1,6 +1,6 @@
 local system = _G.system or {}
 
-local ffi = require("ffi")
+runfile("platforms/" .. PLATFORM .. "/system.lua", system)
 
 function system.OSCommandExists(...)
 	if select("#", ...) > 1 then
@@ -12,17 +12,7 @@ function system.OSCommandExists(...)
 		end
 	end
 
-	local cmd = ...
-
-	if LINUX then
-		if io.popen("command -v " .. cmd):read("*all") ~= "" then
-			return true
-		end
-
-		return false, cmd .. " command does not exist"
-	end
-
-	return false, "NYI"
+	return system._OSCommandExists(...)
 end
 
 function system.GetLibraryDependencies(path)
@@ -42,31 +32,6 @@ function system.GetLibraryDependencies(path)
 end
 
 do -- console title
-	if not system.SetConsoleTitleRaw then
-		local set_title
-
-		if WINDOWS then
-			ffi.cdef("int SetConsoleTitleA(const char* blah);")
-
-			set_title = function(str)
-				return ffi.C.SetConsoleTitleA(str)
-			end
-		end
-
-		if not CURSES then
-			set_title = function()
-				-- hmmm
-			end
-		elseif LINUX then
-			local iowrite = _OLD_G.io.write
-			set_title = function(str)
-				return iowrite and iowrite('\27]0;', str, '\7') or nil
-			end
-		end
-
-		system.SetConsoleTitleRaw = set_title
-	end
-
 	local titles = {}
 	local titlesi = {}
 	local str = ""
@@ -191,81 +156,6 @@ do -- server time (synchronized across client and server)
 		return server_time
 	end
 end
-do -- time in ms
-	local get = not_implemented
-
-	if WINDOWS then
-		require("winapi.time")
-
-		local winapi = require("winapi")
-
-		local freq = tonumber(winapi.QueryPerformanceFrequency().QuadPart)
-		local start_time = winapi.QueryPerformanceCounter()
-
-		get = function()
-			local time = winapi.QueryPerformanceCounter()
-
-			time.QuadPart = time.QuadPart - start_time.QuadPart
-			return tonumber(time.QuadPart) / freq
-		end
-	end
-
-	if LINUX then
-		local posix = require("syscall")
-
-		local ts = posix.t.timespec()
-
-		get = function()
-			posix.clock_gettime("MONOTONIC", ts)
-			return tonumber(ts.tv_sec * 1000000000 + ts.tv_nsec) * 1e-9
-		end
-	end
-
-	system.GetTime = get
-end
-
-do -- sleep
-	local sleep = not_implemented
-
-	if WINDOWS then
-		ffi.cdef("VOID Sleep(DWORD dwMilliseconds);")
-		sleep = function(ms) ffi.C.Sleep(ms) end
-	end
-
-	if LINUX then
-		ffi.cdef("void usleep(unsigned int ns);")
-		sleep = function(ms) ffi.C.usleep(ms*1000) end
-	end
-
-	system.Sleep = sleep
-end
-
-do -- openurl
-	local func = not_implemented
-
-	if WINDOWS then
-		func = function(url) os.execute(([[explorer "%s"]]):format(url)) end
-	else
-		local attempts = {
-			"sensible-browser",
-			"xdg-open",
-			"kde-open",
-			"gnome-open",
-		}
-
-		func = function(url)
-			for _, cmd in ipairs(attempts) do
-				if os.execute(cmd .. " " .. url) then
-					return
-				end
-			end
-
-			wlog("don't know how to open an url (tried: %s)", table.concat(attempts, ", "), 2)
-		end
-	end
-
-	system.OpenURL = func
-end
 
 do -- arg is made from luajit.exe
 	local arg = _G.arg or {}
@@ -280,200 +170,6 @@ do -- arg is made from luajit.exe
 	end
 end
 
-
-do -- text editors
-	if WINDOWS then
-		local text_editors = {
-			["ZeroBrane.Studio"] = "%PATH%:%LINE%",
-			["notepad++.exe"] = "\"%PATH%\" -n%LINE%",
-			["notepad2.exe"] = "/g %LINE% %PATH%",
-			["sublime_text.exe"] = "%PATH%:%LINE%",
-			["notepad.exe"] = "/A %PATH%",
-		}
-
-		function system.FindFirstTextEditor(os_execute, with_args)
-			local app = system.GetRegistryValue("ClassesRoot/.lua/default")
-			if app then
-				local path = system.GetRegistryValue("ClassesRoot/" .. app .. "/shell/edit/command/default")
-				if path then
-					path = path and path:match("(.-) %%") or path:match("(.-) \"%%")
-					if path then
-						if os_execute then
-							path = "start \"\" " .. path
-						end
-
-						if with_args and text_editors[app] then
-							path = path .. " " .. text_editors[app]
-						end
-
-						return path
-					end
-				end
-			end
-		end
-	else
-		local text_editors = {
-			{
-				name = "atom",
-				args = "%PATH%:%LINE%",
-			},
-			{
-				name = "scite",
-				args = "%PATH% -goto:%LINE%",
-			},
-			{
-				name = "emacs",
-				args = "+%LINE% %PATH%",
-				terminal = true,
-			},
-			{
-				name = "vim",
-				args = "%PATH%:%LINE%",
-				terminal = true,
-			},
-			{
-				name = "kate",
-				args = "-l %LINE% %PATH%",
-			},
-			{
-				name = "gedit",
-				args = "+%LINE% %PATH%",
-			},
-			{
-				name = "nano",
-				args = "+%LINE% %PATH%",
-				terminal = true,
-			},
-		}
-
-		function system.FindFirstTextEditor(os_execute, with_args)
-			for _, v in pairs(text_editors) do
-
-				if io.popen("command -v " .. v.name):read() then
-					local cmd = v.name
-
-					if v.terminal then
-						cmd = "x-terminal-emulator -e " .. cmd
-					end
-
-					if with_args then
-						cmd = cmd .. " " .. v.args
-
-					end
-
-					if os_execute then
-						cmd = cmd .. " &"
-					end
-
-					return cmd
-				end
-			end
-		end
-	end
-end
-
-do -- dll paths
-	local set, get = not_implemented, not_implemented
-
-	if WINDOWS then
-		ffi.cdef[[
-			BOOL SetDllDirectoryA(LPCTSTR lpPathName);
-			DWORD GetDllDirectoryA(DWORD nBufferLength, LPTSTR lpBuffer);
-		]]
-
-		set = function(path)
-			ffi.C.SetDllDirectoryA(path or "")
-		end
-
-		local str = ffi.new("char[1024]")
-
-		get = function()
-			ffi.C.GetDllDirectoryA(1024, str)
-
-			return ffi.string(str)
-		end
-	end
-
-	if LINUX then
-		set = function(path)
-			os.setenv("LD_LIBRARY_PATH", path)
-		end
-
-		get = function()
-			return os.getenv("LD_LIBRARY_PATH") or ""
-		end
-	end
-
-	system.SetSharedLibraryPath = set
-	system.GetSharedLibraryPath = get
-end
-
-do -- registry
-	local set = not_implemented
-	local get = not_implemented
-
-	if WINDOWS then
-		ffi.cdef([[
-			typedef unsigned goluwa_hkey;
-			LONG RegGetValueA(goluwa_hkey, LPCTSTR, LPCTSTR, DWORD, LPDWORD, PVOID, LPDWORD);
-		]])
-
-		local advapi = ffi.load("advapi32")
-
-		local ERROR_SUCCESS = 0
-		local HKEY_CLASSES_ROOT  = 0x80000000
-		local HKEY_CURRENT_USER = 0x80000001
-		local HKEY_LOCAL_MACHINE = 0x80000002
-		local HKEY_CURRENT_CONFIG = 0x80000005
-
-		local RRF_RT_REG_SZ = 0x00000002
-
-		local translate = {
-			HKEY_CLASSES_ROOT  = 0x80000000,
-			HKEY_CURRENT_USER = 0x80000001,
-			HKEY_LOCAL_MACHINE = 0x80000002,
-			HKEY_CURRENT_CONFIG = 0x80000005,
-
-			ClassesRoot  = 0x80000000,
-			CurrentUser = 0x80000001,
-			LocalMachine = 0x80000002,
-			CurrentConfig = 0x80000005,
-		}
-
-		get = function(str)
-			local where, key1, key2 = str:match("(.-)/(.+)/(.*)")
-
-			if where then
-				where, key1 = str:match("(.-)/(.+)/")
-			end
-
-			where = translate[where] or where
-			key1 = key1:gsub("/", "\\")
-			key2 = key2 or ""
-
-			if key2 == "default" then key2 = nil end
-
-			local value = ffi.new("char[4096]")
-			local value_size = ffi.new("unsigned[1]")
-			value_size[0] = 4096
-
-			local err = advapi.RegGetValueA(where, key1, key2, RRF_RT_REG_SZ, nil, value, value_size)
-
-			if err ~= ERROR_SUCCESS then
-				return
-			end
-
-			return ffi.string(value)
-		end
-	end
-
-	if LINUX then
-		-- return empty values
-	end
-
-	system.GetRegistryValue = get
-	system.SetRegistryValue = set
-end
 do
 	-- this should be used for xpcall
 	local suppress = false

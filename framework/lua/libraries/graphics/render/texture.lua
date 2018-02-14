@@ -678,14 +678,14 @@ end
 
 render.texture_path_cache = render.texture_path_cache or {}
 
-function render.CreateTextureFromPath(str)
+function render.CreateTextureFromPath(str, ...)
 	if render.texture_path_cache[str] then
 		return render.texture_path_cache[str]
 	end
 
 	local self = render.CreateTexture("2d")
 
-	self:SetPath(str)
+	self:SetPath(str, ...)
 	self:SetAnisotropy(-1)
 
 	render.texture_path_cache[str] = self

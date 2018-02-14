@@ -51,6 +51,14 @@ do -- constants
 	_G[jit.arch:upper()] = true
 
 	_G.CLI = os.getenv("GOLUWA_CLI")
+
+	if WINDOWS == true then
+		_G.PLATFORM = "windows"
+	elseif GMOD == true then
+		_G.PLATFORM = "gmod"
+	else
+		_G.PLATFORM = "unix"
+	end
 end
 
 do
@@ -89,7 +97,7 @@ do
 	-- this is required because fs needs winapi and syscall
 	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../"..e.INTERNAL_ADDON_NAME.."/lua/modules/" .. name .. ".lua") end)
 	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../"..e.INTERNAL_ADDON_NAME.."/lua/modules/" .. name .. "/init.lua") end)
-	local fs = dofile("../../"..e.INTERNAL_ADDON_NAME.."/lua/libraries/fs.lua")
+	local fs = dofile("../../"..e.INTERNAL_ADDON_NAME.."/lua/libraries/platforms/"..PLATFORM.."/filesystem.lua")
 	package.loaded.fs = fs
 	-- remove the temporary added loaders from top because we do it properly later on
 	table.remove(package.loaders)

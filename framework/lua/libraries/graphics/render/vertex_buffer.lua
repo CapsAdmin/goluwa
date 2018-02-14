@@ -28,8 +28,9 @@ function render.CreateVertexBuffer(mesh_layout, vertices, is_valid_table)
 	return self
 end
 
-do -- attributes
-	local ffi = require("ffi")
+local ffi = desire("ffi")
+if ffi then -- attributes
+
 	local type_info =  {
 		int = {type = "int", arg_count = 1},
 		float = {type = "float", arg_count = 1},
@@ -195,6 +196,12 @@ do -- attributes
 			self:SetVertices(Array(self.mesh_layout.ctype, #vertices, vertices))
 		end
 	end
+else
+	function META:LoadVertices() end
+	function META:GetVertex() end
+	function META:SetupAttributes() end
+	function META:ClearAttributes() end
+	function META:SetAttribute() end
 end
 
 function META:SetVertices(vertices)

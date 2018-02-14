@@ -1,5 +1,7 @@
 local render = ... or _G.render
-local ffi = require("ffi")
+local ffi = desire("ffi")
+
+if not ffi then return end
 
 local texture_formats = {
 	depth_component16 = {bits = {16}},

@@ -1,6 +1,10 @@
 local window = _G.window or {}
 
-runfile("window_sdl.lua", window)
+if PLATFORM == "gmod" then
+	runfile("window_gmod.lua", window)
+else
+	runfile("window_sdl.lua", window)
+end
 
 local meta = prototype.GetRegistered("render_window")
 

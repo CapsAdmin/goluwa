@@ -20,7 +20,9 @@ runfile("shader_builder.lua", render)
 function render.GetDir()
 	local dir = "lua/libraries/graphics/render/"
 
-	if OPENGL then
+	if PLATFORM == "gmod" then
+		dir = "framework/" .. dir .. "gmod/"
+	elseif OPENGL then
 		dir = dir .. "opengl/"
 	elseif VULKAN then
 		dir = dir .. "vulkan/"
