@@ -69,7 +69,7 @@ function PLUGIN:Setup()
 		return self
 	end
 
-	local function setup_console(id, name, cmd_line, icon, on_key)
+	local function setup_console(id, name, cmd_line, icon, on_key, env_vars)
 		return
 		{
 			id = id,
@@ -78,7 +78,7 @@ function PLUGIN:Setup()
 			icon = icon,
 
 			working_directory = "../../",
-			env_vars = {
+			env_vars = env_vars or {
 				GOLUWA_CURSES = "0",
 				GOLUWA_IDE = "",
 				GOLUWA_ARGS = [==[{[[
@@ -277,6 +277,43 @@ function PLUGIN:Setup()
 				end
 			end
 		end),
+		setup_console("gmod", "GMOD", function(console)
+			local cmd_line = ""
+
+			if WINE then
+				cmd_line = "wine hl2.exe -steam -game garrysmod -disableluarefresh"
+			elseif jit.os ~= "Windows" then
+				cmd_line = "./hl2_linux -steam -game garrysmod -disableluarefresh"
+			else
+
+			end
+
+			local pid = CommandLineRun(
+				cmd_line,
+				GetGMODDir() .. "../",
+				true,--tooutput,
+				true,--nohide,
+				function(...) console:print(...) end,
+				"goluwa_" .. console.id,
+				function()
+					local tb = ide:GetToolBar()
+					tb:ToggleTool(console.wx_start_id, false)
+					tb:EnableTool(console.wx_run_id, false)
+					tb:Realize()
+
+					self:StopProcess(console.id)
+				end
+			)
+
+			os.execute("xterm -e 'echo password needed to attach to process " ..pid.. " && sudo gdb -p " .. pid .. " --ex continue &'")
+
+			return pid
+		end, server_icon, nil, {
+			__GL_THREADED_OPTIMIZATIONS = "1",
+			LIBGL_DEBUG = "1",
+			MESA_DEBUG = "context",
+			LD_LIBRARY_PATH = GetGMODDir() .. "../bin",
+		}),
 	}
 end
 
@@ -324,34 +361,39 @@ function PLUGIN:StartProcess(id, cmd)
 
 	local cmd_line = console.cmd_line
 
-	if BRANCH then
-		cmd_line = cmd_line .. " branch " .. BRANCH
+	if type(cmd_line) == "function" then
+		console.pid = cmd_line(console)
+	else
 
-		if DEBUG then
-			cmd_line = cmd_line .. " debug"
+		if BRANCH then
+			cmd_line = cmd_line .. " branch " .. BRANCH
+
+			if DEBUG then
+				cmd_line = cmd_line .. " debug"
+			end
+
 		end
 
-	end
-
-	if jit.os == "Windows" then
-		cmd_line = ide:GetProject() .. cmd_line
-	end
-
-	console.pid = CommandLineRun(
-		cmd_line,
-		console.working_directory,
-		true,--tooutput,
-		true,--nohide,
-		function(...) console:print(...) end,
-		"luacraft_" .. id,
-		function()
-			tb:ToggleTool(console.wx_start_id, false)
-			tb:EnableTool(console.wx_run_id, false)
-			tb:Realize()
-
-			self:StopProcess(console.id)
+		if jit.os == "Windows" then
+			cmd_line = ide:GetProject() .. cmd_line
 		end
-	)
+
+		console.pid = CommandLineRun(
+			cmd_line,
+			console.working_directory,
+			true,--tooutput,
+			true,--nohide,
+			function(...) console:print(...) end,
+			"luacraft_" .. id,
+			function()
+				tb:ToggleTool(console.wx_start_id, false)
+				tb:EnableTool(console.wx_run_id, false)
+				tb:Realize()
+
+				self:StopProcess(console.id)
+			end
+		)
+	end
 
 	tb:ToggleTool(console.wx_start_id, true)
 	tb:EnableTool(console.wx_run_id, true)
