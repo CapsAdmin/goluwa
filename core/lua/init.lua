@@ -218,8 +218,6 @@ end
 -- this will skip the src folder though
 vfs.MountAddons(e.ROOT_FOLDER)
 
-system._CheckCreatedEnv()
-
 if not CLI then
 	logn("[runfile] ", os.clock() - start_time," seconds spent in core/lua/init.lua")
 end

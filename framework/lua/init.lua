@@ -122,8 +122,6 @@ if NETWORK then
 	network.Initialize()
 end
 
-system._CheckCreatedEnv()
-
 event.AddListener("Initialize", function()
 	-- load everything in goluwa/*/lua/autorun/client/*
 	if CLIENT then
