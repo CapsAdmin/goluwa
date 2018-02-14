@@ -8,7 +8,7 @@ local GoluwaToGmodPath = GoluwaToGmodPath
 
 local fs = {}
 
-local dprint = function(...) if gmod.goluwa.debug then gmod.print("[goluwa] fs: ", ...) end end
+local dprint = function(...) if DEBUG then gmod.print("[goluwa] fs: ", ...) end end
 
 fs.find_cache = {}
 fs.get_attributes_cache = {}

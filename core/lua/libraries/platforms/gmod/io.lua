@@ -11,7 +11,7 @@ local file_Open = gmod.file.Open
 local Msg = gmod.Msg
 local GoluwaToGmodPath = GoluwaToGmodPath
 
-local dprint = function(...) if gmod.goluwa.debug then gmod.print("[goluwa] io: ", ...) end end
+local dprint = function(...) if DEBUG then gmod.print("[goluwa] io: ", ...) end end
 
 local io = ... or _G.io
 

@@ -7,7 +7,7 @@ local RealTime = gmod.RealTime
 local util_RelativePathToFull = gmod.util.RelativePathToFull
 local LocalPlayer = gmod.LocalPlayer
 
-local dprint = function(...) if gmod.goluwa.debug then gmod.print("[goluwa] fs: ", ...) end end
+local dprint = function(...) if DEBUG then gmod.print("[goluwa] fs: ", ...) end end
 
 local os = ... or _G.os
 
