@@ -21,7 +21,7 @@ function render.GetDir()
 	local dir = "lua/libraries/graphics/render/"
 
 	if PLATFORM == "gmod" then
-		dir = "framework/" .. dir .. "gmod/"
+		dir = dir .. "gmod/"
 	elseif OPENGL then
 		dir = dir .. "opengl/"
 	elseif VULKAN then
@@ -50,7 +50,9 @@ do
 
 	end
 
-	runfile(render.GetDir() .. "window_sdl.lua", render)
+	if PLATFORM ~= "gmod" then
+		runfile(render.GetDir() .. "window_sdl.lua", render)
+	end
 end
 
 function render.Shutdown()

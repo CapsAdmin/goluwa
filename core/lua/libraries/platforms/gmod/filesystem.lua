@@ -5,9 +5,10 @@ local file_IsDir = gmod.file.IsDir
 local file_CreateDir = gmod.file.CreateDir
 local file_Time = gmod.file.Time
 local GoluwaToGmodPath = GoluwaToGmodPath
-local dprint = function(...) end
 
 local fs = {}
+
+local dprint = function(...) if gmod.goluwa.debug then gmod.print("[goluwa] fs: ", ...) end end
 
 fs.find_cache = {}
 fs.get_attributes_cache = {}

@@ -1,5 +1,3 @@
-local dprint = function(...) end
-
 local META = gmod.FindMetaTable("File")
 local file_obj_Write = META.Write
 local file_obj_Read = META.Read
@@ -12,6 +10,8 @@ local file_obj_Tell = META.Tell
 local file_Open = gmod.file.Open
 local Msg = gmod.Msg
 local GoluwaToGmodPath = GoluwaToGmodPath
+
+local dprint = function(...) if gmod.goluwa.debug then gmod.print("[goluwa] io: ", ...) end end
 
 local io = ... or _G.io
 
@@ -132,9 +132,6 @@ do -- file
 		return self
 	end
 end
-
-io.stdin = io.open("stdin", "r")
-io.stdout = io.open("stdout", "w")
 
 local current_file = io.stdin
 
