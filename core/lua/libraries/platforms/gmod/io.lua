@@ -160,7 +160,9 @@ function io.write(...)
 		str = str .. tostring(select(i, ...))
 	end
 
-	Msg(str)
+	for _, chunk in ipairs(str:lengthsplit(3000)) do
+		Msg(str)
+	end
 end
 
 function io.read(...)
