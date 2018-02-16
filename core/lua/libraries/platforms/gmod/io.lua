@@ -161,7 +161,7 @@ function io.write(...)
 	end
 
 	for _, chunk in ipairs(str:lengthsplit(3000)) do
-		Msg(str)
+		Msg(chunk)
 	end
 end
 
