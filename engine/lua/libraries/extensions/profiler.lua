@@ -46,8 +46,13 @@ commands.Add("profile_dump=nil,number|nil", function(how, min_samples)
 	end
 end)
 
-commands.Add("profile=number[5],string|nil,string|nil", function(time, file_filter, method)
-	profiler.MeasureInstrumental(time, file_filter, method)
+commands.Add("sprofile=number[5],string|nil,string|nil", function(time, file_filter, method)
+	profiler.EnableStatisticalProfiling(true)
+
+	event.Delay(time, function()
+		profiler.EnableStatisticalProfiling(false)
+		profiler.PrintStatistical(0)
+	end)
 end)
 
 commands.Add("zbprofile", function()
