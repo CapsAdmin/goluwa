@@ -48,8 +48,8 @@ function PLUGIN:onProjectLoad()
 
 		ide:GetProjectTree():MapDirectory(ide:GetProject() .. "pac3_server/addons/notagain/lua/notagain/")
 		ide:GetProjectTree():MapDirectory(ide:GetProject() .. "pac3_server/addons/pac3/lua/pac3/")
-		ide:GetProjectTree():MapDirectory(gmod_path .. "lua/")
-		ide:GetProjectTree():MapDirectory(gmod_path .. "gamemodes/")
+		ide:GetProjectTree():MapDirectory(ide:GetProject() .. "pac3_server/addons/garrysmod/garrysmod/lua/")
+		ide:GetProjectTree():MapDirectory(ide:GetProject() .. "pac3_server/addons/garrysmod/garrysmod/gamemodes/")
 		ide:GetProjectTree():MapDirectory(gmod_path .. "addons/")
 	end
 end
