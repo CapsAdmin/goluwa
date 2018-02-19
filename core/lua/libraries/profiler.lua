@@ -64,7 +64,7 @@ local function parse_raw_statistical_data()
 
 	for _ = 1, #profiler.raw_data.statistical do
 		local args = table.remove(profiler.raw_data.statistical)
-		local str, samples = args[1], args[2]
+		local str, samples, vmstate = args[1], args[2], args[3]
 		local children = {}
 
 		for line in str:gmatch("(.-)\n") do
@@ -85,7 +85,7 @@ local function parse_raw_statistical_data()
 		local line = tonumber(info.line) or -1
 
 		data[path] = data[path] or {}
-		data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, ready = false, func_name = path}
+		data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, ready = false, func_name = path, vmstate = vmstate}
 
 		data[path][line].samples = data[path][line].samples + samples
 		data[path][line].start_time = data[path][line].start_time or system.GetTime()
@@ -97,7 +97,7 @@ local function parse_raw_statistical_data()
 			local line = tonumber(info.line) or -1
 
 			data[path] = data[path] or {}
-			data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, ready = false, func_name = path}
+			data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, ready = false, func_name = path, vmstate = vmstate}
 
 			data[path][line].samples = data[path][line].samples + samples
 			data[path][line].start_time = data[path][line].start_time or system.GetTime()
@@ -112,8 +112,8 @@ local function parse_raw_statistical_data()
 end
 
 local function statistical_callback(thread, samples, vmstate)
-	local str = jit.profiler.dumpstack(thread, "pl\n", 10)
-	table.insert(profiler.raw_data.statistical, {str, samples})
+	local str = jit.profiler.dumpstack(thread, "pl\n", 1000)
+	table.insert(profiler.raw_data.statistical, {str, samples, vmstate})
 end
 
 function profiler.EnableStatisticalProfiling(b)
@@ -406,12 +406,23 @@ end
 function profiler.PrintStatistical(min_samples)
 	min_samples = min_samples or 100
 
+	local tr = {
+		N = "native",
+		I = "interpreted",
+		G = "garbage collector",
+		J = "JIT compiler",
+		C = "C",
+	}
+
 	log(utility.TableToColumns(
 		"statistical",
 		profiler.GetBenchmark("statistical"),
 		{
 			{key = "name"},
 			{key = "times_called", friendly = "percent", tostring = function(val, column, columns)  return math.round((val / columns[#columns].val.times_called) * 100, 2) end},
+			{key = "vmstate", tostring = function(str)
+				return tr[str]
+			end},
 		},
 		function(a) return a.name and a.times_called > min_samples end,
 		function(a, b) return a.times_called < b.times_called end
@@ -453,6 +464,8 @@ function profiler.StartInstrumental(file_filter, method)
 end
 
 function profiler.StopInstrumental(file_filter, show_everything)
+	profiler.EnableSectionProfiling(false)
+
 	profiler.stop_time = system.GetTime()
 
 	profiler.busy = false
@@ -472,8 +485,6 @@ function profiler.StopInstrumental(file_filter, show_everything)
 		function(a) return show_everything or a.average_time > 0.5 or (file_filter or a.times_called > 100) end,
 		function(a, b) return a.total_time < b.total_time end
 	))
-
-	profiler.EnableSectionProfiling(false, true)
 end
 
 do
