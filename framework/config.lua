@@ -12,7 +12,6 @@ local env_vars = {
 	BUILD_SHADER_OUTPUT = false,
 	DEBUG_OPENGL = false,
 
-	PHYSICS = false,
 
 	OPENGL = true,
 	VULKAN = false,

@@ -35,13 +35,6 @@ input = runfile("!lua/libraries/input.lua") -- keyboard and mouse input
 tasks = runfile("!lua/libraries/tasks.lua") -- high level coroutine library
 threads = runfile("!lua/libraries/threads.lua")
 
-if PHYSICS then
-	physics = runfile("!lua/libraries/physics/physics.lua") -- bullet physics
-	if not physics then
-		PHYSICS = false
-	end
-end
-
 if SOCKETS then
 	sockets = runfile("!lua/libraries/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
 
@@ -110,10 +103,6 @@ end
 
 if SOUND then
 	audio.Initialize()
-end
-
-if PHYSICS then
-	physics.Initialize()
 end
 
 --steam.InitializeWebAPI()

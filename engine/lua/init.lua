@@ -43,6 +43,13 @@ if GRAPHICS then
 	--gui.Initialize()
 end
 
+if PHYSICS then
+	physics = runfile("!lua/libraries/physics/physics.lua") -- physics
+	if not physics then
+		PHYSICS = false
+	end
+end
+
 entities = runfile("lua/libraries/entities/entities.lua") -- entity component system
 
 pvars.Initialize()
@@ -52,6 +59,10 @@ pvars.Setup("text_editor_path", false)
 
 if CURSES then
 	repl.Initialize()
+end
+
+if PHYSICS then
+	physics.Initialize()
 end
 
 local rate_cvar = pvars.Setup(

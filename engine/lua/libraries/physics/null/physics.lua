@@ -6,12 +6,12 @@ local physics = physics or {}
 physics.ode = ode
 physics.bodies = physics.bodies or {}
 
-function physics.Vec3ToODE(x, y, z)
+function physics.Vec3ToEngine(x, y, z)
 --	return -y, -x, -z
 	return x,y,z
 end
 
-function physics.Vec3FromODE(x, y, z)
+function physics.Vec3FromEngine(x, y, z)
 --	return -y, -x, -z
 	return x,y,z
 end
@@ -167,11 +167,11 @@ do
 
 	function physics.GetGravity()
 		ode.WorldGetGravity(physics.world, out)
-		return Vec3(physics.Vec3FromODE(out[0], out[1], out[2]))
+		return Vec3(physics.Vec3FromEngine(out[0], out[1], out[2]))
 	end
 
 	function physics.SetGravity(vec)
-		ode.WorldSetGravity(physics.world, physics.Vec3ToODE(vec:Unpack()))
+		ode.WorldSetGravity(physics.world, physics.Vec3ToEngine(vec:Unpack()))
 	end
 end
 

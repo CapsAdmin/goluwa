@@ -26,12 +26,12 @@ do -- matrix44
 
 		if self.Movable then
 			if check_body(self) then
-				physics.ode.BodySetPosition(self.body, physics.Vec3ToODE(m:GetTranslation()))
+				physics.ode.BodySetPosition(self.body, physics.Vec3ToEngine(m:GetTranslation()))
 				physics.ode.BodySetQuaternion(self.body, m:GetRotation():GetDoublePointer())
 			end
 		else
 			if check_geom(self) then
-				physics.ode.GeomSetPosition(self.geom, physics.Vec3ToODE(m:GetTranslation()))
+				physics.ode.GeomSetPosition(self.geom, physics.Vec3ToEngine(m:GetTranslation()))
 				physics.ode.GeomSetQuaternion(self.geom, m:GetRotation():GetDoublePointer())
 			end
 		end
@@ -59,7 +59,7 @@ do -- matrix44
 		local m = Matrix44()
 
 		if p and r then
-			m:Translate(physics.Vec3FromODE(p[0], p[1], p[2]))
+			m:Translate(physics.Vec3FromEngine(p[0], p[1], p[2]))
 			m:SetRotation(Quat(r[0], r[1], r[2], r[3]))
 		end
 
@@ -103,7 +103,7 @@ do -- mass
 			local info = ffi.new("struct dMass[1]")
 			physics.ode.BodyGetMass(self.body, info)
 
-			local x,y,z = physics.Vec3ToODE(self:GetMassOrigin():Unpack())
+			local x,y,z = physics.Vec3ToEngine(self:GetMassOrigin():Unpack())
 			info[0].c[0] = x
 			info[0].c[1] = y
 			info[0].c[2] = z
@@ -141,7 +141,7 @@ do -- mass
 		if check_body(self) then
 			local out = ffi.new("struct dMass[1]")
 			physics.ode.BodyGetMass(self.body, out)
-			return Vec3(physics.Vec3ToODE(out[0].c[0], out[0].c[2], out[0].c[2]))
+			return Vec3(physics.Vec3ToEngine(out[0].c[0], out[0].c[2], out[0].c[2]))
 		end
 
 		return self.MassOrigin
@@ -174,7 +174,7 @@ do -- init box options
 		if scale then self:SetPhysicsBoxScale(scale) end
 
 		if physics.init then
-			self.geom = physics.ode.CreateBox(physics.hash_space, physics.Vec3ToODE(self:GetPhysicsBoxScale():Unpack()))
+			self.geom = physics.ode.CreateBox(physics.hash_space, physics.Vec3ToEngine(self:GetPhysicsBoxScale():Unpack()))
 
 			if self.Movable then
 				self.body = physics.ode.BodyCreate(physics.world)
@@ -258,7 +258,6 @@ do -- mesh init options
 		if not physics.init then return end
 
 		self.mesh = tbl
-
 		local data = physics.ode.GeomTriMeshDataCreate()
 
 		physics.ode.GeomTriMeshDataBuildSingle(
@@ -310,13 +309,13 @@ do -- generic get set
 			META["Set" .. friendly] = function(self, var)
 				self[friendly] = var
 				if not check_body(self) then return end
-				set_func(self.body, physics.Vec3ToODE(var.x, var.y, var.z))
+				set_func(self.body, physics.Vec3ToEngine(var.x, var.y, var.z))
 			end
 
 			META["Get" .. friendly] = function(self)
 				if not check_body(self) then return self[friendly] end
 				local out = get_func(self.body)
-				return Vec3(physics.Vec3FromODE(out[0], out[1], out[2]))
+				return Vec3(physics.Vec3FromEngine(out[0], out[1], out[2]))
 			end
 		end
 	end

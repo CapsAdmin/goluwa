@@ -1,5 +1,4 @@
 local ffi = require("ffi")
-local ode = desire("ode")
 local physics = ... or _G.physics
 
 local META = prototype.CreateTemplate("physics_body")
@@ -27,13 +26,13 @@ do -- matrix44
 
 		if self.Movable then
 			if check_body(self) then
-				ode.BodySetPosition(self.body, physics.Vec3ToEngine(m:GetTranslation()))
-				ode.BodySetQuaternion(self.body, m:GetRotation():GetDoublePointer())
+				physics.ode.BodySetPosition(self.body, physics.Vec3ToEngine(m:GetTranslation()))
+				physics.ode.BodySetQuaternion(self.body, m:GetRotation():GetDoublePointer())
 			end
 		else
 			if check_geom(self) then
-				ode.GeomSetPosition(self.geom, physics.Vec3ToEngine(m:GetTranslation()))
-				ode.GeomSetQuaternion(self.geom, m:GetRotation():GetDoublePointer())
+				physics.ode.GeomSetPosition(self.geom, physics.Vec3ToEngine(m:GetTranslation()))
+				physics.ode.GeomSetQuaternion(self.geom, m:GetRotation():GetDoublePointer())
 			end
 		end
 
@@ -46,14 +45,14 @@ do -- matrix44
 
 		if self.Movable then
 			if check_body(self) then
-				p = ode.BodyGetPosition(self.body)
-				r = ode.BodyGetQuaternion(self.body)
+				p = physics.ode.BodyGetPosition(self.body)
+				r = physics.ode.BodyGetQuaternion(self.body)
 			end
 		else
 			if check_geom(self) then
-				p = ode.GeomGetPosition(self.geom)
+				p = physics.ode.GeomGetPosition(self.geom)
 				r = ffi.new("double[4]")
-				ode.GeomGetQuaternion(self.geom, r)
+				physics.ode.GeomGetQuaternion(self.geom, r)
 			end
 		end
 
@@ -75,7 +74,7 @@ do -- damping
 	function META:SetLinearDamping(damping)
 		self.LinearDamping = damping
 		if not check_body(self) then return end
-		ode.BodySetLinearDamping(self.body, self:GetLinearDamping())
+		physics.ode.BodySetLinearDamping(self.body, self:GetLinearDamping())
 	end
 
 	function META:GetLinearDamping()
@@ -85,7 +84,7 @@ do -- damping
 	function META:SetAngularDamping(damping)
 		self.AngularDamping = damping
 		if not check_body(self) then return end
-		ode.BodySetAngularDamping(self.body, self:GetAngularDamping())
+		physics.ode.BodySetAngularDamping(self.body, self:GetAngularDamping())
 	end
 
 	function META:GetAngularDamping()
@@ -102,14 +101,14 @@ do -- mass
 
 		if check_body(self) then
 			local info = ffi.new("struct dMass[1]")
-			ode.BodyGetMass(self.body, info)
+			physics.ode.BodyGetMass(self.body, info)
 
 			local x,y,z = physics.Vec3ToEngine(self:GetMassOrigin():Unpack())
 			info[0].c[0] = x
 			info[0].c[1] = y
 			info[0].c[2] = z
 
-			ode.BodySetMass(self.body, info)
+			physics.ode.BodySetMass(self.body, info)
 		end
 	end
 
@@ -118,11 +117,11 @@ do -- mass
 
 		if check_body(self) then
 			local info = ffi.new("struct dMass[1]")
-			ode.BodyGetMass(self.body, info)
+			physics.ode.BodyGetMass(self.body, info)
 
 			info[0].mass = self:GetMass()
 
-			ode.BodySetMass(self.body, info)
+			physics.ode.BodySetMass(self.body, info)
 		end
 	end
 
@@ -131,7 +130,7 @@ do -- mass
 	function META:GetMass()
 		if check_body(self) then
 			local out = ffi.new("struct dMass[1]")
-			ode.BodyGetMass(self.body, out)
+			physics.ode.BodyGetMass(self.body, out)
 			return out[0].mass
 		end
 
@@ -141,7 +140,7 @@ do -- mass
 	function META:GetMassOrigin()
 		if check_body(self) then
 			local out = ffi.new("struct dMass[1]")
-			ode.BodyGetMass(self.body, out)
+			physics.ode.BodyGetMass(self.body, out)
 			return Vec3(physics.Vec3ToEngine(out[0].c[0], out[0].c[2], out[0].c[2]))
 		end
 
@@ -156,11 +155,11 @@ do -- init sphere options
 		if rad then self:SetPhysicsSphereRadius(rad) end
 
 		if physics.init then
-			self.geom = ode.CreateSphere(physics.hash_space, self:GetPhysicsSphereRadius())
+			self.geom = physics.ode.CreateSphere(physics.hash_space, self:GetPhysicsSphereRadius())
 
 			if self.Movable then
-				self.body = ode.BodyCreate(physics.world)
-				ode.GeomSetBody(self.geom, self.body)
+				self.body = physics.ode.BodyCreate(physics.world)
+				physics.ode.GeomSetBody(self.geom, self.body)
 			end
 
 			physics.StoreBodyPointer(self)
@@ -175,11 +174,11 @@ do -- init box options
 		if scale then self:SetPhysicsBoxScale(scale) end
 
 		if physics.init then
-			self.geom = ode.CreateBox(physics.hash_space, physics.Vec3ToEngine(self:GetPhysicsBoxScale():Unpack()))
+			self.geom = physics.ode.CreateBox(physics.hash_space, physics.Vec3ToEngine(self:GetPhysicsBoxScale():Unpack()))
 
 			if self.Movable then
-				self.body = ode.BodyCreate(physics.world)
-				ode.GeomSetBody(self.geom, self.body)
+				self.body = physics.ode.BodyCreate(physics.world)
+				physics.ode.GeomSetBody(self.geom, self.body)
 			end
 
 			physics.StoreBodyPointer(self)
@@ -194,11 +193,11 @@ do -- init capsule options
 
 	function META:InitPhysicsCapsuleZ()
 		if physics.init then
-			self.geom = ode.CreateCCylinder(physics.hash_space, self:GetPhysicsCapsuleZRadius(), self:GetPhysicsCapsuleZHeight())
+			self.geom = physics.ode.CreateCCylinder(physics.hash_space, self:GetPhysicsCapsuleZRadius(), self:GetPhysicsCapsuleZHeight())
 
 			if self.Movable then
-				self.body = ode.BodyCreate(physics.world)
-				ode.GeomSetBody(self.geom, self.body)
+				self.body = physics.ode.BodyCreate(physics.world)
+				physics.ode.GeomSetBody(self.geom, self.body)
 			end
 
 			physics.StoreBodyPointer(self)
@@ -260,9 +259,9 @@ do -- mesh init options
 
 		self.mesh = tbl
 
-		local data = ode.GeomTriMeshDataCreate()
+		local data = physics.ode.GeomTriMeshDataCreate()
 
-		ode.GeomTriMeshDataBuildSingle(
+		physics.ode.GeomTriMeshDataBuildSingle(
 			data,
 			tbl.vertices.pointer,
 			tbl.vertices.stride,
@@ -273,13 +272,13 @@ do -- mesh init options
 			tbl.triangles.stride
 		)
 
-		ode.GeomTriMeshDataPreprocess(data)
+		physics.ode.GeomTriMeshDataPreprocess(data)
 
-		self.geom = ode.CreateTriMesh(physics.hash_space, data, nil,nil,nil)
+		self.geom = physics.ode.CreateTriMesh(physics.hash_space, data, nil,nil,nil)
 
 		if self.Movable then
-			self.body = ode.BodyCreate(physics.world)
-			ode.GeomSetBody(self.geom, self.body)
+			self.body = physics.ode.BodyCreate(physics.world)
+			physics.ode.GeomSetBody(self.geom, self.body)
 		end
 
 		physics.StoreBodyPointer(self)
@@ -290,8 +289,8 @@ end
 do -- generic get set
 
 	local function GET_SET(name, friendly, default)
-		local set_func = ode and ode["BodySet" .. name] or function() end
-		local get_func = ode and ode["BodyGet" .. name] or function() end
+		local set_func = physics.ode and physics.ode["BodySet" .. name] or function() end
+		local get_func = physics.ode and physics.ode["BodyGet" .. name] or function() end
 
 		META:GetSet(friendly, default)
 
@@ -340,11 +339,11 @@ function META:OnRemove()
 		end
 	end
 	if check_body(self) then
-		ode.BodyDestroy(self.body)
+		physics.ode.BodyDestroy(self.body)
 		self.body = nil
 	end
 	if check_geom(self) then
-		ode.GeomDestroy(self.geom)
+		physics.ode.GeomDestroy(self.geom)
 		self.geom = nil
 	end
 end

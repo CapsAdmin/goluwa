@@ -3,6 +3,7 @@ local env_vars = {
 	DISABLE_CULLING = false,
 	CLI = false,
 	TMUX = false,
+	PHYSICS = false,
 }
 
 for key, default in pairs(env_vars) do
