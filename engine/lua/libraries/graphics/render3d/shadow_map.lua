@@ -47,16 +47,7 @@ local function setup(self)
 
 	tex:SetSize(Vec2() + self.ShadowSize)
 	tex:SetInternalFormat("r32f")
-	tex:SetBaseLevel(0)
-	tex:SetMaxLevel(0)
-	tex:SetAnisotropy(1)
 
-	tex:SetWrapS("clamp_to_edge")
-	tex:SetWrapT("clamp_to_edge")
-	tex:SetWrapR("clamp_to_edge")
-
-	tex:SetMinFilter("linear")
-	tex:SetMagFilter("linear")
 	tex:SetupStorage()
 
 	local fb = render.CreateFrameBuffer()

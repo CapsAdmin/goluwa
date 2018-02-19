@@ -30,13 +30,6 @@ function META:GetMipSize(mip_map_level)
 	return Vec3(x[0], y[0], z[0])
 end
 
-function META:SetSeamlessCubemap(b)
-	self.SeamlessCubemap = b
-	if render.IsExtensionSupported("GL_ARB_seamless_cubemap_per_texture") then
-		self.gl_tex:SetParameteri("GL_TEXTURE_CUBE_MAP_SEAMLESS", b and 1 or 0)
-	end
-end
-
 function META:SetWrapS(val)
 	self.WrapS = val
 	self.gl_tex:SetParameteri("GL_TEXTURE_WRAP_S", gl.e[TOENUM(val)])
@@ -50,49 +43,6 @@ function META:SetWrapR(val)
 	self.gl_tex:SetParameteri("GL_TEXTURE_WRAP_R", gl.e[TOENUM(val)])
 end
 
-function META:SetCompareFunc(val)
-	self.CompareFunc = val
-	self.gl_tex:SetParameteri("GL_TEXTURE_COMPARE_FUNC", gl.e[TOENUM(val)])
-end
-function META:SetCompareMode(val)
-	self.CompareMode = val
-	self.gl_tex:SetParameteri("GL_TEXTURE_COMPARE_MODE", gl.e[TOENUM(val)])
-end
-
-function META:SetBorderColor(val)
-	self.BorderColor = val
-	self.gl_tex:SetParameterfv("GL_TEXTURE_BORDER_COLOR", ffi.cast("const float *", val))
-end
-
-function META:SetSwizzleR(val)
-	self.SwizzleR = val
-	self.gl_tex:SetParameteri("GL_TEXTURE_SWIZZLE_R", gl.e[TOENUM(val)])
-end
-function META:SetSwizzleG(val)
-	self.SwizzleG = val
-	self.gl_tex:SetParameteri("GL_TEXTURE_SWIZZLE_G", gl.e[TOENUM(val)])
-end
-function META:SetSwizzleB(val)
-	self.SwizzleB = val
-	self.gl_tex:SetParameteri("GL_TEXTURE_SWIZZLE_B", gl.e[TOENUM(val)])
-end
-function META:SetSwizzleA(val)
-	self.SwizzleA = val
-	self.gl_tex:SetParameteri("GL_TEXTURE_SWIZZLE_A", gl.e[TOENUM(val)])
-end
-function META:SetSwizzleRgba(val)
-	self.SwizzleRgba = val
-	self.gl_tex:SetParameterfv("GL_TEXTURE_SWIZZLE_RGBA", ffi.cast("const float *", val))
-end
-
-function META:SetMinLod(val)
-	self.MinLod = val
-	self.gl_tex:SetParameterf("GL_TEXTURE_MIN_LOD", val)
-end
-function META:SetMaxLod(val)
-	self.MaxLod = val
-	self.gl_tex:SetParameterf("GL_TEXTURE_MAX_LOD", val)
-end
 function META:SetBaseLevel(val)
 	self.BaseLevel = val
 	self.gl_tex:SetParameteri("GL_TEXTURE_BASE_LEVEL", val)
@@ -101,30 +51,7 @@ function META:SetMaxLevel(val)
 	self.MaxLevel = val
 	self.gl_tex:SetParameteri("GL_TEXTURE_MAX_LEVEL", val)
 end
-function META:SetLodBias(val)
-	self.LodBias = val
-	self.gl_tex:SetParameterf("GL_TEXTURE_LOD_BIAS", val)
-end
 
-function META:SetAnisotropy(num)
-	self.Anisotropy = num
-
-	if render.IsExtensionSupported("GL_EXT_texture_filter_anisotropic") then
-		if self.MinFilter == "nearest" or self.MagFilter == "nearest" then
-			return
-		end
-
-		if num == -1 or num > render.max_anisotropy then
-			num = render.max_anisotropy
-		end
-
-		if num == 0 then
-			num = 1
-		end
-
-		self.gl_tex:SetParameteri("GL_TEXTURE_MAX_ANISOTROPY_EXT", num)
-	end
-end
 function META:SetMagFilter(val)
 	self.MagFilter = val
 	if val == "nearest" and render.IsExtensionSupported("GL_EXT_texture_filter_anisotropic") then
@@ -438,20 +365,39 @@ function render._CreateTexture(self, type)
 		self:SetWrapS("clamp_to_edge")
 		self:SetWrapT("clamp_to_edge")
 		self:SetWrapR("clamp_to_edge")
-		self:SetSeamlessCubemap(true)
+		if render.IsExtensionSupported("GL_ARB_seamless_cubemap_per_texture") then
+			self.gl_tex:SetParameteri("GL_TEXTURE_CUBE_MAP_SEAMLESS", b and 1 or 0)
+		end
 	else
 		self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
 		if self.StorageType:upper() ~= "2D_MULTISAMPLE" then
 			self:SetWrapS("repeat")
 			self:SetWrapT("repeat")
 			self:SetWrapR("repeat")
-			self:SetAnisotropy(100)
 		end
 	end
 
 	if self.StorageType:upper() ~= "2D_MULTISAMPLE" then
 		self:SetMinFilter("linear_mipmap_linear")
 		self:SetMagFilter("linear")
+	end
+
+	if render.IsExtensionSupported("GL_EXT_texture_filter_anisotropic") then
+		if self.MinFilter == "nearest" or self.MagFilter == "nearest" then
+			return
+		end
+
+		local num = -1
+
+		if num == -1 or num > render.max_anisotropy then
+			num = render.max_anisotropy
+		end
+
+		if num == 0 then
+			num = 1
+		end
+
+		self.gl_tex:SetParameteri("GL_TEXTURE_MAX_ANISOTROPY_EXT", num)
 	end
 end
 

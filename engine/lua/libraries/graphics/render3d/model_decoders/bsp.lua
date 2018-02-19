@@ -65,7 +65,6 @@ do
 		tex:SetWrapS("clamp_to_edge")
 		tex:SetWrapT("clamp_to_edge")
 		tex:SetWrapR("clamp_to_edge")
-		tex:SetSeamlessCubemap(true)
 		return tex
 	end
 
