@@ -16,6 +16,7 @@ runfile("lua/libraries/steam/web_api.lua", steam)
 runfile("lua/libraries/utilities/find_color.lua", utilities)
 runfile("lua/libraries/utilities/quickbms.lua", utilities)
 runfile("lua/libraries/utilities/vmd_parser.lua", utilities)
+runfile("lua/libraries/utilities/line.lua", utilities)
 
 if SERVER or CLIENT then
 	chat = runfile("lua/libraries/network/chat.lua")
