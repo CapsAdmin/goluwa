@@ -1,5 +1,4 @@
 local addons = {
-	"https://github.com/PAC3-Server/EasyChat",
 	"https://github.com/PAC3-Server/notagain",
 	"https://github.com/PAC3-Server/gm-http-discordrelay",
 	"https://github.com/CapsAdmin/pac3",
@@ -73,6 +72,7 @@ hook.Add("RenderScene", "zerobrane_bridge", function()
 
 	local content = file.Read("zerobrane_bridge.txt", "DATA")
 	if content then
+		file.Delete("zerobrane_bridge.txt")
 		local chunks = content:Split("¥$£@DELIMITER@£$¥")
 		for i = #chunks, 1, -1 do
 			if chunks[i] ~= "" then
@@ -87,7 +87,6 @@ hook.Add("RenderScene", "zerobrane_bridge", function()
 				end
 			end
 		end
-		file.Delete("zerobrane_bridge.txt")
 	end
 end)
 ]])
