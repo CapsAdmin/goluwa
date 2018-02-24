@@ -11,6 +11,8 @@ local Material = gmod.Material
 local CreateMaterial = gmod.CreateMaterial
 local CreateMaterial = gmod.CreateMaterial
 
+local default_flags = "unlitgeneric mips noclamp smooth"
+
 local render = ... or _G.render
 local META = prototype.GetRegistered("texture")
 
@@ -40,7 +42,7 @@ function META:SetMagFilter() end
 
 function META:SetPath(path, gmod_path)
 	if gmod_path then
-		self.mat = Material(path)
+		self.mat = Material(path, default_flags)
 
 		self.tex = IMaterial_GetTexture(self.mat, "$basetexture")
 
@@ -67,7 +69,7 @@ function META:SetPath(path, gmod_path)
 					["$vertexalpha"] = 1,
 				})
 			else
-				self.mat = Material(path, "unlitgeneric mips noclamp")
+				self.mat = Material(path, default_flags)
 			end
 
 			self.tex = IMaterial_GetTexture(self.mat, "$basetexture")
@@ -81,7 +83,7 @@ function META:SetPath(path, gmod_path)
 	end
 end
 
-local loading_material = Material("gui/progress_cog.png")
+local loading_material = Material("gui/progress_cog.png", default_flags)
 
 function render._CreateTexture(self, type)
 	self.mat = loading_material

@@ -9,6 +9,12 @@ local temp_vector = gmod.Vector(0,0,0)
 local cam_PushModelMatrix = gmod.cam.PushModelMatrix
 local cam_PopModelMatrix = gmod.cam.PopModelMatrix
 
+local render_PushFilterMin = gmod.render.PushFilterMin
+local render_PushFilterMag = gmod.render.PushFilterMag
+local render_PopFilterMag = gmod.render.PopFilterMag
+local render_PopFilterMin = gmod.render.PopFilterMin
+local TEXFILTER_ANISOTROPIC = gmod.TEXFILTER.ANISOTROPIC
+
 local render = ... or _G.render
 local META = prototype.GetRegistered("texture")
 
@@ -96,6 +102,8 @@ end
 function META:Draw()
 	if self.vertices_length == 0 then return end
 
+	render_PushFilterMag( TEXFILTER_ANISOTROPIC )
+	render_PushFilterMin( TEXFILTER_ANISOTROPIC )
 	cam_PushModelMatrix(GetGmodWorldMatrix())
 		for i, vertices in ipairs(self.chunks) do
 			mesh_Begin(MATERIAL_TRIANGLES, #vertices / 3)
@@ -125,4 +133,6 @@ function META:Draw()
 			mesh_End()
 		end
 	cam_PopModelMatrix()
+	render_PopFilterMag()
+	render_PopFilterMin()
 end
