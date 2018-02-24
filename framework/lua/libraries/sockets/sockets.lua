@@ -265,7 +265,7 @@ do -- tcp socket meta
 				ok, msg = self.socket:setpeername(ip, port)
 			end
 
-			if not ok and msg and msg ~= "timeout" then
+			if not ok and msg and msg ~= "timeout" and msg ~= "Operation already in progress" then
 				self:DebugPrintf("connect failed: %s", msg)
 				self:OnError(msg)
 			else
