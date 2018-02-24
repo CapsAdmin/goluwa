@@ -239,7 +239,7 @@ function structs.AddOperator(META, operator, ...)
 		local type = type
 		META["__eq"] = function(a, b)
 				return
-				type(a) == "cdata" and
+				type(a) == "]==] .. (ffi and "cdata" or "table") .. [==[" and
 				istype(a, b) and
 				a.KEY == b.KEY
 			end
