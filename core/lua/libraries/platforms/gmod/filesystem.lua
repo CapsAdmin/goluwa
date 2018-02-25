@@ -61,7 +61,9 @@ function fs.find(path)
 			end
 		end
 
-		out = table.add(files, dirs)
+		table.add(files, dirs)
+
+		out = files
 	end
 
 	fs.find_cache[original_path] = out
