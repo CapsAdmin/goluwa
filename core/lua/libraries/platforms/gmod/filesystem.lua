@@ -14,6 +14,10 @@ fs.find_cache = {}
 fs.get_attributes_cache = {}
 
 function fs.uncache(path)
+	if path:endswith("/") then
+		path = path:sub(0, -2)
+	end
+
 	dprint("uncaching " .. path)
 	fs.find_cache[path:match("(.+/)")] = nil
 	fs.get_attributes_cache[path] = nil
@@ -33,6 +37,8 @@ function fs.find(path)
 	if fs.find_cache[path] then
 		dprint("yes!")
 		return fs.find_cache[path]
+	else
+		dprint("no")
 	end
 
 	if path:endswith("/") then
@@ -48,9 +54,14 @@ function fs.find(path)
 
 	local out
 
+	dprint("fs.find: file.Find("..path..", "..where..")")
+
 	local files, dirs = file_Find(path, where)
 
+	dprint(files, dirs)
+
 	if files then
+
 		if where == "DATA" then
 			for i, name in ipairs(files) do
 				local new_name, count = name:gsub("%^", "%.")
@@ -64,6 +75,8 @@ function fs.find(path)
 		table.add(files, dirs)
 
 		out = files
+
+		dprint("found " .. #out .. " files and folders")
 	end
 
 	fs.find_cache[original_path] = out
@@ -84,6 +97,8 @@ end
 function fs.createdir(path)
 	dprint("fs.createdir: ", path)
 
+	fs.uncache(path)
+
 	local path, where = GoluwaToGmodPath(path)
 
 	file_CreateDir(path, where)
@@ -91,15 +106,19 @@ end
 
 function fs.getattributes(path)
 	dprint("fs.getattributes: ", path)
-	local original_path = path
 
-	if fs.get_attributes_cache[path] ~= nil then
-		return fs.get_attributes_cache[path]
+	local cache_key = path
+	if cache_key:endswith("/") then cache_key = cache_key:sub(0, -2) end
+
+	if fs.get_attributes_cache[cache_key] ~= nil then
+		dprint("\twas cached")
+		return fs.get_attributes_cache[cache_key]
 	end
 
 	local path, where = GoluwaToGmodPath(path)
 
 	if file_Exists(path, where) then
+		dprint("\tfile exists")
 		local size = file_Size(path, where)
 		local time = file_Time(path, where)
 		local type = file_IsDir(path, where) and "directory" or "file"
@@ -117,14 +136,14 @@ function fs.getattributes(path)
 			type = type,
 		}
 
-		fs.get_attributes_cache[original_path] = res
+		fs.get_attributes_cache[cache_key] = res
 
 		return res
 	else
 		dprint("\t" .. path .. " " .. where .. " does not exist")
 	end
 
-	fs.get_attributes_cache[original_path] = false
+	fs.get_attributes_cache[cache_key] = false
 
 	return false
 end
