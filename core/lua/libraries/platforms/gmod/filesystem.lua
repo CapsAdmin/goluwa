@@ -14,7 +14,7 @@ fs.find_cache = {}
 fs.get_attributes_cache = {}
 
 function fs.uncache(path)
-	if path:endswith("/") then
+	if path:sub(-1) == "/" then
 		path = path:sub(0, -2)
 	end
 
@@ -41,7 +41,7 @@ function fs.find(path)
 		dprint("no")
 	end
 
-	if path:endswith("/") then
+	if path:sub(-1) == "/" then
 		path = path .. "*"
 	end
 
@@ -108,7 +108,7 @@ function fs.getattributes(path)
 	dprint("fs.getattributes: ", path)
 
 	local cache_key = path
-	if cache_key:endswith("/") then cache_key = cache_key:sub(0, -2) end
+	if cache_key:sub(-1) == "/" then cache_key = cache_key:sub(0, -2) end
 
 	if fs.get_attributes_cache[cache_key] ~= nil then
 		dprint("\twas cached")
