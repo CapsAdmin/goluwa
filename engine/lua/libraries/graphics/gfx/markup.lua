@@ -1093,6 +1093,11 @@ do -- parse tags
 			return str:rep(count)
 		end)
 
+		str = str:gsub("<foreach=\"(.-)\">(.-)</foreach>", function(replace, str)
+			return str:gsub("(.)", function(c)
+				return replace:replace("@", c)
+			end)
+		end)
 		local chunks = {}
 		local found = false
 
@@ -1239,7 +1244,6 @@ do -- parse tags
 		else
 			chunks = {{type = "string", val = str}}
 		end
-
 
 		-- text modifiers
 		-- this wont work if you do markup:AddTable({"<strmod>sada  sad ad wad d asdasd", Color(1,1,1,1), "</strmod>"})
