@@ -718,11 +718,24 @@ do -- tags
 		arguments = {},
 
 		pre_draw = function(markup, self, x,y, font)
-			set_font(self, fonts.FindFont(font))
+			for i = self.i+1, math.huge do
+				local chunk = markup.chunks[i]
+				if not chunk or chunk.type == "tag_stopper" then break end
+
+				if chunk.font then
+					chunk.font = self.font
+				end
+			end
 		end,
 
-		init = function(markup, self, font)
-			set_font(self, fonts.FindFont(font))
+		init = function(markup, self, font, size, blur_size, bgr, bgg, bgb, bga, blur_overdraw)
+			self.font = fonts.CreateFont({
+				font = font or "Roboto Regular",
+				size = size or 18,
+				blur_size = blur_size or 0,
+				background_color = Color(bgr, bgg, bgb, bga) or ColorBytes(25,50,100,255),
+				blur_overdraw = blur_overdraw,
+			})
 		end,
 	}
 
