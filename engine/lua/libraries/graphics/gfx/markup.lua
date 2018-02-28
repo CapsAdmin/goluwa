@@ -718,6 +718,27 @@ do -- tags
 		arguments = {},
 
 		pre_draw = function(markup, self, x,y, font)
+			if not self.font then return end
+			for i = self.i+1, math.huge do
+				local chunk = markup.chunks[i]
+				if not chunk or chunk.type == "tag_stopper" then break end
+
+				if chunk.font then
+					chunk.font = self.font
+				end
+			end
+		end,
+
+		init = function(markup, self, font)
+			self.font = fonts.FindFont(font)
+		end,
+	}
+
+	META.tags.createfont =
+	{
+		arguments = {},
+
+		pre_draw = function(markup, self, x,y, font)
 			for i = self.i+1, math.huge do
 				local chunk = markup.chunks[i]
 				if not chunk or chunk.type == "tag_stopper" then break end
