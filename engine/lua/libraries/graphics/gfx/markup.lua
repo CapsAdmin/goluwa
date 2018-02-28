@@ -736,7 +736,7 @@ do -- tags
 
 	META.tags.createfont =
 	{
-		arguments = {},
+		arguments = {"roboto black", 18, 0, 0,0,0,1, 0},
 
 		pre_draw = function(markup, self, x,y, font)
 			for i = self.i+1, math.huge do
@@ -751,12 +751,13 @@ do -- tags
 
 		init = function(markup, self, font, size, blur_size, bgr, bgg, bgb, bga, blur_overdraw)
 			self.font = fonts.CreateFont({
-				font = font or "Roboto Regular",
-				size = size or 18,
-				blur_size = blur_size or 0,
-				background_color = Color(bgr, bgg, bgb, bga) or ColorBytes(25,50,100,255),
+				font = font,
+				size = size,
+				blur_size = blur_size,
+				background_color = Color(bgr, bgg, bgb, bga),
 				blur_overdraw = blur_overdraw,
 			})
+			print(font, size, blur_size, bgr, bgg, bgb, bga, blur_overdraw)
 		end,
 	}
 
