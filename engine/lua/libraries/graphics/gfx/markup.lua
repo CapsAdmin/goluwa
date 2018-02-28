@@ -1094,10 +1094,43 @@ do -- parse tags
 		end)
 
 		str = str:gsub("<foreach=\"(.-)\">(.-)</foreach>", function(replace, str)
-			return str:gsub("(.)", function(c)
-				return replace:replace("@", c)
-			end)
+			local tbl = {}
+			local current_pos = 1
+
+			for i = 1, #str do
+				local start_pos, end_pos = str:find("%b<>", current_pos)
+				if not start_pos then break end
+				local res = str:sub(current_pos, start_pos - 1)
+				if res ~= "" then
+					table.insert(tbl, res)
+				end
+				local res = str:sub(start_pos, end_pos)
+				if res ~= "" then
+					table.insert(tbl, res)
+				end
+				current_pos = end_pos + 1
+			end
+
+			if current_pos > 1 then
+				local res = str:sub(current_pos)
+				if res ~= "" then
+					table.insert(tbl, res)
+				end
+			else
+				tbl[1] = str
+			end
+
+			for i,v in ipairs(tbl) do
+				if v:startswith("<") then
+					tbl[i] = replace:replace("@", v)
+				else
+					tbl[i] = v:gsub("(.)", function(c) return replace:replace("@", c) end)
+				end
+			end
+
+			return table.concat(tbl)
 		end)
+
 		local chunks = {}
 		local found = false
 
