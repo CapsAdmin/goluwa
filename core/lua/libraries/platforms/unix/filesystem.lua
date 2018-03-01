@@ -22,7 +22,7 @@ fs.eof = ffi.C.feof
 
 local S = require("syscall")
 
-local size = 4096
+local size = 4096*64
 local buf = S.t.buffer(size)
 
 function fs.find(name)
