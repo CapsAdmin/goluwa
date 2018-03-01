@@ -366,7 +366,7 @@ function render._CreateTexture(self, type)
 		self:SetWrapT("clamp_to_edge")
 		self:SetWrapR("clamp_to_edge")
 		if render.IsExtensionSupported("GL_ARB_seamless_cubemap_per_texture") then
-			self.gl_tex:SetParameteri("GL_TEXTURE_CUBE_MAP_SEAMLESS", b and 1 or 0)
+			self.gl_tex:SetParameteri("GL_TEXTURE_CUBE_MAP_SEAMLESS", 1)
 		end
 	else
 		self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())

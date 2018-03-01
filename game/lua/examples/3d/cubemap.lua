@@ -6,7 +6,6 @@ tex:SetMagFilter("linear")
 tex:SetWrapS("clamp_to_edge")
 tex:SetWrapT("clamp_to_edge")
 tex:SetWrapR("clamp_to_edge")
-tex:SetSeamlessCubemap(true)
 tex:SetSize(Vec2(512,512)) -- skyboxes have varying size for some reason, but this is wrong
 tex:LoadCubemap("materials/skybox/sky_cs15_daylight02_hdr.vmt")
 
