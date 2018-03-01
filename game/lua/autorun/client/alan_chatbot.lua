@@ -9,6 +9,7 @@ function bot:Ask(question, cb, noprint)
 		local username = "notreallyanemailaddress@goluwa.com"
 		local password = "password"
 
+		logged_in = "asking"
 
 		bot:Ask("hi", function()
 			bot:Ask("my username is " .. username, function()
@@ -16,7 +17,6 @@ function bot:Ask(question, cb, noprint)
 				logged_in = "ok"
 			end, true)
 		end, true)
-		logged_in = "asking"
 	end
 
 	if logged_in ~= "ok" then return end
