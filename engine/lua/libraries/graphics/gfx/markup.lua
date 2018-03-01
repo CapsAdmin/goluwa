@@ -757,7 +757,6 @@ do -- tags
 				background_color = Color(bgr, bgg, bgb, bga),
 				blur_overdraw = blur_overdraw,
 			})
-			print(font, size, blur_size, bgr, bgg, bgb, bga, blur_overdraw)
 		end,
 	}
 
