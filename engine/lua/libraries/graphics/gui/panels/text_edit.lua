@@ -25,7 +25,8 @@ function META:Initialize()
 	self.BaseClass.Initialize(self)
 
 	local label = self:CreatePanel("text", "label")
-	label.OnStyleChanged = nil
+
+	label.OnStyleChanged = function() end
 	label.markup:SetEditable(self.Editable)
 
 	label:SetClipping(true)
@@ -76,14 +77,11 @@ function META:OnStyleChanged(skin)
 	self:SetCaretColor(skin.text_edit_color:Copy())
 	self:SetSelectionColor(skin.text_edit_color:Copy():SetAlpha(0.5))
 	self:SetTextColor(skin.text_edit_color:Copy())
-	self.label:SetTextColor(skin.text_edit_color:Copy())
 	self:SetFont(skin.default_font)
 	--self:SetScrollable(true)
 
-	if self.label and self.label.markup then
-		self.label.markup:SetCaretColor(self.CaretColor)
-		self.label.markup:SetSelectionColor(self.SelectionColor)
-	end
+	self.label.markup:SetCaretColor(self.CaretColor)
+	self.label.markup:SetSelectionColor(self.SelectionColor)
 end
 
 function META:OnLayout(S)
