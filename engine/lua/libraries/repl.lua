@@ -332,10 +332,10 @@ function repl.Initialize()
 end
 
 function repl.OSExecute(str)
-	repl.Shutdown()
+	curses.endwin()
 	_OLD_G.os.execute("clear")
 	local code = _OLD_G.os.execute(str)
-	repl.Initialize()
+	curses.doupdate()
 	return code
 end
 
