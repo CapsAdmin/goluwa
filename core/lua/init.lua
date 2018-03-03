@@ -40,7 +40,15 @@ local init_lua_path = info.source
 local internal_addon_name = assert(init_lua_path:match("^@.+/(.+)/lua/init.lua$"), "could not find internal addon name from " .. init_lua_path)
 
 do -- constants
-	-- enums table for
+	if jit.os == "Windows" then
+		_G.PLATFORM = "windows"
+	elseif _G.GMOD == true then
+		_G.PLATFORM = "gmod"
+	else
+		_G.PLATFORM = "unix"
+	end
+
+	-- enums table
 	e = e or {}
 	e.USERNAME = _G.USERNAME or tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
 	e.INTERNAL_ADDON_NAME = internal_addon_name
@@ -51,14 +59,6 @@ do -- constants
 	_G[jit.arch:upper()] = true
 
 	_G.CLI = os.getenv("GOLUWA_CLI")
-
-	if WINDOWS == true then
-		_G.PLATFORM = "windows"
-	elseif GMOD == true then
-		_G.PLATFORM = "gmod"
-	else
-		_G.PLATFORM = "unix"
-	end
 end
 
 do
