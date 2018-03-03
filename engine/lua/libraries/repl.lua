@@ -638,9 +638,9 @@ function repl.SetInputText(str)
 		repl.SyntaxPrint(str, c.input_window)
 	end
 
-	local pos = c.markup:GetCaretPosition()
+	local x, y = c.markup:GetCaretPosition()
 
-	c.input_window:move(pos.y-1, pos.x)
+	c.input_window:move(y-1, x)
 
 	c.input_window:noutrefresh()
 	dirty = true
@@ -667,9 +667,9 @@ do
 		c.status_window:noutrefresh()
 
 		-- this prevents the cursor from going up in the title bar (??)
-		local pos = c.markup:GetCaretPosition()
+		local x, y = c.markup:GetCaretPosition()
 
-    	c.input_window:move(pos.y-1, pos.x)
+    	c.input_window:move(y-1, x)
     	c.input_window:noutrefresh()
 
 		dirty = true

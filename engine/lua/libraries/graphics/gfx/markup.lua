@@ -2015,9 +2015,11 @@ do -- invalidate
 					end
 				end
 
-				table.insert(data, Vec2(chunk.x, chunk.y))
-				table.insert(data, chunk.color)
-				table.insert(data, chunk.val or "\n")
+				if data then
+					table.insert(data, Vec2(chunk.x, chunk.y))
+					table.insert(data, chunk.color)
+					table.insert(data, chunk.val or "\n")
+				end
 
 				if chunk.font then
 					last_font = chunk.font
@@ -2235,7 +2237,7 @@ do -- caret
 	end
 
 	function META:GetCaretPosition()
-		return self.caret_pos
+		return self.caret_pos.x, self.caret_pos.y
 	end
 
 	function META:SetCaretSubPosition(pos)
