@@ -5,7 +5,7 @@ function system.OpenURL(url)
 	os.execute(([[explorer "%s"]]):format(url))
 end
 
-ffi.cdef("VOID Sleep(DWORD dwMilliseconds);")
+ffi.cdef("void Sleep(uint32_t);")
 function system.Sleep(ms)
 	ffi.C.Sleep(ms)
 end

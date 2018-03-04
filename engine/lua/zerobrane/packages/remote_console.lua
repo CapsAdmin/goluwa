@@ -261,7 +261,7 @@ function PLUGIN:Setup()
 	"      8.9.0.a.b.c.d.e.f.g.      ",
 	"                    h.i.        "};
 
-	return {
+	local out =  {
 		setup_console("server", "Server", jit.os ~= "Windows" and "./goluwa server" or "goluwa.cmd server", server_icon),
 		setup_console("client", "Client", jit.os ~= "Windows" and "./goluwa client" or "goluwa.cmd client", client_icon, function(console, suppress_only)
 			if ide:GetMainFrame():IsActive() and (wx.wxGetKeyState(wx.WXK_F5) or wx.wxGetKeyState(wx.WXK_F6)) then
@@ -277,7 +277,10 @@ function PLUGIN:Setup()
 				end
 			end
 		end),
-		setup_console("gmod", "GMOD", function(console)
+	}
+
+	if GetGMODDir() then
+		table.insert(out, setup_console("gmod", "GMOD", function(console)
 			local cmd_line = ""
 
 			if WINE then
@@ -313,8 +316,11 @@ function PLUGIN:Setup()
 			LIBGL_DEBUG = "1",
 			MESA_DEBUG = "context",
 			LD_LIBRARY_PATH = GetGMODDir() .. "../bin",
-		}),
-	}
+		})
+		)
+	end
+
+	return out
 end
 
 function PLUGIN:IsRunning(id)

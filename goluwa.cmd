@@ -24,9 +24,9 @@ function Download($url, $location) {
 New-Item -ItemType Directory -Force -Path "$ROOT_DIR\data\windows_$ARCH" | Out-Null
 Set-Location "$ROOT_DIR\data\windows_$ARCH\"
 
-Download "https://gitlab.com/CapsAdmin/goluwa-binaries-windows_$ARCH/raw/master/luajit.exe" "$ROOT_DIR\data\bin\windows_$ARCH\luajit.exe"
-Download "https://gitlab.com/CapsAdmin/goluwa-binaries-windows_$ARCH/raw/master/lua51.dll" "$ROOT_DIR\data\bin\windows_$ARCH\lua51.dll"
-Download "https://gitlab.com/CapsAdmin/goluwa-binaries-windows_$ARCH/raw/master/vcruntime140.dll" "$ROOT_DIR\data\bin\windows_$ARCH\vcruntime140.dll"
+Download "https://gitlab.com/CapsAdmin/goluwa-binaries-windows_$ARCH/raw/master/luajit.exe" "$ROOT_DIR\data\windows_$ARCH\luajit.exe"
+Download "https://gitlab.com/CapsAdmin/goluwa-binaries-windows_$ARCH/raw/master/lua51.dll" "$ROOT_DIR\data\windows_$ARCH\lua51.dll"
+Download "https://gitlab.com/CapsAdmin/goluwa-binaries-windows_$ARCH/raw/master/vcruntime140.dll" "$ROOT_DIR\data\windows_$ARCH\vcruntime140.dll"
 
 if(!(Test-Path "$ROOT_DIR\core\lua\boot.lua" -PathType Leaf)) {
 	New-Item -ItemType Directory -Force -Path "$ROOT_DIR\core\lua" | Out-Null
@@ -36,4 +36,5 @@ if(!(Test-Path "$ROOT_DIR\core\lua\boot.lua" -PathType Leaf)) {
 $stopwatch.Stop()
 
 Write-Host "[powershell] goluwa.cmd took"$stopwatch.Elapsed.TotalSeconds"seconds"
-.\luajit.exe "..\..\core\lua\boot.lua $args"
+
+.\luajit.exe "../../core/lua/boot.lua" $args

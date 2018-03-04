@@ -375,7 +375,7 @@ do
 					to = to .. "_"
 					move = true
 				end
-				os.execute("git clone https://"..domain..".com/"..name..".git "..to.." --depth 1;")
+				os.execute("git clone https://"..domain..".com/"..name..".git "..to.." --depth 1")
 				if move then
 					os.execute("mv -f " .. to .. "/* " .. to:sub(0, -2) .. "/")
 					os.execute("mv -f " .. to .. "/.* " .. to:sub(0, -2) .. "/")
