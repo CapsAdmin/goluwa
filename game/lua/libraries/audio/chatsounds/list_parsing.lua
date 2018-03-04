@@ -181,6 +181,16 @@ function chatsounds.BuildFromURL(url, callback)
 		local tree = {}
 		local list = {}
 
+		local function rebuild()
+			chatsounds.list = chatsounds.list or {}
+			table.merge(chatsounds.list, list)
+			chatsounds.BuildAutocomplete()
+
+			tree = chatsounds.TableToTree(tree)
+			chatsounds.tree = chatsounds.tree or {}
+			table.merge(chatsounds.tree, tree)
+		end
+
 		callback(vfs.Read(path), function(realm, trigger, path)
 			tree[realm] = tree[realm] or {}
 			list[realm] = list[realm] or {}
@@ -188,15 +198,9 @@ function chatsounds.BuildFromURL(url, callback)
 			tree[realm][trigger] = tree[realm][trigger] or {}
 			table.insert(tree[realm][trigger], {path = path})
 			list[realm][trigger] = path
+
+			event.Delay(0.1, rebuild, "rebuild_chatsounds")
 		end)
-
-		chatsounds.list = chatsounds.list or {}
-		table.merge(chatsounds.list, list)
-		chatsounds.BuildAutocomplete()
-
-		tree = chatsounds.TableToTree(tree)
-		chatsounds.tree = chatsounds.tree or {}
-		table.merge(chatsounds.tree, tree)
 	end, nil, nil, nil, true)
 end
 
@@ -206,16 +210,40 @@ function chatsounds.BuildFromGithub(repo, location)
 
 	chatsounds.BuildFromURL(url, function(str, add_sound)
 		for path in str:gmatch('"path":%s-"('..location..'/.-)"') do
-			local realm, trigger, file_name = path:match(location .. "/(.-)/(.-)/(.+)%.")
-			if not file_name then
-				realm, trigger = path:match(location .. "/(.-)/(.+)%.")
-			end
+			if not path:endswith(".txt") then
+				local realm, trigger, file_name = path:match(location .. "/(.-)/(.-)/(.+)%.")
 
-			path = path:gsub(" ", "%%20")
-			path = "https://raw.githubusercontent.com/"..repo.."/master/" .. path
+				if not file_name then
+					realm, trigger = path:match(location .. "/(.-)/(.+)%.")
+				end
 
-			if realm then
-				add_sound(realm, trigger, path)
+				if trigger and trigger:startswith("-") then
+					local url = "https://raw.githubusercontent.com/"..repo.."/master/"
+
+					if not file_name then
+						url = url .. path:gsub(" ", "%%20"):gsub("(.+)(%..-)$", "%1.txt")
+					else
+						url = url .. (location.."/"..realm.."/"..trigger):gsub(" ", "%%20") .. ".txt"
+					end
+
+					resource.Download(url, function(trigger_file)
+						trigger = vfs.Read(trigger_file)
+
+						path = path:gsub(" ", "%%20")
+						path = "https://raw.githubusercontent.com/"..repo.."/master/" .. path
+
+						if realm then
+							add_sound(realm, trigger, path)
+						end
+					end)
+				else
+					path = path:gsub(" ", "%%20")
+					path = "https://raw.githubusercontent.com/"..repo.."/master/" .. path
+
+					if realm then
+						add_sound(realm, trigger, path)
+					end
+				end
 			end
 		end
 	end)
