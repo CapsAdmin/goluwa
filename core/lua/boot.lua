@@ -377,8 +377,13 @@ do
 				end
 				os.execute("git clone https://"..domain..".com/"..name..".git "..to.." --depth 1")
 				if move then
-					os.execute("mv -f " .. to .. "/* " .. to:sub(0, -2) .. "/")
-					os.execute("mv -f " .. to .. "/.* " .. to:sub(0, -2) .. "/")
+					if WINDOWS then
+						local to = to:gsub("/", "\\")
+						os.execute("move /Y " .. to .. "\\* " .. to:sub(0, -2) .. "\\")
+					else
+						os.execute("mv -f " .. to .. "/* " .. to:sub(0, -2) .. "/")
+						os.execute("mv -f " .. to .. "/.* " .. to:sub(0, -2) .. "/")
+					end
 					os.remove(to)
 				end
 			end
