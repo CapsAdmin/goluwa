@@ -96,11 +96,21 @@ function sockets.SetupReceiveHTTP(socket, info)
 
 				-- redirection
 				if header.location and info.url then
-					info.protocol = nil
-					info.location = nil
-					info.host = nil
+					local protocol, host, location = header.location:match("(.+)://(.-)/(.+)")
 
-					info.url = header.location
+					if not location then
+						protocol, host = header.location:match("(.+)://(.+)")
+					end
+
+					if not location then
+						location = info.location:match("^(.+/).+$") .. header.location
+						host = info.host
+						protocol = info.protocol
+					end
+
+					info.location = location
+					info.host = host
+					info.protocol = protocol
 
 					sockets.Request(info)
 					self:Remove()
