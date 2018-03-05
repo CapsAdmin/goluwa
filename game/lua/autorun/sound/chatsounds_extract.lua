@@ -54,11 +54,10 @@ commands.Add("chatsounds_extract_list", function(game_id)
 			logn(err)
 		end
 
-
 		local info = ffi.new("struct SF_INFO[1]", {{
 			format = bit.bor(soundfile.e.FORMAT_OGG, soundfile.e.FORMAT_VORBIS),
 			samplerate = 44100,
-			channels = 1,
+			channels = info[0].channels,
 		}})
 		local file_dst = soundfile.Open(path, soundfile.e.WRITE, info)
 
@@ -68,7 +67,7 @@ commands.Add("chatsounds_extract_list", function(game_id)
 			logn(err)
 		end
 
-		local quality = ffi.new("float[1]", 0.5)
+		local quality = ffi.new("float[1]", 0.4)
 		soundfile.Command(file_dst, soundfile.e.SET_VBR_ENCODING_QUALITY, quality, ffi.sizeof(quality))
 
 		local buffer = ffi.new("double[4096]")
