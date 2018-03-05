@@ -202,8 +202,8 @@ do
 
 			if ffi.C.GetFileAttributesExA(path, 0, info) then
 				if
-					bit.bor(info[0].dwFileAttributes, flags.archive) == flags.archive or
-					bit.bor(info[0].dwFileAttributes, flags.normal) == flags.normal
+					bit.band(info[0].dwFileAttributes, flags.archive) == flags.archive or
+					bit.band(info[0].dwFileAttributes, flags.normal) == flags.normal
 				then
 					return "file"
 				end
