@@ -121,6 +121,10 @@ do
 		return out
 	end
 
+	function gine.env.ents.GetCount()
+		return #gine.env.ents.GetAll()
+	end
+
 	local META = gine.GetMetaTable("Entity")
 
 	function META:__newindex(k,v)
