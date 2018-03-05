@@ -269,13 +269,14 @@ end
 
 local function clean_sentence(sentence)
 
-	sentence = sentence:gsub("%u%l", " %1")
+	sentence = sentence:gsub("%c", "") -- control characters
+	sentence = sentence:gsub("%u%l", " %1") -- upper, lower
 	sentence = sentence:lower()
 	sentence = sentence:gsub("_", " ")
 	sentence = sentence:gsub("%.", " ")
-	sentence = sentence:gsub("%p", "")
-	sentence = sentence:gsub("%d", "")
-	sentence = sentence:gsub("%s+", " ")
+	sentence = sentence:gsub("%p", "") -- punctuation
+	sentence = sentence:gsub("%d", "") -- digits
+	sentence = sentence:gsub("%s+", " ") -- spaces
 	sentence = sentence:trim()
 
 	return sentence
