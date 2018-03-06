@@ -308,7 +308,7 @@ function PLUGIN:Setup()
 				end
 			)
 
-			os.execute("xterm -e 'echo password needed to attach to process " ..pid.. " && sudo gdb -p " .. pid .. " --ex continue &'")
+			os.execute("xterm -e 'echo password needed to attach to process " ..pid.. " && sudo gdb -p " .. pid .. " --ex continue' &")
 
 			return pid
 		end, server_icon, nil, {
