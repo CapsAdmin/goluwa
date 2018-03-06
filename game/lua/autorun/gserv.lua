@@ -78,25 +78,8 @@ function gserv.IsSetup(id)
 	end
 end
 
-function gserv.Setup(id)
-	if gserv.IsRunning(id) then error("server is running", 2) end
-
-	if gserv.IsSetup(id) then
-		gserv.Log(id, "server is already setup")
-	else
-		gserv.Log(id, "setting up gmod server for first time")
-	end
-
-	gserv.InstallGame("gmod", nil, function()
-
-		local dir = underscore(id)
-
-		if not vfs.IsDirectory(srcds_dir .. dir) then
-			os.execute("cp -a " .. gserv.GetInstalledGames()[4020] .. "/. " .. srcds_dir .. dir)
-			serializer.SetKeyValueInFile("luadata", data_dir .. "games.lua", id, srcds_dir .. dir)
-		end
-
-		vfs.CreateDirectory("os:" .. get_gserv_addon_dir(id) .. "lua/autorun/server/")
+function gserv.FirstTimeSetup(id)
+	vfs.CreateDirectory("os:" .. get_gserv_addon_dir(id) .. "lua/autorun/server/")
 
 		vfs.Write(get_gserv_addon_dir(id) .. "lua/autorun/server/gserv.lua", [[
 			timer.Create("gserv_pinger", 1, 0, function()
@@ -188,7 +171,27 @@ end
 ]]
 		vfs.Write(get_gmod_dir(id) .. "lua/includes/util.lua", lua)
 	end
+end
 
+function gserv.Setup(id)
+	if gserv.IsRunning(id) then error("server is running", 2) end
+
+	if gserv.IsSetup(id) then
+		gserv.Log(id, "server is already setup")
+	else
+		gserv.Log(id, "setting up gmod server for first time")
+	end
+
+	gserv.InstallGame("gmod dedicated server", nil, function()
+
+		local dir = underscore(id)
+
+		if not vfs.IsDirectory(srcds_dir .. dir) then
+			os.execute("cp -a " .. gserv.GetInstalledGames()[4020] .. "/. " .. srcds_dir .. dir)
+			serializer.SetKeyValueInFile("luadata", data_dir .. "games.lua", id, srcds_dir .. dir)
+		end
+
+		gserv.FirstTimeSetup(id)
 	end)
 end
 
@@ -229,29 +232,7 @@ function gserv.UpdateGame(id)
 		if appid == 4020 then
 			os.execute("cp -a -rf " .. gserv.GetInstalledGames()[4020] .. "/. " .. srcds_dir .. underscore(id))
 
-			local lua = vfs.Read(get_gmod_dir(id) .. "lua/includes/util.lua")
-			if not lua:find("GSERV_RESOURCE_FILES") then
-				lua = lua .. [[
-if SERVER then
-	GSERV_RESOURCE_FILES = {}
-	do
-		local old = resource.AddFile
-		function resource.AddFile(path, ...)
-			GSERV_RESOURCE_FILES[path] = "AddFile"
-			return old(path, ...)
-		end
-	end
-	do
-		local old = resource.AddSingleFile
-		function resource.AddSingleFile(path, ...)
-			GSERV_RESOURCE_FILES[path] = "AddSingleFile"
-			return old(path, ...)
-		end
-	end
-end
-]]
-				vfs.Write(get_gmod_dir(id) .. "lua/includes/util.lua", lua)
-			end
+			gserv.FirstTimeSetup(id)
 		end
 	end)
 end
