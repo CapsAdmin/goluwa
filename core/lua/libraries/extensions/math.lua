@@ -1,18 +1,22 @@
 math.tau = math.pi*2
 
-function math.linear2gamma(n)
+function math.linear2gamma(n, gamma)
+	gamma = gamma or 2.4
+
 	if n <= 0.04045 then
 		return n / 12.92
 	end
 
-	return ((n + 0.055) / 1.055) ^ 2.4
+	return ((n + 0.055) / 1.055) ^ gamma
 end
 
-function math.gamma2linear(n)
+function math.gamma2linear(n, gamma)
+	gamma = gamma or 2.4
+
 	if n < 0.0031308 then
 		return n * 12.92
 	else
-		return 1.055 * (n ^ (1.0 / 2.4)) - 0.055
+		return 1.055 * (n ^ (1.0 / gamma)) - 0.055
 	end
 end
 
