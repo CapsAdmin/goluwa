@@ -51,7 +51,9 @@ commands.Add("chatsounds_extract_list", function(game_id)
 		local err = ffi.string(soundfile.Strerror(file_src))
 
 		if err ~= "No Error." then
+			soundfile.Close(file_src)
 			logn(err)
+			return
 		end
 
 		local info = ffi.new("struct SF_INFO[1]", {{
@@ -64,7 +66,9 @@ commands.Add("chatsounds_extract_list", function(game_id)
 		local err = ffi.string(soundfile.Strerror(file_dst))
 
 		if err ~= "No Error." then
+			soundfile.Close(file_dst)
 			logn(err)
+			return
 		end
 
 		local quality = ffi.new("float[1]", 0.4)
