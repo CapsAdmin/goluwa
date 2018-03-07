@@ -55,6 +55,14 @@ commands.Add("sprofile=number[5],string|nil,string|nil", function(time, file_fil
 	end)
 end)
 
+commands.Add("profile=number[5],string|nil,string|nil", function(time, file_filter, method)
+	profiler.StartInstrumental(file_filter)
+
+	event.Delay(time, function()
+		profiler.StopInstrumental(file_filter, true)
+	end)
+end)
+
 commands.Add("zbprofile", function()
 	os.remove("./zerobrane_statistical.msgpack")
 	os.remove("./zerobrane_trace_aborts.msgpack")
