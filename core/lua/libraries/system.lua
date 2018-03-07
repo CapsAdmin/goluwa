@@ -200,28 +200,26 @@ do
 				if info then
 					info.source = debug.getprettysource(level)
 
-					if info.currentline >= 0 then
-						local args = {}
+					local args = {}
 
-						for arg = 1, info.nparams do
-							local key, val = debug.getlocal(level, arg)
-							if type(val) == "table" then
-								val = tostring(val)
-							else
-								val = serializer.GetLibrary("luadata").ToString(val)
-								if val and #val > 200 then
-									val = val:sub(0, 200) .. "...."
-								end
+					for arg = 1, info.nparams do
+						local key, val = debug.getlocal(level, arg)
+						if type(val) == "table" then
+							val = tostring(val)
+						else
+							val = serializer.GetLibrary("luadata").ToString(val)
+							if val and #val > 200 then
+								val = val:sub(0, 200) .. "...."
 							end
-							table.insert(args, ("%s = %s"):format(key, val))
 						end
-
-						info.arg_line = table.concat(args, ", ")
-
-						info.name = info.name or "unknown"
-
-						table.insert(data, info)
+						table.insert(args, ("%s = %s"):format(key, val))
 					end
+
+					info.arg_line = table.concat(args, ", ")
+
+					info.name = info.name or "unknown"
+
+					table.insert(data, info)
 				else
 					break
 				end
