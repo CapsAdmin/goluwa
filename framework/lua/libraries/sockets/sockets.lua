@@ -265,9 +265,16 @@ do -- tcp socket meta
 				ok, msg = self.socket:setpeername(ip, port)
 			end
 
-			if not ok and msg and msg ~= "timeout" and msg ~= "Operation already in progress" then
+			if not ok and msg and msg ~= "timeout" and msg ~= "Operation already in progress" and (WINDOWS and msg ~= "Invalid argument") then
 				self:DebugPrintf("connect failed: %s", msg)
 				self:OnError(msg)
+
+				if WINDOWS and msg == "Invalid argument" then
+					if not LUASOCKET_INVALID_ARGUMENT then
+						logn("socket:connect returns Invalid argument!? luasocket on windows quirk")
+						LUASOCKET_INVALID_ARGUMENT = true
+					end
+				end
 			else
 				self.connecting = true
 			end
