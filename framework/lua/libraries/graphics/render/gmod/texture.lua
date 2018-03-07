@@ -5,6 +5,7 @@ local ITexture_GetColor = ITexture.GetColor
 local ITexture_GetMappingWidth = ITexture.GetMappingWidth
 local ITexture_GetMappingHeight = ITexture.GetMappingHeight
 local IMaterial_GetInt = IMaterial.GetInt
+local IMaterial_SetTexture = IMaterial.SetTexture
 local IMaterial_GetTexture = IMaterial.GetTexture
 
 local Material = gmod.Material
@@ -24,9 +25,10 @@ function META:IsLoading()
 	return self.loading
 end
 
-function META:GetPixelColor(x,y)
-	local c = ITexture_GetColor(self.tex, x,y)
-	return Color(c.r/255, c.g/255, c.b/255, c.a/255)
+function META:_GetRawPixelColor(x,y)
+	local c = ITexture_GetColor(self.tex, x-1,y-1)
+
+	return c.r, c.g, c.b, c.a
 end
 
 function META:GetSize()
@@ -34,20 +36,39 @@ function META:GetSize()
 		return Vec2(16, 16)
 	end
 
-	return Vec2(self.width, self.height)
+	return Vec2(self.width or self.Size.x, self.height or self.Size.y)
+end
+
+function META:GetMipSize()
+	return Vec3(0,0,0)
+end
+
+function META:_Download()
+
 end
 
 function META:SetMinFilter() end
 function META:SetMagFilter() end
 
+function META:SetITexture(tex)
+	self.tex = tex
+
+	self.width = tex:Width()
+	self.height = tex:Height()
+
+	self.Size = Vec2(self.width, self.height)
+end
+
 function META:SetPath(path, gmod_path)
+	self.loading = true
+
 	if gmod_path then
-		self.mat = Material(path, default_flags)
+		local mat = Material(path, default_flags)
 
-		self.tex = IMaterial_GetTexture(self.mat, "$basetexture")
+		self.tex = IMaterial_GetTexture(mat, "$basetexture")
 
-		self.width = IMaterial_GetInt(self.mat, "$realwidth") or ITexture_GetMappingWidth(self.tex)
-		self.height = IMaterial_GetInt(self.mat, "$realheight") or ITexture_GetMappingHeight(self.tex)
+		self.width = IMaterial_GetInt(mat, "$realwidth") or ITexture_GetMappingWidth(self.tex)
+		self.height = IMaterial_GetInt(mat, "$realheight") or ITexture_GetMappingHeight(self.tex)
 		self.Size = Vec2(self.width, self.height)
 
 		self.loading = false
@@ -61,21 +82,22 @@ function META:SetPath(path, gmod_path)
 				path = path:sub(#"materials/" + 1)
 			end
 
+			local mat
+
 			if path:endswith(".vtf") then
-				self.mat = CreateMaterial("goluwa_" .. path, "UnlitGeneric", {
+				mat = CreateMaterial("goluwa_" .. path, "UnlitGeneric", {
 					["$basetexture"] = path:sub(0, -5),
-					["$translucent"] = 1,
-					["$vertexcolor"] = 1,
-					["$vertexalpha"] = 1,
 				})
 			else
-				self.mat = Material(path, default_flags)
+				mat = Material(path, default_flags)
 			end
 
-			self.tex = IMaterial_GetTexture(self.mat, "$basetexture")
 
-			self.width = IMaterial_GetInt(self.mat, "$realwidth") or ITexture_GetMappingWidth(self.tex)
-			self.height = IMaterial_GetInt(self.mat, "$realheight") or ITexture_GetMappingHeight(self.tex)
+			self.tex = IMaterial_GetTexture(mat, "$basetexture")
+
+			self.width = IMaterial_GetInt(mat, "$realwidth") or ITexture_GetMappingWidth(self.tex)
+			self.height = IMaterial_GetInt(mat, "$realheight") or ITexture_GetMappingHeight(self.tex)
+
 			self.Size = Vec2(self.width, self.height)
 
 			self.loading = false
@@ -83,11 +105,18 @@ function META:SetPath(path, gmod_path)
 	end
 end
 
-local loading_material = Material("gui/progress_cog.png", default_flags)
+function META:Clear()
+	local old = gmod.render.GetRenderTarget()
+	gmod.render.SetRenderTarget(self.tex)
+	gmod.render.Clear(0,0,0,0)
+	gmod.render.SetRenderTarget(old)
+end
 
 function render._CreateTexture(self, type)
-	self.mat = loading_material
-	self.loading = true
+	self.tex =
+		render.loading_texture and
+		render.loading_texture.tex or
+		IMaterial_GetTexture(Material("gui/progress_cog.png", default_flags), "$basetexture")
 
 	return self
 end

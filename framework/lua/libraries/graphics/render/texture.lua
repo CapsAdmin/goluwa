@@ -283,9 +283,10 @@ function META:CreateBuffer(mip_map_level, format_override)
 	local size = self:GetMipSize(mip_map_level)
 
 	local format = render.GetTextureFormatInfo(format_override or self.InternalFormat)
-	local byte_size = size.x * size.y * size.z * ffi.sizeof(format.ctype)
 
-	return format.ctype_array(byte_size), nil, byte_size, format
+	local byte_size = ffi and (size.x * size.y * size.z * ffi.sizeof(format.ctype)) or 0
+
+	return ffi and format.ctype_array(byte_size), nil, byte_size, format
 end
 
 function META:Download(mip_map_level, format_override)
@@ -304,7 +305,7 @@ function META:Download(mip_map_level, format_override)
 		depth = size.z,
 		format = format.preferred_upload_format,
 		mip_map_level = mip_map_level,
-		size = size.x * size.y * size.z * ffi.sizeof(format.ctype),
+		size = ffi and (size.x * size.y * size.z * ffi.sizeof(format.ctype)) or 0,
 		length = (size.x * size.y * size.z) - 1, -- for i = 0, data.length do
 		channels = #format.bits,
 		__ref = ref,
@@ -386,8 +387,14 @@ function META:IteratePixels()
 end
 
 function META:GetRawPixelColor(x, y)
+	if self._GetRawPixelColor then
+		return self:_GetRawPixelColor(x, y)
+	end
+
 	local image = self.downloaded_image or self:Download()
 	self.downloaded_image = image
+
+	if image.size == 0 then return 255,255,255,255 end
 
 	x = math.clamp(math.floor(x), 0, image.width)
 	y = math.clamp(math.floor(y), 0, image.height)

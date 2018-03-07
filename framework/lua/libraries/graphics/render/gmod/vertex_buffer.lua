@@ -35,13 +35,13 @@ function META:LoadVertices(vertices, indices, is_valid_table)
 				},
 				uv = {
 					[0] = 0,
-					[1] = 0,
+					[1] = 1,
 				},
 				color = {
-					[0] = 0,
-					[1] = 0,
-					[2] = 0,
-					[3] = 0,
+					[0] = 1,
+					[1] = 1,
+					[2] = 1,
+					[3] = 1,
 				}
 			}
 		end
@@ -94,45 +94,34 @@ function META:UpdateBuffer()
 			vertices[i].b = vertex.color[2] or 1
 			vertices[i].a = vertex.color[3] or 1
 		end
-		chunks[chunk_i] = vertices
+		chunks[chunk_i] = {vertices = vertices, len = #vertices, stride = #vertices / 3}
 	end
 	self.chunks = chunks
+	self.chunks_len = #chunks
 end
 
 function META:Draw()
-	if self.vertices_length == 0 then return end
+	if self.vertices_length == 0 or not self.chunks_len then return end
 
-	render_PushFilterMag( TEXFILTER_ANISOTROPIC )
-	render_PushFilterMin( TEXFILTER_ANISOTROPIC )
-	cam_PushModelMatrix(GetGmodWorldMatrix())
-		for i, vertices in ipairs(self.chunks) do
-			mesh_Begin(MATERIAL_TRIANGLES, #vertices / 3)
-			for i, vertex in ipairs(vertices) do
+	if not render.no_model_matrix then
+		cam_PushModelMatrix(GetGmodWorldMatrix())
+	end
+	for i = 1, self.chunks_len do
+		local vertices = self.chunks[i]
+		mesh_Begin(MATERIAL_TRIANGLES, vertices.stride)
+		for i = 1, vertices.len do
+			temp_vector.x = vertices.vertices[i].x
+			temp_vector.y = vertices.vertices[i].y
+			mesh_Position(temp_vector)
+			mesh_TexCoord(0, vertices.vertices[i].u, vertices.vertices[i].v)
 
-				temp_vector.x = vertex.x
-				temp_vector.y = vertex.y
-				mesh_Position(temp_vector)
-				mesh_TexCoord(0, vertex.u, vertex.v)
+			mesh_Color(255, 255, 255, 255)
 
-				local r,g,b,a = vertex.r, vertex.g, vertex.b, vertex.a
-
-				r = r * render2d.shader.global_color.r
-				g = g * render2d.shader.global_color.g
-				b = b * render2d.shader.global_color.b
-				a = a * render2d.shader.global_color.a * render2d.shader.alpha_multiplier
-
-				r = r * 255
-				g = g * 255
-				b = b * 255
-				a = a * 255
-
-				mesh_Color(r,g,b,a)
-
-				mesh_AdvanceVertex()
-			end
-			mesh_End()
+			mesh_AdvanceVertex()
 		end
-	cam_PopModelMatrix()
-	render_PopFilterMag()
-	render_PopFilterMin()
+		mesh_End()
+	end
+	if not render.no_model_matrix then
+		cam_PopModelMatrix()
+	end
 end

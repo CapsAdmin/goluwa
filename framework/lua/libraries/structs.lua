@@ -88,6 +88,8 @@ function structs.Register(META)
 			end
 		end
 	else
+		META.byte_size = #META.Args * 8 -- double
+
 		local arg_line = "("
 		local tbl_line = "{"
 		for arg_i, arg in pairs(META.Args) do
