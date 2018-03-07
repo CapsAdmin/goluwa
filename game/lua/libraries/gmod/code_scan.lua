@@ -55,9 +55,8 @@ print(RunString(s))
 file.Write((CLIENT and "cl" or "sv") .. "_index.txt", s)
 ]]
 
-local vmdef = require("jit.vmdef")
-
 local function search(func, found, ignore_globals, name, lines)
+	local vmdef = require("jit.vmdef")
 	local info = jit.util.funcinfo(func)
 
 	local function bytecode(func, i)
