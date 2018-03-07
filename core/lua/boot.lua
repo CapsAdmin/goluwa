@@ -9,6 +9,8 @@ do
 
 	UNIX = not WINDOWS
 
+	ARCHIVE_EXT = WINDOWS and ".zip" or ".tar.gz"
+
 	local ffi = require("ffi")
 
 	if WINDOWS then
@@ -398,6 +400,13 @@ local args
 
 if WINDOWS then
 	args = {...}
+
+	for i = 1, #args do
+		if args[i] == "" or args[i]:find("^%s+$") then
+			table.remove(args, i)
+		end
+	end
+
 	arg_line = table.concat(args, " ")
 else
 	arg_line = ... or ""
@@ -405,8 +414,6 @@ else
 end
 
 local bin_dir = "data/" .. OS .. "_" .. ARCH .. "/"
-
-local ARCHIVE_EXT = WINDOWS and ".zip" or ".tar.gz"
 
 local generic = [[ffibuild.CopyLibraries("{BIN_DIR}")]]
 local ffibuild_libraries = {
