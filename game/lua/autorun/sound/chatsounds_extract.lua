@@ -42,7 +42,7 @@ commands.Add("chatsounds_extract_list", function(game_id)
 
 		local  name = os.tmpname()
 		local file = assert(io.open(name, "wb"))
-		file:write(vfs.Read(read_path))
+		file:write(assert(vfs.Read(read_path)))
 		file:close()
 
 		local info = ffi.new("struct SF_INFO[1]")
