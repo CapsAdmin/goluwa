@@ -262,8 +262,8 @@ function PLUGIN:Setup()
 	"                    h.i.        "};
 
 	local out =  {
-		setup_console("server", "Server", jit.os ~= "Windows" and "./goluwa server" or "goluwa.cmd server", server_icon),
-		setup_console("client", "Client", jit.os ~= "Windows" and "./goluwa client" or "goluwa.cmd client", client_icon, function(console, suppress_only)
+		setup_console("server", "Server", "server", server_icon),
+		setup_console("client", "Client", "client", client_icon, function(console, suppress_only)
 			if ide:GetMainFrame():IsActive() and (wx.wxGetKeyState(wx.WXK_F5) or wx.wxGetKeyState(wx.WXK_F6)) then
 				if suppress_only then return false end
 
@@ -371,17 +371,20 @@ function PLUGIN:StartProcess(id, cmd)
 		console.pid = cmd_line(console)
 	else
 
+		if WINE then
+			cmd_line = "wine " .. ide:GetProject() .. "data/windows_x64/luajit.exe " .. " "..ide:GetProject().."core/lua/boot.lua " .. cmd_line
+		elseif jit.os == "Windows" then
+			cmd_line = ide:GetProject() .. "goluwa.cmd " .. cmd_line
+		else
+			cmd_line = "./goluwa " .. cmd_line
+		end
+
 		if BRANCH then
 			cmd_line = cmd_line .. " branch " .. BRANCH
 
 			if DEBUG then
 				cmd_line = cmd_line .. " debug"
 			end
-
-		end
-
-		if jit.os == "Windows" then
-			cmd_line = ide:GetProject() .. cmd_line
 		end
 
 		console.pid = CommandLineRun(
