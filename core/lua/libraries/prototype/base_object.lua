@@ -68,7 +68,7 @@ do
 
 		if self.call_on_remove then
 			for _, v in pairs(self.call_on_remove) do
-				if v() == false then
+				if v(self) == false then
 					return
 				end
 			end
