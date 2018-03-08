@@ -412,7 +412,9 @@ else
 	args = {} (arg_line .. " "):gsub("(%S+)", function(chunk) table.insert(args, chunk) end)
 end
 
-local bin_dir = "data/" .. OS .. "_" .. ARCH .. "/"
+local root = debug.getinfo(1).source:match("@(.+/)core/lua/boot.lua")
+local bin_dir = root .. "data/" .. OS .. "_" .. ARCH .. "/"
+os.cd(bin_dir)
 
 local generic = [[ffibuild.CopyLibraries("{BIN_DIR}")]]
 local ffibuild_libraries = {
