@@ -1,4 +1,5 @@
 local MATERIAL_TRIANGLES = gmod.MATERIAL_TRIANGLES
+local Mesh = gmod.Mesh
 local mesh_Begin = gmod.mesh.Begin
 local mesh_End = gmod.mesh.End
 local mesh_TexCoord = gmod.mesh.TexCoord
@@ -73,10 +74,13 @@ local max_vertices = 32768
 
 function META:UpdateBuffer()
 	if self.vertices_length == 0 then return end
+	if self.DrawHint ~= "static" then return end
+
 	local chunks = {}
 
 	for chunk_i = 1, math.ceil(self.vertices_length/max_vertices) do
-		local vertices = {}
+		self.vertices = self.vertices or {}
+		local vertices = self.vertices
 		for i = 0, max_vertices - 1 do
 			local vertex = self.Vertices.Pointer[i + ((chunk_i - 1) * max_vertices)]
 			if not vertex then break end
@@ -94,32 +98,58 @@ function META:UpdateBuffer()
 			vertices[i].b = vertex.color[2] or 1
 			vertices[i].a = vertex.color[3] or 1
 		end
-		chunks[chunk_i] = {vertices = vertices, len = #vertices, stride = #vertices / 3}
-	end
-	self.chunks = chunks
-	self.chunks_len = #chunks
-end
 
-function META:Draw()
-	if self.vertices_length == 0 or not self.chunks_len then return end
+		local mesh = Mesh()
+		mesh_Begin(mesh, MATERIAL_TRIANGLES, #vertices/3)
+		for i = 1, #vertices do
+			temp_vector.x = vertices[i].x
+			temp_vector.y = vertices[i].y
 
-	if not render.no_model_matrix then
-		cam_PushModelMatrix(GetGmodWorldMatrix())
-	end
-	for i = 1, self.chunks_len do
-		local vertices = self.chunks[i]
-		mesh_Begin(MATERIAL_TRIANGLES, vertices.stride)
-		for i = 1, vertices.len do
-			temp_vector.x = vertices.vertices[i].x
-			temp_vector.y = vertices.vertices[i].y
 			mesh_Position(temp_vector)
-			mesh_TexCoord(0, vertices.vertices[i].u, vertices.vertices[i].v)
-
+			mesh_TexCoord(0, vertices[i].u, vertices[i].v)
 			mesh_Color(255, 255, 255, 255)
 
 			mesh_AdvanceVertex()
 		end
 		mesh_End()
+		chunks[chunk_i] = mesh
+	end
+	self.chunks = chunks
+	self.chunks_len = #chunks
+end
+
+local newindex = gmod.FindMetaTable("Vector").__newindex
+
+function META:Draw()
+	if self.vertices_length == 0 then return end
+
+	if not render.no_model_matrix then
+		cam_PushModelMatrix(GetGmodWorldMatrix())
+	end
+
+	if self.DrawHint == "static" then
+		for i = 1, self.chunks_len do
+			self.chunks[i]:Draw()
+		end
+	else
+		for chunk_i = 1, math.ceil(self.vertices_length/max_vertices) do
+			mesh_Begin(MATERIAL_TRIANGLES, self.vertices_length/3)
+			for i = 0, self.vertices_length - 1 do
+				local vertex = self.Vertices.Pointer[i + ((chunk_i - 1) * max_vertices)]
+				if not vertex then break end
+
+				newindex(temp_vector, "x", vertex.pos[0])
+				newindex(temp_vector, "y", vertex.pos[1])
+				mesh_Position(temp_vector)
+
+				mesh_TexCoord(0, vertex.uv[0], -vertex.uv[1]+1)
+
+				mesh_Color(255, 255, 255, 255)
+
+				mesh_AdvanceVertex()
+			end
+			mesh_End()
+		end
 	end
 	if not render.no_model_matrix then
 		cam_PopModelMatrix()
