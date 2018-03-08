@@ -298,7 +298,6 @@ do
 			os.readexecute('tar -xvzf '..from..' -C "'..to..'"')
 		else
 			local to = to == "./" and "" or to
-			if false then
 			powershell([[
 				$file = "]]..os.getcd() .. "\\" .. from..[["
 				$location = "]]..os.getcd() .. "\\" .. to..[["
@@ -318,7 +317,7 @@ do
 				foreach($item in $zip.items()) {
 					$shell.Namespace("$location").CopyHere($item, 0x14)
 				}
-			]], true) end
+			]], true)
 		end
 
 		if move_out then
