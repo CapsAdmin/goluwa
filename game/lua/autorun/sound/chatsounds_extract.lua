@@ -14,42 +14,6 @@ commands.Add("chatsounds_extract", function(game_id)
 
 	local root = R("data/")
 
-	local FILE
-	local file_io_data = ffi.new("struct SF_VIRTUAL_IO[1]", {{
-		get_filelen = function()
-			return FILE:GetSize()
-		end,
-		seek = function(pos, whence)
-			pos = tonumber(pos)
-
-			if whence == 0 then -- set
-				FILE:SetPosition(pos)
-			elseif whence == 1 then -- cur
-				FILE:SetPosition(FILE:GetPosition() + pos)
-			elseif whence == 2 then -- end
-				FILE:SetPosition(FILE:GetSize() + pos)
-			end
-
-			return FILE:GetPosition()
-		end,
-		read = function(ptr, count)
-			count = tonumber(count)
-
-			local str = FILE:ReadBytes(count)
-
-			ffi.copy(ptr, str)
-
-			return #str
-		end,
-		write = function(ptr, count)
-			return FILE:Write(ffi.string(ptr, count))
-		end,
-		tell = function()
-			return FILE:GetPosition()
-		end
-	}})
-
-
 	local function write(realm, trigger, read_path, i)
 		local dir = root .. "autoadd/" .. realm .. "/"
 		local path = dir
@@ -77,13 +41,13 @@ commands.Add("chatsounds_extract", function(game_id)
 		logn(path:sub(#e.ROOT_FOLDER + 1))
 
 		local info = ffi.new("struct SF_INFO[1]")
-		FILE = vfs.Open(read_path)
-		local file_src = soundfile.OpenVirtual(file_io_data, soundfile.e.READ, info, nil)
+		local file = vfs.Open(read_path)
+		local file_src = soundfile.OpenVFS(file, soundfile.e.READ, info)
 
 		local err = ffi.string(soundfile.Strerror(file_src))
 
 		if err ~= "No Error." then
-			FILE:Close()
+			file:Close()
 			soundfile.Close(file_src)
 			logn("source file: ", err)
 			return
@@ -99,7 +63,7 @@ commands.Add("chatsounds_extract", function(game_id)
 		local err = ffi.string(soundfile.Strerror(file_dst))
 
 		if err ~= "No Error." then
-			FILE:Close()
+			file:Close()
 			soundfile.Close(file_dst)
 			logn("destination file: ", err)
 			return
@@ -118,7 +82,7 @@ commands.Add("chatsounds_extract", function(game_id)
 
 		soundfile.Close(file_src)
 		soundfile.Close(file_dst)
-		FILE:Close()
+		file:Close()
 	end
 
 	sockets.Download("https://raw.githubusercontent.com/PAC3-Server/chatsounds/master/data/chatsounds/lists/"..appid..".txt", function(str)

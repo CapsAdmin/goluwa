@@ -79,9 +79,9 @@ function love.sound.newSoundData(samples, rate, bits, channels)
 
 	if type(samples) == "string" then
 		resource.Download(samples, function(path)
-			local data = vfs.Read(path)
-
-			local data, length, info = audio.Decode(data)
+			local file = vfs.Open(path)
+			local data, length, info = audio.Decode(file)
+			file:Close()
 
 			if data then
 				local buffer = audio.CreateBuffer()
@@ -120,13 +120,16 @@ function Decoder:getSampleRate() return self.info.samplerate end
 function love.sound.newDecoder(file, buffer_size)
 	local self = line.CreateObject("Decoder")
 
+	local file
+
 	if line.Type(file) == "File" then
-		self.data = file:read()
+		file = file.file
 	elseif line.Type(file) == "string" then
-		self.data = love.filesystem.read(file)
+		error("vfs.OPENMEMORY HERE")
 	end
 
-	local decoded_data, length, info = audio.Decode(self.data)
+	local decoded_data, length, info = audio.Decode(file)
+
 	self.decoded_data = decoded_data
 	self.length = length
 	self.info = info

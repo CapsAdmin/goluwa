@@ -463,7 +463,9 @@ do -- source
 			self:SetBuffer(var)
 		elseif type(var) == "string" then
 			resource.Download(var, function(path)
-				local data, length, info = audio.Decode(vfs.Read(path), var)
+				local file = vfs.Open(path)
+				local data, length, info = audio.Decode(file, var)
+				file:Close()
 
 				if data then
 					local buffer = audio.CreateBuffer()
@@ -960,9 +962,9 @@ function audio.RemoveDecoder(id)
 	end
 end
 
-function audio.Decode(data, path_hint)
+function audio.Decode(file, path_hint)
 	for _, decoder in ipairs(audio.decoders) do
-		local ok, buffer, length, info = pcall(decoder.callback, data, path_hint)
+		local ok, buffer, length, info = pcall(decoder.callback, file, path_hint)
 		if ok then
 			if buffer and length then
 				return buffer, length, info or {}
