@@ -38,7 +38,7 @@ commands.Add("chatsounds_extract", function(game_id)
 			vfs.Write(dir .. filename .. ".txt", trigger)
 		end
 
-		logn(path:sub(#e.ROOT_FOLDER + 1))
+		log("converting ", read_path:match(".+/(.+)") , " >> " , path:match(".+autoadd/(.+)") , " - ")
 
 		local info = ffi.new("struct SF_INFO[1]")
 		local file = vfs.Open(read_path)
@@ -49,7 +49,7 @@ commands.Add("chatsounds_extract", function(game_id)
 		if err ~= "No Error." then
 			file:Close()
 			soundfile.Close(file_src)
-			logn("source file: ", err)
+			logn("FAIL: [source file] ", err)
 			return
 		end
 
@@ -58,6 +58,7 @@ commands.Add("chatsounds_extract", function(game_id)
 			samplerate = info[0].samplerate,
 			channels = info[0].channels,
 		}})
+
 		local file_dst = soundfile.Open(path, soundfile.e.WRITE, info)
 
 		local err = ffi.string(soundfile.Strerror(file_dst))
@@ -65,17 +66,19 @@ commands.Add("chatsounds_extract", function(game_id)
 		if err ~= "No Error." then
 			file:Close()
 			soundfile.Close(file_dst)
-			logn("destination file: ", err)
+			logn("FAIL: [destination file] ", err)
 			return
 		end
 
-		local quality = ffi.new("float[1]", 0.4)
-		soundfile.Command(file_dst, soundfile.e.SET_VBR_ENCODING_QUALITY, quality, ffi.sizeof(quality))
+		local ogg_quality = ffi.new("float[1]", 0.4)
 
-		local buffer = ffi.new("double[4096]")
+		soundfile.Command(file_dst, soundfile.e.SET_VBR_ENCODING_QUALITY, ogg_quality, ffi.sizeof(ogg_quality))
+
+		local len = 1024 * 1024 * 4
+		local buffer = ffi.new("double[?]", len)
 
 		while true do
-			local readcount = soundfile.ReadDouble(file_src, buffer, 4096)
+			local readcount = soundfile.ReadDouble(file_src, buffer, len)
 			if readcount == 0 then break end
 			soundfile.WriteDouble(file_dst, buffer, readcount)
 		end
@@ -83,6 +86,8 @@ commands.Add("chatsounds_extract", function(game_id)
 		soundfile.Close(file_src)
 		soundfile.Close(file_dst)
 		file:Close()
+
+		logn("OK")
 	end
 
 	sockets.Download("https://raw.githubusercontent.com/PAC3-Server/chatsounds/master/data/chatsounds/lists/"..appid..".txt", function(str)
