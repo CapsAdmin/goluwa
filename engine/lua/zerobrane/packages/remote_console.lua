@@ -372,7 +372,7 @@ function PLUGIN:StartProcess(id, cmd)
 	else
 
 		if WINE then
-			cmd_line = "wine " .. ide:GetProject() .. "data/windows_x64/luajit.exe " .. " "..ide:GetProject().."core/lua/boot.lua " .. cmd_line
+			cmd_line = "wineconsole " .. ide:GetProject() .. "data/windows_x64/luajit.exe " .. " "..ide:GetProject().."core/lua/boot.lua " .. cmd_line
 		elseif jit.os == "Windows" then
 			cmd_line = ide:GetProject() .. "goluwa.cmd " .. cmd_line
 		else
