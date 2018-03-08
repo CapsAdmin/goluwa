@@ -1,4 +1,4 @@
-commands.Add("chatsounds_extract_list", function(game_id)
+commands.Add("chatsounds_extract", function(game_id)
 	local soundfile = system.GetFFIBuildLibrary("libsndfile")
 	local ffi = require("ffi")
 
@@ -13,6 +13,42 @@ commands.Add("chatsounds_extract_list", function(game_id)
 	end
 
 	local root = R("data/")
+
+	local FILE
+	local file_io_data = ffi.new("struct SF_VIRTUAL_IO[1]", {{
+		get_filelen = function()
+			return FILE:GetSize()
+		end,
+		seek = function(pos, whence)
+			pos = tonumber(pos)
+
+			if whence == 0 then -- set
+				FILE:SetPosition(pos)
+			elseif whence == 1 then -- cur
+				FILE:SetPosition(FILE:GetPosition() + pos)
+			elseif whence == 2 then -- end
+				FILE:SetPosition(FILE:GetSize() + pos)
+			end
+
+			return FILE:GetPosition()
+		end,
+		read = function(ptr, count)
+			count = tonumber(count)
+
+			local str = FILE:ReadBytes(count)
+
+			ffi.copy(ptr, str)
+
+			return #str
+		end,
+		write = function(ptr, count)
+			return FILE:Write(ffi.string(ptr, count))
+		end,
+		tell = function()
+			return FILE:GetPosition()
+		end
+	}})
+
 
 	local function write(realm, trigger, read_path, i)
 		local dir = root .. "autoadd/" .. realm .. "/"
@@ -40,25 +76,22 @@ commands.Add("chatsounds_extract_list", function(game_id)
 
 		logn(path:sub(#e.ROOT_FOLDER + 1))
 
-		local  name = os.tmpname()
-		local file = assert(io.open(name, "wb"))
-		file:write(assert(vfs.Read(read_path)))
-		file:close()
-
 		local info = ffi.new("struct SF_INFO[1]")
-		local file_src = soundfile.Open(name, soundfile.e.READ, info)
+		FILE = vfs.Open(read_path)
+		local file_src = soundfile.OpenVirtual(file_io_data, soundfile.e.READ, info, nil)
 
 		local err = ffi.string(soundfile.Strerror(file_src))
 
 		if err ~= "No Error." then
+			FILE:Close()
 			soundfile.Close(file_src)
-			logn(err)
+			logn("source file: ", err)
 			return
 		end
 
 		local info = ffi.new("struct SF_INFO[1]", {{
 			format = bit.bor(soundfile.e.FORMAT_OGG, soundfile.e.FORMAT_VORBIS),
-			samplerate = 44100,
+			samplerate = info[0].samplerate,
 			channels = info[0].channels,
 		}})
 		local file_dst = soundfile.Open(path, soundfile.e.WRITE, info)
@@ -66,8 +99,9 @@ commands.Add("chatsounds_extract_list", function(game_id)
 		local err = ffi.string(soundfile.Strerror(file_dst))
 
 		if err ~= "No Error." then
+			FILE:Close()
 			soundfile.Close(file_dst)
-			logn(err)
+			logn("destination file: ", err)
 			return
 		end
 
@@ -84,7 +118,7 @@ commands.Add("chatsounds_extract_list", function(game_id)
 
 		soundfile.Close(file_src)
 		soundfile.Close(file_dst)
-
+		FILE:Close()
 	end
 
 	sockets.Download("https://raw.githubusercontent.com/PAC3-Server/chatsounds/master/data/chatsounds/lists/"..appid..".txt", function(str)
