@@ -147,6 +147,19 @@ do
 						current = current[key]
 						key = nil
 					else
+						logn("=========STACK=========")
+						table.print(stack)
+						logn("=======================")
+
+						logn("=========CAPTURE=======")
+						table.print(capture)
+						logn("=======================")
+
+						logn("=========CURRENT=======")
+						table.print(current)
+						logn("=======================")
+
+						logn("in_string = ", in_string)
 						return nil, "stack imbalance at char " .. i
 					end
 				elseif char == [[}]] then
