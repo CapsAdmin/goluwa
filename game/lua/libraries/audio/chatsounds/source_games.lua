@@ -699,7 +699,7 @@ function chatsounds.ExtractSoundsFromLists()
 		end
 
 		if ext == ".mp3" or ext == ".ogg" then
-			logn("not converting ", path)
+			logn("not converting ", read_path)
 			vfs.Write(path .. ext, vfs.Read(read_path))
 		else
 			path = path .. ".ogg"
