@@ -812,6 +812,10 @@ if args[1] == "server" then
 	os.setenv("GOLUWA_CLIENT", "0")
 end
 
+if args[1]:sub(0, 2) == "--" then
+	table.insert(args, 1, "cli")
+end
+
 if args[1] == "client" or args[1] == "server" or args[1] == "launch" or args[1] == "cli" then
 	if args[2] == "branch" then
 		if args[4] == "debug" then
