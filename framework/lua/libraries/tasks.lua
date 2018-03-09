@@ -4,9 +4,10 @@ tasks.max = 4
 
 tasks.coroutine_lookup = tasks.coroutine_lookup or table.weak()
 tasks.created = tasks.created or {}
+tasks.enabled = false
 
 function tasks.IsEnabled()
-	return false
+	return tasks.enabled
 end
 
 function tasks.WaitForTask(name, callback)
