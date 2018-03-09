@@ -16,6 +16,14 @@ if not table.unpack then
 	end
 end
 
+function table.tolist(tbl, sort)
+	local list = {}
+	for key, val in pairs(tbl) do
+		table.insert(list, {key = key, val = val})
+	end
+
+	return list
+end
 function table.slice(tbl, first, last, step)
 	local sliced = {}
 
