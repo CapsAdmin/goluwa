@@ -138,7 +138,9 @@ end
 
 function META:Wait(sec)
 	if sec then self.wait = system.GetElapsedTime() + sec end
-	coroutine.yield()
+	if tasks.IsEnabled() then
+		coroutine.yield()
+	end
 end
 
 function META:OnStart()
