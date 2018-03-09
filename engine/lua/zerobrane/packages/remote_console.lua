@@ -284,7 +284,7 @@ function PLUGIN:Setup()
 			local cmd_line = ""
 
 			if WINE then
-				cmd_line = "wine hl2.exe -steam -game garrysmod -disableluarefresh"
+				cmd_line = "wineconsole hl2.exe -steam -game garrysmod -disableluarefresh"
 			elseif jit.os ~= "Windows" then
 				cmd_line = "./hl2_linux -steam -game garrysmod -disableluarefresh"
 			else
