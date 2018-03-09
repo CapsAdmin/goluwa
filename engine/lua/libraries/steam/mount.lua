@@ -19,6 +19,10 @@ commands.Add("unmount_all", function()
 	steam.UnmountAllSourceGames()
 end)
 
+commands.Add("clear_mount_cache", function()
+	vfs.Delete("data/source_games_cache")
+end)
+
 commands.Add("list_games", function()
 	for _, info in pairs(steam.GetSourceGames()) do
 		logn(info.game)
