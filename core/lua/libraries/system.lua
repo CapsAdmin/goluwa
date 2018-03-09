@@ -2,6 +2,18 @@ local system = _G.system or {}
 
 runfile("platforms/" .. PLATFORM .. "/system.lua", system)
 
+function system.GetWorkingDirectory()
+
+	if CLI then
+		local dir = os.getenv("GOLUWA_CURRENT_DIRECTORY")
+		if dir then
+			return vfs.FixPathSlashes("os:" .. dir .. "/")
+		end
+	end
+
+	return e.USERDATA_FOLDER
+end
+
 function system.OSCommandExists(...)
 	if select("#", ...) > 1 then
 		for _, cmd in ipairs({...}) do

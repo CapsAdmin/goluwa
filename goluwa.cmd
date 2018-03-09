@@ -1,4 +1,4 @@
-@echo off & cls & PowerShell -nologo -noprofile -noninteractive Invoke-Expression ('$args=(''%*'').split('' '');'+'$PSScriptRoot=(''%~dp0'');'+((Get-Content -Raw %~dp0%~n0%~x0 ) -Replace '^.*goto :EOF')); & goto :EOF
+@echo off & cls & PowerShell -nologo -noprofile -noninteractive Invoke-Expression ('$args=(''%*'').split('' '');'+'$PSScriptRoot=(''%~dp0'');$env:GOLUWA_CURRENT_DIRECTORY=(''%cd%'');'+((Get-Content -Raw %~dp0%~n0%~x0 ) -Replace '^.*goto :EOF')); & goto :EOF
 
 $stopwatch = New-Object System.Diagnostics.Stopwatch
 $stopwatch.Start()
