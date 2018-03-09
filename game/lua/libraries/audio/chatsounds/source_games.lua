@@ -786,7 +786,7 @@ function chatsounds.ExtractSoundsFromLists()
 	end
 end
 
-commands.Add("chatsounds_build_list", chatsounds.BuildSoundLists)
+commands.Add("chatsounds_build_lists", chatsounds.BuildSoundLists)
 commands.Add("chatsounds_build_soundinfo", chatsounds.BuildSoundInfoTranslations)
 commands.Add("chatsounds_translate_lists", chatsounds.TranslateSoundLists)
 commands.Add("chatsounds_extract", chatsounds.ExtractSoundsFromLists)
