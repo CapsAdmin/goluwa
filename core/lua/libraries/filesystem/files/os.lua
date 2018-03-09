@@ -27,7 +27,14 @@ CONTEXT.Position = 0
 
 function CONTEXT:CreateFolder(path_info, force)
 	if force or path_info.full_path:startswith(e.DATA_FOLDER) or path_info.full_path:startswith(e.USERDATA_FOLDER) or path_info.full_path:startswith(e.ROOT_FOLDER) then
-		if force then llog("creating directory: ", path_info.full_path) end
+		if self:IsFolder(path_info) then return end
+
+		if force then
+			if not CLI then
+				llog("creating directory: ", path_info.full_path)
+			end
+		end
+
 		local path = path_info.full_path
 		--if path:endswith("/") then path = path:sub(0, -2) end
 		local ok, err = fs.createdir(path)
