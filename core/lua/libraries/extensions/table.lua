@@ -64,7 +64,9 @@ function table.isarray(t)
 	local i = 0
 	for _ in pairs(t) do
 		i = i + 1
-		if t[i] == nil then return false end
+		if t[i] == nil then
+			return false
+		end
 	end
 	return true
 end
