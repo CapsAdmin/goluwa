@@ -415,6 +415,7 @@ end
 local root = debug.getinfo(1).source:match("@(.+/)core/lua/boot.lua")
 local bin_dir = root .. "data/" .. OS .. "_" .. ARCH .. "/"
 os.cd(bin_dir)
+bin_dir = os.getcd() .. "/"
 
 local generic = [[ffibuild.CopyLibraries("{BIN_DIR}")]]
 local ffibuild_libraries = {
