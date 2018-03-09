@@ -1,31 +1,5 @@
 -- golwua cli --gluacheck something.lua
 
-local function get_paths(line)
-	local paths = {}
-	line = line:trim()
-
-	if line:endswith("/") then
-		vfs.Search(line, {"lua"}, function(path)
-			if vfs.IsFile(path) then
-				table.insert(paths, R(path))
-			end
-		end)
-	elseif line:find(",", nil, true) then
-		for path in (line .. ","):gmatch('(.-),') do
-			path = path:trim()
-			if vfs.IsFile(path) and path:endswith(".lua") then
-				table.insert(paths, R(path))
-			end
-		end
-	elseif vfs.IsFile(line) and line:endswith(".lua") then
-		table.insert(paths, R(line))
-	else
-		table.insert(paths, line)
-	end
-
-	return paths
-end
-
 local metatables = {
 	"SWEP",
 	"SKIN",
@@ -83,7 +57,7 @@ local function get_luacheck_envrionment()
 end
 
 commands.Add("glua2lua=arg_line", function(str)
-	local paths = get_paths(str)
+	local paths = utility.CLIPathInputToTable(str, {"lua"})
 
 	for i, path in ipairs(paths) do
 		if path == "stdin" or path == "-" then
@@ -132,7 +106,7 @@ commands.Add("glua2lua=arg_line", function(str)
 end)
 
 commands.Add("gluacheck=arg_line", function(str)
-	local paths = get_paths(str)
+	local paths = utility.CLIPathInputToTable(str, {"lua"})
 
 	local lua_strings = {}
 

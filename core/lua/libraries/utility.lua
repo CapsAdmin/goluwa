@@ -1,5 +1,58 @@
 local utility = _G.utility or {}
 
+do
+	local function handle_path(path)
+		if vfs.IsPathAbsolute(path) then
+			return path
+		end
+
+		if path == "." then
+			path = ""
+		end
+
+		return system.GetWorkingDirectory() .. path
+	end
+
+	function utility.CLIPathInputToTable(str, extensions)
+		local paths = {}
+		str = str:trim()
+
+		if handle_path(str):endswith("/**") then
+			vfs.Search(handle_path(str:sub(0, -3)), extensions, function(path)
+				if vfs.IsFile(path) then
+					table.insert(paths, R(path))
+				end
+			end)
+		elseif handle_path(str):endswith("/*") then
+			for _, path in ipairs(vfs.Find(handle_path(str:sub(0, -2)), true)) do
+				if not extensions or vfs.GetExtensionFromPath(path):endswiththese(extensions) then
+					table.insert(paths, path)
+				end
+			end
+		elseif str:find(",", nil, true) then
+			for i, path in ipairs(str:split(",")) do
+				path = handle_path(vfs.FixPathSlashes(path:trim()))
+				if vfs.IsFile(path) and (not extensions or vfs.GetExtensionFromPath(path):endswiththese(extensions)) then
+					table.insert(paths, R(path))
+				end
+			end
+		elseif LINUX and str:find("%s") then
+			for i, path in ipairs(str:split(" ")) do
+				path = handle_path(vfs.FixPathSlashes(path:trim()))
+				if vfs.IsFile(path) and (not extensions or vfs.GetExtensionFromPath(path):endswiththese(extensions)) then
+					table.insert(paths, R(path))
+				end
+			end
+		elseif vfs.IsFile(handle_path(str)) and (not extensions or vfs.GetExtensionFromPath(str):endswiththese(extensions)) then
+			table.insert(paths, R(handle_path(str)))
+		else
+			table.insert(paths, handle_path(str))
+		end
+
+		return paths
+	end
+end
+
 function utility.GenerateCheckLastFunction(func, arg_count)
 	local lua = ""
 
