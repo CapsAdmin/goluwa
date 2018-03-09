@@ -24,6 +24,19 @@ function table.tolist(tbl, sort)
 
 	return list
 end
+
+function table.sortedpairs(tbl, sort)
+	local list = table.tolist(tbl)
+	table.sort(list, sort)
+	local i = 0
+	return function()
+		i = i + 1
+		if list[i] then
+			return list[i].key, list[i].val
+		end
+	end
+end
+
 function table.slice(tbl, first, last, step)
 	local sliced = {}
 
