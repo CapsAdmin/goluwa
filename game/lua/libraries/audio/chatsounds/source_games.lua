@@ -670,6 +670,9 @@ function chatsounds.ExtractSoundsFromLists()
 
 	local root = R("data/")
 
+	local buffer_len = 1024
+	local buffer = ffi.new("double[?]", buffer_len)
+
 	local function write(realm, trigger, read_path, i)
 		local ext = "." .. vfs.GetExtensionFromPath(read_path)
 		local dir = root .. "chatsounds/autoadd/" .. realm .. "/"
@@ -682,9 +685,9 @@ function chatsounds.ExtractSoundsFromLists()
 		end
 
 		if i then
-			path = path .. filename .. "/" .. i .. ext
+			path = path .. filename .. "/" .. i
 		else
-			path = path .. filename .. ext
+			path = path .. filename
 		end
 
 		vfs.CreateDirectoriesFromPath("os:" .. path)
@@ -697,12 +700,18 @@ function chatsounds.ExtractSoundsFromLists()
 
 		if ext == ".mp3" or ext == ".ogg" then
 			logn("not converting ", path)
-			vfs.Write(path, vfs.Read(read_path))
+			vfs.Write(path .. ext, vfs.Read(read_path))
 		else
+			path = path .. ".ogg"
+
 			log("converting ", read_path:match(".+/(.+)") , " >> " , path:match(".+autoadd/(.+)") , " - ")
 
 			local info = ffi.new("struct SF_INFO[1]")
-			local file = vfs.Open(read_path)
+			local file, err = vfs.Open(read_path)
+			if not file then
+				logn("FAIL: unable to open ", read_path)
+				return
+			end
 			local file_src = soundfile.OpenVFS(file, soundfile.e.READ, info)
 
 			local err = ffi.string(soundfile.Strerror(file_src))
@@ -735,11 +744,8 @@ function chatsounds.ExtractSoundsFromLists()
 
 			soundfile.Command(file_dst, soundfile.e.SET_VBR_ENCODING_QUALITY, ogg_quality, ffi.sizeof(ogg_quality))
 
-			local len = 1024 * 1024 * 4
-			local buffer = ffi.new("double[?]", len)
-
 			while true do
-				local readcount = soundfile.ReadDouble(file_src, buffer, len)
+				local readcount = soundfile.ReadDouble(file_src, buffer, buffer_len)
 				if readcount == 0 then break end
 				soundfile.WriteDouble(file_dst, buffer, readcount)
 			end
