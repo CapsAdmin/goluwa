@@ -2,7 +2,7 @@ local start_time = os.clock()
 
 -- put all c functions in a table so we can override them if needed
 -- without doing the local oldfunc = print thing over and over again
-if os.getenv("GOLUWA_BOOT_TIME") then
+if os.getenv("GOLUWA_BOOT_TIME") and not os.getenv("GOLUWA_CLI") then
 	io.write("[runfile] ", os.getenv("GOLUWA_BOOT_TIME"), " seconds spent in core/lua/boot.lua\n")
 end
 

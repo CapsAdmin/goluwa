@@ -51,10 +51,14 @@ do
 	local stack = {}
 
 	function utility.PushTimeWarning()
+		if CLI then return end
+
 		table.insert(stack, os.clock())
 	end
 
 	function utility.PopTimeWarning(what, threshold, category)
+		if CLI then return end
+
 		threshold = threshold or 0.1
 		local start_time = table.remove(stack)
 		if not start_time then return end
