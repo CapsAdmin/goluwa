@@ -16,7 +16,7 @@ local function dump_script(out)
 			if sounds then
 				local str = ""
 				if data.modifiers then
-					for k,v in pairs(data.modifiers) do
+					for k,v in ipairs(data.modifiers) do
 						str = str .. v.mod .. "(" .. table.concat(v.args, ", ") .. ")"
 						if k ~= #data.modifiers then
 							str = str .. ", "
@@ -616,14 +616,14 @@ function chatsounds.PlayScript(script)
 
 	local sounds = {}
 
-	for _, chunk in pairs(script) do
+	for _, chunk in ipairs(script) do
 		if chunk.type == "matched" then
 
 			if chunk.modifiers then
-				for _, data in pairs(chunk.modifiers) do
+				for _, data in ipairs(chunk.modifiers) do
 					local mod = chatsounds.Modifiers[data.mod]
 					if mod and mod.args then
-						for i, func in pairs(mod.args) do
+						for i, func in ipairs(mod.args) do
 							data.args[i] = func(data.args[i])
 						end
 					end
@@ -631,7 +631,7 @@ function chatsounds.PlayScript(script)
 			end
 
 			if chunk.modifiers then
-				for mod, data in pairs(chunk.modifiers) do
+				for mod, data in ipairs(chunk.modifiers) do
 					mod = chatsounds.Modifiers[data.mod]
 					if mod and mod.pre_init then
 						mod.pre_init(unpack(data.args))
@@ -645,7 +645,7 @@ function chatsounds.PlayScript(script)
 				local info
 
 				if chunk.modifiers then
-					for _, v in pairs(chunk.modifiers) do
+					for _, v in ipairs(chunk.modifiers) do
 						if v.mod == "choose" then
 							if chunk.val.realms[v.args[2]] then
 								data = chunk.val.realms[v.args[2]]
@@ -653,7 +653,7 @@ function chatsounds.PlayScript(script)
 							else
 								local temp = {}
 								for realm, data in pairs(chunk.val.realms) do
-									for _, sound in pairs(data.sounds) do
+									for _, sound in ipairs(data.sounds) do
 										table.insert(temp, {sound = sound, realm = realm})
 									end
 								end
@@ -673,7 +673,7 @@ function chatsounds.PlayScript(script)
 					local temp = {}
 					for realm, data in pairs(chunk.val.realms) do
 						if not chatsounds.last_realm or chatsounds.last_realm == realm then
-							for _, sound in pairs(data.sounds) do
+							for _, sound in ipairs(data.sounds) do
 								table.insert(temp, {sound = sound, realm = realm})
 							end
 						end
@@ -699,7 +699,7 @@ function chatsounds.PlayScript(script)
 
 					sound.call = function(self, func_name)
 						if not self.modifiers then return end
-						for _, data in pairs(self.modifiers) do
+						for _, data in ipairs(self.modifiers) do
 							local mod = chatsounds.Modifiers[data.mod]
 							if mod and mod[func_name] then
 								local ok, err = pcall(mod[func_name], self, unpack_args(data))
@@ -818,8 +818,8 @@ function chatsounds.Update()
 
 	local time = system.GetElapsedTime()
 
-	for i, track in pairs(chatsounds.active_tracks) do
-		for i, sound in pairs(track) do
+	for i, track in ipairs(chatsounds.active_tracks) do
+		for i, sound in ipairs(track) do
 			if sound.start_time < time then
 				if not sound.started then
 					sound:play()
@@ -882,7 +882,7 @@ end
 
 function chatsounds.GetLists()
 	local out = {}
-	for _, v in pairs(vfs.Find("data/chatsounds/lists/")) do
+	for _, v in ipairs(vfs.Find("data/chatsounds/lists/")) do
 		table.insert(out, v:sub(0,-5))
 	end
 	return out
