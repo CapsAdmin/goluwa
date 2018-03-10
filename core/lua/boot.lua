@@ -358,7 +358,7 @@ do
 					os.execute("rm -rf " .. to .. dir)
 				end
 			else
-				os.execute("xcopy /C /E /Y " .. move_out .. "* " .. to .. "\\")
+				os.execute("xcopy /C /E /Y " .. move_out:gsub("/", "\\") .. "* " .. to:gsub("/", "\\") .. "\\")
 			end
 		end
 
