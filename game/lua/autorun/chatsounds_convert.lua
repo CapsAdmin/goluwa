@@ -113,6 +113,9 @@ function chatsounds.BuildSoundLists()
 		"sound/player/survivor/voice/(.-)/",
 		"sound/player/vo/(.-)/",
 
+		"vo/(aperture_ai)/[^/]+",
+		"npc/(turret_floor)/turret_",
+
 		".+/_(mo)_[^/]+",
 		".+/_(al)_[^/]+",
 		".+/_(kl)_[^/]+",
@@ -136,6 +139,7 @@ function chatsounds.BuildSoundLists()
 		"(ui)/[^/]+",
 		"vo/(glados)/[^/]+",
 
+
 		"npc/(.-)/",
 		"vo/npc/(.-)/",
 		"vo/(.-)/",
@@ -155,9 +159,11 @@ function chatsounds.BuildSoundLists()
 	local realm_translate = {
 		[""] = "misc",
 
+		eli = "hl2_eli",
 		breen = "hl2_breen",
 		mo = "hl2_mossman",
 		al = "hl2_alyx",
+		alyx = "hl2_alyx",
 		kl = "hl2_kleiner",
 		br = "hl2_breen",
 		ba = "hl2_barney",
@@ -177,6 +183,9 @@ function chatsounds.BuildSoundLists()
 		virgil = "l4d2_virgil",
 		coach = "l4d2_coach",
 
+		turret_floor = "portal_turret",
+		aperture_ai = "portal_ai",
+
 		scout = "tf2_scout",
 		soldier = "tf2_soldier",
 		pyro = "tf2_pyro",
@@ -189,6 +198,8 @@ function chatsounds.BuildSoundLists()
 	}
 
 	local voice_actors = {
+
+		hl2_eli = "robert_guillaume",
 		hl2_mossman = "michelle_forbes",
 		hl2_alyx = "merle_dandridge",
 		hl2_kleiner = "hal_robins",
@@ -205,6 +216,9 @@ function chatsounds.BuildSoundLists()
 		l4d_manager = "earl_alexander",
 		l4d_mechanic = "jesy_mckinney",
 		l4d_namvet = "jim_french",
+
+		turret_floor = "ellen_mclain",
+		portal_ai = "ellen_mclain",
 
 		tf2_scout = "nathan_vetterlein",
 		tf2_churchguy = "nathan_vetterlein",
@@ -245,9 +259,23 @@ function chatsounds.BuildSoundLists()
 
 	thread.debug = true
 
+	local mounted = {}
+	for i,v in ipairs(steam.GetMountedSourceGames()) do
+		mounted[v.filesystem.steamappid] = v.game_dir
+	end
+
+	if next(mounted) then
+		logn("mounted games")
+		table.print2(mounted)
+	else
+		logn("no games mounted")
+	end
+
+	local hl2_only = table.count(mounted) == 1 and mounted[220]
+
 	function thread:OnStart()
 		vfs.Search("sound/", {"wav", "ogg", "mp3"}, function(path, userdata)
-			if not path:find("common/Half-Life 2/hl2/", nil, true) and path:find("common/.-/hl2/") then
+			if not hl2_only and path:find("common/.-/hl2/") then
 				logn("skiping ", path)
 				return
 			end
@@ -668,7 +696,9 @@ function chatsounds.TranslateSoundLists()
 											local sentence = get_sound_data(file, true)
 											if sentence then
 												sentence = clean_sentence(sentence)
-												new_trigger = sentence
+												if sentence ~= "" then
+													new_trigger = sentence
+												end
 											end
 											file:Close()
 										end
@@ -713,9 +743,9 @@ function chatsounds.ExtractSoundsFromLists()
 	local buffer_len = 1024
 	local buffer = ffi.new("double[?]", buffer_len)
 
-	local function write(realm, trigger, read_path, i)
+	local function write(game, realm, trigger, read_path, i)
 		local ext = "." .. vfs.GetExtensionFromPath(read_path)
-		local dir = root .. "chatsounds/autoadd/" .. realm .. "/"
+		local dir = root .. "chatsounds/autoadd/" .. "/" .. game .. "/" .. realm .. "/"
 		local path = dir
 
 		local filename = trigger
@@ -732,8 +762,6 @@ function chatsounds.ExtractSoundsFromLists()
 
 		vfs.CreateDirectoriesFromPath("os:" .. path)
 
-		if vfs.IsFile(path) then return end
-
 		if filename ~= trigger then
 			vfs.Write(dir .. filename .. ".txt", trigger)
 		end
@@ -743,6 +771,8 @@ function chatsounds.ExtractSoundsFromLists()
 			vfs.Write(path .. ext, vfs.Read(read_path))
 		else
 			path = path .. ".ogg"
+
+			if vfs.IsFile(path) then return end
 
 			log("converting ", read_path:match(".+/(.+)") , " >> " , path:match(".+autoadd/(.+)") , " - ")
 
@@ -820,10 +850,10 @@ function chatsounds.ExtractSoundsFromLists()
 					realm = realm:gsub("[^a-z _]", "")
 
 					if #data == 1 then
-						write(realm, trigger, data[1].path)
+						write(id or "unknown", realm, trigger, data[1].path)
 					else
 						for i, data in ipairs(data) do
-							write(realm, trigger, data.path, i)
+							write(id or "unknown", realm, trigger, data.path, i)
 						end
 					end
 				end
