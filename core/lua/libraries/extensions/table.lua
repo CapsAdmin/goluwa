@@ -195,10 +195,17 @@ function table.count(tbl)
 	return i
 end
 
-function table.merge(a, b)
+function table.merge(a, b, merge_aray)
 	for k,v in pairs(b) do
 		if type(v) == "table" and type(a[k]) == "table" then
-			table.merge(a[k], v)
+			if merge_aray and table.isarray(a[k]) and table.isarray(v) then
+				local offset = #a[k]
+				for i = 1, #v do
+					a[k][i + offset] = v[i]
+				end
+			else
+				table.merge(a[k], v, merge_aray)
+			end
 		else
 			a[k] = v
 		end

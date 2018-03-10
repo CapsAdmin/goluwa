@@ -26,7 +26,7 @@ function chatsounds.BuildFromSoundDirectory(where)
 	end
 
 	chatsounds.list = chatsounds.list or {}
-	table.merge(chatsounds.list, list)
+	table.merge(chatsounds.list, list, true)
 
 	tree = chatsounds.TableToTree(tree)
 	chatsounds.tree = chatsounds.tree or {}
@@ -134,18 +134,21 @@ function chatsounds.BuildFromLegacyChatsoundsDirectory(addon_dir)
 end
 
 function chatsounds.BuildFromURL(url, callback)
+	print(url)
 	resource.Download(url, function(path)
 		local tree = {}
 		local list = {}
 
 		local function rebuild()
-			chatsounds.list = chatsounds.list or {}
-			table.merge(chatsounds.list, list)
-			chatsounds.GenerateAutocomplete()
-
 			tree = chatsounds.TableToTree(tree)
 			chatsounds.tree = chatsounds.tree or {}
 			table.merge(chatsounds.tree, tree)
+
+			chatsounds.list = chatsounds.list or {}
+			table.merge(chatsounds.list, list, true)
+			chatsounds.GenerateAutocomplete()
+
+			print("rebuilt chatsounds", tree, list)
 		end
 
 		callback(vfs.Read(path), function(realm, trigger, path)
@@ -335,38 +338,33 @@ function chatsounds.LoadListFromAppID(name)
 		end
 
 		chatsounds.list = chatsounds.list or {}
-
-		for k,v in pairs(list) do
-			if chatsounds.list[k] then
-				table.merge(chatsounds.list[k], v)
-			else
-				chatsounds.list[k] = v
-			end
-		end
+		table.merge(chatsounds.list, list, true)
 
 		chatsounds.tree = chatsounds.tree or {}
 		table.merge(chatsounds.tree, tree)
 
 		if autocomplete then
-			event.Delay(0, function()
+			event.Delay(0.1, function()
 				chatsounds.GenerateAutocomplete()
-			end, nil, "chatsounds_autocomplete")
+			end, "chatsounds_autocomplete")
 		end
 	end, nil, nil, nil, true)
 end
 
 function chatsounds.AddSound(trigger, realm, ...)
-	local tree = chatsounds.tree
-
 	local data = {}
 
 	for i, v in ipairs({...}) do
 		data[i] = {path = v}
 	end
 
+	chatsounds.list = chatsounds.list or {}
+	chatsounds.list[realm] = chatsounds.list[realm] or {}
+	chatsounds.list[realm][trigger] = data
+
 	local words = trigger:explode(" ")
 
-	local next = tree
+	local next = chatsounds.tree
 	local max = #words
 	for i, word in ipairs(words) do
 		if not next[word] then next[word] = {} end
@@ -379,4 +377,8 @@ function chatsounds.AddSound(trigger, realm, ...)
 
 		next = next[word]
 	end
+
+	event.Delay(0.1, function()
+			chatsounds.GenerateAutocomplete()
+		end, "chatsounds_autocomplete")
 end
