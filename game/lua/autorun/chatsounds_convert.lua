@@ -6,7 +6,7 @@ chatsounds.TranslateSoundLists() -- translates the non translated lists based on
 chatsounds.ExtractSoundsFromLists() -- converts lists to ogg in the chatsounds directory format
 ]]
 
-local chatsounds = ... or chatsounds
+local chatsounds = _G.chatsounds or {}
 
 local function get_sound_data(file, plaintext)
 	local out = {}
@@ -66,6 +66,26 @@ local function clean_sentence(sentence)
 	return sentence
 end
 
+function chatsounds.ListToTable(data)
+	local list = {}
+	local realm = "misc"
+	for path, trigger in data:gmatch("(.-)=(.-)\n") do
+		if path == "realm" then
+			realm = trigger
+		else
+			if not list[realm] then
+				list[realm] = {}
+			end
+
+			if not list[realm][trigger] then
+				list[realm][trigger] = {}
+			end
+
+			table.insert(list[realm][trigger], {path = path})
+		end
+	end
+	return list
+end
 
 function chatsounds.BuildSoundLists()
 
