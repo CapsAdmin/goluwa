@@ -797,6 +797,7 @@ function chatsounds.Panic()
 	end
 
 	chatsounds.active_tracks = {}
+	chatsounds.queue_calc = {}
 end
 
 if chatsounds.active_tracks then
