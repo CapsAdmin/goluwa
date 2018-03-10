@@ -358,7 +358,7 @@ do
 					os.execute("rm -rf " .. to .. dir)
 				end
 			else
-				powershell("Move-Item -Confirm:$false -Force -Path " .. move_out .. "* -Destination " .. to, true)
+				os.execute("xcopy /C /E /Y " .. move_out .. "* " .. to .. "\\")
 			end
 		end
 
