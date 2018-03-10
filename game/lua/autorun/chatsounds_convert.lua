@@ -398,7 +398,7 @@ function chatsounds.BuildSoundInfoTranslations()
 					local str = vfs.Read(path)
 
 					if str then
-						local t, err = utility.VDFToTable(str)
+						local t, err = utility.VDFToTable(str, true)
 						if t then
 							table.merge(sound_info[id], t)
 						else
@@ -446,7 +446,7 @@ function chatsounds.BuildSoundInfoTranslations()
 					str = str:gsub("//.-\n", "")
 					-- stupid hack
 
-					local tbl = utility.VDFToTable(str)
+					local tbl = utility.VDFToTable(str, true)
 					if tbl.Lang then tbl = tbl.Lang end
 					if tbl.lang then tbl = tbl.lang end
 					if tbl.Tokens then tbl = tbl.Tokens end
