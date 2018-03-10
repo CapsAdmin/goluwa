@@ -603,7 +603,7 @@ return {
   unpackers = unpackers,
   encode = ljp_pack,
   decode = function (data, offset)
-    local _, data ljp_unpack(data, offset or 0)
+    local _, data = ljp_unpack(data, offset or 0)
     return data
   end
 }
