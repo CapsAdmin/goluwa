@@ -812,7 +812,7 @@ if args[1] == "server" then
 	os.setenv("GOLUWA_CLIENT", "0")
 end
 
-if args[1]:sub(0, 2) == "--" then
+if args[1] and args[1]:sub(0, 2) == "--" then
 	table.insert(args, 1, "cli")
 end
 
