@@ -742,9 +742,18 @@ function chatsounds.PlayScript(script)
 		end
 	end
 
-
-	table.insert(chatsounds.queue_calc, function()
+	local function cb()
 		for _, sound in ipairs(sounds) do
+			if not sound.snd:IsValid() then
+				for i,v in ipairs(chatsounds.queue_calc) do
+					if v == cb then
+						table.remove(chatsounds.queue_calc, i)
+					end
+				end
+				return
+			end
+
+
 			if not sound.snd:IsReady() then
 				return
 			end
@@ -772,7 +781,10 @@ function chatsounds.PlayScript(script)
 		table.insert(chatsounds.active_tracks, track)
 
 		return true
-	end)
+	end
+
+
+	table.insert(chatsounds.queue_calc, cb)
 
 	chatsounds.last_realm = nil
 end
