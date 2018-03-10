@@ -601,5 +601,10 @@ return {
   set_table_classifier = set_table_classifier,
   packers = packers,
   unpackers = unpackers,
+  encode = ljp_pack,
+  decode = function (data, offset)
+    local _, data ljp_unpack(data, offset or 0)
+    return data
+  end
 }
 
