@@ -380,7 +380,7 @@ do
 				if move then
 					if WINDOWS then
 						local to = to:gsub("/", "\\")
-						os.execute("move /Y " .. to .. "\\* " .. to:sub(0, -2) .. "\\")
+						os.execute("xcopy /C /E /Y " .. to .. "\\* " .. to:sub(0, -2) .. "\\")
 					else
 						os.execute("mv -f " .. to .. "/* " .. to:sub(0, -2) .. "/")
 						os.execute("mv -f " .. to .. "/.* " .. to:sub(0, -2) .. "/")
