@@ -184,7 +184,11 @@ function CONTEXT:Open(path_info, mode, ...)
 		self.file_info = file_info
 
 		if file_info.preload_data then
-			self.data = file_info.preload_data .. file:ReadBytes(file_info.size-#file_info.preload_data)
+			if file_info.size == #file_info.preload_data then
+				self.data = file_info.preload_data
+			else
+				self.data = file_info.preload_data .. file:ReadBytes(file_info.size-#file_info.preload_data)
+			end
 			self.file = nil
 		else
 			self.file = file
