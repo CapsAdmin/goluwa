@@ -1,14 +1,20 @@
+
 do return end
+
 local lib = desire("lame")
 
 if not lib then return end
 
 local audio = ... or _G.audio
 
-audio.AddDecoder("lame", function(data, path_hint)
-	local file = assert(vfs.Open(path_hint))
+audio.AddDecoder("lame", function(path, path_hint)
+	local file = assert(vfs.Open(path))
+	local tag = file:Read(3)
 
-	if data:sub(0,3) ~= "ID3" then return false, "unknown format" end
+	if tag ~= "ID3" then
+		file:Close()
+		return false, "unknown format"
+	end
 
 	local lame = lib.lame_init()
 	local hip = lib.hip_decode_init()
