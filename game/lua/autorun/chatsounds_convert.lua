@@ -1,9 +1,9 @@
 --[[
 mount hl2
-chatsounds.BuildSoundLists() -- builds non translated lists of all the sounds in sound/* depending on what games you have mounted
-chatsounds.BuildSoundInfoTranslations() -- builds translation files for chatsounds.TranslateSoundLists based on source engine soundinfo files
-chatsounds.TranslateSoundLists() -- translates the non translated lists based on phonemes and built (if any) soundinfo translations
-chatsounds.ExtractSoundsFromLists() -- converts lists to ogg in the chatsounds directory format
+chatsounds_build_lists -- builds non translated lists of all the sounds in sound/* depending on what games you have mounted
+chatsounds_build_soundinfo -- builds translation files for chatsounds.TranslateSoundLists based on source engine soundinfo files
+chatsounds_translate_lists -- translates the non translated lists based on phonemes and built (if any) soundinfo translations
+chatsounds_extract -- converts lists to ogg in the chatsounds directory format
 ]]
 
 local chatsounds = _G.chatsounds or {}
