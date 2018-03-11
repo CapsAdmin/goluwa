@@ -20,7 +20,10 @@ commands.Add("unmount_all", function()
 end)
 
 commands.Add("clear_mount_cache", function()
-	vfs.Delete("data/source_games_cache")
+	for i,v in ipairs(vfs.Find("data/archive_cache/", true)) do
+		print(vfs.Delete(v))
+	end
+	print(vfs.Delete("data/source_games_cache"))
 end)
 
 commands.Add("list_games", function()
