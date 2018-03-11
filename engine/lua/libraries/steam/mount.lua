@@ -155,7 +155,6 @@ function steam.GetSourceGames()
 
 					tbl.game_dir = game_dir
 
-
 					if tbl.filesystem then
 						local fixed = {}
 
@@ -258,6 +257,7 @@ function steam.MountSourceGame(game_info)
 						path = path .. "/"
 					end
 					if game_info.game == "Garry's Mod" and not pvars.Get("gine_local_addons_only") then
+						llog("mounting", path)
 						vfs.Mount(path, nil, game_info)
 					end
 				end
@@ -272,6 +272,7 @@ function steam.MountSourceGame(game_info)
 				end
 			end
 
+			llog("mounting", path)
 			vfs.Mount(path, nil, game_info)
 		end
 	end
