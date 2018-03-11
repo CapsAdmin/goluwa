@@ -160,7 +160,7 @@ function steam.GetSourceGames()
 
 						local done = {}
 
-						for _, v in pairs(tbl.filesystem.searchpaths) do
+						for i, v in pairs(tbl.filesystem.searchpaths) do
 							for _, path in pairs(type(v) == "string" and {v} or v) do
 								if path:find("|", nil, true) then
 									path = path:replace("|gameinfo_path|", tbl.gameinfo_path:match("(.+/)"))
@@ -173,7 +173,7 @@ function steam.GetSourceGames()
 
 								if path:endswith("*") then
 									if not done[path] then
-										table.insert(fixed, path)
+										table.insert(fixed, {path, i})
 										done[path] = true
 									end
 								else
@@ -196,18 +196,21 @@ function steam.GetSourceGames()
 
 									if vfs.IsFile(pak) then
 										if not done[pak] then
-											table.insert(fixed, pak)
+											table.insert(fixed, {path, i})
 											done[pak] = true
 										end
 									end
 
 									if not done[path] and vfs.IsDirectory(path) then
-										table.insert(fixed, path)
+										table.insert(fixed, {path, i})
 										done[path] = true
 									end
 								end
 							end
 						end
+
+						table.sort(fixed, function(a, b) return a[2] < b[2] end)
+						for i, v in ipairs(fixed) do fixed[i] = v[1] end
 
 						tbl.filesystem.searchpaths = fixed
 
