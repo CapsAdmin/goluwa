@@ -789,10 +789,17 @@ function chatsounds.ExtractSoundsFromLists()
 			if err ~= "No Error." then
 
 				if err:find("unknown format", nil, true) then
+					logn(read_path)
 					local f = vfs.Open(read_path)
 					f:SetPosition(0)
 					local bytes = f:ReadBytes(4)
-					logn("first 4 bytes is:", bytes:hexdump(), bytes)
+					if bytes then
+						logn("first 4 bytes is:", bytes:hexdump(), bytes)
+					else
+						logn("unable to read 4 first bytes of file")
+						logn("file exists = ", vfs.IsFile(read_path))
+						logn("file size = ", vfs.GetSize(read_path))
+					end
 					f:Close()
 				end
 
