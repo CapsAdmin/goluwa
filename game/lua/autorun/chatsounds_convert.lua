@@ -774,7 +774,7 @@ function chatsounds.ExtractSoundsFromLists()
 
 			if vfs.IsFile(path) then return end
 
-			log("converting ", read_path:match(".+/(.+)") , " >> " , path:match(".+autoadd/(.+)") , " - ")
+			log("converting ", read_path:match(".+/sound/(.+)") , " >> " , path:match(".+autoadd/(.+)") , " - ")
 
 			local info = ffi.new("struct SF_INFO[1]")
 			local file, err = vfs.Open(read_path)
@@ -787,6 +787,15 @@ function chatsounds.ExtractSoundsFromLists()
 			local err = ffi.string(soundfile.Strerror(file_src))
 
 			if err ~= "No Error." then
+
+				if err:find("unknown format", nil, true) then
+					local f = vfs.Open(read_path)
+					f:SetPosition(0)
+					local bytes = f:ReadBytes(4)
+					logn("first 4 bytes is:", bytes:hexdump(), bytes)
+					f:Close()
+				end
+
 				file:Close()
 				soundfile.Close(file_src)
 				logn("FAIL: [source file] ", err)
