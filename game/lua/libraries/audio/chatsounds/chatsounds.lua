@@ -742,18 +742,29 @@ function chatsounds.PlayScript(script)
 		end
 	end
 
+	local timeout = system.GetElapsedTime() + 20
+
 	local function cb()
-		for _, sound in ipairs(sounds) do
-			if not sound.snd:IsValid() then
-				for i,v in ipairs(chatsounds.queue_calc) do
-					if v == cb then
-						table.remove(chatsounds.queue_calc, i)
-					end
-				end
-				return
+		local time = system.GetElapsedTime()
+
+		if time > timeout then
+			logn("timeout waiting for sounds to get ready")
+			dump_script(script)
+
+			for _, sound in ipairs(sounds) do
+				sound.snd:Remove()
 			end
 
+			for i, v in ipairs(chatsounds.queue_calc) do
+				if v == cb then
+					table.remove(chatsounds.queue_calc, i)
+					break
+				end
+			end
+			return
+		end
 
+		for _, sound in ipairs(sounds) do
 			if not sound.snd:IsReady() then
 				return
 			end
@@ -761,7 +772,6 @@ function chatsounds.PlayScript(script)
 
 		local duration = 0
 		local track = {}
-		local time = system.GetElapsedTime()
 
 		for _, sound in ipairs(sounds) do
 
