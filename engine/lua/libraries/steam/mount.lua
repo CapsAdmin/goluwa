@@ -123,6 +123,7 @@ function steam.GetSourceGames()
 	if found then
 		for i,v in ipairs(found) do
 			if not vfs.IsFile(v.gameinfo_path) then
+				logn("unable to find ", v.gameinfo_path, ", rebuilding steam.GetSourceGames cache")
 				found = nil
 				break
 			end
@@ -136,11 +137,12 @@ function steam.GetSourceGames()
 
 	for _, game_dir in ipairs(steam.GetGameFolders()) do
 		for _, folder in ipairs(vfs.Find("os:" .. game_dir, true)) do
-			local path = folder .. "/gameinfo.txt"
-			local str = vfs.Read("os:" .. path)
+			local path = "os:" .. folder .. "/gameinfo.txt"
+			local str = vfs.Read(path)
 
 			if not str then
-				str = vfs.Read("os:" .. folder .. "/GameInfo.txt")
+				path = "os:" .. folder .. "/GameInfo.txt"
+				str = vfs.Read(path)
 			end
 
 			local dir = path:match("(.+/).+/")
