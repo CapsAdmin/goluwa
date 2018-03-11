@@ -134,7 +134,6 @@ function chatsounds.BuildFromLegacyChatsoundsDirectory(addon_dir)
 end
 
 function chatsounds.BuildFromURL(url, callback)
-	print(url)
 	resource.Download(url, function(path)
 		local tree = {}
 		local list = {}
@@ -147,8 +146,6 @@ function chatsounds.BuildFromURL(url, callback)
 			chatsounds.list = chatsounds.list or {}
 			table.merge(chatsounds.list, list, true)
 			chatsounds.GenerateAutocomplete()
-
-			print("rebuilt chatsounds", tree, list)
 		end
 
 		callback(vfs.Read(path), function(realm, trigger, path)
@@ -206,6 +203,8 @@ function chatsounds.BuildFromGithub(repo, location)
 				end
 			end
 		end
+
+		llog("loaded sounds from https://www.github.com/", repo, "/", location)
 	end)
 end
 
