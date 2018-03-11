@@ -2,24 +2,24 @@ local steam = ... or _G.steam
 
 commands.Add("mount=string", function(game)
 	local game_info = assert(steam.MountSourceGame(game))
-	llog("mounted %s %s", game_info.game, game_info.title2)
+
+	llog("mounted %s", game_info.name)
 end)
 
 commands.Add("unmount=string", function(game)
 	local game_info = assert(steam.UnmountSourceGame(game))
-	llog("unmounted %s %s", game_info.game, game_info.title2 or game_info.title)
+	llog("unmounted %s", game_info.name)
 end)
 
 commands.Add("mount_all=string", function(game)
-	local game_info = assert(steam.MountSourceGame(game))
-	llog("mounted %s %s", game_info.game, game_info.title2)
+	steam.MountAllSourceGames()
 end)
 
 commands.Add("unmount_all", function()
 	steam.UnmountAllSourceGames()
 end)
 
-commands.Add("clear_mount_cache", function()
+commands.Add("mount_clear", function()
 	for i,v in ipairs(vfs.Find("data/archive_cache/", true)) do
 		print(vfs.Delete(v))
 	end
@@ -135,86 +135,125 @@ function steam.GetSourceGames()
 
 	found = {}
 
+	local done = {}
+
 	for _, game_dir in ipairs(steam.GetGameFolders()) do
-		for _, folder in ipairs(vfs.Find("os:" .. game_dir, true)) do
-			local path = "os:" .. folder .. "/gameinfo.txt"
+		for _, dir in ipairs(vfs.Find("os:" .. game_dir, true)) do
+			dir = dir .. "/"
+
+			local path = "os:" .. dir .. "gameinfo.txt"
 			local str = vfs.Read(path)
 
 			if not str then
-				path = "os:" .. folder .. "/GameInfo.txt"
+				path = "os:" .. dir .. "GameInfo.txt"
 				str = vfs.Read(path)
 			end
 
-			local dir = path:match("(.+/).+/")
+			local game_info_dir = dir
+			dir = vfs.GetParentFolderFromPath(dir)
 
 			if str then
 				local tbl = utility.VDFToTable(str, true)
 				if tbl and tbl.gameinfo and tbl.gameinfo.game then
 					tbl = tbl.gameinfo
-					tbl.gameinfo_path = path
 
-					tbl.game_dir = game_dir
+					if not tbl.filesystem.steamappid or not done[tbl.filesystem.steamappid] then
 
-					if tbl.filesystem then
-						local fixed = {}
+						done[tbl.filesystem.steamappid] = true
 
-						local done = {}
+						tbl.gameinfo_path = path
 
-						for i, v in pairs(tbl.filesystem.searchpaths) do
-							for _, path in pairs(type(v) == "string" and {v} or v) do
-								if path:find("|", nil, true) then
-									path = path:replace("|gameinfo_path|", tbl.gameinfo_path:match("(.+/)"))
-									path = path:replace("|all_source_engine_paths|", dir)
-								else
-									path = dir .. path
-								end
+						tbl.game_dir = game_dir
 
-								path = vfs.FixPathSlashes(path)
+						local name = tbl.game
+						if tbl.title and tbl.title ~= name then
+							name = name .. " - " .. tbl.title
+						end
+						if tbl.title and tbl.title2 and tbl.title2 ~= tbl.title then
+							name = name .. " - " .. tbl.title2
+						end
+						tbl.name = name
 
-								if path:endswith("*") then
-									if not done[path] then
-										table.insert(fixed, {path, i})
-										done[path] = true
+						if tbl.filesystem then
+							local fixed = {}
+
+							local done = {}
+							for _, v in pairs(tbl.filesystem.searchpaths) do
+								local tbl = type(v) == "string" and {v} or v
+								for _, path in pairs(tbl) do
+									if path:find("|", nil, true) then
+										path = path:replace("|gameinfo_path|", game_info_dir)
+										path = path:replace("|all_source_engine_paths|", dir)
+									else
+										path = dir .. path
 									end
-								else
 
-									if path:endswith(".") then
-										path = path:sub(0,-2)
-									end
+									path = vfs.FixPathSlashes(path)
 
-									if not path:endswith("/") then
-										if vfs.GetExtensionFromPath(path) then
-											if not vfs.IsFile("os:" .. path) then
-												path = path:gsub("(.+/.+)%.vpk", "%1_dir.vpk")
+									if path:endswith("*") then
+										if not done[path] then
+											table.insert(fixed, path)
+											done[path] = true
+										end
+									else
+										if path:endswith(".") then
+											path = path:sub(0,-2)
+										end
+
+										if path:endswith("/") then
+											local test = path .. "/"
+											if vfs.IsDirectory(test) then
+												if not done[test] then
+													table.insert(fixed, test)
+													done[test] = true
+												end
 											end
-										elseif vfs.IsDirectory(path) then
-											path = path .. "/"
+										else
+											local test = path .. "/"
+											if vfs.IsDirectory(test) then
+												if not done[test] then
+													table.insert(fixed, test)
+													done[test] = true
+												end
+											end
+
+											local test = path .. "/pak01_dir.vpk/"
+											if vfs.IsDirectory(test) then
+												if not done[test] then
+													table.insert(fixed, test)
+													done[test] = true
+												end
+											end
 										end
-									end
 
-									local pak = path .. "pak01_dir.vpk"
-
-									if vfs.IsFile(pak) then
-										if not done[pak] then
-											table.insert(fixed, {path, i})
-											done[pak] = true
+										if path:endswith(".vpk") and not vfs.IsFile("os:" .. path) then
+											local path = path:gsub("(.+/.+)%.vpk", "%1_dir.vpk") .. "/"
+											if not done[path] then
+												table.insert(fixed, path)
+												done[path] = true
+											end
 										end
-									end
-
-									if not done[path] and vfs.IsDirectory(path) then
-										table.insert(fixed, {path, i})
-										done[path] = true
 									end
 								end
 							end
+
+							-- utility.VDFToTable does not support ordered keys.
+							-- lets just prioritize vpk in the meantime
+							local sorted = {}
+							for _, v in ipairs(fixed) do
+								if v:endswith(".vpk/") then
+									table.insert(sorted, v)
+								end
+							end
+							for _, v in ipairs(fixed) do
+								if not v:endswith(".vpk/") then
+									table.insert(sorted, v)
+								end
+							end
+							tbl.filesystem.searchpaths = sorted
+
+							table.insert(found, tbl)
 						end
-
-						table.sort(fixed, function(a, b) return a[2] < b[2] end)
-						for i, v in ipairs(fixed) do fixed[i] = v[1] end
-
-						tbl.filesystem.searchpaths = fixed
-
-						table.insert(found, tbl)
 					end
 				end
 			end
@@ -250,32 +289,25 @@ function steam.MountSourceGame(game_info)
 
 	steam.UnmountSourceGame(game_info)
 
-	llog("mounting %s", game_info.game)
-
 	for _, path in ipairs(game_info.filesystem.searchpaths) do
 		if path:endswith("*") then
 			for _, path in ipairs(vfs.Find(path:sub(0, -2), true)) do
 				if vfs.IsDirectory(path) then
-					if not path:endswith("/") and not vfs.GetExtensionFromPath(path) then
-						path = path .. "/"
-					end
 					if game_info.game == "Garry's Mod" and not pvars.Get("gine_local_addons_only") then
-						llog("mounting", path)
+						llog("mounting %s", path)
 						vfs.Mount(path, nil, game_info)
 					end
 				end
 			end
 		else
-			if not path:endswith(".vpk") then
-				path = "os:" .. path
-
+			if not path:endswith(".vpk/") then
 				for _, v in ipairs(vfs.Find(path .. "/maps/workshop/")) do
 					llog("mounting workshop map %s", v)
 					vfs.Mount(path .. "/maps/workshop/" .. v, "maps/", game_info)
 				end
 			end
 
-			llog("mounting", path)
+			llog("mounting %s", path)
 			vfs.Mount(path, nil, game_info)
 		end
 	end
