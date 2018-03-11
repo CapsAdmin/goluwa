@@ -760,14 +760,13 @@ function chatsounds.ExtractSoundsFromLists()
 			path = path .. filename
 		end
 
-		vfs.CreateDirectoriesFromPath("os:" .. path)
-
 		if filename ~= trigger then
 			vfs.Write(dir .. filename .. ".txt", trigger)
 		end
 
 		if ext == ".mp3" or ext == ".ogg" then
 			logn("not converting ", read_path)
+			vfs.CreateDirectoriesFromPath("os:" .. path)
 			vfs.Write(path .. ext, vfs.Read(read_path))
 		else
 			path = path .. ".ogg"
@@ -815,6 +814,7 @@ function chatsounds.ExtractSoundsFromLists()
 				channels = info[0].channels,
 			}})
 
+			vfs.CreateDirectoriesFromPath("os:" .. path)
 			local file_dst = soundfile.Open(path, soundfile.e.WRITE, info)
 
 			local err = ffi.string(soundfile.Strerror(file_dst))
