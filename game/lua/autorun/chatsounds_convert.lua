@@ -272,10 +272,11 @@ function chatsounds.BuildSoundLists()
 	end
 
 	local hl2_only = table.count(mounted) == 1 and mounted[220]
+	local ep1_only = table.count(mounted) == 1 and mounted[380]
 
 	function thread:OnStart()
 		vfs.Search("sound/", {"wav", "ogg", "mp3"}, function(path, userdata)
-			if not hl2_only and path:find("common/.-/hl2/") then
+			if (not hl2_only and path:find("common/.-/hl2/")) or (not ep1_only and path:find("common/.-/episodic/")) then
 				logn("skiping ", path)
 				return
 			end
@@ -378,6 +379,21 @@ function chatsounds.BuildSoundInfoTranslations()
 	thread:SetEnsureFPS(5)
 	thread.debug = true
 
+	local mounted = {}
+	for i,v in ipairs(steam.GetMountedSourceGames()) do
+		mounted[v.filesystem.steamappid] = v.game_dir
+	end
+
+	if next(mounted) then
+		logn("mounted games")
+		table.print2(mounted)
+	else
+		logn("no games mounted")
+	end
+
+	local hl2_only = table.count(mounted) == 1 and mounted[220]
+	local ep1_only = table.count(mounted) == 1 and mounted[380]
+
 	function thread:OnStart()
 		local sound_info = {}
 
@@ -388,26 +404,30 @@ function chatsounds.BuildSoundInfoTranslations()
 			self:ReportProgress("reading scripts/*", max)
 			self:Wait()
 
-			local id = data.userdata and data.userdata.filesystem and tostring(data.userdata.filesystem.steamappid) or data.userdata.game
+			if (hl2_only or not data.full_path:find("common/.-/hl2/")) and (ep1_only or not data.full_path:find("common/.-/episodic/")) then
+				local id = data.userdata and data.userdata.filesystem and tostring(data.userdata.filesystem.steamappid) or data.userdata.game
 
-			if id then
-				local path = data.full_path
-				sound_info[id] = sound_info[id] or {}
+				if id then
+					local path = data.full_path
+					sound_info[id] = sound_info[id] or {}
 
-				if path:find("_sounds") and not path:find("manifest") and path:find("%.txt") and not path:endswith("game_sounds_vo_phonemes.txt") then
-					local str = vfs.Read(path)
+					if path:find("_sounds") and not path:find("manifest") and path:find("%.txt") and not path:endswith("game_sounds_vo_phonemes.txt") then
+						local str = vfs.Read(path)
 
-					if str then
-						local t, err = utility.VDFToTable(str, true)
-						if t then
-							table.merge(sound_info[id], t)
+						if str then
+							local t, err = utility.VDFToTable(str, true)
+							if t then
+								table.merge(sound_info[id], t)
+							else
+								print(path, err)
+							end
 						else
-							print(path, err)
+							logn("couldn't read ", path, " file is empty")
 						end
-					else
-						logn("couldn't read ", path, " file is empty")
 					end
 				end
+			else
+				logn("skipping ", data.full_path)
 			end
 		end
 
@@ -427,33 +447,42 @@ function chatsounds.BuildSoundInfoTranslations()
 			self:ReportProgress("reading resource/*", max)
 			self:Wait()
 
-			local id = data.userdata and data.userdata.filesystem and tostring(data.userdata.filesystem.steamappid) or data.userdata.game
+			if (hl2_only or not data.full_path:find("common/.-/hl2/")) and (ep1_only or not data.full_path:find("common/.-/episodic/")) then
+				local id = data.userdata and data.userdata.filesystem and tostring(data.userdata.filesystem.steamappid) or data.userdata.game
 
-			if id then
-				local path = data.full_path
-				captions[id] = captions[id] or {}
+				if id then
+					local path = data.full_path
+					captions[id] = captions[id] or {}
 
-				if path:find("english") and path:find("%.txt") then
-					local str = vfs.Read(path)
-					-- stupid hack because some caption files are encoded weirdly which would break lua patterns
-					local tbl = {}
-					for uchar in str:gmatch("([%z\1-\127\194-\244][\128-\191]*)") do
-						if uchar ~= "\0" then
-							tbl[#tbl + 1] = uchar
+					if path:find("english") and path:find("%.txt") then
+						local str = vfs.Read(path)
+
+						-- stupid hack because some caption files are encoded weirdly which would break lua patterns
+						local tbl = {}
+						local i = 1
+						for uchar in str:gmatch("([%z\1-\127\194-\244][\128-\191]*)") do
+							if uchar ~= "\0" then
+								tbl[i] = uchar
+								i = i + 1
+							end
 						end
+						str = table.concat(tbl, "")
+						str = str:gsub("//.-\n", "")
+						-- stupid hack
+
+						local tbl = utility.VDFToTable(str, true)
+						if tbl.Lang then tbl = tbl.Lang end
+						if tbl.lang then tbl = tbl.lang end
+						if tbl.Tokens then tbl = tbl.Tokens end
+						if tbl.tokens then tbl = tbl.tokens end
+
+						logn("found ", table.count(tbl), " caption files in ", path)
+
+						table.merge(captions[id], tbl)
 					end
-					str = table.concat(tbl, "")
-					str = str:gsub("//.-\n", "")
-					-- stupid hack
-
-					local tbl = utility.VDFToTable(str, true)
-					if tbl.Lang then tbl = tbl.Lang end
-					if tbl.lang then tbl = tbl.lang end
-					if tbl.Tokens then tbl = tbl.Tokens end
-					if tbl.tokens then tbl = tbl.tokens end
-
-					table.merge(captions[id], tbl)
 				end
+			else
+				logn("skipping ", data.full_path)
 			end
 		end
 
@@ -516,6 +545,8 @@ function chatsounds.BuildSoundInfoTranslations()
 						end
 
 						data.text = data.text:trim()
+
+						logn("found caption for soundname ", sound_name, ": ", data.text)
 
 						sound_info[sound_name].caption = data
 					end
@@ -672,17 +703,21 @@ function chatsounds.TranslateSoundLists()
 								self:ReportProgress("translating " .. path, max)
 								self:Wait()
 
+								local translation_type = "no translation"
 								local new_trigger
 
 								if phonemes and phonemes[data.path] then
 									new_trigger = phonemes[data.path]
+									translation_type = "game_sounds_vo_phonemes"
 								else
 									local info = sound_info[data.path:lower()]
 									if info then
 										if info.caption and info.caption.text then
 											new_trigger = clean_sentence(info.caption.text)
+											translation_type = "gamesound caption"
 										elseif info.name then
 											new_trigger = clean_sentence(info.name)
+											translation_type = "gamesound name"
 										else
 											--logn("found sound info for ", data.path, " but not sure what to do with it")
 											--table.print(info)
@@ -698,6 +733,7 @@ function chatsounds.TranslateSoundLists()
 												sentence = clean_sentence(sentence)
 												if sentence ~= "" then
 													new_trigger = sentence
+													translation_type = "wav embedded caption"
 												end
 											end
 											file:Close()
@@ -711,6 +747,10 @@ function chatsounds.TranslateSoundLists()
 
 								table.insert(newlist[realm][new_trigger], data)
 								found = found + 1
+
+								logn(data.path:sub(7))
+								logn("\t", translation_type)
+								logn("\t", new_trigger)
 							end
 						end
 					end
