@@ -750,7 +750,7 @@ function chatsounds.ExtractSoundsFromLists()
 
 		local filename = trigger
 
-		if #filename > 250 then
+		if #filename > 180 then
 			filename = "-" .. trigger:sub(0, 180)
 		end
 
