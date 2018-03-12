@@ -370,15 +370,9 @@ do
 			io.write("copying files ", move_out, "** -> ", to, "\n")
 
 			if UNIX then
-				os.execute("cp -r \"" .. move_out .. "*\" \"" .. to .. "\"")
-
-				local dir = move_out:sub(#to + 1):match("(.-)/")
-
-				if dir and os.isdir(to .. dir) then
-					os.execute("rm -rf \"" .. to .. dir .. "\"")
-				end
+				os.execute("cp -r " .. move_out .. "* \"" .. to .. "\"")
 			else
-				os.execute("xcopy /C /E /Y \"" .. move_out:gsub("/", "\\") .. "**\" \"" .. winpath(to) .. "\"")
+				os.execute("xcopy /C /E /Y \"" .. winpath(move_out) .. "**\" \"" .. winpath(to) .. "\"")
 			end
 
 			os.removedir(extract_dir)
@@ -402,10 +396,10 @@ do
 				extract_dir = absolute_path(extract_dir)
 				to = absolute_path(to)
 
-				os.execute("git clone \"https://"..domain..".com/"..name..".git\" \""..extract_dir.."\" --depth 1")
+				os.execute("git clone https://"..domain..".com/"..name..".git \""..extract_dir.."\" --depth 1")
 
 				if WINDOWS then
-					os.execute("xcopy /C /E /Y \"" .. winpath(extract_dir .. "/*") .. "\" \"" .. to .. "\"")
+					os.execute("xcopy /C /E /Y " .. winpath(extract_dir .. "/*") .. " \"" .. to .. "\"")
 				else
 					os.execute("cp -rf \"" .. extract_dir .. "/*\" \"" .. to .. "\"")
 					os.execute("cp -rf \"" .. extract_dir .. "/.*\" \"" .. to .. "\"")
