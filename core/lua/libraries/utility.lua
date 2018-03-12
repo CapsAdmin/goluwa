@@ -1,6 +1,24 @@
 local utility = _G.utility or {}
 
 do
+	local ran = {}
+
+	function utility.RunOnNextGarbageCollection(callback, id)
+		if id then
+			ran[id] = false
+			getmetatable(newproxy(true)).__gc = function(...)
+				if not ran[id] then
+					callback(...)
+					ran[id] = true
+				end
+			end
+		else
+			getmetatable(newproxy(true)).__gc = callback
+		end
+	end
+end
+
+do
 	local function handle_path(path)
 		if vfs.IsPathAbsolute(path) then
 			return path
