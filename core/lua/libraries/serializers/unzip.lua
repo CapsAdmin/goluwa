@@ -1,3 +1,7 @@
+local ffi = require("ffi")
+
+local serializer = ...
+
 local deflate
 
 do
@@ -145,7 +149,7 @@ do
 
 	local function output(outstate, byte)
 		local window_pos = outstate.window_pos
-		outstate.string_buffer[outstate.byte_pos+1] = string.char(byte)
+		outstate.string_buffer[outstate.byte_pos] = byte
 		outstate.byte_pos = outstate.byte_pos + 1
 		outstate.window[window_pos] = byte
 		outstate.window_pos = window_pos % 32768 + 1	-- 32K
@@ -231,119 +235,107 @@ do
 
 end
 
-local function BitReader(f)
-	local self = {}
-
-	function self:RestartReadBits()
-		self.buf_byte = 0
-		self.buf_nbit = 0
-	end
-
-	function self:BitsLeftInByte()
-		return self.buf_nbit
-	end
-
-	function self:ReadBits(nbits)
-		if nbits == 0 then return 0 end
-
-		for i = 0, nbits, 8 do
-			if self.buf_nbit >= nbits then break end
-
-			self.buf_byte = self.buf_byte + bit.lshift(f:read(1):byte(), self.buf_nbit)
-			self.buf_nbit = self.buf_nbit + 8
-		end
-
-		self.buf_nbit = self.buf_nbit - nbits
-
-		local bits
-		if nbits == 32 then
-			bits = self.buf_byte
-			self.buf_byte = 0
-		else
-			bits = bit.band(self.buf_byte, bit.rshift(0xffffffff, 32 - nbits))
-			self.buf_byte = bit.rshift(self.buf_byte, nbits)
-		end
-
-		return bits
-	end
-
-	return self
-end
-
-local function bytes_to_int(str,endian,signed) -- use length of string to determine 8,16,32,64 bits
-    local t={str:byte(1,-1)}
-    if endian=="big" then --reverse bytes
-        local tt={}
-        for k=1,#t do
-            tt[#t-k+1]=t[k]
-        end
-        t=tt
-    end
-    local n=0
-    for k=1,#t do
-        n=n+t[k]*2^((k-1)*8)
-    end
-    if signed then
-        n = (n > 2^(#t*8-1) -1) and (n - 2^(#t*8)) or n -- if last bit set, negative.
-    end
-    return n
-end
-
-local serializer = ... or _G.serializer
 local zip = {}
 
-function zip.Encode(tbl)
-	error("NYI")
-end
-
 function zip.Decode(str)
+	local name = os.tmpname()
+	vfs.Write(name, str)
+	local zip = file.Open(name)
 
-	--local file_name = os.tmpname()
-
-	--local zip = io.open(file_name, "wb")
-	--zip:write(str)
-	--zip:close()
-
-	local zip = io.open("/home/caps/Downloads/stickers.zip", "rb")
-
-	local archive = {}
+	local archive = {files = {}, files2 = {}}
 
 	while true do
-		local sig = zip:read(4)
+		local sig = zip:ReadString(4)
 
-		if sig ~= "\x50\x4b\x03\x04" then break end
+		if sig == "\x50\x4b\x03\x04" then -- local file headers
 
-		zip:seek("cur", 10)
+			local data = zip:ReadStructure([[
+				uint16_t version;
+				uint16_t flags;
+				uint16_t compression;
+				uint16_t modtime;
+				uint16_t moddate;
+				uint32_t crc;
+				uint32_t compressed_size;
+				uint32_t uncompressed_size;
+				uint16_t filename_length;
+				uint16_t extra_field_length;
+			]])
 
-		local data = {}
-		data.crc = bytes_to_int(zip:read(4))
-		data.compressed_size = bytes_to_int(zip:read(4))
-		data.uncompressed_size = bytes_to_int(zip:read(4))
-		data.filename_length = bytes_to_int(zip:read(2))
-		data.extra_field_length = bytes_to_int(zip:read(2))
+			data.file_name = zip:ReadString(data.filename_length)
+			data.extra_field_data = zip:ReadString(data.extra_field_length)
 
-		data.file_name = zip:read(data.filename_length)
-		data.extra_field_data = zip:read(data.extra_field_length)
-
-		if data.uncompressed_size == 0 and data.uncompressed_size == 0 then
-			data.directory = true
-		else
-			if data.compressed_size == data.uncompressed_size then
-				data.file_content = zip:read(data.compressed_size)
+			if data.uncompressed_size == 0 then
+				data.directory = true
 			else
-				local out = {}
-				deflate(BitReader(zip), out)
-				data.file_content = table.concat(out)
+				if data.compressed_size == data.uncompressed_size then
+					data.file_content = zip:ReadBytes(data.compressed_size)
+				else
+					if false then
+						zip:Advance(data.compressed_size)
+					else
+						local out = ffi.new("uint8_t[?]", data.uncompressed_size)
+						local t = system.GetTime()
+						deflate(zip, out)
+						data.deflate_time = system.GetTime() - t
+						data.file_content = ffi.string(out, data.uncompressed_size)
+					end
+				end
+			end
+
+			table.insert(archive.files, data)
+		else
+			do break end -- not needed
+			if sig == "\x50\x4b\x01\x02" then -- central directory (not needed)
+				local data = zip:ReadStructure([[
+					uint16_t version;
+					uint16_t version_needed;
+					uint16_t flags;
+					uint16_t compression;
+					uint16_t modtime;
+					uint16_t moddate;
+					uint32_t crc;
+					uint32_t compressed_size;
+					uint32_t uncompressed_size;
+					uint16_t filename_length;
+					uint16_t extra_field_length;
+					uint16_t file_comment_length;
+					uint16_t disk_start;
+					uint16_t internal_attribute;
+					uint32_t external_attribute;
+					uint32_t offset_of_local_header;
+				]])
+
+				data.file_name = zip:ReadString(data.filename_length)
+				data.extra_field_data = zip:ReadString(data.extra_field_length)
+				data.file_comment = zip:ReadString(data.file_comment_length)
+
+				table.insert(archive.files2, data)
+			elseif sig == "\x50\x4b\x05\x06" then -- end of central directory (not needed)
+				local data = zip:ReadStructure([[
+					uint16_t version;
+					uint16_t disk_number;
+					uint16_t disk_wcd;
+					uint16_t disk_entries;
+					uint16_t total_entries;
+					uint32_t central_directory_size;
+					uint32_t offset_of_cd_wrt_starting_disk;
+					uint16_t comment_length;
+				]])
+
+				data.comment = zip:ReadBytes(data.comment_length)
+				archive.central_directory = data
+
+				assert(zip:GetSize() == zip:GetPosition(), "unexpected end of zip archive")
 			end
 		end
-
-		table.insert(archive, data)
 	end
 
-	for _, data in ipairs(archive) do
+	for _, data in ipairs(archive.files) do
 		if data.file_content then
 			if crypto.CRC32(data.file_content) ~= tostring(data.crc) then
-				error(data.file_name, "crc ("..crypto.CRC32(data.file_content)..") does not match "..data.crc.."!")
+				table.print(data)
+				error("crc ("..crypto.CRC32(data.file_content)..") does not match "..data.crc.."!")
 			end
 		end
 	end
