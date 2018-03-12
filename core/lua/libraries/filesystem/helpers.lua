@@ -137,7 +137,7 @@ add_helper("GetLastAccessed", "GetLastAccessed", "read")
 add_helper("GetSize", "GetSize", "read")
 
 function vfs.CreateDirectory(path, force)
-	if vfs.IsDirectory(path) then return true end
+	if vfs.IsDirectory(path) then return end
 
 	local path_info = vfs.GetPathInfo(path, true)
 	local dir_name = vfs.GetFolderNameFromPath(path_info.full_path) or path_info.full_path
