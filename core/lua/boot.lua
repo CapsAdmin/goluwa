@@ -401,8 +401,8 @@ do
 				if WINDOWS then
 					os.execute("xcopy /C /E /Y " .. winpath(extract_dir .. "/*") .. " \"" .. to .. "\"")
 				else
-					os.execute("cp -rf \"" .. extract_dir .. "/*\" \"" .. to .. "\"")
-					os.execute("cp -rf \"" .. extract_dir .. "/.*\" \"" .. to .. "\"")
+					os.execute("cp -rf " .. extract_dir .. "/* \"" .. to .. "\"")
+					os.execute("cp -rf " .. extract_dir .. "/.* \"" .. to .. "\"")
 				end
 
 				os.removedir(extract_dir)
