@@ -88,7 +88,7 @@ local FORMAT_MESSAGE_IGNORE_INSERTS = 0x00000200;
 local error_flags = bit.bor(FORMAT_MESSAGE_FROM_SYSTEM, FORMAT_MESSAGE_IGNORE_INSERTS)
 local function error_string()
 	local code = ffi.C.GetLastError()
-	local numout = ffi.C.FormatMessageA(error_flags, nil, code, 0, str, 1023, nil)
+	local numout = ffi.C.FormatMessageA(error_flags, nil, code, 0, error_str, 1023, nil)
 	local err = numout ~= 0 and ffi.string(error_str, numout)
 	if err and err:sub(-2) == "\r\n" then
 		return err:sub(0, -3)
