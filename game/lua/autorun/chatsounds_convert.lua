@@ -813,7 +813,7 @@ function chatsounds.ExtractSoundsFromLists()
 
 			if vfs.IsFile(path) then return end
 
-			log("converting ", read_path:match(".+/sound/(.+)") , " >> " , path:match(".+autoadd/(.+)") , " - ")
+			log("converting ", read_path:match(".*sound/(.+)") , " >> " , path:match(".+autoadd/(.+)") , " - ")
 
 			local info = ffi.new("struct SF_INFO[1]")
 			local file, err = vfs.Open(read_path)
