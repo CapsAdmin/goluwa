@@ -427,7 +427,7 @@ do
 				io.write("extracting ", os.getcd(), "/temp", ARCHIVE_EXT, " -> ", os.getcd(), "/", to, "\n")
 				os.extract("temp" .. ARCHIVE_EXT, to, "*/")
 
-
+				os.remove(absolute_path("temp" .. ARCHIVE_EXT))
 			end
 		end
 	end
