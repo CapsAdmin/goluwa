@@ -91,7 +91,7 @@ do
 		if b:sub(#b, #b) ~= "/" then b = b .. "/" end
 
 		if WINDOWS then
-			os.execute("xcopy /C /E /Y /F \"" .. winpath(a) .. ".\" \"" .. winpath(b) .. ".\"")
+			os.execute("xcopy /H /C /E /Y /F \"" .. winpath(a) .. ".\" \"" .. winpath(b) .. ".\"")
 		else
 			os.execute("cp -rf \"" .. a .. ".\" \"" .. b .. "\"")
 		end
