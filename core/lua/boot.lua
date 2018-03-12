@@ -372,7 +372,7 @@ do
 			if UNIX then
 				os.execute("cp -r " .. move_out .. "* \"" .. to .. "\"")
 			else
-				os.execute("xcopy /C /E /Y \"" .. winpath(move_out) .. "**\" \"" .. winpath(to) .. "\"")
+				os.execute("xcopy /C /E /Y " .. winpath(move_out) .. "** \"" .. winpath(to) .. "\"")
 			end
 
 			os.removedir(extract_dir)
