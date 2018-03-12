@@ -52,12 +52,12 @@ function render._CreateVertexBuffer(self)
 	end
 end
 
-function META:OnRemove()
-	self.vertex_buffer:Delete()
-	self.vertex_array:Delete()
-end
-
 if buffers_supported then
+	function META:OnRemove()
+		self.vertex_buffer:Delete()
+		self.vertex_array:Delete()
+	end
+
 	if render.IsExtensionSupported("GL_ARB_direct_state_access") then
 		function META:Draw(index_buffer, count)
 			if render.last_vertex_array_id ~= self.vertex_array.id then
@@ -135,6 +135,10 @@ if buffers_supported then
 else
 	-- this will probably only happen when running goluwa in virtual box with windows as a host
 	-- it's using the windows opengl api (seems to be 1.1)
+
+	function META:OnRemove()
+
+	end
 
 	function META:_SetVertices(vertices)
 

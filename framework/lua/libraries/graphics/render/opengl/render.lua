@@ -159,7 +159,7 @@ do
 		local BlendEquation = gl.BlendEquation and utility.GenerateCheckLastFunction(gl.BlendEquation, 1)
 
 		function render._SetBlendMode(src_color, dst_color, func_color)
-			BlendFunc(src_color, enums[dst_color])
+			BlendFunc(enums[src_color], enums[dst_color])
 			if BlendEquation then BlendEquation(enums[func_color]) end
 		end
 	end
