@@ -83,6 +83,20 @@ do
 		end
 	end
 
+	function os.copyfiles(a, b)
+		a = absolute_path(a)
+		b = absolute_path(b)
+
+		if a:sub(#a, #a) ~= "/" then a = a .. "/" end
+		if b:sub(#b, #b) ~= "/" then b = b .. "/" end
+
+		if WINDOWS then
+			os.execute("xcopy /C /E /Y \"" .. winpath(a) .. "\" \"" .. winpath(b) .. "\"")
+		else
+			os.execute("cp -rf \"" .. a .. ".\" \"" .. b .. "\"")
+		end
+	end
+
 	if UNIX then
 		ffi.cdef("char *getcwd(char *buf, size_t size);")
 
@@ -369,12 +383,7 @@ do
 
 			io.write("copying files ", move_out, "** -> ", to, "\n")
 
-			if UNIX then
-				os.execute("cp -r " .. move_out .. "* \"" .. to .. "\"")
-			else
-				os.execute("xcopy /C /E /Y " .. winpath(move_out) .. "** \"" .. winpath(to) .. "\"")
-			end
-
+			os.copyfiles(move_out, to)
 			os.removedir(extract_dir)
 		end
 
@@ -387,7 +396,7 @@ do
 			if os.isdir(to) and os.isdir(to .. "/.git") then
 				os.readexecute("git -C "..absolute_path(to).." pull")
 			else
-				if to:sub(#to, #to) ~= "/" then
+				if to ~= "" and to:sub(#to, #to) ~= "/" then
 					to = to .. "/"
 				end
 
@@ -398,13 +407,7 @@ do
 
 				os.execute("git clone https://"..domain..".com/"..name..".git \""..extract_dir.."\" --depth 1")
 
-				if WINDOWS then
-					os.execute("xcopy /C /E /Y " .. winpath(extract_dir .. "/*") .. " \"" .. to .. "\"")
-				else
-					os.execute("cp -rf " .. extract_dir .. "/* \"" .. to .. "\"")
-					os.execute("cp -rf " .. extract_dir .. "/.* \"" .. to .. "\"")
-				end
-
+				os.copyfiles(extract_dir, to)
 				os.removedir(extract_dir)
 			end
 		else
