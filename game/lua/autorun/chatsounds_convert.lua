@@ -958,7 +958,6 @@ end)
 commands.Add("chatsounds_fetch_tf2_captions", function()
 	resource.Download("https://gitlab.com/DBotThePony/TF2Subtitles/repository/master/archive.zip", function(path)
 		assert(vfs.IsDirectory(path), "zip not supported")
-		print(path) do return end
 		local out = {}
 		local root = vfs.Find(path .. "/", true)[1] .. "/data/eng/"
 		for _, dir in ipairs(vfs.Find(root)) do
