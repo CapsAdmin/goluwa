@@ -253,4 +253,5 @@ if not CLI and system.MainLoop then
 	system.MainLoop()
 end
 event.Call("ShutDown")
+collectgarbage()
 os.realexit(os.exitcode)
