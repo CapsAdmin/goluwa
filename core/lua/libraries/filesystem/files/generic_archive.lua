@@ -104,7 +104,7 @@ function CONTEXT:GetFileTree(path_info)
 
 	cache[cache_key] = tree
 
-	event.Delay(math.random(), function()
+	utility.RunOnNextGarbageCollection(function()
 		serializer.WriteFile("msgpack", cache_path, tree.tree)
 	end)
 
