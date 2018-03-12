@@ -254,4 +254,5 @@ if not CLI and system.MainLoop then
 end
 event.Call("ShutDown")
 collectgarbage()
+collectgarbage() -- https://stackoverflow.com/questions/28320213/why-do-we-need-to-call-luas-collectgarbage-twice
 os.realexit(os.exitcode)
