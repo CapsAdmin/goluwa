@@ -922,3 +922,12 @@ commands.Add("chatsounds_build_lists", chatsounds.BuildSoundLists)
 commands.Add("chatsounds_build_soundinfo", chatsounds.BuildSoundInfoTranslations)
 commands.Add("chatsounds_translate_lists", chatsounds.TranslateSoundLists)
 commands.Add("chatsounds_extract", chatsounds.ExtractSoundsFromLists)
+
+commands.Add("chatsounds_build=arg_line", function(name)
+	steam.MountSourceGame(name)
+	chatsounds.BuildSoundLists()
+	chatsounds.BuildSoundInfoTranslations()
+	chatsounds.TranslateSoundLists()
+	chatsounds.ExtractSoundsFromLists()
+end)
+
