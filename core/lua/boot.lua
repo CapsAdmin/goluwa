@@ -13,6 +13,17 @@ do
 
 	local ffi = require("ffi")
 
+	function absolute_path(path)
+		if not path:match(os.getcd(), 0) then
+			path = os.getcd() .. "/" .. path
+		end
+		return path
+	end
+
+	function winpath(path)
+		return (path:gsub("/", "\\"))
+	end
+
 	if WINDOWS then
 		function powershell(str, no_return)
 			os.setenv("pstemp", str)
@@ -53,7 +64,7 @@ do
 			if cache[cmd] ~= nil then return cache[cmd] end
 			local res
 			if WINDOWS then
-				res = os.readexecute("WHERE " .. cmd) ~= ""
+				res = os.readexecute("WHERE " .. cmd .. " 2>nul") ~= ""
 			else
 				res = os.readexecute("command -v " .. cmd) ~= ""
 			end
@@ -76,18 +87,16 @@ do
 		function os.getcd()
 			local buf = ffi.new("uint8_t[256]")
 			ffi.C.GetCurrentDirectoryA(256, buf)
-			return ffi.string(buf)
+			return ffi.string(buf):gsub("\\", "/")
 		end
 	end
 
 	if UNIX then
 		function os.ls(path)
-			if path:sub(#path, #path) ~= "/" then
-				path = path .. "/"
-			end
+			path = absolute_path(path)
 
 			local out = {}
-			for dir in os.readexecute("for dir in "..path.."*; do printf \"%s\n\" \"${dir}\"; done"):gmatch("(.-)\n") do
+			for dir in os.readexecute("for dir in " .. path .. "*; do printf \"%s\n\" \"${dir}\"; done"):gmatch("(.-)\n") do
 				table.insert(out, dir:sub(#path + 1))
 			end
 
@@ -99,12 +108,11 @@ do
 				path = path .. "/"
 			end
 
-			path = os.getcd() .. "\\" .. path
-			path = path:gsub("/", "\\")
+			path = absolute_path(path)
 
 			local out = {}
 
-			for name in os.readexecute("dir " .. path .. " /B"):gmatch("(.-)\n") do
+			for name in os.readexecute("dir " .. winpath(path) .. " /B"):gmatch("(.-)\n") do
 				table.insert(out, name)
 			end
 
@@ -150,6 +158,8 @@ do
 
 	if UNIX then
 		function os.pathtype(path)
+			path = absolute_path(path)
+
 			if os.readexecute('[ -d "'..path..'" ] && printf "1"') == "1" then
 				return "directory"
 			elseif os.readexecute('[ -f "'..path..'" ] && printf "1"') == "1" then
@@ -197,20 +207,16 @@ do
 		}
 
 		function os.pathtype(path)
-			path = os.getcd() .. "\\" .. path
-			path = path:gsub("/", "\\")
+			path = absolute_path(path)
 
 			local info = ffi.new("goluwa_file_attributes[1]")
 
-			if ffi.C.GetFileAttributesExA(path, 0, info) then
-				if
-					bit.band(info[0].dwFileAttributes, flags.archive) == flags.archive or
-					bit.band(info[0].dwFileAttributes, flags.normal) == flags.normal
-				then
-					return "file"
+			if ffi.C.GetFileAttributesExA(winpath(path), 0, info) then
+				if bit.band(info[0].dwFileAttributes, flags.directory) == flags.directory then
+					return "directory"
 				end
 
-				return "directory"
+				return "file"
 			end
 		end
 	end
@@ -220,40 +226,38 @@ do
 
 	if UNIX then
 		function os.makedir(dir)
+			dir = absolute_path(dir)
 			return os.readexecute("mkdir -p " .. dir)
 		end
 	else
 		ffi.cdef("int SHCreateDirectoryExA(void *,const char *path, void *);")
 		local lib = ffi.load("Shell32.dll")
 		function os.makedir(dir)
-			return lib.SHCreateDirectoryExA(nil, dir, nil)
+			dir = absolute_path(dir)
+			return lib.SHCreateDirectoryExA(nil, winpath(dir), nil)
 		end
 	end
 
 	function os.download(url, to)
-		if WINDOWS then
-			if to then
-				to = os.getcd() .. "\\" .. to
-				return powershell("(New-Object System.Net.WebClient).DownloadFile('"..url.."', '"..to.."')") == ""
-			end
-			to = os.getcd() .. "\\" .. "temp_download"
-			powershell("(New-Object System.Net.WebClient).DownloadFile('"..url.."', '"..to.."')", true)
-			local content = io.readfile(to)
-			os.remove(to)
-			return content
-		else
-			if to then
-				if os.iscmd("wget") then
-					return os.readexecute("wget -O \""..to.."\" \""..url.."\" && printf $?") == "0"
-				elseif os.iscmd("curl") then
-					return os.readexecute("curl -L --url \""..url.."\" --output \""..to.."\" && printf $?") == "0"
-				end
-			end
+		to = absolute_path(to)
 
+		if WINDOWS then
+			powershell([[
+				[Net.ServicePointManager]::Expect100Continue = {$true}
+
+				[System.Net.ServicePointManager]::SecurityProtocol =
+					[System.Net.SecurityProtocolType]::Tls11 -bor
+					[System.Net.SecurityProtocolType]::Tls12 -bor
+					[System.Net.SecurityProtocolType]::Tls13;
+
+				(New-Object System.Net.WebClient).DownloadFile(']] .. url .. [[', ']] .. winpath(to) .. [[')
+			]], true)
+			return os.isfile(to)
+		else
 			if os.iscmd("wget") then
-				return os.readexecute("wget -qO- \""..url.."\"")
+				return os.readexecute("wget -O \""..to.."\" \""..url.."\" && printf $?") == "0"
 			elseif os.iscmd("curl") then
-				return os.readexecute("curl -vv -L --url \""..url.."\"")
+				return os.readexecute("curl -L --url \""..url.."\" --output \""..to.."\" && printf $?") == "0"
 			end
 		end
 	end
@@ -261,6 +265,8 @@ do
 	if UNIX then
 		ffi.cdef("int chdir(const char *path);")
 		function os.cd(path)
+			path = absolute_path(path)
+
 			if ffi.C.chdir(path) ~= 0 then
 				return nil, "unable change directory to " .. path
 			end
@@ -270,7 +276,9 @@ do
 	else
 		ffi.cdef("bool SetCurrentDirectoryA(const char *path);")
 		function os.cd(path)
-			if ffi.C.SetCurrentDirectoryA(path) == 0 then
+			path = absolute_path(path)
+
+			if ffi.C.SetCurrentDirectoryA(winpath(path)) == 0 then
 				return nil, "unable change directory to " .. path
 			end
 
@@ -290,64 +298,66 @@ do
 	end
 
 	function os.extract(from, to, move_out)
-		if to:sub(#to, #to) ~= "/" then to = to .. "/" end
+		from = absolute_path(from)
+		to = absolute_path(to)
 
-		os.makedir(to)
+		if to:sub(#to, #to) ~= "/" then
+			to = to .. "/"
+		end
+
+		local extract_dir = to .. "temp/"
+
+		os.makedir(extract_dir)
 
 		if UNIX then
-			os.readexecute('tar -xvzf '..from..' -C "'..to..'"')
+			os.readexecute('tar -xvzf ' .. from .. ' -C "' .. extract_dir .. '"')
 		else
-			local to = to == "./" and "" or to
 			powershell([[
-				$file = "]]..os.getcd() .. "\\" .. from..[["
-				$location = "]]..os.getcd() .. "\\" .. to..[["
+				$file = "]]..from:gsub("/", "\\")..[["
+				$location = "]]..extract_dir:gsub("/", "\\")..[["
 
 				$shell = New-Object -Com Shell.Application
 
-				$zip = $shell.NameSpace($([System.IO.Path]::GetFullPath("$file")))
+				$zip = $shell.NameSpace("$file")
 
 				if (!$zip) {
-					Write-Error "could not extract $file!"
+					Write-Error "could open zip archive $file!"
 				}
-
-				if (!(Test-Path $location)) {
-					New-Item -ItemType directory -Path $location | Out-Null
-				}
-
-				foreach($item in $zip.items()) {
-					$shell.Namespace("$location").CopyHere($item, 0x14)
+				else
+				{
+					foreach($item in $zip.items()) {
+						Write-Host "extracting $($item.Name) -> $location"
+						$shell.Namespace("$location").CopyHere($item, 0x14)
+					}
 				}
 			]], true)
 		end
 
 		if move_out then
-			move_out = to .. move_out
-
 			if move_out:sub(#move_out, #move_out) ~= "/" then
 				move_out = move_out .. "/"
 			end
 
-			repeat
-				local str, count = move_out:gsub("(.-/)(%*)(/.*)", function(left, star, right)
-					for k,v in ipairs(os.ls(left)) do
-						if os.isdir(left .. v) then
-							return left .. v .. right
-						end
-					end
-				end)
-				move_out = str
-			until count == 0
+			if move_out:sub(1, 1) ~= "/" then
+				move_out = "/" .. move_out
+			end
 
 			repeat
-				local str, count = move_out:gsub("(.-/)(.-%*)(/.*)", function(left, chunk, right)
-					for k,v in ipairs(os.ls(left)) do
-						if v:find(chunk:sub(0, -2), 0, true) and os.isdir(left .. v) then
-							return left .. v .. right
+				local ok = false
+				local str, count = move_out:gsub("(.-)/%*/(.*)", function(left, right)
+					for k,v in ipairs(os.ls(extract_dir .. left)) do
+						ok = true
+						if os.isdir(extract_dir .. left .. v) then
+							return left .. v .. right .. "/"
 						end
 					end
 				end)
 				move_out = str
-			until count == 0
+			until count == 0 or ok == false
+
+			move_out = extract_dir .. move_out
+
+			io.write("copying files ", move_out, "** -> ", to, "\n")
 
 			if UNIX then
 				os.execute("cp -r " .. move_out .. "* " .. to)
@@ -358,7 +368,7 @@ do
 					os.execute("rm -rf " .. to .. dir)
 				end
 			else
-				os.execute("xcopy /C /E /Y " .. move_out:gsub("/", "\\") .. "* " .. to:gsub("/", "\\"))
+				os.execute("xcopy /C /E /Y " .. move_out:gsub("/", "\\") .. "** " .. to:gsub("/", "\\"))
 			end
 		end
 
@@ -388,8 +398,20 @@ do
 					os.remove(to)
 				end
 			end
-		elseif os.download("https://"..domain..".com/"..name.."/archive/master" .. ARCHIVE_EXT, "temp" .. ARCHIVE_EXT) then
-			os.extract("temp" .. ARCHIVE_EXT, to, "*/*")
+		else
+			local url
+			if domain == "gitlab" then
+				url = "https://"..domain..".com/"..name.."/repository/master/archive" .. ARCHIVE_EXT
+			else
+				url = "https://"..domain..".com/"..name.."/archive/master" .. ARCHIVE_EXT
+			end
+
+			io.write("downloading ", url, " -> ", os.getcd(), "/temp", ARCHIVE_EXT, "\n")
+
+			if os.download(url, "temp" .. ARCHIVE_EXT) then
+				io.write("extracting ", os.getcd(), "/temp", ARCHIVE_EXT, " -> ", os.getcd(), "/", to, "\n")
+				os.extract("temp" .. ARCHIVE_EXT, to, "*/")
+			end
 		end
 	end
 end
@@ -502,11 +524,10 @@ if args[1] == "update" or not os.isfile("core/lua/init.lua") then
 		io.write("updating from git repository\n")
 		os.execute("git pull")
 	else
-		io.write("downloading repository archive\n")
-		if os.download("https://gitlab.com/CapsAdmin/goluwa/repository/master/archive" .. ARCHIVE_EXT, "temp" .. ARCHIVE_EXT) then
-			if os.extract("temp" .. ARCHIVE_EXT, "./", "goluwa-master*/") then
-				os.remove("temp" .. ARCHIVE_EXT)
-			end
+		get_github_project("CapsAdmin/goluwa", "", "gitlab")
+		if not os.isfile("core/lua/init.lua") then
+			io.write("still missing core/lua/init.lua\n")
+			os.exit(1)
 		end
 	end
 
@@ -516,7 +537,7 @@ if args[1] == "update" or not os.isfile("core/lua/init.lua") then
 end
 
 if args[1] == "build" then
-	get_github_project("capsadmin/ffibuild", "data/ffibuild")
+	get_github_project("CapsAdmin/ffibuild", "data/ffibuild")
 	assert(os.cd("data/ffibuild"), "unable to download ffibuild?")
 
 	local function run_postbuild(code)
@@ -787,7 +808,7 @@ if IDE then
 	assert(os.cd("data/ide"), "unable to download ide?")
 
 	if WINDOWS then
-		os.execute(os.getcd() .. "\\zbstudio.exe -cfg ../../engine/lua/zerobrane/config.lua")
+		os.execute(absolute_path("zbstudio.exe") .. " -cfg ../../engine/lua/zerobrane/config.lua")
 	else
 		os.execute("./zbstudio.sh -cfg ../../engine/lua/zerobrane/config.lua")
 	end
