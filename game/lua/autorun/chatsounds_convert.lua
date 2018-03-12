@@ -546,9 +546,11 @@ function chatsounds.BuildSoundInfoTranslations()
 
 						data.text = data.text:trim()
 
-						logn("found caption for soundname ", sound_name, ": ", data.text)
+						--logn("found caption for soundname ", sound_name, ": ", data.text)
 
 						sound_info[sound_name].caption = data
+					else
+						--logn("no caption for ", sound_name)
 					end
 				end
 			end
@@ -706,7 +708,7 @@ function chatsounds.TranslateSoundLists()
 								local translation_type = "no translation"
 								local new_trigger
 
-								if phonemes and phonemes[data.path] then
+								if phonemes and phonemes[data.path] and phonemes[data.path] ~= "textless" then
 									new_trigger = phonemes[data.path]
 									translation_type = "game_sounds_vo_phonemes"
 								else
@@ -741,6 +743,29 @@ function chatsounds.TranslateSoundLists()
 									end
 								end
 
+								if TF2_CAPTIONS then
+									local name = vfs.RemoveExtensionFromPath(vfs.GetFileNameFromPath(data.path))
+
+									if TF2_CAPTIONS[name] then
+										new_trigger = TF2_CAPTIONS[name]
+										translation_type = "custom tf2 captions"
+									elseif name:find("_mvm_m_", nil, true) then
+										local try = name:replace("mvm_m_", "")
+										if not TF2_CAPTIONS[name] and TF2_CAPTIONS[try] then
+											new_trigger = TF2_CAPTIONS[try]
+											translation_type = "custom tf2 captions"
+										end
+									elseif name:find("_mvm_", nil, true) then
+										local try = name:replace("mvm_", "")
+										if not TF2_CAPTIONS[name] and TF2_CAPTIONS[try] then
+											new_trigger = TF2_CAPTIONS[try]
+											translation_type = "custom tf2 captions"
+										end
+									else
+										--print(name)
+									end
+								end
+
 								new_trigger = new_trigger or trigger
 
 								newlist[realm][new_trigger] = newlist[realm][new_trigger] or {}
@@ -748,8 +773,7 @@ function chatsounds.TranslateSoundLists()
 								table.insert(newlist[realm][new_trigger], data)
 								found = found + 1
 
-								logn(data.path:sub(7))
-								logn("\t", translation_type)
+								logn(data.path:sub(7), " - ", translation_type)
 								logn("\t", new_trigger)
 							end
 						end
@@ -931,3 +955,34 @@ commands.Add("chatsounds_build=arg_line", function(name)
 	chatsounds.ExtractSoundsFromLists()
 end)
 
+commands.Add("chatsounds_fetch_tf2_captions", function()
+	resource.Download("https://gitlab.com/DBotThePony/TF2Subtitles/repository/master/archive.zip", function(path)
+		local out = {}
+		path = vfs.Find(path .. "/", true)[1]
+		local root = path .. "/data/eng/"
+		for _, dir in ipairs(vfs.Find(root)) do
+			if vfs.IsDirectory(root..dir) then
+				for _, lua in ipairs(vfs.Find(root .. dir.."/", true)) do
+					local ok, res = pcall(loadstring(vfs.Read(lua)))
+					if ok then
+						for k,v in pairs(res) do
+							if type(v) == "table" then
+								for s,c in pairs(v) do
+									out[k..s] = clean_sentence(c)
+									logn(k..s, " = ", c)
+								end
+							else
+								if lua:endswith("halloween.lua") then
+									k = "sf14" .. k
+								end
+								out[k] = clean_sentence(v)
+								logn(k, " = ", v)
+							end
+						end
+					end
+				end
+			end
+		end
+		TF2_CAPTIONS = out
+	end)
+end)
