@@ -747,7 +747,7 @@ function chatsounds.PlayScript(script)
 		local time = system.GetElapsedTime()
 
 		if time > timeout then
-			logn("timeout waiting for sounds to get ready")
+			llog("timeout waiting for sounds to get ready")
 			dump_script(script)
 
 			for _, sound in ipairs(sounds) do
