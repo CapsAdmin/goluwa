@@ -73,6 +73,16 @@ do
 		end
 	end
 
+	function os.removedir(path)
+		path = absolute_path(path)
+
+		if UNIX then
+			os.execute("rm -rf " .. path)
+		else
+			powershell("Remove-Item -Recurse -Force " .. path)
+		end
+	end
+
 	if UNIX then
 		ffi.cdef("char *getcwd(char *buf, size_t size);")
 
@@ -370,6 +380,8 @@ do
 			else
 				os.execute("xcopy /C /E /Y " .. move_out:gsub("/", "\\") .. "** " .. to:gsub("/", "\\"))
 			end
+
+			os.removedir(extract_dir)
 		end
 
 		return true -- TODO
@@ -379,24 +391,27 @@ do
         domain = domain or "github"
 		if os.iscmd("git") then
 			if os.isdir(to) and os.isdir(to .. "/.git") then
-				os.readexecute("git -C "..to.." pull")
+				os.readexecute("git -C "..absolute_path(to).." pull")
 			else
-				local move = false
-				if os.isdir(to) then
-					to = to .. "_"
-					move = true
+				if to:sub(#to, #to) ~= "/" then
+					to = to .. "/"
 				end
-				os.execute("git clone https://"..domain..".com/"..name..".git "..to.." --depth 1")
-				if move then
-					if WINDOWS then
-						local to = to:gsub("/", "\\")
-						os.execute("xcopy /C /E /Y " .. to .. "\\* " .. to:sub(0, -2) .. "\\")
-					else
-						os.execute("mv -f " .. to .. "/* " .. to:sub(0, -2) .. "/")
-						os.execute("mv -f " .. to .. "/.* " .. to:sub(0, -2) .. "/")
-					end
-					os.remove(to)
+
+				local extract_dir = to .. "temp"
+
+				extract_dir = absolute_path(extract_dir)
+				to = absolute_path(to)
+
+				os.execute("git clone https://"..domain..".com/"..name..".git "..extract_dir.." --depth 1")
+
+				if WINDOWS then
+					os.execute("xcopy /C /E /Y " .. winpath(extract_dir .. "/*") .. " " .. to)
+				else
+					os.execute("cp -rf " .. extract_dir .. "/* " .. to)
+					os.execute("cp -rf " .. extract_dir .. "/.* " .. to)
 				end
+
+				os.removedir(extract_dir)
 			end
 		else
 			local url
@@ -411,6 +426,8 @@ do
 			if os.download(url, "temp" .. ARCHIVE_EXT) then
 				io.write("extracting ", os.getcd(), "/temp", ARCHIVE_EXT, " -> ", os.getcd(), "/", to, "\n")
 				os.extract("temp" .. ARCHIVE_EXT, to, "*/")
+
+
 			end
 		end
 	end
