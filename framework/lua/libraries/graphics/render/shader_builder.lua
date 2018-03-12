@@ -1,4 +1,4 @@
-local BUILD_SHADER_OUTPUT = true
+local BUILD_SHADER_OUTPUT = false
 
 local render = (...) or _G.render
 render.use_uniform_buffers = false
