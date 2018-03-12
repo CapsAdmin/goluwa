@@ -66,16 +66,50 @@ ffi.cdef([[
 	  int fInfoLevelId,
 	  goluwa_file_attributes *lpFileInformation
 	);
+
+	long GetFileAttributesA(const char *);
+
+
+	uint32_t GetLastError();
+	uint32_t FormatMessageA(
+		uint32_t dwFlags,
+		const void* lpSource,
+		uint32_t dwMessageId,
+		uint32_t dwLanguageId,
+		char* lpBuffer,
+		uint32_t nSize,
+		va_list *Arguments
+	);
 ]])
+
+local error_str = ffi.new("uint8_t[?]", 1024)
+local FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000;
+local FORMAT_MESSAGE_IGNORE_INSERTS = 0x00000200;
+local error_flags = bit.bor(FORMAT_MESSAGE_FROM_SYSTEM, FORMAT_MESSAGE_IGNORE_INSERTS)
+local function error_string()
+	local code = ffi.C.GetLastError()
+	local numout = ffi.C.FormatMessageA(error_flags, nil, code, 0, str, 1023, nil)
+	local err = numout ~= 0 and ffi.string(error_str, numout)
+	if err and err:sub(-2) == "\r\n" then
+		return err:sub(0, -3)
+	end
+	return err
+end
 
 local data = ffi.new("goluwa_find_data[1]")
 
 function fs.find(dir)
-	local out = {}
-
-	if dir:sub(-1) ~= "/" then dir = dir .. "/" end
+	if dir:sub(-1) ~= "/" then
+		dir = dir .. "/"
+	end
 
 	local handle = ffi.C.FindFirstFileA(dir .. "*", data)
+
+	if handle == nil then
+		return nil, error_string()
+	end
+
+	local out = {}
 
 	if ffi.cast("unsigned long", handle) ~= 0xffffffff then
 		local i = 1
@@ -101,11 +135,18 @@ function fs.getcd()
 end
 
 function fs.setcd(path)
-	ffi.C.SetCurrentDirectoryA(path)
+	if ffi.C.SetCurrentDirectoryA(path) then
+		return true
+	end
+
+	return nil, error_string()
 end
 
 function fs.createdir(path)
-	return ffi.C.CreateDirectoryA(path, nil)
+	if ffi.C.CreateDirectoryA(path, nil) then
+		return true
+	end
+	return nil, error_string()
 end
 
 local flags = {
@@ -138,50 +179,27 @@ local function flags_to_table(bits)
 	return out
 end
 
-local info = ffi.new("goluwa_file_attributes[1]")
-
 local COMBINE = function(hi, lo) return bit.band(bit.lshift(hi, 8), lo) end
 
+local info = ffi.new("goluwa_file_attributes[1]")
+
 function fs.getattributes(path)
-	if fs.debug then logn(path) end
 	if ffi.C.GetFileAttributesExA(path, 0, info) then
-		--local flags = flags_to_table(info[0].dwFileAttributes) -- overkill
-		local type
-
-		-- hmmm
-		if --[[flags.archive]]
-			bit.bor(info[0].dwFileAttributes, flags.archive) == flags.archive or
-			bit.bor(info[0].dwFileAttributes, flags.normal) == flags.normal
-		then
-			type = "file"
-		else
-			type = "directory"
-
-			-- GRRRR
-			-- GRRRR
-			local file = io.open(path, "r")
-			if file then
-				io.close(file)
-				type = "file"
-			end
-			-- GRRRR
-			-- GRRRR
-		end
-
 		local info = {
 			creation_time = COMBINE(info[0].ftCreationTime.high, info[0].ftCreationTime.low),
 			last_accessed = COMBINE(info[0].ftLastAccessTime.high, info[0].ftLastAccessTime.low),
 			last_modified = COMBINE(info[0].ftLastWriteTime.high, info[0].ftLastWriteTime.low),
 			last_changed = -1, -- last permission changes
 			size = info[0].nFileSizeLow,--COMBINE(info[0].nFileSizeLow, info[0].nFileSizeHigh),
-			type = type,
-		---	flags = flags,
+			type = bit.band(
+				info[0].dwFileAttributes, flags.directory
+			) == flags.directory and "directory" or "file",
 		}
 
 		return info
 	end
 
-	return false
+	return nil, error_string()
 end
 
 return fs

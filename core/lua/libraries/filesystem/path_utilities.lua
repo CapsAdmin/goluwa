@@ -96,8 +96,13 @@ function vfs.CreateDirectoriesFromPath(path, force)
 
 	for i = 1, max do
 		local folder = folders[i]
-		vfs.CreateDirectory(path_info.filesystem ..":"..  folder, force)
+		local ok, err = vfs.CreateDirectory(path_info.filesystem ..":"..  folder, force)
+		if not ok then
+			return nil, err
+		end
 	end
+
+	return true
 end
 
 function vfs.GetAbsolutePath(path, is_folder)
