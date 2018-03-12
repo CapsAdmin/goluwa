@@ -541,6 +541,16 @@ if args[1] == "update" or not os.isfile("core/lua/init.lua") then
 		io.write("updating from git repository\n")
 		os.execute("git pull")
 	else
+		if args[1] == "update" then
+			for _, name in ipairs(os.ls(".")) do
+				if os.isdir(name) and name ~= "data" then
+					os.removedir(name)
+				elseif name ~= "goluwa" and name ~= "goluwa.cmd" then
+					os.remove(name)
+				end
+			end
+		end
+
 		get_github_project("CapsAdmin/goluwa", "", "gitlab")
 		if not os.isfile("core/lua/init.lua") then
 			io.write("still missing core/lua/init.lua\n")
