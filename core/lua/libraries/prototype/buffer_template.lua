@@ -1078,6 +1078,10 @@ function META:PeakByte()
 	return self:ReadByte(), self:Advance(-1)
 end
 
+function META:PeakBytes(len)
+	return self:ReadBytes(len), self:Advance(-len)
+end
+
 function META:Advance(i)
 	i = i or 1
 	local pos = self:GetPosition() + i
