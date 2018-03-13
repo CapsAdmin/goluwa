@@ -9,14 +9,29 @@ local OUTPUT_BUFFER_SIZE = 32768
 
 mpg123.Init()
 
-audio.AddDecoder("mpg123", function(vfs_file, path_hint)
-	local header = vfs_file:ReadBytes(3)
+local allowed = {
+	"ID3",
+	"\xFF\xFB\x92\x40",
+	"\xFF\xFB\x92\x60",
+}
 
-	if header ~= "ID3" then
-		return false, "not an mp3 file (file does not start with ID3)"
+local hex_allowed = {}
+for i,v in ipairs(allowed) do hex_allowed[i] = "|" .. v:hexdump():trim():gsub("%s", ""):upper() .. "|" end
+
+audio.AddDecoder("mpg123", function(vfs_file, path_hint)
+
+	local ok = false
+
+	for i, v in ipairs(allowed) do
+		if vfs_file:PeakBytes(#v) == v then
+			ok = true
+			break
+		end
 	end
 
-	vfs_file:SetPosition(0)
+	if not ok then
+		return false, "not a valid file (file does not start with " .. table.concat(hex_allowed, " or ") ..")"
+	end
 
 	local ret = ffi.new("int[1]")
 
@@ -40,6 +55,7 @@ audio.AddDecoder("mpg123", function(vfs_file, path_hint)
 		if not buf then
 			break
 		end
+
 		local ret = mpg123.Decode(feed, buf, #buf, out, OUTPUT_BUFFER_SIZE, size)
 
 		if ret == mpg123.e.NEW_FORMAT then
@@ -53,8 +69,13 @@ audio.AddDecoder("mpg123", function(vfs_file, path_hint)
 
 		table.insert(chunks, ffi.string(out, size[0]))
 
-		while ret ~= mpg123.e.ERR and ret ~= mpg123.e.NEED_MORE do
+		while ret ~= mpg123.e.NEED_MORE do
 			ret = mpg123.Decode(feed, nil, 0, out, OUTPUT_BUFFER_SIZE, size)
+
+			if ret == mpg123.e.ERR then
+				return nil, ffi.string(mpg123.Strerror(feed))
+			end
+
 			table.insert(chunks, ffi.string(out, size[0]))
 		end
 
@@ -63,11 +84,11 @@ audio.AddDecoder("mpg123", function(vfs_file, path_hint)
 		end
 	end
 
-	--mpg123.Delete(feed)
+	mpg123.Delete(feed)
 
 	local str = table.concat(chunks)
 	local buf = ffi.new("uint8_t[?]", #str)
-	ffi.copy(buf, str)
+	ffi.copy(buf, str, #str)
 
 	return buf, #str, format_info
 end)

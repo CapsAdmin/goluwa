@@ -806,6 +806,7 @@ function chatsounds.ExtractSoundsFromLists()
 
 	local buffer_len = 1024
 	local buffer = ffi.new("double[?]", buffer_len)
+	local skipped = 0
 
 	local function write(game, realm, trigger, read_path, i)
 		local ext = "." .. vfs.GetExtensionFromPath(read_path)
@@ -828,14 +829,17 @@ function chatsounds.ExtractSoundsFromLists()
 			vfs.Write(dir .. filename .. ".txt", trigger)
 		end
 
-		if ext == ".mp3" or ext == ".ogg" then
+		if ext == ".ogg" then
 			logn("not converting ", read_path)
 			vfs.CreateDirectoriesFromPath("os:" .. path)
 			vfs.Write(path .. ext, vfs.Read(read_path))
 		else
 			path = path .. ".ogg"
 
-			if vfs.IsFile(path) then return end
+			if vfs.IsFile(path) then
+				skipped = skipped + 1
+				return
+			end
 
 			log("converting ", read_path:match(".*sound/(.+)") , " >> " , path:match(".+autoadd/(.+)") , " - ")
 
@@ -845,64 +849,90 @@ function chatsounds.ExtractSoundsFromLists()
 				logn("FAIL: unable to open ", read_path)
 				return
 			end
-			local file_src = soundfile.OpenVFS(file, soundfile.e.READ, info)
-
-			local err = ffi.string(soundfile.Strerror(file_src))
-
-			if err ~= "No Error." then
-
-				if err:find("unknown format", nil, true) then
-					logn(read_path)
-					local f = vfs.Open(read_path)
-					f:SetPosition(0)
-					local bytes = f:ReadBytes(4)
-					if bytes then
-						logn("first 4 bytes is:", bytes:hexdump(), bytes)
-					else
-						logn("unable to read 4 first bytes of file")
-						logn("file exists = ", vfs.IsFile(read_path))
-						logn("file size = ", vfs.GetSize(read_path))
-					end
-					f:Close()
-				end
-
-				file:Close()
-				soundfile.Close(file_src)
-				logn("FAIL: [source file] ", err)
-				return
-			end
-
-			local info = ffi.new("struct SF_INFO[1]", {{
-				format = bit.bor(soundfile.e.FORMAT_OGG, soundfile.e.FORMAT_VORBIS),
-				samplerate = info[0].samplerate,
-				channels = info[0].channels,
-			}})
-
-			vfs.CreateDirectoriesFromPath("os:" .. path)
-			local file_dst = soundfile.Open(path, soundfile.e.WRITE, info)
-
-			local err = ffi.string(soundfile.Strerror(file_dst))
-
-			if err ~= "No Error." then
-				file:Close()
-				soundfile.Close(file_dst)
-				logn("FAIL: [destination file] ", err)
-				return
-			end
 
 			local ogg_quality = ffi.new("float[1]", 0.4)
 
-			soundfile.Command(file_dst, soundfile.e.SET_VBR_ENCODING_QUALITY, ogg_quality, ffi.sizeof(ogg_quality))
+			if file:PeakBytes(3) == "ID3" or file:PeakBytes(4) == "\xFF\xFB\x92\x40" or file:PeakBytes(4) == "\xFF\xFB\x92\x60" then
+				local buffer, len, info = audio.Decode(file, read_path, "mpg123")
+				if buffer then
+					vfs.CreateDirectoriesFromPath("os:" .. path)
+					local info = ffi.new("struct SF_INFO[1]", {{
+						format = bit.bor(soundfile.e.FORMAT_OGG, soundfile.e.FORMAT_VORBIS),
+						samplerate = info.samplerate,
+						channels = info.channels,
+					}})
 
-			while true do
-				local readcount = soundfile.ReadDouble(file_src, buffer, buffer_len)
-				if readcount == 0 then break end
-				soundfile.WriteDouble(file_dst, buffer, readcount)
+					local file_dst = soundfile.Open(path, soundfile.e.WRITE, info)
+
+					local err = ffi.string(soundfile.Strerror(file_dst))
+
+					if err ~= "No Error." then
+						file:Close()
+						soundfile.Close(file_dst)
+						logn("FAIL: [destination file] ", err)
+						return
+					end
+
+					soundfile.Command(file_dst, soundfile.e.SET_VBR_ENCODING_QUALITY, ogg_quality, ffi.sizeof(ogg_quality))
+
+					local buffer = ffi.cast("const short *", buffer)
+					local len = len / 2
+					while true do
+						local wrote = soundfile.WriteShort(file_dst, buffer, buffer_len)
+						len = len - wrote
+						if wrote == 0 or len <= 0 then break end
+						buffer = buffer + wrote
+					end
+					soundfile.Close(file_dst)
+					file:Close()
+				end
+			else
+				if read_path:endswith(".mp3") then
+					logn("FAIL: [source file] ", "invalid header in mp3? first 4 bytes: ", file:PeakBytes(4):dumphex())
+					return
+				end
+
+				local file_src = soundfile.OpenVFS(file, soundfile.e.READ, info)
+
+				local err = ffi.string(soundfile.Strerror(file_src))
+
+				if err ~= "No Error." then
+					file:Close()
+					soundfile.Close(file_src)
+					logn("FAIL: [source file] ", err)
+					return
+				end
+
+				local info = ffi.new("struct SF_INFO[1]", {{
+					format = bit.bor(soundfile.e.FORMAT_OGG, soundfile.e.FORMAT_VORBIS),
+					samplerate = info[0].samplerate,
+					channels = info[0].channels,
+				}})
+
+				vfs.CreateDirectoriesFromPath("os:" .. path)
+				local file_dst = soundfile.Open(path, soundfile.e.WRITE, info)
+
+				local err = ffi.string(soundfile.Strerror(file_dst))
+
+				if err ~= "No Error." then
+					file:Close()
+					soundfile.Close(file_dst)
+					logn("FAIL: [destination file] ", err)
+					return
+				end
+
+				soundfile.Command(file_dst, soundfile.e.SET_VBR_ENCODING_QUALITY, ogg_quality, ffi.sizeof(ogg_quality))
+
+				while true do
+					local readcount = soundfile.ReadDouble(file_src, buffer, buffer_len)
+					if readcount == 0 then break end
+					soundfile.WriteDouble(file_dst, buffer, readcount)
+				end
+
+				soundfile.Close(file_src)
+				soundfile.Close(file_dst)
+				file:Close()
 			end
-
-			soundfile.Close(file_src)
-			soundfile.Close(file_dst)
-			file:Close()
 
 			logn("OK")
 		end
@@ -940,6 +970,9 @@ function chatsounds.ExtractSoundsFromLists()
 			end
 		end
 	end
+
+	logn("finished extracting files")
+	logn("skipped ", skipped, " files that were already extracted")
 end
 
 commands.Add("chatsounds_build_lists", chatsounds.BuildSoundLists)
