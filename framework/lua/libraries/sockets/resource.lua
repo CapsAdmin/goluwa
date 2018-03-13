@@ -5,8 +5,9 @@ e.DOWNLOAD_FOLDER = e.DATA_FOLDER .. "downloads/"
 local etags_file = e.DOWNLOAD_FOLDER .. "resource_etags.txt"
 
 --os.execute("rm -rf " .. R(e.DOWNLOAD_FOLDER))
+local ok, err = vfs.CreateDirectory("os:" .. e.DOWNLOAD_FOLDER)
+if not ok then wlog(err) end
 
-vfs.CreateDirectory("os:" .. e.DOWNLOAD_FOLDER)
 vfs.Mount("os:" .. e.DOWNLOAD_FOLDER, "os:downloads")
 
 function resource.AddProvider(provider, no_autodownload)
@@ -72,8 +73,7 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 				local ok, err = vfs.Rename(full_path, (full_path:gsub(".+/(.+).temp", "%1")))
 
 				if not ok then
-					wlog("unable to rename %q: %s", full_path, err)
-					on_fail()
+					on_fail(llog("unable to rename %q: %s", full_path, err))
 					return
 				end
 
@@ -86,12 +86,10 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 
 					--llog("finished donwnloading ", from)
 				else
-					wlog("resource download error: %q not found!", "data/downloads/" .. to)
-					on_fail()
+					on_fail(llog("open error: %q not found!", "data/downloads/" .. to))
 				end
 			else
-				wlog("resource download error: %q not found!", "data/downloads/" .. to)
-				on_fail()
+				on_fail(llog("open error: %q not found!", "data/downloads/" .. full_path))
 			end
 		end,
 		function(...)
@@ -109,13 +107,18 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 				to = to .. "." .. ext
 			end
 
-			vfs.CreateDirectoriesFromPath("os:" .. e.DOWNLOAD_FOLDER .. to)
+			local ok, err = vfs.CreateDirectoriesFromPath("os:" .. e.DOWNLOAD_FOLDER .. to)
+
+			if not ok then
+				on_fail(llog("unable to create directories %q download error: %s", "os:" .. e.DOWNLOAD_FOLDER .. to, err))
+				return false
+			end
+
 			local file_, err = vfs.Open("os:" .. e.DOWNLOAD_FOLDER .. to .. ".temp", "write")
 			file = file_
 
 			if not file then
-				wlog("resource download error: ", err, 2)
-				on_fail()
+				on_fail(llog("unable to open file for writing %q: %s", "os:" .. e.DOWNLOAD_FOLDER .. to .. ".temp", err))
 				return false
 			end
 
@@ -133,12 +136,12 @@ end
 local function download_from_providers(path, callback, on_fail, check_etag)
 
 	if event.Call("ResourceDownload", path, callback, on_fail) ~= nil then
-		on_fail("[resource] ResourceDownload hook returned not nil\n")
+		on_fail("ResourceDownload hook returned not nil\n")
 		return
 	end
 
 	if #resource.providers == 0 then
-		on_fail("[resource] no providers added\n")
+		on_fail("no providers added\n")
 		return
 	end
 
