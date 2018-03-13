@@ -137,7 +137,7 @@ add_helper("GetLastAccessed", "GetLastAccessed", "read")
 add_helper("GetSize", "GetSize", "read")
 
 function vfs.CreateDirectory(path, force)
-	if vfs.IsDirectory(path) then return end
+	if vfs.IsDirectory(path) then return true end
 
 	local path_info = vfs.GetPathInfo(path, true)
 	local dir_name = vfs.GetFolderNameFromPath(path_info.full_path) or path_info.full_path
@@ -145,12 +145,12 @@ function vfs.CreateDirectory(path, force)
 	local parent_dir = vfs.GetParentFolderFromPath(path_info.full_path)
 	local full_path = vfs.GetAbsolutePath(parent_dir, true)
 
-	if not full_path then return false, "directory " .. parent_dir .. " does not exist" end
+	if not full_path then return nil, "directory " .. parent_dir .. " does not exist" end
 
 	local path_info = vfs.GetPathInfo(path_info.filesystem .. ":" .. full_path)
 
 	if path_info.filesystem == "unknown" then
-		return false, "filesystem must be explicit when creating directories"
+		return nil, "filesystem must be explicit when creating directories"
 	end
 
 	path_info.full_path = path_info.full_path .. dir_name .. "/"

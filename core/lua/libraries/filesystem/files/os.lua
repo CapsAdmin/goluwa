@@ -27,7 +27,7 @@ CONTEXT.Position = 0
 
 function CONTEXT:CreateFolder(path_info, force)
 	if force or path_info.full_path:startswith(e.DATA_FOLDER) or path_info.full_path:startswith(e.USERDATA_FOLDER) or path_info.full_path:startswith(e.ROOT_FOLDER) then
-		if self:IsFolder(path_info) then return end
+		if self:IsFolder(path_info) then return true end
 
 		if force then
 			if not CLI then
