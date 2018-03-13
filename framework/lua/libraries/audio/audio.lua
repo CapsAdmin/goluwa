@@ -963,18 +963,23 @@ function audio.RemoveDecoder(id)
 end
 
 function audio.Decode(file, path_hint)
+	local errors = {}
 	for _, decoder in ipairs(audio.decoders) do
+		file:SetPosition(0)
 		local ok, buffer, length, info = pcall(decoder.callback, file, path_hint)
 		if ok then
 			if buffer and length then
 				return buffer, length, info or {}
-			elseif audio.debug or not length:find("unknown format") then
+			elseif buffer == nil then
 				llog("%s failed to decode %s: %s", decoder.id, path_hint or "", length)
+			elseif buffer == false then
+				table.insert(errors, decoder.id .. ": " .. length)
 			end
 		else
 			llog("decoder %q errored: %s", decoder.id, buffer)
 		end
 	end
+	llog("failed to decode ", path_hint, ":\n\t", table.concat(errors, "\n\t"))
 end
 
 runfile("decoders/*", audio)
