@@ -723,26 +723,13 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 			text = text .. (i > 1 and sep or "") .. tostring(select(i,...))
 		end
 
-		-- split the text into smaller chunks as one large line
-		-- is difficult to handle for the editor
-		local prev, maxlength = 0, ide.config.debugger.maxdatalength
-		if #text > maxlength and not text:find("\n.") then
-			text = text:gsub("()(%s+)", function(p, s)
-					if p-prev >= maxlength then
-						prev = p
-						return "\n"
-					else
-						return s
-					end
-				end)
-		end
 		return text
 	end
 
 	local partial = false
 	local function shellPrint(marker, text, newline)
 		if not text or text == "" then return end -- return if nothing to print
-		if newline then text = text:gsub("\n+$", "").."\n" end
+		--if newline then text = text:gsub("\n+$", "").."\n" end
 		local isPrompt = marker and (getPromptLine() ~= wx.wxNOT_FOUND)
 		local lines = console:GetLineCount()
 		local promptLine = isPrompt and getPromptLine() or nil
