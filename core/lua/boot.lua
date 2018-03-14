@@ -14,8 +14,6 @@ do
 	local ffi = require("ffi")
 
 	function absolute_path(path)
-		print("absolute_path(", path)
-		print("getcd", os.getcd())
 		if not path:match(os.getcd(), 0) then
 			path = os.getcd() .. "/" .. path
 		end
@@ -95,7 +93,6 @@ do
 		if WINDOWS then
 			os.execute("xcopy /H /C /E /Y /F \"" .. winpath(a) .. ".\" \"" .. winpath(b) .. ".\"")
 		else
-		    print("copyfiles", a, "to", b)
 			os.execute("cp -rf \"" .. a .. ".\" \"" .. b .. "\"")
 		end
 	end
