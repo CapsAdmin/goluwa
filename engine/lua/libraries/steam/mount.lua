@@ -163,7 +163,7 @@ function steam.GetSourceGames()
 
 			if str then
 				local tbl = utility.VDFToTable(str, true)
-				if tbl and tbl.gameinfo and tbl.gameinfo.game then
+				if tbl and tbl.gameinfo and tbl.gameinfo.game and tbl.gameinfo.filesystem then
 					tbl = tbl.gameinfo
 
 					if not tbl.filesystem.steamappid or not done[tbl.filesystem.steamappid] then
