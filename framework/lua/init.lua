@@ -80,6 +80,8 @@ if SOUND then
 	if not audio then
 		SOUND = false
 	end
+elseif CLI then
+	audio = runfile("!lua/libraries/audio/decoding.lua") -- only decoding
 end
 
 if SOCKETS then
