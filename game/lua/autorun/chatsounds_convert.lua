@@ -807,6 +807,7 @@ function chatsounds.ExtractSoundsFromLists()
 	local buffer_len = 1024
 	local buffer = ffi.new("double[?]", buffer_len)
 	local skipped = 0
+	local failed = 0
 
 	local function write(game, realm, trigger, read_path, i)
 		local ext = "." .. vfs.GetExtensionFromPath(read_path)
@@ -847,12 +848,13 @@ function chatsounds.ExtractSoundsFromLists()
 			local file, err = vfs.Open(read_path)
 			if not file then
 				logn("FAIL: unable to open ", read_path)
+				failed = failed + 1
 				return
 			end
 
 			local ogg_quality = ffi.new("float[1]", 0.4)
 
-			if file:PeakBytes(3) == "ID3" or file:PeakBytes(4) == "\xFF\xFB\x92\x40" or file:PeakBytes(4) == "\xFF\xFB\x92\x60" then
+			if file:PeakBytes(3) == "ID3" or file:PeakBytes(4) == "\xFF\xFB\x92\x40" or file:PeakBytes(4) == "\xFF\xFB\x92\x60" or file:PeakBytes(4) == "\xFF\xFB\x92\x64" then
 				local buffer, len, info = audio.Decode(file, read_path, "mpg123")
 				if buffer then
 					vfs.CreateDirectoriesFromPath("os:" .. path)
@@ -870,6 +872,7 @@ function chatsounds.ExtractSoundsFromLists()
 						file:Close()
 						soundfile.Close(file_dst)
 						logn("FAIL: [destination file] ", err)
+						failed = failed + 1
 						return
 					end
 
@@ -889,6 +892,7 @@ function chatsounds.ExtractSoundsFromLists()
 			else
 				if read_path:endswith(".mp3") then
 					logn("FAIL: [source file] ", "invalid header in mp3? first 4 bytes: ", file:PeakBytes(4):dumphex())
+					failed = failed + 1
 					return
 				end
 
@@ -900,6 +904,7 @@ function chatsounds.ExtractSoundsFromLists()
 					file:Close()
 					soundfile.Close(file_src)
 					logn("FAIL: [source file] ", err)
+					failed = failed + 1
 					return
 				end
 
@@ -918,6 +923,7 @@ function chatsounds.ExtractSoundsFromLists()
 					file:Close()
 					soundfile.Close(file_dst)
 					logn("FAIL: [destination file] ", err)
+					failed = failed + 1
 					return
 				end
 
@@ -973,6 +979,7 @@ function chatsounds.ExtractSoundsFromLists()
 
 	logn("finished extracting files")
 	logn("skipped ", skipped, " files that were already extracted")
+	logn("failed ", failed)
 end
 
 commands.Add("chatsounds_build_lists", chatsounds.BuildSoundLists)
