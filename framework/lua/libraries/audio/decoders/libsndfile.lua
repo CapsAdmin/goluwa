@@ -4,8 +4,10 @@ local soundfile = system.GetFFIBuildLibrary("libsndfile") -- sound decoder
 
 if not soundfile then return end
 
+local aaa = WINDOWS and "" or "struct "
+
 audio.AddDecoder("libsndfile", function(vfs_file, path_hint)
-	local info = ffi.new("struct SF_INFO[1]")
+	local info = ffi.new(aaa .. "SF_INFO[1]")
 
 	local file = soundfile.OpenVFS(vfs_file, soundfile.e.READ, info)
 	local err = ffi.string(soundfile.Strerror(file))
@@ -19,15 +21,15 @@ audio.AddDecoder("libsndfile", function(vfs_file, path_hint)
 	local subname
 
 	do
-		local data = ffi.new("struct SF_FORMAT_INFO[1]")
+		local data = ffi.new(aaa .. "SF_FORMAT_INFO[1]")
 		data[0].format = info[0].format
-		soundfile.Command(nil, soundfile.e.GET_FORMAT_INFO, data, ffi.sizeof("struct SF_FORMAT_INFO"))
+		soundfile.Command(nil, soundfile.e.GET_FORMAT_INFO, data, ffi.sizeof(aaa .. "SF_FORMAT_INFO"))
 
 		typename = ffi.string(data[0].name)
 		extension = ffi.string(data[0].extension)
 
 		data[0].format = bit.band(info[0].format , soundfile.e.FORMAT_SUBMASK)
-		soundfile.Command(nil, soundfile.e.GET_FORMAT_INFO, data, ffi.sizeof("struct SF_FORMAT_INFO"))
+		soundfile.Command(nil, soundfile.e.GET_FORMAT_INFO, data, ffi.sizeof(aaa .. "SF_FORMAT_INFO"))
 		subname = ffi.string(data[0].name)
 	end
 

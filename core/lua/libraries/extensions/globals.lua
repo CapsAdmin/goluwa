@@ -281,12 +281,15 @@ do -- logging
 			sub_category = source:match(".+/libraries/(.+)%.lua")
 		end
 
+		local str = fmt:safeformat(...)
+
 		if not main_category or not sub_category or main_category == sub_category then
-			return logf("[%s] %s\n", main_category or sub_category, fmt:safeformat(...))
+			return logf("[%s] %s\n", main_category or sub_category, str)
 		else
-			return logf("[%s][%s] %s\n", main_category, sub_category, fmt:safeformat(...))
+			return logf("[%s][%s] %s\n", main_category, sub_category, str)
 		end
-		return ...
+
+		return str
 	end
 
 	-- warning log
