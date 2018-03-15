@@ -102,6 +102,12 @@ function fs.createdir(path)
 	local path, where = GoluwaToGmodPath(path)
 
 	file_CreateDir(path, where)
+
+	if file_IsDir(path, where) then
+		return true
+	end
+
+	return nil, "file.IsDir returns false"
 end
 
 function fs.getattributes(path)
