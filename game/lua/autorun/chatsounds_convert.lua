@@ -24,7 +24,22 @@ local function get_sound_data(file, plaintext)
 		local content = file:ReadAll()
 		-- TODO
 
-		if plaintext then return content:match("PLAINTEXT%s-{%s+(.-)%s-}") end
+		if plaintext then
+			local words = content:match("WORDS%s-{(.+)")
+			local out = {}
+
+			if words then
+				for word, start, stop, phonemes in words:gmatch("WORD%s-(%S-)%s-(%S-)%s-(%S-)%s-{(.-)}") do
+					table.insert(out, word)
+				end
+
+				if out[1] then
+					return table.concat(out, " ")
+				end
+			end
+
+			return content:match("PLAINTEXT%s-{%s+(.-)%s-}")
+		end
 
 		out.plaintext = content:match("PLAINTEXT%s-{%s+(.-)%s-}")
 
