@@ -146,14 +146,10 @@ function sockets.SetupReceiveHTTP(socket, info)
 			length = length + #str
 
 			if info.on_chunks then
-				info.on_chunks(str)
+				info.on_chunks(str, length, header)
 			end
 
 			table.insert(content, str)
-
-			if info.progress_callback then
-				info.progress_callback(content, str, length, header)
-			end
 
 			if header["content-length"] then
 				if length >= header["content-length"] then
@@ -351,11 +347,19 @@ do
 
 	local cb = utility.CreateCallbackThing()
 
+	local function no_callback(data, url)
+		logn(url, ":")
+		logn("\tsize:", utility.FormatFileSize(#data))
+		logn("\tcrc32:", crypto.CRC32(data))
+	end
+
 	function sockets.Download(url, callback, on_fail, on_chunks, on_header)
 		if not url:find("^(.-)://") then return end
 
 		local last_downloaded = 0
 		local last_report = system.GetElapsedTime() + 4
+
+		callback = callback or no_callback
 
 		if cb:check(url, callback, {on_fail = on_fail, on_chunks = on_chunks, on_header = on_header}) then return true end
 
@@ -383,7 +387,7 @@ do
 					if sockets.debug_download then
 						llog("finished downloading ", url)
 					end
-					cb:stop(url, data.content)
+					cb:stop(url, data.content, url, header)
 				end
 
 				sockets.StopDownload(url)
@@ -401,19 +405,6 @@ do
 						llog("size of ", url, " is ", utility.FormatFileSize(header["content-length"]))
 					else
 						llog("size of ", url, " is unkown!")
-					end
-				end
-			end,
-			progress_callback = function(_, _, current_length, header)
-				if not header["content-length"] then return end
-
-				if sockets.debug_download then
-					if last_report < system.GetElapsedTime() then
-						logn(url, ":")
-						logn("\tprogress: ", math.round((current_length / header["content-length"]) * 100, 3), "%")
-						logn("\tspeed: ", utility.FormatFileSize(current_length - last_downloaded))
-						last_downloaded = current_length
-						last_report = system.GetElapsedTime() + 4
 					end
 				end
 			end,
