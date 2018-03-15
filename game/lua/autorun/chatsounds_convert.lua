@@ -714,7 +714,7 @@ function chatsounds.TranslateSoundLists()
 								else
 									local info = sound_info[data.path:lower()]
 									if info then
-										if info.caption and info.caption.text then
+										if info.caption and info.caption.text and info.caption.text:trim() ~= "" then
 											new_trigger = clean_sentence(info.caption.text)
 											translation_type = "gamesound caption"
 										elseif info.name then
