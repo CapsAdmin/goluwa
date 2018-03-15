@@ -798,6 +798,71 @@ function chatsounds.TranslateSoundLists()
 	thread:Start()
 end
 
+local function create_safe_path(realm, trigger)
+	local path = realm .. "/"
+
+	if #trigger > 100 then
+		path = path .. "-" .. trigger:sub(0, 30):trim() .. "-" .. crypto.CRC32(trigger)
+	else
+		path = path .. trigger
+	end
+
+	return path
+end
+
+function chatsounds.BuildListForGithub(appid)
+	local mounted = {}
+	for i,v in ipairs(steam.GetMountedSourceGames()) do
+		mounted[v.filesystem.steamappid] = v.game_dir
+	end
+
+	if next(mounted) then
+		logn("mounted games")
+		table.print2(mounted)
+	else
+		logn("no games mounted")
+	end
+
+	local sounds = {}
+
+	for i, path in pairs(vfs.Find("data/chatsounds/translated_lists/", true)) do
+		local id = tonumber(path:match("(%d+)%.", 0))
+		if not id or mounted[id] then
+			for realm, triggers in pairs(chatsounds.ListToTable(vfs.Read(path))) do
+				for trigger, data in pairs(triggers) do
+					trigger = trigger:gsub("[^a-z0-9 ]", "")
+					realm = realm:gsub("[^a-z0-9 _]", "")
+
+					if #data == 1 then
+						table.insert(sounds, {
+							realm,
+							trigger,
+							create_safe_path(realm, trigger) .. ".ogg",
+						})
+					else
+						for i, data in ipairs(data) do
+							table.insert(sounds, {
+								realm,
+								trigger,
+								create_safe_path(realm, trigger) .. "/" .. i .. ".ogg",
+							})
+						end
+					end
+
+					local data = sounds[#sounds]
+					logn(data[3])
+					logn("\t", data[1])
+					logn("\t", data[2])
+				end
+			end
+
+		end
+		serializer.WriteFile("msgpack", "data/chatsounds/autoadd/"..(id or "unknown").."/list.msgpack", sounds)
+	end
+
+	logn("finished building list files")
+end
+
 function chatsounds.ExtractSoundsFromLists()
 	local soundfile = system.GetFFIBuildLibrary("libsndfile")
 	local ffi = require("ffi")
@@ -811,23 +876,11 @@ function chatsounds.ExtractSoundsFromLists()
 
 	local function write(game, realm, trigger, read_path, i)
 		local ext = "." .. vfs.GetExtensionFromPath(read_path)
-		local dir = root .. "chatsounds/autoadd/" .. "/" .. game .. "/" .. realm .. "/"
-		local path = dir
-
-		local filename = trigger
-
-		if #filename > 50 then
-			filename = "-" .. trigger:sub(0, 50):trim()
-		end
+		local dir = root .. "chatsounds/autoadd/" .. "/" .. game .. "/"
+		local path = dir .. create_safe_path(realm, trigger)
 
 		if i then
-			path = path .. filename .. "/" .. i
-		else
-			path = path .. filename
-		end
-
-		if filename ~= trigger then
-			vfs.Write(dir .. filename .. ".txt", trigger)
+			path = path .. "/" .. i
 		end
 
 		if ext == ".ogg" then
@@ -962,8 +1015,8 @@ function chatsounds.ExtractSoundsFromLists()
 		if not id or mounted[id] then
 			for realm, triggers in pairs(chatsounds.ListToTable(vfs.Read(path))) do
 				for trigger, data in pairs(triggers) do
-					trigger = trigger:gsub("[^a-z ]", "")
-					realm = realm:gsub("[^a-z _]", "")
+					trigger = trigger:gsub("[^a-z0-9 ]", "")
+					realm = realm:gsub("[^a-z0-9 _]", "")
 
 					if #data == 1 then
 						write(id or "unknown", realm, trigger, data[1].path)
@@ -985,6 +1038,7 @@ end
 commands.Add("chatsounds_build_lists", chatsounds.BuildSoundLists)
 commands.Add("chatsounds_build_soundinfo", chatsounds.BuildSoundInfoTranslations)
 commands.Add("chatsounds_translate_lists", chatsounds.TranslateSoundLists)
+commands.Add("chatsounds_build_list_file", chatsounds.BuildListForGithub)
 commands.Add("chatsounds_extract", chatsounds.ExtractSoundsFromLists)
 
 commands.Add("chatsounds_build=arg_line", function(name)
@@ -992,6 +1046,7 @@ commands.Add("chatsounds_build=arg_line", function(name)
 	chatsounds.BuildSoundLists()
 	chatsounds.BuildSoundInfoTranslations()
 	chatsounds.TranslateSoundLists()
+	chatsounds.BuildListForGithub()
 	chatsounds.ExtractSoundsFromLists()
 end)
 
