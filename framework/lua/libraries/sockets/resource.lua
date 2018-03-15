@@ -35,7 +35,7 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 	if check_etag then
 		local etag = serializer.GetKeyFromFile("luadata", etags_file, etag_path_override or from)
 
-		llog("checking if ", etag_path_override or from, " has been modified.")
+		--llog("checking if ", etag_path_override or from, " has been modified.")
 
 		sockets.Request({
 			method = "HEAD",

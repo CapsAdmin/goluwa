@@ -12,8 +12,6 @@ local function read_list(base_url, sounds)
 		chatsounds.list = chatsounds.list or {}
 		table.merge(chatsounds.list, list, true)
 		chatsounds.GenerateAutocomplete()
-
-		llog("rebuilt chatsounds lists")
 	end
 
 	local count = 0
@@ -40,11 +38,7 @@ local function read_list(base_url, sounds)
 		end
 	end
 
-	llog("loaded sounds from https://www.github.com/", repo, "/", location)
-
-	if count ~= 0 then
-		llog("\tcould not add ", count, " sounds due to a (temporary) design problem with chatsounds and too long paths")
-	end
+	llog("loaded sounds from", base_url)
 
 	event.Delay(0.5, rebuild, "rebuild_chatsounds")
 end
@@ -57,12 +51,12 @@ function chatsounds.BuildFromGithub(repo, location)
 	resource.Download(
 		base_url .. "list.msgpack",
 		function(path)
-			llog("found list.msgpack for ", location)
+			--llog("found list.msgpack for ", location)
 			read_list(base_url, serializer.ReadFile("msgpack", path))
 		end,
 		function()
-			llog(repo, ": unable to find list.msgpack from \"", location, "\"")
-			llog(repo, ":parsing with github api instead (slow)")
+			--llog(repo, ": unable to find list.msgpack from \"", location, "\"")
+			--llog(repo, ":parsing with github api instead (slow)")
 
 			local url = "https://api.github.com/repos/"..repo.."/git/trees/master?recursive=1"
 
@@ -75,7 +69,7 @@ function chatsounds.BuildFromGithub(repo, location)
 						read_list(base_url, sounds)
 						return
 					else
-						llog("found cached list but format doesn't look right, regenerating.")
+						--llog("found cached list but format doesn't look right, regenerating.")
 					end
 				end
 
