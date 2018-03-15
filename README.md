@@ -12,8 +12,8 @@ Goluwa is a game engine, framework, a collection of utilities and experiments wr
 * [markup language](engine/lua/libraries/graphics/gfx)
 * [löve wrapper](game/lua/libraries/love) that lets you run Löve games in Goluwa
 * [glua wrapper](game/lua/libraries/gmod) that lets you run GarrysMod Lua in Goluwa
-* [enitity editor](game/lua/autorun/graphics) similar to [PAC3's editor](http://steamcommunity.com/sharedfiles/filedetails/?id=104691717)
-* [filesystem](core/lua/libraries/filesystem) with the ability to mount and treat many archive formats as directories 
+* [entity editor](game/lua/autorun/graphics) similar to [PAC3's editor](http://steamcommunity.com/sharedfiles/filedetails/?id=104691717)
+* [filesystem](core/lua/libraries/filesystem) with the ability to mount and treat many archive formats as directories
 * [source engine](engine/lua/libraries/steam) formats are supported
 
 ##### Prototyping

@@ -14,7 +14,7 @@ do
 	local ffi = require("ffi")
 
 	function absolute_path(path)
-		if not path:match(os.getcd(), 0) then
+		if not path:find(os.getcd(), 1, true) then
 			path = os.getcd() .. "/" .. path
 		end
 		return path

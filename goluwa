@@ -4,7 +4,7 @@ export GOLUWA_CURRENT_DIRECTORY=$PWD
 
 basetime=$(date +%s%N)
 
-script_path=$(realpath "$0")
+script_path=$(readlink -f -- "$0")
 
 if [ -L "$script_path" ]; then
     cd "$(dirname "$(readlink -f "$script_path")")" || exit
