@@ -1,6 +1,7 @@
 local chatsounds = _G.chatsounds or {}
 
 runfile("list_parsing.lua", chatsounds)
+runfile("repositories.lua", chatsounds)
 
 chatsounds.max_iterations = 1000
 
@@ -687,6 +688,10 @@ function chatsounds.PlayScript(script)
 				local path = info.path
 
 				if path then
+					if info.base_path then
+						path = info.base_path .. path
+					end
+
 					local sound = {}
 
 					sound.snd = audio.CreateSource(path)
