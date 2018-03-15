@@ -216,6 +216,9 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag,
 		if resource.url_cache_lookup[crc] then
 			path = "cache/" .. resource.url_cache_lookup[crc]
 			existing_path = R(path)
+			if not existing_path then
+				path = "cache/" .. crc
+			end
 		else
 			path = "cache/" .. crc
 			existing_path = false
