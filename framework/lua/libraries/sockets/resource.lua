@@ -35,12 +35,22 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 	if check_etag then
 		local etag = serializer.GetKeyFromFile("luadata", etags_file, etag_path_override or from)
 
-		--llog("checking if ", etag_path_override or from, " has been modified. etag is: ", etag)
+		llog("checking if ", etag_path_override or from, " has been modified.")
 
 		sockets.Request({
 			method = "HEAD",
 			url = from,
+			error_callback = function(reason)
+				llog(from, ": unable to fetch etag, socket error: ", reason)
+				check_etag()
+			end,
 			callback = function(data)
+				if data.code ~= 200 then
+					llog(from, ": unable to fetch etag, server returned code ", data.code)
+					check_etag()
+					return
+				end
+
 				local res = data.header.etag or data.header["last-modified"]
 
 				if not res then return end
@@ -184,7 +194,8 @@ local cb = utility.CreateCallbackThing()
 local ohno = false
 
 function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag, ext)
-	on_fail = on_fail or function(reason) llog(path, ": ", reason) end
+	local tr = not on_fail and debug.traceback()
+	on_fail = on_fail or function(reason) llog(path, ": ", reason) logn(tr) end
 
 	if resource.virtual_files[path] then
 		resource.virtual_files[path](callback, on_fail)
