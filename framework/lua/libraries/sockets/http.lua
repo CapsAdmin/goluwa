@@ -1,9 +1,17 @@
 local sockets = (...) or _G.sockets
 
 function sockets.EscapeURL(str)
-	return str:gsub("([^A-Za-z0-9_])", function(char)
+	local protocol, rest = str:match("^(.-://)(.+)$")
+	if not protocol then
+		protocol = ""
+		rest = str
+	end
+
+	rest = rest:gsub("([^A-Za-z0-9_/])", function(char)
 		return ("%%%02x"):format(string.byte(char))
 	end)
+
+	return protocol .. rest
 end
 
 function sockets.HeaderToTable(header)
