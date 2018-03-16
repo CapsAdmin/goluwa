@@ -53,6 +53,7 @@ commands.Add("setup_gmod_bridge", function()
 
 	os.execute("mkdir -p " .. gmod_dir .. "addons/zerobrane_bridge/lua/autorun/")
 	vfs.Write("os:" .. gmod_dir .. "addons/zerobrane_bridge/lua/autorun/zerobrane_bridge.lua", [[
+file.Delete("zerobrane_bridge.txt")
 local next_run = 0
 local last_time = 0
 hook.Add("RenderScene", "zerobrane_bridge", function()
@@ -91,6 +92,7 @@ hook.Add("RenderScene", "zerobrane_bridge", function()
 end)
 ]])
 	vfs.Write("os:" .. e.ROOT_FOLDER .. "data/ide/gmod_path", gmod_dir)
+	logn("wrote script to ", gmod_dir .. "addons/zerobrane_bridge/lua/autorun/zerobrane_bridge.lua")
 end)
 
 commands.Add("setup_metastruct_addons", function()
