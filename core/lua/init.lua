@@ -156,8 +156,7 @@ temp_runfile("lua/libraries/filesystem/addons.lua", vfs)
 temp_runfile("lua/libraries/filesystem/files/os.lua", vfs)
 temp_runfile("lua/libraries/filesystem/files/generic_archive.lua", vfs)
 
-vfs.Mount("os:" .. e.USERDATA_FOLDER, "data") -- mount "ROOT/data/users/*username*/" to "/data/"
-vfs.Mount("os:" .. e.BIN_FOLDER, "bin") -- mount "ROOT/data/bin" to "/bin/"
+vfs.Mount("os:" .. e.USERDATA_FOLDER, "os:data") -- mount "ROOT/data/users/*username*/" to "/data/"
 vfs.MountAddon("os:" .. e.SRC_FOLDER) -- mount "ROOT/"..e.INTERNAL_ADDON_NAME to "/"
 vfs.GetAddonInfo(e.INTERNAL_ADDON_NAME).dependencies = {e.INTERNAL_ADDON_NAME} -- prevent init.lua from running later on again
 vfs.GetAddonInfo(e.INTERNAL_ADDON_NAME).startup = nil -- prevent init.lua from running later on again
