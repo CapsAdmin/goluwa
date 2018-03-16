@@ -32,6 +32,8 @@ do -- mounting/links
 			error("a filesystem has to be provided when mounting /to/ somewhere")
 		end
 
+		--llog("mounting ", path_info_where.full_path, " -> ", path_info_to.full_path)
+
 		table.insert(vfs.mounted_paths, {
 			where = path_info_where,
 			to = path_info_to,
@@ -72,38 +74,44 @@ do -- mounting/links
 		local out = {}
 		local out_i = 1
 
-		local filesystems = vfs.GetFileSystems()
+		if path_info.relative then
+			for _, mount_info in ipairs(vfs.mounted_paths) do
+				local where
 
-		if path_info.filesystem ~= "unknown" then
-			filesystems = {vfs.GetFileSystem(path_info.filesystem)}
-		end
+				if path_info.full_path:sub(0, #mount_info.to.full_path) == mount_info.to.full_path then
+					where = vfs.GetPathInfo(mount_info.where.filesystem .. ":" .. mount_info.where.full_path .. path_info.full_path:sub(#mount_info.to.full_path+1), is_folder)
+				elseif path_info.full_path ~= "/" then
+					where = vfs.GetPathInfo(mount_info.where.filesystem .. ":" .. mount_info.where.full_path .. path_info.full_path, is_folder)
+				else
+					where = vfs.GetPathInfo(mount_info.where.filesystem .. ":" .. mount_info.to.full_path, is_folder)
+				end
 
-		--for _, context in ipairs(filesystems) do
-			if path_info.relative then
-				for _, mount_info in ipairs(vfs.mounted_paths) do
-					local where = mount_info.where
-
-					if path_info.full_path:sub(0, #mount_info.to.full_path) == mount_info.to.full_path then
-						where = vfs.GetPathInfo(mount_info.where.filesystem .. ":" .. mount_info.where.full_path .. path_info.full_path:sub(#mount_info.to.full_path+1), is_folder)
-					else
-						where = vfs.GetPathInfo(mount_info.where.filesystem .. ":" .. where.full_path .. path_info.full_path, is_folder)
-					end
-
-					out[out_i] = {path_info = where, context = vfs.filesystems2[mount_info.where.filesystem], userdata = mount_info.userdata}
+				if where then
+					out[out_i] = {
+						path_info = where,
+						context = vfs.filesystems2[mount_info.where.filesystem],
+						userdata = mount_info.userdata
+					}
 					out_i = out_i + 1
 				end
-			else
-				for _, context in ipairs(filesystems) do
-					if (is_folder and context:IsFolder(path_info)) or (not is_folder and context:IsFile(path_info)) then
-						out[out_i] = {path_info = path_info, context = context, userdata = path_info.userdata}
-						out_i = out_i + 1
-					elseif not is_folder and context:IsFolder({full_path = vfs.GetParentFolderFromPath(path_info.full_path)}) then
-						out[out_i] = {path_info = path_info, context = context, userdata = path_info.userdata}
-						out_i = out_i + 1
-					end
+			end
+		else
+			local filesystems = vfs.GetFileSystems()
+
+			if path_info.filesystem ~= "unknown" then
+				filesystems = {vfs.GetFileSystem(path_info.filesystem)}
+			end
+
+			for _, context in ipairs(filesystems) do
+				if (is_folder and context:IsFolder(path_info)) or (not is_folder and context:IsFile(path_info)) then
+					out[out_i] = {path_info = path_info, context = context, userdata = path_info.userdata}
+					out_i = out_i + 1
+				elseif not is_folder and context:IsFolder({full_path = vfs.GetParentFolderFromPath(path_info.full_path)}) then
+					out[out_i] = {path_info = path_info, context = context, userdata = path_info.userdata}
+					out_i = out_i + 1
 				end
 			end
-		--end
+		end
 
 		return out
 	end
