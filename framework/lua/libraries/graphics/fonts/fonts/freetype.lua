@@ -227,9 +227,10 @@ local function find_font(name, callback, on_error)
 
 			if content then
 				ext = ext or url:match(".+(%.%a+)") or ".dat"
-				local path = "cache/" .. crypto.CRC32(real_name) .. ext
+				local path = "os:" .. e.DOWNLOAD_FOLDER .. "/fonts/_" .. real_name .. ext
 
 				llog("%s cache: %s", name, path)
+				vfs.CreateDirectoriesFromPath(path)
 				vfs.Write(path, content)
 
 				callback(path)
@@ -307,7 +308,7 @@ function META:Initialize()
 		end
 	end
 
-	local tbl = vfs.Find("cache/" .. crypto.CRC32(self.Path), true)
+	local tbl = vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "fonts/_" .. self.Path, true)
 
 	if tbl[1] then
 		load(tbl[1])
