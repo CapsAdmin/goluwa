@@ -5,6 +5,7 @@ e.DOWNLOAD_FOLDER = e.DATA_FOLDER .. "downloads/"
 local etags_file = e.DOWNLOAD_FOLDER .. "resource_etags.txt"
 
 --os.execute("rm -rf " .. R(e.DOWNLOAD_FOLDER))
+
 local ok, err = vfs.CreateDirectory("os:" .. e.DOWNLOAD_FOLDER)
 if not ok then wlog(err) end
 
@@ -90,8 +91,6 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 				local full_path = R("os:" .. e.DOWNLOAD_FOLDER .. to)
 
 				if full_path then
-					resource.BuildCacheFolderList(full_path:match(".+/(.+)"))
-
 					callback(full_path)
 
 					--llog("finished donwnloading ", from)
@@ -109,12 +108,14 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 			file:Write(chunk)
 		end,
 		function(header)
+			local dir = to
+
 			if ext_override then
-				to = to .. "." .. ext_override
+				to = to .. "/file." .. ext_override
 			elseif need_extension then
 				local ext = header["content-type"] and (header["content-type"]:match(".-/(.-);") or header["content-type"]:match(".-/(.+)")) or "dat"
 				if ext == "jpeg" then ext = "jpg" end
-				to = to .. "." .. ext
+				to = to .. "/file." .. ext
 			end
 
 			local ok, err = vfs.CreateDirectoriesFromPath("os:" .. e.DOWNLOAD_FOLDER .. to)
@@ -122,6 +123,10 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 			if not ok then
 				on_fail(llog("unable to create directories %q download error: %s", "os:" .. e.DOWNLOAD_FOLDER .. to, err))
 				return false
+			end
+
+			if resource.debug then
+				serializer.WriteFile("luadata", "os:" .. e.DOWNLOAD_FOLDER .. dir .. "info.txt", {header = header, url = from})
 			end
 
 			local file_, err = vfs.Open("os:" .. e.DOWNLOAD_FOLDER .. to .. ".temp", "write")
@@ -206,21 +211,15 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag,
 	local existing_path
 
 	if path:find("^.-://") then
-		if not resource.url_cache_lookup then
-			resource.BuildCacheFolderList()
-		end
-
 		url = path
 		local crc = (crc or crypto.CRC32(path))
+		local found = vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "url/" .. crc .. "/file", true)
 
-		if resource.url_cache_lookup[crc] then
-			path = "cache/" .. resource.url_cache_lookup[crc]
-			existing_path = R(path)
-			if not existing_path then
-				path = "cache/" .. crc
-			end
+		if found[1] then
+			path = found[1]
+			existing_path = found[1]
 		else
-			path = "cache/" .. crc
+			path = "url/" .. crc .. "/"
 			existing_path = false
 		end
 	else
@@ -315,26 +314,6 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag,
 	return true
 end
 
-function resource.BuildCacheFolderList(file_name)
-	if not resource.url_cache_lookup then
-		local tbl = {}
-		for _, file_name in ipairs(vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "cache/")) do
-			local name = file_name:match("(%d+)%.")
-			if name and not file_name:endswith(".temp") then
-				tbl[name] = file_name
-			else
-				logn("bad file in downloads/cache folder: ", file_name)
-				vfs.Delete("os:" .. e.DOWNLOAD_FOLDER .. "cache/" .. file_name)
-			end
-		end
-		resource.url_cache_lookup = tbl
-	end
-
-	if file_name then
-		resource.url_cache_lookup[file_name:match("(.-)%.") or file_name] = file_name
-	end
-end
-
 function resource.ClearDownloads()
 	local dirs = {}
 
@@ -351,8 +330,6 @@ function resource.ClearDownloads()
 	for _, dir in ipairs(dirs) do
 		vfs.Delete(dir.."/")
 	end
-
-	resource.BuildCacheFolderList()
 end
 
 function resource.CheckDownloadedFiles()
@@ -382,6 +359,30 @@ function resource.CreateVirtualFile(where, callback)
 			end
 		end, on_error)
 	end
+end
+
+function resource.ValidateCache(crc)
+	for _, path in ipairs(vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "url/", true)) do
+		if vfs.IsFile(path) then
+			local crc, ext = path:match(".+/(%d+)(.+)")
+			if crc then
+				local data = vfs.Read(path)
+				local new_path = "os:" .. e.DOWNLOAD_FOLDER .. "url/" .. crc .. "/file" .. ext
+				if vfs.CreateDirectoriesFromPath(new_path) then
+					llog("moving %s -> %s", path, new_path)
+					vfs.Delete(path)
+					vfs.Write(new_path, data)
+				end
+			else
+				llog("bad file in downloads/url folder: %s", path)
+				vfs.Delete(path)
+			end
+		end
+	end
+end
+
+if PLATFORM == "gmod" then
+	resource.ValidateCache()
 end
 
 return resource
