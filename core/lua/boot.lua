@@ -2,11 +2,12 @@ local start_time = os.clock()
 
 if os.getenv("GOLUWA_START_TIME") then
 	local start = os.getenv("GOLUWA_START_TIME")
+	local ffi = require("ffi")
+
 	if jit.os == "Windows" then
 		local min, sec, ms = start:match(".+:(%d+):(%d+).(%d+)", 0)
 		start = min*60+sec+ms/1000
-	
-		local ffi = require("ffi")
+
 		ffi.cdef([[
 			struct goluwa_systemtime{
 				short wYear;
@@ -22,11 +23,24 @@ if os.getenv("GOLUWA_START_TIME") then
 		]])
 		local t = ffi.new("struct goluwa_systemtime[1]")
 		ffi.C.GetSystemTime(t)
-		
+
 		local min, sec, ms = t[0].wMinute, t[0].wSecond, t[0].wMilliseconds
 		local stop = min*60+sec+ms/1000
-		
+
 		GOLUWA_CLI_TIME = stop - start - start_time
+	else
+		ffi.cdef([[
+			struct timeval {
+               long tv_sec;
+               long tv_usec;
+           };
+			int gettimeofday(struct timeval *, void *);
+		]])
+		local t = ffi.new("struct timeval[1]")
+		ffi.C.gettimeofday(t, nil)
+		start = tonumber(start) / 1000000000
+
+		GOLUWA_CLI_TIME = (tonumber(t[0].tv_sec) + (tonumber(t[0].tv_usec) / 1000000)) - start
 	end
 end
 
