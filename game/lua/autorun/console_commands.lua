@@ -1,6 +1,10 @@
 commands.Add("bootime", function()
-	logn("spent ", e.CLI_TIME, " seconds in ./goluwa", WINDOWS and ".cmd" or "")
-	logn("spent ", e.BOOT_TIME, " seconds in core/lua/boot.lua")
+	if e.CLI_TIME > -1 then
+		logn("spent ", e.CLI_TIME, " seconds in ./goluwa", WINDOWS and ".cmd" or "")
+	end
+	if e.BOOT_TIME > -1 then
+		logn("spent ", e.BOOT_TIME, " seconds in core/lua/boot.lua")
+	end
 	logn("spent ", e.INIT_TIME, " seconds in core/lua/init.lua")
 	logn("spent ", os.clock() - e.BOOTIME, " seconds from core/lua/init.lua to this command")
 end)
