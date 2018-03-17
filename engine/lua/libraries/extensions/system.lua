@@ -19,6 +19,12 @@ function system.ExecuteArgs(args)
 
 					if not ok then
 						logn("failed to execute ARGS: ", tbl)
+						return
+					end
+
+					if type(tbl) ~= "table" then
+						logn("table expected in ARGS, got ",type(tbl),": return ", str)
+						return
 					end
 
 					args = tbl
