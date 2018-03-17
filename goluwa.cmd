@@ -27,7 +27,7 @@ Download "$BINARIES_LOCATION/luajit.exe" "luajit.exe"
 Download "$BINARIES_LOCATION/lua51.dll" "lua51.dll"
 Download "$BINARIES_LOCATION/vcruntime140.dll" "vcruntime140.dll"
 
-New-Item -ItemType Directory -Force -Path "core\lua" | Out-Null
+New-Item -ItemType Directory -Force -Path "..\..\core\lua" | Out-Null
 Download "https://gitlab.com/CapsAdmin/goluwa/raw/master/core/lua/boot.lua" "..\..\core\lua\boot.lua"
 
 .\luajit.exe "../../core/lua/boot.lua" $args
