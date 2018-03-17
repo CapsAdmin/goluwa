@@ -86,6 +86,7 @@ hook.Add("RenderScene", "zerobrane_bridge", function()
 				else
 					ErrorNoHalt(func)
 				end
+				print("ran script from zerobrane")
 			end
 		end
 	end

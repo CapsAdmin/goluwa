@@ -30,6 +30,15 @@ function PLUGIN:onEditorSave(editor)
 			f:close()
 
 			local f = io.open(gmod_path .. "data/zerobrane_bridge.txt", "a")
+			local path = ide:GetDocument(editor).filePath
+			if path then
+				path = path:lower()
+				if path:find("server") or path:find("sv_") then
+					f:write("if CLIENT then return end ")
+				elseif path:find("client") or path:find("cl_") then
+					f:write("if SERVER then return end ")
+				end
+			end
 			f:write(ide:GetDocument(editor).editor:GetText())
 			f:write("¥$£@DELIMITER@£$¥")
 			f:close()
