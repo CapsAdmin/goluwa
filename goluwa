@@ -1,6 +1,6 @@
 #!/bin/sh
 export GOLUWA_START_TIME=$(date +%s%N)
-export GOLUWA_CURRENT_DIRECTORY=$PWD
+export GOLUWA_WORKING_DIRECTORY=$PWD
 
 basetime=$(date +%s%N)
 

@@ -5,7 +5,7 @@ runfile("platforms/" .. PLATFORM .. "/system.lua", system)
 function system.GetWorkingDirectory()
 
 	if CLI then
-		local dir = os.getenv("GOLUWA_CURRENT_DIRECTORY")
+		local dir = os.getenv("GOLUWA_WORKING_DIRECTORY")
 		if dir then
 			return vfs.FixPathSlashes("os:" .. dir .. "/")
 		end
