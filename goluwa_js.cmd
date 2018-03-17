@@ -1,4 +1,4 @@
-// set GOLUWA_START_TIME="%time%" & @echo off & echo \n\n\n & cls & cscript.exe //NoLogo //E:JScript %~dp0%~n0%~x0 %* & goto :EOF
+// & @echo off & set GOLUWA_START_TIME="%time%" & cls & cscript.exe //NoLogo //E:JScript %~dp0%~n0%~x0 %* & goto :EOF
 var fs = new ActiveXObject("Scripting.FileSystemObject")
 var shell = WScript.CreateObject("WScript.Shell")
 
@@ -6,7 +6,6 @@ var ashell = new ActiveXObject("shell.application")
 var arch = ashell.GetSystemInformation("ProcessorArchitecture") == 9 ? "x64" : "x86"
 var working_dir = fs.GetAbsolutePathName(".")
 var script_dir = fs.GetParentFolderName(WScript.ScriptFullName)
-
 var arg_line = ""
 for (var i = 0; i < WScript.Arguments.Length; i++)
 {

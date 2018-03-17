@@ -1,4 +1,4 @@
-set GOLUWA_START_TIME="%time%" & @echo off & PowerShell -nologo -noprofile -noninteractive Invoke-Expression ('$args=(''%*'').split('' '');'+'$PSScriptRoot=(''%~dp0'');$env:GOLUWA_CURRENT_DIRECTORY=(''%cd%'');'+((Get-Content -Raw %~dp0%~n0%~x0 ) -Replace '^.*goto :EOF')); & goto :EOF
+@echo off & set GOLUWA_START_TIME="%time%" & PowerShell -nologo -noprofile -noninteractive Invoke-Expression ('$args=(''%*'').split('' '');'+'$PSScriptRoot=(''%~dp0'');$env:GOLUWA_CURRENT_DIRECTORY=(''%cd%'');'+((Get-Content -Raw %~dp0%~n0%~x0 ) -Replace '^.*goto :EOF')); & goto :EOF
 
 $ROOT_DIR = $PSScriptRoot
 $ROOT_DIR = $([System.IO.Path]::GetFullPath("$ROOT_DIR"))
