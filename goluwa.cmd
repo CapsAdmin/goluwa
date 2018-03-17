@@ -1,7 +1,4 @@
-@echo off & PowerShell -nologo -noprofile -noninteractive Invoke-Expression ('$args=(''%*'').split('' '');'+'$PSScriptRoot=(''%~dp0'');$env:GOLUWA_CURRENT_DIRECTORY=(''%cd%'');'+((Get-Content -Raw %~dp0%~n0%~x0 ) -Replace '^.*goto :EOF')); & goto :EOF
-
-$stopwatch = New-Object System.Diagnostics.Stopwatch
-$stopwatch.Start()
+set GOLUWA_START_TIME="%time%" & @echo off & PowerShell -nologo -noprofile -noninteractive Invoke-Expression ('$args=(''%*'').split('' '');'+'$PSScriptRoot=(''%~dp0'');$env:GOLUWA_CURRENT_DIRECTORY=(''%cd%'');'+((Get-Content -Raw %~dp0%~n0%~x0 ) -Replace '^.*goto :EOF')); & goto :EOF
 
 $ROOT_DIR = $PSScriptRoot
 $ROOT_DIR = $([System.IO.Path]::GetFullPath("$ROOT_DIR"))
@@ -32,9 +29,5 @@ if(!(Test-Path "$ROOT_DIR\core\lua\boot.lua" -PathType Leaf)) {
 	New-Item -ItemType Directory -Force -Path "$ROOT_DIR\core\lua" | Out-Null
 	Download "https://gitlab.com/CapsAdmin/goluwa/raw/master/core/lua/boot.lua" "$ROOT_DIR\core\lua\boot.lua"
 }
-
-$stopwatch.Stop()
-
-Write-Host "[powershell] goluwa.cmd took"$stopwatch.Elapsed.TotalSeconds"seconds"
 
 .\luajit.exe "../../core/lua/boot.lua" $args

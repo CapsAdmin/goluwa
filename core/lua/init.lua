@@ -2,6 +2,11 @@ local start_time = os.clock()
 
 -- put all c functions in a table so we can override them if needed
 -- without doing the local oldfunc = print thing over and over again
+
+if os.getenv("GOLUWA_CLI_TIME") and not os.getenv("GOLUWA_CLI") then
+	io.write("[runfile] ", os.getenv("GOLUWA_CLI_TIME"), " seconds spent in ./goluwa", jit.os == "Windows" and ".cmd" or "", "\n")
+end
+
 if os.getenv("GOLUWA_BOOT_TIME") and not os.getenv("GOLUWA_CLI") then
 	io.write("[runfile] ", os.getenv("GOLUWA_BOOT_TIME"), " seconds spent in core/lua/boot.lua\n")
 end
@@ -241,6 +246,11 @@ do -- autorun
 	vfs.AutorunAddons(e.USERNAME .. "/")
 end
 
+e.CLI_TIME = tonumber(os.getenv("GOLUWA_CLI_TIME")) or -1
+e.BOOT_TIME = tonumber(os.getenv("GOLUWA_BOOT_TIME")) or -1
+e.INIT_TIME = os.clock() - start_time
+e.BOOTIME = os.clock()
+
 event.Call("Initialize")
 
 if PROFILE_STARTUP then
@@ -248,7 +258,7 @@ if PROFILE_STARTUP then
 end
 
 if not CLI and system.MainLoop then
-	logn("[runfile] total init time took ", os.clock() - start_time, " seconds to execute")
+	logn("[runfile] total init time took ", GOLUWA_INIT_TIME, " seconds to execute")
 	system.MainLoop()
 end
 event.Call("ShutDown")

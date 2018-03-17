@@ -1,3 +1,10 @@
+commands.Add("bootime", function()
+	logn("spent ", e.CLI_TIME, " seconds in ./goluwa", WINDOWS and ".cmd" or "")
+	logn("spent ", e.BOOT_TIME, " seconds in core/lua/boot.lua")
+	logn("spent ", e.INIT_TIME, " seconds in core/lua/init.lua")
+	logn("spent ", os.clock() - e.BOOTIME, " seconds from core/lua/init.lua to this command")
+end)
+
 commands.Add("exit=number[0]", function(exit_code)
 	system.ShutDown(exit_code)
 end)

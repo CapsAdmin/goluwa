@@ -1,5 +1,35 @@
 local start_time = os.clock()
 
+if os.getenv("GOLUWA_START_TIME") then
+	local start = os.getenv("GOLUWA_START_TIME")
+	if jit.os == "Windows" then
+		local min, sec, ms = start:match(".+:(%d+):(%d+).(%d+)", 0)
+		start = min*60+sec+ms/1000
+	
+		local ffi = require("ffi")
+		ffi.cdef([[
+			struct goluwa_systemtime{
+				short wYear;
+				short wMonth;
+				short wDayOfWeek;
+				short wDay;
+				short wHour;
+				short wMinute;
+				short wSecond;
+				short wMilliseconds;
+			};
+			void GetSystemTime(struct goluwa_systemtime *);
+		]])
+		local t = ffi.new("struct goluwa_systemtime[1]")
+		ffi.C.GetSystemTime(t)
+		
+		local min, sec, ms = t[0].wMinute, t[0].wSecond, t[0].wMilliseconds
+		local stop = min*60+sec+ms/1000
+		
+		GOLUWA_CLI_TIME = stop - start - start_time
+	end
+end
+
 do
 	_G[jit.os:upper()] = true
 	_G.OS = jit.os:lower()
@@ -930,6 +960,7 @@ if not WINDOWS and os.getenv("GOLUWA_DEBUG") or args[4] == "debug" then
 	os.execute("xterm -hold -e " .. valgrind .. " &")
 	os.execute("xterm -hold -e " .. gdb)
 else
+	os.setenv("GOLUWA_CLI_TIME", tostring(GOLUWA_CLI_TIME))
 	os.setenv("GOLUWA_BOOT_TIME", tostring(os.clock() - start_time))
 
 	if WINDOWS then
