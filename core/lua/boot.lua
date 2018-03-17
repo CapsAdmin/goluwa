@@ -570,7 +570,9 @@ local ffibuild_libraries = {
 	vulkan = generic,
 }
 
-if OSX then ffibuild_libraries.vulkan = nil end
+if OSX then
+	ffibuild_libraries.vulkan = nil
+end
 
 os.cd("../../")
 
