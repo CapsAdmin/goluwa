@@ -113,8 +113,20 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 			if ext_override then
 				to = to .. "/file." .. ext_override
 			elseif need_extension then
-				local ext = header["content-type"] and (header["content-type"]:match(".-/(.-);") or header["content-type"]:match(".-/(.+)")) or "dat"
-				if ext == "jpeg" then ext = "jpg" end
+
+				local ext =
+					header["content-type"] and
+					(header["content-type"]:match(".-/(.-);") or header["content-type"]:match(".-/(.+)")) or
+					"dat"
+
+				if ext == "dat" or ext == "octet-stream" then
+					ext = from:match("%.([%a%d]+)$") or from:match("%.([%a%d]+)%?") or ext
+				end
+
+				if ext == "jpeg" then
+					ext = "jpg"
+				end
+
 				to = to .. "/file." .. ext
 			end
 
