@@ -73,6 +73,7 @@ function META:SetPath(path, gmod_path)
 
 		self.loading = false
 	else
+		local real_path = path
 		resource.Download(path, function(path)
 			local path, where = GoluwaToGmodPath(path)
 
@@ -93,7 +94,7 @@ function META:SetPath(path, gmod_path)
 			end
 
 
-			self.tex = IMaterial_GetTexture(mat, "$basetexture")
+			self.tex = IMaterial_GetTexture(mat, "$basetexture") or render.GetErrorTexture().tex
 
 			self.width = IMaterial_GetInt(mat, "$realwidth") or ITexture_GetMappingWidth(self.tex)
 			self.height = IMaterial_GetInt(mat, "$realheight") or ITexture_GetMappingHeight(self.tex)
