@@ -75,7 +75,7 @@ function chatsounds.BuildFromGithub(repo, location)
 
 				local sounds = {}
 
-				local str = vfs.Read(path)
+				local str = assert(vfs.Read(path))
 				local count = 0
 				local i = 1
 				for _, chunk in ipairs(str:split(PLATFORM == "gmod" and [["path":"]] or [["path": "]])) do
