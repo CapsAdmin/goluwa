@@ -412,9 +412,7 @@ do -- addons
 			if not vfs.IsDirectory(dir) then
 				repl.OSExecute("git clone " .. info.url .. " '" .. dir .. "' --depth 1")
 			else
-				repl.OSExecute("git -C '" .. dir .. "' fetch")
-				repl.OSExecute("git -C '" .. dir .. "' reset --hard origin/master")
-				repl.OSExecute("git -C '" .. dir .. "' clean -f -d")
+				repl.OSExecute("git -C '" .. dir .. "' fetch && git -C '" .. dir .. "' reset --hard origin/master && git -C '" .. dir .. "' clean -f -d")
 			end
 			gserv.Log(id, "done updating ", info.url)
 		elseif info.type == "workshop" then
