@@ -27,7 +27,7 @@ local char_translate =
 	[13] = "KEY_ENTER",
 	[459] = "KEY_ENTER",
 	[8] = "KEY_BACKSPACE",
-	[127] = "CTL_BACKSPACE",
+	[127] = "KEY_BACKSPACE",
 	[9] = "KEY_TAB",
 
 	[25] = "KEY_UNDO",
@@ -48,12 +48,15 @@ local char_translate =
 	["\27[1;5D"] = "CTL_LEFT",
 	["\27[1;5C"] = "CTL_RIGHT",
 
+	["\27[1;5A"] = "KEY_UP",
+	["\27[1;5B"] = "KEY_DOWN",
+
 	["\27[D"] = "CTL_LEFT",
 	["\27[C"] = "CTL_RIGHT",
 
-	["\27\79\72"] = "KEY_HOME",
-	["\27\79\70"] = "KEY_END",
-	["\27\91\51\59\53\126"] = "CTL_DEL",
+	["\27" .. "0H"] = "KEY_HOME",
+	["\27" .. "0F"] = "KEY_END",
+	["\27" .. "[3;5~"] = "CTL_DEL",
 	["kDC5"] = "CTL_DEL",
 
 	KEY_SELECT = "KEY_HOME",
@@ -62,7 +65,17 @@ local char_translate =
 	PADENTER = "KEY_ENTER",
 	KEY_NPAGE = "KEY_PAGEDOWN",
 	KEY_PPAGE = "KEY_PAGEUP",
+
+	["\27[1;2A"] = "KEY_LINEUP",
+	["\27[1;2B"] = "KEY_LINEDOWN",
 }
+
+local longest_char = 0
+for k,v in pairs(char_translate) do
+	if type(k) == "string" then
+		longest_char = math.max(longest_char, #k)
+	end
+end
 
 local markup_translate = {
 	KEY_BACKSPACE = "backspace",
@@ -166,16 +179,24 @@ function repl.Initialize()
 					key = char_translate[byte]
 					break
 				elseif byte == 27 then
-					local char1, char2 = c.input_window:getch(), c.input_window:getch()
-					if char1 > 0 and char2 > 0 then
-						local str = string.char(byte, char1, char2)
+					for len = longest_char, 1, -1 do
+						local chars = {}
+						for _ = 1, len do
+							local b = c.input_window:getch()
+							if b == -1 then break end
+							table.insert(chars, b)
+						end
+
+						local str = string.char(byte, unpack(chars))
 						if char_translate[str] then
 							key = char_translate[str]
 							break
 						end
+
+						for i = #chars, 1, -1 do
+							curses.ungetch(chars[i])
+						end
 					end
-					curses.ungetch(char2)
-					curses.ungetch(char1)
 				elseif (byte > 32 or string.char(byte):find("%s")) and byte < 256 then
 					table.insert(chars, string.char(byte))
 				else
@@ -701,6 +722,12 @@ function repl.HandleKey(key)
 		repl.SetScroll(repl.GetScroll() - curses.LINES / 2)
 	elseif key == "KEY_PAGEDOWN" then
 		repl.SetScroll(repl.GetScroll() + curses.LINES / 2)
+	end
+
+	if key == "KEY_LINEUP" then
+		repl.SetScroll(repl.GetScroll() - 1)
+	elseif key == "KEY_LINEDOWN" then
+		repl.SetScroll(repl.GetScroll() + 1)
 	end
 
 	if window then
