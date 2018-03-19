@@ -373,7 +373,7 @@ function resource.CreateVirtualFile(where, callback)
 	end
 end
 
-function resource.ValidateCache(crc)
+function resource.ValidateCache()
 	for _, path in ipairs(vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "url/", true)) do
 		if vfs.IsFile(path) then
 			local crc, ext = path:match(".+/(%d+)(.+)")
@@ -389,12 +389,10 @@ function resource.ValidateCache(crc)
 				llog("bad file in downloads/url folder: %s", path)
 				vfs.Delete(path)
 			end
+		else
+
 		end
 	end
-end
-
-if PLATFORM == "gmod" then
-	resource.ValidateCache()
 end
 
 return resource
