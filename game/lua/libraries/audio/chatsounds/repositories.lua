@@ -46,19 +46,19 @@ end
 function chatsounds.BuildFromGithub(repo, location)
 	location = location or "sounds/chatsounds"
 
-	local base_url = "https://raw.githubusercontent.com/"..repo.."/master/" .. location .. "/"
+	local base_url = "https://raw.githubusercontent.com/" .. repo .. "/master/" .. location .. "/"
 
 	resource.Download(
 		base_url .. "list.msgpack",
 		function(path)
-			--llog("found list.msgpack for ", location)
+			-- llog("found list.msgpack for ", location)
 			read_list(base_url, serializer.ReadFile("msgpack", path))
 		end,
 		function()
-			--llog(repo, ": unable to find list.msgpack from \"", location, "\"")
-			--llog(repo, ":parsing with github api instead (slow)")
+			-- llog(repo, ": unable to find list.msgpack from \"", location, "\"")
+			-- llog(repo, ": parsing with github api instead (slow)")
 
-			local url = "https://api.github.com/repos/"..repo.."/git/trees/master?recursive=1"
+			local url = "https://api.github.com/repos/" .. repo .. "/git/trees/master?recursive=1"
 
 			resource.Download(url, function(path)
 				local cached_path = "data/cache/" .. crypto.CRC32(url .. location) .. ".chatsounds_treecache"
@@ -68,42 +68,38 @@ function chatsounds.BuildFromGithub(repo, location)
 					if sounds[1] and #sounds[1] >= 3 then
 						read_list(base_url, sounds)
 						return
-					else
-						--llog("found cached list but format doesn't look right, regenerating.")
+					-- else
+					-- 	llog("found cached list but format doesn't look right, regenerating.")
 					end
 				end
 
 				local sounds = {}
-
 				local str = assert(vfs.Read(path))
-				local count = 0
 				local i = 1
-				for _, chunk in ipairs(str:split(PLATFORM == "gmod" and [["path":"]] or [["path": "]])) do
-					if chunk:startswith(location) then
-						local start = chunk:find('"', 1, true)
-						local path = chunk:sub(#location + 2, start - 1)
-						if path:endswith(".ogg") then
-							local tbl = path:split("/")
-							local realm = tbl[1]
-							local trigger = tbl[2]
+				for path in str:gmatch('"path":%s?"(.-)"[\n,}]') do
+					if path:startswith(location) and path:endswith(".ogg") then
+						path = path:sub(#location + 2) -- start character after location, and another /
 
-							if not tbl[3] then
-								trigger = trigger:sub(1, -#".ogg" - 1)
-							end
+						local tbl = path:split("/")
+						local realm = tbl[1]
+						local trigger = tbl[2]
 
-							sounds[i] = {
-								realm,
-								trigger,
-								path,
-							}
-
-							if trigger:startswith("-") then
-								sounds[i][2] = sounds[i][2]:sub(2)
-								sounds[i][4] = realm .. "/" .. trigger .. ".txt"
-							end
-
-							i = i + 1
+						if not tbl[3] then
+							trigger = trigger:sub(1, -#".ogg" - 1)
 						end
+
+						sounds[i] = {
+							realm,
+							trigger,
+							path,
+						}
+
+						if trigger:startswith("-") then
+							sounds[i][2] = sounds[i][2]:sub(2)
+							sounds[i][4] = realm .. "/" .. trigger .. ".txt"
+						end
+
+						i = i + 1
 					end
 				end
 
