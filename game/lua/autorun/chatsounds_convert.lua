@@ -922,7 +922,7 @@ function chatsounds.ExtractSoundsFromLists()
 
 			local ogg_quality = ffi.new("float[1]", 0.4)
 
-			if file:PeakBytes(3) == "ID3" or file:PeakBytes(4) == "\xFF\xFB\x92\x40" or file:PeakBytes(4) == "\xFF\xFB\x92\x60" or file:PeakBytes(4) == "\xFF\xFB\x92\x64" then
+			if file:PeakBytes(3) == "ID3" or file:PeakBytes(3) == "\xFF\xFB\x92" or file:PeakBytes(3) == "\xFF\xFB\x90" then
 				local buffer, len, info = audio.Decode(file, read_path, "mpg123")
 				if buffer then
 					vfs.CreateDirectoriesFromPath("os:" .. path)

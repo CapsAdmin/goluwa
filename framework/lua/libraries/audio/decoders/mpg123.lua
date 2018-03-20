@@ -12,6 +12,7 @@ mpg123.Init()
 local allowed = {
 	"ID3",
 	"\xFF\xFB\x92",
+	"\xFF\xFB\x90",
 }
 
 local hex_allowed = {}
