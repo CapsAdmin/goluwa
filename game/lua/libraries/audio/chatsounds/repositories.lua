@@ -61,7 +61,7 @@ function chatsounds.BuildFromGithub(repo, location)
 			local url = "https://api.github.com/repos/" .. repo .. "/git/trees/master?recursive=1"
 
 			resource.Download(url, function(path)
-				local cached_path = "data/cache/" .. crypto.CRC32(url .. location) .. ".chatsounds_treecache"
+				local cached_path = e.DATA_FOLDER .. "cache/" .. crypto.CRC32(url .. location) .. ".chatsounds_treecache"
 				local sounds = serializer.ReadFile("msgpack", cached_path)
 
 				if sounds then
