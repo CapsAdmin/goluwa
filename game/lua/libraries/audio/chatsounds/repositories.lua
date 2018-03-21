@@ -3,17 +3,6 @@ local chatsounds = ... or chatsounds
 local function read_list(base_url, sounds)
 	local tree = {}
 	local list = {}
-
-	local function rebuild()
-		tree = chatsounds.TableToTree(tree)
-		chatsounds.tree = chatsounds.tree or {}
-		table.merge(chatsounds.tree, tree)
-
-		chatsounds.list = chatsounds.list or {}
-		table.merge(chatsounds.list, list, true)
-		chatsounds.GenerateAutocomplete()
-	end
-
 	local count = 0
 
 	for i = 1, #sounds do
@@ -38,9 +27,15 @@ local function read_list(base_url, sounds)
 		end
 	end
 
-	llog("loaded sounds from", base_url)
+	tree = chatsounds.TableToTree(tree)
+	chatsounds.tree = chatsounds.tree or {}
+	table.merge(chatsounds.tree, tree)
 
-	event.Delay(0.5, rebuild, "rebuild_chatsounds")
+	chatsounds.list = chatsounds.list or {}
+	table.merge(chatsounds.list, list, true)
+	chatsounds.GenerateAutocomplete()
+
+	llog("loaded sounds from", base_url)
 end
 
 function chatsounds.BuildFromGithub(repo, location)
