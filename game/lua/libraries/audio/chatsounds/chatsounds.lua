@@ -286,7 +286,7 @@ do
 				if char == "(" then
 					bracket_level = bracket_level + 1
 				elseif char == ")" then
-					inside_brackets = bracket_level - 1
+					bracket_level = bracket_level - 1
 				end
 
 				if not exp and (type ~= last or char == ":" or char == ")" or char == "(" or char == ",") or capture_exp then
@@ -348,7 +348,6 @@ do
 								table.insert(args, func)
 							else
 								wlog("failed to compile expression: ", func)
-								table.insert(args, exp)
 							end
 						elseif word ~= "," then
 							table.insert(args, word)
@@ -426,7 +425,7 @@ do
 						if type(mod) ~= "table" then break end
 						table.insert(out, mod)
 					end
- 				else
+				else
 					for _, info in ipairs(matched) do
 						table.insert(out, {type = "unmatched", val = info.word})
 					end
@@ -631,8 +630,8 @@ function chatsounds.PlayScript(script)
 			end
 
 			if chunk.modifiers then
-				for mod, data in ipairs(chunk.modifiers) do
-					mod = chatsounds.Modifiers[data.mod]
+				for _, data in ipairs(chunk.modifiers) do
+					local mod = chatsounds.Modifiers[data.mod]
 					if mod and mod.pre_init then
 						mod.pre_init(unpack(data.args))
 					end
@@ -737,11 +736,11 @@ function chatsounds.PlayScript(script)
 					table.insert(sounds, sound)
 
 					chatsounds.last_trigger = chunk.val.trigger
-				else
-					--print("huh")
+				-- else
+				-- 	print("huh")
 				end
-			else
-			--	print(data, chunk.trigger, chunk.realm)
+			-- else
+			-- 	print(data, chunk.trigger, chunk.realm)
 			end
 		end
 	end

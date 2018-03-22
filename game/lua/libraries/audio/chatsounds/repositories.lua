@@ -35,7 +35,7 @@ local function read_list(base_url, sounds)
 	table.merge(chatsounds.list, list, true)
 	chatsounds.GenerateAutocomplete()
 
-	llog("loaded sounds from", base_url)
+	llog("loaded sounds from ", base_url)
 end
 
 function chatsounds.BuildFromGithub(repo, location)
