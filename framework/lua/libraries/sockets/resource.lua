@@ -81,7 +81,7 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 			file:Close()
 			local full_path = R("os:" .. e.DOWNLOAD_FOLDER .. to .. ".temp")
 			if full_path then
-				local ok, err = vfs.Rename(full_path, (full_path:gsub(".+/(.+).temp", "%1")))
+				local ok, err = vfs.Rename(full_path, full_path:gsub(".+/(.+).temp", "%1"))
 
 				if not ok then
 					on_fail(llog("unable to rename %q: %s", full_path, err))
@@ -174,9 +174,9 @@ local function download_from_providers(path, callback, on_fail, check_etag)
 
 	if not SOCKETS then return end
 
-	if not check_etag then
-		--llog("downloading ", path)
-	end
+	-- if not check_etag then
+	-- 	llog("downloading ", path)
+	-- end
 
 	local failed = 0
 	local max = #resource.providers
@@ -197,7 +197,7 @@ local function download_from_providers(path, callback, on_fail, check_etag)
 				for _, other_provider in ipairs(resource.providers) do
 					if provider ~= other_provider then
 						sockets.StopDownload(other_provider .. path)
-						event.Call("DownloadStop", url, nil, "download found in " .. provider)
+						event.Call("DownloadStop", path, nil, "download found in " .. provider)
 					end
 				end
 			end,
@@ -224,10 +224,10 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag,
 
 	if path:find("^.-://") then
 		url = path
-		local crc = (crc or crypto.CRC32(path))
+		local crc = crc or crypto.CRC32(path)
 		local found = vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "url/" .. crc .. "/file", true)
 
-		if platform == "gmod" and found[1] and vfs.IsDirectory(found[1]) then
+		if PLATFORM == "gmod" and found[1] and vfs.IsDirectory(found[1]) then
 			llog("deleting bad cache data")
 			for _, path in ipairs(vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "url/" .. crc .. "/", true)) do
 				vfs.Delete(path)
@@ -291,9 +291,9 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag,
 	end
 
 	if url then
-		if not check_etag then
-			-- llog("downloading ", url)
-		end
+		-- if not check_etag then
+		-- 	llog("downloading ", url)
+		-- end
 
 		download(
 			url,
@@ -396,8 +396,6 @@ function resource.ValidateCache()
 				llog("bad file in downloads/url folder: %s", path)
 				vfs.Delete(path)
 			end
-		else
-
 		end
 	end
 end
