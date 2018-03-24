@@ -624,7 +624,7 @@ if args[1] == "build" then
 
 		for dir, post_build in pairs(ffibuild_libraries) do
 			os.cd(dir)
-			os.execute("./build.sh")
+			os.execute("./make.sh")
 			run_postbuild(post_build)
 			os.cd("..")
 		end
@@ -636,7 +636,7 @@ if args[1] == "build" then
 		for dir, post_build in pairs(ffibuild_libraries) do
 			if os.isdir(dir) then
 				os.cd(dir)
-				os.execute("./build.sh clean")
+				os.execute("./make.sh clean")
 				os.cd("..")
 			end
 		end
@@ -644,9 +644,9 @@ if args[1] == "build" then
 		os.cd(args[2])
 
 		if args[3] == "clean" then
-			os.execute("make clean")
+			os.execute("./make.sh clean")
 		else
-			os.execute("make " .. (args[3] or ""))
+			os.execute("./make.sh " .. (args[3] or ""))
 			if ffibuild_libraries[args[2]] then
 				run_postbuild(ffibuild_libraries[args[2]])
 			end
