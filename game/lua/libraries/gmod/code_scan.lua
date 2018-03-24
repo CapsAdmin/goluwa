@@ -177,6 +177,55 @@ function gine.CheckCode(source, ignore_globals, found)
 	return found
 end
 
+function gine.CheckDirectory(path, name)
+	vfs.Search(path, {"lua"}, function(path)
+		local found = {}
+		local code =  gine.PreprocessLua(vfs.Read(path))
+		local ok, err = loadstring(code)
+		local lines = code:split("\n")
+
+		if ok then
+			vfs.Write("data/" .. name .. "/" .. path, code)
+
+			gine.CheckCode(code, ignore_globals, found)
+		else
+			print(path)
+			print(err)
+		end
+
+
+		if found[1] then
+			logn("\t", path:match(".+/(lua.+)") .. ":")
+
+			local function parse_info(info)
+				logn("\t\t", path:match(".+/(lua.+)"), ":", info.start_line, " - ", info.stop_line)
+				logn("\t\t", info.msg .. ":")
+				if not no_linenumbers or info.type == "important" then
+					for i = info.start_line, info.stop_line do
+						local line = lines[i]
+						if line then
+							logn("\t\t\t", i .. ":" .. line)
+						end
+					end
+					logn("\n")
+				end
+			end
+
+			for i, info in ipairs(found) do
+				if info.type ~= "important" then
+					parse_info(info)
+				end
+			end
+
+			for i, info in ipairs(found) do
+				if info.type == "important" then
+					parse_info(info)
+				end
+			end
+		end
+	end)
+end
+
 function gine.CheckWorkshopAddon(id, no_linenumbers)
 	local ignore_globals = {}
 	logn("downloading ", id)
@@ -186,52 +235,7 @@ function gine.CheckWorkshopAddon(id, no_linenumbers)
 		logn("checking ", info.response.publishedfiledetails[1].title)
 		logn("http://steamcommunity.com/workshop/filedetails/?id=" .. info.response.publishedfiledetails[1].publishedfileid)
 
-		vfs.Search(path .. "/lua/", {"lua"}, function(path)
-			local found = {}
-			local code =  gine.PreprocessLua(vfs.Read(path))
-			local ok, err = loadstring(code)
-			local lines = code:split("\n")
-
-			if ok then
-				vfs.Write("data/" .. id .. "(" .. info.response.publishedfiledetails[1].publishedfileid:gsub("%s+", "_"):gsub("%p", "") .. ")" .. "/" .. path, code)
-
-				gine.CheckCode(code, ignore_globals, found)
-			else
-				print(path)
-				print(err)
-			end
-
-
-			if found[1] then
-				logn("\t", path:match(".+/(lua.+)") .. ":")
-
-				local function parse_info(info)
-					logn("\t\t", path:match(".+/(lua.+)"), ":", info.start_line, " - ", info.stop_line)
-					logn("\t\t", info.msg .. ":")
-					if not no_linenumbers or info.type == "important" then
-						for i = info.start_line, info.stop_line do
-							local line = lines[i]
-							if line then
-								logn("\t\t\t", i .. ":" .. line)
-							end
-						end
-						logn("\n")
-					end
-				end
-
-				for i, info in ipairs(found) do
-					if info.type ~= "important" then
-						parse_info(info)
-					end
-				end
-
-				for i, info in ipairs(found) do
-					if info.type == "important" then
-						parse_info(info)
-					end
-				end
-			end
-		end)
+		gine.ScanLua(path .. "/lua/", id .. "(" .. info.response.publishedfiledetails[1].publishedfileid:gsub("%s+", "_"):gsub("%p", "") .. ")")
 
 		if not vfs.IsDirectory(path .. "/lua") then
 			table.print(vfs.Find(path .. "/"))
