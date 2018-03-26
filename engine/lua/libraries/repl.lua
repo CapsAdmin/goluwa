@@ -122,7 +122,17 @@ local markup_translate = {
 	CTL_H = "backspace",
 }
 
+if LINUX then
+	ffi.cdef("int isatty(int);")
+end
+
 function repl.Initialize()
+	if LINUX then
+		if ffi.C.isatty(0) == 0 then
+			return
+		end
+	end
+
 	if not gfx or not gfx.CreateMarkup then
 		-- the renderer might fail to load :( !
 		local hack = false
