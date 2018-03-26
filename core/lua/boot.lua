@@ -735,11 +735,13 @@ if args[1] == "bundle_library_dependencies" then
 	local found = {}
 	local ok = true
 
-	for _, bin in ipairs(os.ls(".")) do
+	for _, bin in ipairs(os.ls("")) do
 		if bin:find("%.so") then
 			local tool = jit.os == "OSX" and "otool -L" or "ldd"
 			for line in os.readexecute(tool .. " " .. bin):gmatch("(.-)\n") do
-				if not blacklisted then
+				if line:find("not found") then
+					print(line)
+				elseif not blacklisted then
 					local name, location = line:match("(%S-) => (%S-) %b()")
 					if not name then
 						location = line:match("(%S-) %b()")
