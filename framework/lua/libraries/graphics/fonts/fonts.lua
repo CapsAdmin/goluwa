@@ -162,7 +162,11 @@ function fonts.CreateFont(options, callback)
 		end
 	end
 
-	return fonts.GetDefaultFont()
+	if options.path ~= fonts.default_font_path then
+		return fonts.GetDefaultFont()
+	end
+
+	return fonts.GetFallbackFont()
 end
 
 function fonts.FindFont(name)
