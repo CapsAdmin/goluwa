@@ -836,8 +836,6 @@ if args[1] ~= "launch" then
 	if not args[1] then
 		if not WINDOWS and not OSX and os.readexecute("printf %s ${DISPLAY+x}") == "" then
 			CLIENT = true
-		elseif args[1] == "ide" or os.isfile("engine/lua/zerobrane/config.lua") then
-			IDE = true
 		end
 	elseif not WINDOWS and os.iscmd("tmux") and has_tmux_session() then
 		if args[1] == "attach" or args[1] == "tmux" then
@@ -875,7 +873,7 @@ if args[1] ~= "launch" then
 	end
 end
 
-if IDE then
+if IDE or args[1] == "ide" then
 	get_github_project("pkulchenko/ZeroBraneStudio", "data/ide")
 	assert(os.cd("data/ide"), "unable to download ide?")
 
@@ -888,7 +886,7 @@ if IDE then
 	os.exit()
 end
 
-if CLIENT or args[1] == "client" then
+if CLIENT or args[1] == "client"  or  args[1] == "" then
 	os.setenv("GOLUWA_CLIENT", "1")
 	os.setenv("GOLUWA_SERVER", "0")
 	os.setenv("LD_PRELOAD", "libpthread.so.0")
