@@ -8,6 +8,7 @@ META:GetSet("Highlight", false)
 META:GetSet("ActiveStyle", "button_active")
 META:GetSet("InactiveStyle", "button_inactive")
 META:GetSet("HighlightOnMouseEnter", true)
+META:GetSet("OffsetContentOnClick", 0)
 META:GetSet("ClicksToActivate", 0)
 META:GetSet("ImagePath", "")
 META:GetSet("ImageSize", Vec2() + 16)
@@ -65,6 +66,12 @@ end
 
 function META:SetState(press, button)
 	button = button or "button_1"
+
+	if self.OffsetContentOnClick ~= 0 then
+		if press then
+			self:Animate("DrawPositionOffset", {Vec2() + self.OffsetContentOnClick, function() return self:GetState(button) end, "from"}, nil, "", 0.5)
+		end
+	end
 
 	if press then
 		self.button_down[button] = press
