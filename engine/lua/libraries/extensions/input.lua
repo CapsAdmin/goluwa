@@ -33,8 +33,18 @@ function input.Initialize()
 	input.binds = serializer.ReadFile("luadata", "data/input.txt") or {}
 end
 
+input.disable_focus = 0
+
+function input.PushDisableFocus()
+	input.disable_focus = input.disable_focus + 1
+end
+
+function input.PopDisableFocus()
+	input.disable_focus = math.max(input.disable_focus - 1, 0)
+end
+
 function input.Call(key, press)
-	if input.DisableFocus then return end
+	if input.disable_focus > 0 then return end
 
 	for _, data in pairs(input.binds) do
 		if data.trigger == key then

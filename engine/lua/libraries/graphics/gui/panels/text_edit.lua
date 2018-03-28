@@ -132,7 +132,7 @@ end
 
 function META:OnFocus()
 	event.Call("TextInputFocus", self)
-	input.DisableFocus = true -- TODO
+	input.PushDisableFocus()
 	if self.Editable then
 		self.label.markup:SetEditable(true)
 	end
@@ -140,7 +140,7 @@ end
 
 function META:OnUnfocus()
 	event.Call("TextInputUnfocus", self)
-	input.DisableFocus = false -- TODO
+	input.PopDisableFocus()
 	self.label.markup:SetEditable(false)
 end
 
