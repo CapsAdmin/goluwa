@@ -227,7 +227,7 @@ function META:GetNextCharacterClassPosition(delta, next_space)
 		end
 
 		if pos >= #self.chars then
-			return pos, 1
+			return pos, self.chars[#self.chars].y
 		end
 
 		if next_space then
@@ -304,32 +304,9 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 	self.text = utf8.sub(self.text, 1, sub_pos - 1) .. str .. utf8.sub(self.text, sub_pos)
 
 	do -- fix chunks
-		local sub_pos = self.caret_pos.char.data.i
 		local chunk = self.caret_pos.char.chunk
 
-		-- if we're in a sea of non strings we need to make one
-		if chunk.internal or chunk.type ~= "string" and ((self.chunks[chunk.i-1] and self.chunks[chunk.i-1].type ~= "string") or (self.chunks[chunk.i+1] and self.chunks[chunk.i+1].type ~= "string")) then
-			table.insert(self.chunks, chunk.internal and #self.chunks or chunk.i , {type = "string", val = str})
-		else
-			do -- sub the start
-				local pos = chunk.i
-
-				while chunk.type ~= "string" and pos > 1 do
-					pos = pos - 1
-					chunk = self.chunks[pos]
-				end
-			end
-
-			if chunk.type == "string" then
-				if not sub_pos then
-					sub_pos = #chunk.chars + 1
-				end
-
-				chunk.val = utf8.sub(chunk.val, 1, sub_pos - 1) .. str .. utf8.sub(chunk.val, sub_pos)
-			else
-				table.remove(self.chunks, chunk.i)
-			end
-		end
+		table.insert(self.chunks, chunk.internal and #self.chunks or chunk.i, {type = "string", val = str})
 
 		self:Invalidate()
 	end
@@ -339,7 +316,7 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 		local y = self.caret_pos.y + string.count(str, "\n")
 
 		if self.caret_pos.char.str == "\n" then
-			x = x + 1
+			x = 0
 		end
 
 		self.real_x = x
@@ -1441,7 +1418,7 @@ do -- invalidate
 										end
 
 										if char == "\n" then
-											add_chunk(self, out, {type = "newline"})
+											add_chunk(self, out, {type = "newline", val = "\n"})
 										else
 											add_chunk(self, out, {type = "string", val = char, whitespace = true})
 										end
@@ -1455,11 +1432,11 @@ do -- invalidate
 								end
 							else
 								if chunk.val == "\n" then
-									add_chunk(self, out, {type = "newline"})
+									add_chunk(self, out, {type = "newline", val = "\n"})
 								elseif chunk.val:find("\n", nil, true) then
 									for _, line in ipairs(string.split(chunk.val, "\n")) do
 										add_chunk(self, out, {type = "string", val = line})
-										add_chunk(self, out, {type = "newline"})
+										add_chunk(self, out, {type = "newline", val = "\n"})
 									end
 								else
 									add_chunk(self, out, {type = "string", val = chunk.val})
@@ -1555,10 +1532,16 @@ do -- invalidate
 				chunk_height = chunk.h
 			end
 
-			-- is the previous line a newline?
-			local newline = chunks[i - 1] and chunks[i - 1].type == "newline"
+			chunk.x = x
+			chunk.y = y
 
-			if not (chunk.type == "string" and chunk.val:find("^%s*$")) and chunk.type~= "newline" then
+			if chunk.type == "newline" then
+				if not chunk.nolinebreak then
+					y = y + chunk_height
+					x = 0
+				end
+				chunk.w = 0
+			elseif not (chunk.type == "string" and chunk.val:find("^%s*$")) then
 				if newline or x + chunk.w > self.MaxWidth then
 					local left_over_space = x - self.MaxWidth
 
@@ -1589,9 +1572,6 @@ do -- invalidate
 					end
 				end
 			end
-
-			chunk.x = x
-			chunk.y = y
 
 			x = x + chunk.w
 		end
@@ -1628,6 +1608,10 @@ do -- invalidate
 					chunk = chunk,
 				}
 
+				if chunk.internal then
+					chunk.chars[i].internal = true
+				end
+
 				chunk.chars[i].unicode = #char > 1
 				chunk.chars[i].length = #char
 
@@ -1636,12 +1620,7 @@ do -- invalidate
 
 			if str == " " and chunk.internal then
 				chunk.chars[1].char = ""
-				chunk.chars[1].w = 0
-				chunk.chars[1].h = 0
-				chunk.chars[1].x = 0
-				chunk.chars[1].y = 0
-				chunk.chars[1].top = 0
-				chunk.chars[1].right = 0
+
 			end
 		end
 	end
@@ -1965,6 +1944,7 @@ do -- invalidate
 		if self.suppress_layout then return end
 
 		local chunks = prepare_chunks(self)
+
 		solve_max_width(self, chunks)
 		store_tag_info(self, chunks)
 		--P"align y axis"
@@ -2211,20 +2191,21 @@ do -- shortcuts
 			local y = self.caret_pos.y
 
 			local cur_space = utf8.sub(self.lines[y], 1, self.caret_pos.x):match("^(%s*)") or ""
+
 			x = x + #cur_space
 
 			if x == 0 and #self.lines == 1 then
 				cur_space = " " .. cur_space
 			end
 
-			self:InsertString("\n" .. cur_space, true)
-
-
-			self:InvalidateEditedText()
+			self:InsertString("\n" .. cur_space)
 
 			self.real_x = x
 
 			self:SetCaretPosition(x, y + 1, true)
+			if #cur_space > 0 then
+				self:Delete() -- AGH
+			end
 		else
 			self:InsertString("\n")
 		end
@@ -2267,6 +2248,8 @@ do -- caret
 				break
 			end
 		end
+		--print(x,y)
+		--table.print(CHAR.data, 1)
 
 		-- if nothing was found we need to check things differently
 
@@ -2274,18 +2257,8 @@ do -- caret
 			local line = {}
 
 			for i, char in ipairs(self.chars) do
-				if y > char.data.y and y < char.data.top + 1 then -- todo: remove +1
+				if y > char.data.y and (y > self.height and char.chunk.line == #self.lines or y < char.data.top + 1) then -- todo: remove +1
 					table.insert(line, {i, char})
-				end
-			end
-
-			if #line == 0 then
-				for i, char in ipairs(self.chars) do
-					if char.chunk.line == #self.lines then
-						if y > char.data.y then
-							table.insert(line, {i, char})
-						end
-					end
 				end
 			end
 
@@ -2296,8 +2269,8 @@ do -- caret
 			if not CHAR then
 				for _, v in ipairs(line) do
 					local i, char = unpack(v)
-					if x < char.data.x then
-						POS = i - 1
+					if x < char.data.right then
+						POS = i
 						CHAR = self.chars[POS]
 						break
 					end
@@ -2306,8 +2279,8 @@ do -- caret
 		end
 
 		if not CHAR then
-			CHAR = self.chars[#self.chars]
 			POS = #self.chars
+			CHAR = self.chars[POS]
 		end
 
 		local data = CHAR.data
@@ -2329,8 +2302,8 @@ do -- caret
 		x = x or 0
 		y = y or 0
 
-		y = math.min(math.max(y, 1), #self.lines)
-		x = math.min(math.max(x, 0), self.lines[y] and utf8.length(self.lines[y]) or 0)
+		y = math.clamp(y, 1, #self.lines)
+		x = math.clamp(x, 0, self.lines[y] and utf8.length(self.lines[y]) or 0)
 
 		local CHAR
 		local POS
@@ -2345,7 +2318,7 @@ do -- caret
 
 		if not CHAR then
 			if x == utf8.length(self.lines[#self.lines]) then
-				POS = #self.chars
+				POS = #self.chars - 1
 				CHAR = self.chars[POS]
 			end
 		end
@@ -2365,11 +2338,6 @@ do -- caret
 				POS = i
 			end
 		end
-
-		if not CHAR then
-			CHAR = self.chars[#self.chars] -- something is wrong!
-		end
-
 
 		local data = CHAR.data
 
@@ -2402,42 +2370,40 @@ do -- caret
 		if Y ~= 0 then
 			local pixel_y = self.caret_pos.char.data.y
 
-			if Y > 0 then
-				pixel_y = pixel_y + self.caret_pos.char.data.h + Y * 2
-			else
-				pixel_y = pixel_y + Y
+			if pixel_y > 0 or Y > 0 then
+				if Y > 0 then
+					pixel_y = pixel_y + self.caret_pos.char.data.h * Y + 1
+				else
+					pixel_y = pixel_y + self.caret_pos.char.data.h * Y + 1
+				end
+
+				if pixel_y < self.height then
+					local pcaret = self:CaretFromPixels(
+						(self.real_x or self.caret_pos.char.data.x) + self.caret_pos.char.data.w / 2,
+						pixel_y
+					)
+					y = pcaret.y
+					x = pcaret.x
+				end
 			end
-
-			local pcaret = self:CaretFromPixels(
-				(self.real_x or self.caret_pos.char.data.x) + self.caret_pos.char.data.w / 2,
-				pixel_y
-			)
-
-			x = pcaret.x
-			y = pcaret.y
 		elseif X ~= math.huge and X ~= -math.huge then
 			x = x + X
 
 			self.real_x = self:CaretFromPosition(x, y).char.data.x
 
 			-- move to next or previous line
-			if X > 0 and x > utf8.length(line) and #self.lines > 1 then
+			if X > 0 and x > utf8.length(line) and y < #self.lines and #self.lines > 1 then
 				x = 0
 				y = y + 1
-
-				if self.ControlDown then
-					local line = self.lines[self.caret_pos.y + 1] or ""
-					x = line:find("%s-%S", 0) or 1
-					x = x - 1
-				end
 			elseif X < 0 and x < 0 and y > 0 and self.lines[self.caret_pos.y - 1] then
 				x = utf8.length(self.lines[self.caret_pos.y - 1])
 				y = y - 1
 			end
-
 		else
 			if X == math.huge then
 				x = utf8.length(line)
+				self.real_x = math.huge
+
 			elseif X == -math.huge then
 				local pos = #(line:match("^(%s*)") or "")
 
@@ -2446,6 +2412,8 @@ do -- caret
 				end
 
 				x = pos
+
+				self.real_x = 0
 			end
 		end
 
@@ -2742,9 +2710,9 @@ do -- input
 				x = -math.huge
 			elseif key == "end" then
 				x = math.huge
-			elseif key == "page_up" and self.Multiline then
+			elseif key == "pageup" and self.Multiline then
 				y = -10
-			elseif key == "page_down" and self.Multiline then
+			elseif key == "pagedown" and self.Multiline then
 				y = 10
 			end
 
@@ -2934,6 +2902,7 @@ do -- drawing
 
 	function META:Draw(max_w)
 		if (self.LightMode or self.SuperLightMode) and self.light_mode_obj then
+			render2d.SetColor(1, 1, 1, 1)
 			self.light_mode_obj:Draw(max_w)
 
 			if self.Selectable then
@@ -3148,7 +3117,7 @@ do -- drawing
 			local y = self.caret_pos.py
 			local h = self.caret_pos.h
 
-			if self.caret_pos.char.chunk.internal then
+			if false and self.caret_pos.char.internal then
 				local chunk = self.chunks[self.caret_pos.char.chunk.i - 1]
 				if chunk then
 					x = chunk.right
@@ -3175,5 +3144,5 @@ end
 META:Register()
 
 if RELOAD then
-	runfile("lua/examples/2d/markup.lua")
+	--runfile("lua/examples/2d/markup.lua")
 end

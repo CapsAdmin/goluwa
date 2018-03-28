@@ -32,7 +32,6 @@ function META:Initialize()
 		self:MarkCacheDirty()
 	end
 	self.markup = markup
-	self:SetFont(gfx.GetDefaultFont())
 end
 
 function META:SetPadding(rect)
@@ -91,8 +90,10 @@ function META:SetText(str)
 	markup:SetCopyTags(self.CopyTags)
 
 	markup:Clear()
-	if self.Font then markup:AddFont(self.Font) end
-	if self.TextColor then markup:AddColor(self.TextColor:Copy()) end
+
+	markup:AddFont(self.Font or self:GetSkin().default_font or gfx.GetDefaultFont())
+	markup:AddColor(self.TextColor and self.TextColor:Copy() or self:GetSkin().text_color)
+
 	if self.MaxWidth then markup:SetMaxWidth(self.MaxWidth) end
 	markup:AddString(self.Text, self.ParseTags)
 	markup:SetCaretPosition(0,0)
@@ -121,13 +122,16 @@ function META:OnPostMatrixBuild()
 end
 
 function META:OnMouseMove(x, y)
-	self.markup:SetMousePosition(Vec2(x, y))
+	local pos = Vec2(x, y)
+	if self:HasParent() then
+		pos = pos + self.Parent:GetScroll()
+	end
+	self.markup:SetMousePosition(pos)
 	self:MarkCacheDirty()
 end
 
 function META:OnStyleChanged(skin)
-	self:SetTextColor(skin.text_color)
-	self:SetFont(skin.default_font)
+	self:SetText(self:GetText())
 end
 
 function META:OnUpdate()
@@ -178,6 +182,8 @@ end
 function META:OnKeyInput(key, press)
 	local markup = self.markup
 
+	if key == "tab" and input.IsKeyDown("left_alt") then return end
+
 	if key == "left_shift" or key == "right_shift" then  markup:SetShiftDown(press) return end
 	if key == "left_control" or key == "right_control" then  markup:SetControlDown(press) return end
 
@@ -185,10 +191,13 @@ function META:OnKeyInput(key, press)
 		if key == "enter" then if self:OnEnter() == false then return end end
 		markup:OnKeyInput(key, press)
 	end
+
+	markup:Invalidate()
 end
 
 function META:OnCharInput(char)
 	self.markup:OnCharInput(char)
+	self.markup:Invalidate()
 end
 
 function META:OnEnter() end
