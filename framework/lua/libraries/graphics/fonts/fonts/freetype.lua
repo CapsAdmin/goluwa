@@ -51,6 +51,13 @@ local function try_find(files, name)
 			end
 		end
 	end
+
+	for _, full_path in ipairs(files) do
+		local ext = full_path:match(".+%.(%a+)") or "dat"
+		if supported[ext] then
+			return full_path
+		end
+	end
 end
 
 local function google(path)
