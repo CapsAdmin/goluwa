@@ -1933,7 +1933,11 @@ do -- layout
 					if typex(cmd) == "panel" then
 						child.last_layout_panel = cmd
 					else
-						if tr_child[cmd] then
+						if child[cmd] then
+							child[cmd](child)
+						elseif self[cmd] then
+							self[cmd](self)
+						elseif tr_child[cmd] then
 							child[tr_child[cmd]](child)
 						elseif tr_self[cmd] then
 							self[tr_self[cmd]](self)
