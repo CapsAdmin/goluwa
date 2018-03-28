@@ -16,4 +16,10 @@ function META:OnLayout()
 	end
 end
 
+function META:SetSizeKeepAspectRatio(s)
+	local tex_size = self.Texture:GetSize()
+	local ratio = tex_size.x/tex_size.y
+	self:SetSize(Vec2(s*ratio, s))
+end
+
 gui.RegisterPanel(META)
