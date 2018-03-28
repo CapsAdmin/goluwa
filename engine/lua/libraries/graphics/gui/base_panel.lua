@@ -278,30 +278,45 @@ do -- call on hide
 	end
 
 	function META:SetVisible(bool)
-		self.call_on_hide = self.call_on_hide or {}
+		self.call_on_visible = self.call_on_visible or {}
+
+		for _, v in pairs(self.call_on_visible) do
+			if v(bool) == false then
+				return false
+			end
+		end
 
 		self.Visible = not not bool -- nil would make self.Visible be the default which is true
+
 		if bool then
 			self:OnShow()
+			if self.visible_was_focused then
+				self:RequestFocus()
+				self.visible_was_focused = nil
+			end
 		else
 			self:OnHide()
-			self:Unfocus()
-			for _, v in pairs(self.call_on_hide) do
-				if v() == false then
-					break
-				end
+			if self:IsFocused() then
+				self:Unfocus()
+				self.visible_was_focused = true
 			end
+		end
+
+		for _, pnl in ipairs(self:GetChildren()) do
+			local old = pnl.Visible
+			pnl:SetVisible(bool)
+			pnl.Visible = old
 		end
 
 		self:Layout()
 	end
 
-	function META:CallOnHide(callback, id)
-		self.call_on_hide = self.call_on_hide or {}
+	function META:CallOnVisibilityChanged(callback, id)
+		self.call_on_visible = self.call_on_visible or {}
 
 		id = id or callback
 
-		self.call_on_hide[id] = callback
+		self.call_on_visible[id] = callback
 	end
 end
 

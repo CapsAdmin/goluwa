@@ -27,7 +27,7 @@ do
 		local menu, entry = self:AddEntry(text, on_click):CreateSubMenu()
 
 		self:CallOnRemove(function() gui.RemovePanel(menu) end)
-		self:CallOnHide(function() menu:SetVisible(false) end)
+		self:CallOnVisibilityChanged(function(b) if not b then menu:SetVisible(false) end end)
 
 		self:Layout()
 
