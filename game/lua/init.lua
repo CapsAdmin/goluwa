@@ -45,4 +45,8 @@ if WINDOW then
 	love = line.CreateLoveEnv() -- https://www.love2d.org/wiki/love
 end
 
+if GRAPHICS then
+	menu = runfile("lua/libraries/graphics/menu.lua")
+end
+
 goluwa = event.CreateRealm("goluwa")
