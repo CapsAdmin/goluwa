@@ -418,7 +418,7 @@ function string.replace(self, what, with)
 		current_pos = end_pos + 1
 	end
 
-	if current_pos > 1 then
+	if current_pos > 1 and last_i then
 		tbl[last_i] = self:sub(current_pos)
 
 		return table.concat(tbl, with)
