@@ -48,6 +48,16 @@ function META:Initialize()
 	min:SetupLayout("right", "center_y_simple")
 	min.OnRelease = function()
 		self:Minimize()
+
+		if gui.GetTaskBar then
+			gui.GetTaskBar():AddButton(self:GetTitle(), self, function(button)
+				self:Minimize(not self:IsMinimized())
+			end, function(button)
+				gui.CreateMenu({
+					{L"remove", function() self:Remove() end, self:GetSkin().icons.delete},
+				})
+			end)
+		end
 	end
 	self.min = min
 
@@ -57,7 +67,7 @@ function META:Initialize()
 	self:SetTitle(self:GetTitle())
 
 	self:CallOnRemove(function()
-		if gui.task_bar:IsValid() then
+		if gui.task_bar and gui.task_bar:IsValid() then
 			gui.task_bar:RemoveButton(self)
 		end
 		prototype.SafeRemove(self.os_window)
@@ -128,6 +138,7 @@ function META:OnLayout(S)
 	self.bar:SetMargin(Rect(S,S,S,S))
 
 	self.min:SetPadding(Rect()+S)
+
 	self.max:SetPadding(Rect()+S)
 	self.close:SetPadding(Rect()+S)
 	self.title:SetPadding(Rect()+S)
@@ -196,16 +207,6 @@ function META:SetTitle(str)
 	title:SetupLayout("center_y_simple", "center_x")
 	title:SetSendMouseInputToPanel(self)
 	self.title = title
-
-	if gui.GetTaskBar then
-		gui.GetTaskBar():AddButton(self:GetTitle(), self, function(button)
-			self:Minimize(not self:IsMinimized())
-		end, function(button)
-			gui.CreateMenu({
-				{L"remove", function() self:Remove() end, self:GetSkin().icons.delete},
-			})
-		end)
-	end
 end
 
 function META:OnMouseInput(button, press)
