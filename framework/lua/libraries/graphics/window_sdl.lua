@@ -316,8 +316,8 @@ function window.CreateWindow(width, height, title, flags)
 	if not width or not height then
 		local info = ffi.new("struct SDL_DisplayMode[1]")
 		sdl.GetCurrentDisplayMode(0, info)
-		width = width or info[0].w / 2
-		height = height or info[0].h / 2
+		width = width or info[0].w
+		height = height or info[0].h
 	end
 
 	local sdl_wnd = sdl.CreateWindow(title, sdl.e.WINDOWPOS_CENTERED, sdl.e.WINDOWPOS_CENTERED, width, height, bit_flags)
