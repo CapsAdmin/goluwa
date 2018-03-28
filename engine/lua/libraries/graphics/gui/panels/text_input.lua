@@ -58,6 +58,8 @@ function META:OnPostKeyInput(key, press)
 	local width = self:GetWidth()
 	self:SizeToText()
 	self:SetWidth(width)
+
+	self:OnHeightChanged()
 end
 
 function META:OnPreKeyInput(key, press)
@@ -118,6 +120,10 @@ function META:OnPreKeyInput(key, press)
 	end
 
 	self:OnTextChanged(str)
+end
+
+function META:OnHeightChanged()
+
 end
 
 function META:OnFinish()

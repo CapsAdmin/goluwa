@@ -41,6 +41,8 @@ function gfx.CreateMarkup(str, skip_invalidate)
 		blink_offset = 0,
 		remove_these = {},
 		started_tags = {},
+
+		undo = {},
 	})
 
 	if str then
@@ -1316,6 +1318,23 @@ do -- parse tags
 end
 
 do -- invalidate
+	function string.luaescape(str)
+		str = str:gsub("\n", "\\n")
+		str = str:gsub("\r", "\\r")
+		str = str:gsub("\t", "\\t")
+		return str
+	end
+
+	function META:DumpState()
+		for _, chunk in ipairs(self.chunks) do
+			if chunk.type == "color" or chunk.type == "font" then
+				logn("<", chunk.val, ">")
+			else
+				logn("'", chunk.val:luaescape(), "' ", chunk.x,",",chunk.y, " ", chunk.w,",",chunk.h)
+			end
+		end
+	end
+
 	local function set_font(self, font)
 		if self.FixedSize == 0 then
 			gfx.SetFont(font)
@@ -1532,17 +1551,8 @@ do -- invalidate
 				chunk_height = chunk.h
 			end
 
-			chunk.x = x
-			chunk.y = y
-
-			if chunk.type == "newline" then
-				if not chunk.nolinebreak then
-					y = y + chunk_height
-					x = 0
-				end
-				chunk.w = 0
-			elseif not (chunk.type == "string" and chunk.val:find("^%s*$")) then
-				if newline or x + chunk.w > self.MaxWidth then
+			if not (chunk.type == "string" and chunk.val:find("^%s*$")) and chunk.type ~= "newline" then
+				if x + chunk.w > self.MaxWidth then
 					local left_over_space = x - self.MaxWidth
 
 					if not chunk.nolinebreak then
@@ -1550,28 +1560,40 @@ do -- invalidate
 						x = 0
 
 						chunk_height = 0
+--[[
+						-- go backwards and stretch all the words so
+						-- it fits the line using the leftover space
+						local x = 0
+						local space_size = get_text_size(self, " ")
+						local space = left_over_space/(prev_line_i-i)
 
-						if not newline then
-							-- go backwards and stretch all the words so
-							-- it fits the line using the leftover space
-							local x = 0
-							local space_size = get_text_size(self, " ")
-							local space = left_over_space/(prev_line_i-i)
+						local div = (1/(i-prev_line_i))^0.25
 
-							local div = (1/(i-prev_line_i))^0.25
-
-							for i2 = prev_line_i, i do
-								local chunk = chunks[i2]
-								local space = math.min(space, space_size*div)
-								chunk.x = math.max(x - space*2, 0)
-								x = x + chunk.w + space
-							end
+						for i2 = prev_line_i, i do
+							local chunk = chunks[i2]
+							local space = math.min(space, space_size*div)
+							chunk.x = math.max(x - space*2, 0)
+							x = x + chunk.w + space
 						end
 
 						prev_line_i = i
+						]]
 					end
 				end
 			end
+
+			chunk.x = x
+			chunk.y = y
+
+
+				if chunk.type == "newline" then
+				if not chunk.nolinebreak then
+					y = y + chunk_height
+					x = 0
+				end
+				chunk.w = 0
+			end
+
 
 			x = x + chunk.w
 		end
@@ -1590,7 +1612,6 @@ do -- invalidate
 			if str == "" and chunk.internal then
 				str = " "
 			end
-
 			for i, char in ipairs(utf8.totable(str)) do
 				local char_width, char_height = get_text_size(chunk.markup, char)
 				local x = chunk.x + width
@@ -2184,6 +2205,8 @@ do -- shortcuts
 	end
 
 	function META:Enter()
+		self:SaveUndoState()
+
 		self:DeleteSelection(true)
 
 		if self.PreserveTabsOnEnter then
@@ -2203,9 +2226,6 @@ do -- shortcuts
 			self.real_x = x
 
 			self:SetCaretPosition(x, y + 1, true)
-			if #cur_space > 0 then
-				self:Delete() -- AGH
-			end
 		else
 			self:InsertString("\n")
 		end
@@ -2583,11 +2603,30 @@ do -- selection
 		return table.concat(out, "")
 	end
 
+	function META:Undo()
+		if not self.undo then return end
+		local chunks = table.remove(self.undo)
+		if chunks then
+			self:SetTable(chunks)
+			self:Invalidate()
+			self:SetCaretPosition(math.huge, math.huge)
+		end
+	end
+
+	function META:SaveUndoState()
+		local chunks = {}
+		for i,v in ipairs(self.chunks) do
+			chunks[i] = {type = v.type, val = table.copy(v.val)}
+		end
+		table.insert(self.undo, chunks)
+	end
+
 	function META:DeleteSelection(skip_move)
 		local start = self:GetSelectStart()
 		local stop = self:GetSelectStop()
 
 		if start then
+			self:SaveUndoState()
 
 			if not skip_move then
 				self:SetCaretPosition(start.x, start.y)
@@ -2744,6 +2783,8 @@ do -- input
 				self:Paste(window.GetClipboard())
 			elseif key == "a" then
 				self:SelectAll()
+			elseif key == "z" then
+				self:Undo()
 			elseif key == "t" then
 				local str = self:GetSelection()
 				self:DeleteSelection()
@@ -2873,6 +2914,8 @@ do -- drawing
 				if caret then
 					self.select_stop = caret
 				end
+
+				print(x,y,caret.x, caret.y)
 			end
 
 			if self.ShiftDown then
@@ -3117,8 +3160,9 @@ do -- drawing
 			local y = self.caret_pos.py
 			local h = self.caret_pos.h
 
-			if false and self.caret_pos.char.internal then
+			if self.caret_pos.char.internal then
 				local chunk = self.chunks[self.caret_pos.char.chunk.i - 1]
+
 				if chunk then
 					x = chunk.right
 					y = chunk.y
@@ -3143,6 +3187,23 @@ end
 
 META:Register()
 
-if RELOAD then
+if RELOAD then do return end
 	--runfile("lua/examples/2d/markup.lua")
+
+	local markup = ... or gfx.CreateMarkup()
+
+	markup:AddString("hello world\nnewline!")
+
+	markup:Invalidate()
+
+	function goluwa.PreDrawGUI()
+		local x = gfx.GetMousePosition()
+		render2d.PushMatrix(50,50)
+			markup:Update()
+			markup:Draw()
+			markup:SetMaxWidth(x)
+			render2d.SetColor(1,1,1,1)
+			gfx.DrawLine(x, 0, x, 1000)
+		render2d.PopMatrix()
+	end
 end

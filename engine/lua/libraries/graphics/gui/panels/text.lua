@@ -171,7 +171,24 @@ function META:OnUpdate()
 end
 
 function META:OnMouseInput(button, press)
+	if button == "button_2" then
+		gui.CreateMenu({
+			{"undo", function() self.markup:Undo() end, "textures/silkicons/arrow_undo.png"},
+			{"redo", function() self.markup:Undo() end, "textures/silkicons/arrow_redo.png"},
+			{},
+			{"cut", function() window.SetClipboard(self.markup:Cut()) end, "textures/silkicons/cut.png"},
+			{"copy", function() window.SetClipboard(self.markup:Copy()) end, "textures/silkicons/page_copy.png"},
+			{"paste", function() self.markup:Paste(window.GetClipboard()) end, "textures/silkicons/page_paste.png"},
+			{"delete", function() self.markup:DeleteSelection() end, "textures/silkicons/textfield_delete.png"},
+			{"clear", function() self.markup:Clear() end, "textures/silkicons/cross.png"},
+			{},
+			{"select all", function() self.markup:SelectAll() end, "textures/silkicons/textfield_rename.png"},
+		}, self)
+		return
+	end
+
 	self.markup:OnMouseInput(button, press)
+
 	if press then
 		event.Delay(0, function() self:GlobalMouseCapture(true) end, "asdf", self)
 	else

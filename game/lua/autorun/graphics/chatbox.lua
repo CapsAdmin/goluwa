@@ -61,6 +61,10 @@ function chat.GetPanel()
 			return false
 		end
 
+		function edit:OnHeightChanged()
+			self:SetupLayout("bottom", "fill_x")
+		end
+
 		function edit:OnTextChanged(str)
 			event.Call("ChatTextChanged", str)
 		end
@@ -118,7 +122,7 @@ function chat.Close()
 
 	panel:SetVisible(false)
 
-	window.SetMouseTrapped(old_mouse_trap)
+	window.SetMouseTrapped(true)
 end
 
 input.Bind("y", "show_chat", function()

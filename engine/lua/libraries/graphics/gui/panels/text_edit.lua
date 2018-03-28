@@ -143,12 +143,7 @@ end
 
 function META:GetPixelCaretPosition()
 	local data = self.label.markup:CaretFromPosition(self:GetCaretPosition():Unpack())
-	if data then
-		if data.i == #self.label.markup.chars then
-			return Vec2(data.char.data.chunk.x, data.char.data.chunk.y - data.char.data.chunk.real_h)
-		end
-		return Vec2(data.char.data.x, data.char.data.top)
-	end
+	return Vec2(data.px, data.py)
 end
 
 function META:SetCaretSubPosition(pos)
@@ -211,10 +206,13 @@ function META:OnTextChanged() end
 gui.RegisterPanel(META)
 
 if RELOAD then
-	local pnl = gui.CreatePanel(META.ClassName, nil, "lol")
+	local frame = gui.CreatePanel("frame", nil, "lol")
+	frame:SetSize(Vec2()+256)
+	local pnl = frame:CreatePanel(META.ClassName)
+	pnl:SetupLayout("fill")
 	pnl:SetPosition(Vec2() + 50)
 	pnl:SetMultiline(true)
-	pnl:SetSize(Vec2()+512)
+	pnl:SetTextWrap(true)
 	MARKUP = pnl.label.markup
 	--pnl:Center()
 	pnl:RequestFocus()
