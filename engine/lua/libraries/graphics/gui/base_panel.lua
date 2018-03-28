@@ -2583,9 +2583,12 @@ do -- skin
 		self.Style = name
 
 		self.style_nodraw = false
+		self.style_blank = false
 
 		if name == "nodraw" then
 			self.style_nodraw = true
+		elseif name == "blank" then
+			self.style_blank = true
 		elseif name == "none" then
 			self:SetNinePatch(false)
 			self:SetNinePatchRect(Rect(0, 0, 0, 0))
