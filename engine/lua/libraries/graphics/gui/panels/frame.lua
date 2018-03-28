@@ -216,9 +216,8 @@ function META:OnMouseInput(button, press)
 			self:Maximize(not self:IsMaximized())
 			self.last_click = nil
 		end
+		self.last_click = system.GetTime() + 0.2
 	end
-
-	self.last_click = system.GetTime() + 0.2
 end
 
 gui.RegisterPanel(META)
