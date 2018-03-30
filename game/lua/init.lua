@@ -3,8 +3,9 @@ if SOCKETS then
 
 	runfile("lua/libraries/sockets/websocket.lua", sockets)
 	runfile("lua/libraries/sockets/irc.lua", sockets)
-	runfile("lua/libraries/sockets/intermsg.lua", sockets)
 	runfile("lua/libraries/sockets/webhooks.lua", sockets)
+
+	_G.intermsg = runfile("lua/libraries/sockets/intermsg.lua")
 end
 
 runfile("lua/decoders/files/*", vfs)
