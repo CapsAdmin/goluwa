@@ -105,7 +105,7 @@ end
 function prototype.RebuildMetatables(what)
 	for super_type, sub_types in pairs(prototype.registered) do
 		if what == nil or what == super_type then
-			prototype.invalidate_meta[what] = nil
+			prototype.invalidate_meta[what or super_type] = nil
 
 			for sub_type, meta in pairs(sub_types) do
 
