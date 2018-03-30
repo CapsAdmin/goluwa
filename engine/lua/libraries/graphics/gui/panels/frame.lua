@@ -3,7 +3,7 @@ local gui = ... or _G.gui
 local META = prototype.CreateTemplate("frame")
 
 META:GetSet("Title", "no title")
-META:GetSet("Icon", "textures/silkicons/heart.png")
+META:GetSet("Icon", "textures/silkicons/application.png")
 
 function META:Initialize()
 	self:SetDraggable(true)
