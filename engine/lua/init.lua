@@ -86,7 +86,7 @@ local battery_limit = pvars.Setup("system_battery_limit", true)
 event.AddListener("Update", "rate_limit", function(dt)
 	local rate = rate_cvar:Get()
 
-	if window and battery_limit:Get() and window.IsUsingBattery() then
+	if window and battery_limit:Get() and window.IsUsingBattery() and window.GetBatteryLevel() < 0.95 then
 		render.SwapInterval(true)
 		if window.GetBatteryLevel() < 0.20 then
 			rate = 10
