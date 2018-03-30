@@ -8,19 +8,6 @@ do
 		local s = render.GetWidth()/1920
 		s = s * 1.25
 
-		local menu_font = fonts.CreateFont({
-			path = "Roboto Black",
-			fallback = gfx.GetDefaultFont(),
-			size = 35*s,
-			padding = 50,
-			shadow = {
-				order = 1,
-				dir = Vec2(-1, 1) * 5 * s,
-				dir_passes = 5,
-				color = Color(0.25,0.25,0.25,1),
-			},
-		})
-
 		local title_font = fonts.CreateFont({
 			path = "propaganda squaregear",--"russian dollmaker",
 			fallback = gfx.GetDefaultFont(),
@@ -64,11 +51,25 @@ do
 
 		logo:SetupLayout("SizeToChildren")
 
+
+		local menu_font = fonts.CreateFont({
+			path = "Roboto Black",
+			fallback = gfx.GetDefaultFont(),
+			size = 30*s,
+			padding = 50,
+			shadow = {
+				order = 1,
+				dir = Vec2(-1, 1) * 5 * s,
+				dir_passes = 5,
+				color = Color(0.25,0.25,0.25,1),
+			},
+		})
+
 		local buttons = self:CreatePanel("base")
 		--buttons:SetMargin(Rect()+50)
-		buttons:SetWidth(300*s)
-		buttons:SetHeight(300*s)
-		buttons:SetupLayout("left", "bottom")
+		buttons:SetWidth(250*s)
+		buttons:SetHeight(250*s)
+		buttons:SetupLayout("SizeToChildren", "left", "bottom")
 		buttons:SetNoDraw(true)
 
 		local function add_button(text, cb)
@@ -78,15 +79,18 @@ do
 			btn:SetOffsetContentOnClick(4)
 			btn:SetInactiveStyle("blank")
 			btn:SetFont(menu_font)
-			btn:SetTextColor(Color(1,1,1,1))
-			btn:SetText(text)
-			btn:SetMargin(Rect(2,1,2,1)*15*s)
+			--btn:SetTextColor(Color(1,1,1,1))
+			btn:SetText(L(text))
+			btn:SetMargin(Rect(1,1,1,1)*5*s)
 			btn:SizeToText()
 			btn:SetPadding(Rect(1,1,1,1)*5*s)
 			btn:SetupLayout("top", "fill_x")
 			btn.OnRelease = cb
 		end
 
+		add_button("RESUME", function()
+			menu.Close()
+		end)
 		add_button("LOAD SCENE")
 		add_button("JOIN SERVER", function()
 			local frame = gui.CreatePanel("frame", nil, "server_browser")
@@ -126,12 +130,71 @@ do
 			tab:SelectTab(L"internet")
 		end)
 		add_button("OPTIONS", function()
-			local frame = gui.CreatePanel("frame")
+			local frame = gui.CreatePanel("frame", nil, "options")
 			frame:SetSize(Vec2() + 500)
 			frame:Center()
 			frame:SetTitle("options")
+
+			local tabs = frame:CreatePanel("tab")
+			tabs:SetupLayout("fill")
+
+			do
+				local page = tabs:AddTab("mounted games")
+				local scroll = page:CreatePanel("scroll")
+				scroll:SetupLayout("fill")
+
+				for _, info in ipairs(steam.GetSourceGames()) do
+					local check = scroll:CreatePanel("checkbox_label")
+					check:SetText(info.game)
+					check:SetTooltip(info.game_dir)
+					check:SizeToText()
+					check:SetupLayout("top", "left")
+					check:SetState(steam.IsSourceGameMounted(info))
+
+					check.OnCheck = function(_, b)
+						if b then
+							steam.MountSourceGame(info)
+						else
+							steam.UnmountSourceGame(info)
+						end
+					end
+				end
+			end
+
+			do
+				local page = tabs:AddTab("other")
+				local scroll = page:CreatePanel("scroll")
+				scroll:SetupLayout("fill")
+
+				local props = scroll:SetPanel(page:CreatePanel("properties"))
+
+				local grouped = {}
+				for key, info in pairs(pvars.GetAll()) do
+					if info.store then
+						grouped[info.group] = grouped[info.group] or {}
+						grouped[info.group][info.friendly] = info
+					end
+				end
+
+				for group, vars in table.sortedpairs(grouped, function(a, b) return a.key < b.key end) do
+					props:AddGroup(group)
+					for key, info in table.sortedpairs(vars, function(a, b) return a.val.friendly < b.val.friendly end) do
+						props:AddProperty(
+							L(info.friendly),
+							function(val) pvars.Set(info.key, val) end,
+							function() return pvars.Get(info.key) end,
+							info.default,
+							info
+						)
+					end
+				end
+			end
+
+			tabs:SelectTab("mounted games")
 		end)
-		add_button("EXIT", function() system.ShutDown() end)
+		add_button("EXIT", function()
+			system.ShutDown()
+		end)
 	end
 
 	gui.RegisterPanel(META)
@@ -140,7 +203,6 @@ end
 event.AddListener("ShowMenu", "main_menu", function(b)
 	if b then
 		menu.panel = gui.CreatePanel("main_menu")
-
 	else
 		prototype.SafeRemove(menu.panel)
 	end
