@@ -274,108 +274,111 @@ function steam.GetSourceGames()
 	return found
 end
 
-local cache_mounted = {}
+do
+	local cache_mounted = {}
 
-function steam.MountSourceGame(game_info)
+	function steam.IsSourceGameMounted(var)
+		local game_info, err = steam.FindSourceGame(var)
+		if not game_info then return nil, err end
 
-	if type(game_info) == "number" then
-		game_info = tostring(game_info)
+		if cache_mounted[game_info.filesystem.steamappid] then
+			return true
+		end
+
+		return false
 	end
 
-	if cache_mounted[game_info] then
-		return cache_mounted[game_info]
-	end
+	function steam.MountSourceGame(var)
+		local game_info, err = steam.FindSourceGame(var)
+		if not game_info then return nil, err end
 
-	local str_game_info
+		if cache_mounted[game_info.filesystem.steamappid] then
+			llog("already mounted")
+			return cache_mounted[game_info.filesystem.steamappid]
+		end
 
-	if type(game_info) == "string" then
-		str_game_info = game_info:trim()
+		steam.UnmountSourceGame(game_info)
 
-		game_info = steam.FindSourceGame(str_game_info)
-	end
-
-	if not game_info then return nil, "could not find " .. str_game_info end
-
-	steam.UnmountSourceGame(game_info)
-
-	for _, path in ipairs(game_info.filesystem.searchpaths) do
-		if path:endswith("*") then
-			for _, path in ipairs(vfs.Find(path:sub(0, -2), true)) do
-				if vfs.IsDirectory(path) then
-					if game_info.game == "Garry's Mod" and not pvars.Get("gine_local_addons_only") then
-						llog("mounting %s", path)
-						vfs.Mount(path, nil, game_info)
+		for _, path in ipairs(game_info.filesystem.searchpaths) do
+			if path:endswith("*") then
+				for _, path in ipairs(vfs.Find(path:sub(0, -2), true)) do
+					if vfs.IsDirectory(path) then
+						if game_info.game == "Garry's Mod" and not pvars.Get("gine_local_addons_only") then
+							llog("mounting %s", path)
+							vfs.Mount(path, nil, game_info)
+						end
 					end
 				end
-			end
-		else
-			if not path:endswith(".vpk/") then
-				for _, v in ipairs(vfs.Find(path .. "/maps/workshop/")) do
-					llog("mounting workshop map %s", v)
-					vfs.Mount(path .. "/maps/workshop/" .. v, "maps/", game_info)
+			else
+				if not path:endswith(".vpk/") then
+					for _, v in ipairs(vfs.Find(path .. "/maps/workshop/")) do
+						llog("mounting workshop map %s", v)
+						vfs.Mount(path .. "/maps/workshop/" .. v, "maps/", game_info)
+					end
 				end
+
+				llog("mounting %s", path)
+				vfs.Mount(path, nil, game_info)
 			end
-
-			llog("mounting %s", path)
-			vfs.Mount(path, nil, game_info)
 		end
+
+		cache_mounted[game_info.filesystem.steamappid] = game_info
+
+		return game_info
 	end
 
-	if str_game_info then
-		cache_mounted[str_game_info] = game_info
-	end
+	function steam.UnmountSourceGame(var)
+		local game_info, err = steam.FindSourceGame(var)
+		if not game_info then return nil, err end
 
-	return game_info
-end
+		cache_mounted[game_info.filesystem.steamappid] = nil
 
-function steam.UnmountSourceGame(game_info)
-	local str_game_info = game_info
-
-	if type(game_info) == "string" then
-		cache_mounted[game_info] = nil
-		str_game_info = game_info
-		game_info = steam.FindSourceGame(game_info)
-	end
-
-	if not game_info then return nil, "could not find " .. str_game_info end
-
-	if game_info then
 		for _, v in pairs(vfs.GetMounts()) do
 			if v.userdata and v.userdata.filesystem.steamappid == game_info.filesystem.steamappid then
 				vfs.Unmount(v.full_where, v.full_to)
 			end
 		end
+
+		return game_info
 	end
 
-	return game_info
-end
-
-function steam.GetMountedSourceGames()
-	local out = {}
-	local done = {}
-	for k,v in pairs(vfs.GetMounts()) do
-		if v.userdata and v.userdata.filesystem and v.userdata.filesystem.steamappid then
-			if not done[v.userdata] then
-				table.insert(out, v.userdata)
-				done[v.userdata] = true
-			end
-		end
-	end
-	return out
-end
-
-do
-	function steam.FindSourceGame(name)
-		local appid = steam.GetAppIdFromName(name)
-
-		if appid and tonumber(appid) then
-			for _, game_info in ipairs(steam.GetSourceGames()) do
-				if game_info.filesystem.steamappid == tonumber(appid) then
-					return game_info
+	function steam.GetMountedSourceGames()
+		local out = {}
+		local done = {}
+		for k,v in pairs(vfs.GetMounts()) do
+			if v.userdata and v.userdata.filesystem and v.userdata.filesystem.steamappid then
+				if not done[v.userdata] then
+					table.insert(out, v.userdata)
+					done[v.userdata] = true
 				end
 			end
 		end
+		return out
 	end
+end
+
+function steam.FindSourceGame(var)
+	local appid
+
+	if type(var) == "number" then
+		appid = var
+	elseif type(var) == "table" then
+		if var.filesystem and var.filesystem.steamappid then
+			appid = var.filesystem.steamappid
+		end
+	else
+		appid = steam.GetAppIdFromName(var)
+	end
+
+	if appid and tonumber(appid) then
+		for _, game_info in ipairs(steam.GetSourceGames()) do
+			if game_info.filesystem.steamappid == tonumber(appid) then
+				return game_info
+			end
+		end
+	end
+
+	return nil, "could not find " .. tostring(var)
 end
 
 function steam.MountSourceGames()
