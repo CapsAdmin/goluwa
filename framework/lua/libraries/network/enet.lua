@@ -41,6 +41,16 @@ local function create_host(ip, port, max_connections, max_channels, incomming_ba
 		print(ip, port, max_connections, max_channels, incomming_bandwidth, outgoing_bandwidth)
 		error("host is NULL")
 	end
+
+	--[[
+	local cb = ffi.cast(host.intercept, function(host, event)
+		jit.off(true, true)
+		print(host, event)
+		return 0
+	end)
+	host.intercept = cb
+	]]
+
 	return host
 end
 

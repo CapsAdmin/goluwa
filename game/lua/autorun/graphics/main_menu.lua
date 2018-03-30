@@ -88,7 +88,43 @@ do
 		end
 
 		add_button("LOAD SCENE")
-		add_button("JOIN SERVER")
+		add_button("JOIN SERVER", function()
+			local frame = gui.CreatePanel("frame", nil, "server_browser")
+			--frame:SetSkin(bar:GetSkin())
+			frame:SetPosition(Vec2(100, 100))
+			frame:SetSize(Vec2(500, 400))
+			frame:SetTitle("servers (fetching public servers..)")
+
+			local tab = frame:CreatePanel("tab")
+			tab:SetupLayout("fill")
+
+			local page = tab:AddTab(L"internet")
+
+			local list = page:CreatePanel("list")
+			list:SetupLayout("fill")
+			list:SetupSorted(L"name", L"players", L"scene", L"latency")
+			list:SetupConverters(nil, function(num) tostring(num) end)
+
+			network.JoinIRCServer(function(count)
+				frame:SetTitle("server list (found " .. count .. " servers)")
+			end)
+
+			local function add(info)
+				list:AddEntry(info.name, #info.players, info.scene_name, info.latency).OnSelect = function()
+					network.Connect(info.ip, info.port)
+				end
+			end
+
+			for _, info in pairs(network.GetAvailableServers()) do
+				add(info)
+			end
+
+			event.AddListener("PublicServerFound", "server_list", function(info)
+				add(info)
+			end)
+
+			tab:SelectTab(L"internet")
+		end)
 		add_button("OPTIONS", function()
 			local frame = gui.CreatePanel("frame")
 			frame:SetSize(Vec2() + 500)
