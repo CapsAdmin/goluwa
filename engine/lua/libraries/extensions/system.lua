@@ -43,7 +43,7 @@ function system.ExecuteArgs(args)
 end
 
 do
-	local show = pvars.Setup("system_fps_show", true, "show fps in titlebar")
+	local show = pvars.Setup("system_fps_show", true, nil, "show fps in titlebar")
 	local total = 0
 	local count = 0
 
