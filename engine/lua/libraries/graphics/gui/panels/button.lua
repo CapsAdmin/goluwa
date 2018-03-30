@@ -141,6 +141,10 @@ function META:OnMouseInput(button, press)
 	if self.Mode == "normal" then
 		if press and not self:CanPress(button) then return end
 
+		local was_down = self:GetState(button)
+
+		if not press and not was_down then return end
+
 		if self:SetState(press, button) then
 			self:OnStateChanged(press, button)
 			if button == "button_1" then
