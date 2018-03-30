@@ -210,6 +210,46 @@ do -- string
 	gui.RegisterPanel(META)
 end
 
+do -- choice
+	local META = prototype.CreateTemplate("choice_property")
+	META.Base = "base_property"
+
+	function META:Initialize()
+		prototype.GetRegistered(self.Type, META.Base).Initialize(self)
+
+		self:SetClicksToActivate(2)
+
+		local icon = self:CreatePanel("base")
+		icon:SetIgnoreMouse(true)
+		icon:SetStyle("list_down_arrow")
+		icon:SetupLayout("left", "right", "center_y_simple")
+	end
+
+	function META:OnClick()
+		local menu = gui.CreateMenu(self.choices)
+		menu:SetPosition(self:GetWorldPosition() + Vec2(0, self:GetHeight()))
+	end
+
+	function META:SetChoices(tbl)
+		local menu_options = {}
+
+		if type(tbl[1]) == "string" then
+			for _, v in ipairs(tbl) do
+				table.insert(menu_options, {v, function() self:SetValue(v) end})
+			end
+		elseif not table.isarray(tbl) then
+			for k, v in pairs(tbl) do
+				table.insert(menu_options, {v.friendly or k, function() self:SetValue(k) end, v.icon_path})
+			end
+			table.sort(menu_options, function(a, b) return a[1] < b[1] end)
+		end
+
+		self.choices = menu_options
+	end
+
+	gui.RegisterPanel(META)
+end
+
 do -- number
 	local META = prototype.CreateTemplate("number_property")
 	META.Base = "base_property"
@@ -260,8 +300,8 @@ do -- number
 
 	function META:OnUpdate()
 		prototype.GetRegistered(self.Type, META.Base).OnUpdate(self)
-
 		if not self.drag_number then return end
+
 
 		if input.IsKeyDown("left_shift") and self.real_base_value then
 			self:SetValue(self.real_base_value)
@@ -632,6 +672,12 @@ function META:AddProperty(name, set_value, get_value, default, extra_info, obj)
 	local right = self.right:CreatePanel("base")
 	right:SetWidth(500)
 
+	if t == "string" then
+		if extra_info.table or extra_info.list then
+			t = "choice"
+		end
+	end
+
 	if prototype.GetRegistered("panel", t .. "_property") then
 		local panel = right:CreatePanel(t .. "_property", "property")
 
@@ -648,6 +694,10 @@ function META:AddProperty(name, set_value, get_value, default, extra_info, obj)
 		panel:SetupLayout("fill")
 		panel.left = left
 		property = panel
+
+		if t == "choice" then
+			panel:SetChoices(extra_info.table or extra_info.list)
+		end
 
 		if t == "number" then
 			if extra_info.editor_min then
