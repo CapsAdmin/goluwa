@@ -1948,14 +1948,14 @@ do -- layout
 					if typex(cmd) == "panel" then
 						child.last_layout_panel = cmd
 					else
-						if child[cmd] then
-							child[cmd](child)
-						elseif self[cmd] then
-							self[cmd](self)
-						elseif tr_child[cmd] then
+						if tr_child[cmd] then
 							child[tr_child[cmd]](child)
 						elseif tr_self[cmd] then
 							self[tr_self[cmd]](self)
+						elseif child[cmd] then
+							child[cmd](child)
+						elseif self[cmd] then
+							self[cmd](self)
 						elseif type(cmd) == "function" then
 							cmd(child, self)
 						elseif typex(cmd) == "vec2" then
