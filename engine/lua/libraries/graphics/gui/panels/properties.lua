@@ -653,7 +653,7 @@ function META:AddProperty(name, set_value, get_value, default, extra_info, obj)
 			end
 
 			if extra_info.editor_sens then
-				panel:SetMaximum(extra_info.max)
+				panel:SetSensitivity(extra_info.editor_sens)
 			end
 		end
 
