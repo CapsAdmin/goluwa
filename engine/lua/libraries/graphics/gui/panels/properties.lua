@@ -638,7 +638,13 @@ function META:AddProperty(name, set_value, get_value, default, extra_info, obj)
 		panel:SetValue(default)
 		panel:SetDefaultValue(extra_info.default or default)
 		panel.GetValue = get_value
-		panel.OnValueChanged = function(_, val) set_value(val) end
+		panel.OnValueChanged = function(_, val)
+			set_value(val)
+			local new = get_value()
+			if new ~= val then
+				panel:SetValue(new)
+			end
+		end
 		panel:SetupLayout("fill")
 		panel.left = left
 		property = panel
