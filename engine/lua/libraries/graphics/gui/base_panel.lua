@@ -2631,6 +2631,8 @@ do -- skin
 	function META:SetStyleTranslation(from, to)
 		self.style_translation = self.style_translation or {}
 		self.style_translation[from] = to
+
+		self:SetStyle(self:GetStyle())
 	end
 
 	META:GetSet("NinePatch", false)
