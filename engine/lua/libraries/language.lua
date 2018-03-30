@@ -4,6 +4,35 @@ language.known_strings = language.known_strings or {}
 language.current_translation = {}
 
 
+do
+	local available = vfs.Find("languages/")
+	table.insert(available, "english")
+
+	local tbl = {}
+
+	for i,v in ipairs(available) do
+		tbl[v] = {}
+	end
+
+	language.available = tbl
+end
+
+resource.Download("data/countries.lua", function(path)
+	language.world = serializer.ReadFile("luadata", path)
+
+	for lang_code, info in pairs(language.world.languages) do
+		if info.name then
+			local found = language.available[info.name:lower()]
+			if found then
+				found.native = info.native
+				if info.native ~= info.name then
+					found.friendly = info.name .. " <=> " .. info.native
+				else
+					found.friendly = info.name
+				end
+			end
+		end
+	end
 end)
 
 local cvar = pvars.Setup2({
@@ -24,25 +53,6 @@ function language.LanguageString(val)
 end
 
 local L = language.LanguageString
-
-function language.AddLanguagesToMenu(menu)
-	local menu = menu:AddSubMenu(L"language")
-
-	menu:AddOption("english", function()
-		language.SetLanguage("english")
-	end)
-
-	for _, val in pairs(vfs.Find("translations/")) do
-		val = val:match("(.+)%.")
-		menu:AddOption(val, function()
-			language.SetLanguage(val)
-		end)
-	end
-
-	menu:AddSpacer()
-
-	menu:AddOption("edit", function() language.ShowLanguageEditor() end)
-end
 
 function language.ShowLanguageEditor()
 	local lang = cvar:Get()
@@ -76,11 +86,10 @@ function language.ShowLanguageEditor()
 							L"translate",
 							L"translate",
 							english,
-							other,
 
 							function(new)
 								language.current_translation[english] = new
-								line:SetValue(2, new)
+								line:UpdateLine(2, new)
 								language.SaveCurrentTranslation()
 							end
 						)
@@ -130,7 +139,7 @@ function language.Translate(to, nice)
 		print(res)
 
 		local tbl = serializer.Decode("simple", res)
-		serializer.WriteFile("simple", "%SRC%/languages/" .. (nice or to), tbl)
+		serializer.WriteFile("simple", "data/languages/" .. (nice or to), tbl)
 	end)
 
 	return str
