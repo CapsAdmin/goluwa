@@ -3,9 +3,17 @@ local language = _G.language or {}
 language.known_strings = language.known_strings or {}
 language.current_translation = {}
 
-local cvar = pvars.Setup("language", "english", function(val)
-	language.Set(val)
+
 end)
+
+local cvar = pvars.Setup2({
+	key = "system_language",
+	default = "english",
+	table = language.available,
+	callback = function(val)
+		language.Set(val)
+	end
+})
 
 function language.LanguageString(val)
 	local key = val:trim():lower()

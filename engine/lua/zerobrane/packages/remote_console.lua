@@ -84,7 +84,7 @@ function PLUGIN:Setup()
 				GOLUWA_ARGS = [==[{[[
 					local delimiter = "]==] .. delimiter .. [==["
 
-					pvars.Set("text_editor_path", "./../../ide/zbstudio.sh %PATH%:%LINE%")
+					pvars.Set("system_texteditor_path", "./../../ide/zbstudio.sh %PATH%:%LINE%")
 
 					event.Timer("remote_console", 1/5, 0, function()
 						local input = vfs.Read("os:" .. e.ROOT_FOLDER .. "data/ide/goluwa_input_LUA{console.id}")

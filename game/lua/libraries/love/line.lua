@@ -4,7 +4,7 @@ line.speed = 1
 line.love_envs = line.love_envs or table.weak()
 
 pvars.Setup("line_enable_audio", true)
-pvars.Setup("love_version", "0.10.1")
+pvars.Setup("line_version", "0.10.1")
 
 do
 	local function base_typeOf(self, str)
@@ -72,7 +72,7 @@ function line.ErrorNotSupported(str, level)
 end
 
 function line.CreateLoveEnv(version)
-	version = version or pvars.Get("love_version")
+	version = version or pvars.Get("line_version")
 
 	local love = {}
 

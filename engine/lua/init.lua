@@ -53,7 +53,7 @@ end
 entities = runfile("lua/libraries/entities/entities.lua") -- entity component system
 
 pvars.Initialize()
-pvars.Setup("text_editor_path", false)
+pvars.Setup("system_texteditor_path", false)
 
 --steam.InitializeWebAPI()
 
@@ -65,10 +65,11 @@ if PHYSICS then
 	physics.Initialize()
 end
 
-local rate_cvar = pvars.Setup(
-	"system_fps_max",
-	-1,
-	function(rate)
+local rate_cvar = pvars.Setup2({
+	key = "system_fps_max",
+	default = -1,
+	modify = function(num) if num < 0 then return -1 end return num end,
+	callback = function(rate)
 		if window and window.IsOpen() then
 			if rate == 0 then
 				render.SwapInterval(true)
@@ -77,8 +78,8 @@ local rate_cvar = pvars.Setup(
 			end
 		end
 	end,
-	"-1\t=\trun as fast as possible\n 0\t=\tvsync\n+1\t=\t/try/ to run at this framerate (using sleep)"
-)
+	help = "-1\t=\trun as fast as possible\n 0\t=\tvsync\n+1\t=\t/try/ to run at this framerate (using sleep)",
+})
 
 local battery_limit = pvars.Setup("system_battery_limit", true)
 

@@ -2,16 +2,24 @@ local render3d = ... or _G.render3d
 
 local gbuffer_enabled = false
 
-local w_cvar = pvars.Setup("render_width", 0, function(_, first) if not first and gbuffer_enabled then render3d.Initialize() end end)
-local h_cvar = pvars.Setup("render_height", 0, function(_, first) if not first and  gbuffer_enabled then render3d.Initialize() end end)
-local mult_cvar = pvars.Setup("render_ss_multiplier", 1, function(_, first) if not first and gbuffer_enabled then render3d.Initialize() end end)
+local size_cvar = pvars.Setup("render_size", Vec2(0, 0), function(_, first)
+	if not first and gbuffer_enabled then
+		render3d.Initialize()
+	end
+end)
+
+local mult_cvar = pvars.Setup("render_ss_multiplier", 1, function(_, first)
+	if not first and gbuffer_enabled then
+		render3d.Initialize()
+	end
+end)
 
 function render3d.GetGBufferSize()
 	if not render3d.gbuffer_size then
 		local size = render.GetScreenSize()
 
-		if w_cvar:Get() > 0 then size.x = w_cvar:Get() end
-		if h_cvar:Get() > 0 then size.y = h_cvar:Get() end
+		if size_cvar:Get().x > 0 then size.x = size_cvar:Get().x end
+		if size_cvar:Get().y > 0 then size.y = size_cvar:Get().y end
 
 		size = size * mult_cvar:Get()
 
