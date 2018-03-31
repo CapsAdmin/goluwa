@@ -443,6 +443,7 @@ function gui.Initialize()
 	event.AddListener("WindowResize", "gui", function(wnd, w,h)
 		if window == wnd then
 			gui.world:SetSize(Vec2(w, h))
+			gui.world:Layout(true)
 		end
 	end, {on_error = system.OnError})
 
