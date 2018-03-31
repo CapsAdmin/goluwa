@@ -21,10 +21,11 @@ function console.Open()
 
 	console.font = fonts.CreateFont({path = "fonts/unifont.ttf", size = 12.5})
 
-	local frame = gui.CreatePanel("frame") console.panel = frame
+	local frame = gui.CreatePanel("frame", menu.panel, "console")
 	frame:SetSize(Vec2(render.GetScreenSize().x / 2, render.GetScreenSize().y / 1.25))
+	frame:NoCollide()
 	frame:SetPadding(Rect()+20)
-	frame:MoveLeft()
+	frame:MoveRight()
 	frame:MoveUp()
 
 	local edit = frame:CreatePanel("text_input")
@@ -44,7 +45,8 @@ function console.Open()
 
 	function edit:OnEscape()
 		self:SetText("")
-		console.Close()
+		self:Unfocus()
+		--console.Close()
 	end
 
 	edit:SetupLayout("bottom", "fill_x")

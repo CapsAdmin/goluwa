@@ -1,14 +1,28 @@
 do
 	local META = prototype.CreateTemplate("main_menu")
 
-	function META:Initialize()
-		self:SetColor(Color(0.6,0.6,0.5,1))
-		self:SetSize(render.GetScreenSize():Copy())
+	local title_font
+	local menu_font
+
+	function META:OnLayout()
 
 		local s = render.GetWidth()/1920
 		s = s * 1.25
 
-		local title_font = fonts.CreateFont({
+		menu_font = fonts.CreateFont({
+			path = "Roboto Black",
+			fallback = gfx.GetDefaultFont(),
+			size = 30*s,
+			padding = 50,
+			shadow = {
+				order = 1,
+				dir = Vec2(-1, 1) * 5 * s,
+				dir_passes = 5,
+				color = Color(0.25,0.25,0.25,1),
+			},
+		})
+
+		title_font = fonts.CreateFont({
 			path = "propaganda squaregear",--"russian dollmaker",
 			fallback = gfx.GetDefaultFont(),
 			size = 100*s,
@@ -26,49 +40,48 @@ do
 			},
 		})
 
-		--self:SetColor(Color(0.1,0.1,0.1,1))
+		self:SetSize(render.GetScreenSize():Copy())
 
+		self:SetMargin(Rect(100, 100, 100, 50)*s)
+		self.logo:SetMargin(Rect()+20*s)
+		self.logo.image:SetSizeKeepAspectRatio(200*s)
+		self.logo.image:SetPosition(Vec2(35, 15)*s)
+		self.logo.title:SetFont(title_font)
+		self.buttons:SetWidth(250*s)
+		self.buttons:SetHeight(250*s)
 
-		self:SetMargin(Rect(100, 50, 100, 50)*s)
+		for i, btn in ipairs(self.buttons:GetChildren()) do
+			btn:SetFont(menu_font)
+			btn:SetMargin(Rect(1,1,1,1)*5*s)
+			btn:SetPadding(Rect(1,1,1,1)*5*s)
+			btn:SizeToText()
+			btn:SetupLayout("top", "fill_x")
+		end
 
-		local logo = self:CreatePanel("base")
+		self.buttons:SetupLayout("SizeToChildren", "left", "bottom")
+	end
+
+	function META:Initialize()
+		self:SetColor(Color(0.6,0.6,0.5,1))
+
+		local logo = self:CreatePanel("base", "logo")
 		logo:SetSize(Vec2(400, 200))
 		logo:NoCollide()
-		logo:SetMargin(Rect()+20*s)
 		logo:SetNoDraw(true)
 
-			local image = logo:CreatePanel("image")
+			local image = logo:CreatePanel("image", "image")
 			image:SetTexture(render.CreateTextureFromPath("https://gitlab.com/CapsAdmin/goluwa-assets/raw/master/extras/textures/lua_logo.png"))
-			image:SetSizeKeepAspectRatio(200*s)
-			image:SetPosition(Vec2(35, 15)*s)
 			image:NoCollide()
 
-			local title = logo:CreatePanel("text")
-			title:SetFont(title_font)
+			local title = logo:CreatePanel("text", "title")
+
 			title:SetTextColor(Color(1,1,1,1))
 			title:SetText("GOLUWA")
 			title:SetupLayout("left", "center_y_simple")
 
 		logo:SetupLayout("SizeToChildren")
 
-
-		local menu_font = fonts.CreateFont({
-			path = "Roboto Black",
-			fallback = gfx.GetDefaultFont(),
-			size = 30*s,
-			padding = 50,
-			shadow = {
-				order = 1,
-				dir = Vec2(-1, 1) * 5 * s,
-				dir_passes = 5,
-				color = Color(0.25,0.25,0.25,1),
-			},
-		})
-
-		local buttons = self:CreatePanel("base")
-		--buttons:SetMargin(Rect()+50)
-		buttons:SetWidth(250*s)
-		buttons:SetHeight(250*s)
+		local buttons = self:CreatePanel("base", "buttons")
 		buttons:SetupLayout("SizeToChildren", "left", "bottom")
 		buttons:SetNoDraw(true)
 
@@ -78,12 +91,9 @@ do
 			btn:SetColor(Color(1,1,1,0))
 			btn:SetOffsetContentOnClick(4)
 			btn:SetInactiveStyle("blank")
-			btn:SetFont(menu_font)
 			--btn:SetTextColor(Color(1,1,1,1))
 			btn:SetText(L(text))
-			btn:SetMargin(Rect(1,1,1,1)*5*s)
-			btn:SizeToText()
-			btn:SetPadding(Rect(1,1,1,1)*5*s)
+
 			btn:SetupLayout("top", "fill_x")
 			btn.OnRelease = cb
 		end
@@ -93,10 +103,9 @@ do
 		end)
 		add_button("LOAD SCENE")
 		add_button("JOIN SERVER", function()
-			local frame = gui.CreatePanel("frame", nil, "server_browser")
-			--frame:SetSkin(bar:GetSkin())
-			frame:SetPosition(Vec2(100, 100))
-			frame:SetSize(Vec2(500, 400))
+			local frame = gui.CreatePanel("frame", menu.panel, "server_browser")
+			frame:SetSize(Vec2(600, 400))
+			frame:CenterSimple()
 			frame:SetTitle("servers (fetching public servers..)")
 
 			local tab = frame:CreatePanel("tab")
@@ -130,9 +139,9 @@ do
 			tab:SelectTab(L"internet")
 		end)
 		add_button("OPTIONS", function()
-			local frame = gui.CreatePanel("frame", nil, "options")
-			frame:SetSize(Vec2() + 500)
-			frame:Center()
+			local frame = gui.CreatePanel("frame", menu.panel, "options")
+			frame:SetSize(Vec2(600, 400))
+			frame:CenterSimple()
 			frame:SetTitle("options")
 
 			local tabs = frame:CreatePanel("tab")
@@ -200,11 +209,21 @@ do
 	gui.RegisterPanel(META)
 end
 
-event.AddListener("ShowMenu", "main_menu", function(b)
+event.AddListener("ShowMenu", "main_menu", function(b, remove)
 	if b then
-		menu.panel = gui.CreatePanel("main_menu")
+		if menu.panel:IsValid() then
+			menu.panel:SetVisible(true)
+		else
+			menu.panel = gui.CreatePanel("main_menu")
+			--console.Open(menu.panel)
+			--menu.panel.console.edit:RequestFocus()
+		end
 	else
-		prototype.SafeRemove(menu.panel)
+		if remove then
+			prototype.SafeRemove(menu.panel)
+		elseif menu.panel:IsValid() then
+			menu.panel:SetVisible(false)
+		end
 	end
 end)
 

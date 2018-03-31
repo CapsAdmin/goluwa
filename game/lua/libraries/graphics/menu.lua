@@ -1,9 +1,12 @@
 local menu = {}
 
+menu.panel = menu.panel or NULL
+
 do -- open close
 	function menu.Open()
 		if menu.visible then return end
 		window.SetMouseTrapped(false)
+		input.disable_focus = 0
 		event.Call("ShowMenu", true)
 		menu.visible = true
 	end
@@ -11,6 +14,7 @@ do -- open close
 	function menu.Close()
 		if not menu.visible then return end
 		window.SetMouseTrapped(true)
+		input.disable_focus = 0
 		event.Call("ShowMenu", false)
 		menu.visible = false
 	end
@@ -27,19 +31,15 @@ do -- open close
 		end
 	end
 
-	input.Bind("escape", "toggle_menu")
-
-	commands.Add("toggle_menu", function()
+	input.Bind("escape", "toggle_menu", function()
 		menu.Toggle()
 	end)
 
+	input.Bind("escape+left_shift", "toggle_menu", function()
+		menu.Toggle()
+	end, true)
+
 	event.AddListener("Disconnected", "main_menu", menu.Open)
-	event.AddListener("WindowResize", "main_menu", function()
-		if menu.IsVisible() then
-			menu.Close()
-			menu.Open()
-		end
-	end)
 end
 
 return menu
