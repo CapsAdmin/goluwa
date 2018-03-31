@@ -38,8 +38,9 @@ function META:OnPostKeyInput(key, press)
 	if not self.Autocomplete then return end
 	if not press then return end
 
-	local str = self:GetText():trim()
-	if not str:find("\n") and self:GetCaretPosition().x == #self:GetText() then
+	local str = self:GetText()
+
+	if self.label.markup:GetSubPosFromPosition(self.label.markup:GetCaretPosition()) == #str+1 then
 		local scroll = 0
 
 		if key == "tab" then
@@ -50,7 +51,7 @@ function META:OnPostKeyInput(key, press)
 
 		if key == "tab" and self.found_autocomplete[1] then
 			self:SetText(self.found_autocomplete[1])
-			self:SetCaretPosition(Vec2(math.huge, 0))
+			self:SetCaretPosition(Vec2(math.huge, math.huge))
 			return false
 		end
 	end
@@ -76,7 +77,15 @@ function META:OnPreKeyInput(key, press)
 	if self.HistoryPath then
 		self.history = serializer.ReadFile("luadata", self.HistoryPath) or {}
 
-		if str == history_last or str == "" or not str:find("\n") then
+		if
+			str == history_last or
+			str == "" or
+			not str:find("\n") or
+			(
+				(self.label.markup:GetSubPosFromPosition(self.label.markup:GetCaretPosition()) == (#str+1) and key == "down") or
+				(self.label.markup:GetSubPosFromPosition(self.label.markup:GetCaretPosition()) == 1 and key == "up")
+			)
+		then
 			local browse = false
 
 			if key == "up" then
@@ -90,7 +99,7 @@ function META:OnPreKeyInput(key, press)
 			local found = self.history[self.history_i]
 			if browse and found then
 				self:SetText(found)
-				self:SetCaretPosition(Vec2(math.huge, 0))
+				self:SetCaretPosition(Vec2(math.huge, math.huge))
 				history_last = found
 			end
 		end
