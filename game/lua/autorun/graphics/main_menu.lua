@@ -62,7 +62,7 @@ do
 	end
 
 	function META:Initialize()
-		self:SetColor(Color(0.6,0.6,0.5,1))
+		self:SetColor(Color(1,1,0.8,0.25))
 
 		local logo = self:CreatePanel("base", "logo")
 		logo:SetSize(Vec2(400, 200))
