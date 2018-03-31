@@ -487,7 +487,7 @@ function prototype.UpdateObjects(meta)
 			if RELOAD then
 				for k, v in pairs(tbl) do
 					if type(v) == "function" then
-						if type(obj[k]) == "function" and #string.dump(v) < #string.dump(obj[k]) then
+						if type(obj[k]) == "function" and debug.getinfo(v).source ~= debug.getinfo(obj[k]).source and #string.dump(v) < #string.dump(obj[k]) then
 							llog("not overriding smaller function %s.%s:%s(%s)", tbl.Type, tbl.ClassName, k, table.concat(debug.getupvalues(v), ", "))
 						else
 							obj[k] = v
