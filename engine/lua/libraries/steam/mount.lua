@@ -35,6 +35,26 @@ commands.Add("mount_clear", function()
 	end
 end)
 
+pvars.Setup2({
+	key = "steam_mount",
+	default = {},
+	get_list = function()
+		local list = {}
+		for _, info in pairs(steam.GetSourceGames()) do
+			list[info.filesystem.steamappid] = {friendly = info.name}
+		end
+		return list
+	end,
+	callback = function(list)
+		for appid, v in pairs(steam.GetMountedSourceGames()) do
+			steam.UnmountSourceGame(appid)
+		end
+		for i,v in ipairs(list) do
+			steam.MountSourceGame(v)
+		end
+	end,
+})
+
 commands.Add("list_games", function()
 	for _, info in pairs(steam.GetSourceGames()) do
 		logn(info.game)
@@ -343,6 +363,10 @@ do
 	end
 
 	function steam.GetMountedSourceGames()
+		return cache_mounted
+	end
+
+	function steam.GetMountedSourceGames2()
 		local out = {}
 		local done = {}
 		for k,v in pairs(vfs.GetMounts()) do

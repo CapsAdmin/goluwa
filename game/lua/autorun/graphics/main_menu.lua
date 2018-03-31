@@ -188,13 +188,48 @@ do
 				for group, vars in table.sortedpairs(grouped, function(a, b) return a.key < b.key end) do
 					props:AddGroup(group)
 					for key, info in table.sortedpairs(vars, function(a, b) return a.val.friendly < b.val.friendly end) do
-						props:AddProperty(
-							L(info.friendly),
-							function(val) pvars.Set(info.key, val) end,
-							function() return pvars.Get(info.key) end,
-							info.default,
-							info
-						)
+						if info.get_list then
+							local booleans = {}
+							local state = pvars.Get(info.key)
+							local fields = {}
+							local lookup = {}
+							for k,v in pairs(info.get_list()) do
+								booleans[v.friendly] = table.hasvalue(state, k) ~= false
+								table.insert(fields, v.friendly)
+								lookup[v.friendly] = k
+							end
+							info.fields = fields
+							props:AddProperty(
+								L(info.friendly),
+								function(val)
+									local selected = {}
+									for k,v in pairs(val) do
+										if v then
+											table.insert(selected, lookup[k])
+										end
+									end
+									pvars.Set(info.key, selected)
+								end,
+								function()
+									local state = pvars.Get(info.key)
+									local booleans = {}
+									for k,v in pairs(info.get_list()) do
+										booleans[v.friendly] = table.hasvalue(state, k) ~= false
+									end
+									return booleans
+								end,
+								booleans,
+								info
+							)
+						else
+							props:AddProperty(
+								L(info.friendly),
+								function(val) pvars.Set(info.key, val) end,
+								function() return pvars.Get(info.key) end,
+								info.default,
+								info
+							)
+						end
 					end
 				end
 			end
@@ -228,6 +263,7 @@ event.AddListener("ShowMenu", "main_menu", function(b, remove)
 end)
 
 if RELOAD then
+	prototype.SafeRemove(menu.panel)
 	menu.Toggle()
 	menu.Toggle()
 end
