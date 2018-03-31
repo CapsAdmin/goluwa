@@ -961,8 +961,12 @@ do
 		return self.__obj:IsFocused()
 	end
 
+	function META:SetEnabled(b)
+		self.__obj.gine_enabled = b
+	end
+
 	function META:IsEnabled()
-		return true
+		return not not self.__obj.gine_enabled
 	end
 
 	function META:HasHierarchicalFocus()
