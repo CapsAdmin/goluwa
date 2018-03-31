@@ -307,18 +307,19 @@ do -- events
 end
 
 do -- skin
-	function gui.SetSkin(skin, reload_panels)
+	function gui.SetSkin(skin)
 		if type(skin) == "string" then
 			skin = gui.GetRegisteredSkin(skin).skin
 		end
 
+		local old = gui.GetSkin() and gui.GetSkin().name
+
 		gui.skin = skin
 
-		if reload_panels then
-			runfile("lua/libraries/graphics/gui/panels/*", gui)
-		end
+		if not old then return end
 
 		for panel in pairs(gui.panels) do
+			panel:SetSkin(skin)
 			panel:ReloadStyle()
 		end
 	end
@@ -351,10 +352,6 @@ do -- skin
 		end
 		return out
 	end
-
-	commands.Add("gui_skin=string[gwen],string|nil", function(str, sub_skin)
-		gui.SetSkin(str, sub_skin)
-	end)
 
 	function gui.RegisterSkin(tbl)
 		gui.registered_skins[tbl.Name] = tbl
@@ -421,7 +418,17 @@ function gui.Initialize()
 	gui.init = true
 
 	runfile("lua/libraries/graphics/gui/skins/*", gui)
-	gui.SetSkin("gwen_dark")
+
+	pvars.Setup2({
+		key = "gui_skin",
+		default = "gwen_dark",
+		list = gui.GetRegisteredSkins(),
+		callback = function(str)
+			gui.SetSkin(str)
+		end,
+	})
+
+	gui.SetSkin(pvars.Get("gui_skin"))
 
 	gui.RemovePanel(gui.world)
 
