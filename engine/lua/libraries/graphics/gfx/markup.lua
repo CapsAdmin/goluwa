@@ -265,7 +265,6 @@ function META:GetNextCharacterClassPosition(delta, next_space)
 end
 
 function META:InsertString(str, skip_move, start_offset, stop_offset)
-
 	start_offset = start_offset or 0
 	stop_offset = stop_offset or 0
 
@@ -306,9 +305,38 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 	self.text = utf8.sub(self.text, 1, sub_pos - 1) .. str .. utf8.sub(self.text, sub_pos)
 
 	do -- fix chunks
+		local sub_pos = self.caret_pos.char.data.i
 		local chunk = self.caret_pos.char.chunk
 
-		table.insert(self.chunks, chunk.internal and #self.chunks or chunk.i, {type = "string", val = str})
+		-- if we're in a sea of non strings we need to make one
+		if (chunk.type ~= "string" or chunk.internal) and ((self.chunks[chunk.i-1] and self.chunks[chunk.i-1].type ~= "string") or (self.chunks[chunk.i+1] and self.chunks[chunk.i+1].type ~= "string")) then
+			table.insert(self.chunks, chunk.i, {type = "string", val = str})
+		else
+			if chunk.internal then
+				local chunk = self.chunks[chunk.i - 1]
+				sub_pos = #chunk.chars + 1
+				chunk.val = utf8.sub(chunk.val, 1, sub_pos - 1) .. str .. utf8.sub(chunk.val, sub_pos)
+			else
+				do
+					local pos = chunk.i
+
+					while chunk.type ~= "string" and pos > 1 do
+						pos = pos - 1
+						chunk = self.chunks[pos]
+					end
+				end
+
+				if chunk.type == "string" then
+					if not sub_pos then
+						sub_pos = #chunk.chars + 1
+					end
+
+					chunk.val = utf8.sub(chunk.val, 1, sub_pos - 1) .. str .. utf8.sub(chunk.val, sub_pos)
+				else
+					table.remove(self.chunks, chunk.i)
+				end
+			end
+		end
 
 		self:Invalidate()
 	end
@@ -320,8 +348,6 @@ function META:InsertString(str, skip_move, start_offset, stop_offset)
 		if self.caret_pos.char.str == "\n" then
 			x = 0
 		end
-
-		self.real_x = x
 
 		self:SetCaretPosition(x, y)
 	end
@@ -1327,6 +1353,10 @@ do -- invalidate
 
 	function META:DumpState()
 		for _, chunk in ipairs(self.chunks) do
+			log(chunk.i, ": ")
+			if chunk.internal then
+				log(" INTERNAL ")
+			end
 			if chunk.type == "color" or chunk.type == "font" then
 				logn("<", chunk.val, ">")
 			else
@@ -1425,6 +1455,7 @@ do -- invalidate
 					end
 
 					if chunk then
+
 						if not chunk.internal and chunk.type == "string" and string.haswhitespace(chunk.val) then
 							if self.LineWrap then
 								local str = {}
@@ -2217,10 +2248,6 @@ do -- shortcuts
 
 			x = x + #cur_space
 
-			if x == 0 and #self.lines == 1 then
-				cur_space = " " .. cur_space
-			end
-
 			self:InsertString("\n" .. cur_space)
 
 			self.real_x = x
@@ -2257,19 +2284,17 @@ do -- caret
 
 		for i, char in ipairs(self.chars) do
 			if
-				x >= char.data.x and
-				y >= char.data.y and
+				x > char.data.x and
+				x < char.data.right and
 
-				x <= char.data.right and
-				y <= char.data.top
+				y > char.data.y and
+				y < char.data.top
 			then
 				POS = i
 				CHAR = char
 				break
 			end
 		end
-		--print(x,y)
-		--table.print(CHAR.data, 1)
 
 		-- if nothing was found we need to check things differently
 
@@ -2277,13 +2302,17 @@ do -- caret
 			local line = {}
 
 			for i, char in ipairs(self.chars) do
-				if y > char.data.y and (y > self.height and char.chunk.line == #self.lines or y < char.data.top + 1) then -- todo: remove +1
+				if y >= char.data.y and y <= char.data.top then
 					table.insert(line, {i, char})
 				end
 			end
 
-			if #line > 0 and x > line[#line][2].data.right then
-				POS, CHAR = unpack(line[#line])
+			if #line > 0 then
+				if x > line[#line][2].data.right then
+					POS, CHAR = unpack(line[#line])
+				elseif x < line[1][2].data.x then
+					POS, CHAR = unpack(line[1])
+				end
 			end
 
 			if not CHAR then
@@ -2390,20 +2419,31 @@ do -- caret
 		if Y ~= 0 then
 			local pixel_y = self.caret_pos.char.data.y
 
+			if self.caret_pos.char.internal then
+				pixel_y = self.chars[#self.chars - 1].data.y
+			end
+
 			if pixel_y > 0 or Y > 0 then
+
+				local h = self.caret_pos.char.data.h
+
+				if h == 0 and Y > 0 then return end
+
 				if Y > 0 then
-					pixel_y = pixel_y + self.caret_pos.char.data.h * Y + 1
+					pixel_y = pixel_y + h * Y + 1
 				else
-					pixel_y = pixel_y + self.caret_pos.char.data.h * Y + 1
+					pixel_y = pixel_y + h * Y + 1
 				end
 
-				if pixel_y < self.height then
+				if pixel_y <= self.height+1 then
+
 					local pcaret = self:CaretFromPixels(
 						(self.real_x or self.caret_pos.char.data.x) + self.caret_pos.char.data.w / 2,
 						pixel_y
 					)
 					y = pcaret.y
 					x = pcaret.x
+					--self.real_x = self:CaretFromPosition(x, y).char.data.x
 				end
 			end
 		elseif X ~= math.huge and X ~= -math.huge then
@@ -2746,19 +2786,25 @@ do -- input
 			elseif key == "right" then
 				x = 1
 			elseif key == "home" then
-				x = -math.huge
+				self:SetCaretPosition(0, self.caret_pos.y)
+				self.real_x = 0
 			elseif key == "end" then
-				x = math.huge
+				if not self.caret_pos.char.internal then
+					self:SetCaretPosition(#self.lines[self.caret_pos.char.chunk.line], self.caret_pos.y)
+					self.real_x = self:CaretFromPosition(self.caret_pos.x, self.caret_pos.y).px
+				end
 			elseif key == "pageup" and self.Multiline then
 				y = -10
 			elseif key == "pagedown" and self.Multiline then
 				y = 10
 			end
 
-			self:AdvanceCaret(x, y)
+			if x ~= 0 or y ~= 0 then
+				self:AdvanceCaret(x, y)
 
-			if (x ~= 0 or y ~= 0) and self.OnAdvanceCaret then
-				self:OnAdvanceCaret(x, y)
+				if self.OnAdvanceCaret then
+					self:OnAdvanceCaret(x, y)
+				end
 			end
 		end
 
@@ -2914,8 +2960,6 @@ do -- drawing
 				if caret then
 					self.select_stop = caret
 				end
-
-				print(x,y,caret.x, caret.y)
 			end
 
 			if self.ShiftDown then
@@ -3159,20 +3203,6 @@ do -- drawing
 			local x = self.caret_pos.px
 			local y = self.caret_pos.py
 			local h = self.caret_pos.h
-
-			if self.caret_pos.char.internal then
-				local chunk = self.chunks[self.caret_pos.char.chunk.i - 1]
-
-				if chunk then
-					x = chunk.right
-					y = chunk.y
-					h = chunk.h
-				else
-					x = 0
-					y = 0
-					h = self.caret_pos.char.chunk.real_h
-				end
-			end
 
 			if h < self.MinimumHeight then
 				h = self.MinimumHeight
