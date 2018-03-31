@@ -90,7 +90,7 @@ function META:OnPreKeyInput(key, press)
 			local found = self.history[self.history_i]
 			if browse and found then
 				self:SetText(found)
-				self:SetCaretPosition(Vec2(#found, 0))
+				self:SetCaretPosition(Vec2(math.huge, 0))
 				history_last = found
 			end
 		end
