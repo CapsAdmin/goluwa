@@ -28,30 +28,36 @@ function console.Open()
 	frame:MoveRight()
 	frame:MoveUp()
 
-	local edit = frame:CreatePanel("text_input")
-	edit:SetHeight(20)
-	edit:SetHistoryPath("data/console_history.txt")
-	function edit:OnHeightChanged()
+	do -- edit line
+		local edit = frame:CreatePanel("text_input")
+
+		edit:SetMargin(Rect() + 3)
+		edit:SetHeight(20)
+		edit:SetHistoryPath("data/console_history.txt")
+
+
+		function edit:OnEscape()
+			self:SetText("")
+			self:Unfocus()
+			--console.Close()
+		end
+
+		function edit:OnFinish(str)
+			logn("> ", str)
+			commands.RunString(str, nil, true, true)
+			self:SetText("")
+			frame:Layout(true)
+			return false
+		end
+
+		function edit:OnHeightChanged()
+			self:SetupLayout("bottom", "fill_x")
+		end
+
 		edit:SetupLayout("bottom", "fill_x")
+		edit:RequestFocus()
+		frame.edit = edit
 	end
-
-	function edit:OnFinish(str)
-		logn("> ", str)
-		commands.RunString(str, nil, true, true)
-		self:SetText("")
-		frame:Layout(true)
-		return false
-	end
-
-	function edit:OnEscape()
-		self:SetText("")
-		self:Unfocus()
-		--console.Close()
-	end
-
-	edit:SetupLayout("bottom", "fill_x")
-	edit:RequestFocus()
-	frame.edit = edit
 
 	local scroll = frame:CreatePanel("scroll")
 	scroll:SetupLayout("center_simple", "fill")
