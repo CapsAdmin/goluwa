@@ -6,6 +6,7 @@ scoreboard.clients = {}
 
 input.Bind("tab", "+score", function()
 	if input.IsKeyDown("left_alt") then return end
+	if menu.IsVisible() then return end
 
 	if not scoreboard.panel:IsValid() then
 		scoreboard.Initialize()

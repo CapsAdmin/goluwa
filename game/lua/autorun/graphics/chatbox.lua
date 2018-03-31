@@ -126,7 +126,9 @@ function chat.Close()
 end
 
 input.Bind("y", "show_chat", function()
-	chat.Open()
+	if not menu.IsVisible() then
+		chat.Open()
+	end
 end)
 
 if RELOAD then
