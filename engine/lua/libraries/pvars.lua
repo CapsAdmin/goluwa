@@ -6,8 +6,43 @@ local mode = "luadata"
 pvars.vars = pvars.vars or {}
 pvars.infos = pvars.infos or {}
 
+local function set(key, val)
+	local info = pvars.infos[key]
+
+	if info then
+		if val == nil then
+			val = info.default
+		end
+
+		if info.list then
+			if not table.hasvalue(info.list, val) then
+				val = info.default
+			end
+		elseif info.table then
+			if not info.table[val] then
+				val = info.default
+			end
+		end
+
+		if typex(val) ~= info.type then
+			val = info.default
+		end
+
+		if info.modify then
+			val = info.modify(val)
+		end
+
+		pvars.vars[key] = val
+	end
+end
+
 function pvars.Initialize()
 	pvars.vars = serializer.ReadFile(mode, path) or {}
+
+	for _, info in pairs(pvars.infos) do
+		set(info.key, pvars.vars[info.key])
+	end
+
 	pvars.init = true
 	serializer.WriteFile(mode, path, pvars.vars)
 end
@@ -63,15 +98,7 @@ function pvars.Setup2(info)
 
 	pvars.infos[info.key] = info
 
-	local val = info.default
-
-	local test = pvars.vars[info.key]
-
-	if test ~= nil then
-		val = test
-	end
-
-	pvars.vars[info.key] = val
+	set(info.key, pvars.vars[info.key])
 
 	if info.callback then
 		event.Delay(function()
@@ -120,40 +147,43 @@ end
 
 function pvars.Set(key, val)
 	local info = pvars.infos[key]
+	local old = pvars.Get(key)
 
-	if info then
-		if val == nil then
-			val = info.default
-		end
+	set(key, val)
 
-		if info.modify then
-			val = info.modify(val)
-		end
+	pvars.Save()
 
-		if info.list then
-			if not table.hasvalue(info.list, val) then
-				val = info.default
-			end
-		elseif info.table then
-			if not info.table[val] then
-				val = info.default
-			end
-		end
-
-		local old = pvars.vars[key]
-
-		pvars.vars[key] = val
-
-		pvars.Save()
-
-		if info.callback and not info.in_callback then
-			info.in_callback = true
-			system.pcall(info.callback, val)
-			info.in_callback = nil
-		end
-
-		event.Call("PersistentVariableChanged", key, pvars.Get(key), old)
+	if info.callback and not info.in_callback then
+		info.in_callback = true
+		system.pcall(info.callback, pvars.Get(key))
+		info.in_callback = nil
 	end
+
+	event.Call("PersistentVariableChanged", key, pvars.Get(key), old)
+
+end
+
+function pvars.SetString(key, val)
+	local info = pvars.infos[key]
+
+	if info.type == "table" then
+		val = serializer.GetLibrary("comma").Decode(val)
+	elseif info.type ~= "string" then
+		val = serializer.GetLibrary(mode).FromString(val)
+	end
+
+	pvars.Set(key, val)
+end
+
+function pvars.GetString(key)
+	local val = pvars.Get(key)
+	local info = pvars.infos[key]
+
+	if info.type == "table" then
+		return serializer.GetLibrary("comma").Encode(val)
+	end
+
+	return serializer.GetLibrary(mode).Encode(val)
 end
 
 return pvars

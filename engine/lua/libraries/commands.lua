@@ -520,25 +520,20 @@ do -- commands
 			return
 		end
 
-
-		local key, val = line:match("^([%w_]+)%s+(.+)")
-		if key and val and pvars and pvars.Get(key) ~= nil then
-			if pvars.GetObject(key):GetType() ~= "string" then
-				val = serializer.GetLibrary("luadata").FromString(val)
-			end
-
-			if val ~= nil then
-				pvars.Set(key, val)
-				logn(key, " (",pvars.GetObject(key):GetType(),") = ", pvars.Get(key))
+		if pvars then
+			local key, val = line:match("^([%w_]+)%s+(.+)")
+			if key and val and pvars.Get(key) ~= nil then
+				pvars.SetString(key, val)
+				logn(key, " (",pvars.GetObject(key):GetType(),") = ", pvars.GetString(key))
 				return
 			end
-		end
 
-		local key = line:match("^([%w_]+)$")
-		if key and pvars.Get(key) ~= nil then
-			logn(key, " (",pvars.GetObject(key):GetType(),") = ", pvars.Get(key))
-			logn(pvars.GetObject(key):GetHelp())
-			return
+			local key = line:match("^([%w_]+)$")
+			if key and pvars.Get(key) ~= nil then
+				logn(key, " (",pvars.GetObject(key):GetType(),") = ", pvars.GetString(key))
+				logn(pvars.GetObject(key):GetHelp())
+				return
+			end
 		end
 
 		local ok, msg = commands.ExecuteCommandString(line)
