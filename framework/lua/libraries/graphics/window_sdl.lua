@@ -413,7 +413,7 @@ function window.CreateWindow(width, height, title, flags)
 					wnd.position.y = event.window.data2
 					call(wnd, "OnMove", wnd.position.x, wnd.position.y)
 
-				elseif case == sdl.e.WINDOWEVENT_RESIZED then
+				elseif case == sdl.e.WINDOWEVENT_RESIZED or case == sdl.e.WINDOWEVENT_SIZE_CHANGED then
 					wnd.size.x = event.window.data1
 					wnd.size.y = event.window.data2
 					call(wnd, "OnResize", wnd.size.x, wnd.size.y)
