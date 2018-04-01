@@ -148,29 +148,6 @@ do
 			tabs:SetupLayout("fill")
 
 			do
-				local page = tabs:AddTab("mounted games")
-				local scroll = page:CreatePanel("scroll")
-				scroll:SetupLayout("fill")
-
-				for _, info in ipairs(steam.GetSourceGames()) do
-					local check = scroll:CreatePanel("checkbox_label")
-					check:SetText(info.game)
-					check:SetTooltip(info.game_dir)
-					check:SizeToText()
-					check:SetupLayout("top", "left")
-					check:SetState(steam.IsSourceGameMounted(info))
-
-					check.OnCheck = function(_, b)
-						if b then
-							steam.MountSourceGame(info)
-						else
-							steam.UnmountSourceGame(info)
-						end
-					end
-				end
-			end
-
-			do
 				local page = tabs:AddTab("other")
 				local scroll = page:CreatePanel("scroll")
 				scroll:SetupLayout("fill")
@@ -233,8 +210,7 @@ do
 					end
 				end
 			end
-
-			tabs:SelectTab("mounted games")
+			tabs:SelectTab("other")
 		end)
 		add_button("EXIT", function()
 			system.ShutDown()
