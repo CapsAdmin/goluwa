@@ -32,29 +32,8 @@ function META:SetAutocomplete(str)
 	end, "hide_autocomplete")
 end
 
--- autocomplete should be done after keys like space and backspace are pressed
--- so we can use the string after modifications
 function META:OnPostKeyInput(key, press)
-	if not self.Autocomplete then return end
 	if not press then return end
-
-	local str = self:GetText()
-
-	if self.label.markup:GetSubPosFromPosition(self.label.markup:GetCaretPosition()) == #str+1 then
-		local scroll = 0
-
-		if key == "tab" then
-			scroll = input.IsKeyDown("left_shift") and -1 or 1
-		end
-
-		self.found_autocomplete = autocomplete.Query(self.Autocomplete, str, scroll)
-
-		if key == "tab" and self.found_autocomplete[1] then
-			self:SetText(self.found_autocomplete[1])
-			self:SetCaretPosition(Vec2(math.huge, math.huge))
-			return false
-		end
-	end
 
 	local width = self:GetWidth()
 	self:SizeToText()
@@ -69,9 +48,25 @@ function META:OnPreKeyInput(key, press)
 	local ctrl = input.IsKeyDown("left_shift") or input.IsKeyDown("right_shift")
 	local str = self:GetText()
 
-	if str ~= "" and ctrl then
+	if str ~= "" and ctrl and key == "enter" then
 		self:SetMultiline(true)
 		return
+	end
+
+	if self.Autocomplete and self.label.markup:GetSubPosFromPosition(self.label.markup:GetCaretPosition()) == #str+1 then
+		local scroll = 0
+
+		if key == "tab" then
+			scroll = input.IsKeyDown("left_shift") and -1 or 1
+		end
+
+		self.found_autocomplete = autocomplete.Query(self.Autocomplete, str, scroll)
+
+		if key == "tab" and self.found_autocomplete[1] then
+			self:SetText(self.found_autocomplete[1])
+			self:SetCaretPosition(Vec2(math.huge, math.huge))
+			return false
+		end
 	end
 
 	if self.HistoryPath then
