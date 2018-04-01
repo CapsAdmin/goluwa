@@ -150,6 +150,7 @@ function META:SetPanel(panel)
 
 	area.OnScroll = function(_, frac)
 		if self.scrolling then return end
+
 		if self.y_track then
 			self.y_handle:SetY(frac.y * (self.y_track:GetHeight() - self.y_handle:GetHeight()))
 		end
@@ -246,10 +247,6 @@ function META:OnLayout(S)
 		self.x_handle:SetWidth(math.max(real, 20))
 	end
 
-	if self.y_track and self.y_track:IsVisible() then
-		x_offset = self.ScrollWidth
-	end
-
 	self.scroll_area:SetWidth(self:GetWidth() - x_offset)
 	self.scroll_area:SetHeight(self:GetHeight() - y_offset)
 
@@ -271,11 +268,16 @@ if RELOAD then
 	scroll:SetupLayout("fill")
 	scroll:SetPadding(Rect()+4)
 
-
 	local lol = gui.CreatePanel("text")
 	lol:SetWidth(300)
 	lol:SetObeyPanelWidth(true)
 	lol:SetTextWrap(true)
 	runfile("lua/examples/2d/markup.lua", lol.markup)
 	scroll:SetPanel(lol)
+
+	local old = panel.OnLayout
+	function panel:OnLayout(...)
+		panel:SetTitle(tostring(lol:GetSize()))
+		return old(self, ...)
+	end
 end
