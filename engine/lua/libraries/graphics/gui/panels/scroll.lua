@@ -32,43 +32,42 @@ function META:SetXScrollBar(b)
 	self.XScrollBar = b
 
 	if b then
-		local x_track = self:CreatePanel("base", "x_track")
-		x_track:SetStyle("scroll_horizontal_track")
+		local track = self:CreatePanel("base", "x_track")
+		track:SetStyle("scroll_horizontal_track")
 
 		local area = self.scroll_area
 
-		local x_handle = x_track:CreatePanel("button")
-		x_handle.real_width = 10
-		x_handle:SetDraggable(true)
-		x_handle:SetDragMinDistance(0)
-		x_handle:SetStyle("scroll_horizontal_handle_inactive")
-		x_handle:SetStyleTranslation("button_active", "scroll_horizontal_handle_active")
-		x_handle:SetStyleTranslation("button_inactive", "scroll_horizontal_handle_inactive")
+		local handle = track:CreatePanel("button")
+		self.x_handle = handle
+		handle.real_width = 10
+		handle:SetDraggable(true)
+		handle:SetDragMinDistance(0)
+		handle:SetStyle("scroll_horizontal_handle_inactive")
+		handle:SetStyleTranslation("button_active", "scroll_horizontal_handle_active")
+		handle:SetStyleTranslation("button_inactive", "scroll_horizontal_handle_inactive")
 
-		x_handle.OnMouseInput = function(_, button, press)
+		handle.OnMouseInput = function(_, button, press)
 			if button == "mwheel_down" then
 				area:SetScroll(area:GetScroll() + Vec2(10, 0))
 			elseif button == "mwheel_up" then
 				area:SetScroll(area:GetScroll() + Vec2(-10, 0))
 			end
 		end
-		x_track.OnMouseInput = x_handle.OnMouseInput
+		track.OnMouseInput = handle.OnMouseInput
 
-		x_handle.OnPositionChanged = function(_, pos)
+		handle.OnPositionChanged = function(_, pos)
 			if not area:IsValid() then return end
 
-			local w = area:GetSizeOfChildren().x / (area:GetWidth() / x_handle.real_width)
-			w = w - x_handle:GetWidth()
+			local w = area:GetSizeOfChildren().x / (area:GetWidth() / handle.real_width)
+			w = w - handle:GetWidth()
 			local frac = math.clamp(pos.x / w, 0, 1)
 			self.scrolling = true
 			area:SetScrollFraction(Vec2(frac, area:GetScrollFraction().y))
 			self.scrolling = false
 
-			pos.x = math.clamp(pos.x, 0, x_track:GetWidth() - x_handle:GetWidth())
-			pos.y = x_handle.Parent:GetHeight() - x_handle:GetHeight()
+			pos.x = math.clamp(pos.x, 0, track:GetWidth() - handle:GetWidth())
+			pos.y = handle.Parent:GetHeight() - handle:GetHeight()
 		end
-
-		self.x_handle = x_handle
 	else
 		gui.RemovePanel(self.x_handle)
 		gui.RemovePanel(self.x_track)
@@ -82,44 +81,42 @@ function META:SetYScrollBar(b)
 	self.YScrollBar = b
 
 	if b then
-		local y_track = self:CreatePanel("base", "y_track")
-		y_track:SetStyle("scroll_vertical_track")
+		local track = self:CreatePanel("base", "y_track")
+		track:SetStyle("scroll_vertical_track")
 
 		local area = self.scroll_area
 
-		local y_handle = y_track:CreatePanel("button")
-		y_handle.real_height = 10
-		y_handle:SetDraggable(true)
-		y_handle:SetDragMinDistance(0)
-		y_handle:SetStyle("scroll_vertical_handle_inactive")
-		y_handle:SetStyleTranslation("button_active", "scroll_vertical_handle_active")
-		y_handle:SetStyleTranslation("button_inactive", "scroll_vertical_handle_inactive")
+		local handle = track:CreatePanel("button")
+		self.y_handle = handle
+		handle.real_height = 10
+		handle:SetDraggable(true)
+		handle:SetDragMinDistance(0)
+		handle:SetStyle("scroll_vertical_handle_inactive")
+		handle:SetStyleTranslation("button_active", "scroll_vertical_handle_active")
+		handle:SetStyleTranslation("button_inactive", "scroll_vertical_handle_inactive")
 
-		y_handle.OnMouseInput = function(_, button, press)
+		handle.OnMouseInput = function(_, button, press)
 			if button == "mwheel_down" then
 				area:SetScroll(area:GetScroll() + Vec2(0, 10))
 			elseif button == "mwheel_up" then
 				area:SetScroll(area:GetScroll() + Vec2(0, -10))
 			end
 		end
-		y_track.OnMouseInput = y_handle.OnMouseInput
+		track.OnMouseInput = handle.OnMouseInput
 
-		y_handle.OnPositionChanged = function(_, pos)
+		handle.OnPositionChanged = function(_, pos)
 			if not area:IsValid() then return end
 
-			local h = area:GetSizeOfChildren().y / (area:GetHeight() / y_handle.real_height)
-			h = h - y_handle:GetHeight()
+			local h = area:GetSizeOfChildren().y / (area:GetHeight() / handle.real_height)
+			h = h - handle:GetHeight()
 			local frac = pos.y / h
 			self.scrolling = true
 			area:SetScrollFraction(Vec2(area:GetScrollFraction().x, frac))
 			self.scrolling = false
 
-			pos.x = y_handle.Parent:GetWidth() - y_handle:GetWidth()
-			pos.y = math.clamp(pos.y, 0, y_handle.Parent:GetHeight() - y_handle:GetHeight())
+			pos.x = handle.Parent:GetWidth() - handle:GetWidth()
+			pos.y = math.clamp(pos.y, 0, handle.Parent:GetHeight() - handle:GetHeight())
 		end
-
-		self.y_handle = y_handle
-		self.y_track = y_track
 	else
 		gui.RemovePanel(self.y_handle)
 		gui.RemovePanel(self.y_track)
@@ -202,15 +199,14 @@ function META:OnLayout(S)
 	local children_size = self.scroll_area:GetSizeOfChildren()
 --	panel:SetSize(children_size)
 
-	local y_offset = 0
-
 	self.scroll_area:SetScroll(self.scroll_area:GetScroll())
+
+	local x_offset = 0
+	local y_offset = 0
 
 	if self.x_track and self.x_track:IsVisible() then
 		y_offset = self.ScrollWidth
 	end
-
-	local x_offset = 0
 
 	if self.y_track and self.y_track:IsVisible() then
 		x_offset = self.ScrollWidth
