@@ -55,7 +55,7 @@ end
 
 do -- vfs extension
 	function serializer.WriteFile(lib, path, ...)
-		vfs.Write(path, serializer.Encode(lib, ...))
+		return vfs.Write(path, serializer.Encode(lib, ...))
 	end
 
 	function serializer.ReadFile(lib, path, ...)
