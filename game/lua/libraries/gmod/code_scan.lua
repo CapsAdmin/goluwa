@@ -18,6 +18,10 @@ local suspicious = {
 		getregistry = true,
 	},
 	HTTP = true,
+	concommand = {
+		Run = true,
+	},
+	RunConsoleCommand = true,
 }
 
 local index = {
@@ -146,8 +150,7 @@ end
 
 local loaded = false
 
-function gine.CheckCode(source, ignore_globals, found)
-
+function gine.CheckCode(source, ignore_globals)
 	if not loaded then
 		table.merge(index, runfile("lua/libraries/gmod/cl_index.lua"))
 		table.merge(index, runfile("lua/libraries/gmod/sv_index.lua"))
@@ -157,7 +160,7 @@ function gine.CheckCode(source, ignore_globals, found)
 	local func = loadstring(source, "")
 	local info = jit.util.funcinfo(func)
 
-	found = found or {}
+	local found = {}
 
 	if info.children then
 		for i = -1, -1000000000, -1 do
@@ -177,57 +180,74 @@ function gine.CheckCode(source, ignore_globals, found)
 	return found
 end
 
-function gine.CheckDirectory(path, name)
-	vfs.Search(path, {"lua"}, function(path)
-		local found = {}
-		local code =  gine.PreprocessLua(vfs.Read(path))
-		local ok, err = loadstring(code)
-		local lines = code:split("\n")
+function gine.CheckDirectory(root, name, no_linenumbers, suspicious_only)
+	vfs.Search(root, {"lua"}, function(path)
+		local ignore_globals = {}
+		local code, err = vfs.Read(path)
+		if code then
+			code =  gine.PreprocessLua(code)
+			local ok, err = loadstring(code)
+			local lines = code:split("\n")
 
-		if ok then
-			vfs.Write("data/" .. name .. "/" .. path, code)
+			local found = {}
 
-			gine.CheckCode(code, ignore_globals, found)
-		else
-			print(path)
-			print(err)
-		end
+			if ok then
+				vfs.Write("data/gluacheck/" .. name .. "/" .. path, code)
 
+				found = gine.CheckCode(code, ignore_globals)
+			else
+				print(path)
+				print(err)
+			end
 
-		if found[1] then
-			logn("\t", path:match(".+/(lua.+)") .. ":")
+			if found[1] then
+				logn("\t", (path:match(".+/(lua.+)") or path) .. ":")
 
-			local function parse_info(info)
-				logn("\t\t", path:match(".+/(lua.+)"), ":", info.start_line, " - ", info.stop_line)
-				logn("\t\t", info.msg .. ":")
-				if not no_linenumbers or info.type == "important" then
-					for i = info.start_line, info.stop_line do
-						local line = lines[i]
-						if line then
-							logn("\t\t\t", i .. ":" .. line)
+				local function parse_info(info)
+					logn("\t\t", path:match(".+/(lua.+)"), ":", info.start_line, " - ", info.stop_line)
+					logn("\t\t", info.msg .. ":")
+					if not no_linenumbers then
+						local max = 20
+						local c = 0
+						for i = info.start_line, info.stop_line do
+							local line = lines[i]
+							if line then
+								logn("\t\t\t", i .. ":" .. line)
+							end
+							c = c + 1
+
+							if c > 20 then break logn("...") end
+						end
+						logn("\n")
+					end
+				end
+
+				if not suspicious_only then
+					for i, info in ipairs(found) do
+						if info.type ~= "important" then
+							parse_info(info)
 						end
 					end
-					logn("\n")
+				end
+
+				for i, info in ipairs(found) do
+					if info.type == "important" then
+						parse_info(info)
+					end
 				end
 			end
 
-			for i, info in ipairs(found) do
-				if info.type ~= "important" then
-					parse_info(info)
-				end
-			end
-
-			for i, info in ipairs(found) do
-				if info.type == "important" then
-					parse_info(info)
-				end
+		else
+			if not err then
+				logn(path, ": empty file")
+			else
+				logn(path, ": ", err)
 			end
 		end
 	end)
 end
 
-function gine.CheckWorkshopAddon(id, no_linenumbers)
-	local ignore_globals = {}
+function gine.CheckWorkshopAddon(id, no_linenumbers, suspicious_only)
 	logn("downloading ", id)
 	steam.DownloadWorkshop(id, function(info, path)
 		logn("finished downloading ", id)
@@ -235,11 +255,14 @@ function gine.CheckWorkshopAddon(id, no_linenumbers)
 		logn("checking ", info.response.publishedfiledetails[1].title)
 		logn("http://steamcommunity.com/workshop/filedetails/?id=" .. info.response.publishedfiledetails[1].publishedfileid)
 
-		gine.ScanLua(path .. "/lua/", id .. "(" .. info.response.publishedfiledetails[1].publishedfileid:gsub("%s+", "_"):gsub("%p", "") .. ")")
+		local name = vfs.FixIllegalCharactersInPath(info.response.publishedfiledetails[1].title, true)
 
-		if not vfs.IsDirectory(path .. "/lua") then
+		gine.CheckDirectory(path .. "/lua/", name, no_linenumbers, suspicious_only)
+		gine.CheckDirectory(path .. "/gamemodes/", name, no_linenumbers, suspicious_only)
+
+		if not vfs.IsDirectory(path .. "/lua") and not vfs.IsDirectory(path .. "/gamemodes") then
 			table.print(vfs.Find(path .. "/"))
-			logn("no lua folder")
+			logn("no lua or gamemode folder")
 		end
 	end)
 end
