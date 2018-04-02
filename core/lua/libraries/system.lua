@@ -2,6 +2,10 @@ local system = _G.system or {}
 
 runfile("platforms/" .. PLATFORM .. "/system.lua", system)
 
+function system.ForceMainLoop()
+	system.force_main_loop = true
+end
+
 function system.GetWorkingDirectory()
 
 	if CLI then
@@ -100,7 +104,9 @@ do
 
 	function system.ShutDown(code)
 		code = code or 0
-		logn("shutting down with code ", code)
+		if not CLI then
+			logn("shutting down with code ", code)
+		end
 		system.run = code
 	end
 

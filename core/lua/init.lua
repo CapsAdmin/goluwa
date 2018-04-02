@@ -260,8 +260,10 @@ if PROFILE_STARTUP then
 	profiler.ToggleStatistical()
 end
 
-if not CLI and system.MainLoop then
-	logn("[runfile] total init time took ", os.clock() - start_time, " seconds to execute")
+if not CLI and system.MainLoop or system.force_main_loop then
+	if not CLI then
+		logn("[runfile] total init time took ", os.clock() - start_time, " seconds to execute")
+	end
 	system.MainLoop()
 end
 event.Call("ShutDown")
