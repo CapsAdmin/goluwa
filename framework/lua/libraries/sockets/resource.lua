@@ -227,6 +227,14 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag,
 		local crc = crc or crypto.CRC32(path)
 		local found = vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "url/" .. crc .. "/file", true)
 
+		if found[1] and found[1]:endswith(".temp") then
+			llog("deleting unfinished download: ", path)
+			for _, path in ipairs(vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "url/" .. crc .. "/", true)) do
+				vfs.Delete(path)
+			end
+			found = {}
+		end
+
 		if PLATFORM == "gmod" and found[1] and vfs.IsDirectory(found[1]) then
 			llog("deleting bad cache data")
 			for _, path in ipairs(vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "url/" .. crc .. "/", true)) do
