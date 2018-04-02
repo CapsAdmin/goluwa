@@ -355,10 +355,16 @@ do
 	end
 
 	function io.readfile(path)
-		local f = assert(io.open(path))
+		local f = assert(io.open(path, "rb"))
 		local str = f:read("*all")
 		f:close()
 		return str
+	end
+
+	function io.writefile(path, str)
+		local f = assert(io.open(path, "wb"))
+		f:write(str)
+		f:close()
 	end
 
 	function has_tmux_session()
@@ -933,6 +939,31 @@ if not os.isfile("data/binaries_downloaded") then
 end
 
 os.cd(bin_dir)
+
+if args[1] == "install" then
+	if LINUX then
+		local path = os.getenv("HOME") .. "/.bashrc"
+		local str = io.readfile(path)
+		local alias = "alias goluwa='"..os.getcd().."/goluwa_cli'"
+		alias = "\n#goluwastart\n" .. alias .. "\n#goluwend"
+		str = str:gsub("\n#goluwastart\n(.-)\n#goluwend", "")
+		str = str .. alias
+		io.writefile(path, str)
+	end
+
+	os.exit()
+end
+
+if args[1] == "uninstall" then
+	if LINUX then
+		local path = os.getenv("HOME") .. "/.bashrc"
+		local str = io.readfile(path)
+		str = str:gsub("\n#goluwastart\n(.-)\n#goluwend", "")
+		io.writefile(path, str)
+	end
+
+	os.exit()
+end
 
 local initlua = "../../core/lua/init.lua"
 
