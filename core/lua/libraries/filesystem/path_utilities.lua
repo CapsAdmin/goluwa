@@ -64,20 +64,28 @@ function vfs.ParsePathVariables(path)
 	return path
 end
 
-local illegal_characters = {
-	[":"] = "_semicolon_",
-	["*"] = "_star_",
-	["?"] = "_questionmark_",
-	["<"] = "_less_than_",
-	[">"] = "_greater_than_",
-	["|"] = "_line_",
+local character_translation = {
+	["\\"] = "⟍",
+	[":"] = "⠅",
+	["*"] = "✱",
+	["?"] = "❔",
+	["<"] = "ᐸ",
+	[">"] = "𝈷",
+	["|"] = "ᥣ",
+	["~"] = "𝀈",
+	["#"] = "⧣",
+	["\""] = "‟",
+	["^"] = "ᣔ",
 }
 
-function vfs.FixIllegalCharactersInPath(path)
-	for k,v in pairs(illegal_characters) do
-		path = path:gsub("%"..k, v)
+function vfs.FixIllegalCharactersInPath(path, forward_slash)
+	local out = path:gsub(".", character_translation)
+
+	if forward_slash then
+		out = out:gsub("/", "⟋")
 	end
-	return path
+
+	return out
 end
 
 function vfs.FixPathSlashes(path)
