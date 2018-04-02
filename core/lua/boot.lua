@@ -29,6 +29,10 @@ if os.getenv("GOLUWA_START_TIME") then
 
 		GOLUWA_CLI_TIME = stop - start - start_time
 	else
+		if jit.os == "OSX" then
+			start = start:match("^(%d+)")
+		end
+
 		ffi.cdef([[
 			struct timeval {
                long tv_sec;
