@@ -236,10 +236,11 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag,
 		end
 
 		if PLATFORM == "gmod" and found[1] and vfs.IsDirectory(found[1]) then
-			llog("deleting bad cache data")
+			llog("deleting bad cache data:", path)
 			for _, path in ipairs(vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "url/" .. crc .. "/", true)) do
 				vfs.Delete(path)
 			end
+			found = {}
 		end
 
 		path = "url/" .. crc
