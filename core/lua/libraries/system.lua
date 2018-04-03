@@ -15,7 +15,7 @@ function system.GetWorkingDirectory()
 		end
 	end
 
-	return e.USERDATA_FOLDER
+	return "os:" .. e.USERDATA_FOLDER
 end
 
 function system.OSCommandExists(...)
