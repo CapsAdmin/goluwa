@@ -832,11 +832,13 @@ for _, path in ipairs(vfs.Find(data_dir .. "configs/", true)) do
 	gserv.SetupCommands(config.id)
 end
 
-for _, path in ipairs(vfs.Find(data_dir, true)) do
-	if path:endswith("_server_state") then
-		local data = serializer.ReadFile("luadata", path)
-		gserv.Resume(data.id)
-		gserv.logs[data.id] = data.log_path
+if not CLI then
+	for _, path in ipairs(vfs.Find(data_dir, true)) do
+		if path:endswith("_server_state") then
+			local data = serializer.ReadFile("luadata", path)
+			gserv.Resume(data.id)
+			gserv.logs[data.id] = data.log_path
+		end
 	end
 end
 
