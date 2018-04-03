@@ -1,5 +1,5 @@
 commands.Add("extract_workshop=arg_line", function(url)
-	system.ForceMainLoop()
+	if CLI then system.ForceMainLoop() end
 	steam.DownloadWorkshop(url:match("id=(%d+)"), function(info, path)
 		local ok, err = pcall(function()
 			local root = path
@@ -8,7 +8,7 @@ commands.Add("extract_workshop=arg_line", function(url)
 			local outdir = system.GetWorkingDirectory() .. name .. "/"
 			logn("writing to ", outdir)
 
-			logn("writing workshop_info.lua")
+			logn("writing ",outdir,"workshop_info.lua")
 			assert(vfs.CreateDirectoriesFromPath(outdir .. "workshop_info.lua"))
 			assert(serializer.WriteFile("luadata", outdir .. "workshop_info.lua", info.response))
 
@@ -24,7 +24,7 @@ commands.Add("extract_workshop=arg_line", function(url)
 			end)
 		end)
 		if not ok then print(err) end
-		system.ShutDown()
+		if CLI then system.ShutDown() end
 	end)
 end)
 
