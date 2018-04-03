@@ -36,9 +36,10 @@ commands.Add("workshop2git=arg_line", function(dir)
 			vfs.Search(path, nil, function(path)
 				if vfs.IsDirectory(path) then return end
 
+				local relative = path:match("^.-:.-/file.gma/(.+)$")
+
 				logn(cd .. relative)
 
-				local relative = path:match("^.-:.-/file.gma/(.+)$")
 				vfs.CreateDirectoriesFromPath(cd .. relative, true)
 				vfs.Write(cd .. relative, vfs.Read(path))
 			end)
