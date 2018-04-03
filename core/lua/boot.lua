@@ -847,7 +847,7 @@ if args[1] ~= "launch" then
 		if not WINDOWS and not OSX and os.readexecute("printf %s ${DISPLAY+x}") == "" then
 			CLIENT = true
 		end
-	elseif not WINDOWS and os.iscmd("tmux") and has_tmux_session() then
+	elseif not WINDOWS and args[1]:sub(0, 2) ~= "--" and os.iscmd("tmux") and has_tmux_session() then
 		if args[1] == "attach" or args[1] == "tmux" then
 			os.readexecute("tmux attach-session -t goluwa")
 		elseif args[1] ~= "launch" then
