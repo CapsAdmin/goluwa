@@ -97,7 +97,7 @@ function sockets.Update(remove_only)
 		if sock then
 
 			if sock.remove_me then
-				sock.socket:close()
+				if sock.socket then sock.socket:close() end
 				sock.socket = nil
 				collectgarbage("step")
 				sock:DebugPrintf("closed real socket object")
@@ -669,14 +669,22 @@ do -- tcp socket meta
 
 			if not ok and msg then
 				if msg == "address already in use" then
-					msg = string.format("address already in use (%s:%s)", ip, port)
-				end
+					self.retry_host = {
+						ip = ip,
+						port = port,
+						next_try = system.GetElapsedTime() + 3,
+					}
+					self:DebugPrintf("address already in use (%s:%s) retrying in 3 seconds", ip, port)
+				else
+					self:DebugPrintf("bind failed: %s", msg)
 
-				self:DebugPrintf("bind failed: %s", msg)
-				if self:OnError(msg) ~= false then
-					error(msg, 2)
+					if self:OnError(msg) ~= false then
+						error(msg, 2)
+					end
 				end
 			else
+				self.retry_host = nil
+
 				if self.socket_type == "tcp" then
 					ok, msg = self.socket:listen()
 
@@ -730,6 +738,13 @@ do -- tcp socket meta
 		end
 
 		function SERVER:Think()
+
+			if self.retry_host then
+				if self.retry_host.next_try < system.GetElapsedTime() then
+					self:Host(self.retry_host.ip, self.retry_host.port)
+				end
+			end
+
 			if not self.ready then return end
 
 			if self.socket_type == "udp" then
