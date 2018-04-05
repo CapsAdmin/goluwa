@@ -9,7 +9,7 @@ commands.Add("extract_workshop=arg_line", function(url)
 			logn("writing to ", outdir)
 
 			logn("writing ",outdir,"workshop_info.lua")
-			assert(vfs.CreateDirectoriesFromPath(outdir .. "workshop_info.lua"))
+			assert(vfs.CreateDirectoriesFromPath(outdir .. "workshop_info.lua", true))
 			assert(serializer.WriteFile("luadata", outdir .. "workshop_info.lua", info.response))
 
 			vfs.Search(path, nil, function(path)
@@ -18,7 +18,7 @@ commands.Add("extract_workshop=arg_line", function(url)
 					relative = relative:sub(#root + 2)
 					logn("extracting ", relative)
 
-					assert(vfs.CreateDirectoriesFromPath(outdir .. relative))
+					assert(vfs.CreateDirectoriesFromPath(outdir .. relative, true))
 					assert(vfs.Write(outdir .. relative, vfs.Read(path)))
 				end
 			end)
