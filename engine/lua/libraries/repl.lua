@@ -68,6 +68,8 @@ local char_translate =
 
 	["\27[1;2A"] = "KEY_LINEUP",
 	["\27[1;2B"] = "KEY_LINEDOWN",
+
+	["\27OM"] = "CTL_ENTER",
 }
 
 local longest_char = 0
@@ -222,7 +224,6 @@ function repl.Initialize()
 				repl.SetInputText(c.markup:GetText())
 			end
 		end
-
 		if key then
 
 			if key == "KEY_COPY" then
@@ -803,7 +804,6 @@ function repl.HandleKey(key)
 		end
 	end
 
-
 	if key == "KEY_ENTER" then
 		local line = c.markup:GetText()
 		c.markup:Clear()
@@ -832,7 +832,7 @@ function repl.HandleKey(key)
 			if event.Call("ReplLineEntered", line) ~= false then
 				logn("> ", line)
 
-				commands.RunString(line, nil, nil, true)
+				commands.RunString(line, nil, true)
 			end
 
 			c.in_function = false
