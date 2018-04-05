@@ -420,7 +420,7 @@ do -- addons
 			steam.DownloadWorkshop(info.id, function(header, path)
 				-- if the name is just the id make it more readable
 				if info.id == info.name then
-					info.name = header.response.publishedfiledetails[1].title:lower():gsub("%p", ""):gsub("%s+", "_") .. "_" .. info.name
+					info.name = vfs.FixIllegalCharactersInPath(header.response.publishedfiledetails[1].title, true) .. "_" .. info.name
 					save_config(id)
 				end
 
