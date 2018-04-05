@@ -1,6 +1,6 @@
 local addons = {
 	"https://github.com/PAC3-Server/notagain",
-	"https://github.com/PAC3-Server/gm-http-discordrelay",
+	--"https://github.com/PAC3-Server/gm-http-discordrelay",
 	"https://github.com/CapsAdmin/pac3",
 	"https://github.com/PAC3-Server/ServerAssets",
 	"https://github.com/PAC3-Server/garrysmod",
