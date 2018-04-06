@@ -34,6 +34,10 @@ do
 		vector = function(str, me) return vector(str, Vec3) end,
 		angle = function(str, me) return vector(str, Ang3) end,
 		boolean = function(arg)
+			if type(arg) == "boolean" then
+				return arg
+			end
+
 			arg = arg:lower()
 
 			if arg == "1" or arg == "true" or arg == "on" or arg == "yes" or arg == "y" then

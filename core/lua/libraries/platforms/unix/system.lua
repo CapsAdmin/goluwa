@@ -49,7 +49,13 @@ do
 		local last
 		function system.SetConsoleTitleRaw(str)
 			if str ~= last then
-				logn(str)
+				for i, v in ipairs(str:split("|")) do
+					local s = v:trim()
+					if s ~= "" then
+						logn(s)
+					end
+				end
+				last = str
 			end
 		end
 	else

@@ -1,17 +1,71 @@
-commands.Add("extract_workshop=arg_line", function(url)
-	local gma_path, info = assert(steam.DownloadWorkshop(url))
-	local name = vfs.ReplaceIllegalPathSymbols(info.publishedfiledetails[1].title, true)
+local function extract_single(id, dir)
+	local gma_path, info = assert(steam.DownloadWorkshop(id))
 
-	local out = system.GetWorkingDirectory() .. name .. "/"
+	local directory_name =
+		dir and (dir == "." and "" or (dir .. "/")) or
+		vfs.ReplaceIllegalPathSymbols(info.publishedfiledetails[1].title, true) .. "/"
 
+	local out = system.GetWorkingDirectory() .. directory_name
 	vfs.Write(out .. "workshop_info.luadata", info)
 
 	for _, path in ipairs(vfs.GetFilesRecursive(gma_path)) do
 		vfs.Write(out .. vfs.AbsoluteToRelativePath(gma_path, path), vfs.Read(path))
 	end
+end
+
+commands.Add("gmod-workshop-extract=string,string|nil", function(id, dir)
+	extract_single(id, dir)
 end)
 
-commands.Add("workshop2dir=arg_line", function(dir)
+commands.Add("gmod-workshop-extract-collection=string", function(id)
+	if not tonumber(id) and not id:find("steamcommunity.com") then
+		for id in assert(sockets.Download(id)):gmatch("id=(%d+)") do
+			extract_single(id)
+		end
+	else
+		for _, id in ipairs(assert(steam.DownloadWorkshopCollection(id))) do
+			extract_single(id)
+		end
+	end
+end)
+
+do
+	local function check_single(id, no_linenumbers, suspicious_only)
+		local gma_path, info = assert(steam.DownloadWorkshop(id))
+		logn("==============================", info.publishedfiledetails[1].title, "==============================")
+		logn("http://steamcommunity.com/workshop/filedetails/?id=" .. info.publishedfiledetails[1].publishedfileid)
+
+		local name = vfs.ReplaceIllegalPathSymbols(info.publishedfiledetails[1].title, true)
+
+		if vfs.IsDirectory(gma_path .. "/lua") or vfs.IsDirectory(gma_path .. "/gamemodes") then
+			gine.CheckDirectory(gma_path .. "/lua/", name, no_linenumbers, suspicious_only)
+			gine.CheckDirectory(gma_path .. "/gamemodes/", name, no_linenumbers, suspicious_only)
+		else
+			logn("no lua or gamemode folder")
+			table.print(vfs.Find(gma_path .. "/"))
+		end
+
+		logn("============================================================")
+	end
+
+	commands.Add("gmod-workshop-check-exploit=string,boolean,boolean[true]", function(id, no_linenumbers, suspicious_only)
+		check_single(id, no_linenumbers, suspicious_only)
+	end)
+
+	commands.Add("gmod-workshop-check-exploit-collection=string,boolean,boolean[true]", function(id, no_linenumbers, suspicious_only)
+		if not tonumber(id) and not id:find("steamcommunity.com") then
+			for id in assert(sockets.Download(id)):gmatch("id=(%d+)") do
+				check_single(id, no_linenumbers, suspicious_only)
+			end
+		else
+			for _, id in ipairs(assert(steam.DownloadWorkshopCollection(id))) do
+				check_single(id, no_linenumbers, suspicious_only)
+			end
+		end
+	end)
+end
+
+commands.Add("gmod-workshop2dir=arg_line", function(dir)
 	local cd = system.GetWorkingDirectory()
 
 	if dir == "." then

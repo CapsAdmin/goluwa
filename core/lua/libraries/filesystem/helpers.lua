@@ -133,7 +133,7 @@ local function add_helper(name, func, mode, cb)
 		end
 
 		if CLI then
-			debug.trace()
+			logn(path)
 			error(err, 2)
 		end
 
@@ -157,16 +157,12 @@ add_helper("Write", "WriteBytes", "write", function(path, content, on_change)
 		on_change(content)
 	end
 
-	if CLI then
-		vfs.CreateDirectoriesFromPath(path, true)
-		return
-	end
+	if path:startswith("data/") or path:sub(4):startswith("data/") then
 
-	if path:startswith("os:") then
-		path = path:sub(4)
-	end
+		if path:startswith("os:") then
+			path = path:sub(4)
+		end
 
-	if path:startswith("data/") then
 		path = path:sub(#"data/" + 1)
 
 		local fs = vfs.GetFileSystem("os")
@@ -179,6 +175,8 @@ add_helper("Write", "WriteBytes", "write", function(path, content, on_change)
 				fs:CreateFolder({full_path = base .. dir})
 			end
 		end
+	elseif CLI then
+		vfs.CreateDirectoriesFromPath(path, true)
 	end
 end)
 

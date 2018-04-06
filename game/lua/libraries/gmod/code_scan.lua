@@ -181,88 +181,58 @@ function gine.CheckCode(source, ignore_globals)
 end
 
 function gine.CheckDirectory(root, name, no_linenumbers, suspicious_only)
-	vfs.GetFilesRecursive(root, {"lua"}, function(path)
+	for _, path in ipairs(vfs.GetFilesRecursive(root, {"lua"})) do
 		local ignore_globals = {}
-		local code, err = vfs.Read(path)
-		if code then
-			code =  gine.PreprocessLua(code)
-			local ok, err = loadstring(code)
-			local lines = code:split("\n")
+		local code = vfs.Read(path)
 
-			local found = {}
+		code =  gine.PreprocessLua(code)
+		local ok, err = loadstring(code)
+		local lines = code:split("\n")
 
-			if ok then
-				vfs.Write("data/gluacheck/" .. name .. "/" .. path, code)
+		local found = {}
 
-				found = gine.CheckCode(code, ignore_globals)
-			else
-				print(path)
-				print(err)
+		if ok then
+			found = gine.CheckCode(code, ignore_globals)
+		else
+			print(path)
+			print(err)
+		end
+
+		if found[1] then
+			logn("\t", (path:match(".+/(lua.+)") or path) .. ":")
+
+			local function parse_info(info)
+				logn("\t\t", path:match(".+/(lua.+)"), ":", info.start_line, " - ", info.stop_line)
+				logn("\t\t", info.msg .. ":")
+				if not no_linenumbers then
+					local max = 20
+					local c = 0
+					for i = info.start_line, info.stop_line do
+						local line = lines[i]
+						if line then
+							logn("\t\t\t", i .. ":" .. line)
+						end
+						c = c + 1
+
+						if c > 20 then break logn("...") end
+					end
+					logn("\n")
+				end
 			end
 
-			if found[1] then
-				logn("\t", (path:match(".+/(lua.+)") or path) .. ":")
-
-				local function parse_info(info)
-					logn("\t\t", path:match(".+/(lua.+)"), ":", info.start_line, " - ", info.stop_line)
-					logn("\t\t", info.msg .. ":")
-					if not no_linenumbers then
-						local max = 20
-						local c = 0
-						for i = info.start_line, info.stop_line do
-							local line = lines[i]
-							if line then
-								logn("\t\t\t", i .. ":" .. line)
-							end
-							c = c + 1
-
-							if c > 20 then break logn("...") end
-						end
-						logn("\n")
-					end
-				end
-
-				if not suspicious_only then
-					for i, info in ipairs(found) do
-						if info.type ~= "important" then
-							parse_info(info)
-						end
-					end
-				end
-
+			if not suspicious_only then
 				for i, info in ipairs(found) do
-					if info.type == "important" then
+					if info.type ~= "important" then
 						parse_info(info)
 					end
 				end
 			end
 
-		else
-			if not err then
-				logn(path, ": empty file")
-			else
-				logn(path, ": ", err)
+			for i, info in ipairs(found) do
+				if info.type == "important" then
+					parse_info(info)
+				end
 			end
 		end
-	end)
-end
-
-function gine.CheckWorkshopAddon(id, no_linenumbers, suspicious_only)
-	logn("downloading ", id)
-	steam.DownloadWorkshop(id, function(path, info)
-		logn("finished downloading ", id)
-		logn("==============================================================================================================")
-		logn("checking ", info.publishedfiledetails[1].title)
-		logn("http://steamcommunity.com/workshop/filedetails/?id=" .. info.publishedfiledetails[1].publishedfileid)
-
-		local name = vfs.ReplaceIllegalPathSymbols(info.publishedfiledetails[1].title, true)
-
-		gine.CheckDirectory(path .. "/lua/", name, no_linenumbers, suspicious_only)
-		gine.CheckDirectory(path .. "/gamemodes/", name, no_linenumbers, suspicious_only)
-
-		if not vfs.IsDirectory(path .. "/lua") and not vfs.IsDirectory(path .. "/gamemodes") then
-			table.print(vfs.Find(path .. "/"))
-			logn("no lua or gamemode folder")
-		end
-	end)
+	end
 end
