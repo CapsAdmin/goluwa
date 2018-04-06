@@ -201,6 +201,11 @@ do -- commands
 							defaults = defaults or {}
 							default = default:sub(2, -2)
 
+							if default == "STDIN" then
+								logn(aliases[1], " #", i2, " argument (", temp ,"):")
+								default = io.stdin:read("*l")
+							end
+
 							-- special case
 							if temp == "string" then
 								defaults[i] = default
