@@ -40,14 +40,21 @@ end
 
 do
 	if CURSES then
+		function system.SetConsoleTitleRaw(str)
+
+		end
+	elseif CLI then
+		local last
+		function system.SetConsoleTitleRaw(str)
+			if str ~= last then
+				logn(str)
+			end
+		end
+	else
 		local iowrite = _OLD_G.io.write
 
 		function system.SetConsoleTitleRaw(str)
 			return iowrite and iowrite('\27]0;', str, '\7') or nil
-		end
-	else
-		function system.SetConsoleTitleRaw(str)
-
 		end
 	end
 end

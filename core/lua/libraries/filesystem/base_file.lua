@@ -34,6 +34,10 @@ do
 			cache[func_name][self.Name][path_info.full_path] = self[func_name](self, path_info)
 		end
 
+		-- might have been cleared inbetween
+		cache[func_name] = cache[func_name] or {}
+		cache[func_name][self.Name] = cache[func_name][self.Name] or {}
+
 		return cache[func_name][self.Name][path_info.full_path]
 	end
 

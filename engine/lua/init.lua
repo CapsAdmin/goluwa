@@ -53,9 +53,14 @@ end
 entities = runfile("lua/libraries/entities/entities.lua") -- entity component system
 
 pvars.Initialize()
+
 pvars.Setup("system_texteditor_path", false)
+pvars.Setup("system_tasks_enabled", false, function(val) tasks.enabled = val end)
+
+if CLI then tasks.enabled = true end
 
 --steam.InitializeWebAPI()
+
 
 if CURSES then
 	repl.Initialize()
@@ -109,7 +114,9 @@ event.AddListener("Update", "rate_limit", function(dt)
 		system.Sleep(math.floor(1/rate * 1000))
 	end
 
-	system.UpdateTitlebarFPS(dt)
+	if not CLI then
+		system.UpdateTitlebarFPS(dt)
+	end
 end)
 
 if TMUX then
@@ -128,3 +135,23 @@ end
 event.AddListener("Initialize", function()
 	system.ExecuteArgs()
 end)
+
+if CLI then
+	event.AddListener("VFSPreWrite", "log_write", function(path, data)
+		if path:startswith("data/") or vfs.GetPathInfo(path).full_path:startswith(e.DATA_FOLDER) then
+			return
+		end
+
+		if path:startswith(system.GetWorkingDirectory()) then
+			path = path:sub(#system.GetWorkingDirectory() + 1)
+		end
+
+		logn("[vfs] writing ", path, " - ", utility.FormatFileSize(#data))
+	end)
+
+	event.AddListener("Update", "cli", function()
+		if not tasks.IsBusy() then
+			system.ShutDown()
+		end
+	end)
+end

@@ -181,7 +181,7 @@ function gine.CheckCode(source, ignore_globals)
 end
 
 function gine.CheckDirectory(root, name, no_linenumbers, suspicious_only)
-	vfs.Search(root, {"lua"}, function(path)
+	vfs.GetFilesRecursive(root, {"lua"}, function(path)
 		local ignore_globals = {}
 		local code, err = vfs.Read(path)
 		if code then
@@ -249,13 +249,13 @@ end
 
 function gine.CheckWorkshopAddon(id, no_linenumbers, suspicious_only)
 	logn("downloading ", id)
-	steam.DownloadWorkshop(id, function(info, path)
+	steam.DownloadWorkshop(id, function(path, info)
 		logn("finished downloading ", id)
 		logn("==============================================================================================================")
-		logn("checking ", info.response.publishedfiledetails[1].title)
-		logn("http://steamcommunity.com/workshop/filedetails/?id=" .. info.response.publishedfiledetails[1].publishedfileid)
+		logn("checking ", info.publishedfiledetails[1].title)
+		logn("http://steamcommunity.com/workshop/filedetails/?id=" .. info.publishedfiledetails[1].publishedfileid)
 
-		local name = vfs.FixIllegalCharactersInPath(info.response.publishedfiledetails[1].title, true)
+		local name = vfs.ReplaceIllegalPathSymbols(info.publishedfiledetails[1].title, true)
 
 		gine.CheckDirectory(path .. "/lua/", name, no_linenumbers, suspicious_only)
 		gine.CheckDirectory(path .. "/gamemodes/", name, no_linenumbers, suspicious_only)

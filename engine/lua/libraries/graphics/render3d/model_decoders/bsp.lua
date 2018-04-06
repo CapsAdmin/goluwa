@@ -26,9 +26,9 @@ function steam.SetMap(name)
 			vfs.Mount(info.path, "maps/")
 			steam.SetMap(info.name)
 		else
-			steam.DownloadWorkshop(workshop_id, function(info, path)
-				local name = info.response.publishedfiledetails[1].filename:match(".+/(.+)%.bsp")
-				local appid = info.response.publishedfiledetails[1].creator_app_id
+			steam.DownloadWorkshop(workshop_id, function(path, info)
+				local name = info.publishedfiledetails[1].filename:match(".+/(.+)%.bsp")
+				local appid = info.publishedfiledetails[1].creator_app_id
 				serializer.SetKeyValueInFile("luadata", "workshop_maps.cfg", workshop_id, {
 					path = path,
 					name = name,

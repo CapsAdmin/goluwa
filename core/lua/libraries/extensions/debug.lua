@@ -283,9 +283,9 @@ function debug.dumpcall(level, line, info_match)
 	if info.source:find("strung%.lua") then return end
 	if path == "../../../lua/init.lua" then return end
 
-	local script = vfs.Read(path)
+	if vfs.IsFile(path) then
+		local script = vfs.Read(path)
 
-	if script then
 		local lines = script:split("\n")
 
 		for i = -20, 20 do

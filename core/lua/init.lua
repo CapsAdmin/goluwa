@@ -260,12 +260,11 @@ if PROFILE_STARTUP then
 	profiler.ToggleStatistical()
 end
 
-if not CLI and system.MainLoop or system.force_main_loop then
-	if not CLI then
-		logn("[runfile] total init time took ", os.clock() - start_time, " seconds to execute")
-	end
-	system.MainLoop()
+if not CLI then
+	logn("[runfile] total init time took ", os.clock() - start_time, " seconds to execute")
 end
+system.MainLoop()
+
 event.Call("ShutDown")
 collectgarbage()
 collectgarbage() -- https://stackoverflow.com/questions/28320213/why-do-we-need-to-call-luas-collectgarbage-twice

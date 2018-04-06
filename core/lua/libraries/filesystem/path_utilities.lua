@@ -1,5 +1,11 @@
 local vfs = (...) or _G.vfs
 
+function vfs.AbsoluteToRelativePath(root, abs)
+	local root_info = vfs.GetPathInfo(root)
+	local abs_info = vfs.GetPathInfo(abs)
+	return abs_info.full_path:sub(#root_info.full_path + 2)
+end
+
 function vfs.GetParentFolderFromPath(str, level)
 	level = level or 1
 	for i = #str, 1, -1 do
@@ -78,7 +84,7 @@ local character_translation = {
 	["^"] = "ᣔ",
 }
 
-function vfs.FixIllegalCharactersInPath(path, forward_slash)
+function vfs.ReplaceIllegalPathSymbols(path, forward_slash)
 	local out = path:gsub(".", character_translation)
 
 	if forward_slash then
@@ -86,6 +92,10 @@ function vfs.FixIllegalCharactersInPath(path, forward_slash)
 	end
 
 	return out
+end
+
+function vfs.ReplaceIllegalCharacters()
+
 end
 
 function vfs.FixPathSlashes(path)

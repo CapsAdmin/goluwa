@@ -50,7 +50,13 @@ function vfs.Delete(path, ...)
 		return ok, err
 	end
 
-	return false, ("No such file or directory %q"):format(path)
+	local err = ("No such file or directory %q"):format(path)
+
+	if CLI then
+		error(err, 2)
+	end
+
+	return nil, err
 end
 
 function vfs.Rename(path, name, ...)
@@ -68,15 +74,23 @@ function vfs.Rename(path, name, ...)
 		local ok, err = os.rename(abs_path, dst)
 
 		if not ok then
-			wlog(err)
+			if CLI then
+				error(err, 2)
+			else
+				wlog(err)
+			end
 		end
 
 		return ok, err
 	end
 
 	local err = ("No such file or directory %q"):format(path)
-	wlog(err)
-	return false, err
+
+	if CLI then
+		error(err, 2)
+	end
+
+	return nil, err
 end
 
 local function add_helper(name, func, mode, cb)
@@ -86,14 +100,44 @@ local function add_helper(name, func, mode, cb)
 		local file, err = vfs.Open(path, mode)
 
 		if file then
-			local data = {file[func](file, ...)}
+			local args = {...}
+
+			if event then
+				local ret = {event.Call("VFSPre" .. name, path, ...)}
+				if ret[1] ~= nil then
+					for i,v in ipairs(args) do
+						if ret[i] ~= nil then
+							args[i] = ret[i]
+						end
+					end
+				end
+			end
+
+			local res, err = file[func](file, unpack(args))
 
 			file:Close()
 
-			return unpack(data)
+			if res and event then
+				local res, err = event.Call("VFSPost" .. name, path, res)
+				if res ~= nil or err then
+					if CLI then
+						debug.trace()
+						error(err, 2)
+					end
+
+					return res, err
+				end
+			end
+
+			return res, err
 		end
 
-		return file, err
+		if CLI then
+			debug.trace()
+			error(err, 2)
+		end
+
+		return nil, err
 	end
 end
 
@@ -106,11 +150,16 @@ add_helper("Write", "WriteBytes", "write", function(path, content, on_change)
 		return folder .. file_name
 	end)
 
-	if on_change then
+	if type(on_change) == "function" then
 		vfs.MonitorFile(path, function(file_path)
 			on_change(vfs.Read(file_path), file_path)
 		end)
 		on_change(content)
+	end
+
+	if CLI then
+		vfs.CreateDirectoriesFromPath(path, true)
+		return
 	end
 
 	if path:startswith("os:") then
@@ -132,6 +181,7 @@ add_helper("Write", "WriteBytes", "write", function(path, content, on_change)
 		end
 	end
 end)
+
 add_helper("GetLastModified", "GetLastModified", "read")
 add_helper("GetLastAccessed", "GetLastAccessed", "read")
 add_helper("GetSize", "GetSize", "read")

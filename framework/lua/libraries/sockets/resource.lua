@@ -345,13 +345,13 @@ end
 function resource.ClearDownloads()
 	local dirs = {}
 
-	vfs.Search("os:" .. e.DOWNLOAD_FOLDER, nil, function(path)
+	vfs.GetFilesRecursive("os:" .. e.DOWNLOAD_FOLDER, nil, function(path)
 		if vfs.IsDirectory(path) then
 			table.insert(dirs, path)
 		else
 			vfs.Delete(path)
 		end
-	end)
+	end, nil, true)
 
 	table.sort(dirs, function(a, b) return #a > #b end)
 

@@ -290,7 +290,7 @@ function chatsounds.BuildSoundLists()
 	local ep1_only = table.count(mounted) == 1 and mounted[380]
 
 	function thread:OnStart()
-		vfs.Search("sound/", {"wav", "ogg", "mp3"}, function(path, userdata)
+		vfs.GetFilesRecursive("sound/", {"wav", "ogg", "mp3"}, function(path, userdata)
 			if (not hl2_only and path:find("common/.-/hl2/")) or (not ep1_only and path:find("common/.-/episodic/")) then
 				logn("skiping ", path)
 				return
@@ -321,7 +321,7 @@ function chatsounds.BuildSoundLists()
 			--logn("\t", sentence)
 
 			self:Wait()
-		end)
+		end, nil, true)
 	end
 
 	function thread:Save()
@@ -645,7 +645,7 @@ function chatsounds.BuildSoundInfoTranslations()
 				end
 			end
 
-			game = vfs.FixIllegalCharactersInPath(game)
+			game = vfs.ReplaceIllegalPathSymbols(game)
 
 			logn("saving data/chatsounds/sound_info/"..game..".dat")
 			serializer.WriteFile("msgpack", "data/chatsounds/sound_info/"..game..".dat", out)
@@ -798,7 +798,7 @@ function chatsounds.TranslateSoundLists()
 					logn("saving ", path)
 					local game_list = chatsounds.TableToList(newlist)
 
-					path = vfs.FixIllegalCharactersInPath(path)
+					path = vfs.ReplaceIllegalPathSymbols(path)
 
 					vfs.Write("data/chatsounds/translated_lists/" .. path, game_list)
 

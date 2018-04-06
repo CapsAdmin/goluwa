@@ -36,10 +36,8 @@ do
 		str = str:trim()
 
 		if handle_path(str):endswith("/**") then
-			vfs.Search(handle_path(str:sub(0, -3)), extensions, function(path)
-				if vfs.IsFile(path) then
-					table.insert(paths, R(path))
-				end
+			vfs.GetFilesRecursive(handle_path(str:sub(0, -3)), extensions, function(path)
+				table.insert(paths, R(path))
 			end)
 		elseif handle_path(str):endswith("/*") then
 			for _, path in ipairs(vfs.Find(handle_path(str:sub(0, -2)), true)) do

@@ -74,6 +74,10 @@ function sockets.SetupReceiveHTTP(socket, info)
 		elseif info.on_fail then
 			system.pcall(info.on_fail, content)
 		end
+
+		if info.remove_socket_on_finish then
+			socket:Remove()
+		end
 	end
 
 	function socket:OnReceive(str)
@@ -168,6 +172,22 @@ local multipart_boundary = "Goluwa" .. os.time()
 local multipart = string.format('multipart/form-data;boundary=%q', multipart_boundary)
 
 function sockets.Request(info)
+	if not info.callback and tasks.GetActiveTask() then
+		local data
+		local err
+
+		info.callback = function(val) data = val end
+		info.error_callback = function(val) err = val end
+		info.timedout_callback = function(val) err = val end
+
+		sockets.Request(info)
+
+		while not data and not err do
+			tasks.Wait()
+		end
+
+		return data, err
+	end
 
 	if info.url then
 		local protocol, host, location = info.url:match("(.+)://(.-)/(.+)")
@@ -217,8 +237,11 @@ function sockets.Request(info)
 	info.user_agent = info.user_agent or "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0"
 	info.connection = info.connection or "Keep-Alive"
 	info.receive_mode = info.receive_mode or "all"
-	info.timeout = info.timeout or 2
+	info.timeout = info.timeout or 5
 	info.callback = info.callback or table.print
+	if info.remove_socket_on_finish == nil then
+		info.remove_socket_on_finish = true
+	end
 
 	if not info.files and (info.method == "POST" or info.method == "PATCH" or info.method == "PUT") and not info.post_data then
 		error("no post data!", 2)
@@ -240,7 +263,7 @@ function sockets.Request(info)
 
 	function socket:OnTimedOut()
 		if info.timedout_callback then
-			info.timedout_callback()
+			info.timedout_callback("timed out (" .. self:GetTimeout() .. " seconds)")
 		end
 	end
 
@@ -316,8 +339,6 @@ function sockets.Request(info)
 	return socket
 end
 
-local active_downloads = table.weak()
-
 local count = 0
 local queue = {}
 
@@ -371,6 +392,7 @@ do
 
 		local socket = sockets.Request({
 			url = url,
+			receive_mode = (1024 * 1024) * 2, -- 2 mb
 			on_chunks = function(...)
 				event.Call("DownloadChunkReceived", url, ...)
 
@@ -426,8 +448,8 @@ do
 				cb:callextra(url, "on_fail", reason)
 				sockets.StopDownload(url)
 			end,
-			timedout_callback = function()
-				cb:callextra(url, "on_fail", "timed out")
+			timedout_callback = function(msg)
+				cb:callextra(url, "on_fail", msg)
 				sockets.StopDownload(url)
 			end,
 		})
@@ -437,6 +459,8 @@ do
 
 		return true
 	end
+
+	tasks.WrapCallback(sockets, "Download")
 
 	function sockets.StopDownload(url)
 		local socket = sockets.active_downloads[url] or NULL

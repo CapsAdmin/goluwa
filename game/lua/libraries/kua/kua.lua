@@ -5,7 +5,7 @@ runfile("lexer.lua", kua)
 local function test_lua_files()
 	if true or not FILES then
 		FILES = {}
-		for _, path in pairs(vfs.Search("/home/caps/snabb/", {"lua"})) do
+		for _, path in pairs(vfs.GetFilesRecursive("/home/caps/snabb/", {"lua"})) do
 
 			local str, err = vfs.Read(path)
 			if str then

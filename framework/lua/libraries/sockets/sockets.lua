@@ -332,6 +332,7 @@ do -- tcp socket meta
 			-- check connection
 			if self.connecting then
 				local res, msg = sock:getpeername()
+
 				if res then
 					self:DebugPrintf("connected to %s:%s", res, msg)
 
@@ -475,17 +476,16 @@ do -- tcp socket meta
 			function CLIENT:Timeout(bool)
 				if not self.TimeoutLength then return end
 
+				local time = system.GetElapsedTime()
+
 				if not bool then
-					self.TimeoutStart = nil
+					self.TimeoutStart = time
 					return
 				end
-
-				local time = system.GetElapsedTime()
 
 				if not self.TimeoutStart then
 					self.TimeoutStart = time + self.TimeoutLength
 				end
-
 				local seconds = time - self.TimeoutStart
 
 				if self:OnTimeout(seconds) ~= false then

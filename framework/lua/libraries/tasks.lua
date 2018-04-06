@@ -105,6 +105,7 @@ function META:Start(now)
 				self:OnUpdate()
 				self:OnFinish(res)
 				event.Call("TaskFinished", self)
+				self:Remove()
 				return false
 			end
 
@@ -185,18 +186,19 @@ end
 
 META:Register()
 
-function tasks.CreateTask(on_start, on_finish)
+function tasks.CreateTask(on_start, on_finish, now)
 	local self = META:CreateObject()
 
 	if on_start then self.OnStart = function(_, ...) return on_start(...) end end
 	if on_finish then self.OnFinish = function(_, ...) return on_finish(...) end end
 
-	if on_start then self:Start() end
+	if on_start then self:Start(now) end
 
 	tasks.created[self] = self
 
 	if tasks.IsEnabled() and not event.IsTimer("tasks") then
 		event.Timer("tasks", 0.25, 0, tasks.Update)
+		tasks.Update()
 	end
 
 	return self
@@ -266,6 +268,37 @@ function tasks.Update()
 	for thread in pairs(tasks.created) do
 		if thread.run_me then
 			thread:Start(true)
+		end
+	end
+end
+
+do
+	tasks.wrapped_functions = tasks.wrapped_functions or {}
+
+	function tasks.WrapCallback(lib, func, arg)
+		tasks.wrapped_functions[lib] = tasks.wrapped_functions[lib] or {}
+		tasks.wrapped_functions[lib][func] = tasks.wrapped_functions[lib][func] or lib[func]
+		local old = tasks.wrapped_functions[lib][func]
+
+		lib[func] = function(arg, callback, on_error, ...)
+			if not callback and not on_error and tasks.GetActiveTask() then
+				local data
+				local err
+
+				old(arg, function(...) data = {...} end, function(val) err = val end)
+
+				while not data and not err do
+					tasks.Wait()
+				end
+
+				if data then
+					return unpack(data)
+				end
+
+				return nil, err
+			end
+
+			return old(arg, callback, on_error, ...)
 		end
 	end
 end

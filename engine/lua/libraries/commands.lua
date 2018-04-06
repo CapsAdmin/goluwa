@@ -453,7 +453,13 @@ do -- commands
 
 	function commands.ExecuteCommandString(str)
 		local tr
-		local a, b, c = xpcall(commands.RunCommandString, function(msg) tr = debug.traceback() .. "\n\n" .. msg end, str, simple)
+		local a, b, c = xpcall(commands.RunCommandString, function(msg)
+			if CLI then
+				tr = msg
+			else
+				tr = debug.traceback() .. "\n\n" .. msg
+			end
+		end, str, simple)
 
 		if a == false then
 			return false, b or tr
@@ -509,48 +515,52 @@ do -- commands
 	end
 
 	function commands.RunString(line, skip_lua, skip_split)
-		if CLI then
-			logn(">> ", line)
-		end
+		tasks.CreateTask(
+			function()
+				if CLI then
+					logn(">> ", line)
+				end
 
-		if not skip_split and line:find("\n") then
-			for line in (line .. "\n"):gmatch("(.-)\n") do
-				commands.RunString(line, skip_lua, skip_split)
+				if not skip_split and line:find("\n") then
+					for line in (line .. "\n"):gmatch("(.-)\n") do
+						commands.RunString(line, skip_lua, skip_split)
+					end
+					return
+				end
+
+				if pvars then
+					local key, val = line:match("^([%w_]+)%s+(.+)")
+					if key and val and pvars.Get(key) ~= nil then
+						pvars.SetString(key, val)
+						logn(key, " (",pvars.GetObject(key):GetType(),") = ", pvars.GetString(key))
+						return
+					end
+
+					local key = line:match("^([%w_]+)$")
+					if key and pvars.Get(key) ~= nil then
+						logn(key, " (",pvars.GetObject(key):GetType(),") = ", pvars.GetString(key))
+						logn(pvars.GetObject(key):GetHelp())
+						return
+					end
+				end
+
+				local ok, msg = commands.ExecuteCommandString(line)
+
+				if not ok and not msg:find("could not find command") then
+					logn(msg)
+
+					return
+				end
+
+				if not ok and not skip_lua then
+					ok, msg = commands.ExecuteLuaString(line)
+				end
+
+				if not ok then
+					logn(msg)
+				end
 			end
-			return
-		end
-
-		if pvars then
-			local key, val = line:match("^([%w_]+)%s+(.+)")
-			if key and val and pvars.Get(key) ~= nil then
-				pvars.SetString(key, val)
-				logn(key, " (",pvars.GetObject(key):GetType(),") = ", pvars.GetString(key))
-				return
-			end
-
-			local key = line:match("^([%w_]+)$")
-			if key and pvars.Get(key) ~= nil then
-				logn(key, " (",pvars.GetObject(key):GetType(),") = ", pvars.GetString(key))
-				logn(pvars.GetObject(key):GetHelp())
-				return
-			end
-		end
-
-		local ok, msg = commands.ExecuteCommandString(line)
-
-		if not ok and not msg:find("could not find command") then
-			logn(msg)
-
-			return
-		end
-
-		if not ok and not skip_lua then
-			ok, msg = commands.ExecuteLuaString(line)
-		end
-
-		if not ok then
-			logn(msg)
-		end
+		)
 	end
 
 	commands.Add("help|usage=string|nil", function(cmd)

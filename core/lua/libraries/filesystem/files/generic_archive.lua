@@ -70,14 +70,16 @@ function CONTEXT:GetFileTree(path_info)
 	end
 
 	local cache_path = "os:data/archive_cache/" .. crypto.CRC32(cache_key)
-	never = true
-	local tree_data, err, what = serializer.ReadFile("msgpack", cache_path)
-	never = false
+	if vfs.IsFile(cache_path) then
+		never = true
+		local tree_data, err, what = serializer.ReadFile("msgpack", cache_path)
+		never = false
 
-	if tree_data then
-		local tree = utility.CreateTree("/", tree_data)
-		cache[cache_key] = tree
-		return cache[cache_key], relative, archive_path
+		if tree_data then
+			local tree = utility.CreateTree("/", tree_data)
+			cache[cache_key] = tree
+			return cache[cache_key], relative, archive_path
+		end
 	end
 
 	never = true
@@ -87,7 +89,9 @@ function CONTEXT:GetFileTree(path_info)
 		return false, err
 	end
 
-	llog("generating tree data cache for ", archive_path)
+	if not CLI then
+		llog("generating tree data cache for ", archive_path)
+	end
 
 	local tree = utility.CreateTree("/")
 	self.tree = tree
