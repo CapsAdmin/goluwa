@@ -201,11 +201,6 @@ do -- commands
 							defaults = defaults or {}
 							default = default:sub(2, -2)
 
-							if default == "STDIN" then
-								logn(aliases[1], " #", i2, " argument (", temp ,"):")
-								default = io.stdin:read("*l")
-							end
-
 							-- special case
 							if temp == "string" then
 								defaults[i] = default
@@ -418,7 +413,12 @@ do -- commands
 
 			for i, arg_types in ipairs(command.argtypes) do
 				if command.defaults and args[i] == nil and command.defaults[i] then
-					args[i] = command.defaults[i]
+					if command.defaults[i] == "STDIN" then
+						logn(alias, " #", i2, " argument (", temp ,"):")
+						args[i] = io.stdin:read("*l")
+					else
+						args[i] = command.defaults[i]
+					end
 				end
 
 				if args[i] ~= nil or not table.hasvalue(arg_types, "nil") then
