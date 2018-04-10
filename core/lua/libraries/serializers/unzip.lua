@@ -344,8 +344,8 @@ function zip.Decode(str)
 end
 
 serializer.AddLibrary(
-	"zip",
-	function(simple, ...) return zip.Encode(...) end,
+	"luaunzip",
+	nil,
 	function(simple, ...) return zip.Decode(...) end,
 	zip
 )
