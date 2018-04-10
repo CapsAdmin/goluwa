@@ -181,8 +181,8 @@ function line.RunGame(folder, ...)
 			end
 
 			if name == "socket.core" then
-				env.socket = sockets.luasocket
-				return sockets.luasocket
+				env.socket = sockets.core.luasocket
+				return env.socket
 			end
 
 			if package_loaded[name] then

@@ -1,21 +1,41 @@
 if not SOCKETS then return end
 
-local luasocket = desire("socket.core")
+local sockets = _G.sockets or {}
 
-if not luasocket then
+sockets.core = {}
+
+sockets.core.luasocket = desire("socket.core")
+
+local enet = system.GetFFIBuildLibrary("enet")
+
+if enet then
+	local ffi = require("ffi")
+
 	local META = {}
 	META.__index = META
+
+	function META:setfd(val)
+		self.obj = val
+	end
+
+	function META:getfd(val)
+		return self.obj
+	end
 
 	function META:accept()
 
 	end
 
 	function META:close()
-
+		enet.SocketDestroy(self.obj)
 	end
 
 	function META:settimeout(sec)
+		if sec == 0 then
+			enet.SocketSetOption(obj, enet.e.SOCKOPT_NONBLOCK, 1)
+		end
 
+		return true
 	end
 
 	function META:setoption(key, val)
@@ -23,13 +43,45 @@ if not luasocket then
 	end
 
 	function META:connect(ip, port)
+		local host = ip
+		local out = ffi.new("struct _ENetAddress[1]")
+		local ret = enet.AddressSetHost(out, host)
+		out[0].port = port
+		self.address = out
 
+		local ret = enet.SocketConnect(self.obj, out[0])
+
+		if ret == -1 then
+			return nil, ffi.strerror()
+		end
+
+		return true
 	end
 
-	function META:getpeername() end
+	function META:getpeername()
+		--local out = ffi.new("struct _ENetAddress[1]")
+		--enet.SocketGetAddress(self.obj, out)
+		local out = self.address
+
+		local ip = ffi.new("char[256]")
+		enet.AddressGetHostIp(out[0], ip, ffi.sizeof(ip))
+
+		--local host = ffi.new("char[256]")
+		--enet.AddressGetHost(out[0], host, ffi.sizeof(host))
+		--print(ffi.string(host), "!!!")
+
+		return tostring(ffi.string(ip)), out[0].port
+	end
 
 	function META:send(str)
+		local buffer = ffi.new("struct ENetBuffer", {data = ffi.cast("uint8_t*", str), dataLength = #str})
+		local ret = enet.SocketSend(self.obj, self.address[0], buffer, 1)
 
+		if ret == -1 then
+			return nil, ffi.strerror()
+		end
+
+		return ret
 	end
 
 	function META:bind(ip, port)
@@ -44,23 +96,93 @@ if not luasocket then
 
 	end
 
-	function META:receivefrom()
+	function META:receive()
+		local buffer = ffi.new("struct ENetBuffer[1]")
+		local ret = enet.SocketReceive(self.obj, self.address[0], buffer, 1)
 
+		if ret == -1 then
+			return nil, ffi.strerror()
+		end
+
+		return ffi.string(buffer[0].data, buffer[0].dataLength)
 	end
+
+	META.receivefrom = META.receieve
 
 	function META:getsockname()
 
 	end
 
-	luasocket = {
+	local function create(enum)
+		local obj = enet.SocketCreate(enum)
+
+		return obj
+	end
+
+	sockets.core.enet = {
+		tcp = function() return setmetatable({obj = create(enet.e.SOCKET_TYPE_STREAM)}, META) end,
+		udp = function() return setmetatable({obj = create(enet.e.SOCKET_TYPE_DGRAM)}, META) end,
+	}
+end
+
+
+do
+	local META = {}
+	META.__index = META
+
+	function META:accept()
+		return nil, "nyi"
+	end
+
+	function META:close()
+		return nil, "nyi"
+	end
+
+	function META:settimeout(sec)
+		return nil, "nyi"
+	end
+
+	function META:setoption(key, val)
+		return nil
+	end
+
+	function META:connect(ip, port)
+		return nil, "nyi"
+	end
+
+	function META:getpeername()
+		return nil, "nyi"
+	end
+
+	function META:send(str)
+		return nil, "nyi"
+	end
+
+	function META:bind(ip, port)
+		return nil, "nyi"
+	end
+
+	function META:listen()
+		return nil, "nyi"
+	end
+
+	function META:sendto(str, ip, port)
+		return nil, "nyi"
+	end
+
+	function META:receivefrom()
+		return nil, "nyi"
+	end
+
+	function META:getsockname()
+		return nil, "nyi"
+	end
+
+	sockets.core.dummy = {
 		tcp = function() return setmetatable({}, META) end,
 		udp = function() return setmetatable({}, META) end,
 	}
 end
-
-local sockets = _G.sockets or {}
-
-sockets.luasocket = luasocket
 
 sockets.active_sockets = sockets.active_sockets or {}
 
@@ -151,11 +273,15 @@ local function new_socket(override, META, typ, id)
 
 	local self = META:CreateObject()
 
-	if typ == "udp" or typ == "tcp" then
-		self.socket = override or assert(sockets.luasocket[typ]())
-		self.socket:settimeout(0, "block")
-		self.socket:settimeout(0, "total")
+	local subtype = typ:sub(5)
+
+	if subtype == "" then
+		subtype = "luasocket"
 	end
+
+	self.socket = override or assert(sockets.core[subtype][typ]())
+	self.socket:settimeout(0, "block")
+	self.socket:settimeout(0, "total")
 
 	self.socket_type = typ
 	self.data_sent = 0
@@ -170,6 +296,19 @@ local function new_socket(override, META, typ, id)
 	self.uid = id
 
 	return self
+end
+
+local SHARED = {}
+function SHARED:Error(msg)
+	self:DebugPrintf("errored!: %s", msg)
+
+	if sockets.debug then
+		debug.trace()
+	end
+
+	if self:OnError(msg) ~= false then
+		self:Remove()
+	end
 end
 
 do -- tcp socket meta
@@ -267,7 +406,7 @@ do -- tcp socket meta
 
 			if not ok and msg and msg ~= "timeout" and msg ~= "Operation already in progress" and (WINDOWS and msg ~= "Invalid argument") then
 				self:DebugPrintf("connect failed: %s", msg)
-				self:OnError(msg)
+				self:Error(msg)
 
 				if WINDOWS and msg == "Invalid argument" then
 					if not LUASOCKET_INVALID_ARGUMENT then
@@ -359,24 +498,23 @@ do -- tcp socket meta
 				elseif msg == "timeout" or msg == "getpeername failed" or msg == "Transport endpoint is not connected" then
 					self:Timeout(true)
 				else
-					self:DebugPrintf("errored: %s", msg)
-					self:OnError(msg)
+					self:Error(msg)
 				end
 			end
 
 			if self.shaking_hands then
 				local res, msg = sock:dohandshake()
+
 				if res then
 					self.shaking_hands = nil
 					self:DebugPrintf("done shaking hands")
 					self:OnConnect(self.old_socket:getpeername())
-				elseif msg == "wantread" or msg == "Socket is not connected" then
+				elseif msg == "wantread" or msg == "wantwrite" or msg == "Socket is not connected" then
 					self:Timeout(true)
 				elseif msg == "closed" then
 					self:Remove()
 				else
-					self:DebugPrintf("errored: %s", msg)
-					self:OnError(msg)
+					self:Error(msg)
 					self:Remove()
 				end
 
@@ -428,7 +566,7 @@ do -- tcp socket meta
 
 				for _ = 1, 128 do
 					local data, err, partial = sock:receive(mode)
-
+print(data and #data, err, partial and #partial, mode)
 					if not data and partial and partial ~= "" then
 						data = partial
 					end
@@ -449,7 +587,13 @@ do -- tcp socket meta
 
 						self.data_received = self.data_received + #data
 					else
-						if err == "timeout" or err == "Socket is not connected" or err == "wantread" then
+						if
+							err == "timeout" or
+							err == "Socket is not connected" or
+							err == "wantread" or
+							err == "Resource temporarily unavailable" or
+							err == "Operation now in progress"
+						then
 							self:Timeout(true)
 						elseif err == "closed" then
 							self:DebugPrintf("closed")
@@ -458,13 +602,11 @@ do -- tcp socket meta
 								self:Remove()
 							end
 						else
-							self:DebugPrintf("errored: %s", err)
-
 							if self.__server then
 								self.__server:OnClientError(self, err)
 							end
 
-							self:OnError(err)
+							self:Error(err)
 						end
 						break
 					end
@@ -600,9 +742,10 @@ do -- tcp socket meta
 		function CLIENT:OnTimedOut() end
 		function CLIENT:OnConnect(ip, port) end
 		function CLIENT:OnReceive(data) end
-		function CLIENT:OnError(msg) self:Remove() end
+		function CLIENT:OnError(msg) end
 		function CLIENT:OnSend(data, bytes, b,c,d) end
 		function CLIENT:OnClose() end
+		CLIENT.Error = SHARED.Error
 
 		function sockets.CreateClient(type, ip, port, id)
 			local self = new_socket(nil, CLIENT, type, id)
@@ -677,10 +820,7 @@ do -- tcp socket meta
 					self:DebugPrintf("address already in use (%s:%s) retrying in 3 seconds", ip, port)
 				else
 					self:DebugPrintf("bind failed: %s", msg)
-
-					if self:OnError(msg) ~= false then
-						error(msg, 2)
-					end
+					self:Error(msg)
 				end
 			else
 				self.retry_host = nil
@@ -690,10 +830,7 @@ do -- tcp socket meta
 
 					if not ok and msg then
 						self:DebugPrintf("bind failed: %s", msg)
-
-						if self:OnError(msg) ~= false then
-							error(msg, 2)
-						end
+						self:Error(msg)
 					end
 				end
 				self.ready = true
@@ -753,7 +890,7 @@ do -- tcp socket meta
 				if ip == "timeout" then return end
 
 				if not ip or not port then
-					self:DebugPrintf("errored: %s", ip)
+					self:Error(ip)
 				else
 					self:DebugPrintf("received %s from %s:%s", data, ip, port)
 
@@ -855,7 +992,8 @@ do -- tcp socket meta
 		function SERVER:OnClientClosed(client) end
 		function SERVER:OnReceive(data, client) end
 		function SERVER:OnClientError(client, err) end
-		function SERVER:OnError(msg) self:Remove() end
+		function SERVER:OnError(msg) end
+		SERVER.Error = SHARED.Error
 
 		function sockets.CreateServer(type, ip, port, id)
 			local self = new_socket(nil, SERVER, type, id)
