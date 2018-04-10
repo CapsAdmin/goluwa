@@ -49,7 +49,7 @@ function render.SetDebug(b)
 						obj = nil
 					end
 
-					if obj and obj.GetDebugTrace and obj:GetDebugTrace() ~= "" then
+					if obj and hasindex(obj) and obj.GetDebugTrace and obj:GetDebugTrace() ~= "" then
 						logn(obj:GetDebugTrace())
 					end
 
