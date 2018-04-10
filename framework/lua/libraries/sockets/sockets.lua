@@ -566,7 +566,7 @@ do -- tcp socket meta
 
 				for _ = 1, 128 do
 					local data, err, partial = sock:receive(mode)
-print(data and #data, err, partial and #partial, mode)
+
 					if not data and partial and partial ~= "" then
 						data = partial
 					end
