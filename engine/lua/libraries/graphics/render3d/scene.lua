@@ -65,7 +65,6 @@ local occlusion_shader = render.CreateShader({
 			{uv = "vec2"},
 		},
 		variables = {
-			size = 1,
 			model = "mat4",
 		},
 		source = [[
