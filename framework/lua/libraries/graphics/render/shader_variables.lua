@@ -13,7 +13,7 @@ function render.CreateShaderVariables(typ, shader, name, extra_size, persistent)
 	elseif properties.shader_storage_block then
 		block = properties.shader_storage_block[name]
 	else
-		return
+		return nil, "could not find uniform_block or shader_storage_block in shader properties"
 	end
 
 	local referenced = false
@@ -26,7 +26,7 @@ function render.CreateShaderVariables(typ, shader, name, extra_size, persistent)
 	end
 
 	if not referenced then
-		return
+		return nil, "uniform buffer has no references in shader"
 	end
 
 	local total_size = block.buffer_data_size + extra_size
