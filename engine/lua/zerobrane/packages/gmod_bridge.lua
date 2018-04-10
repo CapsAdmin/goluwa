@@ -33,9 +33,9 @@ function PLUGIN:onEditorSave(editor)
 			local path = ide:GetDocument(editor).filePath
 			if path then
 				path = path:lower()
-				if path:find("server") or path:find("sv_") then
+				if path:find("/server/", 1, true) or path:find("/sv_", 1, true) then
 					f:write("if CLIENT then return end ")
-				elseif path:find("client") or path:find("cl_") then
+				elseif path:find("/client/", 1, true) or path:find("/cl_", 1, true) then
 					f:write("if SERVER then return end ")
 				end
 			end
