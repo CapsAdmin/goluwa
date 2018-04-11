@@ -458,6 +458,100 @@ do
 			return out
 		end
 	end
+
+	function META:GetUniformData(key)
+		local out = {}
+
+		out.block_index = self:GetUniformBlockIndex(key)
+
+		for _, v in ipairs({
+			"GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER",
+			"GL_UNIFORM_BLOCK_REFERENCED_BY_TESS_CONTROL_SHADER",
+			"GL_UNIFORM_BLOCK_REFERENCED_BY_TESS_EVALUATION_SHADER",
+			"GL_UNIFORM_BLOCK_REFERENCED_BY_GEOMETRY_SHADER",
+			"GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER",
+			"GL_UNIFORM_BLOCK_REFERENCED_BY_COMPUTE_SHADER",
+		}) do
+
+			local ptr = ffi.new("GLint[1]")
+			self:GetActiveUniformBlock(out.block_index, v, ptr)
+			out[v:sub(18):lower()] = ptr[0]
+		end
+
+		local ptr = ffi.new("GLint[1]")
+		self:GetActiveUniformBlock(out.block_index, "GL_UNIFORM_BLOCK_NAME_LENGTH", ptr)
+		local strptr = ffi.new("uint8_t[?]", ptr[0])
+		self:GetActiveUniformBlockName(out.block_index, ptr[0], nil, strptr)
+		out.name = ffi.string(strptr)
+
+		local ptr = ffi.new("GLint[1]")
+		self:GetActiveUniformBlock(out.block_index, "GL_UNIFORM_BLOCK_DATA_SIZE", ptr)
+		out.buffer_data_size = ptr[0]
+
+		local ptr = ffi.new("GLint[1]")
+		self:GetActiveUniformBlock(out.block_index, "GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS", ptr)
+		out.active_uniforms = ptr[0]
+
+		out.variables = {}
+
+		local ptr = ffi.new("GLint[?]", out.active_uniforms)
+		self:GetActiveUniformBlock(out.block_index, "GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES", ptr)
+		for i = 0, out.active_uniforms - 1 do
+			local idx = ptr[i]
+
+			local name, type = self:GetActiveUniform(idx)
+
+			local tbl = {}
+
+			tbl.location = idx
+			tbl.name = name
+			tbl.type = type
+			tbl.offset = self:GetActiveUniforms({idx}, "GL_UNIFORM_OFFSET")[1]
+			tbl.array_stride = self:GetActiveUniforms({idx}, "GL_UNIFORM_ARRAY_STRIDE")[1]
+			tbl.matrix_stride = self:GetActiveUniforms({idx}, "GL_UNIFORM_MATRIX_STRIDE")[1]
+			tbl.is_row_major = self:GetActiveUniforms({idx}, "GL_UNIFORM_IS_ROW_MAJOR")[1]
+			tbl.atomic_counter_buffer_index = self:GetActiveUniforms({idx}, "GL_UNIFORM_ATOMIC_COUNTER_BUFFER_INDEX")[1]
+
+			table.insert(out.variables, tbl)
+		end
+
+		return out
+	end
+
+	do -- GetProperties alternative
+		function META:GetUniformBlockIndex(key)
+			local location = self.gl_program:GetUniformBlockIndex(key)
+			if location == gl.e.GL_INVALID_INDEX then
+				return nil, "invalid index"
+			end
+			return location
+		end
+
+		function META:GetActiveUniformBlock(location, name, out)
+			gl.GetActiveUniformBlockiv(self.gl_program.id, location, name, out)
+		end
+
+		function META:GetActiveUniformBlockName(location, bufsize, outlength, outname)
+			gl.GetActiveUniformBlockName(self.gl_program.id, location, bufsize, outlength, outname)
+		end
+
+		function META:GetActiveUniform(idx)
+			local enum_out = ffi.new("GLenum[1]")
+			local name_out = ffi.new("uint8_t[256]")
+			gl.GetActiveUniform(self.gl_program.id, idx, 256, nil, nil, enum_out, name_out)
+			return ffi.string(name_out), type_translate[enum_out[0]] or enum_out[0]
+		end
+
+		function META:GetActiveUniforms(indices, pname)
+			local out = ffi.new("GLint[?]", #indices)
+			gl.GetActiveUniformsiv(self.gl_program.id, #indices, ffi.new("GLint[?]", unpack(indices)), pname, out)
+			local tbl = {}
+			for i = 1, #indices do
+				tbl[i] = out[i-1]
+			end
+			return tbl
+		end
+	end
 end
 
 function META:BindShaderBlock(block_index, where)
