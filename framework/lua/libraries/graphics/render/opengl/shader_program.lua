@@ -127,7 +127,6 @@ do
 			GL_NUM_ACTIVE_VARIABLES = true,
 			GL_REFERENCED_BY_GEOMETRY_SHADER = true,
 			GL_REFERENCED_BY_COMPUTE_SHADER = true,
-			GL_ACTIVE_VARIABLES = true,
 			GL_REFERENCED_BY_TESS_CONTROL_SHADER = true,
 			GL_REFERENCED_BY_TESS_EVALUATION_SHADER = true,
 			GL_BUFFER_DATA_SIZE = true,
@@ -332,13 +331,20 @@ do
 	temp = {}
 	for what, properties in pairs(fill_info) do
 		local property_enums = {}
+		local property_enums_tbl = {}
 		local names = {}
 		for enum in pairs(properties) do
 			table.insert(property_enums, gl.e[enum])
+			table.insert(property_enums_tbl, enum)
 			table.insert(names, enum:sub(4):lower())
 		end
-		property_enums = ffi.new("GLint["..#names.."]", property_enums)
-		temp[what] = {enums = property_enums, count = #names, names = names}
+
+		temp[what] = {
+			enums = ffi.new("const GLenum["..#names.."]", property_enums),
+			enumstbl = property_enums_tbl,
+			count = #names,
+			names = names
+		}
 	end
 	fill_info = temp
 
@@ -362,15 +368,17 @@ do
 				for resource_index = 0, resource_count - 1 do
 
 					local res = ffi.new("GLint["..property_info.count.."]")
-					self.gl_program:GetResource(what, resource_index, property_info.count, property_info.enums, 0, nil, res)
+					local len = ffi.new("GLsizei[1]")
+					self.gl_program:GetResource(what, resource_index, property_info.count, property_info.enums, property_info.count, len, res)
 
 					local values = {}
 
-					for i, key in ipairs(property_info.names) do
+					for i = 1, property_info.count do
+						local key = property_info.names[i]
 						local val = res[i - 1]
 
 						if key == "name_length" then
-							local bytes = val + 256
+							local bytes = val
 							local str = ffi.new("GLchar[?]", bytes)
 							self.gl_program:GetResourceName(what, resource_index, bytes, nil, str)
 							val = ffi.string(str)
@@ -381,6 +389,25 @@ do
 
 						values[key] = val
 					end
+					--[[
+					if what == "GL_UNIFORM_BLOCK" then
+						local res = ffi.new("GLint[1]")
+						local props = ffi.new("const GLenum[?]", gl.e.GL_NUM_ACTIVE_VARIABLES)
+						self.gl_program:GetResource(what, resource_index, 1, props, 1, len, res)
+						local count = res[0]
+						count = len[0]
+
+						print("active variables: ", count, len[0])
+						if count > 0 then
+							local res = ffi.new("GLint[?]", count)
+							local props = ffi.new("const GLenum[?]", gl.e.GL_ACTIVE_VARIABLES)
+							self.gl_program:GetResource(what, resource_index, count, props, count, len, res)
+							for i = 0, count - 1 do
+								print(res[0])
+							end
+						end
+					end
+					]]
 
 					table.insert(properties, values)
 				end
