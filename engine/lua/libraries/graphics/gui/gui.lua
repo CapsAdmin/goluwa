@@ -102,6 +102,7 @@ local function try(children, filter)
 end
 
 local suppress
+local sort = function(a, b) return a.MouseZPos > b.MouseZPos end
 
 function gui.GetHoveringPanel(panel, filter)
 	if not suppress and gui.popup_panel.mouse_over then
@@ -128,7 +129,7 @@ function gui.GetHoveringPanel(panel, filter)
 	local found
 
 	if ordered[1] then
-		table.sort(ordered, function(a, b) return a.MouseZPos > b.MouseZPos end)
+		table.sort(ordered, sort)
 		found = try(ordered, filter)
 	end
 
