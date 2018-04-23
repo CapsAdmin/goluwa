@@ -155,8 +155,22 @@ do
 		return current
 	end
 
-	local sshh
 	local last = {}
+
+	local function update()
+		local options = {}
+
+		for k, v in pairs(current) do
+			if type(v) == "number" then
+				table.insert(options, k .. "=" .. v)
+			elseif type(v) == "boolean" then
+				table.insert(options, v and ("+" .. k) or ("-" .. k))
+			end
+		end
+
+		jit.opt.start(unpack(options))
+		jit.flush()
+	end
 
 	function jit.setoption(option, val)
 		if current[option] == nil then error("not a valid option", 2) end
@@ -164,31 +178,13 @@ do
 		current[option] = val
 
 		if last[option] ~= val then
-			local options = {}
+			logn("jit option ", option, " = ", val)
 
-			if not sshh then
-				logn("jit option ", option, " = ", val)
-			end
-
-			for k, v in pairs(current) do
-				if type(v) == "number" then
-					table.insert(options, k .. "=" .. v)
-				elseif type(v) == "boolean" then
-					table.insert(options, v and ("+" .. k) or ("-" .. k))
-				end
-			end
-
-			jit.opt.start(unpack(options))
-			jit.flush()
+			update()
 
 			last[option] = val
 		end
 	end
-	sshh = true
-	for k,v in pairs(current) do
-		jit.setoption(k, v)
-	end
-	sshh = nil
 end
 
 pcall(function()
