@@ -6,6 +6,7 @@ profiler.raw_data = profiler.raw_data or {sections = {}, statistical = {}, trace
 local blacklist = {
 	["leaving loop in root trace"] = true,
 	["error thrown or hook fed during recording"] = true,
+	["too many spill slots"] = true,
 }
 
 local function trace_dump_callback(what, trace_id, func, pc, trace_error_id, trace_error_arg)
@@ -300,6 +301,11 @@ function profiler.GetBenchmark(type, file, dump_line)
 					data.section_name = data.section_name:match(".+lua/(.+)") or data.section_name
 				end
 
+				if name:find("\n", 1, true) then
+					name = name:gsub("\n", "")
+					name = name:sub(0, 50)
+				end
+
 				name = name:trim()
 				data.path = path
 				data.file_name = path:match(".+/(.+)%.") or path
@@ -556,10 +562,13 @@ local blacklist = {
 	["inner loop in root trace"] = true,
 	["leaving loop in root trace"] = true,
 	["blacklisted"] = true,
+	["too many spill slots"] = true,
+	["down-recursion, restarting"] = true,
 }
 
 function profiler.EnableRealTimeTraceAbortLogging(b)
 	if b then
+		local last_log
 		jit.attach(function(what, trace_id, func, pc, trace_error_id, trace_error_arg)
 			if what == "abort" then
 				local info = jit.util.funcinfo(func, pc)
@@ -577,10 +586,17 @@ function profiler.EnableRealTimeTraceAbortLogging(b)
 					local line = info.currentline or info.linedefined
 					local content = vfs.Read(e.ROOT_FOLDER .. path:sub(2)) or vfs.Read(path:sub(2))
 
+					local str
+
 					if content then
-						logf("%s:%s\n%s:--\t%s\n\n", path:sub(2):replace(e.ROOT_FOLDER, ""), line, content:split("\n")[line]:trim(), reason)
+						str = string.format("%s:%s\n%s:--\t%s\n\n", path:sub(2):replace(e.ROOT_FOLDER, ""), line, content:split("\n")[line]:trim(), reason)
 					else
-						logf("%s:%s:\n\t%s\n\n", path, line, reason)
+						str = string.format("%s:%s:\n\t%s\n\n", path, line, reason)
+					end
+
+					if str ~= last_log then
+						log(str)
+						last_log = str
 					end
 				end
 			end
