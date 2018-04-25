@@ -280,7 +280,13 @@ if GRAPHICS or PHYSICS then
 		{path = "__MAPNAME__/__MAPNAME__.obj", callback =  function(ent) ent:SetSize(0.01) ent:SetRotation(Quat(-1,0,0,1)) end},
 	}
 
-	commands.Add("map=string_trim", function(name)
+	commands.Add("map=string_trim|nil", function(name)
+		if not name then
+			for _, path in ipairs(vfs.Find("maps/.-%.bsp")) do
+				print(vfs.RemoveExtensionFromPath(path))
+			end
+			return
+		end
 		utility.PushTimeWarning()
 		for _, info in pairs(tries) do
 			local path = info.path:gsub("__MAPNAME__", name)
