@@ -12,6 +12,7 @@ function META:OnRemove()
 
 	sdl.DestroyWindow(self.sdl_wnd)
 	window.windowobjects[self.sdl_windowid] = nil
+	table.removevalue(window.active, self)
 end
 
 function META:GetPosition()
@@ -101,26 +102,7 @@ function META:GetMouseTrapped()
 end
 
 function META:GetMouseDelta()
-	if self.mouse_trapped_start then
-		self.mouse_trapped_start = nil
-		return Vec2()
-	end
-	if self.mouse_trapped then
-		local x, y = ffi.new("int[1]"), ffi.new("int[1]")
-		sdl.GetRelativeMouseState(x, y)
-		return Vec2(x[0], y[0])
-	end
 	return self.mouse_delta or Vec2()
-end
-
-function META:UpdateMouseDelta()
-	local pos = self:GetMousePosition()
-
-	if self.last_mpos then
-		self.mouse_delta = (pos - self.last_mpos)
-	end
-
-	self.last_mpos = pos
 end
 
 function META:OnUpdate(delta)
@@ -289,6 +271,13 @@ for k,v in pairs(sdl.e) do
 	end
 end
 
+window.windowobjects = window.windowobjects or {}
+window.active = window.active or {}
+
+function window.GetWindows()
+	return window.active
+end
+
 function window.CreateWindow(width, height, title, flags)
 	title = title or ""
 
@@ -332,6 +321,7 @@ function window.CreateWindow(width, height, title, flags)
 
 	local self = META:CreateObject()
 
+	table.insert(window.active, self)
 
 	local x, y = ffi.new("int[1]"), ffi.new("int[1]")
 	sdl.GetWindowPosition(sdl_wnd, x, y)
@@ -344,7 +334,6 @@ function window.CreateWindow(width, height, title, flags)
 	self.mouse_delta = Vec2()
 	self.sdl_wnd = sdl_wnd
 
-	window.windowobjects = window.windowobjects or {}
 	self.sdl_windowid = sdl.GetWindowID(self.sdl_wnd)
 	window.windowobjects[self.sdl_windowid] = self
 
@@ -375,7 +364,6 @@ function window.CreateWindow(width, height, title, flags)
 		return b
 	end
 
-	local event = ffi.new("union SDL_Event")
 	local mbutton_translate = {}
 	for i = 1, 8 do mbutton_translate[i] = "button_" .. i end
 	mbutton_translate[3] = "button_2"
@@ -383,24 +371,38 @@ function window.CreateWindow(width, height, title, flags)
 
 	local suppress_char_input = false
 
-	_G.event.AddListener("Update", self, function(dt)
+	event.AddListener("FrameEnd", self, function(dt)
+		if system.disable_window then return end
+		render.SwapBuffers(self)
+		sdl.PumpEvents()
+	end)
+
+	local events = ffi.new("union SDL_Event[20]")
+
+	event.AddListener("Update", self, function(dt)
+		if system.disable_window then return end
 		if not self:IsValid() or not sdl.video_init then
-			sdl.PollEvent(event) -- this needs to be done or windows thinks the application froze..
+			if WINDOWS then
+				sdl.PollEvent(events) -- this needs to be done or windows thinks the application froze..
+			end
 			return
 		end
 
-		self.mouse_delta:Zero()
-		self:UpdateMouseDelta()
 		self:OnUpdate(dt)
 
-		while sdl.PollEvent(event) ~= 0 do
+		self.mouse_delta:Zero()
+
+		local count = sdl.PeepEvents(events, 20, "SDL_GETEVENT", sdl.e.FIRSTEVENT, sdl.e.LASTEVENT)
+
+		for i = 0, count - 1 do
+			local events = events[i]
 			local wnd
-			if event.window and event.window.windowID then
-				wnd = window.windowobjects[event.window.windowID]
+			if events.window and events.window.windowID then
+				wnd = window.windowobjects[events.window.windowID]
 			end
 
-			if event.type == sdl.e.WINDOWEVENT and wnd then
-				local case = event.window.event
+			if events.type == sdl.e.WINDOWEVENT and wnd then
+				local case = events.window.event
 
 				if case == sdl.e.WINDOWEVENT_SHOWN then
 					call(wnd, "OnShow")
@@ -409,13 +411,13 @@ function window.CreateWindow(width, height, title, flags)
 					call(wnd, "OnHide")
 
 				elseif case == sdl.e.WINDOWEVENT_MOVED then
-					wnd.position.x = event.window.data1
-					wnd.position.y = event.window.data2
+					wnd.position.x = events.window.data1
+					wnd.position.y = events.window.data2
 					call(wnd, "OnMove", wnd.position.x, wnd.position.y)
 
 				elseif case == sdl.e.WINDOWEVENT_RESIZED or case == sdl.e.WINDOWEVENT_SIZE_CHANGED then
-					wnd.size.x = event.window.data1
-					wnd.size.y = event.window.data2
+					wnd.size.x = events.window.data1
+					wnd.size.y = events.window.data2
 					call(wnd, "OnResize", wnd.size.x, wnd.size.y)
 
 				elseif case == sdl.e.WINDOWEVENT_MINIMIZED then
@@ -457,23 +459,23 @@ function window.CreateWindow(width, height, title, flags)
 						end
 					end
 				end
-			elseif event.type == sdl.e.KEYDOWN or event.type == sdl.e.KEYUP then
-				local window = window.windowobjects[event.key.windowID]
-				local key = ffi.string(sdl.GetKeyName(event.key.keysym.sym)):lower():gsub(" ", "_")
+			elseif events.type == sdl.e.KEYDOWN or events.type == sdl.e.KEYUP then
+				local window = window.windowobjects[events.key.windowID]
+				local key = ffi.string(sdl.GetKeyName(events.key.keysym.sym)):lower():gsub(" ", "_")
 
 				key = key_translate[key] or key
 
-				if event.key["repeat"] == 0 then
+				if events.key["repeat"] == 0 then
 					if call(
 						window,
 						"OnKeyInput",
 						key,
-						event.type == sdl.e.KEYDOWN,
+						events.type == sdl.e.KEYDOWN,
 
-						event.key.state,
-						event.key.keysym.mod,
-						ffi.string(sdl.GetScancodeName(event.key.keysym.scancode)):lower(),
-						event.key.keysym
+						events.key.state,
+						events.key.keysym.mod,
+						ffi.string(sdl.GetScancodeName(events.key.keysym.scancode)):lower(),
+						events.key.keysym
 					) == false then suppress_char_input = true return end
 				end
 
@@ -481,43 +483,43 @@ function window.CreateWindow(width, height, title, flags)
 					window,
 					"OnKeyInputRepeat",
 					key,
-					event.type == sdl.e.KEYDOWN,
+					events.type == sdl.e.KEYDOWN,
 
-					event.key.state,
-					event.key.keysym.mod,
-					ffi.string(sdl.GetScancodeName(event.key.keysym.scancode)):lower(),
-					event.key.keysym
+					events.key.state,
+					events.key.keysym.mod,
+					ffi.string(sdl.GetScancodeName(events.key.keysym.scancode)):lower(),
+					events.key.keysym
 				)
-			elseif event.type == sdl.e.TEXTINPUT then
+			elseif events.type == sdl.e.TEXTINPUT then
 				if suppress_char_input then suppress_char_input = false return end
-				local window = window.windowobjects[event.edit.windowID]
+				local window = window.windowobjects[events.edit.windowID]
 
-				call(window, "OnCharInput", ffi.string(event.edit.text), event.edit.start, event.edit.length)
-			elseif event.type == sdl.e.TEXTEDITING then
-				local window = window.windowobjects[event.text.windowID]
+				call(window, "OnCharInput", ffi.string(events.edit.text), events.edit.start, events.edit.length)
+			elseif events.type == sdl.e.TEXTEDITING then
+				local window = window.windowobjects[events.text.windowID]
 
-				call(window, "OnTextEditing", ffi.string(event.text.text))
-			elseif event.type == sdl.e.MOUSEMOTION then
-				local window = window.windowobjects[event.motion.windowID]
+				call(window, "OnTextEditing", ffi.string(events.text.text))
+			elseif events.type == sdl.e.MOUSEMOTION then
+				local window = window.windowobjects[events.motion.windowID]
 				if window then
-					self.mouse_delta.x = event.motion.xrel
-					self.mouse_delta.y = event.motion.yrel
-					call(window, "OnCursorPosition", event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, event.motion.state, event.motion.which)
+					self.mouse_delta.x = events.motion.xrel
+					self.mouse_delta.y = events.motion.yrel
+					call(window, "OnCursorPosition", events.motion.x, events.motion.y, events.motion.xrel, events.motion.yrel, events.motion.state, events.motion.which)
 				end
-			elseif event.type == sdl.e.MOUSEBUTTONDOWN or event.type == sdl.e.MOUSEBUTTONUP then
-				local window = window.windowobjects[event.button.windowID] or sdl.last_window
-				call(window, "OnMouseInput", mbutton_translate[event.button.button], event.type == sdl.e.MOUSEBUTTONDOWN, event.button.x, event.button.y)
+			elseif events.type == sdl.e.MOUSEBUTTONDOWN or events.type == sdl.e.MOUSEBUTTONUP then
+				local window = window.windowobjects[events.button.windowID] or sdl.last_window
+				call(window, "OnMouseInput", mbutton_translate[events.button.button], events.type == sdl.e.MOUSEBUTTONDOWN, events.button.x, events.button.y)
 				sdl.last_window = window
-			elseif event.type == sdl.e.MOUSEWHEEL then
-				local window = window.windowobjects[event.button.windowID]
-				call(window, "OnMouseScroll", event.wheel.x, event.wheel.y, event.wheel.which)
-			elseif event.type == sdl.e.DROPFILE then
+			elseif events.type == sdl.e.MOUSEWHEEL then
+				local window = window.windowobjects[events.button.windowID]
+				call(window, "OnMouseScroll", events.wheel.x, events.wheel.y, events.wheel.which)
+			elseif events.type == sdl.e.DROPFILE then
 				for _, window in pairs(window.windowobjects) do
-					call(window, "OnFileDrop", ffi.string(event.drop.file))
+					call(window, "OnFileDrop", ffi.string(events.drop.file))
 				end
-			elseif event.type == sdl.e.QUIT and system then
+			elseif events.type == sdl.e.QUIT and system then
 				system.ShutDown()
-			else print("unknown event", event.type) end
+			else print("unknown event", events.type) end
 		end
 	end)
 

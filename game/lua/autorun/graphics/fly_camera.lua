@@ -6,7 +6,7 @@ function CalcMovement(dt, cam_ang, cam_fov)
 	cam_ang:Normalize()
 	local speed = dt * 10
 
-	local delta = window.GetMouseDelta() / 5
+	local delta = window.GetMouseDelta() / 2
 
 	local r = cam_ang.z
 	local cs = math.cos(r)
