@@ -236,6 +236,8 @@ do -- events
 	end
 
 	function gui.UpdateMousePosition()
+		if not gui.world.Children[1] then return end
+
 		gui.hovering_panel = gui.GetHoveringPanel()
 
 		if gui.hovering_panel:IsValid() then
@@ -256,6 +258,8 @@ do -- events
 	end
 
 	function gui.DrawMenu(dt)
+		if not gui.world.Children[1] then return end
+
 		if gui.threedee then
 			--render2d.camera:Start3D2DEx(Vec3(1, -5, 10), Deg3(-90, 180, 0), Vec3(8, 8, 10))
 			render2d.camera:Start3D2DEx(Vec3(0, 0, 0), Ang3(0, 0, 0), Vec3(20, 20, 20))

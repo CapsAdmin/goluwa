@@ -238,9 +238,15 @@ function META:Run(...)
 	self.thread = sdl.CreateThread(thread_func, "luajit_thread", ffi.cast("void *", self.queues))
 
 	table.insert(threads.active, self)
+
+	event.AddListener("Update", "threads", threads.Update)
 end
 
-event.AddListener("Update", "threads", function()
+function threads.Update()
+	if not threads.active[1] then
+		event.RemoveListener("Update", "threads")
+	end
+
 	for i = #threads.active, 1, -1 do
 		local thread = threads.active[i]
 		if not thread:IsValid() then
@@ -262,7 +268,7 @@ event.AddListener("Update", "threads", function()
 			end
 		end
 	end
-end)
+end
 
 function META:RunFunction() end
 

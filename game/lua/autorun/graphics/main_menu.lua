@@ -230,6 +230,11 @@ event.AddListener("ShowMenu", "main_menu", function(b, remove)
 			--menu.panel.console.edit:RequestFocus()
 		end
 	else
+		if not render3d.IsGBufferReady() then
+			prototype.SafeRemove(menu.panel)
+			return
+		end
+
 		if remove then
 			prototype.SafeRemove(menu.panel)
 		elseif menu.panel:IsValid() then

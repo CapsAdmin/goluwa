@@ -25,6 +25,12 @@ input.Bind("tab", "-score", function()
 		window.SetMouseTrapped(true)
 	end
 	scoreboard.showed_cursor = nil
+
+	if not render3d.IsGBufferReady() then
+		prototype.SafeRemove(scoreboard.panel)
+		return
+	end
+
 	scoreboard.panel:SetVisible(false)
 end)
 

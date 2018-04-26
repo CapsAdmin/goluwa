@@ -1,3 +1,5 @@
+event.AddListener("NetworkStarted", function()
+
 if CLIENT then
 
 	event.AddListener("CreateMove", "spooky", function(client, prev_cmd, dt)
@@ -251,3 +253,5 @@ if SERVER then
 		end
 	end)
 end
+
+end)
