@@ -62,7 +62,7 @@ function window.Open(...)
 			end
 
 			render.GetScreenFrameBuffer():End()
-			render.SwapBuffers(self)
+			self.swap_me = true
 		render.PopWindow()
 		render.PopViewport()
 	end

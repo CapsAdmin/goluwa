@@ -163,20 +163,11 @@ function system.MainLoop()
 		system.SetFrameTime(dt)
 		system.SetFrameNumber(i)
 		system.SetElapsedTime(system.GetElapsedTime() + dt)
+		event.Call("Update", dt)
+		system.SetInternalFrameTime(system.GetTime() - time)
+		system.UpdateTitlebarFPS()
 		i = i + 1
-
-		local ok, err = pcall(event.Call, "Update", dt)
-
-		if not ok then
-			if system.MessageBox then
-				system.MessageBox("fatal error", tostring(err))
-			else
-				error("fatal error: " .. tostring(err))
-			end
-			os.exit()
-			return false
-		end
-
 		last_time = time
+		event.Call("FrameEnd")
 	end
 end

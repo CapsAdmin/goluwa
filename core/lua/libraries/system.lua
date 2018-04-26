@@ -137,6 +137,19 @@ do -- frame time
 	end
 end
 
+do -- frame time
+	local frame_time = 0.1
+
+	function system.GetInternalFrameTime()
+		return frame_time
+	end
+
+	-- used internally in main_loop.lua
+	function system.SetInternalFrameTime(dt)
+		frame_time = dt
+	end
+end
+
 do -- frame number
 	local frame_number = 0
 

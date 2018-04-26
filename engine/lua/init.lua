@@ -88,36 +88,38 @@ local rate_cvar = pvars.Setup2({
 
 local battery_limit = pvars.Setup("system_battery_limit", true)
 
-event.AddListener("Update", "rate_limit", function(dt)
+do
 	local rate = rate_cvar:Get()
 
-	-- todo: user is changing properties in game
-	if rate > 0 and GRAPHICS and gui and gui.world.options then
-		rate = math.max(rate, 10)
-	end
+	event.Timer("rate_limit", 0.1, 0, function()
+		rate = rate_cvar:Get()
 
-	if window and battery_limit:Get() and window.IsUsingBattery() and window.GetBatteryLevel() < 0.95 then
-		render.SwapInterval(true)
-		if window.GetBatteryLevel() < 0.20 then
-			rate = 10
+		-- todo: user is changing properties in game
+		if rate > 0 and GRAPHICS and gui and gui.world.options then
+			rate = math.max(rate, 10)
 		end
-		if not window.IsFocused() then
-			rate = 5
+
+		if window and battery_limit:Get() and window.IsUsingBattery() and window.GetBatteryLevel() < 0.95 then
+			render.SwapInterval(true)
+			if window.GetBatteryLevel() < 0.20 then
+				rate = 10
+			end
+			if not window.IsFocused() then
+				rate = 5
+			end
 		end
-	end
 
-	if SERVER then
-		rate = 66
-	end
+		if SERVER then
+			rate = 66
+		end
+	end)
 
-	if rate > 0 then
-		system.Sleep(math.floor(1/rate * 1000))
-	end
-
-	if not CLI then
-		system.UpdateTitlebarFPS(dt)
-	end
-end)
+	event.AddListener("FrameEnd", "rate_limit", function()
+		if rate > 0 then
+			system.Sleep(math.floor(1/rate * 1000))
+		end
+	end)
+end
 
 if TMUX then
 	logn("== tmux session started ==")

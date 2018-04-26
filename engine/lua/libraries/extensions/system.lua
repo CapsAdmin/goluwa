@@ -47,15 +47,22 @@ do
 	local total = 0
 	local count = 0
 
-	function system.UpdateTitlebarFPS(dt)
+	local total2 = 0
+	local count2 = 0
+
+	function system.UpdateTitlebarFPS()
 		if not show:Get() then return end
 
-		total = total + dt
+		total = total + system.GetFrameTime()
 		count = count + 1
 
+		total2 = total2 + system.GetInternalFrameTime()
+		count2 = count2 + 1
+
 		if wait(1) then
-			system.current_fps = math.round(1/(total / count))
-			system.SetConsoleTitle(("FPS: %i"):format(system.current_fps), "fps")
+			system.current_fps = 1/(total / count)
+			system.current_fps2 = 1/(total2/count2)--math.round(1/(total2 / count2))
+			system.SetConsoleTitle(("FPS: %i / %i"):format(system.current_fps, system.current_fps2), "fps")
 			system.SetConsoleTitle(("GARBAGE: %s"):format(utility.FormatFileSize(collectgarbage("count") * 1024)), "garbage")
 
 			if GRAPHICS then
@@ -64,6 +71,9 @@ do
 
 			total = 0
 			count = 0
+
+			total2 = 0
+			count2 = 0
 		end
 	end
 end
