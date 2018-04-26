@@ -228,14 +228,14 @@ end
 
 if system then
 	local freq = tonumber(sdl.GetPerformanceFrequency())
-	local start_time = sdl.GetPerformanceCounter()
+	local start_time = tonumber(sdl.GetPerformanceCounter())
 
-	function system.GetTime()
-		local time = sdl.GetPerformanceCounter()
+	function system.GetTimeSDL()
+		local time = tonumber(sdl.GetPerformanceCounter())
 
 		time = time - start_time
 
-		return tonumber(time) / freq
+		return time / freq
 	end
 end
 
