@@ -31,10 +31,12 @@ do
 	local posix = require("syscall")
 
 	local ts = posix.t.timespec()
+	local enum = posix.c.CLOCK.MONOTONIC
+	local func = ffi.C.clock_gettime
 
 	function system.GetTime()
-		posix.clock_gettime("MONOTONIC", ts)
-		return tonumber(ts.tv_sec * 1000000000 + ts.tv_nsec) * 1e-9
+		func(enum, ts)
+		return tonumber(ts.tv_sec) + tonumber(ts.tv_nsec) * 0.000000001
 	end
 end
 
