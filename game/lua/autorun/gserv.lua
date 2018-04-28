@@ -415,13 +415,19 @@ do -- addons
 		elseif info.type == "workshop" then
 			gserv.Log(id, "updating workshop addon ", info.url)
 			steam.DownloadWorkshop(info.id, function(path, info)
-				-- if the name is just the id make it more readable
-				if info.name and info.id == info.name then
-					info.name = vfs.ReplaceIllegalPathSymbols(info.publishedfiledetails[1].title, true) .. "_" .. info.name
-					save_config(id)
+				if not info.name then
+					table.print(info)
+					print("no name?")
+					return
 				end
 
 				local name = info.name
+
+				-- if the name is just the id make it more readable
+				if info.id == name then
+					name = vfs.ReplaceIllegalPathSymbols(info.publishedfiledetails[1].title, true) .. "_" .. name
+					save_config(id)
+				end
 
 				vfs.Write(get_gmod_dir(id) .. "addons/" .. name .. ".gma", path)
 
