@@ -415,7 +415,7 @@ do -- addons
 			gserv.Log(id, "updating workshop addon ", info.url)
 			steam.DownloadWorkshop(info.id, function(path, info)
 				-- if the name is just the id make it more readable
-				if info.id == info.name then
+				if info.name and info.id == info.name then
 					info.name = vfs.ReplaceIllegalPathSymbols(info.publishedfiledetails[1].title, true) .. "_" .. info.name
 					save_config(id)
 				end
