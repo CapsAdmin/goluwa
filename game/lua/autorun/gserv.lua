@@ -205,7 +205,7 @@ function gserv.SetupCommands(id)
 	commands.Add(id .. " restart=number[30]", function(id, time) gserv.Restart(id, time) end)
 	commands.Add(id .. " reboot", function() gserv.Reboot(id) end)
 
-	commands.Add(id .. " add_addon=string", function(url) gserv.AddAddon(id, url) gserv.UpdateAddon(id, url) end)
+	commands.Add(id .. " add_addon=string,string|nil,string|nil", function(url, override, branch) gserv.AddAddon(id, url, override, branch) gserv.UpdateAddon(id, url) end)
 	commands.Add(id .. " remove_addon=string", function(url) gserv.RemoveAddon(id, url) end)
 	commands.Add(id .. " update_addon=string", function(url) gserv.UpdateAddon(id, url) end)
 	commands.Add(id .. " update_addons", function() gserv.UpdateAddons(id) end)
@@ -404,11 +404,12 @@ do -- addons
 		if info.type == "git" then
 			gserv.Log(id, "updating git repository addon ", info.url)
 			local dir = get_gmod_dir(id) .. "addons/" .. info.name
+			local branch = info.branch or "master"
 
 			if not vfs.IsDirectory(dir) then
-				repl.OSExecute("git clone " .. info.url .. " '" .. dir .. "' --depth 1")
+				repl.OSExecute("git clone -b " .. branch .. " " .. info.url .. " '" .. dir .. "' --depth 1")
 			else
-				repl.OSExecute("git -C '" .. dir .. "' fetch && git -C '" .. dir .. "' reset --hard origin/master && git -C '" .. dir .. "' clean -f -d")
+				repl.OSExecute("git -C '" .. dir .. "' fetch && git -C '" .. dir .. "' reset --hard origin/" .. branch .. " && git -C '" .. dir .. "' clean -f -d")
 			end
 			gserv.Log(id, "done updating ", info.url)
 		elseif info.type == "workshop" then
@@ -433,7 +434,7 @@ do -- addons
 		end
 	end
 
-	function gserv.AddAddon(id, url, name_override)
+	function gserv.AddAddon(id, url, name_override, branch)
 		load_config(id)
 
 		local key = url
@@ -447,6 +448,7 @@ do -- addons
 			info = {
 				type = "git",
 				name = name_override or url:match(".+/(.+)%.git"):lower(),
+				branch = branch or "master",
 			}
 		elseif url:find("steamcommunity") and url:find("id=%d+") or tonumber(url) then
 			info = {
