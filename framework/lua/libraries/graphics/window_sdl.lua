@@ -380,7 +380,8 @@ function window.CreateWindow(width, height, title, flags)
 		sdl.PumpEvents()
 	end)
 
-	local events = ffi.new("union SDL_Event[20]")
+	local max = 20
+	local events = ffi.new("union SDL_Event[?]", max)
 
 	event.AddListener("Update", self, function(dt)
 		if system.disable_window then return end
@@ -393,7 +394,7 @@ function window.CreateWindow(width, height, title, flags)
 
 		self:OnUpdate(dt)
 
-		local count = sdl.PeepEvents(events, 20, "SDL_GETEVENT", sdl.e.FIRSTEVENT, sdl.e.LASTEVENT)
+		local count = sdl.PeepEvents(events, max, "SDL_GETEVENT", sdl.e.FIRSTEVENT, sdl.e.LASTEVENT)
 
 		for i = 0, count - 1 do
 			local events = events[i]
@@ -519,6 +520,12 @@ function window.CreateWindow(width, height, title, flags)
 			elseif events.type == sdl.e.QUIT and system then
 				system.ShutDown()
 			else print("unknown event", events.type) end
+		end
+
+		if count == max then
+			max = max + 1
+			events = ffi.new("union SDL_Event[?]", max)
+			--llog("max events increased: ", max)
 		end
 	end)
 
