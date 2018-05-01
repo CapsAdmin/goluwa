@@ -102,7 +102,12 @@ function META:GetMouseTrapped()
 end
 
 function META:GetMouseDelta()
-	return self.mouse_delta or Vec2()
+	local x = ffi.new("int[1]")
+	local y = ffi.new("int[1]")
+
+	sdl.GetRelativeMouseState(x, y)
+
+	return Vec2(x[0], y[0])
 end
 
 function META:OnUpdate(delta)
@@ -330,8 +335,6 @@ function window.CreateWindow(width, height, title, flags)
 	sdl.GetWindowSize(sdl_wnd, x, y)
 	self.size = Vec2(x[0], y[0])
 
-	self.last_mpos = Vec2()
-	self.mouse_delta = Vec2()
 	self.sdl_wnd = sdl_wnd
 
 	self.sdl_windowid = sdl.GetWindowID(self.sdl_wnd)
@@ -389,8 +392,6 @@ function window.CreateWindow(width, height, title, flags)
 		end
 
 		self:OnUpdate(dt)
-
-		self.mouse_delta:Zero()
 
 		local count = sdl.PeepEvents(events, 20, "SDL_GETEVENT", sdl.e.FIRSTEVENT, sdl.e.LASTEVENT)
 
@@ -502,8 +503,6 @@ function window.CreateWindow(width, height, title, flags)
 			elseif events.type == sdl.e.MOUSEMOTION then
 				local window = window.windowobjects[events.motion.windowID]
 				if window then
-					self.mouse_delta.x = events.motion.xrel
-					self.mouse_delta.y = events.motion.yrel
 					call(window, "OnCursorPosition", events.motion.x, events.motion.y, events.motion.xrel, events.motion.yrel, events.motion.state, events.motion.which)
 				end
 			elseif events.type == sdl.e.MOUSEBUTTONDOWN or events.type == sdl.e.MOUSEBUTTONUP then
