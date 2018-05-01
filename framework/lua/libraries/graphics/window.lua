@@ -42,13 +42,12 @@ function window.Open(...)
 			local dt = system.GetFrameTime()
 			render.GetScreenFrameBuffer():Begin()
 
+			event.Call("Draw3D", dt)
+
 			if render2d.IsReady() then
 				render2d.Start()
 				render2d.SetColor(1,1,1,1)
 				render.SetCullMode("none")
-
-				event.Call("Draw3D", dt)
-
 				render.SetDepth(false)
 				render.SetPresetBlendMode("alpha")
 
