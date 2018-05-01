@@ -10,6 +10,15 @@ render3d.scene_dist = {}
 local needs_sorting = true
 
 function render3d.AddModel(model)
+	if
+		not model.sub_models[1] or
+		not model.sub_models[1].sub_meshes[1] or
+		not model.sub_models[1].sub_meshes[1].data
+	then
+		debug.trace()
+		print("bad model")
+	end
+
 	if not scene_keyval[model] then
 		table.insert(render3d.scene, model)
 		needs_sorting = true
@@ -95,7 +104,6 @@ local occlusion_shader = render.CreateShader({
 	},
 })
 
-local DISABLE_CULLING = _G.DISABLE_CULLING
 local next_visible = {}
 local framebuffers = {}
 
@@ -104,73 +112,75 @@ function render3d.DrawScene(what)
 
 	if not render3d.scene[1] then return end
 
-	if not DISABLE_CULLING and (not next_visible[what] or next_visible[what] < system.GetElapsedTime()) then
+	if not render3d.noculling then
+		if (not next_visible[what] or next_visible[what] < system.GetElapsedTime()) then
 
-		if not framebuffers[what] then
-			local fb = render.CreateFrameBuffer()
-			local size = Vec2() + 512
+			if not framebuffers[what] then
+				local fb = render.CreateFrameBuffer()
+				local size = Vec2() + 512
 
-			fb:SetTexture("depth", {
-				size = size,
-				internal_format = "depth_component16",
-			})
+				fb:SetTexture("depth", {
+					size = size,
+					internal_format = "depth_component16",
+				})
 
-			fb:SetSize(size)
-			framebuffers[what] = fb
-		end
-
-		render3d.cull_rate = math.clamp(system.GetFrameTime()*10, 1/20, 1/5)
-
-		framebuffers[what]:Begin()
-		framebuffers[what]:ClearDepth(1)
-		render.PushDepth(true)
-		render.SetColorMask(0,0,0,0)
-		render.PushCullMode("none")
-
-		--for _, model in ipairs(scene) do
-		for i = 1, render3d.SortDistanceScene(what) do
-			local model = render3d.scene_dist[i]
-			model.occluders[what] = model.occluders[what] or render.CreateQuery("any_samples_passed_conservative")
-
-			-- TODO: upload aabb only
-			occlusion_shader.model = model.tr.FinalMatrix -- don't call model:GetMatrix() as it migth rebuild, it's not that important
-
-
-			model.occluders[what]:Begin()
-
-			if model.MaterialOverride then
-				for i = 1, model.sub_meshes_length do
-					occlusion_shader.AlbedoAlphaMetallic = model.MaterialOverride.AlbedoAlphaMetallic
-					occlusion_shader.AlbedoTexture = model.MaterialOverride.AlbedoTexture
-					occlusion_shader.Translucent = model.MaterialOverride.Translucent
-					occlusion_shader.AlphaTest = model.MaterialOverride.AlphaTest
-					occlusion_shader.Alpha = model.MaterialOverride.Color.a
-					occlusion_shader:Bind()
-					model.sub_meshes[i].model:Draw(model.sub_meshes[i].i)
-				end
-			else
-
-				-- TODO: simple geometry
-				--for _, data in ipairs(model.sub_meshes) do
-				for i = 1, model.sub_meshes_length do
-					occlusion_shader.AlbedoAlphaMetallic = model.sub_meshes[i].data.AlbedoAlphaMetallic
-					occlusion_shader.AlbedoTexture = model.sub_meshes[i].data.AlbedoTexture
-					occlusion_shader.Translucent = model.sub_meshes[i].data.Translucent
-					occlusion_shader.AlphaTest = model.sub_meshes[i].data.AlphaTest
-					occlusion_shader.Alpha = model.sub_meshes[i].data.Color.a
-					occlusion_shader:Bind()
-					model.sub_meshes[i].model:Draw(model.sub_meshes[i].i)
-				end
+				fb:SetSize(size)
+				framebuffers[what] = fb
 			end
-			model.occluders[what]:End()
+
+			render3d.cull_rate = math.clamp(system.GetFrameTime()*10, 1/20, 1/5)
+
+			framebuffers[what]:Begin()
+			framebuffers[what]:ClearDepth(1)
+			render.PushDepth(true)
+			render.SetColorMask(0,0,0,0)
+			render.PushCullMode("none")
+
+			--for _, model in ipairs(scene) do
+			for i = 1, render3d.SortDistanceScene(what) do
+				local model = render3d.scene_dist[i]
+				model.occluders[what] = model.occluders[what] or render.CreateQuery("any_samples_passed_conservative")
+
+				-- TODO: upload aabb only
+				occlusion_shader.model = model.tr.FinalMatrix -- don't call model:GetMatrix() as it migth rebuild, it's not that important
+
+
+				model.occluders[what]:Begin()
+
+				if model.MaterialOverride then
+					for i = 1, model.sub_meshes_length do
+						occlusion_shader.AlbedoAlphaMetallic = model.MaterialOverride.AlbedoAlphaMetallic
+						occlusion_shader.AlbedoTexture = model.MaterialOverride.AlbedoTexture
+						occlusion_shader.Translucent = model.MaterialOverride.Translucent
+						occlusion_shader.AlphaTest = model.MaterialOverride.AlphaTest
+						occlusion_shader.Alpha = model.MaterialOverride.Color.a
+						occlusion_shader:Bind()
+						model.sub_meshes[i].model:Draw(model.sub_meshes[i].i)
+					end
+				else
+
+					-- TODO: simple geometry
+					--for _, data in ipairs(model.sub_meshes) do
+					for i = 1, model.sub_meshes_length do
+						occlusion_shader.AlbedoAlphaMetallic = model.sub_meshes[i].data.AlbedoAlphaMetallic
+						occlusion_shader.AlbedoTexture = model.sub_meshes[i].data.AlbedoTexture
+						occlusion_shader.Translucent = model.sub_meshes[i].data.Translucent
+						occlusion_shader.AlphaTest = model.sub_meshes[i].data.AlphaTest
+						occlusion_shader.Alpha = model.sub_meshes[i].data.Color.a
+						occlusion_shader:Bind()
+						model.sub_meshes[i].model:Draw(model.sub_meshes[i].i)
+					end
+				end
+				model.occluders[what]:End()
+			end
+
+			render.PopCullMode()
+			render.SetColorMask(1,1,1,1)
+			render.PopDepth()
+			framebuffers[what]:End()
+
+			next_visible[what] = system.GetElapsedTime() + render3d.cull_rate
 		end
-
-		render.PopCullMode()
-		render.SetColorMask(1,1,1,1)
-		render.PopDepth()
-		framebuffers[what]:End()
-
-		next_visible[what] = system.GetElapsedTime() + render3d.cull_rate
 	end
 
 	if needs_sorting then

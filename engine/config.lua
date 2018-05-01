@@ -1,6 +1,5 @@
 local env_vars = {
 	CURSES = true,
-	DISABLE_CULLING = false,
 	CLI = false,
 	TMUX = false,
 	PHYSICS = false,

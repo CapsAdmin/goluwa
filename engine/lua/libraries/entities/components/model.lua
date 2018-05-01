@@ -189,30 +189,58 @@ if GRAPHICS then
 	function META:DrawModel()
 		render3d.camera:SetWorld(self.tr:GetMatrix())
 
-		if self.MaterialOverride then
-			apply_material(self, self.MaterialOverride)
+		if render3d.nomat then
+			apply_material(self, render3d.default_material)
 
-			--for _, data in ipairs(self.sub_meshes) do
-			for i = 1, self.sub_meshes_length do
+			if render3d.nomodel then
 				render3d.shader:Bind()
-				self.sub_meshes[i].model:Draw(self.sub_meshes[i].i)
+				render3d.simple_mesh:Draw(1)
+			else
+				--for _, data in ipairs(self.sub_meshes) do
+				for i = 1, self.sub_meshes_length do
+					render3d.shader:Bind()
+					self.sub_meshes[i].model:Draw(self.sub_meshes[i].i)
+				end
 			end
 		else
-			--for _, data in ipairs(self.sub_meshes) do
-			for i = 1, self.sub_meshes_length do
-				apply_material(self, self.sub_meshes[i].data)
-				render3d.shader:Bind()
-				self.sub_meshes[i].model:Draw(self.sub_meshes[i].i)
+			if self.MaterialOverride then
+				apply_material(self, self.MaterialOverride)
+
+				if render3d.nomodel then
+					for i = 1, self.sub_meshes_length do
+						render3d.shader:Bind()
+						render3d.simple_mesh:Draw(1)
+					end
+				else
+					--for _, data in ipairs(self.sub_meshes) do
+					for i = 1, self.sub_meshes_length do
+						render3d.shader:Bind()
+						self.sub_meshes[i].model:Draw(self.sub_meshes[i].i)
+					end
+				end
+			else
+				if render3d.nomodel then
+					for i = 1, self.sub_meshes_length do
+						apply_material(self, self.sub_meshes[i].data)
+						render3d.shader:Bind()
+						render3d.simple_mesh:Draw(1)
+					end
+				else
+					--for _, data in ipairs(self.sub_meshes) do
+					for i = 1, self.sub_meshes_length do
+						apply_material(self, self.sub_meshes[i].data)
+						render3d.shader:Bind()
+						self.sub_meshes[i].model:Draw(self.sub_meshes[i].i)
+					end
+				end
 			end
 		end
 	end
 
-	if DISABLE_CULLING then
-		function META:Draw()
+	function META:Draw(what)
+		if render3d.noculling then
 			self:DrawModel()
-		end
-	else
-		function META:Draw(what)
+		else
 			if self:IsVisible(what) then
 				if self.occluders[what] then
 					self.occluders[what]:BeginConditional()

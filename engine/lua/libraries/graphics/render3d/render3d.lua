@@ -1,5 +1,11 @@
 local render3d = _G.render3d or {}
 
+-- debug variables
+render3d.noculling = false
+render3d.nomat = false
+render3d.nomodel = false
+
+
 render3d.camera = camera.CreateCamera()
 
 event.AddListener("Draw3D", "render3d", function()
@@ -9,9 +15,9 @@ event.AddListener("Draw3D", "render3d", function()
 end)
 
 event.AddListener("PreDrawGUI", "render3d", function()
-	render.GetScreenFrameBuffer():ClearAll()
-
 	if render3d.IsGBufferReady() then
+		render.GetScreenFrameBuffer():ClearAll()
+
 		if menu and menu.IsVisible() then
 			render2d.PushHSV(1,0,1)
 		end
@@ -45,6 +51,10 @@ function render3d.Initialize()
 	render3d.sky_shader = render.CreateShader(render3d.sky_shader_source) -- uahsduyHUASH
 	render3d.GenerateTextures()
 	runfile("lua/libraries/graphics/render3d/scene.lua", render3d)
+
+	render3d.LoadModel("models/low-poly-sphere.obj", function(meshes)
+		render3d.simple_mesh = meshes[1]
+	end)
 end
 
 function render3d.GenerateTextures()
