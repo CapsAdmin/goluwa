@@ -93,6 +93,13 @@ do
 		local X, Y, W, H, SX, SY
 
 		function render2d.SetRectUV(x,y, w,h, sx,sy)
+			X = x or 0
+			Y = y or 0
+			W = w or 1
+			H = h or 1
+			SX = sx or 1
+			SY = sy or 1
+
 			if not x then
 				render2d.rectangle.Vertices.Pointer[1].uv[0] = 0
 				render2d.rectangle.Vertices.Pointer[0].uv[1] = 0
@@ -118,13 +125,6 @@ do
 			render2d.rectangle.Vertices.Pointer[5].uv = render2d.rectangle.Vertices.Pointer[1].uv
 
 			update_vbo()
-
-			X = x
-			Y = y
-			W = w
-			H = h
-			SX = sx
-			SY = sy
 		end
 
 		function render2d.GetRectUV()
