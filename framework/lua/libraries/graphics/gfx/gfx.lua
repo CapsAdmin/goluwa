@@ -1,6 +1,7 @@
 local gfx = _G.gfx or {}
 
 runfile("polygon_2d.lua", gfx)
+runfile("sprite_batch.lua", gfx)
 runfile("quadric_bezier_curve.lua", gfx)
 runfile("text.lua", gfx)
 
