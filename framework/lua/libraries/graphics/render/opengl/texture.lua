@@ -387,17 +387,7 @@ function render._CreateTexture(self, type)
 			return
 		end
 
-		local num = -1
-
-		if num == -1 or num > render.max_anisotropy then
-			num = render.max_anisotropy
-		end
-
-		if num == 0 then
-			num = 1
-		end
-
-		self.gl_tex:SetParameteri("GL_TEXTURE_MAX_ANISOTROPY_EXT", num)
+		--self.gl_tex:SetParameteri("GL_TEXTURE_MAX_ANISOTROPY_EXT", math.min(4, render.max_anisotropy))
 	end
 end
 
