@@ -36,7 +36,7 @@ end
 
 do -- physcs models
 
-	local assimp = system.GetFFIBuildLibrary("assimp")
+	local assimp = desire("assimp")
 
 	physics.model_cache = {}
 

@@ -2,7 +2,7 @@ local render = ... or _G.render
 local META = prototype.GetRegistered("texture")
 
 local ffi = require("ffi")
-local gl = system.GetFFIBuildLibrary("opengl", true)
+local gl = require("opengl")
 
 local TOENUM = function(str)
 	return "GL_" .. str:upper()

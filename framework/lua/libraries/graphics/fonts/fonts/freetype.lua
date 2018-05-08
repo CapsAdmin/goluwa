@@ -1,7 +1,7 @@
 local ffi = require("ffi")
 local fonts = ... or _G.fonts
 
-local freetype = system.GetFFIBuildLibrary("freetype")
+local freetype = desire("freetype")
 
 if not freetype then return end
 

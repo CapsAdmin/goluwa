@@ -1,6 +1,6 @@
 local repl = _G.repl or {}
 
-local curses = system.GetFFIBuildLibrary("curses")
+local curses = desire("curses")
 
 if not curses then return end
 

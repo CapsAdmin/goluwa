@@ -1,7 +1,7 @@
 local msg = require("msgpack")
 local ffi = require("ffi")
-local lua = system.GetFFIBuildLibrary("luajit")
-local sdl = system.GetFFIBuildLibrary("SDL2")
+local lua = desire("luajit")
+local sdl = desire("SDL2")
 
 local threads = _G.threads or {}
 

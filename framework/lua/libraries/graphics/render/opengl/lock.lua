@@ -1,5 +1,5 @@
 local render = ... or _G.render
-local gl = system.GetFFIBuildLibrary("opengl")
+local gl = desire("opengl")
 
 local GL_ALREADY_SIGNALED = gl.e.GL_ALREADY_SIGNALED
 local GL_CONDITION_SATISFIED = gl.e.GL_CONDITION_SATISFIED

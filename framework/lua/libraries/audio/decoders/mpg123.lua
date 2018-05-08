@@ -1,6 +1,6 @@
 local ffi =  require("ffi")
 local audio = ... or _G.audio
-local mpg123 = system.GetFFIBuildLibrary("mpg123")
+local mpg123 = desire("mpg123")
 
 if not mpg123 then return end
 

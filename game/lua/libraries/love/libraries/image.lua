@@ -67,7 +67,7 @@ do -- image data
 		end, false, true)
 	end
 
-	local freeimage = system.GetFFIBuildLibrary("freeimage")
+	local freeimage = desire("freeimage")
 
 	function love.image.newImageData(a, b)
 		if line.Type(a) == "ImageData" then

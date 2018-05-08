@@ -2,7 +2,7 @@ if not GRAPHICS then return end
 
 local render = ... or _G.render
 
-local vl = system.GetFFIBuildLibrary("VTFLib")
+local vl = desire("VTFLib")
 
 if not vl then return end
 

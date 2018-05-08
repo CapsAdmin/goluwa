@@ -358,7 +358,7 @@ function gine.Run(skip_addons)
 	gine.env.gamemode.Call("InitPostEntity")
 
 	if CLIENT and CAPS then
---		system.GetFFIBuildLibrary("opengl", true).Disable("GL_SCISSOR_TEST")
+--		require("opengl").Disable("GL_SCISSOR_TEST")
 
 		if gine.env.notagain then
 			gine.env.LocalPlayer():SetNWBool("rpg", true)

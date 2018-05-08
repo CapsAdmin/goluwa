@@ -879,7 +879,7 @@ function chatsounds.BuildListForGithub(appid)
 end
 
 function chatsounds.ExtractSoundsFromLists()
-	local soundfile = system.GetFFIBuildLibrary("libsndfile")
+	local soundfile = desire("libsndfile")
 	local ffi = require("ffi")
 
 	local root = R("data/")

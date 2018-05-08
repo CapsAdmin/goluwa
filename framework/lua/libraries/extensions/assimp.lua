@@ -1,4 +1,4 @@
-local assimp = system.GetFFIBuildLibrary("assimp")
+local assimp = desire("assimp")
 
 if not assimp then return end
 

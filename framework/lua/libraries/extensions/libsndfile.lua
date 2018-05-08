@@ -1,4 +1,4 @@
-local soundfile = system.GetFFIBuildLibrary("libsndfile")
+local soundfile = desire("libsndfile")
 
 if not soundfile then return end
 local ffi = require("ffi")

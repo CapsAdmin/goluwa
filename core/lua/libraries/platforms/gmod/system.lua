@@ -33,7 +33,3 @@ end
 function system._OSCommandExists(cmd)
 	return false
 end
-
-function system.GetFFIBuildLibrary()
-	return false
-end

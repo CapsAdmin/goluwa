@@ -1,26 +1,3 @@
-do
-	local cache = {}
-	function system.GetFFIBuildLibrary(name, require)
-		if cache[name] ~= nil then return cache[name] end
-
-		local val, res = loadfile("./" .. name .. ".lua")
-
-		if val then
-			val, res = pcall(val)
-
-			if val then
-				cache[name] = res
-				return res
-			end
-		end
-
-		if require then
-			error("unable to load library " .. name .. ": " .. res, 2)
-		end
-
-		llog("unable to load library " .. name .. ": " .. res)
-	end
-end
 runfile("!lua/libraries/extensions/*")
 runfile("!lua/libraries/filesystem/files/*")
 runfile("!lua/libraries/serializers/*")

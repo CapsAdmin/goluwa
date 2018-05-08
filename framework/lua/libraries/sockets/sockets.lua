@@ -6,7 +6,7 @@ sockets.core = {}
 
 sockets.core.luasocket = desire("socket.core")
 
-local enet = system.GetFFIBuildLibrary("enet")
+local enet = desire("enet")
 
 if enet then
 	local ffi = require("ffi")

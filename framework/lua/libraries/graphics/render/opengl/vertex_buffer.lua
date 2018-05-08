@@ -1,7 +1,7 @@
 local render = ... or _G.render
 local META = prototype.GetRegistered("vertex_buffer")
 
-local gl = system.GetFFIBuildLibrary("opengl", true)
+local gl = require("opengl")
 
 local buffers_supported = gl.GenBuffers
 
