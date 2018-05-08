@@ -1,31 +1,23 @@
-local fps = 0
-
-fps = 1/fps
-
-if fps == math.huge then
-	fps = 0
-end
-
 local fb = render.CreateFrameBuffer(window.GetSize(), {
-	internal_format = "r32f",
-	filter = "nearest",
+	internal_format = "rgba32f",
+	filter = "linear",
 })
-
-local W, H = fb:GetTexture():GetSize():Unpack()
-
+fb:GetTexture():SetWrapS("repeat")
+fb:GetTexture():SetWrapT("repeat")
 local shader = render.CreateShader({
 	name = "test",
 	fragment = {
 		variables = {
-			size = {vec2 = function() return fb:GetTexture():GetSize() end},
+			texture_size = {vec2 = function() return fb:GetTexture():GetSize() end},
 			self = {texture = function() return fb:GetTexture() end},
+			i = 0,
 			generate_random = 1,
 		},
 		mesh_layout = {
 			{uv = "vec2"},
 		},
 		source = [[
-			out float out_val;
+			out vec4 out_val;
 
 			vec2 Circle(float Start, float Points, float Point)
 			{
@@ -35,7 +27,7 @@ local shader = render.CreateShader({
 
 			float GetAverage(vec2 uv, float unit)
 			{
-				vec2 PixelOffset = unit / size;
+				vec2 PixelOffset = unit / texture_size;
 
 				float Start = 2.0 / 14.0;
 				vec2 Scale = 0.66 * 4.0 * 2.0 * PixelOffset.xy;
@@ -84,7 +76,7 @@ local shader = render.CreateShader({
 			{
 				float neighbours = 0;
 
-				vec2 uv_unit = unit / size;
+				vec2 uv_unit = unit / texture_size;
 
 				for (float y = -1; y <= 1; y++)
 				{
@@ -130,12 +122,26 @@ local shader = render.CreateShader({
 				{
 					for (int j=-kSize; j <= kSize; ++j)
 					{
-						final_colour += kernel[kSize+j]*kernel[kSize+i]*texture(self, ((uv*size)+vec2(float(i),float(j))) / size).rgb;
+						final_colour += kernel[kSize+j]*kernel[kSize+i]*texture(self, ((uv*texture_size)+vec2(float(i),float(j))) / texture_size).rgb;
 
 					}
 				}
 
 				return final_colour/(Z*Z).x;
+			}
+
+			float GetAverage4(vec2 uv, float unit)
+			{
+				float neighbours = 0;
+
+				vec2 uv_unit = unit / texture_size;
+
+				for (float i = 0; i <= 16; i++)
+				{
+					neighbours += texture(self, uv + (uv_unit * get_noise(uv*i/16).xy*2-1)).x;
+				}
+
+				return neighbours / 16;
 			}
 
 			vec2 hash( vec2 x )  // replace this by something better
@@ -158,33 +164,42 @@ local shader = render.CreateShader({
 								 dot( hash( i + vec2(1.0,1.0) ), f - vec2(1.0,1.0) ), u.x), u.y);
 			}
 
+
 			void main()
 			{
 				if (generate_random == 1)
 				{
-					out_val = random(uv);
-
+					out_val = get_noise(uv);
 					return;
 				}
 
-
-				float rot = radians(0.25);
-				float prev = texture(self, uv).r;
+				float prev = texture(self, uv).x;
 
 				vec2 uv = uv;
+				//uv = -uv+1;
+				//uv.x = -uv.x+1;
+				//uv.y = -uv.y+1;
 
-				//uv.y += 0.001;
+				//uv.x += smoothnoise(uv)/160;
+				//uv.y += smoothnoise(-uv)/160;
 
-				uv.x += smoothnoise(uv)/160;
-				uv.y += smoothnoise(-uv)/160;
+				//uv.x += random(uv)*0.0015;
+				//uv.y += random(uv)*0.0015;
+				//uv.y += 0.1;
 
-				float val = texture(self, uv).r;
 
-				float avg = GetAverage2(uv, 2*(1 + cos(val)));
+				/*float val = texture(self, uv).x;
+				float avg = GetAverage(uv, (1 + cos(val*1.1)));
+				float s = sin(pow(avg, 1.57) * PI) / val * 1.5;
+				out_val.x = clamp(s, 0, 1);*/
 
-				val = sin((avg) * PI) / val * 1.25;
+				vec4 c = texture(self, uv);
+				float avg = GetAverage(uv, 1);
+				out_val.r = sin(avg * 4) + sin(c.r);
+				out_val.g = out_val.r*0.5+0.5 * 1.5;
+				out_val.b = c.r/10;
+				out_val.a = 1;
 
-				out_val = max((prev*val + (1-val)) - 0.1, 0) + random(uv)*0.005;
 			}
 		]]
 	}
@@ -209,42 +224,46 @@ end)
 
 local brush_size = 4
 
-event.Timer("fb_update", fps, 0, function()
-
-	fb:Begin()
-		--render.SetBlendMode("src_color", "one_minus_dst_color", "add")
-		render.SetPresetBlendMode("none")
-
-		render2d.PushMatrix(0, 0, W, H)
-			shader:Bind()
-			render2d.rectangle:Draw(render2d.rectangle_indices)
-		render2d.PopMatrix()
-
-		if input.IsMouseDown("button_1") or input.IsMouseDown("button_2") then
-			if input.IsMouseDown("button_1") then
-				render.SetPresetBlendMode("multiplicative")
-				render2d.SetColor(1,1,1,1)
-			else
-				render.SetBlendMode("src_color","one_minus_src_color","sub")
-				render2d.SetColor(1,1,1,1)
-			end
-			render2d.SetTexture(brush)
-			local x,y = gfx.GetMousePosition()
-			render2d.DrawRect(x, y, brush:GetSize().x*brush_size, brush:GetSize().y*brush_size, 0, brush:GetSize().x/2*brush_size, brush:GetSize().y/2*brush_size)
-		end
-	fb:End()
-
-	shader.generate_random = 0
-end)
-
 function goluwa.PreDrawGUI()
-	render2d.SetColor(0,0,0, 1)
 
-	render2d.SetTexture()
-	render2d.DrawRect(0, 0, render2d.GetSize())
+	if true or wait(1/5) then
+		fb:Begin()
 
+			if input.IsMouseDown("button_1") or input.IsMouseDown("button_2") then
+				if input.IsMouseDown("button_1") then
+					render.SetPresetBlendMode("additive")
+					render2d.SetColor(1,1,1,1)
+				else
+					render.SetBlendMode("src_color","one_minus_src_color","sub")
+					render2d.SetColor(1,1,1,1)
+				end
+				render2d.SetTexture(brush)
+				local x,y = gfx.GetMousePosition()
+				render2d.DrawRect(x, y, brush:GetSize().x*brush_size, brush:GetSize().y*brush_size, 0, brush:GetSize().x/2*brush_size, brush:GetSize().y/2*brush_size)
+			end
+
+
+
+			render.SetBlendMode("src_color", "one_minus_dst_color", "add", "src_color")
+			render.SetPresetBlendMode("none")
+
+			render2d.PushMatrix(0, 0, fb:GetTexture():GetSize():Unpack())
+				shader.i = ((shader.i or 0) + 1)%2
+				shader:Bind()
+				render2d.rectangle:Draw(render2d.rectangle_indices)
+			render2d.PopMatrix()
+
+		fb:End()
+		shader.generate_random = 0
+	end
+
+	render.GetScreenFrameBuffer():ClearAll()
+
+	render.SetPresetBlendMode("alpha")
 
 	render2d.SetColor(1,1,1, 1)
 	render2d.SetTexture(fb:GetTexture())
-	render2d.DrawRect(0, 0, render2d.GetSize())
+	local w,h = render2d.GetSize()
+	render2d.SetRectUV(0,0,w,h,w,h)
+	render2d.DrawRect(0, 0, w,h)
 end
