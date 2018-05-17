@@ -1,6 +1,53 @@
 local utility = _G.utility or {}
 
 do
+	function utility.StartRecordingCalls(lib, filter)
+		lib.old_funcs = lib.old_funcs or {}
+		lib.call_log = lib.call_log or {}
+		local i = 1
+		for k,v in pairs(lib) do
+			if (type(v) == "cdata" or type(v) == "function") and (not filter or filter(k)) then
+				lib.old_funcs[k] = v
+
+				lib[k] = function(...)
+					local ret = v(...)
+					lib.call_log[i] = {func_name = k, ret = ret, args = {...}}
+					i = i  + 1
+					return ret
+				end
+			end
+		end
+	end
+
+	function utility.StopRecordingCalls(lib, name)
+		if not lib.old_funcs then return end
+
+		for k,v in pairs(lib.old_funcs) do
+			lib[k] = v
+		end
+
+		local tbl = lib.call_log
+		lib.call_log = nil
+
+		for i,v in ipairs(tbl) do
+			log(("%3i"):format(i), ": ")
+
+			if v.ret ~= nil then
+				log(v.ret, " ")
+			end
+
+			local args = {}
+
+			for k,v in pairs(v.args) do
+				table.insert(args, tostringx(v))
+			end
+
+			logn(name or "", ".", v.func_name, "(", table.concat(args, ", "), ")")
+		end
+	end
+end
+
+do
 	local ran = {}
 
 	function utility.RunOnNextGarbageCollection(callback, id)
