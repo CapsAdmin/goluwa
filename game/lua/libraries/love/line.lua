@@ -361,7 +361,7 @@ commands.Add("love_run=string,var_arg", function(name, ...)
 	end
 end)
 
-event.AddListener("WindowFileDrop", "line", function(wnd, path)
+event.AddListener("WindowDrop", "line", function(wnd, path)
 	if vfs.IsDirectory(path) and vfs.IsFile(path .. "/main.lua") then
 		line.RunGame(path)
 		if menu then menu.Close() end

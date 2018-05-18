@@ -15,7 +15,6 @@ function render3d.AddModel(model)
 		not model.sub_models[1].sub_meshes[1] or
 		not model.sub_models[1].sub_meshes[1].data
 	then
-		debug.trace()
 		print("bad model")
 	end
 

@@ -309,7 +309,7 @@ end
 event.AddListener("LoveNewIndex", "line_filesystem", function(love, key, val)
 	if key == "filedropped" then
 		if val then
-			event.AddListener("WindowFileDrop", "line_filedropped", function(wnd, path)
+			event.AddListener("WindowDrop", "line_filedropped", function(wnd, path)
 				if love.filedropped then
 					local file = love.filesystem.newFile(path)
 					file.dropped = true
@@ -317,7 +317,7 @@ event.AddListener("LoveNewIndex", "line_filesystem", function(love, key, val)
 				end
 			end)
 		else
-			event.AddListener("WindowFileDrop", "line_filedropped")
+			event.AddListener("WindowDrop", "line_filedropped")
 		end
 	end
 end)

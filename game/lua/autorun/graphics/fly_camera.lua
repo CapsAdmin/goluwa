@@ -111,7 +111,7 @@ event.AddListener("GBufferInitialized", function()
 
 	event.AddListener("Update", "fly_camera_3d", function(dt)
 		if network.IsConnected() then return end
-		if not window.HasFocus() then return end
+		if not window.IsFocused() then return end
 
 		local cam_pos = render3d.camera:GetPosition()
 		local cam_ang = render3d.camera:GetAngles()

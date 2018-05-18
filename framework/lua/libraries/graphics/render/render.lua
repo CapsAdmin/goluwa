@@ -34,26 +34,54 @@ function render.GetDir()
 	return dir
 end
 
+do
+	local cache = {}
+	render.extension_cache = cache
+
+	function render.IsExtensionSupported(str)
+		if cache[str] == nil then
+			cache[str] = render.GetWindow():IsExtensionSupported(str)
+			if not cache[str] then
+				local new
+
+				if str:startswith("ARB_") then
+					new = "EXT" .. str:sub(4)
+				elseif str:startswith("EXT_") then
+					new = "ARB" .. str:sub(4)
+				end
+
+				if new then
+					local try = render.GetWindow():IsExtensionSupported(new)
+					cache[str] = try
+					if try then
+						llog("requested extension %s which doesn't exist. using %s instead", str, new)
+					end
+				end
+			end
+			if not cache[str] then
+				llog("extension %s does not exist", str)
+			end
+		end
+		return cache[str]
+	end
+end
+
 function render.Initialize(wnd)
+	for k,v in pairs(_G) do
+		if type(k) == "string" and type(v) == "boolean" and k:sub(1, #"RENDER_EXT_")  == "RENDER_EXT_" then
+			render.extension_cache[k] = v
+			if render.IsExtensionSupported(str:sub(#"RENDER_EXT_" + 1)) then
+				llog("extension %s was forced to %s", k, v)
+			end
+		end
+	end
+
+	render.current_window = wnd -- todo
 	runfile(render.GetDir() .. "render.lua", render)
 	render.SetWindow(wnd)
 
-	render._Initialize(wnd)
+	render._Initialize()
 	render.GenerateTextures()
-end
-
-do
-	function render.PreWindowSetup()
-
-	end
-
-	function render.PostWindowSetup(ptr)
-
-	end
-
-	if PLATFORM ~= "gmod" then
-		runfile(render.GetDir() .. "window_sdl.lua", render)
-	end
 end
 
 function render.Shutdown()

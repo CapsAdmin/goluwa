@@ -77,9 +77,9 @@ local rate_cvar = pvars.Setup2({
 	callback = function(rate)
 		if window and window.IsOpen() then
 			if rate == 0 then
-				render.SwapInterval(true)
+				render.GetWindow():SwapInterval(true)
 			else
-				render.SwapInterval(false)
+				render.GetWindow():SwapInterval(false)
 			end
 		end
 	end,
@@ -99,9 +99,9 @@ do
 			rate = math.max(rate, 10)
 		end
 
-		if window and battery_limit:Get() and window.IsUsingBattery() and window.GetBatteryLevel() < 0.95 then
+		if window and battery_limit:Get() and system.IsUsingBattery() and system.GetBatteryLevel() < 0.95 then
 			render.SwapInterval(true)
-			if window.GetBatteryLevel() < 0.20 then
+			if system.GetBatteryLevel() < 0.20 then
 				rate = 10
 			end
 			if not window.IsFocused() then

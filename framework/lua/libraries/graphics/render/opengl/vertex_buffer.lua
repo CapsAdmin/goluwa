@@ -58,7 +58,7 @@ if buffers_supported then
 		self.vertex_array:Delete()
 	end
 
-	if render.IsExtensionSupported("GL_ARB_direct_state_access") then
+	if render.IsExtensionSupported("ARB_direct_state_access") then
 		function META:Draw(index_buffer, count)
 			if render.last_vertex_array_id ~= self.vertex_array.id then
 				gl.BindVertexArray(self.vertex_array.id)
@@ -72,7 +72,7 @@ if buffers_supported then
 
 			gl.DrawElements(self.gl_mode, count or index_buffer.Indices:GetLength(), index_buffer.gl_indices_type, nil)
 		end
-	elseif render.IsExtensionSupported("GL_ARB_vertex_attrib_binding") then
+	elseif render.IsExtensionSupported("ARB_vertex_attrib_binding") then
 		function META:Draw(index_buffer, count)
 			if render.last_vertex_array_id ~= self.vertex_array.id then
 				gl.BindVertexArray(self.vertex_array.id)
@@ -86,7 +86,7 @@ if buffers_supported then
 	else
 		function META:Draw(index_buffer, count)
 			gl.BindVertexArray(self.vertex_array.id)
-			index_buffer.element_buffer:Bind()
+--			index_buffer.element_buffer:Bind()
 
 			gl.DrawElements(self.gl_mode, count or index_buffer.Indices:GetLength(), index_buffer.gl_indices_type, index_buffer.Indices:GetPointer())
 		end
@@ -94,7 +94,7 @@ if buffers_supported then
 
 	local function setup_vertex_array(self)
 		if not self.setup_vao and self.Vertices then
-			if render.IsExtensionSupported("GL_ARB_vertex_attrib_binding") then
+			if render.IsExtensionSupported("ARB_vertex_attrib_binding") then
 				for _, data in ipairs(self.mesh_layout.attributes) do
 					self.vertex_array:AttribFormat(data.location, data.row_length, data.number_type, false, data.row_offset)
 					self.vertex_array:AttribBinding(data.location, 0)

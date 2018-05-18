@@ -42,7 +42,7 @@ if GRAPHICS then
 		render2d = runfile("!lua/libraries/graphics/render2d/render2d.lua") -- low level 2d rendering based on the render library
 		fonts = runfile("!lua/libraries/graphics/fonts/fonts.lua") -- font rendering
 		gfx = runfile("!lua/libraries/graphics/gfx/gfx.lua") -- high level 2d and 3d functions based on render2d, fonts and render
-		window = runfile("!lua/libraries/graphics/window.lua") -- window implementation
+		window = runfile("!lua/libraries/window/window.lua") -- window implementation
 	end
 end
 

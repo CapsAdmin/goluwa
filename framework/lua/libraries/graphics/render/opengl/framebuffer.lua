@@ -1,7 +1,7 @@
 local render = ... or _G.render
 local gl = require("opengl") -- OpenGL
 
-if not render.IsExtensionSupported("GL_ARB_framebuffer_object") then
+if not render.IsExtensionSupported("ARB_framebuffer_object") then
 	runfile("../null/framebuffer.lua", render)
 
 	local META = prototype.GetRegistered("framebuffer")

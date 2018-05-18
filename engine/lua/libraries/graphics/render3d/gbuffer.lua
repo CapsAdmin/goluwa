@@ -465,13 +465,13 @@ function render3d.InitializeGBuffer()
 
 	runfile("lua/libraries/graphics/render3d/post_process/*")
 
-	event.AddListener("WindowResize", "gbuffer", function(_, w, h)
+	event.AddListener("WindowFramebufferResized", "gbuffer", function(_, size)
 		local current = render3d.GetGBufferSize()
 		render3d.gbuffer_size = nil
 		if render3d.GetGBufferSize() ~= current then
 			render3d.Initialize()
 		end
-		render3d.camera:SetViewport(Rect(0,0,w,h))
+		render3d.camera:SetViewport(Rect(0,0,size.x,size.y))
 	end)
 
 	for k,v in pairs(render3d.gbuffer_values) do
@@ -486,7 +486,7 @@ function render3d.InitializeGBuffer()
 end
 
 function render3d.ShutdownGBuffer()
-	event.RemoveListener("WindowResize", "gbuffer")
+	event.RemoveListener("WindowFramebufferResized", "gbuffer")
 
 	if render3d.gbuffer:IsValid() then
 		render3d.gbuffer:Remove()
@@ -545,7 +545,6 @@ commands.Add("dump_gbuffer=string|nil,string|nil", function(format, depth_format
 			local ok, err = pcall(function()
 				local format = format
 				if k == "depth" then format = depth_format end
-				print(format)
 				local data = v.tex:Download(nil, format)
 				local buffer = data.buffer
 				data.buffer = nil

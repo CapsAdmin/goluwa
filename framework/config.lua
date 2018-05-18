@@ -6,6 +6,7 @@ local env_vars = {
 	DEBUG = false,
 	SOCKETS = true,
 	WINDOW = true,
+	WINDOW_IMPLEMENTATION = "sdl2",
 
 	SRGB = true,
 	NULL_OPENGL = false,
@@ -24,6 +25,8 @@ for key, default in pairs(env_vars) do
 			_G[key] = false
 		elseif val == "1" then
 			_G[key] = true
+		elseif val and val ~= "" then
+			_G[key] = val
 		elseif default then
 			_G[key] = default
 		end

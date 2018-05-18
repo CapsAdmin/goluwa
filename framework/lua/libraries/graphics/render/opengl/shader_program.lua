@@ -1,6 +1,6 @@
 local render = ... or _G.render
 
-if not render.IsExtensionSupported("GL_ARB_shader_objects") then
+if not render.IsExtensionSupported("ARB_shader_objects") then
 	runfile("../null/shader_program.lua", render)
 	return
 end
@@ -184,7 +184,7 @@ do
 		},
 	}
 
-	if render.IsExtensionSupported("GL_ARB_tessellation_shader") then
+	if render.IsExtensionSupported("ARB_tessellation_shader") then
 		fill_info.GL_TESS_CONTROL_SUBROUTINE_UNIFORM = {
 			GL_NAME_LENGTH = true,
 			GL_COMPATIBLE_SUBROUTINES = true,
@@ -201,7 +201,7 @@ do
 		}
 	end
 
-	if render.IsExtensionSupported("GL_ARB_shader_subroutine") then
+	if render.IsExtensionSupported("ARB_shader_subroutine") then
 		fill_info.GL_VERTEX_SUBROUTINE_UNIFORM = {
 			GL_NAME_LENGTH = true,
 			GL_ARRAY_SIZE = true,
@@ -235,7 +235,7 @@ do
 		}
 	end
 
-	if not render.IsExtensionSupported("GL_ARB_compute_shader") then
+	if not render.IsExtensionSupported("ARB_compute_shader") then
 		for k,v in pairs(fill_info) do
 			for k in pairs(v) do
 				if k:find("COMPUTE_SHADER") then
@@ -354,7 +354,7 @@ do
 	end
 	type_translate = temp
 
-	if render.IsExtensionSupported("GL_ARB_program_interface_query") then
+	if render.IsExtensionSupported("ARB_program_interface_query") then
 		function META:GetProperties()
 			local out = {}
 
@@ -593,7 +593,7 @@ else
 	end
 end
 
-if render.IsExtensionSupported("GL_ARB_bindless_texture") then
+if render.IsExtensionSupported("ARB_bindless_texture") then
 	function META:UploadTexture(key, val)
 		if not val.gl_bindless_handle then
 			val:SetBindless(true)

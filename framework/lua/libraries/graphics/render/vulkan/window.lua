@@ -12,7 +12,7 @@ function render.PostWindowSetup()
 end
 
 function render.CreateVulkanSurface(wnd, instance)
-	local surface = sdl.CreateVulkanSurface(wnd.sdl_wnd, instance)
+	local surface = sdl.CreateVulkanSurface(wnd.wnd_ptr, instance)
 
 	if surface == nil then
 		return nil, ffi.string(sdl.GetError())
@@ -22,5 +22,5 @@ function render.CreateVulkanSurface(wnd, instance)
 end
 
 function render.GetRequiredInstanceExtensions(wnd, extra)
-	return sdl.GetRequiredInstanceExtensions(wnd.sdl_wnd, extra)
+	return sdl.GetRequiredInstanceExtensions(wnd.wnd_ptr, extra)
 end
