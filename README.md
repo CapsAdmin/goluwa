@@ -6,7 +6,7 @@ Goluwa is a game engine, framework, a collection of utilities and experiments wr
 ![ScreenShot](https://gitlab.com/CapsAdmin/goluwa-assets/raw/master/extras/screenshots/goluwa.png)
 
 # Features
-* [ffi build system](framework/lua/build) to automatically build LuaJIT ffi bindings.
+* [FFI build system](!https://github.com/CapsAdmin/ffibuild) to automatically build LuaJIT FFI bindings.
 * [gui](engine/lua/libraries/graphics/gui) with focus on automatic layout and [GWEN](!https://github.com/garrynewman/GWEN) skin support
 * [font effects](framework/lua/libraries/graphics/fonts) to create outlined, shadowed, etc text.
 * [markup language](engine/lua/libraries/graphics/gfx)
