@@ -1,5 +1,5 @@
 local ffi = require("ffi")
-local gl = system.GetFFIBuildLibrary("opengl", true) -- OpenGL
+local gl = require("opengl") -- OpenGL
 local render = (...) or _G.render
 
 local severity_translate = {
@@ -27,7 +27,7 @@ local type_translate = {
 }
 
 function render.SetDebug(b)
-	if render.IsExtensionSupported("GL_KHR_debug") then
+	if render.IsExtensionSupported("KHR_debug") then
 		if b then
 			--jit.off()
 			--jit.flush()
@@ -49,7 +49,7 @@ function render.SetDebug(b)
 						obj = nil
 					end
 
-					if obj and obj.GetDebugTrace and obj:GetDebugTrace() ~= "" then
+					if obj and hasindex(obj) and obj.GetDebugTrace and obj:GetDebugTrace() ~= "" then
 						logn(obj:GetDebugTrace())
 					end
 

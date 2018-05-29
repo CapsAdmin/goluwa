@@ -3,8 +3,9 @@ if SOCKETS then
 
 	runfile("lua/libraries/sockets/websocket.lua", sockets)
 	runfile("lua/libraries/sockets/irc.lua", sockets)
-	runfile("lua/libraries/sockets/intermsg.lua", sockets)
 	runfile("lua/libraries/sockets/webhooks.lua", sockets)
+
+	_G.intermsg = runfile("lua/libraries/sockets/intermsg.lua")
 end
 
 runfile("lua/decoders/files/*", vfs)
@@ -16,6 +17,7 @@ runfile("lua/libraries/steam/web_api.lua", steam)
 runfile("lua/libraries/utilities/find_color.lua", utilities)
 runfile("lua/libraries/utilities/quickbms.lua", utilities)
 runfile("lua/libraries/utilities/vmd_parser.lua", utilities)
+runfile("lua/libraries/utilities/line.lua", utilities)
 
 if SERVER or CLIENT then
 	chat = runfile("lua/libraries/network/chat.lua")
@@ -42,6 +44,10 @@ end
 
 if WINDOW then
 	love = line.CreateLoveEnv() -- https://www.love2d.org/wiki/love
+end
+
+if GRAPHICS then
+	menu = runfile("lua/libraries/graphics/menu.lua")
 end
 
 goluwa = event.CreateRealm("goluwa")

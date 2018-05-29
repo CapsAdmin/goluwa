@@ -1,9 +1,14 @@
 local ffi = require("ffi")
-local gl = system.GetFFIBuildLibrary("opengl")
+local gl = desire("opengl")
 
 if not gl then return end
 
 local render = ... or {}
+
+if OSX then
+	render.extension_cache.ARB_framebuffer_object = true
+	render.extension_cache.ARB_shader_objects = true
+end
 
 runfile("debug.lua", render)
 runfile("shader_program.lua", render)
@@ -15,24 +20,15 @@ runfile("texture.lua", render)
 runfile("framebuffer.lua", render)
 
 function render._Initialize()
-	if not gl then
-		llog("cannot initialize")
-		return
-	end
-
-	if not system.gl_context then
-		error("a window must exist before the renderer can be initialized", 2)
-	end
-
-	llog("opengl version: %s", render.GetVersion())
-	llog("glsl version: %s", render.GetShadingLanguageVersion())
-	llog("vendor: %s", render.GetVendor())
+	--llog("opengl version: %s", render.GetVersion())
+	--llog("glsl version: %s", render.GetShadingLanguageVersion())
+	--llog("vendor: %s", render.GetVendor().vendor)
 
 	if render.GetVersion():find("OpenGL ES") then
 		OPENGL_ES = true
 	end
 
-	local vendor = render.GetVendor():lower()
+	local vendor = render.GetInfo().vendor:lower()
 	if vendor:find("nvidia") then NVIDIA = true end
 	if vendor:find("ati") then ATI = true end
 	if vendor:find("amd") then AMD = true end
@@ -51,7 +47,7 @@ function render._Initialize()
 	gl.Enable("GL_MULTISAMPLE")
 	gl.Enable("GL_BLEND")
 
-	if render.IsExtensionSupported("GL_EXT_texture_filter_anisotropic") then
+	if render.IsExtensionSupported("EXT_texture_filter_anisotropic") then
 		local largest = ffi.new("GLfloat[1]")
 		gl.GetFloatv("GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT", largest)
 		render.max_anisotropy = largest[0]
@@ -74,10 +70,29 @@ function render.GetShadingLanguageVersion()
 	return ffi.string(str)
 end
 
-function render.GetVendor()
+function render.GetInfo()
+	local tbl = {}
+
 	local str = gl.GetString("GL_VENDOR")
-	if str == nil then  return "?" end
-	return ffi.string(str)
+	tbl.vendor = str ~= nil and ffi.string(str) or "?"
+
+	local str = gl.GetString("GL_VERSION")
+	tbl.version = str ~= nil and ffi.string(str) or "?"
+
+	local str = gl.GetString("GL_RENDERER")
+	tbl.renderer = str ~= nil and ffi.string(str) or "?"
+
+	return tbl
+end
+
+function render.GetAllExtensions()
+	local out = {}
+	local num = ffi.new("GLint[1]")
+	gl.GetIntegerv("GL_NUM_EXTENSIONS", num)
+	for i = 0, num[0] - 1 do
+		out[i + 1] = ffi.string(gl.GetStringi("GL_EXTENSIONS", i))
+	end
+	return out
 end
 
 do
@@ -140,7 +155,7 @@ do
 		local BlendEquation = gl.BlendEquation and utility.GenerateCheckLastFunction(gl.BlendEquation, 1)
 
 		function render._SetBlendMode(src_color, dst_color, func_color)
-			BlendFunc(src_color, enums[dst_color])
+			BlendFunc(enums[src_color], enums[dst_color])
 			if BlendEquation then BlendEquation(enums[func_color]) end
 		end
 	end
@@ -202,7 +217,7 @@ do
 
 end
 
-if render.IsExtensionSupported("GL_ARB_texture_barrier") then
+if render.IsExtensionSupported("ARB_texture_barrier") then
 	function render.TextureBarrier()
 		gl.TextureBarrier()
 	end

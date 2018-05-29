@@ -255,8 +255,7 @@ function META:Register()
 		ffi.metatype(META.Constructor, META)
 	end
 
-	function _G.Matrix]==]..X..Y..[==[(x, y, z)
-		if x or y or z then error() end
+	function _G.Matrix]==]..X..Y..[==[()
 		return META.Constructor(]==] .. table.concat(identity, ", ") .. [==[)
 	end
 

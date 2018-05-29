@@ -5,7 +5,11 @@ steam.source2meters = 0.01905
 runfile("mount.lua", steam)
 runfile("vmt.lua", steam)
 
-function steam.DownloadWorkshop(id, callback)
+function steam.DownloadWorkshop(id, callback, on_error)
+	if not tonumber(id) then
+		id = id:match("id=(%d+)")
+	end
+	on_error = on_error or llog
 	sockets.Request({
 		method = "POST",
 		url = "http://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v0001/",
@@ -14,21 +18,44 @@ function steam.DownloadWorkshop(id, callback)
 			["Content-Type"] = "application/x-www-form-urlencoded"
 		},
 		callback = function(data)
-			local data = serializer.Decode("json", data.content)
+			local data, err = serializer.Decode("json", data.content)
+
+			if not data then
+				on_error(err)
+				return
+			end
+
 			if data.response.publishedfiledetails[1].file_url then
 				resource.Download(data.response.publishedfiledetails[1].file_url, function(path)
-					vfs.Write(path, assert(serializer.ReadFile("lzma", path)))
-					callback(data, path)
-				end, nil,nil,nil,nil,data.response.publishedfiledetails[1].creator_app_id == 4000 and "gma" or "zip")
+					local bin, err = serializer.ReadFile("lzma", path)
+					if not bin then
+						on_error("unable to extract data: " .. err)
+						return
+					end
+					vfs.Write(path, bin)
+					callback(path, data.response)
+				end, on_error, nil, nil, nil, data.response.publishedfiledetails[1].creator_app_id == 4000 and "gma" or "zip")
 			else
-				logn("error downloading ", id, " no file url?")
-				table.print(data)
+				on_error("error downloading " ..  id .. " no file url?")
 			end
 		end,
+		code_callback = function(code)
+			if code == 404 or code == 400 then
+				on_error("error code " .. code)
+			end
+		end,
+		error_callback = on_error,
+		timedout_callback = on_error,
 	})
 end
 
-function steam.DownloadWorkshopCollection(id, callback)
+tasks.WrapCallback(steam, "DownloadWorkshop")
+
+function steam.DownloadWorkshopCollection(id, callback, on_error)
+	if not tonumber(id) then
+		id = id:match("id=(%d+)")
+	end
+	on_error = on_error or llog
 	sockets.Request({
 		method = "POST",
 		url = "http://api.steampowered.com/ISteamRemoteStorage/GetCollectionDetails/v0001/",
@@ -37,14 +64,27 @@ function steam.DownloadWorkshopCollection(id, callback)
 			["Content-Type"] = "application/x-www-form-urlencoded",
 		},
 		callback = function(data)
-			local data = serializer.Decode("json", data.content)
+			local data, err = serializer.Decode("json", data.content)
+			if not data then
+				on_error(err)
+				return
+			end
 			for i,v in ipairs(data.response.collectiondetails[1].children) do
 				data.response.collectiondetails[1].children[i] = v.publishedfileid
 			end
 			callback(data.response.collectiondetails[1].children)
 		end,
+		code_callback = function(code)
+			if code == 404 or code == 400 then
+				on_error("error code " .. code)
+			end
+		end,
+		error_callback = on_error,
+		timedout_callback = on_error,
 	})
 end
+
+tasks.WrapCallback(steam, "DownloadWorkshopCollection")
 
 function steam.InitializeSteamWorks()
 	local ok, err = pcall(function()
@@ -512,6 +552,7 @@ local name_translate = {
 	css = "Counter-Strike: Source",
 	cs = "Counter-Strike",
 	gmod = "Garry's Mod",
+	garrysmod = "Garry's Mod",
 	l4d = "Left 4 Dead",
 	l4d2 = "Left 4 Dead 2",
 	hl2ep2 = "Half-Life 2: Episode Two",

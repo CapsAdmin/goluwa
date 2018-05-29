@@ -5,6 +5,22 @@ bot:SetNick("Alan")
 bot.gender = "male"
 
 function bot:Ask(question, cb, noprint)
+	if not logged_in then -- not so elegant login
+		local username = "notreallyanemailaddress@goluwa.com"
+		local password = "password"
+
+		logged_in = "asking"
+
+		bot:Ask("hi", function()
+			bot:Ask("my username is " .. username, function()
+				bot:Ask(password, nil, true)
+				logged_in = "ok"
+			end, true)
+		end, true)
+	end
+
+	if logged_in ~= "ok" then return end
+
 	--self.cookie = self.cookie or vfs.Read("data/alan_cookie")
 
 	sockets.Request({
@@ -52,16 +68,4 @@ bot:AddEvent("NetworkStarted")
 ALAN = bot
 function bot:OnNetworkStarted()
 	self:Remove()
-end
-
-do -- not so elegant login
-	local username = "notreallyanemailaddress@goluwa.com"
-	local password = "password"
-
-
-	bot:Ask("hi", function()
-		bot:Ask("my username is " .. username, function()
-			bot:Ask(password, nil, true)
-		end, true)
-	end, true)
 end

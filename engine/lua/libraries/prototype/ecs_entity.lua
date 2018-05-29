@@ -243,7 +243,7 @@ function prototype.CreateEntity(config, info)
 		DEFER_COMPONENT_CHECKS_AND_EVENTS = true
 
 		for _, name in ipairs(prototype.component_configurations[config].components) do
-			if not info.exclude_components or not info.exclude_components2[data.component] then
+			if not info.exclude_components2 or not info.exclude_components2[name] then
 				self:AddComponent(name)
 			end
 		end
@@ -267,7 +267,7 @@ function prototype.CreateEntity(config, info)
 		DEFER_COMPONENT_CHECKS_AND_EVENTS = false
 
 		for _, data in ipairs(prototype.component_configurations[config].functions) do
-			if not info.exclude_components or not info.exclude_components2[data.component] then
+			if not info.exclude_components2 or not info.exclude_components2[data.component] then
 				self[data.name] = self[data.name] or data.func
 			end
 		end

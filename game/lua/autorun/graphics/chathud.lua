@@ -29,15 +29,14 @@ if render2d.DrawFlag then
 	}
 end
 
-local height_mult = pvars.Setup("cl_chathud_height_mult", 0.76)
-local width_mult = pvars.Setup("cl_chathud_width_mult", 0.6)
-
-chathud.markup =  gfx.CreateMarkup()
-chathud.markup:SetEditable(false)
-chathud.markup:SetSelectable(false)
-chathud.life_time = 20
+local pos_mult = pvars.Setup("chathud_pos_mult", Vec2(0.6, 0.76))
 
 function chathud.Initialize()
+	chathud.markup =  gfx.CreateMarkup()
+	chathud.markup:SetEditable(false)
+	chathud.markup:SetSelectable(false)
+	chathud.life_time = 20
+
 	resource.Download("http://cdn.steam.tools/data/emote.json", function(path)
 		profiler.StartTimer("emotes")
 		local i = 0
@@ -131,7 +130,7 @@ function chathud.AddText(...)
 		markup:AddString("\n")
 	markup:EndLifeTime()
 
-	markup:SetMaxWidth(render2d.GetSize() * width_mult:Get())
+	markup:SetMaxWidth(render2d.GetSize() * pos_mult:Get().x)
 
 	for k,v in pairs(chathud.tags) do
 		markup.tags[k] = v
@@ -144,7 +143,7 @@ function chathud.Draw()
 	local markup = chathud.markup
 
 	local _, h = render2d.GetSize()
-	local x, y = 30, h * height_mult:Get()
+	local x, y = 30, h * pos_mult:Get().y
 
 	y = y - markup.height
 

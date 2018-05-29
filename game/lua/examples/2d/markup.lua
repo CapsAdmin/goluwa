@@ -1,4 +1,4 @@
-﻿local markup = ... or gfx.CreateMarkup()
+local markup = ... or gfx.CreateMarkup()
 --markup:SetLineWrap(true)
 markup:AddFont(fonts.CreateFont({size = 14, read_speed = 100}))
 

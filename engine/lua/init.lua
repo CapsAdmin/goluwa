@@ -43,57 +43,83 @@ if GRAPHICS then
 	--gui.Initialize()
 end
 
+if PHYSICS then
+	physics = runfile("!lua/libraries/physics/physics.lua") -- physics
+	if not physics then
+		PHYSICS = false
+	end
+end
+
 entities = runfile("lua/libraries/entities/entities.lua") -- entity component system
 
 pvars.Initialize()
-pvars.Setup("text_editor_path", false)
+
+pvars.Setup("system_texteditor_path", false)
+pvars.Setup("system_tasks_enabled", false, function(val) tasks.enabled = val end)
+
+if CLI then tasks.enabled = true end
 
 --steam.InitializeWebAPI()
+
 
 if CURSES then
 	repl.Initialize()
 end
 
-local rate_cvar = pvars.Setup(
-	"system_fps_max",
-	-1,
-	function(rate)
+if PHYSICS then
+	physics.Initialize()
+end
+
+local rate_cvar = pvars.Setup2({
+	key = "system_fps_max",
+	default = -1,
+	modify = function(num) if num < 0 then return -1 end return num end,
+	callback = function(rate)
 		if window and window.IsOpen() then
 			if rate == 0 then
-				render.SwapInterval(true)
+				render.GetWindow():SwapInterval(true)
 			else
-				render.SwapInterval(false)
+				render.GetWindow():SwapInterval(false)
 			end
 		end
 	end,
-	"-1\t=\trun as fast as possible\n 0\t=\tvsync\n+1\t=\t/try/ to run at this framerate (using sleep)"
-)
+	help = "-1\t=\trun as fast as possible\n 0\t=\tvsync\n+1\t=\t/try/ to run at this framerate (using sleep)",
+})
 
 local battery_limit = pvars.Setup("system_battery_limit", true)
 
-event.AddListener("Update", "rate_limit", function(dt)
+do
 	local rate = rate_cvar:Get()
 
-	if window and battery_limit:Get() and window.IsUsingBattery() then
-		render.SwapInterval(true)
-		if window.GetBatteryLevel() < 0.20 then
-			rate = 10
+	event.Timer("rate_limit", 0.1, 0, function()
+		rate = rate_cvar:Get()
+
+		-- todo: user is changing properties in game
+		if rate > 0 and GRAPHICS and gui and gui.world.options then
+			rate = math.max(rate, 10)
 		end
-		if not window.IsFocused() then
-			rate = 5
+
+		if window and battery_limit:Get() and system.IsUsingBattery() and system.GetBatteryLevel() < 0.95 then
+			render.SwapInterval(true)
+			if system.GetBatteryLevel() < 0.20 then
+				rate = 10
+			end
+			if not window.IsFocused() then
+				rate = 5
+			end
 		end
-	end
 
-	if SERVER then
-		rate = 66
-	end
+		if SERVER then
+			rate = 66
+		end
+	end)
 
-	if rate > 0 then
-		system.Sleep(math.floor(1/rate * 1000))
-	end
-
-	system.UpdateTitlebarFPS(dt)
-end)
+	event.AddListener("FrameEnd", "rate_limit", function()
+		if rate > 0 then
+			system.Sleep(math.floor(1/rate * 1000))
+		end
+	end)
+end
 
 if TMUX then
 	logn("== tmux session started ==")
@@ -111,3 +137,23 @@ end
 event.AddListener("Initialize", function()
 	system.ExecuteArgs()
 end)
+
+if CLI then
+	event.AddListener("VFSPreWrite", "log_write", function(path, data)
+		if path:startswith("data/") or vfs.GetPathInfo(path).full_path:startswith(e.DATA_FOLDER) then
+			return
+		end
+
+		if path:startswith(system.GetWorkingDirectory()) then
+			path = path:sub(#system.GetWorkingDirectory() + 1)
+		end
+
+		logn("[vfs] writing ", path, " - ", utility.FormatFileSize(#data))
+	end)
+
+	event.AddListener("Update", "cli", function()
+		if not tasks.IsBusy() and not sockets.active_sockets[1] then
+			system.ShutDown()
+		end
+	end)
+end

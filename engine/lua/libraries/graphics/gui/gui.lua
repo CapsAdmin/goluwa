@@ -102,6 +102,7 @@ local function try(children, filter)
 end
 
 local suppress
+local sort = function(a, b) return a.MouseZPos > b.MouseZPos end
 
 function gui.GetHoveringPanel(panel, filter)
 	if not suppress and gui.popup_panel.mouse_over then
@@ -128,7 +129,7 @@ function gui.GetHoveringPanel(panel, filter)
 	local found
 
 	if ordered[1] then
-		table.sort(ordered, function(a, b) return a.MouseZPos > b.MouseZPos end)
+		table.sort(ordered, sort)
 		found = try(ordered, filter)
 	end
 
@@ -235,6 +236,8 @@ do -- events
 	end
 
 	function gui.UpdateMousePosition()
+		if not gui.world.Children[1] then return end
+
 		gui.hovering_panel = gui.GetHoveringPanel()
 
 		if gui.hovering_panel:IsValid() then
@@ -255,6 +258,8 @@ do -- events
 	end
 
 	function gui.DrawMenu(dt)
+		if not gui.world.Children[1] then return end
+
 		if gui.threedee then
 			--render2d.camera:Start3D2DEx(Vec3(1, -5, 10), Deg3(-90, 180, 0), Vec3(8, 8, 10))
 			render2d.camera:Start3D2DEx(Vec3(0, 0, 0), Ang3(0, 0, 0), Vec3(20, 20, 20))
@@ -307,18 +312,19 @@ do -- events
 end
 
 do -- skin
-	function gui.SetSkin(skin, reload_panels)
+	function gui.SetSkin(skin)
 		if type(skin) == "string" then
 			skin = gui.GetRegisteredSkin(skin).skin
 		end
 
+		local old = gui.GetSkin() and gui.GetSkin().name
+
 		gui.skin = skin
 
-		if reload_panels then
-			runfile("lua/libraries/graphics/gui/panels/*", gui)
-		end
+		if not old then return end
 
 		for panel in pairs(gui.panels) do
+			panel:SetSkin(skin)
 			panel:ReloadStyle()
 		end
 	end
@@ -351,10 +357,6 @@ do -- skin
 		end
 		return out
 	end
-
-	commands.Add("gui_skin=string[gwen],string|nil", function(str, sub_skin)
-		gui.SetSkin(str, sub_skin)
-	end)
 
 	function gui.RegisterSkin(tbl)
 		gui.registered_skins[tbl.Name] = tbl
@@ -421,7 +423,17 @@ function gui.Initialize()
 	gui.init = true
 
 	runfile("lua/libraries/graphics/gui/skins/*", gui)
-	gui.SetSkin("gwen_dark")
+
+	pvars.Setup2({
+		key = "gui_skin",
+		default = "gwen_dark",
+		list = gui.GetRegisteredSkins(),
+		callback = function(str)
+			gui.SetSkin(str)
+		end,
+	})
+
+	gui.SetSkin(pvars.Get("gui_skin"))
 
 	gui.RemovePanel(gui.world)
 
@@ -438,11 +450,12 @@ function gui.Initialize()
 	event.AddListener("MouseInput", "gui", gui.MouseInput, {on_error = system.OnError})
 	event.AddListener("KeyInputRepeat", "gui", gui.KeyInput, {on_error = system.OnError})
 	event.AddListener("CharInput", "gui", gui.CharInput, {on_error = system.OnError})
-	event.AddListener("WindowFileDrop", "gui", gui.SystemFileDrop, {on_error = system.OnError})
+	event.AddListener("WindowDrop", "gui", gui.SystemFileDrop, {on_error = system.OnError})
 	local window = render.GetWindow()
-	event.AddListener("WindowResize", "gui", function(wnd, w,h)
+	event.AddListener("WindowFramebufferResized", "gui", function(wnd, size)
 		if window == wnd then
-			gui.world:SetSize(Vec2(w, h))
+			gui.world:SetSize(size)
+			gui.world:Layout(true)
 		end
 	end, {on_error = system.OnError})
 

@@ -319,7 +319,7 @@ function thread:OnStart()
 													for i, path in ipairs(info.wave) do
 														local original = path
 														local flags, path = path:match("^(%p*)(.+)")
-														if path and path ~= "" then
+														if path and path~= "" then
 															path = vfs.FixPathSlashes(path)
 
 															local relative = path:lower()

@@ -23,47 +23,53 @@ function PLUGIN:Setup()
 	local META = {}
 	META.__index = META
 
-	local socket = require("socket")
-
 	local last_msg = ""
+	local delimiter = "_aeoaa__DELIMITER_aeoaa_"
 
 	function META:Update()
-		local res, msg = self.socket:connect("*", self.port)
+		if not self.next_update or self.next_update < os.clock() then
+			local f = io.open(ide:GetProject() .. "data/ide/goluwa_output_" .. self.id, "r")
+			if f then
+				local str = f:read("*all")
+				f:close()
 
-		if msg ~= last_msg then
-			ide:Print("*", self.port, ":", res, msg)
-			last_msg = msg
-		end
+				for chunk in str:gmatch("(.-)" .. delimiter) do
+					local func, err = loadstring(chunk)
+					if func then
+						local ok, err = pcall(func)
+						if not func then
+							ide:Print(err)
+						end
+					else
+						ide:Print(err)
+					end
+				end
 
-		if not self.connected and res or msg == "already connected" then
-			if not self.connected then
-				ide:Print("remote console: connected to localhost:", self.port)
+				io.open(ide:GetProject() .. "data/ide/goluwa_output_" .. self.id, "w"):close()
 			end
-			self.connected = true
-		elseif msg ~= "timeout" and msg ~= "connection refused" then
-			ide:Print(msg)
+
+			self.next_update = os.clock() + 1/5
 		end
 	end
 
 	function META:Send(str)
-		if self.connected then
-			self.socket:send(str)
-		else
-			ide:Print("remote console: cannot send '", str, "' because socket is not connected")
-			ide:Print(self.socket)
-		end
+		local f = io.open(ide:GetProject() .. "data/ide/goluwa_input_" .. self.id, "ab")
+		f:write(str)
+		f:write(delimiter)
+		f:close()
 	end
 
-	function create_socket(id)
+	function META:Remove()
+
+	end
+
+	function create_connection(id)
 		local self = setmetatable({}, META)
-		self.connected = false
-		self.socket = socket.tcp()
-		self.socket:settimeout(0)
-		self.port = (self.port or math.random(1500, 10000)) + 1
+		self.id = id
 		return self
 	end
 
-	local function setup_console(id, name, cmd_line, icon, on_key)
+	local function setup_console(id, name, cmd_line, icon, on_key, env_vars)
 		return
 		{
 			id = id,
@@ -72,27 +78,29 @@ function PLUGIN:Setup()
 			icon = icon,
 
 			working_directory = "../../",
-			env_vars = {
+			env_vars = env_vars or {
 				GOLUWA_CURSES = "0",
 				GOLUWA_IDE = "",
 				GOLUWA_ARGS = [==[{[[
-					if not sockets then return end
-					pvars.Set("text_editor_path", "./../../ide/zbstudio.sh %PATH%:%LINE%")
+					local delimiter = "]==] .. delimiter .. [==["
 
-					local server = sockets.CreateServer("tcp")
-					server:Host("*", LUA{console.socket.port})
+					pvars.Set("system_texteditor_path", "./../../ide/zbstudio.sh %PATH%:%LINE%")
 
-					function server:OnClientConnected(client)
-						logn("zerobrane connected")
-						return true
-					end
+					event.Timer("remote_console", 1/5, 0, function()
+						local input = vfs.Read("os:" .. e.ROOT_FOLDER .. "data/ide/goluwa_input_LUA{console.id}")
+						if input and input ~= "" then
+							vfs.Write("os:" .. e.ROOT_FOLDER .. "data/ide/goluwa_input_LUA{console.id}", "")
 
-					function server:OnReceive(str)
-						commands.RunString(str, nil, nil, true)
-					end
+							for _, chunk in ipairs(input:split(delimiter)) do
+								if chunk ~= "" then
+									commands.RunString(chunk, nil, nil, true)
+								end
+							end
+						end
+					end)
 
 					_G.zb = function(str)
-						server:Broadcast(str, true)
+						vfs.Write("os:" .. e.ROOT_FOLDER .. "data/ide/goluwa_output_LUA{console.id}", vfs.Read(e.ROOT_FOLDER .. "data/ide/goluwa_output_LUA{console.id}") .. str .. delimiter)
 					end
 
 					ZEROBRANE = true
@@ -100,39 +108,35 @@ function PLUGIN:Setup()
 					if "DEFERRED_CMD" ~= "" then
 						commands.RunString("DEFERRED_CMD")
 					end
+
+					if CLIENT and LUA{plugin:IsRunning("server")} then
+						commands.RunString("connect localhost")
+					end
 				]]}]==]
 			},
 
 			start = function(console)
-				console.socket = create_socket(id)
+				console.connection = create_connection(id)
 			end,
 			stop = function(console)
-				if console.socket then
-					console.socket.socket:close()
-				end
-				console.socket = nil
+				if not console.connection then return end
+				console.connection:Remove()
 			end,
 			run_string = function(console, str)
-				if not console.socket or not console.socket.socket then
-					console:Print("zerobrane is not connected")
-				end
-				console.socket:Send(str)
+				if not console.connection then return end
+				console.connection:Send(str)
 			end,
 			run_script = function(console, path)
-				if not console.socket or not console.socket.socket then
-					console:Print("zerobrane is not connected")
-				else
-					console:Print("loading: ", path, "\n")
-				end
+				if not console.connection then return end
+				console:Print("loading: ", path, "\n")
 				console:run_string("_G.RELOAD = true runfile([["..path.."]]) _G.RELOAD = nil print('script ran successfully')")
 			end,
 			print = function(console, ...)
 				console:Print(...)
 			end,
 			on_update = function(console)
-				if console.socket then
-					console.socket:Update()
-				end
+				if not console.connection then return end
+				console.connection:Update()
 			end,
 			on_save = function(console, path)
 				local dir = path:lower():match("^.+/([^/]-)/[^/]+$")
@@ -257,10 +261,10 @@ function PLUGIN:Setup()
 	"      8.9.0.a.b.c.d.e.f.g.      ",
 	"                    h.i.        "};
 
-	return {
-		setup_console("server", "Server", jit.os ~= "Windows" and "./goluwa server" or "goluwa.cmd server", server_icon),
-		setup_console("client", "Client", jit.os ~= "Windows" and "./goluwa client" or "goluwa.cmd client", client_icon, function(console, suppress_only)
-			if (wx.wxGetKeyState(wx.WXK_F5) or wx.wxGetKeyState(wx.WXK_F6)) then
+	local out =  {
+		setup_console("server", "Server", "server", server_icon),
+		setup_console("client", "Client", "client", client_icon, function(console, suppress_only)
+			if ide:GetMainFrame():IsActive() and (wx.wxGetKeyState(wx.WXK_F5) or wx.wxGetKeyState(wx.WXK_F6)) then
 				if suppress_only then return false end
 
 				if (console.last_start or 0) < os.clock() then
@@ -274,6 +278,49 @@ function PLUGIN:Setup()
 			end
 		end),
 	}
+
+	if GetGMODDir() then
+		table.insert(out, setup_console("gmod", "GMOD", function(console)
+			local cmd_line = ""
+
+			if WINE then
+				cmd_line = "wineconsole hl2.exe -steam -game garrysmod -disableluarefresh"
+			elseif jit.os ~= "Windows" then
+				cmd_line = "./hl2_linux -steam -game garrysmod -disableluarefresh"
+			else
+
+			end
+
+			local pid = CommandLineRun(
+				cmd_line,
+				GetGMODDir() .. "../",
+				true,--tooutput,
+				true,--nohide,
+				function(...) console:print(...) end,
+				"goluwa_" .. console.id,
+				function()
+					local tb = ide:GetToolBar()
+					tb:ToggleTool(console.wx_start_id, false)
+					tb:EnableTool(console.wx_run_id, false)
+					tb:Realize()
+
+					self:StopProcess(console.id)
+				end
+			)
+
+			os.execute("xterm -e 'echo password needed to attach to process " ..pid.. " && sudo gdb -p " .. pid .. " --ex continue' &")
+
+			return pid
+		end, server_icon, nil, {
+			__GL_THREADED_OPTIMIZATIONS = "1",
+			LIBGL_DEBUG = "1",
+			MESA_DEBUG = "context",
+			LD_LIBRARY_PATH = GetGMODDir() .. "../bin",
+		})
+		)
+	end
+
+	return out
 end
 
 function PLUGIN:IsRunning(id)
@@ -298,39 +345,64 @@ function PLUGIN:StartProcess(id, cmd)
 	console:print("launching...\n")
 
 	for k,v in pairs(console.env_vars) do
-		v = v:gsub("LUA(%b{})", function(code) return assert(loadstring("local console = ... return " .. code:sub(2, -2)))(console) end)
+		v = v:gsub("LUA(%b{})", function(code) return tostring(assert(loadstring("local console, plugin = ... return " .. code:sub(2, -2)))(console, self)) end)
 		v = v:gsub("DEFERRED_CMD", cmd or "")
 		wx.wxSetEnv(k, v)
+		if os.getenv(k) ~= v then
+			ide:Print("failed to set environment variable " .. k)
+			for i = 1, #v do
+				local str = v:sub(0, i)
+				wx.wxSetEnv(k, str)
+				if os.getenv(k) ~= str and i > 1 then
+					local bad_char = v:sub(i-1, i-1)
+					ide:Print("the character " .. bad_char .. "(" .. (bad_char:byte() or -1) .. ")" .. " seems to be problematic")
+					ide:Print(str)
+					break
+				end
+			end
+		end
 	end
 
 	local tb = ide:GetToolBar()
 
 	local cmd_line = console.cmd_line
 
-	if BRANCH then
-		cmd_line = cmd_line .. " branch " .. BRANCH
+	if type(cmd_line) == "function" then
+		console.pid = cmd_line(console)
+	else
 
-		if DEBUG then
-			cmd_line = cmd_line .. " debug"
+		if WINE then
+			cmd_line = "wineconsole " .. ide:GetProject() .. "data/windows_x64/luajit.exe " .. " "..ide:GetProject().."core/lua/boot.lua " .. cmd_line
+		elseif jit.os == "Windows" then
+			cmd_line = ide:GetProject() .. "goluwa.cmd " .. cmd_line
+		else
+			cmd_line = "./goluwa " .. cmd_line
 		end
 
+		if BRANCH then
+			cmd_line = cmd_line .. " branch " .. BRANCH
+
+			if DEBUG then
+				cmd_line = cmd_line .. " debug"
+			end
+		end
+
+		console.pid = CommandLineRun(
+			cmd_line,
+			console.working_directory,
+			true,--tooutput,
+			true,--nohide,
+			function(...) console:print(...) end,
+			"luacraft_" .. id,
+			function()
+				tb:ToggleTool(console.wx_start_id, false)
+				tb:EnableTool(console.wx_run_id, false)
+				tb:Realize()
+
+				self:StopProcess(console.id)
+			end
+		)
 	end
-
-	console.pid = CommandLineRun(
-		cmd_line,
-		console.working_directory,
-		true,--tooutput,
-		true,--nohide,
-		function(...) console:print(...) end,
-		"luacraft_" .. id,
-		function()
-			tb:ToggleTool(console.wx_start_id, false)
-			tb:EnableTool(console.wx_run_id, false)
-			tb:Realize()
-
-			self:StopProcess(console.id)
-		end
-	)
 
 	tb:ToggleTool(console.wx_start_id, true)
 	tb:EnableTool(console.wx_run_id, true)
@@ -445,13 +517,7 @@ function PLUGIN:onRegister()
 			name = "LuaJIT",
 		})
 
-		table.insert(branches, {
-			wx_id = NewID(),
-			branch_id = "lua",
-			name = "Lua51 + FFILib",
-		})
-
-		for _, path in pairs(FileSysGetRecursive("../bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/", false, "luajit_*")) do
+		for _, path in pairs(FileSysGetRecursive("../" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/", false, "luajit_*")) do
 			local id = path:match(".+/luajit_(.+)")
 
 			table.insert(branches, {
@@ -657,26 +723,13 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 			text = text .. (i > 1 and sep or "") .. tostring(select(i,...))
 		end
 
-		-- split the text into smaller chunks as one large line
-		-- is difficult to handle for the editor
-		local prev, maxlength = 0, ide.config.debugger.maxdatalength
-		if #text > maxlength and not text:find("\n.") then
-			text = text:gsub("()(%s+)", function(p, s)
-					if p-prev >= maxlength then
-						prev = p
-						return "\n"
-					else
-						return s
-					end
-				end)
-		end
 		return text
 	end
 
 	local partial = false
 	local function shellPrint(marker, text, newline)
 		if not text or text == "" then return end -- return if nothing to print
-		if newline then text = text:gsub("\n+$", "").."\n" end
+		--if newline then text = text:gsub("\n+$", "").."\n" end
 		local isPrompt = marker and (getPromptLine() ~= wx.wxNOT_FOUND)
 		local lines = console:GetLineCount()
 		local promptLine = isPrompt and getPromptLine() or nil

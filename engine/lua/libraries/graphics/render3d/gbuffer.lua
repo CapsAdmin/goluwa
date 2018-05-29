@@ -2,16 +2,24 @@ local render3d = ... or _G.render3d
 
 local gbuffer_enabled = false
 
-local w_cvar = pvars.Setup("render_width", 0, function(_, first) if not first and gbuffer_enabled then render3d.Initialize() end end)
-local h_cvar = pvars.Setup("render_height", 0, function(_, first) if not first and  gbuffer_enabled then render3d.Initialize() end end)
-local mult_cvar = pvars.Setup("render_ss_multiplier", 1, function(_, first) if not first and gbuffer_enabled then render3d.Initialize() end end)
+local size_cvar = pvars.Setup("render_size", Vec2(0, 0), function(_, first)
+	if not first and gbuffer_enabled then
+		render3d.Initialize()
+	end
+end)
+
+local mult_cvar = pvars.Setup("render_ss_multiplier", 1, function(_, first)
+	if not first and gbuffer_enabled then
+		render3d.Initialize()
+	end
+end)
 
 function render3d.GetGBufferSize()
 	if not render3d.gbuffer_size then
 		local size = render.GetScreenSize()
 
-		if w_cvar:Get() > 0 then size.x = w_cvar:Get() end
-		if h_cvar:Get() > 0 then size.y = h_cvar:Get() end
+		if size_cvar:Get().x > 0 then size.x = size_cvar:Get().x end
+		if size_cvar:Get().y > 0 then size.y = size_cvar:Get().y end
 
 		size = size * mult_cvar:Get()
 
@@ -457,13 +465,13 @@ function render3d.InitializeGBuffer()
 
 	runfile("lua/libraries/graphics/render3d/post_process/*")
 
-	event.AddListener("WindowResize", "gbuffer", function(_, w, h)
+	event.AddListener("WindowFramebufferResized", "gbuffer", function(_, size)
 		local current = render3d.GetGBufferSize()
 		render3d.gbuffer_size = nil
 		if render3d.GetGBufferSize() ~= current then
 			render3d.Initialize()
 		end
-		render3d.camera:SetViewport(Rect(0,0,w,h))
+		render3d.camera:SetViewport(Rect(0,0,size.x,size.y))
 	end)
 
 	for k,v in pairs(render3d.gbuffer_values) do
@@ -478,7 +486,7 @@ function render3d.InitializeGBuffer()
 end
 
 function render3d.ShutdownGBuffer()
-	event.RemoveListener("WindowResize", "gbuffer")
+	event.RemoveListener("WindowFramebufferResized", "gbuffer")
 
 	if render3d.gbuffer:IsValid() then
 		render3d.gbuffer:Remove()
@@ -537,7 +545,6 @@ commands.Add("dump_gbuffer=string|nil,string|nil", function(format, depth_format
 			local ok, err = pcall(function()
 				local format = format
 				if k == "depth" then format = depth_format end
-				print(format)
 				local data = v.tex:Download(nil, format)
 				local buffer = data.buffer
 				data.buffer = nil

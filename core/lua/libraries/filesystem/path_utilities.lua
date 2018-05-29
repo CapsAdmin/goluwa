@@ -1,5 +1,11 @@
 local vfs = (...) or _G.vfs
 
+function vfs.AbsoluteToRelativePath(root, abs)
+	local root_info = vfs.GetPathInfo(root)
+	local abs_info = vfs.GetPathInfo(abs)
+	return abs_info.full_path:sub(#root_info.full_path + 2)
+end
+
 function vfs.GetParentFolderFromPath(str, level)
 	level = level or 1
 	for i = #str, 1, -1 do
@@ -31,7 +37,7 @@ function vfs.RemoveExtensionFromPath(str)
 end
 
 function vfs.GetExtensionFromPath(str)
-	return vfs.GetFileNameFromPath(str):match(".+%.(%a+)")
+	return vfs.GetFileNameFromPath(str):match(".+%.(%w+)") or ""
 end
 
 function vfs.GetFolderFromPath(str)
@@ -64,20 +70,32 @@ function vfs.ParsePathVariables(path)
 	return path
 end
 
-local illegal_characters = {
-	[":"] = "_semicolon_",
-	["*"] = "_star_",
-	["?"] = "_questionmark_",
-	["<"] = "_less_than_",
-	[">"] = "_greater_than_",
-	["|"] = "_line_",
+local character_translation = {
+	["\\"] = "⟍",
+	[":"] = "⠅",
+	["*"] = "✱",
+	["?"] = "❔",
+	["<"] = "ᐸ",
+	[">"] = "𝈷",
+	["|"] = "ᥣ",
+	["~"] = "𝀈",
+	["#"] = "⧣",
+	["\""] = "‟",
+	["^"] = "ᣔ",
 }
 
-function vfs.FixIllegalCharactersInPath(path)
-	for k,v in pairs(illegal_characters) do
-		path = path:gsub("%"..k, v)
+function vfs.ReplaceIllegalPathSymbols(path, forward_slash)
+	local out = path:gsub(".", character_translation)
+
+	if forward_slash then
+		out = out:gsub("/", "⟋")
 	end
-	return path
+
+	return out
+end
+
+function vfs.ReplaceIllegalCharacters()
+
 end
 
 function vfs.FixPathSlashes(path)
@@ -96,8 +114,13 @@ function vfs.CreateDirectoriesFromPath(path, force)
 
 	for i = 1, max do
 		local folder = folders[i]
-		vfs.CreateDirectory(path_info.filesystem ..":"..  folder, force)
+		local ok, err = vfs.CreateDirectory(path_info.filesystem ..":"..  folder, force)
+		if not ok then
+			return nil, err
+		end
 	end
+
+	return true
 end
 
 function vfs.GetAbsolutePath(path, is_folder)

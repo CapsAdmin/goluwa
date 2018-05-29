@@ -137,7 +137,7 @@ function autocomplete.Query(id, str, scroll, list)
 			env[id].pause_autocomplete = str
 		end
 	else
-		if #env[id].pause_autocomplete > #str then
+		if #env[id].pause_autocomplete >= #str then
 			env[id].pause_autocomplete = false
 		end
 	end

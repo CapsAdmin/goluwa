@@ -3,21 +3,36 @@ do
 
 	if ffi then
 		if WINDOWS then
-			ffi.cdef[[int _putenv_s(const char *var_name, const char *new_value)]]
+			ffi.cdef([[
+				int _putenv_s(const char *var_name, const char *new_value);
+				int _putenv(const char *var_name);
+
+			]])
 
 			function os.setenv(key, val)
-				ffi.C._putenv_s(key, val)
+				if not val then
+					ffi.C._putenv(key)
+				else
+					ffi.C._putenv_s(key, val)
+				end
 			end
 		else
-			ffi.cdef[[int setenv(const char *var_name, const char *new_value, int change_flag)]]
+			ffi.cdef([[
+				int setenv(const char *var_name, const char *new_value, int change_flag);
+				int unsetenv(const char *name);
+			]])
 
-			function os.setenv(key, val, flag)
-				ffi.C.setenv(key, val, flag or 0)
+			function os.setenv(key, val)
+				if not val then
+					ffi.C.unsetenv(key)
+				else
+					ffi.C.setenv(key, val, 0)
+				end
 			end
 		end
 	else
-		function os.setenv(key, val, flag)
-			logn("ffi.C.setenv(", key, val, flag or 0, ")")
+		function os.setenv(key, val)
+			logn("ffi.C.setenv(", key, val, ")")
 		end
 	end
 end

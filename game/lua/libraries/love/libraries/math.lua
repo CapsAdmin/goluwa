@@ -7,6 +7,10 @@ for k,v in pairs(math) do
 	love.math[k] = v
 end
 
+function math.mod(a, b)
+	return a % b
+end
+
 do
 	local SEED = 0
 

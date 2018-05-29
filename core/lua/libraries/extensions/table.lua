@@ -16,6 +16,27 @@ if not table.unpack then
 	end
 end
 
+function table.tolist(tbl, sort)
+	local list = {}
+	for key, val in pairs(tbl) do
+		table.insert(list, {key = key, val = val})
+	end
+
+	return list
+end
+
+function table.sortedpairs(tbl, sort)
+	local list = table.tolist(tbl)
+	table.sort(list, sort)
+	local i = 0
+	return function()
+		i = i + 1
+		if list[i] then
+			return list[i].key, list[i].val
+		end
+	end
+end
+
 function table.slice(tbl, first, last, step)
 	local sliced = {}
 
@@ -64,7 +85,9 @@ function table.isarray(t)
 	local i = 0
 	for _ in pairs(t) do
 		i = i + 1
-		if t[i] == nil then return false end
+		if t[i] == nil then
+			return false
+		end
 	end
 	return true
 end
@@ -172,10 +195,17 @@ function table.count(tbl)
 	return i
 end
 
-function table.merge(a, b)
+function table.merge(a, b, merge_aray)
 	for k,v in pairs(b) do
 		if type(v) == "table" and type(a[k]) == "table" then
-			table.merge(a[k], v)
+			if merge_aray and table.isarray(a[k]) and table.isarray(v) then
+				local offset = #a[k]
+				for i = 1, #v do
+					a[k][i + offset] = v[i]
+				end
+			else
+				table.merge(a[k], v, merge_aray)
+			end
 		else
 			a[k] = v
 		end
@@ -222,6 +252,29 @@ function table.print(...)
 	logn(luadata.ToString(tbl, {tab_limit = max_level, done = {}}))
 
 	luadata.SetModifier("function", nil)
+end
+
+do
+	local indent = 0
+	function table.print2(tbl)
+		for k,v in pairs(tbl) do
+			log(("\t"):rep(indent))
+
+			if type(v) == "table" then
+				logn(k, ":")
+				indent = indent + 1
+				table.print2(v)
+				indent = indent - 1
+			else
+				local v = v
+				if type(v) == "string" then
+					v = "\"" .. v .. "\""
+				end
+
+				logn(k, " = ", v)
+			end
+		end
+	end
 end
 
 do -- table copy

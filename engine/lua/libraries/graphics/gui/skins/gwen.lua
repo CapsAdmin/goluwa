@@ -34,7 +34,7 @@ for i, sub_skin in ipairs(skins) do
 		local scale = self:GetScale()
 
 		local font = fonts.CreateFont({
-			path = "Roboto",
+			path = "Roboto Regular",
 			fallback = gfx.GetDefaultFont(),
 			size = 6*scale,
 			filtering = "nearest",
@@ -48,7 +48,7 @@ for i, sub_skin in ipairs(skins) do
 			skin.text_color = texture:GetPixelColor(187, 504)
 			skin.text_color.a = 1
 			skin.text_color_inactive = skin.text_color * 0.80
-			skin.text_edit_color = texture:GetPixelColor(110, 497)*0
+			skin.text_edit_color = texture:GetPixelColor(110, 497)
 			skin.text_edit_color.a = 1
 			skin.text_list_color = skin.text_color
 			skin.property_background = texture:GetPixelColor(28, 500)

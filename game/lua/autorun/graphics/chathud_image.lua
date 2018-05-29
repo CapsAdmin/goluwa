@@ -10,7 +10,7 @@ local allowed = {
 	png = true,
 }
 
-local sDCvar = pvars.Setup("chathud_image_slideduration", 0.5)
+local sDCvar = pvars.Setup("chathud_image_slidesduration", 0.5)
 local hDCvar = pvars.Setup("chathud_image_holdduration", 5)
 local cvar = pvars.Setup("chathud_image_url", 1)
 

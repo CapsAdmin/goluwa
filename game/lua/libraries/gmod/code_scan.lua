@@ -18,6 +18,10 @@ local suspicious = {
 		getregistry = true,
 	},
 	HTTP = true,
+	concommand = {
+		Run = true,
+	},
+	RunConsoleCommand = true,
 }
 
 local index = {
@@ -55,9 +59,8 @@ print(RunString(s))
 file.Write((CLIENT and "cl" or "sv") .. "_index.txt", s)
 ]]
 
-local vmdef = require("jit.vmdef")
-
 local function search(func, found, ignore_globals, name, lines)
+	local vmdef = require("jit.vmdef")
 	local info = jit.util.funcinfo(func)
 
 	local function bytecode(func, i)
@@ -147,8 +150,7 @@ end
 
 local loaded = false
 
-function gine.CheckCode(source, ignore_globals, found)
-
+function gine.CheckCode(source, ignore_globals)
 	if not loaded then
 		table.merge(index, runfile("lua/libraries/gmod/cl_index.lua"))
 		table.merge(index, runfile("lua/libraries/gmod/sv_index.lua"))
@@ -158,7 +160,7 @@ function gine.CheckCode(source, ignore_globals, found)
 	local func = loadstring(source, "")
 	local info = jit.util.funcinfo(func)
 
-	found = found or {}
+	local found = {}
 
 	if info.children then
 		for i = -1, -1000000000, -1 do
@@ -178,65 +180,59 @@ function gine.CheckCode(source, ignore_globals, found)
 	return found
 end
 
-function gine.CheckWorkshopAddon(id, no_linenumbers)
-	local ignore_globals = {}
-	logn("downloading ", id)
-	steam.DownloadWorkshop(id, function(info, path)
-		logn("finished downloading ", id)
-		logn("==============================================================================================================")
-		logn("checking ", info.response.publishedfiledetails[1].title)
-		logn("http://steamcommunity.com/workshop/filedetails/?id=" .. info.response.publishedfiledetails[1].publishedfileid)
+function gine.CheckDirectory(root, name, no_linenumbers, suspicious_only)
+	for _, path in ipairs(vfs.GetFilesRecursive(root, {"lua"})) do
+		local ignore_globals = {}
+		local code = vfs.Read(path)
 
-		vfs.Search(path .. "/lua/", {"lua"}, function(path)
-			local found = {}
-			local code =  gine.PreprocessLua(vfs.Read(path))
-			local ok, err = loadstring(code)
-			local lines = code:split("\n")
+		code =  gine.PreprocessLua(code)
+		local ok, err = loadstring(code)
+		local lines = code:split("\n")
 
-			if ok then
-				vfs.Write("data/" .. id .. "(" .. info.response.publishedfiledetails[1].publishedfileid:gsub("%s+", "_"):gsub("%p", "") .. ")" .. "/" .. path, code)
+		local found = {}
 
-				gine.CheckCode(code, ignore_globals, found)
-			else
-				print(path)
-				print(err)
+		if ok then
+			found = gine.CheckCode(code, ignore_globals)
+		else
+			print(path)
+			print(err)
+		end
+
+		if found[1] then
+			logn("\t", (path:match(".+/(lua.+)") or path) .. ":")
+
+			local function parse_info(info)
+				logn("\t\t", path:match(".+/(lua.+)"), ":", info.start_line, " - ", info.stop_line)
+				logn("\t\t", info.msg .. ":")
+				if not no_linenumbers then
+					local max = 20
+					local c = 0
+					for i = info.start_line, info.stop_line do
+						local line = lines[i]
+						if line then
+							logn("\t\t\t", i .. ":" .. line)
+						end
+						c = c + 1
+
+						if c > 20 then break logn("...") end
+					end
+					logn("\n")
+				end
 			end
 
-
-			if found[1] then
-				logn("\t", path:match(".+/(lua.+)") .. ":")
-
-				local function parse_info(info)
-					logn("\t\t", path:match(".+/(lua.+)"), ":", info.start_line, " - ", info.stop_line)
-					logn("\t\t", info.msg .. ":")
-					if not no_linenumbers or info.type == "important" then
-						for i = info.start_line, info.stop_line do
-							local line = lines[i]
-							if line then
-								logn("\t\t\t", i .. ":" .. line)
-							end
-						end
-						logn("\n")
-					end
-				end
-
+			if not suspicious_only then
 				for i, info in ipairs(found) do
 					if info.type ~= "important" then
 						parse_info(info)
 					end
 				end
+			end
 
-				for i, info in ipairs(found) do
-					if info.type == "important" then
-						parse_info(info)
-					end
+			for i, info in ipairs(found) do
+				if info.type == "important" then
+					parse_info(info)
 				end
 			end
-		end)
-
-		if not vfs.IsDirectory(path .. "/lua") then
-			table.print(vfs.Find(path .. "/"))
-			logn("no lua folder")
 		end
-	end)
+	end
 end

@@ -106,9 +106,11 @@ end
 
 do
 	local out
-	local function search(path, ext, callback, dir_blacklist, userdata)
+	local function search(path, ext, callback, dir_blacklist, include_directories, userdata)
 		for _, v in ipairs(vfs.GetFiles({path = path, verbose = true, no_sort = true})) do
-			if not ext or v.name:endswiththese(ext) then
+			local is_dir = vfs.IsDirectory(v.full_path)
+
+			if (not ext or v.name:endswiththese(ext)) and (not is_dir or include_directories) then
 				if callback then
 					if callback(v.full_path, v.userdata or userdata, v) ~= nil then
 						return
@@ -118,28 +120,26 @@ do
 				end
 			end
 
-			local dir = v.full_path
-
-			if vfs.IsDirectory(dir) then
+			if is_dir then
 				local okay = true
 				if dir_blacklist then
 					for i,v in ipairs(dir_blacklist) do
-						if dir:find(v) then
+						if v.full_path:find(v) then
 							okay = false
 							break
 						end
 					end
 				end
 				if okay then
-					search(dir .. "/", ext, callback, dir_blacklist, v.userdata or userdata)
+					search(v.full_path .. "/", ext, callback, dir_blacklist, include_directories, v.userdata or userdata)
 				end
 			end
 		end
 	end
 
-	function vfs.Search(path, ext, callback, dir_blacklist)
+	function vfs.GetFilesRecursive(path, ext, callback, dir_blacklist)
 		out = {}
-		search(path, ext, callback, dir_blacklist)
+		search(path, ext, callback, dir_blacklist, include_directories)
 		return out
 	end
 end

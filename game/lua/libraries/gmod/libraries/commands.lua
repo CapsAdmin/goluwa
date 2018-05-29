@@ -14,8 +14,9 @@ function gine.env.AddConsoleCommand(name)
 			wlog("gmod tried to add existing command %s", name, 2)
 		end
 	else
-		commands.Add(name, function(line, ...)
-			gine.env.concommand.Run(NULL, name, {...}, line)
+		commands.Add(name, function(line)
+			line = line or ""
+			gine.env.concommand.Run(NULL, name, line:split(" "), line)
 		end)
 	end
 end

@@ -1,7 +1,7 @@
 local render = ... or _G.render
-local gl = system.GetFFIBuildLibrary("opengl", true) -- OpenGL
+local gl = require("opengl") -- OpenGL
 
-if not render.IsExtensionSupported("GL_ARB_framebuffer_object") then
+if not render.IsExtensionSupported("ARB_framebuffer_object") then
 	runfile("../null/framebuffer.lua", render)
 
 	local META = prototype.GetRegistered("framebuffer")
@@ -323,7 +323,7 @@ function META:ClearAll(r,g,b,a, d,s)
 
 	local color = ffi.new("GLfloat[4]", r or 0, g or 0, b or 0, a or 0)
 
-	for i = 0, self.draw_buffers_size or 1 do
+	for i = 0, self.draw_buffers_size do
 		self.gl_fb:Clearfv("GL_COLOR", i, color)
 	end
 

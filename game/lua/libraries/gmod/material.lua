@@ -826,8 +826,7 @@ do -- vmt object
 			val = Vec3(x,y,z)
 		elseif info.type == "vec4" or info.type == "color" then
 			val = val:gsub("%s+", " "):trim()
-			local x, y, z, w
-			if val:startswith("[") then
+			if val:startswith("[") or val:find(" ", nil, true) then
 				x, y, z, w = unpack(val:sub(2, -2):split(" "))
 				x = tonumber(x) or 0
 				y = tonumber(y) or 0

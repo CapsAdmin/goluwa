@@ -1,6 +1,7 @@
 local gfx = _G.gfx or {}
 
 runfile("polygon_2d.lua", gfx)
+runfile("sprite_batch.lua", gfx)
 runfile("quadric_bezier_curve.lua", gfx)
 runfile("text.lua", gfx)
 
@@ -11,7 +12,6 @@ function gfx.Initialize()
 	local tex = render.CreateBlankTexture(Vec2() + 1024)
 	tex:SetWrapS("mirrored_repeat")
 	tex:SetWrapT("mirrored_repeat")
-	tex:SetAnisotropy(32)
 	tex:SetMipMapLevels(32)
 	tex:SetMinFilter("nearest")
 	--tex:SetMagFilter("linear")

@@ -6,6 +6,7 @@ profiler.raw_data = profiler.raw_data or {sections = {}, statistical = {}, trace
 local blacklist = {
 	["leaving loop in root trace"] = true,
 	["error thrown or hook fed during recording"] = true,
+	["too many spill slots"] = true,
 }
 
 local function trace_dump_callback(what, trace_id, func, pc, trace_error_id, trace_error_arg)
@@ -64,7 +65,7 @@ local function parse_raw_statistical_data()
 
 	for _ = 1, #profiler.raw_data.statistical do
 		local args = table.remove(profiler.raw_data.statistical)
-		local str, samples = args[1], args[2]
+		local str, samples, vmstate = args[1], args[2], args[3]
 		local children = {}
 
 		for line in str:gmatch("(.-)\n") do
@@ -85,7 +86,7 @@ local function parse_raw_statistical_data()
 		local line = tonumber(info.line) or -1
 
 		data[path] = data[path] or {}
-		data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, ready = false, func_name = path}
+		data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, ready = false, func_name = path, vmstate = vmstate}
 
 		data[path][line].samples = data[path][line].samples + samples
 		data[path][line].start_time = data[path][line].start_time or system.GetTime()
@@ -97,7 +98,7 @@ local function parse_raw_statistical_data()
 			local line = tonumber(info.line) or -1
 
 			data[path] = data[path] or {}
-			data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, ready = false, func_name = path}
+			data[path][line] = data[path][line] or {total_time = 0, samples = 0, children = {}, parents = {}, ready = false, func_name = path, vmstate = vmstate}
 
 			data[path][line].samples = data[path][line].samples + samples
 			data[path][line].start_time = data[path][line].start_time or system.GetTime()
@@ -112,8 +113,8 @@ local function parse_raw_statistical_data()
 end
 
 local function statistical_callback(thread, samples, vmstate)
-	local str = jit.profiler.dumpstack(thread, "pl\n", 10)
-	table.insert(profiler.raw_data.statistical, {str, samples})
+	local str = jit.profiler.dumpstack(thread, "pl\n", 1000)
+	table.insert(profiler.raw_data.statistical, {str, samples, vmstate})
 end
 
 function profiler.EnableStatisticalProfiling(b)
@@ -300,6 +301,11 @@ function profiler.GetBenchmark(type, file, dump_line)
 					data.section_name = data.section_name:match(".+lua/(.+)") or data.section_name
 				end
 
+				if name:find("\n", 1, true) then
+					name = name:gsub("\n", "")
+					name = name:sub(0, 50)
+				end
+
 				name = name:trim()
 				data.path = path
 				data.file_name = path:match(".+/(.+)%.") or path
@@ -406,12 +412,23 @@ end
 function profiler.PrintStatistical(min_samples)
 	min_samples = min_samples or 100
 
+	local tr = {
+		N = "native",
+		I = "interpreted",
+		G = "garbage collector",
+		J = "JIT compiler",
+		C = "C",
+	}
+
 	log(utility.TableToColumns(
 		"statistical",
 		profiler.GetBenchmark("statistical"),
 		{
 			{key = "name"},
 			{key = "times_called", friendly = "percent", tostring = function(val, column, columns)  return math.round((val / columns[#columns].val.times_called) * 100, 2) end},
+			{key = "vmstate", tostring = function(str)
+				return tr[str]
+			end},
 		},
 		function(a) return a.name and a.times_called > min_samples end,
 		function(a, b) return a.times_called < b.times_called end
@@ -453,6 +470,8 @@ function profiler.StartInstrumental(file_filter, method)
 end
 
 function profiler.StopInstrumental(file_filter, show_everything)
+	profiler.EnableSectionProfiling(false)
+
 	profiler.stop_time = system.GetTime()
 
 	profiler.busy = false
@@ -472,8 +491,6 @@ function profiler.StopInstrumental(file_filter, show_everything)
 		function(a) return show_everything or a.average_time > 0.5 or (file_filter or a.times_called > 100) end,
 		function(a, b) return a.total_time < b.total_time end
 	))
-
-	profiler.EnableSectionProfiling(false, true)
 end
 
 do
@@ -545,10 +562,13 @@ local blacklist = {
 	["inner loop in root trace"] = true,
 	["leaving loop in root trace"] = true,
 	["blacklisted"] = true,
+	["too many spill slots"] = true,
+	["down-recursion, restarting"] = true,
 }
 
 function profiler.EnableRealTimeTraceAbortLogging(b)
 	if b then
+		local last_log
 		jit.attach(function(what, trace_id, func, pc, trace_error_id, trace_error_arg)
 			if what == "abort" then
 				local info = jit.util.funcinfo(func, pc)
@@ -566,16 +586,23 @@ function profiler.EnableRealTimeTraceAbortLogging(b)
 					local line = info.currentline or info.linedefined
 					local content = vfs.Read(e.ROOT_FOLDER .. path:sub(2)) or vfs.Read(path:sub(2))
 
+					local str
+
 					if content then
-						logf("%s:%s\n%s:--\t%s\n\n", path:sub(2):replace(e.ROOT_FOLDER, ""), line, content:split("\n")[line]:trim(), reason)
+						str = string.format("%s:%s\n%s:--\t%s\n\n", path:sub(2):replace(e.ROOT_FOLDER, ""), line, content:split("\n")[line]:trim(), reason)
 					else
-						logf("%s:%s:\n\t%s\n\n", path, line, reason)
+						str = string.format("%s:%s:\n\t%s\n\n", path, line, reason)
+					end
+
+					if str ~= last_log then
+						log(str)
+						last_log = str
 					end
 				end
 			end
 		end, "trace")
 	else
-		jit.attach(nil)
+		jit.attach(function() end)
 	end
 end
 
@@ -589,9 +616,9 @@ function profiler.MeasureFunction(func, count, name, no_print)
 
 	for _ = 1, count do
 		local time = system_GetTime()
-		jit.barrier()
+		jit.tracebarrier()
 		func()
-		jit.barrier()
+		jit.tracebarrier()
 		total_time = total_time + system_GetTime() - time
 	end
 

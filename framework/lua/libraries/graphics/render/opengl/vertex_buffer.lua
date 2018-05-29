@@ -1,7 +1,7 @@
 local render = ... or _G.render
 local META = prototype.GetRegistered("vertex_buffer")
 
-local gl = system.GetFFIBuildLibrary("opengl", true)
+local gl = require("opengl")
 
 local buffers_supported = gl.GenBuffers
 
@@ -52,13 +52,13 @@ function render._CreateVertexBuffer(self)
 	end
 end
 
-function META:OnRemove()
-	self.vertex_buffer:Delete()
-	self.vertex_array:Delete()
-end
-
 if buffers_supported then
-	if render.IsExtensionSupported("GL_ARB_direct_state_access") then
+	function META:OnRemove()
+		self.vertex_buffer:Delete()
+		self.vertex_array:Delete()
+	end
+
+	if render.IsExtensionSupported("ARB_direct_state_access") then
 		function META:Draw(index_buffer, count)
 			if render.last_vertex_array_id ~= self.vertex_array.id then
 				gl.BindVertexArray(self.vertex_array.id)
@@ -72,7 +72,7 @@ if buffers_supported then
 
 			gl.DrawElements(self.gl_mode, count or index_buffer.Indices:GetLength(), index_buffer.gl_indices_type, nil)
 		end
-	else
+	elseif render.IsExtensionSupported("ARB_vertex_attrib_binding") then
 		function META:Draw(index_buffer, count)
 			if render.last_vertex_array_id ~= self.vertex_array.id then
 				gl.BindVertexArray(self.vertex_array.id)
@@ -83,16 +83,31 @@ if buffers_supported then
 
 			gl.DrawElements(self.gl_mode, count or index_buffer.Indices:GetLength(), index_buffer.gl_indices_type, index_buffer.Indices:GetPointer())
 		end
+	else
+		function META:Draw(index_buffer, count)
+			gl.BindVertexArray(self.vertex_array.id)
+--			index_buffer.element_buffer:Bind()
+
+			gl.DrawElements(self.gl_mode, count or index_buffer.Indices:GetLength(), index_buffer.gl_indices_type, index_buffer.Indices:GetPointer())
+		end
 	end
 
 	local function setup_vertex_array(self)
 		if not self.setup_vao and self.Vertices then
-			for _, data in ipairs(self.mesh_layout.attributes) do
-				self.vertex_array:AttribFormat(data.location, data.row_length, data.number_type, false, data.row_offset)
-				self.vertex_array:AttribBinding(data.location, 0)
-				self.vertex_array:EnableAttrib(data.location)
+			if render.IsExtensionSupported("ARB_vertex_attrib_binding") then
+				for _, data in ipairs(self.mesh_layout.attributes) do
+					self.vertex_array:AttribFormat(data.location, data.row_length, data.number_type, false, data.row_offset)
+					self.vertex_array:AttribBinding(data.location, 0)
+					self.vertex_array:EnableAttrib(data.location)
+				end
+				self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.mesh_layout.size)
+			else
+				gl.BindBuffer("GL_ARRAY_BUFFER", self.vertex_buffer.id)
+				for _, data in ipairs(self.mesh_layout.attributes) do
+					self.vertex_array:EnableAttrib(data.location)
+					self.vertex_array:AttribPointer2(data.location, data.row_length, data.number_type, false, data.row_offset, self.mesh_layout.size)
+				end
 			end
-			self.vertex_array:VertexBuffer(0, self.vertex_buffer.id, 0, self.mesh_layout.size)
 			render.last_vertex_array_id = nil
 			self.setup_vao = true
 		end
@@ -120,6 +135,10 @@ if buffers_supported then
 else
 	-- this will probably only happen when running goluwa in virtual box with windows as a host
 	-- it's using the windows opengl api (seems to be 1.1)
+
+	function META:OnRemove()
+
+	end
 
 	function META:_SetVertices(vertices)
 

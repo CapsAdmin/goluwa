@@ -1,6 +1,10 @@
 #!/bin/sh
+export GOLUWA_START_TIME=$(date +%s%N)
+export GOLUWA_WORKING_DIRECTORY=$PWD
 
-script_path=$(which "./$0")
+basetime=$(date +%s%N)
+
+script_path=$(readlink -f -- "$0")
 
 if [ -L "$script_path" ]; then
     cd "$(dirname "$(readlink -f "$script_path")")" || exit
@@ -22,25 +26,37 @@ download () {
     fi
 }
 
-mkdir -p "data/bin/${OS}_${ARCH}"
-cd "data/bin/${OS}_${ARCH}"
+mkdir -p "data/${OS}_${ARCH}"
+cd "data/${OS}_${ARCH}" || exit
 
 if [ ! -f "luajit" ]; then
-    download "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/data/bin/${OS}_${ARCH}/luajit" "luajit"
-fi
-
-if [ ! -f "../../../core/lua/boot.lua" ]; then
-    mkdir -p "../../../core/lua/"
-    download "https://gitlab.com/CapsAdmin/goluwa/blob/master/core/lua/boot.lua" "../../../core/lua/boot.lua"
+    download "https://gitlab.com/CapsAdmin/goluwa-binaries-${OS}_${ARCH}/raw/master/luajit" "luajit"
 fi
 
 chmod +x luajit
 
-if [ ! -x luajit ] && [ -f "/lib64/ld-linux-x86-64.so.2" ]; then
-	# i don't know if this is stupid or not
-	# but it's so i can execute luajt without the need for execute permissions
-	# on a non ext filesystem (like on a usb stick with fat32)
-	eval "/lib64/ld-linux-x86-64.so.2 ./luajit ../../../core/lua/boot.lua $*"
+./luajit -e "os.exit(1)"
+status=$?
+
+if [ $status -ne 1 ]; then
+    echo "exit code 'os.exit(1)' does not match $status"
+    echo "removing luajit"
+    mv luajit luajit_old
+fi
+
+if [ ! -f "../../core/lua/boot.lua" ]; then
+    mkdir -p "../../core/lua/"
+    download "https://gitlab.com/CapsAdmin/goluwa/raw/master/core/lua/boot.lua" "../../core/lua/boot.lua"
+fi
+
+if [ "$2" = "cli" ]; then
+eli
+    echo "[bash] goluwa.sh took : $(echo "scale=3;($(date +%s%N) - ${basetime})/(1*10^09)" | bc) seconds"
+fi
+
+if [ ! -x luajit ] && [ -f "/lib/ld-2.26.so" ]; then
+    # a way to execute on fat32 filesystems or something
+	/lib/ld-2.26.so "./luajit" "../../core/lua/boot.lua" "$*"
 else
-    ./luajit "../../../core/lua/boot.lua" "$*"
+    ./luajit "../../core/lua/boot.lua" "$*"
 fi

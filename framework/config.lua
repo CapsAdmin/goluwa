@@ -6,14 +6,13 @@ local env_vars = {
 	DEBUG = false,
 	SOCKETS = true,
 	WINDOW = true,
+	WINDOW_IMPLEMENTATION = "sdl2",
 
 	SRGB = true,
 	NULL_OPENGL = false,
 	BUILD_SHADER_OUTPUT = false,
 	DEBUG_OPENGL = false,
 
-	PHYSICS = false,
-	VERBOSE_STARTUP = true,
 
 	OPENGL = true,
 	VULKAN = false,
@@ -26,6 +25,8 @@ for key, default in pairs(env_vars) do
 			_G[key] = false
 		elseif val == "1" then
 			_G[key] = true
+		elseif val and val ~= "" then
+			_G[key] = val
 		elseif default then
 			_G[key] = default
 		end
@@ -52,6 +53,14 @@ end
 
 if EXTERNAL_DEBUGGER == nil then
 	EXTERNAL_DEBUGGER = false
+end
+
+if CLI then
+	GRAPHICS = false
+	WINDOW = false
+	SOUND = false
+	CLIENT = false
+	NETWORK = false
 end
 
 RELOAD = false

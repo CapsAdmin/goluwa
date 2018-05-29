@@ -1,5 +1,121 @@
 local utility = _G.utility or {}
 
+do
+	function utility.StartRecordingCalls(lib, filter)
+		lib.old_funcs = lib.old_funcs or {}
+		lib.call_log = lib.call_log or {}
+		local i = 1
+		for k,v in pairs(lib) do
+			if (type(v) == "cdata" or type(v) == "function") and (not filter or filter(k)) then
+				lib.old_funcs[k] = v
+
+				lib[k] = function(...)
+					local ret = v(...)
+					lib.call_log[i] = {func_name = k, ret = ret, args = {...}}
+					i = i  + 1
+					return ret
+				end
+			end
+		end
+	end
+
+	function utility.StopRecordingCalls(lib, name)
+		if not lib.old_funcs then return end
+
+		for k,v in pairs(lib.old_funcs) do
+			lib[k] = v
+		end
+
+		local tbl = lib.call_log
+		lib.call_log = nil
+
+		for i,v in ipairs(tbl) do
+			log(("%3i"):format(i), ": ")
+
+			if v.ret ~= nil then
+				log(v.ret, " ")
+			end
+
+			local args = {}
+
+			for k,v in pairs(v.args) do
+				table.insert(args, tostringx(v))
+			end
+
+			logn(name or "", ".", v.func_name, "(", table.concat(args, ", "), ")")
+		end
+	end
+end
+
+do
+	local ran = {}
+
+	function utility.RunOnNextGarbageCollection(callback, id)
+		if id then
+			ran[id] = false
+			getmetatable(newproxy(true)).__gc = function(...)
+				if not ran[id] then
+					callback(...)
+					ran[id] = true
+				end
+			end
+		else
+			getmetatable(newproxy(true)).__gc = callback
+		end
+	end
+end
+
+do
+	local function handle_path(path)
+		if vfs.IsPathAbsolute(path) then
+			return path
+		end
+
+		if path == "." then
+			path = ""
+		end
+
+		return system.GetWorkingDirectory() .. path
+	end
+
+	function utility.CLIPathInputToTable(str, extensions)
+		local paths = {}
+		str = str:trim()
+
+		if handle_path(str):endswith("/**") then
+			vfs.GetFilesRecursive(handle_path(str:sub(0, -3)), extensions, function(path)
+				table.insert(paths, R(path))
+			end)
+		elseif handle_path(str):endswith("/*") then
+			for _, path in ipairs(vfs.Find(handle_path(str:sub(0, -2)), true)) do
+				if not extensions or vfs.GetExtensionFromPath(path):endswiththese(extensions) then
+					table.insert(paths, path)
+				end
+			end
+		elseif str:find(",", nil, true) then
+			for i, path in ipairs(str:split(",")) do
+				path = handle_path(vfs.FixPathSlashes(path:trim()))
+				if vfs.IsFile(path) and (not extensions or vfs.GetExtensionFromPath(path):endswiththese(extensions)) then
+					table.insert(paths, R(path))
+				end
+			end
+		elseif LINUX and str:find("%s") then
+			for i, path in ipairs(str:split(" ")) do
+				path = handle_path(vfs.FixPathSlashes(path:trim()))
+				if vfs.IsFile(path) and (not extensions or vfs.GetExtensionFromPath(path):endswiththese(extensions)) then
+					table.insert(paths, R(path))
+				end
+			end
+		elseif vfs.IsFile(handle_path(str)) and (not extensions or vfs.GetExtensionFromPath(str):endswiththese(extensions)) then
+			table.insert(paths, R(handle_path(str)))
+		else
+			table.insert(paths, handle_path(str))
+		end
+
+		return paths
+	end
+end
+
 function utility.GenerateCheckLastFunction(func, arg_count)
 	local lua = ""
 
@@ -51,17 +167,25 @@ do
 	local stack = {}
 
 	function utility.PushTimeWarning()
+		if CLI then return end
+
 		table.insert(stack, os.clock())
 	end
 
-	function utility.PopTimeWarning(what, threshold)
+	function utility.PopTimeWarning(what, threshold, category)
+		if CLI then return end
+
 		threshold = threshold or 0.1
 		local start_time = table.remove(stack)
 		if not start_time then return end
 		local delta = os.clock() - start_time
 
 		if delta > threshold then
-			logf("%s: %f seconds to execute\n", what, delta)
+			if category then
+				logf("%s %f seconds spent in %s\n", category, delta, what)
+			else
+				logf("%f seconds spent in %s\n", delta, what)
+			end
 		end
 	end
 end
@@ -706,6 +830,39 @@ do
 			hooks[tag] = nil
 		end
 	end
+end
+
+function utility.NumberToBinary(num, bits)
+	bits = bits or 32
+	local bin = {}
+
+	for i = 1, bits do
+		if num > 0 then
+			rest = math.fmod(num,2)
+			table.insert(bin, rest)
+			num = (num - rest) / 2
+		else
+			table.insert(bin, 0)
+		end
+	end
+
+	return table.concat(bin)
+end
+
+function utility.BinaryToNumber(bin)
+	bin = string.reverse(bin)
+	local sum = 0
+
+	for i = 1, string.len(bin) do
+		num = string.sub(bin, i,i) == "1" and 1 or 0
+		sum = sum + num * math.pow(2, i-1)
+	end
+
+	return sum
+end
+
+function utility.NumberToHex(num)
+	return "0x" .. bit.tohex(num):upper()
 end
 
 return utility

@@ -1,7 +1,7 @@
 local ffi = require("ffi")
 local fonts = ... or _G.fonts
 
-local freetype = system.GetFFIBuildLibrary("freetype")
+local freetype = desire("freetype")
 
 if not freetype then return end
 
@@ -49,6 +49,13 @@ local function try_find(files, name)
 					return full_path
 				end
 			end
+		end
+	end
+
+	for _, full_path in ipairs(files) do
+		local ext = full_path:match(".+%.(%a+)") or "dat"
+		if supported[ext] then
+			return full_path
 		end
 	end
 end
@@ -193,8 +200,27 @@ local function find_font(name, callback, on_error)
 			local full_path
 
 			if info.archive then
+				if not content:startswith("PK\003\004") then
+					llog("%s is not a zip file (does not start with zip header)", url)
+					local path = "data/error_" .. crypto.CRC32(url) .. ".dat"
+					llog("writing content to %s", path)
+					vfs.Write(path, content)
+					resource.Download(fonts.default_font_path, callback)
+					return
+				end
+
 				local path = "data/temp_"..crypto.CRC32(url)..".zip"
 				vfs.Write(path, content)
+
+				local ok, err = vfs.IsFolderValid(path)
+				if not ok then
+					llog("%s appears to be damaged", path)
+					logn(err:trim())
+					--vfs.Delete(path)
+					resource.Download(fonts.default_font_path, callback)
+					return
+				end
+
 				full_path = info.archive(R(path) .. "/", name)
 				if full_path then
 					content = vfs.Read(full_path)
@@ -208,9 +234,10 @@ local function find_font(name, callback, on_error)
 
 			if content then
 				ext = ext or url:match(".+(%.%a+)") or ".dat"
-				local path = "cache/" .. crypto.CRC32(real_name) .. ext
+				local path = "os:" .. e.DOWNLOAD_FOLDER .. "/fonts/_" .. real_name .. ext
 
 				llog("%s cache: %s", name, path)
+				vfs.CreateDirectoriesFromPath(path)
 				vfs.Write(path, content)
 
 				callback(path)
@@ -252,6 +279,7 @@ function META:Initialize()
 			end
 
 			resource.Download(fonts.default_font_path, load)
+			return
 		end
 
 		self.char_buffer = data
@@ -287,7 +315,7 @@ function META:Initialize()
 		end
 	end
 
-	local tbl = vfs.Find("cache/" .. crypto.CRC32(self.Path), true)
+	local tbl = vfs.Find("os:" .. e.DOWNLOAD_FOLDER .. "fonts/_" .. self.Path, true)
 
 	if tbl[1] then
 		load(tbl[1])

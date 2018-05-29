@@ -1,11 +1,11 @@
 local render = ... or _G.render
 
-if not render.IsExtensionSupported("GL_ARB_shader_objects") then
+if not render.IsExtensionSupported("ARB_shader_objects") then
 	runfile("../null/shader_program.lua", render)
 	return
 end
 
-local gl = system.GetFFIBuildLibrary("opengl", true)
+local gl = require("opengl")
 local ffi = require("ffi")
 
 local META = prototype.CreateTemplate("shader_program")
@@ -127,7 +127,6 @@ do
 			GL_NUM_ACTIVE_VARIABLES = true,
 			GL_REFERENCED_BY_GEOMETRY_SHADER = true,
 			GL_REFERENCED_BY_COMPUTE_SHADER = true,
-			GL_ACTIVE_VARIABLES = true,
 			GL_REFERENCED_BY_TESS_CONTROL_SHADER = true,
 			GL_REFERENCED_BY_TESS_EVALUATION_SHADER = true,
 			GL_BUFFER_DATA_SIZE = true,
@@ -185,7 +184,7 @@ do
 		},
 	}
 
-	if render.IsExtensionSupported("GL_ARB_tessellation_shader") then
+	if render.IsExtensionSupported("ARB_tessellation_shader") then
 		fill_info.GL_TESS_CONTROL_SUBROUTINE_UNIFORM = {
 			GL_NAME_LENGTH = true,
 			GL_COMPATIBLE_SUBROUTINES = true,
@@ -202,7 +201,7 @@ do
 		}
 	end
 
-	if render.IsExtensionSupported("GL_ARB_shader_subroutine") then
+	if render.IsExtensionSupported("ARB_shader_subroutine") then
 		fill_info.GL_VERTEX_SUBROUTINE_UNIFORM = {
 			GL_NAME_LENGTH = true,
 			GL_ARRAY_SIZE = true,
@@ -236,7 +235,7 @@ do
 		}
 	end
 
-	if not render.IsExtensionSupported("GL_ARB_compute_shader") then
+	if not render.IsExtensionSupported("ARB_compute_shader") then
 		for k,v in pairs(fill_info) do
 			for k in pairs(v) do
 				if k:find("COMPUTE_SHADER") then
@@ -332,13 +331,20 @@ do
 	temp = {}
 	for what, properties in pairs(fill_info) do
 		local property_enums = {}
+		local property_enums_tbl = {}
 		local names = {}
 		for enum in pairs(properties) do
 			table.insert(property_enums, gl.e[enum])
+			table.insert(property_enums_tbl, enum)
 			table.insert(names, enum:sub(4):lower())
 		end
-		property_enums = ffi.new("GLint["..#names.."]", property_enums)
-		temp[what] = {enums = property_enums, count = #names, names = names}
+
+		temp[what] = {
+			enums = ffi.new("const GLenum["..#names.."]", property_enums),
+			enumstbl = property_enums_tbl,
+			count = #names,
+			names = names
+		}
 	end
 	fill_info = temp
 
@@ -348,80 +354,203 @@ do
 	end
 	type_translate = temp
 
-	function META:GetProperties()
+	if render.IsExtensionSupported("ARB_program_interface_query") then
+		function META:GetProperties()
+			local out = {}
+
+			for what, property_info in pairs(fill_info) do
+				local resource_count = ffi.new("GLint[1]")
+				self.gl_program:GetInterface(what, "GL_ACTIVE_RESOURCES", resource_count)
+				resource_count = resource_count[0]
+
+				local properties = {}
+
+				for resource_index = 0, resource_count - 1 do
+
+					local res = ffi.new("GLint["..property_info.count.."]")
+					local len = ffi.new("GLsizei[1]")
+					self.gl_program:GetResource(what, resource_index, property_info.count, property_info.enums, property_info.count, len, res)
+
+					local values = {}
+
+					for i = 1, property_info.count do
+						local key = property_info.names[i]
+						local val = res[i - 1]
+
+						if key == "name_length" then
+							local bytes = val
+							local str = ffi.new("GLchar[?]", bytes)
+							self.gl_program:GetResourceName(what, resource_index, bytes, nil, str)
+							val = ffi.string(str)
+							key = "name"
+						elseif key == "type" then
+							val = type_translate[val] or val
+						end
+
+						values[key] = val
+					end
+					--[[
+					if what == "GL_UNIFORM_BLOCK" then
+						local res = ffi.new("GLint[1]")
+						local props = ffi.new("const GLenum[?]", gl.e.GL_NUM_ACTIVE_VARIABLES)
+						self.gl_program:GetResource(what, resource_index, 1, props, 1, len, res)
+						local count = res[0]
+						count = len[0]
+
+						print("active variables: ", count, len[0])
+						if count > 0 then
+							local res = ffi.new("GLint[?]", count)
+							local props = ffi.new("const GLenum[?]", gl.e.GL_ACTIVE_VARIABLES)
+							self.gl_program:GetResource(what, resource_index, count, props, count, len, res)
+							for i = 0, count - 1 do
+								print(res[0])
+							end
+						end
+					end
+					]]
+
+					table.insert(properties, values)
+				end
+
+				if next(properties) then
+					out[what:sub(4):lower()] = properties
+				end
+			end
+
+
+			if out.buffer_variable then
+				for _, info in ipairs(out.buffer_variable) do
+					local i = info.block_index + 1
+					out.shader_storage_block[i].variables = out.shader_storage_block[i].variables or {}
+					table.insert(out.shader_storage_block[i].variables, info)
+				end
+				out.buffer_variable = nil
+
+				for _, info in pairs(out.shader_storage_block) do
+					info.block_index = self.gl_program:GetResourceIndex("GL_SHADER_STORAGE_BLOCK", info.name)
+					out.shader_storage_block[info.name] = info
+				end
+			end
+
+			if out.uniform_block then
+				for i2, info in ipairs(out.uniform) do
+					if info.block_index >= 0 then
+						local i = info.block_index + 1
+						out.uniform_block[i].variables = out.uniform_block[i].variables or {}
+						table.insert(out.uniform_block[i].variables, info)
+						out.uniform[i2] = nil
+					end
+				end
+				out.buffer_variable = nil
+
+				for _, info in pairs(out.uniform_block) do
+					info.block_index = self.gl_program:GetResourceIndex("GL_UNIFORM_BLOCK", info.name)
+					out.uniform_block[info.name] = info
+				end
+			end
+
+			return out
+		end
+	else
+		function META:GetProperties()
+			local out = {}
+
+			return out
+		end
+	end
+
+	function META:GetUniformData(key)
 		local out = {}
 
-		for what, property_info in pairs(fill_info) do
-			local resource_count = ffi.new("GLint[1]")
-			self.gl_program:GetInterface(what, "GL_ACTIVE_RESOURCES", resource_count)
-			resource_count = resource_count[0]
+		out.block_index = self:GetUniformBlockIndex(key)
 
-			local properties = {}
+		for _, v in ipairs({
+			"GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER",
+			"GL_UNIFORM_BLOCK_REFERENCED_BY_TESS_CONTROL_SHADER",
+			"GL_UNIFORM_BLOCK_REFERENCED_BY_TESS_EVALUATION_SHADER",
+			"GL_UNIFORM_BLOCK_REFERENCED_BY_GEOMETRY_SHADER",
+			"GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER",
+			"GL_UNIFORM_BLOCK_REFERENCED_BY_COMPUTE_SHADER",
+		}) do
 
-			for resource_index = 0, resource_count - 1 do
-
-				local res = ffi.new("GLint["..property_info.count.."]")
-				self.gl_program:GetResource(what, resource_index, property_info.count, property_info.enums, 0, nil, res)
-
-				local values = {}
-
-				for i, key in ipairs(property_info.names) do
-					local val = res[i - 1]
-
-					if key == "name_length" then
-						local bytes = val + 256
-						local str = ffi.new("GLchar[?]", bytes)
-						self.gl_program:GetResourceName(what, resource_index, bytes, nil, str)
-						val = ffi.string(str)
-						key = "name"
-					elseif key == "type" then
-						val = type_translate[val] or val
-					end
-
-					values[key] = val
-				end
-
-				table.insert(properties, values)
-			end
-
-			if next(properties) then
-				out[what:sub(4):lower()] = properties
-			end
+			local ptr = ffi.new("GLint[1]")
+			self:GetActiveUniformBlock(out.block_index, v, ptr)
+			out[v:sub(18):lower()] = ptr[0]
 		end
 
+		local ptr = ffi.new("GLint[1]")
+		self:GetActiveUniformBlock(out.block_index, "GL_UNIFORM_BLOCK_NAME_LENGTH", ptr)
+		local strptr = ffi.new("uint8_t[?]", ptr[0])
+		self:GetActiveUniformBlockName(out.block_index, ptr[0], nil, strptr)
+		out.name = ffi.string(strptr)
 
-		if out.buffer_variable then
-			for _, info in ipairs(out.buffer_variable) do
-				local i = info.block_index + 1
-				out.shader_storage_block[i].variables = out.shader_storage_block[i].variables or {}
-				table.insert(out.shader_storage_block[i].variables, info)
-			end
-			out.buffer_variable = nil
+		local ptr = ffi.new("GLint[1]")
+		self:GetActiveUniformBlock(out.block_index, "GL_UNIFORM_BLOCK_DATA_SIZE", ptr)
+		out.buffer_data_size = ptr[0]
 
-			for _, info in pairs(out.shader_storage_block) do
-				info.block_index = self.gl_program:GetResourceIndex("GL_SHADER_STORAGE_BLOCK", info.name)
-				out.shader_storage_block[info.name] = info
-			end
-		end
+		local ptr = ffi.new("GLint[1]")
+		self:GetActiveUniformBlock(out.block_index, "GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS", ptr)
+		out.active_uniforms = ptr[0]
 
-		if out.uniform_block then
-			for i2, info in ipairs(out.uniform) do
-				if info.block_index >= 0 then
-					local i = info.block_index + 1
-					out.uniform_block[i].variables = out.uniform_block[i].variables or {}
-					table.insert(out.uniform_block[i].variables, info)
-					out.uniform[i2] = nil
-				end
-			end
-			out.buffer_variable = nil
+		out.variables = {}
 
-			for _, info in pairs(out.uniform_block) do
-				info.block_index = self.gl_program:GetResourceIndex("GL_UNIFORM_BLOCK", info.name)
-				out.uniform_block[info.name] = info
-			end
+		local ptr = ffi.new("GLint[?]", out.active_uniforms)
+		self:GetActiveUniformBlock(out.block_index, "GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES", ptr)
+		for i = 0, out.active_uniforms - 1 do
+			local idx = ptr[i]
+
+			local name, type = self:GetActiveUniform(idx)
+
+			local tbl = {}
+
+			tbl.location = idx
+			tbl.name = name
+			tbl.type = type
+			tbl.offset = self:GetActiveUniforms({idx}, "GL_UNIFORM_OFFSET")[1]
+			tbl.array_stride = self:GetActiveUniforms({idx}, "GL_UNIFORM_ARRAY_STRIDE")[1]
+			tbl.matrix_stride = self:GetActiveUniforms({idx}, "GL_UNIFORM_MATRIX_STRIDE")[1]
+			tbl.is_row_major = self:GetActiveUniforms({idx}, "GL_UNIFORM_IS_ROW_MAJOR")[1]
+			tbl.atomic_counter_buffer_index = self:GetActiveUniforms({idx}, "GL_UNIFORM_ATOMIC_COUNTER_BUFFER_INDEX")[1]
+
+			table.insert(out.variables, tbl)
 		end
 
 		return out
+	end
+
+	do -- GetProperties alternative
+		function META:GetUniformBlockIndex(key)
+			local location = self.gl_program:GetUniformBlockIndex(key)
+			if location == gl.e.GL_INVALID_INDEX then
+				return nil, "invalid index"
+			end
+			return location
+		end
+
+		function META:GetActiveUniformBlock(location, name, out)
+			gl.GetActiveUniformBlockiv(self.gl_program.id, location, name, out)
+		end
+
+		function META:GetActiveUniformBlockName(location, bufsize, outlength, outname)
+			gl.GetActiveUniformBlockName(self.gl_program.id, location, bufsize, outlength, outname)
+		end
+
+		function META:GetActiveUniform(idx)
+			local enum_out = ffi.new("GLenum[1]")
+			local name_out = ffi.new("uint8_t[256]")
+			gl.GetActiveUniform(self.gl_program.id, idx, 256, nil, nil, enum_out, name_out)
+			return ffi.string(name_out), type_translate[enum_out[0]] or enum_out[0]
+		end
+
+		function META:GetActiveUniforms(indices, pname)
+			local out = ffi.new("GLint[?]", #indices)
+			gl.GetActiveUniformsiv(self.gl_program.id, #indices, ffi.new("GLint[?]", unpack(indices)), pname, out)
+			local tbl = {}
+			for i = 1, #indices do
+				tbl[i] = out[i-1]
+			end
+			return tbl
+		end
 	end
 end
 
@@ -464,7 +593,7 @@ else
 	end
 end
 
-if render.IsExtensionSupported("GL_ARB_bindless_texture") then
+if render.IsExtensionSupported("ARB_bindless_texture") then
 	function META:UploadTexture(key, val)
 		if not val.gl_bindless_handle then
 			val:SetBindless(true)

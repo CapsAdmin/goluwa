@@ -2,10 +2,17 @@ local network = _G.network or {}
 
 network.socket = network.socket or NULL
 
-local ffi = require("ffi")
+local ffi = desire("ffi")
+local ipport_to_uid
 
-local function ipport_to_uid(peer)
-	return tostring(tonumber(ffi.cast("unsigned long *", peer.peer.data)[0]))
+if ffi then
+	function ipport_to_uid(peer)
+		return tostring(tonumber(ffi.cast("unsigned long *", peer.peer.data)[0]))
+	end
+else
+	function ipport_to_uid(peer)
+		return tostring(peer)
+	end
 end
 
 event.AddListener("PeerReceivePacket", "network", function(str, peer, type)
@@ -26,6 +33,19 @@ event.AddListener("PeerReceivePacket", "network", function(str, peer, type)
 
 	event.Call("NetworkPacketReceived", str, client, type)
 end)
+
+
+-- TODO
+function network.PingServer(ip, cb)
+	local lol = io.popen("ping " .. ip .. (WINDOWS and "-n 1" or " -c 1"))
+
+	event.Thinker(function()
+		local str = lol:read("*all")
+		local time = str:match("time=(%S+)")
+		cb(tonumber(time) / 100)
+		if not c then return false end
+	end)
+end
 
 if SERVER then
 
@@ -123,8 +143,10 @@ end
 do
 	network.irc_client = network.irc_client or NULL
 	network.available_servers = network.available_servers or {}
-	network.server = "chat.freenode.net"
-	network.channel = "#goluwa"
+
+	network.serverbrowser_hostname = "chat.freenode.net"
+	network.serverbrowser_channel = "#goluwa"
+	network.serverbrowser_port = 6667
 
 	function network.SetHostName(str)
 		nvars.Set("hostname", str)
@@ -138,49 +160,66 @@ do
 		return network.available_servers
 	end
 
-	function network.JoinIRCServer()
+	function network.JoinIRCServer(cb)
 		if not SOCKETS then
 			wlog("sockets not availible")
 			return
 		end
-		if not network.irc_client:IsValid() then
-			local client = sockets.CreateIRCClient()
 
-			if SERVER then
-				client:SetNick(client:GetNick() .. "_server")
-
-				client.OnPrivateMessage = network.OnIRCMessage
-
-				client.OnReady = function() logn("successfully joined irc channel") end
-			end
-
+		if network.irc_client:IsValid() then
 			if CLIENT then
-				client:SetNick(client:GetNick() .. "_client")
-				client.OnPrivateMessage = network.OnIRCMessage
-				client.OnJoin = function(s, nick)
-					if nick:endswith("_server") then
-						client.asked[nick] = true
-						client:PRIVMSG(nick .. " info")
-					end
-				end
-				client.OnPart = function(s, nick, ip)
-					if nick:endswith("_server") then
-						network.available_servers[ip] = nil
-					end
-				end
-				client.OnReady = function() logn("successfully joined irc channel") network.QueryAvailableServers() end
+				network.QueryAvailableServers(cb)
 			end
-
-			client:Connect(network.server)
-			client:Join(network.channel)
-
-			llog("joining %s:%s", network.server, network.channel)
-
-			network.irc_client = client
+			return
 		end
+
+		local client = sockets.CreateIRCClient()
+
+		if SERVER then
+			sockets.Download("https://api.ipify.org/?format=plaintext", function(s)
+				network.public_ip = s
+				llog("public ip is %s", s)
+			end)
+
+			client:SetNick(client:GetNick() .. "_server")
+
+			client.OnPrivateMessage = network.OnIRCMessage
+
+			client.OnReady = function()
+				logn("successfully joined irc channel")
+				if cb then cb() end
+			end
+		end
+
+		if CLIENT then
+			client:SetNick(client:GetNick() .. "_client")
+			client.OnPrivateMessage = network.OnIRCMessage
+			client.OnJoin = function(s, nick)
+				if nick:endswith("_server") then
+					client.asked[nick] = true
+					client:PRIVMSG(nick .. " info")
+				end
+			end
+			client.OnPart = function(s, nick, ip)
+				if nick:endswith("_server") then
+					network.available_servers[ip] = nil
+				end
+			end
+			client.OnReady = function()
+				logn("successfully joined irc channel")
+				network.QueryAvailableServers(cb)
+			end
+		end
+
+		client:Connect(network.serverbrowser_hostname)
+		client:Join(network.serverbrowser_channel, network.serverbrowser_port)
+
+		llog("joining %s:%s", network.serverbrowser_hostname, network.serverbrowser_channel)
+
+		network.irc_client = client
 	end
 
-	function network.QueryAvailableServers()
+	function network.QueryAvailableServers(cb)
 		network.available_servers = {}
 
 		local irc_client = network.irc_client
@@ -194,27 +233,45 @@ do
 
 		irc_client.asked = {}
 
+		local found = 0
+
 		for user in pairs(network.irc_client:GetUsers()) do
 			if user:endswith("_server") then
 				irc_client.asked[user] = true
 				irc_client:PRIVMSG(user .. " info")
+				found = found + 1
 			end
 		end
+
+		if cb then cb(found) end
 	end
 
 	function network.OnIRCMessage(irc_client, message, nick, ip)
 		if CLIENT then
 			if irc_client.asked[nick] then
 				local info = serializer.Decode("msgpack", message)
-				info.ip = ip
+				info.masked_ip = ip
 				network.available_servers[ip] = info
-				event.Call("PublicServerFound", info)
+				network.PingServer(info.ip, function(sec)
+					info.latency = sec
+					event.Call("PublicServerFound", info)
+				end)
 			end
 		end
 
 		if SERVER then
 			if message == "info" then
-				irc_client:PRIVMSG(nick .. " :" .. serializer.Encode("msgpack", {name = network.GetHostname(), port = network.port}))
+				local players = {}
+				for i, ply in ipairs(clients.GetAll()) do
+					players[i] = ply:GetNick()
+				end
+				irc_client:PRIVMSG(nick .. " :" .. serializer.Encode("msgpack", {
+					name = network.GetHostname(),
+					port = network.port,
+					players = players,
+					scene_name = "none",
+					ip = network.public_ip,
+				}))
 			end
 		end
 	end

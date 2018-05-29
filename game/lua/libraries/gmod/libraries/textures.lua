@@ -116,7 +116,7 @@ do
 	end
 
 	function META:GetKeyValues()
-		return table.copy(self.vars)
+		return table.copy(self.__obj.vars)
 	end
 
 	function META:Recompute()

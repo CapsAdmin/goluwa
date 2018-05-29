@@ -3,6 +3,14 @@ local ENV = love._line_env
 
 love.physics = love.physics or {}
 
+function love.physics.setMeter(scale)
+	ENV.physics_meter_scale = scale
+end
+
+function love.physics.getMeter()
+	return ENV.physics_meter_scale
+end
+
 local Shape = {}
 
 function Shape:computeAABB(tx, ty, tr, childIndex)

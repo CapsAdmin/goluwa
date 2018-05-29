@@ -65,7 +65,7 @@ for meta_name, functions in pairs(data.meta) do
 
 		if functions.IsValid then
 			function META:IsValid()
-				if self.__removed then return false end
+				if not self or self.__removed then return false end
 				return self.__obj and self.__obj:IsValid()
 			end
 		end

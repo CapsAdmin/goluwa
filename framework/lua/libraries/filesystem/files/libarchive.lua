@@ -1,4 +1,4 @@
-local archive = system.GetFFIBuildLibrary("archive")
+local archive = desire("libarchive")
 
 if not archive then return end
 
@@ -10,6 +10,15 @@ local CONTEXT = {}
 CONTEXT.Name = "libarchive"
 CONTEXT.Position = math.huge
 
+local function get_error(a)
+	local buff = archive.ErrorString(a)
+	if buff ~= nil then
+		return ffi.string(buff)
+	end
+	debug.trace()
+	return "error string is null?"
+end
+
 CONTEXT.archive_cache = CONTEXT.archive_cache or table.weak()
 
 local function iterate_archive(data)
@@ -18,16 +27,25 @@ local function iterate_archive(data)
 	end
 
 	local entry = archive.EntryNew()
+
 	local tbl = CONTEXT.archive_cache[data.archive_path].files
 	local tbl2 = CONTEXT.archive_cache[data.archive_path].files2
 
-	while archive.ReadNextHeader2(data.archive, entry) == archive.e.OK do
+	local code
+
+	for i = 1, math.huge do
+		code = archive.ReadNextHeader2(data.archive, entry)
+		if code ~= archive.e.OK then break end
 		local path = ffi.string(archive.EntryPathname(entry))
-		table.insert(tbl, path)
+		tbl[i] = path
 		tbl2[path] = true
 	end
 
 	archive.EntryFree(entry)
+
+	if code ~= archive.e.EOF then
+		return false, get_error(data.archive)
+	end
 
 	return tbl
 end
@@ -117,7 +135,10 @@ local function contains_file(path_info)
 	local data, err = open_archive(path_info)
 	if not data then return data, err end
 
-	for _, path in ipairs(iterate_archive(data)) do
+	local files, err = iterate_archive(data)
+	if not files then return files, err end
+
+	for _, path in ipairs(files) do
 		if path == data.relative then
 			return true
 		end
@@ -134,7 +155,10 @@ function CONTEXT:IsFolder(path_info)
 
 	local found = false
 
-	for _, path in ipairs(iterate_archive(data)) do
+	local files, err = iterate_archive(data)
+	if not files then return files, err end
+
+	for _, path in ipairs(files) do
 		if path:startswith(data.relative) then
 			found = true
 			break
@@ -142,6 +166,22 @@ function CONTEXT:IsFolder(path_info)
 	end
 
 	return found
+end
+
+function CONTEXT:IsArchive(path_info)
+	if open_archive(path_info) then
+		return true
+	end
+end
+
+function CONTEXT:IsFolderValid(path_info)
+	local data, err = open_archive(path_info)
+	if not data then return data, err end
+
+	local files, err = iterate_archive(data)
+	if not files then return files, err end
+
+	return true
 end
 
 function CONTEXT:GetFiles(path_info)
@@ -156,7 +196,10 @@ function CONTEXT:GetFiles(path_info)
 	local files = {}
 	local done = {}
 
-	for _, path in ipairs(iterate_archive(data)) do
+	local files_, err = iterate_archive(data)
+	if not files_ then return files_, err end
+
+	for _, path in ipairs(files_) do
 		for i = #path, 1, -1 do
 			local char = path:sub(i, i)
 			if char == "/" then

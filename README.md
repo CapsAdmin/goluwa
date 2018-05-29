@@ -1,19 +1,20 @@
 # About
 
-Goluwa is a game engine, a framework and a collection of experiments written in [LuaJIT](http://luajit.org/) leveraging FFI.
+Goluwa is a game engine, framework, a collection of utilities and experiments written in [LuaJIT](http://luajit.org/) leveraging FFI.
 
-![ScreenShot](https://raw.githubusercontent.com/CapsAdmin/goluwa-assets/master/extras/screenshots/goluwa.png)
+
+![ScreenShot](https://gitlab.com/CapsAdmin/goluwa-assets/raw/master/extras/screenshots/goluwa.png)
 
 # Features
-* [ffi build system](https://github.com/CapsAdmin/goluwa/tree/master/src/lua/build) to automatically build LuaJIT ffi bindings.
-* [gui](src/lua/libraries/graphics/gui) with focus on automatic layout and [GWEN](!https://github.com/garrynewman/GWEN) skin support
-* [font effects](src/lua/libraries/graphics/fonts) to create outlined, shadowed, etc text.
-* [markup language](src/lua/libraries/graphics/gui)
-* [löve wrapper](src/lua/libraries/love) that lets you run Löve games in Goluwa
-* [glua wrapper](src/lua/libraries/gmod) that lets you run GarrysMod Lua in Goluwa
-* [enitity editor](src/lua/autorun/graphics) similar to [PAC3's editor](http://steamcommunity.com/sharedfiles/filedetails/?id=104691717)
-* [filesystem](src/lua/libraries/filesystem) with the ability to mount and treat many archive formats as directories 
-* [source engine](src/lua/libraries/steam) formats are supported
+* [ffi build system](framework/lua/build) to automatically build LuaJIT ffi bindings.
+* [gui](engine/lua/libraries/graphics/gui) with focus on automatic layout and [GWEN](!https://github.com/garrynewman/GWEN) skin support
+* [font effects](framework/lua/libraries/graphics/fonts) to create outlined, shadowed, etc text.
+* [markup language](engine/lua/libraries/graphics/gfx)
+* [löve wrapper](game/lua/libraries/love) that lets you run Löve games in Goluwa
+* [glua wrapper](game/lua/libraries/gmod) that lets you run GarrysMod Lua in Goluwa
+* [entity editor](game/lua/autorun/graphics) similar to [PAC3's editor](http://steamcommunity.com/sharedfiles/filedetails/?id=104691717)
+* [filesystem](core/lua/libraries/filesystem) with the ability to mount and treat many archive formats as directories
+* [source engine](engine/lua/libraries/steam) formats are supported
 
 ##### Prototyping
 * all resources can be loaded from the internet with urls
@@ -23,12 +24,16 @@ Goluwa is a game engine, a framework and a collection of experiments written in 
 * integration with zerobrane
 
 # Structure
-Goluwa is split into 4 folders. ```core > framework > engine > game```. Going backwards, each folder depends on the previous folder, so if you delete the engine folder the game folder wont load.
+Goluwa is split into 4 directories. ```core > framework > engine > game```. Going backwards, each directory depends on the previous directory, so if you delete the engine directory the game directory wont load.
 
+##### -1. goluwa|.cmd
+The shell and powershell script that will only download and launch luajit|.exe with core/lua/boot.lua
+##### 0. core/lua/boot.lua
+Responsible for downloading other binaries, the zerobrane ide, updating goluwa with or without git and launching goluwa. It's mostly lua but some of its helper functions use shell and powershell.
 ##### 1. Core
-Contains the barebone framework that has no explicit dependencies on any shared libraries.
+Contains the barebone framework that has no explicit dependencies on any external shared libraries.
 ##### 2. Framework
-The basic framework utilizing sdl, opengl, openal, etc but does not implement anything. It has a renderer which is neither 2d or 3d, very feature complete 2d rendering library utilizing that renderer, game math library, high level socket library, etc.
+The basic framework utilizing sdl, opengl, openal, etc but does not implement anything. It has a renderer which is neither 2d or 3d, game math library, high level socket library, 2d rendering library, etc.
 ##### 3. Engine
 The engine contains a 3d renderer, source engine asset compatibility, steam integration, zerobrane integration, networking, entities, gui, markup language, etc.
 ##### 4. Game
@@ -36,11 +41,9 @@ The game folder contains very high level scripts such as Löve2D implemented in 
 
 # Caveats
 
-I mainly use and develop this on Linux so windows support isn't high priority even though it should work there. It may also work on OSX but I can't test rendering as I'm limited to using mac in a vm.
+While I want to support OSX and Windows they become low priority due to lack of windows and osx machines. I try to test goluwa in a VM and ask friends but that's about as much as I can do.
 
-Writing everything in LuaJIT also comes with some challenges. I try to write JIT compilable code, especially in areas that are hot but this is not always easy if I also want to have support for reloading code. I believe I'm hitting limits in some cases but some of these may be solved in the future.
-
-Because of how JIT works there will inevitably be hiccups and unreliable performance. I don't think this is something that can be solved easily so therefore I don't think this project is very useful outside of tinkering.
+Writing everything in LuaJIT also comes with some challenges. I try to write JIT compilable code, especially in areas that are intensive but this is not always easy without resorting to ugly code which I try to avoid.
 
 # Credits
 * [Garry Newman](https://github.com/garrynewman/) - I learned programming in garrysmod and many of the ideas and libraries in goluwa were developed in garrysmod initially.

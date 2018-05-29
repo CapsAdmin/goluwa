@@ -82,7 +82,7 @@ do
 
 		-- number of iterations to detect a hot loop or hot call
 		-- default = 56
-		hotloop = 10000,
+		hotloop = 56,
 
 		-- number of taken exits to start a side trace
 		-- default = 10
@@ -90,19 +90,19 @@ do
 
 		-- number of attempts to compile a side trace
 		-- default = 4
-		tryside = 1,
+		tryside = 4,
 
 		-- maximum unroll factor for instable loops
 		-- default = 4
-		instunroll = 4,
+		instunroll = 500,
 
 		-- maximum unroll factor for loop ops in side traces
 		-- default = 15
-		loopunroll = 15,
+		loopunroll = 500,
 
 		-- maximum unroll factor for pseudo-recursive calls
 		-- default = 3
-		callunroll = 3,
+		callunroll = 500,
 
 		-- minimum unroll factor for true recursion
 		-- default = 2
@@ -155,8 +155,22 @@ do
 		return current
 	end
 
-	local sshh
 	local last = {}
+
+	local function update()
+		local options = {}
+
+		for k, v in pairs(current) do
+			if type(v) == "number" then
+				table.insert(options, k .. "=" .. v)
+			elseif type(v) == "boolean" then
+				table.insert(options, v and ("+" .. k) or ("-" .. k))
+			end
+		end
+
+		jit.opt.start(unpack(options))
+		jit.flush()
+	end
 
 	function jit.setoption(option, val)
 		if current[option] == nil then error("not a valid option", 2) end
@@ -164,31 +178,13 @@ do
 		current[option] = val
 
 		if last[option] ~= val then
-			local options = {}
+			logn("jit option ", option, " = ", val)
 
-			if not sshh then
-				logn("jit option ", option, " = ", val)
-			end
-
-			for k, v in pairs(current) do
-				if type(v) == "number" then
-					table.insert(options, k .. "=" .. v)
-				elseif type(v) == "boolean" then
-					table.insert(options, v and ("+" .. k) or ("-" .. k))
-				end
-			end
-
-			jit.opt.start(unpack(options))
-			jit.flush()
+			update()
 
 			last[option] = val
 		end
 	end
-	sshh = true
-	for k,v in pairs(current) do
-		jit.setoption(k, v)
-	end
-	sshh = nil
 end
 
 pcall(function()
@@ -494,4 +490,6 @@ digraph G {
 	end
 end)
 
-jit.barrier = function() debug.gethook() end
+if not jit.tracebarrier then
+	jit.tracebarrier = function() debug.gethook() end
+end

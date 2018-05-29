@@ -278,30 +278,45 @@ do -- call on hide
 	end
 
 	function META:SetVisible(bool)
-		self.call_on_hide = self.call_on_hide or {}
+		self.call_on_visible = self.call_on_visible or {}
+
+		for _, v in pairs(self.call_on_visible) do
+			if v(bool) == false then
+				return false
+			end
+		end
 
 		self.Visible = not not bool -- nil would make self.Visible be the default which is true
+
 		if bool then
 			self:OnShow()
+			if self.visible_was_focused then
+				self:RequestFocus()
+				self.visible_was_focused = nil
+			end
 		else
 			self:OnHide()
-			self:Unfocus()
-			for _, v in pairs(self.call_on_hide) do
-				if v() == false then
-					break
-				end
+			if self:IsFocused() then
+				self:Unfocus()
+				self.visible_was_focused = true
 			end
+		end
+
+		for _, pnl in ipairs(self:GetChildren()) do
+			local old = pnl.Visible
+			pnl:SetVisible(bool)
+			pnl.Visible = old
 		end
 
 		self:Layout()
 	end
 
-	function META:CallOnHide(callback, id)
-		self.call_on_hide = self.call_on_hide or {}
+	function META:CallOnVisibilityChanged(callback, id)
+		self.call_on_visible = self.call_on_visible or {}
 
 		id = id or callback
 
-		self.call_on_hide[id] = callback
+		self.call_on_visible[id] = callback
 	end
 end
 
@@ -771,7 +786,7 @@ do -- cached rendering
 	function META:SetCachedRendering(b)
 		self.CachedRendering = b
 
-		if not render.IsExtensionSupported("GL_ARB_framebuffer_object") then
+		if not render.IsExtensionSupported("ARB_framebuffer_object") then
 			self.CachedRendering = false
 		end
 
@@ -860,78 +875,49 @@ do -- scrolling
 	META:GetSet("SmoothScroll", 0.25)
 	META.RealScroll = Vec2(0, 0)
 
-	local function start_scroll(self, add)
-		if self.SmoothScroll ~= 0 and not self:IsScrolling() then
-			if self.scroll_start and self.scroll_stop and add then
-				self.scroll_vel = self.scroll_start - self.scroll_stop
-				local dir = add - self.scroll_stop
-
-				if math.abs(dir.y) > math.abs(self.scroll_vel.y) then
-					self.scroll_vel.y = -self.scroll_vel.y
-				end
-				if math.abs(dir.x) > math.abs(self.scroll_vel.x) then
-					self.scroll_vel.x = -self.scroll_vel.x
-				end
-			end
-			self.scroll_start = self:GetScroll():Copy()
-			self.scroll_time = system.GetElapsedTime() + self.SmoothScroll
-		end
-	end
-
-	local function stop_scroll(self, size, add)
-		if self.SmoothScroll ~= 0 and not self:IsScrolling() then
-			if add then
-				self.scroll_stop = (-(self.scroll_vel or Vec2())*0.9) + self.Scroll:Copy()
-				self.scroll_vel = nil
-			else
-				self.scroll_stop = self.Scroll:Copy()
-			end
-			self.scroll_start:Clamp(Vec2(0),  self.Size)
-			self.scroll_stop:Clamp(Vec2(0), self.Size)
-		else
-			self.RealScroll = self.Scroll:Copy()
-		end
-	end
-
 	function META:SetScroll(vec)
 		self:Layout(true)
 
-		start_scroll(self, vec)
+		local size = self:GetSizeOfChildren() - self.Size
 
-		local size = self:GetSizeOfChildren()
+		self.Scroll = vec:GetClamped(Vec2(0), size)
 
-		self.Scroll = vec:GetClamped(Vec2(0), size - self.Size)
-		if size.x < self.Size.x then self.Scroll.x = 0 end
-		if size.y < self.Size.y then self.Scroll.y = 0 end
+		if self.Scroll.x < 0 then self.Scroll.x = 0 end
+		if self.Scroll.y < 0 then self.Scroll.y = 0 end
 
-		self.ScrollFraction = self.Scroll / self.Size
-		self:OnScroll(self.ScrollFraction)
-
-		self:MarkCacheDirty()
-
-		stop_scroll(self, size, vec)
+		if self.SmoothScroll == 0 then
+			self.ScrollFraction = self.Scroll / size
+			self:OnScroll(self.ScrollFraction)
+			self:MarkCacheDirty()
+		end
 	end
 
 	function META:SetScrollFraction(frac)
 		self:Layout(true)
 
 		local size = self:GetSizeOfChildren()
-
-		start_scroll(self, size)
+		if self.Size.x > size.x then size.x = self.Size.x end
+		if self.Size.y > size.y then size.y = self.Size.y end
 
 		self.Scroll = frac * size
-		self.Scroll:Clamp(Vec2(0, 0), size - self.Size)
+
+		if self.Scroll.x < 0 then self.Scroll.x = 0 end
+		if self.Scroll.y < 0 then self.Scroll.y = 0 end
+
+		if self.Scroll.x + self.Size.x > size.x then self.Scroll.x = size.x - self.Size.x end
+		if self.Scroll.y + self.Size.y > size.y then self.Scroll.y = size.y - self.Size.y end
+		--if self.Scroll.y - size.y > 0 then self.Scroll.y = size.y - self.Size.y end
+
 		self.ScrollFraction = frac
 
-		self:OnScroll(self.ScrollFraction)
-
-		self:MarkCacheDirty()
-
-		stop_scroll(self, size)
+		if self.SmoothScroll == 0 then
+			self:OnScroll(self.ScrollFraction)
+			self:MarkCacheDirty()
+		end
 	end
 
 	function META:GetScroll()
-		return self.RealScroll
+		return self.RealScroll:Copy()
 	end
 
 	function META:StartScrolling(button)
@@ -954,6 +940,30 @@ do -- scrolling
 	end
 
 	function META:CalcScrolling()
+
+		if self.SmoothScroll ~= 0 then
+			self.smooth_scroll_pos = self.smooth_scroll_pos or Vec2()
+
+			local smooth_scrolling = self.smooth_scroll_pos - self.Scroll
+			local len = smooth_scrolling:GetLength()
+
+			local speed = 10
+
+			if len > 2 then
+				local dist = smooth_scrolling:GetLength()
+				self.smooth_scroll_pos = self.smooth_scroll_pos - ((self.smooth_scroll_pos - self.Scroll) * system.GetFrameTime() * speed)
+				self.smooth_scroll_pos:Ceil()
+				self.RealScroll = self.smooth_scroll_pos
+
+				local size = self:GetSizeOfChildren() - self.Size
+				self:OnScroll(self.smooth_scroll_pos / size)
+
+				self:MarkCacheDirty()
+			else
+				self.RealScroll = self.Scroll:Copy()
+			end
+		end
+
 		if self:IsScrolling() then
 			local size = self:GetSizeOfChildren()
 
@@ -961,21 +971,10 @@ do -- scrolling
 
 			if input.IsMouseDown(self.scroll_button) then
 				self:SetScroll(self.scroll_drag_pos - self:GetMousePosition())
-				self:OnScroll(self.ScrollFraction)
+				local size = self:GetSizeOfChildren() - self.Size
+				self:OnScroll(self.Scroll / size)
 			else
 				self:StopScrolling()
-			end
-		elseif self.scroll_time and self.scroll_stop then
-			local f = (self.scroll_time - system.GetElapsedTime()) / self.SmoothScroll
-			if f >= 0 then
-				f = f ^ 5
-				self.RealScroll = self.scroll_stop:GetLerped(f, self.scroll_start)
-				self.RealScroll.x = math.max(self.RealScroll.x, 0)
-				self.RealScroll.y = math.max(self.RealScroll.y, 0)
-			else
-				self.scroll_time = nil
-				self.scroll_stop = nil
-				self.scroll_start = nil
 			end
 		end
 	end
@@ -1716,10 +1715,38 @@ do -- mouse
 				self:StartScrolling(button)
 			end
 
-			if button == "mwheel_down" then
-				self:SetScroll(self:GetScroll() + Vec2(0, 20))
-			elseif button == "mwheel_up" then
-				self:SetScroll(self:GetScroll() + Vec2(0, -20))
+			if press then
+				local dir
+
+				if button == "mwheel_down" then
+					dir = Vec2(0, 50)
+				elseif button == "mwheel_up" then
+					dir = Vec2(0, -50)
+				end
+
+				if dir then
+
+					if (self.last_wheel_scroll_time or 0) < system.GetElapsedTime() then
+						self.last_wheel_scroll_dir = nil
+					end
+
+					if self.last_wheel_scroll_dir then
+						if self.last_wheel_scroll_dir.y > 0 and dir.y < 0 then
+							self.last_wheel_scroll_dir = nil
+						end
+					end
+
+					if self.last_wheel_scroll_dir then
+						dir = dir + self.last_wheel_scroll_dir
+					end
+
+					self.last_wheel_scroll_time = system.GetElapsedTime() + 0.25
+
+					self.last_wheel_scroll_dir = dir
+
+
+					self:SetScroll(self:GetScroll() + dir)
+				end
 			end
 		end
 
@@ -1937,6 +1964,10 @@ do -- layout
 							child[tr_child[cmd]](child)
 						elseif tr_self[cmd] then
 							self[tr_self[cmd]](self)
+						elseif child[cmd] then
+							child[cmd](child)
+						elseif self[cmd] then
+							self[cmd](self)
 						elseif type(cmd) == "function" then
 							cmd(child, self)
 						elseif typex(cmd) == "vec2" then
@@ -2583,9 +2614,12 @@ do -- skin
 		self.Style = name
 
 		self.style_nodraw = false
+		self.style_blank = false
 
 		if name == "nodraw" then
 			self.style_nodraw = true
+		elseif name == "blank" then
+			self.style_blank = true
 		elseif name == "none" then
 			self:SetNinePatch(false)
 			self:SetNinePatchRect(Rect(0, 0, 0, 0))
@@ -2609,6 +2643,8 @@ do -- skin
 	function META:SetStyleTranslation(from, to)
 		self.style_translation = self.style_translation or {}
 		self.style_translation[from] = to
+
+		self:SetStyle(self:GetStyle())
 	end
 
 	META:GetSet("NinePatch", false)

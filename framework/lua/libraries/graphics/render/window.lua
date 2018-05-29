@@ -3,7 +3,7 @@ local render = (...) or _G.render
 render.current_window = render.current_window or NULL
 
 function render.SetWindow(window)
-	render._SetWindow(window)
+	window:BindContext()
 	render.current_window = window
 
 	render.SetViewport(0, 0, window:GetSize():Unpack())

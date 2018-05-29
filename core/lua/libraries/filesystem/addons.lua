@@ -6,7 +6,12 @@ vfs.disabled_addons = vfs.disabled_addons or {}
 function vfs.MountAddons(dir)
 	for info in vfs.Iterate(dir, true, nil, nil, nil, true) do
 		if info.name ~= e.INTERNAL_ADDON_NAME then
-			if vfs.IsDirectory(info.full_path:sub(#info.filesystem + 2)) and not info.name:startswith(".") and not info.name:startswith("__") then
+			if
+				vfs.IsDirectory(info.full_path:sub(#info.filesystem + 2)) and
+				not info.name:startswith(".") and
+				not info.name:startswith("__") and
+				(info.name ~= "data" and info.filesystem == "os")
+			then
 				vfs.MountAddon(info.full_path:sub(#info.filesystem + 2) .. "/")
 			end
 		end
@@ -136,11 +141,15 @@ end
 
 function vfs.AutorunAddons(folder, force)
 	folder = folder or ""
-	utility.PushTimeWarning()
+	if not CLI then
+		utility.PushTimeWarning()
+	end
 	for _, info in pairs(vfs.GetMountedAddons()) do
 		vfs.AutorunAddon(info, folder, force)
 	end
-	utility.PopTimeWarning("autorun " .. folder .. "*", 0.1)
+	if not CLI then
+		utility.PopTimeWarning("autorun " .. folder .. "*", 0.1)
+	end
 end
 
 function vfs.MountAddon(path, force)

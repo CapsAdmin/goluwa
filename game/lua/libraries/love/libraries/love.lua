@@ -103,11 +103,11 @@ event.AddListener("LoveNewIndex", "line_love", function(love, key, val)
 		end
 	elseif key == "resize" then
 		if val then
-			event.AddListener("WindowResize", "line", function(_,w,h)
-				line.CallEvent("resize",w,h)
+			event.AddListener("WindowFramebufferResized", "line", function(_, size)
+				line.CallEvent("resize",size.x, size.y)
 			end)
 		else
-			event.RemoveListener("WindowResize", "line")
+			event.RemoveListener("WindowFramebufferResized", "line")
 		end
 	end
 end)

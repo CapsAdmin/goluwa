@@ -4,6 +4,17 @@ do -- AUTOMATE THIS
 	local size = 6
 	local x,y,w,h,i
 
+	local function advance()
+		if i%size == 0 then
+			y = y + h
+			x = 0
+		else
+			x = x + w
+		end
+
+		i = i + 1
+	end
+
 	function render3d.DrawGBufferDebugOverlay()
 		w, h = render2d.GetSize()
 		w = w / size
@@ -43,14 +54,7 @@ do -- AUTOMATE THIS
 
 						gfx.DrawText(("%s %s %s %s"):format(pass_name, buffer_type, color, sub_name), x, y + 5)
 
-						if i%size == 0 then
-							y = y + h
-							x = 0
-						else
-							x = x + w
-						end
-
-						i = i  + 1
+						advance()
 					end
 				end
 				buffer_i = buffer_i + 1
@@ -68,14 +72,7 @@ do -- AUTOMATE THIS
 					gfx.DrawRect(x,y,w,h, tex, 1,1,1,1)
 					gfx.DrawText(tostring(name) .. " " .. light_i, x, y + 5)
 
-					if i%size == 0 then
-						y = y + h
-						x = 0
-					else
-						x = x + w
-					end
-
-					i = i + 1
+					advance()
 				end
 			end
 		end

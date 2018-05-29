@@ -21,7 +21,7 @@ do
 	}
 
 	for i,v in ipairs(variables) do
-		if true or not v.name:find("world") and v.name ~= "normal_matrix" then
+		if true or not v.name:find("world", 1, true) and v.name ~= "normal_matrix" then
 			v.glsl = nil -- disable gpu matrix calculation for world matrices
 		end
 	end

@@ -103,11 +103,9 @@ do
 end
 
 function prototype.RebuildMetatables(what)
-	if what and not prototype.invalidate_meta[what] then return end
-
 	for super_type, sub_types in pairs(prototype.registered) do
 		if what == nil or what == super_type then
-			prototype.invalidate_meta[what] = nil
+			prototype.invalidate_meta[what or super_type] = nil
 
 			for sub_type, meta in pairs(sub_types) do
 
@@ -194,7 +192,9 @@ function prototype.GetRegistered(super_type, sub_type)
 	sub_type = sub_type or super_type
 
 	if prototype.registered[super_type] and prototype.registered[super_type][sub_type] then
-		prototype.RebuildMetatables(super_type)
+		if prototype.invalidate_meta[super_type] then
+			prototype.RebuildMetatables(super_type)
+		end
 		return prototype.prepared_metatables[super_type][sub_type]
 	end
 end
@@ -487,9 +487,11 @@ function prototype.UpdateObjects(meta)
 			if RELOAD then
 				for k, v in pairs(tbl) do
 					if type(v) == "function" then
-						--if not k:startswith("On") then
+						if type(obj[k]) == "function" and debug.getinfo(v).source ~= debug.getinfo(obj[k]).source and #string.dump(v) < #string.dump(obj[k]) then
+							llog("not overriding smaller function %s.%s:%s(%s)", tbl.Type, tbl.ClassName, k, table.concat(debug.getupvalues(v), ", "))
+						else
 							obj[k] = v
-						--end
+						end
 					elseif obj[k] == nil then
 						obj[k] = v
 					end

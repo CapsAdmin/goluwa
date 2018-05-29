@@ -31,10 +31,6 @@ if GRAPHICS then
 	function META:OnAdd()
 		self.shadow_maps = {}
 		self.cameras = {}
-
-		render3d.LoadModel("models/low-poly-sphere.obj", function(meshes)
-			self.light_mesh = meshes[1]
-		end)
 	end
 
 	function META:SetShadow(b)
@@ -101,7 +97,7 @@ if GRAPHICS then
 	end
 
 	function META:OnDraw3DLights()
-		if not self.light_mesh or not render3d.gbuffer_data_pass.light_shader then return end -- grr
+		if not render3d.gbuffer_data_pass.light_shader then return end -- grr
 
 		-- automate this!!
 
@@ -125,7 +121,9 @@ if GRAPHICS then
 		render.SetBlendMode("one", "one")
 		shader:Bind()
 
-		self.light_mesh:Draw(1)
+		if render3d.simple_mesh then
+			render3d.simple_mesh:Draw(1)
+		end
 	end
 
 	function META:DrawScene(pos, rot, i)

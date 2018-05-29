@@ -100,6 +100,9 @@ function love.thread.newChannel()
 end
 
 function love.thread.getChannel(name)
+	if not ENV.channels[name] then
+		ENV.channels[name] = love.thread.newChannel()
+	end
 	return ENV.channels[name]
 end
 

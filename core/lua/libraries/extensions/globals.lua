@@ -281,12 +281,15 @@ do -- logging
 			sub_category = source:match(".+/libraries/(.+)%.lua")
 		end
 
+		local str = fmt:safeformat(...)
+
 		if not main_category or not sub_category or main_category == sub_category then
-			return logf("[%s] %s\n", main_category or sub_category, fmt:safeformat(...))
+			return logf("[%s] %s\n", main_category or sub_category, str)
 		else
-			return logf("[%s][%s] %s\n", main_category, sub_category, fmt:safeformat(...))
+			return logf("[%s][%s] %s\n", main_category, sub_category, str)
 		end
-		return ...
+
+		return str
 	end
 
 	-- warning log
@@ -369,9 +372,9 @@ do -- wait
 	local temp = {}
 
 	function wait(seconds)
-		local time = system.GetTime()
+		local time = system.GetElapsedTime()
 		if not temp[seconds] or (temp[seconds] + seconds) <= time then
-			temp[seconds] = system.GetTime()
+			temp[seconds] = system.GetElapsedTime()
 			return true
 		end
 		return false

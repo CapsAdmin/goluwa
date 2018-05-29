@@ -34,6 +34,10 @@ do
 		vector = function(str, me) return vector(str, Vec3) end,
 		angle = function(str, me) return vector(str, Ang3) end,
 		boolean = function(arg)
+			if type(arg) == "boolean" then
+				return arg
+			end
+
 			arg = arg:lower()
 
 			if arg == "1" or arg == "true" or arg == "on" or arg == "yes" or arg == "y" then
@@ -249,6 +253,8 @@ do -- commands
 	end
 
 	function commands.FindCommand(str)
+		if #str > 50 or str:find("\n", nil, true) then return nil, "could not find command: command is too complex" end
+
 		local found = {}
 
 		for _, command in pairs(commands.added2) do
@@ -407,7 +413,12 @@ do -- commands
 
 			for i, arg_types in ipairs(command.argtypes) do
 				if command.defaults and args[i] == nil and command.defaults[i] then
-					args[i] = command.defaults[i]
+					if command.defaults[i] == "STDIN" then
+						logn(alias, " #", i2, " argument (", temp ,"):")
+						args[i] = io.stdin:read("*l")
+					else
+						args[i] = command.defaults[i]
+					end
 				end
 
 				if args[i] ~= nil or not table.hasvalue(arg_types, "nil") then
@@ -451,7 +462,13 @@ do -- commands
 
 	function commands.ExecuteCommandString(str)
 		local tr
-		local a, b, c = xpcall(commands.RunCommandString, function(msg) tr = debug.traceback() .. "\n\n" .. msg end, str, simple)
+		local a, b, c = xpcall(commands.RunCommandString, function(msg)
+			if CLI then
+				tr = msg
+			else
+				tr = debug.traceback() .. "\n\n" .. msg
+			end
+		end, str, simple)
 
 		if a == false then
 			return false, b or tr
@@ -475,7 +492,7 @@ do -- commands
 		end
 
 		function commands.RunLuaString(line, env_name)
-			commands.SetLuaEnvironmentVariable("gl", system.GetFFIBuildLibrary("opengl"))
+			commands.SetLuaEnvironmentVariable("gl", desire("opengl"))
 			commands.SetLuaEnvironmentVariable("ffi", desire("ffi"))
 			commands.SetLuaEnvironmentVariable("findo", prototype.FindObject)
 			if WINDOW then commands.SetLuaEnvironmentVariable("copy", window.SetClipboard) end
@@ -507,53 +524,52 @@ do -- commands
 	end
 
 	function commands.RunString(line, skip_lua, skip_split)
-		if CLI then
-			logn(">> ", line)
-		end
+		tasks.CreateTask(
+			function()
+				if CLI then
+					logn(">> ", line)
+				end
 
-		if not skip_split and line:find("\n") then
-			for line in (line .. "\n"):gmatch("(.-)\n") do
-				commands.RunString(line, skip_lua, skip_split)
+				if not skip_split and line:find("\n") then
+					for line in (line .. "\n"):gmatch("(.-)\n") do
+						commands.RunString(line, skip_lua, skip_split)
+					end
+					return
+				end
+
+				if pvars then
+					local key, val = line:match("^([%w_]+)%s+(.+)")
+					if key and val and pvars.Get(key) ~= nil then
+						pvars.SetString(key, val)
+						logn(key, " (",pvars.GetObject(key):GetType(),") = ", pvars.GetString(key))
+						return
+					end
+
+					local key = line:match("^([%w_]+)$")
+					if key and pvars.Get(key) ~= nil then
+						logn(key, " (",pvars.GetObject(key):GetType(),") = ", pvars.GetString(key))
+						logn(pvars.GetObject(key):GetHelp())
+						return
+					end
+				end
+
+				local ok, msg = commands.ExecuteCommandString(line)
+
+				if not ok and not msg:find("could not find command") then
+					logn(msg)
+
+					return
+				end
+
+				if not ok and not skip_lua then
+					ok, msg = commands.ExecuteLuaString(line)
+				end
+
+				if not ok then
+					logn(msg)
+				end
 			end
-			return
-		end
-
-
-		local key, val = line:match("^([%w_]+)%s+(.+)")
-		if key and val and pvars and pvars.Get(key) ~= nil then
-			if pvars.GetObject(key):GetType() ~= "string" then
-				val = serializer.GetLibrary("luadata").FromString(val)
-			end
-
-			if val ~= nil then
-				pvars.Set(key, val)
-				logn(key, " (",pvars.GetObject(key):GetType(),") = ", pvars.Get(key))
-				return
-			end
-		end
-
-		local key = line:match("^([%w_]+)$")
-		if key and pvars.Get(key) ~= nil then
-			logn(key, " (",pvars.GetObject(key):GetType(),") = ", pvars.Get(key))
-			logn(pvars.GetObject(key):GetHelp())
-			return
-		end
-
-		local ok, msg = commands.ExecuteCommandString(line)
-
-		if not ok and not msg:find("could not find command") then
-			logn(msg)
-
-			return
-		end
-
-		if not ok and not skip_lua then
-			ok, msg = commands.ExecuteLuaString(line)
-		end
-
-		if not ok then
-			logn(msg)
-		end
+		)
 	end
 
 	commands.Add("help|usage=string|nil", function(cmd)

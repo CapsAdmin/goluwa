@@ -184,6 +184,21 @@ function META:ClearList()
 	self.list:RemoveChildren()
 end
 
+function META:SetEntry(i, ...)
+	local label = entry.labels[i]
+	if label then
+		for i = 1, #self.columns do
+			local text = select(i, ...)
+			if text then
+
+				label:SetText(self.columns[i].converter and self.columns[i].converter(text) or text)
+				label:SizeToText()
+				label.text = text
+			end
+		end
+	end
+end
+
 function META:AddEntry(...)
 	local entry = self.list:CreatePanel("button")
 
@@ -235,6 +250,15 @@ function META:AddEntry(...)
 			entry:OnSelect()
 		end
 		self:OnEntrySelect(entry, b)
+	end
+
+	entry.UpdateLine = function(_, i, text)
+		local label = entry.labels[i]
+		if label then
+			label:SetText(self.columns[i].converter and self.columns[i].converter(text) or text)
+			label:SizeToText()
+			label.text = text
+		end
 	end
 
 	entry.i = #self.entries + 1

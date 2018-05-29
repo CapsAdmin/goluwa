@@ -2,6 +2,8 @@ local gfx = (...) or _G.gfx
 
 local META = prototype.CreateTemplate("polygon_2d")
 
+META:GetSet("WorldMatrixMultiply", false)
+
 function gfx.CreatePolygon2D(vertex_count, map)
 	local vertex_buffer = render2d.CreateMesh()
 	vertex_buffer:SetDrawHint("dynamic")
@@ -113,6 +115,11 @@ function META:SetVertex(i, x,y, u,v)
 		x = new_x + self.X - self.RX
 		y = new_y + self.Y - self.RY
 	end
+
+	if self.WorldMatrixMultiply then
+		x, y = render2d.GetWorldMatrix():TransformVector(x, y, 0)
+	end
+
 
 	self.Vertices.Pointer[i].pos[0] = x
 	self.Vertices.Pointer[i].pos[1] = y

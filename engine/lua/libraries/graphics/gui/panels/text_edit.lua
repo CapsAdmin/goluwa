@@ -22,10 +22,11 @@ META:Delegate("label", "GetTextSize", "GetSize")
 function META:Initialize()
 	self:SetStyle("text_edit")
 	self:SetFocusOnClick(true)
-	self.BaseClass.Initialize(self)
+	META.BaseClass.Initialize(self)
 
 	local label = self:CreatePanel("text", "label")
-	label.OnStyleChanged = nil
+
+	label.OnStyleChanged = function() end
 	label.markup:SetEditable(self.Editable)
 
 	label:SetClipping(true)
@@ -39,7 +40,9 @@ function META:Initialize()
 
 		self:ScrollToCaret()
 	end
-	label.markup.OnAdvanceCaret = function() self:ScrollToCaret() end
+	label.markup.OnAdvanceCaret = function()
+		self:ScrollToCaret()
+	end
 	label.OnEnter = function(_, ...)
 		self:OnEnter(...)
 		if not self.Multiline then
@@ -54,9 +57,52 @@ end
 
 function META:ScrollToCaret()
 	local cpos = self:GetPixelCaretPosition()
-	local scroll = cpos - self.Size + Vec2(self.label.Padding:GetRight(), self.label.Padding:GetBottom()) + Vec2(self.label.Padding:GetLeft(), self.label.Padding:GetTop())
 
-	self:SetScroll(scroll)
+	if
+		cpos.x < self:GetScroll().x + self.Size.x and
+		cpos.x + self.Size.x > self:GetScroll().x + self.Size.x
+	then
+
+	else
+		local scroll = cpos.x - self.Size.x
+		local padding = self.label.Padding:GetRight() + self.label.Padding:GetLeft()
+		scroll = scroll + self:GetSize().x - padding
+		scroll = scroll + padding
+
+
+		local prev = self:GetScroll()
+		prev.x = scroll
+		self:SetScroll(prev)
+	end
+
+
+	local height = 15
+	local font = self:GetFont()
+
+	if font then
+		local _, h = font:GetTextSize("|")
+		height = h
+	end
+
+	if cpos.y + self.Size.y < self:GetScroll().y + self.Size.y + height then
+		cpos.y = cpos.y - height
+	end
+
+	if
+		cpos.y < self:GetScroll().y + self.Size.y and
+		cpos.y + self.Size.y > self:GetScroll().y + self.Size.y
+	then
+
+	else
+		local scroll = cpos.y - self.Size.y
+		local padding = self.label.Padding:GetTop() + self.label.Padding:GetBottom()
+		scroll = scroll + self:GetSize().y - padding
+		scroll = scroll + padding
+
+		local prev = self:GetScroll()
+		prev.y = scroll
+		self:SetScroll(prev)
+	end
 end
 
 function META:SetMultiline(b)
@@ -76,14 +122,11 @@ function META:OnStyleChanged(skin)
 	self:SetCaretColor(skin.text_edit_color:Copy())
 	self:SetSelectionColor(skin.text_edit_color:Copy():SetAlpha(0.5))
 	self:SetTextColor(skin.text_edit_color:Copy())
-	self.label:SetTextColor(skin.text_edit_color:Copy())
 	self:SetFont(skin.default_font)
 	--self:SetScrollable(true)
 
-	if self.label and self.label.markup then
-		self.label.markup:SetCaretColor(self.CaretColor)
-		self.label.markup:SetSelectionColor(self.SelectionColor)
-	end
+	self.label.markup:SetCaretColor(self.CaretColor)
+	self.label.markup:SetSelectionColor(self.SelectionColor)
 end
 
 function META:OnLayout(S)
@@ -100,12 +143,7 @@ end
 
 function META:GetPixelCaretPosition()
 	local data = self.label.markup:CaretFromPosition(self:GetCaretPosition():Unpack())
-	if data then
-		if data.i == #self.label.markup.chars then
-			return Vec2(data.char.data.chunk.x, data.char.data.chunk.y - data.char.data.chunk.real_h)
-		end
-		return Vec2(data.char.data.x, data.char.data.top)
-	end
+	return Vec2(data.px, data.py)
 end
 
 function META:SetCaretSubPosition(pos)
@@ -133,14 +171,16 @@ function META:SizeToText()
 end
 
 function META:OnFocus()
-	input.DisableFocus = true -- TODO
+	event.Call("TextInputFocus", self)
+	input.PushDisableFocus()
 	if self.Editable then
 		self.label.markup:SetEditable(true)
 	end
 end
 
 function META:OnUnfocus()
-	input.DisableFocus = false -- TODO
+	event.Call("TextInputUnfocus", self)
+	input.PopDisableFocus()
 	self.label.markup:SetEditable(false)
 end
 
@@ -166,9 +206,14 @@ function META:OnTextChanged() end
 gui.RegisterPanel(META)
 
 if RELOAD then
-	local pnl = gui.CreatePanel(META.ClassName, nil, "lol")
+	local frame = gui.CreatePanel("frame", nil, "lol")
+	frame:SetSize(Vec2()+256)
+	local pnl = frame:CreatePanel(META.ClassName)
+	pnl:SetupLayout("fill")
 	pnl:SetPosition(Vec2() + 50)
 	pnl:SetMultiline(true)
-	pnl:SetSize(Vec2(50, 50))
+	pnl:SetTextWrap(true)
+	MARKUP = pnl.label.markup
+	--pnl:Center()
 	pnl:RequestFocus()
 end

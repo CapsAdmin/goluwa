@@ -1,4 +1,4 @@
-﻿local META = prototype.CreateTemplate("font", "base")
+local META = prototype.CreateTemplate("font", "base")
 
 META:GetSet("Path", "")
 META:GetSet("Padding", 0)
@@ -92,7 +92,7 @@ end
 
 function META:DrawString(str, x, y, w)
 	if not self.Ready then
-		return fonts.loading_font:DrawString(str, x, y, w)
+		return fonts.GetFallbackFont():DrawString(str, x, y, w)
 	end
 
 	if str == nil then str = "nil" end
@@ -118,6 +118,100 @@ function META:DrawString(str, x, y, w)
 		render2d.SetColor(1,0,0,0.25)
 		render2d.SetTexture()
 		render2d.DrawRect(x, y, gfx.GetTextSize(str))
+	end
+end
+
+function META:DrawStringDynamic(str, x,y,w)
+	local max_width = 0
+	local X, Y = 0, 0
+	local i = 1
+	local last_tex
+
+	render2d.PushMatrix(x,y)
+
+	self.strtblcache = self.strtblcache or {}
+	self.strtblcache[str] = self.strtblcache[str] or str:utotable()
+
+	for str_i, char in ipairs(self.strtblcache[str]) do
+		local data = self:GetChar(char)
+
+		local spacing = self.Spacing
+
+		if char == "\n" then
+			X = 0
+			Y = Y + self:GetChar("\n").h + spacing
+		elseif char == "\t" then
+			data = self:GetChar(" ")
+
+			if data then
+				if self.Monospace then
+					X = X + spacing * self.TabWidthMultiplier
+				else
+					X = X + (data.x_advance + spacing) * self.TabWidthMultiplier
+				end
+			else
+				X = X + self.Size * self.TabWidthMultiplier
+			end
+		elseif data then
+			if self.rebuild then
+				self:Rebuild()
+				self.rebuild = false
+			end
+
+			render2d.SetTexture(self.texture_atlas:GetPageTexture(char))
+
+			local draw_i = self.ReverseDraw and (-i + count + 1) or i
+
+			if self.Curve ~= 0 then
+				local offset = math.sin(((str_i-1)/count)*math.pi+math.pi/2)
+				Y = Y + (offset * -self.Curve)
+
+				self:DrawPolyChar(poly, draw_i, X, Y, char, -offset*self.Curve/50)
+			else
+				self:DrawPolyChar(poly, draw_i, X + data.bitmap_left, Y, char)
+			end
+
+			if self.Monospace then
+				X = X + spacing
+			else
+				X = X + data.x_advance + spacing
+			end
+
+			i = i + 1
+		elseif char == " " then
+			X = X + self.Size / 2
+		end
+		max_width = math.max(max_width, X)
+	end
+
+	render2d.PopMatrix()
+
+	--render2d.DrawSpriteBatch()
+end
+
+function META:DrawPolyChar(poly, i, x, y, char, r)
+	local ch = self.chars[char]
+
+	if ch then
+		local x_,y_, w,h, sx,sy = self.texture_atlas:GetUV(char)
+		render2d.SetRectUV(x_,y_, w,h, sx,sy)
+
+		y = y - ch.bitmap_top + self.Size
+
+		x = x - (self.Padding / 2)
+		y = y - (self.Padding / 2)
+
+		x = x * self.Scale.x
+		y = y * self.Scale.y
+
+		w = w * self.Scale.x
+		h = h * self.Scale.y
+
+		if r then
+			render2d.DrawRect(x, y, w, h, r, nil, nil, -w/2, -h/2)
+		else
+			render2d.DrawRect(x, y, w, h)
+		end
 	end
 end
 
@@ -172,7 +266,7 @@ end
 function META:CompileString(data)
 
 	if not self.Ready then
-		return fonts.loading_font:CompileString(data)
+		return fonts.GetFallbackFont():CompileString(data)
 	end
 
 	local vertex_count = 0
@@ -294,7 +388,7 @@ end
 
 function META:GetTextSize(str)
 	if not self.Ready then
-		return fonts.loading_font:GetTextSize(str)
+		return fonts.GetFallbackFont():GetTextSize(str)
 	end
 
 	str = tostring(str)

@@ -34,8 +34,8 @@ function render.GetShadingLanguageVersion()
 	return "nil"
 end
 
-function render.GetVendor()
-	return "nil"
+function render.GetInfo()
+	return {vendor = "null", version = "null", renderer = "null"}
 end
 
 function render._SetScissor(x,y,w,h, sw,sh)

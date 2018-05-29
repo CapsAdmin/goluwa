@@ -11,17 +11,14 @@ local queue = {}
 function fonts.Initialize()
 	ready = true
 
-	fonts.default_font = fonts.CreateFont({path = fonts.default_font_path})
-	fonts.loading_font = fonts.GetFallbackFont()
-
-	gfx.SetFont(fonts.default_font)
-
-	for _, args in pairs(queue) do
+	for _, args in ipairs(queue) do
 		fonts.CreateFont(unpack(args))
 	end
 end
 
 function fonts.GetDefaultFont()
+	fonts.default_font = fonts.default_font or fonts.CreateFont({path = fonts.default_font_path})
+
 	return fonts.default_font or fonts.GetFallbackFont()
 end
 
@@ -165,7 +162,11 @@ function fonts.CreateFont(options, callback)
 		end
 	end
 
-	return fonts.GetDefaultFont()
+	if options.path ~= fonts.default_font_path then
+		return fonts.GetDefaultFont()
+	end
+
+	return fonts.GetFallbackFont()
 end
 
 function fonts.FindFont(name)

@@ -26,7 +26,7 @@ do
 		if not vfs.files_ran then
 			vfs.files_ran = {}
 			for _, path in ipairs(vfs.files_ran_) do
-				local full_path = vfs.GetAbsolutePath(path, false)
+				local full_path = vfs.GetAbsolutePath(path, false) or path
 				vfs.files_ran[full_path] = vfs.OSGetAttributes(full_path)
 			end
 		end
@@ -165,8 +165,7 @@ do -- runfile
 					_G.FILE_NAME = full_path:match(".*/(.+)%.") or full_path
 					_G.FILE_EXTENSION = full_path:match(".*/.+%.(.+)")
 
-
-					if utility and utility.PushTimeWarning then
+					if not CLI and utility and utility.PushTimeWarning then
 						utility.PushTimeWarning()
 					end
 
@@ -178,7 +177,7 @@ do -- runfile
 						ok, err = pcall(func, ...)
 					end
 
-					if utility and utility.PushTimeWarning then
+					if not CLI and utility and utility.PushTimeWarning then
 						utility.PopTimeWarning(full_path, 0.01)
 					end
 
@@ -265,7 +264,7 @@ do -- runfile
 			end
 
 			if full_path:find(e.ROOT_FOLDER, nil, true) then
-				utility.PopTimeWarning("[runfile] " .. full_path:gsub(e.ROOT_FOLDER, ""), 0.025)
+				utility.PopTimeWarning(full_path:gsub(e.ROOT_FOLDER, ""), 0.025, "[runfile]")
 			end
 
 			_G.FILE_PATH = nil

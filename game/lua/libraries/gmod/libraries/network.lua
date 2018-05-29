@@ -298,6 +298,12 @@ function gine.env.game.SinglePlayer()
 	return false
 end
 
+function gine.env.util.SharedRandom(id, min, max, extra_seed)
+	extra_seed = extra_seed or 0
+	math.randomseed(tonumber(crypto.CRC32(id)) + extra_seed)
+	return math.randomf(min, max)
+end
+
 if SERVER then
 	event.AddListener("ClientEntered", "ginit_client", function(client)
 		if gine.env then

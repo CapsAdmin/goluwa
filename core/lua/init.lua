@@ -1,5 +1,52 @@
+local start_time = os.clock()
+
+if not os.getenv("GOLUWA_CLI") then
+	if os.getenv("GOLUWA_CLI_TIME") then
+		io.write("[runfile] ", os.getenv("GOLUWA_CLI_TIME"), " seconds spent in ./goluwa", jit.os == "Windows" and ".cmd" or "", "\n")
+	end
+
+	if os.getenv("GOLUWA_BOOT_TIME") then
+		io.write("[runfile] ", os.getenv("GOLUWA_BOOT_TIME"), " seconds spent in core/lua/boot.lua\n")
+	end
+end
+
+do
+	local ok, opt = pcall(require, "jit.opt")
+	if ok then
+		opt.start(
+			"maxtrace=65535", -- 1000 1-65535: maximum number of traces in the cache
+			"maxrecord=20000", -- 4000: maximum number of recorded IR instructions
+			"maxirconst=2500", -- 500: maximum number of IR constants of a trace
+			"maxside=100", -- 100: maximum number of side traces of a root trace
+			"maxsnap=800", -- 500: maximum number of snapshots for a trace
+			"minstitch=0", -- 0: minimum number of IR ins for a stitched trace.
+			"hotloop=56", -- 56: number of iterations to detect a hot loop or hot call
+			"hotexit=10", -- 10: number of taken exits to start a side trace
+			"tryside=4", -- 4: number of attempts to compile a side trace
+			"instunroll=500", -- 4: maximum unroll factor for instable loops
+			"loopunroll=500", -- 15: maximum unroll factor for loop ops in side traces
+			"callunroll=500", -- 3: maximum unroll factor for pseudo-recursive calls
+			"recunroll=2", -- 2: minimum unroll factor for true recursion
+			"maxmcode=8192", -- 512: maximum total size of all machine code areas in KBytes
+			--jit.os == "x64" and "sizemcode=64" or "sizemcode=32", -- Size of each machine code area in KBytes (Windows: 64K)
+			"+fold", -- Constant Folding, Simplifications and Reassociation
+			"+cse", -- Common-Subexpression Elimination
+			"+dce", -- Dead-Code Elimination
+			"+narrow", -- Narrowing of numbers to integers
+			"+loop", -- Loop Optimizations (code hoisting)
+			"+fwd", -- Load Forwarding (L2L) and Store Forwarding (S2L)
+			"+dse", -- Dead-Store Elimination
+			"+abc", -- Array Bounds Check Elimination
+			"+sink", -- Allocation/Store Sinking
+			"+fuse" -- Fusion of operands into instructions
+		)
+	end
+end
+
+
 -- put all c functions in a table so we can override them if needed
 -- without doing the local oldfunc = print thing over and over again
+
 do
 	local _OLD_G = {}
 	if pcall(require, "ffi") then
@@ -34,7 +81,15 @@ local init_lua_path = info.source
 local internal_addon_name = assert(init_lua_path:match("^@.+/(.+)/lua/init.lua$"), "could not find internal addon name from " .. init_lua_path)
 
 do -- constants
-	-- enums table for
+	if jit.os == "Windows" then
+		_G.PLATFORM = "windows"
+	elseif _G.GMOD == true then
+		_G.PLATFORM = "gmod"
+	else
+		_G.PLATFORM = "unix"
+	end
+
+	-- enums table
 	e = e or {}
 	e.USERNAME = _G.USERNAME or tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
 	e.INTERNAL_ADDON_NAME = internal_addon_name
@@ -43,6 +98,8 @@ do -- constants
 	_G[e.USERNAME:upper()] = true
 	_G[jit.os:upper()] = true
 	_G[jit.arch:upper()] = true
+
+	_G.CLI = os.getenv("GOLUWA_CLI")
 end
 
 do
@@ -57,7 +114,7 @@ do
 
 	package.path = "./?.lua"
 
-	if pcall(require, ffi) then
+	if pcall(require, "ffi") then
 		local ffi = require("ffi")
 
 		local dir = init_lua_path:match("@(.+/)" .. e.INTERNAL_ADDON_NAME .. "/lua/init.lua$")
@@ -79,9 +136,9 @@ end
 
 do
 	-- this is required because fs needs winapi and syscall
-	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../../"..e.INTERNAL_ADDON_NAME.."/lua/modules/" .. name .. ".lua") end)
-	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../../"..e.INTERNAL_ADDON_NAME.."/lua/modules/" .. name .. "/init.lua") end)
-	local fs = dofile("../../../"..e.INTERNAL_ADDON_NAME.."/lua/libraries/fs.lua")
+	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../"..e.INTERNAL_ADDON_NAME.."/lua/modules/" .. name .. ".lua") end)
+	table.insert(package.loaders, function(name) name = name:gsub("%.", "/") return loadfile("../../"..e.INTERNAL_ADDON_NAME.."/lua/modules/" .. name .. "/init.lua") end)
+	local fs = dofile("../../"..e.INTERNAL_ADDON_NAME.."/lua/libraries/platforms/"..PLATFORM.."/filesystem.lua")
 	package.loaded.fs = fs
 	-- remove the temporary added loaders from top because we do it properly later on
 	table.remove(package.loaders)
@@ -90,7 +147,7 @@ do
 	-- create constants
 
 	e.BIN_FOLDER = fs.getcd():gsub("\\", "/") .. "/"
-	e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(3)) -- the root folder is always 3 directories up (data/bin/os_arch)
+	e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(2)) -- the root folder is always 2 directories up (data/os_arch)
 	e.SRC_FOLDER = e.ROOT_FOLDER .. e.INTERNAL_ADDON_NAME .. "/"
 	e.DATA_FOLDER = e.ROOT_FOLDER .. "data/"
 	e.USERDATA_FOLDER = e.DATA_FOLDER .. "users/" .. e.USERNAME:lower() .. "/"
@@ -140,8 +197,7 @@ temp_runfile("lua/libraries/filesystem/addons.lua", vfs)
 temp_runfile("lua/libraries/filesystem/files/os.lua", vfs)
 temp_runfile("lua/libraries/filesystem/files/generic_archive.lua", vfs)
 
-vfs.Mount("os:" .. e.USERDATA_FOLDER, "data") -- mount "ROOT/data/users/*username*/" to "/data/"
-vfs.Mount("os:" .. e.BIN_FOLDER, "bin") -- mount "ROOT/data/bin" to "/bin/"
+vfs.Mount("os:" .. e.USERDATA_FOLDER, "os:data") -- mount "ROOT/data/users/*username*/" to "/data/"
 vfs.MountAddon("os:" .. e.SRC_FOLDER) -- mount "ROOT/"..e.INTERNAL_ADDON_NAME to "/"
 vfs.GetAddonInfo(e.INTERNAL_ADDON_NAME).dependencies = {e.INTERNAL_ADDON_NAME} -- prevent init.lua from running later on again
 vfs.GetAddonInfo(e.INTERNAL_ADDON_NAME).startup = nil -- prevent init.lua from running later on again
@@ -210,9 +266,10 @@ end
 -- this will skip the src folder though
 vfs.MountAddons(e.ROOT_FOLDER)
 
-system._CheckCreatedEnv()
+if not CLI then
+	logn("[runfile] ", os.clock() - start_time," seconds spent in core/lua/init.lua")
+end
 
-logn("[core] init took ", os.clock(), " seconds")
 
 do -- autorun
 	-- call goluwa/*/lua/init.lua if it exists
@@ -225,15 +282,23 @@ do -- autorun
 	vfs.AutorunAddons(e.USERNAME .. "/")
 end
 
+e.CLI_TIME = tonumber(os.getenv("GOLUWA_CLI_TIME")) or -1
+e.BOOT_TIME = tonumber(os.getenv("GOLUWA_BOOT_TIME")) or -1
+e.INIT_TIME = os.clock() - start_time
+e.BOOTIME = os.clock()
+
 event.Call("Initialize")
 
 if PROFILE_STARTUP then
 	profiler.ToggleStatistical()
 end
 
-if not CLI and system.MainLoop then
-	logn("[core] total init time is ", os.clock(), " seconds")
-	system.MainLoop()
+if not CLI then
+	logn("[runfile] total init time took ", os.clock() - start_time, " seconds to execute")
 end
+system.MainLoop()
+
 event.Call("ShutDown")
+collectgarbage()
+collectgarbage() -- https://stackoverflow.com/questions/28320213/why-do-we-need-to-call-luas-collectgarbage-twice
 os.realexit(os.exitcode)

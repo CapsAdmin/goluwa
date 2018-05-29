@@ -54,7 +54,7 @@ function SoundData:setSample(i, sample)
 	self.buffer:SetData(self.buffer:GetData()) -- slow!!!
 end
 
-local al = system.GetFFIBuildLibrary("openal.al")
+local al = desire("al")
 
 local function get_format(channels, bits)
 	if al then
@@ -79,9 +79,9 @@ function love.sound.newSoundData(samples, rate, bits, channels)
 
 	if type(samples) == "string" then
 		resource.Download(samples, function(path)
-			local data = vfs.Read(path)
-
-			local data, length, info = audio.Decode(data, var)
+			local file = vfs.Open(path)
+			local data, length, info = audio.Decode(file)
+			file:Close()
 
 			if data then
 				local buffer = audio.CreateBuffer()
@@ -107,3 +107,34 @@ function love.sound.newSoundData(samples, rate, bits, channels)
 end
 
 line.RegisterType(SoundData)
+
+
+local Decoder = line.TypeTemplate("Decoder")
+
+function Decoder:getDepth() return 8 end
+function Decoder:getBits() return 8 end
+function Decoder:getChannels() return self.info.channels end
+function Decoder:getDuration() return self.length end
+function Decoder:getSampleRate() return self.info.samplerate end
+
+function love.sound.newDecoder(file, buffer_size)
+	local self = line.CreateObject("Decoder")
+
+	local file
+
+	if line.Type(file) == "File" then
+		file = file.file
+	elseif line.Type(file) == "string" then
+		error("vfs.OPENMEMORY HERE")
+	end
+
+	local decoded_data, length, info = audio.Decode(file)
+
+	self.decoded_data = decoded_data
+	self.length = length
+	self.info = info
+
+	return self
+end
+
+line.RegisterType(Decoder)

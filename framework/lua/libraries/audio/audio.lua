@@ -6,8 +6,8 @@ if LINUX then
 	pcall(ffi.load, "pulse")
 end
 
-local al = system.GetFFIBuildLibrary("openal.al")
-local alc = system.GetFFIBuildLibrary("openal.alc")
+local al = desire("al")
+local alc = desire("alc")
 
 if not al or not alc then return end
 
@@ -463,7 +463,9 @@ do -- source
 			self:SetBuffer(var)
 		elseif type(var) == "string" then
 			resource.Download(var, function(path)
-				local data, length, info = audio.Decode(vfs.Read(path), var)
+				local file = vfs.Open(path)
+				local data, length, info = audio.Decode(file, var)
+				file:Close()
 
 				if data then
 					local buffer = audio.CreateBuffer()
@@ -944,37 +946,6 @@ do -- microphone
 	META:Register()
 end
 
-audio.decoders = audio.decoders or {}
-
-function audio.AddDecoder(id, callback)
-	audio.RemoveDecoder(id)
-	table.insert(audio.decoders, {id = id, callback = callback})
-end
-
-function audio.RemoveDecoder(id)
-	for _, v in pairs(audio.decoders) do
-		if v.id == id then
-			table.remove(audio.decoders)
-			return true
-		end
-	end
-end
-
-function audio.Decode(data, path_hint)
-	for _, decoder in ipairs(audio.decoders) do
-		local ok, buffer, length, info = pcall(decoder.callback, data, path_hint)
-		if ok then
-			if buffer and length then
-				return buffer, length, info or {}
-			elseif audio.debug or not length:find("unknown format") then
-				llog("%s failed to decode %s: %s", decoder.id, path_hint or "", length)
-			end
-		else
-			llog("decoder %q errored: %s", decoder.id, buffer)
-		end
-	end
-end
-
-runfile("decoders/*", audio)
+runfile("decoding.lua", audio)
 
 return audio

@@ -65,6 +65,8 @@ function love.filesystem.lines(path)
 	if file then
 		return file:Lines()
 	end
+
+	return function() end
 end
 
 function love.filesystem.load(path)
@@ -262,9 +264,12 @@ end
 
 do -- FileData object
 	local FileData = line.TypeTemplate("FileData")
+	local ffi = require("ffi")
 
 	function FileData:getPointer()
-		return ffi.cast("uint8_t *", self.contents)
+		local ptr = ffi.new("uint8_t[?]", #self.contents)
+		ffi.copy(ptr, self.contents, #self.contents)
+		return ptr
 	end
 
 	function FileData:getSize()
@@ -304,7 +309,7 @@ end
 event.AddListener("LoveNewIndex", "line_filesystem", function(love, key, val)
 	if key == "filedropped" then
 		if val then
-			event.AddListener("WindowFileDrop", "line_filedropped", function(wnd, path)
+			event.AddListener("WindowDrop", "line_filedropped", function(wnd, path)
 				if love.filedropped then
 					local file = love.filesystem.newFile(path)
 					file.dropped = true
@@ -312,7 +317,7 @@ event.AddListener("LoveNewIndex", "line_filesystem", function(love, key, val)
 				end
 			end)
 		else
-			event.AddListener("WindowFileDrop", "line_filedropped")
+			event.AddListener("WindowDrop", "line_filedropped")
 		end
 	end
 end)

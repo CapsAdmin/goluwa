@@ -20,28 +20,15 @@ META:StartStorable()
 	META:GetSet("Multisample", 0)
 	META:GetSet("InternalFormat", "rgba8")
 	META:IsSet("SRGB", true)
-	META:GetSet("StencilTextureMode")
 	META:GetSet("DepthTextureMode")
 	META:GetSet("BaseLevel", 0)
-	META:GetSet("BorderColor", Color())
-	META:GetSet("CompareMode", "none")
 	META:GetSet("CompareFunc", "never")
-	META:GetSet("LodBias", 0)
 	META:GetSet("MinFilter", "nearest")
 	META:GetSet("MagFilter", "nearest")
 	META:GetSet("MaxLevel", 0)
-	META:GetSet("MaxLOD", 0)
-	META:GetSet("MinLOD", 0)
-	META:GetSet("SwizzleR", "zero")
-	META:GetSet("SwizzleG", "zero")
-	META:GetSet("SwizzleB", "zero")
-	META:GetSet("SwizzleA", "zero")
-	META:GetSet("SwizzleRgba", Color())
 	META:GetSet("WrapS", "repeat")
 	META:GetSet("WrapT", "repeat")
 	META:GetSet("WrapR", "repeat")
-	META:GetSet("Anisotropy", -1)
-	META:GetSet("SeamlessCubemap", false)
 	META:GetSet("LoadingTexture")
 META:EndStorable()
 
@@ -296,9 +283,10 @@ function META:CreateBuffer(mip_map_level, format_override)
 	local size = self:GetMipSize(mip_map_level)
 
 	local format = render.GetTextureFormatInfo(format_override or self.InternalFormat)
-	local byte_size = size.x * size.y * size.z * ffi.sizeof(format.ctype)
 
-	return format.ctype_array(byte_size), nil, byte_size, format
+	local byte_size = ffi and (size.x * size.y * size.z * ffi.sizeof(format.ctype)) or 0
+
+	return ffi and format.ctype_array(byte_size), nil, byte_size, format
 end
 
 function META:Download(mip_map_level, format_override)
@@ -317,7 +305,7 @@ function META:Download(mip_map_level, format_override)
 		depth = size.z,
 		format = format.preferred_upload_format,
 		mip_map_level = mip_map_level,
-		size = size.x * size.y * size.z * ffi.sizeof(format.ctype),
+		size = ffi and (size.x * size.y * size.z * ffi.sizeof(format.ctype)) or 0,
 		length = (size.x * size.y * size.z) - 1, -- for i = 0, data.length do
 		channels = #format.bits,
 		__ref = ref,
@@ -399,8 +387,14 @@ function META:IteratePixels()
 end
 
 function META:GetRawPixelColor(x, y)
+	if self._GetRawPixelColor then
+		return self:_GetRawPixelColor(x, y)
+	end
+
 	local image = self.downloaded_image or self:Download()
 	self.downloaded_image = image
+
+	if image.size == 0 then return 255,255,255,255 end
 
 	x = math.clamp(math.floor(x), 0, image.width)
 	y = math.clamp(math.floor(y), 0, image.height)
@@ -678,15 +672,14 @@ end
 
 render.texture_path_cache = render.texture_path_cache or {}
 
-function render.CreateTextureFromPath(str)
+function render.CreateTextureFromPath(str, ...)
 	if render.texture_path_cache[str] then
 		return render.texture_path_cache[str]
 	end
 
 	local self = render.CreateTexture("2d")
 
-	self:SetPath(str)
-	self:SetAnisotropy(-1)
+	self:SetPath(str, ...)
 
 	render.texture_path_cache[str] = self
 

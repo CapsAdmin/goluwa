@@ -78,6 +78,101 @@ function gserv.IsSetup(id)
 	end
 end
 
+function gserv.SetupLua(id)
+	vfs.CreateDirectory("os:" .. get_gserv_addon_dir(id) .. "lua/autorun/server/")
+
+	vfs.Write(get_gserv_addon_dir(id) .. "lua/autorun/server/gserv.lua", [[
+		timer.Create("gserv_pinger", 1, 0, function()
+			file.Write("gserv_pinger.txt", os.time())
+		end)
+
+		local extensions = {
+			vmt = {"vtf"},
+			mdl = {"vvd", "ani", "dx80.vtx", "dx90.vtx", "sw.vtx", "phy", "jpg"}
+		}
+
+		timer.Simple(0.01, function()
+			local found = {}
+
+			for path, type in pairs(GSERV_RESOURCE_FILES) do
+				if type == "AddFile" then
+					local path, ext = path:match("(.+/.-)%.(.+)")
+					if extensions[ext] then
+						for k, v in pairs(file.Find(path:match("(.+/)") .. "*", "GAME")) do
+							for _, ext2 in ipairs(extensions[ext]) do
+								if v:EndsWith("." .. ext2) then
+									found[path .. "." .. ext2] = true
+								end
+								break
+							end
+						end
+					end
+				end
+				if file.Exists(path, "GAME") then
+					found[path] = true
+				end
+			end
+
+			do
+				local path = "maps/" .. game.GetMap() .. ".bsp"
+
+				if file.Exists(path, "GAME") then
+					found[path] = true
+				end
+			end
+
+			do
+				local path = "maps/" .. game.GetMap() .. ".nav"
+
+				if file.Exists(path, "GAME") then
+					found[path] = true
+				end
+			end
+
+			local txt = ""
+			for path in pairs(found) do
+				txt = txt .. path .. "\n"
+			end
+			file.Write("gserv_resource_files.txt", txt)
+		end)
+	]])
+
+	vfs.Write(get_gmod_dir(id) .. "cfg/server.cfg", "exec gserv.cfg\n")
+
+	-- silence some startup errors
+	vfs.Write(get_gmod_dir(id) .. "cfg/trusted_keys_base.txt", "trusted_key_list\n{\n}\n")
+	vfs.Write(get_gmod_dir(id) .. "cfg/pure_server_minimal.txt", "whitelist\n{\n}\n")
+	vfs.Write(get_gmod_dir(id) .. "cfg/network.cfg", "")
+
+	gserv.BuildMountConfig(id)
+
+	gserv.SetupCommands(id)
+
+	local lua = vfs.Read(get_gmod_dir(id) .. "lua/includes/util.lua")
+	if not lua:find("GSERV_RESOURCE_FILES") then
+		lua = lua .. [[
+if SERVER then
+GSERV_RESOURCE_FILES = {}
+do
+	local old = resource.AddFile
+	function resource.AddFile(path, ...)
+		GSERV_RESOURCE_FILES[path] = "AddFile"
+		return old(path, ...)
+	end
+end
+do
+	local old = resource.AddSingleFile
+	function resource.AddSingleFile(path, ...)
+		GSERV_RESOURCE_FILES[path] = "AddSingleFile"
+		return old(path, ...)
+	end
+end
+end
+]]
+		vfs.Write(get_gmod_dir(id) .. "lua/includes/util.lua", lua)
+	end
+end
+
 function gserv.Setup(id)
 	if gserv.IsRunning(id) then error("server is running", 2) end
 
@@ -87,7 +182,7 @@ function gserv.Setup(id)
 		gserv.Log(id, "setting up gmod server for first time")
 	end
 
-	gserv.InstallGame("gmod", nil, function()
+	gserv.InstallGame("gmod dedicated server", nil, function()
 
 		local dir = underscore(id)
 
@@ -95,100 +190,6 @@ function gserv.Setup(id)
 			os.execute("cp -a " .. gserv.GetInstalledGames()[4020] .. "/. " .. srcds_dir .. dir)
 			serializer.SetKeyValueInFile("luadata", data_dir .. "games.lua", id, srcds_dir .. dir)
 		end
-
-		vfs.CreateDirectory("os:" .. get_gserv_addon_dir(id) .. "lua/autorun/server/")
-
-		vfs.Write(get_gserv_addon_dir(id) .. "lua/autorun/server/gserv.lua", [[
-			timer.Create("gserv_pinger", 1, 0, function()
-				file.Write("gserv_pinger.txt", os.time())
-			end)
-
-			local extensions = {
-				vmt = {"vtf"},
-				mdl = {"vvd", "ani", "dx80.vtx", "dx90.vtx", "sw.vtx", "phy", "jpg"}
-			}
-
-			timer.Simple(0.01, function()
-				local found = {}
-
-				for path, type in pairs(GSERV_RESOURCE_FILES) do
-					if type == "AddFile" then
-						local path, ext = path:match("(.+/.-)%.(.+)")
-						if extensions[ext] then
-							for k, v in pairs(file.Find(path:match("(.+/)") .. "*", "GAME")) do
-								for _, ext2 in ipairs(extensions[ext]) do
-									if v:EndsWith("." .. ext2) then
-										found[path .. "." .. ext2] = true
-									end
-									break
-								end
-							end
-						end
-					end
-					if file.Exists(path, "GAME") then
-						found[path] = true
-					end
-				end
-
-				do
-					local path = "maps/" .. game.GetMap() .. ".bsp"
-
-					if file.Exists(path, "GAME") then
-						found[path] = true
-					end
-				end
-
-				do
-					local path = "maps/" .. game.GetMap() .. ".nav"
-
-					if file.Exists(path, "GAME") then
-						found[path] = true
-					end
-				end
-
-				local txt = ""
-				for path in pairs(found) do
-					txt = txt .. path .. "\n"
-				end
-				file.Write("gserv_resource_files.txt", txt)
-			end)
-		]])
-
-		vfs.Write(get_gmod_dir(id) .. "cfg/server.cfg", "exec gserv.cfg\n")
-
-		-- silence some startup errors
-		vfs.Write(get_gmod_dir(id) .. "cfg/trusted_keys_base.txt", "trusted_key_list\n{\n}\n")
-		vfs.Write(get_gmod_dir(id) .. "cfg/pure_server_minimal.txt", "whitelist\n{\n}\n")
-		vfs.Write(get_gmod_dir(id) .. "cfg/network.cfg", "")
-
-		gserv.BuildMountConfig(id)
-
-		gserv.SetupCommands(id)
-
-		local lua = vfs.Read(get_gmod_dir(id) .. "lua/includes/util.lua")
-		if not lua:find("GSERV_RESOURCE_FILES") then
-			lua = lua .. [[
-if SERVER then
-	GSERV_RESOURCE_FILES = {}
-	do
-		local old = resource.AddFile
-		function resource.AddFile(path, ...)
-			GSERV_RESOURCE_FILES[path] = "AddFile"
-			return old(path, ...)
-		end
-	end
-	do
-		local old = resource.AddSingleFile
-		function resource.AddSingleFile(path, ...)
-			GSERV_RESOURCE_FILES[path] = "AddSingleFile"
-			return old(path, ...)
-		end
-	end
-end
-]]
-		vfs.Write(get_gmod_dir(id) .. "lua/includes/util.lua", lua)
-	end
-
 	end)
 end
 
@@ -204,7 +205,7 @@ function gserv.SetupCommands(id)
 	commands.Add(id .. " restart=number[30]", function(id, time) gserv.Restart(id, time) end)
 	commands.Add(id .. " reboot", function() gserv.Reboot(id) end)
 
-	commands.Add(id .. " add_addon=string", function(url) gserv.AddAddon(id, url) gserv.UpdateAddon(id, url) end)
+	commands.Add(id .. " add_addon=string,string|nil,string|nil", function(url, override, branch) gserv.AddAddon(id, url, override, branch) gserv.UpdateAddon(id, url) end)
 	commands.Add(id .. " remove_addon=string", function(url) gserv.RemoveAddon(id, url) end)
 	commands.Add(id .. " update_addon=string", function(url) gserv.UpdateAddon(id, url) end)
 	commands.Add(id .. " update_addons", function() gserv.UpdateAddons(id) end)
@@ -228,30 +229,6 @@ function gserv.UpdateGame(id)
 	gserv.InstallGame("gmod dedicated server", nil, function(appid)
 		if appid == 4020 then
 			os.execute("cp -a -rf " .. gserv.GetInstalledGames()[4020] .. "/. " .. srcds_dir .. underscore(id))
-
-			local lua = vfs.Read(get_gmod_dir(id) .. "lua/includes/util.lua")
-			if not lua:find("GSERV_RESOURCE_FILES") then
-				lua = lua .. [[
-if SERVER then
-	GSERV_RESOURCE_FILES = {}
-	do
-		local old = resource.AddFile
-		function resource.AddFile(path, ...)
-			GSERV_RESOURCE_FILES[path] = "AddFile"
-			return old(path, ...)
-		end
-	end
-	do
-		local old = resource.AddSingleFile
-		function resource.AddSingleFile(path, ...)
-			GSERV_RESOURCE_FILES[path] = "AddSingleFile"
-			return old(path, ...)
-		end
-	end
-end
-]]
-				vfs.Write(get_gmod_dir(id) .. "lua/includes/util.lua", lua)
-			end
 		end
 	end)
 end
@@ -427,25 +404,24 @@ do -- addons
 		if info.type == "git" then
 			gserv.Log(id, "updating git repository addon ", info.url)
 			local dir = get_gmod_dir(id) .. "addons/" .. info.name
+			local branch = info.branch or "master"
 
 			if not vfs.IsDirectory(dir) then
-				repl.OSExecute("git clone " .. info.url .. " '" .. dir .. "' --depth 1")
+				repl.OSExecute("git clone -b " .. branch .. " " .. info.url .. " '" .. dir .. "' --depth 1")
 			else
-				repl.OSExecute("git -C '" .. dir .. "' fetch")
-				repl.OSExecute("git -C '" .. dir .. "' reset --hard origin/master")
-				repl.OSExecute("git -C '" .. dir .. "' clean -f -d")
+				repl.OSExecute("git -C '" .. dir .. "' fetch && git -C '" .. dir .. "' reset --hard origin/" .. branch .. " && git -C '" .. dir .. "' clean -f -d")
 			end
 			gserv.Log(id, "done updating ", info.url)
 		elseif info.type == "workshop" then
 			gserv.Log(id, "updating workshop addon ", info.url)
-			steam.DownloadWorkshop(info.id, function(header, path)
+			steam.DownloadWorkshop(info.id, function(path, workshop_info)
+				local name = info.name
+
 				-- if the name is just the id make it more readable
-				if info.id == info.name then
-					info.name = header.response.publishedfiledetails[1].title:lower():gsub("%p", ""):gsub("%s+", "_") .. "_" .. info.name
+				if info.id == name then
+					info.name = vfs.ReplaceIllegalPathSymbols(workshop_info.publishedfiledetails[1].title, true) .. "_" .. name
 					save_config(id)
 				end
-
-				local name = info.name
 
 				vfs.Write(get_gmod_dir(id) .. "addons/" .. name .. ".gma", path)
 
@@ -458,7 +434,7 @@ do -- addons
 		end
 	end
 
-	function gserv.AddAddon(id, url, name_override)
+	function gserv.AddAddon(id, url, name_override, branch)
 		load_config(id)
 
 		local key = url
@@ -472,6 +448,7 @@ do -- addons
 			info = {
 				type = "git",
 				name = name_override or url:match(".+/(.+)%.git"):lower(),
+				branch = branch or "master",
 			}
 		elseif url:find("steamcommunity") and url:find("id=%d+") or tonumber(url) then
 			info = {
@@ -704,6 +681,7 @@ do
 		os.execute("tmux pipe-pane -o -t srcds_"..underscore(id).."_goluwa 'cat >> " .. R("data/" .. gserv.logs[id]) .. "'")
 
 		gserv.BuildConfig(id)
+		gserv.SetupLua(id)
 
 		local str = ""
 		for k, v in pairs(gserv.configs[id].startup) do
@@ -853,11 +831,13 @@ for _, path in ipairs(vfs.Find(data_dir .. "configs/", true)) do
 	gserv.SetupCommands(config.id)
 end
 
-for _, path in ipairs(vfs.Find(data_dir, true)) do
-	if path:endswith("_server_state") then
-		local data = serializer.ReadFile("luadata", path)
-		gserv.Resume(data.id)
-		gserv.logs[data.id] = data.log_path
+if not CLI then
+	for _, path in ipairs(vfs.Find(data_dir, true)) do
+		if path:endswith("_server_state") then
+			local data = serializer.ReadFile("luadata", path)
+			gserv.Resume(data.id)
+			gserv.logs[data.id] = data.log_path
+		end
 	end
 end
 

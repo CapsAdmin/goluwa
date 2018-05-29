@@ -88,6 +88,8 @@ function structs.Register(META)
 			end
 		end
 	else
+		META.byte_size = #META.Args * 8 -- double
+
 		local arg_line = "("
 		local tbl_line = "{"
 		for arg_i, arg in pairs(META.Args) do
@@ -239,7 +241,7 @@ function structs.AddOperator(META, operator, ...)
 		local type = type
 		META["__eq"] = function(a, b)
 				return
-				type(a) == "cdata" and
+				type(a) == "]==] .. (ffi and "cdata" or "table") .. [==[" and
 				istype(a, b) and
 				a.KEY == b.KEY
 			end

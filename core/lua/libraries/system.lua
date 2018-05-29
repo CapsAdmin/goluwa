@@ -1,6 +1,22 @@
 local system = _G.system or {}
 
-local ffi = require("ffi")
+runfile("platforms/" .. PLATFORM .. "/system.lua", system)
+
+function system.ForceMainLoop()
+	system.force_main_loop = true
+end
+
+function system.GetWorkingDirectory()
+
+	if CLI then
+		local dir = os.getenv("GOLUWA_WORKING_DIRECTORY")
+		if dir then
+			return vfs.FixPathSlashes("os:" .. dir .. "/")
+		end
+	end
+
+	return "os:" .. e.USERDATA_FOLDER
+end
 
 function system.OSCommandExists(...)
 	if select("#", ...) > 1 then
@@ -12,22 +28,13 @@ function system.OSCommandExists(...)
 		end
 	end
 
-	local cmd = ...
-
-	if LINUX then
-		if io.popen("command -v " .. cmd):read("*all") ~= "" then
-			return true
-		end
-
-		return false, cmd .. " command does not exist"
-	end
-
-	return false, "NYI"
+	return system._OSCommandExists(...)
 end
 
 function system.GetLibraryDependencies(path)
-	if system.OSCommandExists("ldd") then
-		local f = io.popen("ldd " .. path .. " 2>&1")
+	if system.OSCommandExists("ldd", "otool") then
+		local cmd = system.OSCommandExists("ldd") and "ldd" or "otool -L"
+		local f = io.popen(cmd .. " " .. path .. " 2>&1")
 		if f then
 			local str = f:read("*all")
 			f:close()
@@ -41,32 +48,8 @@ function system.GetLibraryDependencies(path)
 end
 
 do -- console title
-	if not system.SetConsoleTitleRaw then
-		local set_title
-
-		if WINDOWS then
-			ffi.cdef("int SetConsoleTitleA(const char* blah);")
-
-			set_title = function(str)
-				return ffi.C.SetConsoleTitleA(str)
-			end
-		end
-
-		if not CURSES then
-			set_title = function()
-				-- hmmm
-			end
-		elseif LINUX then
-			local iowrite = _OLD_G.io.write
-			set_title = function(str)
-				return iowrite and iowrite('\27]0;', str, '\7') or nil
-			end
-		end
-
-		system.SetConsoleTitleRaw = set_title
-	end
-
 	local titles = {}
+	local titlesi = {}
 	local str = ""
 	local last_title
 
@@ -77,10 +60,25 @@ do -- console title
 
 		if not lasttbl[id] or lasttbl[id] < time then
 			if id then
-				titles[id] = title
+				if title then
+					if not titles[id] then
+						titles[id] = {title = title}
+						table.insert(titlesi, titles[id])
+					end
+
+					titles[id].title = title
+				else
+					for _, v in ipairs(titlesi) do
+						if v == titles[id] then
+							table.remove(titlesi, i)
+							break
+						end
+					end
+				end
+
 				str = "| "
-				for _, v in pairs(titles) do
-					str = str ..  v .. " | "
+				for _, v in ipairs(titlesi) do
+					str = str ..  v.title .. " | "
 				end
 				if str ~= last_title then
 					system.SetConsoleTitleRaw(str)
@@ -106,7 +104,9 @@ do
 
 	function system.ShutDown(code)
 		code = code or 0
-		logn("shutting down with code ", code)
+		if not CLI then
+			logn("shutting down with code ", code)
+		end
 		system.run = code
 	end
 
@@ -133,6 +133,19 @@ do -- frame time
 
 	-- used internally in main_loop.lua
 	function system.SetFrameTime(dt)
+		frame_time = dt
+	end
+end
+
+do -- frame time
+	local frame_time = 0.1
+
+	function system.GetInternalFrameTime()
+		return frame_time
+	end
+
+	-- used internally in main_loop.lua
+	function system.SetInternalFrameTime(dt)
 		frame_time = dt
 	end
 end
@@ -174,81 +187,6 @@ do -- server time (synchronized across client and server)
 		return server_time
 	end
 end
-do -- time in ms
-	local get = not_implemented
-
-	if WINDOWS then
-		require("winapi.time")
-
-		local winapi = require("winapi")
-
-		local freq = tonumber(winapi.QueryPerformanceFrequency().QuadPart)
-		local start_time = winapi.QueryPerformanceCounter()
-
-		get = function()
-			local time = winapi.QueryPerformanceCounter()
-
-			time.QuadPart = time.QuadPart - start_time.QuadPart
-			return tonumber(time.QuadPart) / freq
-		end
-	end
-
-	if LINUX then
-		local posix = require("syscall")
-
-		local ts = posix.t.timespec()
-
-		get = function()
-			posix.clock_gettime("MONOTONIC", ts)
-			return tonumber(ts.tv_sec * 1000000000 + ts.tv_nsec) * 1e-9
-		end
-	end
-
-	system.GetTime = get
-end
-
-do -- sleep
-	local sleep = not_implemented
-
-	if WINDOWS then
-		ffi.cdef("VOID Sleep(DWORD dwMilliseconds);")
-		sleep = function(ms) ffi.C.Sleep(ms) end
-	end
-
-	if LINUX then
-		ffi.cdef("void usleep(unsigned int ns);")
-		sleep = function(ms) ffi.C.usleep(ms*1000) end
-	end
-
-	system.Sleep = sleep
-end
-
-do -- openurl
-	local func = not_implemented
-
-	if WINDOWS then
-		func = function(url) os.execute(([[explorer "%s"]]):format(url)) end
-	else
-		local attempts = {
-			"sensible-browser",
-			"xdg-open",
-			"kde-open",
-			"gnome-open",
-		}
-
-		func = function(url)
-			for _, cmd in ipairs(attempts) do
-				if os.execute(cmd .. " " .. url) then
-					return
-				end
-			end
-
-			wlog("don't know how to open an url (tried: %s)", table.concat(attempts, ", "), 2)
-		end
-	end
-
-	system.OpenURL = func
-end
 
 do -- arg is made from luajit.exe
 	local arg = _G.arg or {}
@@ -263,270 +201,6 @@ do -- arg is made from luajit.exe
 	end
 end
 
-do -- memory
-	if WINDOWS then
-
-		ffi.cdef([[
-			typedef struct _PROCESS_MEMORY_COUNTERS {
-				DWORD  cb;
-				DWORD  PageFaultCount;
-				SIZE_T PeakWorkingSetSize;
-				SIZE_T WorkingSetSize;
-				SIZE_T QuotaPeakPagedPoolUsage;
-				SIZE_T QuotaPagedPoolUsage;
-				SIZE_T QuotaPeakNonPagedPoolUsage;
-				SIZE_T QuotaNonPagedPoolUsage;
-				SIZE_T PagefileUsage;
-				SIZE_T PeakPagefileUsage;
-			} PROCESS_MEMORY_COUNTERS, *PPROCESS_MEMORY_COUNTERS;
-
-			BOOL GetProcessMemoryInfo(HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb);
-		]])
-
-		local lib = ffi.load("psapi")
-		local pmc = ffi.new("PROCESS_MEMORY_COUNTERS[1]")
-		local size = ffi.sizeof(pmc)
-
-		function system.GetMemoryInfo()
-			lib.GetProcessMemoryInfo(nil, pmc, size)
-			local pmc = pmc[0]
-
-			return {
-				page_fault_count = pmc.PageFaultCount,
-				peak_working_set_size = pmc.PeakWorkingSetSize,
-				working_set_size = pmc.WorkingSetSize,
-				qota_peak_paged_pool_usage = pmc.QuotaPeakPagedPoolUsage,
-				quota_paged_pool_usage = pmc.QuotaPagedPoolUsage,
-				quota_peak_non_paged_pool_usage = pmc.QuotaPeakNonPagedPoolUsage,
-				quota_non_paged_pool_usage = pmc.QuotaNonPagedPoolUsage,
-				page_file_usage = pmc.PagefileUsage,
-				peak_page_file_usage = pmc.PeakPagefileUsage,
-			}
-		end
-	end
-
-	if LINUX then
-		system.GetMemoryInfo = not_implemented
-	end
-end
-
-do -- text editors
-	if WINDOWS then
-		local text_editors = {
-			["ZeroBrane.Studio"] = "%PATH%:%LINE%",
-			["notepad++.exe"] = "\"%PATH%\" -n%LINE%",
-			["notepad2.exe"] = "/g %LINE% %PATH%",
-			["sublime_text.exe"] = "%PATH%:%LINE%",
-			["notepad.exe"] = "/A %PATH%",
-		}
-
-		function system.FindFirstTextEditor(os_execute, with_args)
-			local app = system.GetRegistryValue("ClassesRoot/.lua/default")
-			if app then
-				local path = system.GetRegistryValue("ClassesRoot/" .. app .. "/shell/edit/command/default")
-				if path then
-					path = path and path:match("(.-) %%") or path:match("(.-) \"%%")
-					if path then
-						if os_execute then
-							path = "start \"\" " .. path
-						end
-
-						if with_args and text_editors[app] then
-							path = path .. " " .. text_editors[app]
-						end
-
-						return path
-					end
-				end
-			end
-		end
-	else
-		local text_editors = {
-			{
-				name = "atom",
-				args = "%PATH%:%LINE%",
-			},
-			{
-				name = "scite",
-				args = "%PATH% -goto:%LINE%",
-			},
-			{
-				name = "emacs",
-				args = "+%LINE% %PATH%",
-				terminal = true,
-			},
-			{
-				name = "vim",
-				args = "%PATH%:%LINE%",
-				terminal = true,
-			},
-			{
-				name = "kate",
-				args = "-l %LINE% %PATH%",
-			},
-			{
-				name = "gedit",
-				args = "+%LINE% %PATH%",
-			},
-			{
-				name = "nano",
-				args = "+%LINE% %PATH%",
-				terminal = true,
-			},
-		}
-
-		function system.FindFirstTextEditor(os_execute, with_args)
-			for _, v in pairs(text_editors) do
-
-				if io.popen("command -v " .. v.name):read() then
-					local cmd = v.name
-
-					if v.terminal then
-						cmd = "x-terminal-emulator -e " .. cmd
-					end
-
-					if with_args then
-						cmd = cmd .. " " .. v.args
-
-					end
-
-					if os_execute then
-						cmd = cmd .. " &"
-					end
-
-					return cmd
-				end
-			end
-		end
-	end
-end
-
-do -- dll paths
-	local set, get = not_implemented, not_implemented
-
-	if WINDOWS then
-		ffi.cdef[[
-			BOOL SetDllDirectoryA(LPCTSTR lpPathName);
-			DWORD GetDllDirectoryA(DWORD nBufferLength, LPTSTR lpBuffer);
-		]]
-
-		set = function(path)
-			ffi.C.SetDllDirectoryA(path or "")
-		end
-
-		local str = ffi.new("char[1024]")
-
-		get = function()
-			ffi.C.GetDllDirectoryA(1024, str)
-
-			return ffi.string(str)
-		end
-	end
-
-	if LINUX then
-		set = function(path)
-			os.setenv("LD_LIBRARY_PATH", path)
-		end
-
-		get = function()
-			return os.getenv("LD_LIBRARY_PATH") or ""
-		end
-	end
-
-	system.SetSharedLibraryPath = set
-	system.GetSharedLibraryPath = get
-end
-
-do -- registry
-	local set = not_implemented
-	local get = not_implemented
-
-	if WINDOWS then
-		ffi.cdef([[
-			typedef unsigned goluwa_hkey;
-			LONG RegGetValueA(goluwa_hkey, LPCTSTR, LPCTSTR, DWORD, LPDWORD, PVOID, LPDWORD);
-		]])
-
-		local advapi = ffi.load("advapi32")
-
-		local ERROR_SUCCESS = 0
-		local HKEY_CLASSES_ROOT  = 0x80000000
-		local HKEY_CURRENT_USER = 0x80000001
-		local HKEY_LOCAL_MACHINE = 0x80000002
-		local HKEY_CURRENT_CONFIG = 0x80000005
-
-		local RRF_RT_REG_SZ = 0x00000002
-
-		local translate = {
-			HKEY_CLASSES_ROOT  = 0x80000000,
-			HKEY_CURRENT_USER = 0x80000001,
-			HKEY_LOCAL_MACHINE = 0x80000002,
-			HKEY_CURRENT_CONFIG = 0x80000005,
-
-			ClassesRoot  = 0x80000000,
-			CurrentUser = 0x80000001,
-			LocalMachine = 0x80000002,
-			CurrentConfig = 0x80000005,
-		}
-
-		get = function(str)
-			local where, key1, key2 = str:match("(.-)/(.+)/(.*)")
-
-			if where then
-				where, key1 = str:match("(.-)/(.+)/")
-			end
-
-			where = translate[where] or where
-			key1 = key1:gsub("/", "\\")
-			key2 = key2 or ""
-
-			if key2 == "default" then key2 = nil end
-
-			local value = ffi.new("char[4096]")
-			local value_size = ffi.new("unsigned[1]")
-			value_size[0] = 4096
-
-			local err = advapi.RegGetValueA(where, key1, key2, RRF_RT_REG_SZ, nil, value, value_size)
-
-			if err ~= ERROR_SUCCESS then
-				return
-			end
-
-			return ffi.string(value)
-		end
-	end
-
-	if LINUX then
-		-- return empty values
-	end
-
-	system.GetRegistryValue = get
-	system.SetRegistryValue = set
-end
-
-function system.Restart(run_on_launch)
-	run_on_launch = run_on_launch or ""
-	vfs.SetWorkingDirectory("../../../")
-
-	if LINUX then
-		if CLIENT then
-			os.execute("./client.bash " .. run_on_launch .. "&")
-		else
-			os.execute("./server.bash " .. run_on_launch .. "&")
-		end
-	end
-
-	if WINDOWS then
-		if CLIENT then
-			os.execute("start \"\" \"client.bat\" \"" .. run_on_launch .. "\"")
-		else
-			os.execute("start \"\" \"server.bat\" \"" .. run_on_launch .. "\"")
-		end
-	end
-
-	system.ShutDown()
-end
-
 do
 	-- this should be used for xpcall
 	local suppress = false
@@ -536,7 +210,6 @@ do
 		msg = msg or "no error"
 		if suppress then logn("error in system.OnError: ", msg, ...) logn(debug.traceback())  return end
 		suppress = true
-		if LINUX and msg == "interrupted!\n" then return end
 
 		if event.Call("LuaError", msg) == false then return end
 
@@ -558,28 +231,26 @@ do
 				if info then
 					info.source = debug.getprettysource(level)
 
-					if info.currentline >= 0 then
-						local args = {}
+					local args = {}
 
-						for arg = 1, info.nparams do
-							local key, val = debug.getlocal(level, arg)
-							if type(val) == "table" then
-								val = tostring(val)
-							else
-								val = serializer.GetLibrary("luadata").ToString(val)
-								if val and #val > 200 then
-									val = val:sub(0, 200) .. "...."
-								end
+					for arg = 1, info.nparams do
+						local key, val = debug.getlocal(level, arg)
+						if type(val) == "table" then
+							val = tostring(val)
+						else
+							val = serializer.GetLibrary("luadata").ToString(val)
+							if val and #val > 200 then
+								val = val:sub(0, 200) .. "...."
 							end
-							table.insert(args, ("%s = %s"):format(key, val))
 						end
-
-						info.arg_line = table.concat(args, ", ")
-
-						info.name = info.name or "unknown"
-
-						table.insert(data, info)
+						table.insert(args, ("%s = %s"):format(key, val))
 					end
+
+					info.arg_line = table.concat(args, ", ")
+
+					info.name = info.name or "unknown"
+
+					table.insert(data, info)
 				else
 					break
 				end
@@ -679,210 +350,6 @@ do
 
 	function system.pcall(func, ...)
 		return xpcall(func, system.OnError, ...)
-	end
-end
-
-do -- environment
-
-	if system.lua_environment_sockets then
-		for _, val in pairs(system.lua_environment_sockets) do
-			utility.SafeRemove(val)
-		end
-	end
-
-	function system.StartLuaInstance(...)
-		local args = {...}
-		local arg_line = ""
-
-		for k,v in pairs(args) do
-			arg_line = arg_line .. serializer.GetLibrary("luadata").ToString(v)
-			if #args ~= k then
-				arg_line = arg_line .. ", "
-			end
-		end
-
-		arg_line = arg_line:gsub('"', "'")
-
-		local arg = ([[-e ARGS={%s}loadfile('%sinit.lua')()]]):format(arg_line, e.SRC_FOLDER .. "lua/")
-
-		if WINDOWS then
-			os.execute([[start "" "luajit" "]] .. arg .. [["]])
-		elseif LINUX then
-			os.execute([[luajit "]] .. arg .. [[" &]])
-		end
-	end
-
-	system.lua_environment_sockets = {}
-
-	function system.CreateLuaEnvironment(title, globals, id)
-		id = id or title
-
-		local socket = system.lua_environment_sockets[id] or NULL
-
-		if socket:IsValid() then
-			socket:Remove()
-		end
-
-		local socket = sockets.CreateServer()
-		socket:Host("*", 0)
-
-		system.lua_environment_sockets[id] = socket
-
-		local arg = ""
-
-		globals = globals or {}
-
-		globals.PLATFORM = _G.PLATFORM or globals.PLATFORM
-		globals.PORT = socket:GetPort()
-		globals.CREATED_ENV = true
-		globals.TITLE = tostring(title)
-
-		for key, val in pairs(globals) do
-			arg = arg .. key .. "=" .. serializer.GetLibrary("luadata").ToString(val) .. ";"
-		end
-
-		arg = arg:gsub([["]], [[']])
-		arg = ([[-e %sloadfile('%sinit.lua')()]]):format(arg, e.SRC_FOLDER .. "lua/")
-
-		if WINDOWS then
-			os.execute([[start "" "luajit" "]] .. arg .. [["]])
-		elseif LINUX then
-			os.execute([[luajit "]] .. arg .. [[" &]])
-		end
-
-		local env = {}
-
-		function env:OnReceive(line)
-			local func, msg = loadstring(line)
-			if func then
-				local ok, msg = system.pcall(func)
-				if not ok then
-					logn("runtime error:", client, msg)
-				end
-			else
-				logn("compile error:", client, msg)
-			end
-		end
-
-		local queue = {}
-
-		function env:Send(line)
-			if not socket:HasClients() then
-				table.insert(queue, line)
-			else
-				socket:Broadcast(line, true)
-			end
-		end
-
-		function env:Remove()
-			self:Send("os.exit()")
-			socket:Remove()
-		end
-
-		socket.OnClientConnected = function(self, client)
-			for _, v in pairs(queue) do
-				socket:Broadcast(v, true)
-			end
-
-			table.clear(queue)
-
-			return true
-		end
-
-		socket.OnReceive = function(self, line)
-			env:OnReceive(line)
-		end
-
-		env.socket = socket
-
-		return env
-	end
-
-	function system._CheckCreatedEnv()
-		if CREATED_ENV then
-			system.SetConsoleTitle(TITLE, "env")
-
-			utility.SafeRemove(ENV_SOCKET)
-
-			ENV_SOCKET = sockets.CreateClient()
-
-			ENV_SOCKET:Connect("localhost", PORT)
-			ENV_SOCKET:SetTimeout()
-
-			ENV_SOCKET.OnReceive = function(self, line)
-				local func, msg = loadstring(line)
-
-				if func then
-					local ok, msg = system.pcall(func)
-					if not ok then
-						logn("runtime error:", client, msg)
-					end
-				else
-					logn("compile error:", client, msg)
-				end
-
-				event.Delay(0, function() event.Call("ConsoleEnvReceive", line) end)
-			end
-		end
-	end
-
-	function system.CreateConsole(title)
-		if CONSOLE then return logn("tried to create a console in a console!!!") end
-		local env = system.CreateLuaEnvironment(title, {CONSOLE = true})
-
-		env:Send([[
-			local __stop__
-
-			local function clear()
-				logn(("\n"):rep(1000)) -- lol
-			end
-
-			local function exit()
-				__stop__ = true
-				os.exit()
-			end
-
-			clear()
-
-			ENV_SOCKET.OnClose = function() exit() end
-
-			event.AddListener("ConsoleEnvReceive", TITLE, function()
-				::again::
-
-				local str = io.read()
-
-				if str == "exit" then
-					exit()
-				elseif str == "clear" then
-					clear()
-				end
-
-				if str and #str:trim() > 0 then
-					ENV_SOCKET:Send(str, true)
-				else
-					goto again
-				end
-			end)
-
-			event.AddListener("ShutDown", TITLE, function()
-				ENV_SOCKET:Remove()
-			end)
-		]])
-
-		event.AddListener("Print", title .. "_console_output", function(...)
-			local line = tostring_args(...)
-			env:Send(string.format("logn(%q)", line))
-		end)
-
-
-		function env:Remove()
-			self:Send("os.exit()")
-			utility.SafeRemove(self.socket)
-			event.RemoveListener("Print", title .. "_console_output")
-		end
-
-
-		return env
 	end
 end
 

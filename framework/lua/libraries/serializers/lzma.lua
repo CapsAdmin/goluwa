@@ -69,4 +69,4 @@ serializer.AddLibrary("lzma", nil, function(archive, str)
 
 		return ffi.string(data, size)
 	end
-end, "archive")
+end, "libarchive")

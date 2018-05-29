@@ -34,6 +34,10 @@ do
 			cache[func_name][self.Name][path_info.full_path] = self[func_name](self, path_info)
 		end
 
+		-- might have been cleared inbetween
+		cache[func_name] = cache[func_name] or {}
+		cache[func_name][self.Name] = cache[func_name][self.Name] or {}
+
 		return cache[func_name][self.Name][path_info.full_path]
 	end
 
@@ -126,6 +130,14 @@ end
 
 function CONTEXT:Close()
 	self:Remove()
+end
+
+function CONTEXT:IsFolderValid(path_info)
+	return self:IsFolder(path_info)
+end
+
+function CONTEXT:IsArchive(path_info)
+	return false
 end
 
 runfile("lua/libraries/prototype/buffer_template.lua", CONTEXT)

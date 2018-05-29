@@ -1,4 +1,4 @@
-﻿local source = [[
+local source = [[
 	vec4 sum = vec4(0.0);
 
 	vec2 blur = radius/size;

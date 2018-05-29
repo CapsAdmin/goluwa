@@ -744,7 +744,7 @@ render3d.AddModelDecoder("mdl", function(path, full_path, mesh_callback)
 	for _, body_part in ipairs(vtx.body_parts) do
 		for _, model_ in ipairs(body_part.models) do
 			for lod_index, lod_model in ipairs(model_.model_lods) do
-				if lod_model.meshes then
+				if lod_model.meshes and lod_model.meshes[1] then
 
 					local mesh = gfx.CreatePolygon3D()
 					local vertices = vvd.fixed_vertices_by_lod[lod_index] or vvd.vertices

@@ -1,35 +1,46 @@
 local vfs = _G.vfs or {}
 
 vfs.use_appdata = false
+vfs.mounted_paths = vfs.mounted_paths or {}
 
 do -- mounting/links
 	function vfs.Mount(where, to, userdata)
 		to = to or ""
 
+		if not vfs.IsDirectory(where) then
+			llog("attempted to mount non existing directory ", where)
+			return false
+		end
+
 		vfs.ClearCallCache()
 
 		vfs.Unmount(where, to)
 
-		---print(where, to)
-
 		local path_info_where = vfs.GetPathInfo(where, true)
 		local path_info_to = vfs.GetPathInfo(to, true)
+
+		if path_info_where.filesystem == "unknown" then
+			for context, info in pairs(vfs.DescribePath(where, true)) do
+				if info.is_folder then
+					path_info_where.filesystem = context.Name
+					where = context.Name .. ":" .. where
+				end
+			end
+		end
 
 		if to ~= "" and not path_info_to.filesystem then
 			error("a filesystem has to be provided when mounting /to/ somewhere")
 		end
 
-		for _, context in ipairs(vfs.GetFileSystems()) do
-			if path_info_to.filesystem == context.Name or path_info_to.filesystem == "unknown" then
-				table.insert(context.mounted_paths, {
-					where = path_info_where,
-					to = path_info_to,
-					full_where = where,
-					full_to = to,
-					userdata = userdata
-				})
-			end
-		end
+		--llog("mounting ", path_info_where.full_path, " -> ", path_info_to.full_path)
+
+		table.insert(vfs.mounted_paths, {
+			where = path_info_where,
+			to = path_info_to,
+			full_where = where,
+			full_to = to,
+			userdata = userdata
+		})
 	end
 
 	function vfs.Unmount(where, to)
@@ -37,28 +48,23 @@ do -- mounting/links
 
 		vfs.ClearCallCache()
 
-		local path_info_where = vfs.GetPathInfo(where, true)
-		local path_info_to = vfs.GetPathInfo(to, true)
-		for _, context in ipairs(vfs.GetFileSystems()) do
-			for i, v in ipairs(context.mounted_paths) do
-				if
-					v.full_where:lower() == where:lower() and
-					v.full_to:lower() == to:lower() and
-					(path_info_where.filesystem == context.Name or path_info_to.filesystem == "unknown")
-				then
-					table.remove(context.mounted_paths, i)
-					break
-				end
+		for i, v in ipairs(vfs.mounted_paths) do
+			if
+				v.full_where:lower() == where:lower() and
+				v.full_to:lower() == to:lower()
+			then
+				table.remove(vfs.mounted_paths, i)
+				return true
 			end
 		end
+
+		return false
 	end
 
 	function vfs.GetMounts()
 		local out = {}
-		for _, context in ipairs(vfs.GetFileSystems()) do
-			for _, v in ipairs(context.mounted_paths) do
-				out[v.full_where] = v
-			end
+		for _, v in ipairs(vfs.mounted_paths) do
+			out[v.full_where] = v
 		end
 		return out
 	end
@@ -68,31 +74,35 @@ do -- mounting/links
 		local out = {}
 		local out_i = 1
 
-		local filesystems = vfs.GetFileSystems()
+		if path_info.relative then
+			for _, mount_info in ipairs(vfs.mounted_paths) do
+				local where
 
-		if path_info.filesystem ~= "unknown" then
-			filesystems = {vfs.GetFileSystem(path_info.filesystem)}
-		end
+				if path_info.full_path:sub(0, #mount_info.to.full_path) == mount_info.to.full_path then
+					where = vfs.GetPathInfo(mount_info.where.filesystem .. ":" .. mount_info.where.full_path .. path_info.full_path:sub(#mount_info.to.full_path+1), is_folder)
+				elseif path_info.full_path ~= "/" then
+					where = vfs.GetPathInfo(mount_info.where.filesystem .. ":" .. mount_info.where.full_path .. path_info.full_path, is_folder)
+				else
+					where = vfs.GetPathInfo(mount_info.where.filesystem .. ":" .. mount_info.to.full_path, is_folder)
+				end
 
-		for _, context in ipairs(filesystems) do
-			if path_info.relative then
-				for _, mount_info in ipairs(context.mounted_paths) do
-					local where = mount_info.where
-					-- does the path match the start of the to path?
-					if
-						(mount_info.where.filesystem == "unknown" or mount_info.where.filesystem == context.Name) and
-						path_info.full_path:sub(0, #mount_info.to.full_path) == mount_info.to.full_path
-					then
-						-- if so we need to prepend it to make a new "where" path
-						where = vfs.GetPathInfo(context.Name .. ":" .. mount_info.where.full_path .. path_info.full_path:sub(#mount_info.to.full_path+1), is_folder)
-					else
-						where = vfs.GetPathInfo(context.Name .. ":" .. where.full_path .. path_info.full_path, is_folder)
-					end
-
-					out[out_i] = {path_info = where, context = context, userdata = mount_info.userdata}
+				if where then
+					out[out_i] = {
+						path_info = where,
+						context = vfs.filesystems2[mount_info.where.filesystem],
+						userdata = mount_info.userdata
+					}
 					out_i = out_i + 1
 				end
-			else
+			end
+		else
+			local filesystems = vfs.GetFileSystems()
+
+			if path_info.filesystem ~= "unknown" then
+				filesystems = {vfs.GetFileSystem(path_info.filesystem)}
+			end
+
+			for _, context in ipairs(filesystems) do
 				if (is_folder and context:IsFolder(path_info)) or (not is_folder and context:IsFile(path_info)) then
 					out[out_i] = {path_info = path_info, context = context, userdata = path_info.userdata}
 					out_i = out_i + 1
@@ -180,6 +190,21 @@ do -- file systems
 end
 
 do -- translate path to useful data
+	function vfs.DescribePath(path, is_folder)
+		local path_info = vfs.GetPathInfo(path, is_folder)
+		local out = {}
+		for _, context in ipairs(vfs.GetFileSystems()) do
+			out[context] = {}
+			if is_folder then
+				out[context].is_folder = context:IsFolder(path_info)
+			else
+				out[context].is_folder = context:IsFolder(path_info)
+				out[context].is_file = context:IsFile(path_info)
+			end
+		end
+		return out
+	end
+
 	local function get_folders(self, typ)
 		if typ == "full" then
 			local folders = {}

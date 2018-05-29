@@ -37,15 +37,12 @@ end
 do
 	function gine.env.ents.FindByClass(name)
 		local out = {}
+		local i = 1
 
-		for obj, ent in pairs(gine.objects.Entity) do
-			if not ent.ClassName then
-				print(ent)
-				table.print(ent)
-			else
-				if ent.ClassName:find(name) then
-					table.insert(out, ent)
-				end
+		for _, data in ipairs(gine.objectsi.Entity) do
+			if data.external.ClassName:find(name, nil, true) then
+				out[i] = data.external
+				i = i + 1
 			end
 		end
 
@@ -53,9 +50,9 @@ do
 	end
 
 	function gine.env.ents.GetByIndex(idx)
-		for obj, ent in pairs(gine.objects.Entity) do
-			if ent:EntIndex() == idx then
-				return ent
+		for _, data in ipairs(gine.objectsi.Entity) do
+			if data.external:EntIndex() == idx then
+				return data.external
 			end
 		end
 
@@ -122,6 +119,10 @@ do
 		end
 
 		return out
+	end
+
+	function gine.env.ents.GetCount()
+		return #gine.env.ents.GetAll()
 	end
 
 	local META = gine.GetMetaTable("Entity")

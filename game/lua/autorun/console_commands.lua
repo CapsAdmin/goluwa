@@ -1,3 +1,14 @@
+commands.Add("bootime", function()
+	if e.CLI_TIME > -1 then
+		logn("spent ", e.CLI_TIME, " seconds in ./goluwa", WINDOWS and ".cmd" or "")
+	end
+	if e.BOOT_TIME > -1 then
+		logn("spent ", e.BOOT_TIME, " seconds in core/lua/boot.lua")
+	end
+	logn("spent ", e.INIT_TIME, " seconds in core/lua/init.lua")
+	logn("spent ", os.clock() - e.BOOTIME, " seconds from core/lua/init.lua to this command")
+end)
+
 commands.Add("exit=number[0]", function(exit_code)
 	system.ShutDown(exit_code)
 end)
@@ -269,7 +280,13 @@ if GRAPHICS or PHYSICS then
 		{path = "__MAPNAME__/__MAPNAME__.obj", callback =  function(ent) ent:SetSize(0.01) ent:SetRotation(Quat(-1,0,0,1)) end},
 	}
 
-	commands.Add("map=string_trim", function(name)
+	commands.Add("map=string_trim|nil", function(name)
+		if not name then
+			for _, path in ipairs(vfs.Find("maps/.-%.bsp")) do
+				print(vfs.RemoveExtensionFromPath(path))
+			end
+			return
+		end
 		utility.PushTimeWarning()
 		for _, info in pairs(tries) do
 			local path = info.path:gsub("__MAPNAME__", name)
@@ -287,6 +304,6 @@ if GRAPHICS or PHYSICS then
 
 		steam.SetMap(name)
 
-		utility.PopTimeWarning("map " .. name)
+		utility.PopTimeWarning("map " .. name, nil, "cmd")
 	end)
 end

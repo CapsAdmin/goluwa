@@ -112,12 +112,12 @@ do
 		if not old then
 			obj[func_name] = callback
 		else
-			obj[func_name] = function(...)
-				local a,b,c,d = callback(...)
+			obj[func_name] = function(z,x,c,v,b,n,m)
+				local a,b,c,d = callback(z,x,c,v,b,n,m)
 				if a ~= nil then
 					return a,b,c,d
 				end
-				return old(...)
+				return old(z,x,c,v,b,n,m)
 			end
 		end
 	end
@@ -961,8 +961,12 @@ do
 		return self.__obj:IsFocused()
 	end
 
+	function META:SetEnabled(b)
+		self.__obj.gine_enabled = b
+	end
+
 	function META:IsEnabled()
-		return true
+		return not not self.__obj.gine_enabled
 	end
 
 	function META:HasHierarchicalFocus()

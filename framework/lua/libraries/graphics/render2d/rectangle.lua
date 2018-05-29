@@ -102,7 +102,7 @@ do
 				sx = sx or 1
 				sy = sy or 1
 
-				y = -y - h
+				local y = -y - h
 
 				render2d.rectangle.Vertices.Pointer[1].uv[0] = x / sx
 				render2d.rectangle.Vertices.Pointer[0].uv[1] = y / sy

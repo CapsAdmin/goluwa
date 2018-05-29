@@ -4,7 +4,7 @@ line.speed = 1
 line.love_envs = line.love_envs or table.weak()
 
 pvars.Setup("line_enable_audio", true)
-pvars.Setup("love_version", "0.9.0")
+pvars.Setup("line_version", "0.10.1")
 
 do
 	local function base_typeOf(self, str)
@@ -72,7 +72,7 @@ function line.ErrorNotSupported(str, level)
 end
 
 function line.CreateLoveEnv(version)
-	version = version or pvars.Get("love_version")
+	version = version or pvars.Get("line_version")
 
 	local love = {}
 
@@ -181,8 +181,8 @@ function line.RunGame(folder, ...)
 			end
 
 			if name == "socket.core" then
-				env.socket = sockets.luasocket
-				return sockets.luasocket
+				env.socket = sockets.core.luasocket
+				return env.socket
 			end
 
 			if package_loaded[name] then
@@ -200,8 +200,10 @@ function line.RunGame(folder, ...)
 				if debug.getinfo(func).what ~= "C" then
 					setfenv(func, env)
 				end
+				local res = assert(require.require_function(name, func, path, name, love.package_loaders))
 
-				return assert(require.require_function(name, func, path, name, love.package_loaders))
+				package_loaded[name] = res
+				return res
 			end
 
 			if pcall(require, name) then
@@ -359,7 +361,7 @@ commands.Add("love_run=string,var_arg", function(name, ...)
 	end
 end)
 
-event.AddListener("WindowFileDrop", "line", function(wnd, path)
+event.AddListener("WindowDrop", "line", function(wnd, path)
 	if vfs.IsDirectory(path) and vfs.IsFile(path .. "/main.lua") then
 		line.RunGame(path)
 		if menu then menu.Close() end

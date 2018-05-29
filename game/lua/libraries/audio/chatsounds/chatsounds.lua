@@ -1,6 +1,7 @@
 local chatsounds = _G.chatsounds or {}
 
 runfile("list_parsing.lua", chatsounds)
+runfile("repositories.lua", chatsounds)
 
 chatsounds.max_iterations = 1000
 
@@ -15,7 +16,7 @@ local function dump_script(out)
 			if sounds then
 				local str = ""
 				if data.modifiers then
-					for k,v in pairs(data.modifiers) do
+					for k,v in ipairs(data.modifiers) do
 						str = str .. v.mod .. "(" .. table.concat(v.args, ", ") .. ")"
 						if k ~= #data.modifiers then
 							str = str .. ", "
@@ -285,7 +286,7 @@ do
 				if char == "(" then
 					bracket_level = bracket_level + 1
 				elseif char == ")" then
-					inside_brackets = bracket_level - 1
+					bracket_level = bracket_level - 1
 				end
 
 				if not exp and (type ~= last or char == ":" or char == ")" or char == "(" or char == ",") or capture_exp then
@@ -347,7 +348,6 @@ do
 								table.insert(args, func)
 							else
 								wlog("failed to compile expression: ", func)
-								table.insert(args, exp)
 							end
 						elseif word ~= "," then
 							table.insert(args, word)
@@ -425,7 +425,7 @@ do
 						if type(mod) ~= "table" then break end
 						table.insert(out, mod)
 					end
- 				else
+				else
 					for _, info in ipairs(matched) do
 						table.insert(out, {type = "unmatched", val = info.word})
 					end
@@ -615,14 +615,14 @@ function chatsounds.PlayScript(script)
 
 	local sounds = {}
 
-	for _, chunk in pairs(script) do
+	for _, chunk in ipairs(script) do
 		if chunk.type == "matched" then
 
 			if chunk.modifiers then
-				for _, data in pairs(chunk.modifiers) do
+				for _, data in ipairs(chunk.modifiers) do
 					local mod = chatsounds.Modifiers[data.mod]
 					if mod and mod.args then
-						for i, func in pairs(mod.args) do
+						for i, func in ipairs(mod.args) do
 							data.args[i] = func(data.args[i])
 						end
 					end
@@ -630,8 +630,8 @@ function chatsounds.PlayScript(script)
 			end
 
 			if chunk.modifiers then
-				for mod, data in pairs(chunk.modifiers) do
-					mod = chatsounds.Modifiers[data.mod]
+				for _, data in ipairs(chunk.modifiers) do
+					local mod = chatsounds.Modifiers[data.mod]
 					if mod and mod.pre_init then
 						mod.pre_init(unpack(data.args))
 					end
@@ -644,7 +644,7 @@ function chatsounds.PlayScript(script)
 				local info
 
 				if chunk.modifiers then
-					for _, v in pairs(chunk.modifiers) do
+					for _, v in ipairs(chunk.modifiers) do
 						if v.mod == "choose" then
 							if chunk.val.realms[v.args[2]] then
 								data = chunk.val.realms[v.args[2]]
@@ -652,7 +652,7 @@ function chatsounds.PlayScript(script)
 							else
 								local temp = {}
 								for realm, data in pairs(chunk.val.realms) do
-									for _, sound in pairs(data.sounds) do
+									for _, sound in ipairs(data.sounds) do
 										table.insert(temp, {sound = sound, realm = realm})
 									end
 								end
@@ -672,7 +672,7 @@ function chatsounds.PlayScript(script)
 					local temp = {}
 					for realm, data in pairs(chunk.val.realms) do
 						if not chatsounds.last_realm or chatsounds.last_realm == realm then
-							for _, sound in pairs(data.sounds) do
+							for _, sound in ipairs(data.sounds) do
 								table.insert(temp, {sound = sound, realm = realm})
 							end
 						end
@@ -687,6 +687,10 @@ function chatsounds.PlayScript(script)
 				local path = info.path
 
 				if path then
+					if info.base_path then
+						path = info.base_path .. path
+					end
+
 					local sound = {}
 
 					sound.snd = audio.CreateSource(path)
@@ -698,7 +702,7 @@ function chatsounds.PlayScript(script)
 
 					sound.call = function(self, func_name)
 						if not self.modifiers then return end
-						for _, data in pairs(self.modifiers) do
+						for _, data in ipairs(self.modifiers) do
 							local mod = chatsounds.Modifiers[data.mod]
 							if mod and mod[func_name] then
 								local ok, err = pcall(mod[func_name], self, unpack_args(data))
@@ -732,17 +736,37 @@ function chatsounds.PlayScript(script)
 					table.insert(sounds, sound)
 
 					chatsounds.last_trigger = chunk.val.trigger
-				else
-					--print("huh")
+				-- else
+				-- 	print("huh")
 				end
-			else
-			--	print(data, chunk.trigger, chunk.realm)
+			-- else
+			-- 	print(data, chunk.trigger, chunk.realm)
 			end
 		end
 	end
 
+	local timeout = system.GetElapsedTime() + 20
 
-	table.insert(chatsounds.queue_calc, function()
+	local function cb()
+		local time = system.GetElapsedTime()
+
+		if time > timeout then
+			llog("timeout waiting for sounds to get ready")
+			dump_script(script)
+
+			for _, sound in ipairs(sounds) do
+				sound.snd:Remove()
+			end
+
+			for i, v in ipairs(chatsounds.queue_calc) do
+				if v == cb then
+					table.remove(chatsounds.queue_calc, i)
+					break
+				end
+			end
+			return
+		end
+
 		for _, sound in ipairs(sounds) do
 			if not sound.snd:IsReady() then
 				return
@@ -751,7 +775,6 @@ function chatsounds.PlayScript(script)
 
 		local duration = 0
 		local track = {}
-		local time = system.GetElapsedTime()
 
 		for _, sound in ipairs(sounds) do
 
@@ -771,7 +794,10 @@ function chatsounds.PlayScript(script)
 		table.insert(chatsounds.active_tracks, track)
 
 		return true
-	end)
+	end
+
+
+	table.insert(chatsounds.queue_calc, cb)
 
 	chatsounds.last_realm = nil
 end
@@ -784,6 +810,7 @@ function chatsounds.Panic()
 	end
 
 	chatsounds.active_tracks = {}
+	chatsounds.queue_calc = {}
 end
 
 if chatsounds.active_tracks then
@@ -804,8 +831,8 @@ function chatsounds.Update()
 
 	local time = system.GetElapsedTime()
 
-	for i, track in pairs(chatsounds.active_tracks) do
-		for i, sound in pairs(track) do
+	for i, track in ipairs(chatsounds.active_tracks) do
+		for i, sound in ipairs(track) do
 			if sound.start_time < time then
 				if not sound.started then
 					sound:play()
@@ -868,7 +895,7 @@ end
 
 function chatsounds.GetLists()
 	local out = {}
-	for _, v in pairs(vfs.Find("data/chatsounds/lists/")) do
+	for _, v in ipairs(vfs.Find("data/chatsounds/lists/")) do
 		table.insert(out, v:sub(0,-5))
 	end
 	return out

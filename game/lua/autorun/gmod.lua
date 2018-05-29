@@ -1,9 +1,9 @@
 local addons = {
-	"https://github.com/PAC3-Server/EasyChat",
 	"https://github.com/PAC3-Server/notagain",
-	"https://github.com/PAC3-Server/gm-http-discordrelay",
+	--"https://github.com/PAC3-Server/gm-http-discordrelay",
 	"https://github.com/CapsAdmin/pac3",
 	"https://github.com/PAC3-Server/ServerAssets",
+	"https://github.com/PAC3-Server/garrysmod",
 }
 
 commands.Add("setup_pac3server_addons", function()
@@ -53,6 +53,7 @@ commands.Add("setup_gmod_bridge", function()
 
 	os.execute("mkdir -p " .. gmod_dir .. "addons/zerobrane_bridge/lua/autorun/")
 	vfs.Write("os:" .. gmod_dir .. "addons/zerobrane_bridge/lua/autorun/zerobrane_bridge.lua", [[
+file.Delete("zerobrane_bridge.txt")
 local next_run = 0
 local last_time = 0
 hook.Add("RenderScene", "zerobrane_bridge", function()
@@ -72,6 +73,7 @@ hook.Add("RenderScene", "zerobrane_bridge", function()
 
 	local content = file.Read("zerobrane_bridge.txt", "DATA")
 	if content then
+		file.Delete("zerobrane_bridge.txt")
 		local chunks = content:Split("¥$£@DELIMITER@£$¥")
 		for i = #chunks, 1, -1 do
 			if chunks[i] ~= "" then
@@ -84,13 +86,14 @@ hook.Add("RenderScene", "zerobrane_bridge", function()
 				else
 					ErrorNoHalt(func)
 				end
+				print("ran script from zerobrane")
 			end
 		end
-		file.Delete("zerobrane_bridge.txt")
 	end
 end)
 ]])
 	vfs.Write("os:" .. e.ROOT_FOLDER .. "data/ide/gmod_path", gmod_dir)
+	logn("wrote script to ", gmod_dir .. "addons/zerobrane_bridge/lua/autorun/zerobrane_bridge.lua")
 end)
 
 commands.Add("setup_metastruct_addons", function()

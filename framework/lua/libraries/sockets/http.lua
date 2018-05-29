@@ -1,9 +1,17 @@
 local sockets = (...) or _G.sockets
 
 function sockets.EscapeURL(str)
-	return str:gsub("([^A-Za-z0-9_])", function(char)
+	local protocol, rest = str:match("^(.-://)(.+)$")
+	if not protocol then
+		protocol = ""
+		rest = str
+	end
+
+	rest = rest:gsub("([^A-Za-z0-9_/])", function(char)
 		return ("%%%02x"):format(string.byte(char))
 	end)
+
+	return protocol .. rest
 end
 
 function sockets.HeaderToTable(header)
@@ -66,6 +74,10 @@ function sockets.SetupReceiveHTTP(socket, info)
 		elseif info.on_fail then
 			system.pcall(info.on_fail, content)
 		end
+
+		if info.remove_socket_on_finish then
+			socket:Remove()
+		end
 	end
 
 	function socket:OnReceive(str)
@@ -96,11 +108,21 @@ function sockets.SetupReceiveHTTP(socket, info)
 
 				-- redirection
 				if header.location and info.url then
-					info.protocol = nil
-					info.location = nil
-					info.host = nil
+					local protocol, host, location = header.location:match("(.+)://(.-)/(.+)")
 
-					info.url = header.location
+					if not location then
+						protocol, host = header.location:match("(.+)://(.+)")
+					end
+
+					if not location then
+						location = info.location:match("^(.+/).+$") .. header.location
+						host = info.host
+						protocol = info.protocol
+					end
+
+					info.location = location
+					info.host = host
+					info.protocol = protocol
 
 					sockets.Request(info)
 					self:Remove()
@@ -128,14 +150,10 @@ function sockets.SetupReceiveHTTP(socket, info)
 			length = length + #str
 
 			if info.on_chunks then
-				info.on_chunks(str)
+				info.on_chunks(str, length, header)
 			end
 
 			table.insert(content, str)
-
-			if info.progress_callback then
-				info.progress_callback(content, str, length, header)
-			end
 
 			if header["content-length"] then
 				if length >= header["content-length"] then
@@ -154,6 +172,22 @@ local multipart_boundary = "Goluwa" .. os.time()
 local multipart = string.format('multipart/form-data;boundary=%q', multipart_boundary)
 
 function sockets.Request(info)
+	if not info.callback and tasks.GetActiveTask() then
+		local data
+		local err
+
+		info.callback = function(val) data = val end
+		info.error_callback = function(val) err = val end
+		info.timedout_callback = function(val) err = val end
+
+		sockets.Request(info)
+
+		while not data and not err do
+			tasks.Wait()
+		end
+
+		return data, err
+	end
 
 	if info.url then
 		local protocol, host, location = info.url:match("(.+)://(.-)/(.+)")
@@ -203,8 +237,11 @@ function sockets.Request(info)
 	info.user_agent = info.user_agent or "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0"
 	info.connection = info.connection or "Keep-Alive"
 	info.receive_mode = info.receive_mode or "all"
-	info.timeout = info.timeout or 2
+	info.timeout = info.timeout or 5
 	info.callback = info.callback or table.print
+	if info.remove_socket_on_finish == nil then
+		info.remove_socket_on_finish = true
+	end
 
 	if not info.files and (info.method == "POST" or info.method == "PATCH" or info.method == "PUT") and not info.post_data then
 		error("no post data!", 2)
@@ -226,7 +263,7 @@ function sockets.Request(info)
 
 	function socket:OnTimedOut()
 		if info.timedout_callback then
-			info.timedout_callback()
+			info.timedout_callback("timed out (" .. self:GetTimeout() .. " seconds)")
 		end
 	end
 
@@ -302,13 +339,11 @@ function sockets.Request(info)
 	return socket
 end
 
-local active_downloads = table.weak()
-
 local count = 0
 local queue = {}
 
 local function push_download(...)
-	if count >= 3 then
+	if count >= 20 then
 		table.insert(queue, table.pack(...))
 		llog("too many downloads (queue size: %s)", #queue)
 		for i,v in ipairs(queue) do
@@ -327,147 +362,162 @@ local function pop_download()
 	end
 end
 
-local cb = utility.CreateCallbackThing()
 
-function sockets.Download(url, callback, on_fail, on_chunks, on_header)
-	if not url:find("^(.-)://") then return end
+do
+	sockets.active_downloads = sockets.active_downloads or {}
 
-	local last_downloaded = 0
-	local last_report = system.GetElapsedTime() + 4
+	local cb = utility.CreateCallbackThing()
 
-	if cb:check(url, callback, {on_fail = on_fail, on_chunks = on_chunks, on_header = on_header}) then return true end
-
-	if not push_download(url, callback, on_fail, on_chunks, on_header) then return true, "queued" end
-
-	cb:start(url, callback, {on_fail = on_fail, on_chunks = on_chunks, on_header = on_header})
-
-	event.Call("DownloadStart", url)
-
-	sockets.Request({
-		url = url,
-		on_chunks = function(...)
-			event.Call("DownloadChunkReceived", url, ...)
-
-			cb:callextra(url, "on_chunks", ...)
-		end,
-		callback = function(data)
-			event.Call("DownloadStop", url, data)
-
-			if not data then
-				cb:callextra(url, "on_fail", "data is nil")
-			elseif data.header["content-length"] == 0 then
-				cb:callextra(url, "on_fail", "content length is zero")
-			else
-				if sockets.debug_download then
-					llog("finished downloading ", url)
-				end
-				cb:stop(url, data.content)
-			end
-
-			cb:uncache(url)
-			pop_download()
-		end,
-		header_callback = function(header)
-			event.Call("DownloadHeaderReceived", url, header)
-
-			if cb:callextra(url, "on_header", header) == false then
-				cb:uncache(url)
-				pop_download()
-				return false
-			end
-
-			if sockets.debug_download then
-				if header["content-length"] then
-					llog("size of ", url, " is ", utility.FormatFileSize(header["content-length"]))
-				else
-					llog("size of ", url, " is unkown!")
-				end
-			end
-		end,
-		progress_callback = function(_, _, current_length, header)
-			if not header["content-length"] then return end
-
-			if sockets.debug_download then
-				if last_report < system.GetElapsedTime() then
-					logn(url, ":")
-					logn("\tprogress: ", math.round((current_length / header["content-length"]) * 100, 3), "%")
-					logn("\tspeed: ", utility.FormatFileSize(current_length - last_downloaded))
-					last_downloaded = current_length
-					last_report = system.GetElapsedTime() + 4
-				end
-			end
-		end,
-		code_callback = function(code)
-
-			if code == 404 or code == 400 then
-				event.Call("DownloadStop", url, nil, "recevied code " .. code)
-
-				cb:callextra(url, "on_fail", "error code " .. tostring(code))
-				cb:uncache(url)
-				pop_download()
-				return false
-			else
-				event.Call("DownloadCodeReceived", url, code)
-			end
-
-			if sockets.debug_download then llog("downloading ", url) end
-		end,
-		error_callback = function(reason)
-			cb:callextra(url, "on_fail", reason)
-			cb:uncache(url)
-			pop_download()
-		end,
-		timedout_callback = function()
-			cb:callextra(url, "on_fail", "timed out")
-			cb:uncache(url)
-			pop_download()
-		end,
-	})
-
-	return true
-end
-
-function sockets.AbortDownload(url)
-	event.Call("DownloadStop", url, nil, "aborted")
-	cb:uncache(url)
-	pop_download()
-	if sockets.debug_download then llog("download aborted ", url) end
-end
-
-function sockets.DownloadFirstFound(urls, callback, on_fail)
-	local found = function(found_url)
-		for _, other_url in ipairs(urls) do
-			if found_url ~= other_url then
-				sockets.AbortDownload(other_url)
-			end
-		end
+	local function no_callback(data, url)
+		logn(url, ":")
+		logn("\tsize:", utility.FormatFileSize(#data))
+		logn("\tcrc32:", crypto.CRC32(data))
 	end
 
-	local fails = {}
+	function sockets.Download(url, callback, on_fail, on_chunks, on_header)
+		if not url:find("^(.-)://") then return end
 
-	for _, url in ipairs(urls) do
-		sockets.Download(
-			url,
-			function(...)
-				callback(url, ...)
+		local last_downloaded = 0
+		local last_report = system.GetElapsedTime() + 4
+
+		callback = callback or no_callback
+
+		if cb:check(url, callback, {on_fail = on_fail, on_chunks = on_chunks, on_header = on_header}) then return true end
+
+		if not push_download(url, callback, on_fail, on_chunks, on_header) then return true, "queued" end
+
+		cb:start(url, callback, {on_fail = on_fail, on_chunks = on_chunks, on_header = on_header})
+
+		event.Call("DownloadStart", url)
+
+		local socket = sockets.Request({
+			url = url,
+			receive_mode = (1024 * 1024) * 2, -- 2 mb
+			on_chunks = function(...)
+				event.Call("DownloadChunkReceived", url, ...)
+
+				cb:callextra(url, "on_chunks", ...)
 			end,
-			function(reason)
-				table.insert(fails, "failed to download " .. url .. ": " .. reason .. "\n")
-				if #fails == #urls then
-					local reason = ""
-					for _, str in ipairs(fails) do
-						reason = reason .. str
+			callback = function(data)
+				event.Call("DownloadStop", url, data)
+
+				if not data then
+					cb:callextra(url, "on_fail", "data is nil")
+				elseif data.header["content-length"] == 0 then
+					cb:callextra(url, "on_fail", "content length is zero")
+				else
+					if sockets.debug_download then
+						llog("finished downloading ", url)
 					end
-					on_fail(reason)
+					cb:stop(url, data.content, url, header)
+				end
+
+				sockets.StopDownload(url)
+			end,
+			header_callback = function(header)
+				event.Call("DownloadHeaderReceived", url, header)
+
+				if cb:callextra(url, "on_header", header) == false then
+					sockets.StopDownload(url)
+					return false
+				end
+
+				if sockets.debug_download then
+					if header["content-length"] then
+						llog("size of ", url, " is ", utility.FormatFileSize(header["content-length"]))
+					else
+						llog("size of ", url, " is unkown!")
+					end
 				end
 			end,
-			nil,
-			function(header)
-				if header["content-length"] > 0 then
-					found(url)
+			code_callback = function(code)
+
+				if code == 404 or code == 400 then
+					event.Call("DownloadStop", url, nil, "recevied code " .. code)
+
+					cb:callextra(url, "on_fail", "error code " .. tostring(code))
+					sockets.StopDownload(url)
+					return false
+				else
+					event.Call("DownloadCodeReceived", url, code)
 				end
-			end
-		)
+
+				if sockets.debug_download then llog("downloading ", url) end
+			end,
+			error_callback = function(reason)
+				cb:callextra(url, "on_fail", reason)
+				sockets.StopDownload(url)
+			end,
+			timedout_callback = function(msg)
+				cb:callextra(url, "on_fail", msg)
+				sockets.StopDownload(url)
+			end,
+		})
+
+
+		sockets.active_downloads[url] = socket
+
+		return true
+	end
+
+	tasks.WrapCallback(sockets, "Download")
+
+	function sockets.StopDownload(url)
+		local socket = sockets.active_downloads[url] or NULL
+		if socket:IsValid() then
+			sockets.active_downloads[url]:Remove()
+		end
+		sockets.active_downloads[url] = nil
+		cb:uncache(url)
+		pop_download()
+	end
+end
+
+do
+	local cb = utility.CreateCallbackThing()
+
+	function sockets.DownloadFirstFound(urls, callback, on_fail)
+		local id = table.concat(urls)
+
+		if cb:check(id, callback, {on_fail = on_fail}) then return true end
+
+		cb:start(id, callback, {on_fail = on_fail})
+
+		local fails = {}
+
+		for _, url in ipairs(urls) do
+			sockets.Download(
+				url,
+				function(...)
+					cb:stop(id, url, ...)
+				end,
+				function(reason)
+					table.insert(fails, "failed to download " .. url .. ": " .. reason .. "\n")
+					if #fails == #urls then
+						local reason = ""
+						for _, str in ipairs(fails) do
+							reason = reason .. str
+						end
+						cb:callextra(id, "on_fail", reason)
+						cb:uncache(id)
+					end
+				end,
+				nil,
+				function(header)
+					if header["content-length"] > 0 then
+						local found_url = url
+						for _, other_url in ipairs(urls) do
+							if found_url ~= other_url then
+								sockets.StopDownload(other_url)
+								event.Call("DownloadStop", url, nil, "download found in " .. found_url)
+							end
+						end
+					end
+				end
+			)
+		end
+
+		return true
 	end
 end
 

@@ -1,5 +1,4 @@
 local render = ... or _G.render
-local ffi = require("ffi")
 
 local texture_formats = {
 	depth_component16 = {bits = {16}},
@@ -150,8 +149,12 @@ for _, info in pairs(texture_formats) do
 	end
 
 	line = line .. "} "
-	info.ctype = ffi.typeof(line)
-	info.ctype_array = ffi.typeof("$[?]", info.ctype)
+
+	local ffi = desire("ffi")
+	if ffi then
+		info.ctype = ffi.typeof(line)
+		info.ctype_array = ffi.typeof("$[?]", info.ctype)
+	end
 end
 
 local function get_upload_format(size, reverse, integer, depth, stencil)

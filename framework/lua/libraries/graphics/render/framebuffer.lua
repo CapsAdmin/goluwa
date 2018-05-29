@@ -8,6 +8,8 @@ function render.GetScreenFrameBuffer()
 	if render.screen_buffer then
 		render.screen_buffer.Size.x = render.GetWidth()
 		render.screen_buffer.Size.y = render.GetHeight()
+		render.screen_buffer.draw_buffers_size = 0
+
 	end
 
 	return render.screen_buffer
