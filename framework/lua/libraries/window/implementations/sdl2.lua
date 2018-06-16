@@ -29,7 +29,6 @@ function META:Initialize()
 		sdl.video_init = true
 	end
 
-
 	local flags = self.Flags or {"shown", "resizable"}
 
 	self:PreWindowSetup(flags)
@@ -107,7 +106,7 @@ do
 		self:UpdateMouseDelta()
 		self:OnPostUpdate(dt)
 
-		if self.Cursor == "trapped" then
+		if self.Cursor == "trapped" and self:IsFocused() then
 			local pos = self:GetMousePosition()
 			local size = self:GetSize()
 			local changed = false
@@ -153,14 +152,14 @@ do
 				elseif case == sdl.e.WINDOWEVENT_LEAVE then
 					self:CallEvent("CursorLeave")
 
-				elseif case == sdl.e.WINDOWEVENT_FOCUS_GAINED then
+				elseif case == sdl.e.WINDOWEVENT_EXPOSED then
 					self:CallEvent("GainedFocus")
 					self.Focused = true
 
-				elseif case == sdl.e.WINDOWEVENT_FOCUS_LOST  then
+				elseif case == sdl.e.WINDOWEVENT_LEAVE then
 					self:CallEvent("LostFocus")
 					self.Focused = false
-
+print("!!!")
 				elseif case == sdl.e.WINDOWEVENT_CLOSE then
 					self:CallEvent("Close")
 
