@@ -125,7 +125,7 @@ function fs.getattributes(path)
 
 	if file_Exists(path, where) then
 		dprint("\tfile exists")
-		local size = file_Size(path, where)
+		local size = path == "" and 0 or file_Size(path, where)
 		local time = file_Time(path, where)
 		local type = file_IsDir(path, where) and "directory" or "file"
 
