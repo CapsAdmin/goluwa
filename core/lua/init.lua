@@ -43,6 +43,16 @@ do
 	end
 end
 
+--loadfile("../../core/lua/modules/bytecode_cache.lua")()
+
+local PROFILE_STARTUP = false
+
+if PROFILE_STARTUP then
+	local old = io.stdout
+	io.stdout = {write = function(_, ...) io.write(...) end}
+	require("jit.p").start("rplfvi1")
+	io.stdout = old
+end
 
 -- put all c functions in a table so we can override them if needed
 -- without doing the local oldfunc = print thing over and over again
@@ -253,12 +263,6 @@ profiler = runfile("lua/libraries/profiler.lua") -- for profiling
 
 if THREAD then return end
 
-local PROFILE_STARTUP = false
-
-if PROFILE_STARTUP then
-	profiler.ToggleStatistical()
-end
-
 -- tries to load all addons
 -- some might not load depending on its info.lua file.
 -- for instance: "load = CAPSADMIN ~= nil," will make it load
@@ -288,10 +292,6 @@ e.INIT_TIME = os.clock() - start_time
 e.BOOTIME = os.clock()
 
 event.Call("Initialize")
-
-if PROFILE_STARTUP then
-	profiler.ToggleStatistical()
-end
 
 if not CLI then
 	logn("[runfile] total init time took ", os.clock() - start_time, " seconds to execute")
