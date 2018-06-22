@@ -81,8 +81,8 @@ local function header_to_table(str)
 	return out
 end
 
-check(META.WriteByte, "function")
-check(META.ReadByte, "function")
+assert(META.WriteByte, "missing META:WriteByte")
+assert(META.ReadByte, "missing META:ReadByte")
 
 do -- basic data types
 	if ffi then

@@ -1,24 +1,11 @@
 local vfs = (...) or _G.vfs
 
 local fs = require("fs")
-
 local ffi = require("ffi")
 
-if vfs.use_appdata then
-	if WINDOWS then
-		vfs.SetEnv("DATA", "os:%%APPDATA%%/.goluwa")
-	end
-
-	if LINUX then
-		vfs.SetEnv("DATA", "os:%%HOME%%/.goluwa")
-	end
-else
-	vfs.SetEnv("DATA", "os:" .. e.USERDATA_FOLDER)
-end
-
-vfs.SetEnv("ROOT", "os:" .. e.ROOT_FOLDER)
-vfs.SetEnv("SRC", "os:" .. e.SRC_FOLDER)
-vfs.SetEnv("BIN", "os:" .. e.BIN_FOLDER)
+fs.createdir(e.DATA_FOLDER)
+fs.createdir(e.DATA_FOLDER .. "users/")
+fs.createdir(e.USERDATA_FOLDER)
 
 local CONTEXT = {}
 

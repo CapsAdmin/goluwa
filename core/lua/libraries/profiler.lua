@@ -359,7 +359,7 @@ function profiler.PrintTraceAborts(min_samples)
 
 		if s[path] or not next(s) then
 			local full_path = R(path) or path
-			full_path = full_path:replace("../../../", e.SRC_FOLDER)
+			full_path = full_path:replace("../../../", e.CORE_FOLDER)
 			full_path = full_path:lower():replace(e.ROOT_FOLDER:lower(), "")
 
 			local temp = {}

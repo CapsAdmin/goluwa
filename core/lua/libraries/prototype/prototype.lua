@@ -518,10 +518,6 @@ function prototype.RemoveObjects(super_type, sub_type)
 	end
 end
 
-runfile("get_is_set.lua", prototype)
-runfile("base_object.lua", prototype)
-runfile("null.lua", prototype)
-
 function prototype.DumpObjectCount()
 	local found = {}
 
@@ -544,5 +540,9 @@ function prototype.DumpObjectCount()
 		logn(v.k, " = ", v.v)
 	end
 end
+
+runfile("lua/libraries/prototype/get_is_set.lua", prototype)
+runfile("lua/libraries/prototype/base_object.lua", prototype)
+runfile("lua/libraries/prototype/null.lua", prototype)
 
 return prototype

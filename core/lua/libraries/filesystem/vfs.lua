@@ -306,14 +306,15 @@ function vfs.Open(path, mode, sub_mode)
 	return false, "unable to open file: \n" .. table.concat(errors, "\n")
 end
 
-runfile("path_utilities.lua", vfs)
-runfile("base_file.lua", vfs)
-runfile("find.lua", vfs)
-runfile("helpers.lua", vfs)
-runfile("addons.lua", vfs)
-runfile("lua_utilities.lua", vfs)
+runfile("lua/libraries/filesystem/path_utilities.lua", vfs)
+runfile("lua/libraries/filesystem/base_file.lua", vfs)
+runfile("lua/libraries/filesystem/find.lua", vfs)
+runfile("lua/libraries/filesystem/helpers.lua", vfs)
+runfile("lua/libraries/filesystem/addons.lua", vfs)
+runfile("lua/libraries/filesystem/lua_utilities.lua", vfs)
 
-runfile("files/*", vfs)
+runfile("lua/libraries/filesystem/files/generic_archive.lua", vfs)
+runfile("lua/libraries/filesystem/files/os.lua", vfs)
 
 for _, context in ipairs(vfs.GetFileSystems()) do
 	if context.VFSOpened then

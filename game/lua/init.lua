@@ -1,3 +1,23 @@
+do -- full path
+	vfs.AddPackageLoader(function(path)
+		return vfs.LoadFile(path)
+	end)
+
+	vfs.AddPackageLoader(function(path)
+		return vfs.LoadFile(path .. ".lua")
+	end)
+
+	vfs.AddPackageLoader(function(path)
+		path = path:gsub("(.)%.(.)", "%1/%2")
+		return vfs.LoadFile(path .. ".lua")
+	end)
+
+	vfs.AddPackageLoader(function(path)
+		path = path:gsub("(.+/)(.+)", function(a, str) return a .. str:gsub("(.)%.(.)", "%1/%2") end)
+		return vfs.LoadFile(path .. ".lua")
+	end)
+end
+
 if SOCKETS then
 	package.preload["mime.core"] = function() return {b64 = crypto.Base64Encode} end
 
