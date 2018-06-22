@@ -28,10 +28,16 @@ do
 end
 
 do
-	local posix = require("syscall")
+	ffi.cdef([[
+		struct timespec {
+			long int tv_sec;
+			long tv_nsec;
+		};
+		int clock_gettime(int clock_id, struct timespec *tp);
+	]])
 
-	local ts = posix.t.timespec()
-	local enum = posix.c.CLOCK.MONOTONIC
+	local ts = ffi.new("struct timespec")
+	local enum = 1
 	local func = ffi.C.clock_gettime
 
 	function system.GetTime()
