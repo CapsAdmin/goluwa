@@ -89,7 +89,7 @@ function fs.setcd(path)
 end
 
 function fs.createdir(path)
-	return ffi.C.mkdir(path, 0x0000700) -- #define S_IRWXU 0000700    /* RWX mask for owner */
+	return ffi.C.mkdir(path, 448) -- 0700
 end
 
 if jit.os == "OSX" then

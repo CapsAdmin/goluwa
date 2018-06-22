@@ -135,6 +135,10 @@ do
 	e.CORE_FOLDER = e.ROOT_FOLDER .. e.INTERNAL_ADDON_NAME .. "/"
 	e.DATA_FOLDER = e.ROOT_FOLDER .. "data/"
 	e.USERDATA_FOLDER = e.DATA_FOLDER .. "users/" .. e.USERNAME:lower() .. "/"
+
+	fs.createdir(e.DATA_FOLDER)
+	fs.createdir(e.DATA_FOLDER .. "users/")
+	fs.createdir(e.USERDATA_FOLDER)
 end
 
 _G.runfile = function(path, ...) return loadfile(e.CORE_FOLDER .. path)(...) end

@@ -3,10 +3,6 @@ local vfs = (...) or _G.vfs
 local fs = require("fs")
 local ffi = require("ffi")
 
-fs.createdir(e.DATA_FOLDER)
-fs.createdir(e.DATA_FOLDER .. "users/")
-fs.createdir(e.USERDATA_FOLDER)
-
 local CONTEXT = {}
 
 CONTEXT.Name = "os"
