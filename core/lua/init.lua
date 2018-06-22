@@ -1,8 +1,11 @@
+local OS = jit and jit.os:lower() or "unknown"
+local ARCH = jit and jit.arch:lower() or "unknown"
+
 local start_time = os.clock()
 
 if not os.getenv("GOLUWA_CLI") then
 	if os.getenv("GOLUWA_CLI_TIME") then
-		io.write("[runfile] ", os.getenv("GOLUWA_CLI_TIME"), " seconds spent in ./goluwa", jit.os == "Windows" and ".cmd" or "", "\n")
+		io.write("[runfile] ", os.getenv("GOLUWA_CLI_TIME"), " seconds spent in ./goluwa", OS == "windows" and ".cmd" or "", "\n")
 	end
 
 	if os.getenv("GOLUWA_BOOT_TIME") then
@@ -88,16 +91,9 @@ end
 
 local info = assert(debug.getinfo(1), "debug.getinfo(1) returns nothing")
 local init_lua_path = info.source
-local internal_addon_name = init_lua_path:match("^@.+/(.+)/lua/init.lua$") or "."
+local relative_root, internal_addon_name = init_lua_path:match("^@(.+/)(.+)/lua/init.lua$")
 
 do -- constants
-	if jit.os == "Windows" then
-		_G.PLATFORM = "windows"
-	elseif _G.GMOD == true then
-		_G.PLATFORM = "gmod"
-	else
-		_G.PLATFORM = "unix"
-	end
 
 	-- enums table
 	e = e or {}
@@ -106,8 +102,18 @@ do -- constants
 
 	-- _G constants. should only contain you need to access a lot like if LINUX then
 	_G[e.USERNAME:upper()] = true
-	_G[jit.os:upper()] = true
-	_G[jit.arch:upper()] = true
+	_G[OS:upper()] = true
+	_G[ARCH:upper()] = true
+
+	if not _G.PLATFORM then
+		if OS == "windows" then
+			_G.PLATFORM = "windows"
+		elseif OS == "linux" or OS == "osx" or OS == "bsd" then
+			_G.PLATFORM = "unix"
+		else
+			_G.PLATFORM = "unknown"
+		end
+	end
 
 	_G.CLI = os.getenv("GOLUWA_CLI")
 end
@@ -125,13 +131,26 @@ do
 	package.path = "./?.lua"
 end
 
+_G.runfile = function(path, ...) return loadfile(relative_root .. e.INTERNAL_ADDON_NAME .. "/" .. path)(...) end
+
 do
-	local fs = loadfile("../../"..e.INTERNAL_ADDON_NAME.."/lua/libraries/platforms/"..PLATFORM.."/filesystem.lua")()
+	local fs
+
+	if PLATFORM == "unix" then
+		fs = runfile("lua/libraries/platforms/unix/filesystem.lua")
+	elseif PLATFORM == "windows" then
+		fs = runfile("lua/libraries/platforms/windows/filesystem.lua")
+	elseif PLATFORM == "gmod" then
+		fs = runfile("lua/libraries/platforms/gmod/filesystem.lua")
+	elseif PLATFORM == "unknown" then
+		fs = runfile("lua/libraries/platforms/unknown/filesystem.lua")
+	end
+
 	package.loaded.fs = fs
 
 	-- create constants
 	e.BIN_FOLDER = fs.getcd():gsub("\\", "/") .. "/"
-	e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(2)) -- the root folder is always 2 directories up (data/os_arch)
+	e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(select(2, relative_root:gsub("/", ""))))
 	e.CORE_FOLDER = e.ROOT_FOLDER .. e.INTERNAL_ADDON_NAME .. "/"
 	e.DATA_FOLDER = e.ROOT_FOLDER .. "data/"
 	e.USERDATA_FOLDER = e.DATA_FOLDER .. "users/" .. e.USERNAME:lower() .. "/"
@@ -140,8 +159,6 @@ do
 	fs.createdir(e.DATA_FOLDER .. "users/")
 	fs.createdir(e.USERDATA_FOLDER)
 end
-
-_G.runfile = function(path, ...) return loadfile(e.CORE_FOLDER .. path)(...) end
 
 -- standard library extensions
 runfile("lua/libraries/extensions/jit.lua")
@@ -210,7 +227,10 @@ event.Call("Initialize")
 if not CLI then
 	logn("[runfile] total init time took ", os.clock() - start_time, " seconds to execute")
 end
-system.MainLoop()
+
+if system.MainLoop then
+	system.MainLoop()
+end
 
 event.Call("ShutDown")
 collectgarbage()

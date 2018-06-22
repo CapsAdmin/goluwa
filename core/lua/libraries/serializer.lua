@@ -95,6 +95,6 @@ do -- vfs extension
 	end
 end
 
-runfile("serializers/*", serializer)
+runfile("lua/libraries/serializers/*", serializer)
 
 return serializer

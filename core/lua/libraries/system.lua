@@ -1,6 +1,12 @@
 local system = _G.system or {}
 
-runfile("platforms/" .. PLATFORM .. "/system.lua", system)
+if PLATFORM == "gmod" then
+	runfile("lua/libraries/platforms/gmod/system.lua", system)
+elseif PLATFORM == "unix" then
+	runfile("lua/libraries/platforms/unix/system.lua", system)
+elseif PLATFORM == "windows" then
+	runfile("lua/libraries/platforms/windows/system.lua", system)
+end
 
 function system.ForceMainLoop()
 	system.force_main_loop = true
