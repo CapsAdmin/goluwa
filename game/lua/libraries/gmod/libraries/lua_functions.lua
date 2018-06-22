@@ -64,6 +64,8 @@ function gine.env.module(name, _ENV)
 	setfenv(2, tbl)
 end
 
+local require = require("require")
+
 function gine.env.require(name, ...)
 	--logn("gine: require(",name,")")
 

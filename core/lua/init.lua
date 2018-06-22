@@ -242,8 +242,6 @@ end
 
 _G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir
 
-_G.require = runfile("lua/libraries/require.lua") -- replace require with the pure lua version
-_G.module = _G.require.module
 
 -- now we can use runfile properly
 

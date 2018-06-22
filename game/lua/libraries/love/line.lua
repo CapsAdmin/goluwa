@@ -1,5 +1,7 @@
 local line = _G.line or {}
 
+local require = require("require")
+
 line.speed = 1
 line.love_envs = line.love_envs or table.weak()
 
