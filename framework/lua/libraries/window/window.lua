@@ -143,7 +143,11 @@ do
 		system.ShutDown()
 	end
 
-	runfile("implementations/"..WINDOW_IMPLEMENTATION..".lua", META)
+	if WINDOW_IMPLEMENTATION == "sdl2" then
+		runfile("implementations/sdl2.lua", META)
+	elseif WINDOW_IMPLEMENTATION == "glfw" then
+		runfile("implementations/glfw.lua", META)
+	end
 
 	function window.CreateWindow(width, height, title, flags)
 		local self = META:CreateObject()

@@ -7,7 +7,7 @@ function fs.find(name)
 end
 
 function fs.getcd()
-	return "./"
+	return "."
 end
 
 function fs.setcd(path)

@@ -37,7 +37,7 @@ do
 			local track = {}
 			track.events = {}
 
-			local time = 0ULL
+			local time = ffi.new("uint64_t", 0)
 
 			for _ = 1, 1000000 do
 				local event = {}

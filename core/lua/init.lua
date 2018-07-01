@@ -91,7 +91,13 @@ end
 
 local info = assert(debug.getinfo(1), "debug.getinfo(1) returns nothing")
 local init_lua_path = info.source
+
 local relative_root, internal_addon_name = init_lua_path:match("^@(.+/)(.+)/lua/init.lua$")
+
+if not relative_root then
+	relative_root = "./"
+	internal_addon_name = ""
+end
 
 do -- constants
 
@@ -149,7 +155,7 @@ do
 	package.loaded.fs = fs
 
 	-- create constants
-	e.BIN_FOLDER = fs.getcd():gsub("\\", "/") .. "/"
+	e.BIN_FOLDER = fs.getcd() .. "/"
 	e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(select(2, relative_root:gsub("/", ""))))
 	e.CORE_FOLDER = e.ROOT_FOLDER .. e.INTERNAL_ADDON_NAME .. "/"
 	e.DATA_FOLDER = e.ROOT_FOLDER .. "data/"

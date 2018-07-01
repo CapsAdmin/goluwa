@@ -529,5 +529,5 @@ runfile("base_panel.lua", gui)
 RELOAD = nil
 runfile("panels/*", gui)
 runfile("helpers.lua", gui)
-return gui
 --for k,v in pairs(event.GetTable()) do for k2,v2 in pairs(v) do if type(v2.id)=='string' and v2.id:lower():find"aahh" or v2.id == "gui" then event.RemoveListener(k,v2.id) end end end
+return gui

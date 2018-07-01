@@ -129,7 +129,7 @@ end
 
 -- main loop
 local last_time = 0
-local i = 0ULL
+local i = 0
 
 function system.MainLoop()
 	while system.run == true do
