@@ -11,18 +11,24 @@ function system.Sleep(ms)
 end
 
 do
-	require("winapi.time")
+	ffi.cdef([[
+		int QueryPerformanceFrequency(int64_t *lpFrequency);
+		int QueryPerformanceCounter(int64_t *lpPerformanceCount);
+	]])
 
-	local winapi = require("winapi")
+	local q = ffi.new("int64_t[1]")
+	ffi.C.QueryPerformanceFrequency(q)
+	local freq = tonumber(q[0])
 
-	local freq = tonumber(winapi.QueryPerformanceFrequency().QuadPart)
-	local start_time = winapi.QueryPerformanceCounter()
+	local start_time = ffi.new("int64_t[1]")
+	ffi.C.QueryPerformanceCounter(start_time)
 
 	function system.GetTime()
-		local time = winapi.QueryPerformanceCounter()
+		local time = ffi.new("int64_t[1]")
+		ffi.C.QueryPerformanceCounter(time)
 
-		time.QuadPart = time.QuadPart - start_time.QuadPart
-		return tonumber(time.QuadPart) / freq
+		time[0] = time[0] - start_time[0]
+		return tonumber(time[0]) / freq
 	end
 end
 
@@ -66,8 +72,8 @@ end
 
 do
 	ffi.cdef[[
-		BOOL SetDllDirectoryA(LPCTSTR lpPathName);
-		DWORD GetDllDirectoryA(DWORD nBufferLength, LPTSTR lpBuffer);
+		int SetDllDirectoryA(const char *lpPathName);
+		unsigned long GetDllDirectoryA(unsigned long nBufferLength, const char *lpBuffer);
 	]]
 
 	function system.SetSharedLibraryPath(path)
@@ -86,7 +92,7 @@ end
 do
 	ffi.cdef([[
 		typedef unsigned goluwa_hkey;
-		LONG RegGetValueA(goluwa_hkey, LPCTSTR, LPCTSTR, DWORD, LPDWORD, PVOID, LPDWORD);
+		long RegGetValueA(goluwa_hkey, const char*, const char*, unsigned long, unsigned long*, void*, unsigned long*);
 	]])
 
 	local advapi = ffi.load("advapi32")

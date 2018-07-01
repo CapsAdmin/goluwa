@@ -156,7 +156,7 @@ do
 
 	-- create constants
 	e.BIN_FOLDER = fs.getcd() .. "/"
-	e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(select(2, relative_root:gsub("/", ""))))
+	e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(select(2, relative_root:gsub(e.BIN_FOLDER, ""):gsub("/", ""))))
 	e.CORE_FOLDER = e.ROOT_FOLDER .. e.INTERNAL_ADDON_NAME .. "/"
 	e.DATA_FOLDER = e.ROOT_FOLDER .. "data/"
 	e.USERDATA_FOLDER = e.DATA_FOLDER .. "users/" .. e.USERNAME:lower() .. "/"

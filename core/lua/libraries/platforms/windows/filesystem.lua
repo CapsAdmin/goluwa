@@ -131,7 +131,7 @@ end
 function fs.getcd()
 	local buffer = ffi.new("char[260]")
 	local length = ffi.C.GetCurrentDirectoryA(260, buffer)
-	return ffi.string(buffer, length)
+	return ffi.string(buffer, length):gsub("\\", "/")
 end
 
 function fs.setcd(path)
