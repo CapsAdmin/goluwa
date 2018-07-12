@@ -327,6 +327,15 @@ do -- table copy
 	end
 end
 
+function table.concatmember(tbl, key, sep)
+	local temp = {}
+	for i,v in ipairs(tbl) do
+		temp[i] = tostring(v[key])
+	end
+
+	return table.concat(tbl, sep)
+end
+
 do
 	local setmetatable = setmetatable
 	local ipairs = ipairs
