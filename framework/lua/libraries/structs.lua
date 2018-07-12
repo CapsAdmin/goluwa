@@ -61,23 +61,52 @@ function structs.Register(META)
 
 			i = i + 1
 
+			local lua = "local META = ...\n"
+			lua = lua .. "function META:__index(key)\n"
+
+			local found = false
+
 			for arg_i, arg in pairs(META.Args) do
 				if type(arg) ~= "table" then arg = {arg} end
 
 				for i, v in pairs(arg) do
-					if arg_i == 1 then
-						arg_lines[i] = number_type .. " "
-					end
+					if i == 1 then
+						if arg_i == 1 then
+							arg_lines[i] = number_type .. " "
+						end
 
-					arg_lines[i] = arg_lines[i] .. v
+						arg_lines[i] = arg_lines[i] .. v
 
-					if arg_i ~= #META.Args then
-						arg_lines[i] = arg_lines[i] .. ", "
+						if arg_i ~= #META.Args then
+							arg_lines[i] = arg_lines[i] .. ", "
+						else
+							arg_lines[i] = arg_lines[i] .. ";"
+						end
 					else
-						arg_lines[i] = arg_lines[i] .. ";"
+						lua = lua .. "\t" .. (not found and "if" or "elseif")  .. " key == \""..v.."\" then\n"
+						lua = lua .. "\t\treturn self." .. arg[1] .. "\n"
+						found = true
 					end
 				end
 			end
+
+			if found then
+				lua = lua .. "\tend\n"
+			end
+
+			if META.__swizzle then
+				lua = lua .. "\tif META.__swizzle[key] then\n"
+				lua = lua .. "\t\treturn META.__swizzle[key](self)\n"
+				lua = lua .. "\tend\n"
+				found = true
+			end
+
+			if found then
+				lua = lua .. "\treturn META[key]\n"
+				lua = lua .. "end"
+				assert(loadstring(lua))(META)
+			end
+
 
 			table.insert(arg_lines, "\t" .. number_type .. " ptr[" .. #META.Args .. "];")
 
@@ -428,6 +457,134 @@ function structs.AddOperator(META, operator, ...)
 		lua = parse_args(META, lua, " and ")
 
 		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs, math.isvalid)
+	elseif operator == "generic_vector" then
+		local lua = [==[
+		local META, structs = ...
+
+		function META:SetLength(num)
+			if num == 0 then
+				self.KEY = 0
+
+				return
+			end
+
+			local scale = math.sqrt(self:GetLengthSquared()) * num
+
+			self.KEY = self.KEY / scale
+
+			return self
+		end
+
+		function META:SetMaxLength(num)
+			local length = self:GetLengthSquared()
+
+			if length * length > num then
+				local scale = math.sqrt(length) * num
+
+				self.KEY = self.KEY / scale
+			end
+
+			return self
+		end
+
+		function META:Normalize(scale)
+			scale = scale or 1
+
+			local length = self:GetLengthSquared()
+
+			if length == 0 then
+				self.KEY = 0
+				self.KEY = 0
+				return self
+			end
+
+			local inverted_length = scale / math.sqrt(length)
+
+			self.KEY = self.KEY * inverted_length
+
+			return self
+		end
+		structs.AddGetFunc(META, "Normalize", "Normalized")
+		]==]
+
+		lua = parse_args(META, lua, "")
+
+		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
+
+
+		local lua = [[
+		local META, structs = ...
+
+		function META:GetLengthSquared()
+			return
+			self.KEY * self.KEY
+		end
+
+		function META.GetDot(a, b)
+			return
+			a.KEY * b.KEY
+		end
+		]]
+
+		lua = parse_args(META, lua, " + ")
+
+		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
+
+		local lua = [[
+		local META, structs = ...
+
+		function META:GetVolume()
+			return
+			self.KEY
+		end
+		]]
+
+		lua = parse_args(META, lua, " * ")
+
+		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
+
+		function META:GetLength()
+			return math.sqrt(self:GetLengthSquared())
+		end
+
+		function META.Distance(a, b)
+			return (a - b):GetLength()
+		end
+
+		META.__len = META.GetLength
+
+		function META.__lt(a, b)
+			if structs.IsType(a, b) and type(b) == "number" then
+				return a:GetLength() < b
+			elseif structs.IsType(b, a) and type(a) == "number" then
+				return b:GetLength() < a
+			end
+		end
+
+		function META.__le(a, b)
+			if structs.IsType(a, b) and type(b) == "number" then
+				return a:GetLength() <= b
+			elseif structs.IsType(b, a) and type(a) == "number" then
+				return b:GetLength() <= a
+			end
+		end
+	elseif operator == "lerp" then
+		local lua = [[
+		local META, structs = ...
+
+		function META.Lerp(a, mult, b)
+			a.KEY = (b.KEY - a.KEY) * mult + a.KEY
+
+			return a
+		end
+		]]
+
+		lua = parse_args(META, lua, "")
+
+		assert(loadstring(lua, META.ClassName .. " operator " .. operator))(META, structs)
+
+		structs.AddGetFunc(META, "Lerp", "Lerped")
+
 	else
 		logn("unhandled operator " .. operator)
 	end
@@ -449,6 +606,7 @@ function structs.AddAllOperators(META)
 	structs.AddOperator(META, "tostring")
 	structs.AddOperator(META, "zero")
 	structs.AddOperator(META, "random")
+	structs.AddOperator(META, "lerp")
 	structs.AddOperator(META, "set")
 	structs.AddOperator(META, "math", "abs", "Abs")
 	structs.AddOperator(META, "math", "round", "Round", "Rounded")
@@ -457,6 +615,61 @@ function structs.AddAllOperators(META)
 	structs.AddOperator(META, "math", "min", "Min", "Min")
 	structs.AddOperator(META, "math", "max", "Max", "Max")
 	structs.AddOperator(META, "math", "clamp", "Clamp", "Clamped", true)
+end
+
+function structs.Swizzle(META, arg_count, ctor)
+	local count = #META.Args
+	arg_count = arg_count or count
+	ctor = ctor or "structs."..META.ClassName
+
+	local lua = "local META = ...\nlocal out = {}\n"
+	for i = 1, count do
+		lua = lua .. "for _, _"..i.." in ipairs(META.Args) do\n"
+	end
+
+	local index_args = ""
+	for i = 1, arg_count do
+		index_args = index_args .. "_"..i.."[1]"
+
+		if i ~= arg_count then
+			index_args = index_args .. ".."
+		end
+	end
+
+	local ctor_args = ""
+	for i = 1, arg_count do
+		ctor_args = ctor_args .. "_"..i.."[1]"
+
+		if i ~= arg_count then
+			ctor_args = ctor_args .. "..', a.'.. "
+		end
+	end
+
+	lua = lua .. "out["..index_args.."] = loadstring('return function(a) return ".. ctor .."(a.'.."..ctor_args.."..') end')()\n"
+
+	for i = 1, count do
+		lua = lua .. "end\n"
+	end
+
+	lua = lua .. "return out"
+
+	local tbl = assert(loadstring(lua))(META)
+
+
+	for i2 = 2, #META.Args[1] do
+		for k,v in pairs(tbl) do
+			for i = 1, count do
+				k = k:replace(META.Args[i][1], META.Args[i][i2])
+			end
+			tbl[k] = v
+		end
+	end
+
+	if META.__swizzle then
+		table.merge(META.__swizzle, tbl)
+	else
+		META.__swizzle = tbl
+	end
 end
 
 runfile("structs/*", structs)
