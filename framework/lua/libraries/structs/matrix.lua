@@ -626,6 +626,10 @@ function META:SetRotation(q)
 	return self
 end
 
+function META:RotateQuat(q)
+	self:Multiply(Matrix44():SetRotation(q))
+end
+
 function META:SetAngles(ang)
 	self:SetRotation(Quat():SetAngles(ang))
 end
