@@ -46,7 +46,7 @@ local function setup(self)
 	end
 
 	tex:SetSize(Vec2() + self.ShadowSize)
-	tex:SetInternalFormat("r32f")
+	tex:SetInternalFormat("r16f")
 
 	tex:SetupStorage()
 
