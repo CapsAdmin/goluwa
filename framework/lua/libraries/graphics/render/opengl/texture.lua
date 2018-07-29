@@ -360,24 +360,14 @@ function META:Bind(location)
 end
 
 function render._CreateTexture(self, type)
-	if type == "cube_map" then
-		self.gl_tex = gl.CreateTextureNODSA("GL_TEXTURE_" .. self.StorageType:upper())
-		self:SetWrapS("clamp_to_edge")
-		self:SetWrapT("clamp_to_edge")
-		self:SetWrapR("clamp_to_edge")
-		if render.IsExtensionSupported("ARB_seamless_cubemap_per_texture") then
-			self.gl_tex:SetParameteri("GL_TEXTURE_CUBE_MAP_SEAMLESS", 1)
-		end
-	else
-		self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
-		if self.StorageType:upper() ~= "2D_MULTISAMPLE" then
-			self:SetWrapS("repeat")
-			self:SetWrapT("repeat")
-			self:SetWrapR("repeat")
-		end
-	end
+
+	self.gl_tex = gl.CreateTexture("GL_TEXTURE_" .. self.StorageType:upper())
 
 	if self.StorageType:upper() ~= "2D_MULTISAMPLE" then
+		self:SetWrapS("repeat")
+		self:SetWrapT("repeat")
+		self:SetWrapR("repeat")
+
 		self:SetMinFilter("linear_mipmap_linear")
 		self:SetMagFilter("linear")
 	end
