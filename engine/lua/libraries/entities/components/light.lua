@@ -79,7 +79,7 @@ if GRAPHICS then
 			do -- setup the projection matrix
 				if self.Ortho then
 					local size = self:GetOrthoSize(i)
-					projection:Ortho(-size, size, -size, size, size*5, -size*2)
+					projection:Ortho(-size, size, -size, size, 100,-1000)
 					cam:SetViewport(Rect(0,0,size,size))
 				else
 					local shadow_map = self.shadow_maps[i]

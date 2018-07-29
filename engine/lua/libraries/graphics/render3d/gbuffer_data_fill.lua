@@ -495,8 +495,8 @@ PASS.Stages = {
 
 				float calc_shadow(vec2 uv, vec3 light_view_pos, vec3 L, vec3 N)
 				{
-					float cosTheta = -dot(N, L);
-					float bias = 0.0005*tan(acos(cosTheta));
+					float cosTheta = clamp(-dot(N, L), -1, 1);
+					float bias = clamp(0.0005*tan((cosTheta)), 0, 0.01);
 					float div = 1;
 
 					float shadow = 1;
@@ -513,7 +513,8 @@ PASS.Stages = {
 					}
 					else
 					{
-						vec3 world_pos = get_world_pos(uv)*0.9999;
+						vec3 world_pos = get_world_pos(uv);
+						const float hmm = 1;
 
 						]] .. (function()
 							local code = ""
@@ -524,14 +525,17 @@ PASS.Stages = {
 									vec3 shadow_coord = temp.xyz / temp.w;
 
 									if (
-										shadow_coord.x >= -0.995 &&
-										shadow_coord.x <= 0.995 &&
-										shadow_coord.y >= -0.995 &&
-										shadow_coord.y <= 0.995 &&
-										shadow_coord.z >= -0.995 &&
-										shadow_coord.z <= 0.995
+										shadow_coord.x >= -hmm &&
+										shadow_coord.x <= hmm &&
+										shadow_coord.y >= -hmm &&
+										shadow_coord.y <= hmm &&
+										shadow_coord.z >= -hmm &&
+										shadow_coord.z <= hmm
 									)
 									{
+
+
+
 										shadow_coord = 0.5 * shadow_coord + 0.5;
 
 										float depth = texture(tex_shadow_map, shadow_coord.xy).r - shadow_coord.z;
