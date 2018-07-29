@@ -22,13 +22,16 @@ function table.tolist(tbl, sort)
 		table.insert(list, {key = key, val = val})
 	end
 
+	if sort then table.sort(list, sort) end
+
 	return list
 end
 
 function table.sortedpairs(tbl, sort)
-	local list = table.tolist(tbl)
-	table.sort(list, sort)
+	local list = table.tolist(tbl, sort)
+
 	local i = 0
+
 	return function()
 		i = i + 1
 		if list[i] then
