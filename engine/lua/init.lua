@@ -95,7 +95,7 @@ do
 		rate = rate_cvar:Get()
 
 		-- todo: user is changing properties in game
-		if rate > 0 and GRAPHICS and gui and gui.world.options then
+		if rate > 0 and GRAPHICS and gui and gui.world and gui.world.options then
 			rate = math.max(rate, 10)
 		end
 
