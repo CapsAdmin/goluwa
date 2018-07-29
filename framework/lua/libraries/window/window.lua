@@ -113,7 +113,10 @@ do
 		render.PushViewport(0, 0, self:GetSize():Unpack())
 
 			local dt = system.GetFrameTime()
-			render.GetScreenFrameBuffer():Begin()
+			local fb = render.GetScreenFrameBuffer()
+
+			fb:Begin()
+			fb:ClearAll()
 
 			event.Call("Draw3D", dt)
 
@@ -133,7 +136,7 @@ do
 				event.Call("PostDrawScene")
 			end
 
-			render.GetScreenFrameBuffer():End()
+			fb:End()
 		render.PopWindow()
 		render.PopViewport()
 	end
