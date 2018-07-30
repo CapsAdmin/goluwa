@@ -6,6 +6,7 @@ runfile("quadric_bezier_curve.lua", gfx)
 runfile("text.lua", gfx)
 
 function gfx.Initialize()
+	if VULKAN then return end
 	gfx.ninepatch_poly = gfx.CreatePolygon2D(9 * 6)
 	gfx.ninepatch_poly.vertex_buffer:SetDrawHint("dynamic")
 

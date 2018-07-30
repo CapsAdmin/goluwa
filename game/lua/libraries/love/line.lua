@@ -74,6 +74,8 @@ function line.ErrorNotSupported(str, level)
 end
 
 function line.CreateLoveEnv(version)
+	if VULKAN then return end
+
 	version = version or pvars.Get("line_version")
 
 	local love = {}

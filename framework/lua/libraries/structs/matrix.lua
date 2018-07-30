@@ -1,6 +1,7 @@
 local structs = (...) or _G.structs
 
-local function matrix_template(X, Y, identity)
+local function matrix_template(X, Y, identity, number_type)
+	number_type = number_type or "double"
 
 	local function generate_generic(cb, no_newline)
 		local str = ""
@@ -24,7 +25,7 @@ local structs = ...
 local META = prototype.CreateTemplate("matrix]==] .. X .. Y .. [==[")
 META.__index = META
 
-META.NumberType = "double"
+META.NumberType = "]==] .. number_type .. [==["
 
 META.Args = {
 	]==] .. generate_generic(function(x, y) return "\"m" .. x .. y .. "\", " end) .. [==[
@@ -150,6 +151,10 @@ if ffi then
 		return o
 	end
 
+	function META.GetDoublePointer(m)
+		return m
+	end
+
 	function META.GetFloatCopy(m)
 		return ctype(
 			]==] .. generate_generic(function(x, y) return "m.m" .. x .. y .. ", " end):sub(0, -4)  .. [==[
@@ -255,7 +260,7 @@ function META:Register()
 		ffi.metatype(META.Constructor, META)
 	end
 
-	function _G.Matrix]==]..X..Y..[==[()
+	function _G.Matrix]==]..X..Y..(function() if number_type == "double" then return "" end return "f" end)()..[==[()
 		return META.Constructor(]==] .. table.concat(identity, ", ") .. [==[)
 	end
 
@@ -284,7 +289,8 @@ for X = 2, 4 do
 	end
 end
 
-local META = matrix_template(4,4, {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1})
+for i,v in ipairs({"double", "float"}) do
+local META = matrix_template(4,4, {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1}, v)
 
 function META.GetInverse(m, o)
 	o = o or META.Constructor(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
@@ -639,3 +645,4 @@ function META:GetAngles()
 end
 
 META:Register()
+end

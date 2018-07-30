@@ -403,6 +403,26 @@ function META:GetClipboard()
 	end
 end
 
+if VULKAN then
+	function META:PreWindowSetup(flags)
+		table.insert(flags, "vulkan")
+
+		glfw.WindowHint(glfw.e.CLIENT_API, glfw.e.NO_API)
+	end
+
+	function META:PostWindowSetup()
+
+	end
+
+	function render.CreateVulkanSurface(wnd, instance)
+		return glfw.CreateWindowSurface(instance, wnd.wnd_ptr, nil)
+	end
+
+	function render.GetRequiredInstanceExtensions(wnd, extra)
+		return glfw.GetRequiredInstanceExtensions(wnd.wnd_ptr, extra)
+	end
+end
+
 if OPENGL and not NULL_OPENGL then
 	local gl = require("opengl")
 

@@ -2,7 +2,10 @@ local render = ... or _G.render
 
 runfile("../null/render.lua", render)
 
+--_G.FFI_LIB = "/usr/lib/x86_64-linux-gnu/libvulkan.so.1"
 local vk = desire("vulkan")
+--_G.FFI_LIB = nil
+
 local ffi = require("ffi")
 
 runfile("buffer.lua", render)
@@ -30,7 +33,8 @@ function render.AllocateMemory(size, type_bits, requirements_mask)
 	})
 end
 
-function render._Initialize(wnd)
+function render._Initialize()
+	local wnd = render.GetWindow()
 	local width, height = wnd:GetSize():Unpack()
 
 	do -- create vulkan instance
@@ -141,7 +145,7 @@ function render._Initialize(wnd)
 	end
 
 	do -- setup the window buffer
-		local surface = assert(render.CreateVulkanSurface(wnd, render.instance))
+		local surface = vk.Assert(render.CreateVulkanSurface(wnd, render.instance))
 		local formats = render.physical_device:GetSurfaceFormats(surface)
 		local capabilities = render.physical_device:GetSurfaceCapabilities(surface)
 
@@ -173,9 +177,15 @@ function render._Initialize(wnd)
 
 		render.surface = surface
 
-		render.swap_chain = render.device:CreateSwapchain({
+		local imageCount = capabilities.minImageCount + 1
+
+		if capabilities.maxImageCount > 0 and imageCount > capabilities.maxImageCount then
+			imageCount = capabilities.maxImageCount
+		end
+
+		render.swap_chain = vk.Assert(render.device:CreateSwapchain({
 			surface = surface,
-			minImageCount = math.min(capabilities.minImageCount + 1, capabilities.maxImageCount),
+			minImageCount = imageCount,
 			imageFormat = prefered_format,
 			imagecolorSpace = formats[1].colorSpace,
 			imageExtent = {width, height},
@@ -191,7 +201,7 @@ function render._Initialize(wnd)
 			presentMode = present_mode,
 			oldSwapchain = nil,
 			clipped = true,
-		})
+		}))
 
 		do -- depth buffer to use in render pass
 			local format = "d16_unorm"
@@ -368,7 +378,7 @@ function render._Initialize(wnd)
 
 	do
 		-- CreateTexture is a function defined further up that returns a lua object
-		render.texture = render.CreateTexture("../../../src/lua/build/vulkan/test/volcano.png", "b8g8r8a8_unorm")
+		render.texture = render.CreateTextureVK(R"textures/lua_logo.png", "b8g8r8a8_unorm")
 	end
 
 	do -- vertices
@@ -455,24 +465,31 @@ function render._Initialize(wnd)
 	end
 
 	do -- uniforms
-		local matrix_type = ffi.typeof(Matrix44())
+		local cam = camera.CreateCamera()
+		cam:Set3D(true)
+
+		render.camera = cam
+
+		local matrix_type = ffi.typeof(Matrix44f())
 
 		local uniforms_type = ffi.typeof("struct { $ projection; $ view; $ world; }", matrix_type, matrix_type, matrix_type)
 		local create_uniforms = uniforms_type
 
 		local uniforms = create_uniforms
 		{
-			projection = Matrix44(),
-			view = Matrix44(),
-			world = Matrix44(),
+			projection = Matrix44f(),
+			view = Matrix44f(),
+			world = Matrix44f(),
 		}
+
+		render.uniforms_mem = uniforms
 
 		render.projection_matrix = uniforms.projection
 		render.view_matrix = uniforms.view
 		render.model_matrix = uniforms.world
 
-		render.projection_matrix:Perspective(math.rad(90), 32000, 0.1, width / height)
-		render.view_matrix:Translate(0,0,-5)
+		--render.projection_matrix:Perspective(math.rad(90), 32000, 0.1, width / height)
+		render.view_matrix:Translate(0,-3,-5)
 		render.model_matrix:Rotate(0.5, 0,1,0)
 
 		render.uniforms = render.CreateBuffer("uniform_buffer", uniforms)
@@ -716,9 +733,11 @@ function render._Initialize(wnd)
 		buffer.command_buffer:End()
 	end
 
+	runfile("/home/caps/goluwa/game/lua/autorun/graphics/fly_camera.lua")
+
 	event.AddListener("Update", "vulkan_test", function()
-		render.device_queue:WaitIdle()
-		render.device:WaitIdle()
+		vk.Assert(render.device_queue:WaitIdle())
+		vk.Assert(render.device:WaitIdle())
 
 		local semaphore = render.device:CreateSemaphore({
 			flags = 0,
@@ -728,6 +747,33 @@ function render._Initialize(wnd)
 		index = index + 1
 
 		--render.projection_matrix:Perspective(math.rad(90), 32000, 0.1, width / height)
+
+		do
+			render.camera:SetViewport(Rect(0,0,width,height))
+
+			local cam_pos = render.camera:GetPosition()
+			local cam_ang = render.camera:GetAngles()
+			local cam_fov = render.camera:GetFOV()
+
+			local dir, ang, fov = CalcMovement(system.GetFrameTime(), cam_ang, cam_fov)
+
+			cam_pos = cam_pos + dir
+
+			render.camera:SetPosition(cam_pos)
+			render.camera:SetAngles(ang)
+			render.camera:SetFOV(fov)
+
+			for i = 0, 15 do
+				render.uniforms_mem.view:SetI(i, render.camera:GetMatrices().view:GetI(i))
+			end
+
+			for i = 0, 15 do
+				render.uniforms_mem.projection:SetI(i, render.camera:GetMatrices().projection:GetI(i))
+			end
+
+			render.camera:Rebuild()
+		end
+
 		render.uniforms:Update()
 
 		render.device_queue:Submit(nil,

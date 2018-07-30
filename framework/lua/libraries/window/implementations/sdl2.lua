@@ -159,7 +159,6 @@ do
 				elseif case == sdl.e.WINDOWEVENT_LEAVE then
 					self:CallEvent("LostFocus")
 					self.Focused = false
-print("!!!")
 				elseif case == sdl.e.WINDOWEVENT_CLOSE then
 					self:CallEvent("Close")
 
@@ -418,6 +417,30 @@ if system then
 		time = time - start_time
 
 		return time / freq
+	end
+end
+
+if VULKAN then
+	function META:PreWindowSetup(flags)
+		table.insert(flags, "vulkan")
+	end
+
+	function META:PostWindowSetup()
+
+	end
+
+	function render.CreateVulkanSurface(wnd, instance)
+		local surface = sdl.CreateVulkanSurface(wnd.wnd_ptr, instance)
+
+		if surface == nil then
+			return nil, ffi.string(sdl.GetError())
+		end
+
+		return surface
+	end
+
+	function render.GetRequiredInstanceExtensions(wnd, extra)
+		return sdl.GetRequiredInstanceExtensions(wnd.wnd_ptr, extra)
 	end
 end
 

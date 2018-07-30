@@ -7,6 +7,7 @@ runfile("stencil.lua", render2d)
 runfile("effects.lua", render2d)
 
 function render2d.Initialize()
+	if VULKAN then return end
 	render2d.shader = render.CreateShader(render2d.shader_data)
 
 	render2d.rectangle_indices = render.CreateIndexBuffer()
