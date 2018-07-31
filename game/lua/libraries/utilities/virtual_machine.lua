@@ -43,7 +43,7 @@ do
 		end
 
 		function INSTR:jump_if_true()
-			local addr = self.code[self.ip]
+			local addr = self.current_function.code[self.ip]
 			self.ip = self.ip + 1
 
 			if self.stack[self.sp] == true then
@@ -54,7 +54,7 @@ do
 		end
 
 		function INSTR:jump_if_false()
-			local addr = self.code[self.ip]
+			local addr = self.current_function.code[self.ip]
 			self.ip = self.ip + 1
 
 			if self.stack[self.sp] == false then
@@ -65,17 +65,17 @@ do
 		end
 
 		function INSTR:jump()
-			self.ip = self.code[self.ip]
+			self.ip = self.current_function.code[self.ip]
 		end
 
 		function INSTR:value()
-			self:Push(self.code[self.ip])
+			self:Push(self.current_function.code[self.ip])
 			self.ip = self.ip + 1
 		end
 
 		do
 			local function load(self, tbl)
-				local val = self.code[self.ip]
+				local val = self.current_function.code[self.ip]
 				self.ip = self.ip + 1
 				self.sp = self.sp + 1
 
@@ -83,15 +83,15 @@ do
 			end
 
 			local function store(self, tbl)
-				local val = self.code[self.ip]
+				local val = self.current_function.code[self.ip]
 				self.ip = self.ip + 1
 
 				tbl[val] = self.stack[self.sp]
 				self.sp = self.sp - 1
 			end
 
-			function INSTR:local_load() load(self, self.ctx.locals) end
-			function INSTR:local_store() store(self, self.ctx.locals) end
+			function INSTR:local_load() load(self, self.current_function.locals) end
+			function INSTR:local_store() store(self, self.current_function.locals) end
 
 			function INSTR:global_load() load(self, self.globals) end
 			function INSTR:global_store() store(self, self.globals) end
@@ -100,27 +100,32 @@ do
 		function INSTR:pop() self.sp = self.sp - 1 end
 
 		function INSTR:call()
-			local findex = self.code[self.ip]
+			local func_name = self.current_function.code[self.ip]
 			self.ip = self.ip + 1
 
+			local func = self.functions[func_name]
 
-			local nargs = self.metadata[findex].args
+			local nargs = func.args
 
-			self.ctx = {prev_context = self.ctx, return_ip = self.ip, metadata = self.metadata[findex], locals = {}}
+			func.prev_function = self.current_function
+			func.return_ip = self.ip
 
 			local firstarg = self.sp - nargs + 1
 
 			for i = 1, nargs do
-				self.ctx.locals[i] = self.stack[firstarg + i - 1]
+				func.locals[i] = self.stack[firstarg + i - 1]
 			end
 
 			self.sp = self.sp - (nargs - 1)
-			self.ip = self.metadata[findex].address
+
+			self.current_function = func
+
+			self.ip = 1
 		end
 
 		function INSTR:ret()
-			self.ip = self.ctx.return_ip
-			self.ctx = self.ctx.prev_context
+			self.ip = self.current_function.return_ip
+			self.current_function = self.current_function.prev_function
 		end
 
 		function INSTR:print()
@@ -145,9 +150,8 @@ do
 	end
 
 	function META:Run()
-		local opcode = self.code[self.ip]
+		local opcode = self.current_function.code[self.ip]
 
-		self.ctx = {prev_context = nil, return_ip = 1, metadata = self.metadata[1], locals = {}}
 		self.ip = 1
 
 		while opcode ~= "halt" do
@@ -159,20 +163,29 @@ do
 
 			self.Instructions[opcode](self)
 
-			opcode = self.code[self.ip]
+			opcode = self.current_function.code[self.ip]
 		end
 	end
 
-	function utility.CreateVirtualMachine(code, metadata)
+	function utility.CreateVirtualMachine(functions)
+
+		assert(functions.main, "no main function")
+
+		for k,v in pairs(functions) do
+			v.locals = v.locals or {}
+			v.args = v.args or 0
+		end
+
 		local self = setmetatable({}, META)
-		self.code = code
+		self.functions = functions
+		self.current_function = self.functions.main
+
 		self.ip = 1
 		self.sp = 0
 
 		self.globals = {}
 		self.stack = {}
 
-		self.metadata = metadata or {}
 		return self
 	end
 end
@@ -180,66 +193,66 @@ end
 if RELOAD then
 	do
 		local code = {
-			-- function main()
-				-- print(f(10))
-				"value", 10,
-				"call", 2,
-				"print",
-				"halt",
-			-- end
-
-			-- function f(x) (ARGS=1, LOCALS=1)
-				-- local a = x;
+			main = {
+				code = {
+					"value", 10,
+					"call", "f",
+					"print",
+					"halt",
+				},
+			},
+			f = {
+				args = 1,
+				code = {
 					"local_load", 1,
 					"local_store", 2,
 
-				-- return 2*a
 					"local_load", 2,
 					"value", 2,
 					"mul",
 					"ret"
-			-- end
-		};
+				}
+			},
+		}
 
-		local vm = VirtualMachine(code, {
-			{name = "main", address = 1,},
-			{name = "f", address = 7, args = 1,}
-		})
+		local vm = utility.CreateVirtualMachine(code)
 		vm:Run()
 	end
 
 	do
 		local code = {
-			-- function main()
-				-- _G.N = 10
-				"value", 10,
-				"global_store", "N",
+			main = {
+				code = {
+					-- function main()
+						-- _G.N = 10
+						"value", 10,
+						"global_store", "N",
 
-				-- _G.I = 0
-				"value", 0,
-				"global_store", "I",
+						-- _G.I = 0
+						"value", 0,
+						"global_store", "I",
 
-				--while I < N do -- ADDRESS: 9
-					"global_load", "I",
-					"global_load", "N",
-					"less",
-					"jump_if_false", 28, -- end of main
+						--while I < N do -- ADDRESS: 9
+							"global_load", "I",
+							"global_load", "N",
+							"less",
+							"jump_if_false", 28, -- end of main
 
-					"global_load", "I",
-					"value", 1,
-					"add",
-					"global_store", "I",
+							"global_load", "I",
+							"value", 1,
+							"add",
+							"global_store", "I",
 
-					"global_load", "I",
-					"print",
-				"jump", 9,
+							"global_load", "I",
+							"print",
+						"jump", 9,
 
-			"halt", -- ADDRESS: 25
+					"halt", -- ADDRESS: 25
+				}
+			}
 		}
 
-		local vm = VirtualMachine(code, {
-			{name = "main", address = 1,}
-		})
+		local vm = utility.CreateVirtualMachine(code)
 		vm:Run()
 	end
 
