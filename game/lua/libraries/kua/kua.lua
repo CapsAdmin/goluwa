@@ -1,53 +1,21 @@
 local kua = {}
 
-runfile("lexer.lua", kua)
+runfile("tokenizer.lua", kua)
 
-local function test_lua_files()
-	if true or not FILES then
-		FILES = {}
-		for _, path in pairs(vfs.GetFilesRecursive("/home/caps/snabb/", {"lua"})) do
+MINIFIED = MINIFIED or vfs.Read(e.BIN_FOLDER .. "main.lua")
 
-			local str, err = vfs.Read(path)
-			if str then
-				table.insert(FILES, {str=str, path=path})
-			else
-				print(err)
-				print(path)
-			end
-		end
-	end
+--S""
+--local tokens = kua.Tokenize(MINIFIED)
+--S""
 
+kua.DumpTokens(kua.Tokenize([==[
+{awdaw AWD}
+]==]))
 
-	S""
-	for i,v in ipairs(FILES) do
-		local tokens, err = kua.Lexify(v.str)
-		if not tokens then
-			print(err)
-			print(v.path)
-		end
-	end
-	S""
-end
+--table.print(tokens[#tokens])
 
-
-local function test_string()
-	local tokens, err = kua.Lexify(
-	[========[#!asdawdawd
-	local num = 0x4p4a
-	]========]
-)
-
-	if tokens then
-		kua.DumpTokens(tokens)
-		--table.print2(tokens)
-	else
-		print(err, "!!")
-	end
-end
-
-test_lua_files()
---test_string()
-
-_G.kua = kua
+commands.Add("tokenize=arg_line", function(str)
+	kua.DumpTokens(kua.Tokenize(str))
+end)
 
 return kua
