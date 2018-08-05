@@ -62,15 +62,12 @@ do -- syntax rules
 		["-U"] = "left",
 		["=="] = "left",
 		["~="] = "left",
+		["!="] = "left",
 		[">"] = "left",
 		["<"] = "left",
 		[">="] = "left",
 		["<="] = "left",
-		["and"] = "left",
-		["or"] = "left",
-		["not"] = "left",
 		["#"] = "left",
-
 		["^"] = "right",
 		[".."] = "right",
 		["&"] = "right",
@@ -117,7 +114,14 @@ do -- syntax rules
 	syntax.symbol_priority = {"..."}
 	syntax.symbol_priority_lookup = {}
 
+	local is_operator = {}
+
+	for k,v in pairs(syntax.operator_priority) do
+		is_operator[v] = true
+	end
 	for k,v in pairs(syntax.operator_precedence) do
+		is_operator[k] = true
+
 		table.insert(syntax.symbol_priority, k)
 		for i = 1, #k do
 			local c = k:sub(i, i)
@@ -130,7 +134,64 @@ do -- syntax rules
 		end
 	end
 
+	syntax.is_operator = is_operator
+
 	table.sort(syntax.symbol_priority, function(a, b) return #a > #b end)
+
+
+
+
+
+	local symbols = {
+		"^",
+		"-",
+		"#",
+		"*",
+		"/",
+		"%",
+		"+",
+		"-",
+		"..",
+		"<<",
+		">>",
+		"&",
+		"|",
+		"<",
+		">",
+		"<=",
+		">=",
+		"~=",
+		"!=",
+		"==",
+		"..",
+		"...",
+		"+=",
+		".",
+		",",
+		"(",
+		")",
+		"{",
+		"}",
+		"[",
+		"]",
+		"=",
+		":",
+		";",
+		"`",
+		"'",
+		"\"",
+	}
+	table.sort(symbols, function(a, b) return #a > #b end)
+	syntax.symbols = symbols
+
+	local longest_symbol = 0
+	local lookup = {}
+	for k,v in ipairs(symbols) do
+		lookup[v] = true
+		longest_symbol = math.max(longest_symbol, #v)
+	end
+	syntax.longest_symbol = longest_symbol
+	syntax.symbols_lookup = lookup
 end
 
 return syntax

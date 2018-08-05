@@ -22,6 +22,8 @@ local function compile_error(state, msg, start, stop)
 
 	str = context_start .. str .. context_stop:sub(#content_after + 1)
 
+	print(str)
+
 	return nil, "\n" .. str
 end
 
@@ -435,25 +437,11 @@ function kua.Tokenize(code)
 
 			i = stop
 		elseif t == "symbol" then
-			local found = false
-
-			if kua.syntax.symbol_priority_lookup[char] then
-				for _, token in ipairs(kua.syntax.symbol_priority) do
-					if state.code:sub(i, i + #token - 1) == token then
-						i = i + #token - 1
-
-						found = true
-
-						add_token(state, "symbol", i, i + #token - 1)
-
-						break
-					end
-				end
-			end
-
-			if not found then
-				if kua.syntax.char_types[char] then
-					add_token(state, "symbol", i, i)
+			for i2 = kua.syntax.longest_symbol - 1, 0, -1 do
+				if kua.syntax.symbols_lookup[state.code:sub(i, i+i2)] then
+					add_token(state, "symbol", i, i+i2)
+					i = i + i2
+					break
 				end
 			end
 		end
@@ -464,15 +452,30 @@ function kua.Tokenize(code)
 		i = i + 1
 	end
 
+	function state:GetToken(i)
+		local info = self.chunks[i]
+		if not info then return end
+		info.value = info.value or self.code:sub(info.start, info.stop)
+		info.i = i
+		return info
+	end
+
+	state.i = 1
+
 	return state
 end
 
 function kua.DumpTokens(state, err)
-	assert(state, err)
 
-	table.print2(state.chunks)
+	--table.print2(state.chunks)
 
+	local start = 0
 	for _,v in ipairs(state.chunks) do
-		log("𝆄", state.code:sub(v.start, v.stop), "𝆄")
+		log(
+			state.code:sub(start+1, v.start-1),
+			"⸢", state.code:sub(v.start, v.stop), "⸥"
+		)
+		start = v.stop
 	end
+	log(state.code:sub(start+1))
 end

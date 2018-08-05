@@ -1,18 +1,15 @@
 local kua = {}
 
 runfile("tokenizer.lua", kua)
+runfile("tree.lua", kua)
 
 MINIFIED = MINIFIED or vfs.Read(e.BIN_FOLDER .. "main.lua")
 
 --S""
---local tokens = kua.Tokenize(MINIFIED)
+local tokens = kua.Tokenize(MINIFIED)
 --S""
 
-kua.DumpTokens(kua.Tokenize([==[
-{awdaw AWD}
-]==]))
-
---table.print(tokens[#tokens])
+table.print(tokens[#tokens])
 
 commands.Add("tokenize=arg_line", function(str)
 	kua.DumpTokens(kua.Tokenize(str))
