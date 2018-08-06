@@ -53,43 +53,31 @@ do -- syntax rules
 		syntax.char_types = char_types
 	end
 
-	syntax.operator_precedence = {
-		["+"] = "left",
-		["-"] = "left",
-		["*"] = "left",
-		["/"] = "left",
-		["%"] = "left",
-		["-U"] = "left",
-		["=="] = "left",
-		["~="] = "left",
-		["!="] = "left",
-		[">"] = "left",
-		["<"] = "left",
-		[">="] = "left",
-		["<="] = "left",
-		["#"] = "left",
-		["^"] = "right",
-		[".."] = "right",
-		["&"] = "right",
-		["~U"] = "right",
-		["|"] = "right",
-		[">>"] = "right",
-		["<<"] = "right",
-	}
-
-	syntax.operator_priority = {
-		"^",
-		"not", "-", "#",
-		"*", "/", "%",
-		"+", "-",
-		"..",
-		"<<", ">>",
-		"&",
-		"~U",
-		"|",
-		"<", ">", "<=", ">=", "~=", "==",
-		"and",
-		"or",
+	syntax.operators = {
+		["^"] = {10, 9},
+		["%"] = {7, 7},
+		["/"] = {7, 7},
+		["*"] = {7, 7},
+		["+"] = {6, 6},
+		["-"] = {6, 6},
+		[".."] = {5, 4},
+		["<="] = {3, 3},
+		["=="] = {3, 3},
+		["~="] = {3, 3},
+		["<"] = {3, 3},
+		[">"] = {3, 3},
+		[">="] = {3, 3},
+		["and"] = {2, 2},
+		["or"] = {1, 1},
+		[">>"] = {-1, -1},
+		["~U"] = {-1, -1},
+		["#"] = {-1, -1},
+		["not"] = {-1, -1},
+		["<<"] = {-1, -1},
+		["!="] = {-1, -1},
+		["&"] = {-1, -1},
+		["|"] = {-1, -1},
+		["-U"] = {-1, -1},
 	}
 
 	syntax.keywords = {
@@ -111,87 +99,36 @@ do -- syntax rules
 		syntax.keyword_values[v] = v
 	end
 
-	syntax.symbol_priority = {"..."}
-	syntax.symbol_priority_lookup = {}
-
-	local is_operator = {}
-
-	for k,v in pairs(syntax.operator_priority) do
-		is_operator[v] = true
-	end
-	for k,v in pairs(syntax.operator_precedence) do
-		is_operator[k] = true
-
-		table.insert(syntax.symbol_priority, k)
-		for i = 1, #k do
-			local c = k:sub(i, i)
-			if c:find("%p") then
-				if i == 1 then
-					syntax.symbol_priority_lookup[c] = true
-				end
-				syntax.char_types[c] = "symbol"
+	do
+		local symbols = {"..."}
+		local done = {}
+		for k,v in pairs(syntax.char_types) do
+			if v == "symbol" and not done[k] then
+				table.insert(symbols, k)
+				done[k] = true
 			end
 		end
+		for k,v in pairs(syntax.operators) do
+			if not done[k] then
+				table.insert(symbols, k)
+				done[k] = true
+			end
+		end
+		table.sort(symbols, function(a, b) return #a > #b end)
+		syntax.symbols = symbols
+
+		local longest_symbol = 0
+		local lookup = {}
+		for k,v in ipairs(symbols) do
+			lookup[v] = true
+			longest_symbol = math.max(longest_symbol, #v)
+			if #v == 1 then
+				syntax.char_types[v] = "symbol"
+			end
+		end
+		syntax.longest_symbol = longest_symbol
+		syntax.symbols_lookup = lookup
 	end
-
-	syntax.is_operator = is_operator
-
-	table.sort(syntax.symbol_priority, function(a, b) return #a > #b end)
-
-
-
-
-
-	local symbols = {
-		"^",
-		"-",
-		"#",
-		"*",
-		"/",
-		"%",
-		"+",
-		"-",
-		"..",
-		"<<",
-		">>",
-		"&",
-		"|",
-		"<",
-		">",
-		"<=",
-		">=",
-		"~=",
-		"!=",
-		"==",
-		"..",
-		"...",
-		"+=",
-		".",
-		",",
-		"(",
-		")",
-		"{",
-		"}",
-		"[",
-		"]",
-		"=",
-		":",
-		";",
-		"`",
-		"'",
-		"\"",
-	}
-	table.sort(symbols, function(a, b) return #a > #b end)
-	syntax.symbols = symbols
-
-	local longest_symbol = 0
-	local lookup = {}
-	for k,v in ipairs(symbols) do
-		lookup[v] = true
-		longest_symbol = math.max(longest_symbol, #v)
-	end
-	syntax.longest_symbol = longest_symbol
-	syntax.symbols_lookup = lookup
 end
 
 return syntax
