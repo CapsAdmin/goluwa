@@ -175,7 +175,48 @@ function META:BalancedMatch(i, match, max)
 	end
 end
 
-function META:MatchBody(level)
+function META:MatchAssignment()
+	local data = {}
+
+	data.type = "assignment"
+	data.names = {}
+
+	while true do
+		local info = self:GetToken()
+		self:Next()
+
+		if info.value == "=" then
+			break
+		end
+
+		if info.value ~= "," then
+			if info.type ~= "letter" then
+				self:CompileError("unexpected symbol " .. info.value, info.start, info.stop)
+				break
+			end
+
+			table.insert(data.names, info)
+		end
+	end
+
+	data.expressions = {}
+
+	while true do
+		local tree, nxt = self:MatchExpression()
+
+		table.insert(data.expressions, tree)
+
+		if not nxt or nxt.value ~= "," then
+			break
+		end
+	end
+
+	self.i = self.i - 2
+
+	return data
+end
+
+function META:MatchBody(level, if_statement)
 	local tree = {}
 
 	while true do
@@ -184,10 +225,17 @@ function META:MatchBody(level)
 		if not info then break end
 
 		if level then
-			if info.value == "do" or info.value == "repeat" or info.value == "then" then
+
+			if info.value == "do" or info.value == "if" or info.value == "for" or info.value == "function" or info.value == "repeat" then
 				level = level + 1
-			elseif info.value == "end" then
+			elseif info.value == "end" or info.value == "until" then
 				level = level - 1
+			end
+
+			if if_statement and level == 1 then
+				if info.value == "else" or info.value == "elseif" then
+					return tree
+				end
 			end
 
 			if level == 0 then
@@ -236,50 +284,70 @@ function META:MatchBody(level)
 				self.i = self.i - 2
 
 				data.body = self:MatchBody(1)
-				table.print(body)
 
 				table.insert(tree, data)
 			else
-				local data = {}
-				data.type = "assignment"
+				local data = self:MatchAssignment()
 				data.is_local = true
-
-				data.names = {}
-
-				while true do
-					local info = self:GetToken()
-					self:Next()
-
-					if info.value == "=" then
-						break
-					end
-
-					if info.value ~= "," then
-						if info.type ~= "letter" then
-							self:CompileError("unexpected symbol " .. info.value, info.start, info.stop)
-							break
-						end
-
-						table.insert(data.names, info)
-					end
-				end
-
-				data.expressions = {}
-
-				while true do
-					local tree, nxt = self:MatchExpression()
-
-					table.insert(data.expressions, tree)
-
-					if not nxt or nxt.value ~= "," then
-						break
-					end
-				end
-
-				self.i = self.i - 2
-
 				table.insert(tree, data)
 			end
+		elseif info.value == "do" then
+			local data = {}
+			data.type = "do"
+			data.body = self:MatchBody(1)
+			table.insert(tree, data)
+		elseif info.value == "if" then
+			local data = {}
+			data.type = "if"
+			data.statements = {}
+
+			local stop = false
+
+			for i = 1, 100 do
+				local expr = self:MatchExpression()
+				local body = self:MatchBody(1, true)
+				self.i = self.i - 1
+				local token = self:GetToken()
+				self:Next()
+
+				table.insert(data.statements, {
+					expr = expr,
+					body = body,
+					token = token,
+				})
+
+				if token.value == "else" then
+					local body = self:MatchBody(1, true)
+					self.i = self.i - 1
+					local token = self:GetToken()
+					table.insert(data.statements, {
+						body = body,
+						token = token,
+					})
+					break
+				end
+			end
+
+			table.insert(tree, data)
+		elseif info.value == "for" then
+			local data = {}
+			data.type = "for"
+			data.name = self:GetToken().value
+			self:Next()
+
+			-- =
+			self:Next()
+
+			data.val = self:MatchExpression()
+			data.max = self:MatchExpression()
+
+			data.body = self:MatchBody(1)
+
+			table.insert(tree, data)
+		elseif info.type == "letter" and self:GetToken(1) and (self:GetToken(1).value == "," or self:GetToken(1).value == "=") then
+			local data = self:MatchAssignment()
+			data.is_local = false
+			table.insert(tree, data)
 		end
 	end
 
@@ -402,7 +470,42 @@ do
 		indent = indent or 0
 
 		for _, data in ipairs(tree) do
-			if data.type == "function" then
+			log(string.rep("\t", indent))
+
+			if false then
+				--
+			elseif data.type == "if" then
+				for i,v in ipairs(data.statements) do
+					if i == 1 then
+						log("if ")
+					end
+
+					if v.expr then
+						dump_expression(v.expr)
+						log(" then")
+					end
+
+					logn()
+
+					oh.DumpAST(v.body, indent + 1)
+					log(string.rep("\t", indent))
+					log(v.token.value)
+				end
+			elseif data.type == "for" then
+				log("for ", data.name, " = ")
+				dump_expression(data.val)
+				log(", ")
+				dump_expression(data.max)
+				log(" do\n")
+				oh.DumpAST(data.body, indent + 1)
+				log(string.rep("\t", indent))
+				log("end")
+			elseif data.type == "do" then
+				log("do\n")
+				oh.DumpAST(data.body, indent + 1)
+				log(string.rep("\t", indent))
+				log("end")
+			elseif data.type == "function" then
 
 				if data.is_local then
 					log("local ")
@@ -419,11 +522,9 @@ do
 				end
 				log(")\n")
 				oh.DumpAST(data.body, indent + 1)
-				log("\nend")
-			end
-			if data.type == "assignment" then
-
 				log(string.rep("\t", indent))
+				log("end")
+			elseif data.type == "assignment" then
 
 				if data.is_local then
 					log("local ")
@@ -462,9 +563,8 @@ do
 						log(", ")
 					end
 				end
-
-				logn()
 			end
+			logn()
 		end
 	end
 	logn()
@@ -979,6 +1079,32 @@ if RELOAD then
 	local b = function(a,b,c) local awd = awd*5 end
 	local function test()
 		local a = b
+		lol = true
+		adwawd = ad
+		a,b,c=e,f,g
+	end
+
+	do
+		local a = 1
+		do
+		local a = 2
+
+		local function asdf()
+			for i = 1, 10 do
+			local i = i + 2
+			if i < 5 then
+			local a = 1
+			elseif i > 5 then
+			local a = 2
+			else
+			local a = 3
+			end
+			end
+
+
+		end
+
+		end
 	end
 	]==]
 
