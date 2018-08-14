@@ -1,6 +1,139 @@
-local kua = ... or _G.kua or {}
+local oh = {}
 
-kua.syntax = runfile("grammar.lua")
+do
+	local syntax = {}
+
+	do -- syntax rules
+		syntax.quote = "\""
+		syntax.literal_quote = "`"
+		syntax.escape_character = "\\"
+		syntax.comment = "--"
+
+		do
+			local char_types = {}
+
+			do -- space
+				char_types[""] = "space"
+				char_types[" "] = "space"
+				char_types["\n"] = "space"
+				char_types["\r"] = "space"
+				char_types["\t"] = "space"
+			end
+
+			do -- numbers
+				for i = 0, 9 do
+					char_types[tostring(i)] = "number"
+				end
+			end
+
+			do -- letters
+				char_types["_"] = "letter"
+
+				for i = string.byte("A"), string.byte("z") do
+					char_types[string.char(i)] = "letter"
+				end
+			end
+
+			do -- symbols
+				char_types["."] = "symbol"
+				char_types[","] = "symbol"
+				char_types["("] = "symbol"
+				char_types[")"] = "symbol"
+				char_types["{"] = "symbol"
+				char_types["}"] = "symbol"
+				char_types["["] = "symbol"
+				char_types["]"] = "symbol"
+				char_types["="] = "symbol"
+				char_types[":"] = "symbol"
+				char_types[";"] = "symbol"
+				char_types["`"] = "symbol"
+				char_types["'"] = "symbol"
+				char_types["\""] = "symbol"
+			end
+
+			syntax.char_types = char_types
+		end
+
+		syntax.operators = {
+			["^"] = {10, 9},
+			["%"] = {7, 7},
+			["/"] = {7, 7},
+			["*"] = {7, 7},
+			["+"] = {6, 6},
+			["-"] = {6, 6},
+			[".."] = {5, 4},
+			["<="] = {3, 3},
+			["=="] = {3, 3},
+			["~="] = {3, 3},
+			["<"] = {3, 3},
+			[">"] = {3, 3},
+			[">="] = {3, 3},
+			["and"] = {2, 2},
+			["or"] = {1, 1},
+			[">>"] = {-1, -1},
+			["~U"] = {-1, -1},
+			["#"] = {-1, -1},
+			["not"] = {-1, -1},
+			["<<"] = {-1, -1},
+			["!="] = {-1, -1},
+			["&"] = {-1, -1},
+			["|"] = {-1, -1},
+			["-U"] = {-1, -1},
+		}
+
+		syntax.keywords = {
+			"and", "break", "do", "else", "elseif", "end",
+			"false", "for", "function", "if", "in", "local",
+			"nil", "not", "or", "repeat", "return", "then",
+			"true", "until", "while", "goto",
+		}
+		for k,v in pairs(syntax.keywords) do
+			syntax.keywords[v] = v
+		end
+
+		syntax.keyword_values = {
+			"nil",
+			"true",
+			"false",
+		}
+		for k,v in pairs(syntax.keyword_values) do
+			syntax.keyword_values[v] = v
+		end
+
+		do
+			local symbols = {"..."}
+			local done = {}
+			for k,v in pairs(syntax.char_types) do
+				if v == "symbol" and not done[k] then
+					table.insert(symbols, k)
+					done[k] = true
+				end
+			end
+			for k,v in pairs(syntax.operators) do
+				if not done[k] then
+					table.insert(symbols, k)
+					done[k] = true
+				end
+			end
+			table.sort(symbols, function(a, b) return #a > #b end)
+			syntax.symbols = symbols
+
+			local longest_symbol = 0
+			local lookup = {}
+			for k,v in ipairs(symbols) do
+				lookup[v] = true
+				longest_symbol = math.max(longest_symbol, #v)
+				if #v == 1 then
+					syntax.char_types[v] = "symbol"
+				end
+			end
+			syntax.longest_symbol = longest_symbol
+			syntax.symbols_lookup = lookup
+		end
+	end
+
+	oh.syntax = syntax
+end
 
 local META = {}
 META.__index = META
@@ -42,6 +175,117 @@ function META:BalancedMatch(i, match, max)
 	end
 end
 
+function META:MatchBody(level)
+	local tree = {}
+
+	while true do
+		local info = self:GetToken()
+		self:Next()
+		if not info then break end
+
+		if level then
+			if info.value == "do" or info.value == "repeat" or info.value == "then" then
+				level = level + 1
+			elseif info.value == "end" then
+				level = level - 1
+			end
+
+			if level == 0 then
+				return tree
+			end
+		end
+
+		if info.value == "local" then
+			local res = self:GetToken()
+
+			if
+				res.type ~= "letter" or
+				(
+					oh.syntax.keywords[res.value] and
+					res.value ~= "function"
+				)
+			then
+				return self:CompileError("name expected", res.start, res.start)
+			end
+
+			if res.value == "function" then
+				self:Next()
+
+				local data = {}
+				data.type = "function"
+				data.arguments = {}
+				data.name = self:GetToken().value
+				data.is_local = true
+
+				self:Next()
+
+				while true do
+					local tree, nxt = self:MatchExpression()
+
+					if tree.value == ")" then
+						break
+					end
+
+					table.insert(data.arguments, tree)
+
+					if not nxt or nxt.value ~= "," then
+						break
+					end
+				end
+
+				self.i = self.i - 2
+
+				data.body = self:MatchBody(1)
+				table.print(body)
+
+				table.insert(tree, data)
+			else
+				local data = {}
+				data.type = "assignment"
+				data.is_local = true
+
+				data.names = {}
+
+				while true do
+					local info = self:GetToken()
+					self:Next()
+
+					if info.value == "=" then
+						break
+					end
+
+					if info.value ~= "," then
+						if info.type ~= "letter" then
+							self:CompileError("unexpected symbol " .. info.value, info.start, info.stop)
+							break
+						end
+
+						table.insert(data.names, info)
+					end
+				end
+
+				data.expressions = {}
+
+				while true do
+					local tree, nxt = self:MatchExpression()
+
+					table.insert(data.expressions, tree)
+
+					if not nxt or nxt.value ~= "," then
+						break
+					end
+				end
+
+				self.i = self.i - 2
+
+				table.insert(tree, data)
+			end
+		end
+	end
+
+	return tree
+end
+
 function META:MatchExpression(priority, bracket_match)
 	priority = priority or 0
 	local v = self:GetToken()
@@ -61,6 +305,24 @@ function META:MatchExpression(priority, bracket_match)
 	if v.value == "-" or v.value == "#" or v.value == "not" then
 		local obj, op = self:MatchExpression(unary_priority, bracket_match)
 		v = {type = "unary", value = v.value, argument = obj}
+	elseif v.value == "function" then
+		self:Next()
+
+		local arguments = {}
+
+		while true do
+			local tree, nxt = self:MatchExpression()
+
+			table.insert(arguments, tree)
+
+			if not nxt or nxt.value ~= "," then
+				break
+			end
+		end
+
+		v = {type = "function", arguments = arguments, body = self:MatchBody(1)}
+
+		return v
 	end
 
 	local op = self:GetToken()
@@ -70,8 +332,8 @@ function META:MatchExpression(priority, bracket_match)
 		return v
 	end
 
-	while (not bracket_match or bracket_match == 0) and kua.syntax.operators[op.value] and kua.syntax.operators[op.value][1] > priority do
-		local v2, nextop = self:MatchExpression(kua.syntax.operators[op.value][2], bracket_match)
+	while (not bracket_match or bracket_match == 0) and oh.syntax.operators[op.value] and oh.syntax.operators[op.value][1] > priority do
+		local v2, nextop = self:MatchExpression(oh.syntax.operators[op.value][2], bracket_match)
 
 		v = {type = "operator", value = op.value, left = v, right = v2}
 
@@ -123,6 +385,91 @@ function META:Dump()
 	log(self.code:sub(start+1))
 end
 
+do
+	local function dump_expression(v)
+		if v.left then
+			log("(")
+			dump_expression(v.left)
+		end
+		log(v.value)
+		if v.right then
+			dump_expression(v.right)
+			log(")")
+		end
+	end
+
+	function oh.DumpAST(tree, indent)
+		indent = indent or 0
+
+		for _, data in ipairs(tree) do
+			if data.type == "function" then
+
+				if data.is_local then
+					log("local ")
+				end
+
+				log("function", " ")
+				log(data.name)
+				log("(")
+				for i,v2 in ipairs(data.arguments) do
+					log(v2.value)
+					if i ~= #data.arguments then
+						log(", ")
+					end
+				end
+				log(")\n")
+				oh.DumpAST(data.body, indent + 1)
+				log("\nend")
+			end
+			if data.type == "assignment" then
+
+				log(string.rep("\t", indent))
+
+				if data.is_local then
+					log("local ")
+				end
+
+				for i, v in ipairs(data.names) do
+					log(v.value)
+					if i ~= #data.names then
+						log(", ")
+					end
+				end
+
+				log(" = ")
+
+				for i, v in ipairs(data.expressions) do
+					if v.type == "operator" then
+						dump_expression(v)
+					elseif v.type == "unary" then
+						log(v.value)
+						dump_expression(v.argument)
+					elseif v.type == "function" then
+						log("function(")
+						for i,v2 in ipairs(v.arguments) do
+							log(v2.value)
+							if i ~= #v.arguments then
+								log(", ")
+							end
+						end
+						log(")\n")
+						oh.DumpAST(v.body, indent + 1)
+						log("\nend")
+					else
+						log(v.value)
+					end
+					if i ~= #data.expressions then
+						log(", ")
+					end
+				end
+
+				logn()
+			end
+		end
+	end
+	logn()
+end
+
 do -- tokenizer
 	local function string_escape(self, i)
 		if self.string_escape then
@@ -130,7 +477,7 @@ do -- tokenizer
 			return true
 		end
 
-		if self.code:sub(i, i) == kua.syntax.escape_character then
+		if self.code:sub(i, i) == oh.syntax.escape_character then
 			self.string_escape = true
 		end
 	end
@@ -149,7 +496,7 @@ do -- tokenizer
 		local length = 0
 
 		for offset = 0, 32 do
-			if self.code:sub(i + offset, i + offset) ~= kua.syntax.literal_quote then
+			if self.code:sub(i + offset, i + offset) ~= oh.syntax.literal_quote then
 				length = offset
 				break
 			end
@@ -162,7 +509,7 @@ do -- tokenizer
 			local c = self.code:sub(i, i)
 
 			if not string_escape(self, i) then
-				if c == kua.syntax.literal_quote then
+				if c == oh.syntax.literal_quote then
 					count = count + 1
 				else
 					count = 0
@@ -237,7 +584,7 @@ do -- tokenizer
 		local i = 1
 		for _ = 1, self.code_length + 1 do
 			local char = self.code:sub(i, i)
-			local t = kua.syntax.char_types[char]
+			local t = oh.syntax.char_types[char]
 
 			if i == 1 and char == "#" then
 				local stop = self.code_length
@@ -262,13 +609,13 @@ do -- tokenizer
 			self.char = char
 			self.char_type = t
 
-			if self.code:sub(i, i + #kua.syntax.comment - 1) == kua.syntax.comment then
-				i = i + #kua.syntax.comment
+			if self.code:sub(i, i + #oh.syntax.comment - 1) == oh.syntax.comment then
+				i = i + #oh.syntax.comment
 
-				if self.code:sub(i, i) == kua.syntax.literal_quote or is_literal_lua_string(self, i) then
+				if self.code:sub(i, i) == oh.syntax.literal_quote or is_literal_lua_string(self, i) then
 					local stop
 
-					if self.code:sub(i, i) == kua.syntax.literal_quote then
+					if self.code:sub(i, i) == oh.syntax.literal_quote then
 						stop = capture_literal_string(self, i)
 					else
 						stop = capture_literal_lua_string(self, i)
@@ -278,7 +625,7 @@ do -- tokenizer
 						return self:CompileError("cannot find the end of multiline comment", i, i)
 					end
 
-					add_token(self, "comment", i - #kua.syntax.comment, stop)
+					add_token(self, "comment", i - #oh.syntax.comment, stop)
 
 					i = stop
 				else
@@ -293,18 +640,18 @@ do -- tokenizer
 						end
 					end
 
-					add_token(self, "comment", i - #kua.syntax.comment, stop)
+					add_token(self, "comment", i - #oh.syntax.comment, stop)
 
 					i = stop
 				end
-			elseif char == kua.syntax.quote then
+			elseif char == oh.syntax.quote then
 				local stop
 
 				for i = i + 1, self.code_length do
 					local c = self.code:sub(i, i)
 
 					if not string_escape(self, i) then
-						if c == kua.syntax.quote then
+						if c == oh.syntax.quote then
 							stop = i
 							break
 						end
@@ -318,10 +665,10 @@ do -- tokenizer
 				add_token(self, "string", i, stop)
 
 				i = stop
-			elseif self.code:sub(i, i) == kua.syntax.literal_quote or is_literal_lua_string(self, i) then
+			elseif self.code:sub(i, i) == oh.syntax.literal_quote or is_literal_lua_string(self, i) then
 				local stop
 
-				if self.code:sub(i, i) == kua.syntax.literal_quote then
+				if self.code:sub(i, i) == oh.syntax.literal_quote then
 					stop = capture_literal_string(self, i)
 
 					if not stop then
@@ -368,7 +715,7 @@ do -- tokenizer
 					local pow = false
 					for offset = i + 2, i + 64 do
 						local char = self.code:sub(offset, offset):lower()
-						local t = kua.syntax.char_types[char]
+						local t = oh.syntax.char_types[char]
 
 						if (char:lower() == "u" or char:lower() == "l") and self.code:sub(offset+1, offset+1):lower() == "l" then
 							if self.code:sub(offset+2, offset+2):lower() == "l" then
@@ -378,7 +725,7 @@ do -- tokenizer
 							end
 
 							local char = self.code:sub(stop+1, stop+1)
-							local t = kua.syntax.char_types[char]
+							local t = oh.syntax.char_types[char]
 
 							if t == "space" or t == "symbol" then
 								break
@@ -425,7 +772,7 @@ do -- tokenizer
 
 					for offset = i + 2, i + 64 do
 						local char = self.code:sub(offset, offset):lower()
-						local t = kua.syntax.char_types[char]
+						local t = oh.syntax.char_types[char]
 
 						if char ~= "1" and char ~= "0" and char ~= "_" then
 							if not t or t == "space" or t == "symbol" then
@@ -448,7 +795,7 @@ do -- tokenizer
 
 					for offset = i, self.code_length+1 do
 						local char = self.code:sub(offset, offset)
-						local t = kua.syntax.char_types[char]
+						local t = oh.syntax.char_types[char]
 
 						if exponent then
 							if char ~= "-" and char ~= "+" and t ~= "number" then
@@ -468,7 +815,7 @@ do -- tokenizer
 									end
 
 									local char = self.code:sub(stop+1, stop+1)
-									local t = kua.syntax.char_types[char]
+									local t = oh.syntax.char_types[char]
 
 									if t == "space" or t == "symbol" then
 										break
@@ -504,7 +851,7 @@ do -- tokenizer
 
 				for offset = i, i + 256 do
 					local char = self.code:sub(offset, offset)
-					local t = kua.syntax.char_types[char]
+					local t = oh.syntax.char_types[char]
 
 					if t ~= "letter" and (t ~= "number" and last_type == "letter") then
 						stop = offset - 1
@@ -524,8 +871,8 @@ do -- tokenizer
 
 				i = stop
 			elseif t == "symbol" then
-				for i2 = kua.syntax.longest_symbol - 1, 0, -1 do
-					if kua.syntax.symbols_lookup[self.code:sub(i, i+i2)] then
+				for i2 = oh.syntax.longest_symbol - 1, 0, -1 do
+					if oh.syntax.symbols_lookup[self.code:sub(i, i+i2)] then
 						add_token(self, "symbol", i, i+i2)
 						i = i + i2
 						break
@@ -540,7 +887,7 @@ do -- tokenizer
 	end
 end
 
-function kua.Tokenize(code)
+function oh.Tokenize(code)
 	local self = {}
 
 	setmetatable(self, META)
@@ -556,3 +903,94 @@ function kua.Tokenize(code)
 
 	return self
 end
+
+function oh.TestLuajitLangToolkit(code)
+	local ls = require("lang.lexer")(require("lang.reader").string(code), code)
+	local parse = require('lang.parser')
+	local lua_ast = require('lang.lua-ast')
+	local ast_builder = lua_ast.New()
+	local parse_success, ast_tree = pcall(parse, ast_builder, ls)
+
+	for _, data in ipairs(ast_tree.body) do
+		log("local ")
+		for i, v in ipairs(data.names) do
+			log(v.name)
+			if i ~= #data.names then
+				log(", ")
+			end
+		end
+		log(" = ")
+		for i, v in ipairs(data.expressions) do
+			if v.kind == "BinaryExpression" then
+				local function dump(v)
+					local lol = false
+					if v.left then
+						log("(")
+						dump(v.left)
+					end
+					if lol then
+						log(",")
+					else
+						log(v.value or v.operator or v.name)
+					end
+					if v.right then
+						dump(v.right)
+						log(")")
+					end
+				end
+				dump(v)
+			else
+				log(v.value)
+			end
+
+			if i ~= #data.expressions then
+				log(", ")
+			end
+		end
+		logn()
+	end
+end
+
+commands.Add("tokenize=arg_line", function(str)
+	oh.DumpTokens(oh.Tokenize(str))
+end)
+
+if RELOAD then
+	local code = [==[
+
+	local a = a+i < b/2+1
+	local b = 5+x^2*8
+	local a = (1+2)+(3+4)
+
+	local a = a+i < b/2+1
+	local b = 5+x^2*8
+	local a =a < y and y <= z
+	local a =-x^2
+	local a =x^y^z
+	local a = 5+x^2*8
+	local a = x < y and x*x or y*y
+	local a = 1+2+3+4
+	local a = (1+2)+(3+4)
+	local a = (1+(2)+(3)+4)
+	local a = (1+(2+3)+4)
+	local a,b,c = 1,3+2^3,(3+2)^3
+	local a = 5+(1+2+3+4)
+
+	local b = function(a,b,c) local awd = awd*5 end
+	local function test()
+		local a = b
+	end
+	]==]
+
+	--[[
+	]]
+
+	local tokens = oh.Tokenize(code)
+
+	if tokens then
+		tokens:Dump()
+		oh.DumpAST(tokens:MatchBody())
+	end
+end
+
+return oh
