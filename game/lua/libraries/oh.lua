@@ -325,8 +325,18 @@ function META:MatchBody(level, if_statement)
 						token = token,
 					})
 					break
+				elseif token.value == "end" then
+					break
 				end
 			end
+
+			table.insert(tree, data)
+		elseif info.value == "while" then
+			local data = {}
+			data.type = "while"
+
+			data.expr = self:MatchExpression()
+			data.body = self:MatchBody(1)
 
 			table.insert(tree, data)
 		elseif info.value == "for" then
@@ -389,6 +399,7 @@ function META:MatchExpression(priority, bracket_match)
 		end
 
 		v = {type = "function", arguments = arguments, body = self:MatchBody(1)}
+		self:Next()
 
 		return v
 	end
@@ -454,120 +465,143 @@ function META:Dump()
 end
 
 do
-	local function dump_expression(v)
-		if v.left then
-			log("(")
-			dump_expression(v.left)
-		end
-		log(v.value)
-		if v.right then
-			dump_expression(v.right)
-			log(")")
-		end
-	end
+	local META = {}
+	META.__index = META
 
-	function oh.DumpAST(tree, indent)
-		indent = indent or 0
-
-		for _, data in ipairs(tree) do
-			log(string.rep("\t", indent))
-
-			if false then
-				--
-			elseif data.type == "if" then
-				for i,v in ipairs(data.statements) do
-					if i == 1 then
-						log("if ")
-					end
-
-					if v.expr then
-						dump_expression(v.expr)
-						log(" then")
-					end
-
-					logn()
-
-					oh.DumpAST(v.body, indent + 1)
-					log(string.rep("\t", indent))
-					log(v.token.value)
-				end
-			elseif data.type == "for" then
-				log("for ", data.name, " = ")
-				dump_expression(data.val)
-				log(", ")
-				dump_expression(data.max)
-				log(" do\n")
-				oh.DumpAST(data.body, indent + 1)
-				log(string.rep("\t", indent))
-				log("end")
-			elseif data.type == "do" then
-				log("do\n")
-				oh.DumpAST(data.body, indent + 1)
-				log(string.rep("\t", indent))
-				log("end")
-			elseif data.type == "function" then
-
-				if data.is_local then
-					log("local ")
-				end
-
-				log("function", " ")
-				log(data.name)
-				log("(")
-				for i,v2 in ipairs(data.arguments) do
-					log(v2.value)
-					if i ~= #data.arguments then
-						log(", ")
-					end
-				end
-				log(")\n")
-				oh.DumpAST(data.body, indent + 1)
-				log(string.rep("\t", indent))
-				log("end")
-			elseif data.type == "assignment" then
-
-				if data.is_local then
-					log("local ")
-				end
-
-				for i, v in ipairs(data.names) do
-					log(v.value)
-					if i ~= #data.names then
-						log(", ")
-					end
-				end
-
-				log(" = ")
-
-				for i, v in ipairs(data.expressions) do
-					if v.type == "operator" then
-						dump_expression(v)
-					elseif v.type == "unary" then
-						log(v.value)
-						dump_expression(v.argument)
-					elseif v.type == "function" then
-						log("function(")
-						for i,v2 in ipairs(v.arguments) do
-							log(v2.value)
-							if i ~= #v.arguments then
-								log(", ")
-							end
-						end
-						log(")\n")
-						oh.DumpAST(v.body, indent + 1)
-						log("\nend")
-					else
-						log(v.value)
-					end
-					if i ~= #data.expressions then
-						log(", ")
-					end
-				end
+	function META:Value2(v)
+		local _ = self
+		if v.type == "function" then
+			self.suppress_indention = true
+			_"(function("_:arguments(v.arguments)_")" self:Body(v.body, true) _"end)"
+			self.suppress_indention = false
+		else
+			if oh.syntax.keywords[v.value] then
+				_" " _(v.value) _ " "
+			else
+				self:emit(v.value)
 			end
-			logn()
 		end
 	end
-	logn()
+
+	function META:Value(v)
+		local _ = self
+		if v.type == "operator" then
+			self:Expression(v)
+		elseif v.type == "unary" then
+			_(v.value)_:Expression(v.argument)
+		else
+			self:Value2(v)
+		end
+	end
+
+	function META:Expression(v)
+		local _ = self
+
+		if v.left then _"(" _:Expression(v.left) end _:Value2(v) if v.right then _:Expression(v.right) _")" end
+	end
+
+	function META:Body(tree)
+		local _ = self
+		for __, data in ipairs(tree) do
+			if data.type == "if" then
+				for i,v in ipairs(data.statements) do
+					if i == 1 then _"\t"_"if " end if v.expr then _:Expression(v.expr) _" then" end _"\n"
+						_"\t+"
+							self:Body(v.body)
+						_"\t-"
+					_"\t"self:emit(v.token.value)_" " -- elseif / else / end
+				end
+			elseif data.type == "while" then
+				_"\t"_"while "_:Expression(data.expr)_" do"_"\n"
+					_"\t+"
+						self:Body(data.body)
+					_"\t-"
+				_"\t"_"end"
+			elseif data.type == "for" then
+				_"\t"_"for "_(data.name)_" = "_:Expression(data.val)_", "_:Expression(data.max)_" do"_"\n"
+					_"\t+"
+						_:Body(data.body)
+					_"\t-"
+				_"\t"_"end"
+			elseif data.type == "do" then
+				_"\t"_"do\n"
+					_"\t+"
+						_:Body(data.body)
+					_"\t-"
+				_"\t"_"end"
+			elseif data.type == "function" then
+				_"\t"_("local ", not not data.is_local)_"function"_" "_(data.name)_"("_:arguments(data.arguments)_")"_"\n"
+					_"\t+"
+						self:Body(data.body)
+					_"\t-"
+				_"\t"_"end"
+			elseif data.type == "assignment" then
+				_"\t"_("local ", not not data.is_local)_:arguments(data.names)_" = "_:arguments(data.expressions)
+			end
+
+			_"\n"
+		end
+	end
+
+	META.__call = function(self, str, b)
+		if b == false then return end
+
+		if self.suppress_indention and (str == "\n" or str == "\t") then
+			self:emit(" ")
+			return
+		end
+
+		if str == "\t" then
+			self:emitindent()
+		elseif str == "\t+" then
+			self:indent()
+		elseif str == "\t-" then
+			self:outdent()
+		else
+			self:emit(str)
+		end
+	end
+
+	function META:arguments(tbl)
+		for i,v2 in ipairs(tbl) do
+			self:Value(v2)
+			if i ~= #tbl then
+				self:emit(", ")
+			end
+		end
+	end
+
+	function META:emit(str)
+		--self.out[self.i] = str
+		self.i = self.i + 1
+		log(str)
+	end
+
+	function META:indent()
+		self.level = self.level + 1
+	end
+
+	function META:outdent()
+		self.level = self.level - 1
+	end
+
+	function META:emitindent()
+		self:emit(string.rep("\t", self.level))
+	end
+
+	function oh.DumpAST(tree)
+		local self = {}
+
+		self.level = 0
+		self.out = {}
+		self.i = 1
+
+		setmetatable(self, META)
+
+		self:Body(tree)
+
+		return table.concat(self.out)
+	end
 end
 
 do -- tokenizer
@@ -1077,6 +1111,7 @@ if RELOAD then
 	local a = 5+(1+2+3+4)
 
 	local b = function(a,b,c) local awd = awd*5 end
+
 	local function test()
 		local a = b
 		lol = true
@@ -1096,14 +1131,22 @@ if RELOAD then
 			local a = 1
 			elseif i > 5 then
 			local a = 2
+			elseif i > 1 then
+			local a = 2
 			else
-			local a = 3
+			local a = 4
 			end
 			end
 
 
+			local i = 0
+			while (function(foo) local foo = foo + bar return foo end) or 1 do
+				i = i + 1
+				if i > 10 then
+
+				end
+			end
 		end
-
 		end
 	end
 	]==]
@@ -1115,7 +1158,26 @@ if RELOAD then
 
 	if tokens then
 		tokens:Dump()
-		oh.DumpAST(tokens:MatchBody())
+		logn()
+		local str = oh.DumpAST(tokens:MatchBody())
+
+		local func, err = loadstring(str, "")
+
+		if func then
+			print(string.dump(func) == string.dump(loadstring(code, "")))
+		else
+			local line = tonumber(err:match("%b[]:(%d+):"))
+			local lines = str:split("\n")
+			for i = -1, 1 do
+				log(lines[line + i])
+				if i == 0 then
+					log(" --<<< ", err)
+				end
+				logn()
+			end
+		end
+
+
 	end
 end
 
