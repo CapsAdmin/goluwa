@@ -179,7 +179,7 @@ function META:MatchAssignment()
 	local data = {}
 
 	data.type = "assignment"
-	data.names = {}
+	data.indices = {}
 
 	while true do
 		local info = self:GetToken()
@@ -195,7 +195,7 @@ function META:MatchAssignment()
 				break
 			end
 
-			table.insert(data.names, info)
+			table.insert(data.indices, {{type = "index", value = info}})
 		end
 	end
 
@@ -211,12 +211,12 @@ function META:MatchAssignment()
 		end
 	end
 
-	self.i = self.i - 2
+	self.i = self.i - 1
 
 	return data
 end
 
-function META:MatchBody(level, if_statement)
+function META:MatchBody(stop)
 	local tree = {}
 
 	while true do
@@ -224,37 +224,18 @@ function META:MatchBody(level, if_statement)
 		self:Next()
 		if not info then break end
 
-		if level then
-
-			if info.value == "do" or info.value == "if" or info.value == "for" or info.value == "function" or info.value == "repeat" then
-				level = level + 1
-			elseif info.value == "end" or info.value == "until" then
-				level = level - 1
+		if type(stop) == "table" then
+			if stop[info.value] then
+				return tree
 			end
-
-			if if_statement and level == 1 then
-				if info.value == "else" or info.value == "elseif" then
-					return tree
-				end
-			end
-
-			if level == 0 then
+		elseif type(stop) == "string" then
+			if info.value == stop then
 				return tree
 			end
 		end
 
 		if info.value == "local" then
 			local res = self:GetToken()
-
-			if
-				res.type ~= "letter" or
-				(
-					oh.syntax.keywords[res.value] and
-					res.value ~= "function"
-				)
-			then
-				return self:CompileError("name expected", res.start, res.start)
-			end
 
 			if res.value == "function" then
 				self:Next()
@@ -283,7 +264,7 @@ function META:MatchBody(level, if_statement)
 
 				self.i = self.i - 2
 
-				data.body = self:MatchBody(1)
+				data.body = self:MatchBody("end")
 
 				table.insert(tree, data)
 			else
@@ -291,43 +272,53 @@ function META:MatchBody(level, if_statement)
 				data.is_local = true
 				table.insert(tree, data)
 			end
+		elseif info.value == "return" then
+			local data = {}
+			data.type = "return"
+			data.expression = self:MatchExpression()
+			self.i = self.i - 1
+			table.insert(tree, data)
 		elseif info.value == "do" then
 			local data = {}
 			data.type = "do"
-			data.body = self:MatchBody(1)
+			data.body = self:MatchBody("end")
 			table.insert(tree, data)
 		elseif info.value == "if" then
 			local data = {}
 			data.type = "if"
 			data.statements = {}
 
+			self.i = self.i - 1
+
 			local stop = false
 
 			for i = 1, 100 do
-				local expr = self:MatchExpression()
-				local body = self:MatchBody(1, true)
-				self.i = self.i - 1
 				local token = self:GetToken()
 				self:Next()
+
+				if token.value == "end" then
+					break
+				end
+
+				if token.value == "else" then
+					local body = self:MatchBody("end")
+					table.insert(data.statements, {
+						body = body,
+						token = token,
+					})
+					break
+				end
+
+				local expr = self:MatchExpression()
+				local body = self:MatchBody({["else"] = true, ["elseif"] = true, ["end"] = true})
+
+				self.i = self.i - 1
 
 				table.insert(data.statements, {
 					expr = expr,
 					body = body,
 					token = token,
 				})
-
-				if token.value == "else" then
-					local body = self:MatchBody(1, true)
-					self.i = self.i - 1
-					local token = self:GetToken()
-					table.insert(data.statements, {
-						body = body,
-						token = token,
-					})
-					break
-				elseif token.value == "end" then
-					break
-				end
 			end
 
 			table.insert(tree, data)
@@ -336,8 +327,7 @@ function META:MatchBody(level, if_statement)
 			data.type = "while"
 
 			data.expr = self:MatchExpression()
-			data.body = self:MatchBody(1)
-
+			data.body = self:MatchBody("end")
 			table.insert(tree, data)
 		elseif info.value == "for" then
 			local data = {}
@@ -350,14 +340,81 @@ function META:MatchBody(level, if_statement)
 
 			data.val = self:MatchExpression()
 			data.max = self:MatchExpression()
-
-			data.body = self:MatchBody(1)
+LOL = true
+		data.body = self:MatchBody("end")
+		LOL = false
 
 			table.insert(tree, data)
-		elseif info.type == "letter" and self:GetToken(1) and (self:GetToken(1).value == "," or self:GetToken(1).value == "=") then
-			local data = self:MatchAssignment()
-			data.is_local = false
-			table.insert(tree, data)
+		elseif info.type == "letter" then
+			local names = {}
+			local indices = {{type = "index", value = info}}
+
+			while true do
+				local info = self:GetToken()
+
+				if not info then break end
+
+				if info.value == "," then
+					table.insert(names, indices)
+					indices = {}
+				end
+
+
+				if info.type == "letter" then
+					table.insert(indices, {type = "index", value = info})
+				end
+
+				if info.value == "[" then
+					self:Next()
+					table.insert(indices, {type = "expression", value = self:MatchExpression()})
+					self.i = self.i - 2
+				end
+
+				if info.value == "=" then
+					table.insert(names, indices)
+					indices = {}
+
+					local data = self:MatchAssignment()
+					data.is_local = false
+					data.indices = names
+					table.insert(tree, data)
+					break
+				elseif info.value == "(" or info.value == ":" then
+
+					local data = {}
+
+					if info.value == ":" then
+						data.self_call = true
+						self:Next()
+						table.insert(indices, {type = "index", value = self:GetToken()})
+						self:Next()
+					end
+
+					data.type = "call"
+					data.indices = indices
+					data.arguments = {}
+
+					self:Next()
+					while true do
+						local tree, nxt = self:MatchExpression()
+
+						if tree.value == ")" then
+							break
+						end
+
+						table.insert(data.arguments, tree)
+
+						if not nxt or nxt.value ~= "," then
+							break
+						end
+					end
+
+					table.insert(tree, data)
+					break
+				end
+
+				self:Next()
+			end
 		end
 	end
 
@@ -383,6 +440,7 @@ function META:MatchExpression(priority, bracket_match)
 	if v.value == "-" or v.value == "#" or v.value == "not" then
 		local obj, op = self:MatchExpression(unary_priority, bracket_match)
 		v = {type = "unary", value = v.value, argument = obj}
+		return v, op
 	elseif v.value == "function" then
 		self:Next()
 
@@ -398,7 +456,8 @@ function META:MatchExpression(priority, bracket_match)
 			end
 		end
 
-		v = {type = "function", arguments = arguments, body = self:MatchBody(1)}
+		v = {type = "function", arguments = arguments, body = self:MatchBody("end")}
+
 		self:Next()
 
 		return v
@@ -422,6 +481,52 @@ function META:MatchExpression(priority, bracket_match)
 
 		op = nextop
 	end
+
+
+	--[[if v and v.type == "letter" then
+		local indices = {{type = "index", value = v}}
+
+		while true do
+			local info = self:GetToken()
+
+			if not info then break end
+
+			if info.type == "letter" then
+				table.insert(indices, {type = "index", value = info})
+			end
+
+			if info.value == "[" then
+				self:Next()
+				table.insert(indices, {type = "expression", value = self:MatchExpression()})
+				self.i = self.i - 2
+			end
+
+			if info.value == "(" then
+				local data = {}
+				data.type = "call"
+				data.indices = indices
+				data.arguments = {}
+
+				self:Next()
+				while true do
+					local tree, nxt = self:MatchExpression()
+
+					table.insert(data.arguments, tree)
+
+					if not nxt or nxt.value ~= "," then
+						break
+					end
+				end
+
+				local op = self:GetToken()
+				self:Next()
+
+				return data, op
+			end
+
+			self:Next()
+		end
+	end]]
 
 	return v, op
 end
@@ -505,18 +610,20 @@ do
 		for __, data in ipairs(tree) do
 			if data.type == "if" then
 				for i,v in ipairs(data.statements) do
-					if i == 1 then _"\t"_"if " end if v.expr then _:Expression(v.expr) _" then" end _"\n"
+					_"\t"_(v.token.value)_" " if v.expr then _:Expression(v.expr) _" then" end _"\n"
 						_"\t+"
 							self:Body(v.body)
 						_"\t-"
-					_"\t"self:emit(v.token.value)_" " -- elseif / else / end
 				end
+				_"\t" _"end"
 			elseif data.type == "while" then
 				_"\t"_"while "_:Expression(data.expr)_" do"_"\n"
 					_"\t+"
 						self:Body(data.body)
 					_"\t-"
 				_"\t"_"end"
+			elseif data.type == "return" then
+				_"\t"_"return "_:Expression(data.expression)
 			elseif data.type == "for" then
 				_"\t"_"for "_(data.name)_" = "_:Expression(data.val)_", "_:Expression(data.max)_" do"_"\n"
 					_"\t+"
@@ -536,7 +643,42 @@ do
 					_"\t-"
 				_"\t"_"end"
 			elseif data.type == "assignment" then
-				_"\t"_("local ", not not data.is_local)_:arguments(data.names)_" = "_:arguments(data.expressions)
+				_"\t"_("local ", not not data.is_local)
+
+				for i2,v2 in ipairs(data.indices) do
+					for i,v in ipairs(v2) do
+						if i == 1 then
+							_(v.value.value)
+						elseif v.type == "expression" then
+							_"["_:Value(v.value)_"]"
+						else
+							_"."_(v.value.value)
+						end
+					end
+					if i2 ~= #data.indices then
+						_", "
+					end
+				end
+
+				_" = "_:arguments(data.expressions)
+			elseif data.type == "call" then
+				_"\t"
+
+				for i,v in ipairs(data.indices) do
+					if i == 1 then
+						_(v.value.value)
+					elseif v.type == "expression" then
+						_"["_:Value(v.value)_"]"
+					else
+						if data.self_call and i == #data.indices then
+							_":"_(v.value.value)
+						else
+							_"."_(v.value.value)
+						end
+					end
+				end
+
+				_"("_:arguments(data.arguments)_")"
 			end
 
 			_"\n"
@@ -572,7 +714,7 @@ do
 	end
 
 	function META:emit(str)
-		--self.out[self.i] = str
+		self.out[self.i] = str
 		self.i = self.i + 1
 		log(str)
 	end
@@ -1122,49 +1264,77 @@ if RELOAD then
 	do
 		local a = 1
 		do
-		local a = 2
-
-		local function asdf()
-			for i = 1, 10 do
-			local i = i + 2
-			if i < 5 then
-			local a = 1
-			elseif i > 5 then
 			local a = 2
-			elseif i > 1 then
-			local a = 2
-			else
-			local a = 4
-			end
-			end
+
+			local function asdf()
+				for i = 1, 10 do
+					local i = i + 2
+					if i < 5 then
+						local a = 1
+					elseif i > 5 then
+						local a = 2
+					elseif i > 1 then
+						local a = 2
+					else
+						local a = 4
+					end
+				end
 
 
-			local i = 0
-			while (function(foo) local foo = foo + bar return foo end) or 1 do
-				i = i + 1
-				if i > 10 then
+				local i = 0
 
+				while (function(foo) local foo = foo + bar return foo end) or 1 do
+					i = i + 1
+					if i > 10 then
+
+					end
 				end
 			end
 		end
-		end
 	end
+
+		foo.bar[1+2]["3"][four].five = 1
+		a = 1
+		b = 2
+		foo.bar[1+2]["3"][four].waddwa(a,b,c + 2 + 1 + 22+2 +2)
+
+
+		a.lol,b,c = 1,2,3
+		lol:foo(awdadwwad, awdwadaw, adadw, 2+11+231+23+1+23)
+
+		while true do
+			local a = 1
+			if true then a = 1 elseif true then b= 2 elseif true and false then c = 3 end
+			local a = 2
+			asad(adawd+123,21235,325,235,253)
+		end
+		if true then
+			a = 1
+		elseif true then
+			b= 2
+		elseif true and false then
+			c = 3
+		end
+
 	]==]
 
-	--[[
-	]]
 
 	local tokens = oh.Tokenize(code)
 
 	if tokens then
 		tokens:Dump()
 		logn()
+
+		assert(loadstring(code))
+
 		local str = oh.DumpAST(tokens:MatchBody())
 
 		local func, err = loadstring(str, "")
 
 		if func then
-			print(string.dump(func) == string.dump(loadstring(code, "")))
+			print(func, err, string.dump(func) == string.dump(loadstring(code, "")))
+
+			--utility.MeldDiff(jit.dumpbytecode(func), jit.dumpbytecode(loadstring(code, "")))
 		else
 			local line = tonumber(err:match("%b[]:(%d+):"))
 			local lines = str:split("\n")
