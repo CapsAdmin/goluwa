@@ -155,26 +155,6 @@ function META:Next()
 	self.i = self.i + 1
 end
 
-function META:BalancedMatch(i, match, max)
-	local balance = 0
-	local start
-
-	for i2 = i, max or #self.chunks do
-		local token = self:GetToken(i2)
-
-		if match[token.value] == true then
-			start = start or i2
-			balance = balance + 1
-		elseif match[token.value] == false then
-			balance = balance - 1
-		end
-
-		if balance == 0 and start then
-			return start, i2
-		end
-	end
-end
-
 function META:MatchAssignment()
 	local data = {}
 
@@ -340,9 +320,60 @@ function META:MatchBody(stop)
 
 			data.val = self:MatchExpression()
 			data.max = self:MatchExpression()
-LOL = true
-		data.body = self:MatchBody("end")
-		LOL = false
+
+			data.body = self:MatchBody("end")
+
+			table.insert(tree, data)
+		elseif info.value == "function" then
+			local indices = {}
+			local data = {}
+			data.type = "function2"
+			data.arguments = {}
+			data.indices= indices
+			data.is_local = false
+
+			for i = 1, 10 do
+				local info = self:GetToken()
+
+				if not info or info.value == "(" then break end
+
+				if info.type == "letter" then
+					table.insert(indices, {type = "index", value = info})
+				end
+
+				if info.value == "[" then
+					self:Next()
+					table.insert(indices, {type = "expression", value = self:MatchExpression()})
+					self.i = self.i - 2
+				end
+
+
+				if info.value == ":" then
+					data.self_call = true
+				end
+
+				self:Next()
+			end
+
+			self:Next()
+
+			while true do
+				local token = self:GetToken()
+
+				if token.value == ")" then
+					break
+				end
+
+				table.insert(data.arguments, token.value)
+
+				if not token or token.value ~= "," then
+					break
+				end
+			end
+
+			self:Next()
+
+			data.body = self:MatchBody("end")
 
 			table.insert(tree, data)
 		elseif info.type == "letter" then
@@ -421,10 +452,73 @@ LOL = true
 	return tree
 end
 
+function META:MatchTable()
+	self:Next()
+	local tree = {}
+	tree.type = "table"
+	tree.children = {}
+	while true do
+		local token = self:GetToken()
+		if not token then return tree end
+
+		if token.value == "}" then
+			return tree
+		elseif self:GetToken(1) and self:GetToken(1).value == "=" then
+			local index = self:GetToken()
+			self:Next()
+			self:Next()
+			local val = self:MatchExpression()
+
+			local data = {}
+			data.type = "assignment"
+			data.expressions = {val}
+			data.indices = {index}
+
+			self.i = self.i - 1
+
+			table.insert(tree.children, data)
+		elseif token.value == "[" then
+			self:Next()
+			local val, nxt = self:MatchExpression()
+			self:Next()
+			local expr, nxt = self:MatchExpression()
+
+			local data = {}
+			data.type = "assignment"
+			data.expressions = {expr}
+			data.indices = {val}
+			data.expression_key = true
+			table.insert(tree.children, data)
+			self.i = self.i - 1
+
+			if nxt.value == "}" then
+				self:Next()
+				return tree
+			end
+		else
+			local val, nxt = self:MatchExpression()
+			self.i = self.i - 1
+			local data = {}
+			data.type = "value"
+			data.value = val
+			table.insert(tree.children, data)
+
+			if nxt.value == "}" then
+				self:Next()
+				return tree
+			end
+		end
+
+		self:Next()
+	end
+end
+
 function META:MatchExpression(priority, bracket_match)
 	priority = priority or 0
 	local v = self:GetToken()
 	self:Next()
+
+	if not v then return end
 
 	if v.value == "(" then
 		v = self:MatchExpression(0, bracket_match or 0)
@@ -442,26 +536,32 @@ function META:MatchExpression(priority, bracket_match)
 		v = {type = "unary", value = v.value, argument = obj}
 		return v, op
 	elseif v.value == "function" then
-		self:Next()
-
 		local arguments = {}
 
+		self:Next()
+
 		while true do
-			local tree, nxt = self:MatchExpression()
+			local token = self:GetToken()
+			self:Next()
 
-			table.insert(arguments, tree)
+			if not token or token.value == ")" then
+				break
+			end
 
-			if not nxt or nxt.value ~= "," then
+			if token.type == "letter" then
+				table.insert(arguments, token)
+			elseif token.value ~= "," then
 				break
 			end
 		end
 
 		v = {type = "function", arguments = arguments, body = self:MatchBody("end")}
-
-		self:Next()
-
-		return v
+	elseif v.value == "{" then
+		self.i = self.i - 1
+		local data = self:MatchTable()
+		return data
 	end
+
 
 	local op = self:GetToken()
 	self:Next()
@@ -481,52 +581,6 @@ function META:MatchExpression(priority, bracket_match)
 
 		op = nextop
 	end
-
-
-	--[[if v and v.type == "letter" then
-		local indices = {{type = "index", value = v}}
-
-		while true do
-			local info = self:GetToken()
-
-			if not info then break end
-
-			if info.type == "letter" then
-				table.insert(indices, {type = "index", value = info})
-			end
-
-			if info.value == "[" then
-				self:Next()
-				table.insert(indices, {type = "expression", value = self:MatchExpression()})
-				self.i = self.i - 2
-			end
-
-			if info.value == "(" then
-				local data = {}
-				data.type = "call"
-				data.indices = indices
-				data.arguments = {}
-
-				self:Next()
-				while true do
-					local tree, nxt = self:MatchExpression()
-
-					table.insert(data.arguments, tree)
-
-					if not nxt or nxt.value ~= "," then
-						break
-					end
-				end
-
-				local op = self:GetToken()
-				self:Next()
-
-				return data, op
-			end
-
-			self:Next()
-		end
-	end]]
 
 	return v, op
 end
@@ -579,6 +633,24 @@ do
 			self.suppress_indention = true
 			_"(function("_:arguments(v.arguments)_")" self:Body(v.body, true) _"end)"
 			self.suppress_indention = false
+		elseif v.type == "table" then
+			_"{\n"
+				_"\t+"
+				for i,v in ipairs(v.children) do
+					_"\t"
+					if v.type == "value" then
+						_:Value(v.value)
+					elseif v.type == "assignment" then
+						if v.expression_key then
+							_"["_:Value(v.indices[1])_"]" _" = " _:Value(v.expressions[1])
+						else
+							_:Value(v.indices[1]) _" = " _:Value(v.expressions[1])
+						end
+					end
+					_",\n"
+				end
+				_"\t-"
+			_"\t"_"}"
 		else
 			if oh.syntax.keywords[v.value] then
 				_" " _(v.value) _ " "
@@ -634,6 +706,24 @@ do
 				_"\t"_"do\n"
 					_"\t+"
 						_:Body(data.body)
+					_"\t-"
+				_"\t"_"end"
+			elseif data.type == "function2" then
+				_"\t"_"function"_" "
+					for i,v in ipairs(data.indices) do
+						if i == 1 then
+							_(v.value.value)
+						elseif v.type == "expression" then
+							_"["_:Value(v.value)_"]"
+						elseif data.self_call and i == #data.indices then
+							_":"_(v.value.value)
+						else
+							_"."_(v.value.value)
+						end
+					end
+				_"("_:arguments(data.arguments)_")"_"\n"
+					_"\t+"
+						self:Body(data.body)
 					_"\t-"
 				_"\t"_"end"
 			elseif data.type == "function" then
@@ -1316,9 +1406,38 @@ if RELOAD then
 			c = 3
 		end
 
+
+		a = 0b101010
+
+		b = {1,2,3, foo = true, [asd] = true, lol = {1,2,3}}
+		b.a = 1
+		b.test = function() end
+
+		function b:test()
+
+		end
+
+
+	b.test = {1}
+
+	function b:test()
+	end
+
+	b["asdawd"].wad = function(a,b,c)
+	end
+
+		b.A = function() end
+		function b:B()
+		end
+		b.C = function() end
+		function b:D()
+		end
+		b["E"].F= function(a,b,c) a = 1
+		end
+
+		local a = {a}
+		b = 1
 	]==]
-
-
 	local tokens = oh.Tokenize(code)
 
 	if tokens then
@@ -1326,7 +1445,7 @@ if RELOAD then
 		logn()
 
 		assert(loadstring(code))
-
+		print("=============================")
 		local str = oh.DumpAST(tokens:MatchBody())
 
 		local func, err = loadstring(str, "")
@@ -1336,6 +1455,7 @@ if RELOAD then
 
 			--utility.MeldDiff(jit.dumpbytecode(func), jit.dumpbytecode(loadstring(code, "")))
 		else
+			print("=============================")
 			local line = tonumber(err:match("%b[]:(%d+):"))
 			local lines = str:split("\n")
 			for i = -1, 1 do
