@@ -54,32 +54,47 @@ do
 			syntax.char_types = char_types
 		end
 
-		syntax.operators = {
-			["^"] = {10, 9},
-			["%"] = {7, 7},
-			["/"] = {7, 7},
-			["*"] = {7, 7},
-			["+"] = {6, 6},
-			["-"] = {6, 6},
-			[".."] = {5, 4},
-			["<="] = {3, 3},
-			["=="] = {3, 3},
-			["~="] = {3, 3},
-			["<"] = {3, 3},
-			[">"] = {3, 3},
-			[">="] = {3, 3},
-			["and"] = {2, 2},
-			["or"] = {1, 1},
-			[">>"] = {-1, -1},
-			["~U"] = {-1, -1},
-			["#"] = {-1, -1},
-			["not"] = {-1, -1},
-			["<<"] = {-1, -1},
-			["!="] = {-1, -1},
-			["&"] = {-1, -1},
-			["|"] = {-1, -1},
-			["-U"] = {-1, -1},
+		syntax.unary_operators = {
+			["+"] = true,
+			["-"] = true,
+			["#"] = true,
+			["not"] = true,
 		}
+
+		syntax.operators = {
+			["^"] = -9,
+			["%"] = 7,
+			["/"] = 7,
+			["*"] = 7,
+			["+"] = 6,
+			["-"] = 6,
+			[".."] = 5,
+			["<="] = 3,
+			["=="] = 3,
+			["~="] = 3,
+			["<"] = 3,
+			[">"] = 3,
+			[">="] = 3,
+			["and"] = 2,
+			["or"] = 1,
+			[">>"] = -1,
+			["~U"] = -1,
+			["#"] = -1,
+			["not"] = -1,
+			["<<"] = -1,
+			["!="] = -1,
+			["&"] = -1,
+			["|"] = -1,
+			["-U"] = -1,
+		}
+
+		for i,v in pairs(syntax.operators) do
+			if v < 0 then
+				syntax.operators[i] = {-v + 1, -v}
+			else
+				syntax.operators[i] = {v, v}
+			end
+		end
 
 		syntax.keywords = {
 			"and", "break", "do", "else", "elseif", "end",
@@ -138,24 +153,69 @@ end
 local META = {}
 META.__index = META
 
+local token_meta = {__tostring = function(s)
+	return "token['" .. s.value .. "'][" .. s.i .. "]"
+end}
+
 function META:GetToken(offset)
 	local i = self.i + (offset or 0)
 	local info = self.chunks[i]
 	if not info then return end
 	info.value = info.value or self.code:sub(info.start, info.stop)
 	info.i = i
+	setmetatable(info, token_meta)
 	return info
+end
+
+function META:ReadToken()
+	local tk = self:GetToken()
+	self:NextToken()
+	return tk
+end
+
+function META:Error(str)
+	error(select(2, self:CompileError(str)))
+end
+
+function META:CheckTokenValue(tk, value)
+	if tk.value ~= value then
+		self:Error("expected " .. value .. " got " .. tk.value)
+	end
+end
+
+function META:CheckTokenType(tk, type)
+	if tk.type ~= type then
+		self:Error("expected " .. type .. " got " .. tk.type)
+	end
+end
+
+function META:ReadExpectType(type)
+	local tk = self:GetToken()
+	self:CheckTokenType(tk, type)
+	self:NextToken()
+	return tk
+end
+
+function META:ReadExpectValue(value)
+	local tk = self:GetToken()
+	self:CheckTokenValue(tk, value)
+	self:NextToken()
+	return tk
 end
 
 function META:GetLength()
 	return #self.chunks
 end
 
-function META:Next()
+function META:NextToken()
 	self.i = self.i + 1
 end
 
-function META:MatchAssignment()
+function META:Back()
+	self.i = self.i - 1
+end
+
+function META:ReadAssignment()
 	local data = {}
 
 	data.type = "assignment"
@@ -163,7 +223,7 @@ function META:MatchAssignment()
 
 	while true do
 		local info = self:GetToken()
-		self:Next()
+		self:NextToken()
 
 		if info.value == "=" then
 			break
@@ -178,153 +238,174 @@ function META:MatchAssignment()
 			table.insert(data.indices, {{type = "index", value = info}})
 		end
 	end
+	data.expressions = self:ReadExpressions()
 
-	data.expressions = {}
+	return data
+end
+
+function META:ReadArgumentDefintion()
+	local out = {}
+	self:ReadExpectValue("(")
+
+	if self:GetToken().value == ")" then
+		return out
+	end
 
 	while true do
-		local tree, nxt = self:MatchExpression()
+		local token = self:ReadExpectType("letter")
 
-		table.insert(data.expressions, tree)
+		table.insert(out, token)
+
+		if self:GetToken().value == ")" then
+			return out
+		end
+
+		self:ReadExpectValue(",")
+	end
+	return out
+end
+
+function META:ReadVariableLookup(stop, in_expression)
+	local out = {}
+
+	for _ = 1, self:GetLength() do
+		local info = self:GetToken()
+
+		if not info then return out end
+
+		if stop and stop[info.value] or oh.syntax.keywords[info.value] then
+			return out
+		end
+
+		if info.type == "letter" then
+			if out[1] and self:GetToken(-1).type == "letter" then
+				return out
+			end
+
+			table.insert(out, {type = "index", value = info})
+
+		elseif info.value == "[" then
+			self:NextToken()
+			table.insert(out, {type = "expression", value = self:ReadExpression()})
+			self:CheckTokenValue(self:GetToken(), "]")
+		elseif info.value ~= "." then
+			return out
+		end
+
+		self:NextToken()
+	end
+
+	return out
+end
+
+function META:ReadExpressions()
+	local tbl = {}
+
+	while true do
+		local val = self:ReadExpression()
+		local nxt = self:GetToken()
+
+		table.insert(tbl, val)
 
 		if not nxt or nxt.value ~= "," then
 			break
 		end
 	end
 
-	self.i = self.i - 1
-
-	return data
+	return tbl
 end
 
-function META:MatchBody(stop)
+function META:ReadBody(stop)
+	if type(stop) == "string" then
+		stop = {[stop] = true}
+	end
+
 	local tree = {}
 
-	while true do
-		local info = self:GetToken()
-		self:Next()
-		if not info then break end
+	for _ = 1, self:GetLength() do
+		local token = self:ReadToken()
 
-		if type(stop) == "table" then
-			if stop[info.value] then
-				return tree
-			end
-		elseif type(stop) == "string" then
-			if info.value == stop then
-				return tree
-			end
+		if not token then break end
+
+		if stop and stop[token.value] then
+			return tree
 		end
 
-		if info.value == "local" then
-			local res = self:GetToken()
-
-			if res.value == "function" then
-				self:Next()
-
+		if token.value == "local" then
+			if self:GetToken().value == "function" then
+				self:NextToken()
 				local data = {}
 				data.type = "function"
-				data.arguments = {}
-				data.name = self:GetToken().value
+				data.name = self:ReadExpectType("letter").value
 				data.is_local = true
-
-				self:Next()
-
-				while true do
-					local tree, nxt = self:MatchExpression()
-
-					if tree.value == ")" then
-						break
-					end
-
-					table.insert(data.arguments, tree)
-
-					if not nxt or nxt.value ~= "," then
-						break
-					end
-				end
-
-				self.i = self.i - 2
-
-				data.body = self:MatchBody("end")
-
+				data.arguments = self:ReadArgumentDefintion()
+				data.body = self:ReadBody("end")
 				table.insert(tree, data)
 			else
-				local data = self:MatchAssignment()
+				local data = self:ReadAssignment()
 				data.is_local = true
 				table.insert(tree, data)
 			end
-		elseif info.value == "return" then
+		elseif token.value == "return" then
 			local data = {}
 			data.type = "return"
-			data.expression = self:MatchExpression()
-			self.i = self.i - 1
+			data.expression = self:ReadExpression()
 			table.insert(tree, data)
-		elseif info.value == "do" then
+		elseif token.value == "do" then
 			local data = {}
 			data.type = "do"
-			data.body = self:MatchBody("end")
+			data.body = self:ReadBody("end")
 			table.insert(tree, data)
-		elseif info.value == "if" then
+		elseif token.value == "if" then
 			local data = {}
 			data.type = "if"
 			data.statements = {}
+			self:Back() -- we want to read the if in the upcoming loop
 
-			self.i = self.i - 1
-
-			local stop = false
-
-			for i = 1, 100 do
-				local token = self:GetToken()
-				self:Next()
+			for _ = 1, self:GetLength() do
+				local token = self:ReadToken()
 
 				if token.value == "end" then
 					break
 				end
 
 				if token.value == "else" then
-					local body = self:MatchBody("end")
 					table.insert(data.statements, {
-						body = body,
+						body = self:ReadBody("end"),
 						token = token,
 					})
-					break
+				else
+					local expr = self:ReadExpression()
+					self:ReadExpectValue("then")
+					table.insert(data.statements, {
+						expr = expr,
+						body = self:ReadBody({["else"] = true, ["elseif"] = true, ["end"] = true}, true),
+						token = token,
+					})
 				end
 
-				local expr = self:MatchExpression()
-				local body = self:MatchBody({["else"] = true, ["elseif"] = true, ["end"] = true})
-
-				self.i = self.i - 1
-
-				table.insert(data.statements, {
-					expr = expr,
-					body = body,
-					token = token,
-				})
+				self:Back() -- we want to read the else/elseif/end in the next iteration
 			end
-
 			table.insert(tree, data)
-		elseif info.value == "while" then
+		elseif token.value == "while" then
 			local data = {}
 			data.type = "while"
-
-			data.expr = self:MatchExpression()
-			data.body = self:MatchBody("end")
+			data.expr = self:ReadExpression()
+			self:ReadExpectValue("do")
+			data.body = self:ReadBody("end")
 			table.insert(tree, data)
-		elseif info.value == "for" then
+		elseif token.value == "for" then
 			local data = {}
 			data.type = "for"
-			data.name = self:GetToken().value
-			self:Next()
-
-			-- =
-			self:Next()
-
-			data.val = self:MatchExpression()
-			data.max = self:MatchExpression()
-
-			data.body = self:MatchBody("end")
-
+			data.name = self:ReadExpectType("letter").value
+			self:ReadExpectValue("=")
+			data.val = self:ReadExpression()
+			self:ReadExpectValue(",")
+			data.max = self:ReadExpression()
+			self:ReadExpectValue("do")
+			data.body = self:ReadBody("end")
 			table.insert(tree, data)
-		elseif info.value == "function" then
+		elseif token.value == "function" then
 			local indices = {}
 			local data = {}
 			data.type = "function2"
@@ -342,20 +423,19 @@ function META:MatchBody(stop)
 				end
 
 				if info.value == "[" then
-					self:Next()
-					table.insert(indices, {type = "expression", value = self:MatchExpression()})
+					self:NextToken()
+					table.insert(indices, {type = "expression", value = self:ReadExpression()})
 					self.i = self.i - 2
 				end
-
 
 				if info.value == ":" then
 					data.self_call = true
 				end
 
-				self:Next()
+				self:NextToken()
 			end
 
-			self:Next()
+			self:NextToken()
 
 			while true do
 				local token = self:GetToken()
@@ -371,80 +451,56 @@ function META:MatchBody(stop)
 				end
 			end
 
-			self:Next()
+			self:NextToken()
 
-			data.body = self:MatchBody("end")
+			data.body = self:ReadBody("end")
 
 			table.insert(tree, data)
-		elseif info.type == "letter" then
+		elseif token.type == "letter" then
+			self:Back() -- we want to include the current letter in the loop
+
 			local names = {}
-			local indices = {{type = "index", value = info}}
 
-			while true do
-				local info = self:GetToken()
+			for _ = 1, self:GetLength() do
+				table.insert(names, self:ReadVariableLookup({[","] = true, ["="] = true, ["("] = true, [":"] = true}))
 
-				if not info then break end
+				local token = self:ReadToken()
 
-				if info.value == "," then
-					table.insert(names, indices)
-					indices = {}
-				end
-
-
-				if info.type == "letter" then
-					table.insert(indices, {type = "index", value = info})
-				end
-
-				if info.value == "[" then
-					self:Next()
-					table.insert(indices, {type = "expression", value = self:MatchExpression()})
-					self.i = self.i - 2
-				end
-
-				if info.value == "=" then
-					table.insert(names, indices)
-					indices = {}
-
-					local data = self:MatchAssignment()
-					data.is_local = false
-					data.indices = names
-					table.insert(tree, data)
-					break
-				elseif info.value == "(" or info.value == ":" then
+				if token.value == "=" then
 
 					local data = {}
+					data.type = "assignment"
+					data.is_local = false
+					data.indices = names
+					data.expressions = self:ReadExpressions()
+					table.insert(tree, data)
 
-					if info.value == ":" then
-						data.self_call = true
-						self:Next()
-						table.insert(indices, {type = "index", value = self:GetToken()})
-						self:Next()
-					end
-
+					break
+				elseif token.value == "(" or token.value == ":" then
+					local data = {}
 					data.type = "call"
-					data.indices = indices
-					data.arguments = {}
 
-					self:Next()
-					while true do
-						local tree, nxt = self:MatchExpression()
-
-						if tree.value == ")" then
-							break
-						end
-
-						table.insert(data.arguments, tree)
-
-						if not nxt or nxt.value ~= "," then
-							break
-						end
+					if token.value == ":" then
+						data.self_call = true
+						table.insert(names[#names], {type = "index", value = self:ReadExpectType("letter")})
+						self:ReadExpectValue("(")
 					end
+
+					data.indices = names
+					data.calls = {}
+
+					self:Back() -- step back to (
+
+					while self:GetToken() and self:ReadToken().value == "(" do
+						table.insert(data.calls, self:ReadExpressions())
+						self:ReadExpectValue(")")
+					end
+
+					self:Back()
 
 					table.insert(tree, data)
 					break
 				end
-
-				self:Next()
 			end
 		end
 	end
@@ -452,8 +508,8 @@ function META:MatchBody(stop)
 	return tree
 end
 
-function META:MatchTable()
-	self:Next()
+function META:ReadTable()
+	self:NextToken()
 	local tree = {}
 	tree.type = "table"
 	tree.children = {}
@@ -465,84 +521,85 @@ function META:MatchTable()
 			return tree
 		elseif self:GetToken(1) and self:GetToken(1).value == "=" then
 			local index = self:GetToken()
-			self:Next()
-			self:Next()
-			local val = self:MatchExpression()
+			self:NextToken()
+			self:NextToken()
 
 			local data = {}
 			data.type = "assignment"
-			data.expressions = {val}
+			data.expressions = {self:ReadExpression()}
 			data.indices = {index}
-
-			self.i = self.i - 1
 
 			table.insert(tree.children, data)
 		elseif token.value == "[" then
-			self:Next()
-			local val, nxt = self:MatchExpression()
-			self:Next()
-			local expr, nxt = self:MatchExpression()
+			self:NextToken()
+			local val = self:ReadExpression()
+			self:ReadExpectValue("]")
+			self:ReadExpectValue("=")
 
 			local data = {}
 			data.type = "assignment"
-			data.expressions = {expr}
+			data.expressions = {self:ReadExpression()}
 			data.indices = {val}
 			data.expression_key = true
 			table.insert(tree.children, data)
-			self.i = self.i - 1
 
-			if nxt.value == "}" then
-				self:Next()
+			if self:GetToken().value == "}" then
+				self:NextToken()
 				return tree
 			end
 		else
-			local val, nxt = self:MatchExpression()
-			self.i = self.i - 1
 			local data = {}
 			data.type = "value"
-			data.value = val
+			data.value =  self:ReadExpression()
 			table.insert(tree.children, data)
 
-			if nxt.value == "}" then
-				self:Next()
+			if self:GetToken().value == "}" then
+				self:NextToken()
 				return tree
 			end
 		end
 
-		self:Next()
+		self:NextToken()
 	end
 end
 
-function META:MatchExpression(priority, bracket_match)
+local test = {}
+test["("] = true
+test[")"] = true
+test[":"] = true
+for k,v in pairs(oh.syntax.operators) do
+	test[k] = true
+end
+
+function META:ReadExpression(priority)
 	priority = priority or 0
-	local v = self:GetToken()
-	self:Next()
 
-	if not v then return end
+	local val
 
-	if v.value == "(" then
-		v = self:MatchExpression(0, bracket_match or 0)
-		if bracket_match then
-			bracket_match = bracket_match + 1
-		end
-	elseif v.value == ")" then
-		if bracket_match then
-			bracket_match = bracket_match - 1
-		end
-	end
+	local token = self:GetToken()
 
-	if v.value == "-" or v.value == "#" or v.value == "not" then
-		local obj, op = self:MatchExpression(unary_priority, bracket_match)
-		v = {type = "unary", value = v.value, argument = obj}
-		return v, op
-	elseif v.value == "function" then
+	if not token then return end
+
+	if oh.syntax.unary_operators[token.value] then
+		local op = self:ReadToken()
+		val = {type = "unary", value = op.value, argument = self:ReadExpression(0)}
+	elseif token.value == "(" then
+		self:NextToken()
+		val = self:ReadExpression(0)
+		self:ReadExpectValue(")")
+	elseif token.type == "number" or token.type == "string" or oh.syntax.keyword_values[token.value] then
+		val = self:ReadToken()
+	elseif token.value == "{" then
+		val = self:ReadTable()
+	elseif token.value == "function" then
+		self:NextToken()
+
 		local arguments = {}
 
-		self:Next()
+		self:ReadExpectValue("(")
 
 		while true do
-			local token = self:GetToken()
-			self:Next()
+			local token = self:ReadToken()
 
 			if not token or token.value == ")" then
 				break
@@ -554,39 +611,92 @@ function META:MatchExpression(priority, bracket_match)
 				break
 			end
 		end
+		val = {type = "function", arguments = arguments, body = self:ReadBody("end")}
 
-		v = {type = "function", arguments = arguments, body = self:MatchBody("end")}
-	elseif v.value == "{" then
-		self.i = self.i - 1
-		local data = self:MatchTable()
-		return data
-	end
+	elseif token.type == "letter" and not oh.syntax.keywords[token.value] then
+		val = {}
 
+		for _ = 1, self:GetLength() do
+			local info = self:GetToken()
 
-	local op = self:GetToken()
-	self:Next()
+			if not info then break end
 
-	if not op then
-		return v
-	end
+			if test[info.value] then
+				break
+			end
 
-	while (not bracket_match or bracket_match == 0) and oh.syntax.operators[op.value] and oh.syntax.operators[op.value][1] > priority do
-		local v2, nextop = self:MatchExpression(oh.syntax.operators[op.value][2], bracket_match)
+			--if oh.syntax.operators[info.value] or (oh.syntax.keywords[info.value] and not oh.syntax.operators[info.value]) then
+				--break
+			--end
 
-		v = {type = "operator", value = op.value, left = v, right = v2}
+			if info.type == "letter" then
+				if val[1] and self:GetToken(-1).type == "letter" then
+					break
+				end
 
-		if not nextop then
-			return v
+				table.insert(val, {type = "index", value = info})
+			elseif info.value == "[" then
+				self:NextToken()
+				table.insert(val, {type = "expression", value = self:ReadExpression()})
+				self:CheckTokenValue(self:GetToken(), "]")
+			elseif info.value ~= "." then
+				break
+			end
+
+			self:NextToken()
 		end
 
-		op = nextop
+		local token = self:GetToken()
+
+		if token and (token.value == "(" or token.value == ":") then
+			self:NextToken()
+
+			local data = {}
+			data.type = "call"
+			data.indices = val
+
+			if token.value == ":" then
+				data.self_call = true
+				table.insert(val[#val], {type = "index", value = self:ReadExpectType("letter")})
+				self:ReadExpectValue("(")
+			end
+
+			data.calls = {}
+
+			self:Back() -- step back to (
+
+			while self:GetToken() and self:ReadToken().value == "(" do
+				table.insert(data.calls, self:ReadExpressions())
+				self:ReadExpectValue(")")
+			end
+
+			self:Back()
+
+			val = data
+		else
+			val = {type = "variable", indices = val}
+		end
+	else
+		return val
 	end
 
-	return v, op
+	local token = self:GetToken()
+
+	if not token then return val end
+
+	while oh.syntax.operators[token.value] and oh.syntax.operators[token.value][1] > priority do
+		local op = self:GetToken()
+		if not op or not oh.syntax.operators[op.value] then return val end
+		self:NextToken()
+		val = {type = "operator", value = op.value, left = val, right = self:ReadExpression(oh.syntax.operators[op.value][2])}
+	end
+
+	return val
 end
 
-
 function META:CompileError(msg, start, stop)
+	start = start or self:GetToken().start
+	stop = stop or self:GetToken().stop
 	offset = offset or 0
 
 	local context_start = self.code:sub(math.max(start - 50, 2), start - 1)
@@ -605,8 +715,6 @@ function META:CompileError(msg, start, stop)
 	str = str .. (" "):rep(content_before) .. ("_"):rep(len) .. "^" .. ("_"):rep(#content_after - 1) .. " " .. msg .. "\n"
 
 	str = context_start .. str .. context_stop:sub(#content_after + 1)
-
-	print(str)
 
 	return nil, "\n" .. str
 end
@@ -651,11 +759,40 @@ do
 				end
 				_"\t-"
 			_"\t"_"}"
+		elseif v.type == "variable" then
+			for i,v in ipairs(v.indices) do
+				if i == 1 then
+					_(v.value.value)
+				elseif v.type == "expression" then
+					_"["_:Value(v.value)_"]"
+				else
+					_"."_(v.value.value)
+				end
+			end
+		elseif v.type == "call" then
+			for i,v2 in ipairs(v.indices) do
+				if i == 1 then
+					_(v2.value.value)
+				elseif v2.type == "expression" then
+					_"["_:Value(v2.value)_"]"
+				else
+					if v.self_call and i == #v.indices then
+						_":"_(v2.value.value)
+					else
+						_"."_(v2.value.value)
+					end
+				end
+			end
+			for _i, v2 in ipairs(v.calls) do
+				_"("_:arguments(v2)_")"
+			end
+		elseif v.type == "unary" then
+			_(v.value)_:Expression(v.argument)
 		else
 			if oh.syntax.keywords[v.value] then
-				_" " _(v.value) _ " "
+				_" "_(v.value)_" "
 			else
-				self:emit(v.value)
+				_(v.value)
 			end
 		end
 	end
@@ -754,21 +891,25 @@ do
 			elseif data.type == "call" then
 				_"\t"
 
-				for i,v in ipairs(data.indices) do
-					if i == 1 then
-						_(v.value.value)
-					elseif v.type == "expression" then
-						_"["_:Value(v.value)_"]"
-					else
-						if data.self_call and i == #data.indices then
-							_":"_(v.value.value)
+				for i2,v2 in ipairs(data.indices) do
+					for i,v in ipairs(v2) do
+						if i == 1 then
+							_(v.value.value)
+						elseif v.type == "expression" then
+							_"["_:Value(v.value)_"]"
 						else
-							_"."_(v.value.value)
+							if data.self_call and i == #v2 then
+								_":"_(v.value.value)
+							else
+								_"."_(v.value.value)
+							end
 						end
 					end
 				end
 
-				_"("_:arguments(data.arguments)_")"
+				for _i, v2 in ipairs(data.calls) do
+					_"("_:arguments(v2)_")"
+				end
 			end
 
 			_"\n"
@@ -1317,6 +1458,7 @@ function oh.TestLuajitLangToolkit(code)
 	end
 end
 
+
 commands.Add("tokenize=arg_line", function(str)
 	oh.DumpTokens(oh.Tokenize(str))
 end)
@@ -1426,7 +1568,7 @@ if RELOAD then
 	b["asdawd"].wad = function(a,b,c)
 	end
 
-		b.A = function() end
+		b.A = {function() end,1,2,true,false,2+4+5}
 		function b:B()
 		end
 		b.C = function() end
@@ -1437,16 +1579,196 @@ if RELOAD then
 
 		local a = {a}
 		b = 1
+
+	local function test(a)
+		return 1+2+a*b+d/c
+	end
+
+	if 1+2 > 3 then
+		a = 4
+	elseif false and 32 then
+		a = 23
+	elseif true and asd then
+		a = 7
+	else
+		a = 10
+	end
+
+	if 1+5 then
+		asdawd = true
+	else
+		asdawd = true
+	end
+
+	if 1203 then
+		asdawd = true
+	end
+
+	while true do
+
+	end
+
+	for _ = 1, 10 do
+		print(i  + 4)
+	end
+
+		foo.bar[1+2]["3"][four].five = 1
+		foo.bar[1+2]["3"][four].waddwa:waawd(a,b,c + 2 + 1 + 22+2 +2)
+		a.b,c.d,e,f = lol(), asdf(), asas(),1
+		a,b,c,d = 1,2,3,4
+
+		foo.bar[1+2]["3"][four].waddwa:waawd(a + function() end, b, c + 2 + 1 + 22+2 +2)
+
+		local a = function(a,b,c) end + 1 + aawd.awdawd(1,2,3) * 1 ^ -2
+
+		local a = 2+1<1/aawd.aw:dw(1,2,3)+1
+		local b = 2+1<1/2+1
+
+		local a =a < y and y <= z
+
+		local a =a < y and y <= z
+		local a =-x^2
+
+		local a,b,c = 1,2,3
+		local a = a+1*2*2,2
+		local function test()
+			local a = b
+			lol = true
+			return a+1
+		end
+		local a = 1
+		local b = function() end + 1
+		function lol()
+
+		end
+
+		local a = b
+		c,d = d
+		local a, b = 1, 2, function() end + 1
+		local function asdf()
+			a, b = 2, 3
+			local lol = 2
+			for i = 1, 10 do
+
+			end
+		end
+
+		local foo = A < B or C > D
+		b = a
+		b = true
+
+		foo.bar[1+2]["3"][four].five = 1
+
+		b = {1,2,3, foo = true, [asd] = true, lol = {1,2,3}}
+
+		b = {a = 1, [asd] = true, a = 1, b = {a = 1, [asd] = true, a = 1}
+
+		x={ 1 }
+		x[2] = x
+		x[x] = 3
+		x[3]={ 'indirect recursion', [x]=x }
+		y = { x, x }
+		x.y = y
+		assert (y[1] == y[2])
+		s = serialize (x)
+		z = loadstring (s)()
+		assert (z.y[1] == z.y[2])
+		local _={ }
+		_[1]={ "indirect recursion" }
+		_[2]={ false, false }
+		_[3]={ 1, false, _[1], ["y"] = _[2] }
+		_[3][2] = _[3]
+		_[1][_[3]] = _[3]
+		_[3][_[3]] = 3
+		_[2][1] = _[3]
+		_[2][2] = _[3]
+		x={ 1 }
+		x[2] = x
+		x[x] = 3
+		x[3]={ 'indirect recursion', [x]=x }
+		y = { x, x }
+		x.y = y
+		assert (y[1] == y[2])
+		s = serialize (x)
+		z = loadstring (s)()
+
+
+		assert (z.y[1] == z.y[2])
+		local _={ }
+		_[1]={ "indirect recursion" }
+		_[2]={ false, false }
+		_[3]={ 1, false, _[1], ["y"] = _[2] }
+		_[3][2] = _[3]
+		_[1][_[3]] = _[3]
+		_[3][_[3]] = 3
+		_[2][1] = _[3]
+		_[2][2] = _[3]
+
+
+		z = loadstring(1)(2)(3)(4)(5)
+
+		local _={ }
+
+
+		z = loadstring
+		assert(z.y[1] == z.y[2])
+		z = loadstring(1)(2)(3)(4)(5)
+
+		lol[3]={
+		1,
+		false,
+		_[1],
+		["y"] = _[2]
+		}
+
+		assert (z.y[1] == z.y[2])
+		local _={ }
+		_[1]={ "indirect recursion" }
+		_[2]={ false, false }
+		_[3]={ 1, false, _[1], ["y"] = _[2] }
+		_[3][2] = _[3]
+		_[1][_[3]] = _[3]
+		_[3][_[3]] = 3
+		_[2][1] = _[3]
+		_[2][2] = _[3]
+
+
+		z = loadstring(1)(2)(3)(4)(5)
+
+		local _={ }
+
+
+		z = loadstring
+		assert(z.y[1] == z.y[2])
+		z = loadstring(1)(2)(3)(4)(5)
+
+
+				z = loadstring(1)(2)(3)(4)(5)
+
+		local _={ }
+
+
+		z = loadstring
+		assert(z.y[1] == z.y[2])
+		z = loadstring(1)(2)(3)(4)(5)
+
 	]==]
+
+	-- :Back in :Body may not work after function call, infinite loop?
+
+	code = [==[
+		x={ 1 }
+	]==]
+
 	local tokens = oh.Tokenize(code)
 
 	if tokens then
 		tokens:Dump()
 		logn()
 
-		assert(loadstring(code))
+		print(loadstring(code))
 		print("=============================")
-		local str = oh.DumpAST(tokens:MatchBody())
+		local str = oh.DumpAST(tokens:ReadBody())
 
 		local func, err = loadstring(str, "")
 
@@ -1466,8 +1788,6 @@ if RELOAD then
 				logn()
 			end
 		end
-
-
 	end
 end
 

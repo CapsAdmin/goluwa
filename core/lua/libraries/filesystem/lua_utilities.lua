@@ -343,7 +343,7 @@ function vfs.AddModuleDirectory(dir, loaders)
 	end
 
 	vfs.AddPackageLoader(function(path)
-		return vfs.LoadFile(handle_dir(dir, path) .. "/"..path..".lua")
+		return vfs.LoadFile(handle_dir(dir, path) .. "/" .. path .. ".lua")
 	end, loaders)
 
 	vfs.AddPackageLoader(function(path)

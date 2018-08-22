@@ -24,7 +24,7 @@ do -- PUT ME IN TRANSFORM
 	local function get_target_pos_ang(pos, ang)
 		local parent = mctrl.target:GetParent()
 
-		if parent:IsValid() and parent:HasComponent("transform") then
+		if parent:IsValid() and parent.GetTRPosition then
 			--return math3d.WorldToLocal(pos, ang, parent:GetTRPosition(), parent:GetTRAngles())
 		end
 
@@ -199,7 +199,7 @@ do -- PUT ME IN TRANSFORM
 	function mctrl.Draw()
 		local target = mctrl.target
 
-		if not target:IsValid() or not target:HasComponent("transform") then return end
+		if not target:IsValid() or not target.GetTRPosition then return end
 
 		local x, y = gfx.GetMousePosition()
 		if mctrl.grab.axis and mctrl.grab.mode == "move" then
@@ -258,7 +258,7 @@ do -- PUT ME IN TRANSFORM
 		end
 
 		local target = mctrl.target
-		if not target:IsValid() or not target:HasComponent("transform") then return end
+		if not target:IsValid() or not target.GetTRPosition then return end
 
 		local x, y = gfx.GetMousePosition()
 		local pos, ang = get_draw_position()
@@ -546,7 +546,7 @@ function editor.Open()
 				ent:SetStorableTable(node.ent:GetStorableTable())
 			end, frame:GetSkin().icons.clone)
 
-			if node.ent:HasComponent("transform") then
+			if node.ent.GetTRPosition then
 				add(L"goto", function()
 					render3d.camera:SetPosition(node.ent:GetPosition())
 				end, "textures/silkicons/brick_go.png")
@@ -653,7 +653,7 @@ function editor.Open()
 				table.insert(ents, v)
 			end
 		end
-		fill(ents, tree)
+		fill(EDITOR_ROOT or ents, tree)
 		tree:SetSize(tree:GetSizeOfChildren())
 		tree:SetWidth(frame:GetWidth())
 
@@ -669,11 +669,21 @@ function editor.Open()
 
 			local found_anything = false
 
-			for _, v in ipairs(node.ent:GetComponents()) do
-				if next(prototype.GetStorableVariables(v)) then
-					properties:AddGroup(L(v.ClassName))
-					properties:AddPropertiesFromObject(v)
-					found_anything = true
+			if node.ent.GetComponents then
+				for _, v in ipairs(node.ent:GetComponents()) do
+					if next(prototype.GetStorableVariables(v)) then
+						properties:AddGroup(L(v.ClassName))
+						properties:AddPropertiesFromObject(v)
+						found_anything = true
+					end
+				end
+			else
+				for _, v in ipairs(node.ent:GetChildren()) do
+					if v.ClassName ~= "transform" and next(prototype.GetStorableVariables(v)) then
+						properties:AddGroup(L(v.ClassName))
+						properties:AddPropertiesFromObject(v)
+						found_anything = true
+					end
 				end
 			end
 

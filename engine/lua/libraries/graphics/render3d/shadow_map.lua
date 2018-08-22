@@ -46,7 +46,14 @@ local function setup(self)
 	end
 
 	tex:SetSize(Vec2() + self.ShadowSize)
-	tex:SetInternalFormat("r16f")
+	tex:SetInternalFormat("r32f")
+	tex:SetWrapS("clamp_to_edge")
+	tex:SetWrapT("clamp_to_edge")
+	tex:SetWrapR("clamp_to_edge")
+
+	tex:SetMinFilter("nearest")
+	tex:SetMagFilter("nearest")
+	tex:SetMipMapLevels(1)
 
 	tex:SetupStorage()
 

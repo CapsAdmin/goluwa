@@ -377,7 +377,7 @@ function render._CreateTexture(self, type)
 			return
 		end
 
-		--self.gl_tex:SetParameteri("GL_TEXTURE_MAX_ANISOTROPY_EXT", math.min(4, render.max_anisotropy))
+		self.gl_tex:SetParameteri("GL_TEXTURE_MAX_ANISOTROPY_EXT", math.min(4, render.max_anisotropy))
 	end
 end
 

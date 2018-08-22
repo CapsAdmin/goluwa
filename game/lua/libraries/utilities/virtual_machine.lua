@@ -43,7 +43,7 @@ do
 		end
 
 		function INSTR:jump_if_true()
-			local addr = self.current_function.code[self.ip]
+			local addr = self.current_function[self.ip]
 			self.ip = self.ip + 1
 
 			if self.stack[self.sp] == true then
@@ -54,7 +54,12 @@ do
 		end
 
 		function INSTR:jump_if_false()
-			local addr = self.current_function.code[self.ip]
+			local addr = self.current_function[self.ip]
+
+			if addr == "EOF" then
+				addr = #self.current_function
+			end
+
 			self.ip = self.ip + 1
 
 			if self.stack[self.sp] == false then
@@ -65,17 +70,25 @@ do
 		end
 
 		function INSTR:jump()
-			self.ip = self.current_function.code[self.ip]
+			self.ip = self.current_function[self.ip]
+		end
+
+		function INSTR:push_jump()
+			self.pushed_ip = self.ip
+		end
+
+		function INSTR:pop_jump()
+			self.ip = self.pushed_ip
 		end
 
 		function INSTR:value()
-			self:Push(self.current_function.code[self.ip])
+			self:Push(self.current_function[self.ip])
 			self.ip = self.ip + 1
 		end
 
 		do
 			local function load(self, tbl)
-				local val = self.current_function.code[self.ip]
+				local val = self.current_function[self.ip]
 				self.ip = self.ip + 1
 				self.sp = self.sp + 1
 
@@ -83,7 +96,7 @@ do
 			end
 
 			local function store(self, tbl)
-				local val = self.current_function.code[self.ip]
+				local val = self.current_function[self.ip]
 				self.ip = self.ip + 1
 
 				tbl[val] = self.stack[self.sp]
@@ -100,37 +113,30 @@ do
 		function INSTR:pop() self.sp = self.sp - 1 end
 
 		function INSTR:call()
-			local func_name = self.current_function.code[self.ip]
-			self.ip = self.ip + 1
+			local func_name = self.current_function[self.ip]
+			local arg_count = self.ip + 1
 
-			local func = self.functions[func_name]
+			self.prev_function = self.current_function
+			self.return_ip = self.ip + 2
 
-			local nargs = func.args
-
-			func.prev_function = self.current_function
-			func.return_ip = self.ip
-
-			local firstarg = self.sp - nargs + 1
-
-			for i = 1, nargs do
-				func.locals[i] = self.stack[firstarg + i - 1]
-			end
-
-			self.sp = self.sp - (nargs - 1)
-
-			self.current_function = func
-
+			self.current_function = self.functions[func_name]
 			self.ip = 1
 		end
 
 		function INSTR:ret()
-			self.ip = self.current_function.return_ip
-			self.current_function = self.current_function.prev_function
+			self.ip = self.return_ip
+			self.current_function = self.prev_function
+		end
+
+		function INSTR:move()
+			for i = #self.stack, 1 + #self.stack - self.current_function[self.ip], -1 do
+				self:Push(self.stack[i])
+			end
+			self.ip = self.ip + 1
 		end
 
 		function INSTR:print()
-			print(self.stack[self.sp])
-			self.sp = self.sp - 1
+			table.print(self.stack)
 		end
 
 		function INSTR:halt() print("halt") end
@@ -150,7 +156,7 @@ do
 	end
 
 	function META:Run()
-		local opcode = self.current_function.code[self.ip]
+		local opcode = self.current_function[self.ip]
 
 		self.ip = 1
 
@@ -163,18 +169,13 @@ do
 
 			self.Instructions[opcode](self)
 
-			opcode = self.current_function.code[self.ip]
+			opcode = self.current_function[self.ip]
 		end
 	end
 
 	function utility.CreateVirtualMachine(functions)
 
 		assert(functions.main, "no main function")
-
-		for k,v in pairs(functions) do
-			v.locals = v.locals or {}
-			v.args = v.args or 0
-		end
 
 		local self = setmetatable({}, META)
 		self.functions = functions
@@ -193,25 +194,20 @@ end
 if RELOAD then
 	do
 		local code = {
-			main = {
-				code = {
-					"value", 10,
-					"call", "f",
-					"print",
-					"halt",
-				},
-			},
 			f = {
-				args = 1,
-				code = {
-					"local_load", 1,
-					"local_store", 2,
+				"move", 1,
 
-					"local_load", 2,
-					"value", 2,
-					"mul",
-					"ret"
-				}
+				"value", 2, "mul",
+
+				"ret", 1
+			},
+			main = {
+				"value", 10,
+				"call", "f", 1,
+
+				"print",
+
+				"halt",
 			},
 		}
 
@@ -219,36 +215,32 @@ if RELOAD then
 		vm:Run()
 	end
 
-	do
+	if false then
 		local code = {
 			main = {
-				code = {
-					-- function main()
-						-- _G.N = 10
-						"value", 10,
-						"global_store", "N",
+				-- function main()
+					-- _G.N = 10
+					"value", 10, "global_store", "N",
 
-						-- _G.I = 0
-						"value", 0,
+					-- _G.I = 0
+					"value", 0, "global_store", "I",
+
+					--while I < N do -- ADDRESS: 9
+					"push_jump",
+						"global_load", "I", "global_load", "N", "less",
+						"jump_if_false", "EOF",
+
+						"global_load", "I",
+						"value", 1, "add",
 						"global_store", "I",
 
-						--while I < N do -- ADDRESS: 9
-							"global_load", "I",
-							"global_load", "N",
-							"less",
-							"jump_if_false", 28, -- end of main
+						"value", "I: ",
+						"global_load", "I",
+						"concat",
+						"print",
+					"pop_jump",
 
-							"global_load", "I",
-							"value", 1,
-							"add",
-							"global_store", "I",
-
-							"global_load", "I",
-							"print",
-						"jump", 9,
-
-					"halt", -- ADDRESS: 25
-				}
+				"halt",
 			}
 		}
 

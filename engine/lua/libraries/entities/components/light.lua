@@ -147,9 +147,9 @@ if GRAPHICS then
 				--view:Translate(-size/2, -size/2, 0)
 
 				pos = render3d.camera:GetPosition()
-				--view:Translate(pos.y, pos.x, pos.z)
+				view:Translate(pos.y, pos.x, pos.z)
 				local hmm = 0.5
-				view:Translate(math.round(pos.y*hmm)/hmm, math.round(pos.x*hmm)/hmm, math.round(pos.z*hmm)/hmm)
+				--view:Translate(math.round(pos.y*hmm)/hmm, math.round(pos.x*hmm)/hmm, math.round(pos.z*hmm)/hmm)
 
 			else
 				view:Translate(pos.y, pos.x, pos.z)

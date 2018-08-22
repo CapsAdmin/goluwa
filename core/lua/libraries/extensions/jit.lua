@@ -41,7 +41,10 @@ function jit.dumpinfo(cb, output)
 end
 
 function jit.dumpbytecode(func)
-	jit.bc.dump(func, dummy_file, true)
+	local str = {}
+	jit.bc.dump(func, {flush = function() end, write = function(_, s) str[#str + 1] = s end}, true)
+
+	return table.concat(str)
 end
 
 function jit.debug(b)
