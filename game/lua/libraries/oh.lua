@@ -78,14 +78,12 @@ do
 			["and"] = 2,
 			["or"] = 1,
 			[">>"] = -1,
-			["~U"] = -1,
 			["#"] = -1,
 			["not"] = -1,
 			["<<"] = -1,
 			["!="] = -1,
 			["&"] = -1,
 			["|"] = -1,
-			["-U"] = -1,
 		}
 
 		for i,v in pairs(syntax.operators) do
@@ -176,7 +174,6 @@ end
 function META:Error(str)
 	error(select(2, self:CompileError(str)))
 end
-
 function META:CheckTokenValue(tk, value)
 	if tk.value ~= value then
 		self:Error("expected " .. value .. " got " .. tk.value)
@@ -379,6 +376,7 @@ function META:ReadBody(stop)
 					})
 				else
 					local expr = self:ReadExpression()
+
 					self:ReadExpectValue("then")
 					table.insert(data.statements, {
 						expr = expr,
@@ -401,7 +399,7 @@ function META:ReadBody(stop)
 			local data = {}
 			data.type = "for"
 
-			if self:GetToken(2).value == "=" then
+			if self:GetToken(1).value == "=" then
 				data.iloop = true
 				data.name = self:ReadExpectType("letter").value
 				self:ReadExpectValue("=")
@@ -439,7 +437,7 @@ function META:ReadBody(stop)
 			local data = {}
 			data.type = "function2"
 			data.arguments = {}
-			data.indices= indices
+			data.indices = indices
 			data.is_local = false
 
 			for i = 1, 10 do
@@ -467,20 +465,16 @@ function META:ReadBody(stop)
 			self:NextToken()
 
 			while true do
-				local token = self:GetToken()
+				local token = self:ReadToken()
 
-				if token.value == ")" then
+				if not token or token.value == ")" then
 					break
 				end
 
-				table.insert(data.arguments, token.value)
-
-				if not token or token.value ~= "," then
-					break
+				if token.value ~= "," then
+					table.insert(data.arguments, token)
 				end
 			end
-
-			self:NextToken()
 
 			data.body = self:ReadBody("end")
 
@@ -495,40 +489,42 @@ function META:ReadBody(stop)
 
 				local token = self:ReadToken()
 
-				if token.value == "=" then
+				if token then
+					if token.value == "=" then
 
-					local data = {}
-					data.type = "assignment"
-					data.is_local = false
-					data.indices = names
-					data.expressions = self:ReadExpressions()
-					table.insert(tree, data)
+						local data = {}
+						data.type = "assignment"
+						data.is_local = false
+						data.indices = names
+						data.expressions = self:ReadExpressions()
+						table.insert(tree, data)
 
-					break
-				elseif token.value == "(" or token.value == ":" then
-					local data = {}
-					data.type = "call"
+						break
+					elseif token.value == "(" or token.value == ":" then
+						local data = {}
+						data.type = "call"
 
-					if token.value == ":" then
-						data.self_call = true
-						table.insert(names[#names], {type = "index", value = self:ReadExpectType("letter")})
-						self:ReadExpectValue("(")
+						if token.value == ":" then
+							data.self_call = true
+							table.insert(names[#names], {type = "index", value = self:ReadExpectType("letter")})
+							self:ReadExpectValue("(")
+						end
+
+						data.indices = names
+						data.calls = {}
+
+						self:Back() -- step back to (
+
+						while self:GetToken() and self:ReadToken().value == "(" do
+							table.insert(data.calls, self:ReadExpressions())
+							self:ReadExpectValue(")")
+						end
+
+						self:Back()
+
+						table.insert(tree, data)
+						break
 					end
-
-					data.indices = names
-					data.calls = {}
-
-					self:Back() -- step back to (
-
-					while self:GetToken() and self:ReadToken().value == "(" do
-						table.insert(data.calls, self:ReadExpressions())
-						self:ReadExpectValue(")")
-					end
-
-					self:Back()
-
-					table.insert(tree, data)
-					break
 				end
 			end
 		end
@@ -654,12 +650,11 @@ function META:ReadExpression(priority)
 				break
 			end
 
-			--if oh.syntax.operators[info.value] or (oh.syntax.keywords[info.value] and not oh.syntax.operators[info.value]) then
-				--break
-			--end
-
 			if info.type == "letter" then
-				if val[1] and self:GetToken(-1).type == "letter" then
+				if
+					val[1] and self:GetToken(-1).type == "letter" or
+					(oh.syntax.keywords[info.value] and not oh.syntax.operators[info.value])
+				then
 					break
 				end
 
@@ -757,7 +752,7 @@ function META:Dump()
 		)
 		start = v.stop
 	end
-	log(self.code:sub(start+1))
+	log("⸢", self.code:sub(start+1), "⸥")
 end
 
 do
@@ -816,7 +811,11 @@ do
 				_"("_:arguments(v2)_")"
 			end
 		elseif v.type == "unary" then
-			_(v.value)_:Expression(v.argument)
+			if oh.syntax.keywords[v.value] then
+				_(v.value)_" "_:Expression(v.argument)
+			else
+				_(v.value)_:Expression(v.argument)
+			end
 		else
 			if oh.syntax.keywords[v.value] then
 				_" "_(v.value)_" "
@@ -861,7 +860,11 @@ do
 					_"\t-"
 				_"\t"_"end"
 			elseif data.type == "return" then
-				_"\t"_"return "_:Expression(data.expression)
+				if data.expression then
+					_"\t"_"return "_:Expression(data.expression)
+				else
+					_"\t"_"return "
+				end
 			elseif data.type == "for" then
 				if data.iloop then
 					_"\t"_"for "_(data.name)_" = "_:Expression(data.val)_", "_:Expression(data.max)_" do"_"\n"
@@ -982,6 +985,7 @@ do
 	end
 
 	function META:emit(str)
+		assert(type(str) == "string")
 		self.out[self.i] = str
 		self.i = self.i + 1
 		log(str)
@@ -1798,11 +1802,31 @@ if RELOAD then
 
 	]==] code = [==[
 
-		for k,v in pairs(lol) do
+			do -- numbers
+				for i = 0, 9 do
+					char_types[tostring(i)] = "number"
+				end
+			end
 
-		end
+			do -- letters
+				char_types["_"] = "letter"
 
+				for i = string.byte("A"), string.byte("z") do
+					char_types[string.char(i)] = "letter"
+				end
+			end
 	]==] --[==[
+	]==]
+
+	code = --vfs.Read("/home/caps/goluwa/game/lua/libraries/oh.lua")
+	[==[
+
+function META:CheckTokenValue(tk, value)
+	if tk.valu ~= value then
+
+	end
+end
+
 	]==]
 
 	local tokens = oh.Tokenize(code)
