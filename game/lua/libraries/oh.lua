@@ -400,14 +400,40 @@ function META:ReadBody(stop)
 		elseif token.value == "for" then
 			local data = {}
 			data.type = "for"
-			data.name = self:ReadExpectType("letter").value
-			self:ReadExpectValue("=")
-			data.val = self:ReadExpression()
-			self:ReadExpectValue(",")
-			data.max = self:ReadExpression()
-			self:ReadExpectValue("do")
-			data.body = self:ReadBody("end")
-			table.insert(tree, data)
+
+			if self:GetToken(2).value == "=" then
+				data.iloop = true
+				data.name = self:ReadExpectType("letter").value
+				self:ReadExpectValue("=")
+				data.val = self:ReadExpression()
+				self:ReadExpectValue(",")
+				data.max = self:ReadExpression()
+				self:ReadExpectValue("do")
+				data.body = self:ReadBody("end")
+				table.insert(tree, data)
+			else
+				data.iloop = false
+				local names = {}
+
+				while true do
+					local token = self:ReadToken()
+
+					if not token or token.value == "in" then
+						break
+					end
+
+					if token.value ~= "," then
+						table.insert(names, token)
+					end
+				end
+
+				data.names = names
+				data.expression = self:ReadExpression()
+				self:ReadExpectValue("do")
+				data.body = self:ReadBody("end")
+
+				table.insert(tree, data)
+			end
 		elseif token.value == "function" then
 			local indices = {}
 			local data = {}
@@ -837,11 +863,19 @@ do
 			elseif data.type == "return" then
 				_"\t"_"return "_:Expression(data.expression)
 			elseif data.type == "for" then
-				_"\t"_"for "_(data.name)_" = "_:Expression(data.val)_", "_:Expression(data.max)_" do"_"\n"
-					_"\t+"
-						_:Body(data.body)
-					_"\t-"
-				_"\t"_"end"
+				if data.iloop then
+					_"\t"_"for "_(data.name)_" = "_:Expression(data.val)_", "_:Expression(data.max)_" do"_"\n"
+						_"\t+"
+							_:Body(data.body)
+						_"\t-"
+					_"\t"_"end"
+				else
+					_"\t"_"for "_:arguments(data.names)_" in "_:Expression(data.expression)_" do"_"\n"
+						_"\t+"
+							_:Body(data.body)
+						_"\t-"
+					_"\t"_"end"
+				end
 			elseif data.type == "do" then
 				_"\t"_"do\n"
 					_"\t+"
@@ -1762,7 +1796,13 @@ if RELOAD then
 		foo.bar[1+2]["3"][four].five = 1
 		x={ 1 }
 
-		]==] --[==[
+	]==] code = [==[
+
+		for k,v in pairs(lol) do
+
+		end
+
+	]==] --[==[
 	]==]
 
 	local tokens = oh.Tokenize(code)
