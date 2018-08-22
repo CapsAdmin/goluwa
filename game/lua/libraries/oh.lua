@@ -238,6 +238,7 @@ function META:ReadAssignment()
 			table.insert(data.indices, {{type = "index", value = info}})
 		end
 	end
+
 	data.expressions = self:ReadExpressions()
 
 	return data
@@ -310,6 +311,8 @@ function META:ReadExpressions()
 		if not nxt or nxt.value ~= "," then
 			break
 		end
+
+		self:NextToken()
 	end
 
 	return tbl
@@ -509,10 +512,12 @@ function META:ReadBody(stop)
 end
 
 function META:ReadTable()
-	self:NextToken()
 	local tree = {}
 	tree.type = "table"
 	tree.children = {}
+
+	self:ReadExpectValue("{")
+
 	while true do
 		local token = self:GetToken()
 		if not token then return tree end
@@ -542,25 +547,23 @@ function META:ReadTable()
 			data.indices = {val}
 			data.expression_key = true
 			table.insert(tree.children, data)
-
-			if self:GetToken().value == "}" then
-				self:NextToken()
-				return tree
-			end
 		else
 			local data = {}
 			data.type = "value"
 			data.value =  self:ReadExpression()
 			table.insert(tree.children, data)
+		end
 
-			if self:GetToken().value == "}" then
-				self:NextToken()
-				return tree
-			end
+		if self:GetToken().value == "}" then
+			self:Back()
+		else
+			self:CheckTokenValue(self:GetToken(), ",")
 		end
 
 		self:NextToken()
 	end
+
+	return tree
 end
 
 local test = {}
@@ -1466,6 +1469,8 @@ end)
 if RELOAD then
 	local code = [==[
 
+	]==] code = [==[
+
 	local a = a+i < b/2+1
 	local b = 5+x^2*8
 	local a = (1+2)+(3+4)
@@ -1568,6 +1573,7 @@ if RELOAD then
 	b["asdawd"].wad = function(a,b,c)
 	end
 
+
 		b.A = {function() end,1,2,true,false,2+4+5}
 		function b:B()
 		end
@@ -1661,13 +1667,14 @@ if RELOAD then
 
 		b = {1,2,3, foo = true, [asd] = true, lol = {1,2,3}}
 
-		b = {a = 1, [asd] = true, a = 1, b = {a = 1, [asd] = true, a = 1}
+		b = {a = 1, [asd] = true, a = 1, b = {a = 1, [asd] = true, a = 1}}
 
 		x={ 1 }
 		x[2] = x
 		x[x] = 3
 		x[3]={ 'indirect recursion', [x]=x }
 		y = { x, x }
+
 		x.y = y
 		assert (y[1] == y[2])
 		s = serialize (x)
@@ -1752,12 +1759,10 @@ if RELOAD then
 		assert(z.y[1] == z.y[2])
 		z = loadstring(1)(2)(3)(4)(5)
 
-	]==]
-
-	-- :Back in :Body may not work after function call, infinite loop?
-
-	code = [==[
+		foo.bar[1+2]["3"][four].five = 1
 		x={ 1 }
+
+		]==] --[==[
 	]==]
 
 	local tokens = oh.Tokenize(code)
