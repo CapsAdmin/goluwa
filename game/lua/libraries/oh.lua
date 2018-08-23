@@ -49,6 +49,7 @@ do
 				char_types["`"] = "symbol"
 				char_types["'"] = "symbol"
 				char_types["\""] = "symbol"
+				char_types["~"] = "symbol" -- op
 			end
 
 			syntax.char_types = char_types
@@ -171,31 +172,28 @@ function META:ReadToken()
 	return tk
 end
 
-function META:Error(str)
-	error(select(2, self:CompileError(str)))
-end
-function META:CheckTokenValue(tk, value)
+function META:CheckTokenValue(tk, value, level)
 	if tk.value ~= value then
-		self:Error("expected " .. value .. " got " .. tk.value)
+		self:Error("expected " .. value .. " got " .. tk.value, nil,nil,level or 3)
 	end
 end
 
 function META:CheckTokenType(tk, type)
 	if tk.type ~= type then
-		self:Error("expected " .. type .. " got " .. tk.type)
+		self:Error("expected " .. type .. " got " .. tk.type, nil,nil,level or 3)
 	end
 end
 
 function META:ReadExpectType(type)
 	local tk = self:GetToken()
-	self:CheckTokenType(tk, type)
+	self:CheckTokenType(tk, type, 4)
 	self:NextToken()
 	return tk
 end
 
 function META:ReadExpectValue(value)
 	local tk = self:GetToken()
-	self:CheckTokenValue(tk, value)
+	self:CheckTokenValue(tk, value, 4)
 	self:NextToken()
 	return tk
 end
@@ -228,7 +226,7 @@ function META:ReadAssignment()
 
 		if info.value ~= "," then
 			if info.type ~= "letter" then
-				self:CompileError("unexpected symbol " .. info.value, info.start, info.stop)
+				self:Error("unexpected symbol " .. info.value, info.start, info.stop)
 				break
 			end
 
@@ -545,6 +543,7 @@ function META:ReadTable()
 		if not token then return tree end
 
 		if token.value == "}" then
+			self:NextToken()
 			return tree
 		elseif self:GetToken(1) and self:GetToken(1).value == "=" then
 			local index = self:GetToken()
@@ -696,6 +695,10 @@ function META:ReadExpression(priority)
 
 			self:Back()
 
+			if self:GetToken().value == "." then
+				self:Error("index after call is not yet supported")
+			end
+
 			val = data
 		else
 			val = {type = "variable", indices = val}
@@ -718,14 +721,13 @@ function META:ReadExpression(priority)
 	return val
 end
 
-function META:CompileError(msg, start, stop)
+function META:Error(msg, start, stop, level)
 	start = start or self:GetToken().start
 	stop = stop or self:GetToken().stop
 	offset = offset or 0
 
 	local context_start = self.code:sub(math.max(start - 50, 2), start - 1)
 	local context_stop = self.code:sub(stop, stop + 50)
-
 
 	context_start = context_start:gsub("\t", " ")
 	context_stop = context_stop:gsub("\t", " ")
@@ -738,9 +740,11 @@ function META:CompileError(msg, start, stop)
 
 	str = str .. (" "):rep(content_before) .. ("_"):rep(len) .. "^" .. ("_"):rep(#content_after - 1) .. " " .. msg .. "\n"
 
-	str = context_start .. str .. context_stop:sub(#content_after + 1)
 
-	return nil, "\n" .. str
+
+	str = "\n" .. context_start .. str .. context_stop:sub(#content_after + 1)
+
+	error(str, level or 2)
 end
 
 function META:Dump()
@@ -1151,7 +1155,7 @@ do -- tokenizer
 			end
 
 			if not t then
-				return self:CompileError("unknown symbol >>" .. char .. "<< (" .. char:byte() .. ")", i, i)
+				self:Error("unknown symbol >>" .. char .. "<< (" .. char:byte() .. ")", i, i)
 			end
 
 			self.char = char
@@ -1170,7 +1174,7 @@ do -- tokenizer
 					end
 
 					if not stop then
-						return self:CompileError("cannot find the end of multiline comment", i, i)
+						self:Error("cannot find the end of multiline comment", i, i)
 					end
 
 					add_token(self, "comment", i - #oh.syntax.comment, stop)
@@ -1207,7 +1211,7 @@ do -- tokenizer
 				end
 
 				if not stop then
-					return self:CompileError("cannot find the end of double quote", i, i)
+					self:Error("cannot find the end of double quote", i, i)
 				end
 
 				add_token(self, "string", i, stop)
@@ -1220,12 +1224,12 @@ do -- tokenizer
 					stop = capture_literal_string(self, i)
 
 					if not stop then
-						return self:CompileError("cannot find the end of literal quote", i, i)
+						self:Error("cannot find the end of literal quote", i, i)
 					end
 				else
 					local stop_, err = capture_literal_lua_string(self, i)
 					if not stop_ and err then
-						return self:CompileError("cannot find the end of literal quote: " .. err, i, i)
+						self:Error("cannot find the end of literal quote: " .. err, i, i)
 					end
 					stop = stop_
 				end
@@ -1250,7 +1254,7 @@ do -- tokenizer
 				end
 
 				if not stop then
-					return self:CompileError("cannot find the end of single quote", i, i)
+					self:Error("cannot find the end of single quote", i, i)
 				end
 
 				add_token(self, "string", i, stop)
@@ -1284,7 +1288,7 @@ do -- tokenizer
 							if not pow then
 								pow = true
 							else
-								return self:CompileError("malformed number: pow character can only be used once")
+								self:Error("malformed number: pow character can only be used once")
 							end
 						end
 
@@ -1305,7 +1309,7 @@ do -- tokenizer
 								stop = offset - 1
 								break
 							elseif char == "symbol" or t == "letter" then
-								return self:CompileError("malformed number: invalid character '" .. char .. "'. only abcdef0123456789_ allowed after hex notation", i, offset)
+								self:Error("malformed number: invalid character '" .. char .. "'. only abcdef0123456789_ allowed after hex notation", i, offset)
 							end
 						end
 
@@ -1327,7 +1331,7 @@ do -- tokenizer
 								stop = offset - 1
 								break
 							elseif char == "symbol" or t == "letter" or (char ~= "0" and char ~= "1") then
-								return self:CompileError("malformed number: only 01_ allowed after binary notation", i, offset)
+								self:Error("malformed number: only 01_ allowed after binary notation", i, offset)
 							end
 						end
 					end
@@ -1347,7 +1351,7 @@ do -- tokenizer
 
 						if exponent then
 							if char ~= "-" and char ~= "+" and t ~= "number" then
-								return self:CompileError("malformed number: invalid character '" .. char .. "'. only +-0123456789 allowed after exponent", i, offset)
+								self:Error("malformed number: invalid character '" .. char .. "'. only +-0123456789 allowed after exponent", i, offset)
 							elseif char ~= "-" and char ~= "+" then
 								exponent = false
 							end
@@ -1369,7 +1373,7 @@ do -- tokenizer
 										break
 									end
 								else
-									return self:CompileError("malformed number: invalid character '" .. char .. "'. only ule allowed after a number", i, offset)
+									self:Error("malformed number: invalid character '" .. char .. "'. only ule allowed after a number", i, offset)
 								end
 							elseif t == "space" or t == "symbol" then
 								stop = offset - 1
@@ -1377,7 +1381,7 @@ do -- tokenizer
 							elseif not found_dot and char == "." then
 								found_dot = true
 							else
-								return self:CompileError("malformed number: invalid character '" .. char .. "'. this should never happen?", i, offset)
+								self:Error("malformed number: invalid character '" .. char .. "'. this should never happen?", i, offset)
 							end
 						end
 
@@ -1387,7 +1391,7 @@ do -- tokenizer
 					add_token(self, "number", i, stop)
 
 					if not stop then
-						return self:CompileError("malformed number: expected number after exponent", i, i)
+						self:Error("malformed number: expected number after exponent", i, i)
 					end
 
 					i = stop
@@ -1412,7 +1416,7 @@ do -- tokenizer
 				end
 
 				if not stop then
-					return self:CompileError("malformed letter: could not find end", i, i)
+					self:Error("malformed letter: could not find end", i, i)
 				end
 
 				add_token(self, "letter", i, stop)
@@ -1800,8 +1804,6 @@ if RELOAD then
 		foo.bar[1+2]["3"][four].five = 1
 		x={ 1 }
 
-	]==] code = [==[
-
 			do -- numbers
 				for i = 0, 9 do
 					char_types[tostring(i)] = "number"
@@ -1815,19 +1817,12 @@ if RELOAD then
 					char_types[string.char(i)] = "letter"
 				end
 			end
+
+			insert(data, {})
 	]==] --[==[
 	]==]
 
-	code = --vfs.Read("/home/caps/goluwa/game/lua/libraries/oh.lua")
-	[==[
-
-function META:CheckTokenValue(tk, value)
-	if tk.valu ~= value then
-
-	end
-end
-
-	]==]
+	--code = vfs.Read("/home/caps/goluwa/game/lua/libraries/oh.lua")
 
 	local tokens = oh.Tokenize(code)
 
