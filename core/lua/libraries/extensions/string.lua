@@ -1,3 +1,11 @@
+function string.indent(str, count)
+	local tbl = str:split("\n")
+	for i, line in ipairs(tbl) do
+		tbl[i] = ("\t"):rep(count) .. line
+	end
+	return table.concat(tbl, "\n")
+end
+
 function string.buildclass(...)
 	local classes = {...}
 	local check
