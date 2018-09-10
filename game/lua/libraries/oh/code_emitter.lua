@@ -58,19 +58,23 @@ end
 function META:Expression(v)
 	local _ = self
 
-	_"(" if v.left then _:Expression(v.left) end _:Value2(v) if v.right then _:Expression(v.right) end _")"
+	if v.left then _"(" _:Expression(v.left) end _:Value2(v) if v.right then _:Expression(v.right) _")" end
 end
 
 function META:IndexExpression(data)
 	local _ = self
 
 	for i,v in ipairs(data) do
-		if v.type == "index" then
+		if v.type == "operator" then
+			_"(" _:Expression(v) _")"
+		elseif v.type == "index" then
 			_(v.operator.value)_(v.value.value)
 		elseif v.type == "index_expression" then
 			_"["_:Value(v.value)_"]"
 		elseif v.type == "call" then
 			_"("_:arguments(v.arguments)_")"
+		else
+			_"("_:Value(v)_")"
 		end
 	end
 end
@@ -102,7 +106,13 @@ function META:Body(tree)
 			end
 		elseif data.type == "for" then
 			if data.iloop then
-				_"\t"_"for "_:Expression(data.name)_" = "_:Expression(data.val)_", "_:Expression(data.max)_" do"_"\n"
+				_"\t"_"for "_:Expression(data.name)_" = "_:Expression(data.val)_", "_:Expression(data.max)
+
+				if data.incr then
+					_", "_:Expression(data.incr)
+				end
+
+				_" do"_"\n"
 					_"\t+"
 						_:Body(data.body)
 					_"\t-"
@@ -130,7 +140,6 @@ function META:Body(tree)
 			local arg_line = {}
 
 			for i,v in ipairs(call.arguments) do
-
 				if v.left then
 					local cur = v.left
 					while cur.left do
@@ -143,7 +152,6 @@ function META:Body(tree)
 					table.insert(arg_line, v)
 				end
 
-
 				if i ~= #call.arguments then
 					_", "
 				end
@@ -152,7 +160,9 @@ function META:Body(tree)
 			_")"
 
 			for i,v in ipairs(call.arguments) do
-				_:Value(arg_line[i]) _" = " _:Expression(v) _";"
+				if v.value ~= "..." then
+					_:Value(arg_line[i]) _" = " _:Expression(v) _";"
+				end
 			end
 
 			_"\n"
@@ -170,12 +180,14 @@ function META:Body(tree)
 				end
 			end
 
-			_" = "
+			if data.right then
+				_" = "
 
-			for i,v in ipairs(data.right) do
-				_:Expression(v)
-				if data.right[2] and i ~= #data.right then
-					_", "
+				for i,v in ipairs(data.right) do
+					_:Expression(v)
+					if data.right[2] and i ~= #data.right then
+						_", "
+					end
 				end
 			end
 		elseif data.type == "call" then

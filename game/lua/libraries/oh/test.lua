@@ -1,6 +1,6 @@
 local oh = ... or _G.oh
 
-local code = [==[
+local code = [===============[
 	a = b
 	_1 = _2
 
@@ -361,9 +361,25 @@ test().awd:lol().lol:w().awdawdwa["awdwad"].awdwadawd.wadwda()
 		test(1)(2)(3).awd:lol().lol:w().awdawdwa["awdwad"].awdwadawd.wadwda = function() FOO() end
 		test(1)(2)(3).awd:lol().lol:w().awdawdwa()
 	_1() _2() someFunction = function() Inside() end Outside()
-]==]
 
 
+]===============]
+
+
+codex = vfs.Read("/home/caps/goluwa/game/lua/libraries/oh/test.lua")
+
+codex = [[
+	--("vec4"):format(1,2,3)
+	(1 + 2)
+	("test")
+]]
+
+codex = [[
+
+function test(a or 1, b or 2)
+	return a + 3
+end
+]]
 
 function oh.TestLuajitLangToolkit(code)
 	local ls = require("lang.lexer")(require("lang.reader").string(code), code)
@@ -412,28 +428,31 @@ function oh.TestLuajitLangToolkit(code)
 	end
 end
 
-function oh.CompileCode(code)
+function oh.CompileCode(code, path)
 	local tokens = oh.Tokenize(code)
 
-	local str = oh.DumpAST(tokens:ReadBody())
-	print("result:")
-	print(str:trim():indent(1))
+	--tokens:Dump()
 
-	local func, err = loadstring(str, "")
+	local str = oh.DumpAST(tokens:ReadBody())
+	--print("result:")
+	--print(str:trim():indent(1))
+
+	local func, err = loadstring(str, path)
 
 	if not func then
-		print("error:")
 		local line = tonumber(err:match("%b[]:(%d+):"))
 		local lines = str:split("\n")
 		for i = -1, 1 do
 			if lines[line + i] then
-				log("\t", lines[line + i])
+				err = err .. "\t" .. lines[line + i]
 				if i == 0 then
-					log(" --<<< ", err)
+					err = err .. " --<<< "
 				end
-				logn()
+				err = err .. "\n"
 			end
 		end
+
+		return nil, err
 	end
 
 	return func, err
@@ -442,11 +461,23 @@ end
 function oh.Test()
 	RELOAD = nil
 	_G.oh = runfile("/home/caps/goluwa/game/lua/libraries/oh/oh.lua")
+
+	code = [[[
+		if (type(val) == "function" and not val(out[key])) or out[key] ~= val then
+
+		end
+	]]
+
 	_G.oh.CompileCode(code)
+
+	do return end
+	for path, v in pairs(vfs.GetLoadedLuaFiles()) do
+		assert(_G.oh.CompileCode(vfs.Read(path), path))
+	end
 end
 
 commands.Add("tokenize=arg_line", function(str)
-	oh.DumpTokens(oh.Tokenize(str))
+	oh.Tokenize(str):Dump()
 end)
 
 commands.Add("lex=arg_line", function(str)

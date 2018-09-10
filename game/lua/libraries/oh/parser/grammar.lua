@@ -21,7 +21,7 @@ function META:ReadAssignment()
 	if self:ReadIfValue("=") then
 		return {type = "assignment", left = left, right = self:ReadExpressions()}
 	else
-		return {type = "call", value = left[1]}
+		return {type = "assignment", left = left}
 	end
 end
 
@@ -106,7 +106,6 @@ function META:ReadIndexExpression()
 		elseif token.value == "(" and not out[1] then
 			self:NextToken()
 			local val = self:ReadExpression()
-			table.print(val)
 			table.insert(out, {type = "call2", value = val})
 		elseif token.value == "(" then
 			self:Back()
@@ -160,18 +159,29 @@ function META:ReadExpression(priority)
 	elseif self:ReadIfValue("(") then
 		val = self:ReadExpression(0)
 		self:ReadExpectValue(")")
+		if self:IsValue(":") then
+			local right = self:ReadIndexExpression()
+			table.insert(right, 1, val)
+			val = {type = "index_call_expression", value = right}
+		end
 	elseif oh.syntax.IsValue(token) then
 		val = self:ReadToken()
+	elseif token.value == ":" then
+		val = {type = "index_call_expression", value = self:ReadIndexExpression()}
 	elseif token.value == "{" then
 		val = self:ReadTable()
 	elseif token.value == "function" then
 		self:NextToken()
 		self:ReadExpectValue("(")
 		local arguments = self:ReadExpressions()
+		self:ReadExpectValue(")")
 		local body = self:ReadBody("end")
 		val = {type = "function", arguments = arguments, body = body}
 	elseif token.type == "letter" and not oh.syntax.keywords[token.value] then
 		val = {type = "index_call_expression", value = self:ReadIndexExpression()}
+	elseif token.value == ";" then
+		self:NextToken()
+		return
 	else
 		return val
 	end
@@ -221,6 +231,7 @@ function META:ReadBody(stop)
 				table.insert(out, data)
 			else
 				local data = self:ReadAssignment()
+
 				data.is_local = true
 				table.insert(out, data)
 			end
@@ -259,6 +270,8 @@ function META:ReadBody(stop)
 				else
 					local expr = self:ReadExpression()
 
+					table.print(expr)
+
 					self:ReadExpectValue("then")
 					table.insert(data.statements, {
 						expr = expr,
@@ -288,7 +301,14 @@ function META:ReadBody(stop)
 				data.val = self:ReadExpression()
 				self:ReadExpectValue(",")
 				data.max = self:ReadExpression()
+
+				if self:IsValue(",") then
+					self:NextToken()
+					data.incr = self:ReadExpression()
+				end
+
 				self:ReadExpectValue("do")
+
 				data.body = self:ReadBody("end")
 				table.insert(out, data)
 			else
@@ -313,14 +333,20 @@ function META:ReadBody(stop)
 			data.body = self:ReadBody("end")
 			table.insert(out, data)
 		elseif token.value == "(" then
-			table.insert(out, {type = "call", value = self:ReadExpression()})
+			table.insert(out, {type = "call", value = assert(self:ReadExpression())})
 			self:ReadExpectValue(")")
 		elseif token.type == "letter" then
 			self:Back() -- we want to include the current letter in the loop
 			table.insert(out, self:ReadAssignment())
+		elseif token.value == "goto" then
+			self:NextToken()
+			self:ReadExpectType("letter")
+		elseif token.value == ";" then -- hmmm
+
 		else
 			self:Back()
-			table.insert(out, {type = "call", value = self:ReadExpression()})
+			print(self:GetToken())
+			table.insert(out, {type = "call", value = assert(self:ReadExpression())})
 		end
 	end
 

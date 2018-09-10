@@ -103,7 +103,7 @@ do -- syntax rules
 		"and", "break", "do", "else", "elseif", "end",
 		"false", "for", "function", "if", "in", "local",
 		"nil", "not", "or", "repeat", "return", "then",
-		"true", "until", "while", "goto",
+		"true", "until", "while", "goto", "..."
 	}
 	for k,v in pairs(syntax.keywords) do
 		syntax.keywords[v] = v
