@@ -66,9 +66,37 @@ function META:IsValue(str, offset)
 	return tk and tk.value == str
 end
 
+function META:ReadIsValue(str, offset)
+	local b = self:IsValue(str, offset)
+	self:NextToken()
+	return b
+end
+
 function META:IsType(str, offset)
 	local tk = self:GetToken(offset)
 	return tk and tk.type == str
+end
+
+function META:ReadIsType(str, offset)
+	local b = self:IsType(str, offset)
+	self:NextToken()
+	return b
+end
+
+function META:ReadIfType(str, offset)
+	local b = self:IsType(str, offset)
+	if b then
+		self:NextToken()
+	end
+	return b
+end
+
+function META:ReadIfValue(str, offset)
+	local b = self:IsValue(str, offset)
+	if b then
+		self:NextToken()
+	end
+	return b
 end
 
 function META:CheckTokenValue(tk, value, level)
@@ -107,6 +135,12 @@ end
 
 function META:Back()
 	self.i = self.i - 1
+end
+
+function META:Iterate()
+	return function()
+		return self:ReadToken()
+	end
 end
 
 

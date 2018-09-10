@@ -7,6 +7,12 @@ do -- syntax rules
 	syntax.escape_character = "\\"
 	syntax.comment = "--"
 
+	syntax.types = {
+		"string",
+		"number",
+	}
+
+
 	do
 		local char_types = {}
 
@@ -104,6 +110,7 @@ do -- syntax rules
 	end
 
 	syntax.keyword_values = {
+		"...",
 		"nil",
 		"true",
 		"false",
@@ -141,6 +148,22 @@ do -- syntax rules
 		end
 		syntax.longest_symbol = longest_symbol
 		syntax.symbols_lookup = lookup
+	end
+
+	function syntax.IsValue(token)
+		return token.type == "number" or token.type == "string" or syntax.keyword_values[token.value]
+	end
+
+	function syntax.GetLeftOperatorPriority(token)
+		return oh.syntax.operators[token.value] and oh.syntax.operators[token.value][1]
+	end
+
+	function syntax.GetRightOperatorPriority(token)
+		return oh.syntax.operators[token.value] and oh.syntax.operators[token.value][2]
+	end
+
+	function syntax.IsUnaryOperator(token)
+		return syntax.unary_operators[token.value]
 	end
 end
 

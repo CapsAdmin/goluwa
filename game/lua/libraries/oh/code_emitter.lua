@@ -31,7 +31,7 @@ function META:Value2(v)
 		self:IndexExpression(v.value)
 	elseif v.type == "unary" then
 		if oh.syntax.keywords[v.value] then
-			_(v.value)_" "_:Expression(v.argument)
+			_" "_(v.value)_" "_:Expression(v.argument)
 		else
 			_(v.value)_:Expression(v.argument)
 		end
@@ -58,7 +58,7 @@ end
 function META:Expression(v)
 	local _ = self
 
-	if v.left then _"(" _:Expression(v.left) end _:Value2(v) if v.right then _:Expression(v.right) _")" end
+	_"(" if v.left then _:Expression(v.left) end _:Value2(v) if v.right then _:Expression(v.right) end _")"
 end
 
 function META:IndexExpression(data)
@@ -92,9 +92,11 @@ function META:Body(tree)
 					self:Body(data.body)
 				_"\t-"
 			_"\t"_"end"
+		elseif data.type == "break" then
+			_"\t"_"break"
 		elseif data.type == "return" then
-			if data.expression then
-				_"\t"_"return "_:Expression(data.expression)
+			if data.expressions then
+				_"\t"_"return "_:arguments(data.expressions)
 			else
 				_"\t"_"return "
 			end
@@ -118,15 +120,42 @@ function META:Body(tree)
 					_:Body(data.body)
 				_"\t-"
 			_"\t"_"end"
-		elseif data.type == "function2" then
-			_"\t"_"function"_" "
-				_:IndexExpression(data.expression)
-				_"\t+"
-					self:Body(data.body)
-				_"\t-"
-			_"\t"_"end"
 		elseif data.type == "function" then
-			_"\t"_("local ", not not data.is_local)_"function"_" "_:Expression(data.expression)_"\n"
+			local call = table.remove(data.expression.value, #data.expression.value)
+
+
+			_"\t"_("local ", not not data.is_local)_"function"_" "_:IndexExpression(data.expression.value)
+			_"("
+
+			local arg_line = {}
+
+			for i,v in ipairs(call.arguments) do
+
+				if v.left then
+					local cur = v.left
+					while cur.left do
+						cur = cur.left
+					end
+					_(cur.value[1].value.value)
+					table.insert(arg_line, cur.value[1].value)
+				else
+					_:Value(v)
+					table.insert(arg_line, v)
+				end
+
+
+				if i ~= #call.arguments then
+					_", "
+				end
+			end
+
+			_")"
+
+			for i,v in ipairs(call.arguments) do
+				_:Value(arg_line[i]) _" = " _:Expression(v) _";"
+			end
+
+			_"\n"
 				_"\t+"
 					self:Body(data.body)
 				_"\t-"

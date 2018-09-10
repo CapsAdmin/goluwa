@@ -352,11 +352,11 @@ function META:Tokenize()
 							else
 								self:Error("malformed number: invalid character '" .. char .. "'. only ule allowed after a number", i, offset)
 							end
+						elseif not found_dot and char == "." then
+							found_dot = true
 						elseif t == "space" or t == "symbol" then
 							stop = offset - 1
 							break
-						elseif not found_dot and char == "." then
-							found_dot = true
 						else
 							self:Error("malformed number: invalid character '" .. char .. "'. this should never happen?", i, offset)
 						end
