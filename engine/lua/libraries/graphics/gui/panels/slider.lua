@@ -16,6 +16,12 @@ function META:Initialize()
 
 	local line = self:CreatePanel("base", "line")
 	line:SetStyle("button_active")
+
+	line.OnMouseInput = function(line, button, pressed)
+		if pressed then
+			self:SetFraction(line:GetMousePosition() / line:GetSize())
+		end
+	end
 	line.OnPostDraw = function()
 		self:OnLineDraw(line)
 	end
