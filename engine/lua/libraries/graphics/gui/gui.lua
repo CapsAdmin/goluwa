@@ -77,6 +77,10 @@ function gui.RemovePanel(pnl)
 end
 
 function gui.Panic()
+	if gui.world and gui.world:IsValid() then
+		gui.world:Remove()
+	end
+
 	gui.Initialize()
 end
 
