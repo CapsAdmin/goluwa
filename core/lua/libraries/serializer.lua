@@ -11,14 +11,7 @@ function serializer.GetAvailible()
 end
 
 function serializer.GetLibrary(name)
-	local lib = serializer.libraries[name] and serializer.libraries[name].lib
-
-	if type(lib) == "string" then
-		lib = require(lib)
-		serializer.libraries[name].lib = lib
-	end
-
-	return lib
+	return serializer.libraries[name] and serializer.libraries[name].lib
 end
 
 function serializer.Encode(lib, ...)
