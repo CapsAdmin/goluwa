@@ -362,6 +362,8 @@ test().awd:lol().lol:w().awdawdwa["awdwad"].awdwadawd.wadwda()
 		test(1)(2)(3).awd:lol().lol:w().awdawdwa()
 	_1() _2() someFunction = function() Inside() end Outside()
 
+	a = (a..({ '', '==', '=' })[#data%3+1])
+
 
 ]===============]
 
@@ -431,9 +433,10 @@ end
 function oh.CompileCode(code, path)
 	local tokens = oh.Tokenize(code)
 
-	--tokens:Dump()
-
-	local str = oh.DumpAST(tokens:ReadBody())
+	tokens:Dump()
+	local body = tokens:ReadBody()
+	table.print(body)
+	local str = oh.DumpAST(body)
 	--print("result:")
 	--print(str:trim():indent(1))
 
@@ -452,27 +455,43 @@ function oh.CompileCode(code, path)
 			end
 		end
 
-		return nil, err
+		return nil, err, str
 	end
 
-	return func, err
+	return func, str, str
 end
 
 function oh.Test()
 	RELOAD = nil
 	_G.oh = runfile("/home/caps/goluwa/game/lua/libraries/oh/oh.lua")
 
-	code = [[[
-		if (type(val) == "function" and not val(out[key])) or out[key] ~= val then
+	local code = vfs.Read("/home/caps/goluwa/data/linux_x64/main.lua")
+	code = [[
 
-		end
+		a = (a)()..""..awd
+
+	a=a+1
+
 	]]
+	if code then
+		local ok, err, code2 = _G.oh.CompileCode(code)
+		print(code2)
+		print(ok)
+		print(err)
+		return
+	end
 
-	_G.oh.CompileCode(code)
-
-	do return end
-	for path, v in pairs(vfs.GetLoadedLuaFiles()) do
-		assert(_G.oh.CompileCode(vfs.Read(path), path))
+	for path in pairs(vfs.GetLoadedLuaFiles()) do
+		local code = vfs.Read(path)
+		if code then
+			print(path)
+			local ok, err, code2 = _G.oh.CompileCode(code, path)
+			if not ok then
+				print(code2)
+				print(err)
+				break
+			end
+		end
 	end
 end
 

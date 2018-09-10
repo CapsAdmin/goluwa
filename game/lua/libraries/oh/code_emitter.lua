@@ -6,9 +6,9 @@ META.__index = META
 function META:Value2(v)
 	local _ = self
 	if v.type == "function" then
-		self.suppress_indention = true
+		--self.suppress_indention = true
 		_"(function("_:arguments(v.arguments)_")" self:Body(v.body, true) _"end)"
-		self.suppress_indention = false
+		--self.suppress_indention = false
 	elseif v.type == "table" then
 		_"{\n"
 			_"\t+"
@@ -33,7 +33,7 @@ function META:Value2(v)
 		if oh.syntax.keywords[v.value] then
 			_" "_(v.value)_" "_:Expression(v.argument)
 		else
-			_(v.value)_:Expression(v.argument)
+			_" "_(v.value)_:Expression(v.argument)
 		end
 	else
 		if oh.syntax.keywords[v.value] then
@@ -90,12 +90,22 @@ function META:Body(tree)
 					_"\t-"
 			end
 			_"\t" _"end"
+		elseif data.type == "goto" then
+			_"\t" _"goto " _:Value(data.label)
+		elseif data.type == "goto_label" then
+			_"\t" _"::" _:Value(data.label) _"::"
 		elseif data.type == "while" then
 			_"\t"_"while "_:Expression(data.expr)_" do"_"\n"
 				_"\t+"
 					self:Body(data.body)
 				_"\t-"
 			_"\t"_"end"
+		elseif data.type == "repeat" then
+			_"\t"_"repeat"_"\n"
+				_"\t+"
+					self:Body(data.body)
+				_"\t-"
+			_"\t" _"until "_:Expression(data.expr)
 		elseif data.type == "break" then
 			_"\t"_"break"
 		elseif data.type == "return" then
@@ -191,7 +201,9 @@ function META:Body(tree)
 				end
 			end
 		elseif data.type == "call" then
-			_"\t"_:Expression(data.value)
+			if data.value then
+				_"\t"_:Expression(data.value)
+			end
 		end
 
 		_"\n"
@@ -208,6 +220,7 @@ META.__call = function(self, str, b)
 
 	if str == "\t" then
 		self:emitindent()
+	elseif str == "\t+" then
 	elseif str == "\t+" then
 		self:indent()
 	elseif str == "\t-" then

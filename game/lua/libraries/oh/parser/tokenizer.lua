@@ -237,7 +237,10 @@ function META:Tokenize()
 			add_token(self, "string", i, stop)
 
 			i = stop
-		elseif t == "number" and self.last_type ~= "letter" then
+		elseif
+			t == "number" and self.last_type ~= "letter" or
+			(char == "." and oh.syntax.char_types[self.code:sub(i + 1, i + 1)]) == "number"
+		then
 			if self.code:sub(i + 1, i + 1):lower() == "x" then
 				local stop
 
