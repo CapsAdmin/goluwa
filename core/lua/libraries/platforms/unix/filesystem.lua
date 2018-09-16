@@ -13,6 +13,12 @@ ffi.cdef([[
 	char *getcwd(char *buf, size_t size);
 	int chdir (const char *filename);
 	int mkdir (const char *filename, uint32_t mode);
+
+	typedef struct DIR DIR;
+	DIR *opendir(const char *name);
+	struct dirent *readdir(DIR *dirp);
+	int closedir(DIR *dirp);
+	long syscall(int number, ...);
 ]])
 
 fs.open = ffi.C.fopen
@@ -47,18 +53,14 @@ else
 	]])
 end
 
-ffi.cdef([[
-	typedef struct DIR DIR;
-	DIR *opendir(const char *name);
-	struct dirent *readdir(DIR *dirp);
-	int closedir(DIR *dirp);
-	long syscall(int number, ...);
-]])
-
 function fs.find(name)
 	local out = {}
 
 	local ptr = ffi.C.opendir(name)
+
+	if ptr == nil then
+		return out
+	end
 
 	local i = 1
 	while true do
@@ -73,6 +75,8 @@ function fs.find(name)
 			i = i + 1
 		end
 	end
+
+	ffi.C.closedir(ptr)
 
 	return out
 end
@@ -147,7 +151,6 @@ local STAT = jit.arch == "x64" and 4 or 195
 
 function fs.getattributes(path)
 	local buff = statbox()
-
 	if ffi.C.syscall(STAT, path, buff) == 0 then
 		return {
 			last_accessed = tonumber(buff[0].st_atime),
