@@ -7,7 +7,11 @@ function META:Value2(v)
 	local _ = self
 	if v.type == "function" then
 		--self.suppress_indention = true
-		_"(function("_:arguments(v.arguments)_")" self:Body(v.body, true) _"end)"
+		_"(function("_:arguments(v.arguments)_")\n"
+			_"\t+"
+			self:Body(v.body)
+			_"\t-"
+		_"\nend)"
 		--self.suppress_indention = false
 	elseif v.type == "table" then
 		_"{\n"
@@ -30,13 +34,11 @@ function META:Value2(v)
 	elseif v.type == "index_call_expression" then
 		self:IndexExpression(v.value)
 	elseif v.type == "unary" then
-		if oh.syntax.keywords[v.value] then
-			_" "_(v.value)_" "_:Expression(v.argument)
-		else
-			_" "_(v.value)_:Expression(v.argument)
-		end
+		self:Unary(v)
 	else
-		if oh.syntax.keywords[v.value] then
+		if v.type == "operator" and oh.syntax.operator_translate[v.value] then
+			_" "_(oh.syntax.operator_translate[v.value])_" "
+		elseif oh.syntax.keywords[v.value] or v.type == "number" then
 			_" "_(v.value)_" "
 		else
 			_(v.value)
@@ -49,14 +51,35 @@ function META:Value(v)
 	if v.type == "operator" then
 		self:Expression(v)
 	elseif v.type == "unary" then
-		_(v.value)_:Expression(v.argument)
+		self:Unary(v)
 	else
 		self:Value2(v)
 	end
 end
 
+function META:Unary(v)
+	local _ = self
+
+	local func = oh.syntax.operator_function_transforms[v.value]
+	if func then
+		_" "_(func) _"("_:Value(v.argument)_") "
+	elseif oh.syntax.operator_translate[v.value] then
+		_" "_(oh.syntax.operator_translate[v.value])_" "_:Value(v.argument)
+	elseif oh.syntax.keywords[v.value] then
+		_" "_(v.value)_" "_:Value(v.argument)
+	else
+		_" "_(v.value)_:Value(v.argument)
+	end
+end
+
 function META:Expression(v)
 	local _ = self
+
+	local func = oh.syntax.operator_function_transforms[v.value]
+	if func and v.type ~= "unary" then
+		_(func) if v.left then _"(" _:Expression(v.left) end _" , " if v.right then _:Expression(v.right) _")" end
+		return
+	end
 
 	if v.left then _"(" _:Expression(v.left) end _:Value2(v) if v.right then _:Expression(v.right) _")" end
 end
@@ -114,6 +137,8 @@ function META:Body(tree)
 			else
 				_"\t"_"return "
 			end
+		elseif data.type == "continue" then
+			_"\t"_"goto __continue__"
 		elseif data.type == "for" then
 			if data.iloop then
 				_"\t"_"for "_:Expression(data.name)_" = "_:Expression(data.val)_", "_:Expression(data.max)
@@ -123,17 +148,35 @@ function META:Body(tree)
 				end
 
 				_" do"_"\n"
-					_"\t+"
-						_:Body(data.body)
-					_"\t-"
-				_"\t"_"end"
 			else
-				_"\t"_"for "_:arguments(data.names)_" in "_:Expression(data.expression)_" do"_"\n"
-					_"\t+"
-						_:Body(data.body)
-					_"\t-"
-				_"\t"_"end"
+				_"\t"_"for "_:arguments(data.names)_" in "_:arguments(data.expressions)_" do"_"\n"
 			end
+
+			_"\t+"
+
+				if data.has_continue and data.body[#data.body] and data.body[#data.body].type == "return" then
+					local ret = table.remove(data.body)
+					_:Body(data.body)
+					_"\t"_"do"
+
+					if ret.expressions then
+						_" return "_:arguments(ret.expressions)
+					else
+						_" return "
+					end
+					_" end"
+					_"\n"
+				else
+					_:Body(data.body)
+				end
+
+				if data.has_continue then
+					_"\t"_"::__continue__::\n"
+				end
+			_"\t-"
+
+			_"\t"_"end"
+
 		elseif data.type == "do" then
 			_"\t"_"do\n"
 				_"\t+"
@@ -200,6 +243,8 @@ function META:Body(tree)
 					end
 				end
 			end
+		elseif data.type == "index_call_expression" then
+			self:IndexExpression(data.value)
 		elseif data.type == "call" then
 			if data.value then
 				_"\t"_:Expression(data.value)
@@ -220,7 +265,6 @@ META.__call = function(self, str, b)
 
 	if str == "\t" then
 		self:emitindent()
-	elseif str == "\t+" then
 	elseif str == "\t+" then
 		self:indent()
 	elseif str == "\t-" then

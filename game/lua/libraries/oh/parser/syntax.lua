@@ -6,6 +6,9 @@ do -- syntax rules
 	syntax.literal_quote = "`"
 	syntax.escape_character = "\\"
 	syntax.comment = "--"
+	syntax.cpp_comment = "//"
+	syntax.c_comment_start = "/*"
+	syntax.c_comment_stop = "*/"
 
 	syntax.types = {
 		"string",
@@ -60,10 +63,12 @@ do -- syntax rules
 	end
 
 	syntax.unary_operators = {
-		["+"] = true,
-		["-"] = true,
-		["#"] = true,
-		["not"] = true,
+		["+"] = -1,
+		["-"] = -1,
+		["#"] = -1,
+		["not"] = -1,
+		["!"] = -1,
+		["~"] = -1,
 	}
 
 	syntax.operators = {
@@ -77,21 +82,46 @@ do -- syntax rules
 		["<="] = 3,
 		["=="] = 3,
 		["~="] = 3,
+		["!="] = 3,
 		["<"] = 3,
 		[">"] = 3,
 		[">="] = 3,
 		["and"] = 2,
+		["&&"] = 2,
 		["or"] = 1,
+		["||"] = 1,
+
 		[">>"] = -1,
-		["#"] = -1,
-		["not"] = -1,
 		["<<"] = -1,
-		["!="] = -1,
 		["&"] = -1,
 		["|"] = -1,
 	}
 
+	syntax.operator_function_transforms = {
+		[">>"] = "bit.rshift",
+		["<<"] = "bit.lshift",
+		["&"] = "bit.band",
+		["|"] = "bit.bor",
+		["~"] = "bit.bnot",
+		["^^"] = "bit.bxor",
+	}
+
+	syntax.operator_translate = {
+		["||"] = "or",
+		["&&"] = "and",
+		["!="] = "~=",
+		["!"] = "not",
+	}
+
 	for i,v in pairs(syntax.operators) do
+		if v < 0 then
+			syntax.operators[i] = {-v + 1, -v}
+		else
+			syntax.operators[i] = {v, v}
+		end
+	end
+
+	for i,v in pairs(syntax.unary_operators) do
 		if v < 0 then
 			syntax.operators[i] = {-v + 1, -v}
 		else

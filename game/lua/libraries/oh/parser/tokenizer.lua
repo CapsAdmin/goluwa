@@ -84,21 +84,12 @@ local function capture_literal_lua_string(self, i)
 
 	if length < 2 then return nil end
 
-	for i = i + length, #self.code do
-		local c = self.code:sub(i, i)
+	local closing = "]" .. ("="):rep(length - 2) .. "]"
 
-		if c == "]" then
-			local length = length
-			for i2 = i, i + length do
-				local c = self.code:sub(i2, i2)
-				if c == "]" or c == "=" then
-					length = length - 1
-				elseif length == 0 then
-					stop = i2 - 1
-					break
-				end
-			end
-			if stop then break end
+	for i = i + length, #self.code do
+		if self.code:sub(i, i + length - 1) == closing then
+			stop = i + length - 1
+			break
 		end
 	end
 
@@ -126,7 +117,7 @@ function META:Tokenize()
 				end
 			end
 
-			add_token(self, "shebang", i, stop)
+			--add_token(self, "shebang", i, stop)
 
 			i = stop
 		end
@@ -137,6 +128,48 @@ function META:Tokenize()
 
 		self.char = char
 		self.char_type = t
+
+
+
+		----------
+			if self.code:sub(i, i + #oh.syntax.cpp_comment - 1) == oh.syntax.cpp_comment then
+				i = i + #oh.syntax.cpp_comment
+
+				local stop
+
+				for i = i + 1, self.code_length do
+					local c = self.code:sub(i, i)
+
+					if c == "\n" or i == self.code_length then
+						stop = i
+						break
+					end
+				end
+
+				--add_token(self, "comment", i - #oh.syntax.comment, stop)
+
+				i = stop
+			end
+
+			if self.code:sub(i, i + #oh.syntax.c_comment_start - 1) == oh.syntax.c_comment_start then
+				i = i + #oh.syntax.c_comment_start
+
+				local stop
+
+				for i = i, self.code_length do
+					if self.code:sub(i, i + #oh.syntax.c_comment_stop - 1) == oh.syntax.c_comment_stop then
+						i = i + #oh.syntax.c_comment_stop
+						stop = i
+						break
+					end
+				end
+
+				--add_token(self, "comment", i - #oh.syntax.c_comment_stop, stop)
+
+				i = stop
+			end
+		------
+
 
 		if self.code:sub(i, i + #oh.syntax.comment - 1) == oh.syntax.comment then
 			i = i + #oh.syntax.comment
@@ -160,11 +193,11 @@ function META:Tokenize()
 			else
 				local stop
 
-				for i = i + 1, self.code_length do
+				for i = i, self.code_length do
 					local c = self.code:sub(i, i)
 
 					if c == "\n" or i == self.code_length then
-						stop = i - 1
+						stop = i
 						break
 					end
 				end
@@ -282,7 +315,9 @@ function META:Tokenize()
 							char == "e" or
 							char == "f" or
 							char == "p" or
-							char == "_"
+							char == "_" or
+							char == "." or
+							((char == "+" or char == "-") and self.code:sub(offset-1, offset-1):lower() == "p")
 						)
 					then
 						if not t or t == "space" or t == "symbol" then

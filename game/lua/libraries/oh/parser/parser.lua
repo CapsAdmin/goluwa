@@ -30,6 +30,8 @@ function META:Error(msg, start, stop, level)
 
 	str = "\n" .. context_start .. str .. context_stop:sub(#content_after + 1)
 
+	str =  "\n" .. self.path .. ":" .. self.code:sub(0, start):count("\n") .. "\n" .. str
+
 	error(str, level or 2)
 end
 
@@ -100,12 +102,26 @@ function META:ReadIfValue(str, offset)
 end
 
 function META:CheckTokenValue(tk, value, level)
+	if type(value) == "table" then
+		if not table.hasvalue(value, tk.value) then
+			self:Error("expected " .. table.concat(value, " or ") .. " got " .. tk.value, nil,nil,level or 3)
+		end
+		return
+	end
+
 	if tk.value ~= value then
 		self:Error("expected " .. value .. " got " .. tk.value, nil,nil,level or 3)
 	end
 end
 
 function META:CheckTokenType(tk, type)
+	if _G.type(type) == "table" then
+		if not table.hasvalue(type, tk.value) then
+			self:Error("expected " .. table.concat(type, " or ") .. " got " .. tk.value, nil,nil,level or 3)
+		end
+		return
+	end
+
 	if tk.type ~= type then
 		self:Error("expected " .. type .. " got " .. tk.type, nil,nil,level or 3)
 	end
@@ -147,12 +163,13 @@ end
 runfile("grammar.lua", META)
 runfile("tokenizer.lua", META)
 
-function oh.Tokenize(code)
+function oh.Tokenize(code, path)
 	local self = {}
 
 	setmetatable(self, META)
 
 	self.code = code
+	self.path = path or "?"
 	self.code_length = #code
 
 	self.chunks = {}

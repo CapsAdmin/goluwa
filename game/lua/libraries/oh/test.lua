@@ -431,11 +431,11 @@ function oh.TestLuajitLangToolkit(code)
 end
 
 function oh.CompileCode(code, path)
-	local tokens = oh.Tokenize(code)
+	local tokens = oh.Tokenize(code, path)
 
-	tokens:Dump()
+	--tokens:Dump()
 	local body = tokens:ReadBody()
-	table.print(body)
+	--table.print(body)
 	local str = oh.DumpAST(body)
 	--print("result:")
 	--print(str:trim():indent(1))
@@ -463,36 +463,43 @@ end
 
 function oh.Test()
 	RELOAD = nil
-	_G.oh = runfile("/home/caps/goluwa/game/lua/libraries/oh/oh.lua")
+
+	if not oh.Tokenize then
+		_G.oh = runfile("/home/caps/goluwa/game/lua/libraries/oh/oh.lua")
+	end
 
 	local code = vfs.Read("/home/caps/goluwa/data/linux_x64/main.lua")
-	code = [[
 
-		a = (a)()..""..awd
-
-	a=a+1
-
-	]]
 	if code then
 		local ok, err, code2 = _G.oh.CompileCode(code)
-		print(code2)
+		vfs.Write("/home/caps/goluwa/data/linux_x64/main2.lua", code2)
 		print(ok)
-		print(err)
+		--print(err)
+		--print(code2)
 		return
 	end
 
-	for path in pairs(vfs.GetLoadedLuaFiles()) do
+	for _, path in ipairs(vfs.GetFilesRecursive("/home/caps/goluwa/love_games/lovers/", {"lua"})) do
+		if path:find(".zip", nil, true) or path:find(".love", nil, true) then print(path, "!?!!!??!?!?!!!") return end
 		local code = vfs.Read(path)
-		if code then
+		if code and not code:find("e2function", nil, true) then
+			if path:find("lua-5.4.0", nil, true) then
+				code = code:gsub("//", "/")
+			end
+
+			if path:find("love_games", nil, true) then
+				code = code:gsub("continue", "CONTINUE")
+			end
+
 			print(path)
-			local ok, err, code2 = _G.oh.CompileCode(code, path)
+			local ok, err, code2 = _G.oh.CompileCode(code, path:gsub("os:", ""))
 			if not ok then
-				print(code2)
+				--print(code2)
 				print(err)
-				break
 			end
 		end
 	end
+
 end
 
 commands.Add("tokenize=arg_line", function(str)
