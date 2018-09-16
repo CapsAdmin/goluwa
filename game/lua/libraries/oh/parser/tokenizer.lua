@@ -129,49 +129,40 @@ function META:Tokenize()
 		self.char = char
 		self.char_type = t
 
+		if self.code:sub(i, i + #oh.syntax.c_comment_start - 1) == oh.syntax.c_comment_start then
+			i = i + #oh.syntax.c_comment_start
 
+			local stop
 
-		----------
-			if self.code:sub(i, i + #oh.syntax.cpp_comment - 1) == oh.syntax.cpp_comment then
-				i = i + #oh.syntax.cpp_comment
-
-				local stop
-
-				for i = i + 1, self.code_length do
-					local c = self.code:sub(i, i)
-
-					if c == "\n" or i == self.code_length then
-						stop = i
-						break
-					end
+			for i = i, self.code_length do
+				if self.code:sub(i, i + #oh.syntax.c_comment_stop - 1) == oh.syntax.c_comment_stop then
+					i = i + #oh.syntax.c_comment_stop
+					stop = i
+					break
 				end
-
-				--add_token(self, "comment", i - #oh.syntax.comment, stop)
-
-				i = stop
 			end
 
-			if self.code:sub(i, i + #oh.syntax.c_comment_start - 1) == oh.syntax.c_comment_start then
-				i = i + #oh.syntax.c_comment_start
+			--add_token(self, "comment", i - #oh.syntax.c_comment_stop, stop)
 
-				local stop
+			i = stop
+		elseif self.code:sub(i, i + #oh.syntax.cpp_comment - 1) == oh.syntax.cpp_comment then
+			i = i + #oh.syntax.cpp_comment
 
-				for i = i, self.code_length do
-					if self.code:sub(i, i + #oh.syntax.c_comment_stop - 1) == oh.syntax.c_comment_stop then
-						i = i + #oh.syntax.c_comment_stop
-						stop = i
-						break
-					end
+			local stop
+
+			for i = i, self.code_length do
+				local c = self.code:sub(i, i)
+
+				if c == "\n" or i == self.code_length then
+					stop = i
+					break
 				end
-
-				--add_token(self, "comment", i - #oh.syntax.c_comment_stop, stop)
-
-				i = stop
 			end
-		------
 
+			--add_token(self, "comment", i - #oh.syntax.comment, stop)
 
-		if self.code:sub(i, i + #oh.syntax.comment - 1) == oh.syntax.comment then
+			i = stop
+		elseif self.code:sub(i, i + #oh.syntax.comment - 1) == oh.syntax.comment then
 			i = i + #oh.syntax.comment
 
 			if self.code:sub(i, i) == oh.syntax.literal_quote or is_literal_lua_string(self, i) then
