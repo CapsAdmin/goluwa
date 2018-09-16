@@ -1,3 +1,5 @@
+if not jit then return end
+
 local out = {
 	write = function(t, ...) log(...) end,
 	close = function(t) end,
