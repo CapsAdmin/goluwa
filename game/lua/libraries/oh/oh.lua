@@ -43,9 +43,11 @@ end)
 
 function oh.Test()
 	local code = [=====[
-
+			lol = "a\"b" .. wow
 	]=====]
-	if code:trim() ~= "" then
+
+	code = vfs.Read("/home/caps/goluwa/data/linux_x64/main.lua")
+	if #code > 100000 or code:trim() ~= "" then
 		local func, err = oh.loadstring(code, path)
 		if not func then
 			print(func)

@@ -102,26 +102,12 @@ function META:ReadIfValue(str, offset)
 end
 
 function META:CheckTokenValue(tk, value, level)
-	if type(value) == "table" then
-		if not table.hasvalue(value, tk.value) then
-			self:Error("expected " .. table.concat(value, " or ") .. " got " .. tk.value, nil,nil,level or 3)
-		end
-		return
-	end
-
 	if tk.value ~= value then
 		self:Error("expected " .. value .. " got " .. tk.value, nil,nil,level or 3)
 	end
 end
 
 function META:CheckTokenType(tk, type)
-	if _G.type(type) == "table" then
-		if not table.hasvalue(type, tk.value) then
-			self:Error("expected " .. table.concat(type, " or ") .. " got " .. tk.value, nil,nil,level or 3)
-		end
-		return
-	end
-
 	if tk.type ~= type then
 		self:Error("expected " .. type .. " got " .. tk.type, nil,nil,level or 3)
 	end

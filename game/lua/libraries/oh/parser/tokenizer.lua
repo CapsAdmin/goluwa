@@ -1,20 +1,23 @@
 local META = ... or oh.parser_meta
 
+local escape = false
 local function string_escape(self, i)
-	if self.string_escape then
-		self.string_escape = false
+	if escape == true then
+		escape = false
 		return true
 	end
 
 	if self.code:sub(i, i) == oh.syntax.escape_character then
-		self.string_escape = true
+		escape = true
 	end
+
+	return false
 end
 
 local function add_token(self, type, start, stop)
 	self.chunks[self.chunks_i] = {
 		type = type,
-		--value = self.code:sub(start, stop),
+		value = self.code:sub(start, stop),
 		start = start,
 		stop = stop,
 	}
@@ -201,10 +204,8 @@ function META:Tokenize()
 			local stop
 
 			for i = i + 1, self.code_length do
-				local c = self.code:sub(i, i)
-
 				if not string_escape(self, i) then
-					if c == oh.syntax.quote then
+					if self.code:sub(i, i) == oh.syntax.quote then
 						stop = i
 						break
 					end
@@ -244,10 +245,8 @@ function META:Tokenize()
 			local stop
 
 			for i = i + 1, self.code_length do
-				local c = self.code:sub(i, i)
-
 				if not string_escape(self, i) then
-					if c == "'" then
+					if self.code:sub(i, i) == "'" then
 						stop = i
 						break
 					end

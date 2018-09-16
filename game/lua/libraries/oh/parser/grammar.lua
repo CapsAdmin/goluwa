@@ -76,7 +76,9 @@ function META:ReadTable()
 			break
 		end
 
-		self:CheckTokenValue(self:GetToken(), {",", ";"})
+		if not self:IsValue(",") and not self:IsValue(";") then
+			self:Error("expected , or ; got " .. self:GetToken().value, nil,nil,level or 3)
+		end
 
 		self:NextToken()
 	end
@@ -133,9 +135,7 @@ function META:ReadIndexExpression(hm)
 			if self:IsType("letter") then
 				break
 			end
-		elseif token.value == "." or token.value == ":" then
-
-		else
+		elseif token.value ~= "." and token.value ~= ":" then
 			self:Back()
 			break
 		end
@@ -185,7 +185,7 @@ function META:ReadExpression(priority)
 		self:NextToken()
 		return
 	else
-		return val
+		return
 	end
 
 	local token = self:GetToken()
@@ -239,9 +239,6 @@ function META:ReadBody(stop)
 			if self.loop_stack[1] then
 				self.loop_stack[#self.loop_stack].has_continue = true
 			end
-
-		elseif token.value == ";" then -- hmm
-
 		elseif token.value == "repeat" then
 			local data = {}
 			data.type = "repeat"
@@ -306,7 +303,7 @@ function META:ReadBody(stop)
 
 					table.insert(data.statements, {
 						expr = expr,
-						body = self:ReadBody({["else"] = true, ["elseif"] = true, ["end"] = true}, true),
+						body = self:ReadBody({["else"] = true, ["elseif"] = true, ["end"] = true}),
 						token = token,
 					})
 				end
@@ -379,7 +376,16 @@ function META:ReadBody(stop)
 		elseif token.value == "(" then
 			local expr = self:ReadExpression()
 			self:ReadExpectValue(")")
-			self:ReadExpectValue({".", ":", "[", "(", "{"})
+			if
+				not self:IsValue(".") and
+				not self:IsValue(":") and
+				not self:IsValue("[") and
+				not self:IsValue("(") and
+				not self:IsValue("{")
+			then
+				self:Error("expected .:[({ got " .. self:GetToken().value, nil,nil,level or 3)
+			end
+			self:NextToken()
 			self:Back()
 
 			local right = self:ReadIndexExpression(true)
@@ -388,7 +394,7 @@ function META:ReadBody(stop)
 		elseif token.type == "letter" then
 			self:Back() -- we want to include the current letter in the loop
 			table.insert(out, self:ReadAssignment())
-		else
+		elseif token.value ~= ";" then -- hmm
 			self:Back()
 			self:Error("unexpected token " .. token.value)
 			--self:Back()
