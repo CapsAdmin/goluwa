@@ -22,7 +22,7 @@ function META:Value2(v)
 					_:Value(v.value)
 				elseif v.type == "assignment" then
 					if v.expression_key then
-						_"["_:Value(v.indices[1])_"]" _" = " _:Value(v.expressions[1])
+						_"[ "_:Value(v.indices[1])_" ] "_" = " _:Value(v.expressions[1])
 					else
 						_:Value(v.indices[1]) _" = " _:Value(v.expressions[1])
 					end
@@ -93,7 +93,7 @@ function META:IndexExpression(data)
 		elseif v.type == "index" then
 			_(v.operator.value)_(v.value.value)
 		elseif v.type == "index_expression" then
-			_"["_:Value(v.value)_"]"
+			_"[ "_:Value(v.value)_" ]"
 		elseif v.type == "call" then
 			_"("_:arguments(v.arguments)_")"
 		else
