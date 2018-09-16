@@ -370,6 +370,10 @@ function META:ReadBody(stop)
 			data.arguments = {}
 			data.is_local = false
 			data.expression = self:ReadExpression()
+			if not data.expression then
+				self:Back()
+				self:Error("expected function name")
+			end
 			data.body = self:ReadBody("end")
 			table.insert(out, data)
 		elseif token.value == "(" then
@@ -393,8 +397,4 @@ function META:ReadBody(stop)
 	end
 
 	return out
-end
-
-if RELOAD then
-	oh.Test()
 end

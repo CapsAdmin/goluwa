@@ -198,8 +198,3 @@ do -- syntax rules
 end
 
 oh.syntax = syntax
-
-
-if RELOAD then
-	oh.Test()
-end

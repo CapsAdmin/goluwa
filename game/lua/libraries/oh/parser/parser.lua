@@ -182,7 +182,3 @@ function oh.Tokenize(code, path)
 end
 
 oh.parser_meta = META
-
-if RELOAD then
-	oh.Test()
-end

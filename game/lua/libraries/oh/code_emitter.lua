@@ -315,7 +315,3 @@ function oh.DumpAST(tree)
 
 	return table.concat(self.out)
 end
-
-if RELOAD then
-	oh.Test()
-end

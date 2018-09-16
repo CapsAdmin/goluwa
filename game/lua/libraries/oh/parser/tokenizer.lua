@@ -452,8 +452,3 @@ function META:Tokenize()
 		i = i + 1
 	end
 end
-
-
-if RELOAD then
-	oh.Test()
-end
