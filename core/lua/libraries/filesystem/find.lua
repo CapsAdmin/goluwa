@@ -123,8 +123,8 @@ do
 			if is_dir then
 				local okay = true
 				if dir_blacklist then
-					for i,v in ipairs(dir_blacklist) do
-						if v.full_path:find(v) then
+					for i,v2 in ipairs(dir_blacklist) do
+						if v.full_path:find(v2) then
 							okay = false
 							break
 						end
