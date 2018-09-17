@@ -1,39 +1,16 @@
 local META = ... or oh.parser_meta
 
-
--- var arg ...
-function META:ReadIdentifierArguments()
-	local out = {}
-
-	while true do
-		local tk = self:ReadToken()
-
-		if tk.type ~= "letter" and tk.value ~= "..." then
-			self:Error("expected letter or vararg got " .. tk.value)
-		end
-
-		if not tk then return out end
-
-		table.insert(out, tk)
-
-		if not self:IsValue(",") then
-			break
-		end
-
-		self:NextToken()
-	end
-
-	return out
-end
+local table_insert = table.insert
+local table_remove = table.remove
 
 function META:ReadExpressions()
 	local out = {}
-	while true do
+	for _ = 1, self:GetLength() do
 		local exp = self:ReadExpression()
 
 		if not exp then return out end
 
-		table.insert(out, exp)
+		table_insert(out, exp)
 
 		if not self:IsValue(",") then
 			break
@@ -44,6 +21,30 @@ function META:ReadExpressions()
 
 	return out
 end
+
+function META:ReadArguments(stop)
+	local out = {}
+	for _ = 1, self:GetLength() do
+		if not self:IsType("letter") and not self:IsValue("...") then
+			break
+		end
+
+		local exp = self:ReadToken()
+
+		if not exp then return out end
+
+		table_insert(out, exp)
+
+		if not self:IsValue(",") then
+			break
+		end
+
+		self:NextToken()
+	end
+
+	return out
+end
+
 
 function META:ReadAssignment()
 	local left = self:ReadExpressions()
@@ -62,7 +63,7 @@ function META:ReadTable()
 
 	self:ReadExpectValue("{")
 
-	while true do
+	for _ = 1, self:GetLength() do
 		local token = self:GetToken()
 		if not token then break end
 
@@ -78,7 +79,7 @@ function META:ReadTable()
 			data.expressions = {self:ReadExpression()}
 			data.indices = {index}
 
-			table.insert(tree.children, data)
+			table_insert(tree.children, data)
 		elseif token.value == "[" then
 			self:NextToken()
 			local val = self:ReadExpression()
@@ -90,12 +91,12 @@ function META:ReadTable()
 			data.expressions = {self:ReadExpression()}
 			data.indices = {val}
 			data.expression_key = true
-			table.insert(tree.children, data)
+			table_insert(tree.children, data)
 		else
 			local data = {}
 			data.type = "value"
 			data.value =  self:ReadExpression()
-			table.insert(tree.children, data)
+			table_insert(tree.children, data)
 		end
 
 		if self:IsValue("}") then
@@ -114,7 +115,7 @@ function META:ReadTable()
 	return tree
 end
 
-function META:ReadIndexExpression(hm)
+function META:ReadIndexExpression(hm, simple_call)
 	local out = {}
 
 	for _ = 1, self:GetLength() do
@@ -127,37 +128,35 @@ function META:ReadIndexExpression(hm)
 				self:Back()
 				break
 			end
-			table.insert(out, {type = "index", operator = _ == 1 and {value = ""} or self:GetToken(-2), value = token})
+			table_insert(out, {type = "index", operator = _ == 1 and {value = ""} or self:GetToken(-2), value = token})
 		elseif token.value == "[" then
-			table.insert(out, {type = "index_expression", value = self:ReadExpression()})
+			table_insert(out, {type = "index_expression", value = self:ReadExpression()})
 			self:ReadExpectValue("]")
-		elseif token.value == "(" and (not out[1] and not hm) then
+		elseif token.value == "(" and (not out[1] and not hm and not simple_call) then
 			self:NextToken()
 			local val = self:ReadExpression()
-			table.insert(out, {type = "call2", value = val})
+			table_insert(out, {type = "call2", value = val})
+			print("!?")
 		elseif token.value == "(" then
 			self:Back()
 
-			-- fix this branch
-			if self:IsValue(")", 1) then
-				table.insert(out, {type = "call", arguments = {}})
-				self:NextToken()
-				self:NextToken()
-			else
-				while self:ReadIsValue("(") do
-					table.insert(out, {type = "call", arguments = self:ReadExpressions()})
-					self:ReadExpectValue(")")
-				end
-				self:Back()
+			if simple_call then break end
+
+			while self:ReadIsValue("(") do
+				table_insert(out, {type = "call", arguments = simple_call and self:ReadArguments() or self:ReadExpressions()})
+				self:ReadExpectValue(")")
 			end
+
+			self:Back()
+
 			if self:IsType("letter") then
 				break
 			end
 		elseif token.value == "{" then
 			self:Back()
-			table.insert(out, {type = "call", arguments = {self:ReadTable()}})
+			table_insert(out, {type = "call", arguments = {self:ReadTable()}})
 		elseif token.type == "string" then
-			table.insert(out, {type = "call", arguments = {token}})
+			table_insert(out, {type = "call", arguments = {token}})
 			if self:IsType("letter") then
 				break
 			end
@@ -189,7 +188,7 @@ function META:ReadExpression(priority)
 
 		if self:IsValue(".") or self:IsValue(":") or self:IsValue("[") or self:IsValue("(") or self:IsValue("{") or self:IsType("string") then
 			local right = self:ReadIndexExpression(true)
-			table.insert(right, 1, val)
+			table_insert(right, 1, val)
 			val = {type = "index_call_expression", value = right}
 		end
 	elseif oh.syntax.IsValue(token) then
@@ -201,9 +200,9 @@ function META:ReadExpression(priority)
 	elseif token.value == "function" then
 		self:NextToken()
 		self:ReadExpectValue("(")
-		local arguments = self:ReadExpressions()
+		local arguments = self:ReadArguments()
 		self:ReadExpectValue(")")
-		local body = self:ReadBody("end")
+		local body = self:ReadBody({["end"] = true})
 		val = {type = "function", arguments = arguments, body = body}
 	elseif token.type == "letter" and not oh.syntax.keywords[token.value] then
 		val = {type = "index_call_expression", value = self:ReadIndexExpression()}
@@ -231,10 +230,6 @@ end
 function META:ReadBody(stop)
 	self.loop_stack = self.loop_stack or {}
 
-	if type(stop) == "string" then
-		stop = {[stop] = true}
-	end
-
 	local out = {}
 
 	for _ = 1, self:GetLength() do
@@ -250,17 +245,17 @@ function META:ReadBody(stop)
 			local data = {}
 			data.type = "goto_label"
 			data.label = self:ReadExpectType("letter")
-			table.insert(out, data)
+			table_insert(out, data)
 			self:ReadExpectValue("::")
 		elseif token.value == "goto" then
 			local data = {}
 			data.type = "goto"
 			data.label = self:ReadExpectType("letter")
-			table.insert(out, data)
+			table_insert(out, data)
 		elseif token.value == "continue" then
 			local data = {}
 			data.type = "continue"
-			table.insert(out, data)
+			table_insert(out, data)
 
 			if self.loop_stack[1] then
 				self.loop_stack[#self.loop_stack].has_continue = true
@@ -269,42 +264,45 @@ function META:ReadBody(stop)
 			local data = {}
 			data.type = "repeat"
 
-			table.insert(self.loop_stack, data)
+			table_insert(self.loop_stack, data)
 
-			data.body = self:ReadBody("until")
+			data.body = self:ReadBody({["until"] = true})
 			data.expr = self:ReadExpression()
-			table.insert(out, data)
+			table_insert(out, data)
 
-			table.remove(self.loop_stack)
+			table_remove(self.loop_stack)
 		elseif token.value == "local" then
 			if self:GetToken().value == "function" then
 				self:NextToken()
 				local data = {}
 				data.type = "function"
 				data.is_local = true
-				data.expression = self:ReadExpression()
-				data.body = self:ReadBody("end")
-				table.insert(out, data)
+				data.index_expression = self:ReadExpectType("letter")
+				self:ReadExpectValue("(")
+				data.arguments = self:ReadArguments()
+				self:ReadExpectValue(")")
+				data.body = self:ReadBody({["end"] = true})
+				table_insert(out, data)
 			else
 				local data = self:ReadAssignment()
 
 				data.is_local = true
-				table.insert(out, data)
+				table_insert(out, data)
 			end
 		elseif token.value == "return" then
 			local data = {}
 			data.type = "return"
 			data.expressions = self:ReadExpressions()
-			table.insert(out, data)
+			table_insert(out, data)
 		elseif token.value == "break" then
 			local data = {}
 			data.type = "break"
-			table.insert(out, data)
+			table_insert(out, data)
 		elseif token.value == "do" then
 			local data = {}
 			data.type = "do"
-			data.body = self:ReadBody("end")
-			table.insert(out, data)
+			data.body = self:ReadBody({["end"] = true})
+			table_insert(out, data)
 		elseif token.value == "if" then
 			local data = {}
 			data.type = "if"
@@ -319,15 +317,15 @@ function META:ReadBody(stop)
 				end
 
 				if token.value == "else" then
-					table.insert(data.statements, {
-						body = self:ReadBody("end"),
+					table_insert(data.statements, {
+						body = self:ReadBody({["end"] = true}),
 						token = token,
 					})
 				else
 					local expr = self:ReadExpression()
 					self:ReadExpectValue("then")
 
-					table.insert(data.statements, {
+					table_insert(data.statements, {
 						expr = expr,
 						body = self:ReadBody({["else"] = true, ["elseif"] = true, ["end"] = true}),
 						token = token,
@@ -336,28 +334,28 @@ function META:ReadBody(stop)
 
 				self:Back() -- we want to read the else/elseif/end in the next iteration
 			end
-			table.insert(out, data)
+			table_insert(out, data)
 		elseif token.value == "while" then
 			local data = {}
 			data.type = "while"
 			data.expr = self:ReadExpression()
 			self:ReadExpectValue("do")
 
-			table.insert(self.loop_stack, data)
+			table_insert(self.loop_stack, data)
 
-			data.body = self:ReadBody("end")
-			table.insert(out, data)
+			data.body = self:ReadBody({["end"] = true})
+			table_insert(out, data)
 
 			table.remove(self.loop_stack)
 		elseif token.value == "for" then
 			local data = {}
 			data.type = "for"
 
-			table.insert(self.loop_stack, data)
+			table_insert(self.loop_stack, data)
 
 			if self:GetToken(1).value == "=" then
 				data.iloop = true
-				data.name = self:ReadExpression()
+				data.name = self:ReadExpectType("letter")
 				self:ReadExpectValue("=")
 				data.val = self:ReadExpression()
 				self:ReadExpectValue(",")
@@ -370,7 +368,7 @@ function META:ReadBody(stop)
 
 				self:ReadExpectValue("do")
 			else
-				local names = self:ReadExpressions()
+				local names = self:ReadArguments()
 
 				self:ReadExpectValue("in")
 
@@ -380,11 +378,11 @@ function META:ReadBody(stop)
 				self:ReadExpectValue("do")
 			end
 
-			local body = self:ReadBody("end")
+			local body = self:ReadBody({["end"] = true})
 
 			data.body = body
 
-			table.insert(out, data)
+			table_insert(out, data)
 
 			table.remove(self.loop_stack)
 		elseif token.value == "function" then
@@ -392,13 +390,12 @@ function META:ReadBody(stop)
 			data.type = "function"
 			data.arguments = {}
 			data.is_local = false
-			data.expression = self:ReadExpression()
-			if not data.expression then
-				self:Back()
-				self:Error("expected function name")
-			end
-			data.body = self:ReadBody("end")
-			table.insert(out, data)
+			data.index_expression = self:ReadIndexExpression(true, true)
+			self:ReadExpectValue("(")
+			data.arguments = self:ReadArguments()
+			self:ReadExpectValue(")")
+			data.body = self:ReadBody({["end"] = true})
+			table_insert(out, data)
 		elseif token.value == "(" then
 			local expr = self:ReadExpression()
 			self:ReadExpectValue(")")
@@ -415,18 +412,20 @@ function META:ReadBody(stop)
 			self:Back()
 
 			local right = self:ReadIndexExpression(true)
-			table.insert(right, 1, expr)
-			table.insert(out, {type = "index_call_expression", value = right})
+			table_insert(right, 1, expr)
+			table_insert(out, {type = "index_call_expression", value = right})
 		elseif token.type == "letter" then
 			self:Back() -- we want to include the current letter in the loop
-			table.insert(out, self:ReadAssignment())
+			table_insert(out, self:ReadAssignment())
 		elseif token.value ~= ";" then -- hmm
 			self:Back()
 			self:Error("unexpected token " .. token.value)
-			--self:Back()
-			--table.insert(out, {type = "call", value = self:ReadExpression()})
 		end
 	end
 
 	return out
+end
+
+if RELOAD then
+--	oh.Test()
 end

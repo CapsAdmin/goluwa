@@ -10,7 +10,7 @@ function oh.Transpile(code, path)
 	return output
 end
 
-function oh.Transpile(code, path)
+function oh.Transpile2(code, path)
 	collectgarbage()
 	profiler.StartTimer("total")
 		profiler.StartTimer("tokenize")
@@ -26,6 +26,11 @@ function oh.Transpile(code, path)
 		profiler.StopTimer()
 	profiler.StopTimer()
 	collectgarbage()
+
+	profiler.StartTimer("loadstring")
+		print(loadstring(output))
+	profiler.StopTimer()
+
 	return output
 end
 
@@ -62,47 +67,51 @@ commands.Add("oh=arg_line", function(str)
 end)
 
 function oh.Test()
-	local code = [=====[
-	local a = {
-		["\""] = a,
-		["\\"] = b,
-	}
-	]=====]
+	local paths = io.popen("find " .. e.ROOT_FOLDER .. " -name \"*.lua\""):read("*all")
+	oh.failed_tests = oh.failed_tests or {}
+	local use_failed_tests = oh.failed_tests[1]
 
-	code = vfs.Read("/home/caps/goluwa/data/linux_x64/main.lua")
-
-	local code = oh.Transpile(code, path)
-
-	do return end
-
-	if #code > 100000 or code:trim() ~= "" then
-		--S""
-		jit.flush()
-    	profiler.EnableRealTimeTraceAbortLogging(true)
-		local newcode = oh.Transpile(code, path)
-		--S""
-		if not func then
-			print(func)
-			print(err)
-		end
-		print(func)
-		return
-	end
-
-	vfs.GetFilesRecursive("/home/caps/goluwa/__gmod_addons/addons/", {"lua"}, function(path)
+	S""
+	for _, path in ipairs(use_failed_tests and oh.failed_tests or paths:split("\n")) do
 		local code, err = vfs.Read(path)
-		if not code and err then error(err) end
+		if err then error(err) end
+
 		if code then
-			local func, err = oh.loadstring(code, path:gsub("os:", ""):gsub(e.ROOT_FOLDER, ""))
-			if not func then
-				print(err)
+			if path:find("lua-5.4.0", nil, true) then
+				code = code:gsub("//", "/")
+			end
+
+			if path:find("love_games", nil, true) then
+				code = code:gsub("continue", "CONTINUE")
+			end
+
+			local name = path:sub(#e.ROOT_FOLDER + 1)
+
+			local func, err = oh.loadstring(code, name)
+
+			if func then
+				logn("PASS - ", name)
+				if use_failed_tests then
+					table.removevalue(oh.failed_tests, path)
+				end
+			else
+				local ok, err2 = loadstring(code)
+				if not ok then
+					logn("SKIP - ", name, err2)
+				else
+					logn("FAIL - ", name, err)
+					if not use_failed_tests then
+						table.insert(oh.failed_tests, path)
+					end
+				end
 			end
 		end
-	end, {"%.git", "gmod_wire_expression2"})
+	end
+	S""
 end
 
 _G.oh = oh
 
-oh.Test()
+_G.oh.Test()
 
 return oh

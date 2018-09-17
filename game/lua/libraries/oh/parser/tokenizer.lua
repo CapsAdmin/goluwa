@@ -133,7 +133,7 @@ function META:Tokenize()
 		local t = oh.syntax.char_types[char]
 
 		if not t then
-			self:Error("unknown symbol >>" .. char .. "<< (" .. char:byte() .. ")", i, i)
+			--self:Error("unknown symbol >>" .. char .. "<< (" .. char:byte() .. ")", i, i)
 		end
 
 		if self:GetChars(i, i + #oh.syntax.c_comment_start - 1) == oh.syntax.c_comment_start then
@@ -352,6 +352,9 @@ function META:Tokenize()
 						if t == "letter" then
 							if char:lower() == "e" then
 								exponent = true
+							elseif char:lower() == "i" then
+								stop = offset + 1
+								break
 							elseif char == "_" or (char:lower() == "u" or char:lower() == "l") and self:GetChar(offset+1):lower() == "l" then
 								if self:GetChar(offset+2):lower() == "l" then
 									stop = offset + 2

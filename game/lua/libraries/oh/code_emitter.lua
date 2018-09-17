@@ -184,45 +184,19 @@ function META:Body(tree)
 				_"\t-"
 			_"\t"_"end"
 		elseif data.type == "function" then
-			local call = table.remove(data.expression.value, #data.expression.value)
-
-
-			_"\t"_("local ", not not data.is_local)_"function"_" "_:IndexExpression(data.expression.value)
-			_"("
-
-			local arg_line = {}
-
-			for i,v in ipairs(call.arguments) do
-				if v.left then
-					local cur = v.left
-					while cur.left do
-						cur = cur.left
-					end
-					_(cur.value[1].value.value)
-					table.insert(arg_line, cur.value[1].value)
-				else
-					_:Value(v)
-					table.insert(arg_line, v)
-				end
-
-				if i ~= #call.arguments then
-					_", "
-				end
+			if data.is_local then
+				_"\t"_"local function " _:Value(data.index_expression)_"("_:arguments(data.arguments)_")"_"\n"
+					_"\t+"
+						self:Body(data.body)
+					_"\t-"
+				_"\t"_"end"
+			else
+				_"\t"_"function " _:IndexExpression(data.index_expression)_"("_:arguments(data.arguments)_")"_"\n"
+					_"\t+"
+						self:Body(data.body)
+					_"\t-"
+				_"\t"_"end"
 			end
-
-			_")"
-
-			for i,v in ipairs(call.arguments) do
-				if v.value ~= "..." then
-					_:Value(arg_line[i]) _" = " _:Expression(v) _";"
-				end
-			end
-
-			_"\n"
-				_"\t+"
-					self:Body(data.body)
-				_"\t-"
-			_"\t"_"end"
 		elseif data.type == "assignment" then
 			_"\t"_("local ", not not data.is_local)
 
