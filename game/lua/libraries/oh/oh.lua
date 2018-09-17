@@ -6,7 +6,27 @@ runfile("code_emitter.lua", oh)
 function oh.Transpile(code, path)
 	local tokens = oh.Tokenize(code, path)
 	local body = tokens:ReadBody()
-	return oh.DumpAST(body)
+	local output = oh.DumpAST(body)
+	return output
+end
+
+function oh.Transpile(code, path)
+	collectgarbage()
+	profiler.StartTimer("total")
+		profiler.StartTimer("tokenize")
+			local tokens = oh.Tokenize(code, path)
+		profiler.StopTimer()
+
+		profiler.StartTimer("parse")
+			local body = tokens:ReadBody()
+		profiler.StopTimer()
+
+		profiler.StartTimer("emit")
+			local output = oh.DumpAST(body)
+		profiler.StopTimer()
+	profiler.StopTimer()
+	collectgarbage()
+	return output
 end
 
 function oh.loadstring(code, path)
@@ -43,12 +63,24 @@ end)
 
 function oh.Test()
 	local code = [=====[
-			lol = "a\"b" .. wow
+	local a = {
+		["\""] = a,
+		["\\"] = b,
+	}
 	]=====]
 
 	code = vfs.Read("/home/caps/goluwa/data/linux_x64/main.lua")
+
+	local code = oh.Transpile(code, path)
+
+	do return end
+
 	if #code > 100000 or code:trim() ~= "" then
-		local func, err = oh.loadstring(code, path)
+		--S""
+		jit.flush()
+    	profiler.EnableRealTimeTraceAbortLogging(true)
+		local newcode = oh.Transpile(code, path)
+		--S""
 		if not func then
 			print(func)
 			print(err)

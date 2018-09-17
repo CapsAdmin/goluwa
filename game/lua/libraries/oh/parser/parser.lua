@@ -36,25 +36,25 @@ function META:Error(msg, start, stop, level)
 end
 
 function META:Dump()
+	local out = {}
 	local start = 0
-	for _,v in ipairs(self.chunks) do
-		log(
-			self.code:sub(start+1, v.start-1),
-			"⸢", self.code:sub(v.start, v.stop), "⸥"
-		)
+	for i,v in ipairs(self.chunks) do
+		out[i] = self.code:sub(start+1, v.start-1) ..
+			"⸢" .. self.code:sub(v.start, v.stop) .. "⸥"
 		start = v.stop
 	end
-	log("⸢", self.code:sub(start+1), "⸥")
+
+	table.insert(out, "⸢" .. self.code:sub(start+1) .. "⸥")
+
+	return table.concat(out)
 end
 
 function META:GetToken(offset)
-	local i = self.i + (offset or 0)
-	local info = self.chunks[i]
-	if not info then return end
-	info.value = info.value or self.code:sub(info.start, info.stop)
-	info.i = i
-	setmetatable(info, token_meta)
-	return info
+	if offset then
+		return self.chunks[self.i + offset]
+	end
+
+	return self.chunks[self.i]
 end
 
 function META:ReadToken()
@@ -158,7 +158,7 @@ function oh.Tokenize(code, path)
 	self.path = path or "?"
 	self.code_length = #code
 
-	self.chunks = {}
+	self.chunks = table.new(self.code_length / 6, 1) -- rough estimation of how many chunks there are going to be
 	self.chunks_i = 1
 	self.i = 1
 

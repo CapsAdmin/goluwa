@@ -1,5 +1,31 @@
 local META = ... or oh.parser_meta
 
+
+-- var arg ...
+function META:ReadIdentifierArguments()
+	local out = {}
+
+	while true do
+		local tk = self:ReadToken()
+
+		if tk.type ~= "letter" and tk.value ~= "..." then
+			self:Error("expected letter or vararg got " .. tk.value)
+		end
+
+		if not tk then return out end
+
+		table.insert(out, tk)
+
+		if not self:IsValue(",") then
+			break
+		end
+
+		self:NextToken()
+	end
+
+	return out
+end
+
 function META:ReadExpressions()
 	local out = {}
 	while true do
