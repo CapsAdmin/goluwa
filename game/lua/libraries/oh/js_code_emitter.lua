@@ -8,7 +8,8 @@ local tbl = {
 	["and"] = "&&",
 	["or"] = "||",
 	["not"] = "!",
-	[".."] = "+"
+	[".."] = "+",
+	["nil"] = "undefined"
 }
 
 local function TRANSLATE(val)
@@ -182,7 +183,7 @@ function META:Body(tree)
 	for __, data in ipairs(tree) do
 		if data.type == "if" then
 			for i,v in ipairs(data.statements) do
-				_"\t"_(v.token.value) _"(" if v.expr then _:Expression(v.expr) _") {" end _"\n"
+				_"\t"_(v.token.value) if v.expr then _"(" _:Expression(v.expr) _")" end _"{" _"\n"
 					_"\t+"
 						self:Body(v.body)
 					_"\t-"
@@ -403,6 +404,11 @@ if RELOAD then
 		print(arr.foo, "?!?!?!")
 
 		while true do break end
+
+		if nil then print ("true") else print ("false") end
+		if 0 then print ("true") else print ("false") end
+		if "" then print ("true") else print ("false") end
+		if false then print ("true") else print ("false") end
 	]===]
 
 
