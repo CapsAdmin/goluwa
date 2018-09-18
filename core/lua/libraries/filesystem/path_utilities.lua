@@ -94,10 +94,6 @@ function vfs.ReplaceIllegalPathSymbols(path, forward_slash)
 	return out
 end
 
-function vfs.ReplaceIllegalCharacters()
-
-end
-
 function vfs.FixPathSlashes(path)
 	return (path:gsub("\\", "/"):gsub("(/+)", "/"))
 end
