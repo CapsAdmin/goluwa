@@ -261,20 +261,24 @@ do
 	local indent = 0
 	function table.print2(tbl)
 		for k,v in pairs(tbl) do
-			log(("\t"):rep(indent))
-
-			if type(v) == "table" then
-				logn(k, ":")
-				indent = indent + 1
-				table.print2(v)
-				indent = indent - 1
-			else
+			if type(v) ~= "table" then
+				log(("\t"):rep(indent))
 				local v = v
 				if type(v) == "string" then
 					v = "\"" .. v .. "\""
 				end
 
 				logn(k, " = ", v)
+			end
+		end
+
+		for k,v in pairs(tbl) do
+			if type(v) == "table" then
+				log(("\t"):rep(indent))
+				logn(k, ":")
+				indent = indent + 1
+				table.print2(v)
+				indent = indent - 1
 			end
 		end
 	end
