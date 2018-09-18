@@ -136,7 +136,6 @@ function META:IndexExpression(hm, simple_call)
 			self:NextToken()
 			local val = self:Expression()
 			table_insert(out, {type = "call2", value = val})
-			print("!?")
 		elseif token.value == "(" then
 			self:Back()
 
