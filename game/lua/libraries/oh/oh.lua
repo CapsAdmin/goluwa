@@ -5,7 +5,7 @@ runfile("code_emitter.lua", oh)
 
 function oh.Transpile(code, path)
 	local tokens = oh.Tokenize(code, path)
-	local body = tokens:ReadBody()
+	local body = tokens:Block()
 	local output = oh.DumpAST(body)
 	return output
 end
@@ -18,7 +18,7 @@ function oh.Transpile2(code, path)
 		profiler.StopTimer()
 
 		profiler.StartTimer("parse")
-			local body = tokens:ReadBody()
+			local body = tokens:Block()
 		profiler.StopTimer()
 
 		profiler.StartTimer("emit")
