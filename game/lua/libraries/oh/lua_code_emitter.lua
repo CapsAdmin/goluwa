@@ -9,11 +9,11 @@ META.__index = META
 function META:Value2(v)
 	local _ = self
 	if v.type == "function" then
-		_"(function("_:CommaSeperated(v.arguments)_")\n"
+		_"function("_:CommaSeperated(v.arguments)_")\n"
 			_"\t+"
 			self:Body(v.body)
 			_"\t-"
-		_"\nend)"
+		_"end"
 	elseif v.type == "table" then
 		_"{\n"
 			_"\t+"
@@ -23,7 +23,7 @@ function META:Value2(v)
 					_:Value(v.value)
 				elseif v.type == "assignment" then
 					if v.expression_key then
-						_"[ "_:Value(v.indices[1])_" ] "_" = " _:Value(v.expressions[1])
+						_"[("_:Value(v.indices[1])_")]"_" = " _:Value(v.expressions[1])
 					else
 						_:Value(v.indices[1]) _" = " _:Value(v.expressions[1])
 					end
@@ -36,14 +36,10 @@ function META:Value2(v)
 		self:IndexExpression(v.value)
 	elseif v.type == "unary" then
 		self:Unary(v)
+	elseif v.type == "operator" and oh.syntax.operator_translate[v.value] then
+		_(oh.syntax.operator_translate[v.value])
 	else
-		if v.type == "operator" and oh.syntax.operator_translate[v.value] then
-			_" "_(oh.syntax.operator_translate[v.value])_" "
-		elseif oh.syntax.keywords[v.value] or v.type == "number" then
-			_" "_(v.value)_" "
-		else
-			_(v.value)
-		end
+		_(v.value)
 	end
 end
 
@@ -60,29 +56,55 @@ end
 
 function META:Unary(v)
 	local _ = self
-
+	_"("
 	local func = oh.syntax.operator_function_transforms[v.value]
 	if func then
-		_" "_(func) _"("_:Value(v.argument)_") "
+		_(func) _"("_:Value(v.argument)_")"
 	elseif oh.syntax.operator_translate[v.value] then
-		_" "_(oh.syntax.operator_translate[v.value])_" "_:Value(v.argument)
+		_(oh.syntax.operator_translate[v.value])_:EmitSpaceIf()_:Value(v.argument)
 	elseif oh.syntax.keywords[v.value] then
-		_" "_(v.value)_" "_:Value(v.argument)
+		_(v.value)_:EmitSpaceIf()_:Value(v.argument)
 	else
-		_" "_(v.value)_:Value(v.argument)
+		_(v.value)_:Value(v.argument)
 	end
+	_")"
 end
 
 function META:Expression(v)
 	local _ = self
 
 	local func = oh.syntax.operator_function_transforms[v.value]
+
 	if func and v.type ~= "unary" then
-		_(func) if v.left then _"(" _:Expression(v.left) end _" , " if v.right then _:Expression(v.right) _")" end
+		_:EmitSpaceIf()
+		_(func) if v.left then _"(" _:Expression(v.left) end _", " if v.right then _:Expression(v.right) _")" end
 		return
 	end
 
-	if v.left then _"(" _:Expression(v.left) end _:Value2(v) if v.right then _:Expression(v.right) _")" end
+	if v.left then
+		_"("
+		_:Expression(v.left)
+		_" "
+	end
+
+	_:EmitSpaceIf()
+	_:Value2(v)
+
+	if v.right then
+		_" "
+		_:Expression(v.right)
+		_")"
+	end
+end
+
+function META:GetPrevCharType()
+	return self.out[self.i - 1] and self.out[self.i - 1] and oh.syntax.char_types[self.out[self.i - 1]:sub(1, 1)]
+end
+
+function META:EmitSpaceIf(typ)
+	if self:GetPrevCharType() == "letter" or self:GetPrevCharType() == "number" then
+		self:Emit(" ")
+	end
 end
 
 function META:IndexExpression(data)
@@ -94,7 +116,7 @@ function META:IndexExpression(data)
 		elseif v.type == "index" then
 			_(v.operator.value)_(v.value.value)
 		elseif v.type == "index_expression" then
-			_"[ "_:Value(v.value)_" ]"
+			_"[("_:Value(v.value)_")]"
 		elseif v.type == "call" then
 			_"("_:CommaSeperated(v.arguments)_")"
 		else
@@ -108,18 +130,18 @@ function META:Body(tree)
 	for __, data in ipairs(tree) do
 		if data.type == "if" then
 			for i,v in ipairs(data.statements) do
-				_"\t"_(v.token.value)_" " if v.expr then _:Expression(v.expr) _" then" end _"\n"
+				_"\t"_(v.token.value) if v.expr then _:Expression(v.expr) _" then" end _"\n"
 					_"\t+"
 						self:Body(v.body)
 					_"\t-"
 			end
-			_"\t" _"end"
+				_"\t" _"end"
 		elseif data.type == "goto" then
 			_"\t" _"goto " _:Value(data.label)
 		elseif data.type == "goto_label" then
 			_"\t" _"::" _:Value(data.label) _"::"
 		elseif data.type == "while" then
-			_"\t"_"while "_:Expression(data.expr)_" do"_"\n"
+			_"\t"_"while"_:Expression(data.expr)_:EmitSpaceIf()_"do"_"\n"
 				_"\t+"
 					self:Body(data.body)
 				_"\t-"
@@ -129,28 +151,29 @@ function META:Body(tree)
 				_"\t+"
 					self:Body(data.body)
 				_"\t-"
-			_"\t" _"until "_:Expression(data.expr)
+			_"\t" _"until"_:Expression(data.expr)
 		elseif data.type == "break" then
 			_"\t"_"break"
 		elseif data.type == "return" then
 			if data.expressions then
-				_"\t"_"return "_:CommaSeperated(data.expressions)
+				_"\t"_"return"_:CommaSeperated(data.expressions)
 			else
-				_"\t"_"return "
+				_"\t"_"return"
 			end
 		elseif data.type == "continue" then
 			_"\t"_"goto __continue__"
 		elseif data.type == "for" then
 			if data.iloop then
-				_"\t"_"for "_:Expression(data.name)_" = "_:Expression(data.val)_", "_:Expression(data.max)
+				_"\t"_"for"_:Expression(data.name)_" = "_:Expression(data.val)_", "_:Expression(data.max)
 
 				if data.incr then
 					_", "_:Expression(data.incr)
 				end
 
-				_" do"_"\n"
+				_:EmitSpaceIf()
+				_"do"_"\n"
 			else
-				_"\t"_"for "_:CommaSeperated(data.names)_" in "_:CommaSeperated(data.expressions)_" do"_"\n"
+				_"\t"_"for"_:EmitSpaceIf()_:CommaSeperated(data.names)_:EmitSpaceIf()_"in"_:CommaSeperated(data.expressions)_:EmitSpaceIf()_"do"_"\n"
 			end
 
 			_"\t+"
@@ -161,11 +184,12 @@ function META:Body(tree)
 					_"\t"_"do"
 
 					if ret.expressions then
-						_" return "_:CommaSeperated(ret.expressions)
+						_"return"_:CommaSeperated(ret.expressions)
 					else
-						_" return "
+						_"return"
 					end
-					_" end"
+					_:EmitSpaceIf()
+					_"end"
 					_"\n"
 				else
 					_:Body(data.body)
@@ -244,6 +268,7 @@ end
 
 function META:CommaSeperated(tbl)
 	--for i,v2 in ipairs(tbl) do
+	self:EmitSpaceIf()
 	for i = 1, #tbl do
 		self:Value(tbl[i])
 		if i ~= #tbl then
@@ -270,7 +295,7 @@ function META:EmitIndent()
 	self:Emit(("\t"):rep(self.level))
 end
 
-function oh.DumpAST(tree)
+function oh.BuildLuaCode(tree)
 	local self = {}
 
 	self.level = 0
@@ -282,4 +307,13 @@ function oh.DumpAST(tree)
 	self:Body(tree)
 
 	return table.concat(self.out)
+end
+
+if RELOAD then
+	local code = oh.Transpile(vfs.Read"/home/caps/goluwa/capsadmin/lua/syntax_test.lua")
+	print(code)
+	print(loadstring(code))
+
+	--local code = oh.Transpile(vfs.Read"main.lua")
+	--print(loadstring(code))
 end

@@ -15,6 +15,8 @@ local function string_escape(self, c, i)
 end
 
 local function add_token(self, type, start, stop)
+	if type == "comment" or type == "shebang" then return end
+
 	self.chunks[self.chunks_i] = {
 		type = type,
 		value = self:GetChars(start, stop),
@@ -125,7 +127,7 @@ function META:Tokenize()
 				end
 			end
 
-			--add_token(self, "shebang", i, stop)
+			add_token(self, "shebang", i, stop - 2)
 
 			i = stop
 		end
@@ -149,7 +151,7 @@ function META:Tokenize()
 				end
 			end
 
-			--add_token(self, "comment", i - #oh.syntax.c_comment_stop, stop)
+			add_token(self, "comment", i - #oh.syntax.c_comment_stop, stop - 1)
 
 			i = stop
 		elseif self:GetChars(i, i + #oh.syntax.cpp_comment - 1) == oh.syntax.cpp_comment then
@@ -166,25 +168,25 @@ function META:Tokenize()
 				end
 			end
 
-			--add_token(self, "comment", i - #oh.syntax.comment, stop)
+			add_token(self, "comment", i - #oh.syntax.comment, stop - 1)
 
 			i = stop
 		elseif self:GetChars(i, i + #oh.syntax.comment - 1) == oh.syntax.comment then
 			i = i + #oh.syntax.comment
 
-			if is_literal_string(self, i) then
-				local stop = capture_literal_string(self, i)
+			local stop
 
-				if not stop then
-					self:Error("cannot find the end of multiline comment", i, i)
+			if is_literal_string(self, i) then
+				stop = capture_literal_string(self, i)
+
+				if stop then
+					i = stop
+					add_token(self, "comment", i - #oh.syntax.comment, stop)
 				end
 
-				--add_token(self, "comment", i - #oh.syntax.comment, stop)
+			end
 
-				i = stop
-			else
-				local stop
-
+			if not stop then
 				for i = i, self.code_length do
 					local c = self:GetChar(i)
 
@@ -194,7 +196,7 @@ function META:Tokenize()
 					end
 				end
 
-				--add_token(self, "comment", i - #oh.syntax.comment, stop)
+				add_token(self, "comment", i - #oh.syntax.comment, stop - 1)
 
 				i = stop
 			end
@@ -203,11 +205,9 @@ function META:Tokenize()
 
 			for i = i + 1, self.code_length do
 				local c = self:GetChar(i)
-				if not string_escape(self, c, i) then
-					if c == oh.syntax.quote then
-						stop = i
-						break
-					end
+				if not string_escape(self, c, i) and c == oh.syntax.quote then
+					stop = i
+					break
 				end
 			end
 
@@ -256,6 +256,7 @@ function META:Tokenize()
 				local stop
 
 				local pow = false
+
 				for offset = i + 2, i + 64 do
 					local char = self:GetChar(offset):lower()
 					local t = oh.syntax.char_types[char]
@@ -432,4 +433,19 @@ function META:Tokenize()
 
 		i = i + 1
 	end
+end
+
+if RELOAD then
+	local func = oh.Transpile([[
+local i = 4
+local lnum = 0x131211100908
+  local n = lnum & (~(-1 << (i * 8)))
+print(n)
+	]])
+	print(func)
+	loadstring(func)()
+	--print(tokens.chunks)
+
+
+	--oh.TestAllFiles("/home/caps/goluwa/lua-5.3.0-tests/")
 end

@@ -44,7 +44,7 @@ function META:Dump()
 		start = v.stop
 	end
 
-	table.insert(out, "⸢" .. self.code:sub(start+1) .. "⸥")
+	table.insert(out, self.code:sub(start+1))
 
 	return table.concat(out)
 end

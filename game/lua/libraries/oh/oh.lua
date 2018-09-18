@@ -1,16 +1,20 @@
 local oh = {}
 
+RELOAD = nil
+
 runfile("parser/parser.lua", oh)
-runfile("code_emitter.lua", oh)
+runfile("lua_code_emitter.lua", oh)
 
 function oh.Transpile(code, path)
 	local tokens = oh.Tokenize(code, path)
 	local body = tokens:Block()
-	local output = oh.DumpAST(body)
+	local output = oh.BuildLuaCode(body)
 	return output
 end
 
 function oh.Transpile2(code, path)
+	collectgarbage()
+	collectgarbage()
 	collectgarbage()
 	profiler.StartTimer("total")
 		profiler.StartTimer("tokenize")
@@ -22,9 +26,11 @@ function oh.Transpile2(code, path)
 		profiler.StopTimer()
 
 		profiler.StartTimer("emit")
-			local output = oh.DumpAST(body)
+			local output = oh.BuildLuaCode(body)
 		profiler.StopTimer()
 	profiler.StopTimer()
+	collectgarbage()
+	collectgarbage()
 	collectgarbage()
 
 	profiler.StartTimer("loadstring")
@@ -66,8 +72,8 @@ commands.Add("oh=arg_line", function(str)
 	print(oh.Transpile(str))
 end)
 
-function oh.TestAllFiles()
-	local paths = io.popen("find " .. e.ROOT_FOLDER .. " -name \"*.lua\""):read("*all")
+function oh.TestAllFiles(path_override)
+	local paths = io.popen("find " .. (path_override or e.ROOT_FOLDER) .. " -name \"*.lua\""):read("*all")
 	oh.failed_tests = oh.failed_tests or {}
 	local use_failed_tests = oh.failed_tests[1]
 
@@ -90,11 +96,11 @@ function oh.TestAllFiles()
 
 			local name = path:sub(#e.ROOT_FOLDER + 1)
 
-			profiler.EnableStatisticalProfiling(true)
+			--profiler.EnableStatisticalProfiling(true)
 			local time = system.GetTime()
 			local func, err = oh.loadstring(code, name)
-			total_time = total_time + time - system.GetTime()
-			profiler.EnableStatisticalProfiling(false)
+			total_time = total_time + system.GetTime() - time
+			--profiler.EnableStatisticalProfiling(false)
 
 			if func then
 				statistics.passed = statistics.passed + 1
@@ -120,7 +126,7 @@ function oh.TestAllFiles()
 			end
 		end
 	end
-	profiler.PrintStatistical(0)
+	--profiler.PrintStatistical(0)
 
 	logn("spent ", total_time, " seconds in oh.loadstring")
 
@@ -131,6 +137,14 @@ end
 
 _G.oh = oh
 
-_G.oh.TestAllFiles()
+--_G.oh.TestAllFiles()
+
+function oh.Test()
+	local code = vfs.Read("main.lua")
+	for i = 1, 5 do
+		oh.Transpile2(code, "")
+		print("===========")
+	end
+end
 
 return oh
