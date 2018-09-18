@@ -179,7 +179,7 @@ function META:Expression(priority)
 
 	if oh.syntax.IsUnaryOperator(token) then
 		local unary = self:ReadToken().value
-		local exp = self:Expression(0)
+		local exp = self:Expression(math.huge)
 		val = {type = "unary", value = unary, argument = exp}
 	elseif self:ReadIfValue("(") then
 		val = self:Expression(0)
