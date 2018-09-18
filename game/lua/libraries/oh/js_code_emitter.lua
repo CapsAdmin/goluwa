@@ -8,6 +8,7 @@ local tbl = {
 	["and"] = "&&",
 	["or"] = "||",
 	["not"] = "!",
+	[".."] = "+"
 }
 
 local function TRANSLATE(val)
@@ -26,23 +27,43 @@ function META:Value2(v)
 			_"\t-"
 		_"}"
 	elseif v.type == "table" then
-		_"{\n"
-			_"\t+"
+
+
+			local is_array = true
 			for i,v in ipairs(v.children) do
-				_"\t"
-				if v.type == "value" then
-					_(i)_": "_:Value(v.value)
-				elseif v.type == "assignment" then
-					if v.expression_key then
-						_"[("_:Value(v.indices[1])_")]"_": " _:Value(v.expressions[1])
-					else
-						_:Value(v.indices[1]) _": " _:Value(v.expressions[1])
-					end
+				if v.indices then
+					is_array = false
+					break
 				end
-				_",\n"
 			end
-			_"\t-"
-		_"\t"_"}"
+
+			if is_array then
+				_"[\n"
+				_"\t+"
+				for i,v in ipairs(v.children) do
+					_"\t"_:Value(v.value)_",\n"
+				end
+				_"\t-"
+				_"\t"_"]"
+			else
+				_"{\n"
+				_"\t+"
+				for i,v in ipairs(v.children) do
+					_"\t"
+					if v.type == "value" then
+						_(i)_": "_:Value(v.value)
+					elseif v.type == "assignment" then
+						if v.expression_key then
+							_"[("_:Value(v.indices[1])_")]"_": " _:Value(v.expressions[1])
+						else
+							_:Value(v.indices[1]) _": " _:Value(v.expressions[1])
+						end
+					end
+					_",\n"
+				end
+				_"\t-"
+				_"\t"_"}"
+			end
 	elseif v.type == "index_call_expression" then
 		self:IndexExpression(v.value)
 	elseif v.type == "unary" then
@@ -168,9 +189,9 @@ function META:Body(tree)
 				_"\t" _"} "
 			end
 		elseif data.type == "goto" then
-			_"\t" _"goto " _:Value(data.label)
+			_"\t" _"continue " _:Value(data.label)
 		elseif data.type == "goto_label" then
-			_"\t" _"::" _:Value(data.label) _"::"
+			_"\t" _:Value(data.label)_":"
 		elseif data.type == "while" then
 			_"\t"_"while("_:Expression(data.expr)_:EmitSpaceIf()_"){"_"\n"
 				_"\t+"
@@ -195,7 +216,7 @@ function META:Body(tree)
 			_"\t"_"continue"
 		elseif data.type == "for" then
 			if data.iloop then
-				_"\t"_"for(let "_:Value(data.name)_" = "_:Expression(data.val)_"; " _:Value(data.name) _" <= " _:Expression(data.max)
+				_"\t"_"for(let "_:Value(data.name)_" = "_:Expression(data.val)_"; " _:Value(data.name) _" < " _:Expression(data.max)
 
 				if data.incr then
 					_"; " _:Value(data.name) _" = " _:Value(data.name) _" + " _:Expression(data.incr)
@@ -230,7 +251,7 @@ function META:Body(tree)
 				end
 
 				if data.has_continue then
-					_"\t"_"::__continue__::\n"
+					_"\t"_"continue\n"
 				end
 			_"\t-"
 
@@ -264,24 +285,13 @@ function META:Body(tree)
 				_"\t"_"}"
 			end
 		elseif data.type == "assignment" then
-			_"\t" if data.is_local then _("let ") end
-
 			for i,v in ipairs(data.left) do
+				_"\t" if data.is_local then _"let " end
 				_:Value(v)
-				if data.left[2] and i ~= #data.left then
-					_", "
+				if data.right and data.right[i] then
+					_" = " _:Expression(data.right[i])
 				end
-			end
-
-			if data.right then
-				_" = "
-
-				for i,v in ipairs(data.right) do
-					_:Expression(v)
-					if data.right[2] and i ~= #data.right then
-						_", "
-					end
-				end
+				_"\n"
 			end
 		elseif data.type == "index_call_expression" then
 			self:IndexExpression(data.value)
@@ -354,29 +364,55 @@ if RELOAD then
 	local path = "/home/caps/goluwa/capsadmin/lua/syntax_test.lua"
 	local code = vfs.Read(path)
 
-
-	code = [===[
-		local lol = {}
+	local code = [===[
+		local print = console.log
+		local lol = {
+			bar = function(self, a)
+				console.log(self .. " " .. a)
+			end
+		}
 		lol.foo = "bar"
 		function lol:test(a,b,c)
 			for i = 1, b do
+				if i == 3 then
+					continue
+				end
 				console.log(i)
 			end
+
 			console.log(self.foo)
 
 			self.asdf = true
 		end
 
-		lol:test(1,2)
+		lol:test(1,5)
+
+		lol:bar(888)
 
 		console.log(lol.asdf)
+
+		local a,b,c = 1,2,3
+		local arr = {1,2,true,4}
+
+		for i = 0, 4 do
+			print(arr[i] .. " array")
+		end
+
+		arr.foo = true
+
+		print(arr.foo, "?!?!?!")
+
+		while true do break end
 	]===]
+
 
 	local tokens = oh.Tokenize(code, path)
 	local ast = tokens:Block()
 	local output = oh.BuildJSCode(ast)
 
 	print(output)
+	vfs.Write("test.js", output)
+	os.execute("node " .. R"test.js")
 
 	--local code = oh.Transpile(vfs.Read"main.lua")
 	--print(loadstring(code))
