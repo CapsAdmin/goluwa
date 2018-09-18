@@ -66,12 +66,15 @@ commands.Add("oh=arg_line", function(str)
 	print(oh.Transpile(str))
 end)
 
-function oh.Test()
+function oh.TestAllFiles()
 	local paths = io.popen("find " .. e.ROOT_FOLDER .. " -name \"*.lua\""):read("*all")
 	oh.failed_tests = oh.failed_tests or {}
 	local use_failed_tests = oh.failed_tests[1]
 
-	S""
+	local statistics = {passed = 0, failed = 0, skipped = 0}
+
+	local total_time = 0
+
 	for _, path in ipairs(use_failed_tests and oh.failed_tests or paths:split("\n")) do
 		local code, err = vfs.Read(path)
 		if err then error(err) end
@@ -87,19 +90,29 @@ function oh.Test()
 
 			local name = path:sub(#e.ROOT_FOLDER + 1)
 
+			profiler.EnableStatisticalProfiling(true)
+			local time = system.GetTime()
 			local func, err = oh.loadstring(code, name)
+			total_time = total_time + time - system.GetTime()
+			profiler.EnableStatisticalProfiling(false)
 
 			if func then
-				logn("PASS - ", name)
+				statistics.passed = statistics.passed + 1
+				--logn("PASS - ", name)
+				if _%150 == 0 then
+					logn("parsing files..")
+				end
 				if use_failed_tests then
 					table.removevalue(oh.failed_tests, path)
 				end
 			else
-				local ok, err2 = loadstring(code)
+				local ok, err2 = loadstring(code, "@")
 				if not ok then
-					logn("SKIP - ", name, err2)
+					statistics.skipped = statistics.skipped + 1
+					logn("SKIP - ", name, " ", err2)
 				else
-					logn("FAIL - ", name, err)
+					statistics.failed = statistics.failed + 1
+					logn("FAIL - ", name, " ", err)
 					if not use_failed_tests then
 						table.insert(oh.failed_tests, path)
 					end
@@ -107,11 +120,17 @@ function oh.Test()
 			end
 		end
 	end
-	S""
+	profiler.PrintStatistical(0)
+
+	logn("spent ", total_time, " seconds in oh.loadstring")
+
+	logn(statistics.passed, " files were successfully parsed")
+	logn(statistics.skipped, " files were were skipped as loadstring didn't work")
+	logn(statistics.failed, " failed to parse")
 end
 
 _G.oh = oh
 
-_G.oh.Test()
+_G.oh.TestAllFiles()
 
 return oh

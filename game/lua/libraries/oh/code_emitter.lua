@@ -1,18 +1,19 @@
 local oh = ... or _G.oh
 
+local table_remove = table.remove
+local ipairs = ipairs
+
 local META = {}
 META.__index = META
 
 function META:Value2(v)
 	local _ = self
 	if v.type == "function" then
-		--self.suppress_indention = true
-		_"(function("_:arguments(v.arguments)_")\n"
+		_"(function("_:CommaSeperated(v.arguments)_")\n"
 			_"\t+"
 			self:Body(v.body)
 			_"\t-"
 		_"\nend)"
-		--self.suppress_indention = false
 	elseif v.type == "table" then
 		_"{\n"
 			_"\t+"
@@ -95,7 +96,7 @@ function META:IndexExpression(data)
 		elseif v.type == "index_expression" then
 			_"[ "_:Value(v.value)_" ]"
 		elseif v.type == "call" then
-			_"("_:arguments(v.arguments)_")"
+			_"("_:CommaSeperated(v.arguments)_")"
 		else
 			_"("_:Value(v)_")"
 		end
@@ -133,7 +134,7 @@ function META:Body(tree)
 			_"\t"_"break"
 		elseif data.type == "return" then
 			if data.expressions then
-				_"\t"_"return "_:arguments(data.expressions)
+				_"\t"_"return "_:CommaSeperated(data.expressions)
 			else
 				_"\t"_"return "
 			end
@@ -149,18 +150,18 @@ function META:Body(tree)
 
 				_" do"_"\n"
 			else
-				_"\t"_"for "_:arguments(data.names)_" in "_:arguments(data.expressions)_" do"_"\n"
+				_"\t"_"for "_:CommaSeperated(data.names)_" in "_:CommaSeperated(data.expressions)_" do"_"\n"
 			end
 
 			_"\t+"
 
 				if data.has_continue and data.body[#data.body] and data.body[#data.body].type == "return" then
-					local ret = table.remove(data.body)
+					local ret = table_remove(data.body)
 					_:Body(data.body)
 					_"\t"_"do"
 
 					if ret.expressions then
-						_" return "_:arguments(ret.expressions)
+						_" return "_:CommaSeperated(ret.expressions)
 					else
 						_" return "
 					end
@@ -185,20 +186,20 @@ function META:Body(tree)
 			_"\t"_"end"
 		elseif data.type == "function" then
 			if data.is_local then
-				_"\t"_"local function " _:Value(data.index_expression)_"("_:arguments(data.arguments)_")"_"\n"
+				_"\t"_"local function " _:Value(data.index_expression)_"("_:CommaSeperated(data.arguments)_")"_"\n"
 					_"\t+"
 						self:Body(data.body)
 					_"\t-"
 				_"\t"_"end"
 			else
-				_"\t"_"function " _:IndexExpression(data.index_expression)_"("_:arguments(data.arguments)_")"_"\n"
+				_"\t"_"function " _:IndexExpression(data.index_expression)_"("_:CommaSeperated(data.arguments)_")"_"\n"
 					_"\t+"
 						self:Body(data.body)
 					_"\t-"
 				_"\t"_"end"
 			end
 		elseif data.type == "assignment" then
-			_"\t"_("local ", not not data.is_local)
+			_"\t" if data.is_local then _("local ") end
 
 			for i,v in ipairs(data.left) do
 				_:Value(v)
@@ -230,50 +231,43 @@ function META:Body(tree)
 end
 
 META.__call = function(self, str, b)
-	if b == false then return end
-
-	if self.suppress_indention and (str == "\n" or str == "\t") then
-		self:emit(" ")
-		return
-	end
-
 	if str == "\t" then
-		self:emitindent()
+		self:EmitIndent()
 	elseif str == "\t+" then
-		self:indent()
+		self:Indent()
 	elseif str == "\t-" then
-		self:outdent()
+		self:Outdent()
 	else
-		self:emit(str)
+		self:Emit(str)
 	end
 end
 
-function META:arguments(tbl)
-	for i,v2 in ipairs(tbl) do
-		self:Value(v2)
+function META:CommaSeperated(tbl)
+	--for i,v2 in ipairs(tbl) do
+	for i = 1, #tbl do
+		self:Value(tbl[i])
 		if i ~= #tbl then
-			self:emit(", ")
+			self:Emit(", ")
 		end
 	end
 end
 
-function META:emit(str)
-	assert(type(str) == "string")
+function META:Emit(str)
 	self.out[self.i] = str
 	self.i = self.i + 1
 	--log(str)
 end
 
-function META:indent()
+function META:Indent()
 	self.level = self.level + 1
 end
 
-function META:outdent()
+function META:Outdent()
 	self.level = self.level - 1
 end
 
-function META:emitindent()
-	self:emit(string.rep("\t", self.level))
+function META:EmitIndent()
+	self:Emit(("\t"):rep(self.level))
 end
 
 function oh.DumpAST(tree)
