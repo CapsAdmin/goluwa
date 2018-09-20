@@ -953,6 +953,9 @@ if args[1] == "install" then
 		str = str:gsub("\n#goluwastart\n(.-)\n#goluwend", "")
 		str = str .. alias
 		io.writefile(path, str)
+		io.write("added the following to .bashrc bashrc:\n")
+		io.write(alias)
+		io.write("\n")
 	end
 
 	os.exit()
