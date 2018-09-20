@@ -9,7 +9,8 @@ local tbl = {
 	["or"] = "||",
 	["not"] = "!",
 	[".."] = "+",
-	["nil"] = "undefined"
+	["nil"] = "undefined",
+	["~="] = "!=",
 }
 
 local function TRANSLATE(val)
@@ -229,7 +230,7 @@ function META:Body(tree)
 
 				_"{"_"\n"
 			else
-				_"\t"_"for"_:EmitSpaceIf()_:CommaSeperated(data.names)_:EmitSpaceIf()_"in"_:CommaSeperated(data.expressions)_:EmitSpaceIf()_"do"_"\n"
+				_"\t"_"for (let ["_:CommaSeperated(data.names)_"] of "_:CommaSeperated(data.expressions)_") {"_"\n"
 			end
 
 			_"\t+"
@@ -259,11 +260,11 @@ function META:Body(tree)
 			_"\t"_"}"
 
 		elseif data.type == "do" then
-			_"\t"_"(function() {\n"
+			_"\t"_"{\n"
 				_"\t+"
 					_:Body(data.body)
 				_"\t-"
-			_"\t"_"})();"
+			_"\t"_"}"
 		elseif data.type == "function" then
 			if data.is_local then
 				_"\t" _:Value(data.index_expression)_" = function ("_:CommaSeperated(data.arguments)_") {"_"\n"
@@ -409,7 +410,91 @@ if RELOAD then
 		if 0 then print ("true") else print ("false") end
 		if "" then print ("true") else print ("false") end
 		if false then print ("true") else print ("false") end
+
+		local pairs = Object.entries
+		local type = function(a) return typeof(a) end
+
+local table = {}
+local log = print
+local logn = print
+
+do
+	local indent = 0
+	function table.print2(tbl)
+		for k,v in pairs(tbl) do
+			if type(v) ~= "table" then
+				log(("\t")["repeat"](indent))
+
+				if type(v) == "string" then
+					v = "\"" .. v .. "\""
+				end
+
+				logn(k, " = ", v)
+			end
+		end
+
+		for k,v in pairs(tbl) do
+			if type(v) == "table" then
+				log(("\t"):rep(indent))
+				logn(k, ":")
+				indent = indent + 1
+				table.print2(v)
+				indent = indent - 1
+			end
+		end
+	end
+end
+
+		for k, v in pairs(console) do
+		--	print(k,v)
+		end
+--print(type({1}))
+		if 0 then
+			print("aa")
+		end
+
+local items = {}
+
+function setmetatable(tbl, meta)
+	return new Proxy(tbl, {
+		get = function(target, key, receiver)
+			if meta.__index and not tbl[key] then
+				return meta.__index(tbl, key)
+			end
+		end,
+		set = function(target, key, val, receiver)
+			if meta.__newindex then return meta.__newindex(tbl, key, val) end
+		end,
+	})
+end
+
+items = setmetatable(items, {
+	__newindex = function(self, key, val)
+		print(type(self) .. "." .. key .. " = " .. val)
+		self[key] = val
+	end,
+	__index = function(_, key, self)
+		print(type(self) .. "." .. key)
+		print(self, key)
+	end,
+	__call = function(a,b,c) print(a,b,c) return a(b, c) end,
+})
+
+items["foo"] = true
+items[123] = true
+
+print(items.awdawdwad + 1)
+--items(1,2,3,4)
+print("foo = " .. items.foo)
+--table.print2(items)
+
+
+
+
+
 	]===]
+
+
 
 
 	local tokens = oh.Tokenize(code, path)
