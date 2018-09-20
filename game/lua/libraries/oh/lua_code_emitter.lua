@@ -13,25 +13,30 @@ function META:Value2(v)
 			_"\t+"
 			self:Body(v.body)
 			_"\t-"
-		_"end"
+		_"\t" _"end"
 	elseif v.type == "table" then
-		_"{\n"
-			_"\t+"
-			for i,v in ipairs(v.children) do
-				_"\t"
-				if v.type == "value" then
-					_:Value(v.value)
-				elseif v.type == "assignment" then
-					if v.expression_key then
-						_"[("_:Value(v.indices[1])_")]"_" = " _:Value(v.expressions[1])
-					else
-						_:Value(v.indices[1]) _" = " _:Value(v.expressions[1])
+		if not v.children[1] then
+			_"{}"
+		else
+			_"{\n"
+				_"\t+"
+				for i,v in ipairs(v.children) do
+					_"\t"
+					
+					if v.type == "value" then
+						_:Value(v.value)
+					elseif v.type == "assignment" then
+						if v.expression_key then
+							_"[("_:Value(v.indices[1])_")]"_" = " _:Value(v.expressions[1])
+						else
+							_:Value(v.indices[1]) _" = " _:Value(v.expressions[1])
+						end
 					end
+					_",\n"
 				end
-				_",\n"
-			end
-			_"\t-"
-		_"\t"_"}"
+				_"\t-"
+			_"\t"_"}"
+		end
 	elseif v.type == "index_call_expression" then
 		self:IndexExpression(v.value)
 	elseif v.type == "unary" then
@@ -309,11 +314,6 @@ function oh.BuildLuaCode(tree)
 	return table.concat(self.out)
 end
 
-if RELOAD then
-	local code = oh.Transpile(vfs.Read"/home/caps/goluwa/capsadmin/lua/syntax_test.lua")
-	print(code)
-	print(loadstring(code))
-
-	--local code = oh.Transpile(vfs.Read"main.lua")
-	--print(loadstring(code))
+if RELOAD then 
+	oh.Test() 
 end
