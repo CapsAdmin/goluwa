@@ -3,6 +3,8 @@ local oh = ... or _G.oh
 local table_remove = table.remove
 local ipairs = ipairs
 
+oh.syntax.operator_function_transforms["+"] = "__add"
+
 local tbl = {
 	["elseif"] = "else if",
 	["and"] = "&&",
@@ -70,10 +72,13 @@ function META:Value2(v)
 		self:IndexExpression(v.value)
 	elseif v.type == "unary" then
 		self:Unary(v)
-	elseif v.type == "operator" and oh.syntax.operator_translate[v.value] then
+	elseif v.type == "operator" and oh.syntax.operator_translate[v.value] and not self.suppress_operator_transform then
 		_(oh.syntax.operator_translate[v.value])
 	else
 		_(v.value)
+		if v.comment then
+			_(v.comment.value)
+		end
 	end
 end
 
@@ -92,9 +97,9 @@ function META:Unary(v)
 	local _ = self
 	_"("
 	local func = oh.syntax.operator_function_transforms[v.value]
-	if func then
+	if func and not self.suppress_operator_transform then
 		_(func) _"("_:Value(v.argument)_")"
-	elseif oh.syntax.operator_translate[v.value] then
+	elseif oh.syntax.operator_translate[v.value] and not self.suppress_operator_transform then
 		_(oh.syntax.operator_translate[v.value])_:EmitSpaceIf()_:Value(v.argument)
 	elseif oh.syntax.keywords[v.value] then
 		_(v.value)_:EmitSpaceIf()_:Value(v.argument)
@@ -106,13 +111,15 @@ end
 
 function META:Expression(v)
 	local _ = self
+	
+	if not self.suppress_operator_transform then
+		local func = oh.syntax.operator_function_transforms[v.value]
 
-	local func = oh.syntax.operator_function_transforms[v.value]
-
-	if func and v.type ~= "unary" then
-		_:EmitSpaceIf()
-		_(func) if v.left then _"(" _:Expression(v.left) end _", " if v.right then _:Expression(v.right) _")" end
-		return
+		if func and v.type ~= "unary" then
+			_:EmitSpaceIf()
+			_(func) if v.left then _"(" _:Expression(v.left) end _", " if v.right then _:Expression(v.right) _")" end
+			return
+		end
 	end
 
 	if v.left then
@@ -182,7 +189,12 @@ end
 function META:Body(tree)
 	local _ = self
 	for __, data in ipairs(tree) do
-		if data.type == "if" then
+
+		if data.type == "preprocessor" then
+			if data.name.value == "$OperatorTransform" then
+				self.suppress_operator_transform = data.value.value ~= "true"
+			end
+		elseif data.type == "if" then
 			for i,v in ipairs(data.statements) do
 				_"\t"_(v.token.value) if v.expr then _"(" _:Expression(v.expr) _")" end _"{" _"\n"
 					_"\t+"
@@ -331,7 +343,11 @@ function META:CommaSeperated(tbl)
 end
 
 function META:Emit(str)
-	self.out[self.i] = TRANSLATE(str)
+	if self.suppress_operator_transform then
+		self.out[self.i] = str
+	else
+		self.out[self.i] = TRANSLATE(str)
+	end
 	self.i = self.i + 1
 	--log(str)
 end
@@ -368,6 +384,68 @@ if RELOAD then
 
 	local code = [===[
 		local print = console.log
+		
+		_G = {}
+
+		do
+			local METATABLES = {}
+
+			function __add(a, b) 
+				if METATABLES[a] and METATABLES[a].__add then
+					return METATABLES[a].__add(a, b)
+				end
+				
+				if METATABLES[b] and METATABLES[b].__add then
+					return METATABLES[b].__add(a, b)
+				end
+				
+				$OperatorTransform false
+				return a + b
+				$OperatorTransform true 
+			end 
+
+			function setmetatable(obj, meta)
+				METATABLES[obj] = meta
+				return new Proxy(obj, {
+					get = function(target, key, receiver)
+						if meta.__index and not tbl[key] and not target.hasOwnProperty(key) then
+							meta.__index(tbl, key)
+						else
+							return Reflect.get(target, key, receiver)
+						end
+					end,
+					set = function(target, key, val, receiver)
+						if meta.__newindex then 
+							meta.__newindex(tbl, key, val) 
+						else
+							return Reflect.set(target, key, val, receiver) 
+						end
+					end,
+				})
+			end
+		end
+		
+		let a2 = {val = 5}
+		
+		a2 = setmetatable(a2, {__add = function(a, b) return a.val + b end})
+		
+		print(a2 + 5) 
+	
+		]===] local test = [===[
+		do return end
+
+
+
+
+
+
+
+
+
+
+
+
+
 		local lol = {
 			bar = function(self, a)
 				console.log(self .. " " .. a)
@@ -400,7 +478,7 @@ if RELOAD then
 			print(arr[i] .. " array")
 		end
 
-		arr.foo = true
+		arr.foo = true 
 
 		print(arr.foo, "?!?!?!")
 
@@ -491,9 +569,8 @@ print("foo = " .. items.foo)
 
 
 
-
+ 
 	]===]
-
 
 
 
@@ -503,7 +580,7 @@ print("foo = " .. items.foo)
 
 	print(output)
 	vfs.Write("test.js", output)
-	os.execute("node " .. R"test.js")
+	print(io.popen("node " .. R"test.js"):read("*all"))
 
 	--local code = oh.Transpile(vfs.Read"main.lua")
 	--print(loadstring(code))
