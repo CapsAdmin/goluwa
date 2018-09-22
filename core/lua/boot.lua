@@ -896,6 +896,31 @@ if IDE or args[1] == "ide" then
 	os.exit()
 end
 
+if IDE2 or args[1] == "ide2" then
+	if not os.isfile("data/ide2" .. ARCHIVE_EXT) then
+		os.download("https://go.microsoft.com/fwlink/?LinkId=723968", "data/ide2" .. ARCHIVE_EXT)
+	end
+
+	if not os.isdir("data/ide2") then
+		os.extract("data/ide2" .. ARCHIVE_EXT, "data/ide2", "*/")
+	end
+
+	os.makedir("data/ide2/data")
+	os.makedir("data/ide2/tmp")
+
+	assert(os.cd("data/ide2"), "unable to download ide?")
+
+	local args = " ../../. --goto ../../game/lua/examples/hello_world.lua"
+
+	if WINDOWS then
+		os.execute(absolute_path("bin/code-insiders.exe") .. args)
+	else
+		os.execute("./bin/code-insiders"  .. args)
+	end
+
+	os.exit()
+end
+
 if CLIENT or args[1] == "client"  or  args[1] == "" then
 	os.setenv("GOLUWA_CLIENT", "1")
 	os.setenv("GOLUWA_SERVER", "0")
