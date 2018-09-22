@@ -240,7 +240,13 @@ function META:Block(stop)
 			return out
 		end
 
-		if token.value == "::" then
+		if token.type == "preprocessor" then
+			local data = {}
+			data.type = "preprocessor"
+			data.name = token
+			data.value = self:ReadToken()
+			table_insert(out, data)
+		elseif token.value == "::" then
 			local data = {}
 			data.type = "goto_label"
 			data.label = self:ReadExpectType("letter")

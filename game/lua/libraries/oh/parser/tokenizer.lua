@@ -15,7 +15,18 @@ local function string_escape(self, c, i)
 end
 
 local function add_token(self, type, start, stop)
-	if type == "comment" or type == "shebang" then return end
+	if type == "shebang" then return end
+	
+	if type == "comment" then 
+		local chunk = self.chunks[self.chunks_i - 1]	
+		chunk.comment = = {
+			type = type,
+			value = self:GetChars(start, stop),
+			start = start,
+			stop = stop,
+		}
+		return
+	end
 
 	self.chunks[self.chunks_i] = {
 		type = type,
@@ -137,8 +148,36 @@ function META:Tokenize()
 		if not t then
 			--self:Error("unknown symbol >>" .. char .. "<< (" .. char:byte() .. ")", i, i)
 		end
+		
+		if self:GetChar(i) == "$" then
 
-		if self:GetChars(i, i + #oh.syntax.c_comment_start - 1) == oh.syntax.c_comment_start then
+			local stop
+
+			local last_type
+
+			for offset = i + 1, i + 256 do
+				local char = self:GetChar(offset)
+				local t = oh.syntax.char_types[char]
+
+				if t ~= "letter" and (t ~= "number" and last_type == "letter") then
+					stop = offset - 1
+					break
+				else
+					t = "letter"
+				end
+
+				last_type = t
+			end
+
+			if not stop then
+				self:Error("malformed letter: could not find end", i, i)
+			end
+
+			add_token(self, "preprocessor", i, stop)
+
+			i = stop
+			
+		elseif self:GetChars(i, i + #oh.syntax.c_comment_start - 1) == oh.syntax.c_comment_start then
 			i = i + #oh.syntax.c_comment_start
 
 			local stop
@@ -437,6 +476,8 @@ end
 
 if RELOAD then
 	local func = oh.Transpile([[
+
+	$adwwawad true
 local i = 4
 local lnum = 0x131211100908
   local n = lnum & (~(-1 << (i * 8)))
