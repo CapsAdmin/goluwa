@@ -24,4 +24,4 @@ function goluwa.PreDrawGUI()
 	else
 		gfx.DrawText("no joystick present :(")
 	end
-end)
+end
