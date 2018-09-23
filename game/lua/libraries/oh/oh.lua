@@ -8,7 +8,7 @@ runfile("lua_code_emitter.lua", oh)
 function oh.Transpile(code, path)
 	local tokens = oh.Tokenize(code, path)
 	local body = tokens:Block()
-	local output = oh.BuildLuaCode(body)
+	local output = oh.BuildLuaCode(body, code)
 	return output
 end
 
@@ -64,14 +64,6 @@ function oh.loadstring(code, path)
 	return func
 end
 
-commands.Add("tokenize=arg_line", function(str)
-	oh.Tokenize(str):Dump()
-end)
-
-commands.Add("oh=arg_line", function(str)
-	print(oh.Transpile(str))
-end)
-
 function oh.TestAllFiles(path_override)
 	local paths = io.popen("find " .. (path_override or e.ROOT_FOLDER) .. " -name \"*.lua\""):read("*all")
 	oh.failed_tests = oh.failed_tests or {}
@@ -85,8 +77,8 @@ function oh.TestAllFiles(path_override)
 		local code, err = vfs.Read(path)
 		if err then error(err) end
 
-		if code then
-			if path:find("lua-5.4.0", nil, true) then
+		if code and not code:find("e2function", nil, true) and not path:find("data/users/", nil, true) then
+			if path:find("lua-5.4.0", nil, true) or path:find("lua-5.3.0", nil, true) then
 				code = code:gsub("//", "/")
 			end
 
@@ -115,10 +107,11 @@ function oh.TestAllFiles(path_override)
 				local ok, err2 = loadstring(code, "@")
 				if not ok then
 					statistics.skipped = statistics.skipped + 1
-					logn("SKIP - ", name, " ", err2)
+					logn("SKIP - ", name, err2)
+					logn(err)
 				else
 					statistics.failed = statistics.failed + 1
-					logn("FAIL - ", name, " ", err)
+					logn("FAIL - ", name, err)
 					if not use_failed_tests then
 						table.insert(oh.failed_tests, path)
 					end
@@ -135,16 +128,67 @@ function oh.TestAllFiles(path_override)
 	logn(statistics.failed, " failed to parse")
 end
 
+function oh.Test()
+	local code = vfs.Read"/home/caps/goluwa/data/ffibuild/luajit_forks/repo/softdevteam-master_debug-memory-assert_gc64_52compat/src/jitlog/reader.lua"
+code = [[
+for k, v in pairs( self.m_ReceiverSlot ) do
+
+			if ( !dragndrop.m_DraggingMain.m_DragSlot ) then continue end
+
+			local slot = dragndrop.m_DraggingMain.m_DragSlot[ k ]
+			if ( !slot ) then continue end
+
+			return self, v
+
+		end
+
+]]
+	local tokens = oh.Tokenize(code, path)
+	local body = tokens:Block()
+	local newcode = oh.BuildLuaCode(body, code)
+	--print(code)
+
+	print(newcode)
+	print(newcode:count("\n"), code:count("\n"))
+	print(loadstring(newcode))
+	--local code = oh.Transpile(vfs.Read"main.lua")
+	--print(loadstring(code))
+end
+
+commands.Add("tokenize=arg_line", function(str)
+	oh.Tokenize(str):Dump()
+end)
+
+commands.Add("oh=arg_line", function(str)
+	print(oh.Transpile(str))
+end)
+
+commands.Add("luaformat=arg_line", function(str)
+	local paths = utility.CLIPathInputToTable(str, {"lua"})
+
+	for i, path in ipairs(paths) do
+		print(path)
+		if path == "stdin" or path == "-" then
+
+		else
+			local code, err = vfs.Read(path)
+			if code then
+				local newcode = oh.Transpile(code, path)
+				local ok, err = loadstring(newcode)
+				if ok then
+					vfs.Write(path .. "2", newcode)
+				end
+			end
+
+			if err then
+				logn(path, ": ", err or "empty file?")
+			end
+		end
+	end
+end)
+
 _G.oh = oh
 
---_G.oh.TestAllFiles()
-
-function oh.Test()
-	local code = vfs.Read("main.lua")
-	for i = 1, 5 do
-		oh.Transpile2(code, "")
-		print("===========")
-	end
-end
+oh.Test()
 
 return oh

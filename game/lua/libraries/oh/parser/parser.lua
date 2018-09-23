@@ -65,7 +65,7 @@ end
 
 function META:IsValue(str, offset)
 	local tk = self:GetToken(offset)
-	return tk and tk.value == str
+	return tk and tk.value == str and tk
 end
 
 function META:ReadIsValue(str, offset)

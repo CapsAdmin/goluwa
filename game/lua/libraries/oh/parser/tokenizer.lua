@@ -14,27 +14,38 @@ local function string_escape(self, c, i)
 	return false
 end
 
+local comment_buffer = {}
+
 local function add_token(self, type, start, stop)
 	if type == "shebang" then return end
-	
-	if type == "comment" then 
-		local chunk = self.chunks[self.chunks_i - 1]	
-		chunk.comment = = {
+
+	if type == "line_comment" or type == "multiline_comment" or type == "space" then
+		table.insert(comment_buffer, {
 			type = type,
 			value = self:GetChars(start, stop),
 			start = start,
 			stop = stop,
-		}
+		})
 		return
 	end
+
+	local prev = self.chunks[self.chunks_i - 1]
 
 	self.chunks[self.chunks_i] = {
 		type = type,
 		value = self:GetChars(start, stop),
 		start = start,
 		stop = stop,
+		whitespace_start = prev and (prev.stop + 1) or 1,
+		whitespace_stop = start - 1,
 	}
+
+	if comment_buffer[1] then
+		self.chunks[self.chunks_i].comments = comment_buffer
+		comment_buffer = {}
+	end
 	self.chunks_i = self.chunks_i + 1
+
 end
 
 local function capture_literal_string(self, i)
@@ -68,7 +79,7 @@ local function capture_literal_string(self, i)
 			end
 		end
 
-		return stop
+		return stop, length
 	else
 		local stop
 		local length = 0
@@ -103,7 +114,7 @@ local function capture_literal_string(self, i)
 			return nil, "strange string"
 		end
 
-		return stop
+		return stop, length
 	end
 end
 
@@ -148,7 +159,7 @@ function META:Tokenize()
 		if not t then
 			--self:Error("unknown symbol >>" .. char .. "<< (" .. char:byte() .. ")", i, i)
 		end
-		
+
 		if self:GetChar(i) == "$" then
 
 			local stop
@@ -176,11 +187,12 @@ function META:Tokenize()
 			add_token(self, "preprocessor", i, stop)
 
 			i = stop
-			
-		elseif self:GetChars(i, i + #oh.syntax.c_comment_start - 1) == oh.syntax.c_comment_start then
-			i = i + #oh.syntax.c_comment_start
 
+		elseif self:GetChars(i, i + #oh.syntax.c_comment_start - 1) == oh.syntax.c_comment_start then
+			local start = i
 			local stop
+
+			i = i + #oh.syntax.c_comment_start
 
 			for i = i, self.code_length do
 				if self:GetChars(i, i + #oh.syntax.c_comment_stop - 1) == oh.syntax.c_comment_stop then
@@ -190,13 +202,14 @@ function META:Tokenize()
 				end
 			end
 
-			add_token(self, "comment", i - #oh.syntax.c_comment_stop, stop - 1)
+			add_token(self, "multiline_comment", start, stop - 1)
 
-			i = stop
+			i = stop-1
 		elseif self:GetChars(i, i + #oh.syntax.cpp_comment - 1) == oh.syntax.cpp_comment then
-			i = i + #oh.syntax.cpp_comment
-
+			local start = i
 			local stop
+
+			i = i + #oh.syntax.cpp_comment
 
 			for i = i, self.code_length do
 				local c = self:GetChar(i)
@@ -207,22 +220,24 @@ function META:Tokenize()
 				end
 			end
 
-			add_token(self, "comment", i - #oh.syntax.comment, stop - 1)
+			add_token(self, "line_comment", start, stop)
 
 			i = stop
 		elseif self:GetChars(i, i + #oh.syntax.comment - 1) == oh.syntax.comment then
-			i = i + #oh.syntax.comment
-
+			local start = i
 			local stop
 
+			i = i + #oh.syntax.comment
+
+			local length
+
 			if is_literal_string(self, i) then
-				stop = capture_literal_string(self, i)
+				stop, length = capture_literal_string(self, i)
 
 				if stop then
 					i = stop
-					add_token(self, "comment", i - #oh.syntax.comment, stop)
+					add_token(self, "multiline_comment", start, stop)
 				end
-
 			end
 
 			if not stop then
@@ -235,7 +250,7 @@ function META:Tokenize()
 					end
 				end
 
-				add_token(self, "comment", i - #oh.syntax.comment, stop - 1)
+				add_token(self, "line_comment", i - #oh.syntax.comment, stop)
 
 				i = stop
 			end
@@ -466,6 +481,22 @@ function META:Tokenize()
 					break
 				end
 			end
+		elseif t == "space" then
+			local stop
+
+			for offset = i, #self.code  do
+				local char = self:GetChar(offset)
+				local t2 = oh.syntax.char_types[char]
+
+				if t2 ~= "space" then
+					local start = i
+					local stop = offset - 1
+					i = stop
+					t = t2
+					add_token(self, "space", start, stop)
+					break
+				end
+			end
 		end
 
 		self.last_type = t
@@ -475,18 +506,5 @@ function META:Tokenize()
 end
 
 if RELOAD then
-	local func = oh.Transpile([[
-
-	$adwwawad true
-local i = 4
-local lnum = 0x131211100908
-  local n = lnum & (~(-1 << (i * 8)))
-print(n)
-	]])
-	print(func)
-	loadstring(func)()
-	--print(tokens.chunks)
-
-
-	--oh.TestAllFiles("/home/caps/goluwa/lua-5.3.0-tests/")
+	oh.Test()
 end
