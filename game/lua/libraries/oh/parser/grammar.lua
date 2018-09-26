@@ -141,9 +141,9 @@ function META:IndexExpression(hm, simple_call)
 
 			while self:ReadIsValue("(") do
 				local pleft = self:GetToken(-1)
-				local data = {type = "call", arguments = simple_call and self:NameList() or self:ExpressionList(), ["("] = pleft}
+				local data = {type = "call", arguments = simple_call and self:NameList() or self:ExpressionList(), ["call("] = pleft}
 				table_insert(out, data)
-				data[")"] = self:ReadExpectValue(")")
+				data["call)"] = self:ReadExpectValue(")")
 			end
 
 			self:Back()
@@ -178,7 +178,7 @@ function META:Expression(priority)
 	if not token then return end
 
 	if oh.syntax.IsUnaryOperator(token) then
-		local unary = self:ReadToken().value
+		local unary = self:ReadToken()
 		local exp = self:Expression(math.huge)
 		val = {type = "unary", value = unary, argument = exp}
 	elseif self:ReadIfValue("(") then
@@ -208,7 +208,7 @@ function META:Expression(priority)
 		local arguments = self:NameList()
 		local tkright = self:ReadExpectValue(")")
 		local body = self:Block({["end"] = true})
-		val = {type = "function", arguments = arguments, body = body, ["end"] = self:ReadToken(), ["function"] = tkfunc, ["("] = tkleft, [")"] = tkright}
+		val = {type = "function", arguments = arguments, body = body, ["end"] = self:ReadToken(), ["function"] = tkfunc, ["func("] = tkleft, ["func)"] = tkright}
 	elseif token.type == "letter" and not oh.syntax.keywords[token.value] then
 		val = {type = "index_call_expression", value = self:IndexExpression()}
 	elseif token.value == ";" then
@@ -298,9 +298,9 @@ function META:Block(stop)
 				data["function"] = self:ReadToken()
 				data.is_local = true
 				data.index_expression = self:ReadExpectType("letter")
-				data["("] = self:ReadExpectValue("(")
+				data["func("] = self:ReadExpectValue("(")
 				data.arguments = self:NameList()
-				data[")"] = self:ReadExpectValue(")")
+				data["func)"] = self:ReadExpectValue(")")
 				data.body = self:Block({["end"] = true})
 				data["end"] = self:ReadToken()
 				table_insert(out, data)
@@ -427,9 +427,9 @@ function META:Block(stop)
 			data.arguments = {}
 			data.is_local = false
 			data.index_expression = self:IndexExpression(true, true)
-			data["("] = self:ReadExpectValue("(")
+			data["func("] = self:ReadExpectValue("(")
 			data.arguments = self:NameList()
-			data[")"] = self:ReadExpectValue(")")
+			data["func)"] = self:ReadExpectValue(")")
 			data.body = self:Block({["end"] = true})
 			data["end"] = self:ReadToken()
 			table_insert(out, data)
