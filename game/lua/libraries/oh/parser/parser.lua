@@ -5,10 +5,6 @@ runfile("syntax.lua", oh)
 local META = {}
 META.__index = META
 
-local token_meta = {__tostring = function(s)
-	return "token['" .. s.value .. "'][" .. s.i .. "]"
-end}
-
 function META:Error(msg, start, stop, level)
 	start = start or self:GetToken().start
 	stop = stop or self:GetToken().stop
