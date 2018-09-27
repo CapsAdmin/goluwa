@@ -6,8 +6,8 @@ local META = {}
 META.__index = META
 
 function META:Error(msg, start, stop, level)
-	start = start or self:GetToken().start
-	stop = stop or self:GetToken().stop
+	start = start or self:GetToken() and self:GetToken().start or self.i
+	stop = stop or self:GetToken() and self:GetToken().stop or self.i
 	offset = offset or 0
 
 	local context_start = self.code:sub(math.max(start - 50, 2), start - 1)
@@ -29,20 +29,6 @@ function META:Error(msg, start, stop, level)
 	str =  "\n" .. self.path .. ":" .. self.code:sub(0, start):count("\n") .. "\n" .. str
 
 	error(str, level or 2)
-end
-
-function META:Dump()
-	local out = {}
-	local start = 0
-	for i,v in ipairs(self.chunks) do
-		out[i] = self.code:sub(start+1, v.start-1) ..
-			"⸢" .. self.code:sub(v.start, v.stop) .. "⸥"
-		start = v.stop
-	end
-
-	table.insert(out, self.code:sub(start+1))
-
-	return table.concat(out)
 end
 
 function META:GetToken(offset)
@@ -141,24 +127,18 @@ function META:Iterate()
 	end
 end
 
-
 runfile("grammar.lua", META)
-runfile("tokenizer.lua", META)
 
-function oh.Tokenize(code, path)
+function oh.Parser(tokens, code, path)
 	local self = {}
 
 	setmetatable(self, META)
 
+	self.chunks = tokens
 	self.code = code
 	self.path = path or "?"
-	self.code_length = #code
 
-	self.chunks = table.new(self.code_length / 6, 1) -- rough estimation of how many chunks there are going to be
-	self.chunks_i = 1
 	self.i = 1
-
-	self:Tokenize()
 
 	return self
 end

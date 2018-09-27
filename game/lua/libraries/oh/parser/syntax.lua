@@ -115,7 +115,7 @@ do -- syntax rules
 		syntax.char_types = char_types
 	end
 
-	table.sort(oh.syntax.legal_number_annotations, function(a, b) return #a > #b end)
+	table.sort(syntax.legal_number_annotations, function(a, b) return #a > #b end)
 
 	for i,v in pairs(syntax.operators) do
 		if v < 0 then

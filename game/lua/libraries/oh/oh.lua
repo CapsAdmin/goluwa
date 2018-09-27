@@ -4,10 +4,12 @@ RELOAD = nil
 
 runfile("parser/parser.lua", oh)
 runfile("lua_code_emitter.lua", oh)
+runfile("validate.lua", oh)
 
 function oh.Transpile(code, path)
-	local tokens = oh.Tokenize(code, path)
-	local body = tokens:Block()
+	local tokenizer = oh.Tokenizer(code, path)
+	local parser = oh.Parser(tokenizer:Tokenize(), code, path)
+	local body = parser:Block()
 	local output = oh.BuildLuaCode(body, code)
 	return output
 end
@@ -65,6 +67,8 @@ function oh.loadstring(code, path)
 end
 
 function oh.TestAllFiles(path_override)
+	print("testing all files in " .. path_override)
+
 	local paths = io.popen("find " .. (path_override or e.ROOT_FOLDER) .. " -name \"*.lua\""):read("*all")
 	oh.failed_tests = oh.failed_tests or {}
 	local use_failed_tests = oh.failed_tests[1]
@@ -128,29 +132,28 @@ function oh.TestAllFiles(path_override)
 	logn(statistics.failed, " failed to parse")
 end
 
-function oh.Test()
-	local code = vfs.Read"/home/caps/goluwa/data/ffibuild/luajit_forks/repo/softdevteam-master_debug-memory-assert_gc64_52compat/src/jitlog/reader.lua"
-code = [[
-for k, v in pairs( self.m_ReceiverSlot ) do
+function oh.Test() do return end
+	oh.TestAllFiles("/home/caps/goluwa/core")
+	oh.TestAllFiles("/home/caps/goluwa/framework")
+	oh.TestAllFiles("/home/caps/goluwa/engine")
+	oh.TestAllFiles("/home/caps/goluwa/game")
 
-			if ( !dragndrop.m_DraggingMain.m_DragSlot ) then continue end
+	do return end
 
-			local slot = dragndrop.m_DraggingMain.m_DragSlot[ k ]
-			if ( !slot ) then continue end
+	local code = vfs.Read"/home/caps/goluwa/lua-5.4.0-w2-tests/code.lua"
 
-			return self, v
 
-		end
-
-]]
 	local tokens = oh.Tokenize(code, path)
 	local body = tokens:Block()
+	oh.ValidateTree(body, code)
 	local newcode = oh.BuildLuaCode(body, code)
 	--print(code)
 
 	print(newcode)
 	print(newcode:count("\n"), code:count("\n"))
 	print(loadstring(newcode))
+
+	--utility.MeldDiff(code, newcode)
 	--local code = oh.Transpile(vfs.Read"main.lua")
 	--print(loadstring(code))
 end
