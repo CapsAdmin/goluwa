@@ -6,13 +6,14 @@ do -- syntax rules
 	syntax.single_quote = "'"
 	syntax.literal_quote = "`"
 	syntax.escape_character = "\\"
-	syntax.comment = "--"
+	syntax.line_comment = "--"
 
 	syntax.cpp_comment = "//"
 	syntax.c_comment_start = "/*"
 	syntax.c_comment_stop = "*/"
 
 	syntax.space = {"", " ", "\n", "\r", "\t"}
+	syntax.legal_number_annotations = {"ull", "ll", "ul", "i"}
 
 	syntax.number = {}
 	for i = 0, 9 do
@@ -100,6 +101,8 @@ do -- syntax rules
 		return syntax.unary_operators[token.value]
 	end
 
+	syntax.line_comment_length = #syntax.line_comment
+
 	do
 		local char_types = {}
 
@@ -111,6 +114,8 @@ do -- syntax rules
 
 		syntax.char_types = char_types
 	end
+
+	table.sort(oh.syntax.legal_number_annotations, function(a, b) return #a > #b end)
 
 	for i,v in pairs(syntax.operators) do
 		if v < 0 then
