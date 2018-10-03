@@ -1,9 +1,70 @@
 local META = {}
 META.__index = META
 
+local ffi = require("ffi")
+local string_char = string.char
+local ffi_string = ffi.string
+
+function META:ReadChar()
+	local char = self:GetCurrentChar()
+	self.i = self.i + 1
+	return char
+end
+
+function META:ReadCharByte()
+	local b = self:GetCurrentCharByte()
+	self.i = self.i + 1
+	return b
+end
+
+function META:Advance(len)
+	self.i = self.i + len
+end
+
+if oh.USE_FFI then
+	function META:GetCharOffset(offset)
+		return string_char(self.code_ptr[self.i + offset])
+	end
+
+	function META:GetCurrentChar()
+		return string_char(self.code_ptr[self.i])
+	end
+
+	function META:GetChars(a, b)
+		return ffi_string(self.code_ptr + a, b - a + 1)
+	end
+
+	function META:GetCharOffsetByte(offset)
+		return self.code_ptr[self.i + offset]
+	end
+
+	function META:GetCurrentCharByte()
+		return self.code_ptr[self.i]
+	end
+else
+	function META:GetCharOffset(offset)
+		return self.code:sub(self.i + offset, self.i + offset)
+	end
+
+	function META:GetCurrentChar()
+		return self.code:sub(self.i, self.i)
+	end
+
+	function META:GetChars(a, b)
+		return self.code:sub(a, b)
+	end
+
+	META.GetCharOffsetByte = META.GetCharOffset
+	META.GetCurrentCharByte = META.GetCurrentChar
+end
+
+function META:GetCharsOffset(a, b)
+	return self:GetChars(self.i + a, self.i + b)
+end
+
 function META:Error(msg, start, stop, level)
-	start = start or self:GetToken() and self:GetToken().start or self.i
-	stop = stop or self:GetToken() and self:GetToken().stop or self.i
+	start = start or self.i
+	stop = stop or self.i
 	offset = offset or 0
 
 	local context_start = self.code:sub(math.max(start - 50, 2), start - 1)
@@ -27,20 +88,6 @@ function META:Error(msg, start, stop, level)
 	error(str, level or 2)
 end
 
-function META:Dump()
-	local out = {}
-	local start = 0
-	for i,v in ipairs(self.chunks) do
-		out[i] = self.code:sub(start+1, v.start-1) ..
-			"⸢" .. self.code:sub(v.start, v.stop) .. "⸥"
-		start = v.stop
-	end
-
-	table.insert(out, self.code:sub(start+1))
-
-	return table.concat(out)
-end
-
 --[[
 space,	2785639
 symbol,	303452
@@ -52,6 +99,9 @@ multiline_comment,	265
 ]]
 
 local function RegisterTokenClass(tbl)
+	META.TokenClasses2 = META.TokenClasses2 or {}
+	META.TokenClasses2[tbl.Type] = tbl
+	tbl.ParserType = tbl.ParserType or tbl.Type
 	tbl.Priority = tbl.Priority or 0
 	table.insert(META.TokenClasses, tbl)
 	table.sort(META.TokenClasses, function(a, b)
@@ -59,55 +109,43 @@ local function RegisterTokenClass(tbl)
 	end)
 end
 
-
 META.TokenClasses = {}
 
 local function CaptureLiteralString(self)
-	local stop
-	local length = 0
 	local start = self.i
 
-	local c = self:GetChar(self.i)
-	if c ~= "[" then return nil, "expected [ got " .. c end
+	local c = self:ReadChar()
+	if c ~= "[" then self:Error("expected [ got " .. c) end
 
-	self.i = self.i + 1
+	if self:GetCurrentChar() == "=" then
+		self:Advance(1)
 
-	for offset = self.i, self.code_length do
-		if self:GetChar(offset) ~= "=" then
-			self.i = offset
-			break
+		for _ = self.i, self.code_length do
+			if self:GetCurrentChar() ~= "=" then
+				break
+			end
+			self:Advance(1)
 		end
 	end
 
-	local c = self:GetChar(self.i)
-	if c ~= "[" then return nil, "expected " .. self.code:sub(start, self.i - 1) .. "[ got " .. self.code:sub(start, self.i - 1) .. c end
+	local c = self:ReadChar()
+	if c ~= "[" then self:Error("expected " .. self.code:sub(start, self.i - 1) .. "[ got " .. self.code:sub(start, self.i - 1) .. c) end
 
-	length = self.i - start + 1
+	local length = self.i - start
 
 	if length < 2 then return nil end
 
 	local closing = "]" .. ("="):rep(length - 2) .. "]"
 
-	for i = self.i + length, self.code_length do
-		if self:GetChars(i, i + length - 1) == closing then
-			return i + length - 1
+	for _ = self.i, self.code_length do
+		if self:GetCharsOffset(0, length - 1) == closing then
+			self:Advance(length)
+			return true
 		end
+		self:Advance(1)
 	end
 
-	return nil, "strange string"
-end
-
-function META:StringEscape(c)
-	if self.string_escape then
-		self.string_escape = false
-		return true
-	end
-
-	if c == oh.syntax.escape_character then
-		self.string_escape = true
-	end
-
-	return false
+	self:Error("unable to find end of literal string " .. closing)
 end
 
 do
@@ -117,19 +155,12 @@ do
 	Token.Priority = 100
 
 	function Token:Is()
-		return self:GetChars(self.i, self.i + 3) == "--[=" or self:GetChars(self.i, self.i + 3) == "--[["
+		return self:GetCharsOffset(0, 3) == "--[=" or self:GetCharsOffset(0, 3) == "--[["
 	end
 
 	function Token:Capture()
-		self.i = self.i + 2
-		local stop, err = CaptureLiteralString(self)
-
-		if not stop and err then
-			self:Error("cannot find the end of literal quote: " .. err)
-		end
-
-		self.i = stop
-		return true
+		self:Advance(2)
+		return CaptureLiteralString(self)
 	end
 
 	RegisterTokenClass(Token)
@@ -142,13 +173,14 @@ do
 	Token.Priority = 99
 
 	function Token:Is()
-		return self:GetChars(self.i, self.i + oh.syntax.line_comment_length - 1) == oh.syntax.line_comment
+		return self:GetCharsOffset(0, oh.syntax.line_comment_length - 1) == oh.syntax.line_comment
 	end
 
 	function Token:Capture()
-		for i = self.i + oh.syntax.line_comment_length, self.code_length do
-			if self:GetChar(i) == "\n" or i == self.code_length then
-				self.i = i
+		self:Advance(oh.syntax.line_comment_length)
+
+		for _ = self.i, self.code_length do
+			if self:ReadChar() == "\n" or self.i == self.code_length then
 				return true
 			end
 		end
@@ -160,17 +192,33 @@ end
 for _, quote in ipairs({oh.syntax.single_quote, oh.syntax.double_quote}) do
 	local Token = {}
 
-	Token.Type = "string"
+	Token.Type = _ == 1 and "single_quote_string" or "double_quote_string"
+	Token.ParserType = "string"
 
 	function Token:Is()
-		return self:GetChar(self.i) == quote
+		return self:GetCurrentCharByte() == quote
 	end
 
+	function Token:StringEscape(c)
+		if self.string_escape then
+			self.string_escape = false
+			return true
+		end
+
+		if c == oh.syntax.escape_character then
+			self.string_escape = true
+		end
+
+		return false
+	end
+
+
 	function Token:Capture()
-		for i = self.i + 1, self.code_length do
-			local char = self:GetChar(i)
-			if not self:StringEscape(char) and char == quote then
-				self.i = i
+		self:Advance(1)
+
+		for _ = self.i, self.code_length do
+			local char = self:ReadCharByte()
+			if not Token.StringEscape(self, char) and char == quote then
 				return true
 			end
 		end
@@ -184,22 +232,16 @@ end
 do
 	local Token = {}
 
-	Token.Type = "string"
+	Token.Type = "multiline_string"
+	Token.ParserType = "string"
 	Token.Priority = 1000
 
 	function Token:Is()
-		return self:GetChars(self.i, self.i + 1) == "[=" or self:GetChars(self.i, self.i + 1) == "[["
+		return self:GetCharsOffset(0, 1) == "[=" or self:GetCharsOffset(0, 1) == "[["
 	end
 
 	function Token:Capture()
-		local stop, err = CaptureLiteralString(self)
-
-		if not stop and err then
-			self:Error("cannot find the end of literal quote: " .. err)
-		end
-
-		self.i = stop
-		return true
+		return CaptureLiteralString(self)
 	end
 
 	RegisterTokenClass(Token)
@@ -211,14 +253,30 @@ do
 	Token.Type = "number"
 	Token.Priority = 1000
 
-	function Token:CaptureAnnotations(i)
+	local allowed = {
+		["a"] = true,
+		["b"] = true,
+		["c"] = true,
+		["d"] = true,
+		["e"] = true,
+		["f"] = true,
+		["p"] = true,
+		["_"] = true,
+		["."] = true,
+	}
+
+	local pow_letter = "p"
+	local plus_sign = "+"
+	local minus_sign = "-"
+
+	function Token:CaptureAnnotations()
 		for _, annotation in ipairs(oh.syntax.legal_number_annotations) do
-			local len = #annotation - 1
-			if self:GetChars(i, i + len):lower() == annotation then
-				local t = self:GetCharType(i + len + 1)
+			local len = #annotation
+			if self:GetCharsOffset(0, len - 1):lower() == annotation then
+				local t = oh.syntax.GetCharType(self:GetCharOffsetByte(len))
 
 				if t == "space" or t == "symbol" then
-					self.i = i + len
+					self:Advance(len)
 					return true
 				end
 			end
@@ -226,26 +284,25 @@ do
 	end
 
 	function Token:Is()
-		if self:GetChar(self.i) == "." and self:GetCharType(self.i + 1) == "number" then
+		if self:GetCurrentChar() == oh.syntax.index_operator and oh.syntax.GetCharType(self:GetCharOffsetByte(1)) == "number" then
 			return true
 		end
 
-		return self:GetCharType(self.i) == "number"
+		return oh.syntax.GetCharType(self:GetCurrentCharByte()) == "number"
 	end
 
 	function Token:CaptureHexNumber()
-		local stop
+		self:Advance(2)
 
 		local pow = false
 
-		for offset = self.i + 2, self.i + 64 do
-			local stop = Token.CaptureAnnotations(self, offset)
-			if stop then self.i = stop return true end
+		for _ = self.i, self.code_length do
+			if Token.CaptureAnnotations(self) then return true end
 
-			local char = self:GetChar(offset):lower()
-			local t = self:GetCharType(offset)
+			local char = self:GetCurrentChar():lower()
+			local t = oh.syntax.GetCharType(self:GetCurrentCharByte())
 
-			if char == "p" then
+			if char == pow_letter then
 				if not pow then
 					pow = true
 				else
@@ -253,62 +310,46 @@ do
 				end
 			end
 
-			if
-				not (
-					t == "number" or
-					char == "a" or
-					char == "b" or
-					char == "c" or
-					char == "d" or
-					char == "e" or
-					char == "f" or
-					char == "p" or
-					char == "_" or
-					char == "." or
-					((char == "+" or char == "-") and self:GetChar(offset-1):lower() == "p")
-				)
-			then
+			if not (t == "number" or allowed[char] or ((char == plus_sign or char == minus_sign) and self:GetCharOffset(-1):lower() == pow_letter) ) then
 				if not t or t == "space" or t == "symbol" then
-					self.i = offset - 1
 					return true
 				elseif char == "symbol" or t == "letter" then
-					self:Error("malformed number: invalid character '" .. char .. "'. only abcdef0123456789_ allowed after hex notation", self.i, offset)
+					self:Error("malformed number: invalid character '" .. char .. "'. only abcdef0123456789_ allowed after hex notation")
 				end
 			end
+
+			self:Advance(1)
 		end
 	end
 
 	function Token:CaptureBinaryNumber()
-		local stop
+		self:Advance(2)
 
-		for offset = self.i + 2, self.i + 64 do
-			local char = self:GetChar(offset):lower()
-			local t = self:GetCharType(offset)
+		for _ = self.i, self.code_length do
+			local char = self:GetCurrentChar():lower()
+			local t = oh.syntax.GetCharType(self:GetCurrentCharByte())
 
 			if char ~= "1" and char ~= "0" and char ~= "_" then
 				if not t or t == "space" or t == "symbol" then
-					stop = offset - 1
-					break
+					return true
 				elseif char == "symbol" or t == "letter" or (char ~= "0" and char ~= "1") then
-					self:Error("malformed number: only 01_ allowed after binary notation", self.i, offset)
+					self:Error("malformed number: only 01_ allowed after binary notation")
 				end
 			end
-		end
 
-		self.i = stop
+			self:Advance(1)
+		end
 
 		return true
 	end
 
 	function Token:CaptureNumber()
-		local stop
-
 		local found_dot = false
 		local exponent = false
 
-		for offset = self.i, self.code_length + 1 do
-			local char = self:GetChar(offset)
-			local t = self:GetCharType(offset)
+		for _ = self.i, self.code_length do
+			local t = oh.syntax.GetCharType(self:GetCurrentCharByte())
+			local char = self:GetCurrentChar()
 
 			if exponent then
 				if char ~= "-" and char ~= "+" and t ~= "number" then
@@ -320,36 +361,27 @@ do
 				if t == "letter" then
 					if char:lower() == "e" then
 						exponent = true
+					elseif Token.CaptureAnnotations(self) then
+						return true
 					else
-						local stop = Token.CaptureAnnotations(self, offset)
-						if stop then return stop end
 						self:Error("malformed number: invalid character '" .. char .. "'. only " .. table.concat(oh.syntax.legal_number_annotations, ", ") .. " allowed after a number", i, offset)
 					end
 				elseif not found_dot and char == "." then
 					found_dot = true
 				elseif t == "space" or t == "symbol" then
-					stop = offset - 1
-					break
-				else
-					self:Error("malformed number: invalid character '" .. char .. "'. this should never happen?", self.i, offset)
+					return true
 				end
 			end
+
+			self:Advance(1)
 		end
-
-		if not stop then
-			self:Error("malformed number: expected number after exponent")
-		end
-
-		self.i = stop
-
-		return true
 	end
 
 
 	function Token:Capture()
-		if self:GetChar(self.i + 1):lower() == "x" then
+		if self:GetCharOffset(1):lower() == "x" then
 			return Token.CaptureHexNumber(self)
-		elseif self:GetChar(self.i + 1):lower() == "b" then
+		elseif self:GetCharOffset(1):lower() == "b" then
 			return Token.CaptureBinaryNumber(self)
 		end
 
@@ -366,14 +398,59 @@ do
 	Token.Priority = -1000
 
 	function Token:Is()
-		return self:GetCharType(self.i) == "symbol"
+		return oh.syntax.GetCharType(self:GetCurrentCharByte()) == "symbol"
 	end
 
-	function Token:Capture()
-		for len = oh.syntax.longest_symbol - 1, 0, -1 do
-			if oh.syntax.symbols_lookup[self:GetChars(self.i, self.i + len)] then
-				self.i = self.i + len
-				return true
+	if false and oh.USE_FFI then
+		local ffi = require("ffi")
+		local ffi_cast = ffi.cast
+
+		local _32 = ffi.typeof("uint32_t *")
+		local _16 = ffi.typeof("uint16_t *")
+
+		local len = table.count(oh.syntax.symbols_lookup2)
+		local arr = ffi.new("uint32_t[?]", len)
+		local i = 0
+		for id in pairs(oh.syntax.symbols_lookup2) do
+			arr[i] = id
+			i = i + 1
+		end
+
+		local function lookup(id) do return oh.syntax.symbols_lookup2[id] end
+			for i = 0, len - 1 do
+				if arr[i] == id then
+					return true
+				end
+			end
+			return false
+		end
+
+		function Token:Capture()
+			local ptr = self.code_ptr + self.i
+
+			if ptr[0] == 46 then
+				--print(self.code)
+			end
+			local a = tonumber(ptr[3])
+			ptr[3] = 0
+			if lookup(ffi_cast(_32, ptr)[0]) then self:Advance(3) return true end
+			ptr[3] = a
+
+			if ptr[0] == 46 then
+				print("!!!!!!")
+				--print(self.code)
+			end
+
+			if lookup(ffi_cast(_16, ptr)[0]) then self:Advance(2) return true end
+			if lookup(ptr[0]) then self:Advance(1) return true end
+		end
+	else
+		function Token:Capture()
+			for len = oh.syntax.longest_symbol - 1, 0, -1 do
+				if oh.syntax.symbols_lookup[self:GetCharsOffset(0, len)] then
+					self:Advance(len + 1)
+					return true
+				end
 			end
 		end
 	end
@@ -387,16 +464,18 @@ do
 	Token.Type = "letter"
 
 	function Token:Is()
-		return self:GetCharType(self.i) == "letter"
+		return oh.syntax.GetCharType(self:GetCurrentCharByte()) == "letter"
 	end
 
 	function Token:Capture()
-		for offset = self.i, self.i + 256 do
-			local t = self:GetCharType(offset)
-			if not (t == "letter" or t == "number" and offset ~= self.i) then
-				self.i = offset - 1
+		local start = self.i
+		self:Advance(1)
+		for _ = self.i, self.code_length do
+			local t = oh.syntax.GetCharType(self:GetCurrentCharByte())
+			if t == "space" or not (t == "letter" or (t == "number" and self.i ~= start)) then
 				return true
 			end
+			self:Advance(1)
 		end
 	end
 
@@ -409,16 +488,19 @@ do
 	Token.Type = "space"
 
 	function Token:Is()
-		return self:GetCharType(self.i) == "space"
+		return oh.syntax.GetCharType(self:GetCurrentCharByte()) == "space"
 	end
 
 	function Token:Capture()
-		for offset = self.i, self.code_length  do
-			if self:GetCharType(offset) ~= "space" then
-				self.i = offset - 1
+		self:Advance(1)
+
+		for _ = self.i, self.code_length do
+			if oh.syntax.GetCharType(self:GetCurrentCharByte()) ~= "space" then
 				return true
 			end
+			self:Advance(1)
 		end
+
 		return true
 	end
 
@@ -431,19 +513,19 @@ do -- shebang
 	Token.Type = "shebang"
 
 	function Token:Is()
-		return self.i == 1 and self:GetChar(self.i) == "#"
+		return (self.i == oh.USE_FFI and 0 or 1) and self:GetCurrentChar() == "#"
 	end
 
 	function Token:Capture()
-		for i = 1, self.code_length do
-			if self:GetChar(i) == "\n" then
-				self.i = i + 1
+		for _ = self.i, self.code_length do
+			if self:ReadChar() == "\n" then
+				self.i = self.i + 1
 				return true
 			end
 		end
 	end
 
-	RegisterTokenClass(Token)
+	META.ShebangTokenType = Token
 end
 
 do
@@ -451,8 +533,6 @@ do
 	local comment_buffer_i = 1
 
 	function META:AddToken(type, start, stop)
-		if type == "shebang" then return end
-
 		if type == "line_comment" or type == "multiline_comment" or type == "space" then
 			comment_buffer[comment_buffer_i] = {
 				type = type,
@@ -485,45 +565,80 @@ do
 	end
 end
 
-function META:ReadChar()
-	local char = self:GetChar()
-	self.i = self.i + 1
-	return char
+local system_GetTime = system.GetTime
+
+function META:CaptureToken()
+	for _, class in ipairs(self.TokenClasses) do
+		if class.Is(self) then
+			--stats[class.Type] = stats[class.Type] or {total_time = 0} stats[class.Type].start_time = system_GetTime()
+			local start = self.i
+			if not class.Capture(self) then
+				self:Error("unable to capture " .. class.Type)
+			end
+			--stats[class.Type].total_time = stats[class.Type].total_time + system_GetTime() - stats[class.Type].start_time stats.add_token.start_time = system_GetTime()
+			self:AddToken(class.ParserType, start, self.i - 1)
+			--stats.add_token.total_time = stats.add_token.total_time + system_GetTime() - stats.add_token.start_time
+			break
+		end
+	end
 end
 
-function META:GetChar(i)
-	return self.code:sub(i, i)
+if false then
+	local code = ""
+	code = code .. "local META = ...\n"
+	code = code .. "local TokenClasses = META.TokenClasses2\n"
+	code = code .. "function META:CaptureToken()\n"
+	for i, class in ipairs(META.TokenClasses) do
+		if i == 1 then code = code .. "\t" end
+		code = code .. "if TokenClasses." .. class.Type .. ".Is(self) then\n"
+
+		code = code .. "\t\tlocal start = self.i\n"
+		code = code .. "\t\tif not TokenClasses." .. class.Type .. ".Capture(self) then\n"
+		code = code .. "\t\t\tself:Error(\"unable to capture "..class.Type.."\")\n"
+		code = code .. "\t\tend\n"
+		code = code .. "\t\tself:AddToken(\""..class.ParserType.."\", start, self.i - 1)\n"
+
+		if i ~= #META.TokenClasses then
+			code = code .. "\telse"
+		else
+			code = code .. "\tend\n"
+		end
+	end
+	code = code .. "end\n"
+	loadstring(code)(META)
 end
 
-function META:GetCharType(i)
-	return oh.syntax.char_types[self.code:sub(i, i)]
-end
-
-function META:GetChars(a, b)
-	return self.code:sub(a, b)
-end
 
 function META:Tokenize()
-	self.i = 1
+	self.i = oh.USE_FFI and 0 or 1
+	self.chunks_i = 1
 
-	for _ = 1, self.code_length + 1 do
-		if not self:GetCharType(self.i) then
-			self:Error("unknown symbol >>" .. self:GetChar(self.i) .. "<< (" .. self:GetChar(i):byte() .. ")", self.i, self.i)
-		end
+	--local stats = {add_token = {total_time = 0}} local start_time = system_GetTime()
 
-		for _, class in ipairs(self.TokenClasses) do
-			if class.Is(self) then
-				local start = self.i
-				if not class.Capture(self) then
-					self:Error("unable to capture " .. class.Type)
-				end
-				self:AddToken(class.Type, start, self.i)
-				break
-			end
-		end
-
-		self.i = self.i + 1
+	if META.ShebangTokenType.Is(self) then
+		META.ShebangTokenType.Capture(self)
 	end
+
+	for _ = self.i, self.code_length do
+		if oh.syntax.GetCharType(self:GetCurrentCharByte()) == nil then
+			self:Error("unknown symbol >>" .. self:GetCurrentChar() .. "<< (" .. self:GetCurrentChar():byte() .. ")")
+		end
+
+		self:CaptureToken()
+
+		if self.i >= self.code_length then
+			break
+		end
+	end
+
+	--[==[
+	if stats then
+		local total_time = system_GetTime() - start_time
+		print("total time", total_time)
+		for k, v in table.sortedpairs(stats, function(a, b) return a.val.total_time > b.val.total_time end) do
+			print(k, math.round(v.total_time/total_time, 3) * 100)
+		end
+	end --]==]
 
 	return self.chunks
 end
@@ -533,6 +648,7 @@ function oh.Tokenizer(code, path)
 
 	setmetatable(self, META)
 
+	self.code_ptr = ffi.cast("unsigned char *", code)
 	self.code = code
 	self.path = path or "?"
 	self.code_length = #code
@@ -544,8 +660,22 @@ function oh.Tokenizer(code, path)
 	return self
 end
 
+function oh.DumpTokens(chunks, code)
+	local out = {}
+	local start = 0
+	for i,v in ipairs(chunks) do
+		out[i] = code:sub(start+1, v.start-1) ..
+			"⸢" .. code:sub(v.start, v.stop) .. "⸥"
+		start = v.stop
+	end
+
+	table.insert(out, code:sub(start+1))
+
+	return table.concat(out)
+end
+
+
 if RELOAD then
-	oh.TestAllFiles("/home/caps/goluwa/core")
 	oh.TestAllFiles("/home/caps/goluwa/framework")
 	oh.TestAllFiles("/home/caps/goluwa/engine")
 	oh.TestAllFiles("/home/caps/goluwa/game")

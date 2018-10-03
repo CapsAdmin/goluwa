@@ -12,7 +12,10 @@ do -- syntax rules
 	syntax.c_comment_start = "/*"
 	syntax.c_comment_stop = "*/"
 
-	syntax.space = {"", " ", "\n", "\r", "\t"}
+	syntax.index_operator = "."
+	syntax.self_index_operator = ":"
+
+	syntax.space = {" ", "\n", "\r", "\t"}
 	syntax.legal_number_annotations = {"ull", "ll", "ul", "i"}
 
 	syntax.number = {}
@@ -115,6 +118,10 @@ do -- syntax rules
 		syntax.char_types = char_types
 	end
 
+	function syntax.GetCharType(char)
+		return syntax.char_types[char]
+	end
+
 	table.sort(syntax.legal_number_annotations, function(a, b) return #a > #b end)
 
 	for i,v in pairs(syntax.operators) do
@@ -160,9 +167,46 @@ do -- syntax rules
 				syntax.char_types[v] = "symbol"
 			end
 		end
+
 		syntax.longest_symbol = longest_symbol
 		syntax.symbols_lookup = lookup
 	end
+end
+
+if oh.USE_FFI then
+	local tbl = {}
+	for k,v in pairs(syntax.char_types) do
+		tbl[k:byte()] = v
+	end
+	function syntax.GetCharType(char)
+		return tbl[char]
+	end
+
+	syntax.single_quote = syntax.single_quote:byte()
+	syntax.double_quote = syntax.double_quote:byte()
+	syntax.escape_character = syntax.escape_character:byte()
+
+
+	local ffi = require("ffi")
+
+	local tbl = {}
+	for k,v in pairs(syntax.symbols_lookup) do
+		local len = #k
+		local typ
+
+		if len == 1 then
+			typ = "uint8_t"
+		elseif len == 2 then
+			typ = "uint16_t"
+		elseif len == 3 then
+			typ = "uint32_t"
+		end
+
+		local id = ffi.cast(typ .. "*", k)[0]
+
+		tbl[id] = len + 1
+	end
+	syntax.symbols_lookup2 = tbl
 end
 
 oh.syntax = syntax

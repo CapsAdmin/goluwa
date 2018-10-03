@@ -1,5 +1,7 @@
 local oh = {}
 
+oh.USE_FFI = false
+
 RELOAD = nil
 
 runfile("parser/parser.lua", oh)
