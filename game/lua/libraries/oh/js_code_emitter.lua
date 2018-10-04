@@ -111,7 +111,7 @@ end
 
 function META:Expression(v)
 	local _ = self
-	
+
 	if not self.suppress_operator_transform then
 		local func = oh.syntax.operator_function_transforms[v.value]
 
@@ -384,25 +384,25 @@ if RELOAD then
 
 	local code = [===[
 		local print = console.log
-		
+
 		_G = {}
 
 		do
 			local METATABLES = {}
 
-			function __add(a, b) 
+			function __add(a, b)
 				if METATABLES[a] and METATABLES[a].__add then
 					return METATABLES[a].__add(a, b)
 				end
-				
+
 				if METATABLES[b] and METATABLES[b].__add then
 					return METATABLES[b].__add(a, b)
 				end
-				
+
 				$OperatorTransform false
 				return a + b
-				$OperatorTransform true 
-			end 
+				$OperatorTransform true
+			end
 
 			function setmetatable(obj, meta)
 				METATABLES[obj] = meta
@@ -415,22 +415,22 @@ if RELOAD then
 						end
 					end,
 					set = function(target, key, val, receiver)
-						if meta.__newindex then 
-							meta.__newindex(tbl, key, val) 
+						if meta.__newindex then
+							meta.__newindex(tbl, key, val)
 						else
-							return Reflect.set(target, key, val, receiver) 
+							return Reflect.set(target, key, val, receiver)
 						end
 					end,
 				})
 			end
 		end
-		
+
 		let a2 = {val = 5}
-		
+
 		a2 = setmetatable(a2, {__add = function(a, b) return a.val + b end})
-		
-		print(a2 + 5) 
-	
+
+		print(a2 + 5)
+
 		]===] local test = [===[
 		do return end
 
@@ -478,7 +478,7 @@ if RELOAD then
 			print(arr[i] .. " array")
 		end
 
-		arr.foo = true 
+		arr.foo = true
 
 		print(arr.foo, "?!?!?!")
 
@@ -569,13 +569,13 @@ print("foo = " .. items.foo)
 
 
 
- 
+
 	]===]
 
 
 
-	local tokens = oh.Tokenize(code, path)
-	local ast = tokens:Block()
+	local tokens = oh.Tokenizer(code, path)
+	local ast = tokens:GetAST()
 	local output = oh.BuildJSCode(ast)
 
 	print(output)

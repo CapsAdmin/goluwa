@@ -2,18 +2,17 @@ local oh = ... or _G.oh
 local syntax = {}
 
 do -- syntax rules
-	syntax.double_quote = "\""
-	syntax.single_quote = "'"
-	syntax.literal_quote = "`"
+	syntax.quotes = {
+		double = [["]],
+		single = [[']],
+	}
+
 	syntax.escape_character = "\\"
 	syntax.line_comment = "--"
 
-	syntax.cpp_comment = "//"
-	syntax.c_comment_start = "/*"
-	syntax.c_comment_stop = "*/"
-
 	syntax.index_operator = "."
 	syntax.self_index_operator = ":"
+	syntax.newline = "\n"
 
 	syntax.space = {" ", "\n", "\r", "\t"}
 	syntax.legal_number_annotations = {"ull", "ll", "ul", "i"}
@@ -44,8 +43,7 @@ do -- syntax rules
 
 	syntax.symbol = {".", ",", "(", ")", "{", "}", "[", "]",
 		"=", ":", ";", "~", "::",
-		"...", syntax.single_quote, syntax.double_quote,
-		syntax.literal_quote,
+		"...", syntax.quotes.single, syntax.quotes.double,
 	}
 
 	syntax.unary_operators = {
@@ -182,9 +180,10 @@ if oh.USE_FFI then
 		return tbl[char]
 	end
 
-	syntax.single_quote = syntax.single_quote:byte()
-	syntax.double_quote = syntax.double_quote:byte()
+	syntax.quotes.single = syntax.quotes.single:byte()
+	syntax.quotes.double = syntax.quotes.double:byte()
 	syntax.escape_character = syntax.escape_character:byte()
+	syntax.newline = syntax.newline:byte()
 
 
 	local ffi = require("ffi")

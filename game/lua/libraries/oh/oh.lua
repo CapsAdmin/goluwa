@@ -10,9 +10,9 @@ runfile("validate.lua", oh)
 
 function oh.Transpile(code, path)
 	local tokenizer = oh.Tokenizer(code, path)
-	local parser = oh.Parser(tokenizer:Tokenize(), code, path)
-	local body = parser:Block()
-	local output = oh.BuildLuaCode(body, code)
+	local parser = oh.Parser(tokenizer:GetTokens(), code, path)
+	local ast = parser:GetAST()
+	local output = oh.BuildLuaCode(ast, code)
 	return output
 end
 
@@ -22,15 +22,15 @@ function oh.Transpile2(code, path)
 	collectgarbage()
 	profiler.StartTimer("total")
 		profiler.StartTimer("tokenize")
-			local tokens = oh.Tokenize(code, path)
+			local tokens = oh.Tokenizer(code, path)
 		profiler.StopTimer()
 
 		profiler.StartTimer("parse")
-			local body = tokens:Block()
+			local ast = tokens:GetAST()
 		profiler.StopTimer()
 
 		profiler.StartTimer("emit")
-			local output = oh.BuildLuaCode(body)
+			local output = oh.BuildLuaCode(ast)
 		profiler.StopTimer()
 	profiler.StopTimer()
 	collectgarbage()
@@ -45,7 +45,7 @@ function oh.Transpile2(code, path)
 end
 
 function oh.loadstring(code, path)
-	local ok, code = pcall(oh.Transpile, code, path)
+	local ok, code = system.pcall(oh.Transpile, code, path)
 	if not ok then return nil, code end
 	local func, err = loadstring(code, path)
 
@@ -145,10 +145,9 @@ function oh.Test() do return end
 	local code = vfs.Read"/home/caps/goluwa/lua-5.4.0-w2-tests/code.lua"
 
 
-	local tokens = oh.Tokenize(code, path)
-	local body = tokens:Block()
-	oh.ValidateTree(body, code)
-	local newcode = oh.BuildLuaCode(body, code)
+	local tokenizer = oh.Tokenize(code, path)
+	local ast = oh.Parser(tokenizer:GetTokens(), code, path):GetAST()
+	local newcode = oh.BuildLuaCode(ast, code)
 	--print(code)
 
 	print(newcode)
@@ -161,7 +160,7 @@ function oh.Test() do return end
 end
 
 commands.Add("tokenize=arg_line", function(str)
-	oh.Tokenize(str):Dump()
+	logn(oh.Tokenizer(str):Dump())
 end)
 
 commands.Add("oh=arg_line", function(str)

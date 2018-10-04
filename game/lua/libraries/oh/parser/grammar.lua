@@ -468,6 +468,11 @@ function META:Block(stop)
 	return out
 end
 
+
+function META:GetAST()
+	return self:Block()
+end
+
 if RELOAD then
 	oh.Test()
 end
