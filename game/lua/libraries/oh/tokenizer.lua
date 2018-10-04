@@ -1,3 +1,5 @@
+local oh = ... or _G.oh
+
 local META = {}
 META.__index = META
 
@@ -67,7 +69,7 @@ function META:Error(msg, start, stop)
 	stop = stop or self.i
 
 	if self.halt_on_error then
-		error(self:FormatError(msg, start, stop))
+		error(oh.FormatError(self.code, self.path, msg, start, stop))
 	end
 
 	table.insert(self.errors, {
@@ -105,7 +107,7 @@ local function CaptureLiteralString(self)
 
 	local c = self:ReadChar()
 	if c ~= "[" then
-		self:Error("expected [ got " .. c)
+		self:Error("expected "..oh.QuoteToken("[").." got " .. oh.QuoteToken(c))
 		return false
 	end
 
@@ -122,7 +124,7 @@ local function CaptureLiteralString(self)
 
 	local c = self:ReadChar()
 	if c ~= "[" then
-		self:Error("expected " .. self.code:sub(start, self.i - 1) .. "[ got " .. self.code:sub(start, self.i - 1) .. c)
+		self:Error("expected " .. oh.QuoteToken(self.code:sub(start, self.i - 1) .. "[") .. " got " .. oh.QuoteToken(self.code:sub(start, self.i - 1) .. c))
 		return false
 	end
 
@@ -338,7 +340,7 @@ do
 				if not t or t == "space" or t == "symbol" then
 					return true
 				elseif char == "symbol" or t == "letter" then
-					self:Error("malformed number: invalid character '" .. char .. "'. only abcdef0123456789_ allowed after hex notation")
+					self:Error("malformed number: invalid character "..oh.QuoteToken(char)..". only "..oh.QuoteTokens("abcdef0123456789_").." allowed after hex notation")
 					return false
 				end
 			end
@@ -360,7 +362,7 @@ do
 				if not t or t == "space" or t == "symbol" then
 					return true
 				elseif char == "symbol" or t == "letter" or (char ~= "0" and char ~= "1") then
-					self:Error("malformed number: only 01_ allowed after binary notation")
+					self:Error("malformed number: only "..oh.QuoteTokens("01_").." allowed after binary notation")
 					return false
 				end
 			end
@@ -383,7 +385,7 @@ do
 
 			if exponent then
 				if char ~= "-" and char ~= "+" and t ~= "number" then
-					self:Error("malformed number: invalid character '" .. char .. "'. only +-0123456789 allowed after exponent", start, self.i)
+					self:Error("malformed number: invalid character " .. oh.QuoteToken(char) .. ". only "..oh.QuoteTokens("+-0123456789").." allowed after exponent", start, self.i)
 					return false
 				elseif char ~= "-" and char ~= "+" then
 					exponent = false
@@ -396,7 +398,7 @@ do
 					elseif Token.CaptureAnnotations(self) then
 						return true
 					else
-						self:Error("malformed number: invalid character '" .. char .. "'. only " .. table.concat(oh.syntax.legal_number_annotations, ", ") .. " allowed after a number", start, self.i)
+						self:Error("malformed number: invalid character " .. oh.QuoteToken(char) .. ". only " .. oh.QuoteTokens(oh.syntax.legal_number_annotations, ", ") .. " allowed after a number", start, self.i)
 						return false
 					end
 				elseif not found_dot and char == "." then
@@ -612,7 +614,7 @@ end)
 function META:CaptureToken()
 	for _, class in ipairs(self.TokenClasses) do
 		if oh.syntax.GetCharType(self:GetCurrentCharByte()) == nil then
-			self:Error("unexpected character " .. self:GetCurrentChar() .. " (byte " .. self:GetCurrentChar():byte() .. ")", self.i, self.i)
+			self:Error("unexpected character " .. oh.QuoteToken(self:GetCurrentChar()) .. " (byte " .. self:GetCurrentChar():byte() .. ")", self.i, self.i)
 			self:Advance(1)
 		end
 
@@ -627,32 +629,6 @@ function META:CaptureToken()
 		end
 	end
 end
-
-if false then
-	local code = ""
-	code = code .. "local META = ...\n"
-	code = code .. "local TokenClasses = META.TokenClasses2\n"
-	code = code .. "function META:CaptureToken()\n"
-	for i, class in ipairs(META.TokenClasses) do
-		if i == 1 then code = code .. "\t" end
-		code = code .. "if TokenClasses." .. class.Type .. ".Is(self) then\n"
-
-		code = code .. "\t\tlocal start = self.i\n"
-		code = code .. "\t\tif not TokenClasses." .. class.Type .. ".Capture(self) then\n"
-		code = code .. "\t\t\treturn self:Error(\"unable to capture "..class.Type.."\")\n"
-		code = code .. "\t\tend\n"
-		code = code .. "\t\tself:AddToken(\""..class.ParserType.."\", start, self.i - 1)\n"
-
-		if i ~= #META.TokenClasses then
-			code = code .. "\telse"
-		else
-			code = code .. "\tend\n"
-		end
-	end
-	code = code .. "end\n"
-	loadstring(code)(META)
-end
-
 
 function META:GetTokens()
 	self.i = oh.USE_FFI and 0 or 1
@@ -708,80 +684,6 @@ function oh.Tokenizer(code, path, halt_on_error)
 	return self
 end
 
-function META:FormatError(msg, start, stop)
-	local total_lines = self.code:count("\n")
-	local line_number_length = #tostring(total_lines)
-
-	local function tab2space(str)
-		return str:gsub("\t", "    ")
-	end
-
-	local function line2str(i)
-		return ("%i%s"):format(i, (" "):rep(line_number_length - #tostring(i)))
-	end
-
-	local context_size = 100
-	local line_context_size = 1
-
-	local length = (stop - start) + 1
-	local before = self:GetChars(math.max(start - context_size, 0), stop - length)
-	local middle = self:GetChars(start, stop)
-	local after = self:GetChars(stop + 1, stop + context_size)
-
-	local context_before, line_before = before:match("(.+\n)(.+)")
-	local line_after, context_after = after:match("(.-)(\n.+)")
-
-	if not line_before then
-		context_before = before
-		line_before = before
-	end
-
-	if not line_after then
-		context_after = after
-		line_after = after
-	end
-
-	local current_line = self:GetChars(0, stop):count("\n") + 1
-	local char_number = #line_before + 1
-
-	line_before = tab2space(line_before)
-	line_after = tab2space(line_after)
-	middle = tab2space(middle)
-
-	local out = ""
-	out = out .. "error: " ..  msg:escape() .. "\n"
-	out = out .. " " .. ("-"):rep(line_number_length + 1) .. "> " .. self.path .. ":" .. current_line .. ":" .. char_number .. "\n"
-
-	if line_context_size > 0 then
-		local lines_before = tab2space(context_before:sub(0, -2)):split("\n")
-		for offset = math.max(#lines_before - line_context_size, 1), #lines_before do
-			local str = lines_before[offset]
-			--if str:trim() ~= "" then
-				offset = offset - 1
-				out = out .. line2str(current_line - (-offset + #lines_before)) .. " | " .. str .. "\n"
-			--end
-		end
-	end
-
-	out = out .. line2str(current_line) .. " | " .. line_before .. middle .. line_after .. "\n"
-	out = out .. (" "):rep(line_number_length) .. " |" .. (" "):rep(#line_before + 1) .. ("^"):rep(length) .. "\n"
-
-	if line_context_size > 0 then
-		local lines_after = tab2space(context_after:sub(2)):split("\n")
-		for offset = 1, #lines_after do
-			local str = lines_after[offset]
-			--if str:trim() ~= "" then
-				out = out .. line2str(current_line + offset) .. " | " .. str .. "\n"
-			--end
-			if offset >= line_context_size then break end
-		end
-	end
-
-	out = out:trim()
-
-	return out
-end
-
 function META:GetErrorsFormatted()
 	if not self.errors[1] then
 		return ""
@@ -791,7 +693,7 @@ function META:GetErrorsFormatted()
 	local max_width = 0
 
 	for i, data in ipairs(self.errors) do
-		local msg = self:FormatError(data.msg, data.start, data.stop)
+		local msg = oh.FormatError(self.code, self.path, data.msg, data.start, data.stop)
 
 		for _, line in ipairs(msg:split("\n")) do
 			max_width = math.max(max_width, #line)
@@ -815,8 +717,7 @@ function oh.DumpTokens(chunks, code)
 	local out = {}
 	local start = 0
 	for i,v in ipairs(chunks) do
-		out[i] = code:sub(start+1, v.start-1) ..
-			"⸢" .. code:sub(v.start, v.stop) .. "⸥"
+		out[i] = code:sub(start+1, v.start-1) .. oh.QuoteToken(code:sub(v.start, v.stop))
 		start = v.stop
 	end
 

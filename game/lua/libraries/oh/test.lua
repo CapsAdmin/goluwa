@@ -67,22 +67,23 @@ function oh.TestAllFiles(path_override)
 end
 
 function oh.Test()
-	--oh.TestAllFiles("/home/caps/goluwa/core")oh.TestAllFiles("/home/caps/goluwa/framework")oh.TestAllFiles("/home/caps/goluwa/engine")oh.TestAllFiles("/home/caps/goluwa/game")
-
-	local path = ""
+--oh.TestAllFiles("/home/caps/goluwa/core")oh.TestAllFiles("/home/caps/goluwa/framework")oh.TestAllFiles("/home/caps/goluwa/engine")oh.TestAllFiles("/home/caps/goluwa/game") do return end
+	local path = "foo.lua"
 	local code = [[
-		function test a()
-
-		end
-	]]
+	function test()
+		if true then
+			awdawdawdwa()
+		end + 5
+	end]]
 
 	local tokenizer = oh.Tokenizer(code, path)
 	local tokens = tokenizer:GetTokens()
 
-	local parser = oh.Parser(tokens, code, path)
+	local parser = oh.Parser(tokens, code, path, false)
 	local ast = parser:GetAST()
 	local output = oh.BuildLuaCode(ast, code, path)
 	print(loadstring(output))
+	print(output)
 
 	--print(output)
 
