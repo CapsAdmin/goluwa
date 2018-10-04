@@ -683,7 +683,20 @@ function oh.Tokenizer(code, path, halt_on_error)
 
 	self.code_ptr = ffi.cast("unsigned char *", code)
 	self.code = code
-	self.path = path or "?"
+
+	if not path then
+		local line =  code:match("(.-)\n")
+		if line ~= code then
+			line = line .. "..."
+		end
+		local content = line:sub(0, 15)
+		if content ~= line then
+			content = content .. "..."
+		end
+		path =  "[string \""..content.."\"]"
+	end
+
+	self.path = path
 	self.code_length = #code
 	self.halt_on_error = halt_on_error
 	self.errors = {}
@@ -737,7 +750,7 @@ function META:FormatError(msg, start, stop)
 
 	local out = ""
 	out = out .. "error: " ..  msg:escape() .. "\n"
-	out = out .. " " .. (" "):rep(line_number_length + 1) .. "  " .. self.path .. ":" .. current_line .. ":" .. char_number .. "\n"
+	out = out .. " " .. ("-"):rep(line_number_length + 1) .. "> " .. self.path .. ":" .. current_line .. ":" .. char_number .. "\n"
 
 	if line_context_size > 0 then
 		local lines_before = tab2space(context_before:sub(0, -2)):split("\n")
@@ -813,9 +826,5 @@ function oh.DumpTokens(chunks, code)
 end
 
 if RELOAD then
-	oh.TestAllFiles("/home/caps/goluwa/framework")
-	oh.TestAllFiles("/home/caps/goluwa/engine")
-	oh.TestAllFiles("/home/caps/goluwa/game")
-	oh.TestAllFiles("/home/caps/goluwa/lua-5.2.2-tests")
-	--oh.TestAllFiles("/home/caps/goluwa/love_games/lovers")
+	runfile("lua/libraries/oh/test.lua")
 end
