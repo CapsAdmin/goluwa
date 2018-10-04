@@ -1,3 +1,24 @@
+
+do
+	local lookup = {
+		{from = "\a", to = [[\a]]},
+		{from = "\b", to = [[\b]]},
+		{from = "\f", to = [[\f]]},
+		{from = "\n", to = [[\n]]},
+		{from = "\r", to = [[\r]]},
+		{from = "\t", to = [[\t]]},
+		{from = "\v", to = [[\v]]},
+		{from = "\\", to = [[\]]},
+	}
+
+	function string.escape(str)
+		for _, char in ipairs(lookup) do
+			str = str:gsub(char.from, char.to)
+		end
+		return str
+	end
+end
+
 function string.indent(str, count)
 	local tbl = str:split("\n")
 	for i, line in ipairs(tbl) do
