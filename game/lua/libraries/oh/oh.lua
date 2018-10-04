@@ -4,8 +4,9 @@ oh.USE_FFI = false
 
 RELOAD = nil
 
-runfile("parser/tokenizer.lua", oh)
-runfile("parser/parser.lua", oh)
+runfile("syntax.lua", oh)
+runfile("tokenizer.lua", oh)
+runfile("parser.lua", oh)
 runfile("lua_code_emitter.lua", oh)
 runfile("validate.lua", oh)
 

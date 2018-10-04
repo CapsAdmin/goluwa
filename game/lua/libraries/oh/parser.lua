@@ -1,7 +1,5 @@
 local oh = ... or _G.oh
 
-runfile("syntax.lua", oh)
-
 local META = {}
 META.__index = META
 
