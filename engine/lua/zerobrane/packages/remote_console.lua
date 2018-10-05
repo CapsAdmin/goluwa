@@ -982,6 +982,7 @@ function PLUGIN:CreateRemoteConsole(name, on_execute, bitmap)
 		'^.-%[string "([^"]+)"%]:(%d+)%s*:',
 		-- <filename>:line:linepos
 		"^%s*(.-%.lua):(%d+):(%d+):",
+		"%s+(%S+%.lua):(%d+):(%d+)",
 		-- <filename>:line:
 		"^%s*(.-%.lua):(%d+)%s*:",
 		-- <filename>:line
