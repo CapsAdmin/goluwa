@@ -3,7 +3,10 @@ local oh = ... or _G.oh
 local META = {}
 META.__index = META
 
-function META:Error(msg, start, stop)
+local table_insert = table.insert
+local table_remove = table.remove
+
+function META:Error(msg, start, stop, level)
 	if type(start) == "table" then
 		start = start.start
 	end
@@ -14,8 +17,11 @@ function META:Error(msg, start, stop)
 	start = start or tk.start
 	stop = stop or tk.stop
 
+	if self.halt_on_error then
+		error(oh.FormatError(self.code, self.path, msg, start, stop), level or 2)
+	end
 
-	error(oh.FormatError(self.code, self.path, msg, start, stop))
+	table_insert(self.errors, print(oh.FormatError(self.code, self.path, msg, start, stop)))
 end
 
 function META:GetToken(offset)
@@ -53,33 +59,29 @@ end
 function META:ReadExpectType(type, start, stop)
 	local tk = self:GetToken()
 	if not tk then
-		self:Error("expected " .. oh.QuoteToken(type) .. " reached end of code", start, stop)
-	end
-	if tk.type ~= type then
-		self:Error("expected " .. oh.QuoteToken(type) .. " got " .. tk.type, start, stop)
+		self:Error("expected " .. oh.QuoteToken(type) .. " reached end of code", start, stop, 3)
+	elseif tk.type ~= type then
+		self:Error("expected " .. oh.QuoteToken(type) .. " got " .. tk.type, start, stop, 3)
 	end
 	self:Advance(1)
 	return tk
 end
 
-function META:ReadExpectValue(value, start, stop, msg)
-	local tk = self:GetToken()
+function META:ReadExpectValue(value, start, stop)
+	local tk = self:ReadToken()
 	if not tk then
-		self:Error("expected " .. oh.QuoteToken(value) .. ": reached end of code", start, stop)
+		self:Error("expected " .. oh.QuoteToken(value) .. ": reached end of code", start, stop, 3)
+	elseif tk.value ~= value then
+		self:Error("expected " .. oh.QuoteToken(value) .. ": got " .. tk.value, start, stop, 3)
 	end
-	if tk.value ~= value then
-		self:Error("expected " .. oh.QuoteToken(value) .. ": got " .. tk.value, start, stop)
-	end
-	self:Advance(1)
 	return tk
 end
 
-function META:ReadExpectValues(values, start, stop, msg)
+function META:ReadExpectValues(values, start, stop)
 	local tk = self:GetToken()
 	if not tk then
 		self:Error("expected " .. oh.QuoteTokens(values) .. ": reached end of code", start, stop)
-	end
-	if not table.hasvalue(values, tk.value) then
+	elseif not table.hasvalue(values, tk.value) then
 		self:Error("expected " .. oh.QuoteTokens(values) .. " got " .. tk.value, start, stop)
 	end
 	self:Advance(1)
@@ -93,9 +95,6 @@ end
 function META:Advance(offset)
 	self.i = self.i + offset
 end
-
-local table_insert = table.insert
-local table_remove = table.remove
 
 function META:ExpressionList()
 	local out = {}
@@ -145,18 +144,7 @@ end
 
 
 function META:Assignment(namelist)
-	local start = self:GetToken()
 
-	local left = namelist and self:NameList() or self:ExpressionList()
-	local eqtoken = self:ReadIfValue("=")
-	if eqtoken then
-		return {type = "assignment", left = left, right = self:ExpressionList(), ["="] = eqtoken}
-	else
-		if left[2] or left[1].type ~= "index_call_expression" or left[1].type == "index_call_expression" and left[1].value[#left[1].value].type ~= "call" then
-			self:Error("expected call got unexpected statment", start, start)
-		end
-		return {type = "assignment", left = left}
-	end
 end
 
 function META:Table()
@@ -215,7 +203,26 @@ function META:Table()
 	return tree
 end
 
-function META:IndexExpression(hm, simple_call)
+function META:Function(variant)
+	local data = {}
+	data.type = "function"
+	data["function"] = self:ReadExpectValue("function")
+	if variant == "simple_named" then
+		data.index_expression = self:ReadExpectType("letter")
+	elseif variant == "expression_named" then
+		data.index_expression = self:IndexExpression(true)
+	end
+	local start = self:GetToken()
+
+	data["func("] = self:ReadExpectValue("(")
+	data.arguments = self:NameList()
+	data["func)"] = self:ReadExpectValue(")", start, start)
+	data.body = self:Block({["end"] = true})
+	data["end"] = self:ReadExpectValue("end")
+	return data
+end
+
+function META:IndexExpression(simple_call)
 	local out = {}
 
 	for _ = 1, self:GetLength() do
@@ -238,11 +245,13 @@ function META:IndexExpression(hm, simple_call)
 
 			if simple_call then break end
 
+			local start = self:GetToken()
+
 			while self:IsValue("(") do
 				local pleft = self:ReadToken()
 				local data = {type = "call", arguments = simple_call and self:NameList() or self:ExpressionList(), ["call("] = pleft}
 				table_insert(out, data)
-				data["call)"] = self:ReadExpectValue(")")
+				data["call)"] = self:ReadExpectValue(")", start)
 			end
 
 			if self:IsType("letter") then
@@ -265,7 +274,7 @@ function META:IndexExpression(hm, simple_call)
 	return out
 end
 
-function META:Expression(priority)
+function META:Expression(priority, stop_on_call)
 	priority = priority or 0
 
 	local val
@@ -280,33 +289,25 @@ function META:Expression(priority)
 		val = {type = "unary", value = unary, argument = exp}
 	elseif self:ReadIfValue("(") then
 		local pleft = self:GetToken(-1)
-		val = self:Expression(0)
+		val = self:Expression()
 		local pright = self:ReadExpectValue(")")
 
 		val["("] = pleft
 		val[")"] = pright
 
-		if self:IsValue(".") or self:IsValue(":") or self:IsValue("[") or self:IsValue("(") or self:IsValue("{") or self:IsType("string") then
-			local right = self:IndexExpression(true)
 
+		if self:IsValue(".") or self:IsValue(":") or self:IsValue("[") or self:IsValue("(") or self:IsValue("{") or self:IsType("string") then
+			local right = self:IndexExpression()
 			table_insert(right, 1, val)
 			val = {type = "index_call_expression", value = right}
 		end
 	elseif oh.syntax.IsValue(token) then
 		val = self:ReadToken()
-	elseif token.value == ":" then
-		val = {type = "index_call_expression", value = self:IndexExpression()}
 	elseif token.value == "{" then
 		val = self:Table()
 	elseif token.value == "function" then
-		local tkfunc = token
-		self:Advance(1)
-		local tkleft = self:ReadExpectValue("(")
-		local arguments = self:NameList()
-		local tkright = self:ReadExpectValue(")")
-		local body = self:Block({["end"] = true})
-		val = {type = "function", arguments = arguments, body = body, ["end"] = self:ReadExpectValue("end"), ["function"] = tkfunc, ["func("] = tkleft, ["func)"] = tkright}
-	elseif token.type == "letter" and not oh.syntax.keywords[token.value] then
+		val = self:Function("anonymous")
+	elseif (token.type == "letter" and not oh.syntax.keywords[token.value]) or self:IsValue(".") or self:IsValue(":") or self:IsValue("[") or self:IsValue("(") or self:IsValue("{") or self:IsType("string") then
 		val = {type = "index_call_expression", value = self:IndexExpression()}
 	elseif token.value == ";" then
 		self:Advance(1)
@@ -383,22 +384,26 @@ function META:Block(stop)
 			table_remove(self.loop_stack)
 		elseif token.value == "local" then
 			if self:GetToken().value == "function" then
-				local data = {}
-				data.type = "function"
+				local data = self:Function("simple_named")
 				data["local"] = token
-				data["function"] = self:ReadToken()
 				data.is_local = true
-				data.index_expression = self:ReadExpectType("letter")
-				data["func("] = self:ReadExpectValue("(")
-				data.arguments = self:NameList()
-				data["func)"] = self:ReadExpectValue(")")
-				data.body = self:Block({["end"] = true})
-				data["end"] = self:ReadExpectValue("end", token, token)
 				table_insert(out, data)
 			else
-				local data = self:Assignment(true)
-				data.is_local = true
+
+				local start = self:GetToken()
+
+				local data = {}
+				data.type = "assignment"
 				data["local"] = token
+				data.is_local = true
+				data.left = self:NameList()
+
+				local eqtoken = self:ReadIfValue("=")
+
+				if eqtoken then
+					data.right = self:ExpressionList()
+					data["="] = eqtoken
+				end
 				table_insert(out, data)
 			end
 		elseif token.value == "return" then
@@ -430,6 +435,8 @@ function META:Block(stop)
 
 			for _ = 1, self:GetLength() do
 				local token = self:ReadToken()
+
+				if not token then break end
 
 				if token.value == "end" then
 					data["end"] = token
@@ -499,9 +506,7 @@ function META:Block(stop)
 				data["do"] = self:ReadExpectValue("do")
 			else
 				local names = self:NameList()
-
 				data["in"] = self:ReadExpectValue("in")
-
 				data.iloop = false
 				data.names = names
 				data.expressions = self:ExpressionList()
@@ -516,43 +521,34 @@ function META:Block(stop)
 
 			table.remove(self.loop_stack)
 		elseif token.value == "function" then
-			local data = {}
-			data.type = "function"
-			data["function"] = token
-			data.arguments = {}
-			data.is_local = false
-			data.index_expression = self:IndexExpression(true, true)
-			data["func("] = self:ReadExpectValue("(")
-			data.arguments = self:NameList()
-			data["func)"] = self:ReadExpectValue(")")
-			data.body = self:Block({["end"] = true})
-			data["end"] = self:ReadExpectValue("end", token, token)
-
+			self:Advance(-1)
+			local data = self:Function("expression_named")
 			table_insert(out, data)
 		elseif token.value == "(" then
-			local pleft = token
-			local expr = self:Expression()
-			local pright = self:ReadExpectValue(")")
-			if
-				not self:IsValue(".") and
-				not self:IsValue(":") and
-				not self:IsValue("[") and
-				not self:IsValue("(") and
-				not self:IsValue("{")
-			then
-				self:Error("expected "..oh.QuoteTokens({".", ":", "(", "{"}).." got " .. self:GetToken().value)
-			end
-			self:Advance(1)
 			self:Advance(-1)
-
-			local right = self:IndexExpression(true)
-			expr["("] = pleft
-			expr[")"] = pright
-			table_insert(right, 1, expr)
-			table_insert(out, {type = "index_call_expression", value = right})
+			table_insert(out, {type = "expression", value = self:Expression()})
 		elseif token.type == "letter" then
 			self:Advance(-1) -- we want to include the current letter in the loop
-			table_insert(out, self:Assignment())
+			local start = self:GetToken()
+
+			local data = {}
+
+			local var = self:ExpressionList()
+
+			if self:IsValue("=") then
+				data.type = "assignment"
+				data.left = var
+				data["="] = self:ReadToken()
+				data.right = self:ExpressionList()
+			else
+				if var[2] or not var[1] or var[1].type ~= "index_call_expression" or (var[1].value and var[1].value[#var[1].value].type ~= "call") then
+					self:Error("unexpected statment", start, start)
+				end
+				-- TODO: make me a call type
+				data.type = "assignment"
+				data.left = var
+			end
+			table.insert(out, data)
 		elseif token.value == ";" then
 			table_insert(out, {type = "end_of_statement", value = token})
 		else

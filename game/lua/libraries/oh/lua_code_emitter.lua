@@ -362,6 +362,8 @@ function META:Block(tree)
 			end
 		elseif data.type == "index_call_expression" then
 			self:IndexCallExpression(data.value)
+		elseif data.type == "expression" then
+			self:Expression(data.value)
 		elseif data.type == "call" then
 			if data.value then
 				_:W"\t"_:Expression(data.value)

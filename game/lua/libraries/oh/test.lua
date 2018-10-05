@@ -70,17 +70,24 @@ function oh.Test()
 --oh.TestAllFiles("/home/caps/goluwa/core")oh.TestAllFiles("/home/caps/goluwa/framework")oh.TestAllFiles("/home/caps/goluwa/engine")oh.TestAllFiles("/home/caps/goluwa/game") do return end
 	local path = "foo.lua"
 	local code = [[
-	function test()
-		if true then
-			awdawdawdwa()
-		end + 5
-	end]]
+
+local t = (typex or type)(val)
+
+function table.tolist()
+	(asdf or lol):test();
+	aSDSA()
+	line = (">"):rep(string.len(currentline)) .. ":"
+end
+
+
+		]]
 
 	local tokenizer = oh.Tokenizer(code, path)
 	local tokens = tokenizer:GetTokens()
 
-	local parser = oh.Parser(tokens, code, path, false)
+	local parser = oh.Parser(tokens, code, path)
 	local ast = parser:GetAST()
+--table.print(ast)
 	local output = oh.BuildLuaCode(ast, code, path)
 	print(loadstring(output))
 	print(output)
