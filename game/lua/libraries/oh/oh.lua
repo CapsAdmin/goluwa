@@ -75,8 +75,6 @@ function oh.FormatError(code, path, msg, start, stop)
 	line_after = tab2space(line_after)
 	middle = tab2space(middle)
 
-	print("|" .. line_before .. "|")
-
 	local out = ""
 	out = out .. "error: " ..  msg:escape() .. "\n"
 	out = out .. " " .. ("-"):rep(line_number_length + 1) .. "> " .. path .. ":" .. current_line .. ":" .. char_number .. "\n"
