@@ -544,9 +544,8 @@ function META:Block(stop)
 				if var[2] or not var[1] or var[1].type ~= "index_call_expression" or (var[1].value and var[1].value[#var[1].value].type ~= "call") then
 					self:Error("unexpected statment", start, start)
 				end
-				-- TODO: make me a call type
-				data.type = "assignment"
-				data.left = var
+				data.type = "call"
+				data.value = var[1]
 			end
 			table.insert(out, data)
 		elseif token.value == ";" then

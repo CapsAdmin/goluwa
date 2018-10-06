@@ -365,9 +365,7 @@ function META:Block(tree)
 		elseif data.type == "expression" then
 			self:Expression(data.value)
 		elseif data.type == "call" then
-			if data.value then
-				_:W"\t"_:Expression(data.value)
-			end
+			_:W"\t"_:Expression(data.value)
 		elseif data.type == "end_of_statement" then
 			_:Token(data.value)
 		else
