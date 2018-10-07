@@ -57,11 +57,12 @@ function META:Token(v, translate)
 	else
 		if v.comments and v.whitespace_start then
 			for _, comment in ipairs(v.comments) do
-				if comment.value:sub(1, 2) == "/*" then
-					self:Emit("--[====[" .. comment.value .. "]====]")
-				elseif comment.value:sub(1, 2) == "//" then
-					self:Emit("--" .. comment.value)
-				elseif comment.type ~= "space" or self.code then
+				--if comment.value:sub(1, 2) == "/*" then
+					--self:Emit("--[====[" .. comment.value .. "]====]")
+				--elseif comment.value:sub(1, 2) == "//" then
+					--self:Emit("--" .. comment.value)
+				--else
+					if comment.type ~= "space" or self.code then
 					self:Emit(comment.value)
 				end
 			end

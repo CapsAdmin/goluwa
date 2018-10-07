@@ -159,6 +159,16 @@ function table.hasvalue(tbl, val)
 	return false
 end
 
+function table.hasvaluei(tbl, val)
+	for k,v in ipairs(tbl) do
+		if v == val then
+			return k
+		end
+	end
+
+	return false
+end
+
 function table.getkey(tbl, val)
 	for k in pairs(tbl) do
 		if k == val then

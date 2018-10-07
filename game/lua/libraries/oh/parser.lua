@@ -37,12 +37,12 @@ function META:Error(msg, start, stop, level)
 	table_insert(self.errors, print(oh.FormatError(self.code, self.path, msg, start, stop)))
 end
 
-function META:GetToken(offset)
-	if offset then
-		return self.chunks[self.i + offset]
-	end
-
+function META:GetToken()
 	return self.chunks[self.i]
+end
+
+function META:GetTokenOffset(offset)
+	return self.chunks[self.i + offset]
 end
 
 function META:ReadToken()
@@ -51,18 +51,22 @@ function META:ReadToken()
 	return tk
 end
 
-function META:IsValue(str, offset)
-	local tk = self:GetToken(offset)
+function META:IsValueOffset(str, offset)
+	local tk = self:GetTokenOffset(offset)
 	return tk and tk.value == str and tk
 end
 
-function META:IsType(str, offset)
-	local tk = self:GetToken(offset)
+function META:IsValue(str)
+	return self.chunks[self.i] and self.chunks[self.i].value == str and self.chunks[self.i]
+end
+
+function META:IsType(str)
+	local tk = self:GetToken()
 	return tk and tk.type == str
 end
 
-function META:ReadIfValue(str, offset)
-	local b = self:IsValue(str, offset)
+function META:ReadIfValue(str)
+	local b = self:IsValue(str)
 	if b then
 		self:Advance(1)
 	end
@@ -94,7 +98,7 @@ function META:ReadExpectValues(values, start, stop)
 	local tk = self:GetToken()
 	if not tk then
 		self:Error("expected " .. oh.QuoteTokens(values) .. ": reached end of code", start, stop)
-	elseif not table.hasvalue(values, tk.value) then
+	elseif not table.hasvaluei(values, tk.value) then
 		self:Error("expected " .. oh.QuoteTokens(values) .. " got " .. tk.value, start, stop)
 	end
 	self:Advance(1)
@@ -165,7 +169,7 @@ function META:Table()
 
 		if token.value == "}" then
 			break
-		elseif self:IsValue("=", 1) then
+		elseif self:IsValueOffset("=", 1) then
 			data = Node("key_value")
 			data.key = Node("value", self:ReadToken())
 			data.tokens["="] = self:ReadToken()
@@ -233,13 +237,12 @@ function META:Expression(priority, stop_on_call)
 	local val
 
 	if oh.syntax.IsUnaryOperator(token) then
-		local token = self:ReadToken()
 		val = Node("unary")
-		val.tokens.operator = token
-		val.operator = token.value
+		val.tokens.operator = self:ReadToken()
+		val.operator = val.tokens.operator.value
 		val.expression = self:Expression(math.huge, stop_on_call)
-	elseif self:ReadIfValue("(") then
-		local pleft = self:GetToken(-1)
+	elseif self:IsValue("(") then
+		local pleft = self:ReadToken()
 		val = self:Expression(0, stop_on_call)
 		if not val then
 			self:Error("empty parentheses group", token)
@@ -259,7 +262,7 @@ function META:Expression(priority, stop_on_call)
 		val = self:Table()
 	end
 
-	local token = self:GetToken()
+	token = self:GetToken()
 
 	if token and (token.value == "[" or token.value == "(" or token.value == "{" or token.type == "string") then
 		val.calls = {}
@@ -473,7 +476,7 @@ function META:Block(stop)
 
 			table_insert(self.loop_stack, data)
 
-			if self:GetToken(1).value == "=" then
+			if self:GetTokenOffset(1).value == "=" then
 				data.iloop = true
 
 				data.name = Node("value", self:ReadExpectType("letter"))
