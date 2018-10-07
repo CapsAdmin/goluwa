@@ -259,9 +259,9 @@ end
 
 do
 	local indent = 0
-	function table.print2(tbl)
+	function table.print2(tbl, blacklist)
 		for k,v in pairs(tbl) do
-			if type(v) ~= "table" then
+			if (not blacklist or blacklist[k] ~= type(v)) and type(v) ~= "table" then
 				log(("\t"):rep(indent))
 				local v = v
 				if type(v) == "string" then
@@ -273,11 +273,11 @@ do
 		end
 
 		for k,v in pairs(tbl) do
-			if type(v) == "table" then
+			if (not blacklist or blacklist[k] ~= type(v)) and type(v) == "table" then
 				log(("\t"):rep(indent))
 				logn(k, ":")
 				indent = indent + 1
-				table.print2(v)
+				table.print2(v, blacklist)
 				indent = indent - 1
 			end
 		end
