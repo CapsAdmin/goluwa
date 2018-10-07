@@ -142,11 +142,6 @@ function META:NameList()
 	return out
 end
 
-
-function META:Assignment(namelist)
-
-end
-
 function META:Table()
 	local tree = {}
 	tree.type = "table"
@@ -210,7 +205,7 @@ function META:Function(variant)
 	if variant == "simple_named" then
 		data.index_expression = self:ReadExpectType("letter")
 	elseif variant == "expression_named" then
-		data.index_expression = self:IndexExpression(true)
+		data.index_expression = self:Expression(0, true)
 	end
 	local start = self:GetToken()
 
@@ -222,58 +217,6 @@ function META:Function(variant)
 	return data
 end
 
-function META:IndexExpression(simple_call)
-	local out = {}
-
-	for _ = 1, self:GetLength() do
-		local token = self:ReadToken()
-
-		if not token then break end
-
-		if token.type == "letter" and not oh.syntax.keywords[token.value] then
-			if _ > 1 and (self:IsType("letter", -2) or self:IsValue("]", -2) or self:IsValue("}", -2)) then
-				self:Advance(-1)
-				break
-			end
-			table_insert(out, {type = "index", operator = _ == 1 and {value = ""} or self:GetToken(-2), value = token})
-		elseif token.value == "[" then
-			local data = {type = "index_expression", value = self:Expression(), ["["] = token}
-			table_insert(out, data)
-			data["]"] = self:ReadExpectValue("]")
-		elseif token.value == "(" then
-			self:Advance(-1)
-
-			if simple_call then break end
-
-			local start = self:GetToken()
-
-			while self:IsValue("(") do
-				local pleft = self:ReadToken()
-				local data = {type = "call", arguments = simple_call and self:NameList() or self:ExpressionList(), ["call("] = pleft}
-				table_insert(out, data)
-				data["call)"] = self:ReadExpectValue(")", start)
-			end
-
-			if self:IsType("letter") then
-				break
-			end
-		elseif token.value == "{" then
-			self:Advance(-1)
-			table_insert(out, {type = "call", arguments = {self:Table()}})
-		elseif token.type == "string" then
-			table_insert(out, {type = "call", arguments = {token}})
-			if self:IsType("letter") then
-				break
-			end
-		elseif token.value ~= "." and token.value ~= ":" then
-			self:Advance(-1)
-			break
-		end
-	end
-
-	return out
-end
-
 function META:Expression(priority, stop_on_call)
 	priority = priority or 0
 
@@ -281,50 +224,100 @@ function META:Expression(priority, stop_on_call)
 
 	local token = self:GetToken()
 
-	if not token then return end
+	if not token then
+		self:Error("attempted to read expression but reached end of code")
+		return
+	end
 
 	if oh.syntax.IsUnaryOperator(token) then
 		local unary = self:ReadToken()
-		local exp = self:Expression(math.huge)
+		local exp = self:Expression(math.huge, stop_on_call)
 		val = {type = "unary", value = unary, argument = exp}
 	elseif self:ReadIfValue("(") then
 		local pleft = self:GetToken(-1)
-		val = self:Expression()
+		val = self:Expression(0, stop_on_call)
+		if not val then
+			self:Error("empty parentheses group", token)
+		end
 		local pright = self:ReadExpectValue(")")
-
 		val["("] = pleft
 		val[")"] = pright
-
-
-		if self:IsValue(".") or self:IsValue(":") or self:IsValue("[") or self:IsValue("(") or self:IsValue("{") or self:IsType("string") then
-			local right = self:IndexExpression()
-			table_insert(right, 1, val)
-			val = {type = "index_call_expression", value = right}
-		end
-	elseif oh.syntax.IsValue(token) then
+	elseif token.value == "function" then
+		val = self:Function("anonymous")
+	elseif oh.syntax.IsValue(token) or (token.type == "letter" and not oh.syntax.keywords[token.value]) then
 		val = self:ReadToken()
 	elseif token.value == "{" then
 		val = self:Table()
-	elseif token.value == "function" then
-		val = self:Function("anonymous")
-	elseif (token.type == "letter" and not oh.syntax.keywords[token.value]) or self:IsValue(".") or self:IsValue(":") or self:IsValue("[") or self:IsValue("(") or self:IsValue("{") or self:IsType("string") then
-		val = {type = "index_call_expression", value = self:IndexExpression()}
-	elseif token.value == ";" then
-		self:Advance(1)
-		return
-	else
-		return
 	end
 
 	local token = self:GetToken()
 
-	if not token then return val end
+	if token and (token.value == "[" or token.value == "(" or token.value == "{" or token.type == "string") then
+		val.calls = {}
 
-	while oh.syntax.operators[token.value] and oh.syntax.operators[token.value][1] > priority do
-		local op = self:GetToken()
-		if not op or not oh.syntax.operators[op.value] then return val end
-		self:Advance(1)
-		val = {type = "operator", value = op, left = val, right = self:Expression(oh.syntax.operators[op.value][2])}
+		for _ = 1, self:GetLength() do
+			local token = self:ReadToken()
+
+			if not token then break end
+
+			if token.value == "[" then
+				local data = {type = "index_expression", value = self:Expression(0, stop_on_call), ["["] = token}
+				table_insert(val.calls, data)
+				data["]"] = self:ReadExpectValue("]")
+			elseif token.value == "(" then
+
+				if stop_on_call then
+					self:Advance(-1)
+					return val
+				end
+
+				self:Advance(-1)
+
+				local start = self:GetToken()
+
+				while self:IsValue("(") do
+					local pleft = self:ReadToken()
+					local data = {type = "call", arguments = self:ExpressionList(), ["call("] = pleft}
+					table_insert(val.calls, data)
+					data["call)"] = self:ReadExpectValue(")", start)
+				end
+			elseif token.value == "{" then
+				self:Advance(-1)
+				table_insert(val.calls, {type = "call", arguments = {self:Table()}})
+			elseif token.type == "string" then
+				table_insert(val.calls, {type = "call", arguments = {token}})
+			else
+				self:Advance(-1)
+				break
+			end
+
+			if
+				(not self:GetToken() or not oh.syntax.operators[self:GetToken().value]) and
+				not (token.value == "[" or token.value == "(" or token.value == "{" or token.type == "string")
+			then
+				break
+			end
+		end
+	end
+
+	token = self:GetToken()
+
+	if token then
+		while oh.syntax.operators[token.value] and oh.syntax.operators[token.value][1] > priority do
+			local op = self:GetToken()
+			if not op or not oh.syntax.operators[op.value] then
+				break
+			end
+
+			self:Advance(1)
+
+			local right = self:Expression(oh.syntax.operators[op.value][2], stop_on_call)
+			if not right then
+				break
+			end
+
+			val = {type = "operator", value = op, left = val, right = right}
+		end
 	end
 
 	return val
@@ -530,24 +523,28 @@ function META:Block(stop)
 		elseif token.type == "letter" then
 			self:Advance(-1) -- we want to include the current letter in the loop
 			local start = self:GetToken()
-
-			local data = {}
-
-			local var = self:ExpressionList()
+			local expr = self:Expression()
 
 			if self:IsValue("=") then
+				local data = {}
 				data.type = "assignment"
-				data.left = var
+				data.left = {expr}
 				data["="] = self:ReadToken()
 				data.right = self:ExpressionList()
+				table_insert(out, data)
+			elseif self:IsValue(",") then
+				local data = {}
+				expr[","] = self:ReadToken()
+				data.type = "assignment"
+				local list = self:ExpressionList()
+				table_insert(list, 1, expr)
+				data.left = list
+				data["="] = self:ReadExpectValue("=")
+				data.right = self:ExpressionList()
+				table_insert(out, data)
 			else
-				if var[2] or not var[1] or var[1].type ~= "index_call_expression" or (var[1].value and var[1].value[#var[1].value].type ~= "call") then
-					self:Error("unexpected statment", start, start)
-				end
-				data.type = "call"
-				data.value = var[1]
+				table_insert(out, {type = "expression", value = expr})
 			end
-			table.insert(out, data)
 		elseif token.value == ";" then
 			table_insert(out, {type = "end_of_statement", value = token})
 		else

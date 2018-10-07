@@ -37,7 +37,7 @@ function oh.Validate(ast, code, path)
 	local function type_compatible(a, b)
 		for _, a2 in ipairs(a) do
 			for _,b2 in ipairs(b) do
-				if a2 == b2 or (a2 == "any" or b2 == "any") then
+				if a2 == b2 then
 					return true
 				end
 			end
@@ -45,34 +45,31 @@ function oh.Validate(ast, code, path)
 		return false
 	end
 
-	local function get_key(index_expression)
-		local key = ""
-		for _, index in ipairs(index_expression) do
-			if index.type == "index" then
-				key = key .. index.operator.value .. index.value.value
-			end
+	local function flatten(expr, out)
+		if expr.left then
+			flatten(expr.left, out)
 		end
-		return key
+		if expr.type == "operator" then
+			table.insert(out, expr.value.value)
+		else
+			table.insert(out, expr.value)
+		end
+		if expr.right then
+			flatten(expr.right, out)
+		end
 	end
 
-	local function get_variable(idx_expr)
-		if idx_expr[1].type == "function" then
-			for _, arg in ipairs(idx_expr[1].arguments) do
-				arg.value_type = token2type(arg)
-			end
-			idx_expr[1].return_types = validate_block(idx_expr[1].body)
-			return idx_expr[1]
-		end
+	local function get_key(expr)
+		local out = {}
+		flatten(expr, out)
+		return table.concat(out)
+	end
 
-		local key = get_key(idx_expr)
+	local function get_variable(expr)
+		local key = get_key(expr)
 		local value = scope[key]
 		if not value then
-			for i, v in ipairs(idx_expr) do
-				if v.type ~= "index" then
-					print(oh.FormatError(code, path, "undeclared variable " .. key, idx_expr[1].value.start, idx_expr[i - 1].value.stop))
-					break
-				end
-			end
+			print(oh.FormatError(code, path, "undeclared variable!"))
 		end
 		return value
 	end
@@ -119,12 +116,13 @@ function oh.Validate(ast, code, path)
 	end
 
 	local function check(node)
-		if node.type == "index_call_expression" then
-			local index_expression = node.value
-			local func = get_variable(index_expression)
+		if node.type == "expression" then
+			local func = get_variable(node.value)
 			if func then
-				for index_i, node in ipairs(index_expression) do
+				for index_i, node in ipairs(node.value.calls) do
 					if node.type == "call" then
+						table.print(func.arguments)
+						table.print(node)
 						for i, arg in ipairs(func.arguments) do
 							local expected = token2type(arg)
 							local got
@@ -133,7 +131,9 @@ function oh.Validate(ast, code, path)
 
 							if node.arguments[i] then
 								local val = node.arguments[i]
-								if val.type == "index_expression" then
+								if val.calls then
+
+								elseif val.type == "index_expression" then
 									got = token2type(get_variable(val.value))
 									error_start = val[1].value.value.start or -1
 									error_stop = val[1].value.value.stop or -1
@@ -160,9 +160,6 @@ function oh.Validate(ast, code, path)
 					end
 				end
 			end
-		elseif node.type == "call" then
-			local index_expression = node.value
-			check(index_expression)
 		end
 	end
 
@@ -194,8 +191,13 @@ function oh.Validate(ast, code, path)
 			right_type = get_type(expr.right)
 		end
 
-		if type_compatible(left_type, right_type) then
-			print(oh.FormatError(code, path, table.concat(left_type, "|") .. " " .. expr.value.value .. " " .. table.concat(right_type, "|"), expr.value.start, expr.value.stop))
+		if not type_compatible(left_type, right_type) then
+			print(oh.FormatError(
+				code, path,
+				table.concat(left_type, "|") .. " " .. expr.value.value .. " " .. table.concat(right_type, "|"),
+				expr.left.start or expr.left.right.start or expr.left.right.value.start,
+				expr.right.stop or expr.right.value.stop
+			))
 		end
 
 		return left_type, right_type
@@ -207,7 +209,7 @@ function oh.Validate(ast, code, path)
 		for _, node in ipairs(block) do
 			if node.type == "function" or node.type == "assignment" then
 				declare(node)
-			elseif node.type == "call" then
+			elseif node.type == "expression" then
 				check(node)
 			elseif node.type == "return" then
 				if node.expressions then
@@ -225,6 +227,12 @@ function oh.Validate(ast, code, path)
 
 		return return_types
 	end
+
+
 	validate_block(ast)
 end
 
+
+if RELOAD then
+	runfile("lua/libraries/oh/test.lua")
+end

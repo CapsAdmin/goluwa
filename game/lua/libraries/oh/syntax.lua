@@ -47,7 +47,7 @@ do -- syntax rules
 	}
 
 	syntax.unary_operators = {
-		["+"] = -10,
+		--["+"] = -10,
 		["-"] = -10,
 		["#"] = -10,
 		["not"] = -10,
@@ -68,6 +68,8 @@ do -- syntax rules
 		["*"] = 9, ["/"] = 9, ["%"] = 9,
 		-- the unary operators are in the manual here
 		["^"] = -11, -- right associative
+
+		["."] = -12, [":"] = -12
 	}
 
 	syntax.operator_function_transforms = {

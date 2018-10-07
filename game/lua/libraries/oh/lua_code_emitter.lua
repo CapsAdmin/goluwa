@@ -51,12 +51,15 @@ function META:Value2(v)
 	local _ = self
 
 	if v.type == "function" then
+		if v["("] then _:Token(v["("]) else _:Emit("(") end
 		_:Token(v["function"])_:Token(v["func("])_:CommaSeperated(v.arguments)_:Token(v["func)"])_:W"\n"
 			_:W"\t+"
 			self:Block(v.body)
 			_:W"\t-"
 		_:W"\t" _:Token(v["end"])
+		if v[")"] then _:Token(v[")"]) else _:Emit(")") end
 	elseif v.type == "table" then
+		if v["("] then _:Token(v["("]) else _:Emit("(") end
 		if not v.children[1] then
 			_:Token(v["{"])_:Token(v["}"])
 		else
@@ -65,7 +68,9 @@ function META:Value2(v)
 				for i,v in ipairs(v.children) do
 					_:W"\t"
 					if v.type == "value" then
+						if v["("] then _:Token(v["("]) else _:Emit("(") end
 						_:Value(v.value)
+						if v[")"] then _:Token(v[")"]) else _:Emit(")") end
 					elseif v.type == "assignment" then
 						if v.expression_key then
 							_:Token(v["["])_:W"("_:Value(v.indices[1])_:W")" _:Token(v["]"]) _:Token(v["="]) _:Value(v.expressions[1])
@@ -83,6 +88,7 @@ function META:Value2(v)
 				_:W"\t-"
 			_:W"\t"_:Token(v["}"])
 		end
+		if v[")"] then _:Token(v[")"]) else _:Emit(")") end
 	elseif v.type == "index_call_expression" then
 		self:IndexCallExpression(v.value)
 	elseif v.type == "unary" then
@@ -103,6 +109,7 @@ function META:Value(v)
 	else
 		self:Value2(v)
 	end
+	self:Calls(v)
 end
 
 function META:Unary(v)
@@ -140,6 +147,19 @@ function META:Expression(v)
 		return
 	end
 
+	--[[if v.type == "operator" and v.value.value == "." then
+		if not v["("] then _:E"(" else _:Token(v["("]) end
+		if v.left then _:Expression(v.left) end
+		if not v[")"] then _:E")" else _:Token(v[")"]) end
+
+		if v.right.type == "letter" then
+			_:Token(v.right, "") _:E"[\"" _:Emit(v.right.value) _:E"\"]"
+		elseif v.right.type == "number" then
+			_:Token(v.right, "") _:E"[" _:Emit(v.right.value) _:E"]"
+		else
+			_:Expression(v.right)
+		end
+	else]]
 	if v["("] then _:Token(v["("]) end
 
 	if v.left then
@@ -165,6 +185,38 @@ function META:Expression(v)
 	end
 
 	if v[")"] then _:Token(v[")"]) end
+	--end
+
+	self:Calls(v)
+end
+
+function META:Calls(v)
+	if v.calls then
+		local _ = self
+		for i,v in ipairs(v.calls) do
+			if v.type == "index_expression" then
+				_:Token(v["["])
+			end
+
+			if v.type == "operator" then
+				 _:Expression(v)
+			elseif v.type == "index_expression" then
+				_:W"("_:Value(v.value)_:W")"
+			elseif v.type == "call" then
+				if v["call("] then _:Token(v["call("]) end
+				_:CommaSeperated(v.arguments)
+				if v["call)"] then _:Token(v["call)"]) end
+			else
+				if v["("] then _:Token(v["("]) else _:Emit("(") end
+				_:Value(v)
+				if v[")"] then _:Token(v[")"]) else _:Emit(")") end
+			end
+
+			if v.type == "index_expression" then
+				_:Token(v["]"])
+			end
+		end
+	end
 end
 
 function META:GetPrevCharType()
@@ -329,7 +381,7 @@ function META:Block(tree)
 			if data.is_local then
 				_:W"\t"_:Token(data["local"])_:W" "_:Token(data["function"])_:W" "_:Token(data.index_expression)
 			else
-				_:W"\t"_:Token(data["function"])_:W" " _:IndexCallExpression(data.index_expression)
+				_:W"\t"_:Token(data["function"])_:W" " _:Expression(data.index_expression)
 			end
 			_:Token(data["func("])_:CommaSeperated(data.arguments)_:Token(data["func)"])_:W"\n"
 				_:W"\t+"
