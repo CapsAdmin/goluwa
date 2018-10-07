@@ -43,135 +43,6 @@ function META:EmitIndent()
 	self:Emit(("\t"):rep(self.level))
 end
 
-META.W = META.Whitespace
-META.E = META.Emit
-
-function META:Value(v)
-	local _ = self
-
-	if v.type == "operator" then
-		if oh.syntax.operator_translate[v.value] then
-			_:Token(v, oh.syntax.operator_translate[v.value])
-		else
-			_:Token(v.tokens.operator)
-		end
-	else
-		if v.tokens["("] then _:Token(v.tokens["("]) end
-
-		if v.type == "function" then
-			_:Token(v.tokens["function"])_:Token(v.tokens["func("])_:CommaSeperated(v.arguments)_:Token(v.tokens["func)"])_:W"\n"
-				_:W"\t+"
-				self:Block(v.block)
-				_:W"\t-"
-			_:W"\t" _:Token(v.tokens["end"])
-		elseif v.type == "table" then
-			if not v.children[1] then
-				_:Token(v.tokens["{"])_:Token(v.tokens["}"])
-			else
-				_:Token(v.tokens["{"])_:W"\n"
-					_:W"\t+"
-					for i,v in ipairs(v.children) do
-						_:W"\t"
-						if v.type == "value" then
-							_:Expression(v.value)
-						elseif v.type == "assignment" then
-							if v.expression_key then
-								_:Token(v.tokens["["])_:W"("_:Expression(v.key)_:W")" _:Token(v.tokens["]"]) _:Token(v.tokens["="]) _:Expression(v.expression)
-							else
-								_:Value(v.key) _:Token(v.tokens["="]) _:Expression(v.expression)
-							end
-						end
-						if v.tokens[","] then
-							_:Token(v.tokens[","])
-						else
-							_:W","
-						end
-						_:W"\n"
-					end
-					_:W"\t-"
-				_:W"\t"_:Token(v.tokens["}"])
-			end
-		elseif v.type == "unary" then
-			self:Unary(v)
-		elseif v.type == "value" then
-			_:Token(v.value)
-		else
-			error("unhandled token type " .. v.type)
-		end
-
-		if v.tokens[")"] then _:Token(v.tokens[")"]) end
-	end
-end
-
-function META:Unary(v)
-	local _ = self
-
-	if oh.syntax.operator_function_transforms[v.operator] then
-		_:W("?", true)_:E(oh.syntax.operator_function_transforms[v.operator]) _:E"("_:Value(v.expression)_:E")"
-	elseif oh.syntax.operator_translate[v.operator] then
-		_:Token(v.tokens.operator, "")_:W("?", true)_:Emit(oh.syntax.operator_translate[v.operator])_:W("?", true)_:Value(v.expression)
-	else
-		if oh.syntax.keywords[v.operator] then
-			_:Token(v.tokens.operator, "")_:W("?", true)_:Emit(v.operator)_:Expression(v.expression)
-		else
-			if v.tokens["("] and v.tokens.operator.start > v.tokens["("].start then
-				if v.tokens["("] then _:Token(v.tokens["("]) end
-				_:Token(v.tokens.operator)
-			else
-				_:Token(v.tokens.operator)
-				if v.tokens["("] then _:Token(v.tokens["("]) end
-			end
-
-
-			_:Expression(v.expression)
-			if v.tokens[")"] then _:Token(v.tokens[")"]) end
-		end
-	end
-end
-
-function META:Expression(v)
-	local _ = self
-
-	if v.left then
-		if v.tokens["("] then _:Token(v.tokens["("]) end
-		_:Expression(v.left)
-	end
-
-	_:Value(v)
-
-	if v.right then
-		_:Expression(v.right)
-		if v.tokens[")"] then _:Token(v.tokens[")"]) end
-	end
-
-	if v.calls then
-		local _ = self
-		for i,v in ipairs(v.calls) do
-			if v.type == "index_expression" then
-				_:Token(v.tokens["["])
-			end
-
-			if v.type == "operator" then
-				 _:Expression(v)
-			elseif v.type == "index_expression" then
-				_:W"("_:Expression(v.value)_:W")"
-			elseif v.type == "call" then
-				if v.tokens["call("] then _:Token(v.tokens["call("]) end
-				_:CommaSeperated(v.arguments)
-				if v.tokens["call)"] then _:Token(v.tokens["call)"]) end
-			else
-				if v.tokens["("] then _:Token(v.tokens["("]) end
-				_:Value(v)
-				if v.tokens[")"] then _:Token(v.tokens[")"]) end
-			end
-
-			if v.type == "index_expression" then
-				_:Token(v.tokens["]"])
-			end
-		end
-	end
-end
-
 function META:GetPrevCharType()
 	local prev = self.out[self.i - 1]
 	return prev and oh.syntax.char_types[prev:sub(-1)]
@@ -208,147 +79,249 @@ function META:Token(v, translate)
 	end
 end
 
+function META:Expression(v)
+	if v.tokens["left("] then
+		for __, v in ipairs(v.tokens["left("]) do
+			self:Token(v)
+		end
+	end
+
+	if v.type == "operator" then
+		if v.left then self:Expression(v.left) end
+		self:Operator(v)
+		if v.right then self:Expression(v.right) end
+	elseif v.type == "function" then
+		self:Function(v)
+	elseif v.type == "table" then
+		self:Table(v)
+	elseif v.type == "unary" then
+		self:Unary(v)
+	elseif v.type == "value" then
+		self:Token(v.value)
+	else
+		error("unhandled token type " .. v.type)
+	end
+
+	if v.tokens["right)"] then
+		for __, v in ipairs(v.tokens["right)"]) do
+			self:Token(v)
+		end
+	end
+
+	if v.calls then
+		for i,v in ipairs(v.calls) do
+			if v.type == "index_expression" then
+				self:Token(v.tokens["["])
+				self:Whitespace"("self:Expression(v.value)self:Whitespace")"
+				self:Token(v.tokens["]"])
+			elseif v.type == "call" then
+				if v.tokens["call("] then self:Token(v.tokens["call("]) end
+				self:CommaSeperated(v.arguments)
+				if v.tokens["call)"] then self:Token(v.tokens["call)"]) end
+			end
+		end
+	end
+end
+
+function META:Operator(v)
+	if oh.syntax.operator_translate[v.value] then
+		self:Token(v, oh.syntax.operator_translate[v.value])
+	else
+		self:Token(v.tokens.operator)
+	end
+end
+
+function META:Function(v)
+	if v.is_local then
+		self:Whitespace"\t"self:Token(v.tokens["local"])self:Whitespace" "self:Token(v.tokens["function"])self:Whitespace" "self:Token(v.index_expression)
+	else
+		self:Token(v.tokens["function"])
+
+		if v.index_expression then
+			self:Whitespace" " self:Expression(v.index_expression)
+		end
+	end
+
+	self:Token(v.tokens["func("])self:CommaSeperated(v.arguments)self:Token(v.tokens["func)"])self:Whitespace"\n"
+		self:Whitespace"\t+"
+			self:Block(v.block)
+		self:Whitespace"\t-"
+	self:Whitespace"\t"self:Token(v.tokens["end"])
+end
+
+function META:Table(v)
+	if not v.children[1] then
+		self:Token(v.tokens["{"])self:Token(v.tokens["}"])
+	else
+		self:Token(v.tokens["{"])self:Whitespace"\n"
+			self:Whitespace"\t+"
+			for i,v in ipairs(v.children) do
+				self:Whitespace"\t"
+				if v.type == "value" then
+					self:Expression(v.value)
+				elseif v.type == "key_value" then
+					self:Expression(v.key) self:Token(v.tokens["="]) self:Expression(v.expression)
+				elseif v.type == "expression_value" then
+					self:Token(v.tokens["["])self:Whitespace"("self:Expression(v.key)self:Whitespace")" self:Token(v.tokens["]"]) self:Token(v.tokens["="]) self:Expression(v.expression)
+				end
+				if v.tokens[","] then
+					self:Token(v.tokens[","])
+				else
+					self:Whitespace","
+				end
+				self:Whitespace"\n"
+			end
+			self:Whitespace"\t-"
+		self:Whitespace"\t"self:Token(v.tokens["}"])
+	end
+end
+
+function META:Unary(v)
+	if oh.syntax.keywords[v.operator] then
+		self:Token(v.tokens.operator, "")self:Whitespace("?", true)self:Emit(v.operator)self:Expression(v.expression)
+	else
+		if v.tokens["("] and v.tokens.operator.start > v.tokens["("].start then
+			if v.tokens["("] then self:Token(v.tokens["("]) end
+			self:Token(v.tokens.operator)
+		else
+			self:Token(v.tokens.operator)
+			if v.tokens["("] then self:Token(v.tokens["("]) end
+		end
+
+		self:Expression(v.expression)
+
+		if v.tokens[")"] then self:Token(v.tokens[")"]) end
+	end
+end
 
 local function emit_block_with_continue(self, data, repeat_expression)
-	local _ = self
-
 	if data.has_continue and data.block[#data.block] and data.block[#data.block].type == "return" then
 		local ret = table_remove(data.block)
-		_:Block(data.block)
+		self:Block(data.block)
 
-		_:W"\t"_:Token(ret["return"], "")_:E"do return"_:W("?", true)
+		self:Whitespace"\t"self:Token(ret["return"], "")self:Emit"do return"self:Whitespace("?", true)
 		if ret.expressions then
-			_:CommaSeperated(ret.expressions)
+			self:CommaSeperated(ret.expressions)
 		end
-		_:W("?", true)
-		_:E("end")
+		self:Whitespace("?", true)
+		self:Emit("end")
 	else
-		_:Block(data.block)
+		self:Block(data.block)
 	end
 
 	if not repeat_expression and data.has_continue then
-		_:W"\t"_:E"::continue__oh::"
+		self:Whitespace"\t"self:Emit"::continue__oh::"
 	end
 end
 
 function META:Block(tree)
-	local _ = self
 	for __, data in ipairs(tree) do
 		if data.type == "if" then
 			for i,v in ipairs(data.clauses) do
-				_:W"\t"_:Token(v.tokens["if/else/elseif"]) if v.expr then _:Expression(v.expr) _:W" " _:Token(v.tokens["then"]) end _:W"\n"
-					_:W"\t+"
+				self:Whitespace"\t"self:Token(v.tokens["if/else/elseif"]) if v.expr then self:Expression(v.expr) self:Whitespace" " self:Token(v.tokens["then"]) end self:Whitespace"\n"
+					self:Whitespace"\t+"
 						self:Block(v.block)
-					_:W"\t-"
+					self:Whitespace"\t-"
 			end
-			_:W"\t" _:Token(data.tokens["end"])
+			self:Whitespace"\t" self:Token(data.tokens["end"])
 		elseif data.type == "goto" then
-			_:W"\t" _:Token(data.tokens["goto"]) _:W" " _:Value(data.label)
+			self:Whitespace"\t" self:Token(data.tokens["goto"]) self:Whitespace" " self:Expression(data.label)
 		elseif data.type == "goto_label" then
-			_:W"\t" _:Token(data.tokens["::left"]) _:Value(data.label) _:Token(data.tokens["::right"])
+			self:Whitespace"\t" self:Token(data.tokens["::left"]) self:Expression(data.label) self:Token(data.tokens["::right"])
 		elseif data.type == "while" then
-			_:W"\t"_:Token(data.tokens["while"])_:Expression(data.expr)_:W"?"_:Token(data.tokens["do"])_:W"\n"
-				_:W"\t+"
+			self:Whitespace"\t"self:Token(data.tokens["while"])self:Expression(data.expr)self:Whitespace"?"self:Token(data.tokens["do"])self:Whitespace"\n"
+				self:Whitespace"\t+"
 					emit_block_with_continue(self, data)
-				_:W"\t-"
-			_:W"\t"_:Token(data.tokens["end"])
+				self:Whitespace"\t-"
+			self:Whitespace"\t"self:Token(data.tokens["end"])
 		elseif data.type == "repeat" then
 			if data.has_continue then
-				_:W"\t"_:Token(data.tokens["repeat"], "while true do --[[repeat]]")_:W"\n"
-					_:W"\t+"
+				self:Whitespace"\t"self:Token(data.tokens["repeat"], "while true do --[[repeat]]")self:Whitespace"\n"
+					self:Whitespace"\t+"
 						emit_block_with_continue(self, data, true)
-					_:W"\t-"
-				_:W"\t" _:Token(data.tokens["until"],"")
-				_:E"if--[[until]](" _:Expression(data.expression) _:E")then break end" _:E"::continue__oh::end"
+					self:Whitespace"\t-"
+				self:Whitespace"\t" self:Token(data.tokens["until"],"")
+				self:Emit"if--[[until]](" self:Expression(data.expression) self:Emit")then break end" self:Emit"::continue__oh::end"
 			else
-				_:W"\t"_:Token(data.tokens["repeat"])_:W"\n"
-					_:W"\t+"
+				self:Whitespace"\t"self:Token(data.tokens["repeat"])self:Whitespace"\n"
+					self:Whitespace"\t+"
 						emit_block_with_continue(self, data)
-					_:W"\t-"
-				_:W"\t" _:Token(data.tokens["until"])_:Expression(data.expression)
+					self:Whitespace"\t-"
+				self:Whitespace"\t" self:Token(data.tokens["until"])self:Expression(data.expression)
 			end
 		elseif data.type == "break" then
-			_:W"\t"_:Token(data.tokens["break"])
+			self:Whitespace"\t"self:Token(data.tokens["break"])
 		elseif data.type == "return" then
-			_:W"\t"_:W("?")_:Token(data.tokens["return"])
+			self:Whitespace"\t"self:Whitespace("?")self:Token(data.tokens["return"])
 
 			if data.expressions then
-				_:CommaSeperated(data.expressions)
+				self:CommaSeperated(data.expressions)
 			end
 		elseif data.type == "continue" then
-			_:W"\t"_:W"?" _:Token(data["continue"], "goto continue__oh")
+			self:Whitespace"\t"self:Whitespace"?" self:Token(data["continue"], "goto continue__oh")
 		elseif data.type == "for" then
-			_:W"\t"_:Token(data.tokens["for"])
+			self:Whitespace"\t"self:Token(data.tokens["for"])
 			if data.iloop then
-				_:Expression(data.name)_:W" " _:Token(data.tokens["="]) _:W" "_:Expression(data.val)_:Token(data.tokens[",1"])_:W" "_:Expression(data.max)
+				self:Expression(data.name)self:Whitespace" " self:Token(data.tokens["="]) self:Whitespace" "self:Expression(data.val)self:Token(data.tokens[",1"])self:Whitespace" "self:Expression(data.max)
 
 				if data.incr then
-					_:Token(data.tokens[",2"])_:W" "_:Expression(data.incr)
+					self:Token(data.tokens[",2"])self:Whitespace" "self:Expression(data.incr)
 				end
 			else
-				_:W"?"_:CommaSeperated(data.names)_:W"?"_:Token(data.tokens["in"])_:W"?"_:CommaSeperated(data.expressions)
+				self:Whitespace"?"self:CommaSeperated(data.names)self:Whitespace"?"self:Token(data.tokens["in"])self:Whitespace"?"self:CommaSeperated(data.expressions)
 			end
 
-			_:W"?"_:Token(data.tokens["do"])_:W"\n"
-				_:W"\t+"
+			self:Whitespace"?"self:Token(data.tokens["do"])self:Whitespace"\n"
+				self:Whitespace"\t+"
 					emit_block_with_continue(self, data)
-				_:W"\t-"
-			_:W"\t"_:Token(data.tokens["end"])
+				self:Whitespace"\t-"
+			self:Whitespace"\t"self:Token(data.tokens["end"])
 
 		elseif data.type == "do" then
-			_:W"\t"_:Token(data.tokens["do"])_:W"\n"
-				_:W"\t+"
-					_:Block(data.block)
-				_:W"\t-"
-			_:W"\t"_:Token(data.tokens["end"])
-		elseif data.type == "function" then
-			if data.is_local then
-				_:W"\t"_:Token(data.tokens["local"])_:W" "_:Token(data.tokens["function"])_:W" "_:Token(data.index_expression)
-			else
-				_:W"\t"_:Token(data.tokens["function"])_:W" " _:Expression(data.index_expression)
-			end
-			_:Token(data.tokens["func("])_:CommaSeperated(data.arguments)_:Token(data.tokens["func)"])_:W"\n"
-				_:W"\t+"
+			self:Whitespace"\t"self:Token(data.tokens["do"])self:Whitespace"\n"
+				self:Whitespace"\t+"
 					self:Block(data.block)
-				_:W"\t-"
-			_:W"\t"_:Token(data.tokens["end"])
+				self:Whitespace"\t-"
+			self:Whitespace"\t"self:Token(data.tokens["end"])
+		elseif data.type == "function" then
+			self:Function(data)
 		elseif data.type == "assignment" then
-			_:W"\t" if data.is_local then _:Token(data.tokens["local"])_:W" " end
+			self:Whitespace"\t" if data.is_local then self:Token(data.tokens["local"])self:Whitespace" " end
 
 			for i,v in ipairs(data.left) do
 				if data.is_local then
-					_:Token(v.value)
+					self:Token(v.value)
 				else
-					_:Expression(v)
+					self:Expression(v)
 				end
 				if data.left[2] and i ~= #data.left then
-					_:Token(v.tokens[","])_:W" "
+					self:Token(v.tokens[","])self:Whitespace" "
 				end
 			end
 
 			if data.right then
-				_:W" "_:Token(data.tokens["="])_:W" "
+				self:Whitespace" "self:Token(data.tokens["="])self:Whitespace" "
 
 				for i,v in ipairs(data.right) do
-					_:Expression(v)
+					self:Expression(v)
 					if data.right[2] and i ~= #data.right then
-						_:Token(v.tokens[","])_:W" "
+						self:Token(v.tokens[","])self:Whitespace" "
 					end
 				end
 			end
 		elseif data.type == "expression" then
 			self:Expression(data.value)
 		elseif data.type == "call" then
-			_:W"\t"_:Expression(data.value)
+			self:Whitespace"\t"self:Expression(data.value)
 		elseif data.type == "end_of_statement" then
-			_:Token(data.tokens[";"])
+			self:Token(data.tokens[";"])
 		elseif data.type == "end_of_file" then
-			_:Token(data.tokens["eof"])
+			self:Token(data.tokens["eof"])
 		else
 			error("unhandled value: " .. data.type)
 		end
 
-		_:W"\n"
+		self:Whitespace"\n"
 	end
 end
 

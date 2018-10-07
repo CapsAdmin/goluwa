@@ -170,13 +170,13 @@ function META:Table()
 		if token.value == "}" then
 			break
 		elseif self:IsValue("=", 1) then
-			data = Node("assignment")
+			data = Node("key_value")
 			data.key = Node("value", self:ReadToken())
 			data.tokens["="] = self:ReadToken()
 			data.expression = self:Expression()
 
 		elseif token.value == "[" then
-			data = Node("assignment")
+			data = Node("expression_value")
 
 			data.tokens["["] = self:ReadToken()
 			data.key = self:Expression()
@@ -249,8 +249,13 @@ function META:Expression(priority, stop_on_call)
 		if not val then
 			self:Error("empty parentheses group", token)
 		end
-		val.tokens["("] = pleft
-		val.tokens[")"] = self:ReadExpectValue(")")
+
+		val.tokens["left("] = val.tokens["left("] or {}
+		table.insert(val.tokens["left("], pleft)
+
+		val.tokens["right)"] = val.tokens["right)"] or {}
+		table.insert(val.tokens["right)"], self:ReadExpectValue(")"))
+
 	elseif token.value == "function" then
 		val = self:Function("anonymous")
 	elseif oh.syntax.IsValue(token) or (token.type == "letter" and not oh.syntax.keywords[token.value]) then
