@@ -568,6 +568,7 @@ do
 
 	function META:AddToken(type, start, stop)
 		if type == "line_comment" or type == "multiline_comment" or type == "space" then
+			if start == 1 then start = 0 end -- hmm
 			comment_buffer[comment_buffer_i] = {
 				type = type,
 				value = self:GetChars(start, stop),
@@ -640,6 +641,7 @@ function META:GetTokens()
 
 	for _ = self.i, self.code_length do
 		if self.i > self.code_length then
+			self:AddToken("eof", self.i, self.i)
 			break
 		end
 		self:CaptureToken()

@@ -47,7 +47,6 @@ do -- syntax rules
 	}
 
 	syntax.unary_operators = {
-		--["+"] = -10,
 		["-"] = -10,
 		["#"] = -10,
 		["not"] = -10,

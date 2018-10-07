@@ -1,9 +1,11 @@
 local oh = ... or _G.oh
 
-function oh.TestAllFiles(path_override)
-	print("testing all files in " .. path_override)
+function oh.TestAllFiles(path)
+	path = path or e.ROOT_FOLDER
 
-	local paths = io.popen("find " .. (path_override or e.ROOT_FOLDER) .. " -name \"*.lua\""):read("*all")
+	print("testing all files in " .. path)
+
+	local paths = io.popen("find " .. path .. " -name \"*.lua\""):read("*all")
 	oh.failed_tests = oh.failed_tests or {}
 	local use_failed_tests = oh.failed_tests[1]
 
@@ -67,39 +69,61 @@ function oh.TestAllFiles(path_override)
 end
 
 function oh.Test()
---oh.TestAllFiles("/home/caps/goluwa/core")oh.TestAllFiles("/home/caps/goluwa/framework")oh.TestAllFiles("/home/caps/goluwa/engine")oh.TestAllFiles("/home/caps/goluwa/game") do return end
-	local path = "foo.lua"
-	local code = [[
-		function test(a_num, b_num)
-			return (function() return "" end)
-		end
 
-		local b = tonumber("ad")
+if true then
+	local path = "/home/caps/goluwa/data/users/caps/main.lua"
+	local code = vfs.Read(path)
 
-		print(b.a, 2, 5)
+	code = [[
 
-		local a = 1 + test(a, a) + 2 + b
+		return ( encode(val) )
+
 	]]
-
-	code = "print(a.b.c+5)"
 
 	local tokenizer = oh.Tokenizer(code, path)
 	local tokens = tokenizer:GetTokens()
-
 	local parser = oh.Parser(tokens, code, path)
 	local ast = parser:GetAST()
-table.print(ast)
-	--oh.Validate(ast, code, path)
+	local output = oh.BuildLuaCode(ast, code, path)
 
-	--do return end
 
---table.print(ast)
+	vfs.Write("main2.lua", output)
+
+	print(code == output)
+
+	if #code < 1000 then
+		print(code)
+		print(output)
+	end
+
+	return
+end
+
+oh.TestAllFiles("/home/caps/goluwa/lua-5.2.2-tests/")oh.TestAllFiles("/home/caps/goluwa/framework")oh.TestAllFiles("/home/caps/goluwa/engine")oh.TestAllFiles("/home/caps/goluwa/game") do return end
+	local path = "foo.lua"
+	local code = [[
+		do return ( encode(val) ) end
+
+		(a)();
+	]]
+
+	code = [[local a = {
+			a,b,c
+		}
+	]]
+	print(code)
+
+
+	local tokenizer = oh.Tokenizer(code, path)
+	local tokens = tokenizer:GetTokens()
+	local parser = oh.Parser(tokens, code, path)
+	local ast = parser:GetAST()
+
+	table.print(ast)
+
 	local output = oh.BuildLuaCode(ast, code, path)
 	print(loadstring(output))
 	print(output)
-
-	--print(output)
-
 end
 
 commands.Add("tokenize=arg_line", function(str)

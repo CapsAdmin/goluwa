@@ -2,11 +2,15 @@ local oh = {}
 
 oh.USE_FFI = false
 
+local old = RELOAD RELOAD = nil
+
 runfile("syntax.lua", oh)
 runfile("tokenizer.lua", oh)
 runfile("parser.lua", oh)
 runfile("lua_code_emitter.lua", oh)
 runfile("validate.lua", oh)
+
+RELOAD = old
 
 function oh.QuoteToken(str)
 	return "\"" .. str .. "\""
