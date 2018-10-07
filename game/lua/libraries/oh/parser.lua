@@ -122,9 +122,7 @@ function META:ExpressionList()
 			break
 		end
 
-		exp.tokens[","] = self:GetToken()
-
-		self:Advance(1)
+		exp.tokens[","] = self:ReadToken()
 	end
 
 	return out
@@ -148,9 +146,7 @@ function META:NameList()
 			break
 		end
 
-		data.tokens[","] = self:GetToken()
-
-		self:Advance(1)
+		data.tokens[","] = self:ReadToken()
 	end
 
 	return out
@@ -193,13 +189,12 @@ function META:Table()
 		if self:IsValue("}") then
 			break
 		end
+
 		if not self:IsValue(",") and not self:IsValue(";") then
 			self:Error("expected ".. oh.QuoteTokens(",", ";", "}") .. " got " .. self:GetToken().value)
 		end
 
-		data.tokens[","] = self:GetToken()
-
-		self:Advance(1)
+		data.tokens[","] = self:ReadToken()
 	end
 
 	tree.tokens["}"] = self:ReadExpectValue("}")
@@ -228,14 +223,14 @@ end
 function META:Expression(priority, stop_on_call)
 	priority = priority or 0
 
-	local val
-
 	local token = self:GetToken()
 
 	if not token then
 		self:Error("attempted to read expression but reached end of code")
 		return
 	end
+
+	local val
 
 	if oh.syntax.IsUnaryOperator(token) then
 		local token = self:ReadToken()
@@ -263,32 +258,28 @@ function META:Expression(priority, stop_on_call)
 	elseif token.value == "{" then
 		val = self:Table()
 	end
+
 	local token = self:GetToken()
 
 	if token and (token.value == "[" or token.value == "(" or token.value == "{" or token.type == "string") then
 		val.calls = {}
 
 		for _ = 1, self:GetLength() do
-			local token = self:ReadToken()
+			if not self:GetToken() then break end
 
-			if not token then break end
-
-			if token.value == "[" then
+			if self:IsValue("[") then
 				local data = Node("index_expression")
 
-				data.tokens["["] = token
+				data.tokens["["] = self:ReadToken()
 				data.value = self:Expression(0, stop_on_call)
 				data.tokens["]"] = self:ReadExpectValue("]")
 
 				table_insert(val.calls, data)
-			elseif token.value == "(" then
+			elseif self:IsValue("(") then
 
 				if stop_on_call then
-					self:Advance(-1)
 					return val
 				end
-
-				self:Advance(-1)
 
 				local start = self:GetToken()
 
@@ -302,24 +293,15 @@ function META:Expression(priority, stop_on_call)
 
 					table_insert(val.calls, data)
 				end
-			elseif token.value == "{" then
-				self:Advance(-1)
+			elseif self:IsValue("{") then
 				local data = Node("call")
 				data.arguments = {self:Table()}
 				table_insert(val.calls, data)
-			elseif token.type == "string" then
+			elseif self:IsType"string" then
 				local data = Node("call")
-				data.arguments = {Node("value", token)}
+				data.arguments = {Node("value", self:ReadToken())}
 				table_insert(val.calls, data)
 			else
-				self:Advance(-1)
-				break
-			end
-
-			if
-				(not self:GetToken() or not oh.syntax.operators[self:GetToken().value]) and
-				not (token.value == "[" or token.value == "(" or token.value == "{" or token.type == "string")
-			then
 				break
 			end
 		end
@@ -330,17 +312,11 @@ function META:Expression(priority, stop_on_call)
 	if token then
 		while oh.syntax.operators[token.value] and oh.syntax.operators[token.value][1] > priority do
 			local op = self:GetToken()
-			if not op or not oh.syntax.operators[op.value] then
-				break
-			end
+			if not op or not oh.syntax.operators[op.value] then break end
 
 			self:Advance(1)
 
 			local right = self:Expression(oh.syntax.operators[op.value][2], stop_on_call)
-			if not right then
-				break
-			end
-
 			local left = val
 
 			val = Node("operator")
@@ -360,34 +336,29 @@ function META:Block(stop)
 	local out = {}
 
 	for _ = 1, self:GetLength() do
-		local token = self:ReadToken()
-
-		if not token then break end
-
-		if stop and stop[token.value] then
-			self:Advance(-1)
-			return out
+		if not self:GetToken() or stop and stop[self:GetToken().value] then
+			break
 		end
 
 		local data
 
-		if token.value == "::" then
+		if self:IsValue("::") then
 			data = Node("goto_label")
 
-			data.tokens["::left"] = token
+			data.tokens["::left"] = self:ReadToken()
 			data.label = Node("value", self:ReadExpectType("letter"))
 			data.tokens["::right"]  = self:ReadExpectValue("::")
 
-		elseif token.value == "goto" then
+		elseif self:IsValue("goto") then
 			data = Node("goto")
 
-			data.tokens["goto"] = token
+			data.tokens["goto"] = self:ReadToken()
 			data.label = Node("value", self:ReadExpectType("letter"))
 
-		elseif token.value == "continue" then
+		elseif self:IsValue("continue") then
 			data = Node("continue")
 
-			data.tokens["continue"] = token
+			data.tokens["continue"] = self:ReadToken()
 
 			out.has_continue = true
 
@@ -395,9 +366,12 @@ function META:Block(stop)
 				self.loop_stack[#self.loop_stack].has_continue = true
 			end
 
-		elseif token.value == "repeat" then
+		elseif self:IsValue("repeat") then
+
+			local token = self:GetToken()
+
 			data = Node("repeat")
-			data.tokens["repeat"] = token
+			data.tokens["repeat"] = self:ReadToken()
 
 			table_insert(self.loop_stack, data)
 
@@ -406,14 +380,16 @@ function META:Block(stop)
 			data.expression = self:Expression()
 
 			table_remove(self.loop_stack)
-		elseif token.value == "local" then
-			if self:GetToken().value == "function" then
+		elseif self:IsValue("local") then
+			local local_ = self:ReadToken()
+
+			if self:IsValue("function") then
 				data = self:Function("simple_named")
-				data.tokens["local"] = token
+				data.tokens["local"] = local_
 				data.is_local = true
 			else
 				data = Node("assignment")
-				data.tokens["local"] = token
+				data.tokens["local"] = local_
 				data.is_local = true
 				data.left = self:NameList()
 
@@ -423,48 +399,45 @@ function META:Block(stop)
 					data.right = self:ExpressionList()
 				end
 			end
-		elseif token.value == "return" then
+		elseif self:IsValue("return") then
 			data = Node("return")
-			data.tokens["return"] = token
+			data.tokens["return"] = self:ReadToken()
 			data.expressions = self:ExpressionList()
-		elseif token.value == "break" then
+		elseif self:IsValue("break") then
 			data = Node("break")
 
-			data.tokens["break"] = token
-		elseif token.value == "do" then
+			data.tokens["break"] = self:ReadToken()
+		elseif self:IsValue("do") then
+			local token = self:GetToken()
 			data = Node("do")
 
-			data.tokens["do"] = token
+			data.tokens["do"] = self:ReadToken()
 			data.block = self:Block({["end"] = true})
 			data.tokens["end"] = self:ReadExpectValue("end", token, token)
 
 			out.has_continue = data.block.has_continue
-		elseif token.value == "if" then
+		elseif self:IsValue("if") then
 			data = Node("if")
 
 			data.clauses = {}
-			self:Advance(-1) -- we want to read the if in the upcoming loop
 
-			local prev_token = token
+			local prev_token = self:GetToken()
 
 			for _ = 1, self:GetLength() do
-				local token = self:ReadToken()
 
-				if not token then break end
-
-				if token.value == "end" then
-					data.tokens["end"] = token
+				if self:IsValue "end" then
+					data.tokens["end"] = self:ReadToken()
 					break
 				end
 
 				local clause = Node("clause")
 
-				if token.value == "else" then
+				if self:IsValue("else") then
+					clause.tokens["if/else/elseif"] = self:ReadToken()
 					clause.block = self:Block({["end"] = true})
 					clause.tokens["end"] = self:ReadExpectValue("end", prev_token, prev_token)
-					clause.tokens["if/else/elseif"] = token
 				else
-					clause.tokens["if/else/elseif"] = token
+					clause.tokens["if/else/elseif"] = self:ReadToken()
 					clause.expr = self:Expression()
 					clause.tokens["then"] = self:ReadExpectValue("then")
 					clause.block = self:Block({["else"] = true, ["elseif"] = true, ["end"] = true})
@@ -476,14 +449,15 @@ function META:Block(stop)
 				out.has_continue = data.clauses[#data.clauses].block.has_continue
 				data.has_continue = out.has_continue
 
-				self:Advance(-1) -- we want to read the else/elseif/end in the next iteration
+				prev_token = self:GetToken()
 
-				prev_token = token
+				self:Advance(-1) -- we want to read the else/elseif/end in the next iteration
 			end
-		elseif token.value == "while" then
+		elseif self:IsValue("while") then
+			local token = self:GetToken()
 			data = Node("while")
 
-			data.tokens["while"] = token
+			data.tokens["while"] = self:ReadToken()
 			data.expr = self:Expression()
 			data.tokens["do"] = self:ReadExpectValue("do")
 
@@ -492,9 +466,10 @@ function META:Block(stop)
 			data.block = self:Block({["end"] = true})
 			data.tokens["end"] = self:ReadExpectValue("end", token, token)
 			table.remove(self.loop_stack)
-		elseif token.value == "for" then
+		elseif self:IsValue("for") then
+			local token = self:GetToken()
 			data = Node("for")
-			data.tokens["for"] = token
+			data.tokens["for"] = self:ReadToken()
 
 			table_insert(self.loop_stack, data)
 
@@ -527,15 +502,12 @@ function META:Block(stop)
 			data.block = block
 
 			table.remove(self.loop_stack)
-		elseif token.value == "function" then
-			self:Advance(-1)
+		elseif self:IsValue("function") then
 			data = self:Function("expression_named")
-		elseif token.value == "(" then
-			self:Advance(-1)
+		elseif self:IsValue("(") then
 			data = Node("expression")
 			data.value = self:Expression()
-		elseif token.type == "letter" then
-			self:Advance(-1) -- we want to include the current letter in the loop
+		elseif self:IsType("letter") then
 			local expr = self:Expression()
 
 			if self:IsValue("=") then
@@ -555,15 +527,14 @@ function META:Block(stop)
 				data = Node("expression")
 				data.value = expr
 			end
-		elseif token.value == ";" then
+		elseif self:IsValue(";") then
 			data = Node("end_of_statement")
-			data.tokens[";"] = token
-		elseif token.type == "eof" then
+			data.tokens[";"] = self:ReadToken()
+		elseif self:IsType("eof") then
 			data = Node("end_of_file")
-			data.tokens["eof"] = token
+			data.tokens["eof"] = self:ReadToken()
 		else
-			self:Advance(-1)
-			self:Error("unexpected token " .. oh.QuoteToken(token.value))
+			self:Error("unexpected token " .. oh.QuoteToken(self:GetToken().value))
 		end
 
 		table_insert(out, data)
