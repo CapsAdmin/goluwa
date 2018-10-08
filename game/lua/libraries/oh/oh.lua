@@ -1,7 +1,5 @@
 local oh = {}
 
-oh.USE_FFI = false
-
 local old = RELOAD RELOAD = nil
 
 runfile("syntax.lua", oh)

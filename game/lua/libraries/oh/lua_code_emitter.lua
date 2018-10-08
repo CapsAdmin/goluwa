@@ -55,8 +55,8 @@ function META:Token(v, translate)
 		self:Emit(v.value:sub(len+1, -len-1))
 		self:Emit("]")self:Emit(("="):rep(len))self:Emit("]")
 	else
-		if v.comments and v.whitespace_start then
-			for _, comment in ipairs(v.comments) do
+		if v.whitespace then
+			for _, comment in ipairs(v.whitespace) do
 				--if comment.value:sub(1, 2) == "/*" then
 					--self:Emit("--[====[" .. comment.value .. "]====]")
 				--elseif comment.value:sub(1, 2) == "//" then

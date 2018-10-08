@@ -172,43 +172,6 @@ do -- syntax rules
 	end
 end
 
-if oh.USE_FFI then
-	local tbl = {}
-	for k,v in pairs(syntax.char_types) do
-		tbl[k:byte()] = v
-	end
-	function syntax.GetCharType(char)
-		return tbl[char]
-	end
-
-	syntax.quotes.single = syntax.quotes.single:byte()
-	syntax.quotes.double = syntax.quotes.double:byte()
-	syntax.escape_character = syntax.escape_character:byte()
-	syntax.newline = syntax.newline:byte()
-
-
-	local ffi = require("ffi")
-
-	local tbl = {}
-	for k,v in pairs(syntax.symbols_lookup) do
-		local len = #k
-		local typ
-
-		if len == 1 then
-			typ = "uint8_t"
-		elseif len == 2 then
-			typ = "uint16_t"
-		elseif len == 3 then
-			typ = "uint32_t"
-		end
-
-		local id = ffi.cast(typ .. "*", k)[0]
-
-		tbl[id] = len + 1
-	end
-	syntax.symbols_lookup2 = tbl
-end
-
 oh.syntax = syntax
 
 if RELOAD then

@@ -23,45 +23,23 @@ function META:Advance(len)
 	self.i = self.i + len
 end
 
-if oh.USE_FFI then
-	function META:GetCharOffset(offset)
-		return string_char(self.code_ptr[self.i + offset])
-	end
-
-	function META:GetCurrentChar()
-		return string_char(self.code_ptr[self.i])
-	end
-
-	function META:GetChars(a, b)
-		return ffi_string(self.code_ptr + a, b - a + 1)
-	end
-
-	function META:GetCharOffsetByte(offset)
-		return self.code_ptr[self.i + offset]
-	end
-
-	function META:GetCurrentCharByte()
-		return self.code_ptr[self.i]
-	end
-else
-	function META:GetCharOffset(offset)
-		return self.code:sub(self.i + offset, self.i + offset)
-	end
-
-	function META:GetCurrentChar()
-		return self.code:sub(self.i, self.i)
-	end
-
-	function META:GetChars(a, b)
-		return self.code:sub(a, b)
-	end
-
-	META.GetCharOffsetByte = META.GetCharOffset
-	META.GetCurrentCharByte = META.GetCurrentChar
+function META:GetCharOffset(offset)
+	return self.code:sub(self.i + offset, self.i + offset)
 end
 
-function META:GetCharsOffset(a, b)
-	return self:GetChars(self.i + a, self.i + b)
+function META:GetCurrentChar()
+	return self.code:sub(self.i, self.i)
+end
+
+function META:GetChars(a, b)
+	return self.code:sub(a, b)
+end
+
+META.GetCharOffsetByte = META.GetCharOffset
+META.GetCurrentCharByte = META.GetCurrentChar
+
+function META:GetCharsOffset(b)
+	return self.code:sub(self.i, self.i + b)
 end
 
 function META:Error(msg, start, stop)
@@ -79,25 +57,18 @@ function META:Error(msg, start, stop)
 	})
 end
 
---[[
-space 2785639
-symbol 303452
-letter 289552
-number 50520
-string 14888
-line_comment 9163
-multiline_comment 265
-]]
-
 local function RegisterTokenClass(tbl)
-	META.TokenClasses2 = META.TokenClasses2 or {}
-	META.TokenClasses2[tbl.Type] = tbl
 	tbl.ParserType = tbl.ParserType or tbl.Type
 	tbl.Priority = tbl.Priority or 0
-	table.insert(META.TokenClasses, tbl)
-	table.sort(META.TokenClasses, function(a, b)
-		return a.Priority > b.Priority
-	end)
+
+	META.TokenClasses = META.TokenClasses or {}
+	META.WhitespaceClasses = META.WhitespaceClasses or {}
+
+	if tbl.Whitespace then
+		META.WhitespaceClasses[tbl.Type] = tbl
+	else
+		META.TokenClasses[tbl.Type] = tbl
+	end
 end
 
 META.TokenClasses = {}
@@ -135,7 +106,7 @@ local function CaptureLiteralString(self)
 	local closing = "]" .. ("="):rep(length - 2) .. "]"
 
 	for _ = self.i, self.code_length do
-		if self:GetCharsOffset(0, length - 1) == closing then
+		if self:GetCharsOffset(length - 1) == closing then
 			self:Advance(length)
 			return true
 		end
@@ -148,10 +119,12 @@ do
 	local Token = {}
 
 	Token.Type = "multiline_comment"
+	Token.Whitespace = true
 	Token.Priority = 100
 
 	function Token:Is()
-		return self:GetCharsOffset(0, 3) == "--[=" or self:GetCharsOffset(0, 3) == "--[["
+		local str = self:GetCharsOffset(3)
+		return str == "--[=" or str == "--[["
 	end
 
 	function Token:Capture()
@@ -173,10 +146,11 @@ do
 	local Token = {}
 
 	Token.Type = "line_comment"
+	Token.Whitespace = true
 	Token.Priority = 99
 
 	function Token:Is()
-		return self:GetCharsOffset(0, oh.syntax.line_comment_length - 1) == oh.syntax.line_comment
+		return self:GetCharsOffset(oh.syntax.line_comment_length - 1) == oh.syntax.line_comment
 	end
 
 	function Token:Capture()
@@ -206,7 +180,7 @@ for name, quote in pairs(oh.syntax.quotes) do
 		if self.string_escape then
 
 			if c == "z" then
-				META.TokenClasses2.space.Capture(self)
+				META.WhitespaceClasses.space.Capture(self)
 			end
 
 			self.string_escape = false
@@ -257,7 +231,7 @@ do
 	Token.Priority = 1000
 
 	function Token:Is()
-		return self:GetCharsOffset(0, 1) == "[=" or self:GetCharsOffset(0, 1) == "[["
+		return self:GetCharsOffset(1) == "[=" or self:GetCharsOffset(1) == "[["
 	end
 
 	function Token:Capture()
@@ -297,7 +271,7 @@ do
 	function Token:CaptureAnnotations()
 		for _, annotation in ipairs(oh.syntax.legal_number_annotations) do
 			local len = #annotation
-			if self:GetCharsOffset(0, len - 1):lower() == annotation then
+			if self:GetCharsOffset(len - 1):lower() == annotation then
 				local t = oh.syntax.GetCharType(self:GetCharOffsetByte(len))
 
 				if t == "space" or t == "symbol" then
@@ -435,56 +409,11 @@ do
 		return oh.syntax.GetCharType(self:GetCurrentCharByte()) == "symbol"
 	end
 
-	if false and oh.USE_FFI then
-		local ffi = require("ffi")
-		local ffi_cast = ffi.cast
-
-		local _32 = ffi.typeof("uint32_t *")
-		local _16 = ffi.typeof("uint16_t *")
-
-		local len = table.count(oh.syntax.symbols_lookup2)
-		local arr = ffi.new("uint32_t[?]", len)
-		local i = 0
-		for id in pairs(oh.syntax.symbols_lookup2) do
-			arr[i] = id
-			i = i + 1
-		end
-
-		local function lookup(id) do return oh.syntax.symbols_lookup2[id] end
-			for i = 0, len - 1 do
-				if arr[i] == id then
-					return true
-				end
-			end
-			return false
-		end
-
-		function Token:Capture()
-			local ptr = self.code_ptr + self.i
-
-			if ptr[0] == 46 then
-				--print(self.code)
-			end
-			local a = tonumber(ptr[3])
-			ptr[3] = 0
-			if lookup(ffi_cast(_32, ptr)[0]) then self:Advance(3) return true end
-			ptr[3] = a
-
-			if ptr[0] == 46 then
-				print("!!!!!!")
-				--print(self.code)
-			end
-
-			if lookup(ffi_cast(_16, ptr)[0]) then self:Advance(2) return true end
-			if lookup(ptr[0]) then self:Advance(1) return true end
-		end
-	else
-		function Token:Capture()
-			for len = oh.syntax.longest_symbol - 1, 0, -1 do
-				if oh.syntax.symbols_lookup[self:GetCharsOffset(0, len)] then
-					self:Advance(len + 1)
-					return true
-				end
+	function Token:Capture()
+		for len = oh.syntax.longest_symbol - 1, 0, -1 do
+			if oh.syntax.symbols_lookup[self:GetCharsOffset(len)] then
+				self:Advance(len + 1)
+				return true
 			end
 		end
 	end
@@ -520,6 +449,7 @@ do
 	local Token = {}
 
 	Token.Type = "space"
+	Token.Whitespace = true
 
 	function Token:Is()
 		return oh.syntax.GetCharType(self:GetCurrentCharByte()) == "space"
@@ -547,7 +477,7 @@ do -- shebang
 	Token.Type = "shebang"
 
 	function Token:Is()
-		return (self.i == oh.USE_FFI and 0 or 1) and self:GetCurrentChar() == "#"
+		return self.i == 1 and self:GetCurrentChar() == "#"
 	end
 
 	function Token:Capture()
@@ -562,126 +492,157 @@ do -- shebang
 	META.ShebangTokenType = Token
 end
 
-do
-	local comment_buffer = {}
-	local comment_buffer_i = 1
+do -- eof
+	local Token = {}
 
-	function META:AddToken(type, start, stop)
-		if type == "line_comment" or type == "multiline_comment" or type == "space" then
-			if start == 1 then start = 0 end -- hmm
-			comment_buffer[comment_buffer_i] = {
-				type = type,
-				value = self:GetChars(start, stop),
-				start = start,
-				stop = stop,
-			}
-			comment_buffer_i = comment_buffer_i + 1
-			return
-		end
+	Token.Type = "end_of_file"
 
-		local prev = self.chunks[self.chunks_i - 1]
-
-		self.chunks[self.chunks_i] = {
-			type = type,
-			value = self:GetChars(start, stop),
-			start = start,
-			stop = stop,
-			whitespace_start = prev and (prev.stop + 1) or 1,
-			whitespace_stop = start - 1,
-		}
-
-		if comment_buffer[1] then
-			self.chunks[self.chunks_i].comments = comment_buffer
-			comment_buffer = {}
-			comment_buffer_i = 1
-		end
-
-		self.chunks_i = self.chunks_i + 1
+	function Token:Is()
+		return self.i > self.code_length
 	end
+
+	function Token:Capture()
+		-- nothing to capture, but remaining whitespace will be added
+	end
+
+	META.ShebangTokenType = Token
 end
 
-local system_GetTime = system.GetTime
+function META:BufferWhitespace(type, start, stop)
+	self.whitespace_buffer[self.whitespace_buffer_i] = {
+		type = type,
+		value = self:GetChars(start, stop),
+		start = start == 1 and 0 or start,
+		stop = stop,
+	}
 
---local stats = {add_token = {total_time = 0}} local start_time = system_GetTime()
+	self.whitespace_buffer_i = self.whitespace_buffer_i + 1
+end
+do
+	local sorted_token_classes = table.tolist(META.TokenClasses)
+	table.sort(sorted_token_classes, function(a, b) return a.val.Priority > b.val.Priority end)
 
-commands.Add("tokenize_performance", function()
-	local total_time = system_GetTime() - start_time
-	print("total time", total_time)
-	for k, v in table.sortedpairs(stats, function(a, b) return a.val.total_time > b.val.total_time end) do
-		print(k, math.round(v.total_time/total_time, 3) * 100)
-	end
-end)
+	local sorted_whitespace_classes = table.tolist(META.WhitespaceClasses)
+	table.sort(sorted_whitespace_classes, function(a, b) return a.val.Priority > b.val.Priority end)
 
-function META:CaptureToken()
-	for _, class in ipairs(self.TokenClasses) do
-		if oh.syntax.GetCharType(self:GetCurrentCharByte()) == nil then
-			self:Error("unexpected character " .. oh.QuoteToken(self:GetCurrentChar()) .. " (byte " .. self:GetCurrentChar():byte() .. ")", self.i, self.i)
-			self:Advance(1)
+	local code = "local META = ...\nfunction META:ReadToken()\n"
+
+	code = code .. "\tfor _ = self.i, self.code_length do\n"
+	for i, class in ipairs(sorted_whitespace_classes) do
+		if i == 1 then
+			code = code .. "\t\tif "
+		else
+			code = code .. "\t\telseif "
 		end
 
-		if class.Is(self) then
-			--stats[class.Type] = stats[class.Type] or {total_time = 0} stats[class.Type].start_time = system_GetTime()
-			local start = self.i
-			class.Capture(self)
-			--stats[class.Type].total_time = stats[class.Type].total_time + system_GetTime() - stats[class.Type].start_time stats.add_token.start_time = system_GetTime()
-			self:AddToken(class.ParserType, start, self.i - 1)
-			--stats.add_token.total_time = stats.add_token.total_time + system_GetTime() - stats.add_token.start_time
-			return
-		end
+		code = code .. "META.WhitespaceClasses." .. class.val.Type .. ".Is(self) then\n"
+		code = code .. "\t\t\tlocal start = self.i\n"
+		code = code .. "\t\t\tMETA.WhitespaceClasses." .. class.val.Type .. ".Capture(self)\n"
+		code = code .. "\t\t\tself:BufferWhitespace(\"" .. class.val.ParserType .. "\", start, self.i - 1)\n"
 	end
+	code = code .. "\t\telse\n\t\t\tbreak\n\t\tend\n"
+	code = code .. "\tend\n"
+
+	code = code .. "\n"
+
+	for i, class in ipairs(sorted_token_classes) do
+		if i == 1 then
+			code = code .. "\tif "
+		else
+			code = code .. "\telseif "
+		end
+
+		code = code .. "META.TokenClasses." .. class.val.Type .. ".Is(self) then\n"
+		code = code .. "\t\tlocal start = self.i\n"
+		code = code .. "\t\tMETA.TokenClasses." .. class.val.Type .. ".Capture(self)\n"
+		code = code .. "\t\tlocal whitespace = self.whitespace_buffer\n"
+		code = code .. "\t\tself.whitespace_buffer = {}\n"
+		code = code .. "\t\tself.whitespace_buffer_i = 1\n"
+		code = code .. "\t\treturn \"" .. class.val.ParserType .. "\", start, self.i - 1, whitespace\n"
+	end
+	code = code .. "\tend\n"
+	code = code .. "end\n"
+
+	assert(loadstring(code))(META)
 end
 
 function META:GetTokens()
-	self.i = oh.USE_FFI and 0 or 1
-	self.chunks_i = 1
+	self.i = 1
+	self.tokens_i = 1
 
 	if META.ShebangTokenType.Is(self) then
 		META.ShebangTokenType.Capture(self)
 	end
 
 	for _ = self.i, self.code_length do
-		if self.i > self.code_length then
-			self:AddToken("eof", self.i, self.i)
-			break
-		end
-		self:CaptureToken()
+		--if oh.syntax.GetCharType(self:GetCurrentCharByte()) == nil then
+		--	self:Error("unexpected character " .. oh.QuoteToken(self:GetCurrentChar()) .. " (byte " .. self:GetCurrentChar():byte() .. ")", self.i, self.i)
+		--	self:Advance(1)
+		--end
+
+		local type, start, stop, whitespace = self:ReadToken()
+
+		if not type then break end
+
+		self.tokens[self.tokens_i] = {
+			type = type,
+			start = start,
+			stop = stop,
+			--value = self:GetChars(start, stop),
+			whitespace = whitespace,
+		}
+
+		self.tokens_i = self.tokens_i + 1
 	end
 
-	return self.chunks
+	return self.tokens
 end
 
-function oh.Tokenizer(code, path, halt_on_error)
+function oh.Tokenizer(config, ...)
+
+	if type(config) == "string" then
+		config = {code = config, path = ...}
+	end
+
 	if halt_on_error == nil then
 		halt_on_error = true
 	end
 
-	local self = {}
+	local self = setmetatable({}, META)
 
-	setmetatable(self, META)
+	self.code = config.code
 
-	self.code_ptr = ffi.cast("unsigned char *", code)
-	self.code = code
-
-	if not path then
-		local line =  code:match("(.-)\n")
-		if line ~= code then
+	if config.path then
+		self.path = config.path
+	else
+		local line =  config.code:match("(.-)\n")
+		if line ~= self.code then
 			line = line .. "..."
 		end
 		local content = line:sub(0, 15)
 		if content ~= line then
 			content = content .. "..."
 		end
-		path =  "[string \""..content.."\"]"
+		self.path =  "[string \""..content.."\"]"
 	end
 
-	self.path = path
-	self.code_length = #code
-	self.halt_on_error = halt_on_error
+	if config.halt_on_error == nil then
+		self.halt_on_error = true
+	else
+		self.halt_on_error = config.halt_on_error
+	end
+
+	self.code_length = #self.code
 	self.errors = {}
 
-	self.chunks = table.new(self.code_length / 6, 1) -- rough estimation of how many chunks there are going to be
-	self.chunks_i = 1
+	self.tokens = {}
+	self.tokens_i = 1
+
+	self.whitespace_buffer = {}
+	self.whitespace_buffer_i = 1
+
 	self.i = 1
+	self.config = config
 
 	return self
 end

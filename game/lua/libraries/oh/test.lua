@@ -73,20 +73,37 @@ function oh.Test()
 if true then
 	local path = "/home/caps/goluwa/data/users/caps/main.lua"
 	local code = vfs.Read(path)
-
+--[===[
+	code = [[assert( (10)  [3]  == 13) return (  lol()  ) local t = (typex or type)() ]]
+	code = [[ a = asdf()[1] ]]
+	code = [[ if a==a then lol = a end ]]
 	code = [[
-
-		return ( encode(val) )
-
+	if T==nil then
+  (Message or print)('\a\n >>> testC not active: skipping opcode tests <<<\n\a')
+  return
+end
+print "testing code generation and optimizations"
 	]]
+	code = [[a = 5 a()]]
+]===]
+--S""
+--	profiler.EasyStart()
+	--for i = 1, 1 do
 
-	local tokenizer = oh.Tokenizer(code, path)
-	local tokens = tokenizer:GetTokens()
-	local parser = oh.Parser(tokens, code, path)
-	local ast = parser:GetAST()
-	local output = oh.BuildLuaCode(ast, code, path)
 
+		local tokenizer = oh.Tokenizer(code , path)
+		local tokens = tokenizer:GetTokens()
+		print(tokens)
+	--profiler.EasyStop()
+	--print(tokens)
 
+	--local output = oh.Tokenizer(code, path)
+	--print(loadstring(output))
+
+	--print(loadstring(output))
+
+	--S""
+do return end
 	vfs.Write("main2.lua", output)
 
 	print(code == output)
@@ -114,14 +131,8 @@ oh.TestAllFiles("/home/caps/goluwa/lua-5.2.2-tests/")oh.TestAllFiles("/home/caps
 	print(code)
 
 
-	local tokenizer = oh.Tokenizer(code, path)
-	local tokens = tokenizer:GetTokens()
-	local parser = oh.Parser(tokens, code, path)
-	local ast = parser:GetAST()
+	local output = oh.Transpile2(code, path)
 
-	table.print(ast)
-
-	local output = oh.BuildLuaCode(ast, code, path)
 	print(loadstring(output))
 	print(output)
 end
