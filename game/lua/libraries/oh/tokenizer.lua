@@ -179,7 +179,7 @@ for name, quote in pairs(oh.syntax.quotes) do
 	function Token:StringEscape(c)
 		if self.string_escape then
 
-			if c == "z" then
+			if c == "z" and self:GetCurrentChar() ~= quote then
 				META.WhitespaceClasses.space.Capture(self)
 			end
 
