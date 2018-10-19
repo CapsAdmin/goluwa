@@ -155,7 +155,7 @@ end
 function steam.GetSourceGames()
 	local found = serializer.ReadFile("msgpack", "source_games_cache")
 
-	if found then
+	if found and found[1] then
 		for i,v in ipairs(found) do
 			if not vfs.IsFile(v.gameinfo_path) then
 				logn("unable to find ", v.gameinfo_path, ", rebuilding steam.GetSourceGames cache")
