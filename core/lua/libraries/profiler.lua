@@ -154,6 +154,20 @@ do
 	end
 end
 
+function profiler.EasyStart()
+	profiler.EnableStatisticalProfiling(true)
+	profiler.EnableRealTimeTraceAbortLogging(true)
+end
+
+function profiler.EasyStop()
+	profiler.EnableRealTimeTraceAbortLogging(false)
+	profiler.EnableStatisticalProfiling(false)
+	profiler.PrintTraceAborts(0)
+	profiler.PrintStatistical(0)
+	started = false
+	profiler.Restart()
+end
+
 function profiler.Restart()
 	profiler.data = {sections = {}, statistical = {}, trace_aborts = {}}
 	profiler.raw_data = {sections = {}, statistical = {}, trace_aborts = {}}
