@@ -3,7 +3,7 @@ local oh = {}
 local old = RELOAD RELOAD = nil
 
 runfile("syntax.lua", oh)
-runfile("tokenizer.lua", oh)
+oh.Tokenizer = runfile("tokenizer.lua", oh)
 runfile("parser.lua", oh)
 runfile("lua_code_emitter.lua", oh)
 runfile("validate.lua", oh)
@@ -116,6 +116,49 @@ function oh.FormatError(code, path, msg, start, stop)
 	out = out:trim()
 
 	return out
+end
+
+function oh.GetErrorsFormatted(error_table, code, path)
+	if not error_table[1] then
+		return ""
+	end
+
+	local errors = {}
+	local max_width = 0
+
+	for i, data in ipairs(error_table) do
+		local msg = oh.FormatError(code, path, data.msg, data.start, data.stop)
+
+		for _, line in ipairs(msg:split("\n")) do
+			max_width = math.max(max_width, #line)
+		end
+
+		errors[i] = msg
+	end
+
+	local str = ""
+
+	for _, msg in ipairs(errors) do
+		str = str .. ("="):rep(max_width) .. "\n" .. msg .. "\n"
+	end
+
+	str = str .. ("="):rep(max_width) .. "\n"
+
+	return str
+end
+
+
+function oh.DumpTokens(chunks, code)
+	local out = {}
+	local start = 0
+	for i,v in ipairs(chunks) do
+		out[i] = code:sub(start+1, v.start-1) .. oh.QuoteToken(code:sub(v.start, v.stop))
+		start = v.stop
+	end
+
+	table.insert(out, code:sub(start+1))
+
+	return table.concat(out)
 end
 
 function oh.Transpile(code, path)

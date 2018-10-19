@@ -143,7 +143,19 @@ function META:Function(v)
 		end
 	end
 
-	self:Token(v.tokens["func("])self:CommaSeperated(v.arguments)self:Token(v.tokens["func)"])self:Whitespace("\n")
+	self:Token(v.tokens["func("])self:CommaSeperated(v.arguments)self:Token(v.tokens["func)"])
+
+	if v.return_types then
+		for i,args in ipairs(v.return_types) do
+			for i,v in ipairs(args) do
+				self:Emit(" --[[")
+				self:Emit(table.concat(v, ", "))
+				self:Emit("]]")
+			end
+		end
+	end
+
+	self:Whitespace("\n")
 		self:Whitespace("\t+")
 			self:Block(v.block)
 		self:Whitespace("\t-")
@@ -220,9 +232,9 @@ function META:Block(tree)
 		if data.type == "if" then
 			for i,v in ipairs(data.clauses) do
 				self:Whitespace("\t")self:Token(v.tokens["if/else/elseif"]) if v.expr then self:Expression(v.expr) self:Whitespace(" ") self:Token(v.tokens["then"]) end self:Whitespace("\n")
-					self:Whitespace("\t+")
-						self:Block(v.block)
-					self:Whitespace("\t-")
+				self:Whitespace("\t+")
+					self:Block(v.block)
+				self:Whitespace("\t-")
 			end
 			self:Whitespace("\t") self:Token(data.tokens["end"])
 		elseif data.type == "goto" then
@@ -284,29 +296,38 @@ function META:Block(tree)
 					self:Block(data.block)
 				self:Whitespace("\t-")
 			self:Whitespace("\t")self:Token(data.tokens["end"])
-		elseif data.type == "function" then
-			self:Function(data)
 		elseif data.type == "assignment" then
 			self:Whitespace("\t") if data.is_local then self:Token(data.tokens["local"])self:Whitespace(" ") end
 
-			for i,v in ipairs(data.left) do
-				if data.is_local then
-					self:Token(v.value)
-				else
-					self:Expression(v)
-				end
-				if data.left[2] and i ~= #data.left then
-					self:Token(v.tokens[","])self:Whitespace(" ")
-				end
-			end
-
-			if data.right then
-				self:Whitespace(" ")self:Token(data.tokens["="])self:Whitespace(" ")
-
-				for i,v in ipairs(data.right) do
-					self:Expression(v)
-					if data.right[2] and i ~= #data.right then
+			if data.sub_type == "function" then
+				self:Function(data.value)
+			else
+				for i,v in ipairs(data.left) do
+					if data.is_local then
+						self:Token(v.value)
+					else
+						self:Expression(v)
+					end
+					if data.left[2] and i ~= #data.left then
 						self:Token(v.tokens[","])self:Whitespace(" ")
+					end
+
+					if v.value_type then
+						self:Emit(" --[[")
+						self:Emit(table.concat(v.value_type, ", "))
+						self:Emit("]]")
+					end
+				end
+
+				if data.right then
+					self:Whitespace(" ")self:Token(data.tokens["="])self:Whitespace(" ")
+
+					for i,v in ipairs(data.right) do
+						self:Expression(v)
+
+						if data.right[2] and i ~= #data.right then
+							self:Token(v.tokens[","])self:Whitespace(" ")
+						end
 					end
 				end
 			end
@@ -318,6 +339,8 @@ function META:Block(tree)
 			self:Token(data.tokens[";"])
 		elseif data.type == "end_of_file" then
 			self:Token(data.tokens["eof"])
+		elseif data.type == "shebang" then
+			self:Token(data.tokens["shebang"])
 		else
 			error("unhandled value: " .. data.type)
 		end

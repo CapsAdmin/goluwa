@@ -19,14 +19,14 @@ local function Node(t, val)
 	return node
 end
 
-function META:Error(msg, start, stop, level)
+function META:Error(msg, start, stop, level, offset)
 	if type(start) == "table" then
 		start = start.start
 	end
 	if type(stop) == "table" then
 		stop = stop.stop
 	end
-	local tk = self:GetToken() or self.chunks[#self.chunks]
+	local tk = self:GetTokenOffset(offset or 0) or self.chunks[#self.chunks]
 	start = start or tk.start
 	stop = stop or tk.stop
 
@@ -51,11 +51,6 @@ function META:ReadToken()
 	return tk
 end
 
-function META:IsValueOffset(str, offset)
-	local tk = self:GetTokenOffset(offset)
-	return tk and tk.value == str and tk
-end
-
 function META:IsValue(str)
 	return self.chunks[self.i] and self.chunks[self.i].value == str and self.chunks[self.i]
 end
@@ -76,9 +71,9 @@ end
 function META:ReadExpectType(type, start, stop)
 	local tk = self:GetToken()
 	if not tk then
-		self:Error("expected " .. oh.QuoteToken(type) .. " reached end of code", start, stop, 3)
+		self:Error("expected " .. oh.QuoteToken(type) .. " reached end of code", start, stop, 3, -1)
 	elseif tk.type ~= type then
-		self:Error("expected " .. oh.QuoteToken(type) .. " got " .. tk.type, start, stop, 3)
+		self:Error("expected " .. oh.QuoteToken(type) .. " got " .. oh.QuoteToken(tk.type), start, stop, 3, -1)
 	end
 	self:Advance(1)
 	return tk
@@ -87,9 +82,9 @@ end
 function META:ReadExpectValue(value, start, stop)
 	local tk = self:ReadToken()
 	if not tk then
-		self:Error("expected " .. oh.QuoteToken(value) .. ": reached end of code", start, stop, 3)
+		self:Error("expected " .. oh.QuoteToken(value) .. ": reached end of code", start, stop, 3, -1)
 	elseif tk.value ~= value then
-		self:Error("expected " .. oh.QuoteToken(value) .. ": got " .. tk.value, start, stop, 3)
+		self:Error("expected " .. oh.QuoteToken(value) .. ": got " .. oh.QuoteToken(tk.value), start, stop, 3, -1)
 	end
 	return tk
 end
@@ -132,8 +127,8 @@ function META:ExpressionList()
 	return out
 end
 
-function META:NameList()
-	local out = {}
+function META:NameList(out)
+	out = out or {}
 	for _ = 1, self:GetLength() do
 		if not self:IsType("letter") and not self:IsValue("...") then
 			break
@@ -169,12 +164,6 @@ function META:Table()
 
 		if token.value == "}" then
 			break
-		elseif self:IsValueOffset("=", 1) then
-			data = Node("key_value")
-			data.key = Node("value", self:ReadToken())
-			data.tokens["="] = self:ReadToken()
-			data.expression = self:Expression()
-
 		elseif token.value == "[" then
 			data = Node("expression_value")
 
@@ -184,6 +173,12 @@ function META:Table()
 			data.tokens["="] = self:ReadExpectValue("=")
 			data.expression = self:Expression()
 			data.expression_key = true
+		elseif token.type == "letter" then
+			data = Node("key_value")
+
+			data.key = Node("value", self:ReadToken())
+			data.tokens["="] = self:ReadToken()
+			data.expression = self:Expression()
 		else
 			data = Node("value", self:Expression())
 		end
@@ -316,7 +311,6 @@ function META:Expression(priority, stop_on_call)
 		while oh.syntax.operators[token.value] and oh.syntax.operators[token.value][1] > priority do
 			local op = self:GetToken()
 			if not op or not oh.syntax.operators[op.value] then break end
-
 			self:Advance(1)
 
 			local right = self:Expression(oh.syntax.operators[op.value][2], stop_on_call)
@@ -386,14 +380,14 @@ function META:Block(stop)
 		elseif self:IsValue("local") then
 			local local_ = self:ReadToken()
 
+			data = Node("assignment")
+			data.tokens["local"] = local_
+			data.is_local = true
+
 			if self:IsValue("function") then
-				data = self:Function("simple_named")
-				data.tokens["local"] = local_
-				data.is_local = true
+				data.sub_type = "function"
+				data.value = self:Function("simple_named")
 			else
-				data = Node("assignment")
-				data.tokens["local"] = local_
-				data.is_local = true
 				data.left = self:NameList()
 
 				data.tokens["="] = self:ReadIfValue("=")
@@ -476,11 +470,12 @@ function META:Block(stop)
 
 			table_insert(self.loop_stack, data)
 
-			if self:GetTokenOffset(1).value == "=" then
-				data.iloop = true
+			local identifier = self:ReadExpectType("letter")
 
-				data.name = Node("value", self:ReadExpectType("letter"))
-				data.tokens["="] = self:ReadExpectValue("=")
+			if self:IsValue("=") then
+				data.iloop = true
+				data.name = Node("value", identifier)
+				data.tokens["="] = self:ReadToken("=")
 				data.val = self:Expression()
 				data.tokens[",1"] = self:ReadExpectValue(",")
 				data.max = self:Expression()
@@ -491,8 +486,11 @@ function META:Block(stop)
 				end
 
 				data.tokens["do"] = self:ReadExpectValue("do")
-			else
-				local names = self:NameList()
+			elseif self:IsValue(",") then
+				local name = Node("value", identifier)
+				name.tokens[","] = self:ReadToken()
+				local names = self:NameList({name})
+
 				data.tokens["in"] = self:ReadExpectValue("in")
 				data.iloop = false
 				data.names = names
@@ -506,7 +504,9 @@ function META:Block(stop)
 
 			table.remove(self.loop_stack)
 		elseif self:IsValue("function") then
-			data = self:Function("expression_named")
+			data = Node("assignment")
+			data.sub_type = "function"
+			data.value = self:Function("expression_named")
 		elseif self:IsValue("(") then
 			data = Node("expression")
 			data.value = self:Expression()
@@ -533,11 +533,14 @@ function META:Block(stop)
 		elseif self:IsValue(";") then
 			data = Node("end_of_statement")
 			data.tokens[";"] = self:ReadToken()
-		elseif self:IsType("eof") then
+		elseif self:IsType("end_of_file") then
 			data = Node("end_of_file")
 			data.tokens["eof"] = self:ReadToken()
+		elseif self:IsType("shebang") then
+			data = Node("shebang")
+			data.tokens["shebang"] = self:ReadToken()
 		else
-			self:Error("unexpected token " .. oh.QuoteToken(self:GetToken().value))
+			self:Error("unexpected token " .. self:GetToken().type .. " " .. oh.QuoteToken(self:GetToken().value))
 		end
 
 		table_insert(out, data)
@@ -556,9 +559,7 @@ function oh.Parser(tokens, code, path, halt_on_error)
 		halt_on_error = true
 	end
 
-	local self = {}
-
-	setmetatable(self, META)
+	local self = setmetatable({}, META)
 
 	self.chunks = tokens
 	self.chunks_length = #tokens

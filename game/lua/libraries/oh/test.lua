@@ -69,71 +69,39 @@ function oh.TestAllFiles(path)
 end
 
 function oh.Test()
-
-if true then
-	local path = "/home/caps/goluwa/data/users/caps/main.lua"
-	local code = vfs.Read(path)
---[===[
-	code = [[assert( (10)  [3]  == 13) return (  lol()  ) local t = (typex or type)() ]]
-	code = [[ a = asdf()[1] ]]
-	code = [[ if a==a then lol = a end ]]
-	code = [[
-	if T==nil then
-  (Message or print)('\a\n >>> testC not active: skipping opcode tests <<<\n\a')
-  return
-end
-print "testing code generation and optimizations"
-	]]
-	code = [[a = 5 a()]]
-]===]
---S""
---	profiler.EasyStart()
-	--for i = 1, 1 do
-
-
-		local tokenizer = oh.Tokenizer(code , path)
-		local tokens = tokenizer:GetTokens()
-		print(tokens)
-	--profiler.EasyStop()
-	--print(tokens)
-
-	--local output = oh.Tokenizer(code, path)
-	--print(loadstring(output))
-
-	--print(loadstring(output))
-
-	--S""
-do return end
-	vfs.Write("main2.lua", output)
-
-	print(code == output)
-
-	if #code < 1000 then
-		print(code)
-		print(output)
-	end
-
-	return
-end
-
-oh.TestAllFiles("/home/caps/goluwa/lua-5.2.2-tests/")oh.TestAllFiles("/home/caps/goluwa/framework")oh.TestAllFiles("/home/caps/goluwa/engine")oh.TestAllFiles("/home/caps/goluwa/game") do return end
 	local path = "foo.lua"
 	local code = [[
-		do return ( encode(val) ) end
+		local b = ""
+		local a = 2 + b
 
-		(a)();
+		foo.bar.baz = true
+
+		function test(number_a, number_b)
+			if true then
+				return 0
+			end
+			for i = 1, 10 do
+				if math.random() > 0.5 then
+					return true, ""
+				end
+			end
+			return ""
+		end
+		local w = 1 + test(a, b)
+		for a,b,c,d,e,f,g,h,j,i in a,b,c,d,d,e,f,f,g,g do end
+
+		for i=1; i<10; i=i+1 do
+
+		end
 	]]
-
-	code = [[local a = {
-			a,b,c
-		}
-	]]
-	print(code)
-
-
-	local output = oh.Transpile2(code, path)
-
-	print(loadstring(output))
+	local tokenizer = oh.Tokenizer({code = code, path = path, halt_on_error = false})
+	local tokens = tokenizer:GetTokens()
+	do return end
+	table.print(tokens) do return end
+	local parser = oh.Parser(tokens, code, path)
+	local ast = parser:GetAST()
+	--oh.Validate(ast, code, path)
+	local output = oh.BuildLuaCode(ast, code)
 	print(output)
 end
 
