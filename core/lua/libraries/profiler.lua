@@ -118,7 +118,13 @@ local function statistical_callback(thread, samples, vmstate)
 end
 
 function profiler.EnableStatisticalProfiling(b)
+	if not jit.profiler then
+		wlog("jit profiler is not available")
+		return
+	end
+
 	profiler.busy = b
+
 	if b then
 		jit.profiler.start("li0", function(...)
 			local ok, err = pcall(statistical_callback, ...)
@@ -567,6 +573,12 @@ local blacklist = {
 }
 
 function profiler.EnableRealTimeTraceAbortLogging(b)
+
+	if not jit.attach then
+		wlog("jit profiler is not available")
+		return
+	end
+
 	if b then
 		local last_log
 		jit.attach(function(what, trace_id, func, pc, trace_error_id, trace_error_arg)
