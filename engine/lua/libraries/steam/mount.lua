@@ -56,6 +56,12 @@ pvars.Setup2({
 })
 
 commands.Add("list_games", function()
+	if not next(steam.GetSourceGames()) then
+		logn("no source games found")
+		table.print(steam.GetGameFolders())
+		table.print(steam.GetLibraryFolders())
+	end
+
 	for _, info in pairs(steam.GetSourceGames()) do
 		logn(info.game)
 		logn("\tgame_dir = ", info.game_dir)
