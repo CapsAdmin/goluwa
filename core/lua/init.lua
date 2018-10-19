@@ -181,6 +181,7 @@ prototype = runfile("lua/libraries/prototype/prototype.lua")
 vfs = runfile("lua/libraries/filesystem/vfs.lua")
 
 vfs.Mount("os:" .. e.USERDATA_FOLDER, "os:data") -- mount "ROOT/data/users/*username*/" to "/data/"
+vfs.MountAddon("os:" .. e.DATA_FOLDER) -- mount "ROOT/"..e.DATA_FOLDER to "/"
 vfs.MountAddon("os:" .. e.CORE_FOLDER) -- mount "ROOT/"..e.INTERNAL_ADDON_NAME to "/"
 vfs.GetAddonInfo(e.INTERNAL_ADDON_NAME).dependencies = {e.INTERNAL_ADDON_NAME} -- prevent init.lua from running later on again
 vfs.GetAddonInfo(e.INTERNAL_ADDON_NAME).startup = nil -- prevent init.lua from running later on again

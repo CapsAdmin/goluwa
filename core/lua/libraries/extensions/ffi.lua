@@ -59,7 +59,7 @@ if DEBUG_GC then
 end
 
 local where = {
-	"bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/",
+	jit.os:lower() .. "_" .. jit.arch:lower() .. "/",
 	"lua/modules/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/",
 }
 
@@ -117,7 +117,6 @@ function ffi.load(path, ...)
 	if WINDOWS and not args[1] then
 		args = {pcall(_OLD_G.ffi.load, "lib" .. path, ...)}
 	end
-
 	if not args[1] then
 		if vfs and system and system.SetSharedLibraryPath then
 			for _, where in ipairs(where) do
