@@ -73,7 +73,7 @@ end
 local rate_cvar = pvars.Setup2({
 	key = "system_fps_max",
 	default = -1,
-	modify = function(num) if num < 0 then return -1 end return num end,
+	modify = function(num) if num < 1 then return -1 end return num end,
 	callback = function(rate)
 		if window and window.IsOpen() then
 			if rate == 0 then
