@@ -495,8 +495,8 @@ PASS.Stages = {
 
 				float calc_shadow(vec2 uv, vec3 light_view_pos, vec3 L, vec3 N)
 				{
-					float cosTheta = clamp(-dot(N, L), -1, 1);
-					float bias = clamp(0.0005*tan((cosTheta)), 0, 0.01);
+					float cosTheta = clamp(-dot(N, L), -1.0, 1.0);
+					float bias = clamp(0.0005*tan((cosTheta)), 0.0, 0.01);
 					float div = 1;
 
 					float shadow = 1;
