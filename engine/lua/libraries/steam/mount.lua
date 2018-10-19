@@ -139,11 +139,11 @@ function steam.GetGameFolders(skip_mods)
 	local games = {}
 
 	for _, library in ipairs(steam.GetLibraryFolders()) do
-		for _, game in ipairs(vfs.Find(library .. "/common/", true)) do
+		for _, game in ipairs(vfs.Find(library .. "common/", true)) do
 			table.insert(games, game .. "/")
 		end
 		if not skip_mods then
-			for _, mod in ipairs(vfs.Find(library .. "/sourcemods/", true)) do
+			for _, mod in ipairs(vfs.Find(library .. "sourcemods/", true)) do
 				table.insert(games, mod .. "/")
 			end
 		end
