@@ -117,7 +117,7 @@ function META:Expression(v)
 				self:Token(v.tokens["]"])
 			elseif v.type == "call" then
 				if v.tokens["call("] then self:Token(v.tokens["call("]) end
-				self:CommaSeperated(v.arguments)
+				self:ExpressionList(v.arguments)
 				if v.tokens["call)"] then self:Token(v.tokens["call)"]) end
 			end
 		end
@@ -143,7 +143,7 @@ function META:Function(v)
 		end
 	end
 
-	self:Token(v.tokens["func("])self:CommaSeperated(v.arguments)self:Token(v.tokens["func)"])
+	self:Token(v.tokens["func("])self:ExpressionList(v.arguments)self:Token(v.tokens["func)"])
 
 	if v.return_types then
 		for i,args in ipairs(v.return_types) do
@@ -214,7 +214,7 @@ local function emit_block_with_continue(self, data, repeat_expression)
 
 		self:Whitespace("\t")self:Token(ret["return"], "")self:Emit("do return")self:Whitespace("?", true)
 		if ret.expressions then
-			self:CommaSeperated(ret.expressions)
+			self:ExpressionList(ret.expressions)
 		end
 		self:Whitespace("?", true)
 		self:Emit("end")
@@ -268,7 +268,7 @@ function META:Block(tree)
 			self:Whitespace("\t")self:Whitespace("?")self:Token(data.tokens["return"])
 
 			if data.expressions then
-				self:CommaSeperated(data.expressions)
+				self:ExpressionList(data.expressions)
 			end
 		elseif data.type == "continue" then
 			self:Whitespace("\t")self:Whitespace("?") self:Token(data["continue"], "goto continue__oh")
@@ -281,7 +281,12 @@ function META:Block(tree)
 					self:Token(data.tokens[",2"])self:Whitespace(" ")self:Expression(data.incr)
 				end
 			else
-				self:Whitespace("?")self:CommaSeperated(data.names)self:Whitespace("?")self:Token(data.tokens["in"])self:Whitespace("?")self:CommaSeperated(data.expressions)
+				self:Whitespace("?")
+				self:ExpressionList(data.names)
+				self:Whitespace("?")
+				self:Token(data.tokens["in"])
+				self:Whitespace("?")
+				self:ExpressionList(data.expressions)
 			end
 
 			self:Whitespace("?")self:Token(data.tokens["do"])self:Whitespace("\n")
@@ -349,7 +354,7 @@ function META:Block(tree)
 	end
 end
 
-function META:CommaSeperated(tbl)
+function META:ExpressionList(tbl)
 	for i = 1, #tbl do
 		self:Expression(tbl[i])
 		if i ~= #tbl then

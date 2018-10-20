@@ -157,14 +157,11 @@ function META:Table()
 	tree.tokens["{"] = self:ReadExpectValue("{")
 
 	for _ = 1, self:GetLength() do
-		local token = self:GetToken()
-		if not token then break end
-
 		local data
 
-		if token.value == "}" then
+		if self:IsValue("}") then
 			break
-		elseif token.value == "[" then
+		elseif self:IsValue("[") then
 			data = Node("expression_value")
 
 			data.tokens["["] = self:ReadToken()
@@ -173,7 +170,7 @@ function META:Table()
 			data.tokens["="] = self:ReadExpectValue("=")
 			data.expression = self:Expression()
 			data.expression_key = true
-		elseif token.type == "letter" then
+		elseif self:IsType("letter") and self:GetTokenOffset(1).value == "=" then
 			data = Node("key_value")
 
 			data.key = Node("value", self:ReadToken())
@@ -181,6 +178,9 @@ function META:Table()
 			data.expression = self:Expression()
 		else
 			data = Node("value", self:Expression())
+			if not data.value then
+				self:Error("expected expression got nothing")
+			end
 		end
 
 		table_insert(tree.children, data)
@@ -205,7 +205,7 @@ function META:Function(variant)
 	local data = Node("function")
 	data.tokens["function"] = self:ReadExpectValue("function")
 	if variant == "simple_named" then
-		data.index_expression = self:ReadExpectType("letter")
+		data.index_expression = Node("value", self:ReadExpectType("letter"))
 	elseif variant == "expression_named" then
 		data.index_expression = self:Expression(0, true)
 	end
@@ -488,12 +488,19 @@ function META:Block(stop)
 				data.tokens["do"] = self:ReadExpectValue("do")
 			elseif self:IsValue(",") then
 				local name = Node("value", identifier)
+
 				name.tokens[","] = self:ReadToken()
 				local names = self:NameList({name})
 
 				data.tokens["in"] = self:ReadExpectValue("in")
 				data.iloop = false
 				data.names = names
+				data.expressions = self:ExpressionList()
+				data.tokens["do"] = self:ReadExpectValue("do")
+			else
+				data.tokens["in"] = self:ReadExpectValue("in")
+				data.iloop = false
+				data.names = {Node("value", identifier)}
 				data.expressions = self:ExpressionList()
 				data.tokens["do"] = self:ReadExpectValue("do")
 			end
@@ -575,5 +582,6 @@ function oh.Parser(tokens, code, path, halt_on_error)
 end
 
 if RELOAD then
-	runfile("lua/libraries/oh/test.lua")
+	runfile("lua/libraries/oh.lua")
+	_G.oh.Test()
 end

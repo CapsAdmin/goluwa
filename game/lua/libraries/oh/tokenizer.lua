@@ -61,7 +61,6 @@ do -- syntax rules
 	function syntax.GetCharType(char)
 		return syntax.char_types[char]
 	end
-
 end
 
 
@@ -511,7 +510,10 @@ do
 	for k, v in pairs(lookup) do
 		longest_symbol = math.max(longest_symbol, #k)
 		for i = 1, #k do
-			syntax.char_types[k:sub(i, i)] = "symbol"
+			local char = k:sub(i, i)
+			if not syntax.char_types[char] then
+				syntax.char_types[char] = "symbol"
+			end
 		end
 	end
 
@@ -641,7 +643,7 @@ do
 	local sorted_token_classes = tolist(Tokenizer.TokenClasses)
 	local sorted_whitespace_classes = tolist(Tokenizer.WhitespaceClasses)
 
-	local code = "local table_clear = table.clear local META = ...\nfunction META:CaptureToken()\n"
+	local code = "local META = ...\nfunction META:CaptureToken()\n"
 
 	code = code .. "\tfor _ = self.i, #self.config.code do\n"
 	for i, class in ipairs(sorted_whitespace_classes) do
@@ -651,8 +653,9 @@ do
 			code = code .. "\t\telseif "
 		end
 
+		--\t\tprint('capturing "..class.val.Type.."')\n\z
 		code = code .. "\z
-		META.WhitespaceClasses." .. class.val.Type .. ".Is(self) then\z
+		META.WhitespaceClasses." .. class.val.Type .. ".Is(self) then\n\z
 		\t\t\tlocal start = self.i\n\z
 		\t\t\tMETA.WhitespaceClasses." .. class.val.Type .. ".Capture(self)\n\z
 		\t\t\tself:BufferWhitespace(\"" .. class.val.ParserType .. "\", start, self.i - 1)\n"
@@ -669,6 +672,7 @@ do
 			code = code .. "\telseif "
 		end
 
+		--\t\tprint('capturing "..class.val.Type.."')\n\z
 		code = code .. "\z
 		META.TokenClasses." .. class.val.Type .. ".Is(self) then\n\z
 		\t\tlocal start = self.i\n\z
@@ -724,9 +728,10 @@ function Tokenizer:GetTokens()
 end
 
 if RELOAD then
-	event.Delay(0, function()
+	event.Delay(0.1, function()
+		runfile("lua/libraries/oh/oh.lua")
 		runfile("lua/libraries/oh/test.lua")
-		oh.Test()
+		_G.oh.Test()
 	end)
 end
 
