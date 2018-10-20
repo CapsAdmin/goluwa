@@ -11,7 +11,7 @@ runfile("validate.lua", oh)
 RELOAD = old
 
 function oh.QuoteToken(str)
-	return "\"" .. str .. "\""
+	return "⸢" .. str .. "⸥"
 end
 
 function oh.QuoteTokens(var)
