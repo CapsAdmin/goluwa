@@ -247,8 +247,17 @@ do
 		text_input = sdl.e.SYSTEM_CURSOR_IBEAM,
 		crosshair = sdl.e.SYSTEM_CURSOR_CROSSHAIR,
 		hand = sdl.e.SYSTEM_CURSOR_HAND,
-		horizontal_resize = sdl.e.SYSTEM_CURSOR_SIZEWE,
-		vertical_resize = sdl.e.SYSTEM_CURSOR_SIZENS,
+
+		horizontal_resize = sdl.e.SYSTEM_CURSOR_SIZENS,
+		vertical_resize = sdl.e.SYSTEM_CURSOR_SIZEWE,
+
+		top_right_resize = sdl.e.SYSTEM_CURSOR_SIZENESW,
+		bottom_left_resize = sdl.e.SYSTEM_CURSOR_SIZENESW,
+
+		top_left_resize = sdl.e.SYSTEM_CURSOR_SIZENWSE,
+		bottom_right_resize = sdl.e.SYSTEM_CURSOR_SIZENWSE,
+
+		all_resize = sdl.e.SYSTEM_CURSOR_SIZEALL,
 	}
 
 	local last

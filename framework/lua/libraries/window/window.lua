@@ -25,6 +25,17 @@ do
 		text_input = true,
 		vertical_resize = true,
 		horizontal_resize = true,
+
+		horizontal_resize = true,
+		vertical_resize = true,
+
+		top_right_resize =  true,
+		bottom_left_resize =  true,
+
+		top_left_resize =  true,
+		bottom_right_resize =  true,
+
+		all_resize =  true,
 	}
 
 	META.Keys = {

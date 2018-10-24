@@ -1400,14 +1400,14 @@ do -- resizing
 	end
 
 	local location2cursor = {
-		right = "sizewe",
-		left = "sizewe",
-		top = "sizens",
-		bottom = "sizens",
-		top_right = "sizenesw",
-		bottom_left = "sizenesw",
-		top_left = "sizenwse",
-		bottom_right = "sizenwse",
+		right = "vertical_resize",
+		left = "vertical_resize",
+		top = "horizontal_resize",
+		bottom = "horizontal_resize",
+		top_right = "top_right_resize",
+		bottom_left = "bottom_left_resize",
+		top_left = "top_left_resize",
+		bottom_right = "bottom_right_resize",
 	}
 
 	function META:CalcResizing()
