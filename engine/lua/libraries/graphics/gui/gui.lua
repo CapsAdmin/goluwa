@@ -320,7 +320,7 @@ do -- events
 end
 
 do -- skin
-	function gui.SetSkin(skin)
+	function gui.SetSkin(skin, skip_update_panels)
 		if type(skin) == "string" then
 			skin = gui.GetRegisteredSkin(skin).skin
 		end
@@ -330,6 +330,8 @@ do -- skin
 		gui.skin = skin
 
 		if not old then return end
+
+		if skip_update_panels then return end
 
 		for panel in pairs(gui.panels) do
 			panel:SetSkin(skin)
@@ -437,7 +439,7 @@ function gui.Initialize()
 		default = "gwen_dark",
 		list = gui.GetRegisteredSkins(),
 		callback = function(str)
-			gui.SetSkin(str)
+			gui.SetSkin(str, true)
 		end,
 	})
 

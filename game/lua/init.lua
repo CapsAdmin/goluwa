@@ -68,6 +68,7 @@ end
 
 if GRAPHICS then
 	menu = runfile("lua/libraries/graphics/menu.lua")
+	event.AddListener("Initialize", function() menu.Open() end)
 end
 
 goluwa = event.CreateRealm("goluwa")
