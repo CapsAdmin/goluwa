@@ -1,8 +1,11 @@
 local oh = ... or _G.oh
 
-local syntax = {}
+local Tokenizer = {}
+Tokenizer.__index = Tokenizer
 
-do -- syntax rules
+do
+	local syntax = {}
+
 	syntax.space = {" ", "\n", "\r", "\t"}
 
 	syntax.number = {}
@@ -11,61 +14,44 @@ do -- syntax rules
 	end
 
 	syntax.letter = {"_"}
+
 	for i = string.byte("A"), string.byte("Z") do
 		table.insert(syntax.letter, string.char(i))
 	end
+
 	for i = string.byte("a"), string.byte("z") do
 		table.insert(syntax.letter, string.char(i))
 	end
 
-	syntax.symbol = {".", ",", "(", ")", "{", "}", "[", "]",
-		"=", ":", ";", "~", "::", "...",
+	syntax.symbol = {
+		".", ",", "(", ")", "{", "}", "[", "]",
+		"=", ":", ";", "~", "::", "...", "-",
+		"#", "not", "~", "-", "<", ".", ">",
+		"/", "^", "<<", "&", "|", "==", "<=",
+		"..", "~=", "+", ">>", "*", "and", ">=",
+		"or", ":", "%",
 	}
 
-	syntax.unary_operators = {
-		["-"] = -10,
-		["#"] = -10,
-		["not"] = -10,
-		["~"] = -10,
-	}
+	local lookup = {}
 
-	syntax.operators = {
-		["or"] = 1, ["||"] = 1,
-		["and"] = 2, ["&&"] = 2,
-		["<"] = 3, [">"] = 3, ["<="] = 3, [">="] = 3, ["~="] = 3, ["!="] = 3, ["=="] = 3,
-		["|"] = 4,
-		-- ~ is in the manual here but isn't it a unary operator?
-		["&"] = 5,
-		["<<"] = 6, [">>"] = 6,
-		[".."] = -7, -- right associative
-		["+"] = 8, ["-"] = 8,
-		["*"] = 9, ["/"] = 9, ["%"] = 9,
-		-- the unary operators are in the manual here
-		["^"] = -11, -- right associative
-
-		["."] = -12, [":"] = -12
-	}
-
-	do
-		local char_types = {}
-
-		for _, type in ipairs({"number", "letter", "space", "symbol"}) do
-			for _, value in ipairs(syntax[type]) do
-				char_types[value] = type
-			end
+	for type, chars in pairs(syntax) do
+		for i, char in ipairs(chars) do
+			lookup[char] = type
 		end
-
-		syntax.char_types = char_types
 	end
 
-	function syntax.GetCharType(char)
-		return syntax.char_types[char]
+	function Tokenizer:MapCharType(char, type)
+		lookup[char] = true
+	end
+
+	function Tokenizer:GetCharMap()
+		return lookup
+	end
+
+	function Tokenizer:GetCharType(char)
+		return lookup[char]
 	end
 end
-
-
-local Tokenizer = {}
-Tokenizer.__index = Tokenizer
 
 function Tokenizer:ReadChar()
 	local char = self:GetCurrentChar()
@@ -350,7 +336,7 @@ do
 
 			local len = #annotation
 			code = code .. "self:GetCharsOffset(" .. (len - 1) .. "):lower() == '" .. annotation .. "' then\n\z
-			\t\tlocal t = syntax.GetCharType(self:GetCharOffset("..len.."))\n\z
+			\t\tlocal t = self:GetCharType(self:GetCharOffset("..len.."))\n\z
 			\t\tif t == \"space\" or t == \"symbol\" then\n\z
 				\t\t\tself:Advance("..len..")\n\z
 				\t\t\treturn true\n\z
@@ -368,7 +354,7 @@ do
 		for _, annotation in ipairs(legal_number_annotations) do
 			local len = #annotation
 			if self:GetCharsOffset(len - 1):lower() == annotation then
-				local t = syntax.GetCharType(self:GetCharOffset(len))
+				local t = self:GetCharType(self:GetCharOffset(len))
 
 				if t == "space" or t == "symbol" then
 					self:Advance(len)
@@ -379,11 +365,11 @@ do
 	end
 
 	function Token:Is()
-		if self:GetCurrentChar() == "." and syntax.GetCharType(self:GetCharOffset(1)) == "number" then
+		if self:GetCurrentChar() == "." and self:GetCharType(self:GetCharOffset(1)) == "number" then
 			return true
 		end
 
-		return syntax.GetCharType(self:GetCurrentChar()) == "number"
+		return self:GetCharType(self:GetCurrentChar()) == "number"
 	end
 
 	function Token:CaptureHexNumber()
@@ -395,7 +381,7 @@ do
 			if Token.CaptureAnnotations(self) then return true end
 
 			local char = self:GetCurrentChar():lower()
-			local t = syntax.GetCharType(self:GetCurrentChar())
+			local t = self:GetCharType(self:GetCurrentChar())
 
 			if char == pow_letter then
 				if not pow then
@@ -426,7 +412,7 @@ do
 
 		for _ = self.i, #self.config.code do
 			local char = self:GetCurrentChar():lower()
-			local t = syntax.GetCharType(self:GetCurrentChar())
+			local t = self:GetCharType(self:GetCurrentChar())
 
 			if char ~= "1" and char ~= "0" and char ~= "_" then
 				if not t or t == "space" or t == "symbol" then
@@ -450,7 +436,7 @@ do
 		local start = self.i
 
 		for _ = self.i, #self.config.code do
-			local t = syntax.GetCharType(self:GetCurrentChar())
+			local t = self:GetCharType(self:GetCurrentChar())
 			local char = self:GetCurrentChar()
 
 			if exponent then
@@ -504,21 +490,15 @@ do
 	local longest_symbol = 0
 	local lookup = {}
 
-	for k, v in pairs(oh.syntax.operators) do lookup[k] = true end
-	for k, v in ipairs(syntax.symbol) do lookup[v] = true end
-
-	for k, v in pairs(lookup) do
-		longest_symbol = math.max(longest_symbol, #k)
-		for i = 1, #k do
-			local char = k:sub(i, i)
-			if not syntax.char_types[char] then
-				syntax.char_types[char] = "symbol"
-			end
+	for char, type in pairs(Tokenizer:GetCharMap()) do
+		if type == "symbol" then
+			lookup[char] = true
+			longest_symbol = math.max(longest_symbol, #char)
 		end
 	end
 
 	function Token:Is()
-		return syntax.GetCharType(self:GetCurrentChar()) == "symbol"
+		return self:GetCharType(self:GetCurrentChar()) == "symbol"
 	end
 
 	function Token:Capture()
@@ -539,14 +519,14 @@ do
 	Token.Type = "letter"
 
 	function Token:Is()
-		return syntax.GetCharType(self:GetCurrentChar()) == "letter"
+		return self:GetCharType(self:GetCurrentChar()) == "letter"
 	end
 
 	function Token:Capture()
 		local start = self.i
 		self:Advance(1)
 		for _ = self.i, #self.config.code do
-			local t = syntax.GetCharType(self:GetCurrentChar())
+			local t = self:GetCharType(self:GetCurrentChar())
 			if t == "space" or not (t == "letter" or (t == "number" and self.i ~= start)) then
 				return true
 			end
@@ -564,14 +544,14 @@ do
 	Token.Whitespace = true
 
 	function Token:Is()
-		return syntax.GetCharType(self:GetCurrentChar()) == "space"
+		return self:GetCharType(self:GetCurrentChar()) == "space"
 	end
 
 	function Token:Capture()
 		self:Advance(1)
 
 		for _ = self.i, #self.config.code do
-			if syntax.GetCharType(self:GetCurrentChar()) ~= "space" then
+			if self:GetCharType(self:GetCurrentChar()) ~= "space" then
 				return true
 			end
 			self:Advance(1)
@@ -704,7 +684,7 @@ function Tokenizer:GetTokens()
 	local tokens_i = 1
 
 	for _ = self.i, #self.config.code do
-		--if syntax.GetCharType(self:GetCurrentChar()) == nil then
+		--if self:GetCharType(self:GetCurrentChar()) == nil then
 			--self:Error("unexpected character " .. oh.QuoteToken(self:GetCurrentChar()) .. " (byte " .. self:GetCurrentChar():byte() .. ")", self.i, self.i)
 			--self:Advance(1)
 		--end
