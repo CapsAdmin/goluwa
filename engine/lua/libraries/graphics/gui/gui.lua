@@ -66,6 +66,10 @@ function gui.CreatePanel(name, parent, store_in_parent)
 	return self
 end
 
+function gui.CreateTemplate(class_name, ...)
+	return prototype.CreateTemplate(class_name, ...)
+end
+
 function gui.RegisterPanel(META)
 	META.TypeBase = "base"
 	META.Type = nil
