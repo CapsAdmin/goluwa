@@ -1932,6 +1932,7 @@ do -- layout
 		left = "MoveLeft",
 		bottom = "MoveDown",
 		right = "MoveRight",
+		GmodFill = "gmod_fill",
 		gmod_left = "GmodLeft",
 		gmod_right = "GmodRight",
 		gmod_top = "GmodTop",
