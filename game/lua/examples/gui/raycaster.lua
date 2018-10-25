@@ -1,13 +1,17 @@
 -- redo raycast, gui.RayCast?
 
-local function world_rect(a,b,c,d)
-	gfx.DrawRect(a, b, a-b, c-d)
-end
-
 local function sort(a, b) return a.distance > b.distance end
+
+local function l2w(panel, pos)
+	local x,y = panel.Matrix:TransformVector(pos.x, pos.y, 1)
+	return Vec2(x,y)
+end
 
 function gui.RayCast(world, start_pos, stop_pos, ray_rect)
 	ray_rect = ray_rect or Rect(1,1,1,1)
+
+	start_pos = l2w(world, start_pos)
+	stop_pos = l2w(world, stop_pos)
 
 	local a_lft = start_pos.x + ray_rect.x
 	local a_top = start_pos.y + ray_rect.y
@@ -15,21 +19,17 @@ function gui.RayCast(world, start_pos, stop_pos, ray_rect)
 	local a_rgt = start_pos.x - ray_rect.w
 	local a_btm = start_pos.h - ray_rect.h
 
-	local wpos = world:GetWorldPosition()
-
 	local dir = start_pos - stop_pos
 
 	render2d.SetColor(1,1,1,1)
 
-	render2d.PushMatrix(wpos.x, wpos.y)
-		if dir.x ~= 0 then
-			gfx.DrawLine(start_pos.x, a_top, start_pos.x + dir.x, a_top + dir.y)
-			gfx.DrawLine(start_pos.x, a_btm, start_pos.x + dir.x, a_btm + dir.y)
-		elseif dir.y ~= 0 then
-			gfx.DrawLine(a_lft, start_pos.y, a_lft + dir.x, start_pos.y + dir.y)
-			gfx.DrawLine(a_rgt, start_pos.y, a_rgt + dir.x, start_pos.y + dir.y)
-		end
-	render2d.PopMatrix(wpos.x, wpos.y)
+	if dir.x ~= 0 then
+		gfx.DrawLine(start_pos.x, a_top, start_pos.x + dir.x, a_top + dir.y)
+		gfx.DrawLine(start_pos.x, a_btm, start_pos.x + dir.x, a_btm + dir.y)
+	elseif dir.y ~= 0 then
+		gfx.DrawLine(a_lft, start_pos.y, a_lft + dir.x, start_pos.y + dir.y)
+		gfx.DrawLine(a_rgt, start_pos.y, a_rgt + dir.x, start_pos.y + dir.y)
+	end
 
 	local found = {}
 	local found_i = 1
@@ -73,26 +73,26 @@ function gui.RayCast(world, start_pos, stop_pos, ray_rect)
 			if dir.x ~= 0 then
 				if dir.x < 0 then
 					distance = a_rgt - b_lft
-					hit_pos_x = b_rgt + wpos.x
+					hit_pos_x = b_rgt
 				else
 					distance = b_rgt - a_lft
-					hit_pos_x = b_lft + wpos.x
+					hit_pos_x = b_lft
 				end
-				hit_pos_y = wpos.y + (a_top - b_top) + b_top
+				hit_pos_y = (a_top - b_top) + b_top
 			elseif dir.y ~= 0 then
 				if dir.y < 0 then
 					distance = a_btm - b_top
-					hit_pos_y = b_btm + wpos.y
+					hit_pos_y = b_btm
 				else
 					distance = b_btm - a_top
-					hit_pos_y = b_top + wpos.y
+					hit_pos_y = b_top
 				end
-				hit_pos_x = wpos.x + (a_rgt - b_lft) + b_lft
+				hit_pos_x = (a_rgt - b_lft) + b_lft
 			end
-			found[found_i] = {child = child, distance = distance}
+			found[found_i] = {child = child, distance = distance, hit_pos = Vec2(hit_pos_x, hit_pos_y)}
 			found_i = found_i + 1
 
-			local x, y = wpos.x + b_lft, wpos.y + b_top
+			local x, y = b_lft, b_top
 
 			local offset_x = dir.x ~= 0 and dir.x > 0 and (a_lft - a_rgt) or 0
 			local offset_y = dir.y ~= 0 and dir.y < 0 and (a_btm - a_top) or 0
@@ -108,36 +108,46 @@ function gui.RayCast(world, start_pos, stop_pos, ray_rect)
 		end
 	end
 	local b_lft, b_top, b_rgt, b_btm = world:GetWorldRectFast()
-	--print(world.Margin)
+
 	b_lft = b_lft + world.Margin.x
 	b_rgt = b_rgt - world.Margin.w
 
 	b_top = b_top + world.Margin.y
 	b_btm = b_btm - world.Margin.h
 
+
+	render2d.SetColor(1,1,0,1)
+
+	gfx.DrawRect(b_lft, b_top, 5,5)
+
 	if
 		(
 			dir.y ~= 0 and
 			(
-				(((a_btm + wpos.y) - b_top < dir.y) and ((a_btm + wpos.y) - b_top > 0)) or
-				(((a_top + wpos.y) - b_btm > dir.y) and ((a_top + wpos.y) - b_btm < 0))
+				((a_btm - b_top < dir.y) and (a_btm - b_top > 0)) or
+				((a_top - b_btm > dir.y) and (a_top - b_btm < 0))
 			)
 		)
 		or
 		(
 			dir.x ~= 0 and
 			(
-				(((a_rgt + wpos.x) - b_lft < dir.x) and ((a_rgt + wpos.x) - b_lft > 0)) or
-				(((a_lft + wpos.x) - b_rgt > dir.x) and ((a_lft + wpos.x) - b_rgt < 0))
+				((a_rgt - b_lft < dir.x) and (a_rgt - b_lft > 0)) or
+				((a_lft - b_rgt > dir.x) and (a_lft - b_rgt < 0))
 			)
 
 		)
 	then
+		local hit_pos_x = 0
+		local hit_pos_y = 0
+		local distance = 0
 		if dir.y ~= 0 then
-			hit_pos_x = start_pos.x + wpos.x - (a_lft - a_rgt)/2
+			hit_pos_x = start_pos.x - (a_lft - a_rgt)/2
 			if dir.y > 0 then
+				distance = start_pos.y
 				hit_pos_y = b_top + (ray_rect.w + ray_rect.x)
 			else
+				--distance = b_btm - a_top
 				hit_pos_y = b_btm
 			end
 		elseif dir.x ~= 0 then
@@ -146,11 +156,18 @@ function gui.RayCast(world, start_pos, stop_pos, ray_rect)
 			else
 				hit_pos_x = b_rgt - (ray_rect.x + ray_rect.w)
 			end
-			hit_pos_y = start_pos.y + wpos.y - (a_btm - a_top)/2
+			hit_pos_y = start_pos.y - (a_btm - a_top)/2
 		end
 
 		render2d.SetColor(0,1,0,1)
+
 		gfx.DrawRect(hit_pos_x, hit_pos_y, a_lft - a_rgt, a_btm - a_top)
+
+		local offset_x = dir.x ~= 0 and dir.x > 0 and (a_lft - a_rgt) or 0
+		local offset_y = dir.y ~= 0 and dir.y < 0 and (a_btm - a_top) or 0
+
+		render2d.SetColor(0,0,0,1)
+		gfx.DrawText(distance, hit_pos_x - offset_x, hit_pos_y - offset_y, nil, nil, dir.y > 0 and -1 or -1)
 	end
 
 
@@ -190,6 +207,12 @@ end)
 gui.Panic()
 
 local pnl =  gui.CreatePanel("base")
+pnl:SetSize(Vec2()+700)
+pnl:SetDraggable(true)
+
+local pnl =  pnl:CreatePanel("base")
+pnl:SetDraggable(true)
+pnl:SetResizable(true)
 pnl:SetMargin(Rect() + 25)
 pnl.debug_mp = true
 pnl:SetSize(Vec2()+600)
@@ -200,10 +223,13 @@ pnl:SetPosition(pnl:GetPosition() + Vec2(10,0))
 for i = 1, 20 do
 	local sub = pnl:CreatePanel("base")
 	math.randomseed(i+6)
+	sub:SetDraggable(true)
+	sub:SetResizable(true)
 	sub:SetPosition(Vec2(math.random(0, pnl:GetWidth()), math.random(0, pnl:GetHeight())))
 	sub:SetSize(Vec2() + math.random(32, 64))
 	sub:SetColor(ColorHSV(math.random(),1,1))
 	sub:SetName(ColorToName(sub:GetColor()))
-	sub:SetPadding(Rect() + math.random(10, 25))
+
+	sub:SetPadding(Rect(math.random(10, 25), math.random(10, 25), math.random(10, 25), math.random(10, 25)))
 	sub.debug_mp = true
 end
