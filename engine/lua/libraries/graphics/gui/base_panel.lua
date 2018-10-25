@@ -695,6 +695,11 @@ do -- orientation
 		self.Matrix:SetTranslation(wpos.x, wpos.y, 0)
 	end
 
+	function META:LocalToWorld2(lpos)
+		local x, y = panel.Matrix:TransformVector(pos.x, pos.y, 1)
+		return Vec2(x, y)
+	end
+
 	function META:LocalToWorld(lpos)
 		local x, y = self.Matrix:GetTranslation()
 
@@ -784,6 +789,11 @@ do -- orientation
 
 	function META:GetWorldRectFast()
 		return self.Position.x, self.Position.y, self.Position.x + self.Size.x, self.Position.y + self.Size.y
+	end
+
+	function META:GetWorldRectFast2()
+		local x, y = self.Matrix:GetTranslation()
+		return x, y, x + self.Size.x, y + self.Size.y
 	end
 
 	function META:CenterX()
