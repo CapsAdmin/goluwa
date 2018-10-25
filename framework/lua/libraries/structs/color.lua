@@ -171,8 +171,23 @@ do
 		yellow = "#ffff00",
 		yellowgreen = "#9acd32"
 	}
+
 	function ColorName(name)
+		if name:startswith("#") then
+			return ColorHex(name)
+		end
 		return ColorHex(names[name:lower()] or names.black)
+	end
+
+	function ColorToName(color)
+		local vec3color = Vec3(color.r, color.g, color.b)
+		local found = {}
+		for name, hex in pairs(names) do
+			local c = ColorHex(hex)
+			table.insert(found, {distance = Vec3(c.r, c.g, c.b):Distance(vec3color), name = name})
+		end
+		table.sort(found, function(a, b) return a.distance < b.distance end)
+		return found[1].name
 	end
 end
 
