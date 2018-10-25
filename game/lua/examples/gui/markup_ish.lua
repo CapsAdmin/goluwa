@@ -74,12 +74,83 @@ local META = gui.CreateTemplate("rectangle")
 	META:GetSet("NoDraw", true)
 gui.RegisterPanel(META)
 
---[[
-g("base") SetupLayout("Fill")
-	g("base") Height = 56 Color = ColorName("Blue") SetupLayout("MoveUp", "FillX")  g()
-	g("base") Height = 56 Color = ColorName("Green") SetupLayout("MoveDown", "FillX") g()
-	g("base") Color = ColorName("Yellow") SetupLayout("Fill") g()
-g()]]
+-- [[
+
+g("base")
+	Fill()
+	Color = ColorName("white")
+	local rect = self:GetRect():Copy()
+
+	local function shrink(a, b, how)
+		if how == "top" then
+			a.y = a.y + b.h
+			a.h = a.h - b.h
+		elseif how == "bottom" then
+			a.h = a.h - b.h
+		end
+
+		if how == "left" then
+			a.x = a.x + b.w
+			a.w = a.w - b.w
+		elseif how == "right" then
+			a.w = a.w - b.w
+		end
+		return a
+	end
+
+	local function dock(color, size, dir, lol)
+		g("base")
+			Margin = Rect()+20
+			Padding = Rect()+20
+			self.debug_mp = true
+
+			if dir == "top" or dir == "bottom" then
+				Height = size
+				self.laid_out_y = true
+			elseif dir == "left" or dir == "right" then
+				Width = size
+				self.laid_out_x = true
+			end
+			Position = rect:GetPosition() + self:GetPadding():GetPosition()
+			Color = ColorName(color)
+			if dir == "top" then
+				MoveLeft()
+				MoveUp()
+				FillX()
+			elseif dir == "bottom" then
+				MoveDown()
+				FillX()
+			elseif dir == "left" then
+				MoveLeft()
+				FillY()
+			elseif dir == "right" then
+				MoveRight()
+				FillY()
+			end
+			rect = shrink(rect, self:GetRect() + self:GetPadding() + self:GetParent():GetMargin(), dir)
+		g()
+	end
+
+	Margin = Rect() + 20
+	Padding = Rect() + 20
+
+	dock("#bbbbbbb", 500, "top")
+ do return end
+	dock("green", 50, "bottom")
+	dock("yellow", 50, "left")
+	dock("purple", 50, "right")
+	--dock("orange", 50, "right")
+	--dock("black", 50, "left", true)
+	-- [[
+	g("base") Name = "pink"
+		Color = ColorName("Pink")
+		Size = Vec2(16, 16)
+		--Rect = rect
+		Position = rect:GetPosition()
+		FillX()
+	g()
+	--]]
+g() do return end--]]
 
 g("frame")
 	Size = Vec2(250, 140)
