@@ -110,9 +110,8 @@ function gfx.DrawOutlinedRect(x,y,w,h, r, r_,g,b,a)
 		r = Rect() + r
 	end
 
-	gfx.DrawLine(x, y, x, x + h, r.x, true, r.x)
+	gfx.DrawLine(x, y, x, y + h, r.x, true, r.x)
 	gfx.DrawLine(x - r.x + r.y, y, x + w + r.y + r.w, y, r.y, true, 0, r.y)
-
 	gfx.DrawLine(x + w, y, x + w, y + h, r.w, true, 0)
 	gfx.DrawLine(x - r.x, y + h, x + w + r.w, y + h, r.h, true, r.h, 0)
 
