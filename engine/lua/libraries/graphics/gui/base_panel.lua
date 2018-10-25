@@ -2309,7 +2309,7 @@ do -- layout
 			end
 
 			self:SetY(math.max(y, top.y)) -- HACK???
-			self:SetHeight(math.max(h, min_height))
+			self:SetHeight(math.max(h + 1, min_height))
 
 			self.laid_out_y = true
 		end
@@ -2328,7 +2328,7 @@ do -- layout
 			local left = self:RayCast(self:GetPosition(), Vec2(0, self.Position.y))
 			local right = self:RayCast(self:GetPosition(), Vec2(width, left.y))
 
-			self:SetX(math.lerp(0.5, left.x, right.x))
+			self:SetX((left.x + right.x)/2 - self:GetWidth()/2 - self.Padding:GetLeft() + self.Padding:GetRight())
 
 			self.laid_out_x = true
 		end
@@ -2339,7 +2339,7 @@ do -- layout
 
 			local top = self:RayCast(self:GetPosition(), Vec2(self.Position.x, 0))
 			local bottom = self:RayCast(self:GetPosition(), Vec2(top.x, height))
-			self:SetY(top.y + (bottom.y/2 - self:GetHeight()/2) - self.Padding:GetTop() + self.Padding:GetBottom())
+			self:SetY((top.y + bottom.y)/2 - self:GetHeight()/2 - self.Padding:GetTop() + self.Padding:GetBottom())
 
 			self.laid_out_y = true
 		end
