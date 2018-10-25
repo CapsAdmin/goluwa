@@ -438,6 +438,22 @@ do -- drawing
 	end
 
 	function META:DrawDebug()
+
+		if self.debug_mp then
+			local x,y = self.Margin.x, self.Margin.y
+			local w,h = self.Size.x - self.Margin.w - self.Margin.x, self.Size.y - self.Margin.h - self.Margin.y
+
+			gfx.DrawOutlinedRect(x,y,w,h, 1, 1,0,0,1)
+			gfx.DrawOutlinedRect(x,y,w,h, self.Margin, 1,0,0,0.25)
+
+			local x,y = -self.Padding.x, -self.Padding.y
+			local w,h = self.Size.x + self.Padding.w + self.Padding.x, self.Size.y + self.Padding.h + self.Padding.y
+
+			gfx.DrawOutlinedRect(0,0,self.Size.x,self.Size.y, 1, 0.25,0.5,1, 1)
+			gfx.DrawOutlinedRect(x,y,w,h, 1, 0.25,0.5,1, 1)
+			gfx.DrawOutlinedRect(x,y,w,h, -self.Padding, 0.25,0.5,1, 0.25)
+		end
+
 		if self.debug_flash and self.debug_flash > system.GetElapsedTime() then
 			render2d.SetTexture()
 			render2d.SetColor(1,0,0,(system.GetElapsedTime()*4)%1 > 0.5 and 0.5 or 0)
