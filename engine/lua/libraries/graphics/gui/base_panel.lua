@@ -675,6 +675,10 @@ do -- orientation
 			return Rect(0,0,0,0)
 		end
 
+		if self:IsWorld() then
+			return self:GetMargin()
+		end
+
 		return self.Parent:GetMargin()
 	end
 
