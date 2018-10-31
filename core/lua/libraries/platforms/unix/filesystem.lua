@@ -99,59 +99,90 @@ local stat
 if jit.os == "OSX" then
 	stat = ffi.typeof([[
 		struct {
-			dev_t           st_dev;
-			mode_t          st_mode;
-			nlink_t         st_nlink;
-			ino64_t         st_ino;
-			uid_t           st_uid;
-			gid_t           st_gid;
-			dev_t           st_rdev;
-			struct timespec st_atimespec;
-			struct timespec st_mtimespec;
-			struct timespec st_ctimespec;
-			struct timespec st_birthtimespec;
-			off_t           st_size;
-			blkcnt_t        st_blocks;
-			blksize_t       st_blksize;
-			uint32_t        st_flags;
-			uint32_t        st_gen;
-			int32_t         st_lspare;
-			int64_t         st_qspare[2];
+			uint32_t st_dev;
+			uint16_t st_mode;
+			uint16_t st_nlink;
+			uint64_t st_ino;
+			uint32_t st_uid;
+			uint32_t st_gid;
+			uint32_t st_rdev;
+			// NOTE: these were `struct timespec`
+			time_t   st_atime;
+			long     st_atime_nsec;
+			time_t   st_mtime;
+			long     st_mtime_nsec;
+			time_t   st_ctime;
+			long     st_ctime_nsec;
+			time_t   st_btime; // birth-time i.e. creation time
+			long     st_btime_nsec;
+			int64_t  st_size;
+			int64_t  st_blocks;
+			int32_t  st_blksize;
+			uint32_t st_flags;
+			uint32_t st_gen;
+			int32_t  st_lspare;
+			int64_t  st_qspare[2];
 		}
 	]])
 else
-	stat = ffi.typeof([[
-		struct {
-			unsigned long   st_dev;
-			unsigned long   st_ino;
-			unsigned long   st_nlink;
-			unsigned int    st_mode;
-			unsigned int    st_uid;
-			unsigned int    st_gid;
-			unsigned int    __pad0;
-			unsigned long   st_rdev;
-			long            st_size;
-			long            st_blksize;
-			long            st_blocks;
-			unsigned long   st_atime;
-			unsigned long   st_atime_nsec;
-			unsigned long   st_mtime;
-			unsigned long   st_mtime_nsec;
-			unsigned long   st_ctime;
-			unsigned long   st_ctime_nsec;
-			long            __unused[3];
-		}
-	]])
+	if jit.arch == "x64" then
+		stat = ffi.typeof([[
+			struct {
+				uint64_t st_dev;
+				uint64_t st_ino;
+				uint64_t st_nlink;
+				uint32_t st_mode;
+				uint32_t st_uid;
+				uint32_t st_gid;
+				uint32_t __pad0;
+				uint64_t st_rdev;
+				int64_t  st_size;
+				int64_t  st_blksize;
+				int64_t  st_blocks;
+				uint64_t st_atime;
+				uint64_t st_atime_nsec;
+				uint64_t st_mtime;
+				uint64_t st_mtime_nsec;
+				uint64_t st_ctime;
+				uint64_t st_ctime_nsec;
+				int64_t  __unused[3];
+			}
+		]])
+	else
+		stat = ffi.typeof([[
+			struct {
+				uint64_t st_dev;
+				uint8_t  __pad0[4];
+				uint32_t __st_ino;
+				uint32_t st_mode;
+				uint32_t st_nlink;
+				uint32_t st_uid;
+				uint32_t st_gid;
+				uint64_t st_rdev;
+				uint8_t  __pad3[4];
+				int64_t  st_size;
+				uint32_t st_blksize;
+				uint64_t st_blocks;
+				uint32_t st_atime;
+				uint32_t st_atime_nsec;
+				uint32_t st_mtime;
+				uint32_t st_mtime_nsec;
+				uint32_t st_ctime;
+				uint32_t st_ctime_nsec;
+				uint64_t st_ino;
+			}
+		]])
+	end
 end
 
 local statbox = ffi.typeof("$[1]", stat)
-
 local DIRECTORY = 0x4000
 local STAT = jit.arch == "x64" and 4 or 195
 
 function fs.getattributes(path)
 	local buff = statbox()
-	if ffi.C.syscall(STAT, path, buff) == 0 then
+	local ret = ffi.C.syscall(STAT, path, buff)
+	if ret == 0 then
 		return {
 			last_accessed = tonumber(buff[0].st_atime),
 			last_changed = tonumber(buff[0].st_ctime),
@@ -160,7 +191,6 @@ function fs.getattributes(path)
 			size = tonumber(buff[0].st_size),
 		}
 	end
-
 	return false
 end
 
