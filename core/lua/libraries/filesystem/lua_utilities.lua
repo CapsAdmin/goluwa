@@ -323,18 +323,48 @@ local function handle_dir(dir, path)
 	return dir .. path
 end
 
-function vfs.AddModuleDirectory(dir, loaders)
+vfs.lua_binary_modules_path = {}
+
+function vfs.AddBinaryModuleDirectory(relative_directory)
+	local files = vfs.GetFiles({
+		path = relative_directory,
+		full_path = true,
+	})
+	local done = {}
+	for _, path in pairs(files) do 
+		local full_directory = vfs.GetParentFolderFromPath(path)
+		if not done[full_directory] then
+			local cpath
+			if WINDOWS then
+				cpath = e.BIN_FOLDER .. "?.dll"
+			elseif OSX then
+				cpath = e.BIN_FOLDER .. ".dylib;./?.so"
+			else
+				cpath = e.BIN_FOLDER .. "?.so"
+			end
+			vfs.lua_binary_modules_path[full_directory] = cpath
+			done[full_directory] = true
+		end
+	end
+	package.cpath = ""
+	for k,v in pairs(vfs.lua_binary_modules_path) do 
+		package.cpath = package.cpath .. v .. ";"
+	end
+end
+
+function vfs.AddModuleDirectory(dir, ext, loaders)
+	ext = ext or ".lua"
 	loaders = loaders or package.loaders
 
 	do -- relative path
 		vfs.AddPackageLoader(function(path)
-			return vfs.LoadFile(handle_dir(dir, path) .. ".lua")
+			return vfs.LoadFile(handle_dir(dir, path) .. ext)
 		end, loaders)
 
 		vfs.AddPackageLoader(function(path)
 			local path, count = path:gsub("(.)%.(.)", "%1/%2")
 			if count == 0 then return end
-			return vfs.LoadFile(handle_dir(dir, path) .. ".lua")
+			return vfs.LoadFile(handle_dir(dir, path) .. ext)
 		end, loaders)
 
 		vfs.AddPackageLoader(function(path)
@@ -343,26 +373,26 @@ function vfs.AddModuleDirectory(dir, loaders)
 	end
 
 	vfs.AddPackageLoader(function(path)
-		return vfs.LoadFile(handle_dir(dir, path) .. "/" .. path .. ".lua")
+		return vfs.LoadFile(handle_dir(dir, path) .. "/" .. path .. ext)
 	end, loaders)
 
 	vfs.AddPackageLoader(function(path)
-		return vfs.LoadFile(handle_dir(dir, path) .. "/init.lua")
+		return vfs.LoadFile(handle_dir(dir, path) .. "/init" .. ext)
 	end, loaders)
 
 	-- again but with . replaced with /
 	vfs.AddPackageLoader(function(path)
 		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
-		return vfs.LoadFile(handle_dir(dir, path) .. ".lua")
+		return vfs.LoadFile(handle_dir(dir, path) .. ext)
 	end, loaders)
 
 	vfs.AddPackageLoader(function(path)
 		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
-		return vfs.LoadFile(handle_dir(dir, path) .. "/init.lua")
+		return vfs.LoadFile(handle_dir(dir, path) .. "/init" .. ext)
 	end, loaders)
 
 	vfs.AddPackageLoader(function(path)
 		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
-		return vfs.LoadFile(handle_dir(dir, path) .. "/" .. path ..  ".lua")
+		return vfs.LoadFile(handle_dir(dir, path) .. "/" .. path ..  ext)
 	end, loaders)
 end
