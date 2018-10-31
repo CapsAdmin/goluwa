@@ -100,7 +100,7 @@ do
 		end
 
 		if window and battery_limit:Get() and system.IsUsingBattery() and system.GetBatteryLevel() < 0.95 then
-			render.SwapInterval(true)
+			render.GetWindow():SwapInterval(true)
 			if system.GetBatteryLevel() < 0.20 then
 				rate = 10
 			end
