@@ -23,7 +23,7 @@ function system.ExecuteArgs(args)
 					end
 
 					if type(tbl) ~= "table" then
-						logn("table expected in ARGS, got ",type(tbl),": return ", str)
+						llog("table expected in ARGS, got %s: return %s", type(tbl), str)
 						return
 					end
 

@@ -54,16 +54,27 @@ do
 		return self:GetCursor() == "trapped"
 	end
 
-	function META:Initialize() error("nyi") end
-	function META:PreWindowSetup() error("nyi") end
-	function META:PostWindowSetup() error("nyi") end
-	function META:OnRemove() error("nyi") end
+	local function nyi()
+		local func = debug.getinfo(2).func
+		for k, v in pairs(META) do
+			if v == func then
+				local msg = "function Window:" .. k .. "() is not implemented"
+				wlog(msg, 2)
+				error(msg, 2)
+			end
+		end
+	end
 
-	function META:Maximize() error("nyi") end
-	function META:Minimize() error("nyi") end
-	function META:Restore() error("nyi") end
+	function META:Initialize() nyi() end
+	function META:PreWindowSetup() nyi() end
+	function META:PostWindowSetup() nyi() end
+	function META:OnRemove() nyi() end
 
-	function META:GetFramebufferSize() error("nyi") end
+	function META:Maximize() nyi() end
+	function META:Minimize() nyi() end
+	function META:Restore() nyi() end
+
+	function META:GetFramebufferSize() nyi() end
 
 	function META:OnUpdate(dt) end
 
@@ -166,7 +177,10 @@ do
 	function window.CreateWindow(width, height, title, flags)
 		local self = META:CreateObject()
 
-		self:Initialize()
+		local ok, err = self:Initialize()
+		if ok == false then
+			return ok, err
+		end
 
 		if NULL_OPENGL then
 			local gl = require("opengl")
@@ -216,7 +230,9 @@ end
 function window.Open(...)
 	if window.IsOpen() then return end
 
-	local wnd = window.CreateWindow(...)
+	local ok, wnd = pcall(window.CreateWindow, ...)
+
+	if not ok then wlog(wnd) return ok, wnd end
 
 	wnd:BindContext()
 

@@ -235,7 +235,7 @@ do
 			for level = 3, 100 do
 				local info = debug.getinfo(level)
 				if info then
-					info.source = debug.getprettysource(level)
+					info.source = debug.getprettysource(level) .. ":" .. (info.currentline or 0)
 
 					local args = {}
 
@@ -287,14 +287,13 @@ do
 				end
 			end
 
-			table.insert(data, {currentline = "LINE:", source = "SOURCE:", name = "FUNCTION:", arg_line = " ARGUMENTS "})
+			table.insert(data, {source = "SOURCE:", name = "FUNCTION:", arg_line = " ARGUMENTS "})
 
-			resize_field(data, "currentline")
 			resize_field(data, "source")
 			resize_field(data, "name")
 
 			for _, info in npairs(data) do
-				logf("  %s   %s   %s  (%s)\n", info.currentline, info.source, info.name, info.arg_line)
+				logf("  %s   %s  (%s)\n", info.source, info.name, info.arg_line)
 			end
 
 			table.clear(data)

@@ -338,6 +338,9 @@ function desire(name)
 	local ok, res = pcall(require, name)
 
 	if not ok then
+		res = res:gsub("module .- not found:%s+", "")
+		res = res:gsub("error loading module .- from file.-:%s+", "")
+		
 		wlog("unable to require %s:\n\t%s", name, res, 2)
 
 		return nil, res
