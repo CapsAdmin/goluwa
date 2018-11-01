@@ -217,11 +217,7 @@ do -- logging
 		end
 
 		if log_files.console == log_file then
-			if repl and repl.Print and repl.curses_init then
-				repl.Print(line)
-			elseif can_print(line) then
-				io.write(line)
-			end
+			repl.Print(line)
 		end
 	end
 

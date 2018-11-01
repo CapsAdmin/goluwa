@@ -132,11 +132,14 @@ local last_time = 0
 local i = 0
 
 function system.MainLoop()
+	repl.Start()
 	while system.run == true do
+		repl.Update()
+		
 		local time = system.GetTime()
 
 		local dt = time - (last_time or 0)
-
+		
 		system.SetFrameTime(dt)
 		system.SetFrameNumber(i)
 		system.SetElapsedTime(system.GetElapsedTime() + dt)
@@ -147,4 +150,5 @@ function system.MainLoop()
 		last_time = time
 		event.Call("FrameEnd")
 	end
+	repl.Stop()
 end

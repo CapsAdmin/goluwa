@@ -3,13 +3,6 @@ commands = runfile("lua/libraries/commands.lua") -- console command type interfa
 
 runfile("!lua/libraries/extensions/*")
 
-if CURSES then
-	repl = runfile("lua/libraries/repl.lua") -- read eval print loop using curses
-	if not repl then
-		CURSES = false
-	end
-end
-
 expression = runfile("lua/libraries/expression.lua") -- used by chat and editor to run small and safe lua expressions
 autocomplete = runfile("lua/libraries/autocomplete.lua") -- mainly used in console and chatsounds
 language = runfile("lua/libraries/language.lua") _G.L = language.LanguageString -- L"options", for use in gui menus and such.
@@ -60,11 +53,6 @@ pvars.Setup("system_tasks_enabled", false, function(val) tasks.enabled = val end
 if CLI then tasks.enabled = true end
 
 --steam.InitializeWebAPI()
-
-
-if CURSES then
-	repl.Initialize()
-end
 
 if PHYSICS then
 	physics.Initialize()

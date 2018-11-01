@@ -1,5 +1,4 @@
 local env_vars = {
-	CURSES = true,
 	CLI = false,
 	TMUX = false,
 	PHYSICS = false,
@@ -33,10 +32,6 @@ if CLI or TMUX then
 	SERVER = false
 	SOUND = false
 	PHYSICS = false
-end
-
-if CLI then
-	CURSES = false
 end
 
 return {

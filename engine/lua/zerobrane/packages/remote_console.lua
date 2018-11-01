@@ -79,7 +79,6 @@ function PLUGIN:Setup()
 
 			working_directory = "../../",
 			env_vars = env_vars or {
-				GOLUWA_CURSES = "0",
 				GOLUWA_IDE = "",
 				GOLUWA_ARGS = [==[{[[
 					local delimiter = "]==] .. delimiter .. [==["
