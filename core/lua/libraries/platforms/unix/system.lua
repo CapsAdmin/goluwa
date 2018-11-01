@@ -47,25 +47,13 @@ do
 end
 
 do
-	if CLI then
-		local last
-		function system.SetConsoleTitleRaw(str)
-			if str ~= last then
-				for i, v in ipairs(str:split("|")) do
-					local s = v:trim()
-					if s ~= "" then
-						logn(s)
-					end
-				end
-				last = str
-			end
-		end
-	else
-		local iowrite = _OLD_G.io.write
+	local iowrite = _OLD_G.io.write
 
-		function system.SetConsoleTitleRaw(str)
-			return iowrite and iowrite('\27]0;', str, '\7') or nil
+	function system.SetConsoleTitleRaw(str)
+		if repl and repl.SetConsoleTitle then
+			return repl.SetConsoleTitle(str)
 		end
+		return iowrite and iowrite('\27]0;', str, '\7') or nil
 	end
 end
 

@@ -367,7 +367,7 @@ if ffi then
 		end
 
 		function repl.SetConsoleTitle(str)
-
+			io.write("\27]0;", str, "\7")
 		end
 
 		function repl.GetCaretPosition()
