@@ -71,7 +71,9 @@ function META:Initialize()
 
 	sdl.windowobjects[self.sdl_windowid] = self
 
-	llog("version: %s", ffi.string(sdl.GetRevision()))
+	if VERBOSE then
+		llog("version: %s", ffi.string(sdl.GetRevision()))
+	end
 end
 
 function META:OnFrameEnd()

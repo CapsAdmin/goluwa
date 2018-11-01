@@ -217,7 +217,11 @@ do -- logging
 		end
 
 		if log_files.console == log_file then
-			repl.Print(line)
+			if repl and repl.Print then
+				repl.Print(line)
+			else
+				io.write(line)
+			end
 		end
 	end
 
@@ -338,10 +342,12 @@ function desire(name)
 	local ok, res = pcall(require, name)
 
 	if not ok then
-		res = res:gsub("module .- not found:%s+", "")
-		res = res:gsub("error loading module .- from file.-:%s+", "")
-		
-		wlog("unable to require %s:\n\t%s", name, res, 2)
+		if VERBOSE then
+			res = res:gsub("module .- not found:%s+", "")
+			res = res:gsub("error loading module .- from file.-:%s+", "")
+			
+			wlog("unable to require %s:\n\t%s", name, res, 2)
+		end
 
 		return nil, res
 	end

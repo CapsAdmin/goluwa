@@ -1,6 +1,5 @@
 local env_vars = {
 	CLI = false,
-	TMUX = false,
 	PHYSICS = false,
 }
 
@@ -25,7 +24,7 @@ end
 
 CREATED_ENV = false
 
-if CLI or TMUX then
+if CLI then
 	GRAPHICS = false
 	WINDOW = false
 	CLIENT = false

@@ -115,21 +115,6 @@ end
 			_G.PLATFORM = "unknown"
 		end
 	end
-
-	_G.CLI = os.getenv("GOLUWA_CLI")
-end
-
-do
-	-- force lookup modules in current directory rather than system
-	if WINDOWS then
-		package.cpath = e.BIN_FOLDER .. "?.dll"
-	elseif OSX then
-		package.cpath = e.BIN_FOLDER .. ".dylib;./?.so"
-	else
-		package.cpath = e.BIN_FOLDER .. "?.so"
-	end
-
-	package.path = "./?.lua"
 end
 
 _G.runfile = function(path, ...) return loadfile(e.ROOT_FOLDER .. e.INTERNAL_ADDON_NAME .. "/" .. path)(...) end
@@ -179,10 +164,10 @@ vfs.MountAddon("os:" .. e.CORE_FOLDER) -- mount "ROOT/"..e.INTERNAL_ADDON_NAME t
 vfs.GetAddonInfo(e.INTERNAL_ADDON_NAME).dependencies = {e.INTERNAL_ADDON_NAME} -- prevent init.lua from running later on again
 vfs.GetAddonInfo(e.INTERNAL_ADDON_NAME).startup = nil -- prevent init.lua from running later on again
 
-vfs.AddModuleDirectory("lua/modules/", ".lua")
-vfs.AddModuleDirectory("bin/" .. OS .. "_" .. ARCH .. "/", ".lua")
-vfs.AddBinaryModuleDirectory("bin/" .. OS .. "_" .. ARCH .. "/")
+vfs.AddModuleDirectory("lua/modules/")
+vfs.AddModuleDirectory("bin/" .. OS .. "_" .. ARCH .. "/")
 
+_G.require = vfs.Require
 _G.runfile = vfs.RunFile
 _G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir
 -- libraries
@@ -194,7 +179,13 @@ utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to
 profiler = runfile("lua/libraries/profiler.lua") -- for profiling
 repl = runfile("lua/libraries/repl.lua")
 
-if THREAD then return end
+do
+	local args = os.getenv("GOLUWA_ARG_LINE"):split(" ")
+	
+	if table.hasvalue(args, "--verbose") then
+		_G.VERBOSE = true
+	end
+end
 
 -- tries to load all addons
 -- some might not load depending on its info.lua file.
@@ -203,38 +194,40 @@ if THREAD then return end
 -- this will skip the src folder though
 vfs.MountAddons(e.ROOT_FOLDER)
 
-if not CLI then
+if VERBOSE then
 	logn("[runfile] ", os.clock() - start_time," seconds spent in core/lua/init.lua")
 end
 
-
-do -- autorun
-	-- call goluwa/*/lua/init.lua if it exists
-	vfs.InitAddons()
-
-	-- load everything in goluwa/*/lua/autorun/*
-	vfs.AutorunAddons()
-
-	-- load everything in goluwa/*/lua/autorun/*USERNAME*/*
-	vfs.AutorunAddons(e.USERNAME .. "/")
-end
-
-e.CLI_TIME = tonumber(os.getenv("GOLUWA_CLI_TIME")) or -1
 e.BOOT_TIME = tonumber(os.getenv("GOLUWA_BOOT_TIME")) or -1
 e.INIT_TIME = os.clock() - start_time
 e.BOOTIME = os.clock()
 
+event.AddListener("MainLoopStart", function()
+	vfs.AutorunAddons()
+
+	-- load everything in goluwa/*/lua/autorun/*USERNAME*/*
+	vfs.AutorunAddons(e.USERNAME .. "/")
+end)
+
+-- this could be overriden
+event.AddListener("MainLoop", "main", function()
+	event.Call("MainLoopStart")
+	repl.MainLoop()
+	event.Call("MainLoopStop")
+end)
+
+system.ExecuteArgs()
+
+-- call goluwa/*/lua/init.lua if it exists
+vfs.InitAddons()
+
 event.Call("Initialize")
 
-if not CLI then
+if VERBOSE then
 	logn("[runfile] total init time took ", os.clock() - start_time, " seconds to execute")
 end
 
-if system.MainLoop then
-	system.MainLoop()
-elseif repl.MainLoop then
-	repl.MainLoop()
-end
+event.Call("MainLoop")
 
 event.Call("ShutDown")
 collectgarbage()

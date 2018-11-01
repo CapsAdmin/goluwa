@@ -165,7 +165,7 @@ do -- runfile
 					_G.FILE_NAME = full_path:match(".*/(.+)%.") or full_path
 					_G.FILE_EXTENSION = full_path:match(".*/.+%.(.+)")
 
-					if not CLI and utility and utility.PushTimeWarning then
+					if VERBOSE and utility and utility.PushTimeWarning then
 						utility.PushTimeWarning()
 					end
 
@@ -177,7 +177,7 @@ do -- runfile
 						ok, err = pcall(func, ...)
 					end
 
-					if not CLI and utility and utility.PushTimeWarning then
+					if VERBOSE and utility and utility.PushTimeWarning then
 						utility.PopTimeWarning(full_path, 0.01)
 					end
 
@@ -263,7 +263,7 @@ do -- runfile
 				res = {pcall(func, ...)}
 			end
 
-			if full_path:find(e.ROOT_FOLDER, nil, true) then
+			if VERBOSE and full_path:find(e.ROOT_FOLDER, nil, true) then
 				utility.PopTimeWarning(full_path:gsub(e.ROOT_FOLDER, ""), 0.025, "[runfile]")
 			end
 
@@ -296,103 +296,37 @@ do -- runfile
 	end
 end
 
--- although vfs will add a loader for each mount, the module folder has to be an exception for modules only
--- this loader should support more ways of loading than just adding ".lua"
+vfs.module_directories = {}
 
-function vfs.AddPackageLoader(func, loaders)
-	loaders = loaders or package.loaders
-
-	for i, v in ipairs(loaders) do
-		if v == func then
-			table.remove(loaders, i)
-			break
-		end
+function vfs.Require(...)
+	local ret = {pcall(_OLD_G.require, ...)}
+	if ret[1] then
+		return unpack(ret, 2)
 	end
-	table.insert(loaders, func)
-end
-
-local function handle_dir(dir, path)
-	if path:startswith("..") then
-		local last_dir = vfs.GetFileRunStack()[#vfs.GetFileRunStack()]
-		local dir = vfs.FixPathSlashes(vfs.GetParentFolderFromPath(last_dir, 1) .. path:sub(3))
-		return dir
-	elseif path:startswith(".") then
-		return vfs.FixPathSlashes(vfs.GetFileRunStack()[#vfs.GetFileRunStack()] .. path:sub(2))
-	end
-
-	return dir .. path
-end
-
-vfs.lua_binary_modules_path = {}
-
-function vfs.AddBinaryModuleDirectory(relative_directory)
-	local files = vfs.GetFiles({
-		path = relative_directory,
-		full_path = true,
-	})
+	
 	local done = {}
-	for _, path in pairs(files) do 
-		local full_directory = vfs.GetParentFolderFromPath(path)
-		if not done[full_directory] then
-			local cpath
-			if WINDOWS then
-				cpath = e.BIN_FOLDER .. "?.dll"
-			elseif OSX then
-				cpath = e.BIN_FOLDER .. ".dylib;./?.so"
+	local errors = {}
+	for _, dir in ipairs(vfs.module_directories) do
+		for _, data in ipairs(vfs.TranslatePath(dir, true)) do
+			vfs.PushWorkingDirectory(data.path_info.full_path)
+				
+			local ret = {pcall(_OLD_G.require, ...)}
+
+			vfs.PopWorkingDirectory()
+
+			if ret[1] then
+				return unpack(ret, 2)
 			else
-				cpath = e.BIN_FOLDER .. "?.so"
+				if not done[ret[2]] then
+					table.insert(errors, ret[2])
+					done[ret[2]] = true
+				end
 			end
-			vfs.lua_binary_modules_path[full_directory] = cpath
-			done[full_directory] = true
 		end
 	end
-	package.cpath = ""
-	for k,v in pairs(vfs.lua_binary_modules_path) do 
-		package.cpath = package.cpath .. v .. ";"
-	end
+	error(table.concat(errors, 2), 2)
 end
 
-function vfs.AddModuleDirectory(dir, ext, loaders)
-	ext = ext or ".lua"
-	loaders = loaders or package.loaders
-
-	do -- relative path
-		vfs.AddPackageLoader(function(path)
-			return vfs.LoadFile(handle_dir(dir, path) .. ext)
-		end, loaders)
-
-		vfs.AddPackageLoader(function(path)
-			local path, count = path:gsub("(.)%.(.)", "%1/%2")
-			if count == 0 then return end
-			return vfs.LoadFile(handle_dir(dir, path) .. ext)
-		end, loaders)
-
-		vfs.AddPackageLoader(function(path)
-			return vfs.LoadFile(handle_dir(dir, path))
-		end, loaders)
-	end
-
-	vfs.AddPackageLoader(function(path)
-		return vfs.LoadFile(handle_dir(dir, path) .. "/" .. path .. ext)
-	end, loaders)
-
-	vfs.AddPackageLoader(function(path)
-		return vfs.LoadFile(handle_dir(dir, path) .. "/init" .. ext)
-	end, loaders)
-
-	-- again but with . replaced with /
-	vfs.AddPackageLoader(function(path)
-		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
-		return vfs.LoadFile(handle_dir(dir, path) .. ext)
-	end, loaders)
-
-	vfs.AddPackageLoader(function(path)
-		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
-		return vfs.LoadFile(handle_dir(dir, path) .. "/init" .. ext)
-	end, loaders)
-
-	vfs.AddPackageLoader(function(path)
-		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
-		return vfs.LoadFile(handle_dir(dir, path) .. "/" .. path ..  ext)
-	end, loaders)
+function vfs.AddModuleDirectory(dir)
+	table.insert(vfs.module_directories, dir)
 end

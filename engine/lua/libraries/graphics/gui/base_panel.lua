@@ -1628,7 +1628,7 @@ do -- mouse
 
 		local alpha = 1
 
-		if not self.NinePatch and self.NinePatchRect:IsZero() and self.Texture:IsValid() and self.Texture ~= render.GetWhiteTexture() and not self.Texture:IsLoading() then
+		if not self.NinePatch and self.NinePatchRect:IsZero() and self.Texture and self.Texture:IsValid() and self.Texture ~= render.GetWhiteTexture() and not self.Texture:IsLoading() then
 			local x = (x / self.Size.x)
 			local y = (y / self.Size.y)
 

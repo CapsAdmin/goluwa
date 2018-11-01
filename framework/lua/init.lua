@@ -61,36 +61,25 @@ elseif CLI then
 	audio = runfile("!lua/libraries/audio/decoding.lua") -- only decoding
 end
 
-if SOCKETS then
-	sockets.Initialize()
-end
-
 resource.AddProvider("https://gitlab.com/CapsAdmin/goluwa-assets/raw/master/base/", true)
 
-if WINDOW then
-	if window.Open() then
-		if GRAPHICS then
-			render2d.Initialize()
-			fonts.Initialize()
-			gfx.Initialize()
-		end
-	else
-		GRAPHICS = false
-		WINDOW = false
-	end
-end
-
-if SOUND then
-	audio.Initialize()
-end
-
---steam.InitializeWebAPI()
-
-if NETWORK then
-	network.Initialize()
-end
-
 event.AddListener("Initialize", function()
+	if SOCKETS then
+		sockets.Initialize()
+	end
+
+	if SOUND then
+		audio.Initialize()
+	end
+
+	--steam.InitializeWebAPI()
+
+	if NETWORK then
+		network.Initialize()
+	end
+end)
+
+event.AddListener("MainLoopStart", function()
 	-- load everything in goluwa/*/lua/autorun/client/*
 	if CLIENT then
 		vfs.AutorunAddons("client/")
@@ -109,29 +98,16 @@ event.AddListener("Initialize", function()
 	if SOUND then
 		vfs.AutorunAddons("sound/")
 	end
-
-	if GRAPHICS and render2d.IsReady() then
-		vfs.AutorunAddons("graphics/")
-	end
 end)
 
-if THREAD then return end
+-- this could be overriden
+event.AddListener("MainLoop", "main", function()
+	event.Call("MainLoopStart")
+	event.Call("MainLoopStart")
 
--- only if we're in 32 bit lua
-if #tostring({}) == 10 then
-	event.Thinker(function()
-		if collectgarbage("count") > 900000 then
-			collectgarbage()
-			llog("emergency gc!")
-		end
-	end, false, 1/10)
-end
+	local last_time = 0
+	local i = 0
 
--- main loop
-local last_time = 0
-local i = 0
-
-function system.MainLoop()
 	repl.Start()
 	while system.run == true do
 		repl.Update()
@@ -145,10 +121,14 @@ function system.MainLoop()
 		system.SetElapsedTime(system.GetElapsedTime() + dt)
 		event.Call("Update", dt)
 		system.SetInternalFrameTime(system.GetTime() - time)
-		system.UpdateTitlebarFPS()
+		
 		i = i + 1
 		last_time = time
 		event.Call("FrameEnd")
 	end
 	repl.Stop()
-end
+
+	event.Call("MainLoopStop")
+end)
+
+

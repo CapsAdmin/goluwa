@@ -107,7 +107,7 @@ function event.Call(event_type, a_, b_, c_, d_, e_)
 			else
 				status, a,b,c,d,e = xpcall(data.callback, data.on_error or system.OnError, a_, b_, c_, d_, e_)
 			end
-
+			
 			if a == event.destroy_tag or data.remove_after_one_call then
 				event.RemoveListener(event_type, data.id)
 			else

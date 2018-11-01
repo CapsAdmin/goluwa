@@ -256,7 +256,7 @@ function table.print(...)
 
 	local luadata = serializer.GetLibrary("luadata")
 	luadata.SetModifier("function", function(var)
-		return ("function(%s) --[==[ptr: %p    src: %s]==] end"):format(table.concat(debug.getparams(var), ", "), var, debug.getprettysource(var))
+		return ("function(%s) --[==[ptr: %p    src: %s]==] end"):format(table.concat(debug.getparams(var), ", "), var, debug.getprettysource(var, true))
 	end)
 	luadata.SetModifier("fallback", function(var)
 		return "--[==[  " .. tostringx(var) .. "  ]==]"

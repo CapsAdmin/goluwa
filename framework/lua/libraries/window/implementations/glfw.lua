@@ -183,8 +183,10 @@ function META:Initialize()
 	end
 
 	glfw.MakeContextCurrent(ptr)
-
-	logn("glfw version: ", ffi.string(glfw.GetVersionString()):trim())
+	
+	if VERBOSE then
+		logn("glfw version: ", ffi.string(glfw.GetVersionString()):trim())
+	end
 
 	self.wnd_ptr = ptr
 

@@ -1,23 +1,3 @@
-do -- full path
-	vfs.AddPackageLoader(function(path)
-		return vfs.LoadFile(path)
-	end)
-
-	vfs.AddPackageLoader(function(path)
-		return vfs.LoadFile(path .. ".lua")
-	end)
-
-	vfs.AddPackageLoader(function(path)
-		path = path:gsub("(.)%.(.)", "%1/%2")
-		return vfs.LoadFile(path .. ".lua")
-	end)
-
-	vfs.AddPackageLoader(function(path)
-		path = path:gsub("(.+/)(.+)", function(a, str) return a .. str:gsub("(.)%.(.)", "%1/%2") end)
-		return vfs.LoadFile(path .. ".lua")
-	end)
-end
-
 if SOCKETS then
 	package.preload["mime.core"] = function() return {b64 = crypto.Base64Encode} end
 
@@ -62,13 +42,15 @@ if not CLI then
 	resource.AddProvider("https://gitlab.com/CapsAdmin/goluwa-assets/raw/master/extras/", true)
 end
 
-if WINDOW then
-	love = line.CreateLoveEnv() -- https://www.love2d.org/wiki/love
-end
-
 if GRAPHICS then
 	menu = runfile("lua/libraries/graphics/menu.lua")
-	event.AddListener("Initialize", function() menu.Open() end)
 end
 
 goluwa = event.CreateRealm("goluwa")
+
+if WINDOW then
+	event.AddListener("WindowOpened", function()
+		love = line.CreateLoveEnv() -- https://www.love2d.org/wiki/love
+		--menu.Open()
+	end)
+end

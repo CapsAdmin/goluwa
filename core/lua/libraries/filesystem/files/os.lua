@@ -13,7 +13,7 @@ function CONTEXT:CreateFolder(path_info, force)
 		if self:IsFolder(path_info) then return true end
 
 		if force then
-			if not CLI then
+			if VERBOSE then
 				llog("creating directory: ", path_info.full_path)
 			end
 		end

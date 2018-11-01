@@ -92,6 +92,7 @@ do
 	end
 
 	local tokenize = require("lua_tokenizer")
+
 	local keywords = {
 		"and", "break", "do", "else", "elseif", "end",
 		"false", "for", "function", "if", "in", "local",

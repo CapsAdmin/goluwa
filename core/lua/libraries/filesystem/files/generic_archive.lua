@@ -89,7 +89,7 @@ function CONTEXT:GetFileTree(path_info)
 		return false, err
 	end
 
-	if not CLI then
+	if VERBOSE then
 		llog("generating tree data cache for ", archive_path)
 	end
 

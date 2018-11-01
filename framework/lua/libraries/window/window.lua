@@ -92,6 +92,7 @@ do
 	function META:OnCursorLeave() end
 
 	function META:OnClose() end
+	function META:SwapInterval() end
 
 	function META:OnCursorPosition(x, y) end
 	function META:OnDrop(paths) end
@@ -301,6 +302,8 @@ function window.Open(...)
 			end)
 		end
 	end)
+
+	event.Call("WindowOpened", wnd)
 
 	return wnd
 end

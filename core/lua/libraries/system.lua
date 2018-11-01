@@ -8,6 +8,9 @@ elseif PLATFORM == "windows" then
 	runfile("lua/libraries/platforms/windows/system.lua", system)
 end
 
+function system.ExecuteArgs()
+end
+
 function system.ForceMainLoop()
 	system.force_main_loop = true
 end
@@ -110,7 +113,7 @@ do
 
 	function system.ShutDown(code)
 		code = code or 0
-		if not CLI then
+		if VERBOSE then
 			logn("shutting down with code ", code)
 		end
 		system.run = code
