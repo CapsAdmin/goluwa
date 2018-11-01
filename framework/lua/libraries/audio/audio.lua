@@ -1,11 +1,5 @@
 local ffi = require("ffi")
 
-if LINUX then
-	-- openal needs libpulse but expects that it's
-	-- already loaded for some reason on my system
-	pcall(ffi.load, "pulse")
-end
-
 local al = desire("al")
 local alc = desire("alc")
 
