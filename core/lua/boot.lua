@@ -1,8 +1,8 @@
-STORAGE_PATH = os.getenv("STORAGE_PATH")
-ARG_LINE = os.getenv("ARG_LINE")
-SCRIPT_PATH = os.getenv("SCRIPT_PATH")
-RAN_FROM_FILEBROWSER = os.getenv("RAN_FROM_FILEBROWSER")
-BINARY_DIR = os.getenv("BINARY_DIR")
+STORAGE_PATH = os.getenv("GOLUWA_STORAGE_PATH")
+ARG_LINE = os.getenv("GOLUWA_ARG_LINE")
+SCRIPT_PATH = os.getenv("GOLUWA_SCRIPT_PATH")
+RAN_FROM_FILEBROWSER = os.getenv("GOLUWA_RAN_FROM_FILEBROWSER")
+BINARY_DIR = os.getenv("GOLUWA_BINARY_DIR")
 
 local start_time = os.clock()
 
@@ -494,23 +494,8 @@ do
 	end
 end
 
-local arg_line
-local args
-
-if WINDOWS then
-	args = {...}
-
-	for i = 1, #args do
-		if args[i] == "" or args[i]:find("^%s+$") then
-			table.remove(args, i)
-		end
-	end
-
-	arg_line = table.concat(args, " ")
-else
-	arg_line = ... or ""
-	args = {} (arg_line .. " "):gsub("(%S+)", function(chunk) table.insert(args, chunk) end)
-end
+local args = {} 
+(ARG_LINE .. " "):gsub("(%S+)", function(chunk) table.insert(args, chunk) end)
 
 local generic = [[ffibuild.CopyLibraries("{BINARY_DIR}/")]]
 local ffibuild_libraries = {
@@ -859,7 +844,7 @@ if args[1] ~= "launch" then
 			local prev = io.readfile(STORAGE_PATH .. "/tmux_log.txt")
 
 			os.readexecute("tmux send-keys -t goluwa \"echo  " .. magic_start .. "\" C-m")
-			os.readexecute("tmux send-keys -t goluwa '" .. arg_line .. "' C-m")
+			os.readexecute("tmux send-keys -t goluwa '" .. ARG_LINE .. "' C-m")
 			os.readexecute("tmux send-keys -t goluwa \"echo " .. magic_stop .. "\" C-m")
 
 			local timeout = os.clock() + 1

@@ -94,9 +94,9 @@ do -- constants
 		end
 end
 
-	e.BIN_FOLDER = e.ROOT_FOLDER .. os.getenv("BINARY_DIR") .. "/"
+	e.BIN_FOLDER = e.ROOT_FOLDER .. os.getenv("GOLUWA_BINARY_DIR") .. "/"
 	e.CORE_FOLDER = e.ROOT_FOLDER .. e.INTERNAL_ADDON_NAME .. "/"
-	e.STORAGE_FOLDER = e.ROOT_FOLDER .. os.getenv("STORAGE_PATH") .. "/"
+	e.STORAGE_FOLDER = e.ROOT_FOLDER .. os.getenv("GOLUWA_STORAGE_PATH") .. "/"
 	e.USERDATA_FOLDER = e.STORAGE_FOLDER .. "data/userdata/" .. e.USERNAME:lower() .. "/"
 	e.SHARED_FOLDER = e.STORAGE_FOLDER .. "data/shared/"
 	e.CACHE_FOLDER = e.STORAGE_FOLDER .. "data/cache/"

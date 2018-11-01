@@ -18,7 +18,7 @@ function system.ExecuteArgs(args)
 					local ok, tbl = pcall(func)
 
 					if not ok then
-						logn("failed to execute ARGS: ", tbl)
+						llog("failed to execute ARGS: %s", tbl)
 						return
 					end
 
@@ -29,7 +29,7 @@ function system.ExecuteArgs(args)
 
 					args = tbl
 				else
-					logn("failed to execute ARGS: ", err)
+					llog("failed to execute ARGS: %s", err)
 				end
 			end
 		end
