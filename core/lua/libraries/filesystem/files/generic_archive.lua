@@ -69,7 +69,7 @@ function CONTEXT:GetFileTree(path_info)
 		return false, "not a valid archive path"
 	end
 
-	local cache_path = "os:data/archive_cache/" .. crypto.CRC32(cache_key)
+	local cache_path = "os:cache/archive/" .. crypto.CRC32(cache_key)
 	if vfs.IsFile(cache_path) then
 		never = true
 		local tree_data, err, what = serializer.ReadFile("msgpack", cache_path)

@@ -43,7 +43,7 @@ local function get_gserv_addon_dir(id)
 	return get_gmod_dir(id) .. "addons/gserv/"
 end
 
-local srcds_dir = e.DATA_FOLDER .. "srcds/"
+local srcds_dir = e.STORAGE_FOLDER .. "srcds/"
 
 local data_dir = "data/gserv/"
 local data_dir = "data/gserv/"

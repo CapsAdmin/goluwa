@@ -128,7 +128,7 @@ end)
 
 if CLI then
 	event.AddListener("VFSPreWrite", "log_write", function(path, data)
-		if path:startswith("data/") or vfs.GetPathInfo(path).full_path:startswith(e.DATA_FOLDER) then
+		if path:startswith("data/") or vfs.GetPathInfo(path).full_path:startswith(e.STORAGE_FOLDER) then
 			return
 		end
 

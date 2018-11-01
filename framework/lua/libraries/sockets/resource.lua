@@ -1,7 +1,7 @@
 local resource = _G.resource or {}
 
 resource.providers = resource.providers or {}
-e.DOWNLOAD_FOLDER = e.DATA_FOLDER .. "downloads/"
+e.DOWNLOAD_FOLDER = e.STORAGE_FOLDER .. "data/shared/downloads/"
 local etags_file = e.DOWNLOAD_FOLDER .. "resource_etags.txt"
 
 --os.execute("rm -rf " .. R(e.DOWNLOAD_FOLDER))

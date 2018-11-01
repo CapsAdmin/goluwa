@@ -21,15 +21,15 @@ end)
 
 commands.Add("mount_clear", function()
 	local ok = false
-	for i,v in ipairs(vfs.Find("data/archive_cache/", true)) do
+	for i,v in ipairs(vfs.Find("cache/archive/", true)) do
 		vfs.Delete(v)
 		ok = true
 	end
-	if not ok and vfs.Delete("data/source_games_cache") then
+	if not ok and vfs.Delete("cache/source_games") then
 		ok = true
 	end
 	if ok then
-		logn("removed data/archive_cache/* and data/source_games_cache")
+		logn("removed cache/archive/* and data/source_games")
 	else
 		logn("nothing to remove")
 	end
@@ -153,7 +153,7 @@ function steam.GetGameFolders(skip_mods)
 end
 
 function steam.GetSourceGames()
-	local found = serializer.ReadFile("msgpack", "source_games_cache")
+	local found = serializer.ReadFile("msgpack", "cache/source_games")
 
 	if found and found[1] then
 		for i,v in ipairs(found) do
@@ -295,7 +295,7 @@ function steam.GetSourceGames()
 		end
 	end
 
-	serializer.WriteFile("msgpack", "source_games_cache", found)
+	serializer.WriteFile("msgpack", "cache/source_games", found)
 
 	return found
 end

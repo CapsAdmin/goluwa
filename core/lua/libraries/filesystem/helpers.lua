@@ -157,26 +157,43 @@ add_helper("Write", "WriteBytes", "write", function(path, content, on_change)
 		on_change(content)
 	end
 
-	if path:startswith("data/") or path:sub(4):startswith("data/") then
 
-		if path:startswith("os:") then
-			path = path:sub(4)
-		end
+	local found = false
+	local fs = vfs.GetFileSystem("os")
+	if fs then
+		for _, dir in ipairs({"data", "cache", "shared"}) do
+			if path:startswith(dir.."/") or path:startswith("os:"..dir.."/") then
 
-		path = path:sub(#"data/" + 1)
+				if path:startswith("os:") then
+					path = path:sub(4)
+				end
 
-		local fs = vfs.GetFileSystem("os")
+				path = path:sub(#(dir.."/") + 1)
 
-		if fs then
-			local base = e.USERDATA_FOLDER
-			local dir = ""
-			for folder in path:gmatch("(.-/)") do
-				dir = dir .. folder
-				fs:CreateFolder({full_path = base .. dir})
+				local base = e.USERDATA_FOLDER
+
+				if dir == "cache" then
+					base = e.STORAGE_FOLDER .. "data/cache/"
+				elseif dir == "shared" then
+					base = e.STORAGE_FOLDER .. "data/shared/"
+				end
+
+				local dir = ""
+				for folder in path:gmatch("(.-/)") do
+					dir = dir .. folder
+					fs:CreateFolder({full_path = base .. dir})
+				end
+
+				found = true
+				break
 			end
 		end
-	elseif CLI then
-		vfs.CreateDirectoriesFromPath(path, true)
+	end
+
+	if not found then
+		if CLI then
+			vfs.CreateDirectoriesFromPath(path, true)
+		end
 	end
 end)
 

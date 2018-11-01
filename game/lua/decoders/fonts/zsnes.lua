@@ -10,8 +10,8 @@ function META:Initialize()
 		return false, "not a valid font"
 	end
 
-	if vfs.IsFile("zfont_cache") then
-		self.font_data = serializer.ReadFile("msgpack", "zfont_cache")
+	if vfs.IsFile("cache/zfont") then
+		self.font_data = serializer.ReadFile("msgpack", "cache/zfont")
 		self:CreateTextureAtlas()
 		self:OnLoad()
 		return
@@ -142,7 +142,7 @@ function META:Initialize()
 			end
 		end
 
-		serializer.WriteFile("msgpack", "zfont_cache", self.font_data)
+		serializer.WriteFile("msgpack", "cache/zfont", self.font_data)
 
 		self:CreateTextureAtlas()
 

@@ -59,7 +59,7 @@ if DEBUG_GC then
 end
 
 local where = {
-	jit.os:lower() .. "_" .. jit.arch:lower() .. "/",
+	"bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/",
 	"lua/modules/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/",
 }
 

@@ -1,3 +1,9 @@
+STORAGE_PATH = os.getenv("STORAGE_PATH")
+ARG_LINE = os.getenv("ARG_LINE")
+SCRIPT_PATH = os.getenv("SCRIPT_PATH")
+RAN_FROM_FILEBROWSER = os.getenv("RAN_FROM_FILEBROWSER")
+BINARY_DIR = os.getenv("BINARY_DIR")
+
 local start_time = os.clock()
 
 if os.getenv("GOLUWA_START_TIME") then
@@ -459,10 +465,12 @@ do
 				extract_dir = absolute_path(extract_dir)
 				to = absolute_path(to)
 
-				os.execute("git clone https://"..domain..".com/"..name..".git \""..extract_dir.."\" --depth 1")
+				local ok, err = os.execute("git clone https://"..domain..".com/"..name..".git \""..extract_dir.."\" --depth 1")
 
 				os.copyfiles(extract_dir, to)
 				os.removedir(extract_dir)
+
+				return ok, err
 			end
 		else
 			local url
@@ -476,9 +484,11 @@ do
 
 			if os.download(url, "temp" .. ARCHIVE_EXT) then
 				io.write("extracting ", os.getcd(), "/temp", ARCHIVE_EXT, " -> ", os.getcd(), "/", to, "\n")
-				os.extract("temp" .. ARCHIVE_EXT, to, "*/")
+				local ok = os.extract("temp" .. ARCHIVE_EXT, to, "*/")
 
 				os.remove(absolute_path("temp" .. ARCHIVE_EXT))
+
+				return ok
 			end
 		end
 	end
@@ -502,16 +512,10 @@ else
 	args = {} (arg_line .. " "):gsub("(%S+)", function(chunk) table.insert(args, chunk) end)
 end
 
-local root = debug.getinfo(1).source:match("@(.+/)core/lua/boot.lua")
-local bin_dir = root .. "data/" .. OS .. "_" .. ARCH .. "/"
-os.cd(bin_dir)
-bin_dir = os.getcd() .. "/"
-
-local generic = [[ffibuild.CopyLibraries("{BIN_DIR}")]]
+local generic = [[ffibuild.CopyLibraries("{BINARY_DIR}/")]]
 local ffibuild_libraries = {
 	assimp = generic,
 	enet = generic,
-	curses = generic,
 	freeimage = generic,
 	freetype = generic,
 	libarchive = generic,
@@ -522,12 +526,12 @@ local ffibuild_libraries = {
 			os.execute(str)
 		end
 
-		os.execute("mkdir -p {BIN_DIR}")
-		os.execute("mkdir -p {BIN_DIR}jit")
+		os.execute("mkdir -p {BINARY_DIR}/")
+		os.execute("mkdir -p {BINARY_DIR}/jit")
 
-		execute("cp repo/src/luajit {BIN_DIR}.")
-		execute("cp repo/src/jit/* {BIN_DIR}jit/.")
-		execute("cp luajit.lua {BIN_DIR}.")
+		execute("cp repo/src/luajit {BINARY_DIR}/.")
+		execute("cp repo/src/jit/* {BINARY_DIR}/jit/.")
+		execute("cp luajit.lua {BINARY_DIR}/.")
 	]],
 	luajit_forks = [[
 		local function execute(str)
@@ -535,14 +539,14 @@ local ffibuild_libraries = {
 			os.execute(str)
 		end
 
-		os.execute("mkdir -p {BIN_DIR}")
-		os.execute("mkdir -p {BIN_DIR}jit")
+		os.execute("mkdir -p {BINARY_DIR}/")
+		os.execute("mkdir -p {BINARY_DIR}/jit")
 
-		execute("cp luajit_* {BIN_DIR}.")
-		execute("cp lj.supp {BIN_DIR}.")
+		execute("cp luajit_* {BINARY_DIR}/.")
+		execute("cp lj.supp {BINARY_DIR}/.")
 	]],
 	luasocket = [[
-		os.execute("mkdir -p " .. "{BIN_DIR}" .. "socket")
+		os.execute("mkdir -p " .. "{BINARY_DIR}/" .. "socket")
 
 		local files = {
 			"socket/core.so",
@@ -554,24 +558,24 @@ local ffibuild_libraries = {
 		for _, path in ipairs(files) do
 			local dir = path:match("(.+)/")
 			if dir then
-				os.execute("mkdir -p " .. "{BIN_DIR}" .. dir)
+				os.execute("mkdir -p " .. "{BINARY_DIR}/" .. dir)
 			end
-			os.execute("cp " .. path .. " " .. "{BIN_DIR}" .. path)
+			os.execute("cp " .. path .. " " .. "{BINARY_DIR}/" .. path)
 		end
 	]],
 	luasec = [[
-		os.execute("cp ssl.so {BIN_DIR}.")
-		os.execute("cp -r ssl {BIN_DIR}.")
+		os.execute("cp ssl.so {BINARY_DIR}/.")
+		os.execute("cp -r ssl {BINARY_DIR}/.")
 	]],
 	luaossl = [[
-		os.execute("cp _openssl.so {BIN_DIR}.")
-		os.execute("cp -r openssl {BIN_DIR}.")
+		os.execute("cp _openssl.so {BINARY_DIR}/.")
+		os.execute("cp -r openssl {BINARY_DIR}/.")
 	]],
 	openal = [[
 		ffibuild.SetBuildName("al")
-		ffibuild.CopyLibraries("{BIN_DIR}")
+		ffibuild.CopyLibraries("{BINARY_DIR}/")
 		ffibuild.SetBuildName("alc")
-		ffibuild.CopyLibraries("{BIN_DIR}")
+		ffibuild.CopyLibraries("{BINARY_DIR}/")
 	]],
 	opengl = generic,
 	SDL2 = generic,
@@ -584,8 +588,6 @@ if OSX then
 	ffibuild_libraries.vulkan = nil
 end
 
-os.cd("../../")
-
 if args[1] == "update" or not os.isfile("core/lua/init.lua") then
 	if not os.isfile("core/lua/init.lua") then
 		io.write("missing core/lua/init.lua\n")
@@ -596,7 +598,7 @@ if args[1] == "update" or not os.isfile("core/lua/init.lua") then
 	else
 		if args[1] == "update" then
 			for _, name in ipairs(os.ls(".")) do
-				if os.isdir(name) and name ~= "data" then
+				if os.isdir(name) and name ~= STORAGE_PATH .. "" then
 					os.removedir(name)
 				elseif name ~= "goluwa" and name ~= "goluwa.cmd" then
 					os.remove(name)
@@ -617,11 +619,11 @@ if args[1] == "update" or not os.isfile("core/lua/init.lua") then
 end
 
 if args[1] == "build" then
-	get_github_project("CapsAdmin/ffibuild", "data/ffibuild")
-	assert(os.cd("data/ffibuild"), "unable to download ffibuild?")
+	get_github_project("CapsAdmin/ffibuild", STORAGE_PATH .. "/ffibuild")
+	assert(os.cd(STORAGE_PATH .. "/ffibuild"), "unable to download ffibuild?")
 
 	local function run_postbuild(code)
-		code = code:gsub("{BIN_DIR}", "../../" .. OS .. "_" .. ARCH .. "/")
+		code = code:gsub("{BINARY_DIR}", BINARY_DIR)
 		os.setenv("templua")
 		os.setenv("templua", "local ffibuild = loadfile('../ffibuild.lua')()\n" .. code)
 		os.execute("../luajit/repo/src/luajit -e \"loadstring(os.getenv('templua'))()\"")
@@ -641,7 +643,7 @@ if args[1] == "build" then
 
 		os.cd("../../")
 
-		io.open(bin_dir .. "binaries_downloaded", "w"):close()
+		io.open(BINARY_DIR .. "/binaries_downloaded", "w"):close()
 	elseif args[2] == "clean" then
 		for dir, post_build in pairs(ffibuild_libraries) do
 			if os.isdir(dir) then
@@ -667,7 +669,7 @@ if args[1] == "build" then
 end
 
 if args[1] == "patchelf_binaries" then
-	os.cd(bin_dir)
+	os.cd(BINARY_DIR)
 
 	for _, bin in ipairs(os.ls(".")) do
 		if bin:find("%.so") then
@@ -739,7 +741,7 @@ if args[1] == "bundle_library_dependencies" then
 		"libjack.so"
 	}
 
-	os.cd(bin_dir)
+	os.cd(BINARY_DIR)
 
 	local done = {}
 	local found = {}
@@ -801,13 +803,13 @@ end
 
 if args[1] == "check_binaries" then
 
-	os.cd(bin_dir)
+	os.cd(BINARY_DIR)
 
 	local ok = true
 
 	for _, bin in ipairs(os.ls(".")) do
 		if bin:find("%.so") then
-			if not os.execute([[./luajit -e "require('ffi').load('./]]..bin..[[')"]]) then
+			if not os.execute(BINARY_DIR .. [[/luajit -e "require('ffi').load('./]]..bin..[[')"]]) then
 				ok = false
 			end
 		end
@@ -854,7 +856,7 @@ if args[1] ~= "launch" then
 			local magic_start = "TMUX_EXECUTE_START_" .. tostring({}) .. "__"
 			local magic_stop = "TMUX_EXECUTE_STOP_" .. tostring({}) .. "__"
 
-			local prev = io.readfile("data/tmux_log.txt")
+			local prev = io.readfile(STORAGE_PATH .. "/tmux_log.txt")
 
 			os.readexecute("tmux send-keys -t goluwa \"echo  " .. magic_start .. "\" C-m")
 			os.readexecute("tmux send-keys -t goluwa '" .. arg_line .. "' C-m")
@@ -863,7 +865,7 @@ if args[1] ~= "launch" then
 			local timeout = os.clock() + 1
 
 			while true do
-				cur = io.readfile("data/tmux_log.txt")
+				cur = io.readfile(STORAGE_PATH .. "/tmux_log.txt")
 				local start = cur:find(magic_start, nil, true)
 				local stop = cur:find(magic_stop, nil, true)
 
@@ -884,8 +886,8 @@ if args[1] ~= "launch" then
 end
 
 if IDE or args[1] == "ide" then
-	get_github_project("pkulchenko/ZeroBraneStudio", "data/ide")
-	assert(os.cd("data/ide"), "unable to download ide?")
+	get_github_project("pkulchenko/ZeroBraneStudio", STORAGE_PATH .. "/ide")
+	assert(os.cd(STORAGE_PATH .. "/ide"), "unable to download ide?")
 
 	if WINDOWS then
 		os.execute(absolute_path("zbstudio.exe") .. " -cfg ../../engine/lua/zerobrane/config.lua")
@@ -897,18 +899,18 @@ if IDE or args[1] == "ide" then
 end
 
 if IDE2 or args[1] == "ide2" then
-	if not os.isfile("data/ide2" .. ARCHIVE_EXT) then
-		os.download("https://go.microsoft.com/fwlink/?LinkId=723968", "data/ide2" .. ARCHIVE_EXT)
+	if not os.isfile(STORAGE_PATH .. "/ide2" .. ARCHIVE_EXT) then
+		os.download("https://go.microsoft.com/fwlink/?LinkId=723968", STORAGE_PATH .. "/ide2" .. ARCHIVE_EXT)
 	end
 
-	if not os.isdir("data/ide2") then
-		os.extract("data/ide2" .. ARCHIVE_EXT, "data/ide2", "*/")
+	if not os.isdir(STORAGE_PATH .. "/ide2") then
+		os.extract(STORAGE_PATH .. "/ide2" .. ARCHIVE_EXT, STORAGE_PATH .. "/ide2", "*/")
 	end
 
-	os.makedir("data/ide2/data")
-	os.makedir("data/ide2/tmp")
+	os.makedir(STORAGE_PATH .. "/ide2/data")
+	os.makedir(STORAGE_PATH .. "/ide2/tmp")
 
-	assert(os.cd("data/ide2"), "unable to download ide?")
+	assert(os.cd(STORAGE_PATH .. "/ide2"), "unable to download ide?")
 
 	local args = " ../../. --goto ../../game/lua/examples/hello_world.lua"
 
@@ -962,12 +964,17 @@ end
 
 os.appendenv("GOLUWA_ARGS", table.concat(ARGS, " "))
 
-if not os.isfile("data/binaries_downloaded") then
-	get_github_project("CapsAdmin/goluwa-binaries-" .. OS .. "_" .. ARCH, "data/" .. OS .. "_" .. ARCH, "gitlab", true)
-	io.open("data/binaries_downloaded", "w"):close()
+if false then
+	local dir = STORAGE_PATH .. "/data/shared/"
+	local name = "binaries_downloaded" .. OS .. "_" .. ARCH
+	
+	if not os.isfile(dir) then
+		if get_github_project("CapsAdmin/goluwa-binaries-" .. OS .. "_" .. ARCH, BINARY_DIR, "gitlab", true) then
+			os.makedir(dir)
+			io.open(dir .. name, "w"):close()
+		end
+	end
 end
-
-os.cd(bin_dir)
 
 if args[1] == "install" then
 	if LINUX then
@@ -997,7 +1004,7 @@ if args[1] == "uninstall" then
 	os.exit()
 end
 
-local initlua = "../../core/lua/init.lua"
+local initlua = "core/lua/init.lua"
 
 GOLUWA_EXECUTABLE = (os.getenv("GOLUWA_EXECUTABLE") or "") .. "luajit"
 
@@ -1023,7 +1030,7 @@ if not WINDOWS and os.getenv("GOLUWA_DEBUG") or args[4] == "debug" then
 	gdb = gdb .. "--ex 'set non-stop off' "
 	gdb = gdb .. "--ex 'target remote | vgdb' "
 	gdb = gdb .. "--ex 'monitor leak_check' "
-	gdb = gdb .. "--ex 'run' --args " .. GOLUWA_EXECUTABLE .. " " .. initlua
+	gdb = gdb .. "--ex 'run' --args " .. BINARY_DIR .. "/" .. GOLUWA_EXECUTABLE .. " " .. initlua
 
 	local valgrind = "valgrind "
 	valgrind = valgrind .. "--vgdb=yes "
@@ -1043,8 +1050,8 @@ else
 	os.setenv("GOLUWA_BOOT_TIME", tostring(os.clock() - start_time))
 
 	if WINDOWS then
-		os.execute(os.getcd() .. "\\" .. GOLUWA_EXECUTABLE .. ".exe " .. os.getcd():gsub("\\", "/") .. "/" .. initlua)
+		os.execute(winpath(BINARY_DIR .. "\\" .. GOLUWA_EXECUTABLE) .. ".exe " .. os.getcd():gsub("\\", "/") .. "/" .. initlua)
 	else
-		os.execute("./" .. GOLUWA_EXECUTABLE .. " " .. initlua)
+		os.execute("./" .. BINARY_DIR .. "/" .. GOLUWA_EXECUTABLE .. " " .. initlua)
 	end
 end

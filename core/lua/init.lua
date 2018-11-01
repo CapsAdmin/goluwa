@@ -1,17 +1,7 @@
-local OS = jit and jit.os:lower() or "unknown"
-local ARCH = jit and jit.arch:lower() or "unknown"
-
 local start_time = os.clock()
 
-if not os.getenv("GOLUWA_CLI") then
-	if os.getenv("GOLUWA_CLI_TIME") then
-		io.write("[runfile] ", os.getenv("GOLUWA_CLI_TIME"), " seconds spent in ./goluwa", OS == "windows" and ".cmd" or "", "\n")
-	end
-
-	if os.getenv("GOLUWA_BOOT_TIME") then
-		io.write("[runfile] ", os.getenv("GOLUWA_BOOT_TIME"), " seconds spent in core/lua/boot.lua\n")
-	end
-end
+local OS = jit and jit.os:lower() or "unknown"
+local ARCH = jit and jit.arch:lower() or "unknown"
 
 os.setlocale("")
 io.stdout:setvbuf("no")
@@ -46,7 +36,7 @@ if pcall(require, "jit.opt") then
 		)
 	end
 
---loadfile("../../core/lua/modules/bytecode_cache.lua")()
+--loadfile("core/lua/modules/bytecode_cache.lua")()
 
 local PROFILE_STARTUP = false
 
@@ -66,7 +56,7 @@ if not _G._OLD_G then
 		_G.ffi = require("ffi")
 	end
 
-	for k,v in pairs(_G) do
+	for k, v in pairs(_G) do
 		if k ~= "_G" then
 			local t = type(v)
 			if t == "function" then
@@ -86,22 +76,30 @@ if not _G._OLD_G then
 	_G._OLD_G = _OLD_G
 end
 
-local info = assert(debug.getinfo(1), "debug.getinfo(1) returns nothing")
-local init_lua_path = info.source
-
-local relative_root, internal_addon_name = init_lua_path:match("^@(.+/)(.+)/lua/init.lua$")
-
-if not relative_root then
-	relative_root = "./"
-	internal_addon_name = ""
-end
-
 do -- constants
-
 	-- enums table
 	e = e or {}
+
 	e.USERNAME = _G.USERNAME or tostring(os.getenv("USERNAME") or os.getenv("USER")):gsub(" ", "_"):gsub("%p", "")
-	e.INTERNAL_ADDON_NAME = internal_addon_name
+	e.INTERNAL_ADDON_NAME = "core"
+	e.ROOT_FOLDER = "./"
+
+	if pcall(require, "ffi") then
+		local ffi = require("ffi")
+		if OS == "Windows" then
+			ffi.cdef("uint32 GetFullPathNameA(const char*, uint32, char*, char*);")
+		else
+			ffi.cdef("char *realpath(const char *restrict file_name, char *restrict resolved_name);")
+			e.ROOT_FOLDER = ffi.string(ffi.C.realpath(".", nil)) .. "/"
+		end
+end
+
+	e.BIN_FOLDER = e.ROOT_FOLDER .. os.getenv("BINARY_DIR") .. "/"
+	e.CORE_FOLDER = e.ROOT_FOLDER .. e.INTERNAL_ADDON_NAME .. "/"
+	e.STORAGE_FOLDER = e.ROOT_FOLDER .. os.getenv("STORAGE_PATH") .. "/"
+	e.USERDATA_FOLDER = e.STORAGE_FOLDER .. "data/userdata/" .. e.USERNAME:lower() .. "/"
+	e.SHARED_FOLDER = e.STORAGE_FOLDER .. "data/shared/"
+	e.CACHE_FOLDER = e.STORAGE_FOLDER .. "data/cache/"
 
 	-- _G constants. should only contain you need to access a lot like if LINUX then
 	_G[e.USERNAME:upper()] = true
@@ -124,17 +122,17 @@ end
 do
 	-- force lookup modules in current directory rather than system
 	if WINDOWS then
-		package.cpath = "./?.dll"
+		package.cpath = e.BIN_FOLDER .. "?.dll"
 	elseif OSX then
-		package.cpath = "./?.dylib;./?.so"
+		package.cpath = e.BIN_FOLDER .. ".dylib;./?.so"
 	else
-		package.cpath = "./?.so"
+		package.cpath = e.BIN_FOLDER .. "?.so"
 	end
 
 	package.path = "./?.lua"
 end
 
-_G.runfile = function(path, ...) return loadfile(relative_root .. e.INTERNAL_ADDON_NAME .. "/" .. path)(...) end
+_G.runfile = function(path, ...) return loadfile(e.ROOT_FOLDER .. e.INTERNAL_ADDON_NAME .. "/" .. path)(...) end
 
 do
 	local fs
@@ -151,15 +149,11 @@ do
 
 	package.loaded.fs = fs
 
-	-- create constants
-	e.BIN_FOLDER = fs.getcd() .. "/"
-	e.ROOT_FOLDER = e.BIN_FOLDER:match("(.+/)" .. (".-/"):rep(select(2, relative_root:gsub(e.BIN_FOLDER, ""):gsub("/", ""))))
-	e.CORE_FOLDER = e.ROOT_FOLDER .. e.INTERNAL_ADDON_NAME .. "/"
-	e.DATA_FOLDER = e.ROOT_FOLDER .. "data/"
-	e.USERDATA_FOLDER = e.DATA_FOLDER .. "users/" .. e.USERNAME:lower() .. "/"
-
-	fs.createdir(e.DATA_FOLDER)
-	fs.createdir(e.DATA_FOLDER .. "users/")
+	fs.createdir(e.STORAGE_FOLDER)
+	fs.createdir(e.STORAGE_FOLDER .. "/data/")
+	fs.createdir(e.STORAGE_FOLDER .. "/data/cache/")
+	fs.createdir(e.STORAGE_FOLDER .. "/data/shared/")
+	fs.createdir(e.STORAGE_FOLDER .. "/data/userdata/")
 	fs.createdir(e.USERDATA_FOLDER)
 end
 
@@ -178,16 +172,19 @@ prototype = runfile("lua/libraries/prototype/prototype.lua")
 vfs = runfile("lua/libraries/filesystem/vfs.lua")
 
 vfs.Mount("os:" .. e.USERDATA_FOLDER, "os:data") -- mount "ROOT/data/users/*username*/" to "/data/"
-vfs.MountAddon("os:" .. e.DATA_FOLDER) -- mount "ROOT/"..e.DATA_FOLDER to "/"
+vfs.Mount("os:" .. e.CACHE_FOLDER, "os:cache")
+vfs.Mount("os:" .. e.SHARED_FOLDER, "os:shared")
+
 vfs.MountAddon("os:" .. e.CORE_FOLDER) -- mount "ROOT/"..e.INTERNAL_ADDON_NAME to "/"
 vfs.GetAddonInfo(e.INTERNAL_ADDON_NAME).dependencies = {e.INTERNAL_ADDON_NAME} -- prevent init.lua from running later on again
 vfs.GetAddonInfo(e.INTERNAL_ADDON_NAME).startup = nil -- prevent init.lua from running later on again
 
-vfs.AddModuleDirectory("lua/modules/")
+vfs.AddModuleDirectory("lua/modules/", ".lua")
+vfs.AddModuleDirectory("bin/" .. OS .. "_" .. ARCH .. "/", ".lua")
+vfs.AddBinaryModuleDirectory("bin/" .. OS .. "_" .. ARCH .. "/")
 
 _G.runfile = vfs.RunFile
 _G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir
-
 -- libraries
 crypto = runfile("lua/libraries/crypto.lua") -- base64 and other hash functions
 serializer = runfile("lua/libraries/serializer.lua") -- for serializing lua data in different formats
@@ -195,6 +192,7 @@ system = runfile("lua/libraries/system.lua") -- os and luajit related functions 
 event = runfile("lua/libraries/event.lua") -- event handler
 utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
 profiler = runfile("lua/libraries/profiler.lua") -- for profiling
+repl = runfile("lua/libraries/repl.lua")
 
 if THREAD then return end
 
@@ -234,6 +232,8 @@ end
 
 if system.MainLoop then
 	system.MainLoop()
+elseif repl.MainLoop then
+	repl.MainLoop()
 end
 
 event.Call("ShutDown")
