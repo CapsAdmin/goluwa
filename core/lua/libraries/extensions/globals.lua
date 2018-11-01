@@ -277,6 +277,10 @@ do -- logging
 			sub_category = source:match(".+/libraries/(.+)%.lua")
 		end
 
+		if main_category == "extensions" then
+			main_category = nil
+		end
+
 		local str = fmt:safeformat(...)
 
 		if not main_category or not sub_category or main_category == sub_category then
