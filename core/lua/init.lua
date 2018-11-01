@@ -16,13 +16,11 @@ end
 os.setlocale("")
 io.stdout:setvbuf("no")
 
-do
-	local ok, opt = pcall(require, "jit.opt")
-	if ok then
-		opt.start(
+if pcall(require, "jit.opt") then
+	jit.opt.start(
 			"maxtrace=65535", -- 1000 1-65535: maximum number of traces in the cache
 			"maxrecord=20000", -- 4000: maximum number of recorded IR instructions
-			"maxirconst=2500", -- 500: maximum number of IR constants of a trace
+			"maxirconst=500", -- 500: maximum number of IR constants of a trace
 			"maxside=100", -- 100: maximum number of side traces of a root trace
 			"maxsnap=800", -- 500: maximum number of snapshots for a trace
 			"minstitch=0", -- 0: minimum number of IR ins for a stitched trace.
@@ -47,7 +45,6 @@ do
 			"+fuse" -- Fusion of operands into instructions
 		)
 	end
-end
 
 --loadfile("../../core/lua/modules/bytecode_cache.lua")()
 
