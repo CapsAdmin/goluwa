@@ -94,6 +94,10 @@ function utf8.sub(str, i, j)
 	local end_char   = (j >= 0) and j or l + j + 1
 
 	-- can't have start before end!
+	if start_char == 0 and end_char == 0 then
+		return ""
+	end
+
 	if start_char > end_char then
 		return ""
 	end
