@@ -50,8 +50,8 @@ end
 
 function repl.CharInput(str)
 	local x, y = repl.GetCaretPosition()
-	repl.buffer = repl.buffer:sub(0, x - 1) .. str .. repl.buffer:sub(x + #str - 1, -1)
-	repl.MoveCaret(#str, 0)
+	repl.buffer = repl.buffer:usub(0, x - 1) .. str .. repl.buffer:usub(x + str:ulen() - 1, -1)
+	repl.MoveCaret(str:ulen(), 0)
 	repl.RenderInput()
 end
 
@@ -142,7 +142,7 @@ do
 					set_color("letter")
 				end
 
-				io.write(str:sub(v.start, v.stop))
+				io.write(str:usub(v.start, v.stop))
 			end
 
 			if v.type == "symbol" then
@@ -158,7 +158,7 @@ do
 			else
 				set_color("letter")
 			end
-			io.write(str:sub(v.start, v.stop))
+			io.write(str:usub(v.start, v.stop))
 		end
 
 		set_color("letter")
@@ -166,7 +166,7 @@ do
 end
 
 local function find_next_word(buffer, x, dir)
-    local str = dir == "left" and buffer:sub(0, x-1):reverse() or buffer:sub(x+1, -1)
+    local str = dir == "left" and buffer:usub(0, x-1):reverse() or buffer:usub(x+1, -1)
 
     if str:find("^%s", 0) then
         return str:find("%S")
@@ -174,7 +174,7 @@ local function find_next_word(buffer, x, dir)
         return str:find("%P", 0) or str:find("^%p+$", 0)
     end
     
-    return str:find("%s", 0) or str:find("%p", 0) or #str + 1
+    return str:find("%s", 0) or str:find("%p", 0) or str:ulen() + 1
 end
 
 function repl.KeyPressed(key)
@@ -226,7 +226,7 @@ function repl.KeyPressed(key)
 		repl.buffer = ""
 		repl.SetCaretPosition(0, y + 1)
 	elseif key == "delete" then
-		repl.buffer = repl.buffer:sub(0, x-1) .. repl.buffer:sub(x+1, -1)
+		repl.buffer = repl.buffer:usub(0, x-1) .. repl.buffer:usub(x+1, -1)
 	elseif key == "up" or key == "down" then
 		if key == "up" then
 			repl.scroll_command_history = repl.scroll_command_history - 1
@@ -236,7 +236,7 @@ function repl.KeyPressed(key)
 		local str = repl.command_history[repl.scroll_command_history%#repl.command_history+1]
 		if str then
 			repl.buffer = str
-			repl.SetCaretPosition(#repl.buffer + 1, y)
+			repl.SetCaretPosition(repl.buffer:ulen() + 1, y)
 		end
 	elseif key == "left" then
 		repl.MoveCaret(-1, 0)
@@ -245,7 +245,7 @@ function repl.KeyPressed(key)
 	elseif key == "home" then
 		repl.SetCaretPosition(1, y)
 	elseif key == "end" then
-		repl.SetCaretPosition(#repl.buffer + 1, y)
+		repl.SetCaretPosition(repl.buffer:ulen() + 1, y)
 	elseif key == "ctrl_right" then
 		local offset = find_next_word(repl.buffer, x, "right")
 		if offset then
@@ -258,19 +258,19 @@ function repl.KeyPressed(key)
 			repl.MoveCaret(-offset + 1, 0)
 		end
 	elseif key == "backspace" then
-		repl.buffer = repl.buffer:sub(0, math.max(x - 1 - 1, 0)) .. repl.buffer:sub(x, -1)
+		repl.buffer = repl.buffer:usub(0, math.max(x - 2, 0)) .. repl.buffer:usub(x, -1)
 		repl.MoveCaret(-1, 0)
 	elseif key == "ctrl_backspace" then
 		local offset = find_next_word(repl.buffer, x, "left")
 		if offset then
-			repl.buffer = repl.buffer:sub(0, x - offset) .. repl.buffer:sub(x, -1)
+			repl.buffer = repl.buffer:usub(0, x - offset) .. repl.buffer:usub(x, -1)
 			repl.SetCaretPosition(x - offset + 1, y)
 		end
 	elseif key == "ctrl_delete" then
 		local offset = find_next_word(repl.buffer, x, "right")
 
 		if offset then
-			repl.buffer = repl.buffer:sub(0, x - 1) .. repl.buffer:sub(x + offset, -1)
+			repl.buffer = repl.buffer:usub(0, x - 1) .. repl.buffer:usub(x + offset, -1)
 		end
 	elseif key ~= "ctrl_c" then
 		llog("unhandled key %s", key)
@@ -299,7 +299,7 @@ function repl.KeyPressed(key)
 	end
 
 	local x, y = repl.GetCaretPosition()
-	x = math.min(x, #repl.buffer + 1)
+	x = math.min(x, repl.buffer:ulen() + 1)
 	repl.SetCaretPosition(x, y)
 
 	repl.RenderInput()
@@ -374,15 +374,17 @@ if ffi then
 		function repl.GetCaretPosition()
 			io.write("\x1b[6n")
 
+			local x,y = 0, 0
+
 			while true do
 				local str = io.read()
-				if str and str:sub(1, 2) == "\27[" then
+				if str and str:usub(1, 2) == "\27[" then
 					y,x = str:match("\27%[(%d+);(%d+)R")
 					break
 				end
 			end
 
-			return tonumber(x), tonumber(y)
+			return tonumber(x) or 0, tonumber(y) or 0
 		end
 
 		function repl.SetCaretPosition(x, y)
@@ -431,8 +433,8 @@ if ffi then
 					repl.KeyPressed("enter")
 				elseif str:byte() >= 32 and str:byte() < 127 then -- asci chars
 					repl.CharInput(str)
-				elseif str:sub(1,2) == "\27[" then
-					local seq = str:sub(3, #str)
+				elseif str:usub(1,2) == "\27[" then
+					local seq = str:usub(3, str:ulen())
 
 					if seq == "3~" then
 						repl.KeyPressed("delete")
@@ -472,10 +474,10 @@ if ffi then
 						if str == "\27\68" then -- ctrl delete
 							repl.KeyPressed("ctrl_delete")
 						else
-							print("char sequence: " .. table.concat({str:byte(1, #str)}, ", ") .. " (" .. #str .. ")")
+							print("char sequence: " .. table.concat({str:byte(1, str:ulen())}, ", ") .. " (" .. str:ulen() .. ")")
 						end
 					else -- unicode ?
-						--repl.CharInput(str)
+						repl.CharInput(str)
 					end
 				end
 			end
