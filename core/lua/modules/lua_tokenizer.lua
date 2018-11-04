@@ -1,3 +1,9 @@
+-- these could be swapped with utf8 variants
+local string_length = string.len
+local string_sub = string.sub
+
+local unicode = true
+
 local Tokenizer = {}
 Tokenizer.__index = Tokenizer
 
@@ -49,8 +55,10 @@ do
 		"#", "not", "~", "-", "<", ".", ">",
 		"/", "^", "<<", "&", "|", "==", "<=",
 		"..", "~=", "+", ">>", "*", "and", ">=",
-		"or", ":", "%",
+		"or", ":", "%", "\"", "'"
 	}
+
+	syntax.eof = {""}
 
 	local lookup = {}
 
@@ -68,8 +76,16 @@ do
 		return lookup
 	end
 
-	function Tokenizer:GetCharType(char)
-		return lookup[char]
+	if unicode then
+		string_length = utf8.len
+		string_sub = utf8.sub
+		function Tokenizer:GetCharType(char)
+			return lookup[char] or "letter"
+		end
+	else
+		function Tokenizer:GetCharType(char)
+			return lookup[char]
+		end
 	end
 end
 
@@ -90,19 +106,19 @@ function Tokenizer:Advance(len)
 end
 
 function Tokenizer:GetCharOffset(offset)
-	return self.config.code:sub(self.i + offset, self.i + offset)
+	return string_sub(self.config.code, self.i + offset, self.i + offset)
 end
 
 function Tokenizer:GetCurrentChar()
-	return self.config.code:sub(self.i, self.i)
+	return string_sub(self.config.code, self.i, self.i)
 end
 
 function Tokenizer:GetChars(a, b)
-	return self.config.code:sub(a, b)
+	return string_sub(self.config.code, a, b)
 end
 
 function Tokenizer:GetCharsOffset(b)
-	return self.config.code:sub(self.i, self.i + b)
+	return string_sub(self.config.code, self.i, self.i + b)
 end
 
 function Tokenizer:Error(msg, start, stop)
@@ -146,7 +162,7 @@ local function CaptureLiteralString(self, multiline_comment)
 	if self:GetCurrentChar() == "=" then
 		self:Advance(1)
 
-		for _ = self.i, #self.config.code do
+		for _ = self.i, self.code_length do
 			if self:GetCurrentChar() ~= "=" then
 				break
 			end
@@ -157,7 +173,7 @@ local function CaptureLiteralString(self, multiline_comment)
 	c = self:ReadChar()
 	if c ~= "[" then
 		if multiline_comment then return true end
-		return nil, "expected " .. quote_token(self.config.code:sub(start, self.i - 1) .. "[") .. " got " .. quote_token(self.config.code:sub(start, self.i - 1) .. c)
+		return nil, "expected " .. quote_token(string_sub(self.config.code, start, self.i - 1) .. "[") .. " got " .. quote_token(string_sub(self.config.code, start, self.i - 1) .. c)
 	end
 
 	local length = self.i - start
@@ -166,7 +182,7 @@ local function CaptureLiteralString(self, multiline_comment)
 
 	local closing = "]" .. ("="):rep(length - 2) .. "]"
 
-	for _ = self.i, #self.config.code do
+	for _ = self.i, self.code_length do
 		if self:GetCharsOffset(length - 1) == closing then
 			self:Advance(length)
 			break
@@ -220,8 +236,8 @@ do
 	function Token:Capture()
 		self:Advance(#line_comment)
 
-		for _ = self.i, #self.config.code do
-			if self:ReadChar() == "\n" or self.i-1 == #self.config.code then
+		for _ = self.i, self.code_length do
+			if self:ReadChar() == "\n" or self.i-1 == self.code_length then
 				return true
 			end
 		end
@@ -269,7 +285,7 @@ do
 			local start = self.i
 			self:Advance(1)
 
-			for _ = self.i, #self.config.code do
+			for _ = self.i, self.code_length do
 				local char = self:ReadCharByte()
 
 				if not Token.StringEscape(self, char) then
@@ -397,7 +413,7 @@ do
 
 		local pow = false
 
-		for _ = self.i, #self.config.code do
+		for _ = self.i, self.code_length do
 			if Token.CaptureAnnotations(self) then return true end
 
 			local char = self:GetCurrentChar():lower()
@@ -430,7 +446,7 @@ do
 	function Token:CaptureBinaryNumber()
 		self:Advance(2)
 
-		for _ = self.i, #self.config.code do
+		for _ = self.i, self.code_length do
 			local char = self:GetCurrentChar():lower()
 			local t = self:GetCharType(self:GetCurrentChar())
 
@@ -455,7 +471,7 @@ do
 
 		local start = self.i
 
-		for _ = self.i, #self.config.code do
+		for _ = self.i, self.code_length do
 			local t = self:GetCharType(self:GetCurrentChar())
 			local char = self:GetCurrentChar()
 
@@ -545,7 +561,7 @@ do
 	function Token:Capture()
 		local start = self.i
 		self:Advance(1)
-		for _ = self.i, #self.config.code do
+		for _ = self.i, self.code_length do
 			local t = self:GetCharType(self:GetCurrentChar())
 			if t == "space" or not (t == "letter" or (t == "number" and self.i ~= start)) then
 				return true
@@ -570,7 +586,7 @@ do
 	function Token:Capture()
 		self:Advance(1)
 
-		for _ = self.i, #self.config.code do
+		for _ = self.i, self.code_length do
 			if self:GetCharType(self:GetCurrentChar()) ~= "space" then
 				return true
 			end
@@ -593,7 +609,7 @@ do -- shebang
 	end
 
 	function Token:Capture()
-		for _ = self.i, #self.config.code do
+		for _ = self.i, self.code_length do
 			if self:ReadChar() == "\n" then
 				return true
 			end
@@ -609,7 +625,7 @@ do -- eof
 	Token.Type = "end_of_file"
 
 	function Token:Is()
-		return self.i > #self.config.code
+		return self.i > self.code_length
 	end
 
 	function Token:Capture()
@@ -645,7 +661,7 @@ do
 
 	local code = "local META = ...\nfunction META:CaptureToken()\n"
 
-	code = code .. "\tfor _ = self.i, #self.config.code do\n"
+	code = code .. "\tfor _ = self.i, self.code_length do\n"
 	for i, class in ipairs(sorted_whitespace_classes) do
 		if i == 1 then
 			code = code .. "\t\tif "
@@ -703,7 +719,7 @@ function Tokenizer:GetTokens()
 	local tokens = {}
 	local tokens_i = 1
 
-	for _ = self.i, #self.config.code do
+	for _ = self.i, self.code_length do
 		--if self:GetCharType(self:GetCurrentChar()) == nil then
 			--self:Error("unexpected character " .. quote_token(self:GetCurrentChar()) .. " (byte " .. self:GetCurrentChar():byte() .. ")", self.i, self.i)
 			--self:Advance(1)
@@ -755,6 +771,7 @@ return function(config, ...)
 
 	local self = setmetatable({}, Tokenizer)
 
+	self.code_length = string_length(config.code)
 	self.config = config
 	self.errors = {}
 	self.whitespace_buffer = {}
