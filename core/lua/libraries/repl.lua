@@ -42,10 +42,14 @@ function repl.Update()
 end
 
 function repl.RenderInput()
-	local _, h = repl.GetConsoleSize()
-	local x = repl.GetCaretPosition()
+	local w, h = repl.GetConsoleSize()
+	local x,y = repl.GetCaretPosition()
 	repl.SetCaretPosition(x, h)
-	repl.WriteStringToScreen(0, h, repl.buffer)
+	repl.SetCaretPosition(0,h)
+	repl.Print(repl.buffer)
+	repl.WriteStringToScreen(repl.buffer:ulen() + 1, h, (" "):rep(10))
+	repl.SetCaretPosition(x,y)
+	--repl.WriteStringToScreen(0, h, repl.buffer)
 end
 
 function repl.CharInput(str)
@@ -132,6 +136,8 @@ do
 
 		local start = 0
 		local tokens = tokenize({code = str, path = ""}):GetTokens()
+
+		LAST_TOKENS = tokens
 		
 		for i, v in ipairs(tokens) do
 
@@ -149,6 +155,8 @@ do
 				set_color("symbol")
 			elseif v.type == "number" then
 				set_color("number")
+			elseif v.type == "string" then
+				set_color("string")
 			elseif v.type == "letter" then
 				if keywords[v.value] then
 					set_color("keyword")
@@ -183,7 +191,7 @@ function repl.KeyPressed(key)
 	
 	if key == "enter" then
 		repl.SetCaretPosition(0, y)
-		io.write("> ", repl.buffer)
+		repl.Print("> " .. repl.buffer)
 		repl.SetCaretPosition(x, y)
 		io.write("\n") -- create a new line
 		
