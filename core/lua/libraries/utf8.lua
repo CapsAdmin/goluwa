@@ -87,14 +87,19 @@ function utf8.sub(str, i, j)
 	j = j or -1
 
 	local length = 0
+	local total_length = utf8.length(str)
 
 	-- only set l if i or j is negative
-	local l = (i >= 0 and j >= 0) or utf8.length(str)
+	local l = (i >= 0 and j >= 0) or total_length
 	local start_char = (i >= 0) and i or l + i + 1
 	local end_char   = (j >= 0) and j or l + j + 1
 
 	-- can't have start before end!
 	if start_char == 0 and end_char == 0 then
+		return ""
+	end
+
+	if start_char > total_length or end_char > total_length then
 		return ""
 	end
 
