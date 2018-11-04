@@ -5,14 +5,17 @@ SetLocal EnableDelayedExpansion
 set OS=windows
 set APP_NAME=appexample
 set ARG_LINE=%*
-set STORAGE_PATH=data
-set BINARY_DIR=!STORAGE_PATH!\!OS!_!ARCH!
+set STORAGE_PATH=storage
+set BINARY_DIR=bin\!STORAGE_PATH!\!OS!_!ARCH!
 set BINARY_NAME=luajit.exe
 set BASE_BINARY_URL=https://gitlab.com/CapsAdmin/goluwa-binaries-!OS!_!ARCH!/raw/master/
 set BASE_SCRIPT_URL=https://gitlab.com/CapsAdmin/goluwa/raw/master/
 set SCRIPT_PATH=core/lua/boot.lua
 
 IF %0 == "%~0" set RAN_FROM_FILEBROWSER=1
+if defined VSCODE_CWD (
+	set RAN_FROM_FILEBROWSER=0
+)
 
 :Start
 call:Main
@@ -27,7 +30,7 @@ SetLocal
 		call:DownloadFile "!BASE_BINARY_URL!vcruntime140.dll" "!BINARY_DIR!\vcruntime140.dll"
 	)
 	
-	if not exist "!SCRIPT_PATH!" (
+	if not exist "!BINARY_DIR!\!BINARY_NAME!" (
         call:GetLua "!BASE_BINARY_URL!!BINARY_NAME!" "!BINARY_DIR!" "!BINARY_NAME!"
     )
 	
@@ -41,9 +44,8 @@ SetLocal
 	set GOLUWA_RAN_FROM_FILEBROWSER=!RAN_FROM_FILEBROWSER!
 	set GOLUWA_BINARY_DIR=!BINARY_DIR!
 		
-	
-	set cmd_line="!BINARY_DIR!\!BINARY_NAME! !SCRIPT_PATH!"
-	
+	set "cmd_line=!BINARY_DIR!\!BINARY_NAME! !SCRIPT_PATH!"
+		
 	IF !RAN_FROM_FILEBROWSER! equ 1 (
 		start "" !cmd_line!
 	) else (

@@ -86,8 +86,11 @@ do -- constants
 
 	if pcall(require, "ffi") then
 		local ffi = require("ffi")
-		if OS == "Windows" then
-			ffi.cdef("uint32 GetFullPathNameA(const char*, uint32, char*, char*);")
+		if OS == "windows" then
+			ffi.cdef("unsigned long GetCurrentDirectoryA(unsigned long length, char *buffer);")
+			local buffer = ffi.new("char[260]")
+			local length = ffi.C.GetCurrentDirectoryA(260, buffer)
+			e.ROOT_FOLDER = ffi.string(buffer, length):gsub("\\", "/") .. "/"
 		else
 			ffi.cdef("char *realpath(const char *restrict file_name, char *restrict resolved_name);")
 			e.ROOT_FOLDER = ffi.string(ffi.C.realpath(".", nil)) .. "/"
@@ -180,7 +183,7 @@ profiler = runfile("lua/libraries/profiler.lua") -- for profiling
 repl = runfile("lua/libraries/repl.lua")
 
 do
-	local args = os.getenv("GOLUWA_ARG_LINE"):split(" ")
+	local args = (os.getenv("GOLUWA_ARG_LINE") or ""):split(" ")
 	
 	if table.hasvalue(args, "--verbose") then
 		_G.VERBOSE = true
