@@ -44,11 +44,13 @@ end
 function repl.RenderInput()
 	local w, h = repl.GetConsoleSize()
 	local x,y = repl.GetCaretPosition()
+	
+	-- clear the input row
+	repl.WriteStringToScreen(0, y, (" "):rep(w))
+	
 	repl.SetCaretPosition(0,y)
 	repl.Print(repl.buffer)
-	repl.WriteStringToScreen(repl.buffer:ulen() + 1, y, (" "):rep(w))
 	repl.SetCaretPosition(x,y)
-	--repl.WriteStringToScreen(0, h, repl.buffer)
 end
 
 function repl.CharInput(str)
@@ -398,6 +400,8 @@ if jit.os ~= "Windows" then
 	end
 	
 	function repl.SetCaretPosition(x, y)
+		x = math.max(math.floor(x), 0)
+		y = math.max(math.floor(y), 0)
 		repl.Write("\27[" .. y .. ";" .. x .. "f")
 	end
 	
@@ -409,8 +413,25 @@ if jit.os ~= "Windows" then
 		repl.Write("\27[u")
 	end
 
+	local buffer
+	local capture = false
+	function repl.StartBuffer()
+		capture = true
+		buffer = {}
+	end
+
+	function repl.StopBuffer()
+		capture = false
+		io.write(table.concat(buffer))
+		buffer = nil
+	end
+
 	function repl.Write(str)
-		io.write(str)
+		if capture then 
+			table.insert(buffer, str)
+		else
+			io.write(str)
+		end
 	end
 	
 	function repl.GetConsoleSize()
@@ -439,7 +460,7 @@ if jit.os ~= "Windows" then
 		repl.Write("\27[48;2;" .. r .. ";" .. g .. ";" .. b .. "m")
 	end
 	
-	function repl.Update()	
+	function repl.Update()
 		local str = io.read()
 		
 		if str then
@@ -476,7 +497,6 @@ if jit.os ~= "Windows" then
 					local byte = str:byte()
 					if byte == 3 then -- ctrl c
 						repl.KeyPressed("ctrl_c")
-						return false
 					elseif byte == 127 then -- backspace
 						repl.KeyPressed("backspace")
 					elseif byte == 23 then -- ctrl backspace
@@ -495,8 +515,6 @@ if jit.os ~= "Windows" then
 				end
 			end
 		end
-	
-		return true
 	end	
 else
 	local STD_INPUT_HANDLE = -10
@@ -846,8 +864,8 @@ int ReadConsoleA(
 
 	function repl.SetCaretPosition(x, y)
 		local w,h = repl.GetConsoleSize()
-		x = math.clamp(x-1, 0, w)
-		y = math.clamp(y-1, 0, h)
+		x = math.clamp(math.floor(x)-1, 0, w)
+		y = math.clamp(math.floor(y)-1, 0, h)
 		ffi.C.SetConsoleCursorPosition(stdout, ffi.new("struct COORD", {X = x, Y = y}))
 	end
 
