@@ -195,7 +195,11 @@ function repl.KeyPressed(key)
 		io.write("\n") -- create a new line
 		
 		if repl.buffer == "clear" then
-			os.execute("clear")
+			if jit.os == "Windows" then
+				os.execute("cls")
+			else
+				os.execute("clear")
+			end
 		elseif repl.buffer:startswith("exit") then
 			system.ShutDown(tonumber(repl.buffer:match("exit (%d+)")) or 0)
 		else
@@ -716,7 +720,7 @@ int ReadConsoleA(
 	function repl.GetCaretPosition()
 		local out = ffi.new("struct CONSOLE_SCREEN_BUFFER_INFO[1]")
 		ffi.C.GetConsoleScreenBufferInfo(stdout, out)
-		return out[0].dwCursorPosition.X, out[0].dwCursorPosition.Y
+		return out[0].dwCursorPosition.X+1, out[0].dwCursorPosition.Y+1
 	end
 
 	function repl.SetCaretPosition(x, y)
@@ -924,7 +928,7 @@ int ReadConsoleA(
 		local evt = read()
 		if evt then
 			if evt.Event.KeyEvent.bKeyDown ~= 0 then return end
-			local str = string.char(evt.Event.KeyEvent.uChar.AsciiChar)
+			local str = utf8.char(evt.Event.KeyEvent.uChar.UnicodeChar)
 			local key = evt.Event.KeyEvent.wVirtualKeyCode
 			local CTRL = evt.Event.KeyEvent.dwControlKeyState == 264
 
