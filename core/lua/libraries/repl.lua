@@ -14,22 +14,17 @@ function repl.SetConsoleTitle(str)
 	llog("NYI: repl.SetConsoleTitle(str)")
 end
 
-function repl.SetCaretPosition(x, y)
-	llog("NYI: repl.SetCaretPosition(x, y)")
-end
-
-function repl.GetCaretPosition()
-	llog("NYI: repl.GetCaretPosition()")
-	return 0, 0
-end
-
 function repl.MoveCaret(ox, oy)
 	local x, y = repl.GetCaretPosition()
 	repl.SetCaretPosition(x + ox, y + oy)
 end
 
-function repl.WriteStringToScreen(x,y, str)
-	llog("NYI: repl.WriteString(x,y, str)")
+function repl.WriteStringToScreen(x, y, str)
+	local x_,y_ = repl.GetCaretPosition()
+	
+	repl.SetCaretPosition(x,y)
+	repl.Write(str)
+	repl.SetCaretPosition(x_,y_)
 end
 
 function repl.GetConsoleSize()
@@ -133,7 +128,6 @@ do
 	end
 
 	function repl.Print(str)
-		repl.StartBuffer()
 		str:replace("\t", "    ")
 
 		local start = 0
@@ -172,7 +166,6 @@ do
 		end
 
 		set_color("letter")
-		repl.StopBuffer()
 	end
 end
 
@@ -346,6 +339,10 @@ if jit.os ~= "Windows" then
 		int tcsetattr(int __fd, int __optional_actions, const struct termios *__termios_p); 
 		
 		int usleep(uint32_t);
+
+		typedef struct FILE FILE;
+		size_t fwrite(const char *ptr, size_t size, size_t nmemb, FILE *stream);
+		size_t fread ( char * ptr, size_t size, size_t count, FILE * stream );
 	]])
 	
 	local ISIG = 0000001
@@ -404,46 +401,101 @@ if jit.os ~= "Windows" then
 		y = math.max(math.floor(y), 0)
 		repl.Write("\27[" .. y .. ";" .. x .. "f")
 	end
-	
-	local function push_caret()
-		repl.Write("\27[s")
-	end
-	
-	local function pop_caret()
-		repl.Write("\27[u")
-	end
-
-	local buffer
-	local capture = false
-	function repl.StartBuffer()
-		capture = true
-		buffer = {}
-	end
-
-	function repl.StopBuffer()
-		capture = false
-		io.write(table.concat(buffer))
-		buffer = nil
-	end
 
 	function repl.Write(str)
-		if capture then 
-			table.insert(buffer, str)
-		else
-			io.write(str)
+		ffi.C.fwrite(str, 1, #str, io.stdout)
+	end
+
+	function repl.WriteStringToScreen(x, y, str)
+		repl.Write("\27[s\27[" .. y .. ";" .. x .. "f" .. str .. "\27[u")
+	end
+
+	function repl.Read()
+		local out = ffi.new("char[512]")
+		local len = ffi.C.fread(out, 1, ffi.sizeof(out), io.stdin)
+		if len > 0 then
+			return ffi.string(out, len)
 		end
 	end
-	
-	function repl.GetConsoleSize()
-		push_caret()
-		repl.SetCaretPosition(99999999,99999999)
-		local w,h = repl.GetCaretPosition()
-		pop_caret()
-		return w,h
+
+	local function process_input(str)
+		if str == "" or str == "\n" or str == "\r" then -- newline/enter?
+			repl.KeyPressed("enter")
+		elseif str:byte() >= 32 and str:byte() < 127 then -- asci chars
+			repl.CharInput(str)
+		elseif str:usub(1,2) == "\27[" then
+			local seq = str:usub(3, str:ulen())
+
+			if seq == "3~" then
+				repl.KeyPressed("delete")
+			elseif seq == "D" then
+				repl.KeyPressed("left")
+			elseif seq == "C" then
+				repl.KeyPressed("right")
+			elseif seq == "A" then
+				repl.KeyPressed("up")
+			elseif seq == "B" then
+				repl.KeyPressed("down")
+			elseif seq == "H" then
+				repl.KeyPressed("home")
+			elseif seq == "F" then
+				repl.KeyPressed("end")
+			elseif seq == "1;5C" then
+				repl.KeyPressed("ctrl_right")
+			elseif seq == "1;5D" then
+				repl.KeyPressed("ctrl_left")
+			else
+				print("ansi escape sequence: " .. seq)
+			end
+		else
+			if #str == 1 then
+				local byte = str:byte()
+				if byte == 3 then -- ctrl c
+					repl.KeyPressed("ctrl_c")
+				elseif byte == 127 then -- backspace
+					repl.KeyPressed("backspace")
+				elseif byte == 23 then -- ctrl backspace
+					repl.KeyPressed("ctrl_backspace")
+				else
+					print("byte: " .. byte)
+				end
+			elseif str:byte() < 127 then
+				if str == "\27\68" then -- ctrl delete
+					repl.KeyPressed("ctrl_delete")
+				else
+					print("char sequence: " .. table.concat({str:byte(1, str:ulen())}, ", ") .. " (" .. str:ulen() .. ")")
+				end
+			else -- unicode ?
+				repl.CharInput(str)
+			end
+		end
 	end
-	
-	function repl.WriteStringToScreen(x, y, str)
-		repl.Write("\27[s " .. "\27[" .. y .. ";" .. x .. "H" .. "\27[K" .. str .. "\27[u")
+
+	do
+		local _w,_h = 0,0
+		local test = false
+		function repl.GetConsoleSize()
+		--	if test then return _w,_h end
+
+			repl.Write("\27[s\27[999;999f\x1b[6n\27[u")
+		
+			while true do
+				local str = repl.Read()
+				if str then
+					h,w = str:match("^\27%[(%d+);(%d+)R$")
+					if w then
+						_w,_h = tonumber(w), tonumber(h)
+					else
+						process_input(str)
+					end
+					break
+				end
+			end
+
+			test = true
+
+			return _w,_h
+		end
 	end
 	
 	function repl.SetForegroundColor(r,g,b)
@@ -461,59 +513,10 @@ if jit.os ~= "Windows" then
 	end
 	
 	function repl.Update()
-		local str = io.read()
-		
+		local str = repl.Read()
+
 		if str then
-			if str == "" or str == "\n" or str == "\r" then -- newline/enter?
-				repl.KeyPressed("enter")
-			elseif str:byte() >= 32 and str:byte() < 127 then -- asci chars
-				repl.CharInput(str)
-			elseif str:usub(1,2) == "\27[" then
-				local seq = str:usub(3, str:ulen())
-	
-				if seq == "3~" then
-					repl.KeyPressed("delete")
-				elseif seq == "D" then
-					repl.KeyPressed("left")
-				elseif seq == "C" then
-					repl.KeyPressed("right")
-				elseif seq == "A" then
-					repl.KeyPressed("up")
-				elseif seq == "B" then
-					repl.KeyPressed("down")
-				elseif seq == "H" then
-					repl.KeyPressed("home")
-				elseif seq == "F" then
-					repl.KeyPressed("end")
-				elseif seq == "1;5C" then
-					repl.KeyPressed("ctrl_right")
-				elseif seq == "1;5D" then
-					repl.KeyPressed("ctrl_left")
-				else
-					print("ansi escape sequence: " .. seq)
-				end
-			else
-				if #str == 1 then
-					local byte = str:byte()
-					if byte == 3 then -- ctrl c
-						repl.KeyPressed("ctrl_c")
-					elseif byte == 127 then -- backspace
-						repl.KeyPressed("backspace")
-					elseif byte == 23 then -- ctrl backspace
-						repl.KeyPressed("ctrl_backspace")
-					else
-						print("byte: " .. byte)
-					end
-				elseif str:byte() < 127 then
-					if str == "\27\68" then -- ctrl delete
-						repl.KeyPressed("ctrl_delete")
-					else
-						print("char sequence: " .. table.concat({str:byte(1, str:ulen())}, ", ") .. " (" .. str:ulen() .. ")")
-					end
-				else -- unicode ?
-					repl.CharInput(str)
-				end
-			end
+			process_input(str)
 		end
 	end	
 else
@@ -530,13 +533,13 @@ else
 			};
 
 			struct KEY_EVENT_RECORD {
-			int  bKeyDown;
-			unsigned short  wRepeatCount;
-			unsigned short  wVirtualKeyCode;
-			unsigned short  wVirtualScanCode;
+			int bKeyDown;
+			unsigned short wRepeatCount;
+			unsigned short wVirtualKeyCode;
+			unsigned short wVirtualScanCode;
 			union {
 				wchar_t UnicodeChar;
-				char  AsciiChar;
+				char AsciiChar;
 			} uChar;
 			unsigned long dwControlKeyState;
 			};
@@ -595,11 +598,11 @@ else
 			  
 
 			struct CONSOLE_SCREEN_BUFFER_INFO {
-				struct COORD      dwSize;
-				struct COORD      dwCursorPosition;
-				uint16_t       wAttributes;
+			struct COORD dwSize;
+			struct COORD dwCursorPosition;
+			uint16_t wAttributes;
 				struct SMALL_RECT srWindow;
-				struct COORD      dwMaximumWindowSize;
+			struct COORD dwMaximumWindowSize;
 			};
 			
 			struct CONSOLE_CURSOR_INFO {
@@ -628,11 +631,8 @@ else
 		void* GetStdHandle(unsigned long nStdHandle);
 		int SetConsoleTitleA(const char*);
 
-		int _getch_nolock();
-		unsigned short _getwch_nolock();
-		int _kbhit();
-	
 		uint32_t GetLastError();
+
 		uint32_t FormatMessageA(
 			uint32_t dwFlags,
 			const void* lpSource,
@@ -643,39 +643,6 @@ else
 			va_list *Arguments
 		);
 
-		int PeekNamedPipe(
-			void*  hNamedPipe,
-			void*  lpBuffer,
-			unsigned long   nBufferSize,
-			unsigned long* lpBytesRead,
-			unsigned long* lpTotalBytesAvail,
-			unsigned long* lpBytesLeftThisMessage
-		);
-
-		int WideCharToMultiByte(
-			unsigned int CodePage,
-			unsigned long dwFlags,
-			const wchar_t* lpWideCharStr,
-			int cchWideChar,
-			char * lpMultiByteStr,
-			int cbMultiByte,
-			char* lpDefaultChar,
-			int* lpUsedDefaultChar
-);
-
-unsigned long WaitForSingleObject(
-void* hHandle,
-  unsigned long  dwMilliseconds
-);
-
-int ReadConsoleA(
-				void*  hConsoleInput,
-				void*  lpBuffer,
-				unsigned long nNumberOfCharsToRead,
-				unsigned long* lpNumberOfCharsRead,
-				void*  pInputControl
-			);
-
 			struct CHAR_INFO {
 				union {
 				  wchar_t UnicodeChar;
@@ -683,24 +650,14 @@ int ReadConsoleA(
 				} Char;
 			 	uint16_t Attributes;
 			  } CHAR_INFO;
-
-
-			int WriteConsoleOutput(
-				void *hConsoleOutput,
-				const struct CHAR_INFO*lpBuffer,
-				struct COORD dwBufferSize,
-				struct COORD dwBufferCoord,
-				struct SMALL_RECT * lpWriteRegion
-			);
 	]])
 
 	local error_str = ffi.new("uint8_t[?]", 1024)
-	local ENABLE_ECHO_INPUT = 0x0004;
 	local FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000;
 	local ENABLE_WINDOW_INPUT = 0x0008;
 	local FORMAT_MESSAGE_IGNORE_INSERTS = 0x00000200;
-	local ENABLE_INSERT_MODE = 0x0020;
 	local error_flags = bit.bor(FORMAT_MESSAGE_FROM_SYSTEM, FORMAT_MESSAGE_IGNORE_INSERTS)
+
 	local function throw_error()
 		local code = ffi.C.GetLastError()
 		local numout = ffi.C.FormatMessageA(error_flags, nil, code, 0, error_str, 1023, nil)
@@ -735,6 +692,9 @@ int ReadConsoleA(
 		ENABLE_LVB_GRID_WORLDWIDE = 0x0010,
 	}
 
+	local stdin = ffi.C.GetStdHandle(STD_INPUT_HANDLE)
+	local stdout = ffi.C.GetStdHandle(STD_OUTPUT_HANDLE)
+
 	local old_flags = {}
 	
 	local function add_flags(handle, tbl)
@@ -752,15 +712,6 @@ int ReadConsoleA(
 		end)
 
 		if ffi.C.SetConsoleMode(ptr, flags[0]) == 0 then
-			throw_error()
-		end
-	end
-
-	local function revert_flags(handle)
-		local ptr = ffi.C.GetStdHandle(handle)
-		if ptr == nil then throw_error() end
-
-		if ffi.C.SetConsoleMode(ptr, old_flags[handle]) == 0 then
 			throw_error()
 		end
 	end
@@ -799,61 +750,23 @@ int ReadConsoleA(
 		show_cursor(true)
 	end
 	
+	local function revert_flags(handle)
+		local ptr = ffi.C.GetStdHandle(handle)
+		if ptr == nil then throw_error() end
+
+		if ffi.C.SetConsoleMode(ptr, old_flags[handle]) == 0 then
+			throw_error()
+		end
+			end
+			
 	function repl.Stop()
 		revert_flags(STD_INPUT_HANDLE)
 		revert_flags(STD_OUTPUT_HANDLE)
 	end
 
-	local stdin = ffi.C.GetStdHandle(STD_INPUT_HANDLE)
-	local stdout = ffi.C.GetStdHandle(STD_OUTPUT_HANDLE)
- 
-	local function read()
-		local events = ffi.new("unsigned long[1]")
-		local rec = ffi.new("struct INPUT_RECORD[128]")
-
-		if ffi.C.PeekConsoleInputA(stdin, rec, 128, events) == 0 then
-			error(throw_error())
-		end
-		if events[0] > 0 then
-			local rec = ffi.new("struct INPUT_RECORD[?]", events[0])
-			if ffi.C.ReadConsoleInputA(stdin, rec, events[0], events) == 0 then
-				error(throw_error())
-			end
-			
-			if repl.suppress_first then 
-				repl.suppress_first = false 
-				return 
-			end
-			return rec, events[0]
-		end
-	end
-
-	local buffer
-	local capture = false
-	function repl.StartBuffer()
-		capture = true
-		buffer = {}
-	end
-
-	function repl.StopBuffer()
-		capture = false
-		io.write(table.concat(buffer))
-		buffer = nil
-	end
 
 	function repl.Write(str)
-		if capture then 
-			table.insert(buffer, str)
-		else
-			io.write(str)
-		end
-		do return end
-		local out = ffi.new("struct CHAR_INFO[?]", #str)
-		for i = 1, #str do
-			out[i - 1].Char.AsciiChar = str:sub(i, i):byte()
-		end
-		local x,y = repl.GetCaretPosition()
-		ffi.C.WriteConsoleOutputA(stdout, out, {X = 1, Y = 1}, {X = x, Y = y}, nil)
+		io.write(str)
 	end
 	
 	function repl.GetCaretPosition()
@@ -877,14 +790,6 @@ int ReadConsoleA(
 		local out = ffi.new("struct CONSOLE_SCREEN_BUFFER_INFO[1]")
 		ffi.C.GetConsoleScreenBufferInfo(stdout, out)
 		return out[0].dwSize.X, out[0].dwSize.Y
-	end
-	
-	function repl.WriteStringToScreen(x, y, str)
-		local x_,y_ = repl.GetCaretPosition()
-		
-		repl.SetCaretPosition(x,y)
-		repl.Write(str)
-		repl.SetCaretPosition(x_,y_)
 	end
 	
 	function repl.SetForegroundColor(r,g,b)
@@ -1062,6 +967,26 @@ int ReadConsoleA(
 		VK_OEM_CLEAR = 0xFE,
 	}
 	
+	local function read()
+		local events = ffi.new("unsigned long[1]")
+		local rec = ffi.new("struct INPUT_RECORD[128]")
+
+		if ffi.C.PeekConsoleInputA(stdin, rec, 128, events) == 0 then
+			error(throw_error())
+		end
+		if events[0] > 0 then
+			local rec = ffi.new("struct INPUT_RECORD[?]", events[0])
+			if ffi.C.ReadConsoleInputA(stdin, rec, events[0], events) == 0 then
+				error(throw_error())
+			end
+			
+			if repl.suppress_first then 
+				repl.suppress_first = false 
+				return 
+			end
+			return rec, events[0]
+		end
+	end	
 
 	function repl.Update()
 		local events, count = read()
