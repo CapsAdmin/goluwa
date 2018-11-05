@@ -44,10 +44,9 @@ end
 function repl.RenderInput()
 	local w, h = repl.GetConsoleSize()
 	local x,y = repl.GetCaretPosition()
-	repl.SetCaretPosition(x, h)
-	repl.SetCaretPosition(0,h)
+	repl.SetCaretPosition(0,y)
 	repl.Print(repl.buffer)
-	repl.WriteStringToScreen(repl.buffer:ulen() + 1, h, (" "):rep(10))
+	repl.WriteStringToScreen(repl.buffer:ulen() + 1, y, (" "):rep(w))
 	repl.SetCaretPosition(x,y)
 	--repl.WriteStringToScreen(0, h, repl.buffer)
 end
@@ -131,7 +130,7 @@ do
 		repl.SetForegroundColor(unpack(colors[what]))
 	end
 
-	function repl.Print(str) io.write(str) do return end
+	function repl.Print(str)
 		str:replace("\t", "    ")
 
 		local start = 0
@@ -188,7 +187,7 @@ end
 function repl.KeyPressed(key)
 	local x, y = repl.GetCaretPosition()
 	local w, h = repl.GetConsoleSize()
-	
+
 	if key == "enter" then
 		repl.SetCaretPosition(0, y)
 		repl.Print("> " .. repl.buffer)
@@ -218,6 +217,9 @@ function repl.KeyPressed(key)
 				end
 			end
 		end
+
+		x, y = repl.GetCaretPosition()
+		y = y - 1
 
 		-- write the buffer
 		
@@ -378,7 +380,7 @@ if jit.os ~= "Windows" then
 		local x,y = 0, 0
 	
 		while true do
-			local str = repl.Read()
+			local str = io.read()
 			if str and str:usub(1, 2) == "\27[" then
 				y,x = str:match("\27%[(%d+);(%d+)R")
 				break
