@@ -181,6 +181,7 @@ event = runfile("lua/libraries/event.lua") -- event handler
 utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
 profiler = runfile("lua/libraries/profiler.lua") -- for profiling
 repl = runfile("lua/libraries/repl.lua")
+repl.Start()
 
 do
 	local args = (os.getenv("GOLUWA_ARG_LINE") or ""):split(" ")
@@ -212,13 +213,6 @@ event.AddListener("MainLoopStart", function()
 	vfs.AutorunAddons(e.USERNAME .. "/")
 end)
 
--- this could be overriden
-event.AddListener("MainLoop", "main", function()
-	event.Call("MainLoopStart")
-	repl.MainLoop()
-	event.Call("MainLoopStop")
-end)
-
 system.ExecuteArgs()
 
 -- call goluwa/*/lua/init.lua if it exists
@@ -230,7 +224,31 @@ if VERBOSE then
 	logn("[runfile] total init time took ", os.clock() - start_time, " seconds to execute")
 end
 
-event.Call("MainLoop")
+event.Call("MainLoopStart")
+event.Call("MainLoopStart")
+
+local last_time = 0
+local i = 0
+
+while system.run == true do
+	local time = system.GetTime()
+
+	local dt = time - (last_time or 0)
+	
+	system.SetFrameTime(dt)
+	system.SetFrameNumber(i)
+	system.SetElapsedTime(system.GetElapsedTime() + dt)
+	event.Call("Update", dt)
+	system.SetInternalFrameTime(system.GetTime() - time)
+	
+	i = i + 1
+	last_time = time
+	event.Call("FrameEnd")
+end
+repl.Stop()
+
+event.Call("MainLoopStop")
+event.Call("MainLoopStop")
 
 event.Call("ShutDown")
 collectgarbage()

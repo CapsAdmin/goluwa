@@ -55,14 +55,6 @@ if EXTERNAL_DEBUGGER == nil then
 	EXTERNAL_DEBUGGER = false
 end
 
-if CLI then
-	GRAPHICS = false
-	WINDOW = false
-	SOUND = false
-	CLIENT = false
-	NETWORK = false
-end
-
 RELOAD = false
 CREATED_ENV = false
 

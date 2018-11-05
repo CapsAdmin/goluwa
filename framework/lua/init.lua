@@ -99,36 +99,3 @@ event.AddListener("MainLoopStart", function()
 		vfs.AutorunAddons("sound/")
 	end
 end)
-
--- this could be overriden
-event.AddListener("MainLoop", "main", function()
-	event.Call("MainLoopStart")
-	event.Call("MainLoopStart")
-
-	local last_time = 0
-	local i = 0
-
-	repl.Start()
-	while system.run == true do
-		repl.Update()
-		
-		local time = system.GetTime()
-
-		local dt = time - (last_time or 0)
-		
-		system.SetFrameTime(dt)
-		system.SetFrameNumber(i)
-		system.SetElapsedTime(system.GetElapsedTime() + dt)
-		event.Call("Update", dt)
-		system.SetInternalFrameTime(system.GetTime() - time)
-		
-		i = i + 1
-		last_time = time
-		event.Call("FrameEnd")
-	end
-	repl.Stop()
-
-	event.Call("MainLoopStop")
-end)
-
-

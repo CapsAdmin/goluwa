@@ -373,11 +373,14 @@ function utility.MakePushPopFunction(lib, name, func_set, func_get, reset)
 
 	lib["Push" .. name] = function(a,b,c,d)
 		stack[i] = stack[i] or {}
-		stack[i][1], stack[i][2], stack[i][3], stack[i][4] = func_get()
+		local a_,b_,c_,d_ = func_get()
+		stack[i][1], stack[i][2], stack[i][3], stack[i][4] = a_,b_,c_,d_
 
 		func_set(a,b,c,d)
 
 		i = i + 1
+
+		return a_,b_,c_,d_
 	end
 
 	lib["Pop" .. name] = function()
@@ -391,7 +394,11 @@ function utility.MakePushPopFunction(lib, name, func_set, func_get, reset)
 			reset()
 		end
 
-		func_set(stack[i][1], stack[i][2], stack[i][3], stack[i][4])
+		local a,b,c,d = stack[i][1], stack[i][2], stack[i][3], stack[i][4]
+
+		func_set(a,b,c,d)
+
+		return a,b,c,d
 	end
 end
 
@@ -558,7 +565,7 @@ function utility.TableToColumns(title, tbl, columns, check, sort_key)
 	return out
 end
 
-function utility.TableToFlags(flags, valid_flags)
+function utility.TableToFlags(flags, valid_flags, operation)
 	if type(flags) == "string" then
 		flags = {flags}
 	end
@@ -570,7 +577,11 @@ function utility.TableToFlags(flags, valid_flags)
 		if not flag then
 			error("invalid flag", 2)
 		end
-		out = bit.band(out, tonumber(flag))
+		if type(operation) == "function" then
+			out = operation(out, tonumber(flag))
+		else
+			out = bit.band(out, tonumber(flag))
+		end
 	end
 
 	return out

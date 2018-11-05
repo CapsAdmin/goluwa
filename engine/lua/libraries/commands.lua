@@ -505,7 +505,13 @@ do -- commands
 
 			lua = lua .. line
 
-			return assert(loadstring(lua, env_name or line))()
+			local ok, err = loadstring(lua, env_name or line)
+
+			if err then
+				err = err:match("^.-:%d+:%s+(.+)")
+			end
+
+			return assert(ok, err)()
 		end
 
 		function commands.ExecuteLuaString(line, log_error, env_name)
@@ -514,7 +520,7 @@ do -- commands
 
 			if not ok then
 				if log_error then
-					logn(ret[1])
+					logn(ret[1]:match(".+:%d+:%s+(.+)"))
 				end
 				return false, ret[1]
 			end
@@ -566,6 +572,8 @@ do -- commands
 				end
 
 				if not ok then
+					msg = msg:match("^.-:%d+:%s+(.+)") or msg
+
 					logn(msg)
 				end
 			end

@@ -6,7 +6,7 @@ set OS=windows
 set APP_NAME=appexample
 set ARG_LINE=%*
 set STORAGE_PATH=storage
-set BINARY_DIR=bin\!STORAGE_PATH!\!OS!_!ARCH!
+set BINARY_DIR=!STORAGE_PATH!\bin\!OS!_!ARCH!
 set BINARY_NAME=luajit.exe
 set BASE_BINARY_URL=https://gitlab.com/CapsAdmin/goluwa-binaries-!OS!_!ARCH!/raw/master/
 set BASE_SCRIPT_URL=https://gitlab.com/CapsAdmin/goluwa/raw/master/
@@ -47,12 +47,15 @@ SetLocal
 	set "cmd_line=!BINARY_DIR!\!BINARY_NAME! !SCRIPT_PATH!"
 		
 	IF !RAN_FROM_FILEBROWSER! equ 1 (
-		start "" !cmd_line!
+		set "GOLUWA_ARG_LINE=--verbose"
+		!cmd_line!
+		set err=%errorlevel%
 	) else (
 		!cmd_line!
+		set err=%errorlevel%
 	)
 
-	if !errorlevel! neq 0 (
+	if !err! neq 0 (
 		pause
 	)
 
