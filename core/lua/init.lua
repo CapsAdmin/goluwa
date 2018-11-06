@@ -1,5 +1,9 @@
 local start_time = os.clock()
 
+if (os.getenv("GOLUWA_ARG_LINE") or ""):find("--verbose", nil, true) then
+	_G.VERBOSE = true
+end
+
 local OS = jit and jit.os:lower() or "unknown"
 local ARCH = jit and jit.arch:lower() or "unknown"
 
@@ -182,14 +186,6 @@ utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to
 profiler = runfile("lua/libraries/profiler.lua") -- for profiling
 repl = runfile("lua/libraries/repl.lua")
 repl.Start()
-
-do
-	local args = (os.getenv("GOLUWA_ARG_LINE") or ""):split(" ")
-	
-	if table.hasvalue(args, "--verbose") then
-		_G.VERBOSE = true
-	end
-end
 
 -- tries to load all addons
 -- some might not load depending on its info.lua file.
