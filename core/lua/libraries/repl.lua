@@ -122,39 +122,40 @@ do
 		b = tonumber("0x" .. b)
 		colors[key] = {r/255,g/255,b/255}
 	end
-	
+	local last_color
 	set_color = function(what)
+		if what ~= last_color then
 		repl.SetForegroundColor(unpack(colors[what]))
+			last_color = what
+	end
 	end
 
 	function repl.Print(str)
-		str:replace("\t", "    ")
-
 		local start = 0
-		local tokens = tokenize({code = str, path = ""}):GetTokens()
+		local tokenizer = tokenize({code = str, path = ""})
 
-		LAST_TOKENS = tokens
+		while true do
+			local type, start, stop, whitespace = tokenizer:ReadToken()
+			if not type then break end
 		
-		for i, v in ipairs(tokens) do
-
-			for i,v in ipairs(v.whitespace) do
+			for _, v in ipairs(whitespace) do
 				if v.type == "line_comment" or v.type == "multiline_comment" then
 					set_color("comment")
 				else
 					set_color("letter")
 				end
 
-				repl.Write(str:usub(v.start, v.stop))
+				repl.Write(str:sub(v.start, v.stop))
 			end
 
-			if v.type == "symbol" then
+			if type == "symbol" then
 				set_color("symbol")
-			elseif v.type == "number" then
+			elseif type == "number" then
 				set_color("number")
-			elseif v.type == "string" then
+			elseif type == "string" then
 				set_color("string")
-			elseif v.type == "letter" then
-				if keywords[v.value] then
+			elseif type == "letter" then
+				if keywords[str:sub(start, stop)] then
 					set_color("keyword")
 				else
 					set_color("letter")
@@ -162,7 +163,10 @@ do
 			else
 				set_color("letter")
 			end
-			repl.Write(str:usub(v.start, v.stop))
+
+			repl.Write(str:sub(start, stop))
+
+			if type == "end_of_file" then break end
 		end
 
 		set_color("letter")
