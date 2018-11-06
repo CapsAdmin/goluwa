@@ -146,7 +146,6 @@ do
 end
 
 -- standard library extensions
-runfile("lua/libraries/extensions/jit.lua")
 runfile("lua/libraries/extensions/globals.lua")
 runfile("lua/libraries/extensions/debug.lua")
 runfile("lua/libraries/extensions/string.lua")
@@ -173,6 +172,7 @@ vfs.AddModuleDirectory("bin/" .. OS .. "_" .. ARCH .. "/")
 _G.require = vfs.Require
 _G.runfile = vfs.RunFile
 _G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir
+
 -- libraries
 crypto = runfile("lua/libraries/crypto.lua") -- base64 and other hash functions
 serializer = runfile("lua/libraries/serializer.lua") -- for serializing lua data in different formats
@@ -197,6 +197,11 @@ end
 -- only if the CAPSADMIN constant is not nil.
 -- this will skip the src folder though
 vfs.MountAddons(e.ROOT_FOLDER)
+
+-- this needs to be ran after addons have been mounted as it looks for vmdef.lua and other lua files in binary directories
+if jit then
+	runfile("lua/libraries/extensions/jit.lua")
+end
 
 if VERBOSE then
 	logn("[runfile] ", os.clock() - start_time," seconds spent in core/lua/init.lua")
