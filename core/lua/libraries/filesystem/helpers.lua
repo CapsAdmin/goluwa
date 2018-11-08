@@ -150,7 +150,7 @@ add_helper("Write", "WriteBytes", "write", function(path, content, on_change)
 		return folder .. file_name
 	end)
 
-	if type(on_change) == "function" then
+	if type(on_change) == "function" and vfs.MonitorFile then
 		vfs.MonitorFile(path, function(file_path)
 			on_change(vfs.Read(file_path), file_path)
 		end)
@@ -278,4 +278,33 @@ end
 
 function vfs.Exists(path)
 	return vfs.IsDirectory(path) or vfs.IsFile(path)
+end
+
+function vfs.WatchLuaFiles(b)
+	if not b then
+		event.RemoveListener("Update", "vfs_watch_lua_files")
+		return
+	end
+
+	local watchers = {}
+	for i, path in ipairs(vfs.GetFilesRecursive("", {"lua"})) do
+		watchers[i] = {path = path, watcher = fs.watch(R(path))}
+	end
+
+	local next_check = 0
+
+	event.AddListener("Update", "vfs_watch_lua_files", function() 
+		local time = system.GetElapsedTime() 
+
+		if time > next_check then
+			for _, data in ipairs(watchers) do   
+				local res = data.watcher:Read()
+				if res and res.flags.close_write then 
+					logn("reloading " .. data.path)
+					runfile(data.path)
+				end
+			end
+			next_check = time + 1/5
+		end
+	end)
 end
