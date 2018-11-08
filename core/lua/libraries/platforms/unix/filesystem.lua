@@ -19,6 +19,24 @@ ffi.cdef([[
 	struct dirent *readdir(DIR *dirp);
 	int closedir(DIR *dirp);
 	long syscall(int number, ...);
+
+
+	ssize_t read(int fd, void *buf, size_t count);
+
+	struct inotify_event
+	{
+		int wd;
+		uint32_t mask;
+		uint32_t cookie;
+		uint32_t len;
+		char name [];
+	};
+	int inotify_init(void);
+	int inotify_init1(int flags);
+	int inotify_add_watch(int fd, const char *pathname, uint32_t mask);
+	int inotify_rm_watch(int fd, int wd);
+
+	static const uint32_t IN_MODIFY = 0x00000002;
 ]])
 
 fs.open = ffi.C.fopen
@@ -192,6 +210,69 @@ function fs.getattributes(path)
 		}
 	end
 	return false
+end
+
+do
+	local flags = {
+		access = 0x00000001, -- File was accessed
+		modify = 0x00000002, -- File was modified
+		attrib = 0x00000004, -- Metadata changed
+		close_write = 0x00000008, -- Writtable file was closed
+		close_nowrite = 0x00000010, -- Unwrittable file closed
+		open = 0x00000020, -- File was opened
+		moved_from = 0x00000040, -- File was moved from X
+		moved_to = 0x00000080, -- File was moved to Y
+		create = 0x00000100, -- Subfile was created
+		delete = 0x00000200, -- Subfile was deleted
+		delete_self = 0x00000400, -- Self was deleted
+		move_self = 0x00000800, -- Self was moved
+		unmount = 0x00002000, -- Backing fs was unmounted
+		q_overflow = 0x00004000, -- Event queued overflowed
+		ignored = 0x00008000, -- File was ignored
+		onlydir = 0x01000000, -- only watch the path if it is a directory
+		dont_follow = 0x02000000, -- don't follow a sym link
+		excl_unlink = 0x04000000, -- exclude events on unlinked objects
+		mask_create = 0x10000000, -- only create watches
+		mask_add = 0x20000000, -- add to the mask of an already existing watch
+		isdir = 0x40000000, -- event occurred against dir
+		oneshot = 0x80000000, -- only send event once
+	}
+	local IN_NONBLOCK = 2048
+
+	local fd = ffi.C.inotify_init1(IN_NONBLOCK)
+	local max_length = 8192
+	local length = ffi.sizeof("struct inotify_event")
+	local buffer = ffi.new("char[?]", max_length)
+	local queue = {}
+
+	function fs.watch(path, mask)
+		local wd = ffi.C.inotify_add_watch(fd, path, mask and utility.TableToFlags(mask, flags) or 4095)
+		queue[wd] = {}
+
+		local self = {}
+		function self:Read()
+			local len = ffi.C.read(fd, buffer, length)
+			if len >= length then
+				local res = ffi.cast("struct inotify_event*", buffer)
+				table.insert(queue[res.wd], {
+					cookie = res.cookie,
+					name = ffi.string(res.name, res.len),
+					flags = utility.FlagsToTable(res.mask, flags),
+				})
+			end
+
+			if queue[wd][1] then 
+				return table.remove(queue[wd])
+			end
+		end
+
+		function self:Remove() 
+			ffi.C.inotify_rm_watch(inotify_fd, wd)
+			queue[wd] = nil
+		end
+		
+		return self
+	end
 end
 
 return fs
