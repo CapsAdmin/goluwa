@@ -19,7 +19,7 @@ local battery_limit = pvars.Setup("system_battery_limit", true)
 do
     local rate = rate_cvar:Get()
 
-    event.Timer("rate_limit", 0.1, 0, function()
+    event.Timer("fps_limit", 0.1, 0, function()
         rate = rate_cvar:Get()
 
         -- todo: user is changing properties in game
@@ -42,7 +42,7 @@ do
         end
     end)
 
-    event.AddListener("FrameEnd", "rate_limit", function()
+    event.AddListener("FrameEnd", "fps_limit", function()
         if rate > 0 then
             system.Sleep(math.floor(1/rate * 1000))
         end
