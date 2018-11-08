@@ -37,14 +37,14 @@ function repl.Update()
 end
 
 function repl.RenderInput()
-	local w, h = repl.GetConsoleSize()
+	local w,h = repl.GetConsoleSize()
 	local x,y = repl.GetCaretPosition()
 	
 	-- clear the input row
 	repl.WriteStringToScreen(0, y, (" "):rep(w))
 	
 	repl.SetCaretPosition(0,y)
-	repl.Print(repl.buffer)
+	repl.WriteStringToScreen(0, y, repl.buffer)
 	repl.SetCaretPosition(x,y)
 end
 
@@ -125,12 +125,22 @@ do
 	local last_color
 	set_color = function(what)
 		if what ~= last_color then
-		repl.SetForegroundColor(unpack(colors[what]))
+			repl.SetForegroundColor(unpack(colors[what]))
 			last_color = what
-	end
+		end
 	end
 
-	function repl.Print(str)
+	function repl.StyledWrite(str, dont_move)
+		local x,y, w,h
+		if not dont_move and repl.buffer ~= "" then
+			x,y = repl.GetCaretPosition()
+			repl.WriteStringToScreen(0, y, (" "):rep(#repl.buffer))
+			repl.SetCaretPositionReal(0,y)
+		end
+
+		last_color = nil
+		set_color("letter")
+
 		local start = 0
 		local tokenizer = tokenize({code = str, path = ""})
 
@@ -145,7 +155,7 @@ do
 					set_color("letter")
 				end
 
-				repl.Write(str:sub(v.start, v.stop))
+				repl.Write(str:usub(v.start, v.stop))
 			end
 
 			if type == "symbol" then
@@ -155,7 +165,7 @@ do
 			elseif type == "string" then
 				set_color("string")
 			elseif type == "letter" then
-				if keywords[str:sub(start, stop)] then
+				if keywords[str:usub(start, stop)] then
 					set_color("keyword")
 				else
 					set_color("letter")
@@ -164,12 +174,18 @@ do
 				set_color("letter")
 			end
 
-			repl.Write(str:sub(start, stop))
+			repl.Write(str:usub(start, stop))
 
 			if type == "end_of_file" then break end
 		end
 
 		set_color("letter")
+		
+		if not dont_move and repl.buffer ~= "" then
+			local tx, ty = repl.GetTailPosition()
+			repl.SetCaretPosition(x, ty)
+			repl.StyledWrite(repl.buffer, true)
+		end
 	end
 end
 
@@ -190,42 +206,74 @@ function repl.KeyPressed(key)
 	local w, h = repl.GetConsoleSize()
 
 	if key == "enter" then
-		repl.SetCaretPosition(0, y)
-		repl.Print("> " .. repl.buffer)
-		repl.SetCaretPosition(x, y)
-		repl.Write("\n") -- create a new line
+		local str = repl.buffer
+		repl.buffer = ""
+
+	--	repl.WriteStringToScreen(0, y, (" "):rep(w))
+		repl.WriteStringToScreen(0, y, (" "):rep(#str))
+		repl.SetCaretPositionReal(0,y)
+		repl.StyledWrite("> " .. str, true)
+		repl.Flush()
+		repl.WriteNow("\n")
+		repl.SetCaretPosition(0,y+1)
+		repl.Flush()
 		
-		if repl.buffer == "clear" then
+
+		if str == "clear" then
 			if jit.os == "Windows" then
 				os.execute("cls")
 			else
 				os.execute("clear")
 			end
-		elseif repl.buffer:startswith("exit") then
-			system.ShutDown(tonumber(repl.buffer:match("exit (%d+)")) or 0)
-		elseif repl.buffer ~= "" then
+			repl.SetCaretPosition(0,0)
+		elseif str:startswith("exit") then
+			system.ShutDown(tonumber(str:match("exit (%d+)")) or 0)
+		elseif str ~= "" then
 			if commands and commands.RunString then
-				commands.RunString(repl.buffer)
+				commands.RunString(str)
 			else
-				local func, err = loadstring(repl.buffer)
+				local func, err = loadstring(str)
 				if func then
-					local func, res = pcall(func)
+					local func, res = system.pcall(func)
 					if not func then
+						--res = res:match("^.-:%d+:%s+(.+)")
+
 						set_color("error")
-						repl.Write(res .. "\n")
+						logn(res)
 						set_color("letter")
 					end
 				else
-					err = err:match("^.-:%d+:%s+(.+)")
-					set_color("error")
-					repl.Write(err .. "\n") 
-					set_color("letter")
+					local tokenizer = oh.Tokenizer(str, "")
+					local tokens = tokenizer:GetTokens()
+					local parser = oh.Parser(tokens, str, "")
+					local ast = parser:GetAST()
+					
+					local function print_errors(errors, only_first)
+						for _, v in ipairs(errors) do
+							set_color("error")
+							repl.Write((" "):rep(v.start + 1) .. ("^"):rep(v.stop - v.start + 1))
+							set_color("letter")
+							repl.StyledWrite(" " ..  v.msg .. "\n")
+							if only_first then break end
+						end
+					end
+
+					print_errors(tokenizer.errors)
+					print_errors(parser.errors, true)
+					--print(oh.GetErrorsFormatted(parser.errors, str, ""))
+
+
+					--err = err:match("^.-:%d+:%s+(.+)")
+					--set_color("error")
+					--repl.Write(err .. "\n") 
+					--set_color("letter")
 				end
 			end
 		end
-
-		x, y = repl.GetCaretPosition()
-		y = y - 1
+		local x,y = repl.GetTailPosition()
+		repl.Flush()
+		repl.SetCaretPosition(x,y)
+		repl.Flush()
 
 		-- write the buffer
 		
@@ -235,12 +283,9 @@ function repl.KeyPressed(key)
 			end
 		end
 
-		table.insert(repl.command_history, repl.buffer)
+		table.insert(repl.command_history, str)
 		serializer.WriteFile("luadata", "data/cmd_history.txt", repl.command_history)
 		repl.scroll_command_history = 0
-
-		repl.buffer = ""
-		repl.SetCaretPosition(0, y + 1)
 	elseif key == "delete" then
 		repl.buffer = repl.buffer:usub(0, x-1) .. repl.buffer:usub(x+1, -1)
 	elseif key == "up" or key == "down" then
@@ -319,6 +364,7 @@ function repl.KeyPressed(key)
 	repl.SetCaretPosition(x, y)
 
 	repl.RenderInput()
+	repl.Flush()
 	
 	return true
 end
@@ -352,9 +398,34 @@ if jit.os ~= "Windows" then
 	local ISIG = 0000001
 	local ICANON = 0000002
 	local ECHO = 0000010
+	
 	local VMIN = 6
 	local VTIME = 5
 	local TCSANOW = 0
+	
+	local function octal(s)
+		return tonumber(s, 8)
+	end
+
+	local flags = {
+		ISIG    = octal('0000001'),
+		ICANON  = octal('0000002'),
+		XCASE   = octal('0000004'),
+		ECHO    = octal('0000010'),
+		ECHOE   = octal('0000020'),
+		ECHOK   = octal('0000040'),
+		ECHONL  = octal('0000100'),
+		NOFLSH  = octal('0000200'),
+		TOSTOP  = octal('0000400'),
+		ECHOCTL = octal('0001000'),
+		ECHOPRT = octal('0002000'),
+		ECHOKE  = octal('0004000'),
+		FLUSHO  = octal('0010000'),
+		PENDIN  = octal('0040000'),
+		IEXTEN  = octal('0100000'),
+		EXTPROC = octal('0200000'),
+	}
+
 	local stdin = 0
 
 	local old_attributes
@@ -364,54 +435,32 @@ if jit.os ~= "Windows" then
 			old_attributes = ffi.new("struct termios[1]")
 			ffi.C.tcgetattr(stdin, old_attributes)
 		end
+		
 		local attr = ffi.new("struct termios[1]")
 
 		ffi.C.tcgetattr(stdin, attr)
-
-		attr[0].c_lflag = bit.band(attr[0].c_lflag, bit.bnot(bit.bor(ICANON, ECHO, ISIG)))
+		attr[0].c_lflag = bit.band(attr[0].c_lflag, bit.bnot(bit.bor(flags.ICANON, flags.ECHO, flags.ISIG, flags.ECHOE, flags.ECHOCTL, flags.ECHOKE, flags.ECHOK)))
 		attr[0].c_cc[VMIN] = 0
 		attr[0].c_cc[VTIME] = 0
 		
 		ffi.C.tcsetattr(stdin, TCSANOW, attr)
+
+		repl.WriteNow("\x1b[6n")
+	
+		local x,y = 0, 0
+	
+		while true do
+			local str = repl.Read()
+			if str and str:usub(1, 2) == "\27[" then
+				repl.caret_y,repl.caret_x = str:match("\27%[(%d+);(%d+)R")
+				break
+			end
+		end
 	end
 
 	function repl.Stop()
 		ffi.C.tcsetattr(stdin, TCSANOW, old_attributes)
 		old_attributes = nil
-	end
-
-	function repl.SetConsoleTitle(str)
-		repl.Write("\27]0;" .. str .. "\7")
-	end
-	
-	function repl.GetCaretPosition()
-		repl.Write("\x1b[6n")
-	
-		local x,y = 0, 0
-	
-		while true do
-			local str = io.read()
-			if str and str:usub(1, 2) == "\27[" then
-				y,x = str:match("\27%[(%d+);(%d+)R")
-				break
-			end
-		end
-	
-		return tonumber(x) or 0, tonumber(y) or 0
-	end
-	
-	function repl.SetCaretPosition(x, y)
-		x = math.max(math.floor(x), 0)
-		y = math.max(math.floor(y), 0)
-		repl.Write("\27[" .. y .. ";" .. x .. "f")
-	end
-
-	function repl.Write(str)
-		ffi.C.fwrite(str, 1, #str, io.stdout)
-	end
-
-	function repl.WriteStringToScreen(x, y, str)
-		repl.Write("\27[s\27[" .. y .. ";" .. x .. "f" .. str .. "\27[u")
 	end
 
 	function repl.Read()
@@ -421,6 +470,67 @@ if jit.os ~= "Windows" then
 			return ffi.string(out, len)
 		end
 	end
+	
+	do
+		local buf = {}
+
+		function repl.Flush()
+			if not buf[1] then return end
+
+			local str = table.concat(buf)
+			table.clear(buf)
+			local caret_pos = "\27[" .. repl.caret_y .. ";" .. repl.caret_x .. "f"
+			repl.WriteNow(str .. caret_pos)
+
+			if repl.buffer ~= "" then
+				repl.Write("\27[s\27[" .. repl.caret_y .. ";0f")
+				repl.StyledWrite(repl.buffer, true)
+				repl.Write("\27[u")
+
+				local str = table.concat(buf)
+				table.clear(buf)
+				local caret_pos = "\27[" .. repl.caret_y .. ";" .. repl.caret_x .. "f"
+				repl.WriteNow(str .. caret_pos)
+			end
+		end
+	
+		function repl.Write(str)
+			table.insert(buf, str)
+		end
+	
+		function repl.WriteNow(str)
+			ffi.C.fwrite(str, 1, #str, io.stdout)
+		end
+
+
+		function repl.GetTailPosition()
+			local str = table.concat(buf)
+			local y = str:count("\n") + repl.caret_y
+			local x = (str:match(".+\n(.*)") or ""):ulen()
+
+			return x, y
+		end
+	end
+	
+	function repl.SetConsoleTitle(str)
+		repl.WriteNow("\27]0;" .. str .. "\7")
+	end
+	
+	function repl.SetCaretPositionReal(x, y)
+		x = math.max(math.floor(x), 0)
+		y = math.max(math.floor(y), 0)
+		repl.WriteNow("\27[" .. y .. ";" .. x .. "f")
+	end
+
+	function repl.SetCaretPosition(x,y)
+		repl.caret_x = math.max(x, 1)
+		repl.caret_y = math.max(y, 1)
+	end
+
+	function repl.GetCaretPosition()
+		return repl.caret_x, repl.caret_y
+	end
+
 
 	local function process_input(str)
 		if str == "" or str == "\n" or str == "\r" then -- newline/enter?
@@ -432,6 +542,8 @@ if jit.os ~= "Windows" then
 
 			if seq == "3~" then
 				repl.KeyPressed("delete")
+			elseif seq == "3;5~" then
+				repl.KeyPressed("ctrl_delete")
 			elseif seq == "D" then
 				repl.KeyPressed("left")
 			elseif seq == "C" then
@@ -458,8 +570,14 @@ if jit.os ~= "Windows" then
 					repl.KeyPressed("ctrl_c")
 				elseif byte == 127 then -- backspace
 					repl.KeyPressed("backspace")
-				elseif byte == 23 then -- ctrl backspace
+				elseif byte == 23 or byte == 8 then -- ctrl backspace
 					repl.KeyPressed("ctrl_backspace")
+				elseif byte == 22 then
+					if window and window.GetClipboard() then
+						process_input(window.GetClipboard())
+					else
+						logn("cannot read clipboard: window.GetClipboard() is not a function")
+					end
 				else
 					print("byte: " .. byte)
 				end
@@ -477,11 +595,9 @@ if jit.os ~= "Windows" then
 
 	do
 		local _w,_h = 0,0
-		local test = false
 		function repl.GetConsoleSize()
-		--	if test then return _w,_h end
 
-			repl.Write("\27[s\27[999;999f\x1b[6n\27[u")
+			repl.WriteNow("\27[s\27[999;999f\x1b[6n\27[u")
 		
 			while true do
 				local str = repl.Read()
@@ -495,8 +611,6 @@ if jit.os ~= "Windows" then
 					break
 				end
 			end
-
-			test = true
 
 			return _w,_h
 		end
@@ -516,9 +630,14 @@ if jit.os ~= "Windows" then
 		repl.Write("\27[48;2;" .. r .. ";" .. g .. ";" .. b .. "m")
 	end
 	
+
+	function repl.WriteStringToScreen(x, y, str)
+		repl.Write("\27[s\27[" .. y .. ";" .. x .. "f" .. str .. "\27[u")
+	end
+
 	function repl.Update()
 		local str = repl.Read()
-
+		
 		if str then
 			process_input(str)
 		end
@@ -1062,6 +1181,27 @@ else
 	end	
 end
 
-event.AddListener("Update", "repl", repl.Update)
+local next_update = 0
+
+function repl.UpdateNow()
+	next_update = 0
+end
+
+event.AddListener("Update", "repl", function()
+	local ok, err = system.pcall(repl.Update)
+	if not ok then
+		repl.Stop()
+		repl.Write = repl.WriteNow
+		system.OnError(str)
+		event.RemoveListener("Update", "repl")
+	end
+	
+	local time = system.GetElapsedTime()
+	
+	if next_update < time then
+		repl.Flush()
+		next_update = time + 1/30
+	end
+end)
 
 return repl

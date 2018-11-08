@@ -217,8 +217,8 @@ do -- logging
 		end
 
 		if log_files.console == log_file then
-			if repl and repl.Print then
-				repl.Print(line)
+			if repl and repl.StyledWrite then
+				repl.StyledWrite(line)
 			else
 				io.write(line)
 			end
