@@ -2,11 +2,11 @@ local oh = {}
 
 local old = RELOAD RELOAD = nil
 
-runfile("syntax.lua", oh)
-oh.Tokenizer = runfile("tokenizer.lua", oh)
-runfile("parser.lua", oh)
-runfile("lua_code_emitter.lua", oh)
-runfile("validate.lua", oh)
+runfile("lua/libraries/oh/syntax.lua", oh)
+oh.Tokenizer = require("lua_tokenizer")
+runfile("lua/libraries/oh/parser.lua", oh)
+runfile("lua/libraries/oh/lua_code_emitter.lua", oh)
+runfile("lua/libraries/oh/validate.lua", oh)
 
 RELOAD = old
 
@@ -192,32 +192,6 @@ function oh.loadstring(code, path)
 
 	return func
 end
-
-commands.Add("luaformat=arg_line", function(str)
-	local paths = utility.CLIPathInputToTable(str, {"lua"})
-
-	for i, path in ipairs(paths) do
-		print(path)
-		if path == "stdin" or path == "-" then
-
-		else
-			local code, err = vfs.Read(path)
-			if code then
-				local newcode = oh.Transpile(code, path)
-				local ok, err = loadstring(newcode)
-				if ok then
-					vfs.Write(path .. "2", newcode)
-				end
-			end
-
-			if err then
-				logn(path, ": ", err or "empty file?")
-			end
-		end
-	end
-end)
-
-_G.oh = oh
 
 if RELOAD then
 	runfile("lua/libraries/oh/test.lua")

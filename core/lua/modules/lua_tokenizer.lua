@@ -125,7 +125,7 @@ function Tokenizer:Error(msg, start, stop)
 	start = start or self.i
 	stop = stop or self.i
 
-	if self.config.on_error and self.config.on_error(self, msg, start, stop) ~= false then
+	if not self.config.on_error or self.config.on_error(self, msg, start, stop) ~= false then
 		table.insert(self.errors, {
 			msg = msg,
 			start = start,
@@ -638,7 +638,7 @@ end
 function Tokenizer:BufferWhitespace(type, start, stop)
 	self.whitespace_buffer[self.whitespace_buffer_i] = {
 		type = type,
-		value = self:GetChars(start, stop),
+		--value = self:GetChars(start, stop),
 		start = start == 1 and 0 or start,
 		stop = stop,
 	}
@@ -733,7 +733,7 @@ function Tokenizer:GetTokens()
 			type = type,
 			start = start,
 			stop = stop,
-			value = self:GetChars(start, stop),
+			--value = self:GetChars(start, stop),
 			whitespace = whitespace,
 		}
 

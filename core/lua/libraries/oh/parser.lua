@@ -30,11 +30,13 @@ function META:Error(msg, start, stop, level, offset)
 	start = start or tk.start
 	stop = stop or tk.stop
 
-	if self.halt_on_error then
-		error(oh.FormatError(self.code, self.path, msg, start, stop), level or 2)
+	if not self.config.on_error or self.config.on_error(self, msg, start, stop) ~= false then
+		table.insert(self.errors, {
+			msg = msg,
+			start = start,
+			stop = stop,
+		})
 	end
-
-	table_insert(self.errors, print(oh.FormatError(self.code, self.path, msg, start, stop)))
 end
 
 function META:GetToken()
@@ -518,6 +520,7 @@ function META:Block(stop)
 			data = Node("expression")
 			data.value = self:Expression()
 		elseif self:IsType("letter") then
+			local start_token = self:GetToken()
 			local expr = self:Expression()
 
 			if self:IsValue("=") then
@@ -533,9 +536,11 @@ function META:Block(stop)
 				data.left = list
 				data.tokens["="] = self:ReadExpectValue("=")
 				data.right = self:ExpressionList()
-			else
+			elseif expr.calls then
 				data = Node("expression")
 				data.value = expr
+			else
+				self:Error("unexpected " .. start_token.type, start_token)
 			end
 		elseif self:IsValue(";") then
 			data = Node("end_of_statement")
@@ -547,9 +552,9 @@ function META:Block(stop)
 			data = Node("shebang")
 			data.tokens["shebang"] = self:ReadToken()
 		else
-			self:Error("unexpected token " .. self:GetToken().type .. " " .. oh.QuoteToken(self:GetToken().value))
+			self:Error("unexpected " .. self:GetToken().type)
 		end
-
+		
 		table_insert(out, data)
 	end
 
@@ -575,6 +580,8 @@ function oh.Parser(tokens, code, path, halt_on_error)
 
 	self.halt_on_error = halt_on_error
 	self.errors = {}
+
+	self.config = {}
 
 	self.i = 1
 
