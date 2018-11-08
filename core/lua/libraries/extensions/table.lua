@@ -254,6 +254,11 @@ function table.print(...)
 		tbl[2] = nil
 	end
 
+	if not serializer or not serializer.GetLibrary("luadata") then
+		table.print2(tbl)
+		return
+	end
+
 	local luadata = serializer.GetLibrary("luadata")
 	luadata.SetModifier("function", function(var)
 		return ("function(%s) --[==[ptr: %p    src: %s]==] end"):format(table.concat(debug.getparams(var), ", "), var, debug.getprettysource(var, true))
@@ -262,7 +267,7 @@ function table.print(...)
 		return "--[==[  " .. tostringx(var) .. "  ]==]"
 	end)
 
-	logn(luadata.ToString(tbl, {tab_limit = max_level, done = {}}))
+	log(luadata.ToString(tbl, {tab_limit = max_level, done = {}}):sub(0, -2))
 
 	luadata.SetModifier("function", nil)
 end
