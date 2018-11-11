@@ -497,7 +497,7 @@ local initlua = "core/lua/init.lua"
 os.setenv("GOLUWA_BOOT_TIME", tostring(os.clock() - start_time))
 
 if UNIX then
-	os.execute("./" .. BINARY_DIR .. "/luajit " .. initlua)
+	os.exit(os.execute("./" .. BINARY_DIR .. "/luajit " .. initlua))
 else
-	os.execute(winpath(BINARY_DIR .. "\\luajit.exe " .. os.getcd():gsub("\\", "/") .. "/" .. initlua))
+	os.exit(os.execute(winpath(BINARY_DIR .. "\\luajit.exe " .. os.getcd():gsub("\\", "/") .. "/" .. initlua)))
 end
