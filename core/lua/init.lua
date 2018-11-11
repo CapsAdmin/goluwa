@@ -215,8 +215,6 @@ event.AddListener("MainLoopStart", function()
 	vfs.AutorunAddons(e.USERNAME .. "/")
 end)
 
-system.ExecuteArgs()
-
 -- call goluwa/*/lua/init.lua if it exists
 vfs.InitAddons()
 
@@ -225,6 +223,8 @@ event.Call("Initialize")
 if VERBOSE then
 	logn("[runfile] total init time took ", os.clock() - start_time, " seconds to execute")
 end
+
+vfs.WatchLuaFiles(true)
 
 event.Call("MainLoopStart")
 event.Call("MainLoopStart")
