@@ -2,8 +2,8 @@ local repl = _G.repl or {}
 
 repl.buffer = repl.buffer or ""
 repl.command_history = repl.command_history or serializer.ReadFile("luadata", "data/cmd_history.txt") or {}
-for k,v in ipairs(repl.command_history) do 
-	if type(v) ~= "string" then 
+for k,v in ipairs(repl.command_history) do
+	if type(v) ~= "string" then
 		repl.command_history = {}
 		break
 	end
@@ -12,19 +12,6 @@ repl.scroll_command_history = repl.scroll_command_history or 0
 
 function repl.SetConsoleTitle(str)
 	llog("NYI: repl.SetConsoleTitle(str)")
-end
-
-function repl.MoveCaret(ox, oy)
-	local x, y = repl.GetCaretPosition()
-	repl.SetCaretPosition(x + ox, y + oy)
-end
-
-function repl.WriteStringToScreen(x, y, str)
-	local x_,y_ = repl.GetCaretPosition()
-	
-	repl.SetCaretPosition(x,y)
-	repl.Write(str)
-	repl.SetCaretPosition(x_,y_)
 end
 
 function repl.GetConsoleSize()
@@ -39,13 +26,26 @@ end
 function repl.RenderInput()
 	local w,h = repl.GetConsoleSize()
 	local x,y = repl.GetCaretPosition()
-	
+
 	-- clear the input row
 	repl.WriteStringToScreen(0, y, (" "):rep(w))
-	
+
 	repl.SetCaretPosition(0,y)
 	repl.WriteStringToScreen(0, y, repl.buffer)
 	repl.SetCaretPosition(x,y)
+end
+
+function repl.MoveCaret(ox, oy)
+	local x, y = repl.GetCaretPosition()
+	repl.SetCaretPosition(x + ox, y + oy)
+end
+
+function repl.WriteStringToScreen(x, y, str)
+	local x_,y_ = repl.GetCaretPosition()
+
+	repl.SetCaretPosition(x,y)
+	repl.Write(str)
+	repl.SetCaretPosition(x_,y_)
 end
 
 function repl.CharInput(str)
@@ -100,9 +100,9 @@ do
 		"true", "until", "while", "goto", "...",
 	}
 	local temp = {}
-	for k,v in ipairs(keywords) do 
-		temp[v] = true 
-	end 
+	for k,v in ipairs(keywords) do
+		temp[v] = true
+	end
 	keywords = temp
 
 	local colors = {
@@ -130,11 +130,15 @@ do
 		end
 	end
 
+	function repl.ClearScreen()
+		os.execute("clear")
+	end
+
 	function repl.StyledWrite(str, dont_move)
 		local x,y, w,h
 		if not dont_move then
 			x,y = repl.GetCaretPosition()
-			
+
 			-- clear the input line and reset the caret position
 			repl.WriteStringToScreen(0, y, (" "):rep(#repl.buffer))
 			repl.SetCaretPositionReal(0,y)
@@ -150,7 +154,7 @@ do
 		while true do
 			local type, start, stop, whitespace = tokenizer:ReadToken()
 			if not type then break end
-		
+
 			for _, v in ipairs(whitespace) do
 				if v.type == "line_comment" or v.type == "multiline_comment" then
 					set_color("comment")
@@ -183,7 +187,7 @@ do
 		end
 
 		set_color("letter")
-		
+
 		if not dont_move then
 			local tx, ty = repl.GetTailPosition()
 			repl.SetCaretPosition(x,ty)
@@ -201,7 +205,7 @@ local function find_next_word(buffer, x, dir)
     elseif str:find("^%p", 0) then
         return str:find("%P", 0) or str:find("^%p+$", 0)
     end
-    
+
     return str:find("%s", 0) or str:find("%p", 0) or str:ulen() + 1
 end
 
@@ -221,14 +225,10 @@ function repl.KeyPressed(key)
 		repl.WriteNow("\n")
 		repl.SetCaretPosition(0,y+1)
 		repl.Flush()
-		
+
 
 		if str == "clear" then
-			if jit.os == "Windows" then
-				os.execute("cls")
-			else
-				os.execute("clear")
-			end
+			repl.ClearScreen()
 			repl.SetCaretPosition(0,0)
 		elseif str:startswith("exit") then
 			system.ShutDown(tonumber(str:match("exit (%d+)")) or 0)
@@ -251,7 +251,7 @@ function repl.KeyPressed(key)
 					local tokens = tokenizer:GetTokens()
 					local parser = oh.Parser(tokens, str, "")
 					local ast = parser:GetAST()
-					
+
 					local function print_errors(errors, only_first)
 						for _, v in ipairs(errors) do
 							set_color("error")
@@ -269,7 +269,7 @@ function repl.KeyPressed(key)
 
 					--err = err:match("^.-:%d+:%s+(.+)")
 					--set_color("error")
-					--repl.Write(err .. "\n") 
+					--repl.Write(err .. "\n")
 					--set_color("letter")
 				end
 			end
@@ -280,7 +280,7 @@ function repl.KeyPressed(key)
 		repl.Flush()
 
 		-- write the buffer
-		
+
 		for i, str in ipairs(repl.command_history) do
 			if str == buffer then
 				table.remove(repl.command_history, i)
@@ -318,7 +318,7 @@ function repl.KeyPressed(key)
 		end
 	elseif key == "ctrl_left" then
 		local offset = find_next_word(repl.buffer, x, "left")
-                
+
 		if offset then
 			repl.MoveCaret(-offset + 1, 0)
 		end
@@ -364,7 +364,7 @@ function repl.KeyPressed(key)
 			repl.ctrl_c_exit = system.GetTime() + 0.5
 
 			local x,y = repl.GetCaretPosition()
-			
+
 			repl.WriteNow("ctrl+c again to exit\n")
 			repl.SetCaretPosition(0,y+1)
 			repl.Flush()
@@ -379,7 +379,7 @@ function repl.KeyPressed(key)
 
 	repl.RenderInput()
 	repl.Flush()
-	
+
 	return true
 end
 
@@ -400,21 +400,21 @@ if jit.os ~= "Windows" then
 		};
 
 		int tcgetattr(int __fd, struct termios *__termios_p);
-		int tcsetattr(int __fd, int __optional_actions, const struct termios *__termios_p); 
-		
+		int tcsetattr(int __fd, int __optional_actions, const struct termios *__termios_p);
+
 		typedef struct FILE FILE;
 		size_t fwrite(const char *ptr, size_t size, size_t nmemb, FILE *stream);
 		size_t fread ( char * ptr, size_t size, size_t count, FILE * stream );
 	]])
-	
+
 	local ISIG = 0000001
 	local ICANON = 0000002
 	local ECHO = 0000010
-	
+
 	local VMIN = 6
 	local VTIME = 5
 	local TCSANOW = 0
-	
+
 	local function octal(s)
 		return tonumber(s, 8)
 	end
@@ -441,26 +441,26 @@ if jit.os ~= "Windows" then
 	local stdin = 0
 
 	local old_attributes
-	
+
 	function repl.Start()
 		if not old_attributes then
 			old_attributes = ffi.new("struct termios[1]")
 			ffi.C.tcgetattr(stdin, old_attributes)
 		end
-		
+
 		local attr = ffi.new("struct termios[1]")
 
 		ffi.C.tcgetattr(stdin, attr)
 		attr[0].c_lflag = bit.band(attr[0].c_lflag, bit.bnot(bit.bor(flags.ICANON, flags.ECHO, flags.ISIG, flags.ECHOE, flags.ECHOCTL, flags.ECHOKE, flags.ECHOK)))
 		attr[0].c_cc[VMIN] = 0
 		attr[0].c_cc[VTIME] = 0
-		
+
 		ffi.C.tcsetattr(stdin, TCSANOW, attr)
 
 		repl.WriteNow("\x1b[6n")
-	
+
 		local x,y = 0, 0
-	
+
 		while true do
 			local str = repl.Read()
 			if str and str:usub(1, 2) == "\27[" then
@@ -482,7 +482,7 @@ if jit.os ~= "Windows" then
 			return ffi.string(out, len)
 		end
 	end
-	
+
 	do
 		local buf = {}
 
@@ -496,20 +496,27 @@ if jit.os ~= "Windows" then
 
 			if repl.buffer ~= "" then
 				repl.Write("\27[s\27[" .. repl.caret_y .. ";0f")
-				repl.StyledWrite(repl.buffer, true)
-				repl.Write("\27[u")
-
+				do
+					local buf = repl.buffer .. " "
+					repl.StyledWrite(buf:usub(0, repl.caret_x-1), true)
+					repl.SetBackgroundColor(0.5, 0.5, 0.5)
+					--repl.Write("\27[47m")
+					repl.StyledWrite(buf:usub(repl.caret_x, repl.caret_x), true)
+					--repl.SetBackgroundColor(0,0,0)
+					repl.Write("\27[0m")
+					repl.StyledWrite(buf:usub(repl.caret_x+1), true)
+					repl.Write("\27[u")
+				end
 				local str = table.concat(buf)
 				table.clear(buf)
-				local caret_pos = "\27[" .. repl.caret_y .. ";" .. repl.caret_x .. "f"
-				repl.WriteNow(str .. caret_pos)
+				repl.WriteNow(str)
 			end
 		end
-	
+
 		function repl.Write(str)
 			table.insert(buf, str)
 		end
-	
+
 		function repl.WriteNow(str)
 			ffi.C.fwrite(str, 1, #str, io.stdout)
 		end
@@ -523,11 +530,11 @@ if jit.os ~= "Windows" then
 			return x, y
 		end
 	end
-	
+
 	function repl.SetConsoleTitle(str)
 		repl.WriteNow("\27]0;" .. str .. "\7")
 	end
-	
+
 	function repl.SetCaretPositionReal(x, y)
 		x = math.max(math.floor(x), 0)
 		y = math.max(math.floor(y), 0)
@@ -613,7 +620,7 @@ if jit.os ~= "Windows" then
 		function repl.GetConsoleSize()
 
 			repl.WriteNow("\27[s\27[999;999f\x1b[6n\27[u")
-		
+
 			while true do
 				local str = repl.Read()
 				if str then
@@ -630,21 +637,21 @@ if jit.os ~= "Windows" then
 			return _w,_h
 		end
 	end
-	
+
 	function repl.SetForegroundColor(r,g,b)
 		r = math.floor(r * 255)
 		g = math.floor(g * 255)
 		b = math.floor(b * 255)
 		repl.Write("\27[38;2;" .. r .. ";" .. g .. ";" .. b .. "m")
 	end
-	
+
 	function repl.SetBackgroundColor(r,g,b)
 		r = math.floor(r * 255)
 		g = math.floor(g * 255)
 		b = math.floor(b * 255)
 		repl.Write("\27[48;2;" .. r .. ";" .. g .. ";" .. b .. "m")
 	end
-	
+
 
 	function repl.WriteStringToScreen(x, y, str)
 		repl.Write("\27[s\27[" .. y .. ";" .. x .. "f" .. str .. "\27[u")
@@ -652,11 +659,11 @@ if jit.os ~= "Windows" then
 
 	function repl.Update()
 		local str = repl.Read()
-		
+
 		if str then
 			process_input(str)
 		end
-	end	
+	end
 else
 	local STD_INPUT_HANDLE = -10
 	local STD_OUTPUT_HANDLE = -11
@@ -681,7 +688,7 @@ else
 			} uChar;
 			unsigned long dwControlKeyState;
 			};
-			
+
 			struct MOUSE_EVENT_RECORD {
 			struct COORD dwMousePosition;
 			unsigned long dwButtonState;
@@ -712,14 +719,14 @@ else
 			} Event;
 			};
 
-		
+
 			int PeekConsoleInputA(
 				void* hConsoleInput,
 				struct INPUT_RECORD* lpBuffer,
 				unsigned long nLength,
 				unsigned long * lpNumberOfEventsRead
 			);
-			
+
 			int ReadConsoleInputA(
 				void* hConsoleInput,
 				struct INPUT_RECORD* lpBuffer,
@@ -733,7 +740,7 @@ else
 				uint16_t Right;
 				uint16_t Bottom;
 			  };
-			  
+
 
 			struct CONSOLE_SCREEN_BUFFER_INFO {
 			struct COORD dwSize;
@@ -742,7 +749,7 @@ else
 				struct SMALL_RECT srWindow;
 			struct COORD dwMaximumWindowSize;
 			};
-			
+
 			struct CONSOLE_CURSOR_INFO {
 				unsigned long dwSize;
 				int bVisible;
@@ -834,7 +841,7 @@ else
 	local stdout = ffi.C.GetStdHandle(STD_OUTPUT_HANDLE)
 
 	local old_flags = {}
-	
+
 	local function add_flags(handle, tbl)
 	local ptr = ffi.C.GetStdHandle(handle)
 		if ptr == nil then throw_error() end
@@ -860,9 +867,9 @@ else
 
 		add_flags(STD_INPUT_HANDLE, {
 			--"ENABLE_PROCESSED_OUTPUT",
-			--"ENABLE_LINE_INPUT",        
+			--"ENABLE_LINE_INPUT",
 			--"ENABLE_QUICK_EDIT_MODE",
-			--"ENABLE_EXTENDED_FLAGS",        
+			--"ENABLE_EXTENDED_FLAGS",
 			--"ENABLE_WRAP_AT_EOL_OUTPUT",
 			--"ENABLE_PROCESSED_INPUT",
 			--"ENABLE_ECHO_INPUT",
@@ -887,7 +894,7 @@ else
 		repl.suppress_first = true
 		show_cursor(true)
 	end
-	
+
 	local function revert_flags(handle)
 		local ptr = ffi.C.GetStdHandle(handle)
 		if ptr == nil then throw_error() end
@@ -896,7 +903,7 @@ else
 			throw_error()
 		end
 			end
-			
+
 	function repl.Stop()
 		revert_flags(STD_INPUT_HANDLE)
 		revert_flags(STD_OUTPUT_HANDLE)
@@ -906,7 +913,7 @@ else
 	function repl.Write(str)
 		io.write(str)
 	end
-	
+
 	function repl.GetCaretPosition()
 		local out = ffi.new("struct CONSOLE_SCREEN_BUFFER_INFO[1]")
 		ffi.C.GetConsoleScreenBufferInfo(stdout, out)
@@ -929,14 +936,14 @@ else
 		ffi.C.GetConsoleScreenBufferInfo(stdout, out)
 		return out[0].dwSize.X, out[0].dwSize.Y
 	end
-	
+
 	function repl.SetForegroundColor(r,g,b)
 		r = math.floor(r * 255)
 		g = math.floor(g * 255)
 		b = math.floor(b * 255)
 		repl.Write("\27[38;2;" .. r .. ";" .. g .. ";" .. b .. "m")
 	end
-	
+
 	function repl.SetBackgroundColor(r,g,b)
 		r = math.floor(r * 255)
 		g = math.floor(g * 255)
@@ -950,7 +957,7 @@ else
 		MOD_SHIFT     =  0x0004,
 		MOD_WIN       =  0x0008,
 		MOD_NOREPEAT  =  0x4000,
-	
+
 		VK_LBUTTON = 0x01,
 		VK_RBUTTON = 0x02,
 		VK_CANCEL = 0x03,
@@ -1104,7 +1111,7 @@ else
 		VK_PA1 = 0xFD,
 		VK_OEM_CLEAR = 0xFE,
 	}
-	
+
 	local function read()
 		local events = ffi.new("unsigned long[1]")
 		local rec = ffi.new("struct INPUT_RECORD[128]")
@@ -1117,14 +1124,14 @@ else
 			if ffi.C.ReadConsoleInputA(stdin, rec, events[0], events) == 0 then
 				error(throw_error())
 			end
-			
-			if repl.suppress_first then 
-				repl.suppress_first = false 
-				return 
+
+			if repl.suppress_first then
+				repl.suppress_first = false
+				return
 			end
 			return rec, events[0]
 		end
-	end	
+	end
 
 	function repl.Update()
 		local events, count = read()
@@ -1145,7 +1152,7 @@ else
 					print("==========================================================")
 				--]]
 
-				if evt.Event.KeyEvent.bKeyDown == 1 then 
+				if evt.Event.KeyEvent.bKeyDown == 1 then
 					local str = utf8.char(evt.Event.KeyEvent.uChar.UnicodeChar)
 					local key = evt.Event.KeyEvent.wVirtualKeyCode
 					local CTRL = evt.Event.KeyEvent.dwControlKeyState == 264 or evt.Event.KeyEvent.dwControlKeyState == 8
@@ -1158,7 +1165,7 @@ else
 							if key == keys.VK_RIGHT then
 								repl.KeyPressed("ctrl_right")
 							elseif key == keys.VK_LEFT  then
-								repl.KeyPressed("ctrl_left")						
+								repl.KeyPressed("ctrl_left")
 							elseif key == keys.VK_BACK then
 								repl.KeyPressed("ctrl_backspace")
 							elseif key == keys.VK_DELETE then
@@ -1193,7 +1200,7 @@ else
 
 			show_cursor(true)
 		end
-	end	
+	end
 end
 
 local next_update = 0
@@ -1202,30 +1209,22 @@ function repl.UpdateNow()
 	next_update = 0
 end
 
-vfs.WatchLuaFiles(true)
-
 event.AddListener("Update", "repl", function()
-	--if math.random()>0.79 then print(os.clock()) end
-
 	local ok, err = system.pcall(repl.Update)
+
 	if not ok then
 		repl.Stop()
 		repl.Write = repl.WriteNow
 		system.OnError(str)
 		event.RemoveListener("Update", "repl")
 	end
-	
+
 	local time = system.GetElapsedTime()
-	
+
 	if next_update < time then
 		repl.Flush()
 		next_update = time + 1/30
 	end
 end)
-
-if RELOAD then
-	repl.Stop()
-	repl.Start()
-end
 
 return repl
