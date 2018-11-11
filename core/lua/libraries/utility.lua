@@ -1,5 +1,17 @@
 local utility = _G.utility or {}
 
+function utility.AddPackageLoader(func, loaders)
+	loaders = loaders or package.loaders
+
+	for i, v in ipairs(loaders) do
+		if v == func then
+			table.remove(loaders, i)
+			break
+		end
+	end
+	table.insert(loaders, func)
+end
+
 do
 	function utility.StartRecordingCalls(lib, filter)
 		lib.old_funcs = lib.old_funcs or {}

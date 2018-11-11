@@ -212,7 +212,7 @@ function gine.Initialize(gamemode, skip_addons)
 
 		do
 			local dir = "os:" .. R(gine.dir .. "lua/includes/modules/")
-			vfs.AddPackageLoader(function(path)
+			utility.AddPackageLoader(function(path)
 				return vfs.LoadFile(dir .. "/" .. path .. ".lua")
 			end, gine.package_loaders)
 		end
@@ -231,7 +231,7 @@ function gine.Initialize(gamemode, skip_addons)
 				local dir = R(full_path.."/lua/includes/modules/")
 				if dir then
 					dir = "os:" .. dir
-					vfs.AddPackageLoader(function(path)
+					utility.AddPackageLoader(function(path)
 						return vfs.LoadFile(dir .. "/" .. path .. ".lua")
 					end, gine.package_loaders)
 				end
@@ -257,7 +257,7 @@ function gine.Initialize(gamemode, skip_addons)
 					dir = R(dir.."/lua/includes/modules/")
 					if dir then
 						dir = "os:" .. dir
-						vfs.AddPackageLoader(function(path)
+						utility.AddPackageLoader(function(path)
 							return vfs.LoadFile(dir .. "/" .. path .. ".lua")
 						end, gine.package_loaders)
 					end
