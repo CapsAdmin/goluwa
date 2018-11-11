@@ -301,7 +301,7 @@ function vfs.WatchLuaFiles(b)
 				local res = data.watcher:Read()
 				if res and res.flags.close_write then 
 					logn("reloading " .. data.path)
-					runfile(data.path)
+					system.pcall(runfile, data.path)
 				end
 			end
 			next_check = time + 1/5
