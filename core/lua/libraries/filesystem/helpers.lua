@@ -293,17 +293,22 @@ function vfs.WatchLuaFiles(b)
 
 	local next_check = 0
 
-	event.AddListener("Update", "vfs_watch_lua_files", function() 
-		local time = system.GetElapsedTime() 
+	event.AddListener("Update", "vfs_watch_lua_files", function()
+		local time = system.GetElapsedTime()
 
 		if time > next_check then
-			for _, data in ipairs(watchers) do   
+			for _, data in ipairs(watchers) do
 				local res = data.watcher:Read()
-				if res and res.flags.close_write then 
-					logn("reloading " .. data.path)
-					_G.RELOAD = true
-					system.pcall(runfile, data.path)
-					_G.RELOAD = nil
+				if res then
+					res.path = data.path
+					if event.Call("LuaFileChanged", res) == nil then
+						if res.flags.close_write then
+							logn("reloading " .. data.path)
+							_G.RELOAD = true
+							system.pcall(runfile, data.path)
+							_G.RELOAD = nil
+						end
+					end
 				end
 			end
 			next_check = time + 1/5
