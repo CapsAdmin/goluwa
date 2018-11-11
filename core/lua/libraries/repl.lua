@@ -1,7 +1,7 @@
-local repl = {}
+local repl = _G.repl or {}
 
-repl.buffer = ""
-repl.command_history = serializer.ReadFile("luadata", "data/cmd_history.txt") or {}
+repl.buffer = repl.buffer or ""
+repl.command_history = repl.command_history or serializer.ReadFile("luadata", "data/cmd_history.txt") or {}
 for k,v in ipairs(repl.command_history) do 
 	if type(v) ~= "string" then 
 		repl.command_history = {}
@@ -132,10 +132,13 @@ do
 
 	function repl.StyledWrite(str, dont_move)
 		local x,y, w,h
-		if not dont_move and repl.buffer ~= "" then
+		if not dont_move then
 			x,y = repl.GetCaretPosition()
+			
+			-- clear the input line and reset the caret position
 			repl.WriteStringToScreen(0, y, (" "):rep(#repl.buffer))
 			repl.SetCaretPositionReal(0,y)
+			--repl.Write("\27[M")
 		end
 
 		last_color = nil
@@ -181,10 +184,11 @@ do
 
 		set_color("letter")
 		
-		if not dont_move and repl.buffer ~= "" then
+		if not dont_move then
 			local tx, ty = repl.GetTailPosition()
-			repl.SetCaretPosition(x, ty)
-			repl.StyledWrite(repl.buffer, true)
+			repl.SetCaretPosition(x,ty)
+			--repl.SetCaretPositionReal(tx,ty)
+		--	repl.StyledWrite(repl.buffer, true)
 		end
 	end
 end
@@ -338,12 +342,17 @@ function repl.KeyPressed(key)
 	end
 
 	if key == "ctrl_c" then
-		repl.SetCaretPosition(0, y)
-		repl.Write(repl.buffer .. "\n")
+		local str = repl.buffer
 		repl.buffer = ""
-		repl.SetCaretPosition(0, y)
-		repl.RenderInput()
-		repl.SetCaretPosition(0, y)
+
+	--	repl.WriteStringToScreen(0, y, (" "):rep(w))
+		repl.WriteStringToScreen(0, y, (" "):rep(#str))
+		repl.SetCaretPositionReal(0,y)
+		repl.StyledWrite("> " .. str, true)
+		repl.Flush()
+		repl.WriteNow("\n")
+		repl.SetCaretPosition(0,y+1)
+		repl.Flush()
 
 		if repl.ctrl_c_exit then
 			if repl.ctrl_c_exit > system.GetTime() then
@@ -353,7 +362,12 @@ function repl.KeyPressed(key)
 			end
 		else
 			repl.ctrl_c_exit = system.GetTime() + 0.5
-			repl.Write("ctrl+c again to exit\n")
+
+			local x,y = repl.GetCaretPosition()
+			
+			repl.WriteNow("ctrl+c again to exit\n")
+			repl.SetCaretPosition(0,y+1)
+			repl.Flush()
 		end
 	else
 		repl.ctrl_c_exit = nil
@@ -388,8 +402,6 @@ if jit.os ~= "Windows" then
 		int tcgetattr(int __fd, struct termios *__termios_p);
 		int tcsetattr(int __fd, int __optional_actions, const struct termios *__termios_p); 
 		
-		int usleep(uint32_t);
-
 		typedef struct FILE FILE;
 		size_t fwrite(const char *ptr, size_t size, size_t nmemb, FILE *stream);
 		size_t fread ( char * ptr, size_t size, size_t count, FILE * stream );
@@ -533,9 +545,9 @@ if jit.os ~= "Windows" then
 
 
 	local function process_input(str)
-		if str == "" or str == "\n" or str == "\r" then -- newline/enter?
+		if str == "" or str == "\n" or str == "\r" then
 			repl.KeyPressed("enter")
-		elseif str:byte() >= 32 and str:byte() < 127 then -- asci chars
+		elseif str:byte() >= 32 and str:byte() < 127 then
 			repl.CharInput(str)
 		elseif str:usub(1,2) == "\27[" then
 			local seq = str:usub(3, str:ulen())
@@ -561,7 +573,7 @@ if jit.os ~= "Windows" then
 			elseif seq == "1;5D" then
 				repl.KeyPressed("ctrl_left")
 			else
-				print("ansi escape sequence: " .. seq)
+				--print("ansi escape sequence: " .. seq)
 			end
 		else
 			if #str == 1 then
@@ -579,13 +591,16 @@ if jit.os ~= "Windows" then
 						logn("cannot read clipboard: window.GetClipboard() is not a function")
 					end
 				else
-					print("byte: " .. byte)
+					--print("byte: " .. byte)
 				end
 			elseif str:byte() < 127 then
 				if str == "\27\68" then -- ctrl delete
 					repl.KeyPressed("ctrl_delete")
 				else
-					print("char sequence: " .. table.concat({str:byte(1, str:ulen())}, ", ") .. " (" .. str:ulen() .. ")")
+					for _, char in ipairs(str:utotable()) do
+						process_input(char)
+					end
+					--print("char sequence: " .. table.concat({str:byte(1, str:ulen())}, ", ") .. " (" .. str:ulen() .. ")")
 				end
 			else -- unicode ?
 				repl.CharInput(str)
@@ -1187,7 +1202,11 @@ function repl.UpdateNow()
 	next_update = 0
 end
 
+vfs.WatchLuaFiles(true)
+
 event.AddListener("Update", "repl", function()
+	--if math.random()>0.79 then print(os.clock()) end
+
 	local ok, err = system.pcall(repl.Update)
 	if not ok then
 		repl.Stop()
@@ -1203,5 +1222,10 @@ event.AddListener("Update", "repl", function()
 		next_update = time + 1/30
 	end
 end)
+
+if RELOAD then
+	repl.Stop()
+	repl.Start()
+end
 
 return repl
