@@ -16,7 +16,6 @@ ffi.cdef([[
 
 	typedef struct DIR DIR;
 	DIR *opendir(const char *name);
-	struct dirent *readdir(DIR *dirp);
 	int closedir(DIR *dirp);
 	long syscall(int number, ...);
 
@@ -51,15 +50,16 @@ fs.eof = ffi.C.feof
 if jit.os == "OSX" then
 	ffi.cdef([[
 		int stat64(const char *path, void *buf);
-		typedef long time_t;
+		typedef size_t time_t;
 		struct dirent {
 			uint64_t d_ino;
 			uint64_t d_seekoff;
 			uint16_t d_reclen;
 			uint16_t d_namlen;
 			uint8_t  d_type;
-			char     d_name[1024];
+			char d_name[1024];
 		};
+		struct dirent *readdir(DIR *dirp) asm("readdir$INODE64");
 	]])
 else
 	ffi.cdef([[
@@ -70,6 +70,7 @@ else
 			unsigned char   d_type;
 			char            d_name[256];
 		};
+		struct dirent *readdir(DIR *dirp) asm("readdir64");
 	]])
 end
 
@@ -88,7 +89,7 @@ function fs.find(name)
 
 		if dir_info == nil then break end
 
-		local name = ffi.string(dir_info.d_name)
+		local name = ffi.string(dir_info.d_name, dir_info.d_namlen)
 
 		if name ~= "." and name ~= ".." then
 			out[i] = name
@@ -97,7 +98,7 @@ function fs.find(name)
 	end
 
 	ffi.C.closedir(ptr)
-
+	
 	return out
 end
 

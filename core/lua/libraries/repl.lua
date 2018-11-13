@@ -449,7 +449,10 @@ end
 
 function repl.Start()
 	terminal.Initialize()
+	print("init")
 	repl.caret_x, repl.caret_y = terminal.GetCaretPosition()
+	print("!?")
+	
 end
 
 function repl.Stop()

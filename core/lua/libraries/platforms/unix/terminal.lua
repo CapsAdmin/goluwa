@@ -2,19 +2,36 @@ local ffi = require("ffi")
 
 local terminal = {}
 
-ffi.cdef([[
-    struct termios
-    {
-        unsigned int c_iflag;		/* input mode flags */
-        unsigned int c_oflag;		/* output mode flags */
-        unsigned int c_cflag;		/* control mode flags */
-        unsigned int c_lflag;		/* local mode flags */
-        unsigned char c_line;			/* line discipline */
-        unsigned char c_cc[32];		/* control characters */
-        unsigned int c_ispeed;		/* input speed */
-        unsigned int c_ospeed;		/* output speed */
-    };
+if jit.os ~= "OSX" then
+    ffi.cdef([[
+        struct termios
+        {
+            unsigned int c_iflag;		/* input mode flags */
+            unsigned int c_oflag;		/* output mode flags */
+            unsigned int c_cflag;		/* control mode flags */
+            unsigned int c_lflag;		/* local mode flags */
+            unsigned char c_line;			/* line discipline */
+            unsigned char c_cc[32];		/* control characters */
+            unsigned int c_ispeed;		/* input speed */
+            unsigned int c_ospeed;		/* output speed */
+        };    
+    ]])
+else
+    ffi.cdef([[
+        struct termios
+        {
+            unsigned long c_iflag;		/* input mode flags */
+            unsigned long c_oflag;		/* output mode flags */
+            unsigned long c_cflag;		/* control mode flags */
+            unsigned long c_lflag;		/* local mode flags */
+            unsigned char c_cc[20];		/* control characters */
+            unsigned long c_ispeed;		/* input speed */
+            unsigned long c_ospeed;		/* output speed */
+        };    
+    ]])
+end
 
+ffi.cdef([[
     int tcgetattr(int __fd, struct termios *__termios_p);
     int tcsetattr(int __fd, int __optional_actions, const struct termios *__termios_p);
 
@@ -61,7 +78,6 @@ function terminal.Initialize()
     end
 
     local attr = ffi.new("struct termios[1]")
-
     ffi.C.tcgetattr(stdin, attr)
 	attr[0].c_lflag = bit.band(attr[0].c_lflag, bit.bnot(bit.bor(flags.ICANON, flags.ECHO, flags.ISIG, flags.ECHOE, flags.ECHOCTL, flags.ECHOKE, flags.ECHOK)))
     attr[0].c_cc[VMIN] = 0
@@ -177,9 +193,7 @@ local function process_input(str)
 end
 
 local function read_coordinates()
-	local t = os.clock() + 1
-	while true do
-		if t < os.clock() then logn("timeout") return end
+    while true do
 
 		local str = terminal.Read()
 
