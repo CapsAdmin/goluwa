@@ -70,7 +70,7 @@ do
 
 		local str = table.concat(buf)
 		table.clear(buf)
-	
+
 		repl.WriteNow(str)
 		repl.SetCaretPositionReal(repl.caret_x, repl.caret_y)
 
@@ -449,9 +449,7 @@ end
 
 function repl.Start()
 	terminal.Initialize()
-	print("get caret pos")
 	repl.caret_x, repl.caret_y = terminal.GetCaretPosition()
-	print("ok")
 end
 
 function repl.Stop()
@@ -462,7 +460,7 @@ function repl.Update()
 	--if math.random() > 0.99 then print(os.clock()) end
 
 	local what, arg = terminal.ReadEvent()
-	
+
 	if what then
 		if what == "string" then
 			repl.CharInput(arg)

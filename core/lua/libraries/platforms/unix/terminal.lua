@@ -1,7 +1,7 @@
 local ffi = require("ffi")
 
 local terminal = {}
-	
+
 ffi.cdef([[
     struct termios
     {
@@ -68,7 +68,7 @@ function terminal.Initialize()
     attr[0].c_cc[VTIME] = 0
 
 	ffi.C.tcsetattr(stdin, TCSANOW, attr)
-	
+
 	terminal.EnableCaret(true)
 end
 
@@ -78,7 +78,7 @@ function terminal.Shutdown()
 end
 
 function terminal.EnableCaret(b)
-	
+
 end
 
 function terminal.Clear()
@@ -87,9 +87,7 @@ end
 
 function terminal.Read()
 	local out = ffi.new("char[512]")
-	print("reading stdin")
     local len = ffi.C.fread(out, 1, ffi.sizeof(out), io.stdin)
-	print("ok")
     if len > 0 then
         return ffi.string(out, len)
     end
@@ -185,7 +183,7 @@ local function read_coordinates()
 
 		local str = terminal.Read()
 
-		if str then 
+		if str then
             local a,b = str:match("^\27%[(%d+);(%d+)R$")
             if a then
                 return tonumber(a), tonumber(b)
@@ -224,7 +222,7 @@ do
         if h then
             _w, _h = w, h
         end
-        
+
         return _w,_h
     end
 end
