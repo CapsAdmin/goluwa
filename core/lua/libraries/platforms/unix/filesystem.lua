@@ -50,6 +50,8 @@ fs.eof = ffi.C.feof
 -- NOTE: 64bit version
 if jit.os == "OSX" then
 	ffi.cdef([[
+		int stat64(const char *path, void *buf);
+		typedef long time_t;
 		struct dirent {
 			uint64_t d_ino;
 			uint64_t d_seekoff;
@@ -195,11 +197,18 @@ end
 
 local statbox = ffi.typeof("$[1]", stat)
 local DIRECTORY = 0x4000
-local STAT = jit.arch == "x64" and 4 or 195
+
+if jit.os == "OSX" then
+	stat = function(path, buff) return ffi.C.stat64(path, buff) end
+else
+	local enum = jit.arch == "x64" and 4 or 195
+	stat = function(path, buff) return ffi.C.syscall(enum, path, buff) end
+end
 
 function fs.getattributes(path)
 	local buff = statbox()
-	local ret = ffi.C.syscall(STAT, path, buff)
+	local ret = stat(path, buff)
+	
 	if ret == 0 then
 		return {
 			last_accessed = tonumber(buff[0].st_atime),
@@ -212,7 +221,7 @@ function fs.getattributes(path)
 	return false
 end
 
-do
+if jit.os ~= "OSX" then
 	local flags = {
 		access = 0x00000001, -- File was accessed
 		modify = 0x00000002, -- File was modified
