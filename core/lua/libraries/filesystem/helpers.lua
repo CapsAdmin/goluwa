@@ -281,6 +281,8 @@ function vfs.Exists(path)
 end
 
 function vfs.WatchLuaFiles(b)
+	if not fs.watch then logn("fs.watch not implemented") return end
+
 	if not b then
 		event.RemoveListener("Update", "vfs_watch_lua_files")
 		return
