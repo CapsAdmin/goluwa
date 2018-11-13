@@ -186,7 +186,8 @@ utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to
 profiler = runfile("lua/libraries/profiler.lua") -- for profiling
 oh = runfile("lua/libraries/oh/oh.lua")
 repl = runfile("lua/libraries/repl.lua")
-repl.Start()
+local ok, err = pcall(repl.Start)
+if not ok then logn(err) end
 
 -- tries to load all addons
 -- some might not load depending on its info.lua file.
@@ -236,13 +237,13 @@ while system.run == true do
 	local time = system.GetTime()
 
 	local dt = time - (last_time or 0)
-	
+
 	system.SetFrameTime(dt)
 	system.SetFrameNumber(i)
 	system.SetElapsedTime(system.GetElapsedTime() + dt)
 	event.Call("Update", dt)
 	system.SetInternalFrameTime(system.GetTime() - time)
-	
+
 	i = i + 1
 	last_time = time
 	event.Call("FrameEnd")
