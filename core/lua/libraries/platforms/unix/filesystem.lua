@@ -89,7 +89,7 @@ function fs.find(name)
 
 		if dir_info == nil then break end
 
-		local name = ffi.string(dir_info.d_name, dir_info.d_namlen)
+		local name = ffi.string(dir_info.d_name)
 
 		if name ~= "." and name ~= ".." then
 			out[i] = name
@@ -98,7 +98,7 @@ function fs.find(name)
 	end
 
 	ffi.C.closedir(ptr)
-	
+
 	return out
 end
 
@@ -209,7 +209,7 @@ end
 function fs.getattributes(path)
 	local buff = statbox()
 	local ret = stat(path, buff)
-	
+
 	if ret == 0 then
 		return {
 			last_accessed = tonumber(buff[0].st_atime),
@@ -271,16 +271,16 @@ if jit.os ~= "OSX" then
 				})
 			end
 
-			if queue[wd][1] then 
+			if queue[wd][1] then
 				return table.remove(queue[wd])
 			end
 		end
 
-		function self:Remove() 
+		function self:Remove()
 			ffi.C.inotify_rm_watch(inotify_fd, wd)
 			queue[wd] = nil
 		end
-		
+
 		return self
 	end
 end
