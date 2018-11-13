@@ -14,7 +14,7 @@ if jit.os ~= "OSX" then
             unsigned char c_cc[32];		/* control characters */
             unsigned int c_ispeed;		/* input speed */
             unsigned int c_ospeed;		/* output speed */
-        };    
+        };
     ]])
 else
     ffi.cdef([[
@@ -27,13 +27,13 @@ else
             unsigned char c_cc[20];		/* control characters */
             unsigned long c_ispeed;		/* input speed */
             unsigned long c_ospeed;		/* output speed */
-        };    
+        };
     ]])
 end
 
 ffi.cdef([[
-    int tcgetattr(int __fd, struct termios *__termios_p);
-    int tcsetattr(int __fd, int __optional_actions, const struct termios *__termios_p);
+    int tcgetattr(int, struct termios *);
+    int tcsetattr(int, int, const struct termios *);
 
     typedef struct FILE FILE;
     size_t fwrite(const char *ptr, size_t size, size_t nmemb, FILE *stream);
@@ -48,24 +48,48 @@ local function octal(s)
     return tonumber(s, 8)
 end
 
-local flags = {
-	ISIG = octal("0000001"),
-	ICANON = octal("0000002"),
-	XCASE = octal("0000004"),
-	ECHO = octal("0000010"),
-	ECHOE = octal("0000020"),
-	ECHOK = octal("0000040"),
-	ECHONL = octal("0000100"),
-	NOFLSH = octal("0000200"),
-	TOSTOP = octal("0000400"),
-	ECHOCTL = octal("0001000"),
-	ECHOPRT = octal("0002000"),
-	ECHOKE = octal("0004000"),
-	FLUSHO = octal("0010000"),
-	PENDIN = octal("0040000"),
-	IEXTEN = octal("0100000"),
-	EXTPROC = octal("0200000"),
-}
+local flags
+
+if jit.os ~= "OSX" then
+    flags = {
+        ECHOCTL = 512,
+        EXTPROC = 65536,
+        ECHOK = 32,
+        NOFLSH = 128,
+        FLUSHO = 4096,
+        ECHONL = 64,
+        ECHOE = 16,
+        ECHOKE = 2048,
+        ECHO = 8,
+        ICANON = 2,
+        IEXTEN = 32768,
+        PENDIN = 16384,
+        XCASE = 4,
+        ECHOPRT = 1024,
+        TOSTOP = 256,
+        ISIG = 1,
+    }
+else
+    flags = {
+        ECHOKE = 0x00000001,
+        ECHOE = 0x00000002,
+        ECHOK = 0x00000004,
+        ECHO = 0x00000008,
+        ECHONL = 0x00000010,
+        ECHOPRT = 0x00000020,
+        ECHOCTL = 0x00000040,
+        ISIG = 0x00000080,
+        ICANON = 0x00000100,
+        ALTWERASE = 0x00000200,
+        IEXTEN = 0x00000400,
+        EXTPROC = 0x00000800,
+        TOSTOP = 0x00400000,
+        FLUSHO = 0x00800000,
+        NOKERNINFO = 0x02000000,
+        PENDIN = 0x20000000,
+        NOFLSH = 0x80000000,
+    }
+end
 
 local stdin = 0
 
