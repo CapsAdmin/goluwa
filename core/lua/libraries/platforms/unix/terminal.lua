@@ -107,7 +107,7 @@ function terminal.Initialize()
     if ffi.C.tcgetattr(stdin, attr) ~= 0 then error(ffi.strerr(), 2) end
 	attr[0].c_lflag = bit.band(attr[0].c_lflag, bit.bnot(bit.bor(flags.ICANON, flags.ECHO, flags.ISIG, flags.ECHOE, flags.ECHOCTL, flags.ECHOKE, flags.ECHOK)))
     attr[0].c_cc[VMIN] = 0
-    attr[0].c_cc[VTIME] = 2
+    attr[0].c_cc[VTIME] = 0
     if ffi.C.tcsetattr(stdin, TCSANOW, attr) ~= 0 then error(ffi.strerr(), 2) end
 
     if ffi.C.tcgetattr(stdin, attr) ~= 0 then error(ffi.strerr(), 2) end
