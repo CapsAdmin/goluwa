@@ -202,4 +202,22 @@ function fs.getattributes(path)
 	return nil, error_string()
 end
 
+
+do
+	local queue = {}
+
+	function fs.watch(path, mask)
+		local self = {}
+		function self:Read()
+
+		end
+
+		function self:Remove()
+		end
+		
+		return self
+	end
+end
+
+
 return fs

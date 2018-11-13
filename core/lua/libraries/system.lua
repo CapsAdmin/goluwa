@@ -8,6 +8,20 @@ elseif PLATFORM == "windows" then
 	runfile("lua/libraries/platforms/windows/system.lua", system)
 end
 
+do
+	local terminal
+
+	if PLATFORM == "unix" then
+		terminal = runfile("lua/libraries/platforms/unix/terminal.lua")
+	elseif PLATFORM == "windows" then
+		terminal = runfile("lua/libraries/platforms/windows/terminal.lua")
+	end
+
+	function system.GetTerminal()
+		return terminal
+	end
+end
+
 function system.ExecuteArgs()
 end
 
