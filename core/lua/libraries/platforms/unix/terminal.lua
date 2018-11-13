@@ -70,6 +70,8 @@ if jit.os ~= "OSX" then
         ISIG = 1,
     }
 else
+    VMIN = 16
+    VTIME = 17
     flags = {
         ECHOKE = 0x00000001,
         ECHOE = 0x00000002,
@@ -102,19 +104,23 @@ function terminal.Initialize()
     end
 
     local attr = ffi.new("struct termios[1]")
-    ffi.C.tcgetattr(stdin, attr)
+    if ffi.C.tcgetattr(stdin, attr) ~= 0 then error(ffi.strerr(), 2) end
 	attr[0].c_lflag = bit.band(attr[0].c_lflag, bit.bnot(bit.bor(flags.ICANON, flags.ECHO, flags.ISIG, flags.ECHOE, flags.ECHOCTL, flags.ECHOKE, flags.ECHOK)))
     attr[0].c_cc[VMIN] = 0
-    attr[0].c_cc[VTIME] = 0
+    attr[0].c_cc[VTIME] = 2
+    if ffi.C.tcsetattr(stdin, TCSANOW, attr) ~= 0 then error(ffi.strerr(), 2) end
 
-	ffi.C.tcsetattr(stdin, TCSANOW, attr)
+    if ffi.C.tcgetattr(stdin, attr) ~= 0 then error(ffi.strerr(), 2) end
+    if attr[0].c_cc[VMIN] ~= 0 or attr[0].c_cc[VTIME] ~= 0 then terminal.Shutdown() error("unable to make stdin non blocking", 2) end
 
 	terminal.EnableCaret(true)
 end
 
 function terminal.Shutdown()
-    ffi.C.tcsetattr(stdin, TCSANOW, old_attributes)
-    old_attributes = nil
+    if old_attributes then
+        ffi.C.tcsetattr(stdin, TCSANOW, old_attributes)
+        old_attributes = nil
+    end
 end
 
 function terminal.EnableCaret(b)

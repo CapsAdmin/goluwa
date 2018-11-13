@@ -449,17 +449,18 @@ end
 
 function repl.Start()
 	terminal.Initialize()
-	print("init")
 	repl.caret_x, repl.caret_y = terminal.GetCaretPosition()
-	print("!?")
-	
+	repl.started = true
+
 end
 
 function repl.Stop()
 	terminal.Shutdown()
+	repl.started = false
 end
 
 function repl.Update()
+	if not repl.started then error("repl not initialized") end
 	--if math.random() > 0.99 then print(os.clock()) end
 
 	local what, arg = terminal.ReadEvent()
