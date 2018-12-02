@@ -289,8 +289,10 @@ function vfs.WatchLuaFiles(b)
 	end
 
 	local watchers = {}
-	for i, path in ipairs(vfs.GetFilesRecursive("", {"lua"})) do
-		watchers[i] = {path = path, watcher = fs.watch(R(path))}
+	for i, path in ipairs(vfs.GetFilesRecursive("lua/", {"lua"})) do
+		if not path:endswith("core/lua/boot.lua") then
+			table.insert(watchers, {path = path, watcher = fs.watch(R(path))})
+		end
 	end
 
 	local next_check = 0
