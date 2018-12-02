@@ -298,8 +298,12 @@ end
 
 vfs.module_directories = {}
 
-function vfs.Require(...)
-	local ret = {pcall(_OLD_G.require, ...)}
+function vfs.Require(name, ...)
+	if _G.RELOAD and name then
+		package.loaded[name] = nil
+	end
+
+	local ret = {pcall(_OLD_G.require, name, ...)}
 	if ret[1] then
 		return unpack(ret, 2)
 	end
@@ -310,7 +314,7 @@ function vfs.Require(...)
 		for _, data in ipairs(vfs.TranslatePath(dir, true)) do
 			vfs.PushWorkingDirectory(data.path_info.full_path)
 
-			local ret = {pcall(_OLD_G.require, ...)}
+			local ret = {pcall(_OLD_G.require, name, ...)}
 
 			vfs.PopWorkingDirectory()
 
