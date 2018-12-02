@@ -118,12 +118,22 @@ do
 end
 
 do
-	function system.SetSharedLibraryPath(path)
-		os.setenv("LD_LIBRARY_PATH", path)
-	end
+	if OSX then
+		function system.SetSharedLibraryPath(path)
+			os.setenv("DYLD_FALLBACK_LIBRARY_PATH", path)
+		end
 
-	function system.GetSharedLibraryPath()
-		return os.getenv("LD_LIBRARY_PATH") or ""
+		function system.GetSharedLibraryPath()
+			return os.getenv("DYLD_FALLBACK_LIBRARY_PATH") or ""
+		end
+	else
+		function system.SetSharedLibraryPath(path)
+			os.setenv("LD_LIBRARY_PATH", path)
+		end
+
+		function system.GetSharedLibraryPath()
+			return os.getenv("LD_LIBRARY_PATH") or ""
+		end
 	end
 end
 

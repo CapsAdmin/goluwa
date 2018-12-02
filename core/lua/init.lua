@@ -173,6 +173,9 @@ vfs.GetAddonInfo(e.INTERNAL_ADDON_NAME).startup = nil -- prevent init.lua from r
 vfs.AddModuleDirectory("lua/modules/")
 vfs.AddModuleDirectory("bin/" .. OS .. "_" .. ARCH .. "/")
 
+if desire("ffi") then
+	_G.require("ffi").load = vfs.FFILoadLibrary
+end
 _G.require = vfs.Require
 _G.runfile = vfs.RunFile
 _G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir
@@ -225,7 +228,7 @@ if VERBOSE then
 	logn("[runfile] total init time took ", os.clock() - start_time, " seconds to execute")
 end
 
-vfs.WatchLuaFiles(true)
+vfs.WatchLuaFiles2(true)
 
 event.Call("MainLoopStart")
 event.Call("MainLoopStart")
