@@ -299,10 +299,6 @@ end
 vfs.module_directories = {}
 
 function vfs.Require(name, ...)
-	if _G.RELOAD and name then
-		package.loaded[name] = nil
-	end
-
 	local ret = {pcall(_OLD_G.require, name, ...)}
 	if ret[1] then
 		return unpack(ret, 2)
