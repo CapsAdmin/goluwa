@@ -862,7 +862,7 @@ do
 		end
 	end
 
-	function META:GetAST()
+	function META:BuildAST()
 		return self:Block()
 	end
 
@@ -888,6 +888,6 @@ do
 end
 
 print(oh.DumpTokens(tokens, code))
-cparser(tokens):GetAST()
+cparser(tokens):BuildAST()
 print(oh.GetErrorsFormatted(tokenizer.errors, code, path))
 

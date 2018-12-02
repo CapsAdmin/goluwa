@@ -1,7 +1,5 @@
 local oh = {}
 
-local old = RELOAD RELOAD = nil
-
 do
 	local Tokenizer = require("lua_tokenizer")
 
@@ -59,8 +57,7 @@ end
 runfile("lua/libraries/oh/syntax.lua", oh)
 oh.Parser = require("lua_parser")
 runfile("lua/libraries/oh/lua_code_emitter.lua", oh)
-
-RELOAD = old
+runfile("lua/libraries/oh/test.lua", oh)
 
 function oh.QuoteToken(str)
 	return "⸢" .. str .. "⸥"
@@ -199,24 +196,23 @@ function oh.GetErrorsFormatted(error_table, code, path)
 	return str
 end
 
-
 function oh.DumpTokens(chunks, code)
 	local out = {}
-	local start = 0
-	for i,v in ipairs(chunks) do
-		out[i] = code:sub(start+1, v.start-1) .. oh.QuoteToken(code:sub(v.start, v.stop))
-		start = v.stop
-	end
 
-	table.insert(out, code:sub(start+1))
+	for _, v in ipairs(chunks) do
+		for _, v in ipairs(v.whitespace) do
+			table.insert(out, code:usub(v.start, v.stop))
+		end
+		table.insert(out, oh.QuoteToken(code:usub(v.start, v.stop)))
+	end
 
 	return table.concat(out)
 end
 
 function oh.Transpile(code, path)
 	local tokenizer = oh.Tokenizer(code, path)
-	local parser = oh.Parser(tokenizer:GetTokens(), code, path)
-	local ast = parser:GetAST()
+	local parser = oh.Parser()
+	local ast = parser:BuildAST(tokenizer:GetTokens())
 	local output = oh.BuildLuaCode(ast, code)
 	return output
 end
@@ -243,10 +239,6 @@ function oh.loadstring(code, path)
 	end
 
 	return func
-end
-
-if RELOAD then
-	runfile("lua/libraries/oh/test.lua")
 end
 
 return oh

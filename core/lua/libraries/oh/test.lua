@@ -71,47 +71,28 @@ end
 function oh.Test()
 	local path = "foo.lua"
 	local code = [[
-		local b = ""
-		local a = 2 + b
-
-		foo.bar.baz = true
-
-		function test(number_a, number_b)
-			if true then
-				return 0
-			end
-			for i = 1, 10 do
-				if math.random() > 0.5 then
-					return true, ""
-				end
-			end
-			return ""
-		end
-		local w = 1 + test(a, b)
-		for a,b,c,d,e,f,g,h,j,i in a,b,c,d,d,e,f,f,g,g do end
-
-		for i=1; i<10; i=i+1 do
-
+		if i == #var - 1 then
+			str = str .. " or "
+		elseif i ~= #var then
+			str = str .. ", "
 		end
 	]]
-	local tokenizer = oh.Tokenizer({code = code, path = path, halt_on_error = false})
+
+--	path = "lua/modules/lua_tokenizer.lua"
+	--code = vfs.Read(path)
+
+
+
+
+	local tokenizer = oh.Tokenizer(code)
 	local tokens = tokenizer:GetTokens()
-	do return end
-	table.print(tokens) do return end
-	local parser = oh.Parser(tokens, code, path)
-	local ast = parser:GetAST()
-	--oh.Validate(ast, code, path)
+	local parser = oh.Parser()
+	local ast = parser:BuildAST(tokens)
+	table.print(parser.errors)
+	print(ast) do return end
 	local output = oh.BuildLuaCode(ast, code)
 	print(output)
 end
-
-commands.Add("tokenize=arg_line", function(str)
-	logn(oh.Tokenizer(str):Dump())
-end)
-
-commands.Add("oh=arg_line", function(str)
-	print(oh.Transpile(str))
-end)
 
 function oh.Transpile2(code, path)
 	collectgarbage()
@@ -124,8 +105,8 @@ function oh.Transpile2(code, path)
 		profiler.StopTimer()
 
 		profiler.StartTimer("parse")
-			local parser = oh.Parser(tokens, code, path)
-			local ast = parser:GetAST()
+			local parser = oh.Parser()
+			local ast = parser:BuildAST(tokens)
 		profiler.StopTimer()
 
 		profiler.StartTimer("emit")
@@ -141,8 +122,4 @@ function oh.Transpile2(code, path)
 	profiler.StopTimer()
 
 	return output
-end
-
-if RELOAD then
-	oh.Test()
 end

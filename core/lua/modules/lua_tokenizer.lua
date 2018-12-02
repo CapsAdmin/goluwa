@@ -42,6 +42,12 @@ function meta:BuildLookupTables(syntax)
 	for char, type in pairs(self.char_lookup) do
 		if type == "symbol" then
 			self.symbol_lookup[char] = true
+			do -- this triggers symbol lookup. For example it adds "~" from "~=" so that "~" is a symbol
+				local first_char = self.string_sub(char, 1, 1)
+				if not self.char_lookup[first_char] then
+					self.char_lookup[first_char] = "symbol"
+				end
+			end
 			self.longest_symbol = math.max(self.longest_symbol, #char)
 		end
 	end
@@ -584,9 +590,9 @@ end
 function meta:BufferWhitespace(type, start, stop)
 	self.whitespace_buffer[self.whitespace_buffer_i] = {
 		type = type,
-		--value = self:GetChars(start, stop),
 		start = start == 1 and 0 or start,
 		stop = stop,
+		value = self:GetChars(start, stop),
 	}
 
 	self.whitespace_buffer_i = self.whitespace_buffer_i + 1
@@ -678,14 +684,12 @@ function meta:GetTokens()
 	for _ = self.i, self.code_length do
 		local type, start, stop, whitespace = self:ReadToken()
 
-		if type == "unknown" then break end
-
 		tokens[tokens_i] = {
 			type = type,
 			start = start,
 			stop = stop,
-			--value = self:GetChars(start, stop),
 			whitespace = whitespace,
+			value = self:GetChars(start, stop)
 		}
 
 		if type == "end_of_file" then break end
