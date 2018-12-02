@@ -46,9 +46,11 @@ end
 local srcds_dir = e.STORAGE_FOLDER .. "srcds/"
 
 local data_dir = "data/gserv/"
-local data_dir = "data/gserv/"
 
 local function save_config(id)
+	if not gserv.configs[id] then
+		gserv.configs[id] = table.merge(table.copy(gserv.default_config), {id = id})
+	end
 	serializer.WriteFile("luadata", data_dir .. "configs/" .. underscore(id) .. ".lua", gserv.configs[id])
 end
 
@@ -76,10 +78,12 @@ function gserv.IsSetup(id)
 	then
 		return true
 	end
+
+	return false
 end
 
 function gserv.SetupLua(id)
-	vfs.CreateDirectory("os:" .. get_gserv_addon_dir(id) .. "lua/autorun/server/")
+	vfs.CreateDirectoriesFromPath("os:" .. get_gserv_addon_dir(id) .. "lua/autorun/server/")
 
 	vfs.Write(get_gserv_addon_dir(id) .. "lua/autorun/server/gserv.lua", [[
 		timer.Create("gserv_pinger", 1, 0, function()
@@ -182,14 +186,17 @@ function gserv.Setup(id)
 		gserv.Log(id, "setting up gmod server for first time")
 	end
 
-	gserv.InstallGame("gmod dedicated server", nil, function()
+	save_config(id)
 
+	gserv.InstallGame("gmod dedicated server", nil, function()
 		local dir = underscore(id)
 
 		if not vfs.IsDirectory(srcds_dir .. dir) then
 			os.execute("cp -a " .. gserv.GetInstalledGames()[4020] .. "/. " .. srcds_dir .. dir)
 			serializer.SetKeyValueInFile("luadata", data_dir .. "games.lua", id, srcds_dir .. dir)
 		end
+
+		gserv.SetupLua(id)
 	end)
 end
 
@@ -244,8 +251,6 @@ function gserv.InstallGame(name, dir, callback, username)
 	end
 
 	username = username or "anonymous"
-
-	gserv.Log(id, "setting up")
 
 	-- create the srcds directory in goluwa/data/srcds
 	vfs.CreateDirectory("os:" .. srcds_dir)
@@ -772,7 +777,12 @@ function gserv.ExecuteSync(id, str)
 		current = gserv.GetOutput(id)
 	until current:endswith(end_line)
 
-	return current:sub(#prev + #str + 1):sub(2, -#end_line - 2)
+	local res = current:sub(#prev + #str + 1):sub(2, -#end_line - 2)
+
+	-- gserv run print(1) will print the echo line twice so do this just in case for cleaner output
+	res = res:replace("echo "..delimiter .. "\n", "")
+
+	return res
 end
 
 function gserv.Stop(id)
@@ -827,8 +837,10 @@ end
 
 for _, path in ipairs(vfs.Find(data_dir .. "configs/", true)) do
 	local config = serializer.ReadFile("luadata", path)
-	gserv.configs[config.id] = config
-	gserv.SetupCommands(config.id)
+	if config and config.id then
+		gserv.configs[config.id] = config
+		gserv.SetupCommands(config.id)
+	end
 end
 
 if not CLI then
