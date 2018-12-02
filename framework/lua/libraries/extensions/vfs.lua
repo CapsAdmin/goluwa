@@ -35,31 +35,3 @@ function vfs.MonitorFileInclude(source, target)
 	end)
 end
 
-function vfs.MonitorIncludedLuaScripts(b)
-	if not b then
-		event.RemoveTimer("vfs_monitor_everything")
-		return
-	end
-
-	event.Timer("vfs_monitor_everything", 0.1, 0, function()
-		if WINDOW and window.IsFocused() then return end
-		if profiler.IsBusy() then return end -- I already know this is slow so it's just in the way
-		for path, data in pairs(vfs.GetLoadedLuaFiles()) do
-			local info = fs.getattributes(path)
-
-			if info then
-				if not data.last_modified then
-					data.last_modified = info.last_modified
-				else
-					if data.last_modified ~= info.last_modified then
-						llog("reloading %s", vfs.GetFileNameFromPath(path))
-						_G.RELOAD = true
-						runfile(path)
-						_G.RELOAD = nil
-						data.last_modified = info.last_modified
-					end
-				end
-			end
-		end
-	end)
-end

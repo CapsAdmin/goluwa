@@ -319,3 +319,47 @@ function vfs.WatchLuaFiles(b)
 		end
 	end)
 end
+
+function vfs.WatchLuaFiles2(b)
+	if not b then
+		event.RemoveListener("Update", "vfs_watch_lua_files")
+		return
+	end
+
+	local paths = {}
+	for i, path in ipairs(vfs.GetFilesRecursive("lua/", {"lua"})) do
+		if not path:endswith("core/lua/boot.lua") then
+			table.insert(paths, {path = R(path)})
+		end
+	end
+
+	local next_check = 0
+
+	event.AddListener("Update", "vfs_watch_lua_files", function()
+		local time = system.GetElapsedTime()
+
+		if time > next_check then
+			if WINDOW and window.IsFocused() then return end
+			if profiler.IsBusy() then return end -- I already know this is slow so it's just in the way
+
+			for i, data in ipairs(paths) do
+				local info = fs.getattributes(data.path)
+
+				if info then
+					if not data.last_modified then
+						data.last_modified = info.last_modified
+					else
+						if data.last_modified ~= info.last_modified then
+							llog("reloading %s", vfs.GetFileNameFromPath(data.path))
+							_G.RELOAD = true
+							system.pcall(runfile, data.path)
+							_G.RELOAD = nil
+							data.last_modified = info.last_modified
+						end
+					end
+				end
+			end
+			next_check = time + 1/5
+		end
+	end)
+end
