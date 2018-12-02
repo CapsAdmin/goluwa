@@ -447,6 +447,56 @@ local SCRIPT_PATH = os.getenv("GOLUWA_SCRIPT_PATH")
 local RAN_FROM_FILEBROWSER = os.getenv("GOLUWA_RAN_FROM_FILEBROWSER")
 local BINARY_DIR = os.getenv("GOLUWA_BINARY_DIR")
 
+do -- tmux
+	if ARG_LINE == "tmux" then
+		assert(os.iscmd("tmux"), "tmux is not installed")
+
+		if not has_tmux_session() then
+			os.readexecute([[
+				tmux new-session -d -s goluwa
+				tmux send-keys -t goluwa "export GOLUWA_TMUX=1" C-m
+				tmux send-keys -t goluwa "./goluwa" C-m
+			]])
+		end
+
+		os.readexecute("tmux attach-session -t goluwa")
+
+		os.exit()
+	end
+
+	if ARG_LINE == "attach" and has_tmux_session() then
+		os.readexecute("tmux attach-session -t goluwa")
+
+		return
+	end
+
+	if not os.getenv("GOLUWA_TMUX") and has_tmux_session() then
+		local prev = io.readfile("storage/data/shared/tmux_log.txt")
+
+		print(prev)
+
+		os.readexecute("tmux send-keys -t goluwa '" .. ARG_LINE .. "' C-j")
+
+		local timeout = os.clock() + 1
+
+		while true do
+			cur = io.readfile("storage/data/shared/tmux_log.txt")
+
+			if cur ~= prev then
+				io.write(cur:sub(#prev), "\n")
+				break
+			end
+
+			if timeout < os.clock() then
+				io.write("no resposne from goluwa\n")
+				break
+			end
+		end
+
+		return
+	end
+end
+
 if ARG_LINE == "update" or not os.isfile("core/lua/init.lua") then
 	if not os.isfile("core/lua/init.lua") then
 		io.write("missing core/lua/init.lua\n")
@@ -478,7 +528,7 @@ end
 do
 	local dir = STORAGE_PATH .. "/data/shared/"
 	local name = "binaries_downloaded" .. OS .. "_" .. ARCH
-	
+
 	if not os.isfile(dir .. name) or ARG_LINE == "update" then
 		io.write("updating binaries\n")
 		if get_github_project("CapsAdmin/goluwa-binaries-" .. OS .. "_" .. ARCH, BINARY_DIR, "gitlab", true) then
