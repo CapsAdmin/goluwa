@@ -157,8 +157,6 @@ do
 		end
 	end
 
-	local tokenize = require("lua_tokenizer")
-
 	local keywords = {
 		"and", "break", "do", "else", "elseif", "end",
 		"false", "for", "function", "if", "in", "local",
@@ -179,6 +177,7 @@ do
 		error = "#da4453",
 		keyword = "#2980b9",
 		string = "#27ae60",
+		unknown = "#da4453",
 	}
 
 	for key, hex in pairs(colors) do
@@ -191,13 +190,22 @@ do
 	local last_color
 	set_color = function(what)
 		if what ~= last_color then
-			terminal.ForegroundColor(unpack(colors[what]))
-			last_color = what
+			if colors[what] then
+				terminal.ForegroundColor(unpack(colors[what]))
+				last_color = what
+			else
+				terminal.ForegroundColor(unpack(colors.letter))
+				last_color = "letter"
+			end
 		end
 	end
 
 	function repl.ClearScreen()
 		terminal.Clear()
+	end
+
+	function repl.NoColors(b)
+		repl.no_color = b
 	end
 
 	function repl.StyledWrite(str, dont_move)
@@ -210,48 +218,45 @@ do
 			--repl.Write("\27[M")
 		end
 
-		last_color = nil
-		set_color("letter")
+		if repl.no_color then
+			repl.Write(str)
+		else
+			last_color = nil
+			set_color("letter")
 
-		local start = 0
-		local tokenizer = tokenize({code = str, path = ""})
+			local start = 0
+			local tokenizer = oh.Tokenizer(str)
 
-		while true do
-			local type, start, stop, whitespace = tokenizer:ReadToken()
-			if not type then break end
+			while true do
+				local type, start, stop, whitespace = tokenizer:ReadToken()
 
-			for _, v in ipairs(whitespace) do
-				if v.type == "line_comment" or v.type == "multiline_comment" then
-					set_color("comment")
-				else
-					set_color("letter")
+				for _, v in ipairs(whitespace) do
+					if v.type == "line_comment" or v.type == "multiline_comment" then
+						set_color("comment")
+					else
+						set_color("letter")
+					end
+
+					repl.Write(str:usub(v.start, v.stop))
 				end
 
-				repl.Write(str:usub(v.start, v.stop))
-			end
-
-			if type == "symbol" then
-				set_color("symbol")
-			elseif type == "number" then
-				set_color("number")
-			elseif type == "string" then
-				set_color("string")
-			elseif type == "letter" then
-				if keywords[str:usub(start, stop)] then
-					set_color("keyword")
+				if type == "letter" then
+					if keywords[str:usub(start, stop)] then
+						set_color("keyword")
+					else
+						set_color("letter")
+					end
 				else
-					set_color("letter")
+					set_color(type)
 				end
-			else
-				set_color("letter")
+
+				repl.Write(str:usub(start, stop))
+
+				if type == "end_of_file" then break end
 			end
 
-			repl.Write(str:usub(start, stop))
-
-			if type == "end_of_file" then break end
+			set_color("letter")
 		end
-
-		set_color("letter")
 
 		if not dont_move then
 			local tx, ty = repl.GetTailPosition()
@@ -291,7 +296,9 @@ function repl.KeyPressed(key)
 		repl.SetCaretPosition(0,y+1)
 		repl.Flush()
 
-		if str == "clear" then
+		if str == "detach" and os.getenv("GOLUWA_TMUX") then
+			_OLD_G.os.execute("tmux detach")
+		elseif str == "clear" then
 			repl.ClearScreen()
 			repl.SetCaretPosition(0,0)
 		elseif str:startswith("exit") then
@@ -300,6 +307,7 @@ function repl.KeyPressed(key)
 			if commands and commands.RunString then
 				commands.RunString(str)
 			else
+				local ok, err = pcall(function()
 				local func, err = loadstring(str)
 				if func then
 					local func, res = system.pcall(func)
@@ -311,7 +319,7 @@ function repl.KeyPressed(key)
 						set_color("letter")
 					end
 				else
-					local tokenizer = oh.Tokenizer(str, "")
+					local tokenizer = oh.Tokenizer(str)
 					local tokens = tokenizer:GetTokens()
 					local parser = oh.Parser(tokens, str, "")
 					local ast = parser:GetAST()
@@ -321,7 +329,8 @@ function repl.KeyPressed(key)
 							set_color("error")
 							repl.Write((" "):rep(v.start + 1) .. ("^"):rep(v.stop - v.start + 1))
 							set_color("letter")
-							repl.StyledWrite(" " ..  v.msg .. "\n")
+							repl.StyledWrite(" " ..  v.msg)
+							repl.Write("\n")
 							if only_first then break end
 						end
 					end
@@ -336,6 +345,8 @@ function repl.KeyPressed(key)
 					--repl.Write(err .. "\n")
 					--set_color("letter")
 				end
+				end)
+				if not ok then repl.Write(err .. "\n") end
 			end
 		end
 		local x,y = repl.GetTailPosition()
@@ -474,6 +485,15 @@ function repl.Update()
 	end
 end
 
+function repl.OSExecute(...)
+	repl.Flush()
+	repl.Stop()
+	local ok, res = pcall(_OLD_G.os.execute, ...)
+	repl.Start()
+	if not ok then error(res, 2) end
+	return res
+end
+
 local next_update = 0
 
 function repl.UpdateNow()
@@ -496,5 +516,12 @@ event.AddListener("Update", "repl", function()
 		next_update = time + 1/30
 	end
 end)
+
+
+if os.getenv("GOLUWA_TMUX") then
+	os.remove(R("shared/") .. "tmux_log.txt")
+	os.execute("ln -s " .. getlogpath() .. " " .. R("shared/") .. "tmux_log.txt")
+end
+
 
 return repl

@@ -2,11 +2,63 @@ local oh = {}
 
 local old = RELOAD RELOAD = nil
 
+do
+	local Tokenizer = require("lua_tokenizer")
+
+	local syntax = {}
+
+	syntax.space = {" ", "\n", "\r", "\t"}
+
+	syntax.number = {}
+	for i = 0, 9 do
+		syntax.number[i+1] = tostring(i)
+	end
+
+	syntax.letter = {"_"}
+
+	for i = string.byte("A"), string.byte("Z") do
+		table.insert(syntax.letter, string.char(i))
+	end
+
+	for i = string.byte("a"), string.byte("z") do
+		table.insert(syntax.letter, string.char(i))
+	end
+
+	syntax.symbol = {
+		".", ",", "(", ")", "{", "}", "[", "]",
+		"=", ":", ";", "::", "...", "-", "#",
+		"not", "-", "<", ".", ">", "/", "^",
+		"==", "<=", "..", "~=", "+", "*", "and",
+		">=", "or", ":", "%", "\"", "'"
+	}
+
+	syntax.eof = {""}
+
+	function oh.Tokenizer(code)
+		local errors = {}
+
+		local self = Tokenizer({
+			syntax = syntax,
+			string_length = utf8.length,
+			string_sub = utf8.sub,
+			string_lower = string.string_lower,
+			char_fallback_type = "letter", -- This is needed for UTF8. Assume everything is a letter if it's not any of the other types.
+			on_error = function(_, msg, start, stop)
+				table.insert(errors, {msg = msg, start = start, stop = stop})
+			end
+		})
+
+		self.errors = errors
+
+		self:SetCode(code)
+
+		return self
+	end
+end
+
 runfile("lua/libraries/oh/syntax.lua", oh)
-oh.Tokenizer = require("lua_tokenizer")
-runfile("lua/libraries/oh/parser.lua", oh)
+oh.Parser = require("lua_parser")
 runfile("lua/libraries/oh/lua_code_emitter.lua", oh)
-runfile("lua/libraries/oh/validate.lua", oh)
 
 RELOAD = old
 

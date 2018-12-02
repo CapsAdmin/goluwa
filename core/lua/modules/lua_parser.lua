@@ -1,10 +1,123 @@
 local oh = ... or _G.oh
 
-local META = {}
-META.__index = META
-
 local table_insert = table.insert
 local table_remove = table.remove
+
+local function table_hasvalue(tbl, val)
+	for k,v in ipairs(tbl) do
+		if v == val then
+			return k
+		end
+	end
+
+	return false
+end
+
+local function quote_token(str)
+	return "⸢" .. str .. "⸥"
+end
+
+local function quote_tokens(var)
+	local str = ""
+	for i, v in ipairs(var) do
+		str = str .. quote_token(v)
+
+		if i == #var - 1 then
+			str = str .. " or "
+		elseif i ~= #var then
+			str = str .. ", "
+		end
+	end
+	return str
+end
+
+local syntax = {}
+
+do -- syntax rules
+	syntax.keywords = {
+		"and", "break", "do", "else", "elseif", "end",
+		"false", "for", "function", "if", "in", "local",
+		"nil", "not", "or", "repeat", "return", "then",
+	}
+
+	syntax.keyword_values = {
+		"...",
+		"nil",
+		"true",
+		"false",
+	}
+
+	syntax.unary_operators = {
+		["-"] = -10,
+		["#"] = -10,
+		["not"] = -10,
+		["~"] = -10,
+	}
+
+	syntax.operators = {
+		["or"] = 1,
+		["and"] = 2,
+		["<"] = 3, [">"] = 3, ["<="] = 3, [">="] = 3, ["~="] = 3, ["=="] = 3,
+		[".."] = -7, -- right associative
+		["+"] = 8, ["-"] = 8,
+		["*"] = 9, ["/"] = 9, ["%"] = 9,
+		["^"] = -11, -- right associative
+
+		-- internally in Lua these are not operators but I've decided to
+		["."] = -12, [":"] = -12
+	}
+
+	function syntax.IsValue(token)
+		return token.type == "number" or token.type == "string" or syntax.keyword_values[token.value]
+	end
+
+	function syntax.IsOperator(token)
+		return syntax.operators[token.value] ~= nil
+	end
+
+	function syntax.GetLeftOperatorPriority(token)
+		return syntax.operators[token.value] and syntax.operators[token.value][1]
+	end
+
+	function syntax.GetRightOperatorPriority(token)
+		return syntax.operators[token.value] and syntax.operators[token.value][2]
+	end
+
+	function syntax.IsUnaryOperator(token)
+		return syntax.unary_operators[token.value]
+	end
+
+	function syntax.IsKeyword(token)
+		return syntax.keywords[token.value]
+	end
+
+	for i,v in pairs(syntax.operators) do
+		if v < 0 then
+			syntax.operators[i] = {-v + 1, -v}
+		else
+			syntax.operators[i] = {v, v}
+		end
+	end
+
+	for i,v in pairs(syntax.unary_operators) do
+		if v < 0 then
+			syntax.operators[i] = {-v + 1, -v}
+		else
+			syntax.operators[i] = {v, v}
+		end
+	end
+
+	for k,v in pairs(syntax.keywords) do
+		syntax.keywords[v] = v
+	end
+
+	for k,v in pairs(syntax.keyword_values) do
+		syntax.keyword_values[v] = v
+	end
+end
+
+local META = {}
+META.__index = META
 
 local function Node(t, val)
 	local node = {}
@@ -31,7 +144,7 @@ function META:Error(msg, start, stop, level, offset)
 	stop = stop or tk.stop
 
 	if not self.config.on_error or self.config.on_error(self, msg, start, stop) ~= false then
-		table.insert(self.errors, {
+		table_insert(self.errors, {
 			msg = msg,
 			start = start,
 			stop = stop,
@@ -73,9 +186,9 @@ end
 function META:ReadExpectType(type, start, stop)
 	local tk = self:GetToken()
 	if not tk then
-		self:Error("expected " .. oh.QuoteToken(type) .. " reached end of code", start, stop, 3, -1)
+		self:Error("expected " .. quote_token(type) .. " reached end of code", start, stop, 3, -1)
 	elseif tk.type ~= type then
-		self:Error("expected " .. oh.QuoteToken(type) .. " got " .. oh.QuoteToken(tk.type), start, stop, 3, -1)
+		self:Error("expected " .. quote_token(type) .. " got " .. quote_token(tk.type), start, stop, 3, -1)
 	end
 	self:Advance(1)
 	return tk
@@ -84,9 +197,9 @@ end
 function META:ReadExpectValue(value, start, stop)
 	local tk = self:ReadToken()
 	if not tk then
-		self:Error("expected " .. oh.QuoteToken(value) .. ": reached end of code", start, stop, 3, -1)
+		self:Error("expected " .. quote_token(value) .. ": reached end of code", start, stop, 3, -1)
 	elseif tk.value ~= value then
-		self:Error("expected " .. oh.QuoteToken(value) .. ": got " .. oh.QuoteToken(tk.value), start, stop, 3, -1)
+		self:Error("expected " .. quote_token(value) .. ": got " .. quote_token(tk.value), start, stop, 3, -1)
 	end
 	return tk
 end
@@ -94,9 +207,9 @@ end
 function META:ReadExpectValues(values, start, stop)
 	local tk = self:GetToken()
 	if not tk then
-		self:Error("expected " .. oh.QuoteTokens(values) .. ": reached end of code", start, stop)
-	elseif not table.hasvaluei(values, tk.value) then
-		self:Error("expected " .. oh.QuoteTokens(values) .. " got " .. tk.value, start, stop)
+		self:Error("expected " .. quote_tokens(values) .. ": reached end of code", start, stop)
+	elseif not table_hasvalue(values, tk.value) then
+		self:Error("expected " .. quote_tokens(values) .. " got " .. tk.value, start, stop)
 	end
 	self:Advance(1)
 	return tk
@@ -192,7 +305,7 @@ function META:Table()
 		end
 
 		if not self:IsValue(",") and not self:IsValue(";") then
-			self:Error("expected ".. oh.QuoteTokens(",", ";", "}") .. " got " .. self:GetToken().value)
+			self:Error("expected ".. quote_tokens(",", ";", "}") .. " got " .. self:GetToken().value)
 		end
 
 		data.tokens[","] = self:ReadToken()
@@ -233,7 +346,7 @@ function META:Expression(priority, stop_on_call)
 
 	local val
 
-	if oh.syntax.IsUnaryOperator(token) then
+	if syntax.IsUnaryOperator(token) then
 		val = Node("unary")
 		val.tokens.operator = self:ReadToken()
 		val.operator = val.tokens.operator.value
@@ -246,14 +359,14 @@ function META:Expression(priority, stop_on_call)
 		end
 
 		val.tokens["left("] = val.tokens["left("] or {}
-		table.insert(val.tokens["left("], pleft)
+		table_insert(val.tokens["left("], pleft)
 
 		val.tokens["right)"] = val.tokens["right)"] or {}
-		table.insert(val.tokens["right)"], self:ReadExpectValue(")"))
+		table_insert(val.tokens["right)"], self:ReadExpectValue(")"))
 
 	elseif token.value == "function" then
 		val = self:Function("anonymous")
-	elseif oh.syntax.IsValue(token) or (token.type == "letter" and not oh.syntax.keywords[token.value]) then
+	elseif syntax.IsValue(token) or (token.type == "letter" and not syntax.IsKeyword(token)) then
 		val = Node("value", self:ReadToken())
 	elseif token.value == "{" then
 		val = self:Table()
@@ -310,12 +423,13 @@ function META:Expression(priority, stop_on_call)
 	token = self:GetToken()
 
 	if token then
-		while oh.syntax.operators[token.value] and oh.syntax.operators[token.value][1] > priority do
+		while syntax.IsOperator(token) and syntax.GetLeftOperatorPriority(token) > priority do
 			local op = self:GetToken()
-			if not op or not oh.syntax.operators[op.value] then break end
+			local right_priority = syntax.GetRightOperatorPriority(token)
+			if not op or not right_priority then break end
 			self:Advance(1)
 
-			local right = self:Expression(oh.syntax.operators[op.value][2], stop_on_call)
+			local right = self:Expression(right_priority, stop_on_call)
 			local left = val
 
 			val = Node("operator")
@@ -443,7 +557,7 @@ function META:Block(stop)
 					clause.tokens["end"] = self:ReadExpectValues({"else", "elseif", "end"}, prev_token, prev_token)
 				end
 
-				table.insert(data.clauses, clause)
+				table_insert(data.clauses, clause)
 
 				out.has_continue = data.clauses[#data.clauses].block.has_continue
 				data.has_continue = out.has_continue
@@ -464,7 +578,7 @@ function META:Block(stop)
 
 			data.block = self:Block({["end"] = true})
 			data.tokens["end"] = self:ReadExpectValue("end", token, token)
-			table.remove(self.loop_stack)
+			table_remove(self.loop_stack)
 		elseif self:IsValue("for") then
 			local token = self:GetToken()
 			data = Node("for")
@@ -511,7 +625,7 @@ function META:Block(stop)
 			data.tokens["end"] = self:ReadExpectValue("end", token, token)
 			data.block = block
 
-			table.remove(self.loop_stack)
+			table_remove(self.loop_stack)
 		elseif self:IsValue("function") then
 			data = Node("assignment")
 			data.sub_type = "function"
@@ -554,7 +668,7 @@ function META:Block(stop)
 		else
 			self:Error("unexpected " .. self:GetToken().type)
 		end
-		
+
 		table_insert(out, data)
 	end
 
@@ -566,7 +680,7 @@ function META:GetAST()
 	return self:Block()
 end
 
-function oh.Parser(tokens, code, path, halt_on_error)
+return function(tokens, code, path, halt_on_error)
 	if halt_on_error == nil then
 		halt_on_error = true
 	end
@@ -586,9 +700,4 @@ function oh.Parser(tokens, code, path, halt_on_error)
 	self.i = 1
 
 	return self
-end
-
-if RELOAD then
-	runfile("lua/libraries/oh.lua")
-	_G.oh.Test()
 end

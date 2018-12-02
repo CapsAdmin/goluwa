@@ -1,19 +1,17 @@
--- these could be swapped with utf8 variants
-local string_length = string.len
-local string_sub = string.sub
-
-local unicode = true
-
-local Tokenizer = {}
-Tokenizer.__index = Tokenizer
+local meta = {}
+meta.__index = meta
 
 local function quote_token(str)
-	return "⸢" .. str .. "⸥"
+	return "『" .. str .. "』"
 end
 
 local function quote_tokens(var)
 	if type(var) == "string" then
-		var = var:totable()
+		local tbl = {}
+		for i = 1, string.len(var) do
+			tbl[i] = string.sub(var, i, i)
+		end
+		var = tbl
 	end
 
 	local str = ""
@@ -29,126 +27,83 @@ local function quote_tokens(var)
 	return str
 end
 
-do
-	local syntax = {}
-
-	syntax.space = {" ", "\n", "\r", "\t"}
-
-	syntax.number = {}
-	for i = 0, 9 do
-		syntax.number[i+1] = tostring(i)
-	end
-
-	syntax.letter = {"_"}
-
-	for i = string.byte("A"), string.byte("Z") do
-		table.insert(syntax.letter, string.char(i))
-	end
-
-	for i = string.byte("a"), string.byte("z") do
-		table.insert(syntax.letter, string.char(i))
-	end
-
-	syntax.symbol = {
-		".", ",", "(", ")", "{", "}", "[", "]",
-		"=", ":", ";", "~", "::", "...", "-",
-		"#", "not", "~", "-", "<", ".", ">",
-		"/", "^", "<<", "&", "|", "==", "<=",
-		"..", "~=", "+", ">>", "*", "and", ">=",
-		"or", ":", "%", "\"", "'"
-	}
-
-	syntax.eof = {""}
-
-	local lookup = {}
+function meta:BuildLookupTables(syntax)
+	self.char_lookup = {}
 
 	for type, chars in pairs(syntax) do
 		for i, char in ipairs(chars) do
-			lookup[char] = type
+			self.char_lookup[char] = type
 		end
 	end
 
-	function Tokenizer:MapCharType(char, type)
-		lookup[char] = true
-	end
+	self.longest_symbol = 0
+	self.symbol_lookup = {}
 
-	function Tokenizer:GetCharMap()
-		return lookup
-	end
-
-	if unicode then
-		string_length = utf8.len
-		string_sub = utf8.sub
-		function Tokenizer:GetCharType(char)
-			return lookup[char] or "letter"
-		end
-	else
-		function Tokenizer:GetCharType(char)
-			return lookup[char]
+	for char, type in pairs(self.char_lookup) do
+		if type == "symbol" then
+			self.symbol_lookup[char] = true
+			self.longest_symbol = math.max(self.longest_symbol, #char)
 		end
 	end
 end
 
-function Tokenizer:ReadChar()
+function meta:GetCharType(char)
+	return self.char_lookup[char] or self.char_fallback_type
+end
+
+function meta:ReadChar()
 	local char = self:GetCurrentChar()
 	self.i = self.i + 1
 	return char
 end
 
-function Tokenizer:ReadCharByte()
+function meta:ReadCharByte()
 	local b = self:GetCurrentChar()
 	self.i = self.i + 1
 	return b
 end
 
-function Tokenizer:Advance(len)
+function meta:Advance(len)
 	self.i = self.i + len
 end
 
-function Tokenizer:GetCharOffset(offset)
-	return string_sub(self.config.code, self.i + offset, self.i + offset)
+function meta:GetCharOffset(offset)
+	return self.string_sub(self.code, self.i + offset, self.i + offset)
 end
 
-function Tokenizer:GetCurrentChar()
-	return string_sub(self.config.code, self.i, self.i)
+function meta:GetCurrentChar()
+	return self.string_sub(self.code, self.i, self.i)
 end
 
-function Tokenizer:GetChars(a, b)
-	return string_sub(self.config.code, a, b)
+function meta:GetChars(a, b)
+	return self.string_sub(self.code, a, b)
 end
 
-function Tokenizer:GetCharsOffset(b)
-	return string_sub(self.config.code, self.i, self.i + b)
+function meta:GetCharsOffset(b)
+	return self.string_sub(self.code, self.i, self.i + b)
 end
 
-function Tokenizer:Error(msg, start, stop)
-	start = start or self.i
-	stop = stop or self.i
-
-	if not self.config.on_error or self.config.on_error(self, msg, start, stop) ~= false then
-		table.insert(self.errors, {
-			msg = msg,
-			start = start,
-			stop = stop,
-		})
+function meta:Error(msg, start, stop)
+	if self.on_error then
+		self:on_error(msg, start or self.i, stop or self.i)
 	end
 end
 
-local function RegisterTokenClass(tbl)
+function meta:RegisterTokenClass(tbl)
 	tbl.ParserType = tbl.ParserType or tbl.Type
 	tbl.Priority = tbl.Priority or 0
 
-	Tokenizer.TokenClasses = Tokenizer.TokenClasses or {}
-	Tokenizer.WhitespaceClasses = Tokenizer.WhitespaceClasses or {}
+	self.TokenClasses = self.TokenClasses or {}
+	self.WhitespaceClasses = self.WhitespaceClasses or {}
 
 	if tbl.Whitespace then
-		Tokenizer.WhitespaceClasses[tbl.Type] = tbl
+		self.WhitespaceClasses[tbl.Type] = tbl
 	else
-		Tokenizer.TokenClasses[tbl.Type] = tbl
+		self.TokenClasses[tbl.Type] = tbl
 	end
 end
 
-Tokenizer.TokenClasses = {}
+meta.TokenClasses = {}
 
 local function CaptureLiteralString(self, multiline_comment)
 	local start = self.i
@@ -173,14 +128,14 @@ local function CaptureLiteralString(self, multiline_comment)
 	c = self:ReadChar()
 	if c ~= "[" then
 		if multiline_comment then return true end
-		return nil, "expected " .. quote_token(string_sub(self.config.code, start, self.i - 1) .. "[") .. " got " .. quote_token(string_sub(self.config.code, start, self.i - 1) .. c)
+		return nil, "expected " .. quote_token(self.string_sub(self.code, start, self.i - 1) .. "[") .. " got " .. quote_token(self.string_sub(self.code, start, self.i - 1) .. c)
 	end
 
 	local length = self.i - start
 
 	if length < 2 then return nil end
 
-	local closing = "]" .. ("="):rep(length - 2) .. "]"
+	local closing = "]" .. string.rep("=", length - 2) .. "]"
 
 	for _ = self.i, self.code_length do
 		if self:GetCharsOffset(length - 1) == closing then
@@ -217,7 +172,7 @@ do
 		return ok
 	end
 
-	RegisterTokenClass(Token)
+	meta:RegisterTokenClass(Token)
 end
 
 do
@@ -243,7 +198,7 @@ do
 		end
 	end
 
-	RegisterTokenClass(Token)
+	meta:RegisterTokenClass(Token)
 end
 
 do
@@ -267,7 +222,7 @@ do
 			if self.string_escape then
 
 				if c == "z" and self:GetCurrentChar() ~= quote then
-					Tokenizer.WhitespaceClasses.space.Capture(self)
+					meta.WhitespaceClasses.space.Capture(self)
 				end
 
 				self.string_escape = false
@@ -307,7 +262,7 @@ do
 			return false
 		end
 
-		RegisterTokenClass(Token)
+		meta:RegisterTokenClass(Token)
 	end
 end
 
@@ -332,7 +287,7 @@ do
 		return ok
 	end
 
-	RegisterTokenClass(Token)
+	meta:RegisterTokenClass(Token)
 end
 
 do
@@ -371,7 +326,7 @@ do
 			end
 
 			local len = #annotation
-			code = code .. "self:GetCharsOffset(" .. (len - 1) .. "):lower() == '" .. annotation .. "' then\n\z
+			code = code .. "self.string_lower(self:GetCharsOffset(" .. (len - 1) .. ")) == '" .. annotation .. "' then\n\z
 			\t\tlocal t = self:GetCharType(self:GetCharOffset("..len.."))\n\z
 			\t\tif t == \"space\" or t == \"symbol\" then\n\z
 				\t\t\tself:Advance("..len..")\n\z
@@ -389,7 +344,7 @@ do
 	function Token:CaptureAnnotations()
 		for _, annotation in ipairs(legal_number_annotations) do
 			local len = #annotation
-			if self:GetCharsOffset(len - 1):lower() == annotation then
+			if self.string_lower(self:GetCharsOffset(len - 1)) == annotation then
 				local t = self:GetCharType(self:GetCharOffset(len))
 
 				if t == "space" or t == "symbol" then
@@ -416,7 +371,7 @@ do
 		for _ = self.i, self.code_length do
 			if Token.CaptureAnnotations(self) then return true end
 
-			local char = self:GetCurrentChar():lower()
+			local char = self.string_lower(self:GetCurrentChar())
 			local t = self:GetCharType(self:GetCurrentChar())
 
 			if char == pow_letter then
@@ -428,7 +383,7 @@ do
 				end
 			end
 
-			if not (t == "number" or allowed[char] or ((char == plus_sign or char == minus_sign) and self:GetCharOffset(-1):lower() == pow_letter) ) then
+			if not (t == "number" or allowed[char] or ((char == plus_sign or char == minus_sign) and self.string_lower(self:GetCharOffset(-1)) == pow_letter) ) then
 				if not t or t == "space" or t == "symbol" then
 					return true
 				elseif char == "symbol" or t == "letter" then
@@ -447,7 +402,7 @@ do
 		self:Advance(2)
 
 		for _ = self.i, self.code_length do
-			local char = self:GetCurrentChar():lower()
+			local char = self.string_lower(self:GetCurrentChar())
 			local t = self:GetCharType(self:GetCurrentChar())
 
 			if char ~= "1" and char ~= "0" and char ~= "_" then
@@ -485,12 +440,12 @@ do
 			elseif t ~= "number" then
 				if t == "letter" then
 					start = self.i
-					if char:lower() == "e" then
+					if self.string_lower(char) == "e" then
 						exponent = true
 					elseif Token.CaptureAnnotations(self) then
 						return true
 					else
-						self:Error("malformed number: invalid character " .. quote_token(char) .. ". only " .. quote_tokens(legal_number_annotations, ", ") .. " allowed after a number", start, self.i)
+						self:Error("malformed number: invalid character " .. quote_token(char) .. ". only " .. quote_tokens(legal_number_annotations) .. " allowed after a number", start, self.i)
 						return false
 					end
 				elseif not found_dot and char == "." then
@@ -505,16 +460,17 @@ do
 	end
 
 	function Token:Capture()
-		if self:GetCharOffset(1):lower() == "x" then
+		local s = self.string_lower(self:GetCharOffset(1))
+		if s == "x" then
 			return Token.CaptureHexNumber(self)
-		elseif self:GetCharOffset(1):lower() == "b" then
+		elseif s == "b" then
 			return Token.CaptureBinaryNumber(self)
 		end
 
 		return Token.CaptureNumber(self)
 	end
 
-	RegisterTokenClass(Token)
+	meta:RegisterTokenClass(Token)
 end
 
 do
@@ -523,30 +479,20 @@ do
 	Token.Type = "symbol"
 	Token.Priority = -1000
 
-	local longest_symbol = 0
-	local lookup = {}
-
-	for char, type in pairs(Tokenizer:GetCharMap()) do
-		if type == "symbol" then
-			lookup[char] = true
-			longest_symbol = math.max(longest_symbol, #char)
-		end
-	end
-
 	function Token:Is()
 		return self:GetCharType(self:GetCurrentChar()) == "symbol"
 	end
 
 	function Token:Capture()
-		for len = longest_symbol - 1, 0, -1 do
-			if lookup[self:GetCharsOffset(len)] then
+		for len = self.longest_symbol - 1, 0, -1 do
+			if self.symbol_lookup[self:GetCharsOffset(len)] then
 				self:Advance(len + 1)
 				return true
 			end
 		end
 	end
 
-	RegisterTokenClass(Token)
+	meta:RegisterTokenClass(Token)
 end
 
 do
@@ -570,7 +516,7 @@ do
 		end
 	end
 
-	RegisterTokenClass(Token)
+	meta:RegisterTokenClass(Token)
 end
 
 do
@@ -596,7 +542,7 @@ do
 		return true
 	end
 
-	RegisterTokenClass(Token)
+	meta:RegisterTokenClass(Token)
 end
 
 do -- shebang
@@ -616,7 +562,7 @@ do -- shebang
 		end
 	end
 
-	Tokenizer.ShebangTokenType = Token
+	meta.ShebangTokenType = Token
 end
 
 do -- eof
@@ -632,10 +578,10 @@ do -- eof
 		-- nothing to capture, but remaining whitespace will be added
 	end
 
-	RegisterTokenClass(Token)
+	meta:RegisterTokenClass(Token)
 end
 
-function Tokenizer:BufferWhitespace(type, start, stop)
+function meta:BufferWhitespace(type, start, stop)
 	self.whitespace_buffer[self.whitespace_buffer_i] = {
 		type = type,
 		--value = self:GetChars(start, stop),
@@ -656,8 +602,8 @@ do
 		return list
 	end
 
-	local sorted_token_classes = tolist(Tokenizer.TokenClasses)
-	local sorted_whitespace_classes = tolist(Tokenizer.WhitespaceClasses)
+	local sorted_token_classes = tolist(meta.TokenClasses)
+	local sorted_whitespace_classes = tolist(meta.WhitespaceClasses)
 
 	local code = "local META = ...\nfunction META:CaptureToken()\n"
 
@@ -701,33 +647,38 @@ do
 	code = code .. "\tend\n"
 	code = code .. "end\n"
 
-	assert(loadstring(code))(Tokenizer)
+	assert(loadstring(code))(meta)
 end
 
-function Tokenizer:ReadToken()
-	if Tokenizer.ShebangTokenType.Is(self) then
-		Tokenizer.ShebangTokenType.Capture(self)
-		return Tokenizer.ShebangTokenType.Type, 1, self.i, {}
+function meta:ReadToken()
+	if meta.ShebangTokenType.Is(self) then
+		meta.ShebangTokenType.Capture(self)
+		return meta.ShebangTokenType.Type, 1, self.i, {}
 	end
 
-	return self:CaptureToken()
+	local type, start, stop, whitespace = self:CaptureToken()
+
+	if not type then
+		local start = self.i
+		local char = self:ReadChar()
+		local stop = self.i - 1
+
+		return "unknown", start, stop, {}
+	end
+
+	return type, start, stop, whitespace
 end
 
-function Tokenizer:GetTokens()
+function meta:GetTokens()
 	self.i = 1
 
 	local tokens = {}
 	local tokens_i = 1
 
 	for _ = self.i, self.code_length do
-		--if self:GetCharType(self:GetCurrentChar()) == nil then
-			--self:Error("unexpected character " .. quote_token(self:GetCurrentChar()) .. " (byte " .. self:GetCurrentChar():byte() .. ")", self.i, self.i)
-			--self:Advance(1)
-		--end
-
 		local type, start, stop, whitespace = self:ReadToken()
 
-		if not type then break end
+		if type == "unknown" then break end
 
 		tokens[tokens_i] = {
 			type = type,
@@ -745,38 +696,23 @@ function Tokenizer:GetTokens()
 	return tokens
 end
 
-return function(config, ...)
-	if type(config) == "string" then
-		config = {code = config, path = ...}
-	else
-		assert(type(config) == "table", "expected config table")
-		assert(type(config.code) == "string", "expected config field code to be a string")
-	end
-
-	if not config.path then
-		local line =  config.code:match("(.-)\n")
-		if line ~= config.code then
-			line = line .. "..."
-		end
-		local content = line:sub(0, 15)
-		if content ~= line then
-			content = content .. "..."
-		end
-		config.path =  "[string \""..content.."\"]"
-	end
-
-	if config.halt_on_error == nil then
-		config.halt_on_error = true
-	end
-
-	local self = setmetatable({}, Tokenizer)
-
-	self.code_length = string_length(config.code)
-	self.config = config
-	self.errors = {}
+function meta:SetCode(code)
+	self.code = code
+	self.code_length = self.string_length(code)
 	self.whitespace_buffer = {}
 	self.whitespace_buffer_i = 1
 	self.i = 1
+end
+
+return function(config)
+	local self = setmetatable({}, meta)
+
+	self.string_lower = config.string_lower or string.lower
+	self.string_sub = config.string_sub or string.sub
+	self.string_length = config.string_length or string.len
+	self.on_error = config.on_error
+	self.char_fallback_type = config.fallback_type or false
+	self:BuildLookupTables(config.syntax)
 
 	return self
 end
