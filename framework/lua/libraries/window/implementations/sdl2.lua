@@ -104,6 +104,13 @@ do
 	local max = 20
 	local events = ffi.new("union SDL_Event[?]", max)
 
+	local window_flags = {}
+	for k,v in pairs(sdl.e) do
+		if k:startswith("WINDOW_") then
+			window_flags[k] = v
+		end
+	end
+
 	function META:OnUpdate(dt)
 		self:UpdateMouseDelta()
 		self:OnPostUpdate(dt)
@@ -132,6 +139,12 @@ do
 			local case = events.window.event
 
 			if events.window.windowID == self.sdl_windowid then
+				--for k,v in pairs(sdl.e) do if v == case and k:startswith("WINDOWEVENT_") then print(k) break end end
+
+				local window_state = utility.FlagsToTable(sdl.GetWindowFlags(self.wnd_ptr), window_flags)
+
+				self.Focused = window_state.WINDOW_INPUT_FOCUS or false
+
 				if case == sdl.e.WINDOWEVENT_MOVED then
 					self.cached_pos = nil
 					self:CallEvent("PositionChanged", Vec2(events.window.data1, events.window.data2))
@@ -154,13 +167,10 @@ do
 				elseif case == sdl.e.WINDOWEVENT_LEAVE then
 					self:CallEvent("CursorLeave")
 
-				elseif case == sdl.e.WINDOWEVENT_EXPOSED then
+				elseif case == sdl.e.WINDOWEVENT_FOCUS_GAINED then
 					self:CallEvent("GainedFocus")
-					self.Focused = true
-
-				elseif case == sdl.e.WINDOWEVENT_LEAVE then
+				elseif case == sdl.e.WINDOWEVENT_FOCUS_LOST then
 					self:CallEvent("LostFocus")
-					self.Focused = false
 				elseif case == sdl.e.WINDOWEVENT_CLOSE then
 					self:CallEvent("Close")
 
