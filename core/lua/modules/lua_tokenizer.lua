@@ -74,19 +74,19 @@ function meta:Advance(len)
 end
 
 function meta:GetCharOffset(offset)
-	return self.string_sub(self.code, self.i + offset, self.i + offset)
+	return self.get_code_char(self.i + offset)
 end
 
 function meta:GetCurrentChar()
-	return self.string_sub(self.code, self.i, self.i)
+	return self.get_code_char(self.i)
 end
 
 function meta:GetChars(a, b)
-	return self.string_sub(self.code, a, b)
+	return self.get_code_char_range(a, b)
 end
 
 function meta:GetCharsOffset(b)
-	return self.string_sub(self.code, self.i, self.i + b)
+	return self.get_code_char_range(self.i, self.i + b)
 end
 
 function meta:Error(msg, start, stop)
@@ -134,7 +134,7 @@ local function CaptureLiteralString(self, multiline_comment)
 	c = self:ReadChar()
 	if c ~= "[" then
 		if multiline_comment then return true end
-		return nil, "expected " .. quote_token(self.string_sub(self.code, start, self.i - 1) .. "[") .. " got " .. quote_token(self.string_sub(self.code, start, self.i - 1) .. c)
+		return nil, "expected " .. quote_token(self.get_code_char_range(start, self.i - 1) .. "[") .. " got " .. quote_token(self.get_code_char_range(start, self.i - 1) .. c)
 	end
 
 	local length = self.i - start
@@ -700,9 +700,8 @@ function meta:GetTokens()
 	return tokens
 end
 
-function meta:SetCode(code)
-	self.code = code
-	self.code_length = self.string_length(code)
+function meta:ResetState()
+	self.code_length = self.get_code_length()
 	self.whitespace_buffer = {}
 	self.whitespace_buffer_i = 1
 	self.i = 1
@@ -713,7 +712,10 @@ return function(config)
 
 	self.string_lower = config.string_lower or string.lower
 	self.string_sub = config.string_sub or string.sub
-	self.string_length = config.string_length or string.len
+
+	self.get_code_char_range = config.get_code_char_range or function(i) return string.sub(config.code, i, i) end
+	self.get_code_char = config.get_code_char or function(i) return string.sub(config.code, i, i) end
+	self.get_code_length = config.get_code_length or function() return string.length(config.code) end
 	self.on_error = config.on_error
 	self.char_fallback_type = config.fallback_type or false
 	self:BuildLookupTables(config.syntax)
