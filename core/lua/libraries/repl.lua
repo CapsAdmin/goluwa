@@ -222,9 +222,7 @@ do
 			repl.Write(str)
 		else
 			last_color = nil
-			set_color("letter")
 
-			local start = 0
 			local tokenizer = oh.Tokenizer(str)
 
 			while true do
@@ -233,24 +231,20 @@ do
 				for _, v in ipairs(whitespace) do
 					if v.type == "line_comment" or v.type == "multiline_comment" then
 						set_color("comment")
-					else
-						set_color("letter")
 					end
 
 					repl.Write(str:usub(v.start, v.stop))
 				end
 
-				if type == "letter" then
-					if keywords[str:usub(start, stop)] then
+				local chunk = str:usub(start, stop)
+
+				if type == "letter" and keywords[chunk]  then
 						set_color("keyword")
 					else
-						set_color("letter")
-					end
-				else
 					set_color(type)
 				end
 
-				repl.Write(str:usub(start, stop))
+				repl.Write(chunk)
 
 				if type == "end_of_file" then break end
 			end
@@ -288,7 +282,7 @@ function repl.KeyPressed(key)
 		repl.buffer = ""
 
 	--	repl.WriteStringToScreen(0, y, (" "):rep(w))
-		repl.WriteStringToScreen(0, y, (" "):rep(#str))
+		repl.WriteStringToScreen(0, y, (" "):rep(utf8.length(str)))
 		repl.SetCaretPositionReal(0,y)
 		repl.StyledWrite("> " .. str, true)
 		repl.Flush()
@@ -321,8 +315,8 @@ function repl.KeyPressed(key)
 				else
 					local tokenizer = oh.Tokenizer(str)
 					local tokens = tokenizer:GetTokens()
-					local parser = oh.Parser(tokens, str, "")
-					local ast = parser:GetAST()
+					local parser = oh.Parser(tokens)
+					local ast = parser:BuildAST(tokens)
 
 					local function print_errors(errors, only_first)
 						for _, v in ipairs(errors) do
@@ -421,7 +415,7 @@ function repl.KeyPressed(key)
 		repl.buffer = ""
 
 	--	repl.WriteStringToScreen(0, y, (" "):rep(w))
-		repl.WriteStringToScreen(0, y, (" "):rep(#str))
+		repl.WriteStringToScreen(0, y, (" "):rep(utf8.length(str)))
 		repl.SetCaretPositionReal(0,y)
 		repl.StyledWrite("> " .. str, true)
 		repl.Flush()
