@@ -1,5 +1,5 @@
-local meta = {}
-meta.__index = meta
+local builder = require("tokenizer")()
+local string_lower = string.lower
 
 local function quote_token(str)
 	return "『" .. str .. "』"
@@ -27,90 +27,6 @@ local function quote_tokens(var)
 	return str
 end
 
-function meta:BuildLookupTables(syntax)
-	self.char_lookup = {}
-
-	for type, chars in pairs(syntax) do
-		for i, char in ipairs(chars) do
-			self.char_lookup[char] = type
-		end
-	end
-
-	self.longest_symbol = 0
-	self.symbol_lookup = {}
-
-	for char, type in pairs(self.char_lookup) do
-		if type == "symbol" then
-			self.symbol_lookup[char] = true
-			do -- this triggers symbol lookup. For example it adds "~" from "~=" so that "~" is a symbol
-				local first_char = self.string_sub(char, 1, 1)
-				if not self.char_lookup[first_char] then
-					self.char_lookup[first_char] = "symbol"
-				end
-			end
-			self.longest_symbol = math.max(self.longest_symbol, #char)
-		end
-	end
-end
-
-function meta:GetCharType(char)
-	return self.char_lookup[char] or self.char_fallback_type
-end
-
-function meta:ReadChar()
-	local char = self:GetCurrentChar()
-	self.i = self.i + 1
-	return char
-end
-
-function meta:ReadCharByte()
-	local b = self:GetCurrentChar()
-	self.i = self.i + 1
-	return b
-end
-
-function meta:Advance(len)
-	self.i = self.i + len
-end
-
-function meta:GetCharOffset(offset)
-	return self.get_code_char(self.i + offset)
-end
-
-function meta:GetCurrentChar()
-	return self.get_code_char(self.i)
-end
-
-function meta:GetChars(a, b)
-	return self.get_code_char_range(a, b)
-end
-
-function meta:GetCharsOffset(b)
-	return self.get_code_char_range(self.i, self.i + b)
-end
-
-function meta:Error(msg, start, stop)
-	if self.on_error then
-		self:on_error(msg, start or self.i, stop or self.i)
-	end
-end
-
-function meta:RegisterTokenClass(tbl)
-	tbl.ParserType = tbl.ParserType or tbl.Type
-	tbl.Priority = tbl.Priority or 0
-
-	self.TokenClasses = self.TokenClasses or {}
-	self.WhitespaceClasses = self.WhitespaceClasses or {}
-
-	if tbl.Whitespace then
-		self.WhitespaceClasses[tbl.Type] = tbl
-	else
-		self.TokenClasses[tbl.Type] = tbl
-	end
-end
-
-meta.TokenClasses = {}
-
 local function CaptureLiteralString(self, multiline_comment)
 	local start = self.i
 
@@ -134,7 +50,7 @@ local function CaptureLiteralString(self, multiline_comment)
 	c = self:ReadChar()
 	if c ~= "[" then
 		if multiline_comment then return true end
-		return nil, "expected " .. quote_token(self.get_code_char_range(start, self.i - 1) .. "[") .. " got " .. quote_token(self.get_code_char_range(start, self.i - 1) .. c)
+		return nil, "expected " .. quote_token(self.get_code_char_range(self, start, self.i - 1) .. "[") .. " got " .. quote_token(self.get_code_char_range(self, start, self.i - 1) .. c)
 	end
 
 	local length = self.i - start
@@ -178,7 +94,7 @@ do
 		return ok
 	end
 
-	meta:RegisterTokenClass(Token)
+	builder:RegisterTokenClass(Token)
 end
 
 do
@@ -204,7 +120,7 @@ do
 		end
 	end
 
-	meta:RegisterTokenClass(Token)
+	builder:RegisterTokenClass(Token)
 end
 
 do
@@ -228,7 +144,7 @@ do
 			if self.string_escape then
 
 				if c == "z" and self:GetCurrentChar() ~= quote then
-					meta.WhitespaceClasses.space.Capture(self)
+					self.WhitespaceClasses.space.Capture(self)
 				end
 
 				self.string_escape = false
@@ -268,7 +184,7 @@ do
 			return false
 		end
 
-		meta:RegisterTokenClass(Token)
+		builder:RegisterTokenClass(Token)
 	end
 end
 
@@ -293,7 +209,7 @@ do
 		return ok
 	end
 
-	meta:RegisterTokenClass(Token)
+	builder:RegisterTokenClass(Token)
 end
 
 do
@@ -332,12 +248,12 @@ do
 			end
 
 			local len = #annotation
-			code = code .. "self.string_lower(self:GetCharsOffset(" .. (len - 1) .. ")) == '" .. annotation .. "' then\n\z
-			\t\tlocal t = self:GetCharType(self:GetCharOffset("..len.."))\n\z
-			\t\tif t == \"space\" or t == \"symbol\" then\n\z
-				\t\t\tself:Advance("..len..")\n\z
-				\t\t\treturn true\n\z
-			\t\tend\n"
+			code = code .. "string.lower(self:GetCharsOffset(" .. (len - 1) .. ")) == '" .. annotation .. "' then\n"
+			code = code .. "\t\tlocal t = self:GetCharType(self:GetCharOffset("..len.."))\n"
+			code = code .. "\t\tif t == \"space\" or t == \"symbol\" then\n"
+			code = code .. "\t\t\tself:Advance("..len..")\n"
+			code = code .. "\t\t\treturn true\n"
+			code = code .. "\t\tend\n"
 
 		end
 
@@ -350,7 +266,7 @@ do
 	function Token:CaptureAnnotations()
 		for _, annotation in ipairs(legal_number_annotations) do
 			local len = #annotation
-			if self.string_lower(self:GetCharsOffset(len - 1)) == annotation then
+			if string_lower(self:GetCharsOffset(len - 1)) == annotation then
 				local t = self:GetCharType(self:GetCharOffset(len))
 
 				if t == "space" or t == "symbol" then
@@ -377,7 +293,7 @@ do
 		for _ = self.i, self.code_length do
 			if Token.CaptureAnnotations(self) then return true end
 
-			local char = self.string_lower(self:GetCurrentChar())
+			local char = string_lower(self:GetCurrentChar())
 			local t = self:GetCharType(self:GetCurrentChar())
 
 			if char == pow_letter then
@@ -389,7 +305,7 @@ do
 				end
 			end
 
-			if not (t == "number" or allowed[char] or ((char == plus_sign or char == minus_sign) and self.string_lower(self:GetCharOffset(-1)) == pow_letter) ) then
+			if not (t == "number" or allowed[char] or ((char == plus_sign or char == minus_sign) and string_lower(self:GetCharOffset(-1)) == pow_letter) ) then
 				if not t or t == "space" or t == "symbol" then
 					return true
 				elseif char == "symbol" or t == "letter" then
@@ -408,7 +324,7 @@ do
 		self:Advance(2)
 
 		for _ = self.i, self.code_length do
-			local char = self.string_lower(self:GetCurrentChar())
+			local char = string_lower(self:GetCurrentChar())
 			local t = self:GetCharType(self:GetCurrentChar())
 
 			if char ~= "1" and char ~= "0" and char ~= "_" then
@@ -446,7 +362,7 @@ do
 			elseif t ~= "number" then
 				if t == "letter" then
 					start = self.i
-					if self.string_lower(char) == "e" then
+					if string_lower(char) == "e" then
 						exponent = true
 					elseif Token.CaptureAnnotations(self) then
 						return true
@@ -466,7 +382,7 @@ do
 	end
 
 	function Token:Capture()
-		local s = self.string_lower(self:GetCharOffset(1))
+		local s = string_lower(self:GetCharOffset(1))
 		if s == "x" then
 			return Token.CaptureHexNumber(self)
 		elseif s == "b" then
@@ -476,7 +392,7 @@ do
 		return Token.CaptureNumber(self)
 	end
 
-	meta:RegisterTokenClass(Token)
+	builder:RegisterTokenClass(Token)
 end
 
 do
@@ -491,14 +407,14 @@ do
 
 	function Token:Capture()
 		for len = self.longest_symbol - 1, 0, -1 do
-			if self.symbol_lookup[self:GetCharsOffset(len)] then
+			if self.SymbolLookup[self:GetCharsOffset(len)] then
 				self:Advance(len + 1)
 				return true
 			end
 		end
 	end
 
-	meta:RegisterTokenClass(Token)
+	builder:RegisterTokenClass(Token)
 end
 
 do
@@ -522,7 +438,7 @@ do
 		end
 	end
 
-	meta:RegisterTokenClass(Token)
+	builder:RegisterTokenClass(Token)
 end
 
 do
@@ -548,7 +464,7 @@ do
 		return true
 	end
 
-	meta:RegisterTokenClass(Token)
+	builder:RegisterTokenClass(Token)
 end
 
 do -- shebang
@@ -568,157 +484,163 @@ do -- shebang
 		end
 	end
 
-	meta.ShebangTokenType = Token
+	builder.ShebangTokenType = Token
 end
 
-do -- eof
-	local Token = {}
+local ffi = require "ffi"
+local bit = require "bit"
+local band = bit.band
+local bor = bit.bor
+local rshift = bit.rshift
+local lshift = bit.lshift
+local math_floor = math.floor
+local string_char = string.char
+local UTF8_ACCEPT = 0
+local UTF8_REJECT = 12
 
-	Token.Type = "end_of_file"
+local utf8d = ffi.new("const uint8_t[364]", {
+	-- The first part of the table maps bytes to character classes that
+	-- to reduce the size of the transition table and create bitmasks.
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,  9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+	7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,  7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+	8,8,2,2,2,2,2,2,2,2,2,2,2,2,2,2,  2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+	10,3,3,3,3,3,3,3,3,3,3,3,3,4,3,3, 11,6,6,6,5,8,8,8,8,8,8,8,8,8,8,8,
 
-	function Token:Is()
-		return self.i > self.code_length
-	end
+	-- The second part is a transition table that maps a combination
+	-- of a state of the automaton and a character class to a state.
+	0,12,24,36,60,96,84,12,12,12,48,72, 12,12,12,12,12,12,12,12,12,12,12,12,
+	12, 0,12,12,12,12,12, 0,12, 0,12,12, 12,24,12,12,12,12,12,24,12,24,12,12,
+	12,12,12,12,12,12,12,24,12,12,12,12, 12,24,12,12,12,12,12,12,12,24,12,12,
+	12,12,12,12,12,12,12,36,12,36,12,12, 12,36,12,12,12,12,12,36,12,36,12,12,
+	12,36,12,12,12,12,12,12,12,12,12,12,
+})
 
-	function Token:Capture()
-		-- nothing to capture, but remaining whitespace will be added
-	end
+local function totable(str)
+	local state = UTF8_ACCEPT
+	local codepoint = 0;
+	local offset = 0;
+	local ptr = ffi.cast("uint8_t *", str)
 
-	meta:RegisterTokenClass(Token)
-end
+	local out = {}
+	local out_i = 1
 
-function meta:BufferWhitespace(type, start, stop)
-	self.whitespace_buffer[self.whitespace_buffer_i] = {
-		type = type,
-		start = start == 1 and 0 or start,
-		stop = stop,
-		value = self:GetChars(start, stop),
-	}
+	for i = 0, #str - 1 do
+		local byte = ptr[i]
+		local ctype = utf8d[byte]
 
-	self.whitespace_buffer_i = self.whitespace_buffer_i + 1
-end
-
-do
-	local function tolist(tbl, sort)
-		local list = {}
-		for key, val in pairs(tbl) do
-			table.insert(list, {key = key, val = val})
-		end
-		table.sort(list, function(a, b) return a.val.Priority > b.val.Priority end)
-		return list
-	end
-
-	local sorted_token_classes = tolist(meta.TokenClasses)
-	local sorted_whitespace_classes = tolist(meta.WhitespaceClasses)
-
-	local code = "local META = ...\nfunction META:CaptureToken()\n"
-
-	code = code .. "\tfor _ = self.i, self.code_length do\n"
-	for i, class in ipairs(sorted_whitespace_classes) do
-		if i == 1 then
-			code = code .. "\t\tif "
+		if state ~= UTF8_ACCEPT then
+			codepoint = bor(band(byte, 0x3f), lshift(codepoint, 6))
 		else
-			code = code .. "\t\telseif "
+			codepoint = band(rshift(0xff, ctype), byte)
 		end
 
-		--\t\tprint('capturing "..class.val.Type.."')\n\z
-		code = code .. "\z
-		META.WhitespaceClasses." .. class.val.Type .. ".Is(self) then\n\z
-		\t\t\tlocal start = self.i\n\z
-		\t\t\tMETA.WhitespaceClasses." .. class.val.Type .. ".Capture(self)\n\z
-		\t\t\tself:BufferWhitespace(\"" .. class.val.ParserType .. "\", start, self.i - 1)\n"
+		state = utf8d[256 + state + ctype]
+
+		if state == UTF8_ACCEPT then
+			if codepoint > 0xffff then
+				codepoint = lshift(((0xD7C0 + rshift(codepoint, 10)) - 0xD7C0), 10) +
+				(0xDC00 + band(codepoint, 0x3ff)) - 0xDC00
+			end
+
+			if codepoint <= 127 then
+				out[out_i] = string_char(codepoint)
+			elseif codepoint < 2048 then
+				out[out_i] = string_char(
+					192 + math_floor(codepoint / 64),
+					128 + (codepoint % 64)
+				)
+			elseif codepoint < 65536 then
+				out[out_i] = string_char(
+					224 + math_floor(codepoint / 4096),
+					128 + (math_floor(codepoint / 64) % 64),
+					128 + (codepoint % 64)
+				)
+			elseif codepoint < 2097152 then
+				out[out_i] = string_char(
+					240 + math_floor(codepoint / 262144),
+					128 + (math_floor(codepoint / 4096) % 64),
+					128 + (math_floor(codepoint / 64) % 64),
+					128 + (codepoint % 64)
+				)
+			else
+				out[out_i] = ""
+			end
+
+			out_i = out_i + 1
+		end
 	end
-	code = code .. "\t\telse\n\t\t\tbreak\n\t\tend\n"
-	code = code .. "\tend\n"
+	return out
+end
 
-	code = code .. "\n"
+local table_concat = table.concat
 
-	for i, class in ipairs(sorted_token_classes) do
-		if i == 1 then
-			code = code .. "\tif "
-		else
-			code = code .. "\telseif "
+return builder:BuildTokenizer({
+	OnInitialize = function(self, str, on_error)
+		self.code = totable(str)
+		self.code_length = #self.code
+		self.tbl_cache = {}
+	end,
+
+	Syntax = (function()
+		local tbl = {}
+
+		tbl.space = {" ", "\n", "\r", "\t"}
+
+		tbl.number = {}
+		for i = 0, 9 do
+			tbl.number[i+1] = tostring(i)
 		end
 
-		--\t\tprint('capturing "..class.val.Type.."')\n\z
-		code = code .. "\z
-		META.TokenClasses." .. class.val.Type .. ".Is(self) then\n\z
-		\t\tlocal start = self.i\n\z
-		\t\tMETA.TokenClasses." .. class.val.Type .. ".Capture(self)\n\z
-		\t\tlocal whitespace = self.whitespace_buffer\n\z
-		\t\tself.whitespace_buffer = {}\n\z
-		\t\tself.whitespace_buffer_i = 1\n\z
-		\t\treturn \"" .. class.val.ParserType .. "\", start, self.i - 1, whitespace\n"
-	end
-	code = code .. "\tend\n"
-	code = code .. "end\n"
+		tbl.letter = {"_"}
 
-	assert(loadstring(code))(meta)
-end
+		for i = string.byte("A"), string.byte("Z") do
+			table.insert(tbl.letter, string.char(i))
+		end
 
-function meta:ReadToken()
-	if meta.ShebangTokenType.Is(self) then
-		meta.ShebangTokenType.Capture(self)
-		return meta.ShebangTokenType.Type, 1, self.i, {}
-	end
+		for i = string.byte("a"), string.byte("z") do
+			table.insert(tbl.letter, string.char(i))
+		end
 
-	local type, start, stop, whitespace = self:CaptureToken()
-
-	if not type then
-		local start = self.i
-		local char = self:ReadChar()
-		local stop = self.i - 1
-
-		return "unknown", start, stop, {}
-	end
-
-	return type, start, stop, whitespace
-end
-
-function meta:GetTokens()
-	self.i = 1
-
-	local tokens = {}
-	local tokens_i = 1
-
-	for _ = self.i, self.code_length do
-		local type, start, stop, whitespace = self:ReadToken()
-
-		tokens[tokens_i] = {
-			type = type,
-			start = start,
-			stop = stop,
-			whitespace = whitespace,
-			value = self:GetChars(start, stop)
+		tbl.symbol = {
+			".", ",", "(", ")", "{", "}", "[", "]",
+			"=", ":", ";", "::", "...", "-", "#",
+			"not", "-", "<", ".", ">", "/", "^",
+			"==", "<=", "..", "~=", "+", "*", "and",
+			">=", "or", ":", "%", "\"", "'"
 		}
 
-		if type == "end_of_file" then break end
+		tbl.eof = {""}
 
-		tokens_i = tokens_i + 1
+		return tbl
+	end)(),
+
+	FallbackCharacterType = "letter", -- This is needed for UTF8. Assume everything is a letter if it's not any of the other types.
+
+	GetLength = function(tk)
+		return tk.code_length
+	end,
+	GetCharOffset = function(tk, i)
+		return tk.code[tk.i + i] or ""
+	end,
+	GetCharsRange = function(tk, start, stop)
+		local length = stop-start
+		if not tk.tbl_cache[length] then
+			tk.tbl_cache[length] = {}
+		end
+		local str = tk.tbl_cache[length]
+
+		local str_i = 1
+		for i = start, stop do
+			str[str_i] = tk.code[i]
+			str_i = str_i + 1
+		end
+		return table_concat(str)
+	end,
+	OnError = function(tk, msg, start, stop)
+		table.insert(errors, {msg = msg, start = start, stop = stop})
 	end
-
-	return tokens
-end
-
-function meta:ResetState()
-	self.code_length = self.get_code_length()
-	self.whitespace_buffer = {}
-	self.whitespace_buffer_i = 1
-	self.i = 1
-end
-
-return function(config)
-	local self = setmetatable({}, meta)
-
-	self.string_lower = config.string_lower or string.lower
-	self.string_sub = config.string_sub or string.sub
-
-	self.get_code_char_range = config.get_code_char_range or function(i) return string.sub(config.code, i, i) end
-	self.get_code_char = config.get_code_char or function(i) return string.sub(config.code, i, i) end
-	self.get_code_length = config.get_code_length or function() return string.length(config.code) end
-	self.on_error = config.on_error
-	self.char_fallback_type = config.fallback_type or false
-	self:BuildLookupTables(config.syntax)
-
-	return self
-end
+})
