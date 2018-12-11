@@ -324,6 +324,29 @@ function vfs.Require(name, ...)
 			end
 		end
 	end
+
+	local stack = vfs.GetFileRunStack()
+	local last = stack[#stack]
+	if last then
+		local dir = R(vfs.GetFolderFromPath(last))
+		if dir then
+
+			vfs.PushWorkingDirectory(dir)
+
+			local ret = {pcall(_OLD_G.require, name, ...)}
+
+			vfs.PopWorkingDirectory()
+
+			if ret[1] then
+				return unpack(ret, 2)
+			else
+				if not done[ret[2]] then
+					table.insert(errors, ret[2])
+					done[ret[2]] = true
+				end
+			end
+		end
+	end
 	error(table.concat(errors, "\n\n"), 2)
 end
 
