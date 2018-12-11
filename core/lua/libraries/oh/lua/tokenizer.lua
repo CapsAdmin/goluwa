@@ -1,4 +1,4 @@
-local builder = require("tokenizer")()
+local builder = require("../base_tokenizer")()
 local string_lower = string.lower
 
 local function quote_token(str)
@@ -610,10 +610,10 @@ return builder:BuildTokenizer({
 			"=", ":", ";", "::", "...", "-", "#",
 			"not", "-", "<", ".", ">", "/", "^",
 			"==", "<=", "..", "~=", "+", "*", "and",
-			">=", "or", ":", "%", "\"", "'"
+			">=", "or", "%", "\"", "'"
 		}
 
-		tbl.eof = {""}
+		tbl.end_of_file = {""}
 
 		return tbl
 	end)(),

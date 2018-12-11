@@ -1,44 +1,7 @@
 local oh = {}
 
-function oh.RunTest()
-	local function tokenize(code)
-		local errors = {}
-
-		local self = require("lua_tokenizer")(code, function(_, msg, start, stop)
-			table.insert(errors, {msg = msg, start = start, stop = stop})
-		end)
-
-		self.errors = errors
-
-		self:ResetState()
-
-		return self:GetTokens()
-	end
-
-	local function check_tokens_separated_by_space(code)
-		local tokens = tokenize(code)
-		local i = 1
-		for expected in code:gmatch("(%S+)") do
-			if tokens[i].type == "unknown" then
-				error("token " .. tokens[i].value .. " is unknown")
-			end
-
-			if tokens[i].value ~= expected then
-				error("token " .. tokens[i].value .. " does not match " .. expected)
-			end
-
-			i = i + 1
-		end
-	end
-
-	assert(tokenize([[0xfFFF]])[1].value == "0xfFFF")
-
-	check_tokens_separated_by_space([[while true do end]])
-	check_tokens_separated_by_space([[if a == b and b + 4 && true or ( true and function ( ) end ) then :: foo :: end]])
-end
-
 do
-	local Tokenizer = require("lua_tokenizer")
+	local Tokenizer = require("lua.tokenizer")
 
 	function oh.Tokenizer(code)
 		local errors = {}
@@ -55,10 +18,30 @@ do
 	end
 end
 
-runfile("lua/libraries/oh/syntax.lua", oh)
-oh.Parser = require("lua_parser")
-runfile("lua/libraries/oh/lua_code_emitter.lua", oh)
-runfile("lua/libraries/oh/test.lua", oh)
+do
+	local Parser = require("lua.parser")
+
+	function oh.Parser(code)
+		local errors = {}
+
+		local self = Parser(function(_, msg, start, stop)
+			table.insert(errors, {msg = msg, start = start, stop = stop})
+		end)
+
+		self.errors = errors
+
+		return self:BuildAST()
+	end
+end
+
+do
+	local LuaEmitter = require("lua_code_emitter")
+
+	function oh.BuildLuaCode(ast, config)
+		local self = require("lua_code_emitter")(config)
+		return self:BuildCode(ast)
+	end
+end
 
 function oh.QuoteToken(str)
 	return "⸢" .. str .. "⸥"

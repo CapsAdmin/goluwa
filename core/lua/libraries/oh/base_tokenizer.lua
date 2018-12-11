@@ -68,7 +68,7 @@ do
     function TOKENIZER:ReadToken()
         if self.ShebangTokenType.Is(self) then
             self.ShebangTokenType.Capture(self)
-            return self.ShebangTokenType.Type, 1, self.i, {}
+            return self.ShebangTokenType.Type, 1, self.i - 1, {}
         end
 
         local type, start, stop, whitespace = self:CaptureToken()
