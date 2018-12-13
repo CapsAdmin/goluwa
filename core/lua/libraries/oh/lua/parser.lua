@@ -1,117 +1,9 @@
-local oh = ... or _G.oh
+local lua, oh = ...
+oh = oh or _G.oh
+lua = lua or oh.lua
 
 local table_insert = table.insert
 local table_remove = table.remove
-
-local function table_hasvalue(tbl, val)
-	for k,v in ipairs(tbl) do
-		if v == val then
-			return k
-		end
-	end
-
-	return false
-end
-
-local function quote_token(str)
-	return "⸢" .. str .. "⸥"
-end
-
-local function quote_tokens(var)
-	local str = ""
-	for i, v in ipairs(var) do
-		str = str .. quote_token(v)
-
-		if i == #var - 1 then
-			str = str .. " or "
-		elseif i ~= #var then
-			str = str .. ", "
-		end
-	end
-	return str
-end
-
-local syntax = {}
-
-do -- syntax rules
-	syntax.keywords = {
-		"and", "break", "do", "else", "elseif", "end",
-		"false", "for", "function", "if", "in", "local",
-		"nil", "not", "or", "repeat", "return", "then",
-	}
-
-	syntax.keyword_values = {
-		"...",
-		"nil",
-		"true",
-		"false",
-	}
-
-	syntax.unary_operators = {
-		["-"] = -10,
-		["#"] = -10,
-		["not"] = -10,
-		["~"] = -10,
-	}
-
-	syntax.operators = {
-		["or"] = 1,
-		["and"] = 2,
-		["<"] = 3, [">"] = 3, ["<="] = 3, [">="] = 3, ["~="] = 3, ["=="] = 3,
-		[".."] = -7, -- right associative
-		["+"] = 8, ["-"] = 8,
-		["*"] = 9, ["/"] = 9, ["%"] = 9,
-		["^"] = -11, -- right associative
-	}
-
-	function syntax.IsValue(token)
-		return token.type == "number" or token.type == "string" or syntax.keyword_values[token.value]
-	end
-
-	function syntax.IsOperator(token)
-		return syntax.operators[token.value] ~= nil
-	end
-
-	function syntax.GetLeftOperatorPriority(token)
-		return syntax.operators[token.value] and syntax.operators[token.value][1]
-	end
-
-	function syntax.GetRightOperatorPriority(token)
-		return syntax.operators[token.value] and syntax.operators[token.value][2]
-	end
-
-	function syntax.IsUnaryOperator(token)
-		return syntax.unary_operators[token.value]
-	end
-
-	function syntax.IsKeyword(token)
-		return syntax.keywords[token.value]
-	end
-
-	for i,v in pairs(syntax.operators) do
-		if v < 0 then
-			syntax.operators[i] = {-v + 1, -v}
-		else
-			syntax.operators[i] = {v, v}
-		end
-	end
-
-	for i,v in pairs(syntax.unary_operators) do
-		if v < 0 then
-			syntax.operators[i] = {-v + 1, -v}
-		else
-			syntax.operators[i] = {v, v}
-		end
-	end
-
-	for k,v in pairs(syntax.keywords) do
-		syntax.keywords[v] = v
-	end
-
-	for k,v in pairs(syntax.keyword_values) do
-		syntax.keyword_values[v] = v
-	end
-end
 
 local META = {}
 META.__index = META
@@ -179,9 +71,9 @@ end
 function META:ReadExpectType(type, start, stop)
 	local tk = self:GetToken()
 	if not tk then
-		self:Error("expected " .. quote_token(type) .. " reached end of code", start, stop, 3, -1)
+		self:Error("expected " .. oh.QuoteToken(type) .. " reached end of code", start, stop, 3, -1)
 	elseif tk.type ~= type then
-		self:Error("expected " .. quote_token(type) .. " got " .. quote_token(tk.type), start, stop, 3, -1)
+		self:Error("expected " .. oh.QuoteToken(type) .. " got " .. oh.QuoteToken(tk.type), start, stop, 3, -1)
 	end
 	self:Advance(1)
 	return tk
@@ -190,22 +82,34 @@ end
 function META:ReadExpectValue(value, start, stop)
 	local tk = self:ReadToken()
 	if not tk then
-		self:Error("expected " .. quote_token(value) .. ": reached end of code", start, stop, 3, -1)
+		self:Error("expected " .. oh.QuoteToken(value) .. ": reached end of code", start, stop, 3, -1)
 	elseif tk.value ~= value then
-		self:Error("expected " .. quote_token(value) .. ": got " .. quote_token(tk.value), start, stop, 3, -1)
+		self:Error("expected " .. oh.QuoteToken(value) .. ": got " .. oh.QuoteToken(tk.value), start, stop, 3, -1)
 	end
 	return tk
 end
 
-function META:ReadExpectValues(values, start, stop)
-	local tk = self:GetToken()
-	if not tk then
-		self:Error("expected " .. quote_tokens(values) .. ": reached end of code", start, stop)
-	elseif not table_hasvalue(values, tk.value) then
-		self:Error("expected " .. quote_tokens(values) .. " got " .. tk.value, start, stop)
+do
+	local function table_hasvalue(tbl, val)
+		for k,v in ipairs(tbl) do
+			if v == val then
+				return k
+			end
+		end
+
+		return false
 	end
-	self:Advance(1)
-	return tk
+
+	function META:ReadExpectValues(values, start, stop)
+		local tk = self:GetToken()
+		if not tk then
+			self:Error("expected " .. oh.QuoteTokens(values) .. ": reached end of code", start, stop)
+		elseif not table_hasvalue(values, tk.value) then
+			self:Error("expected " .. oh.QuoteTokens(values) .. " got " .. tk.value, start, stop)
+		end
+		self:Advance(1)
+		return tk
+	end
 end
 
 function META:GetLength()
@@ -300,7 +204,7 @@ function META:Table()
 		end
 
 		if not self:IsValue(",") and not self:IsValue(";") then
-			self:Error("expected ".. quote_tokens(",", ";", "}") .. " got " .. self:GetToken().value)
+			self:Error("expected ".. oh.QuoteTokens(",", ";", "}") .. " got " .. self:GetToken().value)
 		end
 
 		data.tokens[","] = self:ReadToken()
@@ -343,7 +247,7 @@ function META:Expression(priority, stop_on_call)
 
 	local val
 
-	if syntax.IsUnaryOperator(token) then
+	if lua.syntax.IsUnaryOperator(token) then
 		val = self:Node("unary")
 		val.tokens.operator = self:ReadToken()
 		val.operator = val.tokens.operator.value
@@ -363,7 +267,7 @@ function META:Expression(priority, stop_on_call)
 
 	elseif token.value == "function" then
 		val = self:Function("anonymous")
-	elseif syntax.IsValue(token) or (token.type == "letter" and not syntax.IsKeyword(token)) then
+	elseif lua.syntax.IsValue(token) or (token.type == "letter" and not lua.syntax.IsKeyword(token)) then
 		val = self:Node("value", self:ReadToken())
 	elseif token.value == "{" then
 		val = self:Table()
@@ -431,10 +335,10 @@ function META:Expression(priority, stop_on_call)
 	end
 
 	if self:GetToken() then
-		while self:GetToken() and syntax.IsOperator(self:GetToken()) and syntax.GetLeftOperatorPriority(self:GetToken()) > priority do
+		while self:GetToken() and lua.syntax.IsOperator(self:GetToken()) and lua.syntax.GetLeftOperatorPriority(self:GetToken()) > priority do
 
 			local op = self:GetToken()
-			local right_priority = syntax.GetRightOperatorPriority(op)
+			local right_priority = lua.syntax.GetRightOperatorPriority(op)
 			if not op or not right_priority then break end
 			self:Advance(1)
 
@@ -654,11 +558,10 @@ function META:Block(stop)
 				data.lvalues = list
 				data.tokens["="] = self:ReadExpectValue("=")
 				data.rvalues = self:ExpressionList()
-			elseif true then--expr.is_call_expression then
+			elseif expr.suffixes and expr.suffixes[#expr.suffixes].type == "call" then
 				data = self:Node("expression")
 				data.value = expr
 			else
-				table.print(expr)
 				self:Error("unexpected " .. start_token.type, start_token)
 			end
 		elseif self:IsValue(";") then

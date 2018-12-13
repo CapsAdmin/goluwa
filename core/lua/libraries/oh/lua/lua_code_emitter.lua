@@ -1,50 +1,6 @@
-local keywords = (function() local t = {} for i,v in ipairs{
-	"and", "break", "do", "else", "elseif", "end",
-	"false", "for", "function", "if", "in", "local",
-	"nil", "not", "or", "repeat", "return", "then",
-	"true", "until", "while", "goto", "...",
-} do t[v] = true end return t end)()
-
-local char_types = (function()
-	local tbl = {}
-
-	tbl.space = {" ", "\n", "\r", "\t"}
-
-	tbl.number = {}
-	for i = 0, 9 do
-		tbl.number[i+1] = tostring(i)
-	end
-
-	tbl.letter = {"_"}
-
-	for i = string.byte("A"), string.byte("Z") do
-		table.insert(tbl.letter, string.char(i))
-	end
-
-	for i = string.byte("a"), string.byte("z") do
-		table.insert(tbl.letter, string.char(i))
-	end
-
-	tbl.symbol = {
-		".", ",", "(", ")", "{", "}", "[", "]",
-		"=", ":", ";", "::", "...", "-", "#",
-		"not", "-", "<", ".", ">", "/", "^",
-		"==", "<=", "..", "~=", "+", "*", "and",
-		">=", "or", "%", "\"", "'"
-	}
-
-	tbl.end_of_file = {""}
-
-	local map = {}
-
-	for type, chars in pairs(tbl) do
-		for i, char in ipairs(chars) do
-			map[char] = type
-		end
-	end
-
-	return map
-end)()
+local lua, oh = ...
+oh = oh or _G.oh
+lua = lua or oh.lua
 
 local table_remove = table.remove
 local ipairs = ipairs
@@ -91,7 +47,7 @@ end
 
 function META:GetPrevCharType()
 	local prev = self.out[self.i - 1]
-	return prev and char_types[prev:sub(-1)]
+	return prev and lua.syntax.GetCharacterType(prev:sub(-1))
 end
 
 function META:EmitToken(v, translate)
@@ -245,7 +201,7 @@ function META:Table(v)
 end
 
 function META:Unary(v)
-	if keywords[v.operator] then
+	if lua.syntax.IsKeyword(v.operator) then
 		self:EmitToken(v.tokens.operator, "")self:Whitespace("?", true)self:Emit(v.operator)self:Expression(v.expression)
 	else
 		if v.tokens["("] and v.tokens.operator.start > v.tokens["("].start then

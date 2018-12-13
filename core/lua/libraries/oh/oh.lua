@@ -1,47 +1,9 @@
 local oh = {}
 
-do
-	local Tokenizer = require("lua.tokenizer")
-
-	function oh.Tokenizer(code)
-		local errors = {}
-
-		local self = Tokenizer(code, function(_, msg, start, stop)
-			table.insert(errors, {msg = msg, start = start, stop = stop})
-		end)
-
-		self.errors = errors
-
-		self:ResetState()
-
-		return self
-	end
-end
-
-do
-	local Parser = require("lua.parser")
-
-	function oh.Parser(code)
-		local errors = {}
-
-		local self = Parser(function(_, msg, start, stop)
-			table.insert(errors, {msg = msg, start = start, stop = stop})
-		end)
-
-		self.errors = errors
-
-		return self:BuildAST()
-	end
-end
-
-do
-	local LuaEmitter = require("lua_code_emitter")
-
-	function oh.BuildLuaCode(ast, config)
-		local self = require("lua_code_emitter")(config)
-		return self:BuildCode(ast)
-	end
-end
+oh.utf8_tokenizer_config = runfile("utf8_tokenizer_config.lua", oh)
+oh.CreateBaseTokenizer = runfile("base_tokenizer.lua", oh)
+oh.SetupSyntax = runfile("setup_syntax.lua", oh)
+oh.lua = runfile("lua/lua.lua", oh)
 
 function oh.QuoteToken(str)
 	return "⸢" .. str .. "⸥"
@@ -178,51 +140,6 @@ function oh.GetErrorsFormatted(error_table, code, path)
 	str = str .. ("="):rep(max_width) .. "\n"
 
 	return str
-end
-
-function oh.DumpTokens(chunks, code)
-	local out = {}
-
-	for _, v in ipairs(chunks) do
-		for _, v in ipairs(v.whitespace) do
-			table.insert(out, code:usub(v.start, v.stop))
-		end
-		table.insert(out, oh.QuoteToken(code:usub(v.start, v.stop)))
-	end
-
-	return table.concat(out)
-end
-
-function oh.Transpile(code, path)
-	local tokenizer = oh.Tokenizer(code, path)
-	local parser = oh.Parser()
-	local ast = parser:BuildAST(tokenizer:GetTokens())
-	local output = oh.BuildLuaCode(ast, code)
-	return output
-end
-
-function oh.loadstring(code, path)
-	local ok, code = system.pcall(oh.Transpile, code, path)
-	if not ok then return nil, code end
-	local func, err = loadstring(code, path)
-
-	if not func then
-		local line = tonumber(err:match("%b[]:(%d+):"))
-		local lines = code:split("\n")
-		for i = -1, 1 do
-			if lines[line + i] then
-				err = err .. "\t" .. lines[line + i]
-				if i == 0 then
-					err = err .. " --<<< "
-				end
-				err = err .. "\n"
-			end
-		end
-
-		return nil, err
-	end
-
-	return func
 end
 
 return oh

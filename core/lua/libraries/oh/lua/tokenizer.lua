@@ -1,31 +1,9 @@
-local builder = require("../base_tokenizer")()
+local lua, oh = ...
+oh = oh or _G.oh
+lua = lua or oh.lua
+
+local builder = oh.CreateBaseTokenizer()
 local string_lower = string.lower
-
-local function quote_token(str)
-	return "『" .. str .. "』"
-end
-
-local function quote_tokens(var)
-	if type(var) == "string" then
-		local tbl = {}
-		for i = 1, string.len(var) do
-			tbl[i] = string.sub(var, i, i)
-		end
-		var = tbl
-	end
-
-	local str = ""
-	for i, v in ipairs(var) do
-		str = str .. quote_token(v)
-
-		if i == #var - 1 then
-			str = str .. " or "
-		elseif i ~= #var then
-			str = str .. ", "
-		end
-	end
-	return str
-end
 
 local function CaptureLiteralString(self, multiline_comment)
 	local start = self.i
@@ -33,7 +11,7 @@ local function CaptureLiteralString(self, multiline_comment)
 	local c = self:ReadChar()
 	if c ~= "[" then
 		if multiline_comment then return true end
-		return nil, "expected "..quote_token("[").." got " .. quote_token(c)
+		return nil, "expected "..oh.QuoteToken("[").." got " .. oh.QuoteToken(c)
 	end
 
 	if self:GetCurrentChar() == "=" then
@@ -50,7 +28,7 @@ local function CaptureLiteralString(self, multiline_comment)
 	c = self:ReadChar()
 	if c ~= "[" then
 		if multiline_comment then return true end
-		return nil, "expected " .. quote_token(self.get_code_char_range(self, start, self.i - 1) .. "[") .. " got " .. quote_token(self.get_code_char_range(self, start, self.i - 1) .. c)
+		return nil, "expected " .. oh.QuoteToken(self.get_code_char_range(self, start, self.i - 1) .. "[") .. " got " .. oh.QuoteToken(self.get_code_char_range(self, start, self.i - 1) .. c)
 	end
 
 	local length = self.i - start
@@ -309,7 +287,7 @@ do
 				if not t or t == "space" or t == "symbol" then
 					return true
 				elseif char == "symbol" or t == "letter" then
-					self:Error("malformed number: invalid character "..quote_token(char)..". only "..quote_tokens("abcdef0123456789_").." allowed after hex notation")
+					self:Error("malformed number: invalid character "..oh.QuoteToken(char)..". only "..oh.QuoteTokens("abcdef0123456789_").." allowed after hex notation")
 					return false
 				end
 			end
@@ -331,7 +309,7 @@ do
 				if not t or t == "space" or t == "symbol" then
 					return true
 				elseif char == "symbol" or t == "letter" or (char ~= "0" and char ~= "1") then
-					self:Error("malformed number: only "..quote_tokens("01_").." allowed after binary notation")
+					self:Error("malformed number: only "..oh.QuoteTokens("01_").." allowed after binary notation")
 					return false
 				end
 			end
@@ -354,7 +332,7 @@ do
 
 			if exponent then
 				if char ~= "-" and char ~= "+" and t ~= "number" then
-					self:Error("malformed number: invalid character " .. quote_token(char) .. ". only "..quote_tokens("+-0123456789").." allowed after exponent", start, self.i)
+					self:Error("malformed number: invalid character " .. oh.QuoteToken(char) .. ". only "..oh.QuoteTokens("+-0123456789").." allowed after exponent", start, self.i)
 					return false
 				elseif char ~= "-" and char ~= "+" then
 					exponent = false
@@ -367,7 +345,7 @@ do
 					elseif Token.CaptureAnnotations(self) then
 						return true
 					else
-						self:Error("malformed number: invalid character " .. quote_token(char) .. ". only " .. quote_tokens(legal_number_annotations) .. " allowed after a number", start, self.i)
+						self:Error("malformed number: invalid character " .. oh.QuoteToken(char) .. ". only " .. oh.QuoteTokens(legal_number_annotations) .. " allowed after a number", start, self.i)
 						return false
 					end
 				elseif not found_dot and char == "." then
@@ -406,8 +384,8 @@ do
 	end
 
 	function Token:Capture()
-		for len = self.longest_symbol - 1, 0, -1 do
-			if self.SymbolLookup[self:GetCharsOffset(len)] then
+		for len = lua.syntax.LongestSymbolLength - 1, 0, -1 do
+			if lua.syntax.SymbolLookup[self:GetCharsOffset(len)] then
 				self:Advance(len + 1)
 				return true
 			end
@@ -487,160 +465,18 @@ do -- shebang
 	builder.ShebangTokenType = Token
 end
 
-local ffi = require "ffi"
-local bit = require "bit"
-local band = bit.band
-local bor = bit.bor
-local rshift = bit.rshift
-local lshift = bit.lshift
-local math_floor = math.floor
-local string_char = string.char
-local UTF8_ACCEPT = 0
-local UTF8_REJECT = 12
+local config = {}
 
-local utf8d = ffi.new("const uint8_t[364]", {
-	-- The first part of the table maps bytes to character classes that
-	-- to reduce the size of the transition table and create bitmasks.
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,  9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
-	7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,  7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
-	8,8,2,2,2,2,2,2,2,2,2,2,2,2,2,2,  2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-	10,3,3,3,3,3,3,3,3,3,3,3,3,4,3,3, 11,6,6,6,5,8,8,8,8,8,8,8,8,8,8,8,
+config.Syntax = lua.syntax
 
-	-- The second part is a transition table that maps a combination
-	-- of a state of the automaton and a character class to a state.
-	0,12,24,36,60,96,84,12,12,12,48,72, 12,12,12,12,12,12,12,12,12,12,12,12,
-	12, 0,12,12,12,12,12, 0,12, 0,12,12, 12,24,12,12,12,12,12,24,12,24,12,12,
-	12,12,12,12,12,12,12,24,12,12,12,12, 12,24,12,12,12,12,12,12,12,24,12,12,
-	12,12,12,12,12,12,12,36,12,36,12,12, 12,36,12,12,12,12,12,36,12,36,12,12,
-	12,36,12,12,12,12,12,12,12,12,12,12,
-})
+config.CharacterMap = lua.syntax.CharacterMap
 
-local function totable(str)
-	local state = UTF8_ACCEPT
-	local codepoint = 0;
-	local offset = 0;
-	local ptr = ffi.cast("uint8_t *", str)
-
-	local out = {}
-	local out_i = 1
-
-	for i = 0, #str - 1 do
-		local byte = ptr[i]
-		local ctype = utf8d[byte]
-
-		if state ~= UTF8_ACCEPT then
-			codepoint = bor(band(byte, 0x3f), lshift(codepoint, 6))
-		else
-			codepoint = band(rshift(0xff, ctype), byte)
-		end
-
-		state = utf8d[256 + state + ctype]
-
-		if state == UTF8_ACCEPT then
-			if codepoint > 0xffff then
-				codepoint = lshift(((0xD7C0 + rshift(codepoint, 10)) - 0xD7C0), 10) +
-				(0xDC00 + band(codepoint, 0x3ff)) - 0xDC00
-			end
-
-			if codepoint <= 127 then
-				out[out_i] = string_char(codepoint)
-			elseif codepoint < 2048 then
-				out[out_i] = string_char(
-					192 + math_floor(codepoint / 64),
-					128 + (codepoint % 64)
-				)
-			elseif codepoint < 65536 then
-				out[out_i] = string_char(
-					224 + math_floor(codepoint / 4096),
-					128 + (math_floor(codepoint / 64) % 64),
-					128 + (codepoint % 64)
-				)
-			elseif codepoint < 2097152 then
-				out[out_i] = string_char(
-					240 + math_floor(codepoint / 262144),
-					128 + (math_floor(codepoint / 4096) % 64),
-					128 + (math_floor(codepoint / 64) % 64),
-					128 + (codepoint % 64)
-				)
-			else
-				out[out_i] = ""
-			end
-
-			out_i = out_i + 1
-		end
-	end
-	return out
+for key, val in pairs(lua.syntax.TokenizerSetup) do
+	config[key] = val
 end
 
-local table_concat = table.concat
+function config.OnError(tk, msg, start, stop)
+	table.insert(errors, {msg = msg, start = start, stop = stop})
+end
 
-return builder:BuildTokenizer({
-	OnInitialize = function(self, str, on_error)
-		self.code = totable(str)
-		self.code_length = #self.code
-		self.tbl_cache = {}
-	end,
-
-	Syntax = (function()
-		local tbl = {}
-
-		tbl.space = {" ", "\n", "\r", "\t"}
-
-		tbl.number = {}
-		for i = 0, 9 do
-			tbl.number[i+1] = tostring(i)
-		end
-
-		tbl.letter = {"_"}
-
-		for i = string.byte("A"), string.byte("Z") do
-			table.insert(tbl.letter, string.char(i))
-		end
-
-		for i = string.byte("a"), string.byte("z") do
-			table.insert(tbl.letter, string.char(i))
-		end
-
-		tbl.symbol = {
-			".", ",", "(", ")", "{", "}", "[", "]",
-			"=", ":", ";", "::", "...", "-", "#",
-			"not", "-", "<", ".", ">", "/", "^",
-			"==", "<=", "..", "~=", "+", "*", "and",
-			">=", "or", "%", "\"", "'"
-		}
-
-		tbl.end_of_file = {""}
-
-		return tbl
-	end)(),
-
-	FallbackCharacterType = "letter", -- This is needed for UTF8. Assume everything is a letter if it's not any of the other types.
-
-	GetLength = function(tk)
-		return tk.code_length
-	end,
-	GetCharOffset = function(tk, i)
-		return tk.code[tk.i + i] or ""
-	end,
-	GetCharsRange = function(tk, start, stop)
-		local length = stop-start
-		if not tk.tbl_cache[length] then
-			tk.tbl_cache[length] = {}
-		end
-		local str = tk.tbl_cache[length]
-
-		local str_i = 1
-		for i = start, stop do
-			str[str_i] = tk.code[i]
-			str_i = str_i + 1
-		end
-		return table_concat(str)
-	end,
-	OnError = function(tk, msg, start, stop)
-		table.insert(errors, {msg = msg, start = start, stop = stop})
-	end
-})
+return builder:BuildTokenizer(config)

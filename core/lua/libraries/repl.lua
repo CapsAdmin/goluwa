@@ -223,7 +223,7 @@ do
 		else
 			last_color = nil
 
-			local tokenizer = oh.Tokenizer(str)
+			local tokenizer = oh.lua.Tokenizer(str)
 
 			while true do
 				local type, start, stop, whitespace = tokenizer:ReadToken()
@@ -313,9 +313,9 @@ function repl.KeyPressed(key)
 						set_color("letter")
 					end
 				else
-					local tokenizer = oh.Tokenizer(str)
+					local tokenizer = oh.lua.Tokenizer(str)
 					local tokens = tokenizer:GetTokens()
-					local parser = oh.Parser(tokens)
+					local parser = oh.lua.Parser()
 					local ast = parser:BuildAST(tokens)
 
 					local function print_errors(errors, only_first)
