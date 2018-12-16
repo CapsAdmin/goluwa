@@ -16,6 +16,21 @@ if not table.unpack then
 	end
 end
 
+do
+	local table_concat = table.concat
+
+	function table.concatrange(tbl, start, stop)
+		local length = stop-start
+		local str = {}
+		local str_i = 1
+		for i = start, stop do
+			str[str_i] = tbl[i] or ""
+			str_i = str_i + 1
+		end
+		return table_concat(str)
+	end
+end
+
 function table.tolist(tbl, sort)
 	local list = {}
 	for key, val in pairs(tbl) do
