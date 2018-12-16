@@ -24,11 +24,11 @@ fi
 Main() {
 	GetLua "$URL" "$BINARY_DIR" "$BINARY_NAME"
     #CompileLua "https://github.com/LuaJIT/LuaJIT/archive/v2.1.tar.gz" "$BINARY_DIR" "$BINARY_NAME"
-    
+
 	executable_path="$BINARY_DIR/$BINARY_NAME $SCRIPT_PATH"
-	
+
 	if [ ! -f "$SCRIPT_PATH" ]; then
-        mkdir -p "$SCRIPT_DIR"	
+        mkdir -p "$SCRIPT_DIR"
         DownloadFile "$BASE_SCRIPT_URL$SCRIPT_PATH" "$SCRIPT_PATH"
 	fi
 
@@ -47,11 +47,16 @@ Main() {
 			AlertBox "$SCRIPT_PATH exited with code $exit_code" "error"
 			exit 1
 		fi
+
 		if [ "$OS" = osx ]; then
 			osascript -e 'tell application "Terminal" to quit' & exit
 		fi
 	else
 		$executable_path
+		exit_code=$?
+		if [ $exit_code -ne 0 ]; then
+			stty sane
+		fi
 	fi
 }
 
@@ -124,7 +129,7 @@ ValidateLua() {
 DownloadFile () {
 	url="$1"
 	output_path="$2"
-	
+
 	echo "downloading $url to $output_path"
 
 	if command -v wget >/dev/null 2>&1; then
