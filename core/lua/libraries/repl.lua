@@ -225,6 +225,8 @@ do
 
 			local tokenizer = oh.lua.Tokenizer(str)
 
+			local ustr = string.utf8totable(str)
+
 			while true do
 				local type, start, stop, whitespace = tokenizer:ReadToken()
 
@@ -233,10 +235,10 @@ do
 						set_color("comment")
 					end
 
-					repl.Write(str:usub(v.start, v.stop))
+					repl.Write(table.concatrange(ustr, v.start, v.stop))
 				end
 
-				local chunk = str:usub(start, stop)
+				local chunk = table.concatrange(ustr, start, stop)
 
 				if type == "letter" and keywords[chunk]  then
 						set_color("keyword")
