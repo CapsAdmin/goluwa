@@ -119,9 +119,11 @@ function META:GetMarkup()
 end
 
 function META:OnStyleChanged(skin)
-	self:SetCaretColor(skin.text_edit_color:Copy())
-	self:SetSelectionColor(skin.text_edit_color:Copy():SetAlpha(0.5))
-	self:SetTextColor(skin.text_edit_color:Copy())
+	if skin.text_edit_color then
+		self:SetCaretColor(skin.text_edit_color:Copy())
+		self:SetSelectionColor(skin.text_edit_color:Copy():SetAlpha(0.5))
+		self:SetTextColor(skin.text_edit_color:Copy())
+	end
 	self:SetFont(skin.default_font)
 	--self:SetScrollable(true)
 

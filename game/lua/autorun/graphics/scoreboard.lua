@@ -43,7 +43,7 @@ function scoreboard.SetupContainer(id)
 		scoreboard.Initialize()
 	end
 
-	if scoreboard.containers[id] then return scoreboard.containers[id] end
+	if scoreboard.containers[id] and scoreboard.containers[id]:IsValid() then return scoreboard.containers[id] end
 
 	local container = scoreboard.panel:CreatePanel("base")
 	container:SetStyle("text_edit")
