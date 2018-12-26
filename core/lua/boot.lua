@@ -471,7 +471,7 @@ do -- tmux
 	end
 
 	if not os.getenv("GOLUWA_TMUX") and has_tmux_session() then
-		local prev = io.readfile("storage/data/shared/tmux_log.txt")
+		local prev = io.readfile("storage/storage/shared/tmux_log.txt")
 
 		print(prev)
 
@@ -480,7 +480,7 @@ do -- tmux
 		local timeout = os.clock() + 1
 
 		while true do
-			cur = io.readfile("storage/data/shared/tmux_log.txt")
+			cur = io.readfile("storage/storage/shared/tmux_log.txt")
 
 			if cur ~= prev then
 				io.write(cur:sub(#prev), "\n")
@@ -526,7 +526,7 @@ if ARG_LINE == "update" or not os.isfile("core/lua/init.lua") then
 end
 
 do
-	local dir = STORAGE_PATH .. "/data/shared/"
+	local dir = STORAGE_PATH .. "/storage/shared/"
 	local name = "binaries_downloaded" .. OS .. "_" .. ARCH
 
 	if not os.isfile(dir .. name) or ARG_LINE == "update" then

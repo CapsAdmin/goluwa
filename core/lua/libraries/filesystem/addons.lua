@@ -3,6 +3,14 @@ local vfs = (...) or _G.vfs
 vfs.loaded_addons = vfs.loaded_addons or {}
 vfs.disabled_addons = vfs.disabled_addons or {}
 
+local whitelist
+(os.getenv("GOLUWA_ARG_LINE") or ""):gsub("--addons (%S-)", function(line)
+	whitelist = whitelist or {}
+	for _, name in ipairs(line:split(",")) do
+		whitelist[name:lower():trim()] = true
+	end
+end)
+
 function vfs.MountAddons(dir)
 	for info in vfs.Iterate(dir, true, nil, nil, nil, true) do
 		if info.name ~= e.INTERNAL_ADDON_NAME then
@@ -10,6 +18,7 @@ function vfs.MountAddons(dir)
 				vfs.IsDirectory(info.full_path:sub(#info.filesystem + 2)) and
 				not info.name:startswith(".") and
 				not info.name:startswith("__") and
+				(not whitelist or whitelist[info.name:lower():trim()]) and
 				(info.name ~= "data" and info.filesystem == "os")
 			then
 				vfs.MountAddon(info.full_path:sub(#info.filesystem + 2) .. "/")

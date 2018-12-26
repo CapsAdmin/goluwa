@@ -35,7 +35,7 @@ do
 	end
 end
 
-function vfs.LoadFile(path, chunkname)
+local function loadfile(path, chunkname)
 	local full_path = vfs.GetAbsolutePath(path, false)
 
 	if full_path then
@@ -70,6 +70,19 @@ function vfs.LoadFile(path, chunkname)
 	end
 
 	return nil, path .. ": No such file or directory"
+end
+
+vfs.total_loadfile_time = 0
+
+function vfs.LoadFile(path, chunkname)
+	local time =  system and system.GetTime and system.GetTime or os.clock
+	local t = time()
+
+	local func, err, full_path = loadfile(path, chunkname)
+
+	vfs.total_loadfile_time = vfs.total_loadfile_time + (time() - t)
+
+	return func, err, full_path
 end
 
 function vfs.DoFile(path, ...)
@@ -306,17 +319,17 @@ function vfs.Require(name, ...)
 
 	local done = {}
 	local errors = {}
+	local error_directories = {}
 	for _, dir in ipairs(vfs.module_directories) do
 		for _, data in ipairs(vfs.TranslatePath(dir, true)) do
 			vfs.PushWorkingDirectory(data.path_info.full_path)
-
 			local ret = {pcall(_OLD_G.require, name, ...)}
-
 			vfs.PopWorkingDirectory()
 
 			if ret[1] then
 				return unpack(ret, 2)
 			else
+				--table.insert(errors, "no file in: " .. data.path_info.full_path)
 				if not done[ret[2]] then
 					table.insert(errors, ret[2])
 					done[ret[2]] = true
@@ -340,6 +353,8 @@ function vfs.Require(name, ...)
 			if ret[1] then
 				return unpack(ret, 2)
 			else
+				--table.insert(errors, "no file in: " .. dir)
+
 				if not done[ret[2]] then
 					table.insert(errors, ret[2])
 					done[ret[2]] = true
@@ -347,7 +362,19 @@ function vfs.Require(name, ...)
 			end
 		end
 	end
-	error(table.concat(errors, "\n\n"), 2)
+
+	for _, err in ipairs(errors) do
+		if not err:find("module '"..name.."' not found:\n", nil, true) then
+			for i = 1, #errors -1 do
+				if errors[i]:find("module '"..name.."' not found:\n", nil, true) or errors[i]:find("loop or previous", nil, true) then
+					table.remove(errors, i)
+				end
+			end
+			break
+		end
+	end
+
+	error(table.concat(errors, "\n") .. "\n", 2)
 end
 
 function vfs.AddModuleDirectory(dir)
@@ -357,11 +384,6 @@ end
 local ffi = desire("ffi")
 
 if ffi then
-	local where = {
-		"bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/",
-		"lua/modules/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/",
-	}
-
 	local function warn_pcall(func, ...)
 		local res = {pcall(func, ...)}
 		if not res[1] then
@@ -410,38 +432,40 @@ if ffi then
 
 	-- make ffi.load search using our file system
 	function vfs.FFILoadLibrary(path, ...)
-		local args = {pcall(_OLD_G.ffi.load, path, ...)}
+		local args = {}
 
-		if WINDOWS and not args[1] then
-			args = {pcall(_OLD_G.ffi.load, "lib" .. path, ...)}
-		end
-		if not args[1] then
-			if vfs and system and system.SetSharedLibraryPath then
-				for _, where in ipairs(where) do
-					for _, full_path in ipairs(vfs.GetFiles({path = where, filter = path, filter_plain = true, full_path = true})) do
-						-- look first in the vfs' bin directories
-						local old = system.GetSharedLibraryPath()
-						system.SetSharedLibraryPath(full_path:match("(.+/)"))
-						args = {pcall(_OLD_G.ffi.load, full_path, ...)}
-						system.SetSharedLibraryPath(old)
+		if vfs and system and system.SetSharedLibraryPath then
+			local where = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
+			for _, full_path in ipairs(vfs.GetFiles({path = where, filter = path, filter_plain = true, full_path = true})) do
+				-- look first in the vfs' bin directories
+				local old = system.GetSharedLibraryPath()
+				system.SetSharedLibraryPath(full_path:match("(.+/)"))
+				args = {pcall(_OLD_G.ffi.load, full_path, ...)}
+				system.SetSharedLibraryPath(old)
 
-						if args[1] then
-							return handle_windows_symbols(path, select(2, unpack(args)))
-						end
-
-						args[2] = args[2] .. "\n" .. system.GetLibraryDependencies(full_path)
-
-						-- if not try the default OS specific dll directories
-						args = {pcall(_OLD_G.ffi.load, full_path, ...)}
-						if args[1] then
-							return handle_windows_symbols(path, select(2, unpack(args)))
-						end
-
-						args[2] = args[2] .. "\n" .. system.GetLibraryDependencies(full_path)
-					end
+				if args[1] then
+					return handle_windows_symbols(path, select(2, unpack(args)))
 				end
 
-				error(indent_error(args[2]), 2)
+				args[2] = args[2] .. "\n" .. system.GetLibraryDependencies(full_path)
+
+				-- if not try the default OS specific dll directories
+				args = {pcall(_OLD_G.ffi.load, full_path, ...)}
+				if args[1] then
+					return handle_windows_symbols(path, select(2, unpack(args)))
+				end
+
+				args[2] = args[2] .. "\n" .. system.GetLibraryDependencies(full_path)
+			end
+
+			error(indent_error(args[2]), 2)
+		end
+
+		if not args[2] then
+			args = {pcall(_OLD_G.ffi.load, path, ...)}
+
+			if WINDOWS and not args[1] then
+				args = {pcall(_OLD_G.ffi.load, "lib" .. path, ...)}
 			end
 		end
 

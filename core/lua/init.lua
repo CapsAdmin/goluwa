@@ -12,32 +12,32 @@ io.stdout:setvbuf("no")
 
 if pcall(require, "jit.opt") then
 	jit.opt.start(
-			"maxtrace=65535", -- 1000 1-65535: maximum number of traces in the cache
-			"maxrecord=20000", -- 4000: maximum number of recorded IR instructions
-			"maxirconst=500", -- 500: maximum number of IR constants of a trace
-			"maxside=100", -- 100: maximum number of side traces of a root trace
-			"maxsnap=800", -- 500: maximum number of snapshots for a trace
-			"minstitch=0", -- 0: minimum number of IR ins for a stitched trace.
-			"hotloop=56", -- 56: number of iterations to detect a hot loop or hot call
-			"hotexit=10", -- 10: number of taken exits to start a side trace
-			"tryside=4", -- 4: number of attempts to compile a side trace
-			"instunroll=500", -- 4: maximum unroll factor for instable loops
-			"loopunroll=500", -- 15: maximum unroll factor for loop ops in side traces
-			"callunroll=500", -- 3: maximum unroll factor for pseudo-recursive calls
-			"recunroll=2", -- 2: minimum unroll factor for true recursion
-			"maxmcode=8192", -- 512: maximum total size of all machine code areas in KBytes
-			--jit.os == "x64" and "sizemcode=64" or "sizemcode=32", -- Size of each machine code area in KBytes (Windows: 64K)
-			"+fold", -- Constant Folding, Simplifications and Reassociation
-			"+cse", -- Common-Subexpression Elimination
-			"+dce", -- Dead-Code Elimination
-			"+narrow", -- Narrowing of numbers to integers
-			"+loop", -- Loop Optimizations (code hoisting)
-			"+fwd", -- Load Forwarding (L2L) and Store Forwarding (S2L)
-			"+dse", -- Dead-Store Elimination
-			"+abc", -- Array Bounds Check Elimination
-			"+sink", -- Allocation/Store Sinking
-			"+fuse" -- Fusion of operands into instructions
-		)
+		"maxtrace=65535", -- 1000 1-65535: maximum number of traces in the cache
+		"maxrecord=20000", -- 4000: maximum number of recorded IR instructions
+		"maxirconst=500", -- 500: maximum number of IR constants of a trace
+		"maxside=100", -- 100: maximum number of side traces of a root trace
+		"maxsnap=800", -- 500: maximum number of snapshots for a trace
+		"minstitch=0", -- 0: minimum number of IR ins for a stitched trace.
+		"hotloop=56", -- 56: number of iterations to detect a hot loop or hot call
+		"hotexit=10", -- 10: number of taken exits to start a side trace
+		"tryside=4", -- 4: number of attempts to compile a side trace
+		"instunroll=500", -- 4: maximum unroll factor for instable loops
+		"loopunroll=500", -- 15: maximum unroll factor for loop ops in side traces
+		"callunroll=500", -- 3: maximum unroll factor for pseudo-recursive calls
+		"recunroll=2", -- 2: minimum unroll factor for true recursion
+		"maxmcode=8192", -- 512: maximum total size of all machine code areas in KBytes
+		--jit.os == "x64" and "sizemcode=64" or "sizemcode=32", -- Size of each machine code area in KBytes (Windows: 64K)
+		"+fold", -- Constant Folding, Simplifications and Reassociation
+		"+cse", -- Common-Subexpression Elimination
+		"+dce", -- Dead-Code Elimination
+		"+narrow", -- Narrowing of numbers to integers
+		"+loop", -- Loop Optimizations (code hoisting)
+		"+fwd", -- Load Forwarding (L2L) and Store Forwarding (S2L)
+		"+dse", -- Dead-Store Elimination
+		"+abc", -- Array Bounds Check Elimination
+		"+sink", -- Allocation/Store Sinking
+		"+fuse" -- Fusion of operands into instructions
+	)
 	end
 
 --loadfile("core/lua/modules/bytecode_cache.lua")()
@@ -104,9 +104,9 @@ end
 	e.BIN_FOLDER = e.ROOT_FOLDER .. os.getenv("GOLUWA_BINARY_DIR") .. "/"
 	e.CORE_FOLDER = e.ROOT_FOLDER .. e.INTERNAL_ADDON_NAME .. "/"
 	e.STORAGE_FOLDER = e.ROOT_FOLDER .. os.getenv("GOLUWA_STORAGE_PATH") .. "/"
-	e.USERDATA_FOLDER = e.STORAGE_FOLDER .. "data/userdata/" .. e.USERNAME:lower() .. "/"
-	e.SHARED_FOLDER = e.STORAGE_FOLDER .. "data/shared/"
-	e.CACHE_FOLDER = e.STORAGE_FOLDER .. "data/cache/"
+	e.USERDATA_FOLDER = e.STORAGE_FOLDER .. "storage/userdata/" .. e.USERNAME:lower() .. "/"
+	e.SHARED_FOLDER = e.STORAGE_FOLDER .. "storage/shared/"
+	e.CACHE_FOLDER = e.STORAGE_FOLDER .. "storage/cache/"
 
 	-- _G constants. should only contain you need to access a lot like if LINUX then
 	_G[e.USERNAME:upper()] = true
@@ -124,7 +124,7 @@ end
 	end
 end
 
-_G.runfile = function(path, ...) return loadfile(e.ROOT_FOLDER .. e.INTERNAL_ADDON_NAME .. "/" .. path)(...) end
+_G.runfile = function(path, ...) return assert(loadfile(e.ROOT_FOLDER .. e.INTERNAL_ADDON_NAME .. "/" .. path))(...) end
 
 do
 	local fs
@@ -142,10 +142,10 @@ do
 	package.loaded.fs = fs
 
 	fs.createdir(e.STORAGE_FOLDER)
-	fs.createdir(e.STORAGE_FOLDER .. "/data/")
-	fs.createdir(e.STORAGE_FOLDER .. "/data/cache/")
-	fs.createdir(e.STORAGE_FOLDER .. "/data/shared/")
-	fs.createdir(e.STORAGE_FOLDER .. "/data/userdata/")
+	fs.createdir(e.STORAGE_FOLDER .. "/storage/")
+	fs.createdir(e.STORAGE_FOLDER .. "/storage/cache/")
+	fs.createdir(e.STORAGE_FOLDER .. "/storage/shared/")
+	fs.createdir(e.STORAGE_FOLDER .. "/storage/userdata/")
 	fs.createdir(e.USERDATA_FOLDER)
 end
 
@@ -162,6 +162,7 @@ utility = runfile("lua/libraries/utility.lua")
 prototype = runfile("lua/libraries/prototype/prototype.lua")
 vfs = runfile("lua/libraries/filesystem/vfs.lua")
 
+vfs.Mount("os:" .. e.STORAGE_FOLDER) -- mount the storage folder to allow requiring files from bin/*
 vfs.Mount("os:" .. e.USERDATA_FOLDER, "os:data") -- mount "ROOT/data/users/*username*/" to "/data/"
 vfs.Mount("os:" .. e.CACHE_FOLDER, "os:cache")
 vfs.Mount("os:" .. e.SHARED_FOLDER, "os:shared")
@@ -171,6 +172,7 @@ vfs.GetAddonInfo(e.INTERNAL_ADDON_NAME).dependencies = {e.INTERNAL_ADDON_NAME} -
 vfs.GetAddonInfo(e.INTERNAL_ADDON_NAME).startup = nil -- prevent init.lua from running later on again
 
 vfs.AddModuleDirectory("lua/modules/")
+vfs.AddModuleDirectory("bin/shared/")
 vfs.AddModuleDirectory("bin/" .. OS .. "_" .. ARCH .. "/")
 
 if desire("ffi") then
@@ -226,6 +228,7 @@ event.Call("Initialize")
 
 if VERBOSE then
 	logn("[runfile] total init time took ", os.clock() - start_time, " seconds to execute")
+	logn("[runfile] ", vfs.total_loadfile_time, " seconds of that time was overhead spent in loading compiling scripts")
 end
 
 vfs.WatchLuaFiles2(true)
