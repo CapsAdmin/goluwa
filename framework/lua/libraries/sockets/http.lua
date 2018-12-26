@@ -111,7 +111,12 @@ function sockets.SetupReceiveHTTP(socket, info)
 					local protocol, host, location = header.location:match("(.+)://(.-)/(.+)")
 
 					if not location then
-						protocol, host = header.location:match("(.+)://(.+)")
+						if header.location:startswith("//") then
+							protocol = info.protocol
+							host, location = header.location:match("^//(.-)/(.*)")
+						else
+							protocol, host = header.location:match("(.+)://(.*)")
+						end
 					end
 
 					if not location then
