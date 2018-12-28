@@ -3,10 +3,10 @@ case $(uname -m) in x86_64) ARCH=x64;; i[36]86) ARCH=x86;; arm*) ARCH=arm;; esac
 case $(uname) in Darwin) OS=osx;; *) OS=linux;; esac
 APP_NAME="appexample"
 ARG_LINE="$*"
-STORAGE_PATH="storage"
+STORAGE_PATH="core"
 BINARY_DIR="$STORAGE_PATH/bin/${OS}_${ARCH}"
 BINARY_NAME="luajit"
-URL="https://gitlab.com/CapsAdmin/goluwa-binaries-${OS}_${ARCH}/raw/master/$BINARY_NAME"
+URL="https://gitlab.com/CapsAdmin/goluwa-binaries-core-${OS}-${ARCH}/raw/master/$BINARY_NAME"
 BASE_SCRIPT_URL="https://gitlab.com/CapsAdmin/goluwa/raw/master/"
 SCRIPT_DIR="core/lua"
 SCRIPT_PATH="$SCRIPT_DIR/boot.lua"

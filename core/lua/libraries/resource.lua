@@ -54,7 +54,11 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 
 				local res = data.header.etag or data.header["last-modified"]
 
-				if not res then return end
+				if not res then
+					llog(from, ": no etag found")
+					check_etag()
+					return
+				end
 
 				if res ~= etag then
 					if etag then
@@ -91,14 +95,14 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 				local full_path = R("os:" .. e.DOWNLOAD_FOLDER .. to)
 
 				if full_path then
-					callback(full_path)
+					callback(full_path, true)
 
 					--llog("finished donwnloading ", from)
 				else
 					on_fail(llog("open error: %q not found!", "data/downloads/" .. to))
 				end
 			else
-				on_fail(llog("open error: %q not found!", "data/downloads/" .. full_path))
+				on_fail(llog("open error: %q not found!", "data/downloads/" .. e.DOWNLOAD_FOLDER .. to .. ".temp"))
 			end
 		end,
 		function(...)
@@ -264,9 +268,9 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag,
 
 	if not ohno then
 		local old = callback
-		callback = function(path)
+		callback = function(path, changed)
 			if event.Call("ResourceDownloaded", path, url) ~= false then
-				if old then old(path) end
+				if old then old(path, changed) end
 			end
 		end
 	end
@@ -293,7 +297,7 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag,
 
 	cb:start(path, callback, {on_fail = on_fail, check_etag = check_etag})
 
-	if not SOCKETS then
+	if not sockets then
 		cb:callextra(path, "on_fail", "sockets not availble")
 		cb:uncache(path)
 		return false

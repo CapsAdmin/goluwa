@@ -42,10 +42,18 @@ else
 end
 
 function repl.CharInput(str)
+	event.Call("ReplCharInput", str)
 	local x, y = repl.GetCaretPosition()
 	repl.buffer = repl.buffer:usub(0, x - 1) .. str .. repl.buffer:usub(x + str:ulen() - 1, -1)
 	repl.MoveCaret(str:ulen(), 0)
 	repl.RenderInput()
+end
+
+function repl.SetConsoleTitle(str)
+	if WINDOW and window.SetTitle then
+		return window.SetTitle(str)
+	end
+	return terminal.SetTitle(str)
 end
 
 repl.caret_x = 0

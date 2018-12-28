@@ -97,6 +97,17 @@ do
 		end
 	end
 
+	function os.copyfile(a, b)
+		a = absolute_path(a)
+		b = absolute_path(b)
+
+		if WINDOWS then
+			os.execute("xcopy /H /C /Y /F \"" .. winpath(a) .. "\" \"" .. winpath(b) .. "\"")
+		else
+			os.execute("cp \"" .. a .. "\" \"" .. b .. "\"")
+		end
+	end
+
 	if UNIX then
 		ffi.cdef("char *getcwd(char *buf, size_t size);")
 
@@ -445,7 +456,23 @@ local STORAGE_PATH = os.getenv("GOLUWA_STORAGE_PATH")
 local ARG_LINE = os.getenv("GOLUWA_ARG_LINE")
 local SCRIPT_PATH = os.getenv("GOLUWA_SCRIPT_PATH")
 local RAN_FROM_FILEBROWSER = os.getenv("GOLUWA_RAN_FROM_FILEBROWSER")
-local BINARY_DIR = os.getenv("GOLUWA_BINARY_DIR")
+local BINARY_DIR = "core/bin/" .. OS .. "_" .. ARCH .. "/"
+
+if not os.isfile(BINARY_DIR .. "lua/ssl.so") or not os.isfile(BINARY_DIR .. "lua/socket/core.so") then
+	os.makedir(BINARY_DIR .. "lua")
+	os.makedir(BINARY_DIR .. "lua/socket")
+	os.download("https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/linux_x64/lua/ssl.so", BINARY_DIR .. "lua/ssl.so")
+	os.download("https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/linux_x64/lua/socket/core.so", BINARY_DIR .. "lua/socket/core.so")
+end
+
+local instructions_path = "storage/shared/copy_binaries_instructions_" .. OS .. "_" .. ARCH
+if os.isfile(instructions_path) then
+	for from, to in io.readfile(instructions_path):gmatch("(.-);(.-)\n") do
+		io.write("copying ", from, " to ", to, "\n")
+		os.copyfile(from, to)
+	end
+	os.remove(instructions_path)
+end
 
 do -- tmux
 	if ARG_LINE == "tmux" then
@@ -471,7 +498,7 @@ do -- tmux
 	end
 
 	if not os.getenv("GOLUWA_TMUX") and has_tmux_session() then
-		local prev = io.readfile("storage/storage/shared/tmux_log.txt")
+		local prev = io.readfile("storage/shared/tmux_log.txt")
 
 		print(prev)
 
@@ -480,7 +507,7 @@ do -- tmux
 		local timeout = os.clock() + 1
 
 		while true do
-			cur = io.readfile("storage/storage/shared/tmux_log.txt")
+			cur = io.readfile("storage/shared/tmux_log.txt")
 
 			if cur ~= prev then
 				io.write(cur:sub(#prev), "\n")
@@ -525,29 +552,31 @@ if ARG_LINE == "update" or not os.isfile("core/lua/init.lua") then
 	end
 end
 
-do
-	local dir = STORAGE_PATH .. "/storage/shared/"
-	local name = "binaries_downloaded" .. OS .. "_" .. ARCH
-
-	if not os.isfile(dir .. name) or ARG_LINE == "update" then
-		io.write("updating binaries\n")
-		if get_github_project("CapsAdmin/goluwa-binaries-" .. OS .. "_" .. ARCH, BINARY_DIR, "gitlab", true) then
-			os.makedir(dir)
-			io.open(dir .. name, "w"):close()
-		end
-	end
-end
-
 if ARG_LINE == "update" then
 	os.exit(1)
 end
 
 local initlua = "core/lua/init.lua"
+local executable = "luajit"
+
+do
+	local what = "ljv"
+	local start, stop = ARG_LINE:find("^"..what.." (%S+)")
+	if start then
+		local arg = ARG_LINE:sub(#what + 2, stop)
+		if os.isfile(BINARY_DIR .. "/luajit_" .. arg .. (WINDOWS and ".exe" or "")) then
+			executable = "luajit_" .. arg
+		else
+			io.write("\"luajit_" .. arg, "\" is not an executable\n")
+			os.exit(1)
+		end
+	end
+end
 
 os.setenv("GOLUWA_BOOT_TIME", tostring(os.clock() - start_time))
 
 if UNIX then
-	os.exit(os.execute("./" .. BINARY_DIR .. "/luajit " .. initlua))
+	os.exit(os.execute("./" .. BINARY_DIR .. "/"..executable.." " .. initlua))
 else
-	os.exit(os.execute(winpath(BINARY_DIR .. "\\luajit.exe " .. os.getcd():gsub("\\", "/") .. "/" .. initlua)))
+	os.exit(os.execute(winpath(BINARY_DIR .. "\\"..executable..".exe " .. os.getcd():gsub("\\", "/") .. "/" .. initlua)))
 end

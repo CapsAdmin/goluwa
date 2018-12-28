@@ -12,16 +12,6 @@ input = runfile("!lua/libraries/input.lua") -- keyboard and mouse input
 tasks = runfile("!lua/libraries/tasks.lua") -- high level coroutine library
 threads = runfile("!lua/libraries/threads.lua")
 
-if SOCKETS then
-	sockets = runfile("!lua/libraries/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
-
-	if not sockets then
-		SOCKETS = false
-	end
-end
-
-resource = runfile("!lua/libraries/sockets/resource.lua") -- used for downloading resources with resource.Download("http://...", function(path) end)
-
 if SERVER or CLIENT then
 	network = runfile("!lua/libraries/network/network.lua") -- high level implementation of enet
 

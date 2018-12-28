@@ -1,5 +1,3 @@
-local sockets = (...) or _G.sockets
-
 local sck
 
 function sockets.SendUDPData(ip, port, str)

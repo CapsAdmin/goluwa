@@ -11,6 +11,69 @@ local whitelist
 	end
 end)
 
+function vfs.FetchBniariesForAddon(addon, callback)
+	local signature = jit.os:lower() .. "_" .. jit.arch:lower()
+	if callback and vfs.IsFile("shared/framework_binaries_downloaded_" .. signature) then
+		callback()
+	end
+	sockets.Download("https://gitlab.com/api/v4/projects/CapsAdmin%2Fgoluwa-binaries/repository/tree?recursive=1&per_page=99999", function(content)
+		local base_url = "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/"
+		local bin_dir = e.ROOT_FOLDER .. addon .. "/bin/" .. signature .. "/"
+		vfs.CreateDirectoriesFromPath("os:"..bin_dir)
+
+		local instrucitons_path = "shared/copy_binaries_instructions_" .. signature
+		local instructions = vfs.Read(instrucitons_path) or ""
+
+		local found = {}
+
+		for path in content:gmatch("\"path\":\"(.-)\"") do
+			local ext = vfs.GetExtensionFromPath(path)
+			if (ext ~= "" or vfs.GetFileNameFromPath(path):startswith("luajit")) and path:find(signature, nil, true) then
+				if path:startswith(addon) then
+					table.insert(found, {url = base_url .. path, path = path})
+				end
+			end
+		end
+
+		local done = #found
+
+		for i, v in ipairs(found) do
+			resource.Download(v.url, function(file_path, modified)
+				local name = vfs.GetFileNameFromPath(v.path)
+				local to = bin_dir .. name
+
+				if modified then
+					vfs.CreateDirectoriesFromPath(vfs.GetFolderFromPath(to))
+
+					if vfs.IsFile(to) then
+						instructions = instructions .. file_path .. ";" .. to .. "\n"
+						vfs.Write(instrucitons_path, instructions)
+						logn("binary ", to, " was updated")
+					end
+				end
+
+				if not vfs.IsFile(to) then
+					assert(vfs.Copy(file_path, "os:" .. to))
+
+					if UNIX and name:startswith("luajit") then
+						os.execute("chmod +x ''" .. R(to) .. "'")
+					end
+					logn("binary ", to, " was created")
+				end
+
+				done = done - 1
+
+				if done == 0 then
+					if callback then
+						vfs.Write("shared/framework_binaries_downloaded_" .. signature, "")
+						callback()
+					end
+				end
+			end, nil,nil,nil, true)
+		end
+	end)
+end
+
 function vfs.MountAddons(dir)
 	for info in vfs.Iterate(dir, true, nil, nil, nil, true) do
 		if info.name ~= e.INTERNAL_ADDON_NAME then
@@ -100,12 +163,25 @@ local function check_dependencies(info, what)
 	return true
 end
 
-function vfs.InitAddons()
+function vfs.InitAddons(callback)
+	for _, info in pairs(vfs.GetMountedAddons()) do
+		if info.pre_load and not info.loaded then
+			info.load_callback = function()
+				info.loaded = true
+				vfs.InitAddons(callback)
+			end
+			info:pre_load()
+			return
+		end
+	end
+
 	for _, info in pairs(vfs.GetMountedAddons()) do
 		if info.startup and check_dependencies(info, "init") then
 			runfile(info.startup)
 		end
 	end
+
+	callback()
 end
 
 function vfs.AutorunAddon(addon, folder, force)

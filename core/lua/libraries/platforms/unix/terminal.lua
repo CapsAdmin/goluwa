@@ -153,7 +153,8 @@ function terminal.WriteNow(str)
 end
 
 function terminal.SetTitle(str)
-    terminal.Write("\27]0;" .. str .. "\7")
+    --terminal.Write("\27[s\27[0;0f" .. str .. "\27[u")
+    io.write(str, "\n")
 end
 
 function terminal.SetCaretPosition(x, y)

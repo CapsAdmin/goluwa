@@ -1,5 +1,3 @@
-if not SOCKETS then return end
-
 local sockets = _G.sockets or {}
 
 sockets.core = {}
@@ -186,8 +184,7 @@ end
 
 sockets.active_sockets = sockets.active_sockets or {}
 
-runfile("helpers.lua", sockets)
-runfile("http.lua", sockets)
+runfile("lua/libraries/sockets/http.lua", sockets)
 
 function sockets.Initialize()
 	event.Timer("sockets", 1/30, 0, function() sockets.Update() end, nil, function(...) logn(...) return true end)

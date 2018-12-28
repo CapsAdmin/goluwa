@@ -51,6 +51,8 @@ local function loadfile(path, chunkname)
 			return res, err, full_path
 		end
 
+		res = "local SCRIPT_PATH=[["..full_path.."]];" .. res
+
 		if event then res = event.Call("PreLoadString", res, full_path) or res end
 
 		-- prepend "@" in front of the path so it will be treated as a lua file and not a string by lua internally
@@ -458,7 +460,11 @@ if ffi then
 				args[2] = args[2] .. "\n" .. system.GetLibraryDependencies(full_path)
 			end
 
-			error(indent_error(args[2]), 2)
+			if args[2] then
+				error(indent_error(args[2]), 2)
+			else
+				error(where .. " could not be found anywhere", 2)
+			end
 		end
 
 		if not args[2] then

@@ -65,6 +65,10 @@ do
 		end
 	end
 
+	function system.IsUsingBattery()
+		return false
+	end
+
 	function META:Initialize() nyi() end
 	function META:PreWindowSetup() nyi() end
 	function META:PostWindowSetup() nyi() end

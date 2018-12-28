@@ -99,12 +99,17 @@ do -- console title
 					end
 				end
 
-				str = "| "
+				str = ""
 				for _, v in ipairs(titlesi) do
 					str = str ..  v.title .. " | "
 				end
-				if str ~= last_title then
-					system.SetConsoleTitleRaw(str)
+
+				if str ~= "" then
+					str = "| " .. str
+
+					if str ~= last_title then
+						system.SetConsoleTitleRaw(str)
+					end
 				end
 			else
 				str = title

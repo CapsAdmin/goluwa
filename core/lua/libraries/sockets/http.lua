@@ -177,21 +177,9 @@ local multipart_boundary = "Goluwa" .. os.time()
 local multipart = string.format('multipart/form-data;boundary=%q', multipart_boundary)
 
 function sockets.Request(info)
-	if not info.callback and tasks.GetActiveTask() then
-		local data
-		local err
-
-		info.callback = function(val) data = val end
-		info.error_callback = function(val) err = val end
-		info.timedout_callback = function(val) err = val end
-
-		sockets.Request(info)
-
-		while not data and not err do
-			tasks.Wait()
-		end
-
-		return data, err
+	local a,b,c = event.Call("SocketRequest", info)
+	if a ~= nil then
+		return a,b,c
 	end
 
 	if info.url then
@@ -464,8 +452,6 @@ do
 
 		return true
 	end
-
-	tasks.WrapCallback(sockets, "Download")
 
 	function sockets.StopDownload(url)
 		local socket = sockets.active_downloads[url] or NULL

@@ -1,5 +1,19 @@
 local vfs = (...) or _G.vfs
 
+
+do
+	local ext = OSX and "dylib" or UNIX and "so" or WINDOWS and "dll"
+	function vfs.GetSharedLibraryExtension()
+		return ext
+	end
+end
+
+function vfs.GetAddonFromPath(path)
+	local abs = vfs.GetPathInfo(path).full_path
+	local path = abs:sub(#e.ROOT_FOLDER + 1)
+	return path:match("(.-)/")
+end
+
 function vfs.AbsoluteToRelativePath(root, abs)
 	local root_info = vfs.GetPathInfo(root)
 	local abs_info = vfs.GetPathInfo(abs)
@@ -37,7 +51,7 @@ function vfs.RemoveExtensionFromPath(str)
 end
 
 function vfs.GetExtensionFromPath(str)
-	return vfs.GetFileNameFromPath(str):match(".+%.(%w+)") or ""
+	return vfs.GetFileNameFromPath(str):match(".-%.([%w.]+)") or ""
 end
 
 function vfs.GetFolderFromPath(str)

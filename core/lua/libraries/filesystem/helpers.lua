@@ -93,6 +93,38 @@ function vfs.Rename(path, name, ...)
 	return nil, err
 end
 
+function vfs.Copy(from, to)
+	local ok, err = vfs.CreateDirectoriesFromPath(vfs.GetFolderFromPath(to))
+	if not ok then return ok, err end
+	local content, err = vfs.Read(from)
+	if not content then return content, err end
+	return vfs.Write(to, content)
+end
+
+function vfs.LinkFile(from, to)
+	from = vfs.GetAbsolutePath(from)
+
+	if not from then
+		return nil, "source does not exist"
+	end
+
+	local dir = vfs.GetFolderFromPath(to)
+	dir = R(dir)
+
+	if not dir then
+		return nil, "destination directory does not exist"
+	end
+
+	local to = dir .. vfs.GetFileNameFromPath(to)
+
+	if UNIX then
+		os.execute("ln -s '" .. from .. "' '" .. to .. "'")
+	end
+	if WINDOWS then
+		os.execute("MKLINK /H '" .. to .. "' '" .. from .. "'")
+	end
+end
+
 local function add_helper(name, func, mode, cb)
 	vfs[name] = function(path, ...)
 		if cb then cb(path, ...) end

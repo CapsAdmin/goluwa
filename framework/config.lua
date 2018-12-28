@@ -66,4 +66,9 @@ end
 
 return {
 	dependencies = "core",
+	pre_load = function(info)
+		vfs.FetchBniariesForAddon(info.name, function()
+			info.load_callback()
+		end)
+	end,
 }

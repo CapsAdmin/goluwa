@@ -99,14 +99,16 @@ do -- constants
 			ffi.cdef("char *realpath(const char *restrict file_name, char *restrict resolved_name);")
 			e.ROOT_FOLDER = ffi.string(ffi.C.realpath(".", nil)) .. "/"
 		end
-end
+	end
 
 	e.BIN_FOLDER = e.ROOT_FOLDER .. os.getenv("GOLUWA_BINARY_DIR") .. "/"
 	e.CORE_FOLDER = e.ROOT_FOLDER .. e.INTERNAL_ADDON_NAME .. "/"
-	e.STORAGE_FOLDER = e.ROOT_FOLDER .. os.getenv("GOLUWA_STORAGE_PATH") .. "/"
-	e.USERDATA_FOLDER = e.STORAGE_FOLDER .. "storage/userdata/" .. e.USERNAME:lower() .. "/"
-	e.SHARED_FOLDER = e.STORAGE_FOLDER .. "storage/shared/"
-	e.CACHE_FOLDER = e.STORAGE_FOLDER .. "storage/cache/"
+
+	e.STORAGE_FOLDER = e.ROOT_FOLDER .. "storage/"
+	e.USERDATA_FOLDER = e.STORAGE_FOLDER .. "userdata/" .. e.USERNAME:lower() .. "/"
+	e.SHARED_FOLDER = e.STORAGE_FOLDER .. "shared/"
+	e.CACHE_FOLDER = e.STORAGE_FOLDER .. "cache/"
+	e.TEMP_FOLDER = e.STORAGE_FOLDER .. "temp/"
 
 	-- _G constants. should only contain you need to access a lot like if LINUX then
 	_G[e.USERNAME:upper()] = true
@@ -118,6 +120,7 @@ end
 			_G.PLATFORM = "windows"
 		elseif OS == "linux" or OS == "osx" or OS == "bsd" then
 			_G.PLATFORM = "unix"
+			_G.UNIX = true
 		else
 			_G.PLATFORM = "unknown"
 		end
@@ -142,11 +145,11 @@ do
 	package.loaded.fs = fs
 
 	fs.createdir(e.STORAGE_FOLDER)
-	fs.createdir(e.STORAGE_FOLDER .. "/storage/")
-	fs.createdir(e.STORAGE_FOLDER .. "/storage/cache/")
-	fs.createdir(e.STORAGE_FOLDER .. "/storage/shared/")
-	fs.createdir(e.STORAGE_FOLDER .. "/storage/userdata/")
+	fs.createdir(e.STORAGE_FOLDER .. "/userdata/")
 	fs.createdir(e.USERDATA_FOLDER)
+	fs.createdir(e.CACHE_FOLDER)
+	fs.createdir(e.SHARED_FOLDER)
+	fs.createdir(e.TEMP_FOLDER)
 end
 
 -- standard library extensions
@@ -173,7 +176,7 @@ vfs.GetAddonInfo(e.INTERNAL_ADDON_NAME).startup = nil -- prevent init.lua from r
 
 vfs.AddModuleDirectory("lua/modules/")
 vfs.AddModuleDirectory("bin/shared/")
-vfs.AddModuleDirectory("bin/" .. OS .. "_" .. ARCH .. "/")
+vfs.AddModuleDirectory("bin/" .. OS .. "_" .. ARCH .. "/lua")
 
 if desire("ffi") then
 	_G.require("ffi").load = vfs.FFILoadLibrary
@@ -191,6 +194,12 @@ utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to
 profiler = runfile("lua/libraries/profiler.lua") -- for profiling
 oh = runfile("lua/libraries/oh/oh.lua")
 repl = runfile("lua/libraries/repl.lua")
+ffibuild = runfile("lua/libraries/ffibuild.lua")
+resource = runfile("lua/libraries/resource.lua") -- used for downloading resources with resource.Download("http://...", function(path) end)
+sockets = runfile("lua/libraries/sockets/sockets.lua")
+
+sockets.Initialize()
+
 local ok, err = pcall(repl.Start)
 if not ok then logn(err) end
 
@@ -199,6 +208,7 @@ if not ok then logn(err) end
 -- for instance: "load = CAPSADMIN ~= nil," will make it load
 -- only if the CAPSADMIN constant is not nil.
 -- this will skip the src folder though
+
 vfs.MountAddons(e.ROOT_FOLDER)
 
 -- this needs to be ran after addons have been mounted as it looks for vmdef.lua and other lua files in binary directories
@@ -222,19 +232,23 @@ event.AddListener("MainLoopStart", function()
 end)
 
 -- call goluwa/*/lua/init.lua if it exists
-vfs.InitAddons()
+vfs.InitAddons(function()
+	event.Call("Initialize")
 
-event.Call("Initialize")
+	if VERBOSE then
+		logn("[runfile] total init time took ", os.clock() - start_time, " seconds to execute")
+		logn("[runfile] ", vfs.total_loadfile_time, " seconds of that time was overhead spent in loading compiling scripts")
+	end
 
-if VERBOSE then
-	logn("[runfile] total init time took ", os.clock() - start_time, " seconds to execute")
-	logn("[runfile] ", vfs.total_loadfile_time, " seconds of that time was overhead spent in loading compiling scripts")
-end
+	vfs.WatchLuaFiles2(true)
 
-vfs.WatchLuaFiles2(true)
+	event.Call("MainLoopStart")
+	event.Call("MainLoopStart")
+end)
 
-event.Call("MainLoopStart")
-event.Call("MainLoopStart")
+local no_main_loop = not event.active["MainLoopStart"] or #event.active["MainLoopStart"] == 1
+
+vfs.FetchBniariesForAddon("core")
 
 local last_time = 0
 local i = 0
@@ -253,6 +267,10 @@ while system.run == true do
 	i = i + 1
 	last_time = time
 	event.Call("FrameEnd")
+
+	if no_main_loop then
+		system.Sleep(1/30)
+	end
 end
 repl.Stop()
 

@@ -303,4 +303,29 @@ do
 	end
 end
 
+
+if sockets then -- not sure where this belongs
+	tasks.WrapCallback(sockets, "Download")
+
+	event.AddListener("SocketRequest", "socket_tasks", function(info)
+		if not info.callback and tasks.GetActiveTask() then
+			local data
+			local err
+
+			info.callback = function(val) data = val end
+			info.error_callback = function(val) err = val end
+			info.timedout_callback = function(val) err = val end
+
+			sockets.Request(info)
+
+			while not data and not err do
+				tasks.Wait()
+			end
+
+			return data, err
+		end
+	end)
+
+end
+
 return tasks
