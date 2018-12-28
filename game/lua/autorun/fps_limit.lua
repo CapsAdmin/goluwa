@@ -18,6 +18,11 @@ local battery_limit = pvars.Setup("system_battery_limit", true)
 
 do
     local rate = rate_cvar:Get()
+    local suppress_limit = 0
+
+    event.AddListener("ReplCharInput", "fps_limit", function()
+        suppress_limit = system.GetElapsedTime() + 3
+    end)
 
     event.Timer("fps_limit", 0.1, 0, function()
         rate = rate_cvar:Get()
@@ -39,6 +44,10 @@ do
 
         if SERVER then
             rate = 66
+        end
+
+        if suppress_limit > system.GetElapsedTime() then
+        rate = 45
         end
     end)
 
