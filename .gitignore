@@ -18,7 +18,8 @@
 !/game/
 !/game/**
 
-*/bin/**
+*/bin/*_*
+
 */data/**
 
 *.directory
