@@ -414,7 +414,6 @@ if ffi then
 				__newindex = clib,
 			})
 		end
-		print(clib, path)
 		return clib, err, ...
 	end
 
