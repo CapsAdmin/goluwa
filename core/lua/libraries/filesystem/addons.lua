@@ -64,7 +64,7 @@ function vfs.FetchBniariesForAddon(addon, callback)
 				done = done - 1
 
 				if done == 0 then
-					if callback then
+					if callback and not vfs.IsFile("shared/framework_binaries_downloaded_" .. signature) then
 						vfs.Write("shared/framework_binaries_downloaded_" .. signature, "")
 						callback()
 					end
