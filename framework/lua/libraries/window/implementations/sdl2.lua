@@ -359,13 +359,11 @@ end
 if sdl.GetGlobalMouseState and os.getenv("SDL_VIDEODRIVER") ~= "wayland" then
 	local x, y = ffi.new("int[1]"), ffi.new("int[1]")
 	function META:GetMousePosition()
+		sdl.GetGlobalMouseState(x, y)
 		if self.global_mouse then
-			sdl.GetGlobalMouseState(x, y)
 			return Vec2(x[0], y[0])
-		else
-			sdl.GetGlobalMouseState(x, y)
-			return Vec2(x[0], y[0]) - self:GetPosition()
 		end
+		return Vec2(x[0], y[0]) - self:GetPosition()
 	end
 else
 	local x, y = ffi.new("int[1]"), ffi.new("int[1]")
