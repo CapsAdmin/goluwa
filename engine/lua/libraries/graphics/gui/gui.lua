@@ -358,6 +358,7 @@ do -- skin
 
 			return tbl
 		end
+		error("no such skin: " .. name)
 	end
 
 	function gui.GetRegisteredSkins()
