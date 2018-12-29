@@ -4,9 +4,9 @@ sockets.core = {}
 
 sockets.core.luasocket = desire("socket.core")
 
-local enet = desire("enet")
+local ok, enet = pcall(require, "enet")
 
-if enet then
+if ok then
 	local ffi = require("ffi")
 
 	local META = {}
