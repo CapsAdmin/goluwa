@@ -1,18 +1,38 @@
 
-resource.Download("https://avatars1.githubusercontent.com/u/204157?s=52&v=4"):Then(print)
+http.Download("http://ipv4.download.thinkbroadband.com/512MB.zip"):Then(function(data)
+    table.print(data)
+end):Catch(function(reason)
+    print("Catch: ", reason)
+end):Subscribe("chunks", function(chunk)
+    print("got chunk: ", #chunk)
+end):Subscribe("header", function(header)
+    print("got header: ", header)
+end)
 
 do return end
-
-local Delay = callback.WrapTask(function(self, delay)
-    event.Delay(delay, self.callbacks.resolve)
+local Delay = callback.WrapTask(function(self, delay, num)
+    local half = self.callbacks.half
+    local resolve = self.callbacks.resolve
+    event.Delay(delay*0.5, function() half(delay*0.5, num) end)
+    event.Delay(delay, function() resolve(delay, num) end)
 end)
+if false then
+
+local root = Delay(1, 0)
+root:Then(function(delay, num)
+    print(delay, num)
+    return Delay(delay, num + 1):Then(function(delay, num) print(delay, num) return Delay(delay, num + 1):Then(function()   end) end)
+end):Then(function(delay, num) print(delay, num) return Delay(delay, num + 1) end)
+:Then(function(delay, num) print(delay, num) end):Catch(function(err) print("error: " .. err) end)
+
+end
 
 local array = {}
 
 for i = 1, 5 do
     array[i] = Delay(math.random())
     if i == 3 then
-        array[i]:Resolved(function() error("ha") end)
+        array[i]:Then(function() error("ha") end)
     end
 end
 
@@ -21,30 +41,30 @@ function callback.WaitForCallbacks(callbacks)
 
     return callback.WrapTask(function(self)
         for _, cb in ipairs(callbacks) do
-            cb:Resolved(function(...)
+            cb:Then(function(...)
                 counter = counter - 1
                 if counter == 0 then
                     self:Resolve()
                 end
             end)
 
-            cb:Rejected(function(...)
+            cb:Catch(function(...)
                 self:Reject(cb, ...)
             end)
         end
     end)()
 end
 
-callback.WaitForCallbacks(array):Resolved(function() print("everything finished") end):Rejected(function(cb, err) print(cb, err) end)
+callback.WaitForCallbacks(array):Then(function() print("everything finished") end):Catch(function(cb, err) print(cb, err) end)
 
 local Download = callback.WrapKeyedTask(function(self, url)
     sockets.Download(url, self.callbacks.resolve, self.callbacks.reject, self.callbacks.chunks, self.callbacks.header)
 end, 2)
 
-Download("https://docs.angularjs.org/api/ng/service/$q"):Resolved(function(data)
+Download("https://docs.angularjs.org/api/ng/service/$q"):Then(function(data)
     table.print(data)
-end):Rejected(function(reason)
-    print("rejected: ", reason)
+end):Catch(function(reason)
+    print("Catch: ", reason)
 end):Subscribe("chunks", function(chunk)
     print("got chunk: ", chunk)
 end):Subscribe("header", function(header)
@@ -52,9 +72,9 @@ end):Subscribe("header", function(header)
 end)
 
 
-Download("LOL"):Rejected(function(reason) print("second callback rejected", reason) end)
-Download("LOL"):Rejected(function(reason) print("second callback rejected", reason) end)
-Download("LOL"):Rejected(function(reason) print("second callback rejected", reason) end)
+Download("LOL"):Catch(function(reason) print("second callback Catch", reason) end)
+Download("LOL"):Catch(function(reason) print("second callback Catch", reason) end)
+Download("LOL"):Catch(function(reason) print("second callback Catch", reason) end)
 
 
 local Download = callback.WrapKeyedTask(function(self, url)

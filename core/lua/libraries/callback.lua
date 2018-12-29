@@ -4,13 +4,14 @@ do
     local meta = {}
     meta.__index = meta
 
-    meta.Type = "callback"
+    --meta.Type = "callback"
 
     function meta:__tostring()
         return string.format("callback: %p", self)
     end
 
     function meta:Start()
+        if not self.on_start then return end
         if self.start_on_callback then
             return
         end
@@ -37,13 +38,13 @@ do
             return
         end
 
-        if not self.funcs.resolved[1] then
+        if not self.funcs.resolved[1] and self.warn_unhandled then
             logn(self, " unhandled resolve: ", ...)
             logn(self.debug_trace)
         end
 
         for _, cb in ipairs(self.funcs.resolved) do
-            local ok, err = pcall(cb, ...)
+            local ok, err = system.pcall(cb, ...)
             if not ok then
                 return self:Reject(err)
             end
@@ -56,14 +57,25 @@ do
         return self
     end
 
+    local handled = false
+
     function meta:Reject(...)
-        if not self.funcs.rejected[1] then
-            logn(self, " unhandled reject: ", ...)
-            logn(self.debug_trace)
+        handled = false
+
+        if self.children then
+            for _, cb in ipairs(self.children) do
+                cb:Reject(...)
+            end
         end
 
         for _, cb in ipairs(self.funcs.rejected) do
             cb(...)
+            handled = true
+        end
+
+        if not handled and self.warn_unhandled then
+            logn(self, " unhandled reject: ", ...)
+            logn(self.debug_trace)
         end
 
         done(self)
@@ -71,19 +83,41 @@ do
         return self
     end
 
-    function meta:Resolved(callback)
-        table.insert(self.funcs.resolved, callback)
+    function meta:Then(func)
+        local cb = callback.Create()
+
+        cb.parent = self
+        cb.warn_unhandled = false
+        table.insert(self.children, cb)
+
+        table.insert(self.funcs.resolved, function(...)
+            local ret = table.pack(func(...))
+            local returned_cb = ret[1]
+
+            if getmetatable(returned_cb) == meta then
+                returned_cb:Catch(function(...)
+                    return cb:Reject(...)
+                end)
+                return returned_cb:Then(function(...)
+                    return cb:Resolve(...)
+                end), table.unpack(ret, 2)
+            else
+                cb:Resolve(...)
+            end
+
+            return table.unpack(ret)
+        end)
 
         if self.start_on_callback then
             self.start_on_callback = nil
             self:Start()
         end
 
-        return self
+        return cb
     end
 
-    function meta:Rejected(callback)
-        table.insert(self.funcs.rejected, callback)
+    function meta:Catch(func)
+        table.insert(self.funcs.rejected, func)
         return self
     end
 
@@ -92,10 +126,10 @@ do
         return self
     end
 
-    meta.Then = meta.Resolved
-    meta.Catch = meta.Rejected
-
     function meta:Subscribe(what, callback)
+        if self.parent then
+            return self.parent:Subscribe(what, callback)
+        end
         self.funcs[what] = self.funcs[what] or {}
         table.insert(self.funcs[what], callback)
         return self
@@ -111,7 +145,7 @@ do
                 return self:Reject(...)
             elseif self.funcs[key] then
                 for _, cb in ipairs(self.funcs[key]) do
-                    local ok, err = pcall(cb, ...)
+                    local ok, err = system.pcall(cb, ...)
                     if not ok then
                         return self:Reject(err)
                     end
@@ -128,6 +162,8 @@ do
 
         self.callbacks = setmetatable({self = self}, {__index = on_index})
         self.debug_trace = debug.traceback()
+        self.children = {}
+        self.warn_unhandled = true
 
         return self
     end
