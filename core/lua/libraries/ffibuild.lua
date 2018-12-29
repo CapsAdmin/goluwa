@@ -1788,6 +1788,7 @@ do -- lua helper functions
 		ffi.load = function(...)
 			local clib = old(...)
 			return setmetatable({}, {__index = function(_, key)
+				print(clib, key)
 				local ok, ret = pcall(function() return clib[key] end)
 				if ok then
 					return ret
@@ -1844,8 +1845,8 @@ do -- lua helper functions
 		end
 
 		for _, path in ipairs(ffibuild.GetSharedLibrariesInDirectory(dir)) do
-			assert(vfs.Copy(path, bin_path))
-			vfs.Copy(path, bin_path_git)
+			assert(vfs.CopyFile(path, bin_path))
+			vfs.CopyFile(path, bin_path_git)
 			logn("copied ", vfs.GetFileNameFromPath(path), " to ", bin_path)
 			break
 		end
@@ -1860,7 +1861,9 @@ do -- lua helper functions
 			header, meta_data = info.process_header(header)
 
 			if info.build_lua then
+				vfs.PushWorkingDirectory(dir)
 				local lua = info.build_lua(header, meta_data)
+				vfs.PopWorkingDirectory()
 
 				if ffibuild.TestLibrary(lua) then
 					local dir = "os:" .. e.ROOT_FOLDER .. addon .. "/bin/shared/"

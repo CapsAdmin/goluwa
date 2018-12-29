@@ -93,11 +93,39 @@ function vfs.Rename(path, name, ...)
 	return nil, err
 end
 
-function vfs.Copy(from, to)
+function vfs.CopyFile(from, to)
 	local ok, err = vfs.CreateDirectoriesFromPath(vfs.GetFolderFromPath(to))
 	if not ok then return ok, err end
 	local content, err = vfs.Read(from)
 	if not content then return content, err end
+	return vfs.Write(to, content)
+end
+
+function vfs.CopyFileFileOnBoot(from, to)
+	from = vfs.GetAbsolutePath(from)
+	if not from then return nil, "source does not exist" end
+
+	local ok, err = vfs.CreateDirectoriesFromPath(vfs.GetFolderFromPath("os:" .. to))
+	if not ok then
+		return ok, err
+	end
+
+	if not vfs.GetAbsolutePath(vfs.GetFolderFromPath(to)) then
+		return nil, "destination directory does not exist"
+	end
+
+	if vfs.IsFile(to) then
+		local path = "shared/copy_binaries_instructions"
+		local str = vfs.Read(path) or ""
+		str = str .. from .. ";" .. to .. "\n"
+		vfs.Write(path, str)
+		return "deferred"
+	end
+
+	if not ok then return ok, err end
+	local content, err = vfs.Read(from)
+	if not content then return content, err end
+
 	return vfs.Write(to, content)
 end
 

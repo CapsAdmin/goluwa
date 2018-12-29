@@ -414,6 +414,7 @@ if ffi then
 				__newindex = clib,
 			})
 		end
+		print(clib, path)
 		return clib, err, ...
 	end
 
@@ -447,7 +448,6 @@ if ffi then
 				system.SetSharedLibraryPath(old)
 
 				if args[1] then
-					logn(full_path)
 					return handle_windows_symbols(path, select(2, unpack(args)))
 				end
 

@@ -22,9 +22,6 @@ function vfs.FetchBniariesForAddon(addon, callback)
 		local bin_dir = e.ROOT_FOLDER .. relative_bin_dir
 		vfs.CreateDirectoriesFromPath("os:"..bin_dir)
 
-		local instrucitons_path = "shared/copy_binaries_instructions_" .. signature
-		local instructions = vfs.Read(instrucitons_path) or ""
-
 		local found = {}
 
 		for path in content:gmatch("\"path\":\"(.-)\"") do
@@ -43,24 +40,13 @@ function vfs.FetchBniariesForAddon(addon, callback)
 				local name = vfs.GetFileNameFromPath(v.path)
 				local to = bin_dir .. v.path:sub(#relative_bin_dir + 1)
 
-				if modified then
-					vfs.CreateDirectoriesFromPath(vfs.GetFolderFromPath(to))
-
-					if vfs.IsFile(to) then
-						instructions = instructions .. file_path .. ";" .. to .. "\n"
-						vfs.Write(instrucitons_path, instructions)
-						logn("binary ", to, " was updated  (" .. done .. ")")
+				if modified or not vfs.IsFile(to) then
+					local ok = vfs.CopyFileFileOnBoot(file_path, to)
+					if ok == "deferred" then
+						llog("%q will be replaced after restart", to:sub(#e.ROOT_FOLDER+1))
+					else
+						llog("%q was added", to:sub(#e.ROOT_FOLDER+1))
 					end
-				end
-
-				if not vfs.IsFile(to) then
-					vfs.CreateDirectoriesFromPath(vfs.GetFolderFromPath(to))
-					assert(vfs.Copy(file_path, "os:" .. to))
-
-					if UNIX and name:startswith("luajit") then
-						os.execute("chmod +x ''" .. R(to) .. "'")
-					end
-					logn("binary ", to, " was created (" .. done .. ")")
 				end
 
 				done = done - 1

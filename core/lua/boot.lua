@@ -459,6 +459,7 @@ local RAN_FROM_FILEBROWSER = os.getenv("GOLUWA_RAN_FROM_FILEBROWSER")
 local BINARY_DIR = "core/bin/" .. OS .. "_" .. ARCH .. "/"
 
 if not os.isfile(BINARY_DIR .. "luajit") then
+	os.makedir(BINARY_DIR)
 	os.copyfile(STORAGE_PATH .. "/bin/" .. OS .. "_" .. ARCH .. "/" .. "luajit", BINARY_DIR .. "luajit")
 	os.execute("chmod +x " .. BINARY_DIR .. "luajit")
 end
@@ -473,7 +474,7 @@ if not os.isfile(BINARY_DIR .. "lua/socket/core.so") then
 	os.download("https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/linux_x64/lua/socket/core.so", BINARY_DIR .. "lua/socket/core.so")
 end
 
-local instructions_path = "storage/shared/copy_binaries_instructions_" .. OS .. "_" .. ARCH
+local instructions_path = "storage/shared/copy_binaries_instructions"
 if os.isfile(instructions_path) then
 	for from, to in io.readfile(instructions_path):gmatch("(.-);(.-)\n") do
 		io.write("copying ", from, " to ", to, "\n")
