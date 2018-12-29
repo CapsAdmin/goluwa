@@ -50,7 +50,7 @@ function repl.CharInput(str)
 end
 
 function repl.SetConsoleTitle(str)
-	if WINDOW and window.SetTitle then
+	if WINDOW and window.IsOpen() then
 		return window.SetTitle(str)
 	end
 	return terminal.SetTitle(str)
@@ -287,6 +287,8 @@ function repl.KeyPressed(key)
 	local x, y = repl.GetCaretPosition()
 	local w, h = terminal.GetSize()
 
+	event.Call("ReplCharInput", key)
+
 	if key == "enter" then
 		local str = repl.buffer
 		repl.buffer = ""
@@ -467,6 +469,35 @@ function repl.Start()
 	repl.caret_x, repl.caret_y = terminal.GetCaretPosition()
 	repl.started = true
 
+	do
+		local last_report = 0
+		local last_downloaded = 0
+
+		event.AddListener("DownloadChunkReceived", "downprog_title", function(url, data, current_length, header)
+			if WINDOW and window.IsOpen() then return e.EVENT_DESTROY end
+
+			if not header["content-length"] then return end
+
+			if current_length == header["content-length"] then return end
+
+			if last_report < system.GetElapsedTime() then
+				system.SetConsoleTitle(
+					url ..
+					" progress: " .. math.round((current_length / header["content-length"]) * 100, 3) .. "%" ..
+					" speed: " .. utility.FormatFileSize(current_length - last_downloaded),
+					url
+				)
+				last_downloaded = current_length
+				last_report = system.GetElapsedTime() + 4
+			end
+		end)
+
+		event.AddListener("DownloadStop", "downprog_title", function(url, data, msg)
+			if WINDOW and window.IsOpen() then return e.EVENT_DESTROY end
+
+			system.SetConsoleTitle(nil, url)
+		end)
+	end
 end
 
 function repl.Stop()

@@ -458,10 +458,18 @@ local SCRIPT_PATH = os.getenv("GOLUWA_SCRIPT_PATH")
 local RAN_FROM_FILEBROWSER = os.getenv("GOLUWA_RAN_FROM_FILEBROWSER")
 local BINARY_DIR = "core/bin/" .. OS .. "_" .. ARCH .. "/"
 
-if not os.isfile(BINARY_DIR .. "lua/ssl.so") or not os.isfile(BINARY_DIR .. "lua/socket/core.so") then
+if not os.isfile(BINARY_DIR .. "luajit") then
+	os.copyfile(STORAGE_PATH .. "/bin/" .. OS .. "_" .. ARCH .. "/" .. "luajit", BINARY_DIR .. "luajit")
+	os.execute("chmod +x " .. BINARY_DIR .. "luajit")
+end
+
+if not os.isfile(BINARY_DIR .. "lua/ssl.so") then
 	os.makedir(BINARY_DIR .. "lua")
-	os.makedir(BINARY_DIR .. "lua/socket")
 	os.download("https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/linux_x64/lua/ssl.so", BINARY_DIR .. "lua/ssl.so")
+end
+
+if not os.isfile(BINARY_DIR .. "lua/socket/core.so") then
+	os.makedir(BINARY_DIR .. "lua/socket")
 	os.download("https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/linux_x64/lua/socket/core.so", BINARY_DIR .. "lua/socket/core.so")
 end
 

@@ -6,10 +6,7 @@ do
         self.on_stop = function() if socket:IsValid() then socket:Remove() end end
     end, 20, function(what, cb, key, queue)
         if what == "push" then
-            llog("too many downloads (queue size: %s)", #queue)
-            for i,v in ipairs(queue) do
-                logf("[%i]%s\n", i, v.key)
-            end
+            llog("queueing %s (too many active downloads %s)", key, #queue)
         end
     end)
 

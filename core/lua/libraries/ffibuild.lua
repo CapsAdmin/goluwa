@@ -1826,10 +1826,14 @@ do -- lua helper functions
 		ffibuild.SetBuildName(info.name)
 
 		local dir = e.TEMP_FOLDER .. "ffibuild/" .. info.name .. "/repo/"
-		local bin_path =
-			"os:" .. e.ROOT_FOLDER .. addon ..
+
+		local root = "os:" .. e.ROOT_FOLDER
+		local relative_bin_path =
 			"/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" ..
 			"lib" .. info.name .. "." .. vfs.GetSharedLibraryExtension()
+
+		local bin_path = root .. addon .. relative_bin_path
+		local bin_path_git = root .. "__goluwa-binaries/" .. addon .. "/" .. relative_bin_path
 
 		ffibuild.SourceControlClone(info.url, dir)
 
@@ -1841,6 +1845,7 @@ do -- lua helper functions
 
 		for _, path in ipairs(ffibuild.GetSharedLibrariesInDirectory(dir)) do
 			assert(vfs.Copy(path, bin_path))
+			vfs.Copy(path, bin_path_git)
 			logn("copied ", vfs.GetFileNameFromPath(path), " to ", bin_path)
 			break
 		end

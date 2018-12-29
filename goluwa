@@ -3,7 +3,7 @@ case $(uname -m) in x86_64) ARCH=x64;; i[36]86) ARCH=x86;; arm*) ARCH=arm;; esac
 case $(uname) in Darwin) OS=osx;; *) OS=linux;; esac
 APP_NAME="appexample"
 ARG_LINE="$*"
-STORAGE_PATH="core"
+STORAGE_PATH="storage"
 BINARY_DIR="$STORAGE_PATH/bin/${OS}_${ARCH}"
 BINARY_NAME="luajit"
 URL="https://gitlab.com/CapsAdmin/goluwa-binaries-core-${OS}-${ARCH}/raw/master/$BINARY_NAME"

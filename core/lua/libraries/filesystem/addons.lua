@@ -177,7 +177,7 @@ function vfs.InitAddons(callback)
 			return
 		end
 	end
-	debug.trace()
+
 	for _, info in pairs(vfs.GetMountedAddons()) do
 		if info.startup and check_dependencies(info, "init") then
 			runfile(info.startup)
