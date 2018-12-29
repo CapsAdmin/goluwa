@@ -2,6 +2,7 @@ ffibuild.Build({
 	name = "assimp",
 	url = "https://github.com/assimp/assimp.git",
 	cmd = "cmake CMakeLists.txt && make",
+	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 
 	c_source = [[
 		#include "assimp/types.h"
