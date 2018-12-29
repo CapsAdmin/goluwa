@@ -438,7 +438,8 @@ if ffi then
 
 		if vfs and system and system.SetSharedLibraryPath then
 			local where = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
-			for _, full_path in ipairs(vfs.GetFiles({path = where, filter = path, filter_plain = true, full_path = true})) do
+			local found = vfs.GetFiles({path = where, filter = path, filter_plain = true, full_path = true})
+			for _, full_path in ipairs(found) do
 				-- look first in the vfs' bin directories
 				local old = system.GetSharedLibraryPath()
 				system.SetSharedLibraryPath(full_path:match("(.+/)"))
@@ -460,10 +461,12 @@ if ffi then
 				args[2] = args[2] .. "\n" .. system.GetLibraryDependencies(full_path)
 			end
 
+			if not found[1] then
+				error(path .. " could not be found anywhere", 2)
+			end
+
 			if args[2] then
 				error(indent_error(args[2]), 2)
-			else
-				error(where .. " could not be found anywhere", 2)
 			end
 		end
 
