@@ -117,7 +117,7 @@ void(aiSetImportPropertyInteger)(struct aiPropertyStore*,const char*,int);
 const char*(aiGetErrorString)();
 const struct aiScene*(aiImportFileFromMemoryWithProperties)(const char*,unsigned int,unsigned int,const char*,const struct aiPropertyStore*);
 ]])
-local CLIB = ffi.load(_G.FFI_LIB or "goluwa2")
+local CLIB = ffi.load(_G.FFI_LIB or "assimp")
 local library = {}
 library = {
 	GetExportFormatCount = CLIB.aiGetExportFormatCount,

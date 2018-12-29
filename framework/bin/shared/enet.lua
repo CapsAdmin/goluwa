@@ -110,7 +110,7 @@ int(enet_socketset_select)(int,void*,void*,unsigned int);
 unsigned long(enet_list_size)(struct _ENetList*);
 void(enet_host_bandwidth_limit)(struct _ENetHost*,unsigned int,unsigned int);
 ]])
-local CLIB = ffi.load(_G.FFI_LIB or "goluwa2")
+local CLIB = ffi.load(_G.FFI_LIB or "enet")
 local library = {}
 library = {
 	HostCompress = CLIB.enet_host_compress,

@@ -1823,6 +1823,8 @@ do -- lua helper functions
 		logn("building ", info.name, "...")
 		local addon = info.addon
 
+		ffibuild.SetBuildName(info.name)
+
 		local dir = e.TEMP_FOLDER .. "ffibuild/" .. info.name .. "/repo/"
 		local bin_path =
 			"os:" .. e.ROOT_FOLDER .. addon ..
