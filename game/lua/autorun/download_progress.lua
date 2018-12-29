@@ -21,5 +21,3 @@ end)
 event.AddListener("DownloadStop", "downprog", function(url, data, msg)
 	system.SetConsoleTitle(nil, url)
 end)
-
-function LOL() sockets.Download("https://gitlab.com/DBotThePony/TF2Subtitles/repository/master/archive.zip") end
