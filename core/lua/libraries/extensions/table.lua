@@ -11,8 +11,8 @@ if not table.pack then
 end
 
 if not table.unpack then
-	function table.unpack(tbl)
-		return unpack(tbl)
+	function table.unpack(tbl, i)
+		return unpack(tbl, i)
 	end
 end
 
