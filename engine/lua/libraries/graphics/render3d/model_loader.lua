@@ -57,7 +57,7 @@ function render3d.LoadModel(path, callback, callback2, on_fail)
 
 	cb:start(path, callback, {mesh = callback2, on_fail = on_fail})
 
-	resource.Download(path, function(full_path)
+	resource.Download(path, nil, path:endswith(".mdl")):Then(function(full_path)
 		local out = {}
 
 		local thread = tasks.CreateTask()
@@ -84,9 +84,9 @@ function render3d.LoadModel(path, callback, callback2, on_fail)
 		else
 			cb:callextra(path, "on_fail", "unknown format " .. path)
 		end
-	end, function(reason)
+	end):Catch(function(reason)
 		cb:callextra(path, "on_fail", reason)
-	end, nil, path:endswith(".mdl")) -- sigh
+	end)
 
 	return true
 end

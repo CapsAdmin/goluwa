@@ -37,7 +37,7 @@ function chathud.Initialize()
 	chathud.markup:SetSelectable(false)
 	chathud.life_time = 20
 
-	resource.Download("http://cdn.steam.tools/data/emote.json", function(path)
+	resource.Download("http://cdn.steam.tools/data/emote.json"):Then(function(path)
 		profiler.StartTimer("emotes")
 		local i = 0
 		for name in vfs.Read(path):gmatch('"name": ":(.-):"') do

@@ -90,7 +90,7 @@ function META:Initialize()
 	local dark = ColorBytes(168, 164, 160)
 	local light = ColorBytes(232, 228, 224)
 
-	resource.Download(self.Path, function(path)
+	resource.Download(self.Path):Then(function(path)
 		local file = vfs.Open(path)
 
 		if file:ReadBytes(18) ~= "; empty space 0x00" then

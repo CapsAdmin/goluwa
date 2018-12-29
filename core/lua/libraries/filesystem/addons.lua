@@ -4,7 +4,7 @@ vfs.loaded_addons = vfs.loaded_addons or {}
 vfs.disabled_addons = vfs.disabled_addons or {}
 
 local whitelist
-(os.getenv("GOLUWA_ARG_LINE") or ""):gsub("--addons (%S-)", function(line)
+(os.getenv("GOLUWA_ARG_LINE") or ""):gsub("--addons (%S+)", function(line)
 	whitelist = whitelist or {}
 	for _, name in ipairs(line:split(",")) do
 		whitelist[name:lower():trim()] = true
@@ -16,9 +16,10 @@ function vfs.FetchBniariesForAddon(addon, callback)
 	if callback and vfs.IsFile("shared/framework_binaries_downloaded_" .. signature) then
 		callback()
 	end
-	sockets.Download("https://gitlab.com/api/v4/projects/CapsAdmin%2Fgoluwa-binaries/repository/tree?recursive=1&per_page=99999", function(content)
+	http.Download("https://gitlab.com/api/v4/projects/CapsAdmin%2Fgoluwa-binaries/repository/tree?recursive=1&per_page=99999"):Then(function(content)
 		local base_url = "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/"
-		local bin_dir = e.ROOT_FOLDER .. addon .. "/bin/" .. signature .. "/"
+		local relative_bin_dir = addon .. "/bin/" .. signature .. "/"
+		local bin_dir = e.ROOT_FOLDER .. relative_bin_dir
 		vfs.CreateDirectoriesFromPath("os:"..bin_dir)
 
 		local instrucitons_path = "shared/copy_binaries_instructions_" .. signature
@@ -38,9 +39,9 @@ function vfs.FetchBniariesForAddon(addon, callback)
 		local done = #found
 
 		for i, v in ipairs(found) do
-			resource.Download(v.url, function(file_path, modified)
+			resource.Download(v.url, nil,nil, true):Then(function(file_path, modified)
 				local name = vfs.GetFileNameFromPath(v.path)
-				local to = bin_dir .. name
+				local to = bin_dir .. v.path:sub(#relative_bin_dir + 1)
 
 				if modified then
 					vfs.CreateDirectoriesFromPath(vfs.GetFolderFromPath(to))
@@ -48,17 +49,18 @@ function vfs.FetchBniariesForAddon(addon, callback)
 					if vfs.IsFile(to) then
 						instructions = instructions .. file_path .. ";" .. to .. "\n"
 						vfs.Write(instrucitons_path, instructions)
-						logn("binary ", to, " was updated")
+						logn("binary ", to, " was updated  (" .. done .. ")")
 					end
 				end
 
 				if not vfs.IsFile(to) then
+					vfs.CreateDirectoriesFromPath(vfs.GetFolderFromPath(to))
 					assert(vfs.Copy(file_path, "os:" .. to))
 
 					if UNIX and name:startswith("luajit") then
 						os.execute("chmod +x ''" .. R(to) .. "'")
 					end
-					logn("binary ", to, " was created")
+					logn("binary ", to, " was created (" .. done .. ")")
 				end
 
 				done = done - 1
@@ -69,7 +71,7 @@ function vfs.FetchBniariesForAddon(addon, callback)
 						callback()
 					end
 				end
-			end, nil,nil,nil, true)
+			end)
 		end
 	end)
 end
@@ -164,6 +166,7 @@ local function check_dependencies(info, what)
 end
 
 function vfs.InitAddons(callback)
+
 	for _, info in pairs(vfs.GetMountedAddons()) do
 		if info.pre_load and not info.loaded then
 			info.load_callback = function()
@@ -174,7 +177,7 @@ function vfs.InitAddons(callback)
 			return
 		end
 	end
-
+	debug.trace()
 	for _, info in pairs(vfs.GetMountedAddons()) do
 		if info.startup and check_dependencies(info, "init") then
 			runfile(info.startup)

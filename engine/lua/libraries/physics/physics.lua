@@ -57,7 +57,7 @@ do -- physcs models
 
 		cb:start(path, callback, {on_fail = on_fail})
 
-		resource.Download(path, function(full_path)
+		resource.Download(path):Then(function(full_path)
 			local thread = tasks.CreateTask()
 			thread.debug = true
 
@@ -115,7 +115,7 @@ do -- physcs models
 			end
 
 			thread:Start()
-		end, function(reason)
+		end):Catch(function(reason)
 			cb:callextra(path, "on_fail", reason)
 		end)
 

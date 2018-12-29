@@ -456,7 +456,7 @@ do -- source
 		elseif typex(var) == "buffer" then
 			self:SetBuffer(var)
 		elseif type(var) == "string" then
-			resource.Download(var, function(path)
+			resource.Download(var):Then(function(path)
 				local file = vfs.Open(path)
 				local data, length, info = audio.Decode(file, var)
 				file:Close()

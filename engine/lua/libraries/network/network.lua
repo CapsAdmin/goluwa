@@ -161,11 +161,6 @@ do
 	end
 
 	function network.JoinIRCServer(cb)
-		if not SOCKETS then
-			wlog("sockets not availible")
-			return
-		end
-
 		if network.irc_client:IsValid() then
 			if CLIENT then
 				network.QueryAvailableServers(cb)
@@ -176,7 +171,7 @@ do
 		local client = sockets.CreateIRCClient()
 
 		if SERVER then
-			sockets.Download("https://api.ipify.org/?format=plaintext", function(s)
+			http.Download("https://api.ipify.org/?format=plaintext"):Then(function(s)
 				network.public_ip = s
 				llog("public ip is %s", s)
 			end)

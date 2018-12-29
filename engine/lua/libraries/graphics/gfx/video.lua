@@ -42,7 +42,7 @@ function gfx.CreateGif(path)
 	self.loading = true
 
 	if freeimage then
-		resource.Download(path, function(path)
+		resource.Download(path):Then(function(path)
 			local data = vfs.Read(path)
 
 			local frames = freeimage.LoadMultiPageImage(data)

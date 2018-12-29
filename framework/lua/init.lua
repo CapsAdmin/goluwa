@@ -54,10 +54,6 @@ end
 resource.AddProvider("https://gitlab.com/CapsAdmin/goluwa-assets/raw/master/base/", true)
 
 event.AddListener("Initialize", function()
-	if SOCKETS then
-		sockets.Initialize()
-	end
-
 	if SOUND then
 		audio.Initialize()
 	end

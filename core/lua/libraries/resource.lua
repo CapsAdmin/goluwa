@@ -23,9 +23,7 @@ function resource.AddProvider(provider, no_autodownload)
 
 	if no_autodownload then return end
 
-	if not SOCKETS then return end
-
-	sockets.Download(provider .. "auto_download.txt", function(str)
+	http.Download(provider .. "auto_download.txt"):Then(function(str)
 		for _,v in ipairs(serializer.Decode("newline", str)) do
 			resource.Download(v)
 		end
@@ -79,89 +77,83 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 
 	local file
 
-	return sockets.Download(
-		from,
-		function()
-			file:Close()
-			local full_path = R("os:" .. e.DOWNLOAD_FOLDER .. to .. ".temp")
-			if full_path then
-				local ok, err = vfs.Rename(full_path, full_path:gsub(".+/(.+).temp", "%1"))
-
-				if not ok then
-					on_fail(llog("unable to rename %q: %s", full_path, err))
-					return
-				end
-
-				local full_path = R("os:" .. e.DOWNLOAD_FOLDER .. to)
-
-				if full_path then
-					callback(full_path, true)
-
-					--llog("finished donwnloading ", from)
-				else
-					on_fail(llog("open error: %q not found!", "data/downloads/" .. to))
-				end
-			else
-				on_fail(llog("open error: %q not found!", "data/downloads/" .. e.DOWNLOAD_FOLDER .. to .. ".temp"))
-			end
-		end,
-		function(...)
-			on_fail(...)
-		end,
-		function(chunk)
-			file:Write(chunk)
-		end,
-		function(header)
-			local dir = to
-
-			if ext_override then
-				to = to .. "/file." .. ext_override
-			elseif need_extension then
-
-				local ext =
-					header["content-type"] and
-					(header["content-type"]:match(".-/(.-);") or header["content-type"]:match(".-/(.+)")) or
-					"dat"
-
-				if ext == "dat" or ext == "octet-stream" then
-					ext = from:match("%.([%a%d]+)$") or from:match("%.([%a%d]+)%?") or ext
-				end
-
-				if ext == "jpeg" then
-					ext = "jpg"
-				end
-
-				to = to .. "/file." .. ext
-			end
-
-			local ok, err = vfs.CreateDirectoriesFromPath("os:" .. e.DOWNLOAD_FOLDER .. to)
+	return http.Download(from):Then(function()
+		file:Close()
+		local full_path = R("os:" .. e.DOWNLOAD_FOLDER .. to .. ".temp")
+		if full_path then
+			local ok, err = vfs.Rename(full_path, full_path:gsub(".+/(.+).temp", "%1"))
 
 			if not ok then
-				on_fail(llog("unable to create directories %q download error: %s", "os:" .. e.DOWNLOAD_FOLDER .. to, err))
-				return false
+				on_fail(llog("unable to rename %q: %s", full_path, err))
+				return
 			end
 
-			if resource.debug then
-				serializer.WriteFile("luadata", "os:" .. e.DOWNLOAD_FOLDER .. dir .. "info.txt", {header = header, url = from})
+			local full_path = R("os:" .. e.DOWNLOAD_FOLDER .. to)
+
+			if full_path then
+				callback(full_path, true)
+
+				--llog("finished donwnloading ", from)
+			else
+				on_fail(llog("open error: %q not found!", "data/downloads/" .. to))
 			end
-
-			local file_, err = vfs.Open("os:" .. e.DOWNLOAD_FOLDER .. to .. ".temp", "write")
-			file = file_
-
-			if not file then
-				on_fail(llog("unable to open file for writing %q: %s", "os:" .. e.DOWNLOAD_FOLDER .. to .. ".temp", err))
-				return false
-			end
-
-			local etag = header.etag or header["last-modified"]
-
-			if etag then
-				serializer.SetKeyValueInFile("luadata", etags_file, etag_path_override or from, etag)
-			end
-
-			on_header(header)
+		else
+			on_fail(llog("open error: %q not found!", "data/downloads/" .. e.DOWNLOAD_FOLDER .. to .. ".temp"))
 		end
-	)
+	end):Catch(function(...)
+		on_fail(...)
+	end):Subscribe("chunks", function(chunk)
+		file:Write(chunk)
+	end):Subscribe("header", function(header)
+		local dir = to
+
+		if ext_override then
+			to = to .. "/file." .. ext_override
+		elseif need_extension then
+
+			local ext =
+				header["content-type"] and
+				(header["content-type"]:match(".-/(.-);") or header["content-type"]:match(".-/(.+)")) or
+				"dat"
+
+			if ext == "dat" or ext == "octet-stream" then
+				ext = from:match("%.([%a%d]+)$") or from:match("%.([%a%d]+)%?") or ext
+			end
+
+			if ext == "jpeg" then
+				ext = "jpg"
+			end
+
+			to = to .. "/file." .. ext
+		end
+
+		local ok, err = vfs.CreateDirectoriesFromPath("os:" .. e.DOWNLOAD_FOLDER .. to)
+
+		if not ok then
+			on_fail(llog("unable to create directories %q download error: %s", "os:" .. e.DOWNLOAD_FOLDER .. to, err))
+			return false
+		end
+
+		if resource.debug then
+			serializer.WriteFile("luadata", "os:" .. e.DOWNLOAD_FOLDER .. dir .. "info.txt", {header = header, url = from})
+		end
+
+		local file_, err = vfs.Open("os:" .. e.DOWNLOAD_FOLDER .. to .. ".temp", "write")
+		file = file_
+
+		if not file then
+			on_fail(llog("unable to open file for writing %q: %s", "os:" .. e.DOWNLOAD_FOLDER .. to .. ".temp", err))
+			return false
+		end
+
+		local etag = header.etag or header["last-modified"]
+
+		if etag then
+			serializer.SetKeyValueInFile("luadata", etags_file, etag_path_override or from, etag)
+		end
+
+		on_header(header)
+	end)
 end
 
 local function download_from_providers(path, callback, on_fail, check_etag)
@@ -175,8 +167,6 @@ local function download_from_providers(path, callback, on_fail, check_etag)
 		on_fail("no providers added\n")
 		return
 	end
-
-	if not SOCKETS then return end
 
 	-- if not check_etag then
 	-- 	llog("downloading ", path)
@@ -211,16 +201,14 @@ local function download_from_providers(path, callback, on_fail, check_etag)
 	end
 end
 
-local cb = utility.CreateCallbackThing()
 local ohno = false
 
-function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag, ext)
-	local tr = not on_fail and debug.traceback()
-	on_fail = on_fail or function(reason) llog(path, ": ", reason) logn(tr) end
+resource.Download = callback.WrapKeyedTask(function(self, path, crc, mixed_case, check_etag, ext)
+	local resolve = self.callbacks.resolve
+	local reject = self.callbacks.reject
 
 	if resource.virtual_files[path] then
-		resource.virtual_files[path](callback, on_fail)
-		return true
+		return resource.virtual_files[path](resolve, reject)
 	end
 
 	local url
@@ -267,40 +255,29 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag,
 	end
 
 	if not ohno then
-		local old = callback
-		callback = function(path, changed)
+		local old = resolve
+		resolve = function(path, changed)
 			if event.Call("ResourceDownloaded", path, url) ~= false then
-				if old then old(path, changed) end
+				old(path, changed)
 			end
 		end
 	end
 
 	if existing_path and not check_etag then
 		ohno = true
-		callback(existing_path)
+		resolve(existing_path)
 		ohno = false
 		return true
 	end
 
 	if check_etag then
 		check_etag = function()
-			if ohno then return end
-			ohno = true
-			cb:callextra(path, "check_etag", existing_path)
-			ohno = false
-			cb:stop(path, existing_path)
-			cb:uncache(path)
+			resolve(path, existing_path)
 		end
 	end
 
-	if cb:check(path, callback, {on_fail = on_fail, check_etag = check_etag}) then return true end
-
-	cb:start(path, callback, {on_fail = on_fail, check_etag = check_etag})
-
 	if not sockets then
-		cb:callextra(path, "on_fail", "sockets not availble")
-		cb:uncache(path)
-		return false
+		return reject("sockets not availble")
 	end
 
 	if url then
@@ -311,13 +288,9 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag,
 		download(
 			url,
 			path,
+			resolve,
 			function(...)
-				cb:stop(path, ...)
-				cb:uncache(path)
-			end,
-			function(...)
-				cb:callextra(path, "on_fail", ... or path .. " not found")
-				cb:uncache(path)
+				reject(... or path .. " not found")
 			end,
 			function(header)
 				-- check file crc stuff here/
@@ -331,20 +304,16 @@ function resource.Download(path, callback, on_fail, crc, mixed_case, check_etag,
 	elseif not resource.skip_providers then
 		download_from_providers(
 			path,
+			resolve,
 			function(...)
-				cb:stop(path, ...)
-				cb:uncache(path)
-			end,
-			function(...)
-				cb:callextra(path, "on_fail", ... or path .. " not found")
-				cb:uncache(path)
+				reject(... or path .. " not found")
 			end,
 			check_etag
 		)
 	end
 
 	return true
-end
+end, nil, nil, true)
 
 function resource.ClearDownloads()
 	local dirs = {}
@@ -373,7 +342,12 @@ function resource.CheckDownloadedFiles()
 	local i = 0
 
 	for path, etag in pairs(files) do
-		resource.Download(path, function() i = i + 1 if i == count then llog("done checking for file updates") end end, llog, nil, nil, true)
+		resource.Download(path, nil, nil, true):Then(function()
+			i = i + 1
+			if i == count then
+				llog("done checking for file updates")
+			end
+		end)
 	end
 end
 

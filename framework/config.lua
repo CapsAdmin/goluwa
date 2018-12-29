@@ -4,7 +4,6 @@ local env_vars = {
 	GRAPHICS = true,
 	SOUND = true,
 	DEBUG = false,
-	SOCKETS = true,
 	WINDOW = true,
 	WINDOW_IMPLEMENTATION = "sdl2",
 

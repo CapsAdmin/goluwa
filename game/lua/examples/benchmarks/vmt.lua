@@ -168,7 +168,7 @@ vfs.Mount("data/temp_bsp.zip/")
 --S""
 
 for _, path in ipairs(materials) do
-	resource.Download(path, function() end)
+	resource.Download(path):Then(function() end)
 end
 
 --S""

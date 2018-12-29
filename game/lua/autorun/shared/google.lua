@@ -75,7 +75,7 @@ do
 
 		if not base_token then
 			-- i get 403 for some reason but if i can get past that getting the base token should work
-			sockets.Get("http://translate.google.com", function(data)
+			http.Get("http://translate.google.com", function(data)
 				local eval_str = data.content:match("TKK=eval(%b())")
 
 				local a = eval_str:match("var a=(.-);")
@@ -99,7 +99,7 @@ do
 		url = url:gsub("{TOKEN}", gen_token(str)) -- untested, copied from js source
 		url = url .. sockets.EscapeURL(str)
 
-		sockets.Get(url, function(data)
+		http.Get(url, function(data)
 			table.print(data)
 			local out = {translated = "", transliteration = "", from = ""}
 			local content = data.content:match(".-%[(%b[])"):sub(2, -2)
@@ -131,7 +131,7 @@ function google.AutoComplete(question, callback)
 	local _q = question
 	question = question:gsub("(%A)", function(char) return "%"..("%x"):format(char:byte()) end)
 
-	sockets.Get(
+	http.Get(
 		"http://suggestqueries.google.com/complete/search?client=firefox&q=" .. question .. "%20",
 		function(data)
 			local str = data.content
@@ -150,7 +150,7 @@ function google.AutoComplete(question, callback)
 end
 
 function google.YoutubeSearch(query, callback)
-	sockets.Get(("http://gdata.youtube.com/feeds/api/videos?q=%s&max-results=1&v=2&prettyprint=flase&alt=json"):format(query), function(data)
+	http.Get(("http://gdata.youtube.com/feeds/api/videos?q=%s&max-results=1&v=2&prettyprint=flase&alt=json"):format(query), function(data)
 		local hashed = serializer.Decode("json", data.content)
 
 		if not hashed.feed or not hashed.feed.entry then return end
@@ -168,8 +168,6 @@ function google.YoutubeSearch(query, callback)
 		callback({name = name, id = id, views = views, likes = likes, dislikes = dislikes, length = length})
 	end)
 end
-
-if not SOCKETS then return end
 
 if CLIENT then
     message.AddListener("google_say", function(str)

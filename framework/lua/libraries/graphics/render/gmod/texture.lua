@@ -74,7 +74,7 @@ function META:SetPath(path, gmod_path)
 		self.loading = false
 	else
 		local real_path = path
-		resource.Download(path, function(path)
+		resource.Download(path):Then(function(path)
 			local path, where = GoluwaToGmodPath(path)
 
 			if where == "DATA" then

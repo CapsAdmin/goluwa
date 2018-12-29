@@ -256,7 +256,7 @@ function gserv.InstallGame(name, dir, callback, username)
 	vfs.CreateDirectory("os:" .. srcds_dir)
 
 	-- download steamcmd
-	resource.Download("http://media.steampowered.com/client/steamcmd_linux.tar.gz", function(path)
+	resource.Download("http://media.steampowered.com/client/steamcmd_linux.tar.gz"):Then(function(path)
 
 		-- if steamcmd.sh does not exist then we need to extract it
 		if not vfs.IsFile(srcds_dir .. "steamcmd.sh") then

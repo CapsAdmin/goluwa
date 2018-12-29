@@ -204,7 +204,7 @@ function META:Table()
 		end
 
 		if not self:IsValue(",") and not self:IsValue(";") then
-			self:Error("expected ".. oh.QuoteTokens(",", ";", "}") .. " got " .. self:GetToken().value)
+			self:Error("expected ".. oh.QuoteTokens(",", ";", "}") .. " got " .. (self:GetToken().value or "no token"))
 		end
 
 		data.tokens[","] = self:ReadToken()

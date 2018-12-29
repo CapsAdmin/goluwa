@@ -1012,7 +1012,7 @@ do
 
 	function META:SetSteamID(id, size)
 		do return end
-		sockets.Get("http://steamcommunity.com/id/"..id.."/?xml=1", function(data)
+		http.Get("http://steamcommunity.com/id/"..id.."/?xml=1", function(data)
 			local url = data.content:match("<avatarFull>(.-)</avatarFull>")
 			url = url and url:match("%[(http.-)%]")
 			if url then

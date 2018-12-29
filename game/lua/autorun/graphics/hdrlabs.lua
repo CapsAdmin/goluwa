@@ -1,10 +1,10 @@
 local base_url = "http://www.hdrlabs.com/sibl/archive/downloads/"
 
-resource.Download(base_url, function(html_path)
+resource.Download(base_url):Then(function(html_path)
 	local content = assert(vfs.Read(html_path))
 	for file_name in content:gmatch("_f%('(.-)'") do
 		resource.CreateVirtualFile("textures/skybox/hdr/" .. file_name:lower():gsub("%.zip", ".hdr"), function(on_success, on_fail)
-			resource.Download(base_url .. file_name, function(path)
+			resource.Download(base_url .. file_name):Then(function(path)
 				local found = {}
 
 				for _, dir in ipairs(vfs.Find(path .. "/", true)) do
@@ -31,7 +31,7 @@ resource.Download(base_url, function(html_path)
 						end
 					end
 				end
-			end, on_fail)
+			end):Catch(on_fail)
 		end)
 	end
 end)

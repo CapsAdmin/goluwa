@@ -235,7 +235,7 @@ function chatsounds.LoadListFromAppID(name)
 	local list_path = "data/chatsounds/lists/"..name..".txt"
 	local tree_path = "data/chatsounds/trees/"..name..".dat"
 
-	resource.Download(list_path, function(list_path)
+	resource.Download(list_path, nil, nil, true):Then(function(list_path)
 		local list
 		local tree
 
@@ -268,7 +268,7 @@ function chatsounds.LoadListFromAppID(name)
 				chatsounds.GenerateAutocomplete()
 			end, "chatsounds_autocomplete")
 		end
-	end, nil, nil, nil, true)
+	end)
 end
 
 function chatsounds.AddSound(trigger, realm, ...)

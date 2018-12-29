@@ -108,7 +108,7 @@ local function temp_ssl_download(url, callback)
 	callback(str)
 end
 
-sockets.Download("https://sketchfab.com/models/" .. id .. "/embed", function(str)
+http.Download("https://sketchfab.com/models/" .. id .. "/embed"):Then(function(str)
 	str = str:match('prefetchedData%[ "/i/models/' .. id .. '" %] = (%b{})')
 	str = str:gsub("\r", "\n")
 	str = str:gsub("\n.*\n", "")
@@ -116,7 +116,7 @@ sockets.Download("https://sketchfab.com/models/" .. id .. "/embed", function(str
 	local tbl = serializer.Decode("json", str)
 	local url = tbl.files[1].osgjsUrl
 
-	--sockets.Download(url, function(str)
+	--http.Download(url):Then(function(str)
 	temp_ssl_download(url, function(str)
 		str = serializer.Decode("gunzip", str)
 		local tbl = serializer.Decode("json", str)
@@ -145,7 +145,7 @@ do return end
 	local tbl = serializer.Decode("json", str:match('prefetchedData%[ "/i/models/' .. id .. '/textures" %] = (%b{})'))
 
 	for i,v in ipairs(tbl.results) do
-		sockets.Download(v.images[1].url, function(str)
+		http.Download(v.images[1].url):Then(function(str)
 			vfs.Write(output_folder .. v.name, str)
 		end)
 	end

@@ -344,7 +344,7 @@ commands.Add("love_run=string,var_arg", function(name, ...)
 
 		local args = {...}
 
-		resource.Download(url, function(full_path)
+		resource.Download(url):Then(function(full_path)
 			full_path = full_path .. "/" .. name:match(".+/(.+)") .. "-master"
 			logn("running downloaded löve game: ", full_path)
 			line.RunGame(full_path, unpack(args))

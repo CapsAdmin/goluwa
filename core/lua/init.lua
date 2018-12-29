@@ -195,8 +195,10 @@ profiler = runfile("lua/libraries/profiler.lua") -- for profiling
 oh = runfile("lua/libraries/oh/oh.lua")
 repl = runfile("lua/libraries/repl.lua")
 ffibuild = runfile("lua/libraries/ffibuild.lua")
-resource = runfile("lua/libraries/resource.lua") -- used for downloading resources with resource.Download("http://...", function(path) end)
+callback = runfile("lua/libraries/callback.lua")
+resource = runfile("lua/libraries/resource.lua") -- used for downloading resources with resource.Download("http://..."):Then(function(path) end)
 sockets = runfile("lua/libraries/sockets/sockets.lua")
+http = runfile("lua/libraries/http.lua")
 
 sockets.Initialize()
 
@@ -231,6 +233,8 @@ event.AddListener("MainLoopStart", function()
 	vfs.AutorunAddons(e.USERNAME .. "/")
 end)
 
+vfs.WatchLuaFiles2(true)
+
 -- call goluwa/*/lua/init.lua if it exists
 vfs.InitAddons(function()
 	event.Call("Initialize")
@@ -239,8 +243,6 @@ vfs.InitAddons(function()
 		logn("[runfile] total init time took ", os.clock() - start_time, " seconds to execute")
 		logn("[runfile] ", vfs.total_loadfile_time, " seconds of that time was overhead spent in loading compiling scripts")
 	end
-
-	vfs.WatchLuaFiles2(true)
 
 	event.Call("MainLoopStart")
 	event.Call("MainLoopStart")
