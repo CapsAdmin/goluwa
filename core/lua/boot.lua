@@ -469,14 +469,16 @@ if not os.isfile(BINARY_DIR .. lua_exec) then
 	end
 end
 
-if not os.isfile(BINARY_DIR .. "lua/ssl.so") then
+local ext = UNIX and ".so" or ".dll"
+
+if not os.isfile(BINARY_DIR .. "lua/ssl" .. ext) then
 	os.makedir(BINARY_DIR .. "lua")
-	os.download("https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/linux_x64/lua/ssl.so", BINARY_DIR .. "lua/ssl.so")
+	os.download("https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/"..OS.."_"..ARCH.."/lua/ssl" .. ext, BINARY_DIR .. "lua/ssl" .. ext)
 end
 
 if not os.isfile(BINARY_DIR .. "lua/socket/core.so") then
 	os.makedir(BINARY_DIR .. "lua/socket")
-	os.download("https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/linux_x64/lua/socket/core.so", BINARY_DIR .. "lua/socket/core.so")
+	os.download("https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/"..OS.."_"..ARCH.."/lua/socket/core" .. ext, BINARY_DIR .. "lua/socket/core" .. ext)
 end
 
 local instructions_path = "storage/shared/copy_binaries_instructions"
