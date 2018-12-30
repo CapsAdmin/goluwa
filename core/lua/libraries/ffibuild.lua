@@ -1713,7 +1713,7 @@ do -- lua helper functions
 			if not key then
 				key = chunk:match(" (%S+)")
 				val = "1"
-				print("unable to find value for: ", key)
+				logn("unable to find value for: ", key)
 			end
 
 			if temp_enums[val] then
@@ -1788,13 +1788,12 @@ do -- lua helper functions
 		ffi.load = function(...)
 			local clib = old(...)
 			return setmetatable({}, {__index = function(_, key)
-				print(clib, key)
 				local ok, ret = pcall(function() return clib[key] end)
 				if ok then
 					return ret
 				end
 				errored = true
-				print(ret)
+				logn("[test ",ffibuild.GetBuildName(),"] ", ret:match("^.-:.-: (.+)"))
 			end})
 		end
 
@@ -1845,9 +1844,12 @@ do -- lua helper functions
 		end
 
 		for _, path in ipairs(ffibuild.GetSharedLibrariesInDirectory(dir)) do
-			assert(vfs.CopyFile(path, bin_path))
-			vfs.CopyFile(path, bin_path_git)
-			logn("copied ", vfs.GetFileNameFromPath(path), " to ", bin_path)
+			local ok = vfs.CopyFileFileOnBoot(path, bin_path_git)
+			if ok == "deferred" then
+				llog("%q will be replaced after restart", bin_path_git)
+			else
+				llog("%q was added", bin_path_git)
+			end
 			break
 		end
 
