@@ -458,10 +458,15 @@ local SCRIPT_PATH = os.getenv("GOLUWA_SCRIPT_PATH")
 local RAN_FROM_FILEBROWSER = os.getenv("GOLUWA_RAN_FROM_FILEBROWSER")
 local BINARY_DIR = "core/bin/" .. OS .. "_" .. ARCH .. "/"
 
-if not os.isfile(BINARY_DIR .. "luajit") then
+local lua_exec = UNIX and "luajit" or "luajit.exe"
+
+if not os.isfile(BINARY_DIR .. lua_exec) then
 	os.makedir(BINARY_DIR)
-	os.copyfile(STORAGE_PATH .. "/bin/" .. OS .. "_" .. ARCH .. "/" .. "luajit", BINARY_DIR .. "luajit")
-	os.execute("chmod +x " .. BINARY_DIR .. "luajit")
+	os.copyfile(STORAGE_PATH .. "/bin/" .. OS .. "_" .. ARCH .. "/" .. lua_exec BINARY_DIR .. lua_exec)
+
+	if UNIX then
+		os.execute("chmod +x " .. BINARY_DIR .. lua_exec)
+	end
 end
 
 if not os.isfile(BINARY_DIR .. "lua/ssl.so") then
