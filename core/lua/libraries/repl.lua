@@ -523,10 +523,10 @@ end
 function repl.OSExecute(...)
 	repl.Flush()
 	repl.Stop()
-	local ok, res = pcall(_OLD_G.os.execute, ...)
+	local ok, res,a,b = pcall(_OLD_G.os.execute, ...)
 	repl.Start()
 	if not ok then error(res, 2) end
-	return res
+	return res,a,b
 end
 
 local next_update = 0

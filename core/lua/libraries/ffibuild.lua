@@ -1,11 +1,68 @@
 local ffibuild = _G.ffibuild or {}
 
-function ffibuild.ExecuteInDirectory(what, dir)
-	vfs.PushWorkingDirectory(dir)
-	local a,b = os.execute(what)
+local function msys2(cmd, msys2_install)
+	msys2_install = msys2_install or "C:/msys64/"
+
+	local cd = vfs.GetWorkingDirectory()
+	cd = cd:gsub("^(.):", function(drive)
+		return "/" .. drive:lower()
+	end)
+
+	vfs.PushWorkingDirectory(msys2_install)
+		local ok, transformed_cmd = pcall(function()
+			local f = io.open("msys2_shell.cmd", "r")
+			if not f then error("could not find msys2") end
+			f:close()
+			return "usr\\bin\\bash.exe -l -c \"".."cd "..cd ..";"..cmd.."\""
+		end)
 	vfs.PopWorkingDirectory()
-	return a,b
+
+	if not ok then 
+		error(err) 
+	end
+
+	return transformed_cmd
 end
+
+if UNIX then
+	function ffibuild.UnixExecute(cmd, os_execute)
+		if os_execute then
+			return os.execute(cmd)
+		end
+		local f, err = io.open(cmd)
+		if not f then 
+			return f, err 
+		end
+		return f:read("*all")
+	end
+end
+
+if WINDOWS then
+	function ffibuild.UnixExecute(cmd)
+		local transformed_cmd = msys2(cmd)
+
+		repl.Flush()
+		repl.Stop()
+
+		if os_execute then
+			local ok, err = os.execute(transformed_cmd)
+			repl.Start()
+			return ok, err
+		end
+
+		local f = io.popen(transformed_cmd)
+		if not f then 
+			repl.Start()
+			return f, err 
+		end
+		
+		local str = f:read("*all")
+		repl.Start()
+
+		return str
+	end
+end
+
 
 function ffibuild.SourceControlClone(str, dir)
 	assert(vfs.CreateDirectoriesFromPath("os:" .. dir))
@@ -46,9 +103,15 @@ function ffibuild.GetSharedLibrariesInDirectory(dir)
 	for _, path in ipairs(vfs.GetFilesRecursive(dir)) do
 		local ext = vfs.GetExtensionFromPath(path)
 		local find = vfs.GetSharedLibraryExtension()
-		if ext:startswith(find) then
-			if #ext == #find or ext:sub(#find+1, #find+1) == "." then
-				local name = vfs.GetFileNameFromPath(path)
+		if UNIX then
+			if ext:startswith(find) then
+				if #ext == #find or ext:sub(#find+1, #find+1) == "." then
+					table.insert(out, path)
+				end
+			end
+		end
+		if WINDOWS then
+			if ext == find then
 				table.insert(out, path)
 			end
 		end
@@ -174,17 +237,15 @@ end
 
 function ffibuild.ProcessSourceFileGCC(c_source, flags, dir)
 	flags = flags or ""
-	local temp_name = os.tmpname()
+
+	vfs.PushWorkingDirectory(dir)
+	local temp_name = "ffibuild_gcc_process_temp.c"
 	local temp_file = io.open(temp_name, "w")
 	temp_file:write(c_source)
 	temp_file:close()
 
-	vfs.PushWorkingDirectory(dir)
-	local gcc = io.popen("gcc -xc -E -P " .. flags .. " " .. temp_name)
+	local header = ffibuild.UnixExecute("gcc -xc -E -P " .. flags .. " " .. temp_name)
 	vfs.PopWorkingDirectory()
-	local header = gcc:read("*all")
-
-	gcc:close()
 	os.remove(temp_name)
 
 	return header
@@ -1829,26 +1890,33 @@ do -- lua helper functions
 
 		local root = "os:" .. e.ROOT_FOLDER
 		local relative_bin_path =
-			"/bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" ..
-			"lib" .. info.name .. "." .. vfs.GetSharedLibraryExtension()
+			"bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" ..
+			(WINDOWS and "" or "lib") .. info.name .. "." .. vfs.GetSharedLibraryExtension()
 
-		local bin_path = root .. addon .. relative_bin_path
+		local bin_path = root .. addon .. "/" .. relative_bin_path
 		local bin_path_git = root .. "__goluwa-binaries/" .. addon .. "/" .. relative_bin_path
 
 		ffibuild.SourceControlClone(info.url, dir)
 
 		if not vfs.IsFile(bin_path) or not vfs.IsFile(dir .. "ran_build") then
 			logn("running build command")
-			ffibuild.ExecuteInDirectory(info.cmd, dir)
+			vfs.PushWorkingDirectory(dir)
+			ffibuild.UnixExecute(info.cmd, true)
+			vfs.PopWorkingDirectory()
 			vfs.Write(dir .. "ran_build", "1")
 		end
 
 		for _, path in ipairs(ffibuild.GetSharedLibrariesInDirectory(dir)) do
-			local ok = vfs.CopyFileFileOnBoot(path, bin_path_git)
-			if ok == "deferred" then
-				llog("%q will be replaced after restart", bin_path_git)
-			else
+			llog("found %s\n", path)
+			if vfs.IsDirectory(bin_path_git) then
+				vfs.CopyFile(path, bin_path_git)
 				llog("%q was added", bin_path_git)
+			end
+			local ok, err = vfs.CopyFileFileOnBoot(path, bin_path)
+			if ok == "deferred" then
+				llog("%q will be replaced after restart", bin_path)
+			else
+				llog("%q was added", bin_path)
 			end
 			break
 		end

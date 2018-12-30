@@ -1,7 +1,7 @@
 ffibuild.Build({
 	name = "enet",
 	url = "https://github.com/lsalzman/enet.git",
-	cmd = "autoreconf -vfi && ./configure && make",
+	cmd = "export AM_LDFLAGS=-no-undefined; autoreconf -vfi && ./configure && make",
 	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 
 	c_source = [[#include "enet/enet.h"]],

@@ -105,7 +105,7 @@ function vfs.CopyFileFileOnBoot(from, to)
 	from = vfs.GetAbsolutePath(from)
 	if not from then return nil, "source does not exist" end
 
-	local ok, err = vfs.CreateDirectoriesFromPath(vfs.GetFolderFromPath("os:" .. to))
+	local ok, err = vfs.CreateDirectoriesFromPath(vfs.GetFolderFromPath(to:startswith("os:") and to or ("os:" .. to)))
 	if not ok then
 		return ok, err
 	end
