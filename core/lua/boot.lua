@@ -462,7 +462,7 @@ local lua_exec = UNIX and "luajit" or "luajit.exe"
 
 if not os.isfile(BINARY_DIR .. lua_exec) then
 	os.makedir(BINARY_DIR)
-	os.copyfile(STORAGE_PATH .. "/bin/" .. OS .. "_" .. ARCH .. "/" .. lua_exec BINARY_DIR .. lua_exec)
+	os.copyfile(STORAGE_PATH .. "/bin/" .. OS .. "_" .. ARCH .. "/" .. lua_exec, BINARY_DIR .. lua_exec)
 
 	if UNIX then
 		os.execute("chmod +x " .. BINARY_DIR .. lua_exec)
