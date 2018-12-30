@@ -5,7 +5,7 @@ SetLocal EnableDelayedExpansion
 set OS=windows
 set APP_NAME=appexample
 set ARG_LINE=%*
-set STORAGE_PATH=core
+set STORAGE_PATH=storage
 set BINARY_DIR=!STORAGE_PATH!\bin\!OS!_!ARCH!
 set BINARY_NAME=luajit.exe
 set BASE_BINARY_URL=https://gitlab.com/CapsAdmin/goluwa-binaries-!OS!_!ARCH!/raw/master/
@@ -24,6 +24,8 @@ goto:eof
 :Main
 SetLocal
 	if not exist "!BINARY_DIR!" ( mkdir "!BINARY_DIR!" )
+	if not exist "core" ( mkdir "core" )
+	if not exist "core\lua" ( mkdir "core\lua" )
 
 	if not exist "!BINARY_DIR!\lua_downloaded_and_validated" (
 		call:DownloadFile "!BASE_BINARY_URL!lua51.dll" "!BINARY_DIR!\lua51.dll"
