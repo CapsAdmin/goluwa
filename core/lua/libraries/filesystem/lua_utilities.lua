@@ -304,7 +304,7 @@ do -- runfile
 
 			logn(source:sub(1) .. " " .. err)
 
-			debug.openscript(full_path, err:match(":(%d+)"))
+			--debug.openscript(full_path, err:match(":(%d+)"))
 		end
 
 		return false, err
@@ -436,7 +436,7 @@ if ffi then
 	function vfs.FFILoadLibrary(path, ...)
 		local args = {}
 		local found
-
+		
 		if vfs and vfs and vfs.PushWorkingDirectory then
 			local where = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
 			found = vfs.GetFiles({path = where, filter = path, filter_plain = true, full_path = true})
@@ -464,7 +464,7 @@ if ffi then
 				local deps = utility.GetLikelyLibraryDependenciesFormatted(full_path)
 				if deps then
 					args[2] = args[2] .. "\n" .. deps
-			end
+				end
 			end
 
 			if args[2] then
