@@ -57,7 +57,10 @@ do -- loaders
 
 			if not func then
 				if how == "open" and not err:startswith(path) or vfs.IsFile(path) then
-					err = err .. "\n" .. system.GetLibraryDependencies(path)
+					local deps = utility.GetLikelyLibraryDependenciesFormatted(full_path)
+					if deps then
+						err = err .. "\n" .. deps
+					end
 				end
 			end
 			return func, err, path
@@ -79,7 +82,7 @@ do -- loaders
 
 			if not func then
 				if how == "open" and not err:startswith(path) or vfs.IsFile(path) then
-					err = err .. "\n" .. system.GetLibraryDependencies(path)
+					err = err .. "\n" .. utility.GetLikelyLibraryDependenciesFormatted(path)
 				end
 			end
 			return func, err, path
