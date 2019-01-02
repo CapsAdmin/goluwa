@@ -71,25 +71,6 @@ do
 end
 
 do
-	ffi.cdef[[
-		int SetDllDirectoryA(const char *lpPathName);
-		unsigned long GetDllDirectoryA(unsigned long nBufferLength, const char *lpBuffer);
-	]]
-
-	function system.SetSharedLibraryPath(path)
-		ffi.C.SetDllDirectoryA(path or "")
-	end
-
-	local str = ffi.new("char[1024]")
-
-	function system.GetSharedLibraryPath()
-		ffi.C.GetDllDirectoryA(1024, str)
-
-		return ffi.string(str)
-	end
-end
-
-do
 	ffi.cdef([[
 		typedef unsigned goluwa_hkey;
 		long RegGetValueA(goluwa_hkey, const char*, const char*, unsigned long, unsigned long*, void*, unsigned long*);
