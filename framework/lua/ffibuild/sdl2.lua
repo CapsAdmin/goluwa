@@ -1,8 +1,7 @@
-
 ffibuild.Build({
 	name = "SDL2",
-	url = "https://hg.libsdl.org/SDL",
-	cmd = "./autogen.sh && mkdir build && cd build && ../configure --disable-audio --disable-render --disable-haptic --disable-filesystem --disable-file && make && cd ../",
+	url = "https://github.com/spurious/SDL-mirror.git",
+	cmd = "./autogen.sh && mkdir build && cd build && ../configure --host=x86_64-w64-mingw32 --disable-audio --disable-render --disable-haptic --disable-filesystem --disable-file && make && cd ../",
 	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 
 	c_source = [[

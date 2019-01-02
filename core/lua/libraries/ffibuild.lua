@@ -21,7 +21,33 @@ local function msys2(cmd, msys2_install)
 		error(err) 
 	end
 
-	return transformed_cmd
+	return transformed_cmd, msys2_install
+end
+
+do
+	local function go(path, done)
+		local data = utility.GetLikelyLibraryDependencies(path)
+		local dir = vfs.GetFolderFromPath(R(path))
+		
+		if WINDOWS then
+			for _, info in ipairs(data.dependencies) do
+				if info.status == "MISSING" and not done[info.name] then
+					local path = "C:/msys64/usr/bin/" .. info.name
+					if vfs.IsFile(path) then
+						done[info.name] = true
+						logn("\tfound ", info.name)
+						vfs.CopyFileFileOnBoot(path, dir .. info.name)
+						go(dir .. info.name, done)
+					end
+				end
+			end
+		end
+	end
+
+	function ffibuild.FetchDependencies(path)
+		logn("finding missing libraries for ", vfs.GetFileNameFromPath(path))
+		return go(path, {})
+	end
 end
 
 if UNIX then
@@ -38,26 +64,32 @@ if UNIX then
 end
 
 if WINDOWS then
-	function ffibuild.UnixExecute(cmd)
-		local transformed_cmd = msys2(cmd)
+	function ffibuild.UnixExecute(cmd, os_execute)
+		local transformed_cmd, cd = msys2(cmd)
 
 		repl.Flush()
 		repl.Stop()
 
 		if os_execute then
+			vfs.PushWorkingDirectory(cd)
 			local ok, err = os.execute(transformed_cmd)
+			vfs.PopWorkingDirectory()
 			repl.Start()
 			return ok, err
 		end
 
+		vfs.PushWorkingDirectory(cd)
 		local f = io.popen(transformed_cmd)
 		if not f then 
 			repl.Start()
+			vfs.PopWorkingDirectory()
 			return f, err 
 		end
 		
 		local str = f:read("*all")
 		repl.Start()
+
+		vfs.PopWorkingDirectory()
 
 		return str
 	end
@@ -111,7 +143,7 @@ function ffibuild.GetSharedLibrariesInDirectory(dir)
 			end
 		end
 		if WINDOWS then
-			if ext == find then
+			if ext:endswith(find) then
 				table.insert(out, path)
 			end
 		end
@@ -1064,7 +1096,7 @@ do -- type metatables
 					node.type = token
 				end
 
-				if token == "struct" or token == "union" or token == "enum" then
+				if (token == "struct" or token == "union" or token == "enum") and prev_node then
 					prev_node[prev_token] = nil
 					node.type = token .. " " .. prev_token
 				end
@@ -1886,39 +1918,45 @@ do -- lua helper functions
 
 		ffibuild.SetBuildName(info.name)
 
-		local dir = e.TEMP_FOLDER .. "ffibuild/" .. info.name .. "/repo/"
+		local dir = e.TEMP_FOLDER .. "ffibuild/" .. info.name .. "/"
 
 		local root = "os:" .. e.ROOT_FOLDER
-		local relative_bin_path =
-			"bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" ..
-			(WINDOWS and "" or "lib") .. info.name .. "." .. vfs.GetSharedLibraryExtension()
-
-		local bin_path = root .. addon .. "/" .. relative_bin_path
-		local bin_path_git = root .. "__goluwa-binaries/" .. addon .. "/" .. relative_bin_path
 
 		ffibuild.SourceControlClone(info.url, dir)
 
-		if not vfs.IsFile(bin_path) or not vfs.IsFile(dir .. "ran_build") then
+		if not vfs.IsFile(dir .. "ran_build") then
 			logn("running build command")
 			vfs.PushWorkingDirectory(dir)
 			ffibuild.UnixExecute(info.cmd, true)
 			vfs.PopWorkingDirectory()
-			vfs.Write(dir .. "ran_build", "1")
 		end
 
 		for _, path in ipairs(ffibuild.GetSharedLibrariesInDirectory(dir)) do
+			local addon_dir = root .. addon .. "/"
+			local git_dir = root .. "__goluwa-binaries/" .. addon .. "/"
+			
+			local relative_path = info.translate_path and info.translate_path(path) or (WINDOWS and "" or "lib") .. info.name
+
+			local bin_path = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" ..
+			relative_path .. "." .. vfs.GetSharedLibraryExtension()
+
 			llog("found %s\n", path)
-			if vfs.IsDirectory(bin_path_git) then
-				vfs.CopyFile(path, bin_path_git)
-				llog("%q was added", bin_path_git)
+
+			local path =  git_dir .. bin_path
+			if vfs.IsDirectory(git_dir) then
+				vfs.CopyFile(path, path)
+				llog("%q was added", path)
 			end
-			local ok, err = vfs.CopyFileFileOnBoot(path, bin_path)
+
+			local path =  addon_dir .. bin_path
+			local ok, err = vfs.CopyFileFileOnBoot(path, path)
 			if ok == "deferred" then
-				llog("%q will be replaced after restart", bin_path)
+				llog("%q will be replaced after restart", path)
 			else
-				llog("%q was added", bin_path)
+				llog("%q was added", path)
 			end
-			break
+
+			vfs.Write(dir .. "ran_build", "1")
 		end
 
 		if info.process_header then
