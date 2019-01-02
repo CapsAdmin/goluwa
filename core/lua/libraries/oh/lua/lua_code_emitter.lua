@@ -275,7 +275,7 @@ function META:Block(tree)
 						emit_block_with_continue(self, data, true)
 					self:Whitespace("\t-")
 				self:Whitespace("\t") self:EmitToken(data.tokens["until"],"")
-				self:Emit("if--[[until]](") self:Expression(data.expression) self:Emit(")then break end") self:Emit("::continue__oh::end")
+				self:Emit("if--[[until]](") self:Expression(data.condition) self:Emit(")then break end") self:Emit("::continue__oh::end")
 			else
 				self:Whitespace("\t")self:EmitToken(data.tokens["repeat"])self:Whitespace("\n")
 					self:Whitespace("\t+")
@@ -292,7 +292,7 @@ function META:Block(tree)
 				self:ExpressionList(data.expressions)
 			end
 		elseif data.type == "continue" then
-			self:Whitespace("\t")self:Whitespace("?") self:EmitToken(data["continue"], "goto continue__oh")
+			self:Whitespace("\t")self:Whitespace("?") self:EmitToken(data.tokens["continue"], "goto continue__oh")
 		elseif data.type == "for_i" or data.type == "for_kv" then
 			self:Whitespace("\t")self:EmitToken(data.tokens["for"])
 			if data.type == "for_i" then
