@@ -1,5 +1,91 @@
 local utility = _G.utility or {}
 
+
+function utility.GetLikelyLibraryDependencies(path)
+	local ext = vfs.GetExtensionFromPath(path)
+	local original = vfs.GetFileNameFromPath(path)
+
+	if not vfs.IsFile(path) then
+		return nil, "file not found"
+	end
+
+	local content = vfs.Read(path)
+	local done = {}
+	local found = {}
+
+	if ext == "so" then
+		for name in content:gmatch("([%.%w_-]+%.so[%w%.]*)\0") do
+			if not done[name] then
+				table.insert(found, {name = name, status = "MISSING"})
+				done[name] = true
+			end
+		end
+		original = table.remove(found, #found).name
+	elseif ext == "dll" then
+		for name in content:gmatch("([%.%w_-]+%.dll)\0") do
+			if not done[name] then
+				table.insert(found, {name = name, status = "MISSING"})
+				done[name] = true
+			end
+		end
+		--original = table.remove(found, 1).name
+	elseif ext == "dylib" then
+		for name in content:gmatch("([%.%w_-]+%.dylib)\0") do
+			if not done[name] then
+				table.insert(found, {name = name, status = "MISSING"})
+				done[name] = true
+			end
+		end
+		original = table.remove(found, 1).name
+	end
+
+	for i, info in ipairs(found) do
+		local where = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
+		local found = vfs.GetFiles({path = where, filter = path, filter_plain = true, full_path = true})
+
+		if found[1] then
+			for _, full_path in ipairs(found) do
+				-- look first in the vfs' bin directories
+				vfs.PushWorkingDirectory(full_path:match("(.+/)"))
+					local ok, err, what = package.loadlib(info.name, "")
+					if what == "open" then
+						info.status = "MISSING"
+					elseif what == "init" then
+						info.status = "FOUND"
+						break
+					end
+				vfs.PopSharedLibraryPath()
+			end
+		else
+			local ok, err, what = package.loadlib(info.name, "")
+			if what == "open" then
+				info.status = "MISSING"
+			elseif what == "init" then
+				info.status = "FOUND"
+			end
+		end
+	end
+
+	return {name = original, dependencies = found}
+end
+
+do
+	local cache = {}
+	function utility.GetLikelyLibraryDependenciesFormatted(path)
+		local data = cache[path] or utility.GetLikelyLibraryDependencies(path)
+		cache[path] = data
+
+		if not data then return end
+
+		local str = data.name .. " likely dependencies:\n"
+		for _, info in ipairs(data.dependencies) do
+			str = str .. "\t" .. (info.status) .. "\t\t" .. info.name .. "\n"
+		end
+
+		return str
+	end
+end
+
 function utility.AddPackageLoader(func, loaders)
 	loaders = loaders or package.loaders
 

@@ -54,22 +54,6 @@ function system.OSCommandExists(...)
 	return system._OSCommandExists(...)
 end
 
-function system.GetLibraryDependencies(path)
-	if system.OSCommandExists("ldd", "otool") then
-		local cmd = system.OSCommandExists("ldd") and "ldd" or "otool -L"
-		local f = io.popen(cmd .. " " .. path .. " 2>&1")
-		if f then
-			local str = f:read("*all")
-			f:close()
-
-			str = str:gsub("(.-\n)", function(line) if not line:find("not found") then return "" end end)
-
-			return str
-		end
-	end
-	return "unable to find library dependencies for " .. path .. " because ldd is not an os command"
-end
-
 do -- console title
 	local titles = {}
 	local titlesi = {}

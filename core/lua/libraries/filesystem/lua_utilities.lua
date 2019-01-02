@@ -435,22 +435,25 @@ if ffi then
 	-- make ffi.load search using our file system
 	function vfs.FFILoadLibrary(path, ...)
 		local args = {}
+		local found
 
-		if vfs and system and system.SetSharedLibraryPath then
+		if vfs and vfs and vfs.PushWorkingDirectory then
 			local where = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
-			local found = vfs.GetFiles({path = where, filter = path, filter_plain = true, full_path = true})
+			found = vfs.GetFiles({path = where, filter = path, filter_plain = true, full_path = true})
 			for _, full_path in ipairs(found) do
 				-- look first in the vfs' bin directories
-				local old = system.GetSharedLibraryPath()
-				system.SetSharedLibraryPath(full_path:match("(.+/)"))
+				vfs.PushWorkingDirectory(full_path:match("(.+/)"))
 				args = {pcall(_OLD_G.ffi.load, full_path, ...)}
-				system.SetSharedLibraryPath(old)
+				vfs.PophWorkingDirectory()
 
 				if args[1] then
 					return handle_windows_symbols(path, select(2, unpack(args)))
 				end
 
-				args[2] = args[2] .. "\n" .. system.GetLibraryDependencies(full_path)
+				local deps = utility.GetLikelyLibraryDependenciesFormatted(full_path)
+				if deps then
+					args[2] = args[2] .. "\n" .. deps
+				end
 
 				-- if not try the default OS specific dll directories
 				args = {pcall(_OLD_G.ffi.load, full_path, ...)}
@@ -458,11 +461,10 @@ if ffi then
 					return handle_windows_symbols(path, select(2, unpack(args)))
 				end
 
-				args[2] = args[2] .. "\n" .. system.GetLibraryDependencies(full_path)
+				local deps = utility.GetLikelyLibraryDependenciesFormatted(full_path)
+				if deps then
+					args[2] = args[2] .. "\n" .. deps
 			end
-
-			if not found[1] then
-				error(path .. " could not be found anywhere", 2)
 			end
 
 			if args[2] then
@@ -470,14 +472,14 @@ if ffi then
 			end
 		end
 
-		if not args[2] then
+		if not found or not found[1] then
 			args = {pcall(_OLD_G.ffi.load, path, ...)}
-
-			if WINDOWS and not args[1] then
-				args = {pcall(_OLD_G.ffi.load, "lib" .. path, ...)}
-			end
 		end
 
-		return handle_windows_symbols(path, args[2])
+		if args[1] then
+			return handle_windows_symbols(path, args[2])
+		end
+
+		return args[1], args[2]
 	end
 end
