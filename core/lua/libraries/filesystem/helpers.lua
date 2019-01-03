@@ -117,6 +117,11 @@ function vfs.CopyFileFileOnBoot(from, to)
 	if vfs.IsFile(to) then
 		local path = "shared/copy_binaries_instructions"
 		local str = vfs.Read(path) or ""
+		for _, line in ipairs(str:split("\n")) do
+			if line == (from .. ";" .. to) then
+				return "deferred"
+			end
+		end
 		str = str .. from .. ";" .. to .. "\n"
 		vfs.Write(path, str)
 		return "deferred"
