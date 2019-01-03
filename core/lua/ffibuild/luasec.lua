@@ -1,7 +1,8 @@
 ffibuild.Build({
 	name = "luasec",
 	url = "https://github.com/brunoos/luasec.git",
-	cmd = "make linux CFLAGS='-I../../luajit/src -fpic -I.' LDFLAGS='-L../../luajit/src -L../../luasocket/src -L./luasocket -l:libluajit.a'",
+	cmd = "make linux LUAPATH=/mingw64/include/lua5.1/ LIB_PATH='-L /mingw64/bin/' l:lua51.dll",
+    force_rebuild = true,
 	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
     translate_path = function(path)
         local name = vfs.RemoveExtensionFromPath(vfs.GetFileNameFromPath(path))

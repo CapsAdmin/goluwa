@@ -72,6 +72,7 @@ if WINDOWS then
 
 		if os_execute then
 			vfs.PushWorkingDirectory(cd)
+			os.setenv("MSYSTEM", "MINGW64")
 			local ok, err = os.execute(transformed_cmd)
 			vfs.PopWorkingDirectory()
 			repl.Start()
@@ -1924,7 +1925,17 @@ do -- lua helper functions
 
 		ffibuild.SourceControlClone(info.url, dir)
 
-		if not vfs.IsFile(dir .. "ran_build") then
+		if info.patches then
+			vfs.PushWorkingDirectory(dir)
+				for _, patch in ipairs(info.patches) do
+					local f = io.popen("git apply --ignore-space-change --ignore-whitespace -", "wb")
+					f:write(patch)
+					f:close()
+				end
+			vfs.PopWorkingDirectory()
+		end
+
+		if not vfs.IsFile(dir .. "ran_build") or info.force_build then
 			logn("running build command")
 			vfs.PushWorkingDirectory(dir)
 			ffibuild.UnixExecute(info.cmd, true)
