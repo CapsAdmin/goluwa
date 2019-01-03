@@ -51,7 +51,7 @@ function vfs.RemoveExtensionFromPath(str)
 end
 
 function vfs.GetExtensionFromPath(str)
-	return vfs.GetFileNameFromPath(str):match(".-%.([%w.]+)") or ""
+	return vfs.GetFileNameFromPath(str):match(".-%.([%w-_%.]+)") or ""
 end
 
 function vfs.GetFolderFromPath(str)
