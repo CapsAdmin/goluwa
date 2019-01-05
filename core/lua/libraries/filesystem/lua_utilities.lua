@@ -444,7 +444,7 @@ if ffi then
 				-- look first in the vfs' bin directories
 				vfs.PushWorkingDirectory(full_path:match("(.+/)"))
 				args = {pcall(_OLD_G.ffi.load, full_path, ...)}
-				vfs.PophWorkingDirectory()
+				vfs.PopWorkingDirectory()
 
 				if args[1] then
 					return handle_windows_symbols(path, select(2, unpack(args)))
