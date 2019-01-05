@@ -17,8 +17,8 @@ local function msys2(cmd, msys2_install)
 		end)
 	vfs.PopWorkingDirectory()
 
-	if not ok then 
-		error(err) 
+	if not ok then
+		error(err)
 	end
 
 	return transformed_cmd, msys2_install
@@ -28,7 +28,7 @@ do
 	local function go(path, done)
 		local data = utility.GetLikelyLibraryDependencies(path)
 		local dir = vfs.GetFolderFromPath(R(path))
-		
+
 		if WINDOWS then
 			for _, info in ipairs(data.dependencies) do
 				if info.status == "MISSING" and not done[info.name] then
@@ -53,11 +53,11 @@ end
 if UNIX then
 	function ffibuild.UnixExecute(cmd, os_execute)
 		if os_execute then
-			return os.execute(cmd)
+			return os.execute(print(cmd))
 		end
-		local f, err = io.open(cmd)
-		if not f then 
-			return f, err 
+		local f, err = io.popen(cmd)
+		if not f then
+			return f, err
 		end
 		return f:read("*all")
 	end
@@ -81,12 +81,12 @@ if WINDOWS then
 
 		vfs.PushWorkingDirectory(cd)
 		local f = io.popen(transformed_cmd)
-		if not f then 
+		if not f then
 			repl.Start()
 			vfs.PopWorkingDirectory()
-			return f, err 
+			return f, err
 		end
-		
+
 		local str = f:read("*all")
 		repl.Start()
 
@@ -112,9 +112,9 @@ function ffibuild.SourceControlClone(str, dir)
 		branch = branch or ""
 
 		if vfs.IsFile(dir .. ".git") then
-			os.execute("git -C " .. dir .. " pull")
+			os.execute(print("git -C " .. dir .. " pull"))
 		else
-			os.execute("git clone " .. str .. " " .. dir .. " --depth 1 " .. branch .. " ")
+			os.execute(print("git clone " .. str .. " " .. dir .. " --depth 1 " .. branch .. " "))
 		end
 
 	elseif str:find("hg%.") then
@@ -273,11 +273,11 @@ function ffibuild.ProcessSourceFileGCC(c_source, flags, dir)
 
 	vfs.PushWorkingDirectory(dir)
 	local temp_name = "ffibuild_gcc_process_temp.c"
-	local temp_file = io.open(temp_name, "w")
+	local temp_file = assert(io.open(temp_name, "w"))
 	temp_file:write(c_source)
 	temp_file:close()
 
-	local header = ffibuild.UnixExecute("gcc -xc -E -P " .. flags .. " " .. temp_name)
+	local header = assert(ffibuild.UnixExecute("gcc -xc -E -P " .. flags .. " " .. temp_name))
 	vfs.PopWorkingDirectory()
 	os.remove(temp_name)
 
@@ -1928,9 +1928,9 @@ do -- lua helper functions
 		if info.patches then
 			vfs.PushWorkingDirectory(dir)
 				for _, patch in ipairs(info.patches) do
-					local f = io.popen("git apply --ignore-space-change --ignore-whitespace -", "wb")
-					f:write(patch)
-					f:close()
+					io.open("temp.patch", "wb"):write(patch)
+					os.execute("git apply --ignore-space-change --ignore-whitespace temp.patch")
+					os.remove("temp.patch")
 				end
 			vfs.PopWorkingDirectory()
 		end
@@ -1945,26 +1945,28 @@ do -- lua helper functions
 		for _, path in ipairs(ffibuild.GetSharedLibrariesInDirectory(dir)) do
 			local addon_dir = root .. addon .. "/"
 			local git_dir = root .. "__goluwa-binaries/" .. addon .. "/"
-			
+
 			local relative_path = info.translate_path and info.translate_path(path) or (WINDOWS and "" or "lib") .. info.name
 
 			local bin_path = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" ..
 			relative_path .. "." .. vfs.GetSharedLibraryExtension()
 
-			llog("found %s\n", path)
+			llog("found %s", path)
+			logn(utility.GetLikelyLibraryDependenciesFormatted(path))
 
-			local path =  git_dir .. bin_path
+			local to =  git_dir .. bin_path
 			if vfs.IsDirectory(git_dir) then
-				vfs.CopyFile(path, path)
+				vfs.CopyFile(path, to)
 				llog("%q was added", path)
 			end
 
-			local path =  addon_dir .. bin_path
-			local ok, err = vfs.CopyFileFileOnBoot(path, path)
+			local to =  addon_dir .. bin_path
+			local ok, err = assert(vfs.CopyFileFileOnBoot(path, to))
+
 			if ok == "deferred" then
-				llog("%q will be replaced after restart", path)
+				llog("%q will be replaced after restart", to)
 			else
-				llog("%q was added", path)
+				llog("%q was added", to)
 			end
 
 			vfs.Write(dir .. "ran_build", "1")
@@ -1974,7 +1976,7 @@ do -- lua helper functions
 			local header, meta_data = ffibuild.ProcessSourceFileGCC(info.c_source, info.gcc_flags, dir)
 			if #header == 0 then
 
-				logn("failed to process source:\n", info.c_source)
+				logn("failed to process source:", info.c_source)
 				return
 			end
 			header, meta_data = info.process_header(header)
