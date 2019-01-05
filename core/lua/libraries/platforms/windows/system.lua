@@ -1,6 +1,21 @@
 local system = ... or _G.system
 local ffi = require("ffi")
 
+do
+	local FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000
+	local FORMAT_MESSAGE_IGNORE_INSERTS = 0x00000200
+	local flags = bit.bor(FORMAT_MESSAGE_IGNORE_INSERTS, FORMAT_MESSAGE_FROM_SYSTEM)
+
+	ffi.cdef("int GetLastError();")
+
+	function system.LastOSError(num)
+		num = num or ffi.C.GetLastError()
+		local buffer = ffi.new("char[512]")
+		ffi.C.FormatMessageA(flags, nil, num, 0, buffer, ffi.sizeof(buffer), nil)
+		return string.sub(ffi.string(buffer), 1, -3).." ("..num..")" -- remove last crlf
+	end
+end
+
 function system.OpenURL(url)
 	os.execute(([[explorer "%s"]]):format(url))
 end

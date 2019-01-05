@@ -1,6 +1,12 @@
 local system = ... or _G.system
 local ffi = require("ffi")
 
+function system.LastOSError(num)
+	num = num or ffi.errno()
+	local err = ffi.string(ffi.C.strerror(num))
+	return err == "" and tostring(num) or err
+end
+
 do
 	local attempts = {
 		"sensible-browser",
