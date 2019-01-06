@@ -1,186 +1,6 @@
 local sockets = _G.sockets or {}
 
-sockets.core = {}
-
-sockets.core.luasocket = desire("socket.core")
-
-local ok, enet = pcall(require, "enet")
-
-if ok then
-	local ffi = require("ffi")
-
-	local META = {}
-	META.__index = META
-
-	function META:setfd(val)
-		self.obj = val
-	end
-
-	function META:getfd(val)
-		return self.obj
-	end
-
-	function META:accept()
-
-	end
-
-	function META:close()
-		enet.SocketDestroy(self.obj)
-	end
-
-	function META:settimeout(sec)
-		if sec == 0 then
-			enet.SocketSetOption(obj, enet.e.SOCKOPT_NONBLOCK, 1)
-		end
-
-		return true
-	end
-
-	function META:setoption(key, val)
-		return nil
-	end
-
-	function META:connect(ip, port)
-		local host = ip
-		local out = ffi.new("struct _ENetAddress[1]")
-		local ret = enet.AddressSetHost(out, host)
-		out[0].port = port
-		self.address = out
-
-		local ret = enet.SocketConnect(self.obj, out[0])
-
-		if ret == -1 then
-			return nil, ffi.strerror()
-		end
-
-		return true
-	end
-
-	function META:getpeername()
-		--local out = ffi.new("struct _ENetAddress[1]")
-		--enet.SocketGetAddress(self.obj, out)
-		local out = self.address
-
-		local ip = ffi.new("char[256]")
-		enet.AddressGetHostIp(out[0], ip, ffi.sizeof(ip))
-
-		--local host = ffi.new("char[256]")
-		--enet.AddressGetHost(out[0], host, ffi.sizeof(host))
-		--print(ffi.string(host), "!!!")
-
-		return tostring(ffi.string(ip)), out[0].port
-	end
-
-	function META:send(str)
-		local buffer = ffi.new("struct ENetBuffer", {data = ffi.cast("uint8_t*", str), dataLength = #str})
-		local ret = enet.SocketSend(self.obj, self.address[0], buffer, 1)
-
-		if ret == -1 then
-			return nil, ffi.strerror()
-		end
-
-		return ret
-	end
-
-	function META:bind(ip, port)
-
-	end
-
-	function META:listen()
-
-	end
-
-	function META:sendto(str, ip, port)
-
-	end
-
-	function META:receive()
-		local buffer = ffi.new("struct ENetBuffer[1]")
-		local ret = enet.SocketReceive(self.obj, self.address[0], buffer, 1)
-
-		if ret == -1 then
-			return nil, ffi.strerror()
-		end
-
-		return ffi.string(buffer[0].data, buffer[0].dataLength)
-	end
-
-	META.receivefrom = META.receieve
-
-	function META:getsockname()
-
-	end
-
-	local function create(enum)
-		local obj = enet.SocketCreate(enum)
-
-		return obj
-	end
-
-	sockets.core.enet = {
-		tcp = function() return setmetatable({obj = create(enet.e.SOCKET_TYPE_STREAM)}, META) end,
-		udp = function() return setmetatable({obj = create(enet.e.SOCKET_TYPE_DGRAM)}, META) end,
-	}
-end
-
-
-do
-	local META = {}
-	META.__index = META
-
-	function META:accept()
-		return nil, "nyi"
-	end
-
-	function META:close()
-		return nil, "nyi"
-	end
-
-	function META:settimeout(sec)
-		return nil, "nyi"
-	end
-
-	function META:setoption(key, val)
-		return nil
-	end
-
-	function META:connect(ip, port)
-		return nil, "nyi"
-	end
-
-	function META:getpeername()
-		return nil, "nyi"
-	end
-
-	function META:send(str)
-		return nil, "nyi"
-	end
-
-	function META:bind(ip, port)
-		return nil, "nyi"
-	end
-
-	function META:listen()
-		return nil, "nyi"
-	end
-
-	function META:sendto(str, ip, port)
-		return nil, "nyi"
-	end
-
-	function META:receivefrom()
-		return nil, "nyi"
-	end
-
-	function META:getsockname()
-		return nil, "nyi"
-	end
-
-	sockets.core.dummy = {
-		tcp = function() return setmetatable({}, META) end,
-		udp = function() return setmetatable({}, META) end,
-	}
-end
+local bsocket = require("bsocket")
 
 sockets.active_sockets = sockets.active_sockets or {}
 
@@ -253,9 +73,9 @@ function sockets.Panic()
 	table.clear(sockets.active_sockets)
 end
 
-local function new_socket(override, META, typ, id)
-	typ = typ or "tcp"
-	typ = typ:lower()
+local function new_socket(override, META, ip_proto, id)
+	ip_proto = ip_proto or "tcp"
+	ip_proto = ip_proto:lower()
 
 	-- this removes any sockets
 	sockets.Update(true)
@@ -270,17 +90,11 @@ local function new_socket(override, META, typ, id)
 
 	local self = META:CreateObject()
 
-	local subtype = typ:sub(5)
+	local t
+	self.socket = override or assert(bsocket.socket("inet", ip_proto == "tcp" and "stream" or ip_proto == "udp" and "dgram", ip_proto))
+	self.socket:set_blocking(false)
 
-	if subtype == "" then
-		subtype = "luasocket"
-	end
-
-	self.socket = override or assert(sockets.core[subtype][typ]())
-	self.socket:settimeout(0, "block")
-	self.socket:settimeout(0, "total")
-
-	self.socket_type = typ
+	self.socket_type = ip_proto
 	self.data_sent = 0
 	self.data_received = 0
 
@@ -320,7 +134,7 @@ do -- tcp socket meta
 	local function add_options(tbl)
 		for func_name, key in pairs(options) do
 			tbl["Set" .. func_name] = function(self, val)
-				self.socket:setoption(key, val)
+				self.socket:set_option(key, val)
 				self:DebugPrintf("option[%q] = %s", key, val)
 				self[func_name] = val
 			end
@@ -367,15 +181,6 @@ do -- tcp socket meta
 			}
 
 			function CLIENT:SetSSLParams(params)
-				if sockets.ssl == nil then
-					sockets.ssl = WINDOWS and desire("ssl") or desire("ssl.ssl")
-				end
-
-				if not sockets.ssl then
-					wlog("cannot use ssl parameters: luasec not found!")
-					return
-				end
-
 				if params == "https" then
 					params = https_default
 				end
@@ -387,6 +192,52 @@ do -- tcp socket meta
 				end
 
 				self.SSLParams = copy
+
+				local SSL = desire("libressl")
+				if SSL then
+					local ffi = require("ffi")
+					SSL.tls_init()
+					local tls = SSL.tls_client()
+					local config = SSL.tls_config_new()
+					SSL.tls_config_insecure_noverifycert(config)
+					SSL.tls_config_insecure_noverifyname(config)
+					SSL.tls_configure(tls, config)
+
+					function self.socket:on_connect(host, serivce)
+						if SSL.tls_connect_socket(tls, self.fd, host) < 0 then
+							if len == -3 or len == -2 then
+								return true, "blocking"
+							end
+							local err = SSL.tls_error(tls)
+							return nil, err ~= nil and ffi.string(err) or "unknown connect error " .. tonumber(len)
+						end
+						return true
+					end
+
+					function self.socket:on_send(data, flags)
+						local len = SSL.tls_write(tls, data, #data)
+						if len < 0 then
+							if len == -3 or len == -2 then
+								return true, "blocking"
+							end
+							local err = SSL.tls_error(tls)
+							return nil, err ~= nil and ffi.string(err) or "unknown write error " .. tonumber(len)
+						end
+						return len
+					end
+
+					function self.socket:on_receive(buffer, max_size, flags)
+						local len = SSL.tls_read(tls, buffer, max_size)
+						if len < 0 then
+							if len == -3 or len == -2 then
+								return true, "blocking"
+							end
+							local err = SSL.tls_error(tls)
+							return nil, err ~= nil and ffi.string(err) or "unknown read error " .. tonumber(len)
+						end
+						return ffi.string(buffer, len)
+					end
+				end
 			end
 		end
 
@@ -396,9 +247,9 @@ do -- tcp socket meta
 			local ok, msg
 
 			if self.socket_type == "tcp" then
-				ok, msg = self.socket:connect(ip, port)
+				ok, msg = self.socket:connect(ip, tostring(port))
 			else
-				ok, msg = self.socket:setpeername(ip, port)
+				ok, msg = self.socket:set_peer_name(ip, tostring(port))
 			end
 
 			if not ok and msg and msg ~= "timeout" and msg ~= "Operation already in progress" and (WINDOWS and msg ~= "Invalid argument") then
@@ -414,6 +265,9 @@ do -- tcp socket meta
 			else
 				self.connecting = true
 			end
+
+			self.ip = ip
+			self.port = port
 		end
 
 		function CLIENT:Send(str, instant)
@@ -459,63 +313,30 @@ do -- tcp socket meta
 		local receive_types = {all = "*a", line = "*l"}
 
 		function CLIENT:Think()
-			local sock = self.socket
-
 			if self.TimeoutLength and system.GetFrameTime() > self.TimeoutLength / 2 then
 				self:Timeout(false)
 			end
 
 			-- check connection
 			if self.connecting then
-				local res, msg = sock:getpeername()
-
-				if res then
-					self:DebugPrintf("connected to %s:%s", res, msg)
+				if self.socket:is_connected() then
+					self:DebugPrintf("connected to %s:%s", self.socket:get_peer_name())
 
 					if self.SSLParams then
-						self.old_socket = sock
-						sock = assert(sockets.ssl.wrap(sock, self.SSLParams))
-						assert(sock:settimeout(0, "total"))
-						assert(sock:settimeout(0, "block"))
-						self.socket = sock
-
-						self.ssl_socket = sock
-						self.shaking_hands = true
-
 						self:DebugPrintf("start handshake")
-					else
-						self:OnConnect(res, msg)
+						self.socket:on_connect(self.ip)
 					end
+
+					self:OnConnect(res, msg)
 
 					-- ip, port = res, msg
 					self.connected = true
 					self.connecting = nil
 
 					self:Timeout(false)
-				elseif msg == "timeout" or msg == "getpeername failed" or msg == "Transport endpoint is not connected" then
-					self:Timeout(true)
 				else
-					self:Error(msg)
-				end
-			end
-
-			if self.shaking_hands then
-				local res, msg = sock:dohandshake()
-
-				if res then
-					self.shaking_hands = nil
-					self:DebugPrintf("done shaking hands")
-					self:OnConnect(self.old_socket:getpeername())
-				elseif msg == "wantread" or msg == "wantwrite" or msg == "Socket is not connected" then
 					self:Timeout(true)
-				elseif msg == "closed" then
-					self:Remove()
-				else
-					self:Error(msg)
-					self:Remove()
 				end
-
-				return
 			end
 
 			if self.connected then
@@ -525,22 +346,26 @@ do -- tcp socket meta
 					for _ = 1, 128 do
 						local data = self.Buffer[1]
 						if data then
-							local bytes, b, c, d = sock:send(data)
+							local bytes, b, c, d = self.socket:send(data)
 
-							if bytes then
+							if bytes == true and b == "blocking" then
+
+							elseif bytes then
 								if self.debug then
 									self:DebugPrintf("SEND: |%s|",  data:gsub("%s", function(c) if c:byte() < 32 or c:byte() > 126 then return "\\" .. c:byte() end end))
 								end
 								self:OnSend(data, bytes, b,c,d)
 								table.remove(self.Buffer, 1)
 
-								self.data_sent = self.data_sent + bytes
+								self.datas_ent = self.data_sent + bytes
 
 								if self.__server then
 									self.__server.data_sent = self.__server.data_sent + bytes
 								end
-							elseif b ~= "Socket is not connected" and b ~= "wantwrite" then
-								self:DebugPrintf("could not send %s of data : %s", utility.FormatFileSize(#data), b)
+							else
+								if b ~= "Socket is not connected" and b ~= "wantwrite" and b ~= "context not connected" then
+									self:DebugPrintf("could not send %s of data : %s", utility.FormatFileSize(#data), b)
+								end
 --								break
 							end
 						else
@@ -552,23 +377,12 @@ do -- tcp socket meta
 					end
 				end
 
-				-- try receive
-				local mode
-
-				if self.socket_type == "udp" then
-					--mode = 1024
-				else
-					mode = receive_types[self.ReceiveMode] or self.ReceiveMode
-				end
-
 				for _ = 1, 128 do
-					local data, err, partial = sock:receive(mode)
+					local data, err = self.socket:receive()
 
-					if not data and partial and partial ~= "" then
-						data = partial
-					end
+					if data == true and err == "blocking" then
 
-					if data then
+					elseif data then
 						self:DebugPrintf("RECV: |%s|",  data)
 
 						self:OnReceive(data)
@@ -589,7 +403,8 @@ do -- tcp socket meta
 							err == "Socket is not connected" or
 							err == "wantread" or
 							err == "Resource temporarily unavailable" or
-							err == "Operation now in progress"
+							err == "Operation now in progress" or
+							err == "context not connected"
 						then
 							self:Timeout(true)
 						elseif err == "closed" then
@@ -688,14 +503,13 @@ do -- tcp socket meta
 		function CLIENT:GetIP()
 			if not self.connected then return "nil" end
 			local ip, port
-			local socket = self.old_socket or self.socket
 
-			if not socket then return "nil" end
+			if not self.socket then return "nil" end
 
 			if self.__server then
-				ip, port = socket:getpeername()
+				ip, port = self.socket:get_peer_name()
 			else
-				ip, port = socket:getsockname()
+				ip, port = self.socket:get_name()
 			end
 
 			return ip
@@ -703,32 +517,34 @@ do -- tcp socket meta
 
 		function CLIENT:GetPort()
 			if not self.connected then return "nil" end
+			if not self.socket then return "nosock" end
+
 			local ip, port
-			local socket = self.old_socket or self.socket
 
 			if self.__server then
-				ip, port = socket:getpeername()
+				ip, port = self.socket:get_peer_name()
 			else
-				ip, port = socket:getsockname()
+				ip, port = self.socket:get_name()
 			end
 			return ip and tonumber(port) or nil
 		end
 
 		function CLIENT:GetIPPort()
 			if not self.connected then return "nil" end
+			if not self.socket then return "nosock" end
+
 			local ip, port
-			local socket = self.old_socket or self.socket
 
 			if self.__server then
-				ip, port = socket:getpeername()
+				ip, port = self.socket:getpeername()
 			else
-				ip, port = socket:getsockname()
+				ip, port = self.socket:getsockname()
 			end
 			return ip .. ":" .. port
 		end
 
 		function CLIENT:GetSocketName()
-			return (self.old_socket or self.socket):getpeername()
+			return self.socket:getpeername()
 		end
 
 		function CLIENT:IsValid()
@@ -907,9 +723,7 @@ do -- tcp socket meta
 					self.data_received = self.data_received + #data
 				end
 			elseif self.socket_type == "tcp" then
-				local sock = self.socket
-
-				local client = sock:accept()
+				local client = self.socket:accept()
 
 				if client then
 

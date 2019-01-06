@@ -264,10 +264,7 @@ do
 
     function meta:send(data, flags)
         if self.on_send then
-            local ret, err = self:on_send(data, flags)
-            if ret ~= nil or err then
-                return ret
-            end
+            return self:on_send(data, flags)
         end
         local len, err = bsock.socket_send(self.fd, data, #data, flags or 0)
         if not len then
@@ -284,10 +281,7 @@ do
         local buff = ffi.new("char[?]", size)
 
         if self.on_receive then
-            local ret, err = self:on_receive(buff, size, flags)
-            if ret ~= nil or err then
-                return ret, err
-            end
+            return self:on_receive(buff, size, flags)
         end
 
         local len, err = bsock.socket_recv(self.fd, buff, ffi.sizeof(buff), flags or 0)
