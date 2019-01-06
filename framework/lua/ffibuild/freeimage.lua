@@ -1,252 +1,255 @@
-package.path = package.path .. ";../?.lua"
-local ffibuild = require("ffibuild")
+ffibuild.Build({
+	name = "freeimage",
+	url = "https://svn.code.sf.net/p/freeimage/svn/FreeImage/trunk",
+	cmd = "make",
+	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 
-local header = ffibuild.NixBuild({
-	package_name = "freeimage",
-	library_name = "libfreeimage*",
-	src = [[
-	#include "FreeImage.h"
-]]})
+	c_source = [[#include "FreeImage.h"]],
+	gcc_flags = "-I./Source",
 
+	process_header = function(header)
+		local meta_data = ffibuild.GetMetaData(header)
+		meta_data.functions.FreeImage_RegisterExternalPlugin = nil
 
-local meta_data = ffibuild.GetMetaData(header)
-local header = meta_data:BuildMinimalHeader(function(name) return name:find("^FreeImage_") end, function(name) return name:find("^FI") end, true, true)
-local lua = ffibuild.StartLibrary(header)
+		return meta_data:BuildMinimalHeader(function(name) return name:find("^FreeImage_") end, function(name) return name:find("^FI") end, true, true)
+	end,
 
-meta_data.functions.FreeImage_RegisterExternalPlugin = nil
+	build_lua = function(header, meta_data)
+		local lua = ffibuild.StartLibrary(header)
+		lua = lua .. "library = " .. meta_data:BuildFunctions("^FreeImage_(.+)")
 
-lua = lua .. "library = " .. meta_data:BuildFunctions("^FreeImage_(.+)")
-
-do -- enums
-	lua = lua .. "library.e = {\n"
-	for basic_type, type in pairs(meta_data.enums) do
-		for i, enum in ipairs(type.enums) do
-			local friendly = enum.key:match("^FI(.+)")
-			if friendly then
-				if friendly:find("^T_") then
-					friendly = friendly:gsub("^T", "IMAGE_TYPE")
-				elseif friendly:find("^CC_") then
-					friendly = friendly:gsub("^CC", "COLOR_CHANNEL")
-				elseif friendly:find("^C_") then
-					friendly = friendly:gsub("^C", "COLOR_TYPE")
-				elseif friendly:find("^F_") then
-					friendly = friendly:gsub("^F", "FORMAT")
-				elseif friendly:find("^Q_") then
-					friendly = friendly:gsub("^Q", "QUANTIZE")
-				elseif friendly:find("^LTER_") then
-					friendly = friendly:gsub("^LTER", "IMAGE_FILTER")
-				elseif friendly:find("^D_") then
-					friendly = friendly:gsub("^D", "DITHER")
-				elseif friendly:find("^MD_") then
-					friendly = friendly:gsub("^MD", "METADATA")
-				elseif friendly:find("^DT_") then
-					friendly = friendly:gsub("^DT", "METADATA_TYPE")
-				elseif friendly:find("^JPEG_OP_") then
-					friendly = friendly:gsub("^JPEG_OP", "JPEG_OPERATION")
-				elseif friendly:find("^JPEG_OP_") then
-					friendly = friendly:gsub("^JPEG_OP", "JPEG_OPERATION")
-				elseif friendly:find("^TMO_") then
-					friendly = friendly:gsub("^TMO", "TONEMAP_OPERATOR")
+		do -- enums
+			lua = lua .. "library.e = {\n"
+			for basic_type, type in pairs(meta_data.enums) do
+				for i, enum in ipairs(type.enums) do
+					local friendly = enum.key:match("^FI(.+)")
+					if friendly then
+						if friendly:find("^T_") then
+							friendly = friendly:gsub("^T", "IMAGE_TYPE")
+						elseif friendly:find("^CC_") then
+							friendly = friendly:gsub("^CC", "COLOR_CHANNEL")
+						elseif friendly:find("^C_") then
+							friendly = friendly:gsub("^C", "COLOR_TYPE")
+						elseif friendly:find("^F_") then
+							friendly = friendly:gsub("^F", "FORMAT")
+						elseif friendly:find("^Q_") then
+							friendly = friendly:gsub("^Q", "QUANTIZE")
+						elseif friendly:find("^LTER_") then
+							friendly = friendly:gsub("^LTER", "IMAGE_FILTER")
+						elseif friendly:find("^D_") then
+							friendly = friendly:gsub("^D", "DITHER")
+						elseif friendly:find("^MD_") then
+							friendly = friendly:gsub("^MD", "METADATA")
+						elseif friendly:find("^DT_") then
+							friendly = friendly:gsub("^DT", "METADATA_TYPE")
+						elseif friendly:find("^JPEG_OP_") then
+							friendly = friendly:gsub("^JPEG_OP", "JPEG_OPERATION")
+						elseif friendly:find("^JPEG_OP_") then
+							friendly = friendly:gsub("^JPEG_OP", "JPEG_OPERATION")
+						elseif friendly:find("^TMO_") then
+							friendly = friendly:gsub("^TMO", "TONEMAP_OPERATOR")
+						end
+						lua =  lua .. "\t" .. friendly .. " = ffi.cast(\""..basic_type.."\", \""..enum.key.."\"),\n"
+					end
 				end
-				lua =  lua .. "\t" .. friendly .. " = ffi.cast(\""..basic_type.."\", \""..enum.key.."\"),\n"
+			end
+			lua = lua .. "}\n"
+		end
+
+		lua = lua .. [[
+		do
+			local function pow2ceil(n)
+				return 2 ^ math.ceil(math.log(n) / math.log(2))
+			end
+
+			local function create_mip_map(bitmap, w, h, div)
+				local width = pow2ceil(w)
+				local height = pow2ceil(h)
+
+				local size = width > height and width or height
+
+				size = size / (2 ^ div)
+
+				local new_bitmap = ffi.gc(library.Rescale(bitmap, size, size, library.e.IMAGE_FILTER_BILINEAR), library.Unload)
+
+				return {
+					data = library.GetBits(new_bitmap),
+					size = library.GetMemorySize(new_bitmap),
+					width = size,
+					height = size,
+					new_bitmap = new_bitmap,
+				}
+			end
+
+			function library.LoadImageMipMaps(file_name, flags, format)
+				local file = io.open(file_name, "rb")
+				local data = file:read("*all")
+				file:close()
+
+				local buffer = ffi.cast("unsigned char *", data)
+
+				local stream = library.OpenMemory(buffer, #data)
+				local type = format or library.GetFileTypeFromMemory(stream, #data)
+
+				local temp = library.LoadFromMemory(type, stream, flags or 0)
+				local bitmap = library.ConvertTo32Bits(temp)
+
+
+				local width = library.GetWidth(bitmap)
+				local height = library.GetHeight(bitmap)
+
+				local images = {}
+
+				for level = 0, math.floor(math.log(math.max(width, height)) / math.log(2)) do
+					images[level] = create_mip_map(bitmap, width, height, level)
+				end
+
+				library.Unload(bitmap)
+				library.Unload(temp)
+
+				library.CloseMemory(stream)
+
+				return images
 			end
 		end
-	end
-	lua = lua .. "}\n"
-end
 
-lua = lua .. [[
-do
-	local function pow2ceil(n)
-		return 2 ^ math.ceil(math.log(n) / math.log(2))
-	end
+		function library.LoadImage(data)
+			local stream_buffer = ffi.cast("unsigned char *", data)
+			local stream = library.OpenMemory(stream_buffer, #data)
 
-	local function create_mip_map(bitmap, w, h, div)
-		local width = pow2ceil(w)
-		local height = pow2ceil(h)
+			local type = library.GetFileTypeFromMemory(stream, #data)
 
-		local size = width > height and width or height
+			if type == library.e.FORMAT_UNKNOWN or type > library.e.FORMAT_RAW then -- huh...
+				library.CloseMemory(stream)
+				error("unknown format", 2)
+			end
 
-		size = size / (2 ^ div)
+			local bitmap = library.LoadFromMemory(type, stream, 0)
 
-		local new_bitmap = ffi.gc(library.Rescale(bitmap, size, size, library.e.IMAGE_FILTER_BILINEAR), library.Unload)
+			local image_type = library.GetImageType(bitmap)
+			local color_type = library.GetColorType(bitmap)
 
-		return {
-			data = library.GetBits(new_bitmap),
-			size = library.GetMemorySize(new_bitmap),
-			width = size,
-			height = size,
-			new_bitmap = new_bitmap,
-		}
-	end
+			stream_buffer = nil
 
-	function library.LoadImageMipMaps(file_name, flags, format)
-		local file = io.open(file_name, "rb")
-		local data = file:read("*all")
-		file:close()
+			local format = "bgra"
+			local type = "unsigned_byte"
 
-		local buffer = ffi.cast("unsigned char *", data)
+			if color_type == library.e.COLOR_TYPE_RGBALPHA then
+				format = "bgra"
+			elseif color_type == library.e.COLOR_TYPE_RGB then
+				format = "bgr"
+			elseif color_type == library.e.COLOR_TYPE_MINISBLACK or color_type == library.e.COLOR_TYPE_MINISWHITE then
+				format = "r"
+			else
+				bitmap = library.ConvertTo32Bits(bitmap)
 
-		local stream = library.OpenMemory(buffer, #data)
-		local type = format or library.GetFileTypeFromMemory(stream, #data)
+				format = "bgra"
+				wlog("unhandled freeimage color type: %s\nconverting to 8bit rgba", color_type)
+			end
 
-		local temp = library.LoadFromMemory(type, stream, flags or 0)
-		local bitmap = library.ConvertTo32Bits(temp)
+			ffi.gc(bitmap, library.Unload)
 
+			if image_type == library.e.IMAGE_TYPE_BITMAP then
+				type = "unsigned_byte"
+			elseif image_type == library.e.IMAGE_TYPE_RGBF then
+				type = "float"
+				format = "rgb"
+			elseif image_type == library.e.IMAGE_TYPE_RGBAF then
+				type = "float"
+				format = "rgba"
+			else
+				wlog("unhandled freeimage format type: %s", image_type)
+			end
 
-		local width = library.GetWidth(bitmap)
-		local height = library.GetHeight(bitmap)
+			-- the image type of some png images are RGB but bpp is actuall 32bit (RGBA)
+			local bpp = library.GetBPP(bitmap)
 
-		local images = {}
+			if bpp == 32 then
+				format = "bgra"
+			end
 
-		for level = 0, math.floor(math.log(math.max(width, height)) / math.log(2)) do
-			images[level] = create_mip_map(bitmap, width, height, level)
+			local ret = {
+				buffer = library.GetBits(bitmap),
+				width = library.GetWidth(bitmap),
+				height = library.GetHeight(bitmap),
+				format = format,
+				type = type,
+			}
+
+			library.CloseMemory(stream)
+
+			return ret
 		end
 
-		library.Unload(bitmap)
-		library.Unload(temp)
+		function library.LoadMultiPageImage(data, flags)
+			local buffer = ffi.cast("unsigned char *", data)
 
-		library.CloseMemory(stream)
+			local stream = library.OpenMemory(buffer, #data)
+			local type = library.GetFileTypeFromMemory(stream, #data)
 
-		return images
-	end
-end
+			local temp = library.LoadMultiBitmapFromMemory(type, stream, flags or 0)
+			local count = library.GetPageCount(temp)
 
-function library.LoadImage(data)
-	local stream_buffer = ffi.cast("unsigned char *", data)
-	local stream = library.OpenMemory(stream_buffer, #data)
+			local out = {}
 
-	local type = library.GetFileTypeFromMemory(stream, #data)
+			for page = 0, count - 1 do
+				local temp = library.LockPage(temp, page)
+				local bitmap = library.ConvertTo32Bits(temp)
 
-	if type == library.e.FORMAT_UNKNOWN or type > library.e.FORMAT_RAW then -- huh...
-		library.CloseMemory(stream)
-		error("unknown format", 2)
-	end
+				local tag = ffi.new("struct FITAG *[1]")
+				library.GetMetadata(library.e.METADATA_ANIMATION, bitmap, "FrameLeft", tag)
+				local x = tonumber(ffi.cast("int", library.GetTagValue(tag[0])))
 
-	local bitmap = library.LoadFromMemory(type, stream, 0)
+				library.GetMetadata(library.e.METADATA_ANIMATION, bitmap, "FrameTop", tag)
+				local y = tonumber(ffi.cast("int", library.GetTagValue(tag[0])))
 
-	local image_type = library.GetImageType(bitmap)
-	local color_type = library.GetColorType(bitmap)
+				library.GetMetadata(library.e.METADATA_ANIMATION, bitmap, "FrameTime", tag)
+				local ms = tonumber(ffi.cast("int", library.GetTagValue(tag[0]))) / 1000
 
-	stream_buffer = nil
+				library.DeleteTag(tag[0])
 
-	local format = "bgra"
-	local type = "unsigned_byte"
+				local data = library.GetBits(bitmap)
+				local width = library.GetWidth(bitmap)
+				local height = library.GetHeight(bitmap)
 
-	if color_type == library.e.COLOR_TYPE_RGBALPHA then
-		format = "bgra"
-	elseif color_type == library.e.COLOR_TYPE_RGB then
-		format = "bgr"
-	elseif color_type == library.e.COLOR_TYPE_MINISBLACK or color_type == library.e.COLOR_TYPE_MINISWHITE then
-		format = "r"
-	else
-		bitmap = library.ConvertTo32Bits(bitmap)
+				ffi.gc(bitmap, library.Unload)
 
-		format = "bgra"
-		wlog("unhandled freeimage color type: %s\nconverting to 8bit rgba", color_type)
-	end
+				table.insert(out, {w = width, h = height, x = x, y = y, ms = ms, data = data})
+			end
 
-	ffi.gc(bitmap, library.Unload)
+			library.CloseMultiBitmap(temp, 0)
 
-	if image_type == library.e.IMAGE_TYPE_BITMAP then
-		type = "unsigned_byte"
-	elseif image_type == library.e.IMAGE_TYPE_RGBF then
-		type = "float"
-		format = "rgb"
-	elseif image_type == library.e.IMAGE_TYPE_RGBAF then
-		type = "float"
-		format = "rgba"
-	else
-		wlog("unhandled freeimage format type: %s", image_type)
-	end
+			return out
+		end
 
-	-- the image type of some png images are RGB but bpp is actuall 32bit (RGBA)
-	local bpp = library.GetBPP(bitmap)
+		function library.ImageToBuffer(data, format, force_32bit)
+			format = format or "png"
 
-	if bpp == 32 then
-		format = "bgra"
-	end
+			local bitmap = library.ConvertFromRawBits(data.buffer, data.width, data.height, data.width * #data.format, #data.format * 8, 0,0,0,0)
+			local temp
+			if force_32bit then
+				temp = bitmap
+				bitmap = library.ConvertTo32Bits(temp)
+			end
 
-	local ret = {
-		buffer = library.GetBits(bitmap),
-		width = library.GetWidth(bitmap),
-		height = library.GetHeight(bitmap),
-		format = format,
-		type = type,
-	}
+			local mem = library.OpenMemory(nil, 0)
+			library.SaveToMemory(library.e["FORMAT_" .. format:upper()], bitmap, mem, 0)
+			local size = library.TellMemory(mem)
+			local buffer_box = ffi.new("uint8_t *[1]")
+			local size_box = ffi.new("unsigned int[1]")
+			local out_buffer = ffi.new("uint8_t[?]", size)
+			buffer_box[0] = out_buffer
+			size_box[0] = size
+			library.AcquireMemory(mem, buffer_box, size_box)
 
-	library.CloseMemory(stream)
+			library.Unload(bitmap)
+			if temp then library.Unload(temp) end
+			library.CloseMemory(mem)
 
-	return ret
-end
+			return buffer_box[0], size_box[0]
+		end
+		]]
 
-function library.LoadMultiPageImage(data, flags)
-	local buffer = ffi.cast("unsigned char *", data)
-
-	local stream = library.OpenMemory(buffer, #data)
-	local type = library.GetFileTypeFromMemory(stream, #data)
-
-	local temp = library.LoadMultiBitmapFromMemory(type, stream, flags or 0)
-	local count = library.GetPageCount(temp)
-
-	local out = {}
-
-	for page = 0, count - 1 do
-		local temp = library.LockPage(temp, page)
-		local bitmap = library.ConvertTo32Bits(temp)
-
-		local tag = ffi.new("struct FITAG *[1]")
-		library.GetMetadata(library.e.METADATA_ANIMATION, bitmap, "FrameLeft", tag)
-		local x = tonumber(ffi.cast("int", library.GetTagValue(tag[0])))
-
-		library.GetMetadata(library.e.METADATA_ANIMATION, bitmap, "FrameTop", tag)
-		local y = tonumber(ffi.cast("int", library.GetTagValue(tag[0])))
-
-		library.GetMetadata(library.e.METADATA_ANIMATION, bitmap, "FrameTime", tag)
-		local ms = tonumber(ffi.cast("int", library.GetTagValue(tag[0]))) / 1000
-
-		library.DeleteTag(tag[0])
-
-		local data = library.GetBits(bitmap)
-		local width = library.GetWidth(bitmap)
-		local height = library.GetHeight(bitmap)
-
-		ffi.gc(bitmap, library.Unload)
-
-		table.insert(out, {w = width, h = height, x = x, y = y, ms = ms, data = data})
-	end
-
-	library.CloseMultiBitmap(temp, 0)
-
-	return out
-end
-
-function library.ImageToBuffer(data, format, force_32bit)
-	format = format or "png"
-
-	local bitmap = library.ConvertFromRawBits(data.buffer, data.width, data.height, data.width * #data.format, #data.format * 8, 0,0,0,0)
-	local temp
-	if force_32bit then
-		temp = bitmap
-		bitmap = library.ConvertTo32Bits(temp)
-	end
-
-	local mem = library.OpenMemory(nil, 0)
-	library.SaveToMemory(library.e["FORMAT_" .. format:upper()], bitmap, mem, 0)
-	local size = library.TellMemory(mem)
-	local buffer_box = ffi.new("uint8_t *[1]")
-	local size_box = ffi.new("unsigned int[1]")
-	local out_buffer = ffi.new("uint8_t[?]", size)
-	buffer_box[0] = out_buffer
-	size_box[0] = size
-	library.AcquireMemory(mem, buffer_box, size_box)
-
-	library.Unload(bitmap)
-	if temp then library.Unload(temp) end
-	library.CloseMemory(mem)
-
-	return buffer_box[0], size_box[0]
-end
-]]
-
-ffibuild.EndLibrary(lua, header)
+		return ffibuild.EndLibrary(lua, header)
+	end,
+})

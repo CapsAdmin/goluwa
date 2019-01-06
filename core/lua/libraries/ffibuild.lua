@@ -125,6 +125,8 @@ function ffibuild.SourceControlClone(str, dir)
 		else
 			os.execute("hg clone " .. str .. " " .. dir)
 		end
+	elseif str:find("svn%.") then
+		os.execute("svn checkout " .. str .. " " .. dir)
 	else
 		os.execute(str)
 	end
@@ -137,7 +139,7 @@ function ffibuild.GetSharedLibrariesInDirectory(dir)
 		local ext = vfs.GetExtensionFromPath(path)
 		local find = vfs.GetSharedLibraryExtension()
 		if UNIX then
-			if ext:startswith(find) then
+			if ext:startswith(find) or ext:endswith(find) then
 				if #ext == #find or ext:sub(#find+1, #find+1) == "." then
 					table.insert(out, path)
 				end
@@ -719,6 +721,11 @@ function ffibuild.GetMetaData(header)
 
 				if friendly_name then
 					if from then friendly_name = ffibuild.ChangeCase(friendly_name, from, to) end
+
+					if ffibuild.undefined_symbols and ffibuild.undefined_symbols[func_type.name] then
+						s = s .. "--"
+					end
+
 					s = s .. "\t" .. friendly_name .. " = " .. ffibuild.BuildLuaFunction(func_type.name, func_type, nil, nil, nil, clib) .. ",\n"
 				end
 			end
@@ -1875,6 +1882,7 @@ do -- lua helper functions
 	end
 
 	function ffibuild.TestLibrary(lua)
+		ffibuild.undefined_symbols = {}
 		-- check if this works if possible
 		local ffi = require("ffi")
 		local old = ffi.load
@@ -1888,6 +1896,10 @@ do -- lua helper functions
 				end
 				errored = true
 				logn("[test ",ffibuild.GetBuildName(),"] ", ret:match("^.-:.-: (.+)"))
+
+				ffibuild.undefined_symbols[ret:match("undefined symbol: (.+)")] = true
+				ffibuild.undefined_symbols[ret:match("missing declaration for symbol '(.+)'")] = true
+
 			end})
 		end
 
@@ -1949,7 +1961,7 @@ do -- lua helper functions
 			local res = not info.filter_library or info.filter_library(vfs.RemoveExtensionFromPath(path))
 			if res then
 				local name = (WINDOWS and "" or "lib") .. info.name
-				if res == true then
+				if res == true and info.filter_library then
 					name = vfs.RemoveExtensionFromPath(vfs.GetFileNameFromPath(path))
 				end
 				local relative_path = info.translate_path and info.translate_path(path) or name
@@ -1989,11 +2001,21 @@ do -- lua helper functions
 			header, meta_data = info.process_header(header)
 
 			if info.build_lua then
+				::again::
+
 				vfs.PushWorkingDirectory(dir)
 				local lua = info.build_lua(header, meta_data)
 				vfs.PopWorkingDirectory()
 
 				if ffibuild.TestLibrary(lua) then
+
+					if info.strip_undefined_symbols and next(ffibuild.undefined_symbols) then
+						llog("rebuilding lua to get rid of undefined symbols")
+						goto again
+					else
+						ffibuild.undefined_symbols = nil
+					end
+
 					local dir = "os:" .. e.ROOT_FOLDER .. addon .. "/bin/shared/"
 					vfs.CreateDirectoriesFromPath(dir)
 					vfs.Write(dir .. info.name .. ".lua", lua)
