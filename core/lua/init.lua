@@ -248,7 +248,7 @@ vfs.InitAddons(function()
 	event.Call("MainLoopStart")
 end)
 
-local no_main_loop = not event.active["MainLoopStart"] or #event.active["MainLoopStart"] == 1
+local no_main_loop = not event.active["MainLoopStart"] or #event.active["MainLoopStart"] == 0
 
 vfs.FetchBniariesForAddon("core")
 
