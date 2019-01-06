@@ -56,14 +56,6 @@ ffi.cdef([[
         uint32_t s_addr;
     };
 
-    struct sockaddr_in {
-        uint8_t sin_len;
-        unsigned short sin_family;
-        uint16_t sin_port;
-        struct in_addr sin_addr;
-        char sin_zero[8];
-    };
-
     int getaddrinfo(char const *node, char const *service, struct addrinfo const *hints, struct addrinfo **res);
     int getnameinfo(const struct sockaddr* sa, uint32_t salen, char* host, size_t hostlen, char* serv, size_t servlen, int flags);
     void freeaddrinfo(struct addrinfo *ai);
@@ -71,9 +63,6 @@ ffi.cdef([[
     char *inet_ntoa(struct in_addr in);
     uint16_t ntohs(uint16_t netshort);
 ]])
-
-module.inet_ntoa = ffi.C.inet_ntoa
-module.ntohs = ffi.C.ntohs
 
 function module.getaddrinfo(node_name, service_name, hints, result)
     local ret = lib.getaddrinfo(node_name, service_name, hints, result)
@@ -119,7 +108,14 @@ if jit.os == "Windows" then
             size_t ai_addrlen;
             char *ai_canonname;
             struct sockaddr *ai_addr;
-            struct addrinfo_ *ai_next;
+            struct addrinfo *ai_next;
+        };
+
+        struct sockaddr_in {
+            int16_t sin_family;
+            uint16_t sin_port;
+            struct in_addr sin_addr;
+            uint8_t sin_zero[8];
         };
     ]])
 
@@ -255,7 +251,17 @@ else
 			struct sockaddr *ai_addr;
 			char *ai_canonname;
 			struct addrinfo *ai_next;
-		};
+        };
+
+
+        struct sockaddr_in {
+            uint8_t sin_len;
+            unsigned short sin_family;
+            uint16_t sin_port;
+            struct in_addr sin_addr;
+            char sin_zero[8];
+        };
+
     ]])
     lib = ffi.C
 
@@ -334,7 +340,7 @@ generic_function("shutdown", "int shutdown(SOCKET s, int how);")
 generic_function("setsockopt", "int setsockopt(SOCKET s, int level, int optname, const void* optval, uint32_t optlen);")
 generic_function("getsockopt", "int getsockopt(SOCKET s, int level, int optname, void *optval, uint32_t *optlen);")
 
-generic_function("accept", "SOCKET accept(SOCKET s, struct sockaddr *, unsigned int *);", nil, false)
+generic_function("accept", "SOCKET accept(SOCKET s, struct sockaddr *, int *);", nil, false)
 generic_function("bind", "int bind(SOCKET s, const struct sockaddr* name, int namelen);")
 generic_function("connect", "int connect(SOCKET s, const struct sockaddr * name, int namelen);")
 
@@ -346,6 +352,9 @@ generic_function("sendto", "int sendto(SOCKET s, const char* buf, int len, int f
 
 generic_function("getpeername", "int getpeername(SOCKET s, struct sockaddr *, unsigned int *);")
 generic_function("getsockname", "int getsockname(SOCKET s, struct sockaddr *, unsigned int *);")
+
+module.inet_ntoa = lib.inet_ntoa
+module.ntohs = lib.ntohs
 
 local e = {}
 

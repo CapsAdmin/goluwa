@@ -5,7 +5,7 @@ socket:connect("www.lunduke.com", "http")
 
 event.AddListener("Update", "test", function()
     if socket:is_connected() then
-        socket:send(
+        assert(socket:send(
             "GET / HTTP/1.1\r\n"..
             "Host: www.lunduke.com\r\n"..
             "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:64.0) Gecko/20100101 Firefox/64.0\r\n"..
@@ -16,11 +16,11 @@ event.AddListener("Update", "test", function()
             "Connection: keep-alive\r\n"..
             "Upgrade-Insecure-Requests: 1\r\n"..
             "\r\n"
-        )
+        ))
         local str = ""
         local total_length
         event.AddListener("Update", "test2", function()
-            local chunk = socket:receive()
+            local chunk, err = socket:receive()
 
             if chunk then
                 str = str .. chunk

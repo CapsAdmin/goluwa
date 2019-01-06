@@ -4,18 +4,24 @@ do -- server
     local host = nil
     local port = 5001
 
-    local info = assert(bsocket.get_address_info({
+    local info
+    for _, v in ipairs(assert(bsocket.get_address_info({
         host = nil,
         service = tostring(port),
         family = "inet",
         type = "stream",
         protocol = "tcp",
         flags = {"passive"}, -- fill in ip
-    }))[1]
+    }))) do
+        if v.family == "inet" then
+            info = v
+            break
+        end
+    end
 
     -- Create a SOCKET for connecting to server
     table.print(info)
-    local server = assert(bsocket.socket(info.family, info.socket_type, info.protocol))
+    local server = assert(bsocket.socket(info.family, info.socket_type or "stream", info.protocol))
     server:set_blocking(false)
 
     server:set_option("reuseaddr", 1)
@@ -46,7 +52,6 @@ do -- server
 
     event.AddListener("Update", "test", function()
         local client, err = server:accept()
-
         if client then
             assert(client:set_blocking(false))
             assert(client:send(content))
@@ -58,11 +63,17 @@ do -- server
             if str then
                 print(str)
                 client:close()
-            elseif not bsocket.wouldblock() then
+            elseif
+                err ~= "Resource temporarily unavailable" and
+                err ~= "A non-blocking socket operation could not be completed immediately. (10035)"
+            then
+                print(err)
                 client:close()
-                error(bsocket.lasterror())
             end
-        elseif err ~= "Resource temporarily unavailable" then
+        elseif
+             err ~= "Resource temporarily unavailable" and
+             err ~= "A non-blocking socket operation could not be completed immediately. (10035)"
+        then
             error(err)
         end
     end)

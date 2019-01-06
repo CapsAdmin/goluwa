@@ -1,4 +1,9 @@
 local bsock = require("bsocket_ffi")
+
+if bsock.initialize then
+    assert(bsock.initialize())
+end
+
 local ffi = require("ffi")
 
 local function capture_flags(what)
@@ -91,9 +96,9 @@ local function addrinfo_to_table(res)
 
     info.ip = ffi.string(addr)
 
-    info.family = AF.reverse[res.ai_family] or "unknown"
-    info.socket_type = SOCK.reverse[res.ai_socktype] or "unknown"
-    info.protocol = IPPROTO.reverse[res.ai_protocol] or "unknown"
+    info.family = AF.reverse[res.ai_family]
+    info.socket_type = SOCK.reverse[res.ai_socktype]
+    info.protocol = IPPROTO.reverse[res.ai_protocol]
     info.flags = flags_to_table(res.ai_flags, AI.lookup, bit.band)
     info.addrinfo = res
 
@@ -212,7 +217,7 @@ do
 
     function meta:accept()
         local address = ffi.new("struct sockaddr_in[1]")
-        local fd, err = bsock.socket_accept(self.fd, ffi.cast("struct sockaddr *", address), ffi.new("int[1]", ffi.sizeof(address)))
+        local fd, err = bsock.socket_accept(self.fd, ffi.cast("struct sockaddr *", address), ffi.new("unsigned int[1]", ffi.sizeof(address)))
 
         if fd ~= bsock.INVALID_SOCKET then
             local client = setmetatable({
@@ -229,19 +234,11 @@ do
         return nil, bsock.lasterror()
     end
 
-    do
-        local data = ffi.new("struct sockaddr_in")
-        local len = ffi.new("unsigned int[1]", ffi.sizeof(data))
-        data = ffi.cast("struct sockaddr *", data)
-
-        function meta:is_connected()
-            local ok, err = bsock.socket_getpeername(self.fd, data, len)
-            if ok then
-                return ok
-            elseif err == "Transport endpoint is not connected" then
-                return false
-            end
-            error(err)
+    function meta:is_connected()
+        local ip, port = self:get_peer_name()
+        local ip2, port2 = self:get_name()
+        if ip and ip2 then
+            return port ~= 0 and port2 ~= 0
         end
     end
 

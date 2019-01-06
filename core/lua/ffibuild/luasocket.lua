@@ -1,8 +1,9 @@
 ffibuild.Build({
 	name = "luasocket",
-	url = "https://github.com/diegonhab/luasocket.git",
-	cmd = "make PLAT=mingw MYCFLAGS='-I /mingw64/include/lua5.1 -L /mingw64/bin/' LUALIB_mingw='/mingw64/bin/lua51.dll'",
-	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
+	url = "https://github.com/diegonehab/luasocket.git",
+	--cmd = "make PLAT=mingw MYCFLAGS='-I /mingw64/include/lua5.1 -L /mingw64/bin/' LUALIB_mingw='/mingw64/bin/lua51.dll'",
+	cmd = "make linux MYCFLAGS='-I/usr/include/lua5.1/'",
+    addon = vfs.GetAddonFromPath(SCRIPT_PATH),
     translate_path = function(path)
         local name = vfs.RemoveExtensionFromPath(vfs.GetFileNameFromPath(path))
         if name:startswith("unix") or name:startswith("socket") then
@@ -13,6 +14,7 @@ ffibuild.Build({
             return "lua/mime/core"
         end
     end,
+    force_rebuild = true,
     patches = {[[
 diff --git a/src/makefile b/src/makefile
 index 1ed3f4f..3a590d2 100644
