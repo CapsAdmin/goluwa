@@ -50,15 +50,39 @@ ffi.cdef([[
     int getaddrinfo(char const *node, char const *service, struct addrinfo const *hints, struct addrinfo **res);
     int getnameinfo(const struct sockaddr* sa, uint32_t salen, char* host, size_t hostlen, char* serv, size_t servlen, int flags);
     void freeaddrinfo(struct addrinfo *ai);
+    const char *gai_strerror(int errcode);
 ]])
 
 function module.getaddrinfo(node_name, service_name, hints, result)
-    return generic_check(lib.getaddrinfo(node_name, service_name, hints, result))
+    local ret = lib.getaddrinfo(node_name, service_name, hints, result)
+    if ret == 0 then
+        return true
+    end
+
+    return nil, ffi.string(lib.gai_strerror(ret))
 end
 
 function module.getnameinfo(address, length, host, hostlen, serv, servlen, flags)
-    return generic_check(lib.getnameinfo(address, length, host, hostlen, serv, servlen, flags))
+    local ret = lib.getnameinfo(address, length, host, hostlen, serv, servlen, flags)
+    if ret == 0 then
+        return true
+    end
+
+    return nil, ffi.string(lib.gai_strerror(ret))
 end
+
+do
+    ffi.cdef("const char *inet_ntop(int __af, const void *__cp, char *__buf, unsigned int __len);")
+
+    function module.inet_ntop(family, addrinfo, strptr, strlen)
+        if lib.inet_ntop(family, addrinfo, strptr, strlen) == nil then
+            return nil, module.lasterror()
+        end
+
+        return strptr
+    end
+end
+
 
 if jit.os == "Windows" then
     ffi.cdef([[
@@ -151,13 +175,7 @@ if jit.os == "Windows" then
         end
     end
 
-    if jit.arch == "x64" then
-        ffi.cdef("const char *inet_ntop(int __af, const void *__cp, char *__buf, unsigned int __len);")
-
-        function module.inet_ntop(family, pAddr, strptr, strlen)
-            return generic_check(lib.inet_ntop(family, pAddr, strptr, strlen))
-        end
-    else -- xp or something
+    if jit.arch ~= "x64" then -- xp or something
         ffi.cdef("int WSAAddressToStringA(struct sockaddr *, unsigned long, void *, char *, unsigned long *);")
 
         function module.inet_ntop(family, pAddr, strptr, strlen)
@@ -166,7 +184,7 @@ if jit.os == "Windows" then
             ffi.copy(srcaddr.sin_addr, pAddr, ffi.sizeof(srcaddr.sin_addr))
             srcaddr.sin_family = family
             local len = ffi.new("unsigned long[1]", strlen)
-            return generic_check(lib.WSAAddressToStringA(ffi.cast("struct sockaddr *", srcaddr), ffi.sizeof(srcaddr), nil, strptr, len))
+            return lib.WSAAddressToStringA(ffi.cast("struct sockaddr *", srcaddr), ffi.sizeof(srcaddr), nil, strptr, len)
         end
     end
 
@@ -216,14 +234,6 @@ else
         return err == "" and tostring(num) or err
     end
 
-    do
-        ffi.cdef("const char *inet_ntop(int __af, const void *__cp, char *__buf, unsigned int __len);")
-
-        function module.inet_ntop(family, pAddr, strptr, strlen)
-            return generic_check(lib.inet_ntop(family, pAddr, strptr, strlen))
-        end
-    end
-
     generic_function("close", "int close(SOCKET s);")
 
     do
@@ -231,7 +241,7 @@ else
 
         local F_GETFL = 3
         local F_SETFL = 4
-        local O_NONBLOCK = 0x0004
+        local O_NONBLOCK = 04000
 
         function module.socket_blocking(fd, b)
             local flags = ffi.C.fcntl(fd, F_GETFL, 0)
@@ -258,7 +268,8 @@ else
     end
 
     function module.wouldblock()
-        return ffi.errno() == 11
+        local err = ffi.errno()
+        return err == 11 or err == 115 or err == 114
     end
 end
 

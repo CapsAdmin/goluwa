@@ -56,15 +56,18 @@ do -- server
     event.AddListener("Update", "test", function()
         local client_addr = ffi.new("struct sockaddr_in[1]")
         local client_socket = socket.socket_accept(listen_socket, ffi.cast("struct sockaddr *", client_addr), ffi.new("int[1]", ffi.sizeof(client_addr)))
+
         if client_socket ~= socket.INVALID_SOCKET then
+            local send_result = socket.socket_send(client_socket, content, #content, 0)
+
+            print("client connected ", client_socket)
+
             assert(socket.socket_blocking(client_socket, false))
 
             local buffer = ffi.new("char[?]", 16384)
             local result = socket.socket_recv(client_socket, buffer, ffi.sizeof(buffer), 0)
 
             if result > 0 then
-                local send_result = socket.socket_send(client_socket, content, #content, 0)
-
                 print(ffi.string(buffer, result))
                 socket.socket_close(client_socket)
             elseif not socket.wouldblock() then

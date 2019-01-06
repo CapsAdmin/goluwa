@@ -1946,30 +1946,37 @@ do -- lua helper functions
 			local addon_dir = root .. addon .. "/"
 			local git_dir = root .. "__goluwa-binaries/" .. addon .. "/"
 
-			local relative_path = info.translate_path and info.translate_path(path) or (WINDOWS and "" or "lib") .. info.name
+			local res = not info.filter_library or info.filter_library(vfs.RemoveExtensionFromPath(path))
+			if res then
+				local name = (WINDOWS and "" or "lib") .. info.name
+				if res == true then
+					name = vfs.RemoveExtensionFromPath(vfs.GetFileNameFromPath(path))
+				end
+				local relative_path = info.translate_path and info.translate_path(path) or name
 
-			local bin_path = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" ..
-			relative_path .. "." .. vfs.GetSharedLibraryExtension()
+				local bin_path = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/" ..
+				relative_path .. "." .. vfs.GetSharedLibraryExtension()
 
-			llog("found %s", path)
-			logn(utility.GetLikelyLibraryDependenciesFormatted(path))
+				llog("found %s", path)
+				logn(utility.GetLikelyLibraryDependenciesFormatted(path))
 
-			local to =  git_dir .. bin_path
-			if vfs.IsDirectory(git_dir) then
-				vfs.CopyFile(path, to)
-				llog("%q was added", path)
+				local to =  git_dir .. bin_path
+				if vfs.IsDirectory(git_dir) then
+					vfs.CopyFile(path, to)
+					llog("%q was added", path)
+				end
+
+				local to =  addon_dir .. bin_path
+				local ok, err = assert(vfs.CopyFileFileOnBoot(path, to))
+
+				if ok == "deferred" then
+					llog("%q will be replaced after restart", to)
+				else
+					llog("%q was added", to)
+				end
+
+				vfs.Write(dir .. "ran_build", "1")
 			end
-
-			local to =  addon_dir .. bin_path
-			local ok, err = assert(vfs.CopyFileFileOnBoot(path, to))
-
-			if ok == "deferred" then
-				llog("%q will be replaced after restart", to)
-			else
-				llog("%q was added", to)
-			end
-
-			vfs.Write(dir .. "ran_build", "1")
 		end
 
 		if info.process_header then
