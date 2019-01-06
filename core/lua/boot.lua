@@ -471,16 +471,6 @@ end
 
 local ext = UNIX and ".so" or ".dll"
 
-if not os.isfile(BINARY_DIR .. "lua/ssl" .. ext) then
-	os.makedir(BINARY_DIR .. "lua")
-	os.download("https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/"..OS.."_"..ARCH.."/lua/ssl" .. ext, BINARY_DIR .. "lua/ssl" .. ext)
-end
-
-if not os.isfile(BINARY_DIR .. "lua/socket/core.so") then
-	os.makedir(BINARY_DIR .. "lua/socket")
-	os.download("https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/"..OS.."_"..ARCH.."/lua/socket/core" .. ext, BINARY_DIR .. "lua/socket/core" .. ext)
-end
-
 local instructions_path = "storage/shared/copy_binaries_instructions"
 if os.isfile(instructions_path) then
 	for from, to in io.readfile(instructions_path):gmatch("(.-);(.-)\n") do
@@ -592,7 +582,43 @@ end
 os.setenv("GOLUWA_BOOT_TIME", tostring(os.clock() - start_time))
 
 if UNIX then
-	os.exit(os.execute("./" .. BINARY_DIR .. "/"..executable.." " .. initlua))
+
+	if ARG_LINE == "gdb" then
+		assert(os.iscmd("gdb"), "gdb is not installed")
+		assert(os.iscmd("valgrind"), "valgrind is not installed")
+		assert(os.iscmd("git"), "git is not installed")
+
+		local utils = os.readexecute("pwd -P"):sub(0,-2) .. "/storage/temp/openresty-gdb-utils"
+
+		if not os.isdir(utils) then
+			os.execute("git clone https://github.com/openresty/openresty-gdb-utils.git " .. utils .. " --depth 1;")
+		end
+
+		local gdb = "gdb "
+		gdb = gdb .. "--ex 'py import sys' "
+		gdb = gdb .. "--ex 'py sys.path.append(\""..utils.."\")' "
+		gdb = gdb .. "--ex 'source openresty-gdb-utils/luajit21.py' "
+		gdb = gdb .. "--ex 'set non-stop off' "
+		gdb = gdb .. "--ex 'target remote | vgdb' "
+		gdb = gdb .. "--ex 'monitor leak_check' "
+		gdb = gdb .. "--ex 'run' --args " .. BINARY_DIR .. "/"..executable .. " " .. initlua
+
+		local valgrind = "valgrind "
+		valgrind = valgrind .. "--vgdb=yes "
+		valgrind = valgrind .. "--vgdb-error=1 "
+		valgrind = valgrind .. "--tool=memcheck "
+		valgrind = valgrind .. "--leak-check=full "
+		valgrind = valgrind .. "--leak-resolution=high "
+		valgrind = valgrind .. "--show-reachable=yes "
+		valgrind = valgrind .. "--read-var-info=yes "
+		valgrind = valgrind .. "--suppressions=lj.supp "
+		valgrind = valgrind .. "./" .. BINARY_DIR .. "/"..executable .. " " .. initlua
+
+		os.execute("xterm -hold -e " .. valgrind .. " &")
+		os.execute("xterm -hold -e " .. gdb)
+	else
+		os.exit(os.execute("./" .. BINARY_DIR .. "/"..executable.." " .. initlua))
+	end
 else
 	os.exit(os.execute(winpath(BINARY_DIR .. "\\"..executable..".exe " .. os.getcd():gsub("\\", "/") .. "/" .. initlua)))
 end
