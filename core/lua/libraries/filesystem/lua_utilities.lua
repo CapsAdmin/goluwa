@@ -436,14 +436,22 @@ if ffi then
 	function vfs.FFILoadLibrary(path, ...)
 		local args = {}
 		local found
-		
+
 		if vfs and vfs and vfs.PushWorkingDirectory then
 			local where = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
 			found = vfs.GetFiles({path = where, filter = path, filter_plain = true, full_path = true})
 			for _, full_path in ipairs(found) do
 				-- look first in the vfs' bin directories
 				vfs.PushWorkingDirectory(full_path:match("(.+/)"))
+
+				if serializer.GetKeyFromFile("luadata", "shared/library_crashes.lua", full_path) then
+					logn("ffi.load: refusing to load ", full_path, " as it crashed last time")
+					break
+				end
+
+				serializer.SetKeyValueInFile("luadata", "shared/library_crashes.lua", full_path, true)
 				args = {pcall(_OLD_G.ffi.load, full_path, ...)}
+				serializer.SetKeyValueInFile("luadata", "shared/library_crashes.lua", full_path, nil)
 				vfs.PopWorkingDirectory()
 
 				if args[1] then
