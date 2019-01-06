@@ -75,6 +75,7 @@ do
 
         if not handled and self.warn_unhandled then
             logn(self, " unhandled reject: ", ...)
+            logn(debug.traceback("current trace:"))
             logn(self.debug_trace)
         end
 
@@ -161,7 +162,7 @@ do
         self.funcs = {resolved = {}, rejected = {}, done = {}}
 
         self.callbacks = setmetatable({self = self}, {__index = on_index})
-        self.debug_trace = debug.traceback()
+        self.debug_trace = debug.traceback("creation trace:")
         self.children = {}
         self.warn_unhandled = true
 
