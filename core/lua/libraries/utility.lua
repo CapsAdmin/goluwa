@@ -54,7 +54,7 @@ function utility.GetLikelyLibraryDependencies(path)
 						info.status = "FOUND"
 						break
 					end
-				vfs.PopSharedLibraryPath()
+				vfs.PopWorkingDirectory()
 			end
 		else
 			local ok, err, what = package.loadlib(info.name, "")
