@@ -194,7 +194,7 @@ do -- tcp socket meta
 				self.SSLParams = copy
 
 				local SSL = desire("libressl")
-				if SSL then
+				if SSL and ssl.tls_init then
 					local ffi = require("ffi")
 					SSL.tls_init()
 					local tls = SSL.tls_client()
@@ -252,7 +252,12 @@ do -- tcp socket meta
 				ok, msg = self.socket:set_peer_name(ip, tostring(port))
 			end
 
-			if not ok and msg and msg ~= "timeout" and msg ~= "Operation already in progress" and (WINDOWS and msg ~= "Invalid argument") then
+			if not ok and msg and 
+				msg ~= "timeout" and 
+				msg ~= "Operation already in progress" and 
+				(WINDOWS and msg ~= "Invalid argument") and
+				msg ~= "A non-blocking socket operation could not be completed immediately. (10035)"
+			then
 				self:DebugPrintf("connect failed: %s", msg)
 				self:Error(msg)
 
@@ -322,7 +327,7 @@ do -- tcp socket meta
 				if self.socket:is_connected() then
 					self:DebugPrintf("connected to %s:%s", self.socket:get_peer_name())
 
-					if self.SSLParams then
+					if self.SSLParams and self.socket.on_connect then
 						self:DebugPrintf("start handshake")
 						self.socket:on_connect(self.ip)
 					end
@@ -384,7 +389,7 @@ do -- tcp socket meta
 
 					elseif data then
 						self:DebugPrintf("RECV: |%s|",  data)
-
+						print(data, err, "!!")
 						self:OnReceive(data)
 
 						if not self:IsValid() then return end
@@ -397,14 +402,15 @@ do -- tcp socket meta
 						end
 
 						self.data_received = self.data_received + #data
-					else
+					elseif err then
 						if
 							err == "timeout" or
 							err == "Socket is not connected" or
 							err == "wantread" or
 							err == "Resource temporarily unavailable" or
 							err == "Operation now in progress" or
-							err == "context not connected"
+							err:find("not connected", nil, true) or
+							err:find("blocking", nil, true)
 						then
 							self:Timeout(true)
 						elseif err == "closed" then

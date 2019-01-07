@@ -293,7 +293,7 @@ do
             return ffi.string(buff, len)
         end
 
-        return len, err
+        return nil, err
     end
 end
 

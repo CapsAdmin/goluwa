@@ -407,11 +407,11 @@ do
 			end,
 			error_callback = function(reason)
 				on_fail(reason)
-				socket:Remove()
+				if socket then socket:Remove() end
 			end,
 			timedout_callback = function(msg)
 				on_fail(msg)
-				socket:Remove()
+				if socket then socket:Remove() end
 			end,
 		})
 
