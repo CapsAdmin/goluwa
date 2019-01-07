@@ -345,7 +345,7 @@ do
 				source = source:trim()
 				local info = debug.getinfo(2)
 
-				logn("  ", info.currentline, " ", info.source)
+				logn("  ", info.source .. ":" .. info.currentline)
 				logn("  ", _msg:trim())
 			else
 				logn(msg)
