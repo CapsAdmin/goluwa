@@ -72,7 +72,7 @@ do
 	function META:Initialize() nyi() end
 	function META:PreWindowSetup() nyi() end
 	function META:PostWindowSetup() nyi() end
-	function META:OnRemove() nyi() end
+	function META:OnRemove() end
 
 	function META:Maximize() nyi() end
 	function META:Minimize() nyi() end
