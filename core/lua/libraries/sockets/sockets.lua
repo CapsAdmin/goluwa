@@ -194,7 +194,7 @@ do -- tcp socket meta
 				self.SSLParams = copy
 
 				local SSL = desire("libressl")
-				if SSL and ssl.tls_init then
+				if SSL and SSL.tls_init then
 					local ffi = require("ffi")
 					SSL.tls_init()
 					local tls = SSL.tls_client()
