@@ -1,4 +1,5 @@
 local ffi = require("ffi")
+local CLIB = ffi.C
 ffi.cdef([[struct lua_State {};
 struct lua_Debug {int event;const char*name;const char*namewhat;const char*what;const char*source;int currentline;int nups;int linedefined;int lastlinedefined;char short_src[60];int i_ci;};
 struct luaL_Reg {const char*name;int(*func)(struct lua_State*);};
@@ -147,7 +148,6 @@ int(lua_getinfo)(struct lua_State*,const char*,struct lua_Debug*);
 double(lua_tonumber)(struct lua_State*,int);
 int(lua_equal)(struct lua_State*,int,int);
 ]])
-local CLIB = ffi.C
 local library = {}
 library = {
 	setfield = CLIB.lua_setfield,

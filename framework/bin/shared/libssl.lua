@@ -1,4 +1,5 @@
 local ffi = require("ffi")
+local CLIB = assert(ffi.load("libssl"))
 ffi.cdef([[enum{SSL_CT_VALIDATION_PERMISSIVE=0,SSL_CT_VALIDATION_STRICT=1,};typedef enum BIO_lookup_type{BIO_LOOKUP_CLIENT=0,BIO_LOOKUP_SERVER=1};
 typedef enum BIO_sock_info_type{BIO_SOCK_INFO_ADDRESS=0};
 typedef enum BIO_hostserv_priorities{BIO_PARSE_PRIO_HOST=0,BIO_PARSE_PRIO_SERV=1};
@@ -711,7 +712,6 @@ struct bio_st*(BIO_new_socket)(int,int);
 int(SSL_client_hello_get0_ext)(struct ssl_st*,unsigned int,const unsigned char**,unsigned long*);
 void*(OPENSSL_LH_insert)(struct lhash_st*,void*);
 ]])
-local CLIB = ffi.load(_G.FFI_LIB or "libssl")
 local library = {}
 library = {
 	CT_POLICY_EVAL_CTX_free = CLIB.CT_POLICY_EVAL_CTX_free,

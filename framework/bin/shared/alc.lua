@@ -1,4 +1,5 @@
 local ffi = require("ffi")
+local CLIB = assert(ffi.load("openal"))
 ffi.cdef([[struct ALCdevice_struct {};
 struct ALCcontext_struct {};
 void(alcDestroyContext)(struct ALCcontext_struct*);
@@ -31,7 +32,6 @@ void(alcProcessContext)(struct ALCcontext_struct*);
 char(alcCloseDevice)(struct ALCdevice_struct*);
 struct ALCdevice_struct*(alcLoopbackOpenDeviceSOFT)(const char*);
 ]])
-local CLIB = ffi.load(_G.FFI_LIB or "openal")
 local library = {}
 library = {
 	DestroyContext = CLIB.alcDestroyContext,

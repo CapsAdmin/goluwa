@@ -1,4 +1,5 @@
 local ffi = require("ffi")
+local CLIB = assert(ffi.load("assimp"))
 ffi.cdef([[typedef enum aiTextureType{aiTextureType_NONE=0,aiTextureType_DIFFUSE=1,aiTextureType_SPECULAR=2,aiTextureType_AMBIENT=3,aiTextureType_EMISSIVE=4,aiTextureType_HEIGHT=5,aiTextureType_NORMALS=6,aiTextureType_SHININESS=7,aiTextureType_OPACITY=8,aiTextureType_DISPLACEMENT=9,aiTextureType_LIGHTMAP=10,aiTextureType_REFLECTION=11,aiTextureType_UNKNOWN=12};
 typedef enum aiOrigin{aiOrigin_SET=0,aiOrigin_CUR=1,aiOrigin_END=2};
 typedef enum aiMetadataType{aiBOOL=0,aiINT32=1,aiUINT64=2,aiFLOAT=3,aiDOUBLE=4,aiAISTRING=5,aiAIVECTOR3D=6,aiMETA_MAX=7};
@@ -117,7 +118,6 @@ void(aiSetImportPropertyInteger)(struct aiPropertyStore*,const char*,int);
 const char*(aiGetErrorString)();
 const struct aiScene*(aiImportFileFromMemoryWithProperties)(const char*,unsigned int,unsigned int,const char*,const struct aiPropertyStore*);
 ]])
-local CLIB = ffi.load(_G.FFI_LIB or "assimp")
 local library = {}
 library = {
 	GetExportFormatCount = CLIB.aiGetExportFormatCount,

@@ -1,4 +1,5 @@
 local ffi = require("ffi")
+local CLIB = assert(ffi.load("glfw"))
 ffi.cdef([[struct GLFWmonitor {};
 struct GLFWwindow {};
 struct GLFWcursor {};
@@ -124,7 +125,6 @@ void(*glfwSetCursorPosCallback(struct GLFWwindow*,void(*cbfun)(struct GLFWwindow
 void(*glfwSetScrollCallback(struct GLFWwindow*,void(*cbfun)(struct GLFWwindow*,double,double)))(struct GLFWwindow*,double,double);
 void(glfwWaitEventsTimeout)(double);
 ]])
-local CLIB = ffi.load(_G.FFI_LIB or "glfw")
 local library = {}
 library = {
 	MaximizeWindow = CLIB.glfwMaximizeWindow,

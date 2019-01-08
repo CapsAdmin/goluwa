@@ -1,4 +1,5 @@
 local ffi = require("ffi")
+local CLIB = assert(ffi.load("bgfx"))
 ffi.cdef([[typedef enum bgfx_render_frame{BGFX_RENDER_FRAME_NO_CONTEXT=0,BGFX_RENDER_FRAME_RENDER=1,BGFX_RENDER_FRAME_TIMEOUT=2,BGFX_RENDER_FRAME_EXITING=3,BGFX_RENDER_FRAME_COUNT=4};
 typedef enum bgfx_topology_sort{BGFX_TOPOLOGY_SORT_DIRECTION_FRONT_TO_BACK_MIN=0,BGFX_TOPOLOGY_SORT_DIRECTION_FRONT_TO_BACK_AVG=1,BGFX_TOPOLOGY_SORT_DIRECTION_FRONT_TO_BACK_MAX=2,BGFX_TOPOLOGY_SORT_DIRECTION_BACK_TO_FRONT_MIN=3,BGFX_TOPOLOGY_SORT_DIRECTION_BACK_TO_FRONT_AVG=4,BGFX_TOPOLOGY_SORT_DIRECTION_BACK_TO_FRONT_MAX=5,BGFX_TOPOLOGY_SORT_DISTANCE_FRONT_TO_BACK_MIN=6,BGFX_TOPOLOGY_SORT_DISTANCE_FRONT_TO_BACK_AVG=7,BGFX_TOPOLOGY_SORT_DISTANCE_FRONT_TO_BACK_MAX=8,BGFX_TOPOLOGY_SORT_DISTANCE_BACK_TO_FRONT_MIN=9,BGFX_TOPOLOGY_SORT_DISTANCE_BACK_TO_FRONT_AVG=10,BGFX_TOPOLOGY_SORT_DISTANCE_BACK_TO_FRONT_MAX=11,BGFX_TOPOLOGY_SORT_COUNT=12};
 typedef enum bgfx_attrib_type{BGFX_ATTRIB_TYPE_UINT8=0,BGFX_ATTRIB_TYPE_UINT10=1,BGFX_ATTRIB_TYPE_INT16=2,BGFX_ATTRIB_TYPE_HALF=3,BGFX_ATTRIB_TYPE_FLOAT=4,BGFX_ATTRIB_TYPE_COUNT=5};
@@ -219,7 +220,6 @@ void(bgfx_encoder_set_marker)(struct bgfx_encoder*,const char*);
 void(bgfx_encoder_set_stencil)(struct bgfx_encoder*,unsigned int,unsigned int);
 void(bgfx_encoder_set_dynamic_vertex_buffer)(struct bgfx_encoder*,unsigned char,struct bgfx_dynamic_vertex_buffer_handle,unsigned int,unsigned int);
 ]])
-local CLIB = ffi.load(_G.FFI_LIB or "bgfx")
 local library = {}
 library = {
 	UpdateDynamicVertexBuffer = CLIB.bgfx_update_dynamic_vertex_buffer,

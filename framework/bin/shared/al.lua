@@ -1,4 +1,5 @@
 local ffi = require("ffi")
+local CLIB = assert(ffi.load("openal"))
 ffi.cdef([[void(alGetBufferSamplesSOFT)(unsigned int,int,int,int,int,void*);
 void(alGetEffectfv)(unsigned int,int,float*);
 void(alEffectf)(unsigned int,int,float);
@@ -129,7 +130,6 @@ void(alGetFilteriv)(unsigned int,int,int*);
 void(alSourcePausev)(int,const unsigned int*);
 void(alFilteri)(unsigned int,int,int);
 ]])
-local CLIB = ffi.load(_G.FFI_LIB or "openal")
 local library = {}
 local function get_proc_address(func, cast)
 	local ptr = CLIB.alGetProcAddress(func)

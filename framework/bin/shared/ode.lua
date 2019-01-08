@@ -1,4 +1,5 @@
 local ffi = require("ffi")
+local CLIB = assert(ffi.load("ode"))
 ffi.cdef([[enum{dParamLoStop=0,dParamHiStop=1,dParamVel=2,dParamLoVel=3,dParamHiVel=4,dParamFMax=5,dParamFudgeFactor=6,dParamBounce=7,dParamCFM=8,dParamStopERP=9,dParamStopCFM=10,dParamSuspensionERP=11,dParamSuspensionCFM=12,dParamERP=13,dParamsInGroup=14,dParamGroup1=0,dParamLoStop1=0,dParamHiStop1=1,dParamVel1=2,dParamLoVel1=3,dParamHiVel1=4,dParamFMax1=5,dParamFudgeFactor1=6,dParamBounce1=7,dParamCFM1=8,dParamStopERP1=9,dParamStopCFM1=10,dParamSuspensionERP1=11,dParamSuspensionCFM1=12,dParamERP1=13,dParamGroup2=256,dParamLoStop2=256,dParamHiStop2=257,dParamVel2=258,dParamLoVel2=259,dParamHiVel2=260,dParamFMax2=261,dParamFudgeFactor2=262,dParamBounce2=263,dParamCFM2=264,dParamStopERP2=265,dParamStopCFM2=266,dParamSuspensionERP2=267,dParamSuspensionCFM2=268,dParamERP2=269,dParamGroup3=512,dParamLoStop3=512,dParamHiStop3=513,dParamVel3=514,dParamLoVel3=515,dParamHiVel3=516,dParamFMax3=517,dParamFudgeFactor3=518,dParamBounce3=519,dParamCFM3=520,dParamStopERP3=521,dParamStopCFM3=522,dParamSuspensionERP3=523,dParamSuspensionCFM3=524,dParamERP3=525,dParamGroup=256,
 dAMotorUser=0,dAMotorEuler=1,
 dTransmissionParallelAxes=0,dTransmissionIntersectingAxes=1,dTransmissionChainDrive=2,
@@ -680,7 +681,6 @@ struct dxJoint*(dJointCreateTransmission)(struct dxWorld*,struct dxJointGroup*);
 int(dJointGetNumBodies)(struct dxJoint*);
 void(dWorldSetAutoDisableAverageSamplesCount)(struct dxWorld*,unsigned int);
 ]])
-local CLIB = ffi.load(_G.FFI_LIB or "ode")
 local library = {}
 library = {
 	JointSetSliderAxisDelta = CLIB.dJointSetSliderAxisDelta,

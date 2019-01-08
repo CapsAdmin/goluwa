@@ -1,4 +1,5 @@
 local ffi = require("ffi")
+local lib = assert(ffi.load(jit.os == "Windows" and "pdcurses" or "ncurses"))
 
 local header =  [[
 typedef void * FILE;
@@ -435,8 +436,6 @@ int COLOR_PAIR(int);
 
 ffi.cdef("typedef uint64_t chtype;")
 ffi.cdef(header)
-
-local lib = assert(ffi.load(jit.os == "Windows" and "pdcurses" or "ncurses"))
 
 local curses = {
 	lib = lib,

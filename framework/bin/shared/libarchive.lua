@@ -1,4 +1,5 @@
 local ffi = require("ffi")
+local CLIB = assert(ffi.load("libarchive"))
 ffi.cdef([[struct archive {};
 struct archive_entry {};
 struct archive_acl {};
@@ -412,7 +413,6 @@ int(archive_write_set_compression_lzma)(struct archive*);
 void(archive_entry_set_hardlink)(struct archive_entry*,const char*);
 int(archive_match_exclude_pattern_from_file)(struct archive*,const char*,int);
 ]])
-local CLIB = ffi.load(_G.FFI_LIB or "libarchive")
 local library = {}
 library = {
 	VersionNumber = CLIB.archive_version_number,
