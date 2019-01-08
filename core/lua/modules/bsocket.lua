@@ -1,4 +1,5 @@
 local bsock = require("bsocket_ffi")
+local e = bsock.e
 
 if bsock.initialize then
     assert(bsock.initialize())
@@ -9,7 +10,7 @@ local ffi = require("ffi")
 local function capture_flags(what)
     local flags = {}
     local reverse = {}
-    for k, v in pairs(bsock.e) do
+    for k, v in pairs(e) do
         if k:startswith(what) then
             k = k:sub(#what + 1):lower()
             reverse[v] = k
@@ -82,7 +83,7 @@ local function flags_to_table(flags, valid_flags, operation)
 	return out
 end
 
-local module = {}
+local M = {}
 
 local function addrinfo_to_table(res)
     local info = {}
@@ -105,7 +106,7 @@ local function addrinfo_to_table(res)
     return info
 end
 
-function module.get_address_info(data)
+function M.get_address_info(data)
 
 
     local hints
@@ -143,7 +144,7 @@ do
         return string.format("socket[%s-%s-%s][%s]", self.family, self.type, self.protocol, self.fd)
     end
 
-    function module.socket(family, type, protocol)
+    function M.socket(family, type, protocol)
         local fd, err = bsock.socket(AF.strict_lookup(family), SOCK.strict_lookup(type), IPPROTO.strict_lookup(protocol))
 
         if not fd then return fd, err end
@@ -186,7 +187,7 @@ do
         if type(host) == "table" and host.addrinfo then
             res = host
         else
-           res = module.get_address_info({host = host, service = port, family = self.family, socket_type = self.type, protocol = self.protocol})[1]
+           res = M.get_address_info({host = host, service = port, family = self.family, socket_type = self.type, protocol = self.protocol})[1]
         end
 
         local ok, err = bsock.socket_connect(self.fd, res.addrinfo.ai_addr, res.addrinfo.ai_addrlen)
@@ -204,14 +205,14 @@ do
         if type(host) == "table" and host.addrinfo then
             res = host
         else
-           res = module.get_address_info({host = host, service = port, family = self.family, socket_type = self.type, protocol = self.protocol})[1]
+           res = M.get_address_info({host = host, service = port, family = self.family, socket_type = self.type, protocol = self.protocol})[1]
         end
 
         return bsock.socket_bind(self.fd, res.addrinfo.ai_addr, res.addrinfo.ai_addrlen)
     end
 
     function meta:listen(max_connections)
-        max_connections = max_connections or bsock.e.SOMAXCONN
+        max_connections = max_connections or e.SOMAXCONN
         return bsock.socket_listen(self.fd, max_connections)
     end
 
@@ -300,4 +301,4 @@ end
 --print(socket:getpeername())
 --print(socket:getsockname())
 
-return module
+return M

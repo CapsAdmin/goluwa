@@ -1,46 +1,68 @@
 --[[
     berkeley sockets with unix and windows support
 
-    the goal is to provide a minimal abstraction for
-    the socket api and hide platform differences
+    the goal is to provide a minimal abstraction for 
+    the unix domain socket api, hide platform differences 
+    and expose enums. 
 
-    this file is not intended to be used as an api
-    but rather as a building block for a higher level
-    api
+    It also handles errors and so the function calls will
+    return errors lua-style.
+    
+    ---
+    local bsock = require("bsocket_ffi")
+    local e = bsock.e
+    local fd, err = bsock.socket(e.AF_INET, e.SOCK_STREAM, 0)
+    if fd then
+        print("got file descriptor: ", fd)
+    else
+        error(err)
+    end
+    ---
+
+    This file is not intended for direct use. It was made as
+    a building block for a higher level socket abstraction
 ]]
 
-local module = {}
 local ffi = require("ffi")
-local lib
 
-local function generic_function(lib_name, cdef, alias, size_error_handling)
+local C
+
+if jit.os == "Windows" then
+    C = assert(ffi.load("ws2_32"))
+else
+    C = ffi.C
+end
+
+local M = {}
+
+local function generic_function(C_name, cdef, alias, size_error_handling)
     ffi.cdef(cdef)
 
-    alias = alias or lib_name
+    alias = alias or C_name
     local func_name = "socket_" .. alias
-    local func = lib[lib_name]
+    local func = C[C_name]
 
     if size_error_handling == false then
-        module[func_name] = func
+        M[func_name] = func
     elseif size_error_handling then
-        module[func_name] = function(...)
+        M[func_name] = function(...)
             local len = func(...)
 
             if len < 0 then
-                return nil, module.lasterror()
+                return nil, M.lasterror()
             end
 
             return len
         end
     else
-        module[func_name] = function(...)
+        M[func_name] = function(...)
             local ret = func(...)
 
             if ret == 0 then
                 return true
             end
 
-            return nil, module.lasterror()
+            return nil, M.lasterror()
         end
     end
 end
@@ -64,30 +86,30 @@ ffi.cdef([[
     uint16_t ntohs(uint16_t netshort);
 ]])
 
-function module.getaddrinfo(node_name, service_name, hints, result)
-    local ret = lib.getaddrinfo(node_name, service_name, hints, result)
+function M.getaddrinfo(node_name, service_name, hints, result)
+    local ret = C.getaddrinfo(node_name, service_name, hints, result)
     if ret == 0 then
         return true
     end
 
-    return nil, ffi.string(lib.gai_strerror(ret))
+    return nil, ffi.string(C.gai_strerror(ret))
 end
 
-function module.getnameinfo(address, length, host, hostlen, serv, servlen, flags)
-    local ret = lib.getnameinfo(address, length, host, hostlen, serv, servlen, flags)
+function M.getnameinfo(address, length, host, hostlen, serv, servlen, flags)
+    local ret = C.getnameinfo(address, length, host, hostlen, serv, servlen, flags)
     if ret == 0 then
         return true
     end
 
-    return nil, ffi.string(lib.gai_strerror(ret))
+    return nil, ffi.string(C.gai_strerror(ret))
 end
 
 do
     ffi.cdef("const char *inet_ntop(int __af, const void *__cp, char *__buf, unsigned int __len);")
 
-    function module.inet_ntop(family, addrinfo, strptr, strlen)
-        if lib.inet_ntop(family, addrinfo, strptr, strlen) == nil then
-            return nil, module.lasterror()
+    function M.inet_ntop(family, addrinfo, strptr, strlen)
+        if C.inet_ntop(family, addrinfo, strptr, strlen) == nil then
+            return nil, M.lasterror()
         end
 
         return strptr
@@ -119,9 +141,7 @@ if jit.os == "Windows" then
         };
     ]])
 
-    module.INVALID_SOCKET = ffi.new("SOCKET", -1)
-
-    lib = ffi.load("ws2_32")
+    M.INVALID_SOCKET = ffi.new("SOCKET", -1)
 
     local function WORD(low, high)
         return bit.bor(low , bit.lshift(high , 8))
@@ -136,7 +156,7 @@ if jit.os == "Windows" then
 
         local cache = {}
 
-        function module.lasterror(num)
+        function M.lasterror(num)
             num = num or ffi.C.GetLastError()
 
             if not cache[num] then
@@ -158,7 +178,7 @@ if jit.os == "Windows" then
             wsa_data = ffi.typeof([[struct {
                 uint16_t wVersion;
                 uint16_t wHighVersion;
-                unsigned short iMaxmodule;
+                unsigned short iMax_M;
                 unsigned short iMaxUdpDg;
                 char * lpVendorInfo;
                 char szDescription[257];
@@ -170,49 +190,49 @@ if jit.os == "Windows" then
                 uint16_t wHighVersion;
                 char szDescription[257];
                 char szSystemStatus[129];
-                unsigned short iMaxmodule;
+                unsigned short iMax_M;
                 unsigned short iMaxUdpDg;
                 char * lpVendorInfo;
             }]])
         end
 
-        function module.initialize()
+        function M.initialize()
             local data = wsa_data()
 
-            if lib.WSAStartup(WORD(2, 2), data) == 0 then
+            if C.WSAStartup(WORD(2, 2), data) == 0 then
                 return data
             end
 
-            return nil, module.lasterror()
+            return nil, M.lasterror()
         end
     end
 
     do
         ffi.cdef("int WSACleanup();")
 
-        function module.shutdown()
-            if lib.WSACleanup() == 0 then
+        function M.shutdown()
+            if C.WSACleanup() == 0 then
                 return true
             end
 
-            return nil, module.lasterror()
+            return nil, M.lasterror()
         end
     end
 
     if jit.arch ~= "x64" then -- xp or something
         ffi.cdef("int WSAAddressToStringA(struct sockaddr *, unsigned long, void *, char *, unsigned long *);")
 
-        function module.inet_ntop(family, pAddr, strptr, strlen)
+        function M.inet_ntop(family, pAddr, strptr, strlen)
             -- win XP: http://memset.wordpress.com/2010/10/09/inet_ntop-for-win32/
             local srcaddr = ffi.new("struct sockaddr_in")
             ffi.copy(srcaddr.sin_addr, pAddr, ffi.sizeof(srcaddr.sin_addr))
             srcaddr.sin_family = family
             local len = ffi.new("unsigned long[1]", strlen)
-            return lib.WSAAddressToStringA(ffi.cast("struct sockaddr *", srcaddr), ffi.sizeof(srcaddr), nil, strptr, len)
+            return C.WSAAddressToStringA(ffi.cast("struct sockaddr *", srcaddr), ffi.sizeof(srcaddr), nil, strptr, len)
         end
     end
 
-    function module.wouldblock()
+    function M.wouldblock()
         return ffi.C.GetLastError() == 10035
     end
 
@@ -229,13 +249,13 @@ if jit.os == "Windows" then
 
         local FIONBIO = _IOW(string.byte'f', 126, "uint32_t") -- -2147195266 -- 2147772030ULL
 
-        function module.socket_blocking(fd, b)
-            local ret = lib.ioctlsocket(fd, FIONBIO, ffi.new("int[1]", b and 0 or 1))
+        function M.socket_blocking(fd, b)
+            local ret = C.ioctlsocket(fd, FIONBIO, ffi.new("int[1]", b and 0 or 1))
             if ret == 0 then
                 return true
             end
 
-            return nil, module.lasterror()
+            return nil, M.lasterror()
         end
     end
 else
@@ -263,14 +283,13 @@ else
         };
 
     ]])
-    lib = ffi.C
 
-    module.INVALID_SOCKET = -1
+    M.INVALID_SOCKET = -1
 
     do
         local cache = {}
 
-        function module.lasterror(num)
+        function M.lasterror(num)
             num = num or ffi.errno()
 
             if not cache[num] then
@@ -291,12 +310,12 @@ else
         local F_SETFL = 4
         local O_NONBLOCK = 04000
 
-        function module.socket_blocking(fd, b)
+        function M.socket_blocking(fd, b)
             local flags = ffi.C.fcntl(fd, F_GETFL, 0)
 
             if flags < 0 then
                 -- error
-                return nil, module.lasterror()
+                return nil, M.lasterror()
             end
 
             if b then
@@ -308,14 +327,14 @@ else
             local ret = ffi.C.fcntl(fd, F_SETFL, ffi.new("int", flags))
 
             if ret < 0 then
-                return nil, module.lasterror()
+                return nil, M.lasterror()
             end
 
             return true
         end
     end
 
-    function module.wouldblock()
+    function M.wouldblock()
         local err = ffi.errno()
         return err == 11 or err == 115 or err == 114
     end
@@ -324,11 +343,11 @@ end
 do
     ffi.cdef("SOCKET socket(int af, int type, int protocol);")
 
-    function module.socket(af, type, protocol)
-        local fd = lib.socket(af, type, protocol)
+    function M.socket(af, type, protocol)
+        local fd = C.socket(af, type, protocol)
 
         if fd <= 0 then
-            return nil, module.lasterror()
+            return nil, M.lasterror()
         end
 
         return fd
@@ -353,13 +372,13 @@ generic_function("sendto", "int sendto(SOCKET s, const char* buf, int len, int f
 generic_function("getpeername", "int getpeername(SOCKET s, struct sockaddr *, unsigned int *);")
 generic_function("getsockname", "int getsockname(SOCKET s, struct sockaddr *, unsigned int *);")
 
-module.inet_ntoa = lib.inet_ntoa
-module.ntohs = lib.ntohs
+M.inet_ntoa = C.inet_ntoa
+M.ntohs = C.ntohs
 
 local e = {}
 
 if jit.os == "Windows" then
-    module.e = {
+    M.e = {
         SOL_SOCKET = 0xffff,
         SO_DEBUG = 0x0001,
         SOMAXCONN =  0x7fffffff,
@@ -475,7 +494,7 @@ if jit.os == "Windows" then
         AI_FILESERVER = 0x00040000,
     }
 elseif jit.os == "Linux" then
-    module.e = {
+    M.e = {
         PF_INET = 2,
 	    PF_INET6 = 10,
 	    AF_INET = 2,
@@ -542,4 +561,4 @@ elseif jit.os == "Linux" then
     }
 end
 
-return module
+return M
