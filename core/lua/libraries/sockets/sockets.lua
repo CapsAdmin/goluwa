@@ -252,9 +252,9 @@ do -- tcp socket meta
 				ok, msg = self.socket:set_peer_name(ip, tostring(port))
 			end
 
-			if not ok and msg and 
-				msg ~= "timeout" and 
-				msg ~= "Operation already in progress" and 
+			if not ok and msg and
+				msg ~= "timeout" and
+				msg ~= "Operation already in progress" and
 				(WINDOWS and msg ~= "Invalid argument") and
 				msg ~= "A non-blocking socket operation could not be completed immediately. (10035)"
 			then
@@ -389,7 +389,6 @@ do -- tcp socket meta
 
 					elseif data then
 						self:DebugPrintf("RECV: |%s|",  data)
-						print(data, err, "!!")
 						self:OnReceive(data)
 
 						if not self:IsValid() then return end
