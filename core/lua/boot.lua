@@ -335,7 +335,9 @@ do
 	end
 
 	function has_tmux_session()
-		return os.readexecute("tmux has-session -t goluwa 2> /dev/null; printf $?") == "0"
+		if os.iscmd("tmux") then
+			return os.readexecute("tmux has-session -t goluwa 2> /dev/null; printf $?") == "0"
+		end
 	end
 
 	function os.extract(from, to, move_out)
