@@ -89,21 +89,26 @@ do -- loaders
 		end)
 	end
 
+	require.loaders = {}
+	for i,v in ipairs(package.loaders) do
+		require.loaders[i] = v
+	end
+
 	-- we don't need the default loaders since we reimplement them here
-	for i = #package.loaders, 1, -1 do
-		if debug.getinfo(package.loaders[i]).what == "C" then
-			table.remove(package.loaders, i)
+	for i = #require.loaders, 1, -1 do
+		if debug.getinfo(require.loaders[i]).what == "C" then
+			table.remove(require.loaders, i)
 		end
 	end
 
-	table.insert(package.loaders, 1, c_loader2)
-	table.insert(package.loaders, 1, c_loader)
-	table.insert(package.loaders, 1, lua_loader)
-	table.insert(package.loaders, 1, preload_loader)
+	table.insert(require.loaders, 1, c_loader2)
+	table.insert(require.loaders, 1, c_loader)
+	table.insert(require.loaders, 1, lua_loader)
+	table.insert(require.loaders, 1, preload_loader)
 end
 
 function require.load(name, loaders)
-	loaders = loaders or package.loaders
+	loaders = loaders or require.loaders
 
 	local errors = {}
 
