@@ -908,9 +908,9 @@ do -- type metatables
 				if ok then
 					return msg
 				end
-				error(original_expression .. "\n\nunable to run '"..expression.."' : " .. msg)
+				print(original_expression .. "\n\nunable to run '"..expression.."' : " .. msg)
 			end
-			error(original_expression .. "\n\nunable to parse '"..expression.."': " .. err)
+			print(original_expression .. "\n\nunable to parse '"..expression.."': " .. err)
 		end
 
 		local function find_enum(current_meta_data, out, what)
@@ -1690,9 +1690,9 @@ do -- lua helper functions
 
 	function ffibuild.StartLibrary(ffi_header, ...)
 		local lua =
-		"local ffi = require(\"ffi\")\n" ..
+		"local ffi = require(\"ffi\");" ..
+		"local CLIB = assert(ffi.load(\""..(ffibuild.shared_library_name or ffibuild.GetBuildName()).."\"));" ..
 		"ffi.cdef([["..ffi_header.."]])\n" ..
-		"local CLIB = ffi.load(_G.FFI_LIB or \""..ffibuild.GetBuildName().."\")\n" ..
 		"local library = {}\n"
 
 		if ... then
@@ -1881,7 +1881,7 @@ do -- lua helper functions
 		return lua
 	end
 
-	function ffibuild.TestLibrary(lua)
+	function ffibuild.TestLibrary(lua, header)
 		ffibuild.undefined_symbols = {}
 		-- check if this works if possible
 		local ffi = require("ffi")
@@ -1930,6 +1930,7 @@ do -- lua helper functions
 		local addon = info.addon
 
 		ffibuild.SetBuildName(info.name)
+		ffibuild.shared_library_name = info.shared_library_name
 
 		local dir = e.TEMP_FOLDER .. "ffibuild/" .. info.name .. "/"
 
@@ -1992,13 +1993,13 @@ do -- lua helper functions
 		end
 
 		if info.process_header then
-			local header, meta_data = ffibuild.ProcessSourceFileGCC(info.c_source, info.gcc_flags, dir)
+			local header = ffibuild.ProcessSourceFileGCC(info.c_source, info.gcc_flags, dir)
 			if #header == 0 then
-
 				logn("failed to process source:", info.c_source)
 				return
 			end
-			header, meta_data = info.process_header(header)
+
+			local header, meta_data = info.process_header(header)
 
 			if info.build_lua then
 				::again::
@@ -2007,7 +2008,7 @@ do -- lua helper functions
 				local lua = info.build_lua(header, meta_data)
 				vfs.PopWorkingDirectory()
 
-				if ffibuild.TestLibrary(lua) then
+				if ffibuild.TestLibrary(lua, header) or (strip_undefined_symbols and next(strip_undefined_symbols)) then
 
 					if info.strip_undefined_symbols and next(ffibuild.undefined_symbols) then
 						llog("rebuilding lua to get rid of undefined symbols")
@@ -2016,13 +2017,16 @@ do -- lua helper functions
 						ffibuild.undefined_symbols = nil
 					end
 
+					local name = info.lua_name or ffibuild.GetBuildName()
+
 					local dir = "os:" .. e.ROOT_FOLDER .. addon .. "/bin/shared/"
 					vfs.CreateDirectoriesFromPath(dir)
-					vfs.Write(dir .. info.name .. ".lua", lua)
-					logn("copied ", info.name .. ".lua", " to ", dir)
-					logn("successfully built ", info.name)
+					vfs.Write(dir .. name .. ".lua", lua)
+					logn("copied ", name .. ".lua", " to ", dir)
+					logn("successfully built ", name)
 				else
-					logn("failed to validate ", info.name)
+					logn("failed to validate ", name)
+					vfs.Write("temp/last_ffibild_error.lua", lua)
 				end
 			end
 		end

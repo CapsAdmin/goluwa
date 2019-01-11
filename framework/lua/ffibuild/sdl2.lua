@@ -1,8 +1,9 @@
 ffibuild.Build({
 	name = "SDL2",
-	url = "https://github.com/spurious/SDL-mirror.git",
-	cmd = "./autogen.sh && mkdir build && cd build && ../configure --host=x86_64-w64-mingw32 --disable-audio --disable-render --disable-haptic --disable-filesystem --disable-file && make && cd ../",
+	url = "https://github.com/spurious/SDL-mirror.git", -- --host=x86_64-w64-mingw32
+	cmd = "./autogen.sh && mkdir build && cd build && ../configure --disable-audio --disable-render --disable-haptic --disable-filesystem --disable-file && make && cd ../",
 	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
+	strip_undefined_symbols = true,
 
 	c_source = [[
 		typedef enum  {
@@ -23,22 +24,26 @@ ffibuild.Build({
 			SDL_WINDOWPOS_CENTERED        = SDL_WINDOWPOS_CENTERED_MASK
 		} SDL_grrrrrr;
 
-			#include "SDL_video.h"
-			#include "SDL_shape.h"
-			#include "SDL.h"
-			#include "SDL_syswm.h"
-			#include "SDL_vulkan.h"
-
+		#include "SDL.h"
+		#include "SDL_video.h"
+		#include "SDL_shape.h"
+		#include "SDL.h"
+		#include "SDL_syswm.h"
+		#include "SDL_vulkan.h"
+ss
 	]],
 	gcc_flags = "-I./include",
-
+	filter_library = function(path)
+        if path:endswith("libSDL2") then
+            return true
+        end
+    end,
 	process_header = function(header)
+		vfs.Write("rofl.h", header)
 		local meta_data = ffibuild.GetMetaData(header)
 
 		meta_data.functions.SDL_main = nil
 		meta_data.structs["struct SDL_WindowShapeMode"] = nil
-		meta_data.functions.SDL_SetWindowShape.arguments[3] = ffibuild.CreateType("type", "void *")
-		meta_data.functions.SDL_GetShapedWindowMode.arguments[2] = ffibuild.CreateType("type", "void *")
 
 		return meta_data:BuildMinimalHeader(function(name)
 			return name:find("^SDL_")
@@ -54,7 +59,8 @@ ffibuild.Build({
 		header = header:gsub("struct VkInstance_T", "void")
 		header = header:gsub("struct VkSurfaceKHR_T", "void")
 
-		local lua = ffibuild.StartLibrary(header)
+		local lua = ffibuild.StartLibrary(header, "safe_clib_index")
+        lua = lua .. "CLIB = SAFE_INDEX(CLIB)"
 
 		lua = lua .. "library = " .. meta_data:BuildFunctions("^SDL_(.+)")
 		lua = lua .. "library.e = " .. meta_data:BuildEnums("^SDL_(.+)", {"./include/SDL_hints.h"}, "SDL_")

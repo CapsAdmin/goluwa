@@ -2,71 +2,50 @@ local ffi = require("ffi")
 local CLIB = assert(ffi.load("openal"))
 ffi.cdef([[struct ALCdevice_struct {};
 struct ALCcontext_struct {};
-void(alcDestroyContext)(struct ALCcontext_struct*);
-void(alcCaptureStop)(struct ALCdevice_struct*);
-void(alcGetIntegerv)(struct ALCdevice_struct*,int,int,int*);
-void(alcCaptureSamples)(struct ALCdevice_struct*,void*,int);
-const char*(alcGetString)(struct ALCdevice_struct*,int);
-struct ALCcontext_struct*(alcGetCurrentContext)();
-struct ALCcontext_struct*(alcGetThreadContext)();
-int(alcGetError)(struct ALCdevice_struct*);
-char(alcResetDeviceSOFT)(struct ALCdevice_struct*,const int*);
-void(alcRenderSamplesSOFT)(struct ALCdevice_struct*,void*,int);
-void(alcDeviceResumeSOFT)(struct ALCdevice_struct*);
 void*(alcGetProcAddress)(struct ALCdevice_struct*,const char*);
 struct ALCcontext_struct*(alcCreateContext)(struct ALCdevice_struct*,const int*);
-const char*(alcGetStringiSOFT)(struct ALCdevice_struct*,int,int);
-void(alcDevicePauseSOFT)(struct ALCdevice_struct*);
+void(alcDestroyContext)(struct ALCcontext_struct*);
 void(alcSuspendContext)(struct ALCcontext_struct*);
-struct ALCdevice_struct*(alcOpenDevice)(const char*);
 char(alcMakeContextCurrent)(struct ALCcontext_struct*);
+void(alcCaptureStop)(struct ALCdevice_struct*);
 struct ALCdevice_struct*(alcGetContextsDevice)(struct ALCcontext_struct*);
-int(alcGetEnumValue)(struct ALCdevice_struct*,const char*);
-char(alcIsRenderFormatSupportedSOFT)(struct ALCdevice_struct*,int,int,int);
-char(alcSetThreadContext)(struct ALCcontext_struct*);
-char(alcCaptureCloseDevice)(struct ALCdevice_struct*);
-struct ALCdevice_struct*(alcCaptureOpenDevice)(const char*,unsigned int,int,int);
+char(alcCloseDevice)(struct ALCdevice_struct*);
+const char*(alcGetString)(struct ALCdevice_struct*,int);
+struct ALCcontext_struct*(alcGetCurrentContext)();
+void(alcProcessContext)(struct ALCcontext_struct*);
 char(alcIsExtensionPresent)(struct ALCdevice_struct*,const char*);
 void(alcCaptureStart)(struct ALCdevice_struct*);
-void(alcProcessContext)(struct ALCcontext_struct*);
-char(alcCloseDevice)(struct ALCdevice_struct*);
-struct ALCdevice_struct*(alcLoopbackOpenDeviceSOFT)(const char*);
+void(alcCaptureSamples)(struct ALCdevice_struct*,void*,int);
+int(alcGetEnumValue)(struct ALCdevice_struct*,const char*);
+void(alcGetIntegerv)(struct ALCdevice_struct*,int,int,int*);
+struct ALCdevice_struct*(alcOpenDevice)(const char*);
+int(alcGetError)(struct ALCdevice_struct*);
+struct ALCdevice_struct*(alcCaptureOpenDevice)(const char*,unsigned int,int,int);
+char(alcCaptureCloseDevice)(struct ALCdevice_struct*);
 ]])
 local library = {}
 library = {
-	DestroyContext = CLIB.alcDestroyContext,
-	CaptureStop = CLIB.alcCaptureStop,
-	GetIntegerv = CLIB.alcGetIntegerv,
-	CaptureSamples = CLIB.alcCaptureSamples,
-	GetString = CLIB.alcGetString,
-	GetCurrentContext = CLIB.alcGetCurrentContext,
-	GetThreadContext = CLIB.alcGetThreadContext,
-	GetError = CLIB.alcGetError,
-	ResetDeviceSOFT = CLIB.alcResetDeviceSOFT,
-	RenderSamplesSOFT = CLIB.alcRenderSamplesSOFT,
-	DeviceResumeSOFT = CLIB.alcDeviceResumeSOFT,
 	GetProcAddress = CLIB.alcGetProcAddress,
 	CreateContext = CLIB.alcCreateContext,
-	GetStringiSOFT = CLIB.alcGetStringiSOFT,
-	DevicePauseSOFT = CLIB.alcDevicePauseSOFT,
+	DestroyContext = CLIB.alcDestroyContext,
 	SuspendContext = CLIB.alcSuspendContext,
-	OpenDevice = CLIB.alcOpenDevice,
 	MakeContextCurrent = CLIB.alcMakeContextCurrent,
+	CaptureStop = CLIB.alcCaptureStop,
 	GetContextsDevice = CLIB.alcGetContextsDevice,
-	GetEnumValue = CLIB.alcGetEnumValue,
-	IsRenderFormatSupportedSOFT = CLIB.alcIsRenderFormatSupportedSOFT,
-	SetThreadContext = CLIB.alcSetThreadContext,
-	CaptureCloseDevice = CLIB.alcCaptureCloseDevice,
-	CaptureOpenDevice = CLIB.alcCaptureOpenDevice,
+	CloseDevice = CLIB.alcCloseDevice,
+	GetString = CLIB.alcGetString,
+	GetCurrentContext = CLIB.alcGetCurrentContext,
+	ProcessContext = CLIB.alcProcessContext,
 	IsExtensionPresent = CLIB.alcIsExtensionPresent,
 	CaptureStart = CLIB.alcCaptureStart,
-	ProcessContext = CLIB.alcProcessContext,
-	CloseDevice = CLIB.alcCloseDevice,
-	LoopbackOpenDeviceSOFT = CLIB.alcLoopbackOpenDeviceSOFT,
+	CaptureSamples = CLIB.alcCaptureSamples,
+	GetEnumValue = CLIB.alcGetEnumValue,
+	GetIntegerv = CLIB.alcGetIntegerv,
+	OpenDevice = CLIB.alcOpenDevice,
+	GetError = CLIB.alcGetError,
+	CaptureOpenDevice = CLIB.alcCaptureOpenDevice,
+	CaptureCloseDevice = CLIB.alcCaptureCloseDevice,
 }
-local AL_TRUE = 1
-local AL_FALSE = 0
-local AL_INVALID_ENUM = 40962
 library.e = {
 	API = 1,
 	API = extern,
@@ -144,27 +123,30 @@ library.e = {
 	HRTF_ID_SOFT = 6550,
 	SOFT_output_limiter = 1,
 	OUTPUT_LIMITER_SOFT = 6554,
+	SOFT_device_clock = 1,
+	DEVICE_CLOCK_SOFT = 5632,
+	DEVICE_LATENCY_SOFT = 5633,
+	DEVICE_CLOCK_LATENCY_SOFT = 5634,
 	EXT_EFX_NAME = "ALC_EXT_EFX",
 	EFX_MAJOR_VERSION = 131073,
 	EFX_MINOR_VERSION = 131074,
 	MAX_AUXILIARY_SENDS = 131075,
 }
-function library.GetErrorString(device)
-	local num = library.GetError(device)
-
-	if num == library.e.NO_ERROR then
-		return "no error"
-	elseif num == library.e.INVALID_DEVICE then
-		return "invalid device"
-	elseif num == library.e.INVALID_CONTEXT then
-		return "invalid context"
-	elseif num == library.e.INVALID_ENUM then
-		return "invalid enum"
-	elseif num == library.e.INVALID_VALUE then
-		return "invalid value"
-	elseif num == library.e.OUT_OF_MEMORY then
-		return "out of memory"
-	end
-end
-library.clib = CLIB
+		function library.GetErrorString(device)
+			local num = library.GetError(device)
+			if num == library.e.NO_ERROR then
+				return "no error"
+			elseif num == library.e.INVALID_DEVICE then
+				return "invalid device"
+			elseif num == library.e.INVALID_CONTEXT then
+				return "invalid context"
+			elseif num == library.e.INVALID_ENUM then
+				return "invalid enum"
+			elseif num == library.e.INVALID_VALUE then
+				return "invalid value"
+			elseif num == library.e.OUT_OF_MEMORY then
+				return "out of memory"
+			end
+		end
+		library.clib = CLIB
 return library
