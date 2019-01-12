@@ -47,6 +47,7 @@ local IPPROTO = capture_flags("IPPROTO_")
 local AI = capture_flags("AI_")
 local SOL = capture_flags("SOL_")
 local SO = capture_flags("SO_")
+local TCP = capture_flags("TCP_")
 
 local function table_to_flags(flags, valid_flags, operation)
 	if type(flags) == "string" then
@@ -172,13 +173,20 @@ do
     function meta:set_option(key, val, level)
         level = level or "socket"
 
-        if type(val) == "number" then
+        if type(val) == "boolean" then
+            val = ffi.new("int[1]", val and 1 or 0)
+        elseif type(val) == "number" then
             val = ffi.new("int[1]", val)
         elseif type(val) ~= "cdata" then
             error("unknown value type: " .. type(val))
         end
 
-        return bsock.socket_setsockopt(self.fd, SOL.strict_lookup(level), SO.strict_lookup(key), ffi.cast("void *", val), ffi.sizeof(val))
+        local env = SO
+        if level == "tcp" then
+            env = TCP
+    end
+
+        return bsock.socket_setsockopt(self.fd, SOL.strict_lookup(level), env.strict_lookup(key), ffi.cast("void *", val), ffi.sizeof(val))
     end
 
     function meta:connect(host, port)
