@@ -11,32 +11,30 @@ local tinsert = table.insert
 local clients = {}
 
 local client = function(sock,protocol)
-  local copas = require'copas'
-  
   local self = {}
-  
+
   self.state = 'OPEN'
   self.is_server = true
-  
+
   self.sock_send = function(self,...)
     return copas.send(sock,...)
   end
-  
+
   self.sock_receive = function(self,...)
     return copas.receive(sock,...)
   end
-  
+
   self.sock_close = function(self)
     sock:shutdown()
     sock:close()
   end
-  
+
   self = sync.extend(self)
-  
+
   self.on_close = function(self)
     clients[protocol][self] = nil
   end
-  
+
   self.broadcast = function(self,...)
     for client in pairs(clients[protocol]) do
       if client ~= self then
@@ -45,12 +43,12 @@ local client = function(sock,protocol)
     end
     self:send(...)
   end
-  
+
   return self
 end
 
 local listen = function(opts)
-  
+
   local copas = require'copas'
   assert(opts and (opts.protocols or opts.default))
   local on_error = opts.on_error or function(s) print(s) end

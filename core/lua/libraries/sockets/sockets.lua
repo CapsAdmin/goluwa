@@ -5,6 +5,8 @@ local bsocket = require("bsocket")
 sockets.active_sockets = sockets.active_sockets or {}
 
 runfile("lua/libraries/sockets/http.lua", sockets)
+runfile("lua/libraries/sockets/websocket_client.lua", sockets)
+runfile("lua/libraries/sockets/websocket_server.lua", sockets)
 
 function sockets.Initialize()
 	event.Timer("sockets", 1/30, 0, function() sockets.Update() end, nil, function(...) logn(...) return true end)

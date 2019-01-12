@@ -5,19 +5,14 @@ local frame = require'websocket.frame'
 local handshake = require'websocket.handshake'
 local tconcat = table.concat
 local tinsert = table.insert
-local ev
-local loop
 
 local clients = {}
 clients[true] = {}
 
 local client = function(sock,protocol)
   assert(sock)
-  sock:setoption('tcp-nodelay',true)
-  local fd = sock:getfd()
-  local message_io
-  local close_timer
-  local async_send = require'websocket.ev_common'.async_send(sock,loop)
+  sock:set_blocking(false)
+  sock:set_option("nodelay", true, "tcp")
   local self = {}
   self.state = 'OPEN'
   self.sock = sock
@@ -37,11 +32,6 @@ local client = function(sock,protocol)
     if clients[protocol] ~= nil and clients[protocol][self] ~= nil then
       clients[protocol][self] = nil
     end
-    if close_timer then
-      close_timer:stop(loop)
-      close_timer = nil
-    end
-    message_io:stop(loop)
     self.state = 'CLOSED'
     if user_on_close then
       user_on_close(self,was_clean,code,reason or '')
@@ -49,7 +39,7 @@ local client = function(sock,protocol)
     sock:shutdown()
     sock:close()
   end
-  
+
   local handle_sock_err = function(err)
     if err == 'closed' then
       if self.state ~= 'CLOSED' then
@@ -80,24 +70,24 @@ local client = function(sock,protocol)
       end
     end
   end
-  
+
   self.send = function(_,message,opcode)
     local encoded = frame.encode(message,opcode or frame.TEXT)
     return async_send(encoded)
   end
-  
+
   self.on_close = function(_,on_close_arg)
     user_on_close = on_close_arg
   end
-  
+
   self.on_error = function(_,on_error_arg)
     user_on_error = on_error_arg
   end
-  
+
   self.on_message = function(_,on_message_arg)
     user_on_message = on_message_arg
   end
-  
+
   self.broadcast = function(_,...)
     for client in pairs(clients[protocol]) do
       if client.state == 'OPEN' then
@@ -105,7 +95,7 @@ local client = function(sock,protocol)
       end
     end
   end
-  
+
   self.close = function(_,code,reason,timeout)
     if clients[protocol] ~= nil and clients[protocol][self] ~= nil then
       clients[protocol][self] = nil
@@ -127,22 +117,20 @@ local client = function(sock,protocol)
       close_timer:start(loop)
     end
   end
-  
+
   self.start = function()
     message_io = require'websocket.ev_common'.message_io(
       sock,loop,
       on_message,
     handle_sock_err)
   end
-  
-  
+
+
   return self
 end
 
 local listen = function(opts)
   assert(opts and (opts.protocols or opts.default))
-  ev = require'ev'
-  loop = opts.loop or ev.Loop.default
   local user_on_error
   local on_error = function(s,err)
     if user_on_error then
@@ -167,11 +155,11 @@ local listen = function(opts)
     error(err)
   end
   listener:settimeout(0)
-  
+
   self.sock = function()
     return listener
   end
-  
+
   local listen_io = ev.IO.new(
     function()
       local client_sock = listener:accept()

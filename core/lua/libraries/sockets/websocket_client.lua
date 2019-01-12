@@ -33,7 +33,7 @@ function META:Connect(url, ws_protocol, ssl_params)
 		end
 	end
 
-	self.socket:Connect(self.host, self.port)
+	return self.socket:Connect(self.host, self.port)
 end
 
 function META:Send(message, opcode)
@@ -178,10 +178,10 @@ META:Register()
 
 if RELOAD then
 	local socket = sockets.CreateWebsocketClient()
-	--socket:Connect("wss://echo.websocket.org")
-	socket:Connect("10.0.0.54", 27020)
+	socket:Connect("ws://echo.websocket.org")
+	--socket:Connect("10.0.0.54", 27020)
 	local str = {}
-	for i = 1, 500000 do
+	for i = 1, 10 do
 		str[i] = tostring(i)
 	end
 
