@@ -323,6 +323,36 @@ do
     end
 end
 
+function M.bind(host, port)
+    if host == "*" then host = nil end
+    local addrinfo, err = M.get_address_info({
+        host = host,
+        service = tostring(port),
+        family = "inet",
+        type = "stream",
+        protocol = "tcp",
+        flags = {"passive"}, -- fill in ip
+    })
+
+    if not addrinfo then return addrinfo, err end
+
+    for _, info in ipairs(addrinfo) do
+        if info.family == "inet" then
+            local server, err = M.socket(info.family, info.socket_type or "stream", info.protocol)
+            if not server then return server, err end
+
+            server:set_option("reuseaddr", 1)
+
+            local ok, err = server:bind(info)
+            if not ok then return ok, err end
+
+            server:set_option("sndbuf", 65536)
+            server:set_option("rcvbuf", 65536)
+
+            return server
+        end
+    end
+end
 --print(socket:getpeername())
 --print(socket:getsockname())
 
