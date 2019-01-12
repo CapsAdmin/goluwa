@@ -195,16 +195,33 @@ do
         if type(host) == "table" and host.addrinfo then
             res = host
         else
-           res = M.get_address_info({host = host, service = port, family = self.family, socket_type = self.type, protocol = self.protocol})[1]
+           local res_, err = M.get_address_info({
+                host = host,
+                service = port,
+                family = self.family,
+                socket_type = self.type,
+                protocol = self.protocol
+            })
+           if not res_ then
+                return res_, err
+        end
+           if not res_[1] then
+                return nil, "unable to lookup hostname (table returned has no entries)"
+           end
+           res = res_[1]
         end
 
         local ok, err = bsock.socket_connect(self.fd, res.addrinfo.ai_addr, res.addrinfo.ai_addrlen)
-        if not ok then return ok, err end
+
+        if not ok then
+            return ok, err
+        end
+
         if self.on_connect then
             return self:on_connect(host, port)
         end
 
-        return ok, err
+        return true
     end
 
     function meta:bind(host, port)
