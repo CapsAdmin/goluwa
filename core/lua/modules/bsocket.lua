@@ -184,7 +184,7 @@ do
         local env = SO
         if level == "tcp" then
             env = TCP
-    end
+        end
 
         return bsock.socket_setsockopt(self.fd, SOL.strict_lookup(level), env.strict_lookup(key), ffi.cast("void *", val), ffi.sizeof(val))
     end
@@ -204,7 +204,7 @@ do
             })
            if not res_ then
                 return res_, err
-        end
+           end
            if not res_[1] then
                 return nil, "unable to lookup hostname (table returned has no entries)"
            end
@@ -258,7 +258,7 @@ do
         end
 
         return nil, bsock.lasterror()
-    end
+        end
 
     function meta:is_connected()
         local ip, port = self:get_peer_name()
@@ -353,7 +353,15 @@ function M.bind(host, port)
         end
     end
 end
---print(socket:getpeername())
---print(socket:getsockname())
+
+function M.istimeout(res, err)
+    if res ~= nil then return false end
+
+    return
+        err == nil or
+        err == "blocking" or
+        err == "Resource temporarily unavailable" or
+        err == "A non-blocking socket operation could not be completed immediately. (10035)"
+end
 
 return M
