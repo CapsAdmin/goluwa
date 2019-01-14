@@ -36,13 +36,18 @@ local function CaptureLiteralString(self, multiline_comment)
 	if length < 2 then return nil end
 
 	local closing = "]" .. string.rep("=", length - 2) .. "]"
-
+	local found = false
 	for _ = self.i, self.code_length do
 		if self:GetCharsOffset(length - 1) == closing then
 			self:Advance(length)
+			found = true
 			break
 		end
 		self:Advance(1)
+	end
+
+	if not found then
+		return nil, "expected "..oh.QuoteToken(closing).." reached end of code"
 	end
 
 	return true

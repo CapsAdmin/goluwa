@@ -4,7 +4,7 @@ return function(syntax)
     if syntax.UTF8 then
         syntax.TokenizerSetup = oh.utf8_tokenizer_config
     end
-    
+
     do
         local map = {}
 
@@ -45,7 +45,7 @@ return function(syntax)
     end
 
     do -- extend the symbol map from grammar rules
-        for symbol in pairs(syntax.UnaryOperators) do
+        for _, symbol in pairs(syntax.UnaryOperators) do
             if symbol:find("%p") then
                 table.insert(syntax.CharacterMap.symbol, symbol)
             end
@@ -136,12 +136,8 @@ return function(syntax)
         syntax.Operators = temp
 
         local temp = {}
-        for i,v in pairs(syntax.UnaryOperators) do
-            if v < 0 then
-                temp[i] = {-v + 1, -v}
-            else
-                temp[i] = {v, v}
-            end
+        for i, val in pairs(syntax.UnaryOperators) do
+            temp[val] = true
         end
         syntax.UnaryOperators = temp
 

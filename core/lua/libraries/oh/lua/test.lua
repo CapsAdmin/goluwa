@@ -209,7 +209,7 @@ do
     }
 
     local code = {}
-    local total = 1000000
+    local total = 100000
     local whitespace_count = 0
 
     for i = 1, total do
@@ -233,7 +233,7 @@ do
 
     local code = table.concat(code)
     log(" - OK! ", ("%0.3f"):format(#code/1024/1024), "Mb of lua code\n")
-profiler.EasyStart()
+
     do
         log("tokenizing random tokens with capture_whitespace ...")
         local t = os.clock()
@@ -241,22 +241,19 @@ profiler.EasyStart()
         local total = os.clock() - t
         log(" - OK! ", total, " seconds / ", #res, " tokens\n")
     end
-profiler.EasyStop()
 
-profiler.EasyStart()
     do
         log("tokenizing random tokens without capture_whitespace ...")
         local t = os.clock()
         local res = tokenize(code, false)
-        local total = os.clock() - t 
+        local total = os.clock() - t
         log(" - OK! ", total, " seconds / ", #res, " tokens\n")
     end
-profiler.EasyStop()
 
     local function measure(code)
         collectgarbage()
         local res = code
- 
+
         do
             log("tokenizing     ...", ("%0.3f"):format(#code/1024/1024), "Mb of lua code\n")
             local t = os.clock()

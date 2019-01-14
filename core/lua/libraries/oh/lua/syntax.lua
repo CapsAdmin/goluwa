@@ -23,10 +23,7 @@ syntax.KeywordValues = {
 }
 
 syntax.UnaryOperators = {
-    ["-"] = -10,
-    ["#"] = -10,
-    ["not"] = -10,
-    ["~"] = -10,
+    "-", "#", "not", "~",
 }
 
 syntax.Operators = {
