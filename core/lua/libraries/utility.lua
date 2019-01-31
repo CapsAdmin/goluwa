@@ -1,5 +1,53 @@
 local utility = _G.utility or {}
 
+function utility.NumberToBytes(num, endian, signed)
+    if num<0 and not signed then num=-num print"warning, dropping sign from number converting to unsigned" end
+    local res={}
+    local n = math.ceil(select(2,math.frexp(num))/8) -- number of bytes to be used.
+    if signed and num < 0 then
+        num = num + 2^n
+    end
+    for k=n,1,-1 do -- 256 = 2^8 bits per char.
+        local mul=2^(8*(k-1))
+        res[k]=math.floor(num/mul)
+        num=num-res[k]*mul
+    end
+    assert(num==0)
+    if endian == "big" then
+        local t={}
+        for k=1,n do
+            t[k]=res[n-k+1]
+        end
+        res=t
+    end
+
+	local bytes =  string.char(unpack(res))
+
+	if #bytes ~= 4 then
+		bytes = bytes .. ("\0"):rep(4 - #bytes)
+	end
+
+	return bytes
+end
+
+function utility.BytesToNumber(str, endian, signed)
+    local t={str:byte(1,-1)}
+    if endian=="big" then --reverse bytes
+        local tt={}
+        for k=1,#t do
+            tt[#t-k+1]=t[k]
+        end
+        t=tt
+    end
+    local n=0
+    for k=1,#t do
+        n=n+t[k]*2^((k-1)*8)
+    end
+    if signed then
+        n = (n > 2^(#t*8-1) -1) and (n - 2^(#t*8)) or n -- if last bit set, negative.
+    end
+    return n
+end
 
 function utility.GetLikelyLibraryDependencies(path)
 	local ext = vfs.GetExtensionFromPath(path)
