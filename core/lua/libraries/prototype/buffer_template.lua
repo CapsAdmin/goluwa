@@ -1070,6 +1070,44 @@ do -- push pop position
 	end
 end
 
+function META:ReadBytesUntil(what)
+	local pos = self:FindString(what)
+
+	if pos then
+		local str = self:ReadBytes(pos - self:GetPosition())
+		self:Advance(#what)
+		return str
+	end
+
+	return false
+end
+
+function META:RemainingSize()
+	return self:GetSize() - self:GetPosition()
+end
+
+function META:FindString(str)
+	local old_pos = self:GetPosition()
+
+	for i = 1, self:GetSize() do
+		local chr = self:ReadChar()
+
+		if chr == str:sub(1, 1) then
+			for i = 2, #str do
+				if self:ReadChar() == str:sub(i, i) then
+					local pos = self:GetPosition() - #str
+					self:SetPosition(old_pos)
+					return pos
+				end
+			end
+		end
+	end
+
+	self:SetPosition(old_pos)
+
+	return false
+end
+
 function META:TheEnd()
 	return self:GetPosition() >= self:GetSize()
 end
