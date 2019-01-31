@@ -51,22 +51,30 @@ function CONTEXT:ReadAll()
 	return self:ReadBytes(math.huge)
 end
 
+local translate_mode = {
+	read = "rb",
+	write = "wb",
+	append = "ab",
+	read_write = "",
+}
+
 if fs.open then
 
 	-- if CONTEXT:Open errors the virtual file system will assume
 	-- the file doesn't exist and will go to the next mounted context
 
-	local translate_mode = {
-		read = "r",
-		write = "w",
-	}
 
 	function CONTEXT:Open(path_info, ...)
 		local mode = translate_mode[self:GetMode()]
 
 		if not mode then return false, "mode not supported" end
 
-		self.file = fs.open(path_info.full_path, mode .. "b")
+		if self.Mode == "read_write" then
+			fs.close(fs.open(path_info.full_path, "a"))
+			self.file = fs.open(path_info.full_path, "rb+")
+		else
+			self.file = fs.open(path_info.full_path, mode)
+		end
 
 		if self.file == nil then
 			return false, "unable to open file: " .. ffi.strerror()
@@ -147,12 +155,20 @@ if fs.open then
 			self.file = nil
 		end
 	end
-else
-	local translate_mode = {
-		read = "r",
-		write = "w",
-	}
 
+	function CONTEXT:GetSize()
+		if self.Mode == "read" or self.memory then
+			return self.attributes.size
+		end
+
+		local pos = fs.tell(self.file)
+		fs.seek(self.file, 0, 2)
+		local size = fs.tell(self.file)
+		fs.seek(self.file, pos, 0)
+
+		return tonumber(size) -- hmm, 64bit?
+	end
+else
 	function CONTEXT:Open(path_info, ...)
 		local mode = translate_mode[self:GetMode()]
 
@@ -193,10 +209,10 @@ else
 			self.file = nil
 		end
 	end
-end
 
-function CONTEXT:GetSize()
-	return self.attributes.size
+	function CONTEXT:GetSize()
+		return self.attributes.size
+	end
 end
 
 function CONTEXT:GetLastModified()
