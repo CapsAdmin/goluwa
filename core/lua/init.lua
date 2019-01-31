@@ -186,6 +186,8 @@ _G.runfile = vfs.RunFile
 _G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir
 
 -- libraries
+runfile("lua/libraries/datatypes/buffer.lua")
+runfile("lua/libraries/datatypes/tree.lua")
 crypto = runfile("lua/libraries/crypto.lua") -- base64 and other hash functions
 serializer = runfile("lua/libraries/serializer.lua") -- for serializing lua data in different formats
 system = runfile("lua/libraries/system.lua") -- os and luajit related functions like creating windows or changing jit options
