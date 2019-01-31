@@ -716,7 +716,7 @@ local function parse_compressed_item(bs, outstate, littable, disttable)
     --debug('BACK', len, dist)
     for i=1,len do
       local pos = (outstate.window_pos - 1 - dist) % 32768 + 1  -- 32K
-      output(outstate, assert(outstate.window[pos], 'invalid distance'))
+      output(outstate, assert(outstate.window[pos], 'invalid distance at pos ' .. pos))
     end
   end
   return false
