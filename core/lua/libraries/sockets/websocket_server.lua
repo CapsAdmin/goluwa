@@ -1,5 +1,5 @@
 local sockets = ... or _G.sockets
-local bsocket = require("bsocket")
+local ljsocket = require("ljsocket")
 
 local META = prototype.CreateTemplate("websocket_server")
 
@@ -12,7 +12,7 @@ function META:Bind(host, port)
 		host = nil
 	end
 
-	for _, info in ipairs(assert(bsocket.get_address_info({
+	for _, info in ipairs(assert(ljsocket.get_address_info({
         host = host,
         service = tostring(port),
         family = self.socket.family,
@@ -68,7 +68,7 @@ function META:Bind(host, port)
 			if client.state == "connected" then
 				local data = assert(client:receive2())
 
-				if data ~= bsocket.TIMEOUT then
+				if data ~= ljsocket.TIMEOUT then
 					print("received data")
 					local first_opcode
 					local frames = {}
@@ -140,7 +140,7 @@ function sockets.CreateWebsocketServer(protocols)
 
 	local self = META:CreateObject()
 
-	local socket = assert(bsocket.socket("inet", "stream", "tcp"))
+	local socket = assert(ljsocket.create("inet", "stream", "tcp"))
 	assert(socket:set_blocking(false))
     socket:set_option("reuseaddr", true)
     socket:set_option("sndbuf", 65536)
@@ -169,10 +169,10 @@ if RELOAD then
 	--socket:Connect("127.0.0.1", 8080)
 	--socket:Send(vfs.Read("/home/caps/Downloads/254366__harrybates01__heartbeat-fast.wav"))
 
-	local bsocket = require("bsocket")
+	local ljsocket = require("ljsocket")
 
 	do -- server
-		local server = assert(bsocket.bind(nil, 5001))
+		local server = assert(ljsocket.bind(nil, 5001))
 		server:set_blocking(false)
 
 		server:set_option("reuseaddr", 1)

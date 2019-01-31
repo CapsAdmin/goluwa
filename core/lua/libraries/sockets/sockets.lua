@@ -1,6 +1,6 @@
 local sockets = _G.sockets or {}
 
-local bsocket = require("bsocket")
+local ljsocket = require("ljsocket")
 
 sockets.active_sockets = sockets.active_sockets or {}
 
@@ -93,7 +93,7 @@ local function new_socket(override, META, ip_proto, id)
 	local self = META:CreateObject()
 
 	local t
-	self.socket = override or assert(bsocket.socket("inet", ip_proto == "tcp" and "stream" or ip_proto == "udp" and "dgram", ip_proto))
+	self.socket = override or assert(ljsocket.create("inet", ip_proto == "tcp" and "stream" or ip_proto == "udp" and "dgram", ip_proto))
 	self.socket:set_blocking(false)
 
 	self.socket_type = ip_proto
@@ -129,14 +129,17 @@ do -- tcp socket meta
 	{
 		KeepAlive = "keepalive",
 		Linger = "linger",
-		ReuseAddress = "ReuseAddr",
+		ReuseAddress = "reuseaddr",
 		NoDelay = "tcp-nodelay",
 	}
 
 	local function add_options(tbl)
 		for func_name, key in pairs(options) do
+			local level, rest = key:match("(.-)%-(.+)")
+			if level then key = rest end
+
 			tbl["Set" .. func_name] = function(self, val)
-				self.socket:set_option(key, val)
+				self.socket:set_option(key, val, level)
 				self:DebugPrintf("option[%q] = %s", key, val)
 				self[func_name] = val
 			end
@@ -275,6 +278,8 @@ do -- tcp socket meta
 
 			self.ip = ip
 			self.port = port
+
+			return true
 		end
 
 		function CLIENT:Send(str, instant)
@@ -285,7 +290,7 @@ do -- tcp socket meta
 					if bytes then
 						self:DebugPrintf("sucessfully sent %s", str)
 						self:OnSend(packet, bytes, b,c,d)
-						self.data_sent = self.data_sent + bytes
+						self.data_sent = self.data_sent + #str
 					elseif b ~= "Socket is not connected" then
 						self:DebugPrintf("could not send %s of data : %s", utility.FormatFileSize(#str), b)
 					end
@@ -545,7 +550,7 @@ do -- tcp socket meta
 			if self.__server then
 				ip, port = self.socket:getpeername()
 			else
-				ip, port = self.socket:getsockname()
+				ip, port = self.socket:get_name()
 			end
 			return ip .. ":" .. port
 		end
@@ -625,7 +630,7 @@ do -- tcp socket meta
 
 
 			if self.socket_type == "tcp" then
-				ok, msg = self.socket:bind(ip, port)
+				ok, msg = self.socket:bind(ip, tostring(port))
 			elseif self.socket_type == "udp" then
 				ok, msg = self.socket:setsockname(ip, port)
 			end
@@ -789,21 +794,21 @@ do -- tcp socket meta
 		end
 
 		function SERVER:GetIP()
-			return (self.socket:getsockname())
+			return self.socket and self.socket:get_name()
 		end
 
 		function SERVER:GetPort()
-			local _, port = self.socket:getsockname()
+			local _, port = self.socket:get_name()
 			return tonumber(port) or nil
 		end
 
 		function SERVER:GetIPPort()
-			local ip, port = self.socket:getsockname()
+			local ip, port = self.socket:get_name()
 			return ip .. ":" .. port
 		end
 
 		function SERVER:GetSocketName()
-			return self.socket:getsockname()
+			return self.socket:get_name()
 		end
 
 		function SERVER:OnClientConnected(client, ip, port) end
