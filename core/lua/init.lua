@@ -185,6 +185,8 @@ _G.require = vfs.Require
 _G.runfile = vfs.RunFile
 _G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir
 
+package.loaded.bit32 = bit
+
 -- libraries
 runfile("lua/libraries/datatypes/buffer.lua")
 runfile("lua/libraries/datatypes/tree.lua")
