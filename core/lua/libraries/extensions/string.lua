@@ -183,6 +183,22 @@ function string.removepadding(str, padding)
 	return table.concat(new)
 end
 
+function string.readablebinary(str)
+	return (str:gsub("(.)", function(str)
+		local byte = str:byte()
+		if byte >= 27 and byte <= 126 then
+			str = " " .. str
+		elseif str == "\r" then
+			str = "\\r"
+		elseif str == "\n" then
+			str = "\\n"
+		else
+			str = "\\" .. byte
+		end
+		return str
+	 end))
+end
+
 function string.dumphex(str)
 	local str = str:readablehex():lower():split(" ")
 	local out = {}
