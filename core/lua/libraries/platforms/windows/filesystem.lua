@@ -179,18 +179,22 @@ local function flags_to_table(bits)
 	return out
 end
 
-local COMBINE = function(hi, lo) return bit.band(bit.lshift(hi, 8), lo) end
+local time_type = ffi.typeof("uint64_t *")
+local POSIX_TIME = function(ptr) 
+	return tonumber(ffi.cast(time_type, ptr)[0] / 10000000 - 11644473600)
+end
 
-local info = ffi.new("goluwa_file_attributes[1]")
 
 function fs.getattributes(path)
+	local info = ffi.new("goluwa_file_attributes[1]")
 	if ffi.C.GetFileAttributesExA(path, 0, info) then
 		local info = {
-			creation_time = COMBINE(info[0].ftCreationTime.high, info[0].ftCreationTime.low),
-			last_accessed = COMBINE(info[0].ftLastAccessTime.high, info[0].ftLastAccessTime.low),
-			last_modified = COMBINE(info[0].ftLastWriteTime.high, info[0].ftLastWriteTime.low),
+			raw_info = info[0],
+			creation_time = POSIX_TIME(info[0].ftCreationTime),
+			last_accessed = POSIX_TIME(info[0].ftLastAccessTime),
+			last_modified = POSIX_TIME(info[0].ftLastWriteTime),
 			last_changed = -1, -- last permission changes
-			size = info[0].nFileSizeLow,--COMBINE(info[0].nFileSizeLow, info[0].nFileSizeHigh),
+			size = info[0].nFileSizeLow,
 			type = bit.band(
 				info[0].dwFileAttributes, flags.directory
 			) == flags.directory and "directory" or "file",
