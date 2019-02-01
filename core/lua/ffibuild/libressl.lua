@@ -1,5 +1,5 @@
 ffibuild.Build({
-	name = "libressl",
+	name = "libtls",
 	url = "https://github.com/libressl-portable/portable.git",
 	cmd = "./autogen.sh && ./configure && make",
 	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
@@ -25,10 +25,10 @@ ffibuild.Build({
     build_lua = function(header, meta_data)
         ffibuild.SetBuildName("tls")
         local lua = ffibuild.StartLibrary(header, "safe_clib_index")
-        ffibuild.SetBuildName("libressl")
+        ffibuild.SetBuildName("libtls")
         lua = lua .. "CLIB = SAFE_INDEX(CLIB)"
-        lua = lua .. "library = " .. meta_data:BuildFunctions(prefixes)
-        lua = lua .. "library.e = " .. meta_data:BuildEnums(prefixes, {"./include/tls.h"})
+        lua = lua .. "library = " .. meta_data:BuildFunctions("^tls_(.+)")
+        lua = lua .. "library.e = " .. meta_data:BuildEnums("^TLS_(.+)", {"./include/tls.h"})
         return ffibuild.EndLibrary(lua)
 	end,
 })

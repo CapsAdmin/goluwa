@@ -198,46 +198,46 @@ do -- tcp socket meta
 
 				self.SSLParams = copy
 
-				local SSL = desire("libressl")
-				if SSL and SSL.tls_init then
+				local tls = desire("libtls")
+				if tls and tls.init then
 					local ffi = require("ffi")
-					SSL.tls_init()
-					local tls = SSL.tls_client()
-					local config = SSL.tls_config_new()
-					SSL.tls_config_insecure_noverifycert(config)
-					SSL.tls_config_insecure_noverifyname(config)
-					SSL.tls_configure(tls, config)
+					tls.init()
+					local tls_client = tls.client()
+					local config = tls.config_new()
+					tls.config_insecure_noverifycert(config)
+					tls.config_insecure_noverifyname(config)
+					tls.configure(tls_client, config)
 
 					function self.socket:on_connect(host, serivce)
-						if SSL.tls_connect_socket(tls, self.fd, host) < 0 then
+						if tls.connect_socket(tls_client, self.fd, host) < 0 then
 							if len == -3 or len == -2 then
 								return true, "blocking"
 							end
-							local err = SSL.tls_error(tls)
+							local err = tls.error(tls_client)
 							return nil, err ~= nil and ffi.string(err) or "unknown connect error " .. tonumber(len)
 						end
 						return true
 					end
 
 					function self.socket:on_send(data, flags)
-						local len = SSL.tls_write(tls, data, #data)
+						local len = tls.write(tls_client, data, #data)
 						if len < 0 then
 							if len == -3 or len == -2 then
 								return true, "blocking"
 							end
-							local err = SSL.tls_error(tls)
+							local err = tls.error(tls_client)
 							return nil, err ~= nil and ffi.string(err) or "unknown write error " .. tonumber(len)
 						end
 						return len
 					end
 
 					function self.socket:on_receive(buffer, max_size, flags)
-						local len = SSL.tls_read(tls, buffer, max_size)
+						local len = tls.read(tls_client, buffer, max_size)
 						if len < 0 then
 							if len == -3 or len == -2 then
 								return true, "blocking"
 							end
-							local err = SSL.tls_error(tls)
+							local err = tls.error(tls_client)
 							return nil, err ~= nil and ffi.string(err) or "unknown read error " .. tonumber(len)
 						end
 						return ffi.string(buffer, len)
