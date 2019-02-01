@@ -7,6 +7,7 @@ local whitelist
 (os.getenv("GOLUWA_ARG_LINE") or ""):gsub("--addons (%S+)", function(line)
 	whitelist = whitelist or {}
 	for _, name in ipairs(line:split(",")) do
+		llog("not loading addon ", name)
 		whitelist[name:lower():trim()] = true
 	end
 end)
