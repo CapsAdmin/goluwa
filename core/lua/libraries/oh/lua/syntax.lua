@@ -27,13 +27,16 @@ syntax.UnaryOperators = {
 }
 
 syntax.Operators = {
-    ["or"] = 1,
-    ["and"] = 2,
-    ["<"] = 3, [">"] = 3, ["<="] = 3, [">="] = 3, ["~="] = 3, ["=="] = 3,
-    [".."] = -7, -- right associative
-    ["+"] = 8, ["-"] = 8,
-    ["*"] = 9, ["/"] = 9, ["%"] = 9,
-    ["^"] = -11, -- right associative
+    {"or"},
+    {"and"},
+    {"<", ">", "<=", ">=", "~=", "=="},
+    {"|"},
+    {"&"},
+    {"<<", ">>"},
+    {"R.."}, -- right associative
+    {"+", "-"},
+    {"*", "/", "//", "%"},
+    {"R^"}, -- right associative
 }
 
 return syntax

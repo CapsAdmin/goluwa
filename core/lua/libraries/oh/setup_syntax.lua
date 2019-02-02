@@ -51,9 +51,11 @@ return function(syntax)
             end
         end
 
-        for symbol in pairs(syntax.Operators) do
-            if symbol:find("%p") then
-                table.insert(syntax.CharacterMap.symbol, symbol)
+        for priority, group in ipairs(syntax.Operators) do
+            for _, token in ipairs(group) do
+                if token:find("%p") then
+                    table.insert(syntax.CharacterMap.symbol, token)
+                end
             end
         end
 
@@ -126,11 +128,13 @@ return function(syntax)
         end
 
         local temp = {}
-        for i,v in pairs(syntax.Operators) do
-            if v < 0 then
-                temp[i] = {-v + 1, -v}
-            else
-                temp[i] = {v, v}
+        for priority, group in ipairs(syntax.Operators) do
+            for _, token in ipairs(group) do
+                if token:sub(1, 1) == "R" then
+                    temp[token:sub(2)] = {-priority + 1, -priority}
+                else
+                    temp[token] = {priority, priority}
+                end
             end
         end
         syntax.Operators = temp
