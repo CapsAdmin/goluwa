@@ -59,13 +59,18 @@ do -- vfs extension
 		return false, "no such file"
 	end
 
-	function serializer.SetKeyValueInFile(lib, path, key, value)
+	function serializer.StoreInFile(lib, path, key, value)
 		local tbl = serializer.ReadFile(lib, path) or {}
 		tbl[key] = value
 		serializer.WriteFile(lib, path, tbl)
 	end
 
-	function serializer.GetKeyFromFile(lib, path, key, def)
+	function serializer.GetKeyValuesInFile(lib, path)
+		local tbl = serializer.ReadFile(lib, path) or {}
+		return tbl
+	end
+
+	function serializer.LookupInFile(lib, path, key, def)
 		local tbl = serializer.ReadFile(lib, path)
 
 		if tbl then

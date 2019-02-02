@@ -32,7 +32,7 @@ end
 
 local function download(from, to, callback, on_fail, on_header, check_etag, etag_path_override, need_extension, ext_override)
 	if check_etag then
-		local etag = serializer.GetKeyFromFile("luadata", etags_file, etag_path_override or from)
+		local etag = serializer.LookupInFile("luadata", etags_file, etag_path_override or from)
 
 		--llog("checking if ", etag_path_override or from, " has been modified.")
 
@@ -149,7 +149,7 @@ local function download(from, to, callback, on_fail, on_header, check_etag, etag
 		local etag = header.etag or header["last-modified"]
 
 		if etag then
-			serializer.SetKeyValueInFile("luadata", etags_file, etag_path_override or from, etag)
+			serializer.StoreInFile("luadata", etags_file, etag_path_override or from, etag)
 		end
 
 		on_header(header)

@@ -193,7 +193,7 @@ function gserv.Setup(id)
 
 		if not vfs.IsDirectory(srcds_dir .. dir) then
 			os.execute("cp -a " .. gserv.GetInstalledGames()[4020] .. "/. " .. srcds_dir .. dir)
-			serializer.SetKeyValueInFile("luadata", data_dir .. "games.lua", id, srcds_dir .. dir)
+			serializer.StoreInFile("luadata", data_dir .. "games.lua", id, srcds_dir .. dir)
 		end
 
 		gserv.SetupLua(id)
@@ -267,7 +267,7 @@ function gserv.InstallGame(name, dir, callback, username)
 
 		llog("installing ", name, " (", appid, ")", " to ", srcds_dir .. dir_name)
 
-		serializer.SetKeyValueInFile("luadata", data_dir .. "games.lua", appid, srcds_dir .. dir_name)
+		serializer.StoreInFile("luadata", data_dir .. "games.lua", appid, srcds_dir .. dir_name)
 		repl.OSExecute(srcds_dir .. "steamcmd.sh +login " .. username .. " +force_install_dir \"" .. srcds_dir .. dir_name .. "\" +app_update " .. appid .. " validate +quit")
 
 		llog("done")

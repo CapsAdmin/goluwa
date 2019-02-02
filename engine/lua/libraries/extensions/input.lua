@@ -1,7 +1,7 @@
 input.binds = {}
 
 function input.Bind(key, cmd, callback, important)
-	serializer.SetKeyValueInFile("luadata", "data/input.txt", key, cmd)
+	serializer.StoreInFile("luadata", "data/input.txt", key, cmd)
 
 	local modifiers = key:split("+")
 	table.remove(modifiers, 1)

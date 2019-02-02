@@ -444,14 +444,14 @@ if ffi then
 				-- look first in the vfs' bin directories
 				vfs.PushWorkingDirectory(full_path:match("(.+/)"))
 
-				if serializer.GetKeyFromFile("luadata", "shared/library_crashes.lua", full_path) then
+				if serializer.LookupInFile("luadata", "shared/library_crashes.lua", full_path) then
 					logn("ffi.load: refusing to load ", full_path, " as it crashed last time")
 					break
 				end
 
-				serializer.SetKeyValueInFile("luadata", "shared/library_crashes.lua", full_path, true)
+				serializer.StoreInFile("luadata", "shared/library_crashes.lua", full_path, true)
 				args = {pcall(_OLD_G.ffi.load, full_path, ...)}
-				serializer.SetKeyValueInFile("luadata", "shared/library_crashes.lua", full_path, nil)
+				serializer.StoreInFile("luadata", "shared/library_crashes.lua", full_path, nil)
 				vfs.PopWorkingDirectory()
 
 				if args[1] then
