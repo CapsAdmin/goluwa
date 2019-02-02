@@ -93,6 +93,31 @@ function vfs.Rename(path, name, ...)
 	return nil, err
 end
 
+
+
+function vfs.SetAttribute(path, key, val)
+	local abs_path, err = vfs.GetAbsolutePath(path)
+	if not abs_path then return nil, err end
+
+	local store = vfs.GetAttributes(path)
+	store[key] = val
+	fs.setcustomattribute(abs_path, serializer.Encode("luadata", store))
+end
+
+function vfs.GetAttributes(path)
+	local abs_path, err = vfs.GetAbsolutePath(path)
+	if not abs_path then return nil, err end
+
+	return serializer.Decode("luadata", fs.getcustomattribute(abs_path)) or {}
+end
+
+function vfs.GetAttribute(path, key)
+	local store = vfs.GetAttributes(path)
+	if store then
+		return store[key]
+	end
+end
+
 function vfs.CopyFile(from, to)
 	local ok, err = vfs.CreateDirectoriesFromPath(vfs.GetFolderFromPath(to))
 	if not ok then return ok, err end

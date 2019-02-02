@@ -206,6 +206,20 @@ function fs.getattributes(path)
 	return nil, error_string()
 end
 
+function fs.setcustomattribute(path, data)
+	local f = io.open(path .. ":goluwa_attributes", "wb")
+	if not f then return nil, err end
+	f:write(data)
+	f:close()
+end
+
+function fs.getcustomattribute(path)
+	local f, err = io.open(path .. ":goluwa_attributes", "rb")
+	if not f then return "" end
+	local data = f:read("*all")
+	f:close()
+	return data
+end
 
 do
 	local queue = {}
