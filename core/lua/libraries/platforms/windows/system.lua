@@ -22,7 +22,7 @@ end
 
 ffi.cdef("void Sleep(uint32_t);")
 function system.Sleep(ms)
-	ffi.C.Sleep(ms)
+	ffi.C.Sleep(ms * 1000)
 end
 
 do
