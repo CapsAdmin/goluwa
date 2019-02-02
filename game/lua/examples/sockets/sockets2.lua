@@ -33,7 +33,9 @@ do
 
         function META:SocketRestart()
             self.socket = ljsocket.create("inet", "stream", "tcp")
-            self.socket:set_blocking(false)
+            assert(self.socket:set_blocking(false))
+            self.socket:set_option("nodelay", true, "tcp")
+            self.socket:set_option("cork", false, "tcp")
 
             self.tls_setup = nil
             self.connected = nil
@@ -45,19 +47,19 @@ do
 
             self.tls_setup = true
 
-            local SSL = require("libressl")
+            local tls = require("libtls")
             local ffi = require("ffi")
-            SSL.tls_init()
+            tls.init()
 
-            local tls = SSL.tls_client()
+            local tls_client = tls.client()
 
-            local config = SSL.tls_config_new()
-            SSL.tls_config_insecure_noverifycert(config)
-            SSL.tls_config_insecure_noverifyname(config)
-            SSL.tls_configure(tls, config)
+            local config = tls.config_new()
+            tls.config_insecure_noverifycert(config)
+            tls.config_insecure_noverifyname(config)
+            tls.configure(tls_client, config)
 
             local function last_error(code, what)
-                local err = SSL.tls_error(tls)
+                local err = tls.error(tls_client)
                 if err ~= nil then
                     return ffi.string(err)
                 end
@@ -65,7 +67,7 @@ do
             end
 
             function self.socket:on_connect(host, serivce)
-                local code = SSL.tls_connect_socket(tls, self.fd, host)
+                local code = tls.connect_socket(tls_client, self.fd, host)
 
                 if code < 0 then
                     return nil, last_error(code, "connect")
@@ -75,9 +77,9 @@ do
             end
 
             function self:DoHandshake()
-                local ret = SSL.tls_handshake(tls)
+                local ret = tls.handshake(tls_client)
 
-                if ret == SSL.e.TLS_WANT_POLLOUT or ret == SSL.e.TLS_WANT_POLLIN then
+                if ret == tls.e.WANT_POLLOUT or ret == tls.e.WANT_POLLIN then
                     return nil, "timeout"
                 elseif ret < 0 then
                     return nil, last_error(ret, "handshake")
@@ -88,10 +90,10 @@ do
                 return true
             end
 
-            function self.socket:on_send(data, flags)
-                local len = SSL.tls_write(tls, data, #data)
+            function self.socket:on_send(data, flags)            
+                local len = tls.write(tls_client, data, #data)
                 if len < 0 then
-                    if len == SSL.e.TLS_WANT_POLLOUT or len == SSL.e.TLS_WANT_POLLIN then
+                    if len == tls.e.WANT_POLLOUT or len == tls.e.WANT_POLLIN then
                         return nil, "timeout"
                     end
                     return nil, last_error(len, "write")
@@ -100,9 +102,9 @@ do
             end
 
             function self.socket:on_receive(buffer, max_size, flags)
-                local len = SSL.tls_read(tls, buffer, max_size)
+                local len = tls.read(tls_client, buffer, max_size)
                 if len < 0 then
-                    if len == SSL.e.TLS_WANT_POLLOUT or len == SSL.e.TLS_WANT_POLLIN then
+                    if len == tls.e.WANT_POLLOUT or len == tls.e.WANT_POLLIN then
                         return nil, "timeout"
                     end
                     return nil, last_error(len, "receive")
@@ -116,7 +118,7 @@ do
             end
 
             function self.socket:on_close()
-                SSL.tls_close(tls)
+                tls.close(tls_client)
             end
         end
 
@@ -141,7 +143,14 @@ do
         end
 
         function META:Send(data)
-            local ok, err = self.socket:send(data)
+           
+            local ok, err
+            
+            if self.socket:is_connected() then
+                ok, err = self.socket:send(data)
+            else
+                ok, err = false, "timeout"    
+            end
 
             if not ok then
                 if err == "timeout" then
@@ -203,16 +212,18 @@ do
 
                 if chunk then
                     self:OnReceiveChunk(chunk)
-                elseif err == "closed" then
-                    self:OnClose()
-                elseif err ~= "timeout" then
-                    self:Error(err)
+                else
+                    if err == "closed" then
+                        self:OnClose()
+                    elseif err ~= "timeout" then
+                        self:Error(err)
+                    end
                 end
             end
         end
 
-        function META:Error(message)
-            self:OnError(message)
+        function META:Error(message, ...)
+            self:OnError(message, ...)
             return false
         end
 
@@ -468,15 +479,18 @@ do
                         if i == 1 then
                             local version, code, status = line:match("^(HTTP/%d+%.%d+) (%d+) (.+)$")
 
-                            if not code:startswith("2") and not code:startswith("3") then
-                                return self:Error(code .. " " .. status)
+                            if version ~= "HTTP/1.1" then
+                                return self:Error(version .. " protocol not supported")
                             end
 
-                            self.Version = version
+                            if not code:startswith("2") and not code:startswith("3") then
+                                return self:Error(code .. " " .. status, code, status)
+                            end
+
                             self.Code = code
                             self.Status = status
 
-                            if self:OnReceiveStatusLine(version, code, status) == false then
+                            if self:OnReceiveStatus(code, status) == false then
                                 return
                             end
                         else
@@ -503,7 +517,7 @@ do
                     self.Header["content-encoding"] = self.Header["content-encoding"] or "identity"
                 end
 
-                if self.Code:startswith("3") and self.Header["location"] then
+                if self.Code ~= "304" and self.Code:startswith("3") and self.Header["location"] then
 
                     if self:OnReceiveRedirectHeader(self.Header) == false then
                         return
@@ -606,7 +620,7 @@ do
 
     end
 
-    function META:OnReceiveStatusLine()
+    function META:OnReceiveStatus()
 
     end
 
@@ -618,26 +632,7 @@ do
         return self
     end
 
-    local function decode_data_uri(uri)
-        local mime, encoding, data = uri:match("data:(.-);(.-),(.+)")
-        if encoding == "" then
-            encoding = "base64"
-        end
-
-        if encoding == "base64" then
-            vfs.Write("test." .. META.MimeToExtension[mime], crypto.Base64Decode(data))
-        else
-            error("unknown encoding " .. encoding)
-        end
-
-        return
-    end
-
     do
-        local META = prototype.CreateTemplate("socket2", "downloader")
-
-        META.Base = "http/1.1"
-
         local function posixtime2http(posix_time)
             return require("date")(posix_time):fmt("${http}")
         end
@@ -646,61 +641,125 @@ do
             return (require("date")(http_time) - require("date").epoch()):spanseconds()
         end
 
-        local time = vfs.GetLastModified("/home/caps/goluwa2/core/lua/modules/date.lua")
-        local http_time = posixtime2http(time)
-
-        print(http_time)
-
-        do return end
-
-
-        function META:Fetch(url, info, header)
-            header = header or {}
-            if info then
-                if info.last_modified then
-                    header["If-Modified-Since"] =
-                end
-                if info.etag then
-                    header["etag"] = info.etag
-                end
+        local function decode_data_uri(uri)
+            local mime, encoding, data = uri:match("data:(.-);(.-),(.+)")
+            if encoding == "" then
+                encoding = "base64"
             end
 
-            self:Request("GET", url, header)
+            if encoding == "base64" then
+                vfs.Write("test." .. META.MimeToExtension[mime], crypto.Base64Decode(data))
+            else
+                error("unknown encoding " .. encoding)
+            end
+
+            return
         end
 
-        function META:OnReceiveHeader(header)
-            local hash = header["etag"]
-            print(hash)
+        function sockets.Download(url, path, on_finish, on_error, on_progress)
+            on_finish = on_finish or function(path) print("finished downloading " .. path) end
+            on_progress = on_progress or function(bytes, size) print((bytes / size)*100) end
+            on_error = on_error or function(reason) print("error ", reason) end
+
+            local file
+            local written_size = 0
+            local current_size = 0
+            local etag = vfs.GetAttribute(path, "etag") or vfs.GetAttribute(path ..".part", "etag")
+            print(etag, "!!!!!!!!")
+            local header = {}
+            
+            if etag then
+                header["If-None-Match"] = etag
+            end
+                    
+            if current_size > 0 then
+                header["range"] = "bytes=" .. current_size .. "-"
+            end
+
+            local http = sockets.HTTPClient()
+            http:Request("GET", url, header)
+
+            function http:WriteBody(chunk)
+                file:Write(chunk)
+                on_progress(written_size, self.Header["content-length"] or math.huge, file:GetPosition(), #chunk)
+                written_size = written_size + #chunk
+            end
+
+            function http:GetWrittenBodySize()
+                return written_size
+            end
+
+            function http:GetWrittenBodyString()
+                file:PushPosition(0)
+                local data = file:ReadAll()
+                file:PopPosition()
+                return data or ""
+            end
+                    
+            function http:OnReceiveHeader(header)
+                if vfs.IsFile(path) then
+                    if etag == header.etag then
+                        on_finish(path)
+                        self:Close()
+                        return false
+                    else
+                        file = vfs.Open(path, "read_write")
+                        file:SetPosition(0)
+                        
+                    end
+                else
+                    file = vfs.Open(path .. ".part", "read_write")
+                    current_size = file:GetSize()
+                    file:SetPosition(current_size)
+                end
+
+                vfs.SetAttribute(path .. ".part", "etag", header.etag)
+                vfs.SetAttribute(path, "etag", header.etag)
+
+                if header["content-disposition"] then
+                    local file_name = header["content-disposition"]:match("filename=(%b\"\")")
+                    if file_name then
+                        file_name = file_name:sub(2, -2)
+                        local ext = vfs.GetExtensionFromPath(file_name)
+                        print(file_name)
+                    end
+                end
+                
+                table.print(header)
+            end
+
+            function http:OnReceiveBody(body)
+                file:Flush()
+                file:Close()
+                vfs.Rename(path, vfs.GetFileNameFromPath(path))
+                --on_progress(written_size, self.Header["content-length"], file:GetPosition(), #body)
+                on_finish(path)
+            end
+
+            function http:OnError(reason)
+                on_error(reason)
+                self:Close()
+            end
         end
 
-        function sockets.Downloader()
-            local self = META:CreateObject()
-            self:Initialize()
-            return self
-        end
 
-        META:Register()
+        local urls = {
+            "https://puu.sh/qJZWP/febd7450cd.wav",
+            "https://puu.sh/rMEGk/7b30e5c5a5.txt",
+            "http://pastebin.com/raw/xmHZ2eb3",
+            "https://dl.dropbox.com/s/9yac9ud6xu25i6b/DABDABDAB.txt?dl=0",
+            "https://dl.dropboxusercontent.com/s/yex5xw5bvnvr7o8/Look%20at%20my%20dab.ogg",
+            "http://puu.sh/pLvKh.obj",
+            "http://www.fresher.ru/manager_content/images/10-faktov-o-flagax/10.jpg",
+            "http://www.derpygamers.com/PAC_Content_Gmod/models/bodyfluff.obj",
+            "https://www.dropbox.com/s/nczdyt33jcfky8f/talk%20(7).ogg?dl=1",
+        }
+        
+        sockets.Download(
+            "https://dl.dropboxusercontent.com/s/yex5xw5bvnvr7o8/Look%20at%20my%20dab.ogg",
+            "test.jpg"
+        )
     end
-
-
-
-
-    local urls = {
-        "https://puu.sh/qJZWP/febd7450cd.wav",
-        "https://puu.sh/rMEGk/7b30e5c5a5.txt",
-        "http://pastebin.com/raw/xmHZ2eb3",
-        "https://dl.dropbox.com/s/9yac9ud6xu25i6b/DABDABDAB.txt?dl=0",
-        "https://dl.dropboxusercontent.com/s/yex5xw5bvnvr7o8/Look%20at%20my%20dab.ogg",
-        "http://puu.sh/pLvKh.obj",
-        "http://www.fresher.ru/manager_content/images/10-faktov-o-flagax/10.jpg",
-        "http://www.derpygamers.com/PAC_Content_Gmod/models/bodyfluff.obj",
-        "https://www.dropbox.com/s/nczdyt33jcfky8f/talk%20(7).ogg?dl=1",
-    }
-
-    local dl = sockets.Downloader()
-    dl:Fetch(urls[2])
-
-    rofl = dl
 
     do return end
 
@@ -716,7 +775,7 @@ do
 
     http:Request("GET", url)
 
-    function http:OnReceiveStatusLine(...)
+    function http:OnReceiveStatus(...)
         print(...)
     end
 
@@ -750,6 +809,7 @@ do
     end
 
     function http:OnReceiveBody(body)
+        print("done!")
         print(self.written_size)
     end
 
