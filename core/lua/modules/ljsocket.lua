@@ -285,13 +285,7 @@ do
         do
             ffi.cdef[[int ioctlsocket(SOCKET s, long cmd, unsigned long* argp);]]
 
-            local IOCPARM_MASK    = 0x7
-            local IOC_IN          = 0x80000000
-            local function _IOW(x,y,t)
-                return bit.bor(IOC_IN, bit.lshift(bit.band(ffi.sizeof(t),IOCPARM_MASK),16), bit.lshift(x,8), y)
-            end
-
-            local FIONBIO = _IOW(string.byte'f', 126, "uint32_t") -- -2147195266 -- 2147772030ULL
+            local FIONBIO = -2147195266
 
             function socket.blocking(fd, b)
                 local ret = C.ioctlsocket(fd, FIONBIO, ffi.new("int[1]", b and 0 or 1))
