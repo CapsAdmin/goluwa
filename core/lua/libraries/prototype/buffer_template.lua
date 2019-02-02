@@ -1057,6 +1057,7 @@ end
 
 do -- push pop position
 	function META:PushPosition(pos)
+		if self:GetSize() == 0 then return end
 		if pos >= self:GetSize() then error("position pushed is larger than reported size of buffer", 2) end
 		self.push_pop_pos_stack = self.push_pop_pos_stack or {}
 
@@ -1066,7 +1067,9 @@ do -- push pop position
 	end
 
 	function META:PopPosition()
-		self:SetPosition(table.remove(self.push_pop_pos_stack))
+		if self.push_pop_pos_stack[1] then
+			self:SetPosition(table.remove(self.push_pop_pos_stack))
+		end
 	end
 end
 
