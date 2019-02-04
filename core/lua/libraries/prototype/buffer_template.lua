@@ -121,6 +121,46 @@ do -- basic data types
 		end
 
 
+		do -- taken from lua sources https://github.com/lua/lua/blob/master/lstrlib.c
+			local NB = 8
+			local MC = bit.lshift(1, NB) - 1
+			local SZINT = ffi.sizeof("uint64_t")
+
+			function META:WritePackedInteger(n, size, signed)
+				for i = 0, size - 1 do
+					self:WriteByte(tonumber(bit.band(n, MC)))
+					n = bit.rshift(n, NB)
+				end
+
+				if signed and size > SZINT then
+					for i = SZINT, size - 1 do
+						self:WriteByte(MC)
+					end
+				end
+			end
+
+			function META:ReadPackedInteger(size, signed)
+				local res = 0
+				local limit = (size <= SZINT) and size or SZINT
+
+				for i = limit - 1, 0, -1 do
+					res = bit.lshift(res, NB)
+					res = bit.bor(res, self:ReadByte())
+				end
+
+				if size < SZINT then
+					if signed then
+						local mask = bit.lshift(1, size*NB - 1)
+						res = bit.bxor(res, mask) - mask
+					end
+				end
+
+				return res
+			end
+		end
+
+
+
 		function META:ReadVariableSizedInteger(byte_size)
 			local ret = 0
 
@@ -138,8 +178,8 @@ do -- basic data types
 				ret = tonumber(ffi.cast("uint16_t", ret))
 			elseif byte_size >= 2 and byte_size <= 4 then
 				ret = tonumber(ffi.cast("uint32_t", ret))
-			elseif byte_size > 4 and byte_size <= 8 then
-				ret = tonumber(ffi.cast("uint64_t", ret))
+			elseif byte_size > 4 then
+				ret = ffi.cast("uint64_t", ret)
 			end
 
 			return ret
@@ -471,6 +511,10 @@ do -- basic data types
 		return table.concat(str)
 	end
 
+	function META:ReadFixedLengthString(length)
+		return self:ReadString(length)
+	end
+
 	-- not null terminated string (write size of string first)
 	function META:WriteString2(str)
 		if #str > 0xFFFFFFFF then error("string is too long!", 2) end
@@ -731,10 +775,13 @@ do -- extended
 	META.ReadInt = META.ReadLong
 	META.ReadUnsignedInt = META.ReadUnsignedLong
 
-	function META:WriteVariableSizedInteger(value)
+	function META:WriteVariableSizedInteger(value, max_size)
 		local output_size = 1
 
-		while value > 127 do
+		while
+			(max_size and output_size < max_size) or
+			(not max_size and value > 127)
+		do
 			self:WriteByte(tonumber(bit.bor(bit.band(value, 127), 128)))
 			value = bit.rshift(value, 7)
 			output_size = output_size + 1
