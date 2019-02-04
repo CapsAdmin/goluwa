@@ -546,10 +546,7 @@ function META:Block(stop)
 			table_remove(self.loop_stack)
 		elseif self:IsValue("function") then
 			data = self:Function("expression_named")
-		elseif self:IsValue("(") then
-			data = self:Node("expression")
-			data.value = self:Expression()
-		elseif self:IsType("letter") then
+		elseif self:IsType("letter") or self:IsValue("(") then
 			local start_token = self:GetToken()
 			local expr = self:Expression()
 

@@ -146,6 +146,7 @@ local function check_tokens_separated_by_space(code)
 end
 
 
+transpile_check"(a)[b] = c"
 transpile_check"foo = bar"
 transpile_check"foo--[[]].--[[]]bar--[[]]:--[[]]test--[[]](--[[]]1--[[]]--[[]],2--[[]])--------[[]]--[[]]--[[]]"
 transpile_check"function foo.testadw() end"
