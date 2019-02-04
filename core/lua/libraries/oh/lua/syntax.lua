@@ -31,6 +31,7 @@ syntax.Operators = {
     {"and"},
     {"<", ">", "<=", ">=", "~=", "=="},
     {"|"},
+    {"~"},
     {"&"},
     {"<<", ">>"},
     {"R.."}, -- right associative
@@ -38,5 +39,23 @@ syntax.Operators = {
     {"*", "/", "//", "%"},
     {"R^"}, -- right associative
 }
+
+syntax.OperatorFunctions = {
+    [">>"] = "bit.rshift",
+    ["<<"] = "bit.lshift",
+    ["|"] = "bit.bor",
+    ["&"] = "bit.band",
+    ["//"] = "math.floordiv",
+    ["~"] = "bit.bxor",
+}
+
+syntax.UnaryOperatorFunctions = {
+    ["~"] = "bit.bnot",
+}
+
+-- temp
+function math.floordiv(a, b)
+    return math.floor(a / b)
+end
 
 return syntax

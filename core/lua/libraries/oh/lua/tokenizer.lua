@@ -80,6 +80,38 @@ do
 	builder:RegisterTokenClass(Token)
 end
 
+
+do
+	local Token = {}
+
+	Token.Type = "compiler_option"
+	Token.Priority = 100
+
+	local start = "@"
+
+	function Token:Is()
+		return self:GetCharsOffset(#start - 1) == start
+	end
+
+	function Token:Capture()
+		self:Advance(#start)
+		local i = self.i
+
+		for _ = self.i, self.code_length do
+			if self:ReadChar() == "\n" or self.i-1 == self.code_length then
+				local code = self:GetCharsRange(i, self.i)
+				if code:startswith("T:") then
+					assert(loadstring("local self = ...;" .. code:sub(3)))(self)
+				end
+				return true
+			end
+		end
+	end
+
+	builder:RegisterTokenClass(Token)
+end
+
+
 do
 	local Token = {}
 

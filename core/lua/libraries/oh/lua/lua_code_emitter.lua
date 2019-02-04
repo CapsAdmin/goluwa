@@ -67,6 +67,12 @@ function META:EmitToken(v, translate)
 		end
 	else
 		self:Emit(v.value)
+
+		if self.FORCE_INTEGER then
+			if v.type == "number" then
+				self:Emit("LL")
+			end
+		end
 	end
 end
 
@@ -78,9 +84,18 @@ function META:Expression(v)
 	end
 
 	if v.type == "operator" then
-		if v.left then self:Expression(v.left) end
-		self:Operator(v)
-		if v.right then self:Expression(v.right) end
+		local func_name = lua.syntax.GetFunctionForOperator(v.tokens["operator"])
+		if func_name then
+			self:Emit(" " .. func_name .. "(")
+			if v.left then self:Expression(v.left) end
+			self:Emit(",")
+			if v.right then self:Expression(v.right) end
+			self:Emit(") ")
+		else
+			if v.left then self:Expression(v.left) end
+			self:Operator(v)
+			if v.right then self:Expression(v.right) end
+		end
 	elseif v.type == "function" then
 		self:Function(v)
 	elseif v.type == "table" then
@@ -201,20 +216,30 @@ function META:Table(v)
 end
 
 function META:Unary(v)
-	if lua.syntax.IsKeyword(v.operator) then
-		self:EmitToken(v.tokens.operator, "")self:Whitespace("?", true)self:Emit(v.operator)self:Expression(v.expression)
-	else
-		if v.tokens["("] and v.tokens.operator.start > v.tokens["("].start then
-			if v.tokens["("] then self:EmitToken(v.tokens["("]) end
-			self:EmitToken(v.tokens.operator)
-		else
-			self:EmitToken(v.tokens.operator)
-			if v.tokens["("] then self:EmitToken(v.tokens["("]) end
-		end
-
+	local func_name = lua.syntax.GetFunctionForUnaryOperator(v.tokens["operator"])
+	if func_name then
+		self:Emit(" " .. func_name .. "(")
 		self:Expression(v.expression)
+		self:Emit(") ")
+	else
+		if lua.syntax.IsKeyword(v.operator) then
+			self:EmitToken(v.tokens.operator, "")
+			self:Whitespace("?", true)
+			self:Emit(v.operator)
+			self:Expression(v.expression)
+		else
+			if v.tokens["("] and v.tokens.operator.start > v.tokens["("].start then
+				if v.tokens["("] then self:EmitToken(v.tokens["("]) end
+				self:EmitToken(v.tokens.operator)
+			else
+				self:EmitToken(v.tokens.operator)
+				if v.tokens["("] then self:EmitToken(v.tokens["("]) end
+			end
 
-		if v.tokens[")"] then self:EmitToken(v.tokens[")"]) end
+			self:Expression(v.expression)
+
+			if v.tokens[")"] then self:EmitToken(v.tokens[")"]) end
+		end
 	end
 end
 
@@ -365,6 +390,12 @@ function META:Block(tree)
 			self:EmitToken(data.tokens["end_of_file"])
 		elseif data.type == "shebang" then
 			self:EmitToken(data.tokens["shebang"])
+		elseif data.type == "compiler_option" then
+			self:Emit("--" .. data.lua)
+
+			if data.lua:startswith("E:") then
+				assert(loadstring("local self = ...;" .. data.lua:sub(3)))(self)
+			end
 		else
 			error("unhandled value: " .. data.type)
 		end

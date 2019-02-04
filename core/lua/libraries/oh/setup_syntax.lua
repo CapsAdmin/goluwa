@@ -54,6 +54,10 @@ return function(syntax)
         for priority, group in ipairs(syntax.Operators) do
             for _, token in ipairs(group) do
                 if token:find("%p") then
+                    if token:sub(1, 1) == "R" then
+                       token = token:sub(2)
+                    end
+
                     table.insert(syntax.CharacterMap.symbol, token)
                 end
             end
@@ -119,6 +123,14 @@ return function(syntax)
             return syntax.Operators[token.value] and syntax.Operators[token.value][2]
         end
 
+        function syntax.GetFunctionForOperator(token)
+            return syntax.OperatorFunctions[token.value]
+        end
+
+        function syntax.GetFunctionForUnaryOperator(token)
+            return syntax.UnaryOperatorFunctions[token.value]
+        end
+
         function syntax.IsUnaryOperator(token)
             return syntax.UnaryOperators[token.value]
         end
@@ -131,7 +143,7 @@ return function(syntax)
         for priority, group in ipairs(syntax.Operators) do
             for _, token in ipairs(group) do
                 if token:sub(1, 1) == "R" then
-                    temp[token:sub(2)] = {-priority + 1, -priority}
+                    temp[token:sub(2)] = {priority + 1, priority}
                 else
                     temp[token] = {priority, priority}
                 end

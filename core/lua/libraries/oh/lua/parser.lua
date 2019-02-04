@@ -368,7 +368,15 @@ function META:Block(stop)
 
 		local data
 
-		if self:IsValue("::") then
+		if self:IsType("compiler_option") then
+			data = self:Node("compiler_option")
+			data.lua = self:ReadToken().value:sub(2)
+
+			if data.lua:startswith("P:") then
+				assert(loadstring("local self = ...;" .. data.lua:sub(3)))(self)
+			end
+
+		elseif self:IsValue("::") then
 			data = self:Node("goto_label")
 
 			data.tokens["::left"] = self:ReadToken()
