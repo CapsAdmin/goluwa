@@ -190,6 +190,7 @@ package.loaded.bit32 = bit
 -- libraries
 runfile("lua/libraries/datatypes/buffer.lua")
 runfile("lua/libraries/datatypes/tree.lua")
+bytepack = runfile("lua/libraries/bytepack.lua") -- base64 and other hash functions
 crypto = runfile("lua/libraries/crypto.lua") -- base64 and other hash functions
 serializer = runfile("lua/libraries/serializer.lua") -- for serializing lua data in different formats
 system = runfile("lua/libraries/system.lua") -- os and luajit related functions like creating windows or changing jit options
