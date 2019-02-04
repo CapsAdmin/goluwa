@@ -222,6 +222,30 @@ function fs.getattributes(path)
 	return false
 end
 
+ffi.cdef([[
+	int setxattr(const char *path, const char *name, const void *value, size_t size, int flags);
+	ssize_t getxattr(const char *path, const char *name, void *value, size_t size);
+]])
+
+function fs.setcustomattribute(path, data)
+	if ffi.C.setxattr(path, "goluwa_attributes", data, #data, 0x2) ~= 0 then
+		return nil, system.LastOSError()
+	end
+	return true
+end
+
+function fs.getcustomattribute(path)
+	local size = ffi.C.getxattr(path, "goluwa_attributes", nil, 0)
+	if size == -1 then
+		return nil, system.LastOSError()
+	end
+
+	local buffer = ffi.string("char[?]", size)
+	ffi.C.getxattr(path, "goluwa_attributes", buffer, size)
+
+	return ffi.string(buffer)
+end
+
 if jit.os ~= "OSX" then
 	local flags = {
 		access = 0x00000001, -- File was accessed
