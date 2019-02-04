@@ -93,22 +93,22 @@ function vfs.Rename(path, name, ...)
 	return nil, err
 end
 
-
-
 function vfs.SetAttribute(path, key, val)
 	local abs_path, err = vfs.GetAbsolutePath(path)
 	if not abs_path then return nil, err end
 
-	local store = vfs.GetAttributes(path)
-	store[key] = val
-	fs.setcustomattribute(abs_path, serializer.Encode("luadata", store))
+	local tbl = serializer.LookupInFile("luadata", "vfs_file_attributes", abs_path) or {}
+	tbl[key] = val
+	serializer.StoreInFile("luadata", "vfs_file_attributes", abs_path, tbl)
 end
 
 function vfs.GetAttributes(path)
 	local abs_path, err = vfs.GetAbsolutePath(path)
 	if not abs_path then return nil, err end
 
-	return serializer.Decode("luadata", fs.getcustomattribute(abs_path)) or {}
+	local tbl = serializer.LookupInFile("luadata", "vfs_file_attributes", abs_path) or {}
+
+	return tbl
 end
 
 function vfs.GetAttribute(path, key)
