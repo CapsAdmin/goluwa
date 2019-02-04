@@ -90,7 +90,7 @@ do
                 return true
             end
 
-            function self.socket:on_send(data, flags)            
+            function self.socket:on_send(data, flags)
                 local len = tls.write(tls_client, data, #data)
                 if len < 0 then
                     if len == tls.e.WANT_POLLOUT or len == tls.e.WANT_POLLIN then
@@ -143,13 +143,13 @@ do
         end
 
         function META:Send(data)
-           
+
             local ok, err
-            
+
             if self.socket:is_connected() then
                 ok, err = self.socket:send(data)
             else
-                ok, err = false, "timeout"    
+                ok, err = false, "timeout"
             end
 
             if not ok then
@@ -411,6 +411,8 @@ do
         self.RequestHeader = header
         self.RequestBody = body
         self.RequestURI = uri
+        self.LocationHistory = self.LocationHistory or {url}
+        self.HeaderHistory = self.HeaderHistory or {}
 
         self.Stage = "connecting"
     end
@@ -534,6 +536,9 @@ do
                         self.RequestHeader.Host = nil
                     end
 
+                    table.insert(self.LocationHistory, location)
+                    table.insert(self.HeaderHistory, self.Header)
+
                     self:Request(self.RequestMethod, location, self.RequestHeader, self.RequestBody)
                     return
                 end
@@ -555,39 +560,37 @@ do
                 return
             end
 
-            if self.HandleBodyReceive ~= false then
-                self:WriteBody(chunk)
+            self:WriteBody(chunk)
 
-                local body = nil
+            local body = nil
 
-                if self.Header["content-length"] and self:GetWrittenBodySize() >= self.Header["content-length"] then
-                    body = self:GetWrittenBodyString()
-                elseif self:GetWrittenBodyString():endswith("0\r\n\r\n") then
-                    body = self:DecodeChunkedBody(self:GetWrittenBodyString())
-                end
+            if self.Header["content-length"] and self:GetWrittenBodySize() >= self.Header["content-length"] then
+                body = self:GetWrittenBodyString()
+            elseif self:GetWrittenBodyString():endswith("0\r\n\r\n") then
+                body = self:DecodeChunkedBody(self:GetWrittenBodyString())
+            end
 
-                if body then
-                    local encoding = self.Header["content-encoding"]
-                    if encoding ~= "identity" then
-                        if encoding == "gzip" then
-                            local ok, str = pcall(serializer.Decode, "gunzip", body)
+            if body then
+                local encoding = self.Header["content-encoding"]
+                if encoding ~= "identity" then
+                    if encoding == "gzip" then
+                        local ok, str = pcall(serializer.Decode, "gunzip", body)
 
-                            if not ok then
-                                return self:OnError("failed to parse " .. encoding .. " body: " .. str)
-                            end
-
-                            body = str
-                        else
-                            print("unknown content-encoding: " .. encoding)
+                        if not ok then
+                            return self:OnError("failed to parse " .. encoding .. " body: " .. str)
                         end
+
+                        body = str
+                    else
+                        print("unknown content-encoding: " .. encoding)
                     end
-
-                    self.Body = body
-
-                    self:OnReceiveBody(body)
-
-                    self:Close()
                 end
+
+                self.Body = body
+
+                self:OnReceiveBody(body)
+
+                self:Close()
             end
         end
     end
@@ -656,22 +659,86 @@ do
             return
         end
 
-        function sockets.Download(url, path, on_finish, on_error, on_progress)
+        local function find_best_name(http)
+            local contestants = {}
+
+            if http.Header["content-disposition"] then
+                local file_name = http.Header["content-disposition"]:match("filename=(%b\"\")")
+                if file_name then
+                    file_name = file_name:sub(2, -2)
+                    table.insert(contestants, {score = math.huge, name = file_name})
+                end
+            end
+
+            for _, url in ipairs(http.LocationHistory) do
+                local score = 0
+                local name = vfs.GetFileNameFromPath(url):gsub("%%(%x%x)", function(hex)
+                    return string.char(tonumber(hex, 16))
+                end)
+
+                name = name:gsub("^(.+)%?.+$", "%1")
+                local ext = vfs.GetExtensionFromPath(name)
+                if #ext > 0 then
+                    score = score + 10
+                end
+
+                score = score - (select(2, name:gsub("%p", "")) or 0)
+
+                table.insert(contestants, {score = score, name = name})
+            end
+
+            table.sort(contestants, function(a, b) return a.score > b.score end)
+
+            local name = contestants[1].name
+
+            if http.Header["content-type"] and #vfs.GetExtensionFromPath(name) == 0 then
+                local mime = http.Header["content-type"]:match("^(.-);") or http.Header["content-type"]
+                name = name .. "." .. http.MimeToExtension[mime] or "dat"
+
+            end
+
+            return name
+        end
+
+        local function move_and_finish(path, on_finish)
+            assert(vfs.Rename(path .. ".part", vfs.GetFileNameFromPath(path)))
+            on_finish(path)
+        end
+
+        function sockets.Download(url, path, on_finish, on_error, on_progress, max_connections)
             on_finish = on_finish or function(path) print("finished downloading " .. path) end
-            on_progress = on_progress or function(bytes, size) print((bytes / size)*100) end
+            on_progress = on_progress or function(bytes, size)
+                if size == math.huge then
+                    size = "unknown"
+                end
+                print("progress: " .. bytes .. "/" .. size)
+            end
             on_error = on_error or function(reason) print("error ", reason) end
+            max_connections = max_connections or 1
+
+            local etag = vfs.GetAttribute(path..".part", "socket_download_etag") or vfs.GetAttribute(path, "socket_download_etag")
+            local total_size = vfs.GetAttribute(path ..".part", "socket_download_total_size") or vfs.GetSize(path) or 0
 
             local file
             local written_size = 0
-            local current_size = 0
-            local etag = vfs.GetAttribute(path, "etag") or vfs.GetAttribute(path ..".part", "etag")
-            print(etag, "!!!!!!!!")
+            local current_size = vfs.GetSize(path .. ".part") or 0
+            local progress_size = math.huge
+
+            if current_size > total_size then
+               etag = nil
+               current_size = 0
+               vfs.Delete(path ..".part")
+            elseif current_size == total_size and total_size > 0 then
+                move_and_finish(path, on_finish)
+                return
+            end
+
             local header = {}
-            
-            if etag then
+
+            if etag and not total_size then
                 header["If-None-Match"] = etag
             end
-                    
+
             if current_size > 0 then
                 header["range"] = "bytes=" .. current_size .. "-"
             end
@@ -679,10 +746,14 @@ do
             local http = sockets.HTTPClient()
             http:Request("GET", url, header)
 
+            function http:OnReceiveStatus(status, reason)
+                print(status, reason)
+            end
+
             function http:WriteBody(chunk)
                 file:Write(chunk)
-                on_progress(written_size, self.Header["content-length"] or math.huge, file:GetPosition(), #chunk)
                 written_size = written_size + #chunk
+                on_progress(tonumber(file:GetPosition()), tonumber(total_size), http.friendly_name)
             end
 
             function http:GetWrittenBodySize()
@@ -695,45 +766,39 @@ do
                 file:PopPosition()
                 return data or ""
             end
-                    
+
             function http:OnReceiveHeader(header)
-                if vfs.IsFile(path) then
-                    if etag == header.etag then
-                        on_finish(path)
-                        self:Close()
-                        return false
-                    else
-                        file = vfs.Open(path, "read_write")
-                        file:SetPosition(0)
-                        
-                    end
+                print(header["x-object-meta-sha1base36"])
+                print(crypto.SHA1(vfs.Read(path)))
+                print(crypto.SHA1(vfs.Read(path)))
+                print("what")
+
+                http.friendly_name = find_best_name(self)
+
+                if vfs.IsFile(path) and etag == header.etag then
+                    on_finish(path)
+                    self:Close()
+                    return false
                 else
                     file = vfs.Open(path .. ".part", "read_write")
                     current_size = file:GetSize()
                     file:SetPosition(current_size)
-                end
-
-                vfs.SetAttribute(path .. ".part", "etag", header.etag)
-                vfs.SetAttribute(path, "etag", header.etag)
-
-                if header["content-disposition"] then
-                    local file_name = header["content-disposition"]:match("filename=(%b\"\")")
-                    if file_name then
-                        file_name = file_name:sub(2, -2)
-                        local ext = vfs.GetExtensionFromPath(file_name)
-                        print(file_name)
+                    if current_size == 0 then
+                        vfs.SetAttribute(path .. ".part", "socket_download_total_size", header["content-length"])
+                        total_size = header["content-length"]
                     end
                 end
-                
-                table.print(header)
+
+                if header.etag then
+                    vfs.SetAttribute(path .. ".part", "socket_download_etag", header.etag)
+                    vfs.SetAttribute(path, "socket_download_etag", header.etag)
+                end
             end
 
             function http:OnReceiveBody(body)
                 file:Flush()
                 file:Close()
-                vfs.Rename(path, vfs.GetFileNameFromPath(path))
-                --on_progress(written_size, self.Header["content-length"], file:GetPosition(), #body)
-                on_finish(path)
+                move_and_finish(path, on_finish)
             end
 
             function http:OnError(reason)
@@ -744,21 +809,15 @@ do
 
 
         local urls = {
-            "https://puu.sh/qJZWP/febd7450cd.wav",
             "https://puu.sh/rMEGk/7b30e5c5a5.txt",
             "http://pastebin.com/raw/xmHZ2eb3",
-            "https://dl.dropbox.com/s/9yac9ud6xu25i6b/DABDABDAB.txt?dl=0",
             "https://dl.dropboxusercontent.com/s/yex5xw5bvnvr7o8/Look%20at%20my%20dab.ogg",
-            "http://puu.sh/pLvKh.obj",
             "http://www.fresher.ru/manager_content/images/10-faktov-o-flagax/10.jpg",
             "http://www.derpygamers.com/PAC_Content_Gmod/models/bodyfluff.obj",
             "https://www.dropbox.com/s/nczdyt33jcfky8f/talk%20(7).ogg?dl=1",
         }
-        
-        sockets.Download(
-            "https://dl.dropboxusercontent.com/s/yex5xw5bvnvr7o8/Look%20at%20my%20dab.ogg",
-            "test.jpg"
-        )
+
+        sockets.Download("https://upload.wikimedia.org/wikipedia/commons/c/cc/ESC_large_ISS022_ISS022-E-11387-edit_01.JPG", "map.jpg")
     end
 
     do return end
