@@ -199,7 +199,8 @@ function string.readablebinary(str)
 	 end))
 end
 
-function string.dumphex(str)
+function string.dumphex(str, byte_width)
+	byte_width = byte_width or 4
 	local str = str:readablehex():lower():split(" ")
 	local out = {}
 
@@ -209,10 +210,10 @@ function string.dumphex(str)
 		if i%16 == 0 then
 			table.insert(out, "\n")
 		end
-		if i%16 == 4 or i%16 == 12 then
+		if i%16 == byte_width or i%16 == 12 then
 			table.insert(out, " ")
 		end
-		if i%16 == 8 then
+		if i%16 == byte_width*2 then
 			table.insert(out, "  ")
 		end
 
