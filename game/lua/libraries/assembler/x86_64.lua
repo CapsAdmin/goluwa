@@ -1,4 +1,8 @@
-local META = _G.asm and _G.asm.asm_meta or ...
+local asm, META = ...
+
+if not asm then asm = _G.asm end
+if not META then META = asm.asm_meta end
+
 local ffi = require("ffi")
 
 asm.Reg64 = {

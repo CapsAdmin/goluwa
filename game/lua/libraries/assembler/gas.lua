@@ -87,7 +87,7 @@ function asm.CompareGAS(gas, func, ...)
 
             gas_asm = gas_asm .. data[1] .. "\n"
 
-            table.insert(our_bytes, obj:GetString(pos, obj:GetPosition() - pos):hexdump(32):trim())
+            table.insert(our_bytes, obj:GetString(pos, obj:GetPosition() - pos):hexformat(32))
         end
 
         local res, err = asm.GASToTable(gas_asm)
@@ -111,7 +111,7 @@ function asm.CompareGAS(gas, func, ...)
 
     local obj = asm.CreateAssembler(32)
     obj[func](obj, ...)
-    asm.PrintGAS(gas, obj:GetString():hexdump(32):trim())
+    asm.PrintGAS(gas, obj:GetString():hexformat(32):trim())
     obj:Unmap()
 end
 

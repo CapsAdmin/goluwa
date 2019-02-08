@@ -94,7 +94,7 @@ function META:GetString(pos, len)
 end
 
 function META:Dump()
-    print(self:GetString():hexdump(32))
+    print(self:GetString():hexformat(32))
 end
 
 function asm.ObjectToAddress(str)
@@ -103,8 +103,11 @@ end
 
 asm.asm_meta = META
 
-runfile("x86_64.lua", META)
-runfile("gas.lua", META)
+local old = _G.RELOAD
+_G.RELOAD = nil
+runfile("x86_64.lua", asm, META)
+runfile("gas.lua", asm)
+_G.RELOAD = old
 
 if RELOAD then
     _G.asm = asm
