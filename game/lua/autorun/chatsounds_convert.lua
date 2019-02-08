@@ -959,7 +959,7 @@ function chatsounds.ExtractSoundsFromLists()
 				end
 			else
 				if read_path:endswith(".mp3") then
-					logn("FAIL: [source file] ", "invalid header in mp3? first 4 bytes: ", file:PeakBytes(4):dumphex())
+					logn("FAIL: [source file] ", "invalid header in mp3? first 4 bytes: ", file:PeakBytes(4):hexformat())
 					failed = failed + 1
 					return
 				end

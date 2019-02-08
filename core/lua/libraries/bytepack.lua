@@ -186,7 +186,7 @@ end
 
 --[==[
 local packed = bytepack.uint32_t.encode(0xdeadbeef, true)
-print(packed:hexdump(), 0xdeadbeef)
+print(packed:hexformat(), 0xdeadbeef)
 local unpacked = bytepack.uint32_t.decode(packed, true)
 print(("%x"):format(unpacked), unpacked == 0xdeadbeef, unpacked)
 do return end
@@ -194,7 +194,7 @@ do return end
 for k,v in pairs(bytepack) do
     local packed = bytepack[k].encode(0xDEADBEEF)
     local unpacked = bytepack[k].decode(packed)
-    print(k, packed:hexdump():trim(), unpacked == 0xDEADBEEF)
+    print(k, packed:hexformat():trim(), unpacked == 0xDEADBEEF)
 end
 ]]
 

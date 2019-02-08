@@ -162,10 +162,6 @@ function string.random(length, min, max)
 	return table.concat(tbl)
 end
 
-function string.readablehex(str)
-	return (str:gsub("(.)", function(str) str = ("%X"):format(str:byte()) if #str == 1 then str = "0" .. str end return str .. " " end))
-end
-
 -- gsub doesn't seem to remove \0
 
 function string.removepadding(str, padding)
@@ -181,6 +177,10 @@ function string.removepadding(str, padding)
 	end
 
 	return table.concat(new)
+end
+
+function string.readablehex(str)
+	return (str:gsub("(.)", function(str) str = ("%X"):format(str:byte()) if #str == 1 then str = "0" .. str end return str .. " " end))
 end
 
 function string.readablebinary(str)
@@ -199,28 +199,41 @@ function string.readablebinary(str)
 	 end))
 end
 
-function string.dumphex(str, byte_width)
-	byte_width = byte_width or 4
+function string.hexformat(str, chunk_width, row_width, space_size)
+	row_width = row_width or 4
+	chunk_width = chunk_width or 4
+	space_size = space_size or 1
+
 	local str = str:readablehex():lower():split(" ")
 	local out = {}
 
-	for i, char in pairs(str) do
+	local chunk_i = 1
+	local row_i = 1
+
+	for _, char in pairs(str) do
 		table.insert(out, char)
 		table.insert(out, " ")
-		if i%16 == 0 then
+
+		if row_i >= (row_width * chunk_width) then
 			table.insert(out, "\n")
-		end
-		if i%16 == byte_width or i%16 == 12 then
-			table.insert(out, " ")
-		end
-		if i%16 == byte_width*2 then
-			table.insert(out, "  ")
+			chunk_i = 0
+			row_i = 0
 		end
 
+		if chunk_i >= chunk_width then
+			table.insert(out, (" "):rep(space_size))
+			chunk_i = 0
+		end
+
+		row_i = row_i + 1
+		chunk_i = chunk_i + 1
 	end
-	table.insert(out, "\n")
-	return table.concat(out)
+
+	return table.concat(out):trim()
 end
+			table.insert(out, "\n")
+	return table.concat(out)
+	end
 
 string.hexdump = string.dumphex
 
