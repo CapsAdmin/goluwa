@@ -7,13 +7,13 @@ local msg = "hello world!\n"
 
 local address = asm.ObjectToAddress(msg)
 
-obj:MoveConst64Reg64(WRITE, "rax") -- write
-obj:MoveConst64Reg64(STDOUT, "rdi") -- stdout
-obj:MoveConst64Reg64(address, "rsi") -- message address
-obj:MoveConst64Reg64(#msg, "rdx") -- length
+obj:MoveConst64Reg64(WRITE, asm.r.rax) -- write
+obj:MoveConst64Reg64(STDOUT, asm.r.rdi) -- stdout
+obj:MoveConst64Reg64(address, asm.r.rsi) -- message address
+obj:MoveConst64Reg64(#msg, asm.r.rdx) -- length
 obj:Syscall()
 obj:Return()
 
 local func = obj:GetFunctionPointer()
 
-func()
+func(0)
