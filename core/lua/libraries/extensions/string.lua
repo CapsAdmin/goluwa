@@ -231,11 +231,31 @@ function string.hexformat(str, chunk_width, row_width, space_size)
 
 	return table.concat(out):trim()
 end
+
+function string.binformat(str, row_width, space_size)
+	row_width = row_width or 8
+	space_size = space_size or 1
+
+	local str = str:totable()
+	local out = {}
+
+	local chunk_i = 1
+	local row_i = 1
+
+	for _, char in pairs(str) do
+		table.insert(out, utility.NumberToBinary(char:byte(), 8))
+		table.insert(out, (" "):rep(space_size))
+
+		if row_i >= row_width then
 			table.insert(out, "\n")
-	return table.concat(out)
+			row_i = 0
+		end
+
+		row_i = row_i + 1
 	end
 
-string.hexdump = string.dumphex
+	return table.concat(out):trim()
+end
 
 function string.endswith(a, b)
 	return a:sub(-#b) == b
