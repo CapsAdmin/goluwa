@@ -19,6 +19,8 @@ runfile("lua/libraries/utilities/quickbms.lua", utilities)
 runfile("lua/libraries/utilities/vmd_parser.lua", utilities)
 runfile("lua/libraries/utilities/line.lua", utilities)
 
+asm = runfile("lua/libraries/assembler.lua")
+
 if SERVER or CLIENT then
 	chat = runfile("lua/libraries/network/chat.lua")
 	runfile("lua/libraries/network/chat_above_head.lua")
