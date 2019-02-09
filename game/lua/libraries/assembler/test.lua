@@ -1,6 +1,9 @@
+print("building gas instructions..")
+
 local tbl = {}
 
 local function test(fmt, ...)
+
     fmt = fmt:format(...)
 
     local args = fmt:split(" ")
@@ -51,6 +54,10 @@ for _, what in ipairs({{"add", "Add"}, {"sub", "Subtract"}, {"imul", "IntegerMul
 end
 
 for _, reg in ipairs(asm.Reg64) do
+    test("cmp CompareConst8Reg64 $%s %s", "0xf", reg)
+end
+
+for _, reg in ipairs(asm.Reg64) do
     test("push PushReg64 %s", reg)
 end
 for _, reg in ipairs(asm.Reg64) do
@@ -86,5 +93,11 @@ for _, bit in ipairs(asm.KnownBits) do
     end
 end
 
+print("comparing " .. #tbl .. " instructions..")
+local ok, err = asm.CompareGAS(tbl, true)
 
-asm.CompareGAS(tbl, true)
+if ok then
+    print("comparison OK!")
+else
+    print(err)
+end

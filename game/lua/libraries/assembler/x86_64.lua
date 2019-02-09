@@ -44,40 +44,238 @@ for _, bit in ipairs(asm.KnownBits) do
     end
 end
 
-function META:MoveConst32Reg64(src, dst)
-    if dst < 8 then
-        self:WriteData("\x48\xC7" .. string.char(0xc0 + dst))
-    else
-        self:WriteData("\x49\xC7" .. string.char(0xc0 + (dst - 8)))
-    end
+local REX = {
+    BASE = 0x40,  -- Access to new 8-bit registers
+    B = 0x41,   -- Extension of r/m field, base field, or opcode reg field
+    X = 0x42,   -- Extension of SIB index field
+    XB = 0x43,   -- REX.X and REX.B combination
+    R = 0x44,   -- Extension of ModR/M reg field
+    RB = 0x45,   -- REX.R and REX.B combination
+    RX = 0x46,   -- REX.R and REX.X combination
+    RXB = 0x47,   -- REX.R, REX.X and REX.B combination
+    W = 0x48,   -- 64 Bit Operand Size
+    WB = 0x49,   -- REX.W and REX.B combination
+    WX = 0x4A,   -- REX.W and REX.X combination
+    WXB = 0x4B,   -- REX.W, REX.X and REX.B combination
+    WR = 0x4C,   -- REX.W and REX.R combination
+    WRB = 0x4D,   -- REX.W, REX.R and REX.B combination
+    WRX = 0x4E,   -- REX.W, REX.R and REX.X combination
+    WRXB = 0x4F,   -- REX.W, REX.R, REX.X and REX.B combination
+}
 
-    self:WriteData(ffi.new("uint32_t[1]", src))
+function META:WriteRex(i)
+    if i >= 8 then
+        self:WriteData(REX.WB)
+    else
+        self:WriteData(REX.W)
+    end
+end
+
+do
+    local lookup = {
+        ["64"] = ffi.typeof("uint64_t[1]"),
+        ["32"] = ffi.typeof("uint32_t[1]"),
+        ["16"] = ffi.typeof("uint16_t[1]"),
+        ["8"] = ffi.typeof("uint8_t[1]"),
+    }
+
+    function META:WriteNumber(num, bits)
+        self:WriteData(lookup[bits](num))
+    end
+end
+
+function META:MoveConst32Reg64(src, dst)
+    self:MoveConstReg(src, dst, "32", "64")
 end
 
 function META:MoveConst64Reg64(src, dst)
-    if dst < 8 then
-        self:WriteData("\x48" .. string.char(0xB8 + dst))
+    self:MoveConstReg(src, dst, "64", "64")
+end
+
+function META:MoveRegMemReg(src, dst, src_bits, dst_bits)
+    local index = bit.bor(0x0, bit.bor(bit.lshift(dst, 3), bit.band(src, 7)))
+
+    if dst_bits == "64" then
+        if dst < 8 then
+            if src >= 8 then
+                self:WriteData(0x49)
+            else
+                self:WriteData(0x48)
+            end
+        else
+            if src >= 8 then
+                self:WriteData(0x4d)
+            else
+                self:WriteData(0x4c)
+            end
+
+            index = index - 64
+        end
+
+        if src == 5 then
+            index = index + 64
+        elseif src == 13 then
+            index = index + 64
+        end
+
+        self:WriteData(0x8b, index)
+
+        if src == 12 then
+            self:WriteData(0x24)
+        elseif src == 13 then
+            self:WriteData(0x00)
+        end
+
+        if src == 5 then
+            self:WriteData(0x00)
+        elseif src == 4 then
+            self:WriteData(0x24)
+        end
+    elseif dst_bits == "32" then
+        if src_bits == "32" then
+            self:WriteData(0x67)
+        end
+
+        if dst < 8 then
+            if src >= 8 then
+                self:WriteData(0x41)
+            end
+        else
+            if src >= 8 then
+                self:WriteData(0x45)
+            else
+                self:WriteData(0x44)
+            end
+
+            index = index - 64
+        end
+
+        if src == 5 then
+            index = index + 64
+        elseif src == 13 then
+            index = index + 64
+        end
+
+        self:WriteData(0x8b, index)
+
+        if src == 12 then
+            self:WriteData(0x24)
+        elseif src == 13 then
+            self:WriteData(0x00)
+        end
+
+        if src == 5 then
+            self:WriteData(0x00)
+        elseif src == 4 then
+            self:WriteData(0x24)
+        end
+    end
+end
+
+function META:MoveMemReg(src, dst, src_bits, dst_bits)
+    if src_bits == "64" then
+        if dst ~= 0 then error("unsupported", 2) end
+        self:WriteData(0x48, 0xa1)
+    elseif src_bits == "32" then
+        if dst_bits == "8" then
+            if dst >= 12 then
+                self:WriteData(0x44)
+            elseif dst >= 8 then
+                self:WriteData(0x40)
+            end
+
+            self:WriteData(0x8a)
+
+            if dst >= 12 then
+                dst = dst - 4
+            elseif dst >= 8 then
+                dst = dst - 12
+            end
+        else
+            if dst_bits == "64" then
+                if dst < 8 then
+                    self:WriteData(0x48)
+                else
+                    self:WriteData(0x4c)
+                end
+            else
+                if dst_bits == "16" then
+                    self:WriteData(0x66)
+                end
+
+                if dst >= 8 then
+                    self:WriteData(0x44)
+                end
+            end
+
+            self:WriteData(0x8b)
+        end
+
+        self:WriteData(0x04 + bit.band(dst * 8, 63))
+        self:WriteData(0x25)
     else
-        self:WriteData("\x49" .. string.char(0xB8 + (dst - 8)))
+        error("unsupported", 2)
     end
 
-    self:WriteData(ffi.new("uint64_t[1]", src))
+    self:WriteNumber(src, src_bits)
+end
+
+function META:MoveConstReg(src, dst, src_bits, dst_bits)
+    if dst_bits == "32" or dst_bits == "64" then
+        self:WriteRex(dst)
+
+        local offset = bit.band(dst, 7)
+
+        if src_bits == "64" then
+            self:WriteData(0xB8 + offset)
+        elseif src_bits == "32" then
+            self:WriteData(0xC7, 0xc0 + offset)
+        end
+    elseif dst_bits == "16" then
+        self:WriteData(0x66)
+
+        if dst >= 8 then
+            self:WriteData(0x44)
+        end
+
+        self:WriteData(0x8B, 0x4 + bit.band(dst * 8, 63), 0x25)
+        src_bits = "32"
+    elseif dst_bits == "8" then
+        if dst >= 12 then
+            self:WriteData(0x44)
+        elseif dst >= 8 then
+            self:WriteData(0x40)
+        end
+
+        self:WriteData(0x8a)
+
+        if dst >= 8 then
+            dst = dst - 4
+        end
+
+        self:WriteData(0x4 + bit.band(dst * 8, 63))
+        self:WriteData(0x25)
+
+        src_bits = "32"
+    end
+
+    self:WriteNumber(src, src_bits)
 end
 
 function META:PushReg64(src)
-    if src < 8 then
-        self:WriteData(string.char(0x50 + src))
-    else
-        self:WriteData(string.char(0x41, 0x50 + src - 8))
+    if src >= 8 then
+        self:WriteData(0x41)
     end
+
+    self:WriteData(0x50 + bit.band(src, 7))
 end
 
 function META:PopReg64(src)
-    if src < 8 then
-        self:WriteData(string.char(0x58 + src))
-    else
-        self:WriteData(string.char(0x41, 0x58 + src - 8))
+    if src >= 8 then
+        self:WriteData(0x41)
     end
+
+    self:WriteData(0x58 + bit.band(src, 7))
 end
 
 local function increase_decrease(what, base)
@@ -342,12 +540,8 @@ function META:CompareConst32Reg64(dst, src)
 end
 
 function META:CompareConst8Reg64(dst, src)
-    if src < 8 then
-        self:WriteData(string.char(0x48, 0x83, 0xf8 + src))
-    else
-        self:WriteData(string.char(0x49, 0x83, 0xf8 + src - 8))
-    end
-
+    self:WriteRex(src)
+    self:WriteData(0x83, 0xf8 + bit.band(src, 7))
     self:WriteData(ffi.new("uint8_t[1]", dst))
 end
 
@@ -408,4 +602,24 @@ end
 
 if RELOAD then
     runfile("test.lua")
+
+    do return end
+
+
+    local str = ""
+    local lua = ""
+
+    local bits = "32"
+    for _, rega in ipairs(asm["Reg" .. bits]) do
+        for _, regb in ipairs(asm["Reg" .. bits]) do
+            --local rega = "rbp"
+            --local regb = "r15d"
+            local bits = "32"
+            str = str .. "mov (%"..rega.."), %"..regb.."\n"
+            lua = lua .. "obj:MoveRegMemReg(" .. asm.r[rega] .. ", " .. asm.r[regb] .. ", '"..bits.."', '"..bits.."')\n"
+        end
+    end
+
+    asm.PrintGAS(str, function(str) return str:hexformat(16) end, asm.LuaToTable(lua))
+    --bit.band(i * 8, 63)
 end

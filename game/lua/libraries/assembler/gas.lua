@@ -1,120 +1,128 @@
 local asm = _G.asm or ...
 
-function asm.PrintGAS(code, compare_hex)
+function asm.PrintGAS(code, format_func, compare)
+    local str = asm.GASTableToString(asm.GASToTable(code), nil, format_func, compare)
+    logn(str)
+end
+
+function asm.GASTableToString(tbl, skip_print_matched, format_func, compare)
+    format_func = format_func or string.hexformat
     local ok = true
-    local skip_print_matched = type(code) == "table" and compare_hex
-    local asm = type(code) == "table" and code or asm.GASToTable(code)
 
-    if asm then
-        do
-            local longest = 0
-            for _, data in ipairs(asm) do
-                for _, arg in ipairs(data.guess) do
-                    longest = math.max(longest, #arg)
-                end
-            end
+    local out = {}
 
-            for _, data in ipairs(asm) do
-                local fmt = ("%-"..longest.."s "):rep(#data.guess - 1) .. "%s "
-                data.guess = string.format(fmt, unpack(data.guess))
+    do
+        local longest = 0
+
+        for _, data in ipairs(tbl) do
+            for _, arg in ipairs(data.guess) do
+                longest = math.max(longest, #arg)
             end
         end
 
-        do
-            local longest = 0
+        for _, data in ipairs(tbl) do
+            local fmt = ("%-"..longest.."s "):rep(#data.guess - 1) .. "%s "
+            data.guess = string.format(fmt, unpack(data.guess))
+        end
+    end
 
-            for _, data in ipairs(asm) do
-                longest = math.max(longest, #data.guess)
-                longest = math.max(longest, #data.bytes)
+    do
+        local longest_left = 0
+        local longest_right = 0
+
+        for _, data in ipairs(tbl) do
+            data.hex = format_func(data.bytes)
+
+            longest_left = math.min(math.max(longest_left, #data.guess), 99)
+            longest_right = math.min(math.max(longest_right, #data.hex), 99)
+        end
+
+        for i, data in ipairs(tbl) do
+            if not skip_print_matched then
+                table.insert(out, string.format("%-"..longest_left.."s: %"..longest_right.."s", data.guess, data.hex))
             end
 
-            for _, data in ipairs(asm) do
-                if not skip_print_matched then
-                    logf("%-"..longest.."s: %-"..longest.."s\n", data.guess, data.bytes)
+            local compare_bytes = data.compare_bytes or (compare and compare[i].bytes)
+
+            if compare_bytes and compare_bytes ~= data.bytes then
+                if skip_print_matched then
+                    table.insert(out, string.format("%-"..longest_left.."s: %"..longest_right.."s", data.guess, data.hex))
                 end
 
-                if data.compare then
-                    if data.compare ~= data.bytes then
-                        if skip_print_matched then
-                            logf("%-"..longest.."s: %-"..longest.."s\n", data.guess, data.bytes)
-                        end
+                local hex = format_func(compare_bytes)
 
-                        logn((" "):rep(longest + 2), data.compare)
-                        logn((" "):rep(longest + 2), ("^"):rep(#data.compare))
-                        logn()
-                        ok = false
+                hex =  ("%"..longest_right.."s"):format(hex)
 
-                        if RELOAD then
-                            return false
-                        end
-                    end
-                elseif compare_hex then
-                    if compare_hex ~= data.bytes then
-                        logn((" "):rep(longest+2), compare_hex)
-                        logn((" "):rep(longest + 2), ("^"):rep(#compare_hex))
-                        logn()
-                        ok = false
+                table.insert(out, (" "):rep(longest_left + 2) .. hex)
+                table.insert(out, (" "):rep(longest_left + 2) .. ("^"):rep(#hex))
+                table.insert(out, "")
 
-                        if RELOAD then
-                            return false
-                        end
-                    end
-                end
+                ok = false
             end
         end
     end
 
-    return ok
+    return table.concat(out, "\n"), ok
 end
 
-function asm.CompareGAS(gas, func, ...)
-    if type(gas) == "table" then
-        local skip_print_matched = func
-        local obj = asm.CreateAssembler(4096)
+function asm.CompareGAS(tbl, skip_print_matched, compare)
+    local obj = asm.CreateAssembler(4096)
 
-        local gas_asm = ""
-        local our_bytes = {}
-        for _, data in ipairs(gas) do
-            local func = data[2]
-            local pos = obj:GetPosition()
+    local gas_asm = ""
+    local our_bytes = {}
+    for _, data in ipairs(tbl) do
+        local func = data[2]
+        local pos = obj:GetPosition()
 
-            if not obj[func] then
-                print("comparison failed: no such function in lua obj:" .. func)
-                return false
-            end
-
-            obj[func](obj, unpack(data, 3))
-
-            gas_asm = gas_asm .. data[1] .. "\n"
-
-            table.insert(our_bytes, obj:GetString(pos, obj:GetPosition() - pos):hexformat(32))
+        if not obj[func] then
+            return nil, "comparison failed: no such function in lua obj:" .. func
         end
 
-        local res, err = asm.GASToTable(gas_asm)
-        if not res then
-            print("comparison failed: " .. err)
-            return false
-        end
+        obj[func](obj, unpack(data, 3))
 
-        for i,v in ipairs(res) do
-            v.compare = our_bytes[i]
-        end
+        gas_asm = gas_asm .. data[1] .. "\n"
 
-        if asm.PrintGAS(res, skip_print_matched) then
-            print("comparison ok!")
-            return true
-        end
-
-        print("comparison failed!")
-        return false
+        table.insert(our_bytes, obj:GetString(pos, obj:GetPosition() - pos))
     end
 
-    local obj = asm.CreateAssembler(32)
-    obj[func](obj, ...)
-    asm.PrintGAS(gas, obj:GetString():hexformat(32):trim())
+    local res, err = asm.GASToTable(gas_asm)
+    if not res then
+        return nil, "comparison failed: " .. err
+    end
+
+    for i,v in ipairs(res) do
+        v.compare_bytes = our_bytes[i]
+    end
+
+    local str, ok = asm.GASTableToString(res, skip_print_matched)
+
+    logn(str)
+
+    if ok then
+        return true
+    end
+
+    return nil, "comparison failed!"
+end
+
+function asm.LuaToTable(str)
+    local out = {}
+    local obj = asm.CreateAssembler(4096)
+
+    for _, line in ipairs(str:split("\n")) do
+        local pos = obj:GetPosition()
+        local ok, err = pcall(loadstring("local obj = ...\n" .. line), obj)
+        if ok then
+            table.insert(out, {guess = line, bytes = obj:GetString(pos, obj:GetPosition() - pos)})
+        else
+            print(line .. ": " .. err)
+        end
+    end
+
     obj:Unmap()
-end
 
+    return out
+end
 
 function asm.GASToTable(str)
     if not str:find("_start", nil, true) then
@@ -138,7 +146,7 @@ function asm.GASToTable(str)
         if not os.execute("ld -s -o temp temp.o") then return nil, "failed to generate executable from temp.o" end
 
         -- we could execute it to try but usually
-        os.execute("./temp")
+        --os.execute("./temp")
 
         if not os.execute("objdump -S --insn-width=16 --disassemble temp > temp.dump") then return nil, "failed to disassemble temp" end
 
@@ -162,7 +170,13 @@ function asm.GASToTable(str)
             guess = guess:gsub("%s+", " ")
             guess = guess:split(" ")
 
-            table.insert(tbl, {address = address, bytes = bytes, guess = guess})
+            local bin = ""
+
+            for _, hex in ipairs(bytes:split(" ")) do
+                bin = bin .. string.char(tonumber(hex, 16))
+            end
+
+            table.insert(tbl, {address = address, bytes = bin, guess = guess})
         end
 
         return tbl
