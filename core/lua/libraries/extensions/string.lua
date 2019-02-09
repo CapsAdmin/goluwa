@@ -199,10 +199,10 @@ function string.readablebinary(str)
 	 end))
 end
 
-function string.hexformat(str, chunk_width, row_width, space_size)
+function string.hexformat(str, chunk_width, row_width, space_separator)
 	row_width = row_width or 4
 	chunk_width = chunk_width or 4
-	space_size = space_size or 1
+	space_separator = space_separator or " "
 
 	local str = str:readablehex():lower():split(" ")
 	local out = {}
@@ -221,7 +221,7 @@ function string.hexformat(str, chunk_width, row_width, space_size)
 		end
 
 		if chunk_i >= chunk_width then
-			table.insert(out, (" "):rep(space_size))
+			table.insert(out, space_separator)
 			chunk_i = 0
 		end
 
@@ -232,9 +232,9 @@ function string.hexformat(str, chunk_width, row_width, space_size)
 	return table.concat(out):trim()
 end
 
-function string.binformat(str, row_width, space_size)
+function string.binformat(str, row_width, space_separator, with_hex)
 	row_width = row_width or 8
-	space_size = space_size or 1
+	space_separator = space_separator or " "
 
 	local str = str:totable()
 	local out = {}
@@ -243,8 +243,14 @@ function string.binformat(str, row_width, space_size)
 	local row_i = 1
 
 	for _, char in pairs(str) do
-		table.insert(out, utility.NumberToBinary(char:byte(), 8))
-		table.insert(out, (" "):rep(space_size))
+
+		local bin = utility.NumberToBinary(char:byte(), 8)
+		if with_hex then
+			table.insert(out, ("%02X/"):format(char:byte()))
+		end
+
+		table.insert(out, bin:sub(0, 4) .. "-" .. bin:sub(5, 8))
+		table.insert(out, space_separator)
 
 		if row_i >= row_width then
 			table.insert(out, "\n")
