@@ -1003,7 +1003,7 @@ function utility.NumberToBinary(num, bits)
 		end
 	end
 
-	return table.concat(bin)
+	return table.concat(bin):reverse()
 end
 
 function utility.BinaryToNumber(bin)
