@@ -232,7 +232,7 @@ function string.hexformat(str, chunk_width, row_width, space_separator)
 	return table.concat(out):trim()
 end
 
-function string.binformat(str, row_width, space_separator, with_hex)
+function string.binformat(str, row_width, space_separator, with_hex, format)
 	row_width = row_width or 8
 	space_separator = space_separator or " "
 
@@ -249,7 +249,54 @@ function string.binformat(str, row_width, space_separator, with_hex)
 			table.insert(out, ("%02X/"):format(char:byte()))
 		end
 
-		table.insert(out, bin:sub(0, 4) .. "-" .. bin:sub(5, 8))
+		if format then
+			local str = ""
+			local bin = bin:totable()
+
+
+			local offset = 1
+			for _, num in ipairs(format:totable()) do
+				num = tonumber(num)
+				table.insert(bin, num + offset, "-")
+				offset = offset + 1
+			end
+
+			table.insert(out, table.concat(bin))
+		else
+			table.insert(out, bin)
+		end
+		table.insert(out, space_separator)
+
+		if row_i >= row_width then
+			table.insert(out, "\n")
+			row_i = 0
+		end
+
+		row_i = row_i + 1
+	end
+
+	return table.concat(out):trim()
+end
+
+function string.octformat(str, row_width, space_separator, with_hex)
+	row_width = row_width or 8
+	space_separator = space_separator or " "
+
+	local str = str:totable()
+	local out = {}
+
+	local chunk_i = 1
+	local row_i = 1
+
+	for _, char in pairs(str) do
+
+		local bin = string.format("%03o", char:byte())
+
+		if with_hex then
+			table.insert(out, ("%02X/"):format(char:byte()))
+		end
+
+		table.insert(out, bin)--:sub(0, 4) .. "-" .. bin:sub(5, 8))
 		table.insert(out, space_separator)
 
 		if row_i >= row_width then
