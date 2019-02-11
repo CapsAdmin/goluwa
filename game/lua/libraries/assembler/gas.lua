@@ -1,11 +1,36 @@
 local asm = _G.asm or ...
 
-function asm.PrintGAS(code, format_func, compare)
-    local str = asm.GASTableToString(asm.GASToTable(code), nil, format_func, compare)
-    logn(str)
+function asm.PrintGAS(code, format_func, compare, left_align)
+    local tbl = asm.GASToTable(code)
+    if tbl then
+        local str = asm.GASTableToString(tbl, nil, format_func, compare, left_align)
+        logn(str)
+    end
 end
 
-function asm.GASTableToString(tbl, skip_print_matched, format_func, compare)
+function asm.PrintC(code, format_func)
+    if not code:find("int main") then
+        local template = [[
+            #include <stdio.h>
+
+            int main( int argc, char *argv[] )
+            {
+                ]]..code..[[
+                return 0;
+            }
+        ]]
+
+        code = template
+    end
+
+    local tbl = asm.GASToTable(code, true)
+    if tbl then
+        local str = asm.GASTableToString(tbl, nil, format_func)
+        logn(str)
+    end
+end
+
+function asm.GASTableToString(tbl, skip_print_matched, format_func, compare, left_align)
     format_func = format_func or string.hexformat
     local ok = true
 
@@ -38,23 +63,38 @@ function asm.GASTableToString(tbl, skip_print_matched, format_func, compare)
         end
 
         for i, data in ipairs(tbl) do
+            local str = string.format("%-"..longest_left.."s: %-"..longest_right.."s", data.guess, data.hex)
             if not skip_print_matched then
-                table.insert(out, string.format("%-"..longest_left.."s: %"..longest_right.."s", data.guess, data.hex))
+                table.insert(out, str)
             end
 
-            local compare_bytes = data.compare_bytes or (compare and compare[i].bytes)
+            local compare_bytes = data.compare_bytes or (compare and compare[i] and compare[i].bytes)
 
             if compare_bytes and compare_bytes ~= data.bytes then
                 if skip_print_matched then
-                    table.insert(out, string.format("%-"..longest_left.."s: %"..longest_right.."s", data.guess, data.hex))
+                    table.insert(out, str)
                 end
 
                 local hex = format_func(compare_bytes)
 
-                hex =  ("%"..longest_right.."s"):format(hex)
+                hex =  ("%-"..longest_right.."s"):format(hex)
+                hex = (" "):rep(longest_left + 2) .. hex
 
-                table.insert(out, (" "):rep(longest_left + 2) .. hex)
-                table.insert(out, (" "):rep(longest_left + 2) .. ("^"):rep(#hex))
+                local diff = ""
+                for i = 1, #hex do
+                    if str:sub(i, i) == hex:sub(i, i) then
+                        diff = diff .. " "
+                    else
+                        diff = diff .. hex:sub(i, i)
+                    end
+                end
+
+                if #diff:trim() == 0 then
+                    diff = hex
+                end
+
+                table.insert(out, diff .. " << DIFF")
+                --table.insert(out, (" "):rep(longest_left + 2) .. ("^"):rep(#hex))
                 table.insert(out, "")
 
                 ok = false
@@ -124,33 +164,46 @@ function asm.LuaToTable(str)
     return out
 end
 
-function asm.GASToTable(str)
-    if not str:find("_start", nil, true) then
-        str = ".global _start\n.text\n_start:\n" .. str
-        str = str:gsub("; ", "\n")
+function asm.GASToTable(str, c_source)
+    if not c_source then
+        if not str:find("_start", nil, true) then
+            str = ".global _start\n.text\n_start:\n" .. str
+            str = str:gsub("; ", "\n")
+        end
+        str = str .. "\n"
     end
-    str = str .. "\n"
 
     local function go()
 
-        local f, err = io.open("temp.S", "wb")
+        if c_source then
+            local f, err = io.open("temp.c", "wb")
 
-        if not f then
-            return nil, "failed to read temp.S: " .. err
+            if not f then
+                return nil, "failed to read temp.c: " .. err
+            end
+
+            f:write(str)
+            f:close()
+
+            if not os.execute("gcc -S temp.c") then return nil, "failed to compile C code" end
+        else
+            local f, err = io.open("temp.s", "wb")
+
+            if not f then
+                return nil, "failed to read temp.s: " .. err
+            end
+
+            f:write(str)
+            f:close()
         end
 
-        f:write(str)
-        f:close()
-
-        if not os.execute("as -o temp.o temp.S") then return nil, "failed to assemble temp.S" end
+        if not os.execute("as -march=generic64 -o temp.o temp.s") then return nil, "failed to assemble temp.S" end
         if not os.execute("ld -s -o temp temp.o") then return nil, "failed to generate executable from temp.o" end
 
         -- we could execute it to try but usually
         --os.execute("./temp")
 
-        if not os.execute("objdump -S --insn-width=16 --disassemble temp > temp.dump") then return nil, "failed to disassemble temp" end
-
-        local f, err = io.open("temp.dump", "rb")
+        local f, err = io.popen("objdump -M suffix --special-syms --disassemble-zeroes -S -M amd64 --insn-width=16 --disassemble temp")
         if not f then
             return nil, "failed to read temp.dump: " .. err
         end
@@ -165,7 +218,7 @@ function asm.GASToTable(str)
             local address, bytes, guess = line:match("^(.-):%s+(%S.-)  %s+(%S.+)")
             guess = guess:gsub(",", ", ")
             guess = guess:gsub("%%", "")
-            guess = guess:gsub("%$", "")
+            guess = guess:gsub("%$", "IMM_")-- FIX THE CONSOLE OUTPUT
             guess = guess:gsub(",", "")
             guess = guess:gsub("%s+", " ")
             guess = guess:split(" ")
@@ -186,7 +239,25 @@ function asm.GASToTable(str)
 
     os.remove("temp.o")
     os.remove("temp")
-    os.remove("temp.dump")
 
     return res, err
 end
+
+if RELOAD then
+
+    local mem = {"(%eax)", "0xFF+(%eax)", "0xFF", "$0xFF"}
+    local reg = {"%eax"}
+
+    local code = ""
+
+    for _, mem in ipairs(mem) do
+        for _, reg in ipairs(reg) do
+            code = code .. "mov " .. mem .. ", " .. reg .. "\n"
+        end
+    end
+
+    asm.PrintGAS(code, function(str) return str:octformat(16, " ") end)
+end
+    --bit.band(i * 8, 63)
+
+    --asm.PrintC("int a = 0xdead+1+2;__uint64_t *c = 0xDEADBEEF;")

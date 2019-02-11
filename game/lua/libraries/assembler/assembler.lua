@@ -63,8 +63,8 @@ function META:Unmap()
     ffi.C.munmap(self.Memory, self.Size)
 end
 
-function META:GetFunctionPointer()
-    return ffi.cast("uint64_t (*)(uint64_t)", self.Memory)
+function META:GetFunctionPointer(type)
+    return ffi.cast(type or "void (*)()", self.Memory)
 end
 
 function META:AddInstruction(name, bytes, dst)

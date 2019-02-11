@@ -40,8 +40,8 @@ end
 
 for _, bit in ipairs(asm.KnownBits) do
     for _, reg in pairs(asm["Reg"..bit]) do
-        test("inc IncreaseReg%s %s", bit, reg)
-        test("dec DecreaseReg%s %s", bit, reg)
+        test("inc IncrementReg%s %s", bit, reg)
+        test("dec DecrementReg%s %s", bit, reg)
     end
 end
 
@@ -54,7 +54,7 @@ for _, what in ipairs({{"add", "Add"}, {"sub", "Subtract"}, {"imul", "IntegerMul
 end
 
 for _, reg in ipairs(asm.Reg64) do
-    test("cmp CompareConst8Reg64 $%s %s", "0xf", reg)
+    test("cmp CompareImm8Reg64 $%s %s", "0xf", reg)
 end
 
 for _, reg in ipairs(asm.Reg64) do
@@ -64,20 +64,20 @@ for _, reg in ipairs(asm.Reg64) do
     test("pop PopReg64 %s", reg)
 end
 
---mov 0xDEADBEEF causes gas to emit a MoveConst64Reg64
+--mov 0xDEADBEEF causes gas to emit a MoveImm64Reg64
 for _, reg in ipairs(asm.Reg64) do
-    test("mov MoveConst32Reg64 $0xDEAD %s", reg)
+    test("mov MoveImm32Reg64 $0xDEAD %s", reg)
 end
 
 for _, reg in ipairs(asm.Reg64) do
-    test("mov MoveConst64Reg64 $0xDEADBEEFCAFE %s", reg)
+    test("mov MoveImm64Reg64 $0xDEADBEEFCAFE %s", reg)
 end
 
 test("syscall Syscall")
 test("ret Return")
 
 -- this gets interpreted as an address relative to something, not sure how to test this with this setup
---test("jne JumpNotEqualConst8 0x1")
+--test("jne JumpNotEqualImm8 0x1")
 
 --test("mov MoveReg64Reg8 cl rsi")
 

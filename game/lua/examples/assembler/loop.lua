@@ -30,20 +30,20 @@ obj:MoveReg64Reg64(asm.r.rdi, asm.r.r12)
 local loop_pos = obj:GetPosition()
 
     -- syscall(WRITE, STDOUT, msg_adress, #msg)
-    obj:MoveConst64Reg64(WRITE, asm.r.rax) -- write
-    obj:MoveConst64Reg64(STDOUT, asm.r.rdi) -- stdout
-    obj:MoveConst64Reg64(msg_address, asm.r.rsi) -- message address
-    obj:MoveConst64Reg64(#msg, asm.r.rdx) -- length
+    obj:MoveImmReg(WRITE, "rax") -- write
+    obj:MoveImmReg(STDOUT, "rdi") -- stdout
+    obj:MoveImmReg(msg_address, "rsi") -- message address
+    obj:MoveImmReg(#msg, "rdx") -- length
     obj:Syscall()
 
     -- i = i + 1
-    obj:IncreaseReg64(asm.r.r12)
+    obj:IncrementReg64(asm.r.r12)
 
 -- local res = 10 == r12
-obj:CompareConst8Reg64(10, asm.r.r12)
+obj:CompareImm8Reg64(10, asm.r.r12)
 
 -- if not res then goto loop_pos end
-obj:JumpNotEqualConst8(loop_pos)
+obj:JumpNotEqualImm8(loop_pos)
 
 -- move r12 into rax so that we can retrieve the value from lua
 obj:MoveReg64Reg64(asm.r.r12, asm.r.rax)
@@ -53,4 +53,4 @@ obj:Return()
 
 -- get the funciton that we built and run it
 local func = obj:GetFunctionPointer()
-local count = func(3)
+local count = func()
