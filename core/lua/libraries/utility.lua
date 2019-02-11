@@ -1007,19 +1007,23 @@ function utility.NumberToBinary(num, bits)
 end
 
 function utility.BinaryToNumber(bin)
-	bin = string.reverse(bin)
-	local sum = 0
-
-	for i = 1, string.len(bin) do
-		num = string.sub(bin, i,i) == "1" and 1 or 0
-		sum = sum + num * math.pow(2, i-1)
-	end
-
-	return sum
+	return tonumber(bin, 2)
 end
 
 function utility.NumberToHex(num)
-	return "0x" .. bit.tohex(num):upper()
+	return ("0x%X"):format(num)
+end
+
+function utility.HexToNumber(hex)
+	return tonumber(hex, 16)
+end
+
+function utility.NumberToOctal(num)
+	return ("%o"):format(num)
+end
+
+function utility.OctalToNumber(hex)
+	return tonumber(hex, 8)
 end
 
 return utility
