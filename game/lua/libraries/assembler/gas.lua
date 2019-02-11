@@ -243,6 +243,42 @@ function asm.GASToTable(str, c_source)
     return res, err
 end
 
+function asm.Compareinterleaved(code, format)
+	local gas = {}
+	local lua = {}
+
+	local function replace(str)
+		for bits, id in str:gmatch("REG(%d*)(%u)") do
+			local temp = {}
+			for _, reg in ipairs(asm["Reg" .. bits]) do
+				table.insert(temp, (str:gsub("REG"..bits..id, reg)))
+			end
+			str = table.concat(temp, "\n")
+		end
+		return str:trim()
+	end
+
+    local lines = code:gsub("\n+", "\n"):trim():split("\n")
+
+    for i = 1, #lines, 2 do
+        local a = lines[i + 0]
+        local b = lines[i + 1]
+
+        a = replace(a)
+        b = replace(b)
+
+        table.insert(gas, a)
+        table.insert(lua, b)
+    end
+
+	asm.PrintGAS(
+        table.concat(gas, "\n"),
+        format or function(str) return str:binformat(16, " ", true) end,
+        asm.LuaToTable(table.concat(lua, "\n"))
+    )
+end
+
+
 if RELOAD then
 
     local mem = {"(%eax)", "0xFF+(%eax)", "0xFF", "$0xFF"}
