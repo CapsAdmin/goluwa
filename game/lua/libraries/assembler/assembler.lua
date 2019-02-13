@@ -97,8 +97,12 @@ function META:Dump()
     print(self:GetString():hexformat(32))
 end
 
-function asm.ObjectToAddress(str)
-    return assert(loadstring("return " .. tostring(ffi.cast("void *", str)):match(": (0x.+)") .. "ULL"))()
+function asm.ObjectToAddress(var)
+    if type(var) == "cdata" or type (var) == "string" then
+        return assert(loadstring("return " .. tostring(ffi.cast("void *", var)):match(": (0x.+)") .. "ULL"))()
+    end
+
+    return loadstring("return " .. string.format("%p", var) .. "ULL")()
 end
 
 asm.asm_meta = META

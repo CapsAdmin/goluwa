@@ -80,8 +80,10 @@ function asm.GASTableToString(tbl, skip_print_matched, format_func, compare, lef
                 hex =  ("%-"..longest_right.."s"):format(hex)
                 hex = (" "):rep(longest_left + 2) .. hex
 
+                hex = hex:gsub("(%s+)$", "")
+
                 local diff = ""
-                for i = 1, #hex do
+                for i = 1, #str do
                     if str:sub(i, i) == hex:sub(i, i) then
                         diff = diff .. " "
                     else
@@ -225,7 +227,10 @@ function asm.GASToTable(str, c_source)
 
             local bin = ""
 
-            for _, hex in ipairs(bytes:split(" ")) do
+            local hex_numbers = bytes:split(" ")
+
+
+            for _, hex in ipairs(hex_numbers) do
                 bin = bin .. string.char(tonumber(hex, 16))
             end
 
@@ -243,7 +248,8 @@ function asm.GASToTable(str, c_source)
     return res, err
 end
 
-function asm.Compareinterleaved(code, format)
+function asm.CompareInterleaved(code, format_func, friendly)
+    format_func = format_func or function(str) return str:binformat(16, " ", true) end
 	local gas = {}
 	local lua = {}
 
@@ -260,6 +266,18 @@ function asm.Compareinterleaved(code, format)
 
     local lines = code:gsub("\n+", "\n"):trim():split("\n")
 
+    if not friendly then
+        if #lines == 2 then
+            friendly = lines[1]
+        else
+            local temp = ""
+            for i = 1, #lines, 2 do
+                temp = temp .. lines[i + 0] .. "\n"
+            end
+            friendly = temp
+        end
+    end
+
     for i = 1, #lines, 2 do
         local a = lines[i + 0]
         local b = lines[i + 1]
@@ -271,29 +289,17 @@ function asm.Compareinterleaved(code, format)
         table.insert(lua, b)
     end
 
-	asm.PrintGAS(
-        table.concat(gas, "\n"),
-        format or function(str) return str:binformat(16, " ", true) end,
-        asm.LuaToTable(table.concat(lua, "\n"))
-    )
-end
+    lua = asm.LuaToTable(table.concat(lua, "\n"))
+    gas = asm.GASToTable(table.concat(gas, "\n"))
 
-
-if RELOAD then
-
-    local mem = {"(%eax)", "0xFF+(%eax)", "0xFF", "$0xFF"}
-    local reg = {"%eax"}
-
-    local code = ""
-
-    for _, mem in ipairs(mem) do
-        for _, reg in ipairs(reg) do
-            code = code .. "mov " .. mem .. ", " .. reg .. "\n"
+    if gas then
+        local str, ok = asm.GASTableToString(gas, true, format_func, lua)
+        if ok then
+            logn(friendly, ": OK")
+        else
+            logn(str)
         end
+    else
+        logn(friendly .. ": failed to compile gas!")
     end
-
-    asm.PrintGAS(code, function(str) return str:octformat(16, " ") end)
 end
-    --bit.band(i * 8, 63)
-
-    --asm.PrintC("int a = 0xdead+1+2;__uint64_t *c = 0xDEADBEEF;")
