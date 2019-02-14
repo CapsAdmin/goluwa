@@ -13,7 +13,12 @@ set BASE_SCRIPT_URL=https://gitlab.com/CapsAdmin/goluwa/raw/master/
 set SCRIPT_PATH=core/lua/boot.lua
 
 IF %0 == "%~0" set RAN_FROM_FILEBROWSER=1
+
 if defined VSCODE_CWD (
+	set RAN_FROM_FILEBROWSER=0
+)
+
+if defined TERM_PROGRAM (
 	set RAN_FROM_FILEBROWSER=0
 )
 
