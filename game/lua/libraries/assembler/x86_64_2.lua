@@ -15,7 +15,6 @@
 ]]
 
 local x86_64 = {}
-
 local ffi = require("ffi")
 
 local base = {
@@ -35,12 +34,12 @@ x86_64.Reg8 = {
 	"r12b", "r13b", "r14b", "r15b",
 }
 
+local REX_PATTERN = 0b01000000 -- Fixed base bit pattern
 local REX = {
-	FIXED = 0b01000000, -- Fixed base bit pattern
-	_64BIT = 0b00001000, -- 64bit mode
-	REG = 0b00000100, -- r8-r15
-	INDEX = 0b00000010, -- r8-r15
-	BASE = 0b00000001, -- r8-r15
+	W = 0b00001000, -- 64bit mode
+	R = 0b00000100, -- r8-r15
+	X = 0b00000010, -- r8-r15
+	B = 0b00000001, -- r8-r15
 }
 
 local VEX_2_BYTES_PREFIX = 0xC5
@@ -59,7 +58,7 @@ for _, bit in ipairs(x86_64.KnownBits) do
 	end
 end
 
-function x86_64.Encode(tbl)
+function x86_64.encode(tbl)
 
 	-- these are some quirks observed by comparing gcc generated machine code to ours
 	if true then -- gcc quirks
@@ -106,22 +105,22 @@ function x86_64.Encode(tbl)
 
 	do -- build REX prefix byte
 		if reg_bits == "64" or base_bits == "64" then
-			rex = bit.bor(rex or REX.FIXED, REX._64BIT)
+			rex = bit.bor(rex or REX_PATTERN, REX.W)
 		end
 
 		if reg and reg >= 8 then
 			reg = reg - 8
-			rex = bit.bor(rex or REX.FIXED, REX.REG)
+			rex = bit.bor(rex or REX_PATTERN, REX.R)
 		end
 
 		if base and base >= 8 then
 			base = base - 8
-			rex = bit.bor(rex or REX.FIXED, REX.BASE)
+			rex = bit.bor(rex or REX_PATTERN, REX.B)
 		end
 
 		if index and index >= 8 then
 			index = index - 8
-			rex = bit.bor(rex or REX.FIXED, REX.INDEX)
+			rex = bit.bor(rex or REX_PATTERN, REX.X)
 		end
 	end
 
@@ -249,35 +248,32 @@ local shortened = {
 	[0x58] = true,
 }
 
-function x86_64.Decode(bin)
-	local pos = 1
+function x86_64.format_gas(tbl)
 	local str = ""
 
-	local rex = {}
-	local _32bit = false
-
-	if bin:byte(pos) == 0x67 then
-		str = str .. "32bit "
-		_32bit = true
-		pos = pos + 1
+	if tbl.args then
+		str = str .. serializer.Encode("luadata", tbl.args):gsub("\n", "") .. " "
 	end
 
-	if bin:byte(pos) >= 64 and bin:byte(pos) <= 79 then
-		str = str .. "REX."
-		for k,v in pairs(REX) do
-			if k ~= "FIXED" and bit.band(bin:byte(pos), v) ~= 0 then
-				str = str .. k:sub(1,1)
-				rex[k] = true
+	local rex = {}
+
+	if tbl.prefixes then
+		if tbl.prefixes.rex then
+			str = str .. "REX."
+			for k,v in pairs(tbl.prefixes.rex) do
+				if k ~= "FIXED" then
+					str = str .. k:sub(1,1)
+				end
 			end
+			str = str .. " "
+			rex = tbl.prefixes.rex
 		end
-		str = str .. " "
-		pos = pos + 1
 	end
 
 	local function toreg(i, ext)
 		local lookup = x86_64.Reg32
 
-		if rex._64BIT then
+		if rex.W then
 			lookup = x86_64.Reg64
 		end
 
@@ -288,92 +284,56 @@ function x86_64.Decode(bin)
 		return lookup[i + 1] or i
 	end
 
-	do
-		local a,b,c
+	str = str .. string.format("\"" .. ("\\x%x"):rep(#tbl.opcode) .. "\" ", unpack(tbl.opcode))
 
-		a = bin:byte(pos)
-		pos = pos + 1
-
-		if a == 0x0F then
-			b = bin:byte(pos)
-			pos = pos + 1
-
-			if b == 0x38 or b == 0x3A then
-				c = bin:byte(pos)
-				pos = pos + 1
-			end
-		end
-
-		if a and b and c then
-			str = str .. string.format("\"\\x%x\\x%x\\x%x\"", a,b,c)
-		elseif a and b then
-			str = str .. string.format("\"\\x%x\\x%x\\x%x\"", a,b)
-		elseif a then
-			str = str .. string.format("\"\\x%x\"", a)
-		end
-	end
-
-	if not bin:byte(pos) then
+	if not tbl.modrm then
 		return str
 	end
 
-	local mod, reg, rm = byte2bits(bin:byte(pos), "233")
-	pos = pos + 1
-
+	local mod, reg, rm = tbl.modrm.mod, tbl.modrm.reg, tbl.modrm.rm
 	local sib = rm == 4
 
 	local scale, index, base
 
 	-- this means we are either using 8 or 32 bit displacement
 	if sib then
-		scale, index, base = byte2bits(bin:byte(pos), "233")
-		pos = pos + 1
+		scale, index, base = tbl.sib.scale, tbl.sib.index, tbl.sib.base
 	end
 
 	if mod == 0 and not sib then
 		-- mov rax, (rcx) indirect
-		str = str .. string.format("%%%s, (%%%s)", toreg(reg, rex.REG), toreg(rm, rex.BASE))
+		str = str .. string.format("%s, (%s)", toreg(reg, rex.R), toreg(rm, rex.B))
 	elseif mod == 3 then
 		-- mov rax, rcx direct
-		str = str .. string.format("%%%s, %%%s", toreg(reg, rex.REG), toreg(rm, rex.BASE))
+		str = str .. string.format("%s, %s", toreg(reg, rex.R), toreg(rm, rex.B))
 	end
 
 	if mod == 0 and rm == 4 then
-		pos = pos + 1
-
 		-- scale but no displacement
-		str = str .. ("%%%s, (%%%s, %%%s, %i)"):format(
-			toreg(reg, rex.REG),
-			toreg(base, rex.BASE),
-			toreg(index, rex.INDEX),
+		str = str .. ("%s, (%s, %s, %i)"):format(
+			toreg(reg, rex.R),
+			toreg(base, rex.B),
+			toreg(index, rex.X),
 			2^scale
 		)
 	elseif mod == 1 or mod == 2 then
 		-- indirect with 1 or 4 byte displacement
 
-		local num
-
-		if mod == 1 then
-			-- 1 byte displacement
-			num = bin:byte(pos) or 0
-		else
-			-- 4 byte displacement
-			num = bytes2int(bin:byte(pos, pos + 4))
-		end
+		local num = tbl.displacement
 
 		if sib then
-			str = str .. ("%%%s, 0x%x(%%%s, %%%s, %i)"):format(
-				toreg(reg, rex.REG),
+			str = str .. ("%s, 0x%x(%s, %s, %i)"):format(
+				toreg(reg, rex.R),
 				num,
-				toreg(base, rex.BASE),
-				toreg(index, rex.INDEX),
+				toreg(base, rex.B),
+				toreg(index, rex.X),
 				2^scale
 			)
 		else
-			str = str .. ("%%%s, 0x%x(%%%s)"):format(
-				toreg(reg, rex.REG),
+			str = str .. ("%s, 0x%x(%s)"):format(
+				toreg(reg, rex.R),
 				num,
-				toreg(rm, rex.BASE)
+				toreg(rm, rex.B)
 			)
 		end
 	end
@@ -381,7 +341,7 @@ function x86_64.Decode(bin)
 	return str
 end
 
-function x86_64.Decode2(bin)
+function x86_64.decode(bin)
 	local pos = 1
 
 	local out = {}
@@ -393,31 +353,63 @@ function x86_64.Decode2(bin)
 	end
 
 	if bin:byte(pos) >= 64 and bin:byte(pos) <= 79 then
-		pos = pos + 1
-		out.rex = {}
+		out.prefixes = out.prefixes or {}
+		out.prefixes.rex = out.prefixes.rex or {}
 
 		for k,v in pairs(REX) do
-			out.rex[k] = true
+			if bit.band(bin:byte(pos), v) ~= 0 then
+				out.prefixes.rex[k] = true
+			end
 		end
+		pos = pos + 1
 	end
 
 	do
-		local a,b,c
+		local byte = bin:byte(pos)
+		local node = asm.opcode_map[byte]
 
-		a = bin:byte(pos)
-		pos = pos + 1
+		if node then
+			out.opcode = {byte}
+			for i = 0, 15 do
+				if node.ARGS then
+					out.args = node.ARGS
+					return out
+				else
+					local what = next(node)
+					if what == "id" then
+						out.imm = bytes2int(bin:byte(pos, pos + 4))
+						pos = pos + 4
+						node = node[what]
+					elseif what == "\r" then
+						break
+					else
+						node = node[bin:byte(pos + i)]
+						if node then
+							table.insert(out.opcode, bin:byte(pos + i))
+						end
+					end
+				end
 
-		if a == 0x0F then
-			b = bin:byte(pos)
+				if not node then break end
+			end
+		else
+			local a,b,c
+
+			a = bin:byte(pos)
 			pos = pos + 1
 
-			if b == 0x38 or b == 0x3A then
-				c = bin:byte(pos)
+			if a == 0x0F then
+				b = bin:byte(pos)
 				pos = pos + 1
-			end
-		end
 
-		out.opcode = {a,b,c}
+				if b == 0x38 or b == 0x3A then
+					c = bin:byte(pos)
+					pos = pos + 1
+				end
+			end
+
+			out.opcode = {a,b,c}
+		end
 	end
 
 	-- this assumes we're always at the end of the byte stream
@@ -431,7 +423,7 @@ function x86_64.Decode2(bin)
 		}
 
 		-- this means we are either using 8 or 32 bit displacement
-		if sib then
+		if rm == 4 then
 			local scale, index, base = byte2bits(bin:byte(pos), "233")
 			pos = pos + 1
 			out.sib = {
@@ -456,28 +448,24 @@ function x86_64.Decode2(bin)
 		end
 	end
 
+	out.length = pos
+
 	return out
 end
 
 
 local format_func = function(str)
-	local ok, res = pcall(decode, str)
-	if ok then
-		return res-- .. str:binformat(16, " ", true)
-	end
-	return str:binformat(16, " ", true) .. ": " .. res
+	return str:binformat(16, " ", true) .. "\n                        " .. x86_64.format_gas(x86_64.decode(str))
 end
 
 -- rex opcode
 
-local bytes = x86_64.Encode({opcode="\x89", reg="rax", base="r12", disp=require("ffi").new("uint8_t", 0x2)})
-print(bytes:binformat(16, " ", true))
-table.print(x86_64.Decode2("\x48\x89\x94\xC3\x00\x10\x00"))
+local bytes = x86_64.encode({opcode="\x89", reg="rax", base="r12", disp=require("ffi").new("uint8_t", 0x2)})
+--print(bytes:binformat(16, " ", true))
+--print(x86_64.format_gas("\x48\x89\x94\xC3\x00\x10\x00"))
 --print(x86_64.Decode(bytes))
 
 do return end
-
-asm.PrintGAS("mov %ecx, (%eax, %r12d,2)", format_func) do return end
 
 asm.PrintC([[
 	#include <stdio.h>
@@ -504,8 +492,9 @@ asm.PrintC([[
 		return 0 ;
 	}
 ]], format_func)
---asm.PrintGAS("mov %ecx, (%rax, %rax, 8)", format_func)
---asm.PrintGAS("mov %eax, (%rax, %rbx, 2)", format_func)
+--
+
+asm.PrintGAS("mov %eax, (%rax, %rbx, 2)", format_func)
 
 do return end
 
