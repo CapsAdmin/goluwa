@@ -1,9 +1,10 @@
+local asm2 = _G.asm
+
 local asm = {}
 local ffi = require("ffi")
 
 local map = {}
-local keyval = {}
-local opcodes = {}
+local luamap = {}
 
 local base = {
 	"ax", "cx", "dx", "bx",
@@ -101,12 +102,14 @@ function asm.ObjectToAddress(var)
 end
 
 function asm.MODRM(op1, op2)
-	local reg = op1.reg.index
-
+	local reg
 	local index
 	local base
 	local displacement
 	local scale
+	local displacement_size
+
+	reg = op1.reg.index
 
 	if type(op2) == "number" then
 		base = op2
@@ -120,12 +123,11 @@ function asm.MODRM(op1, op2)
 
 	-- build modrm byte
 	if reg and base then
-
 		-- 00 000 000
 		modrm = 0
 
 		-- 00 src 000 - place
-		modrm = bit.bor(modrm, bit.lshift(reg, 3))
+		modrm = bit.bor(modrm, bit.lshift(base, 3))
 
 
 		if displacement then
@@ -147,7 +149,7 @@ function asm.MODRM(op1, op2)
 			modrm = bit.bor(modrm, 0b100)
 		else
 			-- 10 src dst
-			modrm = bit.bor(modrm, base)
+			modrm = bit.bor(modrm, reg)
 		end
 	elseif base then
 		modrm = 0b11000000
@@ -199,10 +201,10 @@ end
 function asm.INT2BYTES(t, int)
 	if type(int) == "cdata" then
 		int = ffi.cast(t, int)
-	end
-
-	if type(int) == "number" then
+	elseif type(int) == "number" then
 		int = ffi.new(t, int)
+	elseif type(int) == "string" then
+		int = asm.ObjectToAddress(int)
 	end
 
 	return ffi.string(ffi.new(t.."[1]", int), ffi.sizeof(t))
@@ -264,7 +266,6 @@ local function parse_db(db)
 
 		local instr = {}
 
-
 		if opcode[1] == "REX.W" then
 			table.insert(instr, "e.REX(true)")
 		elseif false then
@@ -292,20 +293,22 @@ local function parse_db(db)
 				table.insert(instr, "e.MODRM(op1, "..byte:sub(2,2)..")")
 			elseif byte:endswith("+r") then
 				table.insert(instr, "string.char(0x"..byte:sub(1, 2).." + op1.reg.index)")
-			elseif type_translate[byte] then
-				table.insert(instr, "e.INT2BYTES(\""..type_translate[byte].."\", op1)")
+			elseif type_translate[type_translate2[byte]] then
+				table.insert(instr, "e.INT2BYTES(\""..type_translate[type_translate2[byte]].."\", op"..#operands..")")
 			end
 		end
 
-		lua = lua .. "\n\treturn\n\t\t" .. table.concat(instr, "..\n\t\t")
+		lua = lua .. " return\n" .. table.concat(instr, "..")
 		lua = lua:gsub("\"%s*%.%.%s*\"", "")
 		lua = lua .."\nend"
 
 		map[name] = map[name] or {}
 		map[name][table.concat(operands, ",")] = loadstring(lua)(asm)
 
-		lua = table.concat({"--", name, table.concat(operands, ","), operands2, encoding, table.concat(opcode, " "), metadata}, " | ") .. "\n" .. lua
-		map[name][table.concat(operands, ",").."LUA"] = lua
+
+		local lua = table.concat({"--", name, table.concat(operands, ","), operands2, encoding, table.concat(opcode, " "), metadata}, " | ") .. "\n" .. lua
+		luamap[name] = luamap[name] or {}
+		luamap[name][table.concat(operands, ",")] = lua
 	end
 
 	for i, v in ipairs(db.instructions) do
@@ -400,7 +403,7 @@ local function run(func, ...)
 				end
 			end
 		elseif type(arg) == "string" then
-			str = str .. "i?"
+			str = str .. "i64"
 		else
 			str = str .. type(arg)
 		end
@@ -429,8 +432,16 @@ local function run(func, ...)
 		error("no such function " .. func .. "\ndid you mean one of these?\n" .. found)
 	end
 
-	if str:find("?", nil, true) then
+	if str:find("i?", nil, true) then
 		for _, bits in ipairs({"32", "16", "8"}) do
+			local test = str:replace("?", bits)
+			if map[func][test] then
+				str = test
+				break
+			end
+		end
+	elseif str:find("m?", nil, true) then
+		for _, bits in ipairs({"64", "32", "16", "8"}) do
 			local test = str:replace("?", bits)
 			if map[func][test] then
 				str = test
@@ -457,6 +468,9 @@ local function run(func, ...)
 
 		error(func .. " does not take arguments " .. str .. "\ndid you mean one of these?\n" .. found)
 	end
+
+	--print(luamap[func][str])
+
 	return map[func][str](...)
 end
 
@@ -538,6 +552,7 @@ local MAP_ANONYMOUS = 0x20
 
 local META = {}
 META.__index = META
+META.Type = "register"
 
 local function Assemble(func)
 	local str = {}
@@ -545,6 +560,7 @@ local function Assemble(func)
 		if map[key] then
 			return function(...)
 				local bin = run(key, ...)
+				--print("                                    " .. bin:binformat(15, " ", true))
 				table.insert(str, bin)
 			end
 		end
@@ -552,32 +568,36 @@ local function Assemble(func)
 			return r[key]
 		end
 
-		return _G
+		return _G[key]
 	end}))()
 
-	--[[local mem = ffi.C.mmap(ffi.cast("void *", table.concat(str)), #str, bit.bor(PROT_READ, PROT_WRITE, PROT_EXEC), bit.bor(MAP_PRIVATE, MAP_ANONYMOUS), -1, 0)
+	if #str == 0 then
+		return nil, "nothing to assemble"
+	end
+	str = table.concat(str)
+
+	local mem = ffi.C.mmap(nil, #str, bit.bor(PROT_READ, PROT_WRITE, PROT_EXEC), bit.bor(MAP_PRIVATE, MAP_ANONYMOUS), -1, 0)
+
+	ffi.copy(mem, str)
+
     if mem == nil then
         return nil, "failed to map memory"
 	end
-]]
-	return table.concat(str)
+
+	return mem
 end
 
 local mcode = Assemble(function()
-	local msg = "hello"
+	local msg = "hello world\n"
 
-	mov(rax, 4)   	-- 'write' system call = 4
-	mov(rbx, 1)   	-- file descriptor 1 = STDOUT
-	mov(rcx, msg) 	-- string to write
-	mov(rdx, #msg)	-- length of string to write
-	int(0x80)    	-- call the kernel
+	local STDOUT = 1
+	local WRITE = 1
 
+	mov(rax, STDOUT)
+	mov(rdi, WRITE)
+	mov(rsi, msg)
+	mov(rdx, #msg)
+	syscall()
 	ret()
 end)
-print(mcode:binformat())
---ffi.cast("void (*)()", mcode)()
-
---asm.PrintGAS("mov %rax, -0x20(%rbx, %rcx, 4)", format_func)
---asm.PrintGAS("jmp 10(%rax)", format_func)
-
--- FIX MOD RM
+print(ffi.cast("uint64_t (*)(uint64_t)", mcode)(0))
