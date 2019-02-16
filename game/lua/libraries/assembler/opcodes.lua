@@ -25,7 +25,7 @@ x86_64.Reg8 = {
 	"r12b", "r13b", "r14b", "r15b",
 }
 
-local REX_PATTERN = 0b01000000 -- Fixed base bit pattern
+local REX_FIXED_BIT = 0b01000000
 local REX = {
 	W = 0b00001000, -- 64bit mode
 	R = 0b00000100, -- r8-r15
@@ -40,6 +40,7 @@ local XOP_PREFIX = 0x8F
 x86_64.KnownBits = {64, 32, 16, 8}
 
 x86_64.RegLookup = {}
+asm.RegLookup = x86_64.RegLookup
 
 for _, bit in ipairs(x86_64.KnownBits) do
 	for i, reg in ipairs(x86_64["Reg" .. bit]) do
@@ -47,11 +48,11 @@ for _, bit in ipairs(x86_64.KnownBits) do
 
 		info.bits = bit
 
-		if i >= 8 then
+		if i > 8 then
 			info.extra = true
 		end
 
-		info.index = (i - 1)%7
+		info.index = (i - 1)%8
 
 		x86_64.RegLookup[reg] = info
 	end
@@ -64,30 +65,23 @@ end
 
 -- table means register
 
-function asm.REX(W, op1, op2)
-	local R = op1 and op1.reg
+function asm.REX(W, B, R, X)
+	local rex = REX_FIXED_BIT -- Fixed base bit pattern
 
-	local X = op2 and op2.index and op2.index
-	local B = op2 and op2.reg
-
-	local rex = REX_PATTERN
-
-	if W or op1.reg.bits == "64" then
+	if W then
 		rex = bit.bor(rex, REX.W)
 	end
 
-	if R and R.extra then
+	if R then
 		rex = bit.bor(rex, REX.R)
 	end
 
-	if B and B.extra then
-		base = base - 8
-		rex = bit.bor(rex, REX.B)
+	if X then
+		rex = bit.bor(rex, REX.X)
 	end
 
-	if X and X.extra then
-		index = index - 8
-		rex = bit.bor(rex, REX.X)
+	if B then
+		rex = bit.bor(rex, REX.B)
 	end
 
 	return string.char(rex)
@@ -102,22 +96,21 @@ function asm.ObjectToAddress(var)
 end
 
 function asm.MODRM(op1, op2)
-	local reg
+	local reg = asm.RegLookup[op1.reg].index
 	local index
 	local base
-	local displacement
 	local scale
-	local displacement_size
+	local disp
 
-	reg = op1.reg.index
+	reg = asm.RegLookup[op1.reg].index
 
 	if type(op2) == "number" then
 		base = op2
 	else
-		index = op2.index and op2.index.index
-		base = op2.reg.index
+		index = asm.RegLookup[op2.index] and asm.RegLookup[op2.index].index
+		base = asm.RegLookup[op2.reg] and asm.RegLookup[op2.reg].index
 
-		displacement = op2.disp
+		disp = op2.disp
 		scale = op2.scale
 	end
 
@@ -129,15 +122,12 @@ function asm.MODRM(op1, op2)
 		-- 00 src 000 - place
 		modrm = bit.bor(modrm, bit.lshift(base, 3))
 
-
-		if displacement then
-			if displacement_size == 1 then
+		if disp then
+			if disp >= -127 and disp <= 127 == 1 then
 				-- 10 src 000
 				modrm = bit.bor(modrm, 0b01000000)
-			elseif displacement_size == 4 then
-				modrm = bit.bor(modrm, 0b10000000)
 			else
-				error("invalid displacement size " .. displacement_size)
+				modrm = bit.bor(modrm, 0b10000000)
 			end
 		else
 			-- 11 src 000
@@ -239,9 +229,7 @@ local type_translate2 = {
 	rel32 = "i32",
 }
 
-local SWAP_ARGS = false
-local SWAP_STRB = SWAP_ARGS and "op1, op2" or "op2, op1"
-local SWAP_STRA = SWAP_ARGS and "op2, op1" or "op1, op2"
+local rel
 
 local function parse_db(db)
 -- /r = modrm + sib and displacement
@@ -254,47 +242,73 @@ local function parse_db(db)
 		--print(" ")
 		--print(name, table.concat(operands, ", "), operands2, encoding, table.concat(opcode, " "), metadata)
 
+		local real_operands = {}
 		local arg_line = {}
 		for i, v in ipairs(operands) do
+			real_operands[i] = v
 			v = type_translate2[v] or v
 			operands[i] = v
 			arg_line[i] =  "op" .. i
 		end
+
+
+		local key = table.concat(operands, ",")
+
+		if map[name] and map[name][key] and luamap[name][key].encoding == "MR" then
+			return
+		end
+
 		arg_line = table.concat(arg_line, ", ")
 
-		local lua = "local e = ...\nreturn function("..arg_line..")"
+
+		local lua = ""
+		lua = lua .. table.concat({"--", name, table.concat(operands, ","), operands2, encoding, table.concat(opcode, " "), metadata}, " | ") .. "\n"
+		lua = lua .. "local e = ...\nreturn function("..arg_line..")"
+
+		local instr_length = 0
+
+
 
 		local instr = {}
 
 		if opcode[1] == "REX.W" then
-			table.insert(instr, "e.REX(true)")
-		elseif false then
-			local W = opcode[1] == (arg_line:find("r64") or arg_line:find("m64")) and "true, " or ""
+			local op2 = ")"
 
-			if encoding:startswith("MR") then
-				table.insert(instr, "e.REX("..W..SWAP_STRA .. ")")
-			elseif encoding:startswith("RM") then
-				table.insert(instr, "e.REX("..W..SWAP_STRb .. ")")
-			elseif encoding:startswith("M") then
-				table.insert(instr, "e.REX("..W.."op1)")
+			if operands[2] and (operands[2]:startswith("r") or operands[2]:startswith("m")) then
+				op2 = ", op2.reg and e.RegLookup[op2.reg].extra, op2.index and e.RegLookup[op2.index].extra)"
 			end
+
+			table.insert(instr, "e.REX(true, e.RegLookup[op1.reg].extra" .. op2)
 		end
 
 		for _, byte in ipairs(opcode) do
-			if tonumber(byte, 16) then
-				table.insert(instr, "\"\\x"..byte.."\"")
-			elseif byte == "/r" then
-				if encoding:startswith("MR") then
-					table.insert(instr, "e.MODRM("..SWAP_STRA..")")
-				else
-					table.insert(instr, "e.MODRM("..SWAP_STRB..")")
+			if byte == "/r" then
+				table.insert(instr, "e.MODRM(op1, op2)")
+			elseif byte:startswith("c") then
+				local s = byte:sub(2,2)
+				if s == "b" then
+					table.insert(instr, "e.INT2BYTES('int8_t', op"..#operands..")")
+				elseif s == "w" then
+					table.insert(instr, "e.INT2BYTES('int16_t', op"..#operands..")")
+				elseif s == "d" then
+					table.insert(instr, "e.INT2BYTES('int32_t', op"..#operands..")")
 				end
 			elseif byte:startswith("/") and tonumber(byte:sub(2,2)) then
 				table.insert(instr, "e.MODRM(op1, "..byte:sub(2,2)..")")
 			elseif byte:endswith("+r") then
-				table.insert(instr, "string.char(0x"..byte:sub(1, 2).." + op1.reg.index)")
+				table.insert(instr, "string.char(0x"..byte:sub(1, 2).." + e.RegLookup[op1.reg].index)")
 			elseif type_translate[type_translate2[byte]] then
 				table.insert(instr, "e.INT2BYTES(\""..type_translate[type_translate2[byte]].."\", op"..#operands..")")
+			elseif tonumber(byte, 16) then
+				table.insert(instr, "\"\\x"..byte.."\"")
+				instr_length = instr_length + 1
+			end
+		end
+
+		for i, v in ipairs(real_operands) do
+			if v:startswith("rel") then
+				instr_length = instr_length + tonumber(v:sub(4)) / 8
+				lua = lua .. "\nop" .. i .. " = op" .. i .. " - " .. instr_length .. "\n"
 			end
 		end
 
@@ -303,12 +317,12 @@ local function parse_db(db)
 		lua = lua .."\nend"
 
 		map[name] = map[name] or {}
-		map[name][table.concat(operands, ",")] = loadstring(lua)(asm)
+		map[name][key] = loadstring(lua)(asm)
 
-
-		local lua = table.concat({"--", name, table.concat(operands, ","), operands2, encoding, table.concat(opcode, " "), metadata}, " | ") .. "\n" .. lua
 		luamap[name] = luamap[name] or {}
-		luamap[name][table.concat(operands, ",")] = lua
+		luamap[name][key] = {lua = lua, real_operands = real_operands, encoding = encoding}
+
+
 	end
 
 	for i, v in ipairs(db.instructions) do
@@ -382,19 +396,23 @@ end)
 
 
 local function run(func, ...)
-	local str = ""
+	local str = {}
 	local max = select("#", ...)
+	local lua_number = false
+	local lua_address = false
+
 	for i = 1, max do
 		local arg = select(i, ...)
 
 		if type(arg) == "table" then
 			if arg.disp or arg.scale then
-				str = str .. "m" .. arg.reg.bits
+				str[i] = "rm" .. x86_64.RegLookup[arg.reg].bits
 			else
-				str = str .. "r" .. arg.reg.bits
+				str[i] = "r" .. x86_64.RegLookup[arg.reg].bits
 			end
 		elseif type(arg) == "number" then
-			str = str .. "i?"
+			str[i] = "i?"
+			lua_number = true
 		elseif type(arg) == "cdata" then
 			for k,v in pairs(type_translate) do
 				if ffi.istype(v, arg) then
@@ -403,13 +421,9 @@ local function run(func, ...)
 				end
 			end
 		elseif type(arg) == "string" then
-			str = str .. "i64"
+			str[i] = "i64"
 		else
-			str = str .. type(arg)
-		end
-
-		if i ~= max then
-			str = str .. ","
+			str[i] = type(arg)
 		end
 	end
 
@@ -432,23 +446,28 @@ local function run(func, ...)
 		error("no such function " .. func .. "\ndid you mean one of these?\n" .. found)
 	end
 
-	if str:find("i?", nil, true) then
-		for _, bits in ipairs({"32", "16", "8"}) do
-			local test = str:replace("?", bits)
-			if map[func][test] then
-				str = test
-				break
-			end
-		end
-	elseif str:find("m?", nil, true) then
-		for _, bits in ipairs({"64", "32", "16", "8"}) do
-			local test = str:replace("?", bits)
-			if map[func][test] then
-				str = test
-				break
+	if lua_number then
+		for i, arg in ipairs(str) do
+			if arg:endswith("?") then
+				local num = select(i, ...)
+
+				for _, bits in ipairs({"8", "16", "32"}) do
+					str[i] = arg:sub(0, 1) .. bits
+					local test = table.concat(str, ",")
+
+					if bits == "8" and num > -128 and num < 128 and map[func][test] then
+						break
+					elseif bits == "16" and num > -13824 and num < 13824 and map[func][test] then
+						break
+					elseif bits == "32" and num > -2147483648 and num < 2147483648 and map[func][test] then
+						break
+					end
+				end
 			end
 		end
 	end
+
+	str = table.concat(str, ",")
 
 	if not map[func][str] then
 		local candidates = {}
@@ -469,9 +488,16 @@ local function run(func, ...)
 		error(func .. " does not take arguments " .. str .. "\ndid you mean one of these?\n" .. found)
 	end
 
-	--print(luamap[func][str])
+	local bin = map[func][str](...)
 
-	return map[func][str](...)
+	return bin, {
+		func = func,
+		arg_types = str,
+		args = {...},
+		bytes = bin,
+		lua = luamap[func][str].lua,
+		real_operands = luamap[func][str].real_operands,
+	}
 end
 
 local format_func = function(str)
@@ -483,15 +509,15 @@ local REG
 local reg_meta = {}
 reg_meta.__index = reg_meta
 function reg_meta:__tostring()
-	if self.disp or self.index_name or self.scale then
-		return string.format("%s(%s, %s, %s)", self.disp or "", self.name, self.index_name or "", self.scale or "")
+	if self.disp or self.index or self.scale then
+		return string.format("%s(%s, %s, %s)", self.disp or "", self.reg, self.index or "", self.scale or "")
 	end
-	return self.name
+	return self.reg
 end
 
 function reg_meta.__add(l, r)
 	if getmetatable(r) == reg_meta then
-		return REG(l.name, r.name, r.disp, r.scale)
+		return REG(l.reg, r.reg, r.disp, r.scale)
 	end
 
 	if type(r) == "number" then
@@ -517,14 +543,10 @@ function reg_meta.__mul(l, r)
 	return l
 end
 
-function REG(name, index_name, disp, scale)
+function REG(reg, index, disp, scale)
 	return setmetatable({
-		reg = x86_64.RegLookup[name],
-		index = index_name and x86_64.RegLookup[index_name],
-
-		name = name,
-		index_name = index_name,
-
+		reg = reg,
+		index = index,
 		disp = disp,
 		scale = scale,
 	}, reg_meta)
@@ -537,7 +559,7 @@ end})
 
 ffi.cdef[[
     char *mmap(void *addr, size_t length, int prot, int flags, int fd, long int offset);
-    int munmap(void *addr, size_t length);
+	int munmap(void *addr, size_t length);
 ]]
 
 local PROT_READ = 0x1 -- Page can be read.
@@ -550,22 +572,68 @@ local MAP_SHARED = 0x01 -- Share changes.
 local MAP_PRIVATE = 0x02
 local MAP_ANONYMOUS = 0x20
 
-local META = {}
-META.__index = META
-META.Type = "register"
+local function GAS(data)
+	local gas = data.func .. " "
+	local types = data.arg_types:split(",")
+	for i = #data.args, 1, -1 do
+		local arg, type = data.args[i], types[i]
 
-local function Assemble(func)
+		if type:startswith("i") then
+			if _G.type(arg) == "string" then
+				arg = tostring(asm.ObjectToAddress(arg)):sub(0,-3)
+			elseif _G.type(arg) == "cdata" then
+				arg = tonumber(arg)
+			end
+
+			if data.real_operands[i]:startswith("i") then
+				gas = gas .. "$"
+			end
+			gas = gas .. tostring(arg)
+		end
+		if type:startswith("r") or type:startswith("m") then
+			gas = gas .. "%" .. tostring(arg)
+		end
+		if i ~= 1 then
+			gas = gas .. ","
+		end
+	end
+
+	asm2.PrintGAS(gas, format_func, data.bytes, false)
+
+	if false then
+		print(gas)
+		print(format_func(data.bytes))
+		data.bytes = nil
+		print(data.lua) data.lua = nil
+		table.print(data)
+	end
+end
+
+local function Assemble(func, validate)
 	local str = {}
+	local size = 0
 	setfenv(func, setmetatable({}, {__index = function(s, key)
 		if map[key] then
 			return function(...)
-				local bin = run(key, ...)
-				--print("                                    " .. bin:binformat(15, " ", true))
+				local bin, info = run(key, ...)
 				table.insert(str, bin)
+				size = size + #bin
+				if validate then
+					GAS(info)
+				end
 			end
 		end
+
+		if type_translate[key] then
+			return function(num) return ffi.new(type_translate[key], num) end
+		end
+
 		if x86_64.RegLookup[key] then
 			return r[key]
+		end
+
+		if key == "pos" then
+			return function() return size end
 		end
 
 		return _G[key]
@@ -584,20 +652,68 @@ local function Assemble(func)
         return nil, "failed to map memory"
 	end
 
-	return mem
+	return mem, #str
 end
 
-local mcode = Assemble(function()
-	local msg = "hello world\n"
+local mcode, len = Assemble(function()
+	local msg = "hello world!\n"
 
-	local STDOUT = 1
+	local STDOUT_FILENO = 1
 	local WRITE = 1
 
-	mov(rax, STDOUT)
-	mov(rdi, WRITE)
-	mov(rsi, msg)
-	mov(rdx, #msg)
-	syscall()
+	mov(r12, rdi)
+
+	local loop = pos()
+		mov(rax, WRITE)
+		mov(rdi, STDOUT_FILENO)
+		mov(rsi, msg)
+		mov(rdx, #msg)
+		syscall()
+		inc(r12)
+	cmp(r12, 10)
+
+	jne(loop - pos())
+	mov(rax, r12)
 	ret()
 end)
+
 print(ffi.cast("uint64_t (*)(uint64_t)", mcode)(0))
+
+do return end
+
+asm2.GASToTable([[
+
+.text                           # section declaration
+
+# we must export the entry point to the ELF linker or
+.global _start              # loader. They conventionally recognize _start as their
+# entry point. Use ld -e foo to override the default.
+
+_start:
+
+# write our string to stdout
+
+mov $0, %rcx
+
+mov    $4,%rax             # system call number (sys_write)
+mov    $1,%rdi             # first argument: file handle (stdout)
+mov    $len,%rdx           # third argument: message length
+mov    $msg,%rsi           # second argument: pointer to message to write
+syscall               		# call kernel
+
+inc %rcx
+cmp $10, %rcx
+jne -42
+
+# and exit
+
+mov    $1,%rax             # system call number (sys_exit)
+mov    $0,%rdi             # first argument: exit code
+syscall						# call kernel
+
+.data                           # section declaration
+
+msg:
+.ascii    "Hello, world!\n"   # our dear string
+len = . - msg                 # length of our dear string
+]], nil, true)

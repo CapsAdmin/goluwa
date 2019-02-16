@@ -32,6 +32,9 @@ end
 
 function asm.GASTableToString(tbl, skip_print_matched, format_func, compare, left_align)
     format_func = format_func or string.hexformat
+    if compare then
+        tbl[1].compare_bytes = compare
+    end
     local ok = true
 
     local out = {}
@@ -166,7 +169,7 @@ function asm.LuaToTable(str)
     return out
 end
 
-function asm.GASToTable(str, c_source)
+function asm.GASToTable(str, c_source, execute)
     if not c_source then
         if not str:find("_start", nil, true) then
             str = ".global _start\n.text\n_start:\n" .. str
@@ -202,8 +205,9 @@ function asm.GASToTable(str, c_source)
         if not os.execute("as -march=generic64 -o temp.o temp.s") then return nil, "failed to assemble temp.S" end
         if not os.execute("ld -s -o temp temp.o") then return nil, "failed to generate executable from temp.o" end
 
-        -- we could execute it to try but usually
-        --os.execute("./temp")
+        if execute then
+            os.execute("./temp")
+        end
 
         local f, err = io.popen("objdump -M suffix --special-syms --disassemble-zeroes -S -M amd64 --insn-width=16 --disassemble temp")
         if not f then
