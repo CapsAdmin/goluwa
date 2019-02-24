@@ -13,13 +13,8 @@ alc.debug = true
 audio.effect_channels = audio.effect_channels or table.weak()
 
 function audio.Initialize(name)
-	local f = io.open("./al_config.ini", "wb")
-	f:write("slots = 256\n")
-	f:write("sends = 256\n")
-	f:close()
-
-	--os.setenv("ALSOFT_LOGLEVEL", "3")
-	os.setenv("ALSOFT_CONF", "./al_config.ini")
+	vfs.Write("temp/al_config.ini", "slots = 256\nsends = 256\n")
+	os.setenv("ALSOFT_CONF", R"temp/al_config.ini")
 	audio.Shutdown()
 
 	if not name then
