@@ -54,7 +54,7 @@ do
         end
     end
 
-    function TOKENIZER:BufferWhitespace(type, start, stop)        
+    function TOKENIZER:BufferWhitespace(type, start, stop)
         self.whitespace_buffer[self.whitespace_buffer_i] = {
             type = type,
             start = start == 1 and 0 or start,
@@ -78,7 +78,12 @@ do
             local char = self:ReadChar()
             local stop = self.i - 1
 
-            return "unknown", start, stop, {}
+            local whitespace = self.whitespace_buffer
+
+            self.whitespace_buffer = {}
+            self.whitespace_buffer_i = 1
+
+            return "unknown", start, stop, whitespace
         end
 
         return type, start, stop, whitespace
@@ -138,7 +143,7 @@ do
             local code = "return function(self)\n"
 
             code = code .. "\tfor _ = self.i, self.code_length do\n"
-            
+
 
             for i, class in ipairs(sorted_whitespace_classes) do
                 if i == 1 then
@@ -151,7 +156,7 @@ do
                 code = code .. "\t\t\tlocal start = self.i\n"
                 code = code .. "\t\t\tself.WhitespaceClasses." .. class.val.Type .. ".Capture(self)\n"
 
-                
+
                 code = code .. "\t\t\tif self.capture_whitespace then\n"
                 code = code .. "\t\t\t\tself:BufferWhitespace(\"" .. class.val.ParserType .. "\", start, self.i - 1)\n"
                 code = code .. "\t\t\tend\n"
@@ -222,7 +227,7 @@ do
             tk.CaptureToken = CaptureToken
 
             tk.syntax = config.Syntax
-            
+
             tk.TokenClasses = self.TokenClasses
             tk.WhitespaceClasses = self.WhitespaceClasses
             tk.ShebangTokenType = self.ShebangTokenType
