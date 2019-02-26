@@ -39,10 +39,12 @@ do
 		local out = {}
 		local i = 1
 
-		for _, data in ipairs(gine.objectsi.Entity) do
-			if data.external.ClassName:find(name, nil, true) then
-				out[i] = data.external
-				i = i + 1
+		if gine.objectsi.Entity then
+			for _, data in ipairs(gine.objectsi.Entity) do
+				if data.external.ClassName:find(name, nil, true) then
+					out[i] = data.external
+					i = i + 1
+				end
 			end
 		end
 
@@ -50,9 +52,12 @@ do
 	end
 
 	function gine.env.ents.GetByIndex(idx)
-		for _, data in ipairs(gine.objectsi.Entity) do
-			if data.external:EntIndex() == idx then
-				return data.external
+
+		if gine.objectsi.Entity then
+			for _, data in ipairs(gine.objectsi.Entity) do
+				if data.external:EntIndex() == idx then
+					return data.external
+				end
 			end
 		end
 
