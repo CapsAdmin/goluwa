@@ -55,33 +55,21 @@ do
 end
 
 do
-    function http.Get(url, callback, timeout, user_agent, binary, debug)
+    function http.Get(url, callback, timeout, binary, debug)
         return sockets.Request({
+            method = "GET",
             url = url,
             callback = callback,
-            method = "GET",
-            timeout = timeout,
-            user_agent = user_agent,
-            receive_mode = binary and "all",
-            debug = debug
         })
     end
 end
 
-function http.Post(url, post_data, callback, timeout, user_agent, binary, debug)
-	if type(post_data) == "table" then
-		post_data = sockets.TableToHeader(post_data)
-	end
-
-	return sockets.Request({
+function http.Post(url, body, callback)
+	 sockets.Request({
+        method = "POST",
 		url = url,
 		callback = callback,
-		method = "POST",
-		timeout = timeout,
-		post_data = post_data,
-		user_agent = user_agent,
-		receive_mode = binary and "all",
-		debug = debug
+		body = body,
 	})
 end
 

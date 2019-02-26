@@ -345,6 +345,10 @@ do
 				source = source:trim()
 				local info = debug.getinfo(2)
 
+				if info.source:startswith("@") then
+					info.source = info.source:sub(2)
+				end
+
 				logn("  ", info.source .. ":" .. info.currentline)
 				logn("  ", _msg:trim())
 			else

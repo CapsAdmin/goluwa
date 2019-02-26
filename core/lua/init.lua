@@ -7,9 +7,6 @@ end
 local OS = jit and jit.os:lower() or "unknown"
 local ARCH = jit and jit.arch:lower() or "unknown"
 
-os.setlocale("")
-io.stdout:setvbuf("no")
-
 if pcall(require, "jit.opt") then
 	jit.opt.start(
 		"maxtrace=65535", -- 1000 1-65535: maximum number of traces in the cache
@@ -91,12 +88,12 @@ do -- constants
 	if pcall(require, "ffi") then
 		local ffi = require("ffi")
 		if OS == "windows" then
-			ffi.cdef("unsigned long GetCurrentDirectoryA(unsigned long length, char *buffer);")
+			ffi.cdef("unsigned long GetCurrentDirectoryA(unsigned long, char *);")
 			local buffer = ffi.new("char[260]")
 			local length = ffi.C.GetCurrentDirectoryA(260, buffer)
 			e.ROOT_FOLDER = ffi.string(buffer, length):gsub("\\", "/") .. "/"
 		else
-			ffi.cdef("char *realpath(const char *restrict file_name, char *restrict resolved_name);")
+			ffi.cdef("char *realpath(const char *, char *);")
 			e.ROOT_FOLDER = ffi.string(ffi.C.realpath(".", nil)) .. "/"
 		end
 	end
@@ -181,6 +178,7 @@ vfs.AddModuleDirectory("bin/" .. OS .. "_" .. ARCH .. "/lua")
 if desire("ffi") then
 	_G.require("ffi").load = vfs.FFILoadLibrary
 end
+
 _G.require = vfs.Require
 _G.runfile = vfs.RunFile
 _G.R = vfs.GetAbsolutePath -- a nice global for loading resources externally from current dir
@@ -190,22 +188,20 @@ package.loaded.bit32 = bit
 -- libraries
 runfile("lua/libraries/datatypes/buffer.lua")
 runfile("lua/libraries/datatypes/tree.lua")
-bytepack = runfile("lua/libraries/bytepack.lua") -- base64 and other hash functions
+bytepack = runfile("lua/libraries/bytepack.lua") -- string.pack lua implementation
 crypto = runfile("lua/libraries/crypto.lua") -- base64 and other hash functions
 serializer = runfile("lua/libraries/serializer.lua") -- for serializing lua data in different formats
 system = runfile("lua/libraries/system.lua") -- os and luajit related functions like creating windows or changing jit options
 event = runfile("lua/libraries/event.lua") -- event handler
 utf8 = runfile("lua/libraries/utf8.lua") -- utf8 string library, also extends to string as utf8.len > string.ulen
-profiler = runfile("lua/libraries/profiler.lua") -- for profiling
-oh = runfile("lua/libraries/oh/oh.lua")
+profiler = runfile("lua/libraries/profiler.lua")
+oh = runfile("lua/libraries/oh/oh.lua") -- lua tokenizer, parser and emitter
 repl = runfile("lua/libraries/repl.lua")
-ffibuild = runfile("lua/libraries/ffibuild.lua")
-callback = runfile("lua/libraries/callback.lua")
+ffibuild = runfile("lua/libraries/ffibuild.lua") -- used to build binaries
+callback = runfile("lua/libraries/callback.lua") -- promise-like library
 resource = runfile("lua/libraries/resource.lua") -- used for downloading resources with resource.Download("http://..."):Then(function(path) end)
 sockets = runfile("lua/libraries/sockets/sockets.lua")
 http = runfile("lua/libraries/http.lua")
-
-sockets.Initialize()
 
 local ok, err = pcall(repl.Start)
 if not ok then logn(err) end

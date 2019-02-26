@@ -768,11 +768,6 @@ do
             end
 
             function http:OnReceiveHeader(header)
-                print(header["x-object-meta-sha1base36"])
-                print(crypto.SHA1(vfs.Read(path)))
-                print(crypto.SHA1(vfs.Read(path)))
-                print("what")
-
                 http.friendly_name = find_best_name(self)
 
                 if vfs.IsFile(path) and etag == header.etag then

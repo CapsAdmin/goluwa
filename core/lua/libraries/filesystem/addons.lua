@@ -60,6 +60,8 @@ function vfs.FetchBniariesForAddon(addon, callback)
 				end
 			end)
 		end
+	end):Catch(function(err)
+		llog(err)
 	end)
 end
 

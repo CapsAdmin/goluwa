@@ -18,7 +18,7 @@ do
 end
 
 resource.Download("data/countries.lua"):Then(function(path)
-	language.world = serializer.ReadFile("luadata", path)
+	language.world = assert(serializer.ReadFile("luadata", path))
 
 	for lang_code, info in pairs(language.world.languages) do
 		if info.name then
