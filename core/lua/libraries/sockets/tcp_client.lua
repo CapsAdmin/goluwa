@@ -76,7 +76,10 @@ function META:SetupTLS()
         if ret == tls.e.WANT_POLLOUT or ret == tls.e.WANT_POLLIN then
             return nil, "timeout"
         elseif ret < 0 then
-            return nil, last_error(ret, "handshake")
+            local err = last_error(ret, "handshake")
+            if err ~= "handshake already completed" then
+                return nil, err
+            end
         end
 
         self.DoHandshake = nil
@@ -217,7 +220,8 @@ function META:Update()
 end
 
 function META:Error(message, ...)
-    self:OnError(message, ...)
+    local tr = debug.traceback()
+    self:OnError(message, tr, ...)
     return false
 end
 

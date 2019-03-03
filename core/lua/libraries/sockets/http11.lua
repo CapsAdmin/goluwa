@@ -127,7 +127,7 @@ function META:Request(method, url, header, body)
     local uri = assert(self:ParseURI(url))
 
     assert(self.socket:set_option("nodelay", true, "tcp"))
-    assert(self.socket:set_option("quickack", true, "tcp"))
+    --assert(self.socket:set_option("quickack", true, "tcp"))
     self:Connect(uri.host, uri.scheme)
 
     do
@@ -415,7 +415,9 @@ function sockets.Request(tbl)
     end
 
     client.OnReceiveChunk = function(_, chunk)
-        tbl.on_chunks(chunk, length, header)
+        if tbl.on_chunks then
+            tbl.on_chunks(chunk, length, header)
+        end
     end
 
     client.OnReceiveBody = function(_, body)
@@ -426,11 +428,19 @@ function sockets.Request(tbl)
         })
     end
 
-    client.OnError = function(_, err)
+    client.OnError = function(_, err, tr)
         if tbl.error_callback then
             tbl.error_callback(err)
         else
-            llogn("sockets.Request: " .. err)
+            llog("sockets.Request: " .. err)
+            logn(tr)
         end
     end
+end
+
+if RELOAD then
+    sockets.Request({
+        url = "https://news.ycombinator.com/item?id=19291558",
+        callback = function(tbl) table.print(tbl) end,
+    })
 end
