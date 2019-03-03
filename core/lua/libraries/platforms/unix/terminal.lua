@@ -38,16 +38,16 @@ ffi.cdef([[
     typedef struct FILE FILE;
     size_t fwrite(const char *ptr, size_t size, size_t nmemb, FILE *stream);
     size_t fread( char * ptr, size_t size, size_t count, FILE * stream );
+
+    ssize_t read(int fd, void *buf, size_t count);
+    int fileno(FILE *stream);
+
+    int ferror(FILE*stream);
 ]])
 
 local VMIN = 6
 local VTIME = 5
 local TCSANOW = 0
-
-local function octal(s)
-    return tonumber(s, 8)
-end
-
 local flags
 
 if jit.os ~= "OSX" then
@@ -131,11 +131,16 @@ function terminal.Clear()
 	os.execute("clear")
 end
 
-function terminal.Read()
-	local out = ffi.new("char[512]")
-    local len = ffi.C.fread(out, 1, ffi.sizeof(out), io.stdin)
-    if len > 0 then
-        return ffi.string(out, len)
+do
+    local stdin = ffi.C.fileno(io.stdin)
+    local buff = ffi.new("char[512]")
+    local buff_size = ffi.sizeof(buff)
+    function terminal.Read() 
+        local len = ffi.C.read(stdin, buff, buff_size)
+
+        if len > 0 then
+            return ffi.string(buff, len)
+        end
     end
 end
 
@@ -148,7 +153,7 @@ function terminal.Write(str)
 	terminal.writing = false
 end
 
-function terminal.WriteNow(str)
+function terminal.WriteNow(str) 
 	ffi.C.fwrite(str, 1, #str, io.stdout)
 end
 
