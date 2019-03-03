@@ -132,12 +132,10 @@ function terminal.Clear()
 end
 
 do
-    local stdin = ffi.C.fileno(io.stdin)
     local buff = ffi.new("char[512]")
     local buff_size = ffi.sizeof(buff)
-    function terminal.Read() 
+    function terminal.Read() do return io.read() end
         local len = ffi.C.read(stdin, buff, buff_size)
-
         if len > 0 then
             return ffi.string(buff, len)
         end
