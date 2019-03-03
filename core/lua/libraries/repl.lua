@@ -47,6 +47,7 @@ function repl.CharInput(str)
 	repl.buffer = repl.buffer:usub(0, x - 1) .. str .. repl.buffer:usub(x + str:ulen() - 1, -1)
 	repl.MoveCaret(str:ulen(), 0)
 	repl.RenderInput()
+	repl.Flush()
 end
 
 function repl.SetConsoleTitle(str)
