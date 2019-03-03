@@ -147,7 +147,23 @@ do
             };
         ]]
         socket.INVALID_SOCKET = ffi.new("SOCKET", -1)
-    else -- posix
+    elseif ffi.os == "OSX" then
+        ffi.cdef[[
+            typedef int32_t SOCKET;
+
+            struct addrinfo {
+                int ai_flags;
+                int ai_family;
+                int ai_socktype;
+                int ai_protocol;
+                uint32_t ai_addrlen;
+                char *ai_canonname;
+                struct sockaddr *ai_addr;
+                struct addrinfo *ai_next;
+            };
+        ]]
+        socket.INVALID_SOCKET = -1
+    else
         ffi.cdef[[
             typedef int32_t SOCKET;
 
@@ -285,7 +301,13 @@ do
         do
             ffi.cdef[[int ioctlsocket(SOCKET s, long cmd, unsigned long* argp);]]
 
-            local FIONBIO = -2147195266
+            local IOCPARM_MASK    = 0x7
+            local IOC_IN          = 0x80000000
+            local function _IOW(x,y,t)
+                return bit.bor(IOC_IN, bit.lshift(bit.band(ffi.sizeof(t),IOCPARM_MASK),16), bit.lshift(x,8), y)
+            end
+
+            local FIONBIO = _IOW(string.byte'f', 126, "uint32_t") -- -2147195266 -- 2147772030ULL
 
             function socket.blocking(fd, b)
                 local ret = C.ioctlsocket(fd, FIONBIO, ffi.new("int[1]", b and 0 or 1))
@@ -490,53 +512,18 @@ do
         TCP_ZEROCOPY_RECEIVE = 35,
         TCP_INQ = 36,
 
-        AF_UNSPEC = 0,
-        AF_LOCAL = 1,
-        AF_UNIX = 1,
-        AF_FILE = 1,
         AF_INET = 2,
+        AF_INET6 = 10,
+        AF_UNSPEC = 0,
+
+        AF_UNIX = 1,
         AF_AX25 = 3,
         AF_IPX = 4,
         AF_APPLETALK = 5,
         AF_NETROM = 6,
         AF_BRIDGE = 7,
-        AF_ATMPVC = 8,
+        AF_AAL5 = 8,
         AF_X25 = 9,
-        AF_INET6 = 10,
-        AF_ROSE = 11,
-        AF_DECnet = 12,
-        AF_NETBEUI = 13,
-        AF_SECURITY = 14,
-        AF_KEY = 15,
-        AF_NETLINK = 16,
-        AF_ROUTE = 16,
-        AF_PACKET = 17,
-        AF_ASH = 18,
-        AF_ECONET = 19,
-        AF_ATMSVC = 20,
-        AF_RDS = 21,
-        AF_SNA = 22,
-        AF_IRDA = 23,
-        AF_PPPOX = 24,
-        AF_WANPIPE = 25,
-        AF_LLC = 26,
-        AF_IB = 27,
-        AF_MPLS = 28,
-        AF_CAN = 29,
-        AF_TIPC = 30,
-        AF_BLUETOOTH = 31,
-        AF_IUCV = 32,
-        AF_RXRPC = 33,
-        AF_ISDN = 34,
-        AF_PHONET = 35,
-        AF_IEEE802154 = 36,
-        AF_CAIF = 37,
-        AF_ALG = 38,
-        AF_NFC = 39,
-        AF_VSOCK = 40,
-        AF_KCM = 41,
-        AF_QIPCRTR = 42,
-        AF_SMC = 43,
 
         INET6_ADDRSTRLEN = 46,
         INET_ADDRSTRLEN = 16,
@@ -725,6 +712,16 @@ do
         e.SO_RCVLOWAT = 4100
     end
 
+    if ffi.os == "OSX" then
+        e.SOL_SOCKET = 0xffff
+        e.SO_DEBUG = 0x0001
+        e.SO_ACCEPTCONN = 0x0002
+        e.SO_REUSEADDR = 0x0004
+        e.SO_KEEPALIVE = 0x0008
+        e.SO_DONTROUTE = 0x0010
+        e.SO_BROADCAST = 0x0020
+    end
+
     if socket.initialize then
         assert(socket.initialize())
     end
@@ -828,12 +825,18 @@ function M.poll(socket, flags, timeout)
 end
 
 local function addrinfo_get_ip(self)
+    if self.addrinfo.ai_addr == nil then
+        return nil
+    end
     local str = ffi.new("char[256]")
     local addr = assert(socket.inet_ntop(AF.lookup[self.family], self.addrinfo.ai_addr.sa_data, str, ffi.sizeof(str)))
     return ffi.string(addr)
 end
 
 local function addrinfo_get_port(self)
+    if self.addrinfo.ai_addr == nil then
+        return nil
+    end
     if self.family == "inet" then
         return ffi.cast("struct sockaddr_in*", self.addrinfo.ai_addr).sin_port
     elseif self.family == "inet6" then
@@ -866,8 +869,9 @@ end
 function M.get_address_info(data)
     local hints
 
-    if data.socket_type or data.protocol or data.flags then
+    if data.socket_type or data.protocol or data.flags or data.family then
         hints = ffi.new("struct addrinfo", {
+            ai_family = data.family and AF.strict_lookup(data.family) or nil,
             ai_socktype = data.socket_type and SOCK.strict_lookup(data.socket_type) or nil,
             ai_protocol = data.protocol and IPPROTO.strict_lookup(data.protocol) or nil,
             ai_flags = data.flags and table_to_flags(data.flags, AI.lookup, bit.bor) or nil,
@@ -875,7 +879,14 @@ function M.get_address_info(data)
     end
 
     local out = ffi.new("struct addrinfo*[1]")
-    local ok, err = socket.getaddrinfo(data.host ~= "*" and data.host or nil, data.service and tostring(data.service) or nil, hints, out)
+
+    local ok, err = socket.getaddrinfo(
+        data.host ~= "*" and data.host or nil, 
+        data.service and tostring(data.service) or nil, 
+        hints, 
+        out
+    )
+
     if not ok then return ok, err end
 
     local tbl = {}
@@ -887,6 +898,8 @@ function M.get_address_info(data)
 
         res = res.ai_next
     end
+
+    --ffi.C.freeaddrinfo(out[0])
 
     return tbl
 end
@@ -1004,7 +1017,7 @@ do
 
         local ok, err = socket.connect(self.fd, res.addrinfo.ai_addr, res.addrinfo.ai_addrlen)
 
-        if not ok and (not self.blocking and not timeout_messages[err]) then
+        if not ok and (not self.blocking or not timeout_messages[err]) then
             return ok, err
         end
 
@@ -1145,10 +1158,6 @@ do
         end
 
         if not len then
-            if not self.blocking and timeout_messages[err] then
-                return nil, "timeout"
-            end
-
             return len, err
         end
 
