@@ -71,7 +71,7 @@ end
 
 sockets.active_downloads = sockets.active_downloads or {}
 
-function sockets.Download(url, on_finish, on_error, on_chunks, on_header)
+function sockets.Download(url, on_finish, on_error, on_chunks, on_header, on_code)
     local http = sockets.HTTPClient()
 
     local lookup = {url = url, client = http}
@@ -83,7 +83,10 @@ function sockets.Download(url, on_finish, on_error, on_chunks, on_header)
 
     function http:OnReceiveStatus(status, reason)
         if status:startswith("3") then
+            self:Error(reason)
             return false
+        elseif on_code then
+            on_code(tonumber(status))
         end
     end
 
@@ -265,4 +268,36 @@ function sockets.StopDownload(url)
             table.remove(sockets.active_downloads, i)
         end
     end
+end
+
+if RELOAD then
+    local function download(url, on_finish)
+        event.Call("DownloadStart", url)
+        local client
+        client = sockets.Download(
+            url,
+            function(data)
+                event.Call("DownloadStop", client, data)
+                if on_finish then
+                    on_finish(data)
+                end
+            end,
+            function(reason)
+                llog(client.url, " failed to download: ", reason)
+                event.Call("DownloadStop", client, nil, reason)
+            end,
+            function(chunk, written_size, total_size, friendly_name)
+                event.Call("DownloadChunkReceived", client, chunk)
+            end,
+            function(header)
+                event.Call("DownloadHeaderReceived", client, header)
+            end,
+            function(code)
+                event.Call("DownloadCodeReceived", client, tonumber(code))
+            end
+        )
+        client.url = url
+    end
+
+    download("https://upload.wikimedia.org/wikipedia/commons/c/cc/ESC_large_ISS022_ISS022-E-11387-edit_01.JPG")
 end

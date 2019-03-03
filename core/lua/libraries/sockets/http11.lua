@@ -1,8 +1,8 @@
 local sockets = ... or _G.sockets
 
-local META = prototype.CreateTemplate("socket2", "http/1.1")
+local META = prototype.CreateTemplate("socket", "http/1.1")
 
-META.Base = "tcp"
+META.Base = "tcp_client"
 META.Stage = "none"
 META.MimeToExtension = {
     ["audio/aac"] = "aac",

@@ -284,6 +284,49 @@ local function find_next_word(buffer, x, dir)
     return str:find("%s", 0) or str:find("%p", 0) or str:ulen() + 1
 end
 
+function repl.InputLua(str)
+	local ok, err = pcall(function()
+	local func, err = loadstring(str)
+	if func then
+		local func, res = system.pcall(func)
+		if not func then
+			--res = res:match("^.-:%d+:%s+(.+)")
+
+			set_color("error")
+			logn(res)
+			set_color("letter")
+		end
+	else
+		local tokenizer = oh.lua.Tokenizer(str)
+		local tokens = tokenizer:GetTokens()
+		local parser = oh.lua.Parser()
+		local ast = parser:BuildAST(tokens)
+
+		local function print_errors(errors, only_first)
+			for _, v in ipairs(errors) do
+				set_color("error")
+				repl.Write((" "):rep(v.start + 1) .. ("^"):rep(v.stop - v.start + 1))
+				set_color("letter")
+				repl.StyledWrite(" " ..  v.msg)
+				repl.Write("\n")
+				if only_first then break end
+			end
+		end
+
+		print_errors(tokenizer.errors)
+		print_errors(parser.errors, true)
+		--print(oh.GetErrorsFormatted(parser.errors, str, ""))
+
+
+		--err = err:match("^.-:%d+:%s+(.+)")
+		--set_color("error")
+		--repl.Write(err .. "\n")
+		--set_color("letter")
+	end
+	end)
+	if not ok then repl.Write(err .. "\n") end
+end
+
 function repl.KeyPressed(key)
 	local x, y = repl.GetCaretPosition()
 	local w, h = terminal.GetSize()
@@ -314,46 +357,7 @@ function repl.KeyPressed(key)
 			if commands and commands.RunString then
 				commands.RunString(str)
 			else
-				local ok, err = pcall(function()
-				local func, err = loadstring(str)
-				if func then
-					local func, res = system.pcall(func)
-					if not func then
-						--res = res:match("^.-:%d+:%s+(.+)")
-
-						set_color("error")
-						logn(res)
-						set_color("letter")
-					end
-				else
-					local tokenizer = oh.lua.Tokenizer(str)
-					local tokens = tokenizer:GetTokens()
-					local parser = oh.lua.Parser()
-					local ast = parser:BuildAST(tokens)
-
-					local function print_errors(errors, only_first)
-						for _, v in ipairs(errors) do
-							set_color("error")
-							repl.Write((" "):rep(v.start + 1) .. ("^"):rep(v.stop - v.start + 1))
-							set_color("letter")
-							repl.StyledWrite(" " ..  v.msg)
-							repl.Write("\n")
-							if only_first then break end
-						end
-					end
-
-					print_errors(tokenizer.errors)
-					print_errors(parser.errors, true)
-					--print(oh.GetErrorsFormatted(parser.errors, str, ""))
-
-
-					--err = err:match("^.-:%d+:%s+(.+)")
-					--set_color("error")
-					--repl.Write(err .. "\n")
-					--set_color("letter")
-				end
-				end)
-				if not ok then repl.Write(err .. "\n") end
+				repl.InputLua(str)
 			end
 		end
 		local x,y = repl.GetTailPosition()
@@ -474,7 +478,7 @@ function repl.Start()
 		local last_report = 0
 		local last_downloaded = 0
 
-		event.AddListener("DownloadChunkReceived", "downprog_title", function(url, data, current_length, header)
+		event.AddListener("DownloadChunkReceived", "downprog_title", function(client, data, current_length, header)
 			if WINDOW and window.IsOpen() then return e.EVENT_DESTROY end
 
 			if not header["content-length"] then return end
@@ -483,20 +487,20 @@ function repl.Start()
 
 			if last_report < system.GetElapsedTime() then
 				system.SetConsoleTitle(
-					url ..
+					client.url ..
 					" progress: " .. math.round((current_length / header["content-length"]) * 100, 3) .. "%" ..
 					" speed: " .. utility.FormatFileSize(current_length - last_downloaded),
-					url
+					client.url
 				)
 				last_downloaded = current_length
 				last_report = system.GetElapsedTime() + 4
 			end
 		end)
 
-		event.AddListener("DownloadStop", "downprog_title", function(url, data, msg)
+		event.AddListener("DownloadStop", "downprog_title", function(client, data, msg)
 			if WINDOW and window.IsOpen() then return e.EVENT_DESTROY end
 
-			system.SetConsoleTitle(nil, url)
+			system.SetConsoleTitle(nil, client.url)
 		end)
 	end
 end

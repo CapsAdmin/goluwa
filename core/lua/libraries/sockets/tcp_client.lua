@@ -2,7 +2,7 @@ local sockets = ... or _G.sockets
 
 local ljsocket = require("ljsocket")
 
-local META = prototype.CreateTemplate("socket2", "tcp")
+local META = prototype.CreateTemplate("socket", "tcp_client")
 
 function META:assert(val, err)
     if not val then
@@ -16,13 +16,13 @@ function META:__tostring2()
     return "[" .. tostring(self.socket) .. "]"
 end
 
-function META:Initialize()
-    self:SocketRestart()
+function META:Initialize(socket)
+    self:SocketRestart(socket)
     table.insert(sockets.active, self)
 end
 
-function META:SocketRestart()
-    self.socket = ljsocket.create("inet", "stream", "tcp")
+function META:SocketRestart(socket)
+    self.socket = socket or ljsocket.create("inet", "stream", "tcp")
     assert(self.socket:set_blocking(false))
     self.socket:set_option("nodelay", true, "tcp")
     self.socket:set_option("cork", false, "tcp")
@@ -228,8 +228,8 @@ function META:OnConnect() end
 
 META:Register()
 
-function sockets.TCPClient()
+function sockets.TCPClient(socket)
     local self = META:CreateObject()
-    self:Initialize()
+    self:Initialize(socket)
     return self
 end
