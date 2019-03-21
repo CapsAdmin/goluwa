@@ -486,6 +486,10 @@ if OPENGL and not NULL_OPENGL then
 			profile_mask = "core",
 		},
 		{
+			version = 4.1,
+			profile_mask = "core",
+		},
+		{
 			version = 4.0,
 			profile_mask = "core",
 		},
@@ -505,6 +509,7 @@ if OPENGL and not NULL_OPENGL then
 	function META:PostWindowSetup(wnd_ptr)
 		local context
 		local errors = ""
+		local failed_once = false
 
 		for _, attempt in ipairs(attempts) do
 			sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_PROFILE_MASK, sdl.e["GL_CONTEXT_PROFILE_" .. attempt.profile_mask:upper()])
@@ -522,7 +527,9 @@ if OPENGL and not NULL_OPENGL then
 			context = sdl.GL_CreateContext(wnd_ptr)
 
 			if context ~= nil then
-				--llog("successfully created OpenGL context ", attempt.version or "??", " ", attempt.profile_mask)
+				if errors ~= "" then
+					llog("successfully created OpenGL context ", attempt.version or "??", " ", attempt.profile_mask)
+				end
 				break
 			else
 				local err = ffi.string(sdl.GetError())
@@ -537,7 +544,6 @@ if OPENGL and not NULL_OPENGL then
 
 		gl.GetProcAddress = sdl.GL_GetProcAddress
 		gl.Initialize()
-
 		self:BindContext()
 
 		self.gl_context = context

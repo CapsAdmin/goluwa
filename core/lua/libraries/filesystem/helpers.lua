@@ -147,7 +147,7 @@ function vfs.CopyFileFileOnBoot(from, to)
 				return "deferred"
 			end
 		end
-		str = str .. from .. ";" .. to .. "\n"
+		str = str .. R(from) .. ";" .. R(to) .. "\n"
 		vfs.Write(path, str)
 		return "deferred"
 	end

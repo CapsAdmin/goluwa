@@ -8733,6 +8733,9 @@ setmetatable(gl, {
 		if rawget(self, "GetProcAddress") and (functions["gl" .. name] or (name:sub(0, 3) == "Gen" and functions["gl" .. name .. "s"])) then
 			local info = functions["gl" .. name] or functions["gl" .. name .. "s"]
 			local ptr = gl.GetProcAddress("gl" .. name)
+			if ptr == nil then
+				ptr = gl.GetProcAddress("gl" .. name .. "s")
+			end
 			if ptr ~= nil then
 				local ok, func = pcall(ffi.cast, info[1], ptr)
 				if ok then
@@ -8747,6 +8750,7 @@ setmetatable(gl, {
 					end
 					return gl[name]
 				end
+				if not ok then print(func) end
 			end
 		end
 	end,
@@ -8756,7 +8760,7 @@ function gl.Initialize(get_proc_address)
 	if type(get_proc_address) == "function" then
 		gl.GetProcAddress = get_proc_address
 	end
-
+	
 	if not gl.TextureBarrier then
 		gl.TextureBarrier = gl.TextureBarrierNV
 	end
