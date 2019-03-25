@@ -59,8 +59,7 @@ do
 		for k, v in pairs(META) do
 			if v == func then
 				local msg = "function Window:" .. k .. "() is not implemented"
-				wlog(msg, 2)
-				error(msg, 2)
+				error(msg, 3)
 			end
 		end
 	end
