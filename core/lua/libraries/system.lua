@@ -220,6 +220,7 @@ do
 		logsection("lua error", true)
 		if msg then logn(msg) end
 		msg = msg or "no error"
+		msg = tostring(msg)
 		if suppress then logn("error in system.OnError: ", msg, ...) logn(debug.traceback())  return end
 		suppress = true
 
