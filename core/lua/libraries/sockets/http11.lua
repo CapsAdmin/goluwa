@@ -72,6 +72,31 @@ META.MimeToExtension = {
     ["application/vnd.microsoft.portable-executable"] = "exe",
 }
 
+local legal_uri_characters = {
+    ["-"] = true,
+    ["."] = true,
+    ["_"] = true,
+    ["~"] = true,
+    [":"] = true,
+    ["/"] = true,
+    ["?"] = true,
+    ["#"] = true,
+    ["["] = true,
+    ["]"] = true,
+    ["@"] = true,
+    ["!"] = true,
+    ["$"] = true,
+    ["&"] = true,
+    ["'"] = true,
+    ["("] = true,
+    [")"] = true,
+    ["*"] = true,
+    ["+"] = true,
+    [","] = true,
+    [";"] = true,
+    ["=" ] = true
+}
+
 -- maybe this should be a helper?
 function META:ParseURI(uri)
     local scheme
@@ -90,7 +115,11 @@ function META:ParseURI(uri)
         path = path:sub(3)
 
         host, rest = path:match("^(.-)/(.*)$")
-        path = rest
+        path = rest:gsub("[^%w%-_%.%!%~%*%'%(%)]", function(c)
+            if not legal_uri_characters[c] then
+                return string.format("%%%02X", c:byte(1,1))
+            end
+        end)
 
         if host:find("@", 1, true) then
             local temp = host:split("@")
@@ -124,9 +153,10 @@ end
 function META:Request(method, url, header, body)
     header = header or {}
 
-    local uri = assert(self:ParseURI(url))
+    local uri = self:assert(self:ParseURI(url))
+    if not uri then return end
 
-    assert(self.socket:set_option("nodelay", true, "tcp"))
+    if not self:assert(self.socket:set_option("nodelay", true, "tcp")) then return end
     --assert(self.socket:set_option("quickack", true, "tcp"))
     self:Connect(uri.host, uri.scheme)
 

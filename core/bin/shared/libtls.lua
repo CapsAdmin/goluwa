@@ -13,7 +13,7 @@ int(tls_ocsp_process_response)(struct tls*,const unsigned char*,unsigned long);
 int(tls_peer_ocsp_cert_status)(struct tls*);
 void(tls_config_insecure_noverifytime)(struct tls_config*);
 int(tls_config_add_keypair_mem)(struct tls_config*,const unsigned char*,unsigned long,const unsigned char*,unsigned long);
-int(tls_config_set_cert_mem)(struct tls_config*,const unsigned char*,unsigned long);
+void(tls_config_prefer_ciphers_client)(struct tls_config*);
 const char*(tls_config_error)(struct tls_config*);
 int(tls_config_set_ocsp_staple_file)(struct tls_config*,const char*);
 const char*(tls_peer_ocsp_result)(struct tls*);
@@ -22,7 +22,7 @@ int(tls_config_add_keypair_ocsp_mem)(struct tls_config*,const unsigned char*,uns
 int(tls_connect_cbs)(struct tls*,long(*_read_cb)(struct tls*,void*,unsigned long,void*),long(*_write_cb)(struct tls*,const void*,unsigned long,void*),void*,const char*);
 struct tls_config*(tls_config_new)();
 void(tls_config_insecure_noverifycert)(struct tls_config*);
-int(tls_config_set_key_file)(struct tls_config*,const char*);
+int(tls_config_set_crl_file)(struct tls_config*,const char*);
 long(tls_peer_ocsp_next_update)(struct tls*);
 int(tls_config_set_cert_file)(struct tls_config*,const char*);
 int(tls_handshake)(struct tls*);
@@ -39,60 +39,76 @@ int(tls_config_set_ocsp_staple_mem)(struct tls_config*,const unsigned char*,unsi
 void(tls_free)(struct tls*);
 int(tls_config_set_verify_depth)(struct tls_config*,int);
 int(tls_config_set_ecdhecurve)(struct tls_config*,const char*);
-long(tls_peer_ocsp_this_update)(struct tls*);
-long(tls_peer_ocsp_revocation_time)(struct tls*);
 const char*(tls_conn_cipher)(struct tls*);
-int(tls_peer_ocsp_response_status)(struct tls*);
 void(tls_unload_file)(unsigned char*,unsigned long);
 int(tls_connect)(struct tls*,const char*,const char*);
+long(tls_peer_ocsp_this_update)(struct tls*);
+long(tls_peer_ocsp_revocation_time)(struct tls*);
+int(tls_peer_ocsp_response_status)(struct tls*);
 int(tls_peer_ocsp_crl_reason)(struct tls*);
 unsigned char*(tls_load_file)(const char*,unsigned long*,char*);
-const char*(tls_default_ca_cert_file)();
-const char*(tls_conn_alpn_selected)(struct tls*);
 const char*(tls_peer_cert_hash)(struct tls*);
 int(tls_config_add_ticket_key)(struct tls_config*,unsigned int,unsigned char*,unsigned long);
 int(tls_config_set_ecdhecurves)(struct tls_config*,const char*);
-void(tls_config_prefer_ciphers_client)(struct tls_config*);
+const char*(tls_default_ca_cert_file)();
 int(tls_accept_fds)(struct tls*,struct tls**,int,int);
-long(tls_peer_cert_notafter)(struct tls*);
-long(tls_peer_cert_notbefore)(struct tls*);
+const char*(tls_conn_alpn_selected)(struct tls*);
+int(tls_config_set_ca_path)(struct tls_config*,const char*);
 int(tls_peer_cert_provided)(struct tls*);
 int(tls_accept_cbs)(struct tls*,struct tls**,long(*_read_cb)(struct tls*,void*,unsigned long,void*),long(*_write_cb)(struct tls*,const void*,unsigned long,void*),void*);
-const char*(tls_peer_cert_subject)(struct tls*);
+long(tls_peer_cert_notafter)(struct tls*);
 int(tls_config_add_keypair_ocsp_file)(struct tls_config*,const char*,const char*,const char*);
 int(tls_accept_socket)(struct tls*,struct tls**,int);
-const char*(tls_peer_cert_issuer)(struct tls*);
+long(tls_peer_cert_notbefore)(struct tls*);
 int(tls_init)();
-int(tls_peer_cert_contains_name)(struct tls*,const char*);
+const char*(tls_peer_cert_subject)(struct tls*);
 int(tls_connect_servername)(struct tls*,const char*,const char*,const char*);
 const char*(tls_error)(struct tls*);
-int(tls_close)(struct tls*);
+const char*(tls_peer_cert_issuer)(struct tls*);
+int(tls_peer_cert_contains_name)(struct tls*,const char*);
+void(tls_config_prefer_ciphers_server)(struct tls_config*);
 long(tls_write)(struct tls*,const void*,unsigned long);
 long(tls_read)(struct tls*,void*,unsigned long);
-int(tls_connect_socket)(struct tls*,int,const char*);
-int(tls_config_set_crl_file)(struct tls_config*,const char*);
 struct tls*(tls_client)();
 int(tls_configure)(struct tls*,struct tls_config*);
+int(tls_config_set_keypair_ocsp_file)(struct tls_config*,const char*,const char*,const char*);
 int(tls_config_set_keypair_mem)(struct tls_config*,const unsigned char*,unsigned long,const unsigned char*,unsigned long);
-int(tls_config_set_ca_path)(struct tls_config*,const char*);
+int(tls_config_set_cert_mem)(struct tls_config*,const unsigned char*,unsigned long);
+int(tls_config_set_session_lifetime)(struct tls_config*,int);
 void(tls_config_insecure_noverifyname)(struct tls_config*);
 const char*(tls_conn_servername)(struct tls*);
 int(tls_config_set_keypair_ocsp_mem)(struct tls_config*,const unsigned char*,unsigned long,const unsigned char*,unsigned long,const unsigned char*,unsigned long);
 int(tls_config_add_keypair_file)(struct tls_config*,const char*,const char*);
-int(tls_config_set_protocols)(struct tls_config*,unsigned int);
+int(tls_config_set_ca_mem)(struct tls_config*,const unsigned char*,unsigned long);
 void(tls_reset)(struct tls*);
 int(tls_config_set_key_mem)(struct tls_config*,const unsigned char*,unsigned long);
 const unsigned char*(tls_peer_cert_chain_pem)(struct tls*,unsigned long*);
-int(tls_config_set_session_lifetime)(struct tls_config*,int);
-int(tls_config_set_keypair_ocsp_file)(struct tls_config*,const char*,const char*,const char*);
-void(tls_config_prefer_ciphers_server)(struct tls_config*);
-int(tls_config_set_ca_mem)(struct tls_config*,const unsigned char*,unsigned long);
+int(tls_connect_socket)(struct tls*,int,const char*);
+int(tls_config_set_protocols)(struct tls_config*,unsigned int);
+int(tls_close)(struct tls*);
+void(tls_config_clear_keys)(struct tls_config*);
 int(tls_config_set_session_id)(struct tls_config*,const unsigned char*,unsigned long);
 int(tls_config_set_session_fd)(struct tls_config*,int);
-void(tls_config_clear_keys)(struct tls_config*);
+int(tls_config_set_key_file)(struct tls_config*,const char*);
 ]])
 local library = {}
-library = {
+
+
+--====helper safe_clib_index====
+		function SAFE_INDEX(clib)
+			return setmetatable({}, {__index = function(_, k)
+				local ok, val = pcall(function() return clib[k] end)
+				if ok then
+					return val
+				elseif clib_index then
+					return clib_index(k)
+				end
+			end})
+		end
+
+--====helper safe_clib_index====
+
+CLIB = SAFE_INDEX(CLIB)library = {
 	peer_ocsp_url = CLIB.tls_peer_ocsp_url,
 	config_set_dheparams = CLIB.tls_config_set_dheparams,
 	config_set_keypair_file = CLIB.tls_config_set_keypair_file,
@@ -104,7 +120,7 @@ library = {
 	peer_ocsp_cert_status = CLIB.tls_peer_ocsp_cert_status,
 	config_insecure_noverifytime = CLIB.tls_config_insecure_noverifytime,
 	config_add_keypair_mem = CLIB.tls_config_add_keypair_mem,
-	config_set_cert_mem = CLIB.tls_config_set_cert_mem,
+	config_prefer_ciphers_client = CLIB.tls_config_prefer_ciphers_client,
 	config_error = CLIB.tls_config_error,
 	config_set_ocsp_staple_file = CLIB.tls_config_set_ocsp_staple_file,
 	peer_ocsp_result = CLIB.tls_peer_ocsp_result,
@@ -113,7 +129,7 @@ library = {
 	connect_cbs = CLIB.tls_connect_cbs,
 	config_new = CLIB.tls_config_new,
 	config_insecure_noverifycert = CLIB.tls_config_insecure_noverifycert,
-	config_set_key_file = CLIB.tls_config_set_key_file,
+	config_set_crl_file = CLIB.tls_config_set_crl_file,
 	peer_ocsp_next_update = CLIB.tls_peer_ocsp_next_update,
 	config_set_cert_file = CLIB.tls_config_set_cert_file,
 	handshake = CLIB.tls_handshake,
@@ -130,57 +146,57 @@ library = {
 	free = CLIB.tls_free,
 	config_set_verify_depth = CLIB.tls_config_set_verify_depth,
 	config_set_ecdhecurve = CLIB.tls_config_set_ecdhecurve,
-	peer_ocsp_this_update = CLIB.tls_peer_ocsp_this_update,
-	peer_ocsp_revocation_time = CLIB.tls_peer_ocsp_revocation_time,
 	conn_cipher = CLIB.tls_conn_cipher,
-	peer_ocsp_response_status = CLIB.tls_peer_ocsp_response_status,
 	unload_file = CLIB.tls_unload_file,
 	connect = CLIB.tls_connect,
+	peer_ocsp_this_update = CLIB.tls_peer_ocsp_this_update,
+	peer_ocsp_revocation_time = CLIB.tls_peer_ocsp_revocation_time,
+	peer_ocsp_response_status = CLIB.tls_peer_ocsp_response_status,
 	peer_ocsp_crl_reason = CLIB.tls_peer_ocsp_crl_reason,
 	load_file = CLIB.tls_load_file,
-	--default_ca_cert_file = CLIB.tls_default_ca_cert_file,
-	conn_alpn_selected = CLIB.tls_conn_alpn_selected,
 	peer_cert_hash = CLIB.tls_peer_cert_hash,
 	config_add_ticket_key = CLIB.tls_config_add_ticket_key,
 	config_set_ecdhecurves = CLIB.tls_config_set_ecdhecurves,
-	config_prefer_ciphers_client = CLIB.tls_config_prefer_ciphers_client,
+	default_ca_cert_file = CLIB.tls_default_ca_cert_file,
 	accept_fds = CLIB.tls_accept_fds,
-	peer_cert_notafter = CLIB.tls_peer_cert_notafter,
-	peer_cert_notbefore = CLIB.tls_peer_cert_notbefore,
+	conn_alpn_selected = CLIB.tls_conn_alpn_selected,
+	config_set_ca_path = CLIB.tls_config_set_ca_path,
 	peer_cert_provided = CLIB.tls_peer_cert_provided,
 	accept_cbs = CLIB.tls_accept_cbs,
-	peer_cert_subject = CLIB.tls_peer_cert_subject,
+	peer_cert_notafter = CLIB.tls_peer_cert_notafter,
 	config_add_keypair_ocsp_file = CLIB.tls_config_add_keypair_ocsp_file,
 	accept_socket = CLIB.tls_accept_socket,
-	peer_cert_issuer = CLIB.tls_peer_cert_issuer,
+	peer_cert_notbefore = CLIB.tls_peer_cert_notbefore,
 	init = CLIB.tls_init,
-	peer_cert_contains_name = CLIB.tls_peer_cert_contains_name,
+	peer_cert_subject = CLIB.tls_peer_cert_subject,
 	connect_servername = CLIB.tls_connect_servername,
 	error = CLIB.tls_error,
-	close = CLIB.tls_close,
+	peer_cert_issuer = CLIB.tls_peer_cert_issuer,
+	peer_cert_contains_name = CLIB.tls_peer_cert_contains_name,
+	config_prefer_ciphers_server = CLIB.tls_config_prefer_ciphers_server,
 	write = CLIB.tls_write,
 	read = CLIB.tls_read,
-	connect_socket = CLIB.tls_connect_socket,
-	config_set_crl_file = CLIB.tls_config_set_crl_file,
 	client = CLIB.tls_client,
 	configure = CLIB.tls_configure,
+	config_set_keypair_ocsp_file = CLIB.tls_config_set_keypair_ocsp_file,
 	config_set_keypair_mem = CLIB.tls_config_set_keypair_mem,
-	config_set_ca_path = CLIB.tls_config_set_ca_path,
+	config_set_cert_mem = CLIB.tls_config_set_cert_mem,
+	config_set_session_lifetime = CLIB.tls_config_set_session_lifetime,
 	config_insecure_noverifyname = CLIB.tls_config_insecure_noverifyname,
 	conn_servername = CLIB.tls_conn_servername,
 	config_set_keypair_ocsp_mem = CLIB.tls_config_set_keypair_ocsp_mem,
 	config_add_keypair_file = CLIB.tls_config_add_keypair_file,
-	config_set_protocols = CLIB.tls_config_set_protocols,
+	config_set_ca_mem = CLIB.tls_config_set_ca_mem,
 	reset = CLIB.tls_reset,
 	config_set_key_mem = CLIB.tls_config_set_key_mem,
 	peer_cert_chain_pem = CLIB.tls_peer_cert_chain_pem,
-	config_set_session_lifetime = CLIB.tls_config_set_session_lifetime,
-	config_set_keypair_ocsp_file = CLIB.tls_config_set_keypair_ocsp_file,
-	config_prefer_ciphers_server = CLIB.tls_config_prefer_ciphers_server,
-	config_set_ca_mem = CLIB.tls_config_set_ca_mem,
+	connect_socket = CLIB.tls_connect_socket,
+	config_set_protocols = CLIB.tls_config_set_protocols,
+	close = CLIB.tls_close,
+	config_clear_keys = CLIB.tls_config_clear_keys,
 	config_set_session_id = CLIB.tls_config_set_session_id,
 	config_set_session_fd = CLIB.tls_config_set_session_fd,
-	config_clear_keys = CLIB.tls_config_clear_keys,
+	config_set_key_file = CLIB.tls_config_set_key_file,
 }
 library.e = {
 	API = 20180210,

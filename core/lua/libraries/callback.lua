@@ -195,7 +195,7 @@ function callback.WrapKeyedTask(create_callback, max, queue_callback, start_on_c
             else
                 callbacks[key]:Start()
 
-                if max then
+                if max ~= math.huge then
                     callbacks[key]:Done(function()
                         total = total - 1
 
