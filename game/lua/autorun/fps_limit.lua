@@ -53,7 +53,7 @@ do
 
     event.AddListener("FrameEnd", "fps_limit", function()
         if rate > 0 then
-            system.Sleep(math.floor(1/rate * 1000))
+            system.Sleep(1/rate)
         end
     end)
 end

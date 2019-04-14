@@ -1,6 +1,5 @@
 local sdl = desire("SDL2")
 if not sdl then return end
-
 local ffi = require("ffi")
 
 local META = ... or prototype.GetRegistered("window")
@@ -477,33 +476,18 @@ if OPENGL and not NULL_OPENGL then
 	end
 
 	local attempts = {
-		{
-			version = 4.6,
-			profile_mask = "core",
-		},
-		{
-			version = 4.5,
-			profile_mask = "core",
-		},
-		{
-			version = 4.1,
-			profile_mask = "core",
-		},
-		{
-			version = 4.0,
-			profile_mask = "core",
-		},
-		{
-			version = 3.3,
-			profile_mask = "core",
-		},
-		{
-			version = 3.2,
-			profile_mask = "core",
-		},
-		{
-			profile_mask = "core",
-		},
+		{ version = 4.6, profile_mask = "core" },
+		{ version = 4.5, profile_mask = "core" },
+		{ version = 4.4, profile_mask = "core" },
+		{ version = 4.3, profile_mask = "core" },
+		{ version = 4.2, profile_mask = "core" },
+		{ version = 4.1, profile_mask = "core" },
+		{ version = 4.0, profile_mask = "core" },
+		{ version = 3.3, profile_mask = "core" },
+		{ version = 3.2, profile_mask = "core" },
+		{ version = 3.1, profile_mask = "core" },
+		{ version = 3.0, profile_mask = "core" },
+		{ profile_mask = "core" },
 	}
 
 	function META:PostWindowSetup(wnd_ptr)

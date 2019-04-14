@@ -8728,6 +8728,13 @@ local functions = {
 	glTextureBarrier = {"void (*)()"},
 }
 
+local GL_GETERROR = false
+local LOG_CALLS = false
+local log_file
+if LOG_CALLS then
+	log_file = io.open("gl_calls", "wb")
+end
+
 setmetatable(gl, {
 	__index = function(self, name)
 		if rawget(self, "GetProcAddress") and (functions["gl" .. name] or (name:sub(0, 3) == "Gen" and functions["gl" .. name .. "s"])) then
@@ -8739,7 +8746,42 @@ setmetatable(gl, {
 			if ptr ~= nil then
 				local ok, func = pcall(ffi.cast, info[1], ptr)
 				if ok then
-					gl[name] = func
+
+					if LOG_CALLS then
+						local old = func
+						func = function(...)
+							log_file:write("gl", name, "(")
+							local args = {...}
+							for i, v in ipairs(args) do
+								log_file:write(tostring(v))
+								if i ~= #args then
+									log_file:write(", ")
+								end
+							end
+							log_file:write(") = ")
+							local val = old(...)
+							log_file:write(tostring(val))
+							log_file:write("\n")
+							return val
+						end
+					end
+
+					if GL_GETERROR and name ~= "GetError" then
+						local old = func
+						func = function(...)
+							local val = old(...)
+
+							local err = gl.GetError()
+
+							if err ~= 0 then
+								print("gl" .. name .. "(", ...)
+								print("): " .. tostring(err))
+							end
+
+							return val
+						end
+					end
+
 					if info[2] then
 						gl[name] = function()
 							local id = ffi.new('GLint[1]')
@@ -8747,6 +8789,8 @@ setmetatable(gl, {
 							return id[0]
 						end
 						return gl[name]
+					else
+						gl[name] = func
 					end
 					return gl[name]
 				end
