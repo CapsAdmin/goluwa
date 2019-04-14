@@ -1022,6 +1022,8 @@ do
                 self.timeout_connected = {host, service}
                 return true
             end
+        elseif self.on_connect then
+            self:on_connect(host, service)
         end
 
         if not ok then
