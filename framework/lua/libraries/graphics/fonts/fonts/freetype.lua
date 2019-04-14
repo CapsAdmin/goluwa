@@ -74,9 +74,9 @@ local function translate_windows_font(font_name)
 	-- TODO: EnumFontFamiliesEx
 
 	local name_translate = {
-		["lucidaconsole"] = "lucon",
-		["trebuchetms"] = "trebuc",
-		["couriernew"] = "cour",
+		["lucidaconsole"] = "lucida grande",
+		["trebuchetms"] = "trebuchet ms",
+		["couriernew"] = "courier new",
 	}
 
 	local font = font_name:lower()
@@ -91,13 +91,15 @@ local function translate_windows_font(font_name)
 	local parts = font:lower():split(" ")
 	local name = parts[1]
 
+	name = name .. "/" .. name
+
 	for i = 2, #parts do
 		local flag = parts[i]
 
 		if flag == "bold" then
-			flag = "b"
+			flag = " bold"
 		elseif flag == "semibold" then
-			flag = "sb"
+			flag = " bold"
 		elseif flag == "semibold" then
 
 		end
@@ -122,8 +124,12 @@ local providers = {
 		translate = google,
 	},
 	{
-		url = "https://github.com/caarlos0/msfonts/raw/master/fonts/",
+		url = "https://gitlab.com/jeichert/fonts/raw/master/",
 		translate = translate_windows_font,
+	},
+	{
+		url = "http://www.speedywristbands.com/public/files/fonts/",
+		translate = function(path) print(path, "!!") return (" " .. path):gsub("%s(%l)", function(str) return str:upper() end) .. ".ttf" end,
 	},
 	{
 		url = "http://dl.dafont.com/dl/?f=", -- roboto | Roboto-BoldItalic.ttf

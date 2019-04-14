@@ -23,7 +23,7 @@ end
 
 function META:SocketRestart(socket)
     self.socket = socket or ljsocket.create("inet", "stream", "tcp")
-    assert(self.socket:set_blocking(false))
+    if not self:assert(self.socket:set_blocking(false)) then return end
     self.socket:set_option("nodelay", true, "tcp")
     self.socket:set_option("cork", false, "tcp")
 
@@ -143,7 +143,7 @@ function META:Send(data)
 
     local ok, err
 
-    if self.socket:is_connected() then
+    if self.socket:is_connected() and not self.connecting then
         ok, err = self.socket:send(data)
     else
         ok, err = false, "timeout"
@@ -164,7 +164,9 @@ end
 
 function META:Update()
     if self.connecting then
+        self.socket:poll_connect()
         if self.socket:is_connected() then
+            print(self)
             if self.DoHandshake then
                 local ok, err = self:DoHandshake()
 

@@ -32,8 +32,8 @@ do
     end
 
     function meta:Resolve(...)
-        if self.is_resolved then
-            logn(self, "attempted to resolve resolved promise")
+        if self.is_resolved or self.is_rejected then
+            logn(self, "attempted to resolve "..(self.is_resolved and "resolved" or "rejected").." promise")
             logn(self.debug_trace)
             return
         end
@@ -60,6 +60,13 @@ do
     local handled = false
 
     function meta:Reject(...)
+
+        if self.is_resolved then
+            --logn(self, "attempted to resolve resolved promise")
+            --logn(self.debug_trace)
+            return
+        end
+
         handled = false
 
         if self.children then
@@ -80,6 +87,8 @@ do
         end
 
         done(self)
+
+        self.is_rejected = true
 
         return self
     end
@@ -125,6 +134,27 @@ do
     function meta:Done(callback)
         table.insert(self.funcs.done, callback)
         return self
+    end
+
+    function meta:Get()
+        local res
+        local err
+        self:Then(function(...) 
+            res = {...}
+        end)
+
+        self:Catch(function(msg)
+            err = msg
+        end)
+
+        while not res do
+            if err then
+                error(err, 3)
+            end
+            tasks.Wait()
+        end
+
+        return unpack(res)
     end
 
     function meta:Subscribe(what, callback)
@@ -195,7 +225,7 @@ function callback.WrapKeyedTask(create_callback, max, queue_callback, start_on_c
             else
                 callbacks[key]:Start()
 
-                if max then
+                if max ~= math.huge then
                     callbacks[key]:Done(function()
                         total = total - 1
 
@@ -230,6 +260,26 @@ function callback.WrapTask(create_callback)
         cb:Start()
         return cb
     end
+end
+
+
+if RELOAD then
+    local function await(func)
+        tasks.enabled = true
+        tasks.CreateTask(func)
+    end
+
+    local Delay = callback.WrapTask(function(self, delay)
+        local resolve = self.callbacks.resolve
+        local reject = self.callbacks.reject
+        event.Delay(delay, function() resolve("result!") end)
+    end)
+
+    await(function() 
+        print(1)
+        local res = Delay(1):Get()
+        print(2, res)
+    end)
 end
 
 return callback

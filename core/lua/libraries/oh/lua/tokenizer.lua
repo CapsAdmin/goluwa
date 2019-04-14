@@ -99,7 +99,7 @@ do
 
 		for _ = self.i, self.code_length do
 			if self:ReadChar() == "\n" or self.i-1 == self.code_length then
-				local code = self:GetCharsRange(i, self.i)
+				local code = self:GetCharsRange(i, self.i-1)
 				if code:startswith("T:") then
 					assert(loadstring("local self = ...;" .. code:sub(3)))(self)
 				end
@@ -467,13 +467,11 @@ do
 	end
 
 	function Token:Capture()
-		self:Advance(1)
-
 		for _ = self.i, self.code_length do
+			self:Advance(1)
 			if self:GetCharType(self:GetCurrentChar()) ~= "space" then
 				return true
 			end
-			self:Advance(1)
 		end
 
 		return true

@@ -27,9 +27,9 @@ do
 end
 
 do
-	ffi.cdef("void usleep(unsigned int ns);")
+	ffi.cdef("int usleep(unsigned int ns);")
 	function system.Sleep(ms)
-		ffi.C.usleep(ms*1000)
+		ffi.C.usleep(ms*1000*1000)
 	end
 end
 

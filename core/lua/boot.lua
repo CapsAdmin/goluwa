@@ -10,6 +10,7 @@ do
 	UNIX = not WINDOWS
 
 	ARCHIVE_EXT = WINDOWS and ".zip" or ".tar.gz"
+	SHARED_LIBRARY_EXT = UNIX and ".so" or ".dll"
 
 	local ffi = require("ffi")
 
@@ -334,9 +335,11 @@ do
 		f:close()
 	end
 
+	local session_id = os.getenv("GOLUWA_TMUX_SESSION_ID") or "goluwa"
+
 	function has_tmux_session()
 		if os.iscmd("tmux") then
-			return os.readexecute("tmux has-session -t goluwa 2> /dev/null; printf $?") == "0"
+			return os.readexecute("tmux has-session -t "..session_id.." 2> /dev/null; printf $?") == "0"
 		end
 	end
 
@@ -471,8 +474,6 @@ if not os.isfile(BINARY_DIR .. lua_exec) then
 	end
 end
 
-local ext = UNIX and ".so" or ".dll"
-
 local instructions_path = "storage/shared/copy_binaries_instructions"
 if os.isfile(instructions_path) then
 	for from, to in io.readfile(instructions_path):gmatch("(.-);(.-)\n") do
@@ -488,19 +489,19 @@ do -- tmux
 
 		if not has_tmux_session() then
 			os.readexecute([[
-				tmux new-session -d -s goluwa
-				tmux send-keys -t goluwa "export GOLUWA_TMUX=1" C-m
-				tmux send-keys -t goluwa "./goluwa" C-m
+				tmux new-session -d -s ]]..session_id..[[
+				tmux send-keys -t ]]..session_id..[[ "export GOLUWA_TMUX=1" C-m
+				tmux send-keys -t ]]..session_id..[[ "./goluwa" C-m
 			]])
 		end
 
-		os.readexecute("tmux attach-session -t goluwa")
+		os.readexecute("tmux attach-session -t "..session_id)
 
 		os.exit()
 	end
 
 	if ARG_LINE == "attach" and has_tmux_session() then
-		os.readexecute("tmux attach-session -t goluwa")
+		os.readexecute("tmux attach-session -t "..session_id)
 
 		return
 	end
@@ -510,7 +511,7 @@ do -- tmux
 
 		print(prev)
 
-		os.readexecute("tmux send-keys -t goluwa '" .. ARG_LINE .. "' C-j")
+		os.readexecute("tmux send-keys -t "..session_id.." '" .. ARG_LINE .. "' C-j")
 
 		local timeout = os.clock() + 1
 
@@ -581,13 +582,30 @@ do
 	end
 end
 
+do
+	local base_url = "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/"..OS.."_"..ARCH.."/"
+
+	local files = {
+		"libtls",
+		"libcrypto",
+		"libssl",
+		"libtls",
+	}
+
+	for _, name in ipairs(files) do
+		name = name .. SHARED_LIBRARY_EXT
+		if not os.isfile(BINARY_DIR .. name) then
+			os.download(base_url .. name, BINARY_DIR .. name)
+		end
+	end
+end
+
 os.setenv("GOLUWA_BOOT_TIME", tostring(os.clock() - start_time))
 
 if UNIX then
 
 	if ARG_LINE == "gdb" then
 		assert(os.iscmd("gdb"), "gdb is not installed")
-		assert(os.iscmd("valgrind"), "valgrind is not installed")
 		assert(os.iscmd("git"), "git is not installed")
 
 		local utils = os.readexecute("pwd -P"):sub(0,-2) .. "/storage/temp/openresty-gdb-utils"
@@ -616,8 +634,17 @@ if UNIX then
 		valgrind = valgrind .. "--suppressions=lj.supp "
 		valgrind = valgrind .. "./" .. BINARY_DIR .. "/"..executable .. " " .. initlua
 
-		os.execute("xterm -hold -e " .. valgrind .. " &")
-		os.execute("xterm -hold -e " .. gdb)
+		if os.getenv("DISPLAY") then
+			os.execute("xterm -hold -e " .. gdb)
+
+			if os.iscmd("valgrind") then
+				os.execute("xterm -hold -e " .. valgrind .. " &")
+			else
+				print("valgrind is not installed")
+			end
+		else
+			os.execute(gdb)
+		end
 	else
 		os.exit(os.execute("./" .. BINARY_DIR .. "/"..executable.." " .. initlua))
 	end

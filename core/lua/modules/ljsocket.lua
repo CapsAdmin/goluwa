@@ -881,9 +881,9 @@ function M.get_address_info(data)
     local out = ffi.new("struct addrinfo*[1]")
 
     local ok, err = socket.getaddrinfo(
-        data.host ~= "*" and data.host or nil, 
-        data.service and tostring(data.service) or nil, 
-        hints, 
+        data.host ~= "*" and data.host or nil,
+        data.service and tostring(data.service) or nil,
+        hints,
         out
     )
 
@@ -1017,15 +1017,30 @@ do
 
         local ok, err = socket.connect(self.fd, res.addrinfo.ai_addr, res.addrinfo.ai_addrlen)
 
-        if not ok and (not self.blocking or not timeout_messages[err]) then
+        if not ok and not self.blocking then
+            if timeout_messages[err] then
+                self.timeout_connected = {host, service}
+                return true
+            end
+        elseif self.on_connect then
+            self:on_connect(host, service)
+        end
+
+        if not ok then
             return ok, err
         end
 
-        if self.on_connect then
-            return self:on_connect(host, service)
+        return true
+    end
+
+    function meta:poll_connect()
+        if self.on_connect and self.timeout_connected and self:is_connected() then
+            local ok, err = self:on_connect(unpack(self.timeout_connected))
+            self.timeout_connected = nil
+            return ok, err
         end
 
-        return true
+        return nil, "timeout"
     end
 
     function meta:bind(host, service)

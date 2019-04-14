@@ -23,25 +23,31 @@ do
         local cbs = {}
         local fails = {}
 
+        local function fail(url, reason)
+            table.insert(fails, "failed to download " .. url .. ": " .. reason .. "\n")
+            if #fails == #urls then
+                local reason = ""
+                for _, str in ipairs(fails) do
+                    reason = reason .. str
+                end
+                reject(reason)
+            end
+        end
+
         for i, url in ipairs(urls) do
             cbs[i] = http.Download(url):Then(function(...)
                 resolve(url, ...)
             end):Catch(function(reason)
-                table.insert(fails, "failed to download " .. url .. ": " .. reason .. "\n")
-                if #fails == #urls then
-                    local reason = ""
-                    for _, str in ipairs(fails) do
-                        reason = reason .. str
-                    end
-                    reject(reason)
-                end
+                fail(url, reason or "no reason")
             end):Subscribe("header", function(header)
-                if header["content-length"] > 0 then
+                if header["content-length"] and header["content-length"] > 0 then
                     for _, cb in ipairs(cbs) do
                         if cb ~= cbs[i] then
                             cb:Stop()
                         end
                     end
+                else
+                    fail(url, "download length is 0")
                 end
             end)
         end
@@ -71,6 +77,15 @@ function http.Post(url, body, callback)
 		callback = callback,
 		body = body,
 	})
+end
+
+if RELOAD then
+    --print("!?")
+    --http.DownloadFirstFound({"https://dl.dafont.com/dl/?f=helveticaaDAWDAWD", "https://dl.dafont.com/dl/?f=helvetica"}):Then(function(url, data)
+        ---print("?!?!")
+    --end)
+
+    sockets.Download("https://gitlab.com/CapsAdmin/goluwa-assets/raw/master/extras/roboto italic")
 end
 
 return http
