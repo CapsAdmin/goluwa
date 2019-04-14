@@ -10,6 +10,7 @@ do
 	UNIX = not WINDOWS
 
 	ARCHIVE_EXT = WINDOWS and ".zip" or ".tar.gz"
+	SHARED_LIBRARY_EXT = UNIX and ".so" or ".dll"
 
 	local ffi = require("ffi")
 
@@ -473,8 +474,6 @@ if not os.isfile(BINARY_DIR .. lua_exec) then
 	end
 end
 
-local ext = UNIX and ".so" or ".dll"
-
 local instructions_path = "storage/shared/copy_binaries_instructions"
 if os.isfile(instructions_path) then
 	for from, to in io.readfile(instructions_path):gmatch("(.-);(.-)\n") do
@@ -579,6 +578,24 @@ do
 		else
 			io.write("\"luajit_" .. arg, "\" is not an executable\n")
 			os.exit(1)
+		end
+	end
+end
+
+do
+	local base_url = "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/"..OS.."_"..ARCH.."/"
+
+	local files = {
+		"libtls",
+		"libcrypto",
+		"libssl",
+		"libtls",
+	}
+
+	for _, name in ipairs(files) do
+		name = name .. SHARED_LIBRARY_EXT
+		if not os.isfile(BINARY_DIR .. name) then
+			os.download(base_url .. name, BINARY_DIR .. name)
 		end
 	end
 end
