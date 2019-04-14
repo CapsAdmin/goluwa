@@ -150,22 +150,22 @@ function downprog.Stop(url, reason)
 	downprog.downloads[url] = nil
 end
 
-event.AddListener("DownloadCodeReceived", "downprog", function(url, code)
+event.AddListener("DownloadCodeReceived", "downprog", function(client, code)
 	if code == 200 then
-		downprog.Start(url)
+		downprog.Start(client.url)
 	end
 end)
 
-event.AddListener("DownloadHeaderReceived", "downprog", function(url, header)
-	downprog.UpdateInformation(url, header["content-length"], header["content-type"], header["content-disposition"] and header["content-disposition"]:match("filename=(.+)"))
+event.AddListener("DownloadHeaderReceived", "downprog", function(client, header)
+	downprog.UpdateInformation(client.url, header["content-length"], header["content-type"], header["content-disposition"] and header["content-disposition"]:match("filename=(.+)"))
 end)
 
-event.AddListener("DownloadChunkReceived", "downprog", function(url, data)
-	downprog.BytesReceived(url, #data)
+event.AddListener("DownloadChunkReceived", "downprog", function(client, data)
+	downprog.BytesReceived(client.url, #data)
 end)
 
-event.AddListener("DownloadStop", "downprog", function(url, data, msg)
-	downprog.Stop(url, msg)
+event.AddListener("DownloadStop", "downprog", function(client, data, msg)
+	downprog.Stop(client.url, msg)
 end)
 
 if RELOAD then
