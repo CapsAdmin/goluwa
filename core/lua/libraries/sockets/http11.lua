@@ -94,7 +94,8 @@ local legal_uri_characters = {
     ["+"] = true,
     [","] = true,
     [";"] = true,
-    ["=" ] = true
+    ["=" ] = true,
+    ["%" ] = true,
 }
 
 -- maybe this should be a helper?
