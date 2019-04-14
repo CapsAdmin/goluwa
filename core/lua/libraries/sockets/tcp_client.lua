@@ -121,7 +121,7 @@ end
 
 function META:OnRemove()
     table.removevalue(sockets.active, self)
-    self:assert(self.socket:close())
+    self.socket:close()
 end
 
 function META:Close(reason)
@@ -166,7 +166,6 @@ function META:Update()
     if self.connecting then
         self.socket:poll_connect()
         if self.socket:is_connected() then
-            print(self)
             if self.DoHandshake then
                 local ok, err = self:DoHandshake()
 

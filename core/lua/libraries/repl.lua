@@ -442,7 +442,11 @@ function repl.KeyPressed(key)
 
 		if repl.ctrl_c_exit then
 			if repl.ctrl_c_exit > system.GetTime() then
-				system.ShutDown(0)
+				if os.getenv("GOLUWA_TMUX") then
+					_OLD_G.os.execute("tmux detach")
+				else
+					system.ShutDown(0)
+				end
 			else
 				repl.ctrl_c_exit = nil
 			end
@@ -451,7 +455,11 @@ function repl.KeyPressed(key)
 
 			local x,y = repl.GetCaretPosition()
 
-			repl.WriteNow("ctrl+c again to exit\n")
+			if os.getenv("GOLUWA_TMUX") then
+				repl.WriteNow("ctrl+c again to detach\n")
+			else
+				repl.WriteNow("ctrl+c again to exit\n")
+			end
 			repl.SetCaretPosition(0,y+1)
 			repl.Flush()
 		end
@@ -517,6 +525,12 @@ function repl.Update()
 	local what, arg = terminal.ReadEvent()
 
 	if what then
+		if what == "string" and arg:endswith("__ENTERHACK__") then
+			repl.CharInput(arg:sub(0, -#"__ENTERHACK__" - 1))
+			repl.KeyPressed("enter")
+			return
+		end
+
 		if what == "string" then
 			repl.CharInput(arg)
 		else

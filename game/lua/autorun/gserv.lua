@@ -853,7 +853,7 @@ if not CLI then
 	end
 end
 
-if GMOD then
+if GMOD or CAPSADMIN then
 	event.AddListener("GservWebhook", "update_addons", function(id, tbl)
 		if tbl.repository and tbl.repository.html_url then
 			local url = tbl.repository.html_url .. ".git"

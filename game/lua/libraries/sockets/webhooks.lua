@@ -25,27 +25,29 @@ function sockets.StartWebhookServer(port, secret, callback)
 	local server = sockets.webook_servers[port]
 
 	if not server then
-		server = sockets.CreateServer("tcp")
+		server = sockets.TCPServer()
 		server:Host("*", port)
+
+		print("started webhook server", server)
 
 		sockets.webook_servers[port] = server
 	end
 
 	function server:OnClientConnected(client)
-		sockets.SetupReceiveHTTP(client)
+		sockets.ConnectedTCP2HTTP(client)
 
-		function client:OnReceiveHTTP(data)
+		function client:OnReceiveBody()
 			if secret then
-				if not verify_signature(data.header["x-hub-signature"], data.content) then
+				if not verify_signature(self.Header["x-hub-signature"], self.Body) then
 					logn("webhook client ", client, " removed because signature does not match: ", data.header["x-hub-signature"])
 					client:Remove()
 					return
 				end
 			end
 
-			local content = data.content
+			local content = self.Body
 
-			if data.header["content-type"]:find("form-urlencoded", nil, true) then
+			if self.Header["content-type"]:find("form-urlencoded", nil, true) then
 				content = content:match("^payload=(.+)")
 				content = content:gsub("%%(..)", function(hex)
 					return string.char(tonumber("0x"..hex))

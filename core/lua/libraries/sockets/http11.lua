@@ -242,9 +242,12 @@ function META:DecodeChunkedBody(body)
     return table.concat(temp)
 end
 
+-- POST /webhook HTTP/1.1
+-- HTTP/1.1 200 OK
+
 function META:OnReceiveChunk(chunk)
     if self.Stage == "header" then
-        if #self.RawHeader > 4 and not self.RawHeader:startswith("HTTP") then
+        if not self.FromClient and #self.RawHeader > 4 and not self.RawHeader:startswith("HTTP") then
             return self:Error("header does not start with HTTP (" .. self.RawHeader:sub(10) .. ")")
         end
 
@@ -256,10 +259,6 @@ function META:OnReceiveChunk(chunk)
             local header = self.RawHeader:sub(1, stop)
             chunk = self.RawHeader:sub(stop+1) -- resume body here
 
-            if not header:startswith("HTTP") then
-                return self:Error("header does not start with HTTP")
-            end
-
             self.RawHeader = header
 
             do
@@ -267,21 +266,36 @@ function META:OnReceiveChunk(chunk)
 
                 for i, line in ipairs(header:split("\r\n")) do
                     if i == 1 then
-                        local version, code, status = line:match("^(HTTP/%d+%.%d+) (%d+) (.+)$")
+                        if self.FromClient then
+                            local method, path, version = line:match("^(%u+) (%S+) (HTTP/%d+%.%d+)$")
 
-                        if version ~= "HTTP/1.1" then
-                            return self:Error(version .. " protocol not supported")
-                        end
+                            if version ~= "HTTP/1.1" then
+                                return self:Error(version .. " protocol not supported")
+                            end
 
-                        if not code:startswith("2") and not code:startswith("3") then
-                            return self:Error(code .. " " .. status, code, status)
-                        end
+                            self.Code = code
+                            self.Status = status
 
-                        self.Code = code
-                        self.Status = status
+                            if self:OnReceiveRESTMethod(method, path) == false then
+                                return
+                            end
+                        else
+                            local version, code, status = line:match("^(HTTP/%d+%.%d+) (%d+) (.+)$")
 
-                        if self:OnReceiveStatus(code, status) == false then
-                            return
+                            if version ~= "HTTP/1.1" then
+                                return self:Error(version .. " protocol not supported")
+                            end
+
+                            if not code:startswith("2") and not code:startswith("3") then
+                                return self:Error(code .. " " .. status, code, status)
+                            end
+
+                            self.Code = code
+                            self.Status = status
+
+                            if self:OnReceiveStatus(code, status) == false then
+                                return
+                            end
                         end
                     else
                         local keyval = line:split(": ")
@@ -307,7 +321,7 @@ function META:OnReceiveChunk(chunk)
                 self.Header["content-encoding"] = self.Header["content-encoding"] or "identity"
             end
 
-            if self.Code ~= "304" and self.Code:startswith("3") and self.Header["location"] then
+            if self.Code and self.Code ~= "304" and self.Code:startswith("3") and self.Header["location"] then
 
                 if self:OnReceiveRedirectHeader(self.Header) == false then
                     return
@@ -415,12 +429,24 @@ function META:OnReceiveStatus()
 
 end
 
+function META:OnReceiveRESTMethod()
+
+end
+
 META:Register()
 
-function sockets.HTTPClient()
+function sockets.HTTPClient(socket)
     local self = META:CreateObject()
-    self:Initialize()
+    self:Initialize(socket)
     return self
+end
+
+function sockets.ConnectedTCP2HTTP(obj)
+    setmetatable(obj, prototype.GetRegistered("socket", "http/1.1"))
+    obj:OnConnect()
+    obj.connected = true
+    obj.connecting = false
+    obj.FromClient = true
 end
 
 function sockets.Request(tbl)

@@ -1,5 +1,7 @@
 local start_time = os.clock()
 
+local session_id = os.getenv("GOLUWA_TMUX_SESSION_ID") or "goluwa"
+
 do
 	_G[jit.os:upper()] = true
 	_G.OS = jit.os:lower()
@@ -335,8 +337,6 @@ do
 		f:close()
 	end
 
-	local session_id = os.getenv("GOLUWA_TMUX_SESSION_ID") or "goluwa"
-
 	function has_tmux_session()
 		if os.iscmd("tmux") then
 			return os.readexecute("tmux has-session -t "..session_id.." 2> /dev/null; printf $?") == "0"
@@ -488,11 +488,9 @@ do -- tmux
 		assert(os.iscmd("tmux"), "tmux is not installed")
 
 		if not has_tmux_session() then
-			os.readexecute([[
-				tmux new-session -d -s ]]..session_id..[[
-				tmux send-keys -t ]]..session_id..[[ "export GOLUWA_TMUX=1" C-m
-				tmux send-keys -t ]]..session_id..[[ "./goluwa" C-m
-			]])
+			os.readexecute("tmux new-session -d -s "..session_id)
+			os.readexecute("tmux send-keys -t "..session_id..' "export GOLUWA_TMUX=1" C-m')
+			os.readexecute("tmux send-keys -t "..session_id..' "./goluwa" C-m')
 		end
 
 		os.readexecute("tmux attach-session -t "..session_id)
@@ -509,16 +507,14 @@ do -- tmux
 	if not os.getenv("GOLUWA_TMUX") and has_tmux_session() then
 		local prev = io.readfile("storage/shared/tmux_log.txt")
 
-		print(prev)
-
-		os.readexecute("tmux send-keys -t "..session_id.." '" .. ARG_LINE .. "' C-j")
+		os.readexecute("tmux send-keys -t "..session_id..' "' .. ARG_LINE .. '__ENTERHACK__"')
 
 		local timeout = os.clock() + 1
 
 		while true do
 			cur = io.readfile("storage/shared/tmux_log.txt")
 
-			if cur ~= prev then
+			if cur ~= prev and cur:sub(#prev):gsub("%s+", "") ~= "" then
 				io.write(cur:sub(#prev), "\n")
 				break
 			end
