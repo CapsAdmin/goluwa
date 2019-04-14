@@ -62,10 +62,17 @@ return {
 			RELOAD = false
 			CREATED_ENV = false
 
-			if LINUX and (GRAPHICS or WINDOW) and not os.getenv("DISPLAY") then
-				GRAPHICS = false
-				WINDOW = false
-				io.write("os.getenv('DISPLAY') is nil.\nsetting GRAPHICS and WINDOW to false.\n")
+			if LINUX then
+				if (GRAPHICS or WINDOW) and not os.getenv("DISPLAY") then
+					GRAPHICS = false
+					WINDOW = false
+					io.write("os.getenv('DISPLAY') is nil.\nsetting GRAPHICS and WINDOW to false.\n")
+				end
+
+				if not vfs.IsDirectory("/proc/asound") and not os.getenv("DISPLAY") then
+					SOUND = false
+					io.write("/proc/asound is not a directory and DISPLAY is not set, assuming no sound.\nsetting SOUND to false.\n")
+				end
 			end
 
 			info.load_callback()
