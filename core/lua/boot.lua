@@ -606,7 +606,6 @@ if UNIX then
 
 	if ARG_LINE == "gdb" then
 		assert(os.iscmd("gdb"), "gdb is not installed")
-		assert(os.iscmd("valgrind"), "valgrind is not installed")
 		assert(os.iscmd("git"), "git is not installed")
 
 		local utils = os.readexecute("pwd -P"):sub(0,-2) .. "/storage/temp/openresty-gdb-utils"
@@ -635,8 +634,17 @@ if UNIX then
 		valgrind = valgrind .. "--suppressions=lj.supp "
 		valgrind = valgrind .. "./" .. BINARY_DIR .. "/"..executable .. " " .. initlua
 
-		os.execute("xterm -hold -e " .. valgrind .. " &")
-		os.execute("xterm -hold -e " .. gdb)
+		if os.getenv("DISPLAY") then
+			os.execute("xterm -hold -e " .. gdb)
+
+			if os.iscmd("valgrind") then
+				os.execute("xterm -hold -e " .. valgrind .. " &")
+			else
+				print("valgrind is not installed")
+			end
+		else
+			os.execute(gdb)
+		end
 	else
 		os.exit(os.execute("./" .. BINARY_DIR .. "/"..executable.." " .. initlua))
 	end
