@@ -1,7 +1,7 @@
 local msg = require("msgpack")
 local ffi = require("ffi")
 local lua = desire("luajit")
-local sdl = desire("SDL2")
+local sdl
 
 local threads = _G.threads or {}
 
@@ -210,6 +210,8 @@ local thread_init = [[
 ]]
 
 function META:Run(...)
+	sdl = sdl or desire("SDL2")
+
 	local state = lua.L.newstate()
 	lua.L.openlibs(state)
 
