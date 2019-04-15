@@ -559,6 +559,10 @@ function repl.UpdateNow()
 end
 
 event.AddListener("Update", "repl", function()
+	if not repl.started then
+		event.RemoveListener("Update", "repl")
+		return
+	end
 	local ok, err = system.pcall(repl.Update)
 
 	if not ok then
