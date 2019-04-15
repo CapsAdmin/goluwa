@@ -67,28 +67,30 @@ if WINDOWS then
 	function ffibuild.UnixExecute(cmd, os_execute)
 		local transformed_cmd, cd = msys2(cmd)
 
-		repl.Flush()
-		repl.Stop()
+		if repl.started then
+			repl.Flush()
+			repl.Stop()
+		end
 
 		if os_execute then
 			vfs.PushWorkingDirectory(cd)
 			os.setenv("MSYSTEM", "MINGW64")
 			local ok, err = os.execute(transformed_cmd)
 			vfs.PopWorkingDirectory()
-			repl.Start()
+			if repl.started then repl.Start() end
 			return ok, err
 		end
 
 		vfs.PushWorkingDirectory(cd)
 		local f = io.popen(transformed_cmd)
 		if not f then
-			repl.Start()
+			if repl.started then repl.Start() end
 			vfs.PopWorkingDirectory()
 			return f, err
 		end
 
 		local str = f:read("*all")
-		repl.Start()
+		if repl.started then repl.Start() end
 
 		vfs.PopWorkingDirectory()
 

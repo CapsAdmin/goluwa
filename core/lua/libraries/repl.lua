@@ -541,6 +541,9 @@ function repl.Update()
 end
 
 function repl.OSExecute(...)
+	if not repl.started then
+		return os.execute(...)
+	end
 	repl.Flush()
 	repl.Stop()
 	local ok, res,a,b = pcall(_OLD_G.os.execute, ...)
