@@ -27,7 +27,7 @@ do
 				if not val then
 					ffi.C.unsetenv(key)
 				else
-					ffi.C.setenv(key, val, 0)
+					ffi.C.setenv(key, val, 1)
 				end
 			end
 

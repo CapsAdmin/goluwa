@@ -168,7 +168,7 @@ do
 			if not val then
 				ffi.C.unsetenv(key)
 			else
-				ffi.C.setenv(key, val, 0)
+				ffi.C.setenv(key, val, 1)
 			end
 		end
 	else
@@ -504,7 +504,7 @@ do -- tmux
 		return
 	end
 
-	if not os.getenv("GOLUWA_TMUX") and has_tmux_session() then
+	if not os.getenv("GOLUWA_TMUX") and has_tmux_session() and ARG_LINE ~= "" then
 		local prev = io.readfile("storage/shared/tmux_log.txt")
 
 		os.readexecute("tmux send-keys -t "..session_id..' "' .. ARG_LINE .. '__ENTERHACK__"')
