@@ -232,6 +232,8 @@ event.AddListener("MainLoopStart", function()
 
 	-- load everything in goluwa/*/lua/autorun/*USERNAME*/*
 	vfs.AutorunAddons(e.USERNAME .. "/")
+
+	system.ExecuteArgs()
 end)
 
 vfs.WatchLuaFiles2(true)

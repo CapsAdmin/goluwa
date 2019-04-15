@@ -514,6 +514,7 @@ function repl.Start()
 end
 
 function repl.Stop()
+	repl.Flush()
 	terminal.Shutdown()
 	repl.started = false
 end

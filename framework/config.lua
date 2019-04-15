@@ -37,6 +37,16 @@ return {
 				end
 			end
 
+
+			local str = os.getenv("GOLUWA_ARG_LINE") or ""
+
+			if str:startswith("--cli ") then
+				GRAPHICS = false
+				SOUND = false
+				WINDOW = false
+				system.ShutDown()
+			end
+
 			if os.getenv("CODEXL") == "1" or os.getenv("MESA_DEBUG") == "1" then
 				EXTERNAL_DEBUGGER = true
 			end
@@ -69,7 +79,7 @@ return {
 					io.write("os.getenv('DISPLAY') is nil.\nsetting GRAPHICS and WINDOW to false.\n")
 				end
 
-				if not vfs.IsDirectory("/proc/asound") and not os.getenv("DISPLAY") then
+				if SOUND and not vfs.IsDirectory("/proc/asound") and not os.getenv("DISPLAY") then
 					SOUND = false
 					io.write("/proc/asound is not a directory and DISPLAY is not set, assuming no sound.\nsetting SOUND to false.\n")
 				end

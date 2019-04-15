@@ -38,6 +38,10 @@ Main() {
 	export "GOLUWA_RAN_FROM_FILEBROWSER=$RAN_FROM_FILEBROWSER"
 	export "GOLUWA_BINARY_DIR=$BINARY_DIR"
 
+	if [  -n "$TMUX_PANE" ]; then
+		clear
+	fi
+
 	if [ "$RAN_FROM_FILEBROWSER" = 1 ]; then
 		clear
 		$executable_path
