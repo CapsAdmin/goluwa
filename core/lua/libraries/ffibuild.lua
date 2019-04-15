@@ -2087,4 +2087,25 @@ do -- lua helper functions
 	end
 end
 
+function ffibuild.PatchBinaries()
+	local root = "os:" .. e.ROOT_FOLDER
+	local git_dir = root .. "__goluwa-binaries/"
+	for _, path in ipairs(vfs.GetFilesRecursive(git_dir)) do
+		if path:endswith(".so") then
+			local bin = vfs.Read(path)
+			bin = bin:gsub("(lib%w+%.so%.%d*)", function(name)
+				if name:startswith("libtls") or name:startswith("libcrypto") or name:startswith("libssl") then
+					local start, stop = name:find(".so")
+					return name:sub(0, stop) .. ("\0"):rep(#name - stop)
+				end
+			end)
+			vfs.Write(path, bin)
+		end
+	end
+end
+
+if RELOAD then
+	ffibuild.PatchBinaries()
+end
+
 return ffibuild
