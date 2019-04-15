@@ -578,7 +578,7 @@ do
 	end
 end
 
-do
+if not os.getenv("GOLUWA_SKIP_LIBTLS") then
 	local base_url = "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/"..OS.."_"..ARCH.."/"
 
 	local files = {
