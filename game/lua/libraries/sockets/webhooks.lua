@@ -28,8 +28,6 @@ function sockets.StartWebhookServer(port, secret, callback)
 		server = sockets.TCPServer()
 		server:Host("*", port)
 
-		print("started webhook server", server)
-
 		sockets.webook_servers[port] = server
 	end
 

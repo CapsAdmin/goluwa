@@ -173,4 +173,12 @@ realpath() {
 
 Main
 
-exit 0
+#exit the tmux session if we're in a goluwa tmux session
+if [  -n "$TMUX_PANE" ]; then
+	session_name=$(tmux list-panes -t "$TMUX_PANE" -F '#S' | head -n1)
+	if [ `echo $session_name | grep -c "goluwa" ` -gt 0 ]; then
+		tmux send-keys -t $session_name "exit " C-m
+	fi
+fi
+
+exit $exit_code

@@ -151,7 +151,7 @@ function terminal.Write(str)
 	terminal.writing = false
 end
 
-function terminal.WriteNow(str) 
+function terminal.WriteNow(str)
 	ffi.C.fwrite(str, 1, #str, io.stdout)
 end
 
@@ -186,9 +186,9 @@ local function process_input(str)
             table.insert(terminal.event_buffer, {"up"})
         elseif seq == "B" then
             table.insert(terminal.event_buffer, {"down"})
-        elseif seq == "H" then
+        elseif seq == "H" or seq == "1~" then
             table.insert(terminal.event_buffer, {"home"})
-        elseif seq == "F" then
+        elseif seq == "F" or seq == "4~" then
             table.insert(terminal.event_buffer, {"end"})
         elseif seq == "1;5C" then
             table.insert(terminal.event_buffer, {"ctrl_right"})
@@ -198,6 +198,11 @@ local function process_input(str)
             --print("ansi escape sequence: " .. seq)
         end
     else
+        -- in a tmux session over ssh
+        if str == "\127\127" then
+            str = "\127"
+        end
+
         if #str == 1 then
             local byte = str:byte()
             if byte == 3 then -- ctrl c

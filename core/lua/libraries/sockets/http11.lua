@@ -286,7 +286,7 @@ function META:OnReceiveChunk(chunk)
                                 return self:Error(version .. " protocol not supported")
                             end
 
-                            if not code:startswith("2") and not code:startswith("3") then
+                            if not self.NoCodeError and not code:startswith("2") and not code:startswith("3") then
                                 return self:Error(code .. " " .. status, code, status)
                             end
 
@@ -457,7 +457,7 @@ function sockets.Request(tbl)
 
     local client = sockets.HTTPClient()
 
-    client:Request(tbl.method or "GET", tbl.url, tbl.header, tbl.post_data)
+    client.NoCodeError = true
 
     client.OnReceiveStatus = function(_, code, status)
         if tbl.code_callback then
@@ -471,7 +471,7 @@ function sockets.Request(tbl)
         end
     end
 
-    client.OnReceiveChunk = function(_, chunk)
+    client.OnReceiveBodyChunk = function(_, chunk)
         if tbl.on_chunks then
             tbl.on_chunks(chunk, length, header)
         end
@@ -479,9 +479,9 @@ function sockets.Request(tbl)
 
     client.OnReceiveBody = function(_, body)
         tbl.callback({
-            body = self.Body,
-            header = self.Header,
-            code = tonumber(self.Code)
+            body = client.Body,
+            header = client.Header,
+            code = tonumber(client.Code)
         })
     end
 
@@ -493,6 +493,8 @@ function sockets.Request(tbl)
             logn(tr)
         end
     end
+
+    client:Request(tbl.method or "GET", tbl.url, tbl.header, tbl.post_data)
 end
 
 if RELOAD then
