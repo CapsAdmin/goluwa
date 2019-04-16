@@ -138,8 +138,6 @@ function gserv.SetupLua(id)
 
 			function HTTP(tbl)
 				if tbl and tbl.url and tbl.url:find("discordapp%.com%/api") then
-					print("overriding http call")
-					PrintTable(tbl)
 					local uid = tostring(tbl)
 					active[uid] = tbl
 
