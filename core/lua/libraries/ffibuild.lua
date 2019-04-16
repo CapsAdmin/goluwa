@@ -127,7 +127,7 @@ function ffibuild.SourceControlClone(str, dir)
 		else
 			os.execute("hg clone " .. str .. " " .. dir)
 		end
-	elseif str:find("svn%.") then
+	elseif str:find("svn%.") or str:find("svn%:") then
 		os.execute("svn checkout " .. str .. " " .. dir)
 	else
 		os.execute(str)
