@@ -43,10 +43,12 @@ end
 
 function repl.CharInput(str)
 	event.Call("ReplCharInput", str)
-	local x, y = repl.GetCaretPosition()
-	repl.buffer = repl.buffer:usub(0, x - 1) .. str .. repl.buffer:usub(x + str:ulen() - 1, -1)
-	repl.MoveCaret(str:ulen(), 0)
-	repl.RenderInput()
+	for _, str in ipairs(str:totable()) do
+		local x, y = repl.GetCaretPosition()
+		repl.buffer = repl.buffer:usub(0, x - 1) .. str .. repl.buffer:usub(x + str:ulen() - 1, -1)
+		repl.MoveCaret(str:ulen(), 0)
+		repl.RenderInput()
+	end
 	repl.Flush()
 end
 
