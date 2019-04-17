@@ -484,7 +484,7 @@ if os.isfile(instructions_path) then
 end
 
 do -- tmux
-	if ARG_LINE == "tmux" then
+	if ARG_LINE:sub(0, #"tmux") == "tmux" then
 		assert(os.iscmd("tmux"), "tmux is not installed")
 
 		if not has_tmux_session() then
