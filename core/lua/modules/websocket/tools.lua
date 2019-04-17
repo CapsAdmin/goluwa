@@ -1,4 +1,4 @@
-local bit = require'websocket.bit'
+local bit = bit
 local rol = bit.rol
 local bxor = bit.bxor
 local bor = bit.bor

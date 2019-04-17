@@ -2,6 +2,7 @@ local sockets = {}
 
 runfile("tcp_client.lua", sockets)
 runfile("tcp_server.lua", sockets)
+runfile("websocket_client.lua", sockets)
 runfile("http11.lua", sockets)
 runfile("download.lua", sockets)
 

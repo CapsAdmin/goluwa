@@ -11,6 +11,8 @@ local multipart_boundary = "Goluwa" .. os.time()
 local multipart = string.format('multipart/form-data; boundary=%s', boundary)
 
 function META:Query(method, data, callback, files)
+	local input_method = method
+	local input_data = data
 	local method, index = unpack(method:split(" "))
 
 	if method == "WEBSOCKET" then
@@ -70,7 +72,7 @@ function META:Query(method, data, callback, files)
 				post_data = data and serializer.Encode("json", data) or nil,
 				url = "https://discordapp.com/api" .. index,
 				callback = function(data)
-					local json = data.content:match("^.-\r\n(.+)0") or data.content
+					local json = data.body:match("^.-\r\n(.+)0") or data.body
 					local ok, tbl = pcall(serializer.Decode, "json", json)
 
 					if not ok then
@@ -79,7 +81,9 @@ function META:Query(method, data, callback, files)
 					end
 
 					if tbl.code == 0 then
-						print(tbl.message)
+						table.print(input_data)
+						print(input_method, tbl.message)
+						return
 					end
 
 					if callback then
@@ -101,6 +105,7 @@ function META:Initialize()
 
 		local bot = self
 		local socket = sockets.CreateWebsocketClient()
+		print(data.url .. "/?v=6")
 		socket:Connect(data.url .. "/?v=6", "wss", {mode = "client", protocol = "sslv23", options = {"all"}})
 		self.socket = socket
 
@@ -144,6 +149,7 @@ function META:Initialize()
 		}
 
 		function socket:OnReceive(message, err, partial)
+			print(message, err, partial)
 			local data = serializer.Decode("json", message)
 
 			data.opcode = opcodes[data.op]
@@ -194,16 +200,16 @@ META:Register()
 
 if RELOAD then
 	if not LOL then
-		LOL = DiscordBot(assert(vfs.Read("discord_bot_token")))
+		LOL = DiscordBot(assert(vfs.Read("temp/discord_bot_token")))
 	end
 
 	function LOL:OnEvent(data)
 		if data.t == "READY" and false then
-			self:Query("POST /channels/348586142423187466/messages", {
+			self:Query("POST /channels/348585066294673410/messages", {
 				content = "hello",
 			}, table.print)
 
-			self:Query("GET /channels/348586142423187466/messages", function(messages)
+			self:Query("GET /channels/348585066294673410/messages", function(messages)
 				for k,v in pairs(messages) do
 					print(v.author.username, v.content)
 				end
