@@ -217,10 +217,11 @@ do -- logging
 		end
 
 		if log_files.console == log_file then
-			if repl and repl.StyledWrite then
+			if repl and repl.started and repl.StyledWrite then
 				repl.StyledWrite(line)
 			else
 				io.write(line)
+				io.stdout:flush()
 			end
 		end
 	end
@@ -345,7 +346,7 @@ function desire(name)
 		if VERBOSE then
 			res = res:gsub("module .- not found:%s+", "")
 			res = res:gsub("error loading module .- from file.-:%s+", "")
-			
+
 			wlog("unable to require %s:\n\t%s", name, res, 2)
 		end
 

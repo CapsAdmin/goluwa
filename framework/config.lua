@@ -40,11 +40,11 @@ return {
 
 			local str = os.getenv("GOLUWA_ARG_LINE") or ""
 
-			if str:startswith("--cli ") then
+			if str:find("--cli ") then
+				CLI = true
 				GRAPHICS = false
 				SOUND = false
 				WINDOW = false
-				system.ShutDown()
 			end
 
 			if os.getenv("CODEXL") == "1" or os.getenv("MESA_DEBUG") == "1" then

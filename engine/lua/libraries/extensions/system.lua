@@ -6,17 +6,19 @@ function system.ExecuteArgs()
 	end
 
 	local args = str:split("--", true)
-	table.remove(args, 1) -- uh
 
 	if args then
 		for _, arg in ipairs(args) do
-			commands.RunString(tostring(arg), true, true)
+			if arg:trim() ~= "" then
+				commands.RunString(arg, true, true)
+			end
 		end
 	end
 end
 
 commands.Add("cli", function() end)
 commands.Add("verbose", function() end)
+commands.Add("tmux", function() end)
 
 do
 	local show = pvars.Setup("system_fps_show", true, nil, "show fps in titlebar")

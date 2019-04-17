@@ -98,6 +98,9 @@ local stdin = 0
 local old_attributes
 
 function terminal.Initialize()
+	io.stdin:setvbuf("no")
+	io.stdout:setvbuf("no")
+
     if not old_attributes then
         old_attributes = ffi.new("struct termios[1]")
         ffi.C.tcgetattr(stdin, old_attributes)

@@ -532,10 +532,6 @@ do -- commands
 	function commands.RunString(line, skip_lua, skip_split)
 		tasks.CreateTask(
 			function()
-				if CLI then
-					logn(">> ", line)
-				end
-
 				if not skip_split and line:find("\n") then
 					for line in (line .. "\n"):gmatch("(.-)\n") do
 						commands.RunString(line, skip_lua, skip_split)
