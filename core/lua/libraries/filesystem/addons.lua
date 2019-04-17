@@ -37,30 +37,34 @@ function vfs.FetchBniariesForAddon(addon, callback)
 		local done = #found
 
 		for i, v in ipairs(found) do
-			resource.Download(v.url, nil,nil, true):Then(function(file_path, modified)
-				local name = vfs.GetFileNameFromPath(v.path)
-				local to = bin_dir .. v.path:sub(#relative_bin_dir + 1)
+			local to = bin_dir .. v.path:sub(#relative_bin_dir + 1)
+			if not vfs.IsFile("shared/framework_binaries_downloaded_" .. signature) and vfs.IsFile(to) then
+				llog("%q already exists before a fetch was ran, skipping", to:sub(#e.ROOT_FOLDER+1))
+			else
+				resource.Download(v.url, nil,nil, true):Then(function(file_path, modified)
+					local name = vfs.GetFileNameFromPath(v.path)
 
-				if modified or not vfs.IsFile(to) then
-					local ok = vfs.CopyFileFileOnBoot(file_path, to)
-					if ok == "deferred" then
-						llog("%q will be replaced after restart", to:sub(#e.ROOT_FOLDER+1))
-					else
-						llog("%q was added", to:sub(#e.ROOT_FOLDER+1))
+					if modified or not vfs.IsFile(to) then
+						local ok = vfs.CopyFileFileOnBoot(file_path, to)
+						if ok == "deferred" then
+							llog("%q will be replaced after restart", to:sub(#e.ROOT_FOLDER+1))
+						else
+							llog("%q was added", to:sub(#e.ROOT_FOLDER+1))
+						end
 					end
-				end
 
-				done = done - 1
+					done = done - 1
 
-				if done == 0 then
-					if callback and not vfs.IsFile("shared/framework_binaries_downloaded_" .. signature) then
-						vfs.Write("shared/framework_binaries_downloaded_" .. signature, "")
-						callback()
+					if done == 0 then
+						if callback and not vfs.IsFile("shared/framework_binaries_downloaded_" .. signature) then
+							vfs.Write("shared/framework_binaries_downloaded_" .. signature, "")
+							callback()
+						end
 					end
-				end
-			end):Catch(function(err)
-				llog(err)
-			end)
+				end):Catch(function(err)
+					llog(err)
+				end)
+			end
 		end
 	end):Catch(function(err)
 		llog(err)
