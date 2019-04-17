@@ -150,8 +150,6 @@ function sockets.CreateWebsocketClient()
 				self.last_encoded = nil
 			end
 
-			local last_rest
-
 			repeat
 				local decoded, fin, opcode, rest = frame.decode(encoded)
 
@@ -168,20 +166,19 @@ function sockets.CreateWebsocketClient()
 							local code, reason = frame.decode_close(message)
 							local encoded = frame.encode_close(code)
 							encoded = frame.encode(encoded, frame.CLOSE, true)
-							self.socket:Send(encoded, true)
+							self.socket:Send(encoded)
 							self:OnClose(reason, code)
 							self.socket:Remove()
 							return
 						else
+							frames = {}
 							self:OnReceive(message, opcode)
 						end
 					end
+				elseif #encoded > 0 then
+					self.last_encoded = encoded
 				end
 			until not decoded
-
-			if #encoded > 0 then
-				self.last_encoded = encoded
-			end
 		end
 	end
 
