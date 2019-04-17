@@ -49,18 +49,18 @@ event.AddListener("Initialize", function()
 
 	pvars.Setup("system_texteditor_path", false)
 	pvars.Setup("system_tasks_enabled", false, function(val) tasks.enabled = val end)
-	
+
 	if CLI then tasks.enabled = true end
-	
+
 	--steam.InitializeWebAPI()
-	
+
 	if PHYSICS then
 		physics.Initialize()
 	end
-	
+
 	if CLI then
 		event.AddListener("Update", "cli", function()
-			if not tasks.IsBusy() and not sockets.active_sockets[1] then
+			if not tasks.IsBusy() and not sockets.active[1] then
 				system.ShutDown()
 			end
 		end)
