@@ -106,6 +106,7 @@ do -- constants
 	e.SHARED_FOLDER = e.STORAGE_FOLDER .. "shared/"
 	e.CACHE_FOLDER = e.STORAGE_FOLDER .. "cache/"
 	e.TEMP_FOLDER = e.STORAGE_FOLDER .. "temp/"
+	e.BIN_PATH = "bin/" .. OS .. "_" .. ARCH .. "/"
 
 	-- _G constants. should only contain you need to access a lot like if LINUX then
 	_G[e.USERNAME:upper()] = true
@@ -173,7 +174,7 @@ vfs.GetAddonInfo(e.INTERNAL_ADDON_NAME).startup = nil -- prevent init.lua from r
 
 vfs.AddModuleDirectory("lua/modules/")
 vfs.AddModuleDirectory("bin/shared/")
-vfs.AddModuleDirectory("bin/" .. OS .. "_" .. ARCH .. "/lua")
+vfs.AddModuleDirectory(e.BIN_PATH .. "lua")
 
 if desire("ffi") then
 	_G.require("ffi").load = vfs.FFILoadLibrary
@@ -226,6 +227,22 @@ end
 e.BOOT_TIME = tonumber(os.getenv("GOLUWA_BOOT_TIME")) or -1
 e.INIT_TIME = os.clock() - start_time
 e.BOOTIME = os.clock()
+
+if os.getenv("GOLUWA_ARG_LINE") == "build" then
+	runfile("lua/ffibuild/libressl.lua")
+	runfile("lua/ffibuild/luajit.lua")
+	runfile("lua/ffibuild/enet.lua")
+	runfile("lua/ffibuild/freeimage.lua")
+	runfile("lua/ffibuild/freetype.lua")
+	runfile("lua/ffibuild/libarchive.lua")
+	runfile("lua/ffibuild/libmp3lame.lua")
+	runfile("lua/ffibuild/mpg123.lua")
+	runfile("lua/ffibuild/libsndfile.lua")
+	runfile("lua/ffibuild/openal.lua")
+	runfile("lua/ffibuild/sdl2.lua")
+
+	return
+end
 
 event.AddListener("MainLoopStart", function()
 	vfs.AutorunAddons()

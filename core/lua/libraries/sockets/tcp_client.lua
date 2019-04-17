@@ -45,11 +45,17 @@ function META:SetupTLS()
     local ffi = require("ffi")
     tls.init()
 
-    local tls_client = tls.client()
 
     local config = tls.config_new()
-    tls.config_insecure_noverifycert(config)
-    tls.config_insecure_noverifyname(config)
+    --tls.config_insecure_noverifycert(config)
+    --tls.config_insecure_noverifyname(config)
+    local err = tls.config_set_ca_file(config, e.ROOT_FOLDER .. "core/" .. e.BIN_PATH .. "ssl/cert.pem")
+    if err ~= 0 then
+        print(ffi.string(tls.config_error(config)), "!!")
+    end
+
+    local tls_client = tls.client()
+
     tls.configure(tls_client, config)
 
     local function last_error(code, what)
@@ -125,7 +131,6 @@ function META:OnRemove()
 end
 
 function META:Close(reason)
-    if reason then print(reason) end
     self:Remove()
 end
 
@@ -175,7 +180,7 @@ function META:Update()
                     end
 
                     if err == "closed" then
-                        self:OnClose()
+                        self:OnClose("handshake")
                     else
                         self:Error(err)
                     end
@@ -212,7 +217,7 @@ function META:Update()
             self:OnReceiveChunk(chunk)
         else
             if err == "closed" then
-                self:OnClose()
+                self:OnClose("receive")
             elseif err ~= "timeout" then
                 self:Error(err)
             end
@@ -226,7 +231,7 @@ function META:Error(message, ...)
     return false
 end
 
-function META:OnError(str) self:Remove() end
+function META:OnError(str, tr) logn(tr) llog(str) self:Remove() end
 function META:OnReceiveChunk(str) end
 function META:OnClose() self:Close() end
 function META:OnConnect() end
