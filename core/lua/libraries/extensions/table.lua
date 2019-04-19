@@ -1,6 +1,14 @@
 table.new = table.new or desire("table.new") or function() return {} end
 table.clear = table.clear or desire("table.clear") or function(t) for k in pairs(t) do t[k] = nil end end
 
+function table.lowercasedlookup(tbl, key)
+	for k,v in pairs(tbl) do
+		if k:lower() == key:lower() then
+			return v
+		end
+	end
+end
+
 if not table.pack then
     function table.pack(...)
         return {
