@@ -143,6 +143,62 @@ function META:ParseURI(uri)
     }
 end
 
+function META:EncodeURI(tbl)
+    local uri = ""
+
+    if tbl.scheme then
+        uri = uri .. tbl.scheme .. "://"
+    end
+
+    if tbl.authority then
+        uri = uri .. tbl.authority .. "@"
+    end
+
+    if tbl.host then
+        uri = uri .. tbl.host .. "/"
+    end
+
+    if tbl.path or tbl.query then
+        local str = ""
+
+        if tbl.path then
+            str = str .. tbl.path
+        end
+
+        if tbl.query then
+            str = str .. "?"
+            for k, v in pairs(tbl.query) do
+                str = str .. k .. "=" .. v .. "&"
+            end
+            if str:endswith("&") then
+                str = str:sub(0,-2)
+            end
+        end
+
+        str = str:gsub("[^%w%-_%.%!%~%*%'%(%)]", function(c)
+            if not legal_uri_characters[c] then
+                return string.format("%%%02X", c:byte(1,1))
+            end
+        end)
+
+        uri = uri .. str
+    end
+
+    return uri
+end
+
+if RELOAD then
+    local url = "https://Aladdin:OpenSesame@www.example.com/index.php"
+    local tbl = META:ParseURI(url)
+    tbl.query = {
+        test = "1",
+        awdawd = "aa",
+    }
+    local encoded = META:EncodeURI(tbl)
+    print(encoded, url == encoded)
+    return
+end
+
 local function default_header(header, key, val)
     if header[key] == nil then
         header[key] = val
@@ -438,6 +494,7 @@ META:Register()
 function sockets.HTTPClient(socket)
     local self = META:CreateObject()
     self:Initialize(socket)
+
     return self
 end
 
@@ -447,54 +504,6 @@ function sockets.ConnectedTCP2HTTP(obj)
     obj.connected = true
     obj.connecting = false
     obj.FromClient = true
-end
-
-function sockets.Request(tbl)
-    local a,b,c = event.Call("SocketRequest", tbl)
-	if a ~= nil then
-		return a,b,c
-	end
-
-    local client = sockets.HTTPClient()
-
-    client.NoCodeError = true
-
-    client.OnReceiveStatus = function(_, code, status)
-        if tbl.code_callback then
-            tbl.code_callback(tonumber(code), status)
-        end
-    end
-
-    client.OnReceiveHeader = function(_, header)
-        if tbl.header_callback then
-            tbl.header_callback(header)
-        end
-    end
-
-    client.OnReceiveBodyChunk = function(_, chunk)
-        if tbl.on_chunks then
-            tbl.on_chunks(chunk, length, header)
-        end
-    end
-
-    client.OnReceiveBody = function(_, body)
-        tbl.callback({
-            body = client.Body,
-            header = client.Header,
-            code = tonumber(client.Code)
-        })
-    end
-
-    client.OnError = function(_, err, tr)
-        if tbl.error_callback then
-            tbl.error_callback(err)
-        else
-            llog("sockets.Request: " .. err)
-            logn(tr)
-        end
-    end
-
-    client:Request(tbl.method or "GET", tbl.url, tbl.header, tbl.post_data)
 end
 
 if RELOAD then
