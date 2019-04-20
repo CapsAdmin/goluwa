@@ -44,11 +44,12 @@ function chatsounds.BuildFromGithub(repo, location)
 	local base_url = "https://raw.githubusercontent.com/" .. repo .. "/master/" .. location .. "/"
 
 	resource.Download(base_url .. "list.msgpack", nil, nil, true):Then(function(path)
-		-- llog("found list.msgpack for ", location)
-		read_list(base_url, serializer.ReadFile("msgpack", path))
+		 llog("found list.msgpack for ", location)
+		local val = vfs.Read(path)
+		read_list(base_url, val)
 	end):Catch(function(reason)
-		-- llog(repo, ": unable to find list.msgpack from \"", location, "\"")
-		-- llog(repo, ": parsing with github api instead (slow)")
+		 llog(repo, ": unable to find list.msgpack from \"", location, "\"")
+		 llog(repo, ": parsing with github api instead (slow)")
 
 		local url = "https://api.github.com/repos/" .. repo .. "/git/trees/master?recursive=1"
 
@@ -66,7 +67,7 @@ function chatsounds.BuildFromGithub(repo, location)
 			end
 
 			local sounds = {}
-			local str = assert(vfs.Read(path))
+			local str = assert(io.open(path, "rb"):read("*all"))
 			local i = 1
 			for path in str:gmatch('"path":%s?"(.-)"[\n,}]') do
 				if path:startswith(location) and path:endswith(".ogg") then
