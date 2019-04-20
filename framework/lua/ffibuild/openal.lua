@@ -8,12 +8,11 @@ for lib_name, enum_name in pairs({al = "AL_", alc = "ALC_"}) do
 		shared_library_name = "openal",
 
 		c_source = [[
-			#define ALEXT_PROTOTYPES
+			#define AL_ALEXT_PROTOTYPES 1
 			#include "AL/alc.h"
 			#include "AL/alext.h"
 			#include "AL/al.h"
 			#include "AL/efx.h"
-
 		]],
 		gcc_flags = "-I./include/AL",
 
@@ -23,7 +22,7 @@ for lib_name, enum_name in pairs({al = "AL_", alc = "ALC_"}) do
 
 			return meta_data:BuildMinimalHeader(
 				function(name)
-					return name:find("^"..lib_name.."%u")
+					return name:find("^" .. lib_name .. "%u")
 				end,
 				function(name)
 					return name:find("^" .. enum_name)
@@ -213,6 +212,6 @@ for lib_name, enum_name in pairs({al = "AL_", alc = "ALC_"}) do
         if name:startswith("libopenal") then
 			return "libopenal"
 		end
-    end,
+	end,
 })
 end

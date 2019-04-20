@@ -25,7 +25,14 @@ function audio.Initialize(name)
 		llog("opening device %q for sound output", name)
 	end
 
-	local device = alc.OpenDevice(nil)
+
+	local device
+
+	if name == "loopback" then
+		device = alc.LoopbackOpenDeviceSOFT(nil)
+	else
+		device = alc.OpenDevice(nil)
+	end
 
 	if device == nil then
 		llog("opening device failed: ", alc.GetErrorString(device))
@@ -37,11 +44,31 @@ function audio.Initialize(name)
 	al.debug = true
 	alc.debug = true
 
-	local context = alc.CreateContext(device, nil)
-	alc.MakeContextCurrent(context)
+	if name == "loopback" then
+		local channels = alc.e.STEREO_SOFT
+		local frequency = 48000
+		local format = alc.e.SHORT_SOFT
+
+		audio.context = alc.CreateContext(device, ffi.new("const int[16]", {
+			alc.e.FORMAT_CHANNELS_SOFT, channels,
+			alc.e.FORMAT_TYPE_SOFT, format,
+			alc.e.FREQUENCY, frequency,
+			0,
+		}))
+
+		if alc.IsRenderFormatSupportedSOFT(device, frequency, channels, format) == 0 then
+			llog("unable to initialize loopback audio context, format not supported")
+			return
+		end
+	else
+		audio.context = alc.CreateContext(device, nil)
+	end
+
+	audio.channels = 2
+
+	alc.MakeContextCurrent(audio.context)
 
 	audio.device = device
-	audio.context = context
 
 	event.AddListener("ShutDown", "openal", audio.Shutdown)
 end
@@ -146,6 +173,15 @@ function audio.GetAllInputDevices()
 	end
 
 	return devices
+end
+
+function audio.ReadLoopbackOutput(samples)
+	samples = samples or 4096
+	local buffer = ffi.new("int16_t[?]", samples * audio.channels)
+
+	alc.RenderSamplesSOFT(alc.device, buffer, samples)
+
+	return buffer, samples
 end
 
 function audio.GetEffectChannel(i)
@@ -650,6 +686,7 @@ do -- source
 					self.reverse_source:Play()
 					self:Stop()
 				end
+
 				self.reverse_source:SetPitch(-num)
 
 				return
