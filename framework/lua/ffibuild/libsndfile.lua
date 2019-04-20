@@ -1,15 +1,15 @@
 ffibuild.Build({
 	name = "libsndfile",
 	url = "https://github.com/erikd/libsndfile.git", -- --host=x86_64-w64-mingw32
-	cmd = "./autogen.sh && ./configure && make",
+	cmd = "mkdir out && cd out && cmake -DBUILD_SHARED_LIBS=ON .. && make",
 	addon = vfs.GetAddonFromPath(SCRIPT_PATH),
 	c_source = [[
 		#include "sndfile.h"
 	]],
-	gcc_flags = "-I./src",
+	gcc_flags = "-I./out/src",
 	process_header = function(header)
         local meta_data = ffibuild.GetMetaData(header)
-        return meta_data:BuildMinimalHeader(function(name) return name:find("^sf_") end, function(name) return name:find("^SF") end, true, true)    
+        return meta_data:BuildMinimalHeader(function(name) return name:find("^sf_") end, function(name) return name:find("^SF") end, true, true)
 	end,
 
     build_lua = function(header, meta_data)
