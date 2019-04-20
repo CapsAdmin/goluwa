@@ -1,5 +1,5 @@
-local server_id = "348585066294673409"
-local channel_id = "348585066294673411"
+local server_id = "260866188962168832"
+local channel_id = "568745482407641099"
 
 local ffi = require("ffi")
 local CHANNELS = 2
@@ -16,9 +16,6 @@ local MAX_SEQUENCE = 0xFFFF
 local MAX_TIMESTAMP = 0xFFFFFFFF
 
 local PADDING = string.rep('\0', 12)
-
-local MS_PER_NS = 1 / (1000 * 1000)
-local MS_PER_S = 1000
 
 local sodium = require("sodium")
 local opus = require("opus")
@@ -42,7 +39,7 @@ local function swap_endian(num, size)
 end
 
 local function start_noise(self)
-	local frame_size = SAMPLE_RATE * FRAME_DURATION / MS_PER_S
+	local frame_size = SAMPLE_RATE * FRAME_DURATION / 1000
 	local pcm_len = frame_size * CHANNELS
 	local elapsed = 0
 	local start = system.GetTime()
@@ -51,15 +48,15 @@ local function start_noise(self)
 	self.time = 0
 
 
-	--event.AddListener("Update", "noise_voice", function()
-	local function encode()
-		local pcm = {}
-		for i = 1, pcm_len do
-			math.randomseed(i)
-			pcm[i] = math.random(-0xFFFF, 0xFFFF)
-		end
 
-		local data, len = encoder:encode(pcm, pcm_len, frame_size, pcm_len * 2)
+	local mic = audio.CreateAudioCapture()
+	mic:Start()
+
+	event.AddListener("Update", "noise_voice", function()
+
+		local pcm, pcm_len = audio.ReadLoopbackOutput(frame_size*2)
+
+		local data, len = encoder:encode(pcm, pcm_len, pcm_len * 2)
 
 		if not data then
 			print('could not encode audio data')
@@ -78,7 +75,7 @@ local function start_noise(self)
 		local header = buf:GetString()
 
 		s = s + 1
-		t = t + frame_size
+		t = t + pcm_len
 
 		self.sample = s > MAX_SEQUENCE and 0 or s
 		self.time = t > MAX_TIMESTAMP and 0 or t
@@ -94,11 +91,11 @@ local function start_noise(self)
 		local packet = header .. ffi.string(encrypted, encrypted_len)
 		self.udp:Send(packet, self.ip, self.port)
 
-		elapsed = elapsed + FRAME_DURATION/1000
-		local delay = elapsed - (system.GetTime() - start)
-		event.Delay(delay, encode)
-	end
-	encode()
+	--	elapsed = elapsed + FRAME_DURATION/1000
+	--	local delay = elapsed - (system.GetTime() - start)
+	--	event.Delay(delay, encode)
+	end)
+	--encode()
 end
 
 local META = prototype.CreateTemplate("discord_bot")
@@ -333,19 +330,16 @@ do return end
 META:Register()
 
 if RELOAD then
-	if LOL then
-		LOL:Remove()
+	if not LOL then
+		--LOL:Remove()
+		LOL = DiscordBot(assert(vfs.Read("temp/discord_bot_token")))
 	end
-
-	LOL = DiscordBot(assert(vfs.Read("temp/discord_bot_token")))
 
 	function LOL:OnEvent(data)
 		if data.t == "VOICE_SERVER_UPDATE" then
 			self.voice_server = data
-			table.print(data)
 		elseif data.t == "VOICE_STATE_UPDATE" then
 			self.voice_state = data
-			table.print(data)
 		end
 
 		if self.voice_server and self.voice_state then
@@ -465,7 +459,7 @@ if RELOAD then
 						self.key = sodium.key(data.d.secret_key)
 						start_noise(self)
 
-						--[[event.Delay(10, function()
+						--[[event.Delay(4, function()
 							self:Send(serializer.Encode("json", {
 								op = 5,
 								d = {
@@ -512,6 +506,10 @@ if RELOAD then
 			end, {limit = 10})]]
 		else
 			if data.t == "MESSAGE_CREATE" then
+				chatsounds.Say(data.d.content)
+			elseif data.t == "MESSAGE_UPDATE" then
+				chatsounds.Say(data.d.content)
+			elseif data.t ~= "PRESENCE_UPDATE" then
 				table.print(data)
 			end
 
