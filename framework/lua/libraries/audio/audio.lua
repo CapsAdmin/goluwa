@@ -891,7 +891,7 @@ do -- microphone
 	local val = ffi.new("int[1]")
 
 	function META:GetCapturedSamples()
-		alc.GetIntegerv(self.id, al.e.ALC_CAPTURE_SAMPLES, 1, val)
+		alc.GetIntegerv(self.id, alc.e.CAPTURE_SAMPLES, 1, val)
 		return val[0]
 	end
 
