@@ -2010,6 +2010,8 @@ do -- lua helper functions
 				local lua = info.build_lua(header, meta_data)
 				vfs.PopWorkingDirectory()
 
+				local name = info.lua_name or ffibuild.GetBuildName()
+
 				if ffibuild.TestLibrary(lua, header) or (strip_undefined_symbols and next(strip_undefined_symbols)) then
 
 					if info.strip_undefined_symbols and next(ffibuild.undefined_symbols) then
@@ -2018,8 +2020,6 @@ do -- lua helper functions
 					else
 						ffibuild.undefined_symbols = nil
 					end
-
-					local name = info.lua_name or ffibuild.GetBuildName()
 
 					local dir = "os:" .. e.ROOT_FOLDER .. addon .. "/bin/shared/"
 					vfs.CreateDirectoriesFromPath(dir)
