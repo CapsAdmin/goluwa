@@ -838,11 +838,13 @@ library.e = {
 			size_box[0] = size
 			library.AcquireMemory(mem, buffer_box, size_box)
 
+			local str = ffi.string(buffer_box[0], size_box[0])
+
 			library.Unload(bitmap)
 			if temp then library.Unload(temp) end
 			library.CloseMemory(mem)
 
-			return buffer_box[0], size_box[0]
+			return str
 		end
 		library.clib = CLIB
 return library
