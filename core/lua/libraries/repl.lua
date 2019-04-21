@@ -43,7 +43,7 @@ end
 
 function repl.CharInput(str)
 	event.Call("ReplCharInput", str)
-	for _, str in ipairs(str:totable()) do
+	for _, str in ipairs(str:utotable()) do
 		local x, y = repl.GetCaretPosition()
 		repl.buffer = repl.buffer:usub(0, x - 1) .. str .. repl.buffer:usub(x + str:ulen() - 1, -1)
 		repl.MoveCaret(str:ulen(), 0)
@@ -425,6 +425,8 @@ function repl.KeyPressed(key)
 		if offset then
 			repl.buffer = repl.buffer:usub(0, x - 1) .. repl.buffer:usub(x + offset, -1)
 		end
+	elseif key == "cmd_backspace" then
+		repl.buffer = ""
 	elseif key ~= "ctrl_c" then
 		llog("unhandled key %s", key)
 	end

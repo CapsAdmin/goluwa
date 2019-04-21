@@ -174,8 +174,8 @@ local function process_input(str)
         table.insert(terminal.event_buffer, {"enter"})
     elseif str:byte() >= 32 and str:byte() < 127 then
         table.insert(terminal.event_buffer, {"string", str})
-    elseif str:usub(1,2) == "\27[" then
-        local seq = str:usub(3, str:ulen())
+    elseif str:sub(1,2) == "\27[" then
+        local seq = str:sub(3, str:len())
 
         if seq == "3~" then
             table.insert(terminal.event_buffer, {"delete"})
@@ -200,6 +200,15 @@ local function process_input(str)
         else
             --print("ansi escape sequence: " .. seq)
         end
+    elseif str:sub(1,1) == "\27" then
+        local seq = str:sub(2, str:len())
+        if seq == "b" then
+            table.insert(terminal.event_buffer, {"ctrl_left"})
+        elseif seq == "f" then
+            table.insert(terminal.event_buffer, {"ctrl_right"})
+        elseif seq == "D" then
+            table.insert(terminal.event_buffer, {"ctrl_delete"})
+        end
     else
         -- in a tmux session over ssh
         if str == "\127\127" then
@@ -216,6 +225,12 @@ local function process_input(str)
                 table.insert(terminal.event_buffer, {"ctrl_backspace"})
             elseif byte == 22 then
                 table.insert(terminal.event_buffer, {"ctrl_v"})
+            elseif byte == 1 then
+                table.insert(terminal.event_buffer, {"home"})
+            elseif byte == 5 then
+                table.insert(terminal.event_buffer, {"end"})
+            elseif byte == 21 then
+                table.insert(terminal.event_buffer, {"cmd_backspace"})
             else
                 --print("byte: " .. byte)
             end
