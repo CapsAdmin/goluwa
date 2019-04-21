@@ -47,11 +47,11 @@ function META:SetupTLS()
 
 
     local config = tls.config_new()
-    --tls.config_insecure_noverifycert(config)
-    --tls.config_insecure_noverifyname(config)
     local err = tls.config_set_ca_file(config, e.ROOT_FOLDER .. "core/" .. e.BIN_PATH .. "ssl/cert.pem")
     if err ~= 0 then
-        print(ffi.string(tls.config_error(config)), "!!")
+        llog(ffi.string(tls.config_error(config)))
+        tls.config_insecure_noverifycert(config)
+        tls.config_insecure_noverifyname(config)
     end
 
     local tls_client = tls.client()
