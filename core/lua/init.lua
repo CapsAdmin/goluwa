@@ -244,6 +244,11 @@ if os.getenv("GOLUWA_ARG_LINE") == "build" then
 	return
 end
 
+-- this can be overriden later, but by default we limit the fps to 30
+event.AddListener("FrameEnd", "fps_limit", function()
+	system.Sleep(1/30)
+end)
+
 event.AddListener("MainLoopStart", function()
 	vfs.AutorunAddons()
 
@@ -268,8 +273,6 @@ vfs.InitAddons(function()
 	event.Call("MainLoopStart")
 end)
 
-local no_main_loop = not event.active["MainLoopStart"] or #event.active["MainLoopStart"] == 0
-
 vfs.FetchBniariesForAddon("core")
 
 local last_time = 0
@@ -289,10 +292,6 @@ while system.run == true do
 	i = i + 1
 	last_time = time
 	event.Call("FrameEnd")
-
-	if no_main_loop then
-		system.Sleep(1/30)
-	end
 end
 repl.Stop()
 
