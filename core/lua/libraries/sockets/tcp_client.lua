@@ -145,11 +145,20 @@ function META:Connect(host, service)
 end
 
 function META:Send(data)
-
     local ok, err
 
     if self.socket:is_connected() and not self.connecting then
-        ok, err = self.socket:send(data)
+        local pos = 0
+        for i = 1, math.huge do
+            ok, err = self.socket:send(data:sub(pos + 1))
+            if ok then
+                pos = pos + tonumber(ok)
+            end
+
+            if pos >= #data then
+                break
+            end
+        end
     else
         ok, err = false, "timeout"
     end
@@ -161,7 +170,7 @@ function META:Send(data)
             return true
         end
 
-        self:Error(err)
+        return self:Error(err)
     end
 
     return ok, err
@@ -201,7 +210,7 @@ function META:Update()
 
                 if not data then break end
 
-                local ok, err = self.socket:send(data)
+                local ok, err = self:Send(data)
 
                 if ok then
                     table.remove(self.buffered_send)
