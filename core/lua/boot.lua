@@ -627,17 +627,16 @@ if UNIX then
 		valgrind = valgrind .. "--leak-resolution=high "
 		valgrind = valgrind .. "--show-reachable=yes "
 		valgrind = valgrind .. "--read-var-info=yes "
-		valgrind = valgrind .. "--suppressions=lj.supp "
+		valgrind = valgrind .. "--suppressions=./"..BINARY_DIR.."/lj.supp "
 		valgrind = valgrind .. "./" .. BINARY_DIR .. "/"..executable .. " " .. initlua
 
 		if os.getenv("DISPLAY") then
-			os.execute("xterm -hold -e " .. gdb)
-
 			if os.iscmd("valgrind") then
-				os.execute("xterm -hold -e " .. valgrind .. " &")
+			--	os.execute("xterm -hold -e " .. valgrind .. " &")
 			else
 				print("valgrind is not installed")
 			end
+			os.execute("xterm -hold -e " .. gdb)
 		else
 			os.execute(gdb)
 		end
