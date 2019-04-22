@@ -166,7 +166,6 @@ do
         local post_data
 
 
-
         if data.headers and table.lowercasedlookup(data.headers, "content-type") and table.lowercasedlookup(data.headers, "content-type"):startswith("application/json") then
             post_data = serializer.Encode("json", data.body)
         else
@@ -189,7 +188,7 @@ do
             code_callback = function(code, status)
                 if not tostring(code):startswith("2") then
                     socket:Remove()
-                    reject(status)
+                    reject(status .. "(" .. code .. ") url:" .. url)
                     return false
                 end
             end,
@@ -201,6 +200,7 @@ do
             end,
             post_data = post_data,
             header = data.headers,
+            files = data.files,
         }, true)
 
         self.on_stop = function()
@@ -240,13 +240,19 @@ do
                 data.headers = data.headers or {}
 
                 if default_headers then
+                    local default_headers = default_headers
+
+                    if type(default_headers) == "function" then
+                        default_headers = default_headers(data)
+                    end
+
                     for k,v in pairs(default_headers) do
                         data.headers[k] = data.headers[k] or v
                     end
                 end
 
-                table.print(data)
-                print(base_url .. url)
+                --table.print(data)
+                --print(base_url .. url)
 
                 if tasks.GetActiveTask() then
                     return start(base_url .. url, data, method):Get()
