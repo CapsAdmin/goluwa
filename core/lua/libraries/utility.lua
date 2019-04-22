@@ -985,6 +985,14 @@ do
 	end
 end
 
+function utility.SwapEndian(num, size)
+	local result = 0
+	for shift = 0, (size * 8) - 8, 8 do
+		result = bit.bor(bit.lshift(result, 8), bit.band(bit.rshift(num, shift), 0xff))
+	end
+	return result
+end
+
 function utility.NumberToBinary(num, bits)
 	bits = bits or 32
 	local bin = {}
