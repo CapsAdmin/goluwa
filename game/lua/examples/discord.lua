@@ -1,44 +1,32 @@
 local server_id = "260866188962168832"
 local channel_id = "568745482407641099"
 
-local ffi = require("ffi")
-local CHANNELS = 2
-local SAMPLE_RATE = 48000 -- Hz
-local FRAME_DURATION = 20 -- ms
-local COMPLEXITY = 5
+local function start_voicechat(self)
 
-local MIN_BITRATE = 8000 -- bps
-local MAX_BITRATE = 128000 -- bps
-local MIN_COMPLEXITY = 0
-local MAX_COMPLEXITY = 10
+	local ffi = require("ffi")
+	local CHANNELS = 2
+	local SAMPLE_RATE = 48000 -- Hz
+	local FRAME_DURATION = 20 -- ms
+	local COMPLEXITY = 5
 
-local MAX_SEQUENCE = 0xFFFF
-local MAX_TIMESTAMP = 0xFFFFFFFF
+	local MIN_BITRATE = 8000 -- bps
+	local MAX_BITRATE = 128000 -- bps
+	local MIN_COMPLEXITY = 0
+	local MAX_COMPLEXITY = 10
 
-local PADDING = string.rep('\0', 12)
+	local MAX_SEQUENCE = 0xFFFF
+	local MAX_TIMESTAMP = 0xFFFFFFFF
 
-local sodium = require("sodium")
-local opus = require("opus")
+	local PADDING = string.rep('\0', 12)
 
-local encoder = opus.Encoder(SAMPLE_RATE, CHANNELS)
+	local sodium = require("sodium")
+	local opus = require("opus")
 
-encoder:set(opus.SET_COMPLEXITY_REQUEST, COMPLEXITY)
-encoder:set(opus.SET_BITRATE_REQUEST, 64000)
+	local encoder = opus.Encoder(SAMPLE_RATE, CHANNELS)
 
-local bit_rshift = bit.rshift
-local bit_lshift = bit.lshift
-local bit_bor = bit.bor
-local bit_band = bit.band
+	encoder:set(opus.SET_COMPLEXITY_REQUEST, COMPLEXITY)
+	encoder:set(opus.SET_BITRATE_REQUEST, 64000)
 
-local function swap_endian(num, size)
-	local result = 0
-	for shift = 0, (size * 8) - 8, 8 do
-		result = bit_bor(bit_lshift(result, 8), bit_band(bit_rshift(num, shift), 0xff))
-	end
-	return result
-end
-
-local function start_noise(self)
 	local frame_size = SAMPLE_RATE * FRAME_DURATION / 1000
 	local pcm_len = frame_size * CHANNELS
 	local elapsed = 0
@@ -47,14 +35,42 @@ local function start_noise(self)
 	self.sample = 0
 	self.time = 0
 
+	local speaking
 
+	local function is_speaking(pcm, pcm_len)
+		for i = 0, pcm_len-1 do
+			if pcm[i] <= -5 or pcm[i] >= 5 then
+				print(pcm[i])
+				return true
+			end
+		end
 
-	local mic = audio.CreateAudioCapture()
-	mic:Start()
+		return false
+	end
 
 	event.AddListener("Update", "noise_voice", function()
 
 		local pcm, pcm_len = audio.ReadLoopbackOutput(frame_size*2)
+
+		if is_speaking(pcm, pcm_len) then
+			if not speaking then
+				self:SendSpeaking({
+					speaking = true,
+					delay = 0,
+					ssrc = self.ssrc,
+				})
+				speaking = true
+			end
+		else
+			if speaking then
+				self:SendSpeaking({
+					speaking = false,
+					delay = 0,
+					ssrc = self.ssrc,
+				})
+				speaking = false
+			end
+		end
 
 		local data, len = encoder:encode(pcm, pcm_len, pcm_len * 2)
 
@@ -69,9 +85,9 @@ local function start_noise(self)
 		local buf = utility.CreateBuffer()
 		buf:WriteByte(0x80)
 		buf:WriteByte(0x78)
-		buf:WriteInt16_T(swap_endian(s, 2))
-		buf:WriteInt32_T(swap_endian(t, 4))
-		buf:WriteInt32_T(swap_endian(self.ssrc, 4))
+		buf:WriteInt16_T(utility.SwapEndian(s, 2))
+		buf:WriteInt32_T(utility.SwapEndian(t, 4))
+		buf:WriteInt32_T(utility.SwapEndian(self.ssrc, 4))
 		local header = buf:GetString()
 
 		s = s + 1
@@ -103,216 +119,137 @@ local META = prototype.CreateTemplate("discord_bot")
 function DiscordBot(token)
 	local self = META:CreateObject()
 	self.token = "Bot " .. token
-	self:Initialize()
 
-	self.api = http.CreateAPI("https://discordapp.com/api/", {
-		Authorization = self.token,
-		["Content-Type"] = "application/json",
-	})
+	self.api = http.CreateAPI("https://discordapp.com/api/", function(data)
+		return {
+			Authorization = self.token,
+			["Content-Type"] = data.body and "application/json" or nil,
+		}
+	end)
+
+	self:Initialize()
 
 	return self
 end
 
+function META:Send(data)
+	self.socket:SendMessage(data)
+end
 
+function META:CreateWebsocket(opcodes, friendly_name)
+	local name2opcode = {}
+	local opcode2name = {}
 
+	for i, v in ipairs(opcodes) do
+		name2opcode[v] = i
+	end
 
-local multipart_boundary = "Goluwa" .. os.time()
-local multipart = string.format('multipart/form-data; boundary=%s', boundary)
+	for i, v in ipairs(opcodes) do
+		opcode2name[i] = v
+	end
 
-function META:Query(method, data, callback, files)
-	local input_method = method
-	local method, index = unpack(method:split(" "))
+	local socket = sockets.CreateWebsocketClient()
 
-	if method == "WEBSOCKET" then
-		self.socket:Send(serializer.Encode("json", data), 1)
-	else
-		if method == "GET" then
-			callback, data = data, callback
+	function socket:SendMessage(data)
+		if data.opcode then
+			data.op = name2opcode[data.opcode]
+			if not data.op then error("invalid opcode " .. data.opcode) end
+			data.opcode = nil
 		end
+		self:Send(serializer.Encode("json", data), 1)
+	end
 
-		local input_data = data
+	for k, v in pairs(opcodes) do
+		socket["Send" .. v] = function(self, data)
 
-		local function finished(data)
-			if data.code ~= 200 then
-				table.print(input_data)
-				print(input_method, input_data, callback, files)
-				print(data.body)
-				return
-			end
-			local json = data.body:match("^.-\r\n(.+)0") or data.body
-			local ok, tbl = pcall(serializer.Decode, "json", json)
+			llog(friendly_name .." sending: " .. v)
+			table.print(data)
 
-			if not ok then
-				print(tbl)
-				print(json)
-			end
-
-			if tbl.code == 0 then
-				table.print(input_data)
-				print(input_method, tbl.message)
-				return
-			end
-
-			if callback then
-				callback(tbl)
-			end
-		end
-
-		if files then
-			local tbl = {}
-
-			table.insert(tbl, {
-				name = "payload_json",
-				type = "application/json",
-				data = serializer.Encode("json", data),
+			self:SendMessage({
+				op = k,
+				d = data,
 			})
-
-			for i, v in ipairs(files) do
-				table.insert(tbl, {
-					name = "file" .. i,
-					type = "application/octet-stream",
-					filename = v.name,
-					data = v.data,
-				})
-			end
-
-			sockets.Request({
-				files = tbl,
-				method = method,
-				url = "https://discordapp.com/api" .. index,
-				callback = finished,
-				user_agent = "DiscordBot (https://github.com/CapsAdmin/goluwa, 0)",
-				header = {
-					Authorization = self.token,
-				},
-			})
-		else
-			if method == "GET" then
-				local query = ""
-
-				if data then
-					query = "?"
-					for k, v in pairs(data) do
-						query = query .. k .. "=" .. v .. "&"
-					end
-					if query:endswith("&") then
-						query = query:sub(0,-2)
-					end
-					print(method, "https://discordapp.com/api" .. index .. query)
-				end
-				sockets.Request({
-					method = method,
-					url = "https://discordapp.com/api" .. index .. query,
-					callback = finished,
-					user_agent = "DiscordBot (https://github.com/CapsAdmin/goluwa, 0)",
-					header = {
-						["Content-Type"] = data and "application/json" or nil,
-						Authorization = self.token,
-					},
-				})
-			else
-				sockets.Request({
-					method = method,
-					post_data = data and serializer.Encode("json", data) or nil,
-					url = "https://discordapp.com/api" .. index,
-					callback = finished,
-					user_agent = "DiscordBot (https://github.com/CapsAdmin/goluwa, 0)",
-					header = {
-						["Content-Type"] = data and "application/json" or nil,
-						Authorization = self.token,
-					},
-				})
-			end
 		end
 	end
+
+	function socket:OnReceive(message, err, partial)
+		local data = serializer.Decode("json", message)
+
+		data.opcode = opcode2name[data.op]
+		data.op = nil
+
+		if data.opcode == "Hello" then
+			self:SendHeartbeat(os.clock())
+			event.Timer(self, (data.d.heartbeat_interval/1000) * 0.75, function()
+				self:SendHeartbeat(os.clock())
+			end)
+		end
+
+		if data.opcode then
+			llog(friendly_name .. " received opcode: " .. data.opcode)
+			table.print(data)
+		elseif data.t and data.t ~= "PRESENCE_UPDATE" and data.t ~= "GUILD_CREATE" then
+			llog(friendly_name .. " received event: " .. data.t)
+			table.print(data)
+		end
+
+		self:OnEvent(data)
+	end
+
+	function socket:OnClose(reason, code)
+		event.RemoveTimer(self)
+		logf("closing discord socket: %s (%s)\n", reason, code)
+		self:Remove()
+	end
+
+	function socket:OnEvent(data) end
+
+	return socket
 end
 
 function META:Initialize()
-	local socket = sockets.CreateWebsocketClient()
-	self.socket = socket
-	self:Query("GET /gateway/bot", function(data)
+	self.api.GET("gateway/bot"):Then(function(data)
 
-		local bot = self
-		socket:Connect(data.url .. "/?v=6", "wss")
-
-		function socket:Heartbeat()
-			bot:Query("WEBSOCKET", {
-				op = 1,
-				d = self.last_sequence or 0,
-			})
-		end
-
-		bot:Query("WEBSOCKET", {
-			op = 2,
-			d = {
-				token = bot.token,
-				properties = {
-					["$os"] = jit.os,
-					["$browser"] = "goluwa",
-					["$device"] = "goluwa",
-					["$referrer"] = "",
-					["$referring_domain"] = "",
-				},
-				compress = false,
-				large_threshold = 100,
-				shard = {0,1},
-			},
-		})
-
-		local opcodes = {
+		local socket = self:CreateWebsocket({
 			[0] = "Dispatch", -- dispatches an event
 			[1] = "Heartbeat", -- used for ping checking
 			[2] = "Identify", -- used for client handshake
-			[3] = "Status Update", -- used to update the client status
-			[4] = "Voice State Update", -- used to join/move/leave voice channels
-			[5] = "Voice Server Ping", -- used for voice ping checking
+			[3] = "StatusUpdate", -- used to update the client status
+			[4] = "VoiceStateUpdate", -- used to join/move/leave voice channels
+			[5] = "VoiceServerPing", -- used for voice ping checking
 			[6] = "Resume", -- used to resume a closed connection
 			[7] = "Reconnect", -- used to tell clients to reconnect to the gateway
-			[8] = "Request Guild Members", -- used to request guild members
-			[9] = "Invalid Session", -- used to notify client they have an invalid session id
+			[8] = "RequestGuildMembers", -- used to request guild members
+			[9] = "InvalidSession", -- used to notify client they have an invalid session id
 			[10] = "Hello", -- sent immediately after connecting, contains heartbeat and server debug information
-			[11] = "Heartback ACK", -- sent immediately following a client heartbeat that was received
-		}
+			[11] = "HeartbackACK", -- sent immediately following a client heartbeat that was received
+		}, "base")
 
+		self.socket = socket
 
+		socket:Connect(data.url .. "/?v=6", "wss")
 
-		function socket:OnReceive(message, err, partial)
-			local data = serializer.Decode("json", message)
+		socket:SendIdentify({
+			token = self.token,
+			properties = {
+				["$os"] = jit.os,
+				["$browser"] = "goluwa",
+				["$device"] = "goluwa",
+				["$referrer"] = "",
+				["$referring_domain"] = "",
+			},
+			compress = false,
+			large_threshold = 100,
+			shard = {0,1},
+		})
 
-			data.opcode = opcodes[data.op]
-			data.op = nil
-
-			if data.opcode == "Dispatch" then
-				self.last_sequence = data.s
-			end
-
-			if data.opcode == "Hello" then
-				self:Heartbeat()
-				event.Timer("discord_heartbeat", data.d.heartbeat_interval/1000, function()
-					if self:IsValid() then
-						self:Heartbeat()
-					end
-				end)
-			end
-
-			if data.t then
-				bot:OnEvent(data)
-			end
-
-			if data.opcode == "Identify" then
-				table.print(data)
-			end
-		end
-
-		function socket:OnClose(reason, code)
-			logf("closing discord socket: %s (%s)\n", reason, code)
-			self:Remove()
+		function socket.OnEvent(_, data)
+			self:OnEvent(data)
 		end
 	end)
 end
 
 function META:OnRemove()
-	event.RemoveTimer("discord_heartbeat")
 	self.socket:Remove()
 end
 
@@ -344,7 +281,19 @@ if RELOAD then
 
 		if self.voice_server and self.voice_state then
 			if not self.voice_socket then
-				local socket = sockets.CreateWebsocketClient()
+				local socket = self:CreateWebsocket({
+					[0] = "Identify", --	client	begin a voice websocket connection
+					[1] = "SelectProtocol", --	client	select the voice protocol
+					[2] = "Ready", --	server	complete the websocket handshake
+					[3] = "Heartbeat", --	client	keep the websocket connection alive
+					[4] = "SessionDescription", --	server	describe the session
+					[5] = "Speaking", --	client and server	indicate which users are speaking
+					[6] = "HeartbeatACK", --	server	sent immediately following a received client heartbeat
+					[7] = "Resume", --	client	resume a connection
+					[8] = "Hello", --	server	the continuous interval in milliseconds after which the client should send a heartbeat
+					[9] = "Resumed", --	server	acknowledge Resume
+					[13] = "ClientDisconnect", --	server	a client has disconnected from the voice channel
+				}, "voice")
 				self.voice_socket = socket
 
 				local voice_server = self.voice_server
@@ -352,55 +301,14 @@ if RELOAD then
 
 				local host, port = unpack(self.voice_server.d.endpoint:split(":"))
 				socket:Connect("wss://" .. host .. "/?v=3")
-				socket:Send(serializer.Encode("json", {
-					op = 0,
-					d = {
-						server_id = voice_server.d.guild_id,
-						user_id = voice_state.d.user_id,
-						session_id = voice_state.d.session_id,
-						token = voice_server.d.token,
-					}
-				}), 1)
+				socket:SendIdentify({
+					server_id = voice_server.d.guild_id,
+					user_id = voice_state.d.user_id,
+					session_id = voice_state.d.session_id,
+					token = voice_server.d.token,
+				})
 
-				local opcodes = {
-					[0] = "Identify", --	client	begin a voice websocket connection
-					[1] = "Select Protocol", --	client	select the voice protocol
-					[2] = "Ready", --	server	complete the websocket handshake
-					[3] = "Heartbeat", --	client	keep the websocket connection alive
-					[4] = "Session Description", --	server	describe the session
-					[5] = "Speaking", --	client and server	indicate which users are speaking
-					[6] = "Heartbeat ACK", --	server	sent immediately following a received client heartbeat
-					[7] = "Resume", --	client	resume a connection
-					[8] = "Hello", --	server	the continuous interval in milliseconds after which the client should send a heartbeat
-					[9] = "Resumed", --	server	acknowledge Resume
-					[13] = "Client Disconnect", --	server	a client has disconnected from the voice channel
-				}
-
-				function socket:Heartbeat()
-					self:Send(serializer.Encode("json", {
-						op = 3,
-						d = math.ceil(1+os.clock()),
-					}), 1)
-				end
-				function socket:OnReceive(message, err, partial)
-					local data = serializer.Decode("json", message)
-
-					data.opcode = opcodes[data.op]
-					data.op = nil
-
-					if data.opcode == "Hello" then
-						self:Heartbeat()
-						event.Timer("discord_heartbeat_voice", (data.d.heartbeat_interval * 0.75)/1000, function()
-							if self:IsValid() then
-								self:Heartbeat()
-							end
-						end)
-					end
-
-					if data.opcode == "Dispatch" then
-						self.last_sequence = data.s
-					end
-
+				function socket:OnEvent(data)
 					if data.opcode == "Ready" then
 						self.ssrc = data.d.ssrc
 						self.key = "?"
@@ -408,6 +316,8 @@ if RELOAD then
 						self.port = data.d.port
 
 						local udp = sockets.UDPServer()
+
+						llog("connecting to voice chat " .. data.d.ip .. ":" .. data.d.port)
 
 						udp:SetAddress(data.d.ip, data.d.port)
 
@@ -418,24 +328,16 @@ if RELOAD then
 							buf:SetPosition(buf:GetSize()-2)
 							local port = buf:ReadUInt16_T()
 
-							self:Send(serializer.Encode("json", {
-								op = 1,
-								d = {
-									protocol = "udp",
-									data = {
-										address = ip,
-										port = port,
-										mode = "xsalsa20_poly1305"
-									}
-								},
-							}), 1)
+							self:SendSelectProtocol({
+								protocol = "udp",
+								data = {
+									address = ip,
+									port = port,
+									mode = "xsalsa20_poly1305"
+								}
+							})
 
-							--self.ip = ip
-							--self.port = port
-
-							print(address:get_ip(), address:get_port())
-
-							--udp:Remove()
+							llog("our voice chat address is " .. address:get_ip() .. ":" .. address:get_port())
 						end
 
 						udp:Send(string.rep("\0", 70))
@@ -445,33 +347,11 @@ if RELOAD then
 						self.udp = udp
 					end
 
-					if data.opcode == "Session Description" then
-
-						self:Send(serializer.Encode("json", {
-							op = 5,
-							d = {
-								speaking = true,
-								delay = 0,
-								ssrc = data.d.ssrc,
-							},
-						}), 1)
+					if data.opcode == "SessionDescription" then
 
 						self.key = sodium.key(data.d.secret_key)
-						start_noise(self)
-
-						--[[event.Delay(4, function()
-							self:Send(serializer.Encode("json", {
-								op = 5,
-								d = {
-									speaking = false,
-									delay = 0,
-									ssrc = data.d.ssrc,
-								},
-							}), 1)
-						end)]]
+						start_voicechat(self)
 					end
-
-					table.print(data)
 				end
 			end
 		end
@@ -491,14 +371,11 @@ if RELOAD then
 			end)
 			]]
 
-			self:Query("WEBSOCKET", {
-				op = 4,
-				d = {
-					guild_id = server_id,
-					channel_id = channel_id,
-					self_mute = false,
-					self_deaf = false
-				}
+			self.socket:SendVoiceStateUpdate({
+				guild_id = server_id,
+				channel_id = channel_id,
+				self_mute = false,
+				self_deaf = false
 			})
 
 			--[[self:Query("GET /guilds/"..server_id.."/members", function(data)
@@ -510,7 +387,7 @@ if RELOAD then
 			elseif data.t == "MESSAGE_UPDATE" then
 				chatsounds.Say(data.d.content)
 			elseif data.t ~= "PRESENCE_UPDATE" then
-				table.print(data)
+				--table.print(data)
 			end
 
 			if data.t == "MESSAGE_CREATE" and data.d.author.id == "208633661787078657" then
@@ -525,7 +402,7 @@ if RELOAD then
 					end
 				end
 
-				if data.d.content:startswith("goluwa") then
+				if data.d.content:startswith("screenshot") then
 					local ffi = require("ffi")
 					local freeimage = require("freeimage")
 
@@ -556,23 +433,47 @@ if RELOAD then
 					local png_data = freeimage.ImageToBuffer(image, "png")
 
 					vfs.Write("lol.png", png_data)
-					vfs.Write("lol.raw", ffi.string(pixels, w*h*4))
+					--vfs.Write("lol.raw", ffi.string(pixels, w*h*4))
 
-					self:Query("POST /channels/"..data.d.channel_id.."/messages", {
-						content = "sending " .. utility.FormatFileSize(#png_data) .. " image\n" .. serializer.Encode("luadata", image),
-					})
 
-					self:Query("POST /channels/"..data.d.channel_id.."/messages", {
-						file = {
-							image = {
-								url = "attachment://test.png",
-								width = image.width,
-								height = image.height,
+					local files = {}
+
+					table.insert(files, {
+						name = "payload_json",
+						type = "application/json",
+						data = serializer.Encode("json", {
+							file = {
+								image = {
+									url = "attachment://test.png",
+									width = image.width,
+									height = image.height,
+								},
 							},
-						}
-					}, table.print, {
-						{name = "test.png", data = png_data},
+							content = "sending " .. utility.FormatFileSize(#png_data) .. " image\n" .. serializer.Encode("luadata", image),
+						}),
 					})
+--[[
+					table.insert(files, {
+						name = "payload_json",
+						type = "application/json",
+						data = serializer.Encode("json", {
+							content = "sending " .. utility.FormatFileSize(#png_data) .. " image\n" .. serializer.Encode("luadata", image),
+						}),
+					})
+]]
+					table.insert(files, {
+						name = "test",
+						type = "application/octet-stream",
+						filename = "test.png",
+						data = png_data,
+					})
+
+					self.api.POST("channels/"..data.d.channel_id.."/messages", {
+						body = {
+							content = "sending " .. utility.FormatFileSize(#png_data) .. " image\n" .. serializer.Encode("luadata", image),
+						},
+						files = files,
+					}):Then(print)
 				end
 			end
 			--table.print(data)
