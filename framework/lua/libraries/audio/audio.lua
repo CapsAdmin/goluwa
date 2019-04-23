@@ -31,7 +31,7 @@ function audio.Initialize(name)
 	if name == "loopback" then
 		device = alc.LoopbackOpenDeviceSOFT(nil)
 	else
-		device = alc.OpenDevice(nil)
+		device = alc.OpenDevice(name)
 	end
 
 	if device == nil then
@@ -484,7 +484,7 @@ do -- source
 			buffer:SetData(var, length)
 			self:SetBuffer(buffer)
 
-		elseif typex(var) == "buffer" then
+		elseif typex(var) == "audio_buffer" then
 			self:SetBuffer(var)
 		elseif type(var) == "string" then
 			resource.Download(var):Then(function(path)
@@ -659,10 +659,15 @@ do -- source
 		ADD_FUNCTION("POSITION", "fv")
 		ADD_FUNCTION("BYTE_OFFSET", "i")
 		ADD_FUNCTION("BUFFERS_PROCESSED", "i")
+		ADD_FUNCTION("BUFFERS_QUEUED", "i")
 
 		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "AuxiliaryEffectSlot", "iv", al.e.AUXILIARY_SEND_FILTER)
 		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "Buffer", "i", al.e.BUFFER)
 		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "Filter", "i", al.e.DIRECT_FILTER)
+	end
+
+	function META:GetBuffersQueuedLeft()
+		return self:GetBuffersQueued() - self:GetBuffersProcessed()
 	end
 
 	do
@@ -781,7 +786,7 @@ do -- buffer
 			return unpack(self.buffer_data)
 		end
 
-		return nil, 0
+		return nil, nil
 	end
 
 	META:Register()
