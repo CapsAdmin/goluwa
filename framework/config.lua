@@ -79,7 +79,7 @@ return {
 					io.write("os.getenv('DISPLAY') is nil.\nsetting GRAPHICS and WINDOW to false.\n")
 				end
 
-				if SOUND and not vfs.IsDirectory("/proc/asound") and not os.getenv("DISPLAY") then
+				if SOUND and not vfs.IsDirectory("/proc/asound") and not os.getenv("DISPLAY") and not os.getenv("GOLUWA_AUDIO_DEVICE") then
 					SOUND = false
 					io.write("/proc/asound is not a directory and DISPLAY is not set, assuming no sound.\nsetting SOUND to false.\n")
 				end
