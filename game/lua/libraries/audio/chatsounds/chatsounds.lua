@@ -724,6 +724,7 @@ function chatsounds.PlayScript(script)
 
 						if not self.overlap then
 							self.snd:Stop()
+							self.snd:Remove()
 						end
 					end
 
@@ -903,6 +904,18 @@ end
 
 function chatsounds.Initialize()
 	event.AddListener("Update", "chatsounds", chatsounds.Update)
+
+	chatsounds.BuildFromGithub("PAC3-Server/chatsounds-valve-games", "hl2")
+	chatsounds.BuildFromGithub("PAC3-Server/chatsounds-valve-games", "tf2")
+	chatsounds.BuildFromGithub("PAC3-Server/chatsounds-valve-games", "ep2")
+	chatsounds.BuildFromGithub("PAC3-Server/chatsounds-valve-games", "ep1")
+	chatsounds.BuildFromGithub("PAC3-Server/chatsounds-valve-games", "portal")
+	chatsounds.BuildFromGithub("PAC3-Server/chatsounds-valve-games", "css")
+	chatsounds.BuildFromGithub("PAC3-Server/chatsounds-valve-games", "csgo")
+	chatsounds.BuildFromGithub("PAC3-Server/chatsounds-valve-games", "l4d")
+	chatsounds.BuildFromGithub("PAC3-Server/chatsounds-valve-games", "l4d2")
+	chatsounds.BuildFromGithub("PAC3-Server/chatsounds")
+	chatsounds.BuildFromGithub("Metastruct/garrysmod-chatsounds", "sound/chatsounds/autoadd")
 end
 
 function chatsounds.Shutdown()

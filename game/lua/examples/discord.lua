@@ -1,7 +1,10 @@
 local server_id = "260866188962168832"
 local channel_id = "568745482407641099"
+local ADMIN_ROLE = "260932947140411412"
+local chatsounds_channel = "570392695248388097"
 
 local function start_voicechat(self)
+	chatsounds.Initialize()
 
 	local ffi = require("ffi")
 	local CHANNELS = 2
@@ -22,6 +25,8 @@ local function start_voicechat(self)
 	local sodium = require("sodium")
 	local opus = require("opus")
 
+	self.key = sodium.key(self.secret_key)
+
 	local encoder = opus.Encoder(SAMPLE_RATE, CHANNELS)
 
 	encoder:set(opus.SET_COMPLEXITY_REQUEST, COMPLEXITY)
@@ -40,7 +45,6 @@ local function start_voicechat(self)
 	local function is_speaking(pcm, pcm_len)
 		for i = 0, pcm_len-1 do
 			if pcm[i] <= -5 or pcm[i] >= 5 then
-				print(pcm[i])
 				return true
 			end
 		end
@@ -186,11 +190,11 @@ function META:CreateWebsocket(opcodes, friendly_name)
 		end
 
 		if data.opcode then
-			llog(friendly_name .. " received opcode: " .. data.opcode)
-			table.print(data)
+			--llog(friendly_name .. " received opcode: " .. data.opcode)
+			--table.print(data)
 		elseif data.t and data.t ~= "PRESENCE_UPDATE" and data.t ~= "GUILD_CREATE" then
-			llog(friendly_name .. " received event: " .. data.t)
-			table.print(data)
+			--llog(friendly_name .. " received event: " .. data.t)
+			--table.print(data)
 		end
 
 		self:OnEvent(data)
@@ -272,6 +276,58 @@ if RELOAD then
 		LOL = DiscordBot(assert(vfs.Read("temp/discord_bot_token")))
 	end
 
+	local ffi = require("ffi")
+	local freeimage = require("freeimage")
+
+	function LOL:SendImage(pixels, w,h, channel)
+		local image = {
+			buffer = pixels,
+			width = w,
+			height = h,
+			format = "rgba",
+		}
+
+		local png_data = freeimage.ImageToBuffer(image, "png")
+
+		vfs.Write("test.png", png_data)
+
+		local files = {}
+
+		table.insert(files, {
+			name = "payload_json",
+			type = "application/json",
+			data = serializer.Encode("json", {
+				file = {
+					image = {
+						url = "attachment://test.png",
+						width = image.width,
+						height = image.height,
+					},
+				},
+				--content = "sending " .. utility.FormatFileSize(#png_data) .. " image\n" .. serializer.Encode("luadata", image),
+			}),
+		})
+
+		table.insert(files, {
+			name = "test",
+			type = "application/octet-stream",
+			filename = "test.png",
+			data = png_data,
+		})
+
+		self.api.POST("channels/"..channel.."/messages", {
+			files = files,
+		}):Then(print)
+	end
+
+	function LOL:Say(channel, what)
+		self.api.POST("channels/"..channel.."/messages", {
+			body = {
+				content = what,
+			},
+		}):Then(print)
+	end
+
 	function LOL:OnEvent(data)
 		if data.t == "VOICE_SERVER_UPDATE" then
 			self.voice_server = data
@@ -348,8 +404,8 @@ if RELOAD then
 					end
 
 					if data.opcode == "SessionDescription" then
+						self.secret_key = data.d.secret_key
 
-						self.key = sodium.key(data.d.secret_key)
 						start_voicechat(self)
 					end
 				end
@@ -357,6 +413,9 @@ if RELOAD then
 		end
 
 		if data.t == "READY" then
+
+			--self.api.GET("guilds/"..server_id.."/roles"):Then(table.print)
+
 			--[[self.api.POST("channels/260911858133762048/messages", {
 				body = {
 					content = "hello"
@@ -382,95 +441,70 @@ if RELOAD then
 				table.print(data)
 			end, {limit = 10})]]
 		else
-			if data.t == "MESSAGE_CREATE" then
-				chatsounds.Say(data.d.content)
-			elseif data.t == "MESSAGE_UPDATE" then
-				chatsounds.Say(data.d.content)
-			elseif data.t ~= "PRESENCE_UPDATE" then
-				--table.print(data)
-			end
+			if data.t == "MESSAGE_CREATE" or data.t == "MESSAGE_UPDATE" then
+				local ok, err = pcall(function()
 
-			if data.t == "MESSAGE_CREATE" and data.d.author.id == "208633661787078657" then
-				local str = data.d.content:match("^!l (.+)")
-				if str then
-					local func, err = loadstring(str)
-					if func then
-						local ok, err = pcall(func)
-						if not ok then
-							print(err)
+					if data.d.channel_id == chatsounds_channel then
+						chatsounds.Say(data.d.content)
+					end
+
+					local cmd, rest = data.d.content:match("^!(%S+)%s(.+)")
+					if not rest then
+						cmd = data.d.content:match("^!(%S+)")
+					end
+
+					if data.d.member and table.hasvalue(data.d.member.roles, ADMIN_ROLE) then
+						if cmd == "l" and rest then
+							local func, err = loadstring(rest)
+							if func then
+								local ok, err = pcall(func)
+								if not ok then
+									print(err)
+								end
+							end
+						elseif cmd == "avatar" then
+							self.api.PATCH("users/@me", {
+								body = {
+									username = "goluwa",
+									avatar = "data:image/png;base64," .. crypto.Base64Encode(vfs.Read("/home/caps/Documents/Untitled.png"))
+								},
+								--avatar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAVUlEQVR42mNgGAXYwSOB/ySJo4PMDRb/STYcGeg58/zHZzheC9BtACl2KVL5j2w4PgvgBqyB2kJYAw7biNaE7ncMjUheArkqH8k7JLmIZO+QpWFoAgAY9DgM7ldwswAAAABJRU5ErkJggg==",
+							}):Then(print)
+						elseif cmd == "screenshot" then
+							local w,h = render.GetWidth(), render.GetHeight()
+							local pixels = ffi.new("uint8_t[?]", (w*h*4))
+							require("opengl").ReadPixels(0,0,w,h,"GL_BGRA", "GL_UNSIGNED_BYTE", pixels)
+
+							self:SendImage(pixels, w, h, data.d.channel_id)
+						elseif cmd == "glsl" and rest then
+							local fb = render.CreateFrameBuffer()
+							fb:SetSize(Vec2()+128)
+
+							local tex = render.CreateTexture("2d")
+							tex:SetSize(Vec2(128, 128))
+							tex:SetInternalFormat("rgba8")
+							tex:SetupStorage()
+							tex:Clear()
+							print(rest)
+							tex:Shade(rest)
+							local image = tex:Download()
+
+							self:SendImage(ffi.cast("uint8_t *", image.buffer), image.width, image.height, data.d.channel_id)
 						end
 					end
-				end
 
-				if data.d.content:startswith("screenshot") then
-					local ffi = require("ffi")
-					local freeimage = require("freeimage")
+					print(cmd, rest, "!!")
 
-					--[[
-					-- setting avatar
+					if cmd == "ac" and rest then
+						self:Say(data.d.channel_id, table.concat(autocomplete.Query("chatsounds", rest), "\n"))
+					end
+				end)
 
-					self:Query("PATCH /users/@me", {
-						--username = "goluwa " .. os.clock(),
-						--avatar = "data:image/png;base64," .. crypto.Base64Encode(ffi.string(freeimage.BufferToPNG(freeimage.LoadImage(vfs.Read("/home/caps/sfYru.jpg"))))),
-						avatar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAVUlEQVR42mNgGAXYwSOB/ySJo4PMDRb/STYcGeg58/zHZzheC9BtACl2KVL5j2w4PgvgBqyB2kJYAw7biNaE7ncMjUheArkqH8k7JLmIZO+QpWFoAgAY9DgM7ldwswAAAABJRU5ErkJggg==",
-					}, table.print)
-					]]
-
-
-
-					-- anything over 31 kb will not send for some reason
-					local w,h = render.GetWidth(), render.GetHeight()
-					local pixels = ffi.new("uint8_t[?]", (w*h*4))
-					require("opengl").ReadPixels(0,0,w,h,"GL_BGRA", "GL_UNSIGNED_BYTE", pixels)
-
-					local image = {
-						buffer = pixels,
-						width = w,
-						height = h,
-						format = "rgba",
-					}
-
-					local png_data = freeimage.ImageToBuffer(image, "png")
-
-					vfs.Write("lol.png", png_data)
-					--vfs.Write("lol.raw", ffi.string(pixels, w*h*4))
-
-
-					local files = {}
-
-					table.insert(files, {
-						name = "payload_json",
-						type = "application/json",
-						data = serializer.Encode("json", {
-							file = {
-								image = {
-									url = "attachment://test.png",
-									width = image.width,
-									height = image.height,
-								},
-							},
-							content = "sending " .. utility.FormatFileSize(#png_data) .. " image\n" .. serializer.Encode("luadata", image),
-						}),
-					})
---[[
-					table.insert(files, {
-						name = "payload_json",
-						type = "application/json",
-						data = serializer.Encode("json", {
-							content = "sending " .. utility.FormatFileSize(#png_data) .. " image\n" .. serializer.Encode("luadata", image),
-						}),
-					})
-]]
-					table.insert(files, {
-						name = "test",
-						type = "application/octet-stream",
-						filename = "test.png",
-						data = png_data,
-					})
-
+				if not ok then
+					logn(err)
 					self.api.POST("channels/"..data.d.channel_id.."/messages", {
 						body = {
-							content = "sending " .. utility.FormatFileSize(#png_data) .. " image\n" .. serializer.Encode("luadata", image),
+							content = err,
 						},
 						files = files,
 					}):Then(print)
