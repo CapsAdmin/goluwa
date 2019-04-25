@@ -17,8 +17,8 @@ function prototype.GetStorableVariables(meta)
 	return meta.storable_variables or {}
 end
 
-function prototype.DelegateProperties(meta, from, var_name)
-        meta[var_name] = NULL
+function prototype.DelegateProperties(meta, from, var_name, callback)
+	meta[var_name] = NULL
 	for _, info in pairs(prototype.GetStorableVariables(from)) do
 		if not meta[info.var_name] then
 			 prototype.SetupProperty({
@@ -29,11 +29,23 @@ function prototype.DelegateProperties(meta, from, var_name)
 				get_name = info.get_name,
 			})
 
-			meta[info.set_name] = function(self, var)
-				self[info.var_name] = var
+			if callback then
+				meta[info.set_name] = function(self, var)
+					self[info.var_name] = var
 
-				if self[var_name]:IsValid() then
-					self[var_name][info.set_name](self[var_name], var)
+					if self[var_name]:IsValid() then
+						self[var_name][info.set_name](self[var_name], var)
+					end
+
+					self[callback](self, var)
+				end
+			else
+				meta[info.set_name] = function(self, var)
+					self[info.var_name] = var
+
+					if self[var_name]:IsValid() then
+						self[var_name][info.set_name](self[var_name], var)
+					end
 				end
 			end
 

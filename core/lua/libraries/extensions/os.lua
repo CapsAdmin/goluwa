@@ -20,14 +20,19 @@ do
 			ffi.cdef([[
 				int setenv(const char *var_name, const char *new_value, int change_flag);
 				int unsetenv(const char *name);
+				int getpid();
 			]])
 
 			function os.setenv(key, val)
 				if not val then
 					ffi.C.unsetenv(key)
 				else
-					ffi.C.setenv(key, val, 0)
+					ffi.C.setenv(key, val, 1)
 				end
+			end
+
+			function os.getpid()
+				return ffi.C.getpid()
 			end
 		end
 	else

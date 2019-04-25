@@ -19,7 +19,7 @@ end)
 
 commands.Add("gmod-workshop-extract-collection=string", function(id)
 	if not tonumber(id) and not id:find("steamcommunity.com") then
-		for id in assert(sockets.Download(id)):gmatch("id=(%d+)") do
+		for id in assert(http.Download(id)):gmatch("id=(%d+)") do
 			extract_single(id)
 		end
 	else
@@ -54,7 +54,7 @@ do
 
 	commands.Add("gmod-workshop-check-exploit-collection=string,boolean,boolean[true]", function(id, no_linenumbers, suspicious_only)
 		if not tonumber(id) and not id:find("steamcommunity.com") then
-			for id in assert(sockets.Download(id)):gmatch("id=(%d+)") do
+			for id in assert(http.Download(id)):gmatch("id=(%d+)") do
 				check_single(id, no_linenumbers, suspicious_only)
 			end
 		else

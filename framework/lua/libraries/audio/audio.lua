@@ -1,11 +1,5 @@
 local ffi = require("ffi")
 
-if LINUX then
-	-- openal needs libpulse but expects that it's
-	-- already loaded for some reason on my system
-	pcall(ffi.load, "pulse")
-end
-
 local al = desire("al")
 local alc = desire("alc")
 
@@ -19,13 +13,8 @@ alc.debug = true
 audio.effect_channels = audio.effect_channels or table.weak()
 
 function audio.Initialize(name)
-	local f = io.open("./al_config.ini", "wb")
-	f:write("slots = 256\n")
-	f:write("sends = 256\n")
-	f:close()
-
-	--os.setenv("ALSOFT_LOGLEVEL", "3")
-	os.setenv("ALSOFT_CONF", "./al_config.ini")
+	vfs.Write("temp/al_config.ini", "slots = 256\nsends = 256\n")
+	os.setenv("ALSOFT_CONF", R"temp/al_config.ini")
 	audio.Shutdown()
 
 	if not name then
@@ -36,7 +25,14 @@ function audio.Initialize(name)
 		llog("opening device %q for sound output", name)
 	end
 
-	local device = alc.OpenDevice(nil)
+
+	local device
+
+	if name == "loopback" then
+		device = alc.LoopbackOpenDeviceSOFT(nil)
+	else
+		device = alc.OpenDevice(name)
+	end
 
 	if device == nil then
 		llog("opening device failed: ", alc.GetErrorString(device))
@@ -48,11 +44,31 @@ function audio.Initialize(name)
 	al.debug = true
 	alc.debug = true
 
-	local context = alc.CreateContext(device, nil)
-	alc.MakeContextCurrent(context)
+	if name == "loopback" then
+		local channels = alc.e.STEREO_SOFT
+		local frequency = 48000
+		local format = alc.e.SHORT_SOFT
+
+		audio.context = alc.CreateContext(device, ffi.new("const int[16]", {
+			alc.e.FORMAT_CHANNELS_SOFT, channels,
+			alc.e.FORMAT_TYPE_SOFT, format,
+			alc.e.FREQUENCY, frequency,
+			0,
+		}))
+
+		if alc.IsRenderFormatSupportedSOFT(device, frequency, channels, format) == 0 then
+			llog("unable to initialize loopback audio context, format not supported")
+			return
+		end
+	else
+		audio.context = alc.CreateContext(device, nil)
+	end
+
+	audio.channels = 2
+
+	alc.MakeContextCurrent(audio.context)
 
 	audio.device = device
-	audio.context = context
 
 	event.AddListener("ShutDown", "openal", audio.Shutdown)
 end
@@ -157,6 +173,15 @@ function audio.GetAllInputDevices()
 	end
 
 	return devices
+end
+
+function audio.ReadLoopbackOutput(samples)
+	samples = samples or 4096
+	local buffer = ffi.new("int16_t[?]", samples * audio.channels)
+
+	alc.RenderSamplesSOFT(alc.device, buffer, samples)
+
+	return buffer, samples
 end
 
 function audio.GetEffectChannel(i)
@@ -459,10 +484,10 @@ do -- source
 			buffer:SetData(var, length)
 			self:SetBuffer(buffer)
 
-		elseif typex(var) == "buffer" then
+		elseif typex(var) == "audio_buffer" then
 			self:SetBuffer(var)
 		elseif type(var) == "string" then
-			resource.Download(var, function(path)
+			resource.Download(var):Then(function(path)
 				local file = vfs.Open(path)
 				local data, length, info = audio.Decode(file, var)
 				file:Close()
@@ -634,10 +659,15 @@ do -- source
 		ADD_FUNCTION("POSITION", "fv")
 		ADD_FUNCTION("BYTE_OFFSET", "i")
 		ADD_FUNCTION("BUFFERS_PROCESSED", "i")
+		ADD_FUNCTION("BUFFERS_QUEUED", "i")
 
 		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "AuxiliaryEffectSlot", "iv", al.e.AUXILIARY_SEND_FILTER)
 		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "Buffer", "i", al.e.BUFFER)
 		ADD_SET_GET_OBJECT(META, ADD_FUNCTION, "Filter", "i", al.e.DIRECT_FILTER)
+	end
+
+	function META:GetBuffersQueuedLeft()
+		return self:GetBuffersQueued() - self:GetBuffersProcessed()
 	end
 
 	do
@@ -661,6 +691,7 @@ do -- source
 					self.reverse_source:Play()
 					self:Stop()
 				end
+
 				self.reverse_source:SetPitch(-num)
 
 				return
@@ -755,7 +786,7 @@ do -- buffer
 			return unpack(self.buffer_data)
 		end
 
-		return nil, 0
+		return nil, nil
 	end
 
 	META:Register()
@@ -902,7 +933,7 @@ do -- microphone
 	local val = ffi.new("int[1]")
 
 	function META:GetCapturedSamples()
-		alc.GetIntegerv(self.id, al.e.ALC_CAPTURE_SAMPLES, 1, val)
+		alc.GetIntegerv(self.id, alc.e.CAPTURE_SAMPLES, 1, val)
 		return val[0]
 	end
 

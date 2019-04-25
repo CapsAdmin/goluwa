@@ -438,6 +438,22 @@ do -- drawing
 	end
 
 	function META:DrawDebug()
+
+		if self.debug_mp then
+			local x,y = self.Margin.x, self.Margin.y
+			local w,h = self.Size.x - self.Margin.w - self.Margin.x, self.Size.y - self.Margin.h - self.Margin.y
+
+			gfx.DrawOutlinedRect(x,y,w,h, 1, 1,0,0,1)
+			gfx.DrawOutlinedRect(x,y,w,h, self.Margin, 1,0,0,0.25)
+
+			local x,y = -self.Padding.x, -self.Padding.y
+			local w,h = self.Size.x + self.Padding.w + self.Padding.x, self.Size.y + self.Padding.h + self.Padding.y
+
+			gfx.DrawOutlinedRect(0,0,self.Size.x,self.Size.y, 1, 0.25,0.5,1, 1)
+			gfx.DrawOutlinedRect(x,y,w,h, 1, 0.25,0.5,1, 1)
+			gfx.DrawOutlinedRect(x,y,w,h, -self.Padding, 0.25,0.5,1, 0.25)
+		end
+
 		if self.debug_flash and self.debug_flash > system.GetElapsedTime() then
 			render2d.SetTexture()
 			render2d.SetColor(1,0,0,(system.GetElapsedTime()*4)%1 > 0.5 and 0.5 or 0)
@@ -659,6 +675,10 @@ do -- orientation
 			return Rect(0,0,0,0)
 		end
 
+		if self:IsWorld() then
+			return self:GetMargin()
+		end
+
 		return self.Parent:GetMargin()
 	end
 
@@ -673,6 +693,11 @@ do -- orientation
 
 	function META:SetWorldPosition(wpos)
 		self.Matrix:SetTranslation(wpos.x, wpos.y, 0)
+	end
+
+	function META:LocalToWorld2(lpos)
+		local x, y = panel.Matrix:TransformVector(pos.x, pos.y, 1)
+		return Vec2(x, y)
 	end
 
 	function META:LocalToWorld(lpos)
@@ -764,6 +789,11 @@ do -- orientation
 
 	function META:GetWorldRectFast()
 		return self.Position.x, self.Position.y, self.Position.x + self.Size.x, self.Position.y + self.Size.y
+	end
+
+	function META:GetWorldRectFast2()
+		local x, y = self.Matrix:GetTranslation()
+		return x, y, x + self.Size.x, y + self.Size.y
 	end
 
 	function META:CenterX()
@@ -1400,14 +1430,14 @@ do -- resizing
 	end
 
 	local location2cursor = {
-		right = "sizewe",
-		left = "sizewe",
-		top = "sizens",
-		bottom = "sizens",
-		top_right = "sizenesw",
-		bottom_left = "sizenesw",
-		top_left = "sizenwse",
-		bottom_right = "sizenwse",
+		right = "vertical_resize",
+		left = "vertical_resize",
+		top = "horizontal_resize",
+		bottom = "horizontal_resize",
+		top_right = "top_right_resize",
+		bottom_left = "bottom_left_resize",
+		top_left = "top_left_resize",
+		bottom_right = "bottom_right_resize",
 	}
 
 	function META:CalcResizing()
@@ -1598,7 +1628,7 @@ do -- mouse
 
 		local alpha = 1
 
-		if not self.NinePatch and self.NinePatchRect:IsZero() and self.Texture:IsValid() and self.Texture ~= render.GetWhiteTexture() and not self.Texture:IsLoading() then
+		if not self.NinePatch and self.NinePatchRect:IsZero() and self.Texture and self.Texture:IsValid() and self.Texture ~= render.GetWhiteTexture() and not self.Texture:IsLoading() then
 			local x = (x / self.Size.x)
 			local y = (y / self.Size.y)
 
@@ -1932,6 +1962,7 @@ do -- layout
 		left = "MoveLeft",
 		bottom = "MoveDown",
 		right = "MoveRight",
+		GmodFill = "gmod_fill",
 		gmod_left = "GmodLeft",
 		gmod_right = "GmodRight",
 		gmod_top = "GmodTop",
@@ -2292,7 +2323,7 @@ do -- layout
 			end
 
 			self:SetY(math.max(y, top.y)) -- HACK???
-			self:SetHeight(math.max(h, min_height))
+			self:SetHeight(math.max(h + 1, min_height))
 
 			self.laid_out_y = true
 		end
@@ -2311,7 +2342,7 @@ do -- layout
 			local left = self:RayCast(self:GetPosition(), Vec2(0, self.Position.y))
 			local right = self:RayCast(self:GetPosition(), Vec2(width, left.y))
 
-			self:SetX(math.lerp(0.5, left.x, right.x))
+			self:SetX((left.x + right.x)/2 - self:GetWidth()/2 - self.Padding:GetLeft() + self.Padding:GetRight())
 
 			self.laid_out_x = true
 		end
@@ -2322,7 +2353,7 @@ do -- layout
 
 			local top = self:RayCast(self:GetPosition(), Vec2(self.Position.x, 0))
 			local bottom = self:RayCast(self:GetPosition(), Vec2(top.x, height))
-			self:SetY(top.y + (bottom.y/2 - self:GetHeight()/2) - self.Padding:GetTop() + self.Padding:GetBottom())
+			self:SetY((top.y + bottom.y)/2 - self:GetHeight()/2 - self.Padding:GetTop() + self.Padding:GetBottom())
 
 			self.laid_out_y = true
 		end

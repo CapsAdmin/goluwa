@@ -1,6 +1,12 @@
 local system = ... or _G.system
 local ffi = require("ffi")
 
+function system.LastOSError(num)
+	num = num or ffi.errno()
+	local err = ffi.string(ffi.C.strerror(num))
+	return err == "" and tostring(num) or err
+end
+
 do
 	local attempts = {
 		"sensible-browser",
@@ -21,17 +27,44 @@ do
 end
 
 do
-	ffi.cdef("void usleep(unsigned int ns);")
+	ffi.cdef("int usleep(unsigned int ns);")
 	function system.Sleep(ms)
-		ffi.C.usleep(ms*1000)
+		ffi.C.usleep(ms*1000*1000)
 	end
 end
 
-do
-	local posix = require("syscall")
+if ffi.os == "OSX" then
+	ffi.cdef([[
+		struct mach_timebase_info {
+			uint32_t	numer;
+			uint32_t	denom;
+		};
+		int mach_timebase_info(struct mach_timebase_info *info);
+		uint64_t mach_absolute_time(void);
+	]])
 
-	local ts = posix.t.timespec()
-	local enum = posix.c.CLOCK.MONOTONIC
+	local tb = ffi.new("struct mach_timebase_info")
+	ffi.C.mach_timebase_info(tb)
+	local orwl_timebase = tb.numer
+	local orwl_timebase = tb.denom
+	local orwl_timestart = ffi.C.mach_absolute_time()
+
+	function system.GetTime()
+		local diff = (ffi.C.mach_absolute_time() - orwl_timestart) * orwl_timebase
+		diff = tonumber(diff) / 1000000000
+		return diff
+	end
+else
+	ffi.cdef([[
+		struct timespec {
+			long int tv_sec;
+			long tv_nsec;
+		};
+		int clock_gettime(int clock_id, struct timespec *tp);
+	]])
+
+	local ts = ffi.new("struct timespec")
+	local enum = 1
 	local func = ffi.C.clock_gettime
 
 	function system.GetTime()
@@ -41,29 +74,13 @@ do
 end
 
 do
-	if CURSES then
-		local iowrite = _OLD_G.io.write
+	local iowrite = _OLD_G.io.write
 
-		function system.SetConsoleTitleRaw(str)
-			return iowrite and iowrite('\27]0;', str, '\7') or nil
+	function system.SetConsoleTitleRaw(str)
+		if repl and repl.SetConsoleTitle then
+			return repl.SetConsoleTitle(str)
 		end
-	elseif CLI then
-		local last
-		function system.SetConsoleTitleRaw(str)
-			if str ~= last then
-				for i, v in ipairs(str:split("|")) do
-					local s = v:trim()
-					if s ~= "" then
-						logn(s)
-					end
-				end
-				last = str
-			end
-		end
-	else
-		function system.SetConsoleTitleRaw(str)
-
-		end
+		return iowrite and iowrite('\27]0;', str, '\7') or nil
 	end
 end
 
@@ -124,16 +141,6 @@ do
 				return cmd
 			end
 		end
-	end
-end
-
-do
-	function system.SetSharedLibraryPath(path)
-		os.setenv("LD_LIBRARY_PATH", path)
-	end
-
-	function system.GetSharedLibraryPath()
-		return os.getenv("LD_LIBRARY_PATH") or ""
 	end
 end
 

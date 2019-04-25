@@ -35,7 +35,7 @@ do
 	end
 end
 
-function vfs.LoadFile(path, chunkname)
+local function loadfile(path, chunkname)
 	local full_path = vfs.GetAbsolutePath(path, false)
 
 	if full_path then
@@ -50,6 +50,8 @@ function vfs.LoadFile(path, chunkname)
 		if not res then
 			return res, err, full_path
 		end
+
+		res = "local SCRIPT_PATH=[["..full_path.."]];" .. res
 
 		if event then res = event.Call("PreLoadString", res, full_path) or res end
 
@@ -70,6 +72,19 @@ function vfs.LoadFile(path, chunkname)
 	end
 
 	return nil, path .. ": No such file or directory"
+end
+
+vfs.total_loadfile_time = 0
+
+function vfs.LoadFile(path, chunkname)
+	local time =  system and system.GetTime and system.GetTime or os.clock
+	local t = time()
+
+	local func, err, full_path = loadfile(path, chunkname)
+
+	vfs.total_loadfile_time = vfs.total_loadfile_time + (time() - t)
+
+	return func, err, full_path
 end
 
 function vfs.DoFile(path, ...)
@@ -165,7 +180,7 @@ do -- runfile
 					_G.FILE_NAME = full_path:match(".*/(.+)%.") or full_path
 					_G.FILE_EXTENSION = full_path:match(".*/.+%.(.+)")
 
-					if not CLI and utility and utility.PushTimeWarning then
+					if VERBOSE and utility and utility.PushTimeWarning then
 						utility.PushTimeWarning()
 					end
 
@@ -177,7 +192,7 @@ do -- runfile
 						ok, err = pcall(func, ...)
 					end
 
-					if not CLI and utility and utility.PushTimeWarning then
+					if VERBOSE and utility and utility.PushTimeWarning then
 						utility.PopTimeWarning(full_path, 0.01)
 					end
 
@@ -263,7 +278,7 @@ do -- runfile
 				res = {pcall(func, ...)}
 			end
 
-			if full_path:find(e.ROOT_FOLDER, nil, true) then
+			if VERBOSE and full_path:find(e.ROOT_FOLDER, nil, true) then
 				utility.PopTimeWarning(full_path:gsub(e.ROOT_FOLDER, ""), 0.025, "[runfile]")
 			end
 
@@ -289,80 +304,190 @@ do -- runfile
 
 			logn(source:sub(1) .. " " .. err)
 
-			debug.openscript(full_path, err:match(":(%d+)"))
+			--debug.openscript(full_path, err:match(":(%d+)"))
 		end
 
 		return false, err
 	end
 end
 
--- although vfs will add a loader for each mount, the module folder has to be an exception for modules only
--- this loader should support more ways of loading than just adding ".lua"
+vfs.module_directories = {}
 
-function vfs.AddPackageLoader(func, loaders)
-	loaders = loaders or package.loaders
+function vfs.Require(name, ...)
+	local ret = {pcall(_OLD_G.require, name, ...)}
+	if ret[1] then
+		return unpack(ret, 2)
+	end
 
-	for i, v in ipairs(loaders) do
-		if v == func then
-			table.remove(loaders, i)
+	local done = {}
+	local errors = {}
+	local error_directories = {}
+	for _, dir in ipairs(vfs.module_directories) do
+		for _, data in ipairs(vfs.TranslatePath(dir, true)) do
+			vfs.PushWorkingDirectory(data.path_info.full_path)
+			local ret = {pcall(_OLD_G.require, name, ...)}
+			vfs.PopWorkingDirectory()
+
+			if ret[1] then
+				return unpack(ret, 2)
+			else
+				--table.insert(errors, "no file in: " .. data.path_info.full_path)
+				if not done[ret[2]] then
+					table.insert(errors, ret[2])
+					done[ret[2]] = true
+				end
+			end
+		end
+	end
+
+	local stack = vfs.GetFileRunStack()
+	local last = stack[#stack]
+	if last then
+		local dir = R(vfs.GetFolderFromPath(last))
+		if dir then
+
+			vfs.PushWorkingDirectory(dir)
+
+			local ret = {pcall(_OLD_G.require, name, ...)}
+
+			vfs.PopWorkingDirectory()
+
+			if ret[1] then
+				return unpack(ret, 2)
+			else
+				--table.insert(errors, "no file in: " .. dir)
+
+				if not done[ret[2]] then
+					table.insert(errors, ret[2])
+					done[ret[2]] = true
+				end
+			end
+		end
+	end
+
+	for _, err in ipairs(errors) do
+		if not err:find("module '"..name.."' not found:\n", nil, true) then
+			for i = 1, #errors -1 do
+				if errors[i]:find("module '"..name.."' not found:\n", nil, true) or errors[i]:find("loop or previous", nil, true) then
+					table.remove(errors, i)
+				end
+			end
 			break
 		end
 	end
-	table.insert(loaders, func)
+
+	error(table.concat(errors, "\n") .. "\n", 2)
 end
 
-local function handle_dir(dir, path)
-	if path:startswith("..") then
-		local last_dir = vfs.GetFileRunStack()[#vfs.GetFileRunStack()]
-		local dir = vfs.FixPathSlashes(vfs.GetParentFolderFromPath(last_dir, 1) .. path:sub(3))
-		return dir
-	elseif path:startswith(".") then
-		return vfs.FixPathSlashes(vfs.GetFileRunStack()[#vfs.GetFileRunStack()] .. path:sub(2))
-	end
-
-	return dir .. path
+function vfs.AddModuleDirectory(dir)
+	table.insert(vfs.module_directories, dir)
 end
 
-function vfs.AddModuleDirectory(dir, loaders)
-	loaders = loaders or package.loaders
+local ffi = desire("ffi")
 
-	do -- relative path
-		vfs.AddPackageLoader(function(path)
-			return vfs.LoadFile(handle_dir(dir, path) .. ".lua")
-		end, loaders)
+if ffi then
+	local function warn_pcall(func, ...)
+		local res = {pcall(func, ...)}
+		if not res[1] then
+			logn(res[2]:trim())
+		end
 
-		vfs.AddPackageLoader(function(path)
-			local path, count = path:gsub("(.)%.(.)", "%1/%2")
-			if count == 0 then return end
-			return vfs.LoadFile(handle_dir(dir, path) .. ".lua")
-		end, loaders)
-
-		vfs.AddPackageLoader(function(path)
-			return vfs.LoadFile(handle_dir(dir, path))
-		end, loaders)
+		return unpack(res, 2)
 	end
 
-	vfs.AddPackageLoader(function(path)
-		return vfs.LoadFile(handle_dir(dir, path) .. "/"..path..".lua")
-	end, loaders)
+	local function handle_windows_symbols(path, clib, err, ...)
+		if WINDOWS and clib then
+			return setmetatable({}, {
+				__index = function(s, k)
+					if k == "Type" then return "ffi" end
+					local ok, msg = pcall(function() return clib[k] end)
+					if not ok then
+						if  msg:find("cannot resolve symbol", nil, true)  then
+							logf("[%s] could not find function %q in shared library\n", path, msg:match("cannot resolve symbol '(.-)': "))
+							return nil
+						else
+							error(msg, 2)
+						end
+					end
+					return msg
+				end,
+				__newindex = clib,
+			})
+		end
+		return clib, err, ...
+	end
 
-	vfs.AddPackageLoader(function(path)
-		return vfs.LoadFile(handle_dir(dir, path) .. "/init.lua")
-	end, loaders)
+	local function indent_error(str)
+		local last_line
+		str = "\n" .. str .. "\n"
+		str = str:gsub("(.-\n)", function(line)
+			line = "\t" .. line:trim() .. "\n"
+			if line == last_line then
+				return ""
+			end
+			last_line = line
+			return line
+		end)
+		str= str:gsub("\n\n", "\n")
+		return str
+	end
 
-	-- again but with . replaced with /
-	vfs.AddPackageLoader(function(path)
-		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
-		return vfs.LoadFile(handle_dir(dir, path) .. ".lua")
-	end, loaders)
+	-- make ffi.load search using our file system
+	function vfs.FFILoadLibrary(path, ...)
+		local args = {}
+		local found
 
-	vfs.AddPackageLoader(function(path)
-		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
-		return vfs.LoadFile(handle_dir(dir, path) .. "/init.lua")
-	end, loaders)
+		if vfs and vfs and vfs.PushWorkingDirectory then
+			local where = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
+			found = vfs.GetFiles({path = where, filter = path, filter_plain = true, full_path = true})
+			for _, full_path in ipairs(found) do
+				-- look first in the vfs' bin directories
+				vfs.PushWorkingDirectory(full_path:match("(.+/)"))
 
-	vfs.AddPackageLoader(function(path)
-		path = path:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
-		return vfs.LoadFile(handle_dir(dir, path) .. "/" .. path ..  ".lua")
-	end, loaders)
+				if serializer.LookupInFile("luadata", "shared/library_crashes.lua", full_path) then
+					logn("ffi.load: refusing to load ", full_path, " as it crashed last time")
+					break
+				end
+
+				serializer.StoreInFile("luadata", "shared/library_crashes.lua", full_path, true)
+				args = {pcall(_OLD_G.ffi.load, full_path, ...)}
+				serializer.StoreInFile("luadata", "shared/library_crashes.lua", full_path, nil)
+				vfs.PopWorkingDirectory()
+
+				if args[1] then
+					return handle_windows_symbols(path, select(2, unpack(args)))
+				end
+
+				local deps = utility.GetLikelyLibraryDependenciesFormatted(full_path)
+				if deps then
+					args[2] = args[2] .. "\n" .. deps
+				end
+
+				-- if not try the default OS specific dll directories
+				args = {pcall(_OLD_G.ffi.load, full_path, ...)}
+				if args[1] then
+					return handle_windows_symbols(path, select(2, unpack(args)))
+				end
+
+				local deps = utility.GetLikelyLibraryDependenciesFormatted(full_path)
+				if deps then
+					args[2] = args[2] .. "\n" .. deps
+				end
+			end
+
+			if args[2] then
+				error(indent_error(args[2]), 2)
+			end
+		end
+
+		if not found or not found[1] then
+			args = {pcall(_OLD_G.ffi.load, path, ...)}
+		end
+
+		if args[1] then
+			return handle_windows_symbols(path, args[2])
+		end
+
+		return args[1], args[2]
+	end
 end

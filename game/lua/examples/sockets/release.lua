@@ -2,7 +2,7 @@ local token = vfs.Read("/home/caps/github_token")
 
 os.execute("tar --exclude=binaries_downloaded --exclude=al_config.ini --exclude=x64.tar.gz -zcvf x64.tar.gz ./*")
 
-sockets.Get("https://api.github.com/repos/CapsAdmin/goluwa/releases", function(data)
+http.Get("https://api.github.com/repos/CapsAdmin/goluwa/releases", function(data)
 	for i,v in ipairs(serializer.Decode("json", data.content)) do
 		if v.tag_name == "linux-binaries" then
 			if v.assets and v.assets[1] then

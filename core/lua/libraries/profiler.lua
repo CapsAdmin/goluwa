@@ -118,7 +118,13 @@ local function statistical_callback(thread, samples, vmstate)
 end
 
 function profiler.EnableStatisticalProfiling(b)
+	if not jit.profiler then
+		wlog("jit profiler is not available")
+		return
+	end
+
 	profiler.busy = b
+
 	if b then
 		jit.profiler.start("li0", function(...)
 			local ok, err = pcall(statistical_callback, ...)
@@ -146,6 +152,20 @@ do
 			profiler.Restart()
 		end
 	end
+end
+
+function profiler.EasyStart()
+	profiler.EnableStatisticalProfiling(true)
+	profiler.EnableRealTimeTraceAbortLogging(true)
+end
+
+function profiler.EasyStop()
+	profiler.EnableRealTimeTraceAbortLogging(false)
+	profiler.EnableStatisticalProfiling(false)
+	profiler.PrintTraceAborts(0)
+	profiler.PrintStatistical(0)
+	started = false
+	profiler.Restart()
 end
 
 function profiler.Restart()
@@ -359,7 +379,7 @@ function profiler.PrintTraceAborts(min_samples)
 
 		if s[path] or not next(s) then
 			local full_path = R(path) or path
-			full_path = full_path:replace("../../../", e.SRC_FOLDER)
+			full_path = full_path:replace("../../../", e.CORE_FOLDER)
 			full_path = full_path:lower():replace(e.ROOT_FOLDER:lower(), "")
 
 			local temp = {}
@@ -567,6 +587,12 @@ local blacklist = {
 }
 
 function profiler.EnableRealTimeTraceAbortLogging(b)
+
+	if not jit.attach then
+		wlog("jit profiler is not available")
+		return
+	end
+
 	if b then
 		local last_log
 		jit.attach(function(what, trace_id, func, pc, trace_error_id, trace_error_arg)

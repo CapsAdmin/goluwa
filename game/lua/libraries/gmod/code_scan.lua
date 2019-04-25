@@ -214,7 +214,7 @@ function gine.CheckDirectory(root, name, no_linenumbers, suspicious_only)
 						end
 						c = c + 1
 
-						if c > 20 then break logn("...") end
+						if c > 20 then logn("...") break end
 					end
 					logn("\n")
 				end

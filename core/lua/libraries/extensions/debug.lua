@@ -54,6 +54,11 @@ function debug.getsource(func)
 end
 function debug.getprettysource(level, append_line, full_folder)
 	local info = debug.getinfo(type(level) == "number" and (level + 1) or level)
+	
+	if info.source == "=[C]" and type(level) == "number" then
+		info = debug.getinfo(type(level) == "number" and (level + 2) or level)
+	end
+
 	local pretty_source = "debug.getinfo = nil"
 
 	if info then
@@ -183,7 +188,7 @@ function debug.trace(skip_print)
 		local info = debug.getinfo(level, "Sln")
 
 		if info then
-			lines[#lines + 1] = ("%i: Line %d\t\"%s\"\t%s"):format(level, info.currentline, info.name or "unknown", info.source or "")
+			lines[#lines + 1] = ("%i:\t\"%s\"\t%s:%d"):format(level, info.name or "unknown", info.source or "", info.currentline)
 		else
 			break
 		end

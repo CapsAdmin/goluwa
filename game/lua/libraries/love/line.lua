@@ -1,5 +1,7 @@
 local line = _G.line or {}
 
+local require = require("require")
+
 line.speed = 1
 line.love_envs = line.love_envs or table.weak()
 
@@ -72,6 +74,8 @@ function line.ErrorNotSupported(str, level)
 end
 
 function line.CreateLoveEnv(version)
+	if VULKAN then return end
+
 	version = version or pvars.Get("line_version")
 
 	local love = {}
@@ -340,7 +344,7 @@ commands.Add("love_run=string,var_arg", function(name, ...)
 
 		local args = {...}
 
-		resource.Download(url, function(full_path)
+		resource.Download(url):Then(function(full_path)
 			full_path = full_path .. "/" .. name:match(".+/(.+)") .. "-master"
 			logn("running downloaded löve game: ", full_path)
 			line.RunGame(full_path, unpack(args))

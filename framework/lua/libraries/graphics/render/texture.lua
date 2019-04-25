@@ -76,7 +76,7 @@ end
 function META:LoadTextureFromPath(path, face)
 	self.Loading = true
 
-	resource.Download(path, function(full_path)
+	resource.Download(path):Then(function(full_path)
 		local val, err = vfs.Read(full_path)
 		if val then
 			local info, err = render.DecodeTexture(val, full_path)
@@ -100,7 +100,7 @@ function META:LoadTextureFromPath(path, face)
 		if self.OnLoad then
 			self:OnLoad()
 		end
-	end, function(reason)
+	end):Catch(function(reason)
 		logf("[%s] unable to find %s: %s\n", self, path, reason)
 		self.Loading = false
 		self:MakeError(reason)

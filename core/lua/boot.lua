@@ -1,52 +1,6 @@
 local start_time = os.clock()
 
-if os.getenv("GOLUWA_START_TIME") then
-	local start = os.getenv("GOLUWA_START_TIME")
-	local ffi = require("ffi")
-
-	if jit.os == "Windows" then
-		local min, sec, ms = start:match(".+:(%d+):(%d+).(%d+)", 0)
-		start = min*60+sec+ms/1000
-
-		ffi.cdef([[
-			struct goluwa_systemtime{
-				short wYear;
-				short wMonth;
-				short wDayOfWeek;
-				short wDay;
-				short wHour;
-				short wMinute;
-				short wSecond;
-				short wMilliseconds;
-			};
-			void GetSystemTime(struct goluwa_systemtime *);
-		]])
-		local t = ffi.new("struct goluwa_systemtime[1]")
-		ffi.C.GetSystemTime(t)
-
-		local min, sec, ms = t[0].wMinute, t[0].wSecond, t[0].wMilliseconds
-		local stop = min*60+sec+ms/1000
-
-		GOLUWA_CLI_TIME = stop - start - start_time
-	else
-		if jit.os == "OSX" then
-			start = start:match("^(%d+)")
-		end
-
-		ffi.cdef([[
-			struct timeval {
-               long tv_sec;
-               long tv_usec;
-           };
-			int gettimeofday(struct timeval *, void *);
-		]])
-		local t = ffi.new("struct timeval[1]")
-		ffi.C.gettimeofday(t, nil)
-		start = tonumber(start) / 1000000000
-
-		GOLUWA_CLI_TIME = (tonumber(t[0].tv_sec) + (tonumber(t[0].tv_usec) / 1000000)) - start
-	end
-end
+local session_id = os.getenv("GOLUWA_TMUX_SESSION_ID") or "goluwa"
 
 do
 	_G[jit.os:upper()] = true
@@ -58,6 +12,7 @@ do
 	UNIX = not WINDOWS
 
 	ARCHIVE_EXT = WINDOWS and ".zip" or ".tar.gz"
+	SHARED_LIBRARY_EXT = UNIX and ".so" or ".dll"
 
 	local ffi = require("ffi")
 
@@ -145,6 +100,17 @@ do
 		end
 	end
 
+	function os.copyfile(a, b)
+		a = absolute_path(a)
+		b = absolute_path(b)
+
+		if WINDOWS then
+			os.execute("xcopy /H /C /Y /F \"" .. winpath(a) .. "\" \"" .. winpath(b) .. "\"")
+		else
+			os.execute("cp \"" .. a .. "\" \"" .. b .. "\"")
+		end
+	end
+
 	if UNIX then
 		ffi.cdef("char *getcwd(char *buf, size_t size);")
 
@@ -202,7 +168,7 @@ do
 			if not val then
 				ffi.C.unsetenv(key)
 			else
-				ffi.C.setenv(key, val, 0)
+				ffi.C.setenv(key, val, 1)
 			end
 		end
 	else
@@ -372,7 +338,9 @@ do
 	end
 
 	function has_tmux_session()
-		return os.readexecute("tmux has-session -t goluwa 2> /dev/null; printf $?") == "0"
+		if os.iscmd("tmux") then
+			return os.readexecute("tmux has-session -t "..session_id.." 2> /dev/null; printf $?") == "0"
+		end
 	end
 
 	function os.extract(from, to, move_out)
@@ -459,11 +427,14 @@ do
 				extract_dir = absolute_path(extract_dir)
 				to = absolute_path(to)
 
-				os.execute("git clone https://"..domain..".com/"..name..".git \""..extract_dir.."\" --depth 1")
+				local ok, err = os.execute("git clone https://"..domain..".com/"..name..".git \""..extract_dir.."\" --depth 1")
 
 				os.copyfiles(extract_dir, to)
 				os.removedir(extract_dir)
+
+				return ok, err
 			end
+			return true
 		else
 			local url
 			if domain == "gitlab" then
@@ -476,127 +447,100 @@ do
 
 			if os.download(url, "temp" .. ARCHIVE_EXT) then
 				io.write("extracting ", os.getcd(), "/temp", ARCHIVE_EXT, " -> ", os.getcd(), "/", to, "\n")
-				os.extract("temp" .. ARCHIVE_EXT, to, "*/")
+				local ok = os.extract("temp" .. ARCHIVE_EXT, to, "*/")
 
 				os.remove(absolute_path("temp" .. ARCHIVE_EXT))
+
+				return ok
 			end
 		end
 	end
 end
 
-local arg_line
-local args
+local STORAGE_PATH = os.getenv("GOLUWA_STORAGE_PATH")
+local ARG_LINE = os.getenv("GOLUWA_ARG_LINE") or ""
+local SCRIPT_PATH = os.getenv("GOLUWA_SCRIPT_PATH")
+local RAN_FROM_FILEBROWSER = os.getenv("GOLUWA_RAN_FROM_FILEBROWSER")
+local BINARY_DIR = "core/bin/" .. OS .. "_" .. ARCH .. "/"
 
-if WINDOWS then
-	args = {...}
+local lua_exec = UNIX and "luajit" or "luajit.exe"
 
-	for i = 1, #args do
-		if args[i] == "" or args[i]:find("^%s+$") then
-			table.remove(args, i)
+if not os.isfile(BINARY_DIR .. lua_exec) then
+	os.makedir(BINARY_DIR)
+	os.copyfiles(STORAGE_PATH .. "/bin/" .. OS .. "_" .. ARCH .. "/", BINARY_DIR)
+
+	if UNIX then
+		os.execute("chmod +x " .. BINARY_DIR .. lua_exec)
+	end
+end
+
+local instructions_path = "storage/shared/copy_binaries_instructions"
+if os.isfile(instructions_path) then
+	for from, to in io.readfile(instructions_path):gmatch("(.-);(.-)\n") do
+		io.write("copying ", from, " to ", to, "\n")
+		os.copyfile(from, to)
+	end
+	os.remove(instructions_path)
+end
+
+do -- tmux
+	if ARG_LINE:sub(0, #"tmux") == "tmux" then
+		assert(os.iscmd("tmux"), "tmux is not installed")
+
+		if not has_tmux_session() then
+			os.readexecute("tmux new-session -d -s "..session_id)
+			os.readexecute("tmux send-keys -t "..session_id..' "export GOLUWA_TMUX=1" C-m')
+			os.readexecute("tmux send-keys -t "..session_id..' "./goluwa" C-m')
 		end
+
+		os.readexecute("tmux attach-session -t "..session_id)
+
+		os.exit()
 	end
 
-	arg_line = table.concat(args, " ")
-else
-	arg_line = ... or ""
-	args = {} (arg_line .. " "):gsub("(%S+)", function(chunk) table.insert(args, chunk) end)
-end
+	if ARG_LINE == "attach" and has_tmux_session() then
+		os.readexecute("tmux attach-session -t "..session_id)
 
-local root = debug.getinfo(1).source:match("@(.+/)core/lua/boot.lua")
-local bin_dir = root .. "data/" .. OS .. "_" .. ARCH .. "/"
-os.cd(bin_dir)
-bin_dir = os.getcd() .. "/"
+		return
+	end
 
-local generic = [[ffibuild.CopyLibraries("{BIN_DIR}")]]
-local ffibuild_libraries = {
-	assimp = generic,
-	enet = generic,
-	curses = generic,
-	freeimage = generic,
-	freetype = generic,
-	libarchive = generic,
-	libsndfile = generic,
-	luajit = [[
-		local function execute(str)
-			print("os.execute: " .. str)
-			os.execute(str)
-		end
+	if not os.getenv("GOLUWA_TMUX") and has_tmux_session() and ARG_LINE ~= "" then
+		local prev = io.readfile("storage/shared/tmux_log.txt")
 
-		os.execute("mkdir -p {BIN_DIR}")
-		os.execute("mkdir -p {BIN_DIR}jit")
+		os.readexecute("tmux send-keys -t "..session_id..' "' .. ARG_LINE .. '__ENTERHACK__"')
 
-		execute("cp repo/src/luajit {BIN_DIR}.")
-		execute("cp repo/src/jit/* {BIN_DIR}jit/.")
-		execute("cp luajit.lua {BIN_DIR}.")
-	]],
-	luajit_forks = [[
-		local function execute(str)
-			print("os.execute: " .. str)
-			os.execute(str)
-		end
+		local timeout = os.clock() + 1
 
-		os.execute("mkdir -p {BIN_DIR}")
-		os.execute("mkdir -p {BIN_DIR}jit")
+		while true do
+			cur = io.readfile("storage/shared/tmux_log.txt")
 
-		execute("cp luajit_* {BIN_DIR}.")
-		execute("cp lj.supp {BIN_DIR}.")
-	]],
-	luasocket = [[
-		os.execute("mkdir -p " .. "{BIN_DIR}" .. "socket")
-
-		local files = {
-			"socket/core.so",
-			"socket/unix.so",
-			"socket/serial.so",
-			"mime/core.so",
-		}
-
-		for _, path in ipairs(files) do
-			local dir = path:match("(.+)/")
-			if dir then
-				os.execute("mkdir -p " .. "{BIN_DIR}" .. dir)
+			if cur ~= prev and cur:sub(#prev):gsub("%s+", "") ~= "" then
+				io.write(cur:sub(#prev), "\n")
+				break
 			end
-			os.execute("cp " .. path .. " " .. "{BIN_DIR}" .. path)
-		end
-	]],
-	luasec = [[
-		os.execute("cp ssl.so {BIN_DIR}.")
-		os.execute("cp -r ssl {BIN_DIR}.")
-	]],
-	luaossl = [[
-		os.execute("cp _openssl.so {BIN_DIR}.")
-		os.execute("cp -r openssl {BIN_DIR}.")
-	]],
-	openal = [[
-		ffibuild.SetBuildName("al")
-		ffibuild.CopyLibraries("{BIN_DIR}")
-		ffibuild.SetBuildName("alc")
-		ffibuild.CopyLibraries("{BIN_DIR}")
-	]],
-	opengl = generic,
-	SDL2 = generic,
-	steamworks = generic,
-	VTFLib = generic,
-	vulkan = generic,
-}
 
-if OSX then
-	ffibuild_libraries.vulkan = nil
+			if timeout < os.clock() then
+				io.write("no resposne from goluwa\n")
+				break
+			end
+		end
+
+		return
+	end
 end
 
-os.cd("../../")
-
-if args[1] == "update" or not os.isfile("core/lua/init.lua") then
+if ARG_LINE == "update" or not os.isfile("core/lua/init.lua") then
 	if not os.isfile("core/lua/init.lua") then
 		io.write("missing core/lua/init.lua\n")
 	end
+
 	if os.isfile(".git/config") and io.readfile(".git/config"):find("goluwa") and os.iscmd("git") then
 		io.write("updating from git repository\n")
 		os.execute("git pull")
 	else
-		if args[1] == "update" then
+		if ARG_LINE == "update" then
 			for _, name in ipairs(os.ls(".")) do
-				if os.isdir(name) and name ~= "data" then
+				if os.isdir(name) and name ~= STORAGE_PATH then
 					os.removedir(name)
 				elseif name ~= "goluwa" and name ~= "goluwa.cmd" then
 					os.remove(name)
@@ -605,418 +549,100 @@ if args[1] == "update" or not os.isfile("core/lua/init.lua") then
 		end
 
 		get_github_project("CapsAdmin/goluwa", "", "gitlab")
+
 		if not os.isfile("core/lua/init.lua") then
 			io.write("still missing core/lua/init.lua\n")
 			os.exit(1)
 		end
 	end
-
-	if args[1] == "update" then
-		os.exit(1)
-	end
 end
 
-if args[1] == "build" then
-	get_github_project("CapsAdmin/ffibuild", "data/ffibuild")
-	assert(os.cd("data/ffibuild"), "unable to download ffibuild?")
+if ARG_LINE == "update" then
+	os.exit(1)
+end
 
-	local function run_postbuild(code)
-		code = code:gsub("{BIN_DIR}", "../../" .. OS .. "_" .. ARCH .. "/")
-		os.setenv("templua")
-		os.setenv("templua", "local ffibuild = loadfile('../ffibuild.lua')()\n" .. code)
-		os.execute("../luajit/repo/src/luajit -e \"loadstring(os.getenv('templua'))()\"")
-	end
+local initlua = "core/lua/init.lua"
+local executable = "luajit"
 
-	if args[2] == "all" then
-		os.cd("luajit")
-		os.execute("make")
-		os.cd("..")
-
-		for dir, post_build in pairs(ffibuild_libraries) do
-			os.cd(dir)
-			os.execute("./make.sh")
-			run_postbuild(post_build)
-			os.cd("..")
-		end
-
-		os.cd("../../")
-
-		io.open(bin_dir .. "binaries_downloaded", "w"):close()
-	elseif args[2] == "clean" then
-		for dir, post_build in pairs(ffibuild_libraries) do
-			if os.isdir(dir) then
-				os.cd(dir)
-				os.execute("./make.sh clean")
-				os.cd("..")
-			end
-		end
-	else
-		os.cd(args[2])
-
-		if args[3] == "clean" then
-			os.execute("./make.sh clean")
+do
+	local what = "ljv"
+	local start, stop = ARG_LINE:find("^"..what.." (%S+)")
+	if start then
+		local arg = ARG_LINE:sub(#what + 2, stop)
+		if os.isfile(BINARY_DIR .. "/luajit_" .. arg .. (WINDOWS and ".exe" or "")) then
+			executable = "luajit_" .. arg
 		else
-			os.execute("./make.sh " .. (args[3] or ""))
-			if ffibuild_libraries[args[2]] then
-				run_postbuild(ffibuild_libraries[args[2]])
-			end
+			io.write("\"luajit_" .. arg, "\" is not an executable\n")
+			os.exit(1)
 		end
 	end
-
-	os.exit()
 end
 
-if args[1] == "patchelf_binaries" then
-	os.cd(bin_dir)
+if not os.getenv("GOLUWA_SKIP_LIBTLS") then
+	local base_url = "https://gitlab.com/CapsAdmin/goluwa-binaries/raw/master/core/bin/"..OS.."_"..ARCH.."/"
 
-	for _, bin in ipairs(os.ls(".")) do
-		if bin:find("%.so") then
-			os.execute("patchelf --set-rpath . " .. bin)
-		end
-	end
-	os.exit()
-end
-
-if args[1] == "bundle_library_dependencies" then
-
-	local blacklist = {
-		"statically linked",
-		"linux-vdso.so",
-		--"libsystemd.so",
-		"libwayland",
-		"libX",
-		-- https://raw.githubusercontent.com/probonopd/AppImages/master/excludelist
-		"ld-linux.so",
-		"ld-linux-x86-64.so",
-		"libanl.so",
-		"libBrokenLocale.so",
-		"libcidn.so",
-		"libcrypt.so",
-		"libc.so",
-		"libdl.so",
-		"libm.so",
-		"libmvec.so",
-		"libnsl.so",
-		"libnss_compat.so",
-		"libnss_db.so",
-		"libnss_dns.so",
-		"libnss_files.so",
-		"libnss_hesiod.so",
-		"libnss_nisplus.so",
-		"libnss_nis.so",
-		"libpthread.so",
-		"libreso",
-		"librt.so",
-		"libthread_db.so",
-		"libutil.so",
-		"libstdc++.so",
-		"libGL.so",
-		"libdrm.so",
-		"libxcb.so",
-		"libX11.so",
-		"libgio-2.0.so",
-		"libaso",
-		"libgdk_pixbuf-2.0.so",
-		"libfontconfig.so",
-		"libcom_err.so",
-		"libcrypt.so",
-		"libexpat.so",
-		"libgcc_s.so",
-		"libglib-2.0.so",
-		"libgpg-error.so",
-		"libICE.so",
-		"libkeyutils.so",
-		"libp11-kit.so",
-		"libSM.so",
-		"libusb-1.0.so",
-		"libuuid.so",
-		"libz.so",
-		"libgobject-2.0.so",
-		"libpangoft2-1.0.so",
-		"libpangocairo-1.0.so",
-		"libpango-1.0.so",
-		"libgpg-error.so",
-		"libjack.so"
+	local files = {
+		"libtls",
+		"libcrypto",
+		"libssl",
+		"libtls",
 	}
 
-	os.cd(bin_dir)
+	for _, name in ipairs(files) do
+		name = name .. SHARED_LIBRARY_EXT
+		if not os.isfile(BINARY_DIR .. name) then
+			os.download(base_url .. name, BINARY_DIR .. name)
+		end
+	end
+end
 
-	local done = {}
-	local found = {}
-	local ok = true
+os.setenv("GOLUWA_BOOT_TIME", tostring(os.clock() - start_time))
 
-	for _, bin in ipairs(os.ls("")) do
-		if bin:find("%.so") then
-			local tool = jit.os == "OSX" and "otool -L" or "ldd"
-			for line in os.readexecute(tool .. " " .. bin):gmatch("(.-)\n") do
-				if line:find("not found") then
-					print(line)
-				elseif not blacklisted then
-					local name, location = line:match("(%S-) => (%S-) %b()")
-					if not name then
-						location = line:match("(%S-) %b()")
-						if location then
-							name = location:match(".+/(.+)") or location:match("^(%S+)")
-						else
-							name, location = line:match(".+/(.+)"), line
-						end
-					end
+if UNIX then
 
-					if name == location then
-						location = "./" .. location
-					end
+	if ARG_LINE == "gdb" then
+		assert(os.iscmd("gdb"), "gdb is not installed")
+		assert(os.iscmd("git"), "git is not installed")
 
-					local blacklisted = false
+		local utils = os.readexecute("pwd -P"):sub(0,-2) .. "/storage/temp/openresty-gdb-utils"
 
-					for _, str in ipairs(blacklist) do
-						if name:find(str, nil, true) then
-							blacklisted = true
-							if not done[name] then
-								print("skipping " .. name .. " (blacklisted)")
-								done[name] = true
-							end
-							break
-						end
-					end
+		if not os.isdir(utils) then
+			os.execute("git clone https://github.com/openresty/openresty-gdb-utils.git " .. utils .. " --depth 1;")
+		end
 
-					if not blacklisted then
-						if location:sub(1, 1) == "." or location:sub(1, 1) == "/" then
-							found[name] = found[name] or {location = location, bin = bin}
-						end
-					end
-				end
+		local gdb = "gdb "
+		gdb = gdb .. "--ex 'py import sys' "
+		gdb = gdb .. "--ex 'py sys.path.append(\""..utils.."\")' "
+		gdb = gdb .. "--ex 'source openresty-gdb-utils/luajit21.py' "
+		gdb = gdb .. "--ex 'set non-stop off' "
+		gdb = gdb .. "--ex 'target remote | vgdb' "
+		gdb = gdb .. "--ex 'monitor leak_check' "
+		gdb = gdb .. "--ex 'run' --args " .. BINARY_DIR .. "/"..executable .. " " .. initlua
+
+		local valgrind = "valgrind "
+		valgrind = valgrind .. "--vgdb=yes "
+		valgrind = valgrind .. "--vgdb-error=1 "
+		valgrind = valgrind .. "--tool=memcheck "
+		valgrind = valgrind .. "--leak-check=full "
+		valgrind = valgrind .. "--leak-resolution=high "
+		valgrind = valgrind .. "--show-reachable=yes "
+		valgrind = valgrind .. "--read-var-info=yes "
+		valgrind = valgrind .. "--suppressions=./"..BINARY_DIR.."/lj.supp "
+		valgrind = valgrind .. "./" .. BINARY_DIR .. "/"..executable .. " " .. initlua
+
+		if os.getenv("DISPLAY") then
+			if os.iscmd("valgrind") then
+			--	os.execute("xterm -hold -e " .. valgrind .. " &")
+			else
+				print("valgrind is not installed")
 			end
-		end
-	end
-
-	for k,v in pairs(found) do
-		print(v.location .. ":")
-		print("\t" .. v.bin)
-
-		os.execute("cp " .. v.location .. " .")
-	end
-
-	os.exit()
-end
-
-if args[1] == "check_binaries" then
-
-	os.cd(bin_dir)
-
-	local ok = true
-
-	for _, bin in ipairs(os.ls(".")) do
-		if bin:find("%.so") then
-			if not os.execute([[./luajit -e "require('ffi').load('./]]..bin..[[')"]]) then
-				ok = false
-			end
-		end
-	end
-
-	if not ok then
-		print("errors when calling ffi.load() on one or more libraries")
-		os.exit(1)
-	end
-
-	print("everything seems ok")
-	os.exit()
-end
-
-if args[1] == "tmux" then
-	assert(os.iscmd("tmux"), "tmux is not installed")
-
-	if not has_tmux_session() then
-		os.readexecute([[
-		tmux new-session -d -s goluwa
-		tmux send-keys -t goluwa "export GOLUWA_TMUX=1" C-m
-		tmux send-keys -t goluwa "./goluwa launch" C-m
-		]])
-	end
-
-	os.readexecute("tmux attach-session -t goluwa")
-
-	os.exit()
-end
-
-if args[2] == "attach" and has_tmux_session() then
-	os.readexecute("tmux attach-session -t goluwa")
-end
-
-if args[1] ~= "launch" then
-	if not args[1] then
-		if not WINDOWS and not OSX and os.readexecute("printf %s ${DISPLAY+x}") == "" then
-			CLIENT = true
-		end
-	elseif not WINDOWS and args[1]:sub(0, 2) ~= "--" and os.iscmd("tmux") and has_tmux_session() then
-		if args[1] == "attach" or args[1] == "tmux" then
-			os.readexecute("tmux attach-session -t goluwa")
-		elseif args[1] ~= "launch" then
-			local magic_start = "TMUX_EXECUTE_START_" .. tostring({}) .. "__"
-			local magic_stop = "TMUX_EXECUTE_STOP_" .. tostring({}) .. "__"
-
-			local prev = io.readfile("data/tmux_log.txt")
-
-			os.readexecute("tmux send-keys -t goluwa \"echo  " .. magic_start .. "\" C-m")
-			os.readexecute("tmux send-keys -t goluwa '" .. arg_line .. "' C-m")
-			os.readexecute("tmux send-keys -t goluwa \"echo " .. magic_stop .. "\" C-m")
-
-			local timeout = os.clock() + 1
-
-			while true do
-				cur = io.readfile("data/tmux_log.txt")
-				local start = cur:find(magic_start, nil, true)
-				local stop = cur:find(magic_stop, nil, true)
-
-				if start and stop then
-					io.write(cur:sub(start + #magic_start + 1, stop - 2), "\n")
-					break
-				end
-
-				if timeout < os.clock() then
-					io.write("no resposne from goluwa\n")
-					break
-				end
-			end
-		end
-
-		os.exit()
-	end
-end
-
-if IDE or args[1] == "ide" then
-	get_github_project("pkulchenko/ZeroBraneStudio", "data/ide")
-	assert(os.cd("data/ide"), "unable to download ide?")
-
-	if WINDOWS then
-		os.execute(absolute_path("zbstudio.exe") .. " -cfg ../../engine/lua/zerobrane/config.lua")
-	else
-		os.execute("./zbstudio.sh -cfg ../../engine/lua/zerobrane/config.lua")
-	end
-
-	os.exit()
-end
-
-if CLIENT or args[1] == "client"  or  args[1] == "" then
-	os.setenv("GOLUWA_CLIENT", "1")
-	os.setenv("GOLUWA_SERVER", "0")
-	os.setenv("LD_PRELOAD", "libpthread.so.0")
-	os.setenv("__GL_THREADED_OPTIMIZATIONS", "1")
-	os.setenv("multithread_glsl_compiler", "1")
-end
-
-if args[1] == "server" then
-	os.setenv("GOLUWA_GRAPHICS", "0")
-	os.setenv("GOLUWA_SOUND", "0")
-	os.setenv("GOLUWA_WINDOW", "0")
-
-	os.setenv("GOLUWA_SERVER", "1")
-	os.setenv("GOLUWA_CLIENT", "0")
-end
-
-if args[1] and args[1]:sub(0, 2) == "--" then
-	table.insert(args, 1, "cli")
-end
-
-if args[1] == "client" or args[1] == "server" or args[1] == "launch" or args[1] == "cli" then
-	if args[2] == "branch" then
-		if args[4] == "debug" then
-			ARGS = {unpack(args, 5)}
+			os.execute("xterm -hold -e " .. gdb)
 		else
-			ARGS = {unpack(args, 4)}
+			os.execute(gdb)
 		end
 	else
-		ARGS = {unpack(args, 2)}
+		os.exit(os.execute("./" .. BINARY_DIR .. "/"..executable.." " .. initlua))
 	end
 else
-	ARGS = args
-end
-
-if args[1] == "cli" then
-	os.setenv("GOLUWA_CLI", "1")
-end
-
-os.appendenv("GOLUWA_ARGS", table.concat(ARGS, " "))
-
-if not os.isfile("data/binaries_downloaded") then
-	get_github_project("CapsAdmin/goluwa-binaries-" .. OS .. "_" .. ARCH, "data/" .. OS .. "_" .. ARCH, "gitlab", true)
-	io.open("data/binaries_downloaded", "w"):close()
-end
-
-os.cd(bin_dir)
-
-if args[1] == "install" then
-	if LINUX then
-		local path = os.getenv("HOME") .. "/.bashrc"
-		local str = io.readfile(path)
-		local alias = "alias goluwa='"..os.getcd().."/goluwa_cli'"
-		alias = "\n#goluwastart\n" .. alias .. "\n#goluwend"
-		str = str:gsub("\n#goluwastart\n(.-)\n#goluwend", "")
-		str = str .. alias
-		io.writefile(path, str)
-	end
-
-	os.exit()
-end
-
-if args[1] == "uninstall" then
-	if LINUX then
-		local path = os.getenv("HOME") .. "/.bashrc"
-		local str = io.readfile(path)
-		str = str:gsub("\n#goluwastart\n(.-)\n#goluwend", "")
-		io.writefile(path, str)
-	end
-
-	os.exit()
-end
-
-local initlua = "../../core/lua/init.lua"
-
-GOLUWA_EXECUTABLE = (os.getenv("GOLUWA_EXECUTABLE") or "") .. "luajit"
-
-if args[2] == "branch" then
-	GOLUWA_EXECUTABLE = "luajit_" .. args[3]
-end
-
-if not WINDOWS and os.getenv("GOLUWA_DEBUG") or args[4] == "debug" then
-	assert(os.iscmd("gdb"), "gdb is not installed")
-	assert(os.iscmd("valgrind"), "valgrind is not installed")
-	assert(os.iscmd("git"), "git is not installed")
-
-	local utils = os.readexecute("pwd -P"):sub(0,-2) .. "/openresty-gdb-utils"
-
-	if not os.isdir(utils) then
-		os.execute("git clone https://github.com/openresty/openresty-gdb-utils.git " .. utils .. " --depth 1;")
-	end
-
-	local gdb = "gdb "
-	gdb = gdb .. "--ex 'py import sys' "
-	gdb = gdb .. "--ex 'py sys.path.append(\""..utils.."\")' "
-	gdb = gdb .. "--ex 'source openresty-gdb-utils/luajit21.py' "
-	gdb = gdb .. "--ex 'set non-stop off' "
-	gdb = gdb .. "--ex 'target remote | vgdb' "
-	gdb = gdb .. "--ex 'monitor leak_check' "
-	gdb = gdb .. "--ex 'run' --args " .. GOLUWA_EXECUTABLE .. " " .. initlua
-
-	local valgrind = "valgrind "
-	valgrind = valgrind .. "--vgdb=yes "
-	valgrind = valgrind .. "--vgdb-error=1 "
-	valgrind = valgrind .. "--tool=memcheck "
-	valgrind = valgrind .. "--leak-check=full "
-	valgrind = valgrind .. "--leak-resolution=high "
-	valgrind = valgrind .. "--show-reachable=yes "
-	valgrind = valgrind .. "--read-var-info=yes "
-	valgrind = valgrind .. "--suppressions=lj.supp "
-	valgrind = valgrind .. "./" .. GOLUWA_EXECUTABLE .. " " .. initlua
-
-	os.execute("xterm -hold -e " .. valgrind .. " &")
-	os.execute("xterm -hold -e " .. gdb)
-else
-	os.setenv("GOLUWA_CLI_TIME", tostring(GOLUWA_CLI_TIME))
-	os.setenv("GOLUWA_BOOT_TIME", tostring(os.clock() - start_time))
-
-	if WINDOWS then
-		os.execute(os.getcd() .. "\\" .. GOLUWA_EXECUTABLE .. ".exe " .. os.getcd():gsub("\\", "/") .. "/" .. initlua)
-	else
-		os.execute("./" .. GOLUWA_EXECUTABLE .. " " .. initlua)
-	end
+	os.exit(os.execute(winpath(BINARY_DIR .. "\\"..executable..".exe " .. os.getcd():gsub("\\", "/") .. "/" .. initlua)))
 end

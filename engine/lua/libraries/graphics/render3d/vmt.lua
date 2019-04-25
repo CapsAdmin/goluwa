@@ -23,7 +23,7 @@ local property_translate = {
 
 	selfillummask = {"SelfIlluminationTexture", get_non_srgb},
 
-	selfillum = {"SelfIllumination", function(num) return num end},
+	selfillum = {"SelfIllumination", function(num) return num ~= 0 end},
 	selfillumtint = {"IlluminationColor", function(v)
 		if type(v) == "string" then
 			local r,g,b = unpack_numbers(v)

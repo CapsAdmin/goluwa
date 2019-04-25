@@ -1,1 +1,1 @@
-sockets.Get("https://github.com/CapsAdmin/goluwa")
+http.Get("https://github.com/CapsAdmin/goluwa")

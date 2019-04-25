@@ -252,11 +252,11 @@ event.Timer("enet", 1/30, 0, function()
 				flags = utility.FlagsToTable(flags, valid_flags)
 
 				if socket.Type == "enet_peer" then
-					if enet.debug then llog("%s: received %s of data: %s", socket, utility.FormatFileSize(#str), str:dumphex()) end
+					if enet.debug then llog("%s: received %s of data: %s", socket, utility.FormatFileSize(#str), str:hexformat()) end
 					socket:OnReceive(str, flags, channel)
 				else
 					local peer = socket.peers[getuid(evt[0].peer)]
-					if enet.debug then llog("%s: received %s of data from %s: %s", socket, utility.FormatFileSize(#str), peer, str:dumphex()) end
+					if enet.debug then llog("%s: received %s of data from %s: %s", socket, utility.FormatFileSize(#str), peer, str:hexformat()) end
 					socket:OnReceive(peer, str, flags, channel)
 				end
 			end

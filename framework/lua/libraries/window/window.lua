@@ -25,6 +25,17 @@ do
 		text_input = true,
 		vertical_resize = true,
 		horizontal_resize = true,
+
+		horizontal_resize = true,
+		vertical_resize = true,
+
+		top_right_resize =  true,
+		bottom_left_resize =  true,
+
+		top_left_resize =  true,
+		bottom_right_resize =  true,
+
+		all_resize =  true,
 	}
 
 	META.Keys = {
@@ -43,16 +54,30 @@ do
 		return self:GetCursor() == "trapped"
 	end
 
-	function META:Initialize() error("nyi") end
-	function META:PreWindowSetup() error("nyi") end
-	function META:PostWindowSetup() error("nyi") end
-	function META:OnRemove() error("nyi") end
+	local function nyi()
+		local func = debug.getinfo(2).func
+		for k, v in pairs(META) do
+			if v == func then
+				local msg = "function Window:" .. k .. "() is not implemented"
+				error(msg, 3)
+			end
+		end
+	end
 
-	function META:Maximize() error("nyi") end
-	function META:Minimize() error("nyi") end
-	function META:Restore() error("nyi") end
+	function system.IsUsingBattery()
+		return false
+	end
 
-	function META:GetFramebufferSize() error("nyi") end
+	function META:Initialize() nyi() end
+	function META:PreWindowSetup() nyi() end
+	function META:PostWindowSetup() nyi() end
+	function META:OnRemove() end
+
+	function META:Maximize() nyi() end
+	function META:Minimize() nyi() end
+	function META:Restore() nyi() end
+
+	function META:GetFramebufferSize() nyi() end
 
 	function META:OnUpdate(dt) end
 
@@ -70,6 +95,7 @@ do
 	function META:OnCursorLeave() end
 
 	function META:OnClose() end
+	function META:SwapInterval() end
 
 	function META:OnCursorPosition(x, y) end
 	function META:OnDrop(paths) end
@@ -113,7 +139,10 @@ do
 		render.PushViewport(0, 0, self:GetSize():Unpack())
 
 			local dt = system.GetFrameTime()
-			render.GetScreenFrameBuffer():Begin()
+			local fb = render.GetScreenFrameBuffer()
+
+			fb:Begin()
+			fb:ClearAll()
 
 			event.Call("Draw3D", dt)
 
@@ -133,7 +162,7 @@ do
 				event.Call("PostDrawScene")
 			end
 
-			render.GetScreenFrameBuffer():End()
+			fb:End()
 		render.PopWindow()
 		render.PopViewport()
 	end
@@ -143,12 +172,19 @@ do
 		system.ShutDown()
 	end
 
-	runfile("implementations/"..WINDOW_IMPLEMENTATION..".lua", META)
+	if WINDOW_IMPLEMENTATION == "sdl2" then
+		runfile("implementations/sdl2.lua", META)
+	elseif WINDOW_IMPLEMENTATION == "glfw" then
+		runfile("implementations/glfw.lua", META)
+	end
 
 	function window.CreateWindow(width, height, title, flags)
 		local self = META:CreateObject()
 
-		self:Initialize()
+		local ok, err = self:Initialize()
+		if ok == false then
+			return ok, err
+		end
 
 		if NULL_OPENGL then
 			local gl = require("opengl")
@@ -198,7 +234,9 @@ end
 function window.Open(...)
 	if window.IsOpen() then return end
 
-	local wnd = window.CreateWindow(...)
+	local ok, wnd = pcall(window.CreateWindow, ...)
+
+	if not ok then wlog(wnd) return ok, wnd end
 
 	wnd:BindContext()
 
@@ -267,6 +305,8 @@ function window.Open(...)
 			end)
 		end
 	end)
+
+	event.Call("WindowOpened", wnd)
 
 	return wnd
 end

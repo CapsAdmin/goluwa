@@ -74,9 +74,9 @@ local function translate_windows_font(font_name)
 	-- TODO: EnumFontFamiliesEx
 
 	local name_translate = {
-		["lucidaconsole"] = "lucon",
-		["trebuchetms"] = "trebuc",
-		["couriernew"] = "cour",
+		["lucidaconsole"] = "lucida grande",
+		["trebuchetms"] = "trebuchet ms",
+		["couriernew"] = "courier new",
 	}
 
 	local font = font_name:lower()
@@ -91,13 +91,15 @@ local function translate_windows_font(font_name)
 	local parts = font:lower():split(" ")
 	local name = parts[1]
 
+	name = name .. "/" .. name
+
 	for i = 2, #parts do
 		local flag = parts[i]
 
 		if flag == "bold" then
-			flag = "b"
+			flag = " bold"
 		elseif flag == "semibold" then
-			flag = "sb"
+			flag = " bold"
 		elseif flag == "semibold" then
 
 		end
@@ -122,8 +124,12 @@ local providers = {
 		translate = google,
 	},
 	{
-		url = "https://github.com/caarlos0/msfonts/raw/master/fonts/",
+		url = "https://gitlab.com/jeichert/fonts/raw/master/",
 		translate = translate_windows_font,
+	},
+	{
+		url = "http://www.speedywristbands.com/public/files/fonts/",
+		translate = function(path) print(path, "!!") return (" " .. path):gsub("%s(%l)", function(str) return str:upper() end) .. ".ttf" end,
 	},
 	{
 		url = "http://dl.dafont.com/dl/?f=", -- roboto | Roboto-BoldItalic.ttf
@@ -190,64 +196,60 @@ local function find_font(name, callback, on_error)
 		lookup[url] = info
 	end
 
-	sockets.DownloadFirstFound(
-		urls,
-		function(url, content)
-			llog("%s downloading url: %s", name, url)
+	http.DownloadFirstFound(urls):Then(function(url, content)
+		llog("%s downloading url: %s", name, url)
 
-			local info = lookup[url]
-			local ext
-			local full_path
+		local info = lookup[url]
+		local ext
+		local full_path
 
-			if info.archive then
-				if not content:startswith("PK\003\004") then
-					llog("%s is not a zip file (does not start with zip header)", url)
-					local path = "data/error_" .. crypto.CRC32(url) .. ".dat"
-					llog("writing content to %s", path)
-					vfs.Write(path, content)
-					resource.Download(fonts.default_font_path, callback)
-					return
-				end
-
-				local path = "data/temp_"..crypto.CRC32(url)..".zip"
+		if info.archive then
+			if not content:startswith("PK\003\004") then
+				llog("%s is not a zip file (does not start with zip header)", url)
+				local path = "data/error_" .. crypto.CRC32(url) .. ".dat"
+				llog("writing content to %s", path)
 				vfs.Write(path, content)
-
-				local ok, err = vfs.IsFolderValid(path)
-				if not ok then
-					llog("%s appears to be damaged", path)
-					logn(err:trim())
-					--vfs.Delete(path)
-					resource.Download(fonts.default_font_path, callback)
-					return
-				end
-
-				full_path = info.archive(R(path) .. "/", name)
-				if full_path then
-					content = vfs.Read(full_path)
-					ext = full_path:match(".+(%.%a+)")
-					vfs.Delete(path)
-				else
-					resource.Download(fonts.default_font_path, callback)
-					return
-				end
+				resource.Download(fonts.default_font_path):Then(callback)
+				return
 			end
 
-			if content then
-				ext = ext or url:match(".+(%.%a+)") or ".dat"
-				local path = "os:" .. e.DOWNLOAD_FOLDER .. "/fonts/_" .. real_name .. ext
+			local path = "data/temp_"..crypto.CRC32(url)..".zip"
+			vfs.Write(path, content)
 
-				llog("%s cache: %s", name, path)
-				vfs.CreateDirectoriesFromPath(path)
-				vfs.Write(path, content)
+			local ok, err = vfs.IsFolderValid(path)
+			if not ok then
+				llog("%s appears to be damaged", path)
+				logn(err:trim())
+				--vfs.Delete(path)
+				resource.Download(fonts.default_font_path):Then(callback)
+				return
+			end
 
-				callback(path)
+			full_path = info.archive(R(path) .. "/", name)
+			if full_path then
+				content = vfs.Read(full_path)
+				ext = full_path:match(".+(%.%a+)")
+				vfs.Delete(path)
 			else
-				llog("%s is empty", full_path)
-				resource.Download(fonts.default_font_path, callback)
+				resource.Download(fonts.default_font_path):Then(callback)
+				return
 			end
-		end,
-		on_error
-	)
+		end
+
+		if content then
+			ext = ext or url:match(".+(%.%a+)") or ".dat"
+			local path = "os:" .. e.DOWNLOAD_FOLDER .. "/fonts/_" .. real_name .. ext
+
+			llog("%s cache: %s", name, path)
+			vfs.CreateDirectoriesFromPath(path)
+			vfs.Write(path, content)
+
+			callback(path)
+		else
+			llog("%s is empty", full_path)
+			resource.Download(fonts.default_font_path):Then(callback)
+		end
+	end):Catch(on_error)
 end
 
 local META = prototype.CreateTemplate("freetype")
@@ -278,7 +280,7 @@ function META:Initialize()
 				if path == R(fonts.default_font_path) then return end
 			end
 
-			resource.Download(fonts.default_font_path, load)
+			resource.Download(fonts.default_font_path):Then(load)
 			return
 		end
 
@@ -311,7 +313,7 @@ function META:Initialize()
 				if path == R(fonts.default_font_path) then return end
 			end
 
-			resource.Download(fonts.default_font_path, load)
+			resource.Download(fonts.default_font_path):Then(load)
 		end
 	end
 
@@ -322,27 +324,27 @@ function META:Initialize()
 		return
 	end
 
-	resource.Download(self.Path, load, function(reason)
+	resource.Download(self.Path):Then(load):Catch(function(reason)
 		if WINDOWS then
 			local path = vfs.ParsePathVariables("%windir%/fonts/" .. translate_windows_font(self.Path))
 
 			if vfs.IsFile(path) then
-				resource.Download(path, load)
+				resource.Download(path):Then(load)
 				return
 			end
 		end
 
-		if SOCKETS then
+		do
 			if self.Path:find("/", nil, true) then
 				logn("unable to download ", self.Path, ": ", reason)
 				llog("loading default font instead")
-				resource.Download(fonts.default_font_path, load)
+				resource.Download(fonts.default_font_path):Then(load)
 			else
 				find_font(self.Path, load, function(reason)
 					logn("unable to download ", self.Path, ": ", reason)
 					logn(reason)
 					llog("loading default font instead")
-					resource.Download(fonts.default_font_path, load)
+					resource.Download(fonts.default_font_path):Then(load)
 				end)
 			end
 		end

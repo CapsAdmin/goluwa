@@ -11,14 +11,7 @@ function serializer.GetAvailible()
 end
 
 function serializer.GetLibrary(name)
-	local lib = serializer.libraries[name] and serializer.libraries[name].lib
-
-	if type(lib) == "string" then
-		lib = require(lib)
-		serializer.libraries[name].lib = lib
-	end
-
-	return lib
+	return serializer.libraries[name] and serializer.libraries[name].lib
 end
 
 function serializer.Encode(lib, ...)
@@ -66,13 +59,18 @@ do -- vfs extension
 		return false, "no such file"
 	end
 
-	function serializer.SetKeyValueInFile(lib, path, key, value)
+	function serializer.StoreInFile(lib, path, key, value)
 		local tbl = serializer.ReadFile(lib, path) or {}
 		tbl[key] = value
 		serializer.WriteFile(lib, path, tbl)
 	end
 
-	function serializer.GetKeyFromFile(lib, path, key, def)
+	function serializer.GetKeyValuesInFile(lib, path)
+		local tbl = serializer.ReadFile(lib, path) or {}
+		return tbl
+	end
+
+	function serializer.LookupInFile(lib, path, key, def)
 		local tbl = serializer.ReadFile(lib, path)
 
 		if tbl then
@@ -95,6 +93,6 @@ do -- vfs extension
 	end
 end
 
-runfile("serializers/*", serializer)
+runfile("lua/libraries/serializers/*", serializer)
 
 return serializer

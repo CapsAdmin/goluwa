@@ -1,24 +1,7 @@
 local vfs = (...) or _G.vfs
 
 local fs = require("fs")
-
 local ffi = require("ffi")
-
-if vfs.use_appdata then
-	if WINDOWS then
-		vfs.SetEnv("DATA", "os:%%APPDATA%%/.goluwa")
-	end
-
-	if LINUX then
-		vfs.SetEnv("DATA", "os:%%HOME%%/.goluwa")
-	end
-else
-	vfs.SetEnv("DATA", "os:" .. e.USERDATA_FOLDER)
-end
-
-vfs.SetEnv("ROOT", "os:" .. e.ROOT_FOLDER)
-vfs.SetEnv("SRC", "os:" .. e.SRC_FOLDER)
-vfs.SetEnv("BIN", "os:" .. e.BIN_FOLDER)
 
 local CONTEXT = {}
 
@@ -26,11 +9,11 @@ CONTEXT.Name = "os"
 CONTEXT.Position = 0
 
 function CONTEXT:CreateFolder(path_info, force)
-	if force or path_info.full_path:startswith(e.DATA_FOLDER) or path_info.full_path:startswith(e.USERDATA_FOLDER) or path_info.full_path:startswith(e.ROOT_FOLDER) then
+	if force or path_info.full_path:startswith(e.STORAGE_FOLDER) or path_info.full_path:startswith(e.USERDATA_FOLDER) or path_info.full_path:startswith(e.ROOT_FOLDER) then
 		if self:IsFolder(path_info) then return true end
 
 		if force then
-			if not CLI then
+			if VERBOSE then
 				llog("creating directory: ", path_info.full_path)
 			end
 		end
@@ -68,22 +51,30 @@ function CONTEXT:ReadAll()
 	return self:ReadBytes(math.huge)
 end
 
+local translate_mode = {
+	read = "rb",
+	write = "wb",
+	append = "ab",
+	read_write = "",
+}
+
 if fs.open then
 
 	-- if CONTEXT:Open errors the virtual file system will assume
 	-- the file doesn't exist and will go to the next mounted context
 
-	local translate_mode = {
-		read = "r",
-		write = "w",
-	}
 
 	function CONTEXT:Open(path_info, ...)
 		local mode = translate_mode[self:GetMode()]
 
 		if not mode then return false, "mode not supported" end
 
-		self.file = fs.open(path_info.full_path, mode .. "b")
+		if self.Mode == "read_write" then
+			fs.close(fs.open(path_info.full_path, "a"))
+			self.file = fs.open(path_info.full_path, "rb+")
+		else
+			self.file = fs.open(path_info.full_path, mode)
+		end
 
 		if self.file == nil then
 			return false, "unable to open file: " .. ffi.strerror()
@@ -164,12 +155,20 @@ if fs.open then
 			self.file = nil
 		end
 	end
-else
-	local translate_mode = {
-		read = "r",
-		write = "w",
-	}
 
+	function CONTEXT:GetSize()
+		if self.Mode == "read" or self.memory then
+			return self.attributes.size
+		end
+
+		local pos = fs.tell(self.file)
+		fs.seek(self.file, 0, 2)
+		local size = fs.tell(self.file)
+		fs.seek(self.file, pos, 0)
+
+		return tonumber(size) -- hmm, 64bit?
+	end
+else
 	function CONTEXT:Open(path_info, ...)
 		local mode = translate_mode[self:GetMode()]
 
@@ -210,10 +209,10 @@ else
 			self.file = nil
 		end
 	end
-end
 
-function CONTEXT:GetSize()
-	return self.attributes.size
+	function CONTEXT:GetSize()
+		return self.attributes.size
+	end
 end
 
 function CONTEXT:GetLastModified()

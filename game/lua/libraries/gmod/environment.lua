@@ -37,6 +37,9 @@ do -- copy standard libraries
 			env[k] = _G[k]
 		end
 	end
+
+	env.require = require("require")
+	env.module = require("require").module
 end
 
 do -- enums

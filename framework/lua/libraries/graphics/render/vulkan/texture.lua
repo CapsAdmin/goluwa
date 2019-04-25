@@ -2,7 +2,7 @@ local vk = desire("vulkan")
 local ffi = require("ffi")
 local freeimage = require("freeimage")
 
-function render.CreateTexture(file_name, format)
+function render.CreateTextureVK(file_name, format)
 	format = format or "b8g8r8a8_unorm"
 
 	local image_infos = freeimage.LoadImageMipMaps(file_name)

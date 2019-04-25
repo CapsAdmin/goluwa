@@ -78,7 +78,7 @@ function love.sound.newSoundData(samples, rate, bits, channels)
 	self.buffer = buffer
 
 	if type(samples) == "string" then
-		resource.Download(samples, function(path)
+		resource.Download(samples):Then(function(path)
 			local file = vfs.Open(path)
 			local data, length, info = audio.Decode(file)
 			file:Close()

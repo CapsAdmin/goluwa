@@ -6,6 +6,8 @@ local addons = {
 	"https://github.com/PAC3-Server/garrysmod",
 }
 
+local gmod_path = steam.GetGamePath("GarrysMod")
+
 commands.Add("setup_pac3server_addons", function()
 	assert(steam.GetGamePath("GarrysMod"), "could not find gmod install")
 	assert(system.OSCommandExists("git", "readlink", "ln"), "windows?")
@@ -43,20 +45,18 @@ commands.Add("setup_pac3server_addons", function()
 end)
 
 commands.Add("setup_gmod_bridge", function()
-	local gmod_dir = steam.GetGamePath("GarrysMod")
+	assert(gmod_path)
 
-	assert(gmod_dir)
-
-	gmod_dir = gmod_dir .. "garrysmod/"
+	local gmod_dir = gmod_path .. "garrysmod/"
 
 	os.execute("rm -rf " .. gmod_dir .. "backgrounds/")
 
-	os.execute("mkdir -p " .. gmod_dir .. "addons/zerobrane_bridge/lua/autorun/")
-	vfs.Write("os:" .. gmod_dir .. "addons/zerobrane_bridge/lua/autorun/zerobrane_bridge.lua", [[
-file.Delete("zerobrane_bridge.txt")
+	os.execute("mkdir -p " .. gmod_dir .. "addons/goluwa_bridge/lua/autorun/")
+	vfs.Write("os:" .. gmod_dir .. "addons/goluwa_bridge/lua/autorun/goluwa_bridge.lua", [[
+file.Delete("goluwa_bridge.txt")
 local next_run = 0
 local last_time = 0
-hook.Add("RenderScene", "zerobrane_bridge", function()
+hook.Add("RenderScene", "goluwa_bridge", function()
 	local time = SysTime()
 	if next_run > next_run then return end
 	next_run = next_run + 0.1
@@ -71,13 +71,13 @@ hook.Add("RenderScene", "zerobrane_bridge", function()
 		return
 	end
 
-	local content = file.Read("zerobrane_bridge.txt", "DATA")
+	local content = file.Read("goluwa_bridge.txt", "DATA")
 	if content then
-		file.Delete("zerobrane_bridge.txt")
+		file.Delete("goluwa_bridge.txt")
 		local chunks = content:Split("¥$£@DELIMITER@£$¥")
 		for i = #chunks, 1, -1 do
 			if chunks[i] ~= "" then
-				local func = CompileString(chunks[i], "zerobrane_bridge", false)
+				local func = CompileString(chunks[i], "goluwa_bridge", false)
 				if type(func) == "function" then
 					local ok, err = pcall(func)
 					if not ok then
@@ -86,18 +86,42 @@ hook.Add("RenderScene", "zerobrane_bridge", function()
 				else
 					ErrorNoHalt(func)
 				end
-				print("ran script from zerobrane")
+				print("ran script from goluwa")
 			end
 		end
 	end
 end)
 ]])
-	vfs.Write("os:" .. e.ROOT_FOLDER .. "data/ide/gmod_path", gmod_dir)
-	logn("wrote script to ", gmod_dir .. "addons/zerobrane_bridge/lua/autorun/zerobrane_bridge.lua")
+	logn("wrote script to ", gmod_dir .. "addons/goluwa_bridge/lua/autorun/goluwa_bridge.lua")
 end)
 
+if gmod_path then
+	event.AddListener("LuaFileChanged", "gmod_bridge", function(info)
+		if info.flags.close_write and vfs.IsFile(gmod_path .. "garrysmod/addons/goluwa_bridge/lua/autorun/goluwa_bridge.lua") then
+			local content = vfs.Read(info.path)
+			local f = io.open(gmod_path .. "garrysmod/data/goluwa_bridge.txt", "a")
+
+			local path = info.path:lower()
+			if path:find("/server/", 1, true) or path:find("/sv_", 1, true) then
+				f:write("if CLIENT then return end ")
+			elseif path:find("/client/", 1, true) or path:find("/cl_", 1, true) then
+				f:write("if SERVER then return end ")
+			end
+
+			local current = vfs.Read(gmod_path .. "garrysmod/data/goluwa_bridge.txt")
+			if current and current:find(content .. "¥$£@DELIMITER@£$¥", nil, true) then
+				return
+			end
+
+			f:write(content)
+			f:write("¥$£@DELIMITER@£$¥")
+			f:close()
+		end
+	end)
+end
+
 commands.Add("setup_metastruct_addons", function()
-	if not vfs.IsDirectory(e.ROOT_FOLDER .. "metastruct_addons") then
+		if not vfs.IsDirectory(e.ROOT_FOLDER .. "metastruct_addons") then
 		vfs.CreateDirectory(e.ROOT_FOLDER .. "metastruct_addons")
 	end
 

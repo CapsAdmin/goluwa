@@ -86,7 +86,7 @@ if buffers_supported then
 	else
 		function META:Draw(index_buffer, count)
 			gl.BindVertexArray(self.vertex_array.id)
---			index_buffer.element_buffer:Bind()
+			index_buffer.element_buffer:Bind()
 
 			gl.DrawElements(self.gl_mode, count or index_buffer.Indices:GetLength(), index_buffer.gl_indices_type, index_buffer.Indices:GetPointer())
 		end
@@ -104,8 +104,8 @@ if buffers_supported then
 			else
 				gl.BindBuffer("GL_ARRAY_BUFFER", self.vertex_buffer.id)
 				for _, data in ipairs(self.mesh_layout.attributes) do
+					self.vertex_array:AttribPointer2(data.location, data.row_length, data.number_type, 0, data.row_offset, self.mesh_layout.size)
 					self.vertex_array:EnableAttrib(data.location)
-					self.vertex_array:AttribPointer2(data.location, data.row_length, data.number_type, false, data.row_offset, self.mesh_layout.size)
 				end
 			end
 			render.last_vertex_array_id = nil

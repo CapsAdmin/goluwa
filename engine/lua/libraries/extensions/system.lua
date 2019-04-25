@@ -1,46 +1,24 @@
-function system.ExecuteArgs(args)
-	args = args or _G.ARGS
+function system.ExecuteArgs()
+	local str = os.getenv("GOLUWA_ARG_LINE")
 
-	local skip_lua = nil
-
-	if not args then
-		local str = os.getenv("GOLUWA_ARGS")
-
-		if str then
-			if str:startswith("--") then
-				args = str:split("--", true)
-				table.remove(args, 1) -- uh
-				skip_lua = true
-			else
-				local func, err = loadstring("return " .. str)
-
-				if func then
-					local ok, tbl = pcall(func)
-
-					if not ok then
-						logn("failed to execute ARGS: ", tbl)
-						return
-					end
-
-					if type(tbl) ~= "table" then
-						logn("table expected in ARGS, got ",type(tbl),": return ", str)
-						return
-					end
-
-					args = tbl
-				else
-					logn("failed to execute ARGS: ", err)
-				end
-			end
-		end
+	if not str or str:trim() == "" then
+		return
 	end
+
+	local args = str:split("--", true)
 
 	if args then
 		for _, arg in ipairs(args) do
-			commands.RunString(tostring(arg), skip_lua, true)
+			if arg:trim() ~= "" then
+				commands.RunString(arg, true, true)
+			end
 		end
 	end
 end
+
+commands.Add("cli", function() end)
+commands.Add("verbose", function() end)
+commands.Add("tmux", function() end)
 
 do
 	local show = pvars.Setup("system_fps_show", true, nil, "show fps in titlebar")

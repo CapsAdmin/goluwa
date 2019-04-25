@@ -20,4 +20,4 @@ function goluwa.MouseInput(button, press)
 			window.SetClipboard(aabb)
 		end
 	end
-end)
+end

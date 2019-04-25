@@ -1,6 +1,14 @@
 table.new = table.new or desire("table.new") or function() return {} end
 table.clear = table.clear or desire("table.clear") or function(t) for k in pairs(t) do t[k] = nil end end
 
+function table.lowercasedlookup(tbl, key)
+	for k,v in pairs(tbl) do
+		if k:lower() == key:lower() then
+			return v
+		end
+	end
+end
+
 if not table.pack then
     function table.pack(...)
         return {
@@ -11,8 +19,23 @@ if not table.pack then
 end
 
 if not table.unpack then
-	function table.unpack(tbl)
-		return unpack(tbl)
+	function table.unpack(tbl, i)
+		return unpack(tbl, i)
+	end
+end
+
+do
+	local table_concat = table.concat
+
+	function table.concatrange(tbl, start, stop)
+		local length = stop-start
+		local str = {}
+		local str_i = 1
+		for i = start, stop do
+			str[str_i] = tbl[i] or ""
+			str_i = str_i + 1
+		end
+		return table_concat(str)
 	end
 end
 
@@ -22,13 +45,16 @@ function table.tolist(tbl, sort)
 		table.insert(list, {key = key, val = val})
 	end
 
+	if sort then table.sort(list, sort) end
+
 	return list
 end
 
 function table.sortedpairs(tbl, sort)
-	local list = table.tolist(tbl)
-	table.sort(list, sort)
+	local list = table.tolist(tbl, sort)
+
 	local i = 0
+
 	return function()
 		i = i + 1
 		if list[i] then
@@ -156,6 +182,16 @@ function table.hasvalue(tbl, val)
 	return false
 end
 
+function table.hasvaluei(tbl, val)
+	for k,v in ipairs(tbl) do
+		if v == val then
+			return k
+		end
+	end
+
+	return false
+end
+
 function table.getkey(tbl, val)
 	for k in pairs(tbl) do
 		if k == val then
@@ -241,37 +277,46 @@ function table.print(...)
 		tbl[2] = nil
 	end
 
+	if not serializer or not serializer.GetLibrary("luadata") then
+		table.print2(tbl)
+		return
+	end
+
 	local luadata = serializer.GetLibrary("luadata")
 	luadata.SetModifier("function", function(var)
-		return ("function(%s) --[==[ptr: %p    src: %s]==] end"):format(table.concat(debug.getparams(var), ", "), var, debug.getprettysource(var))
+		return ("function(%s) --[==[ptr: %p    src: %s]==] end"):format(table.concat(debug.getparams(var), ", "), var, debug.getprettysource(var, true))
 	end)
 	luadata.SetModifier("fallback", function(var)
 		return "--[==[  " .. tostringx(var) .. "  ]==]"
 	end)
 
-	logn(luadata.ToString(tbl, {tab_limit = max_level, done = {}}))
+	log(luadata.ToString(tbl, {tab_limit = max_level, done = {}}):sub(0, -2))
 
 	luadata.SetModifier("function", nil)
 end
 
 do
 	local indent = 0
-	function table.print2(tbl)
+	function table.print2(tbl, blacklist)
 		for k,v in pairs(tbl) do
-			log(("\t"):rep(indent))
-
-			if type(v) == "table" then
-				logn(k, ":")
-				indent = indent + 1
-				table.print2(v)
-				indent = indent - 1
-			else
+			if (not blacklist or blacklist[k] ~= type(v)) and type(v) ~= "table" then
+				log(("\t"):rep(indent))
 				local v = v
 				if type(v) == "string" then
 					v = "\"" .. v .. "\""
 				end
 
 				logn(k, " = ", v)
+			end
+		end
+
+		for k,v in pairs(tbl) do
+			if (not blacklist or blacklist[k] ~= type(v)) and type(v) == "table" then
+				log(("\t"):rep(indent))
+				logn(k, ":")
+				indent = indent + 1
+				table.print2(v, blacklist)
+				indent = indent - 1
 			end
 		end
 	end
@@ -325,6 +370,15 @@ do -- table copy
 		table.clear(lookup_table)
 		return copy(obj, skip_meta)
 	end
+end
+
+function table.concatmember(tbl, key, sep)
+	local temp = {}
+	for i,v in ipairs(tbl) do
+		temp[i] = tostring(v[key])
+	end
+
+	return table.concat(tbl, sep)
 end
 
 do

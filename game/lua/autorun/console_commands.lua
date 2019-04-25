@@ -64,7 +64,7 @@ do -- url monitoring
 					local date = data.header["last-modified"] or data.header["date"]
 
 					if date ~= last_modified then
-						sockets.Download(url, function(lua)
+						http.Download(url):Then(function(lua)
 							local func, err = loadstring(lua)
 							if func then
 								local ok, err = pcall(func)

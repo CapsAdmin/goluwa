@@ -1,28 +1,49 @@
 local system = ... or _G.system
 local ffi = require("ffi")
 
+do
+	local FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000
+	local FORMAT_MESSAGE_IGNORE_INSERTS = 0x00000200
+	local flags = bit.bor(FORMAT_MESSAGE_IGNORE_INSERTS, FORMAT_MESSAGE_FROM_SYSTEM)
+
+	ffi.cdef("int GetLastError();")
+
+	function system.LastOSError(num)
+		num = num or ffi.C.GetLastError()
+		local buffer = ffi.new("char[512]")
+		ffi.C.FormatMessageA(flags, nil, num, 0, buffer, ffi.sizeof(buffer), nil)
+		return string.sub(ffi.string(buffer), 1, -3).." ("..num..")" -- remove last crlf
+	end
+end
+
 function system.OpenURL(url)
 	os.execute(([[explorer "%s"]]):format(url))
 end
 
 ffi.cdef("void Sleep(uint32_t);")
 function system.Sleep(ms)
-	ffi.C.Sleep(ms)
+	ffi.C.Sleep(ms * 1000)
 end
 
 do
-	require("winapi.time")
+	ffi.cdef([[
+		int QueryPerformanceFrequency(int64_t *lpFrequency);
+		int QueryPerformanceCounter(int64_t *lpPerformanceCount);
+	]])
 
-	local winapi = require("winapi")
+	local q = ffi.new("int64_t[1]")
+	ffi.C.QueryPerformanceFrequency(q)
+	local freq = tonumber(q[0])
 
-	local freq = tonumber(winapi.QueryPerformanceFrequency().QuadPart)
-	local start_time = winapi.QueryPerformanceCounter()
+	local start_time = ffi.new("int64_t[1]")
+	ffi.C.QueryPerformanceCounter(start_time)
 
 	function system.GetTime()
-		local time = winapi.QueryPerformanceCounter()
+		local time = ffi.new("int64_t[1]")
+		ffi.C.QueryPerformanceCounter(time)
 
-		time.QuadPart = time.QuadPart - start_time.QuadPart
-		return tonumber(time.QuadPart) / freq
+		time[0] = time[0] - start_time[0]
+		return tonumber(time[0]) / freq
 	end
 end
 
@@ -65,28 +86,9 @@ do
 end
 
 do
-	ffi.cdef[[
-		BOOL SetDllDirectoryA(LPCTSTR lpPathName);
-		DWORD GetDllDirectoryA(DWORD nBufferLength, LPTSTR lpBuffer);
-	]]
-
-	function system.SetSharedLibraryPath(path)
-		ffi.C.SetDllDirectoryA(path or "")
-	end
-
-	local str = ffi.new("char[1024]")
-
-	function system.GetSharedLibraryPath()
-		ffi.C.GetDllDirectoryA(1024, str)
-
-		return ffi.string(str)
-	end
-end
-
-do
 	ffi.cdef([[
 		typedef unsigned goluwa_hkey;
-		LONG RegGetValueA(goluwa_hkey, LPCTSTR, LPCTSTR, DWORD, LPDWORD, PVOID, LPDWORD);
+		long RegGetValueA(goluwa_hkey, const char*, const char*, unsigned long, unsigned long*, void*, unsigned long*);
 	]])
 
 	local advapi = ffi.load("advapi32")

@@ -18,10 +18,6 @@ function render.SwapBuffers()
 
 end
 
-function render.SwapInterval()
-
-end
-
 function render.Shutdown()
 
 end

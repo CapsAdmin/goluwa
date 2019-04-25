@@ -1,5 +1,151 @@
 local utility = _G.utility or {}
 
+function utility.NumberToBytes(num, endian, signed)
+    if num<0 and not signed then num=-num print"warning, dropping sign from number converting to unsigned" end
+    local res={}
+    local n = math.ceil(select(2,math.frexp(num))/8) -- number of bytes to be used.
+    if signed and num < 0 then
+        num = num + 2^n
+    end
+    for k=n,1,-1 do -- 256 = 2^8 bits per char.
+        local mul=2^(8*(k-1))
+        res[k]=math.floor(num/mul)
+        num=num-res[k]*mul
+    end
+    assert(num==0)
+    if endian == "big" then
+        local t={}
+        for k=1,n do
+            t[k]=res[n-k+1]
+        end
+        res=t
+    end
+
+	local bytes =  string.char(unpack(res))
+
+	if #bytes ~= 4 then
+		bytes = bytes .. ("\0"):rep(4 - #bytes)
+	end
+
+	return bytes
+end
+
+function utility.BytesToNumber(str, endian, signed)
+    local t={str:byte(1,-1)}
+    if endian=="big" then --reverse bytes
+        local tt={}
+        for k=1,#t do
+            tt[#t-k+1]=t[k]
+        end
+        t=tt
+    end
+    local n=0
+    for k=1,#t do
+        n=n+t[k]*2^((k-1)*8)
+    end
+    if signed then
+        n = (n > 2^(#t*8-1) -1) and (n - 2^(#t*8)) or n -- if last bit set, negative.
+    end
+    return n
+end
+
+function utility.GetLikelyLibraryDependencies(path)
+	local ext = vfs.GetExtensionFromPath(path)
+	local original = vfs.GetFileNameFromPath(path)
+
+	if not vfs.IsFile(path) then
+		return nil, "file not found"
+	end
+
+	local content = vfs.Read(path)
+	local done = {}
+	local found = {}
+
+	if ext == "so" then
+		for name in content:gmatch("([%.%w_-]+%.so[%w%.]*)\0") do
+			if not done[name] then
+				table.insert(found, {name = name, status = "MISSING"})
+				done[name] = true
+			end
+		end
+		original = table.remove(found, #found).name
+	elseif ext == "dll" then
+		for name in content:gmatch("([%.%w_-]+%.dll)\0") do
+			if not done[name] then
+				table.insert(found, {name = name, status = "MISSING"})
+				done[name] = true
+			end
+		end
+		--original = table.remove(found, 1).name
+	elseif ext == "dylib" then
+		for name in content:gmatch("([%.%w_-]+%.dylib)\0") do
+			if not done[name] then
+				table.insert(found, {name = name, status = "MISSING"})
+				done[name] = true
+			end
+		end
+		original = table.remove(found, 1).name
+	end
+
+	for i, info in ipairs(found) do
+		local where = "bin/" .. jit.os:lower() .. "_" .. jit.arch:lower() .. "/"
+		local found = vfs.GetFiles({path = where, filter = path, filter_plain = true, full_path = true})
+
+		if found[1] then
+			for _, full_path in ipairs(found) do
+				-- look first in the vfs' bin directories
+				vfs.PushWorkingDirectory(full_path:match("(.+/)"))
+					local ok, err, what = package.loadlib(info.name, "")
+					if what == "open" then
+						info.status = "MISSING"
+					elseif what == "init" then
+						info.status = "FOUND"
+						break
+					end
+				vfs.PopWorkingDirectory()
+			end
+		else
+			local ok, err, what = package.loadlib(info.name, "")
+			if what == "open" then
+				info.status = "MISSING"
+			elseif what == "init" then
+				info.status = "FOUND"
+			end
+		end
+	end
+
+	return {name = original, dependencies = found}
+end
+
+do
+	local cache = {}
+	function utility.GetLikelyLibraryDependenciesFormatted(path)
+		local data = cache[path] or utility.GetLikelyLibraryDependencies(path)
+		cache[path] = data
+
+		if not data then return end
+
+		local str = data.name .. " likely dependencies:\n"
+		for _, info in ipairs(data.dependencies) do
+			str = str .. "\t" .. (info.status) .. "\t\t" .. info.name .. "\n"
+		end
+
+		return str
+	end
+end
+
+function utility.AddPackageLoader(func, loaders)
+	loaders = loaders or package.loaders
+
+	for i, v in ipairs(loaders) do
+		if v == func then
+			table.remove(loaders, i)
+			break
+		end
+	end
+	table.insert(loaders, func)
+end
+
 do
 	function utility.StartRecordingCalls(lib, filter)
 		lib.old_funcs = lib.old_funcs or {}
@@ -167,14 +313,10 @@ do
 	local stack = {}
 
 	function utility.PushTimeWarning()
-		if CLI then return end
-
 		table.insert(stack, os.clock())
 	end
 
 	function utility.PopTimeWarning(what, threshold, category)
-		if CLI then return end
-
 		threshold = threshold or 0.1
 		local start_time = table.remove(stack)
 		if not start_time then return end
@@ -373,11 +515,14 @@ function utility.MakePushPopFunction(lib, name, func_set, func_get, reset)
 
 	lib["Push" .. name] = function(a,b,c,d)
 		stack[i] = stack[i] or {}
-		stack[i][1], stack[i][2], stack[i][3], stack[i][4] = func_get()
+		local a_,b_,c_,d_ = func_get()
+		stack[i][1], stack[i][2], stack[i][3], stack[i][4] = a_,b_,c_,d_
 
 		func_set(a,b,c,d)
 
 		i = i + 1
+
+		return a_,b_,c_,d_
 	end
 
 	lib["Pop" .. name] = function()
@@ -391,7 +536,11 @@ function utility.MakePushPopFunction(lib, name, func_set, func_get, reset)
 			reset()
 		end
 
-		func_set(stack[i][1], stack[i][2], stack[i][3], stack[i][4])
+		local a,b,c,d = stack[i][1], stack[i][2], stack[i][3], stack[i][4]
+
+		func_set(a,b,c,d)
+
+		return a,b,c,d
 	end
 end
 
@@ -558,7 +707,7 @@ function utility.TableToColumns(title, tbl, columns, check, sort_key)
 	return out
 end
 
-function utility.TableToFlags(flags, valid_flags)
+function utility.TableToFlags(flags, valid_flags, operation)
 	if type(flags) == "string" then
 		flags = {flags}
 	end
@@ -570,7 +719,11 @@ function utility.TableToFlags(flags, valid_flags)
 		if not flag then
 			error("invalid flag", 2)
 		end
-		out = bit.band(out, tonumber(flag))
+		if type(operation) == "function" then
+			out = operation(out, tonumber(flag))
+		else
+			out = bit.band(out, tonumber(flag))
+		end
 	end
 
 	return out
@@ -832,6 +985,14 @@ do
 	end
 end
 
+function utility.SwapEndian(num, size)
+	local result = 0
+	for shift = 0, (size * 8) - 8, 8 do
+		result = bit.bor(bit.lshift(result, 8), bit.band(bit.rshift(num, shift), 0xff))
+	end
+	return result
+end
+
 function utility.NumberToBinary(num, bits)
 	bits = bits or 32
 	local bin = {}
@@ -846,23 +1007,27 @@ function utility.NumberToBinary(num, bits)
 		end
 	end
 
-	return table.concat(bin)
+	return table.concat(bin):reverse()
 end
 
 function utility.BinaryToNumber(bin)
-	bin = string.reverse(bin)
-	local sum = 0
-
-	for i = 1, string.len(bin) do
-		num = string.sub(bin, i,i) == "1" and 1 or 0
-		sum = sum + num * math.pow(2, i-1)
-	end
-
-	return sum
+	return tonumber(bin, 2)
 end
 
 function utility.NumberToHex(num)
-	return "0x" .. bit.tohex(num):upper()
+	return ("0x%X"):format(num)
+end
+
+function utility.HexToNumber(hex)
+	return tonumber(hex, 16)
+end
+
+function utility.NumberToOctal(num)
+	return ("%o"):format(num)
+end
+
+function utility.OctalToNumber(hex)
+	return tonumber(hex, 8)
 end
 
 return utility

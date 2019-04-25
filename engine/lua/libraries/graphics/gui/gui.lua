@@ -66,6 +66,10 @@ function gui.CreatePanel(name, parent, store_in_parent)
 	return self
 end
 
+function gui.CreateTemplate(class_name, ...)
+	return prototype.CreateTemplate(class_name, ...)
+end
+
 function gui.RegisterPanel(META)
 	META.TypeBase = "base"
 	META.Type = nil
@@ -77,6 +81,10 @@ function gui.RemovePanel(pnl)
 end
 
 function gui.Panic()
+	if gui.world and gui.world:IsValid() then
+		gui.world:Remove()
+	end
+
 	gui.Initialize()
 end
 
@@ -312,7 +320,7 @@ do -- events
 end
 
 do -- skin
-	function gui.SetSkin(skin)
+	function gui.SetSkin(skin, skip_update_panels)
 		if type(skin) == "string" then
 			skin = gui.GetRegisteredSkin(skin).skin
 		end
@@ -322,6 +330,8 @@ do -- skin
 		gui.skin = skin
 
 		if not old then return end
+
+		if skip_update_panels then return end
 
 		for panel in pairs(gui.panels) do
 			panel:SetSkin(skin)
@@ -348,6 +358,7 @@ do -- skin
 
 			return tbl
 		end
+		error("no such skin: " .. name)
 	end
 
 	function gui.GetRegisteredSkins()
@@ -429,7 +440,7 @@ function gui.Initialize()
 		default = "gwen_dark",
 		list = gui.GetRegisteredSkins(),
 		callback = function(str)
-			gui.SetSkin(str)
+			gui.SetSkin(str, true)
 		end,
 	})
 
@@ -529,5 +540,5 @@ runfile("base_panel.lua", gui)
 RELOAD = nil
 runfile("panels/*", gui)
 runfile("helpers.lua", gui)
-return gui
 --for k,v in pairs(event.GetTable()) do for k2,v2 in pairs(v) do if type(v2.id)=='string' and v2.id:lower():find"aahh" or v2.id == "gui" then event.RemoveListener(k,v2.id) end end end
+return gui

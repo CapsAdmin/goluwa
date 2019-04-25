@@ -1,3 +1,18 @@
+function utility.MeldDiff(a, b)
+	local name_a = os.tmpname()
+	local name_b = os.tmpname()
+
+	local f = io.open(name_a, "wb")
+	f:write(a)
+	f:close()
+
+	local f = io.open(name_b, "wb")
+	f:write(b)
+	f:close()
+
+	os.execute("meld " .. name_a .. " " .. name_b)
+end
+
 do
 	local function replace(start, stop, def)
 		local os = def:match("%$(.+)")

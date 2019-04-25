@@ -22,14 +22,6 @@ function system.FindFirstTextEditor(os_execute, with_args)
 
 end
 
-function system.SetSharedLibraryPath(path)
-
-end
-
-function system.GetSharedLibraryPath()
-	return ""
-end
-
 function system._OSCommandExists(cmd)
 	return false
 end

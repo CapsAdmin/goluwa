@@ -131,7 +131,7 @@ end
 function fs.getcd()
 	local buffer = ffi.new("char[260]")
 	local length = ffi.C.GetCurrentDirectoryA(260, buffer)
-	return ffi.string(buffer, length)
+	return ffi.string(buffer, length):gsub("\\", "/")
 end
 
 function fs.setcd(path)
@@ -179,18 +179,22 @@ local function flags_to_table(bits)
 	return out
 end
 
-local COMBINE = function(hi, lo) return bit.band(bit.lshift(hi, 8), lo) end
+local time_type = ffi.typeof("uint64_t *")
+local POSIX_TIME = function(ptr) 
+	return tonumber(ffi.cast(time_type, ptr)[0] / 10000000 - 11644473600)
+end
 
-local info = ffi.new("goluwa_file_attributes[1]")
 
 function fs.getattributes(path)
+	local info = ffi.new("goluwa_file_attributes[1]")
 	if ffi.C.GetFileAttributesExA(path, 0, info) then
 		local info = {
-			creation_time = COMBINE(info[0].ftCreationTime.high, info[0].ftCreationTime.low),
-			last_accessed = COMBINE(info[0].ftLastAccessTime.high, info[0].ftLastAccessTime.low),
-			last_modified = COMBINE(info[0].ftLastWriteTime.high, info[0].ftLastWriteTime.low),
+			raw_info = info[0],
+			creation_time = POSIX_TIME(info[0].ftCreationTime),
+			last_accessed = POSIX_TIME(info[0].ftLastAccessTime),
+			last_modified = POSIX_TIME(info[0].ftLastWriteTime),
 			last_changed = -1, -- last permission changes
-			size = info[0].nFileSizeLow,--COMBINE(info[0].nFileSizeLow, info[0].nFileSizeHigh),
+			size = info[0].nFileSizeLow,
 			type = bit.band(
 				info[0].dwFileAttributes, flags.directory
 			) == flags.directory and "directory" or "file",
@@ -201,5 +205,37 @@ function fs.getattributes(path)
 
 	return nil, error_string()
 end
+
+function fs.setcustomattribute(path, data)
+	local f = io.open(path .. ":goluwa_attributes", "wb")
+	if not f then return nil, err end
+	f:write(data)
+	f:close()
+end
+
+function fs.getcustomattribute(path)
+	local f, err = io.open(path .. ":goluwa_attributes", "rb")
+	if not f then return "" end
+	local data = f:read("*all")
+	f:close()
+	return data
+end
+
+do
+	local queue = {}
+
+	function fs.watch(path, mask)
+		local self = {}
+		function self:Read()
+
+		end
+
+		function self:Remove()
+		end
+		
+		return self
+	end
+end
+
 
 return fs

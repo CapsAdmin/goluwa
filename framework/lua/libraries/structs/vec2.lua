@@ -3,59 +3,12 @@ local structs = (...) or _G.structs
 local META = prototype.CreateTemplate("Vec2")
 
 META.NumberType = "double"
-META.Args = {{"x", "w", "p"}, {"y", "h", "y"}}
+META.Args = {{"x", "w", "p", "r"}, {"y", "h", "y", "g"}}
 
 structs.AddAllOperators(META)
--- length stuff
-do
-	function META:GetLengthSquared()
-		return self.x * self.x + self.y * self.y
-	end
+structs.AddOperator(META, "generic_vector")
 
-	function META:SetLength(num)
-		local scale = num * 1/math.sqrt(self:GetLengthSquared())
-
-		self.x = self.x * scale
-		self.y = self.y * scale
-	end
-
-	function META:GetLength()
-		return math.sqrt(self:GetLengthSquared())
-	end
-
-	META.__len = META.GetLength
-
-	function META.__lt(a, b)
-		if type(a) == "cdata" and structs.IsType(a, b) and type(b) == "number" then
-			return a:GetLength() < b
-		elseif type(b) == "cdata" and structs.IsType(b, a) and type(a) == "number" then
-			return b:GetLength() < a
-		end
-	end
-
-	function META.__le(a, b)
-		if type(a) == "cdata" and structs.IsType(a, b) and type(b) == "number" then
-			return a:GetLength() <= b
-		elseif type(b) == "cdata" and structs.IsType(b, a) and type(a) == "number" then
-			return b:GetLength() <= a
-		end
-	end
-
-	function META:SetMaxLength(num)
-		local length = self:GetLengthSquared()
-
-		if length * length > num then
-			local scale = num * 1/math.sqrt(length)
-
-			self.x = self.x * scale
-			self.y = self.y * scale
-		end
-	end
-
-	function META.Distance(a, b)
-		return (a - b):GetLength()
-	end
-end
+structs.Swizzle(META)
 
 function META:Rotate(angle)
 	local cs = math.cos(angle);
@@ -72,40 +25,12 @@ end
 
 structs.AddGetFunc(META, "Rotate", "Rotated")
 
-function META.Lerp(a, mult, b)
-
-	a.x = (b.x - a.x) * mult + a.x
-	a.y = (b.y - a.y) * mult + a.y
-
-	return a
-end
-
-structs.AddGetFunc(META, "Lerp", "Lerped")
-
 function META.GetDot(a, b)
 	return
 		a.x * b.x +
 		a.y * b.y
-	end
-
-function META:Normalize(scale)
-	scale = scale or 1
-	local length = self:GetLengthSquared()
-
-	if length == 0 then
-		self.x = 0
-		self.y = 0
-		return self
-	end
-	local inverted_length = scale/math.sqrt(length)
-
-	self.x = self.x * inverted_length
-	self.y = self.y * inverted_length
-
-	return self
 end
 
-structs.AddGetFunc(META, "Normalize", "Normalized")
 
 function META:GetNormal(scale)
 	return Vec2(-self.y * scale, self.x * scale)

@@ -217,10 +217,11 @@ do -- logging
 		end
 
 		if log_files.console == log_file then
-			if repl and repl.Print and repl.curses_init then
-				repl.Print(line)
-			elseif can_print(line) then
+			if repl and repl.started and repl.StyledWrite then
+				repl.StyledWrite(line)
+			else
 				io.write(line)
+				io.stdout:flush()
 			end
 		end
 	end
@@ -281,6 +282,10 @@ do -- logging
 			sub_category = source:match(".+/libraries/(.+)%.lua")
 		end
 
+		if main_category == "extensions" then
+			main_category = nil
+		end
+
 		local str = fmt:safeformat(...)
 
 		if not main_category or not sub_category or main_category == sub_category then
@@ -338,7 +343,12 @@ function desire(name)
 	local ok, res = pcall(require, name)
 
 	if not ok then
-		wlog("unable to require %s:\n\t%s", name, res, 2)
+		if VERBOSE then
+			res = res:gsub("module .- not found:%s+", "")
+			res = res:gsub("error loading module .- from file.-:%s+", "")
+
+			wlog("unable to require %s:\n\t%s", name, res, 2)
+		end
 
 		return nil, res
 	end

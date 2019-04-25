@@ -12,13 +12,19 @@ end
 
 local X, Y = 0, 0
 
-function gfx.DrawText(str, x, y, w)
+function gfx.DrawText(str, x, y, w, align_x, align_y)
 	local ux,uy,uw,uh,usx,usy = render2d.GetRectUV()
 	local old_tex = render2d.GetTexture()
 	local r,g,b,a = render2d.GetColor()
 
 	x = x or X
 	y = y or Y
+
+	if align_x or align_y then
+		local w, h = gfx.GetTextSize(str)
+		x = x + (w * (align_x or 0))
+		y = y + (h * (align_y or 0))
+	end
 
 	gfx.GetFont():DrawString(str, x, y, w)
 

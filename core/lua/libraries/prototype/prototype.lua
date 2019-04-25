@@ -488,7 +488,7 @@ function prototype.UpdateObjects(meta)
 				for k, v in pairs(tbl) do
 					if type(v) == "function" then
 						if type(obj[k]) == "function" and debug.getinfo(v).source ~= debug.getinfo(obj[k]).source and #string.dump(v) < #string.dump(obj[k]) then
-							llog("not overriding smaller function %s.%s:%s(%s)", tbl.Type, tbl.ClassName, k, table.concat(debug.getupvalues(v), ", "))
+							llog("not overriding smaller function %s.%s:%s(%s)", tbl.Type, tbl.ClassName, k, table.concatmember(debug.getupvalues(v), "key", ", "))
 						else
 							obj[k] = v
 						end
@@ -518,10 +518,6 @@ function prototype.RemoveObjects(super_type, sub_type)
 	end
 end
 
-runfile("get_is_set.lua", prototype)
-runfile("base_object.lua", prototype)
-runfile("null.lua", prototype)
-
 function prototype.DumpObjectCount()
 	local found = {}
 
@@ -544,5 +540,9 @@ function prototype.DumpObjectCount()
 		logn(v.k, " = ", v.v)
 	end
 end
+
+runfile("lua/libraries/prototype/get_is_set.lua", prototype)
+runfile("lua/libraries/prototype/base_object.lua", prototype)
+runfile("lua/libraries/prototype/null.lua", prototype)
 
 return prototype

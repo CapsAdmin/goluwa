@@ -12,16 +12,6 @@ input = runfile("!lua/libraries/input.lua") -- keyboard and mouse input
 tasks = runfile("!lua/libraries/tasks.lua") -- high level coroutine library
 threads = runfile("!lua/libraries/threads.lua")
 
-if SOCKETS then
-	sockets = runfile("!lua/libraries/sockets/sockets.lua") -- luasocket wrapper mostly for web stuff
-
-	if not sockets then
-		SOCKETS = false
-	end
-end
-
-resource = runfile("!lua/libraries/sockets/resource.lua") -- used for downloading resources with resource.Download("http://...", function(path) end)
-
 if SERVER or CLIENT then
 	network = runfile("!lua/libraries/network/network.lua") -- high level implementation of enet
 
@@ -61,36 +51,21 @@ elseif CLI then
 	audio = runfile("!lua/libraries/audio/decoding.lua") -- only decoding
 end
 
-if SOCKETS then
-	sockets.Initialize()
-end
-
 resource.AddProvider("https://gitlab.com/CapsAdmin/goluwa-assets/raw/master/base/", true)
 
-if WINDOW then
-	if window.Open() then
-		if GRAPHICS then
-			render2d.Initialize()
-			fonts.Initialize()
-			gfx.Initialize()
-		end
-	else
-		GRAPHICS = false
-		WINDOW = false
-	end
-end
-
-if SOUND then
-	audio.Initialize()
-end
-
---steam.InitializeWebAPI()
-
-if NETWORK then
-	network.Initialize()
-end
-
 event.AddListener("Initialize", function()
+	if SOUND then
+		audio.Initialize(os.getenv("GOLUWA_AUDIO_DEVICE"))
+	end
+
+	--steam.InitializeWebAPI()
+
+	if NETWORK then
+		network.Initialize()
+	end
+end)
+
+event.AddListener("MainLoopStart", function()
 	-- load everything in goluwa/*/lua/autorun/client/*
 	if CLIENT then
 		vfs.AutorunAddons("client/")
@@ -109,42 +84,4 @@ event.AddListener("Initialize", function()
 	if SOUND then
 		vfs.AutorunAddons("sound/")
 	end
-
-	if GRAPHICS and render2d.IsReady() then
-		vfs.AutorunAddons("graphics/")
-	end
 end)
-
-if THREAD then return end
-
--- only if we're in 32 bit lua
-if #tostring({}) == 10 then
-	event.Thinker(function()
-		if collectgarbage("count") > 900000 then
-			collectgarbage()
-			llog("emergency gc!")
-		end
-	end, false, 1/10)
-end
-
--- main loop
-local last_time = 0
-local i = 0ULL
-
-function system.MainLoop()
-	while system.run == true do
-		local time = system.GetTime()
-
-		local dt = time - (last_time or 0)
-
-		system.SetFrameTime(dt)
-		system.SetFrameNumber(i)
-		system.SetElapsedTime(system.GetElapsedTime() + dt)
-		event.Call("Update", dt)
-		system.SetInternalFrameTime(system.GetTime() - time)
-		system.UpdateTitlebarFPS()
-		i = i + 1
-		last_time = time
-		event.Call("FrameEnd")
-	end
-end

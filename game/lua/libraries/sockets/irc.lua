@@ -270,16 +270,16 @@ function META:Connect(address, port)
 	port = port or 6667
 
 	do
-		local socket = sockets.CreateClient()
+		local socket = sockets.TCPClient()
 
 		socket:Connect(address, port)
-		socket:SetKeepAlive(true)
-		socket:SetTimeout(math.huge)
-		socket:SetReceiveMode("line")
+		socket.socket:set_option("keepalive", true)
 
-		socket.OnReceive = function(s, line)
-			if self:OnReceive(line) ~= false then
-				self:HandleMessage(line)
+		socket.OnReceiveChunk = function(s, chunk)
+			for _, line in ipairs(chunk:split("\n")) do
+				if self:OnReceive(line) ~= false then
+					self:HandleMessage(line)
+				end
 			end
 		end
 

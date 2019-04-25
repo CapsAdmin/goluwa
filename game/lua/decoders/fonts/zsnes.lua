@@ -10,8 +10,8 @@ function META:Initialize()
 		return false, "not a valid font"
 	end
 
-	if vfs.IsFile("zfont_cache") then
-		self.font_data = serializer.ReadFile("msgpack", "zfont_cache")
+	if vfs.IsFile("cache/zfont") then
+		self.font_data = serializer.ReadFile("msgpack", "cache/zfont")
 		self:CreateTextureAtlas()
 		self:OnLoad()
 		return
@@ -90,7 +90,7 @@ function META:Initialize()
 	local dark = ColorBytes(168, 164, 160)
 	local light = ColorBytes(232, 228, 224)
 
-	resource.Download(self.Path, function(path)
+	resource.Download(self.Path):Then(function(path)
 		local file = vfs.Open(path)
 
 		if file:ReadBytes(18) ~= "; empty space 0x00" then
@@ -142,7 +142,7 @@ function META:Initialize()
 			end
 		end
 
-		serializer.WriteFile("msgpack", "zfont_cache", self.font_data)
+		serializer.WriteFile("msgpack", "cache/zfont", self.font_data)
 
 		self:CreateTextureAtlas()
 

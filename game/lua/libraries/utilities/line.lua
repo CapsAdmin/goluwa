@@ -6,7 +6,7 @@ function utility.DownloadLineStickers(id, cb)
 		icon_path = "https://stickershop.line-scdn.net/stickershop/v1/product/"..id.."/LINEStorePC/main.png",
 	}
 
-	sockets.Download("https://store.line.me/stickershop/product/" .. id, function(content)
+	http.Download("https://store.line.me/stickershop/product/" .. id):Then(function(content)
 		out.title = content:match("<title>(.-) – .-</title>"):gsub("&#%d-;", "")
 		out.stickers = {}
 
@@ -17,7 +17,7 @@ function utility.DownloadLineStickers(id, cb)
 		if out.stickers[1] then
 			cb(out)
 		else
-			sockets.Download("http://dl.stickershop.line.naver.jp/products/0/0/1/"..id.."/android/productInfo.meta", function(content)
+			http.Download("http://dl.stickershop.line.naver.jp/products/0/0/1/"..id.."/android/productInfo.meta"):Then(function(content)
 				local tbl = serializer.Decode("json", content)
 				for i,v in ipairs(tbl.stickers) do
 					table.insert(out.stickers, "http://stickershop.line-cdn.net/products/0/0/1/"..tbl.packageId.."/PC/stickers/"..v.id..".png")
@@ -50,7 +50,7 @@ do
 				icon_path = "https://stickershop.line-scdn.net//stickershop/v1/product/"..package_id:match(".+/(%d+)").."/android/main.png"
 			}
 
-			sockets.Download(url, function(data)
+			http.Download(url):Then(function(data)
 				out.title = data:match([=["en":"(.-)"]=])
 
 				for id in data:match([=["stickers":%b[]]=], 0):gmatch([=["id":(%d+)]=]) do

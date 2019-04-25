@@ -23,11 +23,11 @@ function META:CompileShader(type, source)
 	shader:Source(1, shader_strings, nil)
 	shader:Compile()
 
-	local status = ffi.new("GLint[1]", 1)
-	shader:Getiv("GL_COMPILE_STATUS", status)
+	local log_length = ffi.new("GLint[1]", 0)
+	shader:Getiv("GL_INFO_LOG_LENGTH", log_length)
 
-	if status[0] == 0 then
-		local log = ffi.new("GLchar[1024]")
+	if log_length[0] > 0 then
+		local log = ffi.new("GLchar[?]", log_length[0])
 		local size = ffi.new("GLsizei[1]")
 		shader:GetInfoLog(1024, size, log)
 		shader:Delete()

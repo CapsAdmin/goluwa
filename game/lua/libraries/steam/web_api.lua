@@ -1,5 +1,3 @@
-if not SOCKETS then return end
-
 local steam = ... or _G.steam
 
 local patch = {
@@ -307,7 +305,7 @@ end
 function steam.UpdateSupportedWebAPI(callback)
 	llog("fetching supported api..")
 
-	sockets.Get("https://api.steampowered.com/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key=" .. steam.GetWebAPIKey(), function(data)
+	http.Get("https://api.steampowered.com/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key=" .. steam.GetWebAPIKey(), function(data)
 		if data.content then
 			local tbl = serializer.Decode("json", data.content)
 

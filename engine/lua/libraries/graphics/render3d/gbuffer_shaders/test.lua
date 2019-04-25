@@ -35,7 +35,7 @@ float sqr(float x) { return x*x; }
 
 float SchlickFresnel(float u)
 {
-    float m = clamp(1-u, 0, 1);
+    float m = clamp(1.0-u, 0.0, 1.0);
     float m2 = m*m;
     return m2*m2*m; // pow(m,5)
 }
@@ -104,20 +104,20 @@ vec3 compute_specular2(
     float Cdlum = .3*Cdlin[0] + .6*Cdlin[1]  + .1*Cdlin[2]; // luminance approx.
 
     vec3 Ctint = Cdlum > 0 ? Cdlin/Cdlum : vec3(1); // normalize lum. to isolate hue+sat
-    vec3 Cspec0 = mix(specular*.08*mix(vec3(1), Ctint, specularTint), Cdlin, metallic);
-    vec3 Csheen = mix(vec3(1), Ctint, sheenTint);
+    vec3 Cspec0 = mix(specular*.08*mix(vec3(1.0), Ctint, specularTint), Cdlin, metallic);
+    vec3 Csheen = mix(vec3(1.0), Ctint, sheenTint);
 
     // Diffuse fresnel - go from 1 at normal incidence to .5 at grazing
     // and mix in diffuse retro-reflection based on roughness
     float FL = SchlickFresnel(NdotL), FV = SchlickFresnel(NdotV);
     float Fd90 = 0.5 + 2 * LdotH*LdotH * roughness;
-    float Fd = mix(1, Fd90, FL) * mix(1, Fd90, FV);
+    float Fd = mix(1.0, Fd90, FL) * mix(1.0, Fd90, FV);
 
     // Based on Hanrahan-Krueger brdf approximation of isotropic bssrdf
     // 1.25 scale is used to (roughly) preserve albedo
     // Fss90 used to "flatten" retroreflection based on roughness
     float Fss90 = LdotH*LdotH*roughness;
-    float Fss = mix(1, Fss90, FL) * mix(1, Fss90, FV);
+    float Fss = mix(1.0, Fss90, FL) * mix(1.0, Fss90, FV);
     float ss = 1.25 * (Fss * (1 / (NdotL + NdotV) - .5) + .5);
 
     // specular
@@ -135,7 +135,7 @@ vec3 compute_specular2(
 
     // clearcoat (ior = 1.5 -> F0 = 0.04)
     float Dr = GTR1(NdotH, mix(.1,.001,clearcoatGloss));
-    float Fr = mix(.04, 1, FH);
+    float Fr = mix(.04, 1.0, FH);
     float Gr = smithG_GGX(NdotL, .25) * smithG_GGX(NdotV, .25);
 
     return
@@ -181,9 +181,9 @@ float compute_specular(vec3 N, vec3 V, vec3 L, float roughness, float F0)
 {
 	vec3 H = normalize(V+L);
 
-	float dotNL = clamp(dot(N,L), 0, 1);
-	float dotLH = clamp(dot(L,H), 0, 1);
-	float dotNH = clamp(dot(N,H), 0, 1);
+	float dotNL = clamp(dot(N,L), 0.0, 1.0);
+	float dotLH = clamp(dot(L,H), 0.0, 1.0);
+	float dotNH = clamp(dot(N,H), 0.0, 1.0);
 
 	float D = LightingFuncGGX_D(dotNH,roughness);
 	vec2 FV_helper = LightingFuncGGX_FV(dotLH,roughness);

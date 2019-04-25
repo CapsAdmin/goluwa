@@ -26,7 +26,7 @@ function steam.DownloadWorkshop(id, callback, on_error)
 			end
 
 			if data.response.publishedfiledetails[1].file_url then
-				resource.Download(data.response.publishedfiledetails[1].file_url, function(path)
+				resource.Download(data.response.publishedfiledetails[1].file_url, nil, nil, nil, data.response.publishedfiledetails[1].creator_app_id == 4000 and "gma" or "zip"):Then(function(path)
 					local bin, err = serializer.ReadFile("lzma", path)
 					if not bin then
 						on_error("unable to extract data: " .. err)
@@ -34,7 +34,7 @@ function steam.DownloadWorkshop(id, callback, on_error)
 					end
 					vfs.Write(path, bin)
 					callback(path, data.response)
-				end, on_error, nil, nil, nil, data.response.publishedfiledetails[1].creator_app_id == 4000 and "gma" or "zip")
+				end):Catch(on_error)
 			else
 				on_error("error downloading " ..  id .. " no file url?")
 			end

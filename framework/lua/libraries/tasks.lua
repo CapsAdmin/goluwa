@@ -280,12 +280,12 @@ do
 		tasks.wrapped_functions[lib][func] = tasks.wrapped_functions[lib][func] or lib[func]
 		local old = tasks.wrapped_functions[lib][func]
 
-		lib[func] = function(arg, callback, on_error, ...)
-			if not callback and not on_error and tasks.GetActiveTask() then
+		lib[func] = function(arg, ...)
+			if tasks.GetActiveTask() then
 				local data
 				local err
 
-				old(arg, function(...) data = {...} end, function(val) err = val end)
+				old(arg):Then(function(...) data = {...} end):Catch(function(val) err = val end)
 
 				while not data and not err do
 					tasks.Wait()
@@ -298,9 +298,34 @@ do
 				return nil, err
 			end
 
-			return old(arg, callback, on_error, ...)
+			return old(arg, ...)
 		end
 	end
+end
+
+
+if sockets then -- not sure where this belongs
+	tasks.WrapCallback(http, "Download")
+
+	event.AddListener("SocketRequest", "socket_tasks", function(info)
+		if not info.callback and tasks.GetActiveTask() then
+			local data
+			local err
+
+			info.callback = function(val) data = val end
+			info.error_callback = function(val) err = val end
+			info.timedout_callback = function(val) err = val end
+
+			sockets.Request(info)
+
+			while not data and not err do
+				tasks.Wait()
+			end
+
+			return data, err
+		end
+	end)
+
 end
 
 return tasks

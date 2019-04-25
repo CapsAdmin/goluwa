@@ -2,6 +2,11 @@ local render2d = ... or _G.render2d
 
 render2d.camera = camera.CreateCamera()
 render2d.camera:Set3D(false)
+render2d._camera = render2d.camera
+
+function render2d.SetCamera(cam)
+	render2d.camera = cam or render2d._camera
+end
 
 function render2d.GetSize()
 	return render2d.camera.Viewport.w, render2d.camera.Viewport.h

@@ -18,22 +18,6 @@ runfile("texture_decoders/*", render)
 runfile("shader_builder.lua", render)
 runfile("state.lua", render)
 
-function render.GetDir()
-	local dir = "lua/libraries/graphics/render/"
-
-	if PLATFORM == "gmod" then
-		dir = dir .. "gmod/"
-	elseif OPENGL then
-		dir = dir .. "opengl/"
-	elseif VULKAN then
-		dir = dir .. "vulkan/"
-	else
-		dir = dir .. "null/"
-	end
-
-	return dir
-end
-
 do
 	local cache = {}
 	render.extension_cache = cache
@@ -77,7 +61,17 @@ function render.Initialize(wnd)
 	end
 
 	render.current_window = wnd -- todo
-	runfile(render.GetDir() .. "render.lua", render)
+
+	if PLATFORM == "gmod" then
+		runfile("lua/libraries/graphics/render/gmod/render.lua", render)
+	elseif OPENGL then
+		runfile("lua/libraries/graphics/render/opengl/render.lua", render)
+	elseif VULKAN then
+		runfile("lua/libraries/graphics/render/vulkan/render.lua", render)
+	else
+		runfile("lua/libraries/graphics/render/null/render.lua", render)
+	end
+
 	render.SetWindow(wnd)
 
 	render._Initialize()

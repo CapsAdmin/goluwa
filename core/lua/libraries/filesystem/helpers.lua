@@ -93,6 +93,96 @@ function vfs.Rename(path, name, ...)
 	return nil, err
 end
 
+function vfs.SetAttribute(path, key, val)
+	local abs_path, err = vfs.GetAbsolutePath(path)
+	if not abs_path then return nil, err end
+
+	local tbl = serializer.LookupInFile("luadata", "vfs_file_attributes", abs_path) or {}
+	tbl[key] = val
+	serializer.StoreInFile("luadata", "vfs_file_attributes", abs_path, tbl)
+end
+
+function vfs.GetAttributes(path)
+	local abs_path, err = vfs.GetAbsolutePath(path)
+	if not abs_path then return nil, err end
+
+	local tbl = serializer.LookupInFile("luadata", "vfs_file_attributes", abs_path) or {}
+
+	return tbl
+end
+
+function vfs.GetAttribute(path, key)
+	local store = vfs.GetAttributes(path)
+	if store then
+		return store[key]
+	end
+end
+
+function vfs.CopyFile(from, to)
+	local ok, err = vfs.CreateDirectoriesFromPath(vfs.GetFolderFromPath(to))
+	if not ok then return ok, err end
+	local content, err = vfs.Read(from)
+	if not content then return content, err end
+	return vfs.Write(to, content)
+end
+
+function vfs.CopyFileFileOnBoot(from, to)
+	from = vfs.GetAbsolutePath(from)
+	if not from then return nil, "source does not exist" end
+
+	local ok, err = vfs.CreateDirectoriesFromPath(vfs.GetFolderFromPath(to:startswith("os:") and to or ("os:" .. to)))
+	if not ok then
+		return ok, err
+	end
+
+	if not vfs.GetAbsolutePath(vfs.GetFolderFromPath(to)) then
+		return nil, "destination directory does not exist"
+	end
+
+	if vfs.IsFile(to) then
+		local path = "shared/copy_binaries_instructions"
+		local str = vfs.Read(path) or ""
+		for _, line in ipairs(str:split("\n")) do
+			if line == (from .. ";" .. to) then
+				return "deferred"
+			end
+		end
+		str = str .. R(from) .. ";" .. R(to) .. "\n"
+		vfs.Write(path, str)
+		return "deferred"
+	end
+
+	if not ok then return ok, err end
+	local content, err = vfs.Read(from)
+	if not content then return content, err end
+
+	return vfs.Write(to, content)
+end
+
+function vfs.LinkFile(from, to)
+	from = vfs.GetAbsolutePath(from)
+
+	if not from then
+		return nil, "source does not exist"
+	end
+
+	local dir = vfs.GetFolderFromPath(to)
+	dir = R(dir)
+
+	if not dir then
+		return nil, "destination directory does not exist"
+	end
+
+	local to = dir .. vfs.GetFileNameFromPath(to)
+
+	if UNIX then
+		os.execute("ln -s '" .. from .. "' '" .. to .. "'")
+	end
+	if WINDOWS then
+		os.execute("MKLINK /H '" .. to .. "' '" .. from .. "'")
+	end
+end
+
 local function add_helper(name, func, mode, cb)
 	vfs[name] = function(path, ...)
 		if cb then cb(path, ...) end
@@ -150,33 +240,50 @@ add_helper("Write", "WriteBytes", "write", function(path, content, on_change)
 		return folder .. file_name
 	end)
 
-	if type(on_change) == "function" then
+	if type(on_change) == "function" and vfs.MonitorFile then
 		vfs.MonitorFile(path, function(file_path)
 			on_change(vfs.Read(file_path), file_path)
 		end)
 		on_change(content)
 	end
 
-	if path:startswith("data/") or path:sub(4):startswith("data/") then
 
-		if path:startswith("os:") then
-			path = path:sub(4)
-		end
+	local found = false
+	local fs = vfs.GetFileSystem("os")
+	if fs then
+		for _, dir in ipairs({"data", "cache", "shared"}) do
+			if path:startswith(dir.."/") or path:startswith("os:"..dir.."/") then
 
-		path = path:sub(#"data/" + 1)
+				if path:startswith("os:") then
+					path = path:sub(4)
+				end
 
-		local fs = vfs.GetFileSystem("os")
+				path = path:sub(#(dir.."/") + 1)
 
-		if fs then
-			local base = e.USERDATA_FOLDER
-			local dir = ""
-			for folder in path:gmatch("(.-/)") do
-				dir = dir .. folder
-				fs:CreateFolder({full_path = base .. dir})
+				local base = e.USERDATA_FOLDER
+
+				if dir == "cache" then
+					base = e.STORAGE_FOLDER .. "data/cache/"
+				elseif dir == "shared" then
+					base = e.STORAGE_FOLDER .. "data/shared/"
+				end
+
+				local dir = ""
+				for folder in path:gmatch("(.-/)") do
+					dir = dir .. folder
+					fs:CreateFolder({full_path = base .. dir})
+				end
+
+				found = true
+				break
 			end
 		end
-	elseif CLI then
-		vfs.CreateDirectoriesFromPath(path, true)
+	end
+
+	if not found then
+		if CLI then
+			vfs.CreateDirectoriesFromPath(path, true)
+		end
 	end
 end)
 
@@ -261,4 +368,88 @@ end
 
 function vfs.Exists(path)
 	return vfs.IsDirectory(path) or vfs.IsFile(path)
+end
+
+function vfs.WatchLuaFiles(b)
+	if not fs.watch then logn("fs.watch not implemented") return end
+
+	if not b then
+		event.RemoveListener("Update", "vfs_watch_lua_files")
+		return
+	end
+
+	local watchers = {}
+	for i, path in ipairs(vfs.GetFilesRecursive("lua/", {"lua"})) do
+		if not path:endswith("core/lua/boot.lua") then
+			table.insert(watchers, {path = path, watcher = fs.watch(R(path))})
+		end
+	end
+
+	local next_check = 0
+
+	event.AddListener("Update", "vfs_watch_lua_files", function()
+		local time = system.GetElapsedTime()
+
+		if time > next_check then
+			for _, data in ipairs(watchers) do
+				local res = data.watcher:Read()
+				if res then
+					res.path = data.path
+					if event.Call("LuaFileChanged", res) == nil then
+						if res.flags.close_write then
+							logn("reloading " .. data.path)
+							_G.RELOAD = true
+							system.pcall(runfile, data.path)
+							_G.RELOAD = nil
+						end
+					end
+				end
+			end
+			next_check = time + 1/5
+		end
+	end)
+end
+
+function vfs.WatchLuaFiles2(b)
+	if not b then
+		event.RemoveListener("Update", "vfs_watch_lua_files")
+		return
+	end
+
+	local paths = {}
+	for i, path in ipairs(vfs.GetFilesRecursive("lua/", {"lua"})) do
+		if not path:endswith("core/lua/boot.lua") then
+			table.insert(paths, {path = R(path)})
+		end
+	end
+
+	local next_check = 0
+
+	event.AddListener("Update", "vfs_watch_lua_files", function()
+		local time = system.GetElapsedTime()
+
+		if time > next_check then
+			if WINDOW and window.IsFocused() then return end
+			if profiler.IsBusy() then return end -- I already know this is slow so it's just in the way
+
+			for i, data in ipairs(paths) do
+				local info = fs.getattributes(data.path)
+
+				if info then
+					if not data.last_modified then
+						data.last_modified = info.last_modified
+					else
+						if data.last_modified ~= info.last_modified then
+							llog("reloading %s", vfs.GetFileNameFromPath(data.path))
+							_G.RELOAD = true
+							system.pcall(runfile, data.path)
+							_G.RELOAD = nil
+							data.last_modified = info.last_modified
+						end
+					end
+				end
+			end
+			next_check = time + 1/5
+		end
+	end)
 end

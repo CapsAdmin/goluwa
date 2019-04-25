@@ -23,10 +23,11 @@ local shader = {
 			tex = {sampler2D = function() return render.GetMaterial().AlbedoTexture or render.GetErrorTexture() end},
 		},
 		source = [[
-			out vec3 color;
+			out vec4 color;
 			void main()
 			{
-				color = texture(tex, uv).rgb;
+				color = texture(tex, uv);
+				color.a = 1;
 			}
 		]]
 	}

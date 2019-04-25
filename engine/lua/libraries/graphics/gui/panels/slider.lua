@@ -16,6 +16,12 @@ function META:Initialize()
 
 	local line = self:CreatePanel("base", "line")
 	line:SetStyle("button_active")
+
+	line.OnMouseInput = function(line, button, pressed)
+		if pressed then
+			self:SetFraction(line:GetMousePosition() / line:GetSize())
+		end
+	end
 	line.OnPostDraw = function()
 		self:OnLineDraw(line)
 	end
@@ -34,7 +40,21 @@ end
 
 function META:SetFraction(pos)
 	self.Fraction = pos
-	self:OnButtonPositionChanged(self.button, self.button:GetPosition())
+	self.Fraction.x = math.clamp(self.Fraction.x, 0, 1)
+	self.Fraction.y = math.clamp(self.Fraction.y, 0, 1)
+
+	if self.XSlide and self.YSlide then
+	elseif self.XSlide then
+		self.Fraction.y = 0.5
+	elseif self.YSlide then
+		self.Fraction.x = 0.5
+	end
+
+	self.button:SetPosition(self.Fraction * self.line:GetSize())
+
+	self.button:MouseInput("button_1", true)
+
+	self:OnSlide(self.Fraction)
 end
 
 function META:OnButtonPositionChanged(button, pos)

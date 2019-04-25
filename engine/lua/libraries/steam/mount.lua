@@ -21,15 +21,15 @@ end)
 
 commands.Add("mount_clear", function()
 	local ok = false
-	for i,v in ipairs(vfs.Find("data/archive_cache/", true)) do
+	for i,v in ipairs(vfs.Find("cache/archive/", true)) do
 		vfs.Delete(v)
 		ok = true
 	end
-	if not ok and vfs.Delete("data/source_games_cache") then
+	if not ok and vfs.Delete("cache/source_games") then
 		ok = true
 	end
 	if ok then
-		logn("removed data/archive_cache/* and data/source_games_cache")
+		logn("removed cache/archive/* and data/source_games")
 	else
 		logn("nothing to remove")
 	end
@@ -56,6 +56,12 @@ pvars.Setup2({
 })
 
 commands.Add("list_games", function()
+	if not next(steam.GetSourceGames()) then
+		logn("no source games found")
+		table.print(steam.GetGameFolders())
+		table.print(steam.GetLibraryFolders())
+	end
+
 	for _, info in pairs(steam.GetSourceGames()) do
 		logn(info.game)
 		logn("\tgame_dir = ", info.game_dir)
@@ -83,7 +89,9 @@ function steam.GetInstallPath()
 
 	if WINDOWS then
 		path = system.GetRegistryValue("CurrentUser/Software/Valve/Steam/SteamPath") or (X64 and "C:\\Program Files (x86)\\Steam" or "C:\\Program Files\\Steam")
-	elseif LINUX then
+	elseif OSX then
+		path = os.getenv("HOME") .. "/Library/Application Support/Steam"
+	else
 		path = os.getenv("HOME") .. "/.steam/steam"
 
 		if not vfs.IsDirectory(path) then
@@ -133,11 +141,11 @@ function steam.GetGameFolders(skip_mods)
 	local games = {}
 
 	for _, library in ipairs(steam.GetLibraryFolders()) do
-		for _, game in ipairs(vfs.Find(library .. "/common/", true)) do
+		for _, game in ipairs(vfs.Find(library .. "common/", true)) do
 			table.insert(games, game .. "/")
 		end
 		if not skip_mods then
-			for _, mod in ipairs(vfs.Find(library .. "/sourcemods/", true)) do
+			for _, mod in ipairs(vfs.Find(library .. "sourcemods/", true)) do
 				table.insert(games, mod .. "/")
 			end
 		end
@@ -147,9 +155,9 @@ function steam.GetGameFolders(skip_mods)
 end
 
 function steam.GetSourceGames()
-	local found = serializer.ReadFile("msgpack", "source_games_cache")
+	local found = serializer.ReadFile("msgpack", "cache/source_games")
 
-	if found then
+	if found and found[1] then
 		for i,v in ipairs(found) do
 			if not vfs.IsFile(v.gameinfo_path) then
 				logn("unable to find ", v.gameinfo_path, ", rebuilding steam.GetSourceGames cache")
@@ -289,7 +297,7 @@ function steam.GetSourceGames()
 		end
 	end
 
-	serializer.WriteFile("msgpack", "source_games_cache", found)
+	serializer.WriteFile("msgpack", "cache/source_games", found)
 
 	return found
 end

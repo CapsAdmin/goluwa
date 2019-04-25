@@ -1,6 +1,29 @@
 local system = _G.system or {}
 
-runfile("platforms/" .. PLATFORM .. "/system.lua", system)
+if PLATFORM == "gmod" then
+	runfile("lua/libraries/platforms/gmod/system.lua", system)
+elseif PLATFORM == "unix" then
+	runfile("lua/libraries/platforms/unix/system.lua", system)
+elseif PLATFORM == "windows" then
+	runfile("lua/libraries/platforms/windows/system.lua", system)
+end
+
+do
+	local terminal
+
+	if PLATFORM == "unix" then
+		terminal = runfile("lua/libraries/platforms/unix/terminal.lua")
+	elseif PLATFORM == "windows" then
+		terminal = runfile("lua/libraries/platforms/windows/terminal.lua")
+	end
+
+	function system.GetTerminal()
+		return terminal
+	end
+end
+
+function system.ExecuteArgs()
+end
 
 function system.ForceMainLoop()
 	system.force_main_loop = true
@@ -29,22 +52,6 @@ function system.OSCommandExists(...)
 	end
 
 	return system._OSCommandExists(...)
-end
-
-function system.GetLibraryDependencies(path)
-	if system.OSCommandExists("ldd", "otool") then
-		local cmd = system.OSCommandExists("ldd") and "ldd" or "otool -L"
-		local f = io.popen(cmd .. " " .. path .. " 2>&1")
-		if f then
-			local str = f:read("*all")
-			f:close()
-
-			str = str:gsub("(.-\n)", function(line) if not line:find("not found") then return "" end end)
-
-			return str
-		end
-	end
-	return "unable to find library dependencies for " .. path .. " because ldd is not an os command"
 end
 
 do -- console title
@@ -76,12 +83,17 @@ do -- console title
 					end
 				end
 
-				str = "| "
+				str = ""
 				for _, v in ipairs(titlesi) do
 					str = str ..  v.title .. " | "
 				end
-				if str ~= last_title then
-					system.SetConsoleTitleRaw(str)
+
+				if str ~= "" then
+					str = "| " .. str
+
+					if str ~= last_title then
+						system.SetConsoleTitleRaw(str)
+					end
 				end
 			else
 				str = title
@@ -104,7 +116,7 @@ do
 
 	function system.ShutDown(code)
 		code = code or 0
-		if not CLI then
+		if VERBOSE then
 			logn("shutting down with code ", code)
 		end
 		system.run = code
@@ -208,6 +220,7 @@ do
 		logsection("lua error", true)
 		if msg then logn(msg) end
 		msg = msg or "no error"
+		msg = tostring(msg)
 		if suppress then logn("error in system.OnError: ", msg, ...) logn(debug.traceback())  return end
 		suppress = true
 
@@ -229,7 +242,7 @@ do
 			for level = 3, 100 do
 				local info = debug.getinfo(level)
 				if info then
-					info.source = debug.getprettysource(level)
+					info.source = debug.getprettysource(level) .. ":" .. (info.currentline or 0)
 
 					local args = {}
 
@@ -281,14 +294,13 @@ do
 				end
 			end
 
-			table.insert(data, {currentline = "LINE:", source = "SOURCE:", name = "FUNCTION:", arg_line = " ARGUMENTS "})
+			table.insert(data, {source = "SOURCE:", name = "FUNCTION:", arg_line = " ARGUMENTS "})
 
-			resize_field(data, "currentline")
 			resize_field(data, "source")
 			resize_field(data, "name")
 
 			for _, info in npairs(data) do
-				logf("  %s   %s   %s  (%s)\n", info.currentline, info.source, info.name, info.arg_line)
+				logf("  %s   %s  (%s)\n", info.source, info.name, info.arg_line)
 			end
 
 			table.clear(data)
@@ -334,7 +346,11 @@ do
 				source = source:trim()
 				local info = debug.getinfo(2)
 
-				logn("  ", info.currentline, " ", info.source)
+				if info.source:startswith("@") then
+					info.source = info.source:sub(2)
+				end
+
+				logn("  ", info.source .. ":" .. info.currentline)
 				logn("  ", _msg:trim())
 			else
 				logn(msg)

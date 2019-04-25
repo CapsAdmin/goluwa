@@ -1,6 +1,5 @@
 local sdl = desire("SDL2")
 if not sdl then return end
-
 local ffi = require("ffi")
 
 local META = ... or prototype.GetRegistered("window")
@@ -28,7 +27,6 @@ function META:Initialize()
 		sdl.SetHint(sdl.e.HINT_MOUSE_FOCUS_CLICKTHROUGH, "1")
 		sdl.video_init = true
 	end
-
 
 	local flags = self.Flags or {"shown", "resizable"}
 
@@ -72,7 +70,9 @@ function META:Initialize()
 
 	sdl.windowobjects[self.sdl_windowid] = self
 
-	llog("version: %s", ffi.string(sdl.GetRevision()))
+	if VERBOSE then
+		llog("version: %s", ffi.string(sdl.GetRevision()))
+	end
 end
 
 function META:OnFrameEnd()
@@ -103,11 +103,18 @@ do
 	local max = 20
 	local events = ffi.new("union SDL_Event[?]", max)
 
+	local window_flags = {}
+	for k,v in pairs(sdl.e) do
+		if k:startswith("WINDOW_") then
+			window_flags[k] = v
+		end
+	end
+
 	function META:OnUpdate(dt)
 		self:UpdateMouseDelta()
 		self:OnPostUpdate(dt)
 
-		if self.Cursor == "trapped" then
+		if self.Cursor == "trapped" and self:IsFocused() then
 			local pos = self:GetMousePosition()
 			local size = self:GetSize()
 			local changed = false
@@ -131,6 +138,12 @@ do
 			local case = events.window.event
 
 			if events.window.windowID == self.sdl_windowid then
+				--for k,v in pairs(sdl.e) do if v == case and k:startswith("WINDOWEVENT_") then print(k) break end end
+
+				local window_state = utility.FlagsToTable(sdl.GetWindowFlags(self.wnd_ptr), window_flags)
+
+				self.Focused = window_state.WINDOW_INPUT_FOCUS or false
+
 				if case == sdl.e.WINDOWEVENT_MOVED then
 					self.cached_pos = nil
 					self:CallEvent("PositionChanged", Vec2(events.window.data1, events.window.data2))
@@ -155,12 +168,8 @@ do
 
 				elseif case == sdl.e.WINDOWEVENT_FOCUS_GAINED then
 					self:CallEvent("GainedFocus")
-					self.Focused = true
-
-				elseif case == sdl.e.WINDOWEVENT_FOCUS_LOST  then
+				elseif case == sdl.e.WINDOWEVENT_FOCUS_LOST then
 					self:CallEvent("LostFocus")
-					self.Focused = false
-
 				elseif case == sdl.e.WINDOWEVENT_CLOSE then
 					self:CallEvent("Close")
 
@@ -249,8 +258,17 @@ do
 		text_input = sdl.e.SYSTEM_CURSOR_IBEAM,
 		crosshair = sdl.e.SYSTEM_CURSOR_CROSSHAIR,
 		hand = sdl.e.SYSTEM_CURSOR_HAND,
-		horizontal_resize = sdl.e.SYSTEM_CURSOR_SIZEWE,
-		vertical_resize = sdl.e.SYSTEM_CURSOR_SIZENS,
+
+		horizontal_resize = sdl.e.SYSTEM_CURSOR_SIZENS,
+		vertical_resize = sdl.e.SYSTEM_CURSOR_SIZEWE,
+
+		top_right_resize = sdl.e.SYSTEM_CURSOR_SIZENESW,
+		bottom_left_resize = sdl.e.SYSTEM_CURSOR_SIZENESW,
+
+		top_left_resize = sdl.e.SYSTEM_CURSOR_SIZENWSE,
+		bottom_right_resize = sdl.e.SYSTEM_CURSOR_SIZENWSE,
+
+		all_resize = sdl.e.SYSTEM_CURSOR_SIZEALL,
 	}
 
 	local last
@@ -340,13 +358,11 @@ end
 if sdl.GetGlobalMouseState and os.getenv("SDL_VIDEODRIVER") ~= "wayland" then
 	local x, y = ffi.new("int[1]"), ffi.new("int[1]")
 	function META:GetMousePosition()
+		sdl.GetGlobalMouseState(x, y)
 		if self.global_mouse then
-			sdl.GetGlobalMouseState(x, y)
 			return Vec2(x[0], y[0])
-		else
-			sdl.GetGlobalMouseState(x, y)
-			return Vec2(x[0], y[0]) - self:GetPosition()
 		end
+		return Vec2(x[0], y[0]) - self:GetPosition()
 	end
 else
 	local x, y = ffi.new("int[1]"), ffi.new("int[1]")
@@ -422,6 +438,30 @@ if system then
 	end
 end
 
+if VULKAN then
+	function META:PreWindowSetup(flags)
+		table.insert(flags, "vulkan")
+	end
+
+	function META:PostWindowSetup()
+
+	end
+
+	function render.CreateVulkanSurface(wnd, instance)
+		local surface = sdl.CreateVulkanSurface(wnd.wnd_ptr, instance)
+
+		if surface == nil then
+			return nil, ffi.string(sdl.GetError())
+		end
+
+		return surface
+	end
+
+	function render.GetRequiredInstanceExtensions(wnd, extra)
+		return sdl.GetRequiredInstanceExtensions(wnd.wnd_ptr, extra)
+	end
+end
+
 if OPENGL and not NULL_OPENGL then
 	local gl = require("opengl")
 
@@ -436,34 +476,24 @@ if OPENGL and not NULL_OPENGL then
 	end
 
 	local attempts = {
-		{
-			version = 4.6,
-			profile_mask = "core",
-		},
-		{
-			version = 4.5,
-			profile_mask = "core",
-		},
-		{
-			version = 4.0,
-			profile_mask = "core",
-		},
-		{
-			version = 3.3,
-			profile_mask = "core",
-		},
-		{
-			version = 3.2,
-			profile_mask = "core",
-		},
-		{
-			profile_mask = "core",
-		},
+		{ version = 4.6, profile_mask = "core" },
+		{ version = 4.5, profile_mask = "core" },
+		{ version = 4.4, profile_mask = "core" },
+		{ version = 4.3, profile_mask = "core" },
+		{ version = 4.2, profile_mask = "core" },
+		{ version = 4.1, profile_mask = "core" },
+		{ version = 4.0, profile_mask = "core" },
+		{ version = 3.3, profile_mask = "core" },
+		{ version = 3.2, profile_mask = "core" },
+		{ version = 3.1, profile_mask = "core" },
+		{ version = 3.0, profile_mask = "core" },
+		{ profile_mask = "core" },
 	}
 
 	function META:PostWindowSetup(wnd_ptr)
 		local context
 		local errors = ""
+		local failed_once = false
 
 		for _, attempt in ipairs(attempts) do
 			sdl.GL_SetAttribute(sdl.e.GL_CONTEXT_PROFILE_MASK, sdl.e["GL_CONTEXT_PROFILE_" .. attempt.profile_mask:upper()])
@@ -481,7 +511,9 @@ if OPENGL and not NULL_OPENGL then
 			context = sdl.GL_CreateContext(wnd_ptr)
 
 			if context ~= nil then
-				--llog("successfully created OpenGL context ", attempt.version or "??", " ", attempt.profile_mask)
+				if errors ~= "" then
+					llog("successfully created OpenGL context ", attempt.version or "??", " ", attempt.profile_mask)
+				end
 				break
 			else
 				local err = ffi.string(sdl.GetError())
@@ -496,7 +528,6 @@ if OPENGL and not NULL_OPENGL then
 
 		gl.GetProcAddress = sdl.GL_GetProcAddress
 		gl.Initialize()
-
 		self:BindContext()
 
 		self.gl_context = context

@@ -9,4 +9,4 @@ serializer.AddLibrary("gunzip", nil, function(gz, str)
 	end, disable_crc = true})
 
 	return table.concat(out)
-end, "deflatelua")
+end, desire("deflatelua"))

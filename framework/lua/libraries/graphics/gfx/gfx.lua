@@ -6,6 +6,7 @@ runfile("quadric_bezier_curve.lua", gfx)
 runfile("text.lua", gfx)
 
 function gfx.Initialize()
+	if VULKAN then return end
 	gfx.ninepatch_poly = gfx.CreatePolygon2D(9 * 6)
 	gfx.ninepatch_poly.vertex_buffer:SetDrawHint("dynamic")
 
@@ -92,6 +93,30 @@ function gfx.DrawRect(x,y,w,h, tex, r,g,b,a)
 	render2d.DrawRect(x,y,w,h)
 	render2d.PopTexture()
 	if r then
+		render2d.PopColor()
+	end
+end
+
+function gfx.DrawOutlinedRect(x,y,w,h, r, r_,g,b,a)
+	r = r or 1
+
+	if r_ then
+		render2d.PushColor(r_,g,b,a)
+	end
+
+	render2d.PushTexture(render.GetWhiteTexture())
+
+	if type(r) == "number" then
+		r = Rect() + r
+	end
+
+	gfx.DrawLine(x, y, x, y + h, r.x, true, r.x)
+	gfx.DrawLine(x - r.x + r.y, y, x + w + r.y + r.w, y, r.y, true, 0, r.y)
+	gfx.DrawLine(x + w, y, x + w, y + h, r.w, true, 0)
+	gfx.DrawLine(x - r.x, y + h, x + w + r.w, y + h, r.h, true, r.h, 0)
+
+	render2d.PopTexture()
+	if r_ then
 		render2d.PopColor()
 	end
 end

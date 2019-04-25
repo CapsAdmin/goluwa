@@ -13,7 +13,7 @@ local metatables = {
 }
 
 local function get_luacheck_envrionment()
-	local globals --= serializer.ReadFile("luadata", "luacheck_cache")
+	local globals --= serializer.ReadFile("luadata", "cache/luacheck")
 
 	if not globals then
 		globals = {"NULL"}
@@ -50,7 +50,7 @@ local function get_luacheck_envrionment()
 			globals[name] = {read_only = false, other_fields = true}
 		end
 
-		serializer.WriteFile("luadata", "luacheck_cache", globals)
+		serializer.WriteFile("luadata", "cache/luacheck", globals)
 	end
 
 	return globals

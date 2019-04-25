@@ -1,4 +1,4 @@
-if SOCKETS then
+do
 	package.preload["mime.core"] = function() return {b64 = crypto.Base64Encode} end
 
 	runfile("lua/libraries/sockets/websocket.lua", sockets)
@@ -42,12 +42,15 @@ if not CLI then
 	resource.AddProvider("https://gitlab.com/CapsAdmin/goluwa-assets/raw/master/extras/", true)
 end
 
-if WINDOW then
-	love = line.CreateLoveEnv() -- https://www.love2d.org/wiki/love
-end
-
 if GRAPHICS then
 	menu = runfile("lua/libraries/graphics/menu.lua")
 end
 
 goluwa = event.CreateRealm("goluwa")
+
+if WINDOW then
+	event.AddListener("WindowOpened", function()
+		love = line.CreateLoveEnv() -- https://www.love2d.org/wiki/love
+		--menu.Open()
+	end)
+end

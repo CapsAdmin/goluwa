@@ -3053,7 +3053,9 @@ do -- drawing
 						set_font(self, chunk.font)
 
 						local c = chunk.color
-						render2d.SetColor(c.r, c.g, c.b, c.a)
+						if c then
+							render2d.SetColor(c.r, c.g, c.b, c.a)
+						end
 
 						gfx.DrawText(chunk.val, chunk.x, chunk.y, max_w)
 					elseif chunk.type == "custom" then

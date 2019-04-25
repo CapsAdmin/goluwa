@@ -78,7 +78,7 @@ local fonts = {
 		padding = 50,
 		shadow = {
 			order = 1,
-			dir = 30,
+			dir = 20,
 			dir_passes = 40,
 			dir_falloff = 3,
 			color = Color(0,0,0,1),
@@ -116,7 +116,7 @@ function goluwa.PreDrawGUI()
 
 	local y = 0
 	for _, font in ipairs(fonts) do
-		local str = "A quick brown fox jumps over the lazy dog."--font:GetName()
+		local str = "A quick brown fox jumps over the lazy dog. - " .. font:GetName()
 		local size = Vec2(font:GetTextSize(str))
 		render2d.SetColor(1,1,1,1)
 		gfx.SetFont(font)

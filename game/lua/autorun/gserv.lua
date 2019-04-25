@@ -43,12 +43,14 @@ local function get_gserv_addon_dir(id)
 	return get_gmod_dir(id) .. "addons/gserv/"
 end
 
-local srcds_dir = e.DATA_FOLDER .. "srcds/"
+local srcds_dir = e.SHARED_FOLDER .. "srcds/"
 
-local data_dir = "data/gserv/"
 local data_dir = "data/gserv/"
 
 local function save_config(id)
+	if not gserv.configs[id] then
+		gserv.configs[id] = table.merge(table.copy(gserv.default_config), {id = id})
+	end
 	serializer.WriteFile("luadata", data_dir .. "configs/" .. underscore(id) .. ".lua", gserv.configs[id])
 end
 
@@ -76,12 +78,96 @@ function gserv.IsSetup(id)
 	then
 		return true
 	end
+
+	return false
+end
+
+function gserv.WriteData(id, str)
+	local prev = vfs.Read(get_gmod_dir(id) .. "data/gserv_data_gserv2gmod.txt") or ""
+	vfs.Write(get_gmod_dir(id) .. "data/gserv_data_gserv2gmod.txt", prev .. str .. "¥$£@DELIMITER@£$¥")
+end
+
+function gserv.ReadData(id)
+	local data = vfs.Read(get_gmod_dir(id) .. "data/gserv_data_gmod2gserv.txt")
+	vfs.Write(get_gmod_dir(id) .. "data/gserv_data_gmod2gserv.txt", "")
+
+	if data and data ~= "" then
+		for _, chunk in ipairs(data:split("¥$£@DELIMITER@£$¥")) do
+			if chunk ~= "" then
+				event.Call("GServMessage", chunk)
+			end
+		end
+	end
 end
 
 function gserv.SetupLua(id)
-	vfs.CreateDirectory("os:" .. get_gserv_addon_dir(id) .. "lua/autorun/server/")
+	vfs.CreateDirectoriesFromPath("os:" .. get_gserv_addon_dir(id) .. "lua/autorun/server/")
 
 	vfs.Write(get_gserv_addon_dir(id) .. "lua/autorun/server/gserv.lua", [[
+		gserv = {}
+
+		function gserv.WriteData(str)
+			file.Append("gserv_data_gmod2gserv.txt", str .. "¥$£@DELIMITER@£$¥")
+		end
+
+		function gserv.ReadData()
+			local data = file.Read("gserv_data_gserv2gmod.txt", "DATA")
+			file.Write("gserv_data_gserv2gmod.txt", "")
+
+			if data and data ~= "" then
+				for _, chunk in ipairs(data:Split("¥$£@DELIMITER@£$¥")) do
+					if chunk ~= "" then
+						hook.Run("GServMessage", chunk)
+					end
+				end
+			end
+		end
+
+		do
+			local last_time
+			hook.Add("Think", "gserv_read_data", function()
+				if file.Time("gserv_data_gserv2gmod.txt", "DATA") ~= last_time then
+					gserv.ReadData()
+				end
+			end)
+		end
+
+		do
+			_G.OLD_HTTP = _G.OLD_HTTP or _G.HTTP
+			local active = {}
+
+			function HTTP(tbl)
+				if tbl and tbl.url and tbl.url:find("discordapp%.com%/api") then
+					local uid = tostring(tbl)
+					active[uid] = tbl
+
+					local tbl = table.Copy(tbl)
+					tbl.type = "HTTP"
+					tbl.uid = uid
+
+					tbl.success = nil
+					tbl.failed = nil
+
+					gserv.WriteData(util.TableToJSON(tbl))
+
+					return
+				end
+
+				return _G.OLD_HTTP(tbl)
+			end
+
+			hook.Add("GServMessage", "gserv_http", function(str)
+				local data = util.JSONToTable(str)
+				if data and data.type == "HTTP" and active[data.uid] then
+					if data.success and active[data.uid].success then
+						active[data.uid].success(unpack(data.success))
+					elseif data.failed and active[data.uid].failed then
+						active[data.uid].failed(data.failed)
+					end
+				end
+			end)
+		end
+
 		timer.Create("gserv_pinger", 1, 0, function()
 			file.Write("gserv_pinger.txt", os.time())
 		end)
@@ -135,6 +221,8 @@ function gserv.SetupLua(id)
 			end
 			file.Write("gserv_resource_files.txt", txt)
 		end)
+
+
 	]])
 
 	vfs.Write(get_gmod_dir(id) .. "cfg/server.cfg", "exec gserv.cfg\n")
@@ -182,14 +270,17 @@ function gserv.Setup(id)
 		gserv.Log(id, "setting up gmod server for first time")
 	end
 
-	gserv.InstallGame("gmod dedicated server", nil, function()
+	save_config(id)
 
+	gserv.InstallGame("gmod dedicated server", nil, function()
 		local dir = underscore(id)
 
 		if not vfs.IsDirectory(srcds_dir .. dir) then
 			os.execute("cp -a " .. gserv.GetInstalledGames()[4020] .. "/. " .. srcds_dir .. dir)
-			serializer.SetKeyValueInFile("luadata", data_dir .. "games.lua", id, srcds_dir .. dir)
+			serializer.StoreInFile("luadata", data_dir .. "games.lua", id, srcds_dir .. dir)
 		end
+
+		gserv.SetupLua(id)
 	end)
 end
 
@@ -202,7 +293,7 @@ function gserv.SetupCommands(id)
 	commands.Add(id .. " stop", function() gserv.Stop(id) end)
 	commands.Add(id .. " kill", function() gserv.Kill(id) end)
 	commands.Add(id .. " dump", function() gserv.Dump(id) end)
-	commands.Add(id .. " restart=number[30]", function(id, time) gserv.Restart(id, time) end)
+	commands.Add(id .. " restart=number[30]", function(time) gserv.Restart(id, time) end)
 	commands.Add(id .. " reboot", function() gserv.Reboot(id) end)
 
 	commands.Add(id .. " add_addon=string,string|nil,string|nil", function(url, override, branch) gserv.AddAddon(id, url, override, branch) gserv.UpdateAddon(id, url) end)
@@ -245,13 +336,11 @@ function gserv.InstallGame(name, dir, callback, username)
 
 	username = username or "anonymous"
 
-	gserv.Log(id, "setting up")
-
 	-- create the srcds directory in goluwa/data/srcds
 	vfs.CreateDirectory("os:" .. srcds_dir)
 
 	-- download steamcmd
-	resource.Download("http://media.steampowered.com/client/steamcmd_linux.tar.gz", function(path)
+	resource.Download("http://media.steampowered.com/client/steamcmd_linux.tar.gz"):Then(function(path)
 
 		-- if steamcmd.sh does not exist then we need to extract it
 		if not vfs.IsFile(srcds_dir .. "steamcmd.sh") then
@@ -262,7 +351,7 @@ function gserv.InstallGame(name, dir, callback, username)
 
 		llog("installing ", name, " (", appid, ")", " to ", srcds_dir .. dir_name)
 
-		serializer.SetKeyValueInFile("luadata", data_dir .. "games.lua", appid, srcds_dir .. dir_name)
+		serializer.StoreInFile("luadata", data_dir .. "games.lua", appid, srcds_dir .. dir_name)
 		repl.OSExecute(srcds_dir .. "steamcmd.sh +login " .. username .. " +force_install_dir \"" .. srcds_dir .. dir_name .. "\" +app_update " .. appid .. " validate +quit")
 
 		llog("done")
@@ -637,6 +726,13 @@ do
 			end
 		end)
 
+		local last_time
+		event.AddListener("Update", "gserv_message_" .. underscore(id), function()
+			if vfs.GetLastModified(get_gmod_dir(id) .. "data/gserv_data_gmod2gserv.txt") ~= last_time then
+				gserv.ReadData(id)
+			end
+		end)
+
 		if gserv.configs[id].webhook_port then
 			sockets.StartWebhookServer(gserv.configs[id].webhook_port, os.getenv(gserv.configs[id].webhook_secret), function(...) event.Call("GservWebhook", id, ...) end)
 		end
@@ -772,7 +868,12 @@ function gserv.ExecuteSync(id, str)
 		current = gserv.GetOutput(id)
 	until current:endswith(end_line)
 
-	return current:sub(#prev + #str + 1):sub(2, -#end_line - 2)
+	local res = current:sub(#prev + #str + 1):sub(2, -#end_line - 2)
+
+	-- gserv run print(1) will print the echo line twice so do this just in case for cleaner output
+	res = res:replace("echo "..delimiter .. "\n", "")
+
+	return res
 end
 
 function gserv.Stop(id)
@@ -827,8 +928,10 @@ end
 
 for _, path in ipairs(vfs.Find(data_dir .. "configs/", true)) do
 	local config = serializer.ReadFile("luadata", path)
-	gserv.configs[config.id] = config
-	gserv.SetupCommands(config.id)
+	if config and config.id then
+		gserv.configs[config.id] = config
+		gserv.SetupCommands(config.id)
+	end
 end
 
 if not CLI then
@@ -841,7 +944,7 @@ if not CLI then
 	end
 end
 
-if GMOD then
+if GMOD or CAPSADMIN then
 	event.AddListener("GservWebhook", "update_addons", function(id, tbl)
 		if tbl.repository and tbl.repository.html_url then
 			local url = tbl.repository.html_url .. ".git"
@@ -856,4 +959,34 @@ if GMOD then
 			gserv.Log(id, "bad payload?")
 		end
 	end)
+
+	event.AddListener("GServMessage", "gmod_HTTP_goluwa", function(data)
+		local ok, data = pcall(serializer.Decode, "json", data)
+		if ok and data then
+			if data.type == "HTTP" then
+				data.headers = data.headers or {}
+				data.headers["Content-Type"] = data.headers["Content-Type"] or "text/plain; charset=utf-8"
+
+				sockets.Request({
+					url = data.url,
+					callback = function(data_)
+						data.success = {data_.code, data_.body, data_.header}
+						gserv.WriteData("gmod", serializer.Encode("json", data))
+					end,
+					error_callback = function(msg)
+						data.failed = msg
+						gserv.WriteData("gmod", serializer.Encode("json", data))
+					end,
+					method = (data.method or "get"):upper(),
+					header = data.headers,
+					post_data = data.body or data.parameters,
+				})
+			end
+		end
+	end)
+
+	if RELOAD then
+		gserv.SetupLua("gmod")
+		gserv.RunLua("gmod", "print(include('autorun/server/gserv.lua'), '!!!')")
+	end
 end

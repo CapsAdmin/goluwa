@@ -88,7 +88,7 @@ do
 		return self:GetChatMessage(i - 1)
 	end
 
-	--[[[event.Timer("steam_friends", 0.25, 0, function()
+	event.Timer("steam_friends", 0.25, 0, function()
 		for i, friend in ipairs(steam.GetFriends()) do
 			local message = friend:GetLastChatMessage()
 			if message then
@@ -99,7 +99,7 @@ do
 				friend.last_message = message
 			end
 		end
-	end)]]
+	end)
 
 	META:Register()
 end
