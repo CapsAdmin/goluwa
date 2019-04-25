@@ -724,6 +724,7 @@ function chatsounds.PlayScript(script)
 
 						if not self.overlap then
 							self.snd:Stop()
+							self.snd:Remove()
 						end
 					end
 
