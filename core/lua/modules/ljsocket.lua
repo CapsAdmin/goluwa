@@ -361,6 +361,10 @@ do
             local F_SETFL = 4
             local O_NONBLOCK = 04000
 
+            if ffi.os == "OSX" then
+                O_NONBLOCK = 0x0004
+            end
+
             function socket.blocking(fd, b)
                 local flags = ffi.C.fcntl(fd, F_GETFL, 0)
 
