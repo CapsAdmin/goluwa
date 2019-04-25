@@ -1,0 +1,62 @@
+#!/bin/sh
+export GOLUWA_START_TIME=$(date +%s%N)
+export GOLUWA_WORKING_DIRECTORY=$PWD
+
+basetime=$(date +%s%N)
+
+script_path=$(readlink -f -- "$0")
+
+if [ -L "$script_path" ]; then
+    cd "$(dirname "$(readlink -f "$script_path")")" || exit
+else
+    cd "$(dirname "$script_path")" || exit
+fi
+
+case $(uname -m) in x86_64) ARCH=x64;; i[36]86) ARCH=x86;; arm*) ARCH=arm;; esac
+case $(uname) in Darwin) OS=osx;; *) OS=linux;; esac
+
+download () {
+    if command -v wget >/dev/null 2>&1; then
+        wget -O "$2" "$1"
+    elif command -v curl >/dev/null 2>&1; then
+        curl -L --url "$1" --output "$2"
+    else
+        echo "unable to find wget or curl"
+        exit 1
+    fi
+}
+
+mkdir -p "data/${OS}_${ARCH}"
+cd "data/${OS}_${ARCH}" || exit
+
+if [ ! -f "luajit" ]; then
+    download "https://gitlab.com/CapsAdmin/goluwa-binaries-${OS}_${ARCH}/raw/master/luajit" "luajit"
+fi
+
+chmod +x luajit
+
+./luajit -e "os.exit(1)"
+status=$?
+
+if [ $status -ne 1 ]; then
+    echo "exit code 'os.exit(1)' does not match $status"
+    echo "removing luajit"
+    mv luajit luajit_old
+fi
+
+if [ ! -f "../../core/lua/boot.lua" ]; then
+    mkdir -p "../../core/lua/"
+    download "https://gitlab.com/CapsAdmin/goluwa/raw/master/core/lua/boot.lua" "../../core/lua/boot.lua"
+fi
+
+if [ "$2" = "cli" ]; then
+eli
+    echo "[bash] goluwa.sh took : $(echo "scale=3;($(date +%s%N) - ${basetime})/(1*10^09)" | bc) seconds"
+fi
+
+if [ ! -x luajit ] && [ -f "/lib/ld-2.26.so" ]; then
+    # a way to execute on fat32 filesystems or something
+	/lib/ld-2.26.so "./luajit" "../../core/lua/boot.lua" "$*"
+else
+    ./luajit "../../core/lua/boot.lua" "$*"
+fi
