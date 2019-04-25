@@ -56,12 +56,12 @@ do
 	end
 end
 
-function lua.loadstring(code, name)
-	name = name or "unkknown"
+function lua.CodeToAST(code, name, start, stop)
+	name = name or "unknown"
 
 	local tokenizer = lua.Tokenizer(code)
 	local tokens = tokenizer:GetTokens()
-
+	
 	if tokenizer.errors[1] then
 		local str = ""
 		for _, err in ipairs(tokenizer.errors) do
@@ -80,13 +80,27 @@ function lua.loadstring(code, name)
 		return nil, str
 	end
 
+	return ast, tokens
+end
+
+function lua.loadstring(code, name)
+	local ast, err = lua.ASTToCode(ast)
+
+	if not ast then return err end
+
 	code = lua.ASTToCode(ast)
-print(code)
+
 	return loadstring(code, name)
 end
 
 function lua.runfile(path, ...)
 	return assert(oh.lua.loadstring(vfs.Read(path), "@" .. R(path)))(...)
+end
+
+if RELOAD then
+	if oh then
+		oh.lua = lua
+	end
 end
 
 return lua
